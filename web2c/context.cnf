@@ -179,6 +179,7 @@ stack_size               =    5000
 string_vacancies         =  100000
 trie_size                =  500000
 hyph_size                =    8191
+expand_depth             =   10000
 
 buf_size.context         = 4000000 % needed for omega bug
 extra_mem_bot.context    = 2000000
@@ -198,6 +199,7 @@ stack_size.context       =   10000
 string_vacancies.context =  125000
 trie_size.context        =  500000
 hyph_size.context        =    8191 % prime
+expand_depth.context     =   10000
 
 obj_tab_size.context     =  300000 % obsolete in 1.40+
 dest_names_size.context  =  300000 % obsolete in 1.40+

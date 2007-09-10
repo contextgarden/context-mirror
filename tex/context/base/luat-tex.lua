@@ -339,7 +339,7 @@ if texconfig and not texlua then
 
     luatex.variablenames = {
         'main_memory', 'extra_mem_bot', 'extra_mem_top',
-        'buf_size',
+        'buf_size','expand_depth',
         'font_max', 'font_mem_size',
         'hash_extra', 'max_strings', 'pool_free', 'pool_size', 'string_vacancies',
         'obj_tab_size', 'pdf_mem_size', 'dest_names_size',

@@ -78,9 +78,15 @@
         job.version = "\utilityversion"
       % local settings = loadfile("\jobname.tuc")
         local settings = io.loaddata("\jobname.tuc")
-        if settings:find("\letterpercent -\letterpercent -\letterpercent s*end of utility file \letterpercent s$") then
-            settings = loadstring(data)
-            if settings then settings() end
+        if settings and settings:find("\letterpercent -\letterpercent -\letterpercent s*end of utility file\letterpercent s*$") then
+            settings = loadstring(settings)
+            if settings then
+                settings()
+            else
+                logs.report("utilityfile","invalid, not loaded")
+            end
+        else
+            logs.report("utilityfile","unfinished, not loaded")
         end
     end}%
 \to \everyjob

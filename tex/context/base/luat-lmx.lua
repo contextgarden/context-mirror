@@ -6,6 +6,8 @@
 
 if not versions then versions = { } end versions['luat-mlx'] = 1.001
 
+-- we can now use l-xml
+
 lmx = { }
 
 lmx.escapes = {

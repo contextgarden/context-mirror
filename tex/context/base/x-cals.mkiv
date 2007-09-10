@@ -1,0 +1,168 @@
+%D \module
+%D   [       file=x-cals,
+%D        version=2007.09.05,
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=Cals table renderer,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (cals tables)}
+
+\startluacode
+do
+
+    lxml.cals = { }
+    lxml.cals.ignore_widths = false
+
+    local halignments = {
+        left = "flushleft",
+        right = "flushright",
+        center = "middle",
+        centre = "middle",
+        justify = "normal",
+    }
+
+    local valignments = {
+        top = "high",
+        bottom = "low",
+        middle = "lohi",
+    }
+
+    local function getspecs(root, pattern, names, widths)
+        local ignore_widths = lxml.cals.ignore_widths
+        for r, d, k in xml.elements(root,pattern) do
+            local dk = d[k]
+            local at = dk.at
+            local column = at.colnum
+            if column then
+                if not ignore_widths then
+                    local width = at.colwidth
+                    if width then
+                        widths[tonumber(column)] = width:lower()
+                    end
+                end
+                local name = at.colname
+                if name then
+                    names[name] = tonumber(column)
+                end
+            end
+        end
+    end
+
+    local function getspans(root, pattern, names, spans)
+        for r, d, k in xml.elements(root,pattern) do
+            local dk = d[k]
+            local at = dk.at
+            local name, namest, nameend = at.colname, names[at.namest or "?"], names[at.nameend or "?"]
+            if name and namest and nameend then
+                spans[name] = tonumber(nameend) - tonumber(namest) + 1
+            end
+        end
+    end
+
+    local texsprint = tex.sprint
+
+    function lxml.cals.table(root,namespace)
+
+        local prefix = (namespace or "cals") .. ":"
+
+        local tgroupspec = "/" .. prefix .. "tgroup"
+        local colspec    = "/" .. prefix .. "colspec"
+        local spanspec   = "/" .. prefix .. "spanspec"
+        local hcolspec   = "/" .. prefix .. "thead" .. "/" ..prefix .. "colspec"
+        local bcolspec   = "/" .. prefix .. "tbody" .. "/" ..prefix .. "colspec"
+        local fcolspec   = "/" .. prefix .. "tfoot" .. "/" ..prefix .. "colspec"
+        local entryspec  = "/" .. prefix .. "entry" .. "|" ..prefix .. "entrytbl"
+        local hrowspec   = "/" .. prefix .. "thead" .. "/" ..prefix .. "row"
+        local browspec   = "/" .. prefix .. "tbody" .. "/" ..prefix .. "row"
+        local frowspec   = "/" .. prefix .. "tfoot" .. "/" ..prefix .. "row"
+
+        local function tablepart(root, xcolspec, xrowspec, before, after)
+            texsprint(tex.ctxcatcodes,before)
+            local at = root.at
+            local pphalign, ppvalign = at.align, at.valign
+            local names, widths, spans = { }, { }, { }
+            getspecs(root, colspec , names, widths)
+            getspecs(root, xcolspec, names, widths)
+            getspans(root, spanspec, names, spans)
+            for r, d, k in xml.elements(root,xrowspec) do
+                texsprint(tex.ctxcatcodes,"\\bTR")
+                local dk = d[k]
+                local at = dk.at
+                local phalign, pvalign = at.align or pphalign, at.valign or ppvalign -- todo: __p__ test
+                local col = 1
+                for rr, dd, kk in xml.elements(dk,entryspec) do
+                    local dk = dd[kk]
+                    if dk.tg == "entrytbl" then
+                        texsprint(tex.ctxcatcodes,"\\bTD{")
+                        lxml.cals.table(dk)
+                        texsprint(tex.ctxcatcodes,"}\\eTD")
+                        col = col + 1
+                    else
+                        local at = dk.at
+                        local b, e, s, m = names[at.namest or "?"], names[at.nameend or "?"], spans[at.spanname or "?"], at.morerows
+                        local halign, valign = at.align or phalign, at.valign or pvalign
+                        if b and e then
+                            s = e - b + 1
+                        end
+                        if halign then
+                            halign = halignments[halign]
+                        end
+                        if valign then
+                            valign = valignments[valign]
+                        end
+                        local width = widths[col]
+                        if s or m or halign or valign or width then
+                            texsprint(tex.ctxcatcodes,string.format("\\bTD[nx=%s,ny=%s,align={%s,%s},width=%s]",
+                                s or 1, (m or 0)+1, halign or "flushleft", valign or "high", width or "fit"))
+                        else
+                            texsprint(tex.ctxcatcodes,"\\bTD")
+                        end
+                        texsprint(xml.content(dk))
+                        texsprint(tex.ctxcatcodes,"\\eTD")
+                        col = col + (s or 1)
+                    end
+                end
+                texsprint(tex.ctxcatcodes,"\\eTR")
+            end
+            texsprint(tex.ctxcatcodes,after)
+        end
+
+        for r, d, k in xml.elements(lxml.id(root),tgroupspec) do
+            local tgroup = d[k]
+            texsprint(tex.ctxcatcodes, "\\bgroup")
+            lxml.directives.setups(root)
+            texsprint(tex.ctxcatcodes, "\\bTABLE")
+            tablepart(tgroup, hcolspec, hrowspec, "\\bTABLEhead", "\\eTABLEhead")
+            tablepart(tgroup, bcolspec, browspec, "\\bTABLEbody", "\\eTABLEbody")
+            tablepart(tgroup, fcolspec, frowspec, "\\bTABLEfoot", "\\eTABLEfoot")
+            texsprint(tex.ctxcatcodes, "\\eTABLE")
+            texsprint(tex.ctxcatcodes, "\\egroup")
+        end
+    end
+
+end
+\stopluacode
+
+% \startxmlsetups xml:cals:process
+%     \xmlsetsetup {\xmldocument} {cals:table} {*}
+% \stopxmlsetups
+% \startxmlsetups cals:table
+%     \ctxlua{lxml.cals.table("#1")}
+% \stopxmlsetups
+% \xmlregistersetup{xml:cals:process}
+
+\startxmlsetups xml:cals:process
+    \xmlsetfunction {\xmldocument} {cals:table} {lxml.cals.table}
+\stopxmlsetups
+
+\xmlregistersetup{xml:cals:process}
+
+\xmlregisterns{cals}{cals}
+
+\endinput

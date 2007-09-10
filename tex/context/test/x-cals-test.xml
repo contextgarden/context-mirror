@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- this is a test file -->
+<!-- this is a test file -->
+<!-- this is a test file -->
+
+<root xmlns:cals="http://www.someplace.org/cals"
+      xmlns:c="http://www.someplace.org/cals">
+
+    <c:table id="100">
+        <c:tgroup cols="2">
+            <c:colspec colnum="1" colwidth="4cm" colname="first"/>
+            <c:colspec colnum="2" colname="second"/>
+            <c:thead>
+                <c:row>
+                    <c:entry>alpha</c:entry>
+                    <c:entry>beta</c:entry>
+                    <c:entry>gamma</c:entry>
+                </c:row>
+            </c:thead>
+            <c:tbody>
+                <c:row>
+                    <c:entry>one</c:entry>
+                    <c:entry>two</c:entry>
+                    <c:entry>three</c:entry>
+                </c:row>
+                <c:row>
+                    <c:entry namest="first" nameend="second">four</c:entry>
+                    <c:entry>five</c:entry>
+                </c:row>
+            </c:tbody>
+        </c:tgroup>
+    </c:table>
+
+    <cals:table id="101">
+        <cals:tgroup cols="2">
+            <cals:colspec colnum="1" colwidth="4cm" colname="first"/>
+            <cals:colspec colnum="2" colname="second"/>
+            <cals:thead>
+                <cals:colspec colnum="1" colwidth="2cm"/>
+                <cals:row>
+                    <cals:entry>alpha</cals:entry>
+                    <cals:entry>beta</cals:entry>
+                    <cals:entry>gamma</cals:entry>
+                </cals:row>
+            </cals:thead>
+            <cals:tbody>
+                <cals:colspec colnum="1" colwidth="2cm"/>
+                <cals:row>
+                    <cals:entry>one</cals:entry>
+                    <cals:entry>two</cals:entry>
+                    <cals:entry>three</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry namest="first" nameend="second">four</cals:entry>
+                    <cals:entry>five</cals:entry>
+                </cals:row>
+            </cals:tbody>
+        </cals:tgroup>
+    </cals:table>
+
+    <cls:table xmlns:cls="http://www.hereorthere.com/cals" id="200">
+        <cls:tgroup cols="2">
+            <cls:colspec colnum="1" colwidth="4cm" colname="first"/>
+            <cls:colspec colnum="2" colname="second"/>
+            <cls:spanspec colname="myspan" namest="first" nameend="second"/>
+            <cls:thead>
+                <cls:row>
+                    <cls:entry>alpha</cls:entry>
+                    <cls:entry>beta</cls:entry>
+                    <cls:entry>gamma</cls:entry>
+                </cls:row>
+            </cls:thead>
+            <cls:tbody>
+                <cls:row>
+                    <cls:entry>one</cls:entry>
+                    <cls:entry morerows='1'>two</cls:entry>
+                    <cls:entry>three</cls:entry>
+                </cls:row>
+                <cls:row>
+                    <cls:entry>one</cls:entry>
+                    <cls:entry>three</cls:entry>
+                </cls:row>
+                <cls:row align="center">
+                    <cls:entry>4m</cls:entry>
+                    <cls:entry>5m</cls:entry>
+                </cls:row>
+            </cls:tbody>
+        </cls:tgroup>
+    </cls:table>
+
+    <table xmlns="http://www.nowhere.org/cals" id="300">
+        <tgroup cols="2">
+            <tbody>
+                <row>
+                    <entry>alpha</entry>
+                    <entrytbl id="400">
+                        <tgroup cols="2">
+                            <tbody>
+                                <row>
+                                    <entry align='middle'>one</entry>
+                                    <entry>three</entry>
+                                </row>
+                                <row>
+                                    <entry align='left'>4</entry>
+                                    <entry align='right'>5</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </entrytbl>
+                </row>
+                <row>
+                    <entry>one</entry>
+                    <entry>two</entry>
+                </row>
+            </tbody>
+        </tgroup>
+    </table>
+
+    <cals:table id="ex.calstable" frame='all'>
+        <cals:title>Cals tabel 3 met kolommen: header + footer + 3 rijen </cals:title>
+        <cals:tgroup cols='3' align='left' colsep='1' rowsep='1'>
+            <cals:colspec colname='c1'/>
+            <cals:colspec colname='c2'/>
+            <cals:colspec colname='c3'/>
+            <cals:thead>
+                <cals:row>
+                    <cals:entry>h1</cals:entry>
+                    <cals:entry>h2</cals:entry>
+                    <cals:entry>h3</cals:entry>
+                </cals:row>
+            </cals:thead>
+            <cals:tfoot>
+                <cals:row>
+                    <cals:entry>f1</cals:entry>
+                    <cals:entry>f2</cals:entry>
+                    <cals:entry>f3</cals:entry>
+                </cals:row>
+            </cals:tfoot>
+            <cals:tbody>
+                <cals:row>
+                    <cals:entry>a1</cals:entry>
+                    <cals:entry>a2</cals:entry>
+                    <cals:entry>a3</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry>b1</cals:entry>
+                    <cals:entry>b2</cals:entry>
+                    <cals:entry>b3</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry>c1</cals:entry>
+                    <cals:entry>c2</cals:entry>
+                    <cals:entry>c3</cals:entry>
+                </cals:row>
+            </cals:tbody>
+        </cals:tgroup>
+    </cals:table>
+
+    <cals:table id="ex.calstable" frame='all'>
+        <cals:title>Cals tabel 4 met kolommen: header + footer + 3 rijen </cals:title>
+        <cals:tgroup cols='4' align='left' colsep='1' rowsep='1'>
+            <cals:colspec colnum='1' colname='c1'/>
+            <cals:colspec colnum='2' colname='c2'/>
+            <cals:colspec colnum='3' colname='c3'/>
+            <cals:colspec colnum='4' colname='c4'/>
+            <cals:thead>
+                <cals:row>
+                    <cals:entry>h1</cals:entry>
+                    <cals:entry>h2</cals:entry>
+                    <cals:entry>h3</cals:entry>
+                    <cals:entry>h4</cals:entry>
+                </cals:row>
+            </cals:thead>
+            <cals:tfoot>
+                <cals:row>
+                    <cals:entry>f1</cals:entry>
+                    <cals:entry>f2</cals:entry>
+                    <cals:entry>f3</cals:entry>
+                    <cals:entry>f4</cals:entry>
+                </cals:row>
+            </cals:tfoot>
+            <cals:tbody>
+                <cals:row>
+                    <cals:entry>a1</cals:entry>
+                    <cals:entry>a2</cals:entry>
+                    <cals:entry>a3</cals:entry>
+                    <cals:entry>a4</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry>b1</cals:entry>
+                    <cals:entry>b2</cals:entry>
+                    <cals:entry>b3</cals:entry>
+                    <cals:entry>b4</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry>c1</cals:entry>
+                    <cals:entry>c2</cals:entry>
+                    <cals:entry>c3</cals:entry>
+                    <cals:entry>c4</cals:entry>
+                </cals:row>
+            </cals:tbody>
+        </cals:tgroup>
+    </cals:table>
+
+    <cals:table id="ex.calstable" frame='all'>
+        <cals:title>Cals tabel 3 met kolommen: horizontal span</cals:title>
+        <cals:tgroup cols='3' align='left' colsep='1' rowsep='1'>
+            <cals:colspec colnum='1' colname='c1'/>
+            <cals:colspec colnum='2' colname='c2'/>
+            <cals:colspec colnum='3' colname='c3'/>
+            <cals:thead>
+                <cals:row>
+                    <cals:entry>h1</cals:entry>
+                    <cals:entry>h2</cals:entry>
+                    <cals:entry>h3</cals:entry>
+                </cals:row>
+            </cals:thead>
+            <cals:tfoot>
+                <cals:row>
+                    <cals:entry>f1</cals:entry>
+                    <cals:entry>f2</cals:entry>
+                    <cals:entry>f3</cals:entry>
+                </cals:row>
+            </cals:tfoot>
+            <cals:tbody>
+                <cals:row>
+                    <cals:entry>a1</cals:entry>
+                    <cals:entry>a2</cals:entry>
+                    <cals:entry>a3</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry namest="c1" nameend="c2" align="center">hs</cals:entry>
+                    <!-- cals:entry>b2: weg in verband met horizontale span</cals:entry -->
+                    <cals:entry>b3</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry>c1</cals:entry>
+                    <cals:entry>c2</cals:entry>
+                    <cals:entry>c3</cals:entry>
+                </cals:row>
+            </cals:tbody>
+        </cals:tgroup>
+    </cals:table>
+
+    <cals:table id="ex.calstable" frame='all'>
+        <cals:title>Cals tabel 3 met kolommen: verticale span</cals:title>
+        <cals:tgroup cols='3' align='left' colsep='1' rowsep='1'>
+            <cals:colspec colnum='1' colname='c1'/>
+            <cals:colspec colnum='2' colname='c2'/>
+            <cals:colspec colnum='3' colname='c3'/>
+            <cals:thead>
+                <cals:row>
+                    <cals:entry>h1</cals:entry>
+                    <cals:entry>h2</cals:entry>
+                    <cals:entry>h3</cals:entry>
+                </cals:row>
+            </cals:thead>
+            <cals:tfoot>
+                <cals:row>
+                    <cals:entry>f1</cals:entry>
+                    <cals:entry>f2</cals:entry>
+                    <cals:entry>f3</cals:entry>
+                </cals:row>
+            </cals:tfoot>
+            <cals:tbody>
+                <cals:row>
+                    <cals:entry>a1</cals:entry>
+                    <cals:entry>a2</cals:entry>
+                    <cals:entry>a3</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry>b1</cals:entry>
+                    <cals:entry>b2</cals:entry>
+                    <cals:entry morerows='1' valign='middle'><p>vs</p></cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry>c1</cals:entry>
+                    <cals:entry>c2</cals:entry>
+                    <!-- cals:entry>c3: weg in verband met verticale span</cals:entry-->
+                </cals:row>
+            </cals:tbody>
+        </cals:tgroup>
+    </cals:table>
+
+    <cals:table id="ex.calstable" frame='all'>
+        <cals:title>Cals tabel 3 met kolommen: verticale en horizontale span</cals:title>
+        <cals:tgroup cols='3' align='left' colsep='1' rowsep='1'>
+            <cals:colspec colnum='1' colname='c1'/>
+            <cals:colspec colnum='2' colname='c2'/>
+            <cals:colspec colnum='3' colname='c3'/>
+            <cals:thead>
+                <cals:row>
+                    <cals:entry>h1</cals:entry>
+                    <cals:entry>h2</cals:entry>
+                    <cals:entry>h3</cals:entry>
+                </cals:row>
+            </cals:thead>
+            <cals:tfoot>
+                <cals:row>
+                    <cals:entry>f1</cals:entry>
+                    <cals:entry>f2</cals:entry>
+                    <cals:entry>f3</cals:entry>
+                </cals:row>
+            </cals:tfoot>
+            <cals:tbody>
+                <cals:row>
+                    <cals:entry>a1</cals:entry>
+                    <cals:entry>a2</cals:entry>
+                    <cals:entry>a3</cals:entry>
+                </cals:row>
+                <cals:row>
+                    <cals:entry>b1</cals:entry>
+                    <cals:entry namest="c1" nameend="c2" align="center" morerows='1' valign='bottom'>vh</cals:entry>
+                    <!-- cals:entry>b3: weg in verband met verticale en horizontale span</cals:entry-->
+                </cals:row>
+                <cals:row>
+                    <cals:entry>c1</cals:entry>
+                    <!-- cals:entry>c2: weg in verband met verticale en horizontale span</cals:entry-->
+                    <!-- cals:entry>c3: weg in verband met verticale en horizontale span</cals:entry-->
+                </cals:row>
+            </cals:tbody>
+        </cals:tgroup>
+    </cals:table>
+
+</root>

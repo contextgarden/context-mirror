@@ -68,6 +68,141 @@
    % reset topskip
    \oninterlineskip}
 
+% experimental spacing
+%
+% test: oeps {\setcharacterspacing[frenchpunctuation]x: xx \bfd x: xx} oeps: test
+
+\defineattribute[spacing]
+
+\newcount \maxcharacterspacingid
+
+\def\definecharacterspacing[#1]%
+  {\ifcsname\??ch#1\endcsname \else
+     \global\advance\maxcharacterspacingid\plusone
+     \setxvalue{\??ch:#1}{\the\maxcharacterspacingid}%
+   \fi}
+
+\def\setupcharacterspacing
+  {\dotripleargument\dosetupcharacterspacing}
+
+\def\dosetupcharacterspacing[#1][#2][#3]%
+  {\ifcsname\??ch:#1\endcsname
+     \begingroup
+     \getparameters[\??ch][\c!left=0,\c!right=0,#3]%
+     \ctxlua{spacings.setspacing(\getvalue{\??ch:#1},\number#2,\@@chleft,\@@chright)}%
+     \endgroup
+   \fi}
+
+\def\setcharacterspacing[#1]%
+  {\dosetattribute{spacing}{\csname\??ch:#1\endcsname}}
+
+\definecharacterspacing [frenchpunctuation] % name may change / unit is em
+
+\setupcharacterspacing [frenchpunctuation] ["003A] [\c!left =.25] % :
+\setupcharacterspacing [frenchpunctuation] ["003B] [\c!left =.25] % ;
+\setupcharacterspacing [frenchpunctuation] ["003F] [\c!left =.25] % ?
+\setupcharacterspacing [frenchpunctuation] ["0021] [\c!left =.25] % !
+\setupcharacterspacing [frenchpunctuation] ["00AB] [\c!right=.25] % guillemotleft/leftguillemot
+\setupcharacterspacing [frenchpunctuation] ["00BB] [\c!left =.25] % guillemotright/rightguillemot
+
+% more
+%
+% {\setcharacterkerning[extrakerning]\input davis\relax}
+
+\defineattribute[kern]
+
+\newcount \maxcharacterkerningid
+
+\def\definecharacterkerning
+  {\dosingleargument\dodefinecharacterkerning}
+
+\def\dodefinecharacterkerning[#1]%
+  {\ifcsname\??ck#1\endcsname \else
+     \global\advance\maxcharacterkerningid\plusone
+     \setxvalue{\??ck:#1}{\the\maxcharacterkerningid}%
+   \fi}
+
+\def\setupcharacterkerning
+  {\dodoubleargument\dosetupcharacterkerning}
+
+\def\dosetupcharacterkerning[#1][#2]%
+  {\ifcsname\??ck:#1\endcsname
+     \begingroup
+     \getparameters[\??ck][\c!factor=0,#2]%
+     \ctxlua{kerns.setspacing(\getvalue{\??ck:#1},\@@ckfactor)}%
+     \endgroup
+   \fi}
+
+\def\setcharacterkerning[#1]%
+  {\dosetattribute{kern}{\csname\??ck:#1\endcsname}}
+
+\definecharacterkerning[extrakerning]
+
+\setupcharacterkerning[extrakerning][\c!factor=.125]
+
+% sorry, here:
+
+% test \WORD{test TEST \TeX} test
+% test \word{test TEST \TeX} test
+% test \Word{test TEST \TeX} test
+
+\defineattribute[case]
+
+\def\WORD{\groupedcommand{\dosetattribute{case}\plusone  }{}}
+\def\word{\groupedcommand{\dosetattribute{case}\plustwo  }{}}
+\def\Word{\groupedcommand{\dosetattribute{case}\plusthree}{}} % \plusfour
+
+\let\WORDS\WORD
+\let\words\word
+\let\Words\Word
+
+% \definestartstop is not yet in available at core-spa time
+%
+% \startrandomized \input tufte \stoprandomized
+%
+% \definestartstop[randomized][\c!before=\dosetattribute{case}\plusfour,\c!after=]
+
+\def\randomizetext{\groupedcommand{\dosetattribute{case}\plusfive}{}}
+
+% compound stuff (under construction)
+
+\defineattribute[breakpoint]
+
+\newbox\breakpointbox
+
+\definesystemvariable {bp}   % BreakPoint
+
+\newcount \maxbreakpointsid
+
+\def\definebreakpoints
+  {\dosingleargument\dodefinebreakpoints}
+
+\def\dodefinebreakpoints[#1]%
+  {\ifcsname\??bp:#1\endcsname \else
+     \global\advance\maxbreakpointsid\plusone
+     \setxvalue{\??bp:#1}{\the\maxbreakpointsid}%
+   \fi}
+
+\def\installbreakpoint
+  {\dotripleempty\doinstallbreakpoint}
+
+% hm, we cannot prebuild lists, font dependent
+
+\def\doinstallbreakpoint[#1][#2][#3]%
+  {\ifcsname\??bp:#1\endcsname
+     \begingroup
+     \getparameters[\??bp][\c!type=1,\c!nleft=3,\c!nright=3,#3]%
+     \ctxlua{breakpoints.setreplacement(\csname\??bp:#1\endcsname,#2,\@@bptype,\@@bpnleft,\@@bpnright)}%
+     \endgroup
+   \fi}
+
+\def\setbreakpoints[#1]%
+  {\dosetattribute{breakpoint}{\csname\??bp:#1\endcsname}}
+
+\definebreakpoints[compound]
+
+\installbreakpoint [compound] [\number`+] [\c!left=3,\c!right=3,\c!type=1]
+
 \protect \endinput
 
 \starttext

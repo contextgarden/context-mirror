@@ -1,0 +1,12 @@
+% engine=luatex
+
+% \startsetups xml:process
+%     \xmlregisteredsetups
+%     \xmlall\xmldocument{/}
+% \stopsetups
+
+\usemodule[x][mml]
+
+\starttext
+    \xmlprocess{main}{x-mmp-test.xml}{xml:process}
+\stoptext

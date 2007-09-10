@@ -111,6 +111,10 @@ function string.piecewise(str, pat, fnc) -- variant of split
     for k in string.splitter(str,pat) do fnc(k) end
 end
 
+--~ function string.piecewise(str, pat, fnc) -- variant of split
+--~     for k in str:splitter(pat) do fnc(k) end
+--~ end
+
 --~ do if lpeg then
 
 --~     -- this alternative is 30% faster esp when we cache them

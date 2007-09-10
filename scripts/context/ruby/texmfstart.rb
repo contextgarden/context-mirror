@@ -1765,6 +1765,7 @@ def runoneof(application,fullname,browserpermitted)
     if browserpermitted && launch(fullname) then
         return true
     else
+        fullname = quoted(fullname) # added because MM ran into problems
         report("starting #{$filename}") unless $report
         output("\n") if $report && $verbose
         applications = $applications[application.downcase]

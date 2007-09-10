@@ -73,16 +73,17 @@
   {\obeylines  \let\obeyedline \outputnewlinechar
    \obeyspaces \let\obeyedspace\space}
 
-\def\obeyluatokens % todo: make this a proper catcode table
-  {\catcode`\%=11 \catcode`\#=11
-   \catcode`\_=11 \catcode`\^=11
-   \catcode`\&=11 \catcode`\|=11
-   \catcode`\{=11 \catcode`\}=11
+\def\obeyluatokens % todo: make this a proper catcode table, use let's
+  {\catcode`\%=12 \catcode`\#=12
+   \catcode`\_=12 \catcode`\^=12
+   \catcode`\&=12 \catcode`\|=12
+   \catcode`\{=12 \catcode`\}=12
+   \catcode`\~=12 \catcode`\$=12
    \def\\{\string\\}\def\|{\string\|}\def\-{\string\-}%
    \def\({\string\(}\def\){\string\)}\def\{{\string\{}\def\}{\string\}}%
    \def\'{\string\'}\def\"{\string\"}%
    \def\n{\string\n}\def\r{\string\r}\def\f{\string\f}\def\t{\string\t}%
-   \def\a{\string\a}\def\b{\string\b}\def\v{\string\v}%
+   \def\a{\string\a}\def\b{\string\b}\def\v{\string\v}\def\s{\string\s}%
    \def\1{\string1}\def\2{\string2}\def\3{\string3}\def\4{\string\4}\def\5{\string\5}%
    \def\6{\string6}\def\7{\string7}\def\8{\string8}\def\9{\string\9}\def\0{\string\0}}
 

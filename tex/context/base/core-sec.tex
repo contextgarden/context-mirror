@@ -1806,7 +1806,7 @@
                    {\setstrut
                     \begstrut
                     \ifcase\headtimingmode\hbox{#2}\fi
-                    \executeifdefined{\??ko#1\c!deeptextcommand}\firstofoneargument{#3}
+                    \executeifdefined{\??ko#1\c!deeptextcommand}\firstofoneargument{#3}%
                     \endstrut}% \hbox prevents break
                  \xdef\localheadheight    {\the\strutht}%
                  \xdef\localheaddepth     {\the\strutdp}%

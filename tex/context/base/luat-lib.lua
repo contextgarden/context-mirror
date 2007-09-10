@@ -84,6 +84,10 @@ function environment.showarguments()
     end
 end
 
+function environment.setargument(name,value)
+    environment.arguments[name] = value
+end
+
 function environment.argument(name)
     if environment.arguments[name] then
         return environment.arguments[name]

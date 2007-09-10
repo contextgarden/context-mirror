@@ -13,6 +13,9 @@
 
 \writestatus{loading}{Context Core Macros / TaBlE Embedding}
 
+% By now it makes more sense to merge the patches into the original
+% and clean that one up too.
+
 % Don't change the splitter:
 %
 % ... \NR
@@ -64,9 +67,7 @@
 % meldingen row, column, use, advise
 % \AR: UITSTELLEN / EXPERIMENTEEL
 
-
 % WAARDELOZE ERROR HANDLER
-
 % THIS RENEWED MODULE WORKS OK BUT STILL LOOKS BAD
 
 %D We felt no need to write our own table building macros,
@@ -361,42 +362,39 @@
 
 \newif\ifForgetTableBarAndQuote \ForgetTableBarAndQuotetrue
 
-\bgroup
+% \bgroup
 
-\catcode`\|=\@@active
-\catcode`\"=\@@active
-
+% \catcode`\|=\@@active
+% \catcode`\"=\@@active
+%
 % \gdef\pushouterbarandquote
+%    {\ifForgetTableBarAndQuote
+%       \ifnum\catcode`\|=\@@active \let\outertablebar  |\else\let\outertablebar  \relax\fi
+%       \ifnum\catcode`\"=\@@active \let\outertablequote"\else\let\outertablequote\relax\fi
+%       \let|\letterbar
+%       \let"\letterdoublequote
+%     \fi}
+%
+% \gdef\popouterbarandquote
 %   {\ifForgetTableBarAndQuote
-%      \let|\letterbar
-%      \let"\letterdoublequote
-%      \ifnum\catcode`\|=\@@active \let\outertablebar  |\else\let\outertablebar  \relax\fi
-%      \ifnum\catcode`\"=\@@active \let\outertablequote"\else\let\outertablequote\relax\fi
+%      \ifx\outertablebar  \relax\else\let|\outertablebar  \fi
+%      \ifx\outertablequote\relax\else\let"\outertablequote\fi
+%    \else
+%      \redefinetablebarandquote
+%    \fi}
+%
+% \egroup
+%
+% \def\ObeyTableBarAndQuote
+%   {\ForgetTableBarAndQuotefalse
+%    \ifintable
+%      \redefinetablebarandquote
 %    \fi}
 
-\gdef\pushouterbarandquote
-   {\ifForgetTableBarAndQuote
-      \ifnum\catcode`\|=\@@active \let\outertablebar  |\else\let\outertablebar  \relax\fi
-      \ifnum\catcode`\"=\@@active \let\outertablequote"\else\let\outertablequote\relax\fi
-      \let|\letterbar
-      \let"\letterdoublequote
-    \fi}
-
-\gdef\popouterbarandquote
-  {\ifForgetTableBarAndQuote
-     \ifx\outertablebar  \relax\else\let|\outertablebar  \fi
-     \ifx\outertablequote\relax\else\let"\outertablequote\fi
-   \else
-     \redefinetablebarandquote
-   \fi}
-
-\egroup
-
-\def\ObeyTableBarAndQuote
-  {\ForgetTableBarAndQuotefalse
-   \ifintable
-     \redefinetablebarandquote
-   \fi}
+\let\ActivateBarAndQuote \relax
+\let\ObeyTableBarAndQuote\relax
+\let\pushouterbarandquote\relax
+\let\popouterbarandquote \relax
 
 %D \macros
 %D   {ObeyTableBarAndQuote}
@@ -1006,7 +1004,7 @@
   {\bgroup                   % kan-ie weg?
    \global\intabletrue
    \pushouterbarandquote
-   \catcode`\|=\@@other
+   %catcode`\|=\@@other
    \complexorsimple\secondstagestartTABLE}
 
 \def\simplesecondstagestartTABLE#1%
@@ -1031,10 +1029,10 @@
 %D The implementation of the definition macro is not that
 %D complicated:
 
-\def\douseTABLEtemplate#1#2#3%
-  {\gdef\TABLEhead{\getvalue{@@TABLEhead#2}}%
-   \gdef\TABLEtail{\getvalue{@@TABLEtail#3}}%
-   \complexsecondstagestartTABLE[#1]}
+\def\definetabletemplate % to be redone
+  {\bgroup
+   \catcode`\|=\@@other
+   \doquadrupleempty\dodefinetabletemplate}
 
 \def\dodefinetabletemplate[#1][#2][#3][#4]%
   {\ifsecondargument
@@ -1042,10 +1040,10 @@
    \fi
    \egroup}
 
-\def\definetabletemplate
-  {\bgroup
-   \catcode`\|=\@@other
-   \doquadrupleempty\dodefinetabletemplate}
+\def\douseTABLEtemplate#1#2#3%
+  {\gdef\TABLEhead{\getvalue{@@TABLEhead#2}}%
+   \gdef\TABLEtail{\getvalue{@@TABLEtail#3}}%
+   \complexsecondstagestartTABLE[#1]}
 
 %D The optional third and fourth arguments define which table
 %D head and tail to use.
@@ -1106,17 +1104,35 @@
    \fi \fi
    \TABLEnoalign{\globalpopmacro\simpleTableHL}}
 
-\def\complexsecondstagestartTABLE#1[#2]%
-  {\convertargument|\to\asciia
-   \convertargument#2\to\asciib
+% \def\complexsecondstagestartTABLE#1[#2]%
+%   {\convertargument|\to\asciia
+%    \convertargument#2\to\asciib
+%    \global\setfalse\someTABLEhead
+%    \global\setfalse\someTABLEtail
+%    \doifinstringelse\asciia\asciib
+%      {\gdef\restartTABLE{\dorestartTABLE{\thirdstagestartTABLE{#2}}}}
+%      {\doifdefinedelse{\c!Table#2}
+%         {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
+%         {\gdef\restartTABLE{\dorestartTABLE{\getvalue{#2}}}}}%
+%    \restartTABLE}
+
+\bgroup \catcode`|=\@@other \catcode`"=\@@other
+
+\gdef\complexsecondstagestartTABLE#1[#2]% brr nested mess
+  {\bgroup
+   \@@useotherbar
+   \@@useotherquote
    \global\setfalse\someTABLEhead
    \global\setfalse\someTABLEtail
-   \doifinstringelse\asciia\asciib
-     {\gdef\restartTABLE{\dorestartTABLE{\thirdstagestartTABLE{#2}}}}
+   \expanded{\doifinstringelse{|}{#2}}
+     {\xdef\restartTABLE{\noexpand\dorestartTABLE{\noexpand\thirdstagestartTABLE{#2}}}}
      {\doifdefinedelse{\c!Table#2}
         {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
         {\gdef\restartTABLE{\dorestartTABLE{\getvalue{#2}}}}}%
+   \egroup
    \restartTABLE}
+
+\egroup
 
 %D The third stage involves a lot of (re)sets, which we will
 %D explain later.
@@ -1161,6 +1177,7 @@
    \doifsomething{#1}
      {\def\TABLEformat{#1}%
       \getTABLEnofcolumns\TABLEformat
+      % more modern is to use catcode tables
       \expandafter\BeginFormat\TABLEformat\EndFormat}}
 
 \def\finishTABLE
@@ -1633,19 +1650,41 @@
 %D if the bar is active or not.\footnote{Normally it is, but
 %D \TABLE\ changes the catcode when needed.}
 
+% \bgroup
+% \catcode`\|=\@@active
+% \gdef\protectTABLEbar{\let|\letterbar}
+% \catcode`\|=\@@other
+% \gdef\getTABLEnofcolumns#1%
+%   {\bgroup
+%    \cleanupfeatures % needed !
+%    \protectTABLEbar % is still a feature
+%    \expanded{\convertargument#1}\to\ascii
+%    \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
+%    \global\advance\maxTABLEcolumn \minusone
+%    % in case of & counting, divide by 2
+%    \egroup}
+% \egroup
+
 \bgroup
-\catcode`\|=\@@active
-\gdef\protectTABLEbar{\let|\letterbar}
-\catcode`\|=\@@other
+    \catcode`\|=\@@other  \gdef\@@otherbar     {|}
+    \catcode`\"=\@@other  \gdef\@@otherquite   {"}
+    \catcode`\|=\@@active \gdef\@@useotherbar  {\let|\@@otherbar}
+    \catcode`\"=\@@active \gdef\@@useotherquote{\let"\@@otherquote}
+\egroup
+
+\bgroup \catcode`\|=\@@other
+
 \gdef\getTABLEnofcolumns#1%
   {\bgroup
    \cleanupfeatures % needed !
-   \protectTABLEbar % is still a feature
+   \@@useotherbar
+   \@@useotherquote
    \expanded{\convertargument#1}\to\ascii
    \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
    \global\advance\maxTABLEcolumn \minusone
    % in case of & counting, divide by 2
    \egroup}
+
 \egroup
 
 \def\!ttDoHalign
@@ -1883,14 +1922,16 @@
      \normalTABLEquote
    \fi}
 
-\bgroup
-\catcode`\|=\@@active
-\catcode`\"=\@@active
-\gdef\redefinetablebarandquote%
-  {\def|{\VL}%           % \normalTABLEsimplebar
-   \def\|##1{\VL[##1]}%  % \normalTABLEcomplexbar
-   \def"{\NC}}           % \normalTABLEquote
-\egroup
+% \bgroup
+% \catcode`\|=\@@active
+% \catcode`\"=\@@active
+% \gdef\redefinetablebarandquote
+%   {\def|{\VL}%           % \normalTABLEsimplebar
+%    \def\|##1{\VL[##1]}%  % \normalTABLEcomplexbar
+%    \def"{\NC}}           % \normalTABLEquote
+% \egroup
+
+\let\redefinetablebarandquote\relax
 
 %D \startitemize[3*ruim]
 %D \sym{\type{\DL}}
@@ -2335,7 +2376,7 @@
      {\chardef\TABLErowfactor\zerocount}
      {\chardef\TABLErowfactor\plustwo  }}
 
-\def\dohandlebar
+\def\dohandlebar % here ?
   {\ifmmode
      \@EA\domathmodebar
    \else\ifintable

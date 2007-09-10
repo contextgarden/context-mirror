@@ -1,0 +1,39 @@
+\unprotect
+
+\def\mkloadsetups#1%
+  {\doifnotmode{no-setup-all}
+     {\startXMLmapping[zero]
+      \expanded{\processXMLfilegrouped{#1}}%
+      \stopXMLmapping}}
+
+\bgroup \catcode`\<=\active
+
+\gdef\mkshowsetup#1%
+  {\bgroup
+   \def<<##1>>{##1}%
+   \edef\ascii{#1}%
+   \enableXML
+   \doifelseXMLelement{stp:\ascii}
+     {\expanded{\flushXMLelement{stp:\ascii}}}
+     {\doifelseXMLelement{stp:\ascii:1}
+        {\expanded{\flushXMLelement{stp:\ascii:1}}}
+        {\convertargument#1\to\ascii
+         \em unknown setup \quote{\ascii}}}
+   \egroup}
+
+\egroup
+
+\def\mkshowusedsetups
+  {\getvalue{\e!place\e!listof texcommands}}
+
+\def\mkshowallsetups
+  {\getvalue{\e!place\e!listof alltexcommands}}
+
+\defineXMLenvironmentsave [cd:define] [name=]
+  {}
+  {\setevalue{cd:def:\XMLop{name}}{\XMLflush{cd:define}}}
+
+\defineXMLsingular [cd:resolve] [name=]
+  {\getvalue{cd:def:\XMLop{name}}}
+
+\protect \endinput

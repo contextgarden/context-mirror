@@ -505,6 +505,7 @@
    filloffset=\!!zeropoint,
    linewidth=\linewidth,
    gridwidth=\linewidth,
+   gridshift=\!!zeropoint,
    lineradius=.5\bodyfontsize]
 
 \startuseMPgraphic{mpos:par:shape}
@@ -521,6 +522,7 @@
    boxfilloffset := \MPvar{filloffset} ;
    boxlinewidth  := \MPvar{linewidth} ;
    boxgridwidth  := \MPvar{gridwidth} ;
+   boxgridshift  := \MPvar{gridshift} ;
    boxlineradius := \MPvar{lineradius} ;
   %snap_multi_par_tops := \MPvar{snaptops} ;
 \stopuseMPgraphic
@@ -545,7 +547,7 @@
   \edef\MPparcounter{\MPv\MPbself{1}{0}}%
   \doifpositionelse\MPwself
     {\startMPpositiongraphic{mpos:par}%
-         {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+         {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
        initialize_area_par(\MPpos\MPbself,
                            \MPpos\MPeself,
                            \MPpos\MPwself) ;
@@ -555,7 +557,7 @@
        anchor_par(\MPanchor\MPbself) ;
      \stopMPpositiongraphic}
     {\startMPpositiongraphic{mpos:par}%
-         {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+         {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
        initialize_par(\MPpos\MPbself,
                       \MPpos\MPeself,
                       \MPpos\textanchor,
@@ -651,8 +653,10 @@
 \def\nextbtbanchor{b:\nextparbackground}
 \def\nextetbanchor{e:\nextparbackground}
 
-\def\backgroundvariable#1%
+\def\textbackgroundparameter#1%
   {\csname\??td\currenttextbackground#1\endcsname}
+
+\let\backgroundvariable\textbackgroundparameter % will become obsolete
 
 % \definetextbackground[more][state=start,backgroundcolor=red] % location=paragraph
 % \definetextbackground[test][state=start,backgroundcolor=green]
@@ -692,7 +696,7 @@
    \setuptextbackground[#1][#2]%
    \let\dodostarttextbackground\relax
    \let\dodostoptextbackground \relax
-   \doifvalue{\??td#1\c!state}\v!start
+   \doif{\textbackgroundparameter\c!state}\v!start
      {\dopresettextbackground{#1}}%
    \dodostarttextbackground}
 
@@ -700,7 +704,7 @@
 
 \def\dopresettextbackground#1% todo: \backgroundparameter
   {\ExpandFirstAfter\processaction % \EFA niet echt nodig
-     [\getvalue{\??td#1\c!location}]
+     [\textbackgroundparameter\c!location]
      [   \v!text=>\let\dodostarttextbackground\dostarttextbackgroundtxt
                   \let\dodostoptextbackground \dostoptextbackgroundtxt,
     \v!paragraph=>\let\dodostarttextbackground\dostarttextbackgroundpar
@@ -713,33 +717,34 @@
        \let\dodostoptextbackground \dostoptextbackgroundtxt
      \fi
    \fi
-   \doifelsevalue{\??td#1\c!frame}\v!on
-     {\doifelsevalue{\??td#1\c!corner}\v!round
+   \doifelse{\textbackgroundparameter\c!frame}\v!on
+     {\doifelse{\textbackgroundparameter\c!corner}\v!round
         {\setvalue{\??td#1\c!frame}{2}}
         {\setvalue{\??td#1\c!frame}{1}}}
      {\setvalue{\??td#1\c!frame}{0}}%
-   \doifelsevalue{\??td#1\c!background}\v!color
+   \doifelse{\textbackgroundparameter\c!background}\v!color
      {\setvalue{\??td#1\c!background}{1}}
      {\setvalue{\??td#1\c!background}{0}}%
   %\startpositionoverlay{\v!text\getvalue{\??td#1\c!level}}%
-   \startpositionoverlay{\textbackgroundoverlay{\getvalue{\??td#1\c!level}}}%
+   \startpositionoverlay{\textbackgroundoverlay{\textbackgroundparameter\c!level}}%
      \expanded
        {\setMPpositiongraphicrange % moet veel efficienter
           {\btbanchor}% {b:\currentparbackground}%
           {\etbanchor}% {e:\currentparbackground}%
-          {\getvalue{\??td#1\c!method}}%
+          {\textbackgroundparameter\c!method}%
           {self=\currentparbackground,
-           mp=\getvalue{\??td#1\c!mp},
-           gridtype=\getvalue{\??td#1\c!alternative},
-           filltype=\getvalue{\??td#1\c!background},
-           linetype=\getvalue{\??td#1\c!frame},
-           gridcolor=\getvalue{\??td#1\c!framecolor},
-           linecolor=\getvalue{\??td#1\c!framecolor},
-           fillcolor=\getvalue{\??td#1\c!backgroundcolor},
-           filloffset=\getvalue{\??td#1\c!backgroundoffset},
-           gridwidth=\getvalue{\??td#1\c!rulethickness},
-           linewidth=\getvalue{\??td#1\c!rulethickness},
-           lineradius=\getvalue{\??td#1\c!radius}}}%
+           mp=\textbackgroundparameter\c!mp,
+           gridtype=\textbackgroundparameter\c!alternative,
+           filltype=\textbackgroundparameter\c!background,
+           linetype=\textbackgroundparameter\c!frame,
+           gridcolor=\textbackgroundparameter\c!framecolor,
+           linecolor=\textbackgroundparameter\c!framecolor,
+           fillcolor=\textbackgroundparameter\c!backgroundcolor,
+           filloffset=\textbackgroundparameter\c!backgroundoffset,
+           gridwidth=\textbackgroundparameter\c!rulethickness,
+           gridshift=\textbackgroundparameter\c!voffset,
+           linewidth=\textbackgroundparameter\c!rulethickness,
+           lineradius=\textbackgroundparameter\c!radius}}%
    \stoppositionoverlay}
 
 \def\stoptextbackground
@@ -755,7 +760,7 @@
    \dostopattributes}
 
 \def\dostarttextbackgroundtxt
-  {\ifvmode \leavevmode \fi
+  {\ifvmode \dontleavehmode \fi % was leavevmode, brrr
    \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
    \fpos\currentparbackground\ignorespaces}
 
@@ -796,8 +801,8 @@
 
 \def\dostarttextbackgroundpar
   {\endgraf % new
-   \getvalue{\??td\currenttextbackground\c!before}%
-   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!topoffset}\to\scratchskip
+   \textbackgroundparameter\c!before
+   \doassignsomeskip\textbackgroundparameter\c!topoffset\to\scratchskip
    \xdef\textbackgroundskip{\the\scratchskip}%
    \noindent
    \ifgridsnapping
@@ -812,16 +817,16 @@
    \bgroup
    \endgraf % we need a vertical nobreak - 29/06/2004
    \nobreak \vskip-\lineheight \nobreak
-   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!topoffset}\to\scratchskip
+   \doassignsomeskip\textbackgroundparameter\c!topoffset\to\scratchskip
    \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
      \kern\textbackgroundskip\nobreak
    \fi \fi
-   \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!leftoffset}}%
+   \dosetleftskipadaption{\textbackgroundparameter\c!leftoffset}%
    \advance\leftskip\leftskipadaption
-   \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rightoffset}}%
+   \dosetleftskipadaption{\textbackgroundparameter\c!rightoffset}%
    \advance\rightskip\leftskipadaption
    % new
-   \dosetraggedcommand{\getvalue{\??td\currenttextbackground\c!align}}%
+   \dosetraggedcommand{\textbackgroundparameter\c!align}%
    \raggedcommand
    %
    \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
@@ -835,7 +840,7 @@
   {\par
    \removelastskip % new
    \dostopattributes
-   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bottomoffset}\to\scratchskip
+   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\scratchskip
    \ifdim\lastskip>\zeropoint
      \advance\scratchskip-\lastskip
    \fi
@@ -859,7 +864,7 @@
    \fi
 \egroup
    \endgraf % new
-   \getvalue{\??td\currenttextbackground\c!after}}
+   \textbackgroundparameter\c!after}
 
 \let\textparpages \!!zeropoint
 \let\textparheight\!!zeropoint
@@ -942,7 +947,7 @@
        [\c!state,\c!location,\c!alternative,\c!mp,\c!method,
         \c!background,\c!backgroundcolor,\c!corner,\c!level,
         \c!backgroundoffset,\c!before,\c!after,\c!align,
-        \c!radius,\c!frame,\c!framecolor,\c!rulethickness,
+        \c!radius,\c!frame,\c!framecolor,\c!rulethickness,\c!voffset,
         \c!leftoffset,\c!rightoffset,\c!topoffset,\c!bottomoffset]%
      \getparameters[\??td#1][#2]%
      \doifvalue{\??td#1\c!state}\v!start\checktextbackgrounds
@@ -983,9 +988,9 @@
    \c!state=\v!start,
    \c!location=\v!text,
    \c!leftoffset=\!!zeropoint, % 1em,
-   \c!rightoffset=\getvalue{\??td\currenttextbackground\c!leftoffset},
+   \c!rightoffset=\textbackgroundparameter\c!leftoffset,
    \c!topoffset=\!!zeropoint,  % \v!medium,
-   \c!bottomoffset=\getvalue{\??td\currenttextbackground\c!topoffset},
+   \c!bottomoffset=\textbackgroundparameter\c!topoffset,
    \c!level=-1,
    \c!alternative=0,
    \c!align=,
@@ -994,6 +999,7 @@
    \c!backgroundoffset=\!!zeropoint,
    \c!corner=\v!rectangular,
    \c!radius=.5\bodyfontsize,
+   \c!voffset=\!!zeropoint,
    \c!frame=\v!on,
    \c!framecolor=blue,
    \c!rulethickness=\linewidth]

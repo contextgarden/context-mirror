@@ -210,15 +210,6 @@
 \def\@tmd@math@  {@tmd@m@}
 \def\@tmd@both@  {@tmd@b@}
 
-% \def\installdiscretionary#1#2%
-%   {\setevalue{\@tmd@math@\detokenize{#1}}{\detokenize{#1}}%
-%    \setvalue {\@tmd@text@\detokenize{#1}}{#2}%
-%    \catcode`#1=\@@active % \catcode\expandafter`\detokenize{#1}=\@@active
-%    \scratchcounter=\the\uccode`\~
-%    \uccode`\~=`#1\relax  % \uccode`\~=\expandafter`\detokenize{#1}\relax
-%    \uppercase{\unexpanded\def~{\discretionarycommand~}}%
-%    \uccode`\~=\scratchcounter}
-
 \def\installdiscretionary#1#2%
   {\setevalue{\@tmd@math@\detokenize{#1}}{\detokenize{#1}}%
    \setvalue {\@tmd@text@\detokenize{#1}}{#2}%
@@ -256,6 +247,11 @@
 %D \type{\checkafterdiscretionary} is responsible for handling
 %D the comma.
 
+\newsignal\compoundbreakpoint
+
+\newconditional\punctafterdiscretionary
+\newconditional\spaceafterdiscretionary
+
 \def\checkbeforediscretionary
   {\ifvmode\dontleavehmode\fi
    \ifhmode
@@ -269,13 +265,14 @@
   \fi}
 
 \def\checkafterdiscretionary
-  {\ifx,\nextnext
-     \def\nextnextnext{\afterassignment\egroup\let\next=}%
-   \else
-     \let\nextnext\relax
-   \fi}
-
-\newsignal\compoundbreakpoint
+  {\setfalse\punctafterdiscretionary
+   \setfalse\spaceafterdiscretionary
+   \ifx\blankspace\nextnext \settrue \spaceafterdiscretionary \else
+   \ifx\space     \nextnext \settrue \spaceafterdiscretionary \else
+   \ifx          .\nextnext \settrue \punctafterdiscretionary \else
+   \ifx          ,\nextnext \settrue \punctafterdiscretionary \else
+   \ifx          :\nextnext \settrue \punctafterdiscretionary \else
+   \ifx          ;\nextnext \settrue \punctafterdiscretionary \fi\fi\fi\fi\fi\fi}
 
 \let\domathmodediscretionary\handlemathmodediscretionary
 
@@ -290,38 +287,48 @@
 \def\activedododotextmodediscretionary#1#2%
   {\edef\discretionarytoken{\detokenize{#2}}%
    \def\textmodediscretionary{\handletextmodediscretionary{#1}}%
+   \checkafterdiscretionary
    \ifx\discretionarytoken\empty
      \ifx#1\nextnext % takes care of ||| and +++ and ......
-       \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
-       \allowbreak\postwordbreak
+       \ifcsname\@tmd@action@\string#1\endcsname
+         \csname\@tmd@action@\string#1\endcsname
+       \else\ifconditional\spaceafterdiscretionary
+         \prewordbreak\hbox{\string#1}\relax
+       \else\ifconditional\punctafterdiscretionary
+         \prewordbreak\hbox{\string#1}\relax
+       \else
+         \prewordbreak\hbox{\string#1}\prewordbreak
+       \fi\fi\fi
        \def\nextnextnext{\afterassignment\egroup\let\next=}%
      \else
-       \checkafterdiscretionary
-       \bgroup
-         \checkbeforediscretionary
-         % the next line has been changed (20050203)
-         % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
-         % but an hbox blocks a possible \discretionary
-         \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
-       \egroup
-     \fi
-   \else\expandafter\ifx\csname\@tmd@action@\discretionarytoken\endcsname\relax
-     \checkafterdiscretionary
-     \bgroup
        \checkbeforediscretionary
-       \prewordbreak
-       \discretionary{\hbox{#2}}{}{\hbox{#2}}%
-       \allowbreak\postwordbreak
-     \egroup
-   \else\ifx\nextnextnext\egroup % so we can properly do things afterward
-     \@EA\egroup
-     \@EA\let\@EA\nextnextnext\@EA\empty
+       % the next line has been changed (20050203)
+       % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+       % but an hbox blocks a possible \discretionary
+       \ifcsname\@tmd@action@\endcsname
+         \csname\@tmd@action@\endcsname
+       \else\ifconditional\spaceafterdiscretionary
+         \prewordbreak\textmodediscretionary\relax
+       \else\ifconditional\punctafterdiscretionary
+         \prewordbreak\textmodediscretionary\relax
+       \else
+         \prewordbreak\textmodediscretionary\prewordbreak
+       \fi\fi\fi
+     %  \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
+     \fi
+   \else\ifcsname\@tmd@action@\discretionarytoken\endcsname
      \csname\@tmd@action@\discretionarytoken\endcsname
    \else
-     \csname\@tmd@action@\discretionarytoken\endcsname
-   \fi\fi\fi
+     \checkbeforediscretionary
+     \ifconditional\spaceafterdiscretionary
+       \prewordbreak\hbox{#2}\relax
+     \else\ifconditional\punctafterdiscretionary
+       \prewordbreak\hbox{#2}\relax
+     \else
+       \prewordbreak\discretionary{\hbox{#2}}{}{\hbox{#2}}\allowbreak\postwordbreak
+     \fi\fi
+   \fi\fi
    \nextnextnext} % lookahead in commands
-
 
 %D \macros
 %D   {directdiscretionary}
@@ -358,16 +365,37 @@
 \def\definetextmodediscretionary #1
   {\setvalue{\@tmd@action@\detokenize{#1}}}
 
-\definetextmodediscretionary {} % empty case, also handled in parser
-  {\prewordbreak\compoundhyphen\allowbreak\postwordbreak}
+% \start \hsize 1mm
+% test |||test test|||, test\blank
+% test test|-|, test|-| and test|-|test\blank
+% test test|_|, test|_| and test|_|test\blank
+% test cd|'|tje\blank
+% test |(|test test|)|, test\blank
+% test test test|x|, test\blank
+% test|~|test
+% test|^|test
+% \stop
+
+\def\hyphenliketextmodediscretionary#1#2#3#4%
+  {\ifconditional\spaceafterdiscretionary
+     \prewordbreak\hbox{#1}\relax
+   \else\ifconditional\punctafterdiscretionary
+     \prewordbreak\hbox{#1}\relax
+   \else
+     \prewordbreak\discretionary{#2}{#3}{#4}\prewordbreak
+   \fi\fi}
+
+\definetextmodediscretionary {}
+  {\hyphenliketextmodediscretionary\compoundhyphen\compoundhyphen\empty\compoundhyphen}
+
+\definetextmodediscretionary -
+  {\hyphenliketextmodediscretionary\hyphen\hyphen\empty\hyphen}
 
 \definetextmodediscretionary ~
   {\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
 
 \definetextmodediscretionary _
-  {\prewordbreak
-   \discretionary{\compoundhyphen}{\compoundhyphen}{\compoundhyphen}%
-   \prewordbreak}
+  {\hyphenliketextmodediscretionary\compoundhyphen\compoundhyphen\compoundhyphen\compoundhyphen}
 
 \definetextmodediscretionary (
   {\ifdim\lastskip>\zeropoint
@@ -377,16 +405,14 @@
    \fi}
 
 \definetextmodediscretionary )
-  {\ifx\nextnext\blankspace
-     \prewordbreak)\relax
-   \else\ifx\nextnext\space
-     \prewordbreak)\relax
-   \else
-     \prewordbreak\discretionary{-)}{}{)}\prewordbreak
-   \fi\fi}
+  {\hyphenliketextmodediscretionary{)}{-)}{}{)}}
 
 \definetextmodediscretionary '
   {\prewordbreak\discretionary{-}{}{'}\postwordbreak}
+
+\definetextmodediscretionary ^
+  {\prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
+   \allowbreak\postwordbreak}
 
 \definetextmodediscretionary <
   {\beginofsubsentence\prewordbreak\beginofsubsentencespacing}
@@ -394,15 +420,8 @@
 \definetextmodediscretionary >
   {\endofsubsentencespacing\prewordbreak\endofsubsentence}
 
-% \definetextmodediscretionary . % not yet definitive
-%   {\prewordbreak\midsentence\prewordbreak}
-
 \definetextmodediscretionary =
   {\prewordbreak\midsentence\prewordbreak} % {\prewordbreak\compoundhyphen}
-
-\definetextmodediscretionary ^
-  {\prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
-   \allowbreak\postwordbreak}
 
 % french
 

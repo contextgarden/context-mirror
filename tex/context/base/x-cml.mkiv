@@ -1,0 +1,268 @@
+%D \module
+%D   [       file=x-cml,
+%D        version=2007.09.03, % reimplementation
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=MkIV ChemML renderer,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (chemml mkiv)}
+
+\usemodule[pictex,chemic] % someday we will do structural fomulas in mp
+
+%D The following code assumes a load||flush approach to \XML.
+
+\unprotect
+
+\startxmlsetups xml:cml:process
+    \xmlstrip {\xmldocument} {cml:chem|cml:ichem|cml:dchem}
+    \xmlstrip {\xmldocument} {cml:reaction}
+    \xmlstrip {\xmldocument} {cml:molecule}
+    \xmlstrip {\xmldocument} {cml:ion}
+    \xmlstrip {\xmldocument} {cml:structure}
+
+    \xmlgrab {\xmldocument} {cml:chem|cml:dchem|cml:ichem|cml:reaction|cml:molecule|cml:ion|cml:atom} {*}
+    \xmlgrab {\xmldocument} {cml:structure|cml:component|cml:forever}                                 {*}
+%     \xmlgrab {\xmldocument} {cml:*} {*}
+
+    \xmlgrab {\xmldocument} {cml:gives|cml:equilibrium|cml:mesomeric}                {cml:arrow}
+    \xmlgrab {\xmldocument} {cml:plus|cml:minus|cml:equal}                           {cml:operator}
+    \xmlgrab {\xmldocument} {cml:bond|cml:singlebond|cml:doublebound|cml:triplebond} {cml:bond}
+
+    \xmlgrab {\xmldocument} {pi::chemml} {cml:pi}
+\stopxmlsetups
+
+\xmlregistersetup{xml:cml:process}
+
+\xmlregisterns{cml}{chemml}
+
+\def\setupCMLappearance[#1]{\dodoubleargument\getparameters[@@CML#1]}
+
+\setupCMLappearance [ion] [\c!alternative=\v!a]
+
+\startluacode
+    function lxml.cml_do_pi(id)
+        local str = xml.content(lxml.id(id))
+        local _, class, key, value = str:match("^(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$")
+        if key and value then
+            tex.sprint(tex.ctxcatcodes,string.format("\\setupCMLappearance[%s][%s=%s]",class, key, value))
+        end
+    end
+\stopluacode
+
+\def\doifelseCMLvariable#1#2#3% id key value
+  {\doifelse{\xmlatt{#1}{#2}}{#3}
+     \firstoftwoarguments
+     {\doifelse{\getvalue{@@CML\xmltag{#1}#2}}{#3}
+        \firstoftwoarguments
+        \secondoftwoarguments}}
+
+\startxmlsetups cml:pi
+    \ctxlua{lxml.cml_do_pi(#1)}
+\stopxmlsetups
+
+\startxmlsetups cml:chem
+    \automathematics{\xmlflush{#1}}
+\stopxmlsetups
+\startxmlsetups cml:ichem
+    \inlinemathematics{\xmlflush{#1}}
+\stopxmlsetups
+\startxmlsetups cml:dchem
+    \displaymathematics{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups cml:reaction
+    \xmlflush{#1}
+\stopxmlsetups
+
+\def\doCMLtext#1#2#3% main top bot
+  {\setbox0\hbox{\doifsomething{#2}{\txx\setstrut\strut\ignorespaces#2\unskip}}%
+   \setbox2\hbox{\ignorespaces\strut#1\unskip}%
+   \setbox4\hbox{\doifsomething{#3}{\txx\setstrut\strut\ignorespaces#3\unskip}}%
+   \scratchdimen=\wd2\advance\scratchdimen-.5em
+   \ifdim\wd0>\scratchdimen
+     \setbox0\hbox spread .5em{\hss\box0\hss}%
+   \fi
+   \ifdim\wd4>\scratchdimen
+     \setbox4\hbox spread .5em{\hss\box4\hss}%
+   \fi
+   \setbox6=\vbox
+     {\offinterlineskip\halign{\hss##\hss\cr\copy0\cr\copy2\cr\copy4\cr}}%
+   \hbox{\lower\ht4\hbox{\lower\dp2\box6}}}
+
+\def\doCMLamount#1%
+  {\scratchcounter0\xmlatt{#1}{n}\relax
+   \ifnum\scratchcounter>0 \number\scratchcounter \fi}
+
+\startxmlsetups cml:molecule
+    \doCMLtext
+        {\doCMLamount{#1}
+         \xmlall{#1}{cml:atom|cml:bond|cml:singlebond|cml:doublebond|cml:triplebond}}
+        {\xmlindex{#1}{cml:caption}{2}}
+        {\xmlindex{#1}{cml:caption}{1}}
+\stopxmlsetups
+
+\startxmlsetups cml:atom
+    \doCMLtext {
+            \lohi {
+                $\tfxx\xmlatt{#1}{protons}$
+            } {
+                $\tfxx\xmlatt{#1}{weight}$
+            }
+            \xmlflush{#1}
+            \lohi {
+                $\tfxx\xmlatt{#1}{n}$
+            } {
+                $\tfxx\xmlatt{#1}{charge}$%
+            }
+        }
+        {\xmlindex{#1}{cml:caption}{2}}
+        {\xmlindex{#1}{cml:caption}{1}}
+\stopxmlsetups
+
+\startxmlsetups cml:ion
+    \doifelseCMLvariable{#1}{alternative}{b} {
+        \left[
+        \doCMLtext
+            {\doCMLamount{#1}
+             \xmlall{#1}{cml:atom}}
+            {\xmlindex{#1}{cml:caption}{2}}
+            {\xmlindex{#1}{cml:caption}{1}}
+        \right]
+    } {
+        \doCMLtext
+            {\doCMLamount{#1}
+             \xmlall{#1}{cml:atom}}
+            {\xmlindex{#1}{cml:caption}{2}}
+            {\xmlindex{#1}{cml:caption}{1}}
+    }
+    \high {\xmlatt{#1}{charge}}
+\stopxmlsetups
+
+\def\doCMLgives      {\xrightarrow}
+\def\doCMLequilibrium{\xleftrightarrow}
+\def\doCMLmesomeric  {\xrightoverleftarrow}
+\def\doCMLplus       {+}
+\def\doCMLminus      {-}
+\def\doCMLequal      {=}
+
+\startxmlsetups cml:arrow
+    \quad
+    \executeifdefined{doCML\xmlname{#1}}\doCMLgives{\tf\xmlindex{#1}{cml:caption}{2}}{\tf\xmlindex{#1}{cml:caption}{1}}
+    \quad
+\stopxmlsetups
+
+\startxmlsetups cml:operator
+    \quad
+    \mathop{\executeifdefined{doCML\xmlname{#1}}\doCMLplus}
+    \quad
+\stopxmlsetups
+
+\startxmlsetups cml:bond
+    \executeifdefined{doCML\xmlname{#1}} {
+        \ifcase0\xmlatt{#1}{n}\relax
+            \doCMLsinglebond
+        \or
+            \doCMLdoublebond
+        \or
+            \doCMLtriplebond
+        \fi
+    }
+\stopxmlsetups
+
+\def\doCMLbond
+  {\hrule\!!width\hsize\!!height.1ex\relax}
+
+\def\dodoCMLbond#1#2#3%
+  {\begingroup
+   \setbox\scratchbox\hbox{$M$}%
+   \vbox to \ht\scratchbox
+     {\hsize\wd\scratchbox
+      \vskip.1\wd\scratchbox
+      #1\vfill#2\vfill#3%
+      \vskip.1\wd\scratchbox}%
+   \endgroup}
+
+\def\doCMLsinglebond{\dodoCMLbond\relax    \doCMLbond\relax    }
+\def\doCMLdoublebond{\dodoCMLbond\doCMLbond\relax    \doCMLbond}
+\def\doCMLtriplebond{\dodoCMLbond\doCMLbond\doCMLbond\doCMLbond}
+
+\startxmlsetups cml:structure
+    \startchemical
+    \xmlall{#1}{cml:component}
+    \stopchemical
+\stopxmlsetups
+
+% It makes not much sense to adapt ppchtex to accept different input. Maybe some day.
+
+\startluacode
+    function lxml.cml_do_graphic(id)
+        local t = { }
+        for r, d, k in xml.elements(lxml.id(id),"cml:graphic") do
+            t[#t+1] = xml.tostring(d[k].dt)
+        end
+        tex.sprint(tex.ctxcatcodes,table.concat(t,","))
+    end
+    function lxml.cml_no_graphic(id)
+        local t = { }
+        for r, d, k in xml.elements(lxml.id(id),"cml:text|cml:oxidation|cml:annotation") do
+            local dk = d[k]
+            if dk.tg == "oxidation" then
+                t[#t+1] = string.format("\\chemicaloxidation{%s}{%s}{%s}",r.at.sign or "",r.at.n or 1,xml.tostring(dk.dt))
+            elseif dk.tg == "annotation" then
+                local location = r.at.location or "r"
+                local caption  = xml.content(xml.first(dk,"cml:caption"))
+                local text     = xml.content(xml.first(dk,"cml:text"))
+                t[#t+1] = string.format("\\doCMLannotation{%s}{%s}{%s}",location,caption,text)
+            else
+                t[#t+1] = xml.tostring(dk.dt) or ""
+            end
+        end
+        tex.sprint(tex.ctxcatcodes,table.concat(t,","))
+    end
+\stopluacode
+
+\startxmlsetups cml:component
+    \expanded {
+        \chemical
+            [\ctxlua{lxml.cml_do_graphic("#1")}]
+            [\ctxlua{lxml.cml_no_graphic("#1")}]
+    }
+\stopxmlsetups
+
+\unexpanded\def\doCMLannotation#1% #2#3% loc caption text
+  {\XMLval{cml:a:l}{#1}{\chemicalright}}% {#2}{#3}}
+
+\mapXMLvalue {cml:a:l} {t}  {\chemicaltop}
+\mapXMLvalue {cml:a:l} {b}  {\chemicalbottom}
+\mapXMLvalue {cml:a:l} {l}  {\chemicalleft}
+\mapXMLvalue {cml:a:l} {r}  {\chemicalright}
+\mapXMLvalue {cml:a:l} {lc} {\chemicalleftcentered}  % \mapXMLvalue {cml:a:l} {cl} {\chemicalleftcentered}
+\mapXMLvalue {cml:a:l} {rc} {\chemicalrightcentered} % \mapXMLvalue {cml:a:l} {cr} {\chemicalrightcentered}
+\mapXMLvalue {cml:a:l} {tl} {\chemicaltopleft}       % \mapXMLvalue {cml:a:l} {lt} {\chemicaltopleft}
+\mapXMLvalue {cml:a:l} {bl} {\chemicalbottomleft}    % \mapXMLvalue {cml:a:l} {lb} {\chemicalbottomleft}
+\mapXMLvalue {cml:a:l} {tr} {\chemicaltopright}      % \mapXMLvalue {cml:a:l} {rt} {\chemicaltopright}
+\mapXMLvalue {cml:a:l} {br} {\chemicalbottomright}   % \mapXMLvalue {cml:a:l} {rb} {\chemicalbottomright}
+\mapXMLvalue {cml:a:l} {lt} {\chemicallefttop}       % \mapXMLvalue {cml:a:l} {tl} {\chemicallefttop}
+\mapXMLvalue {cml:a:l} {lb} {\chemicalleftbottom}    % \mapXMLvalue {cml:a:l} {bl} {\chemicalleftbottom}
+\mapXMLvalue {cml:a:l} {rt} {\chemicalrighttop}      % \mapXMLvalue {cml:a:l} {tr} {\chemicalrighttop}
+\mapXMLvalue {cml:a:l} {rb} {\chemicalrightbottom}   % \mapXMLvalue {cml:a:l} {br} {\chemicalrightbottom}
+\mapXMLvalue {cml:a:l} {x}  {\chemicaltighttext}
+\mapXMLvalue {cml:a:l} {sl} {\chemicalsmashedleft}   % \mapXMLvalue {cml:a:l} {ls} {\chemicalsmashedleft}
+\mapXMLvalue {cml:a:l} {sm} {\chemicalsmashedmiddle} % \mapXMLvalue {cml:a:l} {ms} {\chemicalsmashedmiddle}
+\mapXMLvalue {cml:a:l} {sr} {\chemicalsmashedright}  % \mapXMLvalue {cml:a:l} {rs} {\chemicalsmashedright}
+
+\startxmlsetups cml:forever
+    \left[\xmlflush{#1}\right]
+\stopxmlsetups
+
+% \starttext
+%     \xmlprocess{main}{cmltest.xml}{xml:process}
+% \stoptext
+
+\protect \endinput

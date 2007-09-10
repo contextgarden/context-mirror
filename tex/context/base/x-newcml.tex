@@ -171,7 +171,7 @@
 \stopsetups
 
 \startsetups cml:ion:stop
-\removeunwantedspaces
+    \removeunwantedspaces
     \stopsavingXMLelements
     \resetCMLcaption
     \XMLfirstnamed{caption}
@@ -364,7 +364,7 @@
   {\doCMLoxidation}
 
 \def\doCMLoxidation#1%
-  {\expanded{\dogetCMLtext{\noexpand\chemicaloxidation{\XMLop{cml}}{\XMLop{n}}{#1}}}%
+  {\expanded{\dogetCMLtext{\noexpand\chemicaloxidation{\XMLop{sign}}{\XMLop{n}}{#1}}}%
    \ignorespaces}
 
 % \defineXMLenvironment

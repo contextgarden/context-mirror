@@ -42,6 +42,7 @@ function support.splitfilename(fullname)
     else
         kind = 2
     end
+--~ print(fullname,path,base,name,suffix)
     cs.def("splitofffull", fullname)
     cs.def("splitoffpath", path)
     cs.def("splitoffbase", base)

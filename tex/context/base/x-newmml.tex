@@ -13,11 +13,14 @@
 
 %D Remark: from now on this is a module and no longer an xtag
 %D filter. In due time it will replace the older renderer (which
-%D we will keep around for sentimental reasons).
+%D we will keep around for sentimental reasons). This variant has
+%D no namespace support yet, but eventually we will use a \MKIV\
+%D version.
 
-\def\inlinemathematics   {\dontleavehmode\mathematics} % already in kernel
-\long\def\inlinemath #1{\dontleavehmode\relax\ifmmode#1\else $#1$\fi}
-
+\ifx\inlinemathematics\undefined
+    \def\inlinemathematics   {\dontleavehmode\mathematics} % already in kernel
+    \long\def\inlinemath #1{\dontleavehmode\relax\ifmmode#1\else $#1$\fi}
+\fi
 
 % \defineXMLentity[x000AF]{\normalorfiller{x}\hrulefill}
 % CHECK FOR: \xmlrent
@@ -2309,11 +2312,11 @@
     \endgroup
 \stopsetups
 
-\def\doMMLfiller#1%
+\def\doMMLfiller#1% bugged
    {\pushmacro\doMMLfiller
     \let\doMMLfiller\gobbleoneargument
     \gdef\dodoMMLfiller{\disablefiller\mathematics{#1}}%
-    \setbox\scratchbox=\hbox
+    \hbox
       {\def\normalorfiller##1##2%
          {\gdef\dodoMMLfiller{\enablefiller#1}%
           \let\normalorfiller\gobbletwoarguments}%

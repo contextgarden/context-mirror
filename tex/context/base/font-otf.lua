@@ -6,6 +6,11 @@ if not modules then modules = { } end modules ['font-otf'] = {
     license   = "see context related readme files"
 }
 
+
+-- abvf abvs blwf blwm blws dist falt half halt jalt lfbd ljmo
+-- mset opbd palt pwid qwid rand rtbd rtla ruby size tjmo twid valt vatu vert
+-- vhal vjmo vkna vkrn vpal vrt2
+
 -- otfdata zit in tfmdata / check
 
 --~ function string:split_at_space()
@@ -33,7 +38,7 @@ in the <l n='otf'/> table.</p>
 
 fonts                        = fonts or { }
 fonts.otf                    = fonts.otf or { }
-fonts.otf.version            = 1.60 -- incrementing this number one up will force a re-cache
+fonts.otf.version            = 1.64 -- incrementing this number one up will force a re-cache
 fonts.otf.tables             = fonts.otf.tables or { }
 fonts.otf.meanings           = fonts.otf.meanings or { }
 fonts.otf.enhance_data       = false
@@ -694,17 +699,25 @@ end
 <p>Here we go.</p>
 --ldx]]--
 
-fonts.otf.enhance = { }
+fonts.otf.enhance           = fonts.otf.enhance or { }
+fonts.otf.enhance.add_kerns = true
 
 function fonts.otf.load(filename,format,sub,featurefile)
     local name = file.basename(file.removesuffix(filename))
     if featurefile then
         name = name .. "@" .. file.removesuffix(file.basename(featurefile))
     end
-    local data = containers.read(fonts.otf.cache, name)
+    if sub == "" then sub = false end
+    local hash = name
+    if sub then -- name cleanup will move to cache code
+        hash = hash .. "-" .. sub
+        hash = hash:lower()
+        hash = hash:gsub("[^%w%d]+","-")
+    end
+    local data = containers.read(fonts.otf.cache, hash)
     if not data then
         local ff
-        if sub and sub ~= "" then
+        if sub then
             ff = fontforge.open(filename,sub)
         else
             ff = fontforge.open(filename)
@@ -730,7 +743,7 @@ function fonts.otf.load(filename,format,sub,featurefile)
                 logs.report("load otf","enhance: patch")
                 fonts.otf.enhance.patch(data,filename)
                 logs.report("load otf","saving: in cache")
-                data = containers.write(fonts.otf.cache, name, data)
+                data = containers.write(fonts.otf.cache, hash, data)
             else
                 logs.error("load otf","loading failed")
             end
@@ -854,7 +867,7 @@ function fonts.otf.enhance.before(data,filename)
                             local unicode, name = unicodes[index], names[index]
                             g.cidindex = n
                             g.boundingbox = g.boundingbox or zerobox
-                            g.name = g.name or name     or "unknown"
+                            g.name = g.name or name or "unknown"
                             if unicode then
                                 g.unicodeenc = unicode
                                 uni_to_int[unicode] = index
@@ -885,17 +898,38 @@ function fonts.otf.enhance.before(data,filename)
         local uni_to_int = data.map.map
         local int_to_uni = data.map.backmap
         for index, glyph in pairs(data.glyphs) do
-            if index > 0 and glyph.unicodeenc == -1 then
-                while uni_to_int[private] do
-                    private = private + 1
-                end
-                uni_to_int[private] = index
-                int_to_uni[index] = private
-                glyph.unicodeenc = private
-                if fonts.trace then
-                    logs.report("load otf",string.format("enhance: glyph %s at index %s is moved to private unicode slot %s",glyph.name,index,private))
+            if glyph.name then
+                local unic = glyph.unicodeenc or -1
+                if index > 0 and (unic == -1 or unic >= 0x110000) then
+                    while uni_to_int[private] do
+                        private = private + 1
+                    end
+                    uni_to_int[private] = index
+                    int_to_uni[index] = private
+                    glyph.unicodeenc = private
+                    if fonts.trace then
+                        logs.report("load otf",string.format("enhance: glyph %s at index %s is moved to private unicode slot %s",glyph.name,index,private))
+                    end
                 end
             end
+        end
+        local n = 0
+        for k,v in pairs(int_to_uni) do
+            if v == -1 or v >= 0x110000 then
+                int_to_uni[k], n = nil, n+1
+            end
+        end
+        if fonts.trace then
+            logs.report("load otf",string.format("enhance: %s entries removed from map.backmap",n))
+        end
+        local n = 0
+        for k,v in pairs(uni_to_int) do
+            if k == -1 or k >= 0x110000 then
+                uni_to_int[k], n = nil, n+1
+            end
+        end
+        if fonts.trace then
+            logs.report("load otf",string.format("enhance: %s entries removed from map.mapmap",n))
         end
     else
         data.map = { map = {}, backmap = {} }
@@ -914,31 +948,75 @@ function fonts.otf.enhance.before(data,filename)
     end
 end
 
-function fonts.otf.enhance.after(data,filename)
-    local unicodes = data.luatex.unicodes
-    for index, glyph in pairs(data.glyphs) do
-        if glyph.kerns then
-            local mykerns = { }
-            for k,v in pairs(glyph.kerns) do
-                local vc, vo, vl = v.char, v.off, v.lookup
-                if vc and vo and vl then -- brrr, wrong! we miss the non unicode ones
-                    local uvc = unicodes[vc]
-                    if uvc then
-                        local mkl = mykerns[vl]
-                        if not mkl then
-                            mkl = { [unicodes[vc]] = vo }
-                            mykerns[v.lookup] = mkl
+function fonts.otf.enhance.after(data,filename) -- to be split
+    if fonts.otf.enhance.add_kerns then
+        local glyphs, mapmap, unicodes = data.glyphs, data.map.map, data.luatex.unicodes
+        for index, glyph in pairs(data.glyphs) do
+            if glyph.kerns then
+                local mykerns = { } -- unicode indexed !
+                for k,v in pairs(glyph.kerns) do
+                    local vc, vo, vl = v.char, v.off, v.lookup
+                    if vc and vo and vl then -- brrr, wrong! we miss the non unicode ones
+                        local uvc = unicodes[vc]
+                        if uvc then
+                            local mkl = mykerns[vl]
+                            if not mkl then
+                                mkl = { [unicodes[vc]] = vo }
+                                mykerns[v.lookup] = mkl
+                            else
+                                mkl[unicodes[vc]] = vo
+                            end
                         else
-                            mkl[unicodes[vc]] = vo
+                            logs.report("load otf", string.format("problems with unicode %s of kern %s at glyph %s",vc,k,index))
                         end
-                    else
-                        logs.report("load otf", string.format("problems with unicode %s of kern %s at glyph %s",vc,k,index))
+                    end
+                end
+                glyph.mykerns = mykerns
+            end
+        end
+        if data.gpos then
+            for _, gpos in ipairs(data.gpos) do
+                if gpos.subtables then
+                    for _, subtable in ipairs(gpos.subtables) do
+                        local kernclass = subtable.kernclass
+                        if kernclass then
+                            for _, kcl in ipairs(kernclass) do
+                                local firsts, seconds, offsets, lookup = kcl.firsts, kcl.seconds, kcl.offsets, kcl.lookup
+                                local maxfirsts, maxseconds = table.getn(firsts), table.getn(seconds)
+                                logs.report("load otf", string.format("adding kernclass %s with %s times %s pairs)",lookup, maxfirsts, maxseconds))
+                                for fk, fv in pairs(firsts) do
+                                    for first in fv:gmatch("(%S+)") do
+                                        local glyph = glyphs[mapmap[unicodes[first]]]
+                                        local mykerns = glyph.mykerns
+                                        if not mykerns then
+                                            mykerns = { } -- unicode indexed !
+                                            glyph.mykerns = mykerns
+                                        end
+                                        local lookupkerns = mykerns[lookup]
+                                        if not lookupkerns then
+                                            lookupkerns = { }
+                                            mykerns[lookup] = lookupkerns
+                                        end
+                                        for sk, sv in pairs(seconds) do
+                                            for second in sv:gmatch("(%S+)") do
+                                                lookupkerns[unicodes[second]] = offsets[(fk-1) * maxseconds + sk]
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        subtable.comment = "The kernclass table is merged into mykerns in the indexed glyph tables."
+                        subtable.kernclass = { }
                     end
                 end
             end
-            glyph.mykerns = mykerns
         end
     end
+    if data.map then
+        data.map.enc = nil -- not needed
+    end
+    data.luatex.comment = "Glyph tables have their original index. When present, mykern tables are indexed by unicode."
 end
 
 fonts.otf.enhance.patches = { }
@@ -964,9 +1042,9 @@ do -- will move to a typescript
         end
     end
 
-    fonts.otf.enhance.patches["^lmroman"] = patch
-    fonts.otf.enhance.patches["^lmsans"]  = patch
-    fonts.otf.enhance.patches["^lmmono"]  = patch
+    fonts.otf.enhance.patches["^lmroman"]      = patch
+    fonts.otf.enhance.patches["^lmsans"]       = patch
+    fonts.otf.enhance.patches["^lmtypewriter"] = patch
 
 end
 
@@ -1099,6 +1177,8 @@ function fonts.otf.set_features(tfmdata)
     local otfdata = shared.otfdata
     shared.features = fonts.define.check(shared.features,fonts.otf.features.default)
     local features = shared.features
+tfmdata.language = tfmdata.language or 'dflt'
+tfmdata.script = tfmdata.script or 'dflt'
     if not table.is_empty(features) then
         local gposlist = otfdata.luatex.gposfeatures
         local gsublist = otfdata.luatex.gsubfeatures
@@ -1109,9 +1189,9 @@ function fonts.otf.set_features(tfmdata)
                 if list then
                     for _, f in ipairs(list) do
                         local value = features[f]
-                        if  value and fi.otf[f] then -- brr
+                        if value and fi.otf[f] then -- brr
                             if fonts.otf.trace_features then
-                                logs.report("define otf",string.format("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown', tfmdata.name or 'unknown'))
+                                logs.report("define otf",string.format("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown', tfmdata.fullname or 'unknown'))
                             end
                             fi.otf[f](tfmdata,value) -- can set mode (no need to pass otf)
                             mode = tfmdata.mode or fonts.mode
@@ -1130,6 +1210,9 @@ function fonts.otf.set_features(tfmdata)
                 if list then
                     for _, f in ipairs(list) do
                         if features[f] and fm.otf[f] then -- brr
+                            if fonts.otf.trace_features then
+                                logs.report("define otf",string.format("installing feature handler %s for mode %s for font %s",f,mode or 'unknown', tfmdata.fullname or 'unknown'))
+                            end
                             if not shared.processors then -- maybe also predefine
                                 shared.processors = { fm.otf[f] }
                             else
@@ -1248,36 +1331,37 @@ function fonts.otf.copy_to_tfm(data)
         if data.pfminfo then
             data.charwidth = data.pfminfo.avgwidth
         end
+        local endash, emdash = unicodes['space'], unicodes['emdash']
         if data.isfixedpitch then
-            if data.glyphs[unicodes['space']] then
-                spaceunits, tfm.spacer = data.glyphs[unicodes['space']].width, "space"
+            if characters[endash] then
+                spaceunits, tfm.spacer = characters[endash].width, "space"
             end
-            if not spaceunits and data.glyphs[unicodes['emdash']] then
-                spaceunits, tfm.spacer = data.glyphs[unicodes['emdash']].width, "emdash"
+            if not spaceunits and characters[emdash] then
+                spaceunits, tfm.spacer = characters[emdash].width, "emdash"
             end
             if not spaceunits and data.charwidth then
                 spaceunits, tfm.spacer = data.charwidth, "charwidth"
             end
         else
-            if data.glyphs[unicodes['space']] then
-                spaceunits, tfm.spacer = data.glyphs[unicodes['space']].width, "space"
+            if characters[endash] then
+                spaceunits, tfm.spacer = characters[endash].width, "space"
             end
-            if not spaceunits and data.glyphs[unicodes['emdash']] then
-                spaceunits, tfm.spacer = data.glyphs[unicodes['emdash']].width/2, "emdash/2"
+            if not spaceunits and characters[emdash] then
+                spaceunits, tfm.spacer = characters[emdash].width/2, "emdash/2"
             end
             if not spaceunits and data.charwidth then
                 spaceunits, tfm.spacer = data.charwidth, "charwidth"
             end
         end
-        spaceunits = tonumber(spaceunits) or 500 -- brrr
-        tfm.parameters[1] = 0          -- slant
-        tfm.parameters[2] = spaceunits -- space
-        tfm.parameters[3] = 500        -- space_stretch
-        tfm.parameters[4] = 333        -- space_shrink
-        tfm.parameters[5] = 400        -- x_height
-        tfm.parameters[6] = 1000       -- quad
-        tfm.parameters[7] = 0          -- extra_space (todo)
-        if spaceunits < 200 then
+        spaceunits = tonumber(spaceunits) or tfm.units/2 -- 500 -- brrr
+        tfm.parameters[1] = 0                     -- slant
+        tfm.parameters[2] = spaceunits            -- space
+        tfm.parameters[3] = tfm.units/2   --  500 -- space_stretch
+        tfm.parameters[4] = 2*tfm.units/3 --  333 -- space_shrink
+        tfm.parameters[5] = 4*tfm.units/5 --  400 -- x_height
+        tfm.parameters[6] = tfm.units     -- 1000 -- quad
+        tfm.parameters[7] = 0                     -- extra_space (todo)
+        if spaceunits < 2*tfm.units/5 then
             -- todo: warning
         end
         tfm.italicangle = data.italicangle
@@ -1289,7 +1373,7 @@ function fonts.otf.copy_to_tfm(data)
         if data.isfixedpitch then
             tfm.parameters[3] = 0
             tfm.parameters[4] = 0
-        elseif fonts.otf.syncspace then
+        elseif fonts.otf.syncspace then --
             tfm.parameters[3] = spaceunits/2  -- space_stretch
             tfm.parameters[4] = spaceunits/3  -- space_shrink
         end
@@ -1316,15 +1400,16 @@ function fonts.tfm.read_from_open_type(specification)
         tfmtable = fonts.tfm.scale(tfmtable, specification.size)
      -- here we resolve the name; file can be relocated, so this info is not in the cache
         local otfdata = tfmtable.shared.otfdata
-        local filename = otfdata and otfdata.luatex and otfdata.luatex.filename
+        local filename = (otfdata and otfdata.luatex and otfdata.luatex.filename) or specification.filename
         if not filename then
             -- try to locate anyway and set otfdata.luatex.filename
         end
         if filename then
             tfmtable.encodingbytes = 2
             tfmtable.filename = input.findbinfile(texmf.instance,filename,"") or filename
-            tfmtable.fullname = otfdata.fullname or otfdata.fontname
+            tfmtable.fullname = otfdata.fontname or otfdata.fullname
             tfmtable.format = specification.format
+            tfmtable.name = tfmtable.filename or tfmtable.fullname
         end
         fonts.logger.save(tfmtable,file.extname(specification.filename),specification)
     end
@@ -1534,6 +1619,9 @@ function fonts.initializers.base.otf.cpsp(tfm,value) fonts.otf.features.prepare_
 function fonts.initializers.base.otf.c2sc(tfm,value) fonts.otf.features.prepare_base_substitutions(tfm,'c2sc',value) end
 function fonts.initializers.base.otf.ornm(tfm,value) fonts.otf.features.prepare_base_substitutions(tfm,'ornm',value) end
 function fonts.initializers.base.otf.aalt(tfm,value) fonts.otf.features.prepare_base_substitutions(tfm,'aalt',value) end
+
+function fonts.initializers.base.otf.hwid(tfm,value) fonts.otf.features.prepare_base_substitutions(tfm,'hwid',value) end
+function fonts.initializers.base.otf.fwid(tfm,value) fonts.otf.features.prepare_base_substitutions(tfm,'fwid',value) end
 
 fonts.otf.features.data.tex = {
     { "endash", "hyphen hyphen" },
@@ -1967,6 +2055,9 @@ do
         logs.report("otf define","gpos_single not yet supported")
     end
 
+    --  ["kerns"]={ { ["char"]="ytilde", ["lookup"]="pp_l_1_s", ["off"]=-83, ...
+    --  ["mykerns"] = { ["pp_l_1_s"] = { [67] = -28, ...
+
     function fonts.otf.features.prepare.gpos_pair(tfmdata,kind,lookupname)
         local featuredata = tfmdata.shared.featuredata[kind]
         local kerns = featuredata[lookupname]
@@ -1976,8 +2067,47 @@ do
             local otfdata = tfmdata.shared.otfdata
             local unicodes = otfdata.luatex.unicodes
             local glyphs = otfdata.glyphs
+            -- ff has isolated kerns in a separate table
             for k,o in pairs(glyphs) do
-                local list = o.lookups
+                local list = o.mykerns
+                if list then
+                    local omk = list[lookupname]
+                    if omk then
+                        local one = o.unicodeenc
+                        for char, off in pairs(omk) do
+                            local two = char
+                            local krn = kerns[one]
+                            if krn then
+                                krn[two] = off
+                            else
+                                kerns[one] = { two = off }
+                            end
+                            if fonts.otf.trace_features then
+                                logs.report("define otf",string.format("feature %s kern pair %s - %s",kind,one,two))
+                            end
+                        end
+                    end
+                elseif o.kerns then
+                    local one = o.unicodeenc
+                    for _, l in ipairs(o.kerns) do
+                        if l.lookup == lookupname then
+                            local char = l.char
+                            if char then
+                                local two = unicodes[char]
+                                local krn = kerns[one]
+                                if krn then
+                                    krn[two] = l.off
+                                else
+                                    kerns[one] = { two = l.off }
+                                end
+                                if fonts.otf.trace_features then
+                                    logs.report("define otf",string.format("feature %s kern pair %s - %s",kind,one,two))
+                                end
+                            end
+                        end
+                    end
+                end
+                list = o.lookups
                 if list then
                     local one = o.unicodeenc
                     for lookup,ps in pairs(list) do
@@ -2000,31 +2130,6 @@ do
                             end
                         end
                     end
-                else
-                    list = o.kerns
-                    if list then
-                        local one = o.unicodeenc
-                        for lookup,ps in pairs(list) do
-                            if lookup == lookupname then
-                                for i=1,#ps do
-                                    local p = ps[i]
-                                    local char = p.char
-                                    if char then
-                                        local two = unicodes[char]
-                                        local krn = kerns[one]
-                                        if krn then
-                                            krn[two] = p.off
-                                        else
-                                            kerns[one] = { two = p.off }
-                                        end
-                                        if fonts.otf.trace_features then
-                                            logs.report("define otf",string.format("feature %s kern pair %s - %s",kind,one,two))
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
                 end
             end
         end
@@ -2041,6 +2146,7 @@ do
 
     local prepare = fonts.otf.features.prepare.feature
 
+    function fonts.initializers.node.otf.aalt(tfm,value) return prepare(tfm,'aalt',value) end
     function fonts.initializers.node.otf.afrc(tfm,value) return prepare(tfm,'afrc',value) end
     function fonts.initializers.node.otf.akhn(tfm,value) return prepare(tfm,'akhn',value) end
     function fonts.initializers.node.otf.c2pc(tfm,value) return prepare(tfm,'c2pc',value) end
@@ -2059,11 +2165,13 @@ do
     function fonts.initializers.node.otf.fin3(tfm,value) return prepare(tfm,'fin3',value) end
     function fonts.initializers.node.otf.fina(tfm,value) return prepare(tfm,'fina',value) end
     function fonts.initializers.node.otf.frac(tfm,value) return prepare(tfm,'frac',value) end
+    function fonts.initializers.node.otf.fwid(tfm,value) return prepare(tfm,'fwid',value) end
     function fonts.initializers.node.otf.haln(tfm,value) return prepare(tfm,'haln',value) end
     function fonts.initializers.node.otf.hist(tfm,value) return prepare(tfm,'hist',value) end
     function fonts.initializers.node.otf.hkna(tfm,value) return prepare(tfm,'hkna',value) end
     function fonts.initializers.node.otf.hlig(tfm,value) return prepare(tfm,'hlig',value) end
     function fonts.initializers.node.otf.hngl(tfm,value) return prepare(tfm,'hngl',value) end
+    function fonts.initializers.node.otf.hwid(tfm,value) return prepare(tfm,'hwid',value) end
     function fonts.initializers.node.otf.init(tfm,value) return prepare(tfm,'init',value) end
     function fonts.initializers.node.otf.isol(tfm,value) return prepare(tfm,'isol',value) end
     function fonts.initializers.node.otf.ital(tfm,value) return prepare(tfm,'ital',value) end
@@ -2547,13 +2655,16 @@ do
 
     function fonts.otf.features.process.gpos_pair(start,kind,lookupname,basekerns,kerns)
         local next, prev, done = start.next, start, false
+        -- to be optimized
         while next and next.id == glyph and next.font == currentfont do
             if characters[next.char].class == 'mark' then
                 prev = next
                 next = next.next
             else
                 local krn = basekerns[next.char]
-                if krn then
+                if not krn then
+                    -- skip
+                elseif type(krn) == "table" then
                     local a, b = krn[1], krn[2]
                     if a and a.x then
                         local k = node.copy(kern_node)
@@ -2569,7 +2680,14 @@ do
                             -- todo
                         end
                     end
-                    -- skip over marks
+                else
+                    -- todo, just start, next = node.insert_before(head,next,nodes.kern(tex.scale(kern,fontdata[currentfont].factor)))
+                    local k = node.copy(kern_node)
+                    k.kern = tex.scale(krn,fontdata[currentfont].factor) -- tfmdata.factor
+                    k.next = next
+                    k.prev = prev
+                    prev.next = k
+                    next.prev = k
                 end
                 break
             end
@@ -3185,14 +3303,11 @@ do
 
 end
 
--- aalt abvf abvs blwf blwm blws dist falt fwid half halt hwid jalt lfbd ljmo
--- mset opbd palt pwid qwid rand rtbd rtla ruby size tjmo twid valt vatu vert
--- vhal vjmo vkna vkrn vpal vrt2
-
 do
 
     local process = fonts.otf.features.process.feature
 
+    function fonts.methods.node.otf.aalt(head,font) return process(head,font,'aalt') end
     function fonts.methods.node.otf.afrc(head,font) return process(head,font,'afrc') end
     function fonts.methods.node.otf.akhn(head,font) return process(head,font,'akhn') end
     function fonts.methods.node.otf.c2pc(head,font) return process(head,font,'c2pc') end
@@ -3211,11 +3326,13 @@ do
     function fonts.methods.node.otf.fin3(head,font) return process(head,font,'fin3') end
     function fonts.methods.node.otf.fina(head,font) return process(head,font,'fina',3) end
     function fonts.methods.node.otf.frac(head,font) return process(head,font,'frac') end
+    function fonts.methods.node.otf.fwid(head,font) return process(head,font,'fwid') end
     function fonts.methods.node.otf.haln(head,font) return process(head,font,'haln') end
     function fonts.methods.node.otf.hist(head,font) return process(head,font,'hist') end
     function fonts.methods.node.otf.hkna(head,font) return process(head,font,'hkna') end
     function fonts.methods.node.otf.hlig(head,font) return process(head,font,'hlig') end
     function fonts.methods.node.otf.hngl(head,font) return process(head,font,'hngl') end
+    function fonts.methods.node.otf.hwid(head,font) return process(head,font,'hwid') end
     function fonts.methods.node.otf.init(head,font) return process(head,font,'init',1) end
     function fonts.methods.node.otf.isol(head,font) return process(head,font,'isol',4) end
     function fonts.methods.node.otf.ital(head,font) return process(head,font,'ital') end
@@ -3350,6 +3467,9 @@ fonts.initializers.node.otf.equaldigits = fonts.initializers.common.equaldigits
 fonts.initializers.base.otf.lineheight  = fonts.initializers.common.lineheight
 fonts.initializers.node.otf.lineheight  = fonts.initializers.common.lineheight
 
+fonts.initializers.base.otf.complement  = fonts.initializers.common.complement
+fonts.initializers.node.otf.complement  = fonts.initializers.common.complement
+
 -- temp hack, may change
 
 function fonts.initializers.base.otf.kern(tfmdata,value)
@@ -3408,6 +3528,7 @@ end
 
 -- Here we plug in some analyzing code
 
+-- will move to font-tfm
 
 do
 
@@ -3607,33 +3728,62 @@ do
 
     -- this info eventually will go into char-def
 
-    local no_init = table.tohash {
-        0x3001, 0x3002, 0x2014, 0xFF5E, 0x2019, 0x201D, 0x3015, 0x3009,
-        0x300B, 0x300D, 0x300F, 0x3017, 0x3011, 0x2237, 0x00B0, 0x2032,
-        0x2033, 0xFF01, 0xFF02, 0xFF07, 0xFF09, 0xFF0C, 0xFF0E, 0xFF1A,
-        0xFF1B, 0xFF1F, 0xFF3D, 0xFF5D,
+    -- list by Zhichu Chen
+
+    local end_punctuation = table.tohash {
+        0x3002, -- 。
+        0xFF0E, -- ．
+        0xFF0C, -- ，
+        0x3001, -- 、
+        0xFF1B, -- ；
+        0xFF1F, -- ？
+        0xFF01, -- ！
     }
 
-    local no_fina = table.tohash {
-        0x2018, 0x201C, 0x3014, 0x3008, 0x300A, 0x300C, 0x300E, 0x3016,
-        0x3010, 0xFF08, 0xFF3B, 0xFF40, 0xFF5B,
+    local begin_punctuation = table.tohash {
+        0xFF1A, -- ：
+        0x2236, -- ∶
+        0xFF0C, -- ，
     }
 
-    local no_xxxx = table.tohash {
-        0x00B7, 0x00A8, 0x2026, 0xFF1E,
+    local left_punctuation = table.tohash {
+        0x2018, -- ‘
+        0x201C, -- “
+        0x300C, -- 「   left quote
+        0x300E, -- 『   left double quote
+        0x3008, -- 〈   Left book quote
+        0x300A, -- 《   Left double book quote
+        0x3014, -- 〔   left book quote
+        0x3016, --〖   left double book quote
+        0x3010, -- 【   left double book quote
+        0xFF08, -- （   left parenthesis
+        0xFF3B, -- ［   left square brackets
+        0xFF5B, -- ｛   left curve bracket
     }
 
-    local allowbreak = node.new("penalty")
-    local nobreak    = node.new("penalty")
---~ local zeroskip   = node.new("glue")
+    local right_punctuation = table.tohash {
+        0x2019, -- ’   right quote, right
+        0x201D, -- ”   right double quote
+        0x300D, -- 」   right quote, right
+        0x300F, -- 』   right double quote
+        0x3009, -- 〉   book quote
+        0x300B, -- 》   double book quote
+        0x3015, -- 〕   right book quote
+        0x3017, -- 〗  right double book quote
+        0x3011, -- 】   right double book quote
+        0xFF09, -- ）   right parenthesis
+        0xFF3D, -- ］   right square brackets
+        0xFF5D, -- ｝   right curve brackets
+    }
 
-    allowbreak.penalty    =   -100
-    nobreak.penalty       =  10000
---~ zeroskip.subtype      =      0
---~ zeroskip.spec         = node.new('glue_spec')
---~ zeroskip.spec.width   =      0
---~ zeroskip.spec.stretch =      0
---~ zeroskip.spec.shrink  =      0
+    -- the characters below are always appear in a double form, so there
+    -- will be two Chinese ellipsis characters together that denote
+    -- ellipsis marks and it is not allowed to break between them
+
+    local hyphenation = table.tohash {
+        0x2026, -- …   ellipsis
+        0x2014, -- —   hyphen
+    }
 
     -- an alternative is to deal with it in the line breaker
 
@@ -3646,68 +3796,85 @@ do
             (char>=0x2F800 and char<=0x2FA1F)
     end
 
+    -- end_punctuation begin_punctuation right_punctuation
+    -- left_punctuation
+    -- hyphenation
+
+    -- will move to node-ini :
+
+    local allowbreak = node.new("penalty")   allowbreak.penalty =  -100
+    local nobreak    = node.new("penalty")   nobreak.penalty    = 10000
+
+    fonts.analyzers.methods.stretch_hang = true
+
+    -- for the moment we insert potential breakpoinst here, but eventually
+    -- it wil become either a mkiv feature or an attribute, so this is
+    -- experimental
+
     function fonts.analyzers.methods.hang(head,font) -- maybe make a special version with no trace
         local characters = fontdata[font].characters
-        local current, done = head, false
+        local current, last, done, stretch, prevchinese = head, nil, false, 0, false
         local trace = fonts.color.trace
-        local prevchinese = false
-        local function unskip()
-            if prevchinese then
-                local temp = current.prev
-                while temp and temp.id == glue do
-                    head, temp = nodes.delete(head,temp)
-                    if temp then temp = temp.prev end
-                end
-            end
+        if fonts.analyzers.methods.stretch_hang then
+            stretch = fontdata[font].parameters[6]
         end
         while current do
             if current.id == glyph then
                 if current.font == font then
-                    local char = current.char
-                    if no_init[char] then
-                        done = true
-                        set_attribute(current,state,1) -- before
-                        if trace then fcs(current,"font:init") end -- we need nice names
-                        if current.prev then
-                            unskip()
-                            head, current = node.insert_before(head,current,node.copy(nobreak))
-                            current = current.next
+                    if prevchinese then
+                        local temp = current.prev
+                        while temp and temp.id == glue and temp.spec and temp.spec.width > 0 do
+                            head, temp = nodes.delete(head,temp)
+                            if temp then temp = temp.prev end
                         end
-                        prevchinese = true
-                    elseif no_fina[char] then
-                        done = true
-                        set_attribute(current,state,2) -- after
-                        if trace then fcs(current,"font:fina") end -- we need nice names
-                        if current.prev then
-                            unskip()
-                            head, current = node.insert_before(head,current,node.copy(allowbreak))
-                            current = current.next
-                        end
-                        if current and current.next then
-                            head, current = node.insert_after(head,current,node.copy(nobreak))
-                            current = current.next
-                        end
-                        prevchinese = true
-                    elseif no_xxxx[char] then
-                        done = true
-                        set_attribute(current,state,3) -- xxxx
-                        if trace then fcs(current,"font:medi") end -- we need nice names
-                        if current.prev then -- todo
-                            unskip()
-                            head, current = node.insert_before(head,current,node.copy(allowbreak))
-                            current = current.next
-                        end
-                        prevchinese = true
-                    elseif is_han_character(char) then
-                        if current.prev and current.prev.id ~= penalty then
-                            unskip()
-                            head, current = node.insert_before(head,current,node.copy(allowbreak))
-                            current = current.next
-                        end
-                        prevchinese = true
-                    else
-                        prevchinese = false
                     end
+                    last = current -- faster that current.next
+                    local char = current.char
+                    -- penalty before break
+                    if left_punctuation[char] then -- (
+                        set_attribute(current,state,1)
+                        if trace then fcs(current,"font:init") end
+                        head, current = node.insert_after(head,current,node.copy(nobreak))
+                        done = true
+                    elseif right_punctuation[char] then -- )
+                        set_attribute(current,state,2)
+                        if trace then fcs(current,"font:fina") end
+                        if prevchinese then
+                            head, current = node.insert_before(head,current.prev,node.copy(nobreak))
+                        end
+                        current, done = last, true
+                    elseif begin_punctuation[char] then -- :
+                        set_attribute(current,state,1)
+                        if trace then fcs(current,"font:init") end
+                        if prevchinese then
+                            head, current = node.insert_before(head,current.prev,node.copy(nobreak))
+                        end
+                        current, done = last, true
+                    elseif end_punctuation[char] then -- .
+                        set_attribute(current,state,2)
+                        if trace then fcs(current,"font:fina") end
+                        if prevchinese then
+                            head, current = node.insert_before(head,current.prev,node.copy(nobreak))
+                        end
+                        current, done = last, true
+                    elseif hyphenation[char] then
+                        set_attribute(current,state,3) -- xxxx
+                        local prev, next = current.prev, current.next
+                        if next and next.id == glyph and hyphenation[next.char] then
+                            if trace then fcs(current,"font:medi") fcs(next,"font:medi")end -- we need nice names
+                            if prev then
+                                if prevchinese then
+                                    head, current = node.insert_before(head,current.prev,node.copy(nobreak))
+                                end
+                                current = last
+                                head, current = node.insert_before(head,current,node.copy(nobreak))
+                            end
+                        end
+                        current, done = last.next, true
+                --  elseif is_han_character(char) then
+                    end
+                    head, current = node.insert_after(head,current,nodes.glue(0,stretch,0))
+                    prevchinese = true
                 else
                     prevchinese = false
                 end
@@ -3718,6 +3885,10 @@ do
         end
         return head, done
     end
+
+
+
+    fonts.analyzers.methods.hani = fonts.analyzers.methods.hang
 
 end
 
@@ -3732,7 +3903,6 @@ function fonts.otf.install_feature(tag)
     fonts.methods.node.otf     [tag] = function(head,font) return fonts.otf.features.process.feature(head,font,tag) end
     fonts.initializers.node.otf[tag] = function(tfm,value) return fonts.otf.features.prepare.feature(tfm,tag,value) end
 end
-
 
 --~ exclam     + quoteleft  => exclamdown
 --~ question   + quoteleft  => questiondown

@@ -21,7 +21,7 @@ function file.addsuffix(filename, suffix)
 end
 
 function file.replacesuffix(filename, suffix)
-    return filename:gsub("%.%a+$", "." .. suffix)
+    return (filename:gsub("%.%a+$", "." .. suffix))
 end
 
 function file.dirname(name)
@@ -33,7 +33,7 @@ function file.basename(name)
 end
 
 function file.extname(name)
-    return name:match("^.+%.(.-)$") or  ""
+    return name:match("^.+%.([^/\\]-)$") or  ""
 end
 
 function file.join(...)

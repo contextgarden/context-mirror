@@ -7,10 +7,16 @@
 % splitting over pages, color and consistent spacing.
 
 % We've patched this file for catcode ! because in luatex we use
-% catcode tables and using unprotect/protect is cleaner.
+% catcode tables and using unprotect/protect is cleaner. Late
+% 2007 we also decided no longer to treat quotes and bars the
+% TaBLe way and instead of messy pushing and popping of catcodes
+% we commented a couple of lines here. We just assume that the
+% template has no active bar and quote. Inside tables we now
+% have the regular meaning of active bars in ConTeXt. More
+% drastic extensions and patched can be found in core-tab.tex.
 
 % TABLE 1.0
-% Copyright Michael J. Wichura August 1988
+% Copyright Michael J. Wichura August 1988 (patched by Hans Hagen)
 
 % The TABLE macros are divided into sections, roughly according to
 % function:
@@ -109,7 +115,6 @@
 %    \|                       t
 %    |                        t
 %    ~                        t
-%
 
 \unprotect
 
@@ -132,8 +137,6 @@
 % To continue with a "bottom-up" approach, read next Sections k,
 % f, and t. (Top-downers should reverse the order.) The other
 % Sections can be looked at as the need arises.
-
-
 
 % *********************************************************************
 % SECTION A: ALLOCATION
@@ -598,8 +601,8 @@
 
 % BEGIN FORMAT
 \def\BeginFormat{%
-  \catcode`\|=12 % Inhibit expansion if | immediately follows a <number>
-  \catcode`\"=12 %  read by \getvalue.
+  %catcode`\|=12 % Inhibit expansion if | immediately follows a <number>
+  %catcode`\"=12 %  read by \getvalue.
   \!taPreamble={}%
   \!taColumnNumber=0
   \skip0 =\InterColumnSpaceUnit
@@ -863,8 +866,8 @@
     \!thMessage{Row Of Widths="\!tfRowOfWidths"}
   \fi
   \!taBeginFormatfalse % Intercepts "|", tabskips, and "."
-  \catcode`\|=13
-  \catcode`\"=13
+  %\catcode`\|=13
+  %\catcode`\"=13
   \!ttDoHalign}
 
 % ERROR MESSAGE FOR NOT ENOUGH "|"'s
@@ -877,14 +880,17 @@
 % REFORMAT [<key letters>]{<text>}: Formats <text> according to
 % <key letters>. Used to override the template for a column,
 % or columns when used after \use.
-\def\ReFormat[{%
+\def\ReFormat[#1]{%
   \omit
   \!taDataColumnTemplate{##}%
   \!taLeftGlue{}%
   \!taRightGlue{}%
-  \catcode`\|=12  % Inhibit expansion if | immediately follows a <number>
-  \catcode`\"=12  % read by \getvalue. Actually, '|' and '"' shouldn't
-  \ReadFormatKeys}% appear in a \ReFormat cmd; this is here as a safeguard.
+  %\catcode`\|=12  % Inhibit expansion if | immediately follows a <number>
+  %\catcode`\"=12  % read by \getvalue. Actually, '|' and '"' shouldn't
+  \begingroup
+  \@@useotherbar
+  \@@useotherquote
+  \expanded{\endgroup\noexpand\ReadFormatKeys#1]}}% appear in a \ReFormat cmd; this is here as a safeguard.
 
 % END REFORMAT: Invoked by the key "]"
 \def\!tfEndReFormat{%
@@ -894,8 +900,8 @@
        \hbox{\the\!taDataColumnTemplate}%   White lie
        \the\!taRightGlue}
   \fi
-  \catcode`\|=13
-  \catcode`\"=13
+  %\catcode`\|=13
+  %\catcode`\"=13
   \!tfReFormat}
 
 \def\!tfReFormat#1{%
@@ -1654,31 +1660,58 @@
   \fi}
 
 % INITIALIZE TABLE
+% \bgroup
+%   \catcode`\|=13
+%   \catcode`\"=13
+%   \catcode`\~=13
+%   \gdef\!ttInitializeTable{%
+%     \let\!ttTie=~ %                         Meanings of ~ and \- are
+%     \let\!ttDH=\- %                           restored by \BeginTableParBox
+%     \catcode`\|=\active
+%     \catcode`\"=\active
+%     \catcode`\~=\active
+%     \def |{\unskip\!ttRightGlue&&}%         Use rule-column template
+%     \def\|{\unskip\!ttRightGlue&\omit\!ttAlternateVrule}%
+%     %                                       Override rule-column template
+%     \def"{\unskip\!ttRightGlue&\omit&}%     Omit rule-column template
+%     \def~{\kern .5em}%                      ~ now has the width of a digit
+%     \def\\{\!ttEndOfRow}%
+%     \def\-{\!ttShortHrule}%
+%     \def\={\!ttLongHrule}%
+%     \def\_{\!ttFullHrule}%
+%     \def\Left##1{##1\hfill\null}%           \null prevents \unskip from
+%     \def\Center##1{\hfill##1\hfill\null}%    killing the \hfill
+%     \def\Right##1{\hfill##1}%
+%     \def\use{\!ttuse}%
+%     \def\Use{\!ttUse}%
+%     \the\EveryTable}
+% \egroup
+
 \bgroup
-  \catcode`\|=13
-  \catcode`\"=13
+  %catcode`\|=13
+  %catcode`\"=13
   \catcode`\~=13
   \gdef\!ttInitializeTable{%
-    \let\!ttTie=~ %                         Meanings of ~ and \- are
-    \let\!ttDH=\- %                           restored by \BeginTableParBox
-    \catcode`\|=\active
-    \catcode`\"=\active
+    \let\!ttTie=~ %
+    \let\!ttDH=\- %
+    %catcode`\|=\active
+    %catcode`\"=\active
     \catcode`\~=\active
-    \def |{\unskip\!ttRightGlue&&}%         Use rule-column template
-    \def\|{\unskip\!ttRightGlue&\omit\!ttAlternateVrule}%
-    %                                       Override rule-column template
-    \def"{\unskip\!ttRightGlue&\omit&}%     Omit rule-column template
-    \def~{\kern .5em}%                      ~ now has the width of a digit
-    \def\\{\!ttEndOfRow}%
-    \def\-{\!ttShortHrule}%
-    \def\={\!ttLongHrule}%
-    \def\_{\!ttFullHrule}%
-    \def\Left##1{##1\hfill\null}%           \null prevents \unskip from
-    \def\Center##1{\hfill##1\hfill\null}%    killing the \hfill
-    \def\Right##1{\hfill##1}%
+    %def |{\unskip\!ttRightGlue&&}%
+    %def\|{\unskip\!ttRightGlue&\omit\!ttAlternateVrule}%
+    %def"{\unskip\!ttRightGlue&\omit&}%
+    \def~{\kern .5em}%
+    %def\\{\!ttEndOfRow}%
+    \def\\{\par}
+    %def\-{\!ttShortHrule}%
+    %def\={\!ttLongHrule}%
+    %def\_{\!ttFullHrule}%
+    \def\Left  ##1{##1\hfill\null}%         % \null prevents \unskip from
+    \def\Center##1{\hfill##1\hfill\null}%   % killing the \hfill
+    \def\Right ##1{\hfill##1}%
     \def\use{\!ttuse}%
     \def\Use{\!ttUse}%
-    \the\EveryTable}
+    \the\EveryTable}% comes too soon
 \egroup
 
 \let\!ttRightGlue=\relax  % This may be changed, in a group, by

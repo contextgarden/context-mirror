@@ -517,18 +517,14 @@
 % no, with 2\whatever we loose the stretch and shrink! Taco's alternative:
 
 \defineblankmethod
-  [2*line]
+  [2*\v!line]
   {\addblankskip+\openlineheight\openlineheight
    \addblankskip+\openlineheight\openlineheight}
 
 \defineblankmethod
-  [2*big]
+  [2*\v!big]
   {\addblankskip+\bigskipamount\openlineheight
    \addblankskip+\bigskipamount\openlineheight}
-
-% ETEX ! ! !
-
-\beginETEX \ifcsname
 
 \def\doblank#1%
   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
@@ -554,61 +550,8 @@
      \fi\fi
    \fi}
 
-\endETEX
-
-\beginTEX
-
-\def\doblank#1%
-  {\edef\ascii{#1}\convertcommand\ascii\to\ascii
-   \ifx\ascii\empty\else
-     \@EA\ifx\csname\??bo\??bo\ascii\endcsname\relax
-       \@EA\ifx\csname\??bo\ascii\endcsname\relax
-         \dorepeatwithcommand[#1]\redoblank
-       \else
-         \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
-       \fi
-     \else
-       \csname\??bo\??bo\ascii\endcsname
-     \fi
-   \fi}
-
-\def\redoblank#1%
-  {\edef\ascii{#1}\convertcommand\ascii\to\ascii
-   \ifx\ascii\empty\else
-     \@EA\ifx\csname\??bo\??bo\ascii\endcsname\relax
-       \@EA\ifx\csname\??bo\ascii\endcsname\relax
-         \global\advance\blankskip#1\relax
-       \else
-         \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
-       \fi
-     \else
-       \csname\??bo\??bo\ascii\endcsname
-     \fi
-   \fi}
-
-\endTEX
-
 \unexpanded\def\blank % the \relax is definitely needed due to the many \if's
   {\relax\complexorsimple\doblank}
-
-% \def\complexdoblank
-%   {\flushnotes
-%    \ifmmode
-%      \let\next\nocomplexdoblank
-%    \else
-%      \ifopelkaar
-%        \ifinpagebody
-%          \let\next\docomplexdoblank
-%        \else
-%          \let\next\nocomplexdoblank
-%        \fi
-%      \else
-%        \let\next\docomplexdoblank
-%      \fi
-%    \fi
-%    \next}
-%
-% with \next removed
 
 \def\complexdoblank
   {\flushnotes
@@ -2222,25 +2165,6 @@
 
 \let\restoreinterlinespace\relax
 
-\beginTEX
-
-\def\saveinterlinespace
-  {\scratchdimen\normallineheight
-   \edef\restoreinterlinespace
-     {\lineheight         \the\lineheight
-      \openstrutheight    \the\openstrutheight
-      \openstrutdepth     \the\openstrutdepth
-      \openlineheight     \the\openlineheight
-      \normalbaselineskip \the\normalbaselineskip
-      \normallineskip     \the\normallineskip
-      \normallineskiplimit\the\normallineskiplimit
-      \noexpand\def\noexpand\normallineheight{\the\scratchdimen}%
-      \noexpand\normalbaselines}}
-
-\endTEX
-
-\beginETEX
-
 \def\saveinterlinespace
   {\edef\restoreinterlinespace
      {\lineheight         \the\lineheight
@@ -2252,8 +2176,6 @@
       \normallineskiplimit\the\normallineskiplimit
       \noexpand\def\noexpand\normallineheight{\the\dimexpr\normallineheight\relax}%
       \noexpand\normalbaselines}}
-
-\endETEX
 
 % plain definition:
 %
@@ -2582,73 +2504,27 @@
 % \widowpenalty=\defaultwidowpenalty\relax
 % \clubpenalty =\defaultclubpenalty \relax
 
-\beginTEX widowpenalties clubpenalties interlinepenalties
+\def\resetpenalties#1%
+  {\ifx#1\undefined\else
+     #1\minusone
+   \fi}
 
-  \newcount \widowpenalties
-  \newcount \clubpenalties
-  \newcount \interlinepenalties
+\def\setpenalties#1#2#3%
+  {\ifx#1\undefined\else % space before #3 prevents lookahead problems, needed when #3=text
+     #1\numexpr#2+\plusone\relax\space\doexpandedrecurse{\the\numexpr#2\relax}{ #3}\zerocount\relax
+   \fi}
 
-\endTEX
-
-% \setpenalties\widowpenalties2\maxdimen
-%
-% expands to \widowpenalty \maxdimen \maxdimen \zeropoint
-
-\beginTEX
-
-  \let\resetpenalties   \gobbleoneargument
-  \let\setpenalties     \gobblethreearguments
-  \let\doexpandedrecurse\gobbletwoarguments
-
-\endTEX
-
-\beginETEX \numexpr
-
-  \def\resetpenalties#1%
-    {\ifx#1\undefined\else
-       #1\minusone
-     \fi}
-
-%   \def\setpenalties#1#2#3%
-%     {\ifx#1\undefined\else % space before #3 prevents lookahead problems, needed when #3=text
-%        #1\numexpr(#2+1)\space\doexpandedrecurse{\the\numexpr(#2)}{ #3}\zerocount\relax
-%      \fi}
-
-  \def\setpenalties#1#2#3%
-    {\ifx#1\undefined\else % space before #3 prevents lookahead problems, needed when #3=text
-       #1\numexpr#2+\plusone\relax\space\doexpandedrecurse{\the\numexpr#2\relax}{ #3}\zerocount\relax
-     \fi}
-
-%   \def\doexpandedrecurse#1#2%
-%     {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr(#1-1)}{#2}\fi}
-
-  \def\doexpandedrecurse#1#2%
-    {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr#1-1\relax}{#2}\fi}
-
-\endETEX
+\def\doexpandedrecurse#1#2%
+  {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr#1-1\relax}{#2}\fi}
 
 %D \macros
 %D   {keeplinestogether}
 %D
 %D Dirty hack, needed in margin content that can run of a page.
 
-\beginETEX
-
-  \def\keeplinestogether#1%
-    {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
-     \global\setpenalties\interlinepenalties{#1}\plustenthousand}
-
-\endETEX
-
-\beginTEX
-
-  \def\keeplinestogether#1%
-    {\xdef\restoreinterlinepenalty
-       {\global\let\restoreinterlinepenalty\relax
-        \global\interlinepenalty=\the\interlinepenalty}% keep = here
-     \global\interlinepenalty\plustenthousand}
-
-\endTEX
+\def\keeplinestogether#1%
+  {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
+   \global\setpenalties\interlinepenalties{#1}\plustenthousand}
 
 \newif\ifgridsnapping % to be sure
 
@@ -2753,6 +2629,8 @@
 \def\dotfskip#1{{\tf\hskip#1}}
 \def\dotfkern#1{{\tf\kern #1}}
 
+% needs a proper \definenarrower or installnarrower
+
 \newskip\ctxleftskip
 \newskip\ctxrightskip
 \newskip\ctxmidskip
@@ -3160,26 +3038,6 @@
 
 \let\dostopattributes\relax % in case these commands end up in an edef
 
-\beginTEX
-
-\unexpanded\def\dostartattributes#1#2#3%
-  {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
-   \@EA\ifx\csname#1#3\endcsname\relax
-     \let\dostopattributes\@@nostopattributes
-   \else
-     \let\dostopattributes\@@dostopattributes
-     \startcolor[\csname#1#3\endcsname]%
-   \fi
-   \@EA\ifx\csname#1#2\endcsname\relax
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\doconvertfont
-   \fi{\csname#1#2\endcsname}}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \unexpanded\def\dostartattributes#1#2#3%
   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
    \ifcsname#1#3\endcsname
@@ -3193,8 +3051,6 @@
    \else
      \expandafter\gobbleoneargument
    \fi{\csname#1#2\endcsname}}
-
-\endETEX
 
 \newconditional \parbasedattributes
 
@@ -3222,81 +3078,60 @@
 
 % An even faster \ETEX\ version:
 
-\beginETEX
+\unexpanded\def\dostartattributes#1#2#3%
+  {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
+   \ifincolor
+     \ifcsname#1#3\endcsname
+        \let\dostopattributes\@@dostopattributes
+       \faststartcolor[\csname#1#3\endcsname]%
+     \else
+       \let\dostopattributes\@@nostopattributes
+     \fi
+   \else
+     \let\dostopattributes\@@nostopattributes
+   \fi
+   \ifcsname#1#2\endcsname
+   % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+     \@EA\doconvertfont\csname#1#2\@EA\endcsname
+   \fi}
 
-    \unexpanded\def\dostartattributes#1#2#3%
-      {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
-       \ifincolor
-         \ifcsname#1#3\endcsname
-           \let\dostopattributes\@@dostopattributes
-           \faststartcolor[\csname#1#3\endcsname]%
-         \else
-           \let\dostopattributes\@@nostopattributes
-         \fi
-       \else
-         \let\dostopattributes\@@nostopattributes
-       \fi
-       \ifcsname#1#2\endcsname
-       % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
-         \@EA\doconvertfont\csname#1#2\@EA\endcsname
-       \fi}
+\unexpanded\def\@@dostopattributes
+  {\faststopcolor
+   \finishparbasedattributes
+   \endgroup}
 
-    \unexpanded\def\@@dostopattributes
-      {\faststopcolor
-       \finishparbasedattributes
-       \endgroup}
-
-    \unexpanded\def\@@nostopattributes
-      {\finishparbasedattributes
-       \endgroup}
-
-\endETEX
+\unexpanded\def\@@nostopattributes
+  {\finishparbasedattributes
+   \endgroup}
 
 %D Bonus macro, see core-sec.tex
 
-\beginTEX
-
-    \unexpanded\def\dosetfontattribute#1#2%
-      {\@EA\ifx\csname#1#2\endcsname\relax\else
-         \@EA\doconvertfont\csname#1#2\@EA\endcsname
-       \fi\empty}
-
-\endTEX
-
-\beginETEX \ifcsname
-
-    \unexpanded\def\dosetfontattribute#1#2%
-      {\ifcsname#1#2\endcsname
-         \@EA\doconvertfont\csname#1#2\@EA\endcsname
-       \fi\empty}
-
-\endETEX
+\unexpanded\def\dosetfontattribute#1#2%
+  {\ifcsname#1#2\endcsname
+     \@EA\doconvertfont\csname#1#2\@EA\endcsname
+   \fi\empty}
 
 %D Since this happens a lot, and sometimes large arguments
 %D are passed in \type {#4}, we just copy some code:
 
-\beginETEX \ifcsname
-
-    \unexpanded\def\doattributes#1#2#3#4%
-      {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
-       \ifincolor
-         \ifcsname#1#3\endcsname
-           \let\dostopattributes\@@dostopattributes
-           \faststartcolor[\csname#1#3\endcsname]%
-         \else
-           \let\dostopattributes\endgroup
-         \fi
-       \else
-         \let\dostopattributes\endgroup
-       \fi
-       \ifcsname#1#2\endcsname
-       % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
-         \@EA\doconvertfont\csname#1#2\@EA\endcsname
-       \fi
-       {#4}%
-       \dostopattributes}
-
-\endETEX
+\unexpanded\def\doattributes#1#2#3#4%
+  {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
+   \ifincolor
+     \ifcsname#1#3\endcsname
+       \let\dostopattributes\@@dostopattributes
+       \faststartcolor[\csname#1#3\endcsname]%
+     \else
+       \let\dostopattributes\endgroup
+     \fi
+     \else
+       \let\dostopattributes\endgroup
+     \fi
+     \ifcsname#1#2\endcsname
+     % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+       \@EA\doconvertfont\csname#1#2\@EA\endcsname
+     \fi
+     {#4}%
+     \dostopattributes}
 
 % Kan vaker worden toegepast en moet bovendien sneller!
 
@@ -3310,32 +3145,6 @@
 \def\doadaptrightskip#1%
   {\dosetrightskipadaption{#1}%
    \advance\rightskip \rightskipadaption}
-
-\beginTEX
-
-\def\dosetleftskipadaption#1%
-  {\leftskipadaption\zeropoint
-   \processaction[#1]
-     [\v!standard=>\leftskipadaption
-                   \ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi,
-           \v!yes=>\leftskipadaption
-                   \ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi,
-            \v!no=>,
-       \s!unknown=>\leftskipadaption#1]}
-
-\def\dosetrightskipadaption#1%
-  {\rightskipadaption\zeropoint
-   \processaction[#1]
-     [\v!standard=>\rightskipadaption\@@slright,
-           \v!yes=>\rightskipadaption\@@slright,
-            \v!no=>,
-       \s!unknown=>\rightskipadaption#1]}
-
-\endTEX
-
-\beginETEX
-
-% installation
 
 \setvalue{@lsa@\v!standard}{\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
 \setvalue{@lsa@\v!yes     }{\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
@@ -3378,8 +3187,6 @@
        #1%
      \fi
    \relax}
-
-\endETEX
 
 \newcounter \noftrackedpagestates
 \newif      \ifpagestatemismatch

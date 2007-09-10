@@ -17,6 +17,8 @@
 %D overloades a few file reading macros and permits runtime
 %D conversion and job control.
 
+% todo: rewrite in lua
+
 \unprotect
 
 \chardef\preprocessmethod 2 % 0=no check 1=present_check 2=log_check
@@ -77,19 +79,27 @@
        \iftracefiles\writestatus\m!systems{preprocessing - no suffix}\fi
        \egroup
      \else\ifcase\preprocesslocal
+       % also ./ strippen
        \iftracefiles\writestatus\m!systems{preprocessing - check presence of \readfilename\preprocesssuffix}\fi
        \doifdefinedelse{fp..\readfilename}
          {\egroup
           \doiffileexistselse{\readfilename\preprocesssuffix}
             {\chardef\preprocessstate\plusone}
             {\chardef\preprocessstate\plustwo}}%
-         {\doifdefinedelse{fp..\splitoffbase}%
+         {\doifdefinedelse{fp.../\readfilename}
             {\egroup
+             \edef\readfilename{./\readfilename}%
              \doiffileexistselse{\readfilename\preprocesssuffix}
                {\chardef\preprocessstate\plusone}
                {\chardef\preprocessstate\plustwo}}%
-            {\egroup}}%
+            {\doifdefinedelse{fp..\splitoffbase}%
+               {\egroup
+                \doiffileexistselse{\readfilename\preprocesssuffix}
+                  {\chardef\preprocessstate\plusone}
+                  {\chardef\preprocessstate\plustwo}}%
+               {\egroup}}}%
      \else
+       % maybe just filecheck, why ctl
        \iftracefiles\writestatus\m!systems{preprocessing - check local presence of \readfilename\preprocesssuffix}\fi
        \doifdefinedelse{fp..\readfilename}
          {\egroup
@@ -184,15 +194,15 @@
    \the\everybeforereadfile
    \ifcase\preprocessstate
      % no checking or not found when using method 1
-%      \normalinput\readfilename
-     \inputgivenfile\readfilename
+     \def\dodoreadfileindeed{\inputgivenfile\readfilename}%
    \or
      % found when using method 1 or 2
-%      \normalinput\readfilename\preprocesssuffix
-     \inputgivenfile{\readfilename\preprocesssuffix}%
+     \def\dodoreadfileindeed{\inputgivenfile{\readfilename\preprocesssuffix}}%
    \or
      % not found when using method 2
+     \let\dodoreadfileindeed\relax
    \fi
+   \dodoreadfileindeed
    \relax
    \the\everyafterreadfile}
 

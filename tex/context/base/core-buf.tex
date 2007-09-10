@@ -227,6 +227,13 @@
    \def\stopbufferparagraph{\dostopbufferparagraph{#1}\egroup\egroup}%
    \setbox\scratchbox\vbox\bgroup\dostartbufferparagraph{#1}}
 
+% only mkiv
+
+\beginLUATEX
+    \def\savebuffer{\dosingleempty\dosavebuffer}
+    \def\dosavebuffer[#1]{\ctxlua{buffers.save("#1")}}
+\endLUATEX
+
 % plugins
 
 \loadmarkfile{core-buf}

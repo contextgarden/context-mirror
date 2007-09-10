@@ -20,6 +20,13 @@
 
 \usemodule[set-02]
 
+\loadmarkfile{x-set-11}
+
+\ifx\mkloadsetups\undefined \let\mkloadsetups \gobbleoneargument \fi
+\ifx\mkshowsetup \undefined \let\mkshowsetup  \gobbleoneargument \fi
+\ifx\mkusedsetups\undefined \let\mkusedsetups \gobbleoneargument \fi
+\ifx\mkallsetups \undefined \let\mkallsetups  \gobbleoneargument \fi
+
 \unprotect
 
 % general
@@ -350,8 +357,19 @@
 
 \newif\ifshortsetup
 
-\def\setup     {\shortsetupfalse\dosetup}
-\def\shortsetup{\shortsetuptrue \dosetup}
+\def\doshowsetup
+  {\dosingleempty\dodoshowsetup}
+
+\def\dodoshowsetup[#1]%
+  {\iffirstargument
+     \mkshowsetup{#1}%
+   \else
+     \expandafter\mkshowsetup
+   \fi}
+
+\def\setup     {\shortsetupfalse\doshowsetup}
+\def\showsetup {\shortsetupfalse\doshowsetup}
+\def\shortsetup{\shortsetuptrue \doshowsetup}
 \def\setupsetup{\dodoubleargument\getparameters[\??stp]}
 
 \setupsetup
@@ -370,18 +388,20 @@
 
 \def\placesetup
   {\bgroup
-   \getvalue{\e!place\e!listof texcommands}
+   \mkshowusedsetups
    \egroup}
 
-\def\placeeverysetup % for fun purposes only
+\def\placeallsetups
   {\bgroup
    \setupsetup[\c!reference=2]%
    \setupreferencing[\c!state=\v!stop]%
-   \getvalue{\e!place\e!listof alltexcommands}%
+   \mkshowallsetups
    \egroup}
 
+\let\placeeverysetup\placeallsetups
+
 \let\plaatssetup    \placesetup
-\let\plaatselkesetup\placeeverysetup
+\let\plaatselkesetup\placeallsetups
 
 % we use :1 as fallback
 %
@@ -389,22 +409,6 @@
 % \setup{setupinterlinespace:1}
 % \setup{setupinterlinespace:2}
 
-\bgroup \catcode`\<=\active
-
-\gdef\dosetup#1%
-  {\bgroup
-   \def<<##1>>{##1}%
-   \edef\ascii{#1}%
-   \enableXML
-   \doifelseXMLelement{stp:\ascii}
-     {\expanded{\flushXMLelement{stp:\ascii}}}
-     {\doifelseXMLelement{stp:\ascii:1}
-        {\expanded{\flushXMLelement{stp:\ascii:1}}}
-        {\convertargument#1\to\ascii
-         \em unknown setup \quote{\ascii}}}
-   \egroup}
-
-\egroup
 
 \defineXMLenvironment [cd:command] [name=,type=,generated=,interactive=,variant=]
   {}
@@ -419,7 +423,7 @@
        \doglobal\newcounter\currentSETUPargument
        \global\let\maximumSETUPargument\currentSETUPargument
        \bgroup
-         \doifXMLop{generated}{yes}{\ttsl}%
+         \doif{\XMLpar{cd:command}{generated}{}}{yes}{\ttsl}%
          \doifelseXMLop{type}{environment}
            {\tex{\e!start}}{\tex{}}\ignorespaces
          \XMLflush{cd:sequence}\ignorespaces
@@ -433,6 +437,7 @@
             \ignorespaces\XMLflush{cd:arguments}%
             \doif{\XMLpar{cd:command}{type}{}}{environment}
               {\hskip.5em\unknown\hskip.5em
+               \doif{\XMLpar{cd:command}{generated}{}}{yes}{\ttsl}%
                \tex{\e!stop}\ignorespaces\XMLflush{cd:sequence}}%
             \endgraf
           \egroup
@@ -545,13 +550,6 @@
   {\startsecondSETUPcolumn{#1}{#2}\stopsecondSETUPcolumn}
 
 \def\previousSETUPargument{\currentSETUPargument}
-
-\defineXMLenvironmentsave [cd:define] [name=]
-  {}
-  {\setevalue{cd:def:\XMLop{name}}{\XMLflush{cd:define}}}
-
-\defineXMLsingular [cd:resolve] [name=]
-  {\getvalue{cd:def:\XMLop{name}}}
 
 \defineXMLenvironmentsave [cd:assignments]
   {}
@@ -812,11 +810,7 @@
      {\complexloadsetups[cont-en.xml]}}
 
 \def\complexloadsetups[#1]%
-  {\doifnotmode{no-setup-all}
-     {\doifsomething{#1}
-        {\startXMLmapping[zero]
-         \expanded{\processXMLfilegrouped{#1}}%
-         \stopXMLmapping}}}
+  {\doifsomething{#1}{\mkloadsetups{#1}}}
 
 \defineXMLsingular [cd:include] [file=]
   {\complexloadsetups[\XMLop{file}]}

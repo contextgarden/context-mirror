@@ -11,11 +11,13 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\appendtoks
-    \writestatus\m!lua{tfm over afm, wide fonts not yet supported}
-\to \everystoptext
+% \appendtoks
+%     \writestatus\m!lua{tfm over afm, wide fonts not yet supported}
+% \to \everystoptext
 
 % \ctxlua { fonts.define.method = 2 }  % normally 3
+
+\enablemode[mkiv]
 
 \unprotect
 
@@ -28,6 +30,7 @@
 \appendtoks
     \writestatus\m!lua{input load time           - \ctxlua{input.loadtime(texmf.instance)} seconds}%
     \writestatus\m!lua{fonts load time           - \ctxlua{input.loadtime(fonts)} seconds}%
+    \writestatus\m!lua{xml load time             - \ctxlua{input.loadtime(lxml)} seconds}%
     \writestatus\m!lua{mps conversion time       - \ctxlua{input.loadtime(mptopdf)} seconds}%
     \writestatus\m!lua{node processing time      - \ctxlua{input.loadtime(nodes)} seconds}%
     \writestatus\m!lua{attribute processing time - \ctxlua{input.loadtime(attributes)} seconds}%
@@ -36,7 +39,7 @@
     \writestatus\m!lua{modules/dumps/instances   - \ctxlua{tex.print((status.luabytecodes-500).."/"..input.storage.done.."/"..status.luastates)}}%
     \writestatus\m!lua{current memory usage      - \ctxlua{tex.print(status.luastate_bytes)} bytes}%
     \writestatus\m!lua{loaded fonts              - \ctxlua{tex.print(fonts.logger.report())}}%
-\to \everystoptext
+\to \everybye
 
 \def\resettimer    {\ctxlua{environment.starttime = os.clock()}}
 \def\elapsedtime   {\ctxlua{tex.sprint(os.clock()-environment.starttime)}}
@@ -99,6 +102,19 @@
 %         end
 %     end)
 % }
+
+% The following commands need to be taken care of, e.g. because there is not yet
+% a mkiv module for them.
+
+\definestartstop[randomized][\c!before=\dosetattribute{case}\plusfour,\c!after=]
+
+\def\WORD{\groupedcommand{\dosetattribute{case}\plusone  }{}}
+\def\word{\groupedcommand{\dosetattribute{case}\plustwo  }{}}
+\def\Word{\groupedcommand{\dosetattribute{case}\plusthree}{}} % \plusfour
+
+\let\WORDS\WORD
+\let\words\word
+\let\Words\Word
 
 \protect \endinput
 

@@ -6,146 +6,6 @@ if not modules then modules = { } end modules ['core-spa'] = {
     license   = "see context related readme files"
 }
 
-do
-
-    local glyph, disc, kern, glue, hlist, vlist = node.id('glyph'), node.id('disc'), node.id('kern'), node.id('glue'), node.id('hlist'), node.id('vlist')
-
-    local kernnode = node.new('kern')
-    local stretch  = attributes.numbers['kern-chars'] or 141
-
-    function nodes.kern_chars(head)
-        local fti, scale, has_attribute = fonts.tfm.id, tex.scale, node.has_attribute
-        local fnt, pchar, pfont, p, n = nil, nil, nil, nil, head
--- local marks = fti[font].shared.otfdata.luatex.marks
-        while n do
-            local id = n.id
-            local extra = has_attribute(n,stretch)
-            if id == glyph then
-                if pfont == n.font then
-                    -- check for mark
-                    local tchar = n.char
--- if not marks[tchar] then
-                    local pdata = fti[pfont].characters[pchar]
-                    local pkern = pdata.kerns
-                    if pkern and pkern[tchar] then
-                        local k = node.copy(kernnode)
-                        if extra then
-                            k.kern = pkern[tchar] + extra
-                            if p.id == disc then
-                                p.replace = p.replace + 1
-                            end
-                        else
-                            k.kern = pkern[tchar]
-                        end
-                        k.attr = n.attr
-                        k.next = p.next
-                        p.next = k
-                    elseif extra then
-                        local k = node.copy(kernnode)
-                        k.kern = extra
-                        k.attr = n.attr
-                        k.next = p.next
-                        p.next = k
-                        if p.id == disc then
-                            p.replace = p.replace + 1
-                        end
--- end
-                    end
-                else
-                    pfont, pchar = n.font, n.char
-                end
-            elseif id == disc then
-                local pre, post = n.pre, n.post
-                if pre then
-                    local nn, pp = p.prev, p.next
-                    p.prev, p.next = nil, pre -- hijack node
-                    pre = nodes.kern_chars(p)
-                    pre = pre.next
-                    pre.prev = nil
-                    p.prev, p.next = nn, pp
-                    n.pre = pre
-                end
-                if post and n.next then
-                    local tail = node.slide(post)
-                    local nn, pp = n.next.prev, n.next.next
-                    n.next.next, n.next.prev = nil, tail
-                    tail.next = n.next -- hijack node
-                    post = nodes.kern_chars(post)
-                    tail.next = nil
-                    n.next.prev, n.next.next = nn, pp
-                    n.post = post
-                end
-                if n.next and n.next.id == glyph then
-                    local tchar = n.next.char
-                    local pdata = fti[pfont].characters[pchar]
-                    local pkern = pdata.kerns
-                    if pkern and pkern[tchar] then
-                        local k = node.copy(kernnode)
-                        if extra then
-                            k.kern = pkern[tchar] + extra
-                        else
-                            k.kern = pkern[tchar]
-                        end
-                        k.attr = n.attr
-                        k.next = n.next
-                        n.next = k
-                        n.replace = n.replace + 1
-                        n = n.next
-                    end
-                end
-            else
-                pfont = nil
-                if extra then
-                    if id == glue and n.subtype == 0 then
-                        local g = n.spec
-                        if g.width > 0 then
-                            g = node.copy(g)
-                            n.spec = g
-                            local w = g.width
-                            g.width = w + 2*extra
-                            local f = g.width/w
-                            g.stretch = scale(g.stretch,f)
-                            g.shrink = scale(g.shrink, f)
-                        end
-                    elseif id == kern and n.subtype == 0 then
-                        if n.width > 0 then
-                            n.width = n.width + extra
-                        end
-                    elseif id == hlist or id == vlist then
-                        if n.width > 0 then -- else parindent etc
-                            if p then
-                                local k = node.copy(kernnode)
-                                k.kern = extra
-                                k.attr = n.attr
-                                k.next = n
-                                k.prev = p
-                                p.next = k
-                                n.prev = k
-                            end
-                            if n.next then
-                                local k = node.copy(kernnode)
-                                k.kern = extra
-                                k.attr = n.attr
-                                k.next = n.next
-                                k.prev = n
-                                n.prev = k
-                                n.next = k
-                                p = k
-                                n = n.next
-                            end
-                        end
-                    end
-                end
-            end
-            n.prev = p
-            p = n
-            n = n.next
-        end
-        return head, p
-    end
-
-end
-
 -- vertical space handler
 
 nodes.snapvalues = { }
@@ -240,6 +100,16 @@ do
 
     -- local free = node.free
 
+    local line_skip                =  1
+    local baseline_skip            =  2
+    local par_skip                 =  3
+    local above_display_skip       =  4
+    local below_display_skip       =  5
+    local above_display_short_skip =  6
+    local below_display_short_skip =  7
+    local top_skip                 =  8
+    local split_top_skip           =  9
+
     local function collapser(head,where)
         if head and head.next then
             local trace = nodes.trace_collapse
@@ -247,6 +117,7 @@ do
             local glue_order, glue_data = 0, nil
             local penalty_order, penalty_data, natural_penalty = 0, nil, nil
             if trace then reset_tracing() end
+            local parskip, ignore_parskip = nil, false
             while current do
                 local id = current.id
                 if id == glue and current.subtype == 0 then -- todo, other subtypes, like math
@@ -321,6 +192,7 @@ do
             --      natural_penalty = current.penalty
             --      head, current = nodes.remove(head, current, true)
                 elseif id == glue and current.subtype == 2 then
+                    -- baselineskip
                     local sn = has_attribute(current,snap_category)
                     if sn then
                     --  local sv = nodes.snapvalues[sn]
@@ -332,6 +204,9 @@ do
                     else
                         current = current.next
                     end
+                elseif id == glue and current.subtype == 3 then
+                    parskip = current
+                    current = current.next
                 else
                     if glue_data then
                         head, current = nodes.before(head,current,glue_data)
@@ -348,6 +223,12 @@ do
         --  if natural_penalty and (not penalty_data or natural_penalty > penalty_data) then
         --      penalty_data = natural_penalty
         --  end
+            if parskip and glue_data then
+                if parskip.spec.width > glue_data.spec.width then
+                    glue_data.spec.width = parskip.spec.width
+                end
+                head, current = nodes.remove(head, parskip, true)
+            end
             if penalty_data then
                 local p = node.copy(penalty_node)
                 p.penalty = penalty_data
@@ -380,31 +261,40 @@ do
 
     function nodes.handle_page_spacing(t, where)
     --  we need to add the latest t too, else we miss skips and such
-        if t and t.next then
-            local tt = node.slide(t)
-            local id = tt.id
-            if id == glue then -- or id == penalty then -- or maybe: if not hlist or vlist
-                if head then
-                    t.prev = tail
-                    tail.next = t
+        if t then
+            if t.next then
+                local tt = node.slide(t)
+                local id = tt.id
+                if id == glue then -- or id == penalty then -- or maybe: if not hlist or vlist
+                    if head then
+                        t.prev = tail
+                        tail.next = t
+                    else
+                        head = t
+                    end
+                    tail = tt
+                    t = nil
                 else
-                    head = t
+                    input.start_timing(nodes)
+                    if head then
+                        t.prev = tail
+                        tail.next = t
+                    --  tail = tt
+                        t = collapser(head,where)
+                        head = nil
+                    --  tail = nil
+                    else
+                        t = collapser(t,where)
+                    end
+                    input.stop_timing(nodes,where)
                 end
-                tail = tt
-                t = nil
+            elseif head then
+                t.prev = tail
+                tail.next = t
+                t = collapser(head,where)
+                head = nil
             else
-                input.start_timing(nodes)
-                if head then
-                    t.prev = tail
-                    tail.next = t
-                --  tail = tt
-                    t = collapser(head,where)
-                    head = nil
-                --  tail = nil
-                else
-                    t = collapser(t,where)
-                end
-                input.stop_timing(nodes,where)
+                t = collapser(t,where)
             end
         end
         return t
@@ -421,10 +311,457 @@ do
 
 end
 
--- experimental!
+-- experimental callback definitions will be moved elsewhere
 
 callback.register('vpack_filter',     nodes.handle_vbox_spacing)
 callback.register('buildpage_filter', nodes.handle_page_spacing)
+
+-- horizontal stuff
+
+-- probably a has_glyphs is rather fast too
+
+do
+
+    local kern_node      = node.new("kern",1)
+    local penalty_node   = node.new("penalty")
+    local glue_node      = node.new("glue")
+    local glue_spec_node = node.new("glue_spec")
+
+    local contains = node.has_attribute
+    local unset    = node.unset_attribute
+
+    local glyph = node.id("glyph")
+    local kern  = node.id("kern")
+    local disc  = node.id('disc')
+    local glue  = node.id('glue')
+    local hlist = node.id('hlist')
+    local vlist = node.id('vlist')
+
+--~     function nodes.penalty(p)
+--~         local n = node.copy(penalty_node)
+--~         n.penalty = p
+--~         return n
+--~     end
+--~     function nodes.kern(k)
+--~         local n = node.copy(kern_node)
+--~         n.kern = k
+--~         return n
+--~     end
+--~     function nodes.glue(width,stretch,shrink)
+--~         local n = node.copy(glue_node)
+--~         local s = node.copy(glue_spec_node)
+--~         s.width, s.stretch, s.shrink = width, stretch, shrink
+--~         n.spec = s
+--~         return n
+--~     end
+--~     function nodes.glue_spec(width,stretch,shrink)
+--~         local s = node.copy(glue_spec_node)
+--~         s.width, s.stretch, s.shrink = width, stretch, shrink
+--~         return s
+--~     end
+
+    spacings         = spacings         or { }
+    spacings.mapping = spacings.mapping or { }
+    spacings.enabled = true
+
+    input.storage.register(false,"spacings/mapping", spacings.mapping, "spacings.mapping")
+
+    function spacings.setspacing(id,char,left,right)
+        local mapping = spacings.mapping[id]
+        if not mapping then
+            mapping = { }
+            spacings.mapping[id] = mapping
+        end
+        local map = mapping[char]
+        if not map then
+            map = { }
+            mapping[char] = map
+        end
+        map.left, map.right = left, right
+    end
+
+    function spacings.process(namespace,attribute,head)
+        local done, mapping, fontids = false, spacings.mapping, fonts.tfm.id
+        for start in node.traverse_id(glyph,head) do -- tricky since we inject
+            local attr = contains(start,attribute)
+            if attr then
+                local map = mapping[attr]
+                if map then
+                    map = mapping[attr][start.char]
+                    unset(start,attribute)
+                    if map then
+                        local kern, prev = map.left, start.prev
+                        if kern and kern ~= 0 and prev and prev.id == glyph then
+                            node.insert_before(head,start,nodes.kern(tex.scale(fontids[start.font].parameters[6],kern)))
+                            done = true
+                        end
+                        local kern, next = map.right, start.next
+                        if kern and kern ~= 0 and next and next.id == glyph then
+                            node.insert_after(head,start,nodes.kern(tex.scale(fontids[start.font].parameters[6],kern)))
+                            done = true
+                        end
+                    end
+                end
+            end
+        end
+        return head, done
+    end
+
+    lists.plugins.spacing = {
+        namespace   = spacings,
+        processor   = spacings.process,
+    }
+
+    kerns         = kerns or { }
+    kerns.mapping = kerns.mapping or { }
+    kerns.enabled = true
+
+    input.storage.register(false, "kerns/mapping", kerns.mapping, "kerns.mapping")
+
+    function kerns.setspacing(id,factor)
+        kerns.mapping[id] = factor
+    end
+
+-- local marks = fti[font].shared.otfdata.luatex.marks
+-- if not marks[tchar] then
+
+    function kerns.process(namespace,attribute,head) -- todo interchar kerns / disc nodes
+        local fti, scale = fonts.tfm.id, tex.scale
+        local start, done, mapping, fontids, lastfont = head, false, kerns.mapping, fonts.tfm.id, nil
+        while start do
+            -- faster to test for attr first
+            local attr = contains(start,attribute)
+            if attr then
+                unset(start,attribute)
+                local krn = mapping[attr]
+                if krn and krn ~= 0 then
+                    local id = start.id
+                    if id == glyph then
+                        lastfont = start.font
+                        local c = start.components
+                        if c then
+                            local s = start
+                            local tail = node.slide(c)
+                            if s.prev then
+                                s.prev.next = c
+                                c.prev = s.prev
+                            else
+                                head = c
+                            end
+                            if s.next then
+                                s.next.prev = tail
+                            end
+                            tail.next = s.next
+                            start = c
+                            start.attr = s.attr
+                            s.attr = nil
+                            s.components = nil
+                            node.free(s)
+                            done = true
+                        end
+                        local prev = start.prev
+                        if prev then
+                            local pid = prev.id
+                            if not pid then
+                                -- nothing
+                            elseif pid == kern and prev.subtype == 0 then
+                                prev.subtype = 1
+                                prev.kern = prev.kern + scale(fontids[lastfont].parameters[6],krn)
+                                done = true
+                            elseif pid == glyph then
+                                -- fontdata access can be done more efficient
+                                if prev.font == lastfont then
+                                    local prevchar, lastchar = prev.char, start.char
+                                    local tfm = fti[lastfont].characters[prevchar]
+                                    local ickern = tfm.kerns
+                                    if ickern and ickern[lastchar] then
+                                        krn = scale(ickern[lastchar]+fontids[lastfont].parameters[6],krn)
+                                    else
+                                        krn = scale(fontids[lastfont].parameters[6],krn)
+                                    end
+                                else
+                                    krn = scale(fontids[lastfont].parameters[6],krn)
+                                end
+                                node.insert_before(head,start,nodes.kern(krn))
+                                done = true
+                            elseif pid == disc then
+                                local d = start.prev
+                                local pre, post = d.pre, d.post
+                                if pre then
+                                    local p = d.prev
+                                    local nn, pp = p.prev, p.next
+                                    p.prev, p.next = nil, pre -- hijack node
+                                    pre = kerns.process(namespace,attribute,p)
+                                    pre = pre.next
+                                    pre.prev = nil
+                                    p.prev, p.next = nn, pp
+                                    d.pre = pre
+                                end
+                                if post then
+                                    local tail = node.slide(post)
+                                    local nn, pp = d.next.prev, d.next.next
+                                    d.next.next, d.next.prev = nil, tail
+                                    tail.next = start.next -- hijack node
+                                    post = kerns.process(namespace,attribute,post)
+                                    tail.next = nil
+                                    d.next.prev, d.next.next = nn, pp
+                                    d.post = post
+                                end
+                                local prevchar, nextchar = d.prev.char, d.next.char -- == start.char
+                                local tfm = fti[lastfont].characters[prevchar]
+                                local ickern = tfm.kerns
+                                if ickern and ickern[nextchar] then
+                                    krn = scale(ickern[nextchar]+fontids[lastfont].parameters[6],krn)
+                                else
+                                    krn = scale(fontids[lastfont].parameters[6],krn)
+                                end
+                                node.insert_before(head,start,nodes.kern(krn))
+                                d.replace = d.replace + 1
+                            end
+                        end
+                    elseif id == glue and start.subtype == 0 then
+                        local s = start.spec
+                        local w = s.width
+                        if w > 0 then
+                            local width, stretch, shrink = w+2*scale(w,krn), s.stretch, s.shrink
+                            start.spec = nodes.glue_spec(width,scale(stretch,width/w),scale(shrink,width/w))
+                        --  node.free(ss)
+                            done = true
+                        end
+                    elseif false and id == kern and start.subtype == 0 then -- handle with glyphs
+                        local sk = start.kern
+                        if sk > 0 then
+                            start.kern = scale(sk,krn)
+                            done = true
+                        end
+                    elseif lastfont and id == hlist or id == vlist then -- todo: lookahead
+                        if start.prev then
+                            node.insert_before(head,start,nodes.kern(scale(fontids[lastfont].parameters[6],krn)))
+                            done = true
+                        end
+                        if start.next then
+                            node.insert_after(head,start,nodes.kern(scale(fontids[lastfont].parameters[6],krn)))
+                            done = true
+                        end
+                    end
+                end
+            end
+            if start then
+                start = start.next
+            end
+        end
+        return head, done
+    end
+
+    lists.plugins.kern = {
+        namespace = kerns,
+        processor = kerns.process,
+    }
+
+    -- spacing == attributename !! does not belong here but we will
+    -- relocate node and attribute stuff once it's more complete !!
+
+    cases         = cases or { }
+    cases.enabled = true
+    cases.actions = { }
+
+    -- hm needs to be run before glyphs: chars.plugins
+
+    local function upper(start)
+        local data, char = characters.data, start.char
+        if data[char] then
+            local uc = data[char].uccode
+            if uc and fonts.tfm.id[start.font].characters[uc] then
+                start.char = uc
+                return start, true
+            end
+        end
+        return start, false
+    end
+    local function lower(start)
+        local data, char = characters.data, start.char
+        if data[char] then
+            local ul = data[char].ulcode
+            if lc and fonts.tfm.id[start.font].characters[lc] then
+                start.char = lc
+                return start, true
+            end
+        end
+        return start, false
+    end
+
+    cases.actions[1], cases.actions[2] = upper, lower
+
+    cases.actions[3] = function(start)
+        local prev = start.prev
+        if prev and prev.id == kern and prev.subtype == 0 then
+            prev = prev.prev
+        end
+        if not prev or prev.id ~= glyph then
+            return upper(start)
+        else
+            return start
+        end
+    end
+
+    cases.actions[4] = function(start)
+        local prev, next = start.prev, start.next
+        if prev and prev.id == kern and prev.subtype == 0 then
+            prev = prev.prev
+        end
+        if next and next.id == kern and next.subtype == 0 then
+            next = next.next
+        end
+        if (not prev or prev.id ~= glyph) and next and next.id == glyph then
+            return upper(start)
+        else
+            return start
+        end
+    end
+
+    cases.actions[5] = function(start)
+        local data = characters.data
+        local ch = start.char
+        local mr = math.random
+        local tfm = fonts.tfm.id[start.font].characters
+        if data[ch].lccode then
+            while true do
+                local d = data[mr(1,0xFFFF)]
+                if d then
+                    local uc = d.uccode
+                    if uc and tfm[uc] then
+                        start.char = uc
+                        return start, true
+                    end
+                end
+            end
+        elseif data[ch].uccode then
+            while true do
+                local d = data[mr(1,0xFFFF)]
+                if d then
+                    local lc = d.lccode
+                    if lc and tfm[lc] then
+                        start.char = lc
+                        return start, true
+                    end
+                end
+            end
+        else
+            return start, false
+        end
+    end
+
+    -- node.traverse_id_attr
+
+    function cases.process(namespace,attribute,head) -- not real fast but also not used on much data
+        local done, actions = false, cases.actions
+        for start in node.traverse_id(glyph,head) do
+            local attr = contains(start,attribute)
+            if attr then
+                unset(start,attribute)
+                local action = actions[attr]
+                if action then
+                    local _, ok = action(start)
+                    done = done and ok
+                end
+            end
+        end
+        return head, done
+    end
+
+    chars.plugins.case = {
+        namespace = cases,
+        processor = cases.process,
+    }
+
+    breakpoints         = breakpoints         or { }
+    breakpoints.mapping = breakpoints.mapping or { }
+    breakpoints.enabled = true
+
+    input.storage.register(false,"breakpoints/mapping", breakpoints.mapping, "breakpoints.mapping")
+
+    function breakpoints.setreplacement(id,char,kind,before,after)
+        local mapping = breakpoints.mapping[id]
+        if not mapping then
+            mapping = { }
+            breakpoints.mapping[id] = mapping
+        end
+        mapping[char] = { kind or 1, before or 1, after or 1 }
+    end
+
+    function breakpoints.process(namespace,attribute,head)
+        local done, mapping, fontids = false, breakpoints.mapping, fonts.tfm.id
+        local start, n = head, 0
+        while start do
+            local id = start.id
+            if id == glyph then
+                local attr = contains(start,attribute)
+                if attr then
+                    unset(start,attribute)
+                    -- look ahead and back n chars
+                    local map = mapping[attr]
+                    if map then
+                        map = map[start.char]
+                        if map then
+                            if n >= map[2] then
+                                local m = map[3]
+                                local next = start.next
+                                while next do -- gamble on same attribute
+                                    local id = next.id
+                                    if id == glyph then -- gamble on same attribute
+                                        if m == 1 then
+                                            if map[1] == 1 then
+                                            --  no discretionary needed
+                                            --  \def\prewordbreak  {\penalty\plustenthousand\hskip\zeropoint\relax}
+                                            --  \def\postwordbreak {\penalty\zerocount\hskip\zeropoint\relax}
+                                            --  texio.write_nl(string.format("injecting replacement type %s for character %s",map[1],utf.char(start.char)))
+                                                local g, p = nodes.glue(0), nodes.penalty(10000)
+                                                node.insert_before(head,start,g)
+                                                node.insert_before(head,g,p)
+                                                g, p = nodes.glue(0), nodes.penalty(0)
+                                                node.insert_after(head,start,p)
+                                                node.insert_after(head,p,g)
+                                                start = g
+                                                done = true
+                                            end
+                                            break
+                                        else
+                                            m = m - 1
+                                            next = next.next
+                                        end
+                                    elseif id == kern and next.subtype == 0 then
+                                        next = next.next
+                                        -- ignore intercharacter kerning, will go way
+                                    else
+                                        -- we can do clever and set n and jump ahead but ... not now
+                                        break
+                                    end
+                                end
+                            end
+                            n = 0
+                        else
+                            n = n + 1
+                        end
+                    else
+                         n = 0
+                    end
+                end
+            elseif id == kern and start.subtype == 0 then
+                -- ignore intercharacter kerning, will go way
+            else
+                n = 0
+            end
+            start = start.next
+        end
+        return head, done
+    end
+
+    chars.plugins.breakpoint = {
+        namespace   = breakpoints,
+        processor   = breakpoints.process,
+    }
+
+end
 
 -- educational: snapper
 
@@ -467,66 +804,3 @@ callback.register('buildpage_filter', nodes.handle_page_spacing)
 --~ end
 
 --~ callback.register('buildpage_filter', demo_snapper)
-
-    --~ function nodes.kern_chars(head)
-    --~     local fti = fonts.tfm.id
-    --~     local fnt, pchar, pfont, p, n = nil, nil, nil, nil, head
-    --~     while n do
-    --~         local id = n.id
-    --~         if id == glyph then
-    --~             if pfont == n.font then
-    --~                 local tchar = n.char
-    --~                 local pdata = fti[pfont].characters[pchar]
-    --~                 local pkern = pdata.kerns
-    --~                 if pkern and pkern[tchar] then
-    --~                     local k = node.copy(kernnode)
-    --~                     k.kern = pkern[tchar]
-    --~                     k.attr = n.attr
-    --~                     k.next = p.next
-    --~                     p.next = k
-    --~                 --  texio.write_nl(string.format("KERN = %s %s %s",utf.char(pchar), utf.char(tchar), pkern[tchar]))
-    --~                 end
-    --~             else
-    --~                 pfont, pchar = n.font, n.char
-    --~             end
-    --~         elseif id == disc then
-    --~             if pre then
-    --~                 local nn, pp = p.prev, p.next
-    --~                 p.prev, p.next = nil, pre -- hijack node
-    --~                 pre = nodes.kern_chars(p)
-    --~                 pre = pre.next
-    --~                 pre.prev = nil
-    --~                 p.prev, p.next = nn, pp
-    --~                 n.pre = pre
-    --~             end
-    --~             if post then
-    --~                 local tail = node.slide(post)
-    --~                 local nn, pp = n.next.prev, n.next.next
-    --~                 n.next.next, n.next.prev = nil, tail
-    --~                 tail.next = n.next -- hijack node
-    --~                 post = nodes.kern_chars(post)
-    --~                 tail.next = nil
-    --~                 n.next.prev, n.next.next = nn, pp
-    --~                 n.post = post
-    --~             end
-    --~             local tchar = n.next.char
-    --~             local pdata = fti[pfont].characters[pchar]
-    --~             local pkern = pdata.kerns
-    --~             if pkern and pkern[tchar] then
-    --~                 local k = node.copy(kernnode)
-    --~                 k.kern = pkern[tchar]
-    --~                 k.attr = n.attr
-    --~                 k.next = n.next
-    --~                 n.next = k
-    --~                 n.replace = n.replace + 1
-    --~                 n = n.next
-    --~             end
-    --~         else
-    --~             pfont = nil
-    --~         end
-    --~         n.prev = p
-    --~         p = n
-    --~         n = n.next
-    --~     end
-    --~     return head, p
-    --~ end

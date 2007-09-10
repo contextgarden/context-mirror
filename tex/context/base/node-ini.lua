@@ -388,18 +388,6 @@ do
 
 end
 
-callback.register('pre_linebreak_filter', nodes.process_glyphs)
-callback.register('hpack_filter',         nodes.process_glyphs)
-
---~ callback.register('pre_linebreak_filter', function(t,...)
---~     print("pre_linebreak_filter",...)
---~     return nodes.process_glyphs(t)
---~ end )
---~ callback.register('hpack_filter',         function(t,...)
---~     print("hpack_filter",...)
---~     return nodes.process_glyphs(t)
---~ end )
-
 function nodes.length(head)
     if head then
         local m = 0
@@ -412,31 +400,56 @@ function nodes.length(head)
     end
 end
 
-do
+nodes.processors.actions = nodes.processors.actions or { }
 
---~     function nodes.totable(n)
---~         local function totable(n)
---~             local f, tt = node.fields(n.id,n.subtype), { }
---~             for _,v in ipairs(f) do
---~                 local nv = n[v]
---~                 if nv then
---~                     local tnv = type(nv)
---~                     if tnv == "string" or tnv == "number" then
---~                         tt[v] = nv
---~                     else -- userdata
---~                         tt[v] = nodes.totable(nv)
---~                     end
---~                 end
---~             end
---~             return tt
---~         end
---~         local t = { }
---~         while n do
---~             t[#t+1] = totable(n)
---~             n = n.next
---~         end
---~         return t
---~     end
+function nodes.processors.action(head)
+    if head then
+        node.slide(head)
+        local actions, done = nodes.processors.actions, false
+        for i=1,#actions do
+            local action = actions[i]
+            if action then
+                local h, ok = action(head)
+                if ok then
+                    head = h
+                end
+                done = done or ok
+            end
+        end
+        if done then
+            return head
+        else
+            return true
+        end
+    else
+        return head
+    end
+end
+
+lists         = lists         or { }
+lists.plugins = lists.plugins or { }
+
+function nodes.process_lists(head)
+    return nodes.process_attributes(head,lists.plugins)
+end
+
+chars         = chars         or { }
+chars.plugins = chars.plugins or { }
+
+function nodes.process_chars(head)
+    return nodes.process_attributes(head,chars.plugins)
+end
+
+nodes.processors.actions = { -- for the moment here, will change
+    nodes.process_chars,  -- attribute driven
+    nodes.process_glyphs, -- font driven
+    nodes.process_lists,  -- attribute driven
+}
+
+callback.register('pre_linebreak_filter', nodes.processors.action)
+callback.register('hpack_filter',         nodes.processors.action)
+
+do
 
     local expand = {
         list = true,
@@ -596,8 +609,41 @@ function nodes.pack_list(head)
     return t
 end
 
--- old code
+-- helpers
 
+do
+
+    local kern_node      = node.new("kern",1)
+    local penalty_node   = node.new("penalty")
+    local glue_node      = node.new("glue")
+    local glue_spec_node = node.new("glue_spec")
+
+    function nodes.penalty(p)
+        local n = node.copy(penalty_node)
+        n.penalty = p
+        return n
+    end
+    function nodes.kern(k)
+        local n = node.copy(kern_node)
+        n.kern = k
+        return n
+    end
+    function nodes.glue(width,stretch,shrink)
+        local n = node.copy(glue_node)
+        local s = node.copy(glue_spec_node)
+        s.width, s.stretch, s.shrink = width, stretch, shrink
+        n.spec = s
+        return n
+    end
+    function nodes.glue_spec(width,stretch,shrink)
+        local s = node.copy(glue_spec_node)
+        s.width, s.stretch, s.shrink = width, stretch, shrink
+        return s
+    end
+
+end
+
+-- old code
 
 --~ function nodes.do_process_glyphs(stack)
 --~     if not stack or #stack == 0 then

@@ -132,6 +132,17 @@ function buffers.typeline(str,n,m,line)
     return n, line
 end
 
+function buffers.save(name)
+    if not name or name == "" then
+        name = tex.jobname
+    end
+    local b, f = buffers.data[name], tex.jobname .. "-" .. name .. ".tmp"
+    b = (b and type(b) == "table" and table.join(b)) or b or ""
+    io.savedata(f,b)
+end
+
+-- todo, use more locals
+
 function buffers.get(name)
     if buffers.data[name] then
         if type(buffers.data[name]) == "table" then

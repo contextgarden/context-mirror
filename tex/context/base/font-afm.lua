@@ -105,6 +105,7 @@ do
     end
 
     local function get_indexes(data,filename)
+        local trace = fonts.trace
         local pfbname = input.find_file(texmf.instance,file.removesuffix(file.basename(filename))..".pfb","pfb") or ""
         if pfbname ~= "" then
             data.luatex = data.luatex or { }
@@ -113,18 +114,37 @@ do
             if pfbblob then
                 local characters = data.characters
                 local pfbdata = fontforge.to_table(pfbblob)
-                if pfbdata and pfbdata.glyphs then
-                    for index, glyph in pairs(pfbdata.glyphs) do
-                        local name = glyph.name
-                        if name then
-                            local char = characters[name]
-                            if char then
-                                char.index = index
+            --~ print(table.serialize(pfbdata))
+                if pfbdata then
+                    local glyphs = pfbdata.glyphs
+                    if glyphs then
+                        if trace then
+                            logs.report("define font", string.format("getting index data from %s",pfbname))
+                        end
+                        -- local offset = (glyphs[0] and glyphs[0] != .notdef) or 0
+                        for index, glyph in pairs(glyphs) do -- ipairs? offset
+                            local name = glyph.name
+                            if name then
+                                local char = characters[name]
+                                if char then
+                                    if trace then
+                                        logs.report("define font", string.format("glyph %s has index %s",name,index))
+                                    end
+                                    char.index = index
+                                end
                             end
                         end
+                    elseif trace then
+                        logs.report("define font", string.format("no glyph data in pfb file %s",pfbname))
                     end
+                elseif trace then
+                    logs.report("define font", string.format("no data in pfb file %s",pfbname))
                 end
-           end
+            elseif trace then
+                logs.report("define font", string.format("invalid pfb file %s",pfbname))
+            end
+        elseif trace then
+            logs.report("define font", string.format("no pfb file for %s",filename))
         end
     end
 
@@ -138,14 +158,23 @@ do
                 filename = file.removesuffix(file.basename(filename))
             }
             afmblob = afmblob:gsub("StartCharMetrics(.-)EndCharMetrics", function(charmetrics)
+                if fonts.trace then
+                    logs.report("define font", "loading char metrics")
+                end
                 get_charmetrics(data,charmetrics,vector)
                 return ""
             end)
             afmblob = afmblob:gsub("StartKernPairs(.-)EndKernPairs", function(kernpairs)
+                if fonts.trace then
+                    logs.report("define font", "loading kern pairs")
+                end
                 get_kernpairs(data,kernpairs)
                 return ""
             end)
             afmblob = afmblob:gsub("StartFontMetrics%s+([%d%.]+)(.-)EndFontMetrics", function(version,fontmetrics)
+                if fonts.trace then
+                    logs.report("define font", "loading variables")
+                end
                 data.afmversion = version
                 get_variables(data,fontmetrics)
                 return ""
@@ -298,7 +327,7 @@ function fonts.afm.copy_to_tfm(data)
         tfm.encodingbytes      = data.encodingbytes or 2
         tfm.fullname           = data.fullname
         tfm.filename           = data.filename
-        tfm.name               = data.name
+        tfm.name               = tfm.fullname -- data.name or tfm.fullname
         tfm.type               = "real"
         tfm.units              = 1000
         tfm.stretch            = stretch
@@ -465,6 +494,8 @@ function fonts.afm.afm_to_tfm(specification)
                     tfmdata.shared.features = features
                     fonts.afm.set_features(tfmdata)
                 end
+            elseif fonts.trace then
+                logs.report("define font", string.format("no (valid) afm file found with name %s",afmname))
             end
             tfmdata = containers.write(fonts.tfm.cache,cache_id,tfmdata)
         end
@@ -503,22 +534,12 @@ function fonts.tfm.read_from_afm(specification)
         if filename then
             tfmtable.encodingbytes = 2
             tfmtable.filename = input.findbinfile(texmf.instance,filename,"") or filename
-            tfmtable.fullname = afmdata.fullname or afmdata.fontname
+            tfmtable.fullname = afmdata.fontname or afmdata.fullname
             tfmtable.format   = 'type1'
-            tfmtable.name     = afmdata.luatex.filename or tfmtable.name
+            tfmtable.name     = afmdata.luatex.filename or tfmtable.fullname
         end
         if fonts.dontembed[filename] then
             tfmtable.file = nil
-        end
-        if false then -- no afm with pk
-            local mapentry = {
-                name     = tfmtable.name,
-                fullname = tfmtable.fullname,
-                stretch  = tfmtable.stretch,
-                slant    = tfmtable.slant,
-                fontfile = tfmtable.filename,
-            }
-            fonts.map.data[specification.name] = mapentry
         end
         fonts.logger.save(tfmtable,'afm',specification)
     end
@@ -530,7 +551,7 @@ end
 those that make sense for this format.</p>
 --ldx]]--
 
-function fonts.afm.features.prepare_ligatures(tfmdata,ligatures,value)
+function fonts.afm.features.prepare_ligatures(tfmdata,ligatures,value) -- probably faulty / check index
     if value then
         local charlist = tfmdata.shared.afmdata.characters
         for k,v in pairs(tfmdata.characters) do

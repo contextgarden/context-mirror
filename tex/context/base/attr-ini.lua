@@ -61,15 +61,15 @@ do
     -- so that we moved looping to teh processor itself; this may lead to a bit of
     -- duplicate code once that we have more state handlers
 
-    function nodes.process_page(head)
-        local trigger = nodes.trigger
-        if head then
+    function nodes.process_attributes(head,plugins)
+        if head then -- is already tested
             input.start_timing(attributes)
+            local trigger = nodes.trigger
             local done, used = false, { }
-            for name, plugin in pairs(shipouts.plugins) do
+            for name, plugin in pairs(plugins) do
                 local attribute = attributes.numbers[name]
                 if attribute then
-                    local namespace   = plugin.namespace
+                    local namespace = plugin.namespace
                     if namespace.enabled then
                         local initializer = plugin.initializer
                         local processor   = plugin.processor
@@ -81,12 +81,12 @@ do
                         if processor then
                             local inheritance = (resolver and resolver()) or -1
                             local ok
-                            ok, head = processor(namespace,attribute,head,inheritance)
+                            head, ok = processor(namespace,attribute,head,inheritance)
                             done = done or ok
                         end
                         if finalizer then -- no need when not ok
                             local ok
-                            ok, head, used[attribute] = finalizer(namespace,attribute,head)
+                            head, ok, used[attribute] = finalizer(namespace,attribute,head)
                             done = done or ok
                         end
                     end
@@ -95,22 +95,28 @@ do
                 end
             end
             if done then
-                for name, plugin in pairs(shipouts.plugins) do
+                for name, plugin in pairs(plugins) do
                     local attribute = attributes.numbers[name]
                     if used[attribute] then
                         local namespace = plugin.namespace
                         if namespace.enabled then
                             local flusher  = plugin.flusher
                             if flusher then
-                                head = flusher(namespace,attribute,head,used[attribute])
+                                local h, d = flusher(namespace,attribute,head,used[attribute])
                             end
                         end
                     end
                 end
             end
             input.stop_timing(attributes)
+            return head, done
+        else
+            return head, false
         end
-        return head
+    end
+
+    function nodes.process_page(head)
+        return nodes.process_attributes(head,shipouts.plugins)
     end
 
 end
@@ -172,15 +178,19 @@ do
             else
                 local stack, previous, head = insert(namespace.none,head,nil,head)
             end
-            return true, head, true
+            return head, true, true
         else
-            return false, head, false
+            return head, false, false
         end
     end
 
     function states.process(namespace,attribute,head,inheritance,default) -- one attribute
-        local trigger = nodes.triggering and nodes.trigger
+local contains = node.has_attribute
+local glyph, rule, whatsit, hlist, vlist = node.id('glyph'), node.id('rule'), node.id('whatsit'), node.id('hlist'), node.id('vlist')
+        local trigger = namespace.triggering and nodes.triggering and nodes.trigger
+--~         local trigger = nodes.triggering and nodes.trigger
         local stack, previous, done, process = head, nil, false, states.process
+        local nsdata, nsreviver, nsnone = namespace.data, namespace.reviver, namespace.none
         while stack do
             local id = stack.id
             if id == hlist or id == vlist then
@@ -190,12 +200,12 @@ do
                     if trigger and contains(stack,trigger) then
                         local outer = contains(stack,attribute)
                         if outer ~= inheritance then
-                            ok, stack.list = process(namespace,attribute,content,inheritance,outer)
+                            stack.list, ok = process(namespace,attribute,content,inheritance,outer)
                         else
-                            ok, stack.list = process(namespace,attribute,content,inheritance,default)
+                            stack.list, ok = process(namespace,attribute,content,inheritance,default)
                         end
                     else
-                        ok, stack.list = process(namespace,attribute,content,inheritance,default)
+                        stack.list, ok = process(namespace,attribute,content,inheritance,default)
                     end
                     done = done or ok
                 end
@@ -204,39 +214,42 @@ do
                 if c then
                     if default and c == inheritance then
                         if current ~= default then
-                            local data = namespace.data[default] or namespace.reviver(default)
+                            local data = nsdata[default] or nsreviver(default)
                             stack, previous, head = insert(data,stack,previous,head)
                             current, done, used[default] = default, true, true
                         end
                     elseif current ~= c then
-                        local data = namespace.data[c] or namespace.reviver(c)
+                        local data = nsdata[c] or nsreviver(c)
                         stack, previous, head = insert(data,stack,previous,head)
                         current, done, used[c] = c, true, true
                     end
                 elseif default and inheritance then
                     if current ~= default then
-                        local data = namespace.data[default] or namespace.reviver(default)
+                        local data = nsdata[default] or nsreviver(default)
                         stack, previous, head = insert(data,stack,previous,head)
                         current, done, used[default] = default, true, true
                     end
                 elseif current > 0 then
-                    stack, previous, head = insert(namespace.none,stack,previous,head)
+                    stack, previous, head = insert(nsnone,stack,previous,head)
                     current, done, used[0] = 0, true, true
                 end
             end
             previous = stack
             stack = stack.next
         end
-        return done, head
+        return head, done
     end
 
     -- we can force a selector, e.g. document wide color spaces, saves a little
 
     function states.selective(namespace,attribute,head,inheritance,default) -- two attributes
-        local trigger = nodes.triggering and nodes.trigger
+local contains = node.has_attribute
+local glyph, rule, whatsit, hlist, vlist = node.id('glyph'), node.id('rule'), node.id('whatsit'), node.id('hlist'), node.id('vlist')
+        local trigger = namespace.triggering and nodes.triggering and nodes.trigger
+--~         local trigger = nodes.triggering and nodes.trigger
         local stack, previous, done, selective = head, nil, false, states.selective
-        local defaultselector, forcedselector, selector, reviver = namespace.default, namespace.forced, namespace.selector, namespace.reviver
-        local none = namespace.none
+        local nsselector, nsforced, nsselector = namespace.default, namespace.forced, namespace.selector
+        local nsdata, nsreviver, nsnone = namespace.data, namespace.reviver, namespace.none
         while stack do
             local id = stack.id
             if id == hlist or id == vlist then
@@ -246,59 +259,67 @@ do
                     if trigger and contains(stack,trigger) then
                         local outer = contains(stack,attribute)
                         if outer ~= inheritance then
-                            ok, stack.list = selective(namespace,attribute,content,inheritance,outer)
+                            stack.list, ok = selective(namespace,attribute,content,inheritance,outer)
                         else
-                            ok, stack.list = selective(namespace,attribute,content,inheritance,default)
+                            stack.list, ok = selective(namespace,attribute,content,inheritance,default)
                         end
                     else
-                        ok, stack.list = selective(namespace,attribute,content,inheritance,default)
+                        stack.list, ok = selective(namespace,attribute,content,inheritance,default)
                     end
                     done = done or ok
                 end
             elseif id == glyph or id == rule or id == whatsit then -- special
+                -- todo: maybe track two states, also selector
                 local c = contains(stack,attribute)
                 if c then
                     if default and c == inheritance then
                         if current ~= default then
-                            local data = namespace.data[default] or reviver(default)
-                            stack, previous, head = insert(data[forcedselector or contains(stack,selector) or defaultselector],stack,previous,head)
+                            local data = nsdata[default] or nsreviver(default)
+                            stack, previous, head = insert(data[nsforced or contains(stack,nsselector) or nsselector],stack,previous,head)
                             current, done, used[default] = default, true, true
                         end
                     elseif current ~= c then
-                        local data = namespace.data[c] or reviver(c)
-                        stack, previous, head = insert(data[forcedselector or contains(stack,selector) or defaultselector],stack,previous,head)
+                        local data = nsdata[c] or nsreviver(c)
+                        stack, previous, head = insert(data[nsforced or contains(stack,nsselector) or nsselector],stack,previous,head)
                         current, done, used[c] = c, true, true
                     end
                 elseif default and inheritance then
                     if current ~= default then
-                        local data = namespace.data[default] or reviver(default)
-                        stack, previous, head = insert(data[forcedselector or contains(stack,selector) or defaultselector],stack,previous,head)
+                        local data = nsdata[default] or nsreviver(default)
+                        stack, previous, head = insert(data[nsforced or contains(stack,nsselector) or nsselector],stack,previous,head)
                         current, done, used[default] = default, true, true
                     end
                 elseif current > 0 then
-                    stack, previous, head = insert(none,stack,previous,head)
+                    stack, previous, head = insert(nsnone,stack,previous,head)
                     current, done, used[0] = 0, true, true
                 end
             end
             previous = stack
             stack = stack.next
         end
-        return done, head
+        return head, done
     end
 
-    local collected = { }
+end
 
-    function states.collect(str)
-        collected[#collected+1] = str
+states           = states           or { }
+states.collected = states.collected or { }
+
+input.storage.register(false,"states/collected", states.collected, "states.collected")
+
+function states.collect(str)
+    states.collected[#states.collected+1] = str
+end
+
+function states.flush()
+    for _, c in ipairs(states.collected) do
+        tex.sprint(tex.ctxcatcodes,c)
     end
+    states.collected = { }
+end
 
-    function states.flush()
-        for _, c in ipairs(collected) do
-            tex.sprint(tex.ctxcatcodes,c)
-        end
-        collected = { }
-    end
-
+function states.check()
+    texio.write_nl(table.concat(states.collected,"\n"))
 end
 
 --
@@ -321,14 +342,14 @@ colors.weightgray = true
 colors.attribute  = 0
 colors.selector   = 0
 colors.default    = 1
-colors.main     = nil
+colors.main       = nil
 
 -- This is a compromis between speed and simplicity. We used to store the
 -- values and data in one array, which made in neccessary to store the
 -- converters that need node constructor into strings and evaluate them
 -- at runtime (after reading from storage). Think of:
 --
--- colors.strings    = colors.strings    or { }
+-- colors.strings = colors.strings or { }
 --
 -- if environment.initex then
 --     colors.strings[color] = "return colors." .. colorspace .. "(" .. table.concat({...},",") .. ")"
@@ -349,10 +370,10 @@ colors.stamps = {
 }
 
 colors.models = {
-    all = 1,
+    all  = 1,
     gray = 2,
-    rgb = 3,
-    cmyk = 4
+    rgb  = 3,
+    cmyk = 4,
 }
 
 do
@@ -408,7 +429,8 @@ do
     -- default color space
 
     function colors.gray(s)
-        return { 2, s, 0, 0, 0, 0, 0, 0, 1 }
+        local n = 1-s
+        return { 2, s, n, n, n, 0, 0, 0, s }
     end
 
     function colors.rgb(r,g,b)
@@ -493,6 +515,7 @@ end
 
 shipouts.plugins.color = {
     namespace   = colors,
+    triggering  = true,
     initializer = states.initialize,
     finalizer   = states.finalize  ,
     processor   = states.selective ,
@@ -512,27 +535,46 @@ transparencies.enabled    = true
 transparencies.template   = "%s:%s"
 
 input.storage.register(false, "transparencies/registered", transparencies.registered, "transparencies.registered")
-input.storage.register(false, "transparencies/data",       transparencies.data,       "transparencies.data")
 input.storage.register(false, "transparencies/values",     transparencies.values,     "transparencies.values")
 
 function transparencies.reference(n)
     return backends.pdf.literal(string.format("/Tr%s gs",n))
 end
 
-transparencies.none = transparencies.reference(0)
-
-function transparencies.register(name,...)
-    local stamp = string.format(transparencies.template, ...)
+function transparencies.register(name,a,t)
+    local stamp = string.format(transparencies.template,a,t)
     local n = transparencies.registered[stamp]
     if not n then
         n = #transparencies.data+1
         transparencies.data[n] = transparencies.reference(n)
-        transparencies.values[n] = { ... }
+        transparencies.values[n] = { a, t }
         transparencies.registered[stamp] = n
-        states.collect(string.format("\\presetPDFtransparency{%s}{%s}",...)) -- too many, but experimental anyway
+        states.collect(string.format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,a,t)) -- too many, but experimental anyway
     end
     return transparencies.registered[stamp]
 end
+
+function transparencies.reviver(n)
+    local d = transparencies.data[n]
+    if not d then
+        local v = transparencies.values[n]
+        if not v then
+            d = transparencies.reference(0)
+            logs.report("attributes",string.format("unable to revive transparency %s",n or "?"))
+        else
+            d = transparencies.reference(n)
+            states.collect(string.format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,v[1],v[2]))
+        end
+        transparencies.data[n] = d
+    end
+    return d
+end
+
+-- check if there is an identity
+
+--~ transparencies.none = transparencies.reference(transparencies.register(nil,1,1))
+
+transparencies.none = transparencies.reference(0) -- for the moment the pdf backend does this
 
 function transparencies.value(id)
     return transparencies.values[id]
@@ -540,6 +582,7 @@ end
 
 shipouts.plugins.transparency = {
     namespace   = transparencies,
+    triggering  = true,
     initializer = states.initialize,
     finalizer   = states.finalize  ,
     processor   = states.process   ,

@@ -462,6 +462,7 @@ function fonts.define.read(name,size,id)
             fontdata = fonts.tfm.make(specification)
         else
             fontdata = fonts.tfm.read(specification)
+            fonts.tfm.check_virtual_id(fontdata)
         end
         if true then
             fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes
@@ -475,7 +476,6 @@ function fonts.define.read(name,size,id)
         else
             fontdata = fonts.tfm.internalized[hash]
         end
-
     end
     if not fontdata then
         logs.error("define font", string.format("name: %s, loading aborted",specification.name))

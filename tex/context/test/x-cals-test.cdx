@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+
+<directives>
+    <directive id="100" setup="xml:directive:noframe"/>
+    <directive id="101" setup="xml:directive:colors"/>
+</directives>

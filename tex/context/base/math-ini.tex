@@ -562,7 +562,7 @@
 %    \to\everymathematics}
 %
 % \def\initializemathpunctuation#1#2#3% sloowww
-%   {\ifmathpunctuation % hm move thsi test to everymath, or better a separate token list
+%   {\ifmathpunctuation % hm move this test to everymath, or better a separate token list
 %      \mathcode`#1="8000
 %      \defineactivecharacter #1 {\dohandlemathpunctuation{#2}{#3}}%
 %    \fi}
@@ -752,6 +752,46 @@
        \catcode`^=\@@superscript}
 
 \egroup
+
+%D \macros
+%D   {checkdelimiters, fakeleftdelimiter, fakerightdelimiter}
+%D
+%D Handy for non matching situations (as with mathml):
+%D
+%D \starttyping
+%D \checkdelimiters{... bla bla ...}
+%D \fakeleftdelimiter
+%D  ... bla bla ...
+%D \fakerightdelimiter
+%D \stoptyping
+
+\newcount\delimitercount
+
+\def\leftfakedelimiter {\advance\delimitercount\minusone\gobbleoneargument}%
+\def\rightfakedelimiter{\advance\delimitercount\plusone \gobbleoneargument}%
+
+\def\checkdelimiters#1%
+  {\delimitercount\zerocount
+   \setbox\scratchbox\hbox\bgroup
+     \let\left \leftfakedelimiter
+     \let\right\rightfakedelimiter
+     $#1\expandafter$\expandafter
+   \egroup
+   \expandafter\delimitercount\the\delimitercount\relax}
+
+\def\fakeleftdelimiter {\ifnum\delimitercount>\zerocount\left .\fi}
+\def\fakerightdelimiter{\ifnum\delimitercount<\zerocount\right.\fi}
+
+% \def\scaledmathdelimiter#1#2%
+%   {\begingroup
+%    \scratchdimen\lineheight
+%    \hbox{$\left#2\vbox\!!to#1\scratchdimen{}\right.\n@space$}%
+%    \endgroup}
+%
+% \let\scaledmathdelimiter\@@dobig
+%
+% \def\scaledmathopen #1#2{\mathopen {\scaledmathdelimiter{#1}{#2}}}
+% \def\scaledmathclose#1#2{\mathclose{\scaledmathdelimiter{#1}{#2}}}
 
 \protect \endinput
 

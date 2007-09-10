@@ -1006,6 +1006,7 @@ numeric boxlinewidth     ; boxlinewidth     := 1pt ;
 numeric boxlineradius    ; boxlineradius    := 0pt ;
 numeric boxfilloffset    ; boxfilloffset    := 0pt ;
 numeric boxgriddistance  ; boxgriddistance  := .5cm ;
+numeric boxgridshift     ; boxgridshift     := 0pt ;
 
 def draw_box =
   draw pxy withcolor boxlinecolor withpen pencircle scaled boxlinewidth ;
@@ -1162,7 +1163,7 @@ enddef ;
 
 vardef baseline_grid (expr pxy, pdir, at_baseline) =
   if (par_line_height>0) and (bbheight(pxy)>1) and (bbwidth(pxy)>1) and (boxgridwidth>0) :
-    save i, grid ; picture grid ; pair start ;
+    save i, grid, bb ; picture grid ; pair start ; path bb ;
     def _do_ (expr start) =
       draw start -- start shifted (bbwidth(pxy),0)
         withpen pencircle scaled boxgridwidth
@@ -1186,6 +1187,9 @@ vardef baseline_grid (expr pxy, pdir, at_baseline) =
         fi ;
       ) ;
     clip grid to pxy ;
+    bb := boundingbox grid ;
+    grid := grid shifted (0,boxgridshift) ;
+    setbounds grid to bb ;
     grid
   else :
     nullpicture

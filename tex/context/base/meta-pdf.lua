@@ -363,17 +363,17 @@ end
 --~     end
 --~ end
 
-if ctx and ctx.aux and ctx.aux.definecolor then
+if false and ctx and ctx.aux and ctx.aux.definecolor then
 
     logs.report("mptopdf", "using attribute based mps colors")
 
-    -- todo: convert pdf specials to lua code
+    -- does not work due to Q-q mess-up
 
     function mp.setrgbcolor(r,g,b) -- extra check
         r, g, b = tonumber(r), tonumber(g), tonumber(b) -- needed when we use lpeg
-        if r == 0.0123 and g < 0.01 then
+        if r == 0.0123 and g < 0.1 then -- g is extra check
             mptopdf.texcode("\\doresetattribute{transparency}\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
-        elseif r == 0.123 and r < 0.1 then
+        elseif r == 0.123 and g < 0.1 then -- g is extra check
             mptopdf.texcode("\\doresetattribute{transparency}\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
         else
             mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'rgb',r,g,b) .. "}")
@@ -392,9 +392,9 @@ else
 
     function mp.setrgbcolor(r,g,b) -- extra check
         r, g = tonumber(r), tonumber(g) -- needed when we use lpeg
-        if r == 0.0123 and g < 0.01 then
+        if r == 0.0123 and g < 0.1 then
             mptopdf.texcode("\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
-        elseif r == 0.123 and r < 0.1 then
+        elseif r == 0.123 and g < 0.1 then
             mptopdf.texcode("\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
         else
             mptopdf.texcode("\\MPSrgb{" .. r .. "}{" .. g .. "}{" .. b .. "}")

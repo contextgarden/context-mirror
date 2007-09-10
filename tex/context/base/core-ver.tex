@@ -558,18 +558,32 @@
 %D Since we support a global color too, the folowing
 %D definition is better:
 
-\def\setupverbatimcolor% fast and local versus slow and global
-  {\doifelsenothing{\typingparameter\c!color}
-     {\def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
-      \let\endofpretty        \restorecolormode % \stopcolormode
-      \let\startverbatimcolor \relax
-      \let\stopverbatimcolor  \relax
-      \let\verbatimcolor      \relax}
-     {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}%
-      \let\endofpretty        \stopcolor
-      \def\startverbatimcolor{\startcolor[\typingparameter\c!color]}%
-      \let\stopverbatimcolor  \stopcolor
-      \def\verbatimcolor     {\getvalue{\typingparameter\c!color}}}% command !
+% \def\setupverbatimcolor% fast and local versus slow and global
+%   {\doifelsenothing{\typingparameter\c!color}
+%      {\def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
+%       \let\endofpretty        \restorecolormode % \stopcolormode
+%       \let\startverbatimcolor \relax
+%       \let\stopverbatimcolor  \relax
+%       \let\verbatimcolor      \relax}
+%      {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}%
+%       \let\endofpretty        \stopcolor
+%       \def\startverbatimcolor{\startcolor[\typingparameter\c!color]}%
+%       \let\stopverbatimcolor  \stopcolor
+%       \def\verbatimcolor     {\getvalue{\typingparameter\c!color}}}% command !
+%    \doifelsenothing{\typingparameter\c!palet}
+%      {\let\prettypalet\empty
+%       \let\endofpretty\relax
+%       \def\beginofpretty[##1]{}}
+%      {\edef\prettypalet{\prettyidentifier\typingparameter\c!palet}}}
+%
+% let's forget about this optimization not that we have mkiv
+
+\def\setupverbatimcolor
+  {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}%
+   \let\endofpretty        \stopcolor
+   \def\startverbatimcolor{\startcolor[\typingparameter\c!color]}%
+   \let\stopverbatimcolor  \stopcolor
+   \def\verbatimcolor     {\getvalue{\typingparameter\c!color}}% command !
    \doifelsenothing{\typingparameter\c!palet}
      {\let\prettypalet\empty
       \let\endofpretty\relax

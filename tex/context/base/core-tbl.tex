@@ -526,7 +526,9 @@
 \def\tabulatenotragged   {\ifnum\tabulatetype=\plusone \else\notragged   \fi}
 \def\tabulatehss         {\ifnum\tabulatetype=\plusone \else\hss         \fi}
 
-\def\nexttabulate#1|%
+\bgroup  \catcode`\|=\@@other
+
+\gdef\nexttabulate#1|%
   {\chardef\tabulatealign\@@tabulatealign
    \chardef\tabulatemodus\zerocount
    \chardef\tabulatedimen\zerocount
@@ -562,6 +564,8 @@
      \dodosettabulatepreamble \xbskip \xeskip
    \fi
    \futurelet\next\donexttabulate}
+
+\egroup
 
 \def\donexttabulate
   {\ifx\next\relax\else
@@ -642,10 +646,12 @@
 % \starttabulate[preamble]
 % \starttabulate -> \starttabulate[|l|p|]
 
-\def\definetabulate
+\bgroup  \catcode`\|=\@@other
+
+\gdef\definetabulate
   {\dotripleempty\dodefinetabulate}
 
-\def\dodefinetabulate[#1][#2][#3]%
+\gdef\dodefinetabulate[#1][#2][#3]%
   {\ifthirdargument
      \doifundefined{\??tt#1::\c!unit}
        {\copyparameters
@@ -667,6 +673,8 @@
    \else
      \definetabulate[#1][][|l|p|]%
    \fi\fi}
+
+\egroup
 
 \let\tabulateheadcontent\empty
 \let\tabulatetailcontent\empty
@@ -731,7 +739,9 @@
 \setvalue{\e!start\v!tabulate}%
   {\bgroup\dodoubleempty\donormalstarttabulate}
 
-\def\donormalstarttabulate[#1][#2]%
+\bgroup
+
+\gdef\donormalstarttabulate[#1][#2]%
   {\ifsecondargument
      \getparameters[\??tt\v!tabulate::][#2]%
    \fi
@@ -741,6 +751,8 @@
      \def\next{\dofinalstarttabulate[\v!tabulate][][|l|p|]}%
    \fi
    \next}
+
+\egroup
 
 % The much neede hook:
 
@@ -756,6 +768,11 @@
 \chardef\tabulatepass=0
 
 \def\tabulateparameter#1{\csname\??tt\currenttabulate#1\endcsname}
+
+\bgroup
+    \catcode`\|=\@@other  \gdef\@@otherbar{|}
+    \catcode`\|=\@@active \gdef\@@useotherbar{\let|\@@otherbar}
+\egroup
 
 \def\dofinalstarttabulate[#1][#2][#3]% identifier sub preamble
   {\edef\currenttabulate{#1::#2}%
@@ -808,7 +825,8 @@
    \def\dodododo##1%
      {\appendtoks##1\to\!!toksb\do}%
    \globallet\tabulatecolumn\!!zerocount
-   \do#3\relax
+%    \do#3\relax
+\bgroup\@@useotherbar\expanded{\egroup\noexpand\do#3\relax}%
    \processcontent
      {\e!stop#1}% \currenttabulate}
      \tabulatecontent
@@ -952,7 +970,9 @@
 
 \chardef\tabulaterepeathead\zerocount
 
-\def\processtabulate[|#1|]% in the process of optimizing
+\bgroup  \catcode`\|=\@@other
+
+\gdef\processtabulate[|#1|]% in the process of optimizing
   {\tabulateunit\tabulateparameter\c!unit
    \checkfulltabulatecontent
    \globallet\tabulateruledepth \!!zeropoint
@@ -1036,7 +1056,7 @@
    \let\doHR\gobbleoneargument
    \let\doHL\gobbleoneargument
    \global\let\flushtabulated\empty
-   \let\savedbar|\let|\nexttabulate
+%    \let\savedbar|\let|\nexttabulate
    \tabskip\zeropoint
    \ifdim\tabulateparameter\c!margin>\zeropoint
      \!!toksa{&\flushtabulateindent\strut##%
@@ -1047,7 +1067,8 @@
               &##\tabskip\zeropoint}%
    \fi
    \tabulatewidth\zeropoint
-   |#1X|\relax
+%    |#1X|\relax
+   \nexttabulate #1X|\relax
    \scratchcounter\tabulatecolumns
    \multiply\scratchcounter3%
    \advance\scratchcounter4%
@@ -1075,7 +1096,7 @@
    \def\xeskip
      {\par\egroup\egroup
       \global\let\tabulatehook\dotabulatehook}%
-   \let|\savedbar
+%    \let|\savedbar
    \global\let\tabulatehook\dotabulatehook
    \doifvalue{\??tt\currenttabulate\c!indenting}\v!no\forgetparindent
    \ifinsidefloat
@@ -1301,6 +1322,8 @@
      \tabulateparameter\c!after
    \fi
    \egroup}
+
+\egroup
 
 % \setuptabulate[split=yes,header=text,title=Vervolg van Tabel]
 %

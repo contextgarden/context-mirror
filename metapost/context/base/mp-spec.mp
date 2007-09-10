@@ -220,6 +220,10 @@ pair shadeoffset ; shadeoffset := origin ;
 %   _special_counter_
 % enddef ;
 
+% these tests are not yet robust for new gray/cmyk features;
+%
+% - we need to get rid of cmykcolor() and
+
 vardef _is_cmyk_(expr c) =
     (redpart c = _special_signal_/_special_div_) and (greenpart c = 1/_special_div_)
 enddef ;

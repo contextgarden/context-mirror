@@ -14,7 +14,7 @@ end
 
 if not math.div then
     function math.div(n,m)
-        math.floor(n/m)
+        return math.floor(n/m)
     end
 end
 

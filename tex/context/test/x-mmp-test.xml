@@ -1,0 +1,1270 @@
+<?xml version="1.0"?>
+
+<!-- this file needs a bit of formatting -->
+
+<root>
+
+    <mmp:math>
+        <mmp:mtable>
+            <mmp:mtr>
+                <mmp:mtd>
+                    <mmp:mn>10</mmp:mn>
+                </mmp:mtd>
+            </mmp:mtr>
+        </mmp:mtable>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mtable columnspacing='0' rowspacing='0'>
+            <mmp:mtr>
+                <mmp:mtd></mmp:mtd>
+                <mmp:mtd columnalign='right'>
+                    <mmp:mn>10</mmp:mn>
+                </mmp:mtd>
+            </mmp:mtr>
+            <mmp:mtr>
+                <mmp:mtd columnalign='right'>
+                    <mmp:mn>131</mmp:mn>
+                </mmp:mtd>
+                <mmp:mtd columnalign='right'>
+                    <mmp:menclose notation='longdiv'>
+                        <mmp:mn>1413</mmp:mn>
+                    </mmp:menclose>
+                </mmp:mtd>
+            </mmp:mtr>
+            <mmp:mtr>
+                <mmp:mtd/>
+                <mmp:mtd columnalign='right'>
+                    <mmp:mrow>
+                        <mmp:munder>
+                            <mmp:mn>131</mmp:mn>
+                            <mmp:mo> &UnderBar; </mmp:mo>
+                        </mmp:munder>
+                        <mmp:mphantom><mmp:mn>3</mmp:mn></mmp:mphantom>
+                    </mmp:mrow>
+                </mmp:mtd>
+            </mmp:mtr>
+            <mmp:mtr>
+                <mmp:mtd/>
+                <mmp:mtd columnalign='right'>
+                    <mmp:mn>103</mmp:mn>
+                </mmp:mtd>
+            </mmp:mtr>
+        </mmp:mtable>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mmultiscripts>
+            <mmp:mi> R </mmp:mi>
+            <mmp:mi> i </mmp:mi>
+            <mmp:none/>
+            <mmp:none/>
+            <mmp:mi> j </mmp:mi>
+            <mmp:mi> k </mmp:mi>
+            <mmp:none/>
+            <mmp:mi> l </mmp:mi>
+            <mmp:none/>
+        </mmp:mmultiscripts>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mmultiscripts>
+            <mmp:mi> R </mmp:mi>
+            <mmp:mi> i </mmp:mi>
+            <mmp:mi> j </mmp:mi>
+            <mmp:mprescripts/>
+            <mmp:mi> k </mmp:mi>
+            <mmp:mi> l </mmp:mi>
+            <mmp:none/>
+        </mmp:mmultiscripts>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:munder accentunder="true">
+        <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+        </mmp:mrow>
+        <mmp:mo> &UnderBrace; </mmp:mo>
+      </mmp:munder>
+      <mmp:mtext> versus </mmp:mtext>
+      <mmp:munder accentunder="false">
+        <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+        </mmp:mrow>
+        <mmp:mo> &UnderBrace; </mmp:mo>
+      </mmp:munder>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:munder>
+                <mmp:mo> ( </mmp:mo>
+                <mmp:mo> &UnderBar; </mmp:mo>
+            </mmp:munder>
+            <mmp:mfrac>
+                <mmp:mi> a </mmp:mi>
+                <mmp:mi> b </mmp:mi>
+            </mmp:mfrac>
+            <mmp:mover>
+                <mmp:mo> ) </mmp:mo>
+                <mmp:mo> &OverBar; </mmp:mo>
+            </mmp:mover>
+        </mmp:mrow>
+    </mmp:math>
+
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:msubsup>
+        <mmp:mo> &int; </mmp:mo>
+        <mmp:mn> 0 </mmp:mn>
+        <mmp:mn> 1 </mmp:mn>
+      </mmp:msubsup>
+      <mmp:mrow>
+        <mmp:msup>
+          <mmp:mi> &ExponentialE; </mmp:mi>
+          <mmp:mi> x </mmp:mi>
+        </mmp:msup>
+        <mmp:mo> &InvisibleTimes; </mmp:mo>
+        <mmp:mrow>
+          <mmp:mo> &DifferentialD; </mmp:mo>
+          <mmp:mi> x </mmp:mi>
+        </mmp:mrow>
+      </mmp:mrow>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mfrac>
+      <mmp:mrow>
+        <mmp:mi> x </mmp:mi>
+        <mmp:mo> + </mmp:mo>
+        <mmp:mi> y </mmp:mi>
+        <mmp:mo> + </mmp:mo>
+        <mmp:mi> z </mmp:mi>
+      </mmp:mrow>
+      <mmp:mrow>
+        <mmp:mi> x </mmp:mi>
+        <mmp:mphantom>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+        </mmp:mphantom>
+        <mmp:mo> + </mmp:mo>
+        <mmp:mi> z </mmp:mi>
+      </mmp:mrow>
+    </mmp:mfrac>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mfrac>
+       <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+       </mmp:mrow>
+       <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mphantom>
+             <mmp:mo> + </mmp:mo>
+          </mmp:mphantom>
+          <mmp:mphantom>
+             <mmp:mi> y </mmp:mi>
+          </mmp:mphantom>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+       </mmp:mrow>
+    </mmp:mfrac>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mo> ( </mmp:mo>
+            <mmp:mfrac>
+                <mmp:mi> a </mmp:mi>
+                <mmp:mi> b </mmp:mi>
+            </mmp:mfrac>
+            <mmp:mo maxsize="1"> ) </mmp:mo>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math display='block'>
+        <mmp:mrow>
+            <mmp:mi>sin</mmp:mi>
+            <mmp:mi>x</mmp:mi>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math display='block'>
+        <mmp:mrow>
+            <mmp:mn>2500</mmp:mn>
+            <mmp:mstyle scriptlevel='+1'>
+                <mmp:mfrac bevelled='true'>
+                    <mmp:mrow>
+                        <mmp:msup>
+                            <mmp:mtext>m</mmp:mtext>
+                            <mmp:mtext>3</mmp:mtext>
+                        </mmp:msup>
+                    </mmp:mrow>
+                    <mmp:mtext>s</mmp:mtext>
+                </mmp:mfrac>
+            </mmp:mstyle>
+        </mmp:mrow>
+    </mmp:math>
+
+<mmp:math display='block'>
+    <mmp:mrow>
+        <mmp:mn>2500</mmp:mn>
+        <mmp:msup>
+            <mmp:mrow>
+                <mmp:mtext>km</mmp:mtext>
+            </mmp:mrow>
+            <mmp:mtext>3</mmp:mtext>
+        </mmp:msup>
+        <mmp:mtext>/s</mmp:mtext>
+    </mmp:mrow>
+</mmp:math>
+
+<mmp:math display='block'>
+    <mmp:mrow>
+        <mmp:msup>
+            <mmp:mrow>
+                <mmp:mi>sin</mmp:mi>
+                <mmp:mo>&#x2061;</mmp:mo>
+            </mmp:mrow>
+            <mmp:mn>2</mmp:mn>
+        </mmp:msup>
+        <mmp:mi>x</mmp:mi>
+        <mmp:mo>=</mmp:mo>
+        <mmp:mn>1</mmp:mn>
+        <mmp:mo>&#x2212;</mmp:mo>
+        <mmp:msup>
+            <mmp:mrow>
+                <mmp:mi>cos</mmp:mi>
+                <mmp:mo>&#x2061;</mmp:mo>
+            </mmp:mrow>
+            <mmp:mn>2</mmp:mn>
+        </mmp:msup>
+        <mmp:mi>x</mmp:mi>
+    </mmp:mrow>
+</mmp:math>
+
+<mmp:math display='block'>
+ <mmp:semantics>
+  <mmp:mrow>
+   <mmp:msup>
+    <mmp:mrow>
+     <mmp:mrow><mmp:mo>&#x2016;</mmp:mo> <mmp:mover accent='true'>
+      <mmp:mi>c</mmp:mi>
+      <mmp:mo>&#x2192;</mmp:mo>
+     </mmp:mover>
+      <mmp:mo>&#x02016;</mmp:mo></mmp:mrow>
+    </mmp:mrow>
+    <mmp:mn>2</mmp:mn>
+   </mmp:msup>
+   <mmp:mo>=</mmp:mo><mmp:msup>
+    <mmp:mrow>
+     <mmp:mrow><mmp:mo>&#x2016;</mmp:mo> <mmp:mover accent='true'>
+      <mmp:mi>a</mmp:mi>
+      <mmp:mo>&#x2192;</mmp:mo>
+     </mmp:mover>
+      <mmp:mo>&#x02016;</mmp:mo></mmp:mrow>
+    </mmp:mrow>
+    <mmp:mn>2</mmp:mn>
+   </mmp:msup>
+   <mmp:mo>+</mmp:mo><mmp:msup>
+    <mmp:mrow>
+     <mmp:mrow><mmp:mo>&#x2016;</mmp:mo> <mmp:mover accent='true'>
+      <mmp:mi>b</mmp:mi>
+      <mmp:mo>&#x2192;</mmp:mo>
+     </mmp:mover>
+      <mmp:mo>&#x02016;</mmp:mo></mmp:mrow>
+    </mmp:mrow>
+    <mmp:mn>2</mmp:mn>
+   </mmp:msup>
+  </mmp:mrow>
+ <mmp:annotation encoding='MathType-MTEF'>
+ MathType@MTEF@5@5@+=feaafiart1ev1aaatCvAUfeBSjuyZL2yd9gzLbvyNv2CaerbuLwBLnhiov2DGi1BTfMBaeXatLxBI9gBaerbd9wDYLwzYbItLDharqqtubsr4rNCHbGeaGqiVu0Je9sqqrpepC0xbbL8F4rqqrFfpeea0xe9Lq=Jc9vqaqpepm0xbba9pwe9Q8fs0=yqaqpepae9pg0FirpepeKkFr0xfr=xfr=xb9adbaqaaeGaciGaaiaabeqaamaabaabaaGcbaWaauWaaeaaceWGJbGbaSaaaiaawMa7caGLkWoadaahaaWcbeqaaiaaikdaaaGccqGH9aqpdaqbdaqaaiqadggagaWcaaGaayzcSlaawQa7amaaCaaaleqabaGaaGOmaaaakiabgUcaRmaafmaabaGabmOyayaalaaacaGLjWUaayPcSdWaaWbaaSqabeaacaaIYaaaaaaa@4704@</mmp:annotation>
+ </mmp:semantics>
+</mmp:math>
+
+<mmp:math display='block'>
+ <mmp:semantics>
+  <mmp:mrow>
+   <mmp:mi>n</mmp:mi><mmp:mo>=</mmp:mo><mmp:mfrac>
+<mmp:mrow>
+    <mmp:mi>log</mmp:mi>
+    <mmp:mo>&#x2061;</mmp:mo>
+    <mmp:msub>
+        <mmp:mi>v</mmp:mi>
+        <mmp:mn>1</mmp:mn>
+    </mmp:msub>
+    <mmp:mo>&#x2212;</mmp:mo>
+    <mmp:mi>log</mmp:mi>
+    <mmp:mo>&#x2061;</mmp:mo>
+    <mmp:msub>
+        <mmp:mi>v</mmp:mi>
+        <mmp:mn>2</mmp:mn>
+    </mmp:msub>
+</mmp:mrow>
+    <mmp:mrow>
+     <mmp:mi>log</mmp:mi><mmp:mo>&#x2061;</mmp:mo><mmp:msub>
+      <mmp:mi>t</mmp:mi>
+      <mmp:mn>1</mmp:mn>
+     </mmp:msub>
+     <mmp:mo>&#x2212;</mmp:mo><mmp:mi>log</mmp:mi><mmp:mo>&#x2061;</mmp:mo><mmp:msub>
+      <mmp:mi>t</mmp:mi>
+      <mmp:mn>2</mmp:mn>
+     </mmp:msub>
+    </mmp:mrow>
+   </mmp:mfrac>
+  </mmp:mrow>
+ <mmp:annotation encoding='MathType-MTEF'>
+ MathType@MTEF@5@5@+=feaafiart1ev1aaatCvAUfeBSjuyZL2yd9gzLbvyNv2CaerbuLwBLnhiov2DGi1BTfMBaeXatLxBI9gBaerbd9wDYLwzYbItLDharqqtubsr4rNCHbGeaGqiVu0Je9sqqrpepC0xbbL8F4rqqrFfpeea0xe9Lq=Jc9vqaqpepm0xbba9pwe9Q8fs0=yqaqpepae9pg0FirpepeKkFr0xfr=xfr=xb9adbaqaaeGaciGaaiaabeqaamaabaabaaGcbaGaamOBaiabg2da9maalaaabaGaciiBaiaac+gacaGGNbGaamODamaaBaaaleaacaaIXaaabeaakiabgkHiTiGacYgacaGGVbGaai4zaiaadAhadaWgaaWcbaGaaGOmaaqabaaakeaaciGGSbGaai4BaiaacEgacaWG0bWaaSbaaSqaaiaaigdaaeqaaOGaeyOeI0IaciiBaiaac+gacaGGNbGaamiDamaaBaaaleaacaaIYaaabeaaaaaaaa@4CB4@</mmp:annotation>
+ </mmp:semantics>
+</mmp:math>
+
+<mmp:math display='block'>
+ <mmp:semantics>
+  <mmp:mrow>
+   <mmp:msub>
+    <mmp:mi>F</mmp:mi>
+    <mmp:mtext>s</mmp:mtext>
+   </mmp:msub>
+   <mmp:mo>=</mmp:mo><mmp:msub>
+    <mmp:mi>A</mmp:mi>
+    <mmp:mtext>a</mmp:mtext>
+   </mmp:msub>
+   <mmp:mo>&#x00B7;</mmp:mo><mmp:msub>
+    <mmp:mover accent='true'>
+     <mmp:mi>&#x03C3;</mmp:mi>
+     <mmp:mo>&#x00AF;</mmp:mo>
+    </mmp:mover>
+    <mmp:mtext>o</mmp:mtext>
+   </mmp:msub>
+  </mmp:mrow>
+ <mmp:annotation encoding='MathType-MTEF'>
+ MathType@MTEF@5@5@+=feaafiart1ev1aaatCvAUfeBSjuyZL2yd9gzLbvyNv2CaerbuLwBLnhiov2DGi1BTfMBaeXatLxBI9gBaerbd9wDYLwzYbItLDharqqtubsr4rNCHbGeaGqiVu0Je9sqqrpepC0xbbL8F4rqqrFfpeea0xe9Lq=Jc9vqaqpepm0xbba9pwe9Q8fs0=yqaqpepae9pg0FirpepeKkFr0xfr=xfr=xb9adbaqaaeGaciGaaiaabeqaamaabaabaaGcbaGaamOramaaBaaaleaacaqGZbaabeaakiabg2da9iaadgeadaWgaaWcbaGaaeyyaaqabaGccqWIpM+zcuaHdpWCgaqeamaaBaaaleaacaqGVbaabeaaaaa@4033@</mmp:annotation>
+ </mmp:semantics>
+</mmp:math>
+
+<mmp:math display='block'>
+ <mmp:semantics>
+  <mmp:mrow>
+   <mmp:msub>
+    <mmp:mi>M</mmp:mi>
+    <mmp:mrow>
+     <mmp:mtext>z;pl;d</mmp:mtext>
+    </mmp:mrow>
+   </mmp:msub>
+   <mmp:mo stretchy='false'>(</mmp:mo><mmp:mn>1</mmp:mn><mmp:mo>&#x2212;</mmp:mo><mmp:msup>
+    <mmp:mrow>
+     <mmp:mo stretchy='false'>(</mmp:mo><mmp:mfrac>
+      <mmp:mrow>
+       <mmp:mfrac>
+        <mmp:mrow>
+         <mmp:msub>
+          <mmp:mi>N</mmp:mi>
+          <mmp:mrow>
+           <mmp:mtext>s;d</mmp:mtext>
+          </mmp:mrow>
+         </mmp:msub>
+        </mmp:mrow>
+        <mmp:mrow>
+         <mmp:msub>
+          <mmp:mi>N</mmp:mi>
+          <mmp:mrow>
+           <mmp:mtext>pl;d</mmp:mtext>
+          </mmp:mrow>
+         </mmp:msub>
+        </mmp:mrow>
+       </mmp:mfrac>
+       <mmp:mo>&#x2212;</mmp:mo><mmp:msub>
+        <mmp:mi>a</mmp:mi>
+        <mmp:mn>1</mmp:mn>
+       </mmp:msub>
+      </mmp:mrow>
+      <mmp:mrow>
+       <mmp:mn>1</mmp:mn><mmp:mo>&#x2212;</mmp:mo><mmp:msub>
+        <mmp:mi>a</mmp:mi>
+        <mmp:mn>1</mmp:mn>
+       </mmp:msub>
+      </mmp:mrow>
+     </mmp:mfrac>
+     <mmp:mo stretchy='false'>)</mmp:mo>
+    </mmp:mrow>
+    <mmp:mn>2</mmp:mn>
+   </mmp:msup>
+   <mmp:mo stretchy='false'>)</mmp:mo>
+  </mmp:mrow>
+ <mmp:annotation encoding='MathType-MTEF'>
+ MathType@MTEF@5@5@+=feaafiart1ev1aaatCvAUfeBSjuyZL2yd9gzLbvyNv2CaerbuLwBLnhiov2DGi1BTfMBaeXatLxBI9gBaerbd9wDYLwzYbItLDharqqtubsr4rNCHbGeaGqiVu0Je9sqqrpepC0xbbL8F4rqqrFfpeea0xe9Lq=Jc9vqaqpepm0xbba9pwe9Q8fs0=yqaqpepae9pg0FirpepeKkFr0xfr=xfr=xb9adbaqaaeGaciGaaiaabeqaamaabaabaaGcbaGaamytamaaBaaaleaacaqG6bGaae4oaiaabchacaqGSbGaae4oaiaabsgaaeqaaOGaaiikaiaaigdacqGHsislcaGGOaWaaSaaaeaadaWcaaqaaiaad6eadaWgaaWcbaGaae4CaiaabUdacaqGKbaabeaaaOqaaiaad6eadaWgaaWcbaGaaeiCaiaabYgacaqG7aGaaeizaaqabaaaaOGaeyOeI0IaamyyamaaBaaaleaacaaIXaaabeaaaOqaaiaaigdacqGHsislcaWGHbWaaSbaaSqaaiaaigdaaeqaaaaakiaacMcadaahaaWcbeqaaiaaikdaaaGccaGGPaaaaa@501B@</mmp:annotation>
+ </mmp:semantics>
+</mmp:math>
+
+<mmp:math display='block'>
+ <mmp:semantics>
+  <mmp:mrow>
+   <mmp:msub>
+    <mmp:mi>M</mmp:mi>
+    <mmp:mrow>
+     <mmp:mtext>z;pl;d</mmp:mtext>
+    </mmp:mrow>
+   </mmp:msub>
+   <mmp:mfenced open="(" close=")">
+   <mmp:mn>1</mmp:mn><mmp:mo>&#x2212;</mmp:mo><mmp:msup>
+    <mmp:mrow>
+     <mmp:mo stretchy='false'>(</mmp:mo><mmp:mfrac>
+      <mmp:mrow>
+       <mmp:mfrac>
+        <mmp:mrow>
+         <mmp:msub>
+          <mmp:mi>N</mmp:mi>
+          <mmp:mrow>
+           <mmp:mtext>s;d</mmp:mtext>
+          </mmp:mrow>
+         </mmp:msub>
+        </mmp:mrow>
+        <mmp:mrow>
+         <mmp:msub>
+          <mmp:mi>N</mmp:mi>
+          <mmp:mrow>
+           <mmp:mtext>pl;d</mmp:mtext>
+          </mmp:mrow>
+         </mmp:msub>
+        </mmp:mrow>
+       </mmp:mfrac>
+       <mmp:mo>&#x2212;</mmp:mo><mmp:msub>
+        <mmp:mi>a</mmp:mi>
+        <mmp:mn>1</mmp:mn>
+       </mmp:msub>
+      </mmp:mrow>
+      <mmp:mrow>
+       <mmp:mn>1</mmp:mn><mmp:mo>&#x2212;</mmp:mo><mmp:msub>
+        <mmp:mi>a</mmp:mi>
+        <mmp:mn>1</mmp:mn>
+       </mmp:msub>
+      </mmp:mrow>
+     </mmp:mfrac>
+     <mmp:mo stretchy='false'>)</mmp:mo>
+    </mmp:mrow>
+    <mmp:mn>2</mmp:mn>
+   </mmp:msup>
+   </mmp:mfenced>
+  </mmp:mrow>
+ <mmp:annotation encoding='MathType-MTEF'>
+ MathType@MTEF@5@5@+=feaafiart1ev1aaatCvAUfeBSjuyZL2yd9gzLbvyNv2CaerbuLwBLnhiov2DGi1BTfMBaeXatLxBI9gBaerbd9wDYLwzYbItLDharqqtubsr4rNCHbGeaGqiVu0Je9sqqrpepC0xbbL8F4rqqrFfpeea0xe9Lq=Jc9vqaqpepm0xbba9pwe9Q8fs0=yqaqpepae9pg0FirpepeKkFr0xfr=xfr=xb9adbaqaaeGaciGaaiaabeqaamaabaabaaGcbaGaamytamaaBaaaleaacaqG6bGaae4oaiaabchacaqGSbGaae4oaiaabsgaaeqaaOGaaiikaiaaigdacqGHsislcaGGOaWaaSaaaeaadaWcaaqaaiaad6eadaWgaaWcbaGaae4CaiaabUdacaqGKbaabeaaaOqaaiaad6eadaWgaaWcbaGaaeiCaiaabYgacaqG7aGaaeizaaqabaaaaOGaeyOeI0IaamyyamaaBaaaleaacaaIXaaabeaaaOqaaiaaigdacqGHsislcaWGHbWaaSbaaSqaaiaaigdaaeqaaaaakiaacMcadaahaaWcbeqaaiaaikdaaaGccaGGPaaaaa@501B@</mmp:annotation>
+ </mmp:semantics>
+</mmp:math>
+
+<mmp:math display='block'>
+ <mmp:semantics>
+  <mmp:mrow>
+   <mmp:mi>q</mmp:mi><mmp:mo>=</mmp:mo><mmp:mn>1</mmp:mn><mmp:mo>,</mmp:mo><mmp:mn>03</mmp:mn><mmp:msqrt>
+    <mmp:mrow>
+     <mmp:mn>1</mmp:mn><mmp:mo>&#x2212;</mmp:mo><mmp:msup>
+      <mmp:mrow>
+       <mmp:mo stretchy='false'></mmp:mo><mmp:mfrac>
+        <mmp:mrow>
+         <mmp:msub>
+          <mmp:mi>V</mmp:mi>
+          <mmp:mrow>
+           <mmp:mtext>y;s;d</mmp:mtext>
+          </mmp:mrow>
+         </mmp:msub>
+        </mmp:mrow>
+        <mmp:mrow>
+         <mmp:msub>
+          <mmp:mi>N</mmp:mi>
+          <mmp:mrow>
+           <mmp:mtext>y;pl;d</mmp:mtext>
+          </mmp:mrow>
+         </mmp:msub>
+        </mmp:mrow>
+       </mmp:mfrac>
+       <mmp:mo stretchy='false'>)</mmp:mo>
+      </mmp:mrow>
+      <mmp:mn>2</mmp:mn>
+     </mmp:msup>
+    </mmp:mrow>
+   </mmp:msqrt>
+  </mmp:mrow>
+ <mmp:annotation encoding='MathType-MTEF'>
+ MathType@MTEF@5@5@+=feaafiart1ev1aaatCvAUfeBSjuyZL2yd9gzLbvyNv2CaerbuLwBLnhiov2DGi1BTfMBaeXatLxBI9gBaerbd9wDYLwzYbItLDharqqtubsr4rNCHbGeaGqiVu0Je9sqqrpepC0xbbL8F4rqqrFfpeea0xe9Lq=Jc9vqaqpepm0xbba9pwe9Q8fs0=yqaqpepae9pg0FirpepeKkFr0xfr=xfr=xb9adbaqaaeGaciGaaiaabeqaamaabaabaaGcbaGaamyCaiabg2da9iaaigdacaGGSaGaaGimaiaaiodadaGcaaqaaiaaigdacqGHsislcaGGOaWaaSaaaeaacaWGwbWaaSbaaSqaaiaabMhacaqG7aGaae4CaiaabUdacaqGKbaabeaaaOqaaiaad6eadaWgaaWcbaGaaeyEaiaabUdacaqGWbGaaeiBaiaabUdacaqGKbaabeaaaaGccaGGPaWaaWbaaSqabeaacaaIYaaaaaqabaaaaa@4A85@</mmp:annotation>
+ </mmp:semantics>
+</mmp:math>
+
+<mmp:math display='block'>
+  <mmp:mi>&#x2115;</mmp:mi>
+ <mmp:annotation encoding='MathType-MTEF'>
+ MathType@MTEF@5@5@+=feaafiart1ev1aaatCvAUfeBSjuyZL2yd9gzLbvyNv2CaerbuLwBLnhiov2DGi1BTfMBaeXatLxBI9gBaerbd9wDYLwzYbItLDharqqtubsr4rNCHbGeaGqiVu0Je9sqqrpepC0xbbL8F4rqqrFfpeea0xe9Lq=Jc9vqaqpepm0xbba9pwe9Q8fs0=yqaqpepae9pg0FirpepeKkFr0xfr=xfr=xb9adbaqaaeGaciGaaiaabeqaamaabaabaaGcbaGaeSyfHukaaa@3759@</mmp:annotation>
+</mmp:math>
+
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mo> ( </mmp:mo>
+            <mmp:mfrac>
+                <mmp:mn> 1 </mmp:mn>
+                <mmp:msqrt>
+                    <mmp:mrow>
+                        <mmp:mo> - </mmp:mo>
+                        <mmp:mn> 1 </mmp:mn>
+                    </mmp:mrow>
+                </mmp:msqrt>
+            </mmp:mfrac>
+            <mmp:mo> ) </mmp:mo>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mfrac>
+                <mmp:mn> 1 </mmp:mn>
+                <mmp:msqrt>
+                    <mmp:mrow>
+                        <mmp:mo> - </mmp:mo>
+                        <mmp:mn> 1 </mmp:mn>
+                    </mmp:mrow>
+                </mmp:msqrt>
+            </mmp:mfrac>
+            <mmp:mo> ) </mmp:mo>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mo> ( </mmp:mo>
+            <mmp:mfrac>
+                <mmp:mn> 1 </mmp:mn>
+                <mmp:msqrt>
+                    <mmp:mrow>
+                        <mmp:mo> - </mmp:mo>
+                        <mmp:mn> 1 </mmp:mn>
+                    </mmp:mrow>
+                </mmp:msqrt>
+            </mmp:mfrac>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mi> x </mmp:mi>
+            <mmp:mo> + </mmp:mo>
+            <mmp:mrow>
+                <mmp:mi> a </mmp:mi>
+                <mmp:mo> / </mmp:mo>
+                <mmp:mi> b </mmp:mi>
+            </mmp:mrow>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:msqrt>
+            <mmp:mo> - </mmp:mo>
+            <mmp:mn> 1 </mmp:mn>
+        </mmp:msqrt>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:msqrt>
+            <mmp:mrow>
+                <mmp:mo> - </mmp:mo>
+                <mmp:mn> 1 </mmp:mn>
+            </mmp:mrow>
+        </mmp:msqrt>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mfenced>
+            <mmp:mrow>
+                <mmp:mi> a </mmp:mi>
+                <mmp:mo> + </mmp:mo>
+                <mmp:mi> b </mmp:mi>
+            </mmp:mrow>
+        </mmp:mfenced>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mfenced open="[">
+            <mmp:mn> 0 </mmp:mn>
+            <mmp:mn> 1 </mmp:mn>
+        </mmp:mfenced>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mfrac>
+            <mmp:mn> 1 </mmp:mn>
+            <mmp:mn> 2 </mmp:mn>
+        </mmp:mfrac>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mi> x </mmp:mi>
+        <mmp:mi> D </mmp:mi>
+        <mmp:mi> sin </mmp:mi>
+        <mmp:mi></mmp:mi>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mi> sin </mmp:mi>
+            <mmp:mo> &ApplyFunction; </mmp:mo>
+            <mmp:mi> x </mmp:mi>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mn> 1 </mmp:mn>
+            <mmp:mo> + </mmp:mo>
+            <mmp:mi> ... </mmp:mi>
+            <mmp:mo> + </mmp:mo>
+            <mmp:mi> n </mmp:mi>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mi> &pi; </mmp:mi>
+        <mmp:mi> &ImaginaryI; </mmp:mi>
+        <mmp:mi> &ExponentialE; </mmp:mi>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mn> 2 </mmp:mn>
+        <mmp:mspace/>
+        <mmp:mn> 0.123 </mmp:mn>
+        <mmp:mspace/>
+        <mmp:mn> 1,000,000 </mmp:mn>
+        <mmp:mspace/>
+        <mmp:mn> 2.1e10 </mmp:mn>
+        <mmp:mspace/>
+        <mmp:mn> 0xFFEF </mmp:mn>
+        <mmp:mspace/>
+        <mmp:mn> MCMLXIX </mmp:mn>
+        <mmp:mspace/>
+        <mmp:mn> twenty one </mmp:mn>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mn> 2 </mmp:mn>
+            <mmp:mo> + </mmp:mo>
+            <mmp:mrow>
+            <mmp:mn> 3 </mmp:mn>
+            <mmp:mo> &InvisibleTimes; </mmp:mo>
+            <mmp:mi> &ImaginaryI; </mmp:mi>
+        </mmp:mrow>
+        </mmp:mrow>
+            <mmp:mfrac> <mmp:mn> 1 </mmp:mn> <mmp:mn> 2 </mmp:mn> </mmp:mfrac>
+            <mmp:mi> &pi; </mmp:mi>
+        <mmp:mi> &ExponentialE; </mmp:mi>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mo> + </mmp:mo>
+        <mmp:mo> &lt; </mmp:mo>
+        <mmp:mo> &le; </mmp:mo>
+        <mmp:mo> &lt;= </mmp:mo>
+        <mmp:mo> ++ </mmp:mo>
+        <mmp:mo> &sum; </mmp:mo>
+        <mmp:mo> .NOT. </mmp:mo>
+        <mmp:mo> and </mmp:mo>
+        <mmp:mo> &InvisibleTimes; </mmp:mo>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mo> ( </mmp:mo>
+            <mmp:mrow>
+            <mmp:mi> a </mmp:mi>
+            <mmp:mo> + </mmp:mo>
+            <mmp:mi> b </mmp:mi>
+        </mmp:mrow>
+            <mmp:mo> ) </mmp:mo>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mo> [ </mmp:mo>
+            <mmp:mrow>
+                <mmp:mn> 0 </mmp:mn>
+                <mmp:mo> , </mmp:mo>
+                <mmp:mn> 1 </mmp:mn>
+            </mmp:mrow>
+            <mmp:mo> ) </mmp:mo>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+        <mmp:mrow>
+            <mmp:mi> f </mmp:mi>
+            <mmp:mo> &ApplyFunction; </mmp:mo>
+            <mmp:mrow>
+                <mmp:mo> ( </mmp:mo>
+                <mmp:mrow>
+                    <mmp:mi> x </mmp:mi>
+                    <mmp:mo> , </mmp:mo>
+                    <mmp:mi> y </mmp:mi>
+                </mmp:mrow>
+                <mmp:mo> ) </mmp:mo>
+            </mmp:mrow>
+        </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mi> x </mmp:mi>
+      <mmp:mo> &InvisibleTimes; </mmp:mo>
+      <mmp:mi> y </mmp:mi>
+    </mmp:mrow>
+    <mmp:mrow>
+      <mmp:mi> f </mmp:mi>
+      <mmp:mo> &ApplyFunction; </mmp:mo>
+      <mmp:mrow>
+        <mmp:mo> ( </mmp:mo>
+        <mmp:mi> x </mmp:mi>
+        <mmp:mo> ) </mmp:mo>
+      </mmp:mrow>
+    </mmp:mrow>
+    <mmp:mrow>
+      <mmp:mi> sin </mmp:mi>
+      <mmp:mo> &ApplyFunction; </mmp:mo>
+      <mmp:mi> x </mmp:mi>
+    </mmp:mrow>
+    <mmp:msub>
+      <mmp:mi> m </mmp:mi>
+      <mmp:mrow>
+        <mmp:mn> 1 </mmp:mn>
+        <mmp:mo> &InvisibleComma; </mmp:mo>
+        <mmp:mn> 2 </mmp:mn>
+      </mmp:mrow>
+    </mmp:msub>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mfrac>
+      <mmp:mo> &DifferentialD; </mmp:mo>
+      <mmp:mrow>
+        <mmp:mo> &DifferentialD; </mmp:mo>
+        <mmp:mi> x </mmp:mi>
+      </mmp:mrow>
+    </mmp:mfrac>
+    </mmp:math>
+
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mi> x </mmp:mi>
+      <mmp:munder>
+        <mmp:mo> &RightArrow; </mmp:mo>
+        <mmp:mtext> maps to </mmp:mtext>
+      </mmp:munder>
+      <mmp:mi> y </mmp:mi>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mtext> Theorem 1: </mmp:mtext>
+    <mmp:mtext> &ThinSpace; </mmp:mtext>
+    <mmp:mtext> &ThickSpace;&ThickSpace; </mmp:mtext>
+    <mmp:mtext> /* a comment */ </mmp:mtext>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mo> there exists </mmp:mo>
+      <mmp:mrow>
+        <mmp:mrow>
+          <mmp:mi> &delta; </mmp:mi>
+          <mmp:mo> &gt; </mmp:mo>
+          <mmp:mn> 0 </mmp:mn>
+        </mmp:mrow>
+        <mmp:mo> such that </mmp:mo>
+        <mmp:mrow>
+          <mmp:mrow>
+            <mmp:mi> f </mmp:mi>
+            <mmp:mo> &ApplyFunction; </mmp:mo>
+            <mmp:mrow>
+              <mmp:mo> ( </mmp:mo>
+              <mmp:mi> x </mmp:mi>
+              <mmp:mo> ) </mmp:mo>
+            </mmp:mrow>
+          </mmp:mrow>
+          <mmp:mo> &lt; </mmp:mo>
+          <mmp:mn> 1 </mmp:mn>
+        </mmp:mrow>
+      </mmp:mrow>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:msup>
+      <mmp:mrow>
+        <mmp:mi> x </mmp:mi>
+        <mmp:malignmark edge="right"/>
+      </mmp:mrow>
+      <mmp:mn> 2 </mmp:mn>
+    </mmp:msup>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mi><mmp:mglyph fontfamily="my-braid-font" index="2" alt="23braid"/></mmp:mi>
+      <mmp:mo>+</mmp:mo>
+      <mmp:mi><mmp:mglyph fontfamily="my-braid-font" index="5" alt="132braid"/></mmp:mi>
+      <mmp:mo>=</mmp:mo>
+      <mmp:mi><mmp:mglyph fontfamily="my-braid-font" index="3" alt="13braid"/></mmp:mi>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mrow>
+        <mmp:mn> 2 </mmp:mn>
+        <mmp:mo> &InvisibleTimes; </mmp:mo>
+        <mmp:mi> x </mmp:mi>
+      </mmp:mrow>
+      <mmp:mo> + </mmp:mo>
+      <mmp:mi> y </mmp:mi>
+      <mmp:mo> - </mmp:mo>
+      <mmp:mi> z </mmp:mi>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mo> ( </mmp:mo>
+      <mmp:mrow>
+        <mmp:mi> x </mmp:mi>
+        <mmp:mo> , </mmp:mo>
+        <mmp:mi> y </mmp:mi>
+      </mmp:mrow>
+      <mmp:mo> ) </mmp:mo>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+       <mmp:mo> ( </mmp:mo>
+       <mmp:mfrac linethickness="0">
+          <mmp:mi> a </mmp:mi>
+          <mmp:mi> b </mmp:mi>
+       </mmp:mfrac>
+       <mmp:mo> ) </mmp:mo>
+    </mmp:mrow>
+    <mmp:mfrac linethickness="2">
+       <mmp:mfrac>
+          <mmp:mi> a </mmp:mi>
+          <mmp:mi> b </mmp:mi>
+       </mmp:mfrac>
+       <mmp:mfrac>
+          <mmp:mi> c </mmp:mi>
+          <mmp:mi> d </mmp:mi>
+       </mmp:mfrac>
+    </mmp:mfrac>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mfrac>
+       <mmp:mn> 1 </mmp:mn>
+       <mmp:mrow>
+          <mmp:msup>
+             <mmp:mi> x </mmp:mi>
+             <mmp:mn> 3 </mmp:mn>
+           </mmp:msup>
+           <mmp:mo> + </mmp:mo>
+           <mmp:mfrac>
+             <mmp:mi> x </mmp:mi>
+             <mmp:mn> 3 </mmp:mn>
+           </mmp:mfrac>
+       </mmp:mrow>
+    </mmp:mfrac>
+    <mmp:mo> = </mmp:mo>
+    <mmp:mfrac bevelled="true">
+       <mmp:mn> 1 </mmp:mn>
+       <mmp:mrow>
+          <mmp:msup>
+             <mmp:mi> x </mmp:mi>
+             <mmp:mn> 3 </mmp:mn>
+           </mmp:msup>
+           <mmp:mo> + </mmp:mo>
+           <mmp:mfrac>
+             <mmp:mi> x </mmp:mi>
+             <mmp:mn> 3 </mmp:mn>
+           </mmp:mfrac>
+       </mmp:mrow>
+    </mmp:mfrac>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mfrac>
+       <mmp:mrow>
+          <mmp:mn> 1 </mmp:mn>
+          <mmp:mo> + </mmp:mo>
+          <mmp:msqrt>
+             <mmp:mn> 5 </mmp:mn>
+          </mmp:msqrt>
+       </mmp:mrow>
+       <mmp:mn> 2 </mmp:mn>
+    </mmp:mfrac>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+       <mmp:mo maxsize="1"> ( </mmp:mo>
+       <mmp:mfrac> <mmp:mi> a </mmp:mi> <mmp:mi> b </mmp:mi> </mmp:mfrac>
+       <mmp:mo maxsize="1"> ) </mmp:mo>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mstyle maxsize="1">
+       <mmp:mrow>
+          <mmp:mo> ( </mmp:mo>
+          <mmp:mfrac> <mmp:mi> a </mmp:mi> <mmp:mi> b </mmp:mi> </mmp:mfrac>
+          <mmp:mo> ) </mmp:mo>
+       </mmp:mrow>
+    </mmp:mstyle>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:merror>
+       <mmp:mtext> Unrecognized element: mfraction;
+               arguments were:  </mmp:mtext>
+       <mmp:mrow> <mmp:mn> 1 </mmp:mn> <mmp:mo> + </mmp:mo> <mmp:msqrt> <mmp:mn> 5 </mmp:mn> </mmp:msqrt> </mmp:mrow>
+       <mmp:mtext>  and  </mmp:mtext>
+       <mmp:mn> 2 </mmp:mn>
+    </mmp:merror>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mpadded width="0"> <mmp:mi> C </mmp:mi> </mmp:mpadded>
+      <mmp:mspace width="0.3em"/>
+      <mmp:mtext> | </mmp:mtext>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:semantics>
+      <mmp:mrow>
+        <mmp:mpadded width="0"> <mmp:mi> C </mmp:mi> </mmp:mpadded>
+        <mmp:mspace width="0.3em"/>
+        <mmp:mtext> | </mmp:mtext>
+      </mmp:mrow>
+      <mmp:annotation-xml encoding="MathML-Presentation">
+        <mmp:mi> &Copf; </mmp:mi>
+      </mmp:annotation-xml>
+    </mmp:semantics>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mfrac>
+      <mmp:mrow>
+        <mmp:mi> x </mmp:mi>
+        <mmp:mo> + </mmp:mo>
+        <mmp:mi> y </mmp:mi>
+        <mmp:mo> + </mmp:mo>
+        <mmp:mi> z </mmp:mi>
+      </mmp:mrow>
+      <mmp:mrow>
+        <mmp:mi> x </mmp:mi>
+        <mmp:mphantom>
+          <mmp:mo form="infix"> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+        </mmp:mphantom>
+        <mmp:mo> + </mmp:mo>
+        <mmp:mi> z </mmp:mi>
+      </mmp:mrow>
+    </mmp:mfrac>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mfrac>
+       <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+       </mmp:mrow>
+       <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mphantom>
+             <mmp:mo> + </mmp:mo>
+          </mmp:mphantom>
+          <mmp:mphantom>
+             <mmp:mi> y </mmp:mi>
+          </mmp:mphantom>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+       </mmp:mrow>
+    </mmp:mfrac>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow> <mmp:mo> ( </mmp:mo> <mmp:mi>x</mmp:mi> <mmp:mo> ) </mmp:mo> </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mo> ( </mmp:mo>
+      <mmp:mrow> <mmp:mi>x</mmp:mi> <mmp:mo>,</mmp:mo> <mmp:mi>y</mmp:mi> </mmp:mrow>
+      <mmp:mo> ) </mmp:mo>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mi>x</mmp:mi> <mmp:mo>+</mmp:mo> <mmp:mi>y</mmp:mi> <mmp:mo>+</mmp:mo> <mmp:mi>z</mmp:mi>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mi> f </mmp:mi>
+      <mmp:mo> &ApplyFunction; </mmp:mo>
+      <mmp:mfenced>
+        <mmp:mi> x </mmp:mi>
+        <mmp:mi> y </mmp:mi>
+      </mmp:mfenced>
+    </mmp:mrow>
+    </mmp:math>
+
+
+    <mmp:math>
+    <mmp:msub>
+      <mmp:mi>a</mmp:mi>
+      <mmp:mrow>
+        <mmp:menclose notation='actuarial'>
+          <mmp:mi>n</mmp:mi>
+        </mmp:menclose>
+        <mmp:mo>&it;</mmp:mo>
+        <mmp:mi>i</mmp:mi>
+      </mmp:mrow>
+    </mmp:msub>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:msup>
+      <mmp:mrow>
+        <mmp:mo> ( </mmp:mo>
+        <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+        </mmp:mrow>
+        <mmp:mo> ) </mmp:mo>
+      </mmp:mrow>
+      <mmp:mn> 2 </mmp:mn>
+    </mmp:msup>
+    </mmp:math>
+
+
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mover accent="true">
+        <mmp:mi> x </mmp:mi>
+        <mmp:mo> &Hat; </mmp:mo>
+      </mmp:mover>
+      <mmp:mtext> versus </mmp:mtext>
+      <mmp:mover accent="false">
+        <mmp:mi> x </mmp:mi>
+        <mmp:mo> &Hat; </mmp:mo>
+      </mmp:mover>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mover accent="true">
+        <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+        </mmp:mrow>
+        <mmp:mo> &OverBar; </mmp:mo>
+      </mmp:mover>
+      <mmp:mtext> versus </mmp:mtext>
+      <mmp:mover accent="false">
+        <mmp:mrow>
+          <mmp:mi> x </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> y </mmp:mi>
+          <mmp:mo> + </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+        </mmp:mrow>
+        <mmp:mo> &OverBar; </mmp:mo>
+      </mmp:mover>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mover>
+        <mmp:munder>
+          <mmp:mo> &int; </mmp:mo>
+          <mmp:mn> 0 </mmp:mn>
+        </mmp:munder>
+        <mmp:mi> &infin; </mmp:mi>
+      </mmp:mover>
+      <mmp:mtext> versus </mmp:mtext>
+      <mmp:munderover>
+        <mmp:mo> &int; </mmp:mo>
+        <mmp:mn> 0 </mmp:mn>
+        <mmp:mi> &infin; </mmp:mi>
+      </mmp:munderover>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mmultiscripts>
+        <mmp:mi> F </mmp:mi>
+        <mmp:mn> 1 </mmp:mn>
+        <mmp:none/>
+        <mmp:mprescripts/>
+        <mmp:mn> 0 </mmp:mn>
+        <mmp:none/>
+      </mmp:mmultiscripts>
+      <mmp:mo> &ApplyFunction; </mmp:mo>
+      <mmp:mrow>
+        <mmp:mo> ( </mmp:mo>
+        <mmp:mrow>
+          <mmp:mo> ; </mmp:mo>
+          <mmp:mi> a </mmp:mi>
+          <mmp:mo> ; </mmp:mo>
+          <mmp:mi> z </mmp:mi>
+        </mmp:mrow>
+        <mmp:mo> ) </mmp:mo>
+      </mmp:mrow>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mrow>
+      <mmp:mo> ( </mmp:mo>
+      <mmp:mtable>
+        <mmp:mtr>
+          <mmp:mtd> <mmp:mn>1</mmp:mn> </mmp:mtd>
+          <mmp:mtd> <mmp:mn>0</mmp:mn> </mmp:mtd>
+          <mmp:mtd> <mmp:mn>0</mmp:mn> </mmp:mtd>
+        </mmp:mtr>
+        <mmp:mtr>
+          <mmp:mtd> <mmp:mn>0</mmp:mn> </mmp:mtd>
+          <mmp:mtd> <mmp:mn>1</mmp:mn> </mmp:mtd>
+          <mmp:mtd> <mmp:mn>0</mmp:mn> </mmp:mtd>
+        </mmp:mtr>
+        <mmp:mtr>
+          <mmp:mtd> <mmp:mn>0</mmp:mn> </mmp:mtd>
+          <mmp:mtd> <mmp:mn>0</mmp:mn> </mmp:mtd>
+          <mmp:mtd> <mmp:mn>1</mmp:mn> </mmp:mtd>
+        </mmp:mtr>
+      </mmp:mtable>
+      <mmp:mo> ) </mmp:mo>
+    </mmp:mrow>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mtable>
+      <mmp:mlabeledtr id='e-is-m-c-square'>
+        <mmp:mtd>
+          <mmp:mtext> (2.1) </mmp:mtext>
+        </mmp:mtd>
+        <mmp:mtd>
+         <mmp:mrow>
+           <mmp:mi>E</mmp:mi>
+           <mmp:mo>=</mmp:mo>
+           <mmp:mrow>
+            <mmp:mi>m</mmp:mi>
+            <mmp:mo>&it;</mmp:mo>
+            <mmp:msup>
+             <mmp:mi>c</mmp:mi>
+             <mmp:mn>2</mmp:mn>
+            </mmp:msup>
+           </mmp:mrow>
+         </mmp:mrow>
+        </mmp:mtd>
+      </mmp:mlabeledtr>
+    </mmp:mtable>
+    </mmp:math>
+
+    <mmp:math>
+    <mmp:mtable groupalign="decimalpoint left left decimalpoint left left decimalpoint">
+      <mmp:mtr>
+        <mmp:mtd>
+          <mmp:mrow>
+            <mmp:mrow>
+              <mmp:mrow>
+                <mmp:maligngroup/>
+                <mmp:mn> 8.44 </mmp:mn>
+                <mmp:mo> &InvisibleTimes; </mmp:mo>
+                <mmp:maligngroup/>
+                <mmp:mi> x </mmp:mi>
+              </mmp:mrow>
+              <mmp:maligngroup/>
+              <mmp:mo> + </mmp:mo>
+              <mmp:mrow>
+                <mmp:maligngroup/>
+                <mmp:mn> 55 </mmp:mn>
+                <mmp:mo> &InvisibleTimes; </mmp:mo>
+                <mmp:maligngroup/>
+                <mmp:mi> y </mmp:mi>
+              </mmp:mrow>
+            </mmp:mrow>
+          <mmp:maligngroup/>
+          <mmp:mo> = </mmp:mo>
+          <mmp:maligngroup/>
+          <mmp:mn> 0 </mmp:mn>
+        </mmp:mrow>
+        </mmp:mtd>
+        <mmp:mtd>
+          <mmp:mrow>
+            <mmp:mrow>
+              <mmp:mrow>
+                <mmp:maligngroup/>
+                <mmp:mn> 3.1 </mmp:mn>
+                <mmp:mo> &InvisibleTimes; </mmp:mo>
+                <mmp:maligngroup/>
+                <mmp:mi> x </mmp:mi>
+              </mmp:mrow>
+              <mmp:maligngroup/>
+              <mmp:mo> - </mmp:mo>
+              <mmp:mrow>
+                <mmp:maligngroup/>
+                <mmp:mn> 0.7 </mmp:mn>
+                <mmp:mo> &InvisibleTimes; </mmp:mo>
+                <mmp:maligngroup/>
+                <mmp:mi> y </mmp:mi>
+              </mmp:mrow>
+            </mmp:mrow>
+            <mmp:maligngroup/>
+            <mmp:mo> = </mmp:mo>
+            <mmp:maligngroup/>
+            <mmp:mrow>
+              <mmp:mo> - </mmp:mo>
+              <mmp:mn> 1.1 </mmp:mn>
+            </mmp:mrow>
+          </mmp:mrow>
+        </mmp:mtd>
+      </mmp:mtr>
+    </mmp:mtable>
+    </mmp:math>
+
+</root>

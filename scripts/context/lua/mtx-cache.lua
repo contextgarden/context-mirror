@@ -6,14 +6,14 @@ scripts       = scripts       or { }
 scripts.cache = scripts.cache or { }
 
 function scripts.cache.collect_one(...)
-    local path = cache.setpath(instance,...)
+    local path = caches.setpath(instance,...)
     local tmas = dir.glob(path .. "/*tma")
     local tmcs = dir.glob(path .. "/*tmc")
     return path, tmas, tmcs
 end
 
 function scripts.cache.collect_two(...)
-    local path = cache.setpath(instance,...)
+    local path = caches.setpath(instance,...)
     local rest = dir.glob(path .. "/**/*")
     return path, rest
 end

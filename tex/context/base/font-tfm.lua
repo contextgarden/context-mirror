@@ -120,8 +120,35 @@ function fonts.tfm.scaled(scaledpoints, designsize) -- handles designsize in sp 
 end
 
 --[[ldx--
-<p>Before a font is passed to <l n='tex'/> we scale it.</p>
+<p>Before a font is passed to <l n='tex'/> we scale it. Here we also need
+to scale virtual characters.</p>
 --ldx]]--
+
+function fonts.tfm.get_virtual_id(tfmdata)
+    --  since we don't know the id yet, we use 0 as signal
+    if not tfmdata.fonts then
+        tfmdata.type = "virtual"
+        tfmdata.fonts = { { id = 0 } }
+        return 1
+    else
+        tfmdata.fonts[#tfmdata.fonts+1] = { id = 0 }
+        return #tfmdata.fonts
+    end
+end
+
+function fonts.tfm.check_virtual_id(tfmdata, id)
+    if tfmdata.type == "virtual" then
+        if not tfmdata.fonts or #tfmdata.fonts == 0 then
+            tfmdata.type, tfmdata.fonts = "real", nil
+        else
+            for k,v in ipairs(tfmdata.fonts) do
+                if v.id and v.id == 0 then
+                    v.id = id
+                end
+            end
+        end
+    end
+end
 
 function fonts.tfm.scale(tfmtable, scaledpoints)
     -- 65536 = 1pt
@@ -152,6 +179,9 @@ function fonts.tfm.scale(tfmtable, scaledpoints)
             depth   = scale(v.depth , delta),
             class   = v.class
         }
+if fonts.trace then
+    logs.report("define font", string.format("n=%s, u=%s, i=%s, n=%s c=%s",k,v.unicode,v.index,v.name or '-',v.class or '-'))
+end
         local b = v.boundingbox -- maybe faster to have llx etc not in table
         if b then
             chr.boundingbox = scale(v.boundingbox,delta)
@@ -169,6 +199,20 @@ function fonts.tfm.scale(tfmtable, scaledpoints)
             end
             chr.ligatures = tt
         end
+        if v.commands then
+            -- we assume non scaled commands here
+            local vc, tt = v.commands, { }
+            for i=1,#vc do
+                local ivc = vc[i]
+                local key = ivc[1]
+                if key == "right" or key == "left" then
+                    tt[#tt+1] = { key, scale(ivc[2],delta) }
+                else
+                    tt[#tt+1] = ivc -- shared since in cache and untouched
+                end
+            end
+            chr.commands = tt
+        end
         tc[k] = chr
     end
     local tp = t.parameters
@@ -179,19 +223,19 @@ function fonts.tfm.scale(tfmtable, scaledpoints)
             tp[k] = scale(v,delta)
         end
     end
---~     t.encodingbytes = tfmtable.encodingbytes or 1
---~     t.filename      = t.filename or tfmtable.filename or tfmtable.file or nil
---~     t.fullname      = t.fullname or tfmtable.fullname or tfmtable.full or nil
---~     t.name          = t.name or tfmtable.name or nil
-    t.size          = scaledpoints
-    t.italicangle   = tfmtable.italicangle
-    t.ascender      = scale(tfmtable.ascender  or 0,delta)
-    t.descender     = scale(tfmtable.descender or 0,delta)
-    t.shared        = tfmtable.shared or { }
+    -- t.encodingbytes, t.filename, t.fullname, t.name: elsewhere
+    t.size        = scaledpoints
+    t.italicangle = tfmtable.italicangle
+    t.ascender    = scale(tfmtable.ascender  or 0,delta)
+    t.descender   = scale(tfmtable.descender or 0,delta)
+    t.shared      = tfmtable.shared or { }
     if t.unique then
         t.unique = table.fastcopy(tfmtable.unique)
     else
         t.unique = { }
+    end
+    if t.fonts then
+        t.fonts = table.fastcopy(t.fonts) -- maybe we virtualize more afterwards
     end
     return t
 end
@@ -295,6 +339,86 @@ function fonts.initializers.common.lineheight(tfmdata,value)
         end
     end
 end
+
+
+--[[ldx--
+<p>The following feature is kind of experimental and deals with fallback characters.</p>
+--ldx]]--
+
+fonts.initializers.complements      = fonts.initializers.complements      or { }
+fonts.initializers.complements.data = fonts.initializers.complements.data or { }
+
+function fonts.initializers.complements.load(pattern)
+    local data = fonts.initializers.complements.data[pattern]
+    if not data then
+        data = { }
+        for k,v in pairs(characters.data) do
+            local vd = v.description
+            if vd and vd:find(pattern) then
+                local vs = v.specials
+                if vs and vs[1] == "compat" then
+                    data[#data+1] = k
+                end
+            end
+        end
+        fonts.initializers.complements.data[pattern] = data
+    end
+    return data
+end
+
+function fonts.initializers.common.complement(tfmdata,value) -- todo: value = latin:compat,....
+    if value then
+        local chr, index, data, get_virtual_id = tfmdata.characters, nil, characters.data, fonts.tfm.get_virtual_id
+        local selection = fonts.initializers.complements.load("LATIN") -- will be value
+        for _, k in ipairs(selection) do
+            if not chr[k] then
+                local dk = data[k]
+                local vs, name = dk.specials, dk.adobename
+                index = index or get_virtual_id(tfmdata)
+                local ok, t, w, h, d, krn, pre = true, {}, 0, 0, 0, nil, nil
+                for i=2,#vs do
+                    local vsi = vs[i]
+                    local c = chr[vsi]
+                    if c then
+                        local k = krn and krn[vsi]
+                        if k then
+                            t[#t+1] = { 'right', k }
+                            w = w + k
+                        end
+                        t[#t+1] = { 'slot', index, vsi }
+                        w = w + c.width
+                        h = h + c.height
+                        d = d + c.depth
+                        krn = c.kerns
+                    else
+                        ok = false
+                        break
+                    end
+                end
+                if ok then
+                    chr[k] = {
+                        unicode  = k,
+                        name     = name,
+                        commands = t,
+                        width    = w,
+                        height   = h,
+                        depth    = d,
+                        kerns    = krn
+                    }
+                    local c = vs[2]
+                    for k,v in pairs(chr) do -- slow
+                        local krn = v.kerns
+                        if krn then
+                            krn[k] = krn[c]
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+table.insert(fonts.triggers,"complement")
 
 --[[ldx--
 <p>It does not make sense any more to support messed up encoding vectors
@@ -437,7 +561,6 @@ do
     end
 
 end
-
 
 --[[ldx--
 <p>We move marks into the components list. This saves much nasty testing later on.</p>

@@ -90,10 +90,14 @@ if not table.fastcopy then
             local new = { }
             for k,v in pairs(old) do
                 if type(v) == "table" then
-                    new[k] = table.copy(v)
+                    new[k] = table.fastcopy(v) -- was just table.copy
                 else
                     new[k] = v
                 end
+            end
+            local mt = getmetatable(old)
+            if mt then
+                setmetatable(new,mt)
             end
             return new
         else
@@ -105,29 +109,31 @@ end
 
 if not table.copy then
 
-    function table.copy(t, _lookup_table) -- taken from lua wiki
-        _lookup_table = _lookup_table or { }
+    function table.copy(t, tables) -- taken from lua wiki, slightly adapted
+        tables = tables or { }
         local tcopy = {}
-        if not _lookup_table[t] then
-            _lookup_table[t] = tcopy
+        if not tables[t] then
+            tables[t] = tcopy
         end
-        for i,v in pairs(t) do
+        for i,v in pairs(t) do -- brrr, what happens with sparse indexed
             if type(i) == "table" then
-                if _lookup_table[i] then
-                    i = _lookup_table[i]
+                if tables[i] then
+                    i = tables[i]
                 else
-                    i = table.copy(i, _lookup_table)
+                    i = table.copy(i, tables)
                 end
             end
             if type(v) ~= "table" then
                 tcopy[i] = v
+            elseif tables[v] then
+                tcopy[i] = tables[v]
             else
-                if _lookup_table[v] then
-                    tcopy[i] = _lookup_table[v]
-                else
-                    tcopy[i] = table.copy(v, _lookup_table)
-                end
+                tcopy[i] = table.copy(v, tables)
             end
+        end
+        local mt = getmetatable(t)
+        if mt then
+            setmetatable(tcopy,mt)
         end
         return tcopy
     end

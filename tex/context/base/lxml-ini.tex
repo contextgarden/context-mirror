@@ -15,9 +15,119 @@
 
 \registerctxluafile{lxml-ini}{1.001}
 
-\def\xmlload   #1#2{\ctxlua{lxml.load ("#1","#2")}}
-\def\xmlfirst  #1#2{\ctxlua{lxml.first("#1","#2")}}
-\def\xmllast   #1#2{\ctxlua{lxml.last ("#1","#2")}}
-\def\xmlindex#1#2#3{\ctxlua{lxml.index("#1","#2",#3)}}
+\unprotect
 
-\endinput
+\def\xmlload         #1#2{\ctxlua{lxml.load("#1","#2")}}
+\def\xmlloadbuffer   #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
+\def\xmlutfize         #1{\ctxlua{lxml.utfize("#1")}}
+\def\xmlfirst        #1#2{\ctxlua{lxml.first("#1","#2")}}
+\def\xmllast         #1#2{\ctxlua{lxml.last("#1","#2")}}
+\def\xmlall          #1#2{\ctxlua{lxml.all("#1","#2")}}
+\def\xmlfilter       #1#2{\ctxlua{lxml.filter("#1","#2")}}
+\def\xmlcommand    #1#2#3{\ctxlua{lxml.command("#1","#2","#3")}}
+\def\xmlnonspace     #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
+\def\xmltext         #1#2{\ctxlua{lxml.text("#1","#2")}}
+\def\xmlcontent      #1#2{\ctxlua{lxml.content("#1","#2")}}
+\def\xmlstripped     #1#2{\ctxlua{lxml.stripped("#1","#2")}}
+\def\xmlstrip        #1#2{\ctxlua{lxml.strip("#1","#2")}}
+\def\xmlflush          #1{\ctxlua{lxml.flush("#1")}}
+\def\xmlindex      #1#2#3{\ctxlua{lxml.index("#1","#2",\number#3)}}
+\def\xmlidx        #1#2#3{\ctxlua{lxml.idx("#1","#2",\number#3)}}
+\def\xmlcount        #1#2{\ctxlua{lxml.count("#1","#2")}}
+\def\xmlname           #1{\ctxlua{lxml.name("#1")}}
+\def\xmlnamespace      #1{\ctxlua{lxml.namespace("#1")}}
+\def\xmltag            #1{\ctxlua{lxml.tag("#1")}}
+\def\xmlattribute  #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
+\def\xmlatt          #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
+\def\xmlattdef     #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
+\def\xmlconcat     #1#2#3{\ctxlua{lxml.concat("#1","#2","#3")}}
+\def\xmlsetsetup   #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
+\def\xmlsetfunction#1#2#3{\ctxlua{lxml.setaction("#1","#2",#3)}}
+\def\xmlloaddirectives #1{\ctxlua{lxml.directives.load("#1")}}
+\def\xmldirectives     #1{\ctxlua{lxml.directives.setups("#1")}}
+
+\def\xmlregisterns   #1#2{\ctxlua{xml.registerns("#1","#2")}}
+
+\let\xmlgrab\xmlsetsetup
+
+\def\xmlsetup#1#2%              % we pass the reference so that we have access to the frozen number
+  {\def\xmlself{#1}%            % by using #1 inside a setup
+   \setupwithargument{#2}{#1}}
+
+\newtoks \registeredxmlsetups
+
+\def\xmlregistersetup#1%
+  {\appendtoks\directsetup{#1}\to\registeredxmlsetups}
+
+\def\xmlregisteredsetups
+  {\the\registeredxmlsetups}
+
+\def\doxmlprocess#1#2#3#4%
+  {\begingroup
+   \def\xmldocument{#2}%
+   #1{#2}{#3}%
+   \enableXML
+   \doifelsenothing{#4}
+     {\directsetup{xml:process}}
+     {\directsetup{#4}}%
+   \endgroup}
+
+\def\xmlprocess      {\doxmlprocess\xmlload}
+\def\xmlprocessbuffer{\doxmlprocess\xmlloadbuffer}
+
+\startsetups xml:process
+    \xmlregisteredsetups
+    \xmlall\xmldocument{/}
+\stopsetups
+
+% \long\def\xmlloop#1#2#3%
+%   {\dorecurse{\xmlcount{#1}{#2}}{\def\xmli####1####2{\xmlidx{#1}{#2/####1}{####2}}#3}}
+
+\long\def\xmlloop#1#2#3%
+  {\def\xmli##1##2{\xmlidx{#1}{#2/##1}{##2}}%
+   \dorecurse{\xmlcount{#1}{#2}}{#3}}
+
+\long\def\xmlconnect#1#2#3%
+  {\scratchcounter\xmlcount{#1}{#2}\relax
+   \ifcase\scratchcounter \or
+       \xmlall{#1}{#2}%
+   \else
+       \dorecurse \scratchcounter {
+           \ifnum\recurselevel>\plusone#3\fi
+           \xmlidx{#1}{#2}{\recurselevel}
+       }
+   \fi}
+
+% will move but is developed for xml
+
+\newtoks \collectingtoks
+
+\def\startcollect#1\stopcollect
+  {\collectingtoks\@EA{\the\collectingtoks#1}}
+
+\def\startexpandedcollect#1\stopexpandedcollect
+  {\expanded{\collectingtoks{\the\collectingtoks#1}}}
+
+\def\startcollecting{\collectingtoks\emptytoks}
+\def\stopcollecting {\the\collectingtoks}
+
+\def\inlinemessage #1{\dontleavehmode{\tttf#1}}
+\def\displaymessage#1{\blank\inlinemessage{#1}\blank}
+
+\protect \endinput
+
+% \xmlload{main}{normreader.xml}
+
+% \xmlattribute{main}{/subject/information/materialoverview/attribute}{pocketbook}
+% \xmltext{main}{/subject/information/materialoverview/@pocketbook}
+
+% \dorecurse{\xmlflush{main}{/subject/blabla/count()}}
+%    {\ifnum\recurselevel=\xmlflush{main}{/subject/blabla/count()}\relax
+%         \removeunwantedspaces and\space\ignorespaces
+%     \else\ifnum\recurselevel>1
+%         \removeunwantedspaces,\space\ignorespaces
+%     \fi
+%     \xmlflush{main}{/subject/blabla/index(\recurselevel})}
+
+% \def\xmljoin{main}{/subject/information/authors/author}{,}{and}
+% table.join(t,1,#t-1,", ") .. " and " .. t[#t]

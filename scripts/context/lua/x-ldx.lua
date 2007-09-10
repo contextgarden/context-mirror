@@ -110,7 +110,7 @@ construction.
 do
     local e = { [">"] = "&gt;", ["<"] = "&lt;", ["&"] = "&amp;" }
     function ldx.escape(str)
-        return str:gsub("([><&])",e)
+        return (str:gsub("([><&])",e))
     end
 end
 
@@ -124,11 +124,13 @@ that we can use a different font to highlight them.
 
 ldx.make_index = true
 
-function ldx.enhance(data)
+function ldx.enhance(data) -- i need to use lpeg and then we can properly autoindent -)
     local e = ldx.escape
     for _,v in pairs(data) do
         if v.code then
             local dqs, sqs, com, cmt, cod = { }, { }, { }, { }, e(v.code)
+cod = cod:gsub('\\"', "##d##")
+cod = cod:gsub("\\'", "##s##")
             cod = cod:gsub("%-%-%[%[.-%]%]%-%-", function(s)
                 cmt[#cmt+1] = s
                 return "[[[[".. #cmt .."]]]]"
@@ -137,14 +139,12 @@ function ldx.enhance(data)
                 com[#com+1] = s
                 return "[[".. #com .."]]"
             end)
---~             cod = cod:gsub('\\"', "<<>>")
---~             cod = cod:gsub("\\'", "<>")
             cod = cod:gsub("(%b\"\")", function(s)
-                dqs[#dqs+1] = s:sub(2,-2)
+                dqs[#dqs+1] = s:sub(2,-2) or ""
                 return "<<<<".. #dqs ..">>>>"
             end)
             cod = cod:gsub("(%b\'\')", function(s)
-                sqs[#sqs+1] = s:sub(2,-2)
+                sqs[#sqs+1] = s:sub(2,-2) or ""
                 return "<<".. #sqs ..">>"
             end)
             cod = cod:gsub("(%a+)",function(key)
@@ -155,20 +155,92 @@ function ldx.enhance(data)
                     return key
                 end
             end)
-            cod = cod:gsub("%[%[%[%[(%d+)%]%]%]%]", function(s)
-                return cmt[tonumber(s)]
-            end)
-            cod = cod:gsub("%[%[(%d+)%]%]", function(s)
-                return "<ldx:com>" .. com[tonumber(s)] .. "</ldx:com>"
-            end)
             cod = cod:gsub("<<<<(%d+)>>>>", function(s)
                 return "<ldx:dqs>" .. dqs[tonumber(s)] .. "</ldx:dqs>"
             end)
             cod = cod:gsub("<<(%d+)>>", function(s)
                 return "<ldx:sqs>" .. sqs[tonumber(s)] .. "</ldx:sqs>"
             end)
---~             cod = cod:gsub("<<>>", "\\\"")
---~             cod = cod:gsub("<>"  , "\\\'")
+            cod = cod:gsub("%[%[%[%[(%d+)%]%]%]%]", function(s)
+                return cmt[tonumber(s)]
+            end)
+            cod = cod:gsub("%[%[(%d+)%]%]", function(s)
+                return "<ldx:com>" .. com[tonumber(s)] .. "</ldx:com>"
+            end)
+cod = cod:gsub("##d##", "\\\"")
+cod = cod:gsub("##s##", "\\\'")
+            if ldx.make_index then
+                local lines = cod:split("\n")
+                local f = "(<ldx:key class='1'>function</ldx:key>)%s+([%w%.]+)%s*%("
+                for k,v in pairs(lines) do
+                    -- functies
+                    v = v:gsub(f,function(key, str)
+                        return "<ldx:function>" .. str .. "</ldx:function>("
+                    end)
+                    -- variables
+                    v = v:gsub("^([%w][%w%,%s]-)(=[^=])",function(str, rest)
+                        local t = string.split(str, ",%s*")
+                        for k,v in pairs(t) do
+                            t[k] = "<ldx:variable>" .. v .. "</ldx:variable>"
+                        end
+                        return table.join(t,", ") .. rest
+                    end)
+                    -- so far
+                    lines[k] = v
+                end
+                v.code = table.concat(lines,"\n")
+            else
+                v.code = cod
+            end
+        end
+    end
+end
+
+function ldx.enhance(data) -- i need to use lpeg and then we can properly autoindent -)
+    local e = ldx.escape
+    for _,v in pairs(data) do
+        if v.code then
+            local dqs, sqs, com, cmt, cod = { }, { }, { }, { }, e(v.code)
+            cod = cod:gsub('\\"', "##d##")
+            cod = cod:gsub("\\'", "##s##")
+            cod = cod:gsub("%-%-%[%[.-%]%]%-%-", function(s)
+                cmt[#cmt+1] = s
+                return "<l<<<".. #cmt ..">>>l>"
+            end)
+            cod = cod:gsub("%-%-([^\n]*)", function(s)
+                com[#com+1] = s
+                return "<c<<<".. #com ..">>>c>"
+            end)
+            cod = cod:gsub("(%b\"\")", function(s)
+                dqs[#dqs+1] = s:sub(2,-2) or ""
+                return "<d<<<".. #dqs ..">>>d>"
+            end)
+            cod = cod:gsub("(%b\'\')", function(s)
+                sqs[#sqs+1] = s:sub(2,-2) or ""
+                return "<s<<<".. #sqs ..">>>s>"
+            end)
+            cod = cod:gsub("(%a+)",function(key)
+                local class = ldx.keywords.reserved[key]
+                if class then
+                    return "<ldx:key class='" .. class .. "'>" .. key .. "</ldx:key>"
+                else
+                    return key
+                end
+            end)
+            cod = cod:gsub("<s<<<(%d+)>>>s>", function(s)
+                return "<ldx:sqs>" .. sqs[tonumber(s)] .. "</ldx:sqs>"
+            end)
+            cod = cod:gsub("<d<<<(%d+)>>>d>", function(s)
+                return "<ldx:dqs>" .. dqs[tonumber(s)] .. "</ldx:dqs>"
+            end)
+            cod = cod:gsub("<c<<<(%d+)>>>c>", function(s)
+                return "<ldx:com>" .. com[tonumber(s)] .. "</ldx:com>"
+            end)
+            cod = cod:gsub("<l<<<(%d+)>>>l>", function(s)
+                return cmt[tonumber(s)]
+            end)
+            cod = cod:gsub("##d##", "\\\"")
+            cod = cod:gsub("##s##", "\\\'")
             if ldx.make_index then
                 local lines = cod:split("\n")
                 local f = "(<ldx:key class='1'>function</ldx:key>)%s+([%w%.]+)%s*%("

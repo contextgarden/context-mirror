@@ -15,10 +15,6 @@
 
 \unprotect
 
-% todo : \startsetups[name][XML] \setups[name][XML]
-
-% todo: \doglobal
-
 \let\startsetups\relax % to please dep checker
 \let\stopsetups \relax % to please dep checker
 
@@ -33,22 +29,20 @@
 \unexpanded \def\setups{\doifnextcharelse\bgroup\dosetupsA\dosetupsB} % {..} or [..]
 \unexpanded \def\setup {\doifnextcharelse\bgroup\dosetups \dosetupsC} % {..} or [..]
 
-% \def\dosetupsA  #1{\processcommacommand[#1]\dosetups} % {..}
-% \def\dosetupsB[#1]{\processcommacommand[#1]\dosetups} % [..]
-% \def\dosetupsC[#1]{\dosetups{#1}} % [..]
-%
-% better:
-
 \def\dosetupsA  #1{\cleanuplabel{#1}\processcommacommand[\cleanlabel]\dosetups} % {..}
 \def\dosetupsB[#1]{\cleanuplabel{#1}\processcommacommand[\cleanlabel]\dosetups} % [..]
 \def\dosetupsC[#1]{\cleanuplabel{#1}\dosetups\cleanlabel} % [..]
 
 % \def\dosetups#1% the grid option will be extended to other main modes
-%   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\empty}
+%   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}
+%   {\executeifdefined{\??su                         :#1}\empty}}
 
 \def\dosetups#1% the grid option will be extended to other main modes
   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}
-  {\executeifdefined{\??su                         :#1}\empty}}
+  {\executeifdefined{\??su                         :#1}\gobbleoneargument}\empty} % takes one argument
+
+\def\setupwithargument#1% the grid option will be extended to other main modes
+  {\executeifdefined{\??su:#1}\gobbleoneargument}
 
 \let\directsetup\dosetups
 
@@ -60,16 +54,17 @@
 \def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
 \def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
 \def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
+\def\startxmlsetups  {\xxstartsetups\plustwo\stopxmlsetups  } \let\stopxmlsetups  \relax
 
 \def\xxstartsetups#1#2%
   {\begingroup\chardef\setupseolmode#1\doifnextcharelse[{\startsetupsA#2}{\startsetupsB#2}}
 
 \def\startsetupsA#1% [ ] delimited
-  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\fi
+  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
    \dotripleempty\dostartsetups[#1]}
 
 \def\startsetupsB#1#2 % space delimited
-  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\fi
+  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
    \dodostartsetups#1\empty{#2}}
 
 \def\startsetupsC[#1][#2][#3]{\dodostartsetups#1{#2}{#3}}   % [..] [..]
@@ -83,8 +78,12 @@
 %
 % better:
 
-\long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
-  {\cleanuplabel{\??su#2:#3}\dograbuntil#1{\endgroup\dodoglobal\long\setvalue\cleanlabel}} % \doglobal
+% \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
+%   {\cleanuplabel{\??su#2:#3}\dograbuntil#1{\endgroup\dodoglobal\long\setvalue\cleanlabel}} % \doglobal
+
+\long\def\dodostartsetups#1#2#3%
+  {\cleanuplabel{\??su#2:#3}%
+   \long\def\dododostartsetups##1#1{\endgroup\dodoglobal\long\setvalue\cleanlabel####1{##1}}\dododostartsetups}
 
 \def\systemsetupsprefix{*}
 

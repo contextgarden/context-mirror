@@ -328,7 +328,6 @@
 \ifx\MMLleft \undefined \let\MMLleft \firstofoneargument \fi
 \ifx\MMLright\undefined \let\MMLright\firstofoneargument \fi
 
-
 \defineXMLentity [lbrace]       {\normalordelimiter{\{}{\MMLleft \{}}
 \defineXMLentity [rbrace]       {\normalordelimiter{\}}{\MMLright\}}}
 \defineXMLentity [lbracket]     {\normalordelimiter{[}{\MMLleft [}}
@@ -353,6 +352,7 @@
 \defineXMLentity [{(}] {\getXMLentity{lparenthesis}}
 \defineXMLentity [{)}] {\getXMLentity{rparenthesis}}
 
+
 \defineXMLentity [times]  {\mathematics{\times}}
 \defineXMLentity [minus]  {\mathematics{-}}
 \defineXMLentity [plus]   {\mathematics{+}}
@@ -367,14 +367,15 @@
 \defineXMLentity [.] {{.}}
 \defineXMLentity [+] {+}
 \defineXMLentity [-] {-}
-\defineXMLentity [(] {(}
-\defineXMLentity [)] {)}
-\defineXMLentity [<] {\mathematics{<}}
-\defineXMLentity [>] {\mathematics{>}}
 \defineXMLentity [|] {\myspecialnormalvert}
 \defineXMLentity [/] {/}
 \defineXMLentity [*] {\times}
 \defineXMLentity [=] {=}
+
+% \defineXMLentity [(] {(}
+% \defineXMLentity [)] {)}
+% \defineXMLentity [<] {\mathematics{<}}
+% \defineXMLentity [>] {\mathematics{>}}
 
 % \defineXMLentity [(] {\MMLleft (}
 % \defineXMLentity [)] {\MMLright)}
@@ -382,11 +383,12 @@
 % \defineXMLentity [{[}] {\MMLleft [}
 % \defineXMLentity [{]}] {\MMLright]}
 
-\defineXMLentity [++] {++}
-\defineXMLentity [--] {--}
-\defineXMLentity [//] {//}
-\defineXMLentity [**] {\times\times}
-\defineXMLentity [==] {==}
+\defineXMLentity [++]  {++}
+\defineXMLentity [--]  {--}
+\defineXMLentity [//]  {//}
+\defineXMLentity [**]  {\times\times}
+\defineXMLentity [==]  {==}
+\defineXMLentity [...] {\cdots}
 
 \defineXMLentity [quot] {"}
 

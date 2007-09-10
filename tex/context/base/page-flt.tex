@@ -685,6 +685,32 @@
 
 % \setupfloat[...][leftmargindistance=1cm,default={left,none}]
 
+% \def\redodefinefloat[#1][#2][#3]% same label/number
+%   {\presetlocalframed[\??fl#1]%
+%    \copylocalframed[\??fl#1][\??fl#3]%
+%    \copyparameters[\??fl#1][\??fl#3]
+%      [\c!width,\c!height,%\c!local,
+%       \c!maxwidth,\c!maxheight,\c!minwidth,
+%       \c!margin,\c!sidespacebefore,\c!sidespaceafter,\c!sidealign,
+%       \c!leftmargindistance,\c!rightmargindistance,\c!criterium,
+%       \c!leftmargin,\c!rightmargin,\c!innermargin,\c!outermargin,
+%       \c!frame,\c!radius,\c!corner,\c!location,\c!background,\c!framecolor,
+%       \c!backgroundscreen,\c!backgroundcolor,\c!backgroundoffset,
+%       \c!topframe,\c!bottomframe,\c!leftframe,\c!rightframe,
+%       \c!frameoffset,\c!pageboundaries,\c!default,
+%       \c!textmethod,\c!sidemethod,\c!method]%
+%    \copyparameters[\??kj#1][\??kj#3]
+%      [\c!location,\c!before,\c!inbetween,\c!after,
+%       \c!spacebefore,\c!spaceinbetween,\c!spaceafter,
+%       \c!width,\c!headstyle,\c!headcolor,\c!style,\c!color,
+%       \c!textstyle,\c!textcolor,\c!minwidth,
+%       \c!align,\c!number,\c!way,\c!blockway,\c!setups,
+%       \c!leftmargin,\c!rightmargin,\c!innermargin,\c!outermargin,
+%       \c!sectionnumber,\c!separator,\c!stopper,\c!suffix,\c!distance,\c!conversion]%
+%    \definenumber[#1][#3]%
+%    \presetlabeltext[#1=\labeltext{#3}]%
+%    \dodefinefloatcommands[#1][#2]}
+
 \def\redodefinefloat[#1][#2][#3]% same label/number
   {\presetlocalframed[\??fl#1]%
    \copylocalframed[\??fl#1][\??fl#3]%
@@ -704,41 +730,12 @@
       \c!spacebefore,\c!spaceinbetween,\c!spaceafter,
       \c!width,\c!headstyle,\c!headcolor,\c!style,\c!color,
       \c!textstyle,\c!textcolor,\c!minwidth,
-      \c!align,\c!number,\c!way,\c!blockway,\c!setups,
-      \c!leftmargin,\c!rightmargin,\c!innermargin,\c!outermargin,
-      \c!sectionnumber,\c!separator,\c!stopper,\c!suffix,\c!distance,\c!conversion]%
-   \definenumber[#1][#3]%
-   \presetlabeltext[#1=\labeltext{#3}]%
-   \dodefinefloatcommands[#1][#2]}
-
-% todo: ook in localframed een parent chain, then we can inherit without defs
-
-\def\redodefinefloat[#1][#2][#3]% same label/number
-  {\presetlocalframed[\??fl#1]%
-   \copylocalframed[\??fl#1][\??fl#3]%
-   \copyparameters[\??fl#1][\??fl#3]
-     [\c!width,\c!height,%\c!local,
-      \c!maxwidth,\c!maxheight,\c!minwidth,
-      \c!margin,\c!sidespacebefore,\c!sidespaceafter,\c!sidealign,
-      \c!leftmargindistance,\c!rightmargindistance,\c!criterium,
-      \c!leftmargin,\c!rightmargin,\c!innermargin,\c!outermargin,
-      \c!frame,\c!radius,\c!corner,\c!location,\c!background,\c!framecolor,
-      \c!backgroundscreen,\c!backgroundcolor,\c!backgroundoffset,
-      \c!topframe,\c!bottomframe,\c!leftframe,\c!rightframe,
-      \c!frameoffset,\c!pageboundaries,\c!default,
-      \c!textmethod,\c!sidemethod]%
-   \copyparameters[\??kj#1][\??kj#3]
-     [\c!location,\c!before,\c!inbetween,\c!after,
-      \c!spacebefore,\c!spaceinbetween,\c!spaceafter,
-      \c!width,\c!headstyle,\c!headcolor,\c!style,\c!color,
-      \c!textstyle,\c!textcolor,\c!minwidth,
       \c!leftmargin,\c!rightmargin,\c!innermargin,\c!outermargin,
       \c!align,\c!number,\c!way,\c!blockway,\c!setups,
       \c!sectionnumber,\c!separator,\c!stopper,\c!suffix,\c!distance,\c!conversion]%
    \definenumber[#1][#3]%
    \presetlabeltext[#1=\labeltext{#3}]%
    \dodefinefloatcommands[#1][#2]}
-
 
 \def\placefloat
   {\dotripleempty\docomplexplacefloat}
@@ -2303,18 +2300,17 @@
    \ifdone
      \bgroup % we need the color/font switch, else problems inside split verbatim
      \setnormalcatcodes % postponing in verbatim
-     \edef\savedtopofpagecolor{\topofpagecolor}%
-     \doifsomething\savedtopofpagecolor\restorecolormode % \stopcolormode
+     \pushpostponedpagecolor
      \restoreglobalbodyfont                        % The \nof-test is
      \global\pagetotal\zeropoint                   % recently added and
      \global\inpostponingtrue                      % definitely needed else
      \the\postponedpageblocks                      % we can loose or disorder
      \dorecurse\nofpostponedblocks                 % floats; anyhow, this
-       {\getbuffer[pbuf-\recurselevel]}           % mechanism is still
+       {\getbuffer[pbuf-\recurselevel]}%           % mechanism is still
      \doflushfloats % new but potential dangerous  % suboptimal and needs a
      \doglobal\newcounter\nofpostponedblocks       % proper analysis
      \global\inpostponingfalse
-     \doifsomething\savedtopofpagecolor\startcolormode\savedtopofpagecolor
+     \poppostponedpagecolor
      \egroup
    \fi
    \egroup} % new may 2004

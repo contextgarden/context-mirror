@@ -123,7 +123,7 @@
 
 \def\domthxarrdouble#1#2#3#4#5#6#7% opt l r sp rs top bot
   {\mathrel
-     {\scratchdimen.22ex\relax
+     {\scratchdimen.32ex\relax % was .22, todo: make configurable
       \setbox0\hbox{$\domthxarr{#1}{#2}{#4}{\phantom{#6}}{#7}$}%
       \setbox2\hbox{$\domthxarr{#1}{#3}{#5}{#6}{\phantom{#7}}$}%
       \raise\scratchdimen\box0
@@ -273,49 +273,57 @@
 %D arrows. \tex{leftarrowfill} and \tex{rightarrowfill} are redefined
 %D using \tex{defaultmtharrowfill}.
 
-\def\rightarrowfill       {\defaultmtharrowfill \relbar              \relbar \rightarrow       }
-\def\leftarrowfill        {\defaultmtharrowfill \leftarrow           \relbar \relbar           }
-\def\equalfill            {\defaultmtharrowfill \Relbar              \Relbar \Relbar           }
-\def\Rightarrowfill       {\defaultmtharrowfill \Relbar              \Relbar \Rightarrow       }
-\def\Leftarrowfill        {\defaultmtharrowfill \Leftarrow           \Relbar \Relbar           }
-\def\Leftrightarrowfill   {\defaultmtharrowfill \Leftarrow           \Relbar \Rightarrow       }
-\def\leftrightarrowfill   {\defaultmtharrowfill \leftarrow           \relbar \rightarrow       }
-\def\mapstofill           {\defaultmtharrowfill {\mapstochar\relbar} \relbar \rightarrow       }
-\def\twoheadrightarrowfill{\defaultmtharrowfill \relbar              \relbar \twoheadrightarrow}
-\def\twoheadleftarrowfill {\defaultmtharrowfill \twoheadleftarrow    \relbar \relbar           }
-\def\rightharpoondownfill {\defaultmtharrowfill \relbar              \relbar \rightharpoondown }
-\def\rightharpoonupfill   {\defaultmtharrowfill \relbar              \relbar \rightharpoonup   }
-\def\leftharpoondownfill  {\defaultmtharrowfill \leftharpoondown     \relbar \relbar           }
-\def\leftharpoonupfill    {\defaultmtharrowfill \leftharpoonup       \relbar \relbar           }
+\def\rightarrowfill       {\defaultmtharrowfill \relbar               \relbar \rightarrow}
+\def\leftarrowfill        {\defaultmtharrowfill \leftarrow            \relbar \relbar}
+\def\equalfill            {\defaultmtharrowfill \Relbar               \Relbar \Relbar}
+\def\Rightarrowfill       {\defaultmtharrowfill \Relbar               \Relbar \Rightarrow}
+\def\Leftarrowfill        {\defaultmtharrowfill \Leftarrow            \Relbar \Relbar}
+\def\Leftrightarrowfill   {\defaultmtharrowfill \Leftarrow            \Relbar \Rightarrow}
+\def\leftrightarrowfill   {\defaultmtharrowfill \leftarrow            \relbar \rightarrow}
+\def\mapstofill           {\defaultmtharrowfill{\mapstochar\relbar}   \relbar \rightarrow}
+\def\twoheadrightarrowfill{\defaultmtharrowfill \relbar               \relbar \twoheadrightarrow}
+\def\twoheadleftarrowfill {\defaultmtharrowfill \twoheadleftarrow     \relbar \relbar}
+\def\rightharpoondownfill {\defaultmtharrowfill \relbar               \relbar \rightharpoondown}
+\def\rightharpoonupfill   {\defaultmtharrowfill \relbar               \relbar \rightharpoonup}
+\def\leftharpoondownfill  {\defaultmtharrowfill \leftharpoondown      \relbar \relbar}
+\def\leftharpoonupfill    {\defaultmtharrowfill \leftharpoonup        \relbar \relbar}
+\def\hookleftfill         {\defaultmtharrowfill \leftarrow            \relbar{\relbar\joinrel\rhook}}
+\def\hookrightfill        {\defaultmtharrowfill{\lhook\joinrel\relbar}\relbar \rightarrow}
+\def\relfill              {\defaultmtharrowfill \relbar               \relbar \relbar}
 
-\def\hookleftfill {\defaultmtharrowfill \leftarrow            \relbar{\relbar\joinrel\rhook}}
-\def\hookrightfill{\defaultmtharrowfill{\lhook\joinrel\relbar}\relbar \rightarrow}
+\def\triplerelbar {\mathrel\equiv}
+\def\triplerelfill{\defaultmtharrowfill\triplerelbar\triplerelbar\triplerelbar}
+
+\def\singlebond{{\xrel}} % or \def\singlebond{{\xrel[2]}}
+\def\doublebond{{\xequal}}
+\def\triplebond{{\xtriplerel}}
 
 %D Now we define most commonly used arrows. These include arrows
 %D defined in \filename{amsmath.sty}, \filename{extarrows.sty},
 %D \filename{extpfel.sty} and \filename{mathtools.sty} packages for
-%D \LATEX.
+%D \LATEX\ (plus a few more).
 
-\definematharrow [xrightarrow]        [0359] [\rightarrowfill]
-\definematharrow [xleftarrow]         [3095] [\leftarrowfill]
-\definematharrow [xequal]             [0099] [\equalfill]
-\definematharrow [xRightarrow]        [0359] [\Rightarrowfill]
-\definematharrow [xLeftarrow]         [3095] [\Leftarrowfill]
-\definematharrow [xLeftrightarrow]    [0099] [\Leftrightarrowfill]
-\definematharrow [xleftrightarrow]    [0099] [\leftrightarrowfill]
-\definematharrow [xmapsto]            [3599] [\mapstofill]
-\definematharrow [xtwoheadrightarrow] [5009] [\twoheadrightarrowfill]
-\definematharrow [xtwoheadleftarrow]  [0590] [\twoheadleftarrowfill]
-\definematharrow [xrightharpoondown]  [0359] [\rightharpoondownfill]
-\definematharrow [xrightharpoonup]    [0359] [\rightharpoonupfill]
-\definematharrow [xleftharpoondown]   [3095] [\leftharpoondownfill]
-\definematharrow [xleftharpoonup]     [3095] [\leftharpoonupfill]
-
-\definematharrow [xleftrightharpoons] [3399,3399] [\leftharpoonupfill,\rightharpoondownfill]
-\definematharrow [xrightleftharpoons] [3399,3399] [\rightharpoonupfill,\leftharpoondownfill]
-
-\definematharrow [xhookleftarrow]  [3095] [\hookleftfill]
-\definematharrow [xhookrightarrow] [0395] [\hookrightfill]
+\definematharrow [xrightarrow]         [0359]      [\rightarrowfill]
+\definematharrow [xleftarrow]          [3095]      [\leftarrowfill]
+\definematharrow [xequal]              [0099]      [\equalfill]
+\definematharrow [xRightarrow]         [0359]      [\Rightarrowfill]
+\definematharrow [xLeftarrow]          [3095]      [\Leftarrowfill]
+\definematharrow [xLeftrightarrow]     [0099]      [\Leftrightarrowfill]
+\definematharrow [xleftrightarrow]     [0099]      [\leftrightarrowfill]
+\definematharrow [xmapsto]             [3599]      [\mapstofill]
+\definematharrow [xtwoheadrightarrow]  [5009]      [\twoheadrightarrowfill]
+\definematharrow [xtwoheadleftarrow]   [0590]      [\twoheadleftarrowfill]
+\definematharrow [xrightharpoondown]   [0359]      [\rightharpoondownfill]
+\definematharrow [xrightharpoonup]     [0359]      [\rightharpoonupfill]
+\definematharrow [xleftharpoondown]    [3095]      [\leftharpoondownfill]
+\definematharrow [xleftharpoonup]      [3095]      [\leftharpoonupfill]
+\definematharrow [xhookleftarrow]      [3095]      [\hookleftfill]
+\definematharrow [xhookrightarrow]     [0395]      [\hookrightfill]
+\definematharrow [xrel]                [0099]      [\relfill]
+\definematharrow [xtriplerel]          [0099]      [\triplerelfill]
+\definematharrow [xrightoverleftarrow] [0359,3095] [\rightarrowfill,\leftarrowfill]
+\definematharrow [xleftrightharpoons]  [3399,3399] [\leftharpoonupfill,\rightharpoondownfill]
+\definematharrow [xrightleftharpoons]  [3399,3399] [\rightharpoonupfill,\leftharpoondownfill]
 
 %D These arrows can be used as follows:
 %D

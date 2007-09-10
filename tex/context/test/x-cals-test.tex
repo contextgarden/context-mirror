@@ -1,0 +1,20 @@
+% engine=luatex
+
+\usemodule[x][cals]
+
+\setupcolors[state=start]
+
+\startsetups xml:directive:noframe
+    \setupTABLE[frame=off]
+\stopsetups
+
+\startsetups xml:directive:colors
+    \setupTABLE[row]   [odd] [frame=off,background=color,backgroundcolor=red]
+    \setupTABLE[row]   [even][frame=off,background=color,backgroundcolor=green]
+    \setupTABLE[column][2]   [frame=off,background=color,backgroundcolor=blue]
+\stopsetups
+
+\starttext
+    \xmlloaddirectives{x-cals-test.cdx}
+    \xmlprocess{main}{x-cals-test.xml}{}
+\stoptext

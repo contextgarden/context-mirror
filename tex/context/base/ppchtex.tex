@@ -19,7 +19,7 @@
 % constante van phantom in definitie ONE: \setchemicaltextwidth 300
 %
 % it would be interesting to rewrite this module with todays
-% experiences and new context functionality, mybe ...
+% experiences and new context functionality, maybe ...
 
 % Deze module ondersteunt het zetten van chemische
 % (structuur)formules. Hoewel de macro' zijn afgestemd op
@@ -1865,7 +1865,7 @@
       \processcommalist[\@@chemicaloffset,#1]\dodoprocesschemical}%
    \ignorespaces}
 
-\def\chemicaloxidation#1#2#3%
+\unexpanded\def\chemicaloxidation#1#2#3%
   {\chemicaltop
      {\ifnum#20=0
         0%
@@ -1879,11 +1879,11 @@
 \def\chemicallfraction{\ifinchemical.1\else.1\fi}
 \def\chemicalrfraction{\ifinchemical.1\else.1\fi}
 
-\def\chemicaltighttext%
+\def\chemicaltighttext
   {\def\chemicaltfraction{\ifinchemical.3\else.6\fi}%
    \def\chemicalbfraction{\ifinchemical.2\else.4\fi}%
-   \def\chemicallfraction{\ifinchemical0\else0\fi}%
-   \def\chemicalrfraction{\ifinchemical0\else0\fi}}
+   \def\chemicallfraction{\ifinchemical 0\else 0\fi}%
+   \def\chemicalrfraction{\ifinchemical 0\else 0\fi}}
 
 \def\dochemicaltop#1#2#3#4%
   {\vbox
@@ -2067,7 +2067,7 @@
 \setvalue{\s!chemical\c!x1}{0}
 \setvalue{\s!chemical\c!y1}{0}
 
-\def\executechemicalSAVE%
+\def\executechemicalSAVE
   {%\writestatus{ppchtex}{saving \the\horchemical,\the\verchemical}%
    \advance\chemicalstack by 1
    \letvalue {\s!chemical n\the\chemicalstack}=\chemicalname
@@ -2080,7 +2080,7 @@
    \doifdefined{\s!executechemical#1}{\getvalue{\s!executechemical#1}[]}%
    \let\processchemical=\oldprocesschemical}
 
-\def\executechemicalRESTORE%
+\def\executechemicalRESTORE
   {\ifnum\chemicalstack=0\relax
      \horchemical=\getvalue{\s!chemical x1}\relax
      \verchemical=\getvalue{\s!chemical y1}\relax
@@ -2142,18 +2142,18 @@
      {\ifdim\ht4>\!!zeropoint\box4\fi}% % expands to \empty in test
    \egroup}
 
-\def\chemicalsingleouterarrow%
+\def\chemicalsingleouterarrow
   {\dochemicalouterarrow
      {\hbox to \dimen2{\rightarrowfill}}}
 
-\def\chemicaldoubleouterarrow%
+\def\chemicaldoubleouterarrow
   {\dochemicalouterarrow
      {\lower.5\ht0\vbox
         {\offinterlineskip
          \hbox to \dimen2{\rightarrowfill}
          \hbox to \dimen2{\leftarrowfill}}}}
 
-\def\chemicaltwintipouterarrow%
+\def\chemicaltwintipouterarrow
   {\dochemicalouterarrow
      {\hbox
         {\hbox to \dimen2{\rightarrowfill}%
@@ -2366,7 +2366,7 @@
                 MOV##4##5=>\processchemicaltranslate{##4##5},
                 DIR##4##5=>\processchemicaldirection{##4##5},
                 OFF##4##5=>\processchemicaloffset{##4##5},
-CCD##4##5=>\processchemicaldottsegment{CC}{##4##5},
+                CCD##4##5=>\processchemicaldottsegment{CC}{##4##5},
                 LDD##4##5=>\processchemicaldashedlinesegment{DB1}{##4##5}%
                            \processchemicallinesegment{DB2}{##4##5},
                 RDD##4##5=>\processchemicallinesegment{DB1}{##4##5}%
@@ -2638,10 +2638,10 @@ CCD##4##5=>\processchemicaldottsegment{CC}{##4##5},
              -RB##4=>\processchemicaldeltalinesegment{-R}{##4},
              +RB##4=>\processchemicaldeltalinesegment{+R}{##4},
              CRZ##4=>\processchemicaltextelement{CRZ}{##4}{#1}{0}{},
-RTN##4=>\processchemicaltextconstant{RTN}{##4}{\chemicaltextelementnumber}{0},
-RTT##4=>\processchemicaltextelement{RTN}{##4}{#1}{0}{},
-RBN##4=>\processchemicaltextconstant{RBN}{##4}{\chemicaltextelementnumber}{0},
-RBT##4=>\processchemicaltextelement{RBN}{##4}{#1}{0}{},
+             RTN##4=>\processchemicaltextconstant{RTN}{##4}{\chemicaltextelementnumber}{0},
+             RTT##4=>\processchemicaltextelement{RTN}{##4}{#1}{0}{},
+             RBN##4=>\processchemicaltextconstant{RBN}{##4}{\chemicaltextelementnumber}{0},
+             RBT##4=>\processchemicaltextelement{RBN}{##4}{#1}{0}{},
              -SS##4=>\processchemicallinesegment{-SS}{##4},
              +SS##4=>\processchemicallinesegment{+SS}{##4},
              CCD##4=>\processchemicaldottsegment{CC}{##4},
@@ -2650,8 +2650,8 @@ RBT##4=>\processchemicaltextelement{RBN}{##4}{#1}{0}{},
            RB##3##4=>\processchemicaldeltalinesegment{R}{##3##4},
            ZN##3##4=>\processchemicaltextconstant{ZN}{##3##4}{\chemicaltextelementnumber}{0},
            ZT##3##4=>\processchemicaltextelement{ZN}{##3##4}{#1}{0}{},
-RN##3##4=>\processchemicaltextconstant{RN}{##3##4}{\chemicaltextelementnumber}{0},
-RT##3##4=>\processchemicaltextelement{RN}{##3##4}{#1}{0}{},
+           RN##3##4=>\processchemicaltextconstant{RN}{##3##4}{\chemicaltextelementnumber}{0},
+           RT##3##4=>\processchemicaltextelement{RN}{##3##4}{#1}{0}{},
            AU##3##4=>\processchemicaluparrowsegment{A}{##3##4},
            AD##3##4=>\processchemicaldownarrowsegment{A}{##3##4},
            CC##3##4=>\processchemicalcircsegment{CC}{##3##4},

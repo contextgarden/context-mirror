@@ -164,22 +164,19 @@
 %      {\ctxlua{nodes.process_page(tex.box[\number\nextbox])}%
 %       \primitive\shipout\box\nextbox}}
 
+% Objects are processed indepently \unknown\ actually we may need a proper callback.
+
 \newbox\finalizedshipoutbox
+
+\def\finalizeobjectbox#1{\ctxlua{nodes.process_page(tex.box[\number#1])}}
 
 \def\finalizeshipoutbox#1% % hack till we have access to pdf backend
   {\global\setbox\finalizedshipoutbox\hbox{#1}%
-   \ctxlua{nodes.process_page(tex.box[\number\finalizedshipoutbox])}%
+   \finalizeobjectbox\finalizedshipoutbox
    \hbox{\ctxlua{states.flush()}\box\finalizedshipoutbox}}
-
-% \def\shipout
-%   {\dowithnextbox{\ctxlua{tex.primitive('shipout', nodes.process_page(tex.nextbox)}}}
 
 \let\normalshipout\shipout
 
-% Objects are processed indepently \unknown\ actually we may need a proper callback.
-
-\def\finalizeobjectbox#1%
-  {\ctxlua{nodes.process_page(tex.box[\number#1])}}
 
 % tricky stuff:
 

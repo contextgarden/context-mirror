@@ -2790,7 +2790,7 @@ end
 
 function input.list_configurations(instance)
     for _,key in pairs(table.sortedkeys(instance.kpsevars)) do
-        if not instance.pattern or (instance.pattern=="") or key:find(instance.pattern) then
+        if not instance.pattern or instance.pattern == "" or key:find(instance.pattern) then
             print(key.."\n")
             for i,c in ipairs(instance.order) do
                 local str = c[key]
@@ -4998,16 +4998,21 @@ input.defaultlibs   = { -- not all are needed
 
 -- todo: use environment.argument() instead of environment.arguments[]
 
-instance.engine     = environment.arguments["engine"]   or 'luatex'
-instance.progname   = environment.arguments["progname"] or 'context'
-instance.luaname    = environment.arguments["luafile"]  or "" -- environment.ownname or ""
-instance.lualibs    = environment.arguments["lualibs"]  or table.concat(input.defaultlibs,",")
-instance.allresults = environment.arguments["all"]      or false
-instance.pattern    = environment.arguments["pattern"]  or nil
-instance.sortdata   = environment.arguments["sort"]     or false
-instance.kpseonly   = not environment.arguments["all"]  or false
-instance.my_format  = environment.arguments["format"]   or instance.format
-instance.lsrmode    = environment.arguments["lsr"]      or false
+instance.engine     =     environment.arguments["engine"]   or 'luatex'
+instance.progname   =     environment.arguments["progname"] or 'context'
+instance.luaname    =     environment.arguments["luafile"]  or "" -- environment.ownname or ""
+instance.lualibs    =     environment.arguments["lualibs"]  or table.concat(input.defaultlibs,",")
+instance.allresults =     environment.arguments["all"]      or false
+instance.pattern    =     environment.arguments["pattern"]  or nil
+instance.sortdata   =     environment.arguments["sort"]     or false
+instance.kpseonly   = not environment.arguments["all"]      or false
+instance.my_format  =     environment.arguments["format"]   or instance.format
+instance.lsrmode    =     environment.arguments["lsr"]      or false
+
+if type(instance.pattern) == 'boolean' then
+    input.report("invalid pattern specification") -- toto, force verbose for one message
+    instance.pattern = nil
+end
 
 if environment.arguments["trace"] then input.settrace(environment.arguments["trace"]) end
 
@@ -5248,10 +5253,10 @@ elseif environment.arguments["var-value"] or environment.arguments["show-value"]
     input.for_files(instance, input.var_value, environment.files)
 elseif environment.arguments["find-file"] then
     input.my_prepare_b(instance)
-    instance.format = environment.arguments["format"] or instance.format
-    if environment.arguments["pattern"] then
+    instance.format  = environment.arguments["format"] or instance.format
+    if instance.pattern then
         instance.allresults = true
-        input.for_files(instance, input.find_files, { environment.arguments["pattern"] }, instance.my_format)
+        input.for_files(instance, input.find_files, { instance.pattern }, instance.my_format)
     else
         input.for_files(instance, input.find_files, environment.files, instance.my_format)
     end
@@ -5261,11 +5266,11 @@ elseif environment.arguments["find-file"] then
 elseif environment.arguments["format-path"] then
     input.my_prepare_b(instance)
     input.report(caches.setpath(instance,"format"))
-elseif environment.arguments["pattern"] then
+elseif instance.pattern then -- brrr
     input.my_prepare_b(instance)
     instance.format = environment.arguments["format"] or instance.format
     instance.allresults = true
-    input.for_files(instance, input.find_files, { environment.arguments["pattern"] }, instance.my_format)
+    input.for_files(instance, input.find_files, { instance.pattern }, instance.my_format)
 elseif environment.arguments["help"] or (environment.files[1]=='help') or (#environment.files==0) then
     if not input.verbose then
         input.verbose = true

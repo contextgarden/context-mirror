@@ -1423,6 +1423,50 @@
 %     \blabla test
 % \stoptext
 
+% \starttext
+%
+% \setupcolors[state=start]
+%
+% \definefontfeature
+%   [default-base]
+%   [script=latn,language=dflt,liga=yes,kern=yes,tlig=yes,trep=yes]
+% \definefontfeature
+%   [default-node]
+%   [script=latn,language=dflt,liga=yes,kern=yes,tlig=yes,trep=yes,mode=node]
+% \definefontfeature
+%   [default-none]
+%   [script=latn,language=dflt,liga=yes,kern=no, tlig=yes,trep=yes]
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:lmroman12regular*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:lmroman12regular*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:lmroman12regular*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \blank
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:texgyrepagella*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:texgyrepagella*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:texgyrepagella*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \blank
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:palatinonovaregular*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:palatinonovaregular*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:palatinonovaregular*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:OfficinaSerifBookITC*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:OfficinaSerifBookITC*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:OfficinaSerifBookITC*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \stoptext
+
 \beginLUATEX
 
     \def\checkfontfilename% -- todo: integrate so that we call do.. directly
