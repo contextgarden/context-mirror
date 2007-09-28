@@ -1,0 +1,149 @@
+<?xml version='1.0' standalone='yes' ?>
+
+<root xmlns:ct="http://www.pragma-ade.com/context">
+
+    one:
+
+    <tabulate xmlns="http://www.pragma-ade.com/context">
+        <template>
+            <column align='flushleft'/>
+            <column align='flushright'/>
+            <column align='center'/>
+        </template>
+        <body>
+            <row>
+                <cell>one</cell>
+                <cell>two</cell>
+                <cell>three</cell>
+            </row>
+            <row>
+                <cell>a</cell>
+                <cell>b</cell>
+                <cell>c</cell>
+            </row>
+            <row>
+                <cell>alpha</cell>
+                <cell>beta</cell>
+                <cell>gamma</cell>
+            </row>
+        </body>
+    </tabulate>
+
+    two:
+
+    <context:tabulate>
+        <context:template>
+            <context:column align='flushleft'/>
+            <context:column align='flushright'/>
+            <context:column align='center'/>
+        </context:template>
+        <context:body>
+            <context:row>
+                <context:cell>one</context:cell>
+                <context:cell>two</context:cell>
+                <context:cell>three</context:cell>
+            </context:row>
+            <context:row>
+                <context:cell>a</context:cell>
+                <context:cell>b</context:cell>
+                <context:cell>c</context:cell>
+            </context:row>
+            <context:row>
+                <context:cell>alpha</context:cell>
+                <context:cell>beta</context:cell>
+                <context:cell>gamma</context:cell>
+            </context:row>
+        </context:body>
+    </context:tabulate>
+
+    three:
+
+    <context:tabulate>
+        <context:body>
+            <context:row>
+                <context:cell>one</context:cell>
+                <context:cell>two</context:cell>
+                <context:cell>three</context:cell>
+            </context:row>
+            <context:row>
+                <context:cell>a</context:cell>
+                <context:cell>b</context:cell>
+                <context:cell>c</context:cell>
+            </context:row>
+            <context:row>
+                <context:cell>alpha</context:cell>
+                <context:cell>beta</context:cell>
+                <context:cell>gamma</context:cell>
+            </context:row>
+        </context:body>
+    </context:tabulate>
+
+    four:
+
+    <context:tabulate template="|l|l|l|">
+        <context:body>
+            <context:row>
+                <context:cell>one</context:cell>
+                <context:cell>two</context:cell>
+                <context:cell>three</context:cell>
+            </context:row>
+            <context:row>
+                <context:cell>a</context:cell>
+                <context:cell>b</context:cell>
+                <context:cell>c</context:cell>
+            </context:row>
+            <context:row>
+                <context:cell>alpha</context:cell>
+                <context:cell>beta</context:cell>
+                <context:cell>gamma</context:cell>
+            </context:row>
+        </context:body>
+    </context:tabulate>
+
+    five:
+
+    <ct:combination nx='3' ny='2'>
+        <ct:pair>
+            <ct:content>some content 1</ct:content>
+            <ct:caption>caption a</ct:caption>
+        </ct:pair>
+        <ct:pair>
+            <ct:content>some content 2</ct:content>
+            <ct:caption>caption b</ct:caption>
+        </ct:pair>
+        <ct:pair>
+            <ct:content>some content 3</ct:content>
+            <ct:caption>caption c</ct:caption>
+        </ct:pair>
+        <ct:pair>
+            <ct:content>some content 4</ct:content>
+            <ct:caption>caption d</ct:caption>
+        </ct:pair>
+        <ct:pair>
+            <ct:content>some content 5</ct:content>
+            <ct:caption>caption e</ct:caption>
+        </ct:pair>
+        <ct:pair>
+            <ct:content>some content 6</ct:content>
+            <ct:caption>caption f</ct:caption>
+        </ct:pair>
+    </ct:combination>
+
+    six:
+
+    <ct:combination>
+        <ct:pair>
+            <ct:content>some content 1</ct:content>
+            <ct:caption>caption a</ct:caption>
+        </ct:pair>
+        <ct:pair>
+            <ct:content>some content 2</ct:content>
+            <ct:caption>caption b</ct:caption>
+        </ct:pair>
+        <ct:pair>
+            <ct:content>some content 3</ct:content>
+            <ct:caption>caption c</ct:caption>
+        </ct:pair>
+    </ct:combination>
+
+</ct:root>

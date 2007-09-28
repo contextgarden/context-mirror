@@ -11,12 +11,20 @@ function boolean.tonumber(b)
     if b then return 1 else return 0 end
 end
 
-function toboolean(str)
-    if type(str) == "string" then
-        return str == "true" or str == "yes" or str == "on" or str == "1"
-    elseif type(str) == "number" then
-        return tonumber(str) ~= 0
-    elseif type(str) == "nil" then
+function toboolean(str,tolerant)
+    if tolerant then
+        if type(str) == "string" then
+            return str == "true" or str == "yes" or str == "on" or str == "1"
+        elseif type(str) == "number" then
+            return tonumber(str) ~= 0
+        elseif type(str) == "nil" then
+            return false
+        else
+            return str
+        end
+    elseif str == "true" then
+        return true
+    elseif str == "false" then
         return false
     else
         return str

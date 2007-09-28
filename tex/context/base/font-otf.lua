@@ -716,11 +716,16 @@ function fonts.otf.load(filename,format,sub,featurefile)
     end
     local data = containers.read(fonts.otf.cache, hash)
     if not data then
-        local ff
+        local ff, messages
         if sub then
-            ff = fontforge.open(filename,sub)
+            ff, messages = fontforge.open(filename,sub)
         else
-            ff = fontforge.open(filename)
+            ff, messages = fontforge.open(filename)
+        end
+        if messages and #messages > 0 then
+            for _, m in ipairs(messages) do
+                logs.report("load otf","warning: " .. m)
+            end
         end
         if ff then
             logs.report("load otf","loading: " .. filename)
@@ -2316,6 +2321,9 @@ do
     local function toligature(start,stop,char,markflag)
         if start ~= stop then
             local deletemarks = markflag ~= "mark"
+            start.components = node.copy_list(start,stop)
+            node.slide(start.components)
+            -- todo: components
             start.subtype = 1
             start.char = char
             local marknum = 1

@@ -72,6 +72,7 @@ class TEX
     @@backends     = Hash.new
     @@mappaths     = Hash.new
     @@runoptions   = Hash.new
+    @@tcxflag      = Hash.new
     @@draftoptions = Hash.new
     @@texformats   = Hash.new
     @@mpsformats   = Hash.new
@@ -169,13 +170,19 @@ class TEX
     ['cont-en','cont-nl','cont-de','cont-it',
      'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
-  # @@runoptions['xetex']   = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5 -q"']
-    @@runoptions['xetex']   = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5"']
+    @@runoptions['aleph']   = ['--8bit']
+    @@runoptions['luatex']  = ['--file-line-error']
+    @@runoptions['mpost']   = ['--8bit']
     @@runoptions['pdfetex'] = ['--8bit']           # obsolete
     @@runoptions['pdftex']  = ['--8bit']           # pdftex is now pdfetex
-    @@runoptions['luatex']  = ['--file-line-error']
-    @@runoptions['aleph']   = ['--8bit']
-    @@runoptions['mpost']   = ['--8bit']
+    @@runoptions['xetex']   = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5"']
+
+    @@tcxflag['aleph']   = true
+    @@tcxflag['luatex']  = false
+    @@tcxflag['mpost']   = true
+    @@tcxflag['pdfetex'] = true
+    @@tcxflag['pdftex']  = true
+    @@tcxflag['xetex']   = false
 
     @@draftoptions['pdftex'] = ['--draftmode']
 
@@ -540,11 +547,16 @@ class TEX
             "--ini"
         end
     end
-    def tcxflag(file="natural.tcx")
-        if Kpse.miktex? then
-            "-tcx=#{file}"
+    def tcxflag(engine)
+        if @@tcxflag[engine] then
+            file = "natural.tcx"
+            if Kpse.miktex? then
+                "-tcx=#{file}"
+            else
+                "-translate-file=#{file}"
+            end
         else
-            "-translate-file=#{file}"
+            ""
         end
     end
 
@@ -661,7 +673,7 @@ class TEX
                     texformats.each do |texformat|
                         report("generating tex format #{texformat}")
                         progname = validprogname([getvariable('progname'),texformat,texengine])
-                        runcommand([quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)])
+                        runcommand([quoted(texengine),prognameflag(progname),iniflag,tcxflag(texengine),prefixed(texformat,texengine),texmakeextras(texformat)])
                     end
                 end
             else
@@ -682,7 +694,7 @@ class TEX
                 mpsformats.each do |mpsformat|
                     report("generating mps format #{mpsformat}")
                     progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
-                    if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
+                    if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag(mpsengine),runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
                         setvariable('error','no format made')
                     end
                 end
@@ -1559,7 +1571,7 @@ end
                 run_luatools("--fmt=#{texformat} #{filename}")
             else
                 progname = validprogname([getvariable('progname'),texformat,texengine])
-                runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)])
+                runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag(texengine),runoptions(texengine),filename,texprocextras(texformat)])
             end
             # true
         else
@@ -1574,8 +1586,7 @@ end
         if mpsengine && mpsformat then
             ENV["MPXCOMMAND"] = "0" unless mpx
             progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
-            runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
-            # runcommand([quoted(mpsengine),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
+            runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag(mpsengine),runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
             true
         else
             false
@@ -1790,10 +1801,10 @@ end
 
         forcexml   = getvariable('forcexml')
 
-if dummyfile || forcexml then # after ctx?
-    jobsuffix = makestubfile(rawname,rawbase,forcexml)
-    checkxmlfile(rawname)
-end
+        if dummyfile || forcexml then # after ctx?
+            jobsuffix = makestubfile(rawname,rawbase,forcexml)
+            checkxmlfile(rawname)
+        end
 
         # preprocess files
 
@@ -1929,7 +1940,15 @@ end
                                 end
                             end
 # goto .
+
                             ok = runtex(File.suffixed(if dummyfile || forcexml then rawbase else rawname end,jobsuffix))
+
+if getvariable('texengine') == "xetex" then
+    ok = true
+end
+
+############################
+
 # goto tmp/jobname when present
                             if ok && (nofruns > 1) then
                                 unless getvariable('nompmode') then

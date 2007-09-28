@@ -150,6 +150,8 @@ function fonts.tfm.check_virtual_id(tfmdata, id)
     end
 end
 
+-- if t.tounicode = 1 then also characters[n].tounicode = "string"
+
 function fonts.tfm.scale(tfmtable, scaledpoints)
     -- 65536 = 1pt
     -- 1000 units per designsize (not always)

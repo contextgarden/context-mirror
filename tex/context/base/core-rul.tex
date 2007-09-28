@@ -482,33 +482,6 @@
 %D by \TEX\ itself, the latter one depends on the driver. This
 %D macro also support a negative offset.
 
-% \def\dooutlinebox
-%   {\setbox\framebox\vbox % rules on top of box
-%      {\scratchdimen \framedparameter\c!frameoffset\relax
-%       \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
-%       \frameddimenht\dimexpr\ht\framebox+ \scratchdimen\relax
-%       \frameddimendp\dimexpr\dp\framebox+ \scratchdimen+\framedparameter\c!framedepth\relax
-%       \ifdim\frameddimendp<\zeropoint
-%         \advance\frameddimenht \frameddimendp
-%         \scratchdimen-\frameddimendp
-%         \frameddimendp\zeropoint
-%       \else
-%         \scratchdimen\zeropoint
-%       \fi
-%       \setbox\extraframebox\hbox
-%         {\dostrokedbox}%
-%       \setbox\extraframebox\hbox
-%         {\raise\scratchdimen\vbox
-%            {\moveleft\framedparameter\c!frameoffset\box\extraframebox}}%
-%       \wd\extraframebox\wd\framebox
-%       \ht\extraframebox\ht\framebox
-%       \dp\extraframebox\dp\framebox
-%       \hbox
-%         {\box\framebox\hskip-\wd\extraframebox
-%          \doifsomething{\framedparameter\c!framecolor}% no else needed,
-%            {\color[\framedparameter\c!framecolor]}%   %
-%            {\box\extraframebox}}}}                    % but {} here
-
 \def\dooutlinebox % we needed to move the color command in order to apply attributes properly
   {\setbox\framebox\vbox % rules on top of box
      {\scratchdimen \framedparameter\c!frameoffset\relax
@@ -563,22 +536,77 @@
 
 \def\@@frame@@{@@frame@@}
 
-\setvalue{t\@@frame@@\v!on \v!on}{\hrule\!!height\ruledlinewidth\kern-\ruledlinewidth}
-\setvalue{t\@@frame@@\v!off\v!on}{\hrule\!!height\ruledlinewidth\kern-\ruledlinewidth}
-\setvalue{t\@@frame@@\v!on      }{\hrule\!!height\ruledlinewidth\kern-\ruledlinewidth}
-\setvalue{b\@@frame@@\v!on \v!on}{\kern-\ruledlinewidth\hrule\!!height\ruledlinewidth}
-\setvalue{b\@@frame@@\v!off\v!on}{\kern-\ruledlinewidth\hrule\!!height\ruledlinewidth}
-\setvalue{b\@@frame@@\v!on      }{\kern-\ruledlinewidth\hrule\!!height\ruledlinewidth}
-\setvalue{l\@@frame@@\v!on \v!on}{\vrule\!!width\ruledlinewidth\kern-\ruledlinewidth}
-\setvalue{l\@@frame@@\v!off\v!on}{\vrule\!!width\ruledlinewidth\kern-\ruledlinewidth}
-\setvalue{l\@@frame@@\v!on      }{\vrule\!!width\ruledlinewidth\kern-\ruledlinewidth}
-\setvalue{r\@@frame@@\v!on \v!on}{\kern-\ruledlinewidth\vrule\!!width\ruledlinewidth}
-\setvalue{r\@@frame@@\v!off\v!on}{\kern-\ruledlinewidth\vrule\!!width\ruledlinewidth}
-\setvalue{r\@@frame@@\v!on      }{\kern-\ruledlinewidth\vrule\!!width\ruledlinewidth}
+% \setvalue{t\@@frame@@\v!on \v!on}{\hrule\!!height\ruledlinewidth\kern-\ruledlinewidth}
+% \setvalue{t\@@frame@@\v!off\v!on}{\hrule\!!height\ruledlinewidth\kern-\ruledlinewidth}
+% \setvalue{t\@@frame@@\v!on      }{\hrule\!!height\ruledlinewidth\kern-\ruledlinewidth}
+% \setvalue{b\@@frame@@\v!on \v!on}{\kern-\ruledlinewidth\hrule\!!height\ruledlinewidth}
+% \setvalue{b\@@frame@@\v!off\v!on}{\kern-\ruledlinewidth\hrule\!!height\ruledlinewidth}
+% \setvalue{b\@@frame@@\v!on      }{\kern-\ruledlinewidth\hrule\!!height\ruledlinewidth}
+% \setvalue{l\@@frame@@\v!on \v!on}{\vrule\!!width\ruledlinewidth\kern-\ruledlinewidth}
+% \setvalue{l\@@frame@@\v!off\v!on}{\vrule\!!width\ruledlinewidth\kern-\ruledlinewidth}
+% \setvalue{l\@@frame@@\v!on      }{\vrule\!!width\ruledlinewidth\kern-\ruledlinewidth}
+% \setvalue{r\@@frame@@\v!on \v!on}{\kern-\ruledlinewidth\vrule\!!width\ruledlinewidth}
+% \setvalue{r\@@frame@@\v!off\v!on}{\kern-\ruledlinewidth\vrule\!!width\ruledlinewidth}
+% \setvalue{r\@@frame@@\v!on      }{\kern-\ruledlinewidth\vrule\!!width\ruledlinewidth}
+
+\def\@@frame@@trule{\hrule\!!height\ruledlinewidth\kern-\ruledlinewidth}
+\def\@@frame@@brule{\kern-\ruledlinewidth\hrule\!!height\ruledlinewidth}
+\def\@@frame@@rrule{\kern-\ruledlinewidth\vrule\!!width\ruledlinewidth}
+\def\@@frame@@lrule{\vrule\!!width\ruledlinewidth\kern-\ruledlinewidth}
+
+\letvalue{t\@@frame@@\v!on \v!on}\@@frame@@trule
+\letvalue{t\@@frame@@\v!off\v!on}\@@frame@@trule
+\letvalue{t\@@frame@@\v!on      }\@@frame@@trule
+
+\letvalue{b\@@frame@@\v!on \v!on}\@@frame@@brule
+\letvalue{b\@@frame@@\v!off\v!on}\@@frame@@brule
+\letvalue{b\@@frame@@\v!on      }\@@frame@@brule
+
+\letvalue{l\@@frame@@\v!on \v!on}\@@frame@@lrule
+\letvalue{l\@@frame@@\v!off\v!on}\@@frame@@lrule
+\letvalue{l\@@frame@@\v!on      }\@@frame@@lrule
+
+\letvalue{r\@@frame@@\v!on \v!on}\@@frame@@rrule
+\letvalue{r\@@frame@@\v!off\v!on}\@@frame@@rrule
+\letvalue{r\@@frame@@\v!on      }\@@frame@@rrule
+
+\def\@@frame@@trules{\hbox{\kern\ruledlinewidth\vrule\!!width\dimexpr\frameddimenwd-2\ruledlinewidth\relax\!!height\ruledlinewidth}\nointerlineskip\kern-\ruledlinewidth}
+\def\@@frame@@brules{\kern-\ruledlinewidth\nointerlineskip\hbox{\kern\ruledlinewidth\vrule\!!width\dimexpr\frameddimenwd-2\ruledlinewidth\relax\!!height\ruledlinewidth}}
+\def\@@frame@@rrules{\kern-\ruledlinewidth\vrule\!!height\dimexpr\frameddimenht-\ruledlinewidth\relax\!!depth-\ruledlinewidth\!!width\ruledlinewidth}
+\def\@@frame@@lrules{\vrule\!!height\dimexpr\frameddimenht-\ruledlinewidth\relax\!!depth-\ruledlinewidth\!!width\ruledlinewidth\kern-\ruledlinewidth}
+
+\letvalue{t\@@frame@@\v!small\v!small}\@@frame@@trules
+\letvalue{t\@@frame@@\v!off  \v!small}\@@frame@@trules
+\letvalue{t\@@frame@@\v!small        }\@@frame@@trules
+
+\letvalue{b\@@frame@@\v!small\v!small}\@@frame@@brules
+\letvalue{b\@@frame@@\v!off  \v!small}\@@frame@@brules
+\letvalue{b\@@frame@@\v!small        }\@@frame@@brules
+
+\letvalue{l\@@frame@@\v!small\v!small}\@@frame@@lrules
+\letvalue{l\@@frame@@\v!off  \v!small}\@@frame@@lrules
+\letvalue{l\@@frame@@\v!small        }\@@frame@@lrules
+
+\letvalue{r\@@frame@@\v!small\v!small}\@@frame@@rrules
+\letvalue{r\@@frame@@\v!off  \v!small}\@@frame@@rrules
+\letvalue{r\@@frame@@\v!small        }\@@frame@@rrules
 
 %D I condidered using the low level support command
 %D \type{\ruledhbox}, but this would slow down processing by a
 %D factor~3.
+
+% \framed
+%   [width=4cm,height=3cm,rulethickness=3mm,
+%    frame=off,rightframe=on,leftframe=on,topframe=on,bottomframe=on]
+%   {}
+% \framed
+%   [width=4cm,height=3cm,rulethickness=3mm,
+%    frame=off,rightframe=small,leftframe=small,topframe=small,bottomframe=small]
+%   {}
+% \framed
+%   [width=4cm,height=3cm,rulethickness=3mm,
+%    frame=off,rightframe=small,leftframe=small,topframe=small,bottomframe=on]
+%   {}
 
 %D Before we come to using these macros we yet have to define
 %D the rounded corner alternative, which after all is not that
@@ -1735,42 +1763,6 @@
 % The next implementation is frozen! It preserves the depth,
 % otherwise we get problems with framed display math and auto
 % width.
-
-% \def\doreshapeframedbox % frozen
-%   {\beginofshapebox
-%    \unvcopy\framebox
-%    \endofshapebox
-%    \global\@@globalwidth\zeropoint
-%    \resetshapeframebox
-%    \reshapebox
-%      {\setbox0\hbox
-%         {\strut\ifhbox\shapebox\unhbox\else\box\fi\shapebox}%
-%       \global\advance\framednoflines \plusone
-%       \ifdim\framedlastlength>\zeropoint\else
-%         \global\framedlastlength\wd0
-%       \fi
-%       \ifdim\wd0>\@@globalwidth
-%         \global\@@globalwidth\wd0
-%       \fi}%
-%    \dosetraggedcommand\localformat
-%    \raggedcommand
-%    \ifboxhasheight
-%      \setbox\framebox\vbox to \localheight
-%        {\hsize\@@globalwidth
-%         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
-%         \dobeforeframedbox
-%         \innerflushshapebox
-%         \doafterframedbox}%
-%    \else
-%      \scratchdimen\dp\framebox
-%      \setbox\framebox\vbox to \ht\framebox
-%        {\hsize\@@globalwidth
-%         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
-%         \innerflushshapebox}%
-%      \dp\framebox\scratchdimen % \strutdp otherwise problem with math
-%    \fi
-%    \ifdim\framedlastlength=\zeropoint\global\framednoflines\wd\framebox\fi
-%    \ifcase\framednoflines\global\framednoflines\plusone\fi}
 
 \chardef\reshapeframeboxmethod\plusone % 0=no flush, 1=old method 2=no depth messing
 

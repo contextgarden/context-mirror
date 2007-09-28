@@ -980,6 +980,9 @@
 % "\dobuildtextaccent \char 18 a" but "\dobuildtextaccent {\char 18}{a}"
 % instead
 
+\def\buildmathaccent#1%
+  {\mathaccent#1 }
+
 \def\buildtextaccent#1#2% **
   {\ifignoreaccent
      \expandafter\nobuildtextaccent
@@ -987,14 +990,25 @@
      \expandafter\dobuildtextaccent
    \fi{#1}{#2}}
 
-\unexpanded\def\dobuildtextaccent#1#2%
-  {{\let\char\normalaccent#1\let\char\normalchar#2}}
-
 \unexpanded\def\nobuildtextaccent#1#2%
   {#2}
 
-\def\buildmathaccent#1%
-  {\mathaccent#1 }
+\unexpanded\def\dobuildtextaccent#1#2%
+  {{\let\char\normalaccent#1\let\char\normalchar#2}}
+
+% EVENTUALLY THIS CODE WILL MOVE TO AN mkiv module
+
+\beginLUATEX
+
+\newbox\accenttestbox
+
+\unexpanded\def\dobuildtextaccent#1#2%
+  {{\global\setbox\accenttestbox\hbox{#1}%
+    \scratchcounter\ctxlua{characters.charcode(\number\accenttestbox)}%
+    \ifcase\scratchcounter\or\accent\scratchcounter\fi
+    \relax#2}}
+
+\endLUATEX
 
 % will be overloaded later
 

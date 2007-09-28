@@ -29,7 +29,7 @@ do
 
     function sorters.index.compare(a,b)
         local result = 0
-        for i=1,3 do
+        for i=1,4 do
             if result == 0 then
                 result = sorters.comparers.basic(a,b,i)
             else
@@ -48,7 +48,7 @@ do
     end
 
     function sorters.index.prepare(data)
-        sorters.prepare(data,sorters.splitters.utf,3)
+        sorters.prepare(data,sorters.splitters.utf,4)
     end
 
     function sorters.index.sort(data)
@@ -152,6 +152,7 @@ do
             "\\registerentrya{%s}{%s}",
             "\\registerentryb{%s}{%s}",
             "\\registerentryc{%s}{%s}",
+            "\\registerentryd{%s}{%s}",
         },
     }
 
@@ -164,8 +165,8 @@ do
             local done = { false, false, false }
             for kk,vv in ipairs(s.data) do
                 if vv[2][1] then
-                    local e = { false, false, false }
-                    for i=1,3,1 do
+                    local e = { false, false, false, false }
+                    for i=1,4,1 do
                         if vv[2][i] then
                             e[i] = vv[2][i][1]
                         end
@@ -193,7 +194,7 @@ do
 
 end
 
--- { { entry, key }, { entry, key }, { entry, key } }, kind, realpage|see, reference, pagespec
+-- { { entry, key }, { entry, key }, { entry, key }, { entry, key } }, kind, realpage|see, reference, pagespec
 
 function job.loadregister(class)
     if job.registers[class] then
@@ -222,7 +223,8 @@ function job.loadregister(class)
                         {
                             { entry[1] or "", key[1] or "" },
                             { entry[2] or "", key[2] or "" },
-                            { entry[3] or "", key[3] or "" }
+                            { entry[3] or "", key[3] or "" },
+                            { entry[4] or "", key[4] or "" }
                         },
                         v[6], -- realpage or seeword (check see)
                         v[2], -- reference

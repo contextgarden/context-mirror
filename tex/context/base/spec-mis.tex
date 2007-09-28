@@ -101,7 +101,7 @@
 % \def\doiffileinsertionsupportedelse#1%
 %   {\expanded{\doifinstringelse{#1}{\c!tex,\c!tmp,\supportedfileinsertions}}}
 
-\def\doiffileinsertionsupportedelse#1%
+\def\doiffileinsertionsupportedelse#1% lowercasing happens at tex end
   {\expanded{\doifinstringelse{\truegraphictype{#1}}{\c!tex,\c!tmp,\supportedfileinsertions}}}
 
 %D This macro is called with 10 arguments, where the first

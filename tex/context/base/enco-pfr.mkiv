@@ -11,10 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx\pdfglyphtounicode\undefined \else
-    \appendtoks
-        \doif\jobsuffix{pdf}{\ctxlua{characters.setpdfunicodes()}}% pdftounicode mappings can only be done runtime
-    \to \everystarttext
-\fi
+% obsolete, at least for wide fonts, we may need to support it otherwise
+%
+% \ifx\pdfglyphtounicode\undefined \else
+%     \appendtoks
+%         \doif\jobsuffix{pdf}{\ctxlua{characters.setpdfunicodes()}}% pdftounicode mappings can only be done runtime
+%     \to \everystarttext
+% \fi
 
 \endinput

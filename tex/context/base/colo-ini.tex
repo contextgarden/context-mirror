@@ -323,7 +323,7 @@
 \def\dodefineglobalcolor{\dododefinecolor\doglobal\setgvalue\setxvalue1}
 \def\dodefinenamedcolor {\dododefinecolor\doglobal\setvalue \setevalue0}
 
-\def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value
+\def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value -- maybe add fake [#7] here
   {#1\addtocommalist{#5}\colorlist % optional
    \doifassignmentelse{#6}
      {\@@resetcolorparameters
@@ -529,9 +529,7 @@
 
 \def\dodefinewhatevercolor[#1][#2][#3]%
   {\ifthirdargument
-     \doifassignmentelse{#2}
-       {\dododefinecolor[#1][#2,#3]}% actually this is an error
-       {\dodefinespotcolor[#1][#2][#3]}% and this the prefered method
+     \dodefinespotcolor[#1][#2][#3]% this is the prefered method !
    \else
      \dodefinecolor[#1][#2]%
    \fi}

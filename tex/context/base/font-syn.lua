@@ -75,6 +75,30 @@ fonts.names.filters.fixes = {
     { "cond$", "condensed", },
 }
 
+--~ todo
+--~
+--~ function getosfontdirs()
+--~     local hash, result = { }, { }
+--~     local function collect(t)
+--~         for _, v in ipairs(t) do
+--~             v = input.clean_path(v)
+--~             v = v:gsub("/+$","")
+--~             local key = v:lower()
+--~             if not hash[key] then
+--~                 hash[key], result[#result+1] = true, v
+--~             end
+--~         end
+--~     end
+--~     collect(input.expanded_path_list(instance,"osfontdir"))
+--~     local name = input.find_file(instance,"fonts.conf","other")
+--~     if name ~= "" then
+--~         local root = xml.load(name)
+--~         collect(xml.all_texts(root,"dir",true))
+--~     end
+--~     return result
+--~ end
+
+
 function fonts.names.identify()
     fonts.names.data = {
         mapping = { },
@@ -122,7 +146,7 @@ function fonts.names.identify()
     local function traverse(what, method)
         for n, suffix in pairs(fonts.names.filters.list) do
             nofread, nofok  = 0, 0
-            local t = os.clock()
+            local t = os.clock() -- use elapser
             logs.report("fontnames", string.format("identifying %s font files with suffix %s",what,suffix))
             method(suffix)
             logs.report("fontnames", string.format("%s %s files identified, %s hash entries added, runtime %s seconds", nofread, what,nofok, os.clock()-t))
@@ -145,7 +169,7 @@ function fonts.names.identify()
                 local pattern = path .. "*." .. suffix
                 logs.info("fontnames", "globbing path " .. pattern)
                 local t = dir.glob(pattern)
-                for _, name in pairs(t) do
+                for _, name in pairs(t) do -- ipairs
                     local mode = lfs.attributes(name,'mode')
                     if mode == "file" then
                         identify(name,file.basename(name),suffix)

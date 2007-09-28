@@ -38,6 +38,7 @@
     \writestatus\m!lua{used cache path           - \ctxlua{tex.print(caches.path)}}%
     \writestatus\m!lua{modules/dumps/instances   - \ctxlua{tex.print((status.luabytecodes-500).."/"..input.storage.done.."/"..status.luastates)}}%
     \writestatus\m!lua{current memory usage      - \ctxlua{tex.print(status.luastate_bytes)} bytes}%
+    \writestatus\m!lua{language load time        - \ctxlua{input.loadtime(languages)} seconds (n=\ctxlua{tex.print(languages.n())})}%
     \writestatus\m!lua{loaded fonts              - \ctxlua{tex.print(fonts.logger.report())}}%
 \to \everybye
 

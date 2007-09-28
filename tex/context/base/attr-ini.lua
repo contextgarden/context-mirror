@@ -429,8 +429,7 @@ do
     -- default color space
 
     function colors.gray(s)
-        local n = 1-s
-        return { 2, s, n, n, n, 0, 0, 0, s }
+        return { 2, s, s, s, s, 0, 0, 0, s }
     end
 
     function colors.rgb(r,g,b)

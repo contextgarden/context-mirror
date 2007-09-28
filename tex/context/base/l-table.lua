@@ -169,6 +169,8 @@ end
 
 do
 
+    -- one of my first exercises in lua ...
+
     -- 34.055.092 32.403.326 arabtype.tma
     --  1.620.614  1.513.863 lmroman10-italic.tma
     --  1.325.585  1.233.044 lmroman10-regular.tma
@@ -526,6 +528,25 @@ function table.tohash(t)
         h[v] = true
     end
     return h
+end
+
+function table.contains(t, v)
+    if t then
+        for i=1, #t do
+            if t[i] == v then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function table.count(t)
+    local n, e = 0, next(t)
+    while e do
+        n, e = n + 1, next(t,e)
+    end
+    return n
 end
 
 --~ function table.are_equal(a,b)

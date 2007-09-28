@@ -96,6 +96,8 @@
 \def\setcharacterspacing[#1]%
   {\dosetattribute{spacing}{\csname\??ch:#1\endcsname}}
 
+\setvalue{\??ch:\s!reset}{\doresetattribute{spacing}}
+
 \definecharacterspacing [frenchpunctuation] % name may change / unit is em
 
 \setupcharacterspacing [frenchpunctuation] ["003A] [\c!left =.25] % :
@@ -135,6 +137,8 @@
 
 \def\setcharacterkerning[#1]%
   {\dosetattribute{kern}{\csname\??ck:#1\endcsname}}
+
+\setvalue{\??ck:\s!reset}{\doresetattribute{kern}}
 
 \definecharacterkerning[extrakerning]
 
@@ -198,6 +202,8 @@
 
 \def\setbreakpoints[#1]%
   {\dosetattribute{breakpoint}{\csname\??bp:#1\endcsname}}
+
+\setvalue{\??bp:\s!reset}{\doresetattribute{breakpoint}}
 
 \definebreakpoints[compound]
 

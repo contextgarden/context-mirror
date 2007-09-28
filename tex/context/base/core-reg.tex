@@ -229,6 +229,7 @@
 \let\c!entrya\empty
 \let\c!entryb\empty
 \let\c!entryc\empty
+\let\c!entryd\empty
 
 \def\nextregisterpage
   {\iffirstregisterpage
@@ -306,6 +307,7 @@
 \def\registerentrya#1{\executeifdefined{#1\s!entrya}\gobbleoneargument   }
 \def\registerentryb#1{\executeifdefined{#1\s!entryb}\gobbleoneargument   }
 \def\registerentryc#1{\executeifdefined{#1\s!entryc}\gobbleoneargument   }
+\def\registerentryd#1{\executeifdefined{#1\s!entryd}\gobbleoneargument   }
 \def\registersee   #1{\executeifdefined{#1\s!see   }\gobblethreearguments}
 \def\registerpage  #1{\executeifdefined{#1\s!page  }\gobblefourarguments }
 \def\registerfrom  #1{\executeifdefined{#1\s!from  }\gobblefourarguments }
@@ -315,6 +317,7 @@
   {\letvalue{#1\s!entrya}\gobbleoneargument
    \letvalue{#1\s!entryb}\gobbleoneargument
    \letvalue{#1\s!entryc}\gobbleoneargument
+   \letvalue{#1\s!entryd}\gobbleoneargument
    \letvalue{#1\s!see   }\gobblethreearguments
    \letvalue{#1\s!page  }\gobblefourarguments
    \letvalue{#1\s!from  }\gobblefourarguments
@@ -331,6 +334,7 @@
 \let\c!entrya        =\relax
 \let\c!entryb        =\relax
 \let\c!entryc        =\relax
+\let\c!entryd        =\relax
 
 \def\limitedregisterentry#1#2%
   {\getvalue{\??id#1\c!textcommand}%
@@ -359,13 +363,15 @@
     \!!doneafalse
     \doifelsevalue{\??id#2\c!interaction}\v!text
       {\ifcase\currententrylevel                 \or
-         \!!doneatrue\c!entrya\c!entryb\c!entryc \or
-         \c!entrya\!!doneatrue\c!entryb\c!entryc \or
-         \c!entrya\c!entryb\!!doneatrue\c!entryc \fi}
-      {\c!entrya\c!entryb\c!entryc}%
+         \!!doneatrue\c!entrya\c!entryb\c!entryc\c!entryd \or
+         \c!entrya\!!doneatrue\c!entryb\c!entryc\c!entryd \or
+         \c!entrya\c!entryb\!!doneatrue\c!entryc\c!entryd \or
+         \c!entrya\c!entryb\c!entryc\!!doneatrue\c!entryd \fi}
+      {\c!entrya\c!entryb\c!entryc\c!entryd}%
     \global\let\c!entrya\relax
     \global\let\c!entryb\relax
     \global\let\c!entryc\relax
+    \global\let\c!entryd\relax
     \global\let\c!entryletter\relax
     \global\let\c!entryreference\relax}
 
@@ -529,12 +535,13 @@
        \def\dohandleregisterentry##1% dubbelop | \strut nieuw
          {\doregistertexthowto{#1}{\strut\limitedregisterentry{#1}{##1}}}%
        \getvalue
-         {#1\ifcase\currententrylevel\s!entrya\or\s!entryb\else\s!entryc\fi}%
+         {#1\ifcase\currententrylevel\s!entrya\or\s!entryb\else\s!entryc\else\s!entryd\fi}%
          {\doregisterpagehowto{#1}{\labeltexts\v!see{#3}}}%
-       \c!entryletter\c!entrya\c!entryb\c!entryc
+       \c!entryletter\c!entrya\c!entryb\c!entryc\c!entryd
        \global\let\c!entrya\relax
        \global\let\c!entryb\relax
        \global\let\c!entryc\relax
+       \global\let\c!entryd\relax
        \global\let\c!entryletter\relax
        \global\let\c!entryreference\relax
     %   \global\firstregisterentrytrue
@@ -627,6 +634,7 @@
    \edef\currententrylevel{1}%
    \global\let\c!entryb\relax
    \global\let\c!entryc\relax
+   \global\let\c!entryd\relax
    \gdef\c!entrya
      {\iffirstregisterentry\else\endgraf\fi % new
       \global\firstregisterpagetrue
@@ -639,6 +647,7 @@
 \def\dosetpageregisterentryb#1#2%
   {\flushseenregisterpage % redundant
    \edef\currententrylevel{2}%
+   \global\let\c!entryd\relax
    \global\let\c!entryc\relax
    \global\def\c!entryb
      {\iffirstregisterentry\else\endgraf\fi % new
@@ -665,6 +674,21 @@
       \global\firstregisterentryfalse
       \global\firstsubsubentryfalse}}
 
+\def\dosetpageregisterentryd#1#2%
+  {\flushseenregisterpage % redundant
+   \edef\currententrylevel{4}%
+   \gdef\c!entryd
+     {\iffirstregisterentry\else\endgraf\fi % new
+      \global\firstregisterpagetrue
+      \global\let\c!entrya\relax
+      \global\let\c!entryb\relax
+      \global\let\c!entryc\relax
+      \iffirstsubsubentry\nobreak\fi
+      \hangindent4em\noindent\c!entryreference\hskip3em\relax
+      \dohandlepageregisterentry{#1}{#2}%
+      \global\firstregisterentryfalse
+      \global\firstsubsubentryfalse}}
+
 \def\dosetpageregister#1% \currentregister gebruiken
   {\dosetreglevel{#1}%
    \global\let\currentregisterentry\empty
@@ -674,6 +698,7 @@
    \setvalue{#1\s!entrya}{\dosetpageregisterentrya {#1}}%
    \setvalue{#1\s!entryb}{\dosetpageregisterentryb {#1}}%
    \setvalue{#1\s!entryc}{\dosetpageregisterentryc {#1}}%
+   \setvalue{#1\s!entryd}{\dosetpageregisterentryd {#1}}%
    \setvalue{#1\s!page  }{\dosetpageregisterpage{1}{#1}}%
    \setvalue{#1\s!from  }{\dosetpageregisterpage{2}{#1}}%
    \setvalue{#1\s!to    }{\dosetpageregisterpage{3}{#1}}%

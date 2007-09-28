@@ -90,23 +90,28 @@ use the table. After all, we have this information available anyway.</p>
 function characters.context.define()
     local unicodes, utfcodes = characters.context.unicodes, characters.context.utfcodes
     local flush, tc = tex.sprint, tex.ctxcatcodes
-    for _, chr in pairs(characters.data) do
+    for u, chr in pairs(characters.data) do
         local contextname = chr.contextname
         if contextname then
          -- by this time, we're still in normal catcode mode
-            if chr.unicodeslot < 128 then
-                flush(tc, "\\chardef\\" .. contextname .. "=" .. unicodes[contextname])
-            else
-                flush(tc, "\\let\\"     .. contextname .. "=" .. utfcodes[contextname])
-            end
+             if chr.unicodeslot < 128 then
+                flush(tc, "\\chardef\\" .. contextname .. "=" .. u) -- unicodes[contextname])
+             else
+                flush(tc, "\\let\\" .. contextname .. "=" .. utf.char(u)) -- utfcodes[contextname])
+             end
         end
     end
+end
+
+function characters.charcode(box)
+    local b = tex.box[box]
+    local l = b.list
+    tex.sprint((l and l.id == node.id('glyph') and l.char) or 0)
 end
 
 --[[ldx--
 <p>Setting the lccodes is also done in a loop over the data table.</p>
 --ldx]]--
-
 
 function characters.setcodes()
     local flush, tc = tex.sprint, tex.ctxcatcodes

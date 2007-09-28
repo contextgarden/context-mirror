@@ -7,7 +7,7 @@ module PDFview
 
     @method     = 'default' # 'xpdf'
 
-    @opencalls['default']  = "pdfopen --file"
+    @opencalls['default']  = "pdfopen  --file" # "pdfopen --back --file"
     @opencalls['xpdf']     = "xpdfopen"
 
     @closecalls['default'] = "pdfclose --file"

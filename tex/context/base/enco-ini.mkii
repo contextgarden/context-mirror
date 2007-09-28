@@ -15,10 +15,20 @@
 
 \unprotect
 
-\useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx,t5,cyr,agr] % pol and il2 will go away, not needed in mkiv
+\beginOLDTEX
 
-\useencoding[032,033,037] % fallbacks for some unicode chars
+    \useencoding[ans,il2,ec,tbo,pdf,pol,qx,t5,cyr,agr] % pol and il2 will go away, not needed in mkiv, uc removed
 
-\setupencoding[\s!default=ec] % was: [\s!default=\s!default]
+    \useencoding[032,033,037] % fallbacks for some unicode chars
+
+    \setupencoding[\s!default=ec] % was: [\s!default=\s!default]
+
+\endOLDTEX
+
+\beginXETEX
+
+    \setupencoding[\s!default=\s!default]
+
+\endXETEX
 
 \protect \endinput

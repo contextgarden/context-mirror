@@ -4,6 +4,34 @@
 -- copyright: PRAGMA ADE / ConTeXt Development Team
 -- license  : see context related readme files
 
+--~ do
+--~     local normal_require = require
+--~     local find_lua_file  = find_lua_file or kpse.find_file -- you can predefine one
+
+--~     function require(modname,luctoo)
+--~         local file, longfile
+--~         if luctoo then
+--~             file = modname .. '.luc';
+--~             longfile = find_lua_file(file)
+--~         end
+--~         if not longfile then
+--~             file = modname .. '.lua';
+--~             longfile = find_lua_file(file)
+--~         end
+--~         if longfile then
+--~             local dir = longfile:match("^(.+[/\\]).-$")
+--~             local pth = package.path:gsub("\\","/")
+--~             dir = dir:gsub("\\","/")
+--~             if pth:find(dir) then
+--~                 package.path = pth -- nicely sanitized
+--~             else
+--~                 package.path = pth .. ';' .. dir .. '?.lua' -- dir has trailing /
+--~             end
+--~             normal_require(modname)
+--~         end
+--~     end
+--~ end
+
 -- here we don't assume any extra libraries
 
 if not versions then versions = { } end versions['luat-env'] = 1.001

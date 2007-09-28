@@ -312,9 +312,8 @@
          \ifx\temp\empty
            \exitloop
          \else
-           \let\filesuffix\temp
+           \lowercasestring\temp\to\filesuffix % insertion check also needs lowercase
            % a temporary hack
-           \doif\filesuffix{PDF}{\pdfimageresolution72}%
            \doif\filesuffix{pdf}{\pdfimageresolution72}%
            % because pdfTeX scales back
          \fi}}

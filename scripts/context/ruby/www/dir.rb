@@ -62,9 +62,9 @@ class WWW
                         end
                         u = dir_uri(@variables.get('path') || '.')
                         str << "<div class='dir-view'>\n<pre>\n"
-                        str << "<a href=\"#{u}&n=#{d1}\">name</A>".ljust(49+u.length)
-                        str << "<a href=\"#{u}&m=#{d1}\">last modified</A>".ljust(41+u.length)
-                        str << "<a href=\"#{u}&s=#{d1}\">size</A>".rjust(31+u.length) << "\n" << "\n"
+                        str << "<a href=\"#{u}&n=#{d1}\">name</a>".ljust(49+u.length)
+                        str << "<a href=\"#{u}&m=#{d1}\">last modified</a>".ljust(41+u.length)
+                        str << "<a href=\"#{u}&s=#{d1}\">size</a>".rjust(31+u.length) << "\n" << "\n"
                         # parent path
                         if showdirs && ! hidden.include?('..') then
                             dname = "parent directory"

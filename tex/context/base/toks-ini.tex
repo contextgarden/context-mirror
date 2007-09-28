@@ -15,6 +15,10 @@
 
 \registerctxluafile{toks-ini}{1.001}
 
+\unprotect
+
+%D Handy for manuals \unknown
+
 \def\starttokens  [#1]{\ctxlua{collectors.install("#1", "stoptokens")}}
 \let\stoptokens        \relax
 \def\flushtokens  [#1]{\ctxlua{collectors.flush("#1")}}
@@ -22,4 +26,51 @@
 \def\testtokens   [#1]{\ctxlua{collectors.with_words("#1")}}
 \def\registertoken  #1{\ctxlua{collectors.register("#1")}}
 
-\endinput
+%D Inspired by a prototype by Taco for Thomas cum suis.
+
+% \defineremapper[babelgreek]
+%
+% \remapcharacter[babelgreek][`a]{\alpha}
+% \remapcharacter[babelgreek][`b]{\beta}
+% \remapcharacter[babelgreek][`c]{\gamma}
+% \remapcharacter[babelgreek][`d]{OEPS}
+%
+% \starttext
+%
+% [\startbabelgreek
+% a b c some stuff here \blank[big] oeps b d
+% \stopbabelgreek]
+%
+% [\babelgreek{some stuff here}]
+%
+% \stoptext
+
+\def\dograbuntil#1#2%
+  {\long\def\next##1#1{#2##1}\next}
+
+\def\grabuntil#1%
+  {\expandafter\dograbuntil\expandafter{\csname#1\endcsname}}
+
+\def\dostartremapper#1%
+  {\ctxlua{collectors.install("#1", "\e!stop#1")}}
+
+\def\dostopremapper#1%
+  {\ctxlua{collectors.handle("#1",function(str) return collectors.remapper.convert("#1",str) end, true)}}
+
+\def\remaptokens#1%
+  {\ctxlua{collectors.handle("#1",function(str) return collectors.remapper.convert("#1",str) end)}}
+
+\def\defineremapper[#1]%
+  {\setvalue{\e!start#1}{\dostartremapper{#1}}%
+   \setvalue{\e!stop #1}{\dostopremapper {#1}}%
+   \def\next##1{\setvalue{#1}####1{\getvalue{\e!start#1}####1##1}}%
+   \expandafter\next\csname\e!stop#1\endcsname}
+
+\def\remapcharacter
+  {\dodoubleempty\doremapcharacter}
+
+\def\doremapcharacter[#1][#2]#3%
+  {\ctxlua{collectors.install("store", "ctxlua")}#3%
+   \ctxlua{collectors.remapper.store("store","#1",\number#2)}}
+
+\protect \endinput

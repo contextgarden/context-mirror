@@ -565,12 +565,6 @@
      \fi
    \fi}
 
-% \def\externalfigurestamp
-%   {\wantedfigurename
-%   -\ifx\wantedfiguretype\empty\wantedfiguretypespec\else\wantedfiguretype\fi
-%   -\wantedfiguretypespec
-%   -\wantedfigurepage}
-
 \def\externalfigurestamp % needs \edef'd macros!
   {\wantedfigurename
    \ifx\wantedfiguretype\empty\else
@@ -600,17 +594,6 @@
       \let\@@efframe\v!off}}
 
 \newtoks\externalfigurepostprocessors
-
-% \def\resetfigureusersettings
-%   {\getparameters % % % hm, can be faster, like the reset
-%      [\??ef]
-%      [\c!type=\s!unknown,\c!method=,\c!label=,\c!symbol=\v!no,%\c!foregroundcolor=,
-%       \c!object=\@@exobject,\c!preset=\v!yes,\c!split=,\c!size=,
-%       \c!page=0,\c!controls=\v!no,\c!preview=\v!no,\c!repeat=\v!no,
-%       \c!maxwidth=\@@exmaxwidth,\c!maxheight=\@@exmaxheight,\c!sx=1,\c!sy=1,
-%       \c!scale=,\c!xscale=,\c!yscale=,\c!width=,\c!height=,\c!display=,\c!lines=,\c!grid=,
-%       \c!color=,\c!conversion=\@@exconversion,\c!prefix=\@@exprefix,\c!cache=\@@excache,
-%       \c!factor=,\c!hfactor=,\c!wfactor=]}
 
 \def\resetfigureusersettings
   {\let\@@eftype      \s!unknown      \let\@@efmethod   \empty         \let\@@efpreset\v!yes
@@ -838,13 +821,15 @@
       \fi}}
 
 \def\insertfiguredriverdata#1#2%
-  {\edef\@@DriverImageWidth {\the\dimexpr#1\relax}%
+  {\lowercasestring\wantedfiguretypespec\to\lcwantedfiguretypespec
+   \lowercasestring\wantedfiguremethod  \to\lcwantedfiguremethod
+   \edef\@@DriverImageWidth {\the\dimexpr#1\relax}%
    \edef\@@DriverImageHeight{\the\dimexpr#2\relax}%
-   \let \@@DriverImageFile   \wantedfigurefullname
-   \let \@@DriverImageType   \wantedfiguretypespec
-   \let \@@DriverImageMethod \wantedfiguremethod
-   \let \@@DriverImageLabel  \wantedfigurelabel
-   \let \@@DriverImagePage   \wantedfigurepage
+   \let \@@DriverImageFile     \wantedfigurefullname
+   \let \@@DriverImageType   \lcwantedfiguretypespec
+   \let \@@DriverImageMethod \lcwantedfiguremethod
+   \let \@@DriverImageLabel    \wantedfigurelabel
+   \let \@@DriverImagePage     \wantedfigurepage
    \doinsertfile}
 
 \def\insertunscaledfiguredriverdata
@@ -1047,7 +1032,8 @@
 \let\doanalyzefiguredimensionsfallback\relax
 
 \def\doanalyzefiguredimensions
-  {\doiffileinsertionsupportedelse\wantedfiguretypespec
+  {\lowercasestring\wantedfiguretypespec\to\lcwantedfiguretypespec
+   \doiffileinsertionsupportedelse\lcwantedfiguretypespec
      {\doiffileelse\wantedfigurefullname
         {\doshowfigurestate{analyzing : \wantedfigurefullname}%
          \doanalyzefiguredimensionsinternal
@@ -1104,11 +1090,12 @@
 
 \def\doanalyzefiguredimensionsinternal
   {\ifcase\figurestatus
-     \let\@@DriverImageFile\wantedfigurefullname
-     \let\@@DriverImagePage\wantedfigurepage
-     \let\@@DriverImageType\wantedfiguretypespec
+     \lowercasestring\wantedfiguretypespec\to\lcwantedfiguretypespec
+     \let\@@DriverImageFile  \wantedfigurefullname
+     \let\@@DriverImagePage  \wantedfigurepage
+     \let\@@DriverImageType\lcwantedfiguretypespec
      % use internal when available, otherwise try driver (\dogetfiguresize)
-     \executeifdefined{dogetfiguresize\wantedfiguretypespec}\dogetfiguresize
+     \executeifdefined{dogetfiguresize\@@DriverImageType}\dogetfiguresize
      \setanalyzedfiguredimensions\!!ten
    \fi}
 

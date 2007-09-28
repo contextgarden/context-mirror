@@ -1,0 +1,202 @@
+%D \module
+%D   [       file=x-cals,
+%D        version=2007.09.05,
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=\CONTEXT\ Structures,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (context)}
+
+\startluacode
+do
+    lxml.context = { }
+
+    local halignments = {
+        left       = 'l',
+        flushleft  = 'l',
+        right      = 'r',
+        flushright = 'r',
+        center     = 'c',
+        middle     = 'c',
+        centre     = 'c',
+        justify    = '',
+    }
+
+    local texsprint = tex.sprint
+    local xmlsprint = xml.sprint
+
+    local function roottemplate(root)
+        local rt = root.at.template
+        if rt then
+            if not rt:find("|") then
+                rt = rt:gsub(",","|")
+            end
+            if not rt:find("^|") then rt = "|" .. rt end
+            if not rt:find("|$") then rt = rt .. "|" end
+        end
+        return rt
+    end
+
+    local function specifiedtemplate(root,templatespec)
+        local template = { }
+        for r, d, k in xml.elements(root,templatespec) do
+            local at = d[k].at
+            local tm = halignments[at.align] or ""
+            if toboolean(at.paragraph) then
+                tm = tm .. "p"
+            end
+            template[#template+1] = tm
+        end
+        if #template > 0 then
+            return "|" .. table.join(template,"|") .. "|"
+        else
+            return nil
+        end
+    end
+
+    local function autotemplate(root,rowspec,cellspec)
+        local max = 0
+        for r, d, k in xml.elements(root,rowspec) do
+            local n = xml.count(d[k],cellspec)
+            if n > max then max = n end
+        end
+        if max == 2 then
+            return "|l|p|"
+        elseif max > 0 then
+            return "|" .. string.rep("p|",max)
+        else
+            return nil
+        end
+    end
+
+    local defaulttemplate = "|l|p|"
+
+    function lxml.context.tabulate(root,namespace)
+        if not root then
+            return
+        else
+            root = lxml.id(root)
+        end
+
+        local prefix = (namespace or "context") .. ":"
+
+        local templatespec = "/" .. prefix .. "template" .. "/" .. prefix .. "column"
+        local bodyrowspec  = "/" .. prefix .. "body" .. "/" .. prefix .. "row"
+        local cellspec     = "/" .. prefix .. "cell"
+
+        local template =
+            roottemplate      (root) or
+            specifiedtemplate (root,templatespec) or
+            autotemplate      (root,bodyrowspec,cellspec) or
+            defaulttemplate
+
+        lxml.directives.before(root,'cdx')
+        texsprint(tex.ctxcatcodes, "\\bgroup")
+        lxml.directives.setup(root,'cdx')
+        -- todo: head and foot
+        texsprint(tex.ctxcatcodes, string.format("\\starttabulate[%s]",template))
+        for r, d, k in xml.elements(root,bodyrowspec) do
+            texsprint(tex.ctxcatcodes, "\\NC ")
+            for r, d, k in xml.elements(d[k],cellspec) do
+                texsprint(xml.content(d[k]))
+                texsprint(tex.ctxcatcodes, "\\NC")
+            end
+            texsprint(tex.ctxcatcodes, "\\NR")
+        end
+        texsprint(tex.ctxcatcodes, "\\stoptabulate")
+        texsprint(tex.ctxcatcodes, "\\egroup")
+        lxml.directives.after(root,'cdx')
+
+    end
+
+    function lxml.context.combination(root,namespace)
+
+        if not root then
+            return
+        else
+            root = lxml.id(root)
+        end
+
+        local prefix = (namespace or "context") .. ":"
+
+        local pairspec    = "/" .. prefix .. "pair"
+        local contentspec = "/" .. prefix .. "content" .. "/text()"
+        local captionspec = "/" .. prefix .. "caption" .. "/text()"
+
+        local nx, ny = root.at.nx, root.at.ny
+
+        if not (nx or ny) then
+            nx = xml.count(root,pairspec) or 2
+        end
+        local template = string.format("%s*%s", nx or 1, ny or 1)
+
+        lxml.directives.before(root,'cdx')
+        texsprint(tex.ctxcatcodes, "\\bgroup")
+        lxml.directives.setup(root,'cdx')
+        -- todo: alignments
+        texsprint(tex.ctxcatcodes, string.format("\\startcombination[%s]",template))
+        for r, d, k in xml.elements(root,pairspec) do
+            local dk = d[k]
+            texsprint(tex.ctxcatcodes,"{")
+            xmlsprint(xml.filter(dk,contentspec) or "")
+            texsprint(tex.ctxcatcodes,"}")
+            texsprint(tex.ctxcatcodes,"{")
+            xmlsprint(xml.filter(dk,captionspec) or "")
+            texsprint(tex.ctxcatcodes,"}")
+        end
+        texsprint(tex.ctxcatcodes, "\\stopcombination")
+        texsprint(tex.ctxcatcodes, "\\egroup")
+        lxml.directives.after(root,'cdx')
+
+    end
+
+end
+\stopluacode
+
+\startxmlsetups xml:context:process
+    \xmlsetfunction {\xmldocument} {context:tabulate}    {lxml.context.tabulate}
+    \xmlsetfunction {\xmldocument} {context:combination} {lxml.context.combination}
+\stopxmlsetups
+
+\xmlregistersetup{xml:context:process}
+
+\xmlregisterns{context}{context}
+
+\endinput
+
+% this replaces:
+
+% \startxmlsetups tabulate
+%     \starttabulate[||p|]
+%         \xmlall{#1}{/body/row}
+%     \stoptabulate
+% \stopxmlsetups
+% \startxmlsetups tabulate:row
+%     \NC \xmlall{#1}{/cell} \NR
+% \stopxmlsetups
+% \startxmlsetups tabulate:cell
+%     \xmlflush{#1} \NC
+% \stopxmlsetups
+
+% \startxmlsetups combination
+%     \startcollecting
+%         \startcollect
+%             \startcombination[\xmlatt{#1}{nx}*\xmlatt{#1}{ny}]
+%         \stopcollect
+%         \xmlloop {#1} {combiblock} {
+%             \startcollect
+%                 {\xmli{/content}{##1}}
+%                 {\xmli{/caption}{##1}}
+%             \stopcollect
+%         }
+%         \startcollect
+%             \stopcombination
+%         \stopcollect
+%     \stopcollecting
+% \stopxmlsetups

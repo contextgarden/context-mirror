@@ -40,13 +40,15 @@
 \def\xmlattribute  #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
 \def\xmlatt          #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
 \def\xmlattdef     #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
-\def\xmlconcat     #1#2#3{\ctxlua{lxml.concat("#1","#2","#3")}}
+\def\xmlconcat     #1#2#3{\ctxlua{lxml.concat("#1","#2",[[\detokenize{#3}]])}}
 \def\xmlsetsetup   #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
 \def\xmlsetfunction#1#2#3{\ctxlua{lxml.setaction("#1","#2",#3)}}
 \def\xmlloaddirectives #1{\ctxlua{lxml.directives.load("#1")}}
 \def\xmldirectives     #1{\ctxlua{lxml.directives.setups("#1")}}
 
-\def\xmlregisterns   #1#2{\ctxlua{xml.registerns("#1","#2")}}
+\def\xmlregisterns      #1#2{\ctxlua{xml.registerns("#1","#2")}}           % document
+\def\xmlchecknamespace#1#2#3{\ctxlua{xml.check_namespace(lxml.id("#1"),"#2","#3")}} % element
+\def\xmlremapname   #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
 
 \let\xmlgrab\xmlsetsetup
 
@@ -57,7 +59,7 @@
 \newtoks \registeredxmlsetups
 
 \def\xmlregistersetup#1%
-  {\appendtoks\directsetup{#1}\to\registeredxmlsetups}
+  {\appendtoksonce\directsetup{#1}\to\registeredxmlsetups}
 
 \def\xmlregisteredsetups
   {\the\registeredxmlsetups}
@@ -97,6 +99,39 @@
            \xmlidx{#1}{#2}{\recurselevel}
        }
    \fi}
+
+\def\xmlcdataobeyedline {\obeyedline}
+\def\xmlcdataobeyedspace{\strut\obeyedspace}
+\def\xmlcdatabefore     {\bgroup\tt}
+\def\xmlcdataafter      {\egroup x}
+
+% verbatim (dodo:pre/post whitespace, maybe splot verbatim and
+% cdata commands), experimental:
+%
+% \xmlsetfunction{main}{verbatim}{lxml.displayverbatim}
+% \xmlsetfunction{main}{verb}    {lxml.inlineverbatim}
+
+% \def\startxmldisplayverbatim[#1]{}
+% \def\stopxmldisplayverbatim     {}
+% \def\startxmlinlineverbatim [#1]{}
+% \def\stopxmlinlineverbatim      {}
+
+\def\startxmldisplayverbatim[#1]%
+  {\begingroup
+   \let\currenttypingclass\??tp
+   \edef\currenttyping{#1}%
+   \def\stopxmldisplayverbatim
+     {\endofverbatimlines
+      \endgroup}%
+   \mkinitializeverbatim
+   \beginofverbatimlines}
+
+\def\startxmlinlineverbatim[#1]%
+  {\begingroup
+   \let\currenttypingclass\??ty
+   \edef\currenttyping{#1}%
+   \let\stopxmldisplayverbatim\endgroup
+   \mkinitializeverbatim}
 
 % will move but is developed for xml
 

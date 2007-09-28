@@ -6,80 +6,134 @@ if not modules then modules = { } end modules ['lang-ini'] = {
     license   = "see context related readme files"
 }
 
-languages           = languages or { }
-languages.patterns  = languages.patterns or { }
-languages.version   = 1.009
-languages.template  = "words-%s.txt"
-languages.number    = nil
-languages.current   = nil
-languages.attribute = nil
+languages                  = languages or {}
+languages.version          = 1.009
 
--- We used to have one list: data[word] = pattern but that overflowed lua's function
--- mechanism. Then we split the lists and again we had oveflows. So eventually we
--- ended up with a dedicated reader.
---
--- function languages.set(attribute,number,name)
---     if not languages.patterns[number] then
---         languages.patterns[number] = containers.define("languages","patterns", languages.version, true)
---     end
---     input.start_timing(languages)
---     local data = containers.read(languages.patterns[number],name)
---     if not data then
---         data = { }
---         local fullname = string.format(languages.template,name)
---         local foundname = input.find_file(texmf.instance,fullname,'other text file')
---         if foundname and foundname ~= "" then
---             local ok, blob, size = input.loadbinfile(texmf.instance,foundname)
---             for word in utf.gfind(blob,"(.-)[%s]+") do
---                 local key = word:gsub("-","")
---                 if key == word then
---                     -- skip
---                 else
---                     data[word:gsub("-","")] = word
---                 end
---             end
---         end
---         data = containers.write(languages.patterns[number],name,data)
---     end
---     input.stop_timing(languages)
---     languages.attribute = attribute
---     languages.number    = number
---     languages.current   = data
--- end
+languages.hyphenation      = languages.hyphenation or {}
+languages.hyphenation.data = languages.hyphenation.data or { }
 
-function languages.set(attribute,number,name)
-    if not languages.patterns[number] then
+do
+    -- we can consider hiding data (faster access too)
+
+    local function filter(filename,what)
+        local data = io.loaddata(input.find_file(texmf.instance,filename))
+        local start, stop = data:find(string.format("\\%s%%s*(%%b{})",what or "patterns"))
+        return (start and stop and data:sub(start+1,stop-1)) or ""
+    end
+
+    local function record(tag)
+        local data = languages.hyphenation.data[tag]
+        if not data then
+             data = lang.new()
+             languages.hyphenation.data[tag] = data
+        end
+        return data
+    end
+
+    languages.hyphenation.record = record
+
+    function languages.hyphenation.number(tag)
+        local data = record(tag)
+        return data:id()
+    end
+
+    function languages.hyphenation.load(tag, patterns, exceptions)
+        input.starttiming(languages)
+        local data = record(tag)
+        patterns   = (patterns   and input.find_file(texmf.instance,patterns  )) or ""
+        exceptions = (exceptions and input.find_file(texmf.instance,exceptions)) or ""
+        if patterns ~= "" then
+            data:patterns(filter(patterns,"patterns"))
+        end
+        if exceptions ~= "" then
+            data:exceptions(string.split(filter(exceptions,"hyphenation"),"%s+"))
+            --    local t = { }
+            --    for s in string.gmatch(filter(exceptions,"hyphenation"), "(%S+)") do
+            --        t[#t+1] = s
+            --    end
+            --    print(tag,#t)
+            --    data:exceptions(t)
+        end
+        languages.hyphenation.data[tag] = data
+        input.stoptiming(languages)
+    end
+
+    function languages.hyphenation.exceptions(tag, ...)
+        local data = record(tag)
+        data:exceptions(...)
+    end
+
+    function languages.hyphenation.hyphenate(tag, str)
+        local data = record(tag)
+        return data:hyphenate(str)
+    end
+
+    function languages.hyphenation.lefthyphenmin(tag, value)
+        local data = record(tag)
+        if value then data:lefthyphenmin(value) end
+        return data:lefthyphenmin()
+    end
+    function languages.hyphenation.righthyphenmin(tag, value)
+        local data = record(tag)
+        if value then data:righthyphenmin(value) end
+        return data:righthyphenmin()
+    end
+
+    function languages.n()
+        return table.count(languages.hyphenation.data)
+    end
+
+end
+
+-- beware, the collowing code has to be adapted, and was used in
+-- experiments with loading lists of words; if we keep supporting
+-- this, i will add a namespace; this will happen when the hyphenation
+-- code is in place
+
+languages.dictionary           = languages.dictionary or {}
+languages.dictionary.data      = languages.dictionary.data or { }
+languages.dictionary.template  = "words-%s.txt"
+languages.dictionary.patterns  = languages.dictionary.patterns or { }
+
+-- maybe not in dictionary namespace
+
+languages.dictionary.current   = nil
+languages.dictionary.number    = nil
+languages.dictionary.attribute = nil
+
+function languages.dictionary.set(attribute,number,name)
+    if not languages.dictionary.patterns[number] then
         input.start_timing(languages)
-        local fullname = string.format(languages.template,name)
+        local fullname = string.format(languages.dictionary.template,name)
         local foundname = input.find_file(texmf.instance,fullname,'other text file')
         if foundname and foundname ~= "" then
         --  texio.write_nl(string.format("loading patterns for language %s as %s from %s",name,number,foundname))
-            languages.patterns[number] = tex.load_dict(foundname) or { }
+            languages.dictionary.patterns[number] = tex.load_dict(foundname) or { }
         else
-            languages.patterns[number] = { }
+            languages.dictionary.patterns[number] = { }
         end
         input.stop_timing(languages)
     end
-    languages.attribute = attribute
-    languages.number    = number
-    languages.current   = languages.patterns[number]
+    languages.dictionary.attribute = attribute
+    languages.dictionary.number    = number
+    languages.dictionary.current   = languages.dictionary.patterns[number]
 end
 
-function languages.add(word,pattern)
-    if languages.current and word and pattern then
-        languages.current[word] = pattern
+function languages.dictionary.add(word,pattern)
+    if languages.dictionary.current and word and pattern then
+        languages.dictionary.current[word] = pattern
     end
 end
 
-function languages.remove(word)
-    if languages.current and word then
-        languages.current[word] = nil
+function languages.dictionary.remove(word)
+    if languages.dictionary.current and word then
+        languages.dictionary.current[word] = nil
     end
 end
 
-function languages.hyphenate(str)
-    if languages.current then
-        local result = languages.current[str]
+function languages.dictionary.hyphenate(str)
+    if languages.dictionary.current then
+        local result = languages.dictionary.current[str]
         if result then
             return result
         else
@@ -89,8 +143,8 @@ function languages.hyphenate(str)
     return str
 end
 
-function languages.found(number, str)
-    local patterns = languages.patterns[number]
+function languages.dictionary.found(number, str)
+    local patterns = languages.dictionary.patterns[number]
     return patterns and patterns[str]
 end
 
@@ -113,7 +167,7 @@ do
         if #str < 4 then
             -- too short
         else
-            local wrd = languages.hyphenate(str)
+            local wrd = languages.dictionary.hyphenate(str)
             if wrd == str then
                 -- not found
             else
@@ -182,8 +236,8 @@ do
         local uc = utf.char
         local n, p = head, nil
         local done, prev, str, fnt, lan = false, false, "", nil, nil
-        local currentlanguage = languages.current
-        local att = languages.attribute
+        local currentlanguage = languages.dictionary.current
+        local att, patterns = languages.dictionary.attribute, languages.dictionary.patterns
         local function action() -- maybe inline
             if reconstruct(prev,str,fnt) then
                 done = true
@@ -198,12 +252,12 @@ do
                     if l ~= lan then
                         if prev then action() end
                         lan = l
-                        languages.current = languages.patterns[lan]
+                        languages.dictionary.current = patterns[lan]
                     end
                 elseif prev then
                     action()
                 end
-                if not languages.current then
+                if not languages.dictionary.current then
                     -- skip
                 elseif n.subtype > 0 then
                     if not prev then
@@ -236,7 +290,7 @@ do
         if prev then
             action()
         end
-        languages.current = currentlanguage
+        languages.dictionary.current = currentlanguage
         return head
     end
 
@@ -254,10 +308,11 @@ do
             end
             str, start, n = "", nil, 0
         end
+        local has_attribute = node.has_attribute
         while current do
             local id = current.id
             if id == glyph then
-                local a = node.has_attribute(current,attribute)
+                local a = has_attribute(current,attribute)
                 if a then
                     if a ~= att then
                         if start then
@@ -302,7 +357,7 @@ do
         return head
     end
 
-    function languages.check(head, attribute, yes, nop)
+    function languages.dictionary.check(head, attribute, yes, nop)
         local set   = node.set_attribute
         local unset = node.unset_attribute
         local wrong, right = false, false
@@ -311,10 +366,11 @@ do
         for n in node.traverse(head) do
             unset(n,attribute)
         end
-        nodes.mark_words(head, languages.attribute, function(att,str)
+        local found = languages.dictionary.found
+        nodes.mark_words(head, languages.dictionary.attribute, function(att,str)
             if #str < 4 then
                 return false
-            elseif languages.found(att,str) then
+            elseif found(att,str) then
                 return right
             else
                 return wrong
@@ -325,3 +381,10 @@ do
     end
 
 end
+
+languages.set       = languages.dictionary.set
+languages.add       = languages.dictionary.add
+languages.remove    = languages.dictionary.remove
+languages.hyphenate = languages.dictionary.hyphenate
+languages.found     = languages.dictionary.found
+languages.check     = languages.dictionary.check

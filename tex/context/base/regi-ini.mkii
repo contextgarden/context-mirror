@@ -15,24 +15,39 @@
 
 %D Plugs into the common interface.
 
-\def\mkloadregime#1%
-  {\makeshortfilename[\truefilename{\f!regimeprefix#1}]%
-   \startreadingfile
-     \readsysfile\shortfilename
-       {\showmessage\m!regimes2{#1}}
-       {\showmessage\m!regimes3{#1}}%
-   \stopreadingfile}
+\beginOLDTEX
 
-\def\mkenableregime#1%
-  {\the\executeifdefined{\@reg@#1}\emptytoks}
+    \def\mkloadregime#1%
+      {\makeshortfilename[\truefilename{\f!regimeprefix#1}]%
+       \startreadingfile
+         \readsysfile\shortfilename
+           {\showmessage\m!regimes2{#1}}
+           {\showmessage\m!regimes3{#1}}%
+       \stopreadingfile}
 
-\def\mkwalkregime#1%
-  {\the\executeifdefined{\@reg@\currentregime}\emptytoks}
+    \def\mkenableregime#1%
+      {\the\executeifdefined{\@reg@#1}\emptytoks}
 
-\def\mkautosetregime#1#2%
-  {\ifnum#2>127
-     \expanded{\defineactivetoken #2 \@EA\noexpand\csname#1\endcsname}%
-   \fi}
+    \def\mkwalkregime#1%
+      {\the\executeifdefined{\@reg@\currentregime}\emptytoks}
+
+    \def\mkautosetregime#1#2%
+      {\ifnum#2>127
+         \expanded{\defineactivetoken #2 \@EA\noexpand\csname#1\endcsname}%
+       \fi}
+
+\endOLDTEX
+
+\beginXETEX
+
+    \let\mkloadregime   \gobbleoneargument
+    \let\mkenableregime \gobbleoneargument
+    \let\mkwalkregime   \gobbleoneargument
+    \let\mkautosetregime\gobbletwoarguments
+
+    \def\mkenableregime#1{\XeTeXinputencoding "#1"\relax}
+
+\endXETEX
 
 %D Remark: regimes accumulate, so there is no explicit reset in
 %D mkii mode.
@@ -148,6 +163,10 @@
 
 %D Preloading:
 
-\useregime[def,uni,utf] % we load the rest runtime
+\beginOLDTEX
+
+    \useregime[def,uni,utf] % we load the rest runtime
+
+\endOLDTEX
 
 \protect \endinput

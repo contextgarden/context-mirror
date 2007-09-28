@@ -132,7 +132,7 @@ end
 --~                 split = lpeg.Ct(c*(p*c)^0)
 --~                 splitters[separator] = split
 --~             end
---~             return lpeg.match(split,self)
+--~             return lpeg.match(split,self) -- split:match(self)
 --~         else
 --~             return { }
 --~         end
@@ -289,7 +289,7 @@ end
 --~     return self .. self.rep(chr or " ",n-#self)
 --~ end
 
-function string:padd(n,chr)
+function string:rpadd(n,chr)
     local m = n-#self
     if m > 0 then
         return self .. self.rep(chr or " ",m)
@@ -297,6 +297,17 @@ function string:padd(n,chr)
         return self
     end
 end
+
+function string:lpadd(n,chr)
+    local m = n-#self
+    if m > 0 then
+        return self.rep(chr or " ",m) .. self
+    else
+        return self
+    end
+end
+
+string.padd = string.rpadd
 
 function is_number(str)
     return str:find("^[%-%+]?[%d]-%.?[%d+]$") == 1

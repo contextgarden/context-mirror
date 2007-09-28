@@ -72,24 +72,52 @@ function collectors.register(name)
     collectors.registered[token.csname_id(name)] = name
 end
 
+--~ function collectors.install(tag,end_cs)
+--~     collectors.data[tag] = { }
+--~     local data   = collectors.data[tag]
+--~     local call   = token.command_id("call")
+--~     local relax  = token.command_id("relax")
+--~     local endcs  = token.csname_id(end_cs)
+--~     local expand = collectors.registered
+--~     local get    = token.get_next -- so no callback!
+--~     while true do
+--~         local t = get()
+--~         local a, b = t[1], t[3]
+--~         if a == relax and b == endcs then
+--~             return
+--~         elseif a == call and expand[b] then
+--~             token.expand()
+--~         else
+--~             data[#data+1] = t
+--~         end
+--~     end
+--~ end
+
 function collectors.install(tag,end_cs)
     collectors.data[tag] = { }
     local data   = collectors.data[tag]
     local call   = token.command_id("call")
-    local relax  = token.command_id("relax")
     local endcs  = token.csname_id(end_cs)
     local expand = collectors.registered
-    local get    = token.get_next -- so no callback!
+    local get    = token.get_next
     while true do
         local t = get()
         local a, b = t[1], t[3]
-        if a == relax and b == endcs then
+        if b == endcs then
+            tex.print('\\' ..end_cs)
             return
         elseif a == call and expand[b] then
             token.expand()
         else
             data[#data+1] = t
         end
+    end
+end
+
+function collectors.handle(tag,handle,flush)
+    collectors.data[tag] = handle(collectors.data[tag])
+    if flush then
+        collectors.flush(tag)
     end
 end
 
@@ -228,5 +256,68 @@ collectors.show_methods.b_c = function(data,swap) -- no need to store the table,
     flush(ct, "\\stoptabulate")
 end
 
+-- Even more experimental ...
+
 collectors.show_methods.b = function(tag) collectors.show_methods.b_c(tag,false) end
 collectors.show_methods.c = function(tag) collectors.show_methods.b_c(tag,true ) end
+
+collectors.remapper = {
+    -- namespace
+}
+
+collectors.remapper.data = {
+    -- user mappings
+}
+
+function collectors.remapper.store(tag,class,key)
+    local s = collectors.remapper.data[class]
+    if not s then
+        s = { }
+        collectors.remapper.data[class] = s
+    end
+    s[key] = collectors.data[tag]
+    collectors.data[tag] = nil
+end
+
+function collectors.remapper.convert(tag,toks)
+    local data = collectors.remapper.data[tag]
+    local leftbracket, rightbracket = utf.byte('['), utf.byte(']')
+    local skipping = 0
+    -- todo: math
+    if data then
+        local t = { }
+        for s=1,#toks do
+            local tok = toks[s]
+            local one, two = tok[1], tok[2]
+            if one == 11 or one == 12 then
+                if two == leftbracket then
+                    skipping = skipping + 1
+                    t[#t+1] = tok
+                elseif two == rightbracket then
+                    skipping = skipping - 1
+                    t[#t+1] = tok
+                elseif skipping == 0 then
+                    local new = data[two]
+                    if new then
+                        if #new > 1 then
+                            for n=1,#new do
+                                t[#t+1] = new[n]
+                            end
+                        else
+                            t[#t+1] = new[1]
+                        end
+                    else
+                        t[#t+1] = tok
+                    end
+                else
+                    t[#t+1] = tok
+                end
+            else
+                t[#t+1] = tok
+            end
+        end
+        return t
+    else
+        return toks
+    end
+end

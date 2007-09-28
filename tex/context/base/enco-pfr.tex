@@ -15,6 +15,10 @@
     \endinput
 \endXETEX
 
+\beginLUATEX
+    \endinput
+\endLUATEX
+
 \ifx\pdffontresource\undefined\else\endinput\fi
 
 \writestatus{loading}{Context Encoding Macros (pdf)}
@@ -252,8 +256,6 @@
       \letgvalue\pdffontfileresource\empty}%
    \egroup}
 
-\beginETEX
-
 \def\doincludepdffontresource
   {\ifcsname\s!ucmap\fontfile\endcsname\else
      \dodoincludepdffontresource
@@ -280,36 +282,6 @@
         % do it only once for each font
         \letgvalue{\s!ucmap\fontfile}\empty
       \fi}}
-
-\endETEX
-
-\beginTEX
-
-\def\doincludepdffontresource
-  {\expandafter\ifcsname\s!ucmap\fontfile\endcsname\relax
-     \dodoincludepdffontresource
-   \fi}
-
-\def\dodoincludepdffontresource
-  {\doifsomething\currentencoding % no \ifx
-     {\expandafter\ifx\csname\pdffontresource\endcsname\relax
-        \expandafter\ifx\csname\pdffontfileresource\endcsname\relax\else
-          \doifsomething\pdffontfileresource
-            {\pdfobj reserveobjnum {}%
-             \setxvalue\pdffontresource{\the\pdflastobj}%
-             \flushatshipout{\dododoincludepdffontresource{\currentencoding}}}%
-%              \doglobal\appendetoks
-%                \noexpand\dododoincludepdffontresource{\currentencoding}%
-%              \to \everybeforeshipout}% prevent multiple loading
-        \fi
-      \fi
-      \expandafter\ifx\csname\pdffontresource\endcsname\relax\else
-        \expanded{\pdffontattr\font{/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
-        % do it only once for each font
-        \letgvalue{\s!ucmap\fontfile}\empty
-      \fi}}
-
-\endTEX
 
 %D For the moment, we keep this definition here, if only
 %D because \type {\usepdffontencoding} is not defined in the

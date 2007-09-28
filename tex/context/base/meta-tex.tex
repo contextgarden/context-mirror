@@ -130,9 +130,8 @@
 
 \newbox\mptextbox
 
-%definefontsynonym[MPtxtfont][texnansi-lmtt10] \loadmapfile[texnansi-public-lm.map]
-\definefontsynonym[MPtxtfont][texnansi-lmtt10] \loadmapfile[lm-texnansi.map]
-
+% \loadmapfile[lm-texnansi.map] % the font is not really used, i.e. nothing ends up in the file
+\definefontsynonym[MPtxtfont][texnansi-lmtt10]
 \definefont[localMPtxtfont][MPtxtfont at 10bp]
 
 \ifx\getTeXtext\undefined

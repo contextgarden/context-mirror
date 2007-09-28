@@ -20,4 +20,9 @@
 \def\setnormallanguage        #1{\dosetnormallanguage{:\s!default:\s!default:}#1\empty}
 \def\setuphyppatencoding        {\pathypsettings}
 
+% temporarily here, awaiting new mechanisms
+
+\def\loadpatternfiles#1{\ctxlua{languages.hyphenation.load('#1', 'lang-#1.pat', 'lang-#1.hyp')}}
+\def\hyphenateword   #1{\ctxlua{tex.sprint(languages.hyphenation.hyphenate("\currentlanguage",[[#1]]))}}
+
 \protect \endinput

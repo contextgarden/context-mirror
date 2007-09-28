@@ -135,14 +135,16 @@ do
 
         for r, d, k in xml.elements(lxml.id(root),tgroupspec) do
             local tgroup = d[k]
+            lxml.directives.before(root,"cdx") -- "cals:table"
             texsprint(tex.ctxcatcodes, "\\bgroup")
-            lxml.directives.setups(root)
+            lxml.directives.setup(root,"cdx") -- "cals:table"
             texsprint(tex.ctxcatcodes, "\\bTABLE")
             tablepart(tgroup, hcolspec, hrowspec, "\\bTABLEhead", "\\eTABLEhead")
             tablepart(tgroup, bcolspec, browspec, "\\bTABLEbody", "\\eTABLEbody")
             tablepart(tgroup, fcolspec, frowspec, "\\bTABLEfoot", "\\eTABLEfoot")
             texsprint(tex.ctxcatcodes, "\\eTABLE")
             texsprint(tex.ctxcatcodes, "\\egroup")
+            lxml.directives.after(root,"cdx") -- "cals:table"
         end
     end
 

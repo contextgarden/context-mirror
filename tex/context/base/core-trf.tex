@@ -115,9 +115,15 @@
      \edef\scaleboxstampb % fast way [just sx/sy]
        {\scaleparameter\c!sx
         \scaleparameter\c!sy}%
+     \edef\scaleboxstampc
+       {11}%
      \ifx\scaleboxstampa\empty
-       \ifx\scaleboxstampb\empty
-         % no scaling
+       \ifx\scaleboxstampb\scaleboxstampc
+        % no scaling, but still check; new
+        \doifsomething{\scaleparameter\c!maxwidth }{\letvalue{\currentscaletag\c!factor}\v!fit}%
+        \doifsomething{\scaleparameter\c!maxheight}{\letvalue{\currentscaletag\c!factor}\v!fit}%
+        \insidefloattrue % trick
+        \dodoscaleboxcalculations
        \else
          \dosetscalboxsxsy
          \nodoscaleboxcalculations
@@ -221,21 +227,21 @@
      {\doapplyscaleboxsize
       \ifdim\scaleboxsizex>\scaleboxsizey
         \docalculatescaleboxnorm  \scaleboxdimx\c!factor\c!maxwidth\hsize\scaleboxhsize
-% not here: \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
+        \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
       \else
         \docalculatescaleboxnorm  \scaleboxdimy\c!factor\c!maxheight\scaleboxoutervsize\scaleboxvsize
-% not here: \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
+        \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
       \fi
       \donetrue}
      {\doifinsetelse{\scaleparameter\c!hfactor}{\v!max,\v!fit,\v!broad}
         {\doapplyscaleboxsize
          \docalculatescaleboxnorm  \scaleboxdimy\c!hfactor\c!maxheight\scaleboxoutervsize\scaleboxvsize
-% not here: \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
+         \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
          \donetrue}
         {\doifinsetelse{\scaleparameter\c!wfactor}{\v!max,\v!fit,\v!broad}
            {\doapplyscaleboxsize
             \docalculatescaleboxnorm  \scaleboxdimx\c!wfactor\c!maxwidth\hsize\scaleboxhsize
-% not here: \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
+            \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
             \donetrue}
            {\docalculatescaleboxnorm\scaleboxdimy\c!factor \c!height \textheight\scaleboxvsize
             \docalculatescaleboxnorm\scaleboxdimy\c!hfactor\c!height \textheight\scaleboxvsize

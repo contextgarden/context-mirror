@@ -5056,6 +5056,7 @@ messages.help = [[
 --show-path       show path expansion of ...
 --var-value       report value of variable
 --find-file       report file location
+--find-path       report path of file
 --make or --ini   make luatex format
 --run or --fmt=   run luatex format
 --luafile=str     lua inifile (default is <progname>.lua)
@@ -5203,22 +5204,26 @@ input.report(banner,"\n")
 
 local ok = true
 
-if environment.arguments["selfmerge"] then
-    utils.merger.selfmerge(own.name,own.libs,own.list)
-elseif environment.arguments["selfclean"] then
-    utils.merger.selfclean(own.name)
-elseif environment.arguments["selfupdate"] then
+if environment.arguments["find-file"] then
     input.my_prepare_b(instance)
-    input.verbose = true
-    input.update_script(instance,own.name,"luatools")
-elseif environment.arguments["generate"] then
-    instance.renewcache = true
-    input.verbose = true
+    instance.format  = environment.arguments["format"] or instance.format
+    if instance.pattern then
+        instance.allresults = true
+        input.for_files(instance, input.find_files, { instance.pattern }, instance.my_format)
+    else
+        input.for_files(instance, input.find_files, environment.files, instance.my_format)
+    end
+elseif environment.arguments["find-path"] then
     input.my_prepare_b(instance)
-elseif environment.arguments["make"] or environment.arguments["ini"] or environment.arguments["compile"] then
-    input.my_prepare_b(instance)
-    input.verbose = true
-    input.my_make_format(instance,environment.files[1] or "")
+    local path = input.find_file(instance, environment.files[1], instance.my_format)
+    if input.verbose then
+        input.report(file.dirname(path))
+    else
+        print(file.dirname(path))
+    end
+--~ elseif environment.arguments["first-writable-path"] then
+--~     input.my_prepare_b(instance)
+--~     input.report(input.first_writable_path(instance,environment.files[1] or "."))
 elseif environment.arguments["run"] then
     input.my_prepare_a(instance) -- ! no need for loading databases
     input.verbose = true
@@ -5227,15 +5232,6 @@ elseif environment.arguments["fmt"] then
     input.my_prepare_a(instance) -- ! no need for loading databases
     input.verbose = true
     input.my_run_format(instance,environment.arguments["fmt"], environment.files[1] or "")
-elseif environment.arguments["variables"] or environment.arguments["show-variables"] then
-    input.my_prepare_a(instance)
-    input.list_variables(instance)
-elseif environment.arguments["expansions"] or environment.arguments["show-expansions"] then
-    input.my_prepare_a(instance)
-    input.list_expansions(instance)
-elseif environment.arguments["configurations"] or environment.arguments["show-configurations"] then
-    input.my_prepare_a(instance)
-    input.list_configurations(instance)
 elseif environment.arguments["expand-braces"] then
     input.my_prepare_a(instance)
     input.for_files(instance, input.expand_braces, environment.files)
@@ -5251,18 +5247,6 @@ elseif environment.arguments["show-path"] or environment.arguments["path-value"]
 elseif environment.arguments["var-value"] or environment.arguments["show-value"] then
     input.my_prepare_a(instance)
     input.for_files(instance, input.var_value, environment.files)
-elseif environment.arguments["find-file"] then
-    input.my_prepare_b(instance)
-    instance.format  = environment.arguments["format"] or instance.format
-    if instance.pattern then
-        instance.allresults = true
-        input.for_files(instance, input.find_files, { instance.pattern }, instance.my_format)
-    else
-        input.for_files(instance, input.find_files, environment.files, instance.my_format)
-    end
---~ elseif environment.arguments["first-writable-path"] then
---~     input.my_prepare_b(instance)
---~     input.report(input.first_writable_path(instance,environment.files[1] or "."))
 elseif environment.arguments["format-path"] then
     input.my_prepare_b(instance)
     input.report(caches.setpath(instance,"format"))
@@ -5271,6 +5255,31 @@ elseif instance.pattern then -- brrr
     instance.format = environment.arguments["format"] or instance.format
     instance.allresults = true
     input.for_files(instance, input.find_files, { instance.pattern }, instance.my_format)
+elseif environment.arguments["generate"] then
+    instance.renewcache = true
+    input.verbose = true
+    input.my_prepare_b(instance)
+elseif environment.arguments["make"] or environment.arguments["ini"] or environment.arguments["compile"] then
+    input.my_prepare_b(instance)
+    input.verbose = true
+    input.my_make_format(instance,environment.files[1] or "")
+elseif environment.arguments["selfmerge"] then
+    utils.merger.selfmerge(own.name,own.libs,own.list)
+elseif environment.arguments["selfclean"] then
+    utils.merger.selfclean(own.name)
+elseif environment.arguments["selfupdate"] then
+    input.my_prepare_b(instance)
+    input.verbose = true
+    input.update_script(instance,own.name,"luatools")
+elseif environment.arguments["variables"] or environment.arguments["show-variables"] then
+    input.my_prepare_a(instance)
+    input.list_variables(instance)
+elseif environment.arguments["expansions"] or environment.arguments["show-expansions"] then
+    input.my_prepare_a(instance)
+    input.list_expansions(instance)
+elseif environment.arguments["configurations"] or environment.arguments["show-configurations"] then
+    input.my_prepare_a(instance)
+    input.list_configurations(instance)
 elseif environment.arguments["help"] or (environment.files[1]=='help') or (#environment.files==0) then
     if not input.verbose then
         input.verbose = true

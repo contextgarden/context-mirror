@@ -39,9 +39,9 @@ do
 
     local keys = { }
 
-    function keys.FontName    (data,line) data.fullname     = line:strip()    end
+    function keys.FontName    (data,line) data.fullname     = line:strip() end
     function keys.ItalicAngle (data,line) data.italicangle  = tonumber (line) end
-    function keys.IsFixedPitch(data,line) data.isfixedpitch = toboolean(line) end
+    function keys.IsFixedPitch(data,line) data.isfixedpitch = toboolean(line,true) end
     function keys.CharWidth   (data,line) data.charwidth    = tonumber (line) end
     function keys.XHeight     (data,line) data.xheight      = tonumber (line) end
     function keys.Descender   (data,line) data.descender    = tonumber (line) end

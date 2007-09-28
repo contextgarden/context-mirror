@@ -7,8 +7,80 @@
 <root xmlns:cals="http://www.someplace.org/cals"
       xmlns:c="http://www.someplace.org/cals">
 
-    <c:table id="100">
-        <c:tgroup cols="2">
+    <c:table cdx="vertical">
+        <c:tgroup cols="3">
+            <c:thead>
+                <c:row>
+                    <c:entry>alpha</c:entry>
+                    <c:entry>beta</c:entry>
+                    <c:entry>gamma</c:entry>
+                </c:row>
+            </c:thead>
+            <c:tbody>
+                <c:row>
+                    <c:entry>one</c:entry>
+                    <c:entry>two</c:entry>
+                    <c:entry>three</c:entry>
+                </c:row>
+                <c:row>
+                    <c:entry>four</c:entry>
+                    <c:entry>five</c:entry>
+                    <c:entry>six</c:entry>
+                </c:row>
+            </c:tbody>
+        </c:tgroup>
+    </c:table>
+
+    <c:table cdx="horizontal">
+        <c:tgroup cols="3">
+            <c:thead>
+                <c:row>
+                    <c:entry>alpha</c:entry>
+                    <c:entry>beta</c:entry>
+                    <c:entry>gamma</c:entry>
+                </c:row>
+            </c:thead>
+            <c:tbody>
+                <c:row>
+                    <c:entry>one</c:entry>
+                    <c:entry>two</c:entry>
+                    <c:entry>three</c:entry>
+                </c:row>
+                <c:row>
+                    <c:entry>four</c:entry>
+                    <c:entry>five</c:entry>
+                    <c:entry>six</c:entry>
+                </c:row>
+            </c:tbody>
+        </c:tgroup>
+    </c:table>
+
+    <c:table cdx="frame">
+        <c:tgroup cols="3">
+            <c:thead>
+                <c:row>
+                    <c:entry>alpha</c:entry>
+                    <c:entry>beta</c:entry>
+                    <c:entry>gamma</c:entry>
+                </c:row>
+            </c:thead>
+            <c:tbody>
+                <c:row>
+                    <c:entry>one</c:entry>
+                    <c:entry>two</c:entry>
+                    <c:entry>three</c:entry>
+                </c:row>
+                <c:row>
+                    <c:entry>four</c:entry>
+                    <c:entry>five</c:entry>
+                    <c:entry>six</c:entry>
+                </c:row>
+            </c:tbody>
+        </c:tgroup>
+    </c:table>
+
+    <c:table cdx="colors">
+        <c:tgroup cols="3">
             <c:colspec colnum="1" colwidth="4cm" colname="first"/>
             <c:colspec colnum="2" colname="second"/>
             <c:thead>
@@ -32,7 +104,7 @@
         </c:tgroup>
     </c:table>
 
-    <cals:table id="101">
+    <cals:table cdx="noframe">
         <cals:tgroup cols="2">
             <cals:colspec colnum="1" colwidth="4cm" colname="first"/>
             <cals:colspec colnum="2" colname="second"/>

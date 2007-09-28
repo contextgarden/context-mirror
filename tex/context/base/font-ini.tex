@@ -1188,81 +1188,6 @@
 \def\setforcedfontspec#1 #2\relax]%
   {\csname\@fs@#1\endcsname#2\relax}
 
-%D For \XETEX\ we need to support a bit more:
-%D
-%D \starttyping
-%D \definedfont[{cmr10}  at 40pt] test
-%D \definedfont['cmss10' at 40pt] test
-%D \definedfont["cmtt10" at 40pt] test
-%D
-%D \definedfont[{cmr10}  at 40pt] test
-%D \definedfont['cmss10' at 40pt] test
-%D \definedfont["cmtt10" at 40pt] test
-%D
-%D \definedfont["Gentium" at 40pt] test
-%D \stoptyping
-
-% \beginXETEX \font
-
-%     % actually, we can use "" in pdftex> 1.20 as well
-
-%     \def\parsefontspec#1%
-%       {\xdef\somefontspec{#1\space}%
-%        \@EA\doparsefontspec\somefontspec\relax]% =>#1 \empty]
-%        \donoparsefontspec}
-
-%     \def\doparsefontspec#1%
-%       {\ifx"#1%
-%          \@EA\dodqparsefontspec
-%        \else\ifx'#1%
-%          \@EAEAEA\dosqparsefontspec
-%        \else
-%          \@EAEAEA\dodoparsefontspec
-%        \fi\fi#1}
-
-%     \def\dqfontquote{"}
-%     \def\sqfontquote{'}
-
-%     \def\dodqparsefontspec"#1"#2%
-%       {\def\somefontname{#1}%
-%        \let\somefontquote\dqfontquote
-%        \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
-
-%     \def\dosqparsefontspec'#1'#2%
-%       {\def\somefontname{#1}%
-%        \let\somefontquote\sqfontquote
-%        \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
-
-%     \def\dodoparsefontspec#1 #2%
-%       {\def\somefontname{#1}%
-%        \let\somefontquote\empty
-%        \ifx\somefontname\empty % space before fontname
-%          \@EA\doparsefontspec
-%        \else\ifx#2\relax
-%          \@EAEAEA\setnaturalfontspec
-%        \else
-%          \@EAEAEA\setforcedfontspec
-%        \fi\fi
-%        #2}
-
-%     \def\setnaturalfontspec#1]%
-%       {\@fs@scaled\plusthousand\relax}
-
-%     \def\setforcedfontspec#1 #2\relax]%
-%       {\csname\@fs@#1\endcsname#2\relax}
-
-%     \def\donoparsefontspec % #1 == \cs
-%       {\edef\fontfile{\somefontquote\truefontname\somefontname\somefontquote}%
-%        \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
-%        \edef\lastfontname{\fontfile\somefontspec}%
-%        \ifx\fontclass\empty
-%          \expandafter\definefontlocal
-%        \else
-%          \expandafter\definefontglobal
-%        \fi} % #1 == \cs
-
-% \endXETEX
-
 \def\@fs@scaled
   {\afterassignment\do@fs@scaled\scratchcounter}
 
@@ -1487,7 +1412,7 @@
 
 \endLUATEX
 
-% xetex / todo: disable default features !
+% xetex / todo: disable default features ! file:, name:, [], "" etc etc
 
 \beginXETEX
 
@@ -1500,24 +1425,43 @@
    % \font\myfont = "msam7"        % also ok
    % \font\myfont = "msam7" at 8pt % error
 
-   \newcount\xetexsavedinteractionmode
-   \newbox  \xetexcrappyhackbox
+    \ifx\suppressfontnotfounderror\undefined
 
-   \def\doiffoundxetexfontelse#1#2%
-     {\xetexsavedinteractionmode\interactionmode
-      \batchmode
-      \setbox\xetexcrappyhackbox\vbox{\par}% resets error count
-      \font\xetextempfont=#2\somefontspec\relax
-      \edef\xetextempfont{\fontname\xetextempfont}%
-      \ifx\xetextempfont\nullfontname
-        \interactionmode\xetexsavedinteractionmode
-       %\writestatus\m!fonts{fails #1: #2 (\xetextempfont)}%
-        \expandafter\secondoftwoarguments
-      \else
-        \interactionmode\xetexsavedinteractionmode
-       %\writestatus\m!fonts{succeeds #1: #2 (\xetextempfont)}%
-        \expandafter\firstoftwoarguments
-      \fi}
+       \newcount\xetexsavedinteractionmode
+       \newbox  \xetexcrappyhackbox
+
+       \def\doiffoundxetexfontelse#1#2%
+         {\xetexsavedinteractionmode\interactionmode
+          \batchmode
+          \setbox\xetexcrappyhackbox\vbox{\par}% resets error count
+          \font\xetextempfont=#2\somefontspec\relax
+          \edef\xetextempfont{\fontname\xetextempfont}%
+          \ifx\xetextempfont\nullfontname
+            \interactionmode\xetexsavedinteractionmode
+           %\writestatus\m!fonts{fails #1: #2 (\xetextempfont)}%
+            \expandafter\secondoftwoarguments
+          \else
+            \interactionmode\xetexsavedinteractionmode
+           %\writestatus\m!fonts{succeeds #1: #2 (\xetextempfont)}%
+            \expandafter\firstoftwoarguments
+          \fi}
+
+    \else
+
+       \def\doiffoundxetexfontelse#1#2%
+         {\suppressfontnotfounderror\plusone
+          \font\xetextempfont=#2\somefontspec\relax
+          \suppressfontnotfounderror\zerocount
+          \edef\xetextempfont{\fontname\xetextempfont}%
+          \ifx\xetextempfont\nullfontname
+           %\writestatus\m!fonts{fails #1: #2 (\xetextempfont)}%
+            \expandafter\secondoftwoarguments
+          \else
+           %\writestatus\m!fonts{succeeds #1: #2 (\xetextempfont)}%
+            \expandafter\firstoftwoarguments
+          \fi}
+
+    \fi
 
     \def\docheckfontfilenameprefix#1:#2:#3#4\relax
       {\edef\!!stringa{#1}%
@@ -1525,17 +1469,19 @@
        \ifx\!!stringb\empty
          % no prefix
          \edef\checkedfontfile{\ifx\@@fontresource\empty\!!stringa\else\@@fontresource\fi}%
-         \doiffoundxetexfontelse{1a}{"\checkedfontfile\checkedfontfeatures"}
-           {\edef\checkedfontfile{"\checkedfontfile\checkedfontfeatures"}}
-           {\doiffoundxetexfontelse{1b}{"[\checkedfontfile]\checkedfontfeatures"}
-              {\edef\checkedfontfile{"[\checkedfontfile]\checkedfontfeatures"}}
-              {\edef\checkedfontfile{\checkedfontfile}}}%
+         \doiffoundxetexfontelse{1a}{\checkedfontfile\checkedfontfeatures}
+           {\edef\checkedfontfile{\checkedfontfile\checkedfontfeatures}}
+           {\doiffoundxetexfontelse{1b}{"\checkedfontfile\checkedfontfeatures"}
+              {\edef\checkedfontfile{"\checkedfontfile\checkedfontfeatures"}}
+              {\doiffoundxetexfontelse{1c}{"[\checkedfontfile]\checkedfontfeatures"}
+                 {\edef\checkedfontfile{"[\checkedfontfile]\checkedfontfeatures"}}
+                 {\edef\checkedfontfile{\checkedfontfile}}}}%
        \else\ifx\!!stringa\v!file
          % force file, only file check when no spaces
          \edef\checkedfontfile{\ifx\@@fontresource\empty\!!stringb\else\@@fontresource\fi}%
-         \doiffoundxetexfontelse{2a}{"[\checkedfontfile]\checkedfontfeatures"}
+         \doiffoundxetexfontelse{2b}{"[\checkedfontfile]\checkedfontfeatures"}
            {\edef\checkedfontfile{"[\checkedfontfile]\checkedfontfeatures"}}
-           {\doiffoundxetexfontelse{2b}{"\checkedfontfile\checkedfontfeatures"}
+           {\doiffoundxetexfontelse{2c}{"\checkedfontfile\checkedfontfeatures"}
               {\edef\checkedfontfile{"\checkedfontfile\checkedfontfeatures"}}
               {\edef\checkedfontfile{\checkedfontfile}}}%
        \else\ifx\!!stringa\v!name
@@ -1671,9 +1617,13 @@
 %D but somehow they changed \TEX\ so that it does not matter
 %D any more.
 
-\def\defaultfontfile{cmtt10}
-\edef\nullfontname  {\fontname\nullfont}
-\edef\dummyfontname {font\strippedcsname\\}
+\def \defaultfontfile{\truefontname{Normal}} % was cmtt10, but that one is gone
+\edef\nullfontname   {\fontname\nullfont}
+\edef\dummyfontname  {font\strippedcsname\\}
+
+\beginXETEX
+    \def\defaultfontfile{lmtypewriter10-regular}
+\endXETEX
 
 %D \macros
 %D  {everyfont,everyfontswitch}

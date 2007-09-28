@@ -248,7 +248,7 @@ do
                 if t and t.a and t.t then
                     ctx.aux.definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
                 elseif ctx.couplecolors then
---~                     ctx.aux.definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
+                --  ctx.aux.definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
                     ctx.aux.definetransparent(name, 0, global) -- can be sped up
                 end
             end
@@ -257,36 +257,34 @@ do
 
     function ctx.mpcolor(model,ca,ta,default)
         local cv = colors.value(ca) -- faster when direct colors.values[ca]
-        local tv = transparencies.value(ta)
         if cv then
+            local tv = transparencies.value(ta)
             if model == 1 then
                 model = cv[1]
             end
             if tv then
                 if model == 2 then
-                    return string.format("transparent(%s,%s,(%s,%s,%s))",1-tv[1],1-tv[2],1-cv[2])
+                    return string.format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
                 elseif model == 3 then
                     return string.format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
                 elseif model == 4 then
---~                     return string.format("transparent(%s,%s,(%s,%s,%s,%s))",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
                     return string.format("transparent(%s,%s,cmyk(%s,%s,%s,%s))",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
                 else
                     return string.format("transparent(%s,%s,multitonecolor(\"%s\",%s,\"%s\",\"%s\"))",tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
                 end
             else
                 if model == 2 then
-                    return string.format("(%s,%s,%s)",1-cv[2],1-cv[2],1-cv[2]) -- cv[3],cv[4],cv[5]
+                    return string.format("(%s,%s,%s)",cv[3],cv[4],cv[5])
                 elseif model == 3 then
                     return string.format("(%s,%s,%s)",cv[3],cv[4],cv[5])
                 elseif model == 4 then
---~                     return string.format("(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
                     return string.format("cmyk(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
                 else
                     return string.format("multitonecolor(\"%s\",%s,\"%s\",\"%s\")",cv[10],cv[11],cv[12],cv[13])
                 end
             end
         else
-            default = default or 1 -- rgb !
+            default = default or 0 -- rgb !
             return string.format("(%s,%s,%s)",default,default,default)
         end
     end
@@ -347,7 +345,7 @@ do
         end
     end
 
-    function ctx.pdfcolor(model,ca,default)
+    function ctx.pdfcolor(model,ca,default) -- todo: use gray when no color
         local cv = colors.value(ca)
         if cv then
             if model == 1 then

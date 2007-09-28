@@ -701,36 +701,56 @@
 
 \beginETEX \numexpr
 
-\chardef       \utf@a=    64
-\mathchardef   \utf@b=  4096
-\newcount\utf@c\utf@c=262144
-\chardef       \utf@d=   192
-\chardef       \utf@e=   224
-\chardef       \utf@f=   240
-\chardef       \utf@g=   128
-\mathchardef   \utf@h=   256
-\chardef       \utf@i=   127
-\mathchardef   \utf@j=  2048
-\chardef       \utf@k=    32
+    \chardef       \utf@a=    64
+    \mathchardef   \utf@b=  4096
+    \newcount\utf@c\utf@c=262144
+    \chardef       \utf@d=   192
+    \chardef       \utf@e=   224
+    \chardef       \utf@f=   240
+    \chardef       \utf@g=   128
+    \mathchardef   \utf@h=   256
+    \chardef       \utf@i=   127
+    \mathchardef   \utf@j=  2048
+    \chardef       \utf@k=    32
 
-\def\numbertoutf#1%
-  {\ifnum#1<\utf@g
-     \rawcharacter{#1}%
-   \else\ifnum#1<\utf@j
-     \rawcharacter{\the\numexpr\utf@d+(#1-\utf@k)/\utf@a\relax}%
-     \rawcharacter{\the\numexpr\utf@g+(#1-((#1-\utf@k)/\utf@a)*\utf@a)\relax}%
-   \else
-     \rawcharacter{\the\numexpr\utf@e+(#1-\utf@j)/\utf@b\relax}%
-     \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a\relax}%
-     \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-((#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a)*\utf@a)\relax}%
-   \fi\fi}
+    % div: \numexp#1/#2\relax
+    % mod: \numexp#1-(#1/#2)*#2\relax
+
+    % \def\numbertoutf#1%
+    %   {\ifnum#1<\utf@g
+    %      \rawcharacter{#1}%
+    %    \else\ifnum#1<2048
+    %      \rawcharacter{\numexpr192+(#1/64)\relax}%                         192 + (ud div 64)
+    %      \rawcharacter{\numexpr128+(#1-(#1/64)*64)\relax}%                 128 + (ud mod 64)
+    %    \else\ifnum#1<2097152
+    %      \rawcharacter{\numexpr224+(#1-(#1/4096)\relax}%                   224 + (ud div 4096)
+    %      \rawcharacter{\numexpr128+(#1-((#1/64)-((#1/64)/64)*64)\relax}%   128 + ((ud div 64) mod 64)
+    %      \rawcharacter{\numexpr128+(#1-(#1-(#1/64)*64)\relax}%             128 + (ud mod 64)
+    %    \else
+    %      % todo
+    %    \fi\fi}
+
+    \def\numbertoutf#1% okay?
+      {\ifnum#1<\utf@g
+         \rawcharacter{#1}%
+       \else\ifnum#1<\utf@j
+         \rawcharacter{\the\numexpr\utf@d+(#1-\utf@k)/\utf@a\relax}%
+         \rawcharacter{\the\numexpr\utf@g+(#1-((#1-\utf@k)/\utf@a)*\utf@a)\relax}%
+       \else
+         \rawcharacter{\the\numexpr\utf@e+(#1-\utf@j)/\utf@b\relax}%
+         \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a\relax}%
+         \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-((#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a)*\utf@a)\relax}%
+       \fi\fi}
 
 \endETEX
 
+\beginXETEX
+    \def\numbertoutf#1{[\number#1]} % xetex has no way to output 8 bit (i.e. \rawcharacter)
+\endXETEX
+
 \beginTEX
 
-\def\numbertoutf#1%
-  {[\number#1]}
+    \def\numbertoutf#1{[\number#1]}
 
 \endTEX
 

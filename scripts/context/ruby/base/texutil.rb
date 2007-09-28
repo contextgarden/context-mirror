@@ -400,7 +400,7 @@ class TeXUtil
             def MyCommands::writer(logger,handle)
                 handle << logger.banner("commands: #{@@commands.size}")
                 @@commands.each do |c|
-                    handle << "#{c}\n"
+                    handle << "#{c}%\n"
                 end
             end
 
@@ -494,7 +494,7 @@ class TeXUtil
                         end
                     end
                     list.each do |entry|
-                        handle << "\\synonymentry{#{entry.type}}{#{entry.command}}{#{entry.key}}{#{entry.data}}\n"
+                        handle << "\\synonymentry{#{entry.type}}{#{entry.command}}{#{entry.key}}{#{entry.data}}%\n"
                     end
                 end
 
@@ -602,7 +602,7 @@ class TeXUtil
                         end
                     else
                         # @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
-@entry, @key = cleanupsplit(@entry), xcleanupsplit(@key)
+                        @entry, @key = cleanupsplit(@entry), xcleanupsplit(@key)
                     end
                     @sortkey = sorter.simplify(@key)
                     # special = @sortkey =~ /^([^a-zA-Z\\])/o
@@ -632,23 +632,23 @@ class TeXUtil
                     end
                 end
 
-def xcleanupsplit(target) # +a+b+c &a&b&c a+b+c a&b&c
-    t = Array.new
-    case target[0,1]
-        when '&' then
-            t = target.sub(/^./o,'').split(/([^\\])\&/o)
-        when '+' then
-            t = target.sub(/^./o,'').split(/([^\\])\+/o)
-        else
-            # t = target.split(/([^\\])[\&\+]/o)
-            # t = target.split(/[\&\+]/o)
-            t = target.split(/(?!\\)[\&\+]/o) # lookahead
-    end
-    if not t[1] then t[1] = " " end # we need some entry else we get subentries first
-    if not t[2] then t[2] = " " end # we need some entry else we get subentries first
-    return t.join(@@split)
-end
-
+                def xcleanupsplit(target) # +a+b+c &a&b&c a+b+c a&b&c
+                    t = Array.new
+                    case target[0,1]
+                        when '&' then
+                            t = target.sub(/^./o,'').split(/([^\\])\&/o)
+                        when '+' then
+                            t = target.sub(/^./o,'').split(/([^\\])\+/o)
+                        else
+                            # t = target.split(/([^\\])[\&\+]/o)
+                            # t = target.split(/[\&\+]/o)
+                            t = target.split(/(?!\\)[\&\+]/o) # lookahead
+                    end
+                    if not t[1] then t[1] = " " end # we need some entry else we get subentries first
+                    if not t[2] then t[2] = " " end # we need some entry else we get subentries first
+                    if not t[3] then t[3] = " " end # we need some entry else we get subentries first
+                    return t.join(@@split)
+                end
                 def <=> (other)
                     @sortkey <=> other.sortkey
                 end
@@ -661,10 +661,10 @@ end
                 def Register.flushsavedline(handle)
                     if @@collapse && ! @@savedfrom.empty? then
                         if ! @@savedto.empty? then
-                            handle << "\\registerfrom#{@@savedfrom}"
-                            handle << "\\registerto#{@@savedto}"
+                            handle << "\\registerfrom#{@@savedfrom}%"
+                            handle << "\\registerto#{@@savedto}%"
                         else
-                            handle << "\\registerpage#{@@savedfrom}"
+                            handle << "\\registerpage#{@@savedfrom}%"
                         end
                     end
                     @@savedhowto, @@savedfrom, @@savedto, @@savedentry = '', '', '', ''
@@ -706,15 +706,15 @@ end
                                     elsif alpha == @@specialsymbol then
                                         character = @@specialbanner
                                     elsif alpha.length > 1 then
-                                        # character = "\\getvalue\{#{alpha}\}"
-                                        character = "\\#{alpha}"
+                                        # character = "\\getvalue\{#{alpha}\}%"
+                                        character = "\\#{alpha}%"
                                     else
                                         character = "\\unknown"
                                     end
-                                    handle << "\\registerentry{#{entry.type}}{#{character}}\n"
+                                    handle << "\\registerentry{#{entry.type}}{#{character}}%\n"
                                 end
                             end
-                            current = [entry.entry.split(@@split),'','',''].flatten
+                            current = [entry.entry.split(@@split),'','','',''].flatten
                             howto = current.collect do |e|
                                 e + '::' + entry.texthowto
                             end
@@ -724,38 +724,51 @@ end
                                 previous[0] = howto[0].dup
                                 previous[1] = ''
                                 previous[2] = ''
+                                previous[3] = ''
                             end
                             if howto[1] == previous[1] then
                                 current[1] = ''
                             else
                                 previous[1] = howto[1].dup
                                 previous[2] = ''
+                                previous[3] = ''
                             end
                             if howto[2] == previous[2] then
                                 current[2] = ''
                             else
                                 previous[2] = howto[2].dup
+                                previous[3] = ''
+                            end
+                            if howto[3] == previous[3] then
+                                current[3] = ''
+                            else
+                                previous[3] = howto[3].dup
                             end
                             copied = false
                             unless current[0].empty? then
                                 Register.flushsavedline(handle)
-                                handle << "\\registerentrya{#{entry.type}}{#{current[0]}}\n"
+                                handle << "\\registerentrya{#{entry.type}}{#{current[0]}}%\n"
                                 copied = true
                             end
                             unless current[1].empty? then
                                 Register.flushsavedline(handle)
-                                handle << "\\registerentryb{#{entry.type}}{#{current[1]}}\n"
+                                handle << "\\registerentryb{#{entry.type}}{#{current[1]}}%\n"
                                 copied = true
                             end
                             unless current[2].empty? then
                                 Register.flushsavedline(handle)
-                                handle << "\\registerentryc{#{entry.type}}{#{current[2]}}\n"
+                                handle << "\\registerentryc{#{entry.type}}{#{current[2]}}%\n"
+                                copied = true
+                            end
+                            unless current[3].empty? then
+                                Register.flushsavedline(handle)
+                                handle << "\\registerentryd{#{entry.type}}{#{current[3]}}%\n"
                                 copied = true
                             end
                             @nofentries += 1 if copied
                             if entry.realpage.to_i == 0 then
                                 Register.flushsavedline(handle)
-                                handle << "\\registersee{#{entry.type}}{#{entry.pagehowto},#{entry.texthowto}}{#{entry.seetoo}}{#{entry.page}}\n" ;
+                                handle << "\\registersee{#{entry.type}}{#{entry.pagehowto},#{entry.texthowto}}{#{entry.seetoo}}{#{entry.page}}%\n" ;
                                 lastpage, lastrealpage = entry.page, entry.realpage
                                 copied = false # no page !
                             elsif @@savedhowto != entry.pagehowto and ! entry.pagehowto.empty? then
@@ -763,14 +776,14 @@ end
                             end
                             # beware, we keep multiple page entries per realpage because of possible prefix usage
                             if copied || ! ((lastpage == entry.page) && (lastrealpage == entry.realpage)) then
-                                nextentry = "{#{entry.type}}{#{previous[0]}}{#{previous[1]}}{#{previous[2]}}{#{entry.pagehowto},#{entry.texthowto}}"
+                                nextentry = "{#{entry.type}}{#{previous[0]}}{#{previous[1]}}{#{previous[2]}}{#{previous[3]}}{#{entry.pagehowto},#{entry.texthowto}}"
                                 savedline = "{#{entry.type}}{#{@@savedhowto},#{entry.texthowto}}{#{entry.location}}{#{entry.page}}{#{entry.realpage}}"
                                 if entry.state == 1 then # from
                                     Register.flushsavedline(handle)
-                                    handle << "\\registerfrom#{savedline}\n"
+                                    handle << "\\registerfrom#{savedline}%\n"
                                 elsif entry.state == 3 then # to
                                     Register.flushsavedline(handle)
-                                    handle << "\\registerto#{savedline}\n"
+                                    handle << "\\registerto#{savedline}%\n"
                                     @@savedhowto = '' # test
                                 elsif @@collapse then
                                     if savedentry != nextentry then
@@ -779,7 +792,7 @@ end
                                         savedTo, savedentry = savedline, nextentry
                                     end
                                 else
-                                    handle << "\\registerpage#{savedline}\n"
+                                    handle << "\\registerpage#{savedline}%\n"
                                     @@savedhowto = '' # test
                                 end
                                 @nofpages += 1
@@ -1027,6 +1040,7 @@ end
                 begin
                     if f = File.open(File.suffixed(filename,'tuo'),'w') then
                         @plugins.writers(f)
+                        f << "\\endinput\n"
                         f.close
                     end
                 rescue

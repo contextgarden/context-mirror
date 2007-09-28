@@ -13,22 +13,15 @@
 
 \writestatus{loading}{Context Core Macros / Defaults}
 
-%D Here we collect default settings. More code will moved to
-%D this module later.
+%D Here we collect settings that cannot be done earlier due to
+%D depedencies. More code will moved to this module later.
 
 \unprotect
 
-%D We preload a couple of symbol|(|sets): a few defaults,
-%D the marvo symbols and a few guillemot replacements.
-
-\usesymbols[mis,mvs,glm]
-
-%D We also choose a navigation symbol set:
+\usesymbols[mis,mvs] % 'glm' no longer needed due to lm
 
 \usesymbols[nav] \setupsymbolset[navigation 1]
 
 \setupinteraction[\c!symbolset=navigation 1]
-
-%D In \type {core-nav}, we choose this set as well.
 
 \protect \endinput
