@@ -92,18 +92,22 @@ if texconfig and not texlua then
         else
             input.logger('+ ' .. tag .. ' opener',filename)
             -- todo: file;name -> freeze / eerste regel scannen -> freeze
+            local filters = input.filters
             t = {
                 reader = function(self)
                     local line = file_handle:read()
                     if line == "" then
                         return ""
-                    elseif input.filters.utf_translator then
-                        return input.filters.utf_translator(line)
-                    elseif input.filters.dynamic_translator then
-                        return input.filters.dynamic_translator(line)
-                    else
-                        return line
                     end
+                    local translator = filters.utf_translator
+                    if translator then
+                        return translator(line)
+                    end
+                    translator = filters.dynamic_translator
+                    if translator then
+                        return translator(line)
+                    end
+                    return line
                 end,
                 close = function()
                     input.logger('= ' .. tag .. ' closer',filename)
@@ -254,8 +258,8 @@ if texconfig and not texlua then
             function input.register_start_actions(f) table.insert(input.start_actions, f) end
             function input.register_stop_actions (f) table.insert(input.stop_actions,  f) end
 
---~             callback.register('start_run', function() for _, a in pairs(input.start_actions) do a() end end)
---~             callback.register('stop_run' , function() for _, a in pairs(input.stop_actions ) do a() end end)
+        --~ callback.register('start_run', function() for _, a in pairs(input.start_actions) do a() end end)
+        --~ callback.register('stop_run' , function() for _, a in pairs(input.stop_actions ) do a() end end)
 
         end
 
@@ -396,4 +400,101 @@ function cs.testcase(b)
     else
         tex.sprint(tex.texcatcodes, "\\secondoftwoarguments")
     end
+end
+
+-- This is not the most ideal place, but it will do. Maybe we need to move
+-- attributes to node-att.lua.
+
+if node then
+
+    nodes = nodes or { }
+
+    do
+
+        -- just for testing
+
+        local reserved = { }
+
+        function nodes.register(n)
+            reserved[#reserved+1] = n
+        end
+
+        function nodes.cleanup_reserved(nofboxes) -- todo
+            local nr, free = #reserved, node.free
+            for i=1,nr do
+                free(reserved[i])
+            end
+            local nl, tb, flush = 0, tex.box, node.flush_list
+            if nofboxes then
+                for i=1,nofboxes do
+                    local l = tb[i]
+                    if l then
+                        flush(l)
+                        tb[i] = nil
+                        nl = nl + 1
+                    end
+                end
+            end
+            reserved = { }
+            return nr, nl, nofboxes
+        end
+
+        -- nodes.register         = function() end
+        -- nodes.cleanup_reserved = function() end
+
+    end
+
+    do
+
+        local pdfliteral = node.new("whatsit",8)   pdfliteral.next, pdfliteral.prev  = nil, nil  pdfliteral.mode = 1
+        local disc       = node.new("disc")        disc.next,       disc.prev        = nil, nil
+        local kern       = node.new("kern",1)      kern.next,       kern.prev        = nil, nil
+        local penalty    = node.new("penalty")     penalty.next,    penalty.prev     = nil, nil
+        local glue       = node.new("glue")        glue.next,       glue.prev        = nil, nil
+        local glue_spec  = node.new("glue_spec")   glue_spec.next,  glue_spec.prev   = nil, nil
+
+        nodes.register(pdfliteral)
+        nodes.register(disc)
+        nodes.register(kern)
+        nodes.register(penalty)
+        nodes.register(glue)
+        nodes.register(glue_spec)
+
+        local copy = node.copy
+
+        function nodes.penalty(p)
+            local n = copy(penalty)
+            n.penalty = p
+            return n
+        end
+        function nodes.kern(k)
+            local n = copy(kern)
+            n.kern = k
+            return n
+        end
+        function nodes.glue(width,stretch,shrink)
+            local n = copy(glue)
+            local s = copy(glue_spec)
+            s.width, s.stretch, s.shrink = width, stretch, shrink
+            n.spec = s
+            return n
+        end
+        function nodes.glue_spec(width,stretch,shrink)
+            local s = copy(glue_spec)
+            s.width, s.stretch, s.shrink = width, stretch, shrink
+            return s
+        end
+
+        function nodes.disc()
+            return copy(disc)
+        end
+
+        function nodes.pdfliteral(str)
+            local t = copy(pdfliteral)
+            t.data = str
+            return t
+        end
+
+    end
+
 end

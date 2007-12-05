@@ -230,13 +230,30 @@ enddef ;
 vardef _is_spot_(expr c) =
     (redpart c = _special_signal_/_special_div_) and (greenpart c = 2/_special_div_)
 enddef ;
+vardef _is_gray_(expr c) =
+    (redpart c = greenpart c) and (greenpart c = bluepart c)
+enddef ;
 
 numeric mp_shade_version ; mp_shade_version := 2 ; % more colors, needs new backend
 
 vardef define_linear_shade (expr a, b, ca, cb) =
-    if (mp_shade_version > 1) and _is_cmyk_(ca) and _is_cmyk_(cb) :
+    save cmyk_a, cmyk_b ; boolean cmyk_a, cmyk_b ;
+    save gray_a, gray_b ; boolean gray_a, gray_b ;
+    cmyk_a := _is_cmyk_(ca) ; gray_a := _is_gray_(ca) ;
+    cmyk_b := _is_cmyk_(cb) ; gray_b := _is_gray_(cb) ;
+    if (mp_shade_version > 1) and cmyk_a and cmyk_b :
         flush_special(32, 17, "0 1 " & decimal shadefactor & " " &
             cmykcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " &
+            cmykcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) ) ;
+    elseif (mp_shade_version > 1) and cmyk_a and gray_b :
+        save cg ; color cg ; cg := cmyk(0,0,0,1-greenpart cb) ;
+        flush_special(32, 17, "0 1 " & decimal shadefactor & " " &
+            cmykcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " &
+            cmykcolorpattern[bluepart cg] & " " & ddecimal (b shifted shadeoffset) ) ;
+    elseif (mp_shade_version > 1) and gray_a and cmyk_b :
+        save cg ; color cg ; cg := cmyk(0,0,0,1-greenpart ca) ;
+        flush_special(32, 17, "0 1 " & decimal shadefactor & " " &
+            cmykcolorpattern[bluepart cg] & " " & ddecimal (a shifted shadeoffset) & " " &
             cmykcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) ) ;
     elseif (mp_shade_version > 1) and _is_spot_(ca) and _is_spot_(cb) :
         flush_special(34, 17, "0 1 " & decimal shadefactor & " " &
@@ -251,9 +268,23 @@ vardef define_linear_shade (expr a, b, ca, cb) =
 enddef ;
 
 vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
-    if (mp_shade_version > 1) and _is_cmyk_(ca) and _is_cmyk_(cb) :
+    save cmyk_a, cmyk_b ; boolean cmyk_a, cmyk_b ;
+    save gray_a, gray_b ; boolean gray_a, gray_b ;
+    cmyk_a := _is_cmyk_(ca) ; gray_a := _is_gray_(ca) ;
+    cmyk_b := _is_cmyk_(cb) ; gray_b := _is_gray_(cb) ;
+    if (mp_shade_version > 1) and cmyk_a and cmyk_b :
         flush_special(33, 19, "0 1 " & decimal shadefactor & " " &
             cmykcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
+            cmykcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
+    elseif (mp_shade_version > 1) and cmyk_a and gray_b :
+        save cg ; color cg ; cg := cmyk(0,0,0,1-greenpart cb) ;
+        flush_special(33, 19, "0 1 " & decimal shadefactor & " " &
+            cmykcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
+            cmykcolorpattern[bluepart cg] & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
+    elseif (mp_shade_version > 1) and gray_a and cmyk_b :
+        save cg ; color cg ; cg := cmyk(0,0,0,1-greenpart ca) ;
+        flush_special(33, 19, "0 1 " & decimal shadefactor & " " &
+            cmykcolorpattern[bluepart cg] & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
             cmykcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
     elseif (mp_shade_version > 1) and _is_spot_(ca) and _is_spot_(cb) :
         flush_special(35, 19, "0 1 " & decimal shadefactor & " " &

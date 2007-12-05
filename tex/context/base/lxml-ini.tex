@@ -17,38 +17,49 @@
 
 \unprotect
 
-\def\xmlload         #1#2{\ctxlua{lxml.load("#1","#2")}}
-\def\xmlloadbuffer   #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
-\def\xmlutfize         #1{\ctxlua{lxml.utfize("#1")}}
-\def\xmlfirst        #1#2{\ctxlua{lxml.first("#1","#2")}}
-\def\xmllast         #1#2{\ctxlua{lxml.last("#1","#2")}}
-\def\xmlall          #1#2{\ctxlua{lxml.all("#1","#2")}}
-\def\xmlfilter       #1#2{\ctxlua{lxml.filter("#1","#2")}}
-\def\xmlcommand    #1#2#3{\ctxlua{lxml.command("#1","#2","#3")}}
-\def\xmlnonspace     #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
-\def\xmltext         #1#2{\ctxlua{lxml.text("#1","#2")}}
-\def\xmlcontent      #1#2{\ctxlua{lxml.content("#1","#2")}}
-\def\xmlstripped     #1#2{\ctxlua{lxml.stripped("#1","#2")}}
-\def\xmlstrip        #1#2{\ctxlua{lxml.strip("#1","#2")}}
-\def\xmlflush          #1{\ctxlua{lxml.flush("#1")}}
-\def\xmlindex      #1#2#3{\ctxlua{lxml.index("#1","#2",\number#3)}}
-\def\xmlidx        #1#2#3{\ctxlua{lxml.idx("#1","#2",\number#3)}}
-\def\xmlcount        #1#2{\ctxlua{lxml.count("#1","#2")}}
-\def\xmlname           #1{\ctxlua{lxml.name("#1")}}
-\def\xmlnamespace      #1{\ctxlua{lxml.namespace("#1")}}
-\def\xmltag            #1{\ctxlua{lxml.tag("#1")}}
-\def\xmlattribute  #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
-\def\xmlatt          #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
-\def\xmlattdef     #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
-\def\xmlconcat     #1#2#3{\ctxlua{lxml.concat("#1","#2",[[\detokenize{#3}]])}}
-\def\xmlsetsetup   #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
-\def\xmlsetfunction#1#2#3{\ctxlua{lxml.setaction("#1","#2",#3)}}
-\def\xmlloaddirectives #1{\ctxlua{lxml.directives.load("#1")}}
-\def\xmldirectives     #1{\ctxlua{lxml.directives.setups("#1")}}
-
-\def\xmlregisterns      #1#2{\ctxlua{xml.registerns("#1","#2")}}           % document
+\def\xmlload            #1#2{\ctxlua{lxml.load("#1","#2")}}
+\def\xmlloadbuffer      #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
+\def\xmlutfize            #1{\ctxlua{lxml.utfize("#1")}}
+\def\xmlfirst           #1#2{\ctxlua{lxml.first("#1","#2")}}
+\def\xmllast           #1#2{\ctxlua{lxml.last("#1","#2")}}
+\def\xmlall             #1#2{\ctxlua{lxml.all("#1","#2")}}
+\def\xmlfilter          #1#2{\ctxlua{lxml.filter("#1","#2")}}
+\def\xmlcommand       #1#2#3{\ctxlua{lxml.command("#1","#2","#3")}}
+\def\xmlnonspace        #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
+\def\xmltext            #1#2{\ctxlua{lxml.text("#1","#2")}}
+\def\xmlcontent         #1#2{\ctxlua{lxml.content("#1","#2")}}
+\def\xmlstripped        #1#2{\ctxlua{lxml.stripped("#1","#2")}}
+\def\xmlstrip           #1#2{\ctxlua{lxml.strip("#1","#2")}}
+\def\xmlflush             #1{\ctxlua{lxml.flush("#1")}}
+\def\xmlindex         #1#2#3{\ctxlua{lxml.index("#1","#2",\number#3)}}
+\def\xmlidx           #1#2#3{\ctxlua{lxml.idx("#1","#2",\number#3)}}
+\def\xmlcount           #1#2{\ctxlua{lxml.count("#1","#2")}}
+\def\xmlname              #1{\ctxlua{lxml.name("#1")}}
+\def\xmlnamespace         #1{\ctxlua{lxml.namespace("#1")}}
+\def\xmltag               #1{\ctxlua{lxml.tag("#1")}}
+\def\xmlattribute     #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
+\def\xmlattributedef#1#2#3#4{\ctxlua{lxml.attribute("#1","#2","#3","#4")}}
+\def\xmlatt             #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
+\def\xmlattdef        #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
+\def\xmlconcat        #1#2#3{\ctxlua{lxml.concat("#1","#2",[[\detokenize{#3}]])}}
+\def\xmlsetsetup      #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
+\def\xmlsetfunction   #1#2#3{\ctxlua{lxml.setaction("#1","#2",#3)}}
+\def\xmlloaddirectives    #1{\ctxlua{lxml.directives.load("#1")}}
+\def\xmldirectives        #1{\ctxlua{lxml.directives.setups("#1")}}
+\def\xmlregisterns      #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
 \def\xmlchecknamespace#1#2#3{\ctxlua{xml.check_namespace(lxml.id("#1"),"#2","#3")}} % element
 \def\xmlremapname   #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
+\def\xmlremapnamespace#1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
+\def\xmldelete          #1#2{\ctxlua{xml.delete(lxml.id("#1"),"#2")}}
+\def\xmlinclude       #1#2#3{\ctxlua{lxml.include("#1","#2","#3",true)}}
+\def\xmldoifelse        #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
+\def\xmldoifelsetext    #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
+
+% \startxmlsetups xml:include
+%     \xmlinclude{main}{include}{filename|href}
+% \stopxmlsetups
+%
+% \xmlprependsetup{xml:include}
 
 \let\xmlgrab\xmlsetsetup
 
@@ -58,8 +69,10 @@
 
 \newtoks \registeredxmlsetups
 
-\def\xmlregistersetup#1%
-  {\appendtoksonce\directsetup{#1}\to\registeredxmlsetups}
+\def\xmlappendsetup #1{\appendtoksonce \directsetup{#1}\to\registeredxmlsetups} % to be done, made faster
+\def\xmlprependsetup#1{\prependtoksonce\directsetup{#1}\to\registeredxmlsetups} % to be done, made faster
+
+\let\xmlregistersetup\xmlappendsetup
 
 \def\xmlregisteredsetups
   {\the\registeredxmlsetups}
@@ -103,7 +116,7 @@
 \def\xmlcdataobeyedline {\obeyedline}
 \def\xmlcdataobeyedspace{\strut\obeyedspace}
 \def\xmlcdatabefore     {\bgroup\tt}
-\def\xmlcdataafter      {\egroup x}
+\def\xmlcdataafter      {\egroup}
 
 % verbatim (dodo:pre/post whitespace, maybe splot verbatim and
 % cdata commands), experimental:
@@ -116,20 +129,26 @@
 % \def\startxmlinlineverbatim [#1]{}
 % \def\stopxmlinlineverbatim      {}
 
+% we use an xml: namespace so one has to define a suitable verbatim, say
+%
+% \definetyping[xml:verbatim][typing]
+%
+% this is experimental!
+
 \def\startxmldisplayverbatim[#1]%
-  {\begingroup
+  {\startpacked % \begingroup
    \let\currenttypingclass\??tp
-   \edef\currenttyping{#1}%
+   \edef\currenttyping{xml:#1}%
    \def\stopxmldisplayverbatim
      {\endofverbatimlines
-      \endgroup}%
+      \stoppacked} % \endgroup
    \mkinitializeverbatim
    \beginofverbatimlines}
 
 \def\startxmlinlineverbatim[#1]%
   {\begingroup
    \let\currenttypingclass\??ty
-   \edef\currenttyping{#1}%
+   \edef\currenttyping{xml:#1}%
    \let\stopxmldisplayverbatim\endgroup
    \mkinitializeverbatim}
 

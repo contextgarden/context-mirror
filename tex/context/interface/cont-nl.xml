@@ -18,7 +18,10 @@
     <cd:constant type="buiten"/>
     <cd:constant type="links"/>
     <cd:constant type="rechts"/>
+    <cd:constant type="lijnlinks"/>
+    <cd:constant type="lijnrechts"/>
     <cd:constant type="midden"/>
+    <cd:constant type="centreer"/>
     <cd:constant type="normaal"/>
     <cd:constant type="nee"/>
     <cd:constant type="ja"/>
@@ -4224,6 +4227,7 @@
       <cd:parameter name="nummer">
         <cd:constant type="ja"/>
         <cd:constant type="nee"/>
+        <cd:constant type="geen"/>
       </cd:parameter>
       <cd:parameter name="tussen">
         <cd:constant type="cd:command"/>
@@ -6064,6 +6068,9 @@
       </cd:parameter>
       <cd:parameter name="uitlijnen">
         <cd:resolve name="align"/>
+      </cd:parameter>
+      <cd:parameter name="symuitlijnen">
+        <cd:resolve name="symalign"/>
       </cd:parameter>
       <cd:parameter name="springvolgendein">
         <cd:resolve name="indentnext"/>

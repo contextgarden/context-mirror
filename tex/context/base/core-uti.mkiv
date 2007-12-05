@@ -61,13 +61,14 @@
     \immediatewriteutilitytua{if job and job.version and not job.version == "\utilityversion" then return end}%
     \immediatewriteutilitytua{if not job then job = { } end}%
     \immediatewriteutilitytua{job.version = "\utilityversion"}%
+    \immediatewriteutilitytua{local ti = table.insert}%
 \to \everyopenutilities
 
 \appendtoks
     \immediatewriteutilitytua{end}%
     \immediatewriteutilitytua{}%
     \immediatewriteutilitytua{-- end of utility file}%
-   %immediate\closeout\utility@tua
+    %\immediate\closeout\utility@tua
 \to \everycloseutilities
 
 % The next file can be in lua or luc format:
@@ -113,5 +114,9 @@
 \appendtoks
     \ctxlua{input.storage.finalize()}%
 \to \everyfinalizeluacode
+
+\appendtoks
+    \ctxlua{nodes.cleanup_reserved()}%
+\to \everydump
 
 \protect \endinput

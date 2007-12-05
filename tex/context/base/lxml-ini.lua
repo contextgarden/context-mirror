@@ -113,8 +113,8 @@ do
 
     function lxml.verbatim(id,before,after)
         local root = lxml.id(id)
-        if before then tex.sprint(tex.ctxcatcodes,string.format("%s[%s]",before,id.tg)) end
-        xml.serialize(root,toverbatim,nil,nil,nil,true)
+        if before then tex.sprint(tex.ctxcatcodes,string.format("%s[%s]",before,root.tg)) end
+        xml.serialize(root.dt,toverbatim,nil,nil,nil,true)  -- was root
         if after  then tex.sprint(tex.ctxcatcodes,after) end
     end
     function lxml.inlineverbatim(id)
@@ -136,17 +136,34 @@ function lxml.root(id)
     return lxml.loaded[id]
 end
 
+-- redefine xml load
+
+xml.originalload = xml.load
+
+function xml.load(filename)
+    input.starttiming(lxml)
+    local x = xml.originalload(filename)
+    input.stoptiming(lxml)
+    return x
+end
+
+function lxml.filename(filename) -- some day we will do this in input, first figure out /
+    return input.find_file(texmf.instance,url.filename(filename)) or ""
+end
+
 function lxml.load(id,filename)
-    input.start_timing(lxml)
     if texmf then
-        local fullname = input.find_file(texmf.instance,filename) or ""
+        local fullname = lxml.filename(filename)
         if fullname ~= "" then
             filename = fullname
         end
     end
     lxml.loaded[id] = xml.load(filename)
-    input.stop_timing(lxml)
     return lxml.loaded[id], filename
+end
+
+function lxml.include(id,pattern,attribute,recurse)
+    xml.include(lxml.id(id),pattern,attribute,recurse,lxml.filename)
 end
 
 function lxml.utfize(id)
@@ -199,7 +216,8 @@ function lxml.index(id,pattern,i)
 end
 
 function lxml.attribute(id,pattern,a,default) --todo: snelle xmlatt
-    tex.sprint((xml.filters.attribute(lxml.id(id),pattern,a)) or default or "")
+    local str = xml.filters.attribute(lxml.id(id),pattern,a) or ""
+    tex.sprint((str == "" and default) or str)
 end
 
 function lxml.count(id,pattern)
@@ -217,7 +235,8 @@ function lxml.tag(id)
     tex.sprint(lxml.id(id).tg or "")
 end
 function lxml.namespace(id) -- or remapped name?
-    tex.sprint(lxml.id(id).ns or "")
+    local root = lxml.id(id)
+    tex.sprint(root.rn or root.ns or "")
 end
 
 --~ function lxml.concat(id,what,separator,lastseparator)
@@ -264,6 +283,7 @@ end
 lxml.trace_setups = false
 
 function lxml.setsetup(id,pattern,setup)
+    local trace = lxml.trace_setups
     if not setup or setup == "" or setup == "*" then
         for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
             local dtdk = dt and dt[dk] or rt
@@ -273,13 +293,25 @@ function lxml.setsetup(id,pattern,setup)
             else
                 dtdk.command = ns .. ":" .. tg
             end
-            if lxml.trace_setups then
-                texio.write_nl(string.format("xml setup: namespace=%s, tag=%s, setup=%s",ns, tg, dtdk.command))
+            if trace then
+                texio.write_nl(string.format("lpath matched -> %s -> %s", dtdk.command, dtdk.command))
             end
         end
     else
+        if trace then
+            texio.write_nl(string.format("lpath pattern -> %s -> %s", pattern, setup))
+        end
         for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
-            ((dt and dt[dk]) or rt).command = setup
+            local dtdk = (dt and dt[dk]) or rt
+            dtdk.command = setup
+            if trace then
+                local ns, tg = dtdk.rn or dtdk.ns, dtdk.tg
+                if ns == "" then
+                    texio.write_nl(string.format("lpath matched -> %s -> %s", tg, setup))
+                else
+                    texio.write_nl(string.format("lpath matched -> %s:%s -> %s", ns, tg, setup))
+                end
+            end
         end
     end
 end
@@ -312,7 +344,7 @@ do
         traverse(root, lpath(pattern), function(r,d,k)
             -- this can become pretty large
             local n = #lxml.self + 1
-            lxml.self[n] = d[k]
+            lxml.self[n] = (d and d[k]) or r
             tex.sprint(tex.ctxcatcodes,string.format("\\xmlsetup{%s}{%s}",n,command))
         end)
     end
@@ -424,9 +456,9 @@ function xml.getbuffer(name) -- we need to make sure that commands are processed
 end
 
 function lxml.loadbuffer(id,name)
-    input.start_timing(lxml)
+    input.starttiming(lxml)
     lxml.loaded[id] = xml.convert(table.join(buffers.data[name or id] or {},""))
-    input.stop_timing(lxml)
+    input.stoptiming(lxml)
     return lxml.loaded[id], name or id
 end
 

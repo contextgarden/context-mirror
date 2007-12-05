@@ -19,27 +19,66 @@
 
 \enablemode[mkiv]
 
+% potential new defaults:
+
+% \setbreakpoints[compound]
+
 \unprotect
 
-\appendtoks
-    \ctxlua{garbagecollector.update()}%
-\to \everyshipout
+\ifx\clearmarks\undefined
+    \def\clearmarks  {\begingroup\afterassignment\doclearmarks\scratchcounter}
+    \def\doclearmarks{\normalmarks\scratchcounter{}\endgroup}
+\fi
+
+\def\resetmark#1% we cannot use \normalmarks#1{}
+  {\global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
+   \@EA\clearmarks\csname\@@prk\string#1\endcsname
+   \global\@EA\let\csname\@@trk\string#1\endcsname\empty
+   \global\@EA\let\csname\@@frk\string#1\endcsname\empty
+   \global\@EA\let\csname\@@brk\string#1\endcsname\empty
+   \global\@EA\let\csname\@@crk\string#1\endcsname\empty}
+
+% \appendtoks
+%     \ctxlua{garbagecollector.update()}%
+% \to \everyshipout
 
 % texmf.instance will become just texmf
 
+%D Since this can be a showstopper, we report the path at the beginning
+%D as well as at the end of a run.
+
+\writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath(texmf.instance))}}
+\writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}
+
+%D For the moment we report some statistics. Later this will become an option,
+%D but for now we need this information.
+
 \appendtoks
+    \writestatus\m!lua{used config path          - \ctxlua{tex.print(caches.configpath(texmf.instance))}}%
+    \writestatus\m!lua{used cache path           - \ctxlua{tex.print(caches.path)}}%
+    \writestatus\m!lua{modules/dumps/instances   - \ctxlua{tex.print((status.luabytecodes-500).."/"..input.storage.done.."/"..status.luastates)}}%
     \writestatus\m!lua{input load time           - \ctxlua{input.loadtime(texmf.instance)} seconds}%
     \writestatus\m!lua{fonts load time           - \ctxlua{input.loadtime(fonts)} seconds}%
     \writestatus\m!lua{xml load time             - \ctxlua{input.loadtime(lxml)} seconds}%
     \writestatus\m!lua{mps conversion time       - \ctxlua{input.loadtime(mptopdf)} seconds}%
-    \writestatus\m!lua{node processing time      - \ctxlua{input.loadtime(nodes)} seconds}%
+    \writestatus\m!lua{node processing time      - \ctxlua{input.loadtime(nodes)} seconds (including kernel)}%
+    \writestatus\m!lua{kernel processing time    - \ctxlua{input.loadtime(kernel)} seconds}%
     \writestatus\m!lua{attribute processing time - \ctxlua{input.loadtime(attributes)} seconds}%
-    \writestatus\m!lua{used config path          - \ctxlua{tex.print(caches.configpath(texmf.instance))}}%
-    \writestatus\m!lua{used cache path           - \ctxlua{tex.print(caches.path)}}%
-    \writestatus\m!lua{modules/dumps/instances   - \ctxlua{tex.print((status.luabytecodes-500).."/"..input.storage.done.."/"..status.luastates)}}%
-    \writestatus\m!lua{current memory usage      - \ctxlua{tex.print(status.luastate_bytes)} bytes}%
-    \writestatus\m!lua{language load time        - \ctxlua{input.loadtime(languages)} seconds (n=\ctxlua{tex.print(languages.n())})}%
+    \writestatus\m!lua{language load time        - \ctxlua{input.loadtime(languages)} seconds (n=\ctxlua{tex.print(languages.hyphenation.n())})}%
     \writestatus\m!lua{loaded fonts              - \ctxlua{tex.print(fonts.logger.report())}}%
+    \writestatus\m!lua{loaded patterns           - \ctxlua{tex.print(languages.logger.report())}}%
+    \writestatus\m!lua{current memory usage      - \ctxlua{tex.print(status.luastate_bytes)} bytes}%
+    \writestatus\m!lua{cleaned up reserved nodes - \ctxlua{
+        tex.print(string.format("\letterpercent s nodes, \letterpercent s lists (of \letterpercent s)", nodes.cleanup_reserved(\number\topofboxstack)))
+    }}%
+\to \everybye
+
+% \appendtoks
+%     \ctxlua{nodes.check_for_leaks()}%
+% \to \everygoodbye
+
+\appendtoks
+    \writestatus{remark}{temporary fallback to base mode for tlig and trep}% end of font-otf.lua
 \to \everybye
 
 \def\resettimer    {\ctxlua{environment.starttime = os.clock()}}
@@ -49,10 +88,11 @@
 %D For me.
 
 \def\traceluausage
+  {\dosingleempty\dotraceluausage}
+
+\def\dotraceluausage[#1]%
   {\ctxlua{debugger.enable()}%
-   \appendtoks
-     \ctxlua{debugger.disable() debugger.showstats(texio.write,5000)}%
-    \to \everybye}
+   \appendtoks\ctxlua{debugger.disable() debugger.showstats(print,\doifnumberelse{#1}{#1}{5000})}\to\everybye}
 
 %D Fonts (experimental AFM loading}
 
@@ -109,9 +149,9 @@
 
 \definestartstop[randomized][\c!before=\dosetattribute{case}\plusfour,\c!after=]
 
-\def\WORD{\groupedcommand{\dosetattribute{case}\plusone  }{}}
-\def\word{\groupedcommand{\dosetattribute{case}\plustwo  }{}}
-\def\Word{\groupedcommand{\dosetattribute{case}\plusthree}{}} % \plusfour
+\def\WORD{\groupedcommand{\setcharactercasing[\plusone  ]}{}}
+\def\word{\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
+\def\Word{\groupedcommand{\setcharactercasing[\plusthree]}{}} % \plusfour
 
 \let\WORDS\WORD
 \let\words\word
@@ -121,3 +161,17 @@
 
 % \expanded{\defineactivecharacter \number"2000E} {\textdir TRT\relax}
 % \expanded{\defineactivecharacter \number"2000F} {\textdir TLT\relax}
+
+\startluacode
+    local ss = { }
+    function ctx.writestatus(a,b)
+        local s = ss[a]
+        if not ss[a] then
+            s = a:rpadd(15) .. ":"
+            ss[a] = s
+        end
+        texio.write_nl(s .. b)
+    end
+\stopluacode
+
+\def\writestatus#1#2{\ctxlua{ctx.writestatus([[#1]],[[#2]])}}

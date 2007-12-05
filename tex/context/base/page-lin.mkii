@@ -26,95 +26,6 @@
 \newtoks\beforeeverylinenumbering
 \newtoks\aftereverylinenumbering
 
-\def\setuplines
-  {\dodoubleargument\getparameters[\??rg]}
-
-\def\startlines
-  {\@@rgbefore
-   \pushmacro\checkindentation
-   \whitespace
-  %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
-   \begingroup
-   \setupindenting[\@@rgindenting]%
-   \typesettinglinestrue
-   \setupwhitespace[\v!none]%
-   \obeylines
-   \ignorespaces
-   \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
-     {\gdef\afterfirstobeyedline
-        {\nobreak
-         \global\let\afterfirstobeyedline\relax}}%
-   \def\obeyedline
-     {\par
-      \afterfirstobeyedline
-      \futurelet\next\dobetweenthelines}%
-   \activatespacehandler\@@rgspace
-   \GotoPar}
-
-\def\stoplines
-  {\endgroup
-   \popmacro\checkindentation
-   \@@rgafter}
-
-%D When spacing is active we need to handle commands in
-%D a special way:
-%D
-%D \starttyping
-%D \setuplines[space=on]
-%D
-%D \startlines
-%D Let's talk about this{\ttsl\gobbleoneargument or}that.
-%D \stoplines
-%D
-%D \startlines
-%D Let's talk about this{\getvalue{ttsl}or}that.
-%D \stoplines
-%D \stoptyping
-%D
-%D One can indent in several ways:
-%D
-%D \starttyping
-%D \setupindenting[medium] \setuplines[indenting=odd] % no yes odd even
-%D
-%D \startlines
-%D first
-%D second
-%D third
-%D fourth
-%D \stoplines
-%D \stoptyping
-
-% this is not the natural place
-
-\def\installspacehandler#1#2% needs to set \obeyedspace
-  {\setvalue{\??sr#1}{#2}}
-
-\installspacehandler \v!on
-  {\obeyspaces
-   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
-   \let\ =\obeyedspace}
-
-\installspacehandler \v!yes
-  {\obeyspaces
-   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode    \normalspace  }}%
-   \let\ =\obeyedspace}
-
-\installspacehandler \v!off
-  {\normalspaces
-   \let\obeyedspace\normalspace
-   \let\ =\normalspace}
-
-\installspacehandler \v!fixed
-  {\obeyspaces
-   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode\fixedspace}}%
-   \let\ =\obeyedspace}
-
-\def\activatespacehandler#1%
-  {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
-
-\def\dobetweenthelines
-  {\doifmeaningelse\next\obeyedline\@@rginbetween\donothing}
-
 % het gebruik van \setlocalreference scheelt een hash entry
 
 \def\dodoshowlinenumber % for use elsewhere, to be extended
@@ -381,46 +292,6 @@
    \the\aftereverylinenumbering
    \egroup}
 
-\def\emptylines
-  {\dosingleempty\doemptylines}
-
-\def\doemptylines[#1]%
-  {\endgraf\dorecurse{\iffirstargument#1\else3\fi}\crlf}
-
-\newcount\internalparagraphnumber
-
-\def\setupparagraphnumbering
-  {\dosingleempty\dosetupparagraphnumbering}
-
-\def\dosetupparagraphnumbering[#1]%
-  {\getparameters
-     [\??ph][#1]%
-   \processaction
-     [\@@phstate]
-     [\v!start=>\let\showparagraphnumber\doshowparagraphnumberA,
-       \v!stop=>\let\showparagraphnumber\relax,
-       \v!line=>\let\showparagraphnumber\doshowparagraphnumberB,
-      \v!reset=>\global\internalparagraphnumber\zerocount
-                \let\showparagraphnumber\doshowparagraphnumberA]}
-
-\def\dodoshowparagraphnumber
-  {\global\advance\internalparagraphnumber \plusone
-   \inleftmargin % \tf normalizes em
-     {\tf{\doattributes\??ph\c!style\c!color{\the\internalparagraphnumber}}%
-      \kern\@@phdistance}}
-
-\def\doshowparagraphnumberA
-  {\ifprocessingverbatim
-     \iflinepar\dodoshowparagraphnumber\fi
-   \else
-     \dodoshowparagraphnumber
-   \fi}
-
-\def\doshowparagraphnumberB
-  {\ifnumberinglines
-     \doshowparagraphnumberA
-   \fi}
-
 \setuplinenumbering
   [\c!method=,
    \c!conversion=\v!numbers,
@@ -429,31 +300,13 @@
    \c!location=\v!margin,
    \c!style=,
    \c!color=,
-   \c!width=2em,
    \c!prefix=,
-   \c!referencing=\v!on]
-
-% new
-
-\setuplinenumbering
-  [\c!width=\ifcase\linenumberlocation2em\else\v!margin\fi,
+   \c!referencing=\v!on,
+   \c!width=\ifcase\linenumberlocation2em\else\v!margin\fi,
    \c!left=,
    \c!right=,
    \c!command=,
    \c!distance=\zeropoint,
    \c!align=\ifcase\linenumberlocation\v!right\or\v!right\or\v!left\fi]
-
-\setupparagraphnumbering
-  [\c!state=\v!stop,
-   \c!style=,
-   \c!color=,
-   \c!distance=\ifcase\linenumberlocation2em\else\!!zeropoint\fi]
-
-\setuplines
-  [\c!before=\blank,
-   \c!after=\blank,
-   \c!inbetween=\blank,
-   \c!indenting=\v!no,
-   \c!space=\v!default]
 
 \protect \endinput

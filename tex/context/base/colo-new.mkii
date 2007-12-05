@@ -904,6 +904,12 @@
 %D page color. This macro is used in the same way as
 %D \type {\color}.
 
+\def\startregistercolor[#1]%
+  {\permitcolormodefalse\startcolor[#1]\permitcolormodetrue}
+
+\def\stopregistercolor
+  {\permitcolormodefalse\stopcolor\permitcolormodetrue}
+
 \def\starttextcolor[#1]%
   {\doifsomething{#1}
      {\bgroup

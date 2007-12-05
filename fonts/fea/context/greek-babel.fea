@@ -1,66 +1,22 @@
+# This file has been written by Arthur Reutenauer.
 # An Opentype feature to replace the Babel input scheme
-
-# Not quite complete; some rhos with breathings and accents are missing (where
-# are they?) and the final sigma isn't accounted for.
-
-lookup GreekBabelLookupSimple {
-    lookupflag 0 ;
-	sub a	by alpha ;
-	sub b	by beta ;
-	sub g	by gamma ;
-	sub d	by delta ;
-	sub e	by epsilon ;
-	sub z	by zeta ;
-	sub h	by eta ;
-	sub j	by theta ;
-	sub i	by iota ;
-	sub k	by kappa ;
-	sub l	by lambda ;
-	sub m	by mu ;
-	sub n	by nu ;
-	sub x	by xi ;
-	sub o	by omicron ;
-	sub p	by pi ;
-	sub r	by rho ;
-	sub c	by sigmafinal ;
-	sub s	by sigma ;
-	sub t	by tau ;
-	sub u	by upsilon ;
-	sub f	by phi ;
-	sub q	by chi ;
-	sub y	by psi ;
-	sub w	by omega ;
-	sub A	by Alpha ;
-	sub B	by Beta ;
-	sub G	by Gamma ;
-	sub D	by Delta ;
-	sub E	by Epsilon ;
-	sub Z	by Zeta ;
-	sub H	by Eta ;
-	sub J	by Theta ;
-	sub I	by Iota ;
-	sub K	by Kappa ;
-	sub L	by Lambda ;
-	sub M	by Mu ;
-	sub N	by Nu ;
-	sub X	by Xi ;
-	sub O	by Omicron ;
-	sub P	by Pi ;
-	sub R	by Rho ;
-	sub C	by Uni03C2 ;
-	sub S	by Sigma ;
-	sub T	by Tau ;
-	sub U	by Upsilon ;
-	sub F	by Phi ;
-	sub Q	by Chi ;
-	sub Y	by Psi ;
-	sub W	by Omega ;
-	sub semicolon	by periodcentered ;
-} GreekBabelLookupSimple ;
 
 lookup GreekBabelLookupMultiple {
     lookupflag 1 ;
-	# sub s 'space by sigmafinal ;
+	sub quotedbl quotesingle i by uni1FD3 ;
+	sub quotedbl quotesingle u by uni1FE3 ;
+	sub quotedbl grave i by uni1FD2 ;
+	sub quotedbl grave u by uni1FE2 ;
+	sub quotedbl asciitilde i by uni1FD7 ;
+	sub quotedbl asciitilde u by uni1FE7 ;
+	sub quotedbl i by uni03CA ;
+	sub quotedbl u by uni03CB ;
+	sub equal a by uni1FB1 ;
+	sub equal i by uni1FD1 ;
+	sub equal u by uni1FE1 ;
+	sub equal quotesingle a by uniEB00 ;
+	sub equal quotesingle i by uniEB39 ;
+	sub equal u quotesingle by uniEB7A ;
 	sub greater  a by uni1F00 ;
 	sub greater  A by uni1F08 ;
 	sub greater  e by uni1F10 ;
@@ -72,7 +28,6 @@ lookup GreekBabelLookupMultiple {
 	sub greater  o by uni1F40 ;
 	sub greater  O by uni1F48 ;
 	sub greater  u by uni1F50 ;
-	# sub greater  U by uni1F58 ;
 	sub greater  w by uni1F60 ;
 	sub greater  W by uni1F68 ;
 	sub greater grave a by uni1F02 ;
@@ -86,7 +41,6 @@ lookup GreekBabelLookupMultiple {
 	sub greater grave o by uni1F42 ;
 	sub greater grave O by uni1F4A ;
 	sub greater grave u by uni1F52 ;
-	# sub greater grave U by uni1F5A ;
 	sub greater grave w by uni1F62 ;
 	sub greater grave W by uni1F6A ;
 	sub greater quotesingle a by uni1F04 ;
@@ -248,28 +202,82 @@ lookup GreekBabelLookupMultiple {
 	sub less asciitilde w bar by uni1FA7 ;
 	sub less asciitilde W bar by uni1FAF ;
 	sub grave a bar by uni1FB2 ;
+	sub a bar by uni1FB3 ;
 	sub quotesingle a bar by uni1FB4 ;
+	sub h bar by uni1FC3 ;
 	sub grave h bar by uni1FC2 ;
 	sub quotesingle h bar by uni1FC4 ;
-	sub grave w bar by uni1FD2 ;
-	sub quotesingle w bar by uni1FD4 ;
+	sub grave w bar by uni1FF2 ;
+	sub w bar by uni1FF3 ;
+	sub quotesingle w bar by uni1FF4 ;
 	sub asciitilde a by uni1FB6 ;
 	sub asciitilde a bar by uni1FB7 ;
 	sub asciitilde h by uni1FC6 ;
 	sub asciitilde h bar by uni1FC7 ;
-	sub asciitilde w by uni1FD6 ;
-	sub asciitilde w bar by uni1FD7 ;
+	sub asciitilde i by uni1FD6 ;
+	sub asciitilde u by uni1FE6 ;
+	sub asciitilde w by uni1FF6 ;
+	sub asciitilde w bar by uni1FF7 ;
 	sub greater r by uni1FE4 ;
 	sub less r by uni1FE5 ;
 	sub less R by uni1FEC ;
 } GreekBabelLookupMultiple ;
 
-lookup GreekBabel2LookupMultiple {
-    lookupflag 1 ;
-	sub alpha bar by uni1FB3 ;
-	sub eta bar by uni1FC3 ;
-	sub omega bar by uni1FF3 ;
-} GreekBabel2LookupMultiple ;
+lookup GreekBabelLookupSimple {
+    lookupflag 0 ;
+	sub a	by alpha ;
+	sub b	by beta ;
+	sub g	by gamma ;
+	sub d	by delta ;
+	sub e	by epsilon ;
+	sub z	by zeta ;
+	sub h	by eta ;
+	sub j	by theta ;
+	sub i	by iota ;
+	sub k	by kappa ;
+	sub l	by lambda ;
+	sub m	by mu ;
+	sub n	by nu ;
+	sub x	by xi ;
+	sub o	by omicron ;
+	sub p	by pi ;
+	sub r	by rho ;
+	sub c	by uni03F2 ;
+	sub s	by uni03F2 ;
+	sub t	by tau ;
+	sub u	by upsilon ;
+	sub f	by phi ;
+	sub q	by chi ;
+	sub y	by psi ;
+	sub w	by omega ;
+	sub A	by Alpha ;
+	sub B	by Beta ;
+	sub G	by Gamma ;
+	sub D	by Delta ;
+	sub E	by Epsilon ;
+	sub Z	by Zeta ;
+	sub H	by Eta ;
+	sub J	by Theta ;
+	sub I	by Iota ;
+	sub K	by Kappa ;
+	sub L	by Lambda ;
+	sub M	by Mu ;
+	sub N	by Nu ;
+	sub X	by Xi ;
+	sub O	by Omicron ;
+	sub P	by Pi ;
+	sub R	by Rho ;
+	sub C	by Uni03C2 ;
+	sub S	by uni03F9 ;
+	sub T	by Tau ;
+	sub U	by Upsilon ;
+	sub F	by Phi ;
+	sub Q	by Chi ;
+	sub Y	by Psi ;
+	sub W	by Omega ;
+	sub semicolon	by anoteleia ;
+	sub exclam	by dotbelowcomb ;
+} GreekBabelLookupSimple ;
 
 feature grbl {
 
@@ -283,15 +291,4 @@ feature grbl {
 	    lookup GreekBabelLookupMultiple ;
 	    lookup GreekBabelLookupSimple ;
 } grbl ;
-
-feature grb2 {
-
-    script DFLT ;
-	language dflt ;
-	    lookup GreekBabel2LookupMultiple ;
-
-    script latn;
-	language dflt ;
-	    lookup GreekBabel2LookupMultiple ;
-} grb2 ;
 

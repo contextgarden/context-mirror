@@ -828,9 +828,7 @@
 \def\do@@label[#1][#2]%
   {\numberparameter{#1}\c!before
    \numberparameter{#1}\c!command
-     {\doattributes{\@@thenumber{#1}}\c!headstyle\c!headcolor
-        {\dotextprefix{\numberparameter{#1}\c!text}%
-         \getvalue{\e!next#1}[#2]}}%
+     {\doattributes{\@@thenumber{#1}}\c!headstyle\c!headcolor{\getvalue{\e!next#1}[#2]}}%
    \numberparameter{#1}\c!after}%
 
 \def\do@@nextlabel[#1][#2]%

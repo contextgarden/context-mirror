@@ -20,16 +20,10 @@
 \unprotect
 
 \startxmlsetups xml:cml:process
-    \xmlstrip {\xmldocument} {cml:chem|cml:ichem|cml:dchem}
-    \xmlstrip {\xmldocument} {cml:reaction}
-    \xmlstrip {\xmldocument} {cml:molecule}
-    \xmlstrip {\xmldocument} {cml:ion}
-    \xmlstrip {\xmldocument} {cml:structure}
 
-    \xmlgrab {\xmldocument} {cml:chem|cml:dchem|cml:ichem|cml:reaction|cml:molecule|cml:ion|cml:atom} {*}
-    \xmlgrab {\xmldocument} {cml:structure|cml:component|cml:forever}                                 {*}
-%     \xmlgrab {\xmldocument} {cml:*} {*}
+    \xmlstrip {\xmldocument} {cml:chem|cml:ichem|cml:dchem|cml:reaction|cml:molecule|cml:ion|cml:structure}
 
+    \xmlgrab {\xmldocument} {cml:*}                                                  {*}
     \xmlgrab {\xmldocument} {cml:gives|cml:equilibrium|cml:mesomeric}                {cml:arrow}
     \xmlgrab {\xmldocument} {cml:plus|cml:minus|cml:equal}                           {cml:operator}
     \xmlgrab {\xmldocument} {cml:bond|cml:singlebond|cml:doublebound|cml:triplebond} {cml:bond}

@@ -2470,7 +2470,7 @@ leader-pattern-width=12pt,
 \startsetups fo:position:absolute:stop
   \egroup
   % evt uitstellen tot otr, zodat text/realfolio is solved
-  \edef\FOpartag{p:\parposcounter}
+  \edef\FOpartag{p:\number\parposcounter}
   \edef\FOtxttag{text:\realfolio}
   \FOcontainerWW\MPplus\FOpartag{1}{0pt}
   \FOcontainerHH\zeropoint % todo: add anchors to each 'object'

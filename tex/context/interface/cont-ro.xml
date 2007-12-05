@@ -18,7 +18,10 @@
     <cd:constant type="extern"/>
     <cd:constant type="stanga"/>
     <cd:constant type="dreapta"/>
+    <cd:constant type="flushleft"/>
+    <cd:constant type="flushright"/>
     <cd:constant type="centru"/>
+    <cd:constant type="center"/>
     <cd:constant type="normal"/>
     <cd:constant type="nu"/>
     <cd:constant type="da"/>
@@ -4224,6 +4227,7 @@
       <cd:parameter name="numar">
         <cd:constant type="da"/>
         <cd:constant type="nu"/>
+        <cd:constant type="niciunul"/>
       </cd:parameter>
       <cd:parameter name="intre">
         <cd:constant type="cd:command"/>
@@ -6064,6 +6068,9 @@
       </cd:parameter>
       <cd:parameter name="aliniere">
         <cd:resolve name="align"/>
+      </cd:parameter>
+      <cd:parameter name="symaliniere">
+        <cd:resolve name="symalign"/>
       </cd:parameter>
       <cd:parameter name="aliniaturmator">
         <cd:resolve name="indentnext"/>

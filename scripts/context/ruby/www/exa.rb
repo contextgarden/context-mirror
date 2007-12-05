@@ -368,6 +368,7 @@ class WWW
     end
 
     def handle_exastatus
+        get_cfg() # weird, needed for apache, but not for wwwserver
         if request_variable('id').empty? then
             if id = valid_session() then
                 send_result()

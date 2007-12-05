@@ -539,7 +539,7 @@
 \definespecial\dostartnonecolormode{\doPDFstartnonecolormode}
 \definespecial\doregisternonecolor {\doPDFregisternonecolor}
 
-\def\doPDFregisterspotcolorname#1#2%
+\def\doPDFregisterspotcolorname#1#2% no need for escape in luatex
   {\bgroup
    \let\ascii\empty
    \def\docommand##1%

@@ -62,7 +62,7 @@ do
         return split
     end
 
-    -- for the moment we use the old structure, some day mmiv code
+    -- for the moment we use the old structure, some day mkiv code
     -- will be different: more structure, less mess
 
     local template = {

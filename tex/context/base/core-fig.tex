@@ -1002,6 +1002,14 @@
 \def\dogetfiguredimensionsonly[#1][#2]%
   {\dogetfiguredimensions[#1][#2]%
    \doresetobjects}
+
+\def\doiffigureelse#1%
+  {\getfiguredimensions[#1]%
+   \ifcase\figurewidth
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
 %D Size determination.
 %D
@@ -1408,7 +1416,7 @@
 \def\doexternalfigure[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
   {\bgroup
    \doifelsenothing{#1}
-     {\framed[\c!width=\defaultfigurewidth,\c!height=\defaultfigureheight]{external\\figure}}
+     {\framed[\c!width=\defaultfigurewidth,\c!height=\defaultfigureheight]{external\\figure\\no name}}
      {\doifundefinedelse{\??ef\??ef#1}
         {\useexternalfigure[\s!dummy][#1][#2][#3]%
          \getvalue{\??ef\??ef\s!dummy}[]} % [] is dummy arg 5

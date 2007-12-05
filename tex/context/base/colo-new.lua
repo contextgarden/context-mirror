@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['colo-ini'] = {
     license   = "see context related readme files"
 }
 
+-- split_settings -> aux.settings_to_hash
+
 -- for the moment this looks messy but we're waiting for a pdf backend interface
 --
 -- code collected here will move and be adapted
@@ -42,7 +44,7 @@ do
 
     function backends.pdf.registerspotcolorname(name,e)
         if e and e ~= "" then
-           tex.sprint(tex.ctxcatcodes,string.format(s_template_e,name,e))
+           tex.sprint(tex.ctxcatcodes,string.format(s_template_e,name,e)) -- todo in new backend: e:gsub(" ","#20")
         end
     end
 
@@ -149,7 +151,7 @@ do
             elseif kind == 4 then
                 backend.registercmykspotcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
             end
-            backends.pdf.registerspotcolorname(name,e)
+            backends.pdf.registerspotcolorname(parent,e)
         end
     end
 
@@ -473,18 +475,33 @@ end
 -- literals needed to inject code in the mp stream, we cannot use attributes there
 -- since literals may have qQ's
 
-function ctx.pdfrgbliteral(model,r,g,b)
-    tex.sprint(tex.ctxcatcodes,string.format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'rgb',r,g,b))))
-end
-function ctx.pdfcmykliteral(model,c,m,y,k)
-    tex.sprint(tex.ctxcatcodes,string.format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'cmyk',c,m,y,k))))
-end
-function ctx.pdfgrayliteral(model,s)
-    tex.sprint(tex.ctxcatcodes,string.format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'gray',s))))
-end
-function ctx.pdfspotliteral(model,n,f,d,p)
-    tex.sprint(tex.ctxcatcodes,string.format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'spot',n,f,d,p)))) -- incorrect
-end
-function ctx.pdftransparencyliteral(a,t)
-    tex.sprint(tex.ctxcatcodes,string.format("\\pdfliteral{/Tr%s gs}",transparencies.register(nil,a,t)))
+do
+
+    local format, sprint = string.format, tex.sprint
+
+    local intransparency = false
+
+    function ctx.pdfrgbliteral(model,r,g,b)
+        sprint(tex.ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'rgb',r,g,b))))
+    end
+    function ctx.pdfcmykliteral(model,c,m,y,k)
+        sprint(tex.ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'cmyk',c,m,y,k))))
+    end
+    function ctx.pdfgrayliteral(model,s)
+        sprint(tex.ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'gray',s))))
+    end
+    function ctx.pdfspotliteral(model,n,f,d,p)
+        sprint(tex.ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'spot',n,f,d,p)))) -- incorrect
+    end
+    function ctx.pdftransparencyliteral(a,t)
+        intransparency = true
+        sprint(tex.ctxcatcodes,format("\\pdfliteral{/Tr%s gs}",transparencies.register(nil,a,t)))
+    end
+    function ctx.pdffinishtransparency()
+        if intransparency then
+            intransparency = false
+            sprint(tex.ctxcatcodes,"\\pdfliteral{/Tr0 gs}") -- we happen to know this -)
+        end
+    end
+
 end

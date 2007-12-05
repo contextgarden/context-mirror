@@ -1,5 +1,14 @@
 #!/usr/bin/env texlua
 
+if not modules then modules = { } end modules ['mtxrun'] = {
+    version   = 1.001,
+    comment   = "runner, lua replacement for texmfstart.rb",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+
 -- one can make a stub:
 --
 -- #!/bin/sh
@@ -29,7 +38,7 @@
 -- remember for subruns: _CTX_K_S_#{original}_
 -- remember for subruns: TEXMFSTART.#{original} [tex.rb texmfstart.rb]
 
-banner = "version 1.0.1 - 2007+ - PRAGMA ADE / CONTEXT"
+banner = "version 1.0.2 - 2007+ - PRAGMA ADE / CONTEXT"
 texlua = true
 
 -- begin library merge
@@ -370,6 +379,49 @@ function string:split_settings() -- no {} handling, see l-aux for lpeg variant
 end
 
 
+-- filename : l-lpeg.lua
+-- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+-- copyright: PRAGMA ADE / ConTeXt Development Team
+-- license  : see context related readme files
+
+if not versions then versions = { } end versions['l-lpeg'] = 1.001
+
+--~ l-lpeg.lua :
+
+--~ lpeg.digit         = lpeg.R('09')^1
+--~ lpeg.sign          = lpeg.S('+-')^1
+--~ lpeg.cardinal      = lpeg.P(lpeg.sign^0 * lpeg.digit^1)
+--~ lpeg.integer       = lpeg.P(lpeg.sign^0 * lpeg.digit^1)
+--~ lpeg.float         = lpeg.P(lpeg.sign^0 * lpeg.digit^0 * lpeg.P('.') * lpeg.digit^1)
+--~ lpeg.number        = lpeg.float + lpeg.integer
+--~ lpeg.oct           = lpeg.P("0") * lpeg.R('07')^1
+--~ lpeg.hex           = lpeg.P("0x") * (lpeg.R('09') + lpeg.R('AF'))^1
+--~ lpeg.uppercase     = lpeg.P("AZ")
+--~ lpeg.lowercase     = lpeg.P("az")
+
+--~ lpeg.eol           = lpeg.S('\r\n\f')^1 -- includes formfeed
+--~ lpeg.space         = lpeg.S(' ')^1
+--~ lpeg.nonspace      = lpeg.P(1-lpeg.space)^1
+--~ lpeg.whitespace    = lpeg.S(' \r\n\f\t')^1
+--~ lpeg.nonwhitespace = lpeg.P(1-lpeg.whitespace)^1
+
+function lpeg.anywhere(pattern) --slightly adapted from website
+    return lpeg.P { lpeg.P(pattern) + 1 * lpeg.V(1) }
+end
+
+function lpeg.startswith(pattern) --slightly adapted
+    return lpeg.P(pattern)
+end
+
+--~ g = lpeg.splitter(" ",function(s) ... end) -- gmatch:lpeg = 3:2
+
+function lpeg.splitter(pattern, action)
+    return (((1-lpeg.P(pattern))^1)/action+1)^0
+end
+
+
+
+
 -- filename : l-table.lua
 -- comment  : split off from luat-lib
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -443,6 +495,7 @@ function table.merge(t, ...)
             t[k] = v
         end
     end
+    return t
 end
 
 function table.merged(...)
@@ -450,6 +503,25 @@ function table.merged(...)
     for _, list in ipairs({...}) do
         for k,v in pairs(list) do
             tmp[k] = v
+        end
+    end
+    return tmp
+end
+
+function table.imerge(t, ...)
+    for _, list in ipairs({...}) do
+        for k,v in ipairs(list) do
+            t[#t+1] = v
+        end
+    end
+    return t
+end
+
+function table.imerged(...)
+    local tmp = { }
+    for _, list in ipairs({...}) do
+        for _,v in pairs(list) do
+            tmp[#tmp+1] = v
         end
     end
     return tmp
@@ -1101,6 +1173,38 @@ do
 
 end
 
+function io.ask(question,default,options)
+    while true do
+        io.write(question)
+        if options then
+            io.write(string.format(" [%s]",table.concat(options,"|")))
+        end
+        if default then
+            io.write(string.format(" [%s]",default))
+        end
+        io.write(string.format(" "))
+        local answer = io.read()
+        answer = answer:gsub("^%s*(.*)%s*$","%1")
+        if answer == "" and default then
+            return default
+        elseif not options then
+            return answer
+        else
+            for _,v in pairs(options) do
+                if v == answer then
+                    return answer
+                end
+            end
+            local pattern = "^" .. answer
+            for _,v in pairs(options) do
+                if v:find(pattern) then
+                    return v
+                end
+            end
+        end
+    end
+end
+
 
 -- filename : l-md5.lua
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -1117,7 +1221,7 @@ if md5 then do
 
     if not md5.HEX then function md5.HEX(str) return convert(str,"%02X") end end
     if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
-    if not md5.dec then function md5.dec(str) return convert(stt,"%03i") end end
+    if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 
 end end
 
@@ -1325,15 +1429,18 @@ dir = { }
 if lfs then
 
     function dir.glob_pattern(path,patt,recurse,action)
-        for name in lfs.dir(path) do
-            local full = path .. '/' .. name
-            local mode = lfs.attributes(full,'mode')
-            if mode == 'file' then
-                if name:find(patt) then
-                    action(full)
+        local ok, scanner = xpcall(function() return lfs.dir(path) end, function() end) -- kepler safe
+        if ok and type(scanner) == "function" then
+            for name in scanner do
+                local full = path .. '/' .. name
+                local mode = lfs.attributes(full,'mode')
+                if mode == 'file' then
+                    if name:find(patt) then
+                        action(full)
+                    end
+                elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+                    dir.glob_pattern(full,patt,recurse,action)
                 end
-            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                dir.glob_pattern(full,patt,recurse,action)
             end
         end
     end
@@ -1358,6 +1465,30 @@ if lfs then
         return t
     end
 
+    function dir.globfiles(path,recurse,func,files)
+        if type(func) == "string" then
+            local s = func -- alas, we need this indirect way
+            func = function(name) return name:find(s) end
+        end
+        files = files or { }
+        for name in lfs.dir(path) do
+            if name:find("^%.") then
+                --- skip
+            elseif lfs.attributes(name,'mode') == "directory" then
+                if recurse then
+                    dir.globfiles(path .. "/" .. name,recurse,func,files)
+                end
+            elseif func then
+                if func(name) then
+                    files[#files+1] = path .. "/" .. name
+                end
+            else
+                files[#files+1] = path .. "/" .. name
+            end
+        end
+        return files
+    end
+
     -- t = dir.glob("c:/data/develop/context/sources/**/????-*.tex")
     -- t = dir.glob("c:/data/develop/tex/texmf/**/*.tex")
     -- t = dir.glob("c:/data/develop/context/texmf/**/*.tex")
@@ -1374,34 +1505,24 @@ if lfs then
     --~ mkdirs(".","/a/b/c")
     --~ mkdirs("a","b","c")
 
-    function dir.mkdirs(...) -- root,... or ... ; root is not split
-        local pth, err = "", false
-        for k,v in pairs({...}) do
-            if k == 1 then
-                if not lfs.isdir(v) then
-                 -- print("no root path " .. v)
-                    err = true
-                else
-                    pth = v
-                end
-            elseif lfs.isdir(pth .. "/" .. v) then
-                pth = pth .. "/" .. v
+    function dir.mkdirs(...)
+        local pth, err, lst = "", false, table.concat({...},"/")
+        for _, s in ipairs(lst:split("/")) do
+            if pth == "" then
+                pth = (s == "" and "/") or s
             else
-                for _,s in pairs(v:split("/")) do
-                    pth = pth .. "/" .. s
-                    if not lfs.isdir(pth) then
-                        ok = lfs.mkdir(pth)
-                        if not lfs.isdir(pth) then
-                            err = true
-                        end
-                    end
-                    if err then break end
-                end
+                pth = pth .. "/" .. s
             end
-            if err then break end
+            if s == "" then
+                -- can be network path
+            elseif not lfs.isdir(pth) then
+                lfs.mkdir(pth)
+            end
         end
         return pth, not err
     end
+
+    dir.makedirs = dir.mkdirs
 
 end
 
@@ -1512,7 +1633,8 @@ xml.xmlns = { }
 
 do
 
-    local parser = lpeg.P(false) -- printing shows that this has no side effects
+    local check = lpeg.P(false)
+    local parse = check
 
     --[[ldx--
     <p>The next function associates a namespace prefix with an <l n='url'/>. This
@@ -1524,7 +1646,8 @@ do
     --ldx]]--
 
     function xml.registerns(namespace, pattern) -- pattern can be an lpeg
-        parser = parser + lpeg.C(lpeg.P(pattern:lower())) / namespace
+        check = check + lpeg.C(lpeg.P(pattern:lower())) / namespace
+        parse = lpeg.P { lpeg.P(check) + 1 * lpeg.V(1) }
     end
 
     --[[ldx--
@@ -1538,7 +1661,7 @@ do
     --ldx]]--
 
     function xml.checkns(namespace,url)
-        local ns = parser:match(url:lower())
+        local ns = parse:match(url:lower())
         if ns and namespace ~= ns then
             xml.xmlns[namespace] = ns
         end
@@ -1556,7 +1679,7 @@ do
     --ldx]]--
 
     function xml.resolvens(url)
-        return parser:match(url:lower()) or ""
+         return parse:match(url:lower()) or ""
     end
 
     --[[ldx--
@@ -1607,11 +1730,15 @@ do
 
     local mt = { __tostring = xml.text }
 
+    function xml.check_error(top,toclose)
+        return ""
+    end
+
     local function add_attribute(namespace,tag,value)
         if tag == "xmlns" then
             xmlns[#xmlns+1] = xml.resolvens(value)
             at[tag] = value
-        elseif ns == "xmlns" then
+        elseif namespace == "xmlns" then
             xml.checkns(tag,value)
             at["xmlns:" .. tag] = value
         else
@@ -1623,7 +1750,7 @@ do
             dt[#dt+1] = spacing
         end
         local resolved = (namespace == "" and xmlns[#xmlns]) or nsremap[namespace] or namespace
-        top = { ns=namespace or "", nr=resolved, tg=tag, at=at, dt={}, __p__ = stack[#stack] }
+        top = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = stack[#stack] }
         setmetatable(top, mt)
         dt = top.dt
         stack[#stack+1] = top
@@ -1636,9 +1763,9 @@ do
         local toclose = remove(stack)
         top = stack[#stack]
         if #stack < 1 then
-            errorstr = string.format("nothing to close with %s", tag)
+            errorstr = string.format("nothing to close with %s %s", tag, xml.check_error(top,toclose) or "")
         elseif toclose.tg ~= tag then -- no namespace check
-            errorstr = string.format("unable to close %s with %s", toclose.tg, tag)
+            errorstr = string.format("unable to close %s with %s %s", toclose.tg, tag, xml.check_error(top,toclose) or "")
         end
         dt = top.dt
         dt[#dt+1] = toclose
@@ -1654,7 +1781,7 @@ do
         top = stack[#stack]
         setmetatable(top, mt)
         dt = top.dt
-        dt[#dt+1] = { ns=namespace or "", nr=resolved, tg=tag, at=at, dt={}, __p__ = top }
+        dt[#dt+1] = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = top }
         at = { }
         if at.xmlns then
             remove(xmlns)
@@ -1743,14 +1870,13 @@ do
     --  text + comment + emptyelement + cdata + instruction + lpeg.V("parent"), -- 5.8
     --  text + lpeg.V("parent") + emptyelement + comment + cdata + instruction, -- 5.5
 
-
     local grammar = lpeg.P { "preamble",
         preamble = utfbom^0 * instruction^0 * (doctype + comment + instruction)^0 * lpeg.V("parent") * trailer,
         parent   = beginelement * lpeg.V("children")^0 * endelement,
         children = text + lpeg.V("parent") + emptyelement + comment + cdata + instruction,
     }
 
-    function xml.convert(data, no_root) -- no collapse any more
+    function xml.convert(data, no_root)
         stack, top, at, xmlns, errorstr, result = {}, {}, {}, {}, nil, nil
         stack[#stack+1] = top
         top.dt = { }
@@ -1761,7 +1887,7 @@ do
             errorstr = "invalid xml file"
         end
         if errorstr then
-            result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={} } } }
+            result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={}, er = true } }, error = true }
             setmetatable(stack, mt)
             if xml.error_handler then xml.error_handler("load",errorstr) end
         else
@@ -1785,11 +1911,19 @@ do
     function. Maybe it will go away (when not used).</p>
     --ldx]]--
 
+    function xml.is_valid(root)
+        return root and root.dt and root.dt[1] and type(root.dt[1]) == "table" and not root.dt[1].er
+    end
+
     function xml.package(tag,attributes,data)
         local ns, tg = tag:match("^(.-):?([^:]+)$")
         local t = { ns = ns, tg = tg, dt = data or "", at = attributes or {} }
         setmetatable(t, mt)
         return t
+    end
+
+    function xml.is_valid(root)
+        return root and not root.error
     end
 
     xml.error_handler = (logs and logs.report) or print
@@ -1804,16 +1938,18 @@ a filename or a file handle.</p>
 
 function xml.load(filename)
     if type(filename) == "string" then
-        local root, f = { }, io.open(filename,'r')
+        local f = io.open(filename,'r')
         if f then
-            root = xml.convert(f:read("*all"))
+            local root = xml.convert(f:read("*all"))
             f:close()
+            return root
         else
-            -- if we want an error: root = xml.convert("")
+            return xml.convert("")
         end
-        return root -- no nil but an empty table if it fails
-    else
+    elseif filename then -- filehandle
         return xml.convert(filename:read("*all"))
+    else
+        return xml.convert("")
     end
 end
 
@@ -1955,10 +2091,10 @@ do
                         else
                             if ats then
                             --  handle(format("<%s:%s %s/>",ens,etg,table.concat(ats," ")))
-                                handle("<%" .. ens .. ":" .. etg .. table.concat(ats," ") .. "/>")
+                                handle("<" .. ens .. ":" .. etg .. table.concat(ats," ") .. "/>")
                             else
                             --  handle(format("<%s:%s/>",ens,etg))
-                                handle("<%" .. ens .. ":" .. "/>")
+                                handle("<" .. ens .. ":" .. "/>")
                             end
                         end
                     else
@@ -2159,8 +2295,19 @@ do
         [28] = "has value",
         [29] = "fast match",
         [30] = "select",
+        [31] = "expression",
         [40] = "processing instruction",
     }
+
+    local function make_expression(str)
+        str = str:gsub("@([a-zA-Z%-_]+)", "(a['%1'] or '')")
+        str = str:gsub("position%(%)", "i")
+        str = str:gsub("text%(%)", "t")
+        str = str:gsub("!=", "~=")
+        str = str:gsub("([^=!~<>])=([^=!~<>])", "%1==%2")
+        str = str:gsub("([a-zA-Z%-_]+)%(", "functions.%1(")
+        return str, loadstring(string.format("return function(functions,i,a,t) return %s end", str))()
+    end
 
     local map = { }
 
@@ -2182,7 +2329,7 @@ do
     local bar               = lpeg.P('|')
     local hat               = lpeg.P('^')
     local valid             = lpeg.R('az', 'AZ', '09') + lpeg.S('_-')
-    local name_yes          = lpeg.C(valid^1) * colon * lpeg.C(valid^1)
+    local name_yes          = lpeg.C(valid^1) * colon * lpeg.C(valid^1 + star) -- permits ns:*
     local name_nop          = lpeg.C(lpeg.P(true)) * lpeg.C(valid^1)
     local name              = name_yes + name_nop
     local number            = lpeg.C((lpeg.S('+-')^0 * lpeg.R('09')^1)) / tonumber
@@ -2201,6 +2348,11 @@ do
     local is_attribute      = lbracket * atsign * name              * rbracket
     local is_value          = lbracket *          value             * rbracket
     local is_number         = lbracket *          number            * rbracket
+
+    local nobracket         = 1-(lbracket+rbracket)  -- must be improved
+    local is_expression     = lbracket * lpeg.C(((lpeg.C(nobracket^1))/make_expression)) * rbracket
+
+    local is_expression     = lbracket * (lpeg.C(nobracket^1))/make_expression * rbracket
 
     local is_one            =          name
     local is_none           = exclam * name
@@ -2237,6 +2389,9 @@ do
     local position                 = (is_one  * is_number   ) / function(...) map[#map+1] = { 30, true,  ... } end
     local dont_position            = (is_none * is_number   ) / function(...) map[#map+1] = { 30, false, ... } end
 
+    local expression               = (is_one  * is_expression)/ function(...) map[#map+1] = { 31, true,  ... } end
+    local dont_expression          = (is_none * is_expression)/ function(...) map[#map+1] = { 31, false, ... } end
+
     local instruction              = (instructiontag * text ) / function(...) map[#map+1] = { 40,        ... } end
     local nothing                  = (empty                 ) / function(   ) map[#map+1] = { 15             } end -- 15 ?
     local crap                     = (1-slash)^1
@@ -2261,6 +2416,7 @@ do
         match_one_of_and_eq + match_one_of_and_ne +
         dont_match_and_eq + dont_match_and_ne +
         match_and_eq + match_and_ne +
+        dont_expression + expression +
         has_attribute + has_value +
         dont_match_one_of + match_one_of +
         dont_match + match +
@@ -2294,8 +2450,10 @@ do
                         -- root
                         return false
                     end
-                elseif #map == 2 and m == 12 and map[2][1] == 20 then
-                    return { { 29, map[2][2], map[2][3] } }
+                elseif #map == 2  and m == 12 and map[2][1] == 20 then
+                --  return { { 29, map[2][2], map[2][3], map[2][4], map[2][5] } }
+                    map[2][1] = 29
+                    return { map[2] }
                 end
                 if m ~= 11 and m ~= 12 and m ~= 13 and m ~= 14 and m ~= 15 and m ~= 16 then
                     table.insert(map, 1, { 16 })
@@ -2355,6 +2513,20 @@ do
         end
     end
 
+    function xml.xshow(e,...) -- also handy when report is given, use () to isolate first e
+        local t = { ... }
+        local report = (type(t[#t]) == "function" and t[#t]) or fallbackreport
+        if not e then
+            report("<!-- no element -->\n")
+        elseif e.tg then
+            report(tostring(e) .. "\n")
+        else
+            for i=1,#e do
+                report(tostring(e[i]) .. "\n")
+            end
+        end
+    end
+
 end
 
 --[[ldx--
@@ -2372,7 +2544,21 @@ advance what we want to do with the found element the handle gets three argument
 functions.</p>
 --ldx]]--
 
+xml.functions = { }
+
 do
+
+    local functions = xml.functions
+
+    functions.contains = string.find
+    functions.find     = string.find
+    functions.upper    = string.upper
+    functions.lower    = string.lower
+    functions.number   = tonumber
+    functions.boolean  = toboolean
+    functions.oneof    = function(s,...) -- slow
+        local t = {...} for i=1,#t do if s == t[i] then return true end end return false
+    end
 
     function xml.traverse(root,pattern,handle,reverse,index,parent,wildcard)
         if not root then -- error
@@ -2402,8 +2588,10 @@ do
                 local rootdt = root.dt
                 for k=1,#rootdt do
                     local e = rootdt[k]
-                    local ns, tg = e.rn or e.ns, e.tg
-                    if ns == action[2] and tg == action[3] then
+                    local ns, tg = (e.rn or e.ns), e.tg
+                    local matched = ns == action[3] and tg == action[4]
+                    if not action[2] then matched = not matched end
+                    if matched then
                         if handle(root,rootdt,k) then return false end
                     end
                 end
@@ -2416,7 +2604,8 @@ do
                 end
             else
                 if (command == 16 or command == 12) and index == 1 then -- initial
-                    wildcard = true
+--~                     wildcard = true
+                    wildcard = command == 16 -- ok?
                     index = index + 1
                     action = pattern[index]
                     command = action and action[1] or 0 -- something is wrong
@@ -2440,13 +2629,16 @@ do
                     elseif reverse and index == #pattern then
                         start, stop, step = stop, start, -1
                     end
+                    local idx = 0
                     for k=start,stop,step do
                         local e = rootdt[k]
                         local ns, tg = e.rn or e.ns, e.tg
                         if tg then
+                            idx = idx + 1
                             if command == 30 then
-                                local matched = ns == action[3] and tg == action[4]
-                                if action[2] then matched = not matched end
+                                local tg_a = action[4]
+                                if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                if not action[2] then matched = not matched end
                                 if matched then
                                     n = n + dn
                                     if n == action[5] then
@@ -2463,46 +2655,58 @@ do
                             else
                                 local matched, multiple = false, false
                                 if command == 20 then -- match
-                                    matched = ns == action[2] and tg == action[3]
-                                    if action[2] then matched = not matched end
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    if not action[2] then matched = not matched end
                                 elseif command == 21 then -- match one of
                                     multiple = true
-                                    for i=2,#action,2 do
+                                    for i=3,#action,2 do
                                         if ns == action[i] and tg == action[i+1] then matched = true break end
                                     end
-                                    if action[2] then matched = not matched end
+                                    if not action[2] then matched = not matched end
                                 elseif command == 22 then -- eq
-                                    matched = ns == action[3] and tg == action[4]
-                                    if action[2] then matched = not matched end
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[6]] == action[7]
                                 elseif command == 23 then -- ne
-                                    matched = ns == action[3] and tg == action[4]
-                                    if action[2] then matched = not matched end
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    if not action[2] then matched = not matched end
                                     matched = mached and e.at[action[6]] ~= action[7]
                                 elseif command == 24 then -- one of eq
                                     multiple = true
                                     for i=3,#action-2,2 do
                                         if ns == action[i] and tg == action[i+1] then matched = true break end
                                     end
-                                    if action[2] then matched = not matched end
+                                    if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[#action-1]] == action[#action]
                                 elseif command == 25 then -- one of ne
                                     multiple = true
                                     for i=3,#action-2,2 do
                                         if ns == action[i] and tg == action[i+1] then matched = true break end
                                     end
-                                    if action[2] then matched = not matched end
+                                    if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[#action-1]] ~= action[#action]
                                 elseif command == 27 then -- has attribute
-                                    local ans = action[3]
-                                    matched = ns == action[3] and tg == action[4]
-                                    if action[2] then matched = not matched end
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[5]]
                                 elseif command == 28 then -- has value
                                     local edt = e.dt
-                                    matched = ns == action[3] and tg == action[4]
-                                    if action[2] then matched = not matched end
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    if not action[2] then matched = not matched end
                                     matched = matched and edt and edt[1] == action[5]
+                                elseif command == 31 then
+                                    local edt = e.dt
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    if not action[2] then matched = not matched end
+                                    if matched then
+                                        matched = action[6](functions,idx,e.at,edt[1])
+                                    end
                                 end
                                 if matched then -- combine tg test and at test
                                     if index == #pattern then
@@ -2943,28 +3147,33 @@ do
         end
     end
 
-    function xml.include(xmldata,element,attribute,pathlist,collapse)
-        element   = element   or 'ctx:include'
-        attribute = attribute or 'name'
-        pathlist  = pathlist  or { '.' }
-        -- todo, check op ri
+    function xml.include(xmldata,pattern,attribute,recursive,findfile)
+        -- parse="text" (default: xml), encoding="" (todo)
+        pattern   = pattern   or 'include'
+        attribute = attribute or 'href'
         local function include(r,d,k)
-            local ek = d[k]
-            local name = (ek.at and ek.at[attribute]) or ""
-            if name ~= "" then
-                -- maybe file lookup in tree
-                local fullname
-                for _, path in ipairs(pathlist) do
-                    if path == '.' then
-                        fullname = name
-                    else
-                        fullname = file.join(path,name)
-                    end
-                    local f = io.open(fullname)
+            local ek, name = d[k], nil
+            if ek.at then
+                for a in attribute:gmatch("([^|]+)") do
+                    name = ek.at[a]
+                    if name then break end
+                end
+            end
+            if name then
+                name = (findfile and findfile(name)) or name
+                if name ~= "" then
+                    local f = io.open(name)
                     if f then
-                        xml.assign(d,k,xml.load(f,collapse))
+                        if ek.at["parse"] == "text" then -- for the moment hard coded
+                            d[k] = xml.escaped(f:read("*all"))
+                        else
+                            local xi = xml.load(f)
+                            if recursive then
+                                xml.include(xi,pattern,attribute,recursive,findfile)
+                            end
+                            xml.assign(d,k,xi)
+                        end
                         f:close()
-                        break
                     else
                         xml.empty(d,k)
                     end
@@ -2973,7 +3182,7 @@ do
                 xml.empty(d,k)
             end
         end
-        while xml.each_element(xmldata, element, include) do end
+        xml.each_element(xmldata, pattern, include)
     end
 
     function xml.strip_whitespace(root, pattern)
@@ -3041,6 +3250,20 @@ do
         end)
     end
 
+    function xml.filters.found(root,pattern,check_content)
+        local found = false
+        traverse(root, lpath(pattern), function(r,d,k)
+            if check_content then
+                local dk = d and d[k]
+                found = dk and dk.dt and next(dk.dt) and true
+            else
+                found = true
+            end
+            return true
+        end)
+        return found
+    end
+
 end
 
 --[[ldx--
@@ -3054,6 +3277,7 @@ xml.index    = xml.filters.index
 xml.position = xml.filters.index
 xml.first    = xml.filters.first
 xml.last     = xml.filters.last
+xml.found    = xml.filters.found
 
 xml.each     = xml.each_element
 xml.process  = xml.process_element
@@ -3102,12 +3326,46 @@ function xml.serialize_path(root,lpath,handle)
     xml.serialize(dk,handle)
 end
 
-xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
-xml.unescapes = { } for k,v in pairs(xml.escapes) do xml.unescapes[v] = k end
+--~ xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
+--~ xml.unescapes = { } for k,v in pairs(xml.escapes) do xml.unescapes[v] = k end
 
-function xml.escaped  (str) return str:gsub("(.)"   , xml.escapes  ) end
-function xml.unescaped(str) return str:gsub("(&.-;)", xml.unescapes) end
-function xml.cleansed (str) return str:gsub("<.->"  , ''           ) end -- "%b<>"
+--~ function xml.escaped  (str) return str:gsub("(.)"   , xml.escapes  ) end
+--~ function xml.unescaped(str) return str:gsub("(&.-;)", xml.unescapes) end
+--~ function xml.cleansed (str) return str:gsub("<.->"  , ''           ) end -- "%b<>"
+
+do
+
+    -- 100 * 2500 * "oeps< oeps> oeps&" : gsub:lpeg|lpeg|lpeg
+    --
+    -- 1021:0335:0287:0247
+
+    -- 10 * 1000 * "oeps< oeps> oeps& asfjhalskfjh alskfjh alskfjh alskfjh ;al J;LSFDJ"
+    --
+    -- 1559:0257:0288:0190 (last one suggested by roberto)
+
+    --    escaped = lpeg.Cs((lpeg.S("<&>") / xml.escapes + 1)^0)
+    --    escaped = lpeg.Cs((lpeg.S("<")/"&lt;" + lpeg.S(">")/"&gt;" + lpeg.S("&")/"&amp;" + 1)^0)
+    local normal  = (1 - lpeg.S("<&>"))^0
+    local special = lpeg.P("<")/"&lt;" + lpeg.P(">")/"&gt;" + lpeg.P("&")/"&amp;"
+    local escaped = lpeg.Cs(normal * (special * normal)^0)
+
+    -- 100 * 1000 * "oeps&lt; oeps&gt; oeps&amp;" : gsub:lpeg == 0153:0280:0151:0080 (last one by roberto)
+
+    --    unescaped = lpeg.Cs((lpeg.S("&lt;")/"<" + lpeg.S("&gt;")/">" + lpeg.S("&amp;")/"&" + 1)^0)
+    --    unescaped = lpeg.Cs((((lpeg.P("&")/"") * (lpeg.P("lt")/"<" + lpeg.P("gt")/">" + lpeg.P("amp")/"&") * (lpeg.P(";")/"")) + 1)^0)
+    local normal    = (1 - lpeg.S"&")^0
+    local special   = lpeg.P("&lt;")/"<" + lpeg.P("&gt;")/">" + lpeg.P("&amp;")/"&"
+    local unescaped = lpeg.Cs(normal * (special * normal)^0)
+
+    -- 100 * 5000 * "oeps <oeps bla='oeps' foo='bar'> oeps </oeps> oeps " : gsub:lpeg == 623:501 msec (short tags, less difference)
+
+    local cleansed = lpeg.Cs(((lpeg.P("<") * (1-lpeg.P(">"))^0 * lpeg.P(">"))/"" + 1)^0)
+
+    function xml.escaped  (str) return escaped  :match(str) end
+    function xml.unescaped(str) return unescaped:match(str) end
+    function xml.cleansed (str) return cleansed :match(str) end
+
+end
 
 function xml.join(t,separator,lastseparator)
     if #t > 0 then
@@ -3192,6 +3450,33 @@ end end
 --~ xml.lshow("/../../../a/(b|c)[@d='e']/f")
 --~ xml.lshow("/../../../a/!(b|c)[@d='e']/f")
 --~ xml.lshow("/../../../a/!b[@d!='e']/f")
+
+--~ x = xml.convert([[
+--~     <a>
+--~         <b n='01'>01</b>
+--~         <b n='02'>02</b>
+--~         <b n='03'>03</b>
+--~         <b n='04'>OK</b>
+--~         <b n='05'>05</b>
+--~         <b n='06'>06</b>
+--~         <b n='07'>ALSO OK</b>
+--~     </a>
+--~ ]])
+
+--~ xml.trace_lpath = true
+
+--~ xml.xshow(xml.first(x,"b[position() > 2 and position() < 5 and text() == 'ok']"))
+--~ xml.xshow(xml.first(x,"b[position() > 2 and position() < 5 and text() == upper('ok')]"))
+--~ xml.xshow(xml.first(x,"b[@n=='03' or @n=='08']"))
+--~ xml.xshow(xml.all  (x,"b[number(@n)>2 and number(@n)<6]"))
+--~ xml.xshow(xml.first(x,"b[find(text(),'ALSO')]"))
+
+--~ str = [[
+--~ <?xml version="1.0" encoding="utf-8"?>
+--~ <story line='mojca'>
+--~     <windows>my secret</mouse>
+--~ </story>
+--~ ]]
 
 
 -- filename : l-utils.lua
@@ -3500,6 +3785,7 @@ end
 -- Beware, loading and saving is overloaded in luat-tmp!
 
 -- todo: instances.[hashes,cnffiles,configurations,522] -> ipairs (alles check, sneller)
+-- todo: check escaping in find etc, too much, too slow
 
 if not versions    then versions    = { } end versions['luat-inp'] = 1.001
 if not environment then environment = { } end
@@ -3737,7 +4023,7 @@ input.settrace(tonumber(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRA
 -- These functions can be used to test the performance, especially
 -- loading the database files.
 
-function input.start_timing(instance)
+function input.starttiming(instance)
     if instance then
         instance.starttime = os.clock()
         if not instance.loadtime then
@@ -3746,7 +4032,7 @@ function input.start_timing(instance)
     end
 end
 
-function input.stop_timing(instance, report)
+function input.stoptiming(instance, report)
     if instance and instance.starttime then
         instance.stoptime = os.clock()
         local loadtime = instance.stoptime - instance.starttime
@@ -3759,9 +4045,6 @@ function input.stop_timing(instance, report)
         return 0
     end
 end
-
-input.stoptiming  = input.stop_timing
-input.starttiming = input.start_timing
 
 function input.elapsedtime(instance)
     return string.format("%0.3f",instance.loadtime or 0)
@@ -4075,99 +4358,106 @@ function input.generatedatabase(instance,specification)
     return input.methodhandler('generators', instance, specification)
 end
 
-function input.generators.tex(instance,specification)
-    local tag = specification
-    if not instance.lsrmode and lfs and lfs.dir then
-        input.report("scanning path",specification)
-        instance.files[tag] = { }
-        local files = instance.files[tag]
-        local n, m, r = 0, 0, 0
-        local spec = specification .. '/'
-        local attributes = lfs.attributes
-        local directory = lfs.dir
-        local small = instance.smallcache
-        local function action(path)
-            local mode, full
-            if path then
-                full = spec .. path .. '/'
-            else
-                full = spec
-            end
-            for name in directory(full) do
-                if name:find("^%.") then
-                  -- skip
-                elseif name:find("[%~%`%!%#%$%%%^%&%*%(%)%=%{%}%[%]%:%;\"\'%|%|%<%>%,%?\n\r\t]") then
-                  -- texio.write_nl("skipping " .. name)
-                  -- skip
+do
+
+    local weird = lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+
+    function input.generators.tex(instance,specification)
+        local tag = specification
+        if not instance.lsrmode and lfs and lfs.dir then
+            input.report("scanning path",specification)
+            instance.files[tag] = { }
+            local files = instance.files[tag]
+            local n, m, r = 0, 0, 0
+            local spec = specification .. '/'
+            local attributes = lfs.attributes
+            local directory = lfs.dir
+            local small = instance.smallcache
+            local function action(path)
+                local mode, full
+                if path then
+                    full = spec .. path .. '/'
                 else
-                    mode = attributes(full..name,'mode')
-                    if mode == "directory" then
-                        m = m + 1
-                        if path then
-                            action(path..'/'..name)
-                        else
-                            action(name)
+                    full = spec
+                end
+                for name in directory(full) do
+                    if name:find("^%.") then
+                      -- skip
+                --  elseif name:find("[%~%`%!%#%$%%%^%&%*%(%)%=%{%}%[%]%:%;\"\'%|%<%>%,%?\n\r\t]") then -- too much escaped
+                    elseif weird:match(name) then
+                      -- texio.write_nl("skipping " .. name)
+                      -- skip
+                    else
+                        mode = attributes(full..name,'mode')
+                        if mode == "directory" then
+                            m = m + 1
+                            if path then
+                                action(path..'/'..name)
+                            else
+                                action(name)
+                            end
+                        elseif path and mode == 'file' then
+                            n = n + 1
+                            local f = files[name]
+                            if f then
+                                if not small then
+                                    if type(f) == 'string' then
+                                        files[name] = { f, path }
+                                    else
+                                      f[#f+1] = path
+                                    end
+                                end
+                            else
+                                files[name] = path
+                                local lower = name:lower()
+                                if name ~= lower then
+                                    files["remap:"..lower] = name
+                                    r = r + 1
+                                end
+                            end
                         end
-                    elseif path and mode == 'file' then
-                        n = n + 1
-                        local f = files[name]
-                        if f then
+                    end
+                end
+            end
+            action()
+            input.report(string.format("%s files found on %s directories with %s uppercase remappings",n,m,r))
+        else
+            local fullname = file.join(specification,input.lsrname)
+            local path     = '.'
+            local f        = io.open(fullname)
+            if f then
+                instance.files[tag] = { }
+                local files = instance.files[tag]
+                local small = instance.smallcache
+                input.report("loading lsr file",fullname)
+            --  for line in f:lines() do -- much slower then the next one
+                for line in (f:read("*a")):gmatch("(.-)\n") do
+                    if line:find("^[%a%d]") then
+                        local fl = files[line]
+                        if fl then
                             if not small then
-                                if type(f) == 'string' then
-                                    files[name] = { f, path }
+                                if type(fl) == 'string' then
+                                    files[line] = { fl, path } -- table
                                 else
-                                  f[#f+1] = path
+                                    fl[#fl+1] = path
                                 end
                             end
                         else
-                            files[name] = path
-                            local lower = name:lower()
-                            if name ~= lower then
-                                files["remap:"..lower] = name
-                                r = r + 1
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        action()
-        input.report(string.format("%s files found on %s directories with %s uppercase remappings",n,m,r))
-    else
-        local fullname = file.join(specification,input.lsrname)
-        local path     = '.'
-        local f        = io.open(fullname)
-        if f then
-            instance.files[tag] = { }
-            local files = instance.files[tag]
-            local small = instance.smallcache
-            input.report("loading lsr file",fullname)
-        --  for line in f:lines() do -- much slower then the next one
-            for line in (f:read("*a")):gmatch("(.-)\n") do
-                if line:find("^[%a%d]") then
-                    local fl = files[line]
-                    if fl then
-                        if not small then
-                            if type(fl) == 'string' then
-                                files[line] = { fl, path } -- table
-                            else
-                                fl[#fl+1] = path
+                            files[line] = path -- string
+                            local lower = line:lower()
+                            if line ~= lower then
+                                files["remap:"..lower] = line
                             end
                         end
                     else
-                        files[line] = path -- string
-                        local lower = line:lower()
-                        if line ~= lower then
-                            files["remap:"..lower] = line
-                        end
+                        path = line:match("%.%/(.-)%:$") or path -- match could be nil due to empty line
                     end
-                else
-                    path = line:match("%.%/(.-)%:$") or path -- match could be nil due to empty line
                 end
+                f:close()
             end
-            f:close()
         end
     end
+
 end
 
 -- savers, todo
@@ -4590,10 +4880,168 @@ end
 -- a,b,c/{p,q,r}/d/{x,y,z}//
 -- a,b,c/{p,q/{x,y,z},r},d/{p,q,r}
 -- a,b,c/{p,q/{x,y,z},r},d/{p,q,r}
+-- a{b,c}{d,e}f
+-- {a,b,c,d}
+-- {a,b,c/{p,q,r},d}
+-- {a,b,c/{p,q,r}/d/{x,y,z}//}
+-- {a,b,c/{p,q/{x,y,z}},d/{p,q,r}}
+-- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
+
+-- this one is better and faster, but it took me a while to realize
+-- that this kind of replacement is cleaner than messy parsing and
+-- fuzzy concatenating we can probably gain a bit with selectively
+-- applying lpeg, but experiments with lpeg parsing this proved not to
+-- work that well; the parsing is ok, but dealing with the resulting
+-- table is a pain because we need to work inside-out recursively
+
+--~ function input.aux.splitpathexpr(str, t, validate)
+--~     -- no need for optimization, only called a few times, we can use lpeg for the sub
+--~     t = t or { }
+--~     while true do
+--~         local done = false
+--~         while true do
+--~             ok = false
+--~             str = str:gsub("([^{},]+){([^{}]-)}", function(a,b)
+--~                 local t = { }
+--~                 for s in b:gmatch("([^,]+)") do
+--~                     t[#t+1] = a .. s
+--~                 end
+--~                 ok, done = true, true
+--~                 return "{" .. table.concat(t,",") .. "}"
+--~             end)
+--~             if not ok then break end
+--~         end
+--~         while true do
+--~             ok = false
+--~             str = str:gsub("{([^{}]-)}([^{},]+)", function(a,b)
+--~                 local t = { }
+--~                 for s in a:gmatch("([^,]+)") do
+--~                     t[#t+1] = s .. b
+--~                 end
+--~                 ok, done = true, true
+--~                 return "{" .. table.concat(t,",") .. "}"
+--~             end)
+--~             if not ok then break end
+--~         end
+--~         while true do
+--~             ok = false
+--~             str = str:gsub("([,{]){([^{}]+)}([,}])", function(a,b,c)
+--~                 ok, done = true, true
+--~                 return a .. b .. c
+--~             end)
+--~             if not ok then break end
+--~         end
+--~         if not done then break end
+--~     end
+--~     while true do
+--~         ok = false
+--~         str = str:gsub("{([^{}]-)}{([^{}]-)}", function(a,b)
+--~             local t = { }
+--~             for sa in a:gmatch("([^,]+)") do
+--~                 for sb in b:gmatch("([^,]+)") do
+--~                     t[#t+1] = sa .. sb
+--~                 end
+--~             end
+--~             ok = true
+--~             return "{" .. table.concat(t,",") .. "}"
+--~         end)
+--~         if not ok then break end
+--~     end
+--~     while true do
+--~         ok = false
+--~         str = str:gsub("{([^{}]-)}", function(a)
+--~             ok = true
+--~             return a
+--~         end)
+--~         if not ok then break end
+--~     end
+--~     if validate then
+--~         for s in str:gmatch("([^,]+)") do
+--~             s = validate(s)
+--~             if s then t[#t+1] = s end
+--~         end
+--~     else
+--~         for s in str:gmatch("([^,]+)") do
+--~             t[#t+1] = s
+--~         end
+--~     end
+--~     return t
+--~ end
+
+function input.aux.splitpathexpr(str, t, validate)
+    -- no need for optimization, only called a few times, we can use lpeg for the sub
+    t = t or { }
+    local concat = table.concat
+    while true do
+        local done = false
+        while true do
+            ok = false
+            str = str:gsub("([^{},]+){([^{}]-)}", function(a,b)
+                local t = { }
+                b:piecewise(",", function(s) t[#t+1] = a .. s end)
+                ok, done = true, true
+                return "{" .. concat(t,",") .. "}"
+            end)
+            if not ok then break end
+        end
+        while true do
+            ok = false
+            str = str:gsub("{([^{}]-)}([^{},]+)", function(a,b)
+                local t = { }
+                a:piecewise(",", function(s) t[#t+1] = s .. b end)
+                ok, done = true, true
+                return "{" .. concat(t,",") .. "}"
+            end)
+            if not ok then break end
+        end
+        while true do
+            ok = false
+            str = str:gsub("([,{]){([^{}]+)}([,}])", function(a,b,c)
+                ok, done = true, true
+                return a .. b .. c
+            end)
+            if not ok then break end
+        end
+        if not done then break end
+    end
+    while true do
+        ok = false
+        str = str:gsub("{([^{}]-)}{([^{}]-)}", function(a,b)
+            local t = { }
+            a:piecewise(",", function(sa)
+                b:piecewise(",", function(sb)
+                    t[#t+1] = sa .. sb
+                end)
+            end)
+            ok = true
+            return "{" .. concat(t,",") .. "}"
+        end)
+        if not ok then break end
+    end
+    while true do
+        ok = false
+        str = str:gsub("{([^{}]-)}", function(a)
+            ok = true
+            return a
+        end)
+        if not ok then break end
+    end
+    if validate then
+        str:piecewise(",", function(s)
+            s = validate(s)
+            if s then t[#t+1] = s end
+        end)
+    else
+        str:piecewise(",", function(s)
+            t[#t+1] = s
+        end)
+    end
+    return t
+end
 
 function input.aux.expanded_path(instance,pathlist)
     -- a previous version fed back into pathlist
-    local i, n, oldlist, newlist, ok = 0, 0, { }, { }, false
+    local newlist, ok = { }, false
     for _,v in ipairs(pathlist) do
         if v:find("[{}]") then
             ok = true
@@ -4601,45 +5049,11 @@ function input.aux.expanded_path(instance,pathlist)
         end
     end
     if ok then
-        for _,v in ipairs(pathlist) do
-            oldlist[#oldlist+1] = (v:gsub("([\{\}])", function(p)
-                if p == "{" then
-                    i = i + 1
-                    if i > n then n = i end
-                    return "<" .. (i-1) .. ">"
-                else
-                    i = i - 1
-                    return "</" .. i .. ">"
-                end
-            end))
-        end
-        for i=1,n do
-            while true do
-                local more = false
-                local pattern = "^(.-)<"..(n-i)..">(.-)</"..(n-i)..">(.-)$"
-                local t = { }
-                for _,v in ipairs(oldlist) do
-                    local pre, mid, post = v:match(pattern)
-                    if pre and mid and post then
-                        more = true
-                        for vv in string.gmatch(mid..',',"(.-),") do
-                            if vv == '.' then
-                                t[#t+1] = pre..post
-                            else
-                                t[#t+1] = pre..vv..post
-                            end
-                        end
-                    else
-                        t[#t+1] = v
-                    end
-                end
-                oldlist = t
-                if not more then break end
-            end
-        end
-        for _,v in ipairs(oldlist) do
-            v = file.collapse_path(v)
-            if v ~= "" and not v:find(instance.dummy_path_expr) then newlist[#newlist+1] = v end
+        for _, v in ipairs(pathlist) do
+            input.aux.splitpathexpr(v, newlist, function(s)
+                s = file.collapse_path(s)
+                return s ~= "" and not s:find(instance.dummy_path_expr) and s
+            end)
         end
     else
         for _,v in ipairs(pathlist) do
@@ -4651,6 +5065,83 @@ function input.aux.expanded_path(instance,pathlist)
     end
     return newlist
 end
+
+--~ old one, imperfect and not that efficient
+--~
+--~ function input.aux.expanded_path(instance,pathlist)
+--~     -- a previous version fed back into pathlist
+--~     local i, n, oldlist, newlist, ok = 0, 0, { }, { }, false
+--~     for _,v in ipairs(pathlist) do
+--~         if v:find("[{}]") then
+--~             ok = true
+--~             break
+--~         end
+--~     end
+--~     if ok then
+--~         for _,v in ipairs(pathlist) do
+--~             oldlist[#oldlist+1] = (v:gsub("([\{\}])", function(p)
+--~                 if p == "{" then
+--~                     i = i + 1
+--~                     if i > n then n = i end
+--~                     return "<" .. (i-1) .. ">"
+--~                 else
+--~                     i = i - 1
+--~                     return "</" .. i .. ">"
+--~                 end
+--~             end))
+--~         end
+--~         for i=1,n do
+--~             while true do
+--~                 local more = false
+--~                 local pattern = "^(.-)<"..(n-i)..">(.-)</"..(n-i)..">(.-)$"
+--~                 local t = { }
+--~                 for _,v in ipairs(oldlist) do
+--~                     local pre, mid, post = v:match(pattern)
+--~                     if pre and mid and post then
+--~                         more = true
+--~                         for vv in string.gmatch(mid..',',"(.-),") do -- (mid, "([^,]+)")
+--~                             if vv == '.' then
+--~                                 t[#t+1] = pre..post
+--~                             else
+--~                                 t[#t+1] = pre..vv..post
+--~                             end
+--~                         end
+--~                     else
+--~                         t[#t+1] = v
+--~                     end
+--~                 end
+--~                 oldlist = t
+--~                 if not more then break end
+--~             end
+--~         end
+--~         if true then
+--~             -- many dups are possible due to messy resolve / order can be messed up too, brr !
+--~             local ok = { }
+--~             for _,o in ipairs(oldlist) do
+--~                 for v in o:gmatch("([^,]+)") do
+--~                     if not ok[v] then
+--~                         ok[v] = true
+--~                         v = file.collapse_path(v)
+--~                         if v ~= "" and not v:find(instance.dummy_path_expr) then newlist[#newlist+1] = v end
+--~                     end
+--~                 end
+--~             end
+--~         else
+--~             for _,v in ipairs(oldlist) do
+--~                 v = file.collapse_path(v)
+--~                 if v ~= "" and not v:find(instance.dummy_path_expr) then newlist[#newlist+1] = v end
+--~             end
+--~         end
+--~     else
+--~         for _,v in ipairs(pathlist) do
+--~             for vv in string.gmatch(v..',',"(.-),") do
+--~                 vv = file.collapse_path(v)
+--~                 if vv ~= "" then newlist[#newlist+1] = vv end
+--~             end
+--~         end
+--~     end
+--~     return newlist
+--~ end
 
 --~ function input.is_readable(name) -- brrr, get rid of this
 --~     return name:find("^zip##") or file.is_readable(name)
@@ -4750,24 +5241,51 @@ function input.suffixes_of_format(str)
     end
 end
 
-function input.aux.qualified_path(filename) -- make platform dependent / not good yet
-    return
-        filename:find("^%.+/") or
-        filename:find("^/") or
-        filename:find("^%a+%:") or
-        filename:find("^%a+##")
-end
+--~ function input.aux.qualified_path(filename) -- make platform dependent / not good yet
+--~     return
+--~         filename:find("^%.+/") or
+--~         filename:find("^/") or
+--~         filename:find("^%a+%:") or
+--~         filename:find("^%a+##")
+--~ end
 
-function input.normalize_name(original)
-    -- internally we use type##spec##subspec ; this hackery slightly slows down searching
-    local str = original or ""
-    str = str:gsub("::",               "##")         -- ::             -> ##
-    str = str:gsub("^(%a+)://"        ,"%1##")       -- zip://         -> zip##
-    str = str:gsub("(.+)##(.+)##/(.+)","%1##%2##%3") -- ##/spec        -> ##spec
-    if (input.trace>1) and (original ~= str) then
-        input.logger('= normalizer',original.." -> "..str)
+--~ function input.normalize_name(original)
+--~     -- internally we use type##spec##subspec ; this hackery slightly slows down searching
+--~     local str = original or ""
+--~     str = str:gsub("::",               "##")         -- ::             -> ##
+--~     str = str:gsub("^(%a+)://"        ,"%1##")       -- zip://         -> zip##
+--~     str = str:gsub("(.+)##(.+)##/(.+)","%1##%2##%3") -- ##/spec        -> ##spec
+--~     if (input.trace>1) and (original ~= str) then
+--~         input.logger('= normalizer',original.." -> "..str)
+--~     end
+--~     return str
+--~ end
+
+do  -- called about 700 times for an empty doc (font initializations etc)
+    -- i need to weed the font files for redundant calls
+
+    local letter     = lpeg.R("az","AZ")
+    local separator  = lpeg.P("##")
+
+    local qualified  = lpeg.P(".")^0 * lpeg.P("/") + letter*lpeg.P(":") + letter^1*separator
+    local normalized = lpeg.Cs(
+        (letter^1*(lpeg.P("://")/"##") * (1-lpeg.P(false))^1) +
+        (lpeg.P("::")/"##" + (1-separator)^1*separator*(1-separator)^1*separator*(lpeg.P("/")/"") + 1)^0
+    )
+
+    -- ./name ../name  /name c: zip## (todo: use url internally and get rid of ##)
+    function input.aux.qualified_path(filename)
+        return qualified:match(filename)
     end
-    return str
+
+    -- zip:// -> zip## ; :: -> ## ; aa##bb##/cc -> aa##bb##cc
+    function input.normalize_name(original)
+        local str = normalized:match(original or "")
+        if input.trace > 1 and  original ~= str then
+            input.logger('= normalizer',original.." -> "..str)
+        end
+        return str
+    end
 end
 
 -- split the next one up, better for jit
@@ -5132,13 +5650,13 @@ function input.automount(instance)
 end
 
 function input.load(instance)
-    input.start_timing(instance)
+    input.starttiming(instance)
     input.identify_cnf(instance)
     input.load_cnf(instance)
     input.expand_variables(instance)
     input.load_hash(instance)
     input.automount(instance)
-    input.stop_timing(instance)
+    input.stoptiming(instance)
 end
 
 function input.for_files(instance, command, files, filetype, mustexist)
@@ -5432,7 +5950,7 @@ being written at the same time is small. We also need to extend
 luatools with a recache feature.</p>
 --ldx]]--
 
-caches = caches  or { }
+caches = caches or { }
 dir    = dir    or { }
 texmf  = texmf  or { }
 
@@ -5444,9 +5962,20 @@ caches.trace  = false
 caches.tree   = false
 caches.temp   = caches.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
 caches.paths  = caches.paths or { caches.temp }
+caches.force  = false
 
+input.usecache = not toboolean(os.getenv("TEXMFSHARECACHE") or "false",true) -- true
+
+if caches.temp and caches.temp ~= "" and lfs.attributes(caches.temp,"mode") ~= "directory" then
+    if caches.force or io.ask(string.format("Should I create the cache path %s?",caches.temp), "no", { "yes", "no" }) == "yes" then
+        lfs.mkdirs(caches.temp)
+    end
+end
 if not caches.temp or caches.temp == "" then
-    print("\nFATAL ERROR: NO VALID TEMPORARY PATH\n")
+    print("\nfatal error: there is no valid cache path defined\n")
+    os.exit()
+elseif lfs.attributes(caches.temp,"mode") ~= "directory" then
+    print(string.format("\nfatal error: cache path %s is not a directory\n",caches.temp))
     os.exit()
 end
 
@@ -5632,8 +6161,6 @@ end
 
 -- since we want to use the cache instead of the tree, we will now
 -- reimplement the saver.
-
-input.usecache = true
 
 function input.aux.save_data(instance, dataname, check)
     for cachename, files in pairs(instance[dataname]) do
@@ -5868,12 +6395,143 @@ if lua.bytecode then -- from 0 upwards
 end
 
 
+if not modules then modules = { } end modules ['luat-log'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+--[[ldx--
+<p>This is a prelude to a more extensive logging module. For the sake
+of parsing log files, in addition to the standard logging we will
+provide an <l n='xml'/> structured file. Actually, any logging that
+is hooked into callbacks will be \XML\ by default.</p>
+--ldx]]--
+
+input = input or { }
+logs  = logs  or { }
+
+--[[ldx--
+<p>This looks pretty ugly but we need to speed things up a bit.</p>
+--ldx]]--
+
+logs.levels = {
+    ['error']   = 1,
+    ['warning'] = 2,
+    ['info']    = 3,
+    ['debug']   = 4
+}
+
+logs.functions = {
+    'error', 'warning', 'info', 'debug', 'report',
+    'start', 'stop', 'push', 'pop'
+}
+
+logs.callbacks  = {
+    'start_page_number',
+    'stop_page_number',
+    'report_output_pages',
+    'report_output_log'
+}
+
+logs.xml = logs.xml or { }
+logs.tex = logs.tex or { }
+
+logs.level = 0
+
+do
+    local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
+
+    if texlua then
+        write_nl = print
+        write    = io.write
+    end
+
+    function logs.xml.debug(category,str)
+        if logs.level > 3 then write_nl(format("<d category='%s'>%s</d>",category,str)) end
+    end
+    function logs.xml.info(category,str)
+        if logs.level > 2 then write_nl(format("<i category='%s'>%s</i>",category,str)) end
+    end
+    function logs.xml.warning(category,str)
+        if logs.level > 1 then write_nl(format("<w category='%s'>%s</w>",category,str)) end
+    end
+    function logs.xml.error(category,str)
+        if logs.level > 0 then write_nl(format("<e category='%s'>%s</e>",category,str)) end
+    end
+    function logs.xml.report(category,str)
+        write_nl(format("<r category='%s'>%s</r>",category,str))
+    end
+
+    function logs.xml.start() if logs.level > 0 then tw("<%s>" ) end end
+    function logs.xml.stop () if logs.level > 0 then tw("</%s>") end end
+    function logs.xml.push () if logs.level > 0 then tw("<!-- ") end end
+    function logs.xml.pop  () if logs.level > 0 then tw(" -->" ) end end
+
+    function logs.tex.debug(category,str)
+        if logs.level > 3 then write_nl(format("debug >> %s: %s"  ,category,str)) end
+    end
+    function logs.tex.info(category,str)
+        if logs.level > 2 then write_nl(format("info >> %s: %s"   ,category,str)) end
+    end
+    function logs.tex.warning(category,str)
+        if logs.level > 1 then write_nl(format("warning >> %s: %s",category,str)) end
+    end
+    function logs.tex.error(category,str)
+        if logs.level > 0 then write_nl(format("error >> %s: %s"  ,category,str)) end
+    end
+    function logs.tex.report(category,str)
+        write_nl(format("report >> %s: %s"  ,category,str))
+    end
+
+    function logs.set_level(level)
+        logs.level = logs.levels[level] or level
+    end
+
+    function logs.set_method(method)
+        for _, v in pairs(logs.functions) do
+            logs[v] = logs[method][v] or function() end
+        end
+        if callback and input[method] then
+            for _, cb in pairs(logs.callbacks) do
+                callback.register(cb, input[method][cb])
+            end
+        end
+    end
+
+    function logs.xml.start_page_number()
+        write_nl(format("<p real='%s' page='%s' sub='%s'", tex.count[0], tex.count[1], tex.count[2]))
+    end
+
+    function logs.xml.stop_page_number()
+        write("/>")
+        write_nl("")
+    end
+
+    function logs.xml.report_output_pages(p,b)
+        write_nl(format("<v k='pages' v='%s'/>", p))
+        write_nl(format("<v k='bytes' v='%s'/>", b))
+        write_nl("")
+    end
+
+    function logs.xml.report_output_log()
+    end
+
+end
+
+logs.set_level('error')
+logs.set_method('tex')
+
+
 -- end library merge
 
 own = { }
 
 own.libs = { -- todo: check which ones are really needed
     'l-string.lua',
+    'l-lpeg.lua',
     'l-table.lua',
     'l-io.lua',
     'l-md5.lua',
@@ -5892,6 +6550,7 @@ own.libs = { -- todo: check which ones are really needed
 --  'luat-tex.lua',
 --  'luat-kps.lua',
     'luat-tmp.lua',
+    'luat-log.lua',
 }
 
 -- We need this hack till luatex is fixed.
@@ -5953,22 +6612,32 @@ instance.lsrmode  = environment.argument("lsr")      or false
 
 -- use os.env or environment when available
 
-function os.setenv(key,value)
-    -- todo
-end
+--~ function input.check_environment(tree)
+--~     input.report('')
+--~     os.setenv('TMP', os.getenv('TMP') or os.getenv('TEMP') or os.getenv('TMPDIR') or os.getenv('HOME'))
+--~     if os.platform == 'linux' then
+--~         os.setenv('TEXOS', os.getenv('TEXOS') or 'texmf-linux')
+--~     elseif os.platform == 'windows' then
+--~         os.setenv('TEXOS', os.getenv('TEXOS') or 'texmf-windows')
+--~     elseif os.platform == 'macosx'  then
+--~         os.setenv('TEXOS', os.getenv('TEXOS') or 'texmf-macosx')
+--~     end
+--~     os.setenv('TEXOS',   string.gsub(string.gsub(os.getenv('TEXOS'),"^[\\\/]*", ''),"[\\\/]*$", ''))
+--~     os.setenv('TEXPATH', string.gsub(tree,"\/+$",''))
+--~     os.setenv('TEXMFOS', os.getenv('TEXPATH') .. "/" .. os.getenv('TEXOS'))
+--~     input.report('')
+--~     input.report("preset : TEXPATH => " .. os.getenv('TEXPATH'))
+--~     input.report("preset : TEXOS   => " .. os.getenv('TEXOS'))
+--~     input.report("preset : TEXMFOS => " .. os.getenv('TEXMFOS'))
+--~     input.report("preset : TMP     => " .. os.getenv('TMP'))
+--~     input.report('')
+--~ end
 
 function input.check_environment(tree)
     input.report('')
     os.setenv('TMP', os.getenv('TMP') or os.getenv('TEMP') or os.getenv('TMPDIR') or os.getenv('HOME'))
-    if os.platform == 'linux' then
-        os.setenv('TEXOS', os.getenv('TEXOS') or 'texmf-linux')
-    elseif os.platform == 'windows' then
-        os.setenv('TEXOS', os.getenv('TEXOS') or 'texmf-windows')
-    elseif os.platform == 'macosx'  then
-        os.setenv('TEXOS', os.getenv('TEXOS') or 'texmf-macosx')
-    end
-    os.setenv('TEXOS',   string.gsub(string.gsub(os.getenv('TEXOS'),"^[\\\/]*", ''),"[\\\/]*$", ''))
-    os.setenv('TEXPATH', string.gsub(tree,"\/+$",''))
+    os.setenv('TEXOS', os.getenv('TEXOS') or ("texmf-" .. os.currentplatform()))
+    os.setenv('TEXPATH', (tree or "tex"):gsub("\/+$",''))
     os.setenv('TEXMFOS', os.getenv('TEXPATH') .. "/" .. os.getenv('TEXOS'))
     input.report('')
     input.report("preset : TEXPATH => " .. os.getenv('TEXPATH'))
@@ -5985,23 +6654,25 @@ function input.load_environment(name) -- todo: key=value as well as lua
             if line:find("^[%%%#]") then
                 -- skip comment
             else
-                local key, how, value = line:match("^(.-)%s*([%<%=%>%?]+)%s*(.*)%s*$")
-                value = value:gsub("^%%(.+)%%$", function(v) return os.getenv(v) or "" end)
-                    if how == "=" or how == "<<" then
-                        os.setenv(key,value)
-                elseif how == "?" or how == "??" then
-                        os.setenv(key,os.getenv(key) or value)
-                elseif how == "<" or how == "+=" then
-                    if os.getenv(key) then
-                        os.setenv(key,os.getenv(key) .. io.fileseparator .. value)
-                    else
-                        os.setenv(key,value)
-                    end
-                elseif how == ">" or how == "=+" then
-                    if os.getenv(key) then
-                        os.setenv(key,value .. io.pathseparator .. os.getenv(key))
-                    else
-                        os.setenv(key,value)
+                local key, how, value = line:match("^(.-)%s*([<=>%?]+)%s*(.*)%s*$")
+                if how then
+                    value = value:gsub("%%(.-)%%", function(v) return os.getenv(v) or "" end)
+                        if how == "=" or how == "<<" then
+                            os.setenv(key,value)
+                    elseif how == "?" or how == "??" then
+                            os.setenv(key,os.getenv(key) or value)
+                    elseif how == "<" or how == "+=" then
+                        if os.getenv(key) then
+                            os.setenv(key,os.getenv(key) .. io.fileseparator .. value)
+                        else
+                            os.setenv(key,value)
+                        end
+                    elseif how == ">" or how == "=+" then
+                        if os.getenv(key) then
+                            os.setenv(key,value .. io.pathseparator .. os.getenv(key))
+                        else
+                            os.setenv(key,value)
+                        end
                     end
                 end
             end
@@ -6013,7 +6684,7 @@ end
 function input.load_tree(tree)
     if tree and tree ~= "" then
         local setuptex = 'setuptex.tmf'
-        if lfs.attributes(tree, mode) == "directory" then -- check if not nil
+        if lfs.attributes(tree, "mode") == "directory" then -- check if not nil
             setuptex = tree .. "/" .. setuptex
         else
             setuptex = tree
@@ -6092,6 +6763,26 @@ function file.savechecksum(name, checksum)
         end
     end
     return nil
+end
+
+function os.currentplatform()
+    local currentplatform = "linux"
+    if os.platform == "windows" then
+        currentplatform = "mswin"
+    else
+        local architecture = os.resultof("uname -m")
+        local unixvariant  = os.resultof("uname -s")
+        if architecture and architecture:find("x86_64") then
+            currentplatform = "linux-64"
+        elseif unixvariant and unixvariant:find("Darwin") then
+            if architecture and architecture:find("i386") then
+                currentplatform = "osx-intel"
+            else
+                currentplatform = "osx-ppc"
+            end
+        end
+    end
+    return currentplatform
 end
 
 -- it starts here
@@ -6401,6 +7092,27 @@ function input.runners.edit_script(instance,filename)
     end
 end
 
+function input.runners.save_script_session(filename, list)
+    local t = { }
+    for _, key in ipairs(list) do
+        t[key] = environment.arguments[key]
+    end
+    io.savedata(filename,table.serialize(t,true))
+end
+
+function input.runners.load_script_session(filename)
+    if lfs.isfile(filename) then
+        local t = io.loaddata(filename)
+        if t then
+            t = loadstring(t)
+            if t then t = t() end
+            for key, value in pairs(t) do
+                environment.arguments[key] = value
+            end
+        end
+    end
+end
+
 input.runners.launchers = {
     windows = { },
     unix = { }
@@ -6448,6 +7160,15 @@ function input.runners.launch_file(instance,filename)
 end
 
 function input.runners.execute_ctx_script(instance,filename)
+    local function found(name)
+        local path = file.dirname(name)
+        if path and path ~= "" then
+            return false
+        else
+            local fullname = own and own.path and file.join(own.path,name)
+            return io.exists(fullname) and fullname
+        end
+    end
     local before, after = environment.split_arguments(filename)
     local suffix = ""
     if not filename:find("%.lua$") then suffix = ".lua" end
@@ -6458,17 +7179,17 @@ function input.runners.execute_ctx_script(instance,filename)
     -- mtx-<filename>
     if not fullname or fullname == "" then
         fullname = "mtx-" .. filename .. suffix
-        fullname = input.find_file(instance,fullname)
+        fullname = found(fullname) and input.find_file(instance,fullname)
     end
     -- mtx-<filename>s
     if not fullname or fullname == "" then
         fullname = "mtx-" .. filename .. "s" .. suffix
-        fullname = input.find_file(instance,fullname)
+        fullname = found(fullname) and input.find_file(instance,fullname)
     end
     -- mtx-<filename minus trailing s>
     if not fullname or fullname == "" then
         fullname = "mtx-" .. filename:gsub("s$","") .. suffix
-        fullname = input.find_file(instance,fullname)
+        fullname = found(fullname) and input.find_file(instance,fullname)
     end
     -- that should do it
     if fullname and fullname ~= "" then
@@ -6480,8 +7201,23 @@ function input.runners.execute_ctx_script(instance,filename)
         elseif state == "run" then
             arg = { } for _,v in pairs(after) do arg[#arg+1] = v end
             environment.initialize_arguments(arg)
+local loadname = environment.arguments['load']
+if loadname then
+    if type(loadname) ~= "string" then loadname = file.basename(fullname) end
+    loadname = file.replacesuffix(loadname,"cfg")
+    input.runners.load_script_session(loadname)
+end
             filename = environment.files[1]
+            if input.verbose then
+                input.report("using script: " .. fullname)
+            end
             dofile(fullname)
+local savename = environment.arguments['save']
+if savename and input.runners.save_list and not table.is_empty(input.runners.save_list or { }) then
+    if type(savename) ~= "string" then savename = file.basename(fullname) end
+    savename = file.replacesuffix(savename,"cfg")
+    input.runners.save_script_session(savename, input.runners.save_list)
+end
             return true
         end
     else

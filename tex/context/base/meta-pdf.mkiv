@@ -28,7 +28,7 @@
 
 %D Plugin.
 
-\def\mkconvertMPtoPDF
+\def\mkconvertMPtoPDF % watch the transparency reset
   {\vbox\bgroup
      \forgetall
      \offinterlineskip
@@ -40,6 +40,7 @@
         \PDFcomment{mps begin}%
         \PDFcode{q 1 0 0 1 0 0 cm}%
         \ctxlua{mptopdf.convertmpstopdf("\MPfilename")}\removeunwantedspaces
+        \dohandleMPresettransparency % a bit messy here, should be a toks
         \PDFcode{Q}%
         \PDFcomment{mps end}%
         \stopMPresources
@@ -86,6 +87,7 @@
    \executeifdefined{handleMPtext\MPtexttag}
      {\setbox\scratchbox\hbox
         {\font\temp=#1\space at #2\onebasepoint
+         \let\c\char
          \temp
          \MPfshowcommand{#3}}%
       \setbox\scratchbox\hbox
@@ -113,11 +115,11 @@
 %D The boundingbox.
 
 \def\MPSboundingbox#1#2#3#4%
-  {\xdef\MPllx{#1}
-   \xdef\MPlly{#2}
-   \xdef\MPurx{#3}
-   \xdef\MPury{#4}
-   \xdef\MPwidth {\the\dimexpr#3\onebasepoint-#1\onebasepoint\relax}
+  {\xdef\MPllx{#1}%
+   \xdef\MPlly{#2}%
+   \xdef\MPurx{#3}%
+   \xdef\MPury{#4}%
+   \xdef\MPwidth {\the\dimexpr#3\onebasepoint-#1\onebasepoint\relax}%
    \xdef\MPheight{\the\dimexpr#4\onebasepoint-#2\onebasepoint\relax}}
 
 \MPSboundingbox0000

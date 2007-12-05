@@ -95,15 +95,20 @@ end
 one.</p>
 --ldx]]--
 
-do
+-- maybe make this a function:
+
+function fonts.enc.make_unicode_vector()
     local vector, hash = { }, { }
-    for k,v in pairs(characters.data) do
-        local a = v.adobename
-        if a then
-            vector[k], hash[a] = a, k
+    for code, v in pairs(characters.data) do
+        local name = v.adobename
+        if name then
+            vector[code], hash[name] = name, code
         else
-            vector[k] = '.notdef'
+            vector[code] = '.notdef'
         end
+    end
+    for name, code in pairs(characters.synonyms) do
+        vector[code], hash[name] = name, code
     end
     containers.write(fonts.enc.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
 end

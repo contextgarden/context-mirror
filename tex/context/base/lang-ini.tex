@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Todo : --language=pl,en,nl : nl incs number of language
+%D This module needs a further cleanup (real split between ii/iv).
 
 %D This module implements the (for the moment still simple)
 %D multi||language support of \CONTEXT, which should not be
@@ -157,24 +157,6 @@
 
 \normallanguage\zerocount \def\loadedlanguage{1}
 
-%D Let's start with setting the lowercase code of quotes, so
-%D that we get proper hyphenation in languages like Dutch,
-%D French and Czech.
-
-% elsewhere: \lccode`\'=`\'
-
-% \def\showlccodes
-%   {\currentlanguage:\space
-%    \dostepwiserecurse{0}{255}{1}
-%      {\ifnum\lccode\recurselevel>0
-%         \char\recurselevel:\the\lccode\recurselevel\relax\space
-%       \fi}
-%    \endgraf}
-
-% \de \hyphenatedword{Works''} \showlccodes
-% \nl \hyphenatedword{Works''} \showlccodes
-% \uk \hyphenatedword{Works''} \showlccodes
-
 %D \macros
 %D   {currentlanguage, setupcurrentlanguage}
 %D
@@ -272,8 +254,7 @@
 \def\doiflanguageelse#1{\doifdefinedelse{\??la#1\c!state}}
 
 \def\doinstalllanguage[#1][#2]%
-  {%\ConvertConstantAfter\doifinstringelse{=}{#2}
-   \doifassignmentelse{#2}
+  {\doifassignmentelse{#2}
      {\doiflanguageelse{#1}
         {\getparameters[\??la#1][#2]}
         {\setvalue{\l!prefix!#1}{#1}%
@@ -326,97 +307,11 @@
 \let \patternencoding \s!default
 \let \patternmapping  \s!default
 
-\def\doloadpatterns#1#2%
-  {\expanded{\getcommacommandsize[\getvalue{\??la#2\s!encoding}]}%
-   \ifnum\commalistsize>0
-    %\message{[nofpatterns #2: \commalistsize/\getvalue{\??la#2\s!encoding}]}%
-     \dorecurse\commalistsize
-       {\expanded{\getfromcommacommand[\getvalue{\??la#2\s!encoding}][\recurselevel]}%
-        \let\patternencoding\commalistelement
-        \expanded{\getfromcommacommand[\getvalue{\??la#2\s!mapping }][\recurselevel]}%
-        \let\patternmapping \commalistelement
-       %\message{[patterns: #1/#2/\patternencoding/\patternmapping]}%
-        \dodoloadpatterns{#1}{#2}\patternencoding\patternmapping}%
-   \else
-    %\message{[patterns: #1/#2]}%
-     \dodoloadpatterns{#1}{#2}{}{}%
-   \fi}
+\ifx\mkloadpatterns    \undefined \let\mkloadpatterns    \gobbletwoarguments \fi
+\ifx\mkdoifpatternselse\undefined \let\mkdoifpatternselse\gobbletwoarguments \fi
 
-\def\setuphyppatencoding
-  {\pathypsettings
-   \enableregime[utf]}
-
-\beginXETEX
-    \def\synchronizepatternswithfont{}
-    \def\doloadpatterns         #1#2{\dodoloadpatterns{#1}{#2}\s!default\s!default}
-    \def\setnormallanguage        #1{\dosetnormallanguage{:\s!default:\s!default:}#1\empty}
-    \def\setuphyppatencoding        {\pathypsettings}
-\endXETEX
-
-\beginLUATEX
-    \def\synchronizepatternswithfont{}
-    \def\doloadpatterns         #1#2{\dodoloadpatterns{#1}{#2}\s!default\s!default}
-    \def\setnormallanguage        #1{\dosetnormallanguage{:\s!default:\s!default:}#1\empty}
-    \def\setuphyppatencoding        {\pathypsettings}
-\endLUATEX
-
-\def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
-  {\normallanguage\loadedlanguage % when not really needed
-   \bgroup
-   \let\synchronizepatterns\relax % needed?
-   \let\enabledmapping     \empty % needed?
-   \doifelsenothing{#3}{\enableencoding[\s!default]}{\enableencoding[#3]}%
-   \doifelsenothing{#4}{\enablemapping [\s!default]}{\enablemapping [#4]}%
-   \setuphyppatencoding
-   \ifundefined{\??la\??la:\currentencoding:\currentmapping:#2}%
-     \let\doshowpatterns\relax
-     \edef\alreadyloadedlanguage
-       {\executeifdefined{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}\empty}%
-     \edef\alreadyloadedlanguage
-       {\executeifdefined{\??la\??la:\currentencoding:\currentmapping:\f!languageprefix#2.\f!patternsextension}\alreadyloadedlanguage}%
-     \ifx\alreadyloadedlanguage\empty
-       \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\loadedlanguage
-       \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
-       \startpatternloading{\truefilename{\f!languageprefix#2.\f!patternsextension}}{#3}{#4}%
-         \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
-           {\setxvalue{\??la#1\s!patterns}{#2}%
-            \setxvalue{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}{\number\loadedlanguage}%
-            \xdef\preloadedpmessage{\preloadedpmessage\doshowpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
-            \doglobal\addtocommalist{#2}\preloadedpatterns
-            \showmessage\m!linguals1{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
-           {\showmessage\m!linguals2{#2,#1,\loadedlanguage,\currentencoding,\currentmapping,\f!languageprefix#2.\f!patternsextension,\truefilename{\f!languageprefix#2.\f!patternsextension}}}%
-       \stoppatternloading
-       \startpatternloading{\truefilename{\f!languageprefix#2.\f!hyphensextension}}{#3}{#4}%
-         \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
-           {\showmessage\m!linguals3{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
-           {\showmessage\m!linguals4{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}%
-       \stoppatternloading
-       \doglobal\increment\loadedlanguage
-       % \stopencoding
-     \else % optimization, introduced 2004.08.24, while sorting out changes in tl
-       \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\alreadyloadedlanguage
-       \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
-       \setxvalue{\??la#1\s!patterns}{#2}%
-       \xdef\preloadedpmessage{\preloadedpmessage\doshowpatterns{#2}{[\number\alreadyloadedlanguage]}{\currentencoding}{\currentmapping}}%
-       \doglobal\addtocommalist{#2}\preloadedpatterns
-       \showmessage\m!linguals1{#2,#1,[\alreadyloadedlanguage],\currentencoding,\currentmapping}%
-     \fi
-   \fi
-   \egroup}
-
-\def\doifpatternselse#1%
-  {\expanded{\doifinsetelse{#1}{\preloadedpatterns}}}
-
-%D Since we can only load patterns in ini\TeX, we nil the
-%D loading before dumping (which saves a bit of memory, but
-%D strangely enough not in the format).
-
-\appendtoks
-  \gdef\doloadpatterns{\doglobal\increment\loadedlanguage\gobbletwoarguments}%
-  \globallet\dodoloadpatterns\gobblefourarguments
-\to \everydump
-
-\loadmarkfile{lang-ini} % not yet
+\def\doloadpatterns  {\mkdoloadpatterns}
+\def\doifpatternselse{\mkdoifpatternselse}
 
 %D \macros
 %D   {setuplanguage}
@@ -525,65 +420,18 @@
 %D We take care of local as well as standardized language
 %D switching (fr and fa, de and du, but nl and nl).
 
-% new, encoding specific patterns
-
 \ifx\synchronizepatterns        \undefined \let\synchronizepatterns\relax                         \fi
 \ifx\synchronizepatternswithfont\undefined \def\synchronizepatternswithfont{\synchronizepatterns} \fi
 
-\beginTEX
+\ifx\mksetnormallanguage\undefined \let\mksetnormallanguage\gobbletwoarguments \fi
 
-\def\dosetnormallanguage#1#2%
-  {\@EA\ifx\csname\??la\??la#1#2\endcsname\relax
-     \@EA\firstofoneargument
-   \else\@EA\ifx\csname\??la\??la#1#2\endcsname\empty
-     \@EAEAEA\firstofoneargument
-   \else
-     \donetrue
-     \@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
-     \normallanguage\csname\??la\??la#1#2\endcsname\relax % \relax is needed for lookahead problems
-     \@EAEAEA\gobbleoneargument
-   \fi\fi}
-
-\endTEX
-
-\beginETEX
-
-\def\dosetnormallanguage#1#2%
-  {\ifcsname\??la\??la#1#2\endcsname
-     \edef\thenormallanguage{\csname\??la\??la#1#2\endcsname}%
-     \ifx\thenormallanguage\empty
-       \@EAEAEA\firstofoneargument
-     \else
-       \donetrue
-       \@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
-       \normallanguage\thenormallanguage\relax % \relax is needed for lookahead problems
-       \@EAEAEA\gobbleoneargument
-     \fi
-   \else
-     \@EA\firstofoneargument
-   \fi}
-
-\endETEX
+\def\setnormallanguage{\mksetnormallanguage}
 
 \newevery \everylanguage               \relax
 \newevery \everyresetlanguagespecifics \relax
 
 \def\disablelanguagespecifics
   {\ignorecompoundcharacter}
-
-% \def\setnormallanguage#1%
-%   {\dosetnormallanguage{:\currentencoding:\currentmapping:}{#1}{%
-%    \dosetnormallanguage{:\currentencoding:\s!default     :}{#1}{%
-%    \dosetnormallanguage{:\s!default      :\currentmapping:}{#1}{%
-%    \dosetnormallanguage{:\s!default      :\s!default     :}{#1}\empty}}}}
-%
-% assume #1 = \cs
-
-\def\setnormallanguage#1%
-  {\dosetnormallanguage{:\currentencoding:\currentmapping:}#1{%
-   \dosetnormallanguage{:\currentencoding:\s!default     :}#1{%
-   \dosetnormallanguage{:\s!default      :\currentmapping:}#1{%
-   \dosetnormallanguage{:\s!default      :\s!default     :}#1\empty}}}}
 
 \def\sethyphenationvariables
   {\lefthyphenmin 0\languageparameter\s!lefthyphenmin \relax
@@ -593,53 +441,16 @@
 
 \def\docomplexlanguage% assumes that \currentlanguage is set
   {\edef\currentdefaultlanguage{\defaultlanguage\currentlanguage}%
-   % called quite often, so we use \csname
-   % \def\synchronizepatterns{\setnormallanguage
-   %   {\csname\??la\currentlanguage\s!patterns\endcsname}}% called often
-   % of even better pre-expand in an ugly way:
-   \@EA\def\@EA\synchronizepatterns\@EA{\@EA\setnormallanguage
-     \csname\??la\currentlanguage\s!patterns\endcsname}%
-   \donefalse
-   \synchronizepatterns
-   \ifdone\else
-     \def\synchronizepatterns{\setnormallanguage\currentlanguage}%
-     \synchronizepatterns
-     \ifdone\else
-       \ifx\currentdefaultlanguage\empty\else
-         % \def\synchronizepatterns{\setnormallanguage
-         %   {\csname\??la\currentdefaultlanguage\s!patterns\endcsname}}%
-         \@EA\def\@EA\synchronizepatterns\@EA{\@EA\setnormallanguage
-           \csname\??la\currentdefaultlanguage\s!patterns\endcsname}%
-         \synchronizepatterns
-         \ifdone\else
-           \setnormallanguage\currentdefaultlanguage
-           \synchronizepatterns
-         \fi
-       \fi
-     \fi
-   \fi
+   \mksetnormallanguage\currentlanguage\currentdefaultlanguage
    \the\everylanguage
    \enablelanguagespecifics[\currentlanguage]%
-   % strange, what is this doing here, dangerous for {il2,ec}
-   %   \edef\languagemapping{\csname\??la\currentlanguage\s!mapping\endcsname}%
-   %   \ifx\languagemapping\empty\else
-   %     \fastenablemapping\languagemapping
-   %   \fi
    \sethyphenationvariables
-   %\lefthyphenmin 0\languageparameter\s!lefthyphenmin
-   %\righthyphenmin0\languageparameter\s!righthyphenmin
    \relax
    % will be definable and move to core-spa !
    \doifelse{\languageparameter\c!spacing}\v!broad
      \nonfrenchspacing\frenchspacing}
 
-\ifx\enablelanguagespecifics\undefined
-
-  \def\enablelanguagespecifics[#1]{}
-
-\fi
-
-\beginETEX
+\ifx\enablelanguagespecifics\undefined \def\enablelanguagespecifics[#1]{} \fi
 
 \def\complexlanguage[#1]%
   {\edef\askedlanguage{#1}%
@@ -654,33 +465,11 @@
        \showmessage\m!linguals6{#1}%
      \fi
    \fi}
-
-\endETEX
-
-\beginTEX
-
-\def\complexlanguage[#1]%
-  {\edef\askedlanguage{#1}%
-   \ifx\askedlanguage\empty \else
-     \@EA\ifx\csname\l!prefix!\askedlanguage\endcsname\relax
-       \showmessage\m!linguals6{#1}%
-     \else
-       \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
-       \ifx\currentlanguage\askedlanguage \else
-         \setcurrentlanguage\currentmainlanguage\askedlanguage
-         \docomplexlanguage
-       \fi
-     \fi
-   \fi}
-
-\endTEX
 
 \let\simplelanguage\normallanguage
 
 \definecomplexorsimple\language
 
-\beginETEX
-
 \def\mainlanguage[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
@@ -692,24 +481,6 @@
        \fi
      \fi
    \fi}
-
-\endETEX
-
-\beginTEX
-
-\def\mainlanguage[#1]%
-  {\edef\askedlanguage{#1}%
-   \ifx\askedlanguage\empty \else
-     \@EA\ifx\csname\l!prefix!\askedlanguage\endcsname\relax\else
-       \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
-       \ifx\currentmainlanguage\askedlanguage \else
-         \setcurrentlanguage\askedlanguage\askedlanguage
-         \docomplexlanguage
-       \fi
-     \fi
-   \fi}
-
-\endTEX
 
 %D \macros
 %D   {defaultlanguage,languagedefault}
@@ -729,9 +500,6 @@
 \def\languagedefault#1#2%
   {\csname\??la\defaultlanguage{#1}#2\endcsname}
 
-% \def\languageparameter#1%
-%   {\csname\??la\defaultlanguage\currentlanguage#1\endcsname}
-
 \def\languageparameter % @EA = speedup
   {\@EA\dolanguageparameter\@EA{\defaultlanguage\currentlanguage}}
 
@@ -744,120 +512,27 @@
 \def\defaultlanguageparameter#1%
   {\csname\??la\s!default#1\endcsname}
 
-\beginETEX
+\def\dolanguageparameter#1#2%
+  {\csname\??la
+     \ifcsname\??la\currentlanguage#2\endcsname
+       \currentlanguage
+     \else\ifcsname\??la#1#2\endcsname
+       \@EA\ifx\csname\??la#1#2\endcsname\empty\s!default\else#1\fi
+     \else
+       \s!default
+     \fi\fi
+   #2\endcsname}
 
-  \def\dolanguageparameter#1#2%
-    {\csname\??la
-       \ifcsname\??la\currentlanguage#2\endcsname
-         \currentlanguage
-       \else\ifcsname\??la#1#2\endcsname
-         \@EA\ifx\csname\??la#1#2\endcsname\empty\s!default\else#1\fi
-       \else
-         \s!default
-       \fi\fi
-     #2\endcsname}
-
-  \def\dospecificlanguageparameter#1#2#3%
-    {\csname\??la
-       \ifcsname\??la#2#3\endcsname
-         \@EA\ifx\csname\??la#2#3\endcsname\empty\s!default\else#2\fi
-       \else\ifcsname\??la#1#3\endcsname
-         \@EA\ifx\csname\??la#1#3\endcsname\empty\s!default\else#1\fi
-       \else
-         \s!default
-       \fi\fi
-     #3\endcsname}
-
-\endETEX
-
-\beginTEX
-
-  \def\dolanguageparameter#1#2%
-    {\csname\??la
-       \@EA\ifx\csname\??la\currentlanguage#2\endcsname\relax
-         \@EA\ifx\csname\??la#1#2\endcsname\relax
-           \s!default
-         \else
-           \@EA\ifx\csname\??la#1#2\endcsname\empty\s!default\else#1\fi
-         \fi
-       \else
-         \currentlanguage
-       \fi
-     #2\endcsname}
-
-  \def\dospecificlanguageparameter#1#2#3%
-    {\csname\??la
-       \@EA\ifx\csname\??la#2#3\endcsname\relax
-         \@EA\ifx\csname\??la#1#3\endcsname\relax
-           \s!default
-         \else
-           \@EA\ifx\csname\??la#1#3\endcsname\empty\s!default\else#1\fi
-         \fi
-       \else
-         \@EA\ifx\csname\??la#2#3\endcsname\empty\s!default\else#2\fi
-       \fi
-     #3\endcsname}
-
-\endTEX
-
-% moved
-%
-% %D \macros
-% %D   {leftguillemot,rightguillemot,leftsubguillemot,rightsubguillemot,
-% %D    ...single...quote,...double...quote}
-% %D
-% %D We assign logical names to all kind of quote and sentence
-% %D boundary characters.
-% %D
-% %D When using Computer Modern Roman, the next definitions
-% %D looks a bit better than the default ligatures.
-% %D
-% %D \starttyping
-% %D \def\lowerleftsingleninequote  {,}
-% %D \def\lowerleftdoubleninequote  {,\kern-.1em,}
-% %D \def\upperleftsingleninequote  {'}
-% %D \def\upperleftdoubleninequote  {''\kern-.1em}
-% %D \def\upperleftsinglesixquote   {`}
-% %D \def\upperleftdoublesixquote   {`\kern-.1em`}
-% %D
-% %D \def\lowerrightsingleninequote {,}
-% %D \def\lowerrightdoubleninequote {,\kern-.1em,}
-% %D \def\upperrightsingleninequote {'}
-% %D \def\upperrightdoubleninequote {''}
-% %D \def\upperrightsinglesixquote  {`}
-% %D \def\upperrightdoublesixquote  {\kern-.125em``}
-% %D \stoptyping
-% %D
-% %D But in other fonts, these definitions can give problems, so
-% %D we just say:
-%
-% \def\lowerleftsingleninequote  {,}
-% \def\lowerleftdoubleninequote  {,,}
-% \def\upperleftsingleninequote  {'}
-% \def\upperleftdoubleninequote  {''}
-% \def\upperleftsinglesixquote   {`}
-% \def\upperleftdoublesixquote   {``}
-%
-% \def\lowerrightsingleninequote {,}
-% \def\lowerrightdoubleninequote {,,}
-% \def\upperrightsingleninequote {'}
-% \def\upperrightdoubleninequote {''}
-% \def\upperrightsinglesixquote  {`}
-% \def\upperrightdoublesixquote  {``}
-%
-% %D Yes I know, they are ugly:
-%
-% \def\leftfakeguillemot
-%   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle\ll$}}}
-%
-% \def\rightfakeguillemot
-%   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle\gg$}}}
-%
-% \def\leftsubfakeguillemot
-%   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle<$}}}
-%
-% \def\rightsubfakeguillemot
-%   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
+\def\dospecificlanguageparameter#1#2#3%
+  {\csname\??la
+     \ifcsname\??la#2#3\endcsname
+       \@EA\ifx\csname\??la#2#3\endcsname\empty\s!default\else#2\fi
+     \else\ifcsname\??la#1#3\endcsname
+       \@EA\ifx\csname\??la#1#3\endcsname\empty\s!default\else#1\fi
+     \else
+       \s!default
+     \fi\fi
+   #3\endcsname}
 
 %D New (see nomarking and nolist):
 
@@ -987,12 +662,13 @@
 
 \def\nopatterns{\normallanguage\minusone}
 
+%D Mark plugin:
+
+\loadmarkfile{lang-ini} % not yet
+
 %D We default to the language belonging to the interface. This
 %D is one of the few places outside the interface modules where
 %D \type{\startinterface} is used.
-
-\let\normaldoublequote ="
-\let\normalforwardslash=/
 
 %D We default to english:
 
@@ -1001,9 +677,5 @@
 \appendtoks\mainlanguage[\currentlanguage]\to\everyjob
 
 \appendtoks\showmessage\m!linguals9\currentlanguage\to\everyjob
-
-%D Brrr:
-
-% \ifx\@@ladefault\undefined \let\@@ladefault\s!en \fi
 
 \protect \endinput

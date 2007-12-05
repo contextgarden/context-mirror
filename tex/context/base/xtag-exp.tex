@@ -27,8 +27,7 @@
 
 \def\startXMLreading
   {\increment \XMLfilenesting \relax
-   \ifnum\XMLfilenesting=1
-%\ifcase\XMLfilenesting\or
+   \ifcase\XMLfilenesting\or
      \ifprocessingXML
        \let\restoreXMLelements\relax
      \else
@@ -38,8 +37,7 @@
    \fi}
 
 \def\stopXMLreading
-  {\ifnum\XMLfilenesting=1
-%\ifcase\XMLfilenesting\or
+  {\ifcase\XMLfilenesting\or
      \restoreXMLelements
      \let\restoreXMLelements\relax
    \fi

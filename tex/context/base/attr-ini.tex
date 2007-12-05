@@ -42,6 +42,8 @@
    \appendetoks\csname @attr@#1\endcsname\minusone\to\attributesresetlist
    \ctxlua{attributes.define("#1",\number\attdefcounter)}}
 
+% expandable so we can \edef them for speed
+
 \def\dosetattribute#1#2{\csname @attr@#1\endcsname#2\relax}
 \def\doresetattribute#1{\csname @attr@#1\endcsname\minusone}
 \def\dogetattribute  #1{\number\csname @attr@#1\endcsname}
@@ -50,15 +52,24 @@
 \let\dompattribute\gobbletwoarguments
 
 \defineattribute[mark]
-\defineattribute[status]
+% \defineattribute[status] % used ? maybe combine with
+\defineattribute[state]
 \defineattribute[trigger] % feature inheritance
-% \defineattribute[language]
 \defineattribute[skip]
 \defineattribute[penalty]
 
 \startruntimectxluacode
     nodes.trigger = \dogetattributeid{trigger}
 \stopruntimectxluacode
+
+% \defineattribute[ignore]
+%
+% \edef\startignorecontent{\dosetattribute{ignore}\plusone}
+% \edef\stopignorecontent {\doresetattribute{ignore}}
+%
+% \startruntimectxluacode
+%     nodes.ignore = \dogetattributeid{ignore}
+% \stopruntimectxluacode
 
 % \dosetattribute{status}{1}
 
@@ -93,10 +104,15 @@
 
 \defineattribute[transparency]
 
-\def\registertransparency#1#2#3% we need to fake a name in the current setup, same as color
+\def\registertransparency#1#2#3%
   {\setevalue{(ts:#1)}{\dosetattribute{transparency}{\ctxlua{tex.print(transparencies.register(#2,#3))}}}}
 
 \def\sometransparencyswitch#1{\csname(ts:#1)\endcsname}
+
+\def\sometransparencyswitch
+  {\ctxlua{transparencies.enabled=true}%
+   \gdef\sometransparencyswitch##1{\csname(ts:##1)\endcsname}%
+   \sometransparencyswitch}
 
 % \registertransparency {one} {1} {.5}
 % \registertransparency {two} {1} {.6}
@@ -109,8 +125,10 @@
   {\initializePDFoverprint % temp here, to be tested in la code (states.collect)
    \setvalue{(os:#1)}{\dosetattribute{overprint}{\ctxlua{tex.print(overprints.register('#2'))}}}}
 
-\def\dotriggeroverprint#1%
-  {\csname(os:#1)\endcsname}
+\def\dotriggeroverprint
+  {\ctxlua{overprints.enabled=true}%
+   \gdef\dotriggeroverprint##1{\csname(os:##1)\endcsname}%
+   \dotriggeroverprint}
 
 % \registeroverprint{knockout} {knockout}
 % \registeroverprint{overprint}{overprint}
@@ -123,8 +141,10 @@
   {\initializePDFnegative % temp here, to be tested in la code (states.collect)
    \setvalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
 
-\def\dotriggernegative#1%
-  {\csname(ns:#1)\endcsname}
+\def\dotriggernegative
+  {\ctxlua{negatives.enabled=true}%
+   \gdef\dotriggernegative##1{\csname(ns:##1)\endcsname}%
+   \dotriggernegative}
 
 % \registernegative{positive}{positive}
 % \registernegative{negative}{negative}
@@ -137,9 +157,16 @@
   {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}%
      {\dosetattribute{effect}{\ctxlua{tex.print(effects.register('#1',#2,\number\dimexpr#3\relax))}}}}
 
-\def\dotriggereffect#1#2#3%
-  {\ifcsname(es:#1:#2:\number\dimexpr#3\relax)\endcsname\else\registereffect{#1}{#2}{#3}\fi
-   \csname(es:#1:#2:\number\dimexpr#3\relax)\endcsname}
+% \def\dotriggereffect#1#2#3%
+%   {\ifcsname(es:#1:#2:\number\dimexpr#3\relax)\endcsname\else\registereffect{#1}{#2}{#3}\fi
+%    \csname(es:#1:#2:\number\dimexpr#3\relax)\endcsname}
+
+\def\dotriggereffect
+  {\ctxlua{effects.enabled=true}%
+   \gdef\dotriggereffect##1##2##3%
+     {\ifcsname(es:##1:##2:\number\dimexpr##3\relax)\endcsname\else\registereffect{##1}{##2}{##3}\fi
+      \csname(es:##1:##2:\number\dimexpr##3\relax)\endcsname}%
+   \dotriggereffect}
 
 % \registereffect{normal}
 % \registereffect{inner}
@@ -176,7 +203,6 @@
    \hbox{\ctxlua{states.flush()}\box\finalizedshipoutbox}}
 
 \let\normalshipout\shipout
-
 
 % tricky stuff:
 

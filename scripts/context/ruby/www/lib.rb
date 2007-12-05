@@ -163,7 +163,7 @@ class WWW
         @interface.set('template:login'    , 'exalogin.htm')
         @interface.set('process:timeout'   ,  @@session_max_age)
         @interface.set('process:threshold' ,  @@send_threshold)
-        @interface.set('process:background', 'yes')  # this demands a watchdog being active
+        @interface.set('process:background', 'yes') # this demands a watchdog being active
         @interface.set('process:indirect'  , 'no')  # indirect download, no direct feed
         @interface.set('process:autologin' , 'yes') # provide default interface when applicable
         @interface.set('process:exaurl'    , '')    # this one will be used as replacement in templates
@@ -1224,6 +1224,12 @@ class WWW
             end
         end
         return ! (@session.nothing?('gui') && @session.nothing?('path') && @session.nothing?('process'))
+    end
+
+    def get_cfg()
+        if data = load_interface_file() then
+            fetch_session_interface_variables(data)
+        end
     end
 
 end

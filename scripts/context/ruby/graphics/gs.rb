@@ -296,9 +296,9 @@ class GhostScript
 
     def gscolorswitch
         case getvariable('colormodel')
-            when 'cmyk' then '-dProcessColorModel=/DeviceCMYK '
-            when 'rgb'  then '-dProcessColorModel=/DeviceRGB '
-            when 'gray' then '-dProcessColorModel=/DeviceGRAY '
+            when 'cmyk' then '-dProcessColorModel=/DeviceCMYK -dColorConversionStrategy=/CMYK '
+            when 'rgb'  then '-dProcessColorModel=/DeviceRGB  -dColorConversionStrategy=/RGB '
+            when 'gray' then '-dProcessColorModel=/DeviceGRAY -dColorConversionStrategy=/GRAY '
         else
             ''
         end

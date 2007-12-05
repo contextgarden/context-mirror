@@ -51,7 +51,8 @@ xml.xmlns = { }
 
 do
 
-    local parser = lpeg.P(false) -- printing shows that this has no side effects
+    local check = lpeg.P(false)
+    local parse = check
 
     --[[ldx--
     <p>The next function associates a namespace prefix with an <l n='url'/>. This
@@ -63,7 +64,8 @@ do
     --ldx]]--
 
     function xml.registerns(namespace, pattern) -- pattern can be an lpeg
-        parser = parser + lpeg.C(lpeg.P(pattern:lower())) / namespace
+        check = check + lpeg.C(lpeg.P(pattern:lower())) / namespace
+        parse = lpeg.P { lpeg.P(check) + 1 * lpeg.V(1) }
     end
 
     --[[ldx--
@@ -77,7 +79,7 @@ do
     --ldx]]--
 
     function xml.checkns(namespace,url)
-        local ns = parser:match(url:lower())
+        local ns = parse:match(url:lower())
         if ns and namespace ~= ns then
             xml.xmlns[namespace] = ns
         end
@@ -95,7 +97,7 @@ do
     --ldx]]--
 
     function xml.resolvens(url)
-        return parser:match(url:lower()) or ""
+         return parse:match(url:lower()) or ""
     end
 
     --[[ldx--
@@ -146,11 +148,15 @@ do
 
     local mt = { __tostring = xml.text }
 
+    function xml.check_error(top,toclose)
+        return ""
+    end
+
     local function add_attribute(namespace,tag,value)
         if tag == "xmlns" then
             xmlns[#xmlns+1] = xml.resolvens(value)
             at[tag] = value
-        elseif ns == "xmlns" then
+        elseif namespace == "xmlns" then
             xml.checkns(tag,value)
             at["xmlns:" .. tag] = value
         else
@@ -162,7 +168,7 @@ do
             dt[#dt+1] = spacing
         end
         local resolved = (namespace == "" and xmlns[#xmlns]) or nsremap[namespace] or namespace
-        top = { ns=namespace or "", nr=resolved, tg=tag, at=at, dt={}, __p__ = stack[#stack] }
+        top = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = stack[#stack] }
         setmetatable(top, mt)
         dt = top.dt
         stack[#stack+1] = top
@@ -175,9 +181,9 @@ do
         local toclose = remove(stack)
         top = stack[#stack]
         if #stack < 1 then
-            errorstr = string.format("nothing to close with %s", tag)
+            errorstr = string.format("nothing to close with %s %s", tag, xml.check_error(top,toclose) or "")
         elseif toclose.tg ~= tag then -- no namespace check
-            errorstr = string.format("unable to close %s with %s", toclose.tg, tag)
+            errorstr = string.format("unable to close %s with %s %s", toclose.tg, tag, xml.check_error(top,toclose) or "")
         end
         dt = top.dt
         dt[#dt+1] = toclose
@@ -193,7 +199,7 @@ do
         top = stack[#stack]
         setmetatable(top, mt)
         dt = top.dt
-        dt[#dt+1] = { ns=namespace or "", nr=resolved, tg=tag, at=at, dt={}, __p__ = top }
+        dt[#dt+1] = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = top }
         at = { }
         if at.xmlns then
             remove(xmlns)
@@ -282,14 +288,13 @@ do
     --  text + comment + emptyelement + cdata + instruction + lpeg.V("parent"), -- 5.8
     --  text + lpeg.V("parent") + emptyelement + comment + cdata + instruction, -- 5.5
 
-
     local grammar = lpeg.P { "preamble",
         preamble = utfbom^0 * instruction^0 * (doctype + comment + instruction)^0 * lpeg.V("parent") * trailer,
         parent   = beginelement * lpeg.V("children")^0 * endelement,
         children = text + lpeg.V("parent") + emptyelement + comment + cdata + instruction,
     }
 
-    function xml.convert(data, no_root) -- no collapse any more
+    function xml.convert(data, no_root)
         stack, top, at, xmlns, errorstr, result = {}, {}, {}, {}, nil, nil
         stack[#stack+1] = top
         top.dt = { }
@@ -300,7 +305,7 @@ do
             errorstr = "invalid xml file"
         end
         if errorstr then
-            result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={} } } }
+            result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={}, er = true } }, error = true }
             setmetatable(stack, mt)
             if xml.error_handler then xml.error_handler("load",errorstr) end
         else
@@ -324,11 +329,19 @@ do
     function. Maybe it will go away (when not used).</p>
     --ldx]]--
 
+    function xml.is_valid(root)
+        return root and root.dt and root.dt[1] and type(root.dt[1]) == "table" and not root.dt[1].er
+    end
+
     function xml.package(tag,attributes,data)
         local ns, tg = tag:match("^(.-):?([^:]+)$")
         local t = { ns = ns, tg = tg, dt = data or "", at = attributes or {} }
         setmetatable(t, mt)
         return t
+    end
+
+    function xml.is_valid(root)
+        return root and not root.error
     end
 
     xml.error_handler = (logs and logs.report) or print
@@ -343,16 +356,18 @@ a filename or a file handle.</p>
 
 function xml.load(filename)
     if type(filename) == "string" then
-        local root, f = { }, io.open(filename,'r')
+        local f = io.open(filename,'r')
         if f then
-            root = xml.convert(f:read("*all"))
+            local root = xml.convert(f:read("*all"))
             f:close()
+            return root
         else
-            -- if we want an error: root = xml.convert("")
+            return xml.convert("")
         end
-        return root -- no nil but an empty table if it fails
-    else
+    elseif filename then -- filehandle
         return xml.convert(filename:read("*all"))
+    else
+        return xml.convert("")
     end
 end
 
@@ -494,10 +509,10 @@ do
                         else
                             if ats then
                             --  handle(format("<%s:%s %s/>",ens,etg,table.concat(ats," ")))
-                                handle("<%" .. ens .. ":" .. etg .. table.concat(ats," ") .. "/>")
+                                handle("<" .. ens .. ":" .. etg .. table.concat(ats," ") .. "/>")
                             else
                             --  handle(format("<%s:%s/>",ens,etg))
-                                handle("<%" .. ens .. ":" .. "/>")
+                                handle("<" .. ens .. ":" .. "/>")
                             end
                         end
                     else
@@ -706,6 +721,8 @@ do
         str = str:gsub("@([a-zA-Z%-_]+)", "(a['%1'] or '')")
         str = str:gsub("position%(%)", "i")
         str = str:gsub("text%(%)", "t")
+        str = str:gsub("!=", "~=")
+        str = str:gsub("([^=!~<>])=([^=!~<>])", "%1==%2")
         str = str:gsub("([a-zA-Z%-_]+)%(", "functions.%1(")
         return str, loadstring(string.format("return function(functions,i,a,t) return %s end", str))()
     end
@@ -730,7 +747,7 @@ do
     local bar               = lpeg.P('|')
     local hat               = lpeg.P('^')
     local valid             = lpeg.R('az', 'AZ', '09') + lpeg.S('_-')
-    local name_yes          = lpeg.C(valid^1) * colon * lpeg.C(valid^1)
+    local name_yes          = lpeg.C(valid^1) * colon * lpeg.C(valid^1 + star) -- permits ns:*
     local name_nop          = lpeg.C(lpeg.P(true)) * lpeg.C(valid^1)
     local name              = name_yes + name_nop
     local number            = lpeg.C((lpeg.S('+-')^0 * lpeg.R('09')^1)) / tonumber
@@ -851,8 +868,10 @@ do
                         -- root
                         return false
                     end
-                elseif #map == 2 and m == 12 and map[2][1] == 20 then
-                    return { { 29, map[2][2], map[2][3] } }
+                elseif #map == 2  and m == 12 and map[2][1] == 20 then
+                --  return { { 29, map[2][2], map[2][3], map[2][4], map[2][5] } }
+                    map[2][1] = 29
+                    return { map[2] }
                 end
                 if m ~= 11 and m ~= 12 and m ~= 13 and m ~= 14 and m ~= 15 and m ~= 16 then
                     table.insert(map, 1, { 16 })
@@ -987,8 +1006,10 @@ do
                 local rootdt = root.dt
                 for k=1,#rootdt do
                     local e = rootdt[k]
-                    local ns, tg = e.rn or e.ns, e.tg
-                    if ns == action[2] and tg == action[3] then
+                    local ns, tg = (e.rn or e.ns), e.tg
+                    local matched = ns == action[3] and tg == action[4]
+                    if not action[2] then matched = not matched end
+                    if matched then
                         if handle(root,rootdt,k) then return false end
                     end
                 end
@@ -1001,7 +1022,8 @@ do
                 end
             else
                 if (command == 16 or command == 12) and index == 1 then -- initial
-                    wildcard = true
+--~                     wildcard = true
+                    wildcard = command == 16 -- ok?
                     index = index + 1
                     action = pattern[index]
                     command = action and action[1] or 0 -- something is wrong
@@ -1032,7 +1054,8 @@ do
                         if tg then
                             idx = idx + 1
                             if command == 30 then
-                                local matched = ns == action[3] and tg == action[4]
+                                local tg_a = action[4]
+                                if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
                                 if not action[2] then matched = not matched end
                                 if matched then
                                     n = n + dn
@@ -1050,20 +1073,23 @@ do
                             else
                                 local matched, multiple = false, false
                                 if command == 20 then -- match
-                                    matched = ns == action[2] and tg == action[3]
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
                                     if not action[2] then matched = not matched end
                                 elseif command == 21 then -- match one of
                                     multiple = true
-                                    for i=2,#action,2 do
+                                    for i=3,#action,2 do
                                         if ns == action[i] and tg == action[i+1] then matched = true break end
                                     end
                                     if not action[2] then matched = not matched end
                                 elseif command == 22 then -- eq
-                                    matched = ns == action[3] and tg == action[4]
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
                                     if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[6]] == action[7]
                                 elseif command == 23 then -- ne
-                                    matched = ns == action[3] and tg == action[4]
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
                                     if not action[2] then matched = not matched end
                                     matched = mached and e.at[action[6]] ~= action[7]
                                 elseif command == 24 then -- one of eq
@@ -1081,18 +1107,20 @@ do
                                     if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[#action-1]] ~= action[#action]
                                 elseif command == 27 then -- has attribute
-                                    local ans = action[3]
-                                    matched = ns == action[3] and tg == action[4]
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
                                     if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[5]]
                                 elseif command == 28 then -- has value
                                     local edt = e.dt
-                                    matched = ns == action[3] and tg == action[4]
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
                                     if not action[2] then matched = not matched end
                                     matched = matched and edt and edt[1] == action[5]
                                 elseif command == 31 then
                                     local edt = e.dt
-                                    matched = ns == action[3] and tg == action[4]
+                                    local tg_a = action[4]
+                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
                                     if not action[2] then matched = not matched end
                                     if matched then
                                         matched = action[6](functions,idx,e.at,edt[1])
@@ -1537,28 +1565,33 @@ do
         end
     end
 
-    function xml.include(xmldata,element,attribute,pathlist,collapse)
-        element   = element   or 'ctx:include'
-        attribute = attribute or 'name'
-        pathlist  = pathlist  or { '.' }
-        -- todo, check op ri
+    function xml.include(xmldata,pattern,attribute,recursive,findfile)
+        -- parse="text" (default: xml), encoding="" (todo)
+        pattern   = pattern   or 'include'
+        attribute = attribute or 'href'
         local function include(r,d,k)
-            local ek = d[k]
-            local name = (ek.at and ek.at[attribute]) or ""
-            if name ~= "" then
-                -- maybe file lookup in tree
-                local fullname
-                for _, path in ipairs(pathlist) do
-                    if path == '.' then
-                        fullname = name
-                    else
-                        fullname = file.join(path,name)
-                    end
-                    local f = io.open(fullname)
+            local ek, name = d[k], nil
+            if ek.at then
+                for a in attribute:gmatch("([^|]+)") do
+                    name = ek.at[a]
+                    if name then break end
+                end
+            end
+            if name then
+                name = (findfile and findfile(name)) or name
+                if name ~= "" then
+                    local f = io.open(name)
                     if f then
-                        xml.assign(d,k,xml.load(f,collapse))
+                        if ek.at["parse"] == "text" then -- for the moment hard coded
+                            d[k] = xml.escaped(f:read("*all"))
+                        else
+                            local xi = xml.load(f)
+                            if recursive then
+                                xml.include(xi,pattern,attribute,recursive,findfile)
+                            end
+                            xml.assign(d,k,xi)
+                        end
                         f:close()
-                        break
                     else
                         xml.empty(d,k)
                     end
@@ -1567,7 +1600,7 @@ do
                 xml.empty(d,k)
             end
         end
-        while xml.each_element(xmldata, element, include) do end
+        xml.each_element(xmldata, pattern, include)
     end
 
     function xml.strip_whitespace(root, pattern)
@@ -1635,6 +1668,20 @@ do
         end)
     end
 
+    function xml.filters.found(root,pattern,check_content)
+        local found = false
+        traverse(root, lpath(pattern), function(r,d,k)
+            if check_content then
+                local dk = d and d[k]
+                found = dk and dk.dt and next(dk.dt) and true
+            else
+                found = true
+            end
+            return true
+        end)
+        return found
+    end
+
 end
 
 --[[ldx--
@@ -1648,6 +1695,7 @@ xml.index    = xml.filters.index
 xml.position = xml.filters.index
 xml.first    = xml.filters.first
 xml.last     = xml.filters.last
+xml.found    = xml.filters.found
 
 xml.each     = xml.each_element
 xml.process  = xml.process_element
@@ -1696,12 +1744,46 @@ function xml.serialize_path(root,lpath,handle)
     xml.serialize(dk,handle)
 end
 
-xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
-xml.unescapes = { } for k,v in pairs(xml.escapes) do xml.unescapes[v] = k end
+--~ xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
+--~ xml.unescapes = { } for k,v in pairs(xml.escapes) do xml.unescapes[v] = k end
 
-function xml.escaped  (str) return str:gsub("(.)"   , xml.escapes  ) end
-function xml.unescaped(str) return str:gsub("(&.-;)", xml.unescapes) end
-function xml.cleansed (str) return str:gsub("<.->"  , ''           ) end -- "%b<>"
+--~ function xml.escaped  (str) return str:gsub("(.)"   , xml.escapes  ) end
+--~ function xml.unescaped(str) return str:gsub("(&.-;)", xml.unescapes) end
+--~ function xml.cleansed (str) return str:gsub("<.->"  , ''           ) end -- "%b<>"
+
+do
+
+    -- 100 * 2500 * "oeps< oeps> oeps&" : gsub:lpeg|lpeg|lpeg
+    --
+    -- 1021:0335:0287:0247
+
+    -- 10 * 1000 * "oeps< oeps> oeps& asfjhalskfjh alskfjh alskfjh alskfjh ;al J;LSFDJ"
+    --
+    -- 1559:0257:0288:0190 (last one suggested by roberto)
+
+    --    escaped = lpeg.Cs((lpeg.S("<&>") / xml.escapes + 1)^0)
+    --    escaped = lpeg.Cs((lpeg.S("<")/"&lt;" + lpeg.S(">")/"&gt;" + lpeg.S("&")/"&amp;" + 1)^0)
+    local normal  = (1 - lpeg.S("<&>"))^0
+    local special = lpeg.P("<")/"&lt;" + lpeg.P(">")/"&gt;" + lpeg.P("&")/"&amp;"
+    local escaped = lpeg.Cs(normal * (special * normal)^0)
+
+    -- 100 * 1000 * "oeps&lt; oeps&gt; oeps&amp;" : gsub:lpeg == 0153:0280:0151:0080 (last one by roberto)
+
+    --    unescaped = lpeg.Cs((lpeg.S("&lt;")/"<" + lpeg.S("&gt;")/">" + lpeg.S("&amp;")/"&" + 1)^0)
+    --    unescaped = lpeg.Cs((((lpeg.P("&")/"") * (lpeg.P("lt")/"<" + lpeg.P("gt")/">" + lpeg.P("amp")/"&") * (lpeg.P(";")/"")) + 1)^0)
+    local normal    = (1 - lpeg.S"&")^0
+    local special   = lpeg.P("&lt;")/"<" + lpeg.P("&gt;")/">" + lpeg.P("&amp;")/"&"
+    local unescaped = lpeg.Cs(normal * (special * normal)^0)
+
+    -- 100 * 5000 * "oeps <oeps bla='oeps' foo='bar'> oeps </oeps> oeps " : gsub:lpeg == 623:501 msec (short tags, less difference)
+
+    local cleansed = lpeg.Cs(((lpeg.P("<") * (1-lpeg.P(">"))^0 * lpeg.P(">"))/"" + 1)^0)
+
+    function xml.escaped  (str) return escaped  :match(str) end
+    function xml.unescaped(str) return unescaped:match(str) end
+    function xml.cleansed (str) return cleansed :match(str) end
+
+end
 
 function xml.join(t,separator,lastseparator)
     if #t > 0 then
@@ -1806,3 +1888,10 @@ end end
 --~ xml.xshow(xml.first(x,"b[@n=='03' or @n=='08']"))
 --~ xml.xshow(xml.all  (x,"b[number(@n)>2 and number(@n)<6]"))
 --~ xml.xshow(xml.first(x,"b[find(text(),'ALSO')]"))
+
+--~ str = [[
+--~ <?xml version="1.0" encoding="utf-8"?>
+--~ <story line='mojca'>
+--~     <windows>my secret</mouse>
+--~ </story>
+--~ ]]

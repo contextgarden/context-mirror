@@ -37,12 +37,17 @@ function table.sortedkeys(tab)
         srt[#srt+1] = key
         if kind == 3 then
             -- no further check
-        elseif type(key) == "string" then
-            if kind == 2 then kind = 3 else kind = 1 end
-        elseif type(key) == "number" then
-            if kind == 1 then kind = 3 else kind = 2 end
         else
-            kind = 3
+            local tkey = type(key)
+            if tkey == "string" then
+            --  if kind == 2 then kind = 3 else kind = 1 end
+                kind = (kind == 2 and 3) or 1
+            elseif tkey == "number" then
+            --  if kind == 1 then kind = 3 else kind = 2 end
+                kind = (kind == 1 and 3) or 2
+            else
+                kind = 3
+            end
         end
     end
     if kind == 0 or kind == 3 then
@@ -65,32 +70,96 @@ function table.prepend(t, list)
     end
 end
 
+--~ function table.merge(t, ...)
+--~     for _, list in ipairs({...}) do
+--~         for k,v in pairs(list) do
+--~             t[k] = v
+--~         end
+--~     end
+--~     return t
+--~ end
+
 function table.merge(t, ...)
-    for _, list in ipairs({...}) do
-        for k,v in pairs(list) do
+    local lst = {...}
+    for i=1,#lst do
+        for k, v in pairs(lst[i]) do
             t[k] = v
         end
     end
+    return t
 end
 
+--~ function table.merged(...)
+--~     local tmp = { }
+--~     for _, list in ipairs({...}) do
+--~         for k,v in pairs(list) do
+--~             tmp[k] = v
+--~         end
+--~     end
+--~     return tmp
+--~ end
+
 function table.merged(...)
-    local tmp = { }
-    for _, list in ipairs({...}) do
-        for k,v in pairs(list) do
+    local tmp, lst = { }, {...}
+    for i=1,#lst do
+        for k, v in pairs(lst[i]) do
             tmp[k] = v
         end
     end
     return tmp
 end
 
-if not table.fastcopy then
+--~ function table.imerge(t, ...)
+--~     for _, list in ipairs({...}) do
+--~         for _, v in ipairs(list) do
+--~             t[#t+1] = v
+--~         end
+--~     end
+--~     return t
+--~ end
 
-    function table.fastcopy(old) -- fast one
+function table.imerge(t, ...)
+    local lst = {...}
+    for i=1,#lst do
+        local nst = lst[i]
+        for j=1,#nst do
+            t[#t+1] = nst[j]
+        end
+    end
+    return t
+end
+
+--~ function table.imerged(...)
+--~     local tmp = { }
+--~     for _, list in ipairs({...}) do
+--~         for _,v in pairs(list) do
+--~             tmp[#tmp+1] = v
+--~         end
+--~     end
+--~     return tmp
+--~ end
+
+function table.imerged(...)
+    local tmp, lst = { }, {...}
+    for i=1,#lst do
+        local nst = lst[i]
+        for j=1,#nst do
+            tmp[#tmp+1] = nst[j]
+        end
+    end
+    return tmp
+end
+
+if not table.fastcopy then do
+
+    local type, pairs, getmetatable, setmetatable = type, pairs, getmetatable, setmetatable
+
+    local function fastcopy(old) -- fast one
         if old then
             local new = { }
             for k,v in pairs(old) do
                 if type(v) == "table" then
-                    new[k] = table.fastcopy(v) -- was just table.copy
+                    new[k] = fastcopy(v) -- was just table.copy
                 else
                     new[k] = v
                 end
@@ -105,11 +174,15 @@ if not table.fastcopy then
         end
     end
 
-end
+    table.fastcopy = fastcopy
 
-if not table.copy then
+end end
 
-    function table.copy(t, tables) -- taken from lua wiki, slightly adapted
+if not table.copy then do
+
+    local type, pairs, getmetatable, setmetatable = type, pairs, getmetatable, setmetatable
+
+    local function copy(t, tables) -- taken from lua wiki, slightly adapted
         tables = tables or { }
         local tcopy = {}
         if not tables[t] then
@@ -120,7 +193,7 @@ if not table.copy then
                 if tables[i] then
                     i = tables[i]
                 else
-                    i = table.copy(i, tables)
+                    i = copy(i, tables)
                 end
             end
             if type(v) ~= "table" then
@@ -128,7 +201,7 @@ if not table.copy then
             elseif tables[v] then
                 tcopy[i] = tables[v]
             else
-                tcopy[i] = table.copy(v, tables)
+                tcopy[i] = copy(v, tables)
             end
         end
         local mt = getmetatable(t)
@@ -138,7 +211,9 @@ if not table.copy then
         return tcopy
     end
 
-end
+    table.copy = copy
+
+end end
 
 -- rougly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
 
@@ -211,7 +286,9 @@ do
             end
             if n == #t then
                 local tt = { }
-                for _,v in ipairs(t) do
+            --  for _,v in ipairs(t) do
+                for i=1,#t do
+                    local v = t[i]
                     local tv = type(v)
                     if tv == "number" or tv == "boolean" then
                         tt[#tt+1] = tostring(v)
@@ -240,15 +317,16 @@ do
             end
         else
             depth = ""
-            if type(name) == "string" then
+            local tname = type(name)
+            if tname == "string" then
                 if name == "return" then
                     handle("return {")
                 else
                     handle(name .. "={")
                 end
-            elseif type(name) == "number" then
+            elseif tname == "number" then
                 handle("[" .. name .. "]={")
-            elseif type(name) == "boolean" then
+            elseif tname == "boolean" then
                 if name then
                     handle("return {")
                 else
@@ -263,7 +341,7 @@ do
             local inline  = compact and table.serialize_inline
             local first, last = nil, 0 -- #root cannot be trusted here
             if compact then
-                for k,v in ipairs(root) do
+              for k,v in ipairs(root) do -- NOT: for k=1,#root do
                     if not first then first = k end
                     last = last + 1
                 end

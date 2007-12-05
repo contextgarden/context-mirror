@@ -45,7 +45,14 @@
     \let\mkwalkregime   \gobbleoneargument
     \let\mkautosetregime\gobbletwoarguments
 
-    \def\mkenableregime#1{\XeTeXinputencoding "#1"\relax}
+    % \def\mkenableregime#1%
+    %   {\XeTeXinputencoding "#1"\relax}
+
+    \def\mkenableregime#1%
+      {\doifelse{#1}{utf}%
+          {\writestatus\m!regime{mapping utf to utf-8}%
+           \XeTeXinputencoding{utf-8}}
+          {\XeTeXinputencoding{#1}}}
 
 \endXETEX
 

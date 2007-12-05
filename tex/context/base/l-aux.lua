@@ -14,19 +14,19 @@ do
         hash[key] = value
     end
 
-    local space    = lpeg.S(' ')^0
-    local equal    = lpeg.S("=")^1
-    local comma    = lpeg.S(",")^0
-    local nonspace = lpeg.P(1-lpeg.S(' '))^1
-    local nonequal = lpeg.P(1-lpeg.S('='))^1
-    local noncomma = lpeg.P(1-lpeg.S(','))^1
-    local nonbrace = lpeg.P(1-lpeg.S('{}'))^1
-    local nested   = lpeg.S('{') * lpeg.C(nonbrace^1) * lpeg.S('}')
+    local space     = lpeg.P(' ')
+    local equal     = lpeg.P("=")
+    local comma     = lpeg.P(",")
+    local lbrace    = lpeg.P("{")
+    local rbrace    = lpeg.P("}")
+    local nobrace   = 1 - (lbrace+rbrace)
+    local nested    = lpeg.P{ lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
 
-    local key   = lpeg.C(nonequal)
-    local value = nested + lpeg.C(noncomma)
+    local key       = lpeg.C((1-equal)^1)
+    local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
+    local pattern   = ((space^0 * key * equal * value * comma^0) / set)^1
 
-    local pattern = ((space * key * equal * value * comma) / set)^1
+    -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
 
     function aux.settings_to_hash(str)
         hash = { }
@@ -34,7 +34,11 @@ do
         return hash
     end
 
-    local pattern = lpeg.Ct((space * value * comma)^1)
+    local seperator = comma * space^0
+    local value     = lbrace * lpeg.C(nobrace^0) * rbrace + lpeg.C((1-seperator)^0)
+    local pattern   = lpeg.Ct(value*(seperator*value)^0)
+
+    -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
     function aux.settings_to_array(str)
         return lpeg.match(pattern,str)
@@ -42,30 +46,27 @@ do
 
 end
 
---~ do
---~     str = "a=1, b=2, c=3, d={abc}"
-
---~     for k,v in pairs(aux.settings_to_hash (str)) do print(k,v) end
---~     for k,v in pairs(aux.settings_to_array(str)) do print(k,v) end
---~ end
-
-function aux.hash_to_string(h,separator,yes,no,strict)
+function aux.hash_to_string(h,separator,yes,no,strict,omit)
     if h then
-        local t = { }
-        for _,k in ipairs(table.sortedkeys(h)) do
-            local v = h[k]
-            if type(v) == "boolean" then
-                if yes and no then
-                    if v then
-                        t[#t+1] = k .. '=' .. yes
-                    elseif not strict then
-                        t[#t+1] = k .. '=' .. no
+        local t, s = { }, table.sortedkeys(h)
+        omit = omit and table.tohash(omit)
+        for i=1,#s do
+            local key = s[i]
+            if not omit or not omit[key] then
+                local value = h[key]
+                if type(value) == "boolean" then
+                    if yes and no then
+                        if value then
+                            t[#t+1] = key .. '=' .. yes
+                        elseif not strict then
+                            t[#t+1] = key .. '=' .. no
+                        end
+                    elseif value or not strict then
+                        t[#t+1] = key .. '=' .. tostring(value)
                     end
-                elseif v or not strict then
-                    t[#t+1] = k .. '=' .. tostring(v)
+                else
+                    t[#t+1] = key .. '=' .. value
                 end
-            else
-                t[#t+1] = k .. '=' .. v
             end
         end
         return table.concat(t,separator or ",")

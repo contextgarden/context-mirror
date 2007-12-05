@@ -18,7 +18,10 @@
     <cd:constant type="aussen"/>
     <cd:constant type="links"/>
     <cd:constant type="rechts"/>
+    <cd:constant type="flushleft"/>
+    <cd:constant type="flushright"/>
     <cd:constant type="mittig"/>
+    <cd:constant type="center"/>
     <cd:constant type="normal"/>
     <cd:constant type="nein"/>
     <cd:constant type="ja"/>
@@ -4224,6 +4227,7 @@
       <cd:parameter name="nummer">
         <cd:constant type="ja"/>
         <cd:constant type="nein"/>
+        <cd:constant type="kein"/>
       </cd:parameter>
       <cd:parameter name="zwischen">
         <cd:constant type="cd:command"/>
@@ -6064,6 +6068,9 @@
       </cd:parameter>
       <cd:parameter name="ausrichtung">
         <cd:resolve name="align"/>
+      </cd:parameter>
+      <cd:parameter name="symausrichtung">
+        <cd:resolve name="symalign"/>
       </cd:parameter>
       <cd:parameter name="ziehefolgendeein">
         <cd:resolve name="indentnext"/>

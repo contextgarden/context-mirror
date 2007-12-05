@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2007.09.28 11:58">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2007.12.05 13:56">
 
   <cd:variables>
     <cd:variable name="lesshyphenation" value="lesshyphenation"/>
@@ -125,6 +125,7 @@
     <cd:variable name="lines" value="righe"/>
     <cd:variable name="framedtext" value="testoincorniciato"/>
     <cd:variable name="quotation" value="citazione"/>
+    <cd:variable name="blockquote" value="blockquote"/>
     <cd:variable name="quote" value="menzione"/>
     <cd:variable name="speech" value="speech"/>
     <cd:variable name="itemize" value="elenco"/>
@@ -446,6 +447,7 @@
     <cd:constant name="inbetween" value="tra"/>
     <cd:constant name="type" value="type"/>
     <cd:constant name="align" value="allinea"/>
+    <cd:constant name="symalign" value="symallinea"/>
     <cd:constant name="urlspace" value="spaziourl"/>
     <cd:constant name="urlalternative" value="alternativaurl"/>
     <cd:constant name="from" value="da"/>

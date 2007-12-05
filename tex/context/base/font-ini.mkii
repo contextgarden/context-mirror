@@ -16,4 +16,35 @@
 \def\mkdefinefontfeature#1% #2
   {\setvalue{\??fa#1}} % {#2}
 
+\def\updatefontparameters
+  {\edef\@@fontencoding{\truefontdata\fontfile    \s!encoding}%
+   \edef\@@fontmapping {\truefontdata\fontfile    \s!mapping }%
+   \edef\@@fonthandling{\truefontdata\somefontname\s!handling}%
+   \edef\@@fontfeatures{\truefontdata\fontfile    \s!features}%
+   \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
+
+\def\setfontcharacteristics
+  {\updatefontparameters % redundant, will go away, faster too
+   \fastenableencoding
+     {\ifx\@@fontencoding\empty
+        \s!default \else \@@fontencoding
+      \fi}%
+   \fastenablemapping
+     {\ifx\@@fontmapping\empty
+        \ifx\@@fontencoding\empty
+          \s!default \else \@@fontencoding
+        \fi
+      \else
+        \@@fontmapping
+      \fi}%
+   \fastenablehandling
+     {\ifx\@@fonthandling\empty
+        \s!default \else \@@fonthandling
+      \fi}%
+     {\lastfontidentifier}%
+   \the\everyfont
+   \synchronizepatternswithfont}
+
+\ifx\synchronizepatternswithfont\undefined \def\synchronizepatternswithfont{\synchronizepatterns} \fi
+
 \protect \endinput

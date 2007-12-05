@@ -20,8 +20,8 @@ do
             if counters[f] == nil then
                 counters[f] = 1
 --~                 names[f] = debug.getinfo(2,"Sn")
---~                 names[f] = debug.getinfo(2,"n")
-                names[f] = debug.getinfo(f)
+                names[f] = debug.getinfo(2,"n")
+--~                 names[f] = debug.getinfo(f)
             else
                 counters[f] = counters[f] + 1
             end
@@ -51,8 +51,11 @@ do
         printer("\n") -- ugly but ok
         for func, count in pairs(counters) do
             if count > threshold then
-                printer(string.format("%8i  %s\n", count, getname(func)))
-                total = total + count
+                local name = getname(func)
+                if name ~= "(for generator)" then
+                    printer(string.format("%8i  %s\n", count, getname(func)))
+                    total = total + count
+                end
             end
             grandtotal = grandtotal + count
             functions = functions + 1
@@ -78,7 +81,12 @@ do
     end
 
     function debugger.tracing()
-        return tonumber((os.env['MTX.TRACE.CALLS'] or os.env['MTX_TRACE_CALLS'] or 0)) > 0
+        local n = tonumber(os.env['MTX.TRACE.CALLS']) or tonumber(os.env['MTX_TRACE_CALLS']) or 0
+        if n > 0 then
+            function debugger.tracing() return true  end ; return true
+        else
+            function debugger.tracing() return false end ; return false
+        end
     end
 
 end

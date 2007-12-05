@@ -366,6 +366,8 @@
      {\ConvertToConstant\doifelse{#4}\v!none
         {\global\nofloatcaptiontrue}
         {\global\nofloatcaptionfalse}}%
+   \doif{\floatcaptionparameter\c!number}\v!none % new
+    {\global\nofloatcaptiontrue}%
    \ifemptyfloatcaption \ifnofloatnumber
      \global\nofloatcaptiontrue
    \fi \fi}
@@ -513,20 +515,20 @@
 
 % pas op, maxbreedte niet instellen als plaats=links/rechts
 
-\def\setlocalfloatdimensions#1#2#3% experimental / #3 box number #4 prefix
+\def\setlocalfloatdimensions#1%
   {\global\sidefloatshift  \zeropoint       % duplicate
    \global\sidefloatmaximum\zeropoint\relax % duplicate
    \ifextrafloatactions
      \ifdim\sidefloatdownshift=\zeropoint\else
-       #3\setbox#2\vbox
-        {\vskip\sidefloatdownshift\nointerlineskip\box#3}%
+       \global\setbox\floatbox\vbox
+        {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
      \fi
      \doifsomething{\floatparameter\c!minwidth}
        {\scratchdimen\floatparameter\c!minwidth\relax
-        \ifdim\wd#2<\scratchdimen
-          #3\setbox#2\hbox to \scratchdimen
+        \ifdim\wd\floatbox<\scratchdimen
+          \global\setbox\floatbox\hbox to \scratchdimen
             {\doifnot{\floatparameter\c!location}\v!left \hss
-             \box#2%
+             \box\floatbox%
              \doifnot{\floatparameter\c!location}\v!right\hss}%
         \fi}%
      % todo: rand / rug
@@ -537,17 +539,17 @@
              {\letvalue{\??fl\currentfloat\c!maxwidth}\rightmarginwidth}}}%
      \doifsomething{\floatparameter\c!maxwidth}
        {\scratchdimen\floatparameter\c!maxwidth\relax
-        \ifdim\wd#2>\scratchdimen
+        \ifdim\wd\floatbox>\scratchdimen
           \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge
                           \v!inleft,\v!leftmargin,\v!leftedge}{#1}
             {\global\sidefloatmaximum\scratchdimen}
-            {#3\setbox#2\hbox to \scratchdimen
+            {\global\setbox\floatbox\hbox to \scratchdimen
               {\doifcommonelse{\v!right,\v!left}{#1}
                  {\doifnotinset\v!right{#1}\hss
-                  \box#2%
+                  \box\floatbox
                   \doifnotinset\v!left{#1}\hss}%
                  {\doifnot{\floatparameter\c!location}\v!left\hss
-                  \box#2%
+                  \box\floatbox
                   \doifnot{\floatparameter\c!location}\v!right\hss}}}%
         \fi}%
   \fi}
@@ -2031,7 +2033,7 @@
      \par
      \edef\floatcaptiondirectives{\floatparameter\c!location,\floatcaptionparameter\c!location}%
      \ifparfloat\@EA\dosetparfloat\else\@EA\dosetpagfloat\fi{#1}{#2}{#3}%
-     \setlocalfloatdimensions{#1}\floatbox\global % tzt arg 3/4 weg
+     \setlocalfloatdimensions{#1}%
      \setbox\floatbox\hbox
        {\dosavefloatdata\restoretextcolor{\box\floatbox}}%
      \global\floatheight\ht\floatbox

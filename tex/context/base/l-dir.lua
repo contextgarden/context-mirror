@@ -13,15 +13,18 @@ dir = { }
 if lfs then
 
     function dir.glob_pattern(path,patt,recurse,action)
-        for name in lfs.dir(path) do
-            local full = path .. '/' .. name
-            local mode = lfs.attributes(full,'mode')
-            if mode == 'file' then
-                if name:find(patt) then
-                    action(full)
+        local ok, scanner = xpcall(function() return lfs.dir(path) end, function() end) -- kepler safe
+        if ok and type(scanner) == "function" then
+            for name in scanner do
+                local full = path .. '/' .. name
+                local mode = lfs.attributes(full,'mode')
+                if mode == 'file' then
+                    if name:find(patt) then
+                        action(full)
+                    end
+                elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+                    dir.glob_pattern(full,patt,recurse,action)
                 end
-            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                dir.glob_pattern(full,patt,recurse,action)
             end
         end
     end
@@ -46,6 +49,30 @@ if lfs then
         return t
     end
 
+    function dir.globfiles(path,recurse,func,files)
+        if type(func) == "string" then
+            local s = func -- alas, we need this indirect way
+            func = function(name) return name:find(s) end
+        end
+        files = files or { }
+        for name in lfs.dir(path) do
+            if name:find("^%.") then
+                --- skip
+            elseif lfs.attributes(name,'mode') == "directory" then
+                if recurse then
+                    dir.globfiles(path .. "/" .. name,recurse,func,files)
+                end
+            elseif func then
+                if func(name) then
+                    files[#files+1] = path .. "/" .. name
+                end
+            else
+                files[#files+1] = path .. "/" .. name
+            end
+        end
+        return files
+    end
+
     -- t = dir.glob("c:/data/develop/context/sources/**/????-*.tex")
     -- t = dir.glob("c:/data/develop/tex/texmf/**/*.tex")
     -- t = dir.glob("c:/data/develop/context/texmf/**/*.tex")
@@ -62,33 +89,23 @@ if lfs then
     --~ mkdirs(".","/a/b/c")
     --~ mkdirs("a","b","c")
 
-    function dir.mkdirs(...) -- root,... or ... ; root is not split
-        local pth, err = "", false
-        for k,v in pairs({...}) do
-            if k == 1 then
-                if not lfs.isdir(v) then
-                 -- print("no root path " .. v)
-                    err = true
-                else
-                    pth = v
-                end
-            elseif lfs.isdir(pth .. "/" .. v) then
-                pth = pth .. "/" .. v
+    function dir.mkdirs(...)
+        local pth, err, lst = "", false, table.concat({...},"/")
+        for _, s in ipairs(lst:split("/")) do
+            if pth == "" then
+                pth = (s == "" and "/") or s
             else
-                for _,s in pairs(v:split("/")) do
-                    pth = pth .. "/" .. s
-                    if not lfs.isdir(pth) then
-                        ok = lfs.mkdir(pth)
-                        if not lfs.isdir(pth) then
-                            err = true
-                        end
-                    end
-                    if err then break end
-                end
+                pth = pth .. "/" .. s
             end
-            if err then break end
+            if s == "" then
+                -- can be network path
+            elseif not lfs.isdir(pth) then
+                lfs.mkdir(pth)
+            end
         end
         return pth, not err
     end
+
+    dir.makedirs = dir.mkdirs
 
 end

@@ -19,9 +19,10 @@ from the big character table that we use for all kind of purposes:
 <type>char-def.lua</type>.</p>
 --ldx]]--
 
-characters         = characters         or { }
-characters.data    = characters.data    or { }
-characters.context = characters.context or { }
+characters          = characters          or { }
+characters.data     = characters.data     or { }
+characters.synonyms = characters.synonyms or { }
+characters.context  = characters.context  or { }
 
 do
     local _empty_table_ = { __index = function(t,k) return "" end }
@@ -43,17 +44,21 @@ characters.context.utfcodes = characters.context.utfcodes or { }
 characters.context.enccodes = characters.context.enccodes or { }
 
 function characters.context.rehash()
-    local unicodes, utfcodes, enccodes = characters.context.unicodes, characters.context.utfcodes, characters.context.enccodes
+    local unicodes, utfcodes, enccodes, utfchar = characters.context.unicodes, characters.context.utfcodes, characters.context.enccodes, utf.char
     for k,v in pairs(characters.data) do
         local contextname, adobename = v.contextname, v.adobename
         if contextname then
-            unicodes[contextname] = v.unicodeslot
-            utfcodes[contextname] = utf.char(v.unicodeslot)
+            local slot = v.unicodeslot
+            unicodes[contextname] = slot
+            utfcodes[contextname] = utfchar(slot)
         end
         local encname = adobename or contextname
         if encname then
             enccodes[encname] = k
         end
+    end
+    for name,code in pairs(characters.synonyms) do
+        if not enccodes[name] then enccodes[name] = code end
     end
 end
 
@@ -89,7 +94,7 @@ use the table. After all, we have this information available anyway.</p>
 
 function characters.context.define()
     local unicodes, utfcodes = characters.context.unicodes, characters.context.utfcodes
-    local flush, tc = tex.sprint, tex.ctxcatcodes
+    local flush, tc, char = tex.sprint, tex.ctxcatcodes, utf.char
     for u, chr in pairs(characters.data) do
         local contextname = chr.contextname
         if contextname then
@@ -97,7 +102,7 @@ function characters.context.define()
              if chr.unicodeslot < 128 then
                 flush(tc, "\\chardef\\" .. contextname .. "=" .. u) -- unicodes[contextname])
              else
-                flush(tc, "\\let\\" .. contextname .. "=" .. utf.char(u)) -- utfcodes[contextname])
+                flush(tc, "\\let\\" .. contextname .. "=" .. char(u)) -- utfcodes[contextname])
              end
         end
     end
@@ -118,9 +123,10 @@ function characters.setcodes()
     for code, chr in pairs(characters.data) do
         local cc = chr.category
         if cc == 'll' or cc == 'lu' or cc == 'lt' then
-            if not chr.lccode then chr.lccode = code end
-            if not chr.uccode then chr.uccode = code end
-            flush(tc, '\\setcclcuc '.. code .. ' ' .. chr.lccode .. ' ' .. chr.uccode .. ' ')
+            local lc, uc = chr.lccode, chr.uccode
+            if not lc then chr.lccode, lc = code, code end
+            if not uc then chr.uccode, uc = code, code end
+            flush(tc, '\\setcclcuc '.. code .. ' ' .. lc .. ' ' .. uc .. ' ')
         end
     end
 end

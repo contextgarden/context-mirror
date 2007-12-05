@@ -127,7 +127,7 @@ function fonts.names.identify()
         end
     end
     local function identify(completename,name,suffix)
-        if not done[name] then
+        if not done[name] and io.exists(completename) then
             nofread = nofread + 1
             logs.info("fontnames", "identifying " .. suffix .. " font " .. completename)
             logs.push()

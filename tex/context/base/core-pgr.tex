@@ -498,6 +498,7 @@
    gridtype=0,
    linetype=1,
    filltype=1,
+   dashtype=0,
   %snaptops=true, % not that nice: true/false
    gridcolor=red,
    linecolor=blue,
@@ -506,7 +507,8 @@
    linewidth=\linewidth,
    gridwidth=\linewidth,
    gridshift=\!!zeropoint,
-   lineradius=.5\bodyfontsize]
+   lineradius=.5\bodyfontsize,
+   dashtype=1]
 
 \startuseMPgraphic{mpos:par:shape}
   \iftracepositions show_par \else draw_par \fi ;
@@ -516,6 +518,7 @@
    boxgridtype   := \MPvar{gridtype} ;
    boxlinetype   := \MPvar{linetype} ;
    boxfilltype   := \MPvar{filltype} ;
+   boxdashtype   := \MPvar{dashtype} ;
    boxgridcolor  := \MPvar{gridcolor} ;
    boxlinecolor  := \MPvar{linecolor} ;
    boxfillcolor  := \MPvar{fillcolor} ;
@@ -620,7 +623,7 @@
 \newcounter\textbackgrounddepth
 
 \appendtoks
-  \savecurrentvalue\totalnofparbackgrounds\nofparbackgrounds
+  \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
 \to \everybye
 
 \appendtoks
@@ -628,7 +631,7 @@
 \to \everystarttext
 
 \ifx\totalnofparbackgrounds\undefined \newcounter\totalnofparbackgrounds \fi
-\ifx\nofparbackgrounds     \undefined \newcounter\nofparbackgrounds      \fi
+\ifx\nofparbackgrounds     \undefined \newcount  \nofparbackgrounds      \fi
 
 \def\initializeparbackgrounds
   {\ifcase\totalnofparbackgrounds\else
@@ -684,20 +687,18 @@
 \def\dostarttextbackground[#1][#2]%
   {\checktextbackgrounds
    \def\currenttextbackground{#1}%
-   \doglobal\increment\nofparbackgrounds
-  %\edef\currentparbackground{background:\nofparbackgrounds}%
-   \edef\currentparbackground{pbg:\nofparbackgrounds}%
-   \bgroup
-     \increment\nofparbackgrounds
-    %\xdef\nextparbackground{background:\nofparbackgrounds}%
-     \xdef\nextparbackground{pbg:\nofparbackgrounds}%
-   \egroup
+   \global\advance\nofparbackgrounds\plusone
+   \edef\currentparbackground{pbg:\number\nofparbackgrounds}%
+%    \bgroup
+%      \advance\nofparbackgrounds\plusone
+%      \xdef\nextparbackground{pbg:\number\nofparbackgrounds}%
+%    \egroup
+   \xdef\nextparbackground{pbg:\number\numexpr\nofparbackgrounds+\plusone\relax}% still xdef ?
    % todo : \synchonizepositionpage{b:\currentparbackground}{s:\currentparbackground}%
    \setuptextbackground[#1][#2]%
    \let\dodostarttextbackground\relax
    \let\dodostoptextbackground \relax
-   \doif{\textbackgroundparameter\c!state}\v!start
-     {\dopresettextbackground{#1}}%
+   \doif{\textbackgroundparameter\c!state}\v!start{\dopresettextbackground{#1}}%
    \dodostarttextbackground}
 
 % todo \backgroundvariable\c!variant
@@ -737,6 +738,7 @@
            gridtype=\textbackgroundparameter\c!alternative,
            filltype=\textbackgroundparameter\c!background,
            linetype=\textbackgroundparameter\c!frame,
+           dashtype=\textbackgroundparameter{dash}, %  to be internationalized
            gridcolor=\textbackgroundparameter\c!framecolor,
            linecolor=\textbackgroundparameter\c!framecolor,
            fillcolor=\textbackgroundparameter\c!backgroundcolor,
@@ -946,7 +948,7 @@
      \copyparameters[\??td#1][\??td]
        [\c!state,\c!location,\c!alternative,\c!mp,\c!method,
         \c!background,\c!backgroundcolor,\c!corner,\c!level,
-        \c!backgroundoffset,\c!before,\c!after,\c!align,
+        \c!backgroundoffset,\c!before,\c!after,\c!align,dash, % dash not yet internationalized
         \c!radius,\c!frame,\c!framecolor,\c!rulethickness,\c!voffset,
         \c!leftoffset,\c!rightoffset,\c!topoffset,\c!bottomoffset]%
      \getparameters[\??td#1][#2]%
@@ -994,6 +996,7 @@
    \c!level=-1,
    \c!alternative=0,
    \c!align=,
+   dash=0, % to be internationalized
    \c!background=\v!color,
    \c!backgroundcolor=lightgray,
    \c!backgroundoffset=\!!zeropoint,
@@ -1254,90 +1257,46 @@
 
 \newif\ifrepositionmarginbox \repositionmarginboxtrue
 
-\newcounter\currentmarginpos
-
-% \def\dopositionmarginbox#1%
-%   {\bgroup
-%    \ifrepositionmarginbox
-%      \doglobal\increment\currentmarginpos
-%      \setposition{\s!margin:\currentmarginpos}%
-%      \scratchdimen=\MPy{\s!margin:\currentmarginpos}%
-%      \doglobal\increment\currentmarginpos
-%      \advance\scratchdimen by -\MPy{\s!margin:\currentmarginpos}%
-%      \advance\scratchdimen by -\strutdp
-%      \setbox#1=\hbox
-%        {\setposition{\s!margin:\currentmarginpos}\raise\scratchdimen\box#1}%
-%      \dp#1=\!!zeropoint
-%      \ht#1=\!!zeropoint
-%    \fi
-%    \vadjust{\box#1}%
-%    \egroup}
-
-% \def\dopositionmarginbox#1% how about page boundaries !
-%   {\bgroup
-%    \ifrepositionmarginbox
-%      \doglobal\increment\currentmarginpos
-%      \setposition{\s!margin:\currentmarginpos}%
-%      \scratchdimen\MPy{\s!margin:\currentmarginpos}%
-%      \doglobal\increment\currentmarginpos
-%      \advance\scratchdimen -\MPy{\s!margin:\currentmarginpos}%
-%      \advance\scratchdimen -\strutdp
-%      % new
-%      \setbox#1\hbox
-%        {\hskip-\MPx{\s!margin:\currentmarginpos}%
-%         \hskip\MPx{head:\realfolio}%
-%         \box#1}%
-%      % so far
-%      \setbox#1\hbox
-%        {\setposition{\s!margin:\currentmarginpos}%
-%         \raise\scratchdimen\box#1}%
-%      \dp#1\zeropoint
-%      \ht#1\zeropoint
-%    \fi
-%    \graphicvadjust{\box#1}%
-%    \egroup}
+\newcount\currentmarginpos
 
 \def\dopositionmarginbox#1%
   {\bgroup
    \ifrepositionmarginbox
-     \doglobal\increment\currentmarginpos
-     \setposition{\s!margin:\currentmarginpos}%
+     \global\advance\currentmarginpos\plusone
+     \setposition{\s!margin:\number\currentmarginpos}%
      \ifcase\marginrepositionmethod
        % nothing
      \or
        % nothing
      \or
        % stack / page check yet untested
-% \scratchcounter\MPp{\s!margin:\currentmarginpos}\relax
-       \scratchdimen\MPy{\s!margin:\currentmarginpos}%
-       \doglobal\increment\currentmarginpos
-       \advance\scratchdimen -\MPy{\s!margin:\currentmarginpos}%
+       \scratchdimen\MPy{\s!margin:\number\currentmarginpos}%
+       \global\advance\currentmarginpos\plusone
+       \advance\scratchdimen -\MPy{\s!margin:\number\currentmarginpos}%
        \advance\scratchdimen -\strutdp
-% \ifnum\scratchcounter=\MPp{\s!margin:\currentmarginpos}\relax
        % new
        \setbox#1\hbox
-         {\hskip-\MPx{\s!margin:\currentmarginpos}%
+         {\hskip-\MPx{\s!margin:\number\currentmarginpos}%
           \hskip\MPx{head:\realfolio}%
           \box#1}%
        % so far
        \setbox#1\hbox
-         {\setposition{\s!margin:\currentmarginpos}%
+         {\setposition{\s!margin:\number\currentmarginpos}%
           \raise\scratchdimen\box#1}%
-% \fi
      \or
        % move up
-       \ifnum\MPp{p:\parposcounter}=\MPp{\s!margin:\currentmarginpos}\relax
-         \scratchdimen\dimexpr\MPy{p:\parposcounter}-\MPy{\s!margin:\currentmarginpos}\relax
+       \ifnum\MPp{p:\number\parposcounter}=\MPp{\s!margin:\number\currentmarginpos}\relax
+         \scratchdimen\dimexpr\MPy{p:\number\parposcounter}-\MPy{\s!margin:\number\currentmarginpos}\relax
          \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
        \fi
      \or
        % move up, assume end of par
-       \ifnum\MPp{p:\parposcounter}=\MPp{\s!margin:\currentmarginpos}\relax
+       \ifnum\MPp{p:\number\parposcounter}=\MPp{\s!margin:\number\currentmarginpos}\relax
          \getnoflines\margincontentheight
          \advance\noflines\minusone
          \scratchdimen\noflines\lineheight
        \else
-         \scratchdimen\dimexpr\MPy{p:\parposcounter}-\MPy{\s!margin:\currentmarginpos}\relax
+         \scratchdimen\dimexpr\MPy{p:\number\parposcounter}-\MPy{\s!margin:\number\currentmarginpos}\relax
        \fi
        \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
      \fi

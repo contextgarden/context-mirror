@@ -19,7 +19,7 @@ away.</p>
 
 fonts                      = fonts     or { }
 fonts.afm                  = fonts.afm or { }
-fonts.afm.version          = 1.13 -- incrementing this number one up will force a re-cache
+fonts.afm.version          = 1.21 -- incrementing this number one up will force a re-cache
 fonts.afm.syncspace        = true -- when true, nicer stretch values
 fonts.afm.enhance_data     = true -- best leave this set to true
 fonts.afm.trace_features   = false
@@ -35,7 +35,61 @@ fonts.afm.cache            = containers.define("fonts", "afm", fonts.afm.version
 built in <l n='tfm'/> and <l n='otf'/> reader.</p>
 --ldx]]--
 
+--~ Comment FONTIDENTIFIER LMMATHSYMBOLS10
+--~ Comment CODINGSCHEME TEX MATH SYMBOLS
+--~ Comment DESIGNSIZE 10.0 pt
+--~ Comment CHECKSUM O 4261307036
+--~ Comment SPACE 0 plus 0 minus 0
+--~ Comment QUAD 1000
+--~ Comment EXTRASPACE 0
+--~ Comment NUM 676.508 393.732 443.731
+--~ Comment DENOM 685.951 344.841
+--~ Comment SUP 412.892 362.892 288.889
+--~ Comment SUB 150 247.217
+--~ Comment SUPDROP 386.108
+--~ Comment SUBDROP 50
+--~ Comment DELIM 2390 1010
+--~ Comment AXISHEIGHT 250
+
 do
+
+    local c = lpeg.P("Comment")
+    local s = lpeg.S(" \t")
+    local l = lpeg.S("\n\r")
+    local w = lpeg.C((1 - l)^1)
+    local n = lpeg.C((lpeg.R("09") + lpeg.S("."))^1) / tonumber * s^0
+
+    local fd = { }
+
+    local pattern = ( c * s^1 * (
+        ("CODINGSCHEME" * s^1 * w                            ) / function(a)                                      end +
+        ("DESIGNSIZE"   * s^1 * n * w                        ) / function(a)     fd[ 1]                 = a       end +
+        ("CHECKSUM"     * s^1 * n * w                        ) / function(a)     fd[ 2]                 = a       end +
+        ("SPACE"        * s^1 * n * "plus"  * n * "minus" * n) / function(a,b,c) fd[ 3], fd[ 4], fd[ 5] = a, b, c end +
+        ("QUAD"         * s^1 * n                            ) / function(a)     fd[ 6]                 = a       end +
+        ("EXTRASPACE"   * s^1 * n                            ) / function(a)     fd[ 7]                 = a       end +
+        ("NUM"          * s^1 * n * n * n                    ) / function(a,b,c) fd[ 8], fd[ 9], fd[10] = a, b, c end +
+        ("DENOM"        * s^1 * n * n                        ) / function(a,b  ) fd[11], fd[12]         = a, b    end +
+        ("SUP"          * s^1 * n * n * n                    ) / function(a,b,c) fd[13], fd[14], fd[15] = a, b, c end +
+        ("SUB"          * s^1 * n * n                        ) / function(a,b)   fd[16], fd[17]         = a, b    end +
+        ("SUPDROP"      * s^1 * n                            ) / function(a)     fd[18]                 = a       end +
+        ("SUBDROP"      * s^1 * n                            ) / function(a)     fd[19]                 = a       end +
+        ("DELIM"        * s^1 * n * n                        ) / function(a,b)   fd[20], fd[21]         = a, b    end +
+        ("AXISHEIGHT"   * s^1 * n                            ) / function(a)     fd[22]                 = a       end +
+        (1-l)^0
+    ) + (1-c)^1)^0
+
+    function fonts.afm.scan_comment(str)
+        fd = { }
+        pattern:match(str)
+        return fd
+    end
+
+end
+
+do
+
+    -- On a rainy day I will rewrite this in lpeg ...
 
     local keys = { }
 
@@ -122,7 +176,7 @@ do
                             logs.report("define font", string.format("getting index data from %s",pfbname))
                         end
                         -- local offset = (glyphs[0] and glyphs[0] != .notdef) or 0
-                        for index, glyph in pairs(glyphs) do -- ipairs? offset
+                        for index, glyph in pairs(glyphs) do
                             local name = glyph.name
                             if name then
                                 local char = characters[name]
@@ -177,11 +231,15 @@ do
                 end
                 data.afmversion = version
                 get_variables(data,fontmetrics)
+                data.fontdimens = fonts.afm.scan_comment(fontmetrics) -- todo: all lpeg, no time now
                 return ""
             end)
             get_indexes(data,filename)
             return data
         else
+            if fonts.trace then
+                logs.report("define font", "no valid afm file " .. filename)
+            end
             return nil
         end
     end
@@ -218,7 +276,7 @@ end
 function fonts.afm.unify(data, filename)
     local unicode, private, unicodes = containers.content(fonts.enc.cache,'unicode').hash, 0x0F0000, { }
     for name, blob in pairs(data.characters) do
-        local code = unicode[name]
+        local code = unicode[name] -- or characters.name_to_unicode[name]
         if not code then
             code = private
             private = private + 1
@@ -310,18 +368,20 @@ end
 function fonts.afm.copy_to_tfm(data)
     if data and data.characters then
         local tfm = { characters = { }, parameters = { } }
-        local characters = data.characters
-        if characters then
-            for k, v in pairs(characters) do
-                local t = { }
-                t.height      =   v.boundingbox[4]
-                t.depth       = - v.boundingbox[2]
-                t.width       =   v.wx
-                t.boundingbox =   v.boundingbox
-                t.index       =   v.index
-                t.name        =   k
-                t.unicode     =   v.unicode
-                tfm.characters[t.unicode] = t
+        local afmcharacters = data.characters
+        local characters, parameters = tfm.characters, tfm.parameters
+        if afmcharacters then
+            for k, v in pairs(afmcharacters) do
+                local b, u = v.boundingbox, v.unicode
+                characters[u] = {
+                    height      =   b[4],
+                    depth       = - b[2],
+                    width       =   v.wx,
+                    boundingbox =   b,
+                    index       =   v.index,
+                    name        =   k,
+                    unicode     =   u,
+                }
             end
         end
         tfm.encodingbytes      = data.encodingbytes or 2
@@ -340,26 +400,26 @@ function fonts.afm.copy_to_tfm(data)
         local spaceunits = 500
         tfm.spacer = "500 units"
         if data.isfixedpitch then
-            if characters['space'] and characters['space'].wx then
-                spaceunits, tfm.spacer = characters['space'].wx, "space"
-            elseif characters['emdash'] and characters['emdash'].wx then -- funny default
-                spaceunits, tfm.spacer = characters['emdash'].wx, "emdash"
+            if afmcharacters['space'] and afmcharacters['space'].wx then
+                spaceunits, tfm.spacer = afmcharacters['space'].wx, "space"
+            elseif afmcharacters['emdash'] and afmcharacters['emdash'].wx then -- funny default
+                spaceunits, tfm.spacer = afmcharacters['emdash'].wx, "emdash"
             elseif data.charwidth then
                 spaceunits, tfm.spacer = data.charwidth, "charwidth"
             end
-        elseif characters['space'] and characters['space'].wx then
-            spaceunits, tfm.spacer = characters['space'].wx, "space"
+        elseif afmcharacters['space'] and afmcharacters['space'].wx then
+            spaceunits, tfm.spacer = afmcharacters['space'].wx, "space"
         elseif data.charwidth then
             spaceunits, tfm.spacer = data.charwidth, "charwidth variable"
         end
         spaceunits = tonumber(spaceunits)
-        tfm.parameters[1] = 0          -- slant
-        tfm.parameters[2] = spaceunits -- space
-        tfm.parameters[3] = 500        -- space_stretch
-        tfm.parameters[4] = 333        -- space_shrink
-        tfm.parameters[5] = 400        -- x_height
-        tfm.parameters[6] = 1000       -- quad
-        tfm.parameters[7] = 0          -- extra_space (todo)
+        parameters[1] = 0          -- slant
+        parameters[2] = spaceunits -- space
+        parameters[3] = 500        -- space_stretch
+        parameters[4] = 333        -- space_shrink
+        parameters[5] = 400        -- x_height
+        parameters[6] = 1000       -- quad
+        parameters[7] = 0          -- extra_space (todo)
         if spaceunits < 200 then
             -- todo: warning
         end
@@ -367,28 +427,35 @@ function fonts.afm.copy_to_tfm(data)
         tfm.ascender    = math.abs(data.ascender  or 0)
         tfm.descender   = math.abs(data.descender or 0)
         if data.italicangle then
-            tfm.parameters[1] = tfm.parameters[1] - math.round(math.tan(data.italicangle*math.pi/180))
+            parameters[1] = parameters[1] - math.round(math.tan(data.italicangle*math.pi/180))
         end
         if data.isfixedpitch then
-          tfm.parameters[3] = 0
-          tfm.parameters[4] = 0
+          parameters[3] = 0
+          parameters[4] = 0
         elseif fonts.afm.syncspace then
             -- too little
-            -- tfm.parameters[3] = .2*spaceunits  -- space_stretch
-            -- tfm.parameters[4] = .1*spaceunits  -- space_shrink
+            -- parameters[3] = .2*spaceunits  -- space_stretch
+            -- parameters[4] = .1*spaceunits  -- space_shrink
             -- taco's suggestion:
-            -- tfm.parameters[3] = .4*spaceunits  -- space_stretch
-            -- tfm.parameters[4] = .1*spaceunits  -- space_shrink
+            -- parameters[3] = .4*spaceunits  -- space_stretch
+            -- parameters[4] = .1*spaceunits  -- space_shrink
             -- knuthian values: (for the moment compatible)
-            tfm.parameters[3] = spaceunits/2  -- space_stretch
-            tfm.parameters[4] = spaceunits/3  -- space_shrink
+            parameters[3] = spaceunits/2  -- space_stretch
+            parameters[4] = spaceunits/3  -- space_shrink
         end
         if data.xheight and data.xheight > 0 then
-            tfm.parameters[5] = data.xheight
-        elseif tfm.characters['x'] and tfm.characters['x'].height then
-            tfm.parameters[5] = tfm.characters['x'].height
+            parameters[5] = data.xheight
+        elseif afmcharacters['x'] and afmcharacters['x'].height then
+            parameters[5] = afmcharacters['x'].height
         end
-        if table.is_empty(tfm.characters) then
+        local fd = data.fontdimens
+        if fd and fd[8] and fd[9] and fd[10] then
+        --  we're dealing with a tex math font
+            for k,v in pairs(fd) do
+                parameters[k] = v
+            end
+        end
+        if table.is_empty(characters) then
             return nil
         else
             return tfm
@@ -462,12 +529,15 @@ function fonts.afm.afm_to_tfm(specification)
     local afmname = specification.filename or specification.name
     local encoding, filename = afmname:match("^(.-)%-(.*)$") -- context: encoding-name.*
     if encoding and filename and fonts.enc.known[encoding] then
--- only when no bla-name is found
         fonts.tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
         if fonts.trace then
             logs.report("define font", string.format("stripping encoding prefix from filename %s",afmname))
         end
         afmname = filename
+    elseif specification.forced == "afm" then
+        if fonts.trace then
+            logs.report("define font", string.format("forcing afm format for %s",afmname))
+        end
     else
         local tfmname = input.findbinfile(texmf.instance,afmname,"ofm") or ""
         if tfmname ~= "" then
@@ -561,8 +631,8 @@ function fonts.afm.features.prepare_ligatures(tfmdata,ligatures,value) -- probab
                 if al then
                     local ligatures = { }
                     for k,v in pairs(al) do
-                        ligatures[charlist[k].index] = {
-                            char = charlist[v].index,
+                        ligatures[charlist[k].unicode] = {
+                            char = charlist[v].unicode,
                             type = 0
                         }
                     end
@@ -581,7 +651,7 @@ function fonts.afm.features.prepare_kerns(tfmdata,kerns,value)
             if newkerns then
                 local t = chr.kerns or { }
                 for k,v in pairs(newkerns) do
-                    t[charlist[k].index] = v
+                    t[charlist[k].unicode] = v
                 end
                 chr.kerns = t
             end

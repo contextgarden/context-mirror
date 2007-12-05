@@ -111,7 +111,7 @@ class Commands
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
-            files = @commandline.arguments.sort
+            files =  if @commandline.option('sort') then @commandline.arguments.sort else @commandline.arguments end
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     backspace = @commandline.checkedoption('backspace', '1.5cm')
@@ -156,7 +156,7 @@ class Commands
             prepare(job)
             job.cleanuptemprunfiles
             fast = @commandline.option('fast')
-            files = @commandline.arguments.sort
+            files =  if @commandline.option('sort') then @commandline.arguments.sort else @commandline.arguments end
             if fast or (files.length > 0) then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     files.delete("texexec.pdf")
@@ -202,7 +202,7 @@ class Commands
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
-            files = @commandline.arguments.sort
+            files =  if @commandline.option('sort') then @commandline.arguments.sort else @commandline.arguments end
             msuffixes = ['tex','mkii','mkiv','mp','pl','pm','rb']
             if files.length > 0 then
                 files.each do |fname|
@@ -302,7 +302,7 @@ class Commands
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
-            files = @commandline.arguments.sort
+            files =  if @commandline.option('sort') then @commandline.arguments.sort else @commandline.arguments end
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     emptypages  = @commandline.checkedoption('addempty', '')
@@ -355,7 +355,7 @@ class Commands
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
-            files = @commandline.arguments.sort
+            files =  if @commandline.option('sort') then @commandline.arguments.sort else @commandline.arguments end
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     selection   = @commandline.checkedoption('selection', '')
@@ -425,7 +425,7 @@ class Commands
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
-            files = @commandline.arguments.sort
+            files =  if @commandline.option('sort') then @commandline.arguments.sort else @commandline.arguments end
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     scale = @commandline.checkedoption('scale')
@@ -492,7 +492,7 @@ class Commands
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
-            files = @commandline.arguments.sort
+            files =  if @commandline.option('sort') then @commandline.arguments.sort else @commandline.arguments end
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     paperoffset = @commandline.checkedoption('paperoffset', '0cm')
@@ -762,6 +762,7 @@ commandline.registerflag('aleph')
 
 commandline.registerflag('all')
 commandline.registerflag('fast')
+commandline.registerflag('sort')
 
 # generic
 

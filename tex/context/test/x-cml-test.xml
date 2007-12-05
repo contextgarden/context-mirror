@@ -1,6 +1,13 @@
 <root>
 
     <cml:dchem>
+        <cml:molecule>
+            <cml:atom n="2">H</cml:atom>
+            <cml:atom>O</cml:atom>
+        </cml:molecule>
+    </cml:dchem>
+
+    <cml:dchem>
         <cml:reaction>
             <cml:molecule n="2">
                 <cml:atom n="2"> H </cml:atom>

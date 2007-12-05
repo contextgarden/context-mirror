@@ -99,7 +99,8 @@ garbagecollector = { }
 do
     local level = 0
 
-    collectgarbage("setstepmul", 165)
+--~     collectgarbage("setstepmul", 165)
+--~     collectgarbage("setstepmul",50)
 
     garbagecollector.trace = false
     garbagecollector.tune  = false -- for the moment

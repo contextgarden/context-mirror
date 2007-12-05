@@ -1240,7 +1240,6 @@
      \expandafter\dogetglobalfontparameter
    \fi}
 
-\let\@@fontresource\empty
 \let\@@fontencoding\empty
 \let\@@fontmapping \empty
 \let\@@fonthandling\empty
@@ -1322,12 +1321,7 @@
 %     \definefontsynonym[Serif]          [palatinonova-regular*default]
 %     \definefontsynonym[SerifCaps]      [palatinonova-regular*default-caps]
 % \stoptypescript
-%
-% \starttypescript [serif] [palatino-nova-regular] [name]
-%     \definefontsynonym[Serif]    [palatinonova-regular]   [resource=palatinonova-regular,features=default]
-%     \definefontsynonym[SerifCaps][palatinonova-regular-sc][resource=palatinonova-regular,features=default-caps] % caps
-% \stoptypescript
-%
+
 % \definetypeface[mainface][rm][serif][palatino-nova-regular][default] \setupbodyfont[mainface]
 %
 % \starttext
@@ -1399,14 +1393,12 @@
 
     \def\docheckfontfilename#1*#2#3*#4\relax % class overrules file
       {\edef\checkedfontfile{{%
-         \ifx\@@fontresource\empty#1\else\@@fontresource\fi
+         #1%
          \expandafter\ifx\csname\fontclass\s!features\endcsname\empty
-           \ifx\@@fontfeatures\empty\ifx#2\empty\else*#2#3\fi\else*\@@fontfeatures\fi
-         \else\expandafter\ifx\csname\fontclass\s!features\endcsname\relax % redundant, will go away
            \ifx\@@fontfeatures\empty\ifx#2\empty\else*#2#3\fi\else*\@@fontfeatures\fi
          \else
            *\csname\fontclass\s!features\endcsname
-         \fi\fi
+         \fi
        }}%
        \doshowcheckedfontfeatures}
 
@@ -1468,29 +1460,28 @@
        \edef\!!stringb{#2}%
        \ifx\!!stringb\empty
          % no prefix
-         \edef\checkedfontfile{\ifx\@@fontresource\empty\!!stringa\else\@@fontresource\fi}%
+         \let\checkedfontfile\!!stringa
          \doiffoundxetexfontelse{1a}{\checkedfontfile\checkedfontfeatures}
            {\edef\checkedfontfile{\checkedfontfile\checkedfontfeatures}}
            {\doiffoundxetexfontelse{1b}{"\checkedfontfile\checkedfontfeatures"}
               {\edef\checkedfontfile{"\checkedfontfile\checkedfontfeatures"}}
               {\doiffoundxetexfontelse{1c}{"[\checkedfontfile]\checkedfontfeatures"}
                  {\edef\checkedfontfile{"[\checkedfontfile]\checkedfontfeatures"}}
-                 {\edef\checkedfontfile{\checkedfontfile}}}}%
+                 {}}}%
        \else\ifx\!!stringa\v!file
          % force file, only file check when no spaces
-         \edef\checkedfontfile{\ifx\@@fontresource\empty\!!stringb\else\@@fontresource\fi}%
+         \let\checkedfontfile\!!stringb
          \doiffoundxetexfontelse{2b}{"[\checkedfontfile]\checkedfontfeatures"}
            {\edef\checkedfontfile{"[\checkedfontfile]\checkedfontfeatures"}}
            {\doiffoundxetexfontelse{2c}{"\checkedfontfile\checkedfontfeatures"}
               {\edef\checkedfontfile{"\checkedfontfile\checkedfontfeatures"}}
-              {\edef\checkedfontfile{\checkedfontfile}}}%
+              {}}%
        \else\ifx\!!stringa\v!name
          % force name, always lookup by xetex itself, "" forces otf/ttf/type1
-         \edef\checkedfontfile{\ifx\@@fontresource\empty\!!stringb\else\@@fontresource\fi}%
-         \edef\checkedfontfile{"\checkedfontfile\checkedfontfeatures"}%
+         \edef\checkedfontfile{"\!!stringb\checkedfontfeatures"}%
        \else
          % whatever, maybe even xetex spec, forget about features
-         \edef\checkedfontfile{"\ifx\@@fontresource\empty\!!stringa\!!stringb\else\@@fontresource\fi"}%
+         \edef\checkedfontfile{"\!!stringa\!!stringb"}%
        \fi\fi\fi}
 
     \def\checkfontfilename% -- todo: integrate so that we call do.. directly
@@ -1965,7 +1956,6 @@
    \edef\currentfontfileencoding{\truefontdata\@@truefontname\s!encoding}%
    \edef\currentfontfilemapping {\truefontdata\@@truefontname\s!mapping }%
    \edef\currentfontfilehandling{\truefontdata\@@truefontname\s!handling}%
-   \edef\currentfontfileresource{\truefontdata\@@truefontname\s!resource}%
    \edef\currentfontfilefeatures{\truefontdata\@@truefontname\s!features}}
 
 %D \macros
@@ -3531,37 +3521,8 @@
 
 %D The font specific features are bound to the filename.
 
-\def\updatefontparameters % can be simpler for mkii (and mkiv no font encoding)
-  {\edef\@@fontencoding{\truefontdata\fontfile    \s!encoding}%
-   \edef\@@fontmapping {\truefontdata\fontfile    \s!mapping }%
-   \edef\@@fonthandling{\truefontdata\somefontname\s!handling}%
-   \edef\@@fontfeatures{\truefontdata\fontfile    \s!features}%
-   \edef\@@fontresource{\truefontdata\fontfile    \s!resource}%
-   \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
-
-\def\setfontcharacteristics
-  {\updatefontparameters % redundant, will go away, faster too
-   \fastenableencoding
-     {\ifx\@@fontencoding\empty
-        \s!default \else \@@fontencoding
-      \fi}%
-   \fastenablemapping
-     {\ifx\@@fontmapping\empty
-        \ifx\@@fontencoding\empty
-          \s!default \else \@@fontencoding
-        \fi
-      \else
-        \@@fontmapping
-      \fi}%
-   \fastenablehandling
-     {\ifx\@@fonthandling\empty
-        \s!default \else \@@fonthandling
-      \fi}%
-     {\lastfontidentifier}%
-   \the\everyfont
-   \synchronizepatternswithfont}
-
-\ifx\synchronizepatternswithfont\undefined \def\synchronizepatternswithfont{\synchronizepatterns} \fi
+\ifx\updatefontparameters  \undefined \let\updatefontparameters  \relax \fi
+\ifx\setfontcharacteristics\undefined \let\setfontcharacteristics\relax \fi
 
 %D Experimental:
 

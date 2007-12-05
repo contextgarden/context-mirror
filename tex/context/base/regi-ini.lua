@@ -57,18 +57,21 @@ function regimes.load(regime)
 end
 
 function regimes.translate(line,regime)
-    if regime and line and regimes.utf[regime] then
-        return line:gsub("(.)", regimes.utf[regime])
-    else
-        return line
+    if regime and line then
+        local rur = regimes.utf[regime]
+        if rur then
+            return line:gsub("(.)", rur) -- () redundant
+        end
     end
+    return line
 end
 
 function regimes.enable(regime)
     if regimes.data[regime] then
         regimes.currentregime = regime
+        local translate = regimes.translate
         input.filters.dynamic_translator = function(s)
-            return regimes.translate(s,regimes.currentregime)
+            return translate(s,regime)
         end
     else
         regimes.disable()

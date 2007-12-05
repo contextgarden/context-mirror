@@ -86,6 +86,7 @@ function fonts.tfm.read_from_tfm(specification)
                         tfmdata.fonts = vfdata.fonts
                     end
                 end
+--~ print(table.serialize(tfmdata))
             end
             fonts.tfm.enhance(tfmdata,specification)
         end
@@ -152,67 +153,76 @@ end
 
 -- if t.tounicode = 1 then also characters[n].tounicode = "string"
 
-function fonts.tfm.scale(tfmtable, scaledpoints)
+function fonts.tfm.do_scale(tfmtable, scaledpoints)
+    -- beware, the boundingbox is passed as reference so we may not overwrite it
+    -- in the process, numbers are of course copies
+    --
     -- 65536 = 1pt
     -- 1000 units per designsize (not always)
     local scale, round = tex.scale, tex.round -- replaces math.floor(n*m+0.5)
-    local delta
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
-    delta = scaledpoints/(tfmtable.units or 1000) -- brr, some open type fonts have 2048
+    local delta = scaledpoints/(tfmtable.units or 1000) -- brr, some open type fonts have 2048
     local t = { }
     t.factor = delta
     for k,v in pairs(tfmtable) do
-        if type(v) == "table" then
-            t[k] = { }
-        else
-            t[k] = v
-        end
+        t[k] = (type(v) == "table" and { }) or v
     end
     local tc = t.characters
+    local trace = fonts.trace
     for k,v in pairs(tfmtable.characters) do
+        local w, h, d = v.width, v.height, v.depth
         local chr = {
             unicode = v.unicode,
             name    = v.name,
             index   = v.index or k,
-            width   = scale(v.width , delta),
-            height  = scale(v.height, delta),
-            depth   = scale(v.depth , delta),
+            width   = (w == 0 and 0) or scale(w, delta),
+            height  = (h == 0 and 0) or scale(h, delta),
+            depth   = (d == 0 and 0) or scale(d, delta),
             class   = v.class
         }
-if fonts.trace then
-    logs.report("define font", string.format("n=%s, u=%s, i=%s, n=%s c=%s",k,v.unicode,v.index,v.name or '-',v.class or '-'))
-end
-        local b = v.boundingbox -- maybe faster to have llx etc not in table
-        if b then
-            chr.boundingbox = scale(v.boundingbox,delta)
+        if trace then
+            logs.report("define font", string.format("n=%s, u=%s, i=%s, n=%s c=%s",k,v.unicode,v.index,v.name or '-',v.class or '-'))
         end
-        if v.italic then
-            chr.italic = scale(v.italic,delta)
+        local vb = v.boundingbox
+        if vb then
+            chr.boundingbox = scale(vb,delta)
         end
-        if v.kerns then
-            chr.kerns = scale(v.kerns,delta)
+        local vi = v.italic
+        if vi then
+            chr.italic = scale(vi,delta)
         end
-        if v.ligatures then
-            local tt = { }
-            for kk,vv in pairs(v.ligatures) do
-                tt[kk] = vv
+        local vk = v.kerns
+        if vk then
+            chr.kerns = scale(vk,delta)
+        end
+        local vl = v.ligatures
+        if vl then
+            if true then
+                chr.ligatures = v.ligatures -- shared
+            else
+                local tt = { }
+                for i,l in pairs(vl) do
+                    tt[i] = l
+                end
+                chr.ligatures = tt
             end
-            chr.ligatures = tt
         end
-        if v.commands then
+        local vc = v.commands
+        if vc then
             -- we assume non scaled commands here
-            local vc, tt = v.commands, { }
+            local tt = { }
             for i=1,#vc do
                 local ivc = vc[i]
                 local key = ivc[1]
-                if key == "right" or key == "left" then
+                if key == "right" or key == "left" or key == "down" or key == "up" then
                     tt[#tt+1] = { key, scale(ivc[2],delta) }
                 else
                     tt[#tt+1] = ivc -- shared since in cache and untouched
                 end
             end
+--~ print(table.serialize(vc),table.serialize(tt))
             chr.commands = tt
         end
         tc[k] = chr
@@ -226,19 +236,29 @@ end
         end
     end
     -- t.encodingbytes, t.filename, t.fullname, t.name: elsewhere
-    t.size        = scaledpoints
-    t.italicangle = tfmtable.italicangle
-    t.ascender    = scale(tfmtable.ascender  or 0,delta)
-    t.descender   = scale(tfmtable.descender or 0,delta)
-    t.shared      = tfmtable.shared or { }
-    if t.unique then
-        t.unique = table.fastcopy(tfmtable.unique)
-    else
-        t.unique = { }
-    end
+    t.size = scaledpoints
     if t.fonts then
         t.fonts = table.fastcopy(t.fonts) -- maybe we virtualize more afterwards
     end
+    return t, delta
+end
+
+--[[ldx--
+<p>The reason why the scaler is split, is that for a while we experimented
+with a helper function. However, in practice the <l n='api'/> calls are too slow to
+make this profitable and the <l n='lua'/> based variant was just faster. A days
+wasted day but an experience richer.</p>
+--ldx]]--
+
+function fonts.tfm.scale(tfmtable, scaledpoints)
+    local scale = tex.scale
+    local t, factor = fonts.tfm.do_scale(tfmtable, scaledpoints)
+    t.factor    = factor
+    t.ascender  = scale(tfmtable.ascender  or 0, factor)
+    t.descender = scale(tfmtable.descender or 0, factor)
+    t.shared    = tfmtable.shared or { }
+    t.unique    = table.fastcopy(tfmtable.unique or {})
+--~ print("scaling", t.name, t.factor) -- , fonts.tfm.hash_features(tfmtable.specification))
     return t
 end
 
@@ -372,7 +392,9 @@ function fonts.initializers.common.complement(tfmdata,value) -- todo: value = la
     if value then
         local chr, index, data, get_virtual_id = tfmdata.characters, nil, characters.data, fonts.tfm.get_virtual_id
         local selection = fonts.initializers.complements.load("LATIN") -- will be value
-        for _, k in ipairs(selection) do
+    --  for _, k in ipairs(selection) do
+        for i=1,#selection do
+            local k = selection[i]
             if not chr[k] then
                 local dk = data[k]
                 local vs, name = dk.specials, dk.adobename
@@ -520,8 +542,8 @@ do
     local glyph           = node.id('glyph')
     local fontdata        = fonts.tfm.id
     local set_attribute   = node.set_attribute
-    local unset_attribute = node.unset_attribute
-    local has_attribute   = node.has_attribute
+--  local unset_attribute = node.unset_attribute
+--  local has_attribute   = node.has_attribute
 
     local state = attributes.numbers['state'] or 100
 
@@ -533,14 +555,6 @@ do
     function fonts.analyzers.aux.setstate(head,font)
         local characters = fontdata[font].characters
         local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
-        local function finish()
-            if first and first == last then
-                set_attribute(last,state,4) -- isol
-            elseif last then
-                set_attribute(last,state,3) -- fina
-            end
-            first, last, n = nil, nil, 0
-        end
         while current do
             if current.id == glyph and current.font == font then
                 if characters[current.char].class == "mark" then
@@ -553,12 +567,21 @@ do
                     last, n = current, n+1
                     set_attribute(current,state,2) -- medi
                 end
-            else
-                finish()
+            else -- finish
+                if first and first == last then
+                    set_attribute(last,state,4) -- isol
+                elseif last then
+                    set_attribute(last,state,3) -- fina
+                end
+                first, last, n = nil, nil, 0
             end
             current = current.next
         end
-        finish()
+        if first and first == last then
+            set_attribute(last,state,4) -- isol
+        elseif last then
+            set_attribute(last,state,3) -- fina
+        end
         return head, done
     end
 
@@ -585,7 +608,7 @@ do
                     -- check if head
                     if last and not last.components then
                         last.components = current
-                        last.components.prev = nil
+                        current.prev = nil -- last.components.prev = nil
                         done = true
                         n = 1
                     else

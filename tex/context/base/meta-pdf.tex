@@ -13,6 +13,8 @@
 
 %D Formerly known as supp-pdf.tex and supp-mpe.tex.
 
+%D We will clean up the color mess later.
+
 %D These macros are written as generic as possible. Some
 %D general support macro's are loaded from a small module
 %D especially made for non \CONTEXT\ use. In this module I
@@ -968,19 +970,27 @@
 
 \ifx\colorversion\undefined \else \ifnum\colorversion>\plusone
 
-    \def\dohandleMPgraycolor      #1{\ctxlua{ctx.pdfgrayliteral(\the\currentcolormodel,#1)}}
-    \def\dohandleMPrgbcolor   #1#2#3{\ctxlua{ctx.pdfrgbliteral (\the\currentcolormodel,#1,#2,#3)}}
-    \def\dohandleMPcmykcolor#1#2#3#4{\ctxlua{ctx.pdfcmykliteral(\the\currentcolormodel,#1,#2,#3,#4)}}
-    \def\dohandleMPspotcolor#1#2#3#4{\ctxlua{ctx.pdfspotliteral(\the\currentcolormodel,"#1",#2,"#3","#4")}}
+    \def\dohandleMPgraycolor      #1{\ctxlua{ctx.pdffinishtransparency()
+                                             ctx.pdfgrayliteral(\the\currentcolormodel,#1)}}
+    \def\dohandleMPrgbcolor   #1#2#3{\ctxlua{ctx.pdffinishtransparency()
+                                             ctx.pdfrgbliteral (\the\currentcolormodel,#1,#2,#3)}}
+    \def\dohandleMPcmykcolor#1#2#3#4{\ctxlua{ctx.pdffinishtransparency()
+                                             ctx.pdfcmykliteral(\the\currentcolormodel,#1,#2,#3,#4)}}
+    \def\dohandleMPspotcolor#1#2#3#4{\ctxlua{ctx.pdffinishtransparency()
+                                             ctx.pdfspotliteral(\the\currentcolormodel,"#1",#2,"#3","#4")}}
 
-    \def\dohandleMPgraytransparency      #1#2#3{\ctxlua{ctx.pdfgrayliteral(\the\currentcolormodel,#1)}%
-                                                \ctxlua{ctx.pdftransparencyliteral(#2,#3)}}
-    \def\dohandleMPrgbtransparency   #1#2#3#4#5{\ctxlua{ctx.pdfrgbliteral (\the\currentcolormodel,#1,#2,#3)}%
-                                                \ctxlua{ctx.pdftransparencyliteral(#4,#5)}}
-    \def\dohandleMPcmyktransparency#1#2#3#4#5#6{\ctxlua{ctx.pdfcmykliteral(\the\currentcolormodel,#1,#2,#3,#4)}%
-                                                \ctxlua{ctx.pdftransparencyliteral(#5,#6)}}
-    \def\dohandleMPspottransparency#1#2#3#4#5#6{\ctxlua{ctx.pdfspotliteral(\the\currentcolormodel,"#1",#2,"#3","#4")}%
-                                                \ctxlua{ctx.pdftransparencyliteral(#5,#6)}}
+    % we can combine the next calls
+
+    \def\dohandleMPgraytransparency      #1#2#3{\ctxlua{ctx.pdfgrayliteral(\the\currentcolormodel,#1)
+                                                        ctx.pdftransparencyliteral(#2,#3)}}
+    \def\dohandleMPrgbtransparency   #1#2#3#4#5{\ctxlua{ctx.pdfrgbliteral (\the\currentcolormodel,#1,#2,#3)
+                                                        ctx.pdftransparencyliteral(#4,#5)}}
+    \def\dohandleMPcmyktransparency#1#2#3#4#5#6{\ctxlua{ctx.pdfcmykliteral(\the\currentcolormodel,#1,#2,#3,#4)
+                                                        ctx.pdftransparencyliteral(#5,#6)}}
+    \def\dohandleMPspottransparency#1#2#3#4#5#6{\ctxlua{ctx.pdfspotliteral(\the\currentcolormodel,"#1",#2,"#3","#4")
+                                                        ctx.pdftransparencyliteral(#5,#6)}}
+
+    \def\dohandleMPresettransparency           {\ctxlua{ctx.pdffinishtransparency()}}
 
     \def\resolveMPgraycolor      #1\to#2{\ctxlua{ctx.resolvempgraycolor("\strippedcsname#2","MPresolvedspace",\number\currentcolormodel,#1)}}
     \def\resolveMPrgbcolor   #1#2#3\to#4{\ctxlua{ctx.resolvemprgbcolor ("\strippedcsname#4","MPresolvedspace",\number\currentcolormodel,#1,#2,#3)}}

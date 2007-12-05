@@ -25,3 +25,35 @@ end
 if not os.setenv then
     function os.setenv() return false end
 end
+
+if not os.times then
+    -- utime  = user time
+    -- stime  = system time
+    -- cutime = children user time
+    -- cstime = children system time
+    function os.times()
+        return {
+            utime  = os.clock(), -- user
+            stime  = 0,          -- system
+            cutime = 0,          -- children user
+            cstime = 0,          -- children system
+        }
+    end
+end
+
+if os.gettimeofday then
+    os.clock = os.gettimeofday
+end
+
+do
+    local startuptime = os.gettimeofday()
+    function os.runtime()
+        return os.gettimeofday() - startuptime
+    end
+end
+
+--~ print(os.gettimeofday()-os.time())
+--~ os.sleep(1.234)
+--~ print (">>",os.runtime())
+--~ print(os.date("%H:%M:%S",os.gettimeofday()))
+--~ print(os.date("%H:%M:%S",os.time()))

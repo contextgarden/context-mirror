@@ -162,13 +162,13 @@ function buffers.inspect(name)
                 if v == "" then
                     tex.sprint(tex.ctxcatcodes,"[crlf]\\par ")
                 else
-                    tex.sprint(tex.ctxcatcodes,(string.gsub("(.)",function(c)
+                    tex.sprint(tex.ctxcatcodes,(buffers.data[name]:gsub("(.)",function(c)
                         return " [" .. string.byte(c) .. "] "
                     end)) .. "\\par")
                 end
             end
         else
-            tex.sprint(tex.ctxcatcodes,(string.gsub(buffers.data[name],"(.)",function(c)
+            tex.sprint(tex.ctxcatcodes,(buffers.data[name]:gsub("(.)",function(c)
                 return " [" .. string.byte(c) .. "] "
             end)))
         end
@@ -354,7 +354,7 @@ buffers.open_nested  = string.rep("\\char"..string.byte('<').." ",2)
 buffers.close_nested = string.rep("\\char"..string.byte('>').." ",2)
 
 function buffers.replace_nested(result)
-    return (string.gsub(string.gsub(result,buffers.open_nested,"{"),buffers.close_nested,"}"))
+    return (string.gsub(result:gsub(buffers.open_nested,"{"),buffers.close_nested,"}"))
 end
 
 function buffers.flush_result(result,nested)

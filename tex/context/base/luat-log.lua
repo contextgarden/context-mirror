@@ -45,7 +45,12 @@ logs.tex = logs.tex or { }
 logs.level = 0
 
 do
-    local write_nl, write, format = texio.write_nl or print, texio.write or print, string.format
+    local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
+
+    if texlua then
+        write_nl = print
+        write    = io.write
+    end
 
     function logs.xml.debug(category,str)
         if logs.level > 3 then write_nl(format("<d category='%s'>%s</d>",category,str)) end

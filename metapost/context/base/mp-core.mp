@@ -1000,6 +1000,7 @@ color   boxfillcolor     ; boxfillcolor     := .8white ;
 numeric boxgridtype      ; boxgridtype      := 0 ;
 numeric boxlinetype      ; boxlinetype      := 1 ;
 numeric boxfilltype      ; boxfilltype      := 1 ;
+numeric boxdashtype      ; boxdashtype      := 0 ;
 pair    boxgriddirection ; boxgriddirection := up ;
 numeric boxgridwidth     ; boxgridwidth     := 1pt ;
 numeric boxlinewidth     ; boxlinewidth     := 1pt ;
@@ -1166,6 +1167,7 @@ vardef baseline_grid (expr pxy, pdir, at_baseline) =
     save i, grid, bb ; picture grid ; pair start ; path bb ;
     def _do_ (expr start) =
       draw start -- start shifted (bbwidth(pxy),0)
+        if boxdashtype = 1 : dashed evenly fi
         withpen pencircle scaled boxgridwidth
         withcolor boxgridcolor ;
     enddef ;

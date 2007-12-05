@@ -123,23 +123,56 @@ end
 
 function fonts.tfm.hash_features(specification)
     if specification.features then
+        local t = { }
         local normal = specification.features.normal
         if not table.is_empty(normal) then
-            local t = { }
             for _, v in pairs(table.sortedkeys(normal)) do
+if v ~= "number" then
                 t[#t+1] = v .. '=' .. tostring(normal[v])
+end
             end
+        end
+        local vtf = specification.features.vtf
+        if not table.is_empty(vtf) then
+            for _, v in pairs(table.sortedkeys(vtf)) do
+                t[#t+1] = v .. '=' .. tostring(vtf[v])
+            end
+        end
+        if next(t) then
             return table.concat(t,"+")
         end
     end
     return "unknown"
 end
 
+--~ function fonts.tfm.hash_instance(specification)
+--~     if not specification.hash then
+--~         specification.hash = fonts.tfm.hash_features(specification)
+--~     end
+--~     return specification.hash .. ' @ ' .. tostring(specification.size)
+--~ end
+
+fonts.designsizes = { }
+
+--[[ldx--
+<p>In principle we can share tfm tables when we are in node for a font, but then
+we need to define a font switch as an id/attr switch which is no fun, so in that
+case users can best use dynamic features ... so, we will not use that speedup. Okay,
+when we get rid of base mode we can optimize even further by sharing, but then we
+loose our testcases for <l n='luatex'/>.</p>
+--ldx]]--
+
 function fonts.tfm.hash_instance(specification)
-    if not specification.hash then
-        specification.hash = fonts.tfm.hash_features(specification)
+    local hash, size = specification.hash, specification.size
+    if not hash then
+        hash = fonts.tfm.hash_features(specification)
+        specification.hash = hash
     end
-    return specification.hash .. ' @ ' .. tostring(specification.size)
+    if size < 1000 and fonts.designsizes[hash] then
+        size = fonts.tfm.scaled(size, fonts.designsizes[hash])
+        specification.size = size
+    end
+    return hash .. ' @ ' .. tostring(size)
 end
 
 --[[ldx--
@@ -185,7 +218,7 @@ specification yet.</p>
 
 function fonts.tfm.read(specification)
     garbagecollector.push()
-    input.start_timing(fonts)
+    input.starttiming(fonts)
     local hash = fonts.tfm.hash_instance(specification)
     local tfmtable = fonts.tfm.fonts[hash] -- hashes by size !
     if not tfmtable then
@@ -213,8 +246,10 @@ function fonts.tfm.read(specification)
             end
         end
         fonts.tfm.fonts[hash] = tfmtable
+fonts.designsizes[specification.hash] = tfmtable.designsize -- we only know this for sure after loading once
+--~ tfmtable.mode = specification.features.normal.mode or "base"
     end
-    input.stop_timing(fonts)
+    input.stoptiming(fonts)
     garbagecollector.pop()
     if not tfmtable then
         logs.error("define font",string.format("font with name %s is not found",specification.name))
@@ -319,6 +354,7 @@ end
 <p>So far we haven't really dealt with features (or whatever we want
 to pass along with the font definition. We distinguish the following
 situations:</p>
+situations:</p>
 
 <code>
 name:xetex like specs
@@ -338,7 +374,7 @@ end
 
 fonts.define.register_split("@", fonts.define.specify.predefined)
 
-function fonts.define.specify.colonized(specification)
+function fonts.define.specify.colonized(specification) -- xetex mode
     local list = { }
     if specification.detail and specification.detail ~= "" then
         local expanded_features = { }
@@ -378,29 +414,88 @@ end
 
 fonts.define.register_split(":", fonts.define.specify.colonized)
 
-fonts.define.specify.context_setups = fonts.define.specify.context_setups or { }
+fonts.define.specify.context_setups  = fonts.define.specify.context_setups  or { }
+fonts.define.specify.context_numbers = fonts.define.specify.context_numbers or { }
+fonts.define.specify.synonyms        = fonts.define.specify.synonyms        or { }
 
-input.storage.register(false,"fonts/setups", fonts.define.specify.context_setups, "fonts.define.specify.context_setups")
+input.storage.register(false,"fonts/setups" , fonts.define.specify.context_setups , "fonts.define.specify.context_setups" )
+input.storage.register(false,"fonts/numbers", fonts.define.specify.context_numbers, "fonts.define.specify.context_numbers")
 
 function fonts.define.specify.preset_context(name,features)
+    local fds = fonts.define.specify
+    local setups, numbers, synonyms = fds.context_setups, fds.context_numbers, fds.synonyms
+    local number = (setups[name] and setups[name].number) or 0
     local t = aux.settings_to_hash(features)
     for k,v in pairs(t) do
+        k = synonyms[k] or k
         t[k] = v:is_boolean()
         if type(t[k]) == "nil" then
             t[k] = v
         end
     end
-    fonts.define.specify.context_setups[name] = t
+    if number == 0 then
+        numbers[#numbers+1] = name
+        t.number = #numbers
+    else
+        t.number = number
+    end
+    setups[name] = t
 end
 
-function fonts.define.specify.context_tostring(name,kind,separator,yes,no,strict)
-    return aux.hash_to_string(table.merged(fonts[kind].features.default or {},fonts.define.specify.context_setups[name] or {}),separator,yes,no,strict)
+--~ function fonts.define.specify.context_number(name)
+--~     local s = fonts.define.specify.context_setups[name]
+--~     return (s and s.number) or -1
+--~ end
+
+do
+
+    -- here we clone features according to languages
+
+    local default = 0
+    local setups  = fonts.define.specify.context_setups
+    local numbers = fonts.define.specify.context_numbers
+
+    function fonts.define.specify.context_number(name)
+        local t = setups[name]
+        if not t then
+            return default
+        elseif t.auto then
+            local lng = tonumber(tex.language)
+            local tag = name .. ":" .. lng
+            local s = setups[tag]
+            if s then
+                return s.number or default
+            else
+                local script, language = languages.association(lng)
+                if t.script ~= script or t.language ~= language then
+                    local s = table.fastcopy(t)
+                    local n = #numbers + 1
+                    setups[tag] = s
+                    numbers[n] = tag
+                    s.number = n
+                    s.script = script
+                    s.language = language
+                    return n
+                else
+                    setups[tag] = t
+                    return t.number or default
+                end
+            end
+        else
+            return t.number or default
+        end
+    end
+
+end
+
+function fonts.define.specify.context_tostring(name,kind,separator,yes,no,strict,omit)
+    return aux.hash_to_string(table.merged(fonts[kind].features.default or {},fonts.define.specify.context_setups[name] or {}),separator,yes,no,strict,omit)
 end
 
 function fonts.define.specify.split_context(features)
     if fonts.define.specify.context_setups[features] then
         return fonts.define.specify.context_setups[features]
-    else
+    else -- ? ? ?
         return fonts.define.specify.preset_context("***",features)
     end
 end
@@ -454,7 +549,7 @@ function fonts.define.read(name,size,id)
     specification = fonts.define.resolve(specification)
     local hash = fonts.tfm.hash_instance(specification)
     if true then
-        local fontdata = containers.read(fonts.cache,hash) -- for tracing purposes
+    --~         local fontdata = containers.read(fonts.cache,hash) -- for tracing purposes
     end
     local fontdata = fonts.tfm.internalized[hash] -- id
     if not fontdata then
@@ -465,7 +560,7 @@ function fonts.define.read(name,size,id)
             fonts.tfm.check_virtual_id(fontdata)
         end
         if true then
-            fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes
+        --~             fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes
         end
         if not fonts.tfm.internalized[hash] then
             fonts.tfm.id[id] = fontdata

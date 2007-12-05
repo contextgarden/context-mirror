@@ -34,6 +34,10 @@ fonts.triggers = {
     'script'
 }
 
+fonts.define                  = fonts.define                  or { }
+fonts.define.specify          = fonts.define.specify          or { }
+fonts.define.specify.synonyms = fonts.define.specify.synonyms or { }
+
 -- tracing
 
 do
@@ -42,7 +46,7 @@ do
 
     fonts.color.trace = false
 
-    local attribute = attributes.numbers['color'] or 4 -- we happen to know this -)
+    local attribute = attributes.numbers['color'] or 7 -- we happen to know this -)
     local mapping   = attributes.list[attribute]
 
     local set_attribute   = node.set_attribute

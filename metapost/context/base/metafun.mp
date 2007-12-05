@@ -53,12 +53,14 @@ input mp-func.mp ;
 
 string metafunversion ;
 
-metafunversion = "metafun"                       & " " &
-                 decimal year                    & "-" &
-                 decimal month                   & "-" &
-                 decimal day                     & " " &
-                 decimal (time div 60)           & ":" &
-                 decimal (time-(time div 60)*60) ;
+metafunversion = "metafun"                           & " " &
+                 decimal year                        & "-" &
+                 decimal month                       & "-" &
+                 decimal day                         & " " &
+                 if ((time div 60) < 10)           :   "0" & fi
+                 decimal (time div 60)               & ":" &
+                 if ((time-(time div 60)*60) < 10) :   "0" & fi
+                 decimal (time-(time div 60)*60)   ;
 
 let normalend = end ;
 

@@ -73,32 +73,53 @@ end
 
 do
 
+    local sb = string.byte
+
+--~     local nextchar = {
+--~         [ 4] = function(f)
+--~             return f:read(1), f:read(1), f:read(1), f:read(1)
+--~         end,
+--~         [ 2] = function(f)
+--~             return f:read(1), f:read(1)
+--~         end,
+--~         [ 1] = function(f)
+--~             return f:read(1)
+--~         end,
+--~         [-2] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             return b, a
+--~         end,
+--~         [-4] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             local c = f:read(1)
+--~             local d = f:read(1)
+--~             return d, c, b, a
+--~         end
+--~     }
+
     local nextchar = {
         [ 4] = function(f)
-            return f:read(1), f:read(1), f:read(1), f:read(1)
+            return f:read(1,1,1,1)
         end,
         [ 2] = function(f)
-            return f:read(1), f:read(1)
+            return f:read(1,1)
         end,
         [ 1] = function(f)
             return f:read(1)
         end,
         [-2] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
+            local a, b = f:read(1,1)
             return b, a
         end,
         [-4] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
-            local c = f:read(1)
-            local c = f:read(1)
+            local a, b, c, d = f:read(1,1,1,1)
             return d, c, b, a
         end
     }
 
     function io.characters(f,n)
-        local sb = string.byte
         if f then
             return nextchar[n or 1], f
         else
@@ -110,12 +131,62 @@ end
 
 do
 
+    local sb = string.byte
+
+--~     local nextbyte = {
+--~         [4] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             local c = f:read(1)
+--~             local d = f:read(1)
+--~             if d then
+--~                 return sb(a), sb(b), sb(c), sb(d)
+--~             else
+--~                 return nil, nil, nil, nil
+--~             end
+--~         end,
+--~         [2] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             if b then
+--~                 return sb(a), sb(b)
+--~             else
+--~                 return nil, nil
+--~             end
+--~         end,
+--~         [1] = function (f)
+--~             local a = f:read(1)
+--~             if a then
+--~                 return sb(a)
+--~             else
+--~                 return nil
+--~             end
+--~         end,
+--~         [-2] = function (f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             if b then
+--~                 return sb(b), sb(a)
+--~             else
+--~                 return nil, nil
+--~             end
+--~         end,
+--~         [-4] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             local c = f:read(1)
+--~             local d = f:read(1)
+--~             if d then
+--~                 return sb(d), sb(c), sb(b), sb(a)
+--~             else
+--~                 return nil, nil, nil, nil
+--~             end
+--~         end
+--~     }
+
     local nextbyte = {
         [4] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
-            local c = f:read(1)
-            local d = f:read(1)
+            local a, b, c, d = f:read(1,1,1,1)
             if d then
                 return sb(a), sb(b), sb(c), sb(d)
             else
@@ -123,8 +194,7 @@ do
             end
         end,
         [2] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
+            local a, b = f:read(1,1)
             if b then
                 return sb(a), sb(b)
             else
@@ -140,8 +210,7 @@ do
             end
         end,
         [-2] = function (f)
-            local a = f:read(1)
-            local b = f:read(1)
+            local a, b = f:read(1,1)
             if b then
                 return sb(b), sb(a)
             else
@@ -149,10 +218,7 @@ do
             end
         end,
         [-4] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
-            local c = f:read(1)
-            local d = f:read(1)
+            local a, b, c, d = f:read(1,1,1,1)
             if d then
                 return sb(d), sb(c), sb(b), sb(a)
             else
@@ -162,7 +228,6 @@ do
     }
 
     function io.bytes(f,n)
-        local sb = string.byte
         if f then
             return nextbyte[n or 1], f
         else
@@ -170,4 +235,36 @@ do
         end
     end
 
+end
+
+function io.ask(question,default,options)
+    while true do
+        io.write(question)
+        if options then
+            io.write(string.format(" [%s]",table.concat(options,"|")))
+        end
+        if default then
+            io.write(string.format(" [%s]",default))
+        end
+        io.write(string.format(" "))
+        local answer = io.read()
+        answer = answer:gsub("^%s*(.*)%s*$","%1")
+        if answer == "" and default then
+            return default
+        elseif not options then
+            return answer
+        else
+            for _,v in pairs(options) do
+                if v == answer then
+                    return answer
+                end
+            end
+            local pattern = "^" .. answer
+            for _,v in pairs(options) do
+                if v:find(pattern) then
+                    return v
+                end
+            end
+        end
+    end
 end

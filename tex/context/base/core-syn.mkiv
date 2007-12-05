@@ -36,10 +36,10 @@
    \doglobal\addtocommalist{#1}\allsortedlists}
 
 \def\mksavesortedlistentry#1#2#3#4% class key entry meaning
-  {\immediatewriteutilitytua{table.insert(js['#1'],{'e','#1',\!!bs#2\!!es,\!!bs#3\!!es})}}
+  {\immediatewriteutilitytua{ti(js['#1'],{'e','#2',\!!bs#3\!!es,\!!bs#4\!!es})}}
 
 \def\mksavesortedlistvariable#1#2#3% class type value
-  {\immediatewriteutilitytua{table.insert(js['#1'],{'#2','#3'})}}
+  {\immediatewriteutilitytua{ti(js['#1'],{'#2','#3'})}}
 
 \def\mkloadsortedlist#1% class
   {\bgroup

@@ -16,13 +16,20 @@ the top of <l n='luatex'/>'s char range but outside the unicode range.</p>
 do
     local char, flush, format = unicode.utf8.char, tex.sprint, string.format
 
+    function converters.hexstringtonumber(n) flush(tonumber(n,16))   end
+    function converters.octstringtonumber(n) flush(tonumber(n, 8))   end
+    function converters.rawcharacter     (n) flush(char(0x110000+n)) end
+
     function converters.lchexnumber      (n) flush(format("%x"  ,n)) end
     function converters.uchexnumber      (n) flush(format("%X"  ,n)) end
     function converters.lchexnumbers     (n) flush(format("%02x",n)) end
     function converters.uchexnumbers     (n) flush(format("%02X",n)) end
     function converters.octnumber        (n) flush(format("%03o",n)) end
-    function converters.hexstringtonumber(n) flush(tonumber(n,16))   end
-    function converters.octstringtonumber(n) flush(tonumber(n, 8))   end
-    function converters.rawcharacter     (n) flush(char(0x110000+n)) end
+
+    function converters.lchexnumber      (n) flush(("%x"  ):format(n)) end
+    function converters.uchexnumber      (n) flush(("%X"  ):format(n)) end
+    function converters.lchexnumbers     (n) flush(("%02x"):format(n)) end
+    function converters.uchexnumbers     (n) flush(("%02X"):format(n)) end
+    function converters.octnumber        (n) flush(("%03o"):format(n)) end
 
 end

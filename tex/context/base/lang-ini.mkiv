@@ -15,14 +15,63 @@
 
 \registerctxluafile{lang-ini}{1.001}
 
-\def\synchronizepatternswithfont{}
-\def\doloadpatterns         #1#2{\dodoloadpatterns{#1}{#2}\s!default\s!default}
-\def\setnormallanguage        #1{\dosetnormallanguage{:\s!default:\s!default:}#1\empty}
-\def\setuphyppatencoding        {\pathypsettings}
+\let\synchronizepatterns        \relax % todo: cleanup
+\let\synchronizepatternswithfont\relax % todo: cleanup
 
-% temporarily here, awaiting new mechanisms
+\def\mkdoloadpatterns#1#2%
+  {\ctxlua{languages.register(
+      "#1",
+      "#2",
+      "\truefilename{\f!languageprefix#2.\f!patternsextension}",
+      "\truefilename{\f!languageprefix#2.\f!hyphensextension }")
+   }}
 
-\def\loadpatternfiles#1{\ctxlua{languages.hyphenation.load('#1', 'lang-#1.pat', 'lang-#1.hyp')}}
-\def\hyphenateword   #1{\ctxlua{tex.sprint(languages.hyphenation.hyphenate("\currentlanguage",[[#1]]))}}
+\def\mkdoifpatternselse#1%
+  {\ctxlua{cs.testcase(languages.loadable("#1"))}}
+
+\def\mksetnormallanguage#1#2% current default / we can freeze the number here
+  {\normallanguage=\ctxlua{tex.sprint(languages.enable({
+      "\csname\??la#1\s!patterns\endcsname","#1",
+      "\csname\??la#2\s!patterns\endcsname","#2",
+    }))}\relax}
+
+% to be tested
+%
+% \def\mkdosetnormallanguage#1#2% current default
+%   {\normallanguage=\ctxlua{tex.sprint(languages.enable({
+%      "\csname\??la#1\s!patterns\endcsname","#1",
+%      "\csname\??la#2\s!patterns\endcsname","#2",
+%    }))}}%
+%    \setxvalue{\??la\??la#1#2}{\number\normallanguage}}
+%
+% \def\mksetnormallanguage#1#2% current default / we can freeze the number here
+%   {\normallanguage\executeifdefined{\??la\??la#1#2}{\mkdosetnormallanguage{#1}{#2}}}
+
+
+\def\loadspellchecklist
+  {\dodoubleempty\doloadspellchecklist}
+
+% mkiv only -- todo: internationalize command names
+
+% \loadspellchecklist[en][words-en.txt]
+% \loadspellchecklist[nl][words-nl.txt]
+% \setupspellchecking[state=start]
+
+\def\loadspellchecklist[#1][#2]%
+  {\ctxlua{languages.words.load("#1","#2")}}
+
+\def\setupspellchecking
+  {\dosingleargument\dosetupspellchecking}
+
+\def\setupspellchecking[#1]% todo colors
+  {\getparameters[\??wl][#1]%
+   \doifelse\@@wlstate\v!start
+     {\ctxlua{languages.words.enable=true }}
+     {\ctxlua{languages.words.enable=false}}}
+
+\setupspellchecking
+  [\c!state=\v!stop]
+
+\uchyph=1
 
 \protect \endinput

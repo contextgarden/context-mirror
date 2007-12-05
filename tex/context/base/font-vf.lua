@@ -67,14 +67,37 @@ function fonts.vf.aux.combine.load(g,name)
     return fonts.tfm.read_and_define(name or g.specification.name,g.specification.size)
 end
 
+function fonts.vf.aux.combine.names(g,name,force)
+    local f, id = fonts.tfm.read_and_define(name,g.specification.size)
+    if f and id then
+        local fc, gc = f.characters, g.characters
+        g.fonts[#g.fonts+1] = { id = id } -- no need to be sparse
+        local hn = #g.fonts
+        for k, v in pairs(fc) do
+            if force or not gc[k] then
+                gc[k] = table.fastcopy(v)
+                gc[k].commands = { { 'slot', hn, k } }
+            end
+        end
+        if not g.parameters and #g.fonts > 0 then -- share this code !
+            g.parameters  = table.fastcopy(f.parameters)
+            g.italicangle = f.italicangle
+            g.ascender    = f.ascender
+            g.descender   = f.descender
+        end
+    end
+end
+
 fonts.vf.aux.combine.commands = {
-    ["initialize"]      = function(g,v) fonts.vf.aux.combine.assign(g, g.name) end,
-    ["include-method"]  = function(g,v) fonts.vf.aux.combine.process(g,fonts.vf.combinations[v[2]])  end, -- name
+    ["initialize"]      = function(g,v) fonts.vf.aux.combine.assign    (g,g.name) end,
+    ["include-method"]  = function(g,v) fonts.vf.aux.combine.process   (g,fonts.vf.combinations[v[2]])  end, -- name
     ["copy-parameters"] = function(g,v) fonts.vf.aux.combine.parameters(g,v[2]) end, -- name
-    ["copy-range"]      = function(g,v) fonts.vf.aux.combine.assign(g,v[2],v[3],v[4],v[5],true)  end, -- name, from-start, from-end, to-start
-    ["copy-char"]       = function(g,v) fonts.vf.aux.combine.assign(g,v[2],v[3],v[3],v[4],true)  end, -- name, from, to
-    ["fallback-range"]  = function(g,v) fonts.vf.aux.combine.assign(g,v[2],v[3],v[4],v[5],false) end, -- name, from-start, from-end, to-start
-    ["fallback-char"]   = function(g,v) fonts.vf.aux.combine.assign(g,v[2],v[3],v[3],v[4],false) end, -- name, from, to
+    ["copy-range"]      = function(g,v) fonts.vf.aux.combine.assign    (g,v[2],v[3],v[4],v[5],true) end, -- name, from-start, from-end, to-start
+    ["copy-char"]       = function(g,v) fonts.vf.aux.combine.assign    (g,v[2],v[3],v[3],v[4],true) end, -- name, from, to
+    ["fallback-range"]  = function(g,v) fonts.vf.aux.combine.assign    (g,v[2],v[3],v[4],v[5],false) end, -- name, from-start, from-end, to-start
+    ["fallback-char"]   = function(g,v) fonts.vf.aux.combine.assign    (g,v[2],v[3],v[3],v[4],false) end, -- name, from, to
+    ["copy_names"]      = function(g,v) fonts.vf.aux.combine.names     (g,v[2],true) end,
+    ["fallback_names"]  = function(g,v) fonts.vf.aux.combine.names     (g,v[2],false) end,
 }
 
 function fonts.vf.combine(specification,tag)
@@ -119,6 +142,15 @@ fonts.define.methods.install(
 --~         { "lineheight" }
 --~     }
 --~ )
+
+--~ fonts.define.methods.install(
+--~     "lmsymbol10", {
+--~         { "fallback_names", "lmsy10.afm" } ,
+--~         { "fallback_names", "msam10.afm" } ,
+--~         { "fallback_names", "msbm10.afm" }
+--~     }
+--~ )
+--~ \font\TestFont=dummy@lmsymbol10 at 24pt
 
 -- docu case
 

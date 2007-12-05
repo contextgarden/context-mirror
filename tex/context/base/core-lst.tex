@@ -278,7 +278,7 @@
             \c!textstyle,\c!textcolor,\c!textcommand,
             \c!pagestyle,\c!pagecommand,\c!pagecolor,
             \c!numberstyle,\c!numbercolor,\c!numbercommand,
-\c!headnumber,
+            \c!headnumber,
             \c!pagenumber,\c!pageboundaries,\c!margin,\c!symbol,\c!limittext,
             \c!aligntitle,\c!before,\c!after,\c!inbetween,\v!part\c!number,\c!label]%
          \getparameters[\??li#1][#3]}}%
@@ -802,24 +802,45 @@
      \midaligned
      {}}
 
+% \def\dodofixdlistelementEFG#1#2#3#4#5#6#7#8% keep this one here as reference
+%   {\noindent
+%    \hbox
+%      {#1% in case E nils the strut
+%       \let\\=\newlineinlist
+%       \setbox0\hbox
+%         {#2{\showcontrastlocation\??ia{#8}%
+%           {\dostartlistattributes\c!style\c!color\empty
+%            \ignorespaces\dontconvertfont\setstrut
+%            \begstrut
+%           %\doifelsenothing{\listparameter\c!maxwidth}
+%           %  {\listparameter\c!textcommand{#6}}
+%           %  {\listparameter\c!textcommand{\limitatetext{#6}{\listparameter\c!maxwidth}{\unknown}}}%
+%            \limitatedlistentry{#6}%
+%            \endstrut % struts new
+%            \dostoplistattributes}}}%
+%       \linklisttoelement{#4}{#7}{#8}{\box0}}%{\copy0}}%
+%    \par % should be an option
+%    \listparameter\c!inbetween}
+
 \def\dodofixdlistelementEFG#1#2#3#4#5#6#7#8%
   {\noindent
-   \hbox
-     {#1% in case E nils the strut
-      \let\\=\newlineinlist
-      \setbox0\hbox
-        {#2{\showcontrastlocation\??ia{#8}%
-          {\dostartlistattributes\c!style\c!color\empty
-           \ignorespaces\dontconvertfont\setstrut
-           \begstrut
-          %\doifelsenothing{\listparameter\c!maxwidth}
-          %  {\listparameter\c!textcommand{#6}}
-          %  {\listparameter\c!textcommand{\limitatetext{#6}{\listparameter\c!maxwidth}{\unknown}}}%
-           \limitatedlistentry{#6}%
-           \endstrut % struts new
-           \dostoplistattributes}}}%
-      \linklisttoelement{#4}{#7}{#8}{\box0}}%{\copy0}}%
-   \par % should be an option
+   \bgroup
+   \def\makelistelement##1##2% isolated by Wolfgang Schuster
+     {\doifelse{\listparameter\c!interaction}{##1}
+        {#2{##2}}
+        {\setbox0\hbox{#2{\showcontrastlocation\??ia{#8}{##2}}}%
+         \linklisttoelement{#4}{#7}{#8}{\box0}}}%
+   \makelistelement\v!no
+     {\let\\=\newlineinlist
+      #1% in case E nils the strut (still needed?)
+      \dostartlistattributes\c!style\c!color\empty
+      \ignorespaces\dontconvertfont\setstrut
+      \begstrut
+      \limitatedlistentry{#6}%
+      \endstrut
+      \dostoplistattributes}%
+   \egroup
+   \par
    \listparameter\c!inbetween}
 
 % better:

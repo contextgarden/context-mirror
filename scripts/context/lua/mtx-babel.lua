@@ -1,6 +1,12 @@
--- data tables by Thomas A. Schmitz
+if not modules then modules = { } end modules ['mtx-babel'] = {
+    version   = 1.001,
+    comment   = "companion to mtxrun.lua",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-dofile(input.find_file(instance,"luat-log.lua"))
+-- data tables by Thomas A. Schmitz
 
 texmf.instance = instance -- we need to get rid of this / maybe current instance in global table
 
@@ -8,6 +14,10 @@ scripts       = scripts       or { }
 scripts.babel = scripts.babel or { }
 
 do
+
+    local converters = { }
+
+    -- greek
 
     local replace_01 = { -- <' * |
         a = "ᾅ",
@@ -216,6 +226,7 @@ do
         O = "Ὁ",
         U = "Ὑ",
         W = "Ὡ",
+	R = "Ῥ",
     }
 
     local replace_23 = { -- > *
@@ -301,61 +312,111 @@ do
     local skips_01 = lpeg.P("\\")  * lpeg.R("az", "AZ")^1
     local skips_02 = lpeg.P("[")   * (1- lpeg.S("[]"))^1  * lpeg.P("]")
 
-    local stage_01 = (lpeg.P("<'")  * lpeg.Cs(1) * lpeg.P('|')) / replace_01
-    local stage_02 = (lpeg.P(">'")  * lpeg.Cs(1) * lpeg.P('|')) / replace_02
-    local stage_03 = (lpeg.P("<`")  * lpeg.Cs(1) * lpeg.P('|')) / replace_03
-    local stage_04 = (lpeg.P(">`")  * lpeg.Cs(1) * lpeg.P('|')) / replace_04
-    local stage_05 = (lpeg.P("<~")  * lpeg.Cs(1) * lpeg.P('|')) / replace_05
-    local stage_06 = (lpeg.P(">~")  * lpeg.Cs(1) * lpeg.P('|')) / replace_06
-    local stage_07 = (lpeg.P('"\'') * lpeg.Cs(1)              ) / replace_07
-    local stage_08 = (lpeg.P('"`')  * lpeg.Cs(1)              ) / replace_08
-    local stage_09 = (lpeg.P('"~')  * lpeg.Cs(1)              ) / replace_09
-    local stage_10 = (lpeg.P("<'")  * lpeg.Cs(1)              ) / replace_10
-    local stage_11 = (lpeg.P(">'")  * lpeg.Cs(1)              ) / replace_11
-    local stage_12 = (lpeg.P("<`")  * lpeg.Cs(1)              ) / replace_12
-    local stage_13 = (lpeg.P(">`")  * lpeg.Cs(1)              ) / replace_13
-    local stage_14 = (lpeg.P(">~")  * lpeg.Cs(1)              ) / replace_14
-    local stage_15 = (lpeg.P(">~")  * lpeg.Cs(1)              ) / replace_15
-    local stage_16 = (lpeg.P("'")   * lpeg.Cs(1) * lpeg.P('|')) / replace_16
-    local stage_17 = (lpeg.P("`")   * lpeg.Cs(1) * lpeg.P('|')) / replace_17
-    local stage_18 = (lpeg.P("~")   * lpeg.Cs(1) * lpeg.P('|')) / replace_18
-    local stage_19 = (lpeg.P("'")   * lpeg.Cs(1)              ) / replace_19
-    local stage_20 = (lpeg.P("`")   * lpeg.Cs(1)              ) / replace_20
-    local stage_21 = (lpeg.P("~")   * lpeg.Cs(1)              ) / replace_21
-    local stage_22 = (lpeg.P("<")   * lpeg.Cs(1)              ) / replace_22
-    local stage_23 = (lpeg.P(">")   * lpeg.Cs(1)              ) / replace_23
-    local stage_24 = (lpeg.Cs(1)    * lpeg.P('|')             ) / replace_24
-    local stage_25 = (lpeg.P('"')   * lpeg.Cs(1)              ) / replace_25
-    local stage_26 = (lpeg.Cs(1)                              ) / replace_26
+    local greek_01 = (lpeg.P("<'")  * lpeg.Cs(1) * lpeg.P('|')) / replace_01
+    local greek_02 = (lpeg.P(">'")  * lpeg.Cs(1) * lpeg.P('|')) / replace_02
+    local greek_03 = (lpeg.P("<`")  * lpeg.Cs(1) * lpeg.P('|')) / replace_03
+    local greek_04 = (lpeg.P(">`")  * lpeg.Cs(1) * lpeg.P('|')) / replace_04
+    local greek_05 = (lpeg.P("<~")  * lpeg.Cs(1) * lpeg.P('|')) / replace_05
+    local greek_06 = (lpeg.P(">~")  * lpeg.Cs(1) * lpeg.P('|')) / replace_06
+    local greek_07 = (lpeg.P('"\'') * lpeg.Cs(1)              ) / replace_07
+    local greek_08 = (lpeg.P('"`')  * lpeg.Cs(1)              ) / replace_08
+    local greek_09 = (lpeg.P('"~')  * lpeg.Cs(1)              ) / replace_09
+    local greek_10 = (lpeg.P("<'")  * lpeg.Cs(1)              ) / replace_10
+    local greek_11 = (lpeg.P(">'")  * lpeg.Cs(1)              ) / replace_11
+    local greek_12 = (lpeg.P("<`")  * lpeg.Cs(1)              ) / replace_12
+    local greek_13 = (lpeg.P(">`")  * lpeg.Cs(1)              ) / replace_13
+    local greek_14 = (lpeg.P("<~")  * lpeg.Cs(1)              ) / replace_14
+    local greek_15 = (lpeg.P(">~")  * lpeg.Cs(1)              ) / replace_15
+    local greek_16 = (lpeg.P("'")   * lpeg.Cs(1) * lpeg.P('|')) / replace_16
+    local greek_17 = (lpeg.P("`")   * lpeg.Cs(1) * lpeg.P('|')) / replace_17
+    local greek_18 = (lpeg.P("~")   * lpeg.Cs(1) * lpeg.P('|')) / replace_18
+    local greek_19 = (lpeg.P("'")   * lpeg.Cs(1)              ) / replace_19
+    local greek_20 = (lpeg.P("`")   * lpeg.Cs(1)              ) / replace_20
+    local greek_21 = (lpeg.P("~")   * lpeg.Cs(1)              ) / replace_21
+    local greek_22 = (lpeg.P("<")   * lpeg.Cs(1)              ) / replace_22
+    local greek_23 = (lpeg.P(">")   * lpeg.Cs(1)              ) / replace_23
+    local greek_24 = (lpeg.Cs(1)    * lpeg.P('|')             ) / replace_24
+    local greek_25 = (lpeg.P('"')   * lpeg.Cs(1)              ) / replace_25
+    local greek_26 = (lpeg.Cs(1)                              ) / replace_26
 
-    local stages =
-        skips_01 + skips_02 +
-        stage_01 + stage_02 + stage_03 + stage_04 + stage_05 +
-        stage_06 + stage_07 + stage_08 + stage_09 + stage_10 +
-        stage_11 + stage_12 + stage_13 + stage_14 + stage_15 +
-        stage_16 + stage_17 + stage_18 + stage_19 + stage_20 +
-        stage_21 + stage_22 + stage_23 + stage_24 + stage_25 +
-        stage_26
+    local skips =
+        skips_01 + skips_02
 
-    local parser = lpeg.Cs((stages + 1)^0)
+    local greek =
+        greek_01 + greek_02 + greek_03 + greek_04 + greek_05 +
+        greek_06 + greek_07 + greek_08 + greek_09 + greek_10 +
+        greek_11 + greek_12 + greek_13 + greek_14 + greek_15 +
+        greek_16 + greek_17 + greek_18 + greek_19 + greek_20 +
+        greek_21 + greek_22 + greek_23 + greek_24 + greek_25 +
+        greek_26
+
+    local spacing      = lpeg.S(" \n\r\t")
+    local startgreek   = lpeg.P("\\startgreek")
+    local stopgreek    = lpeg.P("\\stopgreek")
+    local localgreek   = lpeg.P("\\localgreek")
+    local lbrace       = lpeg.P("{")
+    local rbrace       = lpeg.P("}")
+
+    local documentparser = lpeg.Cs((skips + greek + 1)^0)
+
+    local contextgrammar = lpeg.Cs ( lpeg.P { "scan",
+        ["scan"]     = (lpeg.V("global") + lpeg.V("local") + skips + 1)^0,
+        ["global"]   = startgreek * ((skips + greek + 1)-stopgreek )^0 ,
+        ["local"]    = localgreek * lpeg.V("grouped"),
+        ["grouped"]  = spacing^0 * lbrace * (lpeg.V("grouped") + skips + (greek - rbrace))^0 * rbrace,
+    } )
+
+    converters['greek'] = {
+        document = documentparser,
+        context  = contextgrammar,
+    }
 
     -- lpeg.print(parser): 254 lines
 
     function scripts.babel.convert(filename)
         if filename and filename ~= empty then
-            local data = io.loaddata(filename)
-            if data then
-                data = parser:match(data)
-                io.savedata(filename .. ".utf", data)
+            local data = io.loaddata(filename) or ""
+            if data ~= "" then
+                local language  = environment.argument("language")  or ""
+                if language ~= "" then
+                    local converter = converters[language]
+                    if converter then
+                        local structure = environment.argument("structure") or "document"
+                        converter = converter[structure]
+                        if converter then
+                            input.report(string.format("converting '%s' using language '%s' with structure '%s'", filename, language, structure))
+                            data = converter:match(data)
+                            local newfilename = filename .. ".utf"
+                            io.savedata(newfilename, data)
+                            input.report(string.format("converted data saved in '%s'", newfilename))
+                        else
+                            input.report(string.format("unknown structure '%s' language '%s'", structure, language))
+                        end
+                    else
+                        input.report(string.format("no converter for language '%s'", language))
+                    end
+                else
+                    input.report(string.format("provide language"))
+                end
+            else
+                input.report(string.format("no data in '%s'",filename))
             end
         end
     end
 
+    --~ print(contextgrammar:match [[
+    --~ oeps abg \localgreek{a}
+    --~ \startgreek abg \stopgreek \oeps
+    --~ oeps abg \localgreek{a{b}\oeps g}
+    --~ ]])
+
 end
 
-banner = banner .. " | conversion tools "
+banner = banner .. " | babel conversion tools "
 
 messages.help = [[
+--language=string     conversion language (e.g. greek)
+--structure=string    obey given structure (e.g. 'document', default: 'context')
 --convert             convert babel codes into utf
 ]]
 
@@ -366,3 +427,4 @@ if environment.argument("convert") then
 else
     input.help(banner,messages.help)
 end
+

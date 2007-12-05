@@ -111,7 +111,7 @@ end
 
 fonts.vf.aux.combine.force_composed = false
 
-fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
+ fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
     local chars = g.characters
     local cap_lly = chars[string.byte("X")].boundingbox[4]
     local ita_cor = math.cos(math.rad(90+g.italicangle))
@@ -126,7 +126,10 @@ fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
                     local cc = c.category
                     if (cc == 'll') or (cc == 'lu') or (cc == 'lt') then
                         local acc = s[3]
-                        chars[i] = table.fastcopy(chars[chr])
+                        local t = table.fastcopy(chars[chr])
+t.name = ""
+t.index = i
+t.unicode = i
                         if chars[acc] then
                             local cb = chars[chr].boundingbox
                             local ab = chars[acc].boundingbox
@@ -139,9 +142,10 @@ fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
                             local dd = (c_urx-c_llx)*ita_cor
                             if a_ury < 0  then
                                 local dy = cap_lly-a_lly
-                                chars[i].commands = {
+                                t.commands = {
                                     {"push"},
                                     {"right", dx-dd},
+                                    {"down", -dy}, -- added
                                     {special, red},
                                     {"slot", 1, acc},
                                     {special, black},
@@ -150,7 +154,7 @@ fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
                                 }
                             elseif c_ury > a_lly then
                                 local dy = cap_lly-a_lly
-                                chars[i].commands = {
+                                t.commands = {
                                     {"push"},
                                     {"right", dx+dd},
                                     {"down", -dy},
@@ -161,7 +165,7 @@ fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
                                     {"slot", 1, chr},
                                 }
                             else
-                                chars[i].commands = {
+                                t.commands = {
                                     {"push"},
                                     {"right", dx+dd},
                                     {special, blue},
@@ -171,6 +175,7 @@ fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
                                     {"slot", 1, chr},
                                 }
                             end
+                            chars[i] = t
                         end
                     end
                 end

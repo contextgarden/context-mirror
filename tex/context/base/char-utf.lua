@@ -50,17 +50,19 @@ function characters.filters.utf.initialize()
             local vs = v.specials
             if vs and #vs == 3 and vs[1] == 'char' then
                 local first, second = uc(vs[2]), uc(vs[3])
-                if not cg[first] then
-                    cg[first] = { }
+                local cgf = cg[first]
+                if not cgf then
+                    cgf = { }
+                    cg[first] = cgf
                 end
-                cg[first][second] = uc(k)
+                cgf[second] = uc(k)
             end
         end
         characters.filters.utf.initialized = true
     end
 end
 
-function characters.filters.utf.collapse(str)
+function characters.filters.utf.collapse(str) -- old one
     if characters.filters.utf.collapsing and str and #str > 1 then
         if not characters.filters.utf.initialized then -- saves a call
             characters.filters.utf.initialize()
@@ -149,36 +151,115 @@ first snippet uses the relocated dollars.</p>
 do
 
     local cg = characters.graphemes
-    local cr = characters.filters.utf.private.high
+    local cr = characters.filters.utf.private.high -- kan via een lpeg
+    local cf = characters.filters.utf
+    local su = string.utfcharacters
 
-    function characters.filters.utf.collapse(str)
-        if characters.filters.utf.collapsing and str then
+    local concat = table.concat
+
+    --~ keep this  one, it's the baseline
+    --~
+    --~ function characters.filters.utf.collapse(str)
+    --~     if cf.collapsing and str then
+    --~         if #str > 1 then
+    --~             if not cf.initialized then -- saves a call
+    --~                 cf.initialize()
+    --~             end
+    --~             local tokens, first, done = { }, false, false
+    --~             for second in su(str) do
+    --~                 if cr[second] then
+    --~                     if first then
+    --~                         tokens[#tokens+1] = first
+    --~                     end
+    --~                     first, done = cr[second], true
+    --~                 else
+    --~                     local cgf = cg[first]
+    --~                     if cgf and cgf[second] then
+    --~                         first, done = cgf[second], true
+    --~                     elseif first then
+    --~                         tokens[#tokens+1] = first
+    --~                         first = second
+    --~                     else
+    --~                         first = second
+    --~                     end
+    --~                 end
+    --~             end
+    --~             if done then
+    --~                 tokens[#tokens+1] = first
+    --~                 return concat(tokens,"") -- seldom called
+    --~             end
+    --~         elseif #str > 0 then
+    --~             return cr[str] or str
+    --~         end
+    --~     end
+    --~     return str
+    --~ end
+
+    --[[ldx--
+    <p>The next variant has lazy token collecting, on a 140 page mk.tex this saves
+    about .25 seconds, which is understandable because we have no graphmes and
+    not collecting tokens is not only faster but also saves garbage collecting.
+    </p>
+    --ldx]]--
+
+    function characters.filters.utf.collapse(str) -- not really tested (we could preallocate a table)
+        if cf.collapsing and str then
             if #str > 1 then
-                if not characters.filters.utf.initialized then -- saves a call
-                    characters.filters.utf.initialize()
+                if not cf.initialized then -- saves a call
+                    cf.initialize()
                 end
-                local tokens, first, done = { }, false, false
-                for second in string.utfcharacters(str) do
-                    if cr[second] then
-                        if first then
-                            tokens[#tokens+1] = first
-                        end
-                        first, done = cr[second], true
-                    else
-                        local cgf = cg[first]
-                        if cgf and cgf[second] then
-                            first, done = cgf[second], true
-                        elseif first then
-                            tokens[#tokens+1] = first
-                            first = second
+                local tokens, first, done, n = { }, false, false, 0
+                for second in su(str) do
+                    if done then
+                        if cr[second] then
+                            if first then
+                                tokens[#tokens+1] = first
+                            end
+                            first = cr[second]
                         else
-                            first = second
+                            local cgf = cg[first]
+                            if cgf and cgf[second] then
+                                first = cgf[second]
+                            elseif first then
+                                tokens[#tokens+1] = first
+                                first = second
+                            else
+                                first = second
+                            end
+                        end
+                    else
+                        if cr[second] then
+                            for s in su(str) do
+                                if n == 0 then
+                                    break
+                                else
+                                    tokens[#tokens+1], n = s, n - 1
+                                end
+                            end
+                            if first then
+                                tokens[#tokens+1] = first
+                            end
+                            first, done = cr[second], true
+                        else
+                            local cgf = cg[first]
+                            if cgf and cgf[second] then
+                                for s in su(str) do
+                                    if n == 0 then
+                                        break
+                                    else
+                                        tokens[#tokens+1], n = s, n -1
+                                    end
+                                end
+                                first, done = cgf[second], true
+                            else
+                                first, n = second, n + 1
+                            end
                         end
                     end
                 end
                 if done then
                     tokens[#tokens+1] = first
-                    return table.concat(tokens,"")
+                    return concat(tokens,"") -- seldom called
                 end
             elseif #str > 0 then
                 return cr[str] or str
@@ -186,6 +267,53 @@ do
         end
         return str
     end
+
+    --~ not faster (0.1 seconds on a 500 k collapsable file)
+    --~
+    --~ local specials, initials = lpeg.P(false), ""
+    --~ for k,v in pairs(cr) do
+    --~     specials, initials = specials + lpeg.P(k)/v, initials .. k:sub(1,1)
+    --~ end
+    --~ specials = lpeg.Cs(lpeg.P((1-lpeg.S(initials)) + specials)^0)
+    --~ local graphemes = ""
+    --~ for _, v in pairs(cg) do
+    --~     for kk, _ in pairs(v) do
+    --~         graphemes = graphemes .. kk:sub(1,1)
+    --~     end
+    --~ end
+    --~ graphemes = lpeg.P{ lpeg.S(graphemes) + 1 * lpeg.V(1) }
+    --~
+    --~ function characters.filters.utf.collapse(str)
+    --~     if cf.collapsing and str then
+    --~         if #str > 1 then
+    --~             str = specials:match(str)
+    --~             if graphemes:match(str) then
+    --~                 if not cf.initialized then -- saves a call
+    --~                     cf.initialize()
+    --~                 end
+    --~                 local tokens, first, done = { }, false, false
+    --~                 for second in su(str) do
+    --~                     local cgf = cg[first]
+    --~                     if cgf and cgf[second] then
+    --~                         first, done = cgf[second], true
+    --~                     elseif first then
+    --~                         tokens[#tokens+1] = first
+    --~                         first = second
+    --~                     else
+    --~                         first = second
+    --~                     end
+    --~                 end
+    --~                 if done then
+    --~                     tokens[#tokens+1] = first
+    --~                     return table.concat(tokens,"")
+    --~                 end
+    --~             end
+    --~         elseif #str > 0 then
+    --~             return cr[str] or str
+    --~         end
+    --~     end
+    --~     return str
+    --~ end
 
 end
 

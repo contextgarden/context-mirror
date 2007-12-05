@@ -33,16 +33,26 @@
 \def\dosetupsB[#1]{\cleanuplabel{#1}\processcommacommand[\cleanlabel]\dosetups} % [..]
 \def\dosetupsC[#1]{\cleanuplabel{#1}\dosetups\cleanlabel} % [..]
 
-% \def\dosetups#1% the grid option will be extended to other main modes
-%   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}
-%   {\executeifdefined{\??su                         :#1}\empty}}
-
 \def\dosetups#1% the grid option will be extended to other main modes
   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}
   {\executeifdefined{\??su                         :#1}\gobbleoneargument}\empty} % takes one argument
 
 \def\setupwithargument#1% the grid option will be extended to other main modes
   {\executeifdefined{\??su:#1}\gobbleoneargument}
+
+% somehow fails ...
+%
+% \letvalue{\??su:..}\gobbleoneargument
+%
+% \def\dosetups#1% the grid option will be extended to other main modes
+%   {\csname    \??su
+%      \ifcsname\??su\ifgridsnapping\v!grid\fi:#1\endcsname\v!grid:#1\else
+%      \ifcsname\??su                         :#1\endcsname       :#1\else
+%                                                                 :..\fi\fi
+%    \endcsname\empty} % takes one argument
+%
+% \def\setupwithargument#1% the grid option will be extended to other main modes
+%   {\csname\??su:\ifcsname\??su:#1\endcsname#1\else..\fi\endcsname}
 
 \let\directsetup\dosetups
 
@@ -54,7 +64,7 @@
 \def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
 \def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
 \def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
-\def\startxmlsetups  {\xxstartsetups\plustwo\stopxmlsetups  } \let\stopxmlsetups  \relax
+\def\startxmlsetups  {\xxstartsetups\plustwo  \stopxmlsetups  } \let\stopxmlsetups  \relax
 
 \def\xxstartsetups#1#2%
   {\begingroup\chardef\setupseolmode#1\doifnextcharelse[{\startsetupsA#2}{\startsetupsB#2}}

@@ -90,25 +90,7 @@ class TEX
     @@luafiles     = "luafiles.tmp"
     @@luatarget    = "lua/context"
 
-    # we now drop pdfetex definitely
-
-    # ENV['PATH'].split(File::PATH_SEPARATOR).each do |p|
-        # if System.unix? then
-            # pp, pe = "#{p}/pdftex"    , "#{p}/pdfetex"
-        # else
-            # pp, pe = "#{p}/pdftex.exe", "#{p}/pdfetex.exe"
-        # end
-        # if    FileTest.file?(pe) then # we assume no update
-            # @@pdftex = 'pdfetex'
-            # break
-        # elsif FileTest.file?(pp) then # we assume an update
-            # @@pdftex = 'pdftex'
-            # break
-        # end
-    # end
-
-    # ['etex','pdfetex','standard']                .each do |e| @@texengines[e] = @@pdftex    end
-    # ['tex','pdftex']                             .each do |e| @@texengines[e] = 'pdftex'    end
+    @@platformslash = if System.unix? then "\\\\" else "\\" end
 
     ['tex','etex','pdftex','pdfetex','standard']   .each do |e| @@texengines[e] = 'pdftex'    end
     ['aleph','omega']                              .each do |e| @@texengines[e] = 'aleph'     end
@@ -120,6 +102,7 @@ class TEX
     ['pdfetex','pdftex','pdf','pdftex','standard'] .each do |b| @@backends[b]   = 'pdftex'    end
     ['dvipdfmx','dvipdfm','dpx','dpm']             .each do |b| @@backends[b]   = 'dvipdfmx'  end
     ['xetex','xtx']                                .each do |b| @@backends[b]   = 'xetex'     end
+    ['aleph']                                      .each do |b| @@backends[b]   = 'dvipdfmx'  end
     ['dvips','ps','dvi']                           .each do |b| @@backends[b]   = 'dvips'     end
     ['dvipsone']                                   .each do |b| @@backends[b]   = 'dvipsone'  end
     ['acrobat','adobe','distiller']                .each do |b| @@backends[b]   = 'acrobat'   end
@@ -164,11 +147,11 @@ class TEX
     ['plain','default','standard']                 .each do |f| @@mpsmethods[f] = 'plain'     end
     ['metafun']                                    .each do |f| @@mpsmethods[f] = 'metafun'   end
 
-    @@texmakestr['plain'] = "\\dump"
-    @@mpsmakestr['plain'] = "\\dump"
+    @@texmakestr['plain'] = @@platformslash + "dump"
+    @@mpsmakestr['plain'] = @@platformslash + "dump"
 
     ['cont-en','cont-nl','cont-de','cont-it',
-     'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
+     'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = @@platformslash + "emergencyend"  end
 
     @@runoptions['aleph']   = ['--8bit']
     @@runoptions['luatex']  = ['--file-line-error']
@@ -1885,7 +1868,7 @@ end
 
         if globalfile || FileTest.file?(rawname) then
 
-            if not dummyfile and not globalfile then
+            if not dummyfile and not globalfile and not forcexml then
                 scantexpreamble(rawname)
                 scantexcontent(rawname) if getvariable('texformats').standard?
             end

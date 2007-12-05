@@ -116,11 +116,11 @@
 %D For postprocessing purposes, we save the number of
 %D positions.
 
-\newcounter\currentpositions  % current number of positions
+\newcount\currentpositions  % current number of positions
 \newcounter\totalnofpositions % total from previous run
 
 \appendtoks
-  \savecurrentvalue\totalnofpositions\currentpositions
+  \expanded{\savecurrentvalue\noexpand\totalnofpositions{\the\currentpositions}}%
 \to \everybye
 
 %D The next switch can be used to communicate a special
@@ -239,7 +239,7 @@
        {\printpaperwidth }%
        {\printpaperheight}%
    \fi
-   \doglobal\increment\currentpositions}
+   \global\advance\currentpositions\plusone}
 
 \def\setpositiononly#1%
   {\iftrialtypesetting
@@ -297,7 +297,7 @@
 \def\setpositiondataplus#1#2#3#4#5%
   {\iftrialtypesetting \else
      \initializenextposition
-     \hbox to \nextboxwd
+     \hbox % bug: to \nextboxwd
        {\edef\currentposition{#1}%
         \dosetpositionplus\currentposition
           {\the\dimexpr#2\relax}%
@@ -451,20 +451,20 @@
 \def\epos#1{\removelastspace\hpos{e:#1}{\strut}}
 
 \def\fpos#1%
-  {\setpositionplus{b:#1}\parposcounter\horizontalstrut
+  {\setpositionplus{b:#1}{\number\parposcounter}\horizontalstrut
    \ignorespaces}
 
 \def\tpos#1%
   {\removelastspace
-   \setpositionplus{e:#1}\parposcounter\horizontalstrut}
+   \setpositionplus{e:#1}{\number\parposcounter}\horizontalstrut}
 
 \def\ffpos#1%
-  {\setpositionplus{b:#1}\parposcounter\horizontalstrut\wpos{#1}%
+  {\setpositionplus{b:#1}{\number\parposcounter}\horizontalstrut\wpos{#1}%
    \ignorespaces}
 
 \def\ttpos#1%
   {\removelastspace
-   \setpositionplus{e:#1}\parposcounter\horizontalstrut}
+   \setpositionplus{e:#1}{\number\parposcounter}\horizontalstrut}
 
 \def\wpos#1%
   {\dontleavehmode\vadjust % may disappear if buried
@@ -503,7 +503,7 @@
 %D of them. This mechanism is activated automatically
 %D based on information collected in the previous pass.
 
-\newcounter\parposcounter
+\newcount\parposcounter
 
 \newif\ifpositioningpar
 
@@ -523,12 +523,12 @@
 \chardef\parposstrut=1 % 0 => no strut data, so fall backs used
 
 \def\doregisterparoptions
-  {\doglobal\increment\parposcounter
+  {\global\advance\parposcounter\plusone
    \begingroup
      \leftskip 1\leftskip
      \rightskip1\rightskip
      \setpositiondataplus
-       {p:\parposcounter}%         % identifier
+       {p:\number\parposcounter}% identifier
        {\the\zeropoint}%
        {\the\strutht}%
        {\the\strutdp}%

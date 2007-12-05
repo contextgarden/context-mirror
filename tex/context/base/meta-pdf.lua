@@ -8,6 +8,8 @@
 -- version 2 gsubbed the file into TeX code, and version 3 uses
 -- the new lpeg functionality and streams the result into TeX.
 
+-- We will move old stuff to edu.
+
 --~                         old           lpeg 0.4       lpeg 0.5
 --~ 100 times test graphic  2.45 (T:1.07) 0.72 (T:0.24)  0.580  (0.560  no table) -- 0.54 optimized for one space (T:0.19)
 --~ 100 times big  graphic 10.44          4.30/3.35 nogb 2.914  (2.050  no table) -- 1.99 optimized for one space (T:0.85)
@@ -46,7 +48,7 @@ function mptopdf.parse()
     mptopdf.parsers[mptopdf.parser]()
 end
 
--- shared code
+-- old code
 
 mptopdf.steps = { }
 
@@ -62,8 +64,6 @@ function mptopdf.descape(str)
     end)
     return str:gsub("\\([%(%)\\])",mptopdf.descapes)
 end
-
--- old code
 
 function mptopdf.steps.descape(str)
     str = str:gsub("\\(%d%d%d)",function(n)
@@ -217,10 +217,10 @@ end
 function mptopdf.convertmpstopdf(name)
     if mptopdf.loaded(name) then
         garbagecollector.push()
-        input.start_timing(mptopdf)
+        input.starttiming(mptopdf)
         mptopdf.parse()
         mptopdf.reset()
-        input.stop_timing(mptopdf)
+        input.stoptiming(mptopdf)
         garbagecollector.pop()
     else
         tex.print("file " .. name .. " not found")
@@ -342,18 +342,6 @@ function mp.textext(font, scale, str) -- old parser
     mptopdf.resetpath()
 end
 
-function mp.fshow(str,font,scale) -- lpeg parser
-    mp.textext(font,scale,mptopdf.descape(str))
---~     local dx, dy = 0, 0
---~     if #mptopdf.stack.path > 0 then
---~         dx, dy = mptopdf.stack.path[1][1], mptopdf.stack.path[1][2]
---~     end
---~     mptopdf.flushconcat()
---~     mptopdf.texcode("\\MPStextext{"..font.."}{"..scale.."}{"..mptopdf.descape(str).."}{"..dx.."}{"..dy.."}")
---~     mptopdf.resetpath()
-end
-
-
 --~ function mp.handletext(font,scale.str,dx,dy)
 --~     local one, two = string.match(str, "^(%d+)::::(%d+)")
 --~     if one and two then
@@ -473,6 +461,24 @@ end
 -- that MetaPost produces. It's my first real lpeg code, which may
 -- show. Because the parser binds to functions, we define it last.
 
+do -- assumes \let\c\char
+
+    local byte = string.byte
+    local digit = lpeg.R("09")
+    local spec = digit^2 * lpeg.P("::::") * digit^2
+    local text = lpeg.Cc("{") * (
+        lpeg.P("\\") * ( (digit * digit * digit) / function(n) return "c" .. tonumber(n,8) end) +
+                          lpeg.P(" ")            / function(n) return "\\c32" end + -- never in new mp
+                          lpeg.P(1)              / function(n) return "\\c" .. byte(n) end
+    ) * lpeg.Cc("}")
+    local package = lpeg.Cs(spec + text^0)
+
+    function mp.fshow(str,font,scale) -- lpeg parser
+        mp.textext(font,scale,package:match(str))
+    end
+
+end
+
 do
 
     local eol      = lpeg.S('\r\n')^1
@@ -517,8 +523,10 @@ do
     local concat             = (lpeg.P("[") * (cnumber * sp^0)^6 * lpeg.P("]")                * sp * lpeg.P("concat") ) / mp.concat
     local scale              = (              (cnumber * sp^0)^6                              * sp * lpeg.P("concat") ) / mp.concat
 
-    local fshow              = (lpeg.P("(") * lpeg.C((1-lpeg.P(")"))^1) * lpeg.P(")") * space * lpeg.C(lpeg.P((1-space)^1)) * space * cnumber * space * lpeg.P("fshow")) / mp.fshow
     local fshow              = (lpeg.P("(") * lpeg.C((1-lpeg.P(")"))^1) * lpeg.P(")") * space * cstring * space * cnumber * space * lpeg.P("fshow")) / mp.fshow
+    local fshow              = (lpeg.P("(") *
+                                    lpeg.Cs( ( lpeg.P("\\(")/"\\050" + lpeg.P("\\)")/"\\051" + (1-lpeg.P(")")) )^1 )
+                                * lpeg.P(")") * space * cstring * space * cnumber * space * lpeg.P("fshow")) / mp.fshow
 
     local setlinewidth_x     = (lpeg.P("0") * sp * cnumber * sp * lpeg.P("dtransform truncate idtransform setlinewidth pop")) / mp.setlinewidth
     local setlinewidth_y     = (cnumber * sp * lpeg.P("0 dtransform exch truncate exch idtransform pop setlinewidth")  ) / mp.setlinewidth
@@ -560,7 +568,6 @@ do
     local attribute = ((cnumber * sp)^2 * lpeg.P("attribute")) / mp.attribute
     local A         = ((cnumber * sp)^2 * lpeg.P("A"))         / mp.attribute
 
-
     local preamble = (
         prolog + setup +
         boundingbox + highresboundingbox + specials + special +
@@ -570,7 +577,7 @@ do
     local procset = (
         lj + ml + lc +
         c + l + m + n + p + r +
-A  +
+        A  +
         R + C + G +
         S + F + B + W +
         vlw + hlw +
@@ -584,7 +591,7 @@ A  +
     local verbose = (
         curveto + lineto + moveto + newpath + closepath + rlineto +
         setrgbcolor + setcmykcolor + setgray +
-attribute +
+        attribute +
         setlinejoin + setmiterlimit + setlinecap +
         stroke + fill + clip + both +
         setlinewidth_x + setlinewidth_y +

@@ -1336,6 +1336,14 @@
    \c!right={\symbol[\c!rightquote]}]
 
 \definedelimitedtext
+   [\v!blockquote][\v!quotation]
+
+\setupdelimitedtext
+  [\v!blockquote]
+  [\c!left=,
+   \c!right=]
+
+\definedelimitedtext
   [\v!speech][\v!quotation]
 
 \setupdelimitedtext
@@ -2605,7 +2613,7 @@
 
 \def\dorotatenextbox#1#2%
   {\doifsomething{#1}
-     {\edef\@@rorotation{\number#1}% get rid of leading zeros and spaces
+     {\edef\@@rorotation{\realnumber{#1}}% get rid of leading zeros and spaces
       \setbox\nextbox\vbox{\flushnextbox}% not really needed
       \dodorotatenextbox\@@rorotation#2}%
    \hbox{\boxcursor\flushnextbox}}

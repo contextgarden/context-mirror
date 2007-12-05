@@ -18,7 +18,10 @@
     <cd:constant type="vnejsi"/>
     <cd:constant type="vlevo"/>
     <cd:constant type="vpravo"/>
+    <cd:constant type="flushleft"/>
+    <cd:constant type="flushright"/>
     <cd:constant type="nastred"/>
+    <cd:constant type="center"/>
     <cd:constant type="normalni"/>
     <cd:constant type="ne"/>
     <cd:constant type="ano"/>
@@ -4224,6 +4227,7 @@
       <cd:parameter name="cislo">
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
+        <cd:constant type="zadny"/>
       </cd:parameter>
       <cd:parameter name="mezi">
         <cd:constant type="cd:command"/>
@@ -6064,6 +6068,9 @@
       </cd:parameter>
       <cd:parameter name="zarovnani">
         <cd:resolve name="align"/>
+      </cd:parameter>
+      <cd:parameter name="symzarovnani">
+        <cd:resolve name="symalign"/>
       </cd:parameter>
       <cd:parameter name="odsadpristi">
         <cd:resolve name="indentnext"/>

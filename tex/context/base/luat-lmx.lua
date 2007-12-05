@@ -32,7 +32,7 @@ end
 
 lmx.converting = false
 
-function lmx.convert(template,result) -- use lpeg instead
+function lmx.convert(template,result) -- todo: use lpeg instead
     if not lmx.converting then -- else, if error then again tex error and loop
         local data = input.texdatablob(texmf.instance, template)
         local f = false
@@ -46,7 +46,7 @@ function lmx.convert(template,result) -- use lpeg instead
             return lmx.variables[str] or ""
         end
         function lmx.escape(str)
-            return string.gsub(string.gsub(str,'&','&amp;'),'[<>"]',lmx.escapes)
+            return string.gsub(str:gsub('&','&amp;'),'[<>"]',lmx.escapes)
         end
         function lmx.type(str)
             if str then lmx.print("<tt>" .. lmx.escape(str) .. "</tt>") end
@@ -57,18 +57,18 @@ function lmx.convert(template,result) -- use lpeg instead
         function lmx.tv(str)
             lmx.type(lmx.variable(str))
         end
-        data = string.gsub(data, "<%?lmx%-include%s+(.-)%s-%?>", function(filename)
+        data = data:gsub("<%?lmx%-include%s+(.-)%s-%?>", function(filename)
             return lmx.loadedfile(filename)
         end)
         local definitions =  { }
-        data = string.gsub(data, "<%?lmx%-define%-begin%s+(%S-)%s-%?>(.-)<%?lmx%-define%-end%s-%?>", function(tag,content)
+        data = data:gsub("<%?lmx%-define%-begin%s+(%S-)%s-%?>(.-)<%?lmx%-define%-end%s-%?>", function(tag,content)
             definitions[tag] = content
             return ""
         end)
-        data = string.gsub(data, "<%?lmx%-resolve%s+(%S-)%s-%?>", function(tag)
+        data = data:gsub("<%?lmx%-resolve%s+(%S-)%s-%?>", function(tag)
             return definitions[tag] or ""
         end)
-        data = string.gsub(data, "%c%s-(<%?lua .-%?>)%s-%c", function(lua)
+        data = data:gsub("%c%s-(<%?lua .-%?>)%s-%c", function(lua)
             return "\n" .. lua .. " "
         end)
         data = string.gsub(data .. "<?lua ?>","(.-)<%?lua%s+(.-)%?>", function(txt, lua)

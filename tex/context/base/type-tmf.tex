@@ -82,7 +82,7 @@
 \stoptypescript
 
 \starttypescript [math] [modern,computer-modern,latin-modern] [name]
-    \definefontsynonym [MathRoman]        [LMRoman-Regular]
+    \definefontsynonym [MathRoman]        [LMMathRoman-Regular]
     \definefontsynonym [MathExtension]    [LMMathExtension-Regular]
     \definefontsynonym [MathItalic]       [LMMathItalic-Italic]
     \definefontsynonym [MathSymbol]       [LMMathSymbols-Italic]
@@ -111,14 +111,14 @@
 \stoptypescript
 
 \starttypescript [boldmath] [modern,computer-modern,latin-modern] [name]
-    \definefontsynonym [MathRoman]        [LMRoman-Bold]
+    \definefontsynonym [MathRoman]        [LMMathRoman-Bold]
     \definefontsynonym [MathExtension]    [LMMathExtension-Regular]
     \definefontsynonym [MathItalic]       [LMMathItalic-BoldItalic]
     \definefontsynonym [MathSymbol]       [LMMathSymbols-BoldItalic]
 \stoptypescript
 
 \starttypescript [bfmath] [modern,computer-modern,latin-modern] [name]
-    \definefontsynonym [MathRomanBold]    [LMRoman-Bold]
+    \definefontsynonym [MathRomanBold]    [LMMathRoman-Bold]
     \definefontsynonym [MathExtension]    [LMMathExtension-Regular]
     \definefontsynonym [MathItalicBold]   [LMMathItalic-BoldItalic]
     \definefontsynonym [MathSymbolBold]   [LMMathSymbols-BoldItalic]
@@ -250,11 +250,28 @@
 \stoptypescript
 
 \starttypescript [math] [modern,latin-modern]
+    \definefontsynonym [LMMathRoman-Regular]       [LMMathRoman10-Regular]
+    \definefontsynonym [LMMathRoman-Bold]          [LMMathRoman10-Bold]
     \definefontsynonym [LMMathSymbols-BoldItalic]  [LMMathSymbols10-BoldItalic]
     \definefontsynonym [LMMathSymbols-Italic]      [LMMathSymbols10-Italic]
     \definefontsynonym [LMMathExtension-Regular]   [LMMathExtension10-Regular]
     \definefontsynonym [LMMathItalic-Italic]       [LMMathItalic10-Italic]
     \definefontsynonym [LMMathItalic-BoldItalic]   [LMMathItalic10-BoldItalic]
+\stoptypescript
+
+% can boldmath and bfmath be joined?
+\starttypescript [boldmath] [modern,computer-modern,latin-modern] [name]
+    \definefontsynonym [LMMathRoman-Bold]         [LMMathRoman10-Bold]
+    \definefontsynonym [LMMathExtension-Regular]  [LMMathExtension10-Regular]
+    \definefontsynonym [LMMathItalic-BoldItalic]  [LMMathItalic10-BoldItalic]
+    \definefontsynonym [LMMathSymbols-BoldItalic] [LMMathSymbols10-BoldItalic]
+\stoptypescript
+
+\starttypescript [bfmath] [modern,computer-modern,latin-modern] [name]
+    \definefontsynonym [LMMathRoman-Bold]         [LMMathRoman10-Bold]
+    \definefontsynonym [LMMathExtension-Regular]  [LMMathExtension10-Regular]
+    \definefontsynonym [LMMathItalic-BoldItalic]  [LMMathItalic10-BoldItalic]
+    \definefontsynonym [LMMathSymbols-BoldItalic] [LMMathSymbols10-BoldItalic]
 \stoptypescript
 
 \starttypescript [serif] [modern,latin-modern,computer-modern]

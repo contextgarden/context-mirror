@@ -93,8 +93,10 @@
      \endgroup
    \fi}
 
-\def\setcharacterspacing[#1]%
-  {\dosetattribute{spacing}{\csname\??ch:#1\endcsname}}
+\def\setcharacterspacing
+  {\ctxlua{spacings.enabled=true}%
+   \gdef\setcharacterspacing[##1]{\dosetattribute{spacing}{\csname\??ch:##1\endcsname}}%
+   \setcharacterspacing}
 
 \setvalue{\??ch:\s!reset}{\doresetattribute{spacing}}
 
@@ -135,8 +137,10 @@
      \endgroup
    \fi}
 
-\def\setcharacterkerning[#1]%
-  {\dosetattribute{kern}{\csname\??ck:#1\endcsname}}
+\def\setcharacterkerning
+  {\ctxlua{kerns.enabled=true}%
+   \gdef\setcharacterkerning[##1]{\dosetattribute{kern}{\csname\??ck:##1\endcsname}}%
+   \setcharacterkerning}
 
 \setvalue{\??ck:\s!reset}{\doresetattribute{kern}}
 
@@ -152,9 +156,14 @@
 
 \defineattribute[case]
 
-\def\WORD{\groupedcommand{\dosetattribute{case}\plusone  }{}}
-\def\word{\groupedcommand{\dosetattribute{case}\plustwo  }{}}
-\def\Word{\groupedcommand{\dosetattribute{case}\plusthree}{}} % \plusfour
+\def\setcharactercasing
+  {\ctxlua{cases.enabled=true}%
+   \gdef\setcharactercasing[##1]{\dosetattribute{case}{\number##1}}%
+   \setcharactercasing}
+
+\def\WORD{\groupedcommand{\setcharactercasing[\plusone  ]}{}}
+\def\word{\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
+\def\Word{\groupedcommand{\setcharactercasing[\plusthree]}{}} % \plusfour
 
 \let\WORDS\WORD
 \let\words\word
@@ -175,6 +184,8 @@
 \newbox\breakpointbox
 
 \definesystemvariable {bp}   % BreakPoint
+
+\exhyphenchar=\minusone % we use a different order then base tex, so we really need this
 
 \newcount \maxbreakpointsid
 
@@ -200,14 +211,22 @@
      \endgroup
    \fi}
 
-\def\setbreakpoints[#1]%
-  {\dosetattribute{breakpoint}{\csname\??bp:#1\endcsname}}
+\def\setbreakpoints
+  {\ctxlua{breakpoints.enabled=true}%
+   \gdef\setbreakpoints[##1]{\dosetattribute{breakpoint}{\csname\??bp:##1\endcsname}}%
+   \setbreakpoints}
 
 \setvalue{\??bp:\s!reset}{\doresetattribute{breakpoint}}
 
 \definebreakpoints[compound]
 
 \installbreakpoint [compound] [\number`+] [\c!left=3,\c!right=3,\c!type=1]
+\installbreakpoint [compound] [\number`-] [\c!left=3,\c!right=3,\c!type=1]
+\installbreakpoint [compound] [\number`/] [\c!left=3,\c!right=3,\c!type=1]
+\installbreakpoint [compound] [\number`(] [\c!left=3,\c!right=3,\c!type=2]
+\installbreakpoint [compound] [\number`)] [\c!left=3,\c!right=3,\c!type=3]
+
+% \setbreakpoints[compound]
 
 \protect \endinput
 

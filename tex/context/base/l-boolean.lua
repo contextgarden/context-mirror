@@ -13,11 +13,12 @@ end
 
 function toboolean(str,tolerant)
     if tolerant then
-        if type(str) == "string" then
+        local tstr = type(str)
+        if tstr == "string" then
             return str == "true" or str == "yes" or str == "on" or str == "1"
-        elseif type(str) == "number" then
+        elseif tstr == "number" then
             return tonumber(str) ~= 0
-        elseif type(str) == "nil" then
+        elseif tstr == "nil" then
             return false
         else
             return str

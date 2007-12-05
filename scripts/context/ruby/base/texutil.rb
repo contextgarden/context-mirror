@@ -706,8 +706,8 @@ class TeXUtil
                                     elsif alpha == @@specialsymbol then
                                         character = @@specialbanner
                                     elsif alpha.length > 1 then
-                                        # character = "\\getvalue\{#{alpha}\}%"
-                                        character = "\\#{alpha}%"
+                                        # character = "\\getvalue\{#{alpha}\}"
+                                        character = "\\#{alpha}"
                                     else
                                         character = "\\unknown"
                                     end

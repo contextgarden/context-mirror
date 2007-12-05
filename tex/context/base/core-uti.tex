@@ -277,6 +277,20 @@
 % we need to pop and push, else problems with reading
 % utility files (toc) in xml mode and (e.g.) in a toc
 % entry doing a doifmode
+%
+% the following is not ok because we have no way to signal
+% xml content (yet), so for the moment we use this:
+
+\appendtoks
+    \ifprocessingXML
+        \processingXMLfalse
+        \enableXML
+        \catcode`\\=\@@escape
+        \catcode`\{=\@@begingroup
+        \catcode`\}=\@@endgroup
+        \catcode`\%=\@@comment\relax
+    \fi
+\to \everybeforeutilityread
 
 \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
   {\resetutilities

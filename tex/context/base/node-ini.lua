@@ -8,13 +8,62 @@ if not modules then modules = { } end modules ['node-ini'] = {
 
 --[[ldx--
 <p>Access to nodes is what gives <l n='luatex'/> its power. Here we
-implement a few helper functions.</p>
+implement a few helper functions. These functions are rather optimized.</p>
 --ldx]]--
 
-nodes       = nodes or { }
-nodes.trace = false
+nodes        = nodes or { }
+nodes.trace  = false
+nodes.ignore = nodes.ignore or false
 
 -- handy helpers
+
+if node.protect_glyphs then
+
+    nodes.protect_glyphs   = node.protect_glyphs
+    nodes.unprotect_glyphs = node.unprotect_glyphs
+
+else do
+
+    -- initial value subtype     : X000 0001 =  1 = 0x01 = char
+    --
+    -- expected before linebreak : X000 0000 =  0 = 0x00 = glyph
+    --                             X000 0010 =  2 = 0x02 = ligature
+    --                             X000 0100 =  4 = 0x04 = ghost
+    --                             X000 1010 = 10 = 0x0A = leftboundary lig
+    --                             X001 0010 = 18 = 0x12 = rightboundary lig
+    --                             X001 1010 = 26 = 0x1A = both boundaries lig
+    --                             X000 1100 = 12 = 0x1C = leftghost
+    --                             X001 0100 = 20 = 0x14 = rightghost
+
+
+    local glyph       = node.id('glyph')
+    local traverse_id = node.traverse_id
+
+    function nodes.protect_glyphs(head)
+        local done = false
+        for g in traverse_id(glyph,head) do
+            local s = g.subtype
+            if s == 1 then
+                done, g.subtype = true, 256
+            elseif s <= 256 then
+                done, g.subtype = true, 256 + s
+            end
+        end
+        return done
+    end
+
+    function nodes.unprotect_glyphs(head)
+        local done = false
+        for g in traverse_id(glyph,head) do
+            local s = g.subtype
+            if s > 256 then
+                done, g.subtype = true, s - 256
+            end
+        end
+        return done
+    end
+
+end end
 
 do
 
@@ -76,44 +125,18 @@ function nodes.report(t,done)
     end
 end
 
---~ function nodes.count(stack)
---~     if stack then
---~         local n = 0
---~         for _, node in pairs(stack) do
---~             if node then
---~                 local kind = node[1]
---~                 if kind == 'hlist' or kind == 'vlist' then
---~                     local content = node[8]
---~                     if type(content) == "table" then
---~                         n = n + 1 + nodes.count(content) -- self counts too
---~                     else
---~                         n = n + 1
---~                     end
---~                 elseif kind == 'inline' then
---~                     n = n + nodes.count(node[4]) -- self does not count
---~                 else
---~                     n = n + 1
---~                 end
---~             end
---~         end
---~         return n
---~     else
---~         return 0
---~     end
---~ end
-
 do
 
     local hlist, vlist = node.id('hlist'), node.id('vlist')
 
-    function nodes.count(stack)
+    local function count(stack,flat)
         local n = 0
         while stack do
             local id = stack.id
-            if id == hlist or id == vlist then
+            if not flat and id == hlist or id == vlist then
                 local list = stack.list
                 if list then
-                    n = n + 1 + nodes.count(list) -- self counts too
+                    n = n + 1 + count(list) -- self counts too
                 else
                     n = n + 1
                 end
@@ -124,6 +147,8 @@ do
         end
         return n
     end
+
+    nodes.count = count
 
 end
 
@@ -147,95 +172,14 @@ original table is used.</p>
 <p>Insertion is handled (at least in <l n='context'/> as follows. When
 we need to insert a node at a certain position, we change the node at
 that position by a dummy node, tagged <type>inline</type> which itself
-contains the original node and one or more new nodes. Before we pass
+has_attribute the original node and one or more new nodes. Before we pass
 back the list we collapse the list. Of course collapsing could be built
 into the <l n='tex'/> engine, but this is a not so natural extension.</p>
 
 <p>When we collapse (something that we only do when really needed), we
-also ignore the empty nodes.</p>
+also ignore the empty nodes. [This is obsolete!]</p>
 --ldx]]--
 
---~ function nodes.inline(...)
---~     return { 'inline', 0, nil, { ... } }
---~ end
-
---~ do
-
---~     function collapse(stack,existing_t)
---~         if stack then
---~             local t = existing_t or { }
---~             for _, node in pairs(stack) do
---~                 if node then
---~                  -- if node[3] then node[3][1] = nil end -- remove status bit
---~                     local kind = node[1]
---~                     if kind == 'inline' then
---~                         collapse(node[4],t)
---~                     elseif kind == 'hlist' or kind == 'vlist' then
---~                         local content = node[8]
---~                         if type(content) == "table" then
---~                             node[8] = collapse(content)
---~                         end
---~                         t[#t+1] = node
---~                     else
---~                         t[#t+1] = node
---~                     end
---~                 else
---~                     -- deleted node
---~                 end
---~             end
---~             return t
---~         else
---~             return stack
---~         end
---~     end
-
---~     nodes.collapse = collapse
-
---~ end
-
---[[ldx--
-<p>The following function implements a generic node processor. A
-generic processer is not that much needed, because we often need
-to act differently for horizontal or vertical lists. For instance
-counting nodes needs a different method (ok, we could add a second
-handle for catching them but it would become messy then).</p>
---ldx]]--
-
---~ function nodes.each(stack,handle)
---~     if stack then
---~         local i = 1
---~         while true do
---~             local node = stack[i]
---~             if node then
---~                 local kind = node[1]
---~                 if kind == 'hlist' or kind == 'vlist' then
---~                     local content = node[8]
---~                     if type(content) == "table" then
---~                         nodes.each(content,handle)
---~                     end
---~                 elseif kind == 'inline' then
---~                     nodes.each(node[4],handle)
---~                 else
---~                     stack[i] = handle(kind,node)
---~                 end
---~             end
---~             i = i + 1
---~             if i > #stack then
---~                 break
---~             end
---~         end
---~     end
---~ end
-
---~ function nodes.remove(stack,id,subid) -- "whatsit", 6
---~     nodes.each(stack, function(kind,node)
---~         if kind == id and node[2] == subid then
---~             return false
---~         else
---~             return node
---~         end
---~     end)
---~ end
 
 --[[ldx--
 <p>Serializing nodes can be handy for tracing. Also, saving and
@@ -298,64 +242,100 @@ if not fonts.tfm.id then fonts.tfm.id = { } end
 
 do
 
-    local glyph, hlist, vlist = node.id('glyph'), node.id('hlist'), node.id('vlist')
-    local pushmarks  = false
+    local glyph = node.id('glyph')
+    local has_attribute = node.has_attribute
+    local traverse_id = node.traverse_id
 
-    function nodes.process_glyphs(head)
+    local pairs = pairs
+
+    local starttiming, stoptiming = input.starttiming, input.stoptiming
+
+    function nodes.process_characters(head)
         if status.output_active then  -- not ok, we need a generic blocker, pagebody ! / attr tex.attibutes
-            -- 25% calls
-            return true
-        elseif not head then
-            -- 25% calls
-            return true
-        elseif not head.next and (head.id == hlist or head.id == vlist) then
-            return head
+            return head, false -- true
         else
             -- either next or not, but definitely no already processed list
-            input.start_timing(nodes)
-            local usedfonts, found, fontdata, done = { }, false, fonts.tfm.id, false
-            for n in node.traverse_id(glyph,head) do
-                local font = n.font
-                if not usedfonts[font] then
-                    local shared = fontdata[font].shared
-                    if shared and shared.processors then
-                        usedfonts[font], found = shared.processors, true
+            starttiming(nodes)
+            local usedfonts, attrfonts, done = { }, { }, false
+            -- todo: should be independent of otf
+            local set_dynamics, font_ids = fonts.otf.set_dynamics, fonts.tfm.id -- todo: font-var.lua so that we can global this one
+            local a, u, prevfont, prevattr = 0, 0, nil, 0
+            for n in traverse_id(glyph,head) do
+                local font, attr = n.font, has_attribute(n,0) -- zero attribute is reserved for fonts, preset to 0 is faster (first match)
+                if attr and attr > 0 then
+                    if font ~= prevfont or attr ~= prevattr then
+                        local used = attrfonts[font]
+                        if not used then
+                            used = { }
+                            attrfonts[font] = used
+                        end
+                        if not used[attr] then
+                            local d = set_dynamics(font_ids[font],attr) -- todo, script, language -> n.language also axis
+                            if d then
+                                used[attr] = d
+                                a = a + 1
+                            end
+                        end
+                        prevfont, prevattr = font, attr
                     end
-                end
-            end
-            if found then
-                local tail = head
-                if head.next then
-                    tail = node.slide(head)
+                elseif font ~= prevfont then
+                    prevfont, prevattr = font, 0
+                    local used = usedfonts[font]
+                    if not used then
+                        local data = font_ids[font]
+                        if data then
+                            local shared = data.shared -- we need to check shared, only when same features
+                            if shared then
+                                local processors = shared.processors
+                                if processors and #processors > 0 then
+                                    usedfonts[font] = processors
+                                    u = u + 1
+                                end
+                            end
+                        else
+                            -- probably nullfont
+                        end
+                    end
                 else
-                    head.prev = nil
+                    prevattr = attr
                 end
+            end
+            -- we could combine these and just make the attribute nil
+            if u > 0 then
                 for font, processors in pairs(usedfonts) do
-                    if pushmarks then
-                        local h, d = fonts.pushmarks(head,font)
-                        head, done = head or h, done or d
-                    end
-                    for _, processor in ipairs(processors) do
-                        local h, d = processor(head,font)
-                        head, done = head or h, done or d
-                    end
-                    if pushmarks then
-                        local h, d = fonts.popmarks(head,font)
-                        head, done = head or h, done or d
+                    local n = #processors
+                    if n == 1 then
+                        local h, d = processors[1](head,font,false)
+                        head, done = h or head, done or d
+                    else
+                        for i=1,#processors do
+                            local h, d = processors[i](head,font,false)
+                            head, done = h or head, done or d
+                        end
                     end
                 end
             end
-            input.stop_timing(nodes)
+            if a > 0 then -- we need to get rid of a loop here
+                for font, dynamics in pairs(attrfonts) do
+                    for attribute, processors in pairs(dynamics) do -- attr can switch in between
+                        local n = #processors
+                        if n == 1 then
+                            local h, d = processors[1](head,font,attribute)
+                            head, done = h or head, done or d
+                        else
+                            for i=1,n do
+                                local h, d = processors[i](head,font,attribute)
+                                head, done = h or head, done or d
+                            end
+                        end
+                    end
+                end
+            end
+            stoptiming(nodes)
             if nodes.trace then
                 nodes.report(head,done)
             end
-            if done then
-                return head  -- something changed
-            elseif head then
-                return true  -- nothing changed
-            else
-                return false -- delete list
-            end
+            return head, true
         end
     end
 
@@ -366,9 +346,9 @@ end
 
 do
 
-    local contains, set, attribute = node.has_attribute, node.set_attribute, tex.attribute
+    local has_attribute, set, attribute = node.has_attribute, node.set_attribute, tex.attribute
 
-    function nodes.inherit_attributes(n)
+    function nodes.inherit_attributes(n) -- still ok ?
         if n then
             local i = 1
             while true do
@@ -376,7 +356,7 @@ do
                 if a < 0 then
                     break
                 else
-                    local ai = contains(n,i)
+                    local ai = has_attribute(n,i)
                     if not ai then
                         set(n,i,a)
                     end
@@ -400,54 +380,132 @@ function nodes.length(head)
     end
 end
 
-nodes.processors.actions = nodes.processors.actions or { }
+--~ nodes.processors.actions = nodes.processors.actions or { }
 
-function nodes.processors.action(head)
-    if head then
-        node.slide(head)
-        local actions, done = nodes.processors.actions, false
-        for i=1,#actions do
-            local action = actions[i]
-            if action then
-                local h, ok = action(head)
-                if ok then
-                    head = h
-                end
-                done = done or ok
-            end
-        end
-        if done then
-            return head
-        else
-            return true
-        end
-    else
-        return head
-    end
-end
+--~ function nodes.processors.action(head)
+--~     if head then
+--~         node.slide(head)
+--~         local done = false
+--~         local actions = nodes.processors.actions
+--~         for i=1,#actions do
+--~             local h, ok = actions[i](head)
+--~             if ok then
+--~                 head, done = h, true
+--~             end
+--~         end
+--~         if done then
+--~             return head
+--~         else
+--~             return true
+--~         end
+--~     else
+--~         return head
+--~     end
+--~ end
 
 lists         = lists         or { }
 lists.plugins = lists.plugins or { }
 
-function nodes.process_lists(head)
-    return nodes.process_attributes(head,lists.plugins)
-end
-
 chars         = chars         or { }
 chars.plugins = chars.plugins or { }
 
-function nodes.process_chars(head)
-    return nodes.process_attributes(head,chars.plugins)
+--~ words         = words         or { }
+--~ words.plugins = words.plugins or { }
+
+callbacks.trace = false
+
+do
+
+    kernel = kernel or { }
+
+    local starttiming, stoptiming = input.starttiming, input.stoptiming
+    local hyphenate, ligaturing, kerning = lang.hyphenate, node.ligaturing, node.kerning
+
+    function kernel.hyphenation(head,tail) -- lang.hyphenate returns done
+        starttiming(kernel)
+        local done = hyphenate(head,tail)
+        stoptiming(kernel)
+        return head, tail, done
+    end
+    function kernel.ligaturing(head,tail) -- node.ligaturing returns head,tail,done
+        starttiming(kernel)
+        local head, tail, done = ligaturing(head,tail)
+        stoptiming(kernel)
+        return head, tail, done
+    end
+    function kernel.kerning(head,tail) -- node.kerning returns head,tail,done
+        starttiming(kernel)
+        local head, tail, done = kerning(head,tail)
+        stoptiming(kernel)
+        return head, tail, done
+    end
+
 end
 
-nodes.processors.actions = { -- for the moment here, will change
-    nodes.process_chars,  -- attribute driven
-    nodes.process_glyphs, -- font driven
-    nodes.process_lists,  -- attribute driven
-}
+callback.register('hyphenate' , function(head,tail) return tail end)
+callback.register('ligaturing', function(head,tail) return tail end)
+callback.register('kerning'   , function(head,tail) return tail end)
 
-callback.register('pre_linebreak_filter', nodes.processors.action)
-callback.register('hpack_filter',         nodes.processors.action)
+-- used to be loop, this is faster, called often; todo: shift up tail or even better,
+-- handle tail everywhere; for the moment we're safe
+
+do
+
+    local charplugins, listplugins = chars.plugins, lists.plugins
+
+    nodes.processors.actions = function(head,tail) -- removed: if head ... end
+        local ok, done = false, false
+        head,       ok = nodes.process_attributes(head,charplugins) ; done = done or ok -- attribute driven
+        head, tail, ok = kernel.hyphenation      (head,tail)        ; done = done or ok -- language driven
+        head,       ok = languages.words.check   (head,tail)        ; done = done or ok -- language driven
+        head,       ok = nodes.process_characters(head)             ; done = done or ok -- font driven
+                    ok = nodes.protect_glyphs    (head)             ; done = done or ok -- turn chars into glyphs
+        head, tail, ok = kernel.ligaturing       (head,tail)        ; done = done or ok -- normal ligaturing routine / needed for base mode
+        head, tail, ok = kernel.kerning          (head,tail)        ; done = done or ok -- normal kerning routine    / needed for base mode
+        head,       ok = nodes.process_attributes(head,listplugins) ; done = done or ok -- attribute driven
+        return head, done
+    end
+
+end
+
+do
+
+    local actions         = nodes.processors.actions
+    local first_character = node.first_character
+    local slide           = node.slide
+
+    local function tracer(what,state,head,groupcode,glyphcount)
+        texio.write_nl(string.format("%s %s: group: %s, nodes: %s",
+            (state and "Y") or "N", what, groupcode or "?", nodes.count(head,true)))
+    end
+
+    function nodes.processors.pre_linebreak_filter(head,groupcode) -- todo: tail
+        local first, found = first_character(head)
+        if found then
+            if callbacks.trace then tracer("pre_linebreak",true,head,groupcode) end
+            local head, done = actions(head,slide(head))
+            return (done and head) or true
+        else
+            if callbacks.trace then tracer("pre_linebreak",false,head,groupcode) end
+            return true
+        end
+    end
+
+    function nodes.processors.hpack_filter(head,groupcode) -- todo: tail
+        local first, found = first_character(head)
+        if found then
+            if callbacks.trace then tracer("hpack",true,head,groupcode) end
+            local head, done = actions(head,slide(head))
+            return (done and head) or true
+        end
+        if callbacks.trace then tracer("hpack",false,head,groupcode) end
+        return true
+    end
+
+end
+
+callback.register('pre_linebreak_filter', nodes.processors.pre_linebreak_filter)
+callback.register('hpack_filter'        , nodes.processors.hpack_filter)
 
 do
 
@@ -462,16 +520,40 @@ do
 
     -- flat: don't use next, but indexes
     -- verbose: also add type
+    -- can be sped up
+
+    function nodes.astable(n,sparse)
+        local f, t = node.fields(n.id,n.subtype), { }
+        for i=1,#f do
+            local v = f[i]
+            local d = n[v]
+            if d then
+                if v == "ref_count" or v == "id" then
+                    -- skip
+                elseif expand[v] then -- or: type(n[v]) ~= "string" or type(n[v]) ~= "number" or type(n[v]) ~= "table"
+                    t[v] = "pointer to list"
+                elseif sparse then
+                    if (type(d) == "number" and d ~= 0) or (type(d) == "string" and d ~= "") then
+                        t[v] = d
+                    end
+                else
+                    t[v] = d
+                end
+            end
+        end
+        t.type = node.type(n.id)
+        return t
+    end
 
     function nodes.totable(n,flat,verbose)
-        local function totable(n,verbose)
+        local function totable(n)
             local f = node.fields(n.id,n.subtype)
             local tt = { }
             for _,v in ipairs(f) do
                 if n[v] then
                     if v == "ref_count" then
                         -- skip
-                    elseif expand[v] then -- or: type(n[v]) ~= "string" or type(n[v]) ~= "number"
+                    elseif expand[v] then -- or: type(n[v]) ~= "string" or type(n[v]) ~= "number" or type(n[v]) ~= "table"
                         tt[v] = nodes.totable(n[v],flat,verbose)
                     else
                         tt[v] = n[v]
@@ -487,12 +569,12 @@ do
             if flat then
                 local t = { }
                 while n do
-                    t[#t+1] = totable(n,verbose)
+                    t[#t+1] = totable(n)
                     n = n.next
                 end
                 return t
             else
-                local t = totable(n,verbose)
+                local t = totable(n)
                 if n.next then
                     t.next = nodes.totable(n.next,flat,verbose)
                 end
@@ -504,11 +586,7 @@ do
     end
 
     local function key(k)
-        if type(k) == "number" then
-            return "["..k.."]"
-        else
-            return k
-        end
+        return ((type(k) == "number") and "["..k.."]") or k
     end
 
     local function serialize(root,name,handle,depth,m)
@@ -518,13 +596,14 @@ do
             handle(("%s%s={"):format(depth,key(name)))
         else
             depth = ""
-            if type(name) == "string" then
+            local tname = type(name)
+            if tname == "string" then
                 if name == "return" then
                     handle("return {")
                 else
                     handle(name .. "={")
                 end
-            elseif type(name) == "number" then
+            elseif tname == "number"then
                 handle("[" .. name .. "]={")
             else
                 handle("t={")
@@ -533,7 +612,7 @@ do
         if root then
             local fld
             if root.id then
-                fld = node.fields(root.id,root.subtype)
+                fld = node.fields(root.id,root.subtype) -- we can cache these (todo)
             else
                 fld = table.sortedkeys(root)
             end
@@ -541,13 +620,23 @@ do
                 handle(("%s %s=%q,"):format(depth,'type',root['type']))
             end
             for _,k in ipairs(fld) do
-                if k then
+                if k == "ref_count" then
+                    -- skip
+                elseif k then
                     local v = root[k]
                     local t = type(v)
                     if t == "number" then
+if v == 0 then
+    -- skip
+else
                         handle(("%s %s=%s,"):format(depth,key(k),v))
+end
                     elseif t == "string" then
+if v == "" then
+    -- skip
+else
                         handle(("%s %s=%q,"):format(depth,key(k),v))
+end
                     elseif v then -- userdata or table
                         serialize(v,k,handle,depth,m+1)
                     end
@@ -585,9 +674,22 @@ do
         tex.print("\\stoptyping")
     end
 
+    function nodes.check_for_leaks(sparse)
+        local l = { }
+        local q = node.usedlist()
+        for p in node.traverse(q) do
+            local s = table.serialize(nodes.astable(p,sparse),node.type(p.id))
+            l[s] = (l[s] or 0) + 1
+        end
+        node.flush_list(q)
+        for k, v in pairs(l) do
+            texio.write_nl(string.format("%s * %s", v, k))
+        end
+    end
+
 end
 
-if not node.list_has_attribute then
+if not node.list_has_attribute then -- no longer needed
 
     function node.list_has_attribute(list,attribute)
         if list and attribute then
@@ -609,377 +711,48 @@ function nodes.pack_list(head)
     return t
 end
 
--- helpers
-
 do
 
-    local kern_node      = node.new("kern",1)
-    local penalty_node   = node.new("penalty")
-    local glue_node      = node.new("glue")
-    local glue_spec_node = node.new("glue_spec")
+    local glue, whatsit, hlist = node.id("glue"), node.id("whatsit"), node.id("hlist")
 
-    function nodes.penalty(p)
-        local n = node.copy(penalty_node)
-        n.penalty = p
-        return n
+    function nodes.leftskip(n)
+        while n do
+            local id = n.id
+            if id == glue then
+                if n.subtype == 8 then -- 7 in c/web source
+                    return (n.spec and n.spec.width) or 0
+                else
+                    return 0
+                end
+            elseif id == whatsit then
+                n = n.next
+            elseif id == hlist then
+                return n.width
+            else
+                break
+            end
+        end
+        return 0
     end
-    function nodes.kern(k)
-        local n = node.copy(kern_node)
-        n.kern = k
-        return n
-    end
-    function nodes.glue(width,stretch,shrink)
-        local n = node.copy(glue_node)
-        local s = node.copy(glue_spec_node)
-        s.width, s.stretch, s.shrink = width, stretch, shrink
-        n.spec = s
-        return n
-    end
-    function nodes.glue_spec(width,stretch,shrink)
-        local s = node.copy(glue_spec_node)
-        s.width, s.stretch, s.shrink = width, stretch, shrink
-        return s
+    function nodes.rightskip(n)
+        if n then
+            n = node.slide(n)
+            while n do
+                local id = n.id
+                if id == glue then
+                    if n.subtype == 9 then -- 8 in the c/web source
+                        return (n.spec and n.spec.width) or 0
+                    else
+                        return 0
+                    end
+                elseif id == whatsit then
+                    n = n.prev
+                else
+                    break
+                end
+            end
+        end
+        return false
     end
 
 end
-
--- old code
-
---~ function nodes.do_process_glyphs(stack)
---~     if not stack or #stack == 0 then
---~         return false
---~     elseif #stack == 1 then
---~         local node = stack[1]
---~         if node then
---~             local kind = node[1]
---~             if kind == 'glyph' then
---~                 local tfmdata = fonts.tfm.id[node[5]] -- we can use fonts.tfm.processor_id
---~                 if tfmdata and tfmdata.shared and tfmdata.shared.processors then
---~                     for _, func in pairs(tfmdata.shared.processors) do -- per font
---~                         func(stack,1,node)
---~                     end
---~                 end
---~             elseif kind == 'hlist' or kind == "vlist" then
---~                 local done = nodes.do_process_glyphs(node[8])
---~             end
---~             return true
---~         else
---~             return false
---~         end
---~     else
---~         local font_ids = { }
---~         local done = false
---~         for _, v in pairs(stack) do
---~             if v then
---~                 if v[1] == 'glyph' then
---~                     local font_id = v[5]
---~                     local tfmdata = fonts.tfm.id[font_id] -- we can use fonts.tfm.processor_id
---~                     if tfmdata and tfmdata.shared and tfmdata.shared.processors then
---~                         font_ids[font_id] = tfmdata.shared.processors
---~                     end
---~                 end
---~             end
---~         end
---~         if done then
---~             return false
---~         else
---~             -- todo: generic loop before
---~             for font_id, _ in pairs(font_ids) do
---~                 for _, func in pairs(font_ids[font_id]) do -- per font
---~                     local i = 1
---~                     while true do
---~                         local node = stack[i]
---~                         if node and node[1] == 'glyph' and node[5] == font_id then
---~                             i = func(stack,i,node)
---~                         end
---~                         if i < #stack then
---~                             i = i + 1
---~                         else
---~                             break
---~                         end
---~                     end
---~                 end
---~             end
---~             for i=1, #stack do
---~                 local node = stack[i]
---~                 if node then
---~                     if node[1] == 'hlist' or node[1] == "vlist" then
---~                         nodes.do_process_glyphs(node[8])
---~                     end
---~                 end
---~             end
---~             return true
---~         end
---~     end
---~ end
-
---~ function nodes.do_process_glyphs(stack)
---~     local function process_list(node)
---~         local done = false
---~         if node and node[1] == 'hlist' or node[1] == "vlist" then
---~             local attributes = node[3]
---~             if attributes then
---~                 if not attributes[1] then
---~                     nodes.do_process_glyphs(node[8])
---~                     attributes[1] = 1
---~                     done = true
---~                 end
---~             else
---~                 nodes.do_process_glyphs(node[8])
---~                 node[3] = { 1 }
---~                 done = true
---~             end
---~         end
---~         return done
---~     end
---~     if not stack or #stack == 0 then
---~         return false
---~     elseif #stack == 1 then
---~         return process_list(stack[1])
---~     else
---~         local font_ids, found = { }, false
---~         for _, node in ipairs(stack) do
---~             if node and node[1] == 'glyph' then
---~                 local font_id = node[5]
---~                 local tfmdata = fonts.tfm.id[font_id] -- we can use fonts.tfm.processor_id
---~                 if tfmdata and tfmdata.shared and tfmdata.shared.processors then
---~                     font_ids[font_id], found = tfmdata.shared.processors, true
---~                 end
---~             end
---~         end
---~         if not found then
---~             return false
---~         else
---~             -- we need func to report a 'done'
---~             local done = false
---~             for font_id, font_func in pairs(font_ids) do
---~                 for _, func in pairs(font_func) do -- per font
---~                     local i = 1
---~                     while true do
---~                         local node = stack[i]
---~                         if node and node[1] == 'glyph' and node[5] == font_id then
---~                             i = func(stack,i,node)
---~                             done = true
---~                         end
---~                         if i < #stack then
---~                             i = i + 1
---~                         else
---~                             break
---~                         end
---~                     end
---~                 end
---~             end
---~             for _, node in ipairs(stack) do
---~                 if node then
---~                     done = done or process_list(node)
---~                 end
---~             end
---~             return done
---~         end
---~     end
---~ end
-
---~ function nodes.process_glyphs(t,...)
---~     input.start_timing(nodes)
---~     local done = nodes.do_process_glyphs(t)
---~     if done then
---~         t = nodes.collapse(t)
---~     end
---~     input.stop_timing(nodes)
---~     nodes.report(t,done)
---~     if done then
---~         return t
---~     else
---~         return true
---~     end
---~ end
-
---~ function nodes.do_process_glyphs(stack)
---~     local function process_list(node)
---~         local done = false
---~         if node and node[1] == 'hist' or node[1] == "vlist" then
---~             local attributes = node[3]
---~             if attributes then
---~                 if attributes[1] then
---~                 else
---~                     local content = node[8]
---~                     if type(content) == "table" then
---~                         nodes.do_process_glyphs(content)
---~                     end
---~                     attributes[1] = 1
---~                     done = true
---~                 end
---~             else
---~                 nodes.do_process_glyphs(node[8])
---~                 node[3] = { 1 }
---~                 done = true
---~             end
---~         end
---~         return done
---~     end
---~     if not stack or #stack == 0 then
---~         return false
---~     elseif #stack == 1 then
---~         return process_list(stack[1])
---~     else
---~         local font_ids, found = { }, false
---~         for _, node in ipairs(stack) do
---~             if node and node[1] == 'glyph' then
---~                 local font_id = node[5]
---~                 local tfmdata = fonts.tfm.id[font_id] -- we can use fonts.tfm.processor_id
---~                 if tfmdata and tfmdata.shared and tfmdata.shared.processors then
---~                     font_ids[font_id], found = tfmdata.shared.processors, true
---~                 end
---~             end
---~         end
---~         if not found then
---~             return false
---~         else
---~             -- we need func to report a 'done'
---~             local done = false
---~             for font_id, font_func in pairs(font_ids) do
---~                 for _, func in pairs(font_func) do -- per font
---~                     local i = 1
---~                     while true do
---~                         local node = stack[i]
---~                         if node and node[1] == 'glyph' and node[5] == font_id then
---~                             i = func(stack,i,node)
---~                             done = true
---~                         end
---~                         if i < #stack then
---~                             i = i + 1
---~                         else
---~                             break
---~                         end
---~                     end
---~                 end
---~             end
---~             for _, node in ipairs(stack) do
---~                 if node then
---~                     done = done or process_list(node)
---~                 end
---~             end
---~             return done
---~         end
---~     end
---~ end
-
---~ function nodes.process_glyphs(t,...)
---~     if status.output_active then
---~         return true
---~     else
---~         input.start_timing(nodes)
---~         local done = nodes.do_process_glyphs(t)
---~         if done then
---~             t = nodes.collapse(t)
---~         end
---~         input.stop_timing(nodes)
---~         nodes.report(t,done)
---~         if done then
---~             return t
---~         else
---~             return true
---~         end
---~     end
---~ end
-
---~ do
-
---~     local function do_process_glyphs(stack)
---~         if not stack or #stack == 0 then
---~             return false
---~         elseif #stack == 1 and stack[1][1] ~= 'glyph' then
---~             return false
---~         else
---~             local font_ids, found = { }, false
---~             local fti = fonts.tfm.id
---~             for _, node in ipairs(stack) do
---~                 if node and node[1] == 'glyph' then
---~                     local font_id = node[5]
---~                     local tfmdata = fti[font_id] -- we can use fonts.tfm.processor_id
---~                     if tfmdata and tfmdata.shared and tfmdata.shared.processors then
---~                         font_ids[font_id], found = tfmdata.shared.processors, true
---~                     end
---~                 end
---~             end
---~             if not found then
---~                 return false
---~             else
---~                 -- we need func to report a 'done'
---~                 local done = false
---~                 for font_id, font_func in pairs(font_ids) do
---~                     for _, func in pairs(font_func) do -- per font
---~                         local i = 1
---~                         while true do
---~                             local node = stack[i]
---~                             if node and node[1] == 'glyph' and node[5] == font_id then
---~                                 i = func(stack,i,node)
---~                                 done = true
---~                             end
---~                             if i < #stack then
---~                                 i = i + 1
---~                             else
---~                                 break
---~                             end
---~                         end
---~                     end
---~                 end
---~                 for _, node in ipairs(stack) do
---~                     if node then
---~                         done = done or process_list(node)
---~                     end
---~                 end
---~                 return done
---~             end
---~         end
---~     end
-
---~     local function do_collapse_glyphs(stack,existing_t)
---~         if stack then
---~             local t = existing_t or { }
---~             for _, node in pairs(stack) do
---~                 if node then
---~                     if node[3] then node[3][1] = nil end -- remove status bit / 1 sec faster on 15 sec
---~                     if node[1] == 'inline' then
---~                         local nodes = node[4]
---~                         if #nodes == 1 then
---~                             t[#t+1] = nodes[1]
---~                         else
---~                             do_collapse_glyphs(nodes,t)
---~                         end
---~                     else
---~                         t[#t+1] = node
---~                     end
---~                 else
---~                     -- deleted node
---~                 end
---~             end
---~             return t
---~         else
---~             return stack
---~         end
---~     end
-
---~     function nodes.process_glyphs(t,...)
---~     --~ print(...)
---~         if status.output_active then  -- not ok, we need a generic blocker, pagebody ! / attr tex.attibutes
---~             return true
---~         else
---~             input.start_timing(nodes)
---~             local done = do_process_glyphs(t)
---~             if done then
---~                 t = do_collapse_glyphs(t)
---~             end
---~             input.stop_timing(nodes)
---~             nodes.report(t,done)
---~             if done then
---~     --~ texio.write_nl("RETURNING PROCESSED LIST")
---~                 return t
---~             else
---~     --~ texio.write_nl("RETURNING SIGNAL")
---~                 return true
---~             end
---~         end
---~     end
-
---~ end

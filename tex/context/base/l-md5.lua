@@ -13,6 +13,6 @@ if md5 then do
 
     if not md5.HEX then function md5.HEX(str) return convert(str,"%02X") end end
     if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
-    if not md5.dec then function md5.dec(str) return convert(stt,"%03i") end end
+    if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 
 end end

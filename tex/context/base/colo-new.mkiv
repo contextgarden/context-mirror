@@ -106,6 +106,13 @@
      \csname(ts:#1)\endcsname
    \fi\fi}
 
+\let\normaldoactivatecolor\doactivatecolor
+
+\def\doactivatecolor
+  {\ctxlua{colors.enabled=true}%
+   \let\doactivatecolor\normaldoactivatecolor
+   \doactivatecolor}
+
 \def\deactivatecolor
   {\doresetattribute\s!color
    \doresetattribute\s!transparency}

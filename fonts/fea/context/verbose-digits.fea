@@ -1,15 +1,15 @@
 lookup NumericLookupDFLT {
     lookupflag 0 ;
-        sub zero  by z e r o ;
-        sub one   by o n e ;
-        sub two   by t w o ;
-        sub three by t h r e e ;
-        sub four  by f o u r ;
-        sub five  by f i v e ;
-        sub six   by s i x ;
-        sub seven by s e v e n ;
-        sub eight by e i g h t ;
-        sub nine  by n i n e ;
+    sub zero  by z e r o ;
+    sub one   by o n e ;
+    sub two   by t w o ;
+    sub three by t h r e e ;
+    sub four  by f o u r ;
+    sub five  by f i v e ;
+    sub six   by s i x ;
+    sub seven by s e v e n ;
+    sub eight by e i g h t ;
+    sub nine  by n i n e ;
 } NumericLookupDFLT ;
 
 feature verb {

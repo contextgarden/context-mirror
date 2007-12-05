@@ -22,6 +22,10 @@
 \registerctxluafile{font-def}{1.001}
 \registerctxluafile{font-fbk}{1.001}
 
+\startruntimectxluacode
+    fonts.enc.make_unicode_vector()
+\stopruntimectxluacode
+
 \unprotect
 
 \def\mkdefinefontfeature#1#2%
@@ -77,6 +81,44 @@
   {\dodoubleargument\dofontfeatureslist}
 
 \def\dofontfeatureslist[#1][#2]% todo: arg voor type
-  {\ctxlua{tex.sprint(tex.ctxcatcodes,fonts.define.specify.context_tostring("#1","otf","\luaescapestring{#2}","yes","no",true))}}
+  {\ctxlua{tex.sprint(tex.ctxcatcodes,fonts.define.specify.context_tostring("#1","otf","\luaescapestring{#2}","yes","no",true,{"number"}))}}
+
+\def\definefontlocal#1%
+  {\expandafter\font\csname#1\endcsname\lastfontname\relax}
+
+\def\definefontglobal#1%
+  {\global\expandafter\font\csname#1:\endcsname\lastfontname\relax}
+
+\attribute\zerocount\zerocount % first in list, so fast match
+
+% \def\featureattribute#1{\ctxlua{tex.sprint(fonts.define.specify.context_number("#1"))}}
+% \def\setfontfeature  #1{\attribute\zerocount\featureattribute{#1}\relax}
+% \def\resetfontfeature#1{\attribute\zerocount\zerocount}
+
+\let\currentfeature\empty
+
+\def\featureattribute#1{\ctxlua{tex.sprint(fonts.define.specify.context_number("#1"))}}
+\def\setfontfeature  #1{\edef\currentfeature{#1}\attribute\zerocount\featureattribute{#1}\relax}
+\def\resetfontfeature#1{\let\currentfeature\empty\attribute\zerocount\zerocount}
+
+\appendtoks
+   \setfontfeature\currentfeature
+\to \everylanguage
+
+%D Simpler:
+
+\def\updatefontparameters
+  {\edef\@@fonthandling{\truefontdata\somefontname\s!handling}%
+   \edef\@@fontfeatures{\truefontdata\fontfile    \s!features}%
+   \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
+
+\def\setfontcharacteristics
+  {\fastenablehandling{\ifx\@@fonthandling\empty\s!default\else\@@fonthandling\fi}\lastfontidentifier
+   \the\everyfont}
+
+%D Predefined:
+
+% \installfontfeature[otf][tlig]
+% \installfontfeature[otf][trep]
 
 \protect \endinput

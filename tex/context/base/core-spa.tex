@@ -2299,16 +2299,41 @@
 
 %D Centered looks nicer:
 
+% \def\dosetstrut
+%   {\let\strut\normalstrut
+%    \setbox\strutbox\normalhbox
+%      {\normalhbox to \zeropoint
+%         {% \hss % new, will be option
+%          \vrule
+%            \!!width \strutwidth
+%            \!!height\strutheight
+%            \!!depth \strutdepth
+%          \hss}}%
+%    \struttotal\dimexpr\strutht+\strutdp\relax}
+%
+% because of all the callbacks in mkiv, we avoid unnecessary boxes ...
+% maybe use an attribute so that we can tag boxes that don't need a
+% treatment; tests with using an attribute so far have shown that
+% it's slower because testing the attribute takes time too
+
 \def\dosetstrut
   {\let\strut\normalstrut
-   \setbox\strutbox\normalhbox
-     {\normalhbox to \zeropoint
-        {% \hss % new, will be option
-         \vrule
-           \!!width \strutwidth
-           \!!height\strutheight
-           \!!depth \strutdepth
-         \hss}}%
+   \ifdim\strutwidth=\zeropoint
+       \setbox\strutbox\normalhbox
+         {\vrule
+            \!!width \zeropoint
+            \!!height\strutheight
+            \!!depth \strutdepth}%
+   \else
+       \setbox\strutbox\normalhbox
+         {\normalhbox to \zeropoint
+            {% \hss % new, will be option
+             \vrule
+               \!!width \strutwidth
+               \!!height\strutheight
+               \!!depth \strutdepth
+             \hss}}%
+   \fi
    \struttotal\dimexpr\strutht+\strutdp\relax}
 
 %D The dimen \type {\struttotal} holds the exact size of the
@@ -2414,7 +2439,7 @@
      \fi
    \fi\fi}
 
-\newbox\nostrutbox \setbox\nostrutbox\normalhbox{\normalhbox{}}
+\newbox\nostrutbox \setbox\nostrutbox\normalhbox{} % {\normalhbox{}}
 
 \def\setnostrut
   {\setbox\strutbox\copy\nostrutbox
@@ -4504,6 +4529,110 @@
    \ifx\nexttoken      \%\else \ifx\nexttoken          \&\else
      \space
    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+
+% moved from page-lin
+
+\def\installspacehandler#1#2% needs to set \obeyedspace
+  {\setvalue{\??sr#1}{#2}}
+
+\installspacehandler \v!on
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
+   \let\ =\obeyedspace}
+
+\installspacehandler \v!yes
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode    \normalspace  }}%
+   \let\ =\obeyedspace}
+
+\installspacehandler \v!off
+  {\normalspaces
+   \let\obeyedspace\normalspace
+   \let\ =\normalspace}
+
+\installspacehandler \v!fixed
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode\fixedspace}}%
+   \let\ =\obeyedspace}
+
+\def\activatespacehandler#1%
+  {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
+
+% moved from page-lin
+
+%D When spacing is active we need to handle commands in
+%D a special way:
+%D
+%D \starttyping
+%D \setuplines[space=on]
+%D
+%D \startlines
+%D Let's talk about this{\ttsl\gobbleoneargument or}that.
+%D \stoplines
+%D
+%D \startlines
+%D Let's talk about this{\getvalue{ttsl}or}that.
+%D \stoplines
+%D \stoptyping
+%D
+%D One can indent in several ways:
+%D
+%D \starttyping
+%D \setupindenting[medium] \setuplines[indenting=odd] % no yes odd even
+%D
+%D \startlines
+%D first
+%D second
+%D third
+%D fourth
+%D \stoplines
+%D \stoptyping
+
+\def\setuplines
+  {\dodoubleargument\getparameters[\??rg]}
+
+\def\startlines
+  {\@@rgbefore
+   \pushmacro\checkindentation
+   \whitespace
+  %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
+   \begingroup
+   \setupindenting[\@@rgindenting]%
+   \typesettinglinestrue
+   \setupwhitespace[\v!none]%
+   \obeylines
+   \ignorespaces
+   \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
+     {\gdef\afterfirstobeyedline
+        {\nobreak
+         \global\let\afterfirstobeyedline\relax}}%
+   \def\obeyedline
+     {\par
+      \afterfirstobeyedline
+      \futurelet\next\dobetweenthelines}%
+   \activatespacehandler\@@rgspace
+   \GotoPar}
+
+\def\stoplines
+  {\endgroup
+   \popmacro\checkindentation
+   \@@rgafter}
+
+\def\dobetweenthelines
+  {\doifmeaningelse\next\obeyedline\@@rginbetween\donothing}
+
+\setuplines
+  [\c!before=\blank,
+   \c!after=\blank,
+   \c!inbetween=\blank,
+   \c!indenting=\v!no,
+   \c!space=\v!default]
+
+\def\emptylines
+  {\dosingleempty\doemptylines}
+
+\def\doemptylines[#1]%
+  {\endgraf\dorecurse{\iffirstargument#1\else3\fi}\crlf}
 
 % plugins
 

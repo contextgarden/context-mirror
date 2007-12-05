@@ -21,7 +21,9 @@
     characters.context.rehash()
 \stopruntimectxluacode
 
-\ctxlua { characters.context.define() } % redefines all \characters
+\ctxlua {
+    characters.context.define()
+} % redefines all \characters
 
 \useencoding[032,033,037] % fallbacks for some unicode chars, todo
 

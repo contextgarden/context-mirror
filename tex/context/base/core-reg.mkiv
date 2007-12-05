@@ -36,13 +36,13 @@
    \doglobal\addtocommalist{#1}\allregisters}
 
 \def\mksaveregisterentry#1#2#3#4#5#6#7% class type reference key entry pagespec realpage
-  {\expanded{\writeutilitytua{table.insert(jr['#1'],{'#2','#3',\!!bs#4\!!es,\!!bs#5\!!es,'#6','#7'})}}}
+  {\expanded{\writeutilitytua{ti(jr['#1'],{'#2','#3',\!!bs#4\!!es,\!!bs#5\!!es,'#6','#7'})}}}
 
 \def\mksaveregistersee#1#2#3#4#5#6#7% class type reference key entry see pagespec
-  {\expanded{\writeutilitytua{table.insert(jr['#1'],{'#2','#3',\!!bs#4\!!es,\!!bs#5\!!es,'#6','#7'})}}}
+  {\expanded{\writeutilitytua{ti(jr['#1'],{'#2','#3',\!!bs#4\!!es,\!!bs#5\!!es,'#6','#7'})}}}
 
 \def\mksaveregistervariable#1#2#3% class type value
-  {\expanded{\immediatewriteutilitytua{table.insert(jr['#1'],{'#2','#3'})}}}
+  {\expanded{\immediatewriteutilitytua{ti(jr['#1'],{'#2','#3'})}}}
 
 % Beware, we have no filename support here. For that we need to save the resulting
 % tex code in a file. No big deal.

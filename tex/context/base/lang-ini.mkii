@@ -11,4 +11,135 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% mkiv code is experimental
+\unprotect
+
+\def\mkdoloadpatterns#1#2%
+  {\expanded{\getcommacommandsize[\getvalue{\??la#2\s!encoding}]}%
+   \ifnum\commalistsize>0
+    %\message{[nofpatterns #2: \commalistsize/\getvalue{\??la#2\s!encoding}]}%
+     \dorecurse\commalistsize
+       {\expanded{\getfromcommacommand[\getvalue{\??la#2\s!encoding}][\recurselevel]}%
+        \let\patternencoding\commalistelement
+        \expanded{\getfromcommacommand[\getvalue{\??la#2\s!mapping }][\recurselevel]}%
+        \let\patternmapping \commalistelement
+       %\message{[patterns: #1/#2/\patternencoding/\patternmapping]}%
+        \dodoloadpatterns{#1}{#2}\patternencoding\patternmapping}%
+   \else
+    %\message{[patterns: #1/#2]}%
+     \dodoloadpatterns{#1}{#2}{}{}%
+   \fi}
+
+\def\setuphyppatencoding
+  {\pathypsettings
+   \enableregime[utf]}
+
+\def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
+  {\normallanguage\loadedlanguage % when not really needed
+   \bgroup
+   \let\synchronizepatterns\relax % needed?
+   \let\enabledmapping     \empty % needed?
+   \doifelsenothing{#3}{\enableencoding[\s!default]}{\enableencoding[#3]}%
+   \doifelsenothing{#4}{\enablemapping [\s!default]}{\enablemapping [#4]}%
+   \setuphyppatencoding
+   \ifundefined{\??la\??la:\currentencoding:\currentmapping:#2}%
+     \let\doshowpatterns\relax
+     \edef\alreadyloadedlanguage
+       {\executeifdefined{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}\empty}%
+     \edef\alreadyloadedlanguage
+       {\executeifdefined{\??la\??la:\currentencoding:\currentmapping:\f!languageprefix#2.\f!patternsextension}\alreadyloadedlanguage}%
+     \ifx\alreadyloadedlanguage\empty
+       \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\loadedlanguage
+       \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
+       \startpatternloading{\truefilename{\f!languageprefix#2.\f!patternsextension}}{#3}{#4}%
+         \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
+           {\setxvalue{\??la#1\s!patterns}{#2}%
+            \setxvalue{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}{\number\loadedlanguage}%
+            \xdef\preloadedpmessage{\preloadedpmessage\doshowpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
+            \doglobal\addtocommalist{#2}\preloadedpatterns
+            \showmessage\m!linguals1{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
+           {\showmessage\m!linguals2{#2,#1,\loadedlanguage,\currentencoding,\currentmapping,\f!languageprefix#2.\f!patternsextension,\truefilename{\f!languageprefix#2.\f!patternsextension}}}%
+       \stoppatternloading
+       \startpatternloading{\truefilename{\f!languageprefix#2.\f!hyphensextension}}{#3}{#4}%
+         \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
+           {\showmessage\m!linguals3{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
+           {\showmessage\m!linguals4{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}%
+       \stoppatternloading
+       \doglobal\increment\loadedlanguage
+       % \stopencoding
+     \else % optimization, introduced 2004.08.24, while sorting out changes in tl
+       \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\alreadyloadedlanguage
+       \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
+       \setxvalue{\??la#1\s!patterns}{#2}%
+       \xdef\preloadedpmessage{\preloadedpmessage\doshowpatterns{#2}{[\number\alreadyloadedlanguage]}{\currentencoding}{\currentmapping}}%
+       \doglobal\addtocommalist{#2}\preloadedpatterns
+       \showmessage\m!linguals1{#2,#1,[\alreadyloadedlanguage],\currentencoding,\currentmapping}%
+     \fi
+   \fi
+   \egroup}
+
+%D Since we can only load patterns in ini\TeX, we nil the
+%D loading before dumping (which saves a bit of memory, but
+%D strangely enough not in the format).
+
+\appendtoks
+  \gdef\doloadpatterns{\doglobal\increment\loadedlanguage\gobbletwoarguments}%
+  \globallet\dodoloadpatterns\gobblefourarguments
+\to \everydump
+
+\def\mkdoifpatternselse#1%
+  {\expanded{\doifinsetelse{#1}{\preloadedpatterns}}}
+
+\def\mksetnormallanguage#1#2% current default
+  {% called quite often, so we use \csname
+   % \def\synchronizepatterns{\setnormallanguage
+   %   {\csname\??la\currentlanguage\s!patterns\endcsname}}% called often
+   % of even better pre-expand in an ugly way:
+   \@EA\def\@EA\synchronizepatterns\@EA{\@EA\dosetnormallanguage
+     \csname\??la\currentlanguage\s!patterns\endcsname}%
+   \donefalse
+   \synchronizepatterns
+   \ifdone\else
+     \def\synchronizepatterns{\dosetnormallanguage\currentlanguage}%
+     \synchronizepatterns
+     \ifdone\else
+       \ifx\currentdefaultlanguage\empty\else
+         \@EA\def\@EA\synchronizepatterns\@EA{\@EA\dosetnormallanguage
+           \csname\??la\currentdefaultlanguage\s!patterns\endcsname}%
+         \synchronizepatterns
+         \ifdone\else
+           \dosetnormallanguage\currentdefaultlanguage
+           \synchronizepatterns
+         \fi
+       \fi
+     \fi
+   \fi}
+
+\def\dosetnormallanguage#1% #1 == \cs
+  {\dodosetnormallanguage{:\currentencoding:\currentmapping:}#1{%
+   \dodosetnormallanguage{:\currentencoding:\s!default     :}#1{%
+   \dodosetnormallanguage{:\s!default      :\currentmapping:}#1{%
+   \dodosetnormallanguage{:\s!default      :\s!default     :}#1\empty}}}}
+
+\def\dodosetnormallanguage#1#2%
+  {\ifcsname\??la\??la#1#2\endcsname
+     \edef\thenormallanguage{\csname\??la\??la#1#2\endcsname}% can be \chardef
+     \ifx\thenormallanguage\empty
+       \@EAEAEA\firstofoneargument
+     \else
+       \donetrue
+       \@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
+       \normallanguage\thenormallanguage\relax % \relax is needed for lookahead problems
+       \@EAEAEA\gobbleoneargument
+     \fi
+   \else
+     \@EA\firstofoneargument
+   \fi}
+
+\beginXETEX
+    \def\synchronizepatternswithfont{}
+    \def\doloadpatterns         #1#2{\dodoloadpatterns{#1}{#2}\s!default\s!default}
+    \def\setnormallanguage        #1{\dosetnormallanguage{:\s!default:\s!default:}#1\empty}
+    \def\setuphyppatencoding        {\pathypsettings}
+\endXETEX
+
+\protect \endinput

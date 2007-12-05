@@ -233,16 +233,13 @@
 % beware, this may change: #1 rawchar (=> `#1 and such, saves tokens)
 
 \def\utftwouniglph#1#2%
-  {\@EA\unicodechar\@EA{\the\numexpr\utf@a*(#1-\utf@d)+%
-     `#2-\utf@g\relax}}
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@a*(#1-\utf@d)+`#2-\utf@g\relax}}
 
 \def\utfthreeuniglph#1#2#3%
-  {\@EA\unicodechar\@EA{\the\numexpr\utf@b*(#1-\utf@e)+%
-     \utf@a*(`#2-\utf@g)+`#3-\utf@g\relax}}
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@b*(#1-\utf@e)+\utf@a*(`#2-\utf@g)+`#3-\utf@g\relax}}
 
 \def\utffouruniglph#1#2#3#4%
-  {\@EA\unicodechar\@EA{\the\numexpr\utf@c*(#1-\utf@f)+%
-      \utf@b*(`#2-\utf@g)+\utf@a*(`#3-\utf@g)+`#4-\utf@g\relax}}
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@c*(#1-\utf@f)+\utf@b*(`#2-\utf@g)+\utf@a*(`#3-\utf@g)+`#4-\utf@g\relax}}
 
 % \def\keeputfcharacters
 %   {\def\utftwouniglph        ##1##2{\rawcharacter{##1}\string##2}%
@@ -749,9 +746,7 @@
 \endXETEX
 
 \beginTEX
-
     \def\numbertoutf#1{[\number#1]}
-
 \endTEX
 
 \def\uchartoutf#1#2%

@@ -64,8 +64,12 @@ module Kpse
 
     # @@distribution  = 'miktex' if ENV['PATH'] =~ /miktex[\\\/]bin/o
 
-    if ENV['PATH'] =~ /(.*?)miktex[\\\/]bin/i then
-        @@distribution = 'miktex' unless $1 =~ /(texmf\-mswin[\/\\]bin|bin[\/\\]win32)/i
+    # if ENV['PATH'] =~ /(.*?)miktex[\\\/]bin/i then
+        # @@distribution = 'miktex' unless $1 =~ /(texmf\-mswin[\/\\]bin|bin[\/\\]win32)/i
+    # end
+
+    if @@mswindows && (ENV['PATH'] =~ /(.*?)miktex[\\\/]bin/i) then
+         @@distribution = 'miktex' unless $1 =~ /(texmf\-mswin[\/\\]bin|bin[\/\\]win32)/i
     end
 
     @@re_true = /yes|on|true|1/i

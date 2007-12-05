@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2007.09.28 11:58}
+\newcontextversion{2007.12.05 13:56}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -53,7 +53,7 @@
    \def\floatsetupcontent   {\copy\nextbox}%
    \def\floatsetupwidth     {\wd\nextbox}%
    \def\floatsetupheight    {\ht\nextbox}%
-   \def\placesetupfloat[##1]{\placefloat[##1][#2][#3]{\floatsetupcaption}{\floatsetupcontent}}%
+   \def\placesetupfloat[##1]{\placefloat[##1][#2][#3]{#4}{\floatsetupcontent}}% #4 and not \floatsetupcaption (unexpanded)
    \dowithnextbox{\setups[#1]}\vbox}
 
 \chardef\baselinegridmode=0 % option in layout / 1=permit_half_lines
@@ -1040,13 +1040,15 @@
 
 \let\normaltype\type
 
-\beginTEX
-  \unexpanded\def\retype#1{\bgroup\convertargument#1\to\ascii\@EA\normaltype\@EA{\ascii}\egroup}
-\endTEX
-
-\beginETEX
-  \unexpanded\def\retype#1{\scantokens{\normaltype{#1}\ignorespaces}}
-\endETEX
+\ifx\scantextokens\undefined
+    \ifx\scantokens\undefined
+        \unexpanded\def\retype#1{\bgroup\convertargument#1\to\ascii\@EA\normaltype\@EA{\ascii}\egroup}
+    \else
+        \unexpanded\def\retype#1{\scantokens{\normaltype{#1}\ignorespaces}\relax}
+    \fi
+\else
+  \unexpanded\def\retype#1{\scantextokens{\normaltype{#1}}}
+\fi
 
 \def\simplifytype{\let\type\retype}
 

@@ -20,8 +20,8 @@
     \immediatewriteutilitytua{local tp = job.twopass}%
 \to \everyopenutilities
 
-\def\immediatesavetwopassdata        #1#2#3{\expanded{\immediatewriteutilitytua{table.insert(tp['#1'],"#3")}}}
-\def\savetwopassdata                 #1#2#3{\expanded{\writeutilitytua         {table.insert(tp['#1'],"#3")}}}
+\def\immediatesavetwopassdata        #1#2#3{\expanded{\immediatewriteutilitytua{ti(tp['#1'],"#3")}}}
+\def\savetwopassdata                 #1#2#3{\expanded{\writeutilitytua         {ti(tp['#1'],"#3")}}}
 \def\immediatesavetaggedtwopassdata#1#2#3#4{\expanded{\immediatewriteutilitytua{tp['#1']['#3']="#4"}}}
 \def\savetaggedtwopassdata         #1#2#3#4{\expanded{\writeutilitytua         {tp['#1']['#3']="#4"}}}
 

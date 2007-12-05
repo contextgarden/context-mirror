@@ -164,7 +164,7 @@ else
 
     function input.registerzipfile(instance,zipname,tag)
         if not zip.registeredfiles[zipname] then
-            input.start_timing(instance)
+            input.starttiming(instance)
             local z = zip.open(zipname)
             if not z then
                 zipname = input.find_file(instance,zipname)
@@ -177,7 +177,7 @@ else
             else
                 input.logger("? zipfile","unknown "..zipname)
             end
-            input.stop_timing(instance)
+            input.stoptiming(instance)
         end
     end
 

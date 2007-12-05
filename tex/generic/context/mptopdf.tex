@@ -112,6 +112,7 @@
 
 \def\processMPfile#1 %
   {\pdfoutput=1
+   \pdfpkresolution600
    \pdfcompresslevel=9
    \chardef\makeMPintoPDFobject=1
    \hsize=100in
@@ -142,5 +143,33 @@
 %D self contained file can be. However, if needed, this \PDF\
 %D file can be converted to \EPS\ using for instance the
 %D \PDFTOPS\ program (in \WEBC) or \GHOSTSCRIPT.
+
+%D A few helpers:
+
+{\catcode`\.=12
+ \catcode`\p=12
+ \catcode`\t=12
+ \gdef\WITHOUTPT#1pt{#1}}
+
+\def\withoutpt#1%
+  {\expandafter\WITHOUTPT#1}
+
+\def\negatecolorcomponent#1% #1 = \macro
+  {\scratchdimen1pt\advance\scratchdimen-#1\onepoint
+   \ifdim\scratchdimen<\zeropoint\scratchdimen\zeropoint\fi
+   \edef#1{\withoutpt\the\scratchdimen}}
+
+\let\negatedcolorcomponent\firstofoneargument
+
+\def\negatedcolorcomponent#1%
+  {\ifdim\dimexpr1pt-#1pt\relax<\zeropoint
+     0pt%
+   \else
+     \expandafter\withoutpt\the\dimexpr1pt-#1pt\relax
+   \fi}
+
+\def\negatecolorcomponent#1% #1 = \macro
+  {\edef#1{\negatedcolorcomponent{#1}}}
+
 
 \dump

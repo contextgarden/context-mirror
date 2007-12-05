@@ -214,7 +214,7 @@
 \def\doinitializeitemgrouplevel#1%
   {\copyparameters
      [\??op\currentitemgroup#1][\??oo]
-     [\c!width,\c!factor,\c!distance,\c!align,\c!option,
+     [\c!width,\c!factor,\c!distance,\c!align,\c!symalign,\c!option,
       \c!style,\c!marstyle,\c!symstyle,\c!headstyle,
       \c!color,\c!marcolor,\c!symcolor,\c!headcolor,
       \c!beforehead,\c!afterhead,\c!before,\c!inbetween,\c!after,
@@ -606,6 +606,16 @@
 \ifx\startcolumns\undefined \def\startcolumns[#1]{} \fi
 \ifx\stopcolumns \undefined \let\stopcolumns\relax  \fi
 
+\def\dosetsymalign#1% hm, we should use one of the core-spa macros or make a helper
+  {\processaction
+      [#1]
+      [ \v!flushleft=>\let\symalignleft\relax,
+            \v!right=>\let\symalignleft\relax,
+       \v!flushright=>\let\symalignleft\hfill,
+             \v!left=>\let\symalignleft\hfill,
+           \v!middle=>\let\symalignleft\hfil,
+           \v!center=>\let\symalignleft\hfil]}
+
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -642,6 +652,7 @@
    \let\marsymbol\relax
    \globallet\doitemdestination\empty
    \let\symsymbol\empty
+   \let\symalignleft\relax
    \the\itemgroupcommands
 \checkcurrentnofitems
    % \getitemparameter\itemlevel\empty
@@ -672,6 +683,7 @@
      \doadaptrightskip{\getitemparameter1\c!rightmargin}%
    \fi
    \dosetraggedcommand{\getitemparameter\itemlevel\c!align}\raggedcommand
+   \dosetsymalign{\getitemparameter\itemlevel\c!symalign}%
    \doifsomething{\getitemparameter\itemlevel\c!indenting}
      {% is \expanded needed?
       \expanded{\setupindenting[\getitemparameter\itemlevel\c!indenting]}}%
@@ -772,11 +784,17 @@
        \dontrechecknextindentation
      \fi
    \fi
-   \endgroup
-   \doglobal\decrement(\itemlevel,\itemincrement)%
-   \egroup
-   % new needed in sidefloats (surfaced in volker's proceedings)
-   \ifconditional\textlistitem\else\par\fi
+   % new test, needed in sidefloats (surfaced in volker's proceedings)
+   \ifconditional\textlistitem % else forgotten
+     \endgroup
+     \doglobal\decrement(\itemlevel,\itemincrement)%
+     \egroup
+   \else
+     \endgroup
+     \doglobal\decrement(\itemlevel,\itemincrement)%
+     \egroup
+     \par
+   \fi
    \dorechecknextindentation}
 
 \newtoks\itemgroupcommands
@@ -917,7 +935,7 @@
    \else
      \scratchdimen\z@
    \fi
-   \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
+   \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hss}}% was: \hfill
    \hskip\scratchdimen}
 
 \def\optimizelistitemsbreak
@@ -998,12 +1016,17 @@
      \ifconditional\textlistitem
        \hbox{\ifconditional\sublistitem+\fi\box8\hskip\interwordspace}\nobreak
      \else\ifconditional\inlinelistitem
-       \hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}%
+       \hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hss}% was: \hfill
      \else\ifconditional\txtlistitem
        \dodotxtitem
      \else
        % todo: align+marge binnen de hbox
-       \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
+%        \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
+       \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi
+                              \symalignleft
+                              \box8\hfil
+                              \hskip\getitemparameter\itemlevel\c!distance% T h
+                              }}%
      \fi\fi\fi
    \fi
    \forceunexpanded % needed for m conversion (\os) / i need to look into this
@@ -1249,6 +1272,7 @@
    \c!distance=.5em,
   %\c!align=\v!normal, % definitely not \v!normal, see mails and
    \c!align=, % debug reports of David A & Patrick G on context list
+   \c!symalign=,
    \c!color=,
    \c!indenting=, % untouched if empty
    \c!color=,

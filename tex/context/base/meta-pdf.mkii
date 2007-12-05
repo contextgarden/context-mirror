@@ -639,8 +639,15 @@
 %D finally I saw the light. It proved that we also had to
 %D take care of \type{(split arguments)}.
 
+% \startMPcode
+%     draw btex Ga toch effe f\kern0ptietsen?{}` etex ;
+% \stopMPcode
+
+\newtoks \everyMPshowfont
+
 \def\setMPfshowfont#1#2%
-  {\font\temp=#1\space at #2\relax\temp}
+  {\font\temp=#1\space at #2\relax\temp
+   \the\everyMPshowfont}
 
 \let\MPfshowcommand\empty
 
@@ -648,7 +655,7 @@
   {\setbox\scratchbox\hbox
      {\obeyMPspecials
       \edef\MPtextsize{\gMPa\nofMParguments}%
-      \def\do(##1){##1}%
+      \def\do(##1){##1}% only works in latest mp
       \edef\MPtextdata{\dogMPa1}% beware, stack can have more
       \handleMPtext}%
    \setbox\scratchbox\hbox
@@ -672,6 +679,29 @@
 
 % elsewhere we will implement \handleMPtextmptxt
 
+\def\doflushMPtext#1%
+  {\edef\!!stringa{#1}%
+   \@EA\dodoflushMPtext\!!stringa\relax}
+
+\def\dodoflushMPtext
+  {\afterassignment\dododoflushMPtext\let\nexttoken=}
+
+\def\dododoflushMPtext
+  {\ifx\nexttoken\relax
+     % done
+   \else\ifx\nexttoken\char
+     \@EA\@EA\@EA\dodododoflushMPtext
+   \else
+     {\nexttoken}%
+     \@EA\@EA\@EA\dodoflushMPtext
+   \fi\fi}
+
+\def\dodododoflushMPtext
+  {\afterassignment\dododododoflushMPtext\scratchcounter}
+
+\def\dododododoflushMPtext
+ {{\char\scratchcounter}\let\next\dodoflushMPtext}
+
 \def\handleMPtextnormal
   {\let\ \relax % mp breaks long lines and appends a \
    \ifx\MPtextsize\PSnfont % round font size (to pt)
@@ -694,8 +724,8 @@
    \MPfshowcommand
      {\ifnum\nofMParguments=\plusone
         \def\do(##1){##1}%
-        \dogMPa1%
-      \else
+        \doflushMPtext{\dogMPa1}%
+      \else % can't happen anymore in mp version 1+
         % we need to catch ( a ) (a a a) (\123 \123 \123) etc
         \scratchcounter\plusone
         \def\dodo##1% Andreas Fieger's bug: (\304...)
@@ -862,7 +892,7 @@
    \or
      \ifx\lastMPmoveX\empty \else % we assume 0,0 rlineto
        \flushMPmoveto
-       \PDFcode{\!MP\lastMPmoveX\space \!MP\lastMPmoveY\space l S}%
+       \PDFcode{\!MP\lastMPmoveX\space \!MP\lastMPmoveY\space l}%
        \resetMPmoveto
      \fi
    \or

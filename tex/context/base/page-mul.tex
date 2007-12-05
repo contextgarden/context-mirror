@@ -580,7 +580,6 @@
         \edef\maxcolumndepth{\the\dp\currentcolumnbox}%
       \fi}}
 
-
 \chardef\multicolumntopflushmethod\plusone % 0: no correction, 1: correction when topstuff, 2: correction, 3: correction++
 \chardef\multicolumntopalignmethod\plustwo % 0: nothing, 1: force grid, 2: follow grid
 
@@ -603,6 +602,7 @@
      \setfalse\someprecolumncontent % will be set elsewhere
    \else
      \settrue\someprecolumncontent
+\mkprocessboxcontents\precolumnbox
    \fi
    \forgetall
    \setmulticolumnsout

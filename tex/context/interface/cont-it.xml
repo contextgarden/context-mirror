@@ -18,7 +18,10 @@
     <cd:constant type="esterno"/>
     <cd:constant type="sinistra"/>
     <cd:constant type="destra"/>
+    <cd:constant type="flushleft"/>
+    <cd:constant type="flushright"/>
     <cd:constant type="centro"/>
+    <cd:constant type="center"/>
     <cd:constant type="normale"/>
     <cd:constant type="no"/>
     <cd:constant type="si"/>
@@ -4224,6 +4227,7 @@
       <cd:parameter name="numero">
         <cd:constant type="si"/>
         <cd:constant type="no"/>
+        <cd:constant type="nessuno"/>
       </cd:parameter>
       <cd:parameter name="tra">
         <cd:constant type="cd:command"/>
@@ -6064,6 +6068,9 @@
       </cd:parameter>
       <cd:parameter name="allinea">
         <cd:resolve name="align"/>
+      </cd:parameter>
+      <cd:parameter name="symallinea">
+        <cd:resolve name="symalign"/>
       </cd:parameter>
       <cd:parameter name="rientrasuccessivo">
         <cd:resolve name="indentnext"/>

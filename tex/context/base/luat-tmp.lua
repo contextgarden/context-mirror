@@ -22,7 +22,7 @@ being written at the same time is small. We also need to extend
 luatools with a recache feature.</p>
 --ldx]]--
 
-caches = caches  or { }
+caches = caches or { }
 dir    = dir    or { }
 texmf  = texmf  or { }
 
@@ -34,9 +34,20 @@ caches.trace  = false
 caches.tree   = false
 caches.temp   = caches.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
 caches.paths  = caches.paths or { caches.temp }
+caches.force  = false
 
+input.usecache = not toboolean(os.getenv("TEXMFSHARECACHE") or "false",true) -- true
+
+if caches.temp and caches.temp ~= "" and lfs.attributes(caches.temp,"mode") ~= "directory" then
+    if caches.force or io.ask(string.format("Should I create the cache path %s?",caches.temp), "no", { "yes", "no" }) == "yes" then
+        lfs.mkdirs(caches.temp)
+    end
+end
 if not caches.temp or caches.temp == "" then
-    print("\nFATAL ERROR: NO VALID TEMPORARY PATH\n")
+    print("\nfatal error: there is no valid cache path defined\n")
+    os.exit()
+elseif lfs.attributes(caches.temp,"mode") ~= "directory" then
+    print(string.format("\nfatal error: cache path %s is not a directory\n",caches.temp))
     os.exit()
 end
 
@@ -222,8 +233,6 @@ end
 
 -- since we want to use the cache instead of the tree, we will now
 -- reimplement the saver.
-
-input.usecache = true
 
 function input.aux.save_data(instance, dataname, check)
     for cachename, files in pairs(instance[dataname]) do
@@ -420,8 +429,8 @@ end
 function input.storage.dump()
     for name, data in ipairs(input.storage.data) do
         local evaluate, message, original, target = data[1], data[2], data[3] ,data[4]
-        local name, initialize, finalize = nil, "", ""
-        for str in string.gmatch(target,"([^%.]+)") do
+        local name, initialize, finalize, code = nil, "", "", ""
+        for str in target:gmatch("([^%.]+)") do
             if name then
                 name = name .. "." .. str
             else
@@ -435,15 +444,15 @@ function input.storage.dump()
         input.storage.max = input.storage.max + 1
         if input.storage.trace then
             logs.report('storage',string.format('saving %s in slot %s',message,input.storage.max))
-            lua.bytecode[input.storage.max] = loadstring(
+            code =
                 initialize ..
                 string.format("logs.report('storage','restoring %s from slot %s') ",message,input.storage.max) ..
                 table.serialize(original,name) ..
                 finalize
-            )
         else
-            lua.bytecode[input.storage.max] = loadstring(initialize .. table.serialize(original,name) .. finalize)
+            code = initialize .. table.serialize(original,name) .. finalize
         end
+        lua.bytecode[input.storage.max] = loadstring(code)
     end
 end
 

@@ -1,4 +1,10 @@
-dofile(input.find_file(instance,"luat-log.lua"))
+if not modules then modules = { } end modules ['mtx-context'] = {
+    version   = 1.001,
+    comment   = "companion to mtxrun.lua",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
 texmf.instance = instance -- we need to get rid of this / maybe current instance in global table
 
@@ -468,9 +474,11 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata)
         setvalues("usemodules"   , "\\usemodule[%s]")
         setvalues("environments" , "\\environment %s ")
         -- ctx stuff
-        setvalues(ctxdata.modes,        "\\enablemode[%s]")
-        setvalues(ctxdata.modules,      "\\usemodule[%s]")
-        setvalues(ctxdata.environments, "\\environment %s ")
+        if ctxdata then
+            setvalues(ctxdata.modes,        "\\enablemode[%s]")
+            setvalues(ctxdata.modules,      "\\usemodule[%s]")
+            setvalues(ctxdata.environments, "\\environment %s ")
+        end
         -- done
         setalways(                 "\\protect")
         setalways(                 "\\endinput")
@@ -497,11 +505,12 @@ function scripts.context.multipass.copytuifile(jobname)
 end
 
 function scripts.context.run(ctxdata)
-    -- todo: interface
-for k,v in pairs(ctxdata.flags) do
-    environment.setargument(k,v)
-end
-
+    if ctxdata then
+        -- todo: interface
+        for k,v in pairs(ctxdata.flags) do
+            environment.setargument(k,v)
+        end
+    end
     local files = environment.files
     if #files > 0 then
         input.identify_cnf(instance)
