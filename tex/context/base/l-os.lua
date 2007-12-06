@@ -43,6 +43,8 @@ end
 
 if os.gettimeofday then
     os.clock = os.gettimeofday
+else
+    os.gettimeofday = os.clock
 end
 
 do

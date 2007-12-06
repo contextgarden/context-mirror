@@ -425,14 +425,15 @@ function fonts.define.specify.preset_context(name,features)
     local fds = fonts.define.specify
     local setups, numbers, synonyms = fds.context_setups, fds.context_numbers, fds.synonyms
     local number = (setups[name] and setups[name].number) or 0
-    local t = aux.settings_to_hash(features)
-    for k,v in pairs(t) do
-        k = synonyms[k] or k
-        t[k] = v:is_boolean()
-        if type(t[k]) == "nil" then
-            t[k] = v
-        end
-    end
+--~     local t = aux.settings_to_hash(features)
+--~     for k,v in pairs(t) do
+--~         k = synonyms[k] or k
+--~         t[k] = v:is_boolean()
+--~         if type(t[k]) == "nil" then
+--~             t[k] = v
+--~         end
+--~     end
+local t = fonts.otf.meanings.resolve(aux.settings_to_hash(features)) -- todo: synonyms
     if number == 0 then
         numbers[#numbers+1] = name
         t.number = #numbers

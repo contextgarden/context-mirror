@@ -105,7 +105,7 @@ function job.loadsortedlist(class)
                 else
                     entries[#entries+1] = {
                         v[1],               -- kind (e)
-                        { { v[3], v[2] } }, -- entry, key
+                        { { v[2], v[3] } }, -- entry, key
                         v[4]                -- optional meaning
                     }
                 end

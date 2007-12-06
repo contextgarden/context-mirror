@@ -177,6 +177,9 @@
 \defineXMLentity[textcomma]  {{,}}
 \defineXMLentity[textperiod] {{.}}
 
+\defineXMLentity[_]          {{\_}}
+\defineXMLentity[^]          {{\^}}
+
 \startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
     \edef\MMPidentifier{\xmlstripped{#1}{*}}
     \doifXMLentityelse{\detokenize\expandafter{\MMPidentifier}} {

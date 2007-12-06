@@ -612,26 +612,26 @@ fonts.otf.tables.features = {
     ['size'] = 'Optical Size',
     ['smcp'] = 'Small Capitals',
     ['smpl'] = 'Simplified Forms',
-    ['ss01'] = 'Sylistic Set 1',
-    ['ss02'] = 'Sylistic Set 2',
-    ['ss03'] = 'Sylistic Set 3',
-    ['ss04'] = 'Sylistic Set 4',
-    ['ss05'] = 'Sylistic Set 5',
-    ['ss06'] = 'Sylistic Set 6',
-    ['ss07'] = 'Sylistic Set 7',
-    ['ss08'] = 'Sylistic Set 8',
-    ['ss09'] = 'Sylistic Set 9',
-    ['ss10'] = 'Sylistic Set 10',
-    ['ss11'] = 'Sylistic Set 11',
-    ['ss12'] = 'Sylistic Set 12',
-    ['ss13'] = 'Sylistic Set 13',
-    ['ss14'] = 'Sylistic Set 14',
-    ['ss15'] = 'Sylistic Set 15',
-    ['ss16'] = 'Sylistic Set 16',
-    ['ss17'] = 'Sylistic Set 17',
-    ['ss18'] = 'Sylistic Set 18',
-    ['ss19'] = 'Sylistic Set 19',
-    ['ss20'] = 'Sylistic Set 20',
+    ['ss01'] = 'Stylistic Set 1',
+    ['ss02'] = 'Stylistic Set 2',
+    ['ss03'] = 'Stylistic Set 3',
+    ['ss04'] = 'Stylistic Set 4',
+    ['ss05'] = 'Stylistic Set 5',
+    ['ss06'] = 'Stylistic Set 6',
+    ['ss07'] = 'Stylistic Set 7',
+    ['ss08'] = 'Stylistic Set 8',
+    ['ss09'] = 'Stylistic Set 9',
+    ['ss10'] = 'Stylistic Set 10',
+    ['ss11'] = 'Stylistic Set 11',
+    ['ss12'] = 'Stylistic Set 12',
+    ['ss13'] = 'Stylistic Set 13',
+    ['ss14'] = 'Stylistic Set 14',
+    ['ss15'] = 'Stylistic Set 15',
+    ['ss16'] = 'Stylistic Set 16',
+    ['ss17'] = 'Stylistic Set 17',
+    ['ss18'] = 'Stylistic Set 18',
+    ['ss19'] = 'Stylistic Set 19',
+    ['ss20'] = 'Stylistic Set 20',
     ['subs'] = 'Subscript',
     ['sups'] = 'Superscript',
     ['swsh'] = 'Swash',
@@ -688,6 +688,76 @@ function fonts.otf.meanings.feature(id)
 end
 function fonts.otf.meanings.baseline(id)
     return fonts.otf.meanings.resolve(fonts.otf.tables.baselines,id)
+end
+
+function table.reverse_hash(h)
+    local r = { }
+    for k,v in pairs(h) do
+        r[v] = (k:gsub(" ","")):lower()
+    end
+    return r
+end
+
+fonts.otf.tables.to_scripts   = table.reverse_hash(fonts.otf.tables.scripts  )
+fonts.otf.tables.to_languages = table.reverse_hash(fonts.otf.tables.languages)
+fonts.otf.tables.to_features  = table.reverse_hash(fonts.otf.tables.features )
+
+do
+
+    local scripts      = fonts.otf.tables.scripts
+    local languages    = fonts.otf.tables.languages
+    local features     = fonts.otf.tables.features
+
+    local to_scripts   = fonts.otf.tables.to_scripts
+    local to_languages = fonts.otf.tables.to_languages
+    local to_features  = fonts.otf.tables.to_features
+
+    function fonts.otf.meanings.resolve(features)
+        local h = { }
+        for k,v in pairs(features) do
+            k = (k:gsub(" ","")):lower()
+            if k == "language" or k =="lang" then
+                v = (k:gsub(" ","")):lower()
+                k = language
+                if not languages[v] then
+                    if to_languages[v] then
+                        h.language = to_languages[v]
+                    else
+                        h.language = "dflt"
+                    end
+                else
+                    h.language = v
+                end
+            elseif k == "script" then
+                v = (k:gsub(" ","")):lower()
+                if not scripts[v] then
+                    if to_scripts[v] then
+                        h.script = to_scripts[v]
+                    else
+                        h.script = "dflt"
+                    end
+                else
+                    h.script = v
+                end
+            else
+                if type(v) == "string" then
+                    local b = v:is_boolean()
+                    if type(b) == "nil" then
+                        v = (k:gsub(" ","")):lower()
+                    else
+                        v = b
+                    end
+                end
+                if to_features[k] then
+                    h[to_features[k]] = v
+                else
+                    h[k] = v
+                end
+            end
+        end
+        return h
+    end
+
 end
 
 --[[ldx--
@@ -1391,26 +1461,42 @@ function fonts.otf.features.prepare_base_kerns(tfmdata,kind,value) -- todo what 
         for _, chr in pairs(tfmdata.characters) do
             local d = charlist[chr.index]
             if d then
-                local dk = d.kerns
+                local dk = d.mykerns
                 if dk then
                     local t, done = chr.kerns or { }, false
-                    for _, v in pairs(dk) do
-                        if somevalid[v.lookup] then
-                            local k = unicodes[v.char]
-                            if k > 0 then
-                                t[k], done = v.off, true
+                    for lookup,kerns in pairs(dk) do
+                        if somevalid[lookup] then
+                            for k, v in pairs(kerns) do
+                                if v > 0 then
+                                    t[k], done = v, true
+                                end
                             end
                         end
                     end
                     if done then
                         chr.kerns = t -- no empty assignments
                     end
+                else
+                    dk = d.kerns
+                    if dk then
+                        local t, done = chr.kerns or { }, false
+                        for _, v in pairs(dk) do
+                            if somevalid[v.lookup] then
+                                local k = unicodes[v.char]
+                                if k > 0 then
+                                    t[k], done = v.off, true
+                                end
+                            end
+                        end
+                        if done then
+                            chr.kerns = t -- no empty assignments
+                        end
+                    end
                 end
             end
         end
     end
 end
-
 function fonts.otf.copy_to_tfm(data)
     if data then
         local tfm = { characters = { }, parameters = { } }

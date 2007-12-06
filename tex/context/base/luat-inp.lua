@@ -195,7 +195,7 @@ end
 
 function input.bare_variable(str)
  -- return string.gsub(string.gsub(string.gsub(str,"%s+$",""),'^"(.+)"$',"%1"),"^'(.+)'$","%1")
-    return str:gsub("\s*([\"\']?)(.+)%1\s*", "%2")
+    return (str:gsub("\s*([\"\']?)(.+)%1\s*", "%2"))
 end
 
 if texio then

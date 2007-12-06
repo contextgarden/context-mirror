@@ -40,7 +40,7 @@ input.usecache = not toboolean(os.getenv("TEXMFSHARECACHE") or "false",true) -- 
 
 if caches.temp and caches.temp ~= "" and lfs.attributes(caches.temp,"mode") ~= "directory" then
     if caches.force or io.ask(string.format("Should I create the cache path %s?",caches.temp), "no", { "yes", "no" }) == "yes" then
-        lfs.mkdirs(caches.temp)
+        dir.mkdirs(caches.temp)
     end
 end
 if not caches.temp or caches.temp == "" then
@@ -246,7 +246,7 @@ function input.aux.save_data(instance, dataname, check)
         input.report("preparing " .. dataname .. " in", luaname)
         for k, v in pairs(files) do
             if not check or check(v,k) then -- path, name
-                if #v == 1 then
+                if type(v) == "table" and #v == 1 then
                     files[k] = v[1]
                 end
             else

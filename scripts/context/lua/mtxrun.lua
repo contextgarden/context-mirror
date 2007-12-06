@@ -461,12 +461,17 @@ function table.sortedkeys(tab)
         srt[#srt+1] = key
         if kind == 3 then
             -- no further check
-        elseif type(key) == "string" then
-            if kind == 2 then kind = 3 else kind = 1 end
-        elseif type(key) == "number" then
-            if kind == 1 then kind = 3 else kind = 2 end
         else
-            kind = 3
+            local tkey = type(key)
+            if tkey == "string" then
+            --  if kind == 2 then kind = 3 else kind = 1 end
+                kind = (kind == 2 and 3) or 1
+            elseif tkey == "number" then
+            --  if kind == 1 then kind = 3 else kind = 2 end
+                kind = (kind == 1 and 3) or 2
+            else
+                kind = 3
+            end
         end
     end
     if kind == 0 or kind == 3 then
@@ -489,52 +494,96 @@ function table.prepend(t, list)
     end
 end
 
+--~ function table.merge(t, ...)
+--~     for _, list in ipairs({...}) do
+--~         for k,v in pairs(list) do
+--~             t[k] = v
+--~         end
+--~     end
+--~     return t
+--~ end
+
 function table.merge(t, ...)
-    for _, list in ipairs({...}) do
-        for k,v in pairs(list) do
+    local lst = {...}
+    for i=1,#lst do
+        for k, v in pairs(lst[i]) do
             t[k] = v
         end
     end
     return t
 end
 
+--~ function table.merged(...)
+--~     local tmp = { }
+--~     for _, list in ipairs({...}) do
+--~         for k,v in pairs(list) do
+--~             tmp[k] = v
+--~         end
+--~     end
+--~     return tmp
+--~ end
+
 function table.merged(...)
-    local tmp = { }
-    for _, list in ipairs({...}) do
-        for k,v in pairs(list) do
+    local tmp, lst = { }, {...}
+    for i=1,#lst do
+        for k, v in pairs(lst[i]) do
             tmp[k] = v
         end
     end
     return tmp
 end
 
+--~ function table.imerge(t, ...)
+--~     for _, list in ipairs({...}) do
+--~         for _, v in ipairs(list) do
+--~             t[#t+1] = v
+--~         end
+--~     end
+--~     return t
+--~ end
+
 function table.imerge(t, ...)
-    for _, list in ipairs({...}) do
-        for k,v in ipairs(list) do
-            t[#t+1] = v
+    local lst = {...}
+    for i=1,#lst do
+        local nst = lst[i]
+        for j=1,#nst do
+            t[#t+1] = nst[j]
         end
     end
     return t
 end
 
+--~ function table.imerged(...)
+--~     local tmp = { }
+--~     for _, list in ipairs({...}) do
+--~         for _,v in pairs(list) do
+--~             tmp[#tmp+1] = v
+--~         end
+--~     end
+--~     return tmp
+--~ end
+
 function table.imerged(...)
-    local tmp = { }
-    for _, list in ipairs({...}) do
-        for _,v in pairs(list) do
-            tmp[#tmp+1] = v
+    local tmp, lst = { }, {...}
+    for i=1,#lst do
+        local nst = lst[i]
+        for j=1,#nst do
+            tmp[#tmp+1] = nst[j]
         end
     end
     return tmp
 end
 
-if not table.fastcopy then
+if not table.fastcopy then do
 
-    function table.fastcopy(old) -- fast one
+    local type, pairs, getmetatable, setmetatable = type, pairs, getmetatable, setmetatable
+
+    local function fastcopy(old) -- fast one
         if old then
             local new = { }
             for k,v in pairs(old) do
                 if type(v) == "table" then
-                    new[k] = table.fastcopy(v) -- was just table.copy
+                    new[k] = fastcopy(v) -- was just table.copy
                 else
                     new[k] = v
                 end
@@ -549,11 +598,15 @@ if not table.fastcopy then
         end
     end
 
-end
+    table.fastcopy = fastcopy
 
-if not table.copy then
+end end
 
-    function table.copy(t, tables) -- taken from lua wiki, slightly adapted
+if not table.copy then do
+
+    local type, pairs, getmetatable, setmetatable = type, pairs, getmetatable, setmetatable
+
+    local function copy(t, tables) -- taken from lua wiki, slightly adapted
         tables = tables or { }
         local tcopy = {}
         if not tables[t] then
@@ -564,7 +617,7 @@ if not table.copy then
                 if tables[i] then
                     i = tables[i]
                 else
-                    i = table.copy(i, tables)
+                    i = copy(i, tables)
                 end
             end
             if type(v) ~= "table" then
@@ -572,7 +625,7 @@ if not table.copy then
             elseif tables[v] then
                 tcopy[i] = tables[v]
             else
-                tcopy[i] = table.copy(v, tables)
+                tcopy[i] = copy(v, tables)
             end
         end
         local mt = getmetatable(t)
@@ -582,7 +635,9 @@ if not table.copy then
         return tcopy
     end
 
-end
+    table.copy = copy
+
+end end
 
 -- rougly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
 
@@ -655,7 +710,9 @@ do
             end
             if n == #t then
                 local tt = { }
-                for _,v in ipairs(t) do
+            --  for _,v in ipairs(t) do
+                for i=1,#t do
+                    local v = t[i]
                     local tv = type(v)
                     if tv == "number" or tv == "boolean" then
                         tt[#tt+1] = tostring(v)
@@ -684,15 +741,16 @@ do
             end
         else
             depth = ""
-            if type(name) == "string" then
+            local tname = type(name)
+            if tname == "string" then
                 if name == "return" then
                     handle("return {")
                 else
                     handle(name .. "={")
                 end
-            elseif type(name) == "number" then
+            elseif tname == "number" then
                 handle("[" .. name .. "]={")
-            elseif type(name) == "boolean" then
+            elseif tname == "boolean" then
                 if name then
                     handle("return {")
                 else
@@ -707,7 +765,7 @@ do
             local inline  = compact and table.serialize_inline
             local first, last = nil, 0 -- #root cannot be trusted here
             if compact then
-                for k,v in ipairs(root) do
+              for k,v in ipairs(root) do -- NOT: for k=1,#root do
                     if not first then first = k end
                     last = last + 1
                 end
@@ -1074,32 +1132,53 @@ end
 
 do
 
+    local sb = string.byte
+
+--~     local nextchar = {
+--~         [ 4] = function(f)
+--~             return f:read(1), f:read(1), f:read(1), f:read(1)
+--~         end,
+--~         [ 2] = function(f)
+--~             return f:read(1), f:read(1)
+--~         end,
+--~         [ 1] = function(f)
+--~             return f:read(1)
+--~         end,
+--~         [-2] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             return b, a
+--~         end,
+--~         [-4] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             local c = f:read(1)
+--~             local d = f:read(1)
+--~             return d, c, b, a
+--~         end
+--~     }
+
     local nextchar = {
         [ 4] = function(f)
-            return f:read(1), f:read(1), f:read(1), f:read(1)
+            return f:read(1,1,1,1)
         end,
         [ 2] = function(f)
-            return f:read(1), f:read(1)
+            return f:read(1,1)
         end,
         [ 1] = function(f)
             return f:read(1)
         end,
         [-2] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
+            local a, b = f:read(1,1)
             return b, a
         end,
         [-4] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
-            local c = f:read(1)
-            local c = f:read(1)
+            local a, b, c, d = f:read(1,1,1,1)
             return d, c, b, a
         end
     }
 
     function io.characters(f,n)
-        local sb = string.byte
         if f then
             return nextchar[n or 1], f
         else
@@ -1111,12 +1190,62 @@ end
 
 do
 
+    local sb = string.byte
+
+--~     local nextbyte = {
+--~         [4] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             local c = f:read(1)
+--~             local d = f:read(1)
+--~             if d then
+--~                 return sb(a), sb(b), sb(c), sb(d)
+--~             else
+--~                 return nil, nil, nil, nil
+--~             end
+--~         end,
+--~         [2] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             if b then
+--~                 return sb(a), sb(b)
+--~             else
+--~                 return nil, nil
+--~             end
+--~         end,
+--~         [1] = function (f)
+--~             local a = f:read(1)
+--~             if a then
+--~                 return sb(a)
+--~             else
+--~                 return nil
+--~             end
+--~         end,
+--~         [-2] = function (f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             if b then
+--~                 return sb(b), sb(a)
+--~             else
+--~                 return nil, nil
+--~             end
+--~         end,
+--~         [-4] = function(f)
+--~             local a = f:read(1)
+--~             local b = f:read(1)
+--~             local c = f:read(1)
+--~             local d = f:read(1)
+--~             if d then
+--~                 return sb(d), sb(c), sb(b), sb(a)
+--~             else
+--~                 return nil, nil, nil, nil
+--~             end
+--~         end
+--~     }
+
     local nextbyte = {
         [4] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
-            local c = f:read(1)
-            local d = f:read(1)
+            local a, b, c, d = f:read(1,1,1,1)
             if d then
                 return sb(a), sb(b), sb(c), sb(d)
             else
@@ -1124,8 +1253,7 @@ do
             end
         end,
         [2] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
+            local a, b = f:read(1,1)
             if b then
                 return sb(a), sb(b)
             else
@@ -1141,8 +1269,7 @@ do
             end
         end,
         [-2] = function (f)
-            local a = f:read(1)
-            local b = f:read(1)
+            local a, b = f:read(1,1)
             if b then
                 return sb(b), sb(a)
             else
@@ -1150,10 +1277,7 @@ do
             end
         end,
         [-4] = function(f)
-            local a = f:read(1)
-            local b = f:read(1)
-            local c = f:read(1)
-            local d = f:read(1)
+            local a, b, c, d = f:read(1,1,1,1)
             if d then
                 return sb(d), sb(c), sb(b), sb(a)
             else
@@ -1163,7 +1287,6 @@ do
     }
 
     function io.bytes(f,n)
-        local sb = string.byte
         if f then
             return nextbyte[n or 1], f
         else
@@ -1290,6 +1413,40 @@ end
 if not os.setenv then
     function os.setenv() return false end
 end
+
+if not os.times then
+    -- utime  = user time
+    -- stime  = system time
+    -- cutime = children user time
+    -- cstime = children system time
+    function os.times()
+        return {
+            utime  = os.clock(), -- user
+            stime  = 0,          -- system
+            cutime = 0,          -- children user
+            cstime = 0,          -- children system
+        }
+    end
+end
+
+if os.gettimeofday then
+    os.clock = os.gettimeofday
+else
+    os.gettimeofday = os.clock
+end
+
+do
+    local startuptime = os.gettimeofday()
+    function os.runtime()
+        return os.gettimeofday() - startuptime
+    end
+end
+
+--~ print(os.gettimeofday()-os.time())
+--~ os.sleep(1.234)
+--~ print (">>",os.runtime())
+--~ print(os.date("%H:%M:%S",os.gettimeofday()))
+--~ print(os.date("%H:%M:%S",os.time()))
 
 
 -- filename : l-file.lua
@@ -1542,11 +1699,12 @@ end
 
 function toboolean(str,tolerant)
     if tolerant then
-        if type(str) == "string" then
+        local tstr = type(str)
+        if tstr == "string" then
             return str == "true" or str == "yes" or str == "on" or str == "1"
-        elseif type(str) == "number" then
+        elseif tstr == "number" then
             return tonumber(str) ~= 0
-        elseif type(str) == "nil" then
+        elseif tstr == "nil" then
             return false
         else
             return str
@@ -3961,7 +4119,7 @@ end
 
 function input.bare_variable(str)
  -- return string.gsub(string.gsub(string.gsub(str,"%s+$",""),'^"(.+)"$',"%1"),"^'(.+)'$","%1")
-    return str:gsub("\s*([\"\']?)(.+)%1\s*", "%2")
+    return (str:gsub("\s*([\"\']?)(.+)%1\s*", "%2"))
 end
 
 if texio then
@@ -4023,27 +4181,35 @@ input.settrace(tonumber(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRA
 -- These functions can be used to test the performance, especially
 -- loading the database files.
 
-function input.starttiming(instance)
-    if instance then
-        instance.starttime = os.clock()
-        if not instance.loadtime then
-            instance.loadtime = 0
+do
+    local clock = os.clock
+
+    function input.starttiming(instance)
+        if instance then
+            instance.starttime = clock()
+            if not instance.loadtime then
+                instance.loadtime = 0
+            end
         end
     end
-end
 
-function input.stoptiming(instance, report)
-    if instance and instance.starttime then
-        instance.stoptime = os.clock()
-        local loadtime = instance.stoptime - instance.starttime
-        instance.loadtime = instance.loadtime + loadtime
-        if report then
-            input.report('load time', string.format("%0.3f",loadtime))
+    function input.stoptiming(instance, report)
+        if instance then
+            local starttime = instance.starttime
+            if starttime then
+                local stoptime = clock()
+                local loadtime = stoptime - starttime
+                instance.stoptime = stoptime
+                instance.loadtime = instance.loadtime + loadtime
+                if report then
+                    input.report('load time', string.format("%0.3f",loadtime))
+                end
+                return loadtime
+            end
         end
-        return loadtime
-    else
         return 0
     end
+
 end
 
 function input.elapsedtime(instance)
@@ -5968,7 +6134,7 @@ input.usecache = not toboolean(os.getenv("TEXMFSHARECACHE") or "false",true) -- 
 
 if caches.temp and caches.temp ~= "" and lfs.attributes(caches.temp,"mode") ~= "directory" then
     if caches.force or io.ask(string.format("Should I create the cache path %s?",caches.temp), "no", { "yes", "no" }) == "yes" then
-        lfs.mkdirs(caches.temp)
+        dir.mkdirs(caches.temp)
     end
 end
 if not caches.temp or caches.temp == "" then
@@ -6174,7 +6340,7 @@ function input.aux.save_data(instance, dataname, check)
         input.report("preparing " .. dataname .. " in", luaname)
         for k, v in pairs(files) do
             if not check or check(v,k) then -- path, name
-                if #v == 1 then
+                if type(v) == "table" and #v == 1 then
                     files[k] = v[1]
                 end
             else
@@ -6357,8 +6523,8 @@ end
 function input.storage.dump()
     for name, data in ipairs(input.storage.data) do
         local evaluate, message, original, target = data[1], data[2], data[3] ,data[4]
-        local name, initialize, finalize = nil, "", ""
-        for str in string.gmatch(target,"([^%.]+)") do
+        local name, initialize, finalize, code = nil, "", "", ""
+        for str in target:gmatch("([^%.]+)") do
             if name then
                 name = name .. "." .. str
             else
@@ -6372,15 +6538,15 @@ function input.storage.dump()
         input.storage.max = input.storage.max + 1
         if input.storage.trace then
             logs.report('storage',string.format('saving %s in slot %s',message,input.storage.max))
-            lua.bytecode[input.storage.max] = loadstring(
+            code =
                 initialize ..
                 string.format("logs.report('storage','restoring %s from slot %s') ",message,input.storage.max) ..
                 table.serialize(original,name) ..
                 finalize
-            )
         else
-            lua.bytecode[input.storage.max] = loadstring(initialize .. table.serialize(original,name) .. finalize)
+            code = initialize .. table.serialize(original,name) .. finalize
         end
+        lua.bytecode[input.storage.max] = loadstring(code)
     end
 end
 
@@ -7308,7 +7474,7 @@ end
 
 --~ if input.verbose then
 --~     input.report("")
---~     input.report("runtime: " .. os.clock() .. " seconds")
+--~     input.report("runtime: " .. os.runtime() .. " seconds")
 --~ end
 
 --~ if ok then
