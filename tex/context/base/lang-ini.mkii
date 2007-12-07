@@ -89,6 +89,20 @@
 \def\mkdoifpatternselse#1%
   {\expanded{\doifinsetelse{#1}{\preloadedpatterns}}}
 
+\def\mkloadlanguagefiles#1%
+  {\doifelsevalue{\??la#1\c!state}\v!start
+     {\doifelsevaluenothing{\??la#1\s!patterns}
+        {\edef\languagesuffix{#1}}
+        {\edef\languagesuffix{\getvalue{\??la#1\s!patterns}}}%
+      \doifundefinedelse{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}
+        {\mkdoloadpatterns{#1}\languagesuffix}
+        {\bgroup
+         \edef\loadedlanguage{\getvalue{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}}%
+         \showmessage\m!linguals1{\languagesuffix,#1,\loadedlanguage,*,*}%
+         \showmessage\m!linguals3{\languagesuffix,#1,\loadedlanguage,*,*}%
+         \egroup}}
+     {\showmessage\m!linguals5{#1}}}
+
 \def\mksetnormallanguage#1#2% current default
   {% called quite often, so we use \csname
    % \def\synchronizepatterns{\setnormallanguage

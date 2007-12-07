@@ -29,6 +29,11 @@
 \def\mkdoifpatternselse#1%
   {\ctxlua{cs.testcase(languages.loadable("#1"))}}
 
+\def\mkloadlanguagefiles#1%
+  {\doifelsevaluenothing{\??la#1\s!patterns}
+     {\mkdoloadpatterns{#1}{#1}}
+     {\mkdoloadpatterns{#1}{\getvalue{\??la#1\s!patterns}}}}
+
 \def\mksetnormallanguage#1#2% current default / we can freeze the number here
   {\normallanguage=\ctxlua{tex.sprint(languages.enable({
       "\csname\??la#1\s!patterns\endcsname","#1",

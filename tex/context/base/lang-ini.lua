@@ -18,6 +18,11 @@ languages.version          = 1.009
 languages.hyphenation      = languages.hyphenation        or { }
 languages.hyphenation.data = languages.hyphenation.data   or { }
 
+-- 002D : hyphen-minus (ascii)
+-- 2010 : hyphen
+-- 2011 : nonbreakable hyphen
+-- 2013 : endash (compound hyphen)
+
 do
     -- we can consider hiding data (faster access too)
 
@@ -43,14 +48,22 @@ do
     local parser     = (1-command)^0 * command * content
 
     local function filterpatterns(filename)
-        return parser:match(io.loaddata(input.find_file(texmf.instance,filename)) or "")
+        if filename:find("%.rpl") then
+            return io.loaddata(input.find_file(texmf.instance,filename)) or ""
+        else
+            return parser:match(io.loaddata(input.find_file(texmf.instance,filename)) or "")
+        end
     end
 
     local command     = lpeg.P("\\hyphenation")
     local parser      = (1-command)^0 * command * content
 
     local function filterexceptions(filename)
-        return parser:match(io.loaddata(input.find_file(texmf.instance,filename)) or {})
+        if filename:find("%.rhl") then
+            return io.loaddata(input.find_file(texmf.instance,filename)) or ""
+        else
+            return parser:match(io.loaddata(input.find_file(texmf.instance,filename)) or {}) -- "" ?
+        end
     end
 
     local function record(tag)

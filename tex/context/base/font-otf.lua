@@ -712,12 +712,12 @@ do
     local to_languages = fonts.otf.tables.to_languages
     local to_features  = fonts.otf.tables.to_features
 
-    function fonts.otf.meanings.resolve(features)
+    function fonts.otf.meanings.normalize(features)
         local h = { }
         for k,v in pairs(features) do
-            k = (k:gsub(" ","")):lower()
+            k = (k:lower()):gsub("[^a-z]","")
             if k == "language" or k =="lang" then
-                v = (k:gsub(" ","")):lower()
+                v = (v:lower()):gsub("[^a-z]","")
                 k = language
                 if not languages[v] then
                     if to_languages[v] then
@@ -729,7 +729,7 @@ do
                     h.language = v
                 end
             elseif k == "script" then
-                v = (k:gsub(" ","")):lower()
+                v = (v:lower()):gsub("[^a-z]","")
                 if not scripts[v] then
                     if to_scripts[v] then
                         h.script = to_scripts[v]
@@ -743,7 +743,7 @@ do
                 if type(v) == "string" then
                     local b = v:is_boolean()
                     if type(b) == "nil" then
-                        v = (k:gsub(" ","")):lower()
+                        v = (v:lower()):gsub("[^a-z]","")
                     else
                         v = b
                     end
@@ -1367,7 +1367,7 @@ function fonts.otf.set_features(tfmdata) -- node and base, simple mapping
                                     end
                                     fiotf[f](tfmdata,value) -- can set mode (no need to pass otf)
                                     mode = tfmdata.mode or fonts.mode -- keep this, mode can be set local !
-                                    fi = fonts.initializers[mode]
+                                    local fi = fonts.initializers[mode]
                                     fiotf = fi.otf
                                     done[f] = true
                                 end

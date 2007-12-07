@@ -580,7 +580,7 @@
 
 % todo: \floatparameter + \currentfloat - saves many hash entries
 
-\def\dododefinefloat[#1][#2]%
+\def\dododefinefloat[#1][#2]% inherits from kj and not from parent
   {\def\currentfloat{#1}%
    \presetlocalframed[\??fl#1]%
    \setupfloat

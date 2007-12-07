@@ -7474,7 +7474,7 @@ end
 
 --~ if input.verbose then
 --~     input.report("")
---~     input.report("runtime: " .. os.runtime() .. " seconds")
+--~     input.report(string.format("runtime: %0.3f seconds",os.runtime()))
 --~ end
 
 --~ if ok then

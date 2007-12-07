@@ -42,7 +42,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2007.12.06 16:24}
+\edef\contextversion{2007.12.07 19:14}
 
 %D For those who want to use this:
 
@@ -284,7 +284,8 @@
 \loadcorefile{lang-ini.tex}
 \loadcorefile{lang-ctx.tex}
 \loadcorefile{lang-dis.tex}
-\loadcorefile{unic-ini.tex}
+
+\loadmarkfile{unic-ini}
 
 % \readfile{lang-url.pat}{}{} % test
 
@@ -532,6 +533,8 @@
 
 %D Just to keep the user busy for a while, we say:
 
+\iffalse
+
 \startinterface english
 
 \writebanner{This package is based on Plain TeX. It uses an adapted version of the}
@@ -624,6 +627,8 @@
    PRAGMA ADE / J. Hagen - A.F. Otten}
 
 \writeline\writebanner{\copyrightversion}\writeline
+
+\fi
 
 \unprotect
 \beginLUATEX

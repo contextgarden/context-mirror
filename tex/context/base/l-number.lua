@@ -14,6 +14,17 @@ function number.toset(n)
     return (tostring(n)):match("(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
 end
 
+local format = string.format
+
+function number.toevenhex(n)
+    local s = format("%X",n)
+    if #s % 2 == 0 then
+        return s
+    else
+        return "0" .. s
+    end
+end
+
 -- the lpeg way is slower on 8 digits, but faster on 4 digits, some 7.5%
 -- on
 --

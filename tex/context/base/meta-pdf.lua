@@ -560,7 +560,7 @@ do
     local sd  = (lpeg.P("[") * (cnumber * sp^0)^0 * lpeg.P("]") * sp * cnumber * sp * lpeg.P("sd")) / mp.setdash
     local rd  = (                                                                     lpeg.P("rd")) / mp.resetdash
 
-    local s   = (              (cnumber * sp^0)^2               * sp * lpeg.P("s") ) / mp.scale
+    local s   = (              (cnumber * sp^0)^2                    * lpeg.P("s") ) / mp.scale
     local t   = (lpeg.P("[") * (cnumber * sp^0)^6 * lpeg.P("]") * sp * lpeg.P("t") ) / mp.concat
 
     -- experimental
@@ -609,7 +609,6 @@ do
 
     function mptopdf.parsers.lpeg()
         if mptopdf.data:find("%%%%BeginResource: procset mpost") then
---~         if mptopdf.data:find("/bd{bind def}bind def") then -- bug in mp
             lpeg.match(captures_new,mptopdf.data)
         else
             lpeg.match(captures_old,mptopdf.data)

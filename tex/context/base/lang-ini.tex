@@ -253,7 +253,9 @@
 
 \def\doiflanguageelse#1{\doifdefinedelse{\??la#1\c!state}}
 
-\def\doinstalllanguage[#1][#2]%
+\ifx\mkloadlanguagefiles\undefined \let\mkloadlanguagefiles\gobbleoneargument \fi
+
+\def\doinstalllanguage[#1][#2]% some day we will make one for mkii and mkiv
   {\doifassignmentelse{#2}
      {\doiflanguageelse{#1}
         {\getparameters[\??la#1][#2]}
@@ -272,18 +274,7 @@
             #2]}%
       \doifvalue{\??la#1\c!default}{#1}{\letvalue{\??la#1\c!default}\empty}%
       % loop in deo: \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
-      \doifelsevalue{\??la#1\c!state}\v!start
-        {\doifelsevaluenothing{\??la#1\s!patterns}
-           {\edef\languagesuffix{#1}}
-           {\edef\languagesuffix{\getvalue{\??la#1\s!patterns}}}%
-         \doifundefinedelse{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}
-           {\doloadpatterns{#1}\languagesuffix}
-           {\bgroup
-            \edef\loadedlanguage{\getvalue{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}}%
-            \showmessage\m!linguals1{\languagesuffix,#1,\loadedlanguage,*,*}%
-            \showmessage\m!linguals3{\languagesuffix,#1,\loadedlanguage,*,*}%
-            \egroup}}
-        {\showmessage\m!linguals5{#1}}}
+      \mkloadlanguagefiles{#1}}
      {\setvalue{\l!prefix!#1}{#2}%
       \dodoinstalllanguage{#1}{#2}}}
 
