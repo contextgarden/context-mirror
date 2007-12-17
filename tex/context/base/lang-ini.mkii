@@ -29,6 +29,16 @@
      \dodoloadpatterns{#1}{#2}{}{}%
    \fi}
 
+\beginXETEX
+
+\def\mkdoloadpatterns#1#2%
+  {\letvalue{\??la#2\s!encoding}\empty
+   \letvalue{\??la#2\s!mapping }\empty
+   \dodoloadpatterns{#1}{#2}{}{}}
+
+\endXETEX
+
+
 \def\setuphyppatencoding
   {\pathypsettings
    \enableregime[utf]}

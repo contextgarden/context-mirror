@@ -1463,11 +1463,12 @@
 \chardef\testpagemethod \zerocount % todo: \testnewpage[method=,lines=,voffset=]
 \chardef\testpagetrigger\zerocount
 
-\def\testpage    {\dotripleempty\dotestpage[\plusone]} %
-\def\testpageonly{\dotripleempty\dotestpage[\plustwo]} % no penalties added to the mvl
+\def\testpage    {\dotripleempty\dotestpage[\plusone  ]} %
+\def\testpageonly{\dotripleempty\dotestpage[\plustwo  ]} % no penalties added to the mvl
+\def\testpagesync{\dotripleempty\dotestpage[\plusthree]} % force sync
 
 \def\dotestpage[#1][#2][#3]% don't change, only add more methods
-  {%\relax % needed before \if
+  {\relax % needed before \if
    \ifpaginageblokkeerd
      \endgraf
    \else
@@ -1516,13 +1517,18 @@
            \fi
          \fi
        \else
-         % force page break / new / does not work as expected
-         % never: \penalty-\!!tenthousand\relax
+         \ifnum#1=\plusthree
+           \flushpagesofar
+         \fi
        \fi
      \else
        \ifnum#1=\plusone\goodbreak\fi
      \fi
    \fi}
+
+\ifx\flushpagesofar\undefined
+    \let\flushpagesofar\relax
+\fi
 
 \def\testcolumn
   {\dodoubleempty\dotestcolumn}

@@ -178,7 +178,8 @@
 %D words. \TEX\ hackers will recognise the next two macro's:
 
 \ifx\prewordbreak             \undefined \def\prewordbreak {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
-\ifx\postwordbreak            \undefined \def\postwordbreak{\penalty\zerocount\prewordbreak}                \fi
+%ifx\postwordbreak            \undefined \def\postwordbreak{\penalty\zerocount      \prewordbreak         } \fi
+\ifx\postwordbreak            \undefined \def\postwordbreak{\penalty\zerocount      \hskip\zeropoint\relax} \fi
 
 \ifx\hspaceamount             \undefined \def\hspaceamount#1#2{\kern.16667em} \fi % language specific
 
@@ -382,7 +383,7 @@
    \else\ifconditional\punctafterdiscretionary
      \prewordbreak\hbox{#1}\relax
    \else
-     \prewordbreak\discretionary{#2}{#3}{#4}\prewordbreak
+     \prewordbreak\discretionary{#2}{#3}{#4}\postwordbreak % was prewordbreak
    \fi\fi}
 
 \definetextmodediscretionary {}
@@ -412,7 +413,7 @@
 
 \definetextmodediscretionary ^
   {\prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
-   \allowbreak\postwordbreak}
+   \allowbreak\postwordbreak} % bugged
 
 \definetextmodediscretionary <
   {\beginofsubsentence\prewordbreak\beginofsubsentencespacing}

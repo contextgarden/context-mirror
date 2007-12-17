@@ -228,7 +228,7 @@
 \def\handletsplit
   {\analyzesplitfloatcaption\tsplitcontent
    \global\setfalse\tsplitfirstdone
-   \testpage
+   \testpagesync % new, sync, but still tricky
      [\tsplitminimumfreelines]
      [\dimexpr\tsplitminimumfreespace+\extrasplitfloatlines\lineheight\relax]%
    \setbox\scratchbox\vbox{\tsplitinbetween}%

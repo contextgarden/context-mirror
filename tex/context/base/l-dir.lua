@@ -10,26 +10,32 @@ dir = { }
 
 -- optimizing for no string.find (*) does not save time
 
-if lfs then
+if lfs then do
 
-    function dir.glob_pattern(path,patt,recurse,action)
-        local ok, scanner = xpcall(function() return lfs.dir(path) end, function() end) -- kepler safe
+    local attributes = lfs.attributes
+    local walkdir    = lfs.dir
+
+    local function glob_pattern(path,patt,recurse,action)
+        local ok, scanner = xpcall(function() return walkdir(path) end, function() end) -- kepler safe
         if ok and type(scanner) == "function" then
+            if not path:find("/$") then path = path .. '/' end
             for name in scanner do
-                local full = path .. '/' .. name
-                local mode = lfs.attributes(full,'mode')
+                local full = path .. name
+                local mode = attributes(full,'mode')
                 if mode == 'file' then
                     if name:find(patt) then
                         action(full)
                     end
                 elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                    dir.glob_pattern(full,patt,recurse,action)
+                    glob_pattern(full,patt,recurse,action)
                 end
             end
         end
     end
 
-    function dir.glob(pattern, action)
+    dir.glob_pattern = glob_pattern
+
+    local function glob(pattern, action)
         local t = { }
         local action = action or function(name) table.insert(t,name) end
         local path, patt = pattern:match("^(.*)/*%*%*/*(.-)$")
@@ -45,22 +51,26 @@ if lfs then
         patt = patt:gsub("%?", ".")
         patt = "^" .. patt .. "$"
      -- print('path: ' .. path .. ' | pattern: ' .. patt .. ' | recurse: ' .. tostring(recurse))
-        dir.glob_pattern(path,patt,recurse,action)
+        glob_pattern(path,patt,recurse,action)
         return t
     end
 
-    function dir.globfiles(path,recurse,func,files)
+    dir.glob = glob
+
+    -- todo: speedup
+
+    local function globfiles(path,recurse,func,files)
         if type(func) == "string" then
             local s = func -- alas, we need this indirect way
             func = function(name) return name:find(s) end
         end
         files = files or { }
-        for name in lfs.dir(path) do
+        for name in walkdir(path) do
             if name:find("^%.") then
                 --- skip
-            elseif lfs.attributes(name,'mode') == "directory" then
+            elseif attributes(name,'mode') == "directory" then
                 if recurse then
-                    dir.globfiles(path .. "/" .. name,recurse,func,files)
+                    globfiles(path .. "/" .. name,recurse,func,files)
                 end
             elseif func then
                 if func(name) then
@@ -73,6 +83,8 @@ if lfs then
         return files
     end
 
+    dir.globfiles = globfiles
+
     -- t = dir.glob("c:/data/develop/context/sources/**/????-*.tex")
     -- t = dir.glob("c:/data/develop/tex/texmf/**/*.tex")
     -- t = dir.glob("c:/data/develop/context/texmf/**/*.tex")
@@ -81,7 +93,7 @@ if lfs then
     -- print(dir.ls("*.tex"))
 
     function dir.ls(pattern)
-        return table.concat(dir.glob(pattern),"\n")
+        return table.concat(glob(pattern),"\n")
     end
 
     --~ mkdirs("temp")
@@ -108,4 +120,4 @@ if lfs then
 
     dir.makedirs = dir.mkdirs
 
-end
+end end

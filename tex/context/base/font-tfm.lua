@@ -151,15 +151,15 @@ function fonts.tfm.check_virtual_id(tfmdata, id)
     end
 end
 
--- if t.tounicode = 1 then also characters[n].tounicode = "string"
+--[[ldx--
+<p>Beware, the boundingbox is passed as reference so we may not overwrite it
+in the process; numbers are of course copies. Here 65536 equals 1pt. (Due to
+excessive memory usage in CJK fonts, we no longer pass the boundingbox.)</p>
+--ldx]]--
+
+local xxx = 0
 
 function fonts.tfm.do_scale(tfmtable, scaledpoints)
-    -- beware, the boundingbox is passed as reference so we may not overwrite it
-    -- in the process, numbers are of course copies
-    --
-    -- 65536 = 1pt
-    -- 1000 units per designsize (not always)
-    local scale, round = tex.scale, tex.round -- replaces math.floor(n*m+0.5)
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
@@ -171,36 +171,41 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
     end
     local tc = t.characters
     local trace = fonts.trace
+ -- local zerobox = { 0, 0, 0, 0 }
     for k,v in pairs(tfmtable.characters) do
-        local w, h, d = v.width, v.height, v.depth
+        local description = v.description or v -- shared data
         local chr = {
-            unicode = v.unicode,
-            name    = v.name,
-            index   = v.index or k,
-            width   = (w == 0 and 0) or scale(w, delta),
-            height  = (h == 0 and 0) or scale(h, delta),
-            depth   = (d == 0 and 0) or scale(d, delta),
-            class   = v.class
+            unicode = description.unicode,
+            name    = description.name,
+            index   = description.index or k,
+            width   = delta*(description.width  or 0),
+            height  = delta*(description.height or 0),
+            depth   = delta*(description.depth  or 0),
+            class   = description.class
         }
         if trace then
-            logs.report("define font", string.format("n=%s, u=%s, i=%s, n=%s c=%s",k,v.unicode,v.index,v.name or '-',v.class or '-'))
+            logs.report("define font", string.format("n=%s, u=%s, i=%s, n=%s c=%s",k,description.unicode,description.index,description.name or '-',description.class or '-'))
         end
-        local vb = v.boundingbox
-        if vb then
-            chr.boundingbox = scale(vb,delta)
-        end
-        local vi = v.italic
+    --  local vb = v.boundingbox
+    --  if vb then
+    --      chr.boundingbox = { vb[1]*delta, vb[2]*delta, vb[3]*delta, vb[4]*delta }
+    --  else
+    --  --  chr.boundingbox = zerobox -- most afm en otf files have bboxes so ..
+    --  end
+        local vi = description.italic
         if vi then
-            chr.italic = scale(vi,delta)
+            chr.italic = vi*delta
         end
         local vk = v.kerns
         if vk then
-            chr.kerns = scale(vk,delta)
+            local tt = {}
+            for k,v in pairs(vk) do tt[k] = v*delta end
+            chr.kerns = tt
         end
         local vl = v.ligatures
         if vl then
             if true then
-                chr.ligatures = v.ligatures -- shared
+                chr.ligatures = vl -- shared
             else
                 local tt = { }
                 for i,l in pairs(vl) do
@@ -217,12 +222,11 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
                 local ivc = vc[i]
                 local key = ivc[1]
                 if key == "right" or key == "left" or key == "down" or key == "up" then
-                    tt[#tt+1] = { key, scale(ivc[2],delta) }
+                    tt[#tt+1] = { key, ivc[2]*delta }
                 else
                     tt[#tt+1] = ivc -- shared since in cache and untouched
                 end
             end
---~ print(table.serialize(vc),table.serialize(tt))
             chr.commands = tt
         end
         tc[k] = chr
@@ -230,9 +234,9 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
     local tp = t.parameters
     for k,v in pairs(tfmtable.parameters) do
         if k == 1 then
-            tp[k] = round(v)
+            tp[k] = v
         else
-            tp[k] = scale(v,delta)
+            tp[k] = v*delta
         end
     end
     -- t.encodingbytes, t.filename, t.fullname, t.name: elsewhere
@@ -251,11 +255,10 @@ wasted day but an experience richer.</p>
 --ldx]]--
 
 function fonts.tfm.scale(tfmtable, scaledpoints)
-    local scale = tex.scale
     local t, factor = fonts.tfm.do_scale(tfmtable, scaledpoints)
     t.factor    = factor
-    t.ascender  = scale(tfmtable.ascender  or 0, factor)
-    t.descender = scale(tfmtable.descender or 0, factor)
+    t.ascender  = factor*(tfmtable.ascender  or 0)
+    t.descender = factor*(tfmtable.descender or 0)
     t.shared    = tfmtable.shared or { }
     t.unique    = table.fastcopy(tfmtable.unique or {})
 --~ print("scaling", t.name, t.factor) -- , fonts.tfm.hash_features(tfmtable.specification))

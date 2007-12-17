@@ -24,23 +24,23 @@ do
 
     -- maybe combine spotcolorname
 
-    local s_template_g = "\\doregistergrayspotcolor{%s}{%s}{%s}{%s}{%s}"             -- n f d p s (p can go away)
-    local s_template_r = "\\doregisterrgbspotcolor {%s}{%s}{%s}{%s}{%s}{%s}{%s}"     -- n f d p r g b
-    local s_template_c = "\\doregistercmykspotcolor{%s}{%s}{%s}{%s}{%s}{%s}{%s}{%s}" -- n f d p c m y k
+    local s_template_g = "\\dodoPDFregistergrayspotcolor{%s}{%s}{%s}{%s}{%s}"             -- n f d p s (p can go away)
+    local s_template_r = "\\dodoPDFregisterrgbspotcolor {%s}{%s}{%s}{%s}{%s}{%s}{%s}"     -- n f d p r g b
+    local s_template_c = "\\dodoPDFregistercmykspotcolor{%s}{%s}{%s}{%s}{%s}{%s}{%s}{%s}" -- n f d p c m y k
 
     function backends.pdf.registergrayspotcolor(n,f,d,p,s)       states.collect(s_template_g:format(n,f,d,p,s))       end
     function backends.pdf.registerrgbspotcolor (n,f,d,p,r,g,b)   states.collect(s_template_r:format(n,f,d,p,r,g,b))   end
     function backends.pdf.registercmykspotcolor(n,f,d,p,c,m,y,k) states.collect(s_template_c:format(n,f,d,p,c,m,y,k)) end
 
-    local m_template_g = "\\doregistergrayindexcolor{%s}{%s}{%s}{%s}{%s}"             -- n f d p s (p can go away)
-    local m_template_r = "\\doregisterrgbindexcolor {%s}{%s}{%s}{%s}{%s}{%s}{%s}"     -- n f d p r g b
-    local m_template_c = "\\doregistercmykindexcolor{%s}{%s}{%s}{%s}{%s}{%s}{%s}{%s}" -- n f d p c m y k
+    local m_template_g = "\\doPDFregistergrayindexcolor{%s}{%s}{%s}{%s}{%s}"             -- n f d p s (p can go away)
+    local m_template_r = "\\doPDFregisterrgbindexcolor {%s}{%s}{%s}{%s}{%s}{%s}{%s}"     -- n f d p r g b
+    local m_template_c = "\\doPDFregistercmykindexcolor{%s}{%s}{%s}{%s}{%s}{%s}{%s}{%s}" -- n f d p c m y k
 
     function backends.pdf.registergrayindexcolor(n,f,d,p,s)       states.collect(m_template_g:format(n,f,d,p,s))       end
     function backends.pdf.registerrgbindexcolor (n,f,d,p,r,g,b)   states.collect(m_template_r:format(n,f,d,p,r,g,b))   end
     function backends.pdf.registercmykindexcolor(n,f,d,p,c,m,y,k) states.collect(m_template_c:format(n,f,d,p,c,m,y,k)) end
 
-    local s_template_e = "\\doregisterspotcolorname{%s}{%s}" -- name, e
+    local s_template_e = "\\doPDFregisterspotcolorname{%s}{%s}" -- name, e
 
     function backends.pdf.registerspotcolorname(name,e)
         if e and e ~= "" then

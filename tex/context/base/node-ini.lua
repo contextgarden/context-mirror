@@ -509,26 +509,60 @@ callback.register('hpack_filter'        , nodes.processors.hpack_filter)
 
 do
 
-    local expand = {
-        list = true,
-        pre = true,
-        post = true,
-        spec = true,
-        attr = true,
-        components = true,
+    -- beware, some field names will change in a next release of luatex
+
+    local expand = table.tohash {
+        "list",         -- list_ptr & ins_ptr & adjust_ptr
+        "pre",          --
+        "post",         --
+        "spec",         -- glue_ptr
+        "top_skip",     --
+        "attr",         --
+        "replace",      -- nobreak
+        "components",   -- lig_ptr
+        "box_left",     --
+        "box_right",    --
+        "glyph",        -- margin_char
+        "leader",       -- leader_ptr
+        "action",       -- action_ptr
+        "value",        -- user_defined nodes with subtype 'a' en 'n'
+    }
+
+    -- page_insert: "height", "last_ins_ptr", "best_ins_ptr"
+    -- split_insert:  "height", "last_ins_ptr", "best_ins_ptr", "broken_ptr", "broken_ins"
+
+    local ignore = table.tohash {
+        "page_insert",
+        "split_insert",
+        "ref_count",
+    }
+
+    local dimension = table.tohash {
+        "width", "height", "depth", "shift",
+        "stretch", "shrink",
+        "xoffset", "yoffset",
+        "surround",
+        "kern",
+        "box_left_width", "box_right_width"
     }
 
     -- flat: don't use next, but indexes
     -- verbose: also add type
     -- can be sped up
 
-    function nodes.astable(n,sparse)
+    nodes.dimensionfields = dimension
+    nodes.listablefields  = expand
+    nodes.ignorablefields = ignore
+
+    -- not ok yet:
+
+    function nodes.astable(n,sparse) -- not yet ok
         local f, t = node.fields(n.id,n.subtype), { }
         for i=1,#f do
             local v = f[i]
             local d = n[v]
             if d then
-                if v == "ref_count" or v == "id" then
+                if ignore[v] or v == "id" then
                     -- skip
                 elseif expand[v] then -- or: type(n[v]) ~= "string" or type(n[v]) ~= "number" or type(n[v]) ~= "table"
                     t[v] = "pointer to list"
@@ -545,23 +579,36 @@ do
         return t
     end
 
-    function nodes.totable(n,flat,verbose)
-        local function totable(n)
-            local f = node.fields(n.id,n.subtype)
+    local nodefields = node.fields
+    local nodetype   = node.type
+
+    -- under construction:
+
+    local function totable(n,flat,verbose)
+        local function to_table(n)
+            local f = nodefields(n.id,n.subtype)
             local tt = { }
-            for _,v in ipairs(f) do
-                if n[v] then
-                    if v == "ref_count" then
+            for k=1,#f do
+                local v = f[k]
+                local nv = n[v]
+                if nv then
+                    if ignore[v] then
                         -- skip
-                    elseif expand[v] then -- or: type(n[v]) ~= "string" or type(n[v]) ~= "number" or type(n[v]) ~= "table"
-                        tt[v] = nodes.totable(n[v],flat,verbose)
+                    elseif expand[v] then
+                        if type(nv) == "number" or type(nv) == "string" then
+                            tt[v] = nv
+                        else
+                            tt[v] = totable(nv,flat,verbose)
+                        end
+                    elseif type(nv) == "table" then
+                        tt[v] = nv -- totable(nv,flat,verbose) -- data
                     else
-                        tt[v] = n[v]
+                        tt[v] = nv
                     end
                 end
             end
             if verbose then
-                tt.type = node.type(tt.id)
+                tt.type = nodetype(tt.id)
             end
             return tt
         end
@@ -569,14 +616,14 @@ do
             if flat then
                 local t = { }
                 while n do
-                    t[#t+1] = totable(n)
+                    t[#t+1] = to_table(n)
                     n = n.next
                 end
                 return t
             else
-                local t = totable(n)
+                local t = to_table(n)
                 if n.next then
-                    t.next = nodes.totable(n.next,flat,verbose)
+                    t.next = totable(n.next,flat,verbose)
                 end
                 return t
             end
@@ -585,9 +632,13 @@ do
         end
     end
 
+    nodes.totable = totable
+
     local function key(k)
         return ((type(k) == "number") and "["..k.."]") or k
     end
+
+    -- not ok yet:
 
     local function serialize(root,name,handle,depth,m)
         handle = handle or print
@@ -612,7 +663,7 @@ do
         if root then
             local fld
             if root.id then
-                fld = node.fields(root.id,root.subtype) -- we can cache these (todo)
+                fld = nodefields(root.id,root.subtype) -- we can cache these (todo)
             else
                 fld = table.sortedkeys(root)
             end
@@ -756,3 +807,19 @@ do
     end
 
 end
+
+-- goodie
+--
+-- if node.valid(tex.box[0]) then print("valid node") end
+
+--~ do
+--~     local n = node.new(0,0)
+--~     local m = getmetatable(n)
+--~     m.__metatable = 'node'
+--~     node.free(n)
+
+--~     function node.valid(n)
+--~         return n and getmetatable(n) == 'node'
+--~     end
+--~ end
+

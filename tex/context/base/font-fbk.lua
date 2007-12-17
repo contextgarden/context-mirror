@@ -51,8 +51,6 @@ end
 fonts.fallbacks['textcent'] = function (g)
     local c = string.byte("c")
     local t = table.fastcopy(g.characters[c])
---~     local s = fonts.tfm.scaled(g.specification.size or g.size or g.private.size)
---~     local s = fonts.tfm.scaled(g.size or g.private.size)
     local s = fonts.tfm.scaled(g.specification.size or g.size)
     local a = - math.tan(math.rad(g.italicangle))
     local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
@@ -89,8 +87,6 @@ end
 fonts.fallbacks['texteuro'] = function (g)
     local c = string.byte("C")
     local t = table.fastcopy(g.characters[c])
---~     local s = fonts.tfm.scaled(g.specification.size or g.size or g.private.size)
---~     local s = fonts.tfm.scaled(g.size or g.private.size)
     local s = fonts.tfm.scaled(g.specification.size or g.size)
     local d = math.cos(math.rad(90+g.italicangle))
     local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
@@ -111,69 +107,144 @@ end
 
 fonts.vf.aux.combine.force_composed = false
 
- fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
+--~ fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
+--~     local chars = g.characters
+--~     local xchar = chars[string.byte("X")]
+--~     if xchar.boundingbox then
+--~         local cap_lly = xchar.boundingbox[4]
+--~         local ita_cor = math.cos(math.rad(90+g.italicangle))
+--~         local force = fonts.vf.aux.combine.force_composed
+--~         local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
+--~         for i,c in pairs(characters.data) do
+--~             if force or not chars[i] then
+--~                 local s = c.specials
+--~                 if s and s[1] == 'char' then
+--~                     local chr = s[2]
+--~                     if chars[chr] then
+--~                         local cc = c.category
+--~                         if (cc == 'll') or (cc == 'lu') or (cc == 'lt') then
+--~                             local acc = s[3]
+--~                             local t = table.fastcopy(chars[chr])
+--~                             t.name = ""
+--~                             t.index = i
+--~                             t.unicode = i
+--~                             if chars[acc] then
+--~                                 local cb = chars[chr].boundingbox
+--~                                 local ab = chars[acc].boundingbox
+--~                                 if cd and ab then
+--~                                     local c_llx, c_lly, c_urx, c_ury = cb[1], cb[2], cb[3], cb[4]
+--~                                     local a_llx, a_lly, a_urx, a_ury = ab[1], ab[2], ab[3], ab[4]
+--~                                     local dx = (c_urx - a_urx - a_llx + c_llx)/2
+--~                                     local dd = (c_urx-c_llx)*ita_cor
+--~                                     if a_ury < 0  then
+--~                                         local dy = cap_lly-a_lly
+--~                                         t.commands = {
+--~                                             {"push"},
+--~                                             {"right", dx-dd},
+--~                                             {"down", -dy}, -- added
+--~                                             {special, red},
+--~                                             {"slot", 1, acc},
+--~                                             {special, black},
+--~                                             {"pop"},
+--~                                             {"slot", 1, chr},
+--~                                         }
+--~                                     elseif c_ury > a_lly then
+--~                                         local dy = cap_lly-a_lly
+--~                                         t.commands = {
+--~                                             {"push"},
+--~                                             {"right", dx+dd},
+--~                                             {"down", -dy},
+--~                                             {special, green},
+--~                                             {"slot", 1, acc},
+--~                                             {special, black},
+--~                                             {"pop"},
+--~                                             {"slot", 1, chr},
+--~                                         }
+--~                                     else
+--~                                         t.commands = {
+--~                                             {"push"},
+--~                                             {"right", dx+dd},
+--~                                             {special, blue},
+--~                                             {"slot", 1, acc},
+--~                                             {special, black},
+--~                                             {"pop"},
+--~                                             {"slot", 1, chr},
+--~                                         }
+--~                                     end
+--~                                 end
+--~                             end
+--~                             chars[i] = t
+--~                         end
+--~                     end
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
+fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
     local chars = g.characters
-    local cap_lly = chars[string.byte("X")].boundingbox[4]
-    local ita_cor = math.cos(math.rad(90+g.italicangle))
-    local force = fonts.vf.aux.combine.force_composed
-    local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
-    for i,c in pairs(characters.data) do
-        if force or not chars[i] then
-            local s = c.specials
-            if s and s[1] == 'char' then
-                local chr = s[2]
-                if chars[chr] then
-                    local cc = c.category
-                    if (cc == 'll') or (cc == 'lu') or (cc == 'lt') then
-                        local acc = s[3]
-                        local t = table.fastcopy(chars[chr])
-t.name = ""
-t.index = i
-t.unicode = i
-                        if chars[acc] then
-                            local cb = chars[chr].boundingbox
-                            local ab = chars[acc].boundingbox
-                            local c_llx, c_lly, c_urx, c_ury = cb[1], cb[2], cb[3], cb[4]
-                            local a_llx, a_lly, a_urx, a_ury = ab[1], ab[2], ab[3], ab[4]
-                         -- local dx = (c_urx-a_urx) - (c_urx-c_llx-a_urx+a_llx)/2
-                         -- local dx = (c_urx-a_urx) - (c_urx-a_urx-c_llx+a_llx)/2
-                            local dx = (c_urx - a_urx - a_llx + c_llx)/2
-                         -- local dd = chars[chr].width*ita_cor
-                            local dd = (c_urx-c_llx)*ita_cor
-                            if a_ury < 0  then
-                                local dy = cap_lly-a_lly
-                                t.commands = {
-                                    {"push"},
-                                    {"right", dx-dd},
-                                    {"down", -dy}, -- added
-                                    {special, red},
-                                    {"slot", 1, acc},
-                                    {special, black},
-                                    {"pop"},
-                                    {"slot", 1, chr},
-                                }
-                            elseif c_ury > a_lly then
-                                local dy = cap_lly-a_lly
-                                t.commands = {
-                                    {"push"},
-                                    {"right", dx+dd},
-                                    {"down", -dy},
-                                    {special, green},
-                                    {"slot", 1, acc},
-                                    {special, black},
-                                    {"pop"},
-                                    {"slot", 1, chr},
-                                }
-                            else
-                                t.commands = {
-                                    {"push"},
-                                    {"right", dx+dd},
-                                    {special, blue},
-                                    {"slot", 1, acc},
-                                    {special, black},
-                                    {"pop"},
-                                    {"slot", 1, chr},
-                                }
+    local xchar = chars[string.byte("X")]
+    if xchar then
+        local xheight = xchar.height
+        local ita_cor = math.cos(math.rad(90+g.italicangle))
+        local force = fonts.vf.aux.combine.force_composed
+        local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
+        for i,c in pairs(characters.data) do
+            if force or not chars[i] then
+                local s = c.specials
+                if s and s[1] == 'char' then
+                    local chr = s[2]
+                    if chars[chr] then
+                        local cc = c.category
+                        if (cc == 'll') or (cc == 'lu') or (cc == 'lt') then
+                            local acc = s[3]
+                            local t = table.fastcopy(chars[chr])
+                            t.name = ""
+                            t.index = i
+                            t.unicode = i
+                            if chars[acc] then
+                                local c = chars[chr]
+                                local a = chars[acc]
+                                if c and a then
+                                    local dx = (c.width-a.width)/2
+                                    local dd = c.width*ita_cor
+                                    if a.height < 0  then
+                                        local dy = xheight+a.depth
+                                        t.commands = {
+                                            {"push"},
+                                            {"right", dx-dd},
+                                            {"down", -dy}, -- added
+                                            {special, red},
+                                            {"slot", 1, acc},
+                                            {special, black},
+                                            {"pop"},
+                                            {"slot", 1, chr},
+                                        }
+                                    elseif c.height > -a.depth then
+                                        local dy = xheight+a.depth
+                                        t.commands = {
+                                            {"push"},
+                                            {"right", dx+dd},
+                                            {"down", -dy},
+                                            {special, green},
+                                            {"slot", 1, acc},
+                                            {special, black},
+                                            {"pop"},
+                                            {"slot", 1, chr},
+                                        }
+                                    else
+                                        t.commands = {
+                                            {"push"},
+                                            {"right", dx+dd},
+                                            {special, blue},
+                                            {"slot", 1, acc},
+                                            {special, black},
+                                            {"pop"},
+                                            {"slot", 1, chr},
+                                        }
+                                    end
+                                end
                             end
                             chars[i] = t
                         end

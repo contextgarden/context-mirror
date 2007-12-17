@@ -244,10 +244,10 @@ function fonts.tfm.read(specification)
             else
                 tfmtable.embedding = "subset"
             end
+            fonts.tfm.fonts[hash] = tfmtable
+            fonts.designsizes[specification.hash] = tfmtable.designsize -- we only know this for sure after loading once
+        --~ tfmtable.mode = specification.features.normal.mode or "base"
         end
-        fonts.tfm.fonts[hash] = tfmtable
-fonts.designsizes[specification.hash] = tfmtable.designsize -- we only know this for sure after loading once
---~ tfmtable.mode = specification.features.normal.mode or "base"
     end
     input.stoptiming(fonts)
     garbagecollector.pop()

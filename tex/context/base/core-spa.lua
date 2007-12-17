@@ -364,11 +364,13 @@ do
                         local kern, prev = map.left, start.prev
                         if kern and kern ~= 0 and prev and prev.id == glyph then
                             node.insert_before(head,start,nodes.kern(tex.scale(fontids[start.font].parameters[6],kern)))
+                        --  node.insert_before(head,start,nodes.kern(fontids[start.font].parameters[6]*kern))
                             done = true
                         end
                         local kern, next = map.right, start.next
                         if kern and kern ~= 0 and next and next.id == glyph then
                             node.insert_after(head,start,nodes.kern(tex.scale(fontids[start.font].parameters[6],kern)))
+                        --  node.insert_after(head,start,nodes.kern(fontids[start.font].parameters[6]*kern))
                             done = true
                         end
                     end
@@ -438,6 +440,7 @@ do
                             elseif pid == kern and prev.subtype == 0 then
                                 prev.subtype = 1
                                 prev.kern = prev.kern + scale(fontids[lastfont].parameters[6],krn)
+                            --  prev.kern = prev.kern + fontids[lastfont].parameters[6]*krn
                                 done = true
                             elseif pid == glyph then
                                 -- fontdata access can be done more efficient
@@ -447,54 +450,18 @@ do
                                     local ickern = tfm.kerns
                                     if ickern and ickern[lastchar] then
                                         krn = scale(ickern[lastchar]+fontids[lastfont].parameters[6],krn)
+                                    --  krn = krn*(ickern[lastchar]+fontids[lastfont].parameters[6])
                                     else
                                         krn = scale(fontids[lastfont].parameters[6],krn)
+                                    --  krn = krn*fontids[lastfont].parameters[6]
                                     end
                                 else
                                     krn = scale(fontids[lastfont].parameters[6],krn)
+                                --  krn = krn*fontids[lastfont].parameters[6]
                                 end
                                 node.insert_before(head,start,nodes.kern(krn))
                                 done = true
                             elseif pid == disc then
-                                -- probably wrong anyway
-                                -- currently this hooks into the node handlere before
-                                -- hyphenation takes place, but this may change
-                                --
-                                -- local d = start.prev
-                                -- local pre, post = d.pre, d.post
-                                -- if pre then
-                                --     local p = d.prev
-                                --     local nn, pp = p.prev, p.next
-                                --     p.prev, p.next = nil, pre -- hijack node
-                                --     pre = kerns.process(namespace,attribute,p)
-                                --     pre = pre.next
-                                --     pre.prev = nil
-                                --     p.prev, p.next = nn, pp
-                                --     d.pre = pre
-                                -- end
-                                -- if post then -- more checks needed
-                                --     local tail = node.slide(post)
-                                --     local nn, pp = d.next.prev, d.next.next
-                                --     d.next.next, d.next.prev = nil, tail
-                                --     tail.next = start.next -- hijack node
-                                --     post = kerns.process(namespace,attribute,post)
-                                --     tail.next = nil
-                                --     d.next.prev, d.next.next = nn, pp
-                                --     d.post = post
-                                -- end
-                                -- local prevchar, nextchar = d.prev.char, d.next.char -- == start.char
-                                -- local tfm = fti[lastfont].characters[prevchar]
-                                -- local ickern = tfm.kerns
-                                -- if ickern and ickern[nextchar] then
-                                --     krn = scale(ickern[nextchar]+fontids[lastfont].parameters[6],krn)
-                                -- else
-                                --     krn = scale(fontids[lastfont].parameters[6],krn)
-                                -- end
-                                -- node.insert_before(head,start,nodes.kern(krn))
-                                -- d.replace = d.replace + 1
-                                --
-                                -- untested:
-                                --
                                 local disc = start.prev -- disc
                                 local pre, post, replace = disc.pre, disc.post, disc.replace
                                 if pre then -- must pair with start.prev
@@ -545,22 +512,26 @@ do
                         if w > 0 then
                             local width, stretch, shrink = w+2*scale(w,krn), s.stretch, s.shrink
                             start.spec = nodes.glue_spec(width,scale(stretch,width/w),scale(shrink,width/w))
-                        --  node.free(ss)
+                        --  local width, stretch, shrink = w+2*w*krn, s.stretch, s.shrink
+                        --  start.spec = nodes.glue_spec(width,stretch*width/w,shrink*width/w))
                             done = true
                         end
                     elseif false and id == kern and start.subtype == 0 then -- handle with glyphs
                         local sk = start.kern
                         if sk > 0 then
-                            start.kern = scale(sk,krn)
+                        --  start.kern = scale(sk,krn)
+                            start.kern = sk*krn
                             done = true
                         end
                     elseif lastfont and (id == hlist or id == vlist) then -- todo: lookahead
                         if start.prev then
                             node.insert_before(head,start,nodes.kern(scale(fontids[lastfont].parameters[6],krn)))
+                        --  node.insert_before(head,start,nodes.kern(fontids[lastfont].parameters[6]*krn))
                             done = true
                         end
                         if start.next then
                             node.insert_after(head,start,nodes.kern(scale(fontids[lastfont].parameters[6],krn)))
+                        --  node.insert_after(head,start,nodes.kern(fontids[lastfont].parameters[6]*krn))
                             done = true
                         end
                     end

@@ -1,0 +1,16 @@
+; TECkit mapping for TeX input conventions <-> Unicode characters
+;
+; Based on tex-text.map used in XeTeX, but with less ligatures (olny the most important ones)
+; This part of ConTeXt distribution, but may be used for any purpose
+
+LHSName	"tlig"
+RHSName	"UNICODE"
+
+pass(Unicode)
+
+; ligatures from Knuth's original CMR fonts
+U+002D U+002D			<>	U+2013	; -- -> en dash
+U+002D U+002D U+002D	<>	U+2014	; --- -> em dash
+
+U+0027			<>	U+2019	; ' -> right single quote
+

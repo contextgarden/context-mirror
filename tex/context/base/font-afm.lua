@@ -19,7 +19,7 @@ away.</p>
 
 fonts                      = fonts     or { }
 fonts.afm                  = fonts.afm or { }
-fonts.afm.version          = 1.21 -- incrementing this number one up will force a re-cache
+fonts.afm.version          = 1.22 -- incrementing this number one up will force a re-cache
 fonts.afm.syncspace        = true -- when true, nicer stretch values
 fonts.afm.enhance_data     = true -- best leave this set to true
 fonts.afm.trace_features   = false
@@ -124,7 +124,7 @@ do
                 end
                 chr.index = ind
             elseif k == 'WX' then
-                chr.wx = v
+                chr.width = v
             elseif k == 'N'  then
                 str = v
             elseif k == 'B'  then
@@ -304,9 +304,10 @@ function fonts.afm.add_ligatures(afmdata,ligatures)
             for _, b in pairs(v) do
                 two, three = b[1], b[2]
                 if two and three and chars[two] and chars[three] then
-                    if one[ligatures] then
-                        if not one.ligatures[two] then
-                            one[ligatures][two] = three
+                    local ol = one[ligatures]
+                    if ol then
+                        if not ol[two] then -- was one.ligatures ... bug
+                            ol[two] = three
                         end
                     else
                         one[ligatures] = { [two] = three }
@@ -330,8 +331,9 @@ function fonts.afm.add_kerns(afmdata)
             if v.kerns then
                 local k = { }
                 for complex,simple in pairs(characters.uncomposed[what]) do
-                    if k[simple] and not k[complex] then
-                        k[complex] = k[simple]
+                    local ks = k[simple]
+                    if ks and not k[complex] then
+                        k[complex] = ks
                     end
                 end
                 if not table.is_empty(k) then
@@ -363,7 +365,21 @@ end
 --ldx]]--
 
 -- once we have otf sorted out (new format) we can try to make the afm
--- cache similar to it
+-- cache similar to it (similar tables)
+
+function fonts.afm.add_dimensions(data) -- we need to normalize afm to otf i.e. indexed table instead of name
+    if data then
+        for n, d in pairs(data.characters) do
+            local bb = d.boundingbox
+            if bb then
+                local ht, dp = bb[4], -bb[2]
+                if ht ~= 0 then d.height = ht end
+                if dp ~= 0 then d.depth  = dp end
+            end
+            d.name = n
+        end
+    end
+end
 
 function fonts.afm.copy_to_tfm(data)
     if data and data.characters then
@@ -372,16 +388,7 @@ function fonts.afm.copy_to_tfm(data)
         local characters, parameters = tfm.characters, tfm.parameters
         if afmcharacters then
             for k, v in pairs(afmcharacters) do
-                local b, u = v.boundingbox, v.unicode
-                characters[u] = {
-                    height      =   b[4],
-                    depth       = - b[2],
-                    width       =   v.wx,
-                    boundingbox =   b,
-                    index       =   v.index,
-                    name        =   k,
-                    unicode     =   u,
-                }
+                characters[v.unicode] = { description = v }
             end
         end
         tfm.encodingbytes      = data.encodingbytes or 2
@@ -400,15 +407,15 @@ function fonts.afm.copy_to_tfm(data)
         local spaceunits = 500
         tfm.spacer = "500 units"
         if data.isfixedpitch then
-            if afmcharacters['space'] and afmcharacters['space'].wx then
-                spaceunits, tfm.spacer = afmcharacters['space'].wx, "space"
-            elseif afmcharacters['emdash'] and afmcharacters['emdash'].wx then -- funny default
-                spaceunits, tfm.spacer = afmcharacters['emdash'].wx, "emdash"
+            if afmcharacters['space'] and afmcharacters['space'].width then
+                spaceunits, tfm.spacer = afmcharacters['space'].width, "space"
+            elseif afmcharacters['emdash'] and afmcharacters['emdash'].width then -- funny default
+                spaceunits, tfm.spacer = afmcharacters['emdash'].width, "emdash"
             elseif data.charwidth then
                 spaceunits, tfm.spacer = data.charwidth, "charwidth"
             end
-        elseif afmcharacters['space'] and afmcharacters['space'].wx then
-            spaceunits, tfm.spacer = afmcharacters['space'].wx, "space"
+        elseif afmcharacters['space'] and afmcharacters['space'].width then
+            spaceunits, tfm.spacer = afmcharacters['space'].width, "space"
         elseif data.charwidth then
             spaceunits, tfm.spacer = data.charwidth, "charwidth variable"
         end
@@ -433,24 +440,16 @@ function fonts.afm.copy_to_tfm(data)
           parameters[3] = 0
           parameters[4] = 0
         elseif fonts.afm.syncspace then
-            -- too little
-            -- parameters[3] = .2*spaceunits  -- space_stretch
-            -- parameters[4] = .1*spaceunits  -- space_shrink
-            -- taco's suggestion:
-            -- parameters[3] = .4*spaceunits  -- space_stretch
-            -- parameters[4] = .1*spaceunits  -- space_shrink
-            -- knuthian values: (for the moment compatible)
             parameters[3] = spaceunits/2  -- space_stretch
             parameters[4] = spaceunits/3  -- space_shrink
         end
         if data.xheight and data.xheight > 0 then
             parameters[5] = data.xheight
         elseif afmcharacters['x'] and afmcharacters['x'].height then
-            parameters[5] = afmcharacters['x'].height
+            parameters[5] = afmcharacters['x'].height or 0
         end
         local fd = data.fontdimens
-        if fd and fd[8] and fd[9] and fd[10] then
-        --  we're dealing with a tex math font
+        if fd and fd[8] and fd[9] and fd[10] then -- math
             for k,v in pairs(fd) do
                 parameters[k] = v
             end
@@ -556,6 +555,7 @@ function fonts.afm.afm_to_tfm(specification)
         if not tfmdata then
             local afmdata = fonts.afm.load(afmname)
             if not table.is_empty(afmdata) then
+                fonts.afm.add_dimensions(afmdata)
                 tfmdata = fonts.afm.copy_to_tfm(afmdata)
                 if not table.is_empty(tfmdata) then
                     tfmdata.shared = tfmdata.shared or { }
@@ -647,7 +647,7 @@ function fonts.afm.features.prepare_kerns(tfmdata,kerns,value)
     if value then
         local charlist = tfmdata.shared.afmdata.characters
         for _, chr in pairs(tfmdata.characters) do
-            local newkerns = charlist[chr.name][kerns]
+            local newkerns = charlist[chr.description.name][kerns]
             if newkerns then
                 local t = chr.kerns or { }
                 for k,v in pairs(newkerns) do

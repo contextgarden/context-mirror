@@ -1167,6 +1167,46 @@
    \expanded{\doifinset{\v!default}{\@@exlocation}}
      {\appendtocommalist\defaultfigurepathsignal\figurepathlist}}
 
+% \def\analyzefigurefilename#1#2%
+%   {\sanitizefilename#1\to\expandedfigurename
+%    \expanded{\checkfilename{\expandedfigurename}}%
+%    \ifcase\kindoffile
+%      \splitfigurefilename
+%      \ifcase\splitoffkind
+%        \let\wantedfigurepath\empty % no . either
+%        \setfigurepathlist
+%        \setfalse\figurefileisqualified
+%      \else
+%        \splitfigurefilename
+%        \let\figurepathlist\wantedfigurepath
+%        \let\wantedfigurepath\empty
+%        \settrue\figurefileisqualified
+%      \fi
+%    \else % fully qualified
+%      \splitfigurefilename
+%      \let\figurepathlist\wantedfigurepath
+%      \let\wantedfigurepath\empty
+%      \settrue\figurefileisqualified
+%    \fi
+%    \ifx\figurepathlist\empty
+%      \let\figurepathlist\defaultfigurepathsignal % will prepend no path
+%    \fi
+%    \doifelsenothing\wantedfiguretype
+%      {\doifparentfileelse\wantedfigurename
+%         {\@EA\removefromcommalist\@EA{\jobsuffix    }\wantedfiguretypelist
+%          \@EA\removefromcommalist\@EA{\jobfilesuffix}\wantedfiguretypelist}
+%         {}}
+%      {\let\wantedfiguretypelist\empty
+%       \let\wantedfiguretypespec\wantedfiguretype}%
+%    \edef\wantedfigurelabel{#2}%
+%    \doshowfigurestate{type check : \ifx\wantedfiguretypelist\empty forced type \wantedfiguretypespec\else\wantedfiguretypelist\fi}%
+%    \doshowfigurestate{file specs : \wantedfigurefull\space [\wantedfigurepath] [\wantedfigurename] [\wantedfiguretype]}%
+%    \doshowfigurestate{file type  : \ifconditional\figurefileisqualified qualified\else simple\fi}}
+
+% The combined path and qualified path hack is dedicated to Onno Tomson,
+% our partner in fighting inconsistent and faulty image specifications in
+% user files.
+
 \def\analyzefigurefilename#1#2%
   {\sanitizefilename#1\to\expandedfigurename
    \expanded{\checkfilename{\expandedfigurename}}%
@@ -1178,13 +1218,24 @@
        \setfalse\figurefileisqualified
      \else
        \splitfigurefilename
+% will become splitoffkind 3 ! ! ! !
+\setfalse\figurefileisqualified
+\doifinstring{$$/}{$$\wantedfigurepath}{\settrue\figurefileisqualified}%
+\doifinstring  {:}  {\wantedfigurepath}{\settrue\figurefileisqualified}%
+\ifconditional\figurefileisqualified
        \let\figurepathlist\wantedfigurepath
        \let\wantedfigurepath\empty
        \settrue\figurefileisqualified
+\else
+    \let\figurepathlist\@@exdirectory
+    \let\oldfigurepathlist\figurepathlist
+    \let\figurepathlist\wantedfigurepath
+    \def\docommand##1{\edef\figurepathlist{\figurepathlist,##1/\wantedfigurepath}}%
+    \processcommacommand[\oldfigurepathlist]\docommand
+\fi
      \fi
    \else % fully qualified
      \splitfigurefilename
-     \let\figurepathlist\wantedfigurepath
      \let\wantedfigurepath\empty
      \settrue\figurefileisqualified
    \fi
