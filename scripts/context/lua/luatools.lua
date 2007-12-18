@@ -2511,6 +2511,7 @@ end
 function input.identify_cnf(instance)
     if #instance.cnffiles == 0 then
         if instance.treepath ~= "" then
+            -- this is a special purpose branch, not really used
             if instance.rootpath ~= "" then
                 local t = instance.treepath:splitchr(',')
                 for k,v in ipairs(t) do
@@ -2523,6 +2524,7 @@ function input.identify_cnf(instance)
             instance.environment['TEXMFCNF'] = file.join(t[1] or '.','texmf/web2c')
         end
         if instance.rootpath ~= "" then
+            -- this assumes a single path, maybe do an expanded split here too
             instance.environment['TEXMFCNF'] = file.join(instance.rootpath,'texmf/web2c')
             instance.environment['SELFAUTOPARENT'] = instance.rootpath
         end
@@ -2550,9 +2552,9 @@ function input.load_cnf(instance)
     else
         instance.rootpath = instance.cnffiles[1]
         for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = fname:gsub("\\",'/')
+            instance.cnffiles[k] = fname:gsub("\\",'/') -- needed?
         end
-        for i = 1, 3 do
+        for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
         if instance.lsrmode then
@@ -2730,22 +2732,33 @@ function input.locatedatabase(instance,specification)
     return input.methodhandler('locators', instance, specification)
 end
 
+--~ poor mans solution, from before we had lfs.isdir
+--~
+--~ function input.locators.tex(instance,specification)
+--~     if specification and specification ~= '' then
+--~         local files = {
+--~             file.join(specification,'files'..input.lucsuffix),
+--~             file.join(specification,'files'..input.luasuffix),
+--~             file.join(specification,input.lsrname)
+--~         }
+--~         for _, filename in pairs(files) do
+--~             local f = io.open(filename)
+--~             if f then
+--~                 input.logger('! tex locator', specification..' found')
+--~                 input.aux.append_hash(instance,'file',specification,filename)
+--~                 f:close()
+--~                 return
+--~             end
+--~         end
+--~         input.logger('? tex locator', specification..' not found')
+--~     end
+--~ end
+
 function input.locators.tex(instance,specification)
-    if specification and specification ~= '' then
-        local files = {
-            file.join(specification,'files'..input.lucsuffix),
-            file.join(specification,'files'..input.luasuffix),
-            file.join(specification,input.lsrname)
-        }
-        for _, filename in pairs(files) do
-            local f = io.open(filename)
-            if f then
-                input.logger('! tex locator', specification..' found')
-                input.aux.append_hash(instance,'file',specification,filename)
-                f:close()
-                return
-            end
-        end
+    if specification and specification ~= '' and lfs.isdir(specification) then
+        input.logger('! tex locator', specification..' found')
+        input.aux.append_hash(instance,'file',specification,filename)
+    else
         input.logger('? tex locator', specification..' not found')
     end
 end
@@ -2932,14 +2945,14 @@ function input.join_path(str)
         return str
     end
 end
-function input.splitexpansions(instance)
-    for k,v in pairs(instance.expansions) do
-        local t = file.split_path(v)
-        if #t >  1 then
-            instance.expansions[k] = t
-        end
-    end
-end
+--~ function input.splitexpansions(instance)
+--~     for k,v in pairs(instance.expansions) do
+--~         local t = file.split_path(v)
+--~         if #t >  1 then
+--~             instance.expansions[k] = t
+--~         end
+--~     end
+--~ end
 function input.splitexpansions(instance)
     for k,v in pairs(instance.expansions) do
         local t, h = { }, { }
@@ -3099,7 +3112,8 @@ function input.expand_variables(instance)
     for k,v in pairs(instance.expansions) do
         instance.expansions[k] = v:gsub("\\", '/')
     end
-    input.splitexpansions(instance)
+    -- ##########
+    --~     input.splitexpansions(instance) -- better not, fuzzy
 end
 
 function input.aux.expand_vars(instance,lst) -- simple vars
@@ -3319,80 +3333,6 @@ end
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
 
---~ function input.aux.splitpathexpr(str, t, validate)
---~     -- no need for optimization, only called a few times, we can use lpeg for the sub
---~     t = t or { }
---~     while true do
---~         local done = false
---~         while true do
---~             ok = false
---~             str = str:gsub("([^{},]+){([^{}]-)}", function(a,b)
---~                 local t = { }
---~                 for s in b:gmatch("([^,]+)") do
---~                     t[#t+1] = a .. s
---~                 end
---~                 ok, done = true, true
---~                 return "{" .. table.concat(t,",") .. "}"
---~             end)
---~             if not ok then break end
---~         end
---~         while true do
---~             ok = false
---~             str = str:gsub("{([^{}]-)}([^{},]+)", function(a,b)
---~                 local t = { }
---~                 for s in a:gmatch("([^,]+)") do
---~                     t[#t+1] = s .. b
---~                 end
---~                 ok, done = true, true
---~                 return "{" .. table.concat(t,",") .. "}"
---~             end)
---~             if not ok then break end
---~         end
---~         while true do
---~             ok = false
---~             str = str:gsub("([,{]){([^{}]+)}([,}])", function(a,b,c)
---~                 ok, done = true, true
---~                 return a .. b .. c
---~             end)
---~             if not ok then break end
---~         end
---~         if not done then break end
---~     end
---~     while true do
---~         ok = false
---~         str = str:gsub("{([^{}]-)}{([^{}]-)}", function(a,b)
---~             local t = { }
---~             for sa in a:gmatch("([^,]+)") do
---~                 for sb in b:gmatch("([^,]+)") do
---~                     t[#t+1] = sa .. sb
---~                 end
---~             end
---~             ok = true
---~             return "{" .. table.concat(t,",") .. "}"
---~         end)
---~         if not ok then break end
---~     end
---~     while true do
---~         ok = false
---~         str = str:gsub("{([^{}]-)}", function(a)
---~             ok = true
---~             return a
---~         end)
---~         if not ok then break end
---~     end
---~     if validate then
---~         for s in str:gmatch("([^,]+)") do
---~             s = validate(s)
---~             if s then t[#t+1] = s end
---~         end
---~     else
---~         for s in str:gmatch("([^,]+)") do
---~             t[#t+1] = s
---~         end
---~     end
---~     return t
---~ end
-
 function input.aux.splitpathexpr(str, t, validate)
     -- no need for optimization, only called a few times, we can use lpeg for the sub
     t = t or { }
@@ -3464,7 +3404,7 @@ function input.aux.splitpathexpr(str, t, validate)
     return t
 end
 
-function input.aux.expanded_path(instance,pathlist)
+function input.aux.expanded_path(instance,pathlist) -- maybe not a list, just a path
     -- a previous version fed back into pathlist
     local newlist, ok = { }, false
     for _,v in ipairs(pathlist) do
@@ -3490,87 +3430,6 @@ function input.aux.expanded_path(instance,pathlist)
     end
     return newlist
 end
-
---~ old one, imperfect and not that efficient
---~
---~ function input.aux.expanded_path(instance,pathlist)
---~     -- a previous version fed back into pathlist
---~     local i, n, oldlist, newlist, ok = 0, 0, { }, { }, false
---~     for _,v in ipairs(pathlist) do
---~         if v:find("[{}]") then
---~             ok = true
---~             break
---~         end
---~     end
---~     if ok then
---~         for _,v in ipairs(pathlist) do
---~             oldlist[#oldlist+1] = (v:gsub("([\{\}])", function(p)
---~                 if p == "{" then
---~                     i = i + 1
---~                     if i > n then n = i end
---~                     return "<" .. (i-1) .. ">"
---~                 else
---~                     i = i - 1
---~                     return "</" .. i .. ">"
---~                 end
---~             end))
---~         end
---~         for i=1,n do
---~             while true do
---~                 local more = false
---~                 local pattern = "^(.-)<"..(n-i)..">(.-)</"..(n-i)..">(.-)$"
---~                 local t = { }
---~                 for _,v in ipairs(oldlist) do
---~                     local pre, mid, post = v:match(pattern)
---~                     if pre and mid and post then
---~                         more = true
---~                         for vv in string.gmatch(mid..',',"(.-),") do -- (mid, "([^,]+)")
---~                             if vv == '.' then
---~                                 t[#t+1] = pre..post
---~                             else
---~                                 t[#t+1] = pre..vv..post
---~                             end
---~                         end
---~                     else
---~                         t[#t+1] = v
---~                     end
---~                 end
---~                 oldlist = t
---~                 if not more then break end
---~             end
---~         end
---~         if true then
---~             -- many dups are possible due to messy resolve / order can be messed up too, brr !
---~             local ok = { }
---~             for _,o in ipairs(oldlist) do
---~                 for v in o:gmatch("([^,]+)") do
---~                     if not ok[v] then
---~                         ok[v] = true
---~                         v = file.collapse_path(v)
---~                         if v ~= "" and not v:find(instance.dummy_path_expr) then newlist[#newlist+1] = v end
---~                     end
---~                 end
---~             end
---~         else
---~             for _,v in ipairs(oldlist) do
---~                 v = file.collapse_path(v)
---~                 if v ~= "" and not v:find(instance.dummy_path_expr) then newlist[#newlist+1] = v end
---~             end
---~         end
---~     else
---~         for _,v in ipairs(pathlist) do
---~             for vv in string.gmatch(v..',',"(.-),") do
---~                 vv = file.collapse_path(v)
---~                 if vv ~= "" then newlist[#newlist+1] = vv end
---~             end
---~         end
---~     end
---~     return newlist
---~ end
-
---~ function input.is_readable(name) -- brrr, get rid of this
---~     return name:find("^zip##") or file.is_readable(name)
---~ end
 
 input.is_readable = { }
 
@@ -4351,6 +4210,10 @@ function input.update_script(instance,oldname,newname) -- oldname -> own.name, n
 end
 
 
+--~ print(table.serialize(input.aux.splitpathexpr("/usr/share/texmf-{texlive,tetex}", {})))
+
+
+
 if not modules then modules = { } end modules ['luat-tmp'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.tex",
@@ -4405,7 +4268,8 @@ elseif lfs.attributes(caches.temp,"mode") ~= "directory" then
 end
 
 function caches.configpath(instance)
-    return input.expand_var(instance,"TEXMFCNF")
+    return table.concat(instance.cnffiles,";")
+--~     return input.expand_var(instance,"TEXMFCNF")
 end
 
 function caches.treehash(instance)
@@ -4420,7 +4284,7 @@ end
 function caches.setpath(instance,...)
     if not caches.path then
         if lfs and instance then
-            for _,v in  pairs(caches.paths) do
+            for _,v in pairs(caches.paths) do
                 for _,vv in pairs(input.expanded_path_list(instance,v)) do
                     if lfs.isdir(vv) then
                         caches.path = vv

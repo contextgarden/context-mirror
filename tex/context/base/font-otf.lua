@@ -1037,13 +1037,14 @@ function fonts.otf.cidmap(registry,ordering,supplement)
     local template = "%s-%s-%s.cidmap"
     local filename = string.format(template,registry,ordering,supplement)
     local supplement = tonumber(supplement)
-    if not fonts.otf.cidmaps[filename] then
+    local cidmap = fonts.otf.cidmaps[filename]
+    if not cidmap then
         for i=supplement,0,-1 do
             logs.report("load otf",string.format("checking cidmap, registry: %s, ordering: %s, supplement: %s",registry,ordering,i))
             filename = string.format(template,registry,ordering,i)
             local fullname = input.find_file(texmf.instance,filename,'cid') or ""
             if fullname ~= "" then
-                local cidmap = fonts.otf.load_cidmap(fullname)
+                cidmap = fonts.otf.load_cidmap(fullname)
                 if cidmap then
                     logs.report("load otf",string.format("using cidmap file %s",filename))
                     fonts.otf.cidmaps[filename] = cidmap
@@ -1058,7 +1059,7 @@ function fonts.otf.cidmap(registry,ordering,supplement)
             end
         end
     end
-    return nil
+    return cidmap
 end
 
 --~  ["cidinfo"]={

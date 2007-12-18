@@ -52,7 +52,8 @@ elseif lfs.attributes(caches.temp,"mode") ~= "directory" then
 end
 
 function caches.configpath(instance)
-    return input.expand_var(instance,"TEXMFCNF")
+    return table.concat(instance.cnffiles,";")
+--~     return input.expand_var(instance,"TEXMFCNF")
 end
 
 function caches.treehash(instance)
@@ -67,7 +68,7 @@ end
 function caches.setpath(instance,...)
     if not caches.path then
         if lfs and instance then
-            for _,v in  pairs(caches.paths) do
+            for _,v in pairs(caches.paths) do
                 for _,vv in pairs(input.expanded_path_list(instance,v)) do
                     if lfs.isdir(vv) then
                         caches.path = vv

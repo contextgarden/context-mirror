@@ -108,10 +108,17 @@
 
 \let\normaldoactivatecolor\doactivatecolor
 
+% if it becomes a bottleneck we can set up a more complex system with one shared
+% attribute for colorspace, color and transparency
+
 \def\doactivatecolor
-  {\ctxlua{colors.enabled=true}%
-   \let\doactivatecolor\normaldoactivatecolor
-   \doactivatecolor}
+  {\ifproductionrun
+     \ctxlua{colors.enabled=true transparencies.enabled=true}% not that efficient but at least robust
+     \let\doactivatecolor\normaldoactivatecolor
+     \expandafter\doactivatecolor
+   \else
+     \expandafter\normaldoactivatecolor
+   \fi}
 
 \def\deactivatecolor
   {\doresetattribute\s!color
