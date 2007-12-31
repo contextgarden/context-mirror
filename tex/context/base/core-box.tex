@@ -646,21 +646,21 @@
   [\v!middle]
   [\c!corner=\v!middle,\c!location=\v!middle]
 
-\definelayerpreset
-  [\v!middle\v!top]
-  [\c!location=\v!bottom,\c!hoffset=.5\layerwidth]
+% \definelayerpreset
+%   [\v!middle\v!top]
+%   [\c!location=\v!bottom,\c!hoffset=.5\layerwidth]
 
-\definelayerpreset
-  [\v!middle\v!bottom]
-  [\c!location=\v!top,\c!hoffset=.5\layerwidth,\c!voffset=\layerheight]
+% \definelayerpreset
+%   [\v!middle\v!bottom]
+%   [\c!location=\v!top,\c!hoffset=.5\layerwidth,\c!voffset=\layerheight]
 
-\definelayerpreset
-  [\v!middle\v!left]
-  [\c!location=\v!right,\c!voffset=.5\layerwidth]
+% \definelayerpreset
+%   [\v!middle\v!left]
+%   [\c!location=\v!right,\c!voffset=.5\layerheight]
 
-\definelayerpreset
-  [\v!middle\v!right]
-  [\c!location=\v!left,\c!hoffset=\layerwidth,\c!voffset=.5\layerheight]
+% \definelayerpreset
+%   [\v!middle\v!right]
+%   [\c!location=\v!left,\c!hoffset=\layerwidth,\c!voffset=.5\layerheight]
 
 \definelayerpreset
   [\v!middle\v!top]
@@ -672,7 +672,7 @@
 
 \definelayerpreset
   [\v!middle\v!left]
-  [\c!location=\v!right,\c!corner=\v!left,\c!dy=.5\layerwidth]
+  [\c!location=\v!right,\c!corner=\v!left,\c!dy=.5\layerheight]
 
 \definelayerpreset
   [\v!middle\v!right]
@@ -748,9 +748,9 @@
 \setvalue{\??ab\??ab gr}{\baselinerightbox}
 
 \setvalue{\??ab\??ab \v!line         }{\baselinemiddlebox} % \v!grid is taken
-\setvalue{\??ab\??ab \v!line\v!left }{\baselineleftbox}
+\setvalue{\??ab\??ab \v!line\v!left  }{\baselineleftbox}
 \setvalue{\??ab\??ab \v!line\v!middle}{\baselinemiddlebox}
-\setvalue{\??ab\??ab \v!line\v!right}{\baselinerightbox}
+\setvalue{\??ab\??ab \v!line\v!right }{\baselinerightbox}
 
 \def\offsetbox
   {\dodoubleempty\dooffsetbox[]}

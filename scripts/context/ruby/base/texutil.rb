@@ -187,7 +187,14 @@ class TeXUtil
         # shortcut("\\\"e", 'ediaeresis')
         # shortcut("\\\'o", 'oacute')
 
+        def hextoutf(str)
+            str.gsub(/^(0x[A-F\d]+)$/) do
+                [$1.hex()].pack("U")
+            end
+        end
+
         def shortcut(from,to)
+            from = hextoutf(from)
             replacer(from,to)
             expander(to)
         end

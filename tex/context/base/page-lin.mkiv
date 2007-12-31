@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% generic or not ... maybe not bother too much and simplify to mkiv only
+
 \writestatus{loading}{Context Core Macros / Line Numbering}
 
 \unprotect
@@ -34,6 +36,7 @@
 
 \def\mkaddtextlinenumbers#1#2#3% box col max
   {\bgroup
+   \def\skipnumber{\hbox{}}%
    \ifcase#3\relax
      \let\makenumber\mkskiplinenumber
    \or
@@ -195,13 +198,19 @@
 \def\dostartlinenumbering[#1][#2]% todo: c!continue
   {\begingroup
    \chardef\linenumbermode\plusone
-   \let\currentlinenumbering\empty
    \ifsecondargument
-     \doif{#2}\v!continue{\chardef\linenumbermode\zerocount}%
+     \def\currentlinenumbering{#1}%
+     \doifnumberelse{#2}% downward compatible
+       {\setvalue{\??rn#1\c!start}{#2}}%
+       {\doif{#2}\v!continue{\chardef\linenumbermode\zerocount}}%
    \else\iffirstargument
-     \doifelse{#1}\v!continue
-       {\chardef\linenumbermode\zerocount}
-       {\def\currentlinenumbering{#1}}%
+     \doifnumberelse{#1}% downward compatible
+       {\let\currentlinenumbering\empty
+        \setvalue{\??rn\c!start}{#1}}%
+       {\doifelse{#1}\v!continue
+          {\let\currentlinenumbering\empty
+           \chardef\linenumbermode\zerocount}
+          {\def\currentlinenumbering{#1}}}%
    \fi\fi
    \doifelse{\linenumberparameter\c!continue}\v!yes
      {\chardef\linenumbermode\zerocount}%
@@ -249,6 +258,7 @@
 
 \def\mkaddtextlinenumbers#1#2#3% box col max
   {\bgroup
+   \def\skipnumber{\hbox{}}%
    \ifcase#3\relax
      \let\makenumber\mkskiplinenumber
    \or

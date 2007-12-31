@@ -30,7 +30,7 @@ module System
 
 
     def System.null
-        if @@mswindows then 'nul' else '/dev/null/' end
+        if @@mswindows then 'nul' else '/dev/null' end
     end
 
     def System.unix?

@@ -25,6 +25,16 @@
     characters.context.define()
 } % redefines all \characters
 
+\newbox\accenttestbox
+
+\unexpanded\def\dobuildtextaccent#1#2%
+  {\begingroup
+   \global\setbox\accenttestbox\hbox{#1}%
+   \scratchcounter\ctxlua{characters.charcode(\number\accenttestbox)}%
+   \ifcase\scratchcounter\else\accent\scratchcounter\fi
+   \relax#2%
+   \endgroup}
+
 \useencoding[032,033,037] % fallbacks for some unicode chars, todo
 
 \setupencoding[\s!default=ec] % for the moment keep it this way, till fonts are there

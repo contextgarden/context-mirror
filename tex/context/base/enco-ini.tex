@@ -1004,26 +1004,14 @@
 \newbox\accenttestbox
 
 \unexpanded\def\dobuildtextaccent#1#2%
-  {{\global\setbox\accenttestbox\hbox{#1}%
-    \scratchcounter\ctxlua{characters.charcode(\number\accenttestbox)}%
-    \ifcase\scratchcounter\or\accent\scratchcounter\fi
-    \relax#2}}
+  {\begingroup
+   \global\setbox\accenttestbox\hbox{#1}%
+   \scratchcounter\ctxlua{characters.charcode(\number\accenttestbox)}%
+   \ifcase\scratchcounter\else\accent\scratchcounter\fi
+   \relax#2%
+   \endgroup}
 
 \endLUATEX
-
-% will be overloaded later
-
-\definecommand ` {\buildtextaccent\textgrave}
-\definecommand ' {\buildtextaccent\textacute}
-\definecommand r {\buildtextaccent\textring}
-\definecommand v {\buildtextaccent\textcaron}
-\definecommand u {\buildtextaccent\textbreve}
-\definecommand = {\buildtextaccent\textmacron}
-\definecommand ^ {\buildtextaccent\textcircumflex}
-\definecommand . {\buildtextaccent\textdotaccent}
-\definecommand H {\buildtextaccent\texthungarumlaut}
-\definecommand ~ {\buildtextaccent\texttilde}
-\definecommand " {\buildtextaccent\textdiaeresis}
 
 % some fake ones, name will change into build
 
@@ -1049,11 +1037,6 @@
 \def\buildtextbottomdot{\bottomaccent{.25ex}{0}{5}{\textbottomdot}}
 \def\buildtextcedilla  {\bottomaccent{0ex}{0}{5}{\textcedilla}}
 \def\buildtextogonek   {\bottomaccent{-.1ex}{.5}{0}{\textogonek}}
-
-\definecommand c {\buildtextcedilla}
-\definecommand b {\buildtextmacron}
-\definecommand d {\buildtextbottomdot}
-\definecommand k {\buildtextogonek}
 
 %D A collectors item:
 
@@ -1086,19 +1069,6 @@
 
 \def\donormalmathaccent#1%
   {\getvalue{normalmathaccent\string#1}}
-
-\definemathaccent acute     {\buildmathaccent\mathacute}
-\definemathaccent grave     {\buildmathaccent\mathgrave}
-\definemathaccent ddot      {\buildmathaccent\mathddot}
-\definemathaccent tilde     {\buildmathaccent\mathtilde}
-\definemathaccent bar       {\buildmathaccent\mathbar}
-\definemathaccent breve     {\buildmathaccent\mathbreve}
-\definemathaccent check     {\buildmathaccent\mathcheck}
-\definemathaccent hat       {\buildmathaccent\mathhat}
-\definemathaccent vec       {\buildmathaccent\mathvec}
-\definemathaccent dot       {\buildmathaccent\mathdot}
-\definemathaccent widetilde {\buildmathaccent\mathwidetilde}
-\definemathaccent widehat   {\buildmathaccent\mathwidehat}
 
 %D Some precautions:
 
@@ -1212,14 +1182,44 @@
 
 %D We preload several encodings:
 
+\loadmarkfile{enco-ini}
+
+\definecommand ` {\buildtextaccent\textgrave}
+\definecommand ' {\buildtextaccent\textacute}
+\definecommand r {\buildtextaccent\textring}
+\definecommand v {\buildtextaccent\textcaron}
+\definecommand u {\buildtextaccent\textbreve}
+\definecommand = {\buildtextaccent\textmacron}
+\definecommand ^ {\buildtextaccent\textcircumflex}
+\definecommand . {\buildtextaccent\textdotaccent}
+\definecommand H {\buildtextaccent\texthungarumlaut}
+\definecommand ~ {\buildtextaccent\texttilde}
+\definecommand " {\buildtextaccent\textdiaeresis}
+
+\definecommand c {\buildtextcedilla}
+\definecommand b {\buildtextmacron}
+\definecommand d {\buildtextbottomdot}
+\definecommand k {\buildtextogonek}
+
+\definemathaccent acute     {\buildmathaccent\mathacute}
+\definemathaccent grave     {\buildmathaccent\mathgrave}
+\definemathaccent ddot      {\buildmathaccent\mathddot}
+\definemathaccent tilde     {\buildmathaccent\mathtilde}
+\definemathaccent bar       {\buildmathaccent\mathbar}
+\definemathaccent breve     {\buildmathaccent\mathbreve}
+\definemathaccent check     {\buildmathaccent\mathcheck}
+\definemathaccent hat       {\buildmathaccent\mathhat}
+\definemathaccent vec       {\buildmathaccent\mathvec}
+\definemathaccent dot       {\buildmathaccent\mathdot}
+\definemathaccent widetilde {\buildmathaccent\mathwidetilde}
+\definemathaccent widehat   {\buildmathaccent\mathwidehat}
+
 \useencoding[def] % defaults (partly simplified)
 \useencoding[acc] % accent commands
 \useencoding[raw] % simplified (incomplete)
 \useencoding[com] % a few commands
 \useencoding[cas] % case mapping, not needed in mkiv
 \useencoding[mis] % a few commands
-
-\loadmarkfile{enco-ini}
 
 % \useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx,t5,cyr,agr] % pol and il2 will go away, not needed in mkiv
 % \useencoding[032,033,037] % fallbacks for some unicode chars

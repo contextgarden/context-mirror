@@ -20,10 +20,12 @@
 \newevery \everysavesortkeys \relax
 
 \def\savesortkeys
-  {\the\everysavesortkeys
-   \global\everysavesortkeys\emptytoks}
+  {\ifproductionrun
+     \the\everysavesortkeys
+     \global\everysavesortkeys\emptytoks
+   \fi}
 
-\prependtoks \savesortkeys \to \everystarttext
+\appendtoks \savesortkeys \to \everyshipout
 
 \loadmarkfile{sort-ini}
 

@@ -21,7 +21,7 @@ if not modules then modules = { } end modules ['font-otf'] = {
 -- vhal vjmo vkna vkrn vpal vrt2
 
 --[[ldx--
-<p>This module is sparesely documented because it is a moving target.
+<p>This module is sparsely documented because it is a moving target.
 The table format of the reader changes and we experiment a lot with
 different methods for supporting features.</p>
 
@@ -40,7 +40,7 @@ number by one when there's a fix in the <l n='fontforge'/> library or
 
 fonts                        = fonts or { }
 fonts.otf                    = fonts.otf or { }
-fonts.otf.version            = 2.00
+fonts.otf.version            = 2.01
 fonts.otf.pack               = true
 fonts.otf.tables             = fonts.otf.tables or { }
 fonts.otf.meanings           = fonts.otf.meanings or { }
@@ -1033,28 +1033,88 @@ end
 
 fonts.otf.cidmaps = { }
 
+--~ function fonts.otf.cidmap(registry,ordering,supplement)
+--~     local template = "%s-%s-%s.cidmap"
+--~     local filename = string.format(template,registry,ordering,supplement)
+--~     local supplement = tonumber(supplement)
+--~     local cidmap = fonts.otf.cidmaps[filename]
+--~     if not cidmap then
+--~         for i=supplement,0,-1 do
+--~             logs.report("load otf",string.format("checking cidmap, registry: %s, ordering: %s, supplement: %s",registry,ordering,i))
+--~             filename = string.format(template,registry,ordering,i)
+--~             local fullname = input.find_file(texmf.instance,filename,'cid') or ""
+--~             if fullname ~= "" then
+--~                 cidmap = fonts.otf.load_cidmap(fullname)
+--~                 if cidmap then
+--~                     logs.report("load otf",string.format("using cidmap file %s",filename))
+--~                     fonts.otf.cidmaps[filename] = cidmap
+--~                     if i < supplement then
+--~                         for j=i+1,supplement do
+--~                             filename = string.format(template,registry,ordering,j)
+--~                             fonts.otf.cidmaps[filename] = cidmap -- copy of ref
+--~                         end
+--~                     end
+--~                     return cidmap
+--~                 end
+--~             end
+--~         end
+--~     end
+--~     return cidmap
+--~ end
+
+fonts.otf.cidmax = 10
+
 function fonts.otf.cidmap(registry,ordering,supplement)
+    -- cf Arthur R. we can safely scan upwards since cids are downward compatible
     local template = "%s-%s-%s.cidmap"
-    local filename = string.format(template,registry,ordering,supplement)
     local supplement = tonumber(supplement)
-    local cidmap = fonts.otf.cidmaps[filename]
-    if not cidmap then
-        for i=supplement,0,-1 do
-            logs.report("load otf",string.format("checking cidmap, registry: %s, ordering: %s, supplement: %s",registry,ordering,i))
-            filename = string.format(template,registry,ordering,i)
+    logs.report("load otf",string.format("needed cidmap, registry: %s, ordering: %s, supplement: %s",registry,ordering,supplement))
+    local function locate(registry,ordering,supplement)
+        local filename = string.format(template,registry,ordering,supplement)
+        local cidmap = fonts.otf.cidmaps[filename]
+        if not cidmap then
+            logs.report("load otf",string.format("checking cidmap, registry: %s, ordering: %s, supplement: %s, filename: %s",registry,ordering,supplement,filename))
             local fullname = input.find_file(texmf.instance,filename,'cid') or ""
             if fullname ~= "" then
                 cidmap = fonts.otf.load_cidmap(fullname)
                 if cidmap then
                     logs.report("load otf",string.format("using cidmap file %s",filename))
                     fonts.otf.cidmaps[filename] = cidmap
-                    if i < supplement then
-                        for j=i+1,supplement do
-                            filename = string.format(template,registry,ordering,j)
-                            fonts.otf.cidmaps[filename] = cidmap -- copy of ref
-                        end
-                    end
                     return cidmap
+                end
+            end
+        end
+        return cidmap
+    end
+    local cidmap = locate(registry,ordering,supplement)
+    if not cidmap then
+        local cidnum = nil
+        -- next highest (alternatively we could start high)
+        if supplement < fonts.otf.cidmax then
+            for supplement=supplement+1,fonts.otf.cidmax do
+                local c = locate(registry,ordering,supplement)
+                if c then
+                    cidmap, cidnum = c, supplement
+                    break
+                end
+            end
+        end
+        -- next lowest (least worse fit)
+        if not cidmap and supplement > 0 then
+            for supplement=supplement-1,0,-1 do
+                local c = locate(registry,ordering,supplement)
+                if c then
+                    cidmap, cidnum = c, supplement
+                    break
+                end
+            end
+        end
+        -- prevent further lookups
+        if cidmap and cidnum > 0 then
+            for s=0,cidnum-1 do
+                filename = string.format(template,registry,ordering,s)
+                if not fonts.otf.cidmaps[filename] then
+                    fonts.otf.cidmaps[filename] = cidmap -- copy of ref
                 end
             end
         end
@@ -1118,7 +1178,8 @@ function fonts.otf.enhance.before(data,filename)
         local int_to_uni = data.map.backmap
         for index, glyph in pairs(data.glyphs) do
             if glyph.name then
-                local unic = glyph.unicode or -1
+                local unic = glyph.unicode or glyph.unicodeenc or -1
+                glyph.unicodeenc = nil -- older luatex version
                 if index > 0 and (unic == -1 or unic >= 0x110000) then
                     while uni_to_int[private] do
                         private = private + 1
@@ -1129,6 +1190,8 @@ function fonts.otf.enhance.before(data,filename)
                     if fonts.trace then
                         logs.report("load otf",string.format("enhance: glyph %s at index %s is moved to private unicode slot %s",glyph.name,index,private))
                     end
+                else
+                    glyph.unicode = unic -- safeguard for older version
                 end
             end
         end
@@ -2093,11 +2156,7 @@ function fonts.initializers.base.otf.tlig(tfm,value)
     fonts.otf.features.aux.resolve_ligatures(tfm,ligatures,'tlig')
 end
 
-function fonts.initializers.base.otf.trep(tfm,value)
-    tfm.characters[0x0022] = table.fastcopy(tfm.characters[0x201D])
-    tfm.characters[0x0027] = table.fastcopy(tfm.characters[0x2019])
-    tfm.characters[0x0060] = table.fastcopy(tfm.characters[0x2018])
-end
+fonts.initializers.base.otf.trep = fonts.tfm.replacements
 
 table.insert(fonts.triggers,"tlig")
 table.insert(fonts.triggers,"trep")
@@ -4298,16 +4357,16 @@ do
     local left_punctuation = table.tohash {
         0x2018, -- ‘
         0x201C, -- “
-        0x300C, -- 「   left quote
-        0x300E, -- 『   left double quote
-        0x3008, -- 〈   Left book quote
-        0x300A, -- 《   Left double book quote
-        0x3014, -- 〔   left book quote
-        0x3016, --〖   left double book quote
-        0x3010, -- 【   left double book quote
-        0xFF08, -- （   left parenthesis
-        0xFF3B, -- ［   left square brackets
-        0xFF5B, -- ｛   left curve bracket
+            0x3008, -- 〈   Left book quote
+            0x300A, -- 《   Left double book quote
+            0x300C, -- 「   left quote
+            0x300E, -- 『   left double quote
+            0x3010, -- 【   left double book quote
+            0x3014, -- 〔   left book quote
+            0x3016, --〖   left double book quote
+    0xFF08, -- （   left parenthesis
+    0xFF3B, -- ［   left square brackets
+    0xFF5B, -- ｛   left curve bracket
     }
 
     local right_punctuation = table.tohash {
@@ -4351,8 +4410,8 @@ do
 
     -- will move to node-ini :
 
-    local allowbreak = nodes.penalty(  -100)  nodes.register(allowbreak)
-    local nobreak    = nodes.penalty( 10000)  nodes.register(nobreak)
+    local allowbreak = nodes.penalty( -100)  nodes.register(allowbreak)
+    local nobreak    = nodes.penalty(10000)  nodes.register(nobreak)
 
     fonts.analyzers.methods.stretch_hang = true
 

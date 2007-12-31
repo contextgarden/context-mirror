@@ -166,7 +166,7 @@
 \def\utfdiv#1{\the\numexpr           (#1-\utf@g)/\utf@h \relax}
 \def\utfmod#1{\the\numexpr#1-\utf@h*((#1-\utf@g)/\utf@h)\relax}
 
-%D The next one also handles the zero case well:
+%D The next one also handles the zero case well: (not really utf specific btw)
 
 \def\utfdiv#1{\the\numexpr\ifcase\numexpr#1\relax0\else           (#1-\utf@g)/\utf@h \fi\relax}
 \def\utfmod#1{\the\numexpr\ifcase\numexpr#1\relax0\else#1-\utf@h*((#1-\utf@g)/\utf@h)\fi\relax}
@@ -741,12 +741,14 @@
 
 \endETEX
 
+\def\numbertohexstring#1{0x\uchexnumbers{\utfdiv{#1}}\uchexnumbers{\utfmod{#1}}}
+
 \beginXETEX
-    \def\numbertoutf#1{[\number#1]} % xetex has no way to output 8 bit (i.e. \rawcharacter)
+    \let\numbertoutf\numbertohexstring
 \endXETEX
 
 \beginTEX
-    \def\numbertoutf#1{[\number#1]}
+    \let\numbertoutf\numbertohexstring
 \endTEX
 
 \def\uchartoutf#1#2%

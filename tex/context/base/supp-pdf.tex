@@ -912,7 +912,7 @@
 
 \def\doflushMPtext#1%
   {\edef\!!stringa{#1}%
-   \@EA\dodoflushMPtext\!!stringa\relax}
+   \expandafter\dodoflushMPtext\!!stringa\relax}
 
 \def\dodoflushMPtext
   {\afterassignment\dododoflushMPtext\let\nexttoken=}
@@ -921,10 +921,10 @@
   {\ifx\nexttoken\relax
      % done
    \else\ifx\nexttoken\char
-     \@EA\@EA\@EA\dodododoflushMPtext
+     \expandafter\expandafter\expandafter\dodododoflushMPtext
    \else
      {\nexttoken}%
-     \@EA\@EA\@EA\dodoflushMPtext
+     \expandafter\expandafter\expandafter\dodoflushMPtext
    \fi\fi}
 
 \def\dodododoflushMPtext

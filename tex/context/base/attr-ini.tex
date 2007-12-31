@@ -214,8 +214,23 @@
 \def\doattributedcopy  {\afterassignment\dodoattributedcopy\attributeboxcount}
 \def\doattributedbox   {\afterassignment\dodoattributedbox \attributeboxcount}
 
-\def\dodoattributedcopy{\startinheritattributes\ifvbox\attributeboxcount\vbox\else\hbox\fi{\unhcopy\attributeboxcount}\stopinheritattributes}
-\def\dodoattributedbox {\startinheritattributes\ifvbox\attributeboxcount\vbox\else\hbox\fi{\unhbox \attributeboxcount}\stopinheritattributes}
+\def\dodoattributedcopy
+  {\startinheritattributes
+   \ifvbox\attributeboxcount
+     \vbox{\unvcopy\attributeboxcount}%
+   \else
+     \hbox{\unhcopy\attributeboxcount}%
+   \fi
+   \stopinheritattributes}
+
+\def\dodoattributedbox
+  {\startinheritattributes
+   \ifvbox\attributeboxcount
+     \vbox{\unvbox\attributeboxcount}%
+   \else
+     \hbox{\unhbox\attributeboxcount}%
+   \fi
+   \stopinheritattributes}
 
 \def\enableattributeinheritance
   {\ctxlua{nodes.triggering=true}%

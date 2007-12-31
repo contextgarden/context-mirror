@@ -168,6 +168,15 @@
 \def\inlinemessage #1{\dontleavehmode{\tttf#1}}
 \def\displaymessage#1{\blank\inlinemessage{#1}\blank}
 
+% entities
+
+\def\xmlresolveentities
+  {\ctxlua{xml.set_text_cleanup(xml.set_text_cleanup(xml.resolve_text_entities))}}
+
+\def\xmltraceentities
+  {\ctxlua{xml.set_text_cleanup(lxml.trace_text_entities)}%
+   \appendtoks\ctxlua{lxml.show_text_entities()}\to\everygoodbye}
+
 \protect \endinput
 
 % \xmlload{main}{normreader.xml}

@@ -258,3 +258,5 @@ characters.texligatures = {
         { 'hyphen', 'emdash' }
     }
 }
+
+--~ U+2019: right single quotation mark / quoteright

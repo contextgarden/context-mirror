@@ -913,8 +913,8 @@
           \checkfilename\@@efcache
           \ifnum\kindoffile=\plusone
             \let\wantedfigurepath\@@efcache % root related path
-          \else
-            \edef\wantedfigurepath{\wantedconversionpath/\@@efcache}%
+          \else % brrr
+            \edef\wantedfigurepath{\@@efcache,\wantedconversionpath/\@@efcache}% in case of explicit paths, what a mess
           \fi
         \fi
         \let\wantedfiguretype    \empty

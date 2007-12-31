@@ -43,6 +43,10 @@ class InkScape
 
     def convert(logfile=System.null)
 
+        directpdf = false
+
+        logfile = logfile.gsub(/\/+$/,"")
+
         inpfilename = getvariable('inputfile').dup
         outfilename = getvariable('outputfile').dup
         outfilename = inpfilename.dup if outfilename.empty?
@@ -62,11 +66,15 @@ class InkScape
             return false
         end
 
-        report("converting #{inpfilename} to #{tmpfilename}")
-
         # we need to redirect the error info else we get a pop up console
 
-        resultpipe = "--without-gui --print=\">#{tmpfilename}\" 2>#{logfile}"
+        if directpdf then
+            report("converting #{inpfilename} to #{outfilename}")
+            resultpipe = "--without-gui --export-pdf=\"#{outfilename}\" 2>#{logfile}"
+        else
+            report("converting #{inpfilename} to #{tmpfilename}")
+            resultpipe = "--without-gui --print=\">#{tmpfilename}\" 2>#{logfile}"
+        end
 
         arguments = [resultpipe,inpfilename].join(' ').gsub(/\s+/,' ')
 
@@ -76,8 +84,11 @@ class InkScape
             # should work
             # ok = System.run('inkscape',arguments) # does not work here
             # but 0.40 only works with this:
-            ok = system("inkscape #{arguments}")
+            command = "inkscape #{arguments}"
+            report(command)
+            ok = system(command)
             # and 0.41 fails with everything
+            # and 0.45 is better
         rescue
             report("aborted due to error")
             return false
@@ -85,18 +96,16 @@ class InkScape
             return false unless ok
         end
 
-        ghostscript = GhostScript.new(@logger)
-
-        ghostscript.setvariable('inputfile',tmpfilename)
-        ghostscript.setvariable('outputfile',outfilename)
-
-        report("converting #{tmpfilename} to #{outfilename}")
-
-        ghostscript.convert
-
-        begin
-            File.delete(tmpfilename)
-        rescue
+        if not directpdf then
+            ghostscript = GhostScript.new(@logger)
+            ghostscript.setvariable('inputfile',tmpfilename)
+            ghostscript.setvariable('outputfile',outfilename)
+            report("converting #{tmpfilename} to #{outfilename}")
+            ghostscript.convert
+            begin
+                File.delete(tmpfilename)
+            rescue
+            end
         end
     end
 

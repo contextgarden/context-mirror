@@ -22,6 +22,7 @@
 % 2 == force even if smaller
 % 3 == only take penalty component
 % 4 == add to existing skip
+% 5 == ignore following skips (== disable)
 
 % penalty:
 %
@@ -227,6 +228,82 @@
 \installbreakpoint [compound] [\number`)] [\c!left=3,\c!right=3,\c!type=3]
 
 % \setbreakpoints[compound]
+
+% experimental code, not yet interfaced:
+
+% category:
+% 0 == discard                             discard
+% 1 == only if larger                      largest
+% 2 == force even if smaller               force
+% 3 == only take penalty component         penalty
+% 4 == add to existing skip                add
+% 5 == disable (ignore following)          disable
+% 6 == kill whitespace                     nowhite
+% 7 == discard previous                    goback
+%
+% penalty: larger wins
+% order: larger wins
+% category:2,order:5,penalty:10000,skip:value|kw
+%
+% always -- obsolete
+% none   -- obsolete
+% outer  -- obsolete
+% reset  -- obsolete
+% \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
+
+% todo, in grid mode: vspacing.fixed = false
+
+\def\startblankhandling{\begingroup \blankskip \zeropoint}
+\def\stopblankhandling {\vskip \blankskip \endgroup}
+\def\setblankcategory#1{\dosetattribute{skip-category}{#1}}
+\def\setblankorder   #1{\dosetattribute{skip-order}{#1}}
+\def\setblankpenalty #1{\dosetattribute{skip-penalty}{#1}}
+\def\addblankskip#1#2#3{\advance\blankskip#1\dimexpr\ifgridsnapping#3\else#2\fi\relax}
+\def\fixedblankskip    {\blankskip1\blankskip}
+\def\flexibleblankskip {\blankskip1\blankskip\!!plus \skipgluefactor\blankskip\!!minus\skipgluefactor\blankskip}
+
+\def\definevspacingamount
+  {\dotripleempty\dodefinevspacingamount}
+
+\def\dodefinevspacingamount[#1][#2][#3]%
+  {\ctxlua{vspacing.setskip("#1","\detokenize{#2}","\detokenize{#3}")}}
+
+\def\definevspacing
+  {\dodoubleempty\dodefinevspacing}
+
+\def\dodefinevspacing[#1][#2]%
+  {\ctxlua{vspacing.setmap("#1","\detokenize{#2}")}}
+
+\def\vspacing
+  {\dosingleempty\dovspacing}
+
+\def\dovspacing[#1]%
+  {\ctxlua{vspacing.analyse("\iffirstargument#1\else default\fi")}}
+
+\definevspacingamount[big]    [\bigskipamount]  [\openlineheight]
+\definevspacingamount[medium] [\medskipamount]  [.50\openlineheight]
+\definevspacingamount[small]  [\smallskipamount][.25\openlineheight]
+\definevspacingamount[line]   [\openlineheight] [\openlineheight]
+\definevspacingamount[formula][\medskipamount]  [.50\openlineheight]
+\definevspacingamount[white]  [\parskip]        [\openlineheight]
+
+\definevspacing[halfline][.5*line]
+\definevspacing[weak]    [order:0]
+\definevspacing[strong]  [order:100]
+\definevspacing[samepage][penalty:10000]
+\definevspacing[force]   [category:2]
+\definevspacing[disable] [category:5]
+\definevspacing[nowhite] [category:6]
+\definevspacing[goback]  [category:7]
+\definevspacing[always]  [category:0]
+
+\definevspacing[default][big]
+
+\definevspacing[whatever][4*big]
+\vspacing[2*big,-medium,-3*small,whatever,halfline,order:10,category:4,strong,samepage]
+\vspacing[2*big,category:disable]
+\vspacing[2*big,disable]
+\vspacing[2*big,back]
 
 \protect \endinput
 

@@ -591,7 +591,7 @@ messages.help = [[
 ]]
 
 input.verbose = true
-input.start_timing(scripts.context)
+input.starttiming(scripts.context)
 
 if environment.argument("run") then
     scripts.context.run()
@@ -603,5 +603,5 @@ else
     input.help(banner,messages.help)
 end
 
-input.stop_timing(scripts.context)
+input.stoptiming(scripts.context)
 input.report("total runtime: " .. input.elapsedtime(scripts.context))

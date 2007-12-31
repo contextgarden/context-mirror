@@ -592,6 +592,10 @@ function fonts.tfm.set_normal_feature(specification,name,value)
 end
 
 function fonts.tfm.read_from_afm(specification)
+--~ local fullname = input.findbinfile(texmf.instance,specification.name,"afm") or ""
+--~ if fullname ~= "" then
+--~     specification.filename = fullname
+--~ end
     local tfmtable = fonts.afm.afm_to_tfm(specification)
     if tfmtable then
         tfmtable.name = specification.name
@@ -677,7 +681,7 @@ end
 
 fonts.afm.features.register('liga',true)
 fonts.afm.features.register('kerns',true)
-fonts.afm.features.register('extrakerns')
+fonts.afm.features.register('extrakerns') -- needed?
 
 fonts.initializers.node.afm.ligatures    = fonts.initializers.base.afm.ligatures
 fonts.initializers.node.afm.texligatures = fonts.initializers.base.afm.texligatures
@@ -688,6 +692,11 @@ fonts.initializers.base.afm.liga         = fonts.initializers.base.afm.ligatures
 fonts.initializers.node.afm.liga         = fonts.initializers.base.afm.ligatures
 fonts.initializers.base.afm.tlig         = fonts.initializers.base.afm.texligatures
 fonts.initializers.node.afm.tlig         = fonts.initializers.base.afm.texligatures
+
+fonts.initializers.base.afm.trep         = fonts.tfm.replacements
+fonts.initializers.node.afm.trep         = fonts.tfm.replacements
+
+fonts.afm.features.register('trep') -- todo: also proper features for afm
 
 -- tfm features
 

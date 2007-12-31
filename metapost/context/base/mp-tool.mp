@@ -2377,6 +2377,35 @@ def break =
     exitif true fi ;
 enddef ;
 
+%D New too:
+
+primarydef p xstretched w =
+  (p if (bbwidth (p)>0) and (w>0) : xscaled (w/bbwidth (p)) fi)
+enddef ;
+
+primarydef p ystretched h =
+  (p if (bbheight(p)>0) and (h>0) : yscaled (h/bbheight(p)) fi)
+enddef ;
+
+primarydef p snapped s =
+  hide ( if path p :
+    forever :
+        exitif (bbheight(p) <= s) and (bbwidth(p) <= s) ;
+        p := p scaled (1/2) ;
+    endfor ;
+  elseif numeric p :
+    forever :
+        exitif p <= s ;
+        p := p scaled (1/2) ;
+    endfor ;
+  fi ; )
+  p
+enddef ;
+
 % done
 
 endinput ;
+
+end
+
+end

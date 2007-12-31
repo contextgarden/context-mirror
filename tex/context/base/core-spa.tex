@@ -245,6 +245,8 @@
 % \type{\normalskipamount} equals the current baseline
 % distance.
 
+% \lineskiplimit = -\maxdimen -> freezes baselineskip
+
 % can be conditionals
 
 \newif\ifblanknowhite       \blanknowhitefalse
@@ -507,7 +509,7 @@
 \defineblankmethod      [\v!none] {\global\blankresettrue}
 \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
 
-\defineblankmethod [\v!always]    {\redowhitespace} % experimental
+\defineblankmethod    [\v!always] {\redowhitespace} % experimental
 
 % happens often, so we speed this up:
 %

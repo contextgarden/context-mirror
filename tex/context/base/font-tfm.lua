@@ -104,21 +104,44 @@ do with the fact that <l n='tex'/> uses a negative multiple of 1000 as
 a signal for a font scaled based on the design size.</p>
 --ldx]]--
 
+do
+
+    local factors = {
+        pt = 65536.0,
+        bp = 65781.8,
+    }
+
+    function fonts.tfm.setfactor(f)
+        fonts.tfm.factor = factors[f or 'pt'] or factors.pt
+    end
+
+    fonts.tfm.setfactor()
+
+end
+
 function fonts.tfm.scaled(scaledpoints, designsize) -- handles designsize in sp as well
     if scaledpoints < 0 then
         if designsize then
-            if designsize > 65536 then -- or just 1000
+            if designsize > fonts.tfm.factor then -- or just 1000 / when? mp?
                 return (- scaledpoints/1000) * designsize -- sp's
             else
-                return (- scaledpoints/1000) * designsize * 65536
+                return (- scaledpoints/1000) * designsize * fonts.tfm.factor
             end
         else
-            return (- scaledpoints/1000) * 10 * 65536
+            return (- scaledpoints/1000) * 10 * fonts.tfm.factor
         end
     else
         return scaledpoints
     end
 end
+
+--~ function fonts.tfm.scaled(scaledpoints, designsize)
+--~     if scaledpoints < 0 then
+--~         return (- scaledpoints/1000) * (designsize or 10) * fonts.tfm.factor
+--~     else
+--~         return scaledpoints
+--~     end
+--~ end
 
 --[[ldx--
 <p>Before a font is passed to <l n='tex'/> we scale it. Here we also need
@@ -284,11 +307,16 @@ function fonts.logger.save(tfmtable,source,specification) -- save file name in s
 end
 
 function fonts.logger.report(separator)
-    local t = { }
-    for _,v in pairs(table.sortedkeys(fonts.loaded)) do
-        t[#t+1] = v .. ":" .. fonts.loaded[v].source
+    local s = table.sortedkeys(fonts.loaded)
+    if #s > 0 then
+        local t = { }
+        for _,v in ipairs(s) do
+            t[#t+1] = v .. ":" .. fonts.loaded[v].source
+        end
+        return table.concat(t,separator or " ")
+    else
+        return "none"
     end
-    return table.concat(t,separator or " ")
 end
 
 function fonts.logger.format(name)
@@ -702,4 +730,13 @@ do
         end
     end
 
+end
+
+function fonts.tfm.replacements(tfm,value)
+--~     tfm.characters[0x0022] = table.fastcopy(tfm.characters[0x201D])
+--~     tfm.characters[0x0027] = table.fastcopy(tfm.characters[0x2019])
+--~     tfm.characters[0x0060] = table.fastcopy(tfm.characters[0x2018])
+    tfm.characters[0x0022] = tfm.characters[0x201D]
+    tfm.characters[0x0027] = tfm.characters[0x2019]
+    tfm.characters[0x0060] = tfm.characters[0x2018]
 end

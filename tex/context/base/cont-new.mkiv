@@ -25,6 +25,18 @@
 
 \unprotect
 
+% \appendtoks
+%     \ctxlua{
+%         table.insert(input.stop_actions, function()
+%             tex.sprint(tex.ctxcatcodes,"\\immediatewriteutilitytua{end}")
+%             tex.sprint(tex.ctxcatcodes,"\\immediatewriteutilitytua{}")
+%             tex.sprint(tex.ctxcatcodes,"\\immediatewriteutilitytua{end of utility file}")
+%         end)
+%     }%
+% \to \everyopenutilities
+
+\def\writestatus#1#2{\ctxlua{ctx.writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
+
 \ifx\clearmarks\undefined
     \def\clearmarks  {\begingroup\afterassignment\doclearmarks\scratchcounter}
     \def\doclearmarks{\normalmarks\scratchcounter{}\endgroup}
@@ -53,28 +65,8 @@
 %D For the moment we report some statistics. Later this will become an option,
 %D but for now we need this information.
 
-\appendtoks
-    \writestatus\m!lua{used config path          - \ctxlua{tex.print(caches.configpath(texmf.instance))}}%
-    \writestatus\m!lua{used cache path           - \ctxlua{tex.print(caches.path)}}%
-    \writestatus\m!lua{modules/dumps/instances   - \ctxlua{tex.print((status.luabytecodes-500).."/"..input.storage.done.."/"..status.luastates)}}%
-    \writestatus\m!lua{input load time           - \ctxlua{input.loadtime(texmf.instance)} seconds}%
-    \writestatus\m!lua{fonts load time           - \ctxlua{input.loadtime(fonts)} seconds}%
-    \writestatus\m!lua{xml load time             - \ctxlua{input.loadtime(lxml)} seconds}%
-    \writestatus\m!lua{mps conversion time       - \ctxlua{input.loadtime(mptopdf)} seconds}%
-    \writestatus\m!lua{node processing time      - \ctxlua{input.loadtime(nodes)} seconds (including kernel)}%
-    \writestatus\m!lua{kernel processing time    - \ctxlua{input.loadtime(kernel)} seconds}%
-    \writestatus\m!lua{attribute processing time - \ctxlua{input.loadtime(attributes)} seconds}%
-    \writestatus\m!lua{language load time        - \ctxlua{input.loadtime(languages)} seconds (n=\ctxlua{tex.print(languages.hyphenation.n())})}%
-    \writestatus\m!lua{loaded fonts              - \ctxlua{tex.print(fonts.logger.report())}}%
-    \writestatus\m!lua{loaded patterns           - \ctxlua{tex.print(languages.logger.report())}}%
-    \writestatus\m!lua{current memory usage      - \ctxlua{tex.print(status.luastate_bytes)} bytes}%
-    \writestatus\m!lua{cleaned up reserved nodes - \ctxlua{
-        tex.print(string.format("\letterpercent s nodes, \letterpercent s lists (of \letterpercent s)", nodes.cleanup_reserved(\number\topofboxstack)))
-    }}%
-\to \everybye
-
 % \appendtoks
-%     \ctxlua{nodes.check_for_leaks()}%
+%     \ctxlua{ctx.show_statistics()}%
 % \to \everygoodbye
 
 \appendtoks
@@ -161,17 +153,3 @@
 
 % \expanded{\defineactivecharacter \number"2000E} {\textdir TRT\relax}
 % \expanded{\defineactivecharacter \number"2000F} {\textdir TLT\relax}
-
-\startluacode
-    local ss = { }
-    function ctx.writestatus(a,b)
-        local s = ss[a]
-        if not ss[a] then
-            s = a:rpadd(15) .. ":"
-            ss[a] = s
-        end
-        texio.write_nl(s .. b)
-    end
-\stopluacode
-
-\def\writestatus#1#2{\ctxlua{ctx.writestatus([[#1]],[[#2]])}}

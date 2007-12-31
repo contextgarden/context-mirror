@@ -418,6 +418,7 @@ colors.attribute  = 0
 colors.selector   = 0
 colors.default    = 1
 colors.main       = nil
+colors.triggering = true
 
 -- This is a compromis between speed and simplicity. We used to store the
 -- values and data in one array, which made in neccessary to store the
@@ -589,7 +590,6 @@ end
 
 shipouts.plugins.color = {
     namespace   = colors,
-    triggering  = true,
     initializer = states.initialize,
     finalizer   = states.finalize,
     processor   = states.selective,
@@ -607,6 +607,7 @@ transparencies.data       = transparencies.data       or { }
 transparencies.values     = transparencies.values     or { }
 transparencies.enabled    = false
 transparencies.template   = "%s:%s"
+transparencies.triggering = true
 
 input.storage.register(false, "transparencies/registered", transparencies.registered, "transparencies.registered")
 input.storage.register(false, "transparencies/values",     transparencies.values,     "transparencies.values")
@@ -656,7 +657,6 @@ end
 
 shipouts.plugins.transparency = {
     namespace   = transparencies,
-    triggering  = true,
     initializer = states.initialize,
     finalizer   = states.finalize  ,
     processor   = states.process   ,
@@ -741,25 +741,32 @@ function effects.register(effect,stretch,rulethickness)
     return effects.registered[stamp]
 end
 
+--~ backends.pdf.effects = {
+--~     normal = 1,
+--~     inner  = 1,
+--~     outer  = 2,
+--~     both   = 3,
+--~     hidden = 4,
+--~ }
 backends.pdf.effects = {
-    normal = 1,
-    inner  = 1,
-    outer  = 2,
-    both   = 3,
-    hidden = 4,
+    normal = 0,
+    inner  = 0,
+    outer  = 1,
+    both   = 2,
+    hidden = 3,
 }
 
 function effects.reference(effect,stretch,rulethickness) -- will move, test code, we will develop a proper model for that
-    effect = backends.pdf.effects[effects] or backends.pdf.effects['normal']
-    if stretch > 0 then
-        stretch = stretch .. " w "
-    else
-        stretch = ""
-    end
+    effect = backends.pdf.effects[effect] or backends.pdf.effects['normal']
     if rulethickness > 0 then
-        rulethickness = number.dimenfactors["bp"]*rulethickness.. " Tc "
+        rulethickness = number.dimenfactors["bp"]*rulethickness .. " w "
     else
         rulethickness = ""
+    end
+    if stretch > 0 then
+        stretch = stretch.. " Tc "
+    else
+        stretch = ""
     end
     return backends.pdf.literal(string.format("%s%s%s Tr",stretch,rulethickness,effect)) -- watch order
 end

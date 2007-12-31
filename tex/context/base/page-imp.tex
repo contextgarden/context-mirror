@@ -125,11 +125,21 @@
 
 \newbox\postponedcontent
 
+% \def\flushatshipout
+%   {\dowithnextbox
+%      {\global\setbox\postponedcontent\hbox to \zeropoint
+%         {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
+%          \box\postponedcontent\flushnextbox}%
+%       \global\ht\postponedcontent\zeropoint
+%       \global\dp\postponedcontent\zeropoint
+%       \global\wd\postponedcontent\zeropoint}%
+%    \hbox}
+
 \def\flushatshipout
   {\dowithnextbox
      {\global\setbox\postponedcontent\hbox to \zeropoint
         {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
-         \box\postponedcontent\flushnextbox}%
+         \unhbox\postponedcontent\unhbox\nextbox}%
       \global\ht\postponedcontent\zeropoint
       \global\dp\postponedcontent\zeropoint
       \global\wd\postponedcontent\zeropoint}%

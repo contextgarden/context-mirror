@@ -111,18 +111,26 @@
              {\dowalkregime\characterencoding}}%
           {\dowalkregime\characterencoding}}%
    \egroup
+   \startnointerference
+%    \startreadingfile
+\setcatcodetable\ctxcatcodes
    \readsysfile{\f!sortprefix def}\donothing\donothing % default
+%    \stopreadingfile
+   \stopnointerference
    \global\let\savesortdefinitions\relax}
 
 \def\savesortlanguage#1% language specifics
   {\doifsomething{#1}
      {\doifundefined{\f!sortprefix::#1}%
-        {\bgroup
+        {\startnointerference
          \global\letvalue{\f!sortprefix::#1}\empty
          \def\currentexportclass{#1}%
          \enablemode[sortorder-#1]%
+%          \startreadingfile
+\setcatcodetable\ctxcatcodes
          \readsysfile{\f!sortprefix lan}\donothing\donothing
-         \egroup}}}
+%          \stopreadingfile
+         \stopnointerference}}}
 
 \prependtoks
     \savesortdefinitions

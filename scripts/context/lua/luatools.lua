@@ -1362,6 +1362,78 @@ end
 
 
 
+-- filename : l-set.lua
+-- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+-- copyright: PRAGMA ADE / ConTeXt Development Team
+-- license  : see context related readme files
+
+if not versions then versions = { } end versions['l-set'] = 1.001
+
+if not set then set = { } end
+
+do
+
+    local nums   = { }
+    local tabs   = { }
+    local concat = table.concat
+
+    set.create = table.tohash
+
+    function set.tonumber(t)
+        if next(t) then
+            local s = ""
+        --  we could save mem by sorting, but it slows down
+            for k, v in pairs(t) do
+                if v then
+                --  why bother about the leading space
+                    s = s .. " " .. k
+                end
+            end
+            if not nums[s] then
+                tabs[#tabs+1] = t
+                nums[s] = #tabs
+            end
+            return nums[s]
+        else
+            return 0
+        end
+    end
+
+    function set.totable(n)
+        if n == 0 then
+            return { }
+        else
+            return tabs[n] or { }
+        end
+    end
+
+    function set.contains(n,s)
+        if type(n) == "table" then
+            return n[s]
+        elseif n == 0 then
+            return false
+        else
+            local t = tabs[n]
+            return t and t[s]
+        end
+    end
+
+end
+
+--~ local c = set.create{'aap','noot','mies'}
+--~ local s = set.tonumber(c)
+--~ local t = set.totable(s)
+--~ print(t['aap'])
+--~ local c = set.create{'zus','wim','jet'}
+--~ local s = set.tonumber(c)
+--~ local t = set.totable(s)
+--~ print(t['aap'])
+--~ print(t['jet'])
+--~ print(set.contains(t,'jet'))
+--~ print(set.contains(t,'aap'))
+
+
+
 -- filename : l-os.lua
 -- comment  : split off from luat-lib
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -2472,7 +2544,7 @@ do
 end
 
 function input.elapsedtime(instance)
-    return string.format("%0.3f",instance.loadtime or 0)
+    return string.format("%0.3f",(instance and instance.loadtime) or 0)
 end
 
 function input.report_loadtime(instance)
@@ -2481,9 +2553,7 @@ function input.report_loadtime(instance)
     end
 end
 
-function input.loadtime(instance)
-    tex.print(input.elapsedtime(instance))
-end
+input.loadtime = input.elapsedtime
 
 function input.env(instance,key)
     return instance.environment[key] or input.osenv(instance,key)
@@ -5078,6 +5148,78 @@ end
 
 -- callback into the file io and related things; disabling kpse
 
+
+if texconfig and not texlua then do
+
+    -- this is not the right place, because we refer to quite some not yet defined tables, but who cares ...
+
+    ctx = ctx or { }
+
+    local ss = { }
+
+    function ctx.writestatus(a,b)
+        local s = ss[a]
+        if not ss[a] then
+            s = a:rpadd(15) .. ": "
+            ss[a] = s
+        end
+        texio.write_nl(s .. b .. "\n")
+    end
+
+    function ctx.show_statistics()
+        local function ws(...)
+            ctx.writestatus("mkiv lua stats",string.format(...))
+        end
+        if caches then
+            ws("used config path          - %s", caches.configpath(texmf.instance))
+            ws("used cache path           - %s", caches.path)
+        end
+        if status.luabytecodes > 0 and input.storage and input.storage.done then
+            ws("modules/dumps/instances   - %s/%s/%s", status.luabytecodes-500, input.storage.done, status.luastates)
+        end
+        if texmf.instance then
+            ws("input load time           - %s seconds", input.loadtime(texmf.instance))
+        end
+        if fonts then
+            ws("fonts load time           - %s seconds", input.loadtime(fonts))
+        end
+        if xml then
+            ws("xml load time             - %s seconds", input.loadtime(lxml))
+        end
+        if mptopdf then
+            ws("mps conversion time       - %s seconds", input.loadtime(mptopdf))
+        end
+        if nodes then
+            ws("node processing time      - %s seconds (including kernel)", input.loadtime(nodes))
+        end
+        if kernel then
+            ws("kernel processing time    - %s seconds", input.loadtime(kernel))
+        end
+        if attributes then
+            ws("attribute processing time - %s seconds", input.loadtime(attributes))
+        end
+        if languages then
+            ws("language load time        - %s seconds (n=%s)", input.loadtime(languages), languages.hyphenation.n())
+        end
+        if status.luastate_bytes then
+            ws("current memory usage      - %s bytes", status.luastate_bytes)
+        end
+        if nodes then
+            ws("cleaned up reserved nodes - %s nodes, %s lists (of %s)", nodes.cleanup_reserved(tex.count[24])) -- \topofboxstack
+        end
+        if languages then
+            ws("loaded patterns           - %s", languages.logger.report())
+        end
+        if status.node_mem_usage then
+            ws("node memory usage         - %s", status.node_mem_usage)
+        end
+        if fonts then
+            ws("loaded fonts              - %s", fonts.logger.report()) -- last because it is often a long list
+        end
+    end
+
+end end
+
 if texconfig and not texlua then
 
     texconfig.kpse_init        = false
@@ -5172,54 +5314,56 @@ if texconfig and not texlua then
 
         end
 
-        if callback and (input.logmode() == 'xml') then
+        if callback then
 
-            function input.start_page_number()
-                texio.write_nl("<p real='" .. tex.count[0] .. "' page='"..tex.count[1].."' sub='"..tex.count[2].."'")
-            end
-            function input.stop_page_number()
-                texio.write("/>")
-                texio.write_nl("")
-            end
+            if input.logmode() == 'xml' then
 
-            callback.register('start_page_number'  , input.start_page_number)
-            callback.register('stop_page_number'   , input.stop_page_number )
-
-            function input.report_output_pages(p,b)
-                texio.write_nl("<v k='pages'>"..p.."</v>")
-                texio.write_nl("<v k='bytes'>"..b.."</v>")
-                texio.write_nl("")
-            end
-            function input.report_output_log()
-            end
-
-            callback.register('report_output_pages', input.report_output_pages)
-            callback.register('report_output_log'  , input.report_output_log  )
-
-            function input.start_run()
-                texio.write_nl("<?xml version='1.0' standalone='yes'?>")
-                texio.write_nl("<job xmlns='www.tug.org/luatex/schemas/context-job.rng'>")
-                texio.write_nl("")
-            end
-            function input.stop_run()
-                texio.write_nl("</job>")
-            end
-            function input.show_statistics()
-                for k,v in pairs(status.list()) do
-                    texio.write_nl("log","<v k='"..k.."'>"..tostring(v).."</v>")
+                function input.start_page_number()
+                    texio.write_nl("<p real='" .. tex.count[0] .. "' page='"..tex.count[1].."' sub='"..tex.count[2].."'")
                 end
+                function input.stop_page_number()
+                    texio.write("/>")
+                    texio.write_nl("")
+                end
+
+                callback.register('start_page_number'  , input.start_page_number)
+                callback.register('stop_page_number'   , input.stop_page_number )
+
+                function input.report_output_pages(p,b)
+                    texio.write_nl("<v k='pages'>"..p.."</v>")
+                    texio.write_nl("<v k='bytes'>"..b.."</v>")
+                    texio.write_nl("")
+                end
+                function input.report_output_log()
+                end
+
+                callback.register('report_output_pages', input.report_output_pages)
+                callback.register('report_output_log'  , input.report_output_log  )
+
+                function input.start_run()
+                    texio.write_nl("<?xml version='1.0' standalone='yes'?>")
+                    texio.write_nl("<job xmlns='www.tug.org/luatex/schemas/context-job.rng'>")
+                    texio.write_nl("")
+                end
+                function input.stop_run()
+                    texio.write_nl("</job>")
+                end
+                function input.show_statistics()
+                    for k,v in pairs(status.list()) do
+                        texio.write_nl("log","<v k='"..k.."'>"..tostring(v).."</v>")
+                    end
+                end
+
+                table.insert(input.start_actions, input.start_run)
+                table.insert(input.stop_actions , input.show_statistics)
+                table.insert(input.stop_actions , input.stop_run)
+
+            else
+                table.insert(input.stop_actions , input.show_statistics)
             end
 
-            table.insert(input.start_actions, input.start_run)
-
-            table.insert(input.stop_actions, input.show_statistics)
-            table.insert(input.stop_actions, input.stop_run)
-
-            function input.start_run() for _, a in pairs(input.start_actions) do a() end end
-            function input.stop_run () for _, a in pairs(input.stop_actions ) do a() end end
-
-            callback.register('start_run', input.start_run)
-            callback.register('stop_run' , input.stop_run )
+            callback.register('start_run', function() for _, a in pairs(input.start_actions) do a() end end)
+            callback.register('stop_run' , function() for _, a in pairs(input.stop_actions ) do a() end ctx.show_statistics() end)
 
         end
 
@@ -5248,7 +5392,7 @@ end
 
 if texconfig and not texlua then
 
-    if not luatex then luatex = { } end
+    luatex = luatex or { }
 
     luatex.variablenames = {
         'main_memory', 'extra_mem_bot', 'extra_mem_top',
@@ -5338,7 +5482,7 @@ if node then
                 for i=1,nofboxes do
                     local l = tb[i]
                     if l then
-                        flush(l)
+                --      flush(l)
                         tb[i] = nil
                         nl = nl + 1
                     end
@@ -5347,9 +5491,6 @@ if node then
             reserved = { }
             return nr, nl, nofboxes
         end
-
-        -- nodes.register         = function() end
-        -- nodes.cleanup_reserved = function() end
 
     end
 
@@ -5404,6 +5545,20 @@ if node then
             return t
         end
 
+    end
+
+end
+
+if tex then
+
+    function tex.node_mem_status()
+        -- todo: lpeg
+        local s = status.node_mem_usage
+        local t = { }
+        for n, tag in s:gmatch("(%d+) ([a-z_]+)") do
+            t[tag] = n
+        end
+        return t
     end
 
 end
@@ -5528,6 +5683,7 @@ own.libs = { -- todo: check which ones are really needed
     'l-table.lua',
     'l-io.lua',
     'l-number.lua',
+    'l-set.lua',
     'l-os.lua',
     'l-md5.lua',
     'l-file.lua',
@@ -5596,7 +5752,7 @@ input.banner        = 'LuaTools | '
 utils.report        = input.report
 
 input.defaultlibs   = { -- not all are needed
-    'l-string.lua', 'l-lpeg.lua', 'l-table.lua', 'l-boolean.lua', 'l-number.lua', 'l-unicode.lua',
+    'l-string.lua', 'l-lpeg.lua', 'l-table.lua', 'l-boolean.lua', 'l-number.lua', 'l-set.lua', 'l-unicode.lua',
     'l-md5.lua', 'l-os.lua', 'l-io.lua', 'l-file.lua', 'l-dir.lua', 'l-utils.lua', 'l-tex.lua',
     'luat-lib.lua', 'luat-inp.lua', 'luat-tmp.lua', 'luat-zip.lua', 'luat-tex.lua'
 }

@@ -466,3 +466,23 @@ end
 
 lxml.set_verbatim("\\xmlcdatabefore", "\\xmlcdataafter", "\\xmlcdataobeyedline", "\\xmlcdataobeyedspace")
 lxml.set_cdata()
+
+
+do
+
+    local traced = { }
+
+    function lxml.trace_text_entities(str)
+        return str:gsub("&(.-);",function(s)
+            traced[s] = (traced[s] or 0) + 1
+            return "["..s.."]"
+        end)
+    end
+
+    function lxml.show_text_entities()
+        for k,v in ipairs(table.sortedkeys(traced)) do
+            texio.write_nl(string.format("entity: %s (n=%s)",v,traced[v]))
+        end
+    end
+
+end

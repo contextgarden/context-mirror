@@ -88,8 +88,12 @@ do
             if d then
                 local s = d.start
                 current_list[#current_list+1] = { n, s }
-                sprint(tex.ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}\\endgraf", d.tag or "", s, n.shift, n.width, leftskip(n.list)))
-                d.start = s + (d.step or 1)
+                if d.start % d.step == 0 then
+                    sprint(tex.ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}\\endgraf", d.tag or "", s, n.shift, n.width, leftskip(n.list)))
+                else
+                    sprint(tex.ctxcatcodes, "\\skipnumber\\endgraf")
+                end
+                d.start = s + 1 -- (d.step or 1)
             end
         end
         for n in traverse_id(hlist,head) do -- attr test here and quit as soon as zero found

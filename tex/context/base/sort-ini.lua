@@ -35,7 +35,7 @@ function sorters.comparers.basic(a,b,i) -- [2] has entry, key, cmp
                     return -1
                 end
             end
-            return -1
+            return 1
         end
     elseif #sort_a < #sort_b then
         if #sort_a == 0 then
@@ -49,7 +49,7 @@ function sorters.comparers.basic(a,b,i) -- [2] has entry, key, cmp
                     return -1
                 end
             end
-            return 1
+            return -1
         end
     elseif #sort_a == 0 then
         return 0
@@ -105,9 +105,11 @@ function sorters.strip(str) -- todo: only letters and such utf.gsub("([^%w%d])",
     return str
 end
 
+sorters.defaultlanguage = 'en'
+
 function sorters.splitters.utf(str)
-    local r = sorters.replacements[sorters.language] or { }
-    local m = sorters.mappings[sorters.language] or { }
+    local r = sorters.replacements[sorters.language] or sorters.replacements[sorters.defaultlanguage] or { }
+    local m = sorters.mappings    [sorters.language] or sorters.mappings    [sorters.defaultlanguage] or { }
     local u = characters.uncompose
     local t = { }
     for _,v in pairs(r) do

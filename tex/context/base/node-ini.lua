@@ -69,6 +69,52 @@ do
 
     local remove, free = node.remove, node.free
 
+    --~     function nodes.remove(head, current, free_too)
+    --~         if head == current then
+    --~             local cn = current.next
+    --~             if cn then
+    --~                 cn.prev = nil
+    --~                 if free_too then
+    --~                     node.free(current)
+    --~                     return cn, cn, nil
+    --~                 else
+    --~                     current.prev = nil
+    --~                     current.next = nil
+    --~                     return cn, cn, current
+    --~                 end
+    --~             else
+    --~                 if free_too then
+    --~                     node.free(current)
+    --~                     return nil, nil, nil
+    --~                 else
+    --~                     return head,current,current
+    --~                 end
+    --~             end
+    --~         else
+    --~             local cp = current.prev
+    --~             local cn = current.next
+    --~             if not cp and head.next == current then
+    --~                 cp = head
+    --~             end
+    --~             if cn then
+    --~                 cn.prev = cp
+    --~                 if cp then
+    --~                     cp.next = cn
+    --~                 end
+    --~             elseif cp then
+    --~                 cp.next = nil
+    --~             end
+    --~             if free_too then
+    --~                 node.free(current)
+    --~                 return head, cn, nil
+    --~             else
+    --~                 current.prev = nil
+    --~                 current.next = nil
+    --~                 return head, cn, current
+    --~             end
+    --~         end
+    --~     end
+
     function nodes.remove(head, current, free_too)
        local t = current
        head, current = remove(head,current)
@@ -87,8 +133,45 @@ do
         return nodes.remove(head,current,true)
     end
 
-    nodes.before =  node.insert_before
+    nodes.before =  node.insert_before -- broken
     nodes.after  =  node.insert_after
+
+function nodes.before(h,c,n)
+    if c then
+        if c == h then
+            n.next = h
+            n.prev = nil
+            h.prev = n
+        else
+            local cp = c.prev
+            n.next = c
+            n.prev = cp
+            if cp then
+                cp.next = n
+            end
+            c.prev = n
+            return h, n
+        end
+    end
+    return n, n
+end
+function nodes.after(h,c,n)
+    if c then
+        local cn = c.next
+        if cn then
+            n.next = cn
+            cn.prev = n
+        else
+            n.next = nil
+        end
+        c.next = n
+        n.prev = c
+        if c ~= h then
+            return h, n
+        end
+    end
+    return n, n
+end
 
     function nodes.show_list(head, message)
         if message then

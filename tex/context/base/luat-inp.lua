@@ -289,7 +289,7 @@ do
 end
 
 function input.elapsedtime(instance)
-    return string.format("%0.3f",instance.loadtime or 0)
+    return string.format("%0.3f",(instance and instance.loadtime) or 0)
 end
 
 function input.report_loadtime(instance)
@@ -298,9 +298,7 @@ function input.report_loadtime(instance)
     end
 end
 
-function input.loadtime(instance)
-    tex.print(input.elapsedtime(instance))
-end
+input.loadtime = input.elapsedtime
 
 function input.env(instance,key)
     return instance.environment[key] or input.osenv(instance,key)

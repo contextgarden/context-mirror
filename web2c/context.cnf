@@ -105,6 +105,7 @@ TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain
 MPINPUTS          = .;{$MFRESOURCES}//;{$CTXDEVMPPATH};$TEXMF/metapost/{context,base,}//
 #~ MFINPUTS       = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;{$TEXMF/fonts,$VARTEXFONTS}/source//
 MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;$TEXMF/fonts/source//
+BSTINPUTS         = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/bibtex/bst//
 
 TEXCONFIG     = .;$TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
 PDFTEXCONFIG  = .;$TEXMF/pdftex/{$progname,}//

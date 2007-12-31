@@ -30,13 +30,9 @@
 
 %D First we load some auxiliary macro's:
 
-\let\normalunexpanded\unexpanded
-
 \input supp-mis.tex  \let\writestatus\undefined
 \input syst-gen.tex
 \input syst-fnt.tex
-
-\let\unexpanded\normalunexpanded
 
 %D after which we can go on with:
 
@@ -210,5 +206,7 @@
 \else
   \setupchemical[\c!resolution=\outputresolution]
 \fi
+
+\let\unexpanded\normalunexpanded
 
 \protect \endinput

@@ -57,7 +57,7 @@
     \immediatewriteutilitytua{}%
     \immediatewriteutilitytua{-- begin of utility file}%
     \immediatewriteutilitytua{}%
-    \immediatewriteutilitytua{do}%
+%     \immediatewriteutilitytua{do}%
     \immediatewriteutilitytua{if job and job.version and not job.version == "\utilityversion" then return end}%
     \immediatewriteutilitytua{if not job then job = { } end}%
     \immediatewriteutilitytua{job.version = "\utilityversion"}%
@@ -65,9 +65,9 @@
 \to \everyopenutilities
 
 \appendtoks
-    \immediatewriteutilitytua{end}%
-    \immediatewriteutilitytua{}%
-    \immediatewriteutilitytua{-- end of utility file}%
+%     \immediatewriteutilitytua{end}%
+%     \immediatewriteutilitytua{}%
+%     \immediatewriteutilitytua{-- end of utility file}%
     %\immediate\closeout\utility@tua
 \to \everycloseutilities
 
@@ -77,9 +77,9 @@
     \ctxlua { do
         if not job then job = { } end
         job.version = "\utilityversion"
-      % local settings = loadfile("\jobname.tuc")
         local settings = io.loaddata("\jobname.tuc")
-        if settings and settings:find("\letterpercent -\letterpercent -\letterpercent s*end of utility file\letterpercent s*$") then
+        if settings then
+      % if settings and settings:find("\letterpercent -\letterpercent -\letterpercent s*end of utility file\letterpercent s*$") then
             settings = loadstring(settings)
             if settings then
                 settings()
@@ -87,7 +87,7 @@
                 logs.report("utilityfile","invalid, not loaded")
             end
         else
-            logs.report("utilityfile","unfinished, not loaded")
+            logs.report("utilityfile","not present")
         end
     end}%
 \to \everyjob

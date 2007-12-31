@@ -95,6 +95,7 @@ class TEX
     ['tex','etex','pdftex','pdfetex','standard']   .each do |e| @@texengines[e] = 'pdftex'    end
     ['aleph','omega']                              .each do |e| @@texengines[e] = 'aleph'     end
     ['xetex']                                      .each do |e| @@texengines[e] = 'xetex'     end
+    ['petex']                                      .each do |e| @@texengines[e] = 'petex'     end
     ['luatex']                                     .each do |e| @@texengines[e] = 'luatex'    end
 
     ['metapost','mpost', 'standard']               .each do |e| @@mpsengines[e] = 'mpost'     end
@@ -102,6 +103,7 @@ class TEX
     ['pdfetex','pdftex','pdf','pdftex','standard'] .each do |b| @@backends[b]   = 'pdftex'    end
     ['dvipdfmx','dvipdfm','dpx','dpm']             .each do |b| @@backends[b]   = 'dvipdfmx'  end
     ['xetex','xtx']                                .each do |b| @@backends[b]   = 'xetex'     end
+    ['petex']                                      .each do |b| @@backends[b]   = 'dvipdfmx'  end
     ['aleph']                                      .each do |b| @@backends[b]   = 'dvipdfmx'  end
     ['dvips','ps','dvi']                           .each do |b| @@backends[b]   = 'dvips'     end
     ['dvipsone']                                   .each do |b| @@backends[b]   = 'dvipsone'  end
@@ -110,7 +112,7 @@ class TEX
 
     ['tex','standard']                             .each do |b| @@mappaths[b]   = 'dvips'     end
     ['pdftex','pdfetex']                           .each do |b| @@mappaths[b]   = 'pdftex'    end
-    ['aleph','omega','xetex']                      .each do |b| @@mappaths[b]   = 'dvipdfm'   end
+    ['aleph','omega','xetex','petex']              .each do |b| @@mappaths[b]   = 'dvipdfm'   end
     ['dvipdfm', 'dvipdfmx', 'xdvipdfmx']           .each do |b| @@mappaths[b]   = 'dvipdfm'   end
     ['xdv','xdv2pdf']                              .each do |b| @@mappaths[b]   = 'dvips'     end
 
@@ -132,9 +134,7 @@ class TEX
     ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'plain'     end
     ['metafun','context','standard']               .each do |f| @@mpsformats[f] = 'metafun'   end
 
-    # no 'standard' progname ! / beware, when using texexec we always use the context/metafun values
-
-    ['pdftex','pdfetex','aleph','omega',
+    ['pdftex','pdfetex','aleph','omega','petex',
      'xetex','luatex']                             .each do |p| @@prognames[p]  = 'context'   end
     ['mpost']                                      .each do |p| @@prognames[p]  = 'metafun'   end
     ['latex','pdflatex']                           .each do |p| @@prognames[p]  = 'latex'     end
@@ -158,6 +158,7 @@ class TEX
     @@runoptions['mpost']   = ['--8bit']
     @@runoptions['pdfetex'] = ['--8bit']           # obsolete
     @@runoptions['pdftex']  = ['--8bit']           # pdftex is now pdfetex
+  # @@runoptions['petex']   = []
     @@runoptions['xetex']   = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5"']
 
     @@tcxflag['aleph']   = true
@@ -165,6 +166,7 @@ class TEX
     @@tcxflag['mpost']   = true
     @@tcxflag['pdfetex'] = true
     @@tcxflag['pdftex']  = true
+    @@tcxflag['petex']   = false
     @@tcxflag['xetex']   = false
 
     @@draftoptions['pdftex'] = ['--draftmode']

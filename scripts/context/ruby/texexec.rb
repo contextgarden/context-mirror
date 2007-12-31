@@ -575,14 +575,16 @@ job.setvariable('given.backend',job.getvariable('backend'))
 
         if (str = @commandline.option('engine')) && ! str.standard? && ! str.empty? then
             job.setvariable('texengine',str)
+        elsif @commandline.oneof('luatex') then
+            job.setvariable('texengine','luatex')
         elsif @commandline.oneof('pdfetex','pdftex','pdf') then
             job.setvariable('texengine','pdftex')
         elsif @commandline.oneof('xetex','xtx') then
             job.setvariable('texengine','xetex')
         elsif @commandline.oneof('aleph') then
             job.setvariable('texengine','aleph')
-        elsif @commandline.oneof('luatex') then
-            job.setvariable('texengine','luatex')
+        elsif @commandline.oneof('petex') then
+            job.setvariable('texengine','petex')
         else
             job.setvariable('texengine','standard')
         end
@@ -597,6 +599,8 @@ job.setvariable('given.backend',job.getvariable('backend'))
             job.setvariable('backend','xetex')
         elsif @commandline.oneof('aleph') then
             job.setvariable('backend','dvipdfmx')
+        elsif @commandline.oneof('petex') then
+            job.setvariable('backend','dvipdfmx')
         elsif @commandline.oneof('dvips','ps') then
             job.setvariable('backend','dvips')
         elsif @commandline.oneof('xdv') then
@@ -607,6 +611,7 @@ job.setvariable('given.backend',job.getvariable('backend'))
                 when 'pdftex'   then job.setvariable('backend','pdftex')
                 when 'luatex'   then job.setvariable('backend','pdftex')
                 when 'xetex'    then job.setvariable('backend','xetex')
+                when 'petex'    then job.setvariable('backend','dvipdfmx')
                 when 'aleph'    then job.setvariable('backend','dvipdfmx')
             else
                 job.setvariable('backend','standard')
@@ -759,6 +764,8 @@ commandline.registerflag('xtx')
 commandline.registerflag('xdv')
 
 commandline.registerflag('aleph')
+
+commandline.registerflag('petex')
 
 commandline.registerflag('all')
 commandline.registerflag('fast')

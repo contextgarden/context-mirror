@@ -152,6 +152,12 @@ do
         return ""
     end
 
+    local cleanup = false
+
+    function xml.set_text_cleanup(fnc)
+        cleanup = fnc
+    end
+
     local function add_attribute(namespace,tag,value)
         if tag == "xmlns" then
             xmlns[#xmlns+1] = xml.resolvens(value)
@@ -206,7 +212,11 @@ do
         end
     end
     local function add_text(text)
-        dt[#dt+1] = text
+        if cleanup and #text > 0 then
+            dt[#dt+1] = cleanup(text)
+        else
+            dt[#dt+1] = text
+        end
     end
     local function add_special(what, spacing, text)
         if #spacing > 0 then
@@ -1834,15 +1844,14 @@ do if unicode and unicode.utf8 then
         end
     end
 
-
     local entities = xml.entities
 
     local function resolve(e)
-        local e = entities[e]
-        if e then
-            return e
+        local ee = entities[e]
+        if ee then
+            return ee
         elseif e:find("#x") then
-            return char(tonumber(s:sub(3),16))
+            return char(tonumber(e:sub(3),16))
         else
             local h = entities.handler
             return (h and h(e)) or "&" .. e .. ";"
@@ -1862,6 +1871,33 @@ do if unicode and unicode.utf8 then
             end
         end
     end
+
+    function xml.utfize_text(str)
+        if str:find("&#") then
+            return str:gsub("&#x(.-);",toutf)
+        else
+            return str
+        end
+    end
+
+    function xml.resolve_text_entities(str)
+        if str:find("&") then
+            return str:gsub("&(.-);",resolve)
+        else
+            return str
+        end
+    end
+
+    function xml.show_text_entities(str)
+        if str:find("&") then
+            return str:gsub("&(.-);","[%1]")
+        else
+            return str
+        end
+    end
+
+--  xml.set_text_cleanup(xml.show_text_entities)
+--  xml.set_text_cleanup(xml.resolve_text_entities)
 
 end end
 
