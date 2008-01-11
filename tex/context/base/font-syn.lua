@@ -98,7 +98,6 @@ fonts.names.filters.fixes = {
 --~     return result
 --~ end
 
-
 function fonts.names.identify()
     fonts.names.data = {
         mapping = { },
@@ -311,3 +310,52 @@ function fonts.names.table(pattern,reload,all)
         tex.sprint(tex.ctxcatcodes,"\\stoptabulate\\stop")
     end
 end
+
+
+--[[ldx--
+<p>Fallbacks, not permanent but a transition thing.</p>
+--ldx]]--
+
+fonts.names.new_to_old = {
+    ["lmroman10-capsregular"]                = "lmromancaps10-oblique",
+    ["lmroman10-capsoblique"]                = "lmromancaps10-regular",
+    ["lmroman10-demi"]                       = "lmromandemi10-oblique",
+    ["lmroman10-demioblique"]                = "lmromandemi10-regular",
+    ["lmroman8-oblique"]                     = "lmromanslant8-regular",
+    ["lmroman9-oblique"]                     = "lmromanslant9-regular",
+    ["lmroman10-oblique"]                    = "lmromanslant10-regular",
+    ["lmroman12-oblique"]                    = "lmromanslant12-regular",
+    ["lmroman17-oblique"]                    = "lmromanslant17-regular",
+    ["lmroman10-boldoblique"]                = "lmromanslant10-bold",
+    ["lmroman10-dunhill"]                    = "lmromandunh10-oblique",
+    ["lmroman10-dunhilloblique"]             = "lmromandunh10-regular",
+    ["lmroman10-unslanted"]                  = "lmromanunsl10-regular",
+    ["lmsans10-demicondensed"]               = "lmsansdemicond10-regular",
+    ["lmsans10-demicondensedoblique"]        = "lmsansdemicond10-oblique",
+    ["lmsansquotation8-bold"]                = "lmsansquot8-bold",
+    ["lmsansquotation8-boldoblique"]         = "lmsansquot8-boldoblique",
+    ["lmsansquotation8-oblique"]             = "lmsansquot8-oblique",
+    ["lmsansquotation8-regular"]             = "lmsansquot8-regular",
+    ["lmtypewriter8-regular"]                = "lmmono8-regular",
+    ["lmtypewriter9-regular"]                = "lmmono9-regular",
+    ["lmtypewriter10-regular"]               = "lmmono10-regular",
+    ["lmtypewriter12-regular"]               = "lmmono12-regular",
+    ["lmtypewriter10-italic"]                = "lmmono10-italic",
+    ["lmtypewriter10-oblique"]               = "lmmonoslant10-regular",
+    ["lmtypewriter10-capsoblique"]           = "lmmonocaps10-oblique",
+    ["lmtypewriter10-capsregular"]           = "lmmonocaps10-regular",
+    ["lmtypewriter10-light"]                 = "lmmonolt10-regular",
+    ["lmtypewriter10-lightoblique"]          = "lmmonolt10-oblique",
+    ["lmtypewriter10-lightcondensed"]        = "lmmonoltcond10-regular",
+    ["lmtypewriter10-lightcondensedoblique"] = "lmmonoltcond10-oblique",
+    ["lmtypewriter10-dark"]                  = "lmmonolt10-bold",
+    ["lmtypewriter10-darkoblique"]           = "lmmonolt10-boldoblique",
+    ["lmtypewritervarwd10-regular"]          = "lmmonoproplt10-regular",
+    ["lmtypewritervarwd10-oblique"]          = "lmmonoproplt10-oblique",
+    ["lmtypewritervarwd10-light"]            = "lmmonoprop10-oblique",
+    ["lmtypewritervarwd10-lightoblique"]     = "lmmonoprop10-regular",
+    ["lmtypewritervarwd10-dark"]             = "lmmonoproplt10-bold",
+    ["lmtypewritervarwd10-darkoblique"]      = "lmmonoproplt10-boldoblique",
+}
+
+fonts.names.old_to_new = table.swapped(fonts.names.new_to_old)

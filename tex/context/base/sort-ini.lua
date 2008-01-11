@@ -111,6 +111,7 @@ function sorters.splitters.utf(str)
     local r = sorters.replacements[sorters.language] or sorters.replacements[sorters.defaultlanguage] or { }
     local m = sorters.mappings    [sorters.language] or sorters.mappings    [sorters.defaultlanguage] or { }
     local u = characters.uncompose
+    local b = utf.byte
     local t = { }
     for _,v in pairs(r) do
         str = str:gsub(v[1],v[2])
@@ -118,9 +119,11 @@ function sorters.splitters.utf(str)
     for c in string.utfcharacters(str) do
         if m[c] then
             t[#t+1] = m[c]
+        elseif #c == 1 then
+            t[#t+1] = b(c)
         else
             for cc in string.characters(u(c)) do
-                t[#t+1] = m[cc] or cc
+                t[#t+1] = m[cc] or b(cc)
             end
         end
     end

@@ -75,17 +75,17 @@ sense to disable or tune the garbage collector in order to
 keep the use of resources acceptable.</p>
 
 <p>At some point in the development we did some tests with counting
-nodes (in thsi case 121049).</p>
+nodes (in this case 121049).</p>
 
 <table>
-<tr><td>setstepmul</td><td>seconds</td><td>megabytes</td</tr>
-<tr><td>200</td><td>24.0</td><td>80.5</td</tr>
-<tr><td>175</td><td>21.0</td><td>78.2</td</tr>
-<tr><td>150</td><td>22.0</td><td>74.6</td</tr>
-<tr><td>160</td><td>22.0</td><td>74.6</td</tr>
-<tr><td>165</td><td>21.0</td><td>77.6</td</tr>
-<tr><td>125</td><td>21.5</td><td>89.2</td</tr>
-<tr><td>100</td><td>21.5</td><td>88.4</td</tr>
+<tr><td>setstepmul</td><td>seconds</td><td>megabytes</td></tr>
+<tr><td>200</td><td>24.0</td><td>80.5</td></tr>
+<tr><td>175</td><td>21.0</td><td>78.2</td></tr>
+<tr><td>150</td><td>22.0</td><td>74.6</td></tr>
+<tr><td>160</td><td>22.0</td><td>74.6</td></tr>
+<tr><td>165</td><td>21.0</td><td>77.6</td></tr>
+<tr><td>125</td><td>21.5</td><td>89.2</td></tr>
+<tr><td>100</td><td>21.5</td><td>88.4</td></tr>
 </table>
 
 <p>The following code is kind of experimental. In the documents

@@ -13,8 +13,15 @@
 
 \unprotect
 
-\def\mkdefinefontfeature#1% #2
-  {\setvalue{\??fa#1}} % {#2}
+% not that efficient but inheritance is seldom used (untested)
+
+\def\mkdefinefontfeature#1#2#3%
+  {\doifassignmentelse{#2}
+    {\setevalue{\??fa#1}{#2}}
+    {\let\!!stringa\empty
+     \def\mkdodefinefontfeature##1{\edef\!!stringa{\ifx\!!stringa\empty\else\!!stringa,\fi##1}}%
+     \processcommalist[#2]\mkdodefinefontfeature
+     \setevalue{\??fa#1}{\ifx\!!stringa\empty\else\!!stringa,\fi#3}}}
 
 \def\updatefontparameters
   {\edef\@@fontencoding{\truefontdata\fontfile    \s!encoding}%

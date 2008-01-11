@@ -19,7 +19,7 @@ away.</p>
 
 fonts                      = fonts     or { }
 fonts.afm                  = fonts.afm or { }
-fonts.afm.version          = 1.22 -- incrementing this number one up will force a re-cache
+fonts.afm.version          = 1.23 -- incrementing this number one up will force a re-cache
 fonts.afm.syncspace        = true -- when true, nicer stretch values
 fonts.afm.enhance_data     = true -- best leave this set to true
 fonts.afm.trace_features   = false
@@ -173,7 +173,7 @@ do
                     local glyphs = pfbdata.glyphs
                     if glyphs then
                         if trace then
-                            logs.report("define font", string.format("getting index data from %s",pfbname))
+                            logs.report("load afm", string.format("getting index data from %s",pfbname))
                         end
                         -- local offset = (glyphs[0] and glyphs[0] != .notdef) or 0
                         for index, glyph in pairs(glyphs) do
@@ -182,23 +182,23 @@ do
                                 local char = characters[name]
                                 if char then
                                     if trace then
-                                        logs.report("define font", string.format("glyph %s has index %s",name,index))
+                                        logs.report("load afm", string.format("glyph %s has index %s",name,index))
                                     end
                                     char.index = index
                                 end
                             end
                         end
                     elseif trace then
-                        logs.report("define font", string.format("no glyph data in pfb file %s",pfbname))
+                        logs.report("load afm", string.format("no glyph data in pfb file %s",pfbname))
                     end
                 elseif trace then
-                    logs.report("define font", string.format("no data in pfb file %s",pfbname))
+                    logs.report("load afm", string.format("no data in pfb file %s",pfbname))
                 end
             elseif trace then
-                logs.report("define font", string.format("invalid pfb file %s",pfbname))
+                logs.report("load afm", string.format("invalid pfb file %s",pfbname))
             end
         elseif trace then
-            logs.report("define font", string.format("no pfb file for %s",filename))
+            logs.report("load afm", string.format("no pfb file for %s",filename))
         end
     end
 
@@ -213,21 +213,21 @@ do
             }
             afmblob = afmblob:gsub("StartCharMetrics(.-)EndCharMetrics", function(charmetrics)
                 if fonts.trace then
-                    logs.report("define font", "loading char metrics")
+                    logs.report("load afm", "loading char metrics")
                 end
                 get_charmetrics(data,charmetrics,vector)
                 return ""
             end)
             afmblob = afmblob:gsub("StartKernPairs(.-)EndKernPairs", function(kernpairs)
                 if fonts.trace then
-                    logs.report("define font", "loading kern pairs")
+                    logs.report("load afm", "loading kern pairs")
                 end
                 get_kernpairs(data,kernpairs)
                 return ""
             end)
             afmblob = afmblob:gsub("StartFontMetrics%s+([%d%.]+)(.-)EndFontMetrics", function(version,fontmetrics)
                 if fonts.trace then
-                    logs.report("define font", "loading variables")
+                    logs.report("load afm", "loading variables")
                 end
                 data.afmversion = version
                 get_variables(data,fontmetrics)
@@ -238,7 +238,7 @@ do
             return data
         else
             if fonts.trace then
-                logs.report("define font", "no valid afm file " .. filename)
+                logs.report("load afm", "no valid afm file " .. filename)
             end
             return nil
         end
@@ -255,6 +255,10 @@ way we can set them faster when defining a font.</p>
 function fonts.afm.load(filename)
     local name = file.removesuffix(filename)
     local data = containers.read(fonts.afm.cache,name)
+    local size = lfs.attributes(name,"size") or 0
+    if data and data.size ~= size then
+        data = nil
+    end
     if not data then
         local foundname = input.find_file(texmf.instance,filename,'afm')
         if foundname and foundname ~= "" then
@@ -266,6 +270,9 @@ function fonts.afm.load(filename)
                     fonts.afm.add_ligatures(data,'texligatures') -- easier this way
                     fonts.afm.add_kerns(data) -- faster this way
                 end
+                logs.report("load afm","file size: " .. size)
+                data.size = size
+                logs.report("load afm","saving: in cache")
                 data = containers.write(fonts.afm.cache, name, data)
             end
         end
@@ -530,18 +537,18 @@ function fonts.afm.afm_to_tfm(specification)
     if encoding and filename and fonts.enc.known[encoding] then
         fonts.tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
         if fonts.trace then
-            logs.report("define font", string.format("stripping encoding prefix from filename %s",afmname))
+            logs.report("load afm", string.format("stripping encoding prefix from filename %s",afmname))
         end
         afmname = filename
     elseif specification.forced == "afm" then
         if fonts.trace then
-            logs.report("define font", string.format("forcing afm format for %s",afmname))
+            logs.report("load afm", string.format("forcing afm format for %s",afmname))
         end
     else
         local tfmname = input.findbinfile(texmf.instance,afmname,"ofm") or ""
         if tfmname ~= "" then
             if fonts.trace then
-                logs.report("define font", string.format("fallback from afm to tfm for %s",afmname))
+                logs.report("load afm", string.format("fallback from afm to tfm for %s",afmname))
             end
             afmname = ""
         end
@@ -565,7 +572,7 @@ function fonts.afm.afm_to_tfm(specification)
                     fonts.afm.set_features(tfmdata)
                 end
             elseif fonts.trace then
-                logs.report("define font", string.format("no (valid) afm file found with name %s",afmname))
+                logs.report("load afm", string.format("no (valid) afm file found with name %s",afmname))
             end
             tfmdata = containers.write(fonts.tfm.cache,cache_id,tfmdata)
         end

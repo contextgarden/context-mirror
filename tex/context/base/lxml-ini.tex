@@ -177,6 +177,18 @@
   {\ctxlua{xml.set_text_cleanup(lxml.trace_text_entities)}%
    \appendtoks\ctxlua{lxml.show_text_entities()}\to\everygoodbye}
 
+% brrrr, give this at the top of a style that needs to stub mkiv loading
+
+\def\processXMLfileMKIV
+  {\dosingleempty\doprocessXMLfileMKIV}
+
+\let\normalprocessXMLfilegrouped\processXMLfilegrouped
+
+\def\doprocessXMLfileMKIV[#1]%
+  {\def\processXMLfilegrouped##1%
+     {\let\processXMLfilegrouped\normalprocessXMLfilegrouped
+      \doifelsenothing{#1}{\xmlprocess{main}{##1}{}}{\xmlprocess{#1}{##1}{}}}}
+
 \protect \endinput
 
 % \xmlload{main}{normreader.xml}

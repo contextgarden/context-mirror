@@ -235,6 +235,28 @@
 
 \newif\iftopofinsert
 
+% \def\OTRONEdosettopinserts
+%   {\bgroup
+%    \ifsomefloatwaiting
+%      \noffloatinserts\zerocount
+%      \let\totaltopinserted\!!zeropoint
+%      \OTRONEdodosettopinserts
+%      \ifnum\@@bknbottom=\zerocount
+%        \ifnum\@@bknlines>\zerocount
+%          \ifdim\totaltopinserted>\zeropoint\relax
+%            \dimen0=\lineheight
+%            \dimen0=\@@bknlines\dimen0
+%            \advance\dimen0 \totaltopinserted\relax
+%            \ifdim\dimen0>\textheight
+%              \showmessage\m!floatblocks8\@@bknlines
+%              \vfilll\eject
+%            \fi
+%          \fi
+%        \fi
+%      \fi
+%    \fi
+%    \egroup}
+
 \def\OTRONEdosettopinserts
   {\bgroup
    \ifsomefloatwaiting
@@ -244,10 +266,7 @@
      \ifnum\@@bknbottom=\zerocount
        \ifnum\@@bknlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
-           \dimen0=\lineheight
-           \dimen0=\@@bknlines\dimen0
-           \advance\dimen0 \totaltopinserted\relax
-           \ifdim\dimen0>\textheight
+           \ifdim\dimexpr\@@bknlines\lineheight+\totaltopinserted\relax>\textheight
              \showmessage\m!floatblocks8\@@bknlines
              \vfilll\eject
            \fi
@@ -265,9 +284,7 @@
      \else
        \topofinsertfalse
      \fi
-     \global\advance\topinserted \ht\floatbox
-     \global\advance\topinserted \dp\floatbox
-     \global\advance\topinserted \floatbottomskip\relax
+     \global\advance\topinserted\dimexpr\ht\floatbox+\dp\floatbox+\floatbottomskip\relax
      \ifdim\topinserted<\textheight\relax
        \xdef\totaltopinserted{\the\topinserted}%
        \insert\topins
@@ -468,18 +485,13 @@
    \else
      % new per 31/5/2004, should be an option, only one column mode
      \begingroup
-     \scratchdimen\pagetotal
-     \advance\scratchdimen\lineheight % maybe strutheight
+     \scratchdimen\dimexpr\pagetotal+\lineheight\relax
      \ifdim\scratchdimen>\pagegoal
        \goodbreak % hack ? needed in icare-az
      \fi
      % should be an option
      \endgroup
-     \dimen0         \pagetotal
-     \advance\dimen0 \ht\floatbox
-     \advance\dimen0 \dp\floatbox
-     \advance\dimen0 \floattopskip
-     \advance\dimen0 -\pageshrink  % toegevoegd
+     \dimen0\dimexpr\pagetotal+\ht\floatbox+\dp\floatbox+\floattopskip-\pageshrink\relax
     %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
      \dimen2\pagegoal
      \relax % needed

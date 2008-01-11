@@ -63,6 +63,10 @@ do
                            "\\setvalue {(cs:%s)}{\\doinheritcs{%s}}"
     local f_g_c_template = "\\setgvalue{(ca:%s)}{\\doinheritca{%s}}" ..
                            "\\setgvalue{(cs:%s)}{\\doinheritcs{%s}}"
+    local r_l_c_template = "\\letbeundefined{(ca:%s)}" ..
+                           "\\letbeundefined{(cs:%s)}"
+    local r_g_c_template = "\\global\\letbeundefined{(ca:%s)}" ..
+                           "\\global\\letbeundefined{(cs:%s)}"
 
     local a_l_t_template = "\\setevalue{(ta:%s)}{%s}" ..
                            "\\setevalue{(ts:%s)}{\\dosetattribute{transparency}{%s}}"
@@ -72,6 +76,10 @@ do
                            "\\setvalue {(ts:%s)}{\\doinheritts{%s}}"
     local f_g_t_template = "\\setgvalue{(ta:%s)}{\\doinheritta{%s}}" ..
                            "\\setgvalue{(ts:%s)}{\\doinheritts{%s}}"
+    local r_l_t_template = "\\letbeundefined{(ta:%s)}" ..
+                           "\\letbeundefined{(ts:%s)}"
+    local r_g_t_template = "\\global\\letbeundefined{(ta:%s)}" ..
+                           "\\global\\letbeundefined{(ts:%s)}"
 
     function ctx.aux.definecolor(name, ca, global)
         if ca and ca > 0 then
@@ -79,6 +87,12 @@ do
                 tex.sprint(tex.ctxcatcodes,a_g_c_template:format(name, ca, name, ca))
             else
                 tex.sprint(tex.ctxcatcodes,a_l_c_template:format(name, ca, name, ca))
+            end
+        else
+            if global then
+                tex.sprint(tex.ctxcatcodes,r_g_c_template:format(name, name))
+            else
+                tex.sprint(tex.ctxcatcodes,r_l_c_template:format(name, name))
             end
         end
     end
@@ -89,6 +103,12 @@ do
             else
                 tex.sprint(tex.ctxcatcodes,f_l_c_template:format(name, ca, name, ca))
             end
+        else
+            if global then
+                tex.sprint(tex.ctxcatcodes,r_g_c_template:format(name, name))
+            else
+                tex.sprint(tex.ctxcatcodes,r_l_c_template:format(name, name))
+            end
         end
     end
     function ctx.aux.definetransparent(name, ta, global)
@@ -98,6 +118,12 @@ do
             else
                 tex.sprint(tex.ctxcatcodes,a_l_t_template:format(name, ta, name, ta))
             end
+        else
+            if global then
+                tex.sprint(tex.ctxcatcodes,r_g_t_template:format(name, name))
+            else
+                tex.sprint(tex.ctxcatcodes,r_l_t_template:format(name, name))
+            end
         end
     end
     function ctx.aux.inherittransparent(name, ta, global)
@@ -106,6 +132,12 @@ do
                 tex.sprint(tex.ctxcatcodes,f_g_t_template:format(name, ta, name, ta))
             else
                 tex.sprint(tex.ctxcatcodes,f_l_t_template:format(name, ta, name, ta))
+            end
+        else
+            if global then
+                tex.sprint(tex.ctxcatcodes,r_g_t_template:format(name, name))
+            else
+                tex.sprint(tex.ctxcatcodes,r_l_t_template:format(name, name))
             end
         end
     end

@@ -11,7 +11,7 @@ texmf.instance = instance -- we need to get rid of this / maybe current instance
 scripts         = scripts         or { }
 scripts.context = scripts.context or { }
 
--- l-file
+-- l-file / todo
 
 function file.needsupdate(oldfile,newfile)
     return true
@@ -228,12 +228,12 @@ do
 
         ctxdata.variables['job'] = ctxdata.jobname
 
-        ctxdata.flags        = xml.all_texts(ctxdata.xmldata,"/ctx:job/ctx:flags/ctx:flag",true)
-        ctxdata.environments = xml.all_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:environment",true)
-        ctxdata.modules      = xml.all_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:module",true)
-        ctxdata.filters      = xml.all_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:filter",true)
-        ctxdata.modes        = xml.all_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:mode",true)
-        ctxdata.messages     = xml.all_texts(ctxdata.xmldata,"ctx:message",true)
+        ctxdata.flags        = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:flags/ctx:flag",true)
+        ctxdata.environments = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:environment",true)
+        ctxdata.modules      = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:module",true)
+        ctxdata.filters      = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:filter",true)
+        ctxdata.modes        = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:mode",true)
+        ctxdata.messages     = xml.collect_texts(ctxdata.xmldata,"ctx:message",true)
 
         ctxdata.flags = ctxrunner.reflag(ctxdata.flags)
 
@@ -405,10 +405,10 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata)
     local f = io.open(jobname..".top","w")
     if f then
         local finalrun, kindofrun, currentrun = false, 0, 0
---~         local function someflag(flag)
---~             return (ctxdata and ctxdata.flags[flag]) or environment.argument(flag)
---~         end
-        local someflag = environment.argument
+        local function someflag(flag)
+            return (ctxdata and ctxdata.flags[flag]) or environment.argument(flag)
+        end
+--~         local someflag = environment.argument
         local function setvalue(flag,format,hash,default)
             local a = someflag(flag) or default
             if a and a ~= "" then
@@ -422,8 +422,8 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata)
             end
         end
         local function setvalues(flag,format)
-            if type(flag) == "table" then
-                for _, v in pairs(flag) do
+            if type(flag) == "table"  then
+                for k, v in pairs(flag) do
                     f:write(format:format(v),"\n")
                 end
             else
@@ -496,15 +496,32 @@ function scripts.context.multipass.copytuifile(jobname)
         g:write("% traditional utility file, only commands written by mtxrun/context\n%\n")
         for line in f:lines() do
             if line:find("^c ") then
-                g:write((line:gsub("^c ","")),"\n")
+                g:write((line:gsub("^c ","")),"%\n")
             end
         end
+        g:write("\\endinput\n")
         f:close()
         g:close()
     end
 end
 
+scripts.context.xmlsuffixes = table.tohash {
+    "xml",
+}
+
 function scripts.context.run(ctxdata)
+    local function makestub(format,filename)
+        local stubname = file.replacesuffix(file.basename(filename),'run')
+        local f = io.open(stubname,'w')
+        if f then
+            f:write("\\starttext\n")
+            f:write(string.format(format,filename),"\n")
+            f:write("\\stoptext\n")
+            f:close()
+            filename = stubname
+        end
+        return filename
+    end
     if ctxdata then
         -- todo: interface
         for k,v in pairs(ctxdata.flags) do
@@ -526,16 +543,10 @@ function scripts.context.run(ctxdata)
                     filename = "./" .. filename
                 end
                 -- also other stubs
-                if environment.argument("forcexml") then
-                    local stubname = file.replacesuffix(file.basename(filename),'run')
-                    local f = io.open(stubname,'w')
-                    if f then
-                        f:write("\\starttext\n")
-                        f:write(string.format("\\processXMLfilegrouped{%s}\n",filename))
-                        f:write("\\stoptext\n")
-                        f:close()
-                        filename = stubname
-                    end
+                if environment.argument("forcexml") or scripts.context.xmlsuffixes[file.extname(filename) or "?"] then -- mkii
+                    filename = makestub("\\processXMLfilegrouped{%s}",filename)
+                elseif environment.argument("processxml") then -- mkiv
+                    filename = makestub("\\xmlprocess{%s}",filename)
                 end
                 --
                 local command = "luatex --fmt=" .. string.quote(formatfile) .. " --lua=" .. string.quote(scriptfile) .. " " .. string.quote(filename)
@@ -575,6 +586,13 @@ function scripts.context.make()
     end
 end
 
+function scripts.context.generate()
+    -- hack, should also be a shared function
+    local command = "luatools --generate " .. name
+    input.report("running command: " .. command)
+    os.execute(command)
+end
+
 function scripts.context.ctx()
     local ctxdata = ctxrunner.new()
     ctxdata.jobname = environment.files[1]
@@ -582,15 +600,17 @@ function scripts.context.ctx()
     scripts.context.run(ctxdata)
 end
 
+input.verbose = false
+
 banner = banner .. " | context tools "
 
 messages.help = [[
---run                 process (one or more) files
---make                generate formats
+--run                 process (one or more) files (default action)
+--make                create context formats formats
+--generate            generate file database etc.
 --ctx=name            use ctx file
 ]]
 
-input.verbose = true
 input.starttiming(scripts.context)
 
 if environment.argument("run") then
@@ -599,6 +619,10 @@ elseif environment.argument("make") then
     scripts.context.make()
 elseif environment.argument("ctx") then
     scripts.context.ctx()
+elseif environment.argument("help") then
+    input.help(banner,messages.help)
+elseif environment.filename then
+    scripts.context.run()
 else
     input.help(banner,messages.help)
 end

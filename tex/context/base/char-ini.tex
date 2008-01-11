@@ -17,4 +17,13 @@
 \registerctxluafile{char-cmp}{1.001} % maybe we will load this someplace else
 \registerctxluafile{char-tok}{1.001} % maybe we will load this someplace else
 
+% \def\defchar
+%   {\afterassignment\dodefchar\scratchcounter}
+
+% \def\dodefchar
+%   {\catcode\scratchcounter\active\relax
+%    \ctxlua{tex.sprint("\\unexpanded\\def"..utf.char(\the\scratchcounter))}}
+
+\def\utfchar#1{\ctxlua{tex.uprint(\number#1)}}
+
 \endinput

@@ -81,6 +81,8 @@
 \def\mlshowusedsetups  {\bgroup\enableXML\ctxlua{document.setups.showused()}\egroup}
 \def\mkshowallsetups   {\bgroup\enableXML\ctxlua{document.setups.showall ()}\egroup}
 
+\def\mkshowsetup     #1{\bgroup\enableXML\ctxlua{document.setups.show("#1")}\egroup}
+
 \defineXMLenvironmentsave [cd:define] [name=]
   {}
 

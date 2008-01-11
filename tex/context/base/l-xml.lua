@@ -519,7 +519,7 @@ do
                         else
                             if ats then
                             --  handle(format("<%s:%s %s/>",ens,etg,table.concat(ats," ")))
-                                handle("<" .. ens .. ":" .. etg .. table.concat(ats," ") .. "/>")
+                                handle("<" .. ens .. ":" .. etg .. " " .. table.concat(ats," ") .. "/>")
                             else
                             --  handle(format("<%s:%s/>",ens,etg))
                                 handle("<" .. ens .. ":" .. "/>")
@@ -543,7 +543,7 @@ do
                         else
                             if ats then
                             --  handle(format("<%s %s/>",etg,table.concat(ats," ")))
-                                handle("<" .. etg .. table.concat(ats," ") .. "/>")
+                                handle("<" .. etg .. " " .. table.concat(ats," ") .. "/>")
                             else
                             --  handle(format("<%s/>",etg))
                                 handle("<" .. etg .. "/>")
@@ -1874,7 +1874,7 @@ do if unicode and unicode.utf8 then
 
     function xml.utfize_text(str)
         if str:find("&#") then
-            return str:gsub("&#x(.-);",toutf)
+            return (str:gsub("&#x(.-);",toutf))
         else
             return str
         end
@@ -1882,7 +1882,7 @@ do if unicode and unicode.utf8 then
 
     function xml.resolve_text_entities(str)
         if str:find("&") then
-            return str:gsub("&(.-);",resolve)
+            return (str:gsub("&(.-);",resolve))
         else
             return str
         end
@@ -1890,7 +1890,7 @@ do if unicode and unicode.utf8 then
 
     function xml.show_text_entities(str)
         if str:find("&") then
-            return str:gsub("&(.-);","[%1]")
+            return (str:gsub("&(.-);","[%1]"))
         else
             return str
         end

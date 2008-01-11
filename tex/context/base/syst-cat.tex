@@ -118,7 +118,7 @@
 \ifx\ctxcatcodes \undefined \newcatcodetable \ctxcatcodes  \fi
 \ifx\vrbcatcodes \undefined \newcatcodetable \vrbcatcodes  \fi
 \ifx\prtcatcodes \undefined \newcatcodetable \prtcatcodes  \fi
-\ifx\mthcatcodes \undefined \newcatcodetable \mthcatcodes  \fi % math
+\ifx\mthcatcodes \undefined \newcatcodetable \mthcatcodes  \fi % math, not used, too tricky
 \ifx\xmlcatcodesn\undefined \newcatcodetable \xmlcatcodesn \fi % normal
 \ifx\xmlcatcodese\undefined \newcatcodetable \xmlcatcodese \fi % entitle
 \ifx\xmlcatcodesr\undefined \newcatcodetable \xmlcatcodesr \fi % reduce
@@ -176,6 +176,26 @@
     \catcode`\%   = 14
     \catcode`\~   = 13
     \catcode`\|   = 13
+\stopcatcodetable
+
+\startcatcodetable \mthcatcodes
+    \catcode`\^^I = 10
+    \catcode`\^^M =  5
+   %\catcode`\^^J = 10 % new
+    \catcode`\^^L =  5
+    \catcode`\    = 10
+    \catcode`\^^Z =  9
+    \catcode`\\   =  0
+    \catcode`\{   =  1
+    \catcode`\}   =  2
+    \catcode`\$   =  3
+    \catcode`\&   =  4
+    \catcode`\#   =  6
+    \catcode`\^   =  7
+    \catcode`\_   =  8
+    \catcode`\%   = 14
+   %\catcode`\~   = 13
+   %\catcode`\|   = 13
 \stopcatcodetable
 
 \startcatcodetable \prtcatcodes

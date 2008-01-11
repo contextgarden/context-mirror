@@ -161,7 +161,7 @@ function fonts.tfm.get_virtual_id(tfmdata)
 end
 
 function fonts.tfm.check_virtual_id(tfmdata, id)
-    if tfmdata.type == "virtual" then
+    if tfmdata and tfmdata.type == "virtual" then
         if not tfmdata.fonts or #tfmdata.fonts == 0 then
             tfmdata.type, tfmdata.fonts = "real", nil
         else
@@ -180,8 +180,6 @@ in the process; numbers are of course copies. Here 65536 equals 1pt. (Due to
 excessive memory usage in CJK fonts, we no longer pass the boundingbox.)</p>
 --ldx]]--
 
-local xxx = 0
-
 function fonts.tfm.do_scale(tfmtable, scaledpoints)
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
@@ -198,6 +196,7 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
     for k,v in pairs(tfmtable.characters) do
         local description = v.description or v -- shared data
         local chr = {
+            description = description,
             unicode = description.unicode,
             name    = description.name,
             index   = description.index or k,
@@ -588,15 +587,25 @@ do
         local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
         while current do
             if current.id == glyph and current.font == font then
-                if characters[current.char].class == "mark" then
-                    done = true
-                    set_attribute(current,state,5) -- mark
-                elseif n == 0 then
-                    first, last, n = current, current, 1
-                    set_attribute(current,state,1) -- init
-                else
-                    last, n = current, n+1
-                    set_attribute(current,state,2) -- medi
+                local c = characters[current.char]
+                if c then
+                    if c.description.class == "mark" then
+                        done = true
+                        set_attribute(current,state,5) -- mark
+                    elseif n == 0 then
+                        first, last, n = current, current, 1
+                        set_attribute(current,state,1) -- init
+                    else
+                        last, n = current, n+1
+                        set_attribute(current,state,2) -- medi
+                    end
+                else -- finish
+                    if first and first == last then
+                        set_attribute(last,state,4) -- isol
+                    elseif last then
+                        set_attribute(last,state,3) -- fina
+                    end
+                    first, last, n = nil, nil, 0
                 end
             else -- finish
                 if first and first == last then
@@ -635,7 +644,8 @@ do
         local current, last, done, n = head, nil, false, 0
         while current do
             if current.id == glyph and current.font == font then
-                if characters[current.char].class == "mark" then
+                local c = characters[current.char]
+                if c and c.description.class == "mark" then
                     -- check if head
                     if last and not last.components then
                         last.components = current
@@ -678,7 +688,7 @@ do
     function fonts.removemarks(head,font)
         local current, done, characters = head, false, tfmdata.characters
         while current do
-            if current.id == glyph and current.font == font and characters[current.char].class == "mark" then
+            if current.id == glyph and current.font == font and characters[current.char].description.class == "mark" then
                 local next, prev = current.next, current.prev
                 if next then
                     next.prev = prev

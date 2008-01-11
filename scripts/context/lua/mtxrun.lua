@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['mtxrun'] = {
     license   = "see context related readme files"
 }
 
-
 -- one can make a stub:
 --
 -- #!/bin/sh
@@ -1072,7 +1071,7 @@ else
 end
 
 function io.loaddata(filename)
-    local f = io.open(filename)
+    local f = io.open(filename,'rb')
     if f then
         local data = f:read('*all')
         f:close()
@@ -1987,6 +1986,12 @@ do
         return ""
     end
 
+    local cleanup = false
+
+    function xml.set_text_cleanup(fnc)
+        cleanup = fnc
+    end
+
     local function add_attribute(namespace,tag,value)
         if tag == "xmlns" then
             xmlns[#xmlns+1] = xml.resolvens(value)
@@ -2041,7 +2046,11 @@ do
         end
     end
     local function add_text(text)
-        dt[#dt+1] = text
+        if cleanup and #text > 0 then
+            dt[#dt+1] = cleanup(text)
+        else
+            dt[#dt+1] = text
+        end
     end
     local function add_special(what, spacing, text)
         if #spacing > 0 then
@@ -2344,7 +2353,7 @@ do
                         else
                             if ats then
                             --  handle(format("<%s:%s %s/>",ens,etg,table.concat(ats," ")))
-                                handle("<" .. ens .. ":" .. etg .. table.concat(ats," ") .. "/>")
+                                handle("<" .. ens .. ":" .. etg .. " " .. table.concat(ats," ") .. "/>")
                             else
                             --  handle(format("<%s:%s/>",ens,etg))
                                 handle("<" .. ens .. ":" .. "/>")
@@ -2368,7 +2377,7 @@ do
                         else
                             if ats then
                             --  handle(format("<%s %s/>",etg,table.concat(ats," ")))
-                                handle("<" .. etg .. table.concat(ats," ") .. "/>")
+                                handle("<" .. etg .. " " .. table.concat(ats," ") .. "/>")
                             else
                             --  handle(format("<%s/>",etg))
                                 handle("<" .. etg .. "/>")
@@ -3669,15 +3678,14 @@ do if unicode and unicode.utf8 then
         end
     end
 
-
     local entities = xml.entities
 
     local function resolve(e)
-        local e = entities[e]
-        if e then
-            return e
+        local ee = entities[e]
+        if ee then
+            return ee
         elseif e:find("#x") then
-            return char(tonumber(s:sub(3),16))
+            return char(tonumber(e:sub(3),16))
         else
             local h = entities.handler
             return (h and h(e)) or "&" .. e .. ";"
@@ -3697,6 +3705,33 @@ do if unicode and unicode.utf8 then
             end
         end
     end
+
+    function xml.utfize_text(str)
+        if str:find("&#") then
+            return (str:gsub("&#x(.-);",toutf))
+        else
+            return str
+        end
+    end
+
+    function xml.resolve_text_entities(str)
+        if str:find("&") then
+            return (str:gsub("&(.-);",resolve))
+        else
+            return str
+        end
+    end
+
+    function xml.show_text_entities(str)
+        if str:find("&") then
+            return (str:gsub("&(.-);","[%1]"))
+        else
+            return str
+        end
+    end
+
+--  xml.set_text_cleanup(xml.show_text_entities)
+--  xml.set_text_cleanup(xml.resolve_text_entities)
 
 end end
 
@@ -6046,6 +6081,76 @@ end
 
 --~ print(table.serialize(input.aux.splitpathexpr("/usr/share/texmf-{texlive,tetex}", {})))
 
+-- command line resolver:
+
+--~ print(input.resolve("abc env:tmp file:cont-en.tex path:cont-en.tex full:cont-en.tex rel:zapf/one/p-chars.tex"))
+
+do
+
+    local resolvers = { }
+
+    resolvers.environment = function(instance,str)
+        return input.clean_path(os.getenv(str) or os.getenv(str:upper()) or os.getenv(str:lower()) or "")
+    end
+    resolvers.relative = function(instance,str,n)
+        if io.exists(str) then
+            -- nothing
+        elseif io.exists("./" .. str) then
+            str = "./" .. str
+        else
+            local p = "../"
+            for i=1,n or 2 do
+                if io.exists(p .. str) then
+                    str = p .. str
+                    break
+                else
+                    p = p .. "../"
+                end
+            end
+        end
+        return input.clean_path(str)
+    end
+    resolvers.locate = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path((fullname ~= "" and fullname) or str)
+    end
+    resolvers.filename = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path(file.basename((fullname ~= "" and fullname) or str))
+    end
+    resolvers.pathname = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path(file.dirname((fullname ~= "" and fullname) or str))
+    end
+
+    resolvers.env  = resolvers.environment
+    resolvers.rel  = resolvers.relative
+    resolvers.loc  = resolvers.locate
+    resolvers.kpse = resolvers.locate
+    resolvers.full = resolvers.locate
+    resolvers.file = resolvers.filename
+    resolvers.path = resolvers.pathname
+
+    function resolve(instance,str)
+        if type(str) == "table" then
+            for k, v in pairs(str) do
+                str[k] = resolve(instance,v) or v
+            end
+        elseif str and str ~= "" then
+            str = str:gsub("([a-z]+):([^ ]+)", function(method,target)
+                if resolvers[method] then
+                    return resolvers[method](instance,target)
+                else
+                    return method .. ":" .. target
+                end
+            end)
+        end
+        return str
+    end
+
+    input.resolve = resolve
+
+end
 
 
 if not modules then modules = { } end modules ['luat-tmp'] = {
@@ -7114,7 +7219,7 @@ function input.runners.execute_program(instance,fullname)
             fullname = fullname:gsub("^bin:","")
             local command = fullname .. " " .. environment.reconstruct_commandline(environment.original_arguments)
             input.report("")
-            input.report("executing: " .. command)
+--~             input.report("executing: " .. command)
             input.report("\n \n")
             local code = os.exec(command)
             return code == 0
@@ -7161,38 +7266,16 @@ function input.runners.handle_stubs(instance,create)
     end
 end
 
-function input.resolve_prefixes(instance,str)
-    -- [env|environment|rel|relative|loc|locate|kpse|path|file]:
-    return (str:gsub("(%a+)%:(%S+)", function(k,v)
-        if k == "env" or k == "environment" then
-            v = os.getenv(k) or ""
-        elseif k == "rel" or k == "relative" then
-            for _,p in pairs({".","..","../.."}) do
-                local f = p .. "/" .. v
-                if file.exist(v) then break end
-            end
-        elseif k == "kpse" or k == "loc" or k == "locate" or k == "file" or k == "path" then
-instance.progname = environment.argument("progname") or instance.progname
-instance.format   = environment.argument("format")   or instance.format
-            v = input.find_given_file(instance, v)
-            if k == "path" then v = file.dirname(v) end
-        else
-            v = ""
-        end
-        return v
-    end))
+function input.runners.resolve_string(instance,filename)
+    if filename and filename ~= "" then
+        input.runners.report_location(instance,input.resolve(instance,filename))
+    end
 end
 
-function input.runners.resolve_string(instance)
-    instance.progname = environment.argument("progname") or environment.argument("program") or instance.progname
-    instance.format   = environment.argument("format") or instance.format
-    input.runners.report_location(instance,input.resolve_prefixes(instance,table.join(environment.files, " ")))
-end
-
-function input.runners.locate_file(instance)
-    instance.progname = environment.argument("progname") or instance.progname
-    instance.format   = environment.argument("format")   or instance.format
-    input.runners.report_location(instance,input.find_given_file(instance, environment.files[1] or ""))
+function input.runners.locate_file(instance,filename)
+    if filename and filename ~= "" then
+        input.runners.report_location(instance,input.find_given_file(instance,filename))
+    end
 end
 
 function input.runners.report_location(instance,result)
@@ -7210,7 +7293,7 @@ end
 
 function input.runners.edit_script(instance,filename)
     local editor = os.getenv("MTXRUN_EDITOR") or os.getenv("TEXMFSTART_EDITOR") or os.getenv("EDITOR") or 'scite'
-    local rest = input.resolve_prefixes(instance,filename)
+    local rest = input.resolve(instance,filename)
     if rest ~= "" then
         os.launch(editor .. " " .. rest)
     end
@@ -7303,17 +7386,17 @@ function input.runners.execute_ctx_script(instance,filename)
     -- mtx-<filename>
     if not fullname or fullname == "" then
         fullname = "mtx-" .. filename .. suffix
-        fullname = found(fullname) and input.find_file(instance,fullname)
+        fullname = found(fullname) or input.find_file(instance,fullname)
     end
     -- mtx-<filename>s
     if not fullname or fullname == "" then
         fullname = "mtx-" .. filename .. "s" .. suffix
-        fullname = found(fullname) and input.find_file(instance,fullname)
+        fullname = found(fullname) or input.find_file(instance,fullname)
     end
     -- mtx-<filename minus trailing s>
     if not fullname or fullname == "" then
         fullname = "mtx-" .. filename:gsub("s$","") .. suffix
-        fullname = found(fullname) and input.find_file(instance,fullname)
+        fullname = found(fullname) or input.find_file(instance,fullname)
     end
     -- that should do it
     if fullname and fullname ~= "" then
@@ -7369,6 +7452,11 @@ local filename = environment.files[1] or ""
 local ok      = true
 
 local before, after = environment.split_arguments(filename)
+
+input.runners.my_prepare_b(instance)
+before = input.resolve(instance,before) -- experimental here
+after = input.resolve(instance,after) -- experimental here
+
 environment.initialize_arguments(before)
 
 if environment.argument("selfmerge") then
@@ -7377,32 +7465,25 @@ if environment.argument("selfmerge") then
 elseif environment.argument("selfclean") then
     -- remove embedded libraries
     utils.merger.selfclean(own.name)
-elseif environment.arguments["selfupdate"] then
-    input.runners.my_prepare_b(instance)
+elseif environment.argument("selfupdate") then
     input.verbose = true
     input.update_script(instance,own.name,"mtxrun")
 elseif environment.argument("ctxlua") or environment.argument("internal") then
     -- run a script by loading it (using libs)
-    input.runners.my_prepare_b(instance)
     ok = input.runners.execute_script(instance,filename,true)
 elseif environment.argument("script") then
     -- run a script by loading it (using libs), pass args
-    input.runners.my_prepare_b(instance)
     ok = input.runners.execute_ctx_script(instance,filename)
 elseif environment.argument("execute") then
     -- execute script
-    input.runners.my_prepare_b(instance)
     ok = input.runners.execute_script(instance,filename)
 elseif environment.argument("direct") then
     -- equals bin:
-    input.runners.my_prepare_b(instance)
     ok = input.runners.execute_program(instance,filename)
 elseif environment.argument("edit") then
     -- edit file
-    input.runners.my_prepare_b(instance)
     input.runners.edit_script(instance,filename)
 elseif environment.argument("launch") then
-    input.runners.my_prepare_b(instance)
     input.runners.launch_file(instance,filename)
 elseif environment.argument("make") then
     -- make stubs
@@ -7412,17 +7493,14 @@ elseif environment.argument("remove") then
     input.runners.handle_stubs(instance,false)
 elseif environment.argument("resolve") then
     -- resolve string
-    input.runners.my_prepare_b(instance)
-    input.runners.resolve_string(instance)
+    input.runners.resolve_string(instance,filename)
 elseif environment.argument("locate") then
     -- locate file
-    input.runners.my_prepare_b(instance)
-    input.runners.locate_file(instance)
+    input.runners.locate_file(instance,filename)
 elseif environment.argument("help") or filename=='help' or filename == "" then
     input.help(banner,messages.help)
 else
     -- execute script
-    input.runners.my_prepare_b(instance)
     if filename:find("^bin:") then
         ok = input.runners.execute_program(instance,filename)
     else

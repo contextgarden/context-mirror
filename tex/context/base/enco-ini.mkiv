@@ -13,17 +13,30 @@
 
 %D In the end we will cleanup enco-ini.tex!
 
-\unprotect
-
 % could also be a new kind of table \definecharacter {name} {char} {fallback}
 
 \startruntimectxluacode
     characters.context.rehash()
 \stopruntimectxluacode
 
-\ctxlua {
-    characters.context.define()
-} % redefines all \characters
+\ctxlua{characters.context.define()}
+
+\startextendcatcodetable\ctxcatcodes \ctxlua{characters.context.activate()}\stopextendcatcodetable
+\startextendcatcodetable\xmlcatcodesn\ctxlua{characters.context.activate()}\stopextendcatcodetable
+\startextendcatcodetable\xmlcatcodese\ctxlua{characters.context.activate()}\stopextendcatcodetable
+\startextendcatcodetable\xmlcatcodesr\ctxlua{characters.context.activate()}\stopextendcatcodetable
+
+%                               [[[\utfchar{8194}]]][[[\utfchar{8195}]]] \par
+%                              $[[[\utfchar{8194}]]][[[\utfchar{8195}]]]$\par
+% {\setcatcodetable\ctxcatcodes [[[\utfchar{8194}]]][[[\utfchar{8195}]]]}\par
+% {\setcatcodetable\texcatcodes [[[\utfchar{8194}]]][[[\utfchar{8195}]]]}\par
+% {\setcatcodetable\prtcatcodes [[[\utfchar{8194}]]][[[\utfchar{8195}]]]}\par
+% \startXMLdata
+% <oeps>((( )))</oeps>
+% \stopXMLdata
+% $\alpha\char945 \utfchar{945} abc 123$
+
+\unprotect
 
 \newbox\accenttestbox
 

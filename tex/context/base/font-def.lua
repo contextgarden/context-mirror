@@ -127,9 +127,9 @@ function fonts.tfm.hash_features(specification)
         local normal = specification.features.normal
         if not table.is_empty(normal) then
             for _, v in pairs(table.sortedkeys(normal)) do
-if v ~= "number" then
-                t[#t+1] = v .. '=' .. tostring(normal[v])
-end
+                if v ~= "number" then
+                    t[#t+1] = v .. '=' .. tostring(normal[v])
+                end
             end
         end
         local vtf = specification.features.vtf
@@ -308,8 +308,20 @@ evolved. Each one has its own way of dealing with its format.</p>
 function fonts.tfm.readers.opentype(specification,suffix,what)
     if fonts.define.auto_otf then
         local fullname, tfmtable = nil, nil
-        fullname = input.findbinfile(texmf.instance,specification.name,suffix)
-        if fullname and fullname ~= "" then
+        fullname = input.findbinfile(texmf.instance,specification.name,suffix) or ""
+        if fullname == "" then
+            local fb = fonts.names.old_to_new[specification.name]
+            if fb then
+                fullname = input.findbinfile(texmf.instance,fb,suffix) or ""
+            end
+        end
+        if fullname == "" then
+            local fb = fonts.names.new_to_old[specification.name]
+            if fb then
+                fullname = input.findbinfile(texmf.instance,fb,suffix) or ""
+            end
+        end
+        if fullname ~= "" then
             specification.filename, specification.format = fullname, what -- hm, so we do set the filename, then
             tfmtable = fonts.tfm.read_from_open_type(specification)       -- we need to do it for all matches / todo
         end
@@ -421,19 +433,39 @@ fonts.define.specify.synonyms        = fonts.define.specify.synonyms        or {
 input.storage.register(false,"fonts/setups" , fonts.define.specify.context_setups , "fonts.define.specify.context_setups" )
 input.storage.register(false,"fonts/numbers", fonts.define.specify.context_numbers, "fonts.define.specify.context_numbers")
 
-function fonts.define.specify.preset_context(name,features)
+--~     local t = aux.settings_to_hash(features)
+--~     for k,v in pairs(t) do
+--~         k = synonyms[k] or k
+--~         t[k] = v:is_boolean()
+--~         if type(t[k]) == "nil" then
+--~             t[k] = v
+--~         end
+--~     end
+
+function fonts.define.specify.preset_context(name,parent,features)
+    if features == "" then
+        if parent:find("=") then
+            features = parent
+            parent = ""
+        end
+    end
     local fds = fonts.define.specify
     local setups, numbers, synonyms = fds.context_setups, fds.context_numbers, fds.synonyms
     local number = (setups[name] and setups[name].number) or 0
-    --~     local t = aux.settings_to_hash(features)
-    --~     for k,v in pairs(t) do
-    --~         k = synonyms[k] or k
-    --~         t[k] = v:is_boolean()
-    --~         if type(t[k]) == "nil" then
-    --~             t[k] = v
-    --~         end
-    --~     end
-    local t = fonts.otf.meanings.normalize(aux.settings_to_hash(features)) -- todo: synonyms
+    local t = (features == "" and { }) or fonts.otf.meanings.normalize(aux.settings_to_hash(features))
+    -- todo: synonyms, and not otf bound
+    if parent ~= "" then
+        for p in parent:gmatch("[^, ]+") do
+            local s = setups[p]
+            if s then
+                for k,v in pairs(s) do
+                    if t[k] == nil then
+                        t[k] = v
+                    end
+                end
+            end
+        end
+    end
     if number == 0 then
         numbers[#numbers+1] = name
         t.number = #numbers
@@ -558,7 +590,9 @@ function fonts.define.read(name,size,id)
             fontdata = fonts.tfm.make(specification)
         else
             fontdata = fonts.tfm.read(specification)
-            fonts.tfm.check_virtual_id(fontdata)
+            if fontdata then
+                fonts.tfm.check_virtual_id(fontdata)
+            end
         end
         if true then
         --~             fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes

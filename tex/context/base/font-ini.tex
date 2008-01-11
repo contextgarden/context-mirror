@@ -3527,10 +3527,10 @@
 %D Experimental:
 
 \def\definefontfeature
-  {\dodoubleargument\dodefinefontfeature}
+  {\dotripleargument\dodefinefontfeature}
 
-\def\dodefinefontfeature[#1][#2]%
-  {\mkdefinefontfeature{#1}{#2}}
+\def\dodefinefontfeature[#1][#2][#3]%
+  {\mkdefinefontfeature{#1}{#2}{#3}}
 
 \ifx\mkdefinefontfeature\undefined \let\mkdefinefontfeature\gobbletwoarguments \fi
 

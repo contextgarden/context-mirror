@@ -24,6 +24,50 @@ characters.data     = characters.data     or { }
 characters.synonyms = characters.synonyms or { }
 characters.context  = characters.context  or { }
 
+characters.categories = {
+    lu = "Letter Uppercase",
+    ll = "Letter Lowercase",
+    lt = "Letter Titlecase",
+    lm = "Letter Modifier",
+    lo = "Letter Other",
+    mn = "Mark Nonspacing",
+    mc = "Mark Spacing Combining",
+    me = "Mark Enclosing",
+    nd = "Number Decimal Digit",
+    nl = "Number Letter",
+    no = "Number Other",
+    pc = "Punctuation Connector",
+    pd = "Punctuation Dash",
+    ps = "Punctuation Open",
+    pe = "Punctuation Close",
+    pi = "Punctuation Initial Quote",
+    pf = "Punctuation Final Quote",
+    po = "Punctuation Other",
+    sm = "Symbol Math",
+    sc = "Symbol Currency",
+    sk = "Symbol Modifier",
+    so = "Symbol Other",
+    zs = "Separator Space",
+    zl = "Separator Line",
+    zp = "Separator Paragraph",
+    cc = "Other Control",
+    cf = "Other Format",
+    cs = "Other Surrogate",
+    co = "Other Private Use",
+    cn = "Other Not Assigned",
+}
+
+--~ special   : cf (softhyphen) zs (emspace)
+--~ characters: ll lm lo lt lu mn nl no pc pd pe pf pi po ps sc sk sm so
+
+characters.is_character = table.tohash {
+    "ll","lm","lo","lt","lu","mn","nl","no","pc","pd","pe","pf","pi","po","ps","sc","sk","sm","so"
+}
+
+characters.is_command = table.tohash {
+    "cf","zs"
+}
+
 do
     local _empty_table_ = { __index = function(t,k) return "" end }
 
@@ -38,6 +82,8 @@ table.set_empty_metatable(characters.data)
 <p>At this point we assume that the big data table is loaded. From this
 table we derive a few more.</p>
 --ldx]]--
+
+-- used ?
 
 characters.context.unicodes = characters.context.unicodes or { }
 characters.context.utfcodes = characters.context.utfcodes or { }
@@ -92,19 +138,65 @@ end
 use the table. After all, we have this information available anyway.</p>
 --ldx]]--
 
+function characters.makeactive(n,name)
+    tex.sprint(string.format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utf.char(n),name))
+end
+
+function tex.uprint(n)
+    tex.sprint(tex.ctxcatcodes,utf.char(n))
+end
+
+--~ function characters.context.define()
+--~     local unicodes, utfcodes = characters.context.unicodes, characters.context.utfcodes
+--~     local flush, tc, char = tex.sprint, tex.ctxcatcodes, utf.char
+--~     local is_character, is_command = characters.is_character, characters.is_command
+--~     for u, chr in pairs(characters.data) do
+--~         local contextname = chr.contextname
+--~         if contextname then
+--~             local category = chr.category
+--~             if is_character[category] then
+--~              -- by this time, we're still in normal catcode mode
+--~                  if chr.unicodeslot < 128 then
+--~                     flush(tc, "\\chardef\\" .. contextname .. "=" .. u) -- unicodes[contextname])
+--~                  else
+--~                     flush(tc, "\\let\\" .. contextname .. "=" .. char(u)) -- utfcodes[contextname])
+--~                  end
+--~             elseif is_command[category] then
+--~                  flush("\\catcode"..u.."=13\\unexpanded\\def "..char(u).."{\\"..contextname.."}")
+--~             --  characters.makeactive(u,contextname)
+--~             end
+--~         end
+--~     end
+--~ end
+
+characters.activated = { }
+
 function characters.context.define()
     local unicodes, utfcodes = characters.context.unicodes, characters.context.utfcodes
     local flush, tc, char = tex.sprint, tex.ctxcatcodes, utf.char
+    local is_character, is_command = characters.is_character, characters.is_command
     for u, chr in pairs(characters.data) do
         local contextname = chr.contextname
         if contextname then
-         -- by this time, we're still in normal catcode mode
-             if chr.unicodeslot < 128 then
-                flush(tc, "\\chardef\\" .. contextname .. "=" .. u) -- unicodes[contextname])
-             else
-                flush(tc, "\\let\\" .. contextname .. "=" .. char(u)) -- utfcodes[contextname])
-             end
+            local category = chr.category
+            if is_character[category] then
+             -- by this time, we're still in normal catcode mode
+                 if chr.unicodeslot < 128 then
+                    flush(tc, "\\chardef\\" .. contextname .. "=" .. u) -- unicodes[contextname])
+                 else
+                    flush(tc, "\\let\\" .. contextname .. "=" .. char(u)) -- utfcodes[contextname])
+                 end
+            elseif is_command[category] then
+                 flush("{\\catcode"..u.."=13\\unexpanded\\gdef "..char(u).."{\\"..contextname.."}}")
+                 characters.activated[u] = true
+            end
         end
+    end
+end
+
+function characters.context.activate()
+    for u,_ in pairs(characters.activated) do
+        tex.sprint(tex.ctxcatcodes,"\\catcode "..u.."=13 ")
     end
 end
 

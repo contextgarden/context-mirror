@@ -8,7 +8,7 @@ if not aux      then aux      = { } end
 
 do
 
-    hash = { }
+    local hash = { }
 
     local function set(key,value)
         hash[key] = value
@@ -29,9 +29,13 @@ do
     -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
 
     function aux.settings_to_hash(str)
-        hash = { }
-        lpeg.match(pattern,str)
-        return hash
+        if str and str ~= "" then
+            hash = { }
+            lpeg.match(pattern,str)
+            return hash
+        else
+            return { }
+        end
     end
 
     local seperator = comma * space^0

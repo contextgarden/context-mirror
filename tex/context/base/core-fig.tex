@@ -1218,21 +1218,21 @@
        \setfalse\figurefileisqualified
      \else
        \splitfigurefilename
-% will become splitoffkind 3 ! ! ! !
-\setfalse\figurefileisqualified
-\doifinstring{$$/}{$$\wantedfigurepath}{\settrue\figurefileisqualified}%
-\doifinstring  {:}  {\wantedfigurepath}{\settrue\figurefileisqualified}%
-\ifconditional\figurefileisqualified
-       \let\figurepathlist\wantedfigurepath
-       \let\wantedfigurepath\empty
-       \settrue\figurefileisqualified
-\else
-    \let\figurepathlist\@@exdirectory
-    \let\oldfigurepathlist\figurepathlist
-    \let\figurepathlist\wantedfigurepath
-    \def\docommand##1{\edef\figurepathlist{\figurepathlist,##1/\wantedfigurepath}}%
-    \processcommacommand[\oldfigurepathlist]\docommand
-\fi
+       % will become splitoffkind 3 ! ! ! !
+       \setfalse\figurefileisqualified
+       \doifinstring{$$/}{$$\wantedfigurepath}{\settrue\figurefileisqualified}%
+       \doifinstring  {:}  {\wantedfigurepath}{\settrue\figurefileisqualified}%
+       \ifconditional\figurefileisqualified
+         \let\figurepathlist\wantedfigurepath
+         \let\wantedfigurepath\empty
+         \settrue\figurefileisqualified
+       \else
+         \let\figurepathlist\@@exdirectory
+         \let\oldfigurepathlist\figurepathlist
+         \let\figurepathlist\wantedfigurepath
+         \def\docommand##1{\edef\figurepathlist{\figurepathlist,##1/\wantedfigurepath}}%
+         \processcommacommand[\oldfigurepathlist]\docommand
+       \fi
      \fi
    \else % fully qualified
      \splitfigurefilename
@@ -1253,13 +1253,6 @@
    \doshowfigurestate{type check : \ifx\wantedfiguretypelist\empty forced type \wantedfiguretypespec\else\wantedfiguretypelist\fi}%
    \doshowfigurestate{file specs : \wantedfigurefull\space [\wantedfigurepath] [\wantedfigurename] [\wantedfiguretype]}%
    \doshowfigurestate{file type  : \ifconditional\figurefileisqualified qualified\else simple\fi}}
-
-% \def\setwantedfigurefullname#1#2#3% path name spec
-%    {\edef\wantedfiguretypespec{#3}%
-%     \doifelse{#1}\defaultfigurepathsignal % default is actually empty i.e. system lookup
-%       {\edef\wantedfigurefullname   {#2.\wantedfiguretypespec}}
-%       {\edef\wantedfigurefullname{#1/#2.\wantedfiguretypespec}}%
-%     }
 
 \def\setwantedfigurefullname#1#2#3% path name spec
    {\ifx\wantedfiguremethod\empty

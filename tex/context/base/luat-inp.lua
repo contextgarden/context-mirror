@@ -2027,3 +2027,73 @@ end
 
 --~ print(table.serialize(input.aux.splitpathexpr("/usr/share/texmf-{texlive,tetex}", {})))
 
+-- command line resolver:
+
+--~ print(input.resolve("abc env:tmp file:cont-en.tex path:cont-en.tex full:cont-en.tex rel:zapf/one/p-chars.tex"))
+
+do
+
+    local resolvers = { }
+
+    resolvers.environment = function(instance,str)
+        return input.clean_path(os.getenv(str) or os.getenv(str:upper()) or os.getenv(str:lower()) or "")
+    end
+    resolvers.relative = function(instance,str,n)
+        if io.exists(str) then
+            -- nothing
+        elseif io.exists("./" .. str) then
+            str = "./" .. str
+        else
+            local p = "../"
+            for i=1,n or 2 do
+                if io.exists(p .. str) then
+                    str = p .. str
+                    break
+                else
+                    p = p .. "../"
+                end
+            end
+        end
+        return input.clean_path(str)
+    end
+    resolvers.locate = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path((fullname ~= "" and fullname) or str)
+    end
+    resolvers.filename = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path(file.basename((fullname ~= "" and fullname) or str))
+    end
+    resolvers.pathname = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path(file.dirname((fullname ~= "" and fullname) or str))
+    end
+
+    resolvers.env  = resolvers.environment
+    resolvers.rel  = resolvers.relative
+    resolvers.loc  = resolvers.locate
+    resolvers.kpse = resolvers.locate
+    resolvers.full = resolvers.locate
+    resolvers.file = resolvers.filename
+    resolvers.path = resolvers.pathname
+
+    function resolve(instance,str)
+        if type(str) == "table" then
+            for k, v in pairs(str) do
+                str[k] = resolve(instance,v) or v
+            end
+        elseif str and str ~= "" then
+            str = str:gsub("([a-z]+):([^ ]+)", function(method,target)
+                if resolvers[method] then
+                    return resolvers[method](instance,target)
+                else
+                    return method .. ":" .. target
+                end
+            end)
+        end
+        return str
+    end
+
+    input.resolve = resolve
+
+end

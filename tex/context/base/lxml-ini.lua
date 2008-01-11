@@ -481,7 +481,14 @@ do
 
     function lxml.show_text_entities()
         for k,v in ipairs(table.sortedkeys(traced)) do
-            texio.write_nl(string.format("entity: %s (n=%s)",v,traced[v]))
+            local h = v:match("^#x(.-)$")
+            if h then
+                local d = tonumber(h,16)
+                local u = unicode.utf8.char(d)
+                texio.write_nl(string.format("entity: %s / %s / %s / n=%s",h,d,u,traced[v]))
+            else
+                texio.write_nl(string.format("entity: %s / n=%s",v,traced[v]))
+            end
         end
     end
 

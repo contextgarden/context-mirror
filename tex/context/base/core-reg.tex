@@ -610,7 +610,7 @@
       \doregistercharacter[#1]{#2}}}
 
 % \def\HowUgly    #1{\doHowUgly#1\relax}
-% \def\doHowUgly#1#2\relax{\iffirstregisterentry{\bf#1}#2\fi#1#2} # handles utf too
+% \def\doHowUgly#1#2\relax{\iffirstregisterentry{\bf#1}\else#1\fi#2} % unchecked
 %
 % \setupregister[index][indicator=no,deeptextcommand=\HowUgly]
 %

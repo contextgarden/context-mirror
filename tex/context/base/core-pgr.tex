@@ -1251,7 +1251,7 @@
          \fi
          \flushnextbox}%
         \egroup}}
-
+
 %D The next hack make sure that margin texts near faulty
 %D strutted lines are handled ok.
 
@@ -1275,10 +1275,11 @@
        \advance\scratchdimen -\MPy{\s!margin:\number\currentmarginpos}%
        \advance\scratchdimen -\strutdp
        % new
-       \setbox#1\hbox
-         {\hskip-\MPx{\s!margin:\number\currentmarginpos}%
-          \hskip\MPx{head:\realfolio}%
-          \box#1}%
+% bugged
+%        \setbox#1\hbox
+%          {\hskip-\MPx{\s!margin:\number\currentmarginpos}%
+%           \hskip\MPx{head:\realfolio}%
+%           \box#1}%
        % so far
        \setbox#1\hbox
          {\setposition{\s!margin:\number\currentmarginpos}%

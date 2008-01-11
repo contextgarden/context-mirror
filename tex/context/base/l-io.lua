@@ -13,7 +13,7 @@ else
 end
 
 function io.loaddata(filename)
-    local f = io.open(filename)
+    local f = io.open(filename,'rb')
     if f then
         local data = f:read('*all')
         f:close()

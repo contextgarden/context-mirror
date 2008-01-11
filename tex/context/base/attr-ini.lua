@@ -7,12 +7,13 @@ if not modules then modules = { } end modules ['attr-ini'] = {
 }
 
 -- nb: attributes: color etc is much slower than normal (marks + literals) but ...
+-- nb. too many "0 g"s
 
 --
 -- nodes
 --
 
-nodes      = nodes      or { }
+nodes = nodes or { }
 
 --
 -- attributes

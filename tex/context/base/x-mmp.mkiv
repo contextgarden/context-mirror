@@ -180,6 +180,10 @@
 \defineXMLentity[_]          {{\_}}
 \defineXMLentity[^]          {{\^}}
 
+\startsetups mml:msemantics % todo: width=ex/ex/pt
+    \xmlflush{#1}
+\stopsetups
+
 \startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
     \edef\MMPidentifier{\xmlstripped{#1}{*}}
     \doifXMLentityelse{\detokenize\expandafter{\MMPidentifier}} {

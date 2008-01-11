@@ -627,6 +627,14 @@ function table.count(t)
     return n
 end
 
+function table.swapped(t)
+    local s = { }
+    for k, v in pairs(t) do
+        s[v] = k
+    end
+    return s
+end
+
 --~ function table.are_equal(a,b)
 --~     return table.serialize(a) == table.serialize(b)
 --~ end
