@@ -34,6 +34,9 @@ fonts.triggers = {
     'script'
 }
 
+fonts.manipulators = {
+}
+
 fonts.define                  = fonts.define                  or { }
 fonts.define.specify          = fonts.define.specify          or { }
 fonts.define.specify.synonyms = fonts.define.specify.synonyms or { }

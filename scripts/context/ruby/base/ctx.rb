@@ -110,7 +110,12 @@ class CtxRunner
             end
         end
 
-        @xmldata = IO.read(@ctxname)
+        if FileTest.file?(@ctxname) then
+            @xmldata = IO.read(@ctxname)
+        else
+            report('no ctx file found')
+            return false
+        end
 
         unless @xmldata =~ /^.*<\?xml.*?\?>/moi then
             report("ctx file #{@ctxname} is no xml file, skipping")

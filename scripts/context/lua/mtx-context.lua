@@ -74,7 +74,7 @@ do
         local attributes = e.at
         if str and attributes then
             if attributes['method'] then
-                str = ctsrunner.filtered(str,attributes['method'])
+                str = ctxrunner.filtered(str,attributes['method'])
             end
             if str == "" and attributes['default'] then
                 str = attributes['default']
@@ -199,7 +199,7 @@ do
         local found    = io.exists(usedname)
 
         if not found then
-            for _, path in (ctsrunner.locations) do
+            for _, path in pairs(ctxdata.locations) do
                 local fullname = file.join(path,ctxdata.ctxname)
                 if io.exists(fullname) then
                     usedname, found = fullname, true
@@ -429,7 +429,7 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata)
             else
                 local a = someflag(flag)
                 if a and a ~= "" then
-                    for _, v in a:gmatch("%s*([^,]+)") do
+                    for v in a:gmatch("%s*([^,]+)") do
                         f:write(format:format(v),"\n")
                     end
                 end
@@ -539,7 +539,7 @@ function scripts.context.run(ctxdata)
             for _, filename in ipairs(files) do
                 local basename, pathname = file.basename(filename), file.dirname(filename)
                 local jobname = file.removesuffix(basename)
-                if pathname ~= "" and pathname ~= "." then
+                if pathname == "" then
                     filename = "./" .. filename
                 end
                 -- also other stubs

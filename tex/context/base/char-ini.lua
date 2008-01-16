@@ -68,6 +68,15 @@ characters.is_command = table.tohash {
     "cf","zs"
 }
 
+-- linebreak:
+--
+-- normative   : BK CR LF CM SG GL CB SP ZW NL WJ JL JV JT H2 H3
+-- informative : XX OP CL QU NS EX SY IS PR PO NU AL ID IN HY BB BA SA AI B2
+
+-- east asian width:
+--
+-- N A H W F Na
+
 do
     local _empty_table_ = { __index = function(t,k) return "" end }
 

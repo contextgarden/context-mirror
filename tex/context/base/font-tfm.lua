@@ -750,3 +750,13 @@ function fonts.tfm.replacements(tfm,value)
     tfm.characters[0x0027] = tfm.characters[0x2019]
     tfm.characters[0x0060] = tfm.characters[0x2018]
 end
+
+-- auto complete font with missing composed characters
+
+table.insert(fonts.manipulators,"compose")
+
+function fonts.initializers.common.compose(tfmdata,value)
+    if value then
+        fonts.vf.aux.compose_characters(tfmdata)
+    end
+end

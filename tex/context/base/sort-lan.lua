@@ -152,6 +152,100 @@ do
 
 end
 
+-- The german vectors are provided by Wolfgang Schuster.
+
+-- DIN 5007-1
+
+do
+    sorters.entries     ['DIN 5007-1'] = sorters.entries ['en']
+    sorters.mappings    ['DIN 5007-1'] = sorters.mappings['en']
+end
+
+-- DIN 5007-2
+
+do
+    sorters.replacements['DIN 5007-2'] = {
+    	{ "ä", 'ae' },
+    	{ "ö", 'oe' },
+    	{ "ü", 'ue' },
+    	{ "Ä", 'Ae' },
+    	{ "Ö", 'Oe' },
+    	{ "Ü", 'Ue' }
+    }
+    sorters.entries     ['DIN 5007-2'] = sorters.entries ['en']
+    sorters.mappings    ['DIN 5007-2'] = sorters.mappings['en']
+end
+
+-- Duden
+
+do
+    sorters.replacements['Duden'] = { { "ß", 's' } }
+    sorters.entries     ['Duden'] = sorters.entries ['en']
+    sorters.mappings    ['Duden'] = sorters.mappings['en']
+end
+
+-- new german
+
+do
+    sorters.entries     ['de'] = sorters.entries ['en']
+    sorters.mappings    ['de'] = sorters.mappings['en']
+end
+
+-- old german
+
+do
+    sorters.entries     ['deo'] = sorters.entries ['de']
+    sorters.mappings    ['deo'] = sorters.mappings['de']
+end
+
+-- german - Germany
+
+do
+    sorters.entries     ['de-DE'] = sorters.entries ['de']
+    sorters.mappings    ['de-DE'] = sorters.mappings['de']
+end
+
+-- german - Swiss
+
+do
+    sorters.entries     ['de-CH'] = sorters.entries ['de']
+    sorters.mappings    ['de-CH'] = sorters.mappings['de']
+end
+
+-- german - Austria
+
+do
+    sorters.entries['de-AT'] = {
+        [ 1] = "a", [ 3] =   1, [ 5] = "b", [ 7] = "c", [ 9] = "d",
+        [11] = "e", [13] = "f", [15] = "g", [17] = "h", [19] = "i",
+        [21] = "j", [23] = "k", [25] = "l", [27] = "m", [29] = "n",
+        [31] = "o", [33] =  31, [35] = "p", [37] = "q", [39] = "r",
+        [41] = "s", [43] = "t", [45] = "u", [47] =  45, [49] = "v",
+        [51] = "w", [53] = "y", [55] = "y", [57] = "z",
+        [ 2] =   1, [ 4] =   3, [ 6] =   5, [ 8] =   7, [10] =   9,
+        [12] =  11, [14] =  13, [16] =  15, [18] =  17, [20] =  19,
+        [22] =  21, [24] =  23, [26] =  25, [28] =  27, [30] =  29,
+        [32] =  31, [34] =  33, [36] =  35, [38] =  37, [40] =  39,
+        [42] =  41, [44] =  43, [46] =  45, [48] =  47, [50] =  49,
+        [52] =  51, [54] =  53, [56] =  55, [58] =  57,
+    }
+    sorters.mappings['de-AT'] = {
+        ["a"] =  1, ["ä"] =  3, ["b"] =  5, ["c"] =  7, ["d"] =  9,
+        ["e"] = 11, ["f"] = 13, ["g"] = 15, ["h"] = 17, ["i"] = 19,
+        ["j"] = 21, ["k"] = 23, ["l"] = 25, ["m"] = 27, ["n"] = 29,
+        ["o"] = 31, ["ö"] = 33, ["p"] = 35, ["q"] = 37, ["r"] = 39,
+        ["s"] = 41, ["t"] = 43, ["u"] = 45, ["ü"] = 47, ["v"] = 49,
+        ["w"] = 51, ["x"] = 53, ["y"] = 55, ["z"] = 57,
+        ["A"] =  2, ["Ä"] =  4, ["B"] =  6, ["C"] =  8, ["D"] = 10,
+        ["E"] = 12, ["F"] = 14, ["G"] = 16, ["H"] = 18, ["I"] = 20,
+        ["J"] = 22, ["K"] = 24, ["L"] = 26, ["M"] = 28, ["N"] = 30,
+        ["O"] = 32, ["Ö"] = 34, ["P"] = 36, ["Q"] = 38, ["R"] = 40,
+        ["S"] = 42, ["T"] = 44, ["U"] = 46, ["Ü"] = 48, ["V"] = 50,
+        ["W"] = 52, ["X"] = 54, ["Y"] = 56, ["Z"] = 58,
+    }
+end
+
+
 --~ sorters.test = ''
 --~ sorters.test = 'nl'
 --~ sorters.test = 'cz'

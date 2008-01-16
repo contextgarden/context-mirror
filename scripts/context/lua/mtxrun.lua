@@ -7366,7 +7366,7 @@ function input.runners.launch_file(instance,filename)
     end
 end
 
-function input.runners.execute_ctx_script(instance,filename)
+function input.runners.execute_ctx_script(instance,filename,arguments)
     local function found(name)
         local path = file.dirname(name)
         if path and path ~= "" then
@@ -7376,7 +7376,6 @@ function input.runners.execute_ctx_script(instance,filename)
             return io.exists(fullname) and fullname
         end
     end
-    local before, after = environment.split_arguments(filename)
     local suffix = ""
     if not filename:find("%.lua$") then suffix = ".lua" end
     local fullname = filename
@@ -7406,25 +7405,26 @@ function input.runners.execute_ctx_script(instance,filename)
         elseif state == 'skip' then
             return true
         elseif state == "run" then
-            arg = { } for _,v in pairs(after) do arg[#arg+1] = v end
+            -- load and save ... kind of undocumented
+            arg = { } for _,v in pairs(arguments) do arg[#arg+1] = v end
             environment.initialize_arguments(arg)
-local loadname = environment.arguments['load']
-if loadname then
-    if type(loadname) ~= "string" then loadname = file.basename(fullname) end
-    loadname = file.replacesuffix(loadname,"cfg")
-    input.runners.load_script_session(loadname)
-end
+            local loadname = environment.arguments['load']
+            if loadname then
+                if type(loadname) ~= "string" then loadname = file.basename(fullname) end
+                loadname = file.replacesuffix(loadname,"cfg")
+                input.runners.load_script_session(loadname)
+            end
             filename = environment.files[1]
             if input.verbose then
                 input.report("using script: " .. fullname)
             end
             dofile(fullname)
-local savename = environment.arguments['save']
-if savename and input.runners.save_list and not table.is_empty(input.runners.save_list or { }) then
-    if type(savename) ~= "string" then savename = file.basename(fullname) end
-    savename = file.replacesuffix(savename,"cfg")
-    input.runners.save_script_session(savename, input.runners.save_list)
-end
+            local savename = environment.arguments['save']
+            if savename and input.runners.save_list and not table.is_empty(input.runners.save_list or { }) then
+                if type(savename) ~= "string" then savename = file.basename(fullname) end
+                savename = file.replacesuffix(savename,"cfg")
+                input.runners.save_script_session(savename, input.runners.save_list)
+            end
             return true
         end
     else
@@ -7473,7 +7473,7 @@ elseif environment.argument("ctxlua") or environment.argument("internal") then
     ok = input.runners.execute_script(instance,filename,true)
 elseif environment.argument("script") then
     -- run a script by loading it (using libs), pass args
-    ok = input.runners.execute_ctx_script(instance,filename)
+    ok = input.runners.execute_ctx_script(instance,filename,after)
 elseif environment.argument("execute") then
     -- execute script
     ok = input.runners.execute_script(instance,filename)

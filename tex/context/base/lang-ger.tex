@@ -131,8 +131,53 @@
 
 %D Extra:
 
+% \mainlanguage[en]
+% \mainlanguage[de]
+% \mainlanguage[deo]
+% \mainlanguage[de-DE]
+% \mainlanguage[de-AT]
+% \mainlanguage[de-CH]
+%
+% \starttext
+%     Die Herren Meier\index{Meier}, Müller\index{Müller}, Huber\index{Huber}
+%     und Schmidt\index{Schmidt} arbeiten in der gleichen Firma.
+%
+%     \index{Mass}\index{Mas}\index{Maß}\index{Maße}\index{Masse}
+%     \index{Muller}\index{Mûller}
+%     \index{Hutte}\index{Hütte}\index{Huttf}
+%     \index{paar}\index{Paar}
+%     \index{a}\index{aa}\index{ä}\index{az}\index{aza}
+%     \index{o}\index{oo}\index{ö}\index{oz}\index{oza}
+%     \index{u}\index{uu}\index{ü}\index{uz}\index{uza}\index{üa}
+%     \index{call}\index{chip}
+%
+%     \subject{Index} \placeindex
+% \stoptext
+
 \installlanguage % old german
   [deo]
+  [\c!spacing=\v!packed,
+   \c!default=\s!de,
+   \c!state=\v!stop]
+
+\installlanguage
+  [de-DE]
+  [\c!spacing=\v!packed,
+   \c!default=\s!de,
+   \c!state=\v!stop]
+
+\installlanguage
+  [de-AT]
+  [\c!spacing=\v!packed,
+   \c!default=\s!de,
+   \c!leftquote=\leftguillemot,
+   \c!rightquote=\rightguillemot,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!state=\v!stop]
+
+\installlanguage
+  [de-CH]
   [\c!spacing=\v!packed,
    \c!default=\s!de,
    \c!state=\v!stop]

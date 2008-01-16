@@ -129,8 +129,8 @@ function ldx.enhance(data) -- i need to use lpeg and then we can properly autoin
     for _,v in pairs(data) do
         if v.code then
             local dqs, sqs, com, cmt, cod = { }, { }, { }, { }, e(v.code)
-cod = cod:gsub('\\"', "##d##")
-cod = cod:gsub("\\'", "##s##")
+            cod = cod:gsub('\\"', "##d##")
+            cod = cod:gsub("\\'", "##s##")
             cod = cod:gsub("%-%-%[%[.-%]%]%-%-", function(s)
                 cmt[#cmt+1] = s
                 return "[[[[".. #cmt .."]]]]"
@@ -167,8 +167,8 @@ cod = cod:gsub("\\'", "##s##")
             cod = cod:gsub("%[%[(%d+)%]%]", function(s)
                 return "<ldx:com>" .. com[tonumber(s)] .. "</ldx:com>"
             end)
-cod = cod:gsub("##d##", "\\\"")
-cod = cod:gsub("##s##", "\\\'")
+            cod = cod:gsub("##d##", "\\\"")
+            cod = cod:gsub("##s##", "\\\'")
             if ldx.make_index then
                 local lines = cod:split("\n")
                 local f = "(<ldx:key class='1'>function</ldx:key>)%s+([%w%.]+)%s*%("
@@ -279,7 +279,7 @@ it possible to change the indentation afterwards.
 function ldx.as_xml(data)
     local t, cmode = { }, false
     t[#t+1] = "<?xml version='1.0' standalone='yes'?>\n"
-    t[#t+1] = "\n<ldx:document>\n"
+    t[#t+1] = "\n<ldx:document xmlns:ldx='http://www.pragma-ade.com/schemas/ldx.rng'>\n"
     for _,v in pairs(data) do
         if v.code and not v.code:is_empty() then
             t[#t+1] = "\n<ldx:code>\n"

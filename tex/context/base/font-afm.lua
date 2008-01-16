@@ -712,6 +712,11 @@ fonts.initializers.node.afm.equaldigits = fonts.initializers.common.equaldigits
 fonts.initializers.base.afm.lineheight  = fonts.initializers.common.lineheight
 fonts.initializers.node.afm.lineheight  = fonts.initializers.common.lineheight
 
+-- vf features
+
+fonts.initializers.base.afm.compose = fonts.initializers.common.compose
+fonts.initializers.node.afm.compose = fonts.initializers.common.compose
+
 -- afm specific, encodings ...kind of obsolete
 
 fonts.afm.features.register('encoding')

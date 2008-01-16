@@ -1384,6 +1384,11 @@
 %     {\vtop{\color[blue] {\font\test=name:OfficinaSerifBookITC*default-none \test \input ward \input zapf \input linden }}}
 % \stopoverlay
 %
+% \definefontfeature[superdefault][default][compose=yes]
+%
+% {\font\oeps=name:lmroman10regular*default      at 30pt \oeps test \char7683}
+% {\font\oeps=name:lmroman10regular*superdefault at 30pt \oeps test \char7683}
+%
 % \stoptext
 
 \beginLUATEX
@@ -1574,7 +1579,10 @@
    \fi} % #1 == \cs
 
 \def\definefontlocal#1%
-  {\expandafter\font\csname#1\endcsname\lastfontname\relax}
+  {\expandafter\edef\csname#1\endcsname  % ! ! ! ! not needed in luatex ! ! ! !
+     {\noexpand\csname#1:\endcsname
+      \noexpand\reactivatefont{\somefontname}{\fontfile}}%
+   \expandafter\font\csname#1:\endcsname\lastfontname\relax}
 
 \def\definefontglobal#1% stores \somefontname=Mono and \fontfile=cmtt10
   {\expandafter\xdef\csname#1\endcsname  % ! ! ! ! not needed in luatex ! ! ! !
@@ -3236,7 +3244,9 @@
 
 \prependtoks
   \ifsynchronizefonts
-    \synchronizemath \synchronizetext \synchronizefont
+    \synchronizemath
+    \synchronizetext
+    \synchronizefont % problem: syncs last font
   \fi
 \to \everybodyfont
 

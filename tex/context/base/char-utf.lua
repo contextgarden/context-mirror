@@ -42,7 +42,6 @@ input.filters.utf_translator      = characters.filters.utf.collapse
 
 function characters.filters.utf.initialize()
     if characters.filters.utf.collapsing and not characters.filters.utf.initialized then
-        characters.graphemes = { }
         local cg = characters.graphemes
         local uc = utf.char
         for k,v in pairs(characters.data) do
@@ -59,6 +58,39 @@ function characters.filters.utf.initialize()
             end
         end
         characters.filters.utf.initialized = true
+    end
+end
+
+-- characters.filters.utf.add_grapheme(utf.char(318),'l','\string~')
+-- characters.filters.utf.add_grapheme('c','a','b')
+
+--~ function characters.filters.utf.add_grapheme(result,...)
+--~     local cg = characters.graphemes
+--~     local t = {...}
+--~     local n = table.getn(t)
+--~     for i=1,n do
+--~         local v = t[i]
+--~         if not cg[v] then
+--~             cg[v] = { }
+--~         end
+--~         if i == n then
+--~            cg[v] = result
+--~         else
+--~             cg = cg[v]
+--~         end
+--~     end
+--~ end
+
+function characters.filters.utf.add_grapheme(result,first,second)
+    local cg, uc = characters.graphemes, utf.char
+    local r, f, s = tonumber(result), tonumber(first), tonumber(second)
+    if r then result = uc(r) end
+    if f then first  = uc(f) end
+    if s then second = uc(s) end
+    if not cg[first] then
+        cg[first] = { [second] = result }
+    else
+        cg[first][second] = result
     end
 end
 
@@ -230,7 +262,7 @@ do
                     else
                         if cr[second] then
                             for s in su(str) do
-                                if n == 0 then
+                                if n == 1 then
                                     break
                                 else
                                     tokens[#tokens+1], n = s, n - 1
@@ -244,7 +276,7 @@ do
                             local cgf = cg[first]
                             if cgf and cgf[second] then
                                 for s in su(str) do
-                                    if n == 0 then
+                                    if n == 1 then
                                         break
                                     else
                                         tokens[#tokens+1], n = s, n -1

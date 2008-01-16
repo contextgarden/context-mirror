@@ -69,10 +69,6 @@
 %     \ctxlua{ctx.show_statistics()}%
 % \to \everygoodbye
 
-\appendtoks
-    \writestatus{remark}{temporary fallback to base mode for tlig and trep}% end of font-otf.lua
-\to \everybye
-
 \def\resettimer    {\ctxlua{environment.starttime = os.clock()}}
 \def\elapsedtime   {\ctxlua{tex.sprint(os.clock()-environment.starttime)}}
 \let\elapsedseconds \elapsedtime

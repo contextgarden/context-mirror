@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['font-vf'] = {
 }
 
 --[[ldx--
-<p>This is very experimental code! Not yet adapted to recent changes.</p>
+<p>This is very experimental code! Not yet adapted to recent changes. This will
+change.</p>
 --ldx]]--
 
 -- define.methods elsewhere !

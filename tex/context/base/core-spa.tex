@@ -4160,21 +4160,26 @@
 \unexpanded\def\textormathspace#1#2#3%
   {\ifmmode\mskip#1#2\else\kern#1\hspaceamount\empty{#3}\fi\relax}
 
+\newmuskip\hairmuskip \hairmuskip=.15mu
+
+\def\hairspace    {\textormathspace+\hairmuskip{.5}}
 \def\thinspace    {\textormathspace+\thinmuskip 1}
 \def\medspace     {\textormathspace+\medmuskip  2}
 \def\thickspace   {\textormathspace+\thickmuskip3}
+\def\neghairspace {\textormathspace-\thinmuskip{.5}}
 \def\negthinspace {\textormathspace-\thinmuskip 1}
 \def\negmedspace  {\textormathspace-\medmuskip  2}
 \def\negthickspace{\textormathspace-\thickmuskip3}
+
+\definehspace[.5][.1250\emspaceamount] % could also be [.1250\spaceamount]
+\definehspace[1] [.1667\emspaceamount]
+\definehspace[2] [.2222\emspaceamount]
+\definehspace[3] [.2777\emspaceamount]
 
 \let \, \thinspace
 \let \: \medspace
 \let \; \thickspace
 \let \! \negthinspace
-
-\definehspace[1][.1667em]
-\definehspace[2][.2222em]
-\definehspace[3][.2777em]
 
 % this will become an alternative bunch of \blank settings
 %

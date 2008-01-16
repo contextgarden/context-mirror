@@ -1626,6 +1626,7 @@ function fonts.otf.set_features(tfmdata) -- node and base, simple mapping
                 initialize(fonts.triggers)
                 initialize(gsublist)
                 initialize(gposlist)
+                initialize(fonts.manipulators)
             end
         end
         local fm = fonts.methods[mode]
@@ -1649,6 +1650,7 @@ function fonts.otf.set_features(tfmdata) -- node and base, simple mapping
                 register(fonts.triggers)
                 register(gsublist)
                 register(gposlist)
+                register(fonts.manipulators)
             end
         end
     end
@@ -4114,6 +4116,9 @@ fonts.initializers.node.otf.lineheight  = fonts.initializers.common.lineheight
 fonts.initializers.base.otf.complement  = fonts.initializers.common.complement
 fonts.initializers.node.otf.complement  = fonts.initializers.common.complement
 
+fonts.initializers.base.otf.compose     = fonts.initializers.common.compose
+fonts.initializers.node.otf.compose     = fonts.initializers.common.compose
+
 -- temp hack, may change
 
 function fonts.initializers.base.otf.kern(tfmdata,value)
@@ -4175,6 +4180,9 @@ do
     local set_attribute   = node.set_attribute
     local has_attribute   = node.has_attribute
     local state           = attributes.numbers['state'] or 100
+
+    local fcs             = fonts.color.set
+    local fcr             = fonts.color.reset
 
     -- in the future we will use language/script attributes instead of the
     -- font related value, but then we also need dynamic features which is
@@ -4265,9 +4273,6 @@ do
             arab_warned[char] = true
         end
     end
-
-    local fcs = fonts.color.set
-    local fcr = fonts.color.reset
 
     function fonts.analyzers.methods.nocolor(head,font,attr)
         for n in node.traverse(head,glyph) do
@@ -4385,52 +4390,111 @@ do
 
     -- this info eventually will go into char-def
 
-    -- list by Zhichu Chen
+    -- in the future we will use language/script attributes instead of the
+    -- font related value, but then we also need dynamic features which is
+    -- somewhat slower; and .. we need a chain of them
 
-    local end_punctuation = table.tohash {
-        0x3002, -- 。
-        0xFF0E, -- ．
-        0xFF0C, -- ，
-        0x3001, -- 、
-        0xFF1B, -- ；
-        0xFF1F, -- ？
-        0xFF01, -- ！
-    }
+    local type = type
 
-    local begin_punctuation = table.tohash {
-        0xFF1A, -- ：
-        0x2236, -- ∶
-        0xFF0C, -- ，
-    }
-
-    local left_punctuation = table.tohash {
+    local opening_parenthesis_hw = table.tohash { -- half width
+        0x0028,
+        0x005B,
+        0x007B,
         0x2018, -- ‘
         0x201C, -- “
-            0x3008, -- 〈   Left book quote
-            0x300A, -- 《   Left double book quote
-            0x300C, -- 「   left quote
-            0x300E, -- 『   left double quote
-            0x3010, -- 【   left double book quote
-            0x3014, -- 〔   left book quote
-            0x3016, --〖   left double book quote
-    0xFF08, -- （   left parenthesis
-    0xFF3B, -- ［   left square brackets
-    0xFF5B, -- ｛   left curve bracket
     }
 
-    local right_punctuation = table.tohash {
+    local opening_parenthesis_fw = table.tohash { -- full width
+        0x3008, -- 〈   Left book quote
+        0x300A, -- 《   Left double book quote
+        0x300C, -- 「   left quote
+        0x300E, -- 『   left double quote
+        0x3010, -- 【   left double book quote
+        0x3014, -- 〔   left book quote
+        0x3016, --〖   left double book quote
+        0x3018, --     left tortoise bracket
+        0x301A, --     left square bracket
+        0x301D, --     reverse double prime qm
+        0xFF08, -- （   left parenthesis
+        0xFF3B, -- ［   left square brackets
+        0xFF5B, -- ｛   left curve bracket
+        0xFF62, --     left corner bracket
+    }
+
+    local closing_parenthesis_hw = table.tohash { -- half width
+        0x0029,
+        0x005D,
+        0x007D,
         0x2019, -- ’   right quote, right
         0x201D, -- ”   right double quote
-        0x300D, -- 」   right quote, right
-        0x300F, -- 』   right double quote
+    }
+
+    local closing_parenthesis_fw = table.tohash { -- full width
         0x3009, -- 〉   book quote
         0x300B, -- 》   double book quote
+        0x300D, -- 」   right quote, right
+        0x300F, -- 』   right double quote
+        0x3011, -- 】   right double book quote
         0x3015, -- 〕   right book quote
         0x3017, -- 〗  right double book quote
-        0x3011, -- 】   right double book quote
+        0x3019, --     right tortoise bracket
+        0x301B, --     right square bracket
+        0x301E, --     double prime qm
+        0x301F, --     low double prime qm
         0xFF09, -- ）   right parenthesis
         0xFF3D, -- ］   right square brackets
         0xFF5D, -- ｝   right curve brackets
+        0xFF63, --     right corner bracket
+    }
+
+    local opening_vertical = table.tohash {
+        0xFE35, 0xFE37, 0xFE39,  0xFE3B,  0xFE3D,  0xFE3F,  0xFE41,  0xFE43,  0xFE47,
+    }
+
+    local closing_vertical = table.tohash {
+        0xFE36, 0xFE38, 0xFE3A,  0xFE3C,  0xFE3E,  0xFE40,  0xFE42,  0xFE44,  0xFE48,
+    }
+
+    local opening_punctuation_hw = table.tohash { -- half width
+    }
+
+    local opening_punctuation_fw = table.tohash {
+    --  0x2236, -- ∶
+    --  0xFF0C, -- ，
+    }
+
+    local closing_punctuation_hw = table.tohash { -- half width
+        0x0021, -- !
+        0x002C, -- ,
+        0x002E, -- .
+        0x003A, -- :
+        0x003B, -- ;
+        0x003F, -- ?
+        0xFF61, -- hw full stop
+    }
+
+    local closing_punctuation_fw = table.tohash { -- full width
+        0x3001, -- 、
+        0x3002, -- 。
+        0xFF01, -- ！
+        0xFF0C, -- ，
+        0xFF0E, -- ．
+        0xFF1A, -- ：
+        0xFF1B, -- ；
+        0xFF1F, -- ？
+    }
+
+    local non_starter = table.tohash { -- japanese
+        0x3005, 0x3041, 0x3043, 0x3045, 0x3047,
+        0x3049, 0x3063, 0x3083, 0x3085, 0x3087,
+        0x308E, 0x3095, 0x3096, 0x309B, 0x309C,
+        0x309D, 0x309E, 0x30A0, 0x30A1, 0x30A3,
+        0x30A5, 0x30A7, 0x30A9, 0x30C3, 0x30E3,
+        0x30E5, 0x30E7, 0x30EE, 0x30F5, 0x30F6,
+        0x30FC, 0x30FD, 0x30FE, 0x31F0, 0x31F1,
+        0x30F2, 0x30F3, 0x30F4, 0x31F5, 0x31F6,
+        0x30F7, 0x30F8, 0x30F9, 0x31FA, 0x31FB,
+        0x30FC, 0x30FD, 0x30FE, 0x31FF,
     }
 
     -- the characters below are always appear in a double form, so there
@@ -4442,8 +4506,6 @@ do
         0x2014, -- —   hyphen
     }
 
-    -- an alternative is to deal with it in the line breaker
-
     local function is_han_character(char)
         return
             (char>=0x04E00 and char<=0x09FFF) or
@@ -4453,107 +4515,100 @@ do
             (char>=0x2F800 and char<=0x2FA1F)
     end
 
-    -- end_punctuation begin_punctuation right_punctuation
-    -- left_punctuation
-    -- hyphenation
+    --~ opening_parenthesis_hw / closing_parenthesis_hw
+    --~ opening_parenthesis_fw / closing_parenthesis_fw
+    --~ opening_punctuation_hw / closing_punctuation_hw
+    --~ opening_punctuation_fw / closing_punctuation_fw
 
-    -- will move to node-ini :
+    --~ non_starter
+    --~ hyphenation
 
-    local allowbreak = nodes.penalty( -100)  nodes.register(allowbreak)
-    local nobreak    = nodes.penalty(10000)  nodes.register(nobreak)
+    --~ opening_vertical / closing_vertical
 
     fonts.analyzers.methods.stretch_hang = true
 
-    -- for the moment we insert potential breakpoinst here, but eventually
-    -- it wil become either a mkiv feature or an attribute, so this is
-    -- experimental
+    fonts.analyzers.methods.hang_data = {
+        inter_char_stretch_factor      = 2.00, -- we started with 0.5, then 1.0
+        inter_char_half_factor         = 0.50, -- normally there is no reason to change this
+        inter_char_half_schrink_factor = 0.25, -- normally there is no reason to change this
+    }
 
---~ local function nodes.replace(head,current,newnode)
---~     local oldnode = current
---~     newnode.prev, newnode.next = oldnode.prev, oldnode.next
---~     if oldnode.prev then
---~         old.prev.next = newnode
---~     end
---~     if oldnode.next then
---~         old.next.prev = newnode
---~     end
---~     if head == current then
---~         head = newnode
---~     end
---~     node.free(oldnode)
---~     return head, newnode
---~ end
---~ if char == 0x3000 then
---~     head, current = node.replace(head,current,nodes.glue(fontdata[font].parameter[6],0,0))
---~ end
+    local hang_data = fonts.analyzers.methods.hang_data
 
-    function fonts.analyzers.methods.hang(head,font,attr) -- maybe make a special version with no trace
+    local insert_after, insert_before, delete = node.insert_after, node.insert_before, nodes.delete
+
+    function fonts.analyzers.methods.hang(head,font,attr)
+        -- maybe make a special version with no trace
         local characters = fontdata[font].characters
-        local current, last, done, stretch, prevchinese = head, nil, false, 0, false
-        local trace = fonts.color.trace
+        local current, done, stretch, prevclass = head, false, 0, 0
         if fonts.analyzers.methods.stretch_hang then
             stretch = fontdata[font].parameters[6]
         end
+        -- penalty before break
+        local interspecialskip   = - stretch * hang_data.inter_char_half_factor
+        local interspecialshrink =   stretch * hang_data.inter_char_half_schrink_factor
+        local internormalstretch =   stretch * hang_data.inter_char_stretch_factor
         while current do
             if current.id == glyph and current.subtype<256 then
                 if current.font == font then
-                    if prevchinese then
-                        local temp = current.prev
-                        while temp and temp.id == glue and temp.spec and temp.spec.width > 0 do
-                            head, temp = nodes.delete(head,temp)
-                            if temp then temp = temp.prev end
-                        end
-                    end
-                    last = current -- faster that current.next
                     local char = current.char
-                    -- penalty before break
-                    if left_punctuation[char] then -- (
-                        set_attribute(current,state,1)
-                        if trace then fcs(current,"font:init") end
-                        head, current = node.insert_after(head,current,node.copy(nobreak))
-                        done = true
-                    elseif right_punctuation[char] then -- )
-                        set_attribute(current,state,2)
-                        if trace then fcs(current,"font:fina") end
-                        if prevchinese then
-                            head, current = node.insert_before(head,current.prev,node.copy(nobreak))
+                    if false then
+                        -- don't ask -)
+                    elseif opening_punctuation_fw[char] or opening_parenthesis_fw[char] then
+                        fcs(current,"font:init")
+                        head, _ = insert_before(head,current,nodes.glue(interspecialskip,0,interspecialshrink))
+                        head, current = insert_after(head,current,nodes.penalty(0))
+                        head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
+                        prevclass, done = 1, true
+                    elseif closing_punctuation_fw[char] or closing_parenthesis_fw[char] then
+                        fcs(current,"font:fina")
+                        if prevclass > 0  then
+                            local prev = current.prev
+                            prev.prev.penalty = 10000
+                            head, current = insert_after(head,current,nodes.penalty(10000))
+                            head, current = insert_after(head,current,nodes.glue(interspecialskip,0,interspecialshrink))
+                            head, current = insert_after(head,current,nodes.penalty(0))
+                            head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                         end
-                        current, done = last, true
-                    elseif begin_punctuation[char] then -- :
-                        set_attribute(current,state,1)
-                        if trace then fcs(current,"font:init") end
-                        if prevchinese then
-                            head, current = node.insert_before(head,current.prev,node.copy(nobreak))
+                        prevclass, done = 2, true
+                    elseif opening_punctuation_hw[char] or opening_parenthesis_hw[char] then
+                        fcs(current,"font:init")
+                        head, current = insert_after(head,current,nodes.penalty(0))
+                        head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
+                        prevclass, done = 3, true
+                    elseif closing_punctuation_hw[char] or closing_parenthesis_hw[char] then
+                        fcs(current,"font:fina")
+                        if prevclass > 0  then
+                            local prev = current.prev
+                            prev.prev.penalty = 10000
+                            head, current = insert_after(head,current,nodes.penalty(0))
+                            head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                         end
-                        current, done = last, true
-                    elseif end_punctuation[char] then -- .
-                        set_attribute(current,state,2)
-                        if trace then fcs(current,"font:fina") end
-                        if prevchinese then
-                            head, current = node.insert_before(head,current.prev,node.copy(nobreak))
-                        end
-                        current, done = last, true
+                        prevclass, done = 4, true
                     elseif hyphenation[char] then
-                        set_attribute(current,state,3) -- xxxx
-                        local prev, next = current.prev, current.next
-                        if next and next.id == glyph and next.subtype<256 and hyphenation[next.char] then
-                            if trace then fcs(current,"font:medi") fcs(next,"font:medi")end -- we need nice names
-                            if prev then
-                                if prevchinese then
-                                    head, current = node.insert_before(head,current.prev,node.copy(nobreak))
-                                end
-                                current = last
-                                head, current = node.insert_before(head,current,node.copy(nobreak))
-                            end
+                        fcs(current,"font:medi")
+                        if prevclass > 0  then
+                            local prev = current.prev
+                            prev.prev.penalty = 10000
+                            head, current = insert_after(head,current,nodes.penalty(0))
+                            head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                         end
-                        current, done = last.next, true
-                --  elseif is_han_character(char) then
+                        prevclass, done = 5, true
+                    elseif non_starter[char] then
+                        fcs(current,"font:isol")
+                        head, current = insert_after(head,current,nodes.penalty(10000))
+                        head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
+                        prevclass, done = 6, true
+                    elseif is_han_character(char) then
+                        prevclass, done = 7, true
+                        head, current = insert_after(head,current,nodes.penalty(0))
+                        head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                     end
-                    head, current = node.insert_after(head,current,nodes.glue(0,stretch,0))
-                    prevchinese = true
                 else
-                    prevchinese = false
+                    prevclass = 0
                 end
+            elseif prevclass > 0 and current.id == glue and current.spec and current.spec.width > 0 then
+                head, current = delete(head,current)
             end
             if current then
                 current = current.next
@@ -4581,5 +4636,3 @@ do
         fonts.initializers.node.otf[tag] = function(tfm,value)      return prepare(tfm,tag,value) end
     end
 end
-
--- trep and tlig are hacks because currently featurefiles erase existing features

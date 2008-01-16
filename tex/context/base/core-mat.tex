@@ -2758,7 +2758,7 @@
 \def\enablefiller    {\let\normalorfiller\secondoftwoarguments}
 \def\disablefiller   {\let\normalorfiller\firstoftwoarguments}
 
-\def\mathopnolimits#1{\mathop{\rm#1}\nolimits}
+\def\mathopnolimits#1{\mathop{\mr#1}\nolimits} % was \rm, which follows text fonts (used in mml parser)
 
 %D \macros{overset, underset}
 %D

@@ -352,8 +352,8 @@ fonts.names.new_to_old = {
     ["lmtypewriter10-darkoblique"]           = "lmmonolt10-boldoblique",
     ["lmtypewritervarwd10-regular"]          = "lmmonoproplt10-regular",
     ["lmtypewritervarwd10-oblique"]          = "lmmonoproplt10-oblique",
-    ["lmtypewritervarwd10-light"]            = "lmmonoprop10-oblique",
-    ["lmtypewritervarwd10-lightoblique"]     = "lmmonoprop10-regular",
+    ["lmtypewritervarwd10-light"]            = "lmmonoprop10-regular",
+    ["lmtypewritervarwd10-lightoblique"]     = "lmmonoprop10-oblique",
     ["lmtypewritervarwd10-dark"]             = "lmmonoproplt10-bold",
     ["lmtypewritervarwd10-darkoblique"]      = "lmmonoproplt10-boldoblique",
 }

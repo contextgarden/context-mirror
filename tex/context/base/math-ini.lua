@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['math-ini'] = {
 <p>Math definitions. This code may move.</p>
 --ldx]]--
 
+-- if needed we can use the info here to set up xetex definition files
 -- the "8000 hackery influences direct characters (utf) as indirect \char's
 
 mathematics       = mathematics       or { }
@@ -47,7 +48,7 @@ mathematics.classes.relation    = mathematics.classes.rel
 mathematics.classes.fence       = mathematics.classes.unknown
 mathematics.classes.diacritic   = mathematics.classes.accent
 mathematics.classes.large       = mathematics.classes.op
-mathematics.classes.variable    = mathematics.classes.nothing
+mathematics.classes.variable    = mathematics.classes.alphabetic
 mathematics.classes.number      = mathematics.classes.nothing
 
 mathematics.families = {
@@ -85,9 +86,6 @@ end
 function mathematics.radical(small_family,small_slot,large_family,large_slot)
     return ("\\radical%s=\"%02X%04X%\"02X%04X"):format(target,small_family,small_slot,large_family,large_slot)
 end
-function mathematics.mathchardef(name,class,family,slot)
-    return ("\\omathchardef\\%s\"%X%02X%04X"):format(name,class,family,slot)
-end
 function mathematics.mathchar(class,family,slot)
     return ("\\omathchar\"%X%02X%04X"):format(class,family,slot)
 end
@@ -97,8 +95,11 @@ end
 function mathematics.delimiter(class,family,slot)
     return ("\\odelimiter\"%X%02X%04X"):format(class,family,slot)
 end
+function mathematics.mathchardef(name,class,family,slot) -- we can avoid this one
+    return ("\\omathchardef\\%s\"%X%02X%04X"):format(name,class,family,slot)
+end
 
-function mathematics.setmathsymbol(name,class,family,slot,largefamily,largeslot)
+function mathematics.setmathsymbol(name,class,family,slot,largefamily,largeslot,unicode)
     class = mathematics.classes[class] or class -- no real checks needed
     family = mathematics.families[family] or family
     -- \unexpanded ? \relax needed for the codes?
@@ -111,8 +112,9 @@ function mathematics.setmathsymbol(name,class,family,slot,largefamily,largeslot)
         end
     elseif class == mathaccent then
         tex.sprint(("\\xdef\\%s{%s\\relax}"):format(name,mathematics.mathaccent(class,family,slot)))
+    elseif unicode then
+        tex.sprint(("\\xdef\\%s{%s}"):format(name,utf.char(unicode)))
     else
-     -- tex.sprint(("\\xdef\\%s{%s\\relax}"):format(name,mathematics.mathchar(class,family,slot)))
         tex.sprint(mathematics.mathchardef(name,class,family,slot))
     end
 end
@@ -130,7 +132,7 @@ function mathematics.setmathcharacter(target,class,family,slot,largefamily,large
     end
 end
 
--- definitions
+-- definitions (todo: expand commands to utf instead of codes)
 
 mathematics.trace = false
 
@@ -138,9 +140,11 @@ function mathematics.define()
     local slots = mathematics.slots.current
     local function trace(k,c,f,i,fe,ie)
         if fe then
-            logs.report("mathematics",string.format("symbol 0x%05X -> %s -> %s %s (%s %s)",k,c,f,i,fe,ie))
+            logs.report("mathematics",string.format("a - symbol 0x%05X -> %s -> %s %s (%s %s)",k,c,f,i,fe,ie))
+        elseif c then
+            logs.report("mathematics",string.format("b - symbol 0x%05X -> %s -> %s %s",k,c,f,i))
         else
-            logs.report("mathematics",string.format("symbol 0x%05X -> %s -> %s %s",k,c,f,i))
+            logs.report("mathematics",string.format("c - symbol 0x%05X -> %s %s",k,f,i))
         end
     end
     for k,v in pairs(characters.data) do
@@ -171,7 +175,7 @@ function mathematics.define()
                         if mathematics.trace then
                             trace(k,c,f,i,fe,ie)
                         end
-                        mathematics.setmathsymbol(c,m,f,i,fe,ie)
+                        mathematics.setmathsymbol(c,m,f,i,fe,ie,k)
                         mathematics.setmathcharacter(k,m,f,i,fe,ie)
                     end
                 else
@@ -207,7 +211,7 @@ mathematics.slots.traditional = {
     [0x03B2] = { "lcgreek", 0x0C },
     [0x03B3] = { "lcgreek", 0x0D },
     [0x03B4] = { "lcgreek", 0x0E },
-    [0x03B5] = { "lcgreek", 0x00 }, -- varepsilon
+--  [0x03B5] = { "lcgreek", 0x00 }, -- varepsilon
     [0x03B6] = { "lcgreek", 0x10 },
     [0x03B7] = { "lcgreek", 0x11 },
     [0x03B8] = { "lcgreek", 0x12 },
@@ -220,7 +224,7 @@ mathematics.slots.traditional = {
     [0x03BF] = { "lcgreek", 0x6F },
     [0x03C0] = { "lcgreek", 0x19 },
     [0x03C1] = { "lcgreek", 0x1A },
-    [0x03C2] = { "lcgreek", 0x00 }, -- varsigma
+--  [0x03C2] = { "lcgreek", 0x00 }, -- varsigma
     [0x03C3] = { "lcgreek", 0x1B },
     [0x03C4] = { "lcgreek", 0x1C },
     [0x03C5] = { "lcgreek", 0x1D },
@@ -268,7 +272,8 @@ mathematics.slots.traditional = {
     [0x002A] = { "sy", 0x03 }, -- *
     [0x002B] = { "mr", 0x2B }, -- +
     [0x002C] = { "mi", 0x3B }, -- ,
-    [0x002D] = { "mr", 0x00 }, -- -
+    [0x002D] = { "sy", 0x00 }, -- -
+    [0x2212] = { "sy", 0x00 }, -- -
     [0x002E] = { "mi", 0x3A }, -- .
     [0x002F] = { "mi", 0x3D }, -- /
     [0x003A] = { "mr", 0x3A }, -- :
@@ -280,7 +285,7 @@ mathematics.slots.traditional = {
     [0x005C] = { "sy", 0x6E }, -- \
     [0x007B] = { "sy", 0x66 }, -- {
     [0x007C] = { "sy", 0x6A }, -- |
-    [0x007D] = { "sy", 0x66 }, -- {
+    [0x007D] = { "sy", 0x67 }, -- }
     [0x00B1] = { "sy", 0x06 }, -- pm
     [0x00B7] = { "sy", 0x01 }, -- cdot
     [0x00D7] = { "sy", 0x02 }, -- times
