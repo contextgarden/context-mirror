@@ -417,7 +417,6 @@
       <cd:constant type="12pt"/>
       <cd:constant type="klein"/>
       <cd:constant type="gross"/>
-      <cd:constant type="global"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

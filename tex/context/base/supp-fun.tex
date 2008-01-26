@@ -132,8 +132,8 @@
 \fi
 
 \def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
-  {\convertargument            #7\to\asciia
-   \convertcommand \DroppedString\to\asciib
+  {\defconvertedargument\asciia{#7}%
+   \defconvertedcommand \asciib{\DroppedString}%
    \ExpandBothAfter\doifinstringelse\asciia\asciib
      {\noindentation
       \dontleavehmode

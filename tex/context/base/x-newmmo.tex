@@ -200,7 +200,7 @@
     {\checkMMLciSYMBOL}
 
 \def\checkMMLciSYMBOL#1%
-   {\convertargument#1\to\ascii
+   {\defconvertedargument\ascii{#1}%
     \executeifdefined{ci:symbol:crap:\ascii}{#1}}
 
 \setvalue{ci:symbol:crap:alpha}{\alpha}

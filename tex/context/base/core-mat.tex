@@ -523,9 +523,6 @@
 % \placeformula {f} \startspformule \fakespacingformula \stopspformule
 % \fakewords{20}{40}
 
-% \convertcommand\next\to\ascii \getfirstcharacter\ascii
-% \ifx\firstcharacter\letterbackslash % a \cs
-
 \def\placeformula
   {\settrue\incrementformulanumber
    \dodoubleempty\doplaceformula}
@@ -2835,6 +2832,44 @@
 
 \def\boldsymbol
   {\mathortext\mathboldsymbol\bold}
+
+%D Some encoding hackery (for Mojca. who else):
+%D
+%D \starttyping
+%D \startmathcollection[eul:texnansi]
+%D     \definemathsymbol [breve] [accent] [tf] ["15]
+%D \stopmathcollection
+%D \startmathcollection[eul:ec]
+%D     \definemathsymbol [breve] [accent] [tf] ["08]
+%D \stopmathcollection
+%D
+%D $\breve e$
+%D \stoptyping
+
+\let\outerencoding\empty
+
+\def\checkoutermathencoding
+  {\ifx\outerencoding\empty
+     \ifx\outerencoding\s!default\else
+       \edef\outerencoding{\currentencoding}%
+     \fi
+   \fi}
+
+\prependtoks
+   \checkoutermathencoding
+\to \everymathematics
+
+%D More. (A temp hack, else no proper default fall back (like \type
+%D {\textmultiply}); todo: sync encoding.
+
+\def\dealwithmathtextencoding
+  {\expanded{\everyhbox{\the\everyhbox\noexpand\fastenableencoding{\currentencoding}}}%
+   \def\dealwithmathtextencoding{\let\characterencoding\nocharacterencoding}%
+   \dealwithmathtextencoding}
+
+\appendtoks
+  \dealwithmathtextencoding
+\to \everymathematics
 
 %D How negative such a symbol looks is demonstrated in:
 %D $\negative 10^{\negative 10^{\negative 10}}$.

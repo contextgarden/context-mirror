@@ -17,7 +17,7 @@
      {\expanded{\flushXMLelement{stp:\ascii}}}
      {\doifelseXMLelement{stp:\ascii:1}
         {\expanded{\flushXMLelement{stp:\ascii:1}}}
-        {\convertargument#1\to\ascii
+        {\defconvertedargument\ascii{#1}%
          \em unknown setup \quote{\ascii}}}
    \egroup}
 

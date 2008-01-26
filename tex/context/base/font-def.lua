@@ -442,6 +442,8 @@ input.storage.register(false,"fonts/numbers", fonts.define.specify.context_numbe
 --~         end
 --~     end
 
+fonts.triggers = fonts.triggers or { }
+
 function fonts.define.specify.preset_context(name,parent,features)
     if features == "" then
         if parent:find("=") then
@@ -466,13 +468,30 @@ function fonts.define.specify.preset_context(name,parent,features)
             end
         end
     end
+    -- these are auto set so in order to prevent redundant definitions
+    -- we need to preset them (we hash the features and adding a default
+    -- setting during initialization may result in a different hash)
+    local default = fonts.otf.features.default
+    for k,v in pairs(fonts.triggers) do
+        if type(t[v]) == "nil" then
+            local vv = default[v]
+            if vv then t[v] = vv end
+        end
+    end
+    -- sparse 'm so that we get a better hash and less test (experimental
+    -- optimization)
+    local tt = { }
+    for k,v in pairs(t) do
+        if v then tt[k] = v end
+    end
+    -- needed for dynamic features
     if number == 0 then
         numbers[#numbers+1] = name
-        t.number = #numbers
+        tt.number = #numbers
     else
-        t.number = number
+        tt.number = number
     end
-    setups[name] = t
+    setups[name] = tt
 end
 
 --~ function fonts.define.specify.context_number(name)

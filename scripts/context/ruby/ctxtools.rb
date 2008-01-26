@@ -1608,8 +1608,8 @@ class Commands
     # ghyphen.readme ghyph31.readme grphyph
     @@languagedata['hr' ] = [ 'ec'      , ['hrhyph.tex'] ]
     @@languagedata['hu' ] = [ 'ec'      , ['huhyphn.tex'] ]
-    @@languagedata['en' ] = [ 'default' , ['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex'] ]
-    @@languagedata['us' ] = [ 'default' , ['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex'] ]
+    @@languagedata['en' ] = [ 'default' , [['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex']] ]
+    @@languagedata['us' ] = [ 'default' , [['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex']] ]
     # inhyph.tex
     @@languagedata['is' ] = [ 'ec'      , ['ishyph.tex'] ]
     @@languagedata['it' ] = [ 'ec'      , ['ithyph.tex'] ]
@@ -1617,12 +1617,12 @@ class Commands
     # mnhyph
     @@languagedata['nl' ] = [ 'ec'      , ['nehyph96.tex'] ]
     # @@languagedata['no' ] = [ 'ec'      , ['nohyphbx.tex'],['nohyphb.tex'],['nohyph2.tex'],['nohyph1.tex'],['nohyph.tex'] ]
-    @@languagedata['no' ] = [ 'ec'      , ['asxsx.tex','nohyphbx.tex'],['nohyphb.tex'],['nohyph2.tex'],['nohyph1.tex'],['nohyph.tex'] ]
-    @@languagedata['agr'] = [ 'agr'     , [['grahyph4.tex','oldgrhyph.tex']] ] # new, todo
+    @@languagedata['no' ] = [ 'ec'      , [['asxsx.tex','nohyphbx.tex'],['nohyphb.tex'],['nohyph2.tex'],['nohyph1.tex'],['nohyph.tex']] ]
+    @@languagedata['agr'] = [ 'agr'     , [['grahyph4.tex'], ['oldgrhyph.tex']] ] # new, todo
     @@languagedata['pl' ] = [ 'ec'      , ['plhyph.tex'] ]
     @@languagedata['pt' ] = [ 'ec'      , ['pthyph.tex'] ]
     @@languagedata['ro' ] = [ 'ec'      , ['rohyph.tex'] ]
-    @@languagedata['sl' ] = [ 'ec'      , ['slhyph.tex'], ['sihyph.tex'] ]
+    @@languagedata['sl' ] = [ 'ec'      , [['slhyph.tex'], ['sihyph.tex']] ]
     @@languagedata['sk' ] = [ 'ec'      , ['skhyphen.tex','skhyphen.ex'] ]
     # sorhyph.tex / upper sorbian
     # srhyphc.tex / cyrillic

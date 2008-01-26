@@ -163,7 +163,7 @@
 *egroup
 
 \long\def\escapePSstring#1\to#2%
-  {\convertargument#1\to#2%
+  {\defconvertedargument#2{#1}%
    \bgroup
    \ifx#2\empty \else
      \setverbosecscharacters

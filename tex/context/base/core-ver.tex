@@ -761,7 +761,7 @@
 \def\reporttypingerror#1% temp hack
   {\blank
    \dontleavehmode\hbox\bgroup
-     \expanded{\convertargument#1}\to\ascii
+     \expanded{\defconvertedargument\noexpand\ascii{#1}}%
      \tttf[\makemessage\m!verbatims1\ascii]%
      \showmessage\m!verbatims1\ascii
    \egroup
@@ -835,7 +835,7 @@
 
 %D And a bonus macro:
 
-\def\verbatim#1{\convertargument#1\to\ascii\ascii}
+\def\verbatim#1{\defconvertedargument\ascii{#1}\ascii}
 
 %D Plugins
 

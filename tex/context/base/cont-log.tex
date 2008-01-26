@@ -21,7 +21,7 @@
 
 \unprotect
 
-\convertargument cmr\to\someCMRfont
+\defconvertedargument\someCMRfont{cmr} % hm, we now have lm
 
 % \def\doifCMRfontelse#1#2%
 %   {\doifinstringelse{\someCMRfont}{\fontname\font}
@@ -161,10 +161,10 @@
 \unexpanded\def\setMFPfont% more sensitive for low level changes
   {\font\logofont=logo%
      \ifx\fontalternative\c!bf\else
+     \ifx\fontalternative\c!it\else
      \ifx\fontalternative\c!sl\else
-     \ifx\fontalternative\c!sl\else
-     \ifx\fontalternative\c!bs\else
      \ifx\fontalternative\c!bi\else
+     \ifx\fontalternative\c!bs\else
      \fi\fi\fi\fi\fi
      10 at \currentfontscale\bodyfontsize
    \logofont}
@@ -230,22 +230,67 @@
 \def\luaTeX           {lua\TeX}
 \unexpanded\def\XeTeX {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
 
+% Better, since lm has a mirrored E (don't ask me why)
+
+% \unexpanded\def\XeTeX
+%   {X\lower.5ex
+%    \hbox
+%      {\kern-.15em
+%       \ifx\XeTeXcharglyph\undefined
+%         \mirror{E}%
+%       \else\ifcase\XeTeXcharglyph"018E\relax
+%         \mirror{E}%
+%       \else
+%         \char"018E%
+%       \fi}%
+%    \kern-.1667em \TeX}
+
+% Adapted from a patch by Mojca:
+
+\def\@XeTeX@
+  {\setbox\scratchbox\hbox{E}%
+   \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
+
+\beginNEWTEX
+
+\unexpanded\def\XeTeX
+  {X\lower.5ex
+   \hbox
+     {\kern-.15em
+      \iffontchar\font"018E\relax
+        \char"018E%
+      \else
+        \ifx\fontalternative\c!bf\mirror{E}\else
+        \ifx\fontalternative\c!it  \@XeTeX@\else
+        \ifx\fontalternative\c!sl  \@XeTeX@\else
+        \ifx\fontalternative\c!bi  \@XeTeX@\else
+        \ifx\fontalternative\c!bs  \@XeTeX@\else
+                                 \mirror{E}\fi\fi\fi\fi\fi
+      \fi}%
+   \kern-.1667em \TeX}
+
+\endNEWTEX
+
+\beginOLDTEX
+
+\unexpanded\def\XeTeX
+  {X\lower.5ex
+   \hbox
+     {\kern-.15em
+      \ifx\fontalternative\c!bf\mirror{E}\else
+      \ifx\fontalternative\c!it  \@XeTeX@\else
+      \ifx\fontalternative\c!sl  \@XeTeX@\else
+      \ifx\fontalternative\c!bi  \@XeTeX@\else
+      \ifx\fontalternative\c!bs  \@XeTeX@\else
+                               \mirror{E}\fi\fi\fi\fi\fi}%
+   \kern-.1667em \TeX}
+
+\endOLDTEX
+
 \let\ETEX     \eTeX
 \let\PDFTEX   \pdfTeX
 \let\PDFETEX  \pdfeTeX
 \let\LUATEX   \luaTeX
 \let\XETEX    \XeTeX
-
-\beginXETEX depth adjustment of logos
-
-  % The next patch by Adam Lindsay is needed to satisfy XeTeX's
-  % feelings about what depths and heights are supposed to be.
-
-  \let\NormalTeXLogo\TeX
-
-  \unexpanded\def\TeX  {T\smash[d]{\kern-.1667em\lower.5ex\hbox{E}}\kern-.125emX}
-  \unexpanded\def\XeTeX{X\smash[d]{\lower.5ex\hbox{\kern-.15em\mirror{E}}}\kern-.1667em\TeX}
-
-\endXETEX
 
 \protect \endinput

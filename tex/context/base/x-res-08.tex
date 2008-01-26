@@ -55,7 +55,7 @@
 
 \def\XMLfeedbackresource#1#2%
   {\begingroup
-   \convertcommand\currentresourcecomment\to\currentresourcecomment
+   \defconvertedcommand\currentresourcecomment\currentresourcecomment
    \doifnothing\figurefilefile{\edef\figurefilefile{\figurefilename.\figurefiletype}}%
    \immediate\write\XMLrllog
      {\writtenXMLelement{\XMLrlprefix usage}%

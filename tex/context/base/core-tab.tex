@@ -1104,18 +1104,6 @@
    \fi \fi
    \TABLEnoalign{\globalpopmacro\simpleTableHL}}
 
-% \def\complexsecondstagestartTABLE#1[#2]%
-%   {\convertargument|\to\asciia
-%    \convertargument#2\to\asciib
-%    \global\setfalse\someTABLEhead
-%    \global\setfalse\someTABLEtail
-%    \doifinstringelse\asciia\asciib
-%      {\gdef\restartTABLE{\dorestartTABLE{\thirdstagestartTABLE{#2}}}}
-%      {\doifdefinedelse{\c!Table#2}
-%         {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
-%         {\gdef\restartTABLE{\dorestartTABLE{\getvalue{#2}}}}}%
-%    \restartTABLE}
-
 \bgroup \catcode`|=\@@other \catcode`"=\@@other
 
 \gdef\complexsecondstagestartTABLE#1[#2]% brr nested mess
@@ -1444,8 +1432,8 @@
 \def\checkTABLErow#1% pure for message purposes
   {\unskip % added
    \ifTABLEgraydone
-     \convertargument         #1\to\asciia
-     \convertcommand\TABLEendBCL\to\asciib
+     \defconvertedargument\asciia{#1}%
+     \defconvertedcommand \asciib\TABLEendBCL
      \ifx\asciia\asciib \else
        \writestatus\m!TABLE{confusing \asciia\space and \asciib}%
        \gdef\TABLEgraylineerror%
@@ -1650,21 +1638,6 @@
 %D if the bar is active or not.\footnote{Normally it is, but
 %D \TABLE\ changes the catcode when needed.}
 
-% \bgroup
-% \catcode`\|=\@@active
-% \gdef\protectTABLEbar{\let|\letterbar}
-% \catcode`\|=\@@other
-% \gdef\getTABLEnofcolumns#1%
-%   {\bgroup
-%    \cleanupfeatures % needed !
-%    \protectTABLEbar % is still a feature
-%    \expanded{\convertargument#1}\to\ascii
-%    \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
-%    \global\advance\maxTABLEcolumn \minusone
-%    % in case of & counting, divide by 2
-%    \egroup}
-% \egroup
-
 \bgroup
     \catcode`\|=\@@other  \gdef\@@otherbar     {|}
     \catcode`\"=\@@other  \gdef\@@otherquite   {"}
@@ -1679,7 +1652,7 @@
    \cleanupfeatures % needed !
    \@@useotherbar
    \@@useotherquote
-   \expanded{\convertargument#1}\to\ascii
+   \expanded{\defconvertedargument\noexpand\ascii{#1}}%
    \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
    \global\advance\maxTABLEcolumn \minusone
    % in case of & counting, divide by 2

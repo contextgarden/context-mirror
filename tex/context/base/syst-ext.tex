@@ -1205,10 +1205,6 @@
 \def\convertedcommand
   {\expandafter\doconvertargument\meaning}
 
-%\long\def\convertargument#1\to#2%
-%  {\long\def\convertedargument{#1}%
-%   \dodoglobal\edef#2{\convertedcommand\convertedargument}}
-
 \long\def\convertargument#1\to#2%
   {\long\def#2{#1}% saves a restore
    \dodoglobal\edef#2{\convertedcommand#2}}
@@ -1216,20 +1212,29 @@
 \long\def\convertcommand#1\to#2%
   {\dodoglobal\edef#2{\convertedcommand#1}}
 
+% no dodoglobal !
+
 \long\def\defconvertedargument#1#2% less sensitive for \to
   {\long\def#1{#2}% saves a restore
-   \dodoglobal\edef#1{\convertedcommand#1}}
+   \edef#1{\convertedcommand#1}}
 
 \long\def\defconvertedcommand#1#2% less sensitive for \to
-  {\dodoglobal\edef#1{\convertedcommand#2}}
+  {\edef#1{\convertedcommand#2}}
+
+\long\def\gdefconvertedargument#1#2% less sensitive for \to
+  {\long\gdef#1{#2}% saves a restore
+   \xdef#1{\convertedcommand#1}}
+
+\long\def\gdefconvertedcommand#1#2% less sensitive for \to
+  {\xdef#1{\convertedcommand#2}}
 
 \endTEX
 
 \def\convertvalue#1\to
   {\expandafter\convertcommand\csname#1\endcsname\to}
 
-\def\defconvertvalue#1#2% less sensitive for \to
-  {\@EA\defconvertcommand\@EA#1\csname#2\endcsname}
+\def\defconvertedvalue#1#2% less sensitive for \to
+  {\@EA\defconvertedcommand\@EA#1\csname#2\endcsname}
 
 %D \macros
 %D   {doifassignmentelse}
@@ -1287,22 +1292,21 @@
 %D something I found out when primitives like \type
 %D {\jobname} were fed (or something undefined).
 
+% command variant: one level expansion !
+
 \beginETEX \detokenize
 
-\long\def\convertargument#1\to#2%
-  {\dodoglobal\edef#2{\detokenize{#1}}}
+\long\def\convertargument#1\to#2{\dodoglobal\edef#2{\detokenize{#1}}}
+\long\def\convertcommand #1\to#2{\dodoglobal\edef#2{\@EA\detokenize\@EA{#1}}} % hm, only second is also ok
 
-% \long\def\convertcommand#1\to#2%
-%   {\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\@EA\detokenize\@EA{#1}}}
-
-\long\def\convertcommand#1\to#2%
-  {\dodoglobal\edef#2{\@EA\detokenize\@EA{#1}}} % hm, only second is also ok
-
-\long\def\defconvertedargument#1#2% less sensitive for \to
-  {\dodoglobal\edef#1{\detokenize{#2}}}
-
-\long\def\defconvertedcommand#1#2% less sensitive for \to
-  {\dodoglobal\edef#1{\detokenize\@EA{#2}}}
+\long\def\defconvertedargument #1#2{\edef#1{\detokenize    {#2}}}
+\long\def\defconvertedcommand  #1#2{\edef#1{\detokenize\@EA{#2}}}
+\long\def\edefconvertedargument#1#2{\edef#1{#2}%
+                                    \edef#1{\detokenize\@EA{#1}}}
+\long\def\gdefconvertedargument#1#2{\xdef#1{\detokenize    {#2}}}
+\long\def\gdefconvertedcommand #1#2{\xdef#1{\detokenize\@EA{#2}}}
+\long\def\xdefconvertedargument#1#2{\xdef#1{#2}%
+                                    \xdef#1{\detokenize\@EA{#1}}}
 
 \endETEX
 
@@ -1324,35 +1328,6 @@
 %D The \type{-}, the delimiter \type{\\\\} and the the second
 %D argument are completely redundant.
 
-% %D As said, the \TEX\ alternative fails on expanding primitives,
-% %D like in:
-% %D
-% %D \starttyping
-% %D \convertcommand\someprimitive\to\ascii
-% %D \stoptyping
-% %D
-% %D Because these primitives convert to themselves, we can use
-% %D the backslash as a signal to treat them different. At the
-% %D cost of slightly more overhead we can therefore define a
-% %D more robust alternative. The catcode trickery is needed to
-% %D get the backslash into the test as character (and not as
-% %D escape, letter or whatever code else).
-% %
-% % does not work:
-% %
-% % \beginTEX
-% %
-% % \let\dodoconvertargument\doconvertargument
-% %
-% % \bgroup
-% %   \catcode`\*=\@@escape
-% %   \catcode`\\=\@@other
-% %   *gdef*doconvertargument#1%
-% %     {*ifx#1\*else*expandafter*dodoconvertargument*fi#1}
-% % *egroup
-% %
-% % \endTEX
-
 %D \macros
 %D   {showvalue,showargument}
 %D
@@ -1373,7 +1348,7 @@
 \endETEX
 
 \long\def\showargument#1%
-  {\convertargument#1\to\ascii\show\ascii}
+  {\defconvertedargument\ascii{#1}\ascii}
 
 %D \macros
 %D   {doifmeaningelse}
@@ -1513,8 +1488,8 @@
 \beginTEX
 
 \def\ConvertToConstant#1#2#3%
-  {\expandafter\convertargument\expandafter{#2}\to\!!stringa
-   \expandafter\convertargument\expandafter{#3}\to\!!stringb
+  {\expandafter\defconvertedargument\expandafter\!!stringa\expandafter{#2}%
+   \expandafter\defconvertedargument\expandafter\!!stringb\expandafter{#3}%
    #1{\!!stringa}{\!!stringb}}
 
 \endTEX
@@ -3647,15 +3622,24 @@
 
 \beginETEX
 
+% \def\executeifdefined#1% #2 / never change this one again
+%   {\ifcsname#1\endcsname
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi
+%    {\csname#1\endcsname}}
+
 \def\executeifdefined#1% #2 / never change this one again
   {\ifcsname#1\endcsname
-     \expandafter\firstoftwoarguments
+     \csname#1\expandafter\expandafter\expandafter\endcsname\expandafter\gobbleoneargument
    \else
-     \expandafter\secondoftwoarguments
-   \fi
-   {\csname#1\endcsname}}
+     \expandafter\firstofoneargument
+   \fi}
 
 \endETEX
+
+% \letvalue{f }\firstofoneargument \def\executeifdefined#1{\csname\ifcsname#1\endcsname#1\else f \fi\endcsname}
 
 %D This one also has the advantage that it is fully
 %D expandable and that it can be used after an assignment.

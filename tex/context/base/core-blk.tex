@@ -289,7 +289,7 @@
   {\immediate\write\outblocks}
 
 \long\def\processnextblocklineAB#1% #2#3%
-  {\convertargument#1 \to\next
+  {\defconvertedargument\next{#1 }%
    \doifinstringelse\endofblockA\next
       \firstoftwoarguments
      {\doifinstringelse\endofblockB\next
@@ -304,7 +304,7 @@
 \egroup
 
 \long\def\processnextblockline#1% #2#3%
-  {\convertargument#1 \to\next
+  {\defconvertedargument\next{#1 }%
    \ifx\next\emptybufferline
      \expandafter\secondoftwoarguments% #3%
    \else
@@ -324,8 +324,7 @@
 
 \def\skipblock#1%
   {\checkcopyingblocks
-   \@EA\convertargument\string\thiswasblock{#1}\to\endofblock
-   %testen : \expanded{\convertargument\string\thiswasblock{#1}\noexpand\to\noexpand\endofblock}%
+   \defconvertedcommand\endofblock{\string\thiswasblock{#1}}% command expands once !
    \let\openblock\begingroup
    \let\closeblock\endgroup
    \openblock
@@ -344,9 +343,8 @@
 \def\saveblock#1#2%
   {\checkcopyingblocks
    \obeylines
-   \@EA\@EA\@EA\convertargument\@EA\string\csname\e!end#1\endcsname\to\endofblockA
-   %testen:  \expanded{\convertargument\string\csname\e!end#1\endcsname\to\endofblockA}%
-   \@EA\convertargument\string\endblock[#1]\to\endofblockB % MULTI LINGUAL MAKEN
+   \@EA\defconvertedcommand\@EA\endofblockA\@EA{\@EA\string\csname\e!end#1\endcsname}%
+   \defconvertedcommand\endofblockB{\string\endblock[#1]}% % MULTI LINGUAL MAKEN
    \def\openblock
      {\dobeforeblock{#1}{#2}%
       \opentmpblock
@@ -670,8 +668,8 @@
      {\egroup\setblocklevel-}%
    \checkcopyingblocks
    \obeylines
-   \@EA\@EA\@EA\convertargument\@EA\string\csname\e!end#1\endcsname\to\endofblockA
-   \@EA\convertargument\string\endblock[#1]\to\endofblockB % MULTI LINGUAL MAKEN
+   \@EA\defconvertedcommand\@EA\endofblockA\@EA{\@EA\string\csname\e!end#1\endcsname}%
+   \defconvertedcommand\endofblockB{\string\endblock[#1]} % MULTI LINGUAL MAKEN
    \setupcopyblock
    \skipblocklineAB}
 

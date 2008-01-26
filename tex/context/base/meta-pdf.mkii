@@ -672,7 +672,7 @@
   {\ifnum\nofMParguments>\plusthree
      \handleMPtextnormal
    \else
-     \convertcommand\MPtextdata\to\MPtextdata
+     \defconvertedcommand\MPtextdata\MPtextdata
      \expanded{\splitstring\MPtextdata}\at::::\to\MPtexttag\and\MPtextnumber
      \executeifdefined{handleMPtext\MPtexttag}\handleMPtextnormal
    \fi}

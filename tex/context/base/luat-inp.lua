@@ -1055,22 +1055,132 @@ function input.unexpanded_path(instance,str)
     return file.join_path(input.unexpanded_path_list(instance,str))
 end
 
+--~ function input.expanded_path_list(instance,str)
+--~     if not str then
+--~         return { }
+--~     elseif instance.savelists then
+--~         -- engine+progname hash
+--~         str = str:gsub("%$","")
+--~         if not instance.lists[str] then -- cached
+--~             local lst = input.split_path(input.expansion(instance,str))
+--~             instance.lists[str] = input.aux.expanded_path(instance,lst)
+--~         end
+--~         return instance.lists[str]
+--~     else
+--~         local lst = input.split_path(input.expansion(instance,str))
+--~         return input.aux.expanded_path(instance,lst)
+--~     end
+--~ end
+
+do
+    local done = { }
+
+    function input.reset_extra_path(instance)
+        local ep = instance.extra_paths
+        if not ep then
+            ep, done = { }, { }
+            instance.extra_paths = ep
+        elseif #ep > 0 then
+            instance.lists, done = { }, { }
+        end
+    end
+
+    function input.register_extra_path(instance,paths,subpaths)
+        local ep = instance.extra_paths or { }
+        local n = #ep
+        if paths and paths ~= "" then
+            if subpaths and subpaths ~= "" then
+                for p in paths:gmatch("[^,]+") do
+                    -- we gmatch each step again, not that fast, but used seldom
+                    for s in subpaths:gmatch("[^,]+") do
+                        local ps = p .. "/" .. s
+                        if not done[ps] then
+                            ep[#ep+1] = input.clean_path(ps)
+                            done[ps] = true
+                        end
+                    end
+                end
+            else
+                for p in paths:gmatch("[^,]+") do
+                    if not done[p] then
+                        ep[#ep+1] = input.clean_path(p)
+                        done[p] = true
+                    end
+                end
+            end
+        elseif subpaths and subpaths ~= "" then
+            for i=1,n do
+                -- we gmatch each step again, not that fast, but used seldom
+                for s in subpaths:gmatch("[^,]+") do
+                    local ps = ep[i] .. "/" .. s
+                    if not done[ps] then
+                        ep[#ep+1] = input.clean_path(ps)
+                        done[ps] = true
+                    end
+                end
+            end
+        end
+        if #ep > 0 then
+            instance.extra_paths = ep -- register paths
+        end
+        if #ep > n then
+            instance.lists = { } -- erase the cache
+        end
+    end
+
+end
+
 function input.expanded_path_list(instance,str)
+    local function made_list(list)
+        local ep = instance.extra_paths
+        if not ep or #ep == 0 then
+            return list
+        else
+            local done, new = { }, { }
+            -- honour . .. ../.. but only when at the start
+            for k, v in ipairs(list) do
+                if not done[v] then
+                    if v:find("^[%.%/]$") then
+                        done[v] = true
+                        new[#new+1] = v
+                    else
+                        break
+                    end
+                end
+            end
+            -- first the extra paths
+            for k, v in ipairs(ep) do
+                if not done[v] then
+                    done[v] = true
+                    new[#new+1] = v
+                end
+            end
+            -- next the formal paths
+            for k, v in ipairs(list) do
+                if not done[v] then
+                    done[v] = true
+                    new[#new+1] = v
+                end
+            end
+            return new
+        end
+    end
     if not str then
-        return { }
+        return ep or { }
     elseif instance.savelists then
         -- engine+progname hash
         str = str:gsub("%$","")
         if not instance.lists[str] then -- cached
-            local lst = input.split_path(input.expansion(instance,str))
+            local lst = made_list(input.split_path(input.expansion(instance,str)))
             instance.lists[str] = input.aux.expanded_path(instance,lst)
         end
         return instance.lists[str]
     else
         local lst = input.split_path(input.expansion(instance,str))
-        return input.aux.expanded_path(instance,lst)
+        return made_list(input.aux.expanded_path(instance,lst))
     end
 end
+
 function input.expand_path(instance,str)
     return file.join_path(input.expanded_path_list(instance,str))
 end
@@ -1937,7 +2047,11 @@ end
 
 function input.clean_path(str)
 --~     return (((str:gsub("\\","/")):gsub("^!+","")):gsub("//+","//"))
-    return ((str:gsub("\\","/")):gsub("^!+",""))
+    if str then
+        return ((str:gsub("\\","/")):gsub("^!+",""))
+    else
+        return nil
+    end
 end
 
 function input.do_with_path(name,func)

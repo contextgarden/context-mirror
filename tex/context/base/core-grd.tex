@@ -154,33 +154,74 @@
 % m-steps.tex, where we apply a \localhsize to the \vbox, in
 % order to follow narrower and side floats !
 
+% \def\startbaselinecorrection
+%   {\baselinecorrection
+%    \ifvmode
+%      \bgroup
+%      \setbox\scratchbox\vbox\bgroup
+%      \ignorespaces
+%      \let\stopbaselinecorrection\dostopbaselinecorrection
+%    \else
+%      \let\stopbaselinecorrection\relax
+%    \fi}
+
+% \def\dostopbaselinecorrection % I have to check columns yet.
+%   {\endgraf
+%    \egroup
+%    \topbaselinecorrection
+%    \box\scratchbox
+%    \botbaselinecorrection
+%    \egroup}
+
+% \let\stopbaselinecorrection=\relax
+
 \def\startbaselinecorrection
-  {\baselinecorrection
-   \ifvmode
-     \bgroup
-     \setbox\scratchbox\vbox\bgroup
-     \ignorespaces
-     \let\stopbaselinecorrection\dostopbaselinecorrection
-   \else
-     \let\stopbaselinecorrection\relax
+  {\bgroup
+   \let\stopbaselinecorrection\egroup
+   \ifcase\baselinecorrectionmode
+   \or % normal
+     \baselinecorrection
+     \ifvmode
+       \setbox\scratchbox\vbox\bgroup\ignorespaces
+       \let\stopbaselinecorrection\donormalstopbaselinecorrection
+     \fi
+   \or % off
+   \or % force
+     \baselinecorrection
+     \ifvmode
+       \setbox\scratchbox\vbox\bgroup\ignorespaces
+       \let\stopbaselinecorrection\doforcedstopbaselinecorrection
+     \fi
    \fi}
 
-%D We do a bit more checking than needed. The pageborder check
-%D is not needed, but I want to look the visualization as good
-%D as possible too.
+\let\stopbaselinecorrection\relax
 
-\def\dostopbaselinecorrection % I have to check columns yet.
-  {\endgraf
-   \egroup
+\def\donormalstopbaselinecorrection % I have to check columns yet.
+  {\egroup
    \topbaselinecorrection
    \box\scratchbox
    \botbaselinecorrection
    \egroup}
 
-\let\stopbaselinecorrection=\relax
+\def\doforcedstopbaselinecorrection % I have to check columns yet.
+  {\egroup
+   \forcedtopbaselinecorrection
+   \box\scratchbox
+   \forcedbotbaselinecorrection
+   \egroup}
 
-\def\offbaselinecorrection % Can be used inside correction.
-  {\def\startbaselinecorrection{\bgroup\let\stopbaselinecorrection\egroup}}
+%D We do a bit more checking than needed. The pageborder check
+%D is not needed, but I want to look the visualization as good
+%D as possible too.
+
+% \def\offbaselinecorrection % Can be used inside correction.
+%   {\def\startbaselinecorrection{\bgroup\let\stopbaselinecorrection\egroup}}
+
+\chardef\baselinecorrectionmode\plusone
+
+\def\onbaselinecorrection   {\chardef\baselinecorrectionmode\plusone  }
+\def\offbaselinecorrection  {\chardef\baselinecorrectionmode\plustwo  }
+\def\forcebaselinecorrection{\chardef\baselinecorrectionmode\plusthree}
 
 %D \macros
 %D  {topbaselinecorrection,botbaselinecorrection}
@@ -188,58 +229,30 @@
 %D The actual top and bottom corrections are implemented as:
 
 % \def\topbaselinecorrection
-%   {\ifvmode
+%   {\ifvmode \ifdim\pagegoal<\maxdimen
 %      \bgroup
 %      \setbaselinecorrections
-%      \ifdim\pagegoal<\maxdimen
-%        \ifdim\pagetotal<\pagegoal
-%          \dimen2=\ht\scratchbox
-%          \advance\dimen2 \dp\scratchbox
-%          \advance\dimen2 \parskip
-%          \advance\dimen2 \thetopbaselinecorrection
-%          \advance\dimen2 \thebotbaselinecorrection
-%          \dimen0=\pagetotal
-%          \advance\dimen0 \dimen2
-% %        \ifdim\dimen0<\pagegoal % does more harm than good
-%            \witruimte
-%            \nointerlineskip
-%            \dotopbaselinecorrection
-% %        \else
-% %          \ifinsidecolumns
-% %            % \vskip\dimen2           % this could definitely
-% %            % \penalty\outputpenalty  % be improved
-% %          \else
-% %            %                         %
-% %            % \vfill\eject            % pretty old and wrong
-% %            %
-% %            % \nobreak                % needed for headings
-% %            % \vskip\parskip          % but often splits
-% %            % \vskip\dimen2           % normal paragraphs
-% %            % \penalty\outputpenalty  % and therefore
-% %            % \vskip-\dimen2          % obsolete
-% %            %
-% %            % do nothing, sub optimal spacing after headings
-% %            % still to be sorted out; use manuals as test case
-% %          \fi
-% %        \fi
-%        \else                           % probably a preceding
-%          \witruimte                    % one-liner
-%          \nointerlineskip
-%          \dotopbaselinecorrection
-%        \fi
-%      \fi
+%      \whitespace
+%      \nointerlineskip
+%      \dotopbaselinecorrection
 %      \egroup
-%    \fi}
+%    \fi \fi}
+
 
 \def\topbaselinecorrection
   {\ifvmode \ifdim\pagegoal<\maxdimen
+     \forcedtopbaselinecorrection
+   \fi \fi}
+
+\def\forcedtopbaselinecorrection
+  {\ifvmode
      \bgroup
      \setbaselinecorrections
      \whitespace
      \nointerlineskip
      \dotopbaselinecorrection
      \egroup
-   \fi \fi}
+   \fi}
 
 \def\botbaselinecorrection
   {\ifvmode
@@ -250,6 +263,8 @@
      \prevdepth\strutdp
      \egroup
    \fi}
+
+\let\forcedbotbaselinecorrection\botbaselinecorrection
 
 %D Still very experimental and therefore undocumented.
 

@@ -89,9 +89,7 @@
                            ?%
                          \fi\fi \NC \NR
    \NC visualization \NC \mathematics{\getvalue{#1}} \NC \NR
-   \NC definition    \NC \tttf \@EA \convertcommand
-                           \csname\@mt@\mathcollection#1\endcsname
-                         \to \ascii \ascii \NC \NR
+   \NC definition    \NC \tttf \@EA\defconvertedcommand\@EA\ascii\csname\@mt@\mathcollection#1\endcsname \ascii \NC \NR
    \stoptabulate}
 
 \protect \endinput

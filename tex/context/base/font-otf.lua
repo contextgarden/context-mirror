@@ -942,9 +942,9 @@ function fonts.otf.enhance.unpack(data)
                             end
                             local c = vv.coverage
                             if c then
-                                if c.before  then c.before  = t[c.before]  end
-                                if c.after   then c.after   = t[c.after]   end
-                                if c.current then c.current = t[c.current] end
+                                local cc = c.before  if cc then c.before  = t[cc] end
+                                      cc = c.after   if cc then c.after   = t[cc] end
+                                      cc = c.current if cc then c.current = t[cc] end
                             end
                         end
                     end
@@ -1598,7 +1598,8 @@ function fonts.otf.set_features(tfmdata) -- node and base, simple mapping
         local gposlist = otfdata.luatex.gposfeatures
         local gsublist = otfdata.luatex.gsubfeatures
         local mode = tfmdata.mode or fonts.mode
-        local fi = fonts.initializers[mode]
+        local initializers = fonts.initializers
+        local fi = initializers[mode]
         if fi then -- todo: delay initilization for mode 'node'
             local fiotf = fi.otf
             if fiotf then
@@ -1615,7 +1616,7 @@ function fonts.otf.set_features(tfmdata) -- node and base, simple mapping
                                     end
                                     fiotf[f](tfmdata,value) -- can set mode (no need to pass otf)
                                     mode = tfmdata.mode or fonts.mode -- keep this, mode can be set local !
-                                    local fi = fonts.initializers[mode]
+                                    local fi = initializers[mode]
                                     fiotf = fi.otf
                                     done[f] = true
                                 end
@@ -1718,7 +1719,7 @@ function fonts.otf.features.prepare_base_kerns(tfmdata,kind,value) -- todo what 
                     for lookup,kerns in pairs(dk) do
                         if somevalid[lookup] then
                             for k, v in pairs(kerns) do
-                                if v > 0 then
+                                if v ~= 0 then
                                     t[k], done = v, true
                                 end
                             end
@@ -2162,6 +2163,8 @@ do
 
     fonts.otf.features.prepare = { }
 
+    local falsetable = { false, false, false }
+
     function fonts.otf.features.prepare.feature(tfmdata,kind,value)
         if value then
             local language, script = tfmdata.language or "dflt", tfmdata.script or "dflt"
@@ -2182,7 +2185,6 @@ do
                     local flags = otfdata.luatex.ignore_flags
                     local preparers = fonts.otf.features.prepare
                     local process = fonts.otf.features.process
-                    local falsetable = { false, false, false }
                     for i=1,#lookuptable do
                         local lookupname = lookuptable[i]
                         local lookuptype = types[lookupname]
@@ -2191,7 +2193,9 @@ do
                             local processdata = prepare(tfmdata,kind,lookupname)
                             if processdata then
                                 local processflags = flags[lookupname] or falsetable --- share false table
-                                processes[#processes+1] = { process[lookuptype], lookupname, processdata, processflags }
+                            --    local chain = (lookuptype == "gsub_contextchain") or (lookuptype == "gpos_contextchain")
+                                local chain = lookuptype:find("context") ~= nil
+                                processes[#processes+1] = { process[lookuptype], lookupname, processdata, processflags, chain }
                             end
                         end
                     end
@@ -2215,7 +2219,7 @@ do
                 local p = ps[i]
                 if p[1] == 'ligature' then
                     if trace then
-                        logs.report("define otf",string.format("feature %s ligature %s => %s",kind,p[2],o.name))
+                        logs.report("define otf",string.format("feature %s lookup %s ligature %s => %s",kind,lookup,p[2],o.name))
                     end
                     local t = ligatures[lookup]
                     if not t then
@@ -2259,13 +2263,13 @@ do
         return ligatures
     end
 
-    -- gsub_single        -> done
-    -- gsub_multiple      -> done
-    -- gsub_alternate     -> done
-    -- gsub_ligature      -> done
-    -- gsub_context       -> todo
-    -- gsub_contextchain  -> done
-    -- gsub_reversechain  -> todo
+    -- gsub_single              -> done
+    -- gsub_multiple            -> done
+    -- gsub_alternate           -> done
+    -- gsub_ligature            -> done
+    -- gsub_context             -> todo
+    -- gsub_contextchain        -> done
+    -- gsub_reversecontextchain -> todo
 
     -- we used to share code in the following functions but that was relatively
     -- due to extensive calls to functions (easily hundreds of thousands per
@@ -2401,27 +2405,21 @@ do
             otfdata.luatex.covers = otfdata.luatex.covers or { }
             local characters = tfmdata.characters
             local cache = otfdata.luatex.covers
-            local function uncover(covers)
+            local function uncover(covers,result)
                 -- lpeg hardly faster (.005 sec on mk)
-                if covers then
-                    local result = { }
-                    for n=1,#covers do
-                        local c = covers[n]
-                        local cc = cache[c]
-                        if not cc then
-                            local t = { }
-                            for s in c:gmatch("[^ ]+") do
-                                t[unicodes[s]] = true
-                            end
-                            cache[c] = t
-                            result[n] = t
-                        else
-                            result[n] = cc
+                for n=1,#covers do
+                    local c = covers[n]
+                    local cc = cache[c]
+                    if not cc then
+                        local t = { }
+                        for s in c:gmatch("[^ ]+") do
+                            t[unicodes[s]] = true
                         end
+                        cache[c] = t
+                        result[#result+1] = t
+                    else
+                        result[#result+1] = cc
                     end
-                    return result
-                else
-                    return { }
                 end
             end
             local lookupdata = otfdata.lookups[lookupname]
@@ -2429,14 +2427,22 @@ do
                 logs.error("otf process", string.format("missing lookupdata table %s",lookupname))
             elseif lookupdata.rules then
                 local rules = lookupdata.rules
+                local center_match = fonts.otf.center_match
                 for nofrules=1,#rules do
                     local rule = rules[nofrules]
                     local coverage = rule.coverage
                     if coverage and coverage.current then
-                        local current = uncover(coverage.current)
-                        local before = uncover(coverage.before)
-                        local after = uncover(coverage.after)
-                        if current[1] then
+                        local current, before, after, sequence = coverage.current, coverage.before, coverage.after, { }
+                        if before then
+                            uncover(before,sequence)
+                        end
+                        local start = #sequence + 1
+                        uncover(current,sequence)
+                        local stop = #sequence
+                        if after then
+                            uncover(after,sequence)
+                        end
+                        if sequence[1] then
                             local lookups, lookuptype = rule.lookups, 'self'
                             -- for the moment only lookup index 1
                             if lookups then
@@ -2445,13 +2451,13 @@ do
                                 end
                                 lookuptype = types[lookups[1]]
                             end
-                            for unic, _ in pairs(current[1]) do
+                            for unic, _ in pairs(sequence[1]) do
                                 local t = contexts[unic]
                                 if not t then
                                     contexts[unic] = { lookups={}, flags=flags[lookupname] }
                                     t = contexts[unic].lookups
                                 end
-                                t[#t+1] = { nofrules, lookuptype, current, before, after, lookups }
+                                t[#t+1] = { nofrules, lookuptype, sequence, start, stop, lookups }
                             end
                         end
                     end
@@ -2467,14 +2473,14 @@ do
 
     -- ruled->lookup=ks_latn_l_27_c_4 => internal[ls_l_84] => valid[ls_l_84_s]
 
-    -- gpos_mark2base     -> done
-    -- gpos_mark2ligature -> done
-    -- gpos_mark2mark     -> done
-    -- gpos_single        -> not done
-    -- gpos_pair          -> not done
-    -- gpos_cursive       -> not done
-    -- gpos_context       -> not done
-    -- gpos_contextchain  -> not done
+    -- gpos_mark2base            -> done
+    -- gpos_mark2ligature        -> done
+    -- gpos_mark2mark            -> done
+    -- gpos_single               -> not done
+    -- gpos_pair                 -> not done
+    -- gpos_cursive              -> not done
+    -- gpos_context              -> not done
+    -- gpos_reversecontextchain  -> not done
 
     function fonts.otf.features.prepare.anchors(tfmdata,kind,lookupname) -- tracing
         local featuredata = tfmdata.shared.featuredata[kind]
@@ -2711,6 +2717,7 @@ do
 
     local glyph         = node.id('glyph')
     local glue          = node.id('glue')
+    local kern          = node.id('kern')
     local disc          = node.id('disc')
 
     local fontdata      = fonts.tfm.id
@@ -2763,12 +2770,26 @@ do
             if #processes == 1 then
                 local p = processes[1]
                 while start do -- evt splitsen
-                    if start.id == glyph and start.subtype<256 and start.font == font and
-                        (not attr or has_attribute(start,0,attr)) and -- dynamic feature
-                        (not attribute or has_attribute(start,state,attribute)) then
-                        -- we can make the p vars also global to this closure
+                    if start.id == glyph then
+                        if start.subtype<256 and start.font == font and
+                            (not attr or has_attribute(start,0,attr)) and -- dynamic feature
+                            (not attribute or has_attribute(start,state,attribute)) then
+                            -- we can make the p vars also global to this closure
+                            local pp = p[3] -- all lookups
+                            local pc = pp[start.char]
+                            if pc then
+                                start, ok = p[1](start,kind,p[2],pc,pp,p[4])
+                                done = done or ok
+                                if start then start = start.next end
+                            else
+                                start = start.next
+                            end
+                        else
+                            start = start.next
+                        end
+                    elseif start.id == glue and p[5] then
                         local pp = p[3] -- all lookups
-                        local pc = pp[start.char]
+                        local pc = pp[32] -- space
                         if pc then
                             start, ok = p[1](start,kind,p[2],pc,pp,p[4])
                             done = done or ok
@@ -2782,23 +2803,46 @@ do
                 end
             else
                 while start do
-                    if start.id == glyph and start.subtype<256 and start.font == font and
-                        (not attr or has_attribute(start,0,attr)) and -- dynamic feature
-                        (not attribute or has_attribute(start,state,attribute)) then
-                        for i=1,#processes do local p = processes[i]
-                            local pp = p[3]
-                            local pc = pp[start.char]
-                            if pc then
-                                start, ok = p[1](start,kind,p[2],pc,pp,p[4])
-                                if ok then
-                                    done = true
-                                    break
-                                elseif not start then
-                                    break
+                    if start.id == glyph then
+                        if start.subtype<256 and start.font == font and
+                            (not attr or has_attribute(start,0,attr)) and -- dynamic feature
+                            (not attribute or has_attribute(start,state,attribute)) then
+                            local chr = start.char
+                            for i=1,#processes do local p = processes[i]
+                                local pp = p[3]
+                            --  local pc = pp[start.char] -- var maken
+                                local pc = pp[chr]
+                                if pc then
+                                    start, ok = p[1](start,kind,p[2],pc,pp,p[4])
+                                    if ok then
+                                        done = true
+                                        break
+                                    elseif not start then
+                                        break
+                                    end
                                 end
                             end
+                            if start then start = start.next end
+                        elseif start.id == glue then
+                            for i=1,#processes do local p = processes[i]
+                                if p[5] then -- chain
+                                    local pp = p[3]
+                                    local pc = pp[32]
+                                    if pc then
+                                        start, ok = p[1](start,kind,p[2],pc,pp,p[4])
+                                        if ok then
+                                            done = true
+                                            break
+                                        elseif not start then
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                            if start then start = start.next end
+                        else
+                            start = start.next
                         end
-                        if start then start = start.next end
                     else
                         start = start.next
                     end
@@ -3258,9 +3302,9 @@ do
     -- We had a version that shared code, but it was too much a slow down
     -- todo n x n.
 
-    function chainprocs.gsub_single(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gsub_single(start,stop,kind,lookupname,sequence,f,l,lookups)
         local char = start.char
-        local cacheslot = sequence[1]
+        local cacheslot = sequence[f] -- [1]
         local replacement = cacheslot[char]
         if replacement == true then
             if lookups then
@@ -3290,9 +3334,9 @@ do
         return start
     end
 
-    function chainprocs.gsub_multiple(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gsub_multiple(start,stop,kind,lookupname,sequence,f,l,lookups)
         local char = start.char
-        local cacheslot = sequence[1]
+        local cacheslot = sequence[f] -- [1]
         local replacement = cacheslot[char]
         if replacement == true then
             if lookups then
@@ -3341,9 +3385,9 @@ do
         return start
     end
 
-    function chainprocs.gsub_alternate(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gsub_alternate(start,stop,kind,lookupname,sequence,f,l,lookups)
         local char = start.char
-        local cacheslot = sequence[1]
+        local cacheslot = sequence[f] -- [1]
         local replacement = cacheslot[char]
         if replacement == true then
             if lookups then
@@ -3378,7 +3422,7 @@ do
         return start
     end
 
-    function chainprocs.gsub_ligature(start,stop,kind,lookupname,sequence,lookups,flags)
+    function chainprocs.gsub_ligature(start,stop,kind,lookupname,sequence,f,l,lookups,flags)
         if lookups then
             local featurecache = fontdata[currentfont].shared.featurecache
             if not featurecache[kind] then
@@ -3426,18 +3470,19 @@ do
         return stop
     end
 
-    function chainprocs.gpos_mark2base(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gpos_mark2base(start,stop,kind,lookupname,sequence,f,l,lookups)
         local component = start.next
         if component and component.id == glyph and component.subtype<256 and component.font == currentfont and marks[component.char] then
             local char = start.char
-            local anchortag = sequence[1][char]
+            local anchortag = sequence[f][char] -- sequence[1][char]
             if anchortag == true then
                 local classes = otfdata.anchor_classes
                 for k=1,#classes do
                     local v = classes[k]
                     if v.lookup == lookupname and v.type == kind then
                         anchortag = v.name
-                        sequence[1][char] = anchortag
+                    --  sequence[1][char] = anchortag
+                        sequence[f][char] = anchortag
                         break
                     end
                 end
@@ -3484,18 +3529,19 @@ do
         return start, false
     end
 
-    function chainprocs.gpos_mark2ligature(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gpos_mark2ligature(start,stop,kind,lookupname,sequence,f,l,lookups)
         local component = start.next
         if component and component.id == glyph and component.subtype<256 and component.font == currentfont and marks[component.char] then
             local char = start.char
-            local anchortag = sequence[1][char]
+            local anchortag = sequence[f][char] -- [1][char]
             if anchortag == true then
                 local classes = otfdata.anchor_classes
                 for k=1,#classes do
                     local v = classes[k]
                     if v.lookup == lookupname and v.type == kind then
                         anchortag = v.name
-                        sequence[1][char] = anchortag
+                    --  sequence[1][char] = anchortag
+                        sequence[f][char] = anchortag
                         break
                     end
                 end
@@ -3547,18 +3593,19 @@ do
         return start, false
     end
 
-    function chainprocs.gpos_mark2mark(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gpos_mark2mark(start,stop,kind,lookupname,sequence,f,l,lookups)
         local component = start.next
         if component and component.id == glyph and component.subtype<256 and component.font == currentfont and marks[component.char] then
             local char = start.char
-            local anchortag = sequence[1][char]
+            local anchortag = sequence[f][char] -- [1][char]
             if anchortag == true then
                 local classes = otfdata.anchor_classes
                 for k=1,#classes do
                     local v = classes[k]
                     if v.lookup == lookupname and v.type == kind then
                         anchortag = v.name
-                        sequence[1][char] = anchortag
+                    --  sequence[1][char] = anchortag
+                        sequence[f][char] = anchortag
                         break
                     end
                 end
@@ -3610,20 +3657,20 @@ do
         return start, false
     end
 
-    function chainprocs.gpos_cursive(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gpos_cursive(start,stop,kind,lookupname,sequence,f,l,lookups)
         report("otf chain","chainproc gpos_cursive not yet supported")
         return start
     end
-    function chainprocs.gpos_single(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gpos_single(start,stop,kind,lookupname,sequence,f,l,lookups)
         report("otf process","chainproc gpos_single not yet supported")
         return start
     end
-    function chainprocs.gpos_pair(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.gpos_pair(start,stop,kind,lookupname,sequence,f,l,lookups)
         report("otf process","chainproc gpos_pair not yet supported")
         return start
     end
 
-    function chainprocs.self(start,stop,kind,lookupname,sequence,lookups)
+    function chainprocs.self(start,stop,kind,lookupname,sequence,f,l,lookups)
         report("otf process","self refering lookup cannot happen")
         return stop
     end
@@ -3634,124 +3681,67 @@ do
         local flags = contextdata.flags
         local skipmark, skipligature, skipbase = unpack(flags)
         for k=1,#contexts do
-            local match, stop = true, start
-            local rule, lookuptype, sequence, before, after, lookups = unpack(contexts[k])
-            if #sequence > 0 then
-                if #sequence == 1 then
-                    match = sequence[1][start.char]
-                else -- n = #sequence -> faster
-                    for n=1,#sequence do
-                        if stop then
-                            local id = stop.id
-                            if id == glyph and stop.subtype<256 and stop.font == currentfont then
-                                local char = stop.char
-                                local class = characters[char].description.class
-                                if class == skipmark or class == skipligature or class == skipbase then
-                                    -- skip 'm
-                                elseif sequence[n][char] then
-                                    if n < #sequence then
-                                        stop = stop.next
-                                    end
-                                else
-                                    match = false break
+            local match, next, first, last = true, start, start, start
+            local rule, lookuptype, sequence, f, l, lookups = unpack(contexts[k]) -- unpack is slow
+            if #sequence == 1 then
+                match = next.id == glyph and next.subtype<256 and next.font == currentfont and sequence[1][next.char]
+            else
+                -- todo: better space check (maybe check for glue)
+--~ print("\nSTART ", k, start)
+                local n, s = 1, #sequence
+                while n <= s do
+                    if next then
+                        local id = next.id
+                        if id == glyph and next.subtype<256 and next.font == currentfont then -- normal char
+                            local char = next.char
+                            local class = characters[char].description.class
+                            if class == skipmark or class == skipligature or class == skipbase then
+--~ print("S",n,char,utf.char(char))
+                                -- skip
+                            elseif sequence[n][char] then
+--~ print("Y",n,char,utf.char(char))
+                                if n == f then
+                                    first = next
                                 end
-                            elseif id == disc then -- what to do with kerns?
-                                stop = stop.next
+                                if n == l then
+                                    last = next
+                                end
+                                n = n + 1
                             else
+--~ print("N",n,char,utf.char(char))
                                 match = false break
                             end
-                        else
+                        elseif id == disc then
+--~ print("D",n)
+                            -- skip
+                        elseif not sequence[n][32] then -- brrr
+--~ print("S",n)
                             match = false break
                         end
-                    end
-                end
-            end
-            if match and #before > 0 then
-                local prev = start.prev
-                if prev then
-                    if #before == 1 then
-                        match = prev.id == glyph and prev.subtype<256 and prev.font == currentfont and before[1][prev.char]
+                        next = next.next
+                    elseif sequence[n][32] then
+                        n = n + 1
                     else
-                        for n=#before,1 do
-                            if prev then
-                                local id = prev.id
-                                if id == glyph and prev.subtype<256 and prev.font == currentfont then -- normal char
-                                    local char = prev.char
-                                    local class = characters[char].description.class
-                                    if class == skipmark or class == skipligature or class == skipbase then
-                                        -- skip 'm
-                                    elseif not before[n][char] then
-                                        match = false break
-                                    end
-                                elseif id == disc then
-                                    -- skip 'm
-                                elseif not before[n][32] then
-                                    match = false break
-                                end
-                                prev = prev.prev
-                            elseif not before[n][32] then
-                                match = false break
-                            end
-                        end
-                    end
-                elseif #before == 1 then
-                    match = before[1][32]
-                else
-                    for n=#before,1 do
-                        if not before[n][32] then
-                            match = false break
-                        end
+--~ print("S",n)
+                        match = false break
                     end
                 end
-            end
-            if match and #after > 0 then
-                local next = stop.next
-                if next then
-                    if #after == 1 then
-                        match = next.id == glyph and next.subtype<256 and next.font == currentfont and after[1][next.char]
-                    else
-                        for n=1,#after do
-                            if next then
-                                local id = next.id
-                                if id == glyph and next.subtype<256 and next.font == currentfont then -- normal char
-                                    local char = next.char
-                                    local class = characters[char].description.class
-                                    if class == skipmark or class == skipligature or class == skipbase then
-                                        -- skip 'm
-                                    elseif not after[n][char] then
-                                        match = false break
-                                    end
-                                elseif id == disc then
-                                    -- skip 'm
-                                elseif not after[n][32] then -- brrr
-                                    match = false break
-                                end
-                                next = next.next
-                            elseif not after[n][32] then
-                                match = false break
-                            end
-                        end
-                    end
-                elseif #after == 1 then
-                    match = after[1][32]
-                else
-                    for n=1,#after do
-                        if not after[n][32] then
-                            match = false break
-                        end
-                    end
-                end
+--~ print((match and "MATCH") or "NO MATCH")
             end
             if match then
                 local trace = fonts.otf.trace_contexts
                 if trace then
-                    local char = start.char
-                    report("otf chain",format("%s: rule %s of %s matches %s times at char %s (%s) lookuptype %s",kind,rule,lookupname,#sequence,char,utf.char(char),lookuptype))
+                    local char = first.char
+                    report("otf chain",format("%s: rule %s of %s matches, replacing starts at char %s (%s) lookuptype %s",kind,rule,lookupname,char,utf.char(char),lookuptype))
                 end
                 if lookups then
                     local cp = chainprocs[lookuptype]
                     if cp then
-                        start = cp(start,stop,kind,lookupname,sequence,lookups,flags)
+                        if start == first then
+                            start = cp(first,last,kind,lookupname,sequence,f,l,lookups,flags)
+                        else
+                            first = cp(first,last,kind,lookupname,sequence,f,l,lookups,flags)
+                        end
                     else
                         report("otf chain",format("%s: lookuptype %s not supported yet for %s",kind,lookuptype,lookupname))
                     end
@@ -3766,101 +3756,64 @@ do
     end
 
     function fonts.otf.features.process.reversecontextchain(start,kind,lookupname,contextdata)
-        -- there is only a single substitution here so it is a simple case of the normal one
-        -- sequence is one character here and we swap the rest
+        -- PROBABLY WRONG, WE NEED TO WALK BACK OVER THE LIST
         local done = false
         local contexts = contextdata.lookups
         local flags = contextdata.flags
         local skipmark, skipligature, skipbase = unpack(flags)
         for k=1,#contexts do
-            local match, stop = true, start
-            local rule, lookuptype, sequence, before, after, lookups = unpack(contexts[k])
-            match = sequence[1][start.char]
-            if match and #after > 0 then
-                local prev = start.prev
-                if prev then
-                    if #after == 1 then
-                        match = prev.id == glyph and prev.subtype<256 and prev.font == currentfont and after[1][prev.char]
-                    else
-                        for n=1,#after do
-                            if prev then
-                                local id = prev.id
-                                if id == glyph and prev.subtype<256 and prev.font == currentfont then -- normal char
-                                    local char = prev.char
-                                    local class = characters[char].description.class
-                                    if class == skipmark or class == skipligature or class == skipbase then
-                                        -- skip 'm
-                                    elseif not after[n][char] then
-                                        match = false break
-                                    end
-                                elseif id == disc then
-                                    -- skip 'm
-                                elseif not after[n][32] then
-                                    match = false break
+            local match, next, first, last = true, start, start, start
+            local rule, lookuptype, sequence, f, l, lookups = unpack(contexts[k]) -- unpack is slow
+            if #sequence == 1 then
+                match = next.id == glyph and next.subtype<256 and next.font == currentfont and sequence[1][next.char]
+            else
+                local n, s = #sequence, 1
+                while n > 0 do
+                    if next then
+                        local id = next.id
+                        if id == glyph and next.subtype<256 and next.font == currentfont then -- normal char
+                            local char = next.char
+                            local class = characters[char].description.class
+                            if class == skipmark or class == skipligature or class == skipbase then
+                                -- skip
+                            elseif sequence[n][char] then
+                                if n == f then
+                                    first = next -- ok ?
                                 end
-                                prev = prev.prev
-                            elseif not after[n][32] then
+                                if n == l then
+                                    last = next -- ok ?
+                                end
+                                n = n - 1
+                            else
                                 match = false break
                             end
-                        end
-                    end
-                elseif #after == 1 then
-                    match = after[1][32]
-                else
-                    for n=#after,1 do
-                        if not after[n][32] then
+                        elseif id == disc then
+                            -- skip
+                        elseif not sequence[n][32] then -- brrr
                             match = false break
                         end
-                    end
-                end
-            end
-            if match and #before > 0 then
-                local next = stop.next
-                if next then
-                    if #after == 1 then
-                        match = next.id == glyph and next.subtype<256 and next.font == currentfont and before[1][next.char]
+                        next = next.next
+                    elseif sequence[n][32] then
+                        n = n - 1
                     else
-                        for n=#before,1 do
-                            if next then
-                                local id = next.id
-                                if id == glyph and next.subtype<256 and next.font == currentfont then -- normal char
-                                    local char = next.char
-                                    local class = characters[char].description.class
-                                    if class == skipmark or class == skipligature or class == skipbase then
-                                        -- skip 'm
-                                    elseif not before[n][char] then
-                                        match = false break
-                                    end
-                                elseif id == disc then
-                                    -- skip 'm
-                                elseif not before[n][32] then -- brrr
-                                    match = false break
-                                end
-                                next = next.next
-                            elseif not before[n][32] then
-                                match = false break
-                            end
-                        end
-                    end
-                elseif #before == 1 then
-                    match = before[1][32]
-                else
-                    for n=1,#before do
-                        if not before[n][32] then
-                            match = false break
-                        end
+                        match = false break
                     end
                 end
             end
             if match then
                 local trace = fonts.otf.trace_contexts
                 if trace then
-                    report("otf reverse chain",format("%s: rule %s of %s matches %s times at char %s (%s) lookuptype %s",kind,rule,lookupname,#sequence,char,utf.char(char),lookuptype))
+                    local char = first.char
+                    report("otf reverse chain",format("%s: rule %s of %s matches, replacing starts at char %s (%s) lookuptype %s",kind,rule,lookupname,char,utf.char(char),lookuptype))
                 end
                 if lookups then
                     local cp = chainprocs[lookuptype]
                     if cp then
-                        start = cp(start,stop,kind,lookupname,sequence,lookups,flags)
+                        if start == first then
+                            start = cp(first,last,kind,lookupname,sequence,f,l,lookups,flags)
+                        else
+                            first = cp(first,last,kind,lookupname,sequence,f,l,lookups,flags)
+                        end
                     else
                         report("otf reverse chain",format("%s: lookuptype %s not supported yet for %s",kind,lookuptype,lookupname))
                     end
@@ -4537,6 +4490,18 @@ do
 
     local insert_after, insert_before, delete = node.insert_after, node.insert_before, nodes.delete
 
+    local function nobreak_before(head,current)
+        local p = current.prev
+        if p then
+            p = p.prev
+            if p and p.id == penalty then
+                p.penalty = 10000
+                return head, current
+            end
+        end
+        return insert_before(head,current,nodes.penalty(10000))
+    end
+
     function fonts.analyzers.methods.hang(head,font,attr)
         -- maybe make a special version with no trace
         local characters = fontdata[font].characters
@@ -4548,6 +4513,7 @@ do
         local interspecialskip   = - stretch * hang_data.inter_char_half_factor
         local interspecialshrink =   stretch * hang_data.inter_char_half_schrink_factor
         local internormalstretch =   stretch * hang_data.inter_char_stretch_factor
+        local trace = fonts.color.trace
         while current do
             if current.id == glyph and current.subtype<256 then
                 if current.font == font then
@@ -4555,16 +4521,15 @@ do
                     if false then
                         -- don't ask -)
                     elseif opening_punctuation_fw[char] or opening_parenthesis_fw[char] then
-                        fcs(current,"font:init")
+                        if trace then fcs(current,"font:init") end
                         head, _ = insert_before(head,current,nodes.glue(interspecialskip,0,interspecialshrink))
-                        head, current = insert_after(head,current,nodes.penalty(0))
+                        head, current = insert_after(head,current,nodes.penalty(10000))
                         head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                         prevclass, done = 1, true
                     elseif closing_punctuation_fw[char] or closing_parenthesis_fw[char] then
-                        fcs(current,"font:fina")
+                        if trace then fcs(current,"font:fina") end
                         if prevclass > 0  then
-                            local prev = current.prev
-                            prev.prev.penalty = 10000
+                            head, current = nobreak_before(head,current)
                             head, current = insert_after(head,current,nodes.penalty(10000))
                             head, current = insert_after(head,current,nodes.glue(interspecialskip,0,interspecialshrink))
                             head, current = insert_after(head,current,nodes.penalty(0))
@@ -4572,30 +4537,28 @@ do
                         end
                         prevclass, done = 2, true
                     elseif opening_punctuation_hw[char] or opening_parenthesis_hw[char] then
-                        fcs(current,"font:init")
-                        head, current = insert_after(head,current,nodes.penalty(0))
+                        if trace then fcs(current,"font:init") end
+                        head, current = insert_after(head,current,nodes.penalty(10000))
                         head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                         prevclass, done = 3, true
                     elseif closing_punctuation_hw[char] or closing_parenthesis_hw[char] then
-                        fcs(current,"font:fina")
+                        if trace then fcs(current,"font:fina") end
                         if prevclass > 0  then
-                            local prev = current.prev
-                            prev.prev.penalty = 10000
+                            head, current = nobreak_before(head,current)
                             head, current = insert_after(head,current,nodes.penalty(0))
                             head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                         end
                         prevclass, done = 4, true
                     elseif hyphenation[char] then
-                        fcs(current,"font:medi")
+                        if trace then fcs(current,"font:medi") end
                         if prevclass > 0  then
-                            local prev = current.prev
-                            prev.prev.penalty = 10000
+                            head, current = nobreak_before(head,current)
                             head, current = insert_after(head,current,nodes.penalty(0))
                             head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                         end
                         prevclass, done = 5, true
                     elseif non_starter[char] then
-                        fcs(current,"font:isol")
+                        if trace then fcs(current,"font:isol") end
                         head, current = insert_after(head,current,nodes.penalty(10000))
                         head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                         prevclass, done = 6, true

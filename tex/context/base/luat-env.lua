@@ -131,7 +131,7 @@ function environment.loadluafile(filename,register)
         environment.showmessage("loading", fullname)
         if register then
             if not environment.regfil then
-                environment.regfil = io.open('luafiles.tmp', 'w')
+                environment.regfil = io.open('luafiles.tmp', 'w') -- we can consider 'a'
             end
             if environment.regfil then
                 environment.regfil:write(fullname .."\n")
@@ -156,13 +156,6 @@ function environment.loadlucfile(filename,version)
                 environment.showmessage("loading", fullname)
                 assert(chunk)()
                 if version then
---~                     if modules and modules[filename] and modules[filename].version ~= version then
---~                         environment.showmessage("version mismatch", filename,"lua=" .. modules[filename].version, "luc=" ..version)
---~                         environment.loadluafile(filename)
---~                     elseif versions and versions[filename] and versions[filename] ~= version then
---~                         environment.showmessage("version mismatch", filename,"lua=" .. versions[filename], "luc=" ..version)
---~                         environment.loadluafile(filename)
---~                     end
                     local v = version -- can be nil
                     if modules and modules[filename] then
                         v = modules[filename].version -- new

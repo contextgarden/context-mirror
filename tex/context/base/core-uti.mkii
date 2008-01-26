@@ -28,8 +28,8 @@
 
 \def\thisisbytesequence#1%
   {\ifx\testbytesequence\empty\else
-     \convertcommand\testbytesequence\to\testbytesequence
-     \convertargument#1\to\ascii
+     \defconvertedcommand\testbytesequence\testbytesequence
+     \defconvertedargument\ascii{#1}%
      \ifx\testbytesequence\ascii \else
        \writestatus\m!systems{possible problem with 8 bit output}%
      \fi

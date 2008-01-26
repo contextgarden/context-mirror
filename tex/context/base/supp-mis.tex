@@ -384,8 +384,8 @@
   \def\doconvertargument#1>{}
 
   \long\def\convertargument#1\to#2%
-    {\long\def\convertedargument{#1}%
-     \edef#2{\expandafter\doconvertargument\meaning\convertedargument}}
+    {\long\def\@@convertedargument{#1}%
+     \edef#2{\expandafter\doconvertargument\meaning\@@convertedargument}}
 
 \fi
 

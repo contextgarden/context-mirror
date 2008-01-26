@@ -468,7 +468,7 @@
    \catcode`\\=\@@escape
    \iftraceXMLremapping
      \ifmmode\vbox\fi\bgroup
-     \convertcommand\remappedXMLdata\to\ascii
+     \defconvertedcommand\ascii\remappedXMLdata
      \tttf\veryraggedright\ascii\par
      \writestatus{xml-remap}{\ascii}%
      \egroup

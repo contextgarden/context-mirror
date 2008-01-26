@@ -255,7 +255,7 @@
      \ifx\currentlistquotechar\empty%
        \doprocessseplist#1\relax
      \else%
-       \convertargument#1\to\csvdata%
+       \defconvertedargument\csvdata{#1}%
        \expanded{\processquotedlist{}{\noexpand\end}%
            {\currentlistseparator}{\currentlistquotechar}%
              \noexpand\doprocessseparatedquoteditem \csvdata\currentlistseparator\noexpand\end}%

@@ -932,7 +932,7 @@
 
 \def\doPDFattachfile#1#2#3#4#5#6#7#8%
   {\bgroup % title width height color symbol file
-   \edef\PDFfile{#8}\convertcommand\PDFfile\to\PDFfile
+   \edefconvertedargument\PDFfile{#8}%
    % beware: the symbol may (indirectly) use the file
    % reference when typesetting the object number;
    \presetPDFsymbolappearance{#5}{#6}{#2}{#3}{#4}% sets width/height
@@ -953,17 +953,17 @@
 % semi-public
 
 \def\doPDFembedfile#1#2#3% symbolic name | filename | user name
-  {\edef\PDFfile{#1}\convertcommand\PDFfile\to\PDFfile
+  {\edefconvertedargument\PDFfile{#1}%
    \doifnotflagged{a:\PDFfile}%
      {\doPDFfilestreamobject{PDFEF}{\PDFfile}{#2}{#3}%
       \doglobal\setflag{a:\PDFfile}}}
 
 \def\doPDFgetembeddedfilereference#1#2%
-  {\edef\PDFfile{#1}\convertcommand\PDFfile\to\PDFfile
+  {\edefconvertedargument\PDFfile{#1}%
    \doPDFgetobjectreference{PDFEF}\PDFfile#2}
 
 \def\doPDFgetembeddedfilestreamreference#1#2%
-  {\edef\PDFfile{#1}\convertcommand\PDFfile\to\PDFfile
+  {\edefconvertedargument\PDFfile{#1}%
    \doPDFgetfilestreamreference\PDFfile#2} % == \doPDFgetobjectreference{PDFFS}\PDFfile#2
 
 \definespecial \doattachfile {\doPDFattachfile}
@@ -2318,9 +2318,9 @@
       \def/doVb##1##2 {\egroup\check\Value{##2}} % watch the space
       \def\check##1##2%
         {\def##1{##2}
-         \advance\scratchcounter by 1
+         \advance\scratchcounter\plusone\relax
          \ifodd\scratchcounter \else
-           \convertcommand\Title\to\asciia
+           \defconvertedcommand\asciia\Title
            \global\setFDFfield{\asciia}{\Value}
            \doglobal\addtocommalist\Title\allFDFfields
          \fi}

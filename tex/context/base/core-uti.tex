@@ -66,8 +66,8 @@
 \def\thisissectionseparator#1%
   {\bgroup
    \globallet\checksectionseparator\relax
-   \convertcommand \sectionseparator\to\asciia
-   \convertargument               #1\to\asciib
+   \defconvertedcommand \asciia\sectionseparator
+   \defconvertedargument\asciib{#1}%
    \expanded{\gdef\noexpand\dosplitofffoliopart[####1\sectionseparator
      \sectionseparator####2\sectionseparator\sectionseparator####3]{####3}}%
    \ifx\asciia\asciib
@@ -189,43 +189,6 @@
 \newif\ifdoinpututilities
 \newif\ifunprotectutilities   % voor't geval er \v!xxxxxx's zijn
 
-% no longer needed, since texutil is now multi platform
-%
-% \def\utilitycheckmessage
-%   {\showmessage\m!systems{12}{}%
-%    \globallet\utilitycheckmessage=\relax}
-%
-% \def\saveutilityline#1 #2\txen% tricky maar ok, want achter \command
-%   {\if     #1c% commands      % in \ascii staat een spatie; #1 kan
-%      \write\scratchwrite{#2}% % \par in stringvorm zijn (eof)!
-%    \else\if#1s% synoniems
-%      \utilitycheckmessage
-%    \else\if#1r% registers
-%      \utilitycheckmessage
-%    \fi\fi\fi}
-%
-% \def\checkutilityfile
-%   {\doiflocfileelse{\jobname.\f!outputextension}
-%      {}
-%      {\doiflocfileelse{\jobname.\f!inputextension}
-%         {\bgroup
-%          \showmessage\m!systems{11}{}%
-%          \openout\scratchwrite\jobname.\f!outputextension
-%          \openlocin\scratchread{\jobname.\f!inputextension}%
-%          \def\doprocessline%
-%            {\ifeof\scratchread
-%               \def\doprocessline{\closein\scratchread}%
-%             \else
-%               \read\scratchread to \ascii
-%               \convertcommand\ascii\to\ascii
-%               \expandafter\saveutilityline\ascii\txen
-%             \fi
-%             \doprocessline}%
-%          \doprocessline
-%          \closeout\scratchwrite
-%          \egroup}
-%         {}}}
-
 \def\currentutilityfilename{\jobname}
 
 % \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
@@ -329,20 +292,6 @@
            \blank}}%
    \fi
    \endgroup}
-
-% Saving the sort vector:
-
-% \def\savesortkeys
-%   {\startnointerference
-%    \def\flushsortkey##1##2##3##4%
-%      {\convertargument{##1}{##2}{##3}{##4}\to\ascii
-%       \immediatewriteutility{k {\currentlanguage}{\currentencoding}\ascii}}%
-%    \let\definesortkey\flushsortkey
-%    \flushsortkeys
-%    \globallet\savesortkeys\relax
-%    \stopnointerference}
-%
-% \prependtoks \savesortkeys \to \everystarttext
 
 % Default-instellingen (verborgen)
 

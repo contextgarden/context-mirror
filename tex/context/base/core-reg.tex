@@ -94,11 +94,11 @@
      \begingroup
      \thisisnextinternal\s!ind
      \ifduplicate\getlastregisterentry{#3}\fi
-     \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
-     \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryB
+     \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#1}%
+     \defconvertexpanded\asciiregisterentryB{\registerparameter\c!expansion   }{#3}%
      \doifsomething{\registerparameter\c!keyexpansion}
        {\ifx\asciiregisterentryA\empty
-         \convertexpanded{\registerparameter\c!keyexpansion}{#3}\asciiregisterentryA
+         \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#3}%
         \fi}%
      \makesectionformat
      \doifelse{\registerparameter\c!ownnumber}\v!yes
@@ -187,12 +187,12 @@
      \begingroup
      \thisisnextinternal\s!ind
      \ifduplicate\getlastregisterentry{#2}\fi
-     \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
-     \convertexpanded{\registerparameter\c!expansion   }{#2}\asciiregisterentryB
-     \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryC
+     \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#1}%
+     \defconvertexpanded\asciiregisterentryB{\registerparameter\c!expansion   }{#2}%
+     \defconvertexpanded\asciiregisterentryC{\registerparameter\c!expansion   }{#3}%
      \doifsomething{\registerparameter\c!keyexpansion}
        {\ifx\asciiregisterentryA\empty
-          \convertexpanded{\registerparameter\c!keyexpansion}{#2}\asciiregisterentryA
+          \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#2}%
         \fi}%
      \makesectionformat
      \mksaveregistersee
@@ -709,7 +709,7 @@
   {\dosetfilterlevel{\getvalue{\??id#1\c!criterium}}\empty}
 
 \def\getalllistreferences#1#2%
-  {\doglobal\convertexpanded{\getvalue{\??id#1\c!expansion}}{#2}\currentregisterentry
+  {\gdefconvertexpanded\currentregisterentry{\getvalue{\??id#1\c!expansion}}{#2}%
    \doifdefinedelse{\??id#1\??id\currentregisterentry}
      {\edef\alllistreferences%
         {\getvalue{\??id#1\??id\currentregisterentry}}%
@@ -813,7 +813,7 @@
    \global\firstregisterpagetrue
    \setvalue{#1\s!entrya}##1%
      {\global\firstregisterpagetrue
-      \doglobal\convertargument##1\to\currentregisterentry % \doglobal nodig?
+      \gdefconvertedargument\currentregisterentry{##1}% global nodig?
       \doglobal\increment\internallistreference}%
    \setvalue{#1\s!from}%
      {\getvalue{#1\s!page}}%

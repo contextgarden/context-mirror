@@ -94,7 +94,7 @@
    \lccode`< \zerocount \lccode`> \zerocount
    \lccode`[ \zerocount \lccode`] \zerocount
    \lccode`\\\zerocount \lccode`/ \zerocount
-   \lowercase{\convertargument#1\to\ascii}%
+   \lowercase{\defconvertedargument\ascii{#1}}%
    % by integrating the split in the loop below
    % \splitofftokens\maxPDFstringsize\from\ascii\to\ascii
    % we diminish the processing time considerably

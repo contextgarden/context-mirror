@@ -74,14 +74,6 @@
 
     \errmessage{This version of Omega is way to buggy (+ \string\SGMLFontEntity\space mess)!}
 
-%   \let\normalSGMLFontEntity\SGMLFontEntity
-%
-%   \def\SGMLFontEntity#1#2#3#4#5%
-%     {\convertargument#3\to\ascii
-%      \expanded{\doifinstringelse{\letterbackslash}{\ascii}}
-%        {\normalSGMLFontEntity{#1}{#2}{#3}{#4}{#5}}
-%        {\normalSGMLFontEntity{#1}{#2}{\string#3}{#4}{#5}}}
-
 \fi
 
 \protect \endinput

@@ -75,8 +75,8 @@
 \let\currentexportclass\empty
 
 \def\exportsortaction#1#2#3%
-  {\convertargument#2\to\asciia
-   \convertargument#3\to\asciib
+  {\defconvertedargument\asciia{#2}%
+   \defconvertedargument\asciib{#3}%
    \immediatewriteutility{x #1 {\currentexportclass} {\asciia} {\asciib}}}
 
 \def\exportsortshortcut {\exportsortaction s}

@@ -451,22 +451,6 @@
 
 \definelist[\@@bookmark]
 
-% \appendtoks\flushpostponedbookmark\to\everypar
-% \appendtoks\flushpostponedbookmark\to\neverypar
-%
-% \let\flushpostponedbookmark\relax
-%
-% \def\simplebookmark#1%
-%   {\ifx\flushpostponedbookmark\relax \else
-%      \bgroup
-%      \convertargument#1\to\ascii
-%      \writestatus\m!systems{clashing bookmarks: \ascii}% ECHTE MESSAGE MAKEN
-%      \egroup
-%    \fi
-%    \doglobal\prependtoks
-%      \writetolist[\@@bookmark]{}{#1}%
-%    \to\postponedbookmarks}
-
 \newtoks\postponedbookmarks
 
 \def\flushpostponedbookmark
@@ -1134,7 +1118,7 @@
   {\dotripleempty\dodefineinteractionmenu}
 
 \def\dodefineinteractionmenu[#1][#2]% compatibility hack
-  {\convertargument#2\to\ascii        % will disappear soon
+  {\defconvertedargument\ascii{#2}% will disappear soon
    \doifinstringelse[\ascii
      \dodosetupinteractionlistmenux
      \dododefineinteractionmenu

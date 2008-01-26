@@ -33,12 +33,39 @@
 \def\dosetupsB[#1]{\cleanuplabel{#1}\processcommacommand[\cleanlabel]\dosetups} % [..]
 \def\dosetupsC[#1]{\cleanuplabel{#1}\dosetups\cleanlabel} % [..]
 
+% \def\dosetups#1% the grid option will be extended to other main modes
+%   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}
+%   {\executeifdefined{\??su                         :#1}\gobbleoneargument}\empty} % takes one argument
+%
+% \def\setupwithargument#1% the grid option will be extended to other main modes
+%   {\executeifdefined{\??su:#1}\gobbleoneargument}
+
+% better:
+
+% \def\dosetups#1% the grid option will be extended to other main modes
+%   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}
+%   {\executeifdefined{\??su                         :#1}\gobbleoneargument}\empty} % takes one argument
+%
+% \def\setupwithargument#1% the grid option will be extended to other main modes
+%   {\executeifdefined{\??su:#1}\gobbleoneargument}
+
+% faster:
+
+\letvalue{\??su:\letterpercent}\gobbleoneargument
+
 \def\dosetups#1% the grid option will be extended to other main modes
-  {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}
-  {\executeifdefined{\??su                         :#1}\gobbleoneargument}\empty} % takes one argument
+  {\csname\??su
+     \ifgridsnapping
+         \ifcsname\??su\v!grid:#1\endcsname\v!grid:#1\else\ifcsname\??su:#1\endcsname:#1\else:\letterpercent\fi\fi
+     \else
+                                                          \ifcsname\??su:#1\endcsname:#1\else:\letterpercent\fi
+     \fi
+   \endcsname\empty} % takes one argument
 
 \def\setupwithargument#1% the grid option will be extended to other main modes
-  {\executeifdefined{\??su:#1}\gobbleoneargument}
+  {\csname\??su:\ifcsname\??su:#1\endcsname#1\else\letterpercent\fi\endcsname}
+
+\let\directsetup\dosetups
 
 % somehow fails ...
 %

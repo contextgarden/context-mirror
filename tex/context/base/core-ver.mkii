@@ -139,7 +139,7 @@
 
 \def\redotypeAB
   {\egroup
-   \expandafter\convertargument\the\globalscratchtoks\to\ascii
+   \expandafter\defconvertedargument\expandafter\ascii\expandafter{\the\globalscratchtoks}% == \edefconvertedargument\ascii{\the\globalscratchtoks}%
    \ifx\scantokens\undefined\ascii\else\everyeof{\hskip-\spaceskip}\scantokens\expandafter{\ascii}\fi
    \egroup}
 

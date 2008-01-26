@@ -631,7 +631,7 @@
 
 \def\parseXMLprocess#1#2%
   {\cleanupXMLprocess{#2}%
-   \convertcommand#1\to\ascii
+   \defconvertedcommand\ascii{#1}%
   %\writestatus{xml-process}{\ascii}
    \expanded
      {\executeifdefined
@@ -2308,7 +2308,7 @@
    \chardef\utfunicodetracer7% new
    \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
    \egroup
-   \convertcommand\@@XML@@string\to#1}
+   \defconvertedcommand#1\@@XML@@string}
 
 % this has to expand nicely:
 %
@@ -2325,7 +2325,7 @@
    \let\getXMLentity\expandedXMLentity % should this go in \simplify ?
    \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
    \egroup
-   \convertcommand\@@XML@@string\to#1}
+   \defconvertedcommand#1\@@XML@@string}
 
 \def\defXMLpar#1#2#3% to be documented
   {\@EA\def\@EA#1\csname\ifcsname\@@XMLvariable:#2:#3\endcsname\@@XMLvariable:#2:#3\else\s!empty\fi\endcsname}
@@ -2578,9 +2578,9 @@
 
 \def\XMLtyp#1#2#3%
   {\ifcsname\@@XMLvariable:#1:#2\endcsname
-     \@EA\convertcommand\csname\@@XMLvariable:#1:#2\endcsname\to\ascii
+     \@EA\defconvertedcommand\@EA\ascii\csname\@@XMLvariable:#1:#2\endcsname
    \else
-     \convertargument#3\to\ascii
+     \defconvertedargument\ascii{#3}%
    \fi
    \ascii}
 
@@ -2660,9 +2660,9 @@
 
 \def\defXMLattributestring#1#2#3#4%
   {\ifcsname\@@XMLvariable:#2:#3\endcsname
-     \@EA\convertcommand\csname\@@XMLvariable:#2:#3\endcsname\to#1%
+     \@EA\defconvertedcommand\@EA#1\csname\@@XMLvariable:#2:#3\endcsname
    \else
-     \convertargument#4\to#1%
+     \defconvertedargument#1{#4}%
    \fi}
 
 \def\XMLprocess#1%
@@ -2982,5 +2982,15 @@
    \@EA\def\@EA\flattenedXMLcontent\@EA{\flattenedXMLcontent}}
 
 \egroup
+
+\def\defXMLexpanded#1#2%
+  {\begingroup
+   \let\getXMLentity\expandedXMLentity
+   \expanded{\endgroup\edef\noexpand#1{#2}}}
+
+\def\gdefXMLexpanded#1#2%
+  {\begingroup
+   \let\getXMLentity\expandedXMLentity
+   \expanded{\endgroup\xdef\noexpand#1{#2}}}
 
 \protect \endinput

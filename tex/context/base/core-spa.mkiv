@@ -280,30 +280,30 @@
 \def\dovspacing[#1]%
   {\ctxlua{vspacing.analyse("\iffirstargument#1\else default\fi")}}
 
-\definevspacingamount[big]    [\bigskipamount]  [\openlineheight]
-\definevspacingamount[medium] [\medskipamount]  [.50\openlineheight]
-\definevspacingamount[small]  [\smallskipamount][.25\openlineheight]
-\definevspacingamount[line]   [\openlineheight] [\openlineheight]
-\definevspacingamount[formula][\medskipamount]  [.50\openlineheight]
-\definevspacingamount[white]  [\parskip]        [\openlineheight]
+\definevspacingamount[\v!big]    [\bigskipamount]  [\openlineheight]
+\definevspacingamount[\v!medium] [\medskipamount]  [.50\openlineheight]
+\definevspacingamount[\v!small]  [\smallskipamount][.25\openlineheight]
+\definevspacingamount[\v!line]   [\openlineheight] [\openlineheight]
+\definevspacingamount[\v!formula][\medskipamount]  [.50\openlineheight]
+\definevspacingamount[\v!white]  [\parskip]        [\openlineheight]
 
-\definevspacing[halfline][.5*line]
-\definevspacing[weak]    [order:0]
-\definevspacing[strong]  [order:100]
-\definevspacing[samepage][penalty:10000]
-\definevspacing[force]   [category:2]
-\definevspacing[disable] [category:5]
-\definevspacing[nowhite] [category:6]
-\definevspacing[goback]  [category:7]
-\definevspacing[always]  [category:0]
+\definevspacing[\v!halfline][.5*\v!line]
+\definevspacing[weak]       [order:0]
+\definevspacing[strong]     [order:100]
+\definevspacing[samepage]   [penalty:10000]
+\definevspacing[\v!force]   [category:2]
+\definevspacing[\v!disable] [category:5]
+\definevspacing[\v!nowhite] [category:6]
+\definevspacing[goback]     [category:7]
+\definevspacing[\v!always]  [category:0]
 
-\definevspacing[default][big]
+\definevspacing[\s!default][\v!big]
 
-\definevspacing[whatever][4*big]
-\vspacing[2*big,-medium,-3*small,whatever,halfline,order:10,category:4,strong,samepage]
-\vspacing[2*big,category:disable]
-\vspacing[2*big,disable]
-\vspacing[2*big,back]
+% \definevspacing[whatever][4*big]
+% \vspacing[2*big,-medium,-3*small,whatever,halfline,order:10,category:4,strong,samepage]
+% \vspacing[2*big,category:disable]
+% \vspacing[2*big,disable]
+% \vspacing[2*big,back]
 
 \protect \endinput
 

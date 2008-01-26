@@ -72,7 +72,7 @@
 \ifx\XMLRtoks\undefined \newtoks\XMLRtoks \fi
 
 \def\convertasciiafter#1#2%
-  {\convertargument#2\to\asciiafter
+  {\defconvertedargument\asciiafter{#2}%
    \@EA#1\@EA{\asciiafter}}
 
 \def\checkMMLoperator#1% #2

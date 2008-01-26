@@ -2701,7 +2701,7 @@ leader-pattern-width=12pt,
 \defineconversion[1][\numbers]
 
 \def\handleFOformat#1#2%
-  {\convertargument#2\to\ascii
+  {\defconvertedargument\ascii{#2}%
    \doifconversiondefinedelse\ascii{\convertnumber\ascii{#1}}{#2}}
 
 %D Element: fo:pagenumber-citation

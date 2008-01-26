@@ -298,186 +298,6 @@
           \smallskipamount\medskipamount\bigskipamount
       \fi}}
 
-%%%% dus niet weg
-
-% replaced
-%
-% \def\dosingleblanko#1%
-%   {\doassignsomeskip#1\to\blankskipamount
-%    \global\advance\blankskip \blankskipamount}
-%
-% \def\doblank#1%
-%   {\processallactionsinset % is maar een actie
-%      [#1]
-%      [    \v!groot=>\dosingleblanko\v!groot, % happens often
-%          \v!buiten=>\ifvmode\ifinner\blankoutertrue\fi\fi,
-%           \v!reset=>\global\blankresettrue,
-%        \v!flexibel=>\global\localblankflexibletrue,
-%            \v!vast=>\global\localblankfixedtrue,
-%            \v!back=>\geenblanko,
-%             \v!wit=>\global\advance\blankskip \parskip,
-%         \v!formule=>\global\advance\blankskip \medskipamount,
-%         \v!geenwit=>\global\blanknowhitetrue,
-%            -\v!wit=>\global\advance\blankskip -\parskip,
-%        \v!blokkeer=>\global\blankdisabletrue,
-%         \v!forceer=>\global\blankforcetrue,
-%           \v!regel=>\global\advance\blankskip \lineheight,
-%      \v!halveregel=>\ifgridsnapping\global\fuzzyvskiptrue\fi
-%                     \global\advance\blankskip .5\lineheight,
-%         \s!unknown=>\doindirectblanko{#1}]}
-%
-% \def\docomplexdoblank[#1]% pas op \relax's zijn nodig ivm volgende \if
-%   {\global\blankresetfalse
-%    \global\blankdisablefalse
-%    \global\blanknowhitefalse
-%    \global\localblankflexiblefalse
-%    \global\localblankfixedfalse
-%    \global\blankskip\zeropoint
-%    \global\blankforcefalse
-%    \blankouterfalse
-%    \processcommalist[#1]\doblank
-%    \ifdim\blankskip=\zeropoint\relax
-%      \iflocalblankflexible \dosingleblanko\currentblank \fi
-%      \iflocalblankfixed     \dosingleblanko\currentblank \fi
-%    \fi
-%    \ifblankouter
-%    \else
-%      \par
-%      \ifvmode          %in pos fonts gaat dit mis
-%        \ifblankforce   %\ifdim\prevdepth>\zeropoint\else
-%          % -1000pt signals top of page or column (\ejectcolumn)
-%          \verticalstrut\kern-\struttotal
-%        \fi
-%        \ifblankdisable
-%          \global\blankindeedfalse
-%          \edef\oldprevdepth{\the\prevdepth}%
-%          \prevdepth=\newprevdepth
-%        \else
-%          \global\blankindeedtrue
-%        \fi
-%        \ifblankreset
-%          \global\blankindeedtrue
-%          \ifdim\prevdepth=\newprevdepth
-%            \prevdepth=\oldprevdepth
-%          \fi
-%        \fi
-%        \ifblankindeed
-%          \ifdim\lastskip<\blankskip\relax
-%            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
-%            % equaling 1*groot, gives a groot=\parskip so adding a small
-%            % value makes it distinguishable; can also be done at parskip
-%            % setting time (better)
-%            \global\advance\blankskip by \mindimen\relax % = skip
-%            % test this on 2* + 3* and parskip groot
-%            \ifblanknowhite
-%              \global\advance\blankskip by -\parskip
-%            \else
-%              \ifdim\lastskip=\parskip
-%              \else  % force this due to previous comment
-%                \ifdim\parskip>\zeropoint\relax
-%                  \ifdim\blankskip<\parskip\relax
-%                    \global\blankskip\zeropoint
-%                  \else
-%                    \global\advance\blankskip by -\parskip
-%                  \fi
-%                \fi
-%              \fi
-%            \fi
-%            \ifblankflexible \else
-%              \blankskip=1\blankskip
-%            \fi
-%            \iflocalblankfixed
-%              \blankskip=1\blankskip
-%            \fi
-%            \iflocalblankflexible
-%              \blankskip=1\blankskip
-%                \!!plus\skipgluefactor\blankskip
-%                \!!minus\skipgluefactor\blankskip
-%            \fi
-%            \ifdim\prevdepth=\newprevdepth
-%            \else
-%              \iffuzzyvskip
-%                \removelastfuzzyvskip
-%                \fuzzyvskip\blankskip\relax
-%              \else
-%                \removelastskip
-%                \vskip\blankskip\relax
-%              \fi
-%            \fi
-%          \else
-%            \iffuzzyvskip
-%              \removelastfuzzyvskip
-%              \fuzzyvskip\blankskip\relax
-%            \fi
-%          \fi
-%        \fi
-%      \fi
-%    \fi
-%    \global\fuzzyvskipfalse
-%    \presetindentation}
-%
-% \def\complexdodoblank[#1]%
-%   {\flushnotes
-%    \ifopelkaar
-%      \ifinpagebody
-%        \expanded{\docomplexdoblank[#1]}% \expanded=nieuw
-%      \else
-%        \par
-%      \fi
-%    \else
-%      \expanded{\docomplexdoblank[#1]}% \expanded = nieuw
-%    \fi}
-%
-% % old
-% %
-% % \def\doindirectblanko#1%
-% %   {\ifundefined{\??bo#1}% <-etex \expandafter\ifx\csname\??bo#1\endcsname\relax
-% %      \expanded{\complexdodoblank[#1]}%
-% %    \else
-% %      \expandafter\complexdoblank\expandafter[\csname\??bo#1\endcsname]%
-% %    \fi}
-% %
-% % \def\complexdoblank[#1]% enables [force,8\bodyfontsize]
-% %   {\doifinstringelse{,}{#1}
-% %      {\expanded{\complexdodoblank[#1]}}
-% %      {\doifnumberelse{#1}
-% %         {\expanded{\complexdodoblank[#1]}}
-% %         {\doindirectblanko{#1}}}}
-% %
-% % new, more robust
-% %
-% % \def\doindirectblanko#1%
-% %   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
-% %    \ifundefined{\??bo\ascii}% <-etex \expandafter\ifx\csname\??bo#1\endcsname\rel
-% %      \dorepeatwithcommand[#1]\dosingleblanko
-% %    \else
-% %      \expandafter\complexdoblank\expandafter[\csname\??bo\ascii\endcsname]%
-% %    \fi}
-% %
-% % even more robust
-%
-% \def\doindirectblanko#1%
-%   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
-%    \ifundefined{\??bo\ascii}% <-etex \expandafter\ifx\csname\??bo#1\endcsname
-%      \expanded{\dorepeatwithcommand[#1]\noexpand\dosingleblanko}%
-%    \else
-%      \expandafter\complexdoblank\expandafter[\csname\??bo\ascii\endcsname]%
-%    \fi}
-
-% \def\TestBlank[#1]%
-%   {blank : {\convertargument#1\to\ascii\tttf\ascii}\blanko[#1]}
-%
-% \defineblank[whatever][2*big,2*big]
-% \TestBlank[]
-% \TestBlank[big]
-% \TestBlank[2*big]
-% \TestBlank[big,big,2*big]
-% \TestBlank[big]
-% \TestBlank[whatever]
-% \TestBlank[2*big,whatever]
-% \TestBlank[3\lineheight]
-
-% this will be replaced/enhanced
 
 \def\addblankskip#1#2#3{\global\advance\blankskip#1\ifgridsnapping#3\else#2\fi}
 
@@ -529,7 +349,7 @@
    \addblankskip+\bigskipamount\openlineheight}
 
 \def\doblank#1%
-  {\edef\ascii{#1}\convertcommand\ascii\to\ascii
+  {\edefconvertedargument\ascii{#1}%
    \ifx\ascii\empty\else
      \ifcsname\??bo\??bo\ascii\endcsname % internal def
        \csname\??bo\??bo\ascii\endcsname
@@ -541,7 +361,7 @@
    \fi}
 
 \def\redoblank#1%
-  {\edef\ascii{#1}\convertcommand\ascii\to\ascii
+  {\edefconvertedargument\ascii{#1}%
    \ifx\ascii\empty\else
      \ifcsname\??bo\??bo\ascii\endcsname % internal def
        \csname\??bo\??bo\ascii\endcsname
@@ -999,7 +819,7 @@
    \medskipamount  \bigskipamount \divide\medskipamount  \plustwo
    \smallskipamount\bigskipamount \divide\smallskipamount\plusfour}%
 
-\def\complexsetupblank[#1]% more \let's
+\def\complexsetupblank[#1]% more \let's -> this also wil become installable
   {\ifgridsnapping
      \blankflexiblefalse
    \else
@@ -1013,32 +833,24 @@
      [ \v!flexible=>\dosetupblank\appliedblankskip,
           \v!fixed=>\dosetupblank\appliedblankskip,
            \v!line=>\edef\appliedblankskip{\linedistance}%
-                    \dosetupblank\appliedblankskip
-                    ,%\let\deblanko\v!big,
+                    \dosetupblank\appliedblankskip,
        \v!halfline=>\scratchskip.5\linedistance
                     \edef\appliedblankskip{\the\scratchskip}%
-                    \dosetupblank\appliedblankskip
-                    ,%\let\deblanko\v!medium,
+                    \dosetupblank\appliedblankskip,
             \v!big=>\ifgridsnapping
                       \edef\appliedblankskip{\linedistance}%
                       \dosetupblank\appliedblankskip
                     \fi
-                    \let\currentblank\v!big  % was \def, why ?
-                    ,%\let\deblanko\v!big,
-         \v!medium=>\let\currentblank\v!medium % was \def, why ?
-                    ,%\let\deblanko\v!medium,
-          \v!small=>\let\currentblank\v!small  % was \def, why ?
-                    ,%\let\deblanko\v!small,
-         \v!normal=>\dosetupblank\appliedblankskip
-                    ,%\let\deblanko\v!big,
+                    \let\currentblank\v!big,
+         \v!medium=>\let\currentblank\v!medium,
+          \v!small=>\let\currentblank\v!small,
+         \v!global=>\let\currentblank\v!global,
+         \v!normal=>\dosetupblank\appliedblankskip,
        \v!standard=>\edef\appliedblankskip{\skipfactor\linedistance}%
-                    \dosetupblank\appliedblankskip
-                    ,%\let\deblanko\v!big,
-        \s!default=>\dosetupblank\appliedblankskip
-                    ,%\let\deblanko\v!big,
+                    \dosetupblank\appliedblankskip,
+        \s!default=>\dosetupblank\appliedblankskip,
         \s!unknown=>\let\appliedblankskip\commalistelement
-                    \dosetupblank\appliedblankskip
-                    ]%\let\deblanko\v!big]%
+                    \dosetupblank\appliedblankskip]%
    \simplesetupwhitespace}
 
 % \definecomplexorsimpleempty\setupblank
@@ -1247,16 +1059,14 @@
       \toggleindentation}}
 
 \def\docomplexsetupindentingA#1%
-  {\edef\!!stringa{#1}% catch #1=\somedimen
-   \convertcommand\!!stringa\to\!!stringa
+  {\edefconvertedargument\!!stringa{#1}%
    \doifundefined{\??in:\!!stringa}%
      {\edef\currentindentation{#1}%
       \let\normalindentation\currentindentation
       \simplesetupindenting}}
 
 \def\docomplexsetupindentingB#1%
-  {\edef\!!stringa{#1}% catch #1=\somedimen
-   \convertcommand\!!stringa\to\!!stringa
+  {\edefconvertedargument\!!stringa{#1}% catch #1=\somedimen
    \executeifdefined{\??in:\!!stringa}\donothing}
 
 \def\simplesetupindenting % empty case, a it strange, needed this way?
@@ -1693,57 +1503,12 @@
 
 \newskip\ctxparskip \ctxparskip\zeropoint
 
-\newif\ifwitruimteflexibel \witruimteflexibeltrue
+\settrue\flexiblewhitespace
 
 \def\blankokleinmaat   {\smallskipamount}
 \def\blankomiddelmaat  {\medskipamount}
 \def\blankogrootmaat   {\bigskipamount}
 \def\currentwhitespace {\zeropoint}
-
-% \def\stelwitruimteopnieuwin
-%   {\expanded{\setupwhitespace[\currentwhitespace]}}
-%
-% \newif\ifwitruimteflexibel \witruimteflexibeltrue
-%
-% \definecomplexorsimple\setupwhitespace
-%
-% \def\complexsetupwhitespace[#1]%
-%   {\expanded{\dosetupwhitespace[#1]}%
-%    \dodosetupwhitespace}
-%
-% \def\dosetupwhitespace[#1]%
-%   {\processallactionsinset
-%      [#1]
-%      [\v!herstel=>,
-%          \v!vast=>\witruimteflexibelfalse,
-%      \v!flexibel=>\witruimteflexibeltrue,
-%         \v!regel=>\ctxparskip\baselineskip,
-%    \v!halveregel=>\ctxparskip.5\baselineskip,
-%       \s!default=>\doifnot\currentwhitespace\v!geen\stelwitruimteopnieuwin,
-%       \s!unknown=>\@EA\assigndimension\@EA{\commalistelement} % \@EA is nodig
-%                     \ctxparskip\blankokleinmaat\blankomiddelmaat\blankogrootmaat]}   % te vangen
-%
-% \def\dodosetupwhitespace
-%   {\edef\currentwhitespace
-%      {\ifdim\ctxparskip=\zeropoint
-%         \v!geen
-%       \else
-%         \ifgridsnapping\the\baselineskip\else\the\ctxparskip\fi
-%       \fi}%
-%    \ifgridsnapping
-%      \witruimteflexibelfalse
-%      \ctxparskip1\ctxparskip
-%      \ifdim\ctxparskip>\zeropoint
-%        \ctxparskip\baselineskip
-%      \fi
-%    \else
-%      \ifwitruimteflexibel \else \ctxparskip1\ctxparskip \fi
-%    \fi
-%    \parskip\ctxparskip}
-%
-% \def\simplesetupwhitespace% == snelle \setupwhitespace[\s!default]
-%   {\doifnot\currentwhitespace\v!geen\stelwitruimteopnieuwin
-%    \dodosetupwhitespace}
 
 \definecomplexorsimple\setupwhitespace
 
@@ -1760,15 +1525,27 @@
   {\processcommacommand[\currentwhitespace]\dowhitespacemethod
    \dodosetupwhitespace}
 
+\chardef\baselinegridmode=0 % option in layout / 1=permit_half_lines
+
 \def\dodosetupwhitespace
   {\ifgridsnapping
-     \witruimteflexibelfalse
+     \setfalse\flexiblewhitespace
      \ctxparskip1\ctxparskip
      \ifdim\ctxparskip>\zeropoint
-       \ctxparskip\baselineskip
+       \ifcase\baselinegridmode
+         \ctxparskip\baselineskip % normal ! ! ! ! !!
+       \or
+         \ifdim\scratchdimen=\baselineskip % maybe range
+           \ctxparskip\baselineskip % normal ! ! ! ! !!
+         \else
+           \ctxparskip\numexpr\ctxparskip/\dimexpr.5\lineheight\relax\relax\dimexpr.5\lineheight\relax
+         \fi
+       \else
+         \ctxparskip\baselineskip % normal ! ! ! ! !!
+       \fi
      \fi
    \else
-     \ifwitruimteflexibel \else \ctxparskip1\ctxparskip \fi
+     \ifconditional\flexiblewhitespace \else \ctxparskip1\ctxparskip \fi
    \fi
    \parskip\ctxparskip}
 
@@ -1777,8 +1554,8 @@
 \def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
 
 \definewhitespacemethod [\v!fix]      {}
-\definewhitespacemethod [\v!fixed]    {\witruimteflexibelfalse}
-\definewhitespacemethod [\v!flexible] {\witruimteflexibeltrue}
+\definewhitespacemethod [\v!fixed]    {\setfalse\flexiblewhitespace}
+\definewhitespacemethod [\v!flexible] {\settrue\flexiblewhitespace}
 \definewhitespacemethod [\v!line]     {\ctxparskip  \baselineskip}
 \definewhitespacemethod [\v!halfline] {\ctxparskip.5\baselineskip}
 \definewhitespacemethod [\v!none]     {\ctxparskip  \zeropoint}
@@ -1814,10 +1591,10 @@
      {\ctxparskip\the\ctxparskip
       \parskip\the\parskip
       \noexpand\def\noexpand\currentwhitespace{\currentwhitespace}%
-      \ifwitruimteflexibel
-        \noexpand\witruimteflexibeltrue
+      \ifconditional\flexiblewhitespace
+        \noexpand\settrue\flexiblewhitespace
       \else
-        \noexpand\witruimteflexibelfalse
+        \noexpand\setfalse\flexiblewhitespace
       \fi}}
 
 % deze variant is nodig binnen \startopelkaar
@@ -3194,8 +2971,7 @@
 %    \relax}
 
 \def\dosetleftskipadaption#1%
-  {\edef\ascii{@lsa@#1}%
-   \convertcommand\ascii\to\ascii
+  {\edefconvertedargument\ascii{@lsa@#1}%
    \leftskipadaption
      \ifcsname\ascii\endcsname
        \csname\ascii\endcsname
@@ -3205,8 +2981,7 @@
    \relax}
 
 \def\dosetrightskipadaption#1%
-  {\edef\ascii{@rsa@#1}%
-   \convertcommand\ascii\to\ascii
+  {\edefconvertedargument\ascii{@rsa@#1}%
    \rightskipadaption
      \ifcsname\ascii\endcsname
        \csname\ascii\endcsname

@@ -600,8 +600,6 @@ function scripts.context.ctx()
     scripts.context.run(ctxdata)
 end
 
-input.verbose = false
-
 banner = banner .. " | context tools "
 
 messages.help = [[
@@ -621,7 +619,7 @@ elseif environment.argument("ctx") then
     scripts.context.ctx()
 elseif environment.argument("help") then
     input.help(banner,messages.help)
-elseif environment.filename then
+elseif environment.files[1] then
     scripts.context.run()
 else
     input.help(banner,messages.help)

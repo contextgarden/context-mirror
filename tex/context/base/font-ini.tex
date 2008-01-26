@@ -2721,7 +2721,7 @@
 %D easily be made \ETEX\ aware.
 
 %D \macros
-%D   {everybodyfont,Everybodyfont}
+%D   {everybodyfont,Everybodyfont,everyglobalbodyfont}
 %D
 %D Every change in bodyfont size has conseqences for the baseline
 %D distance and skips between paragraphs. These are initialized
@@ -2792,27 +2792,10 @@
 
 \chardef\fontdigits=1
 
-% \def\donormalizedbodyfontsize#1.#2#3#4\to#5%
-%   {\edef#5%
-%      {#1%
-%       \ifcase\fontdigits\space
-%       \or
-%         \ifcase#2 \else.#2\fi % and not: \ifcase#2\else ...
-%       \else
-%         \ifcase#2#3 \else.#2\ifcase#3 \else#3\fi\fi % not: \ifcase#2#3\else ...
-%       \fi
-%       pt}}
-%
-% \def\normalizebodyfontsize#1\to#2%
-%   {\scratchdimen#1\relax
-%    \@EA\@EA\@EA\donormalizedbodyfontsize
-%      \@EA\WITHOUTPT\the\scratchdimen00\to#2}
-
 \def\normalizebodyfontsize#1\to#2%
   {\scratchdimen#1\relax
    \ifcase\fontdigits\advance\scratchdimen.5\points\fi
-   \@EA\@EA\@EA\donormalizedbodyfontsize
-     \@EA\WITHOUTPT\the\scratchdimen00\to#2}
+   \@EA\@EA\@EA\donormalizedbodyfontsize\@EA\WITHOUTPT\the\scratchdimen00\to#2}
 
 \def\donormalizedbodyfontsize#1.#2#3#4\to#5% \points ?
   {\edef#5%
@@ -2965,6 +2948,7 @@
    \doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]%
    \the\everybodyfont
+   \the\everyglobalbodyfont
    \saveinterlinespace
    \global\let\preloadfonts\relax}
 
@@ -3470,7 +3454,8 @@
       \normalizebodyfontsize\globalbodyfontsize\to\normalizedglobalbodyfontsize
       \let\globalfontstyle\fontstyle
       \ifloadingfonts\else
-        \the\everybodyfont % indeed needed in case \dosetfont is not executed
+        \the\everybodyfont
+        \the\everyglobalbodyfont
         \saveinterlinespace
       \fi}}
 
@@ -3702,6 +3687,7 @@
   {\doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]%
    \the\everybodyfont
+   \the\everyglobalbodyfont
    \saveinterlinespace}
 
 %D \macros
@@ -3722,7 +3708,9 @@
    \doswitchpoints[\normalizedglobalbodyfontsize]%
    \doswitchstyle[\globalfontstyle]%
    \redoconvertfont % just in case a pagebreak occurs
-   \tf \the\everybodyfont
+   \tf
+   \the\everybodyfont
+   \the\everyglobalbodyfont
    \saveinterlinespace}
 
 \def\partialrestoreglobalbodyfont

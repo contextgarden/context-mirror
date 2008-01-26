@@ -49,9 +49,9 @@
    \@EA\@EA\@EA\@EA\@EA\@EA\@EA#1\@EA\@EA\@EA\@EA\@EA\@EA\@EA{\@EA\@EA\@EA\csexpandeda\@EA\@EA\@EA}\@EA\@EA\@EA{\@EA\csexpandedb\@EA}\@EA{\csexpandedc}}
 
 % \def\xx{XX}\setvalue{xx:yy}{abc \xx def}\def\param#1{\csname xx:#1\endcsname}
-% \def\testa    #1{\convertargument#1\to\ascii{\tttf\ascii}}
-% \def\testb  #1#2{\convertargument#1 #2\to\ascii{\tttf\ascii}}
-% \def\testc#1#2#3{\convertargument#1 #2 #3\to\ascii{\tttf\ascii}}
+% \def\testa    #1{\defconvertedargument\ascii{#1}{\tttf\ascii}}
+% \def\testb  #1#2{\defconvertedargument\ascii{#1 #2}{\tttf\ascii}}
+% \def\testc#1#2#3{\defconvertedargument\ascii{#1 #2 #3}{\tttf\ascii}}
 % \noindent 1 \csnameexpandedoneargument   \testa{\param{yy}}
 % \noindent 2 \csnameexpandedtwoarguments  \testb{\param{yy}}{\param{yy}}
 % \noindent 3 \csnameexpandedthreearguments\testc{\param{yy}}{\param{yy}}{\param{yy}}

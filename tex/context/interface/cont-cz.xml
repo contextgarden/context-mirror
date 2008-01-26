@@ -417,7 +417,6 @@
       <cd:constant type="12pt"/>
       <cd:constant type="male"/>
       <cd:constant type="velke"/>
-      <cd:constant type="globalne"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

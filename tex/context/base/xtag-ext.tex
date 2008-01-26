@@ -192,7 +192,7 @@
 \gdef\doifelseXMLelementcontent#1%
   {\ifcsname\@@XMLsave:#1\endcsname
      \bgroup
-     \@EA\convertcommand\csname\@@XMLsave:#1\endcsname\to\ascii
+     \@EA\defconvertedcommand\@EA\ascii\csname\@@XMLsave:#1\endcsname
      \setbox\scratchbox\hbox{\ignorespaces\ascii\unskip\unskip\unskip}%
      \ifdim\wd\scratchbox>\zeropoint
        \egroup\@EAEAEA\firstoftwoarguments
@@ -206,8 +206,8 @@
 \gdef\doifelseXMLelementequals#1#2%
   {\ifcsname\@@XMLsave:#1\endcsname
      \bgroup
-     \@EA\convertcommand\csname\@@XMLsave:#1\endcsname\to\asciia
-     \convertargument#2\to\asciib
+     \@EA\defconvertedcommand\@EA\asciia\csname\@@XMLsave:#1\endcsname
+     \defconvertedargument\asciib{#2}%
      \ifx\asciia\asciib
        \egroup\@EAEAEA\firstoftwoarguments
      \else
@@ -225,7 +225,7 @@
 
 \gdef\convertXMLelement#1\to#2%
   {\ifcsname\@@XMLsave:#1\endcsname
-     \@EA\convertcommand\csname\@@XMLsave:#1\endcsname\to#2%
+     \@EA\defconvertedcommand\@EA#2\csname\@@XMLsave:#1\endcsname
    \else
      \let#2\ascii
    \fi}
@@ -355,7 +355,7 @@
 
 \bgroup \catcode`\<=\active
 
-\long\gdef\expandxmlargument#1\to
+\long\gdef\defexpandedxmlargument#1#2#3%
   {\begingroup
    \let\uppercase\firstofoneargument
    \def\getXMLhexcharacter##1{\numbertoutp{"##1}}% maps to private if needed
@@ -371,9 +371,9 @@
    \fi
    \let\uchar\relax
    \let\unicodechar\relax
-   \xdef\@@globalexpanded{#1}%
+   \xdef\@@globalexpanded{#3}%
    \endgroup
-   \convertcommand\@@globalexpanded\to}
+   #1#2\@@globalexpanded}
 
 \egroup
 
@@ -389,9 +389,14 @@
 
 \chardef\xmlexpandmode\plusone
 
-\installexpander {xml}     {\chardef\xmlexpandmode\plusone\expandxmlargument}
-\installexpander {xml:cmd} {\chardef\xmlexpandmode\plusone\expandxmlargument}
-\installexpander {xml:utf} {\chardef\xmlexpandmode\plustwo\expandxmlargument}
+\def\defexpandedxmlargumentcmd {\chardef\xmlexpandmode\plusone\defexpandedxmlargument\defconvertedcommand}
+\def\defexpandedxmlargumentutf {\chardef\xmlexpandmode\plustwo\defexpandedxmlargument\defconvertedcommand}
+\def\gdefexpandedxmlargumentcmd{\chardef\xmlexpandmode\plusone\defexpandedxmlargument\gdefconvertedcommand}
+\def\gdefexpandedxmlargumentutf{\chardef\xmlexpandmode\plustwo\defexpandedxmlargument\gdefconvertedcommand}
+
+\installexpander {xml}     \defexpandedxmlargumentcmd \gdefexpandedxmlargumentcmd
+\installexpander {xml:cmd} \defexpandedxmlargumentcmd \gdefexpandedxmlargumentcmd
+\installexpander {xml:utf} \defexpandedxmlargumentutf \gdefexpandedxmlargumentutf
 
 \def\XMLtexmath#1{\begingroup\setnormalcatcodes\scantokens{\mathematics{#1}\ignorespaces}\endgroup}
 

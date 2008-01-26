@@ -1050,6 +1050,14 @@ function table.count(t)
     return n
 end
 
+function table.swapped(t)
+    local s = { }
+    for k, v in pairs(t) do
+        s[v] = k
+    end
+    return s
+end
+
 --~ function table.are_equal(a,b)
 --~     return table.serialize(a) == table.serialize(b)
 --~ end
@@ -1480,9 +1488,12 @@ function os.resultof(command)
     return io.popen(command,"r"):read("*all")
 end
 
---~ if not os.exec then -- still not ok
+if not os.exec then -- still not ok
     os.exec = os.execute
---~ end
+end
+if not os.spawn then -- still not ok
+    os.spawn = os.execute
+end
 
 function os.launch(str)
     if os.platform == "windows" then
@@ -1563,6 +1574,10 @@ end
 
 function file.basename(name)
     return name:match("^.+[/\\](.-)$") or name
+end
+
+function file.nameonly(name)
+    return ((name:match("^.+[/\\](.-)$") or name):gsub("%..*$",""))
 end
 
 function file.extname(name)
@@ -3411,14 +3426,20 @@ do
 
     function xml.include(xmldata,pattern,attribute,recursive,findfile)
         -- parse="text" (default: xml), encoding="" (todo)
-        pattern   = pattern   or 'include'
-        attribute = attribute or 'href'
+        pattern = pattern or 'include'
+        -- attribute = attribute or 'href'
         local function include(r,d,k)
             local ek, name = d[k], nil
-            if ek.at then
-                for a in attribute:gmatch("([^|]+)") do
-                    name = ek.at[a]
-                    if name then break end
+            if not attribute or attribute == "" then
+                local ekdt = ek.dt
+                name = (type(ekdt) == "table" and ekdt[1]) or ekdt
+            end
+            if not name then
+                if ek.at then
+                    for a in (attribute or "href"):gmatch("([^|]+)") do
+                        name = ek.at[a]
+                        if name then break end
+                    end
                 end
             end
             if name then
@@ -3439,6 +3460,8 @@ do
                     else
                         xml.empty(d,k)
                     end
+                else
+                    xml.empty(d,k)
                 end
             else
                 xml.empty(d,k)
@@ -5109,22 +5132,121 @@ function input.unexpanded_path(instance,str)
     return file.join_path(input.unexpanded_path_list(instance,str))
 end
 
+--~ function input.expanded_path_list(instance,str)
+--~     if not str then
+--~         return { }
+--~     elseif instance.savelists then
+--~         -- engine+progname hash
+--~         str = str:gsub("%$","")
+--~         if not instance.lists[str] then -- cached
+--~             local lst = input.split_path(input.expansion(instance,str))
+--~             instance.lists[str] = input.aux.expanded_path(instance,lst)
+--~         end
+--~         return instance.lists[str]
+--~     else
+--~         local lst = input.split_path(input.expansion(instance,str))
+--~         return input.aux.expanded_path(instance,lst)
+--~     end
+--~ end
+
+do
+    local done = { }
+
+    function input.reset_extra_path(instance)
+        local ep = instance.extra_paths
+        if not ep then
+            ep, done = { }, { }
+            instance.extra_paths = ep
+        elseif #ep > 0 then
+            instance.lists, done = { }, { }
+        end
+    end
+
+    function input.register_extra_path(instance,paths,subpaths)
+        if paths and paths ~= "" then
+            local ep = instance.extra_paths
+            if not ep then
+                ep = { }
+                instance.extra_paths = ep
+            end
+            local n = #ep
+            if subpath and subpaths ~= "" then
+                for p in paths:gmatch("[^,]+") do
+                    for s in subpaths:gmatch("[^,]+") do
+                        local ps = p .. "/" .. s
+                        if not done[ps] then
+                            ep[#ep+1] = input.clean_path(ps)
+                            done[ps] = true
+                        end
+                    end
+                end
+            else
+                for p in paths:gmatch("[^,]+") do
+                    if not done[p] then
+                        ep[#ep+1] = input.clean_path(p)
+                        done[p] = true
+                    end
+                end
+            end
+            if n < #ep then
+                instance.lists = { }
+            end
+        end
+    end
+
+end
+
 function input.expanded_path_list(instance,str)
+    local function made_list(list)
+        local ep = instance.extra_paths
+        if not ep or #ep == 0 then
+            return list
+        else
+            local done, new = { }, { }
+            -- honour . .. ../.. but only when at the start
+            for k, v in ipairs(list) do
+                if not done[v] then
+                    if v:find("^[%.%/]$") then
+                        done[v] = true
+                        new[#new+1] = v
+                    else
+                        break
+                    end
+                end
+            end
+            -- first the extra paths
+            for k, v in ipairs(ep) do
+                if not done[v] then
+                    done[v] = true
+                    new[#new+1] = v
+                end
+            end
+            -- next the formal paths
+            for k, v in ipairs(list) do
+                if not done[v] then
+                    done[v] = true
+                    new[#new+1] = v
+                end
+            end
+            return new
+        end
+    end
     if not str then
-        return { }
+        return ep or { }
     elseif instance.savelists then
         -- engine+progname hash
         str = str:gsub("%$","")
         if not instance.lists[str] then -- cached
-            local lst = input.split_path(input.expansion(instance,str))
+            local lst = made_list(input.split_path(input.expansion(instance,str)))
             instance.lists[str] = input.aux.expanded_path(instance,lst)
         end
         return instance.lists[str]
     else
         local lst = input.split_path(input.expansion(instance,str))
-        return input.aux.expanded_path(instance,lst)
+        return made_list(input.aux.expanded_path(instance,lst))
     end
 end
+
 function input.expand_path(instance,str)
     return file.join_path(input.expanded_path_list(instance,str))
 end
@@ -5991,7 +6113,11 @@ end
 
 function input.clean_path(str)
 --~     return (((str:gsub("\\","/")):gsub("^!+","")):gsub("//+","//"))
-    return ((str:gsub("\\","/")):gsub("^!+",""))
+    if str then
+        return ((str:gsub("\\","/")):gsub("^!+",""))
+    else
+        return nil
+    end
 end
 
 function input.do_with_path(name,func)
@@ -7191,12 +7317,11 @@ function input.runners.execute_script(instance,fullname,internal)
                         result = binary .. " " .. result
                     end
                     local before, after = environment.split_arguments(fullname)
-                 -- environment.initialize_arguments(after)
-                 -- local command = result .. " " .. environment.reconstruct_commandline(environment.original_arguments) -- bugged
                     local command = result .. " " .. environment.reconstruct_commandline(after)
                     input.report("")
                     input.report("executing: " .. command)
                     input.report("\n \n")
+                    io.flush()
                     local code = os.exec(command)
                     return code == 0
                 end
@@ -7217,11 +7342,12 @@ function input.runners.execute_program(instance,fullname)
             local before, after = environment.split_arguments(fullname)
             environment.initialize_arguments(after)
             fullname = fullname:gsub("^bin:","")
-            local command = fullname .. " " .. environment.reconstruct_commandline(environment.original_arguments)
+            local command = fullname .. " " .. environment.reconstruct_commandline(after)
             input.report("")
---~             input.report("executing: " .. command)
+            input.report("executing: " .. command)
             input.report("\n \n")
-            local code = os.exec(command)
+            io.flush()
+            local code = os.exec(command) -- (fullname,unpack(after)) does not work
             return code == 0
         end
     end

@@ -643,6 +643,7 @@
    \restorecatcodes
    % collected resets (token list)
    \resetfigurevariables
+\resetwantedconversionvariables % new here
    % analyze filename and set wanted variables
    \analyzefigurefilename{#3}{#2}%
    \doanalyzefiguredimensionsfromfile
@@ -656,8 +657,7 @@
    % now we really start
    \checkiffigureobjectpresent   % first guess, we may not yet know the typespec
    \checkifknownfigureobjectpresent
-   \checkforconvertedfigure
-   \checkforfigurefile
+   \checkforfigurefilepresence
    \checkiffigureobjectpresent   % to be sure, in case we now know the typespec
    \checkfigurerenderingoptions  % was later, moved here
    \checknaturalfiguredimensions % inherit from global values and/or fallbacks
@@ -676,6 +676,10 @@
    % restore variables
    \poppublicfigurevariables
    \doshowfigurestate{end}}
+
+\def\checkforfigurefilepresence
+  {\checkforconvertedfigure
+   \checkforfigurefile}
 
 %D Figure objects.
 
@@ -919,13 +923,13 @@
         \fi
         \let\wantedfiguretype    \empty
         \let\wantedfiguretypelist\figuretypes % hm, why needed
+        \ifx\figurepathlist\empty
+          \let\figurepathlist\wantedfigurepath
+        \else
+          \edef\figurepathlist{\wantedfigurepath,\figurepathlist}%
+        \fi
         \doshowfigurestate{conversion path : \wantedconversionpath}%
         \doshowfigurestate{conversion name : \wantedconversionname}}%
-\ifx\figurepathlist\empty
-    \let\figurepathlist\wantedfigurepath
-\else
-    \edef\figurepathlist{\wantedfigurepath,\figurepathlist}%
-\fi
         \doshowfigurestate{new figure path : \wantedfigurepath}%
    \fi}
 

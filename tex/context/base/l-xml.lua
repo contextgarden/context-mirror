@@ -1577,14 +1577,20 @@ do
 
     function xml.include(xmldata,pattern,attribute,recursive,findfile)
         -- parse="text" (default: xml), encoding="" (todo)
-        pattern   = pattern   or 'include'
-        attribute = attribute or 'href'
+        pattern = pattern or 'include'
+        -- attribute = attribute or 'href'
         local function include(r,d,k)
             local ek, name = d[k], nil
-            if ek.at then
-                for a in attribute:gmatch("([^|]+)") do
-                    name = ek.at[a]
-                    if name then break end
+            if not attribute or attribute == "" then
+                local ekdt = ek.dt
+                name = (type(ekdt) == "table" and ekdt[1]) or ekdt
+            end
+            if not name then
+                if ek.at then
+                    for a in (attribute or "href"):gmatch("([^|]+)") do
+                        name = ek.at[a]
+                        if name then break end
+                    end
                 end
             end
             if name then
@@ -1605,6 +1611,8 @@ do
                     else
                         xml.empty(d,k)
                     end
+                else
+                    xml.empty(d,k)
                 end
             else
                 xml.empty(d,k)

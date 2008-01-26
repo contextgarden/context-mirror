@@ -2,7 +2,7 @@
 %D   [       file=math-tex,
 %D        version=2001.04.12,
 %D       subtitle=Plain Specials,
-%D         author={Hans Hagen \& Taco Hoekwater},
+%D         author={Hans Hagen, Taco Hoekwater \& Aditya Mahajan},
 %D           date=\currentdate,
 %D      copyright=\PRAGMA]
 %C
@@ -25,6 +25,46 @@
 \definefamilysynonym [default] [lcgreek]      [mi]
 \definefamilysynonym [default] [ucgreek]      [mr]
 \definefamilysynonym [default] [vargreek]     [mi]
+
+
+%D \macros
+%D   {\setupmathematics}
+%D
+%D Configuration for integrals. (If needed we can speed this up and make it
+%D installable; no processaction is needed then).
+
+\chardef\intlimitcode\zerocount  % 0 nolimits 1 displaylimits 2 limits
+
+\def\intlimits
+  {\ifcase\intlimitcode \nolimits \or \displaylimits \or \limits \fi}
+
+\def\setupmathematics
+  {\dosingleargument\dosetupmathematics}
+
+\def\dosetupmathematics[#1]%
+  {\getparameters[\??mo][#1]
+   \processaction[\@@mointegral]
+      [ nolimits=>\chardef\intlimitcode\zerocount,
+   displaylimits=>\chardef\intlimitcode\plusone,
+          limits=>\chardef\intlimitcode\plustwo]}
+
+%D \startbuffer
+%D   $\int_a^b f(x) dx$ and also
+%D   $\iint_a^b f(x,y) dxdy$, $\iiint_a^b f(x,y) dxdy$,
+%D   $\iiiint_a^b f(x) dx$
+%D   \startformula
+%D     \int_a^b f(x) dx \quad
+%D     \iint_a^b f(x) dx \quad
+%D     \iiint_a^b f(x) dx \quad
+%D     \iiiint_a^b f(x) dx \quad
+%D   \stopformula
+%D \stopbuffer
+%D
+%D Default: \getbuffer
+%D
+%D Displaylimits: \setupmathematics[integral=displaylimits] \getbuffer
+%D
+%D Limits: \setupmathematics[integral=limits] \getbuffer
 
 \startmathcollection [default]
 
@@ -321,8 +361,8 @@
 \startmathcollection[default]
 
 \definemathcommand [lnot]   {\neg}
-\definemathcommand [int]    {\intop\nolimits}
-\definemathcommand [oint]   {\ointop\nolimits}
+\definemathcommand [int]    {\intop \intlimits}
+\definemathcommand [oint]   {\ointop\intlimits}
 \definemathcommand [land]   {\wedge}
 \definemathcommand [lor]    {\vee}
 \definemathcommand [neq]    {\not=}
@@ -648,9 +688,10 @@
 
 \def\repeatintegral#1%
   {\scratchtoks\emptytoks
-   \let\dointlimits\nolimits
+   \let\dointlimits\donothing
+   \let\dodointlimits\intlimits
    \dorecurse{#1}{\appendtoks \intop \dointkern \to \scratchtoks}
-   \appendtoks \intop \dointlimits \to \scratchtoks
+   \appendtoks \intop \dointlimits \dodointlimits \to \scratchtoks
    \edef\dodorepeatintegral{\the\scratchtoks}%
    \futurelet\next\dorepeatintegral}
 
@@ -659,8 +700,10 @@
 %D subscript visually centered.
 
 \def\dorepeatintegral
-   {\ifx\next\limits        \dointlimitcorrection \else
-    \ifx\next\displaylimits \dointlimitcorrection \fi\fi
+   {\ifx\next\limits          \dointlimitcorrection \else
+    \ifx\next\displaylimits   \dointlimitcorrection \else
+    \ifx\next\nolimits        \donothing            \else
+    \ifcase\intlimitcode\else \dointlimitcorrection \fi\fi\fi\fi
     \dodorepeatintegral}
 
 \def\dointlimitcorrection
@@ -668,5 +711,9 @@
    \mathop\bgroup
      \mkern7mu\mathchoice{\mkern2mu}{}{}{}%
      \let\dointlimits\egroup}
+
+
+\setupmathematics
+  [integral=nolimits]
 
 \protect \endinput

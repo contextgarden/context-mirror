@@ -486,7 +486,7 @@
    \aftergroup\xdef
    \aftergroup#2%
    \aftergroup{%
-   \expanded{\convertargument#1\noexpand\to\noexpand\JScode}%
+   \expanded{\defconvertedargument\noexpand\JScode{#1}}%
    \expandafter\handletokens\JScode\with\dodoPSsanitizeJScode
    \aftergroup}%
    \endgroup

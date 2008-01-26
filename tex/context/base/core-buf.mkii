@@ -19,23 +19,23 @@
 \long\def\mksetbuffer#1%
   {\edef\bufferfilename{\TEXbufferfile{\currentbuffer}}%
    \immediate\openout\tmpblocks\bufferfilename
-   \convertargument#1\to\ascii
+   \defconvertedargument\ascii{#1}%
    \immediate\write\tmpblocks{\ascii}%
    \immediate\closeout\tmpblocks}
 
 \def\mkstartbuffer#1#2#3#4#5% ook grabben a la mkiv / no, we need to add par anchors
   {\doifelsenothing{#4}
      {\letbeundefined{\e!stop\v!buffer}% % \let\stopbuffer=\relax   % \undefined
-      \@EA\@EA\@EA\convertargument\@EA\e!start\v!buffer\to\beginofblock % else a space
-      \@EA\@EA\@EA\convertargument\@EA\e!stop \v!buffer\to\endofblock
+      \edefconvertedargument\beginofblock{\e!start\v!buffer}%
+      \edefconvertedargument\endofblock  {\e!stop \v!buffer}%
       \ifcase\buffernestmode
         \let\processnextbufferline\processnextbufferlineB
       \else
         \let\processnextbufferline\processnextbufferlineA
       \fi}
      {\letbeundefined{#4}% \letvalue{#4}=\relax     % \undefined
-      \@EA\convertargument\csname#3\endcsname\to\beginofblock
-      \@EA\convertargument\csname#4\endcsname\to\endofblock
+      \@EA\defconvertedargument\@EA\beginofblock\@EA{\csname#3\endcsname}% we could use defconvertedcommand here (no \@EA)
+      \@EA\defconvertedargument\@EA\endofblock  \@EA{\csname#4\endcsname}% we could use defconvertedcommand here (no \@EA)
       \ifcase\buffernestmode
           \let\processnextbufferline\processnextbufferlineB
         \or
@@ -73,7 +73,8 @@
 
 % support macros
 
-\expandafter \convertargument \gobbleoneargument @ \to \emptybufferline
+% \expandafter \convertargument \gobbleoneargument @ \to \emptybufferline
+\edefconvertedargument\emptybufferline{ }
 
 \ifx\tmpblocks\undefined \newwrite\tmpblocks \fi
 
@@ -99,7 +100,7 @@
 
 \long\def\processnextbufferlineA#1%
   {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
-   \convertargument#1 \to\next
+   \defconvertedargument\next{#1 }%
    \doifinstringelse{\delcharacter\letterpercent}{\delcharacter\next}
      {\secondoftwoarguments}
      {\doifincsnameelse\endofblock\next
@@ -115,7 +116,7 @@
            {\secondoftwoarguments}}}}
 
 \long\def\processnextbufferlineB#1% #2#3%
-  {\convertargument#1 \to\next
+  {\defconvertedargument\next{#1 }%
    \ifx\next\emptybufferline
      \ifsegmentatebuffer \emptybufferlinetrue \fi
      \expandafter\secondoftwoarguments% #3%

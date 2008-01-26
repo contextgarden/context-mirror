@@ -1414,7 +1414,7 @@
 \unexpanded\def\\{\space}
 
 \def\emptyheadcorrection % experimental, should work
-  {\ifemptyhead            % well with na=\blank
+  {\ifemptyhead          % well with na=\blank
      \vskip-\lineheight
      \dosomebreak\nobreak
      \kern\zeropoint
@@ -1487,7 +1487,7 @@
    \else
      \headnumberfalse
    \fi
-   \convertexpanded{\getvalue{\??ko#1\c!expansion}}{#4}\asciititle
+   \defconvertexpanded\asciititle{\getvalue{\??ko#1\c!expansion}}{#4}%
    %
    \gdef\currentheadtext{#4}% scheelt args
    \globallet\currentheadnumber\empty
@@ -2388,7 +2388,7 @@
    % The next check prevents hard to trace problems. I once
    % set \c!command to nothing and (quite natural) got the
    % wrong references etc. The whole bunch should be boxed!
-   \expandafter\convertcommand\csname\??ko#1\c!command\endcsname\to\ascii
+   \expandafter\defconvertedcommand\expandafter\ascii\csname\??ko#1\c!command\endcsname
    \doifnothing\ascii{\setvalue{\??ko#1\c!command}{\normalplacehead}}}
 
 \def\setuphead

@@ -219,7 +219,7 @@
      \global\MPTEXgraphictrue
    \else
      \global\MPTEXgraphicfalse
-     \edef\ascii{#1}\convertcommand\ascii\to\MPascii
+     \edef\ascii{#1}\defconvertedcommand\MPascii\ascii
      \the\MPTEXgraphicchecks\relax % \relax is end condition!
    \fi
    \flushMPTEXgraphic% % verbatimtex etc

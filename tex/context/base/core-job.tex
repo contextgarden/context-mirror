@@ -15,6 +15,8 @@
 
 \writestatus{loading}{Context Core Macros / Job Handling}
 
+\loadmarkfile{core-job}
+
 \unprotect
 
 \let \currentproject     \empty
@@ -27,6 +29,9 @@
 
 \let \nomorefiles        \relax
 
+\let \allinputpaths      \empty
+\let \locatedfilepath    \empty
+
 \newcounter\textlevel
 \newcounter\fileprocesslevel
 
@@ -34,13 +39,6 @@
 
 \def\processedfile % is used in styles, don't change !
   {\getvalue{\c!file::\fileprocesslevel}}
-
-%\def\processfile#1%
-%  {\doglobal\increment\fileprocesslevel
-%   \setxvalue{\c!file::\fileprocesslevel}{#1}%
-%   \@EA\doglobal\@EA\addtocommalist\@EA{#1}\processedfiles
-%   \readlocfile{#1}{}{}
-%   \doglobal\decrement\fileprocesslevel}
 
 \def\dostarttextfile#1%
   {\doglobal\increment\fileprocesslevel
@@ -51,87 +49,13 @@
   {\doglobal\decrement\fileprocesslevel}
 
 \def\processlocalfile#1#2%
-  {% #1=\readlocfile|\readsetfile{dir} #2=filename
-   % #1{#2}\donothing\donothing
-   #1{#2}\donothing{\readfile{#2}\donothing\donothing}}
+  {#1{#2}\donothing{\readfile{#2}\donothing\donothing}}
 
-\def\processfile#1%
-  {\ifx\allinputpaths\empty
-     \def\next{\processlocalfile\readlocfile}%
-   \else
-     \let\filepath\empty
-     \def\docommand##1%
-       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\filepath{##1}}\donefalse
-        \ifdone\expandafter\quitcommalist\fi}%
-     \doifparentfileelse{#1} % new
-       {\processcommacommand  [\allinputpaths]\docommand}
-       {\processcommacommand[.,\allinputpaths]\docommand}%
-     \ifx\filepath\empty
-       \def\next{\processlocalfile\readlocfile}% fall back ../../..
-     \else
-       \def\next{\processlocalfile{\readsetfile\filepath}}% file found
-     \fi
-   \fi
-   \next{#1}}
-
-\def\doifinputfileelse#1% rarely used
-  {\ifx\allinputpaths\empty
-     \@EA\secondoftwoarguments
-   \else
-     \let\filepath\empty
-     \def\docommand##1%
-       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\filepath{##1}}\donefalse
-        \ifdone\expandafter\quitcommalist\fi}%
-     \processcommacommand[.,\allinputpaths]\docommand
-     \ifx\filepath\empty
-       \@EAEAEA\secondoftwoarguments
-     \else
-       \@EAEAEA\firstoftwoarguments
-     \fi
-   \fi}
-
-\let\allinputpaths\empty
-
-% \def\usepath[#1]%
-%   {\def\docommand##1%
-%      {\doifelse{##1}\v!reset
-%         {\let\allinputpaths\empty}
-%         {\addtocommalist{##1}\allinputpaths}}%
-%    \processcommalist[#1]\docommand}
-%
-% \def\usesubpath[#1]% new, see webschrift for usage
-%   {\ifx\allinputpaths\empty
-%      \edef\allinputpaths{#1}%
-%    \else
-%      \def\docommand##1%
-%        {\def\dodocommand####1{\addtocommalist{##1/####1}\allinputpaths}%
-%         \processcommalist[#1]\dodocommand}%
-%      \processcommacommand[\allinputpaths]\docommand
-%    \fi}
-%
-% the following alternatives permit ../{name} i.e. braces
-
-\def\usepath[#1]%
-  {\def\docommand##1%
-     {\doifelse{##1}\v!reset
-        {\let\allinputpaths\empty}
-        {\sanitizefilename#1\to\ascii
-         \convertcommand\ascii\to\ascii
-         \addtocommalist\ascii\allinputpaths}}%
-   \processcommalist[#1]\docommand}
-
-\def\usesubpath[#1]% test for a real long time, permits ../{name} i.e. braces
-  {\ifx\allinputpaths\empty
-     \sanitizefilename#1\to\allinputpaths
-   \else
-     \def\docommand##1%
-       {\def\dodocommand####1%
-          {\sanitizefilename####1\to\ascii
-           \convertcommand\ascii\to\ascii
-           \addtocommalist{##1/\ascii}\allinputpaths}%
-        \processcommalist[#1]\dodocommand}%
-     \processcommacommand[\allinputpaths]\docommand
-   \fi}
+\ifx\processfile      \undefined \let\processfile       \gobbleoneargument \fi
+\ifx\doifinputfileelse\undefined \let\doifinputfileelse \gobbleoneargument \fi
+\ifx\locatefilepath   \undefined \let\locatefilepath    \gobbleoneargument \fi
+\ifx\usepath          \undefined \def\usepath        [#1]{}                \fi
+\ifx\usesubpath       \undefined \def\usesubpath     [#1]{}                \fi
 
 \def\registerfileinfo[#1#2]#3% geen \showmessage ?
   {\writestatus\m!systems{#1#2 file #3 at line \the\inputlineno}%
@@ -299,26 +223,6 @@
 
 \newcounter\filelevel
 
-% \def\donextlevel#1#2#3#4#5#6\\%
-%   {\beforesplitstring#6\at.\to#1
-%    \ifcase\filelevel\relax
-%      \starttext
-%      \def\project     ##1 {#2{##1}}%
-%      \def\environment ##1 {#3{##1}}%
-%      \def\product     ##1 {#4{##1}}%
-%      \def\component   ##1 {#5{##1}}%
-%    \fi
-%    \increment\filelevel\relax
-%    \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
-%
-% \def\doprevlevel
-%   {\ifnum\filelevel=\plusone
-%      \expandafter\stoptext
-%    \else
-%      \decrement\filelevel\relax
-%      \expandafter\endinput
-%    \fi}
-
 \let\currentcomponent    \v!text
 \let\currentcomponentpath\f!currentpath
 
@@ -354,28 +258,6 @@
      \decrement\filelevel\relax
      \expandafter\endinput
    \fi}
-
-% \def\startproject #1 %
-%   {\donextlevel\currentproject
-%      \donotexecutefile\doexecutefileonce
-%      \doexecutefileonce\doexecutefile#1\\}
-%
-% \def\startproduct #1 %
-%   {\doateverystarttext
-%    \donextlevel\currentproduct
-%      \doexecutefileonce\doexecutefileonce
-%      \donotexecutefile\doexecutefile#1\\}
-%
-% \def\startcomponent #1 %
-%   {\doateverystarttext
-%    \donextlevel\currentcomponent
-%      \doexecutefileonce\doexecutefileonce
-%      \donotexecutefile\doexecutefile#1\\}
-%
-% \def\startenvironment #1 %
-%   {\donextlevel\currentenvironment
-%      \donotexecutefile\doexecutefileonce
-%      \donotexecutefile\donotexecutefile#1\\}
 
 \def\startproject #1 %
   {\donextlevel\v!project\currentproject

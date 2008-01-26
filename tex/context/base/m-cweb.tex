@@ -27,9 +27,9 @@
 \def\dofindfirstcharacter#1#2%
   {\def\firstcharacter{}%
    \bgroup
-   \convertargument#2\to\ascii
-   \let\next=\dodofindfirstcharacter
-   \let\handlecase=#1
+   \defconvertedargument\ascii{#2}%
+   \let\next\dodofindfirstcharacter
+   \let\handlecase#1%
    \expandafter\next\ascii\relax}
 
 \def\normalcase#1%
@@ -1135,7 +1135,7 @@
    \fi
    \message{*\secno}% progress report
    \makesectionformat % context
-   \convertargument#3\to\ascii
+   \defconvertedargument\ascii{#3}%
    \edef\next%
      {\write\CWEBcont % write to contents file
         {\string\ZZ{\ascii}{#1}{\secno}%
@@ -1251,7 +1251,7 @@
    \def\9##1{##1}%  hold this one
    \catcode`*=11
    \expandafter\def\expandafter\entry\expandafter{#1}%
-   \convertcommand\entry\to\ascii
+   \defconvertedcommand\ascii\entry
    \expanded{\FINDFIRSTCHARACTER{\ascii}}%
    \doifnot{\currentCWEBindexentry}{\firstcharacter}
      {\doifnot{\firstcharacter}{*} % signal for \firstbunch

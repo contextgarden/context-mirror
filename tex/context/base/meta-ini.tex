@@ -440,8 +440,8 @@
   {\edef\theMPvariable{\getvalue{#1}}%
    \doifelsenothing\theMPvariable
      {\setevalue{#1}{\MPcolor{black}}}
-     {\convertcommand\theMPvariable\to\ascii % otherwise problems
-      \doifcolorelse \ascii                  % with 2\bodyfontsize
+     {\defconvertedcommand\ascii\theMPvariable % otherwise problems
+      \doifcolorelse \ascii                    % with 2\bodyfontsize
         {\setevalue{#1}{\MPcolor\theMPvariable}}
         {% can be aux macro
          \setbox\scratchbox\hbox{\scratchdimen\theMPvariable sp}%
@@ -562,18 +562,6 @@
 
 %D A more general way of passing environments is:
 
-% ok but introduces \relax's
-%
-% \def\startMPenvironment                 % second arg gobbles spaces, so
-%   {\dodoubleempty\dostartMPenvironment} % that reset gives \emptytoks
-%
-% \long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment%
-%   {\doif{#1}\s!reset\resetMPenvironment % reset mp toks
-%    \doif{#1}\v!globaal{#3}%             % use in main doc too
-%    \doif{#1}+{#3}%                      % use in main doc too
-%    \convertargument#3\to\ascii
-%    \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
-
 \def\startMPenvironment % second arg gobbles spaces, so that reset gives \emptytoks
   {\bgroup
    \catcode`\^^M=\@@space
@@ -584,7 +572,7 @@
    \doif{#1}\s!reset\resetMPenvironment % reset mp toks
    \doif{#1}\v!global{#3}%              % use in main doc too
    \doif{#1}+{#3}%                      % use in main doc too
-   \convertargument#3\to\ascii
+   \defconvertedargument\ascii{#3}%
    \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
 
 \def\resetMPenvironment
@@ -707,7 +695,7 @@
 
 \def\setMPtext#1#2% todo : #1 must be made : safe
   {%\forceMPTEXgraphic
-   \convertargument#2\to\ascii
+   \defconvertedargument\ascii{#2}%
    \dodoglobal\letvalue{\@@MPT#1}\ascii}
 
 % \def\MPtext       #1{\getvalue{\@@MPT#1}}

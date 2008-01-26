@@ -21,7 +21,7 @@
 %D    \blank}
 %D
 %D \gdef\test#1%
-%D   {\convertargument#1\to\ascii\ascii&\hyphenatedword{#1}&#1\cr}
+%D   {\defconvertedargument\ascii{#1}\ascii&\hyphenatedword{#1}&#1\cr}
 
 %D One of \TEX's strong points in building paragraphs is the way
 %D hyphenations are handled. Although for real good hyphenation
@@ -298,7 +298,7 @@
 \beginTEX
 
 \def\installdiscretionaries#1#2#3%
-  {\convertargument#1\to\ascii
+  {\defconvertedargument\ascii{#1}%
    \setevalue{\strippedcsname\mathmodediscretionary\string#1}{\ascii}%
    \setvalue {\strippedcsname\textmodediscretionary\string#1}{#3}%
    \catcode`#1=\@@active
@@ -713,7 +713,7 @@
    \next}
 
 \def\activedododotextmodediscretionary#1#2%
-  {\convertargument#2\to\discretionarytoken
+  {\defconvertedargument\discretionarytoken{#2}%
    \def\textmodediscretionary
      {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
    \ifx#1\nextnext % takes care of ||| and +++ and ......
@@ -729,20 +729,20 @@
        % but an hbox blocks a possible \discretionary
        \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
      \egroup
-   \else\convertargument=\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next=\ifx\next\discretionarytoken
      \prewordbreak\textmodediscretionary
-   \else\convertargument~\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next~\ifx\next\discretionarytoken
      \prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak
-   \else\convertargument_\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next_\ifx\next\discretionarytoken
      \prewordbreak\discretionary{\textmodediscretionary}
        {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
-   \else\convertargument(\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next(\ifx\next\discretionarytoken
      \ifdim\lastskip>\zeropoint\relax
        (\prewordbreak
      \else
        \prewordbreak\discretionary{}{(-}{(}\prewordbreak
      \fi
-   \else\convertargument)\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next)\ifx\next\discretionarytoken
      \ifx\nextnext\blankspace
        \prewordbreak)\relax
      \else\ifx\nextnext\space
@@ -750,13 +750,13 @@
      \else
        \prewordbreak\discretionary{-)}{}{)}\prewordbreak
      \fi\fi
-   \else\convertargument'\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next'\ifx\next\discretionarytoken
      \prewordbreak\discretionary{-}{}{'}\postwordbreak
-   \else\convertargument<\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next<\ifx\next\discretionarytoken
      \beginofsubsentence\prewordbreak\beginofsubsentencespacing
-   \else\convertargument>\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next>\ifx\next\discretionarytoken
      \endofsubsentencespacing\prewordbreak\endofsubsentence
-   \else\convertargument^\to\next\ifx\next\discretionarytoken
+   \else\defconvertedargument\next^\ifx\next\discretionarytoken
      \prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
        \allowbreak\postwordbreak
    \else
@@ -778,7 +778,7 @@
 \def\@tmd@{@@tmd@@}
 
 \def\activedododotextmodediscretionary#1#2%
-  {\convertargument#2\to\discretionarytoken
+  {\defconvertedargument\discretionarytoken{#2}%
    \def\textmodediscretionary%
      {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
    \ifx\discretionarytoken\empty
@@ -814,7 +814,7 @@
    \nextnextnext} % lookahead in commands
 
 \def\definetextmodediscretionary #1
-  {\convertargument#1\to\ascii
+  {\defconvertedargument\ascii{#1}%
    \setvalue{\@tmd@\ascii}}
 
 \definetextmodediscretionary {} % empty case, also handled in parser
@@ -913,7 +913,7 @@
 %D we have \type {\nextnextnext}.
 
 \unexpanded\def\directdiscretionary#1%
-  {\convertargument#1\to\discretionarytoken
+  {\defconvertedargument\discretionarytoken{#1}%
    \let\textmodediscretionary\compoundhyphen
    \expandafter\ifx\csname\@tmd@\string#1\endcsname\relax
      \prewordbreak
@@ -1298,7 +1298,7 @@
 %D This would be better, but it spoils \type {\~} and so:
 %D
 %D \starttyping
-%D \convertargument#1\to\ascii
+%D \defconvertedargument\ascii{#1}
 %D \expandafter\handletokens\ascii\with\scanurl
 %D \stoptyping
 
@@ -1395,7 +1395,7 @@
 %D   {{\let~\lettertilde\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
 %D
 %D \def\whateverurl#1%
-%D   {\convertargument#1\to\ascii
+%D   {\defconvertedargument\ascii{#1}%
 %D    \expanded{\useURL[dummy][\ascii]}\goto{\url[dummy]}[URL(dummy)]}
 %D \stoptyping
 

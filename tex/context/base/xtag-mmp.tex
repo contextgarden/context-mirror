@@ -58,7 +58,7 @@
 \unprotect
 
 \def\convertasciiafter#1#2%
-  {\convertargument#2\to\asciiafter
+  {\defconvertedargument\asciiafter{#2}%
    \@EA#1\@EA{\asciiafter}}
 
 \def\checkMMLoperator#1#2% temp hack
@@ -443,7 +443,7 @@
    \ifdim\wd\scratchbox=\zeropoint
      \edef\MMLpunit{#1em}%
    \else
-     \edef\ascii{#1}\convertcommand\ascii\to\ascii
+     \edefconvertedargument\ascii{#1}%
      \convertasciiafter\doifinstringelse{em}{\ascii}{\edef\MMLpunit{#1}}{%
      \convertasciiafter\doifinstringelse{ex}{\ascii}{\edef\MMLpunit{#1}}{%
      \convertasciiafter\doifinstringelse{pt}{\ascii}{\edef\MMLpunit{#1}}{%

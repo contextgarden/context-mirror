@@ -2237,8 +2237,8 @@
 \def\unexpandedaction#1>{}
 
 \def\noexpandedaction#1#2%
-  {\def\convertedargument{#2}%
-   \@EA\edef\@EA#1\@EA{\@EA\unexpandedaction\meaning\convertedargument}}
+  {\def\@@convertedargument{#2}%
+   \@EA\edef\@EA#1\@EA{\@EA\unexpandedaction\meaning\@@convertedargument}}
 
 \def\dontexpandactions%
   {\let\expandedaction\noexpandedaction}

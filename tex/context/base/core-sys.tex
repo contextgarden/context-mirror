@@ -51,11 +51,11 @@
 
 \def\splitjobfilename % todo: mkiv
   {\resetsystemmode{suffix-\jobfilesuffix}%
-   \edef\ascii{\inputfilename}\convertcommand\ascii\to\ascii
+   \edef\ascii{\inputfilename}\defconvertedcommand\ascii\ascii
    \splitstring\ascii\at.\to\jobfilename\and\jobfilesuffix
    \lowercasestring\jobfilesuffix\to\jobfilesuffix
    \doifnothing\jobfilename  {\let\jobfilename  \jobname}%
-   % todo and totest: \convertcommand\jobfilename\to\jobfilename
+   % todo and totest: \defconvertedcommand\jobfilename\jobfilename
    \doifnothing\jobfilesuffix{\let\jobfilesuffix\c!tex}%
    \setsystemmode{suffix-\jobfilesuffix}}
 
@@ -284,58 +284,89 @@
 %D Since this feature is used in XML processing, it made sense
 %D to support this faster alternative. It's installable as well.
 
-\def\installexpander#1#2{\setvalue{\s!do\c!expansion#1}{#2}}
+\def\installexpander#1#2#3% changed, no longer \convert..\to...
+  {\setvalue{\s!do\c!expansion#1l}{#2}%
+   \setvalue{\s!do\c!expansion#1g}{#3}}%
 
-% \long\def\convertexpanded#1#2#3% hm, first we need to make sure
-%   {\csname   % that we assign all exp a value
-%      \s!do\c!expansion
-%      \ifforcefileexpansion
-%        \v!yes
-%      \else\@EA\ifx\csname\s!do\c!expansion\csname#1\c!expansion\endcsname\endcsname\relax
-%        \s!default
-%      \else
-%        \csname#1\c!expansion\endcsname
-%      \fi\fi
-%    \endcsname#2\to#3}
+% \convertexpanded is obsolete
 
-\long\def\convertexpanded#1#2#3% hm, first we need to make sure
+\long\def\doconvertexpanded#1#2#3% #4 % [l|g] \cs {kind} {data}
   {\csname   % that we assign all exp a value
      \s!do\c!expansion
      \ifforcefileexpansion
        \v!yes
-     \else\@EA\ifx\csname\s!do\c!expansion#1\endcsname\relax
-       \s!default
+     \else\ifcsname\s!do\c!expansion#3#1\endcsname
+       #3%
      \else
-       #1%
+       \s!default
      \fi\fi
-   \endcsname#2\to#3}
+     #1%
+   \endcsname#2}% #3
 
-\installexpander\v!command{\convertcommand }
-\installexpander\s!default{\convertargument}
-\installexpander\empty    {\convertargument}
-\installexpander\v!no     {\convertargument}
-\installexpander\v!yes    {\convertmeaning }
-\installexpander\v!yes    {\convertmeaning } % something lost ?
-\installexpander\v!strict {\reduceargument }
-\installexpander {utf}    {\reducetoutf}
+\long\def\defconvertexpanded {\doconvertexpanded l}
+\long\def\gdefconvertexpanded{\doconvertexpanded g}
+
+\installexpander\v!command \defconvertedcommand  \gdefconvertedcommand
+\installexpander\s!default \defconvertedargument \gdefconvertedargument
+\installexpander\empty     \defconvertedargument \gdefconvertedargument
+\installexpander\v!no      \defconvertedargument \gdefconvertedargument
+\installexpander\v!yes     \defconvertedmeaning  \gdefconvertedmeaning
+\installexpander\v!yes     \defconvertedmeaning  \gdefconvertedmeaning
+\installexpander\v!strict  \defreducedargument  \gdefreducedargument
+\installexpander {utf}     \defreducedtoutf     \gdefreducedtoutf
+
 %installexpander {xml}    {see xtag-ext}
 
-\def\convertmeaning#1\to % watch the double expansion !
+\def\dodefconvertedmeaning#1#2#3% watch the double expansion !
+  {\bgroup
+     \honorunexpanded
+     \convertencodedtokens % can be overloaded
+     \xdef\@@globalexpanded{#3}%
+     \xdef\@@globalexpanded{\@@globalexpanded}%
+   \egroup
+   #1#2\@@globalexpanded}
+
+\def\defconvertedmeaning {\dodefconvertedmeaning\defconvertedcommand}
+\def\gdefconvertedmeaning{\dodefconvertedmeaning\gdefconvertedcommand}
+
+\def\dodefreducedargument#1#2#3%
+  {\begingroup
+   \reducetocoding[raw]%
+   \edef\ascii{#3}%
+   \expandafter\endgroup\expandafter#1\expandafter#2\expandafter{\ascii}}
+
+\def\defreducedargument {\dodefreducedargument\edef}
+\def\gdefreducedargument{\dodefreducedargument\xdef}
+
+% \setupindex[expansion=utf]\index{\eacute}
+
+\def\dodefreducedtoutf#1#2#3%
+  {\begingroup
+   \reducetocoding[uc]%
+   \let\uchar\uchartoutf
+   \let\unicodechar\numbertoutf
+   \edef\ascii{#3}%
+   \expandafter\endgroup\expandafter#1\expandafter#2\expandafter{\ascii}}
+
+\def\defreducedtoutf {\dodefreducedtoutf\edef}
+\def\gdefreducedtoutf{\dodefreducedtoutf\xdef}
+
+% old syntax:
+
+\def\convertmeaning#1\to#2% watch the double expansion !
   {\bgroup
      \honorunexpanded
      \convertencodedtokens % can be overloaded
      \xdef\@@globalexpanded{#1}%
      \xdef\@@globalexpanded{\@@globalexpanded}%
    \egroup
-   \convertcommand\@@globalexpanded\to}
+   \defconvertedcommand#2\@@globalexpanded}
 
 \def\reduceargument#1\to#2%
   {\begingroup
    \reducetocoding[raw]%
    \edef\ascii{#1}%
    \expandafter\endgroup\expandafter\edef\expandafter#2\expandafter{\ascii}}
-
-% \setupindex[expansion=utf]\index{\eacute}
 
 \def\reducetoutf#1\to#2%
   {\begingroup

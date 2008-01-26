@@ -175,7 +175,7 @@
 \def\dotextreference[#1]#2%
   {\bgroup
    \def\asciia{#1}%
-   \convertexpanded\@@rfexpansion{#2}\asciib
+   \defconvertexpanded\asciib\@@rfexpansion{#2}%
    \@EA\rawtextreference\@EA\s!txt\@EA\asciia\@EA{\asciib}%
    \egroup}
 
@@ -185,7 +185,7 @@
 \def\doreference[#1]#2%
   {\bgroup
    \def\asciia{#1}%
-   \convertexpanded\@@rfexpansion{#2}\asciib
+   \defconvertexpanded\asciib\@@rfexpansion{#2}%
    \@EA\rawreference\@EA\s!ref\@EA\asciia\@EA{\asciib}%
    \egroup}
 
@@ -838,7 +838,7 @@
 %D For debugging purposes we provide a showcase macro:
 
 \long\def\dodoshowcurrentreference#1\from#2\with#3%
-  {\convertcommand#2\to\ascii
+  {\defconvertedcommand\ascii{#2}%
    \edef\currentreferenceshow{\currentreferenceshow/#1/\ascii/#3/}}
 
 \long\def\doshowcurrentreference#1%
@@ -2918,7 +2918,7 @@
      \else
        \let\@@programfile\currentreferenceoperation
      \fi
-     \convertcommand\@@programfile\to\ascii
+     \defconvertedcommand\ascii\@@programfile
      \dohandlegoto
        {#2}%
        {\dostartrunprogram\buttonwidth\buttonheight{\@@prdirectory\ascii}\currentreferencearguments}%

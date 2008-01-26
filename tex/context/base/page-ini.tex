@@ -783,8 +783,13 @@
 
 \output{\inotrtrue\the\everybeforeoutput\the\mainoutput\the\everyafteroutput}
 
+\ifx\pagediscards\undefined \let\pagediscards\relax \fi
+
 \installoutput\synchronizeoutput % maybe add pagediscards
-  {\ifvoid\normalpagebox\else\unvbox\normalpagebox\fi}
+  {\ifvoid\normalpagebox\else
+     \unvbox\normalpagebox
+     \pagediscards % maybe not needed ?
+   \fi}
 
 \installoutput\discardpage
   {\setbox\scratchbox\box\normalpagebox}
@@ -1074,7 +1079,7 @@
 
 \def\doplaceversiontext#1#2%
   {\doifsomething{#2}
-     {\@EA\convertargument#2\to\ascii
+     {\defconvertedcommand\ascii{#2}%
       \space#1:\space\ascii\space
       \!!doneatrue}}
 
@@ -1137,7 +1142,7 @@
 \def\dotestinfo#1#2#3%
   {\ifinpagebody\else\ifnum\conceptmode=\plusthree
      \begingroup
-       \@EA\convertargument#3\to\ascii
+       \defconvertedcommand\ascii{#3}%
        \xdef\extratestinfo
          {#2\space\ascii}%
        \gdef\totaltestinfo
@@ -1526,9 +1531,16 @@
      \fi
    \fi}
 
-\ifx\flushpagesofar\undefined
-    \let\flushpagesofar\relax
-\fi
+\def\flushpagesofar
+  {\endgraf
+   \ifdim\pagetotal>\pagegoal
+     \ifdim\dimexpr\pagetotal-\pageshrink\relax>\pagegoal
+       \goodbreak % \penalty0
+     \else
+       \page
+     \fi
+   \else
+   \fi}
 
 \def\testcolumn
   {\dodoubleempty\dotestcolumn}

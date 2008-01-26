@@ -32,6 +32,10 @@ function file.basename(name)
     return name:match("^.+[/\\](.-)$") or name
 end
 
+function file.nameonly(name)
+    return ((name:match("^.+[/\\](.-)$") or name):gsub("%..*$",""))
+end
+
 function file.extname(name)
     return name:match("^.+%.([^/\\]-)$") or  ""
 end

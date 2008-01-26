@@ -1,8 +1,3 @@
-
---~ lang:hyphenation(string)
---~ string  =lang:hyphenation()
---~ lang:clear_hyphenation()
-
 if not modules then modules = { } end modules ['lang-ini'] = {
     version   = 1.001,
     comment   = "companion to lang-ini.tex",
@@ -22,6 +17,11 @@ languages.hyphenation.data = languages.hyphenation.data   or { }
 -- 2010 : hyphen
 -- 2011 : nonbreakable hyphen
 -- 2013 : endash (compound hyphen)
+
+--~ lang:hyphenation(string)
+--~ string  =lang:hyphenation()
+--~ lang:clear_hyphenation()
+
 
 do
     -- we can consider hiding data (faster access too)

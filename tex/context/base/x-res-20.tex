@@ -158,7 +158,7 @@
         \def\docommand####1%
           {\beforesplitstring####1\at=\to\asciia
            \aftersplitstring ####1\at=\to\asciib
-           \convertcommand\asciib\to\asciib
+           \defconvertedcommand\asciib\asciib
            \doifsomething\asciib
              {\hsmash{\hbox to .75em{\asciia\hss}: \asciib}\endgraf}}%
         \processcommalist[##2]\docommand

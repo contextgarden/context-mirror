@@ -1207,8 +1207,8 @@
 \def\typeFLOWchart[#1]%
   {\bgroup
    \def\dohandleflowchart[##1][##2]{\typeFLOWbuffer{##1}}%
-   \convertargument\startFLOWchart[#1]\to\firstverbatimfileline
-   \convertargument     \stopFLOWchart\to\lastverbatimfileline
+   \defconvertedargument\firstverbatimfileline{\startFLOWchart[#1]}%
+   \defconvertedargument\lastverbatimfileline {\stopFLOWchart}%
    \getvalue{\@FLOW@-#1}
    \egroup}
 

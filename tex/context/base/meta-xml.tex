@@ -23,7 +23,7 @@
 \def\setMPtextXML#1#2%
   {\bgroup
    \enableXML
-   \expanded{\convertcommand#2}\to\ascii
+   \expanded{\defconvertedcommand\noexpand\ascii{#2}}%
    \expanded{\egroup\noexpand\dodoglobal\noexpand\setvalue{\@@MPT#1}{\ascii}}}
 
 \protect \endinput

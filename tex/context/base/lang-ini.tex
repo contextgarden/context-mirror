@@ -443,6 +443,13 @@
 
 \ifx\enablelanguagespecifics\undefined \def\enablelanguagespecifics[#1]{} \fi
 
+% The following may be a solution for the fact that one cannot
+% change catcodes of characters like : and ; inside an environment.
+
+\appendtoks
+  \enablelanguagespecifics[\currentlanguage]%
+\to \everystarttext
+
 \def\complexlanguage[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else

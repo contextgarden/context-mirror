@@ -114,10 +114,10 @@
    \ifx#1\undefined
      \let#1\relax
    \fi
-   \convertargument#1\to\asciia
-   \convertargument{ }\to\asciib % lege regel
+   \defconvertedargument\asciia{#1}%
+   \defconvertedargument\asciib{ }% % lege regel
    \def\dopushparagraph##1\par
-     {\convertargument##1\to\asciic
+     {\defconvertedargument\asciic{##1}%
       \doifelse\asciic\asciia
         {#1}
         {\doifsomething\asciic % lege paragraaf

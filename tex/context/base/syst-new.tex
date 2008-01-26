@@ -50,7 +50,7 @@
    \dounspaced}
 
 \def\unspaceargument#1\to#2%
-  {\convertargument#1\to#2%
+  {\defconvertedargument#2{#1}%
    \@EA\edef\@EA#2\@EA{\@EA\unspaced\@EA{#2}}}
 
 \def\unspaceafter#1#2%
@@ -638,7 +638,7 @@
      {\ifx\compressedlist\empty\else\compressedlist,\fi
       {\the\!!counta}{\ifnum\!!countb>\!!counta\the\!!countb\fi}}}
 
-%D \def\test#1{{\tttf#1->\compresscommalistnrs[#1]\convertcommand\compressedlist\to\ascii\ascii}}
+%D \def\test#1{{\tttf#1->\compresscommalistnrs[#1]\defconvertedcommand\ascii\compressedlist\ascii}}
 %D \startlines
 %D \test{}
 %D \test{1}
@@ -672,7 +672,7 @@
      \fi
    \fi}
 
-%D \def\test#1{{\tttf#1->\compresscommalist[#1]\convertcommand\compressedlist\to\ascii\ascii}}
+%D \def\test#1{{\tttf#1->\compresscommalist[#1]\defconvertedcommand\ascii\compressedlist\ascii}}
 %D \startlines
 %D \test{}
 %D \test{1}
@@ -699,7 +699,7 @@
 \def\reversecommacommand[#1]%
   {\expanded{\reversecommalist[#1]}}
 
-%D \def\test#1{{\tttf#1->\reversecommalist[#1]\convertcommand\reversedlist\to\ascii\ascii}}
+%D \def\test#1{{\tttf#1->\reversecommalist[#1]\defconvertedcommand\ascii\reversedlist\ascii}}
 %D \startlines
 %D \test{}
 %D \test{1}
@@ -723,7 +723,7 @@
 
 \def\stripstring#1% #1 is \cs
   {\bgroup
-   \convertcommand#1\to\ascii
+   \defconvertedcommand\ascii{#1}%
    \global\let\globalascii\empty
    \donefalse
    \expandafter\handletokens\ascii\with\dostripstring

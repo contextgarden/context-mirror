@@ -1,0 +1,86 @@
+%D \module
+%D   [       file=core-job, % copied from main-001,
+%D        version=2008.01.25,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Job Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\def\processfile#1%
+  {\ifx\allinputpaths\empty
+     \def\next{\processlocalfile\readlocfile}%
+   \else
+     \let\filepath\empty
+     \def\docommand##1%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\filepath{##1}}\donefalse
+        \ifdone\expandafter\quitcommalist\fi}%
+     \doifparentfileelse{#1} % new
+       {\processcommacommand  [\allinputpaths]\docommand}
+       {\processcommacommand[.,\allinputpaths]\docommand}%
+     \ifx\filepath\empty
+       \def\next{\processlocalfile\readlocfile}% fall back ../../..
+     \else
+       \def\next{\processlocalfile{\readsetfile\filepath}}% file found
+     \fi
+   \fi
+   \next{#1}}
+
+\def\doifinputfileelse#1% rarely used
+  {\ifx\allinputpaths\empty
+     \@EA\secondoftwoarguments
+   \else
+     \let\filepath\empty
+     \def\docommand##1%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\filepath{##1}}\donefalse
+        \ifdone\expandafter\quitcommalist\fi}%
+     \processcommacommand[.,\allinputpaths]\docommand
+     \ifx\filepath\empty
+       \@EAEAEA\secondoftwoarguments
+     \else
+       \@EAEAEA\firstoftwoarguments
+     \fi
+   \fi}
+
+\let\locatedfilepath\empty
+
+\def\locatefilepath#1%
+  {\let\locatedfilepath\empty
+   \ifx\allinputpaths\empty \else
+     \def\docommand##1%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\locatedfilepath{##1}}\donefalse
+        \ifdone\expandafter\quitcommalist\fi}%
+     \doifparentfileelse{#1} % new
+       {\processcommacommand  [\allinputpaths]\docommand}
+       {\processcommacommand[.,\allinputpaths]\docommand}%
+   \fi}
+
+\def\usepath[#1]%
+  {\def\docommand##1%
+     {\doifelse{##1}\v!reset
+        {\let\allinputpaths\empty}
+        {\sanitizefilename#1\to\ascii
+         \defconvertedcommand\ascii\ascii
+         \addtocommalist\ascii\allinputpaths}}%
+   \processcommalist[#1]\docommand}
+
+\def\usesubpath[#1]% test for a real long time, permits ../{name} i.e. braces
+  {\ifx\allinputpaths\empty
+     \sanitizefilename#1\to\allinputpaths
+   \else
+     \def\docommand##1%
+       {\def\dodocommand####1%
+          {\sanitizefilename####1\to\ascii
+           \defconvertedcommand\ascii\ascii
+           \addtocommalist{##1/\ascii}\allinputpaths}%
+        \processcommalist[#1]\dodocommand}%
+     \processcommacommand[\allinputpaths]\docommand
+   \fi}
+
+\protect \endinput

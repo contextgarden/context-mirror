@@ -1036,6 +1036,14 @@ function table.count(t)
     return n
 end
 
+function table.swapped(t)
+    local s = { }
+    for k, v in pairs(t) do
+        s[v] = k
+    end
+    return s
+end
+
 --~ function table.are_equal(a,b)
 --~     return table.serialize(a) == table.serialize(b)
 --~ end
@@ -1446,9 +1454,12 @@ function os.resultof(command)
     return io.popen(command,"r"):read("*all")
 end
 
---~ if not os.exec then -- still not ok
+if not os.exec then -- still not ok
     os.exec = os.execute
---~ end
+end
+if not os.spawn then -- still not ok
+    os.spawn = os.execute
+end
 
 function os.launch(str)
     if os.platform == "windows" then
@@ -1549,6 +1560,10 @@ end
 
 function file.basename(name)
     return name:match("^.+[/\\](.-)$") or name
+end
+
+function file.nameonly(name)
+    return ((name:match("^.+[/\\](.-)$") or name):gsub("%..*$",""))
 end
 
 function file.extname(name)
@@ -3310,22 +3325,121 @@ function input.unexpanded_path(instance,str)
     return file.join_path(input.unexpanded_path_list(instance,str))
 end
 
+--~ function input.expanded_path_list(instance,str)
+--~     if not str then
+--~         return { }
+--~     elseif instance.savelists then
+--~         -- engine+progname hash
+--~         str = str:gsub("%$","")
+--~         if not instance.lists[str] then -- cached
+--~             local lst = input.split_path(input.expansion(instance,str))
+--~             instance.lists[str] = input.aux.expanded_path(instance,lst)
+--~         end
+--~         return instance.lists[str]
+--~     else
+--~         local lst = input.split_path(input.expansion(instance,str))
+--~         return input.aux.expanded_path(instance,lst)
+--~     end
+--~ end
+
+do
+    local done = { }
+
+    function input.reset_extra_path(instance)
+        local ep = instance.extra_paths
+        if not ep then
+            ep, done = { }, { }
+            instance.extra_paths = ep
+        elseif #ep > 0 then
+            instance.lists, done = { }, { }
+        end
+    end
+
+    function input.register_extra_path(instance,paths,subpaths)
+        if paths and paths ~= "" then
+            local ep = instance.extra_paths
+            if not ep then
+                ep = { }
+                instance.extra_paths = ep
+            end
+            local n = #ep
+            if subpath and subpaths ~= "" then
+                for p in paths:gmatch("[^,]+") do
+                    for s in subpaths:gmatch("[^,]+") do
+                        local ps = p .. "/" .. s
+                        if not done[ps] then
+                            ep[#ep+1] = input.clean_path(ps)
+                            done[ps] = true
+                        end
+                    end
+                end
+            else
+                for p in paths:gmatch("[^,]+") do
+                    if not done[p] then
+                        ep[#ep+1] = input.clean_path(p)
+                        done[p] = true
+                    end
+                end
+            end
+            if n < #ep then
+                instance.lists = { }
+            end
+        end
+    end
+
+end
+
 function input.expanded_path_list(instance,str)
+    local function made_list(list)
+        local ep = instance.extra_paths
+        if not ep or #ep == 0 then
+            return list
+        else
+            local done, new = { }, { }
+            -- honour . .. ../.. but only when at the start
+            for k, v in ipairs(list) do
+                if not done[v] then
+                    if v:find("^[%.%/]$") then
+                        done[v] = true
+                        new[#new+1] = v
+                    else
+                        break
+                    end
+                end
+            end
+            -- first the extra paths
+            for k, v in ipairs(ep) do
+                if not done[v] then
+                    done[v] = true
+                    new[#new+1] = v
+                end
+            end
+            -- next the formal paths
+            for k, v in ipairs(list) do
+                if not done[v] then
+                    done[v] = true
+                    new[#new+1] = v
+                end
+            end
+            return new
+        end
+    end
     if not str then
-        return { }
+        return ep or { }
     elseif instance.savelists then
         -- engine+progname hash
         str = str:gsub("%$","")
         if not instance.lists[str] then -- cached
-            local lst = input.split_path(input.expansion(instance,str))
+            local lst = made_list(input.split_path(input.expansion(instance,str)))
             instance.lists[str] = input.aux.expanded_path(instance,lst)
         end
         return instance.lists[str]
     else
         local lst = input.split_path(input.expansion(instance,str))
-        return input.aux.expanded_path(instance,lst)
+        return made_list(input.aux.expanded_path(instance,lst))
     end
 end
+
 function input.expand_path(instance,str)
     return file.join_path(input.expanded_path_list(instance,str))
 end
@@ -4192,7 +4306,11 @@ end
 
 function input.clean_path(str)
 --~     return (((str:gsub("\\","/")):gsub("^!+","")):gsub("//+","//"))
-    return ((str:gsub("\\","/")):gsub("^!+",""))
+    if str then
+        return ((str:gsub("\\","/")):gsub("^!+",""))
+    else
+        return nil
+    end
 end
 
 function input.do_with_path(name,func)
@@ -4282,6 +4400,76 @@ end
 
 --~ print(table.serialize(input.aux.splitpathexpr("/usr/share/texmf-{texlive,tetex}", {})))
 
+-- command line resolver:
+
+--~ print(input.resolve("abc env:tmp file:cont-en.tex path:cont-en.tex full:cont-en.tex rel:zapf/one/p-chars.tex"))
+
+do
+
+    local resolvers = { }
+
+    resolvers.environment = function(instance,str)
+        return input.clean_path(os.getenv(str) or os.getenv(str:upper()) or os.getenv(str:lower()) or "")
+    end
+    resolvers.relative = function(instance,str,n)
+        if io.exists(str) then
+            -- nothing
+        elseif io.exists("./" .. str) then
+            str = "./" .. str
+        else
+            local p = "../"
+            for i=1,n or 2 do
+                if io.exists(p .. str) then
+                    str = p .. str
+                    break
+                else
+                    p = p .. "../"
+                end
+            end
+        end
+        return input.clean_path(str)
+    end
+    resolvers.locate = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path((fullname ~= "" and fullname) or str)
+    end
+    resolvers.filename = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path(file.basename((fullname ~= "" and fullname) or str))
+    end
+    resolvers.pathname = function(instance,str)
+        local fullname = input.find_given_file(instance,str) or ""
+        return input.clean_path(file.dirname((fullname ~= "" and fullname) or str))
+    end
+
+    resolvers.env  = resolvers.environment
+    resolvers.rel  = resolvers.relative
+    resolvers.loc  = resolvers.locate
+    resolvers.kpse = resolvers.locate
+    resolvers.full = resolvers.locate
+    resolvers.file = resolvers.filename
+    resolvers.path = resolvers.pathname
+
+    function resolve(instance,str)
+        if type(str) == "table" then
+            for k, v in pairs(str) do
+                str[k] = resolve(instance,v) or v
+            end
+        elseif str and str ~= "" then
+            str = str:gsub("([a-z]+):([^ ]+)", function(method,target)
+                if resolvers[method] then
+                    return resolvers[method](instance,target)
+                else
+                    return method .. ":" .. target
+                end
+            end)
+        end
+        return str
+    end
+
+    input.resolve = resolve
+
+end
 
 
 if not modules then modules = { } end modules ['luat-tmp'] = {
@@ -5911,7 +6099,8 @@ function input.my_make_format(instance,texname)
                 --  flags[#flags+1] = "--mkii" -- web2c error
                     flags[#flags+1] = "--progname=" .. instance.progname
                 else
-                    flags[#flags+1] = "--lua=" .. string.quote(luaname)
+                --  flags[#flags+1] = "--lua=" .. string.quote(luaname)
+                    flags[#flags+1] = string.quote("--lua=" .. luaname)
                 --  flags[#flags+1] = "--progname=" .. instance.progname -- potential fallback
                 end
                 local bs = (environment.platform == "unix" and "\\\\") or "\\" -- todo: make a function
@@ -5951,7 +6140,8 @@ function input.my_run_format(instance,name,data,more)
             if f then
                 f:close()
                 -- bug, no .fmt !
-                local command = "luatex --fmt=" .. string.quote(barename) .. " --lua=" .. string.quote(luaname) .. " " .. string.quote(data) .. " " .. string.quote(more)
+                -- local command = "luatex --fmt=" .. string.quote(barename) .. " --lua=" .. string.quote(luaname) .. " " .. string.quote(data) .. " " .. string.quote(more)
+                local command = "luatex " .. string.quote("--fmt=" .. barename) .. " " .. string.quote("--lua=" .. luaname) .. " " .. string.quote(data) .. " " .. string.quote(more)
                 input.report("running command: " .. command)
                 os.exec(command)
             else

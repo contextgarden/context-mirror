@@ -2434,7 +2434,7 @@
    \ifdim\wd\scratchbox=\zeropoint
      \edef\MMLpunit{#1em}%
    \else
-     \edef\ascii{#1}\convertcommand\ascii\to\ascii
+     \edefconvertedargument\ascii{#1}%
      \convertasciiafter\doifinstringelse{em}{\ascii}{\edef\MMLpunit{#1}}{%
      \convertasciiafter\doifinstringelse{ex}{\ascii}{\edef\MMLpunit{#1}}{%
      \convertasciiafter\doifinstringelse{pt}{\ascii}{\edef\MMLpunit{#1}}{%
@@ -2452,7 +2452,7 @@
    \ifdim\wd\scratchbox=\zeropoint
      \edef\MMLpunit{#1em}%
    \else
-     \edef\ascii{#1}\convertcommand\ascii\to\ascii
+     \edefconvertedargument\ascii{#1}%
      \convertasciiafter\doifinstringelse{em}{\ascii}{\edef\MMLpunit{#1}}{%
      \convertasciiafter\doifinstringelse{ex}{\ascii}{\edef\MMLpunit{#1}}{%
      \convertasciiafter\doifinstringelse{pt}{\ascii}{\edef\MMLpunit{#1}}{%
