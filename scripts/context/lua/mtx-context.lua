@@ -335,7 +335,7 @@ do
                                         -- potential optimization: when mtxrun run internal
                                         command = ctxrunner.justtext(command) -- command is still xml element here
                                         input.report("command",command)
-                                        local result = os.execute(command)
+                                        local result = os.spawn(command)
                                         if result > 0 then
                                             input.report("error, return code",result)
                                         end
@@ -554,7 +554,7 @@ function scripts.context.run(ctxdata)
                 scripts.context.multipass.makeoptionfile(jobname,ctxdata)
                 for i=1, scripts.context.multipass.nofruns do
                     input.report(string.format("run %s: %s",i,command))
-                    local returncode = os.execute(command)
+                    local returncode = os.spawn(command)
                     input.report("return code: " .. returncode)
                     if returncode > 0 then
                         input.report("fatal error, run aborted")
@@ -582,7 +582,7 @@ function scripts.context.make()
     for _, name in ipairs( { "cont-en", "cont-nl", "mptopdf" } ) do
         local command = "luatools --make --compile " .. name
         input.report("running command: " .. command)
-        os.execute(command)
+        os.spawn(command)
     end
 end
 
@@ -590,7 +590,7 @@ function scripts.context.generate()
     -- hack, should also be a shared function
     local command = "luatools --generate " .. name
     input.report("running command: " .. command)
-    os.execute(command)
+    os.spawn(command)
 end
 
 function scripts.context.ctx()

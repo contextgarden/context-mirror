@@ -122,9 +122,9 @@ function utils.lua.compile(luafile, lucfile)
     if utils.lua.compile_strip then
         command = "-s " .. command
     end
-    if os.execute("texluac " .. command) == 0 then
+    if os.spawn("texluac " .. command) == 0 then
         return true
-    elseif os.execute("luac " .. command) == 0 then
+    elseif os.spawn("luac " .. command) == 0 then
         return true
     else
         return false

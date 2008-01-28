@@ -13,9 +13,9 @@
 
 \registerctxluafile{core-job}{1.001}
 
-\def\processfile      #1{\ctxlua{commands.processfile("#1")}}
-\def\doifinputfileelse#1{\ctxlua{commands.doifinputfileelse("#1")}}
-\def\locatefilepath   #1{\edef\locatedfilepath{\ctxlua{commands.locatefilepath("#1")}}}
+\def\processfile      #1{\ctxlua{commands.processfile("#1",\number\maxreadlevel)}}
+\def\doifinputfileelse#1{\ctxlua{commands.doifinputfileelse("#1",\number\maxreadlevel)}}
+\def\locatefilepath   #1{\edef\locatedfilepath{\ctxlua{commands.locatefilepath("#1",\number\maxreadlevel)}}}
 \def\usepath        [#1]{\edef\allinputpaths{\ctxlua{commands.usepath("#1")}}}
 \def\usesubpath     [#1]{\edef\allinputpaths{\ctxlua{commands.usesubpath("#1")}}}
 

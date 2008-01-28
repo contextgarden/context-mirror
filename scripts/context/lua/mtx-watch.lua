@@ -76,10 +76,10 @@ function scripts.watch.watch()
                                     if newpath ~= "" and newpath ~= "." then
                                         local oldpath = lfs.currentdir()
                                         lfs.chdir(newpath)
-                                        if pipe then result = os.resultof(command) else result = os.execute(command) end
+                                        if pipe then result = os.resultof(command) else result = os.spawn(command) end
                                         lfs.chdir(oldpath)
                                     else
-                                        if pipe then result = os.resultof(command) else result = os.execute(command) end
+                                        if pipe then result = os.resultof(command) else result = os.spawn(command) end
                                     end
                                     logs.report("watch",string.format("return value: %s", result))
                                     done = true

@@ -2290,7 +2290,7 @@
    \fi}
 
 \def\flushrestfloats
-   {\doif\@@bkcache\v!no\doflushfloats}
+   {\doif\@@bkcache\v!no\doflushsavedfloats}
 
 \def\dopostponeblock
   {\bgroup % new may 2004
@@ -2340,8 +2340,7 @@
      {\realfolio}{\nofpostponedpageblocks}\to\postponedpageblocks
    \egroup
    \showmessage\m!layouts3\nofpostponedpageblocks
-   \dostartbuffer[rbuf-\nofpostponedpageblocks]%
-     [\e!start\v!postponing][\e!stop\v!postponing]}
+   \dostartbuffer[rbuf-\nofpostponedpageblocks][\e!start\v!postponing][\e!stop\v!postponing]}
 
 \def\dodostartpostponing
   {\doglobal\increment\nofpostponedblocks

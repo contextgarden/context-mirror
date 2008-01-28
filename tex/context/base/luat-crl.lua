@@ -18,7 +18,7 @@ function curl.fetch(protocol, name)
         if not io.exists(cachename) then
             curl.cached[name] = cachename
             local command = "curl --silent --create-dirs --output " .. cachename .. " " .. protocol .. "://" .. name
-            os.execute(command)
+            os.spawn(command)
         end
         if io.exists(cachename) then
             curl.cached[name] = cachename

@@ -29,27 +29,47 @@ cs.testcase = commands.doifelse
 
 -- main code
 
-function commands.processfile(name)
-    name = input.find_file(texmf.instance,name) or ""
-    if name ~= "" then
-        tex.sprint(tex.ctxcatcodes,string.format("\\input %s\\relax",name))
+do
+
+    local function find(name,maxreadlevel)
+        local n = "./" .. name
+        if io.exists(n) then
+            return n
+        else
+            n = file.addsuffix(name,'tex')
+            for i=1,maxreadlevel or 0 do
+                n = "../" .. n
+                if io.exists(n) then
+                    return n
+                end
+            end
+        end
+        return input.find_file(texmf.instance,name) or ""
     end
-end
 
-function commands.doifinputfileelse(name)
-    commands.doifelse((input.find_file(texmf.instance,name) or "") ~= "")
-end
+    function commands.processfile(name,maxreadlevel)
+        name = find(name,maxreadlevel)
+        if name ~= "" then
+            tex.sprint(tex.ctxcatcodes,string.format("\\input %s\\relax",name))
+        end
+    end
 
-function commands.locatefilepath(name)
-    tex.sprint(tex.texcatcodes,file.dirname(input.find_file(texmf.instance,name) or ""))
-end
+    function commands.doifinputfileelse(name,maxreadlevel)
+        commands.doifelse(find(name,maxreadlevel) ~= "")
+    end
 
-function commands.usepath(paths)
-    input.register_extra_path(texmf.instance,paths)
-    tex.sprint(tex.texcatcodes,table.concat(texmf.instance.extra_paths or {}, ""))
-end
+    function commands.locatefilepath(name,maxreadlevel)
+        tex.sprint(tex.texcatcodes,file.dirname(find(name,maxreadlevel)))
+    end
 
-function commands.usesubpath(subpaths)
-    input.register_extra_path(texmf.instance,nil,subpaths)
-    tex.sprint(tex.texcatcodes,table.concat(texmf.instance.extra_paths or {}, ""))
+    function commands.usepath(paths,maxreadlevel)
+        input.register_extra_path(texmf.instance,paths)
+        tex.sprint(tex.texcatcodes,table.concat(texmf.instance.extra_paths or {}, ""))
+    end
+
+    function commands.usesubpath(subpaths,maxreadlevel)
+        input.register_extra_path(texmf.instance,nil,subpaths)
+        tex.sprint(tex.texcatcodes,table.concat(texmf.instance.extra_paths or {}, ""))
+    end
+
 end

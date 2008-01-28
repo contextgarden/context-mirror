@@ -1454,18 +1454,14 @@ function os.resultof(command)
     return io.popen(command,"r"):read("*all")
 end
 
-if not os.exec then -- still not ok
-    os.exec = os.execute
-end
-if not os.spawn then -- still not ok
-    os.spawn = os.execute
-end
+if not os.exec  then os.exec  = os.execute end
+if not os.spawn then os.spawn = os.execute end
 
 function os.launch(str)
     if os.platform == "windows" then
-        os.execute("start " .. str)
+        os.execute("start " .. str) -- os.spawn ?
     else
-        os.execute(str .. " &")
+        os.execute(str .. " &")     -- os.spawn ?
     end
 end
 
@@ -2107,16 +2103,14 @@ function utils.lua.compile(luafile, lucfile)
     if utils.lua.compile_strip then
         command = "-s " .. command
     end
-    if os.execute("texluac " .. command) == 0 then
+    if os.spawn("texluac " .. command) == 0 then
         return true
-    elseif os.execute("luac " .. command) == 0 then
+    elseif os.spawn("luac " .. command) == 0 then
         return true
     else
         return false
     end
 end
-
-
 
 -- filename : luat-lib.lua
 -- comment  : companion to luat-lib.tex
@@ -6096,17 +6090,14 @@ function input.my_make_format(instance,texname)
                 input.report("using lua initialization file " .. luaname)
                 local flags = { "--ini" }
                 if environment.arguments["mkii"] then
-                --  flags[#flags+1] = "--mkii" -- web2c error
                     flags[#flags+1] = "--progname=" .. instance.progname
                 else
-                --  flags[#flags+1] = "--lua=" .. string.quote(luaname)
-                    flags[#flags+1] = string.quote("--lua=" .. luaname)
-                --  flags[#flags+1] = "--progname=" .. instance.progname -- potential fallback
+                    flags[#flags+1] = "--lua=" .. string.quote(luaname)
                 end
                 local bs = (environment.platform == "unix" and "\\\\") or "\\" -- todo: make a function
                 local command = "luatex ".. table.concat(flags," ")  .. " " .. string.quote(fullname) .. " " .. bs .. "dump"
                 input.report("running command: " .. command .. "\n")
-                os.exec(command)
+                os.spawn(command)
             end
         end
     else
@@ -6139,11 +6130,9 @@ function input.my_run_format(instance,name,data,more)
             end
             if f then
                 f:close()
-                -- bug, no .fmt !
-                -- local command = "luatex --fmt=" .. string.quote(barename) .. " --lua=" .. string.quote(luaname) .. " " .. string.quote(data) .. " " .. string.quote(more)
-                local command = "luatex " .. string.quote("--fmt=" .. barename) .. " " .. string.quote("--lua=" .. luaname) .. " " .. string.quote(data) .. " " .. string.quote(more)
+                local command = "luatex --fmt=" .. string.quote(barename) .. " --lua=" .. string.quote(luaname) .. " " .. string.quote(data) .. " " .. string.quote(more)
                 input.report("running command: " .. command)
-                os.exec(command)
+                os.spawn(command)
             else
                 input.report("using format name",fmtname)
                 input.report("no luc/lua with name",barename)

@@ -94,9 +94,9 @@ lmx.lmxfile   = function(filename)     return filename  end
 lmx.htmfile   = function(filename)     return filename  end
 
 if environment.platform == "windows" then
-    lmx.popupfile = function(filename) os.execute("start " .. filename) end
+    lmx.popupfile = function(filename) os.spawn("start " .. filename) end
 else
-    lmx.popupfile = function(filename) os.execute(filename) end
+    lmx.popupfile = function(filename) os.spawn(filename) end
 end
 
 function lmx.show(name)

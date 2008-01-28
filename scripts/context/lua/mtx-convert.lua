@@ -25,7 +25,7 @@ do
             dir.mkdirs(outputpath)
             local tmpname = file.replacesuffix(newname,"tmp")
             local command = string.format(gstemplate,gsprogram,tmpname,oldname)
-            os.execute(command)
+            os.spawn(command)
             os.remove(newname)
             os.rename(tmpname,newname)
         end

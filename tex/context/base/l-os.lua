@@ -10,18 +10,14 @@ function os.resultof(command)
     return io.popen(command,"r"):read("*all")
 end
 
-if not os.exec then -- still not ok
-    os.exec = os.execute
-end
-if not os.spawn then -- still not ok
-    os.spawn = os.execute
-end
+if not os.exec  then os.exec  = os.execute end
+if not os.spawn then os.spawn = os.execute end
 
 function os.launch(str)
     if os.platform == "windows" then
-        os.execute("start " .. str)
+        os.execute("start " .. str) -- os.spawn ?
     else
-        os.execute(str .. " &")
+        os.execute(str .. " &")     -- os.spawn ?
     end
 end
 

@@ -1497,9 +1497,9 @@ end
 
 function os.launch(str)
     if os.platform == "windows" then
-        os.execute("start " .. str)
+        os.spawn("start " .. str)
     else
-        os.execute(str .. " &")
+        os.spawn(str .. " &")
     end
 end
 
@@ -3914,9 +3914,9 @@ function utils.lua.compile(luafile, lucfile)
     if utils.lua.compile_strip then
         command = "-s " .. command
     end
-    if os.execute("texluac " .. command) == 0 then
+    if os.spawn("texluac " .. command) == 0 then
         return true
-    elseif os.execute("luac " .. command) == 0 then
+    elseif os.spawn("luac " .. command) == 0 then
         return true
     else
         return false
@@ -7322,7 +7322,7 @@ function input.runners.execute_script(instance,fullname,internal)
                     input.report("executing: " .. command)
                     input.report("\n \n")
                     io.flush()
-                    local code = os.exec(command)
+                    local code = os.exec(command) -- maybe spawn
                     return code == 0
                 end
             end
@@ -7347,7 +7347,7 @@ function input.runners.execute_program(instance,fullname)
             input.report("executing: " .. command)
             input.report("\n \n")
             io.flush()
-            local code = os.exec(command) -- (fullname,unpack(after)) does not work
+            local code = os.exec(command) -- (fullname,unpack(after)) does not work / maybe spawn
             return code == 0
         end
     end
