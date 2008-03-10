@@ -66,6 +66,10 @@ do
     end
 
     local texsprint = tex.sprint
+    local xmlsprint = xml.sprint
+
+    --local function texsprint(a,b) print(b) end
+    --local function xmlsprint(a) print(a) end
 
     function lxml.cals.table(root,namespace)
 
@@ -123,7 +127,8 @@ do
                         else
                             texsprint(tex.ctxcatcodes,"\\bTD")
                         end
-                        texsprint(xml.content(dk))
+                    --  xmlsprint(xml.content(dk))
+                        xmlsprint(dk)
                         texsprint(tex.ctxcatcodes,"\\eTD")
                         col = col + (s or 1)
                     end
@@ -135,6 +140,7 @@ do
 
         for r, d, k in xml.elements(lxml.id(root),tgroupspec) do
             local tgroup = d[k]
+-- print(tgroupspec,"!!!!!!!!!!!!!!!!!", r, d, k)
             lxml.directives.before(root,"cdx") -- "cals:table"
             texsprint(tex.ctxcatcodes, "\\bgroup")
             lxml.directives.setup(root,"cdx") -- "cals:table"

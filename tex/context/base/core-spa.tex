@@ -1101,7 +1101,7 @@
                                     \fi}
 
 \defineindentingmethod [\v!reset]  {\indentfirstparagraphtrue
-                                    \parindent\zerocount
+                                    \parindent\zeropoint
                                     \chardef\indentingtoggle\zerocount}
 
 \def\noindenting{\indenting[\v!no, \v!next ]}
@@ -1503,7 +1503,7 @@
 
 \newskip\ctxparskip \ctxparskip\zeropoint
 
-\settrue\flexiblewhitespace
+\newconditional \flexiblewhitespace \settrue\flexiblewhitespace
 
 \def\blankokleinmaat   {\smallskipamount}
 \def\blankomiddelmaat  {\medskipamount}

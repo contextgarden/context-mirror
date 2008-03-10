@@ -181,6 +181,7 @@ excessive memory usage in CJK fonts, we no longer pass the boundingbox.)</p>
 --ldx]]--
 
 function fonts.tfm.do_scale(tfmtable, scaledpoints)
+    local trace = fonts.trace
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
@@ -190,9 +191,17 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
     for k,v in pairs(tfmtable) do
         t[k] = (type(v) == "table" and { }) or v
     end
-    local tc = t.characters
-    local trace = fonts.trace
  -- local zerobox = { 0, 0, 0, 0 }
+    local tp = t.parameters
+    for k,v in pairs(tfmtable.parameters) do
+        if k == 1 then
+            tp[k] = v
+        else
+            tp[k] = v*delta
+        end
+    end
+    local protrusionfactor = 1000/tp[6] -- emwidth
+    local tc = t.characters
     for k,v in pairs(tfmtable.characters) do
         local description = v.description or v -- shared data
         local chr = {
@@ -214,6 +223,18 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
     --  else
     --  --  chr.boundingbox = zerobox -- most afm en otf files have bboxes so ..
     --  end
+        local ve = v.expansion_factor
+        if ve then
+            chr.expansion_factor = ve*1000 -- expansionfactor
+        end
+        local vl = v.left_protruding
+        if vl then
+            chr.left_protruding  = protrusionfactor*chr.width*vl
+        end
+        local vr = v.right_protruding
+        if vr then
+            chr.right_protruding  = protrusionfactor*chr.width*vr
+        end
         local vi = description.italic
         if vi then
             chr.italic = vi*delta
@@ -252,14 +273,6 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
             chr.commands = tt
         end
         tc[k] = chr
-    end
-    local tp = t.parameters
-    for k,v in pairs(tfmtable.parameters) do
-        if k == 1 then
-            tp[k] = v
-        else
-            tp[k] = v*delta
-        end
     end
     -- t.encodingbytes, t.filename, t.fullname, t.name: elsewhere
     t.size = scaledpoints
@@ -391,88 +404,6 @@ function fonts.initializers.common.lineheight(tfmdata,value)
         end
     end
 end
-
-
---[[ldx--
-<p>The following feature is kind of experimental and deals with fallback characters.</p>
---ldx]]--
-
-fonts.initializers.complements      = fonts.initializers.complements      or { }
-fonts.initializers.complements.data = fonts.initializers.complements.data or { }
-
-function fonts.initializers.complements.load(pattern)
-    local data = fonts.initializers.complements.data[pattern]
-    if not data then
-        data = { }
-        for k,v in pairs(characters.data) do
-            local vd = v.description
-            if vd and vd:find(pattern) then
-                local vs = v.specials
-                if vs and vs[1] == "compat" then
-                    data[#data+1] = k
-                end
-            end
-        end
-        fonts.initializers.complements.data[pattern] = data
-    end
-    return data
-end
-
-function fonts.initializers.common.complement(tfmdata,value) -- todo: value = latin:compat,....
-    if value then
-        local chr, index, data, get_virtual_id = tfmdata.characters, nil, characters.data, fonts.tfm.get_virtual_id
-        local selection = fonts.initializers.complements.load("LATIN") -- will be value
-    --  for _, k in ipairs(selection) do
-        for i=1,#selection do
-            local k = selection[i]
-            if not chr[k] then
-                local dk = data[k]
-                local vs, name = dk.specials, dk.adobename
-                index = index or get_virtual_id(tfmdata)
-                local ok, t, w, h, d, krn, pre = true, {}, 0, 0, 0, nil, nil
-                for i=2,#vs do
-                    local vsi = vs[i]
-                    local c = chr[vsi]
-                    if c then
-                        local k = krn and krn[vsi]
-                        if k then
-                            t[#t+1] = { 'right', k }
-                            w = w + k
-                        end
-                        t[#t+1] = { 'slot', index, vsi }
-                        w = w + c.width
-                        h = h + c.height
-                        d = d + c.depth
-                        krn = c.kerns
-                    else
-                        ok = false
-                        break
-                    end
-                end
-                if ok then
-                    chr[k] = {
-                        unicode  = k,
-                        name     = name,
-                        commands = t,
-                        width    = w,
-                        height   = h,
-                        depth    = d,
-                        kerns    = krn
-                    }
-                    local c = vs[2]
-                    for k,v in pairs(chr) do -- slow
-                        local krn = v.kerns
-                        if krn then
-                            krn[k] = krn[c]
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
-table.insert(fonts.triggers,"complement")
 
 --[[ldx--
 <p>It does not make sense any more to support messed up encoding vectors

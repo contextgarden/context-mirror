@@ -82,7 +82,7 @@
             -- for i=1,#id.dt do local e = id.dt[i] if type(e) == table then ...
             for r, d, k in xml.elements(id,"/*") do
                 local e = d[k]
-                local tag = xml.tag(e)
+                local tag = e.tg
                 if tag == "mprescripts" then
                     tex.sprint(tex.ctxcatcodes,"{}")
                     done = true
@@ -93,7 +93,7 @@
             local done, toggle = false, false
             for r, d, k in xml.elements(id,"/*") do
                 local e = d[k]
-                local tag = xml.tag(e)
+                local tag = e.tg
                 if tag == "mprescripts" then
                     break
                 elseif done then

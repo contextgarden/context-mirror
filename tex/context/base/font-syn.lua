@@ -145,10 +145,10 @@ function fonts.names.identify()
     local function traverse(what, method)
         for n, suffix in pairs(fonts.names.filters.list) do
             nofread, nofok  = 0, 0
-            local t = os.clock() -- use elapser
+            local t = os.gettimeofday() -- use elapser
             logs.report("fontnames", string.format("identifying %s font files with suffix %s",what,suffix))
             method(suffix)
-            logs.report("fontnames", string.format("%s %s files identified, %s hash entries added, runtime %s seconds", nofread, what,nofok, os.clock()-t))
+            logs.report("fontnames", string.format("%s %s files identified, %s hash entries added, runtime %s seconds", nofread, what,nofok, os.gettimeofday()-t))
         end
     end
     traverse("tree", function(suffix)

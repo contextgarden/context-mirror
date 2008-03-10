@@ -47,10 +47,10 @@
 % Beware, we have no filename support here. For that we need to save the resulting
 % tex code in a file. No big deal.
 
-\def\mkloadregister#1% class, todo: loader macro just like mkii
+\def\mkloadregister#1#2#3% class, todo: loader macro just like mkii
   {\bgroup
-   \getvalue{\s!set#1}%
-   \ctxlua{job.loadregister('#1')}\par % par needed for hanging indentation
+   \getvalue{\s!set#1}% smells like a hack
+   #2\ctxlua{job.loadregister('#1')}#3% par needed for hanging indentation
    \getvalue{\s!reset#1}%
    \egroup}
 

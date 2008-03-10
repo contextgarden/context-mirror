@@ -514,8 +514,13 @@ end
 
 do
 
-    local has_attribute = node.has_attribute
-    local unset         = node.unset_attribute
+    local has_attribute   = node.has_attribute
+    local unset_attribute = node.unset_attribute
+    local set_attribute   = node.set_attribute
+
+--~     local function unset_attribute(n,attribute)
+--~         set_attribute(n,attribute,0)
+--~     end
 
     local glyph = node.id("glyph")
     local kern  = node.id("kern")
@@ -550,11 +555,11 @@ do
         local done, mapping, fontids = false, spacings.mapping, fonts.tfm.id
         for start in node.traverse_id(glyph,head) do -- tricky since we inject
             local attr = has_attribute(start,attribute)
-            if attr then
+            if attr and attr > 0 then
                 local map = mapping[attr]
                 if map then
                     map = map[start.char]
-                    unset(start,attribute)
+                    unset_attribute(start,attribute)
                     if map then
                         local kern, prev = map.left, start.prev
                         if kern and kern ~= 0 and prev and prev.id == glyph then
@@ -599,8 +604,8 @@ do
         while start do
             -- faster to test for attr first
             local attr = has_attribute(start,attribute)
-            if attr then
-                unset(start,attribute)
+            if attr and attr > 0 then
+                unset_attribute(start,attribute)
                 local krn = mapping[attr]
                 if krn and krn ~= 0 then
                     local id = start.id
@@ -843,8 +848,8 @@ do
         local done, actions = false, cases.actions
         for start in node.traverse_id(glyph,head) do
             local attr = has_attribute(start,attribute)
-            if attr then
-                unset(start,attribute)
+            if attr and attr > 0 then
+                unset_attribute(start,attribute)
                 local action = actions[attr]
                 if action then
                     local _, ok = action(start)
@@ -935,8 +940,8 @@ do
             local id = start.id
             if id == glyph then
                 local attr = has_attribute(start,attribute)
-                if attr then
-                    unset(start,attribute) -- maybe test for subtype > 256 (faster)
+                if attr and attr > 0 then
+                    unset_attribute(start,attribute) -- maybe test for subtype > 256 (faster)
                     -- look ahead and back n chars
                     local map = mapping[attr]
                     if map then

@@ -11,119 +11,123 @@ texmf.instance = instance -- we need to get rid of this / maybe current instance
 scripts       = scripts       or { }
 scripts.watch = scripts.watch or { }
 
-function scripts.watch.watch()
-    local delay   = environment.argument("delay")   or 5
-    local logpath = environment.argument("logpath") or ""
-    local pipe    = environment.argument("pipe")    or false
-    if #environment.files > 0 then
-        for _, path in ipairs(environment.files) do
-            logs.report("watch", "watching path ".. path)
-        end
-        local function glob(files,path)
-            for name in lfs.dir(path) do
-                if name:find("^%.") then
-                    -- skip . and ..
-                else
-                    name = path .. "/" .. name
-                    local a = lfs.attributes(name)
-                    if not a then
-                        -- weird
-                    elseif a.mode == "directory" then
-                        if name:find("graphics$") or name:find("figures$") or name:find("resources$") then
-                            -- skip these too
-                        else
-                            glob(files,name)
-                        end
-                    elseif name:find(".%luj$") then
-                        files[name] = a.change or a.ctime or a.modification or a.mtime
-                    end
-                end
-            end
-        end
-        local n = 0
-        local function process()
-            local done = false
+do
+
+    function scripts.watch.watch()
+        local delay   = environment.argument("delay")   or 5
+        local logpath = environment.argument("logpath") or ""
+        local pipe    = environment.argument("pipe")    or false
+        if #environment.files > 0 then
             for _, path in ipairs(environment.files) do
-                lfs.chdir(path)
-                local files = { }
-                glob(files,path)
-                table.sort(files) -- what gets sorted here
-                for name, time in pairs(files) do
-                --~ local ok, joblog = xpcall(function() return dofile(name) end, function() end )
-                    local ok, joblog = pcall(dofile,name)
-                    if ok and joblog then
-                        if joblog.status == "processing" then
-                            logs.report("watch",string.format("aborted job, %s added to queue",name))
-                            joblog.status = "queued"
-                            io.savedata(name, table.serialize(joblog,true))
-                        elseif joblog.status == "queued" then
-                            local command = joblog.command
-                            if command then
-                                local replacements = {
-                                    inputpath  = (joblog.paths and joblog.paths.input ) or ".",
-                                    outputpath = (joblog.paths and joblog.paths.output) or ".",
-                                    filename   = joblog.filename or "",
-                                }
-                                command = command:gsub("%%(.-)%%", replacements)
-                                if command ~= "" then
-                                    joblog.status = "processing"
-                                    joblog.runtime = os.time() -- os.clock()
-                                    io.savedata(name, table.serialize(joblog,true))
-                                    logs.report("watch",string.format("running: %s", command))
-                                    local newpath = file.dirname(name)
-                                    io.flush()
-                                    local result = ""
-                                    if newpath ~= "" and newpath ~= "." then
-                                        local oldpath = lfs.currentdir()
-                                        lfs.chdir(newpath)
-                                        if pipe then result = os.resultof(command) else result = os.spawn(command) end
-                                        lfs.chdir(oldpath)
-                                    else
-                                        if pipe then result = os.resultof(command) else result = os.spawn(command) end
-                                    end
-                                    logs.report("watch",string.format("return value: %s", result))
-                                    done = true
-                                    local path, base = replacements.outputpath, file.basename(replacements.filename)
-                                    joblog.runtime = os.time() - joblog.runtime -- os.clock() - joblog.runtime
-                                    joblog.result  = file.replacesuffix(file.join(path,base),"pdf")
-                                    joblog.size    = lfs.attributes(joblog.result,"size")
-                                    joblog.status  = "finished"
-                                else
-                                    joblog.status = "invalid command"
-                                end
+                logs.report("watch", "watching path ".. path)
+            end
+            local function glob(files,path)
+                for name in lfs.dir(path) do
+                    if name:find("^%.") then
+                        -- skip . and ..
+                    else
+                        name = path .. "/" .. name
+                        local a = lfs.attributes(name)
+                        if not a then
+                            -- weird
+                        elseif a.mode == "directory" then
+                            if name:find("graphics$") or name:find("figures$") or name:find("resources$") then
+                                -- skip these too
                             else
-                                joblog.status = "no command"
+                                glob(files,name)
                             end
-                            -- pcall, when error sleep + again
-                            io.savedata(name, table.serialize(joblog,true))
-                            if logpath ~= "" then
-                                local name = string.format("%s/%s%04i%09i.lua", logpath, os.time(), math.floor((os.clock()*100)%1000), math.random(99999999))
+                        elseif name:find(".%luj$") then
+                            files[name] = a.change or a.ctime or a.modification or a.mtime
+                        end
+                    end
+                end
+            end
+            local function process()
+                local done = false
+                for _, path in ipairs(environment.files) do
+                    lfs.chdir(path)
+                    local files = { }
+                    glob(files,path)
+                    table.sort(files) -- what gets sorted here
+                    for name, time in pairs(files) do
+                    --~ local ok, joblog = xpcall(function() return dofile(name) end, function() end )
+                        local ok, joblog = pcall(dofile,name)
+                        if ok and joblog then
+                            if joblog.status == "processing" then
+                                logs.report("watch",string.format("aborted job, %s added to queue",name))
+                                joblog.status = "queued"
                                 io.savedata(name, table.serialize(joblog,true))
-                                logs.report("watch", "saving joblog ".. name)
+                            elseif joblog.status == "queued" then
+                                local command = joblog.command
+                                if command then
+                                    local replacements = {
+                                        inputpath  = (joblog.paths and joblog.paths.input ) or ".",
+                                        outputpath = (joblog.paths and joblog.paths.output) or ".",
+                                        filename   = joblog.filename or "",
+                                    }
+                                    command = command:gsub("%%(.-)%%", replacements)
+                                    if command ~= "" then
+                                        joblog.status = "processing"
+                                        joblog.runtime = os.time() -- os.clock()
+                                        io.savedata(name, table.serialize(joblog,true))
+                                        logs.report("watch",string.format("running: %s", command))
+                                        local newpath = file.dirname(name)
+                                        io.flush()
+                                        local result = ""
+                                        if newpath ~= "" and newpath ~= "." then
+                                            local oldpath = lfs.currentdir()
+                                            lfs.chdir(newpath)
+                                            if pipe then result = os.resultof(command) else result = os.spawn(command) end
+                                            lfs.chdir(oldpath)
+                                        else
+                                            if pipe then result = os.resultof(command) else result = os.spawn(command) end
+                                        end
+                                        logs.report("watch",string.format("return value: %s", result))
+                                        done = true
+                                        local path, base = replacements.outputpath, file.basename(replacements.filename)
+                                        joblog.runtime = os.time() - joblog.runtime -- os.clock() - joblog.runtime
+                                        joblog.result  = file.replacesuffix(file.join(path,base),"pdf")
+                                        joblog.size    = lfs.attributes(joblog.result,"size")
+                                        joblog.status  = "finished"
+                                    else
+                                        joblog.status = "invalid command"
+                                    end
+                                else
+                                    joblog.status = "no command"
+                                end
+                                -- pcall, when error sleep + again
+                                io.savedata(name, table.serialize(joblog,true))
+                                if logpath ~= "" then
+                                    local name = string.format("%s/%s%04i%09i.lua", logpath, os.time(), math.floor((os.clock()*100)%1000), math.random(99999999))
+                                    io.savedata(name, table.serialize(joblog,true))
+                                    logs.report("watch", "saving joblog ".. name)
+                                end
                             end
                         end
                     end
                 end
             end
-        end
-        local function wait()
-            io.flush()
-            if not done then
-                n = n + 1
-                if n >= 10 then
-                    logs.report("watch", "still sleeping " .. os.clock())
-                    n = 0
+            local n, start = 0, os.clock()
+            local function wait()
+                io.flush()
+                if not done then
+                    n = n + 1
+                    if n >= 10 then
+                        logs.report("watch", string.format("run time: %i seconds, memory usage: %0.3g MB", os.clock() - start, (status.luastate_bytes/1024)/1000))
+                        n = 0
+                    end
+                    os.sleep(delay)
                 end
-                os.sleep(delay)
             end
+            while true do
+                pcall(process)
+                pcall(wait)
+            end
+        else
+            logs.report("watch", "no paths to watch")
         end
-        while true do
-            pcall(process)
-            pcall(wait)
-        end
-    else
-        logs.report("watch", "no paths to watch")
     end
+
 end
 
 function scripts.watch.collect_logs(path) -- clean 'm up too

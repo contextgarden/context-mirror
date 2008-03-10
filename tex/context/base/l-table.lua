@@ -79,7 +79,8 @@ end
 --~     return t
 --~ end
 
-function table.merge(t, ...)
+function table.merge(t, ...) -- first one is target
+    t = t or {}
     local lst = {...}
     for i=1,#lst do
         for k, v in pairs(lst[i]) do
@@ -608,6 +609,14 @@ function table.tohash(t)
     return h
 end
 
+function table.fromhash(t)
+    local h = { }
+    for k, v in pairs(t) do -- no ipairs here
+        if v then h[#h+1] = k end
+    end
+    return h
+end
+
 function table.contains(t, v)
     if t then
         for i=1, #t do
@@ -639,3 +648,19 @@ end
 --~     return table.serialize(a) == table.serialize(b)
 --~ end
 
+function table.clone(t,p) -- t is optional or nil or table
+    if not p then
+        t, p = { }, t or { }
+    elseif not t then
+        t = { }
+    end
+    setmetatable(t, { __index = function(_,key) return p[key] end })
+    return t
+end
+
+
+function table.hexed(t,seperator)
+    local tt = { }
+    for i=1,#t do tt[i] = string.format("0x%04X",t[i]) end
+    return table.concat(tt,seperator or " ")
+end

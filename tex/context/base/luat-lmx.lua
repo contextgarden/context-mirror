@@ -6,7 +6,7 @@
 
 if not versions then versions = { } end versions['luat-mlx'] = 1.001
 
--- we can now use l-xml
+-- we can now use l-xml, and we can also use lpeg
 
 lmx = { }
 
@@ -94,9 +94,9 @@ lmx.lmxfile   = function(filename)     return filename  end
 lmx.htmfile   = function(filename)     return filename  end
 
 if environment.platform == "windows" then
-    lmx.popupfile = function(filename) os.spawn("start " .. filename) end
+    lmx.popupfile = function(filename) os.execute("start " .. filename) end
 else
-    lmx.popupfile = function(filename) os.spawn(filename) end
+    lmx.popupfile = function(filename) os.execute(filename) end
 end
 
 function lmx.show(name)

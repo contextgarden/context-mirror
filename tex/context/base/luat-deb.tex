@@ -22,8 +22,8 @@
     }
 \stopruntimeluacode
 
-\def\showdebuginfo{\ctxlua{trace.showdebuginfo()}}
-\def\overloaderror{\ctxlua{trace.overloaderror()}}
+\def\showdebuginfo{\ctxlua{tracers.showdebuginfo()}}
+\def\overloaderror{\ctxlua{tracers.overloaderror()}}
 
 \def\breakpoint{\showdebuginfo\wait}
 

@@ -15,27 +15,21 @@
 
 %D We save two pass information in the utility file.
 
-\def\resettwopassentries
-  {\let\twopassentry\gobblethreearguments}
-
 \addutilityreset{twopassentries}
 
-\resettwopassentries
+\def\immediatesavetwopassdata   #1#2#3{\immediatewriteutilitycommand{\twopassentry{#1}{#2}{#3}}}
+\def\savetwopassdata            #1#2#3{\writeutilitycommand{\twopassentry{#1}{#2}{#3}}}
+\def\lazysavetwopassdata        #1#2#3{\expanded{\writeutilitycommand{\noexpand\twopassentry{#1}{#2}{#3}}}} % expanded !
+\def\savetaggedtwopassdata    #1#2#3#4{\immediatewriteutilitycommand{\twopassentry{#1}{#2}{#3::#4}}}
+\def\lazysavetaggedtwopassdata#1#2#3#4{\expanded{\writeutilitycommand{\noexpand\twopassentry{#1}{#2}{#3::#4}}}} % expanded !
+
+\def\resettwopassentries
+  {\let\twopassentry\gobblethreearguments}
 
 \def\settwopassentries
   {\def\twopassentry##1{\executeifdefined{@@##1\s!pass}\gobbletwoarguments}}
 
-\def\savetwopassdata#1#2#3%
-  {\immediatewriteutilitycommand{\twopassentry{#1}{#2}{#3}}}
-
-\def\lazysavetwopassdata#1#2#3% expanded !
-  {\expanded{\writeutilitycommand{\noexpand\twopassentry{#1}{#2}{#3}}}}
-
-\def\savetaggedtwopassdata#1#2#3#4%
-  {\immediatewriteutilitycommand{\twopassentry{#1}{#2}{#3::#4}}}
-
-\def\lazysavetaggedtwopassdata#1#2#3#4% expanded !
-  {\expanded{\writeutilitycommand{\noexpand\twopassentry{#1}{#2}{#3::#4}}}}
+\resettwopassentries
 
 \def\appendtwopasselement#1#2#3% can sometimes become a large list
   {%\debuggerinfo{\m!systems}{twopass data #1 - #2 = #3}%

@@ -187,6 +187,8 @@ if texconfig and not texlua then do
         texio.write_nl(s .. b .. "\n")
     end
 
+    -- this will become: ctx.install_statistics(fnc() return ..,.. end) etc
+
     function ctx.show_statistics()
         local function ws(...)
             ctx.writestatus("mkiv lua stats",string.format(...))
@@ -221,6 +223,12 @@ if texconfig and not texlua then do
         end
         if languages then
             ws("language load time        - %s seconds (n=%s)", input.loadtime(languages), languages.hyphenation.n())
+        end
+        if figures then
+            ws("graphics processing time  - %s seconds (n=%s) (including tex)", input.loadtime(figures), figures.n or "?")
+        end
+        if metapost then
+            ws("metapost processing time  - %s seconds (+ loading: %s seconds)", input.loadtime(metapost), input.loadtime(mplib))
         end
         if status.luastate_bytes then
             ws("current memory usage      - %s bytes", status.luastate_bytes)
@@ -422,7 +430,7 @@ if texconfig and not texlua then
         'hash_extra', 'max_strings', 'pool_free', 'pool_size', 'string_vacancies',
         'obj_tab_size', 'pdf_mem_size', 'dest_names_size',
         'nest_size', 'param_size', 'save_size', 'stack_size',
-        'trie_size', 'hyph_size',
+        'trie_size', 'hyph_size', 'max_in_open',
         'ocp_stack_size', 'ocp_list_size', 'ocp_buf_size'
     }
 
@@ -449,6 +457,7 @@ if texconfig and not texlua then
     end
 
     texconfig.max_print_line = 100000
+    texconfig.max_in_open    = 127
 
 end
 
@@ -474,112 +483,4 @@ function cs.testcase(b)
     else
         tex.sprint(tex.texcatcodes, "\\secondoftwoarguments")
     end
-end
-
--- This is not the most ideal place, but it will do. Maybe we need to move
--- attributes to node-att.lua.
-
-if node then
-
-    nodes = nodes or { }
-
-    do
-
-        -- just for testing
-
-        local reserved = { }
-
-        function nodes.register(n)
-            reserved[#reserved+1] = n
-        end
-
-        function nodes.cleanup_reserved(nofboxes) -- todo
-            local nr, free = #reserved, node.free
-            for i=1,nr do
-                free(reserved[i])
-            end
-            local nl, tb, flush = 0, tex.box, node.flush_list
-            if nofboxes then
-                for i=1,nofboxes do
-                    local l = tb[i]
-                    if l then
-                --      flush(l)
-                        tb[i] = nil
-                        nl = nl + 1
-                    end
-                end
-            end
-            reserved = { }
-            return nr, nl, nofboxes
-        end
-
-    end
-
-    do
-
-        local pdfliteral = node.new("whatsit",8)   pdfliteral.next, pdfliteral.prev  = nil, nil  pdfliteral.mode = 1
-        local disc       = node.new("disc")        disc.next,       disc.prev        = nil, nil
-        local kern       = node.new("kern",1)      kern.next,       kern.prev        = nil, nil
-        local penalty    = node.new("penalty")     penalty.next,    penalty.prev     = nil, nil
-        local glue       = node.new("glue")        glue.next,       glue.prev        = nil, nil
-        local glue_spec  = node.new("glue_spec")   glue_spec.next,  glue_spec.prev   = nil, nil
-
-        nodes.register(pdfliteral)
-        nodes.register(disc)
-        nodes.register(kern)
-        nodes.register(penalty)
-        nodes.register(glue)
-        nodes.register(glue_spec)
-
-        local copy = node.copy
-
-        function nodes.penalty(p)
-            local n = copy(penalty)
-            n.penalty = p
-            return n
-        end
-        function nodes.kern(k)
-            local n = copy(kern)
-            n.kern = k
-            return n
-        end
-        function nodes.glue(width,stretch,shrink)
-            local n = copy(glue)
-            local s = copy(glue_spec)
-            s.width, s.stretch, s.shrink = width, stretch, shrink
-            n.spec = s
-            return n
-        end
-        function nodes.glue_spec(width,stretch,shrink)
-            local s = copy(glue_spec)
-            s.width, s.stretch, s.shrink = width, stretch, shrink
-            return s
-        end
-
-        function nodes.disc()
-            return copy(disc)
-        end
-
-        function nodes.pdfliteral(str)
-            local t = copy(pdfliteral)
-            t.data = str
-            return t
-        end
-
-    end
-
-end
-
-if tex then
-
-    function tex.node_mem_status()
-        -- todo: lpeg
-        local s = status.node_mem_usage
-        local t = { }
-        for n, tag in s:gmatch("(%d+) ([a-z_]+)") do
-            t[tag] = n
-        end
-        return t
-    end
-
 end

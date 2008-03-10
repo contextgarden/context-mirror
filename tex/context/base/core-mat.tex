@@ -155,6 +155,9 @@
 
 \def\formuladistance{\formulaparameter\c!distance}
 
+\def\doformulareference#1#2%
+  {\doifsomething{#1}{\doifnotinset{#1}{+,-}{\rawreference\s!for{#1}{#2}}}}
+
 \def\dododoformulanumber#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
   {\hbox\bgroup
    \ifconditional\handleformulanumber
@@ -168,12 +171,12 @@
      \else
        \let\hetsubnummer\empty
      \fi
-     \doifsomething{#1}{\rawreference{\s!for}{#1}{\composedsectionnumber\hetsubnummer}}%
+     \doformulareference{#1}{\composedsectionnumber\hetsubnummer}%
      \setbox0\hbox{\ignorespaces#4\unskip}%
      \ifdim\wd0>\zeropoint
        \edef\hetsubnummer{\@@fnseparator#4}%AM: was \edef\hetsubnummer{#4}%
      \fi
-     \doifsomething{#3}{\rawreference\s!for{#3}{\composedsectionnumber\hetsubnummer}}%
+     \doformulareference{#3}{\composedsectionnumber\hetsubnummer}%
      \doflushformulalistentry{\composedsectionnumber\hetsubnummer}%
      \rm % nodig ?
      \doif{\formulaparameter\c!location}\v!right{\hskip\formuladistance}%
@@ -571,7 +574,7 @@
   {\incrementnumber[\v!formula]%
    \makesectionnumber[\v!formula]%
    \doflushformulalistentry{\composedsectionnumber}%
-   \doifsomething{#1}{\rawreference\s!for{#1}\composedsectionnumber}%
+   \doformulareference{#1}\composedsectionnumber
    \expanded{\setupnumber
      [\v!formula*]
      [\c!start={\rawnumber[\v!formula]},

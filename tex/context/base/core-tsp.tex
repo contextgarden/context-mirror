@@ -130,14 +130,14 @@
       \egroup
       \ifconditional\somenextplitofffloat
         \doifelsenothing\@@siinbetween
-          {\ifconditional\tsplitfirstdone\else\page\fi}
+          {\ifconditional\splitfloatfirstdone\else\page\fi}
           \@@siinbetween
       \else
         \@@siafter
         \dopopsavedfloats
         \doflushsavedfloats
       \fi
-      \global\settrue\tsplitfirstdone}%
+      \global\settrue\splitfloatfirstdone}%
    \vbox}
 
 \def\nodowithsplitofffloat
@@ -145,7 +145,7 @@
      {\forgetall
       \dontcomplain
       \box\nextbox % maybe an option to unvbox
-      \global\settrue\tsplitfirstdone}%
+      \global\settrue\splitfloatfirstdone}%
    \vbox}
 
 \def\dochecksplitofffloat#1% box
@@ -222,11 +222,11 @@
 
 % todo: keep tail to rest, so we need a lookahead
 
-\newconditional\tsplitfirstdone
+\newconditional\splitfloatfirstdone
 
 \def\handletsplit
   {\analyzesplitfloatcaption\tsplitcontent
-   \global\setfalse\tsplitfirstdone
+   \global\setfalse\splitfloatfirstdone
    \testpagesync % new, sync, but still tricky
      [\tsplitminimumfreelines]
      [\dimexpr\tsplitminimumfreespace+\extrasplitfloatlines\lineheight\relax]%
@@ -236,11 +236,11 @@
    \doloop
      {\ifinsidecolumns
         % brrr, assumes empty columns
-        \global\setfalse\tsplitfirstdone
+        \global\setfalse\splitfloatfirstdone
         \scratchdimen\textheight
         \!!donectrue
       \else
-        \ifconditional\tsplitfirstdone
+        \ifconditional\splitfloatfirstdone
           \scratchdimen\textheight
           \!!donectrue
         \else\ifdim\pagegoal<\maxdimen
@@ -331,7 +331,8 @@
         \else
           \doifnotinsidesplitfloat\page
         \fi
-      \fi}}
+      \fi}%
+   \global\setfalse\splitfloatfirstdone} % we can use this one for tests
 
 \protect \endinput
 

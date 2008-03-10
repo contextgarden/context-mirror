@@ -162,9 +162,9 @@ when we get rid of base mode we can optimize even further by sharing, but then w
 loose our testcases for <l n='luatex'/>.</p>
 --ldx]]--
 
-function fonts.tfm.hash_instance(specification)
+function fonts.tfm.hash_instance(specification,force)
     local hash, size = specification.hash, specification.size
-    if not hash then
+    if force or not hash then
         hash = fonts.tfm.hash_features(specification)
         specification.hash = hash
     end
@@ -568,17 +568,18 @@ fonts.define.register_split('*',fonts.define.specify.starred)
 a helper function.</p>
 --ldx]]--
 
-function fonts.define.check(features,defaults)
+function fonts.define.check(features,defaults) -- nb adapts features !
+    local done = false
     if table.is_empty(features) then
-        features = table.fastcopy(defaults) -- we could do without copy
+        features, done = table.fastcopy(defaults), true
     else
         for k,v in pairs(defaults) do
             if features[k] == nil then
-                features[k] = v
+                features[k], done = v, true
             end
         end
     end
-    return features
+    return features, done -- done signals a change
 end
 
 --[[ldx--

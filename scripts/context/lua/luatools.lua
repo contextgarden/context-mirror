@@ -363,6 +363,31 @@ function string:split_settings() -- no {} handling, see l-aux for lpeg variant
     end
 end
 
+local patterns_escapes = {
+    ["-"] = "%-",
+    ["."] = "%.",
+    ["+"] = "%+",
+    ["*"] = "%*",
+    ["%"] = "%%",
+    ["("] = "%)",
+    [")"] = "%)",
+    ["["] = "%[",
+    ["]"] = "%]",
+}
+
+
+function string:pattesc()
+    return (self:gsub(".",patterns_escapes))
+end
+
+function string:tohash()
+    local t = { }
+    for s in self:gmatch("([^, ]+)") do -- lpeg
+        t[s] = true
+    end
+    return t
+end
+
 
 -- filename : l-lpeg.lua
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -403,7 +428,6 @@ end
 function lpeg.splitter(pattern, action)
     return (((1-lpeg.P(pattern))^1)/action+1)^0
 end
-
 
 
 
@@ -488,7 +512,8 @@ end
 --~     return t
 --~ end
 
-function table.merge(t, ...)
+function table.merge(t, ...) -- first one is target
+    t = t or {}
     local lst = {...}
     for i=1,#lst do
         for k, v in pairs(lst[i]) do
@@ -1017,6 +1042,14 @@ function table.tohash(t)
     return h
 end
 
+function table.fromhash(t)
+    local h = { }
+    for k, v in pairs(t) do -- no ipairs here
+        if v then h[#h+1] = k end
+    end
+    return h
+end
+
 function table.contains(t, v)
     if t then
         for i=1, #t do
@@ -1048,6 +1081,22 @@ end
 --~     return table.serialize(a) == table.serialize(b)
 --~ end
 
+function table.clone(t,p) -- t is optional or nil or table
+    if not p then
+        t, p = { }, t or { }
+    elseif not t then
+        t = { }
+    end
+    setmetatable(t, { __index = function(_,key) return p[key] end })
+    return t
+end
+
+
+function table.hexed(t,seperator)
+    local tt = { }
+    for i=1,#t do tt[i] = string.format("0x%04X",t[i]) end
+    return table.concat(tt,seperator or " ")
+end
 
 
 -- filename : l-io.lua
@@ -1119,37 +1168,9 @@ function io.noflines(f)
     return n
 end
 
---~ t, f, n = os.clock(), io.open("testbed/sample-utf16-bigendian-big.txt",'rb'), 0
---~ for a in io.characters(f) do n = n + 1 end
---~ print(string.format("characters: %s, time: %s", n, os.clock()-t))
-
 do
 
     local sb = string.byte
-
---~     local nextchar = {
---~         [ 4] = function(f)
---~             return f:read(1), f:read(1), f:read(1), f:read(1)
---~         end,
---~         [ 2] = function(f)
---~             return f:read(1), f:read(1)
---~         end,
---~         [ 1] = function(f)
---~             return f:read(1)
---~         end,
---~         [-2] = function(f)
---~             local a = f:read(1)
---~             local b = f:read(1)
---~             return b, a
---~         end,
---~         [-4] = function(f)
---~             local a = f:read(1)
---~             local b = f:read(1)
---~             local c = f:read(1)
---~             local d = f:read(1)
---~             return d, c, b, a
---~         end
---~     }
 
     local nextchar = {
         [ 4] = function(f)
@@ -1457,6 +1478,19 @@ end
 if not os.exec  then os.exec  = os.execute end
 if not os.spawn then os.spawn = os.execute end
 
+--~ os.type : windows | unix (new, we already guessed os.platform)
+--~ os.name : windows | msdos | linux | macosx | solaris | .. | generic (new)
+
+if not io.fileseparator then
+    if string.find(os.getenv("PATH"),";") then
+        io.fileseparator, io.pathseparator, os.platform = "\\", ";", os.type or "windows"
+    else
+        io.fileseparator, io.pathseparator, os.platform = "/" , ":", os.type or "unix"
+    end
+end
+
+os.platform = os.platform or os.type or (io.pathseparator == ";" and "windows") or "unix"
+
 function os.launch(str)
     if os.platform == "windows" then
         os.execute("start " .. str) -- os.spawn ?
@@ -1476,19 +1510,15 @@ if not os.times then
     -- cstime = children system time
     function os.times()
         return {
-            utime  = os.clock(), -- user
-            stime  = 0,          -- system
-            cutime = 0,          -- children user
-            cstime = 0,          -- children system
+            utime  = os.gettimeofday(), -- user
+            stime  = 0,                 -- system
+            cutime = 0,                 -- children user
+            cstime = 0,                 -- children system
         }
     end
 end
 
-if os.gettimeofday then
-    os.clock = os.gettimeofday
-else
-    os.gettimeofday = os.clock
-end
+os.gettimeofday = os.gettimeofday or os.clock
 
 do
     local startuptime = os.gettimeofday()
@@ -1535,11 +1565,11 @@ if not versions then versions = { } end versions['l-file'] = 1.001
 if not file then file = { } end
 
 function file.removesuffix(filename)
-    return filename:gsub("%.%a+$", "")
+    return filename:gsub("%.[%a%d]+$", "")
 end
 
 function file.addsuffix(filename, suffix)
-    if not filename:find("%.%a-$") then
+    if not filename:find("%.[%a%d]+$") then
         return filename .. "." .. suffix
     else
         return filename
@@ -1547,7 +1577,11 @@ function file.addsuffix(filename, suffix)
 end
 
 function file.replacesuffix(filename, suffix)
-    return (filename:gsub("%.%a+$", "." .. suffix))
+    if not filename:find("%.[%a%d]+$") then
+        return filename .. "." .. suffix
+    else
+        return (filename:gsub("%.[%a%d]+$","."..suffix))
+    end
 end
 
 function file.dirname(name)
@@ -1566,12 +1600,36 @@ function file.extname(name)
     return name:match("^.+%.([^/\\]-)$") or  ""
 end
 
+function file.stripsuffix(name)
+    return (name:gsub("%.[%a%d]+$",""))
+end
+
+--~ function file.join(...)
+--~     local t = { ... }
+--~     for i=1,#t do
+--~         t[i] = (t[i]:gsub("\\","/")):gsub("/+$","")
+--~     end
+--~     return table.concat(t,"/")
+--~ end
+
+--~ print(file.join("x/","/y"))
+--~ print(file.join("http://","/y"))
+--~ print(file.join("http://a","/y"))
+--~ print(file.join("http:///a","/y"))
+--~ print(file.join("//nas-1","/y"))
+
 function file.join(...)
-    local t = { ... }
-    for i=1,#t do
-        t[i] = (t[i]:gsub("\\","/")):gsub("/+$","")
+    local pth = table.concat({...},"/")
+    pth = pth:gsub("\\","/")
+    local a, b = pth:match("^(.*://)(.*)$")
+    if a and b then
+        return a .. b:gsub("//+","/")
     end
-    return table.concat(t,"/")
+    a, b = pth:match("^(//)(.*)$")
+    if a and b then
+        return a .. b:gsub("//+","/")
+    end
+    return (pth:gsub("//+","/"))
 end
 
 function file.is_writable(name)
@@ -1648,6 +1706,111 @@ end
 
 file.readdata = io.loaddata
 file.savedata = io.savedata
+
+
+-- filename : l-url.lua
+-- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+-- copyright: PRAGMA ADE / ConTeXt Development Team
+-- license  : see context related readme files
+
+if not versions then versions = { } end versions['l-url'] = 1.001
+if not url      then url      = { } end
+
+-- from the spec (on the web):
+--
+--     foo://example.com:8042/over/there?name=ferret#nose
+--     \_/   \______________/\_________/ \_________/ \__/
+--      |           |            |            |        |
+--   scheme     authority       path        query   fragment
+--      |   _____________________|__
+--     / \ /                        \
+--     urn:example:animal:ferret:nose
+
+do
+
+    local function tochar(s)
+        return string.char(tonumber(s,16))
+    end
+
+    local colon, qmark, hash, slash, percent, endofstring = lpeg.P(":"), lpeg.P("?"), lpeg.P("#"), lpeg.P("/"), lpeg.P("%"), lpeg.P(-1)
+
+    local hexdigit  = lpeg.R("09","AF","af")
+    local escaped   = percent * lpeg.C(hexdigit * hexdigit) / tochar
+
+    local scheme    =                 lpeg.Cs((escaped+(1-colon-slash-qmark-hash))^0) * colon + lpeg.Cc("")
+    local authority = slash * slash * lpeg.Cs((escaped+(1-      slash-qmark-hash))^0)         + lpeg.Cc("")
+    local path      = slash *         lpeg.Cs((escaped+(1-            qmark-hash))^0)         + lpeg.Cc("")
+    local query     = qmark         * lpeg.Cs((escaped+(1-                  hash))^0)         + lpeg.Cc("")
+    local fragment  = hash          * lpeg.Cs((escaped+(1-           endofstring))^0)         + lpeg.Cc("")
+
+    local parser = lpeg.Ct(scheme * authority * path * query * fragment)
+
+    function url.split(str)
+        return (type(str) == "string" and parser:match(str)) or str
+    end
+
+end
+
+function url.hashed(str)
+    local s = url.split(str)
+    return {
+        scheme = (s[1] ~= "" and s[1]) or "file",
+        authority = s[2],
+        path = s[3],
+        query = s[4],
+        fragment = s[5],
+        original=str
+    }
+end
+
+function url.filename(filename)
+    local t = url.hashed(filename)
+    return (t.scheme == "file" and t.path:gsub("^/([a-zA-Z])([:|])/)","%1:")) or filename
+end
+
+function url.query(str)
+    if type(str) == "string" then
+        local t = { }
+        for k, v in str:gmatch("([^&=]*)=([^&=]*)") do
+            t[k] = v
+        end
+        return t
+    else
+        return str
+    end
+end
+
+--~ print(url.filename("file:///c:/oeps.txt"))
+--~ print(url.filename("c:/oeps.txt"))
+--~ print(url.filename("file:///oeps.txt"))
+--~ print(url.filename("file:///etc/test.txt"))
+--~ print(url.filename("/oeps.txt"))
+
+--  from the spec on the web (sort of):
+--~
+--~ function test(str)
+--~     print(table.serialize(url.hashed(str)))
+--~ end
+---~
+--~ test("%56pass%20words")
+--~ test("file:///c:/oeps.txt")
+--~ test("file:///c|/oeps.txt")
+--~ test("file:///etc/oeps.txt")
+--~ test("file://./etc/oeps.txt")
+--~ test("file:////etc/oeps.txt")
+--~ test("ftp://ftp.is.co.za/rfc/rfc1808.txt")
+--~ test("http://www.ietf.org/rfc/rfc2396.txt")
+--~ test("ldap://[2001:db8::7]/c=GB?objectClass?one#what")
+--~ test("mailto:John.Doe@example.com")
+--~ test("news:comp.infosystems.www.servers.unix")
+--~ test("tel:+1-816-555-1212")
+--~ test("telnet://192.0.2.16:80/")
+--~ test("urn:oasis:names:specification:docbook:dtd:xml:4.1.2")
+--~ test("/etc/passwords")
+--~ test("http://www.pragma-ade.com/spaced%20name")
+
+--~ test("zip:///oeps/oeps.zip#bla/bla.tex")
+--~ test("zip:///oeps/oeps.zip?bla/bla.tex")
 
 
 -- filename : l-dir.lua
@@ -2112,6 +2275,8 @@ function utils.lua.compile(luafile, lucfile)
     end
 end
 
+
+
 -- filename : luat-lib.lua
 -- comment  : companion to luat-lib.tex
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -2135,19 +2300,13 @@ os.setlocale(nil,nil) -- useless feature and even dangerous in luatex
 
 if not io.fileseparator then
     if string.find(os.getenv("PATH"),";") then
-        io.fileseparator, io.pathseparator, os.platform = "\\", ";", "windows"
+        io.fileseparator, io.pathseparator, os.platform = "\\", ";", os.type or "windows"
     else
-        io.fileseparator, io.pathseparator, os.platform = "/" , ":", "unix"
+        io.fileseparator, io.pathseparator, os.platform = "/" , ":", os.type or "unix"
     end
 end
 
-if not os.platform then
-    if io.pathseparator == ";" then
-        os.platform = "windows"
-    else
-        os.platform = "unix"
-    end
-end
+os.platform = os.platform or os.type or (io.pathseparator == ";" and "windows") or "unix"
 
 -- arg normalization
 --
@@ -2346,17 +2505,22 @@ input.formats ['lua'] = 'LUAINPUTS' -- new
 input.suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 
 -- here we catch a few new thingies (todo: add these paths to context.tmf)
+--
+-- FONTFEATURES  = .;$TEXMF/fonts/fea//
+-- FONTCIDMAPS   = .;$TEXMF/fonts/cid//
 
-function input.checkconfigdata(instance)
+function input.checkconfigdata(instance) -- not yet ok, no time for debugging now
     local function fix(varname,default)
         local proname = varname .. "." .. instance.progname or "crap"
-        if not instance.environment[proname] and not instance.variables[proname] == "" and not instance.environment[varname] and not instance.variables[varname] == "" then
-            instance.variables[varname] = default
+        local p = instance.environment[proname]
+        local v = instance.environment[varname]
+        if not ((p and p ~= "") or (v and v ~= "")) then
+            instance.variables[varname] = default -- or environment?
         end
     end
     fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS")
-    fix("FONTFEATURES", ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
-    fix("FONTCIDMAPS" , ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    fix("FONTFEATURES", ".;$TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    fix("FONTCIDMAPS" , ".;$TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
 end
 
 -- backward compatible ones
@@ -2457,6 +2621,11 @@ function input.reset()
 
 end
 
+function input.reset_hashes(instance)
+    instance.lists = { }
+    instance.found = { }
+end
+
 function input.bare_variable(str)
  -- return string.gsub(string.gsub(string.gsub(str,"%s+$",""),'^"(.+)"$',"%1"),"^'(.+)'$","%1")
     return (str:gsub("\s*([\"\']?)(.+)%1\s*", "%2"))
@@ -2522,7 +2691,7 @@ input.settrace(tonumber(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRA
 -- loading the database files.
 
 do
-    local clock = os.clock
+    local clock = os.gettimeofday or os.clock
 
     function input.starttiming(instance)
         if instance then
@@ -2796,6 +2965,7 @@ function input.aux.extend_texmf_var(instance,specification) -- crap
         instance.variables['TEXMF'] = "{" .. instance.variables['TEXMF'] .. "}"
     end
     input.expand_variables(instance)
+    input.reset_hashes(instance)
 end
 
 -- locators
@@ -2810,28 +2980,6 @@ end
 function input.locatedatabase(instance,specification)
     return input.methodhandler('locators', instance, specification)
 end
-
---~ poor mans solution, from before we had lfs.isdir
---~
---~ function input.locators.tex(instance,specification)
---~     if specification and specification ~= '' then
---~         local files = {
---~             file.join(specification,'files'..input.lucsuffix),
---~             file.join(specification,'files'..input.luasuffix),
---~             file.join(specification,input.lsrname)
---~         }
---~         for _, filename in pairs(files) do
---~             local f = io.open(filename)
---~             if f then
---~                 input.logger('! tex locator', specification..' found')
---~                 input.aux.append_hash(instance,'file',specification,filename)
---~                 f:close()
---~                 return
---~             end
---~         end
---~         input.logger('? tex locator', specification..' not found')
---~     end
---~ end
 
 function input.locators.tex(instance,specification)
     if specification and specification ~= '' and lfs.isdir(specification) then
@@ -3191,8 +3339,6 @@ function input.expand_variables(instance)
     for k,v in pairs(instance.expansions) do
         instance.expansions[k] = v:gsub("\\", '/')
     end
-    -- ##########
-    --~     input.splitexpansions(instance) -- better not, fuzzy
 end
 
 function input.aux.expand_vars(instance,lst) -- simple vars
@@ -3350,15 +3496,12 @@ do
     end
 
     function input.register_extra_path(instance,paths,subpaths)
+        local ep = instance.extra_paths or { }
+        local n = #ep
         if paths and paths ~= "" then
-            local ep = instance.extra_paths
-            if not ep then
-                ep = { }
-                instance.extra_paths = ep
-            end
-            local n = #ep
-            if subpath and subpaths ~= "" then
+            if subpaths and subpaths ~= "" then
                 for p in paths:gmatch("[^,]+") do
+                    -- we gmatch each step again, not that fast, but used seldom
                     for s in subpaths:gmatch("[^,]+") do
                         local ps = p .. "/" .. s
                         if not done[ps] then
@@ -3375,9 +3518,23 @@ do
                     end
                 end
             end
-            if n < #ep then
-                instance.lists = { }
+        elseif subpaths and subpaths ~= "" then
+            for i=1,n do
+                -- we gmatch each step again, not that fast, but used seldom
+                for s in subpaths:gmatch("[^,]+") do
+                    local ps = ep[i] .. "/" .. s
+                    if not done[ps] then
+                        ep[#ep+1] = input.clean_path(ps)
+                        done[ps] = true
+                    end
+                end
             end
+        end
+        if #ep > 0 then
+            instance.extra_paths = ep -- register paths
+        end
+        if #ep > n then
+            instance.lists = { } -- erase the cache
         end
     end
 
@@ -3633,7 +3790,7 @@ input.is_readable.tex = input.is_readable.file
 -- name/name
 
 function input.aux.collect_files(instance,names)
-    local filelist = nil
+    local filelist = { }
     for _, fname in pairs(names) do
         if fname then
             if input.trace > 2 then
@@ -3665,15 +3822,20 @@ function input.aux.collect_files(instance,names)
                     if blobfile then
                         if type(blobfile) == 'string' then
                             if not dname or blobfile:find(dname) then
-                                if not filelist then filelist = { } end
-                             -- input.logger('= collected', blobpath.." | "..blobfile.." | "..bname)
-                                filelist[#filelist+1] = file.join(blobpath,blobfile,bname)
+                                filelist[#filelist+1] = {
+                                    hash.type,
+                                    file.join(blobpath,blobfile,bname), -- search
+                                    input.concatinators[hash.type](blobpath,blobfile,bname) -- result
+                                }
                             end
                         else
                             for _, vv in pairs(blobfile) do
                                 if not dname or vv:find(dname) then
-                                    if not filelist then filelist = { } end
-                                    filelist[#filelist+1] = file.join(blobpath,vv,bname)
+                                    filelist[#filelist+1] = {
+                                        hash.type,
+                                        file.join(blobpath,vv,bname), -- search
+                                        input.concatinators[hash.type](blobpath,vv,bname) -- result
+                                    }
                                 end
                             end
                         end
@@ -3684,7 +3846,11 @@ function input.aux.collect_files(instance,names)
             end
         end
     end
-    return filelist
+    if #filelist > 0 then
+        return filelist
+    else
+        return nil
+    end
 end
 
 function input.suffix_of_format(str)
@@ -3703,54 +3869,30 @@ function input.suffixes_of_format(str)
     end
 end
 
---~ function input.aux.qualified_path(filename) -- make platform dependent / not good yet
---~     return
---~         filename:find("^%.+/") or
---~         filename:find("^/") or
---~         filename:find("^%a+%:") or
---~         filename:find("^%a+##")
---~ end
+do
 
---~ function input.normalize_name(original)
---~     -- internally we use type##spec##subspec ; this hackery slightly slows down searching
---~     local str = original or ""
---~     str = str:gsub("::",               "##")         -- ::             -> ##
---~     str = str:gsub("^(%a+)://"        ,"%1##")       -- zip://         -> zip##
---~     str = str:gsub("(.+)##(.+)##/(.+)","%1##%2##%3") -- ##/spec        -> ##spec
---~     if (input.trace>1) and (original ~= str) then
---~         input.logger('= normalizer',original.." -> "..str)
---~     end
---~     return str
---~ end
-
-do  -- called about 700 times for an empty doc (font initializations etc)
+    -- called about 700 times for an empty doc (font initializations etc)
     -- i need to weed the font files for redundant calls
 
     local letter     = lpeg.R("az","AZ")
-    local separator  = lpeg.P("##")
+    local separator  = lpeg.P("://")
 
-    local qualified  = lpeg.P(".")^0 * lpeg.P("/") + letter*lpeg.P(":") + letter^1*separator
-    local normalized = lpeg.Cs(
-        (letter^1*(lpeg.P("://")/"##") * (1-lpeg.P(false))^1) +
-        (lpeg.P("::")/"##" + (1-separator)^1*separator*(1-separator)^1*separator*(lpeg.P("/")/"") + 1)^0
-    )
+    local qualified = lpeg.P(".")^0 * lpeg.P("/") + letter*lpeg.P(":") + letter^1*separator
+    local rootbased = lpeg.P("/") + letter*lpeg.P(":")
 
-    -- ./name ../name  /name c: zip## (todo: use url internally and get rid of ##)
+    -- ./name ../name  /name c: ://
     function input.aux.qualified_path(filename)
         return qualified:match(filename)
     end
-
-    -- zip:// -> zip## ; :: -> ## ; aa##bb##/cc -> aa##bb##cc
-    function input.normalize_name(original)
-        local str = normalized:match(original or "")
-        if input.trace > 1 and  original ~= str then
-            input.logger('= normalizer',original.." -> "..str)
-        end
-        return str
+    function input.aux.rootbased_path(filename)
+        return rootbased:match(filename)
     end
-end
 
--- split the next one up, better for jit
+    function input.normalize_name(original)
+        return original
+    end
+
+end
 
 function input.aux.register_in_trees(instance,name)
     if not name:find("^%.") then
@@ -3758,11 +3900,13 @@ function input.aux.register_in_trees(instance,name)
     end
 end
 
+-- split the next one up, better for jit
+
 function input.aux.find_file(instance,filename) -- todo : plugin (scanners, checkers etc)
     local result = { }
     local stamp  = nil
-    filename = input.normalize_name(filename)
-    filename = file.collapse_path(filename:gsub("\\","/"))
+    filename = input.normalize_name(filename)  -- elsewhere
+    filename = file.collapse_path(filename:gsub("\\","/")) -- elsewhere
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -3834,7 +3978,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
         local typespec = input.variable_of_format(filetype)
         local pathlist = input.expanded_path_list(instance,typespec)
         if not pathlist or #pathlist == 0 then
-            -- no pathlist, access check only
+            -- no pathlist, access check only / todo == wildcard
             if input.trace > 2 then
                 input.logger('? filename',filename)
                 input.logger('? filetype',filetype or '?')
@@ -3849,8 +3993,9 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             end
             -- this is actually 'other text files' or 'any' or 'whatever'
             local filelist = input.aux.collect_files(instance,wantedfiles)
-            filename = filelist and filelist[1]
-            if filename then
+            local lf = filelist and filelist[1]
+            if fl then
+                filename = fl[3]
                 result[#result+1] = filename
                 done = true
             end
@@ -3860,8 +4005,8 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             local doscan, recurse
             if input.trace > 2 then
                 input.logger('? filename',filename)
-                if pathlist then input.logger('? path list',table.concat(pathlist," | ")) end
-                if filelist then input.logger('? file list',table.concat(filelist," | ")) end
+            --                if pathlist then input.logger('? path list',table.concat(pathlist," | ")) end
+            --                if filelist then input.logger('? file list',table.concat(filelist," | ")) end
             end
             -- a bit messy ... esp the doscan setting here
             for _, path in pairs(pathlist) do
@@ -3874,16 +4019,18 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                     -- compare list entries with permitted pattern
                     pathname = pathname:gsub("([%-%.])","%%%1") -- this also influences
                     pathname = pathname:gsub("/+$", '/.*')      -- later usage of pathname
-                    pathname = pathname:gsub("//", '/.-/')
+                    pathname = pathname:gsub("//", '/.-/')      -- not ok for /// but harmless
                     local expr = "^" .. pathname
                     -- input.debug('?',expr)
-                    for _, f in pairs(filelist) do
+                    for _, fl in ipairs(filelist) do
+                        local f = fl[2]
                         if f:find(expr) then
                             -- input.debug('T',' '..f)
                             if input.trace > 2 then
                                 input.logger('= found in hash',f)
                             end
-                            result[#result+1] = f
+                            --- todo, test for readable
+                            result[#result+1] = fl[3]
                             input.aux.register_in_trees(instance,f) -- for tracing used files
                             done = true
                             if not instance.allresults then break end
@@ -3893,7 +4040,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                     end
                 end
                 if not done and doscan then
-                    -- check if on disk / unchecked / does not work at all
+                    -- check if on disk / unchecked / does not work at all / also zips
                     if input.method_is_file(pathname) then -- ?
                         local pname = pathname:gsub("%.%*$",'')
                         if not pname:find("%*") then
@@ -3970,10 +4117,7 @@ end
 
 if not input.concatinators  then input.concatinators = { } end
 
-function input.concatinators.tex(tag,path,name)
-    return tag .. '/' .. path .. '/' .. name
-end
-
+input.concatinators.tex  = file.join
 input.concatinators.file = input.concatinators.tex
 
 function input.find_files(instance,filename,filetype,mustexist)
@@ -4175,15 +4319,6 @@ function input.aux.register_file(files, name, path)
     end
 end
 
--- zip:: zip## zip://
--- zip::pathtozipfile::pathinzipfile (also: pathtozipfile/pathinzipfile)
--- file::name
--- tex::name
--- kpse::name
--- kpse::format::name
--- parent::n::name
--- parent::name (default 2)
-
 if not input.finders  then input.finders  = { } end
 if not input.openers  then input.openers  = { } end
 if not input.loaders  then input.loaders  = { } end
@@ -4193,30 +4328,37 @@ input.openers.notfound  = { nil }
 input.loaders.notfound  = { false, nil, 0 }
 
 function input.splitmethod(filename)
-    local method, specification = filename:match("^(.-)##(.+)$")
-    if method and specification then
-        return method, specification
+    if not filename then
+        return { } -- safeguard
+    elseif type(filename) == "table" then
+        return filename -- already split
+    elseif not filename:find("://") then
+        return { scheme="file", path = filename, original=filename } -- quick hack
     else
-        return 'tex', filename
+        return url.hashed(filename)
     end
 end
 
 function input.method_is_file(filename)
-    local method, specification = input.splitmethod(filename)
-    return method == 'tex' or method == 'file'
+    return input.splitmethod(filename).scheme == 'file'
+end
+
+function table.sequenced(t,sep) -- temp here
+    local s = { }
+    for k, v in pairs(t) do
+        s[#s+1] = k .. "=" .. v
+    end
+    return table.concat(s, sep or " | ")
 end
 
 function input.methodhandler(what, instance, filename, filetype) -- ...
-    local method, specification = input.splitmethod(filename)
-    if method and specification then -- redundant
-        if input[what][method] then
-            input.logger('= handler',filename.." -> "..what.." | "..method.." | "..specification)
-            return input[what][method](instance,specification,filetype)
-        else
-            return nil
-        end
+    local specification = (type(filename) == "string" and input.splitmethod(filename)) or filename -- no or { }, let it bomb
+    local scheme = specification.scheme
+    if input[what][scheme] then
+        input.logger('= handler',specification.original .." -> " .. what .. " -> " .. table.sequenced(specification))
+        return input[what][scheme](instance,filename,filetype) -- todo: specification
     else
-        return input[what].tex(instance,filename,filetype)
+        return input[what].tex(instance,filename,filetype) -- todo: specification
     end
 end
 
@@ -4249,6 +4391,8 @@ function input.texdatablob(instance, filename, filetype)
     local ok, data, size = input.loadbinfile(instance, filename, filetype)
     return data or ""
 end
+
+input.loadtexfile = input.texdatablob
 
 function input.openfile(filename) -- brrr texmf.instance here  / todo ! ! ! ! !
     local fullname = input.findtexfile(texmf.instance, filename)
@@ -4828,7 +4972,7 @@ function input.aux.load_data(instance,pathname,dataname,filename)
     end
 end
 
--- we will make a better format, maybe something xml or just text
+-- we will make a better format, maybe something xml or just text or lua
 
 input.automounted = input.automounted or { }
 
@@ -4957,80 +5101,117 @@ if not zip.supported then
 
     function zip.openarchive        (...) return nil end -- needed ?
     function zip.closenarchive      (...)            end -- needed ?
-    function input.registerzipfile  (...)            end -- needed ?
     function input.usezipfile       (...)            end -- needed ?
 
 else
 
-    function input.locators.zip(instance,specification)
-        local name, spec = specification:match("^(.-)##(.-)$")
-        local f = io.open(name or specification)
-        if f then -- todo: reuse code
-            input.logger('! zip locator', specification..' found')
-            if name and spec then
-                input.aux.append_hash(instance,'zip',"zip##"..specification,name)
-                input.aux.extend_texmf_var(instance, "zip##"..specification)
-            else
-                input.aux.append_hash(instance,'zip',"zip##"..specification.."##",specification)
-                input.aux.extend_texmf_var(instance, "zip##"..specification.."##")
-            end
-            f:close()
+    -- zip:///oeps.zip?name=bla/bla.tex
+    -- zip:///oeps.zip?tree=tex/texmf-local
+
+    local function validzip(str)
+        if not str:find("^zip://") then
+            return "zip:///" .. str
         else
-            input.logger('? zip locator', specification..' not found')
+            return str
+        end
+    end
+
+    zip.archives        = { }
+    zip.registeredfiles = { }
+
+    function zip.openarchive(instance,name)
+        if not name or name == "" then
+            return nil
+        else
+            local arch = zip.archives[name]
+            if arch then
+                return arch
+            else
+               local full = input.find_file(instance,name) or ""
+               local arch = (full ~= "" and zip.open(full)) or false
+               zip.archives[name] = arch
+               return arch
+            end
+        end
+    end
+
+    function zip.closearchive(instance,name)
+        if not name or name == "" and zip.archives[name] then
+            zip.close(zip.archives[name])
+            zip.archives[name] = nil
+        end
+    end
+
+    -- zip:///texmf.zip?tree=/tex/texmf
+    -- zip:///texmf.zip?tree=/tex/texmf-local
+    -- zip:///texmf-mine.zip?tree=/tex/texmf-projects
+
+    function input.locators.zip(instance,specification) -- where is this used? startup zips (untested)
+        specification = input.splitmethod(specification)
+        local zipfile = specification.path
+        local zfile = zip.openarchive(instance,name) -- tricky, could be in to be initialized tree
+        if zfile then
+            input.logger('! zip locator', specification.original ..' found')
+        else
+            input.logger('? zip locator', specification.original ..' not found')
         end
     end
 
     function input.hashers.zip(instance,tag,name)
         input.report("loading zip file",name,"as",tag)
-        input.registerzipfile(instance,name,tag)
+        input.usezipfile(instance,tag .."?tree=" .. name)
     end
 
     function input.concatinators.zip(tag,path,name)
-        return tag .. path .. '/' .. name
+        if not path or path == "" then
+            return tag .. '?name=' .. name
+        else
+            return tag .. '?name=' .. path .. "/" .. name
+        end
     end
 
     function input.is_readable.zip(name)
         return true
     end
 
-    function input.finders.zip(instance,filename,filetype)
-        local archive, dataname = filename:match("^(.+)##/*(.+)$")
-        if archive and dataname then
-            local zfile = zip.openarchive(archive)
-            if not zfile then
-               archive = input.find_file(instance,archive,filetype)
-               zfile = zip.openarchive(archive)
-            end
-            if zfile then
-                input.logger('! zip finder',archive)
-                local dfile = zfile:open(dataname)
-                if dfile then
-                    dfile = zfile:close()
-                    input.logger('+ zip finder',filename)
-                    return 'zip##' .. filename
+    function input.finders.zip(instance,specification,filetype)
+        specification = input.splitmethod(specification)
+        if specification.path then
+            local q = url.query(specification.query)
+            if q.name then
+                local zfile = zip.openarchive(instance,specification.path)
+                if zfile then
+                    input.logger('! zip finder',specification.path)
+                    local dfile = zfile:open(q.name)
+                    if dfile then
+                        dfile = zfile:close()
+                        input.logger('+ zip finder',q.name)
+                        return specification.original
+                    end
+                else
+                    input.logger('? zip finder',specification.path)
                 end
-            else
-                input.logger('? zip finder',archive)
             end
         end
         input.logger('- zip finder',filename)
         return unpack(input.finders.notfound)
     end
 
-    function input.openers.zip(instance,filename)
-        if filename and filename ~= "" then
-            local archive, dataname = filename:match("^(.-)##/*(.+)$")
-            if archive and dataname then
-                local zfile= zip.openarchive(archive)
+    function input.openers.zip(instance,specification)
+        local zipspecification = input.splitmethod(specification)
+        if zipspecification.path then
+            local q = url.query(zipspecification.query)
+            if q.name then
+                local zfile = zip.openarchive(instance,zipspecification.path)
                 if zfile then
-                    input.logger('+ zip starter',archive)
-                    local dfile = zfile:open(dataname)
+                    input.logger('+ zip starter',zipspecification.path)
+                    local dfile = zfile:open(q.name)
                     if dfile then
-                        input.show_open(filename)
-                        return input.openers.text_opener(filename,dfile,'zip')
+                        input.show_open(specification)
+                        return input.openers.text_opener(specification,dfile,'zip')
                     end
                 else
-                    input.logger('- zip starter',archive)
+                    input.logger('- zip starter',zipspecification.path)
                 end
             end
         end
@@ -5038,15 +5219,15 @@ else
         return unpack(input.openers.notfound)
     end
 
-    function input.loaders.zip(instance, filename) -- we could use input.openers.zip
-        if filename and filename ~= "" then
-            input.logger('= zip loader',filename)
-            local archive, dataname = filename:match("^(.+)##/*(.+)$")
-            if archive and dataname then
-                local zfile = zip.openarchive(archive)
+    function input.loaders.zip(instance,specification)
+        specification = input.splitmethod(specification)
+        if specification.path then
+            local q = url.query(specification.query)
+            if q.name then
+                local zfile = zip.openarchive(instance,specification.path)
                 if zfile then
-                    input.logger('= zip starter',archive)
-                    local dfile = zfile:open(dataname)
+                    input.logger('+ zip starter',specification.path)
+                    local dfile = zfile:open(q.name)
                     if dfile then
                         input.show_load(filename)
                         input.logger('+ zip loader',filename)
@@ -5055,105 +5236,67 @@ else
                         return true, s, #s
                     end
                 else
-                    input.logger('- zip starter',archive)
+                    input.logger('- zip starter',specification.path)
                 end
             end
         end
         input.logger('- zip loader',filename)
-        return unpack(input.loaders.notfound)
+        return unpack(input.openers.notfound)
     end
 
-    zip.archives        = { }
-    zip.registeredfiles = { }
+    -- zip:///somefile.zip
+    -- zip:///somefile.zip?tree=texmf-local -> mount
 
-    function zip.openarchive(name)
-        if name and name ~= "" and not zip.archives[name] then
-            zip.archives[name] = zip.open(name)
-        end
-        return zip.archives[name]
-    end
-
-    function zip.closearchive(name)
-        if zip.archives[name] then
-            zip.close(archives[name])
-            zip.archives[name] = nil
-        end
-    end
-
-    -- aparte register maken voor user (register tex / zip), runtime tree register
-    -- todo: alleen url syntax toestaan
-    -- user function: also handle zip::name::path
-
-    function input.usezipfile(instance,zipname) -- todo zip://
-        zipname = input.normalize_name(zipname)
-        if not zipname:find("^zip##") then
-            zipname = "zip##"..zipname
-        end
-        input.logger('! zip user','file '..zipname)
-        if not zipname:find("^zip##(.+)##(.-)$") then
-            zipname = zipname .. "##" -- dummy spec
-        end
-        local tag = zipname
-        local name = zipname:match("zip##(.+)##.-")
-        input.aux.prepend_hash(instance,'zip',tag,name)
-        input.aux.extend_texmf_var(instance, tag)
-        input.registerzipfile(instance,name,tag)
-    end
-
-    function input.registerzipfile(instance,zipname,tag)
-        if not zip.registeredfiles[zipname] then
-            input.starttiming(instance)
-            local z = zip.open(zipname)
-            if not z then
-                zipname = input.find_file(instance,zipname)
-                z = zip.open(zipname)
-            end
+    function input.usezipfile(instance,zipname)
+        zipname = validzip(zipname)
+        input.logger('! zip use','file '..zipname)
+        local specification = input.splitmethod(zipname)
+        local zipfile = specification.path
+        if zipfile and not zip.registeredfiles[zipname] then
+            local tree = url.query(specification.query).tree or ""
+            input.logger('! zip register','file '..zipname)
+            local z = zip.openarchive(instance,zipfile)
             if z then
                 input.logger("= zipfile","registering "..zipname)
+                input.starttiming(instance)
+                input.aux.prepend_hash(instance,'zip',zipname,zipfile)
+                input.aux.extend_texmf_var(instance,zipname) -- resets hashes too
                 zip.registeredfiles[zipname] = z
-                input.aux.register_zip_file(instance,zipname,tag)
+                instance.files[zipname] = input.aux.register_zip_file(z,tree or "")
+                input.stoptiming(instance)
             else
                 input.logger("? zipfile","unknown "..zipname)
             end
-            input.stoptiming(instance)
+        else
+            input.logger('! zip register','no file '..zipname)
         end
     end
 
-    function input.aux.register_zip_file(instance,zipname,tagname)
-        if zip.registeredfiles[zipname] then
-            if not tagname:find("^zip##") then
-                tagname = "zip##" .. tagname
-            end
-            local path, name, n = nil, nil, 0
-            if not instance.files[tagname] then
-                instance.files[tagname] = { }
-            end
-            local files, filter = instance.files[tagname], ""
-            local subtree = tagname:match("^zip##.+##(.+)$")
-            if subtree then
-                filter = "^"..subtree.."/(.+)/(.-)$"
-            else
-                filter = "^(.+)/(.-)$"
-            end
-            input.logger('= zip filter',filter)
-            -- we can consider putting a files.luc in the file
-            local register = input.aux.register_file
-            for i, _ in zip.registeredfiles[zipname]:files() do
-                path, name = i.filename:match(filter)
-                if path then
-                    if name and name ~= '' then
-                        register(files, name, path)
-                        n = n + 1
-                    else
-                        -- directory
-                    end
-                else
-                    register(files, i.filename, '')
-                    n = n + 1
-                end
-            end
-            input.report(n, 'entries in', zipname)
+    function input.aux.register_zip_file(z,tree)
+        local files, filter = { }, ""
+        if tree == "" then
+            filter = "^(.+)/(.-)$"
+        else
+            filter = "^"..tree.."/(.+)/(.-)$"
         end
+        input.logger('= zip filter',filter)
+        local register, n = input.aux.register_file, 0
+        for i in z:files() do
+            local path, name = i.filename:match(filter)
+            if path then
+                if name and name ~= '' then
+                    register(files, name, path)
+                    n = n + 1
+                else
+                    -- directory
+                end
+            else
+                register(files, i.filename, '')
+                n = n + 1
+            end
+        end
+        input.report('= zip entries',n)
+        return files
     end
 
 end
@@ -5348,6 +5491,8 @@ if texconfig and not texlua then do
         texio.write_nl(s .. b .. "\n")
     end
 
+    -- this will become: ctx.install_statistics(fnc() return ..,.. end) etc
+
     function ctx.show_statistics()
         local function ws(...)
             ctx.writestatus("mkiv lua stats",string.format(...))
@@ -5382,6 +5527,12 @@ if texconfig and not texlua then do
         end
         if languages then
             ws("language load time        - %s seconds (n=%s)", input.loadtime(languages), languages.hyphenation.n())
+        end
+        if figures then
+            ws("graphics processing time  - %s seconds (n=%s) (including tex)", input.loadtime(figures), figures.n or "?")
+        end
+        if metapost then
+            ws("metapost processing time  - %s seconds (+ loading: %s seconds)", input.loadtime(metapost), input.loadtime(mplib))
         end
         if status.luastate_bytes then
             ws("current memory usage      - %s bytes", status.luastate_bytes)
@@ -5583,7 +5734,7 @@ if texconfig and not texlua then
         'hash_extra', 'max_strings', 'pool_free', 'pool_size', 'string_vacancies',
         'obj_tab_size', 'pdf_mem_size', 'dest_names_size',
         'nest_size', 'param_size', 'save_size', 'stack_size',
-        'trie_size', 'hyph_size',
+        'trie_size', 'hyph_size', 'max_in_open',
         'ocp_stack_size', 'ocp_list_size', 'ocp_buf_size'
     }
 
@@ -5610,6 +5761,7 @@ if texconfig and not texlua then
     end
 
     texconfig.max_print_line = 100000
+    texconfig.max_in_open    = 127
 
 end
 
@@ -5635,114 +5787,6 @@ function cs.testcase(b)
     else
         tex.sprint(tex.texcatcodes, "\\secondoftwoarguments")
     end
-end
-
--- This is not the most ideal place, but it will do. Maybe we need to move
--- attributes to node-att.lua.
-
-if node then
-
-    nodes = nodes or { }
-
-    do
-
-        -- just for testing
-
-        local reserved = { }
-
-        function nodes.register(n)
-            reserved[#reserved+1] = n
-        end
-
-        function nodes.cleanup_reserved(nofboxes) -- todo
-            local nr, free = #reserved, node.free
-            for i=1,nr do
-                free(reserved[i])
-            end
-            local nl, tb, flush = 0, tex.box, node.flush_list
-            if nofboxes then
-                for i=1,nofboxes do
-                    local l = tb[i]
-                    if l then
-                --      flush(l)
-                        tb[i] = nil
-                        nl = nl + 1
-                    end
-                end
-            end
-            reserved = { }
-            return nr, nl, nofboxes
-        end
-
-    end
-
-    do
-
-        local pdfliteral = node.new("whatsit",8)   pdfliteral.next, pdfliteral.prev  = nil, nil  pdfliteral.mode = 1
-        local disc       = node.new("disc")        disc.next,       disc.prev        = nil, nil
-        local kern       = node.new("kern",1)      kern.next,       kern.prev        = nil, nil
-        local penalty    = node.new("penalty")     penalty.next,    penalty.prev     = nil, nil
-        local glue       = node.new("glue")        glue.next,       glue.prev        = nil, nil
-        local glue_spec  = node.new("glue_spec")   glue_spec.next,  glue_spec.prev   = nil, nil
-
-        nodes.register(pdfliteral)
-        nodes.register(disc)
-        nodes.register(kern)
-        nodes.register(penalty)
-        nodes.register(glue)
-        nodes.register(glue_spec)
-
-        local copy = node.copy
-
-        function nodes.penalty(p)
-            local n = copy(penalty)
-            n.penalty = p
-            return n
-        end
-        function nodes.kern(k)
-            local n = copy(kern)
-            n.kern = k
-            return n
-        end
-        function nodes.glue(width,stretch,shrink)
-            local n = copy(glue)
-            local s = copy(glue_spec)
-            s.width, s.stretch, s.shrink = width, stretch, shrink
-            n.spec = s
-            return n
-        end
-        function nodes.glue_spec(width,stretch,shrink)
-            local s = copy(glue_spec)
-            s.width, s.stretch, s.shrink = width, stretch, shrink
-            return s
-        end
-
-        function nodes.disc()
-            return copy(disc)
-        end
-
-        function nodes.pdfliteral(str)
-            local t = copy(pdfliteral)
-            t.data = str
-            return t
-        end
-
-    end
-
-end
-
-if tex then
-
-    function tex.node_mem_status()
-        -- todo: lpeg
-        local s = status.node_mem_usage
-        local t = { }
-        for n, tag in s:gmatch("(%d+) ([a-z_]+)") do
-            t[tag] = n
-        end
-        return t
-    end
-
 end
 
 
@@ -5869,6 +5913,7 @@ own.libs = { -- todo: check which ones are really needed
     'l-os.lua',
     'l-md5.lua',
     'l-file.lua',
+    'l-url.lua',
     'l-dir.lua',
     'l-boolean.lua',
     'l-unicode.lua',
@@ -5935,7 +5980,8 @@ utils.report        = input.report
 
 input.defaultlibs   = { -- not all are needed
     'l-string.lua', 'l-lpeg.lua', 'l-table.lua', 'l-boolean.lua', 'l-number.lua', 'l-set.lua', 'l-unicode.lua',
-    'l-md5.lua', 'l-os.lua', 'l-io.lua', 'l-file.lua', 'l-dir.lua', 'l-utils.lua', 'l-tex.lua',
+    'l-md5.lua', 'l-os.lua', 'l-io.lua', 'l-file.lua', 'l-url.lua', 'l-dir.lua', 'l-utils.lua', 'l-tex.lua',
+'luat-env.lua',
     'luat-lib.lua', 'luat-inp.lua', 'luat-tmp.lua', 'luat-zip.lua', 'luat-tex.lua'
 }
 

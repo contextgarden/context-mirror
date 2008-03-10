@@ -21,19 +21,13 @@ os.setlocale(nil,nil) -- useless feature and even dangerous in luatex
 
 if not io.fileseparator then
     if string.find(os.getenv("PATH"),";") then
-        io.fileseparator, io.pathseparator, os.platform = "\\", ";", "windows"
+        io.fileseparator, io.pathseparator, os.platform = "\\", ";", os.type or "windows"
     else
-        io.fileseparator, io.pathseparator, os.platform = "/" , ":", "unix"
+        io.fileseparator, io.pathseparator, os.platform = "/" , ":", os.type or "unix"
     end
 end
 
-if not os.platform then
-    if io.pathseparator == ";" then
-        os.platform = "windows"
-    else
-        os.platform = "unix"
-    end
-end
+os.platform = os.platform or os.type or (io.pathseparator == ";" and "windows") or "unix"
 
 -- arg normalization
 --

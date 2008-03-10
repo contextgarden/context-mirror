@@ -21,63 +21,63 @@ lmx.variables['color-background-two']    = lmx.variables['color-background-blue'
 lmx.variables['title-default']           = 'ConTeXt Status Information'
 lmx.variables['title']                   = lmx.variables['title-default']
 
-if not trace         then trace         = { } end
-if not trace.list    then trace.list    = { } end
-if not trace.strings then trace.strings = { } end
+if not tracers         then tracers         = { } end
+if not tracers.list    then tracers.list    = { } end
+if not tracers.strings then tracers.strings = { } end
 
-trace.strings.undefined = "undefined"
+tracers.strings.undefined = "undefined"
 
-function trace.split(csname)
+function tracers.split(csname)
     return csname:match("^(.+):(.+)$")
 end
 
-function trace.type(csname)
-    tag, name = trace.split(csname)
+function tracers.type(csname)
+    tag, name = tracers.split(csname)
     if tag then return tag else return nil end
 end
 
-function trace.name(csname)
-    tag, name = trace.split(csname)
+function tracers.name(csname)
+    tag, name = tracers.split(csname)
     if tag then return name else return csname end
 end
 
-function trace.cs(csname)
-    tag, name = trace.split(csname)
-    if trace.types[tag] then
-        return trace.types[tag](name)
+function tracers.cs(csname)
+    tag, name = tracers.split(csname)
+    if tracers.types[tag] then
+        return tracers.types[tag](name)
     else
-        return trace.primitive(csname)
+        return tracers.primitive(csname)
     end
 end
 
-function trace.dimen(name)
-    return (tex.dimen[name] and number.topoints(tex.dimen[name])) or trace.strings.undefined
+function tracers.dimen(name)
+    return (tex.dimen[name] and number.topoints(tex.dimen[name])) or tracers.strings.undefined
 end
 
-function trace.count(name)
-    return tex.count[name] or trace.strings.undefined
+function tracers.count(name)
+    return tex.count[name] or tracers.strings.undefined
 end
 
-function trace.toks(name)
-    return (tex.toks[name] and string.limit(tex.toks[name],40)) or trace.strings.undefined
+function tracers.toks(name)
+    return (tex.toks[name] and string.limit(tex.toks[name],40)) or tracers.strings.undefined
 end
 
-function trace.primitive(name)
-    return tex[name] or trace.strings.undefined
+function tracers.primitive(name)
+    return tex[name] or tracers.strings.undefined
 end
 
-trace.types = {
-    ['d'] = trace.dimen,
-    ['c'] = trace.count,
-    ['t'] = trace.toks,
-    ['p'] = trace.primitive
+tracers.types = {
+    ['d'] = tracers.dimen,
+    ['c'] = tracers.count,
+    ['t'] = tracers.toks,
+    ['p'] = tracers.primitive
 }
 
-function trace.knownlist(name)
-    return trace.list[name] and #trace.list[name] > 0
+function tracers.knownlist(name)
+    return tracers.list[name] and #tracers.list[name] > 0
 end
 
-function trace.showdebuginfo()
+function tracers.showdebuginfo()
     lmx.set('title', 'ConTeXt Debug Information')
     lmx.set('color-background-one', lmx.get('color-background-green'))
     lmx.set('color-background-two', lmx.get('color-background-blue'))
@@ -85,7 +85,7 @@ function trace.showdebuginfo()
     lmx.restore()
 end
 
-function trace.showerror()
+function tracers.showerror()
     lmx.set('title', 'ConTeXt Error Information')
     lmx.set('errormessage', status.lasterrorstring)
     lmx.set('linenumber', status.linenumber)
@@ -132,23 +132,23 @@ function trace.showerror()
     lmx.restore()
 end
 
-function trace.overloaderror()
+function tracers.overloaderror()
 --~     callback.register('show_error_hook', function(identifier, filename, linenumber)
---~         trace.showerror(identifier, filename, linenumber)
+--~         tracers.showerror(identifier, filename, linenumber)
 --~     end )
-    callback.register('show_error_hook', trace.showerror)
+    callback.register('show_error_hook', tracers.showerror)
 end
 
-trace.list['scratch'] = {
+tracers.list['scratch'] = {
     0, 2, 4, 6, 8
 }
 
-trace.list['internals'] = {
+tracers.list['internals'] = {
     'p:hsize', 'p:parindent', 'p:leftskip','p:rightskip',
     'p:vsize', 'p:parskip', 'p:baselineskip', 'p:lineskip', 'p:topskip'
 }
 
-trace.list['context'] = {
+tracers.list['context'] = {
     'd:lineheight',
     'c:realpageno', 'c:pageno', 'c:subpageno'
 }

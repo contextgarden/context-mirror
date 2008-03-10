@@ -4,35 +4,12 @@
 -- copyright: PRAGMA ADE / ConTeXt Development Team
 -- license  : see context related readme files
 
---~ do
---~     local normal_require = require
---~     local find_lua_file  = find_lua_file or kpse.find_file -- you can predefine one
-
---~     function require(modname,luctoo)
---~         local file, longfile
---~         if luctoo then
---~             file = modname .. '.luc';
---~             longfile = find_lua_file(file)
---~         end
---~         if not longfile then
---~             file = modname .. '.lua';
---~             longfile = find_lua_file(file)
---~         end
---~         if longfile then
---~             local dir = longfile:match("^(.+[/\\]).-$")
---~             local pth = package.path:gsub("\\","/")
---~             dir = dir:gsub("\\","/")
---~             if pth:find(dir) then
---~                 package.path = pth -- nicely sanitized
---~             else
---~                 package.path = pth .. ';' .. dir .. '?.lua' -- dir has trailing /
---~             end
---~             normal_require(modname)
---~         end
---~     end
---~ end
-
 -- here we don't assume any extra libraries
+
+-- A former version provides functionality for non embeded core
+-- scripts i.e. runtime library loading. Given the amount of
+-- Lua code we use now, this no longer makes sense. Much of this
+-- evolved before bytecode arrays were available.
 
 if not versions then versions = { } end versions['luat-env'] = 1.001
 
@@ -40,52 +17,40 @@ if not versions then versions = { } end versions['luat-env'] = 1.001
 
 if not environment then environment = { } end
 
-environment.useluc = false -- for testing
---~ environment.silent = true  -- for testing
+--~ environment.useluc  = true -- still testing, so we don't use luc yet
 
 if environment.silent == nil then environment.silent  = false end
 if environment.useluc == nil then environment.useluc  = true  end
 
 -- kpse is overloaded by this time
 
-if environment.formatname  == nil then environment.formatname = tex.formatname                              end
-if environment.formatpath  == nil then environment.formatpath = kpse.find_file(tex.formatname,"fmt") or "." end
-if environment.jobname     == nil then environment.jobname    = tex.jobname                                 end
-if environment.progname    == nil then environment.progname   = os.getenv("progname")    or "luatex"        end
-if environment.engine      == nil then environment.engine     = os.getenv("engine")      or "context"       end
-if environment.enginepath  == nil then environment.enginepath = os.getenv("SELFAUTOLOC") or "."             end
-if environment.initex      == nil then environment.initex     = tex.formatname == ""                        end
+--~ if environment.formatname  == nil then if tex  then environment.formatname = tex.formatname                              end end
+--~ if environment.formatpath  == nil then if kpse then environment.formatpath = kpse.find_file(tex.formatname,"fmt") or "." end end
+--~ if environment.jobname     == nil then if tex  then environment.jobname    = tex.jobname                                 end end
+--~ if environment.progname    == nil then              environment.progname   = os.getenv("progname")    or "luatex"        end
+--~ if environment.engine      == nil then              environment.engine     = os.getenv("engine")      or "context"       end
+--~ if environment.enginepath  == nil then              environment.enginepath = os.getenv("SELFAUTOLOC") or "."             end
+--~ if environment.initex      == nil then if tex  then environment.initex     = tex.formatname == ""                        end end
+
+if not environment.formatname or environment.formatname == "" then if tex then environment.formatname = tex.formatname end end
+if not environment.jobname    or environment.jobname    == "" then if tex then environment.jobname    = tex.jobname    end end
+
+if not environment.progname   or environment.progname   == "" then environment.progname   = "luatex"  end
+if not environment.engine     or environment.engine     == "" then environment.engine     = "context" end
+if not environment.formatname or environment.formatname == "" then environment.formatname = "cont-en" end
+if not environment.formatpath or environment.formatpath == "" then environment.formatpath = '.'       end
+if not environment.enginepath or environment.enginepath == "" then environment.enginepath = '.'       end
+if not environment.version    or environment.version    == "" then environment.version    = "unknown" end
 
 environment.formatpath = string.gsub(environment.formatpath:gsub("\\","/"),"/([^/]-)$","")
 environment.enginepath = string.gsub(environment.enginepath:gsub("\\","/"),"/([^/]-)$","")
 
-if environment.formatname == ""  then environment.formatpath = "cont-en" end
-if environment.formatpath == ""  then environment.formatpath = '.'       end
-if environment.enginepath == ""  then environment.enginepath = '.'       end
-if environment.version    == nil then environment.version    = "unknown" end
-
-function environment.get(name)
-    return os.getenv(name) or ""
-end
-
-function environment.cleanname(filename)
-    if filename and filename ~= "" then
-        return filename:gsub( "\\", "/")
-    else -- leave nil and empty untouched
-        return filename
-    end
-end
-
 function environment.texfile(filename)
-    return environment.cleanname(input.find_file(texmf.instance,filename,'tex'))
-end
-
-function environment.ctxfile(filename)
-    return environment.cleanname(input.find_file(texmf.instance,filename,'tex'))
+    return input.find_file(texmf.instance,filename,'tex')
 end
 
 function environment.luafile(filename)
-    return environment.cleanname(input.find_file(texmf.instance,filename,'tex') or input.find_file(texmf.instance,filename,'texmfscripts'))
+    return input.find_file(texmf.instance,filename,'tex') or input.find_file(texmf.instance,filename,'texmfscripts')
 end
 
 function environment.showmessage(...) -- todo, cleaner
@@ -110,12 +75,18 @@ function environment.setlucpath()
     end
 end
 
+environment.setlucpath()
+
+function environment.loadedluacode(fullname)
+    return loadfile(fullname)
+end
+
 function environment.luafilechunk(filename)
     local filename = filename:gsub("%.%a+$", "") .. ".lua"
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
         environment.showmessage("loading file", fullname)
-        return loadfile(fullname)
+        return environment.loadedluacode(fullname)
     else
         environment.showmessage("unknown file", filename)
         return nil
@@ -124,19 +95,11 @@ end
 
 -- the next ones can use the previous ones
 
-function environment.loadluafile(filename,register)
+function environment.loadluafile(filename)
     filename = filename:gsub("%.%a+$", "") .. ".lua"
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
         environment.showmessage("loading", fullname)
-        if register then
-            if not environment.regfil then
-                environment.regfil = io.open('luafiles.tmp', 'w') -- we can consider 'a'
-            end
-            if environment.regfil then
-                environment.regfil:write(fullname .."\n")
-            end
-        end
         dofile(fullname)
     else
         environment.showmessage("unknown file", filename)
@@ -147,7 +110,7 @@ function environment.loadlucfile(filename,version)
     local filename = filename:gsub("%.%a+$", "")
     local fullname = nil
     if environment.initex or not environment.useluc then
-        environment.loadluafile(filename,environment.initex)
+        environment.loadluafile(filename)
     else
         if environment.lucpath and environment.lucpath ~= "" then
             fullname = environment.lucpath .. "/" .. filename .. ".luc"
@@ -177,17 +140,79 @@ function environment.loadlucfile(filename,version)
     end
 end
 
-function environment.loadedctxfile(filename)
-    local fullname = environment.ctxfile(filename)
-    local i = io.open(fullname)
-    if i then
-        local data = i:read('*all')
-        i:close()
-        return data
+-- -- -- the next function was posted by Peter Cawley on the lua list -- -- --
+-- -- --                                                              -- -- --
+-- -- -- stripping makes the compressed format file about 1MB smaller -- -- --
+-- -- --                                                              -- -- --
+-- -- -- using this trick is at your own risk                         -- -- --
+
+local function strip_code(dump)
+    local version, format, endian, int, size, ins, num = dump:byte(5, 11)
+    local subint
+    if endian == 1 then
+        subint = function(dump, i, l)
+            local val = 0
+            for n = l, 1, -1 do
+                val = val * 256 + dump:byte(i + n - 1)
+            end
+            return val, i + l
+        end
     else
-        environment.showmessage("missing",filename)
-        return ""
+        subint = function(dump, i, l)
+            local val = 0
+            for n = 1, l, 1 do
+                val = val * 256 + dump:byte(i + n - 1)
+            end
+            return val, i + l
+        end
+    end
+    local strip_function
+    strip_function = function(dump)
+        local count, offset = subint(dump, 1, size)
+        local stripped, dirty = string.rep("\0", size), offset + count
+        offset = offset + count + int * 2 + 4
+        offset = offset + int + subint(dump, offset, int) * ins
+        count, offset = subint(dump, offset, int)
+        for n = 1, count do
+            local t
+            t, offset = subint(dump, offset, 1)
+            if t == 1 then
+                offset = offset + 1
+            elseif t == 4 then
+                offset = offset + size + subint(dump, offset, size)
+            elseif t == 3 then
+                offset = offset + num
+            end
+        end
+        count, offset = subint(dump, offset, int)
+        stripped = stripped .. dump:sub(dirty, offset - 1)
+        for n = 1, count do
+            local proto, off = strip_function(dump:sub(offset, -1))
+            stripped, offset = stripped .. proto, offset + off - 1
+        end
+        offset = offset + subint(dump, offset, int) * int + int
+        count, offset = subint(dump, offset, int)
+        for n = 1, count do
+            offset = offset + subint(dump, offset, size) + size + int * 2
+        end
+        count, offset = subint(dump, offset, int)
+        for n = 1, count do
+            offset = offset + subint(dump, offset, size) + size
+        end
+        stripped = stripped .. string.rep("\0", int * 3)
+        return stripped, offset
+    end
+    return dump:sub(1,12) .. strip_function(dump:sub(13,-1))
+end
+
+environment.stripcode = false -- true
+
+function environment.loadedluacode(fullname)
+    if environment.stripcode then
+        return loadstring(strip_code(string.dump(loadstring(io.loaddata(fullname)))))
+    else
+        return loadfile(fullname)
     end
 end
 
-environment.setlucpath()
+-- -- end of stripping code -- --

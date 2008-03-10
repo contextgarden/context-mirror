@@ -44,7 +44,7 @@
 # it cannot do that (it tries to hyphenate as if the "ffi" was a
 # character), and the result is wrong hyphenation.
 
-banner = ['CtxTools', 'version 1.3.3', '2004/2006', 'PRAGMA ADE/POD']
+banner = ['CtxTools', 'version 1.3.5', '2004/2008', 'PRAGMA ADE']
 
 $: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
@@ -866,6 +866,7 @@ class Language
         @filenames = filenames
         @remapping = Array.new
         @demapping = Array.new
+        @cloning = Array.new
         @unicode = Hash.new
         @encoding = encoding
         @data = ''
@@ -894,6 +895,9 @@ class Language
     end
     def demap(from, to)
         @demapping.push([from,to])
+    end
+    def clone(from, to)
+        @cloning.push([from,to])
     end
 
     def load(filenames=@filenames)
@@ -957,6 +961,22 @@ class Language
                             @remapping[$1.to_i][1]
                         end
                         report("      nothing remapped") unless done
+                        @cloning.each_index do |i|
+                            c = 0
+                            f, s = @cloning[i][0], @cloning[i][1]
+                            str = "#{f}|#{s}"
+                            str.gsub!(/([\[\]])/) do "\\" + "#{$1}" end
+                            reg = /(#{str})/
+                            content.gsub!(/(\S*(#{str})\S*)/) do
+                                a, b = $1, $1
+                                a.gsub!(reg, f)
+                                b.gsub!(reg, s)
+                                c = c + 1
+                                "#{a} #{b}"
+                            end
+                            report("#{c.to_s.rjust(5)} times #{f} cloned to #{s}")
+                            n += c
+                        end
                         report("")
                         content.to_s
                     end
@@ -1300,6 +1320,14 @@ class Language
                 remap(/\\a\s*/, "[aeligature]")
                 remap(/\\o\s*/, "[oeligature]")
             when 'agr' then
+                # bug fix
+                remap("a2|", "[greekalphaiotasub]")
+                remap("h2|", "[greeketaiotasub]")
+                remap("w2|", "[greekomegaiotasub]")
+		remap(">2r1<2r", "[2ῤ1ῥ]")
+                remap(">a2n1wdu'", "[ἀ2ν1ωδύ]")
+                remap(">e3s2ou'", "[ἐ3σ2ού]")
+                # main conversion
                 remap(/\<\'a\|/, "[greekalphaiotasubdasiatonos]")
                 # remap(/\<\'a\|/, "[greekdasiatonos][greekAlpha][greekiota]")
                 remap(/\>\'a\|/, "[greekalphaiotasubpsilitonos]")
@@ -1399,7 +1427,7 @@ class Language
                 remap(/\<\'u/,   "[greekupsilondasiatonos]")
                 remap(/\>\'u/,   "[greekupsilonpsilitonos]")
                 remap(/\<\`u/,   "[greekupsilondasiavaria]")
-                remap(/\>\'u/,   "[greekupsilonpsilivaria]")
+                remap(/\>\`u/,   "[greekupsilonpsilivaria]")
                 remap(/\<\~u/,   "[greekupsilondasiaperispomeni]")
                 remap(/\>\~u/,   "[greekupsilonpsiliperispomeni]")
                 remap(/\"\'u/,   "[greekupsilondialytikatonos]")
@@ -1433,14 +1461,15 @@ class Language
                 remap(/\"\'/,    "[greekdialytikatonos]")
                 remap(/\"\`/,    "[greekdialytikavaria]")
                 remap(/\"\~/,    "[greekdialytikaperispomeni]")
-                remap(/\</,      "[dasia]")
-                remap(/\>/,      "[psili]")
-                remap(/\'/,      "[oxia]")
+                remap(/\</,      "[greekdasia]")
+                remap(/\>/,      "[greekpsili]")
+                remap(/\d.{0,2}''/, "")
+                remap(/\'/,      "[greekoxia]")
                 remap(/\`/,      "[greekvaria]")
                 remap(/\~/,      "[perispomeni]")
-                remap(/\"/,      "[dialytika]")
+                remap(/\"/,      "[greekdialytika]")
                 # unknown
-                remap(/\|/,      "[greekIotadialytika]")
+                # remap(/\|/,      "[greekIotadialytika]")
                 # next
                 remap(/A/, "[greekAlpha]")
                 remap(/B/, "[greekBeta]")
@@ -1491,6 +1520,13 @@ class Language
                 remap(/x/, "[greekxi]")
                 remap(/y/, "[greekpsi]")
                 remap(/z/, "[greekzeta]")
+                clone("[greekalphatonos]", "[greekalphaoxia]")
+                clone("[greekepsilontonos]", "[greekepsilonoxia]")
+                clone("[greeketatonos]", "[greeketaoxia]")
+                clone("[greekiotatonos]", "[greekiotaoxia]")
+                clone("[greekomicrontonos]", "[greekomicronoxia]")
+                clone("[greekupsilontonos]", "[greekupsilonoxia]")
+                clone("[greekomegatonos]", "[greekomegaoxia]")
             when 'ru' then
                 remap(/\xC1/, "[cyrillica]")
                 remap(/\xC2/, "[cyrillicb]")

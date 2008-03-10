@@ -310,11 +310,11 @@
 \stopmessages
 
 \def\c!setup!internal!#1%
-  {{\dogetmessage{setup}{#1}%
+  {{\setmessagetext{setup}{#1}%
     \expanded{\setupintfont{\currentmessagetext}}}}
 
 \def\c!setup!text!#1%
-  {{\dogetmessage{setup}{#1}%
+  {{\setmessagetext{setup}{#1}%
     \setupvarfont{\currentmessagetext}}}
 
 \def\c!setup!command!#1%

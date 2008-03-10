@@ -395,4 +395,128 @@
         </cals:tgroup>
     </cals:table>
 
+                        <cals:table frame="all">
+                            <cals:tgroup cols="8">
+                                <cals:colspec colnum="1" colname="col1" colwidth="115.3pt"/>
+                                <cals:colspec colnum="2" colname="col2" colwidth="62.1pt"/>
+                                <cals:colspec colnum="3" colname="col3" colwidth="63.3pt"/>
+                                <cals:colspec colnum="4" colname="col4" colwidth="41.4pt"/>
+                                <cals:colspec colnum="5" colname="col5" colwidth="41.4pt"/>
+                                <cals:colspec colnum="6" colname="col6" colwidth="41.4pt"/>
+                                <cals:colspec colnum="7" colname="col7" colwidth="41.4pt"/>
+                                <cals:colspec colnum="8" colname="col8" colwidth="41.3pt"/>
+                                <cals:tbody>
+                                    <cals:row>
+                                        <cals:entry colname="col1" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>Grootheid</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col2" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>Eenheid</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col3" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>Symbool</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col4" namest="col4" nameend="col8"
+                                            colsep="yes" rowsep="yes" valign="top">
+                                            <p>Meetwaarden</p>
+                                        </cals:entry>
+                                    </cals:row>
+                                    <cals:row>
+                                        <cals:entry colname="col1" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>massa</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col2" colsep="yes" rowsep="yes"
+                                            valign="top"/>
+                                        <cals:entry colname="col3" colsep="yes" rowsep="yes"
+                                            valign="top"/>
+                                        <cals:entry colname="col4" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>125</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col5" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>195</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col6" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>280</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col7" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>380</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col8" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>500</p>
+                                        </cals:entry>
+                                    </cals:row>
+                                    <cals:row>
+                                        <cals:entry colname="col1" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>volume</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col2" colsep="yes" rowsep="yes"
+                                            valign="top"/>
+                                        <cals:entry colname="col3" colsep="yes" rowsep="yes"
+                                            valign="top"/>
+                                        <cals:entry colname="col4" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>16</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col5" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>25</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col6" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>36</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col7" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>49</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col8" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>64</p>
+                                        </cals:entry>
+                                    </cals:row>
+                                    <cals:row>
+                                        <cals:entry colname="col1" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>dichtheid</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col2" colsep="yes" rowsep="yes"
+                                            valign="top"/>
+                                        <cals:entry colname="col3" colsep="yes" rowsep="yes"
+                                            valign="top"/>
+                                        <cals:entry colname="col4" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>7,8 </p>
+                                        </cals:entry>
+                                        <cals:entry colname="col5" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>7,8 </p>
+                                        </cals:entry>
+                                        <cals:entry colname="col6" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>7,8 </p>
+                                        </cals:entry>
+                                        <cals:entry colname="col7" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>7,8</p>
+                                        </cals:entry>
+                                        <cals:entry colname="col8" colsep="yes" rowsep="yes"
+                                            valign="top">
+                                            <p>7,8 </p>
+                                        </cals:entry>
+                                    </cals:row>
+                                </cals:tbody>
+                            </cals:tgroup>
+                        </cals:table>
+
+
 </root>

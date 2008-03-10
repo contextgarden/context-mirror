@@ -549,6 +549,10 @@ function scripts.context.run(ctxdata)
                     filename = makestub("\\xmlprocess{%s}",filename)
                 end
                 --
+                if environment.argument("autopdf") then
+                    os.spawn(string.format('pdfclose --file "%s" 2>&1', file.replacesuffix(filename,"pdf")))
+                end
+                --
                 local command = "luatex --fmt=" .. string.quote(formatfile) .. " --lua=" .. string.quote(scriptfile) .. " " .. string.quote(filename)
                 local oldhash, newhash = scripts.context.multipass.hashfiles(jobname), { }
                 scripts.context.multipass.makeoptionfile(jobname,ctxdata)
@@ -570,6 +574,13 @@ function scripts.context.run(ctxdata)
                         end
                     end
                 end
+                --
+                -- todo: result
+                --
+                if environment.argument("autopdf") then
+                    os.spawn(string.format('pdfopen --file "%s" 2>&1', file.replacesuffix(filename,"pdf")))
+                end
+                --
             end
         else
             input.error("no format found with name " .. formatname)
@@ -578,8 +589,8 @@ function scripts.context.run(ctxdata)
 end
 
 function scripts.context.make()
-    -- hack, should also be a shared function
-    for _, name in ipairs( { "cont-en", "cont-nl", "mptopdf" } ) do
+    local list = (environment.files[1] and environment.files) or { "cont-en", "cont-nl", "mptopdf" }
+    for _, name in ipairs(list) do
         local command = "luatools --make --compile " .. name
         input.report("running command: " .. command)
         os.spawn(command)
@@ -588,7 +599,7 @@ end
 
 function scripts.context.generate()
     -- hack, should also be a shared function
-    local command = "luatools --generate " .. name
+    local command = "luatools --generate "
     input.report("running command: " .. command)
     os.spawn(command)
 end
@@ -607,7 +618,10 @@ messages.help = [[
 --make                create context formats formats
 --generate            generate file database etc.
 --ctx=name            use ctx file
+--autopdf             open pdf file afterwards
 ]]
+
+input.verbose = true
 
 input.starttiming(scripts.context)
 

@@ -9,11 +9,11 @@ if not versions then versions = { } end versions['l-file'] = 1.001
 if not file then file = { } end
 
 function file.removesuffix(filename)
-    return filename:gsub("%.%a+$", "")
+    return filename:gsub("%.[%a%d]+$", "")
 end
 
 function file.addsuffix(filename, suffix)
-    if not filename:find("%.%a-$") then
+    if not filename:find("%.[%a%d]+$") then
         return filename .. "." .. suffix
     else
         return filename
@@ -21,7 +21,11 @@ function file.addsuffix(filename, suffix)
 end
 
 function file.replacesuffix(filename, suffix)
-    return (filename:gsub("%.%a+$", "." .. suffix))
+    if not filename:find("%.[%a%d]+$") then
+        return filename .. "." .. suffix
+    else
+        return (filename:gsub("%.[%a%d]+$","."..suffix))
+    end
 end
 
 function file.dirname(name)
@@ -40,12 +44,36 @@ function file.extname(name)
     return name:match("^.+%.([^/\\]-)$") or  ""
 end
 
+function file.stripsuffix(name)
+    return (name:gsub("%.[%a%d]+$",""))
+end
+
+--~ function file.join(...)
+--~     local t = { ... }
+--~     for i=1,#t do
+--~         t[i] = (t[i]:gsub("\\","/")):gsub("/+$","")
+--~     end
+--~     return table.concat(t,"/")
+--~ end
+
+--~ print(file.join("x/","/y"))
+--~ print(file.join("http://","/y"))
+--~ print(file.join("http://a","/y"))
+--~ print(file.join("http:///a","/y"))
+--~ print(file.join("//nas-1","/y"))
+
 function file.join(...)
-    local t = { ... }
-    for i=1,#t do
-        t[i] = (t[i]:gsub("\\","/")):gsub("/+$","")
+    local pth = table.concat({...},"/")
+    pth = pth:gsub("\\","/")
+    local a, b = pth:match("^(.*://)(.*)$")
+    if a and b then
+        return a .. b:gsub("//+","/")
     end
-    return table.concat(t,"/")
+    a, b = pth:match("^(//)(.*)$")
+    if a and b then
+        return a .. b:gsub("//+","/")
+    end
+    return (pth:gsub("//+","/"))
 end
 
 function file.is_writable(name)

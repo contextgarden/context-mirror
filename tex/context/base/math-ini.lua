@@ -92,8 +92,8 @@ end
 function mathematics.mathaccent(class,family,slot)
     return ("\\omathaccent\"%X%02X%04X"):format(class,family,slot)
 end
-function mathematics.delimiter(class,family,slot)
-    return ("\\odelimiter\"%X%02X%04X"):format(class,family,slot)
+function mathematics.delimiter(class,family,slot,largefamily,largeslot)
+    return ("\\odelimiter\"%X%02X%04X\"%02X%04X"):format(class,family,slot,largefamily,largeslot)
 end
 function mathematics.mathchardef(name,class,family,slot) -- we can avoid this one
     return ("\\omathchardef\\%s\"%X%02X%04X"):format(name,class,family,slot)
@@ -149,6 +149,7 @@ function mathematics.define()
     end
     for k,v in pairs(characters.data) do
         local m = v.mathclass
+        -- i need to clean this up a bit
         if m then
             local c = v.mathname
             if c == false then
@@ -162,13 +163,19 @@ function mathematics.define()
                     mathematics.setmathcharacter(k,m,f,i,fe,ie)
                 end
             else
-                if not c then
-                    -- fallback
-                    c = v.contextname
-                else
-                    -- math specific command
-                end
-                if c then
+                if v.contextname then
+                    local s = slots[k]
+                    local c = v.contextname
+                    if s then
+                        local f, i, fe, ie = s[1], s[2], s[3], s[4]
+                        if mathematics.trace then
+                            trace(k,c,f,i,fe,ie)
+                        end
+                        -- todo: mathortext
+                        -- mathematics.setmathsymbol(c,m,f,i,fe,ie,k)
+                        mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                    end
+                elseif c then
                     local s = slots[k]
                     if s then
                         local f, i, fe, ie = s[1], s[2], s[3], s[4]

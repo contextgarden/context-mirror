@@ -132,6 +132,7 @@
     \definefontsynonym [Palatino-BoldSlanted] [Palatino-BoldItalic]
 
     \loadmapfile[qpl-\typescriptthree.map]
+    \unloadmapfile[\typescriptthree-urw-palatino.map]
 \stoptypescript
 
 % TeXGyreTermes
@@ -152,6 +153,7 @@
     \definefontsynonym [Times-BoldSlanted] [Times-BoldItalic]
 
     \loadmapfile[qtm-\typescriptthree.map]
+    \unloadmapfile[\typescriptthree-urw-times.map]
 \stoptypescript
 
 % TeXGyreHeros
@@ -161,7 +163,7 @@
 % qtmb  TeXGyreHeros-Bold
 % qtmbi TeXGyreHeros-BoldItalic
 
-\starttypescript [serif] [heros,helvetica] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
+\starttypescript [sans] [heros,helvetica] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
     \definefontsynonym [Helvetica]             [\typescriptthree-qhvr]    [encoding=\typescriptthree]
     \definefontsynonym [Helvetica-Oblique]     [\typescriptthree-qhvri]   [encoding=\typescriptthree]
     \definefontsynonym [Helvetica-Bold]        [\typescriptthree-qhvb]    [encoding=\typescriptthree]
@@ -169,6 +171,25 @@
     \definefontsynonym [Helvetica-Caps]        [\typescriptthree-qhvr-sc] [encoding=\typescriptthree]
 
     \loadmapfile[qhv-\typescriptthree.map]
+    \unloadmapfile[\typescriptthree-urw-helvetica.map]
+\stoptypescript
+
+% TeXGyreCursor
+%
+% qcrr  TeXGyreCursor-Regular
+% qcrri TeXGyreCursor-Italic
+% qcrb  TeXGyreCursor-Bold
+% qcrbi TeXGyreCursor-BoldItalic
+
+\starttypescript [mono] [cursor,courier] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definefontsynonym [Courier]             [\typescriptthree-qcrr]  [encoding=\typescriptthree]
+    \definefontsynonym [Courier-Bold]        [\typescriptthree-qcrri] [encoding=\typescriptthree]
+    \definefontsynonym [Courier-Oblique]     [\typescriptthree-qcrb]  [encoding=\typescriptthree]
+    \definefontsynonym [Courier-BoldOblique] [\typescriptthree-qcrbi] [encoding=\typescriptthree]
+    \fakecontrolspace
+
+    \loadmapfile[qcr-\typescriptthree.map]
+    \unloadmapfile[\typescriptthree-urw-courier.map]
 \stoptypescript
 
 % TeXGyreBonum
@@ -189,6 +210,7 @@
     \definefontsynonym [Bookman-DemiBoldSlanted] [Bookman-DemiBoldItalic]
 
     \loadmapfile[qbk-\typescriptthree.map]
+    \unloadmapfile[\typescriptthree-urw-bookman.map]
 \stoptypescript
 
 % TeXGyreScola
@@ -209,6 +231,7 @@
     \definefontsynonym [Schoolbook-BoldSlanted] [Schoolbook-BoldItalic]
 
     \loadmapfile[qcs-\typescriptthree.map]
+    \unloadmapfile[\typescriptthree-urw-ncntrsbk.map]
 \stoptypescript
 
 % TeXGyreAdventor

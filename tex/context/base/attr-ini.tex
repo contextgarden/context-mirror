@@ -157,10 +157,6 @@
   {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}%
      {\dosetattribute{effect}{\ctxlua{tex.print(effects.register('#1',#2,\number\dimexpr#3\relax))}}}}
 
-% \def\dotriggereffect#1#2#3%
-%   {\ifcsname(es:#1:#2:\number\dimexpr#3\relax)\endcsname\else\registereffect{#1}{#2}{#3}\fi
-%    \csname(es:#1:#2:\number\dimexpr#3\relax)\endcsname}
-
 \def\dotriggereffect
   {\ctxlua{effects.enabled=true}%
    \gdef\dotriggereffect##1##2##3%

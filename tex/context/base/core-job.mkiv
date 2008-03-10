@@ -19,4 +19,10 @@
 \def\usepath        [#1]{\edef\allinputpaths{\ctxlua{commands.usepath("#1")}}}
 \def\usesubpath     [#1]{\edef\allinputpaths{\ctxlua{commands.usesubpath("#1")}}}
 
+\def\usezipfile          {\dodoubleempty\dousezipfile}
+\def\dousezipfile[#1][#2]{\ctxlua{commands.usezipfile("#1","#2")}} % [filename] [optional subtree]
+
+\def\loadexamodes        {\dosingleempty\doloadexamodes}
+\def\doloadexamodes  [#1]{\ctxlua{commands.loadexamodes("#1")}}
+
 \endinput

@@ -136,42 +136,43 @@ do
     nodes.before =  node.insert_before -- broken
     nodes.after  =  node.insert_after
 
-function nodes.before(h,c,n)
-    if c then
-        if c == h then
-            n.next = h
-            n.prev = nil
-            h.prev = n
-        else
-            local cp = c.prev
-            n.next = c
-            n.prev = cp
-            if cp then
-                cp.next = n
+    function nodes.before(h,c,n)
+        if c then
+            if c == h then
+                n.next = h
+                n.prev = nil
+                h.prev = n
+            else
+                local cp = c.prev
+                n.next = c
+                n.prev = cp
+                if cp then
+                    cp.next = n
+                end
+                c.prev = n
+                return h, n
             end
-            c.prev = n
-            return h, n
         end
+        return n, n
     end
-    return n, n
-end
-function nodes.after(h,c,n)
-    if c then
-        local cn = c.next
-        if cn then
-            n.next = cn
-            cn.prev = n
-        else
-            n.next = nil
+
+    function nodes.after(h,c,n)
+        if c then
+            local cn = c.next
+            if cn then
+                n.next = cn
+                cn.prev = n
+            else
+                n.next = nil
+            end
+            c.next = n
+            n.prev = c
+            if c ~= h then
+                return h, n
+            end
         end
-        c.next = n
-        n.prev = c
-        if c ~= h then
-            return h, n
-        end
+        return n, n
     end
-    return n, n
-end
 
     function nodes.show_list(head, message)
         if message then
@@ -906,3 +907,133 @@ end
 --~     end
 --~ end
 
+-- for the moment we put this here:
+
+do
+
+    nodes.tracers = { }
+    nodes.tracers.characters = { }
+
+    local glyph, disc = node.id('glyph'), node.id('disc')
+
+    local fontdata = fonts.tfm.id
+
+    local function collect(head,list,tag,n)
+        n = n or 0
+        local ok, fn = false, nil
+        while head do
+            local id = head.id
+            if id == glyph then
+                local f = head.font
+                if f ~= fn then
+                    ok, fn = false, f
+                end
+                local c = head.char
+                local d = fontdata[f].characters[c]
+                local i = (d and d.description.index) or -1
+                if not ok then
+                    ok = true
+                    n = n + 1
+                    list[n] = list[n] or { }
+                    list[n][tag] = { }
+                end
+                local l = list[n][tag]
+                l[#l+1] = { c, f, i }
+            elseif id == disc then
+                -- skip
+            else
+                ok = false
+            end
+            head = head.next
+        end
+    end
+
+    function nodes.tracers.characters.equal(ta, tb)
+        if #ta ~= #tb then
+            return false
+        else
+            for i=1,#ta do
+                local a, b = ta[i], tb[i]
+                if a[1] ~= b[1] or a[2] ~= b[2] or a[3] ~= b[3] then
+                    return false
+                end
+            end
+        end
+        return true
+    end
+    function nodes.tracers.characters.string(t)
+        local tt = { }
+        for i=1,#t do
+            tt[i] = utf.char(t[i][1])
+        end
+        return table.concat(tt,"")
+    end
+    function nodes.tracers.characters.unicodes(t,decimal)
+        local tt = { }
+        for i=1,#t do
+            if decimal then
+                tt[i] = t[i][1]
+            else
+                tt[i] = string.format("%04X",t[i][1])
+            end
+        end
+        return table.concat(tt," ")
+    end
+    function nodes.tracers.characters.indices(t,decimal)
+        local tt = { }
+        for i=1,#t do
+            if decimal then
+                tt[i] = t[i][3]
+            else
+                tt[i] = string.format("%04X",t[i][3])
+            end
+        end
+        return table.concat(tt," ")
+    end
+    function nodes.tracers.characters.fonts(t)
+        local f = t[1] and t[1][2]
+        return (f and file.basename(fontdata[f].filename or "unknown")) or "unknown"
+    end
+
+    function nodes.tracers.characters.start()
+        local npc = nodes.process_characters
+        local list = { }
+        function nodes.process_characters(head)
+            local n = #list
+            collect(head,list,'before',n)
+            local h, d = npc(head)
+            collect(head,list,'after',n)
+            if #list > n then
+                list[#list+1] = { }
+            end
+            return h, d
+        end
+        function nodes.tracers.characters.stop()
+            tracers.list['characters'] = list
+            lmx.set('title', 'ConTeXt Character Processing Information')
+            lmx.set('color-background-one', lmx.get('color-background-yellow'))
+            lmx.set('color-background-two', lmx.get('color-background-purple'))
+            lmx.show('context-characters.lmx')
+            lmx.restore()
+            nodes.process_characters = npc
+        end
+    end
+
+    local stack = { }
+
+    function nodes.tracers.start(tag)
+        stack[#stack+1] = tag
+        local tracer = nodes.tracers[tag]
+        if tracer and tracer.start then
+            tracer.start()
+        end
+    end
+    function nodes.tracers.stop()
+        local tracer = stack[#stack]
+        if tracer and tracer.stop then
+            tracer.stop()
+        end
+        stack[#stack] = nil
+    end
+
+end

@@ -14,7 +14,7 @@ cluttered by macro package code.</p>
 
 userdata  = userdata  or { }
 thirddata = thirddata or { }
-document  = document or { }
+document  = document  or { }
 
 --[[ldx--
 <p>Please create a namespace within these tables before using them!</p>

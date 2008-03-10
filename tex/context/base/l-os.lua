@@ -13,6 +13,19 @@ end
 if not os.exec  then os.exec  = os.execute end
 if not os.spawn then os.spawn = os.execute end
 
+--~ os.type : windows | unix (new, we already guessed os.platform)
+--~ os.name : windows | msdos | linux | macosx | solaris | .. | generic (new)
+
+if not io.fileseparator then
+    if string.find(os.getenv("PATH"),";") then
+        io.fileseparator, io.pathseparator, os.platform = "\\", ";", os.type or "windows"
+    else
+        io.fileseparator, io.pathseparator, os.platform = "/" , ":", os.type or "unix"
+    end
+end
+
+os.platform = os.platform or os.type or (io.pathseparator == ";" and "windows") or "unix"
+
 function os.launch(str)
     if os.platform == "windows" then
         os.execute("start " .. str) -- os.spawn ?
@@ -32,19 +45,15 @@ if not os.times then
     -- cstime = children system time
     function os.times()
         return {
-            utime  = os.clock(), -- user
-            stime  = 0,          -- system
-            cutime = 0,          -- children user
-            cstime = 0,          -- children system
+            utime  = os.gettimeofday(), -- user
+            stime  = 0,                 -- system
+            cutime = 0,                 -- children user
+            cstime = 0,                 -- children system
         }
     end
 end
 
-if os.gettimeofday then
-    os.clock = os.gettimeofday
-else
-    os.gettimeofday = os.clock
-end
+os.gettimeofday = os.gettimeofday or os.clock
 
 do
     local startuptime = os.gettimeofday()

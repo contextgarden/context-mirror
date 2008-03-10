@@ -90,6 +90,7 @@
 %D As the name of their define command states, the next set of
 %D constants is used in the message macro's.
 
+\definemessageconstant {check}
 \definemessageconstant {colors}
 \definemessageconstant {columns}
 \definemessageconstant {encodings}
@@ -777,7 +778,7 @@
 %D And only after this selection is done, we can define
 %D messages, otherwise the default language is in use.
 
-\ifinterfacetranslation \else
+% \ifinterfacetranslation \else % interfacetranslation is obsolete
 
 \startmessages  dutch  library: check
   title: controle
@@ -837,7 +838,7 @@
       3: -- -- remplace une macro, utilisez des MAJUSCULES !
 \stopmessages
 
-\fi
+% \fi
 
 %D Ok, here are some more, because we've got ouselves some
 %D extensions to \CONTEXT.

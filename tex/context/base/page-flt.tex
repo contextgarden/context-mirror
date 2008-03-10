@@ -863,6 +863,7 @@
 \def\dofloatinfomessage#1#2#3%
   {\bgroup
    \showmessage\m!floatblocks{#2}{#3}%
+   \setmessagetext\m!floatblocks{#2}%
    \@EA\floatinfo\@EA#1\@EA{\currentmessagetext}%
    \egroup}
 
@@ -1298,9 +1299,11 @@
      % indirect macro can be more efficient
      \setgvalue{@fl@r@#1}%
        {\tracefloatnumber{#1}%
+\ifconditional\retainfloatnumber\else
         \dowritetolist{#1}{\getvalue{@fl@n@#1}}{#3}{#1}%
         \gdefconvertedargument\flasciititle{#3}% \asciititle is global
         \doifsomething{#2}{\rawreference\s!flt{#2}{{\getvalue{@fl@n@#1}}{\flasciititle}}}%
+\fi
         \letgvalue{@fl@r@#1}\relax}% nils
      \setgvalue{@fl@t@#1}%
        {\preparefullnumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber
@@ -2073,6 +2076,10 @@
    \xdef\naturalfloatwidth {\the\wd#1}%
    \xdef\naturalfloatdepth {\the\dp#1}}
 
+\def\doifelsemainfloatbody#1#2%
+  {\ifinsidesplitfloat\ifconditional\splitfloatfirstdone#2\else#1\fi\else#1\fi}
+
+
 \long\def\docompletefloat#1#2#3#4#5#6#7% #7 = box number
   {%\flushsidefloats % moved
    \presetfloatvariables{#1}{#4}{#2}{#6}%
@@ -2090,8 +2097,8 @@
    \ifnofloatcaption
      \global\setbox\floatbox\vbox
        {\unvbox\floatbox
-        \vss % gets rid of the depth (unless tabulate)
-        \rawpagereference\s!flt{#2}}%
+        \doifelsemainfloatbody{\rawpagereference\s!flt{#2}}\donothing
+        \vss}% gets rid of the depth (unless tabulate)
       \egroup
       \dofloat{#4}{}{#6}%
    \else
@@ -2099,16 +2106,19 @@
      \ifnofloatnumber
        \global\setbox\floatbox\vbox
          {\unvbox\floatbox % no \vss, keep the depth
-          \rawreference\s!flt{#2}{{}{\asciititle}}}%
+          \doifelsemainfloatbody{\rawreference\s!flt{#2}{{}{\asciititle}}}\donothing}%
        \egroup
        \dofloat{#4}{}{#6}%
      \else
        \preparefloatnumber{#1}%
        \global\setbox\floatbox\vbox
          {\unvbox\floatbox % no \vss, keep the depth
-          \tracefloatnumber{#1}%
-          \rawreference\s!flt{#2}{{\composedsectionnumber}{\asciititle}}%
-          \dowritetolist{#3}{\composedsectionnumber}{#6}{#3}}%
+          \doifelsemainfloatbody
+            {\tracefloatnumber{#1}%
+             \rawreference\s!flt{#2}{{\composedsectionnumber}{\asciititle}}%
+             \dowritetolist{#3}{\composedsectionnumber}{#6}{#3}}
+            \donothing
+          }%
        \egroup
        \preparefullnumber{\??kj#1}\composedsectionnumber\preparednumber
        \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}%
@@ -2289,14 +2299,16 @@
      \unvbox\collectedpagefloats
    \fi}
 
-\def\flushrestfloats
-   {\doif\@@bkcache\v!no\doflushsavedfloats}
+% \def\flushrestfloats
+%   {\doif\@@bkcache\v!no\doflushfloats}
+
+% \let\flushrestfloats\relax
 
 \def\dopostponeblock
   {\bgroup % new may 2004
    \setsystemmode\v!postponing % new may 2004
    \the\everytopofpage
-   \flushrestfloats
+%    \flushrestfloats
    \flushpagefloats
    \donefalse
    \ifinpostponing \else
@@ -2340,7 +2352,8 @@
      {\realfolio}{\nofpostponedpageblocks}\to\postponedpageblocks
    \egroup
    \showmessage\m!layouts3\nofpostponedpageblocks
-   \dostartbuffer[rbuf-\nofpostponedpageblocks][\e!start\v!postponing][\e!stop\v!postponing]}
+   \dostartbuffer[rbuf-\nofpostponedpageblocks]%
+     [\e!start\v!postponing][\e!stop\v!postponing]}
 
 \def\dodostartpostponing
   {\doglobal\increment\nofpostponedblocks

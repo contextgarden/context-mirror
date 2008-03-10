@@ -454,6 +454,9 @@
    \let\eTR\relax % handy in \expanded
    \iffirstargument\setTABLEparameters[\c!y\number\maximumrow][#1]\fi}
 
+\def\settblref#1#2{\expandafter\xdef\csname\@@tblprefix\number#1:\number#2:x\endcsname}
+\def\gettblref#1#2{\ifcsname\@@tblprefix\number#1:\number#2:x\endcsname\csname\@@tblprefix\number#1:\number#2:x\endcsname\fi}
+
 \long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
   {\def\tblny{\tblnr}%
    \def\tblnx{\tblnc}%
@@ -461,7 +464,9 @@
    \let\tblnr\plusone
    \let\tbln\currentcol
    \let\tblm\empty
-   \iffirstargument\getparameters[\@@tbl][#1]\fi
+   \iffirstargument
+     \getparameters[\@@tbl][#1]%
+   \fi
    % goto first cell % NEW, n/m=cellnumber
    \edef\@@tblnindeed{\csname\@@tbl\c!n\endcsname}%
    \ifx\@@tblnindeed\empty
@@ -503,6 +508,7 @@
    \lettbltag\maximumrow\currentcol\tblcell
    \settblcol\maximumrow\currentcol{\number\tblnx}%
    \settblrow\maximumrow\currentcol{\number\tblny}%
+   \settblref\maximumrow\currentcol{\ifcsname\@@tbl\c!action\endcsname\csname\@@tbl\c!action\endcsname\fi}%
    % save text
    \edef\celltag{{\number\maximumrow}{\number\currentcol}}%
    \@EA\settbltxt\@EA\maximumrow\@EA\currentcol\@EA{\@EA\handleTBLcell\celltag[#1]{#3}}}
@@ -952,6 +958,12 @@
      \ht\scratchbox\scratchdimen
    \fi
    \dp\scratchbox\zeropoint
+   \edef\!!stringa{\gettblref{#1}{#2}}%
+   \ifx\!!stringa\empty
+     \box\scratchbox
+   \else
+     \expanded{\gotobox{\box\scratchbox}[\!!stringa]}%
+   \fi
    \box\scratchbox}
 
 \def\inTBLcell#1#2% hm, do we need #1 #2 ? we use tblcol anyway
@@ -985,6 +997,7 @@
    \let\makeTBL\domakeTBLone
    \let\handleTBLcell\dohandleTBLcellA
    \setbox0\vbox{\trialtypesettingtrue \flushtbltoks}%
+%    \setbox\scratchbox\vbox{\trialtypesettingtrue \flushtbltoks}%
    \lettbldis\maximumcol\zeropoint
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize
@@ -1020,13 +1033,13 @@
    \let\handleTBLcell\dohandleTBLcellE
    \chardef\tblpass\plusthree
    \let\makeTBL\domakeTBLthree
-    \ifnum\TBLlevel>\plusone
-      \@EA\notsplittblbox
-    \else\ifenableTBLbreak
-      \@EAEAEA\splittblbox
-    \else
-      \@EAEAEA\notsplittblbox
-    \fi\fi{\flushtbltoks}}
+   \ifnum\TBLlevel>\plusone
+     \@EA\notsplittblbox
+   \else\ifenableTBLbreak
+     \@EAEAEA\splittblbox
+   \else
+     \@EAEAEA\notsplittblbox
+   \fi\fi{\flushtbltoks}}
 
 \def\stretchtblwidths
   {\ifcase\maximumcol\else % else division by zero

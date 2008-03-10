@@ -39,6 +39,8 @@ xml.trace_lpath = false
 xml.trace_print = false
 xml.trace_remap = false
 
+-- todo: some things per xml file, liek namespace remapping
+
 --[[ldx--
 <p>First a hack to enable namespace resolving. A namespace is characterized by
 a <l n='url'/>. The following function associates a namespace prefix with a
@@ -657,7 +659,7 @@ function xml.text(root)
     return (root and xml.tostring(root)) or ""
 end
 
-function xml.content(root)
+function xml.content(root) -- bugged
     return (root and root.dt and xml.tostring(root.dt)) or ""
 end
 
@@ -988,14 +990,13 @@ do
         local t = {...} for i=1,#t do if s == t[i] then return true end end return false
     end
 
-    function xml.traverse(root,pattern,handle,reverse,index,parent,wildcard)
+    local function traverse(root,pattern,handle,reverse,index,parent,wildcard)
         if not root then -- error
             return false
         elseif pattern == false then -- root
             handle(root,root.dt,root.ri)
             return false
         elseif pattern == true then -- wildcard
-            local traverse = xml.traverse
             local rootdt = root.dt
             if rootdt then
                 local start, stop, step = 1, #rootdt, 1
@@ -1026,7 +1027,7 @@ do
             elseif command == 11 then -- parent
                 local ep = root.__p__ or parent
                 if index < #pattern then
-                    if not xml.traverse(ep,pattern,handle,reverse,index+1,root) then return false end
+                    if not traverse(ep,pattern,handle,reverse,index+1,root) then return false end
                 elseif handle(root,rootdt,k) then
                     return false
                 end
@@ -1041,12 +1042,11 @@ do
                 if command == 11 then -- parent
                     local ep = root.__p__ or parent
                     if index < #pattern then
-                        if not xml.traverse(ep,pattern,handle,reverse,index+1,root) then return false end
+                        if not traverse(ep,pattern,handle,reverse,index+1,root) then return false end
                     elseif handle(root,rootdt,k) then
                         return false
                     end
                 else
-                    local traverse = xml.traverse
                     local rootdt = root.dt
                     local start, stop, step, n, dn = 1, #rootdt, 1, 0, 1
                     if command == 30 then
@@ -1140,6 +1140,7 @@ do
                                     if index == #pattern then
                                         if handle(root,rootdt,root.ri or k) then return false end
                                         if wildcard and multiple then
+--~ if wildcard or multiple then
                                             if not traverse(e,pattern,handle,reverse,index,root,true) then return false end
                                         end
                                     else
@@ -1199,6 +1200,8 @@ do
         end
         return true
     end
+
+    xml.traverse = traverse
 
 end
 
@@ -1270,7 +1273,7 @@ do
         traverse(root, lpath(pattern), function(r,d,k) rt,dt,dk = r,d,k return true end, 'reverse')
         return dt and dt[dk], rt, dt, dk
     end
-    function xml.filters.count(root, pattern,everything)
+    function xml.filters.count(root,pattern,everything)
         local n = 0
         traverse(root, lpath(pattern), function(r,d,t)
             if everything or type(d[t]) == "table" then
@@ -1340,13 +1343,15 @@ do
         local rt, dt, dk
         traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
         local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
-        return (ekat and ekat[arguments]) or ""
+        return (ekat and (ekat[arguments] or ekat[arguments:gsub("^([\"\'])(.*)%1$","%2")])) or ""
     end
-    function xml.filters.text(root,pattern,arguments)
+    function xml.filters.text(root,pattern,arguments) -- ?? why index
         local dtk, rt, dt, dk = xml.filters.index(root,pattern,arguments)
         if dtk then
             local dtkdt = dtk.dt
-            if #dtkdt == 1 and type(dtkdt[1]) == "string" then
+            if not dtkdt then
+                return "", rt, dt, dk
+            elseif #dtkdt == 1 and type(dtkdt[1]) == "string" then
                 return dtkdt[1], rt, dt, dk
             else
                 return xml.tostring(dtkdt), rt, dt, dk
@@ -1411,7 +1416,7 @@ do
     </typing>
 
     <p>Which will print all the titles in the document. The iterator variant takes
-    1.5 times the runtime of the function variant which si due to the overhead in
+    1.5 times the runtime of the function variant which is due to the overhead in
     creating the wrapper. So, instead of:</p>
 
     <typing>
@@ -1428,6 +1433,10 @@ do
 
     function xml.elements(root,pattern,reverse)
         return coroutine.wrap(function() traverse(root, lpath(pattern), coroutine.yield, reverse) end)
+    end
+
+    function xml.elements_only(root,pattern,reverse)
+        return coroutine.wrap(function() traverse(root, lpath(pattern), function(r,d,k) coroutine.yield(d[k]) end, reverse) end)
     end
 
     function xml.each_element(root, pattern, handle, reverse)
@@ -1575,10 +1584,20 @@ do
         end
     end
 
-    function xml.include(xmldata,pattern,attribute,recursive,findfile)
+    local function load_data(name) -- == io.loaddata
+        local f, data = io.open(name), ""
+        if f then
+            data = f:read("*all",'b') -- 'b' ?
+            f:close()
+        end
+        return data
+    end
+
+    function xml.include(xmldata,pattern,attribute,recursive,loaddata)
         -- parse="text" (default: xml), encoding="" (todo)
-        pattern = pattern or 'include'
         -- attribute = attribute or 'href'
+        pattern = pattern or 'include'
+        loaddata = loaddata or load_data
         local function include(r,d,k)
             local ek, name = d[k], nil
             if not attribute or attribute == "" then
@@ -1593,29 +1612,21 @@ do
                     end
                 end
             end
-            if name then
-                name = (findfile and findfile(name)) or name
-                if name ~= "" then
-                    local f = io.open(name)
-                    if f then
-                        if ek.at["parse"] == "text" then -- for the moment hard coded
-                            d[k] = xml.escaped(f:read("*all"))
-                        else
-                            local xi = xml.load(f)
-                            if recursive then
-                                xml.include(xi,pattern,attribute,recursive,findfile)
-                            end
-                            xml.assign(d,k,xi)
-                        end
-                        f:close()
-                    else
-                        xml.empty(d,k)
-                    end
-                else
-                    xml.empty(d,k)
-                end
-            else
+            local data = (name and name ~= "" and loaddata(name)) or ""
+            if data == "" then
                 xml.empty(d,k)
+            elseif ek.at["parse"] == "text" then -- for the moment hard coded
+                d[k] = xml.escaped(data)
+            else
+                local xi = xml.convert(data)
+                if not xi then
+                    xml.empty(d,k)
+                else
+                    if recursive then
+                        xml.include(xi,pattern,attribute,recursive,loaddata)
+                    end
+                    xml.assign(d,k,xi)
+                end
             end
         end
         xml.each_element(xmldata, pattern, include)

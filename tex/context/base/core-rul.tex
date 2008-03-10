@@ -1753,16 +1753,16 @@
 %D of a centered box automatically (\type {fit}). When
 %D doing so, we need to reshape the box:
 
+% The next implementation is frozen! It preserves the depth,
+% otherwise we get problems with framed display math and auto
+% width.
+
 \newcount\framednoflines
 \newdimen\framedlastlength
 
 \def\resetshapeframebox
   {\framednoflines  \zerocount
    \framedlastlength\zeropoint}
-
-% The next implementation is frozen! It preserves the depth,
-% otherwise we get problems with framed display math and auto
-% width.
 
 \chardef\reshapeframeboxmethod\plusone % 0=no flush, 1=old method 2=no depth messing
 
@@ -1812,7 +1812,7 @@
           \dp\framebox\framedboxdepth % \strutdp otherwise problem with math
         \fi
       \fi
-      \ifdim\framedlastlength=\zeropoint\global\framednoflines\wd\framebox\fi
+      \ifdim\framedlastlength=\zeropoint\global\framedlastlength\wd\framebox\fi
       \ifcase\framednoflines\global\framednoflines\plusone\fi
    \fi}
 

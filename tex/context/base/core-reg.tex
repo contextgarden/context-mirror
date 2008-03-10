@@ -375,6 +375,35 @@
     \global\let\c!entryletter\relax
     \global\let\c!entryreference\relax}
 
+% \def\dodosetpageregisterpageB#1#2#3#4#5#6%
+%   {\iffirstregisterpage
+%      \expandafter\hskip\getvalue{\??id#2\c!distance}\relax
+%    \else\ifnum#1=3
+%      \strut|--|\relax % -- !
+%    \else
+%      % \relax after space needed because | looks ahead
+%      \strut\registerpageseparator|\space|\relax
+%    \fi\fi
+%    \iftrue % \iftrue ...\fi to preserve indentation, can be folded out
+%      \begingroup
+%      %
+%      \doifelsevalue{\??id#2\c!prefix}\v!none % default v!both
+%        {\chardef\pageprefixmode\zerocount}%
+%        {\doifvalue{\??id#2\c!prefix}\v!first % only first in range (1.2-4)
+%           {\ifnum#1=3 \chardef\pageprefixmode\zerocount \fi}}%
+%      %
+%      \doifelsevalue{\??id#2\c!interaction}\v!pagenumber
+%        {\bgroup
+%         \setbox0\hbox{\showlocation{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+%         \gotonextinternal{\s!ind}{#4}{#6}{\box0}%{\copy0}%
+%         \egroup}
+%        {\hbox{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+%      \endgroup
+%      \ignorespaces
+%      \relax
+%    \fi
+%    \global\firstregisterpagefalse}
+
 \def\dodosetpageregisterpageB#1#2#3#4#5#6%
   {\iffirstregisterpage
      \expandafter\hskip\getvalue{\??id#2\c!distance}\relax
@@ -382,19 +411,23 @@
      \strut|--|\relax % -- !
    \else
      % \relax after space needed because | looks ahead
-     \strut\registerpageseparator|\space|\relax
+% TH: next line replaced
+%    \strut\registerpageseparator|\space|\relax
+     \strut \registerpageseparator{ }%
+% /TH
    \fi\fi
    \iftrue % \iftrue ...\fi to preserve indentation, can be folded out
      \begingroup
      %
      \doifelsevalue{\??id#2\c!prefix}\v!none % default v!both
        {\chardef\pageprefixmode\zerocount}%
-       {\doifvalue{\??id#2\c!prefix}\v!first % only first in range (1.2-4)
+       {\doifvalue{\??id#2\c!prefix}\v!first %
           {\ifnum#1=3 \chardef\pageprefixmode\zerocount \fi}}%
      %
      \doifelsevalue{\??id#2\c!interaction}\v!pagenumber
        {\bgroup
-        \setbox0\hbox{\showlocation{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+        \setbox0
+          \hbox{\showlocation{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
         \gotonextinternal{\s!ind}{#4}{#6}{\box0}%{\copy0}%
         \egroup}
        {\hbox{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
@@ -855,7 +888,7 @@
        \let\dosetregister\doloadregisterlinks
        \def\currentregister{#1}%
        \setupregister[#1][#2]%
-       \mkloadregister\currentregister
+       \mkloadregister\currentregister\dobeforeplaceregister\doafterplaceregister
        \endgroup
        \ifautoregisterhack
          \doinitializeautoregister{#1}%
@@ -1064,19 +1097,21 @@
      \doifelse{\registerparameter\c!compress}\v!yes % new
         {\chardef\collapseregisterpages\plusone}
         {\chardef\collapseregisterpages\zerocount}%
-     \raggedright
+% TH: disable next line
+%     \raggedright
+% /TH
      \startcolumns
        [\c!n=\registerparameter\c!n,
         \c!balance=\registerparameter\c!balance,
-        \c!align=\registerparameter\c!align]%
+        \c!align=\registerparameter\c!align,
+        tolerance=stretch]%
      \dontcomplain
      \startpacked[\v!blank]%
-     \mkloadregister\currentregister
+     \mkloadregister\currentregister\dobeforeplaceregister\doafterplaceregister
      \stoppacked
      \stopcolumns
      \endgroup
    \fi}
-
 \def\dobeforeplaceregister
   {\resetseenregisterpage
    \relax}
@@ -1107,7 +1142,7 @@
   {\setupregister[#1]%
      [\c!n=2,
       \c!balance=\v!yes,  % \v!no komt niet zo vaak voor
-      \c!align=\v!no,
+      \c!align=\v!flushleft,
       \c!before=\blank,      % binnen kolommen: \blank[\v!line]
       \c!after=,
       \c!symbol=,
@@ -1167,7 +1202,7 @@
          \global\utilitydonetrue}
         {}}%
    \doglobal\newcounter\utilityregisterlength
-   \setbox0\vbox{\mkloadregister\currentregister}%
+   \setbox0\vbox{\mkloadregister\currentregister\dobeforeplaceregister\doafterplaceregister}%
    \endgroup
    \ifregistergeplaatst
      \setsystemmode  \v!register

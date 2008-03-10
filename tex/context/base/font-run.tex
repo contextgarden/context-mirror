@@ -182,14 +182,15 @@
    \vskip2pt
    % the \noexpand before \blank is needed for non etex
    \edef\ascii{name: {\noexpand\black\fontname\font}}
+   \def\do##1##2{\ifx##1\undefined\else\ifx##1\empty\else##2\fi\fi}%
    \doifelse\v!unknown{#2}
      {\edef\theshowfontspecs
         {name: {\noexpand\black\fontname\font}}}
      {\edef\theshowfontspecs
         {name: {\noexpand\black\fontname\font}\noexpand\quad
-         encoding: {\noexpand\black\currentencoding}\noexpand\quad
-         mapping: {\noexpand\black\currentmapping }\noexpand\quad
-         handling: {\noexpand\black\fonthandling}}}%
+         \do\currentencoding{encoding: {\noexpand\black\currentencoding\noexpand\quad}}%
+         \do\currentmapping {mapping:  {\noexpand\black\currentmapping \noexpand\quad}}%
+         \do\fonthandling   {handling: {\noexpand\black\fonthandling                 }}}}%
    \tf % also sets em
    \hbox to 40em{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
    \egroup

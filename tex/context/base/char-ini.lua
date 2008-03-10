@@ -94,14 +94,15 @@ table we derive a few more.</p>
 
 -- used ?
 
-characters.context.unicodes = characters.context.unicodes or { }
-characters.context.utfcodes = characters.context.utfcodes or { }
-characters.context.enccodes = characters.context.enccodes or { }
+characters.context.unicodes  = characters.context.unicodes  or { }
+characters.context.utfcodes  = characters.context.utfcodes  or { }
+characters.context.enccodes  = characters.context.enccodes  or { }
+characters.context.fallbacks = characters.context.fallbacks or { }
 
 function characters.context.rehash()
-    local unicodes, utfcodes, enccodes, utfchar = characters.context.unicodes, characters.context.utfcodes, characters.context.enccodes, utf.char
+    local unicodes, utfcodes, enccodes, fallbacks, utfchar = characters.context.unicodes, characters.context.utfcodes, characters.context.enccodes, characters.context.fallbacks, utf.char
     for k,v in pairs(characters.data) do
-        local contextname, adobename = v.contextname, v.adobename
+        local contextname, adobename, specials = v.contextname, v.adobename, v.specials
         if contextname then
             local slot = v.unicodeslot
             unicodes[contextname] = slot
@@ -110,6 +111,11 @@ function characters.context.rehash()
         local encname = adobename or contextname
         if encname then
             enccodes[encname] = k
+        end
+        if specials and specials[1] == "compat" and specials[2] == 0x0020 and specials[3] then
+            local s = specials[3]
+            fallbacks[k] = s
+            fallbacks[s] = k
         end
     end
     for name,code in pairs(characters.synonyms) do
@@ -319,15 +325,23 @@ function characters.uccode(n) return characters.data[n].uccode or n end
 function characters.lccode(n) return characters.data[n].lccode or n end
 
 function characters.flush(n)
-    if characters.data[n].contextname then
-        tex.sprint(tex.texcatcodes, "\\"..characters.data[n].contextname)
+    local c = characters.data[n]
+    if c and c.contextname then
+        tex.sprint(tex.texcatcodes, "\\"..c.contextname)
     else
         tex.sprint(unicode.utf8.char(n))
     end
 end
 
 function characters.shape(n)
-    return characters.data[n].shcode or n
+    local shcode = characters.data[n].shcode
+    if not shcode then
+        return n, nil
+    elseif type(shcode) == "table" then
+        return shcode[1], shcode[#shcode]
+    else
+        return shcode, nil
+    end
 end
 
 --[[ldx--
@@ -358,12 +372,12 @@ unicode reference tables.</p>
 --ldx]]--
 
 function characters.setpdfunicodes()
-    local flush, tc, sf = tex.sprint, tex.ctxcatcodes, string.format
-    for _,v in pairs(characters.data) do
-        if v.adobename then
-            flush(tc,sf("\\pdfglyphtounicode{%s}{%04X}", v.adobename, v.unicodeslot))
-        end
-    end
+--~     local flush, tc, sf = tex.sprint, tex.ctxcatcodes, string.format
+--~     for _,v in pairs(characters.data) do
+--~         if v.adobename then
+--~             flush(tc,sf("\\pdfglyphtounicode{%s}{%04X}", v.adobename, v.unicodeslot))
+--~         end
+--~     end
 end
 
 --[[ldx--
@@ -377,21 +391,21 @@ characters.pdftex.make_pdf_to_unicodetable("pdfr-def.tex")
 characters.pdftex = characters.pdftex or { }
 
 function characters.pdftex.make_pdf_to_unicodetable(filename)
-    local sf = string.format
-    f = io.open(filename,'w')
-    if f then
-        f:write("% This file is generated with Luatex using the\n")
-        f:write("% character tables that come with ConTeXt MkIV.\n")
-        f:write("%\n")
-        f:write("\\ifx\\pdfglyphtounicode\\undefined\\endinput\\fi\n") -- just to be sure
-        for _, v in pairs(characters.data) do
-            if v.adobename then
-                f:write(sf("\\pdfglyphtounicode{%s}{%04X}", v.adobename, v.unicodeslot))
-            end
-        end
-        f:write("%\n")
-        f:write("%\n")
-        f:write("\\endinput")
-        f:close()
-    end
+--~     local sf = string.format
+--~     f = io.open(filename,'w')
+--~     if f then
+--~         f:write("% This file is generated with Luatex using the\n")
+--~         f:write("% character tables that come with ConTeXt MkIV.\n")
+--~         f:write("%\n")
+--~         f:write("\\ifx\\pdfglyphtounicode\\undefined\\endinput\\fi\n") -- just to be sure
+--~         for _, v in pairs(characters.data) do
+--~             if v.adobename then
+--~                 f:write(sf("\\pdfglyphtounicode{%s}{%04X}", v.adobename, v.unicodeslot))
+--~             end
+--~         end
+--~         f:write("%\n")
+--~         f:write("%\n")
+--~         f:write("\\endinput")
+--~         f:close()
+--~     end
 end

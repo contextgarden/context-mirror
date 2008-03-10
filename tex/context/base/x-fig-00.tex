@@ -76,6 +76,50 @@
 %D The special keyword \type {reset} can be used to reset
 %D this list.
 
+%D We park some mkiv code here. Eventually we will hook this into mkiv
+%D searching differently (just a standard feature, no need for loading
+%D modules because we need less code). Actually, what we do here is more
+%D like res-*: we load the xml file once.
+
+% \startluacode
+%
+%     document.figurebases = { }
+%     document.figurebases.data = { }
+%     document.figurebases.found = { }
+%
+%     function document.figurebases.find(basename,askedlabel)
+%         document.figurebases.found = { }
+%         local base = document.figurebases.data[basename]
+%         local page = 0
+%         if not base then
+%             base = xml.load(basename)
+%             document.figurebases.data[basename] = base
+%         end
+%         for e, d, k in xml.elements(base,"figurelibrary/figure/label") do
+%             page = page + 1
+%             if xml.content(d[k]) == askedlabel then
+%                 document.figurebases.found = {
+%                     name = xml.filters.text(e,"file"),
+%                     page = page,
+%                 }
+%                 return true
+%             end
+%         end
+%         return false
+%     end
+%
+%     function commands.findfigurefilenameinbase(basename,askedlabel)
+%         if document.figurebases.find(basename,askedlabel) then
+%             commands.xdef("figurefilename",document.figurebases.found.name or "")
+%             commands.xdef("figurefilepage",document.figurebases.found.page or "")
+%         end
+%     end
+%
+% \stopluacode
+%
+% \def\findfigurefilenameinbase#1#2%
+%   {\ctxlua{commands.findfigurefilenameinbase("#1","\askedlabel")}}
+
 \startcommands      dutch                            english
                     german                           czech
                     italian                          romanian
@@ -116,6 +160,9 @@
       \xdef\figurefilename{\XMLpop{file}}\endinput}%
    \egroup}
 
+\def\findfigurefilenameinbase#1#2% sets \figurefilename and \figurefilepage
+  {\processXMLfilegrouped{#1}}
+
 \def\getfigurefilename#1#2%
   {\startnointerference
      \traceXMLelementsfalse
@@ -137,8 +184,11 @@
   {\ifx\figurefilename\empty
      \bgroup
      \xdef\figurefilebasepath{#1}%
-     \assignfullfilename{#1}\figurefilebase\to\filename
-     \expanded{\processXMLfilegrouped{\filename.xml}}%
+     \assignfullfilename{#1}{\figurefilebase}\to\filename
+     \doiffileelse{\filename.xml}
+       {\doshowfigurestate{base file : \filename}%
+        \expanded{\findfigurefilenameinbase{\filename.xml}{\askedlabel}}}
+       \donothing
      \ifx\figurefilename\empty\else
 %        \globallet\figurefilebase\figurefilebase
        \globallet\figurefilebase\filename % hm, bad omen that this is needed
@@ -152,69 +202,33 @@
    \globalletempty\figurefilebasepath
    \globalletempty\figurefilepage}
 
-\ifx\doanalyzefiguredimensionsfromfile\undefined
+\def\doanalyzefiguredimensionsfromfile
+  {\ifcase\figurestatus \ifx\figurebaselist\empty \else
+     \resetfigurefilebase
+     \doshowfigurestate{base list : \figurebaselist}%
+     \processcommacommand[\figurebaselist]\dodoanalyzefiguredimensionsfromfile
+     \ifx\figurefilename\empty
+       \doshowfigurestate{base warning : no matching name found}%
+     \else
+       \doiffileelse{\figurefilebase.pdf}
+         {\doshowfigurestate{base file : \figurefilebase.pdf}%
+          \doshowfigurestate{base page : \figurefilepage}%
+          \let\figurepathlist\figurefilebasepath
+          \analyzefigurefilename{\figurefilebase.pdf}\wantedfigurelabel
+          \let\wantedfigurepage\figurefilepage}
+         {\doshowfigurestate{base missing : \figurefilebase.pdf}}
+     \fi
+     \ifcase\figurestatus
+       \analyzefigurefilename\expandedfigurename\wantedfigurelabel
+     \fi
+   \fi \fi}
 
-    % will become obsolete once the new core-fig is used
-
-    \let\normalcalculateexternalfigure\calculateexternalfigure
-
-    \def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
-      {\resetfigurefilebase
-       \ifx\figurebaselist\empty
-         \normalcalculateexternalfigure[#1][#2][#3][#4][#5][#6]%
-       \else
-         \def\docommand##1%
-           {\doshowfigurestate{base : check #3 in ##1}%
-            \getfigurefilename{##1}{#3}%
-            \ifx\figurefilename\empty\else\quitcommalist\fi}%
-         \processcommacommand[\figurebaselist]\docommand
-         \ifx\figurefilename\empty
-           \stripspaces\from#3\to\figurefilename % to be sure
-           \normalcalculateexternalfigure[#1][#2][\figurefilename][#4][#5][#6]%
-         \else
-           \doiffileelse{\figurefilebase.pdf}
-             {\let\figurepathlist\figurefilebasepath
-              \normalcalculateexternalfigure
-                [#1][#2][\figurefilebase.pdf]%
-                [\c!page=\figurefilepage,#4][#5][#6]}
-             {\@EA\stripspaces\@EA\from\figurefilename\to\figurefilename
-              \normalcalculateexternalfigure[#1][#2][\figurefilename][#4][#5][#6]}%
-         \fi
-       \fi}
-
-\else
-
-    % todo: use different internal names, \figurebasepage and such
-
-    \def\doanalyzefiguredimensionsfromfile
-      {\ifcase\figurestatus \ifx\figurebaselist\empty \else
-         \resetfigurefilebase
-         \doshowfigurestate{base list : \figurebaselist}%
-         \processcommacommand[\figurebaselist]\dodoanalyzefiguredimensionsfromfile
-         \ifx\figurefilename\empty
-           \doshowfigurestate{base warning : no matching name found}%
-         \else
-           \doiffileelse{\figurefilebase.pdf}
-             {\doshowfigurestate{base file : \figurefilebase.pdf}%
-              \doshowfigurestate{base page : \figurefilepage}%
-              \let\figurepathlist\figurefilebasepath
-              \analyzefigurefilename{\figurefilebase.pdf}\wantedfigurelabel
-              \let\wantedfigurepage\figurefilepage}
-             {\doshowfigurestate{base missing : \figurefilebase.pdf}}
-         \fi
-         \ifcase\figurestatus
-           \analyzefigurefilename\expandedfigurename\wantedfigurelabel
-         \fi
-       \fi \fi}
-
-    \def\dodoanalyzefiguredimensionsfromfile#1%
-      {\doshowfigurestate{base check : \wantedfigurename\space in #1}%
-       \getfigurefilename{#1}\wantedfigurename
-       \ifx\figurefilename\empty\else
-         \quitcommalist
-       \fi}
-
-\fi
+\def\dodoanalyzefiguredimensionsfromfile#1%
+  {\doshowfigurestate{base check : \wantedfigurename\space in #1}%
+   \getfigurefilename{#1}\wantedfigurename
+   \ifx\figurefilename\empty\else
+     \quitcommalist
+   \fi}
 
 \def\usefigurebase[#1]%
   {\doifelse{#1}\v!reset

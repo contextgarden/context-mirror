@@ -58,6 +58,10 @@ function buffers.grab(name,begintag,endtag,data)
     cs.testcase(more)
 end
 
+function buffers.exists(name)
+    return buffers.data[name] ~= nil
+end
+
 function buffers.doifelsebuffer(name)
     cs.testcase(buffers.data[name] ~= nil)
 end

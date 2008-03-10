@@ -12,12 +12,13 @@ curl.cachepath = caches.setpath(texmf.instance,"curl")
 curl.cached = { }
 
 function curl.fetch(protocol, name)
-    local cachename = curl.cachepath .. "/" .. file.robustname(name)
-    cachename = cachename:gsub("[\\/]", io.fileseparator)
+    local cachename = curl.cachepath .. "/" .. name:gsub("[^%a%d%.]+","-")
+--  cachename = cachename:gsub("[\\/]", io.fileseparator)
+    cachename = cachename:gsub("[\\]", "/")
     if not curl.cached[name] then
         if not io.exists(cachename) then
             curl.cached[name] = cachename
-            local command = "curl --silent --create-dirs --output " .. cachename .. " " .. protocol .. "://" .. name
+            local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name -- no protocol .. "://"
             os.spawn(command)
         end
         if io.exists(cachename) then

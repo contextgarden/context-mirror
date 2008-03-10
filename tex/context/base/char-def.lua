@@ -1678,6 +1678,7 @@ characters.data={
   ["description"]="LATIN CAPITAL LETTER AE",
   ["lccode"]=0x00E6,
   ["linebreak"]="al",
+  ["shcode"]= { 0x0041, 0x0045 },
   ["unicodeslot"]=0x00C6, -- Æ
  },
  {
@@ -2026,6 +2027,7 @@ characters.data={
   ["contextname"]="aeligature",
   ["description"]="LATIN SMALL LETTER AE",
   ["linebreak"]="al",
+  ["shcode"]= { 0x00E6, 0x00EA },
   ["uccode"]=0x00C6,
   ["unicodeslot"]=0x00E6, -- æ
  },
@@ -2870,6 +2872,7 @@ characters.data={
   ["description"]="LATIN CAPITAL LIGATURE IJ",
   ["lccode"]=0x0133,
   ["linebreak"]="al",
+  ["shcode"]={ 0x0049, 0x004A },
   ["specials"]={ "compat", 0x0049, 0x004A },
   ["unicodeslot"]=0x0132, -- Ĳ
  },
@@ -2880,6 +2883,7 @@ characters.data={
   ["contextname"]="ijligature",
   ["description"]="LATIN SMALL LIGATURE IJ",
   ["linebreak"]="al",
+  ["shcode"]={ 0x0069, 0x006A },
   ["specials"]={ "compat", 0x0069, 0x006A },
   ["uccode"]=0x0132,
   ["unicodeslot"]=0x0133, -- ĳ
@@ -3222,6 +3226,7 @@ characters.data={
   ["description"]="LATIN CAPITAL LIGATURE OE",
   ["lccode"]=0x0153,
   ["linebreak"]="al",
+  ["shcode"]={ 0x004F, 0x0045 },
   ["unicodeslot"]=0x0152, -- Œ
  },
  {
@@ -3231,6 +3236,7 @@ characters.data={
   ["contextname"]="oeligature",
   ["description"]="LATIN SMALL LIGATURE OE",
   ["linebreak"]="al",
+  ["shcode"]={ 0x006F, 0x0065 },
   ["uccode"]=0x0152,
   ["unicodeslot"]=0x0153, -- œ
  },
@@ -4292,6 +4298,7 @@ characters.data={
   ["description"]="LATIN CAPITAL LETTER LJ",
   ["lccode"]=0x01C9,
   ["linebreak"]="al",
+  ["shcode"]={ 0x004C, 0x004A },
   ["specials"]={ "compat", 0x004C, 0x004A },
   ["uccode"]=0x01C8,
   ["unicodeslot"]=0x01C7, -- Ǉ
@@ -4302,7 +4309,7 @@ characters.data={
   ["description"]="LATIN CAPITAL LETTER L WITH SMALL LETTER J",
   ["lccode"]=0x01C9,
   ["linebreak"]="al",
-  ["shcode"]=0x004C,
+  ["shcode"]={ 0x004C, 0x006A },
   ["specials"]={ "compat", 0x004C, 0x006A },
   ["uccode"]=0x01C7,
   ["unicodeslot"]=0x01C8, -- ǈ
@@ -4312,6 +4319,7 @@ characters.data={
   ["contextname"]="ljligature",
   ["description"]="LATIN SMALL LETTER LJ",
   ["linebreak"]="al",
+  ["shcode"]={ 0x006C, 0x006A },
   ["specials"]={ "compat", 0x006C, 0x006A },
   ["uccode"]=0x01C7,
   ["unicodeslot"]=0x01C9, -- ǉ
@@ -4322,6 +4330,7 @@ characters.data={
   ["description"]="LATIN CAPITAL LETTER NJ",
   ["lccode"]=0x01CC,
   ["linebreak"]="al",
+  ["shcode"]={ 0x004E, 0x004A },
   ["specials"]={ "compat", 0x004E, 0x004A },
   ["uccode"]=0x01CB,
   ["unicodeslot"]=0x01CA, -- Ǌ
@@ -4332,6 +4341,7 @@ characters.data={
   ["description"]="LATIN CAPITAL LETTER N WITH SMALL LETTER J",
   ["lccode"]=0x01CC,
   ["linebreak"]="al",
+  ["shcode"]={ 0x004E, 0x006A },
   ["shcode"]=0x004E,
   ["specials"]={ "compat", 0x004E, 0x006A },
   ["uccode"]=0x01CA,
@@ -4342,6 +4352,7 @@ characters.data={
   ["contextname"]="njligature",
   ["description"]="LATIN SMALL LETTER NJ",
   ["linebreak"]="al",
+  ["shcode"]={ 0x006E, 0x006A },
   ["specials"]={ "compat", 0x006E, 0x006A },
   ["uccode"]=0x01CA,
   ["unicodeslot"]=0x01CC, -- ǌ
@@ -6294,14 +6305,14 @@ characters.data={
   ["unicodeslot"]=0x02BB, -- ʻ
  },
  {
-  ["adobename"]="afii0xE249",
+  ["adobename"]="afii57929",
   ["category"]="lm",
   ["description"]="MODIFIER LETTER APOSTROPHE",
   ["linebreak"]="al",
   ["unicodeslot"]=0x02BC, -- ʼ
  },
  {
-  ["adobename"]="afii0xFDA9",
+  ["adobename"]="afii64937",
   ["category"]="lm",
   ["description"]="MODIFIER LETTER REVERSED COMMA",
   ["linebreak"]="al",
@@ -6362,6 +6373,7 @@ characters.data={
   ["contextname"]="textcircumflex",
   ["description"]="MODIFIER LETTER CIRCUMFLEX ACCENT",
   ["linebreak"]="al",
+  ["specials"]={ "compat", 0x0020, 0x0302 }, -- added by hh
   ["unicodeslot"]=0x02C6, -- ˆ
  },
  {
@@ -6371,6 +6383,7 @@ characters.data={
   ["contextname"]="textcaron",
   ["description"]="CARON",
   ["linebreak"]="ai",
+  ["specials"]={ "compat", 0x0020, 0x030C }, -- added by hh
   ["unicodeslot"]=0x02C7, -- ˇ
  },
  {
@@ -8264,7 +8277,7 @@ characters.data={
   ["unicodeslot"]=0x03C1, -- ρ
  },
  [0x03C2]={
-  ["adobename"]="sigma0x0001",
+  ["adobename"]="sigma1",
   ["category"]="ll",
   ["contextname"]="greekfinalsigma",
   ["description"]="GREEK SMALL LETTER FINAL SIGMA",
@@ -8422,7 +8435,7 @@ characters.data={
   ["unicodeslot"]=0x03D0, -- ϐ
  },
  [0x03D1]={
-  ["adobename"]="theta0x0001",
+  ["adobename"]="theta1",
   ["category"]="ll",
   ["contextname"]="greekthetaalt",
   ["description"]="GREEK THETA SYMBOL",
@@ -8434,7 +8447,7 @@ characters.data={
   ["unicodeslot"]=0x03D1, -- ϑ
  },
  [0x03D2]={
-  ["adobename"]="Upsilon0x0001",
+  ["adobename"]="Upsilon1",
   ["category"]="lu",
   ["description"]="GREEK UPSILON WITH HOOK SYMBOL",
   ["linebreak"]="al",
@@ -8456,7 +8469,7 @@ characters.data={
   ["unicodeslot"]=0x03D4, -- ϔ
  },
  [0x03D5]={
-  ["adobename"]="phi0x0001",
+  ["adobename"]="phi1",
   ["category"]="ll",
   ["contextname"]="greekphialt",
   ["description"]="GREEK PHI SYMBOL",
@@ -8467,7 +8480,7 @@ characters.data={
   ["unicodeslot"]=0x03D5, -- ϕ
  },
  [0x03D6]={
-  ["adobename"]="omega0x0001",
+  ["adobename"]="omega1",
   ["category"]="ll",
   ["contextname"]="greekpialt",
   ["description"]="GREEK PI SYMBOL",
@@ -8789,7 +8802,7 @@ characters.data={
   ["unicodeslot"]=0x0400, -- Ѐ
  },
  [0x0401]={
-  ["adobename"]="afii0x2727",
+  ["adobename"]="afii10023",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicYO",
@@ -8800,7 +8813,7 @@ characters.data={
   ["unicodeslot"]=0x0401, -- Ё
  },
  [0x0402]={
-  ["adobename"]="afii0x2743",
+  ["adobename"]="afii10051",
   ["category"]="lu",
   ["contextname"]="cyrillicDJE",
   ["description"]="CYRILLIC CAPITAL LETTER DJE",
@@ -8809,7 +8822,7 @@ characters.data={
   ["unicodeslot"]=0x0402, -- Ђ
  },
  [0x0403]={
-  ["adobename"]="afii0x2744",
+  ["adobename"]="afii10052",
   ["category"]="lu",
   ["contextname"]="cyrillicGJE",
   ["description"]="CYRILLIC CAPITAL LETTER GJE",
@@ -8819,7 +8832,7 @@ characters.data={
   ["unicodeslot"]=0x0403, -- Ѓ
  },
  [0x0404]={
-  ["adobename"]="afii0x2745",
+  ["adobename"]="afii10053",
   ["category"]="lu",
   ["contextname"]="cyrillicIE",
   ["description"]="CYRILLIC CAPITAL LETTER UKRAINIAN IE",
@@ -8828,7 +8841,7 @@ characters.data={
   ["unicodeslot"]=0x0404, -- Є
  },
  [0x0405]={
-  ["adobename"]="afii0x2746",
+  ["adobename"]="afii10054",
   ["category"]="lu",
   ["contextname"]="cyrillicDZE",
   ["description"]="CYRILLIC CAPITAL LETTER DZE",
@@ -8837,7 +8850,7 @@ characters.data={
   ["unicodeslot"]=0x0405, -- Ѕ
  },
  [0x0406]={
-  ["adobename"]="afii0x2747",
+  ["adobename"]="afii10055",
   ["category"]="lu",
   ["contextname"]="cyrillicII",
   ["description"]="CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I",
@@ -8846,7 +8859,7 @@ characters.data={
   ["unicodeslot"]=0x0406, -- І
  },
  [0x0407]={
-  ["adobename"]="afii0x2748",
+  ["adobename"]="afii10056",
   ["category"]="lu",
   ["contextname"]="cyrillicYI",
   ["description"]="CYRILLIC CAPITAL LETTER YI",
@@ -8856,7 +8869,7 @@ characters.data={
   ["unicodeslot"]=0x0407, -- Ї
  },
  [0x0408]={
-  ["adobename"]="afii0x2749",
+  ["adobename"]="afii10057",
   ["category"]="lu",
   ["contextname"]="cyrillicJE",
   ["description"]="CYRILLIC CAPITAL LETTER JE",
@@ -8865,7 +8878,7 @@ characters.data={
   ["unicodeslot"]=0x0408, -- Ј
  },
  [0x0409]={
-  ["adobename"]="afii0x274A",
+  ["adobename"]="afii10058",
   ["category"]="lu",
   ["contextname"]="cyrillicLJE",
   ["description"]="CYRILLIC CAPITAL LETTER LJE",
@@ -8874,7 +8887,7 @@ characters.data={
   ["unicodeslot"]=0x0409, -- Љ
  },
  [0x040A]={
-  ["adobename"]="afii0x274B",
+  ["adobename"]="afii10059",
   ["category"]="lu",
   ["contextname"]="cyrillicNJE",
   ["description"]="CYRILLIC CAPITAL LETTER NJE",
@@ -8883,7 +8896,7 @@ characters.data={
   ["unicodeslot"]=0x040A, -- Њ
  },
  [0x040B]={
-  ["adobename"]="afii0x274C",
+  ["adobename"]="afii10060",
   ["category"]="lu",
   ["contextname"]="cyrillicTSHE",
   ["description"]="CYRILLIC CAPITAL LETTER TSHE",
@@ -8892,7 +8905,7 @@ characters.data={
   ["unicodeslot"]=0x040B, -- Ћ
  },
  [0x040C]={
-  ["adobename"]="afii0x274D",
+  ["adobename"]="afii10061",
   ["category"]="lu",
   ["contextname"]="cyrillicKJE",
   ["description"]="CYRILLIC CAPITAL LETTER KJE",
@@ -8912,7 +8925,7 @@ characters.data={
   ["unicodeslot"]=0x040D, -- Ѝ
  },
  [0x040E]={
-  ["adobename"]="afii0x274E",
+  ["adobename"]="afii10062",
   ["category"]="lu",
   ["contextname"]="cyrillicUSHRT",
   ["description"]="CYRILLIC CAPITAL LETTER SHORT U",
@@ -8922,7 +8935,7 @@ characters.data={
   ["unicodeslot"]=0x040E, -- Ў
  },
  [0x040F]={
-  ["adobename"]="afii0x27A1",
+  ["adobename"]="afii10145",
   ["category"]="lu",
   ["contextname"]="cyrillicDZHE",
   ["description"]="CYRILLIC CAPITAL LETTER DZHE",
@@ -8931,7 +8944,7 @@ characters.data={
   ["unicodeslot"]=0x040F, -- Џ
  },
  [0x0410]={
-  ["adobename"]="afii0x2721",
+  ["adobename"]="afii10017",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicA",
@@ -8941,7 +8954,7 @@ characters.data={
   ["unicodeslot"]=0x0410, -- А
  },
  [0x0411]={
-  ["adobename"]="afii0x2722",
+  ["adobename"]="afii10018",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicB",
@@ -8951,7 +8964,7 @@ characters.data={
   ["unicodeslot"]=0x0411, -- Б
  },
  [0x0412]={
-  ["adobename"]="afii0x2723",
+  ["adobename"]="afii10019",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicV",
@@ -8961,7 +8974,7 @@ characters.data={
   ["unicodeslot"]=0x0412, -- В
  },
  [0x0413]={
-  ["adobename"]="afii0x2724",
+  ["adobename"]="afii10020",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicG",
@@ -8971,7 +8984,7 @@ characters.data={
   ["unicodeslot"]=0x0413, -- Г
  },
  [0x0414]={
-  ["adobename"]="afii0x2725",
+  ["adobename"]="afii10021",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicD",
@@ -8981,7 +8994,7 @@ characters.data={
   ["unicodeslot"]=0x0414, -- Д
  },
  [0x0415]={
-  ["adobename"]="afii0x2726",
+  ["adobename"]="afii10022",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicE",
@@ -8991,7 +9004,7 @@ characters.data={
   ["unicodeslot"]=0x0415, -- Е
  },
  [0x0416]={
-  ["adobename"]="afii0x2728",
+  ["adobename"]="afii10024",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicZH",
@@ -9001,7 +9014,7 @@ characters.data={
   ["unicodeslot"]=0x0416, -- Ж
  },
  [0x0417]={
-  ["adobename"]="afii0x2729",
+  ["adobename"]="afii10025",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicZ",
@@ -9011,7 +9024,7 @@ characters.data={
   ["unicodeslot"]=0x0417, -- З
  },
  [0x0418]={
-  ["adobename"]="afii0x272A",
+  ["adobename"]="afii10026",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicI",
@@ -9021,7 +9034,7 @@ characters.data={
   ["unicodeslot"]=0x0418, -- И
  },
  [0x0419]={
-  ["adobename"]="afii0x272B",
+  ["adobename"]="afii10027",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicISHRT",
@@ -9032,7 +9045,7 @@ characters.data={
   ["unicodeslot"]=0x0419, -- Й
  },
  [0x041A]={
-  ["adobename"]="afii0x272C",
+  ["adobename"]="afii10028",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicK",
@@ -9042,7 +9055,7 @@ characters.data={
   ["unicodeslot"]=0x041A, -- К
  },
  [0x041B]={
-  ["adobename"]="afii0x272D",
+  ["adobename"]="afii10029",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicL",
@@ -9052,7 +9065,7 @@ characters.data={
   ["unicodeslot"]=0x041B, -- Л
  },
  [0x041C]={
-  ["adobename"]="afii0x272E",
+  ["adobename"]="afii10030",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicM",
@@ -9062,7 +9075,7 @@ characters.data={
   ["unicodeslot"]=0x041C, -- М
  },
  [0x041D]={
-  ["adobename"]="afii0x272F",
+  ["adobename"]="afii10031",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicN",
@@ -9072,7 +9085,7 @@ characters.data={
   ["unicodeslot"]=0x041D, -- Н
  },
  [0x041E]={
-  ["adobename"]="afii0x2730",
+  ["adobename"]="afii10032",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicO",
@@ -9082,7 +9095,7 @@ characters.data={
   ["unicodeslot"]=0x041E, -- О
  },
  [0x041F]={
-  ["adobename"]="afii0x2731",
+  ["adobename"]="afii10033",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicP",
@@ -9092,7 +9105,7 @@ characters.data={
   ["unicodeslot"]=0x041F, -- П
  },
  [0x0420]={
-  ["adobename"]="afii0x2732",
+  ["adobename"]="afii10034",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicR",
@@ -9102,7 +9115,7 @@ characters.data={
   ["unicodeslot"]=0x0420, -- Р
  },
  [0x0421]={
-  ["adobename"]="afii0x2733",
+  ["adobename"]="afii10035",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicS",
@@ -9112,7 +9125,7 @@ characters.data={
   ["unicodeslot"]=0x0421, -- С
  },
  [0x0422]={
-  ["adobename"]="afii0x2734",
+  ["adobename"]="afii10036",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicT",
@@ -9122,7 +9135,7 @@ characters.data={
   ["unicodeslot"]=0x0422, -- Т
  },
  [0x0423]={
-  ["adobename"]="afii0x2735",
+  ["adobename"]="afii10037",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicU",
@@ -9132,7 +9145,7 @@ characters.data={
   ["unicodeslot"]=0x0423, -- У
  },
  [0x0424]={
-  ["adobename"]="afii0x2736",
+  ["adobename"]="afii10038",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicF",
@@ -9142,7 +9155,7 @@ characters.data={
   ["unicodeslot"]=0x0424, -- Ф
  },
  [0x0425]={
-  ["adobename"]="afii0x2737",
+  ["adobename"]="afii10039",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicH",
@@ -9152,7 +9165,7 @@ characters.data={
   ["unicodeslot"]=0x0425, -- Х
  },
  [0x0426]={
-  ["adobename"]="afii0x2738",
+  ["adobename"]="afii10040",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicC",
@@ -9162,7 +9175,7 @@ characters.data={
   ["unicodeslot"]=0x0426, -- Ц
  },
  [0x0427]={
-  ["adobename"]="afii0x2739",
+  ["adobename"]="afii10041",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicCH",
@@ -9172,7 +9185,7 @@ characters.data={
   ["unicodeslot"]=0x0427, -- Ч
  },
  [0x0428]={
-  ["adobename"]="afii0x273A",
+  ["adobename"]="afii10042",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicSH",
@@ -9182,7 +9195,7 @@ characters.data={
   ["unicodeslot"]=0x0428, -- Ш
  },
  [0x0429]={
-  ["adobename"]="afii0x273B",
+  ["adobename"]="afii10043",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicSHCH",
@@ -9192,7 +9205,7 @@ characters.data={
   ["unicodeslot"]=0x0429, -- Щ
  },
  [0x042A]={
-  ["adobename"]="afii0x273C",
+  ["adobename"]="afii10044",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicHRDSN",
@@ -9202,7 +9215,7 @@ characters.data={
   ["unicodeslot"]=0x042A, -- Ъ
  },
  [0x042B]={
-  ["adobename"]="afii0x273D",
+  ["adobename"]="afii10045",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicERY",
@@ -9212,7 +9225,7 @@ characters.data={
   ["unicodeslot"]=0x042B, -- Ы
  },
  [0x042C]={
-  ["adobename"]="afii0x273E",
+  ["adobename"]="afii10046",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicSFTSN",
@@ -9222,7 +9235,7 @@ characters.data={
   ["unicodeslot"]=0x042C, -- Ь
  },
  [0x042D]={
-  ["adobename"]="afii0x273F",
+  ["adobename"]="afii10047",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicEREV",
@@ -9232,7 +9245,7 @@ characters.data={
   ["unicodeslot"]=0x042D, -- Э
  },
  [0x042E]={
-  ["adobename"]="afii0x2740",
+  ["adobename"]="afii10048",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicYU",
@@ -9242,7 +9255,7 @@ characters.data={
   ["unicodeslot"]=0x042E, -- Ю
  },
  [0x042F]={
-  ["adobename"]="afii0x2741",
+  ["adobename"]="afii10049",
   ["category"]="lu",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicYA",
@@ -9252,7 +9265,7 @@ characters.data={
   ["unicodeslot"]=0x042F, -- Я
  },
  [0x0430]={
-  ["adobename"]="afii0x2751",
+  ["adobename"]="afii10065",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillica",
@@ -9262,7 +9275,7 @@ characters.data={
   ["unicodeslot"]=0x0430, -- а
  },
  [0x0431]={
-  ["adobename"]="afii0x2752",
+  ["adobename"]="afii10066",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicb",
@@ -9272,7 +9285,7 @@ characters.data={
   ["unicodeslot"]=0x0431, -- б
  },
  [0x0432]={
-  ["adobename"]="afii0x2753",
+  ["adobename"]="afii10067",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicv",
@@ -9282,7 +9295,7 @@ characters.data={
   ["unicodeslot"]=0x0432, -- в
  },
  [0x0433]={
-  ["adobename"]="afii0x2754",
+  ["adobename"]="afii10068",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicg",
@@ -9292,7 +9305,7 @@ characters.data={
   ["unicodeslot"]=0x0433, -- г
  },
  [0x0434]={
-  ["adobename"]="afii0x2755",
+  ["adobename"]="afii10069",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicd",
@@ -9302,7 +9315,7 @@ characters.data={
   ["unicodeslot"]=0x0434, -- д
  },
  [0x0435]={
-  ["adobename"]="afii0x2756",
+  ["adobename"]="afii10070",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillice",
@@ -9312,7 +9325,7 @@ characters.data={
   ["unicodeslot"]=0x0435, -- е
  },
  [0x0436]={
-  ["adobename"]="afii0x2758",
+  ["adobename"]="afii10072",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrilliczh",
@@ -9322,7 +9335,7 @@ characters.data={
   ["unicodeslot"]=0x0436, -- ж
  },
  [0x0437]={
-  ["adobename"]="afii0x2759",
+  ["adobename"]="afii10073",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicz",
@@ -9332,7 +9345,7 @@ characters.data={
   ["unicodeslot"]=0x0437, -- з
  },
  [0x0438]={
-  ["adobename"]="afii0x275A",
+  ["adobename"]="afii10074",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillici",
@@ -9342,7 +9355,7 @@ characters.data={
   ["unicodeslot"]=0x0438, -- и
  },
  [0x0439]={
-  ["adobename"]="afii0x275B",
+  ["adobename"]="afii10075",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicishrt",
@@ -9353,7 +9366,7 @@ characters.data={
   ["unicodeslot"]=0x0439, -- й
  },
  [0x043A]={
-  ["adobename"]="afii0x275C",
+  ["adobename"]="afii10076",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillick",
@@ -9363,7 +9376,7 @@ characters.data={
   ["unicodeslot"]=0x043A, -- к
  },
  [0x043B]={
-  ["adobename"]="afii0x275D",
+  ["adobename"]="afii10077",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicl",
@@ -9373,7 +9386,7 @@ characters.data={
   ["unicodeslot"]=0x043B, -- л
  },
  [0x043C]={
-  ["adobename"]="afii0x275E",
+  ["adobename"]="afii10078",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicm",
@@ -9383,7 +9396,7 @@ characters.data={
   ["unicodeslot"]=0x043C, -- м
  },
  [0x043D]={
-  ["adobename"]="afii0x275F",
+  ["adobename"]="afii10079",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicn",
@@ -9393,7 +9406,7 @@ characters.data={
   ["unicodeslot"]=0x043D, -- н
  },
  [0x043E]={
-  ["adobename"]="afii0x2760",
+  ["adobename"]="afii10080",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillico",
@@ -9403,7 +9416,7 @@ characters.data={
   ["unicodeslot"]=0x043E, -- о
  },
  [0x043F]={
-  ["adobename"]="afii0x2761",
+  ["adobename"]="afii10081",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicp",
@@ -9413,7 +9426,7 @@ characters.data={
   ["unicodeslot"]=0x043F, -- п
  },
  [0x0440]={
-  ["adobename"]="afii0x2762",
+  ["adobename"]="afii10082",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicr",
@@ -9423,7 +9436,7 @@ characters.data={
   ["unicodeslot"]=0x0440, -- р
  },
  [0x0441]={
-  ["adobename"]="afii0x2763",
+  ["adobename"]="afii10083",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillics",
@@ -9433,7 +9446,7 @@ characters.data={
   ["unicodeslot"]=0x0441, -- с
  },
  [0x0442]={
-  ["adobename"]="afii0x2764",
+  ["adobename"]="afii10084",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillict",
@@ -9443,7 +9456,7 @@ characters.data={
   ["unicodeslot"]=0x0442, -- т
  },
  [0x0443]={
-  ["adobename"]="afii0x2765",
+  ["adobename"]="afii10085",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicu",
@@ -9453,7 +9466,7 @@ characters.data={
   ["unicodeslot"]=0x0443, -- у
  },
  [0x0444]={
-  ["adobename"]="afii0x2766",
+  ["adobename"]="afii10086",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicf",
@@ -9463,7 +9476,7 @@ characters.data={
   ["unicodeslot"]=0x0444, -- ф
  },
  [0x0445]={
-  ["adobename"]="afii0x2767",
+  ["adobename"]="afii10087",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillich",
@@ -9473,7 +9486,7 @@ characters.data={
   ["unicodeslot"]=0x0445, -- х
  },
  [0x0446]={
-  ["adobename"]="afii0x2768",
+  ["adobename"]="afii10088",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicc",
@@ -9483,7 +9496,7 @@ characters.data={
   ["unicodeslot"]=0x0446, -- ц
  },
  [0x0447]={
-  ["adobename"]="afii0x2769",
+  ["adobename"]="afii10089",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicch",
@@ -9493,7 +9506,7 @@ characters.data={
   ["unicodeslot"]=0x0447, -- ч
  },
  [0x0448]={
-  ["adobename"]="afii0x276A",
+  ["adobename"]="afii10090",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicsh",
@@ -9503,7 +9516,7 @@ characters.data={
   ["unicodeslot"]=0x0448, -- ш
  },
  [0x0449]={
-  ["adobename"]="afii0x276B",
+  ["adobename"]="afii10091",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicshch",
@@ -9513,7 +9526,7 @@ characters.data={
   ["unicodeslot"]=0x0449, -- щ
  },
  [0x044A]={
-  ["adobename"]="afii0x276C",
+  ["adobename"]="afii10092",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillichrdsn",
@@ -9523,7 +9536,7 @@ characters.data={
   ["unicodeslot"]=0x044A, -- ъ
  },
  [0x044B]={
-  ["adobename"]="afii0x276D",
+  ["adobename"]="afii10093",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicery",
@@ -9533,7 +9546,7 @@ characters.data={
   ["unicodeslot"]=0x044B, -- ы
  },
  [0x044C]={
-  ["adobename"]="afii0x276E",
+  ["adobename"]="afii10094",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicsftsn",
@@ -9543,7 +9556,7 @@ characters.data={
   ["unicodeslot"]=0x044C, -- ь
  },
  [0x044D]={
-  ["adobename"]="afii0x276F",
+  ["adobename"]="afii10095",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicerev",
@@ -9553,7 +9566,7 @@ characters.data={
   ["unicodeslot"]=0x044D, -- э
  },
  [0x044E]={
-  ["adobename"]="afii0x2770",
+  ["adobename"]="afii10096",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicyu",
@@ -9563,7 +9576,7 @@ characters.data={
   ["unicodeslot"]=0x044E, -- ю
  },
  [0x044F]={
-  ["adobename"]="afii0x2771",
+  ["adobename"]="afii10097",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicya",
@@ -9583,7 +9596,7 @@ characters.data={
   ["unicodeslot"]=0x0450, -- ѐ
  },
  [0x0451]={
-  ["adobename"]="afii0x2757",
+  ["adobename"]="afii10071",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["contextname"]="cyrillicyo",
@@ -9594,7 +9607,7 @@ characters.data={
   ["unicodeslot"]=0x0451, -- ё
  },
  [0x0452]={
-  ["adobename"]="afii0x2773",
+  ["adobename"]="afii10099",
   ["category"]="ll",
   ["contextname"]="cyrillicdje",
   ["description"]="CYRILLIC SMALL LETTER DJE",
@@ -9603,7 +9616,7 @@ characters.data={
   ["unicodeslot"]=0x0452, -- ђ
  },
  [0x0453]={
-  ["adobename"]="afii0x2774",
+  ["adobename"]="afii10100",
   ["category"]="ll",
   ["contextname"]="cyrillicgje",
   ["description"]="CYRILLIC SMALL LETTER GJE",
@@ -9613,7 +9626,7 @@ characters.data={
   ["unicodeslot"]=0x0453, -- ѓ
  },
  [0x0454]={
-  ["adobename"]="afii0x2775",
+  ["adobename"]="afii10101",
   ["category"]="ll",
   ["contextname"]="cyrillicie",
   ["description"]="CYRILLIC SMALL LETTER UKRAINIAN IE",
@@ -9622,7 +9635,7 @@ characters.data={
   ["unicodeslot"]=0x0454, -- є
  },
  [0x0455]={
-  ["adobename"]="afii0x2776",
+  ["adobename"]="afii10102",
   ["category"]="ll",
   ["contextname"]="cyrillicdze",
   ["description"]="CYRILLIC SMALL LETTER DZE",
@@ -9631,7 +9644,7 @@ characters.data={
   ["unicodeslot"]=0x0455, -- ѕ
  },
  [0x0456]={
-  ["adobename"]="afii0x2777",
+  ["adobename"]="afii10103",
   ["category"]="ll",
   ["contextname"]="cyrillicii",
   ["description"]="CYRILLIC SMALL LETTER BYELORUSSIAN-UKRAINIAN I",
@@ -9640,7 +9653,7 @@ characters.data={
   ["unicodeslot"]=0x0456, -- і
  },
  [0x0457]={
-  ["adobename"]="afii0x2778",
+  ["adobename"]="afii10104",
   ["category"]="ll",
   ["contextname"]="cyrillicyi",
   ["description"]="CYRILLIC SMALL LETTER YI",
@@ -9650,7 +9663,7 @@ characters.data={
   ["unicodeslot"]=0x0457, -- ї
  },
  [0x0458]={
-  ["adobename"]="afii0x2779",
+  ["adobename"]="afii10105",
   ["category"]="ll",
   ["contextname"]="cyrillicje",
   ["description"]="CYRILLIC SMALL LETTER JE",
@@ -9659,7 +9672,7 @@ characters.data={
   ["unicodeslot"]=0x0458, -- ј
  },
  [0x0459]={
-  ["adobename"]="afii0x277A",
+  ["adobename"]="afii10106",
   ["category"]="ll",
   ["contextname"]="cyrilliclje",
   ["description"]="CYRILLIC SMALL LETTER LJE",
@@ -9668,7 +9681,7 @@ characters.data={
   ["unicodeslot"]=0x0459, -- љ
  },
  [0x045A]={
-  ["adobename"]="afii0x277B",
+  ["adobename"]="afii10107",
   ["category"]="ll",
   ["contextname"]="cyrillicnje",
   ["description"]="CYRILLIC SMALL LETTER NJE",
@@ -9677,7 +9690,7 @@ characters.data={
   ["unicodeslot"]=0x045A, -- њ
  },
  [0x045B]={
-  ["adobename"]="afii0x277C",
+  ["adobename"]="afii10108",
   ["category"]="ll",
   ["contextname"]="cyrillictshe",
   ["description"]="CYRILLIC SMALL LETTER TSHE",
@@ -9686,7 +9699,7 @@ characters.data={
   ["unicodeslot"]=0x045B, -- ћ
  },
  [0x045C]={
-  ["adobename"]="afii0x277D",
+  ["adobename"]="afii10109",
   ["category"]="ll",
   ["contextname"]="cyrillickje",
   ["description"]="CYRILLIC SMALL LETTER KJE",
@@ -9706,7 +9719,7 @@ characters.data={
   ["unicodeslot"]=0x045D, -- ѝ
  },
  [0x045E]={
-  ["adobename"]="afii0x277E",
+  ["adobename"]="afii10110",
   ["category"]="ll",
   ["contextname"]="cyrillicushrt",
   ["description"]="CYRILLIC SMALL LETTER SHORT U",
@@ -9716,7 +9729,7 @@ characters.data={
   ["unicodeslot"]=0x045E, -- ў
  },
  [0x045F]={
-  ["adobename"]="afii0x27D1",
+  ["adobename"]="afii10193",
   ["category"]="ll",
   ["contextname"]="cyrillicdzhe",
   ["description"]="CYRILLIC SMALL LETTER DZHE",
@@ -9741,7 +9754,7 @@ characters.data={
   ["unicodeslot"]=0x0461, -- ѡ
  },
  [0x0462]={
-  ["adobename"]="afii0x27A2",
+  ["adobename"]="afii10146",
   ["category"]="lu",
   ["contextname"]="cyrillicYAT",
   ["description"]="CYRILLIC CAPITAL LETTER YAT",
@@ -9750,7 +9763,7 @@ characters.data={
   ["unicodeslot"]=0x0462, -- Ѣ
  },
  [0x0463]={
-  ["adobename"]="afii0x27D2",
+  ["adobename"]="afii10194",
   ["category"]="ll",
   ["contextname"]="cyrillicyat",
   ["description"]="CYRILLIC SMALL LETTER YAT",
@@ -9871,7 +9884,7 @@ characters.data={
   ["unicodeslot"]=0x0471, -- ѱ
  },
  [0x0472]={
-  ["adobename"]="afii0x27A3",
+  ["adobename"]="afii10147",
   ["category"]="lu",
   ["contextname"]="cyrillicFITA",
   ["description"]="CYRILLIC CAPITAL LETTER FITA",
@@ -9880,7 +9893,7 @@ characters.data={
   ["unicodeslot"]=0x0472, -- Ѳ
  },
  [0x0473]={
-  ["adobename"]="afii0x27D3",
+  ["adobename"]="afii10195",
   ["category"]="ll",
   ["contextname"]="cyrillicfita",
   ["description"]="CYRILLIC SMALL LETTER FITA",
@@ -9889,7 +9902,7 @@ characters.data={
   ["unicodeslot"]=0x0473, -- ѳ
  },
  [0x0474]={
-  ["adobename"]="afii0x27A4",
+  ["adobename"]="afii10148",
   ["category"]="lu",
   ["contextname"]="cyrillicIZHITSA",
   ["description"]="CYRILLIC CAPITAL LETTER IZHITSA",
@@ -9898,7 +9911,7 @@ characters.data={
   ["unicodeslot"]=0x0474, -- Ѵ
  },
  [0x0475]={
-  ["adobename"]="afii0x27D4",
+  ["adobename"]="afii10196",
   ["category"]="ll",
   ["contextname"]="cyrillicizhitsa",
   ["description"]="CYRILLIC SMALL LETTER IZHITSA",
@@ -10105,7 +10118,7 @@ characters.data={
   ["unicodeslot"]=0x048F, -- ҏ
  },
  [0x0490]={
-  ["adobename"]="afii0x2742",
+  ["adobename"]="afii10050",
   ["category"]="lu",
   ["contextname"]="cyrillicGHEupturn",
   ["description"]="CYRILLIC CAPITAL LETTER GHE WITH UPTURN",
@@ -10115,7 +10128,7 @@ characters.data={
   ["unicodeslot"]=0x0490, -- Ґ
  },
  [0x0491]={
-  ["adobename"]="afii0x2772",
+  ["adobename"]="afii10098",
   ["category"]="ll",
   ["contextname"]="cyrillicgheupturn",
   ["description"]="CYRILLIC SMALL LETTER GHE WITH UPTURN",
@@ -10746,7 +10759,7 @@ characters.data={
   ["unicodeslot"]=0x04D8, -- Ә
  },
  [0x04D9]={
-  ["adobename"]="afii0x2A5E",
+  ["adobename"]="afii10846",
   ["category"]="ll",
   ["contextname"]="cyrillicschwa",
   ["description"]="CYRILLIC SMALL LETTER SCHWA",
@@ -12030,70 +12043,70 @@ characters.data={
   ["unicodeslot"]=0x05AF, -- ֯
  },
  [0x05B0]={
-  ["adobename"]="afii0xE1C7",
+  ["adobename"]="afii57799",
   ["category"]="mn",
   ["description"]="HEBREW POINT SHEVA",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B0, -- ְ
  },
  [0x05B1]={
-  ["adobename"]="afii0xE1C9",
+  ["adobename"]="afii57801",
   ["category"]="mn",
   ["description"]="HEBREW POINT HATAF SEGOL",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B1, -- ֱ
  },
  [0x05B2]={
-  ["adobename"]="afii0xE1C8",
+  ["adobename"]="afii57800",
   ["category"]="mn",
   ["description"]="HEBREW POINT HATAF PATAH",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B2, -- ֲ
  },
  [0x05B3]={
-  ["adobename"]="afii0xE1CA",
+  ["adobename"]="afii57802",
   ["category"]="mn",
   ["description"]="HEBREW POINT HATAF QAMATS",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B3, -- ֳ
  },
  [0x05B4]={
-  ["adobename"]="afii0xE1C1",
+  ["adobename"]="afii57793",
   ["category"]="mn",
   ["description"]="HEBREW POINT HIRIQ",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B4, -- ִ
  },
  [0x05B5]={
-  ["adobename"]="afii0xE1C2",
+  ["adobename"]="afii57794",
   ["category"]="mn",
   ["description"]="HEBREW POINT TSERE",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B5, -- ֵ
  },
  [0x05B6]={
-  ["adobename"]="afii0xE1C3",
+  ["adobename"]="afii57795",
   ["category"]="mn",
   ["description"]="HEBREW POINT SEGOL",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B6, -- ֶ
  },
  [0x05B7]={
-  ["adobename"]="afii0xE1C6",
+  ["adobename"]="afii57798",
   ["category"]="mn",
   ["description"]="HEBREW POINT PATAH",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B7, -- ַ
  },
  [0x05B8]={
-  ["adobename"]="afii0xE1C5",
+  ["adobename"]="afii57797",
   ["category"]="mn",
   ["description"]="HEBREW POINT QAMATS",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05B8, -- ָ
  },
  [0x05B9]={
-  ["adobename"]="afii0xE1CE",
+  ["adobename"]="afii57806",
   ["category"]="mn",
   ["description"]="HEBREW POINT HOLAM",
   ["linebreak"]="cm",
@@ -12106,63 +12119,63 @@ characters.data={
   ["unicodeslot"]=0x05BA, -- ֺ
  },
  [0x05BB]={
-  ["adobename"]="afii0xE1C4",
+  ["adobename"]="afii57796",
   ["category"]="mn",
   ["description"]="HEBREW POINT QUBUTS",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05BB, -- ֻ
  },
  [0x05BC]={
-  ["adobename"]="afii0xE1CF",
+  ["adobename"]="afii57807",
   ["category"]="mn",
   ["description"]="HEBREW POINT DAGESH OR MAPIQ",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05BC, -- ּ
  },
  [0x05BD]={
-  ["adobename"]="afii0xE1EF",
+  ["adobename"]="afii57839",
   ["category"]="mn",
   ["description"]="HEBREW POINT METEG",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05BD, -- ֽ
  },
  [0x05BE]={
-  ["adobename"]="afii0xE12D",
+  ["adobename"]="afii57645",
   ["category"]="po",
   ["description"]="HEBREW PUNCTUATION MAQAF",
   ["linebreak"]="ba",
   ["unicodeslot"]=0x05BE, -- ־
  },
  [0x05BF]={
-  ["adobename"]="afii0xE1F1",
+  ["adobename"]="afii57841",
   ["category"]="mn",
   ["description"]="HEBREW POINT RAFE",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05BF, -- ֿ
  },
  [0x05C0]={
-  ["adobename"]="afii0xE1F2",
+  ["adobename"]="afii57842",
   ["category"]="po",
   ["description"]="HEBREW PUNCTUATION PASEQ",
   ["linebreak"]="al",
   ["unicodeslot"]=0x05C0, -- ׀
  },
  [0x05C1]={
-  ["adobename"]="afii0xE1CC",
+  ["adobename"]="afii57804",
   ["category"]="mn",
   ["description"]="HEBREW POINT SHIN DOT",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05C1, -- ׁ
  },
  [0x05C2]={
-  ["adobename"]="afii0xE1CB",
+  ["adobename"]="afii57803",
   ["category"]="mn",
   ["description"]="HEBREW POINT SIN DOT",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x05C2, -- ׂ
  },
  [0x05C3]={
-  ["adobename"]="afii0xE13A",
+  ["adobename"]="afii57658",
   ["category"]="po",
   ["description"]="HEBREW PUNCTUATION SOF PASUQ",
   ["linebreak"]="al",
@@ -12193,7 +12206,7 @@ characters.data={
   ["unicodeslot"]=0x05C7, -- ׇ
  },
  [0x05D0]={
-  ["adobename"]="afii0xE140",
+  ["adobename"]="afii57664",
   ["category"]="lo",
   ["contextname"]="hebrewAlef",
   ["description"]="HEBREW LETTER ALEF",
@@ -12201,7 +12214,7 @@ characters.data={
   ["unicodeslot"]=0x05D0, -- א
  },
  [0x05D1]={
-  ["adobename"]="afii0xE141",
+  ["adobename"]="afii57665",
   ["category"]="lo",
   ["contextname"]="hebrewBet",
   ["description"]="HEBREW LETTER BET",
@@ -12209,7 +12222,7 @@ characters.data={
   ["unicodeslot"]=0x05D1, -- ב
  },
  [0x05D2]={
-  ["adobename"]="afii0xE142",
+  ["adobename"]="afii57666",
   ["category"]="lo",
   ["contextname"]="hebrewGimel",
   ["description"]="HEBREW LETTER GIMEL",
@@ -12217,7 +12230,7 @@ characters.data={
   ["unicodeslot"]=0x05D2, -- ג
  },
  [0x05D3]={
-  ["adobename"]="afii0xE143",
+  ["adobename"]="afii57667",
   ["category"]="lo",
   ["contextname"]="hebrewDalet",
   ["description"]="HEBREW LETTER DALET",
@@ -12225,7 +12238,7 @@ characters.data={
   ["unicodeslot"]=0x05D3, -- ד
  },
  [0x05D4]={
-  ["adobename"]="afii0xE144",
+  ["adobename"]="afii57668",
   ["category"]="lo",
   ["contextname"]="hebrewHe",
   ["description"]="HEBREW LETTER HE",
@@ -12233,7 +12246,7 @@ characters.data={
   ["unicodeslot"]=0x05D4, -- ה
  },
  [0x05D5]={
-  ["adobename"]="afii0xE145",
+  ["adobename"]="afii57669",
   ["category"]="lo",
   ["contextname"]="hebrewVav",
   ["description"]="HEBREW LETTER VAV",
@@ -12241,7 +12254,7 @@ characters.data={
   ["unicodeslot"]=0x05D5, -- ו
  },
  [0x05D6]={
-  ["adobename"]="afii0xE146",
+  ["adobename"]="afii57670",
   ["category"]="lo",
   ["contextname"]="hebrewZayin",
   ["description"]="HEBREW LETTER ZAYIN",
@@ -12249,7 +12262,7 @@ characters.data={
   ["unicodeslot"]=0x05D6, -- ז
  },
  [0x05D7]={
-  ["adobename"]="afii0xE147",
+  ["adobename"]="afii57671",
   ["category"]="lo",
   ["contextname"]="hebrewHet",
   ["description"]="HEBREW LETTER HET",
@@ -12257,7 +12270,7 @@ characters.data={
   ["unicodeslot"]=0x05D7, -- ח
  },
  [0x05D8]={
-  ["adobename"]="afii0xE148",
+  ["adobename"]="afii57672",
   ["category"]="lo",
   ["contextname"]="hebrewTet",
   ["description"]="HEBREW LETTER TET",
@@ -12265,7 +12278,7 @@ characters.data={
   ["unicodeslot"]=0x05D8, -- ט
  },
  [0x05D9]={
-  ["adobename"]="afii0xE149",
+  ["adobename"]="afii57673",
   ["category"]="lo",
   ["contextname"]="hebrewYod",
   ["description"]="HEBREW LETTER YOD",
@@ -12273,7 +12286,7 @@ characters.data={
   ["unicodeslot"]=0x05D9, -- י
  },
  [0x05DA]={
-  ["adobename"]="afii0xE14A",
+  ["adobename"]="afii57674",
   ["category"]="lo",
   ["contextname"]="hebrewKaffinal",
   ["description"]="HEBREW LETTER FINAL KAF",
@@ -12281,7 +12294,7 @@ characters.data={
   ["unicodeslot"]=0x05DA, -- ך
  },
  [0x05DB]={
-  ["adobename"]="afii0xE14B",
+  ["adobename"]="afii57675",
   ["category"]="lo",
   ["contextname"]="hebrewKaf",
   ["description"]="HEBREW LETTER KAF",
@@ -12289,7 +12302,7 @@ characters.data={
   ["unicodeslot"]=0x05DB, -- כ
  },
  [0x05DC]={
-  ["adobename"]="afii0xE14C",
+  ["adobename"]="afii57676",
   ["category"]="lo",
   ["contextname"]="hebrewLamed",
   ["description"]="HEBREW LETTER LAMED",
@@ -12297,7 +12310,7 @@ characters.data={
   ["unicodeslot"]=0x05DC, -- ל
  },
  [0x05DD]={
-  ["adobename"]="afii0xE14D",
+  ["adobename"]="afii57677",
   ["category"]="lo",
   ["contextname"]="hebrewMemfinal",
   ["description"]="HEBREW LETTER FINAL MEM",
@@ -12305,7 +12318,7 @@ characters.data={
   ["unicodeslot"]=0x05DD, -- ם
  },
  [0x05DE]={
-  ["adobename"]="afii0xE14E",
+  ["adobename"]="afii57678",
   ["category"]="lo",
   ["contextname"]="hebrewMem",
   ["description"]="HEBREW LETTER MEM",
@@ -12313,7 +12326,7 @@ characters.data={
   ["unicodeslot"]=0x05DE, -- מ
  },
  [0x05DF]={
-  ["adobename"]="afii0xE14F",
+  ["adobename"]="afii57679",
   ["category"]="lo",
   ["contextname"]="hebrewNunfinal",
   ["description"]="HEBREW LETTER FINAL NUN",
@@ -12321,7 +12334,7 @@ characters.data={
   ["unicodeslot"]=0x05DF, -- ן
  },
  [0x05E0]={
-  ["adobename"]="afii0xE150",
+  ["adobename"]="afii57680",
   ["category"]="lo",
   ["contextname"]="hebrewNun",
   ["description"]="HEBREW LETTER NUN",
@@ -12329,7 +12342,7 @@ characters.data={
   ["unicodeslot"]=0x05E0, -- נ
  },
  [0x05E1]={
-  ["adobename"]="afii0xE151",
+  ["adobename"]="afii57681",
   ["category"]="lo",
   ["contextname"]="hebrewSamekh",
   ["description"]="HEBREW LETTER SAMEKH",
@@ -12337,7 +12350,7 @@ characters.data={
   ["unicodeslot"]=0x05E1, -- ס
  },
  [0x05E2]={
-  ["adobename"]="afii0xE152",
+  ["adobename"]="afii57682",
   ["category"]="lo",
   ["contextname"]="hebrewAyin",
   ["description"]="HEBREW LETTER AYIN",
@@ -12345,7 +12358,7 @@ characters.data={
   ["unicodeslot"]=0x05E2, -- ע
  },
  [0x05E3]={
-  ["adobename"]="afii0xE153",
+  ["adobename"]="afii57683",
   ["category"]="lo",
   ["contextname"]="hebrewPefinal",
   ["description"]="HEBREW LETTER FINAL PE",
@@ -12353,7 +12366,7 @@ characters.data={
   ["unicodeslot"]=0x05E3, -- ף
  },
  [0x05E4]={
-  ["adobename"]="afii0xE154",
+  ["adobename"]="afii57684",
   ["category"]="lo",
   ["contextname"]="hebrewPe",
   ["description"]="HEBREW LETTER PE",
@@ -12361,7 +12374,7 @@ characters.data={
   ["unicodeslot"]=0x05E4, -- פ
  },
  [0x05E5]={
-  ["adobename"]="afii0xE155",
+  ["adobename"]="afii57685",
   ["category"]="lo",
   ["contextname"]="hebrewTsadifinal",
   ["description"]="HEBREW LETTER FINAL TSADI",
@@ -12369,7 +12382,7 @@ characters.data={
   ["unicodeslot"]=0x05E5, -- ץ
  },
  [0x05E6]={
-  ["adobename"]="afii0xE156",
+  ["adobename"]="afii57686",
   ["category"]="lo",
   ["contextname"]="hebrewTsadi",
   ["description"]="HEBREW LETTER TSADI",
@@ -12377,7 +12390,7 @@ characters.data={
   ["unicodeslot"]=0x05E6, -- צ
  },
  [0x05E7]={
-  ["adobename"]="afii0xE157",
+  ["adobename"]="afii57687",
   ["category"]="lo",
   ["contextname"]="hebrewQof",
   ["description"]="HEBREW LETTER QOF",
@@ -12385,7 +12398,7 @@ characters.data={
   ["unicodeslot"]=0x05E7, -- ק
  },
  [0x05E8]={
-  ["adobename"]="afii0xE158",
+  ["adobename"]="afii57688",
   ["category"]="lo",
   ["contextname"]="hebrewResh",
   ["description"]="HEBREW LETTER RESH",
@@ -12393,7 +12406,7 @@ characters.data={
   ["unicodeslot"]=0x05E8, -- ר
  },
  [0x05E9]={
-  ["adobename"]="afii0xE159",
+  ["adobename"]="afii57689",
   ["category"]="lo",
   ["contextname"]="hebrewShin",
   ["description"]="HEBREW LETTER SHIN",
@@ -12401,7 +12414,7 @@ characters.data={
   ["unicodeslot"]=0x05E9, -- ש
  },
  [0x05EA]={
-  ["adobename"]="afii0xE15A",
+  ["adobename"]="afii57690",
   ["category"]="lo",
   ["contextname"]="hebrewTav",
   ["description"]="HEBREW LETTER TAV",
@@ -12409,21 +12422,21 @@ characters.data={
   ["unicodeslot"]=0x05EA, -- ת
  },
  [0x05F0]={
-  ["adobename"]="afii0xE174",
+  ["adobename"]="afii57716",
   ["category"]="lo",
   ["description"]="HEBREW LIGATURE YIDDISH DOUBLE VAV",
   ["linebreak"]="al",
   ["unicodeslot"]=0x05F0, -- װ
  },
  [0x05F1]={
-  ["adobename"]="afii0xE175",
+  ["adobename"]="afii57717",
   ["category"]="lo",
   ["description"]="HEBREW LIGATURE YIDDISH VAV YOD",
   ["linebreak"]="al",
   ["unicodeslot"]=0x05F1, -- ױ
  },
  [0x05F2]={
-  ["adobename"]="afii0xE176",
+  ["adobename"]="afii57718",
   ["category"]="lo",
   ["description"]="HEBREW LIGATURE YIDDISH DOUBLE YOD",
   ["linebreak"]="al",
@@ -12472,7 +12485,7 @@ characters.data={
   ["unicodeslot"]=0x060B, -- ؋
  },
  [0x060C]={
-  ["adobename"]="afii0xE02C",
+  ["adobename"]="afii57388",
   ["category"]="po",
   ["description"]="ARABIC COMMA",
   ["linebreak"]="ex",
@@ -12533,7 +12546,7 @@ characters.data={
   ["unicodeslot"]=0x0615, -- ؕ
  },
  [0x061B]={
-  ["adobename"]="afii0xE03B",
+  ["adobename"]="afii57403",
   ["category"]="po",
   ["description"]="ARABIC SEMICOLON",
   ["linebreak"]="ex",
@@ -12546,21 +12559,21 @@ characters.data={
   ["unicodeslot"]=0x061E, -- ؞
  },
  [0x061F]={
-  ["adobename"]="afii0xE03F",
+  ["adobename"]="afii57407",
   ["category"]="po",
   ["description"]="ARABIC QUESTION MARK",
   ["linebreak"]="ex",
   ["unicodeslot"]=0x061F, -- ؟
  },
  [0x0621]={
-  ["adobename"]="afii0xE041",
+  ["adobename"]="afii57409",
   ["category"]="lo",
   ["description"]="ARABIC LETTER HAMZA",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0621, -- ء
  },
  [0x0622]={
-  ["adobename"]="afii0xE042",
+  ["adobename"]="afii57410",
   ["category"]="lo",
   ["description"]="ARABIC LETTER ALEF WITH MADDA ABOVE",
   ["linebreak"]="al",
@@ -12569,7 +12582,7 @@ characters.data={
   ["unicodeslot"]=0x0622, -- آ
  },
  [0x0623]={
-  ["adobename"]="afii0xE043",
+  ["adobename"]="afii57411",
   ["category"]="lo",
   ["description"]="ARABIC LETTER ALEF WITH HAMZA ABOVE",
   ["linebreak"]="al",
@@ -12578,7 +12591,7 @@ characters.data={
   ["unicodeslot"]=0x0623, -- أ
  },
  [0x0624]={
-  ["adobename"]="afii0xE044",
+  ["adobename"]="afii57412",
   ["category"]="lo",
   ["description"]="ARABIC LETTER WAW WITH HAMZA ABOVE",
   ["linebreak"]="al",
@@ -12587,7 +12600,7 @@ characters.data={
   ["unicodeslot"]=0x0624, -- ؤ
  },
  [0x0625]={
-  ["adobename"]="afii0xE045",
+  ["adobename"]="afii57413",
   ["category"]="lo",
   ["description"]="ARABIC LETTER ALEF WITH HAMZA BELOW",
   ["linebreak"]="al",
@@ -12596,7 +12609,7 @@ characters.data={
   ["unicodeslot"]=0x0625, -- إ
  },
  [0x0626]={
-  ["adobename"]="afii0xE046",
+  ["adobename"]="afii57414",
   ["category"]="lo",
   ["description"]="ARABIC LETTER YEH WITH HAMZA ABOVE",
   ["linebreak"]="al",
@@ -12605,273 +12618,273 @@ characters.data={
   ["unicodeslot"]=0x0626, -- ئ
  },
  [0x0627]={
-  ["adobename"]="afii0xE047",
+  ["adobename"]="afii57415",
   ["category"]="lo",
   ["description"]="ARABIC LETTER ALEF",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0627, -- ا
  },
  [0x0628]={
-  ["adobename"]="afii0xE048",
+  ["adobename"]="afii57416",
   ["category"]="lo",
   ["description"]="ARABIC LETTER BEH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0628, -- ب
  },
  [0x0629]={
-  ["adobename"]="afii0xE049",
+  ["adobename"]="afii57417",
   ["category"]="lo",
   ["description"]="ARABIC LETTER TEH MARBUTA",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0629, -- ة
  },
  [0x062A]={
-  ["adobename"]="afii0xE04A",
+  ["adobename"]="afii57418",
   ["category"]="lo",
   ["description"]="ARABIC LETTER TEH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x062A, -- ت
  },
  [0x062B]={
-  ["adobename"]="afii0xE04B",
+  ["adobename"]="afii57419",
   ["category"]="lo",
   ["description"]="ARABIC LETTER THEH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x062B, -- ث
  },
  [0x062C]={
-  ["adobename"]="afii0xE04C",
+  ["adobename"]="afii57420",
   ["category"]="lo",
   ["description"]="ARABIC LETTER JEEM",
   ["linebreak"]="al",
   ["unicodeslot"]=0x062C, -- ج
  },
  [0x062D]={
-  ["adobename"]="afii0xE04D",
+  ["adobename"]="afii57421",
   ["category"]="lo",
   ["description"]="ARABIC LETTER HAH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x062D, -- ح
  },
  [0x062E]={
-  ["adobename"]="afii0xE04E",
+  ["adobename"]="afii57422",
   ["category"]="lo",
   ["description"]="ARABIC LETTER KHAH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x062E, -- خ
  },
  [0x062F]={
-  ["adobename"]="afii0xE04F",
+  ["adobename"]="afii57423",
   ["category"]="lo",
   ["description"]="ARABIC LETTER DAL",
   ["linebreak"]="al",
   ["unicodeslot"]=0x062F, -- د
  },
  [0x0630]={
-  ["adobename"]="afii0xE050",
+  ["adobename"]="afii57424",
   ["category"]="lo",
   ["description"]="ARABIC LETTER THAL",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0630, -- ذ
  },
  [0x0631]={
-  ["adobename"]="afii0xE051",
+  ["adobename"]="afii57425",
   ["category"]="lo",
   ["description"]="ARABIC LETTER REH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0631, -- ر
  },
  [0x0632]={
-  ["adobename"]="afii0xE052",
+  ["adobename"]="afii57426",
   ["category"]="lo",
   ["description"]="ARABIC LETTER ZAIN",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0632, -- ز
  },
  [0x0633]={
-  ["adobename"]="afii0xE053",
+  ["adobename"]="afii57427",
   ["category"]="lo",
   ["description"]="ARABIC LETTER SEEN",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0633, -- س
  },
  [0x0634]={
-  ["adobename"]="afii0xE054",
+  ["adobename"]="afii57428",
   ["category"]="lo",
   ["description"]="ARABIC LETTER SHEEN",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0634, -- ش
  },
  [0x0635]={
-  ["adobename"]="afii0xE055",
+  ["adobename"]="afii57429",
   ["category"]="lo",
   ["description"]="ARABIC LETTER SAD",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0635, -- ص
  },
  [0x0636]={
-  ["adobename"]="afii0xE056",
+  ["adobename"]="afii57430",
   ["category"]="lo",
   ["description"]="ARABIC LETTER DAD",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0636, -- ض
  },
  [0x0637]={
-  ["adobename"]="afii0xE057",
+  ["adobename"]="afii57431",
   ["category"]="lo",
   ["description"]="ARABIC LETTER TAH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0637, -- ط
  },
  [0x0638]={
-  ["adobename"]="afii0xE058",
+  ["adobename"]="afii57432",
   ["category"]="lo",
   ["description"]="ARABIC LETTER ZAH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0638, -- ظ
  },
  [0x0639]={
-  ["adobename"]="afii0xE059",
+  ["adobename"]="afii57433",
   ["category"]="lo",
   ["description"]="ARABIC LETTER AIN",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0639, -- ع
  },
  [0x063A]={
-  ["adobename"]="afii0xE05A",
+  ["adobename"]="afii57434",
   ["category"]="lo",
   ["description"]="ARABIC LETTER GHAIN",
   ["linebreak"]="al",
   ["unicodeslot"]=0x063A, -- غ
  },
  [0x0640]={
-  ["adobename"]="afii0xE060",
+  ["adobename"]="afii57440",
   ["category"]="lm",
   ["description"]="ARABIC TATWEEL",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0640, -- ـ
  },
  [0x0641]={
-  ["adobename"]="afii0xE061",
+  ["adobename"]="afii57441",
   ["category"]="lo",
   ["description"]="ARABIC LETTER FEH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0641, -- ف
  },
  [0x0642]={
-  ["adobename"]="afii0xE062",
+  ["adobename"]="afii57442",
   ["category"]="lo",
   ["description"]="ARABIC LETTER QAF",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0642, -- ق
  },
  [0x0643]={
-  ["adobename"]="afii0xE063",
+  ["adobename"]="afii57443",
   ["category"]="lo",
   ["description"]="ARABIC LETTER KAF",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0643, -- ك
  },
  [0x0644]={
-  ["adobename"]="afii0xE064",
+  ["adobename"]="afii57444",
   ["category"]="lo",
   ["description"]="ARABIC LETTER LAM",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0644, -- ل
  },
  [0x0645]={
-  ["adobename"]="afii0xE065",
+  ["adobename"]="afii57445",
   ["category"]="lo",
   ["description"]="ARABIC LETTER MEEM",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0645, -- م
  },
  [0x0646]={
-  ["adobename"]="afii0xE066",
+  ["adobename"]="afii57446",
   ["category"]="lo",
   ["description"]="ARABIC LETTER NOON",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0646, -- ن
  },
  [0x0647]={
-  ["adobename"]="afii0xE07E",
+  ["adobename"]="afii57470",
   ["category"]="lo",
   ["description"]="ARABIC LETTER HEH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0647, -- ه
  },
  [0x0648]={
-  ["adobename"]="afii0xE068",
+  ["adobename"]="afii57448",
   ["category"]="lo",
   ["description"]="ARABIC LETTER WAW",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0648, -- و
  },
  [0x0649]={
-  ["adobename"]="afii0xE069",
+  ["adobename"]="afii57449",
   ["category"]="lo",
   ["description"]="ARABIC LETTER ALEF MAKSURA",
   ["linebreak"]="al",
   ["unicodeslot"]=0x0649, -- ى
  },
  [0x064A]={
-  ["adobename"]="afii0xE06A",
+  ["adobename"]="afii57450",
   ["category"]="lo",
   ["description"]="ARABIC LETTER YEH",
   ["linebreak"]="al",
   ["unicodeslot"]=0x064A, -- ي
  },
  [0x064B]={
-  ["adobename"]="afii0xE06B",
+  ["adobename"]="afii57451",
   ["category"]="mn",
   ["description"]="ARABIC FATHATAN",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x064B, -- ً
  },
  [0x064C]={
-  ["adobename"]="afii0xE06C",
+  ["adobename"]="afii57452",
   ["category"]="mn",
   ["description"]="ARABIC DAMMATAN",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x064C, -- ٌ
  },
  [0x064D]={
-  ["adobename"]="afii0xE06D",
+  ["adobename"]="afii57453",
   ["category"]="mn",
   ["description"]="ARABIC KASRATAN",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x064D, -- ٍ
  },
  [0x064E]={
-  ["adobename"]="afii0xE06E",
+  ["adobename"]="afii57454",
   ["category"]="mn",
   ["description"]="ARABIC FATHA",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x064E, -- َ
  },
  [0x064F]={
-  ["adobename"]="afii0xE06F",
+  ["adobename"]="afii57455",
   ["category"]="mn",
   ["description"]="ARABIC DAMMA",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x064F, -- ُ
  },
  [0x0650]={
-  ["adobename"]="afii0xE070",
+  ["adobename"]="afii57456",
   ["category"]="mn",
   ["description"]="ARABIC KASRA",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x0650, -- ِ
  },
  [0x0651]={
-  ["adobename"]="afii0xE071",
+  ["adobename"]="afii57457",
   ["category"]="mn",
   ["description"]="ARABIC SHADDA",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x0651, -- ّ
  },
  [0x0652]={
-  ["adobename"]="afii0xE072",
+  ["adobename"]="afii57458",
   ["category"]="mn",
   ["description"]="ARABIC SUKUN",
   ["linebreak"]="cm",
@@ -12950,77 +12963,77 @@ characters.data={
   ["unicodeslot"]=0x065E, -- ٞ
  },
  [0x0660]={
-  ["adobename"]="afii0xE030",
+  ["adobename"]="afii57392",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT ZERO",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0660, -- ٠
  },
  [0x0661]={
-  ["adobename"]="afii0xE031",
+  ["adobename"]="afii57393",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT ONE",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0661, -- ١
  },
  [0x0662]={
-  ["adobename"]="afii0xE032",
+  ["adobename"]="afii57394",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT TWO",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0662, -- ٢
  },
  [0x0663]={
-  ["adobename"]="afii0xE033",
+  ["adobename"]="afii57395",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT THREE",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0663, -- ٣
  },
  [0x0664]={
-  ["adobename"]="afii0xE034",
+  ["adobename"]="afii57396",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT FOUR",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0664, -- ٤
  },
  [0x0665]={
-  ["adobename"]="afii0xE035",
+  ["adobename"]="afii57397",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT FIVE",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0665, -- ٥
  },
  [0x0666]={
-  ["adobename"]="afii0xE036",
+  ["adobename"]="afii57398",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT SIX",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0666, -- ٦
  },
  [0x0667]={
-  ["adobename"]="afii0xE037",
+  ["adobename"]="afii57399",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT SEVEN",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0667, -- ٧
  },
  [0x0668]={
-  ["adobename"]="afii0xE038",
+  ["adobename"]="afii57400",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT EIGHT",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0668, -- ٨
  },
  [0x0669]={
-  ["adobename"]="afii0xE039",
+  ["adobename"]="afii57401",
   ["category"]="nd",
   ["description"]="ARABIC-INDIC DIGIT NINE",
   ["linebreak"]="nu",
   ["unicodeslot"]=0x0669, -- ٩
  },
  [0x066A]={
-  ["adobename"]="afii0xE025",
+  ["adobename"]="afii57381",
   ["category"]="po",
   ["description"]="ARABIC PERCENT SIGN",
   ["linebreak"]="ex",
@@ -13039,7 +13052,7 @@ characters.data={
   ["unicodeslot"]=0x066C, -- ٬
  },
  [0x066D]={
-  ["adobename"]="afii0xF6BF",
+  ["adobename"]="afii63167",
   ["category"]="po",
   ["description"]="ARABIC FIVE POINTED STAR",
   ["linebreak"]="al",
@@ -13119,7 +13132,7 @@ characters.data={
   ["unicodeslot"]=0x0678, -- ٸ
  },
  [0x0679]={
-  ["adobename"]="afii0xE0A7",
+  ["adobename"]="afii57511",
   ["category"]="lo",
   ["description"]="ARABIC LETTER TTEH",
   ["linebreak"]="al",
@@ -13152,7 +13165,7 @@ characters.data={
   ["unicodeslot"]=0x067D, -- ٽ
  },
  [0x067E]={
-  ["adobename"]="afii0xE0A2",
+  ["adobename"]="afii57506",
   ["category"]="lo",
   ["description"]="ARABIC LETTER PEH",
   ["linebreak"]="al",
@@ -13204,7 +13217,7 @@ characters.data={
   ["unicodeslot"]=0x0685, -- څ
  },
  [0x0686]={
-  ["adobename"]="afii0xE0A3",
+  ["adobename"]="afii57507",
   ["category"]="lo",
   ["description"]="ARABIC LETTER TCHEH",
   ["linebreak"]="al",
@@ -13217,7 +13230,7 @@ characters.data={
   ["unicodeslot"]=0x0687, -- ڇ
  },
  [0x0688]={
-  ["adobename"]="afii0xE0A8",
+  ["adobename"]="afii57512",
   ["category"]="lo",
   ["description"]="ARABIC LETTER DDAL",
   ["linebreak"]="al",
@@ -13277,7 +13290,7 @@ characters.data={
   ["unicodeslot"]=0x0690, -- ڐ
  },
  [0x0691]={
-  ["adobename"]="afii0xE0A9",
+  ["adobename"]="afii57513",
   ["category"]="lo",
   ["description"]="ARABIC LETTER RREH",
   ["linebreak"]="al",
@@ -13326,7 +13339,7 @@ characters.data={
   ["unicodeslot"]=0x0697, -- ڗ
  },
  [0x0698]={
-  ["adobename"]="afii0xE0A4",
+  ["adobename"]="afii57508",
   ["category"]="lo",
   ["description"]="ARABIC LETTER JEH",
   ["linebreak"]="al",
@@ -13409,7 +13422,7 @@ characters.data={
   ["unicodeslot"]=0x06A3, -- ڣ
  },
  [0x06A4]={
-  ["adobename"]="afii0xE0A1",
+  ["adobename"]="afii57505",
   ["category"]="lo",
   ["description"]="ARABIC LETTER VEH",
   ["linebreak"]="al",
@@ -13482,7 +13495,7 @@ characters.data={
   ["unicodeslot"]=0x06AE, -- ڮ
  },
  [0x06AF]={
-  ["adobename"]="afii0xE0A5",
+  ["adobename"]="afii57509",
   ["category"]="lo",
   ["description"]="ARABIC LETTER GAF",
   ["linebreak"]="al",
@@ -13557,7 +13570,7 @@ characters.data={
   ["unicodeslot"]=0x06B9, -- ڹ
  },
  [0x06BA]={
-  ["adobename"]="afii0xE0AA",
+  ["adobename"]="afii57514",
   ["category"]="lo",
   ["description"]="ARABIC LETTER NOON GHUNNA",
   ["linebreak"]="al",
@@ -13714,7 +13727,7 @@ characters.data={
   ["unicodeslot"]=0x06D1, -- ۑ
  },
  [0x06D2]={
-  ["adobename"]="afii0xE0AF",
+  ["adobename"]="afii57519",
   ["category"]="lo",
   ["description"]="ARABIC LETTER YEH BARREE",
   ["linebreak"]="al",
@@ -13734,7 +13747,7 @@ characters.data={
   ["unicodeslot"]=0x06D4, -- ۔
  },
  [0x06D5]={
-  ["adobename"]="afii0xE0BE",
+  ["adobename"]="afii57534",
   ["category"]="lo",
   ["description"]="ARABIC LETTER AE",
   ["linebreak"]="al",
@@ -42607,28 +42620,28 @@ characters.data={
   ["unicodeslot"]=0x200B, -- ​
  },
  [0x200C]={
-  ["adobename"]="afii0xF0E0",
+  ["adobename"]="afii61664",
   ["category"]="cf",
   ["description"]="ZERO WIDTH NON-JOINER",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x200C, -- ‌
  },
  [0x200D]={
-  ["adobename"]="afii0x012D",
+  ["adobename"]="afii301",
   ["category"]="cf",
   ["description"]="ZERO WIDTH JOINER",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x200D, -- ‍
  },
  [0x200E]={
-  ["adobename"]="afii0x012B",
+  ["adobename"]="afii299",
   ["category"]="cf",
   ["description"]="LEFT-TO-RIGHT MARK",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x200E, -- ‎
  },
  [0x200F]={
-  ["adobename"]="afii0x012C",
+  ["adobename"]="afii300",
   ["category"]="cf",
   ["description"]="RIGHT-TO-LEFT MARK",
   ["linebreak"]="cm",
@@ -42671,11 +42684,11 @@ characters.data={
   ["cjkwd"]="a",
   ["contextname"]="emdash",
   ["description"]="EM DASH",
-  ["linebreak"]="b0x0002",
+  ["linebreak"]="b2",
   ["unicodeslot"]=0x2014, -- —
  },
  [0x2015]={
-  ["adobename"]="afii0x00D0",
+  ["adobename"]="afii208",
   ["category"]="pd",
   ["cjkwd"]="a",
   ["contextname"]="texthorizontalbar",
@@ -42856,21 +42869,21 @@ characters.data={
   ["unicodeslot"]=0x202B, -- ‫
  },
  [0x202C]={
-  ["adobename"]="afii0xF085",
+  ["adobename"]="afii61573",
   ["category"]="cf",
   ["description"]="POP DIRECTIONAL FORMATTING",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x202C, -- ‬
  },
  [0x202D]={
-  ["adobename"]="afii0xF086",
+  ["adobename"]="afii61574",
   ["category"]="cf",
   ["description"]="LEFT-TO-RIGHT OVERRIDE",
   ["linebreak"]="cm",
   ["unicodeslot"]=0x202D, -- ‭
  },
  [0x202E]={
-  ["adobename"]="afii0xF087",
+  ["adobename"]="afii61575",
   ["category"]="cf",
   ["description"]="RIGHT-TO-LEFT OVERRIDE",
   ["linebreak"]="cm",
@@ -43571,7 +43584,7 @@ characters.data={
   ["unicodeslot"]=0x20A9, -- ₩
  },
  [0x20AA]={
-  ["adobename"]="afii0xE124",
+  ["adobename"]="afii57636",
   ["category"]="sc",
   ["description"]="NEW SHEQEL SIGN",
   ["linebreak"]="pr",
@@ -43876,7 +43889,7 @@ characters.data={
   ["unicodeslot"]=0x2104, -- ℄
  },
  [0x2105]={
-  ["adobename"]="afii0xEF40",
+  ["adobename"]="afii61248",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="CARE OF",
@@ -43977,7 +43990,7 @@ characters.data={
   ["unicodeslot"]=0x2112, -- ℒ
  },
  [0x2113]={
-  ["adobename"]="afii0xEF69",
+  ["adobename"]="afii61289",
   ["category"]="ll",
   ["cjkwd"]="a",
   ["description"]="SCRIPT SMALL L",
@@ -44001,7 +44014,7 @@ characters.data={
   ["unicodeslot"]=0x2115, -- ℕ
  },
  [0x2116]={
-  ["adobename"]="afii0xEFA8",
+  ["adobename"]="afii61352",
   ["category"]="so",
   ["cjkwd"]="a",
   ["contextname"]="textnumero",
@@ -50251,7 +50264,7 @@ characters.data={
   ["unicodeslot"]=0x24FF, -- ⓿
  },
  [0x2500]={
-  ["adobename"]="SF0x186A0",
+  ["adobename"]="SF100000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT HORIZONTAL",
@@ -50266,7 +50279,7 @@ characters.data={
   ["unicodeslot"]=0x2501, -- ━
  },
  [0x2502]={
-  ["adobename"]="SF0x1ADB0",
+  ["adobename"]="SF110000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT VERTICAL",
@@ -50337,7 +50350,7 @@ characters.data={
   ["unicodeslot"]=0x250B, -- ┋
  },
  [0x250C]={
-  ["adobename"]="SF0x2710",
+  ["adobename"]="SF10000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT DOWN AND RIGHT",
@@ -50366,7 +50379,7 @@ characters.data={
   ["unicodeslot"]=0x250F, -- ┏
  },
  [0x2510]={
-  ["adobename"]="SF0x7530",
+  ["adobename"]="SF30000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT DOWN AND LEFT",
@@ -50395,7 +50408,7 @@ characters.data={
   ["unicodeslot"]=0x2513, -- ┓
  },
  [0x2514]={
-  ["adobename"]="SF0x4E20",
+  ["adobename"]="SF20000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT UP AND RIGHT",
@@ -50424,7 +50437,7 @@ characters.data={
   ["unicodeslot"]=0x2517, -- ┗
  },
  [0x2518]={
-  ["adobename"]="SF0x9C40",
+  ["adobename"]="SF40000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT UP AND LEFT",
@@ -50453,7 +50466,7 @@ characters.data={
   ["unicodeslot"]=0x251B, -- ┛
  },
  [0x251C]={
-  ["adobename"]="SF0x13880",
+  ["adobename"]="SF80000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT VERTICAL AND RIGHT",
@@ -50510,7 +50523,7 @@ characters.data={
   ["unicodeslot"]=0x2523, -- ┣
  },
  [0x2524]={
-  ["adobename"]="SF0x15F90",
+  ["adobename"]="SF90000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT VERTICAL AND LEFT",
@@ -50567,7 +50580,7 @@ characters.data={
   ["unicodeslot"]=0x252B, -- ┫
  },
  [0x252C]={
-  ["adobename"]="SF0xEA60",
+  ["adobename"]="SF60000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT DOWN AND HORIZONTAL",
@@ -50624,7 +50637,7 @@ characters.data={
   ["unicodeslot"]=0x2533, -- ┳
  },
  [0x2534]={
-  ["adobename"]="SF0x11170",
+  ["adobename"]="SF70000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT UP AND HORIZONTAL",
@@ -50681,7 +50694,7 @@ characters.data={
   ["unicodeslot"]=0x253B, -- ┻
  },
  [0x253C]={
-  ["adobename"]="SF0xC350",
+  ["adobename"]="SF50000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL",
@@ -50818,7 +50831,7 @@ characters.data={
   ["unicodeslot"]=0x254F, -- ╏
  },
  [0x2550]={
-  ["adobename"]="SF0x68FB0",
+  ["adobename"]="SF430000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE HORIZONTAL",
@@ -50826,7 +50839,7 @@ characters.data={
   ["unicodeslot"]=0x2550, -- ═
  },
  [0x2551]={
-  ["adobename"]="SF0x3A980",
+  ["adobename"]="SF240000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE VERTICAL",
@@ -50834,7 +50847,7 @@ characters.data={
   ["unicodeslot"]=0x2551, -- ║
  },
  [0x2552]={
-  ["adobename"]="SF0x7C830",
+  ["adobename"]="SF510000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOWN SINGLE AND RIGHT DOUBLE",
@@ -50842,7 +50855,7 @@ characters.data={
   ["unicodeslot"]=0x2552, -- ╒
  },
  [0x2553]={
-  ["adobename"]="SF0x7EF40",
+  ["adobename"]="SF520000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOWN DOUBLE AND RIGHT SINGLE",
@@ -50850,7 +50863,7 @@ characters.data={
   ["unicodeslot"]=0x2553, -- ╓
  },
  [0x2554]={
-  ["adobename"]="SF0x5F370",
+  ["adobename"]="SF390000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE DOWN AND RIGHT",
@@ -50858,7 +50871,7 @@ characters.data={
   ["unicodeslot"]=0x2554, -- ╔
  },
  [0x2555]={
-  ["adobename"]="SF0x35B60",
+  ["adobename"]="SF220000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOWN SINGLE AND LEFT DOUBLE",
@@ -50866,7 +50879,7 @@ characters.data={
   ["unicodeslot"]=0x2555, -- ╕
  },
  [0x2556]={
-  ["adobename"]="SF0x33450",
+  ["adobename"]="SF210000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOWN DOUBLE AND LEFT SINGLE",
@@ -50874,7 +50887,7 @@ characters.data={
   ["unicodeslot"]=0x2556, -- ╖
  },
  [0x2557]={
-  ["adobename"]="SF0x3D090",
+  ["adobename"]="SF250000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE DOWN AND LEFT",
@@ -50882,7 +50895,7 @@ characters.data={
   ["unicodeslot"]=0x2557, -- ╗
  },
  [0x2558]={
-  ["adobename"]="SF0x7A120",
+  ["adobename"]="SF500000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS UP SINGLE AND RIGHT DOUBLE",
@@ -50890,7 +50903,7 @@ characters.data={
   ["unicodeslot"]=0x2558, -- ╘
  },
  [0x2559]={
-  ["adobename"]="SF0x77A10",
+  ["adobename"]="SF490000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS UP DOUBLE AND RIGHT SINGLE",
@@ -50898,7 +50911,7 @@ characters.data={
   ["unicodeslot"]=0x2559, -- ╙
  },
  [0x255A]={
-  ["adobename"]="SF0x5CC60",
+  ["adobename"]="SF380000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE UP AND RIGHT",
@@ -50906,7 +50919,7 @@ characters.data={
   ["unicodeslot"]=0x255A, -- ╚
  },
  [0x255B]={
-  ["adobename"]="SF0x445C0",
+  ["adobename"]="SF280000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS UP SINGLE AND LEFT DOUBLE",
@@ -50914,7 +50927,7 @@ characters.data={
   ["unicodeslot"]=0x255B, -- ╛
  },
  [0x255C]={
-  ["adobename"]="SF0x41EB0",
+  ["adobename"]="SF270000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS UP DOUBLE AND LEFT SINGLE",
@@ -50922,7 +50935,7 @@ characters.data={
   ["unicodeslot"]=0x255C, -- ╜
  },
  [0x255D]={
-  ["adobename"]="SF0x3F7A0",
+  ["adobename"]="SF260000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE UP AND LEFT",
@@ -50930,7 +50943,7 @@ characters.data={
   ["unicodeslot"]=0x255D, -- ╝
  },
  [0x255E]={
-  ["adobename"]="SF0x57E40",
+  ["adobename"]="SF360000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS VERTICAL SINGLE AND RIGHT DOUBLE",
@@ -50938,7 +50951,7 @@ characters.data={
   ["unicodeslot"]=0x255E, -- ╞
  },
  [0x255F]={
-  ["adobename"]="SF0x5A550",
+  ["adobename"]="SF370000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS VERTICAL DOUBLE AND RIGHT SINGLE",
@@ -50946,7 +50959,7 @@ characters.data={
   ["unicodeslot"]=0x255F, -- ╟
  },
  [0x2560]={
-  ["adobename"]="SF0x668A0",
+  ["adobename"]="SF420000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE VERTICAL AND RIGHT",
@@ -50954,7 +50967,7 @@ characters.data={
   ["unicodeslot"]=0x2560, -- ╠
  },
  [0x2561]={
-  ["adobename"]="SF0x2E630",
+  ["adobename"]="SF190000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS VERTICAL SINGLE AND LEFT DOUBLE",
@@ -50962,7 +50975,7 @@ characters.data={
   ["unicodeslot"]=0x2561, -- ╡
  },
  [0x2562]={
-  ["adobename"]="SF0x30D40",
+  ["adobename"]="SF200000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS VERTICAL DOUBLE AND LEFT SINGLE",
@@ -50970,7 +50983,7 @@ characters.data={
   ["unicodeslot"]=0x2562, -- ╢
  },
  [0x2563]={
-  ["adobename"]="SF0x38270",
+  ["adobename"]="SF230000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE VERTICAL AND LEFT",
@@ -50978,7 +50991,7 @@ characters.data={
   ["unicodeslot"]=0x2563, -- ╣
  },
  [0x2564]={
-  ["adobename"]="SF0x72BF0",
+  ["adobename"]="SF470000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOWN SINGLE AND HORIZONTAL DOUBLE",
@@ -50986,7 +50999,7 @@ characters.data={
   ["unicodeslot"]=0x2564, -- ╤
  },
  [0x2565]={
-  ["adobename"]="SF0x75300",
+  ["adobename"]="SF480000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOWN DOUBLE AND HORIZONTAL SINGLE",
@@ -50994,7 +51007,7 @@ characters.data={
   ["unicodeslot"]=0x2565, -- ╥
  },
  [0x2566]={
-  ["adobename"]="SF0x64190",
+  ["adobename"]="SF410000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL",
@@ -51002,7 +51015,7 @@ characters.data={
   ["unicodeslot"]=0x2566, -- ╦
  },
  [0x2567]={
-  ["adobename"]="SF0x6DDD0",
+  ["adobename"]="SF450000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS UP SINGLE AND HORIZONTAL DOUBLE",
@@ -51010,7 +51023,7 @@ characters.data={
   ["unicodeslot"]=0x2567, -- ╧
  },
  [0x2568]={
-  ["adobename"]="SF0x704E0",
+  ["adobename"]="SF460000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS UP DOUBLE AND HORIZONTAL SINGLE",
@@ -51018,7 +51031,7 @@ characters.data={
   ["unicodeslot"]=0x2568, -- ╨
  },
  [0x2569]={
-  ["adobename"]="SF0x61A80",
+  ["adobename"]="SF400000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE UP AND HORIZONTAL",
@@ -51026,7 +51039,7 @@ characters.data={
   ["unicodeslot"]=0x2569, -- ╩
  },
  [0x256A]={
-  ["adobename"]="SF0x83D60",
+  ["adobename"]="SF540000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS VERTICAL SINGLE AND HORIZONTAL DOUBLE",
@@ -51034,7 +51047,7 @@ characters.data={
   ["unicodeslot"]=0x256A, -- ╪
  },
  [0x256B]={
-  ["adobename"]="SF0x81650",
+  ["adobename"]="SF530000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS VERTICAL DOUBLE AND HORIZONTAL SINGLE",
@@ -51042,7 +51055,7 @@ characters.data={
   ["unicodeslot"]=0x256B, -- ╫
  },
  [0x256C]={
-  ["adobename"]="SF0x6B6C0",
+  ["adobename"]="SF440000",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BOX DRAWINGS DOUBLE VERTICAL AND HORIZONTAL",
@@ -51399,7 +51412,7 @@ characters.data={
   ["unicodeslot"]=0x25A0, -- ■
  },
  [0x25A1]={
-  ["adobename"]="H0x5639",
+  ["adobename"]="H22073",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="WHITE SQUARE",
@@ -51462,14 +51475,14 @@ characters.data={
   ["unicodeslot"]=0x25A9, -- ▩
  },
  [0x25AA]={
-  ["adobename"]="H0x486F",
+  ["adobename"]="H18543",
   ["category"]="so",
   ["description"]="BLACK SMALL SQUARE",
   ["linebreak"]="al",
   ["unicodeslot"]=0x25AA, -- ▪
  },
  [0x25AB]={
-  ["adobename"]="H0x4877",
+  ["adobename"]="H18551",
   ["category"]="so",
   ["description"]="WHITE SMALL SQUARE",
   ["linebreak"]="al",
@@ -51706,7 +51719,7 @@ characters.data={
   ["unicodeslot"]=0x25CE, -- ◎
  },
  [0x25CF]={
-  ["adobename"]="H0x4865",
+  ["adobename"]="H18533",
   ["category"]="so",
   ["cjkwd"]="a",
   ["description"]="BLACK CIRCLE",
@@ -81796,14 +81809,14 @@ characters.data={
   ["category"]="lo",
   ["cjkwd"]="w",
   ["description"]="<Hangul Syllable, First>",
-  ["linebreak"]="h0x0002",
+  ["linebreak"]="h2",
   ["unicodeslot"]=0xAC00, -- 가
  },
  [0xD7A3]={
   ["category"]="lo",
   ["cjkwd"]="w",
   ["description"]="<Hangul Syllable, Last>",
-  ["linebreak"]="h0x0003",
+  ["linebreak"]="h3",
   ["unicodeslot"]=0xD7A3, -- 힣
  },
  [0xD800]={
@@ -85591,6 +85604,7 @@ characters.data={
   ["contextname"]="filigature",
   ["description"]="LATIN SMALL LIGATURE FI",
   ["linebreak"]="al",
+  ["shcode"]={ 0x0066, 0x0069 },
   ["specials"]={ "compat", 0x0066, 0x0069 },
   ["unicodeslot"]=0xFB01, -- ﬁ
  },
@@ -85599,6 +85613,7 @@ characters.data={
   ["contextname"]="flligature",
   ["description"]="LATIN SMALL LIGATURE FL",
   ["linebreak"]="al",
+  ["shcode"]={ 0x0066, 0x006C },
   ["specials"]={ "compat", 0x0066, 0x006C },
   ["unicodeslot"]=0xFB02, -- ﬂ
  },
@@ -85607,6 +85622,7 @@ characters.data={
   ["contextname"]="ffiligature",
   ["description"]="LATIN SMALL LIGATURE FFI",
   ["linebreak"]="al",
+  ["shcode"]={ 0x0066, 0x0069 },
   ["specials"]={ "compat", 0x0066, 0x0066, 0x0069 },
   ["unicodeslot"]=0xFB03, -- ﬃ
  },
@@ -85615,6 +85631,7 @@ characters.data={
   ["contextname"]="fflligature",
   ["description"]="LATIN SMALL LIGATURE FFL",
   ["linebreak"]="al",
+  ["shcode"]={ 0x0066, 0x006C },
   ["specials"]={ "compat", 0x0066, 0x0066, 0x006C },
   ["unicodeslot"]=0xFB04, -- ﬄ
  },
@@ -85630,6 +85647,7 @@ characters.data={
   ["contextname"]="stligature",
   ["description"]="LATIN SMALL LIGATURE ST",
   ["linebreak"]="al",
+  ["shcode"]={ 0x0073, 0x0074 },
   ["specials"]={ "compat", 0x0073, 0x0074 },
   ["unicodeslot"]=0xFB06, -- ﬆ
  },

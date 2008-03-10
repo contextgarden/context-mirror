@@ -43,4 +43,14 @@
 \def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,false,true)}}}
 \def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,true,true)}}}
 
+\def\starttracingnodes[#1]{\ctxlua{nodes.tracers.characters.start("#1")}}
+\def\stoptracingnodes     {\ctxlua{nodes.tracers.characters.stop()}}
+
+% \starttext
+%     \starttracingnodes[characters]
+%         \input tufte \par
+%         \input tufte \par
+%     \stoptracingnodes
+% \stoptext
+
 \endinput

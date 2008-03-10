@@ -21,7 +21,7 @@
 \def\xmlloadbuffer      #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
 \def\xmlutfize            #1{\ctxlua{lxml.utfize("#1")}}
 \def\xmlfirst           #1#2{\ctxlua{lxml.first("#1","#2")}}
-\def\xmllast           #1#2{\ctxlua{lxml.last("#1","#2")}}
+\def\xmllast            #1#2{\ctxlua{lxml.last("#1","#2")}}
 \def\xmlall             #1#2{\ctxlua{lxml.all("#1","#2")}}
 \def\xmlfilter          #1#2{\ctxlua{lxml.filter("#1","#2")}}
 \def\xmlcommand       #1#2#3{\ctxlua{lxml.command("#1","#2","#3")}}
@@ -51,9 +51,18 @@
 \def\xmlremapname   #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
 \def\xmlremapnamespace#1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
 \def\xmldelete          #1#2{\ctxlua{xml.delete(lxml.id("#1"),"#2")}}
-\def\xmlinclude       #1#2#3{\ctxlua{lxml.include("#1","#2","#3",true)}}
+\def\xmlinclude       #1#2#3{\ctxlua{lxml.include(lxml.id("#1"),"#2","#3",true)}}
 \def\xmldoifelse        #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
 \def\xmldoifelsetext    #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
+\def\xmlverbatim          #1{\ctxlua{lxml.verbatim(lxml.id("#1"))}}
+
+\def\xmldoifelse        #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",false))}}
+\def\xmldoifelsetext    #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",true ))}}
+\def\xmldoif            #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",false))}}
+\def\xmldoiftext        #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",true ))}}
+\def\xmldoifnot         #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",false))}}
+\def\xmldoifnottext     #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",true ))}}
+
 
 % \startxmlsetups xml:include
 %     \xmlinclude{main}{include}{filename|href}
@@ -75,7 +84,7 @@
 \let\xmlregistersetup\xmlappendsetup
 
 \def\xmlregisteredsetups
-  {\the\registeredxmlsetups}
+  {\the\registeredxmlsetups\registeredxmlsetups\emptytoks}
 
 \def\doxmlprocess#1#2#3#4%
   {\begingroup

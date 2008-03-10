@@ -332,3 +332,28 @@ function string:split_settings() -- no {} handling, see l-aux for lpeg variant
         return nil
     end
 end
+
+local patterns_escapes = {
+    ["-"] = "%-",
+    ["."] = "%.",
+    ["+"] = "%+",
+    ["*"] = "%*",
+    ["%"] = "%%",
+    ["("] = "%)",
+    [")"] = "%)",
+    ["["] = "%[",
+    ["]"] = "%]",
+}
+
+
+function string:pattesc()
+    return (self:gsub(".",patterns_escapes))
+end
+
+function string:tohash()
+    local t = { }
+    for s in self:gmatch("([^, ]+)") do -- lpeg
+        t[s] = true
+    end
+    return t
+end

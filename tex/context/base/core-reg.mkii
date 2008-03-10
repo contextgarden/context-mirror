@@ -27,7 +27,7 @@
 \def\mksaveregistervariable#1#2#3% class type value
   {\expanded{\immediatewriteutility{r #2 {#1} {#3}}}}
 
-\def\mkloadregister#1% class
-  {\doutilities{#1}{\registerparameter\c!file}{#1}\relax\par} % par needed for hanging indentation
+\def\mkloadregister#1#2#3% class before after
+  {\doutilities{#1}{\registerparameter\c!file}{#1}{#2}{#3}}
 
 \protect \endinput

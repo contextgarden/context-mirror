@@ -21,10 +21,11 @@
 \registerctxluafile{font-vf} {1.001}
 \registerctxluafile{font-def}{1.001}
 \registerctxluafile{font-fbk}{1.001}
+\registerctxluafile{font-ext}{1.001}
 
-\startruntimectxluacode
-    fonts.enc.make_unicode_vector()
-\stopruntimectxluacode
+% \startruntimectxluacode
+%     fonts.enc.make_unicode_vector() -- each time, brrr
+% \stopruntimectxluacode
 
 \unprotect
 
@@ -113,8 +114,7 @@
    \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
 
 \def\setfontcharacteristics
-  {\fastenablehandling{\ifx\@@fonthandling\empty\s!default\else\@@fonthandling\fi}\lastfontidentifier
-   \the\everyfont}
+  {\the\everyfont}
 
 %D Predefined:
 

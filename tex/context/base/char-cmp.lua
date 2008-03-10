@@ -195,10 +195,13 @@ function characters.uncompose(n) -- n == string|number, returns string
     end
     -- return characters.shape(n)
     if cdn then
-        if cdn.shcode then
-            return utf.char(cdn.shcode)
-        else
+        local shcode = cdn.shcode
+        if not shcode then
             return characters.uncomposed.both[cdn.contextname] or n
+        elseif type(shcode) == "table" then
+            return utf.char(unpack(cdn.shcode))
+        else
+            return utf.char(cdn.shcode)
         end
     end
     return n

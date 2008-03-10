@@ -48,6 +48,10 @@ do
         return lpeg.match(pattern,str)
     end
 
+    function aux.add_settings_to_array(t,str)
+        return table.merge(t, lpeg.match(pattern,str))
+    end
+
 end
 
 function aux.hash_to_string(h,separator,yes,no,strict,omit)
@@ -85,4 +89,15 @@ function aux.array_to_string(a,separator)
     else
         return ""
     end
+end
+
+-- temporary here
+
+function aux.getparameters(self,class,parentclass,settings)
+    local sc = self[class]
+    if not sc then
+        sc = table.clone(self[parent])
+        self[class] = sc
+    end
+    aux.add_settings_to_array(sc, settings)
 end

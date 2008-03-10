@@ -35,14 +35,16 @@
 
 \setupproperty
   [\s!effect]
-  [\c!rulethickness=.25pt,
-   \c!stretch=1]
+  [\c!rulethickness=\zeropoint,
+   \c!stretch=0]
 
-\defineproperty [\v!inner]  [\s!effect]
-\defineproperty [\v!outer]  [\s!effect]
-\defineproperty [\v!both]   [\s!effect]
-\defineproperty [\v!normal] [\s!effect]
-\defineproperty [\v!hidden] [\s!effect]
+\defineproperty [\v!inner]   [\s!effect] [\c!rulethickness=.25pt]
+\defineproperty [\v!outer]   [\s!effect] [\c!rulethickness=.25pt]
+\defineproperty [\v!both]    [\s!effect] [\c!rulethickness=.25pt]
+\defineproperty [\v!normal]  [\s!effect]
+\defineproperty [\v!hidden]  [\s!effect]
+
+\defineproperty [\v!stretch] [\s!effect] [\c!stretch=1]
 
 %D Plugin:
 

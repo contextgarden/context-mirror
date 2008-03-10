@@ -29,10 +29,6 @@
 % more efficient:
 
 \def\currentproperty      {\csname\??py:c:\number\propertylevel\endcsname} % string
-
-% \def\previouspropertylevel{\numexpr(\csname\??py:p:\currentpropertytype\endcsname+1)}
-% \letvalue{\??py:p:0}\empty
-
 \def\currentpropertytype {\csname\??py\currentproperty\c!type\endcsname}
 
 \def\docheckproperty % watch the s instead of e
@@ -74,18 +70,8 @@
    \global\advance\previouspropertylevel\minusone
    \global\advance\propertylevel\minusone}
 
-% \def\propertyparameter       #1{\csname\??py\currentproperty#1\endcsname}
-% \def\checkedpropertyparameter#1{\executeifdefined{\??py\currentproperty#1}}
-
 \def\defineproperty
   {\dotripleempty\dodefineproperty}
-
-% \def\dodefineproperty[#1][#2][#3]% global ! ! !
-%   {\ifundefined{\??py#1\c!globaal}%
-%      ... actions ...
-%    \fi}
-%
-% since we may perform tests each time before a call, we prefer the faster:
 
 \def\defineproperty
   {\dotripleempty\dodefineproperty}

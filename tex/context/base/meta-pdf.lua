@@ -115,9 +115,9 @@ function mptopdf.steps.convert()
     mptopdf.data = mptopdf.data:gsub("%s*([^%a]-)%s*(%a+)", function(args,cmd)
         if cmd == "textext" then
             t = mptopdf.texts[tonumber(args)]
-            return "mp.textext(" ..  "\"" .. t[2] .. "\"," .. t[3] .. ",\"" .. t[1] .. "\")\n"
+            return "mps.textext(" ..  "\"" .. t[2] .. "\"," .. t[3] .. ",\"" .. t[1] .. "\")\n"
         else
-            return "mp." .. cmd .. "(" .. args:gsub(" +",",") .. ")\n"
+            return "mps." .. cmd .. "(" .. args:gsub(" +",",") .. ")\n"
         end
     end)
 end
@@ -229,37 +229,37 @@ end
 
 -- mp interface
 
-mp = { }
+mps = mps or { }
 
-function mp.creator(a, b, c)
+function mps.creator(a, b, c)
     mptopdf.version = tonumber(b)
 end
 
-function mp.creationdate(a)
+function mps.creationdate(a)
     mptopdf.date= a
 end
 
-function mp.newpath()
+function mps.newpath()
     mptopdf.stack.path = { }
 end
 
-function mp.boundingbox(llx, lly, urx, ury)
+function mps.boundingbox(llx, lly, urx, ury)
     mptopdf.texcode("\\MPSboundingbox{" .. llx .. "}{" .. lly .. "}{" .. urx .. "}{" .. ury .. "}")
 end
 
-function mp.moveto(x,y)
+function mps.moveto(x,y)
     mptopdf.stack.path[#mptopdf.stack.path+1] = {x,y,"m"}
 end
 
-function mp.curveto(ax, ay, bx, by, cx, cy)
+function mps.curveto(ax, ay, bx, by, cx, cy)
     mptopdf.stack.path[#mptopdf.stack.path+1] = {ax,ay,bx,by,cx,cy,"c"}
 end
 
-function mp.lineto(x,y)
+function mps.lineto(x,y)
     mptopdf.stack.path[#mptopdf.stack.path+1] = {x,y,"l"}
 end
 
-function mp.rlineto(x,y)
+function mps.rlineto(x,y)
     local dx, dy = 0, 0
     if #mptopdf.stack.path > 0 then
         dx, dy = mptopdf.stack.path[#mptopdf.stack.path][1], mptopdf.stack.path[#mptopdf.stack.path][2]
@@ -267,72 +267,72 @@ function mp.rlineto(x,y)
     mptopdf.stack.path[#mptopdf.stack.path+1] = {dx,dy,"l"}
 end
 
-function mp.translate(tx,ty)
+function mps.translate(tx,ty)
     mptopdf.pdfcode("1 0 0 0 1 " .. tx .. " " .. ty .. " cm")
 end
 
-function mp.scale(sx,sy)
+function mps.scale(sx,sy)
     mptopdf.stack.concat = {sx,0,0,sy,0,0}
 end
 
-function mp.concat(sx, rx, ry, sy, tx, ty)
+function mps.concat(sx, rx, ry, sy, tx, ty)
     mptopdf.stack.concat = {sx,rx,ry,sy,tx,ty}
 end
 
-function mp.setlinejoin(d)
+function mps.setlinejoin(d)
     mptopdf.pdfcode(d .. " j")
 end
 
-function mp.setlinecap(d)
+function mps.setlinecap(d)
     mptopdf.pdfcode(d .. " J")
 end
 
-function mp.setmiterlimit(d)
+function mps.setmiterlimit(d)
     mptopdf.pdfcode(d .. " M")
 end
 
-function mp.gsave()
+function mps.gsave()
     mptopdf.pdfcode("q")
 end
 
-function mp.grestore()
+function mps.grestore()
     mptopdf.pdfcode("Q")
 end
 
-function mp.setdash(...)
+function mps.setdash(...)
     local n = select("#",...)
     mptopdf.pdfcode("[" .. table.concat({...}," ",1,n-1) .. "] " .. select(n,...) .. " d")
 end
 
-function mp.resetdash()
+function mps.resetdash()
     mptopdf.pdfcode("[ ] 0 d")
 end
 
-function mp.setlinewidth(d)
+function mps.setlinewidth(d)
     mptopdf.pdfcode(d .. " w")
 end
 
-function mp.closepath()
+function mps.closepath()
     mptopdf.stack.close = true
 end
 
-function mp.fill()
+function mps.fill()
     mptopdf.flushpath('f')
 end
 
-function mp.stroke()
+function mps.stroke()
     mptopdf.flushpath('S')
 end
 
-function mp.both()
+function mps.both()
     mptopdf.flushpath('B')
 end
 
-function mp.clip()
+function mps.clip()
     mptopdf.flushpath('W n')
 end
 
-function mp.textext(font, scale, str) -- old parser
+function mps.textext(font, scale, str) -- old parser
     local dx, dy = 0, 0
     if #mptopdf.stack.path > 0 then
         dx, dy = mptopdf.stack.path[1][1], mptopdf.stack.path[1][2]
@@ -342,7 +342,7 @@ function mp.textext(font, scale, str) -- old parser
     mptopdf.resetpath()
 end
 
---~ function mp.handletext(font,scale.str,dx,dy)
+--~ function mps.handletext(font,scale.str,dx,dy)
 --~     local one, two = string.match(str, "^(%d+)::::(%d+)")
 --~     if one and two then
 --~         mptopdf.texcode("\\MPTOPDFtextext{"..font.."}{"..scale.."}{"..one.."}{"..two.."}{"..dx.."}{"..dy.."}")
@@ -357,7 +357,7 @@ if false and ctx and ctx.aux and ctx.aux.definecolor then
 
     -- does not work due to Q-q mess-up
 
-    function mp.setrgbcolor(r,g,b) -- extra check
+    function mps.setrgbcolor(r,g,b) -- extra check
         r, g, b = tonumber(r), tonumber(g), tonumber(b) -- needed when we use lpeg
         if r == 0.0123 and g < 0.1 then -- g is extra check
             mptopdf.texcode("\\doresetattribute{transparency}\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
@@ -368,17 +368,17 @@ if false and ctx and ctx.aux and ctx.aux.definecolor then
         end
     end
 
-    function mp.setcmykcolor(c,m,y,k)
+    function mps.setcmykcolor(c,m,y,k)
         mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'cmyk',tonumber(c),tonumber(m),tonumber(y),tonumber(k)) .. "}")
     end
 
-    function mp.setgray(s)
+    function mps.setgray(s)
         mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'gray',tonumber(s)) .. "}")
     end
 
 else
 
-    function mp.setrgbcolor(r,g,b) -- extra check
+    function mps.setrgbcolor(r,g,b) -- extra check
         r, g = tonumber(r), tonumber(g) -- needed when we use lpeg
         if r == 0.0123 and g < 0.1 then
             mptopdf.texcode("\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
@@ -389,68 +389,68 @@ else
         end
     end
 
-    function mp.setcmykcolor(c,m,y,k)
+    function mps.setcmykcolor(c,m,y,k)
         mptopdf.texcode("\\MPScmyk{" .. c .. "}{" .. m .. "}{" .. y .. "}{" .. k .. "}")
     end
 
-    function mp.setgray(s)
+    function mps.setgray(s)
         mptopdf.texcode("\\MPSgray{" .. s .. "}")
     end
 
 end
 
-function mp.specials(version,signal,factor) -- 2.0 123 1000
+function mps.specials(version,signal,factor) -- 2.0 123 1000
 end
 
-function mp.special(...) -- 7 1 0.5 1 0 0 1 3
+function mps.special(...) -- 7 1 0.5 1 0 0 1 3
     local n = select("#",...)
     mptopdf.texcode("\\MPSbegin\\MPSset{" .. table.concat({...},"}\\MPSset{",2,n) .. "}\\MPSend")
 end
 
-function mp.begindata()
+function mps.begindata()
 end
 
-function mp.enddata()
+function mps.enddata()
 end
 
-function mp.showpage()
+function mps.showpage()
 end
 
-mp.n   = mp.newpath       -- n
-mp.p   = mp.closepath     -- h
-mp.l   = mp.lineto        -- l
-mp.r   = mp.rlineto       -- r
-mp.m   = mp.moveto        -- m
-mp.c   = mp.curveto       -- c
-mp.hlw = mp.setlinewidth
-mp.vlw = mp.setlinewidth
+mps.n   = mps.newpath       -- n
+mps.p   = mps.closepath     -- h
+mps.l   = mps.lineto        -- l
+mps.r   = mps.rlineto       -- r
+mps.m   = mps.moveto        -- m
+mps.c   = mps.curveto       -- c
+mps.hlw = mps.setlinewidth
+mps.vlw = mps.setlinewidth
 
-mp.C   = mp.setcmykcolor  -- k
-mp.G   = mp.setgray       -- g
-mp.R   = mp.setrgbcolor   -- rg
+mps.C   = mps.setcmykcolor  -- k
+mps.G   = mps.setgray       -- g
+mps.R   = mps.setrgbcolor   -- rg
 
-mp.lj  = mp.setlinejoin   -- j
-mp.ml  = mp.setmiterlimit -- M
-mp.lc  = mp.setlinecap    -- J
-mp.sd  = mp.setdash       -- d
-mp.rd  = mp.resetdash
+mps.lj  = mps.setlinejoin   -- j
+mps.ml  = mps.setmiterlimit -- M
+mps.lc  = mps.setlinecap    -- J
+mps.sd  = mps.setdash       -- d
+mps.rd  = mps.resetdash
 
-mp.S   = mp.stroke        -- S
-mp.F   = mp.fill          -- f
-mp.B   = mp.both          -- B
-mp.W   = mp.clip          -- W
+mps.S   = mps.stroke        -- S
+mps.F   = mps.fill          -- f
+mps.B   = mps.both          -- B
+mps.W   = mps.clip          -- W
 
-mp.q   = mp.gsave         -- q
-mp.Q   = mp.grestore      -- Q
+mps.q   = mps.gsave         -- q
+mps.Q   = mps.grestore      -- Q
 
-mp.s   = mp.scale         -- (not in pdf)
-mp.t   = mp.concat        -- (not the same as pdf anyway)
+mps.s   = mps.scale         -- (not in pdf)
+mps.t   = mps.concat        -- (not the same as pdf anyway)
 
-mp.P   = mp.showpage
+mps.P   = mps.showpage
 
 -- experimental
 
-function mp.attribute(id,value)
+function mps.attribute(id,value)
     mptopdf.texcode("\\attribute " .. id .. "=" .. value .. " ")
 --  mptopdf.texcode("\\dompattribute{" .. id .. "}{" .. value .. "}")
 end
@@ -473,8 +473,8 @@ do -- assumes \let\c\char
     ) * lpeg.Cc("}")
     local package = lpeg.Cs(spec + text^0)
 
-    function mp.fshow(str,font,scale) -- lpeg parser
-        mp.textext(font,scale,package:match(str))
+    function mps.fshow(str,font,scale) -- lpeg parser
+        mps.textext(font,scale,package:match(str))
     end
 
 end
@@ -490,83 +490,83 @@ do
     local cnumber = lpeg.C(number)
     local cstring = lpeg.C(nonspace)
 
-    local specials           = (lpeg.P("%%MetaPostSpecials:") * sp * (cstring * sp^0)^0 * eol) / mp.specials
-    local special            = (lpeg.P("%%MetaPostSpecial:")  * sp * (cstring * sp^0)^0 * eol) / mp.special
-    local boundingbox        = (lpeg.P("%%BoundingBox:")      * sp * (cnumber * sp^0)^4 * eol) / mp.boundingbox
-    local highresboundingbox = (lpeg.P("%%HiResBoundingBox:") * sp * (cnumber * sp^0)^4 * eol) / mp.boundingbox
+    local specials           = (lpeg.P("%%MetaPostSpecials:") * sp * (cstring * sp^0)^0 * eol) / mps.specials
+    local special            = (lpeg.P("%%MetaPostSpecial:")  * sp * (cstring * sp^0)^0 * eol) / mps.special
+    local boundingbox        = (lpeg.P("%%BoundingBox:")      * sp * (cnumber * sp^0)^4 * eol) / mps.boundingbox
+    local highresboundingbox = (lpeg.P("%%HiResBoundingBox:") * sp * (cnumber * sp^0)^4 * eol) / mps.boundingbox
 
     local setup              = lpeg.P("%%BeginSetup")  * (1 - lpeg.P("%%EndSetup") )^1
     local prolog             = lpeg.P("%%BeginProlog") * (1 - lpeg.P("%%EndProlog"))^1
     local comment            = lpeg.P('%')^1 * (1 - eol)^1
 
-    local curveto            = ((cnumber * sp)^6 * lpeg.P("curveto")            ) / mp.curveto
-    local lineto             = ((cnumber * sp)^2 * lpeg.P("lineto")             ) / mp.lineto
-    local rlineto            = ((cnumber * sp)^2 * lpeg.P("rlineto")            ) / mp.rlineto
-    local moveto             = ((cnumber * sp)^2 * lpeg.P("moveto")             ) / mp.moveto
-    local setrgbcolor        = ((cnumber * sp)^3 * lpeg.P("setrgbcolor")        ) / mp.setrgbcolor
-    local setcmykcolor       = ((cnumber * sp)^4 * lpeg.P("setcmykcolor")       ) / mp.setcmykcolor
-    local setgray            = ((cnumber * sp)^1 * lpeg.P("setgray")            ) / mp.setgray
-    local newpath            = (                   lpeg.P("newpath")            ) / mp.newpath
-    local closepath          = (                   lpeg.P("closepath")          ) / mp.closepath
-    local fill               = (                   lpeg.P("fill")               ) / mp.fill
-    local stroke             = (                   lpeg.P("stroke")             ) / mp.stroke
-    local clip               = (                   lpeg.P("clip")               ) / mp.clip
-    local both               = (                   lpeg.P("gsave fill grestore")) / mp.both
+    local curveto            = ((cnumber * sp)^6 * lpeg.P("curveto")            ) / mps.curveto
+    local lineto             = ((cnumber * sp)^2 * lpeg.P("lineto")             ) / mps.lineto
+    local rlineto            = ((cnumber * sp)^2 * lpeg.P("rlineto")            ) / mps.rlineto
+    local moveto             = ((cnumber * sp)^2 * lpeg.P("moveto")             ) / mps.moveto
+    local setrgbcolor        = ((cnumber * sp)^3 * lpeg.P("setrgbcolor")        ) / mps.setrgbcolor
+    local setcmykcolor       = ((cnumber * sp)^4 * lpeg.P("setcmykcolor")       ) / mps.setcmykcolor
+    local setgray            = ((cnumber * sp)^1 * lpeg.P("setgray")            ) / mps.setgray
+    local newpath            = (                   lpeg.P("newpath")            ) / mps.newpath
+    local closepath          = (                   lpeg.P("closepath")          ) / mps.closepath
+    local fill               = (                   lpeg.P("fill")               ) / mps.fill
+    local stroke             = (                   lpeg.P("stroke")             ) / mps.stroke
+    local clip               = (                   lpeg.P("clip")               ) / mps.clip
+    local both               = (                   lpeg.P("gsave fill grestore")) / mps.both
     local showpage           = (                   lpeg.P("showpage")           )
-    local setlinejoin        = ((cnumber * sp)^1 * lpeg.P("setlinejoin")        ) / mp.setlinejoin
-    local setlinecap         = ((cnumber * sp)^1 * lpeg.P("setlinecap")         ) / mp.setlinecap
-    local setmiterlimit      = ((cnumber * sp)^1 * lpeg.P("setmiterlimit")      ) / mp.setmiterlimit
-    local gsave              = (                   lpeg.P("gsave")              ) / mp.gsave
-    local grestore           = (                   lpeg.P("grestore")           ) / mp.grestore
+    local setlinejoin        = ((cnumber * sp)^1 * lpeg.P("setlinejoin")        ) / mps.setlinejoin
+    local setlinecap         = ((cnumber * sp)^1 * lpeg.P("setlinecap")         ) / mps.setlinecap
+    local setmiterlimit      = ((cnumber * sp)^1 * lpeg.P("setmiterlimit")      ) / mps.setmiterlimit
+    local gsave              = (                   lpeg.P("gsave")              ) / mps.gsave
+    local grestore           = (                   lpeg.P("grestore")           ) / mps.grestore
 
-    local setdash            = (lpeg.P("[") * (cnumber * sp^0)^0 * lpeg.P("]") * sp * cnumber * sp * lpeg.P("setdash")) / mp.setdash
-    local concat             = (lpeg.P("[") * (cnumber * sp^0)^6 * lpeg.P("]")                * sp * lpeg.P("concat") ) / mp.concat
-    local scale              = (              (cnumber * sp^0)^6                              * sp * lpeg.P("concat") ) / mp.concat
+    local setdash            = (lpeg.P("[") * (cnumber * sp^0)^0 * lpeg.P("]") * sp * cnumber * sp * lpeg.P("setdash")) / mps.setdash
+    local concat             = (lpeg.P("[") * (cnumber * sp^0)^6 * lpeg.P("]")                * sp * lpeg.P("concat") ) / mps.concat
+    local scale              = (              (cnumber * sp^0)^6                              * sp * lpeg.P("concat") ) / mps.concat
 
-    local fshow              = (lpeg.P("(") * lpeg.C((1-lpeg.P(")"))^1) * lpeg.P(")") * space * cstring * space * cnumber * space * lpeg.P("fshow")) / mp.fshow
+    local fshow              = (lpeg.P("(") * lpeg.C((1-lpeg.P(")"))^1) * lpeg.P(")") * space * cstring * space * cnumber * space * lpeg.P("fshow")) / mps.fshow
     local fshow              = (lpeg.P("(") *
                                     lpeg.Cs( ( lpeg.P("\\(")/"\\050" + lpeg.P("\\)")/"\\051" + (1-lpeg.P(")")) )^1 )
-                                * lpeg.P(")") * space * cstring * space * cnumber * space * lpeg.P("fshow")) / mp.fshow
+                                * lpeg.P(")") * space * cstring * space * cnumber * space * lpeg.P("fshow")) / mps.fshow
 
-    local setlinewidth_x     = (lpeg.P("0") * sp * cnumber * sp * lpeg.P("dtransform truncate idtransform setlinewidth pop")) / mp.setlinewidth
-    local setlinewidth_y     = (cnumber * sp * lpeg.P("0 dtransform exch truncate exch idtransform pop setlinewidth")  ) / mp.setlinewidth
+    local setlinewidth_x     = (lpeg.P("0") * sp * cnumber * sp * lpeg.P("dtransform truncate idtransform setlinewidth pop")) / mps.setlinewidth
+    local setlinewidth_y     = (cnumber * sp * lpeg.P("0 dtransform exch truncate exch idtransform pop setlinewidth")  ) / mps.setlinewidth
 
-    local c   = ((cnumber * sp)^6 * lpeg.P("c")  ) / mp.curveto -- ^6 very inefficient, ^1 ok too
-    local l   = ((cnumber * sp)^2 * lpeg.P("l")  ) / mp.lineto
-    local r   = ((cnumber * sp)^2 * lpeg.P("r")  ) / mp.rlineto
-    local m   = ((cnumber * sp)^2 * lpeg.P("m")  ) / mp.moveto
-    local vlw = ((cnumber * sp)^1 * lpeg.P("vlw")) / mp.setlinewidth
-    local hlw = ((cnumber * sp)^1 * lpeg.P("hlw")) / mp.setlinewidth
+    local c   = ((cnumber * sp)^6 * lpeg.P("c")  ) / mps.curveto -- ^6 very inefficient, ^1 ok too
+    local l   = ((cnumber * sp)^2 * lpeg.P("l")  ) / mps.lineto
+    local r   = ((cnumber * sp)^2 * lpeg.P("r")  ) / mps.rlineto
+    local m   = ((cnumber * sp)^2 * lpeg.P("m")  ) / mps.moveto
+    local vlw = ((cnumber * sp)^1 * lpeg.P("vlw")) / mps.setlinewidth
+    local hlw = ((cnumber * sp)^1 * lpeg.P("hlw")) / mps.setlinewidth
 
-    local R   = ((cnumber * sp)^3 * lpeg.P("R")  ) / mp.setrgbcolor
-    local C   = ((cnumber * sp)^4 * lpeg.P("C")  ) / mp.setcmykcolor
-    local G   = ((cnumber * sp)^1 * lpeg.P("G")  ) / mp.setgray
+    local R   = ((cnumber * sp)^3 * lpeg.P("R")  ) / mps.setrgbcolor
+    local C   = ((cnumber * sp)^4 * lpeg.P("C")  ) / mps.setcmykcolor
+    local G   = ((cnumber * sp)^1 * lpeg.P("G")  ) / mps.setgray
 
-    local lj  = ((cnumber * sp)^1 * lpeg.P("lj") ) / mp.setlinejoin
-    local ml  = ((cnumber * sp)^1 * lpeg.P("ml") ) / mp.setmiterlimit
-    local lc  = ((cnumber * sp)^1 * lpeg.P("lc") ) / mp.setlinecap
+    local lj  = ((cnumber * sp)^1 * lpeg.P("lj") ) / mps.setlinejoin
+    local ml  = ((cnumber * sp)^1 * lpeg.P("ml") ) / mps.setmiterlimit
+    local lc  = ((cnumber * sp)^1 * lpeg.P("lc") ) / mps.setlinecap
 
-    local n   = lpeg.P("n") / mp.newpath
-    local p   = lpeg.P("p") / mp.closepath
-    local S   = lpeg.P("S") / mp.stroke
-    local F   = lpeg.P("F") / mp.fill
-    local B   = lpeg.P("B") / mp.both
-    local W   = lpeg.P("W") / mp.clip
-    local P   = lpeg.P("P") / mp.showpage
+    local n   = lpeg.P("n") / mps.newpath
+    local p   = lpeg.P("p") / mps.closepath
+    local S   = lpeg.P("S") / mps.stroke
+    local F   = lpeg.P("F") / mps.fill
+    local B   = lpeg.P("B") / mps.both
+    local W   = lpeg.P("W") / mps.clip
+    local P   = lpeg.P("P") / mps.showpage
 
-    local q   = lpeg.P("q") / mp.gsave
-    local Q   = lpeg.P("Q") / mp.grestore
+    local q   = lpeg.P("q") / mps.gsave
+    local Q   = lpeg.P("Q") / mps.grestore
 
-    local sd  = (lpeg.P("[") * (cnumber * sp^0)^0 * lpeg.P("]") * sp * cnumber * sp * lpeg.P("sd")) / mp.setdash
-    local rd  = (                                                                     lpeg.P("rd")) / mp.resetdash
+    local sd  = (lpeg.P("[") * (cnumber * sp^0)^0 * lpeg.P("]") * sp * cnumber * sp * lpeg.P("sd")) / mps.setdash
+    local rd  = (                                                                     lpeg.P("rd")) / mps.resetdash
 
-    local s   = (              (cnumber * sp^0)^2                    * lpeg.P("s") ) / mp.scale
-    local t   = (lpeg.P("[") * (cnumber * sp^0)^6 * lpeg.P("]") * sp * lpeg.P("t") ) / mp.concat
+    local s   = (              (cnumber * sp^0)^2                    * lpeg.P("s") ) / mps.scale
+    local t   = (lpeg.P("[") * (cnumber * sp^0)^6 * lpeg.P("]") * sp * lpeg.P("t") ) / mps.concat
 
     -- experimental
 
-    local attribute = ((cnumber * sp)^2 * lpeg.P("attribute")) / mp.attribute
-    local A         = ((cnumber * sp)^2 * lpeg.P("A"))         / mp.attribute
+    local attribute = ((cnumber * sp)^2 * lpeg.P("attribute")) / mps.attribute
+    local A         = ((cnumber * sp)^2 * lpeg.P("A"))         / mps.attribute
 
     local preamble = (
         prolog + setup +

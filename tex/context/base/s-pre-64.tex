@@ -131,7 +131,7 @@
 \def\StartItem
   {\blank[line]
    \begingroup
-   \EveryPar {\AdaptShape}}
+   \EveryPar {\AdaptShape}} % beware: \ABBREV aan gegin gaat fout
 
 \def\StopItem
   {\endgraf
@@ -160,6 +160,8 @@
 \def\SetBanner#1%
   {\setuplayer[base][state=repeat]
    \setlayer[base][preset=rightbottom]{\color[white]{\scale[height=9pt]{\strut#1}}}}
+
+\let\titlefont\relax
 
 \startmode[atpragma]
     \definefontfeature[default][method=node,script=latn,language=dflt,liga=yes,onum=yes,kern=yes]

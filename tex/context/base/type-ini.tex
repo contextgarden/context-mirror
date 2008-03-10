@@ -386,11 +386,9 @@
    \setxvalue{\splitoffname \c!state}{3}%
    \doglobal\removefromcommalist\splitoffname\allfontmapsfiles}
 
-\def\preloadmapfile[#1]%
-  {\expanded{\processcommalist[#1]}\dopreloadmapfile}
-
-\def\loadmapfile[#1]%
-  {\expanded{\processcommalist[#1]}\loadthemapfile}
+\def\preloadmapfile[#1]{\expanded{\processcommalist[#1]}\dopreloadmapfile}
+\def\loadmapfile   [#1]{\expanded{\processcommalist[#1]}\loadthemapfile}
+\def\unloadmapfile [#1]{\expanded{\processcommalist[#1]}\unloadthemapfile}
 
 %  too soon, no driver known, \ifproductionrun \loadallfontmapfiles \fi
 
@@ -415,6 +413,10 @@
      \doglobal\addtocommalist\splitoffname\allfontmapsfiles}
 
 \fi \fi
+
+\def\unloadthemapfile#1%
+  {\splitfiletype{#1}%
+   \doglobal\removefromcommalist\splitoffname\allfontmapsfiles}
 
 \let\usedmapfile\gobbletwoarguments
 \let\usedmapline\gobbletwoarguments

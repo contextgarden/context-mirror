@@ -2220,9 +2220,10 @@ enddef ;
 % handy for myself
 
 def addbackground text t =
-  begingroup ; save p ; picture p ;
+  begingroup ; save p, b ; picture p ; path b ;
+  b := boundingbox currentpicture ;
   p := currentpicture ; currentpicture := nullpicture ;
-  fill boundingbox p t ; addto currentpicture also p ;
+  fill b t ; setbounds currentpicture to b ; addto currentpicture also p ;
   endgroup ;
 enddef ;
 

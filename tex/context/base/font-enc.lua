@@ -52,42 +52,48 @@ will be used.</p>
 function fonts.enc.load(filename)
     local name = file.removesuffix(filename)
     local data = containers.read(fonts.enc.cache,name)
-    if not data then
-        local vector, tag, hash, unicodes = { }, "", { }, { }
-        local foundname = input.find_file(texmf.instance,filename,'enc')
-        if foundname and foundname ~= "" then
-            local ok, encoding, size = input.loadbinfile(texmf.instance,foundname)
-            if ok and encoding then
-                local enccodes = characters.context.enccodes
-                encoding = encoding:gsub("%%(.-)\n","")
-                local tag, vec = encoding:match("/(%w+)%s*%[(.*)%]%s*def")
-                local i = 0
-                for ch in vec:gmatch("/([%a%d%.]+)") do
-                    if ch ~= ".notdef" then
-                        vector[i] = ch
-                        if not hash[ch] then
-                            hash[ch] = i
-                        else
-                            -- duplicate, play safe for tex ligs and take first
-                        end
-                        if enccodes[ch] then
-                            unicodes[enccodes[ch]] = i
-                        end
+    if data then
+        return data
+    end
+    if name == "unicode" then
+        data = fonts.enc.make_unicode_vector() -- special case, no tex file for this
+    end
+    if data then
+        return data
+    end
+    local vector, tag, hash, unicodes = { }, "", { }, { }
+    local foundname = input.find_file(texmf.instance,filename,'enc')
+    if foundname and foundname ~= "" then
+        local ok, encoding, size = input.loadbinfile(texmf.instance,foundname)
+        if ok and encoding then
+            local enccodes = characters.context.enccodes
+            encoding = encoding:gsub("%%(.-)\n","")
+            local tag, vec = encoding:match("/(%w+)%s*%[(.*)%]%s*def")
+            local i = 0
+            for ch in vec:gmatch("/([%a%d%.]+)") do
+                if ch ~= ".notdef" then
+                    vector[i] = ch
+                    if not hash[ch] then
+                        hash[ch] = i
+                    else
+                        -- duplicate, play safe for tex ligs and take first
                     end
-                    i = i + 1
+                    if enccodes[ch] then
+                        unicodes[enccodes[ch]] = i
+                    end
                 end
+                i = i + 1
             end
         end
-        local data = {
-            name=name,
-            tag=tag,
-            vector=vector,
-            hash=hash,
-            unicodes=unicodes
-        }
-        data = containers.write(fonts.enc.cache, name, data)
     end
-    return data
+    local data = {
+        name=name,
+        tag=tag,
+        vector=vector,
+        hash=hash,
+        unicodes=unicodes
+    }
+    return containers.write(fonts.enc.cache, name, data)
 end
 
 --[[ldx--
@@ -110,5 +116,5 @@ function fonts.enc.make_unicode_vector()
     for name, code in pairs(characters.synonyms) do
         vector[code], hash[name] = name, code
     end
-    containers.write(fonts.enc.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
+    return containers.write(fonts.enc.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
 end

@@ -45,11 +45,13 @@
 %
 % \stoptext
 
-\def\dograbuntil#1#2%
-  {\long\def\next##1#1{#2##1}\next}
-
-\def\grabuntil#1%
-  {\expandafter\dograbuntil\expandafter{\csname#1\endcsname}}
+% incompatible with mkii ! ! ! ! so we need other names here
+%
+% \def\dograbuntil#1#2%
+%   {\long\def\next##1#1{#2##1}\next}
+%
+% \def\grabuntil#1%
+%   {\expandafter\dograbuntil\expandafter{\csname#1\endcsname}}
 
 \def\dostartremapper#1%
   {\ctxlua{collectors.install("#1", "\e!stop#1")}}

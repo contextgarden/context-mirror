@@ -1,0 +1,131 @@
+%D \module
+%D   [       file=mult-ini,
+%D        version=1996.06.01,
+%D          title=\CONTEXT\ Multilingual Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D This is the oldest variant. Here we filter messages from a big string.
+
+\def\findinterfacemessage#1#2%
+  {\let#2\empty
+   \def\dofindinterfacemessage##1 #1: ##2\relax##3\end{\def#2{##2}}%
+   \edef\!!stringa{\getvalue{\??ms\currentmessagelibrary} #1: \relax}%
+   \expandafter\dofindinterfacemessage\!!stringa\end}
+
+\def\composemessagetext#1--#2--#3--#4--#5--#6--#7--#8--#9\\%
+  {\def\docomposemessagetext##1,##2,##3,##4,##5,##6,##7,##8,##9\\%
+     {\edef\currentmessagetext{#1##1#2##2#3##3#4##4#5##5#6##6#7##7#8##8}}%
+   \docomposemessagetext}
+
+\def\setmessagetext#1#2%
+  {\def\currentmessagelibrary{#1}%
+   \findinterfacemessage{#2}\currentmessagetext}
+
+\unexpanded\def\getmessage#1#2%
+  {\def\currentmessagelibrary{#1}%
+   \findinterfacemessage{#2}\currentmessagetext
+   \currentmessagetext}
+
+\unexpanded\def\makemessage#1#2#3%
+  {\def\currentmessagelibrary{#1}%
+   \findinterfacemessage{#2}\currentmessagetext
+   \@EA\composemessagetext\currentmessagetext----------------\\#3,,,,,,,,\\%
+   \currentmessagetext}
+
+\def\showmessage#1#2#3%
+  {\def\currentmessagelibrary{#1}%
+   \findinterfacemessage{#2}\currentmessagetext
+   \findinterfacemessage{title}\currentmessagetitle
+   \ifx\currentmessagetext\empty
+     \def\currentmessagetext{<unknown message #2>}%
+   \else
+     \@EA\composemessagetext\currentmessagetext----------------\\#3,,,,,,,,\\%
+   \fi
+   \@EA\writestatus\@EA{\currentmessagetitle}{\currentmessagetext}}
+
+\def\doaddinterfacemessage#1#2%
+  {\findinterfacemessage{#1}\currentmessagetext
+   \doifelsenothing\currentmessagetext
+     {\setxvalue{\??ms\currentmessagelibrary}%
+        {\getvalue{\??ms\currentmessagelibrary} #1: #2\relax}}
+     {\debuggerinfotrue % we consider this an important error
+      \debuggerinfo
+        {message}
+        {duplicate tag #1
+         in library \currentmessagelibrary\space
+         of interface \currentresponses}}%
+   \futurelet\next\getinterfacemessage}
+
+\bgroup
+\obeylines
+\gdef\addinterfacemessage#1: #2
+  {\doaddinterfacemessage{#1}{#2}}%
+\egroup
+
+\def\getinterfacemessage
+  {\ifx\next\stopmessages
+     \egroup\expandafter\gobbleoneargument
+   \else
+     \expandafter\addinterfacemessage
+   \fi}
+
+\let\stopmessages\undefined % for dep checker
+
+\def\startmessages #1 library: #2
+  {\definemessageconstant{#2}% handy for modules
+   \bgroup
+   \obeylines
+   \doifinsetelse{#1}{\currentresponses,all}
+     {\def\next
+        {\def\currentmessagelibrary{#2}%
+         \doifundefined{\??ms\currentmessagelibrary}
+           {\letgvalueempty{\??ms\currentmessagelibrary}}%
+         \futurelet\next\getinterfacemessage}}
+     {\long\def\next##1\stopmessages{\egroup}}%
+   \next}
+
+%D Here, the messages are stored in a way that saves hash
+%D entries, i.e. they are packed in one macro per library.
+%D This was important in the days when we used \TEX's with
+%D hash tables of about 10.000. The next, less efficient way
+%D of storing the message, makes \CONTEXT\ run upto 5\%
+%D faster by storing each message in a macro. In July 2000,
+%D this costs some 185 additional hash entries, and since
+%D we run large \TEX's, let do it!
+
+\def\startmessages #1 library: #2
+  {\definemessageconstant{#2}% handy for modules
+   \bgroup
+   \obeylines
+   \doifundefined{\m!prefix!#2}{\setgvalue{\m!prefix!#2}{#2}}%
+   \doifinsetelse{#1}{\currentresponses,all}
+     {\def\next
+        {\def\currentmessagelibrary{#2}%
+         \futurelet\next\getinterfacemessage}}
+     {\long\def\next##1\stopmessages{\egroup}}%
+   \next}
+
+\def\findinterfacemessage#1#2%
+  {\edef#2{\getvalue{\??ms\currentmessagelibrary#1}}}
+
+\def\doaddinterfacemessage#1#2%
+  {\doifdefined{\??ms\currentmessagelibrary#1}
+     {\debuggerinfotrue % we consider this an important error
+      \debuggerinfo
+        {message}
+        {duplicate tag #1
+         in library \currentmessagelibrary\space
+         of interface \currentresponses}}%
+   \setxvalue{\??ms\currentmessagelibrary#1}{#2}%
+   \futurelet\next\getinterfacemessage}
+
+\protect \endinput

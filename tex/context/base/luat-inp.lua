@@ -82,17 +82,22 @@ input.formats ['lua'] = 'LUAINPUTS' -- new
 input.suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 
 -- here we catch a few new thingies (todo: add these paths to context.tmf)
+--
+-- FONTFEATURES  = .;$TEXMF/fonts/fea//
+-- FONTCIDMAPS   = .;$TEXMF/fonts/cid//
 
-function input.checkconfigdata(instance)
+function input.checkconfigdata(instance) -- not yet ok, no time for debugging now
     local function fix(varname,default)
         local proname = varname .. "." .. instance.progname or "crap"
-        if not instance.environment[proname] and not instance.variables[proname] == "" and not instance.environment[varname] and not instance.variables[varname] == "" then
-            instance.variables[varname] = default
+        local p = instance.environment[proname]
+        local v = instance.environment[varname]
+        if not ((p and p ~= "") or (v and v ~= "")) then
+            instance.variables[varname] = default -- or environment?
         end
     end
     fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS")
-    fix("FONTFEATURES", ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
-    fix("FONTCIDMAPS" , ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    fix("FONTFEATURES", ".;$TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    fix("FONTCIDMAPS" , ".;$TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
 end
 
 -- backward compatible ones
@@ -193,6 +198,11 @@ function input.reset()
 
 end
 
+function input.reset_hashes(instance)
+    instance.lists = { }
+    instance.found = { }
+end
+
 function input.bare_variable(str)
  -- return string.gsub(string.gsub(string.gsub(str,"%s+$",""),'^"(.+)"$',"%1"),"^'(.+)'$","%1")
     return (str:gsub("\s*([\"\']?)(.+)%1\s*", "%2"))
@@ -258,7 +268,7 @@ input.settrace(tonumber(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRA
 -- loading the database files.
 
 do
-    local clock = os.clock
+    local clock = os.gettimeofday or os.clock
 
     function input.starttiming(instance)
         if instance then
@@ -532,6 +542,7 @@ function input.aux.extend_texmf_var(instance,specification) -- crap
         instance.variables['TEXMF'] = "{" .. instance.variables['TEXMF'] .. "}"
     end
     input.expand_variables(instance)
+    input.reset_hashes(instance)
 end
 
 -- locators
@@ -546,28 +557,6 @@ end
 function input.locatedatabase(instance,specification)
     return input.methodhandler('locators', instance, specification)
 end
-
---~ poor mans solution, from before we had lfs.isdir
---~
---~ function input.locators.tex(instance,specification)
---~     if specification and specification ~= '' then
---~         local files = {
---~             file.join(specification,'files'..input.lucsuffix),
---~             file.join(specification,'files'..input.luasuffix),
---~             file.join(specification,input.lsrname)
---~         }
---~         for _, filename in pairs(files) do
---~             local f = io.open(filename)
---~             if f then
---~                 input.logger('! tex locator', specification..' found')
---~                 input.aux.append_hash(instance,'file',specification,filename)
---~                 f:close()
---~                 return
---~             end
---~         end
---~         input.logger('? tex locator', specification..' not found')
---~     end
---~ end
 
 function input.locators.tex(instance,specification)
     if specification and specification ~= '' and lfs.isdir(specification) then
@@ -927,8 +916,6 @@ function input.expand_variables(instance)
     for k,v in pairs(instance.expansions) do
         instance.expansions[k] = v:gsub("\\", '/')
     end
-    -- ##########
-    --~     input.splitexpansions(instance) -- better not, fuzzy
 end
 
 function input.aux.expand_vars(instance,lst) -- simple vars
@@ -1380,7 +1367,7 @@ input.is_readable.tex = input.is_readable.file
 -- name/name
 
 function input.aux.collect_files(instance,names)
-    local filelist = nil
+    local filelist = { }
     for _, fname in pairs(names) do
         if fname then
             if input.trace > 2 then
@@ -1412,15 +1399,20 @@ function input.aux.collect_files(instance,names)
                     if blobfile then
                         if type(blobfile) == 'string' then
                             if not dname or blobfile:find(dname) then
-                                if not filelist then filelist = { } end
-                             -- input.logger('= collected', blobpath.." | "..blobfile.." | "..bname)
-                                filelist[#filelist+1] = file.join(blobpath,blobfile,bname)
+                                filelist[#filelist+1] = {
+                                    hash.type,
+                                    file.join(blobpath,blobfile,bname), -- search
+                                    input.concatinators[hash.type](blobpath,blobfile,bname) -- result
+                                }
                             end
                         else
                             for _, vv in pairs(blobfile) do
                                 if not dname or vv:find(dname) then
-                                    if not filelist then filelist = { } end
-                                    filelist[#filelist+1] = file.join(blobpath,vv,bname)
+                                    filelist[#filelist+1] = {
+                                        hash.type,
+                                        file.join(blobpath,vv,bname), -- search
+                                        input.concatinators[hash.type](blobpath,vv,bname) -- result
+                                    }
                                 end
                             end
                         end
@@ -1431,7 +1423,11 @@ function input.aux.collect_files(instance,names)
             end
         end
     end
-    return filelist
+    if #filelist > 0 then
+        return filelist
+    else
+        return nil
+    end
 end
 
 function input.suffix_of_format(str)
@@ -1450,54 +1446,30 @@ function input.suffixes_of_format(str)
     end
 end
 
---~ function input.aux.qualified_path(filename) -- make platform dependent / not good yet
---~     return
---~         filename:find("^%.+/") or
---~         filename:find("^/") or
---~         filename:find("^%a+%:") or
---~         filename:find("^%a+##")
---~ end
+do
 
---~ function input.normalize_name(original)
---~     -- internally we use type##spec##subspec ; this hackery slightly slows down searching
---~     local str = original or ""
---~     str = str:gsub("::",               "##")         -- ::             -> ##
---~     str = str:gsub("^(%a+)://"        ,"%1##")       -- zip://         -> zip##
---~     str = str:gsub("(.+)##(.+)##/(.+)","%1##%2##%3") -- ##/spec        -> ##spec
---~     if (input.trace>1) and (original ~= str) then
---~         input.logger('= normalizer',original.." -> "..str)
---~     end
---~     return str
---~ end
-
-do  -- called about 700 times for an empty doc (font initializations etc)
+    -- called about 700 times for an empty doc (font initializations etc)
     -- i need to weed the font files for redundant calls
 
     local letter     = lpeg.R("az","AZ")
-    local separator  = lpeg.P("##")
+    local separator  = lpeg.P("://")
 
-    local qualified  = lpeg.P(".")^0 * lpeg.P("/") + letter*lpeg.P(":") + letter^1*separator
-    local normalized = lpeg.Cs(
-        (letter^1*(lpeg.P("://")/"##") * (1-lpeg.P(false))^1) +
-        (lpeg.P("::")/"##" + (1-separator)^1*separator*(1-separator)^1*separator*(lpeg.P("/")/"") + 1)^0
-    )
+    local qualified = lpeg.P(".")^0 * lpeg.P("/") + letter*lpeg.P(":") + letter^1*separator
+    local rootbased = lpeg.P("/") + letter*lpeg.P(":")
 
-    -- ./name ../name  /name c: zip## (todo: use url internally and get rid of ##)
+    -- ./name ../name  /name c: ://
     function input.aux.qualified_path(filename)
         return qualified:match(filename)
     end
-
-    -- zip:// -> zip## ; :: -> ## ; aa##bb##/cc -> aa##bb##cc
-    function input.normalize_name(original)
-        local str = normalized:match(original or "")
-        if input.trace > 1 and  original ~= str then
-            input.logger('= normalizer',original.." -> "..str)
-        end
-        return str
+    function input.aux.rootbased_path(filename)
+        return rootbased:match(filename)
     end
-end
 
--- split the next one up, better for jit
+    function input.normalize_name(original)
+        return original
+    end
+
+end
 
 function input.aux.register_in_trees(instance,name)
     if not name:find("^%.") then
@@ -1505,11 +1477,13 @@ function input.aux.register_in_trees(instance,name)
     end
 end
 
+-- split the next one up, better for jit
+
 function input.aux.find_file(instance,filename) -- todo : plugin (scanners, checkers etc)
     local result = { }
     local stamp  = nil
-    filename = input.normalize_name(filename)
-    filename = file.collapse_path(filename:gsub("\\","/"))
+    filename = input.normalize_name(filename)  -- elsewhere
+    filename = file.collapse_path(filename:gsub("\\","/")) -- elsewhere
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -1581,7 +1555,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
         local typespec = input.variable_of_format(filetype)
         local pathlist = input.expanded_path_list(instance,typespec)
         if not pathlist or #pathlist == 0 then
-            -- no pathlist, access check only
+            -- no pathlist, access check only / todo == wildcard
             if input.trace > 2 then
                 input.logger('? filename',filename)
                 input.logger('? filetype',filetype or '?')
@@ -1596,8 +1570,9 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             end
             -- this is actually 'other text files' or 'any' or 'whatever'
             local filelist = input.aux.collect_files(instance,wantedfiles)
-            filename = filelist and filelist[1]
-            if filename then
+            local lf = filelist and filelist[1]
+            if fl then
+                filename = fl[3]
                 result[#result+1] = filename
                 done = true
             end
@@ -1607,8 +1582,8 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             local doscan, recurse
             if input.trace > 2 then
                 input.logger('? filename',filename)
-                if pathlist then input.logger('? path list',table.concat(pathlist," | ")) end
-                if filelist then input.logger('? file list',table.concat(filelist," | ")) end
+            --                if pathlist then input.logger('? path list',table.concat(pathlist," | ")) end
+            --                if filelist then input.logger('? file list',table.concat(filelist," | ")) end
             end
             -- a bit messy ... esp the doscan setting here
             for _, path in pairs(pathlist) do
@@ -1621,16 +1596,18 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                     -- compare list entries with permitted pattern
                     pathname = pathname:gsub("([%-%.])","%%%1") -- this also influences
                     pathname = pathname:gsub("/+$", '/.*')      -- later usage of pathname
-                    pathname = pathname:gsub("//", '/.-/')
+                    pathname = pathname:gsub("//", '/.-/')      -- not ok for /// but harmless
                     local expr = "^" .. pathname
                     -- input.debug('?',expr)
-                    for _, f in pairs(filelist) do
+                    for _, fl in ipairs(filelist) do
+                        local f = fl[2]
                         if f:find(expr) then
                             -- input.debug('T',' '..f)
                             if input.trace > 2 then
                                 input.logger('= found in hash',f)
                             end
-                            result[#result+1] = f
+                            --- todo, test for readable
+                            result[#result+1] = fl[3]
                             input.aux.register_in_trees(instance,f) -- for tracing used files
                             done = true
                             if not instance.allresults then break end
@@ -1640,7 +1617,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                     end
                 end
                 if not done and doscan then
-                    -- check if on disk / unchecked / does not work at all
+                    -- check if on disk / unchecked / does not work at all / also zips
                     if input.method_is_file(pathname) then -- ?
                         local pname = pathname:gsub("%.%*$",'')
                         if not pname:find("%*") then
@@ -1717,10 +1694,7 @@ end
 
 if not input.concatinators  then input.concatinators = { } end
 
-function input.concatinators.tex(tag,path,name)
-    return tag .. '/' .. path .. '/' .. name
-end
-
+input.concatinators.tex  = file.join
 input.concatinators.file = input.concatinators.tex
 
 function input.find_files(instance,filename,filetype,mustexist)
@@ -1922,15 +1896,6 @@ function input.aux.register_file(files, name, path)
     end
 end
 
--- zip:: zip## zip://
--- zip::pathtozipfile::pathinzipfile (also: pathtozipfile/pathinzipfile)
--- file::name
--- tex::name
--- kpse::name
--- kpse::format::name
--- parent::n::name
--- parent::name (default 2)
-
 if not input.finders  then input.finders  = { } end
 if not input.openers  then input.openers  = { } end
 if not input.loaders  then input.loaders  = { } end
@@ -1940,30 +1905,37 @@ input.openers.notfound  = { nil }
 input.loaders.notfound  = { false, nil, 0 }
 
 function input.splitmethod(filename)
-    local method, specification = filename:match("^(.-)##(.+)$")
-    if method and specification then
-        return method, specification
+    if not filename then
+        return { } -- safeguard
+    elseif type(filename) == "table" then
+        return filename -- already split
+    elseif not filename:find("://") then
+        return { scheme="file", path = filename, original=filename } -- quick hack
     else
-        return 'tex', filename
+        return url.hashed(filename)
     end
 end
 
 function input.method_is_file(filename)
-    local method, specification = input.splitmethod(filename)
-    return method == 'tex' or method == 'file'
+    return input.splitmethod(filename).scheme == 'file'
+end
+
+function table.sequenced(t,sep) -- temp here
+    local s = { }
+    for k, v in pairs(t) do
+        s[#s+1] = k .. "=" .. v
+    end
+    return table.concat(s, sep or " | ")
 end
 
 function input.methodhandler(what, instance, filename, filetype) -- ...
-    local method, specification = input.splitmethod(filename)
-    if method and specification then -- redundant
-        if input[what][method] then
-            input.logger('= handler',filename.." -> "..what.." | "..method.." | "..specification)
-            return input[what][method](instance,specification,filetype)
-        else
-            return nil
-        end
+    local specification = (type(filename) == "string" and input.splitmethod(filename)) or filename -- no or { }, let it bomb
+    local scheme = specification.scheme
+    if input[what][scheme] then
+        input.logger('= handler',specification.original .." -> " .. what .. " -> " .. table.sequenced(specification))
+        return input[what][scheme](instance,filename,filetype) -- todo: specification
     else
-        return input[what].tex(instance,filename,filetype)
+        return input[what].tex(instance,filename,filetype) -- todo: specification
     end
 end
 
@@ -1996,6 +1968,8 @@ function input.texdatablob(instance, filename, filetype)
     local ok, data, size = input.loadbinfile(instance, filename, filetype)
     return data or ""
 end
+
+input.loadtexfile = input.texdatablob
 
 function input.openfile(filename) -- brrr texmf.instance here  / todo ! ! ! ! !
     local fullname = input.findtexfile(texmf.instance, filename)

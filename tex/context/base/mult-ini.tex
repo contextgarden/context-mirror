@@ -77,8 +77,10 @@
 \def\c!prefix!{c!} \def\e!prefix!{e!} \def\f!prefix!{f!}
 \def\k!prefix!{k!} \def\l!prefix!{l!} \def\m!prefix!{m!}
 \def\p!prefix!{p!} \def\r!prefix!{r!} \def\s!prefix!{s!}
-\def\v!prefix!{v!} \def\x!prefix!{x!} \def\y!prefix!{y!}
-\def\t!prefix!{t!}
+\def\v!prefix!{v!} \def\t!prefix!{t!}
+
+% \def\x!prefix!{x!} % obsolete
+% \def\y!prefix!{y!} % obsolete
 
 %D \macros
 %D   [constants,variables,commands]
@@ -381,121 +383,11 @@
 %D are a bit more complicated than neccessary. The \NEWLINE\
 %D token is used as message separator.
 %D
-%D For internal purposes one can use \type {\dogetmessage},
+%D For internal purposes one can use \type {\setmessagetext},
 %D which puts the message text asked for in \type
 %D {\currentmessagetext}.
 
-\def\findinterfacemessage#1#2%
-  {\let#2\empty
-   \def\dofindinterfacemessage##1 #1: ##2\relax##3\end{\def#2{##2}}%
-   \edef\!!stringa{\getvalue{\??ms\currentmessagelibrary} #1: \relax}%
-   \expandafter\dofindinterfacemessage\!!stringa\end}
-
-\def\composemessagetext#1--#2--#3--#4--#5--#6--#7--#8--#9\\%
-  {\def\docomposemessagetext##1,##2,##3,##4,##5,##6,##7,##8,##9\\%
-     {\edef\currentmessagetext{#1##1#2##2#3##3#4##4#5##5#6##6#7##7#8##8}}%
-   \docomposemessagetext}
-
-\def\dogetmessage#1#2%
-  {\def\currentmessagelibrary{#1}%
-   \findinterfacemessage{#2}\currentmessagetext}
-
-\unexpanded\def\getmessage#1#2%
-  {\def\currentmessagelibrary{#1}%
-   \findinterfacemessage{#2}\currentmessagetext
-   \currentmessagetext}
-
-\unexpanded\def\makemessage#1#2#3%
-  {\def\currentmessagelibrary{#1}%
-   \findinterfacemessage{#2}\currentmessagetext
-   \@EA\composemessagetext\currentmessagetext----------------\\#3,,,,,,,,\\%
-   \currentmessagetext}
-
-\def\showmessage#1#2#3%
-  {\def\currentmessagelibrary{#1}%
-   \findinterfacemessage{#2}\currentmessagetext
-   \findinterfacemessage{title}\currentmessagetitle
-   \ifx\currentmessagetext\empty
-     \def\currentmessagetext{<unknown message #2>}%
-   \else
-     \@EA\composemessagetext\currentmessagetext----------------\\#3,,,,,,,,\\%
-   \fi
-   \@EA\writestatus\@EA{\currentmessagetitle}{\currentmessagetext}}
-
-\def\doaddinterfacemessage#1#2%
-  {\findinterfacemessage{#1}\currentmessagetext
-   \doifelsenothing\currentmessagetext
-     {\setxvalue{\??ms\currentmessagelibrary}%
-        {\getvalue{\??ms\currentmessagelibrary} #1: #2\relax}}
-     {\debuggerinfotrue % we consider this an important error
-      \debuggerinfo
-        {message}
-        {duplicate tag #1
-         in library \currentmessagelibrary\space
-         of interface \currentresponses}}%
-   \futurelet\next\getinterfacemessage}
-
-\bgroup
-\obeylines
-\gdef\addinterfacemessage#1: #2
-  {\doaddinterfacemessage{#1}{#2}}%
-\egroup
-
-\def\getinterfacemessage
-  {\ifx\next\stopmessages
-     \egroup\expandafter\gobbleoneargument
-   \else
-     \expandafter\addinterfacemessage
-   \fi}
-
-\let\stopmessages\undefined % for dep checker
-
-\def\startmessages #1 library: #2
-  {\definemessageconstant{#2}% handy for modules
-   \bgroup
-   \obeylines
-   \doifinsetelse{#1}{\currentresponses,all}
-     {\def\next
-        {\def\currentmessagelibrary{#2}%
-         \doifundefined{\??ms\currentmessagelibrary}
-           {\letgvalueempty{\??ms\currentmessagelibrary}}%
-         \futurelet\next\getinterfacemessage}}
-     {\long\def\next##1\stopmessages{\egroup}}%
-   \next}
-
-%D Here, the messages are stored in a way that saves hash
-%D entries, i.e. they are packed in one macro per library.
-%D This was important in the days when we used \TEX's with
-%D hash tables of about 10.000. The next, less efficient way
-%D of storing the message, makes \CONTEXT\ run upto 5\%
-%D faster by storing each message in a macro. In July 2000,
-%D this costs some 185 additional hash entries, and since
-%D we run large \TEX's, let do it!
-
-\def\startmessages #1 library: #2
-  {\definemessageconstant{#2}% handy for modules
-   \bgroup
-   \obeylines
-   \doifinsetelse{#1}{\currentresponses,all}
-     {\def\next
-        {\def\currentmessagelibrary{#2}%
-         \futurelet\next\getinterfacemessage}}
-     {\long\def\next##1\stopmessages{\egroup}}%
-   \next}
-
-\def\findinterfacemessage#1#2%
-  {\edef#2{\getvalue{\??ms\currentmessagelibrary#1}}}
-
-\def\doaddinterfacemessage#1#2%
-  {\doifdefined{\??ms\currentmessagelibrary#1}
-     {\debuggerinfotrue % we consider this an important error
-      \debuggerinfo
-        {message}
-        {duplicate tag #1
-         in library \currentmessagelibrary\space
-         of interface \currentresponses}}%
-   \setxvalue{\??ms\currentmessagelibrary#1}{#2}%
-   \futurelet\next\getinterfacemessage}
+\loadmarkfile{mult-ini}
 
 %D \macros
 %D   {ifshowwarnings, ifshowmessages}
@@ -511,6 +403,8 @@
 %D
 %D Turning off messages also turns off warnings, which is
 %D quote logical because they are less important.
+
+% not yet mkiv
 
 \newif\ifshowwarnings \showwarningstrue
 \newif\ifshowmessages \showmessagestrue
@@ -1280,20 +1174,35 @@
 \def\c!internal!n {-}
 \let\c!internal!  \c!internal!y
 
+% \def\setinterfaceconstant#1#2%
+%   {\setvalue{\c!prefix!#1}{\c!internal!#1}%
+%    \doifelse{#2}\nointerfaceobject % ?
+%      {\debuggerinfo{constant}{#1 defined as #1 by default}%
+%       }% \setvalue{\k!prefix!#1}{#1}} % was #2 -> #1
+%      {\debuggerinfo{constant}{#1 defined as #2}%
+%       \ifinterfacetranslation
+%         \setvalue{\x!prefix!#1}{#2}%
+%       \fi
+%       \checksetvalue{\k!prefix!#2}{#1}%
+%       \setvalue{\k!prefix!#2}{#1}}}
+
+% temporary mkiv hack
+
+\ifx\dowithinterfaceconstant\undefined \let\dowithinterfaceconstant\gobbletwoarguments \fi
+\ifx\dowithinterfacevariable\undefined \let\dowithinterfacevariable\gobbletwoarguments \fi
+
 \def\setinterfaceconstant#1#2%
-  {\setvalue{\c!prefix!#1}{\c!internal!#1}%
+  {\dowithinterfaceconstant{#1}{#2}%
+   \setvalue{\c!prefix!#1}{\c!internal!#1}%
    \doifelse{#2}\nointerfaceobject % ?
-     {\debuggerinfo{constant}{#1 defined as #1 by default}%
-      }% \setvalue{\k!prefix!#1}{#1}} % was #2 -> #1
+     {\debuggerinfo{constant}{#1 defined as #1 by default}}%
      {\debuggerinfo{constant}{#1 defined as #2}%
-      \ifinterfacetranslation
-        \setvalue{\x!prefix!#1}{#2}%
-      \fi
       \checksetvalue{\k!prefix!#2}{#1}%
       \setvalue{\k!prefix!#2}{#1}}}
 
 \def\setinterfacevariable#1#2%
-  {\doifelse{#2}\nointerfaceobject
+  {\dowithinterfacevariable{#1}{#2}%
+   \doifelse{#2}\nointerfaceobject
      {\debuggerinfo{variable}{#1 defined as #1 by default}%
       \checksetvalue{\v!prefix!#1}{#1}%
       \setvalue{\v!prefix!#1}{#1}}
@@ -1330,40 +1239,43 @@
 %D in these situations we could use the c||version, but for
 %D documentation purposes the x||alternative comes in handy.
 
+% \def\defineinterfaceconstant#1#2%
+%   {\setvalue{\c!prefix!#1}{#2}%
+%    \ifinterfacetranslation
+%      \setvalue{\x!prefix!#1}{#2}%
+%    \fi}
+
 \def\defineinterfaceconstant#1#2%
-  {\setvalue{\c!prefix!#1}{#2}%
-   \ifinterfacetranslation
-     \setvalue{\x!prefix!#1}{#2}%
-   \fi}
+  {\setvalue{\c!prefix!#1}{#2}}
 
-%D \macros
-%D   {startinterfacesetupconstant}
-%D
-%D The next command, \type{\startinterfacesetupconstant}, which
-%D behavior also depends on the boolean, is used for constants
-%D that are only needed in these quick reference macro's. The
-%D following, more efficient approach does not work here,
-%D because it sometimes generates spaces.
-%D
-%D \starttyping
-%D \def\setinterfacesetupconstant
-%D   {\ifinterfacetranslation
-%D      \expandafter\setinterfaceconstant
-%D    \fi}
-%D \stoptyping
-%D
-%D We therefore use the more redundant but robust method:
+% %D \macros
+% %D   {startinterfacesetupconstant}
+% %D
+% %D The next command, \type{\startinterfacesetupconstant}, which
+% %D behavior also depends on the boolean, is used for constants
+% %D that are only needed in these quick reference macro's. The
+% %D following, more efficient approach does not work here,
+% %D because it sometimes generates spaces.
+% %D
+% %D \starttyping
+% %D \def\setinterfacesetupconstant
+% %D   {\ifinterfacetranslation
+% %D      \expandafter\setinterfaceconstant
+% %D    \fi}
+% %D \stoptyping
+% %D
+% %D We therefore use the more redundant but robust method:
 
-\def\setinterfacesetupvariable#1#2%
-  {\ifinterfacetranslation
-     \doifelse{#2}\nointerfaceobject
-       {\setvalue{\y!prefix!#1}{#1}}
-       {\setvalue{\y!prefix!#1}{#2}}%
-   \fi}
-
-\def\startsetupvariables{\startinterfaceobjects\setinterfacesetupvariable\stopsetupvariables}
-
-\let\stopsetupvariables\relax
+% \def\setinterfacesetupvariable#1#2%
+%   {\ifinterfacetranslation
+%      \doifelse{#2}\nointerfaceobject
+%        {\setvalue{\y!prefix!#1}{#1}}
+%        {\setvalue{\y!prefix!#1}{#2}}%
+%    \fi}
+%
+% \def\startsetupvariables{\startinterfaceobjects\setinterfacesetupvariable\stopsetupvariables}
+%
+% \let\stopsetupvariables\relax
 
 %D \macros
 %D   {startelements}
@@ -1432,83 +1344,68 @@
 %D
 %D \stopcommands
 %D \stoptyping
-%D
-%D Here we also have to take care of the optional translation
-%D needed for reference cards.
 
-% \ifx\doifdefinedascommandelse\undefined
-%   \let\doifdefinedascommandelse\thirdofthreearguments
-% \else
-%   % this one will be defined in the encoding modules
-% \fi
+% %D Here we also have to take care of the optional translation
+% %D needed for reference cards.
+
+% \def\setinterfacecommand#1#2%
+%   {\doifelse{#2}\nointerfaceobject
+%      {\debuggerinfo{command}{no link to #1}%
+%       \setinterfacesetupvariable{#1}{#1}}
+%      {\doifelse{#1}{#2}
+%         {\debuggerinfo{command}{#1 remains #1}}
+%         {\doifdefinedelse{#2}
+%            {\debuggerinfo{command}{core command #2 redefined as #1}}%
+%            {\debuggerinfo{command}{#2 defined as #1}}%
+%         %\@EAEAEA\def\@EA\csname\@EA#2\@EA\endcsname\@EA{\csname#1\endcsname}}%
+%         \@EA\def\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}% ugly but faster
+%       \setinterfacesetupvariable{#1}{#2}}}
 
 \def\setinterfacecommand#1#2%
   {\doifelse{#2}\nointerfaceobject
-     {\debuggerinfo{command}{no link to #1}%
-      \setinterfacesetupvariable{#1}{#1}}
+     {\debuggerinfo{command}{no link to #1}}
      {\doifelse{#1}{#2}
         {\debuggerinfo{command}{#1 remains #1}}
         {\doifdefinedelse{#2}
            {\debuggerinfo{command}{core command #2 redefined as #1}}%
            {\debuggerinfo{command}{#2 defined as #1}}%
-        %\@EAEAEA\def\@EA\csname\@EA#2\@EA\endcsname\@EA{\csname#1\endcsname}}%
-        \@EA\def\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}% ugly but faster
-      \setinterfacesetupvariable{#1}{#2}}}
+        \@EA\def\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}}}
 
 \def\startcommands{\startinterfaceobjects\setinterfacecommand\stopcommands}
 
 \let\stopcommands\relax
 
-%D \macros
-%D   {getinterfaceconstant, getinterfacevariable}
-%D
-%D Generating the interface translation macro's that are used
-%D in the reference lists, is enabled by setting the boolean:
-%D
-%D \starttyping
-%D \interfacetranslationtrue
-%D \stoptyping
-%D
-%D Keep in mind that enabling interfacetranslation costs a
-%D bit of hash space.
-
-\newif\ifinterfacetranslation
-
-% for a long time:
+% %D \macros
+% %D   {getinterfaceconstant, getinterfacevariable}
+% %D
+% %D Generating the interface translation macro's that are used
+% %D in the reference lists, is enabled by setting the boolean:
+% %D
+% %D \starttyping
+% %D \interfacetranslationtrue
+% %D \stoptyping
+% %D
+% %D Keep in mind that enabling interfacetranslation costs a
+% %D bit of hash space.
 %
+% %D Interface translation is obsolete now that we use an \XML\
+% %D definition base.
+
+% \newif\ifinterfacetranslation
+
 % \def\getinterfaceconstant#1%
 %   {\ifinterfacetranslation
-%      \doifdefinedelse{\x!prefix!#1}
-%        {\getvalue{\x!prefix!#1}}
-%        {#1}%
+%      \executeifdefined{\x!prefix!#1}{#1}%
 %    \else
 %      #1%
 %    \fi}
-%
+
 % \def\getinterfacevariable#1%
 %   {\ifinterfacetranslation
-%      \doifdefinedelse{\y!prefix!#1}
-%        {\getvalue{\y!prefix!#1}}
-%        {#1}%
+%      \executeifdefined{\y!prefix!#1}{#1}%
 %    \else
 %      #1%
 %    \fi}
-%
-% more compact
-
-\def\getinterfaceconstant#1%
-  {\ifinterfacetranslation
-     \executeifdefined{\x!prefix!#1}{#1}%
-   \else
-     #1%
-   \fi}
-
-\def\getinterfacevariable#1%
-  {\ifinterfacetranslation
-     \executeifdefined{\y!prefix!#1}{#1}%
-   \else
-     #1%
-   \fi}
 
 %D When a reference list is generated, one does not need to
 %D generate a new format. Just reloading the relevant

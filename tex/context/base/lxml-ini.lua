@@ -140,30 +140,29 @@ end
 
 xml.originalload = xml.load
 
+--~ function xml.load(filename)
+--~     input.starttiming(lxml)
+--~     local x = xml.originalload(filename)
+--~     input.stoptiming(lxml)
+--~     return x
+--~ end
+
 function xml.load(filename)
     input.starttiming(lxml)
-    local x = xml.originalload(filename)
+    local xmldata = xml.convert((filename and input.loadtexfile(texmf.instance,filename)) or "")
     input.stoptiming(lxml)
-    return x
-end
-
-function lxml.filename(filename) -- some day we will do this in input, first figure out /
-    return input.find_file(texmf.instance,url.filename(filename)) or ""
+    return xmldata
 end
 
 function lxml.load(id,filename)
-    if texmf then
-        local fullname = lxml.filename(filename)
-        if fullname ~= "" then
-            filename = fullname
-        end
-    end
     lxml.loaded[id] = xml.load(filename)
     return lxml.loaded[id], filename
 end
 
 function lxml.include(id,pattern,attribute,recurse)
-    xml.include(lxml.id(id),pattern,attribute,recurse,lxml.filename)
+    input.starttiming(lxml)
+    xml.include(lxml.id(id),pattern,attribute,recurse,function(name) return (name and input.loadtexfile(texmf.instance,name)) or "" end)
+    input.stoptiming(lxml)
 end
 
 function lxml.utfize(id)
@@ -298,18 +297,34 @@ function lxml.setsetup(id,pattern,setup)
             end
         end
     else
-        if trace then
-            texio.write_nl(string.format("lpath pattern -> %s -> %s", pattern, setup))
-        end
-        for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
-            local dtdk = (dt and dt[dk]) or rt
-            dtdk.command = setup
-            if trace then
+        local a, b = setup:match("^(.+:)(%*)$")
+        if a and b then
+            for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
+                local dtdk = (dt and dt[dk]) or rt
                 local ns, tg = dtdk.rn or dtdk.ns, dtdk.tg
-                if ns == "" then
-                    texio.write_nl(string.format("lpath matched -> %s -> %s", tg, setup))
-                else
-                    texio.write_nl(string.format("lpath matched -> %s:%s -> %s", ns, tg, setup))
+                dtdk.command = a .. tg
+                if trace then
+                    if ns == "" then
+                        texio.write_nl(string.format("lpath matched -> %s -> %s", tg, dtdk.command))
+                    else
+                        texio.write_nl(string.format("lpath matched -> %s:%s -> %s", ns, tg, dtdk.command))
+                    end
+                end
+            end
+        else
+            if trace then
+                texio.write_nl(string.format("lpath pattern -> %s -> %s", pattern, setup))
+            end
+            for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
+                local dtdk = (dt and dt[dk]) or rt
+                dtdk.command = setup
+                if trace then
+                    local ns, tg = dtdk.rn or dtdk.ns, dtdk.tg
+                    if ns == "" then
+                        texio.write_nl(string.format("lpath matched -> %s -> %s", tg, setup))
+                    else
+                        texio.write_nl(string.format("lpath matched -> %s:%s -> %s", ns, tg, setup))
+                    end
                 end
             end
         end

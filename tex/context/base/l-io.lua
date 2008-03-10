@@ -67,37 +67,9 @@ function io.noflines(f)
     return n
 end
 
---~ t, f, n = os.clock(), io.open("testbed/sample-utf16-bigendian-big.txt",'rb'), 0
---~ for a in io.characters(f) do n = n + 1 end
---~ print(string.format("characters: %s, time: %s", n, os.clock()-t))
-
 do
 
     local sb = string.byte
-
---~     local nextchar = {
---~         [ 4] = function(f)
---~             return f:read(1), f:read(1), f:read(1), f:read(1)
---~         end,
---~         [ 2] = function(f)
---~             return f:read(1), f:read(1)
---~         end,
---~         [ 1] = function(f)
---~             return f:read(1)
---~         end,
---~         [-2] = function(f)
---~             local a = f:read(1)
---~             local b = f:read(1)
---~             return b, a
---~         end,
---~         [-4] = function(f)
---~             local a = f:read(1)
---~             local b = f:read(1)
---~             local c = f:read(1)
---~             local d = f:read(1)
---~             return d, c, b, a
---~         end
---~     }
 
     local nextchar = {
         [ 4] = function(f)

@@ -361,6 +361,9 @@
    \ifflushingfloats \else
      \OTRONEdosettopinserts
      \OTRONEdosetbotinserts
+     \ifsomefloatwaiting
+        \doif\@@bkcache\v!no\doflushfloats
+     \fi
    \fi}
 
 % \def\OTRONEdotopinsertions

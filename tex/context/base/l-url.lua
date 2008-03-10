@@ -29,7 +29,7 @@ do
 
     local scheme    =                 lpeg.Cs((escaped+(1-colon-slash-qmark-hash))^0) * colon + lpeg.Cc("")
     local authority = slash * slash * lpeg.Cs((escaped+(1-      slash-qmark-hash))^0)         + lpeg.Cc("")
-    local path      =                 lpeg.Cs((escaped+(1-            qmark-hash))^0)         + lpeg.Cc("")
+    local path      = slash *         lpeg.Cs((escaped+(1-            qmark-hash))^0)         + lpeg.Cc("")
     local query     = qmark         * lpeg.Cs((escaped+(1-                  hash))^0)         + lpeg.Cc("")
     local fragment  = hash          * lpeg.Cs((escaped+(1-           endofstring))^0)         + lpeg.Cc("")
 
@@ -42,29 +42,52 @@ do
 end
 
 function url.hashed(str)
-    str = url.split(str)
-    return { scheme = str[1], authority = str[2], path = str[3], query = str[4], fragment = str[5] }
+    local s = url.split(str)
+    return {
+        scheme = (s[1] ~= "" and s[1]) or "file",
+        authority = s[2],
+        path = s[3],
+        query = s[4],
+        fragment = s[5],
+        original=str
+    }
 end
 
 function url.filename(filename)
     local t = url.hashed(filename)
-    return (t.scheme == "file" and t.path:gsub("^/([a-zA-Z]:/)","%1")) or filename
+    return (t.scheme == "file" and t.path:gsub("^/([a-zA-Z])([:|])/)","%1:")) or filename
+end
+
+function url.query(str)
+    if type(str) == "string" then
+        local t = { }
+        for k, v in str:gmatch("([^&=]*)=([^&=]*)") do
+            t[k] = v
+        end
+        return t
+    else
+        return str
+    end
 end
 
 --~ print(url.filename("file:///c:/oeps.txt"))
 --~ print(url.filename("c:/oeps.txt"))
 --~ print(url.filename("file:///oeps.txt"))
+--~ print(url.filename("file:///etc/test.txt"))
 --~ print(url.filename("/oeps.txt"))
 
 --  from the spec on the web (sort of):
 --~
 --~ function test(str)
 --~     print(table.serialize(url.hashed(str)))
---~  -- print(table.serialize(url.split(str)))
 --~ end
 ---~
 --~ test("%56pass%20words")
 --~ test("file:///c:/oeps.txt")
+--~ test("file:///c|/oeps.txt")
+--~ test("file:///etc/oeps.txt")
+--~ test("file://./etc/oeps.txt")
+--~ test("file:////etc/oeps.txt")
 --~ test("ftp://ftp.is.co.za/rfc/rfc1808.txt")
 --~ test("http://www.ietf.org/rfc/rfc2396.txt")
 --~ test("ldap://[2001:db8::7]/c=GB?objectClass?one#what")
@@ -75,3 +98,6 @@ end
 --~ test("urn:oasis:names:specification:docbook:dtd:xml:4.1.2")
 --~ test("/etc/passwords")
 --~ test("http://www.pragma-ade.com/spaced%20name")
+
+--~ test("zip:///oeps/oeps.zip#bla/bla.tex")
+--~ test("zip:///oeps/oeps.zip?bla/bla.tex")

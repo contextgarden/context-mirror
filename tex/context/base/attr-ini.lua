@@ -15,6 +15,104 @@ if not modules then modules = { } end modules ['attr-ini'] = {
 
 nodes = nodes or { }
 
+-- This is not the most ideal place, but it will do. Maybe we need to move
+-- attributes to node-att.lua.
+
+do
+
+    -- just for testing
+
+    local reserved = { }
+
+    function nodes.register(n)
+        reserved[#reserved+1] = n
+    end
+
+    function nodes.cleanup_reserved(nofboxes) -- todo
+        local nr, free = #reserved, node.free
+        for i=1,nr do
+            free(reserved[i])
+        end
+        local nl, tb, flush = 0, tex.box, node.flush_list
+        if nofboxes then
+            for i=1,nofboxes do
+                local l = tb[i]
+                if l then
+            --      flush(l)
+                    tb[i] = nil
+                    nl = nl + 1
+                end
+            end
+        end
+        reserved = { }
+        return nr, nl, nofboxes
+    end
+
+end
+
+do
+
+    local pdfliteral = node.new("whatsit",8)   pdfliteral.next, pdfliteral.prev  = nil, nil  pdfliteral.mode = 1
+    local disc       = node.new("disc")        disc.next,       disc.prev        = nil, nil
+    local kern       = node.new("kern",1)      kern.next,       kern.prev        = nil, nil
+    local penalty    = node.new("penalty")     penalty.next,    penalty.prev     = nil, nil
+    local glue       = node.new("glue")        glue.next,       glue.prev        = nil, nil
+    local glue_spec  = node.new("glue_spec")   glue_spec.next,  glue_spec.prev   = nil, nil
+
+    nodes.register(pdfliteral)
+    nodes.register(disc)
+    nodes.register(kern)
+    nodes.register(penalty)
+    nodes.register(glue)
+    nodes.register(glue_spec)
+
+    local copy = node.copy
+
+    function nodes.penalty(p)
+        local n = copy(penalty)
+        n.penalty = p
+        return n
+    end
+    function nodes.kern(k)
+        local n = copy(kern)
+        n.kern = k
+        return n
+    end
+    function nodes.glue(width,stretch,shrink)
+        local n = copy(glue)
+        local s = copy(glue_spec)
+        s.width, s.stretch, s.shrink = width, stretch, shrink
+        n.spec = s
+        return n
+    end
+    function nodes.glue_spec(width,stretch,shrink)
+        local s = copy(glue_spec)
+        s.width, s.stretch, s.shrink = width, stretch, shrink
+        return s
+    end
+
+    function nodes.disc()
+        return copy(disc)
+    end
+
+    function nodes.pdfliteral(str)
+        local t = copy(pdfliteral)
+        t.data = str
+        return t
+    end
+
+end
+
+function tex.node_mem_status()
+    -- todo: lpeg
+    local s = status.node_mem_usage
+    local t = { }
+    for n, tag in s:gmatch("(%d+) ([a-z_]+)") do
+        t[tag] = n
+    end
+    return t
+end
+
 --
 -- attributes
 --
@@ -742,13 +840,6 @@ function effects.register(effect,stretch,rulethickness)
     return effects.registered[stamp]
 end
 
---~ backends.pdf.effects = {
---~     normal = 1,
---~     inner  = 1,
---~     outer  = 2,
---~     both   = 3,
---~     hidden = 4,
---~ }
 backends.pdf.effects = {
     normal = 0,
     inner  = 0,
@@ -757,28 +848,20 @@ backends.pdf.effects = {
     hidden = 3,
 }
 
-function effects.reference(effect,stretch,rulethickness) -- will move, test code, we will develop a proper model for that
+function effects.reference(effect,stretch,rulethickness)
+    -- always, no zero test (removed)
+    rulethickness = number.dimenfactors["bp"]*rulethickness
     effect = backends.pdf.effects[effect] or backends.pdf.effects['normal']
-    if rulethickness > 0 then
-        rulethickness = number.dimenfactors["bp"]*rulethickness .. " w "
-    else
-        rulethickness = ""
-    end
-    if stretch > 0 then
-        stretch = stretch.. " Tc "
-    else
-        stretch = ""
-    end
-    return backends.pdf.literal(string.format("%s%s%s Tr",stretch,rulethickness,effect)) -- watch order
+    return backends.pdf.literal(string.format("%s Tc %s w %s Tr",stretch,rulethickness,effect)) -- watch order
 end
 
-effects.none = effects.reference(effect,0,0)
+effects.none = effects.reference(0,0,0) -- faster: backends.pdf.literal("0 Tc 0 w 0 Tr")
 
 shipouts.plugins.effect = {
     namespace   = effects,
     initializer = states.initialize,
-    finalizer   = states.finalize  ,
-    processor   = states.process   ,
+    finalizer   = states.finalize,
+    processor   = states.process,
 }
 
 -- layers

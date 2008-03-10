@@ -550,9 +550,9 @@
 %D new stuff :
 
 \def\partialexpanded#1%
-   {\let\notexpanded\noexpand
+   {\let\@@notexpanded\noexpand
     \long\xdef\@@expanded{\noexpand#1}%
-    \let\notexpanded\empty
+    \let\@@notexpanded\empty
     \@@expanded}
 
 % for Simon ; watch how we make them fully expandable (i.e.

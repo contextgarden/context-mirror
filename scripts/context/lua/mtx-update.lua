@@ -19,75 +19,105 @@ scripts.update  = scripts.update  or { }
 minimals        = minimals        or { }
 minimals.config = minimals.config or { }
 
-scripts.update.collections = {
+os.setenv("CYGWIN","nontsec")
+
+scripts.update.formats = {
+    "cont-en",
+    "cont-nl",
+    "cont-cz",
+    "cont-de",
+    "cont-fa",
+    "cont-it",
+    "cont-ro",
+    "cont-uk",
+    "metafun",
+    "mptopdf",
+    "plain"
+}
+
+scripts.update.repositories = {
+    "current",
+    "experimental"
+}
+
+scripts.update.versions = {
+    "current",
+    "latest"
+}
+
+scripts.update.engines = {
     ["luatex"] = {
-        { "base/tex/",         "texmf" },
-        { "base/metapost/",    "texmf" },
-        { "fonts/new/",        "texmf" },
-        { "fonts/common/",     "texmf" },
-        { "fonts/other/",      "texmf" },
-        { "context/current/",  "texmf-context" },
-        { "context/img/",      "texmf-context" },
-        { "misc/setuptex/",    "." },
-        { "misc/web2c",        "texmf" },
-        { "bin/common/%s/",    "texmf-%s" },
-        { "bin/context/%s/",   "texmf-%s" },
-        { "bin/metapost/%s/",  "texmf-%s" },
-        { "bin/luatex/%s/",    "texmf-%s" },
-        { "bin/man/",          "texmf-%s" }
+        { "base/tex/",                "texmf" },
+        { "base/metapost/",           "texmf" },
+        { "fonts/new/",               "texmf" },
+        { "fonts/common/",            "texmf" },
+        { "fonts/other/",             "texmf" },
+        { "context/<version>/",       "texmf-context" },
+        { "context/img/",             "texmf-context" },
+        { "context/config/",          "texmf-context" },
+        { "misc/setuptex/",           "." },
+        { "misc/web2c",               "texmf" },
+        { "bin/common/<platform>/",   "texmf-<platform>" },
+        { "bin/context/<platform>/",  "texmf-<platform>" },
+        { "bin/metapost/<platform>/", "texmf-<platform>" },
+        { "bin/luatex/<platform>/",   "texmf-<platform>" },
+        { "bin/man/",                 "texmf-<platform>" }
     },
     ["xetex"] = {
-        { "base/tex/",         "texmf" },
-        { "base/metapost/",    "texmf" },
-        { "base/xetex/",       "texmf" },
-        { "fonts/new/",        "texmf" },
-        { "fonts/common/",     "texmf" },
-        { "fonts/other/",      "texmf" },
-        { "context/current/",  "texmf-context" },
-        { "context/img/",      "texmf-context" },
-        { "misc/setuptex/",    "." },
-        { "misc/web2c",        "texmf" },
-        { "bin/common/%s/",    "texmf-%s" },
-        { "bin/context/%s/",   "texmf-%s" },
-        { "bin/metapost/%s/",  "texmf-%s" },
-        { "bin/xetex/%s/",     "texmf-%s" },
-        { "bin/man/",          "texmf-%s" }
+        { "base/tex/",                "texmf" },
+        { "base/metapost/",           "texmf" },
+        { "base/xetex/",              "texmf" },
+        { "fonts/new/",               "texmf" },
+        { "fonts/common/",            "texmf" },
+        { "fonts/other/",             "texmf" },
+        { "context/<version>/",       "texmf-context" },
+        { "context/img/",             "texmf-context" },
+        { "context/config/",          "texmf-context" },
+        { "misc/setuptex/",           "." },
+        { "misc/web2c",               "texmf" },
+        { "bin/common/<platform>/",   "texmf-<platform>" },
+        { "bin/context/<platform>/",  "texmf-<platform>" },
+        { "bin/metapost/<platform>/", "texmf-<platform>" },
+        { "bin/xetex/<platform>/",    "texmf-<platform>" },
+        { "bin/man/",                 "texmf-<platform>" }
     },
     ["pdftex"] = {
-        { "base/tex/",         "texmf" },
-        { "base/metapost/",    "texmf" },
-        { "fonts/old/",        "texmf" },
-        { "fonts/common/",     "texmf" },
-        { "fonts/other/",      "texmf" },
-        { "context/current/",  "texmf-context" },
-        { "context/img/",      "texmf-context" },
-        { "misc/setuptex/",    "." },
-        { "misc/web2c",        "texmf" },
-        { "bin/common/%s/",    "texmf-%s" },
-        { "bin/context/%s/",   "texmf-%s" },
-        { "bin/metapost/%s/",  "texmf-%s" },
-        { "bin/pdftex/%s/",    "texmf-%s" },
-        { "bin/man/",          "texmf-%s" }
+        { "base/tex/",                "texmf" },
+        { "base/metapost/",           "texmf" },
+        { "fonts/old/",               "texmf" },
+        { "fonts/common/",            "texmf" },
+        { "fonts/other/",             "texmf" },
+        { "context/<version>/",       "texmf-context" },
+        { "context/img/",             "texmf-context" },
+        { "context/config/",          "texmf-context" },
+        { "misc/setuptex/",           "." },
+        { "misc/web2c",               "texmf" },
+        { "bin/common/<platform>/",   "texmf-<platform>" },
+        { "bin/context/<platform>/",  "texmf-<platform>" },
+        { "bin/metapost/<platform>/", "texmf-<platform>" },
+        { "bin/pdftex/<platform>/",   "texmf-<platform>" },
+        { "bin/man/",                 "texmf-<platform>" }
     },
     ["all"] = {
-        { "base/tex/",         "texmf" },
-        { "base/metapost/",    "texmf" },
-        { "base/xetex/",       "texmf" },
-        { "fonts/old/",        "texmf" },
-        { "fonts/new/",        "texmf" },
-        { "fonts/common/",     "texmf" },
-        { "fonts/other/",      "texmf" },
-        { "context/current/",  "texmf-context" },
-        { "context/img/",      "texmf-context" },
-        { "misc/setuptex/",    "." },
-        { "misc/web2c",        "texmf" },
-        { "bin/common/%s/",    "texmf-%s" },
-        { "bin/context/%s/",   "texmf-%s" },
-        { "bin/metapost/%s/",  "texmf-%s" },
-        { "bin/luatex/%s/",    "texmf-%s" },
-        { "bin/xetex/%s/",     "texmf-%s" },
-        { "bin/pdftex/%s/",    "texmf-%s" },
-        { "bin/man/",          "texmf-%s" }
+        { "base/tex/",                "texmf" },
+        { "base/metapost/",           "texmf" },
+        { "base/xetex/",              "texmf" },
+        { "fonts/old/",               "texmf" },
+        { "fonts/new/",               "texmf" },
+        { "fonts/common/",            "texmf" },
+        { "fonts/other/",             "texmf" },
+        { "context/<version>/",       "texmf-context" },
+        { "context/img/",             "texmf-context" },
+        { "context/config/",          "texmf-context" },
+        { "misc/setuptex/",           "." },
+        { "misc/web2c",               "texmf" },
+        { "bin/common/<platform>/",   "texmf-<platform>" },
+        { "bin/context/<platform>/",  "texmf-<platform>" },
+        { "bin/metapost/<platform>/", "texmf-<platform>" },
+        { "bin/luatex/<platform>/",   "texmf-<platform>" },
+        { "bin/xetex/<platform>/",    "texmf-<platform>" },
+        { "bin/pdftex/<platform>/",   "texmf-<platform>" },
+        { "bin/man/",                 "texmf-<platform>" }
     },
 }
 
@@ -104,72 +134,58 @@ scripts.update.platforms = {
     ["osx-ppc"]   = "osx-ppc",
 }
 
-scripts.update.rsyncflagspath = "-rpztlv --stats --delete"
-scripts.update.rsyncflagsroot = "-rpztlv --stats"
-
-function scripts.update.prepare()
-    local texroot  = environment.argument("texroot") or "tex"
-    local engines  = environment.argument("engine")
-    if engines then
-        engines = engines:split(",")
-    else
-        engines = minimals.config.engines or { "all" }
-    end
-    local platforms = environment.argument("platform")
-    if platforms then
-        platforms = platforms:split(",")
-    else
-        platforms = minimals.config.platform or { os.currentplatform() }
-    end
-    return texroot, engines, platforms
-end
-
 function scripts.update.run(str)
-    if environment.argument("dryrun") then
-        logs.report("run", str)
-    else
+    logs.report("run", str)
+    if environment.argument("force") then
         -- important, otherwise formats fly to a weird place
         -- (texlua sets luatex as the engine, we need to reset that or to fix texexec :)
         os.setenv("engine",nil)
-        os.spawn(str)
+        os.execute(str)
+    end
+end
+
+function scripts.update.fullpath(path)
+    if input.aux.rootbased_path(path) then
+        return path
+    else
+        return lfs.currentdir() .. "/" .. path
     end
 end
 
 function scripts.update.synchronize()
-    local texroot, engines, platforms = scripts.update.prepare()
-    local dryrun = environment.argument("dryrun")
-    os.setenv("CYGWIN","nontsec")
-    local rsyncbin = environment.argument("rsync") or "rsync"
-    local url = environment.argument("url") or "contextgarden.net::"
+    logs.report("update","start")
+    local texroot = scripts.update.fullpath(states.get("paths.root"))
+    local engines = states.get('engines')
+    local platforms = states.get('platforms')
+    local repositories = states.get('repositories')
+    local bin = states.get("rsync.program")
+    local url = states.get("rsync.server")
+    local version = states.get("context.version")
+    local force = environment.argument("force")
     if not url:find("::$") then url = url .. "::" end
     local ok = lfs.attributes(texroot,"mode") == "directory"
-    if not ok and not dryrun then
+    if not ok and force then
         dir.mkdirs(texroot)
         ok = lfs.attributes(texroot,"mode") == "directory"
     end
-    if ok or dryrun then
-        if not dryrun then
+    if ok or not force then
+        if force then
             dir.mkdirs(string.format("%s/%s", texroot, "texmf-cache"))
         end
-        local fetched = { }
-        local individual = { }
-        local context = environment.argument("context")
-        for _, engine in ipairs(engines) do
-            local collections = scripts.update.collections[engine]
+        local fetched, individual = { }, { }
+        for engine, _ in pairs(engines) do
+            local collections = scripts.update.engines[engine]
             if collections then
                 for _, collection in ipairs(collections) do
-                    for _, platform in ipairs(platforms) do
+                    for platform, _ in pairs(platforms) do
                         platform = scripts.update.platforms[platform]
                         if platform then
-                            local archive = string.format(collection[1], platform)
-                            local destination = string.format("%s/%s", texroot, string.format(collection[2], platform))
+                            local archive = collection[1]:gsub("<platform>", platform)
+                            local destination = string.format("%s/%s", texroot, collection[2]:gsub("<platform>", platform))
                             destination = destination:gsub("\\","/")
+                            archive = archive:gsub("<version>",version)
                             if platform == "windows" or platform == "mswin" then
                                 destination = destination:gsub("([a-zA-Z]):/", "/cygdrive/%1/")
-                            end
-                            -- if one uses experimental, context=... has no effect
-                            if context and not environment.argument("experimental") then
-                                archive = archive:gsub("/current/", "/" .. context .. "/")
                             end
                             individual[#individual+1] = { archive, destination }
                         end
@@ -178,20 +194,17 @@ function scripts.update.synchronize()
             end
         end
         local combined = { }
-        local distributions = { "current" }
-        -- we need to fetch files from both "current" and "experimental" branch
-        if environment.argument("experimental") then
-            distributions = { "experimental", "current" }
-        end
-        for _, d in pairs(distributions) do
-            for _, v in pairs(individual) do
-                local archive, destination = v[1], v[2]
-                local cd = combined[destination]
-                if not cd then
-                    cd = { }
-                    combined[destination] = cd
+        for _, repository in ipairs(scripts.update.repositories) do
+            if repositories[repository] then
+                for _, v in pairs(individual) do
+                    local archive, destination = v[1], v[2]
+                    local cd = combined[destination]
+                    if not cd then
+                        cd = { }
+                        combined[destination] = cd
+                    end
+                    cd[#cd+1] = string.format("%s/%s/%s",states.get('rsync.module'),repository,archive)
                 end
-                cd[#cd+1] = 'minimals/' .. d .. '/' .. archive
             end
         end
         if input.verbose then
@@ -204,10 +217,11 @@ function scripts.update.synchronize()
         end
         for destination, archive in pairs(combined) do
             local archives, command = table.concat(archive," "), ""
-            if not environment.argument("delete") or destination:find("%.$") then
-                command = string.format("%s %s %s'%s' %s", rsyncbin, scripts.update.rsyncflagsroot, url, archives, destination)
+            local normalflags, deleteflags = states.get("rsync.flags.normal"), states.get("rsync.flags.delete")
+            if true then -- environment.argument("keep") or destination:find("%.$") then
+                command = string.format("%s %s    %s'%s' %s", bin, normalflags,              url, archives, destination)
             else
-                command = string.format("%s %s %s'%s' %s", rsyncbin, scripts.update.rsyncflagspath, url, archives, destination)
+                command = string.format("%s %s %s %s'%s' %s", bin, normalflags, deleteflags, url, archives, destination)
             end
             logs.report("mtx update", string.format("running command: %s",command))
             if not fetched[command] then
@@ -218,51 +232,141 @@ function scripts.update.synchronize()
     else
         logs.report("mtx update", string.format("no valid texroot: %s",texroot))
     end
-    if environment.argument("make") then
-        scripts.update.make()
+    if not force then
+        logs.report("update", "use --force to really update")
     end
+    logs.report("update","done")
 end
 
+function table.fromhash(t)
+    local h = { }
+    for k, v in pairs(t) do -- no ipairs here
+        if v then h[#h+1] = k end
+    end
+    return h
+end
+
+
 function scripts.update.make()
-    local texroot, engines, platforms = scripts.update.prepare()
+    logs.report("make","start")
+    local force = environment.argument("force")
+    local texroot = scripts.update.fullpath(states.get("paths.root"))
+    local engines = states.get('engines')
+    local platforms = states.get('platforms')
+    local formats = states.get('formats')
     input.load_tree(texroot)
     scripts.update.run("mktexlsr")
     scripts.update.run("luatools --generate")
-    engines = (engines[1] and engines[1] == "all" and { "pdftex", "xetex", "luatex" }) or engines
-    for _, engine in ipairs(engines) do
-        scripts.update.run(string.format("texexec --make --all --fast --%s",engine))
+    local formatlist = table.concat(table.fromhash(formats), " ")
+    if formatlist ~= "" then
+        for engine in pairs(engines) do
+            -- todo: just handle make here or in mtxrun --script context --make
+--~             os.execute("set")
+            scripts.update.run(string.format("texexec --make --all --fast --%s %s",engine,formatlist))
+        end
     end
+    if not force then
+        logs.report("make", "use --force to really make")
+    end
+    logs.report("make","done")
 end
 
 banner = banner .. " | download tools "
 
-input.runners.save_list = {
-    "update", "engine", "platform", "url", "rsync", "texroot", "dryrun", "make", "delete", "context"
-}
-
 messages.help = [[
---update              update minimal tree
---engine              tex engine (luatex, pdftex, xetex)
---platform            platform (windows, linux, linux-64, osx-intel, osx-ppc)
---url                 repository url (rsync://contextgarden.net/minimals)
---rsync               rsync binary (rsync)
+--platform=string     platform (windows, linux, linux-64, osx-intel, osx-ppc)
+--server=string       repository url (rsync://contextgarden.net)
+--module=string       repository url (minimals)
+--repository=string   specify version (current, experimental)
+--context=string      specify version (current, latest, yyyy.mm.dd)
+--rsync=string        rsync binary (rsync)
 --texroot             installation directory (not guessed for the moment)
---dryrun              just show what will be done
+--engine              tex engine (luatex, pdftex, xetex)
+--force               instead of a dryrun, do the real thing
+--update              update minimal tree
 --make                also make formats and generate file databases
---delete              delete unused files
---context=string      specify version (current, experimental, yyyy.mm.dd)
+--keep                don't delete unused or obsolete files
 ]]
 
 input.verbose = true
 
+scripts.savestate = true
+
+if scripts.savestate then
+
+    states.load("status-of-update.lua")
+
+    -- tag, value, default, persistent
+
+    input.starttiming(states)
+
+    states.set("info.version",0.1) -- ok
+    states.set("info.count",(states.get("info.count") or 0) + 1,1,false) -- ok
+    states.set("info.comment","this file contains the settings of the last 'mtxrun --script update ' run",false) -- ok
+    states.set("info.date",os.date("!%Y-%m-%d %H:%M:%S")) -- ok
+
+    states.set("rsync.program", environment.argument("rsync"), "rsync", true) -- ok
+    states.set("rsync.server", environment.argument("server"), "contextgarden.net::", true) -- ok
+    states.set("rsync.module", environment.argument("module"), "minimals", true) -- ok
+    states.set("rsync.flags.normal", environment.argument("flags"), "-rpztlv --stats", true) -- ok
+    states.set("rsync.flags.delete", nil, "--delete", true) -- ok
+
+    states.set("paths.root", environment.argument("texroot"), "tex", true) -- ok
+
+    states.set("context.version", environment.argument("context"), "current", true) -- ok
+
+    local valid = table.tohash(scripts.update.repositories)
+    for r in string.gmatch(environment.argument("repository") or "current","([^, ]+)") do
+        if valid[r] then states.set("repositories." .. r, true) end
+    end
+    local valid = scripts.update.engines
+    for r in string.gmatch(environment.argument("engine") or "all","([^, ]+)") do
+        if r == "all" then
+            for k, v in pairs(valid) do
+                if k ~= "all" then
+                    states.set("engines." .. k, true)
+                end
+            end
+        elseif valid[r] then
+            states.set("engines." .. r, true)
+        end
+    end
+    local valid = scripts.update.platforms
+    for r in string.gmatch(environment.argument("platform") or os.currentplatform(),"([^, ]+)") do
+        if valid[r] then states.set("platforms." .. r, true) end
+    end
+
+    local valid = table.tohash(scripts.update.formats)
+    for r in string.gmatch(environment.argument("formats") or "","([^, ]+)") do
+        if valid[r] then states.set("formats." .. r, true) end
+    end
+
+    states.set("formats.cont-en", true)
+    states.set("formats.cont-nl", true)
+    states.set("formats.metafun", true)
+
+    -- modules
+
+    logs.report("state","loaded")
+
+end
+
 if environment.argument("update") then
-    logs.report("update","start")
     scripts.update.synchronize()
-    logs.report("update","done")
+    if environment.argument("make") then
+        scripts.update.make()
+    end
 elseif environment.argument("make") then
-    logs.report("make","start")
     scripts.update.make()
-    logs.report("make","done")
 else
     input.help(banner,messages.help)
+end
+
+if scripts.savestate then
+    input.stoptiming(states)
+    states.set("info.runtime",tonumber(input.elapsedtime(states)))
+    if environment.argument("force") then
+        states.save()
+        logs.report("state","saved")
+    end
 end

@@ -121,6 +121,7 @@
 % When you have your own fonts installed, you may want to predefine:
 %
 % \usetypescriptfile[type-buy]
+% \usetypescriptfile [type-gyr]
 
 % Some styles default to Lucida Bright. You can overload
 % Lucida by Times cum suis. Watch out, the pos collection

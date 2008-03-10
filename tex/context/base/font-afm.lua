@@ -19,7 +19,7 @@ away.</p>
 
 fonts                      = fonts     or { }
 fonts.afm                  = fonts.afm or { }
-fonts.afm.version          = 1.23 -- incrementing this number one up will force a re-cache
+fonts.afm.version          = 1.24 -- incrementing this number one up will force a re-cache
 fonts.afm.syncspace        = true -- when true, nicer stretch values
 fonts.afm.enhance_data     = true -- best leave this set to true
 fonts.afm.trace_features   = false
@@ -281,12 +281,17 @@ function fonts.afm.load(filename)
 end
 
 function fonts.afm.unify(data, filename)
-    local unicode, private, unicodes = containers.content(fonts.enc.cache,'unicode').hash, 0x0F0000, { }
+    local unicode, private, unicodes = fonts.enc.load('unicode').hash, 0x0F0000, { }
     for name, blob in pairs(data.characters) do
         local code = unicode[name] -- or characters.name_to_unicode[name]
         if not code then
-            code = private
-            private = private + 1
+            local u = name:match("^uni(%x+)$")
+            code = u and tonumber(u,16)
+            if not code then
+                code = private
+                private = private + 1
+                logs.report("afm glyph", string.format("assigning private slot 0x%04X for unknown glyph name %s", code, name))
+            end
         end
         blob.unicode = code
         unicodes[name] = code
@@ -486,7 +491,7 @@ end
 function fonts.afm.set_features(tfmdata)
     local shared = tfmdata.shared
     local afmdata = shared.afmdata
-    shared.features = fonts.define.check(shared.features,fonts.afm.features.default)
+    -- elsewhere: shared.features = fonts.define.check(shared.features,fonts.afm.features.default)
     local features = shared.features
 --~ texio.write_nl(table.serialize(features))
     if not table.is_empty(features) then
@@ -510,6 +515,7 @@ function fonts.afm.set_features(tfmdata)
             end
             initialize(fonts.triggers)
             initialize(fonts.afm.features.list)
+            initialize(fonts.manipulators)
         end
         local fm = fonts.methods[mode]
         if fm and fm.afm then
@@ -528,6 +534,14 @@ function fonts.afm.set_features(tfmdata)
             end
             register(fonts.afm.features.list)
         end
+    end
+end
+
+function fonts.afm.check_features(specification)
+    local features, done = fonts.define.check(specification.features.normal,fonts.afm.features.default)
+    if done then
+        specification.features.normal = features
+        fonts.tfm.hash_instance(specification,true)
     end
 end
 
@@ -556,6 +570,7 @@ function fonts.afm.afm_to_tfm(specification)
     if afmname == "" then
         return nil
     else
+        fonts.afm.check_features(specification)
         local features = specification.features.normal
         local cache_id = specification.hash
         local tfmdata  = containers.read(fonts.tfm.cache, cache_id) -- cache with features applied
@@ -670,21 +685,12 @@ function fonts.afm.features.prepare_kerns(tfmdata,kerns,value)
     end
 end
 
-function fonts.initializers.base.afm.ligatures(tfmdata,value)
-    fonts.afm.features.prepare_ligatures(tfmdata,'ligatures',value)
-end
+-- hm, register?
 
-function fonts.initializers.base.afm.texligatures(tfmdata,value)
-    fonts.afm.features.prepare_ligatures(tfmdata,'texligatures',value)
-end
-
-function fonts.initializers.base.afm.kerns(tfmdata,value)
-    fonts.afm.features.prepare_kerns(tfmdata,'kerns',value)
-end
-
-function fonts.initializers.base.afm.extrakerns(tfmdata,value)
-    fonts.afm.features.prepare_kerns(tfmdata,'extrakerns',value)
-end
+function fonts.initializers.base.afm.ligatures   (tfmdata,value) fonts.afm.features.prepare_ligatures(tfmdata,'ligatures',   value) end
+function fonts.initializers.base.afm.texligatures(tfmdata,value) fonts.afm.features.prepare_ligatures(tfmdata,'texligatures',value) end
+function fonts.initializers.base.afm.kerns       (tfmdata,value) fonts.afm.features.prepare_kerns    (tfmdata,'kerns',       value) end
+function fonts.initializers.base.afm.extrakerns  (tfmdata,value) fonts.afm.features.prepare_kerns    (tfmdata,'extrakerns',  value) end
 
 fonts.afm.features.register('liga',true)
 fonts.afm.features.register('kerns',true)
@@ -703,7 +709,8 @@ fonts.initializers.node.afm.tlig         = fonts.initializers.base.afm.texligatu
 fonts.initializers.base.afm.trep         = fonts.tfm.replacements
 fonts.initializers.node.afm.trep         = fonts.tfm.replacements
 
-fonts.afm.features.register('trep') -- todo: also proper features for afm
+fonts.afm.features.register('tlig',true) -- todo: also proper features for afm
+fonts.afm.features.register('trep',true) -- todo: also proper features for afm
 
 -- tfm features
 

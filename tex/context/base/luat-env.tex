@@ -11,6 +11,18 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Originally we compiled the lua files externally and loaded
+%D then at runtime, but when the amount grew, we realized that
+%D we needed away to store them in the format, which is what
+%D bytecode arrays do. And so the following is obsolete:
+%D
+%D \starttyping
+%D \chardef\ctxluaembeddingmode \plusone
+%D
+%D 0 = external compilation and loading
+%D 1 = runtime compilation and embedding
+%D \stoptyping
+
 % \writestatus{loading}{Lua Support Macros (environment)}
 
 % print (lua.id)
@@ -79,18 +91,14 @@
 %D Next we load the initialization code.
 
 \startruntimectxluacode
-    if not environment then environment = { } end
+    environment = environment or { }
     environment.jobname    = "\jobname"                            % tex.jobname
     environment.formatname = "\contextformat"                      % tex.formatname
     environment.initex     = \ifproductionrun false \else true \fi % tex.formatname == ""
     environment.version    = "\contextversion"
-    dofile(input.find_file(texmf.instance,"luat-env.lua","tex"))
+--     dofile(input.find_file(texmf.instance,"luat-env.lua","tex"))
 \stopruntimectxluacode
 
-% 0 = external compilation and loading
-% 1 = runtime compilation and embedding
-
-\chardef\ctxluaembeddingmode \plusone
 \chardef\ctxluaexecutionmode \zerocount % private
 
 % we start at 500, below this, we store predefined data (dumps)
@@ -140,7 +148,8 @@
    \stopruntimectxluacode}%
    \ctxlua {
       lua.bytedata[\the\luabytecodecounter] = { "#1", "#2" }
-      lua.bytecode[\the\luabytecodecounter] = environment.luafilechunk("#1")}}
+      lua.bytecode[\the\luabytecodecounter] = environment.luafilechunk("#1")
+    }}
 
 \def\ctxluafileload#1#2% load a (either not compiled) chunk at runtime
   {\doifelsenothing{#2}
@@ -148,21 +157,14 @@
      {\ctxlua{environment.loadlucfile("#1",#2)}}}
 
 \def\registerctxluafile#1#2% name version
-  {\ifcase\ctxluaembeddingmode
-     \ifproductionrun \else
-       \global\everyloadluacode\expandafter{\the\everyloadluacode\ctxluafileload{#1}{#2}}%
-     \fi
-     \ifcase\ctxluaexecutionmode\or\ctxluafileload{#1}{#2}\fi
-   \else
-     \ifproductionrun \else
-       \ctxluabyteload{#1}{#2}%
-     \fi
-     \global\everyloadluacode\expandafter\expandafter\expandafter{\expandafter\the\expandafter\everyloadluacode
-        \expandafter\ctxluabytecode\expandafter{\the\luabytecodecounter}}%
-     \ifcase\ctxluaexecutionmode\or\ctxluabytecode{\the\luabytecodecounter}\fi
-   \fi}
+  {\ifproductionrun \else
+     \ctxluabyteload{#1}{#2}%
+   \fi
+   \global\everyloadluacode\expandafter\expandafter\expandafter{\expandafter\the\expandafter\everyloadluacode
+      \expandafter\ctxluabytecode\expandafter{\the\luabytecodecounter}}%
+   \ifcase\ctxluaexecutionmode\or\ctxluabytecode{\the\luabytecodecounter}\fi}
 
-\ifcase\ctxluaembeddingmode \else \registerctxluafile{luat-env}{1.001} \fi
+\registerctxluafile{luat-env}{1.001}
 
 \chardef\ctxluaexecutionmode \plusone
 

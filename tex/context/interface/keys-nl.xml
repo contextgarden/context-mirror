@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2008.01.28 21:28">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2008.03.10 23:20">
 
   <cd:variables>
     <cd:variable name="lesshyphenation" value="lesshyphenation"/>
@@ -489,6 +489,7 @@
     <cd:constant name="fieldbackgroundcolor" value="veldachtergrondkleur"/>
     <cd:constant name="fieldframecolor" value="veldkaderkleur"/>
     <cd:constant name="fieldoffset" value="veldoffset"/>
+    <cd:constant name="action" value="actie"/>
     <cd:constant name="openaction" value="openactie"/>
     <cd:constant name="closeaction" value="sluitactie"/>
     <cd:constant name="openpageaction" value="openpaginaactie"/>

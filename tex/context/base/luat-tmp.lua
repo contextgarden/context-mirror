@@ -360,7 +360,7 @@ function input.aux.load_data(instance,pathname,dataname,filename)
     end
 end
 
--- we will make a better format, maybe something xml or just text
+-- we will make a better format, maybe something xml or just text or lua
 
 input.automounted = input.automounted or { }
 

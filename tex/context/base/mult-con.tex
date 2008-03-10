@@ -1974,6 +1974,10 @@ itemalign: itemuitlijnen             itemalign
                            feldoffset                offsetpole
                            offsetcampo               offsetcamp
                            offsetchamp
+                   action: actie                     action
+                           aktion                    akce
+                           azione                    actiune
+                           action
                openaction: openactie                 openaction
                            oeffenaktion              otevriakci
                            azioneapri                actiunedeschidere
@@ -3408,116 +3412,116 @@ nofit: nietpassend             nofit
 
 %D \stopcompressdefinitions
 
-%D All relevent commands of \CONTEXT\ are specified in a
-%D structured way that enables the generation of reference
-%D cards. This specification is setup in a language independant
-%D way. The next category of variables is only used in this
-%D context.
+% %D All relevent commands of \CONTEXT\ are specified in a
+% %D structured way that enables the generation of reference
+% %D cards. This specification is setup in a language independant
+% %D way. The next category of variables is only used in this
+% %D context.
 
-%D \startcompressdefinitions
+% %D \startcompressdefinitions
+%
+% \startsetupvariables       dutch                     english
+%                            german                    czech
+%                            italian                   romanian
+%                            french
+%
+%               enumeration: doornummering             enumeration
+%                            nummerierung              vycet
+%                            enumerazione              enumerare
+%                            enumeration
+%               description: doordefinitie             description
+%                            beschreibung              popis
+%                            descrizione               descriere
+%                            description
+%               indentation: doorsprong                indentation
+%                            einzug                    odsazeni
+%                            rientro                   indentare
+%                            indentation
+%                  labeling: doorlabel                 labeling
+%                            beschriften               oznacovani
+%                            etichettatura             etichetare
+%                            etiquettage
+%              combinedlist: samengesteldelijst        combinedlist
+%                            kombiniereliste           kombinovanyseznam
+%                            elencocombinato           listacombinata
+%                            listeimbriquee
+%         % beware: section clashes with sectionlevel
+%                   section: sectie                    section
+%                            abschnitt                 oddil
+%                            sezione                   sectiune
+%                            section
+%                  register: register                  register
+%                            register                  rejstrik
+%                            registro                  registru
+%                            registre
+%               interaction: interactie                interaction
+%                            interaktion               interakce
+%                            interazione               interactiune
+%                            interaction
+%                   synonym: synoniem                  synonym
+%                            synonym                   synonymum
+%                            sinonimo                  sinonim
+%                            synonyme
+%                  synonyms: synoniemen                synonyms
+%                            synonyme                  synonyma
+%                            sinonimi                  sinonime
+%                            synonymes
+%                      sort: sorteer                   sort
+%                            sortiere                  trid
+%                            sort                      sortare
+%                            tri
+%                     sorts: sorteren                  sorts
+%                            sortieren                 tridit
+%                            sorts                     sortari
+%                            tris
+%                      name: naam                      name
+%                            name                      jmeno
+%                            nome                      nume
+%                            name
+%                     float: blok                      float
+%                            gleitobjekt               plvouciobjekt
+%                            oggettomobile             obiectmobil
+%                            flottant
+%                    floats: blokken                   floats
+%                            gleitobjekte              plvouciobjekty
+%                            oggettimobili             obiectemobile
+%                            flottants
+%                 paragraph: alinea                    paragraph
+%                            absatz                    odstavec
+%                            capoverso                 paragraf
+%                            paragraphe
+%                framedtext: kadertekst                framedtext
+%                            umrahmtertext             oramovanytext
+%                            testoincorniciato         textinconjurat
+%                            texteencadre
+%                 itemgroup: itemgroup                 itemgroup
+%                            itemgroup                 itemgroup
+%                            itemgroup                 itemgroup
+%                            itemgroup
+%                    typing: typen                     typing
+%                            tippen                    typing
+%                            typing                    typing
+%                            typing
+%                    buffer: buffer                    buffer
+%                            puffer                    buffer
+%                            buffer                    buffer
+%                            buffer
+%                   formula: formule                   formula
+%                            formel                    rovnice
+%                            formula                   formula
+%                            formule
+%                subformula: subformule                subformula
+%                            unterformel               podrovnice
+%                            sottoformula              subformula
+%                            sousformule
+%                  tabulate: tabulatie                 tabulate
+%                            tabulator                 tabelator
+%                            tabulato                  tabulate
+%                            tabule
+%
+% \stopsetupvariables
 
-\startsetupvariables       dutch                     english
-                           german                    czech
-                           italian                   romanian
-                           french
-
-              enumeration: doornummering             enumeration
-                           nummerierung              vycet
-                           enumerazione              enumerare
-                           enumeration
-              description: doordefinitie             description
-                           beschreibung              popis
-                           descrizione               descriere
-                           description
-              indentation: doorsprong                indentation
-                           einzug                    odsazeni
-                           rientro                   indentare
-                           indentation
-                 labeling: doorlabel                 labeling
-                           beschriften               oznacovani
-                           etichettatura             etichetare
-                           etiquettage
-             combinedlist: samengesteldelijst        combinedlist
-                           kombiniereliste           kombinovanyseznam
-                           elencocombinato           listacombinata
-                           listeimbriquee
-        % beware: section clashes with sectionlevel
-                  section: sectie                    section
-                           abschnitt                 oddil
-                           sezione                   sectiune
-                           section
-                 register: register                  register
-                           register                  rejstrik
-                           registro                  registru
-                           registre
-              interaction: interactie                interaction
-                           interaktion               interakce
-                           interazione               interactiune
-                           interaction
-                  synonym: synoniem                  synonym
-                           synonym                   synonymum
-                           sinonimo                  sinonim
-                           synonyme
-                 synonyms: synoniemen                synonyms
-                           synonyme                  synonyma
-                           sinonimi                  sinonime
-                           synonymes
-                     sort: sorteer                   sort
-                           sortiere                  trid
-                           sort                      sortare
-                           tri
-                    sorts: sorteren                  sorts
-                           sortieren                 tridit
-                           sorts                     sortari
-                           tris
-                     name: naam                      name
-                           name                      jmeno
-                           nome                      nume
-                           name
-                    float: blok                      float
-                           gleitobjekt               plvouciobjekt
-                           oggettomobile             obiectmobil
-                           flottant
-                   floats: blokken                   floats
-                           gleitobjekte              plvouciobjekty
-                           oggettimobili             obiectemobile
-                           flottants
-                paragraph: alinea                    paragraph
-                           absatz                    odstavec
-                           capoverso                 paragraf
-                           paragraphe
-               framedtext: kadertekst                framedtext
-                           umrahmtertext             oramovanytext
-                           testoincorniciato         textinconjurat
-                           texteencadre
-                itemgroup: itemgroup                 itemgroup
-                           itemgroup                 itemgroup
-                           itemgroup                 itemgroup
-                           itemgroup
-                   typing: typen                     typing
-                           tippen                    typing
-                           typing                    typing
-                           typing
-                   buffer: buffer                    buffer
-                           puffer                    buffer
-                           buffer                    buffer
-                           buffer
-                  formula: formule                   formula
-                           formel                    rovnice
-                           formula                   formula
-                           formule
-               subformula: subformule                subformula
-                           unterformel               podrovnice
-                           sottoformula              subformula
-                           sousformule
-                 tabulate: tabulatie                 tabulate
-                           tabulator                 tabelator
-                           tabulato                  tabulate
-                           tabule
-
-\stopsetupvariables
-
-%D \stopcompressdefinitions
+% %D \stopcompressdefinitions
 
 %D The number of elements used for composing user defined
 %D commands is rather small. We use a \type{-} for empty

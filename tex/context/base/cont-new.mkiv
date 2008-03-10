@@ -73,6 +73,12 @@
 \def\elapsedtime   {\ctxlua{tex.sprint(os.clock()-environment.starttime)}}
 \let\elapsedseconds \elapsedtime
 
+\resettimer
+
+% \appendtoks
+%     \resettimer
+% \to \everyjob
+
 %D For me.
 
 \def\traceluausage
