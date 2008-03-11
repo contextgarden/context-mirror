@@ -101,21 +101,183 @@ if lfs then do
     --~ mkdirs(".","/a/b/c")
     --~ mkdirs("a","b","c")
 
-    function dir.mkdirs(...)
-        local pth, err, lst = "", false, table.concat({...},"/")
-        for _, s in ipairs(lst:split("/")) do
-            if pth == "" then
-                pth = (s == "" and "/") or s
-            else
-                pth = pth .. "/" .. s
+--~     function dir.mkdirs(...)
+--~         local pth, err, lst = "", false, table.concat({...},"/")
+--~         for _, s in ipairs(lst:split("/")) do
+--~             if pth == "" then
+--~                 pth = (s == "" and "/") or s
+--~             else
+--~                 pth = pth .. "/" .. s
+--~             end
+--~             if s == "" then
+--~                 -- can be network path
+--~             elseif not lfs.isdir(pth) then
+--~                 lfs.mkdir(pth)
+--~             end
+--~         end
+--~         return pth, not err
+--~     end
+
+    local make_indeed = true -- false
+
+    if string.find(os.getenv("PATH"),";") then
+
+        function dir.mkdirs(...)
+            local str, pth = "", ""
+            for _, s in ipairs({...}) do
+                if s ~= "" then
+                    if str ~= "" then
+                        str = str .. "/" .. s
+                    else
+                        str = s
+                    end
+                end
             end
-            if s == "" then
-                -- can be network path
-            elseif not lfs.isdir(pth) then
-                lfs.mkdir(pth)
+            local first, middle, last
+            local drive = false
+            first, middle, last = str:match("^(//)(//*)(.*)$")
+            if first then
+                -- empty network path == local path
+            else
+                first, last = str:match("^(//)/*(.-)$")
+                if first then
+                    middle, last = str:match("([^/]+)/+(.-)$")
+                    if middle then
+                        pth = "//" .. middle
+                    else
+                        pth = "//" .. last
+                        last = ""
+                    end
+                else
+                    first, middle, last = str:match("^([a-zA-Z]:)(/*)(.-)$")
+                    if first then
+                        pth, drive = first .. middle, true
+                    else
+                        middle, last = str:match("^(/*)(.-)$")
+                        if not middle then
+                            last = str
+                        end
+                    end
+                end
+            end
+            for s in last:gmatch("[^/]+") do
+                if pth == "" then
+                    pth = s
+                elseif drive then
+                    pth, drive = pth .. s, false
+                else
+                    pth = pth .. "/" .. s
+                end
+                if make_indeed and not lfs.isdir(pth) then
+                    lfs.mkdir(pth)
+                end
+            end
+            return pth, (lfs.isdir(pth) == true)
+        end
+
+--~         print(dir.mkdirs("","","a","c"))
+--~         print(dir.mkdirs("a"))
+--~         print(dir.mkdirs("a:"))
+--~         print(dir.mkdirs("a:/b/c"))
+--~         print(dir.mkdirs("a:b/c"))
+--~         print(dir.mkdirs("a:/bbb/c"))
+--~         print(dir.mkdirs("/a/b/c"))
+--~         print(dir.mkdirs("/aaa/b/c"))
+--~         print(dir.mkdirs("//a/b/c"))
+--~         print(dir.mkdirs("///a/b/c"))
+--~         print(dir.mkdirs("a/bbb//ccc/"))
+
+        function dir.expand_name(str)
+            local first, nothing, last = str:match("^(//)(//*)(.*)$")
+            if first then
+                first = lfs.currentdir() .. "/"
+                first = first:gsub("\\","/")
+            end
+            if not first then
+                first, last = str:match("^(//)/*(.*)$")
+            end
+            if not first then
+                first, last = str:match("^([a-zA-Z]:)(.*)$")
+                if first and not last:find("^/") then
+                    local d = lfs.currentdir()
+                    if lfs.chdir(first) then
+                        first = lfs.currentdir()
+                        first = first:gsub("\\","/")
+                    end
+                    lfs.chdir(d)
+                end
+            end
+            if not first then
+                first, last = lfs.currentdir(), str
+                first = first:gsub("\\","/")
+            end
+            last = last:gsub("//","/")
+            last = last:gsub("/%./","/")
+            last = last:gsub("^/*","")
+            first = first:gsub("/*$","")
+            if last == "" then
+                return first
+            else
+                return first .. "/" .. last
             end
         end
-        return pth, not err
+
+    else
+
+        function dir.mkdirs(...)
+            local str, pth = "", ""
+            for _, s in ipairs({...}) do
+                if s ~= "" then
+                    if str ~= "" then
+                        str = str .. "/" .. s
+                    else
+                        str = s
+                    end
+                end
+            end
+            str = str:gsub("/+","/")
+            if str:find("^/") then
+                pth = "/"
+                for s in str:gmatch("[^/]+") do
+                    local first = (pth == "/")
+                    if first then
+                        pth = pth .. s
+                    else
+                        pth = pth .. "/" .. s
+                    end
+                    if make_indeed and not first and not lfs.isdir(pth) then
+                        lfs.mkdir(pth)
+                    end
+                end
+            else
+                pth = "."
+                for s in str:gmatch("[^/]+") do
+                    pth = pth .. "/" .. s
+                    if make_indeed and not lfs.isdir(pth) then
+                        lfs.mkdir(pth)
+                    end
+                end
+            end
+            return pth, (lfs.isdir(pth) == true)
+        end
+
+--~         print(dir.mkdirs("","","a","c"))
+--~         print(dir.mkdirs("a"))
+--~         print(dir.mkdirs("/a/b/c"))
+--~         print(dir.mkdirs("/aaa/b/c"))
+--~         print(dir.mkdirs("//a/b/c"))
+--~         print(dir.mkdirs("///a/b/c"))
+--~         print(dir.mkdirs("a/bbb//ccc/"))
+
+        function dir.expand_name(str)
+            if not str:find("^/") then
+                str = lfs.currentdir() .. "/" .. str
+            end
+            str = str:gsub("//","/")
+            str = str:gsub("/%./","/")
+            return str
+        end
+
     end
 
     dir.makedirs = dir.mkdirs

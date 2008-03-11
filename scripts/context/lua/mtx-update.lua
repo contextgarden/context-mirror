@@ -286,6 +286,7 @@ messages.help = [[
 --update              update minimal tree
 --make                also make formats and generate file databases
 --keep                don't delete unused or obsolete files
+--state               update tree using saved state
 ]]
 
 input.verbose = true
@@ -349,6 +350,12 @@ if scripts.savestate then
 
     logs.report("state","loaded")
 
+end
+
+if environment.argument("state") then
+    environment.setargument("update",true)
+    environment.setargument("force",true)
+    environment.setargument("make",true)
 end
 
 if environment.argument("update") then

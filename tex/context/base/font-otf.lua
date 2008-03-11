@@ -757,14 +757,6 @@ function fonts.otf.meanings.baseline(id)
     return fonts.otf.meanings.resolve(fonts.otf.tables.baselines,id)
 end
 
-function table.reverse_hash(h)
-    local r = { }
-    for k,v in pairs(h) do
-        r[v] = (k:gsub(" ","")):lower()
-    end
-    return r
-end
-
 fonts.otf.tables.to_scripts   = table.reverse_hash(fonts.otf.tables.scripts  )
 fonts.otf.tables.to_languages = table.reverse_hash(fonts.otf.tables.languages)
 fonts.otf.tables.to_features  = table.reverse_hash(fonts.otf.tables.features )
@@ -907,16 +899,6 @@ function fonts.otf.load(filename,format,sub,featurefile)
 end
 
 -- memory saver ..
-
-function table.reverse(t)
-    local tt = { }
-    if #t > 0 then
-        for i=#t,1,-1 do
-            tt[#tt+1] = t[i]
-        end
-    end
-    return tt
-end
 
 function fonts.otf.enhance.pack(data)
     if data then

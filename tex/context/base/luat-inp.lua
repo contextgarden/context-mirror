@@ -1570,7 +1570,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             end
             -- this is actually 'other text files' or 'any' or 'whatever'
             local filelist = input.aux.collect_files(instance,wantedfiles)
-            local lf = filelist and filelist[1]
+            local fl = filelist and filelist[1]
             if fl then
                 filename = fl[3]
                 result[#result+1] = filename

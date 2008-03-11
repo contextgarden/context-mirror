@@ -1825,21 +1825,157 @@ if lfs then do
     --~ mkdirs(".","/a/b/c")
     --~ mkdirs("a","b","c")
 
-    function dir.mkdirs(...)
-        local pth, err, lst = "", false, table.concat({...},"/")
-        for _, s in ipairs(lst:split("/")) do
-            if pth == "" then
-                pth = (s == "" and "/") or s
+--~     function dir.mkdirs(...)
+--~         local pth, err, lst = "", false, table.concat({...},"/")
+--~         for _, s in ipairs(lst:split("/")) do
+--~             if pth == "" then
+--~                 pth = (s == "" and "/") or s
+--~             else
+--~                 pth = pth .. "/" .. s
+--~             end
+--~             if s == "" then
+--~                 -- can be network path
+--~             elseif not lfs.isdir(pth) then
+--~                 lfs.mkdir(pth)
+--~             end
+--~         end
+--~         return pth, not err
+--~     end
+
+    local make_indeed = true -- false
+
+    if string.find(os.getenv("PATH"),";") then
+
+        function dir.mkdirs(...)
+            local str, pth = "", ""
+            for _, s in ipairs({...}) do
+                if s ~= "" then
+                    if str ~= "" then
+                        str = str .. "/" .. s
+                    else
+                        str = s
+                    end
+                end
+            end
+            local first, middle, last
+            local drive = false
+            first, last = str:match("^(//)/*(.-)$")
+            if first then
+                middle, last = str:match("([^/]+)/+(.-)$")
+                if middle then
+                    pth = "//" .. middle
+                else
+                    pth = "//" .. last
+                    last = ""
+                end
             else
-                pth = pth .. "/" .. s
+                first, middle, last = str:match("^([a-zA-Z]:)(/*)(.-)$")
+                if first then
+                    pth, drive = first .. middle, true
+                else
+                    middle, last = str:match("^(/*)(.-)$")
+                    if not middle then
+                        last = str
+                    end
+                end
             end
-            if s == "" then
-                -- can be network path
-            elseif not lfs.isdir(pth) then
-                lfs.mkdir(pth)
+            for s in last:gmatch("[^/]+") do
+                if pth == "" then
+                    pth = s
+                elseif drive then
+                    pth, drive = pth .. s, false
+                else
+                    pth = pth .. "/" .. s
+                end
+                if make_indeed and not lfs.isdir(pth) then
+                    lfs.mkdir(pth)
+                end
             end
+            return pth, (lfs.isdir(pth) == true)
         end
-        return pth, not err
+
+--~         print(dir.mkdirs("","","a","c"))
+--~         print(dir.mkdirs("a"))
+--~         print(dir.mkdirs("a:"))
+--~         print(dir.mkdirs("a:/b/c"))
+--~         print(dir.mkdirs("a:b/c"))
+--~         print(dir.mkdirs("a:/bbb/c"))
+--~         print(dir.mkdirs("/a/b/c"))
+--~         print(dir.mkdirs("/aaa/b/c"))
+--~         print(dir.mkdirs("//a/b/c"))
+--~         print(dir.mkdirs("///a/b/c"))
+--~         print(dir.mkdirs("a/bbb//ccc/"))
+
+        function dir.expand_name(str)
+            local first, last = str:match("^(//)/*(.*)$")
+            if not first then
+                first, last = str:match("^([a-zA-Z]:)(.*)$")
+            end
+            if not first then
+                first, last = lfs.currentdir() .. "/", str
+                first = first:gsub("\\","/")
+            end
+            last = last:gsub("//","/")
+            last = last:gsub("/%./","/")
+            return first .. last
+        end
+
+    else
+
+        function dir.mkdirs(...)
+            local str, pth = "", ""
+            for _, s in ipairs({...}) do
+                if s ~= "" then
+                    if str ~= "" then
+                        str = str .. "/" .. s
+                    else
+                        str = s
+                    end
+                end
+            end
+            str = str:gsub("/+","/")
+            if str:find("^/") then
+                pth = "/"
+                for s in str:gmatch("[^/]+") do
+                    local first = (pth == "/")
+                    if first then
+                        pth = pth .. s
+                    else
+                        pth = pth .. "/" .. s
+                    end
+                    if make_indeed and not first and not lfs.isdir(pth) then
+                        lfs.mkdir(pth)
+                    end
+                end
+            else
+                pth = "."
+                for s in str:gmatch("[^/]+") do
+                    pth = pth .. "/" .. s
+                    if make_indeed and not lfs.isdir(pth) then
+                        lfs.mkdir(pth)
+                    end
+                end
+            end
+            return pth, (lfs.isdir(pth) == true)
+        end
+
+--~         print(dir.mkdirs("","","a","c"))
+--~         print(dir.mkdirs("a"))
+--~         print(dir.mkdirs("/a/b/c"))
+--~         print(dir.mkdirs("/aaa/b/c"))
+--~         print(dir.mkdirs("//a/b/c"))
+--~         print(dir.mkdirs("///a/b/c"))
+--~         print(dir.mkdirs("a/bbb//ccc/"))
+
+        function dir.expand_name(str)
+            if not str:find("^/") then
+                str = lfs.currentdir() .. "/" .. str
+            end
+            str = str:gsub("//","/")
+            str = str:gsub("/%./","/")
+            return str
+        end
+
     end
 
     dir.makedirs = dir.mkdirs
@@ -6381,12 +6517,16 @@ function caches.configpath(instance)
 --~     return input.expand_var(instance,"TEXMFCNF")
 end
 
+function caches.hashed(tree)
+    return md5.hex((tree:lower()):gsub("[\\\/]+","/"))
+end
+
 function caches.treehash(instance)
     local tree = caches.configpath(instance)
     if not tree or tree == "" then
         return false
     else
-        return md5.hex(tree)
+        return caches.hashed(tree)
     end
 end
 
@@ -6424,6 +6564,7 @@ function caches.setpath(instance,...)
         local pth = dir.mkdirs(caches.path,...)
         return pth
     end
+    caches.path = dir.expand_name(caches.path)
     return caches.path
 end
 
@@ -6564,7 +6705,7 @@ function input.aux.save_data(instance, dataname, check)
     for cachename, files in pairs(instance[dataname]) do
         local name
         if input.usecache then
-            name = file.join(caches.setpath(instance,"trees"),md5.hex(cachename))
+            name = file.join(caches.setpath(instance,"trees"),caches.hashed(cachename))
         else
             name = file.join(cachename,dataname)
         end
@@ -6656,7 +6797,7 @@ end
 function input.aux.load_data(instance,pathname,dataname,filename)
     local luaname, lucname, pname, fname
     if input.usecache then
-        pname, fname = caches.setpath(instance,"trees"), md5.hex(pathname)
+        pname, fname = caches.setpath(instance,"trees"), caches.hashed(pathname)
         filename = file.join(pname,fname)
     else
         if not filename or (filename == "") then

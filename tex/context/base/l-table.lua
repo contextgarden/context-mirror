@@ -664,3 +664,21 @@ function table.hexed(t,seperator)
     for i=1,#t do tt[i] = string.format("0x%04X",t[i]) end
     return table.concat(tt,seperator or " ")
 end
+
+function table.reverse_hash(h)
+    local r = { }
+    for k,v in pairs(h) do
+        r[v] = (k:gsub(" ","")):lower()
+    end
+    return r
+end
+
+function table.reverse(t)
+    local tt = { }
+    if #t > 0 then
+        for i=#t,1,-1 do
+            tt[#tt+1] = t[i]
+        end
+    end
+    return tt
+end

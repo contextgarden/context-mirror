@@ -56,12 +56,16 @@ function caches.configpath(instance)
 --~     return input.expand_var(instance,"TEXMFCNF")
 end
 
+function caches.hashed(tree)
+    return md5.hex((tree:lower()):gsub("[\\\/]+","/"))
+end
+
 function caches.treehash(instance)
     local tree = caches.configpath(instance)
     if not tree or tree == "" then
         return false
     else
-        return md5.hex(tree)
+        return caches.hashed(tree)
     end
 end
 
@@ -99,6 +103,7 @@ function caches.setpath(instance,...)
         local pth = dir.mkdirs(caches.path,...)
         return pth
     end
+    caches.path = dir.expand_name(caches.path)
     return caches.path
 end
 
@@ -239,7 +244,7 @@ function input.aux.save_data(instance, dataname, check)
     for cachename, files in pairs(instance[dataname]) do
         local name
         if input.usecache then
-            name = file.join(caches.setpath(instance,"trees"),md5.hex(cachename))
+            name = file.join(caches.setpath(instance,"trees"),caches.hashed(cachename))
         else
             name = file.join(cachename,dataname)
         end
@@ -331,7 +336,7 @@ end
 function input.aux.load_data(instance,pathname,dataname,filename)
     local luaname, lucname, pname, fname
     if input.usecache then
-        pname, fname = caches.setpath(instance,"trees"), md5.hex(pathname)
+        pname, fname = caches.setpath(instance,"trees"), caches.hashed(pathname)
         filename = file.join(pname,fname)
     else
         if not filename or (filename == "") then
