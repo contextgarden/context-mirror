@@ -42799,6 +42799,8 @@ characters.data={
   ["category"]="po",
   ["cjkwd"]="a",
   ["contextname"]="textbullet",
+  ["mathclass"]="binary", -- ok?
+  ["mathname"] = "bullet",
   ["description"]="BULLET",
   ["linebreak"]="al",
   ["unicodeslot"]=0x2022, -- •
@@ -44877,6 +44879,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="LEFTWARDS ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="leftarrow",
   ["unicodeslot"]=0x2190, -- ←
  },
  [0x2191]={
@@ -44893,6 +44897,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="RIGHTWARDS ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="rightarrow",
   ["unicodeslot"]=0x2192, -- →
  },
  [0x2193]={
@@ -44909,6 +44915,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="LEFT RIGHT ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="leftrightarrow",
   ["unicodeslot"]=0x2194, -- ↔
  },
  [0x2195]={
@@ -45286,6 +45294,8 @@ characters.data={
   ["category"]="so",
   ["description"]="LEFTWARDS DOUBLE ARROW",
   ["linebreak"]="al",
+  ["mathclass"]="relation",
+  ["mathname"]="Leftarrow",
   ["unicodeslot"]=0x21D0, -- ⇐
  },
  [0x21D1]={
@@ -45301,6 +45311,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="RIGHTWARDS DOUBLE ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="Rightarrow",
   ["unicodeslot"]=0x21D2, -- ⇒
  },
  [0x21D3]={
@@ -45316,6 +45328,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="LEFT RIGHT DOUBLE ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="Leftrightarrow",
   ["unicodeslot"]=0x21D4, -- ⇔
  },
  [0x21D5]={
@@ -51538,6 +51552,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="WHITE UP-POINTING TRIANGLE",
   ["linebreak"]="ai",
+  ["mathclass"]="ord",
+  ["mathname"]="triangle",
   ["unicodeslot"]=0x25B3, -- △
  },
  [0x25B4]={

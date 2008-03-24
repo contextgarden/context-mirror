@@ -64,7 +64,8 @@ end
 function commands.processfile(name,maxreadlevel)
     name = find_file(name,maxreadlevel)
     if name ~= "" then
-        tex.sprint(tex.ctxcatcodes,string.format("\\input %s\\relax",name))
+    --  tex.sprint(tex.ctxcatcodes,string.format("\\input %s\\relax",name))
+        tex.print(tex.ctxcatcodes,string.format("\\input %s",name))
     end
 end
 
@@ -125,7 +126,7 @@ local function convertexamodes(str)
     end
 end
 
--- we need a system file option: ,. .. etc + path sbut no tex lookup so input.find_file is wrong here
+-- we need a system file option: ,. .. etc + paths but no tex lookup so input.find_file is wrong here
 
 function commands.loadexamodes(filename)
     if not filename or filename == "" then

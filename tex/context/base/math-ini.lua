@@ -162,45 +162,43 @@ function mathematics.define()
                     end
                     mathematics.setmathcharacter(k,m,f,i,fe,ie)
                 end
+            elseif c then
+                local s = slots[k]
+                if s then
+                    local f, i, fe, ie = s[1], s[2], s[3], s[4]
+                    if mathematics.trace then
+                        trace(k,c,f,i,fe,ie)
+                    end
+                    mathematics.setmathsymbol(c,m,f,i,fe,ie,k)
+                    mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                end
+            elseif v.contextname then
+                local s = slots[k]
+                local c = v.contextname
+                if s then
+                    local f, i, fe, ie = s[1], s[2], s[3], s[4]
+                    if mathematics.trace then
+                        trace(k,c,f,i,fe,ie)
+                    end
+                    -- todo: mathortext
+                    -- mathematics.setmathsymbol(c,m,f,i,fe,ie,k)
+                    mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                end
             else
-                if v.contextname then
-                    local s = slots[k]
-                    local c = v.contextname
+                local a = v.adobename
+                if a and m then
+                    local s, f, i, fe, ie = slots[k], nil, nil, nil, nil
                     if s then
-                        local f, i, fe, ie = s[1], s[2], s[3], s[4]
-                        if mathematics.trace then
-                            trace(k,c,f,i,fe,ie)
-                        end
-                        -- todo: mathortext
-                        -- mathematics.setmathsymbol(c,m,f,i,fe,ie,k)
-                        mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                        f, i, fe, ie = s[1], s[2], s[3], s[4]
+                    elseif m == "variable" then
+                        f, i = mathematics.families.variables, k
+                    elseif m == "number" then
+                        f, i = mathematics.families.numbers, k
                     end
-                elseif c then
-                    local s = slots[k]
-                    if s then
-                        local f, i, fe, ie = s[1], s[2], s[3], s[4]
-                        if mathematics.trace then
-                            trace(k,c,f,i,fe,ie)
-                        end
-                        mathematics.setmathsymbol(c,m,f,i,fe,ie,k)
-                        mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                    if mathematics.trace then
+                        trace(k,a,f,i,fe,ie)
                     end
-                else
-                    local a = v.adobename
-                    if a and m then
-                        local s, f, i, fe, ie = slots[k], nil, nil, nil, nil
-                        if s then
-                            f, i, fe, ie = s[1], s[2], s[3], s[4]
-                        elseif m == "variable" then
-                            f, i = mathematics.families.variables, k
-                        elseif m == "number" then
-                            f, i = mathematics.families.numbers, k
-                        end
-                        if mathematics.trace then
-                            trace(k,a,f,i,fe,ie)
-                        end
-                        mathematics.setmathcharacter(k,m,f,i,fe,ie)
-                    end
+                    mathematics.setmathcharacter(k,m,f,i,fe,ie)
                 end
             end
         end
@@ -296,9 +294,20 @@ mathematics.slots.traditional = {
     [0x00B1] = { "sy", 0x06 }, -- pm
     [0x00B7] = { "sy", 0x01 }, -- cdot
     [0x00D7] = { "sy", 0x02 }, -- times
+    [0x2022] = { "sy", 0x0F }, -- bullet
 
-    [0x02113] = { "mi", 0x60 }, -- ell
-    [0x02135] = { "sy", 0x40 }, -- aleph
+    [0x2190] = { "sy", 0x20 }, -- leftarrow
+    [0x2192] = { "sy", 0x21 }, -- rightarrow
+    [0x2194] = { "sy", 0x24 }, -- leftrightarrow
+
+    [0x21D0] = { "sy", 0x28 }, -- Leftarrow
+    [0x21D2] = { "sy", 0x29 }, -- Rightarrow
+    [0x21D4] = { "sy", 0x2C }, -- Leftrightarrow
+
+    [0x2135] = { "sy", 0x40 }, -- aleph
+    [0x2113] = { "mi", 0x60 }, -- ell
+
+    [0x25B3] = { "sy", 0x34 }, -- triangle up
 
     [0x1D6A4] = { "mi", 0x7B }, -- imath
     [0x1D6A5] = { "mi", 0x7C }, -- jmath

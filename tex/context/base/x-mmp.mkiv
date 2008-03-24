@@ -168,8 +168,7 @@
          {\gdef\dodoMMLfiller{\enablefiller#1}%
           \let\normalorfiller\gobbletwoarguments}%
        $#1$}%
-    \popmacro\doMMLfiller
-    \dodoMMLfiller}
+    \popmacro\doMMLfiller}
 
 % setups
 
@@ -319,16 +318,18 @@
     \hskip.5em\relax
 \stopsetups
 
+% {} around first component is essential!
+
 \startsetups mml:msub
-    \xmlindex{#1}{/*}{1}_{\xmlindex{#1}{/*}{2}}
+    {\xmlindex{#1}{/*}{1}}_{\xmlindex{#1}{/*}{2}}
 \stopsetups
 
 \startsetups mml:msup
-    \xmlindex{#1}{/*}{1}^{\xmlindex{#1}{/*}{2}}
+    {\xmlindex{#1}{/*}{1}}^{\xmlindex{#1}{/*}{2}}
 \stopsetups
 
 \startsetups mml:msubsup
-    \xmlindex{#1}{/*}{1}_{\xmlindex{#1}{/*}{2}}^{\xmlindex{#1}{/*}{3}}
+    {\xmlindex{#1}{/*}{1}}_{\xmlindex{#1}{/*}{2}}^{\xmlindex{#1}{/*}{3}}
 \stopsetups
 
 \startsetups mml:mover

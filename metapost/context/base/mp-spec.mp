@@ -330,24 +330,6 @@ def set_linear_vector (suffix a,b)(expr p,n) =
   fi ;
 enddef ;
 
-def linear_shade (expr p, n, ca, cb) =
-  begingroup ;
-  save a, b, sh ; pair a, b ;
-  set_linear_vector(a,b)(p,n) ;
-  fill p withshade define_linear_shade (a,b,ca,cb) ;
-  if trace_shades :
-    drawarrow a -- b withpen pencircle scaled 1pt ;
-  fi ;
-  endgroup ;
-enddef ;
-
-vardef predefined_linear_shade (expr p, n, ca, cb) =
-  save a, b, sh ; pair a, b ;
-  set_linear_vector(a,b)(p,n) ;
-  set_shade_vector(a,b)(p,n) ;
-  define_linear_shade (a,b,ca,cb)
-enddef ;
-
 def set_circular_vector (suffix ab, r)(expr p,n) =
   if     (n=1) : ab := llcorner p ;
   elseif (n=2) : ab := lrcorner p ;
@@ -355,6 +337,17 @@ def set_circular_vector (suffix ab, r)(expr p,n) =
   elseif (n=4) : ab := ulcorner p ;
   else         : ab := center   p ; r := .5r ;
   fi ;
+enddef ;
+
+def linear_shade (expr p, n, ca, cb) =
+  begingroup ;
+  save a, b, sh ; pair a, b ;
+  set_linear_vector(a,b)(p,n) ;
+  fill p withshade define_linear_shade (a,b,ca,cb) ;
+  if trace_shades :
+    drawarrow a -- b withpen pencircle scaled 1pt withcolor .5white ;
+  fi ;
+  endgroup ;
 enddef ;
 
 def circular_shade (expr p, n, ca, cb) =
@@ -365,9 +358,16 @@ def circular_shade (expr p, n, ca, cb) =
   set_circular_vector(ab,r)(p,n) ;
   fill p withshade define_circular_shade(ab,ab,0,r,ca,cb) ;
   if trace_shades :
-    drawarrow ab -- ab shifted (0,r) withpen pencircle scaled 1pt ;
+    drawarrow ab -- ab shifted (0,r) withpen pencircle scaled 1pt withcolor .5white ;
   fi ;
   endgroup ;
+enddef ;
+
+vardef predefined_linear_shade (expr p, n, ca, cb) =
+  save a, b, sh ; pair a, b ;
+  set_linear_vector(a,b)(p,n) ;
+  set_shade_vector(a,b)(p,n) ;
+  define_linear_shade (a,b,ca,cb)
 enddef ;
 
 vardef predefined_circular_shade (expr p, n, ca, cb) =
@@ -512,9 +512,9 @@ enddef ;
 
 % newcolor truecyan, truemagenta, trueyellow ;
 %
-% truecyan    = cmyk (1,0,0,0) ;
-% truemagenta = cmyk (0,1,0,0) ;
-% trueyellow  = cmyk (0,0,1,0) ;
+% truecyan    = (1,0,0,0) ;
+% truemagenta = (0,1,0,0) ;
+% trueyellow  = (0,0,1,0) ;
 
 %D Spot colors
 

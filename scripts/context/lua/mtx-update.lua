@@ -127,6 +127,7 @@ scripts.update.platforms = {
     ["win32"]     = "mswin",
     ["win"]       = "mswin",
     ["linux"]     = "linux",
+    ["freebsd"]   = "freebsd",
     ["linux-32"]  = "linux",
     ["linux-64"]  = "linux-64",
     ["osx"]       = "osx-intel",

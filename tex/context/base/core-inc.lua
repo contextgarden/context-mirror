@@ -294,7 +294,7 @@ do
         local figuredata = figures.new()
         if request then
             local iv = interfaces.variables
-            local w, h = tonumber(request.width), tonumber(request.heiht)
+            local w, h = tonumber(request.width), tonumber(request.height)
             request.page      = math.max(tonumber(request.page) or 1,1)
             request.size      = img.check_size(request.size)
             request.object    = iv[request.object] == "yes"
@@ -596,11 +596,11 @@ function figures.existers.generic(askedname)
 end
 function figures.checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
-    local name, page = du.fullname or "unknown generic", dr.page
-    local hash = name .. "->" .. page
+    local name, page, size = du.fullname or "unknown generic", dr.page, dr.size or "crop"
+    local hash = name .. "->" .. page .. "->" .. size
     local figure = figures.loaded[hash]
     if figure == nil then
-        figure = img.new { filename = name, page = page }
+        figure = img.new { filename = name, page = page, pagebox = dr.size }
         figure = (figure and img.scan(figure)) or false
         figures.loaded[hash] = figure
     end
@@ -628,8 +628,11 @@ function figures.includers.generic(data)
         figures.used[hash] = figure
     end
     if figure then
-        tex.box[figures.boxnumber] = img.node(figure) -- img.write(figure)
+        local n = figures.boxnumber
+        tex.box[n] = img.node(figure) -- img.write(figure)
+        tex.wd[n], tex.ht[n], tex.dp[n] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         ds.objectnumber = figure.objnum
+        tex.sprint(tex.ctxcatcodes,"\\relocateexternalfigure")
     end
     return data
 end
@@ -766,7 +769,7 @@ function figures.bases.find(basename,askedlabel)
         end
         t = false
         if base[2] and base[3] then
-            for e, d, k in xml.elements(base[3],"/(rlx:library|figurelibrary)/*:figure/*:label") do
+            for e, d, k in xml.elements(base[3],"/(*:library|figurelibrary)/*:figure/*:label") do
                 page = page + 1
                 if xml.content(d[k]) == askedlabel then
                     t = {

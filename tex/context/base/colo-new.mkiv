@@ -127,31 +127,29 @@
 \def\dodefinecolorcommand#1#2%
   {\unexpanded#1{#2}{\doactivatecolor{#2}}}
 
-\let\colordefinitionprefix\empty
-
 \def\dodefinecolor[#1][#2]%
   {\addtocommalist{#1}\colorlist
-   \ctxlua{ctx.defineprocesscolor("\colordefinitionprefix","#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxlua{ctx.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefineglobalcolor[#1][#2]%
   {\doglobal\addtocommalist{#1}\colorlist
-   \ctxlua{ctx.defineprocesscolor("\colordefinitionprefix","#1","#2",true,\iffreezecolors true\else false\fi)}%
+   \ctxlua{ctx.defineprocesscolor("#1","#2",true,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setgvalue{#1}}
 
 \def\dodefinenamedcolor[#1][#2]%
   {\doglobal\addtocommalist{#1}\colorlist
-   \ctxlua{ctx.defineprocesscolor("\colordefinitionprefix","#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxlua{ctx.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefinespotcolor[#1][#2][#3]%
   {\doglobal\addtocommalist{#1}\colorlist % optional
    \doglobal\addtocommalist{#2}\allspotcolors
-   \ctxlua{ctx.definespotcolor("\colordefinitionprefix","#1","#2","#3",true)}%
+   \ctxlua{ctx.definespotcolor("#1","#2","#3",true)}%
    \dodefinecolorcommand\setxvalue{#1}}
 
 \def\dodefinemultitonecolor[#1][#2][#3][#4]%
-  {\ctxlua{ctx.definemultitonecolor("\colordefinitionprefix","#1","#2","#3","#4",true)}%
+  {\ctxlua{ctx.definemultitonecolor("#1","#2","#3","#4",true)}%
    \dodefinecolorcommand\setxvalue{#1}}
 
 \def\dodefinetransparency[#1][#2]%

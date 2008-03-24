@@ -96,6 +96,10 @@
 
 \setcolormodel{all}
 
+\appendtoks
+    \setcolormodel{all}% redundant?
+\to \everyjob
+
 \def\registerrgbcolor   #1#2#3#4{\ctxlua{colors.register('color','#1','rgb' ,#2,#3,#4)}}
 \def\registercmykcolor#1#2#3#4#5{\ctxlua{colors.register('color','#1','cmyk',#2,#3,#4,#5)}}
 \def\registergraycolor      #1#2{\ctxlua{colors.register('color','#1','gray',#2)}}

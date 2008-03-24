@@ -577,7 +577,7 @@ class TEX
         if data = (IO.readlines(@@luafiles) rescue nil) then
             report("compiling lua files (using #{File.expand_path(@@luafiles)})")
             begin
-                Dir.makedirs(@@luatarget) rescue false
+                File.makedirs(@@luatarget) rescue false
                 data.each do |line|
                     luafile = line.chomp
                     lucfile = File.basename(luafile).gsub(/\..*?$/,'') + ".luc"
@@ -2057,7 +2057,7 @@ end
         setvariable('mp.line','')
         setvariable('mp.error','')
         if mpdata = File.silentread(mpname) then
-            mpdata.gsub!(/^\#.*\n/o,'')
+            mpdata.gsub!(/^\%.*\n/o,'')
             File.silentrename(mpname,mpcopy)
             texfound = mergebe || (mpdata =~ /btex .*? etex/mo)
             if mp = openedfile(mpname) then

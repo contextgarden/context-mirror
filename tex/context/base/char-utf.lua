@@ -138,34 +138,42 @@ to their right glyph there.</p>
 0x100000.</p>
 --ldx]]--
 
-characters.filters.utf.private      = { }
-characters.filters.utf.private.high = { }
-characters.filters.utf.private.low  = { }
+characters.filters.utf.private = {
+    high    = { },
+    low     = { },
+    escapes = { },
+}
 
 do
 
+    local low     = characters.filters.utf.private.low
+    local high    = characters.filters.utf.private.high
+    local escapes = characters.filters.utf.private.escapes
+    local special = "~#$%^&_{}\\"
+
     local ub, uc, ug = utf.byte, utf.char, utf.gsub
-    local cfup = characters.filters.utf.private
 
     function characters.filters.utf.private.set(ch)
-        local cb = ub(ch)
+        local cb
+        if type(ch) == "number" then
+            cb, ch = ch, uc(ch)
+        else
+            cb = ub(ch)
+        end
         if cb < 256 then
-            cfup.low[ch] = uc(0x0F0000 + cb)
-            cfup.high[uc(0x0F0000 + cb)] = ch
+            low    [ch]                = uc(0x0F0000 + cb)
+            high   [uc(0x0F0000 + cb)] = ch
+            escapes[ch]                = "\\" .. ch
         end
     end
 
-    function characters.filters.utf.private.replace(str)
-        ug("(.)", cfup.low)
-    end
+    function characters.filters.utf.private.replace(str) return ug(str,"(.)", low    ) end
+    function characters.filters.utf.private.revert(str)  return ug(str,"(.)", high   ) end
+    function characters.filters.utf.private.escape(str)  return ug(str,"(.)", escapes) end
 
-    function characters.filters.utf.private.revert(str)
-        ug("(.)", cfup.high)
-    end
+    local set = characters.filters.utf.private.set
 
-    for _, ch in ipairs({ '~', '#', '$', '%', '^', '&', '_', '{', '}' }) do
-        cfup.set(ch)
-    end
+    for ch in special:gmatch(".") do set(ch) end
 
 end
 

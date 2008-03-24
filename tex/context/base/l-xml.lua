@@ -1033,7 +1033,7 @@ do
                 end
             else
                 if (command == 16 or command == 12) and index == 1 then -- initial
---~                     wildcard = true
+                --  wildcard = true
                     wildcard = command == 16 -- ok?
                     index = index + 1
                     action = pattern[index]
@@ -1139,9 +1139,13 @@ do
                                 if matched then -- combine tg test and at test
                                     if index == #pattern then
                                         if handle(root,rootdt,root.ri or k) then return false end
-                                        if wildcard and multiple then
---~ if wildcard or multiple then
-                                            if not traverse(e,pattern,handle,reverse,index,root,true) then return false end
+                                        if wildcard then
+                                            if multiple then
+                                                if not traverse(e,pattern,handle,reverse,index,root,true) then return false end
+                                            else
+                                             -- maybe or multiple; anyhow, check on (section|title) vs just section and title in example in lxml
+                                                if not traverse(e,pattern,handle,reverse,index,root) then return false end
+                                            end
                                         end
                                     else
                                         if not traverse(e,pattern,handle,reverse,index+1,root) then return false end

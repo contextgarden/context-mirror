@@ -228,7 +228,7 @@ if texconfig and not texlua then do
             ws("graphics processing time  - %s seconds (n=%s) (including tex)", input.loadtime(figures), figures.n or "?")
         end
         if metapost then
-            ws("metapost processing time  - %s seconds (+ loading: %s seconds)", input.loadtime(metapost), input.loadtime(mplib))
+            ws("metapost processing time  - %s seconds (loading: %s seconds, execution: %s seconds, n: %s)", input.loadtime(metapost), input.loadtime(mplib), input.loadtime(metapost.exectime), metapost.n)
         end
         if status.luastate_bytes then
             ws("current memory usage      - %s bytes", status.luastate_bytes)

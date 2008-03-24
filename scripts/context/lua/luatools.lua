@@ -1098,6 +1098,24 @@ function table.hexed(t,seperator)
     return table.concat(tt,seperator or " ")
 end
 
+function table.reverse_hash(h)
+    local r = { }
+    for k,v in pairs(h) do
+        r[v] = (k:gsub(" ","")):lower()
+    end
+    return r
+end
+
+function table.reverse(t)
+    local tt = { }
+    if #t > 0 then
+        for i=#t,1,-1 do
+            tt[#tt+1] = t[i]
+        end
+    end
+    return tt
+end
+
 
 -- filename : l-io.lua
 -- comment  : split off from luat-lib
@@ -1835,6 +1853,7 @@ if lfs then do
         if ok and type(scanner) == "function" then
             if not path:find("/$") then path = path .. '/' end
             for name in scanner do
+print(name)
                 local full = path .. name
                 local mode = attributes(full,'mode')
                 if mode == 'file' then
@@ -1950,23 +1969,28 @@ if lfs then do
             end
             local first, middle, last
             local drive = false
-            first, last = str:match("^(//)/*(.-)$")
+            first, middle, last = str:match("^(//)(//*)(.*)$")
             if first then
-                middle, last = str:match("([^/]+)/+(.-)$")
-                if middle then
-                    pth = "//" .. middle
-                else
-                    pth = "//" .. last
-                    last = ""
-                end
+                -- empty network path == local path
             else
-                first, middle, last = str:match("^([a-zA-Z]:)(/*)(.-)$")
+                first, last = str:match("^(//)/*(.-)$")
                 if first then
-                    pth, drive = first .. middle, true
+                    middle, last = str:match("([^/]+)/+(.-)$")
+                    if middle then
+                        pth = "//" .. middle
+                    else
+                        pth = "//" .. last
+                        last = ""
+                    end
                 else
-                    middle, last = str:match("^(/*)(.-)$")
-                    if not middle then
-                        last = str
+                    first, middle, last = str:match("^([a-zA-Z]:)(/*)(.-)$")
+                    if first then
+                        pth, drive = first .. middle, true
+                    else
+                        middle, last = str:match("^(/*)(.-)$")
+                        if not middle then
+                            last = str
+                        end
                     end
                 end
             end
@@ -1998,17 +2022,38 @@ if lfs then do
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
         function dir.expand_name(str)
-            local first, last = str:match("^(//)/*(.*)$")
-            if not first then
-                first, last = str:match("^([a-zA-Z]:)(.*)$")
+            local first, nothing, last = str:match("^(//)(//*)(.*)$")
+            if first then
+                first = lfs.currentdir() .. "/"
+                first = first:gsub("\\","/")
             end
             if not first then
-                first, last = lfs.currentdir() .. "/", str
+                first, last = str:match("^(//)/*(.*)$")
+            end
+            if not first then
+                first, last = str:match("^([a-zA-Z]:)(.*)$")
+                if first and not last:find("^/") then
+                    local d = lfs.currentdir()
+                    if lfs.chdir(first) then
+                        first = lfs.currentdir()
+                        first = first:gsub("\\","/")
+                    end
+                    lfs.chdir(d)
+                end
+            end
+            if not first then
+                first, last = lfs.currentdir(), str
                 first = first:gsub("\\","/")
             end
             last = last:gsub("//","/")
             last = last:gsub("/%./","/")
-            return first .. last
+            last = last:gsub("^/*","")
+            first = first:gsub("/*$","")
+            if last == "" then
+                return first
+            else
+                return first .. "/" .. last
+            end
         end
 
     else
@@ -4129,7 +4174,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             end
             -- this is actually 'other text files' or 'any' or 'whatever'
             local filelist = input.aux.collect_files(instance,wantedfiles)
-            local lf = filelist and filelist[1]
+            local fl = filelist and filelist[1]
             if fl then
                 filename = fl[3]
                 result[#result+1] = filename
@@ -4890,9 +4935,10 @@ end
 
 -- here we use the cache for format loading (texconfig.[formatname|jobname])
 
-if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
-    if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end
-    texconfig.formatname = caches.setpath(instance,"format") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
+--~ if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
+if tex and texconfig and (not texconfig.formatname or texconfig.formatname == "") and texmf.instance then
+    if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end -- or luc
+    texconfig.formatname = caches.setpath(texmf.instance,"formats") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
 end
 
 --[[ldx--
@@ -5673,7 +5719,7 @@ if texconfig and not texlua then do
             ws("graphics processing time  - %s seconds (n=%s) (including tex)", input.loadtime(figures), figures.n or "?")
         end
         if metapost then
-            ws("metapost processing time  - %s seconds (+ loading: %s seconds)", input.loadtime(metapost), input.loadtime(mplib))
+            ws("metapost processing time  - %s seconds (loading: %s seconds, execution: %s seconds, n: %s)", input.loadtime(metapost), input.loadtime(mplib), input.loadtime(metapost.exectime), metapost.n)
         end
         if status.luastate_bytes then
             ws("current memory usage      - %s bytes", status.luastate_bytes)

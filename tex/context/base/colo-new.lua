@@ -16,6 +16,8 @@ if not modules then modules = { } end modules ['colo-ini'] = {
 
 -- spec-pdf.lua
 
+-- todo: %s -> %f
+
 backends     = backends     or { }
 backends.pdf = backends.pdf or { }
 backend      = backends.pdf
@@ -55,6 +57,8 @@ ctx.aux = ctx.aux or { }
 
 do
 
+    local format, sprint = string.format, tex.sprint
+
     local a_l_c_template = "\\setevalue{(ca:%s)}{%s}" ..
                            "\\setevalue{(cs:%s)}{\\dosetattribute{color}{%s}}"
     local a_g_c_template = "\\setxvalue{(ca:%s)}{%s}" ..
@@ -84,67 +88,63 @@ do
     function ctx.aux.definecolor(name, ca, global)
         if ca and ca > 0 then
             if global then
-                tex.sprint(tex.ctxcatcodes,a_g_c_template:format(name, ca, name, ca))
+                sprint(tex.ctxcatcodes,a_g_c_template:format(name, ca, name, ca))
             else
-                tex.sprint(tex.ctxcatcodes,a_l_c_template:format(name, ca, name, ca))
+                sprint(tex.ctxcatcodes,a_l_c_template:format(name, ca, name, ca))
             end
         else
             if global then
-                tex.sprint(tex.ctxcatcodes,r_g_c_template:format(name, name))
+                sprint(tex.ctxcatcodes,r_g_c_template:format(name, name))
             else
-                tex.sprint(tex.ctxcatcodes,r_l_c_template:format(name, name))
+                sprint(tex.ctxcatcodes,r_l_c_template:format(name, name))
             end
         end
     end
     function ctx.aux.inheritcolor(name, ca, global)
         if ca and ca ~= "" then
             if global then
-                tex.sprint(tex.ctxcatcodes,f_g_c_template:format(name, ca, name, ca))
+                sprint(tex.ctxcatcodes,f_g_c_template:format(name, ca, name, ca))
             else
-                tex.sprint(tex.ctxcatcodes,f_l_c_template:format(name, ca, name, ca))
+                sprint(tex.ctxcatcodes,f_l_c_template:format(name, ca, name, ca))
             end
         else
             if global then
-                tex.sprint(tex.ctxcatcodes,r_g_c_template:format(name, name))
+                sprint(tex.ctxcatcodes,r_g_c_template:format(name, name))
             else
-                tex.sprint(tex.ctxcatcodes,r_l_c_template:format(name, name))
+                sprint(tex.ctxcatcodes,r_l_c_template:format(name, name))
             end
         end
     end
     function ctx.aux.definetransparent(name, ta, global)
         if ta and ta > 0 then
             if global then
-                tex.sprint(tex.ctxcatcodes,a_g_t_template:format(name, ta, name, ta))
+                sprint(tex.ctxcatcodes,a_g_t_template:format(name, ta, name, ta))
             else
-                tex.sprint(tex.ctxcatcodes,a_l_t_template:format(name, ta, name, ta))
+                sprint(tex.ctxcatcodes,a_l_t_template:format(name, ta, name, ta))
             end
         else
             if global then
-                tex.sprint(tex.ctxcatcodes,r_g_t_template:format(name, name))
+                sprint(tex.ctxcatcodes,r_g_t_template:format(name, name))
             else
-                tex.sprint(tex.ctxcatcodes,r_l_t_template:format(name, name))
+                sprint(tex.ctxcatcodes,r_l_t_template:format(name, name))
             end
         end
     end
     function ctx.aux.inherittransparent(name, ta, global)
         if ta and ta ~= "" then
             if global then
-                tex.sprint(tex.ctxcatcodes,f_g_t_template:format(name, ta, name, ta))
+                sprint(tex.ctxcatcodes,f_g_t_template:format(name, ta, name, ta))
             else
-                tex.sprint(tex.ctxcatcodes,f_l_t_template:format(name, ta, name, ta))
+                sprint(tex.ctxcatcodes,f_l_t_template:format(name, ta, name, ta))
             end
         else
             if global then
-                tex.sprint(tex.ctxcatcodes,r_g_t_template:format(name, name))
+                sprint(tex.ctxcatcodes,r_g_t_template:format(name, name))
             else
-                tex.sprint(tex.ctxcatcodes,r_l_t_template:format(name, name))
+                sprint(tex.ctxcatcodes,r_l_t_template:format(name, name))
             end
         end
     end
-
-end
-
-do
 
     local transparent = {
         none       =  0,
@@ -172,7 +172,10 @@ do
         transparent[name] = n
     end
 
+    local registered = { }
+
     local function registerspotcolor(parent,name,parentnumber,e,f,d,p)
+if not registered[parentnumber] then
         local v = colors.values[parentnumber]
         if v then
             local kind = v[1]
@@ -185,9 +188,12 @@ do
             end
             backends.pdf.registerspotcolorname(parent,e)
         end
+    registered[parentnumber] = true
+end
     end
 
     local function registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- same as spot but different template
+if not registered[parentnumber] then
         local v = colors.values[parentnumber]
         if v then
             local kind = v[1]
@@ -199,13 +205,15 @@ do
                 backend.registercmykindexcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
             end
         end
+    registered[parentnumber] = true
+end
     end
 
     function ctx.definesimplegray(name,s)
         return colors.register('color',name,'gray',s) -- we still need to get rid of 'color'
     end
 
-    function ctx.defineprocesscolor(prefix,name,str,global,freeze) -- still inconsistent color vs transparent
+    function ctx.defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
         local t = str:split_settings()
         if t then
             if t.h then
@@ -239,40 +247,56 @@ do
         end
     end
 
-    function ctx.definespotcolor(prefix,name,parent,str,global)
-        if name ~= parent then
+    function ctx.definespotcolor(name,parent,str,global)
+        if parent == "" or parent:find("=") then
+            ctx.registerspotcolor(name, parent)
+        elseif name ~= parent then
             local cp = attributes.list[attributes.numbers['color']][parent]
             if cp then
                 local t = str:split_settings()
                 if t then
                     t.p = tonumber(t.p) or 1
                     registerspotcolor(parent, name, cp, t.e, 1, "", t.p) -- p not really needed, only diagnostics
-                    ctx.aux.definecolor(name, colors.register('color',name,'spot', parent, 1, "", t.p), true)
-                    if t.a and t.t then
-                        ctx.aux.definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
-                    elseif ctx.couplecolors then
---~                         ctx.aux.definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
-                        ctx.aux.definetransparent(name, 0, global) -- can be sped up
+                    if name and name ~= "" then
+                        ctx.aux.definecolor(name, colors.register('color',name,'spot', parent, 1, "", t.p), true)
+                        if t.a and t.t then
+                            ctx.aux.definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
+                        elseif ctx.couplecolors then
+                        --~ ctx.aux.definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
+                            ctx.aux.definetransparent(name, 0, global) -- can be sped up
+                        end
                     end
                 end
             end
         end
     end
 
-    function ctx.definemultitonecolor(prefix,name,multispec,colorspec,selfspec)
+    function ctx.registerspotcolor(parent, str)
+        local cp = attributes.list[attributes.numbers['color']][parent]
+        if cp then
+            local e = ""
+            if str then
+                local t = str:split_settings()
+                e = (t and t.e) or ""
+            end
+            registerspotcolor(parent, "dummy", cp, e, 1, "", 1) -- p not really needed, only diagnostics
+        end
+    end
+
+    function ctx.definemultitonecolor(name,multispec,colorspec,selfspec)
         local dd, pp, nn = { }, { }, { }
         for k,v in multispec:gmatch("(%a+)=([^%,]*)") do
             dd[#dd+1] = k
             pp[#pp+1] = v
             nn[#nn+1] = k
-            nn[#nn+1] = string.format("%1.3g",tonumber(v))
+            nn[#nn+1] = format("%1.3g",tonumber(v))
         end
     --~ v = tonumber(v) * p
         local nof = #dd
         if nof > 0 then
             dd, pp, nn = table.concat(dd,','), table.concat(pp,','), table.concat(nn,'_')
             local parent = (nn:lower()):gsub("[^%d%a%.]+","_")
-            ctx.defineprocesscolor(prefix,parent,colorspec..","..selfspec,true,true)
+            ctx.defineprocesscolor(parent,colorspec..","..selfspec,true,true)
             local cp = attributes.list[attributes.numbers['color']][parent]
             if cp then
                 registerspotcolor     (parent, name, cp, "", nof, dd, pp)
@@ -298,28 +322,28 @@ do
             end
             if tv then
                 if model == 2 then
-                    return string.format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
+                    return format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
                 elseif model == 3 then
-                    return string.format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
+                    return format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
                 elseif model == 4 then
-                    return string.format("transparent(%s,%s,cmyk(%s,%s,%s,%s))",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
+                    return format("transparent(%s,%s,cmyk(%s,%s,%s,%s))",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
                 else
-                    return string.format("transparent(%s,%s,multitonecolor(\"%s\",%s,\"%s\",\"%s\"))",tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
+                    return format("transparent(%s,%s,multitonecolor(\"%s\",%s,\"%s\",\"%s\"))",tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
                 end
             else
                 if model == 2 then
-                    return string.format("(%s,%s,%s)",cv[3],cv[4],cv[5])
+                    return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
                 elseif model == 3 then
-                    return string.format("(%s,%s,%s)",cv[3],cv[4],cv[5])
+                    return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
                 elseif model == 4 then
-                    return string.format("cmyk(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
+                    return format("cmyk(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
                 else
-                    return string.format("multitonecolor(\"%s\",%s,\"%s\",\"%s\")",cv[10],cv[11],cv[12],cv[13])
+                    return format("multitonecolor(\"%s\",%s,\"%s\",\"%s\")",cv[10],cv[11],cv[12],cv[13])
                 end
             end
         else
             default = default or 0 -- rgb !
-            return string.format("(%s,%s,%s)",default,default,default)
+            return format("(%s,%s,%s)",default,default,default)
         end
     end
 
@@ -355,15 +379,15 @@ do
         if cv then
             local model = cv[1]
             if model == 2 then
-                return string.format("s=%1.3f",cv[2])
+                return format("s=%1.3f",cv[2])
             elseif model == 3 then
-                return string.format("r=%1.3f g=%1.3f b=%1.3f",cv[3],cv[4],cv[5])
+                return format("r=%1.3f g=%1.3f b=%1.3f",cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return string.format("c=%1.3f m=%1.3f y=%1.3f k=%1.3f",cv[6],cv[7],cv[8],cv[9])
+                return format("c=%1.3f m=%1.3f y=%1.3f k=%1.3f",cv[6],cv[7],cv[8],cv[9])
             elseif type(cv[13]) == "string" then
-                return string.format("p=%s",cv[13])
+                return format("p=%s",cv[13])
             else
-                return string.format("p=%1.3f",cv[13])
+                return format("p=%1.3f",cv[13])
             end
         else
             return ""
@@ -373,7 +397,7 @@ do
     function ctx.transparencycomponents(ta)
         local tv = transparencies.value(ta)
         if tv then
-            return string.format("a=%1.3f t=%1.3f",tv[1],tv[2])
+            return format("a=%1.3f t=%1.3f",tv[1],tv[2])
         else
             return ""
         end
@@ -387,22 +411,22 @@ do
             end
             if model == 2 then
                 local s = cv[2]
-                return string.format("%s g %s G",s,s)
+                return format("%s g %s G",s,s)
             elseif model == 3 then
                 local r, g, b = cv[3], cv[4], cv[5]
-                return string.format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)
+                return format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)
             elseif model == 4 then
                 local c, m, y, k = cv[6],cv[7],cv[8],cv[9]
-                return string.format("%s %s %s %s k %s %s %s %s K",c,m,y,k,c,m,y,k)
+                return format("%s %s %s %s k %s %s %s %s K",c,m,y,k,c,m,y,k)
             else
                 local n,f,d,p = cv[10],cv[11],cv[12],cv[13]
                 if type(p) == "string" then
                     p = p:gsub(","," ") -- brr misuse of spot
                 end
-                return string.format("/%s cs /%s CS %s SCN %s scn",n,n,p,p)
+                return format("/%s cs /%s CS %s SCN %s scn",n,n,p,p)
             end
         else
-            return string.format("%s g %s G",default or 0)
+            return format("%s g %s G",default or 0)
         end
     end
 
@@ -413,16 +437,16 @@ do
                 model = cv[1]
             end
             if model == 2 then
-                return string.format("%s",cv[2])
+                return format("%s",cv[2])
             elseif model == 3 then
-                return string.format("%s %s %s",cv[3],cv[4],cv[5])
+                return format("%s %s %s",cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return string.format("%s %s %s %s",cv[6],cv[7],cv[8],cv[9])
+                return format("%s %s %s %s",cv[6],cv[7],cv[8],cv[9])
             else
-                return string.format("%s",cv[13])
+                return format("%s",cv[13])
             end
         else
-            return string.format("%s",default or 0)
+            return format("%s",default or 0)
         end
     end
 
@@ -433,16 +457,16 @@ do
                 model = cv[1]
             end
             if model == 2 then
-                return string.format("[%s]",cv[2])
+                return format("[%s]",cv[2])
             elseif model == 3 then
-                return string.format("[%s %s %s]",cv[3],cv[4],cv[5])
+                return format("[%s %s %s]",cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return string.format("[%s %s %s %s]",cv[6],cv[7],cv[8],cv[9])
+                return format("[%s %s %s %s]",cv[6],cv[7],cv[8],cv[9])
             elseif model == 4 then
-                return string.format("[%s]",cv[13])
+                return format("[%s]",cv[13])
             end
         else
-            return string.format("[%s]",default or 0)
+            return format("[%s]",default or 0)
         end
     end
 
@@ -479,33 +503,33 @@ do
         return tostring(v)
     end
 
-end
+    -- unfortunately we have \cs's here but this will go anyway once we have mplib and such
 
--- unfortunately we have \cs's here but this will go anyway once we have mplib and such
+    function ctx.resolvempgraycolor(csa,csb,model,s)
+        local ca = colors.register('color',nil,'gray',s)
+        tex.sprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
+        tex.sprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
+    end
+    function ctx.resolvemprgbcolor(csa,csb,model,r,g,b)
+        local ca = colors.register('color',nil,'rgb',r,g,b)
+        tex.sprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
+        tex.sprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
+    end
+    function ctx.resolvempcmykcolor(csa,csb,model,c,m,y,k)
+        local ca = colors.register('color',nil,'cmyk',c,m,y,k)
+        tex.sprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
+        tex.sprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
+    end
+    function ctx.resolvempspotcolor(csa,csb,model,n,f,d,p)
+        local ca = colors.register('color',nil,'spot',n,f,d,p)
+        tex.sprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
+        tex.sprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
+    end
 
-function ctx.resolvempgraycolor(csa,csb,model,s)
-    local ca = colors.register('color',nil,'gray',s)
-    tex.sprint(tex.ctxcatcodes,string.format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
-    tex.sprint(tex.ctxcatcodes,string.format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
-end
-function ctx.resolvemprgbcolor(csa,csb,model,r,g,b)
-    local ca = colors.register('color',nil,'rgb',r,g,b)
-    tex.sprint(tex.ctxcatcodes,string.format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
-    tex.sprint(tex.ctxcatcodes,string.format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
-end
-function ctx.resolvempcmykcolor(csa,csb,model,c,m,y,k)
-    local ca = colors.register('color',nil,'cmyk',c,m,y,k)
-    tex.sprint(tex.ctxcatcodes,string.format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
-    tex.sprint(tex.ctxcatcodes,string.format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
-end
-function ctx.resolvempspotcolor(csa,csb,model,n,f,d,p)
-    local ca = colors.register('color',nil,'spot',n,f,d,p)
-    tex.sprint(tex.ctxcatcodes,string.format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
-    tex.sprint(tex.ctxcatcodes,string.format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
 end
 
 -- literals needed to inject code in the mp stream, we cannot use attributes there
--- since literals may have qQ's
+-- since literals may have qQ's, much may go away once we have mplib code in place
 
 do
 

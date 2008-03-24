@@ -116,7 +116,21 @@ extra_endfig := extra_endfig
 %D Also handy (when we flush colors):
 
 vardef dddecimal primary c =
-  decimal redpart c & " " & decimal greenpart c & " " & decimal bluepart  c
+  decimal redpart c & " " & decimal greenpart c & " " & decimal bluepart c
+enddef ;
+
+vardef ddddecimal primary c =
+  decimal cyanpart c & " " & decimal magentapart c & " " & decimal yellowpart c & " " & decimal blackpart c
+enddef ;
+
+vardef colordecimals primary c =
+    if cmykcolor c :
+        decimal cyanpart c & ":" & decimal magentapart c & ":" & decimal yellowpart c & ":" & decimal blackpart c
+    elseif rgbcolor c :
+        decimal redpart c & ":" & decimal greenpart c & ":" & decimal bluepart c
+    else :
+        decimal c
+    fi
 enddef ;
 
 %D We have standardized data file names:

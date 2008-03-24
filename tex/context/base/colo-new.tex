@@ -741,31 +741,6 @@
 \def\definecolorgroup
   {\dotripleempty\dodefinecolorgroup}
 
-% \def\dodefinecolorgroup[#1][#2][#3]%
-%   {\ifthirdargument
-%      \processaction
-%        [#2]
-%        [    \v!cmyk=>\edef\currentcolorspace{C},
-%              \v!rgb=>\edef\currentcolorspace{R},
-%             \v!gray=>\edef\currentcolorspace{S},
-%             \v!spot=>\edef\currentcolorspace{P},
-%                \v!s=>\edef\currentcolorspace{S},
-%          \s!unknown=>\edef\currentcolorspace{R}]%
-%      \colorcount\zerocount
-%      \def\dododefinecolorgroup##1%
-%        {\advance\colorcount \plusone
-%         \setevalue{\??cr#1:\the\colorcount}{\currentcolorspace:##1:0:0}}%
-%      \processcommalist[#3]\dododefinecolorgroup
-%    \else
-%      \doifinstringelse{:}{#2}
-%        {\definecolorgroup[#1][\v!rgb][#2]}
-%        {\doloop
-%           {\doifdefinedelse{\??cr#2:\recurselevel}
-%              {\setevalue{\??cr#1:\recurselevel}%
-%                 {\csname\??cr#2:\recurselevel\endcsname}}
-%              {\exitloop}}}%
-%    \fi}
-
 \def\dododefinecolorgroupgray         [#1][#2:#3]{\definecolor   [#1:\the\colorcount][s=#2]}
 \def\dododefinecolorgrouprgb    [#1][#2:#3:#4:#5]{\definecolor   [#1:\the\colorcount][r=#2,g=#3,b=#4]}
 \def\dododefinecolorgroupcmyk[#1][#2:#3:#4:#5:#6]{\definecolor   [#1:\the\colorcount][c=#2,m=#3=,y=#4,k=#5]}

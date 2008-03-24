@@ -180,7 +180,7 @@
    \doifseparatingcolorselse
      {\let\@@efforegroundcolor\empty
       \doifelsenothing\@@efsplit
-        {\chardef\splitexternalfigure\zerocount}
+        {\charde\splitexternalfigure\zerocount}
         {\doifcolorchannelelse\@@efsplit
            {\let\@@efobject\v!no  % why?
             \chardef\splitexternalfigure\plusone}
@@ -262,6 +262,16 @@
       \finishexternalfigure
    \fi
    \ctxlua{figures.pop()}}
+
+\def\relocateexternalfigure % easier here than in lua
+  {\global\setbox\foundexternalfigure\vbox to \ht\foundexternalfigure\bgroup
+     \vss
+     \ht\foundexternalfigure\zeropoint
+     \hbox to \wd\foundexternalfigure\bgroup
+        \box\foundexternalfigure
+        \hss
+     \egroup
+   \egroup}
 
 \def\signalexternalfigure
   {\ifcase\figurestatus
@@ -367,7 +377,7 @@
 \def\dogetfiguredimensions[#1][#2]%
   {\startnointerference
      \testexternalfigureonly
-     \externalfigure[#1][#2,\c!display=,\c!object=\v!no]
+     \externalfigure[#1][#2,\c!display=,\c!object=\v!no]%
    \stopnointerference}
 
 \let\getfiguredimensionsonly\getfiguredimensions
@@ -388,7 +398,7 @@
      \testexternalfigureonly
      \setfalse\externalfigureflush % == test ?
      \externalfigure[#1][#2][#3]% or \doexternalfigure
-     \externalfigure[#1][#2,\c!display=,\c!object=\v!no]
+     \externalfigure[#1][#2,\c!display=,\c!object=\v!no]%
    \stopnointerference}
 
 % figurebases

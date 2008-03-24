@@ -142,9 +142,10 @@ end
 
 -- here we use the cache for format loading (texconfig.[formatname|jobname])
 
-if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
-    if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end
-    texconfig.formatname = caches.setpath(instance,"format") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
+--~ if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
+if tex and texconfig and (not texconfig.formatname or texconfig.formatname == "") and texmf.instance then
+    if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end -- or luc
+    texconfig.formatname = caches.setpath(texmf.instance,"formats") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
 end
 
 --[[ldx--

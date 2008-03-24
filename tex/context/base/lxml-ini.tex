@@ -215,3 +215,60 @@
 
 % \def\xmljoin{main}{/subject/information/authors/author}{,}{and}
 % table.join(t,1,#t-1,", ") .. " and " .. t[#t]
+
+% % An example by Wolfgang Schuster:
+%
+% \startxmlsetups xml:mysetups
+%   \xmlsetsetup{\xmldocument}{section{xml:*}
+%   \xmlsetsetup{\xmldocument}{title|p}{xml:*}
+% \stopxmlsetups
+%
+% \xmlregistersetup{xml:mysetups}
+%
+% \newcounter\sectionlevel
+%
+% \startxmlsetups xml:section
+%   \increment\sectionlevel
+%   \xmlflush{#1}
+%   \decrement\sectionlevel
+% \stopxmlsetups
+%
+% \startxmlsetups xml:title
+%   \ifcase\sectionlevel
+%   \or\chapter      {\xmlflush{#1}}
+%   \or\section      {\xmlflush{#1}}
+%   \or\subsection   {\xmlflush{#1}}
+%   \or\subsubsection{\xmlflush{#1}}
+%   \fi
+% \stopxmlsetups
+%
+% \startxmlsetups xml:p
+%   \xmlflush{#1}\endgraf
+% \stopxmlsetups
+%
+% \startbuffer[section]
+% <!-- An example by Wolfgang Schuster: -->
+% <section>
+%     <title>Section 1</title>
+%     <p>text text text text text text text text</p>
+%     <section>
+%         <title>Subsection 1</title>
+%         <p>text text text text text text text text</p>
+%     </section>
+%     <section>
+%         <title>Subsection 2</title>
+%         <p>text text text text text text text text</p>
+%     </section>
+%     <section>
+%         <title>Subsection 3</title>
+%         <p>text text text text text text text text</p>
+%     </section>
+%     <title>Section 2</title>
+%     <p>text text text text text text text text</p>
+% </section>
+% \stopbuffer
+%
+% \starttext
+%     \xmlprocessbuffer{main}{section}{}
+% \stoptext
+

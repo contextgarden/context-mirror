@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['attr-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: document this
+
 -- nb: attributes: color etc is much slower than normal (marks + literals) but ...
 -- nb. too many "0 g"s
 
@@ -551,6 +553,8 @@ colors.models = {
     cmyk = 4,
 }
 
+colors.model = "all"
+
 do
 
     local min    = math.min
@@ -596,6 +600,11 @@ do
     local function cmyktogray(c,m,y,k)
         return rgbtogray(cmyktorgb(c,m,y,k))
     end
+
+    colors.rgbtocmyk  = rgbtocmyk
+    colors.rgbtogray  = rgbtogray
+    colors.cmyktorgb  = cmyktorgb
+    colors.cmyktogray = cmyktogray
 
     -- we can share some *data by using s, rgb and cmyk hashes, but
     -- normally the amount of colors is not that large; storing the
@@ -663,6 +672,7 @@ do
 end
 
 function colors.setmodel(attribute,name)
+    colors.model = name
     colors.selector = attributes.numbers[attribute]
     colors.default = colors.models[name] or 1
     return colors.default
