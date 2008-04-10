@@ -10,7 +10,7 @@ do
 
     local hash = { }
 
-    local function set(key,value)
+    local function set(key,value) -- using Carg is slower here
         hash[key] = value
     end
 
@@ -31,7 +31,7 @@ do
     function aux.settings_to_hash(str)
         if str and str ~= "" then
             hash = { }
-            lpeg.match(pattern,str)
+            pattern:match(str)
             return hash
         else
             return { }
@@ -39,17 +39,24 @@ do
     end
 
     local seperator = comma * space^0
-    local value     = lbrace * lpeg.C(nobrace^0) * rbrace + lpeg.C((1-seperator)^0)
+    local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
     local pattern   = lpeg.Ct(value*(seperator*value)^0)
 
     -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
     function aux.settings_to_array(str)
-        return lpeg.match(pattern,str)
+        return pattern:match(str)
     end
 
+    local function set(t,v)
+        t[#t+1] = v
+    end
+
+    local value   = lpeg.P(lpeg.Carg(1)*value) / set
+    local pattern = value*(seperator*value)^0 * lpeg.Carg(1)
+
     function aux.add_settings_to_array(t,str)
-        return table.merge(t, lpeg.match(pattern,str))
+        return pattern:match(str, nil, t)
     end
 
 end

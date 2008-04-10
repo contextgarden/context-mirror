@@ -100,6 +100,7 @@
       \wd0\hsize
       \dp0\strutdp
       \nointerlineskip
+      \forgetall
       \ruledvbox{\box0}%
       \egroup
       \prevdepth\strutdp}%
@@ -704,6 +705,7 @@
            \botbaselinecorrection
            \vss}%
         \setbox\nextbox\hbox{\lower\strutdp\flushnextbox}%
+        \forgeteverypar % new per 3/4/2008, prevents duplicate pos nodes resulting in extra whitespace
         \noindent\snaptogrid\vbox{\flushnextbox}%
         \egroup}
        \vbox % was \hbox

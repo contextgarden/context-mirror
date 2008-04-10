@@ -321,6 +321,7 @@ end
 -- node-gly.lua
 
 if not fonts        then fonts        = { } end
+if not fonts.otf    then fonts.otf    = { } end
 if not fonts.tfm    then fonts.tfm    = { } end
 if not fonts.tfm.id then fonts.tfm.id = { } end
 
@@ -761,17 +762,17 @@ do
                     local v = root[k]
                     local t = type(v)
                     if t == "number" then
-if v == 0 then
-    -- skip
-else
-                        handle(("%s %s=%s,"):format(depth,key(k),v))
-end
+                        if v == 0 then
+                            -- skip
+                        else
+                            handle(("%s %s=%s,"):format(depth,key(k),v))
+                        end
                     elseif t == "string" then
-if v == "" then
-    -- skip
-else
-                        handle(("%s %s=%q,"):format(depth,key(k),v))
-end
+                        if v == "" then
+                            -- skip
+                        else
+                            handle(("%s %s=%q,"):format(depth,key(k),v))
+                        end
                     elseif v then -- userdata or table
                         serialize(v,k,handle,depth,m+1)
                     end

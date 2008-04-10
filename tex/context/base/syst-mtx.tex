@@ -50,7 +50,7 @@
 \mathchardef\@@minallocation =    16
 \mathchardef\@@medallocation =   256
 \mathchardef\@@maxallocation = 32767
-\chardef    \@@insallocation =    32
+\chardef    \@@insallocation =   128 % was 32, but if we want continuous ranges (mplib) we need to pass 256 soon 32
 
 \def\myalloc@#1#2#3#4#5%
   {\global\advance\count1#1by\@ne

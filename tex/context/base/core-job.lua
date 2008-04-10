@@ -21,10 +21,14 @@ function commands.doifnot(b)
 end
 cs.testcase = commands.doifelse
 
-function commands. def(cs,value) tex.sprint(tex.ctxcatcodes, "\\def\\"..cs.."{"..value.."}") end
-function commands.edef(cs,value) tex.sprint(tex.ctxcatcodes,"\\edef\\"..cs.."{"..value.."}") end
-function commands.gdef(cs,value) tex.sprint(tex.ctxcatcodes,"\\gdef\\"..cs.."{"..value.."}") end
-function commands.xdef(cs,value) tex.sprint(tex.ctxcatcodes,"\\xdef\\"..cs.."{"..value.."}") end
+local format = string.format
+
+function commands. def(cs,value) tex.sprint(tex.ctxcatcodes,format( "\\def\\%s{%s}",cs,value)) end
+function commands.edef(cs,value) tex.sprint(tex.ctxcatcodes,format("\\edef\\%s{%s}",cs,value)) end
+function commands.gdef(cs,value) tex.sprint(tex.ctxcatcodes,format("\\gdef\\%s{%s}",cs,value)) end
+function commands.xdef(cs,value) tex.sprint(tex.ctxcatcodes,format("\\xdef\\%s{%s}",cs,value)) end
+
+function commands.cs(cs,args) tex.sprint(tex.ctxcatcodes,format("\\csname %s\\endcsname %s",cs,args or"")) end
 
 -- main code
 
@@ -140,4 +144,3 @@ function commands.loadexamodes(filename)
         commands.writestatus("examodes","no mode file " .. filename) -- todo: message system
     end
 end
-

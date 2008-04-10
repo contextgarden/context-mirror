@@ -7,6 +7,8 @@
 -- ctx lua reference model / hooks and such
 -- to be optimized
 
+-- redefine buffers.get
+
 if not versions then versions = { } end versions['core-buf'] = 1.001
 
 if unicode and not utf then utf = unicode.utf8 end
@@ -16,6 +18,10 @@ buffers.data     = { }
 buffers.hooks    = { }
 buffers.flags    = { }
 buffers.commands = { }
+
+-- if needed we can make 'm local
+
+local concat, texsprint, texprint = table.concat, tex.sprint, tex.print
 
 function buffers.erase(name)
     buffers.data[name] = nil
@@ -52,7 +58,8 @@ function buffers.grab(name,begintag,endtag,data)
         buffers.data[name] = buffers.data[name]:gsub("[\010\013]$","")
         if buffers.flags.store_as_table then
             -- todo: specific splitter, do we really want to erase the spaces?
-            buffers.data[name] = string.split(buffers.data[name]," *[\010\013]")
+        --~ buffers.data[name] = string.split(buffers.data[name]," *[\010\013]")
+            buffers.data[name] = buffers.data[name]:splitlines()
         end
     end
     cs.testcase(more)
@@ -78,39 +85,36 @@ buffers.commands.empty_line_command    = "\\doverbatimemptyline"
 function buffers.verbatimbreak(n,m)
     if buffers.flags.optimize_verbatim then
         if (n==2) or (n==m) then
-            tex.sprint(buffers.commands.no_break)
+            texsprint(buffers.commands.no_break)
         else
-            tex.sprint(buffers.commands.do_break)
+            texsprint(buffers.commands.do_break)
         end
     end
 end
 
 function buffers.type(name)
-    if buffers.data[name] then
-        if type(buffers.data[name]) == "string" then
-            -- todo: use linestepper (no need for a table)
-            local lines = string.split(buffers.data[name]," *[\010\013]")
-            local line, n, m = 0, 0, #lines
-            for _,str in ipairs(lines) do
-                n, line = buffers.typeline(str, n, m, line)
-            end
-        else
-            local line, n, m = 0, 0, #buffers.data[name]
-            for _,str in ipairs(buffers.data[name]) do
-                n, line = buffers.typeline(str, n, m, line)
-            end
+    local lines = buffers.data[name]
+    local action = buffers.typeline
+    if lines then
+        if type(lines) == "string" then
+            lines = lines:splitlines() -- lines:split(" *[\010\013]")
+        end
+        local line, n, m = 0, 0, #lines
+        for i=1,m do
+            n, line = action(lines[i], n, m, line)
         end
     end
 end
 
 function buffers.typefile(name)
     local t = input.openfile(name)
+    local action = buffers.typeline
     if t then
         local line, n, m = 0, 0, t.noflines
         while true do
             str = t.reader(t)
             if str then
-                n, line = buffers.typeline(str, n, m, line)
+                n, line = action(str, n, m, line)
             else
                 break
             end
@@ -148,31 +152,57 @@ end
 -- todo, use more locals
 
 function buffers.get(name)
-    if buffers.data[name] then
-        if type(buffers.data[name]) == "table" then
-            for _,v in ipairs(buffers.data[name]) do
-                tex.print(v)
+    local b = buffers.data[name]
+    if b then
+        if type(b) == "table" then
+            for i=1,#b do
+                texprint(b[i])
             end
         else
-            string.piecewise(buffers.data[name], " *[\010\013]", tex.print)
+            string.piecewise(b, " *[\010\013]", texprint) -- hm, can be faster
         end
     end
 end
 
+function buffers.content(name) -- no print
+    local b = buffers.data[name]
+    if b then
+        if type(b) == "table" then
+            return concat(b," ")
+        else
+            return b
+        end
+    else
+        return ""
+    end
+end
+
+function buffers.collect(names) -- no print
+    local t = { }
+    for i=1,#names do
+        local c = buffers.content(names[i])
+        if c ~= "" then
+            t[#t+1] = c
+        end
+    end
+    return concat(t," ")
+end
+
 function buffers.inspect(name)
-    if buffers.data[name] then
-        if type(buffers.data[name]) == "table" then
-            for _,v in ipairs(buffers.data[name]) do
+    local b = buffers.data[name]
+    if b then
+        if type(b) == "table" then
+            for _,v in ipairs(b) do
                 if v == "" then
-                    tex.sprint(tex.ctxcatcodes,"[crlf]\\par ")
+                    texsprint(tex.ctxcatcodes,"[crlf]\\par ")
                 else
-                    tex.sprint(tex.ctxcatcodes,(buffers.data[name]:gsub("(.)",function(c)
+                    texsprint(tex.ctxcatcodes,(b:gsub("(.)",function(c)
                         return " [" .. string.byte(c) .. "] "
                     end)) .. "\\par")
                 end
             end
         else
-            tex.sprint(tex.ctxcatcodes,(buffers.data[name]:gsub("(.)",function(c)
+            texsprint(tex.ctxcatcodes,(b:gsub("(.)",function(c)
                 return " [" .. string.byte(c) .. "] "
             end)))
         end
@@ -258,19 +288,19 @@ end
 -- defaults
 
 function buffers.visualizers.default.flush_line(str)
-    tex.sprint(tex.ctxcatcodes,buffers.escaped(str))
+    texsprint(tex.ctxcatcodes,buffers.escaped(str))
 end
 
 function buffers.visualizers.default.begin_of_line(n)
-    tex.sprint(tex.ctxcatcodes, buffers.commands.begin_of_line_command .. "{" .. n .. "}")
+    texsprint(tex.ctxcatcodes, buffers.commands.begin_of_line_command .. "{" .. n .. "}")
 end
 
 function buffers.visualizers.default.end_of_line()
-    tex.sprint(tex.ctxcatcodes,buffers.commands.end_of_line_command)
+    texsprint(tex.ctxcatcodes,buffers.commands.end_of_line_command)
 end
 
 function buffers.visualizers.default.empty_line()
-    tex.sprint(tex.ctxcatcodes,buffers.commands.empty_line_command)
+    texsprint(tex.ctxcatcodes,buffers.commands.empty_line_command)
 end
 
 function buffers.visualizers.default.line(str)
@@ -315,7 +345,7 @@ function buffers.visualizers.flush_nested(str, enable) -- no utf, kind of obsole
         end
     end
     result = result .. "\\char" .. sb(ss(str,i,i)) .. " " .. string.rep("}",nested)
-    tex.sprint(tex.ctxcatcodes,result)
+    texsprint(tex.ctxcatcodes,result)
 end
 
 -- handy helpers
@@ -363,9 +393,9 @@ end
 
 function buffers.flush_result(result,nested)
     if nested then
-        tex.sprint(tex.ctxcatcodes,buffers.replace_nested(table.concat(result,"")))
+        texsprint(tex.ctxcatcodes,buffers.replace_nested(concat(result,"")))
     else
-        tex.sprint(tex.ctxcatcodes,table.concat(result,""))
+        texsprint(tex.ctxcatcodes,concat(result,""))
     end
 end
 

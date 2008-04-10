@@ -121,7 +121,7 @@ function converters.Character(n)  converters.chr (n,64) end
 function converters.characters(n) converters.chrs(n,96) end
 function converters.Characters(n) converters.chrs(n,64) end
 
-function converters.weekday(year,month,day)
+function converters.weekday(day,month,year)
     tex.sprint(os.date("%w",os.time{year=year,month=month,day=day})+1)
 end
 

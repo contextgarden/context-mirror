@@ -609,9 +609,9 @@ do
 
     function mptopdf.parsers.lpeg()
         if mptopdf.data:find("%%%%BeginResource: procset mpost") then
-            lpeg.match(captures_new,mptopdf.data)
+            captures_new:match(mptopdf.data)
         else
-            lpeg.match(captures_old,mptopdf.data)
+            captures_old:match(mptopdf.data)
         end
     end
 

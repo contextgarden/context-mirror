@@ -40,7 +40,7 @@ do
     local one = lpeg.C(1-lpeg.S(''))^1
 
     function number.toset(n)
-        return lpeg.match(one,tostring(n))
+        return one:match(tostring(n))
     end
 end
 

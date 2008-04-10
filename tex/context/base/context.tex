@@ -42,7 +42,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2008.03.11 23:55}
+\edef\contextversion{2008.04.11 00:07}
 
 %D For those who want to use this:
 
@@ -194,7 +194,7 @@
 \loadcorefile{mult-com.tex}
 
 \loadmkivfile{luat-ini.tex}
-% \loadmkivfile{luat-lib.tex}
+%loadmkivfile{luat-lib.tex}
 \loadmkivfile{luat-lmx.tex}
 
 \loadmkivfile{luat-uni.tex}
@@ -224,11 +224,12 @@
 \loadcorefile{supp-mrk.tex}
 \loadcorefile{supp-vis.tex}
 \loadcorefile{supp-fun.tex}
-\loadcorefile{supp-eps.tex}
+%loadcorefile{supp-eps.tex}
 \loadcorefile{supp-spe.tex}
 \loadcorefile{supp-ran.tex}
-\loadcorefile{supp-mps.tex}
-\loadcorefile{supp-tpi.tex}
+%loadcorefile{supp-mps.tex}
+\loadmkiifile{supp-mps.tex}
+\loadmkiifile{supp-tpi.tex}
 \loadcorefile{supp-mat.tex}
 \loadcorefile{supp-ali.tex}
 \loadcorefile{supp-num.tex}
@@ -435,10 +436,15 @@
 %D Like languages, fonts, encodings and symbols, \METAPOST\
 %D support is also organized in its own class of modules.
 
-\loadcorefile{meta-ini.tex}
+\loadmkivfile{mlib-ctx.tex}
+\loadmkivfile{mlib-pdf.tex}
+\loadmkivfile{mlib-pps.tex}
+
+\loadmarkfile{meta-ini}
+\loadmarkfile{meta-tex}
+
 \loadcorefile{meta-pdf.tex}
 \loadcorefile{meta-pag.tex}
-\loadcorefile{meta-tex.tex}
 
 %D Special page handling (maybe even later)
 
@@ -475,7 +481,7 @@
 
 \loadcorefile{core-box.tex}
 \loadcorefile{page-app.tex}
-\loadcorefile{meta-fig.tex}
+\loadmarkfile{meta-fig}
 
 %D Language specific spacing.
 

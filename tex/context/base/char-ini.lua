@@ -9,9 +9,7 @@ if not modules then modules = { } end modules ['char-ini'] = {
 utf = utf or unicode.utf
 tex = tex or { }
 
-function tex.ctxprint(...)
-    tex.sprint(tex.ctxcatcodes,...)
-end
+local format = string.format
 
 --[[ldx--
 <p>This module implements some methods and creates additional datastructured
@@ -133,9 +131,9 @@ function characters.context.show(n)
     local d = characters.data[n]
     if d then
         local function entry(label,name)
-            tex.ctxprint(string.format("\\NC %s\\NC %s\\NC\\NR",label,characters.valid(d[name])))
+            tex.sprint(tex.ctxcatcodes,format("\\NC %s\\NC %s\\NC\\NR",label,characters.valid(d[name])))
         end
-        tex.ctxprint("\\starttabulate[|Tl|Tl|]")
+        tex.sprint(tex.ctxcatcodes,"\\starttabulate[|Tl|Tl|]")
         entry("unicode index" , "unicodeslot")
         entry("context name"  , "contextname")
         entry("adobe name"    , "adobename")
@@ -144,7 +142,7 @@ function characters.context.show(n)
         entry("uppercase code", "uccode")
         entry("lowercase code", "lccode")
         entry("specials"      , "specials")
-        tex.ctxprint("\\stoptabulate ")
+        tex.sprint(tex.ctxcatcodes,"\\stoptabulate ")
     end
 end
 
@@ -154,7 +152,7 @@ use the table. After all, we have this information available anyway.</p>
 --ldx]]--
 
 function characters.makeactive(n,name)
-    tex.sprint(string.format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utf.char(n),name))
+    tex.sprint(tex.ctxcatcodes,format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utf.char(n),name))
 end
 
 function tex.uprint(n)
@@ -226,14 +224,14 @@ end
 --ldx]]--
 
 function characters.setcodes()
-    local flush, tc = tex.sprint, tex.ctxcatcodes
+    local flush, tc, format = tex.sprint, tex.ctxcatcodes, string.format
     for code, chr in pairs(characters.data) do
         local cc = chr.category
         if cc == 'll' or cc == 'lu' or cc == 'lt' then
             local lc, uc = chr.lccode, chr.uccode
             if not lc then chr.lccode, lc = code, code end
             if not uc then chr.uccode, uc = code, code end
-            flush(tc, '\\setcclcuc '.. code .. ' ' .. lc .. ' ' .. uc .. ' ')
+            flush(tc, format("\\setcclcuc %i %i %i ",code,lc,uc))
         end
     end
 end
@@ -298,7 +296,7 @@ to the checking.</p>
 --ldx]]--
 
 function characters.hexindex(n)
-    return string.format("%04X", characters.valid(characters.data[characters.number(n)].unicodeslot))
+    return format("%04X", characters.valid(characters.data[characters.number(n)].unicodeslot))
 end
 
 function characters.contextname(n)
@@ -391,7 +389,6 @@ characters.pdftex.make_pdf_to_unicodetable("pdfr-def.tex")
 characters.pdftex = characters.pdftex or { }
 
 function characters.pdftex.make_pdf_to_unicodetable(filename)
---~     local sf = string.format
 --~     f = io.open(filename,'w')
 --~     if f then
 --~         f:write("% This file is generated with Luatex using the\n")
@@ -400,7 +397,7 @@ function characters.pdftex.make_pdf_to_unicodetable(filename)
 --~         f:write("\\ifx\\pdfglyphtounicode\\undefined\\endinput\\fi\n") -- just to be sure
 --~         for _, v in pairs(characters.data) do
 --~             if v.adobename then
---~                 f:write(sf("\\pdfglyphtounicode{%s}{%04X}", v.adobename, v.unicodeslot))
+--~                 f:write(format("\\pdfglyphtounicode{%s}{%04X}", v.adobename, v.unicodeslot))
 --~             end
 --~         end
 --~         f:write("%\n")

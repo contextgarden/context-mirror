@@ -29,8 +29,9 @@
 %D The codes are stored in the format, so we don't need to reinitialize
 %D them (unless of course we have adapted the table).
 
+\ctxlua{characters.setcodes()}
+
 % \startruntimeluacode
-    \ctxlua{characters.setcodes()}
 %   \ctxlua{characters.setpdfunicodes()}% pdftounicode mappings can only be done runtime
 % \stopruntimeluacode
 

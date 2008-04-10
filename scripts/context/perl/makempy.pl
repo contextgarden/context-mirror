@@ -289,7 +289,7 @@ sub construct_mpy_file
       { error("unable to open $mpyfile file") }
     print MPY "% mpochecksum : $mpochecksum\n" ;
     my $copying = my $n = 0 ;
-    while (<TMP>)
+    while (<TMP>) # a simple sub is faster
      { if (s/beginfig/begingraphictextfig/o)
          { print MPY $_ ; $copying = 1 ; ++$n }
        elsif (s/endfig/endgraphictextfig/o)

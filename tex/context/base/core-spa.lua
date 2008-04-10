@@ -791,7 +791,7 @@ do
         if not prev or prev.id ~= glyph then
             return upper(start)
         else
-            return start
+            return start, false
         end
     end
 
@@ -806,7 +806,7 @@ do
         if (not prev or prev.id ~= glyph) and next and next.id == glyph then
             return upper(start)
         else
-            return start
+            return start, false
         end
     end
 

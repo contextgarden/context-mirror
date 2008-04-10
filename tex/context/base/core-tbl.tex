@@ -1000,7 +1000,7 @@
               &##\tabskip\zeropoint}%
    \fi
    \tabulatewidth\zeropoint
-%    |#1X|\relax
+    %    |#1X|\relax
    \nexttabulate #1X|\relax
    \scratchcounter\tabulatecolumns
    \multiply\scratchcounter3%
@@ -1029,7 +1029,7 @@
    \def\xeskip
      {\par\egroup\egroup
       \global\let\tabulatehook\dotabulatehook}%
-%    \let|\savedbar
+    %    \let|\savedbar
    \global\let\tabulatehook\dotabulatehook
    \doifvalue{\??tt\currenttabulate\c!indenting}\v!no\forgetparindent
    \ifinsidefloat

@@ -56,23 +56,24 @@ string  graphictextformat  ; graphictextformat  := "plain" ;
 string  graphictextstring  ; graphictextstring  := "" ;
 string  graphictextfile    ; graphictextfile    := "dummy.mpo" ;
 
-def savegraphictext (expr str) =
-  graphictextfile := jobname & ".mpo" ;
-  if (graphictextstring<>"") :
-    write graphictextstring to graphictextfile ;
-    graphictextstring := "" ;
-  fi ;
-  write str to graphictextfile ;
-  let erasegraphictextfile = relax ;
-enddef ;
+def data_mpo_file = job_name & "-mp.mpo" enddef ;
+def data_mpy_file = job_name & "-mp.mpy" enddef ;
 
-def erasegraphictextfile =
-  graphictextfile := jobname & ".mpo" ;
-  write EOF to graphictextfile  ;
-  let erasegraphictextfile = relax ;
-enddef ;
+% def savegraphictext (expr str) =
+%   if (graphictextstring<>"") :
+%     write graphictextstring to data_mpo_file ;
+%     graphictextstring := "" ;
+%   fi ;
+%   write str to data_mpo_file ;
+%   let erasegraphictextfile = relax ;
+% enddef ;
 
-extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ;
+% def erasegraphictextfile =
+%   write EOF to data_mpo_file ;
+%   let erasegraphictextfile = relax ;
+% enddef ;
+
+% extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ;
 
 def begingraphictextfig (expr n) =
   foundpicture := n ; scratchpicture := nullpicture ;
@@ -213,7 +214,7 @@ def dofinishgraphictext text x_op_x =
     if (urcorner dashpart i) = origin : outline_fill := false ; fi ;
   endfor ;
   scratchpicture := nullpicture ;
-  readfile(jobname & ".mpy") ;
+  readfile(data_mpy_file) ;
   scratchpicture := (scratchpicture shifted -llcorner scratchpicture) scaled (1/10) ;
   if not d_color and not f_color : d_color := true ; fi
   if s_color : d_color := false ; f_color := false ; fi ;

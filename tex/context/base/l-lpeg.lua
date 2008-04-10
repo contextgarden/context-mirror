@@ -24,6 +24,8 @@ if not versions then versions = { } end versions['l-lpeg'] = 1.001
 --~ lpeg.whitespace    = lpeg.S(' \r\n\f\t')^1
 --~ lpeg.nonwhitespace = lpeg.P(1-lpeg.whitespace)^1
 
+local hash = { }
+
 function lpeg.anywhere(pattern) --slightly adapted from website
     return lpeg.P { lpeg.P(pattern) + 1 * lpeg.V(1) }
 end
@@ -38,3 +40,17 @@ function lpeg.splitter(pattern, action)
     return (((1-lpeg.P(pattern))^1)/action+1)^0
 end
 
+
+local crlf    = lpeg.P("\r\n")
+local cr      = lpeg.P("\r")
+local lf      = lpeg.P("\n")
+local space   = lpeg.S(" \t\f\v")
+local newline = crlf + cr + lf
+local spacing = space^0 * newline
+local content = lpeg.Cs((1-spacing)^1) * spacing^-1 * (spacing * lpeg.Cc(""))^0
+
+local capture = lpeg.Ct(content^0)
+
+function string:splitlines()
+    return capture:match(self)
+end

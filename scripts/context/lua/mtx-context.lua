@@ -625,6 +625,10 @@ input.verbose = true
 
 input.starttiming(scripts.context)
 
+if environment.argument("once") then
+    scripts.context.multipass.nofruns = 1
+end
+
 if environment.argument("run") then
     scripts.context.run()
 elseif environment.argument("make") then

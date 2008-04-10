@@ -207,7 +207,7 @@ if texconfig and not texlua then do
             ws("fonts load time           - %s seconds", input.loadtime(fonts))
         end
         if xml then
-            ws("xml load time             - %s seconds", input.loadtime(lxml))
+            ws("xml load time             - %s seconds (backreferences: %i, outer filtering time: %s)", input.loadtime(xml), #lxml.self, input.loadtime(lxml))
         end
         if mptopdf then
             ws("mps conversion time       - %s seconds", input.loadtime(mptopdf))
@@ -244,6 +244,10 @@ if texconfig and not texlua then do
         end
         if fonts then
             ws("loaded fonts              - %s", fonts.logger.report()) -- last because it is often a long list
+        end
+        if xml then -- so we are in mkiv, we need a different check
+        -- todo: \nofshipouts
+            ws("shipped out pages         - %i (of %i processed pages)", tex.count['nofshipouts'], tex.count['realpageno']-1) -- last because we want to see this
         end
     end
 

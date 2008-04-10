@@ -6,14 +6,40 @@ if not modules then modules = { } end modules ['lxml-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: speed up
+
+local texsprint, texprint = tex.sprint or print, tex.print or print
+local format, concat = string.format, table.concat
+local type, next, tonumber = type, next, tonumber
+
 document     = document or { }
 document.xml = document.xml or { }
 
 lxml         = { }
 lxml.loaded  = { }
-lxml.self    = { }
+lxml.myself  = { }
+
+local loaded = lxml.loaded
+local myself = lxml.myself
+
+lxml.self = myself -- be backward compatible for a while
+
+local function get_id(id)
+    return (type(id) == "table" and id) or loaded[id] or myself[tonumber(id)] -- no need for tonumber if we pass without ""
+end
+
+lxml.id = get_id
+
+function lxml.root(id)
+    return loaded[id]
+end
 
 do
+
+    xml.specialhandler   = xml.specialhandler or { }
+
+    local specialhandler = xml.specialhandler
+    local serialize      = xml.serialize
 
     local crlf    = lpeg.P("\r\n")
     local cr      = lpeg.P("\r")
@@ -25,34 +51,59 @@ do
     local verbose = lpeg.C((1-(space+newline))^1)
 
     local capture  = (
-        newline^2  * lpeg.Cc("")  / tex.print +
-        newline    * lpeg.Cc(" ") / tex.sprint +
-        content                   / tex.sprint
+        newline^2  * lpeg.Cc("")  / texprint +
+        newline    * lpeg.Cc(" ") / texsprint +
+        content                   / texsprint
     )^0
 
-    xml.specialhandler = { }
+--~     local function sprint(root)
+--~         if not root then
+--~             -- quit
+--~         elseif type(root) == 'string' then
+--~             capture:match(root)
+--~         elseif next(root) then
+--~             serialize(root,sprint,nil,nil,specialhandler)
+--~         end
+--~     end
 
     local function sprint(root)
         if not root then
             -- quit
-        elseif type(root) == 'string' then
-            lpeg.match(capture,root)
-        elseif next(root) then
-            xml.serialize(root,sprint,nil,nil,xml.specialhandler)
+        else
+            local tr = type(root)
+            if tr == "string" then
+                capture:match(root)
+            elseif tr == "table" then
+                serialize(root,sprint,nil,nil,specialhandler)
+            end
         end
     end
 
     xml.sprint = sprint
 
-    function xml.tprint(root)
-        if type(root) == "table" then
+    function xml.tprint(root) -- we can move sprint inline
+        local tr = type(root)
+        if tr == "table" then
             for i=1,#root do
                 sprint(root[i])
             end
-        elseif type(root) == "string" then
+        elseif tr == "string" then
             sprint(root)
         end
     end
+
+    function xml.cprint(root) -- content
+        if not root then
+            -- quit
+        elseif type(root) == 'string' then
+            capture:match(root)
+        elseif root.dt then -- the main one
+            serialize(root.dt,sprint,nil,nil,specialhandler)
+        else -- probably dt
+            serialize(root,sprint,nil,nil,specialhandler)
+        end
+    end
+
 
     -- lines (untested)
 
@@ -68,9 +119,9 @@ do
         if not root then
             -- quit
         elseif type(root) == 'string' then
-            lpeg.match(capture,root)
-        elseif next(root) then
-            xml.serialize(root, lines)
+            capture:match(root)
+        elseif next(root) then -- tr == 'table'
+            serialize(root, lines)
         end
     end
 
@@ -88,15 +139,15 @@ do
     local aftercommand  = ""
 
     local capture  = (
-        newline / function( ) tex.sprint(tex.texcatcodes,linecommand  .. "{}") end +
-        verbose / function(s) tex.sprint(tex.vrbcatcodes,s) end +
-        space   / function( ) tex.sprint(tex.texcatcodes,spacecommand .. "{}") end
+        newline / function( ) texsprint(tex.texcatcodes,linecommand  .. "{}") end +
+        verbose / function(s) texsprint(tex.vrbcatcodes,s) end +
+        space   / function( ) texsprint(tex.texcatcodes,spacecommand .. "{}") end
     )^0
 
     function toverbatim(str)
-        if beforecommand then tex.sprint(tex.texcatcodes,beforecommand .. "{}") end
-        lpeg.match(capture,str)
-        if aftercommand  then tex.sprint(tex.texcatcodes,aftercommand  .. "{}")  end
+        if beforecommand then texsprint(tex.texcatcodes,beforecommand .. "{}") end
+        capture:match(str)
+        if aftercommand  then texsprint(tex.texcatcodes,aftercommand  .. "{}")  end
     end
 
     function lxml.set_verbatim(before,after,obeyedline,obeyedspace)
@@ -104,18 +155,18 @@ do
     end
 
     function lxml.set_cdata()
-        xml.specialhandler['@cd@'] = toverbatim
+        specialhandler['@cd@'] = toverbatim
     end
 
     function lxml.reset_cdata()
-        xml.specialhandler['@cd@'] = nil
+        specialhandler['@cd@'] = nil
     end
 
     function lxml.verbatim(id,before,after)
-        local root = lxml.id(id)
-        if before then tex.sprint(tex.ctxcatcodes,string.format("%s[%s]",before,root.tg)) end
-        xml.serialize(root.dt,toverbatim,nil,nil,nil,true)  -- was root
-        if after  then tex.sprint(tex.ctxcatcodes,after) end
+        local root = get_id(id)
+        if before then texsprint(tex.ctxcatcodes,format("%s[%s]",before,root.tg)) end
+        serialize(root.dt,toverbatim,nil,nil,nil,true)  -- was root
+        if after  then texsprint(tex.ctxcatcodes,after) end
     end
     function lxml.inlineverbatim(id)
         lxml.verbatim(id,"\\startxmlinlineverbatim","\\stopxmlinlineverbatim")
@@ -126,155 +177,169 @@ do
 
 end
 
--- now comes the lxml one
-
-function lxml.id(id)
-    return (type(id) == "table" and id) or lxml.loaded[id] or lxml.self[tonumber(id)]
-end
-
-function lxml.root(id)
-    return lxml.loaded[id]
-end
+local xmlsprint = xml.sprint
+local xmltprint = xml.tprint
 
 -- redefine xml load
 
 xml.originalload = xml.load
 
---~ function xml.load(filename)
---~     input.starttiming(lxml)
---~     local x = xml.originalload(filename)
---~     input.stoptiming(lxml)
---~     return x
---~ end
-
 function xml.load(filename)
-    input.starttiming(lxml)
+    input.starttiming(xml)
     local xmldata = xml.convert((filename and input.loadtexfile(texmf.instance,filename)) or "")
-    input.stoptiming(lxml)
+    input.stoptiming(xml)
     return xmldata
 end
 
 function lxml.load(id,filename)
-    lxml.loaded[id] = xml.load(filename)
-    return lxml.loaded[id], filename
+    loaded[id] = xml.load(filename)
+    return loaded[id], filename
 end
 
 function lxml.include(id,pattern,attribute,recurse)
-    input.starttiming(lxml)
-    xml.include(lxml.id(id),pattern,attribute,recurse,function(name) return (name and input.loadtexfile(texmf.instance,name)) or "" end)
-    input.stoptiming(lxml)
+    input.starttiming(xml)
+    xml.include(get_id(id),pattern,attribute,recurse,function(name) return (name and input.loadtexfile(texmf.instance,name)) or "" end)
+    input.stoptiming(xml)
 end
 
 function lxml.utfize(id)
-    xml.utfize(lxml.id(id))
+    xml.utfize(get_id(id))
 end
+
+local xmlfilter, xmlfirst, xmllast, xmlall = xml.filter, xml.first, xml.last, xml.all
+local xmlcollect, xmlcontent, xmlcollect_texts = xml.collect, xml.content, xml.collect_texts
+local xmlattribute, xmlindex = xml.filters.attribute, xml.filters.index
+local xmlelements = xml.elements
 
 function lxml.filter(id,pattern)
-    xml.sprint(xml.filter(lxml.id(id),pattern))
+    xmlsprint(xmlfilter(get_id(id),pattern))
 end
-
 function lxml.first(id,pattern)
-    xml.sprint(xml.first(lxml.id(id),pattern))
+    xmlsprint(xmlfirst(get_id(id),pattern))
 end
-
 function lxml.last(id,pattern)
-    xml.sprint(xml.last(lxml.id(id),pattern))
+    xmlsprint(xmllast(get_id(id),pattern))
 end
-
 function lxml.all(id,pattern)
-    xml.tprint(xml.collect(lxml.id(id),pattern))
+    xmltprint(xmlcollect(get_id(id),pattern))
 end
-
 function lxml.nonspace(id,pattern)
-    xml.tprint(xml.collect(lxml.id(id),pattern,true))
+    xmltprint(xmlcollect(get_id(id),pattern,true))
+end
+function lxml.content(id,pattern)
+    xmlsprint(xmlcontent(get_id(id),pattern) or "")
 end
 
 function lxml.strip(id,pattern)
-    xml.strip(lxml.id(id),pattern)
+    xml.strip(get_id(id),pattern)
 end
 
 function lxml.text(id,pattern)
-    xml.tprint(xml.collect_texts(lxml.id(id),pattern) or {})
+    xmltprint(xmlcollect_texts(get_id(id),pattern) or {})
 end
 
-function lxml.content(id,pattern)
-    xml.sprint(xml.content(lxml.id(id),pattern) or "")
+function lxml.raw(id,pattern) -- the content, untouched by commands
+    local c = xmlfilter(get_id(id),pattern)
+    if c then
+        texsprint(concat(c.dt,""))
+    end
 end
 
 function lxml.stripped(id,pattern)
-    local str = xml.content(lxml.id(id),pattern)  or ""
-    xml.sprint((str:gsub("^%s*(.-)%s*$","%1")))
+    local str = xmlcontent(get_id(id),pattern) or ""
+    xmlsprint((str:gsub("^%s*(.-)%s*$","%1")))
 end
 
 function lxml.flush(id)
-    xml.sprint(lxml.id(id).dt)
+    xmlsprint(get_id(id).dt)
 end
 
 function lxml.index(id,pattern,i)
-    xml.sprint((xml.filters.index(lxml.id(id),pattern,i)))
+    xmlsprint((xmlindex(get_id(id),pattern,i)))
 end
 
 function lxml.attribute(id,pattern,a,default) --todo: snelle xmlatt
-    local str = xml.filters.attribute(lxml.id(id),pattern,a) or ""
-    tex.sprint((str == "" and default) or str)
+    local str = xmlattribute(get_id(id),pattern,a) or ""
+    texsprint((str == "" and default) or str)
 end
 
 function lxml.count(id,pattern)
-    tex.sprint(xml.count(lxml.id(id),pattern) or 0)
+    texsprint(xml.count(get_id(id),pattern) or 0)
 end
 function lxml.name(id) -- or remapped name?
-    local r = lxml.id(id)
+    local r = get_id(id)
     if r.ns then
-        tex.sprint(r.ns .. ":" .. r.tg)
+        texsprint(r.ns .. ":" .. r.tg)
     else
-        tex.sprint(r.tg)
+        texsprint(r.tg)
     end
 end
 function lxml.tag(id)
-    tex.sprint(lxml.id(id).tg or "")
+    texsprint(get_id(id).tg or "")
 end
 function lxml.namespace(id) -- or remapped name?
-    local root = lxml.id(id)
-    tex.sprint(root.rn or root.ns or "")
+    local root = get_id(id)
+    texsprint(root.rn or root.ns or "")
 end
 
 --~ function lxml.concat(id,what,separator,lastseparator)
---~     tex.sprint(table.concat(xml.collect_texts(lxml.id(id),what,true),separator or ""))
+--~     texsprint(concat(xml.collect_texts(get_id(id),what,true),separator or ""))
 --~ end
 
 function lxml.concat(id,what,separator,lastseparator)
-    local t = xml.collect_texts(lxml.id(id),what,true)
+    local t = xmlcollect_texts(get_id(id),what,true)
     local separator = separator or ""
     local lastseparator = lastseparator or separator or ""
     for i=1,#t do
-        tex.sprint(t[i])
+        texsprint(t[i])
         if i == #t then
             -- nothing
         elseif i == #t-1 and lastseparator ~= "" then
-            tex.sprint(tex.ctxcatcodes,lastseparator)
+            texsprint(tex.ctxcatcodes,lastseparator)
         elseif separator ~= "" then
-            tex.sprint(tex.ctxcatcodes,separator)
+            texsprint(tex.ctxcatcodes,separator)
         end
     end
 end
 
-function xml.command(root) -- todo: free self after usage, so maybe hash after all
-    -- no longer needed: xml.sflush()
-    if type(root.command) == "string" then
-        local n = #lxml.self + 1
-        lxml.self[n] = root
-        if xml.trace_print then
-            texio.write_nl(string.format("tex.sprint: (((%s:%s)))",n,root.command))
-        end
-        -- problems with empty elements
-        tex.sprint(tex.ctxcatcodes,string.format("\\xmlsetup{%s}{%s}",n,root.command)) -- no sprint, else spaces go wrong
+-- string   : setup
+-- true     : text (no <self></self>)
+-- false    : ignore
+-- function : call
+
+-- todo: free self after usage, i.e. after the setup, which
+-- means a call to lua; we can also choose a proper maximum
+-- and cycle or maybe free on demand
+
+-- problems with empty elements
+-- we use a real tex.sprint, else spaces go wrong
+-- maybe just a .. because this happens often
+
+function xml.command(root, command)
+    local tc = type(command)
+    if tc == "string" then
+        -- setup
+        local n = #myself + 1
+        myself[n] = root
+        texsprint(tex.ctxcatcodes,format("\\xmlsetup{%i}{%s}",n,command))
+    elseif tc == "function" then
+        -- function
+        command(root)
+    elseif command == true then
+        -- text (no <self></self>) / so, no mkii fallback then
+--~         local n = #myself + 1
+--~         myself[n] = root
+--~         texsprint(tex.ctxcatcodes,format("\\ctxlua{lxml.flush(%s)}",n)) -- hm, efficient?
+xmltprint(root.dt)
+    elseif command == false then
+        -- ignore
     else
-        root.command(root)
+        -- fuzzy, so ignore too
     end
 end
 
 function lxml.setaction(id,pattern,action)
-    for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
+    for rt, dt, dk in xmlelements(get_id(id),pattern) do
         dt[dk].command = action
     end
 end
@@ -283,47 +348,62 @@ lxml.trace_setups = false
 
 function lxml.setsetup(id,pattern,setup)
     local trace = lxml.trace_setups
-    if not setup or setup == "" or setup == "*" then
-        for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
+    if not setup or setup == "" or setup == "*" or setup == "-" then
+        for rt, dt, dk in xmlelements(get_id(id),pattern) do
             local dtdk = dt and dt[dk] or rt
             local ns, tg = dtdk.rn or dtdk.ns, dtdk.tg
-            if ns == "" then
-                dtdk.command = tg
+            local command = (ns == "" and tg) or (ns .. ":" .. tg)
+            if setup == "-" then
+                dtdk.command = false
+                if trace then
+                    texio.write_nl(format("lpath matched -> %s -> skipped", command))
+                end
             else
-                dtdk.command = ns .. ":" .. tg
-            end
-            if trace then
-                texio.write_nl(string.format("lpath matched -> %s -> %s", dtdk.command, dtdk.command))
+                dtdk.command = command
+                if trace then
+                    texio.write_nl(format("lpath matched -> %s -> %s", command, command))
+                end
             end
         end
     else
-        local a, b = setup:match("^(.+:)(%*)$")
+        local a, b = setup:match("^(.+:)([%*%-])$")
         if a and b then
-            for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
+            for rt, dt, dk in xmlelements(get_id(id),pattern) do
                 local dtdk = (dt and dt[dk]) or rt
                 local ns, tg = dtdk.rn or dtdk.ns, dtdk.tg
-                dtdk.command = a .. tg
-                if trace then
-                    if ns == "" then
-                        texio.write_nl(string.format("lpath matched -> %s -> %s", tg, dtdk.command))
-                    else
-                        texio.write_nl(string.format("lpath matched -> %s:%s -> %s", ns, tg, dtdk.command))
+                if b == "-" then
+                    dtdk.command = false
+                    if trace then
+                        if ns == "" then
+                            texio.write_nl(format("lpath matched -> %s -> skipped", tg))
+                        else
+                            texio.write_nl(format("lpath matched -> %s:%s -> skipped", ns, tg))
+                        end
+                    end
+                else
+                    dtdk.command = a .. tg
+                    if trace then
+                        if ns == "" then
+                            texio.write_nl(format("lpath matched -> %s -> %s", tg, dtdk.command))
+                        else
+                            texio.write_nl(format("lpath matched -> %s:%s -> %s", ns, tg, dtdk.command))
+                        end
                     end
                 end
             end
         else
             if trace then
-                texio.write_nl(string.format("lpath pattern -> %s -> %s", pattern, setup))
+                texio.write_nl(format("lpath pattern -> %s -> %s", pattern, setup))
             end
-            for rt, dt, dk in xml.elements(lxml.id(id),pattern) do
+            for rt, dt, dk in xmlelements(get_id(id),pattern) do
                 local dtdk = (dt and dt[dk]) or rt
                 dtdk.command = setup
                 if trace then
                     local ns, tg = dtdk.rn or dtdk.ns, dtdk.tg
                     if ns == "" then
-                        texio.write_nl(string.format("lpath matched -> %s -> %s", tg, setup))
+                        texio.write_nl(format("lpath matched -> %s -> %s", tg, setup))
                     else
-                        texio.write_nl(string.format("lpath matched -> %s:%s -> %s", ns, tg, setup))
+                        texio.write_nl(format("lpath matched -> %s:%s -> %s", ns, tg, setup))
                     end
                 end
             end
@@ -332,7 +412,7 @@ function lxml.setsetup(id,pattern,setup)
 end
 
 function lxml.idx(id,pattern,i)
-    local r = lxml.id(id)
+    local r = get_id(id)
     if r then
         local rp = r.patterns
         if not rp then
@@ -344,7 +424,7 @@ function lxml.idx(id,pattern,i)
         end
         local rpi = rp[pattern] and rp[pattern][i]
         if rpi then
-            xml.sprint(rpi)
+            xmlsprint(rpi)
         end
     end
 end
@@ -358,14 +438,14 @@ do
         command = command:gsub("^([\'\"])(.-)%1$", "%2")
         traverse(root, lpath(pattern), function(r,d,k)
             -- this can become pretty large
-            local n = #lxml.self + 1
-            lxml.self[n] = (d and d[k]) or r
-            tex.sprint(tex.ctxcatcodes,string.format("\\xmlsetup{%s}{%s}",n,command))
+            local n = #myself + 1
+            myself[n] = (d and d[k]) or r
+            texsprint(tex.ctxcatcodes,format("\\xmlsetup{%s}{%s}",n,command))
         end)
     end
 
     function lxml.command(id,pattern,command)
-        xml.filters.command(lxml.id(id),pattern,command)
+        xml.filters.command(get_id(id),pattern,command)
     end
 
 end
@@ -403,8 +483,7 @@ do
             end
         end
         local root = xml.load(filename)
-        local format = string.format
-        for r, d, k in xml.elements(root,"directive") do
+        for r, d, k in xmlelements(root,"directive") do
             local dk = d[k]
             local at = dk.at
             local attribute, value, element = at.attribute or "", at.value or "", at.element or '*'
@@ -431,7 +510,7 @@ do
     end
 
     function lxml.directives.handle_setup(category,root,attribute,element)
-        root = lxml.id(root)
+        root = get_id(root)
         attribute = attribute
         if attribute then
             local value = root.at[attribute]
@@ -444,20 +523,19 @@ do
                         element = ns .. ':' .. tg
                     end
                 end
-                local format = string.format
                 local setup = data[format("%s::%s::%s",element,attribute,value)]
                 if setup then
                     setup = setup[category]
                 end
                 if setup then
-                    tex.sprint(tex.ctxcatcodes,format("\\directsetup{%s}",setup))
+                    texsprint(tex.ctxcatcodes,format("\\directsetup{%s}",setup))
                 else
                     setup = data[format("%s::%s::*",element,attribute)]
                     if setup then
                         setup = setup[category]
                     end
                     if setup then
-                        tex.sprint(tex.ctxcatcodes,format("\\directsetup{%s}",setup:gsub('%*',value)))
+                        texsprint(tex.ctxcatcodes,format("\\directsetup{%s}",setup:gsub('%*',value)))
                     end
                 end
             end
@@ -467,21 +545,20 @@ do
 end
 
 function xml.getbuffer(name) -- we need to make sure that commands are processed
-    xml.tostring(xml.convert(table.join(buffers.data[name] or {},"")))
+    xml.tostring(xml.convert(concat(buffers.data[name] or {},"")))
 end
 
 function lxml.loadbuffer(id,name)
-    input.starttiming(lxml)
-    lxml.loaded[id] = xml.convert(table.join(buffers.data[name or id] or {},""))
-    input.stoptiming(lxml)
-    return lxml.loaded[id], name or id
+    input.starttiming(xml)
+    loaded[id] = xml.convert(concat(buffers.data[name or id] or {},""))
+    input.stoptiming(xml)
+    return loaded[id], name or id
 end
 
 -- for the moment here:
 
 lxml.set_verbatim("\\xmlcdatabefore", "\\xmlcdataafter", "\\xmlcdataobeyedline", "\\xmlcdataobeyedspace")
 lxml.set_cdata()
-
 
 do
 
@@ -500,10 +577,121 @@ do
             if h then
                 local d = tonumber(h,16)
                 local u = unicode.utf8.char(d)
-                texio.write_nl(string.format("entity: %s / %s / %s / n=%s",h,d,u,traced[v]))
+                texio.write_nl(format("entity: %s / %s / %s / n=%s",h,d,u,traced[v]))
             else
-                texio.write_nl(string.format("entity: %s / n=%s",v,traced[v]))
+                texio.write_nl(format("entity: %s / n=%s",v,traced[v]))
             end
+        end
+    end
+
+end
+
+-- yes or no ...
+
+do
+
+     local function with_elements_only(e,handle)
+        if e and handle then
+            local etg = e.tg
+            if etg then
+                if e.special and etg ~= "@rt@" then
+                    if resthandle then
+                        resthandle(e)
+                    end
+                else
+                    local edt = e.dt
+                    if edt then
+                        for i=1,#edt do
+                            local e = edt[i]
+                            if type(e) == "table" then
+                                handle(e)
+                                with_elements_only(e,handle)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+     local function with_elements_only(e,handle,depth)
+        if e and handle then
+            local edt = e.dt
+            if edt then
+                depth = depth or 0
+                for i=1,#edt do
+                    local e = edt[i]
+                    if type(e) == "table" then
+                        handle(e,depth)
+                        with_elements_only(e,handle,depth+1)
+                    end
+                end
+            end
+        end
+    end
+
+    xml.with_elements_only = with_elements_only
+
+    local function to_text(e)
+        if e.command == nil then
+            local etg = e.tg
+            if etg and e.special and etg ~= "@rt@" then
+                e.command = false -- i.e. skip
+            else
+                e.command = true  -- i.e. no <self></self>
+            end
+        end
+    end
+    local function to_none(e)
+        if e.command == nil then
+            e.command = false -- i.e. skip
+        end
+    end
+
+    function lxml.set_command_to_text(id)
+        xml.with_elements_only(get_id(id),to_text)
+    end
+
+    function lxml.set_command_to_none(id)
+        xml.with_elements_only(get_id(id),to_none)
+    end
+
+    function lxml.get_command_status(id)
+        local status, stack = {}, {}
+        local function get(e,d)
+            local ns, tg = e.ns, e.tg
+            local name = tg
+            if ns ~= "" then name = ns .. ":" .. tg end
+            stack[d] = name
+            local ec = e.command
+            if ec == true then
+                ec = "system: text"
+            elseif ec == false then
+                ec = "system: skip"
+            elseif ec == nil then
+                ec = "system: not set"
+            elseif type(ec) == "string" then
+                ec = "setup: " .. ec
+            else -- function
+                ec = tostring(ec)
+            end
+            local tag = table.concat(stack," => ",1,d)
+            local s = status[tag]
+            if not s then
+                s = { }
+                status[tag] = s
+            end
+            s[ec] = (s[ec] or 0) + 1
+        end
+        if id then
+            xml.with_elements_only(get_id(id),get)
+            return status
+        else
+            local t = { }
+            for id, _ in pairs(lxml.loaded) do
+                t[id] = lxml.get_command_status(id)
+            end
+            return t
         end
     end
 

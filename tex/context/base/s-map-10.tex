@@ -385,9 +385,13 @@
         \advance \rightskip 0pt plus 2em
         \MapsSubTitle\par}
     \fi
-    \blank[30pt]
+	\doifmodeelse{newstyle}
+         {\blank[22pt]}
+         {\blank[30pt]}
   \egroup
   \switchtobodyfont[rm,10pt]
+  \doifmode{newstyle}
+         {\noindent\MapsAuthor\blank[line]}
   \setupalign[width]
   \ifMapsInColumns
     \startcolumns\hyphenpenalty1000

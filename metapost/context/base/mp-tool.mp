@@ -102,16 +102,59 @@ vardef ddecimal primary p =
   decimal xpart p & " " & decimal ypart p
 enddef ;
 
-extra_endfig := extra_endfig
-  & "special "
-       & "("
-       & ditto
-       & "%%HiResBoundingBox: "
-       & ditto
-       & "&ddecimal llcorner currentpicture"
-       & "&space"
-       & "&ddecimal urcorner currentpicture"
-       & ");";
+% is now built in
+
+% extra_endfig := extra_endfig
+%   & "special "
+%        & "("
+%        & ditto
+%        & "%%HiResBoundingBox: "
+%        & ditto
+%        & "&ddecimal llcorner currentpicture"
+%        & "&space"
+%        & "&ddecimal urcorner currentpicture"
+%        & ");";
+
+%D Colors:
+
+nocolormodel   := 1 ;
+greycolormodel := 3 ;
+rgbcolormodel  := 5 ;
+cmykcolormodel := 7 ;
+
+let grayscale = numeric ;
+
+% def colorlike(expr c) text v = % colorlike(a) b, c, d ;
+%     forsuffixes i=v : % save i ;
+%         if cmykcolor c :
+%             cmykcolor i ;
+%         elseif rgbcolor c :
+%             rgbcolor i ;
+%         else :
+%             grayscale i ;
+%         fi ;
+%     endfor ;
+% enddef ;
+
+vardef colorlike(text c) text v = % colorlike(a) b, c, d ;
+    save _p_ ; picture _p_ ;
+    forsuffixes i=v :
+        _p_ := image(draw origin withcolor c ;) ; % intercept pre and postscripts
+        if (colormodel _p_ = cmykcolormodel) :
+            cmykcolor i ;
+        elseif (colormodel _p_ = rgbcolormodel) :
+            rgbcolor i ;
+        else :
+            grayscale i ;
+        fi ;
+    endfor ;
+enddef ;
+
+% if (unknown colormodel) :
+%     def colormodel =
+%         rgbcolormodel
+%     enddef ;
+% fi ;
 
 %D Also handy (when we flush colors):
 
@@ -124,7 +167,7 @@ vardef ddddecimal primary c =
 enddef ;
 
 vardef colordecimals primary c =
-    if cmykcolor c :
+    if cmykcolor c  :
         decimal cyanpart c & ":" & decimal magentapart c & ":" & decimal yellowpart c & ":" & decimal blackpart c
     elseif rgbcolor c :
         decimal redpart c & ":" & decimal greenpart c & ":" & decimal bluepart c
@@ -135,15 +178,12 @@ enddef ;
 
 %D We have standardized data file names:
 
-if not known _data_prefix_ :
+def job_name =
+    jobname
+enddef ;
 
-  string _data_prefix_ ; _data_prefix_ = "mpd-" ;
-  string _data_suffix_ ; _data_suffix_ = ".tmp" ;
-
-fi ;
-
-def data_file =
-  _data_prefix_ & decimal charcode & _data_suffix_
+def data_mpd_file =
+    job_name & "-mp.mpd"
 enddef ;
 
 %D Because \METAPOST\ has a hard coded limit of 4~datafiles,
@@ -157,12 +197,12 @@ boolean savingdata ; savingdata := false ;
 
 def savedata expr txt =
   if collapse_data :
+    write txt to data_mpd_file ;
+  else :
     write if savingdata : txt else :
       "\MPdata{" & decimal charcode & "}{" & txt & "}"
     fi
-    & "%" to jobname & _data_suffix_ ;
-  else :
-    write txt to data_file ;
+    & "%" to data_mpd_file ;
   fi ;
 enddef ;
 
@@ -172,15 +212,19 @@ def startsavingdata =
     write
       "\MPdata{" & decimal charcode & "}{%"
     to
-      jobname & _data_suffix_ ;
+      data_mpd_file ;
   fi ;
 enddef ;
 
 def stopsavingdata =
-  savingdata := false ;
   if collapse_data :
-    write "}%" to jobname & _data_suffix_ ;
+    write "}%" to data_mpd_file ;
   fi ;
+  savingdata := false ;
+enddef ;
+
+def finishsavingdata =
+    write EOF to data_mpd_file ;
 enddef ;
 
 %D Instead of a keystroke eating save and allocation
@@ -664,6 +708,16 @@ color cyan    ; cyan    = (0,1,1) ;
 color magenta ; magenta = (1,0,1) ;
 color yellow  ; yellow  = (1,1,0) ;
 
+def colortype(expr c) =
+    if cmykcolor c : cmykcolor elseif rgbcolor c : rgbcolor else : grayscale fi
+enddef ;
+vardef whitecolor(expr c) =
+    if cmykcolor c : (0,0,0,0) elseif rgbcolor c : (1,1,1)  else : 1         fi
+enddef ;
+vardef blackcolor(expr c) =
+    if cmykcolor c : (0,0,0,1) elseif rgbcolor c : (0,0,0)  else : 0         fi
+enddef ;
+
 %D Well, this is the dangerous and naive version:
 
 def drawfill text t =
@@ -833,11 +887,30 @@ primarydef p randomized s =
     fi
   elseif pair p :
     p randomshifted s
-  elseif color p :
+  elseif cmykcolor p :
+    if color s :
+      (uniformdeviate cyanpart    s * cyanpart    p,
+       uniformdeviate magentapart s * magentapart p,
+       uniformdeviate yellowpart  s * yellowpart  p,
+       uniformdeviate blackpart   s * blackpart   p)
+    elseif pair s :
+      ((xpart s + uniformdeviate (ypart s - xpart s)) * p)
+    else :
+      (uniformdeviate s * p)
+    fi
+  elseif rgbcolor p :
     if color s :
       (uniformdeviate redpart   s * redpart   p,
        uniformdeviate greenpart s * greenpart p,
        uniformdeviate bluepart  s * bluepart  p)
+    elseif pair s :
+      ((xpart s + uniformdeviate (ypart s - xpart s)) * p)
+    else :
+      (uniformdeviate s * p)
+    fi
+  elseif color p :
+    if color s :
+      (uniformdeviate graypart s * graypart p)
     elseif pair s :
       ((xpart s + uniformdeviate (ypart s - xpart s)) * p)
     else :
@@ -1152,7 +1225,7 @@ def visualizedfill expr c =
 enddef ;
 
 def do_visualizeddraw text t =
-  draworigin              ;
+  draworigin            ;
   drawpath          _c_ t ;
   drawcontrollines  _c_ ;
   drawcontrolpoints _c_ ;

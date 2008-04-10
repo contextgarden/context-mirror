@@ -495,7 +495,8 @@ vardef cmyk(expr c,m,y,k) =
       ok := true ;  % globally already defined
     fi ;
     if not ok :
-      save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ;
+%       save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ;
+      save s ; string s ; s := ddddecimal (c,m,y,k) ;
       _cmyk_counter_ := _cmyk_counter_ + 1 ;
       cmykcolorpattern[_cmyk_counter_/_special_div_] := s ;
       cmykcolorhash[c][m][y][k] := _cmyk_counter_ ;

@@ -14,15 +14,21 @@
 % -- ignored: malignmark
 % -- luacode will be moved to x-mmp.lua
 
+% \defineXMLentity[textspace]  {\enspace}
+% \defineXMLentity[textcomma]  {{,}}
+% \defineXMLentity[textperiod] {{.}}
+
 \startluacode
     do
 
         lxml.mml = lxml.mml or { }
 
+        local texsprint = tex.sprint
+
         local replacements = {
-            [" "] = "&textspace;",
-            ["."] = "&textperiod;",
-            [","] = "&textcomma;",
+--            [" "] = utf.char(0x2002),  -- "&textspace;" -> tricky, no &; in mkiv
+--            ["."] = "{.}",
+--            [","] = "{,}",
         }
 
         local reppattern = "([ %.%,])"
@@ -31,7 +37,7 @@
             local str = xml.content(lxml.id(id),pattern) or ""
             str = str:gsub("^%s*(.-)%s*$","%1")
             str = str:gsub(reppattern,replacements)
-            tex.sprint(str)
+            texsprint(str)
         end
 
         function lxml.mml.connect(id,pattern,separators)
@@ -42,14 +48,14 @@
                 lxml.all(id,pattern)
             else
                 local t = { }
-                for s in unicode.utf8.gmatch(separators,"([^%s])") do
+                for s in utf.gmatch(separators,"([^%s])") do
                     t[#t+1] = s
                 end
                 for i=1,n do
                     if i > 1 then
-                        tex.sprint(tex.ctxcatcodes,"{")
-                        tex.sprint(t[i] or t[#t] or "")
-                        tex.sprint(tex.ctxcatcodes,"}")
+                        texsprint(tex.ctxcatcodes,"{")
+                        texsprint(t[i] or t[#t] or "")
+                        texsprint(tex.ctxcatcodes,"}")
                     end
                     lxml.idx(id,pattern,i) -- kind of slow, some day ...
                 end
@@ -57,21 +63,21 @@
         end
 
         local function flush(e,tag,toggle)
-         -- tex.sprint(tex.ctxcatcodes,(toggle and "^{") or "_{")
+         -- texsprint(tex.ctxcatcodes,(toggle and "^{") or "_{")
             if toggle then
-                tex.sprint(tex.ctxcatcodes,"^{")
+                texsprint(tex.ctxcatcodes,"^{")
             else
-                tex.sprint(tex.ctxcatcodes,"_{")
+                texsprint(tex.ctxcatcodes,"_{")
             end
             if tag == "none" then
-                tex.sprint(tex.ctxcatcodes,"{}")
+                texsprint(tex.ctxcatcodes,"{}")
             else
                 xml.sprint(e.dt)
             end
             if not toggle then
-                tex.sprint(tex.ctxcatcodes,"}")
+                texsprint(tex.ctxcatcodes,"}")
             else
-                tex.sprint(tex.ctxcatcodes,"}{}")
+                texsprint(tex.ctxcatcodes,"}{}")
             end
             return not toggle
         end
@@ -84,7 +90,7 @@
                 local e = d[k]
                 local tag = e.tg
                 if tag == "mprescripts" then
-                    tex.sprint(tex.ctxcatcodes,"{}")
+                    texsprint(tex.ctxcatcodes,"{}")
                     done = true
                 elseif done then
                     toggle = flush(e,tag,toggle)
@@ -172,12 +178,11 @@
 
 % setups
 
-\defineXMLentity[textspace]  {\enspace}
-\defineXMLentity[textcomma]  {{,}}
-\defineXMLentity[textperiod] {{.}}
+% \defineXMLentity[_]          {{\_{}}}
+% \defineXMLentity[^]          {{\^{}}}
 
-\defineXMLentity[_]          {{\_}}
-\defineXMLentity[^]          {{\^}}
+% \defineXMLentity[_]          {\string_}
+% \defineXMLentity[^]          {\normalorfiller\hat\widehat}
 
 \startsetups mml:semantics % todo: width=ex/ex/pt
     \xmlflush{#1}
@@ -193,11 +198,15 @@
 \stopxmlsetups
 
 \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
-    % function and style
     \begingroup
         \rm  \ctxlua{lxml.mml.prepare_number("#1","*")}
     \endgroup
 \stopxmlsetups
+
+\startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
+    \mathop{\hbox{\mr \ctxlua{lxml.mml.prepare_number("#1","*")}}}% we need . and , properly spaced
+\stopxmlsetups
+
 
 \startxmlsetups mml:mo
     \edef\MMPoperator{\xmlstripped{#1}{*}}
@@ -332,15 +341,49 @@
     {\xmlindex{#1}{/*}{1}}_{\xmlindex{#1}{/*}{2}}^{\xmlindex{#1}{/*}{3}}
 \stopsetups
 
+% \startsetups mml:mover
+%     \mathop {
+%         \doifelse{\xmlatt{#1}{accent}}{true} {
+%             \begingroup
+%             \xmldoif{#1}{/*[position()==2 and @stretchy=='true']} {
+%                 \let\normalorfiller\secondoftwoarguments
+%             }
+%             \xmlindex{#1}{/*}{2}{\xmlindex{#1}{/*}{1}}
+%             \endgroup
+%         } {
+%             \vbox {
+%                 \m@th\ialign {
+%                     \hss##\hss\crcr
+%                     \noalign{\kern3\p@}%
+%                     \disabledelimiter\doMMLfiller{\xmlindex{#1}{/*}{2}}\crcr
+%                     \noalign{\kern3\p@\nointerlineskip}%
+%                     \disabledelimiter\doMMLfiller{\xmlindex{#1}{/*}{1}}\crcr
+%                 }
+%             }
+%         }
+%     }
+%     \limits
+% \stopsetups
+
+
 \startsetups mml:mover
     \mathop {
-        \vbox {
-            \m@th\ialign {
-                \hss##\hss\crcr
-                \noalign{\kern3\p@}%
-                \disabledelimiter\doMMLfiller{\xmlindex{#1}{/*}{2}}\crcr
-                \noalign{\kern3\p@\nointerlineskip}%
-                \disabledelimiter\doMMLfiller{\xmlindex{#1}{/*}{1}}\crcr
+        \edef\mmlovertoken{\xmlraw{#1}{/mml:mo[position()==2]}}
+        \doifelse{\utfmathclass\mmlovertoken}{accent} {
+            \utfmathcommand\mmlovertoken{\xmlindex{#1}{/*}{1}}
+        } {
+            \vbox {
+                \m@th\ialign {
+                    \hss##\hss\crcr
+                    \noalign{\kern3\p@}%
+                    \disabledelimiter\doMMLfiller{
+                         \xmlindex{#1}{/*}{2}
+                    }\crcr
+                    \noalign{\kern3\p@\nointerlineskip}%
+                    \disabledelimiter\doMMLfiller{
+                        \xmlindex{#1}{/*}{1}
+                    }\crcr
+                }
             }
         }
     }
@@ -363,9 +406,15 @@
 \stopsetups
 
 \startsetups mml:munderover
-    \xmlindex{#1}{/*}{1}
-      _{\disablefiller\disabledelimiter\xmlindex{#1}{/*}{2}}
-      ^{\disablefiller\disabledelimiter\xmlindex{#1}{/*}{3}}
+    \edef\mmlunderovertoken{\xmlraw{#1}{/mml:mo[position()==1]}}
+%     \doifelse{\utfmathclass\mmlunderovertoken}{limop} {
+%         \utfmathcommand\mmlunderovertoken
+%     } {
+%         \xmlindex{#1}{/*}{1}
+%     {
+    \utfmathcommanddefault\mmlunderovertoken{xmlindex}{{#1}{/*}{1}}
+        _{\disablefiller\disabledelimiter\xmlindex{#1}{/*}{2}}
+        ^{\disablefiller\disabledelimiter\xmlindex{#1}{/*}{3}}
 \stopsetups
 
 \startxmlsetups mml:mlabeledtr

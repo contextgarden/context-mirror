@@ -103,14 +103,15 @@ function mathematics.setmathsymbol(name,class,family,slot,largefamily,largeslot,
     class = mathematics.classes[class] or class -- no real checks needed
     family = mathematics.families[family] or family
     -- \unexpanded ? \relax needed for the codes?
+    local classes = mathematics.classes
     if largefamily and largeslot then
         largefamily = mathematics.families[largefamily] or largefamily
-        if class == mathradical then
+        if class == classes.radical then
             tex.sprint(("\\xdef\\%s{%s\\relax}"):format(name,mathematics.radical(class,family,slot,largefamily,largeslot)))
-        else
+        elseif class == classes.open or class == classes.close then
             tex.sprint(("\\xdef\\%s{%s\\relax}"):format(name,mathematics.delimiter(class,family,slot,largefamily,largeslot)))
         end
-    elseif class == mathaccent then
+    elseif class == classes.accent then
         tex.sprint(("\\xdef\\%s{%s\\relax}"):format(name,mathematics.mathaccent(class,family,slot)))
     elseif unicode then
         tex.sprint(("\\xdef\\%s{%s}"):format(name,utf.char(unicode)))
@@ -136,9 +137,14 @@ end
 
 mathematics.trace = false
 
+
+
 function mathematics.define()
     local slots = mathematics.slots.current
-    local function trace(k,c,f,i,fe,ie)
+    local setmathcharacter = mathematics.setmathcharacter
+    local setmathsymbol = mathematics.setmathsymbol
+    local trace = mathematics.trace
+    local function report(k,c,f,i,fe,ie)
         if fe then
             logs.report("mathematics",string.format("a - symbol 0x%05X -> %s -> %s %s (%s %s)",k,c,f,i,fe,ie))
         elseif c then
@@ -157,32 +163,32 @@ function mathematics.define()
                 local s = slots[k]
                 if s then
                     local f, i, fe, ie = s[1], s[2], s[3], s[4]
-                    if mathematics.trace then
-                        trace(k,c,f,i,fe,ie)
+                    if trace then
+                        report(k,c,f,i,fe,ie)
                     end
-                    mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                    setmathcharacter(k,m,f,i,fe,ie)
                 end
             elseif c then
                 local s = slots[k]
                 if s then
                     local f, i, fe, ie = s[1], s[2], s[3], s[4]
-                    if mathematics.trace then
-                        trace(k,c,f,i,fe,ie)
+                    if trace then
+                        report(k,c,f,i,fe,ie)
                     end
-                    mathematics.setmathsymbol(c,m,f,i,fe,ie,k)
-                    mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                    setmathsymbol(c,m,f,i,fe,ie,k)
+                    setmathcharacter(k,m,f,i,fe,ie)
                 end
             elseif v.contextname then
                 local s = slots[k]
                 local c = v.contextname
                 if s then
                     local f, i, fe, ie = s[1], s[2], s[3], s[4]
-                    if mathematics.trace then
-                        trace(k,c,f,i,fe,ie)
+                    if trace then
+                        report(k,c,f,i,fe,ie)
                     end
                     -- todo: mathortext
-                    -- mathematics.setmathsymbol(c,m,f,i,fe,ie,k)
-                    mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                    -- setmathsymbol(c,m,f,i,fe,ie,k)
+                    setmathcharacter(k,m,f,i,fe,ie)
                 end
             else
                 local a = v.adobename
@@ -195,10 +201,10 @@ function mathematics.define()
                     elseif m == "number" then
                         f, i = mathematics.families.numbers, k
                     end
-                    if mathematics.trace then
-                        trace(k,a,f,i,fe,ie)
+                    if trace then
+                        report(k,a,f,i,fe,ie)
                     end
-                    mathematics.setmathcharacter(k,m,f,i,fe,ie)
+                    setmathcharacter(k,m,f,i,fe,ie)
                 end
             end
         end
@@ -216,7 +222,7 @@ mathematics.slots.traditional = {
     [0x03B2] = { "lcgreek", 0x0C },
     [0x03B3] = { "lcgreek", 0x0D },
     [0x03B4] = { "lcgreek", 0x0E },
---  [0x03B5] = { "lcgreek", 0x00 }, -- varepsilon
+    [0x03B5] = { "lcgreek", 0x0F }, -- epsilon
     [0x03B6] = { "lcgreek", 0x10 },
     [0x03B7] = { "lcgreek", 0x11 },
     [0x03B8] = { "lcgreek", 0x12 },
@@ -233,7 +239,7 @@ mathematics.slots.traditional = {
     [0x03C3] = { "lcgreek", 0x1B },
     [0x03C4] = { "lcgreek", 0x1C },
     [0x03C5] = { "lcgreek", 0x1D },
-    [0x03C6] = { "lcgreek", 0x1E },
+--  [0x03C6] = { "lcgreek", 0x1E }, -- varphi
     [0x03C7] = { "lcgreek", 0x1F },
     [0x03C8] = { "lcgreek", 0x20 },
     [0x03C9] = { "lcgreek", 0x21 },
@@ -263,13 +269,17 @@ mathematics.slots.traditional = {
     [0x03A8] = { "ucgreek", 0x09 },
     [0x03A9] = { "ucgreek", 0x0A },
 
-    [0x03B5] = { "vargreek", 0x22 }, -- varepsilon
+    [0x03F5] = { "vargreek", 0x22 }, -- varepsilon
     [0x03D1] = { "vargreek", 0x23 }, -- vartheta
     [0x03D6] = { "vargreek", 0x24 }, -- varpi
     [0x03F1] = { "vargreek", 0x25 }, -- varrho
     [0x03C2] = { "vargreek", 0x26 }, -- varsigma
+
     [0x03C6] = { "vargreek", 0x27 }, -- varphi
+    [0x03D5] = { "lcgreek",  0x1E }, -- phi
+
 --  [0x03F0] = { "",         0x00 }, -- varkappa
+
 
     [0x0021] = { "mr", 0x21 }, -- !
     [0x0028] = { "mr", 0x28 }, -- (
@@ -295,18 +305,15 @@ mathematics.slots.traditional = {
     [0x00B7] = { "sy", 0x01 }, -- cdot
     [0x00D7] = { "sy", 0x02 }, -- times
     [0x2022] = { "sy", 0x0F }, -- bullet
-
     [0x2190] = { "sy", 0x20 }, -- leftarrow
     [0x2192] = { "sy", 0x21 }, -- rightarrow
     [0x2194] = { "sy", 0x24 }, -- leftrightarrow
-
     [0x21D0] = { "sy", 0x28 }, -- Leftarrow
     [0x21D2] = { "sy", 0x29 }, -- Rightarrow
     [0x21D4] = { "sy", 0x2C }, -- Leftrightarrow
-
     [0x2135] = { "sy", 0x40 }, -- aleph
     [0x2113] = { "mi", 0x60 }, -- ell
-
+    [0x22C5] = { "sy", 0x01 }, -- cdot
     [0x25B3] = { "sy", 0x34 }, -- triangle up
 
     [0x1D6A4] = { "mi", 0x7B }, -- imath
@@ -321,6 +328,12 @@ mathematics.slots.traditional = {
     [0x005D] = { "mr", 0x5D, "ex", 0x03 }, -- ]
     [0x007C] = { "sy", 0x6A, "ex", 0x0C }, -- |
     [0x005C] = { "sy", 0x6E, "ex", 0x0F }, -- \
+
+    [0x220F] = { "ex", 0x51 }, -- prod
+    [0x2211] = { "ex", 0x50 }, -- sum
+    [0x222B] = { "ex", 0x52 }, -- intop
+    [0x005E] = { "mr", 0x5E, "ex", 0x62 }, -- widehat
+    [0x007E] = { "mr", 0x7E, "ex", 0x65 }, -- widetilde
 
 }
 
@@ -343,3 +356,10 @@ mathematics.slots.current = mathematics.slots.traditional
 --~         tex.sprint(tex.ctxcatcodes,"\\endgroup")
 --~     end
 --~ end
+
+function mathematics.utfmathclass(chr, default)
+    return characters.data[utf.byte(chr)].mathclass or default or "unknown"
+end
+function mathematics.utfmathcommand(chr, default)
+    return characters.data[utf.byte(chr)].mathname or default or "unknown"
+end

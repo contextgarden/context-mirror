@@ -177,7 +177,8 @@
 \def\checkPDFextgstates
   {\ifx\docuPDFextgstates\empty \else
      \ifnum\realpageno=\lastpage\relax
-       \doPDFdictionaryobject{FDF}{docuextgstates}{\docuPDFextgstates}%
+      %\doreservePDFobject{FDF}{docuextgstates}%
+      \doPDFreserveddictionaryobject{FDF}{docuextgstates}{\docuPDFextgstates}%
      \fi
      \doPDFgetobjectreference{FDF}{docuextgstates}\PDFobjectreference
      \doPDFpageresource{/ExtGState \PDFobjectreference}%
@@ -219,7 +220,8 @@
 \def\checkPDFcolorspaces
   {\ifx\docuPDFcolorspaces\empty \else
      \ifnum\realpageno=\lastpage\relax
-       \doPDFdictionaryobject{FDF}{colorspaces}{\docuPDFcolorspaces}%
+       %\doreservePDFobject{FDF}{colorspaces}%
+       \doPDFreserveddictionaryobject{FDF}{colorspaces}{\docuPDFcolorspaces}%
      \fi
      \doPDFgetobjectreference{FDF}{colorspaces}\PDFobjectreference
      \doPDFpageresource{/ColorSpace \PDFobjectreference}%
@@ -239,7 +241,8 @@
 \def\checkPDFshades
   {\ifx\docuPDFshades\empty \else
      \ifnum\realpageno=\lastpage\relax
-       \doPDFdictionaryobject{FDF}{docushades}{\docuPDFshades}%
+       %\doreservePDFobject{FDF}{docushades}%
+       \doPDFreserveddictionaryobject{FDF}{docushades}{\docuPDFshades}%
      \fi
      \doPDFgetobjectreference{FDF}{docushades}\PDFobjectreference
      \doPDFpageresource{/Shading \PDFobjectreference}%

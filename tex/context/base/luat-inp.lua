@@ -1245,6 +1245,8 @@ end
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
 
+-- get rid of piecewise here, just a gmatch is ok
+
 function input.aux.splitpathexpr(str, t, validate)
     -- no need for optimization, only called a few times, we can use lpeg for the sub
     t = t or { }
@@ -1252,7 +1254,7 @@ function input.aux.splitpathexpr(str, t, validate)
     while true do
         local done = false
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("([^{},]+){([^{}]-)}", function(a,b)
                 local t = { }
                 b:piecewise(",", function(s) t[#t+1] = a .. s end)
@@ -1262,7 +1264,7 @@ function input.aux.splitpathexpr(str, t, validate)
             if not ok then break end
         end
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("{([^{}]-)}([^{},]+)", function(a,b)
                 local t = { }
                 a:piecewise(",", function(s) t[#t+1] = s .. b end)
@@ -1272,7 +1274,7 @@ function input.aux.splitpathexpr(str, t, validate)
             if not ok then break end
         end
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("([,{]){([^{}]+)}([,}])", function(a,b,c)
                 ok, done = true, true
                 return a .. b .. c
@@ -1282,7 +1284,7 @@ function input.aux.splitpathexpr(str, t, validate)
         if not done then break end
     end
     while true do
-        ok = false
+        local ok = false
         str = str:gsub("{([^{}]-)}{([^{}]-)}", function(a,b)
             local t = { }
             a:piecewise(",", function(sa)
@@ -1296,7 +1298,7 @@ function input.aux.splitpathexpr(str, t, validate)
         if not ok then break end
     end
     while true do
-        ok = false
+        local ok = false
         str = str:gsub("{([^{}]-)}", function(a)
             ok = true
             return a
@@ -2165,7 +2167,7 @@ do
     resolvers.file = resolvers.filename
     resolvers.path = resolvers.pathname
 
-    function resolve(instance,str)
+    local function resolve(instance,str)
         if type(str) == "table" then
             for k, v in pairs(str) do
                 str[k] = resolve(instance,v) or v

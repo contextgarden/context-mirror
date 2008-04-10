@@ -168,7 +168,7 @@
 %D nesting deeper than one level, the system shows the
 %D protection level.
 
-\newcount\protectionlevel
+\ifx\protectionlevel\undefined \newcount\protectionlevel \fi
 
 \ifx\protect\undefined
   \def\protect{\writestatus{protection}{too much protection}}

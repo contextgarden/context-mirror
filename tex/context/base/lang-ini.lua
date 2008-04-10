@@ -283,12 +283,12 @@ languages.words.colors    = {
 
 do
 
-    spacing = lpeg.S(" \n\r\t")
-    markup  = lpeg.S("-=")
-    lbrace  = lpeg.P("{")
-    rbrace  = lpeg.P("}")
-    disc    = (lbrace * (1-rbrace)^0 * rbrace)^1 -- or just 3 times, time this
-    word    = lpeg.Cs((markup/"" + disc/"" + (1-spacing))^1)
+    local spacing = lpeg.S(" \n\r\t")
+    local markup  = lpeg.S("-=")
+    local lbrace  = lpeg.P("{")
+    local rbrace  = lpeg.P("}")
+    local disc    = (lbrace * (1-rbrace)^0 * rbrace)^1 -- or just 3 times, time this
+    local word    = lpeg.Cs((markup/"" + disc/"" + (1-spacing))^1)
 
     function languages.words.load(tag, filename)
         local filename = input.find_file(texmf.instance,filename,'other text file') or ""
@@ -325,7 +325,7 @@ do
     local bynode        = node.traverse
     local bychar        = string.utfcharacters
 
-    function mark_words(head,found) -- can be optimized
+    local function mark_words(head,found) -- can be optimized
         local cd = characters.data
         local uc = utf.char
         local current, start, str, language, n = head, nil, "", nil, 0

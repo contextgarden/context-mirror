@@ -1845,19 +1845,68 @@ dir = { }
 
 if lfs then do
 
+--~     local attributes = lfs.attributes
+--~     local walkdir    = lfs.dir
+--~
+--~     local function glob_pattern(path,patt,recurse,action)
+--~         local ok, scanner = xpcall(function() return walkdir(path) end, function() end) -- kepler safe
+--~         if ok and type(scanner) == "function" then
+--~             if not path:find("/$") then path = path .. '/' end
+--~             for name in scanner do
+--~                 local full = path .. name
+--~                 local mode = attributes(full,'mode')
+--~                 if mode == 'file' then
+--~                     if name:find(patt) then
+--~                         action(full)
+--~                     end
+--~                 elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+--~                     glob_pattern(full,patt,recurse,action)
+--~                 end
+--~             end
+--~         end
+--~     end
+--~
+--~     dir.glob_pattern = glob_pattern
+--~
+--~     local function glob(pattern, action)
+--~         local t = { }
+--~         local action = action or function(name) t[#t+1] = name end
+--~         local path, patt = pattern:match("^(.*)/*%*%*/*(.-)$")
+--~         local recurse = path and patt
+--~         if not recurse then
+--~             path, patt = pattern:match("^(.*)/(.-)$")
+--~             if not (path and patt) then
+--~                 path, patt = '.', pattern
+--~             end
+--~         end
+--~         patt = patt:gsub("([%.%-%+])", "%%%1")
+--~         patt = patt:gsub("%*", ".*")
+--~         patt = patt:gsub("%?", ".")
+--~         patt = "^" .. patt .. "$"
+--~      -- print('path: ' .. path .. ' | pattern: ' .. patt .. ' | recurse: ' .. tostring(recurse))
+--~         glob_pattern(path,patt,recurse,action)
+--~         return t
+--~     end
+--~
+--~     dir.glob = glob
+
     local attributes = lfs.attributes
     local walkdir    = lfs.dir
 
     local function glob_pattern(path,patt,recurse,action)
-        local ok, scanner = xpcall(function() return walkdir(path) end, function() end) -- kepler safe
+        local ok, scanner
+        if path == "/" then
+            ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
+        else
+            ok, scanner = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
+        end
         if ok and type(scanner) == "function" then
             if not path:find("/$") then path = path .. '/' end
             for name in scanner do
-print(name)
                 local full = path .. name
                 local mode = attributes(full,'mode')
                 if mode == 'file' then
-                    if name:find(patt) then
+                    if full:find(patt) then
                         action(full)
                     end
                 elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
@@ -1871,29 +1920,72 @@ print(name)
 
     local function glob(pattern, action)
         local t = { }
-        local action = action or function(name) table.insert(t,name) end
-        local path, patt = pattern:match("^(.*)/*%*%*/*(.-)$")
-        local recurse = path and patt
-        if not recurse then
-            path, patt = pattern:match("^(.*)/(.-)$")
-            if not (path and patt) then
-                path, patt = '.', pattern
-            end
+        local path, rest, patt, recurse
+        local action = action or function(name) t[#t+1] = name end
+        local pattern = pattern:gsub("^%*%*","./**")
+        local pattern = pattern:gsub("/%*/","/**/")
+        path, rest = pattern:match("^(/)(.-)$")
+        if path then
+            path = path
+        else
+            path, rest = pattern:match("^([^/]*)/(.-)$")
         end
-        patt = patt:gsub("([%.%-%+])", "%%%1")
-        patt = patt:gsub("%*", ".*")
-        patt = patt:gsub("%?", ".")
-        patt = "^" .. patt .. "$"
-     -- print('path: ' .. path .. ' | pattern: ' .. patt .. ' | recurse: ' .. tostring(recurse))
+        if rest then
+            patt = rest:gsub("([%.%-%+])", "%%%1")
+        end
+        patt = patt:gsub("%*", "[^/]*")
+        patt = patt:gsub("%?", "[^/]")
+        patt = patt:gsub("%[%^/%]%*%[%^/%]%*", ".*")
+        if path == "" then path = "." end
+        recurse = patt:find("%.%*/") ~= nil
         glob_pattern(path,patt,recurse,action)
         return t
     end
 
+    local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
+
+    local pattern = Ct {
+        [1] = (C(P(".") + P("/")^1) + C(R("az","AZ") * P(":") * P("/")^0) + Cc("./")) * V(2) * V(3),
+        [2] = C(((1-S("*?/"))^0 * P("/"))^0),
+        [3] = C(P(1)^0)
+    }
+
+    local filter = Cs ( (
+        P("**") / ".*" +
+        P("*")  / "[^/]*" +
+        P("?")  / "[^/]" +
+        P(".")  / "%." +
+        P("+")  / "%+" +
+        P("-")  / "%-" +
+        P(1)
+    )^0 )
+
+    function glob(str)
+        local split = pattern:match(str)
+        if split then
+            local t = { }
+            local action = action or function(name) t[#t+1] = name end
+            local root, path, base = split[1], split[2], split[3]
+            local recurse = base:find("**")
+            local start = root .. path
+            local result = filter:match(start .. base)
+        --  print(str, start, result)
+            glob_pattern(start,result,recurse,action)
+            return t
+        else
+            return { }
+        end
+    end
+
     dir.glob = glob
 
-    -- todo: speedup
+    --~ list = dir.glob("**/*.tif")
+    --~ list = dir.glob("/**/*.tif")
+    --~ list = dir.glob("./**/*.tif")
+    --~ list = dir.glob("oeps/**/*.tif")
+    --~ list = dir.glob("/oeps/**/*.tif")
 
-    local function globfiles(path,recurse,func,files)
+    local function globfiles(path,recurse,func,files) -- func == pattern or function
         if type(func) == "string" then
             local s = func -- alas, we need this indirect way
             func = function(name) return name:find(s) end
@@ -1934,23 +2026,6 @@ print(name)
     --~ mkdirs("a/b/c")
     --~ mkdirs(".","/a/b/c")
     --~ mkdirs("a","b","c")
-
---~     function dir.mkdirs(...)
---~         local pth, err, lst = "", false, table.concat({...},"/")
---~         for _, s in ipairs(lst:split("/")) do
---~             if pth == "" then
---~                 pth = (s == "" and "/") or s
---~             else
---~                 pth = pth .. "/" .. s
---~             end
---~             if s == "" then
---~                 -- can be network path
---~             elseif not lfs.isdir(pth) then
---~                 lfs.mkdir(pth)
---~             end
---~         end
---~         return pth, not err
---~     end
 
     local make_indeed = true -- false
 

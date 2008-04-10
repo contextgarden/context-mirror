@@ -25,4 +25,21 @@
 
 \ctxlua{mathematics.define()}
 
+\def\utfmathclass  #1{\ctxlua{tex.sprint (mathematics.utfmathclass  ("#1"))}}
+\def\utfmathcommand#1{\ctxlua{commands.cs(mathematics.utfmathcommand("#1"))}}
+
+\def\utfmathclassdefault  #1#2{\ctxlua{
+    tex.sprint(mathematics.utfmathclass("#1","#2"))
+}}
+
+\def\utfmathcommanddefault#1#2#3{\ctxlua{
+    local cmd = mathematics.utfmathcommand("#1","") or ""
+    if cmd == "" then
+        commands.cs("#2","#3")
+    else
+        commands.cs(cmd)
+    end}}
+
+% \let\math@normal@int\int  \def\int{\math@normal@int\intlimits}
+
 \protect \endinput

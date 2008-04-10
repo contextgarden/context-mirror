@@ -96,8 +96,9 @@
     environment.formatname = "\contextformat"                      % tex.formatname
     environment.initex     = \ifproductionrun false \else true \fi % tex.formatname == ""
     environment.version    = "\contextversion"
---     dofile(input.find_file(texmf.instance,"luat-env.lua","tex"))
 \stopruntimectxluacode
+
+% no longer needed: dofile(input.find_file(texmf.instance,"luat-env.lua","tex"))
 
 \chardef\ctxluaexecutionmode \zerocount % private
 

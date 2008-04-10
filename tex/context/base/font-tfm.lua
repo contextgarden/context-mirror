@@ -431,7 +431,7 @@ do
                 local characters = tfmdata.characters
                 local unicodes = afmdata.luatex.unicodes
                 local function remap(pattern,name)
-                    local p = lpeg.match(pattern,name)
+                    local p = pattern:match(name)
                     if p then
                         local oldchr, newchr = unicodes[p], unicodes[name]
                         if oldchr and newchr then
@@ -459,7 +459,7 @@ do
             local characters = tfmdata.characters
             local unicodes = afmdata.luatex.unicodes
             local function remap(pattern,name)
-                local p = lpeg.match(pattern,name)
+                local p = pattern:match(name)
                 if p then
                     local oldchr, newchr = unicodes[p], unicodes[name]
                     if oldchr and newchr then

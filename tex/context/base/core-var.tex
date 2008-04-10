@@ -232,7 +232,7 @@
   {\docheckforallmodes\donothing\dostopallmodes{#1}}
 
 \long\def\dostartnotallmodes[#1]%
-  {\docheckforallmodes\dostopallmodes\donothing{#1}}
+  {\docheckforallmodes\dostopnotallmodes\donothing{#1}}
 
 \let\stopallmodes   \donothing
 \let\stopnotallmodes\donothing
@@ -379,6 +379,8 @@
 %D
 %D This boolean can be used to bypass certain
 %D initializations.
+
+\ifx\protectionlevel\undefined \newcount\protectionlevel \fi
 
 \newif\ifproductionrun \appendtoks \productionruntrue \to \everydump
 

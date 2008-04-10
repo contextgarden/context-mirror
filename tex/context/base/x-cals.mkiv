@@ -19,6 +19,11 @@ do
     lxml.cals = { }
     lxml.cals.ignore_widths = false
 
+    local format    = string.format
+    local texsprint = tex.sprint
+    local xmlsprint = xml.sprint
+    local xmlcprint = xml.cprint
+
     local halignments = {
         left = "flushleft",
         right = "flushright",
@@ -65,26 +70,24 @@ do
         end
     end
 
-    local texsprint = tex.sprint
-    local xmlsprint = xml.sprint
-
     --local function texsprint(a,b) print(b) end
     --local function xmlsprint(a) print(a) end
 
     function lxml.cals.table(root,namespace)
 
         local prefix = (namespace or "cals") .. ":"
+        local p = "/" .. prefix
 
-        local tgroupspec = "/" .. prefix .. "tgroup"
-        local colspec    = "/" .. prefix .. "colspec"
-        local spanspec   = "/" .. prefix .. "spanspec"
-        local hcolspec   = "/" .. prefix .. "thead" .. "/" ..prefix .. "colspec"
-        local bcolspec   = "/" .. prefix .. "tbody" .. "/" ..prefix .. "colspec"
-        local fcolspec   = "/" .. prefix .. "tfoot" .. "/" ..prefix .. "colspec"
-        local entryspec  = "/" .. prefix .. "entry" .. "|" ..prefix .. "entrytbl"
-        local hrowspec   = "/" .. prefix .. "thead" .. "/" ..prefix .. "row"
-        local browspec   = "/" .. prefix .. "tbody" .. "/" ..prefix .. "row"
-        local frowspec   = "/" .. prefix .. "tfoot" .. "/" ..prefix .. "row"
+        local tgroupspec = p .. "tgroup"
+        local colspec    = p .. "colspec"
+        local spanspec   = p .. "spanspec"
+        local hcolspec   = p .. "thead" .. p .. "colspec"
+        local bcolspec   = p .. "tbody" .. p .. "colspec"
+        local fcolspec   = p .. "tfoot" .. p .. "colspec"
+        local entryspec  = p .. "entry" .. "|" ..prefix .. "entrytbl"
+        local hrowspec   = p .. "thead" .. p .. "row"
+        local browspec   = p .. "tbody" .. p .. "row"
+        local frowspec   = p .. "tfoot" .. p .. "row"
 
         local function tablepart(root, xcolspec, xrowspec, before, after)
             texsprint(tex.ctxcatcodes,before)
@@ -122,13 +125,13 @@ do
                         end
                         local width = widths[col]
                         if s or m or halign or valign or width then
-                            texsprint(tex.ctxcatcodes,string.format("\\bTD[nx=%s,ny=%s,align={%s,%s},width=%s]",
+                            texsprint(tex.ctxcatcodes,format("\\bTD[nx=%s,ny=%s,align={%s,%s},width=%s]",
                                 s or 1, (m or 0)+1, halign or "flushleft", valign or "high", width or "fit"))
                         else
                             texsprint(tex.ctxcatcodes,"\\bTD")
                         end
-                    --  xmlsprint(xml.content(dk))
-                        xmlsprint(dk)
+                    --    xmlsprint(dk)
+                        xmlcprint(dk)
                         texsprint(tex.ctxcatcodes,"\\eTD")
                         col = col + (s or 1)
                     end
@@ -140,7 +143,6 @@ do
 
         for r, d, k in xml.elements(lxml.id(root),tgroupspec) do
             local tgroup = d[k]
--- print(tgroupspec,"!!!!!!!!!!!!!!!!!", r, d, k)
             lxml.directives.before(root,"cdx") -- "cals:table"
             texsprint(tex.ctxcatcodes, "\\bgroup")
             lxml.directives.setup(root,"cdx") -- "cals:table"

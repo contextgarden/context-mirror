@@ -97,15 +97,51 @@ if lfs then do
         else
             path, rest = pattern:match("^([^/]*)/(.-)$")
         end
-        patt = rest:gsub("([%.%-%+])", "%%%1")
+        if rest then
+            patt = rest:gsub("([%.%-%+])", "%%%1")
+        end
         patt = patt:gsub("%*", "[^/]*")
         patt = patt:gsub("%?", "[^/]")
         patt = patt:gsub("%[%^/%]%*%[%^/%]%*", ".*")
         if path == "" then path = "." end
-        -- print(pattern, path, patt)
-        recurse = patt:find("%.%*/")
+        recurse = patt:find("%.%*/") ~= nil
         glob_pattern(path,patt,recurse,action)
         return t
+    end
+
+    local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
+
+    local pattern = Ct {
+        [1] = (C(P(".") + P("/")^1) + C(R("az","AZ") * P(":") * P("/")^0) + Cc("./")) * V(2) * V(3),
+        [2] = C(((1-S("*?/"))^0 * P("/"))^0),
+        [3] = C(P(1)^0)
+    }
+
+    local filter = Cs ( (
+        P("**") / ".*" +
+        P("*")  / "[^/]*" +
+        P("?")  / "[^/]" +
+        P(".")  / "%." +
+        P("+")  / "%+" +
+        P("-")  / "%-" +
+        P(1)
+    )^0 )
+
+    function glob(str)
+        local split = pattern:match(str)
+        if split then
+            local t = { }
+            local action = action or function(name) t[#t+1] = name end
+            local root, path, base = split[1], split[2], split[3]
+            local recurse = base:find("**")
+            local start = root .. path
+            local result = filter:match(start .. base)
+        --  print(str, start, result)
+            glob_pattern(start,result,recurse,action)
+            return t
+        else
+            return { }
+        end
     end
 
     dir.glob = glob

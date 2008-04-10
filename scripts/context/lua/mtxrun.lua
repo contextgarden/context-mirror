@@ -176,7 +176,7 @@ end
 --~                 split = lpeg.Ct(c*(p*c)^0)
 --~                 splitters[separator] = split
 --~             end
---~             return lpeg.match(split,self) -- split:match(self)
+--~             return split:match(self)
 --~         else
 --~             return { }
 --~         end
@@ -429,6 +429,8 @@ if not versions then versions = { } end versions['l-lpeg'] = 1.001
 --~ lpeg.whitespace    = lpeg.S(' \r\n\f\t')^1
 --~ lpeg.nonwhitespace = lpeg.P(1-lpeg.whitespace)^1
 
+local hash = { }
+
 function lpeg.anywhere(pattern) --slightly adapted from website
     return lpeg.P { lpeg.P(pattern) + 1 * lpeg.V(1) }
 end
@@ -443,6 +445,20 @@ function lpeg.splitter(pattern, action)
     return (((1-lpeg.P(pattern))^1)/action+1)^0
 end
 
+
+local crlf    = lpeg.P("\r\n")
+local cr      = lpeg.P("\r")
+local lf      = lpeg.P("\n")
+local space   = lpeg.S(" \t\f\v")
+local newline = crlf + cr + lf
+local spacing = space^0 * newline
+local content = lpeg.Cs((1-spacing)^1) * spacing^-1 * (spacing * lpeg.Cc(""))^0
+
+local capture = lpeg.Ct(content^0)
+
+function string:splitlines()
+    return capture:match(self)
+end
 
 
 -- filename : l-table.lua
@@ -517,15 +533,6 @@ function table.prepend(t, list)
     end
 end
 
---~ function table.merge(t, ...)
---~     for _, list in ipairs({...}) do
---~         for k,v in pairs(list) do
---~             t[k] = v
---~         end
---~     end
---~     return t
---~ end
-
 function table.merge(t, ...) -- first one is target
     t = t or {}
     local lst = {...}
@@ -537,16 +544,6 @@ function table.merge(t, ...) -- first one is target
     return t
 end
 
---~ function table.merged(...)
---~     local tmp = { }
---~     for _, list in ipairs({...}) do
---~         for k,v in pairs(list) do
---~             tmp[k] = v
---~         end
---~     end
---~     return tmp
---~ end
-
 function table.merged(...)
     local tmp, lst = { }, {...}
     for i=1,#lst do
@@ -556,15 +553,6 @@ function table.merged(...)
     end
     return tmp
 end
-
---~ function table.imerge(t, ...)
---~     for _, list in ipairs({...}) do
---~         for _, v in ipairs(list) do
---~             t[#t+1] = v
---~         end
---~     end
---~     return t
---~ end
 
 function table.imerge(t, ...)
     local lst = {...}
@@ -576,16 +564,6 @@ function table.imerge(t, ...)
     end
     return t
 end
-
---~ function table.imerged(...)
---~     local tmp = { }
---~     for _, list in ipairs({...}) do
---~         for _,v in pairs(list) do
---~             tmp[#tmp+1] = v
---~         end
---~     end
---~     return tmp
---~ end
 
 function table.imerged(...)
     local tmp, lst = { }, {...}
@@ -734,7 +712,6 @@ do
             end
             if n == #t then
                 local tt = { }
-            --  for _,v in ipairs(t) do
                 for i=1,#t do
                     local v = t[i]
                     local tv = type(v)
@@ -789,7 +766,7 @@ do
             local inline  = compact and table.serialize_inline
             local first, last = nil, 0 -- #root cannot be trusted here
             if compact then
-              for k,v in ipairs(root) do -- NOT: for k=1,#root do
+              for k,v in ipairs(root) do -- NOT: for k=1,#root do (why)
                     if not first then first = k end
                     last = last + 1
                 end
@@ -971,7 +948,8 @@ end
 do
 
     local function flatten(t,f,complete)
-        for _,v in ipairs(t) do
+        for i=1,#t do
+            local v = t[i]
             if type(v) == "table" then
                 if complete or type(v[1]) == "table" then
                     flatten(v,f,complete)
@@ -1437,7 +1415,7 @@ do
     local one = lpeg.C(1-lpeg.S(''))^1
 
     function number.toset(n)
-        return lpeg.match(one,tostring(n))
+        return one:match(tostring(n))
     end
 end
 
@@ -1839,15 +1817,51 @@ if lfs then do
         else
             path, rest = pattern:match("^([^/]*)/(.-)$")
         end
-        patt = rest:gsub("([%.%-%+])", "%%%1")
+        if rest then
+            patt = rest:gsub("([%.%-%+])", "%%%1")
+        end
         patt = patt:gsub("%*", "[^/]*")
         patt = patt:gsub("%?", "[^/]")
         patt = patt:gsub("%[%^/%]%*%[%^/%]%*", ".*")
         if path == "" then path = "." end
-        -- print(pattern, path, patt)
-        recurse = patt:find("%.%*/")
+        recurse = patt:find("%.%*/") ~= nil
         glob_pattern(path,patt,recurse,action)
         return t
+    end
+
+    local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
+
+    local pattern = Ct {
+        [1] = (C(P(".") + P("/")^1) + C(R("az","AZ") * P(":") * P("/")^0) + Cc("./")) * V(2) * V(3),
+        [2] = C(((1-S("*?/"))^0 * P("/"))^0),
+        [3] = C(P(1)^0)
+    }
+
+    local filter = Cs ( (
+        P("**") / ".*" +
+        P("*")  / "[^/]*" +
+        P("?")  / "[^/]" +
+        P(".")  / "%." +
+        P("+")  / "%+" +
+        P("-")  / "%-" +
+        P(1)
+    )^0 )
+
+    function glob(str)
+        local split = pattern:match(str)
+        if split then
+            local t = { }
+            local action = action or function(name) t[#t+1] = name end
+            local root, path, base = split[1], split[2], split[3]
+            local recurse = base:find("**")
+            local start = root .. path
+            local result = filter:match(start .. base)
+        --  print(str, start, result)
+            glob_pattern(start,result,recurse,action)
+            return t
+        else
+            return { }
+        end
     end
 
     dir.glob = glob
@@ -2162,6 +2176,8 @@ xml.trace_lpath = false
 xml.trace_print = false
 xml.trace_remap = false
 
+local format, concat = string.format, table.concat
+
 -- todo: some things per xml file, liek namespace remapping
 
 --[[ldx--
@@ -2172,7 +2188,7 @@ find based solution where we loop over an array of patterns. Less code and
 much cleaner.</p>
 --ldx]]--
 
-xml.xmlns = { }
+xml.xmlns = xml.xmlns or { }
 
 do
 
@@ -2312,9 +2328,9 @@ do
         local toclose = remove(stack)
         top = stack[#stack]
         if #stack < 1 then
-            errorstr = string.format("nothing to close with %s %s", tag, xml.check_error(top,toclose) or "")
+            errorstr = format("nothing to close with %s %s", tag, xml.check_error(top,toclose) or "")
         elseif toclose.tg ~= tag then -- no namespace check
-            errorstr = string.format("unable to close %s with %s %s", toclose.tg, tag, xml.check_error(top,toclose) or "")
+            errorstr = format("unable to close %s with %s %s", toclose.tg, tag, xml.check_error(top,toclose) or "")
         end
         dt = top.dt
         dt[#dt+1] = toclose
@@ -2438,8 +2454,10 @@ do
             errorstr = "empty xml file"
         elseif not grammar:match(data) then
             errorstr = "invalid xml file"
+        else
+            errorstr = ""
         end
-        if errorstr then
+        if errorstr and errorstr ~= "" then
             result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={}, er = true } }, error = true }
             setmetatable(stack, mt)
             if xml.error_handler then xml.error_handler("load",errorstr) end
@@ -2449,7 +2467,9 @@ do
         if not no_root then
             result = { special = true, ns = "", tg = '@rt@', dt = result.dt, at={} }
             setmetatable(result, mt)
-            for k,v in ipairs(result.dt) do
+            local rdt = result.dt
+            for k=1,#rdt do
+                local v = rdt[k]
                 if type(v) == "table" and not v.special then -- always table -)
                     result.ri = k -- rootindex
                     break
@@ -2560,138 +2580,141 @@ do
 
     local fallbackhandle = (tex and tex.sprint) or io.write
 
-    function xml.serialize(e, handle, textconverter, attributeconverter, specialconverter, nocommands)
+    local function serialize(e, handle, textconverter, attributeconverter, specialconverter, nocommands)
         if not e then
-            -- quit
-        elseif not nocommands and e.command and xml.command then
-            xml.command(e)
-        else
-            handle = handle or fallbackhandle
-            local etg = e.tg
-            if etg then
-            --  local format = string.format
-                if e.special then
-                    local edt = e.dt
-                    local spc = specialconverter and specialconverter[etg]
-                    if spc then
-                        local result = spc(edt[1])
-                        if result then
-                            handle(result)
-                        else
-                            -- no need to handle any further
-                        end
-                    elseif etg == "@pi@" then
-                    --  handle(format("<?%s?>",edt[1]))
-                        handle("<?" .. edt[1] .. "?>") -- maybe table.join(edt)
-                    elseif etg == "@cm@" then
-                    --  handle(format("<!--%s-->",edt[1]))
-                        handle("<!--" .. edt[1] .. "-->")
-                    elseif etg == "@cd@" then
-                    --  handle(format("<![CDATA[%s]]>",edt[1]))
-                        handle("<![CDATA[" .. edt[1] .. "]]>")
-                    elseif etg == "@dd@" then
-                    --  handle(format("<!DOCTYPE %s>",edt[1]))
-                        handle("<!DOCTYPE " .. edt[1] .. ">")
-                    elseif etg == "@rt@" then
-                        xml.serialize(edt,handle,textconverter,attributeconverter,specialconverter,nocommands)
-                    end
-                else
-                    local ens, eat, edt, ern = e.ns, e.at, e.dt, e.rn
-                    local ats = eat and next(eat) and { }
-                    if ats then
-                        local format = string.format
-                        if attributeconverter then
-                            for k,v in pairs(eat) do
-                                ats[#ats+1] = format('%s=%q',k,attributeconverter(v))
-                            end
-                        else
-                            for k,v in pairs(eat) do
-                                ats[#ats+1] = format('%s=%q',k,v)
-                            end
-                        end
-                    end
-                    if ern and xml.trace_remap then
-                        if ats then
-                            ats[#ats+1] = string.format("xmlns:remapped='%s'",ern)
-                        else
-                            ats = { string.format("xmlns:remapped='%s'",ern) }
-                        end
-                    end
-                    if ens ~= "" then
-                        if edt and #edt > 0 then
-                            if ats then
-                            --  handle(format("<%s:%s %s>",ens,etg,table.concat(ats," ")))
-                                handle("<" .. ens .. ":" .. etg .. " " .. table.concat(ats," ") .. ">")
-                            else
-                            --  handle(format("<%s:%s>",ens,etg))
-                                handle("<" .. ens .. ":" .. etg .. ">")
-                            end
-                            local serialize = xml.serialize
-                            for i=1,#edt do
-                                local e = edt[i]
-                                if type(e) == "string" then
-                                    if textconverter then
-                                        handle(textconverter(e))
-                                    else
-                                        handle(e)
-                                    end
-                                else
-                                    serialize(e,handle,textconverter,attributeconverter,specialconverter,nocommands)
-                                end
-                            end
-                        --  handle(format("</%s:%s>",ens,etg))
-                            handle("</" .. ens .. ":" .. etg .. ">")
-                        else
-                            if ats then
-                            --  handle(format("<%s:%s %s/>",ens,etg,table.concat(ats," ")))
-                                handle("<" .. ens .. ":" .. etg .. " " .. table.concat(ats," ") .. "/>")
-                            else
-                            --  handle(format("<%s:%s/>",ens,etg))
-                                handle("<" .. ens .. ":" .. "/>")
-                            end
-                        end
-                    else
-                        if edt and #edt > 0 then
-                            if ats then
-                            --  handle(format("<%s %s>",etg,table.concat(ats," ")))
-                                handle("<" .. etg .. " " .. table.concat(ats," ") .. ">")
-                            else
-                            --  handle(format("<%s>",etg))
-                                handle("<" .. etg .. ">")
-                            end
-                            local serialize = xml.serialize
-                            for i=1,#edt do
-                                serialize(edt[i],handle,textconverter,attributeconverter,specialconverter,nocommands)
-                            end
-                        --  handle(format("</%s>",etg))
-                            handle("</" .. etg .. ">")
-                        else
-                            if ats then
-                            --  handle(format("<%s %s/>",etg,table.concat(ats," ")))
-                                handle("<" .. etg .. " " .. table.concat(ats," ") .. "/>")
-                            else
-                            --  handle(format("<%s/>",etg))
-                                handle("<" .. etg .. "/>")
-                            end
-                        end
-                    end
+            return
+        elseif not nocommands then
+            local ec = e.command
+            if ec then
+                local xc = xml.command
+                if xc then
+                    xc(e,ec)
+                    return
                 end
-            elseif type(e) == "string" then
-                if textconverter then
-                    handle(textconverter(e))
-                else
-                    handle(e)
+            end
+        end
+        handle = handle or fallbackhandle
+        local etg = e.tg
+        if etg then
+            if e.special then
+                local edt = e.dt
+                local spc = specialconverter and specialconverter[etg]
+                if spc then
+                    local result = spc(edt[1])
+                    if result then
+                        handle(result)
+                    else
+                        -- no need to handle any further
+                    end
+                elseif etg == "@pi@" then
+                --  handle(format("<?%s?>",edt[1]))
+                    handle("<?" .. edt[1] .. "?>") -- maybe table.join(edt)
+                elseif etg == "@cm@" then
+                --  handle(format("<!--%s-->",edt[1]))
+                    handle("<!--" .. edt[1] .. "-->")
+                elseif etg == "@cd@" then
+                --  handle(format("<![CDATA[%s]]>",edt[1]))
+                    handle("<![CDATA[" .. edt[1] .. "]]>")
+                elseif etg == "@dd@" then
+                --  handle(format("<!DOCTYPE %s>",edt[1]))
+                    handle("<!DOCTYPE " .. edt[1] .. ">")
+                elseif etg == "@rt@" then
+                    serialize(edt,handle,textconverter,attributeconverter,specialconverter,nocommands)
                 end
             else
-                local serialize = xml.serialize
-                for i=1,#e do
-                    serialize(e[i],handle,textconverter,attributeconverter,specialconverter,nocommands)
+                local ens, eat, edt, ern = e.ns, e.at, e.dt, e.rn
+                local ats = eat and next(eat) and { }
+                if ats then
+                    if attributeconverter then
+                        for k,v in pairs(eat) do
+                            ats[#ats+1] = format('%s=%q',k,attributeconverter(v))
+                        end
+                    else
+                        for k,v in pairs(eat) do
+                            ats[#ats+1] = format('%s=%q',k,v)
+                        end
+                    end
                 end
+                if ern and xml.trace_remap then
+                    if ats then
+                        ats[#ats+1] = format("xmlns:remapped='%s'",ern)
+                    else
+                        ats = { format("xmlns:remapped='%s'",ern) }
+                    end
+                end
+                if ens ~= "" then
+                    if edt and #edt > 0 then
+                        if ats then
+                        --  handle(format("<%s:%s %s>",ens,etg,concat(ats," ")))
+                            handle("<" .. ens .. ":" .. etg .. " " .. concat(ats," ") .. ">")
+                        else
+                        --  handle(format("<%s:%s>",ens,etg))
+                            handle("<" .. ens .. ":" .. etg .. ">")
+                        end
+                        for i=1,#edt do
+                            local e = edt[i]
+                            if type(e) == "string" then
+                                if textconverter then
+                                    handle(textconverter(e))
+                                else
+                                    handle(e)
+                                end
+                            else
+                                serialize(e,handle,textconverter,attributeconverter,specialconverter,nocommands)
+                            end
+                        end
+                    --  handle(format("</%s:%s>",ens,etg))
+                        handle("</" .. ens .. ":" .. etg .. ">")
+                    else
+                        if ats then
+                        --  handle(format("<%s:%s %s/>",ens,etg,concat(ats," ")))
+                            handle("<" .. ens .. ":" .. etg .. " " .. concat(ats," ") .. "/>")
+                        else
+                        --  handle(format("<%s:%s/>",ens,etg))
+                            handle("<" .. ens .. ":" .. "/>")
+                        end
+                    end
+                else
+                    if edt and #edt > 0 then
+                        if ats then
+                        --  handle(format("<%s %s>",etg,concat(ats," ")))
+                            handle("<" .. etg .. " " .. concat(ats," ") .. ">")
+                        else
+                        --  handle(format("<%s>",etg))
+                            handle("<" .. etg .. ">")
+                        end
+                        for i=1,#edt do
+                            serialize(edt[i],handle,textconverter,attributeconverter,specialconverter,nocommands)
+                        end
+                    --  handle(format("</%s>",etg))
+                        handle("</" .. etg .. ">")
+                    else
+                        if ats then
+                        --  handle(format("<%s %s/>",etg,concat(ats," ")))
+                            handle("<" .. etg .. " " .. concat(ats," ") .. "/>")
+                        else
+                        --  handle(format("<%s/>",etg))
+                            handle("<" .. etg .. "/>")
+                        end
+                    end
+                end
+            end
+        elseif type(e) == "string" then
+            if textconverter then
+                handle(textconverter(e))
+            else
+                handle(e)
+            end
+        else
+            for i=1,#e do
+                serialize(e[i],handle,textconverter,attributeconverter,specialconverter,nocommands)
             end
         end
     end
 
-    function xml.checkbom(root)
+    xml.serialize = serialize
+
+    function xml.checkbom(root) -- can be made faster
         if root.ri then
             local dt, found = root.dt, false
             for k,v in ipairs(dt) do
@@ -2707,24 +2730,24 @@ do
         end
     end
 
-end
+    --[[ldx--
+    <p>At the cost of some 25% runtime overhead you can first convert the tree to a string
+    and then handle the lot.</p>
+    --ldx]]--
 
---[[ldx--
-<p>At the cost of some 25% runtime overhead you can first convert the tree to a string
-and then handle the lot.</p>
---ldx]]--
-
-function xml.tostring(root) -- 25% overhead due to collecting
-    if root then
-    if type(root) == 'string' then
-        return root
-    elseif next(root) then
-        local result = { }
-        xml.serialize(root,function(s) result[#result+1] = s end)
-        return table.concat(result,"")
+    function xml.tostring(root) -- 25% overhead due to collecting
+        if root then
+        if type(root) == 'string' then
+            return root
+        elseif next(root) then
+            local result = { }
+            serialize(root,function(s) result[#result+1] = s end)
+            return concat(result,"")
+        end
     end
-end
-    return ""
+        return ""
+    end
+
 end
 
 --[[ldx--
@@ -2852,14 +2875,14 @@ do
         [40] = "processing instruction",
     }
 
-    local function make_expression(str)
+    local function make_expression(str) --could also be an lpeg
         str = str:gsub("@([a-zA-Z%-_]+)", "(a['%1'] or '')")
         str = str:gsub("position%(%)", "i")
         str = str:gsub("text%(%)", "t")
         str = str:gsub("!=", "~=")
         str = str:gsub("([^=!~<>])=([^=!~<>])", "%1==%2")
         str = str:gsub("([a-zA-Z%-_]+)%(", "functions.%1(")
-        return str, loadstring(string.format("return function(functions,i,a,t) return %s end", str))()
+        return str, loadstring(format("return function(functions,i,a,t) return %s end", str))()
     end
 
     local map = { }
@@ -2945,6 +2968,9 @@ do
     local expression               = (is_one  * is_expression)/ function(...) map[#map+1] = { 31, true,  ... } end
     local dont_expression          = (is_none * is_expression)/ function(...) map[#map+1] = { 31, false, ... } end
 
+    local self_expression          = (         is_expression)/ function(...) map[#map+1] = { 31, true,  "", "*", ... } end
+    local dont_self_expression     = (exclam * is_expression)/ function(...) map[#map+1] = { 31, true,  "", "*", ... } end
+
     local instruction              = (instructiontag * text ) / function(...) map[#map+1] = { 40,        ... } end
     local nothing                  = (empty                 ) / function(   ) map[#map+1] = { 15             } end -- 15 ?
     local crap                     = (1-slash)^1
@@ -2970,6 +2996,7 @@ do
         dont_match_and_eq + dont_match_and_ne +
         match_and_eq + match_and_ne +
         dont_expression + expression +
+dont_self_expression + self_expression +
         has_attribute + has_value +
         dont_match_one_of + match_one_of +
         dont_match + match +
@@ -2981,7 +3008,7 @@ do
         followup = ((slash + parenttag + childtag + selftag)^0 * selector)^1,
     }
 
-    function compose(str)
+    local function compose(str)
         if not str or str == "" then
             -- wildcard
             return true
@@ -3003,7 +3030,7 @@ do
                         -- root
                         return false
                     end
-                elseif #map == 2  and m == 12 and map[2][1] == 20 then
+                elseif #map == 2 and m == 12 and map[2][1] == 20 then
                 --  return { { 29, map[2][2], map[2][3], map[2][4], map[2][5] } }
                     map[2][1] = 29
                     return { map[2] }
@@ -3011,6 +3038,7 @@ do
                 if m ~= 11 and m ~= 12 and m ~= 13 and m ~= 14 and m ~= 15 and m ~= 16 then
                     table.insert(map, 1, { 16 })
                 end
+            --  print((table.serialize(map)):gsub("[ \n]+"," "))
                 return map
             end
         end
@@ -3045,7 +3073,7 @@ do
             report(" -: wildcard\n")
         else
             if type(pattern) == "string" then
-                report(string.format("pattern: %s\n",pattern))
+                report(format("pattern: %s\n",pattern))
             end
             for k,v in ipairs(lp) do
                 if #v > 1 then
@@ -3058,9 +3086,9 @@ do
                             t[#t+1] = (vv and "==") or "<>"
                         end
                     end
-                    report(string.format("%2i: %s %s -> %s\n", k,v[1],actions[v[1]],table.join(t," ")))
+                    report(format("%2i: %s %s -> %s\n", k,v[1],actions[v[1]],table.join(t," ")))
                 else
-                    report(string.format("%2i: %s %s\n", k,v[1],actions[v[1]]))
+                    report(format("%2i: %s %s\n", k,v[1],actions[v[1]]))
                 end
             end
         end
@@ -3181,7 +3209,7 @@ do
                         start, stop, step = stop, start, -1
                     end
                     local idx = 0
-                    for k=start,stop,step do
+                    for k=start,stop,step do -- we used to have functions for all but a case is faster
                         local e = rootdt[k]
                         local ns, tg = e.rn or e.ns, e.tg
                         if tg then
@@ -3256,15 +3284,19 @@ do
                                     if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
                                     if not action[2] then matched = not matched end
                                     if matched then
-                                        matched = action[6](functions,idx,e.at,edt[1])
+                                        matched = action[6](functions,idx,e.at or { },edt[1])
                                     end
                                 end
                                 if matched then -- combine tg test and at test
                                     if index == #pattern then
                                         if handle(root,rootdt,root.ri or k) then return false end
---~                                         if wildcard and multiple then
-if wildcard or multiple then
-                                            if not traverse(e,pattern,handle,reverse,index,root,true) then return false end
+                                        if wildcard then
+                                            if multiple then
+                                                if not traverse(e,pattern,handle,reverse,index,root,true) then return false end
+                                            else
+                                             -- maybe or multiple; anyhow, check on (section|title) vs just section and title in example in lxml
+                                                if not traverse(e,pattern,handle,reverse,index,root) then return false end
+                                            end
                                         end
                                     else
                                         if not traverse(e,pattern,handle,reverse,index+1,root) then return false end

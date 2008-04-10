@@ -1,0 +1,35 @@
+%D \module
+%D   [       file=meta-tex,
+%D        version=2006.06.07,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=\METAPOST\ fast text insertion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\long\def\startTeXtexts#1\stopTeXtexts{[do we need TeXtexts in MkIV]}
+\long\def\doTeXtext[#1]#2{[do we need TeXtexts in MkIV]}
+\long\def\TeXtext{\dosingleempty\doTeXtext}
+
+\def\definetextext[#1]#2{\setvalue{textext@@#1}{#2}}
+
+% \definetextext[framed]{\framed}
+%
+% \startMPcode
+%     draw \sometxt[framed]{black} rotated 45 ;
+% \stopMPcode
+
+\def\definetextext[#1]#2{\setvalue{@@st@@[#1]}{#2}}
+
+\long\def\sometxt#1#{\dosometxt{#1}}  % grab optional [args]
+
+\long\def\dosometxt#1#2%
+  {textext("\ifcsname @@st@@#1\endcsname\csname @@st@@#1\endcsname{#2}\else#2\fi")}
+
+\protect \endinput

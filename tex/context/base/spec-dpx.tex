@@ -219,7 +219,7 @@
 
 \def\dopresetPDFtransparency#1#2%
   {\global\advance\PDFcurrenttransparency \plusone
-   \doPDFreserveDPXobject{TR:\the\PDFcurrenttransparency}{<< >>}%
+   \doPDFreserveDPXobject{TR:\the\PDFcurrenttransparency}{<< >>}% hack
    \special{pdf:\doPDFcheckedDPXobject{TR:\the\PDFcurrenttransparency}\PDFtransparancydictionary{#1}{#2}{}}%
    \edef\PDFtransparencyidentifier{/Tr\the\PDFcurrenttransparency}%
    \edef\PDFtransparencyreference {@TR:\the\PDFcurrenttransparency}%
@@ -230,7 +230,7 @@
       \PDFtransparencyreference\space}}
 
 \def\initializePDFtransparency
-  {\doPDFreserveDPXobject{TR:0}{<< >>}%
+  {\doPDFreserveDPXobject{TR:0}{<< >>}% hack
    \special{pdf:\doPDFcheckedDPXobject{TR:0}\PDFtransparancydictionary{1}{1}{/AIS false}}%
    \xdef\PDFtransparencyresetidentifier{/Tr0}%
    \xdef\PDFtransparencyresetreference{@TR:0}%
@@ -393,10 +393,10 @@
            \global\let\currentPDFresources\empty
          \fi
          \special{pdf:exobj}}%
-         \finalizeobjectbox\nextbox
-         \smashbox\nextbox
-         \flushatshipout{\box\nextbox}%
-         \egroup}%
+      \finalizeobjectbox\nextbox
+      \smashbox\nextbox
+      \flushatshipout{\box\nextbox}%
+      \egroup}%
     \hbox\bgroup}
 
 \def\doDVIPDFMXstopobject
@@ -623,9 +623,24 @@
 
 \def\doPDFcheckedDPXobject#1{\ifundefined{r:pdx:d:#1}object\else put\fi\space @#1\space}
 
-% todo when etex is fixed, \everyPDFpresets, leeg voor pdftex, nodig voor dvipdfmx
+% new, experimental, can save a run
 
-\doPDFreserveDPXobjectfirst{FDF::docuextgstates}{<< >>}
+\def\doreservePDFobject#1#2%
+  {\dosetobjectreference{#1}{#2}{@#1::#2}}
+
+\def\doPDFreserveddictionaryobject#1#2#3%
+  {\flushatshipout{\special{pdf:object @#1::#2 << #3 >>}}}
+
+\def\doPDFreservedarrayobject#1#2#3%
+  {\flushatshipout{\special{pdf:object @#1::#2 [ #3 ]}}}
+
+% maybe this is not needed
+
+\doreservePDFobject{FDF}{docuextgstates}
+\doreservePDFobject{FDF}{colorspaces}
+\doreservePDFobject{FDF}{docushades}
+
+% so this is to be checked
 
 \def\doPDFdictionaryobject#1#2#3%
   {\flushatshipout

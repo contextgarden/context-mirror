@@ -1565,8 +1565,9 @@
      \def\processisolatedwords##1##2{##2{##1}}% we split only once
    \fi
    \global\let\localbetweenisolatedwords\betweenisolatedwords
-   \setbox0\normalhbox    % we default to spaces, but from inside out
-     {\ignorespaces#1% \localbetweenisolatedwords can be overruled
+   \setbox0\normalhbox % we default to spaces, but from inside out
+     {\normallanguage\minusone % needed for mkiv
+      \ignorespaces#1% \localbetweenisolatedwords can be overruled
       \global\isolatedlastskip\lastskip}%
    \setbox2\normalvbox
      {%\hyphenpenalty10000    % this one fails in \url breaking,

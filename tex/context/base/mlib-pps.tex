@@ -1,0 +1,61 @@
+%D \module
+%D   [       file=mlib-pps,
+%D        version=2008.03.25,
+%D          title=\METAPOST\ Integrated Graphics,
+%D       subtitle=Basics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\registerctxluafile{mlib-pps}{1.001}
+
+\def\MPLIBcircularshade#1#2#3#4#5#6#7% nr domain color-a color-b ? colorspace oordinates
+  {\immediate\pdfobj{<</FunctionType 2 /Domain [#2] /C0 [#3] /C1 [#4] /N #5>>}%
+   \immediate\pdfobj{<</ShadingType 3 /ColorSpace /#6 /Function \the\pdflastobj\space 0 R /Coords [#7] /Extend [true true]>>}%
+   \appendtoPDFdocumentshades{/MpSh#1 \the\pdflastobj\space0 R }}
+
+\def\MPLIBlinearshade#1#2#3#4#5#6#7% nr domain color-a color-b ? colorspace oordinates
+  {\immediate\pdfobj{<</FunctionType 2 /Domain [#2] /C0 [#3] /C1 [#4] /N #5>>}%
+   \immediate\pdfobj{<</ShadingType 2 /ColorSpace /#6 /Function \the\pdflastobj\space 0 R /Coords [#7] /Extend [true true]>>}%
+   \appendtoPDFdocumentshades{/MpSh#1 \the\pdflastobj\space0 R }}
+
+\def\MPLIBfigure#1#2#3#4#5#6#7% todo: move Q q to lua
+  {\setbox\scratchbox\hbox{\externalfigure[#7]}%
+   \ctxlua{metapost.edefsxsy(\number\wd\scratchbox,\number\ht\scratchbox,0)}%
+   \pdfliteral direct{q #1 #2 #3 #4 #5 #6 cm}% no direct
+   \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[sx=\sx,sy=\sy]{\box\scratchbox}\hss}}%
+   \pdfliteral direct{Q}}
+
+\def\MPLIBsettext#1% #2%
+  {\global\setbox#1\hbox}% {#2}}
+
+% \def\MPLIBgettext#1#2#3#4#5#6#7% we can also use this for the figure and pass sx/sy
+%   {\ctxlua{metapost.edefsxsy(\number\wd#7,\number\ht#7,\number\dp#7)}%
+%    \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}%
+%    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[sx=\sx,sy=\sy]{\raise\dp#7\box#7}\hss}}%
+%    \pdfliteral{Q}}
+
+\def\MPLIBgettextscaled#1#2#3%
+  {\vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[sx=#2,sy=#3]{\raise\dp#1\box#1}\hss}}}
+
+\def\MPLIBallocate#1%
+  {\newbox\MPLIBfirst
+   \dorecurse{\numexpr#1-1\relax}{\newbox\MPLIBlast}%
+   \MPLIBregister}
+
+\def\MPLIBregister
+  {\ctxlua{metapost.first_box, metapost.last_box = \number\MPLIBfirst, \number\MPLIBlast}}
+
+\appendtoks \MPLIBallocate{500}\to \everydump
+\appendtoks \MPLIBregister     \to \everyjob
+
+\def\MPLIBgraphictext#1%
+  {\startTEXpage[scale=10000]#1\stopTEXpage}
+
+\protect \endinput

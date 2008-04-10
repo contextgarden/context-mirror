@@ -278,15 +278,17 @@
    \prepareMPvariables{#2}%
    \prepareMPpositionvariables
    \enableincludeMPgraphics
-   \ifcollectMPpositiongraphics
+   \ifcollectMPpositiongraphics % no longer needed in mkiv
      \expanded{\startMPdrawing#3\noexpand\stopMPdrawing}%
      \global\MPdrawingdonetrue
+   \else\ifx\startMPgraphic\undefined
+     \startMPcode#3\stopMPcode
    \else
      \startMPgraphic#3\stopMPgraphic
      \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
      \deallocateMPslot\currentMPgraphic
      \placeMPgraphic
-   \fi
+   \fi\fi
    \egroup}
 
 % Now we need a adapted action handler:
@@ -582,6 +584,14 @@
   \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
 \stopuseMPgraphic
 
+\startuseMPgraphic{mpos:par:sideline}{linecolor,lineoffset}
+    for i=1 upto nofmultipars :
+        fill leftboundary multipars[i]
+            shifted (-\MPvar{lineoffset},0)
+            rightenlarged 1mm withcolor \MPvar{linecolor} ;
+    endfor ;
+\stopuseMPgraphic
+
 \startMPpositionmethod{mpos:par:columnset}
   \edef\MPparcounter{\MPv\MPbself{1}{0}}%
   \startMPpositiongraphic{mpos:par}%
@@ -741,6 +751,7 @@
            dashtype=\textbackgroundparameter{dash}, %  to be internationalized
            gridcolor=\textbackgroundparameter\c!framecolor,
            linecolor=\textbackgroundparameter\c!framecolor,
+           lineoffset=\textbackgroundparameter\c!frameoffset,
            fillcolor=\textbackgroundparameter\c!backgroundcolor,
            filloffset=\textbackgroundparameter\c!backgroundoffset,
            gridwidth=\textbackgroundparameter\c!rulethickness,
@@ -949,7 +960,7 @@
        [\c!state,\c!location,\c!alternative,\c!mp,\c!method,
         \c!background,\c!backgroundcolor,\c!corner,\c!level,
         \c!backgroundoffset,\c!before,\c!after,\c!align,dash, % dash not yet internationalized
-        \c!radius,\c!frame,\c!framecolor,\c!rulethickness,\c!voffset,
+        \c!radius,\c!frame,\c!framecolor,\c!rulethickness,\c!voffset,\c!frameoffset,
         \c!leftoffset,\c!rightoffset,\c!topoffset,\c!bottomoffset]%
      \getparameters[\??td#1][#2]%
      \doifvalue{\??td#1\c!state}\v!start\checktextbackgrounds
@@ -1669,9 +1680,21 @@
   [before={\starttextbackground[strikethrough]},
    after=\stoptextbackground]
 
+\definetextbackground
+  [sideline]
+  [mp=mpos:par:sideline,
+   location=paragraph,
+   framecolor=red,
+   frameoffset=5mm]
+
+\definestartstop [sideline]
+  [before={\starttextbackground[sideline]},
+   after=\stoptextbackground]
+
 \starttext
     \startunderline     \input tufte \stopunderline      \blank
     \startoverstrike    \input tufte \stopoverstrike     \blank
     \startexlines       \input tufte \stopexlines        \blank
     \startstrikethrough \input tufte \stopstrikethrough  \blank
+    \startsideline      \input tufte \stopsideline       \blank
 \stoptext

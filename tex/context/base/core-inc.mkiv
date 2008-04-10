@@ -180,7 +180,7 @@
    \doifseparatingcolorselse
      {\let\@@efforegroundcolor\empty
       \doifelsenothing\@@efsplit
-        {\charde\splitexternalfigure\zerocount}
+        {\chardef\splitexternalfigure\zerocount}
         {\doifcolorchannelelse\@@efsplit
            {\let\@@efobject\v!no  % why?
             \chardef\splitexternalfigure\plusone}

@@ -117,7 +117,7 @@
      \global\resettingsubpagenumberfalse
    \fi
    \ifsubpaging
-     \edef\oldsubpage{\the\subpageno}%
+     \xdef\oldsubpage{\the\subpageno}%
      \incrementnumber[\s!subpage]%
      \global\subpageno\rawnumber[\s!subpage]\relax
      \ifnum\subpageno=\plusone

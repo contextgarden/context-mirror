@@ -69,6 +69,12 @@
 
 \maxnofMPgraphics = 4000 % metafun disables the 4K boundary
 
+\appendtoks \runMPgraphicsfalse    \to \everyfastmode
+\appendtoks \insertMPgraphicsfalse \to \everyfastmode
+\appendtoks \flushMPgraphics       \to \everygoodbye  % \everylastshipout
+
+\def\@@MPG{@MPG@}
+
 \startMPextensions
   if unknown context_tool: input mp-tool; fi;
   if unknown context_spec: input mp-spec; fi;
@@ -485,43 +491,36 @@
 \def\MPrunfile#1%
   {\bufferprefix mprun.#1}
 
-%D We also have to make sure that \METAPOST\ knows this:
-
-\startMPextensions
-  if not known _data_prefix_:
-    string _data_prefix_,_data_suffix_;
-  fi;
-  _data_prefix_:="\bufferprefix mpd-";
-  _data_suffix_:=".mpd";
-\stopMPextensions
-
 %D \macros
 %D   {getMPdata}
 %D
-%D The current data is loaded with:
-
-\def\getMPdata
-  {\startreadingfile
-   \readlocfile\MPdatafile\donothing\donothing
-   \stopreadingfile}
-
 %D When we collect graphics in one file, we run into
 %D troubles, since \METAPOST\ has a built in limit (of 4)
 %D on the number of files it can handle. It's therefore
 %D better to collect all data in one file and filter it.
 
+\def\MPdataMPDfile{\jobname-mp.mpd}
+\def\MPdataMPOfile{\jobname-mp.mpo}
+\def\MPdataMPYfile{\jobname-mp.mpy}
+
+\startMPextensions
+    boolean collapse_data; collapse_data:=true;
+    def data_mpd_file = "\MPdataMPDfile" enddef ;
+    def data_mpo_file = "\MPdataMPOfile" enddef ;
+    def data_mpy_file = "\MPdataMPYfile" enddef ;
+\stopMPextensions
+
 \def\getMPdata
-  {\long\def\MPdata##1##2%
-     {\ifnum##1=\currentMPgraphic\relax##2\fi}%
+  {\long\def\MPdata##1##2{\ifnum##1=\currentMPgraphic\relax##2\fi}%
    \startreadingfile
-   \readlocfile{\MPgraphicfile.mpd}\donothing\donothing
+   \startnointerference
+   \readlocfile\MPdataMPDfile\donothing\donothing
+   \stopnointerference
    \stopreadingfile}
 
 %D We have to enable this mechanism with:
 
 \startMPextensions
-  boolean collapse_data; collapse_data:=true;
-  _data_suffix_:=".mpd"; % overloads previous one
 \stopMPextensions
 
 %D For the moment, the next one is a private macro:
@@ -664,8 +663,8 @@
 %D accomplished by:
 
 \def\douseMPlibrary#1%
-  {\ifundefined{\c!file\f!javascriptprefix#1}%
-     \letvalueempty{\c!file\f!javascriptprefix#1}%
+  {\ifundefined{\c!file\f!metapostprefix#1}%
+     \letvalueempty{\c!file\f!metapostprefix#1}%
      \makeshortfilename[\truefilename{\f!metapostprefix#1}]%
      \startreadingfile
        \readsysfile\shortfilename{\showmessage\m!metapost1{#1}}\donothing

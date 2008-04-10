@@ -37,25 +37,25 @@
 % to transparent colors
 
 \startuseMPgraphic{placeholder}{width,height,reduction,color}
-  numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ;
-  t := is_transparent(\MPvar{color}) ;
-  c := not_transparent(\MPvar{color}) ;
-  b := not_transparent(white) ;
-  w := \MPvar{width} ;
-  h := \MPvar{height} ;
-  r := \MPvar{reduction} ;
-  d := max(w,h) ;
-  p := unitsquare xyscaled (w,h) ;
-  cc := r[.5c,b] ;
-  fill p withcolor if t : transparent(1,.5,cc) else : cc fi ;
-  for i := 1 upto 60 :
-    cc := r[c randomized(.3,.9),b] ;
-    fill fullcircle
-      scaled (d/5 randomized (d/5))
-      shifted (center p randomized (d))
-      withcolor if t : transparent(1,.5,cc) else : cc fi ;
-  endfor ;
-  clip currentpicture to p ;
+    numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ;
+    t := is_transparent(\MPvar{color}) ;
+    c := not_transparent(\MPvar{color}) ;
+    b := not_transparent(white) ;
+    w := \MPvar{width} ;
+    h := \MPvar{height} ;
+    r := \MPvar{reduction} ;
+    d := max(w,h) ;
+    p := unitsquare xyscaled (w,h) ;
+    cc := r[.5c,b] ;
+    fill p withcolor if t : transparent(1,.5,cc) else : cc fi ;
+    for i := 1 upto 60 :
+        cc := r[c randomized(.3,.9),b] ;
+        fill fullcircle
+            scaled (d/5 randomized (d/5))
+            shifted (center p randomized (d))
+            withcolor if t : transparent(1,.5,cc) else : cc fi ;
+    endfor ;
+    clip currentpicture to p ;
 \stopuseMPgraphic
 
 \definepalet

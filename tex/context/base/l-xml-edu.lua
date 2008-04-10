@@ -54,7 +54,7 @@ if false then
                         for _,v in ipairs(doctype_patterns) do
                             a = a:gsub(v, function(d)
                                 text[#text+1] = d or ""
-                                return string.format("<@dd@>%s</@dd@>",#text)
+                                return string.format("<@dt@>%s</@dt@>",#text)
                             end)
                         end
                     end
@@ -179,7 +179,7 @@ if false then
                 local t = { ns = "", tg = '@rt@', dt = stack[1].dt }
                 setmetatable(t, mt)
                 for k,v in ipairs(t.dt) do
-                    if type(v) == "table" and v.tg ~= "@pi@" and v.tg ~= "@dd@" and v.tg ~= "@cm@" then
+                    if type(v) == "table" and v.tg ~= "@pi@" and v.tg ~= "@dt@" and v.tg ~= "@cm@" then
                         t.ri = k -- rootindex
                         break
                     end

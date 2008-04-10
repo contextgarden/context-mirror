@@ -28,6 +28,7 @@
 \def\xmlnonspace        #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
 \def\xmltext            #1#2{\ctxlua{lxml.text("#1","#2")}}
 \def\xmlcontent         #1#2{\ctxlua{lxml.content("#1","#2")}}
+\def\xmlraw             #1#2{\ctxlua{lxml.raw("#1","#2")}}
 \def\xmlstripped        #1#2{\ctxlua{lxml.stripped("#1","#2")}}
 \def\xmlstrip           #1#2{\ctxlua{lxml.strip("#1","#2")}}
 \def\xmlflush             #1{\ctxlua{lxml.flush("#1")}}
@@ -51,10 +52,11 @@
 \def\xmlremapname   #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
 \def\xmlremapnamespace#1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
 \def\xmldelete          #1#2{\ctxlua{xml.delete(lxml.id("#1"),"#2")}}
-\def\xmlinclude       #1#2#3{\ctxlua{lxml.include(lxml.id("#1"),"#2","#3",true)}}
-\def\xmldoifelse        #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
-\def\xmldoifelsetext    #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
-\def\xmlverbatim          #1{\ctxlua{lxml.verbatim(lxml.id("#1"))}}
+\def\xmlinclude       #1#2#3{\ctxlua{lxml.include("#1","#2","#3",true)}}
+\def\xmlverbatim          #1{\ctxlua{lxml.verbatim("#1")}}
+
+%def\xmldoifelse        #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
+%def\xmldoifelsetext    #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
 
 \def\xmldoifelse        #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",false))}}
 \def\xmldoifelsetext    #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",true ))}}
@@ -63,6 +65,8 @@
 \def\xmldoifnot         #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",false))}}
 \def\xmldoifnottext     #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",true ))}}
 
+\def\xmldefaulttotext     #1{\ifcase\xmlprocessingmode\or\or   \ctxlua{lxml.set_command_to_text("#1")}\fi}
+\def\xmldefaulttonone     #1{\ifcase\xmlprocessingmode\or\or\or\ctxlua{lxml.set_command_to_none("#1")}\fi}
 
 % \startxmlsetups xml:include
 %     \xmlinclude{main}{include}{filename|href}
@@ -84,13 +88,25 @@
 \let\xmlregistersetup\xmlappendsetup
 
 \def\xmlregisteredsetups
-  {\the\registeredxmlsetups\registeredxmlsetups\emptytoks}
+  {\xmlstarttiming
+   \the\registeredxmlsetups\registeredxmlsetups\emptytoks
+   \xmlstoptiming}
+
+\chardef\xmlprocessingmode=0 % 0=mixed, 1=mkivonly, 2=mkivonly-default-text, 3=mkivonly-default-none
+
+\def\xmlstarttiming{\ctxlua{input.starttiming(lxml)}}
+\def\xmlstoptiming {\ctxlua{input.stoptiming (lxml)}}
 
 \def\doxmlprocess#1#2#3#4%
   {\begingroup
    \def\xmldocument{#2}%
    #1{#2}{#3}%
-   \enableXML
+   \ifcase\xmlprocessingmode
+     \enableXML
+   \fi
+   \xmlstarttiming
+   \xmldefaulttotext\xmldocument
+   \xmlstoptiming
    \doifelsenothing{#4}
      {\directsetup{xml:process}}
      {\directsetup{#4}}%
@@ -103,9 +119,6 @@
     \xmlregisteredsetups
     \xmlall\xmldocument{/}
 \stopsetups
-
-% \long\def\xmlloop#1#2#3%
-%   {\dorecurse{\xmlcount{#1}{#2}}{\def\xmli####1####2{\xmlidx{#1}{#2/####1}{####2}}#3}}
 
 \long\def\xmlloop#1#2#3%
   {\def\xmli##1##2{\xmlidx{#1}{#2/##1}{##2}}%
@@ -180,7 +193,7 @@
 % entities
 
 \def\xmlresolveentities
-  {\ctxlua{xml.set_text_cleanup(xml.set_text_cleanup(xml.resolve_text_entities))}}
+  {\ctxlua{xml.set_text_cleanup(xml.resolve_text_entities)}}
 
 \def\xmltraceentities
   {\ctxlua{xml.set_text_cleanup(lxml.trace_text_entities)}%
@@ -219,7 +232,7 @@
 % % An example by Wolfgang Schuster:
 %
 % \startxmlsetups xml:mysetups
-%   \xmlsetsetup{\xmldocument}{section{xml:*}
+%   \xmlsetsetup{\xmldocument}{section}{xml:*}
 %   \xmlsetsetup{\xmldocument}{title|p}{xml:*}
 % \stopxmlsetups
 %

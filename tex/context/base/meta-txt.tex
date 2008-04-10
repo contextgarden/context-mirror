@@ -24,6 +24,9 @@
 
 % textext ipv btex ... etex
 
+\ifx\undefined\MPtoks \newtoks\MPtoks \fi
+\ifx\undefined\MPnox  \newbox \MPbox  \fi
+
 \unprotect
 
 \startMPextensions
@@ -46,16 +49,16 @@
 
 \def\startshapetext[#1]%
   {\global\newcounter\currentshapetext
-   \global\setbox\shapetextbox=\vbox\bgroup
+   \global\setbox\shapetextbox\vbox\bgroup
      \expanded{\switchtobodyfont[\@@shbodyfont]}%
      \dontcomplain
      \hsize\parwidth
      \setuptolerance[\v!verytolerant,\v!stretch]%
-     \!!counta=0
-     \!!toksa=\emptytoks
+     \!!counta\zerocount
+     \!!toksa\emptytoks
      \def\docommand##1%
-       {\setbox\scratchbox=\hbox{\useMPgraphic{##1}}%
-        \global\chardef\parfirst=0
+       {\setbox\scratchbox\hbox{\useMPgraphic{##1}}%
+        \global\chardef\parfirst\zerocount
         \getMPdata % \readlocfile{\MPdatafile}{}{}%
         \setshapecharacteristics
         \advance\!!counta by \parlines
@@ -71,7 +74,7 @@
      \ifparseries\def\par{\endgraf\adaptparshape}\fi
      \EveryPar{\begstrut}}
 
-\def\stopshapetext%
+\def\stopshapetext
   {\endstrut
   %\removebottomthings
    \egroup
@@ -104,8 +107,8 @@
       \global\parhoffset       \getvalue{parhoffset:\currentshapetext}%
       \global\parwidth         \getvalue{parwidth:\currentshapetext}%
       \global\parheight        \getvalue{parheight:\currentshapetext}}
-     {\global\parlines         1
-      \global\chardef\parfirst 0
+     {\global\parlines         \plusone
+      \global\chardef\parfirst \zerocount
       \global\parvoffset       \zeropoint
       \global\parhoffset       \zeropoint
       \global\parwidth         \hsize
@@ -172,7 +175,7 @@
    \MPtoks\emptytoks
    \resetMPdrawing
    \startMPdrawing
-     \includeMPgraphic{followtokens}
+     \includeMPgraphic{followtokens} ;
      picture pic[] ; numeric len[], n ; n := 0 ;
    \stopMPdrawing
    \handletokens#1\with\processfollowingtoken
@@ -268,10 +271,10 @@
   [medium]
 
 \startuniqueMPgraphic{EnglishRule}{height,width,color}
-  height = \MPvar{height} ;
-  x1 = 0 ; x3 = \MPvar{width} ; x2 = x4 = .5x3 ;
-  y1 = y3 = 0 ; y2 = -y4 = height/2 ;
-  fill z1..z2..z3 & z3..z4..z1 & cycle withcolor \MPvar{color} ;
+    height = \MPvar{height} ;
+    x1 = 0 ; x3 = \MPvar{width} ; x2 = x4 = .5x3 ;
+    y1 = y3 = 0 ; y2 = -y4 = height/2 ;
+    fill z1..z2..z3 & z3..z4..z1 & cycle withcolor \MPvar{color} ;
 \stopuniqueMPgraphic
 
 \def\EnglishRule%

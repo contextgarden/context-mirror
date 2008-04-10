@@ -2801,12 +2801,33 @@
 %D \commalistsentence[aap,noot,mies]
 %D \commalistsentence[aap,noot]
 %D \commalistsentence[aap]
+%D \commalistsentence[a,b,c]
+%D \commalistsentence[a,b,c][{ \& },{ and }]
+%D \commalistsentence[a,b,c][+,-]
 %D \stoptyping
 
 \let\handlecommalistsentence\firstofoneargument
 
-\def\commalistsentence[#1]%
+\def\commalistsentenceone{and-1}
+\def\commalistsentencetwo{and-2}
+
+\def\commalistsentence
+  {\dodoubleempty\docommalistsentence}
+
+\def\docommalistsentence[#1][#2]%
   {\bgroup
+   \getfromcommalist[#2][1]%
+   \ifx\commalistelement\empty
+     \def\@@commalistsentenceone{\labeltext\commalistsentenceone}%
+   \else
+     \let\@@commalistsentenceone\commalistelement
+   \fi
+   \getfromcommalist[#2][2]%
+   \ifx\commalistelement\empty
+     \def\@@commalistsentencetwo{\labeltext\commalistsentencetwo}%
+   \else
+     \let\@@commalistsentencetwo\commalistelement
+   \fi
    \getcommalistsize[#1]%
    \ifcase\commalistsize\relax
      \def\serializedcommalist{#1}%
@@ -2819,9 +2840,9 @@
           \scratchtoks{\handlecommalistsentence{##1}}%
         \else
           \ifnum\scratchcounter=\commalistsize
-            \appendtoks\labeltext{and-2}\handlecommalistsentence{##1}\to\scratchtoks
+            \appendtoks\@@commalistsentencetwo\handlecommalistsentence{##1}\to\scratchtoks
           \else
-            \appendtoks\labeltext{and-1}\handlecommalistsentence{##1}\to\scratchtoks
+            \appendtoks\@@commalistsentenceone\handlecommalistsentence{##1}\to\scratchtoks
           \fi
         \fi}%
      \processcommacommand[#1]\docommand
@@ -2829,6 +2850,8 @@
    \fi
    \serializedcommalist
    \egroup}
+
+\def\commacommandsentence[#1]{\@EA\commalistsentence\@EA[#1]}
 
 \ifx\textcomma\undefined \def\textcomma{,} \fi
 

@@ -35,7 +35,7 @@ else :
 fi ;
 
 input mp-tool.mp ;
-input mp-spec.mp ;
+input mp-spec.mp ; % will be skipped in mkiv, some day
 input mp-core.mp ;
 input mp-page.mp ;
 input mp-text.mp ;
@@ -46,6 +46,8 @@ input mp-char.mp ;
 input mp-step.mp ;
 input mp-grph.mp ;
 input mp-figs.mp ;
+
+input mp-mlib.mp ;
 
 %     mp-form.mp ;
 input mp-grid.mp ;

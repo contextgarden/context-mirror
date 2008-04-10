@@ -1256,6 +1256,10 @@
   {\doPDFgetobjectnumber{#1}{#2}\PDFobjectnumber
    \immediate\pdfobj useobjnum \PDFobjectnumber {[ #3 ]}}
 
+\doreservePDFobject{FDF}{docuextgstates}
+\doreservePDFobject{FDF}{colorspaces}
+\doreservePDFobject{FDF}{docushades}
+
 %D \macros
 %D   {defaultobjectreference,doPDFgetobjectreference}
 %D

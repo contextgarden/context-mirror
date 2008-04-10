@@ -17,6 +17,8 @@ if not modules then modules = { } end modules ['attr-ini'] = {
 
 nodes = nodes or { }
 
+local format, concat = string.format, table.concat
+
 -- This is not the most ideal place, but it will do. Maybe we need to move
 -- attributes to node-att.lua.
 
@@ -222,7 +224,7 @@ do
                         end
                     end
                 else
-                    texio.write_nl(string.format("undefined attribute %s",name))
+                    texio.write_nl(format("undefined attribute %s",name))
                 end
             end
             if done then
@@ -482,9 +484,6 @@ function states.collect(str)
 end
 
 function states.flush()
---~     for _, c in ipairs(states.collected) do
---~         tex.sprint(tex.ctxcatcodes,c)
---~     end
     local collected = states.collected
     if #collected > 0 then
         for i=1,#collected do
@@ -495,7 +494,7 @@ function states.flush()
 end
 
 function states.check()
-    texio.write_nl(table.concat(states.collected,"\n"))
+    texio.write_nl(concat(states.collected,"\n"))
 end
 
 --
@@ -529,7 +528,7 @@ colors.triggering = true
 -- colors.strings = colors.strings or { }
 --
 -- if environment.initex then
---     colors.strings[color] = "return colors." .. colorspace .. "(" .. table.concat({...},",") .. ")"
+--     colors.strings[color] = "return colors." .. colorspace .. "(" .. concat({...},",") .. ")"
 -- end
 --
 -- input.storage.register(true,"colors/data", colors.strings, "colors.data") -- evaluated
@@ -557,10 +556,8 @@ colors.model = "all"
 
 do
 
-    local min    = math.min
-    local max    = math.max
-    local format = string.format
-    local concat = table.concat
+    local min = math.min
+    local max = math.max
 
     local function rgbdata(r,g,b) -- dodo: backends.pdf.rgbdata
         return backends.pdf.literal(format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b))
@@ -644,7 +641,7 @@ do
             if not v then
                 local gray = graydata(0)
                 d = { gray, gray, gray, gray }
-                logs.report("attributes",string.format("unable to revive color %s",n or "?"))
+                logs.report("attributes",format("unable to revive color %s",n or "?"))
             else
                 local kind, gray, rgb, cmyk = v[1], graydata(v[2]), rgbdata(v[3],v[4],v[5]), cmykdata(v[6],v[7],v[8],v[9])
                 if kind == 2 then
@@ -679,7 +676,7 @@ function colors.setmodel(attribute,name)
 end
 
 function colors.register(attribute, name, colorspace, ...) -- passing 9 vars is faster
-    local stamp = string.format(colors.stamps[colorspace], ...)
+    local stamp = format(colors.stamps[colorspace], ...)
     local color = colors.registered[stamp]
     if not color then
         color = #colors.values+1
@@ -722,18 +719,18 @@ input.storage.register(false, "transparencies/registered", transparencies.regist
 input.storage.register(false, "transparencies/values",     transparencies.values,     "transparencies.values")
 
 function transparencies.reference(n)
-    return backends.pdf.literal(string.format("/Tr%s gs",n))
+    return backends.pdf.literal(format("/Tr%s gs",n))
 end
 
 function transparencies.register(name,a,t)
-    local stamp = string.format(transparencies.template,a,t)
+    local stamp = format(transparencies.template,a,t)
     local n = transparencies.registered[stamp]
     if not n then
         n = #transparencies.data+1
         transparencies.data[n] = transparencies.reference(n)
         transparencies.values[n] = { a, t }
         transparencies.registered[stamp] = n
-        states.collect(string.format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,a,t)) -- too many, but experimental anyway
+        states.collect(format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,a,t)) -- too many, but experimental anyway
     end
     return transparencies.registered[stamp]
 end
@@ -744,10 +741,10 @@ function transparencies.reviver(n)
         local v = transparencies.values[n]
         if not v then
             d = transparencies.reference(0)
-            logs.report("attributes",string.format("unable to revive transparency %s",n or "?"))
+            logs.report("attributes",format("unable to revive transparency %s",n or "?"))
         else
             d = transparencies.reference(n)
-            states.collect(string.format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,v[1],v[2]))
+            states.collect(format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,v[1],v[2]))
         end
         transparencies.data[n] = d
     end
@@ -777,8 +774,8 @@ overprints         = overprints      or { }
 overprints.data    = overprints.data or { }
 overprints.enabled = false
 
-overprints.data[1] = backends.pdf.literal(string.format("/GSoverprint gs"))
-overprints.data[2] = backends.pdf.literal(string.format("/GSknockout  gs"))
+overprints.data[1] = backends.pdf.literal(format("/GSoverprint gs"))
+overprints.data[2] = backends.pdf.literal(format("/GSknockout  gs"))
 
 overprints.none    = overprints.data[1]
 
@@ -805,8 +802,8 @@ negatives         = netatives      or { }
 negatives.data    = negatives.data or { }
 negatives.enabled = false
 
-negatives.data[1] = backends.pdf.literal(string.format("/GSpositive gs"))
-negatives.data[2] = backends.pdf.literal(string.format("/GSnegative gs"))
+negatives.data[1] = backends.pdf.literal(format("/GSpositive gs"))
+negatives.data[2] = backends.pdf.literal(format("/GSnegative gs"))
 
 negatives.none    = negatives.data[1]
 
@@ -839,7 +836,7 @@ input.storage.register(false, "effects/registered", effects.registered, "effects
 input.storage.register(false, "effects/data",       effects.data,       "effects.data")
 
 function effects.register(effect,stretch,rulethickness)
-    local stamp = string.format(effects.stamp,effect,stretch,rulethickness)
+    local stamp = format(effects.stamp,effect,stretch,rulethickness)
     local n = effects.registered[stamp]
     if not n then
         n = #effects.data+1
@@ -862,7 +859,7 @@ function effects.reference(effect,stretch,rulethickness)
     -- always, no zero test (removed)
     rulethickness = number.dimenfactors["bp"]*rulethickness
     effect = backends.pdf.effects[effect] or backends.pdf.effects['normal']
-    return backends.pdf.literal(string.format("%s Tc %s w %s Tr",stretch,rulethickness,effect)) -- watch order
+    return backends.pdf.literal(format("%s Tc %s w %s Tr",stretch,rulethickness,effect)) -- watch order
 end
 
 effects.none = effects.reference(0,0,0) -- faster: backends.pdf.literal("0 Tc 0 w 0 Tr")

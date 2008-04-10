@@ -70,15 +70,6 @@ function table.prepend(t, list)
     end
 end
 
---~ function table.merge(t, ...)
---~     for _, list in ipairs({...}) do
---~         for k,v in pairs(list) do
---~             t[k] = v
---~         end
---~     end
---~     return t
---~ end
-
 function table.merge(t, ...) -- first one is target
     t = t or {}
     local lst = {...}
@@ -90,16 +81,6 @@ function table.merge(t, ...) -- first one is target
     return t
 end
 
---~ function table.merged(...)
---~     local tmp = { }
---~     for _, list in ipairs({...}) do
---~         for k,v in pairs(list) do
---~             tmp[k] = v
---~         end
---~     end
---~     return tmp
---~ end
-
 function table.merged(...)
     local tmp, lst = { }, {...}
     for i=1,#lst do
@@ -109,15 +90,6 @@ function table.merged(...)
     end
     return tmp
 end
-
---~ function table.imerge(t, ...)
---~     for _, list in ipairs({...}) do
---~         for _, v in ipairs(list) do
---~             t[#t+1] = v
---~         end
---~     end
---~     return t
---~ end
 
 function table.imerge(t, ...)
     local lst = {...}
@@ -129,16 +101,6 @@ function table.imerge(t, ...)
     end
     return t
 end
-
---~ function table.imerged(...)
---~     local tmp = { }
---~     for _, list in ipairs({...}) do
---~         for _,v in pairs(list) do
---~             tmp[#tmp+1] = v
---~         end
---~     end
---~     return tmp
---~ end
 
 function table.imerged(...)
     local tmp, lst = { }, {...}
@@ -287,7 +249,6 @@ do
             end
             if n == #t then
                 local tt = { }
-            --  for _,v in ipairs(t) do
                 for i=1,#t do
                     local v = t[i]
                     local tv = type(v)
@@ -342,7 +303,7 @@ do
             local inline  = compact and table.serialize_inline
             local first, last = nil, 0 -- #root cannot be trusted here
             if compact then
-              for k,v in ipairs(root) do -- NOT: for k=1,#root do
+              for k,v in ipairs(root) do -- NOT: for k=1,#root do (why)
                     if not first then first = k end
                     last = last + 1
                 end
@@ -524,7 +485,8 @@ end
 do
 
     local function flatten(t,f,complete)
-        for _,v in ipairs(t) do
+        for i=1,#t do
+            local v = t[i]
             if type(v) == "table" then
                 if complete or type(v[1]) == "table" then
                     flatten(v,f,complete)

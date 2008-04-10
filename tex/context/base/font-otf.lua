@@ -1030,7 +1030,7 @@ function fonts.otf.enhance.analyze(data,filename)
 end
 
 do
-    -- original string parsr: 0.109, lpeg parser: 0.036 seconds for Adobe-CNS1-4.cidmap
+    -- original string parser: 0.109, lpeg parser: 0.036 seconds for Adobe-CNS1-4.cidmap
     --
     -- 18964 18964 (leader)
     -- 0 /.notdef
@@ -1048,21 +1048,21 @@ do
 
     local tonumber = tonumber
 
-    function do_one(a,b)
+    local function do_one(a,b)
         unicodes[tonumber(a)] = tonumber(b,16)
     end
-    function do_range(a,b,c)
+    local function do_range(a,b,c)
         c = tonumber(c,16)
         for i=tonumber(a),tonumber(b) do
             unicodes[i] = c
             c = c + 1
         end
     end
-    function do_name(a,b)
+    local function do_name(a,b)
         names[tonumber(a)] = b
     end
 
-    grammar = lpeg.P { "start",
+    local grammar = lpeg.P { "start",
         start  = number * spaces * number * lpeg.V("series"),
         series = (spaces * (lpeg.V("one") + lpeg.V("range") + lpeg.V("named")) )^1,
         one    = (number * spaces  * number) / do_one,

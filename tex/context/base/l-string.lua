@@ -132,7 +132,7 @@ end
 --~                 split = lpeg.Ct(c*(p*c)^0)
 --~                 splitters[separator] = split
 --~             end
---~             return lpeg.match(split,self) -- split:match(self)
+--~             return split:match(self)
 --~         else
 --~             return { }
 --~         end
