@@ -630,7 +630,7 @@
 
 %D So far for the trickery.
 
-\newcounter\textbackgrounddepth
+\newcount\textbackgrounddepth
 
 \appendtoks
   \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
@@ -651,7 +651,7 @@
 
 \unexpanded\def\starttextbackground
   {\bgroup
-   \increment\textbackgrounddepth
+   \advance\textbackgrounddepth\plusone
    \dodoubleempty\dostarttextbackground}
 
 \let\dodostarttextbackground\relax
@@ -1102,18 +1102,18 @@
 
 \def\stackposdistance{.5em}
 
-\newcounter\currentautopos
+\newcount\currentautopos
+\newcount\previousautopos
 
 \def\POSstackprefix{stack:}
 
 \def\dostackposbox#1#2%
   {\dowithnextbox
-     {#2{\let\previousautopos\currentautopos
-         \doglobal\increment\currentautopos
-         \hpos{\POSstackprefix\currentautopos}
-           {\doifoverlappingelse{\POSstackprefix\currentautopos}{\POSstackprefix\previousautopos}
-              {#1}
-              {\flushnextbox}}}}%
+     {#2{\previousautopos\currentautopos
+         \global\advance\currentautopos\plusone
+         \edef\currentposition {\POSstackprefix\number\currentautopos}%
+         \edef\previousposition{\POSstackprefix\number\previousautopos}%
+         \hpos\currentposition{\doifoverlappingelse\currentposition\previousposition{#1}{\flushnextbox}}}}%
      \hbox}
 
 \def\stackposup   {\dostackposbox{\raise\lineheight\flushnextbox}}
@@ -1128,30 +1128,6 @@
 %D following macro. We now have an extra key \type {stack} for
 %D margin settings. When set to \type {yes}, this macro comes
 %D into action.
-
-% \def\stackeddown
-%   {\dowithnextbox
-%      {\doglobal\increment\currentautopos
-%       \hpos{\POSstackprefix\currentautopos}
-%         {\edef\next
-%            {\nextboxht\the\nextboxht
-%             \nextboxdp\the\nextboxdp
-%             \nextboxwd\the\nextboxwd}%
-%          \let\previousautopos\currentautopos
-%          \scratchdimen\zeropoint
-%          \doloop
-%            {\decrement\previousautopos
-%             \doifoverlappingelse{\POSstackprefix\currentautopos}{\POSstackprefix\previousautopos}
-%               {\advance\scratchdimen\MPh{\POSstackprefix\previousautopos}%
-%                \advance\scratchdimen\MPd{\POSstackprefix\previousautopos}}%
-%               \exitloop
-%             \ifnum\previousautopos<\zerocount\exitloop\fi}%
-%         % \ifdim\scratchdimen>\zeropoint
-%            \setbox\nextbox\iftracepositions\@EA\ruledhbox\else\@EA\hbox\fi
-%              {\lower\scratchdimen\flushnextbox}%
-%            \next
-%         % \fi
-%          \flushnextbox}}}
 
 % Because there can be many stacked items in a line and successive lines, we
 % play dirty and adapt the position and height of the current node so that
@@ -1206,30 +1182,31 @@
   {\bgroup
    % this macro assumes a few things and is meant to work for margin notes
    \dowithnextbox
-     {\doglobal\increment\currentautopos
+     {\global\advance\currentautopos\plusone
       \global\laststackvmove\zeropoint
-      \hpos{\POSstackprefix\currentautopos}
+      \hpos{\POSstackprefix\number\currentautopos}
         {\edef\next
            {\nextboxht\the\nextboxht
             \nextboxdp\the\nextboxdp
             \nextboxwd\the\nextboxwd}%
-         \let\previousautopos\currentautopos
+         \previousautopos\currentautopos
          \scratchdimen\zeropoint
          \scratchcounter\zerocount
          \doloop
-           {\decrement\previousautopos\relax
-            \edef\currentposition {\POSstackprefix\currentautopos}%
-            \edef\previousposition{\POSstackprefix\previousautopos}%
+           {\advance\previousautopos\minusone
+            \edef\currentposition {\POSstackprefix\number\currentautopos}%
+            \edef\previousposition{\POSstackprefix\number\previousautopos}%
             \ifnum\MPp\currentposition=\MPp\previousposition\relax
-              %\registerstatus{doing \currentautopos/\previousautopos}%
+              %\registerstatus{doing \number\currentautopos/\number\previousautopos}%
               \doifoverlappingelse\currentposition\previousposition
-                {\scratchskip         \MPy\currentposition
-                 \advance\scratchskip-\MPy\previousposition
-                 \advance\scratchskip-\MPd\currentposition  % untested
-                 \advance\scratchskip \MPd\previousposition % untested
-                 \advance\scratchskip \MPh\currentposition
-                 % todo: also take depth into account
+                {\scratchskip\dimexpr
+                    \MPy\currentposition
+                   -\MPy\previousposition
+                   -\MPd\currentposition  % untested
+                   +\MPd\previousposition % untested
+                   +\MPh\currentposition
                  \relax
+                 % todo: also take depth into account
                  \ifdim\scratchskip<\scratchdimen
                    %\registerstatus{no \the\scratchskip}%
                  \else
@@ -1243,16 +1220,16 @@
             \fi}%
          \ifdim\scratchdimen=\zeropoint \else
            \bgroup
-           \edef\currentposition{\POSstackprefix\currentautopos}%
+           \edef\currentposition{\POSstackprefix\number\currentautopos}%
            \scratchskip\scratchdimen
            \advance\scratchskip\MPh\currentposition
            \scratchdimen-\scratchdimen
            \advance\scratchdimen\MPy\currentposition
-           %\registerstatus{old \currentautopos: \MPy\currentposition/\MPh\currentposition}%
+           %\registerstatus{old \number\currentautopos: \MPy\currentposition/\MPh\currentposition}%
            \expanded{\replacepospxywhd
              {\currentposition}{\MPp\currentposition}{\MPx\currentposition}{\the\scratchdimen}%
              {\MPw\currentposition}{\the\scratchskip}{\MPd\currentposition}}%
-           %\registerstatus{new \currentautopos: \MPy\currentposition/\MPh\currentposition}%
+           %\registerstatus{new \number\currentautopos: \MPy\currentposition/\MPh\currentposition}%
            \egroup
            \global\laststackvmove\scratchdimen % new
            \setbox\nextbox\iftracepositions\@EA\ruledhbox\else\@EA\hbox\fi
@@ -1375,11 +1352,11 @@
 %D specified with symbolic names, and symbolic references to
 %D the graphics involved. Each table has its own namespace.
 
-\newcounter\noftabpositions
-\newtoks   \posXCtoks
+\newcount\noftabpositions
+\newtoks \posXCtoks
 
 \def\tbPOSprefix
-  {tbp:\noftabpositions:}
+  {tbp:\number\noftabpositions:}
 
 \def\tablepos
   {\scratchtoks\posXCtoks
@@ -1471,7 +1448,7 @@
    &\global\chardef\tabulatetype#1&}
 
 \appendtoks
-  \doglobal\increment\noftabpositions
+  \global\advance\noftabpositions\plusone
 \to \everytabulate
 
 %D In order to prevent potential clashes with abbreviations,
@@ -1518,7 +1495,7 @@
 \def\normalTABLEquote     {\unskip\!ttRightGlue&\omit\tablepos&}                  % "
 
 \appendtoks
-  \doglobal\increment\noftabpositions
+  \global\advance\noftabpositions\plusone
 \to \everytable
 
 %D Since we don't want nameclashes:

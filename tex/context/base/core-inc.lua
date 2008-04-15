@@ -430,7 +430,7 @@ do
                 -- type given
                 for _, path in ipairs(figures.paths) do
                     local check = path .. "/" .. askedname
-                    if figures.exists(askedname,askedformat) then
+                    if figures.exists(check,askedformat) then
                         return register(check, {
                             askedname = askedname,
                             fullname = check,

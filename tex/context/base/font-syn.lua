@@ -23,6 +23,7 @@ fonts.names.saved      = false
 fonts.names.loaded     = false
 fonts.names.be_clever  = true
 fonts.names.enabled    = true
+fonts.names.autoreload = toboolean(os.env['MTX.FONTS.AUTOLOAD'] or os.env['MTX_FONTS_AUTOLOAD'] or "no")
 fonts.names.cache      = containers.define("fonts","data",fonts.names.version,true)
 
 --[[ldx--
@@ -75,28 +76,37 @@ fonts.names.filters.fixes = {
     { "cond$", "condensed", },
 }
 
---~ todo
---~
---~ function getosfontdirs()
---~     local hash, result = { }, { }
---~     local function collect(t)
---~         for _, v in ipairs(t) do
---~             v = input.clean_path(v)
---~             v = v:gsub("/+$","")
---~             local key = v:lower()
---~             if not hash[key] then
---~                 hash[key], result[#result+1] = true, v
---~             end
---~         end
---~     end
---~     collect(input.expanded_path_list(instance,"osfontdir"))
---~     local name = input.find_file(instance,"fonts.conf","other")
---~     if name ~= "" then
---~         local root = xml.load(name)
---~         collect(xml.all_texts(root,"dir",true))
---~     end
---~     return result
---~ end
+fonts.names.xml_configuration_file    = "fonts.conf" -- a bit weird format, bonus feature
+fonts.names.environment_path_variable = "osfontdir"  -- the official way, in minimals etc
+
+function fonts.names.getpaths(instance)
+    local hash, result = { }, { }
+    local function collect(t)
+        for i=1, #t do
+            local v = input.clean_path(t[i])
+            v = v:gsub("/+$","")
+            local key = v:lower()
+            if not hash[key] then
+                hash[key], result[#result+1] = true, v
+            end
+        end
+    end
+    local path = fonts.names.environment_path_variable
+    if path and path ~= "" then
+        collect(input.expanded_path_list(instance,path))
+    end
+    local name = fonts.names.xml_configuration_file
+    if name and not name == "" then
+        local name = input.find_file(instance,name,"other")
+        if name ~= "" then
+            collect(xml.collect_texts(xml.load(name),"dir",true))
+        end
+    end
+    function fonts.names.getpaths()
+        return result
+    end
+    return result
+end
 
 function fonts.names.identify()
     fonts.names.data = {
@@ -159,12 +169,12 @@ function fonts.names.identify()
         end)
     end)
     traverse("system", function(suffix)
-        local pathlist = input.expanded_path_list(texmf.instance,"osfontdir")
+        local pathlist = fonts.names.getpaths(texmf.instance) -- input.expanded_path_list(texmf.instance,"osfontdir")
         if pathlist then
             for _, path in ipairs(pathlist) do
                 -- not that much needed
-                path = input.clean_path(path .. "/")
-                path = path:gsub("/+","/")
+                -- path = input.clean_path(path .. "/")
+                -- path = path:gsub("/+","/")
                 local pattern = path .. "*." .. suffix
                 logs.info("fontnames", "globbing path " .. pattern)
                 local t = dir.glob(pattern)
@@ -270,12 +280,21 @@ do
         return nil, nil, nil
     end
 
+    local reloaded = false
+
     function fonts.names.resolve(name, sub)
         if not name then
             return nil, nil
         elseif fonts.names.enabled then
             fonts.names.load()
             local name, filename, is_sub = found(name:lower())
+            if not filename and not reloaded and fonts.name.autoreload then
+                fonts.names.loaded = false
+                reloaded = true
+                io.flush()
+                fonts.names.load(true)
+                name, filename, is_sub = found(name:lower())
+            end
             if is_sub then
                 return filename, name
             else

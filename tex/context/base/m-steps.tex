@@ -218,7 +218,7 @@
 %D \def\startSTEPchart%
 %D   {\bgroup
 %D    \resetMPdrawing
-%D    \increment\noftabpositions % begin of preroll
+%D    \advance\noftabpositions\plusone % begin of preroll
 %D    \startMPdrawing
 %D      input mp-step ;
 %D      begin_step_chart ;
@@ -252,7 +252,7 @@
 %D      anchor_box(\MPpos{\tbPOSprefix origin}) ;
 %D    \stopMPdrawing
 %D    \MPdrawingdonetrue
-%D    \decrement\noftabpositions % end of preroll
+%D    \advance\noftabpositions\minusone % end of preroll
 %D    \setbox0=\vbox
 %D      {\getMPdrawing}
 %D    \resetMPdrawing

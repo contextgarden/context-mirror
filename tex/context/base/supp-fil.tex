@@ -81,18 +81,18 @@
 %
 % support for nested usage:
 
-\newcounter \endoflinelevel
+\newcount \endoflinelevel
 
 \ifx\newlinecode\undefined \chardef\newlinecode=`\^^M \fi
 
 \def\pushendofline
-  {\fastincrement\endoflinelevel
-   \expandafter\chardef\csname :eol:\endoflinelevel\endcsname\catcode\newlinecode
+  {\advance\endoflinelevel\plusone
+   \expandafter\chardef\csname :eol:\number\endoflinelevel\endcsname\catcode\newlinecode
    \catcode\newlinecode\@@comment\relax}
 
 \def\popendofline
-  {\catcode\newlinecode\csname :eol:\endoflinelevel\endcsname
-   \fastdecrement\endoflinelevel}
+  {\catcode\newlinecode\csname :eol:\number\endoflinelevel\endcsname
+   \advance\endoflinelevel\minusone}
 
 \def\restoreendofline
   {\catcode\newlinecode\@@endofline}
@@ -286,6 +286,8 @@
 
 \newif\iftracefiles
 
+\newcount\readlevel
+
 \def\maxreadlevel{3}
 
 \newconditional\trackfilenames
@@ -338,7 +340,7 @@
       \iftracefiles\writestatus\m!systems{#1 located}\fi
       \def\next{#2\dodoreadfile}}%
      {\iftracefiles\writestatus\m!systems{cannot locate #1}\fi
-      \decrement\readlevel\relax
+      \advance\readlevel\minusone
       \ifnum\readlevel>\zerocount
         \edef\readfilename{\pathplusfile{\f!parentpath}{\readfilename}}%
         \def\next{\redoreadfile\readfilename{#2}{#3}}%
@@ -359,7 +361,7 @@
 % too less:
 %
 % \unexpanded\def\readfile% #1%
-%   {\let\readlevel\maxreadlevel
+%   {\readlevel\maxreadlevel
 %    \doreadfile\empty} % {#1}
 %
 % too much:
@@ -398,15 +400,15 @@
 %D Due to different needs, we decided to offer four alternative
 %D loading commands. With \type{\readjobfile} we load a local
 %D file and do no backtracking, while \type{\readlocfile}
-%D backtracks~\readlevel\ directories, including the current
+%D backtracks~\number\readlevel\ directories, including the current
 %D one.
 
 \unexpanded\def\readjobfile % #1% current path, no backtracking
-  {\newcounter\readlevel
+  {\readlevel\zerocount
    \doreadfile\f!currentpath} % {#1}}
 
 \unexpanded\def\readlocfile % #1% current path, backtracking
-  {\let\readlevel\maxreadlevel
+  {\readlevel\maxreadlevel
    \doreadfile\f!currentpath} % {#1}}
 
 %D System files can be anywhere and therefore
@@ -414,7 +416,7 @@
 %D and obeys the \TEX\ implementation.
 
 \unexpanded\def\readsysfile % #1% current path, obeys tex search
-  {\newcounter\readlevel
+  {\readlevel\zerocount
    \doreadfile\empty} % {#1}}
 
 %D Of the last two, \type{\readfixfile} searches on the
@@ -422,11 +424,11 @@
 %D \type{\readsetfile} does only search on the specified path.
 
 \unexpanded\def\readfixfile % #1#2% specified path, backtracking
-  {\let\readlevel\maxreadlevel
+  {\readlevel\maxreadlevel
    \doreadfile} % {#1}{#2}}
 
 \unexpanded\def\readsetfile % #1#2% specified path, no backtracking
-  {\newcounter\readlevel
+  {\readlevel\zerocount
    \doreadfile} % {#1}{#2}}
 
 %D After having defined this commands, we reconsidered the
@@ -461,7 +463,7 @@
   {\sanitizefilename#2\to\readfilename
    \checkfilename\readfilename
    \ifcase\kindoffile
-     \increment\readlevel
+     \advance\readlevel\plusone
      \openinputfile{#1}\readfilename
      \ifeof#1% \relax
        \ifnum\readlevel>\maxreadlevel % \relax
@@ -473,19 +475,19 @@
    \fi}
 
 \def\openjobin#1#2%
-  {\newcounter\readlevel
+  {\readlevel\zerocount
    \doopenin{#1}{\pathplusfile\f!currentpath{#2}}}
 
 \def\opensysin % #1#2%
-  {\let\readlevel\maxreadlevel
+  {\readlevel\maxreadlevel
    \doopenin} % {#1}{#2}}
 
 \def\openlocin#1#2%
-  {\let\readlevel\maxreadlevel
+  {\readlevel\maxreadlevel
    \doopenin{#1}{\pathplusfile\f!currentpath{#2}}}
 
 \def\openfixin#1#2#3%
-  {\let\readlevel\maxreadlevel
+  {\readlevel\maxreadlevel
    \doopenin{#1}{\pathplusfile{#2}{#3}}}
 
 %D \macros
@@ -576,7 +578,7 @@
 \def\normalequal   {=} % geen \let !
 \def\normaldblquote{"} % geen \let !
 
-\newcounter\readingfilelevel
+\newcount\readingfilelevel
 
 \def\popfilecharacter#1#2%
   {\ifnum\catcode`#1=\@@other \ifnum#2=\@@other \else
@@ -596,43 +598,8 @@
 \newtoks \everystartreadingfile
 \newtoks \everystopreadingfile
 
-% \def\startreadingfile% beter een every en \setnormalcatcodes
-%   {\doglobal\increment\readingfilelevel
-%    \the\everystartreadingfile
-%    \setxvalue{\string\readingfilelevel::\readingfilelevel}%
-%      {\catcode`/ =\the\catcode`/%
-%      %\catcode`_ =\the\catcode`_% math ! ! !
-%       \catcode`" =\the\catcode`"%
-%       \catcode`: =\the\catcode`:%
-%       \catcode`; =\the\catcode`;%
-%       \catcode`< =\the\catcode`<%
-%       \catcode`> =\the\catcode`>%
-%       \catcode`\noexpand\\=\the\catcode`\\%
-%       \catcode`\noexpand\{=\the\catcode`\{%
-%       \catcode`\noexpand\}=\the\catcode`\}%
-%       \catcode`\noexpand\%=\the\catcode`\%}%
-%    \catcode`/ =\@@other
-%   %\catcode`_ =\@@other
-%    \catcode`" =\@@other
-%    \catcode`: =\@@other
-%    \catcode`; =\@@other
-%    \catcode`< =\@@other
-%    \catcode`> =\@@other
-%    \catcode`\\=\@@escape
-%    \catcode`\{=\@@begingroup
-%    \catcode`\}=\@@endgroup
-%    \catcode`\%=\@@comment
-%    \pushendofline
-%    \restoreendofline}
-
-% \def\stopreadingfile
-%   {\popendofline
-%    \getvalue{\string\readingfilelevel::\readingfilelevel}%
-%    \the\everystopreadingfile
-%    \doglobal\decrement\readingfilelevel}
-
 \def\startreadingfile% beter een every en \setnormalcatcodes
-  {\doglobal\increment\readingfilelevel
+  {\global\advance\readingfilelevel\plusone
    \the\everystartreadingfile
    \beginrestorecatcodes
    \setcatcodetable\prtcatcodes}
@@ -640,7 +607,7 @@
 \def\stopreadingfile
   {\endrestorecatcodes
    \the\everystopreadingfile
-   \doglobal\decrement\readingfilelevel}
+   \global\advance\readingfilelevel\minusone}
 
 \let\normalstartreadingfile\startreadingfile
 \let\normalstopreadingfile \stopreadingfile
@@ -682,57 +649,6 @@
 
 \let\splitfilename\gobbleoneargument % defined in mk
 \let\splitfiletype\gobbleoneargument % defined in mk
-
-%% % gebruikt voor normale (!) files, will change to proper
-%% % installer maybe combined with verb module push/popper
-%%
-%% \def\startreadingfile% beter een every
-%%   {\doglobal\increment\readingfilelevel
-%%    \setxvalue{popfilecharacters::\readingfilelevel}%
-%%      {%\expnormalcatcodes
-%%       \expspecialcatcodes}%
-%%   %\setnormalcatcodes
-%%    \setspecialcatcodes}
-%%
-%% \def\stopreadingfile%
-%%   {\getvalue{popfilecharacters::\readingfilelevel}%
-%%    \doglobal\decrement\readingfilelevel}
-%%
-%% \ifx\\\undefined \let\\\relax \fi
-%% \ifx\!\undefined \let\!\relax \fi
-%% \ifx\?\undefined \let\?\relax \fi
-%%
-%% \def\expnormalcatcodes%
-%%   {\catcode`\noexpand\!=\the\catcode`\! \catcode`\noexpand\?=\the\catcode`\?%
-%%    \catcode`\noexpand\&=\the\catcode`\&
-%%    \catcode`\noexpand\#=\the\catcode`\# \catcode`\noexpand\$=\the\catcode`\$%
-%%    \catcode`\noexpand\%=\the\catcode`\% \catcode`\noexpand\\=\the\catcode`\\%
-%%    \catcode`\noexpand\^=\the\catcode`\^ \catcode`\noexpand\_=\the\catcode`\_%
-%%    \catcode`\noexpand\{=\the\catcode`\{ \catcode`\noexpand\}=\the\catcode`\}}
-%%
-%% \def\setnormalcatcodes%
-%%   {%\ifcase\protectionlevel
-%%      \catcode`\!=\@@other  \catcode`\?=\@@other
-%%    %\else
-%%    %  \catcode`\!=\@@letter \catcode`\?=\@@letter
-%%    %\fi
-%%    \catcode`\&=\@@alignment
-%%    \catcode`\#=\@@parameter   \catcode`\$=\@@mathshift
-%%    \catcode`\%=\@@comment     \catcode`\\=\@@escape
-%%    \catcode`\^=\@@superscript \catcode`\_=\@@subscript
-%%    \catcode`\{=\@@begingroup  \catcode`\}=\@@endgroup}
-%%
-%% \def\expspecialcatcodes%
-%%   {\catcode`\noexpand/=\the\catcode`/%
-%%    \catcode`\noexpand"=\the\catcode`"%
-%%    \catcode`\noexpand<=\the\catcode`<%
-%%    \catcode`\noexpand>=\the\catcode`>}
-%%
-%% \def\setspecialcatcodes%
-%%   {\catcode`/=\@@other
-%%    \catcode`"=\@@other
-%%    \catcode`<=\@@other
-%%    \catcode`>=\@@other}
 
 \loadmarkfile{supp-fil}
 

@@ -73,19 +73,20 @@
 \newconditional\continuelistitems \setfalse\continuelistitems
 \newconditional\fittinglistitems  \setfalse\fittinglistitems
 
-\newcounter\noflists
-\newcounter\itemlevel
-\newcounter\itemcolumndepth
-\newcounter\maxitemlevel
+\newcount\noflists
+\newcount\itemcolumndepth
+\newcount\itemdepth
+\newcount\maxitemdepth
 
 \definetwopasslist\s!list
 
+\let\currentitemlevel  \!!zerocount
 \let\currentitemgroup  \empty
 \let\currentnofitems   \!!zerocount
 \let\currentmaxnofitems\!!zerocount
 \let\currentminnofitems\!!zerocount
 \let\currentitemoffset \!!zerocount
-\def\currentitemnumber{\countervalue{\@@itemcounter\itemlevel}}
+\def\currentitemnumber{\countervalue{\@@itemcounter\currentitemlevel}}
 
 % tricky ... we cannot use trialtypesetting here because there can be
 % multiple itemizes in e.g. a table, so we need something more advanced
@@ -93,9 +94,11 @@
 
 \def\dolistreference
   {\ifconditional\continuelistitems
-     \savetaggedtwopassdata\s!list\currentlist\currentlist{\itemlevel:\noflistelements:c:\getitemparameter\itemlevel\c!maxwidth}%
+     \savetaggedtwopassdata\s!list{\number\noflists}{\number\noflists}%
+        {\currentitemlevel:\noflistelements:c:\getitemparameter\currentitemlevel\c!maxwidth}%
    \else
-     \savetaggedtwopassdata\s!list\currentlist\currentlist{\itemlevel:\noflistelements:n:\getitemparameter\itemlevel\c!maxwidth}%
+     \savetaggedtwopassdata\s!list{\number\noflists}{\number\noflists}%
+        {\currentitemlevel:\noflistelements:n:\getitemparameter\currentitemlevel\c!maxwidth}%
    \fi}
 
 \def\splititemtwopassdata#1%
@@ -119,7 +122,7 @@
        \doloop
          {\splititemtwopassdata{\numexpr\noflists+\recurselevel\relax}%
           \iftwopassdatafound
-            \ifnum\itemdatal=\itemlevel\relax
+            \ifnum\itemdatal=\currentitemlevel\relax
               \doifelse{c}\itemdatat
                 {\advance\scratchcounter\itemdatan\relax}
                 {\exitloop}%
@@ -133,7 +136,7 @@
          {\doloop
             {\splititemtwopassdata{\numexpr\noflists-\recurselevel\relax}%
              \iftwopassdatafound
-               \ifnum\itemdatal=\itemlevel\relax
+               \ifnum\itemdatal=\currentitemlevel\relax
                  \doifelse{c}\itemdatat
                    {\advance\scratchcounter\itemdatan\relax}
                    {\advance\scratchcounter\itemdatan\exitloop}%
@@ -230,13 +233,13 @@
 \def\dosetupitemgroups[#1]% still undocumented
   {\getparameters[\??oo][\c!levels=4,#1]%
    % will change (remove)
-   \ifnum\@@oolevels>\maxitemlevel
-     \edef\maxitemlevel{\@@oolevels}%
-     \dorecurse\maxitemlevel{\initializeitemgroupslevel\recurselevel}%
+   \ifnum\@@oolevels>\maxitemdepth
+     \maxitemdepth\@@oolevels\relax
+     \dorecurse\maxitemdepth{\initializeitemgroupslevel\recurselevel}%
    \fi}
 
 \def\doitemreference#1,#2,#3\\%
-  {\ifnum\itemlevel>#1\relax
+  {\ifnum\currentitemlevel>#1\relax
      \ifnum#1>\zerocount \tempsymbol \fi
      \getvalue{\@@currentitemsymbol{#2}}%
      \doitemreference#2,#3\\%
@@ -246,17 +249,17 @@
   {\expandafter\doitemreference\itemreferences,,\\}
 
 \def\packitems
-  {\ifcase\itemlevel \else \settrue\packlistitem \fi}
+  {\ifcase\currentitemlevel \else \settrue\packlistitem \fi}
 
 \def\dosetupitemgroupvariable[#1]% [#2]%  niveau instellingen
   {\doifelsenothing{#1}
-     {\getparameters[\??op\currentitemgroup\itemlevel]}% [#2]}%
+     {\getparameters[\??op\currentitemgroup\currentitemlevel]}% [#2]}%
      {\getparameters[\??op\currentitemgroup#1]}}%        [#2]}}
 
 \newconditional\inlinelistitem \setfalse\inlinelistitem
 
 \def\dododosetupitemgroupconstant[#1][#2#3#4]% * permits [2]
-  {\global\setitemparameter\itemlevel\c!maxwidth{0}%
+  {\global\setitemparameter\currentitemlevel\c!maxwidth{0}%
    \processaction
      [#2#3#4]
      [   \v!packed*=>\packitems,
@@ -320,27 +323,27 @@
 \def\itembeforecommand
   {\ifconditional\nowhitelistitem
      \ifconditional\beforelistitem
-       \ifcase\itemlevel\or\getitemparameter\itemlevel\c!before\fi
+       \ifcase\currentitemlevel\or\getitemparameter\currentitemlevel\c!before\fi
      \else
         \nowhitespace
      \fi
    \else\ifconditional\joinedlistitem
      % \empty
    \else
-     \getitemparameter\itemlevel\c!before
+     \getitemparameter\currentitemlevel\c!before
    \fi\fi}
 
 \def\itemaftercommand
   {\ifconditional\nowhitelistitem
      \ifconditional\afterlistitem
-       \ifcase\itemlevel\or\getitemparameter\itemlevel\c!after\fi
+       \ifcase\currentitemlevel\or\getitemparameter\currentitemlevel\c!after\fi
      \else
         \nowhitespace
      \fi
    \else\ifconditional\joinedlistitem
      % \empty
    \else
-     \getitemparameter\itemlevel\c!after
+     \getitemparameter\currentitemlevel\c!after
    \fi\fi}
 
 \def\iteminbetweencommand
@@ -349,7 +352,7 @@
    \else\ifconditional\joinedlistitem
      % \empty
    \else
-     \getitemparameter\itemlevel\c!inbetween
+     \getitemparameter\currentitemlevel\c!inbetween
    \fi\fi}
 
 \def\itembeforeheadcommand
@@ -358,7 +361,7 @@
    \else\ifconditional\joinedlistitem
      % \empty
    \else
-     \getitemparameter\itemlevel\c!beforehead
+     \getitemparameter\currentitemlevel\c!beforehead
    \fi\fi}
 
 \def\itemafterheadcommand
@@ -367,7 +370,7 @@
    \else\ifconditional\joinedlistitem
      % \empty
    \else
-     \getitemparameter\itemlevel\c!afterhead
+     \getitemparameter\currentitemlevel\c!afterhead
    \fi\fi}
 
 % \def\dosetuppackeditemgroup#1%
@@ -390,18 +393,18 @@
 \def\dodododosetupitemgroup[#1][#2]%
   {\ConvertToConstant\doifnot{#2}{}
      {\doifelse{#1}\v!each
-        {\dorecurse\maxitemlevel{\ExpandFirstAfter\dododododosetupitemgroup[\recurselevel][#2]}}
+        {\dorecurse\maxitemdepth{\ExpandFirstAfter\dododododosetupitemgroup[\recurselevel][#2]}}
         {\ExpandFirstAfter\dododododosetupitemgroup[#1][#2]}}}
 
 \def\dododosetupitemgroup[#1][#2]%
   {\ConvertToConstant\doifelse{#2}{}
-     {\ifcase\itemlevel\relax
+     {\ifcase\currentitemlevel\relax
         \dodododosetupitemgroup[\v!each][#1]%
       \else
-        \dodododosetupitemgroup[\itemlevel][#1]%
+        \dodododosetupitemgroup[\currentitemlevel][#1]%
       \fi}
      {\doifelsenothing{#1}
-        {\dodododosetupitemgroup[\itemlevel][#2]}
+        {\dodododosetupitemgroup[\currentitemlevel][#2]}
         {\dodododosetupitemgroup[#1][#2]}}}
 
 \def\dodosetupitemgroup[#1][#2][#3][#4]%
@@ -421,41 +424,25 @@
 
 \def\doadvanceitem
   {\ifconditional\sublistitem\else\ifconditional\symbollistitem\else
-     \pluscounter{\@@itemcounter\itemlevel}%
+     \pluscounter{\@@itemcounter\currentitemlevel}%
    \fi\fi}
 
-% \def\setitemlevel#1%
-%   {\ifnum\itemlevel>\zerocount
-%      \settrue\firstlistitem
-%      \doifnotinset\v!continue{#1}
-%        {\doifinset{0}{#1}{\setitemparameter\itemlevel\c!start{0}}%
-%         \doifsomething{\getitemparameter\itemlevel\c!start}
-%           {\setcounter{\@@itemcounter\itemlevel}{\getitemparameter\itemlevel\c!start}%
-%            \minuscounter{\@@itemcounter\itemlevel}%
-%            \letitemparameter\itemlevel\c!start\empty}}%
-%      \def\tempnumber
-%        {\countervalue{\@@itemcounter\itemlevel}}%
-%      \doifelse{\getitemparameter\itemlevel\c!placestopper}\v!yes
-%        {\def\tempsymbol{\getitemparameter\itemlevel\c!stopper}}
-%        {\let\tempsymbol\empty}%
-%    \fi}
-
 \def\setitemlevel#1%
-  {\ifnum\itemlevel>\zerocount
+  {\ifnum\currentitemlevel>\zerocount
      \settrue\firstlistitem
      %
-     \expanded{\setitemparameter{\itemlevel}{\c!start}{1}}%
-     \doifinset{0}{#1}{\setitemparameter\itemlevel\c!start{0}}%
-     \setcounter{\@@itemcounter\itemlevel}{0}%
-     \doifelsenothing{\getitemparameter\itemlevel\c!start}
+     \expanded{\setitemparameter{\currentitemlevel}{\c!start}{1}}%
+     \doifinset{0}{#1}{\setitemparameter\currentitemlevel\c!start{0}}%
+     \setcounter{\@@itemcounter\currentitemlevel}{0}%
+     \doifelsenothing{\getitemparameter\currentitemlevel\c!start}
        {\def\currentitemoffset{1}}
-       {\def\currentitemoffset{\getitemparameter\itemlevel\c!start}%
-        \letitemparameter\itemlevel\c!start\empty}%
+       {\def\currentitemoffset{\getitemparameter\currentitemlevel\c!start}%
+        \letitemparameter\currentitemlevel\c!start\empty}%
      %
      \def\tempnumber
-       {\countervalue{\@@itemcounter\itemlevel}}%
-     \doifelse{\getitemparameter\itemlevel\c!placestopper}\v!yes
-       {\def\tempsymbol{\getitemparameter\itemlevel\c!stopper}}
+       {\countervalue{\@@itemcounter\currentitemlevel}}%
+     \doifelse{\getitemparameter\currentitemlevel\c!placestopper}\v!yes
+       {\def\tempsymbol{\getitemparameter\currentitemlevel\c!stopper}}
        {\let\tempsymbol\empty}%
    \fi}
 
@@ -473,23 +460,23 @@
 \def\setitemmark#1% % en pas op: resets \docommand
   {\doifsymboldefinedelse{#1}
      {\edef\currentitemsymbol{#1}%
-      \setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
-      \setgvalue{\@@localitemsymbol \itemlevel}{\unknownitemsymbol}%
+      \setxvalue{\@@globalitemsymbol\currentitemlevel}{\currentitemsymbol}%
+      \setgvalue{\@@localitemsymbol \currentitemlevel}{\unknownitemsymbol}%
       \def\listitem{\symbol[\currentitemsymbol]}%
       \let\@@opsymbol\empty}% \let\docommand\gobbleoneargument}
      {\doifconversiondefinedelse{#1}
         {\edef\currentitemsymbol{#1}%
-         \setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
-         \setgvalue{\@@localitemsymbol\itemlevel }{\actualitemnumber }%
+         \setxvalue{\@@globalitemsymbol\currentitemlevel}{\currentitemsymbol}%
+         \setgvalue{\@@localitemsymbol\currentitemlevel }{\actualitemnumber }%
          \ifconditional\textlistitem
-           \doifsomething{\getitemparameter\itemlevel\c!lefttext}
+           \doifsomething{\getitemparameter\currentitemlevel\c!lefttext}
              {\let\tempsymbol\empty}%
          \fi
          \def\listitem
-           {\getitemparameter\itemlevel
+           {\getitemparameter\currentitemlevel
               {\ifconditional\textlistitem\c!lefttext\else\c!left\fi}%
-            \getvalue{\@@localitemsymbol\itemlevel}\tempsymbol
-            \getitemparameter\itemlevel
+            \getvalue{\@@localitemsymbol\currentitemlevel}\tempsymbol
+            \getitemparameter\currentitemlevel
               {\ifconditional\textlistitem\c!righttext\else\c!right\fi}}%
         \let\@@opsymbol\empty}%\let\docommand\gobbleoneargument}
        {}}}
@@ -527,15 +514,16 @@
 
 \def\dodostartitemgroup[#1]% [#2]%
   {\relax % prevents lookahead
-   \ifnum\itemlevel=\maxitemlevel\relax
-     \showmessage\m!layouts9\maxitemlevel
+   \ifnum\currentitemlevel=\maxitemdepth\relax
+     \showmessage\m!layouts9{\number\maxitemdepth}%
      \let\itemincrement\zerocount
    \else
      \let\itemincrement\plusone
    \fi
-   \doglobal\increment(\itemlevel,\itemincrement)%
-   \initializeitemgrouplevel\itemlevel % safeguard
-   \edef\itemgroupoptions{\getitemparameter\itemlevel\c!option}%
+   \global\advance\itemdepth\itemincrement
+   \xdef\currentitemlevel{\number\itemdepth}%
+   \initializeitemgrouplevel\currentitemlevel % safeguard
+   \edef\itemgroupoptions{\getitemparameter\currentitemlevel\c!option}%
    \ifx\itemgroupoptions\empty
      \edef\itemgroupoptions{#1}%
    \else
@@ -643,8 +631,7 @@
    \doifinsetelse\v!random  {#1}{\settrue\randomizeitems   }{\setfalse\randomizeitems   }%
    \doifinsetelse\v!continue{#1}{\settrue\continuelistitems}{\setfalse\continuelistitems}%
    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
-   \doglobal\increment\noflists
-   \let\currentlist\noflists
+   \global\advance\noflists\plusone
    \newcounter\noflistelements
    \setfalse\headlistitem
    \setfalse\sublistitem
@@ -655,60 +642,60 @@
    \let\symalignleft\relax
    \the\itemgroupcommands
 \checkcurrentnofitems
-   % \getitemparameter\itemlevel\empty
+   % \getitemparameter\currentitemlevel\empty
    \let\listitem\empty % ** start value
    \doifelsenothing{#1} % iffirstargument
-     {\edef\@@opsymbol{\getitemparameter\itemlevel\c!symbol}%
-      \letgvalueempty{\@@globalitemsymbol\itemlevel}%
-      \global\letitemparameter\itemlevel\v!continue\empty
+     {\edef\@@opsymbol{\getitemparameter\currentitemlevel\c!symbol}%
+      \letgvalueempty{\@@globalitemsymbol\currentitemlevel}%
+      \global\letitemparameter\currentitemlevel\v!continue\empty
     % \setitemmark\@@opsymbol % ** default value
-      \dosetupitemgroupvariable[\itemlevel][#2]}
-     {\dosetupitemgroupconstant[\itemlevel][#1]%
-      \dosetupitemgroupvariable[\itemlevel][#2]%
+      \dosetupitemgroupvariable[\currentitemlevel][#2]}
+     {\dosetupitemgroupconstant[\currentitemlevel][#1]%
+      \dosetupitemgroupvariable[\currentitemlevel][#2]%
       \doifinsetelse\v!continue{#1}% \noexpand, else problems in non-etex with chinese
-        {\edef\@@opsymbol{\noexpand\getvalue{\@@globalitemsymbol\itemlevel}}%
-         \getitemparameter\itemlevel\v!continue}
-        {\edef\@@opsymbol{\noexpand\getitemparameter{\itemlevel}{\c!symbol}}%
-         \global\setitemparameter\itemlevel\v!continue
-           {\dosetupitemgroupconstant[\itemlevel][#1]%
-            \dosetupitemgroupvariable[\itemlevel][#2]}}%
+        {\edef\@@opsymbol{\noexpand\getvalue{\@@globalitemsymbol\currentitemlevel}}%
+         \getitemparameter\currentitemlevel\v!continue}
+        {\edef\@@opsymbol{\noexpand\getitemparameter{\currentitemlevel}{\c!symbol}}%
+         \global\setitemparameter\currentitemlevel\v!continue
+           {\dosetupitemgroupconstant[\currentitemlevel][#1]%
+            \dosetupitemgroupvariable[\currentitemlevel][#2]}}%
       \def\docommand##1% \setitemmark resets \docommand
         {\doifnot{##1}{0}{\setitemmark{##1}}}%
     % \processcommalist[#1,\@@opsymbol]\docommand
       \processcommalist[#1]\docommand}% ** preset sequence or provided sequence
    % moved to here, after settings
-   \ifnum\itemlevel=\plusone % NIEUW
+   \ifnum\currentitemlevel=\plusone % NIEUW
      \doadaptleftskip {\getitemparameter1\c!margin}%
      \doadaptleftskip {\getitemparameter1\c!leftmargin}%
      \doadaptrightskip{\getitemparameter1\c!rightmargin}%
    \fi
-   \dosetraggedcommand{\getitemparameter\itemlevel\c!align}\raggedcommand
-   \dosetsymalign{\getitemparameter\itemlevel\c!symalign}%
-   \doifsomething{\getitemparameter\itemlevel\c!indenting}
+   \dosetraggedcommand{\getitemparameter\currentitemlevel\c!align}\raggedcommand
+   \dosetsymalign{\getitemparameter\currentitemlevel\c!symalign}%
+   \doifsomething{\getitemparameter\currentitemlevel\c!indenting}
      {% is \expanded needed?
-      \expanded{\setupindenting[\getitemparameter\itemlevel\c!indenting]}}%
+      \expanded{\setupindenting[\getitemparameter\currentitemlevel\c!indenting]}}%
    %
    \setitemlevel{#1}% moved to here
    \ifx\listitem\empty
      \setitemmark\@@opsymbol % ** default value
      \ifx\listitem\empty
-       \edef\currentitemsymbol{\itemlevel}% ** fall back
+       \edef\currentitemsymbol{\currentitemlevel}% ** fall back
      \fi
    \fi
    \ifconditional\autointrolistitem\ifnum\prevgraf<3
      \settrue\introlistitem
    \fi\fi
    \ifconditional\paragraphlistitem
-     \ifnum\itemlevel>\plusone
-       \letitemparameter\itemlevel\c!inbetween\empty
+     \ifnum\currentitemlevel>\plusone
+       \letitemparameter\currentitemlevel\c!inbetween\empty
      \fi
    \fi
    \ifconditional\packlistitem
-     \letitemparameter\itemlevel\c!inbetween\empty
+     \letitemparameter\currentitemlevel\c!inbetween\empty
    \fi
    \doifinset\v!columns{#1}%
-     {\ifinsidecolumns\else\ifnum\itemcolumndepth=\zerocount
-        \globallet\itemcolumndepth\itemlevel
+     {\ifinsidecolumns\else\ifcase\itemcolumndepth
+        \global\itemcolumndepth\currentitemlevel\relax
         \itembeforecommand
         \processfirstactioninset
           [#1]
@@ -717,9 +704,9 @@
            \v!three=>\!!counta3\relax,
             \v!four=>\!!counta4\relax,
             \v!five=>\!!counta5\relax,
-         \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
+         \s!unknown=>\@EA\!!counta\getitemparameter\currentitemlevel\c!n]%
         \startcolumns
-          [\c!n=\!!counta, % netter \??op\itemlevel\c!n
+          [\c!n=\!!counta, % netter \??op\currentitemlevel\c!n
            \c!height=,
            \c!rule=\v!off,
            \c!balance=\v!yes,
@@ -728,10 +715,10 @@
 \ifconditional\fittinglistitems
     \splititemtwopassdata\noflists
     \ifdim\itemdataw sp>\zeropoint
-      \expanded{\setitemparameter{\itemlevel}{\c!width}{\itemdataw sp}}%
+      \expanded{\setitemparameter{\currentitemlevel}{\c!width}{\itemdataw sp}}%
     \fi
 \fi
-   \calculatelistwidth\itemlevel{\dimen0}%
+   \calculatelistwidth\currentitemlevel{\dimen0}%
    \ifdim\dimen0>\zeropoint\relax
      \ifconditional\inlinelistitem\else
        \advance\leftskip \dimen0\relax
@@ -760,20 +747,19 @@
    \else
      \par
    \fi
-  %\ifnum\itemcolumndepth=\zerocount \dolistreference \fi % beware !
    \dolistreference
    \ifconditional\firstlistitem \else \endgroup \fi % toegevoegd, eerste \som opent groep
-   \ifnum\itemcolumndepth=\itemlevel\relax
+   \ifnum\itemcolumndepth=\currentitemlevel\relax
      \stopcolumns
-     \doglobal\newcounter\itemcolumndepth
+     \global\itemcolumndepth\zerocount
      \itemaftercommand
      \dontrechecknextindentation
    \else
-     \ifnum\itemlevel=\plusone
+     \ifnum\currentitemlevel=\plusone
        \doitembreak\allowbreak           % toegevoegd
-       \itemaftercommand % \getitemparameter\itemlevel\c!after
+       \itemaftercommand % \getitemparameter\currentitemlevel\c!after
        % was: \dochecknextindentation\??oo, is now:
-       \dochecknextindentation{\??op\currentitemgroup\itemlevel}%
+       \dochecknextindentation{\??op\currentitemgroup\currentitemlevel}%
      \else
        % nieuw, not yet nobreak handling
        \ifcase\autoitemgroupspacing
@@ -787,11 +773,13 @@
    % new test, needed in sidefloats (surfaced in volker's proceedings)
    \ifconditional\textlistitem % else forgotten
      \endgroup
-     \doglobal\decrement(\itemlevel,\itemincrement)%
+     \global\advance\itemdepth-\itemincrement
+     \xdef\currentitemlevel{\number\itemdepth}%
      \egroup
    \else
      \endgroup
-     \doglobal\decrement(\itemlevel,\itemincrement)%
+     \global\advance\itemdepth-\itemincrement
+     \xdef\currentitemlevel{\number\itemdepth}%
      \egroup
      \par
    \fi
@@ -814,15 +802,15 @@
    \itemgroupitem}
 
 \def\itemgroupsymbol#1%
-  {\def\symsymbol{\doitemattributes\itemlevel\c!symstyle\c!symcolor{#1}}%
+  {\def\symsymbol{\doitemattributes\currentitemlevel\c!symstyle\c!symcolor{#1}}%
    \settrue\symbollistitem
    \itemgroupitem}
 
 \def\itemgroupedge#1%
   {\itemgroupsymbol
-     {\calculatelistwidth\itemlevel{\dimen0}%
+     {\calculatelistwidth\currentitemlevel{\dimen0}%
       \hbox to \dimen0
-        {#1\hskip\getitemparameter\itemlevel\c!distance}}}
+        {#1\hskip\getitemparameter\currentitemlevel\c!distance}}}
 
 \def\itemgrouphead
   {\settrue\headlistitem\doitemgrouphead}
@@ -832,13 +820,13 @@
 
 \def\doitemgroupitems[#1]%
   {\itemgroupedge
-     {\dorecurse{0\getitemparameter\itemlevel\c!items}{\listitem\hss}%
+     {\dorecurse{0\getitemparameter\currentitemlevel\c!items}{\listitem\hss}%
       \unskip}}
 
 \def\itemgroupmargin#1%
   {\def\marsymbol
      {\llap
-        {\doitemattributes\itemlevel\c!marstyle\c!marcolor{#1}%
+        {\doitemattributes\currentitemlevel\c!marstyle\c!marcolor{#1}%
          \hskip\leftskip\hskip\leftmargindistance}}%
    \itemgroupitem}
 
@@ -896,7 +884,7 @@
 \appendtoks \let\headsym    \itemgroupheadsym \to \itemgroupcommands
 
 \def\itemgroupheadsym#1%
-  {\def\symsymbol{\doitemattributes\itemlevel\c!symstyle\c!symcolor{#1}}%
+  {\def\symsymbol{\doitemattributes\currentitemlevel\c!symstyle\c!symcolor{#1}}%
    \settrue\symbollistitem
    \settrue\headlistitem
    \doitemgrouphead}
@@ -916,7 +904,7 @@
 \newconditional\txtlistitem \setfalse\txtlistitem
 
 \def\itemgrouptext#1%
-  {\def\symsymbol{\doitemattributes\itemlevel\c!headstyle\c!headcolor{#1}}%
+  {\def\symsymbol{\doitemattributes\currentitemlevel\c!headstyle\c!headcolor{#1}}%
    \settrue\symbollistitem
    \settrue\txtlistitem
    \itemgroupitem}
@@ -929,7 +917,7 @@
 
 \def\dodotxtitem
   {\scratchdimen\wd8
-   \advance \scratchdimen \getitemparameter\itemlevel\c!distance\relax
+   \advance \scratchdimen \getitemparameter\currentitemlevel\c!distance\relax
    \ifdim\scratchdimen>\dimen0
      \advance\scratchdimen -\dimen0
    \else
@@ -939,7 +927,7 @@
    \hskip\scratchdimen}
 
 \def\optimizelistitemsbreak
-  {\ifnum\itemcolumndepth=\zerocount \ifconditional\optimizelistitem
+  {\ifcase\itemcolumndepth \ifconditional\optimizelistitem
      \ifcase \currentnofitems \else
        \ifnum\currentnofitems=\plusthree
          \ifnum\noflistelements>\plusone
@@ -978,28 +966,28 @@
         \ifconditional\symbollistitem
           \symsymbol
         \else
-          \doitemattributes\itemlevel\c!headstyle\c!headcolor{\listitem}%
+          \doitemattributes\currentitemlevel\c!headstyle\c!headcolor{\listitem}%
         \fi
       \else
         \ifconditional\symbollistitem
           \symsymbol % no attributes, why?
         \else
-          \doitemattributes\itemlevel\c!style\c!color{\listitem}%
+          \doitemattributes\currentitemlevel\c!style\c!color{\listitem}%
         \fi
       \fi}%
 \ifconditional\fittinglistitems
-    \ifdim\wd8>\getitemparameter\itemlevel\c!maxwidth sp\relax
-      \expanded{\global\noexpand\setitemparameter{\itemlevel}{\c!maxwidth}{\number\wd8}}%
+    \ifdim\wd8>\getitemparameter\currentitemlevel\c!maxwidth sp\relax
+      \expanded{\global\noexpand\setitemparameter{\currentitemlevel}{\c!maxwidth}{\number\wd8}}%
     \fi
     \splititemtwopassdata\noflists
     \ifdim\itemdataw sp>\zeropoint
-       \setbox8\simplealignedbox{\getitemparameter\itemlevel\c!itemalign}{\itemdataw sp}{\box8}%
+       \setbox8\simplealignedbox{\getitemparameter\currentitemlevel\c!itemalign}{\itemdataw sp}{\box8}%
     \fi
 \fi
    \doifsomething\doitemdestination
      {\setbox8\hbox{\goto{\box8}[\doitemdestination]}}%
    \globallet\doitemdestination\empty
-   \dimen2=\getitemparameter\itemlevel\c!width\relax
+   \dimen2=\getitemparameter\currentitemlevel\c!width\relax
    % new, prevents loops when symbol is (not yet found) graphic
    \ht8=\strutheight
    \dp8=\strutdepth
@@ -1011,7 +999,7 @@
      \ifdim\dimen2=\zeropoint\relax
        \calculatelistwidth1{\dimen0}%
      \else
-       \calculatelistwidth\itemlevel{\dimen0}%
+       \calculatelistwidth\currentitemlevel{\dimen0}%
      \fi
      \ifconditional\textlistitem
        \hbox{\ifconditional\sublistitem+\fi\box8\hskip\interwordspace}\nobreak
@@ -1025,14 +1013,14 @@
        \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi
                               \symalignleft
                               \box8\hfil
-                              \hskip\getitemparameter\itemlevel\c!distance% T h
+                              \hskip\getitemparameter\currentitemlevel\c!distance% T h
                               }}%
      \fi\fi\fi
    \fi
    \forceunexpanded % needed for m conversion (\os) / i need to look into this
-   \setevalue{\@@currentitemsymbol\itemlevel}%
-     {\getvalue{\@@localitemsymbol\itemlevel}}% still problems with \uchar ?
-    %{\noexpand\getvalue{\@@localitemsymbol\itemlevel}}% no, spoils subrefs
+   \setevalue{\@@currentitemsymbol\currentitemlevel}%
+     {\getvalue{\@@localitemsymbol\currentitemlevel}}% still problems with \uchar ?
+    %{\noexpand\getvalue{\@@localitemsymbol\currentitemlevel}}% no, spoils subrefs
    \resetunexpanded
    \setfalse\headlistitem
    \setfalse\sublistitem
@@ -1045,17 +1033,17 @@
 \newconditional\repeatlistitem
 
 \def\checkforrepeatedlistitem
-  {\ifnum\itemlevel=\plusone
+  {\ifnum\currentitemlevel=\plusone
      \initializeboxstack{item}%
    \fi
    \ifconditional\repeatlistitem
-      \savebox{item}{\itemlevel}{\hbox{\copy8}}%
+      \savebox{item}{\currentitemlevel}{\hbox{\copy8}}%
       \setbox8\hbox to \wd8
        {\setbox\scratchbox\hbox
-          {\scratchcounter\itemlevel
+          {\scratchcounter\currentitemlevel
            \advance\scratchcounter\minusone
            \dorecurse\scratchcounter{\foundbox{item}{\recurselevel}}}%
-        \ifnum\itemlevel>\plusone
+        \ifnum\currentitemlevel>\plusone
           \ifdim\wd\scratchbox>\zeropoint
             \hskip-\dimen2
             \box\scratchbox
@@ -1098,22 +1086,22 @@
      \doitembreak\nobreak        % new, concat
    \fi                           % new, concat
    \doadvanceitem
-   \ifnum\itemcolumndepth=0\relax\ifnum\noflistelements>0\relax
+   \ifcase\itemcolumndepth \ifnum\noflistelements>0\relax
      \doitembreak\nobreak
    \fi\fi
    \ifconditional\firstlistitem
      \setfalse\firstlistitem
      \begingroup
-     \ifcase\itemlevel
+     \ifcase\currentitemlevel
      \or % 1
-       \ifnum\itemcolumndepth=0\relax
+       \ifcase\itemcolumndepth
          \ifconditional\introlistitem\doitembreak\nobreak\fi
-         \itembeforecommand % \getitemparameter\itemlevel\c!before
+         \itembeforecommand % \getitemparameter\currentitemlevel\c!before
          \ifconditional\introlistitem\doitembreak\nobreak\fi
        \fi
      \else % 2 en hoger
        \ifconditional\paragraphlistitem \else
-         \let\previtemlevel\itemlevel
+         \let\previtemlevel\currentitemlevel
          \decrement\previtemlevel
          \ifcase\autoitemgroupspacing\relax % nieuw
            \itembeforecommand
@@ -1145,7 +1133,7 @@
    \ifconditional\packlistitem
      \setupwhitespace[\v!none]%
    \fi
-   \getitemparameter\itemlevel\c!inner
+   \getitemparameter\currentitemlevel\c!inner
    \marsymbol
    \let\marsymbol\relax
    \doifsomething{#1}
@@ -1158,7 +1146,7 @@
    \setfalse\concatnextitem % new, concat
    \nobreak % else problems with intext items
    \hskip\itemsignal        % new, concat
-   \getitemparameter\itemlevel\c!command} % \defaultitemcommand
+   \getitemparameter\currentitemlevel\c!command} % \defaultitemcommand
 
 \def\defaultitemcommand
   {\EveryPar{\ignorespaces}% needed ?
@@ -1192,10 +1180,10 @@
 % \def\complexdoitemgrouphead[#1]#2\par% % beter in \complexdosom hangen met een if
 %   {\ifconditional\firstlistitem\else\doitembreak\allowbreak\fi
 %    \ifconditional\packlistitem\else\itembeforeheadcommand\fi
-%    \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\itemlevel % incr in \complexdosom
+%    \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\currentitemlevel % incr in \complexdosom
 %       \doitembreak\allowbreak
 %    \fi\fi\fi
-%    \complexdoitemgroupitem[#1]{\doitemattributes\itemlevel\c!headstyle\c!headcolor
+%    \complexdoitemgroupitem[#1]{\doitemattributes\currentitemlevel\c!headstyle\c!headcolor
 %      {\ignorespaces#2}}%
 %    \ifconditional\textlistitem
 %      \removeunwantedspaces\space\ignorespaces
@@ -1215,12 +1203,12 @@
 \def\complexdoitemgrouphead[#1]% beter in \complexdosom hangen met een if
   {\ifconditional\firstlistitem\else\doitembreak\allowbreak\fi
    \ifconditional\packlistitem\else\itembeforeheadcommand\fi
-   \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\itemlevel % incr in \complexdosom
+   \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\currentitemlevel % incr in \complexdosom
      \doitembreak\allowbreak
    \fi\fi\fi
    \complexdoitemgroupitem[#1]%
      \bgroup
-     \dostartitemattributes\itemlevel\c!headstyle\c!headcolor\empty
+     \dostartitemattributes\currentitemlevel\c!headstyle\c!headcolor\empty
      \ignorespaces
      \let\par\enditemhead} % brrrr but simple anyway
 
@@ -1298,7 +1286,7 @@
    \c!start=1,
    \c!option=,
    \c!command=\defaultitemcommand,
-   \c!symbol=\itemlevel] % \v!niveau
+   \c!symbol=\currentitemlevel] % \v!niveau
 
 \def\defineitemgroup
   {\dodoubleempty\dodefineitemgroup}
@@ -1311,8 +1299,8 @@
       \setvalue{\e!stop#1}{\stopitemgroup}%
       \setvalue{\e!setup#1\e!endsetup}{\setupitemgroup[#1]}%
       \getparameters[\??ig#1][\c!levels=3,#2]%
-      \ifnum\getvalue{\??ig#1\c!levels}<\maxitemlevel\relax
-        \letvalue{\??ig#1\c!levels}\maxitemlevel
+      \ifnum\getvalue{\??ig#1\c!levels}<\maxitemdepth\relax
+        \setevalue{\??ig#1\c!levels}{\number\maxitemdepth}%
       \fi
       \dorecurse{\getvalue{\??ig#1\c!levels}}{\initializeitemgrouplevel\recurselevel}%
       \popmacro\currentitemgroup}}

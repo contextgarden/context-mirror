@@ -2277,7 +2277,7 @@ class TexDeps
         report('')
         n = 0
         @files.each do |filename|
-            if f = File.open(filename) then
+            if File.file?(filename) and f = File.open(filename) then
                 defs, uses, l = 0, 0, 0
                 n += 1
                 report("#{n.to_s.rjust(5,' ')} #{filename}")

@@ -623,22 +623,20 @@
 
 \def\doPDFcheckedDPXobject#1{\ifundefined{r:pdx:d:#1}object\else put\fi\space @#1\space}
 
-% new, experimental, can save a run
-
-\def\doreservePDFobject#1#2%
-  {\dosetobjectreference{#1}{#2}{@#1::#2}}
-
-\def\doPDFreserveddictionaryobject#1#2#3%
-  {\flushatshipout{\special{pdf:object @#1::#2 << #3 >>}}}
-
-\def\doPDFreservedarrayobject#1#2#3%
-  {\flushatshipout{\special{pdf:object @#1::#2 [ #3 ]}}}
-
-% maybe this is not needed
-
-\doreservePDFobject{FDF}{docuextgstates}
-\doreservePDFobject{FDF}{colorspaces}
-\doreservePDFobject{FDF}{docushades}
+% new, experimental, can save a run, bugged, too many xforms now
+%
+% \def\doreservePDFobject#1#2%
+%   {\dosetobjectreference{#1}{#2}{@#1::#2}}
+%
+% \def\doPDFreserveddictionaryobject#1#2#3%
+%   {\flushatshipout{\special{pdf:object @#1::#2 << #3 >>}}}
+%
+% \def\doPDFreservedarrayobject#1#2#3%
+%   {\flushatshipout{\special{pdf:object @#1::#2 [ #3 ]}}}
+%
+% \doreservePDFobject{FDF}{docuextgstates}
+% \doreservePDFobject{FDF}{colorspaces}
+% \doreservePDFobject{FDF}{docushades}
 
 % so this is to be checked
 

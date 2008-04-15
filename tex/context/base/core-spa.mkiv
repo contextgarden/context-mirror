@@ -305,6 +305,12 @@
 % \vspacing[2*big,disable]
 % \vspacing[2*big,back]
 
+\def\enablevspacing{\ctxlua{
+    callback.register('vpack_filter',     nodes.handle_vbox_spacing)
+    callback.register('buildpage_filter', nodes.handle_page_spacing)
+}}
+
+
 \protect \endinput
 
 \starttext

@@ -167,7 +167,7 @@
         \iftracefiles\writestatus\m!systems{#1 located}\fi
         \def\next{#2\dodoreadfile}}%
        {\iftracefiles\writestatus\m!systems{cannot locate #1}\fi
-        \decrement\readlevel\relax
+        \advance\readlevel\minusone
         \ifnum\readlevel>\zerocount
           \edef\readfilename{\pathplusfile{\f!parentpath}{\readfilename}}%
           \def\next{\redoreadfile\readfilename{#2}{#3}}%

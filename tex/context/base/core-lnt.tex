@@ -35,7 +35,7 @@
    \ifnum\linenotelinenumber=\linenumber\relax
     % todo: \onlyfootnote{#2}{#3}% == configurable
     % \setupnote[#1][\c!numbercommand=\gobbleoneargument]%
-    % \setnotetext[#1]{\rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}#2: #3}%
+    % \setnotetext[#1]{\rawreference\s!fnt{\s!fnt:f:\number\internalnotereference}{}#2: #3}%
       \def\linenotelinenumber##1{#2}%
       \setupnote[#1][\c!numbercommand=\linenotelinenumber,\c!textcommand=\gobbleoneargument]%
       \setnote[#1]{#3}%

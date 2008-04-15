@@ -27,7 +27,6 @@ texlua = true
 -- when (windows) suffix binding is active.
 
 -- begin library merge
-
 -- filename : l-string.lua
 -- comment  : split off from luat-lib
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -162,7 +161,7 @@ end
 --~                 split = lpeg.Ct(c*(p*c)^0)
 --~                 splitters[separator] = split
 --~             end
---~             return lpeg.match(split,self) -- split:match(self)
+--~             return split:match(self)
 --~         else
 --~             return { }
 --~         end
@@ -415,6 +414,8 @@ if not versions then versions = { } end versions['l-lpeg'] = 1.001
 --~ lpeg.whitespace    = lpeg.S(' \r\n\f\t')^1
 --~ lpeg.nonwhitespace = lpeg.P(1-lpeg.whitespace)^1
 
+local hash = { }
+
 function lpeg.anywhere(pattern) --slightly adapted from website
     return lpeg.P { lpeg.P(pattern) + 1 * lpeg.V(1) }
 end
@@ -429,6 +430,20 @@ function lpeg.splitter(pattern, action)
     return (((1-lpeg.P(pattern))^1)/action+1)^0
 end
 
+
+local crlf    = lpeg.P("\r\n")
+local cr      = lpeg.P("\r")
+local lf      = lpeg.P("\n")
+local space   = lpeg.S(" \t\f\v")
+local newline = crlf + cr + lf
+local spacing = space^0 * newline
+local content = lpeg.Cs((1-spacing)^1) * spacing^-1 * (spacing * lpeg.Cc(""))^0
+
+local capture = lpeg.Ct(content^0)
+
+function string:splitlines()
+    return capture:match(self)
+end
 
 
 -- filename : l-table.lua
@@ -503,15 +518,6 @@ function table.prepend(t, list)
     end
 end
 
---~ function table.merge(t, ...)
---~     for _, list in ipairs({...}) do
---~         for k,v in pairs(list) do
---~             t[k] = v
---~         end
---~     end
---~     return t
---~ end
-
 function table.merge(t, ...) -- first one is target
     t = t or {}
     local lst = {...}
@@ -523,16 +529,6 @@ function table.merge(t, ...) -- first one is target
     return t
 end
 
---~ function table.merged(...)
---~     local tmp = { }
---~     for _, list in ipairs({...}) do
---~         for k,v in pairs(list) do
---~             tmp[k] = v
---~         end
---~     end
---~     return tmp
---~ end
-
 function table.merged(...)
     local tmp, lst = { }, {...}
     for i=1,#lst do
@@ -542,15 +538,6 @@ function table.merged(...)
     end
     return tmp
 end
-
---~ function table.imerge(t, ...)
---~     for _, list in ipairs({...}) do
---~         for _, v in ipairs(list) do
---~             t[#t+1] = v
---~         end
---~     end
---~     return t
---~ end
 
 function table.imerge(t, ...)
     local lst = {...}
@@ -562,16 +549,6 @@ function table.imerge(t, ...)
     end
     return t
 end
-
---~ function table.imerged(...)
---~     local tmp = { }
---~     for _, list in ipairs({...}) do
---~         for _,v in pairs(list) do
---~             tmp[#tmp+1] = v
---~         end
---~     end
---~     return tmp
---~ end
 
 function table.imerged(...)
     local tmp, lst = { }, {...}
@@ -720,7 +697,6 @@ do
             end
             if n == #t then
                 local tt = { }
-            --  for _,v in ipairs(t) do
                 for i=1,#t do
                     local v = t[i]
                     local tv = type(v)
@@ -775,7 +751,7 @@ do
             local inline  = compact and table.serialize_inline
             local first, last = nil, 0 -- #root cannot be trusted here
             if compact then
-              for k,v in ipairs(root) do -- NOT: for k=1,#root do
+              for k,v in ipairs(root) do -- NOT: for k=1,#root do (why)
                     if not first then first = k end
                     last = last + 1
                 end
@@ -957,7 +933,8 @@ end
 do
 
     local function flatten(t,f,complete)
-        for _,v in ipairs(t) do
+        for i=1,#t do
+            local v = t[i]
             if type(v) == "table" then
                 if complete or type(v[1]) == "table" then
                     flatten(v,f,complete)
@@ -1403,7 +1380,7 @@ do
     local one = lpeg.C(1-lpeg.S(''))^1
 
     function number.toset(n)
-        return lpeg.match(one,tostring(n))
+        return one:match(tostring(n))
     end
 end
 
@@ -2460,7 +2437,7 @@ function utils.merger._self_swap_(data,code)
 end
 
 function utils.merger._self_libs_(libs,list)
-    local result, f = "", nil
+    local result, f = { }, nil
     if type(libs) == 'string' then libs = { libs } end
     if type(list) == 'string' then list = { list } end
     for _, lib in ipairs(libs) do
@@ -2469,7 +2446,7 @@ function utils.merger._self_libs_(libs,list)
             f = io.open(name)
             if f then
             --  utils.report("merging library",name)
-                result = result .. "\n" .. f:read("*all") .. "\n"
+                result[#result+1] = f:read("*all")
                 f:close()
                 list = { pth } -- speed up the search
                 break
@@ -2478,7 +2455,7 @@ function utils.merger._self_libs_(libs,list)
             end
         end
     end
-    return result or ""
+    return table.concat(result, "\n\n")
 end
 
 function utils.merger.selfcreate(libs,list,target)
@@ -3924,6 +3901,8 @@ end
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
 
+-- get rid of piecewise here, just a gmatch is ok
+
 function input.aux.splitpathexpr(str, t, validate)
     -- no need for optimization, only called a few times, we can use lpeg for the sub
     t = t or { }
@@ -3931,7 +3910,7 @@ function input.aux.splitpathexpr(str, t, validate)
     while true do
         local done = false
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("([^{},]+){([^{}]-)}", function(a,b)
                 local t = { }
                 b:piecewise(",", function(s) t[#t+1] = a .. s end)
@@ -3941,7 +3920,7 @@ function input.aux.splitpathexpr(str, t, validate)
             if not ok then break end
         end
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("{([^{}]-)}([^{},]+)", function(a,b)
                 local t = { }
                 a:piecewise(",", function(s) t[#t+1] = s .. b end)
@@ -3951,7 +3930,7 @@ function input.aux.splitpathexpr(str, t, validate)
             if not ok then break end
         end
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("([,{]){([^{}]+)}([,}])", function(a,b,c)
                 ok, done = true, true
                 return a .. b .. c
@@ -3961,7 +3940,7 @@ function input.aux.splitpathexpr(str, t, validate)
         if not done then break end
     end
     while true do
-        ok = false
+        local ok = false
         str = str:gsub("{([^{}]-)}{([^{}]-)}", function(a,b)
             local t = { }
             a:piecewise(",", function(sa)
@@ -3975,7 +3954,7 @@ function input.aux.splitpathexpr(str, t, validate)
         if not ok then break end
     end
     while true do
-        ok = false
+        local ok = false
         str = str:gsub("{([^{}]-)}", function(a)
             ok = true
             return a
@@ -4844,7 +4823,7 @@ do
     resolvers.file = resolvers.filename
     resolvers.path = resolvers.pathname
 
-    function resolve(instance,str)
+    local function resolve(instance,str)
         if type(str) == "table" then
             for k, v in pairs(str) do
                 str[k] = resolve(instance,v) or v
@@ -5773,7 +5752,7 @@ if texconfig and not texlua then do
             ws("fonts load time           - %s seconds", input.loadtime(fonts))
         end
         if xml then
-            ws("xml load time             - %s seconds", input.loadtime(lxml))
+            ws("xml load time             - %s seconds (backreferences: %i, outer filtering time: %s)", input.loadtime(xml), #lxml.self, input.loadtime(lxml))
         end
         if mptopdf then
             ws("mps conversion time       - %s seconds", input.loadtime(mptopdf))
@@ -5810,6 +5789,10 @@ if texconfig and not texlua then do
         end
         if fonts then
             ws("loaded fonts              - %s", fonts.logger.report()) -- last because it is often a long list
+        end
+        if xml then -- so we are in mkiv, we need a different check
+        -- todo: \nofshipouts
+            ws("shipped out pages         - %i (of %i processed pages)", tex.count['nofshipouts'], tex.count['realpageno']-1) -- last because we want to see this
         end
     end
 
@@ -6155,7 +6138,6 @@ input.formats['texmfscripts']             = 'TEXMFSCRIPTS'
 input.formats['bitmap font']              = ''
 input.formats['lig files']                = 'LIGFONTS'
 
-
 -- end library merge
 
 -- We initialize some characteristics of this program. We need to
@@ -6243,8 +6225,7 @@ utils.report        = input.report
 input.defaultlibs   = { -- not all are needed
     'l-string.lua', 'l-lpeg.lua', 'l-table.lua', 'l-boolean.lua', 'l-number.lua', 'l-set.lua', 'l-unicode.lua',
     'l-md5.lua', 'l-os.lua', 'l-io.lua', 'l-file.lua', 'l-url.lua', 'l-dir.lua', 'l-utils.lua', 'l-tex.lua',
-'luat-env.lua',
-    'luat-lib.lua', 'luat-inp.lua', 'luat-tmp.lua', 'luat-zip.lua', 'luat-tex.lua'
+    'luat-env.lua', 'luat-lib.lua', 'luat-inp.lua', 'luat-tmp.lua', 'luat-zip.lua', 'luat-tex.lua'
 }
 
 -- todo: use environment.argument() instead of environment.arguments[]

@@ -430,7 +430,7 @@
 
 % pas op: aanpassen aan nieuwe layer hoek ankers en columnset
 
-\newcounter\nofbleeds % per pag
+\newcount\nofbleeds % per pag
 
 \def\setupbleeding
   {\dodoubleempty\getparameters[\??bg]}
@@ -456,7 +456,7 @@
   {\hbox\bgroup
    \xdef\bleedwidth {\the\hsize}%
    \xdef\bleedheight{\the\vsize}%
-   \doglobal\increment\nofbleeds
+   \global\advance\nofbleeds\plusone
    \getparameters[\??bg][#1]%
    \!!doneafalse % left
    \!!donebfalse % right
@@ -481,10 +481,10 @@
    \scratchdimen\@@bgwidth
    \ifdone
      \if!!donea
-       \advance\scratchdimen\MPx{\??bg:\nofbleeds}%
+       \advance\scratchdimen\MPx{\??bg:\number\nofbleeds}%
      \else\if!!doneb
        \scratchdimen\paperwidth
-       \advance\scratchdimen-\MPx{\??bg:\nofbleeds}%
+       \advance\scratchdimen-\MPx{\??bg:\number\nofbleeds}%
      \fi\fi
    \fi
    \advance\scratchdimen\@@bghoffset
@@ -493,9 +493,9 @@
    \ifdone
      \if!!donec
        \scratchdimen\paperheight
-       \advance\scratchdimen-\MPy{\??bg:\nofbleeds}%
+       \advance\scratchdimen-\MPy{\??bg:\number\nofbleeds}%
      \else\if!!doned
-       \advance\scratchdimen\MPy{\??bg:\nofbleeds}%
+       \advance\scratchdimen\MPy{\??bg:\number\nofbleeds}%
      \fi\fi
    \fi
    \advance\scratchdimen\@@bgvoffset
@@ -515,7 +515,7 @@
    \ht\scratchbox\@@bgheight
    \dp\scratchbox\zeropoint
    \ifdone
-     \hpos{\??bg:\nofbleeds}{\box\scratchbox}%
+     \hpos{\??bg:\number\nofbleeds}{\box\scratchbox}%
    \else
      \box\scratchbox
    \fi

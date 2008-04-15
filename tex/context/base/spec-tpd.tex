@@ -1235,30 +1235,23 @@
      {\immediate\pdfobj{[ #3 ]}%
       \dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
 
-% no, we sometimes need to keep track of the page number too
+% tricky .. too many xforms now
 %
-% \def\doPDFdictionaryobject#1#2#3%
-%   {\immediate\pdfobj{<< #3 >>}%
-%    \dosetobjectreference{#1}{#2}{\the\pdflastobj}}
-% \def\doPDFarrayobject#1#2#3%
-%   {\immediate\pdfobj{[ #3 ]}%
-%    \dosetobjectreference{#1}{#2}{\the\pdflastobj}}
+% \def\doreservePDFobject#1#2%
+%   {\pdfobj reserveobjnum{}%
+%    \driverreferenced\dosetobjectreference{#1}{#2}{\the\pdflastobj}}
+%
+% \def\doPDFreserveddictionaryobject#1#2#3%
+%   {\doPDFgetobjectnumber{#1}{#2}\PDFobjectnumber
+%    \immediate\pdfobj useobjnum \PDFobjectnumber {<< #3 >>}}
+%
+% \def\doPDFreservedarrayobject#1#2#3%
+%   {\doPDFgetobjectnumber{#1}{#2}\PDFobjectnumber
+%    \immediate\pdfobj useobjnum \PDFobjectnumber {[ #3 ]}}
 
-\def\doreservePDFobject#1#2%
-  {\pdfobj reserveobjnum{}%
-   \driverreferenced\dosetobjectreference{#1}{#2}{\the\pdflastobj}}
-
-\def\doPDFreserveddictionaryobject#1#2#3%
-  {\doPDFgetobjectnumber{#1}{#2}\PDFobjectnumber
-   \immediate\pdfobj useobjnum \PDFobjectnumber {<< #3 >>}}
-
-\def\doPDFreservedarrayobject#1#2#3%
-  {\doPDFgetobjectnumber{#1}{#2}\PDFobjectnumber
-   \immediate\pdfobj useobjnum \PDFobjectnumber {[ #3 ]}}
-
-\doreservePDFobject{FDF}{docuextgstates}
-\doreservePDFobject{FDF}{colorspaces}
-\doreservePDFobject{FDF}{docushades}
+% \doreservePDFobject{FDF}{docuextgstates}
+% \doreservePDFobject{FDF}{colorspaces}
+% \doreservePDFobject{FDF}{docushades}
 
 %D \macros
 %D   {defaultobjectreference,doPDFgetobjectreference}

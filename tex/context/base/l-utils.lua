@@ -60,7 +60,7 @@ function utils.merger._self_swap_(data,code)
 end
 
 function utils.merger._self_libs_(libs,list)
-    local result, f = "", nil
+    local result, f = { }, nil
     if type(libs) == 'string' then libs = { libs } end
     if type(list) == 'string' then list = { list } end
     for _, lib in ipairs(libs) do
@@ -69,7 +69,7 @@ function utils.merger._self_libs_(libs,list)
             f = io.open(name)
             if f then
             --  utils.report("merging library",name)
-                result = result .. "\n" .. f:read("*all") .. "\n"
+                result[#result+1] = f:read("*all")
                 f:close()
                 list = { pth } -- speed up the search
                 break
@@ -78,7 +78,7 @@ function utils.merger._self_libs_(libs,list)
             end
         end
     end
-    return result or ""
+    return table.concat(result, "\n\n")
 end
 
 function utils.merger.selfcreate(libs,list,target)

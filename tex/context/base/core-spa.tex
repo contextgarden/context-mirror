@@ -2990,10 +2990,10 @@
      \fi
    \relax}
 
-\newcounter \noftrackedpagestates
-\newif      \ifpagestatemismatch
-\let        \realpagestateno      \realfolio
-\chardef    \frozenpagestate      \zerocount
+\newcount \noftrackedpagestates
+\newif    \ifpagestatemismatch
+\newcount \realpagestateno
+\chardef  \frozenpagestate      \zerocount
 
 \def\dotrackpagestate#1#2%
   {\ifdoublesided \ifinpagebody \else
@@ -3002,16 +3002,16 @@
 
 \def\doforcedtrackpagestate#1#2%
   {\ifcase\frozenpagestate
-     \doglobal\increment\noftrackedpagestates\relax
-     \doglobal\increment#2\relax
-     \lazysavetaggedtwopassdata{#1}{\noftrackedpagestates}{#2}{\noexpand\realfolio}%
-     %\llap{\infofont\noftrackedpagestates/#2}% tracing
+     \global\advance\noftrackedpagestates\plusone
+     \global\advance#2\plusone
+     \lazysavetaggedtwopassdata{#1}{\number\noftrackedpagestates}{\number#2}{\noexpand\realfolio}%
+     %\llap{\infofont\number\noftrackedpagestates/\number#2}% tracing
    \fi}
 
 \def\doifrightpagestateelse#1#2%
   {\ifcase\frozenpagestate
      \pagestatemismatchfalse
-     \let\realpagestateno\realfolio
+     \realpagestateno\realfolio
      \ifinpagebody
        \ifdoublesided
          \ifodd\realpageno\relax
@@ -3021,9 +3021,9 @@
          \twopassdatafoundtrue
        \fi
      \else\ifdoublesided
-       \findtwopassdata{#1}{#2}%
+       \findtwopassdata{#1}{\number#2}%
        \iftwopassdatafound
-         \let\realpagestateno\twopassdata
+         \realpagestateno\twopassdata\relax
          \ifnum\twopassdata=\realpageno \else
            \pagestatemismatchtrue
          \fi
@@ -3052,10 +3052,10 @@
 \def\doifforcedrightpagestateelse#1#2%
   {\ifcase\frozenpagestate
      \pagestatemismatchfalse
-     \let\realpagestateno\realfolio
-     \findtwopassdata{#1}{#2}%
+     \realpagestateno\realfolio
+     \findtwopassdata{#1}{\number#2}%
      \iftwopassdatafound
-       \let\realpagestateno\twopassdata
+       \realpagestateno\twopassdata\relax
        \ifnum\twopassdata=\realpageno \else
          \pagestatemismatchtrue
        \fi
@@ -3083,15 +3083,15 @@
 
 % we can make more of these on top, but how to deal with mixed frozen states
 
-\definetwopasslist\s!paragraph \newcounter\nofraggedparagraphs
+\definetwopasslist\s!paragraph \newcount \nofraggedparagraphs
 
 \def\signalrightpage  {\dotrackpagestate      \s!paragraph\nofraggedparagraphs}
 \def\doifrightpageelse{\doifrightpagestateelse\s!paragraph\nofraggedparagraphs}
 
-\newcounter\pagesignallevel
+\newcount\pagesignallevel
 
 \def\startsignalrightpage % one may do a \postsignalrightplace
-  {\increment\pagesignallevel
+  {\advance\pagesignallevel\plusone
    \presignalrightpage
    \let\signalrightpage\relax
    \let\presignalrightpage\relax
@@ -3101,7 +3101,7 @@
 
 \def\stopsignalrightpage
   {\ifcase\pagesignallevel\or\postsignalrightpage\fi
-   \decrement\pagesignallevel}
+   \advance\pagesignallevel\minusone}
 
 \def\setraggedparagraphmode
   {\signalrightpage\doifrightpageelse} % move it there
@@ -3142,7 +3142,7 @@
 \def\docheckpagestatechange#1#2#3%
   {\pagechangedfalse
    \doforcedtrackpagestate{#2}{#3}%
-   \findtwopassdata{#2}{#3}%
+   \findtwopassdata{#2}{\number#3}%
    \iftwopassdatafound
      \ifnum\twopassdata>0\getvalue{#2:p:#1}\relax
        \pagechangedtrue

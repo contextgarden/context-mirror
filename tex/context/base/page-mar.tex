@@ -193,8 +193,8 @@
 \let    \margincontentseparator    \empty
 \def    \margincontentstrutheight  {\strutht}
 
-\newcounter\margincontentlevel
-\newdimen  \margincontentheight
+\newcount\margincontentlevel
+\newdimen\margincontentheight
 
 \def\setupinmargin
   {\dodoubleempty\dosetupinmargin}
@@ -700,8 +700,8 @@
   {\global\chardef\margintextcollected\plusone
    \edef\margincontenttag{#1}%
    \ifx\margincontenttag\empty
-     \doglobal\increment\margincontentlevel
-     \let\margincontenttag\margincontentlevel
+     \global\advance\margincontentlevel\plusone
+     \edef\margincontenttag{\number\margincontentlevel}%
    \fi
    \checkinmargin[\margincontenttag]%
    \doglobal \appendetoks
@@ -790,7 +790,7 @@
 % Yet undocumented, for a manual flush in for instance headers.
 
 \def\resetmargincontent
-  {\doglobal\newcounter\margincontentlevel
+  {\global\margincontentlevel\zerocount
    \global\chardef\margintextcollected\zerocount
    \global\collectedmargintexts\emptytoks}
 

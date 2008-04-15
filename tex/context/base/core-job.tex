@@ -32,21 +32,21 @@
 \let \allinputpaths      \empty
 \let \locatedfilepath    \empty
 
-\newcounter\textlevel
-\newcounter\fileprocesslevel
+\newcount\textlevel
+\newcount\fileprocesslevel
 
 \setvalue{\c!file::0}{\jobname}
 
 \def\processedfile % is used in styles, don't change !
-  {\getvalue{\c!file::\fileprocesslevel}}
+  {\getvalue{\c!file::\number\fileprocesslevel}}
 
 \def\dostarttextfile#1%
-  {\doglobal\increment\fileprocesslevel
-   \setxvalue{\c!file::\fileprocesslevel}{#1}%
+  {\global\advance\fileprocesslevel\plusone
+   \setxvalue{\c!file::\number\fileprocesslevel}{#1}%
    \@EA\doglobal\@EA\addtocommalist\@EA{#1}\processedfiles}
 
 \def\dostoptextfile
-  {\doglobal\decrement\fileprocesslevel}
+  {\global\advance\fileprocesslevel\minusone}
 
 \def\processlocalfile#1#2%
   {#1{#2}\donothing{\readfile{#2}\donothing\donothing}}
@@ -150,14 +150,14 @@
 
 \def\starttext
   {\doateverystarttext
-   \ifnum\textlevel=\zerocount
+   \ifcase\textlevel
      \registerfileinfo[begin]\jobname
      \expandafter\startcopyingblocks
    \fi
-   \doglobal\increment\textlevel\relax}
+   \global\advance\textlevel\plusone}
 
 \def\stoptext
-  {\doglobal\decrement\textlevel\relax
+  {\global\advance\textlevel\minusone
    \ifnum\textlevel>\zerocount \else
      \the\everystoptext
     %\the\everybye            %
@@ -221,7 +221,7 @@
    \processfile{#1}%
    \dostoptextfile}
 
-\newcounter\filelevel
+\newcount\filelevel
 
 \let\currentcomponent    \v!text
 \let\currentcomponentpath\f!currentpath
@@ -245,7 +245,7 @@
      \def\product     ##1 {#5{##1}}%
      \def\component   ##1 {#6{##1}}%
    \fi
-   \increment\filelevel\relax
+   \advance\filelevel\plusone
    \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
 
 \def\doprevlevel
@@ -255,7 +255,7 @@
    \ifnum\filelevel=\plusone
      \expandafter\stoptext
    \else
-     \decrement\filelevel\relax
+     \advance\filelevel\minusone
      \expandafter\endinput
    \fi}
 

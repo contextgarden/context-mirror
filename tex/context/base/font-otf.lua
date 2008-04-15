@@ -4378,7 +4378,7 @@ do
     local zwj  = 0x200D
 
     local isol = {
-         [0x0621] = true,
+         [0x0621] = true, [zwnj] = true,
     }
 
     local isol_fina = {
@@ -4394,7 +4394,7 @@ do
         [0x0640] = true, -- tadwil
         [0x0641] = true, [0x0642] = true, [0x0643] = true, [0x0644] = true, [0x0645] = true, [0x0646] = true, [0x0647] = true, [0x0649] = true, [0x064A] = true,
         [0x067E] = true,
-        [0x0686] = true,
+        [0x0686] = true, [zwj] = true,
     }
 
     local arab_warned = { }

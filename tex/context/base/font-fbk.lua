@@ -10,7 +10,8 @@ if not modules then modules = { } end modules ['font-fbk'] = {
 <p>This is very experimental code!</p>
 --ldx]]--
 
-fonts.fallbacks            = { }
+fonts                      = fonts or { }
+fonts.fallbacks            = fonts.fallbacks or { }
 fonts.vf.aux.combine.trace = false
 
 fonts.vf.aux.combine.commands["enable-tracing"] = function(g,v)
@@ -52,7 +53,7 @@ fonts.fallbacks['textcent'] = function (g)
     local c = string.byte("c")
     local t = table.fastcopy(g.characters[c])
     local s = fonts.tfm.scaled(g.specification.size or g.size)
-    local a = - math.tan(math.rad(g.italicangle))
+    local a = - math.tan(math.rad(g.italicangle or 0))
     local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
     if a == 0 then
         t.commands = {
@@ -88,7 +89,7 @@ fonts.fallbacks['texteuro'] = function (g)
     local c = string.byte("C")
     local t = table.fastcopy(g.characters[c])
     local s = fonts.tfm.scaled(g.specification.size or g.size)
-    local d = math.cos(math.rad(90+g.italicangle))
+    local d = math.cos(math.rad(90+(g.italicangle)))
     local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
     t.width = 1.05*t.width
     t.commands = {
@@ -109,13 +110,17 @@ fonts.vf.aux.combine.force_composed = false
 
 function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call location
     local chars = g.characters
+    local fastcopy = table.fastcopy
     local xchar = chars[string.byte("X")]
-    if xchar.description then
+    if xchar and xchar.description then
         local cap_lly = xchar.description.boundingbox[4]
-        local ita_cor = math.cos(math.rad(90+g.italicangle))
+        local ita_cor = math.cos(math.rad(90+(g.italicangle or 0)))
         local force = fonts.vf.aux.combine.force_composed
         local fallbacks = characters.context.fallbacks
         local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
+if not g.fonts then
+    g.fonts = { { name = g.name, size = g.size or -1000 } } -- fallback
+end
         for i,c in pairs(characters.data) do
             if force or not chars[i] then
                 local s = c.specials
@@ -126,7 +131,7 @@ function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call loc
                         local cc = c.category
                         if cc == 'll' or cc == 'lu' or cc == 'lt' then
                             local acc = s[3]
-                            local t = table.fastcopy(charschr)
+                            local t = fastcopy(charschr)
                             local d = t.description
                             d.name = c.adobename or "unknown"
                             d.unicode = i

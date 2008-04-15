@@ -304,12 +304,14 @@
 \let\presnapskip \!!zeropoint  \def\presnap {-}
 \let\postsnapskip\!!zeropoint  \let\postsnap\presnap
 
+\newcount\currentgridsnap
+
 \def\tracedsnapping
   {\iftracegridsnapping
      \llap
        {\startlayoutcomponent{gridsnaps}{grid snaps}%
         \infofont
-        \doglobal\increment\currentsnap
+        \global\advance\currentgridsnap\plusone
         \color[grid:three]{\vl\presnapskip
                     \vl\presnap
                     \vl\postsnap
@@ -320,7 +322,7 @@
     \extrasnapsign\extrasnapsign\or
                  0\extrasnapsign\fi
                     \fi
-                    \vl\currentsnap\vl}%
+                    \vl\the\currentgridsnap\vl}%
         \stoplayoutcomponent}%
    \fi}
 

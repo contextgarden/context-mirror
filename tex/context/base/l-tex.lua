@@ -8,7 +8,7 @@ if not versions then versions = { } end versions['l-tex'] = 1.001
 
 if not number then number = { } end
 
-number.dimenfactors = {
+local dimenfactors = {
     ["pt"] =             1/65536,
     ["in"] = (  100/ 7227)/65536,
     ["cm"] = (  254/ 7227)/65536,
@@ -22,32 +22,36 @@ number.dimenfactors = {
     ["nc"] = ( 5080/65043)/65536
 }
 
-function number.todimen(n,unit,fmt)
+local function todimen(n,unit,fmt)
     if type(n) == 'string' then
         return n
     else
-        return string.format(fmt or "%.5g%s",n*number.dimenfactors[unit or 'pt'],unit or 'pt')
+        unit = unit or 'pt'
+        return string.format(fmt or "%.5g%s", n*dimenfactors[unit], unit)
     end
 end
 
-function number.topoints      (n) return number.todimen(n,"pt") end
-function number.toinches      (n) return number.todimen(n,"in") end
-function number.tocentimeters (n) return number.todimen(n,"cm") end
-function number.tomillimeters (n) return number.todimen(n,"mm") end
-function number.toscaledpoints(n) return number.todimen(n,"sp") end
-function number.toscaledpoints(n) return n .. "sp" end
-function number.tobasepoints  (n) return number.todimen(n,"bp") end
-function number.topicas       (n) return number.todimen(n "pc") end
-function number.todidots      (n) return number.todimen(n,"dd") end
-function number.tociceros     (n) return number.todimen(n,"cc") end
-function number.tonewdidots   (n) return number.todimen(n,"nd") end
-function number.tonewciceros  (n) return number.todimen(n,"nc") end
+number.todimen      = todimen
+number.dimenfactors = dimenfactors
+
+function number.topoints      (n) return todimen(n,"pt") end
+function number.toinches      (n) return todimen(n,"in") end
+function number.tocentimeters (n) return todimen(n,"cm") end
+function number.tomillimeters (n) return todimen(n,"mm") end
+function number.toscaledpoints(n) return todimen(n,"sp") end
+function number.toscaledpoints(n) return      n .. "sp"  end
+function number.tobasepoints  (n) return todimen(n,"bp") end
+function number.topicas       (n) return todimen(n "pc") end
+function number.todidots      (n) return todimen(n,"dd") end
+function number.tociceros     (n) return todimen(n,"cc") end
+function number.tonewdidots   (n) return todimen(n,"nd") end
+function number.tonewciceros  (n) return todimen(n,"nc") end
 
 --~ for k,v in pairs{nil, "%.5f%s", "%.8g%s", "%.8f%s"} do
---~     print(number.todimen(65536))
---~     print(number.todimen(  256))
---~     print(number.todimen(65536,'pt',v))
---~     print(number.todimen(  256,'pt',v))
+--~     print(todimen(65536))
+--~     print(todimen(  256))
+--~     print(todimen(65536,'pt',v))
+--~     print(todimen(  256,'pt',v))
 --~ end
 
 -- todo: use different scratchdimen
@@ -64,7 +68,7 @@ function string.todimen(str)
     else
         local n, u = str:match("([%d%-%+%.]+)(%a%a)")
         if n and u then
-            return n/number.dimenfactors[u]
+            return n/dimenfactors[u]
         else
             return 0
         end
@@ -89,7 +93,7 @@ end
 
 if lua then do
 
-    local delayed = { } -- could also be done with closures
+    local delayed = { }
 
     function lua.delay(f)
         delayed[#delayed+1] = f
@@ -98,13 +102,13 @@ if lua then do
     function lua.flush_delayed(...)
         local t = delayed
         delayed = { }
-        for _, fun in ipairs(t) do
-            fun(...)
+        for i=1, #t do
+            t[i](...)
         end
     end
 
     function lua.flush(...)
-        tex.sprint("\\directlua 0 {lua.flush_delayed(" .. table.concat({...},',') .. ")}")
+        tex.sprint("\\directlua0{lua.flush_delayed(" .. table.concat({...},',') .. ")}")
     end
 
 end end

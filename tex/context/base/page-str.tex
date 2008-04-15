@@ -145,8 +145,8 @@
 
 \def\setmarknote[#1]#2%
   {\doglobal\incrementvalue{mn:#1:n}%
-   \setgvalue{mn:#1:t:\getvalue{mn:#1:n}}{#1}%
-   \expanded{\marking[#1]{\getvalue{mn:#1:n}}}}
+   \setgvalue{mn:#1:t:\getvalue{mn:#1:n}}{#2}%
+   \expanded{\marking[mn:#1]{\getvalue{mn:#1:n}}}}
 
 \def\flushmarknotes[#1]% assumes split
   {\begingroup

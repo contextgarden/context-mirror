@@ -45,15 +45,15 @@
 \ifx\hyphenatedurl\undefined \let\hyphenatedurl\firstofoneargument \fi
 
 %D \macros
-%D   {hyphenatedfile}
+%D   {hyphenatedfilename}
 %D
 %D For the moment we treat filenames in a similar way,
 %D
 %D \starttyping
-%D \hyphenatedfile{here/there/filename.suffix}
+%D \hyphenatedfilename{here/there/filename.suffix}
 %D \stoptyping
 
-\ifx\hyphenatedfile\undefined \let\hyphenatedfile\hyphenatedurl \fi
+\ifx\hyphenatedfilename\undefined \let\hyphenatedfilename\hyphenatedurl \fi
 
 % \def\test#1%
 %   {\dontleavehmode

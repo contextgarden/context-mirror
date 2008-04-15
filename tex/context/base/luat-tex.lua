@@ -189,65 +189,79 @@ if texconfig and not texlua then do
 
     -- this will become: ctx.install_statistics(fnc() return ..,.. end) etc
 
-    function ctx.show_statistics()
-        local function ws(...)
-            ctx.writestatus("mkiv lua stats",string.format(...))
-        end
+    local statusinfo, n = { }, 0
+
+    function ctx.register_statistics(tag,pattern,fnc)
+        statusinfo[#statusinfo+1] = { tag, pattern, fnc }
+        if #tag > n then n = #tag end
+    end
+
+    function ctx.show_statistics() -- todo: move calls
         if caches then
-            ws("used config path          - %s", caches.configpath(texmf.instance))
-            ws("used cache path           - %s", caches.path)
+            ctx.register_statistics("used config path", "%s", function() return caches.configpath(texmf.instance) end)
+            ctx.register_statistics("used cache path", "%s", function() return caches.path end)
         end
         if status.luabytecodes > 0 and input.storage and input.storage.done then
-            ws("modules/dumps/instances   - %s/%s/%s", status.luabytecodes-500, input.storage.done, status.luastates)
+            ctx.register_statistics("modules/dumps/instances", "%s/%s/%s", function() return status.luabytecodes-500, input.storage.done, status.luastates end)
         end
         if texmf.instance then
-            ws("input load time           - %s seconds", input.loadtime(texmf.instance))
+            ctx.register_statistics("input load time", "%s seconds", function() return input.loadtime(texmf.instance) end)
         end
         if fonts then
-            ws("fonts load time           - %s seconds", input.loadtime(fonts))
+            ctx.register_statistics("fonts load time","%s seconds", function() return input.loadtime(fonts) end)
         end
         if xml then
-            ws("xml load time             - %s seconds (backreferences: %i, outer filtering time: %s)", input.loadtime(xml), #lxml.self, input.loadtime(lxml))
+            ctx.register_statistics("xml load time", "%s seconds, backreferences: %i, outer filtering time: %s", function() return input.loadtime(xml), #lxml.self, input.loadtime(lxml) end)
         end
         if mptopdf then
-            ws("mps conversion time       - %s seconds", input.loadtime(mptopdf))
+            ctx.register_statistics("mps conversion time", "%s seconds", function() return input.loadtime(mptopdf) end)
         end
         if nodes then
-            ws("node processing time      - %s seconds (including kernel)", input.loadtime(nodes))
+            ctx.register_statistics("node processing time", "%s seconds (including kernel)", function() return input.loadtime(nodes) end)
         end
         if kernel then
-            ws("kernel processing time    - %s seconds", input.loadtime(kernel))
+            ctx.register_statistics("kernel processing time", "%s seconds", function() return input.loadtime(kernel) end)
         end
         if attributes then
-            ws("attribute processing time - %s seconds", input.loadtime(attributes))
+            ctx.register_statistics("attribute processing time", "%s seconds", function() return input.loadtime(attributes) end)
         end
         if languages then
-            ws("language load time        - %s seconds (n=%s)", input.loadtime(languages), languages.hyphenation.n())
+            ctx.register_statistics("language load time", "%s seconds, n=%s", function() return input.loadtime(languages), languages.hyphenation.n() end)
         end
         if figures then
-            ws("graphics processing time  - %s seconds (n=%s) (including tex)", input.loadtime(figures), figures.n or "?")
+            ctx.register_statistics("graphics processing time", "%s seconds, n=%s (including tex)", function() return input.loadtime(figures), figures.n or "?" end)
         end
         if metapost then
-            ws("metapost processing time  - %s seconds (loading: %s seconds, execution: %s seconds, n: %s)", input.loadtime(metapost), input.loadtime(mplib), input.loadtime(metapost.exectime), metapost.n)
+            ctx.register_statistics("metapost processing time", "%s seconds, loading: %s seconds, execution: %s seconds, n: %s", function() return input.loadtime(metapost), input.loadtime(mplib), input.loadtime(metapost.exectime), metapost.n end)
         end
         if status.luastate_bytes then
-            ws("current memory usage      - %s bytes", status.luastate_bytes)
+            ctx.register_statistics("current memory usage", "%s bytes", function() return status.luastate_bytes end)
         end
         if nodes then
-            ws("cleaned up reserved nodes - %s nodes, %s lists (of %s)", nodes.cleanup_reserved(tex.count[24])) -- \topofboxstack
-        end
-        if languages then
-            ws("loaded patterns           - %s", languages.logger.report())
+            ctx.register_statistics("cleaned up reserved nodes", "%s nodes, %s lists of %s", function() return nodes.cleanup_reserved(tex.count[24]) end) -- \topofboxstack
         end
         if status.node_mem_usage then
-            ws("node memory usage         - %s", status.node_mem_usage)
+            ctx.register_statistics("node memory usage", "%s", function() return status.node_mem_usage end)
+        end
+        if languages then
+            ctx.register_statistics("loaded patterns", "%s", function() return languages.logger.report() end)
         end
         if fonts then
-            ws("loaded fonts              - %s", fonts.logger.report()) -- last because it is often a long list
+            ctx.register_statistics("loaded fonts", "%s", function() return fonts.logger.report() end)
         end
         if xml then -- so we are in mkiv, we need a different check
-        -- todo: \nofshipouts
-            ws("shipped out pages         - %i (of %i processed pages)", tex.count['nofshipouts'], tex.count['realpageno']-1) -- last because we want to see this
+            ctx.register_statistics("runtime", "%s seconds, %i processed pages, %i shipped pages, %.3f pages/second", function()
+                input.stoptiming(texmf)
+                local runtime = input.loadtime(texmf)
+                local shipped = tex.count['nofshipouts']
+                local pages = tex.count['realpageno'] - 1
+                local persecond = shipped / runtime
+                return runtime, pages, shipped, persecond
+            end)
+        end
+        for _, t in ipairs(statusinfo) do
+            local tag, pattern, fnc = t[1], t[2], t[3]
+            ctx.writestatus("mkiv lua stats", string.format("%s - %s", tag:rpadd(n," "), pattern:format(fnc())))
         end
     end
 
@@ -263,9 +277,12 @@ if texconfig and not texlua then
 
     if not texmf then texmf = { } end
 
+    input.starttiming(texmf)
+
     if not texmf.instance then
 
         if not texmf.instance then -- prevent a second loading
+
 
             texmf.instance            = input.reset()
             texmf.instance.progname   = environment.progname or 'context'

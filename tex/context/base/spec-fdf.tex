@@ -177,8 +177,8 @@
 \def\checkPDFextgstates
   {\ifx\docuPDFextgstates\empty \else
      \ifnum\realpageno=\lastpage\relax
-      %\doreservePDFobject{FDF}{docuextgstates}%
-      \doPDFreserveddictionaryobject{FDF}{docuextgstates}{\docuPDFextgstates}%
+      %\doPDFreserveddictionaryobject{FDF}{docuextgstates}{\docuPDFextgstates}%
+       \doPDFdictionaryobject{FDF}{docuextgstates}{\docuPDFextgstates}%
      \fi
      \doPDFgetobjectreference{FDF}{docuextgstates}\PDFobjectreference
      \doPDFpageresource{/ExtGState \PDFobjectreference}%
@@ -191,28 +191,6 @@
 \def\appendtoPDFdocumentextgstates#1%
   {\xdef\docuPDFextgstates{\docuPDFextgstates\space#1}}
 
-% this can save a pass, but we need to handle dpx then first; for
-% that we need a 'direct special'
-%
-% \def\checkPDFextgstates
-%   {\ifx\docuPDFextgstates\empty \else
-%      \doreservePDFobject{FDF}{docuextgstates}%
-%      \gdef\checkPDFextgstates
-%        {\doPDFgetobjectreference{FDF}{docuextgstates}\PDFobjectreference
-%         \doPDFpageresource{/ExtGState \PDFobjectreference}}%
-%      \checkPDFextgstates
-%    \fi}
-%
-% \appendtoksonce
-%    \ifx\docuPDFextgstates\empty \else
-%      \doPDFreserveddictionaryobject{FDF}{docuextgstates}\docuPDFextgstates
-%    \fi
-% \to \everybye
-%
-% \appendtoksonce
-%   \checkPDFextgstates
-% \to \everyshipout
-
 %D Another special mechanism (needed for color separation):
 
 \let\docuPDFcolorspaces\empty
@@ -220,8 +198,8 @@
 \def\checkPDFcolorspaces
   {\ifx\docuPDFcolorspaces\empty \else
      \ifnum\realpageno=\lastpage\relax
-       %\doreservePDFobject{FDF}{colorspaces}%
-       \doPDFreserveddictionaryobject{FDF}{colorspaces}{\docuPDFcolorspaces}%
+      %\doPDFreserveddictionaryobject{FDF}{colorspaces}{\docuPDFcolorspaces}%
+       \doPDFdictionaryobject{FDF}{colorspaces}{\docuPDFcolorspaces}%
      \fi
      \doPDFgetobjectreference{FDF}{colorspaces}\PDFobjectreference
      \doPDFpageresource{/ColorSpace \PDFobjectreference}%
@@ -241,8 +219,8 @@
 \def\checkPDFshades
   {\ifx\docuPDFshades\empty \else
      \ifnum\realpageno=\lastpage\relax
-       %\doreservePDFobject{FDF}{docushades}%
-       \doPDFreserveddictionaryobject{FDF}{docushades}{\docuPDFshades}%
+      %\doPDFreserveddictionaryobject{FDF}{docushades}{\docuPDFshades}%
+       \doPDFdictionaryobject{FDF}{docushades}{\docuPDFshades}%
      \fi
      \doPDFgetobjectreference{FDF}{docushades}\PDFobjectreference
      \doPDFpageresource{/Shading \PDFobjectreference}%
@@ -3304,13 +3282,13 @@
 
 \let\collectedPDFresources\empty
 
-\def\collectPDFresources
-  {\doifobjectreferencefoundelse{FDF}{docushades}
+\def\collectPDFresources % suboptimal
+  {\doifobjectreferencefoundelse{FDF}{docushades} % redundant, we have an reserved object now
      {\doPDFgetobjectreference{FDF}{docushades}\PDFobjectreference
-      \xdef\collectedPDFresources{\collectedPDFresources/Shading    \PDFobjectreference}}\donothing
+      \xdef\collectedPDFresources{\collectedPDFresources/Shading \PDFobjectreference}}\donothing
    \doifobjectreferencefoundelse{FDF}{docuextgstates}
      {\doPDFgetobjectreference{FDF}{docuextgstates}\PDFobjectreference
-      \xdef\collectedPDFresources{\collectedPDFresources/ExtGState  \PDFobjectreference}}\donothing
+      \xdef\collectedPDFresources{\collectedPDFresources/ExtGState \PDFobjectreference}}\donothing
    \doifobjectreferencefoundelse{FDF}{colorspaces}
      {\doPDFgetobjectreference{FDF}{colorspaces}\PDFobjectreference
       \xdef\collectedPDFresources{\collectedPDFresources/ColorSpace \PDFobjectreference}}\donothing

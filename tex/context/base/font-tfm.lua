@@ -191,6 +191,9 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
     for k,v in pairs(tfmtable) do
         t[k] = (type(v) == "table" and { }) or v
     end
+    if tfmtable.fonts then
+        t.fonts = table.fastcopy(tfmtable.fonts)
+    end
  -- local zerobox = { 0, 0, 0, 0 }
     local tp = t.parameters
     for k,v in pairs(tfmtable.parameters) do
@@ -266,7 +269,7 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
                 local key = ivc[1]
                 if key == "right" or key == "left" or key == "down" or key == "up" then
                     tt[#tt+1] = { key, ivc[2]*delta }
-                else
+                else -- not comment
                     tt[#tt+1] = ivc -- shared since in cache and untouched
                 end
             end

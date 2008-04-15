@@ -445,7 +445,7 @@
 %D or whatever. Because \type{\overstrike} uses the same
 %D method, the settings also apply to that macro.
 
-\newcounter\underbarlevel
+\newcount\underbarlevel
 
 \def\underbarmethoda#1#2#3% RULE
   {\hbox to #1{\vrule\!!width#1\!!height#2\!!depth#3}}
@@ -481,7 +481,6 @@
    \dimen0=\@@onbottomoffset
    \dimen0=\underbarlevel\dimen0
    \ifdone \else
-    %\advance\dimen0 -1pt
      \advance\dimen0 -\strutht
    \fi
    \dimen2\dimen0
@@ -507,7 +506,7 @@
 
 \unexpanded\def\underbar
   {\bgroup
-   \increment\underbarlevel
+   \advance\underbarlevel\plusone
    \donetrue
    \dounderbar\betweenunderbarwords}
 
@@ -522,19 +521,19 @@
 
 \unexpanded\def\underbars
   {\bgroup
-   \increment\underbarlevel
+   \advance\underbarlevel\plusone
    \donetrue
    \dounderbar\betweenunderbarspaces}
 
 \unexpanded\def\overbar
   {\bgroup
-   \decrement\underbarlevel
+   \advance\underbarlevel\minusone
    \donefalse
    \dounderbar\betweenunderbarwords}
 
 \unexpanded\def\overbars
   {\bgroup
-   \decrement\underbarlevel
+   \advance\underbarlevel\minusone
    \donefalse
    \dounderbar\betweenunderbarspaces}
 

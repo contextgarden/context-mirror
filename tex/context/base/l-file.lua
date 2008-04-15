@@ -44,6 +44,8 @@ function file.extname(name)
     return name:match("^.+%.([^/\\]-)$") or  ""
 end
 
+file.suffix = file.extname
+
 function file.stripsuffix(name)
     return (name:gsub("%.[%a%d]+$",""))
 end

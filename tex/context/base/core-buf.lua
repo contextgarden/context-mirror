@@ -145,7 +145,7 @@ function buffers.save(name)
         name = tex.jobname
     end
     local b, f = buffers.data[name], tex.jobname .. "-" .. name .. ".tmp"
-    b = (b and type(b) == "table" and table.join(b)) or b or ""
+    b = (b and type(b) == "table" and table.join(b,"\n")) or b or ""
     io.savedata(f,b)
 end
 

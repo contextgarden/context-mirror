@@ -175,17 +175,19 @@
     string txtpref ; txtpref := "00001::::" ;
 \stopMPextensions
 
+\newcount\metatxtcounter
+
 \long\def\dodofiltersometxt#1#2#3%
   {\ifx#2\empty
    \else
-     \increment\txtcounter
-     \TeXtext\txtcounter{#1}%
+     \advance\metatxtcounter\plusone
+     \TeXtext{\the\metatxtcounter}{#1}%
      \expandafter\filtersometxt
    \fi#2#3}
 
 \long\def\redofiltersometxt[#1]#2%
-  {\increment\txtcounter
-   \TeXtext[#1]\txtcounter{#2}%
+  {\advance\metatxtcounter\plusone
+   \TeXtext[#1]{\the\metatxtcounter}{#2}%
    \filtersometxt}
 
 \long\def\filtersometxt#1\sometxt
@@ -196,7 +198,7 @@
 % \filtersometxt abc\sometxt{def};hij\sometxt{klm};\sometxt{}\empty\relax
 
 \long\def\flushTeXtexts#1%
-  {\newcounter\txtcounter
+  {\metatxtcounter\zerocount
    \dostartTeXtexts
      \the\collectedmptexts
      \filtersometxt#1\sometxt{}\empty\relax
@@ -205,7 +207,7 @@
      \immediate\write\MPwrite{loadtxts ; txtnext := 0 ;}%
      \global\collectedmptexts\emptytoks
    \fi
-   \newcounter\txtcounter}
+   \metatxtcounter\zerocount}
 
 % \long\def\sometxt#1{sometxt(nexttxt)} % to be used in mp definitions, no ; here
 

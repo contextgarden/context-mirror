@@ -142,43 +142,44 @@
 % \NC 500 \NC \NC 20 \NC \NC 100 \NC \NR
 % \stoptabulate
 
-\newtoks    \tabulatepreamble
-\newtoks    \tabulatebefore
-\newtoks    \tabulateafter
-\newtoks    \tabulatebmath
-\newtoks    \tabulateemath
-\newtoks    \tabulatefont
-\newtoks    \tabulatesettings
-\newtoks    \tabulatedummy
+\newtoks  \tabulatepreamble
+\newtoks  \tabulatebefore
+\newtoks  \tabulateafter
+\newtoks  \tabulatebmath
+\newtoks  \tabulateemath
+\newtoks  \tabulatefont
+\newtoks  \tabulatesettings
+\newtoks  \tabulatedummy
 
-\newcount   \nofautotabulate % \newcounter \nofautotabulate
-\newcount   \tabulatecolumns % \newcounter \tabulatecolumns
+\newcount \nofautotabulate
+\newcount \tabulatecolumns
+\newcount \tabulatecolumn
 
-\newcounter \tabulateminplines
-\newcounter \tabulatemaxplines
+\newcount \tabulateminplines
+\newcount \tabulatemaxplines
 
-\newif      \ifautotabulate
-\newif      \ifsplittabulate         \splittabulatetrue
+\newif    \ifautotabulate
+\newif    \ifsplittabulate         \splittabulatetrue
 
-\newif      \ifhandletabulatepbreak  \handletabulatepbreaktrue
-\newif      \iftabulatenopbreak      \tabulatenopbreakfalse
+\newif    \ifhandletabulatepbreak  \handletabulatepbreaktrue
+\newif    \iftabulatenopbreak      \tabulatenopbreakfalse
 
-\newif      \iftabulateequal
-\newif      \iftracetabulate
-\newif      \ifframedtabulate
+\newif    \iftabulateequal
+\newif    \iftracetabulate
+\newif    \ifframedtabulate
 
-\newdimen   \tabulatepwidth
-\newdimen   \tabulatewidth
-\newdimen   \tabulateunit
-\newdimen   \tabulatemaxpheight
+\newdimen \tabulatepwidth
+\newdimen \tabulatewidth
+\newdimen \tabulateunit
+\newdimen \tabulatemaxpheight
 
-\newbox     \tabulatebox
+\newbox   \tabulatebox
 
 % [|lg{.}|] => \NG 12.34 \NC
 
 \gdef\handletabulatecharalign#1 % space delimited !
-  {\edef\alignmentclass{\tabulatecolumn}%
-   \edef\alignmentcharacter{\getvalue{\@@tabalign@@\tabulatecolumn}}%
+  {\edef\alignmentclass{\the\tabulatecolumn}%
+   \edef\alignmentcharacter{\getvalue{\@@tabalign@@\the\tabulatecolumn}}%
    \ifcase\tabulatepass\or
      \setfirstpasscharacteralign\checkalignment{#1}%
    \fi % force hsize
@@ -234,7 +235,7 @@
    \fi}
 
 \def\checktabulatesetups
-  {\getvalue{\@@tabsetups@@\tabulatecolumn}}
+  {\getvalue{\@@tabsetups@@\the\tabulatecolumn}}
 
 \let\pretabrule \donothing
 \let\posttabrule\donothing
@@ -269,8 +270,8 @@
   % some entries can be left out if we test for them being set
    \@EA\appendtoks          \@EA&\@EA\hskip\pretabskip\pretabrule##&\to\!!toksa
        \appendtoks                                     \ignorespaces\to\!!toksa
-  %\@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\tabulatecolumns}\to\!!toksa
-   \@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\the\tabulatecolumns}\to\!!toksa
+%    \@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\the\tabulatecolumns}\to\!!toksa
+   \@EA\appendtoks\@EA\global\@EA\tabulatecolumn\the\tabulatecolumns\relax\to\!!toksa
        \appendtoks                              \checktabulatesetups\to\!!toksa
        \appendtoks                                \checktabulatehook\to\!!toksa
    \@EA\appendtoks                                      \preamblebox\to\!!toksa
@@ -517,13 +518,13 @@
    \dp\tabulatebox\strutdp
    \box\tabulatebox}
 
-\def\dotabulatehook  {\getvalue{\@@tabhook@@  \tabulatecolumn}}
-\def\dotabulatealign {\getvalue{\@@tabalign@@ \tabulatecolumn}}
+\def\dotabulatehook  {\getvalue{\@@tabhook@@  \the\tabulatecolumn}}
+\def\dotabulatealign {\getvalue{\@@tabalign@@ \the\tabulatecolumn}}
 
 \def\resettabulatepheight
-  {\globallet\tabulateminplines\!!plusone
+  {\global\tabulateminplines\plusone
    \getnoflines\tabulatemaxpheight
-   \xdef\tabulatemaxplines{\the\noflines}%
+   \global\tabulatemaxplines\noflines
    \global\tabulatemaxpheight\zeropoint}
 
 \def\settabulatepheight
@@ -541,7 +542,7 @@
           \ifnum\tabulateminplines=\plusone
             \dotabulatenobreak
           \fi
-          \doglobal\increment\tabulateminplines
+          \global\advance\tabulateminplines\plusone
           \ifnum\tabulateminplines=\tabulatemaxplines\relax
             \dotabulatenobreak
           \fi
@@ -757,7 +758,7 @@
      {\appendtoks{##1}\to\!!toksb\do}%
    \def\dodododo##1%
      {\appendtoks##1\to\!!toksb\do}%
-   \globallet\tabulatecolumn\!!zerocount
+   \global\tabulatecolumn\zerocount
 %    \do#3\relax
 \bgroup\@@useotherbar\expanded{\egroup\noexpand\do#3\relax}%
    \processcontent
@@ -903,6 +904,10 @@
 
 \chardef\tabulaterepeathead\zerocount
 
+\newcount\noftabulatelines
+\newcount\totalnoftabulatelines
+\newcount\minusnoftabulatelines
+
 \bgroup  \catcode`\|=\@@other
 
 \gdef\processtabulate[|#1|]% in the process of optimizing
@@ -922,9 +927,9 @@
    \def\postabskip{.5\tabulateunit}%
    \global\tabulatecolumns\zerocount
    \global\nofautotabulate\zerocount
-   \doglobal\newcounter\noftabulatelines
-   \let\totalnoftabulatelines\noftabulatelines
-   \let\minusnoftabulatelines\noftabulatelines
+   \global\noftabulatelines\zerocount
+   \totalnoftabulatelines\noftabulatelines
+   \minusnoftabulatelines\noftabulatelines
    \global\tabulatepwidth\zeropoint
    \global\tabulateequalfalse
    \resettabulatepheight
@@ -957,10 +962,10 @@
    \def\HR{\doHR\zerocount}
    \def\HL{\doHL\zerocount}
    \unexpanded \def\NR % next row
-     {\doglobal\increment\noftabulatelines
+     {\global\advance\noftabulatelines\plusone
       \global\tabulatefirstflushedfalse
       \global\tabulateequalfalse
-      \globallet\tabulatecolumn\!!zerocount
+      \global\tabulatecolumn\zerocount
       \resettabulatepheight
       \unskip\unskip\crcr\flushtabulated
       \TABLEnoalign
@@ -1013,9 +1018,9 @@
    %      {\global\setbox\csname\@@tabbox@@\recurselevel\endcsname\box\voidb@x}}%
    \initializetableboxes\tabulatecolumns
    \appendtoks&##\to\!!toksa
-   \appendtoks\doglobal\increment\tabulatecolumn\to\!!toksa
+   \appendtoks\global\advance\tabulatecolumn\plusone\to\!!toksa
    \appendtoks\NC\unskip\unskip\crcr\flushtabulated\to\tabulatedummy % no count
-   \globallet\tabulatecolumn\!!zerocount
+   \global\tabulatecolumn\zerocount
    \resettabulatepheight
    \def\bskip
      {\setbox\tabulatebox\vbox\bgroup
@@ -1088,7 +1093,7 @@
      \gdef\flushtabulated
        {\TABLEnoalign % noalign % no interference !
           {\global\let\flushtabulatedindeed\empty
-           \globallet\tabulatecolumn\!!zerocount
+           \global\tabulatecolumn\zerocount
            \handletabulatepbreak
            \dorecurse\tabulatecolumns % was: \noftabcolumns
              {\ifvoid\tablebox\recurselevel\else
@@ -1107,10 +1112,9 @@
      \def\eskip % vertical strut added august 2003
        {\par\verticalstrut\vskip-\struttotal\egroup}%
    \fi
-   \let\totalnoftabulatelines\noftabulatelines
-   \let\minusnoftabulatelines\noftabulatelines
-   \decrement\minusnoftabulatelines
-   \doglobal\newcounter\noftabulatelines
+   \totalnoftabulatelines\noftabulatelines
+   \minusnoftabulatelines\numexpr\noftabulatelines+\minusone\relax
+   \global\noftabulatelines\zerocount
 % not satisfying
 %    \def\doHL##1%
 %      {\TABLEnoalign

@@ -74,7 +74,7 @@ function metapost.make(name, target, version)
     ) )
     if mpx then
         input.starttiming(metapost.exectime)
-        local result = mpx:execute(format('\\ ; boolean mplib ; mplib := true ; string mp_parent_version ; mp_parent_version := "%s" ; show mp_parent_version ; input %s ;', version or "unknown", name))
+        local result = mpx:execute(format('\\ ; boolean mplib ; mplib := true ; string mp_parent_version ; mp_parent_version := "%s" ; show mp_parent_version ; input %s ; dump ;', version or "unknown", name))
         input.stoptiming(metapost.exectime)
         if mpx then
             mpx:finish()
@@ -162,7 +162,28 @@ function metapost.format(name)
     return mpx
 end
 
-function metapost.process(mpx, data, trialrun, showlog)
+function metapost.reset(mpx)
+    if not mpx then
+        -- nothing
+    elseif type(mpx) == "string" then
+        if mpxformats[mpx] then
+            mpxformats[mpx]:finish()
+            mpxformats[mpx] = nil
+        end
+    else
+        for name=1,#mpxformats do
+            if mpxformats[name] == mpx then
+                mpxformats[name] = nil
+                break
+            end
+        end
+        mpx:finish()
+    end
+end
+
+metapost.showlog = false
+
+function metapost.process(mpx, data, trialrun, flusher)
     local result
     if type(mpx) == "string" then
         mpx = metapost.format(mpx) -- goody
@@ -175,16 +196,15 @@ function metapost.process(mpx, data, trialrun, showlog)
                 if d then
                     input.starttiming(metapost.exectime)
                     result = mpx:execute(d)
---~ print(">>>",d)
                     input.stoptiming(metapost.exectime)
                     if not result then
                         metapost.report("error", "no result object returned")
                     elseif result.status > 0 then
-                        metapost.report("error",result.error or result.term or result.log or "unknown")
-                    elseif showlog then
-                        metapost.report("info",result.term or "unknown")
+                        metapost.report("error",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
+                    elseif metapost.showlog then
+                        metapost.report("info",result.term or "no-term")
                     elseif result.fig then
-                        metapost.convert(result, trialrun)
+                        metapost.convert(result, trialrun, flusher)
                     end
                 else
                     metapost.report("error", "invalid graphic component " .. i)
@@ -194,15 +214,14 @@ function metapost.process(mpx, data, trialrun, showlog)
             input.starttiming(metapost.exectime)
             result = mpx:execute(data)
             input.stoptiming(metapost.exectime)
---~ print(">>>",data)
             if not result then
                 metapost.report("error", "no result object returned")
             elseif result.status > 0 then
-                metapost.report("error",result.error or result.term or result.log or "unknown")
-            elseif showlog then
-                metapost.report("info",result.term or "unknown")
+                metapost.report("error",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
+            elseif metapost.showlog then
+                metapost.report("info",result.term or "no-term")
             elseif result.fig then
-                metapost.convert(result, trialrun)
+                metapost.convert(result, trialrun, flusher)
             end
         end
         input.stoptiming(metapost)

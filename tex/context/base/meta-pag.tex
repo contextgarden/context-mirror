@@ -136,7 +136,7 @@
 %D The \type {TextArea*} macros can be used to determine
 %D overlap.
 
-\newcounter\currentMPtextareadata
+\newcount\currentMPtextareadata
 
 \newtoks\MPsavedtextareadata
 \newtoks\MPtextareadata
@@ -147,11 +147,11 @@
 \def\registerMPtextarea#1%
   {\ifpositioning
      \bgroup
-     \doglobal\increment\currentMPtextareadata
-    %\hpos{gbd:\currentMPtextareadata}{#1}%
-     \hpos{gbd:\currentMPtextareadata}%
+     \global\advance\currentMPtextareadata\plusone
+    %\hpos{gbd:\the\currentMPtextareadata}{#1}%
+     \hpos{gbd:\the\currentMPtextareadata}%
        {\iftracetextareas\boxrulewidth1.5pt\ruledhbox\fi{#1}}%
-     \edef\!!stringa{gbd:\currentMPtextareadata}%
+     \edef\!!stringa{gbd:\the\currentMPtextareadata}%
      \edef\!!stringa{RegisterTextArea(%
        \MPx\!!stringa,\MPy\!!stringa,%
        \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
@@ -164,11 +164,11 @@
 \def\registerMPlocaltextarea#1%
   {\ifpositioning
      \bgroup
-     \doglobal\increment\currentMPtextareadata
-    %\hpos{gbd:\currentMPtextareadata}{#1}%
-     \hpos{gbd:\currentMPtextareadata}%
+     \global\advance\currentMPtextareadata\plusone
+    %\hpos{gbd:\the\currentMPtextareadata}{#1}%
+     \hpos{gbd:\the\currentMPtextareadata}%
        {\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
-     \edef\!!stringa{gbd:\currentMPtextareadata}%
+     \edef\!!stringa{gbd:\the\currentMPtextareadata}%
      \edef\!!stringa{RegisterLocalTextArea(%
        \MPx\!!stringa,\MPy\!!stringa,%
        \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
@@ -186,8 +186,8 @@
 %   {\ifpositioning
 %      \bgroup
 %      \ifx\namedtextarea\empty
-%        \doglobal\increment\currentMPtextareadata
-%        \edef\namedtextarea{gbd:\currentMPtextareadata}%
+%        \global\advance\currentMPtextareadata\plusone
+%        \edef\namedtextarea{gbd:\the\currentMPtextareadata}%
 %      \fi
 %      \hpos\namedtextarea{\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
 %      \edef\ascii{RegisterLocalTextArea(%

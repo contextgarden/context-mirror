@@ -12,11 +12,11 @@ local abs, sqrt, round = math.abs, math.sqrt, math.round
 
 metapost = metapost or { }
 
-function metapost.convert(result, trialrun)
+function metapost.convert(result, trialrun, flusher)
     if trialrun then
-        metapost.parse(result)
+        metapost.parse(result, flusher)
     else
-        metapost.flush(result)
+        metapost.flush(result, flusher)
     end
 end
 
@@ -28,24 +28,27 @@ function metapost.comment(message)
     end
 end
 
-function metapost.startfigure(llx,lly,urx,ury,message)
+metapost.flushers = { }
+metapost.flushers.pdf = { }
+
+function metapost.flushers.pdf.startfigure(n,llx,lly,urx,ury,message)
     metapost.n = metapost.n + 1
     sprint(tex.ctxcatcodes,format("\\startMPLIBtoPDF{%s}{%s}{%s}{%s}",llx,lly,urx,ury))
     if message then metapost.comment(message) end
 end
 
-function metapost.stopfigure(message)
+function metapost.flushers.pdf.stopfigure(message)
     if message then metapost.comment(message) end
     sprint(tex.ctxcatcodes,"\\stopMPLIBtoPDF")
 end
 
-function metapost.flushfigure(pdfliterals) -- table
+function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
         sprint(tex.ctxcatcodes,"\\MPLIBtoPDF{",join(pdfliterals,"\n"),"}")
     end
 end
 
-function metapost.textfigure(font,size,text,width,height,depth)
+function metapost.flushers.pdf.textfigure(font,size,text,width,height,depth) -- we could save the factor
     text = text:gsub(".","\\hbox{%1}") -- kerning happens in metapost (i have to check if this is true for mplib)
     sprint(tex.ctxcatcodes,format("\\MPLIBtextext{%s}{%s}{%s}{%s}{%s}",font,size,text,0,-number.dimenfactors.bp*depth))
 end
@@ -109,6 +112,7 @@ local function pen_characteristics(object)
         width = wx
     end
     sx, rx, ry, sy, tx, ty = left_x, left_y, right_x, right_y, x_coord, y_coord
+    sx, rx, ry, sy = (sx-tx), (rx-ty), (ry-tx), (sy-ty) -- combine with previous
     if width ~= 1 then
         if width == 0 then
             sx, sy = 1, 1
@@ -152,9 +156,8 @@ local function pen_characteristics(object)
     return not (sx==1 and rx==0 and ry==0 and sy==1 and tx==0 and ty==0), width
 end
 
-local function concat(px, py)
-    local dx, dy = px-tx, py-ty
-    return (sy*dx-ry*dy)/divider,(sx*dy-rx*dx)/divider
+local function concat(px, py) -- no tx, ty here
+    return (sy*px-ry*py)/divider,(sx*py-rx*px)/divider
 end
 
 local function curved(ith,pth)
@@ -225,25 +228,30 @@ metapost.specials = metapost.specials or { }
 
 -- we have two extension handlers, one for pre and postscripts, and one for colors
 
-function metapost.flush(result) -- pdf flusher, table en dan concat is sneller, 1 literal
+-- the flusher is pdf based, if another backend is used, we need to overload the
+-- flusher; this is beta code, the organization will change
+
+function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is sneller, 1 literal
     if result then
         local figures = result.fig
         if figures then
+            flusher = flusher or metapost.flushers.pdf
             local colorconverter = metapost.colorconverter() -- function !
             local colorhandler   = metapost.colorhandler
             for f=1, #figures do
                 local figure = figures[f]
                 local objects = figure:objects()
+                local fignum = tonumber((figure:filename()):match("([%d]+)$") or 0)
                 local t = { }
                 local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                 local bbox = figure:boundingbox()
                 local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
                 if urx < llx then
                     -- invalid
-                    metapost.startfigure(0,0,0,0,"invalid")
-                    metapost.stopfigure()
+                    flusher.startfigure(fignum,0,0,0,0,"invalid")
+                    flusher.stopfigure()
                 else
-                    metapost.startfigure(llx,lly,urx,ury,"begin")
+                    flusher.startfigure(fignum,llx,lly,urx,ury,"begin")
                     t[#t+1] = "q"
                     if objects then
                         for o=1,#objects do
@@ -264,9 +272,9 @@ function metapost.flush(result) -- pdf flusher, table en dan concat is sneller, 
                                 t[#t+1] = "q"
                                 local ot = object.transform -- 3,4,5,6,1,2
                                 t[#t+1] = format("%f %f %f %f %f %f cm",ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: format("%f %f m %f %f %f %f 0 0 cm",unpack(ot))
-                                metapost.flushfigure(t)
+                                flusher.flushfigure(t)
                                 t = { }
-                                metapost.textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
+                                flusher.textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
                                 t[#t+1] = "Q"
                             else
                                 -- alternatively we can pass on the stack, could be a helper
@@ -288,7 +296,7 @@ function metapost.flush(result) -- pdf flusher, table en dan concat is sneller, 
                                 --
                                 local cs, cr = currentobject.color, nil
                                 -- todo document why ...
-                                if cs and colorhandler and round(cs[1]*10000) == 123 then -- test in function
+                                if cs and colorhandler and #cs > 0 and round(cs[1]*10000) == 123 then -- test in function
                                     currentobject, cr = colorhandler(cs,currentobject,t,colorconverter)
                                     objecttype = currentobject.type
                                 end
@@ -298,13 +306,13 @@ function metapost.flush(result) -- pdf flusher, table en dan concat is sneller, 
                                     -- move test to function
                                     local special = metapost.specials[prescript]
                                     if special then
-                                        currentobject, before, inbetween, after = special(currentobject.postscript,currentobject,t)
+                                        currentobject, before, inbetween, after = special(currentobject.postscript,currentobject,t,flusher)
                                         objecttype = currentobject.type
                                     end
                                 end
                                 --
                                 cs = currentobject.color
-                                if cs then
+                                if cs and #cs > 0 then
                                     t[#t+1], cr = colorconverter(cs,objecttype)
                                 end
                                 --
@@ -339,30 +347,58 @@ function metapost.flush(result) -- pdf flusher, table en dan concat is sneller, 
                                 local path = currentobject.path
                                 local transformed, penwidth = false, 1
                                 local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
-                                if path then
-                                    local pen = currentobject.pen
-                                    if pen and #pen==1 then
+                                local pen = currentobject.pen
+                                if pen then
+								   if pen.type=='elliptical' then
                                         transformed, penwidth = pen_characteristics(object) -- boolean, value
                                         t[#t+1] = format("%f w",penwidth) -- todo: only if changed
-                                    end
+                                        if objecttype == 'fill' then
+                                            objecttype = 'both'
+                                        end
+                                   else -- calculated by mplib itself
+                                        objecttype = 'fill'
+                                   end
+                                end
+                                if transformed then
+                                    t[#t+1] = "q"
+                                end
+                                if path then
                                     if transformed then
-                                        t[#t+1] = "q"
                                         flushconcatpath(path,t,open)
                                     else
                                         flushnormalpath(path,t,open)
                                     end
-                                end
-                                local path = currentobject.htap
-                                if path then
-                                    flushnormalpath(path,t,open)
-                                end
-                                if objecttype == "fill" then
-                                    t[#t+1] = "h f"
-                                elseif objecttype == "outline" then
-                                    t[#t+1] = (open and "S") or "h S"
+                                    if objecttype == "fill" then
+                                        t[#t+1] = "h f"
+                                    elseif objecttype == "outline" then
+                                        t[#t+1] = (open and "S") or "h S"
+                                    elseif objecttype == "both" then
+                                        t[#t+1] = "h B"
+                                    end
                                 end
                                 if transformed then
                                     t[#t+1] = "Q"
+                                end
+                                local path = currentobject.htap
+                                if path then
+                                    if transformed then
+                                        t[#t+1] = "q"
+                                    end
+                                    if transformed then
+                                        flushconcatpath(path,t,open)
+                                    else
+                                        flushnormalpath(path,t,open)
+                                    end
+                                    if objecttype == "fill" then
+                                        t[#t+1] = "h f"
+                                    elseif objecttype == "outline" then
+                                        t[#t+1] = (open and "S") or "h S"
+                                    elseif objecttype == "both" then
+                                        t[#t+1] = "h B"
+                                    end
+                                    if transformed then
+                                        t[#t+1] = "Q"
+                                    end
                                 end
                                 if cr and currentobject.color then -- and o < #objects
                                     t[#t+1] = cr
@@ -372,8 +408,8 @@ function metapost.flush(result) -- pdf flusher, table en dan concat is sneller, 
                        end
                     end
                     t[#t+1] = "Q"
-                    metapost.flushfigure(t)
-                    metapost.stopfigure("end")
+                    flusher.flushfigure(t)
+                    flusher.stopfigure("end")
                 end
             end
         end
@@ -406,28 +442,32 @@ function metapost.parse(result)
     end
 end
 
-function metapost.pdfliterals(result)
-    -- only simple graphics, tracing
-    local start = metapost.startfigure
-    local stop = metapost.stopfigure
-    local flush = metapost.flushfigure
+do
+
+    -- just tracing
+
     local t = { }
-    function metapost.flushfigure(literals)
-        for i=1, #literals do
-            t[#t+1] = literals[i]
+
+    local flusher = {
+        startfigure = function()
+            t = { }
+            tex.sprint(tex.ctxcatcodes,"\\startnointerference")
+        end,
+        flushfigure = function(literals)
+            for i=1, #literals do
+                t[#t+1] = literals[i]
+            end
+        end,
+        stopfigure = function()
+            tex.sprint(tex.ctxcatcodes,"\\stopnointerference")
         end
+    }
+
+    function metapost.pdfliterals(result)
+        metapost.flush(result,flusher)
+        return t
     end
-    function metapost.startfigure()
-        tex.sprint(tex.ctxcatcodes,"\\startnointerference")
-    end
-    function metapost.stopfigure()
-        tex.sprint(tex.ctxcatcodes,"\\stopnointerference")
-    end
-    metapost.flush(result)
-    metapost.startfigure = start
-    metapost.stopfigure = stop
-    metapost.flushfigure = flush
-    return t
+
 end
 
 function metapost.totable(result)

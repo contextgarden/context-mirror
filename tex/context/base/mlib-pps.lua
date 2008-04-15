@@ -152,7 +152,7 @@ end
 -- x' = sx * x + ry * y + tx
 -- y' = rx * x + sy * y + ty
 
-function metapost.specials.fg(specification,object,result)
+function metapost.specials.fg(specification,object,result,flusher)
     local op = object.path
     local first, second, fourth  = op[1], op[2], op[4]
     local tx, ty = first.x_coord      , first.y_coord
@@ -161,7 +161,7 @@ function metapost.specials.fg(specification,object,result)
     if sx == 0 then sx = 0.00001 end
     if sy == 0 then sy = 0.00001 end
     local before = specification and function()
-        metapost.flushfigure(result)
+        flusher.flushfigure(result)
         sprint(tex.ctxcatcodes,format("\\MPLIBfigure{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,specification))
         return object, { }
     end
@@ -186,9 +186,9 @@ local function normalize(ca,cb)
     end
 end
 
-function metapost.specials.cs(specification,object,result) -- spot colors?
+function metapost.specials.cs(specification,object,result,flusher) -- spot colors?
     nofshades = nofshades + 1
-    metapost.flushfigure(result)
+    flusher.flushfigure(result)
     result = { }
     local t = specification:split(" ")
     -- we need a way to move/scale
@@ -263,9 +263,9 @@ function metapost.specials.cs(specification,object,result) -- spot colors?
     return object, before, nil, after
 end
 
-function metapost.specials.ls(specification,object,result)
+function metapost.specials.ls(specification,object,result,flusher)
     nofshades = nofshades + 1
-    metapost.flushfigure(result)
+    flusher.flushfigure(result)
     result = { }
     local t = specification:split(" ")
     -- we need a way to move/scale
@@ -357,7 +357,7 @@ function metapost.specials.tf(specification,object)
     return { }, nil, nil, nil
 end
 
-function metapost.specials.ts(specification,object,result)
+function metapost.specials.ts(specification,object,result,flusher)
     -- print("getting", metapost.textext_current)
     local op = object.path
     local first, second, fourth  = op[1], op[2], op[4]
@@ -367,11 +367,11 @@ function metapost.specials.ts(specification,object,result)
     if sx == 0 then sx = 0.00001 end
     if sy == 0 then sy = 0.00001 end
     local before = function()
-    --~ metapost.flushfigure(result)
+    --~ flusher.flushfigure(result)
     --~ sprint(tex.ctxcatcodes,format("\\MPLIBgettext{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,metapost.textext_current))
     --~ result = { }
         result[#result+1] = format("q %f %f %f %f %f %f cm", sx,rx,ry,sy,tx,ty)
-        metapost.flushfigure(result)
+        flusher.flushfigure(result)
         local b = metapost.textext_current
         sprint(tex.ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b, metapost.sxsy(tex.wd[b],tex.ht[b],tex.dp[b])))
         result = { "Q" }

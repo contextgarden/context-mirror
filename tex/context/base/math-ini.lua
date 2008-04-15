@@ -275,11 +275,12 @@ mathematics.slots.traditional = {
     [0x03F1] = { "vargreek", 0x25 }, -- varrho
     [0x03C2] = { "vargreek", 0x26 }, -- varsigma
 
+    -- varphi is part of the alphabet, contrary to the other var*s'
+
     [0x03C6] = { "vargreek", 0x27 }, -- varphi
     [0x03D5] = { "lcgreek",  0x1E }, -- phi
 
---  [0x03F0] = { "",         0x00 }, -- varkappa
-
+    [0x03F0] = { "lcgreek",  0x14 }, -- varkappa, not in tex fonts
 
     [0x0021] = { "mr", 0x21 }, -- !
     [0x0028] = { "mr", 0x28 }, -- (

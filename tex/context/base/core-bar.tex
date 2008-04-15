@@ -53,8 +53,8 @@
 %D \stopsidebar
 %D \stoptyping
 
-\newcounter\currentsidebar
-\newdimen  \sidebardistance
+\newcount\currentsidebar
+\newdimen\sidebardistance
 
 \def\setupsidebars
   {\dodoubleargument\dosetupsidebars}
@@ -94,7 +94,7 @@
   {\bgroup
    \dontleavehmode
    \checktextbackgrounds
-   \doglobal\increment\currentsidebar
+   \global\advance\currentsidebar\plusone
    \doifelsenothing{#1}
      {\advance\sidebardistance\@@brdistance}
      {\doifelsevaluenothing{\??br#1\c!distance}
@@ -102,22 +102,21 @@
         {\sidebardistance\getvalue{\??br#1\c!distance}}}%
    \startpositionoverlay{text-1}%
      \expanded{\setMPpositiongraphicrange
-       {b:side:\currentsidebar}%
-       {e:side:\currentsidebar}%
+       {b:side:\the\currentsidebar}%
+       {e:side:\the\currentsidebar}%
        {mpos:bar}%
-       {self=side:\currentsidebar,
+       {self=side:\the\currentsidebar,
         linewidth=\getvalue{\??br#1\c!rulethickness},
         linecolor=\getvalue{\??br#1\c!rulecolor},
         distance=\the\sidebardistance}}%
    \stoppositionoverlay
-%    \edef\stopsidebar{\noexpand\dostopsidebar{\currentsidebar}}%
-   \bpos{side:\currentsidebar}\ignorespaces}
+   \bpos{side:\the\currentsidebar}\ignorespaces}
 
 % \def\dostopsidebar#1%
 %   {\removelastspace\tpos{side:#1}\carryoverpar\egroup}
 
 \def\stopsidebar
-  {\removelastspace\tpos{side:\currentsidebar}\carryoverpar\egroup}
+  {\removelastspace\tpos{side:\the\currentsidebar}\carryoverpar\egroup}
 
 \startMPpositionmethod{mpos:bar}
   \startMPpositiongraphic{mpos:bar}{linecolor,linewidth,distance}%
