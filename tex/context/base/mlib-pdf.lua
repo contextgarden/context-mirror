@@ -313,7 +313,7 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
                                 --
                                 cs = currentobject.color
                                 if cs and #cs > 0 then
-                                    t[#t+1], cr = colorconverter(cs,objecttype)
+                                    t[#t+1], cr = colorconverter(cs)
                                 end
                                 --
                                 if before then object, t = before() end
@@ -400,7 +400,7 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
                                         t[#t+1] = "Q"
                                     end
                                 end
-                                if cr and currentobject.color then -- and o < #objects
+                                if cr then
                                     t[#t+1] = cr
                                 end
                                 if after then object, t = after() end
@@ -493,17 +493,17 @@ function metapost.totable(result)
 end
 
 function metapost.colorconverter()
-    return function(c,type)
-        if type == "fill" then
-                if #c == 4 then return format("%.3f %.3f %.3f %.3f k", c[1],c[2],c[3],c[4]), "0 g"
-            elseif #c == 3 then return format("%.3f %.3f %.3f rg",     c[1],c[2],c[3]), "0 g"
-            else                return format("%.3f g",                c[1]), "0 g"
-            end
+    return function(cr)
+        local n = #cr
+        if n == 4 then
+            local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
+        elseif n == 3 then
+            local r, g, b = cr[1], cr[2], cr[3]
+            return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
         else
-                if #c == 4 then return format("%.3f %.3f %.3f %.3f K", c[1],c[2],c[3],c[4]), "0 G"
-            elseif #c == 3 then return format("%.3f %.3f %.3f RG",     c[1],c[2],c[3]), "0 G"
-            else                return format("%.3f G",                c[1]), "0 G"
-            end
+            local s = cr[1]
+            return format("%.3f g %.3f G",s,s), "0 g 0 G"
         end
     end
 end

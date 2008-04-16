@@ -1,3 +1,15 @@
+%D \module
+%D   [       file=mp-mlib.mp,
+%D        version=2008.03.21,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=specials,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
 
 if unknown mplib        : endinput ; fi ;
 if known   context_mlib : endinput ; fi ;
@@ -119,12 +131,12 @@ def nographictext (expr t) text rest =
     draw unitsquare withprescript "gt" withpostscript t ;
 enddef ;
 
-
 def doexternalfigure (expr filename) text transformation =
     draw unitsquare transformation withprescript "fg" withpostscript filename ;
 enddef ;
 
 extra_beginfig := extra_beginfig & "currentgraphictext := 0 ; " ;
+extra_endfig   := extra_endfig   & "finishsavingdata ; " ;
 
 boolean cmykcolors ; cmykcolors := true ;
 boolean spotcolors ; spotcolors := true ;

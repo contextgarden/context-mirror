@@ -99,7 +99,7 @@
    \gdef\setcharacterspacing[##1]{\dosetattribute{spacing}{\csname\??ch:##1\endcsname}}%
    \setcharacterspacing}
 
-\setvalue{\??ch:\s!reset}{\doresetattribute{spacing}}
+\letvalue{\??ch:\s!reset}\minusone
 
 \definecharacterspacing [frenchpunctuation] % name may change / unit is em
 
@@ -143,7 +143,7 @@
    \gdef\setcharacterkerning[##1]{\dosetattribute{kern}{\csname\??ck:##1\endcsname}}%
    \setcharacterkerning}
 
-\setvalue{\??ck:\s!reset}{\doresetattribute{kern}}
+\letvalue{\??ck:\s!reset}\minusone
 
 \definecharacterkerning[extrakerning]
 
@@ -217,7 +217,7 @@
    \gdef\setbreakpoints[##1]{\dosetattribute{breakpoint}{\csname\??bp:##1\endcsname}}%
    \setbreakpoints}
 
-\setvalue{\??bp:\s!reset}{\doresetattribute{breakpoint}}
+\letvalue{\??bp:\s!reset}\minusone
 
 \definebreakpoints[compound]
 

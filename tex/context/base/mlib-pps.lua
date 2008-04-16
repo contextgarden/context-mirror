@@ -6,16 +6,15 @@ if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, pos
     license   = "see context related readme files",
 }
 
--- todo
-
-local format, join = string.format, table.concat
+local format, join, round = string.format, table.concat, math.round
 local sprint = tex.sprint
-local round = math.round
 
-local rgbtocmyk  = colors.rgbtocmyk
-local rgbtogray  = colors.rgbtogray
-local cmyktorgb  = colors.cmyktorgb
-local cmyktogray = colors.cmyktogray
+colors = colors or { }
+
+local rgbtocmyk  = colors.rgbtocmyk   or function() return 0,0,0,1 end
+local cmyktorgb  = colors.cmyktorgb   or function() return 0,0,0   end
+local rgbtogray  = colors.rgbtogray   or function() return 0       end
+local cmyktogray = colors.cmyktogray  or function() return 0       end
 
 metapost               = metapost or { }
 metapost.specials      = metapost.specials or { }
@@ -55,15 +54,15 @@ function metapost.colorhandler(cs, object, result, colorconverter)
     if not data then
         --
     elseif what == 1 then
-        result[#result+1], cr = colorconverter({ data[2], data[3], data[4], data[5]}, object.type)
+        result[#result+1], cr = colorconverter({ data[2], data[3], data[4], data[5] })
     elseif what == 2 then
         ctx.registerspotcolor(data[2])
         result[#result+1] = ctx.pdfcolor(colors.model,colors.register('color',nil,'spot',data[2],data[3],data[4],data[5]))
     else
         if what == 3 then
-            result[#result+1], cr = colorconverter({ data[3], data[4], data[5]}, object.type)
+            result[#result+1], cr = colorconverter({ data[3], data[4], data[5]})
         elseif what == 4 then
-            result[#result+1], cr = colorconverter({ data[3], data[4], data[5], data[6]}, object.type)
+            result[#result+1], cr = colorconverter({ data[3], data[4], data[5], data[6]})
         elseif what == 5 then
             ctx.registerspotcolor(data[3])
             result[#result+1] = ctx.pdfcolor(colors.model,colors.register('color',nil,'spot',data[3],data[4],data[5],data[6]))
@@ -384,62 +383,65 @@ function metapost.specials.ts(specification,object,result,flusher)
 end
 
 function metapost.colorconverter()
+    -- it no longer pays off to distinguish between outline and fill
+    --  (we now have both too, e.g. in arrows)
     local model = colors.model
     if model == "all" then
-        return function(c,type)
-            if type == "fill" then
-                    if #c == 4 then return format("%.3f %.3f %.3f %.3f k", c[1],c[2],c[3],c[4]), "0 g"
-                elseif #c == 3 then return format("%.3f %.3f %.3f rg",     c[1],c[2],c[3]), "0 g"
-                else                return format("%.3f g",                c[1]), "0 g"
-                end
+        return function(cr)
+            local n = #cr
+            if n == 1 then
+                local s = cr[1]
+                return format("%.3f g %.3f G",s,s), "0 g 0 G"
+            elseif n == 4 then
+                local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
             else
-                    if #c == 4 then return format("%.3f %.3f %.3f %.3f K", c[1],c[2],c[3],c[4]), "0 G"
-                elseif #c == 3 then return format("%.3f %.3f %.3f RG",     c[1],c[2],c[3]), "0 G"
-                else                return format("%.3f G",                c[1]), "0 G"
-                end
+                local r, g, b = cr[1], cr[2], cr[3]
+                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
             end
         end
     elseif model == "rgb" then
-        return function(c,type)
-            if type == "fill" then
-                    if #c == 4 then return format("%.3f %.3f %.3f rg",cmyktorgb(c[1],c[2],c[3],c[4])), "0 g"
-                elseif #c == 3 then return format("%.3f %.3f %.3f rg",          c[1],c[2],c[3]), "0 g"
-                else                return format("%.3f g",                     c[1]), "0 g"
-                end
-            else
-                    if #c == 4 then return format("%.3f %.3f %.3f RG",cmyktorgb(c[1],c[2],c[3],c[4])), "0 G"
-                elseif #c == 3 then return format("%.3f %.3f %.3f RG",          c[1],c[2],c[3]), "0 G"
-                else                return format("%.3f G",                     c[1]), "0 G"
-                end
+        return function(cr)
+            local n = #cr
+            if n == 1 then
+                local s = cr[1]
+                return format("%.3f g %.3f G",s,s), "0 g 0 G"
             end
+            local r, g, b
+            if n == 4 then
+                r, g, b = cmyktorgb(cr[1],cr[2],cr[3],cr[4])
+            else
+                r, g, b = cr[1],cr[2],cr[3]
+            end
+            return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
         end
     elseif model == "cmyk" then
-        return function(c,type)
-            if type == "fill" then
-                    if #c == 4 then return format("%.3f %.3f %.3f %.3f k",          c[1],c[2],c[3],c[4]), "0 g"
-                elseif #c == 3 then return format("%.3f %.3f %.3f %.3f k",rgbtocmyk(c[1],c[2],c[3])), "0 g"
-                else                return format("%.3f g",                         c[1]), "0 g"
-                end
-            else
-                    if #c == 4 then return format("%.3f %.3f %.3f %.3f K",          c[1],c[2],c[3],c[4]), "0 G"
-                elseif #c == 3 then return format("%.3f %.3f %.3f %.3f K",rgbtocmyk(c[1],c[2],c[3])), "0 G"
-                else                return format("%.3f G",                         c[1]), "0 G"
-                end
+        return function(cr)
+            local n = #cr
+            if n == 1 then
+                local s = cr[1]
+                return format("%.3f g %.3f G",s,s), "0 g 0 G"
             end
+            local c, m, y, k
+            if n == 4 then
+                c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            else
+                c, m, y, k = rgbtocmyk(cr[1],cr[2],cr[3])
+            end
+            return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
         end
     else
-        return function(c,type)
-            if type == "fill" then
-                    if #c == 4 then return format("%.3f g",cmyktogray(c[1],c[2],c[3],c[4])), "0 g"
-                elseif #c == 3 then return format("%.3f g",rgbtogray (c[1],c[2],c[3])), "0 g"
-                else                return format("%.3f g",           c[1]), "0 g"
-                end
+        return function(cr)
+            local s
+            local n = #cr
+            if n == 4 then
+                s = cmyktogray(cr[1],cr[2],cr[3],cr[4])
+            elseif n == 3 then
+                s = rgbtogray(cr[1],cr[2],cr[3])
             else
-                    if #c == 4 then return format("%.3f G",cmyktogray(c[1],c[2],c[3],colors[4])), "0 G"
-                elseif #c == 3 then return format("%.3f G",rgbtogray (c[1],c[2],c[3])), "0 G"
-                else                return format("%.3f G",           c[1]), "0 G"
-                end
+                s = cr[1]
             end
+            return format("%.3f g %.3f G",s,s), "0 g 0 G"
         end
     end
 end
@@ -457,71 +459,69 @@ end
 metapost.reducetogray = true
 
 function metapost.colorconverter()
+    -- it no longer pays off to distinguish between outline and fill
+    --  (we now have both too, e.g. in arrows)
     local model = colors.model
     local reduce = metapost.reducetogray
     if model == "all" then
-        return function(c,type)
-            local n = #c
-            if reduce and n == 3 then if c[1] == c[2] and c[1] == c[3] then n = 1 end end
-            if type == "fill" then
-                    if n == 4 then return format("%.3f %.3f %.3f %.3f k", c[1],c[2],c[3],c[4]), "0 g"
-                elseif n == 3 then return format("%.3f %.3f %.3f rg",     c[1],c[2],c[3]), "0 g"
-                else               return format("%.3f g",                c[1]), "0 g"
-                end
+        return function(cr)
+            local n = #cr
+            if reduce and n == 3 then if cr[1] == cr[2] and cr[1] == cr[3] then n = 1 end end
+            if n == 1 then
+                local s = cr[1]
+                return format("%.3f g %.3f G",s,s)
+            elseif n == 4 then
+                local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
             else
-                    if n == 4 then return format("%.3f %.3f %.3f %.3f K", c[1],c[2],c[3],c[4]), "0 G"
-                elseif n == 3 then return format("%.3f %.3f %.3f RG",     c[1],c[2],c[3]), "0 G"
-                else               return format("%.3f G",                c[1]), "0 G"
-                end
+                local r, g, b = cr[1], cr[2], cr[3]
+                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
             end
         end
     elseif model == "rgb" then
-        return function(c,type)
-            local n = #c
-            if reduce and n == 3 then if c[1] == c[2] and c[1] == c[3] then n = 1 end end
-            if type == "fill" then
-                    if n == 4 then return format("%.3f %.3f %.3f rg",cmyktorgb(c[1],c[2],c[3],c[4])), "0 g"
-                elseif n == 3 then return format("%.3f %.3f %.3f rg",          c[1],c[2],c[3]), "0 g"
-                else               return format("%.3f g",                     c[1]), "0 g"
-                end
-            else
-                    if n == 4 then return format("%.3f %.3f %.3f RG",cmyktorgb(c[1],c[2],c[3],c[4])), "0 G"
-                elseif n == 3 then return format("%.3f %.3f %.3f RG",          c[1],c[2],c[3]), "0 G"
-                else               return format("%.3f G",                     c[1]), "0 G"
-                end
+        return function(cr)
+            local n = #cr
+            if reduce and n == 3 then if cr[1] == cr[2] and cr[1] == cr[3] then n = 1 end end
+            if n == 1 then
+                local s = cr[1]
+                return format("%.3f g %.3f G",s,s)
             end
+            local r, g, b
+            if n == 4 then
+                r, g, b = cmyktorgb(cr[1],cr[2],cr[3],cr[4])
+            else
+                r, g, b = cr[1],cr[2],cr[3]
+            end
+            return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
         end
     elseif model == "cmyk" then
-        return function(c,type)
-            local n = #c
-            if reduce and n == 3 then if c[1] == c[2] and c[1] == c[3] then n = 1 end end
-            if type == "fill" then
-                    if n == 4 then return format("%.3f %.3f %.3f %.3f k",          c[1],c[2],c[3],c[4]), "0 g"
-                elseif n == 3 then return format("%.3f %.3f %.3f %.3f k",rgbtocmyk(c[1],c[2],c[3])), "0 g"
-                else               return format("%.3f g",                         c[1]), "0 g"
-                end
-            else
-                    if n == 4 then return format("%.3f %.3f %.3f %.3f K",          c[1],c[2],c[3],c[4]), "0 G"
-                elseif n == 3 then return format("%.3f %.3f %.3f %.3f K",rgbtocmyk(c[1],c[2],c[3])), "0 G"
-                else               return format("%.3f G",                         c[1]), "0 G"
-                end
+        return function(cr)
+            local n = #cr
+            if reduce and n == 3 then if cr[1] == cr[2] and cr[1] == cr[3] then n = 1 end end
+            if n == 1 then
+                local s = cr[1]
+                return format("%.3f g %.3f G",s,s)
             end
+            local c, m, y, k
+            if n == 4 then
+                c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            else
+                c, m, y, k = rgbtocmyk(cr[1],cr[2],cr[3])
+            end
+            return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
         end
     else
-        return function(c,type)
-            local n = #c
-            if reduce and n == 3 then if c[1] == c[2] and c[1] == c[3] then n = 1 end end
-            if type == "fill" then
-                    if n == 4 then return format("%.3f g",cmyktogray(c[1],c[2],c[3],c[4])), "0 g"
-                elseif n == 3 then return format("%.3f g",rgbtogray (c[1],c[2],c[3])), "0 g"
-                else               return format("%.3f g",           c[1]), "0 g"
-                end
+        return function(cr)
+            local n = #cr
+            if reduce and n == 3 then if cr[1] == cr[2] and cr[1] == cr[3] then n = 1 end end
+            if n == 4 then
+                s = cmyktogray(cr[1],cr[2],cr[3],cr[4])
+            elseif n == 3 then
+                s = rgbtogray(cr[1],cr[2],cr[3])
             else
-                    if n == 4 then return format("%.3f G",cmyktogray(c[1],c[2],c[3],c[4])), "0 G"
-                elseif n == 3 then return format("%.3f G",rgbtogray (c[1],c[2],c[3])), "0 G"
-                else               return format("%.3f G",           c[1]), "0 G"
-                end
+                s = cr[1]
             end
+            return format("%.3f g %.3f G",s,s)
         end
     end
 end

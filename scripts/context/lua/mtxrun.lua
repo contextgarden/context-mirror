@@ -7623,10 +7623,13 @@ function os.currentplatform()
             else
                 currentplatform = "osx-ppc"
             end
+        elseif unixvariant and unixvariant:find("FreeBSD") then
+            currentplatform = "freebsd"
         end
     end
     return currentplatform
 end
+
 
 -- it starts here
 

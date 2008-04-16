@@ -109,6 +109,7 @@ end
 fonts.vf.aux.combine.force_composed = false
 
 function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call location
+    -- this assumes that slot 1 is self, there will be a proper self some day
     local chars = g.characters
     local fastcopy = table.fastcopy
     local xchar = chars[string.byte("X")]
@@ -118,9 +119,6 @@ function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call loc
         local force = fonts.vf.aux.combine.force_composed
         local fallbacks = characters.context.fallbacks
         local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
-if not g.fonts then
-    g.fonts = { { name = g.name, size = g.size or -1000 } } -- fallback
-end
         for i,c in pairs(characters.data) do
             if force or not chars[i] then
                 local s = c.specials

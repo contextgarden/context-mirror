@@ -59,11 +59,12 @@
 %D the code. Otherwise maintainance becomes a pain and after all,
 %D the \MKII\ code will not change.
 
-\let\useMETAFUNformattrue \relax \let\useMETAFUNformatfalse\relax
-\let     \longMPlinestrue \relax \let     \longMPlinesfalse\relax
-\let   \runMPgraphicstrue \relax \let   \runMPgraphicsfalse\relax
-\let\runMPTEXgraphicstrue \relax \let\runMPTEXgraphicsfalse\relax
-\let \MPstaticgraphictrue \relax \let \MPstaticgraphicfalse\relax
+\let \useMETAFUNformattrue\relax \let \useMETAFUNformatfalse\relax
+\let      \longMPlinestrue\relax \let      \longMPlinesfalse\relax
+\let    \runMPgraphicstrue\relax \let    \runMPgraphicsfalse\relax
+\let \runMPTEXgraphicstrue\relax \let \runMPTEXgraphicsfalse\relax
+\let  \MPstaticgraphictrue\relax \let  \MPstaticgraphicfalse\relax
+\let\forceMPTEXgraphictrue\relax \let\forceMPTEXgraphicfalse\relax
 
 \let     \obeyMPlines\relax
 \let \forceMPTEXcheck\gobbleoneargument
@@ -612,11 +613,10 @@
     def data_mpy_file = "\MPdataMPYfile" enddef ;
 \stopMPextensions
 
-\newcount\currentMPgraphic \currentMPgraphic\zerocount
+\chardef\currentMPgraphic\plusone
 
 \def\getMPdata
-  {%\let\MPdata\secondoftwoarguments
-   \long\def\MPdata##1##2{\ifnum##1=\currentMPgraphic\relax##2\fi}%
+  {\let\MPdata\secondoftwoarguments
    \startreadingfile
    \startnointerference
    \readlocfile\MPdataMPDfile\donothing\donothing
@@ -776,8 +776,8 @@
 %D built in, but by means of specials we can supply the
 %D information needed to handle them naturaly.
 
-\newif\ifMPcmykcolors \MPcmykcolorstrue
-\newif\ifMPspotcolors \MPspotcolorstrue
+% \newif\ifMPcmykcolors \MPcmykcolorstrue
+% \newif\ifMPspotcolors \MPspotcolorstrue
 
 \startMPinitializations
     cmykcolors:=\ifMPcmykcolors true\else false\fi;

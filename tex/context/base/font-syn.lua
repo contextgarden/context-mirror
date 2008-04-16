@@ -282,18 +282,19 @@ do
 
     local reloaded = false
 
-    function fonts.names.resolve(name, sub)
-        if not name then
+    function fonts.names.resolve(askedname, sub)
+        if not askedname then
             return nil, nil
         elseif fonts.names.enabled then
+            askedname = askedname:lower()
             fonts.names.load()
-            local name, filename, is_sub = found(name:lower())
-            if not filename and not reloaded and fonts.name.autoreload then
+            local name, filename, is_sub = found(askedname)
+            if not filename and not reloaded and fonts.names.autoreload then
                 fonts.names.loaded = false
                 reloaded = true
                 io.flush()
                 fonts.names.load(true)
-                name, filename, is_sub = found(name:lower())
+                name, filename, is_sub = found(askedname)
             end
             if is_sub then
                 return filename, name

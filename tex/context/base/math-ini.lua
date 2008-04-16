@@ -359,8 +359,10 @@ mathematics.slots.current = mathematics.slots.traditional
 --~ end
 
 function mathematics.utfmathclass(chr, default)
-    return characters.data[utf.byte(chr)].mathclass or default or "unknown"
+    local cd = characters.data[utf.byte(chr)]
+    return (cd and cd.mathclass) or default or "unknown"
 end
 function mathematics.utfmathcommand(chr, default)
-    return characters.data[utf.byte(chr)].mathname or default or "unknown"
+    local cd = characters.data[utf.byte(chr)]
+    return (cd and cd.mathname) or default or "unknown"
 end
