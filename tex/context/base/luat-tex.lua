@@ -67,14 +67,24 @@ if texconfig and not texlua then
                     input.logger('= ' .. tag .. ' closer (' .. unicode.utfname[u] .. ')',filename)
                     input.show_close(filename)
                 end,
+--~                 getline = function(n)
+--~                     local line = t.lines[n]
+--~                     if not line or line == "" then
+--~                         return ""
+--~                     else
+--~                         local translator = input.filters.utf_translator
+--~                         return (translator and translator(line)) or line
+--~                     end
+--~                 end,
                 reader = function(self)
                     self = self or t
                     local current, lines = self.current, self.lines
                     if current >= #lines then
                         return nil
                     else
-                        self.current = current + 1
-                        local line = lines[self.current]
+                        current = current + 1
+                        self.current = current
+                        local line = lines[current]
                         if line == "" then
                             return ""
                         else

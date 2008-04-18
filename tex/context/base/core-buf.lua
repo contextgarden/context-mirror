@@ -57,8 +57,6 @@ function buffers.grab(name,begintag,endtag,data)
         end
         buffers.data[name] = buffers.data[name]:gsub("[\010\013]$","")
         if buffers.flags.store_as_table then
-            -- todo: specific splitter, do we really want to erase the spaces?
-        --~ buffers.data[name] = string.split(buffers.data[name]," *[\010\013]")
             buffers.data[name] = buffers.data[name]:splitlines()
         end
     end
@@ -84,7 +82,7 @@ buffers.commands.empty_line_command    = "\\doverbatimemptyline"
 
 function buffers.verbatimbreak(n,m)
     if buffers.flags.optimize_verbatim then
-        if (n==2) or (n==m) then
+        if n == 2 or n == m then
             texsprint(buffers.commands.no_break)
         else
             texsprint(buffers.commands.do_break)
@@ -92,34 +90,76 @@ function buffers.verbatimbreak(n,m)
     end
 end
 
+function buffers.strip(lines)
+    local first, last = 1, #lines
+    for i=first,last do
+        if #lines[i] == 0 then
+            first = first + 1
+        else
+            break
+        end
+    end
+    for i=last,first,-1 do
+        if #lines[i] == 0 then
+            last = last - 1
+        else
+            break
+        end
+    end
+    return first, last, last - first + 1
+end
+
 function buffers.type(name)
     local lines = buffers.data[name]
     local action = buffers.typeline
     if lines then
         if type(lines) == "string" then
-            lines = lines:splitlines() -- lines:split(" *[\010\013]")
+            lines = lines:splitlines()
         end
-        local line, n, m = 0, 0, #lines
-        for i=1,m do
+        local line, n = 0, 0
+        local first, last, m = buffers.strip(lines)
+        for i=first,last do
             n, line = action(lines[i], n, m, line)
         end
     end
 end
 
+--~ function buffers.typefile(name)
+--~     local t = input.openfile(name)
+--~     local action = buffers.typeline
+--~     if t then
+--~         local line, n, m = 0, 0, t.noflines
+--~         while true do
+--~             str = t.reader(t)
+--~             if str then
+--~                 n, line = action(str, n, m, line)
+--~             else
+--~                 break
+--~             end
+--~         end
+--~         t.close()
+--~     end
+--~ end
+
 function buffers.typefile(name)
     local t = input.openfile(name)
     local action = buffers.typeline
     if t then
-        local line, n, m = 0, 0, t.noflines
+        local lines = { }
         while true do
-            str = t.reader(t)
+            local str = t.reader()
             if str then
-                n, line = action(str, n, m, line)
+                lines[#lines+1] = str
             else
                 break
             end
         end
         t.close()
+        local line, n = 0, 0
+        local first, last, m = buffers.strip(lines)
+        for i=first,last do
+            n, line = action(lines[i], n, m, line)
+        end
     end
 end
 

@@ -157,10 +157,6 @@
 
 \unprotect
 
-\definesystemconstant {link}
-
-\definesystemvariable {lk}
-
 % \expand vs \expanded
 
 % linked registers implementeren als een koppeling == mooier
@@ -177,13 +173,13 @@
      {\expanded{\definetwopasslist{\s!link:#1}}%
       \expanded{\doloadtwopassdata{\s!link:#1}}%
       \getfirsttwopassdata{\s!link:#1}%
-      \setxvalue{\s!link:#1:f}{\twopassdata}%
+      \letgvalue{\s!link:#1:f}\twopassdata
       \getlasttwopassdata{\s!link:#1}%
-      \setxvalue{\s!link:#1:l}{\twopassdata}%
-      \setxvalue{\s!link:#1:s}{\noftwopassitems}%
+      \letgvalue{\s!link:#1:l}\twopassdata
+      \letgvalue{\s!link:#1:s}\noftwopassitems
       \gettwopassdata{\s!link:#1}%
-      \setxvalue{\s!link:#1:c}{\twopassdata}%
-      \setxvalue{\s!link:#1:n}{\twopassdata}}}
+      \letgvalue{\s!link:#1:c}\twopassdata
+      \letgvalue{\s!link:#1:n}\twopassdata}}
 
 \def\koppeling[#1]#2%
   {\bgroup
@@ -191,38 +187,37 @@
    \doglobal\increment\numberoflinks
    \gettwopassdata{\s!link:#1}%
    \edef\numberoflinks{0\getvalue{\s!link:#1:s}}%
-   \edef\firstlink{0\getvalue{\s!link:#1:f}}%
-   \edef\lastlink{0\getvalue{\s!link:#1:l}}%
-   \edef\currentlink{0\getvalue{\s!link:#1:n}}%
-   \edef\prevlink{0\getvalue{\s!link:#1:c}}%
+   \edef\firstlink    {0\getvalue{\s!link:#1:f}}%
+   \edef\lastlink     {0\getvalue{\s!link:#1:l}}%
+   \edef\currentlink  {0\getvalue{\s!link:#1:n}}%
+   \edef\prevlink     {0\getvalue{\s!link:#1:c}}%
    \iftwopassdatafound
      \edef\nextlink{0\twopassdata}%
-     \setxvalue{\s!link:#1:n}{\nextlink}%
-     \setxvalue{\s!link:#1:c}{\currentlink}%
+     \letgvalue{\s!link:#1:n}\nextlink
+     \letgvalue{\s!link:#1:c}\currentlink
    \else
-     \edef\nextlink  {0\getvalue{\s!link:#1:l}}%
+     \edef\nextlink{0\getvalue{\s!link:#1:l}}%
    \fi
    \lazysavetwopassdata{\s!link:#1}{\numberoflinks}{\noexpand\realfolio}%
-   \ifnum\noflinks<2
+   \ifnum\noflinks<\plustwo
      \locationfalse
    \fi
    \iflocation
      \hbox
-       {%\setupinteraction[\c!width=\!!zeropoint]%
-        \setinteractionparameter\c!width\!!zeropoint
-        \doganaareenpagina\??lk\gotobegincharacter\firstlink\hss
-        \ifnum\noflinks>2
-          \hskip\@@lkafstand
-          \doganaareenpagina\??lk\gobackwardcharacter\prevlink\hss
+       {\setinteractionparameter\c!width\!!zeropoint
+        \dogotosomepage\??lk\gotobegincharacter\firstlink\hss
+        \ifnum\noflinks>\plustwo
+          \hskip\@@lkdistance
+          \dogotosomepage\??lk\gobackwardcharacter\prevlink\hss
         \fi
-        \hskip\@@lkafstand
+        \hskip\@@lkdistance
         #2\relax
-        \hskip\@@lkafstand
-        \ifnum\noflinks>2
-          \doganaareenpagina\??lk\goforwardcharacter\nextlink\hss
-          \hskip\@@lkafstand
+        \hskip\@@lkdistance
+        \ifnum\noflinks>\plustwo
+          \dogotosomepage\??lk\goforwardcharacter\nextlink\hss
+          \hskip\@@lkdistance
         \fi
-        \doganaareenpagina\??lk\gotoendcharacter\lastlink}%
+        \dogotosomepage\??lk\gotoendcharacter\lastlink}%
    \else
      \hbox{#2}%
    \fi
@@ -239,8 +234,7 @@
       \gettwopassdata{\s!link:#1}%
       \let\currentlink\twopassdata
       \let\nextlink\twopassdata
-      \setxvalue{\s!link:#1:}%
-        {\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}}}
+      \setxvalue{\s!link:#1:}{\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}}}
 
 \def\koppeling[#1]#2%
   {\bgroup
@@ -254,29 +248,26 @@
       \edef\prevlink   {0##4}%
       \edef\currentlink{0##5}}%
    \expanded{\next[\getvalue{\s!link:#1:}]}%
-   \edef\nextlink
-     {0\iftwopassdatafound\twopassdata\else\lastlink\fi}%
-   \setxvalue{\s!link:#1:}%
-     {\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}%
+   \edef\nextlink{0\iftwopassdatafound\twopassdata\else\lastlink\fi}%
+   \setxvalue{\s!link:#1:}{\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}%
    \lazysavetwopassdata{\s!link:#1}{\numberoflinks}{\noexpand\realfolio}%
-   \ifnum\noflinks<2
+   \ifnum\noflinks<\plustwo
      \locationfalse
    \fi
    \iflocation
      \hbox
-       {%\setupinteraction[\c!width=\!!zeropoint]%
-        \setinteractionparameter\c!width\!!zeropoint
+       {\setinteractionparameter\c!width\!!zeropoint
         #2\relax
-        \hskip\@@lkafstand
-        \doganaareenpagina\??lk\gotobegincharacter\firstlink\hss
-        \ifnum\noflinks>2
-          \doganaareenpagina\??lk\gobackwardcharacter\prevlink\hss
+        \hskip\@@lkdistance
+        \dogotosomepage\??lk\gotobegincharacter\firstlink\hss
+        \ifnum\noflinks>\plustwo
+          \dogotosomepage\??lk\gobackwardcharacter\prevlink\hss
         \fi
-        \ifnum\noflinks>2
-          \doganaareenpagina\??lk\goforwardcharacter\nextlink\hss
-          \hskip\@@lkafstand
+        \ifnum\noflinks>\plustwo
+          \dogotosomepage\??lk\goforwardcharacter\nextlink\hss
+          \hskip\@@lkdistance
         \fi
-        \doganaareenpagina\??lk\gotoendcharacter\lastlink}%
+        \dogotosomepage\??lk\gotoendcharacter\lastlink}%
    \else
      \hbox{#2}%
    \fi
@@ -286,36 +277,22 @@
 
 \def\docalculateinteractionscreen
   {\doifelse\@@scwidth\v!fit
-     {\!!widtha\leftedgewidth
-      \advance\!!widtha \leftedgedistance
-      \advance\!!widtha \leftmarginwidth
-      \advance\!!widtha \leftmargindistance
+     {\!!widtha\leftcombitotal
       \ifdim\backspace>\!!widtha\ifdim\backspace>\zeropoint\relax
         \advance\backspace -\!!widtha
       \fi\fi
-      \advance\!!widtha \makeupwidth
-      \advance\!!widtha \rightmargindistance
-      \advance\!!widtha \rightmarginwidth
-      \advance\!!widtha \rightedgedistance
-      \advance\!!widtha \rightedgewidth
-      \scratchdimen\@@scbackspace
-      \advance\scratchdimen \@@schoroffset
-      \advance\!!widtha 2\scratchdimen}
+      \advance\!!widtha\rightcombitotal
+      \advance\!!widtha 2\dimexpr\@@scbackspace+\@@schoroffset\relax}
      {\doifelse\@@scwidth\v!max
         {\!!widtha\printpaperwidth}
         {\!!widtha\@@scwidth}}%
    \doifelse\@@scheight\v!fit
-     {\!!heighta\topheight
-      \advance\!!heighta \topdistance
+     {\!!heighta\dimexpr\topheight+\topdistance\relax
       \ifdim\topspace>\!!heighta\ifdim\topspace>\zeropoint\relax
         \advance\topspace -\!!heighta
       \fi\fi
-      \advance\!!heighta \makeupheight
-      \advance\!!heighta \bottomdistance
-      \advance\!!heighta \bottomheight
-      \scratchdimen\@@sctopspace
-      \advance\scratchdimen \@@scveroffset
-      \advance\!!heighta 2\scratchdimen}
+      \advance\!!heighta  \dimexpr\makeupheight+\bottomdistance+\bottomheight\relax
+      \advance\!!heighta 2\dimexpr\@@sctopspace+\@@scveroffset\relax}
      {\doifelse\@@scheight\v!max
         {\!!heighta\printpaperheight}
         {\!!heighta\@@scheight}}%
@@ -698,54 +675,6 @@
 \def\dosetlocationboxnone#1[#2]#3[#4]%
   {\global\skippedmenuitemtrue}
 
-% the following version looks ok but is not, since it is unaware of
-% some reference properties
-%
-% \def\setlocationboxyes#1%
-%   {\locationclicktrue
-%    \ifx\currentouterreference\empty
-%      \ifrealreferencepage\!!doneatrue\else\!!doneafalse\fi
-%    \else
-%      \!!doneafalse
-%    \fi
-%    \if!!donea
-%      \ifcase\csname\??am\??am\csname#1\c!samepage\endcsname\endcsname\relax
-%        \copycsname#1\c!color\endcsname\csname#1\c!contrastcolor\endcsname
-%        \@EAEAEA\dosetlocationboxyes
-%      \or
-%        \@EAEAEA\dosetlocationboxempty
-%      \or
-%        \@EAEAEA\dosetlocationboxno
-%      \or
-%        \@EAEAEA\dosetlocationboxnone
-%      \fi
-%    \else
-%      \@EA\dosetlocationboxcontent
-%    \fi{#1}}
-%
-% \def\setlocationboxnop#1%
-%   {\locationclickfalse
-%    \ifcase\csname\??am\??am\csname#1\c!unknownreference\endcsname\endcsname\relax
-%      \@EA\dosetlocationboxyes
-%    \or
-%      \@EA\dosetlocationboxempty
-%    \or
-%      \@EA\dosetlocationboxno
-%    \or
-%      \@EA\dosetlocationboxnone
-%    \fi{#1}}
-%
-% \def\setlocationbox#1[#2]#3[#4]%
-%   {\bgroup % really needed !
-%    \edef\permittedreferences{\csname#1\c!obstruction\endcsname}%
-%    \doifreferencepermittedelse{#4}
-%      {\setlocationboxyes{#1}[#2]{#3}[#4]}
-%      {\setlocationboxnop{#1}[#2]{#3}[#4]}%
-%    \egroup}
-%
-% \def\setlocationboxraw#1[#2]#3[#4]%
-%   {\localframed[#1][#2]{\dolocationattributes{#1}\c!style\c!color{#3}}}
-
 \def\setlocationboxyes#1[#2]#3[#4]%
   {\locationclicktrue
    \setbox\locationbox\hbox
@@ -796,20 +725,6 @@
      {\setlocationboxnop{#1}[#2]{#3}[#4]}%
    \egroup}
 
-\def\dodosetlocationcommanditem#1#2#3[#4]#5\\%
-  {\bgroup
-   \leavevmode
-   \doifelse{#5}{[]}
-     {\doifassignmentelse{#4}{#3}{\setlocationbox{\??am#1}[]{#3}[#4]}}
-     {#3}%
-   \ifskippedmenuitem \else
-     \getvalue{\??am#1#2}%
-   \fi
-   \egroup}
-
-\def\dosetlocationcommanditem#1#2#3%
-  {\dodosetlocationcommanditem{#1}{#2}#3[]\\}
-
 \def\setlocationnop#1[#2]#3%
   {\localframed[#1][#2]{#3}}
 
@@ -820,18 +735,8 @@
    %   \v!empty=>\chardef\handleunknownmenuitem=1\relax,
    %      \v!no=>\chardef\handleunknownmenuitem=2\relax]%
    \getvalue{\??am#1#3}\relax
-   \ifextendedmenu
-     \setamboxcommands{#1}{#4}%
-     \def\next
-       {\ignorespaces#2}%
-   \else
-     \def\dolocationcommand##1%
-       {\dosetlocationcommanditem{#1}{#4}{##1}}%
-     \def\next
-       {\processcommalist[#2]\dolocationcommand}%
-   \fi
-   \next
-   \unskip
+   \setamboxcommands{#1}{#4}%
+   \ignorespaces#2\unskip
    \getvalue{\??am#1#5}}
 
 \newcounter\currentamposition
@@ -845,8 +750,9 @@
    \the\everysetmenucommands}
 
 \def\menu@@amboxcommand#1\\%
-  {\bgroup
-   \leavevmode\ignorespaces#1\unskip\relax
+  {\dontleavehmode
+   \bgroup
+   \ignorespaces#1\unskip\relax
    \ifskippedmenuitem \else
      \getvalue{\??am\currentmenu\currentsubmenu}%
    \fi
@@ -867,7 +773,6 @@
   {\@@amboxcommand\setlocationbox{\??am\currentmenu}[\c!frame=\v!off,\c!background=]{\ignorespaces#2\unskip}[#1]\\}%
 
 \def\menu@nop#1\\%
- %{\@@amboxcommand\phantom{\localframed[\??am\currentmenu][]{#1}}\\}%
   {\@@amboxcommand\setlocationboxraw{\??am\currentmenu}[\c!frame=\v!off,\c!background=,\c!empty=\v!yes]{\ignorespaces#1\unskip}[]\\}%
 
 \def\menu@txt#1\\%
@@ -897,27 +802,27 @@
 
 % beware : never change the concept of pbgoffset
 
+\def\menuparameter#1{\csname\??am\currentmenu#1\endcsname}
+
 \def\@@amhbox#1#2#3#4%
   {\def\currentmenu{#3}%
    \testinteractionmenu{#3}%
    \iflocationmenupermitted
      \bgroup
      \showcomposition
-     \def\dolocationcommand##1{\dosetlocationcommanditem{#3}{##1}}%
-     \dimen0=\makeupwidth
-     \advance\dimen0 \pagebackgroundhoffset
-     \advance\dimen0 \pagebackgroundhoffset
-     \advance\dimen0 -\getvalue{\??am#3\c!leftoffset}%
-     \advance\dimen0 -\getvalue{\??am#3\c!rightoffset}%
-     \setbox0\hbox to \dimen0
-       {\forgetall
-        \executeamboxcommands{#3}{#4}\c!left\c!middle\c!right}%
-     \setbox0\hbox{\do@@ammenuposition{#3}{\box0}}%
-     \wd0=\makeupwidth
-     % geen \ht=#2 setting (yet)
-     \hskip-\pagebackgroundhoffset
-     \hskip \getvalue{\??am#3\c!leftoffset}%
-     \box0\relax
+     \scratchdimen\dimexpr
+        \makeupwidth
+       +\pagebackgroundhoffset
+       +\pagebackgroundhoffset
+       -\menuparameter\c!leftoffset
+       -\menuparameter\c!rightoffset
+     \relax
+     \setbox\scratchbox\hbox to \scratchdimen
+       {\forgetall\executeamboxcommands{#3}{#4}\c!left\c!middle\c!right}%
+     \setbox\scratchbox\hbox{\do@@ammenuposition{#3}{\box\scratchbox}}%
+     \wd\scratchbox\makeupwidth % geen \ht=#2 setting (yet)
+     \hskip\dimexpr-\pagebackgroundhoffset+\menuparameter\c!leftoffset\relax
+     \box\scratchbox
      \egroup
    \else
      #1\relax
@@ -929,28 +834,29 @@
    \iflocationmenupermitted
      \bgroup
      \showcomposition
-     \dimen0=\textheight
-     \advance\dimen0 \pagebackgroundvoffset
-     \advance\dimen0 \pagebackgroundvoffset
-     \advance\dimen0 \pagebackgrounddepth
-     \advance\dimen0 -\getvalue{\??am#3\c!topoffset}%
-     \advance\dimen0 -\getvalue{\??am#3\c!bottomoffset}%
-     \setbox0\vbox to \dimen0
-       {\forgetall                     % Voor't geval de afstand
+     \scratchdimen\dimexpr
+        \textheight
+       +\pagebackgroundvoffset
+       +\pagebackgroundvoffset
+       +\pagebackgrounddepth
+       -\menuparameter\c!topoffset
+       -\menuparameter\c!bottomoffset
+     \relax
+     \setbox\scratchbox\vbox to \scratchdimen
+       {\forgetall                  % Voor't geval de afstand
        %\setupblank[\v!standard]%   % (tijdelijk) is aangepast.
         \restorestandardblank
         \hsize#2\relax
         \executeamboxcommands{#3}{#4}\c!before\c!inbetween\c!after}%
-     \setbox0\vbox{\hbox{\do@@ammenuposition{#3}{\box0}}}%
-     \setbox0\vbox
-       {\vskip-\pagebackgroundvoffset
-        \vskip\getvalue{\??am#3\c!topoffset}%
-        \ht0=\zeropoint
-        \box0
+     \setbox\scratchbox\vbox{\hbox{\do@@ammenuposition{#3}{\box\scratchbox}}}%
+     \setbox\scratchbox\vbox
+       {\ht\scratchbox\zeropoint
+        \vskip\dimexpr-\pagebackgroundvoffset+\endcsname\c!topoffset\relax
+        \box\scratchbox
         \vskip\pagebackgroundvoffset}% overbodig
-     \ht0=\textheight
-     \wd0=#2\relax
-     \box0
+     \ht\scratchbox\textheight
+     \wd\scratchbox#2\relax
+     \box\scratchbox
      \egroup
    \else
      #1\relax
@@ -973,47 +879,47 @@
 
 \def\horizontalinteractionmenu#1#2#3#4%
   {\ifdim#2>\zeropoint % new
-     \dimen2\zeropoint
-     \setbox0\hbox
+     \scratchdimen\zeropoint
+     \setbox\scratchbox\hbox
        {\def\docommand##1%
           {\doifnotvalue{\??am##1\c!state}\v!none
-             {\hskip\dimen2
+             {\hskip\scratchdimen
               \setbox2\hbox to #2
                 {\getvalue{\??am##1#3}\interactionmenu[##1]\getvalue{\??am##1#4}}%
               \doifelsevalue{\??am##1\c!distance}\v!overlay
-                {\dimen2\zeropoint
+                {\scratchdimen\zeropoint
                  \wd2\zeropoint}%
-                {\dimen2=\getvalue{\??am##1\c!distance}}%
+                {\scratchdimen\getvalue{\??am##1\c!distance}}%
               \box2}}%
        \startinteraction
        \processcommacommand[\getvalue{\??am#1}]\docommand
        \stopinteraction}%
-     \wd0=#2\relax
-     \box0\relax
+     \wd\scratchbox#2\relax
+     \box\scratchbox
    \fi}
 
 \def\verticalinteractionmenu#1#2#3#4%
   {\ifdim#2>\zeropoint % new
-     \dimen2\zeropoint
-     \setbox0\vbox
+     \scratchdimen\zeropoint
+     \setbox\scratchbox\vbox
        {\def\docommand##1%
           {\doifnotvalue{\??am##1\c!state}\v!none
-             {\vskip\dimen2
+             {\vskip\scratchdimen
               \setbox2\vbox to #2
                 {\getvalue{\??am##1#3}\interactionmenu[##1]\getvalue{\??am##1#4}}%
               \doifelsevalue{\??am##1\c!distance}\v!overlay
-                {\dimen2\zeropoint
+                {\scratchdimen\zeropoint
                  \offinterlineskip
                  \dp2\zeropoint
                  \ht2\zeropoint}%
-                {\dimen2=\getvalue{\??am##1\c!distance}}%
+                {\scratchdimen\getvalue{\??am##1\c!distance}}%
               \box2}}%
         \startinteraction
         \processcommacommand[\getvalue{\??am#1}]\docommand
         \stopinteraction}%
-     \ht0=#2\relax
-     \dp0\zeropoint
-     \box0\relax
+     \ht\scratchbox#2\relax
+     \dp\scratchbox\zeropoint
+     \box\scratchbox
    \fi}
 
 \letvalue{\??am\v!left }\empty
@@ -1030,14 +936,10 @@
      \dodummypageskip{#1}%
    \fi}
 
-\setvalue{\??am\??am\c!menu\v!left}%
-  {\horizontalinteractionmenu\v!left\leftedgewidth\c!left\c!right}
-\setvalue{\??am\??am\c!menu\v!right}%
-  {\horizontalinteractionmenu\v!right\rightedgewidth\c!left\c!right}
-\setvalue{\??am\??am\c!menu\v!top}%
-  {\verticalinteractionmenu\v!top\topheight\c!before\c!after}
-\setvalue{\??am\??am\c!menu\v!bottom}%
-  {\verticalinteractionmenu\v!bottom\bottomheight\c!before\c!after}
+\setvalue{\??am\??am\c!menu\v!left  }{\horizontalinteractionmenu\v!left  \leftedgewidth \c!left  \c!right}
+\setvalue{\??am\??am\c!menu\v!right }{\horizontalinteractionmenu\v!right \rightedgewidth\c!left  \c!right}
+\setvalue{\??am\??am\c!menu\v!top   }{\verticalinteractionmenu  \v!top   \topheight     \c!before\c!after}
+\setvalue{\??am\??am\c!menu\v!bottom}{\verticalinteractionmenu  \v!bottom\bottomheight  \c!before\c!after}
 
 % this can be implemented with the following command (which
 % is new, undocumented, experimental, untested, etc etc)
@@ -1047,12 +949,8 @@
 
 \def\dodefineinteractionmenuclass[#1][#2]% tag hori|veri
   {\doifelse{#2}\v!vertical
-     {\setvalue{\??am\??am\c!menu#1}%
-        {\verticalinteractionmenu
-           {#1}{\getvalue{\??am#1\c!width}}\c!before\c!after}}
-     {\setvalue{\??am\??am\c!menu#1}%
-        {\horizontalinteractionmenu
-           {#1}{\getvalue{\??am#1\c!height}}\c!left\c!right}}}
+     {\setvalue{\??am\??am\c!menu#1}{\verticalinteractionmenu  {#1}{\getvalue{\??am#1\c!width }}\c!before\c!after}}
+     {\setvalue{\??am\??am\c!menu#1}{\horizontalinteractionmenu{#1}{\getvalue{\??am#1\c!height}}\c!left\c!right  }}}
 
 % \setupinteraction[menu=on,state=start]
 %
@@ -1107,33 +1005,18 @@
 %D We also need an explicit position control some day. I'll
 %D do that when I need it. [The stacking order.]
 
-% for the moment we will support the old method
-%
-% \stelinteractionmenuin[right][{abc[xyz]},...]
-% \stelinteractionmenuin[right][key=val,...]
-
 \newif\ifextendedmenu
-
-\def\defineinteractionmenu
-  {\dotripleempty\dodefineinteractionmenu}
-
-\def\dodefineinteractionmenu[#1][#2]% compatibility hack
-  {\defconvertedargument\ascii{#2}% will disappear soon
-   \doifinstringelse[\ascii
-     \dodosetupinteractionlistmenux
-     \dododefineinteractionmenu
-   [#1][#2]}
 
 % [name] [location]
 % [name] [location] [pars]
 
-\def\dododefineinteractionmenu[#1][#2][#3]%
+\def\defineinteractionmenu
+  {\dotripleempty\dodefineinteractionmenu}
+
+\def\dodefineinteractionmenu[#1][#2][#3]%
   {% main settings
    \letvalue{\??am\c!menu#1}\empty
-   % \setvalue{\??am\c!menu#1}%
-   %   {\extendedmenufalse\dointeractionmenu{#1}{}}%
-   \setvalue{\@@dodolistelement#1}%
-     {\def\dosomelistelement{\dodomenulistelement{#1}}}%
+   \setvalue{\@@dodolistelement#1}{\def\dosomelistelement{\dodomenulistelement{#1}}}%
    \presetlocalframed[\??am#1]%
    % register location
    \expanded{\addtocommalist{#1}\@EA\noexpand\csname\??am#2\endcsname}%
@@ -1152,27 +1035,15 @@
 \def\setupinteractionmenu
   {\dodoubleargument\dosetupinteractionmenu}
 
-\def\dosetupinteractionmenu[#1][% compatibillity hack
-  {\doifnextcharelse\bgroup     % will disappear soon
-     {\dodosetupinteractionlistmenuy[#1][}
-     {\dodosetupinteractionmenu      [#1][}}
-
-\def\dodosetupinteractionlistmenux[#1][#2][#3]% compatibillity hack
-  {\setvalue{\??am\c!menu#1}{\extendedmenufalse\dointeractionmenu{#1}{#2}}}
-
-\def\dodosetupinteractionlistmenuy[#1][#2]% compatibillity hack
-  {\setvalue{\??am\c!menu#1}%
-     {\extendedmenufalse\dointeractionmenu{#1}{#2}}}
-
-\def\dodosetupinteractionmenu[#1][#2]%
+\def\dosetupinteractionmenu[#1][#2]%
   {\def\docommand##1{\getparameters[\??am##1][#2]}%
    \processcommalist[#1]\docommand}
 
-\setvalue{\??am\??am\v!yes  }{0}
-\setvalue{\??am\??am\v!empty}{1}
-\setvalue{\??am\??am\v!no }{2}
-\setvalue{\??am\??am\v!none}{3}
-\setvalue{\??am\??am       }{1} % default
+\expandafter\chardef\csname\??am\??am\v!yes  \endcsname\zerocount
+\expandafter\chardef\csname\??am\??am\v!empty\endcsname\plusone
+\expandafter\chardef\csname\??am\??am\v!no   \endcsname\plustwo
+\expandafter\chardef\csname\??am\??am\v!none \endcsname\plusthree
+\expandafter\chardef\csname\??am\??am        \endcsname\plusone % default
 
 \processbetween{\v!interactionmenu}\dostartinteractionmenu
 
@@ -1188,7 +1059,7 @@
 \def\dodomenulistelement#1#2#3#4#5#6#7%
   {\setbox0=\hbox
      {\let\gotolocation\gobbleoneargument % hack to catch last []
-%\locationclickfalse % ipv ^
+     %\locationclickfalse % ipv ^
       \docheckrealreferencepage{#7}%
       \setlocationboxyes
         {\??am#1}% % needed !
@@ -1244,13 +1115,6 @@
   {\bgroup
   %\locationdummytrue
    \setlocationbox{\??am#1}[]{#3}[#4]%
-   \egroup}
-
-\def\domenubox[#1][#2]#3%
-  {\bgroup
-   \def\setlocationbox##1[##2]##3[##4]%
-     {\localframed[##1][##2]{\dolocationattributes{##1}\c!style\c!color{##3}}}%
-   \domenubutton[#1][#2]#3[]%
    \egroup}
 
 \def\menubox
@@ -1381,66 +1245,71 @@
      \egroup
    \fi\fi}
 
-% Dit is leuke toepassing van glue!
+% A nice application of glue. All this code will be rewritten and
+% generalized.
 
-\newbox\meterbox
+\newbox\interactionbarbox
 
 \newif\ifbarsymbol
 
-\def\doganaareenpagina#1#2#3% nog checken !
+\def\dogotosomepage#1#2#3% nog checken !
   {\checkreferences  % nodig ??
-   \iflocation
-     \ifnum#3=\realpageno
-       {#2}%
+   \hbox
+     {\iflocation
+        \ifnum#3=\realpageno
+          #2%
+       \else
+         \gotorealpage\empty\empty{#3}{\doifsomething{#1}{\dolocationattributes{#1}\c!style\c!color}{#2}}%
+       \fi
      \else
-       \doifelsenothing{#1}
-         {\hbox{\gotorealpage{}{}{#3}
-            {#2}}}
-         {\hbox{\gotorealpage{}{}{#3}
-            {\dolocationattributes{#1}\c!style\c!color{#2}}}}%
-     \fi
-   \else
-     {#2}%
-   \fi}
+       #2%
+     \fi}}
+
+\def\dogotosomecontrastpage#1#2#3% nog checken, may replace previous
+  {\checkreferences  % nodig ??
+   \hbox
+     {\iflocation
+        \ifnum#3=\realpageno
+          \gotorealpage\empty\empty{#3}{\doifsomething{#1}{\dolocationattributes{#1}\c!style\c!contrastcolor}{#2}}%
+        \else
+          \gotorealpage\empty\empty{#3}{\doifsomething{#1}{\dolocationattributes{#1}\c!style\c!color}{#2}}%
+        \fi
+      \else
+        #2%
+      \fi}}
 
 \presetlocalframed[\??ib]
 
-\def\interactionbara
-  {\iflocation
+\def\interactionbara % we need better control over contrastcolor
+  {\iflocation       % maybe just use gotopage and set colors
      \bgroup
-    %\setupinteraction[\c!width=\!!zeropoint]%
-     \setinteractionparameter\c!width\!!zeropoint
-     \setupblackrules[\c!height=\v!max,\c!depth=\v!max]% maten ??
-     \!!widthb\@@ibwidth
-     \advance\!!widthb -2.75em\relax
-     \!!widtha\!!widthb
-     \divide\!!widtha \lastpage\relax
+     \setinteractionparameter\c!width\zeropoint
+     \setupblackrules[\c!height=\v!max,\c!depth=\v!max]%
+     \!!widthb\dimexpr\@@ibwidth-2.75\emwidth\relax
+     \!!widtha\dimexpr\!!widthb/\lastpage\relax
      \bgroup
-       \advance\realpageno \minusone
-       \ifvoid\meterbox
+       \advance\realpageno\minusone
+       \ifvoid\interactionbarbox
          \bgroup
          \processaction
            [\@@ibstep]
-           [   \v!small=>\dimen0=.25em\relax,
-              \v!medium=>\dimen0=.5em\relax,
-               \v!big=>\dimen0=1em\relax,
-             \s!unknown=>\dimen0=\!!widtha]%
-         \ifdim\!!widtha<\dimen0\relax
-           \!!counta\dimen0\relax
-           \!!countb\!!widtha
-           \divide\!!counta \!!countb
+           [   \v!small=>\scratchdimen.25\emwidth,
+              \v!medium=>\scratchdimen.5\emwidth,
+                 \v!big=>\scratchdimen\emwidth,
+             \s!unknown=>\scratchdimen\!!widtha]%
+         \ifdim\!!widtha<\scratchdimen\relax
+           \!!counta\numexpr\scratchdimen/\!!widtha\relax
          \else
            \!!counta\@@ibstep\relax
          \fi
-         \!!widtha=\!!counta\!!widtha
-         \setbox0\hbox{\blackrule[\c!width=\!!widtha]}%
-         \global\setbox\meterbox\hbox to \!!widthb
+         \!!widtha\!!counta\!!widtha
+         \setbox\scratchbox\hbox{\blackrule[\c!width=\!!widtha,\c!color=middlegray]}% color here, else no mkiv
+         \global\setbox\interactionbarbox\hbox to \!!widthb
            {\hss
-            % brrr
-            \for \teller=1 \to \lastpage \step \!!counta \do
-              {\gotorealpage{}{}{\teller}{\copy0}}%
+            \dostepwiserecurse\plusone\lastpage\!!counta
+              {\gotorealpage\empty\empty\recurselevel{\copy\scratchbox}}%
             \hss}%
-         \global\wd\meterbox\zeropoint
+         \global\wd\interactionbarbox\zeropoint
          \egroup
        \fi
      \egroup
@@ -1448,40 +1317,34 @@
      \strut
      \hbox to \@@ibwidth
        {\dontcomplain
-        \setupblackrules[\c!width=1em]%
-        \doganaareenpagina\??ib\blackrule\firstpage
+        \setupblackrules[\c!width=\emwidth]%
+        \dogotosomecontrastpage\??ib\blackrule\firstpage
         \hss
-        \color[middlegray]{\copy\meterbox}%
+        \copy\interactionbarbox
         \hbox to \!!widthb
-          {\ifdim\!!widtha<1em\relax
-             \!!widtha=1em\relax
+          {\ifdim\!!widtha<\emwidth
+             \!!widtha\emwidth
            \fi
            \setupblackrules[\c!width=\!!widtha]%
            \ifnum\realpageno>\plusone
-             \!!counta\realpageno
-             \advance\!!counta -2\relax
+             \!!counta\numexpr\realpageno-\plustwo\relax
              \hskip\zeropoint\!!plus\!!counta \s!sp\relax % cm gives overflow
-             % or just: \hskip\zeropoint\!!plus\!!counta \relax % cm gives overflow
-             \doganaareenpagina\??ib\blackrule\prevpage
+             \dogotosomepage\??ib\blackrule\prevpage
            \fi
-           \color[\@@ibcontrastcolor]{\blackrule[\c!width=.5em]}%
+           \dogotosomecontrastpage\??ib{\blackrule[\c!width=.5em]}\realpageno
            \ifnum\realpageno<\lastpage\relax
-             \doganaareenpagina\??ib\blackrule\nextpage
-             \!!counta\lastpage
-             \advance\!!counta -\realpageno
-             \advance\!!counta \minusone
+             \dogotosomepage\??ib\blackrule\nextpage
+             \!!counta\numexpr\lastpage-\realpageno-\plusone\relax
              \hskip\zeropoint\!!plus\!!counta \s!sp\relax % cm gives overflow
-             % or just \hskip\zeropoint\!!plus\!!counta\relax % cm gives overflow
            \fi}%
         \hss
-        \doganaareenpagina\??ib\blackrule\lastpage}%
+        \dogotosomecontrastpage\??ib\blackrule\lastpage}%
      \egroup
    \fi}
 
 \def\interactionbarb
   {\ifnum\lastpage>\firstpage\relax
-     \interactionbuttons
-       [\v!firstpage,\v!previouspage,\v!nextpage,\v!lastpage]%
+     \interactionbuttons[\v!firstpage,\v!previouspage,\v!nextpage,\v!lastpage]%
    \fi}
 
 \def\interactionbarc
@@ -1489,27 +1352,17 @@
      \ifnum\lastpage>\plusone
        \hbox to \@@ibwidth
          {\setupblackrules[\c!height=\@@ibheight,\c!depth=\@@ibdepth]%
-          \def\gotox##1%
-            {\doganaareenpagina{}{\blackrule[\c!width=##1]}}%
-          \dimen0=\@@ibwidth\relax
-          \advance\dimen0 -4em
-          \!!counta\lastpage
-          \advance\!!counta \minusone
-          \divide\dimen0 \!!counta
-          \!!counta\realpageno
-          \advance\!!counta \minusone
-          \!!widtha\!!counta\dimen0
-          \!!countb\lastpage
-          \advance\!!countb -\realpageno
-          \!!widthb\!!countb\dimen0
+          \scratchdimen\dimexpr(\@@ibwidth-4\emwidth)/\numexpr\lastpage+\minusone\relax\relax
+          \!!widtha\numexpr\realpageno+\minusone\relax\scratchdimen
+          \!!widthb\numexpr\lastpage-\realpageno\relax\scratchdimen
           \startcolor[\locationcolor\@@ibcolor]%
-          \gotox{1em}\firstpage
+          \dogotosomepage\empty{\blackrule[\c!width=\emwidth]}\firstpage
           \hss
-          \gotox\!!widtha\prevpage
-          \color[\@@ibcontrastcolor]{\blackrule[\c!width=1em]}%
-          \gotox\!!widthb\nextpage
+          \dogotosomepage\empty{\blackrule[\c!width=\!!widtha]}\prevpage
+          \color[\@@ibcontrastcolor]{\blackrule[\c!width=\emwidth]}%
+          \dogotosomepage\empty{\blackrule[\c!width=\!!widthb]}\nextpage
           \hss
-          \gotox{1em}\lastpage
+          \dogotosomepage\empty{\blackrule[\c!width=\emwidth]}\lastpage
           \stopcolor}%
      \fi
    \fi}
@@ -1517,42 +1370,29 @@
 \def\interactionbard
   {\iflocation\ifshowingsubpage
      \ifnum\nofsubpages>\plusone
-       \hbox
-       \bgroup
-      %\setupinteraction[\c!width=\!!zeropoint]%
-       \setinteractionparameter\c!width\!!zeropoint
-       \ifbarsymbol % beter: 3 chars assign en 3*box
-         \setupsymbolset[\@@iasymbolset]%
-         \setbox0\hbox{\symbol[\v!previous]}%
-         \setbox2\hbox{\symbol[\v!somewhere]}%
-         \setbox4\hbox{\symbol[\v!next]}%
-       \else
-         \setbox0\hbox
-           {\vrule
-              \!!height\@@ibheight
-              \!!depth\@@ibdepth
-              \!!width\@@ibwidth}%
-         \setbox2\copy0
-         \setbox4\copy0
-       \fi
-       \startcolor[\locationcolor\@@ibcolor]%
-       \for\teller=1\to\nofsubpages\step1\do % brr, \dostepwiserecurse
-         {\bgroup
-          \increment(\teller,\firstsubpage)\relax
-          \decrement\teller\relax
-          \ifnum\teller<\realpageno\relax
-            \gotorealpage{}{}{\teller}{\copy0}\relax
-          \else\ifnum\teller=\realpageno\relax
-            \color
-              [\@@ibcontrastcolor]
-              {\gotorealpage{}{}{\teller}{\copy2}}%
-          \else
-            \gotorealpage{}{}{\teller}{\copy4}\relax
-          \fi\fi
-          \egroup
-          \hskip\@@ibdistance}%
-       \unskip
-       \stopcolor
+       \hbox \bgroup
+         \setinteractionparameter\c!width\!!zeropoint
+         \ifbarsymbol
+           \setupsymbolset[\@@iasymbolset]%
+           \def\dogotox##1%
+             {\hbox{\symbol[\ifcase##1 \v!previous\or\v!somewhere\or\v!next\fi]}}%
+         \else
+           \def\dogotox##1%
+             {\hbox{\vrule\!!height\@@ibheight\!!depth \@@ibdepth\!!width \@@ibwidth}}%
+         \fi
+         \dostepwiserecurse\plusone\nofsubpages\plusone
+           {\bgroup
+            \scratchcounter\numexpr\recurselevel+\firstsubpage+\minusone\relax
+            \ifnum\scratchcounter<\realpageno\relax
+              \dogotosomecontrastpage\??ib{\dogotox0}\scratchcounter
+            \else\ifnum\scratchcounter=\realpageno\relax
+              \dogotosomecontrastpage\??ib{\dogotox1}\scratchcounter
+            \else
+              \dogotosomecontrastpage\??ib{\dogotox2}\scratchcounter
+            \fi\fi
+            \egroup
+            \hskip\@@ibdistance}%
+         \unskip % not needed
        \egroup
      \fi
    \fi\fi}
@@ -1561,72 +1401,54 @@
   {\iflocation\ifshowingsubpage
      \ifnum\nofsubpages>\plusone
        \bgroup
-       \!!widthb\@@ibdistance
-       \multiply\!!widthb \nofsubpages
-       \advance\!!widthb -\@@ibdistance % (n-1)
-       \!!widtha\@@ibwidth
-       \advance\!!widtha -\!!widthb
-       \divide\!!widtha \nofsubpages\relax
+       \!!widthb\dimexpr\nofsubpages\dimexpr\@@ibdistance\relax-\@@ibdistance\relax % (n-1)
+       \!!widtha\dimexpr(\@@ibwidth-\!!widthb)/\nofsubpages\relax
        \ifdim\!!widtha<\@@ibdistance\relax
          \interactionbarf
        \else
-        %\setupinteraction[\c!width=\!!zeropoint]%
          \setinteractionparameter\c!width\!!zeropoint
          \noindent
          \hbox to \@@ibwidth
            \bgroup
              \ifbarsymbol
                \setupsymbolset[\@@iasymbolset]%
-               \setbox0\hbox{\symbol[\v!previous]}%
-               \setbox2\hbox{\symbol[\v!somewhere]}%
-               \setbox4\hbox{\symbol[\v!next]}%
+               \def\dogotox##1%
+                 {\hbox{\symbol[\ifcase##1 \v!previous\or\v!somewhere\or\v!next\fi}}%
              \else
-               \setbox0\hbox
-                  {\vrule
-                     \!!height\@@ibheight
-                     \!!depth\@@ibdepth
-                     \!!width\!!widtha}%
-               \setbox2\copy0
-               \setbox4\copy0
+               \def\dogotox##1%
+                 {\hbox{\vrule\!!height\@@ibheight\!!depth\@@ibdepth\!!width\!!widtha}}%
              \fi
-             \startcolor[\locationcolor\@@ibcolor]%
-             \for\teller=1\to\nofsubpages\step1\do
+             \dostepwiserecurse\plusone\nofsubpages\plusone
                {\bgroup
-                \increment(\teller,\firstsubpage)\relax
-                \decrement\teller\relax
-                \ifnum\teller<\realpageno\relax
-                  \gotorealpage{}{}{\teller}{\copy0}\relax
-                \else\ifnum\teller=\realpageno\relax
-                  \color
-                    [\@@ibcontrastcolor]
-                    {\gotorealpage{}{}{\teller}{\copy2}}%
+                \scratchcounter\numexpr\recurselevel+\firstsubpage+\minusone\relax
+                \ifnum\scratchcounter<\realpageno\relax
+                  \dogotosomecontrastpage\??ib{\dogotox0}\scratchcounter
+                \else\ifnum\scratchcounter=\realpageno\relax
+                  \dogotosomecontrastpage\??ib{\dogotox1}\scratchcounter
                 \else
-                  \gotorealpage{}{}{\teller}{\copy4}\relax
+                  \dogotosomecontrastpage\??ib{\dogotox2}\scratchcounter
                 \fi\fi
                 \egroup
                 \hss}%
              \unskip
-             \stopcolor
            \egroup
        \fi
        \egroup
      \fi
    \fi\fi}
 
-\def\interactionbarf%  !! KAN WORDEN GECOMBINEERD MET D !!
+\def\interactionbarf % !! KAN WORDEN GECOMBINEERD MET D !!
   {\iflocation\ifshowingsubpage
      \ifnum\nofsubpages>\plusone
-      %\setupinteraction[\c!width=\!!zeropoint]%
        \setinteractionparameter\c!width\!!zeropoint
        \noindent
        \hbox to \@@ibwidth
        \bgroup
        \!!countb\zerocount
-       \loop
+       \loop % todo: \doloop
          \advance\!!countb \plusone
-         \!!countc\nofsubpages
-         \divide\!!countc \!!countb
-         \advance\!!countc \plusone
+        %\!!countc\nofsubpages \divide\!!countc \!!countb \advance\!!countc \plusone
+         \!!countc\numexpr(\nofsubpages/\!!countb)+\plusone\relax % rounding
          \!!widthb\@@ibdistance
          \multiply\!!widthb \!!countc
          \advance\!!widthb -\@@ibdistance
@@ -1635,83 +1457,74 @@
          \divide\!!widtha \!!countc
          \ifdim\!!widtha<\@@ibdistance\relax
        \repeat
-\advance\!!countc -2
-\!!widtha-\@@ibdistance
-\!!widtha=\!!countc\!!widtha
-\advance\!!widtha \@@ibwidth
-\advance\!!countc \plusone
-\divide\!!widtha \!!countc
+       \ifnum\!!countc>\plusone
+         % this is not that well tested
+         \advance\!!countc \minustwo
+         \!!widtha-\@@ibdistance
+         \!!widtha\!!countc\!!widtha
+         \advance\!!widtha \@@ibwidth
+         \advance\!!countc \plusone
+         \divide\!!widtha \!!countc
+       \fi
        \ifbarsymbol
          \setupsymbolset[\@@iasymbolset]%
-         \setbox0\hbox{\symbol[\v!previous]}%
-         \setbox4\hbox{\symbol[\v!somewhere]}%
-         \setbox8\hbox{\symbol[\v!next]}%
-         \setbox2\copy4
-         \setbox6\copy4
+         \def\dogotox##1%
+           {\hbox{\symbol[\ifcase##1 \v!previous\or\v!somewhere\or\v!somewhere\or\v!somewhere\or\v!next\fi}}%
        \else
-         \setbox0\hbox
-           {\vrule
-              \!!height\@@ibheight
-              \!!depth\@@ibdepth
-              \!!width\!!widtha}%
-         \setbox4\copy0
-         \setbox8\copy0
-         \setbox2\hbox
-           {\vrule
-              \!!height.5\ht0
-              \!!depth.5\dp0
-              \!!width\!!widtha}%
-         \ht2\ht0
-         \dp2\dp0
-         \setbox6\copy2
+         \def\dogotox##1%
+           {\hbox
+              {\!!heighta\@@ibheight
+               \!!deptha\@@ibdepth
+               \ifcase##1\relax
+                 \vrule\!!height  \!!heighta\!!depth  \!!deptha\!!width\!!widtha
+               \or
+                 \vrule\!!height.5\!!heighta\!!depth.5\!!deptha\!!width\!!widtha
+               \or
+                 \vrule\!!height  \!!heighta\!!depth  \!!deptha\!!width\!!widtha
+               \or
+                 \vrule\!!height.5\!!heighta\!!depth.5\!!deptha\!!width\!!widtha
+               \or
+                 \vrule\!!height  \!!heighta\!!depth  \!!deptha\!!width\!!widtha
+               \fi}}%
        \fi
-       \def\gotox##1%
-         {\ifnum\teller=\realpageno
-            \color
-              [\@@ibcontrastcolor]
-              {\gotorealpage{}{}{\teller}{\copy##1}}%
-          \else
-            \gotorealpage{}{}{\teller}{\copy##1}%
-          \fi
-          \!!countf\zerocount
-          \hss}%
-       \startcolor[\locationcolor\@@ibcolor]%
-       \!!countc\realpageno \advance\!!countc -2
-       \!!countd\realpageno \advance\!!countd 2
+       \!!countc\numexpr\realpageno-\plustwo\relax
+       \!!countd\numexpr\realpageno+\plustwo\relax
+       \ifnum\!!countc<\plusone \!!countc\plusone \fi
        \!!countf\zerocount
-       \for\teller=\firstsubpage\to\lastsubpage\step1\do
+       \dostepwiserecurse\firstsubpage\lastsubpage\plusone
          {\!!doneafalse
           \advance\!!countf \plusone
-          \ifnum\teller=\firstsubpage\relax \!!doneatrue \fi
-          \ifnum\teller=\lastsubpage\relax  \!!doneatrue \fi
-          \ifnum\teller>\!!countc \ifnum\teller<\!!countd \!!doneatrue \fi\fi
+          \ifnum\recurselevel=\firstsubpage\relax \!!doneatrue \fi
+          \ifnum\recurselevel=\lastsubpage\relax  \!!doneatrue \fi
           \if!!donea
-            \ifnum\teller<\realpageno
-              \gotox0%
-            \else\ifnum\teller>\realpageno
-              \gotox4%
+            \ifnum\recurselevel<\realpageno
+              \dogotosomecontrastpage\??ib{\dogotox0}\recurselevel
+            \else\ifnum\recurselevel>\realpageno
+              \dogotosomecontrastpage\??ib{\dogotox2}\recurselevel
             \else
-              \gotox8%
+              \dogotosomecontrastpage\??ib{\dogotox4}\recurselevel
             \fi\fi
+            \hss
+            \!!countf\zerocount
           \else\ifnum\!!countf=\!!countb
-            \ifnum\teller<\realpageno
-              \gotox2%
-            \else\ifnum\teller>\realpageno
-              \gotox6%
+            \ifnum\recurselevel<\realpageno
+              \dogotosomecontrastpage\??ib{\dogotox1}\recurselevel
+            \else\ifnum\recurselevel>\realpageno
+              \dogotosomecontrastpage\??ib{\dogotox3}\recurselevel
             \else
-              \gotox4%
+              \dogotosomecontrastpage\??ib{\dogotox2}\recurselevel
             \fi\fi
+            \hss
+            \!!countf\zerocount
           \fi\fi}%
        \unskip
-       \stopcolor
        \egroup
      \fi
    \fi\fi}
 
 \def\interactionbarg
   {\ifnum\lastsubpage>\firstsubpage\relax
-     \interactionbuttons
-       [\v!firstsubpage,\v!previoussubpage,\v!nextsubpage,\v!lastsubpage]%
+     \interactionbuttons[\v!firstsubpage,\v!previoussubpage,\v!nextsubpage,\v!lastsubpage]%
    \fi}
 
 \def\checkinteractionbar#1#2#3%
@@ -1721,7 +1534,7 @@
 
 \def\complexinteractionbar[#1]%
   {\doifelse{#1}\v!reset
-    {\global\setbox\meterbox\box\voidb@x}%
+    {\global\setbox\interactionbarbox\box\voidb@x}%
     {\bgroup
        \iflocation
          \checksubpages % goes wrong / loads \numberofpages too
@@ -1730,10 +1543,10 @@
            {\startinteraction
             \processaction % breedte defaults !
               [\@@ibalternative]
-              [         c=>\checkinteractionbar{.5em}\v!max \v!max,
+              [         c=>\checkinteractionbar{10em}\v!max \v!max,
                         d=>\checkinteractionbar{.5em}{.5em} \!!zeropoint,
-                        e=>\checkinteractionbar{.5em}{.5em} \!!zeropoint,
-                        f=>\checkinteractionbar{.5em}{.5em} \!!zeropoint,
+                        e=>\checkinteractionbar{10em}{.5em} \!!zeropoint,
+                        f=>\checkinteractionbar{10em}{.5em} \!!zeropoint,
                \s!default=>\checkinteractionbar{10em}\v!broad\!!zeropoint,
                \s!unknown=>\checkinteractionbar{10em}\v!broad\!!zeropoint]%
             \doifelse\@@ibsymbol\v!yes
@@ -2427,35 +2240,27 @@
    \c!rightoffset=\!!zeropoint]
 
 \def\placeleftedgetextblock % Is \hss/\hsize really needed here?
-  {\hbox to \leftedgewidth % (check outer level and settings)
-     {\hsize\leftedgewidth
-      \hss
-      \interactionmenus[\v!left]}}
+  {\hbox to \leftedgewidth  % (check outer level and settings)
+     {\hsize\leftedgewidth\hss\interactionmenus[\v!left]}}
 
 \def\placerightedgetextblock % Is \hss/\hsize really needed here?
-  {\hbox to \rightedgewidth % (check outer level and settings)
-     {\hsize\rightedgewidth
-      \interactionmenus[\v!right]%
-      \hss}}
+  {\hbox to \rightedgewidth  % (check outer level and settings)
+     {\hsize\rightedgewidth\interactionmenus[\v!right]\hss}}
 
 \def\placetoptextblock
   {\vbox to \topheight
      {\vsize\topheight
-%      \getvalue{\??tk\v!boven\v!tekst\c!voor}
-      \getvalue{\??tk\v!top\c!before}
-      \interactionmenus[\v!top]
-%      \getvalue{\??tk\v!boven\v!tekst\c!na}
-      \getvalue{\??tk\v!top\c!after}
+      \csname\??tk\v!top\c!before\endcsname
+      \interactionmenus[\v!top]%
+      \csname\??tk\v!top\c!after\endcsname
       \kern\zeropoint}}
 
 \def\placebottomtextblock
   {\vbox to \bottomheight
      {\vsize\bottomheight
-%      \getvalue{\??tk\v!onder\v!tekst\c!voor}
-      \getvalue{\??tk\v!bottom\c!before}
-      \interactionmenus[\v!bottom]
-%      \getvalue{\??tk\v!onder\v!tekst\c!na}
-      \getvalue{\??tk\v!bottom\c!after}
+      \csname\??tk\v!bottom\c!before\endcsname
+      \interactionmenus[\v!bottom]%
+      \csname\??tk\v!bottom\c!after\endcsname
       \kern\zeropoint}}
 
 \ifx\leftedgetextcontent\undefined \else

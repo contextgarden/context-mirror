@@ -1,0 +1,3 @@
+On MSWindows the mtxrun.lua script is called
+with mtxrun.cmd. On Unix you can either rename
+mtxrun.lua to mtxrun, or use a symlink.

@@ -13,10 +13,7 @@
 
 % -- ignored: malignmark
 % -- luacode will be moved to x-mmp.lua
-
-% \defineXMLentity[textspace]  {\enspace}
-% \defineXMLentity[textcomma]  {{,}}
-% \defineXMLentity[textperiod] {{.}}
+% -- { } # % _ ^ & etc escapen, {} in mathtype entities; mo/mtext
 
 \startluacode
     do
@@ -25,18 +22,30 @@
 
         local texsprint = tex.sprint
 
-        local replacements = {
---            [" "] = utf.char(0x2002),  -- "&textspace;" -> tricky, no &; in mkiv
---            ["."] = "{.}",
---            [","] = "{,}",
-        }
+        -- an alternative is to remap to private codes, where we can have
+        -- different properties .. to be done
 
-        local reppattern = "([ %.%,])"
+        local n_replacements = {
+        --  [" "] = utf.char(0x2002),  -- "&textspace;" -> tricky, no &; in mkiv
+            ["."] = "{.}",
+            [","] = "{,}",
+        }
+        local o_replacements = {
+            ["{"] = "\\{",
+            ["}"] = "\\}",
+        }
 
         function lxml.mml.prepare_number(id,pattern)
             local str = xml.content(lxml.id(id),pattern) or ""
             str = str:gsub("^%s*(.-)%s*$","%1")
-            str = str:gsub(reppattern,replacements)
+            str = str:gsub(".",n_replacements)
+            texsprint(str)
+        end
+
+        function lxml.mml.prepare_operator(id,pattern)
+            local str = xml.content(lxml.id(id),pattern) or ""
+            str = str:gsub("^%s*(.-)%s*$","%1")
+            str = str:gsub(".",o_replacements)
             texsprint(str)
         end
 
@@ -199,17 +208,19 @@
 
 \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
     \begingroup
-        \rm  \ctxlua{lxml.mml.prepare_number("#1","*")}
+        \mr  \ctxlua{lxml.mml.prepare_number("#1","*")}
     \endgroup
 \stopxmlsetups
 
-\startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
-    \mathop{\hbox{\mr \ctxlua{lxml.mml.prepare_number("#1","*")}}}% we need . and , properly spaced
-\stopxmlsetups
-
+% hbox will make . and , behave ok, see rep patterns above as alternative
+%
+% \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
+%     % problem, we need an hbox because of . ,
+%     \mathop{\hbox{\mr \ctxlua{lxml.mml.prepare_number("#1","*")}}}% we need . and , properly spaced
+% \stopxmlsetups
 
 \startxmlsetups mml:mo
-    \edef\MMPoperator{\xmlstripped{#1}{*}}
+    \edef\MMPoperator{\ctxlua{lxml.mml.prepare_operator("#1","*")}}
     \doifXMLentityelse{\detokenize\expandafter{\MMPoperator}} {
         \getXMLentity\MMPoperator
     } {
@@ -364,7 +375,6 @@
 %     }
 %     \limits
 % \stopsetups
-
 
 \startsetups mml:mover
     \mathop {

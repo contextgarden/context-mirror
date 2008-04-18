@@ -55,8 +55,8 @@
 \def\MPul #1{\ctxlua{job.MPul("#1")}}
 \def\MPpos#1{\ctxlua{job.MPpos("#1")}}
 
-\def\MPplus#1#2{\ctxlua{job.MPplus("#1",#2)}}
-\def\MPrest#1#2{\ctxlua{job.MPrest("#1","#2")}}
+\def\MPplus#1#2#3{\ctxlua{job.MPplus("#1",#2,"#3")}}
+\def\MPrest  #1#2{\ctxlua{job.MPrest("#1","#2")}}
 
 \def\doifpositionelse#1{\ctxlua{cs.testcase(job.positions['#1'])}}
 

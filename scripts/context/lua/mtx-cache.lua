@@ -13,8 +13,8 @@ scripts.cache = scripts.cache or { }
 
 function scripts.cache.collect_one(...)
     local path = caches.setpath(instance,...)
-    local tmas = dir.glob(path .. "/*tma")
-    local tmcs = dir.glob(path .. "/*tmc")
+    local tmas = dir.glob(path .. "/*.tma")
+    local tmcs = dir.glob(path .. "/*.tmc")
     return path, tmas, tmcs
 end
 
@@ -25,12 +25,9 @@ function scripts.cache.collect_two(...)
 end
 
 function scripts.cache.process_one(action)
-    action("fonts", "afm")
-    action("fonts", "tfm")
-    action("fonts", "def")
-    action("fonts", "enc")
-    action("fonts", "otf")
-    action("fonts", "data")
+    for k, v in ipairs({ "afm", "tfm", "def", "enc", "otf", "mp", "data" }) do
+        action("fonts", v)
+    end
 end
 
 function scripts.cache.process_two(action)
@@ -57,23 +54,27 @@ function scripts.cache.remove(list,keep)
 end
 
 function scripts.cache.delete(all,keep)
-    local function action(...)
+    scripts.cache.process_one(function(...)
+        local path, rest = scripts.cache.collect_one(...)
+        local n = scripts.cache.remove(rest,keep)
+        logs.report("cache path",string.format("%4i files out of %4i deleted on %s",n,#rest,path))
+    end)
+    scripts.cache.process_two(function(...)
         local path, rest = scripts.cache.collect_two(...)
         local n = scripts.cache.remove(rest,keep)
         logs.report("cache path",string.format("%4i files out of %4i deleted on %s",n,#rest,path))
-    end
-    scripts.cache.process_one(action)
-    scripts.cache.process_two(action)
+    end)
 end
 
 function scripts.cache.list(all)
     scripts.cache.process_one(function(...)
         local path, tmas, tmcs = scripts.cache.collect_one(...)
-        logs.report("cache path",string.format("tma:%4i tmc:%4i   %s",#tmas,#tmcs,path))
+        logs.report("cache path",string.format("%4i (tma:%4i, tmc:%4i)  %s",#tmas+#tmcs,#tmas,#tmcs,path))
+        logs.report("cache path",string.format("%4i (tma:%4i, tmc:%4i)  %s",#tmas+#tmcs,#tmas,#tmcs,path))
     end)
     scripts.cache.process_two(function(...)
         local path, rest = scripts.cache.collect_two("curl")
-        logs.report("cache path",string.format("all:%4i            %s",#rest,path))
+        logs.report("cache path",string.format("%4i                       %s",#rest,path))
     end)
 end
 

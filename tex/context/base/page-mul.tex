@@ -914,7 +914,7 @@
        \bgroup
        \ifcase\clevernotes\or
          \getmulticolumnlines
-         \advance\nofcolumnlines -2 % ?
+         \advance\nofcolumnlines \minustwo
          \scratchdimen\nofcolumnlines\lineheight
          \advance\scratchdimen \topskip
          \setbox0\hbox
@@ -931,7 +931,7 @@
          \scratchdimen\ht\firstcolumnbox
          \advance\scratchdimen -\openstrutdepth % \strutdp
          \getnoflines\scratchdimen
-         \advance\noflines -2
+         \advance\noflines \minustwo
          \scratchdimen\noflines\lineheight
          \advance\scratchdimen \topskip
          \setbox0\hbox

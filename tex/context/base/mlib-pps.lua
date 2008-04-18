@@ -757,6 +757,7 @@ function metapost.graphic_extra_pass()
     metapost.process(current_format, {
         "beginfig(0); ",
         "_trial_run_ := false ;",
+        "_tt_n_ := 0 ;", -- resettextexts
         join(metapost.text_texts_data()," ;\n"),
         current_graphic,
         "endfig ;"

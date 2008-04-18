@@ -1600,11 +1600,11 @@
 \def\gotodestination#1#2#3#4#5% url file destination page data
   {\iflocation
      \ifusepagedestinations
-       \gotorealpage{#1}{#2}{#4}{#5}%
+       \gotorealpage{#1}{#2}{\number#4}{#5}%
      \else
        \dohandlegoto
          {#5}%
-         {\the\everyreference\dostartgotolocation\buttonwidth\buttonheight{#1}{#2}{#3}{#4}}%
+         {\the\everyreference\dostartgotolocation\buttonwidth\buttonheight{#1}{#2}{#3}{\number#4}}%
          {\dostopgotolocation}%
      \fi
    \else
@@ -1615,7 +1615,7 @@
   {\iflocation
      \dohandlegoto
        {#4}%
-       {\dostartgotorealpage\buttonwidth\buttonheight{#1}{#2}{#3}}%
+       {\dostartgotorealpage\buttonwidth\buttonheight{#1}{#2}{\number#3}}%
        {\dostopgotorealpage}%
    \else
      {#4}%

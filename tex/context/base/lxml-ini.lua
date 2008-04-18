@@ -358,6 +358,11 @@ function lxml.setsetup(id,pattern,setup)
                 if trace then
                     texio.write_nl(format("lpath matched -> %s -> skipped", command))
                 end
+            elseif setup == "+" then
+                dtdk.command = true
+                if trace then
+                    texio.write_nl(format("lpath matched -> %s -> text", command))
+                end
             else
                 dtdk.command = command
                 if trace then
@@ -378,6 +383,15 @@ function lxml.setsetup(id,pattern,setup)
                             texio.write_nl(format("lpath matched -> %s -> skipped", tg))
                         else
                             texio.write_nl(format("lpath matched -> %s:%s -> skipped", ns, tg))
+                        end
+                    end
+                elseif b == "+" then
+                    dtdk.command = true
+                    if trace then
+                        if ns == "" then
+                            texio.write_nl(format("lpath matched -> %s -> text", tg))
+                        else
+                            texio.write_nl(format("lpath matched -> %s:%s -> text", ns, tg))
                         end
                     end
                 else

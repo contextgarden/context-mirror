@@ -41,7 +41,6 @@ banner = "version 1.0.2 - 2007+ - PRAGMA ADE / CONTEXT"
 texlua = true
 
 -- begin library merge
-
 -- filename : l-string.lua
 -- comment  : split off from luat-lib
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -1610,6 +1609,8 @@ function file.extname(name)
     return name:match("^.+%.([^/\\]-)$") or  ""
 end
 
+file.suffix = file.extname
+
 function file.stripsuffix(name)
     return (name:gsub("%.[%a%d]+$",""))
 end
@@ -1805,29 +1806,29 @@ if lfs then do
 
     dir.glob_pattern = glob_pattern
 
-    local function glob(pattern, action)
-        local t = { }
-        local path, rest, patt, recurse
-        local action = action or function(name) t[#t+1] = name end
-        local pattern = pattern:gsub("^%*%*","./**")
-        local pattern = pattern:gsub("/%*/","/**/")
-        path, rest = pattern:match("^(/)(.-)$")
-        if path then
-            path = path
-        else
-            path, rest = pattern:match("^([^/]*)/(.-)$")
-        end
-        if rest then
-            patt = rest:gsub("([%.%-%+])", "%%%1")
-        end
-        patt = patt:gsub("%*", "[^/]*")
-        patt = patt:gsub("%?", "[^/]")
-        patt = patt:gsub("%[%^/%]%*%[%^/%]%*", ".*")
-        if path == "" then path = "." end
-        recurse = patt:find("%.%*/") ~= nil
-        glob_pattern(path,patt,recurse,action)
-        return t
-    end
+    --~ local function glob(pattern, action)
+    --~     local t = { }
+    --~     local path, rest, patt, recurse
+    --~     local action = action or function(name) t[#t+1] = name end
+    --~     local pattern = pattern:gsub("^%*%*","./**")
+    --~     local pattern = pattern:gsub("/%*/","/**/")
+    --~     path, rest = pattern:match("^(/)(.-)$")
+    --~     if path then
+    --~         path = path
+    --~     else
+    --~         path, rest = pattern:match("^([^/]*)/(.-)$")
+    --~     end
+    --~     if rest then
+    --~         patt = rest:gsub("([%.%-%+])", "%%%1")
+    --~     end
+    --~     patt = patt:gsub("%*", "[^/]*")
+    --~     patt = patt:gsub("%?", "[^/]")
+    --~     patt = patt:gsub("%[%^/%]%*%[%^/%]%*", ".*")
+    --~     if path == "" then path = "." end
+    --~     recurse = patt:find("%.%*/") ~= nil
+    --~     glob_pattern(path,patt,recurse,action)
+    --~     return t
+    --~ end
 
     local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
 
@@ -1841,13 +1842,13 @@ if lfs then do
         P("**") / ".*" +
         P("*")  / "[^/]*" +
         P("?")  / "[^/]" +
-        P(".")  / "%." +
-        P("+")  / "%+" +
-        P("-")  / "%-" +
+        P(".")  / "%%." +
+        P("+")  / "%%+" +
+        P("-")  / "%%-" +
         P(1)
     )^0 )
 
-    function glob(str)
+    local function glob(str)
         local split = pattern:match(str)
         if split then
             local t = { }
@@ -1856,7 +1857,8 @@ if lfs then do
             local recurse = base:find("**")
             local start = root .. path
             local result = filter:match(start .. base)
-        --  print(str, start, result)
+--~         print(str, start, result)
+--~         print(start, result)
             glob_pattern(start,result,recurse,action)
             return t
         else
@@ -2178,6 +2180,8 @@ xml.trace_remap = false
 
 local format, concat = string.format, table.concat
 
+--~ local pairs, next, type = pairs, next, type
+
 -- todo: some things per xml file, liek namespace remapping
 
 --[[ldx--
@@ -2281,9 +2285,13 @@ local x = xml.convert(somestring)
 element.</p>
 --ldx]]--
 
+xml.strip_cm_and_dt = false -- an extra global flag, in case we have many includes
+
 do
 
-    local remove, nsremap = table.remove, xml.xmlns
+    -- not just one big nested table capture (lpeg overflow)
+
+    local remove, nsremap, resolvens = table.remove, xml.xmlns, xml.resolvens
 
     local stack, top, dt, at, xmlns, errorstr = {}, {}, {}, {}, {}, nil
 
@@ -2293,6 +2301,7 @@ do
         return ""
     end
 
+    local strip   = false
     local cleanup = false
 
     function xml.set_text_cleanup(fnc)
@@ -2301,7 +2310,7 @@ do
 
     local function add_attribute(namespace,tag,value)
         if tag == "xmlns" then
-            xmlns[#xmlns+1] = xml.resolvens(value)
+            xmlns[#xmlns+1] = resolvens(value)
             at[tag] = value
         elseif namespace == "xmlns" then
             xml.checkns(tag,value)
@@ -2359,93 +2368,106 @@ do
             dt[#dt+1] = text
         end
     end
+    --~ local function add_special(what, spacing, text)
+    --~     if #spacing > 0 then
+    --~         dt[#dt+1] = spacing
+    --~     end
+    --~     top = stack[#stack]    -- hm, left over 1
+    --~     setmetatable(top, mt)  -- hm, left over 2
+    --~     dt[#dt+1] = { special=true, ns="", tg=what, dt={text} }
+    --~ end
     local function add_special(what, spacing, text)
         if #spacing > 0 then
             dt[#dt+1] = spacing
         end
-        top = stack[#stack]
-        setmetatable(top, mt)
-        dt[#dt+1] = { special=true, ns="", tg=what, dt={text} }
+        if strip and (what == "@cm@" or what == "@dt@") then
+            -- forget it
+        else
+            dt[#dt+1] = { special=true, ns="", tg=what, dt={text} }
+        end
     end
     local function set_message(txt)
         errorstr = "garbage at the end of the file: " .. txt:gsub("([ \n\r\t]*)","")
     end
 
-    local space            = lpeg.S(' \r\n\t')
-    local open             = lpeg.P('<')
-    local close            = lpeg.P('>')
-    local squote           = lpeg.S("'")
-    local dquote           = lpeg.S('"')
-    local equal            = lpeg.P('=')
-    local slash            = lpeg.P('/')
-    local colon            = lpeg.P(':')
-    local valid            = lpeg.R('az', 'AZ', '09') + lpeg.S('_-.')
-    local name_yes         = lpeg.C(valid^1) * colon * lpeg.C(valid^1)
-    local name_nop         = lpeg.C(lpeg.P(true)) * lpeg.C(valid^1)
+    local P, S, R, C, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V
+
+    local space            = S(' \r\n\t')
+    local open             = P('<')
+    local close            = P('>')
+    local squote           = S("'")
+    local dquote           = S('"')
+    local equal            = P('=')
+    local slash            = P('/')
+    local colon            = P(':')
+    local valid            = R('az', 'AZ', '09') + S('_-.')
+    local name_yes         = C(valid^1) * colon * C(valid^1)
+    local name_nop         = C(P(true)) * C(valid^1)
     local name             = name_yes + name_nop
 
-    local utfbom           = lpeg.P('\000\000\254\255') + lpeg.P('\255\254\000\000') +
-                             lpeg.P('\255\254') + lpeg.P('\254\255') + lpeg.P('\239\187\191') -- no capture
+    local utfbom           = P('\000\000\254\255') + P('\255\254\000\000') +
+                             P('\255\254') + P('\254\255') + P('\239\187\191') -- no capture
 
-    local spacing          = lpeg.C(space^0)
-    local justtext         = lpeg.C((1-open)^1)
+    local spacing          = C(space^0)
+    local justtext         = C((1-open)^1)
     local somespace        = space^1
     local optionalspace    = space^0
 
-    local value            = (squote * lpeg.C((1 - squote)^0) * squote) + (dquote * lpeg.C((1 - dquote)^0) * dquote)
+    local value            = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote)
     local attribute        = (somespace * name * optionalspace * equal * optionalspace * value) / add_attribute
     local attributes       = attribute^0
 
     local text             = justtext / add_text
-    local balanced         = lpeg.P { "[" * ((1 - lpeg.S"[]") + lpeg.V(1))^0 * "]" } -- taken from lpeg manual, () example
+    local balanced         = P { "[" * ((1 - S"[]") + V(1))^0 * "]" } -- taken from lpeg manual, () example
 
     local emptyelement     = (spacing * open         * name * attributes * optionalspace * slash * close) / add_empty
     local beginelement     = (spacing * open         * name * attributes * optionalspace         * close) / add_begin
     local endelement       = (spacing * open * slash * name              * optionalspace         * close) / add_end
 
-    local begincomment     = open * lpeg.P("!--")
-    local endcomment       = lpeg.P("--") * close
-    local begininstruction = open * lpeg.P("?")
-    local endinstruction   = lpeg.P("?") * close
-    local begincdata       = open * lpeg.P("![CDATA[")
-    local endcdata         = lpeg.P("]]") * close
+    local begincomment     = open * P("!--")
+    local endcomment       = P("--") * close
+    local begininstruction = open * P("?")
+    local endinstruction   = P("?") * close
+    local begincdata       = open * P("![CDATA[")
+    local endcdata         = P("]]") * close
 
-    local someinstruction  = lpeg.C((1 - endinstruction)^0)
-    local somecomment      = lpeg.C((1 - endcomment    )^0)
-    local somecdata        = lpeg.C((1 - endcdata      )^0)
+    local someinstruction  = C((1 - endinstruction)^0)
+    local somecomment      = C((1 - endcomment    )^0)
+    local somecdata        = C((1 - endcdata      )^0)
 
-    local begindoctype     = open * lpeg.P("!DOCTYPE")
+    local begindoctype     = open * P("!DOCTYPE")
     local enddoctype       = close
-    local publicdoctype    = lpeg.P("PUBLIC") * somespace * value * somespace * value * somespace * balanced^0
-    local systemdoctype    = lpeg.P("SYSTEM") * somespace * value * somespace                     * balanced^0
+    local publicdoctype    = P("PUBLIC") * somespace * value * somespace * value * somespace * balanced^0
+    local systemdoctype    = P("SYSTEM") * somespace * value * somespace                     * balanced^0
     local simpledoctype    = (1-close)^1                                                          * balanced^0
-    local somedoctype      = lpeg.C((somespace * lpeg.P(publicdoctype + systemdoctype + simpledoctype) * optionalspace)^0)
+    local somedoctype      = C((somespace * P(publicdoctype + systemdoctype + simpledoctype) * optionalspace)^0)
 
     local instruction      = (spacing * begininstruction * someinstruction * endinstruction) / function(...) add_special("@pi@",...) end
     local comment          = (spacing * begincomment     * somecomment     * endcomment    ) / function(...) add_special("@cm@",...) end
     local cdata            = (spacing * begincdata       * somecdata       * endcdata      ) / function(...) add_special("@cd@",...) end
-    local doctype          = (spacing * begindoctype     * somedoctype     * enddoctype    ) / function(...) add_special("@dd@",...) end
+    local doctype          = (spacing * begindoctype     * somedoctype     * enddoctype    ) / function(...) add_special("@dt@",...) end
 
     --  nicer but slower:
     --
     --  local instruction = (lpeg.Cc("@pi@") * spacing * begininstruction * someinstruction * endinstruction) / add_special
     --  local comment     = (lpeg.Cc("@cm@") * spacing * begincomment     * somecomment     * endcomment    ) / add_special
     --  local cdata       = (lpeg.Cc("@cd@") * spacing * begincdata       * somecdata       * endcdata      ) / add_special
-    --  local doctype     = (lpeg.Cc("@dd@") * spacing * begindoctype     * somedoctype     * enddoctype    ) / add_special
+    --  local doctype     = (lpeg.Cc("@dt@") * spacing * begindoctype     * somedoctype     * enddoctype    ) / add_special
 
     local trailer = space^0 * (justtext/set_message)^0
 
-    --  comment + emptyelement + text + cdata + instruction + lpeg.V("parent"), -- 6.5 seconds on 40 MB database file
-    --  text + comment + emptyelement + cdata + instruction + lpeg.V("parent"), -- 5.8
-    --  text + lpeg.V("parent") + emptyelement + comment + cdata + instruction, -- 5.5
+    --  comment + emptyelement + text + cdata + instruction + V("parent"), -- 6.5 seconds on 40 MB database file
+    --  text + comment + emptyelement + cdata + instruction + V("parent"), -- 5.8
+    --  text + V("parent") + emptyelement + comment + cdata + instruction, -- 5.5
 
-    local grammar = lpeg.P { "preamble",
-        preamble = utfbom^0 * instruction^0 * (doctype + comment + instruction)^0 * lpeg.V("parent") * trailer,
-        parent   = beginelement * lpeg.V("children")^0 * endelement,
-        children = text + lpeg.V("parent") + emptyelement + comment + cdata + instruction,
+    local grammar = P { "preamble",
+        preamble = utfbom^0 * instruction^0 * (doctype + comment + instruction)^0 * V("parent") * trailer,
+        parent   = beginelement * V("children")^0 * endelement,
+        children = text + V("parent") + emptyelement + comment + cdata + instruction,
     }
 
-    function xml.convert(data, no_root)
+    function xml.convert(data, no_root, strip_cm_and_dt)
+        strip = strip_cm_and_dt or xml.strip_cm_and_dt
         stack, top, at, xmlns, errorstr, result = {}, {}, {}, {}, nil, nil
         stack[#stack+1] = top
         top.dt = { }
@@ -2546,24 +2568,30 @@ generic table copier. Since we know what we're dealing with we
 can speed up things a bit. The second argument is not to be used!</p>
 --ldx]]--
 
-function xml.copy(old,tables)
-    if old then
-        tables = tables or { }
-        local new = { }
-        if not tables[old] then
-            tables[old] = new
+do
+
+    function copy(old,tables)
+        if old then
+            tables = tables or { }
+            local new = { }
+            if not tables[old] then
+                tables[old] = new
+            end
+            for k,v in pairs(old) do
+                new[k] = (type(v) == "table" and (tables[v] or copy(v, tables))) or v
+            end
+            local mt = getmetatable(old)
+            if mt then
+                setmetatable(new,mt)
+            end
+            return new
+        else
+            return { }
         end
-        for k,v in pairs(old) do
-            new[k] = (type(v) == "table" and (tables[v] or xml.copy(v, tables))) or v
-        end
-        local mt = getmetatable(old)
-        if mt then
-            setmetatable(new,mt)
-        end
-        return new
-    else
-        return { }
     end
+
+    xml.copy = copy
+
 end
 
 --[[ldx--
@@ -2585,7 +2613,7 @@ do
             return
         elseif not nocommands then
             local ec = e.command
-            if ec then
+            if ec ~= nil then -- we can have all kind of types
                 local xc = xml.command
                 if xc then
                     xc(e,ec)
@@ -2608,14 +2636,14 @@ do
                     end
                 elseif etg == "@pi@" then
                 --  handle(format("<?%s?>",edt[1]))
-                    handle("<?" .. edt[1] .. "?>") -- maybe table.join(edt)
+                    handle("<?" .. edt[1] .. "?>")
                 elseif etg == "@cm@" then
                 --  handle(format("<!--%s-->",edt[1]))
                     handle("<!--" .. edt[1] .. "-->")
                 elseif etg == "@cd@" then
                 --  handle(format("<![CDATA[%s]]>",edt[1]))
                     handle("<![CDATA[" .. edt[1] .. "]]>")
-                elseif etg == "@dd@" then
+                elseif etg == "@dt@" then
                 --  handle(format("<!DOCTYPE %s>",edt[1]))
                     handle("<!DOCTYPE " .. edt[1] .. ">")
                 elseif etg == "@rt@" then
@@ -2623,7 +2651,7 @@ do
                 end
             else
                 local ens, eat, edt, ern = e.ns, e.at, e.dt, e.rn
-                local ats = eat and next(eat) and { }
+                local ats = eat and next(eat) and { } -- type test maybe faster
                 if ats then
                     if attributeconverter then
                         for k,v in pairs(eat) do
@@ -2739,7 +2767,7 @@ do
         if root then
         if type(root) == 'string' then
             return root
-        elseif next(root) then
+        elseif next(root) then -- next is faster than type (and >0 test)
             local result = { }
             serialize(root,function(s) result[#result+1] = s end)
             return concat(result,"")
@@ -2887,36 +2915,38 @@ do
 
     local map = { }
 
-    local space             = lpeg.S(' \r\n\t')
-    local squote            = lpeg.S("'")
-    local dquote            = lpeg.S('"')
-    local lparent           = lpeg.P('(')
-    local rparent           = lpeg.P(')')
-    local atsign            = lpeg.P('@')
-    local lbracket          = lpeg.P('[')
-    local rbracket          = lpeg.P(']')
-    local exclam            = lpeg.P('!')
-    local period            = lpeg.P('.')
-    local eq                = lpeg.P('==') + lpeg.P('=')
-    local ne                = lpeg.P('<>') + lpeg.P('!=')
-    local star              = lpeg.P('*')
-    local slash             = lpeg.P('/')
-    local colon             = lpeg.P(':')
-    local bar               = lpeg.P('|')
-    local hat               = lpeg.P('^')
-    local valid             = lpeg.R('az', 'AZ', '09') + lpeg.S('_-')
-    local name_yes          = lpeg.C(valid^1) * colon * lpeg.C(valid^1 + star) -- permits ns:*
-    local name_nop          = lpeg.C(lpeg.P(true)) * lpeg.C(valid^1)
+    local P, S, R, C, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V
+
+    local space             = S(' \r\n\t')
+    local squote            = S("'")
+    local dquote            = S('"')
+    local lparent           = P('(')
+    local rparent           = P(')')
+    local atsign            = P('@')
+    local lbracket          = P('[')
+    local rbracket          = P(']')
+    local exclam            = P('!')
+    local period            = P('.')
+    local eq                = P('==') + P('=')
+    local ne                = P('<>') + P('!=')
+    local star              = P('*')
+    local slash             = P('/')
+    local colon             = P(':')
+    local bar               = P('|')
+    local hat               = P('^')
+    local valid             = R('az', 'AZ', '09') + S('_-')
+    local name_yes          = C(valid^1) * colon * C(valid^1 + star) -- permits ns:*
+    local name_nop          = C(P(true)) * C(valid^1)
     local name              = name_yes + name_nop
-    local number            = lpeg.C((lpeg.S('+-')^0 * lpeg.R('09')^1)) / tonumber
+    local number            = C((S('+-')^0 * R('09')^1)) / tonumber
     local names             = (bar^0 * name)^1
     local morenames         = name * (bar^0 * name)^1
-    local instructiontag    = lpeg.P('pi::')
-    local spacing           = lpeg.C(space^0)
+    local instructiontag    = P('pi::')
+    local spacing           = C(space^0)
     local somespace         = space^1
     local optionalspace     = space^0
-    local text              = lpeg.C(valid^0)
-    local value             = (squote * lpeg.C((1 - squote)^0) * squote) + (dquote * lpeg.C((1 - dquote)^0) * dquote)
+    local text              = C(valid^0)
+    local value             = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote)
     local empty             = 1-slash
 
     local is_eq             = lbracket * atsign * name * eq * value * rbracket
@@ -2926,9 +2956,9 @@ do
     local is_number         = lbracket *          number            * rbracket
 
     local nobracket         = 1-(lbracket+rbracket)  -- must be improved
-    local is_expression     = lbracket * lpeg.C(((lpeg.C(nobracket^1))/make_expression)) * rbracket
+    local is_expression     = lbracket * C(((C(nobracket^1))/make_expression)) * rbracket
 
-    local is_expression     = lbracket * (lpeg.C(nobracket^1))/make_expression * rbracket
+    local is_expression     = lbracket * (C(nobracket^1))/make_expression * rbracket
 
     local is_one            =          name
     local is_none           = exclam * name
@@ -2977,12 +3007,12 @@ do
 
     -- a few ugly goodies:
 
-    local docroottag               = lpeg.P('^^')             / function(   ) map[#map+1] = { 12             } end
-    local subroottag               = lpeg.P('^')              / function(   ) map[#map+1] = { 13             } end
-    local roottag                  = lpeg.P('root::')         / function(   ) map[#map+1] = { 12             } end
-    local parenttag                = lpeg.P('parent::')       / function(   ) map[#map+1] = { 11             } end
-    local childtag                 = lpeg.P('child::')
-    local selftag                  = lpeg.P('self::')
+    local docroottag               = P('^^')             / function(   ) map[#map+1] = { 12             } end
+    local subroottag               = P('^')              / function(   ) map[#map+1] = { 13             } end
+    local roottag                  = P('root::')         / function(   ) map[#map+1] = { 12             } end
+    local parenttag                = P('parent::')       / function(   ) map[#map+1] = { 11             } end
+    local childtag                 = P('child::')
+    local selftag                  = P('self::')
 
     -- there will be more and order will be optimized
 
@@ -2996,15 +3026,15 @@ do
         dont_match_and_eq + dont_match_and_ne +
         match_and_eq + match_and_ne +
         dont_expression + expression +
-dont_self_expression + self_expression +
+        dont_self_expression + self_expression +
         has_attribute + has_value +
         dont_match_one_of + match_one_of +
         dont_match + match +
         crap + empty
     )
 
-    local grammar = lpeg.P { "startup",
-        startup  = (initial + documentroot + subtreeroot + roottag + docroottag + subroottag)^0 * lpeg.V("followup"),
+    local grammar = P { "startup",
+        startup  = (initial + documentroot + subtreeroot + roottag + docroottag + subroottag)^0 * V("followup"),
         followup = ((slash + parenttag + childtag + selftag)^0 * selector)^1,
     }
 
@@ -3086,7 +3116,7 @@ dont_self_expression + self_expression +
                             t[#t+1] = (vv and "==") or "<>"
                         end
                     end
-                    report(format("%2i: %s %s -> %s\n", k,v[1],actions[v[1]],table.join(t," ")))
+                    report(format("%2i: %s %s -> %s\n", k,v[1],actions[v[1]],concat(t," ")))
                 else
                     report(format("%2i: %s %s\n", k,v[1],actions[v[1]]))
                 end
@@ -3376,53 +3406,25 @@ do
 
     xml.filters = { }
 
-    --[[ldx--
-    <p>For splitting the filter function from the path specification, we can
-    use string matching or lpeg matching. Here the difference in speed is
-    neglectable but the lpeg variant is more robust.</p>
-    --ldx]]--
-
-    --  function xml.filter(root,pattern)
-    --      local pat, fun, arg = pattern:match("^(.+)/(.-)%((.*)%)$")
-    --      if fun then
-    --          return (xml.filters[fun] or xml.filters.default)(root,pat,arg)
-    --      else
-    --          pat, arg = pattern:match("^(.+)/@(.-)$")
-    --          if arg then
-    --              return xml.filters.attributes(root,pat,arg)
-    --          else
-    --              return xml.filters.default(root,pattern)
-    --          end
-    --      end
-    --  end
-
-    --  not faster but hipper ... although ... i can't get rid of the trailing / in the path
-
-    local name      = (lpeg.R("az","AZ")+lpeg.R("_-"))^1
-    local path      = lpeg.C(((1-lpeg.P('/'))^0 * lpeg.P('/'))^1)
-    local argument  = lpeg.P { "(" * lpeg.C(((1 - lpeg.S("()")) + lpeg.V(1))^0) * ")" }
-    local action    = lpeg.Cc(1) * path * lpeg.C(name) * argument
-    local attribute = lpeg.Cc(2) * path * lpeg.P('@') * lpeg.C(name)
-
-    local parser    = action + attribute
-
-    function xml.filter(root,pattern)
-        local kind, a, b, c = parser:match(pattern)
-        if kind == 1 then
-            return (xml.filters[b] or xml.filters.default)(root,a,c)
-        elseif kind == 2 then
-            return xml.filters.attributes(root,a,b)
-        else
-            return xml.filters.default(root,pattern)
-        end
-    end
-
     function xml.filters.default(root,pattern)
         local rt, dt, dk
         traverse(root, lpath(pattern), function(r,d,k) rt,dt,dk = r,d,k return true end)
         return dt and dt[dk], rt, dt, dk
     end
-
+    function xml.filters.attributes(root,pattern,arguments)
+        local rt, dt, dk
+        traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
+        local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
+        if ekat then
+            if arguments then
+                return ekat[arguments] or "", rt, dt, dk
+            else
+                return ekat, rt, dt, dk
+            end
+        else
+            return { }, rt, dt, dk
+        end
+    end
     function xml.filters.reverse(root,pattern)
         local rt, dt, dk
         traverse(root, lpath(pattern), function(r,d,k) rt,dt,dk = r,d,k return true end, 'reverse')
@@ -3480,27 +3482,13 @@ do
         end
         return nil, nil, nil, nil
     end
-    function xml.filters.attributes(root,pattern,arguments)
-        local rt, dt, dk
-        traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
-        local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
-        if ekat then
-            if arguments then
-                return ekat[arguments] or "", rt, dt, dk
-            else
-                return ekat, rt, dt, dk
-            end
-        else
-            return { }, rt, dt, dk
-        end
-    end
     function xml.filters.attribute(root,pattern,arguments)
         local rt, dt, dk
         traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
         local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
         return (ekat and (ekat[arguments] or ekat[arguments:gsub("^([\"\'])(.*)%1$","%2")])) or ""
     end
-    function xml.filters.text(root,pattern,arguments) -- ?? why index
+    function xml.filters.text(root,pattern,arguments) -- ?? why index, tostring slow
         local dtk, rt, dt, dk = xml.filters.index(root,pattern,arguments)
         if dtk then
             local dtkdt = dtk.dt
@@ -3515,6 +3503,66 @@ do
             return "", rt, dt, dk
         end
     end
+
+    --[[ldx--
+    <p>For splitting the filter function from the path specification, we can
+    use string matching or lpeg matching. Here the difference in speed is
+    neglectable but the lpeg variant is more robust.</p>
+    --ldx]]--
+
+    --  not faster but hipper ... although ... i can't get rid of the trailing / in the path
+
+    local P, S, R, C, V, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc
+
+    local name      = (R("az","AZ")+R("_-"))^1
+    local path      = C(((1-P('/'))^0 * P('/'))^1)
+    local argument  = P { "(" * C(((1 - S("()")) + V(1))^0) * ")" }
+    local action    = Cc(1) * path * C(name) * argument
+    local attribute = Cc(2) * path * P('@') * C(name)
+
+    local parser    = action + attribute
+
+    local filters          = xml.filters
+    local attribute_filter = xml.filters.attributes
+    local default_filter   = xml.filters.default
+
+    function xml.filter(root,pattern)
+        local kind, a, b, c = parser:match(pattern)
+        if kind == 1 then
+            return (filters[b] or default_filter)(root,a,c)
+        elseif kind == 2 then
+            return attribute_filter(root,a,b)
+        else
+            return default_filter(root,pattern)
+        end
+    end
+
+    --~     slightly faster, but first we need a proper test file
+    --~
+    --~     local hash = { }
+    --~
+    --~     function xml.filter(root,pattern)
+    --~         local h = hash[pattern]
+    --~         if not h then
+    --~             local kind, a, b, c = parser:match(pattern)
+    --~             if kind == 1 then
+    --~                 h = { kind, filters[b] or default_filter, a, b, c }
+    --~             elseif kind == 2 then
+    --~                 h = { kind, attribute_filter, a, b, c }
+    --~             else
+    --~                 h = { kind, default_filter, a, b, c }
+    --~             end
+    --~             hash[pattern] = h
+    --~         end
+    --~         local kind = h[1]
+    --~         if kind == 1 then
+    --~             return h[2](root,h[2],h[4])
+    --~         elseif kind == 2 then
+    --~             return h[2](root,h[2],h[3])
+    --~         else
+    --~             return h[2](root,pattern)
+    --~         end
+    --~     end
 
     --[[ldx--
     <p>The following functions collect elements and texts.</p>
@@ -3586,12 +3634,14 @@ do
     <p>We use the function variants in the filters.</p>
     --ldx]]--
 
+    local wrap, yield = coroutine.wrap, coroutine.yield
+
     function xml.elements(root,pattern,reverse)
-        return coroutine.wrap(function() traverse(root, lpath(pattern), coroutine.yield, reverse) end)
+        return wrap(function() traverse(root, lpath(pattern), yield, reverse) end)
     end
 
     function xml.elements_only(root,pattern,reverse)
-        return coroutine.wrap(function() traverse(root, lpath(pattern), function(r,d,k) coroutine.yield(d[k]) end, reverse) end)
+        return wrap(function() traverse(root, lpath(pattern), function(r,d,k) yield(d[k]) end, reverse) end)
     end
 
     function xml.each_element(root, pattern, handle, reverse)
@@ -3617,7 +3667,7 @@ do
             local ek = d[k]
             local a = ek.at or { }
             handle(a)
-            if next(a) then
+            if next(a) then -- next is faster than type (and >0 test)
                 ek.at = a
             else
                 ek.at = nil
@@ -3937,6 +3987,8 @@ end
 
 do
 
+    local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Cs
+
     -- 100 * 2500 * "oeps< oeps> oeps&" : gsub:lpeg|lpeg|lpeg
     --
     -- 1021:0335:0287:0247
@@ -3945,23 +3997,23 @@ do
     --
     -- 1559:0257:0288:0190 (last one suggested by roberto)
 
-    --    escaped = lpeg.Cs((lpeg.S("<&>") / xml.escapes + 1)^0)
-    --    escaped = lpeg.Cs((lpeg.S("<")/"&lt;" + lpeg.S(">")/"&gt;" + lpeg.S("&")/"&amp;" + 1)^0)
-    local normal  = (1 - lpeg.S("<&>"))^0
-    local special = lpeg.P("<")/"&lt;" + lpeg.P(">")/"&gt;" + lpeg.P("&")/"&amp;"
-    local escaped = lpeg.Cs(normal * (special * normal)^0)
+    --    escaped = Cs((S("<&>") / xml.escapes + 1)^0)
+    --    escaped = Cs((S("<")/"&lt;" + S(">")/"&gt;" + S("&")/"&amp;" + 1)^0)
+    local normal  = (1 - S("<&>"))^0
+    local special = P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;"
+    local escaped = Cs(normal * (special * normal)^0)
 
     -- 100 * 1000 * "oeps&lt; oeps&gt; oeps&amp;" : gsub:lpeg == 0153:0280:0151:0080 (last one by roberto)
 
-    --    unescaped = lpeg.Cs((lpeg.S("&lt;")/"<" + lpeg.S("&gt;")/">" + lpeg.S("&amp;")/"&" + 1)^0)
-    --    unescaped = lpeg.Cs((((lpeg.P("&")/"") * (lpeg.P("lt")/"<" + lpeg.P("gt")/">" + lpeg.P("amp")/"&") * (lpeg.P(";")/"")) + 1)^0)
-    local normal    = (1 - lpeg.S"&")^0
-    local special   = lpeg.P("&lt;")/"<" + lpeg.P("&gt;")/">" + lpeg.P("&amp;")/"&"
-    local unescaped = lpeg.Cs(normal * (special * normal)^0)
+    --    unescaped = Cs((S("&lt;")/"<" + S("&gt;")/">" + S("&amp;")/"&" + 1)^0)
+    --    unescaped = Cs((((P("&")/"") * (P("lt")/"<" + P("gt")/">" + P("amp")/"&") * (P(";")/"")) + 1)^0)
+    local normal    = (1 - S"&")^0
+    local special   = P("&lt;")/"<" + P("&gt;")/">" + P("&amp;")/"&"
+    local unescaped = Cs(normal * (special * normal)^0)
 
     -- 100 * 5000 * "oeps <oeps bla='oeps' foo='bar'> oeps </oeps> oeps " : gsub:lpeg == 623:501 msec (short tags, less difference)
 
-    local cleansed = lpeg.Cs(((lpeg.P("<") * (1-lpeg.P(">"))^0 * lpeg.P(">"))/"" + 1)^0)
+    local cleansed = Cs(((P("<") * (1-P(">"))^0 * P(">"))/"" + 1)^0)
 
     function xml.escaped  (str) return escaped  :match(str) end
     function xml.unescaped(str) return unescaped:match(str) end
@@ -3976,9 +4028,9 @@ function xml.join(t,separator,lastseparator)
             result[k] = xml.tostring(v)
         end
         if lastseparator then
-            return table.join(result,separator or "",1,#result-1) .. (lastseparator or "") .. result[#result]
+            return concat(result,separator or "",1,#result-1) .. (lastseparator or "") .. result[#result]
         else
-            return table.join(result,separator)
+            return concat(result,separator)
         end
     else
         return ""
@@ -3997,13 +4049,17 @@ do if unicode and unicode.utf8 then
 
     xml.entities = xml.entities or { } -- xml.entities.handler == function
 
+    function xml.entities.handler(e)
+        return format("[s]",e)
+    end
+
     local char = unicode.utf8.char
 
     local function toutf(s)
         return char(tonumber(s,16))
     end
 
-    function xml.utfize(root)
+    function utfize(root)
         local d = root.dt
         for k=1,#d do
             local dk = d[k]
@@ -4013,22 +4069,26 @@ do if unicode and unicode.utf8 then
                     d[k] = dk:gsub("&#x(.-);",toutf)
                 end
             else
-                xml.utfize(dk)
+                utfize(dk)
             end
         end
     end
 
+    xml.utfize = utfize
+
     local entities = xml.entities
 
-    local function resolve(e)
-        local ee = entities[e]
-        if ee then
-            return ee
-        elseif e:find("#x") then
+    local function resolve(e) -- hex encoded always first, just to avoid mkii fallbacks
+        if e:find("#x") then
             return char(tonumber(e:sub(3),16))
         else
-            local h = entities.handler
-            return (h and h(e)) or "&" .. e .. ";"
+            local ee = entities[e]
+            if ee then
+                return ee
+            else
+                local h = xml.entities.handler
+                return (h and h(e)) or "&" .. e .. ";"
+            end
         end
     end
 
@@ -4041,7 +4101,7 @@ do if unicode and unicode.utf8 then
                     d[k] = dk:gsub("&(.-);",resolve)
                 end
             else
-                xml.utfize(dk)
+                utfize(dk)
             end
         end
     end
@@ -4054,7 +4114,7 @@ do if unicode and unicode.utf8 then
         end
     end
 
-    function xml.resolve_text_entities(str)
+    function xml.resolve_text_entities(str) -- maybe an lpeg. maybe resolve inline
         if str:find("&") then
             return (str:gsub("&(.-);",resolve))
         else
@@ -4070,10 +4130,10 @@ do if unicode and unicode.utf8 then
         end
     end
 
+end end
+
 --  xml.set_text_cleanup(xml.show_text_entities)
 --  xml.set_text_cleanup(xml.resolve_text_entities)
-
-end end
 
 --~ xml.lshow("/../../../a/(b|c)[@d='e']/f")
 --~ xml.lshow("/../../../a/!(b|c)[@d='e']/f")
@@ -4169,7 +4229,7 @@ function utils.merger._self_swap_(data,code)
 end
 
 function utils.merger._self_libs_(libs,list)
-    local result, f = "", nil
+    local result, f = { }, nil
     if type(libs) == 'string' then libs = { libs } end
     if type(list) == 'string' then list = { list } end
     for _, lib in ipairs(libs) do
@@ -4178,7 +4238,7 @@ function utils.merger._self_libs_(libs,list)
             f = io.open(name)
             if f then
             --  utils.report("merging library",name)
-                result = result .. "\n" .. f:read("*all") .. "\n"
+                result[#result+1] = f:read("*all")
                 f:close()
                 list = { pth } -- speed up the search
                 break
@@ -4187,7 +4247,7 @@ function utils.merger._self_libs_(libs,list)
             end
         end
     end
-    return result or ""
+    return table.concat(result, "\n\n")
 end
 
 function utils.merger.selfcreate(libs,list,target)
@@ -5633,6 +5693,8 @@ end
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
 
+-- get rid of piecewise here, just a gmatch is ok
+
 function input.aux.splitpathexpr(str, t, validate)
     -- no need for optimization, only called a few times, we can use lpeg for the sub
     t = t or { }
@@ -5640,7 +5702,7 @@ function input.aux.splitpathexpr(str, t, validate)
     while true do
         local done = false
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("([^{},]+){([^{}]-)}", function(a,b)
                 local t = { }
                 b:piecewise(",", function(s) t[#t+1] = a .. s end)
@@ -5650,7 +5712,7 @@ function input.aux.splitpathexpr(str, t, validate)
             if not ok then break end
         end
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("{([^{}]-)}([^{},]+)", function(a,b)
                 local t = { }
                 a:piecewise(",", function(s) t[#t+1] = s .. b end)
@@ -5660,7 +5722,7 @@ function input.aux.splitpathexpr(str, t, validate)
             if not ok then break end
         end
         while true do
-            ok = false
+            local ok = false
             str = str:gsub("([,{]){([^{}]+)}([,}])", function(a,b,c)
                 ok, done = true, true
                 return a .. b .. c
@@ -5670,7 +5732,7 @@ function input.aux.splitpathexpr(str, t, validate)
         if not done then break end
     end
     while true do
-        ok = false
+        local ok = false
         str = str:gsub("{([^{}]-)}{([^{}]-)}", function(a,b)
             local t = { }
             a:piecewise(",", function(sa)
@@ -5684,7 +5746,7 @@ function input.aux.splitpathexpr(str, t, validate)
         if not ok then break end
     end
     while true do
-        ok = false
+        local ok = false
         str = str:gsub("{([^{}]-)}", function(a)
             ok = true
             return a
@@ -6553,7 +6615,7 @@ do
     resolvers.file = resolvers.filename
     resolvers.path = resolvers.pathname
 
-    function resolve(instance,str)
+    local function resolve(instance,str)
         if type(str) == "table" then
             for k, v in pairs(str) do
                 str[k] = resolve(instance,v) or v
@@ -7365,7 +7427,6 @@ end
 --~ states.load("teststate", "update")
 --~ print(states.get_by_tag("update","rsync.server","unknown"))
 
-
 -- end library merge
 
 own = { }
@@ -7608,28 +7669,35 @@ function file.savechecksum(name, checksum)
     return nil
 end
 
-function os.currentplatform()
-    local currentplatform = "linux"
-    if os.platform == "windows" then
-        currentplatform = "mswin"
-    else
-        local architecture = os.resultof("uname -m")
-        local unixvariant  = os.resultof("uname -s")
-        if architecture and architecture:find("x86_64") then
-            currentplatform = "linux-64"
-        elseif unixvariant and unixvariant:find("Darwin") then
-            if architecture and architecture:find("i386") then
-                currentplatform = "osx-intel"
-            else
-                currentplatform = "osx-ppc"
-            end
-        elseif unixvariant and unixvariant:find("FreeBSD") then
-            currentplatform = "freebsd"
-        end
-    end
-    return currentplatform
+os.arch = os.arch or function()
+    return os.resultof("uname -m") or "linux"
 end
 
+function os.currentplatform(name, default)
+    local name = os.name or os.platform or name -- os.name is built in, os.platform is mine
+    if name then
+        if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
+            return "mswin"
+        elseif name == "linux" then
+            local architecture = os.arch()
+            if architecture:find("x86_64") then
+                return "linux-64"
+            else
+                return "linux"
+            end
+        elseif name == "macosx" then
+            local architecture = os.arch()
+            if architecture:find("i386") then
+                return "osx-intel"
+            else
+                return "osx-ppc"
+            end
+        elseif name == "freebsd" then
+            return "freebsd"
+        end
+    end
+    return default or name
+end
 
 -- it starts here
 
@@ -7896,6 +7964,10 @@ function input.runners.locate_file(instance,filename)
     end
 end
 
+function input.runners.locate_platform(instance)
+    input.runners.report_location(instance,os.currentplatform())
+end
+
 function input.runners.report_location(instance,result)
     if input.verbose then
         input.report("")
@@ -8115,9 +8187,11 @@ elseif environment.argument("resolve") then
 elseif environment.argument("locate") then
     -- locate file
     input.runners.locate_file(instance,filename)
+elseif environment.argument("platform")then
+    -- locate platform
+    input.runners.locate_platform(instance)
 elseif environment.argument("help") or filename=='help' or filename == "" then
     input.help(banner,messages.help)
-else
     -- execute script
     if filename:find("^bin:") then
         ok = input.runners.execute_program(instance,filename)

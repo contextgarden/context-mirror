@@ -20,6 +20,10 @@ numeric _tt_w_[], _tt_h_[], _tt_d_[] ;
 numeric _tt_n_ ; _tt_n_ := 0 ;
 boolean _trial_run_ ; _trial_run_ := false ;
 
+def resettextexts =
+    _tt_n_ := 0 ;
+enddef ;
+
 vardef textext(expr str) =
     if _trial_run_ :
         image (
@@ -137,6 +141,7 @@ enddef ;
 
 extra_beginfig := extra_beginfig & "currentgraphictext := 0 ; " ;
 extra_endfig   := extra_endfig   & "finishsavingdata ; " ;
+extra_endfig   := extra_endfig   & "resettextexts ; " ;
 
 boolean cmykcolors ; cmykcolors := true ;
 boolean spotcolors ; spotcolors := true ;

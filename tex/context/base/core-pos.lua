@@ -16,80 +16,79 @@ if not jobs          then jobs          = { } end
 if not job           then jobs['main']  = { } end job = jobs['main']
 if not job.positions then job.positions = { } end
 
-function job.MPp(id) local jpi = job.positions[id] if jpi then tex.sprint(jpi[1]) else tex.sprint('0'  ) end end
-function job.MPx(id) local jpi = job.positions[id] if jpi then tex.sprint(jpi[2]) else tex.sprint('0pt') end end
-function job.MPy(id) local jpi = job.positions[id] if jpi then tex.sprint(jpi[3]) else tex.sprint('0pt') end end
-function job.MPw(id) local jpi = job.positions[id] if jpi then tex.sprint(jpi[4]) else tex.sprint('0pt') end end
-function job.MPh(id) local jpi = job.positions[id] if jpi then tex.sprint(jpi[5]) else tex.sprint('0pt') end end
-function job.MPd(id) local jpi = job.positions[id] if jpi then tex.sprint(jpi[6]) else tex.sprint('0pt') end end
+local texprint  = tex.print
+local positions = job.positions
+local concat    = table.concat
+local format    = string.format
+
+function job.MPp(id) local jpi = positions[id] texprint((jpi and jpi[1]) or '0'  ) end
+function job.MPx(id) local jpi = positions[id] texprint((jpi and jpi[2]) or '0pt') end
+function job.MPy(id) local jpi = positions[id] texprint((jpi and jpi[3]) or '0pt') end
+function job.MPw(id) local jpi = positions[id] texprint((jpi and jpi[4]) or '0pt') end
+function job.MPh(id) local jpi = positions[id] texprint((jpi and jpi[5]) or '0pt') end
+function job.MPd(id) local jpi = positions[id] texprint((jpi and jpi[6]) or '0pt') end
+
+-- the following are only for MP so there we can leave out the pt
 
 function job.MPxy(id)
-    local jpi = job.positions[id]
+    local jpi = positions[id]
     if jpi then
-        tex.sprint('('..jpi[2]..','..jpi[3]..')')
+        texprint(format('(%s,%s)',jpi[2],jpi[3]))
     else
-        tex.sprint('(0pt,0pt)')
+        texprint('(0,0)')
     end
 end
 
 function job.MPll(id)
-    local jpi = job.positions[id]
+    local jpi = positions[id]
     if jpi then
-        tex.sprint('('..jpi[2]..'-'..-jpi[3]..','..jpi[6]..')')
+        texprint(format('(%s,%s-%s)',jpi[2],jpi[3],jpi[6]))
     else
-        tex.sprint('(0pt,0pt)')
+        texprint('(0,0)')
     end
 end
 function job.MPlr(id)
-    local jpi = job.positions[id]
+    local jpi = positions[id]
     if jpi then
-        tex.sprint('('..jpi[2]..'+'..jpi[4]..','..jpi[3]..'-'..jpi[6]..')')
+        texprint(format('(%s+%s,%s-%s)',jpi[2],jpi[4],jpi[3],jpi[6]))
     else
-        tex.sprint('(0pt,0pt)')
+        texprint('(0,0)')
     end
 end
 function job.MPur(id)
-    local jpi = job.positions[id]
+    local jpi = positions[id]
     if jpi then
-        tex.sprint('('..jpi[2]..'+'..jpi[4]..','..jpi[3]..'+'..jpi[5]..')')
+        texprint(format('(%s+%s,%s+%s)',jpi[2],jpi[4],jpi[3],jpi[5]))
     else
-        tex.sprint('(0pt,0pt)')
+        texprint('(0,0)')
     end
 end
 function job.MPul(id)
-    local jpi = job.positions[id]
+    local jpi = positions[id]
     if jpi then
-        tex.sprint('('..jpi[2]..','..jpi[3]..'+'..jpi[5]..')')
+        texprint(format('(%s,%s+%s)',jpi[2],jpi[3],jpi[5]))
     else
-        tex.sprint('(0pt,0pt)')
+        texprint('(0,0)')
     end
 end
 
 -- todo
 
 function job.MPpos(id)
-    local jpi = job.positions[id]
+    local jpi = positions[id]
     if jpi then
-        tex.sprint(table.concat(jpi,',',1,6))
+        texprint(concat(jpi,',',1,6))
     else
-        tex.sprint('0,0pt,0pt,0pt,0pt,0pt')
+        texprint('0,0,0,0,0,0')
     end
 end
 
-function job.MPplus(id,n)
-    local jpi = job.positions[id]
-    if jpi then
-        tex.sprint(jpi[n] or '0pt')
-    else
-        tex.sprint('0pt')
-    end
+function job.MPplus(id,n,default)
+    local jpi = positions[id]
+    texprint((jpi and jpi[n]) or default)
 end
 
 function job.MPrest(id,default) -- 7 or 8 ?
-    local jpi = job.positions[id]
-    if jpi then
-        tex.sprint(jpi[7] or default)
-    else
-        tex.sprint(default)
-    end
+    local jpi = positions[id]
+    texprint((jpi and jpi[7]) or default)
 end

@@ -191,9 +191,10 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
     for k,v in pairs(tfmtable) do
         t[k] = (type(v) == "table" and { }) or v
     end
-    if tfmtable.fonts then
-        t.fonts = table.fastcopy(tfmtable.fonts)
-    end
+-- new
+if tfmtable.fonts then
+    t.fonts = table.fastcopy(tfmtable.fonts)
+end
  -- local zerobox = { 0, 0, 0, 0 }
     local tp = t.parameters
     for k,v in pairs(tfmtable.parameters) do

@@ -163,6 +163,9 @@
 %D                    `#4-\utf@g)}
 %D \stoptyping
 
+% beware, unless surrounded by \numexpr .. \relax, a division
+% results in a float until the final result is calculated
+
 \def\utfdiv#1{\the\numexpr           (#1-\utf@g)/\utf@h \relax}
 \def\utfmod#1{\the\numexpr#1-\utf@h*((#1-\utf@g)/\utf@h)\relax}
 

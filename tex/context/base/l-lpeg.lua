@@ -40,14 +40,16 @@ function lpeg.splitter(pattern, action)
     return (((1-lpeg.P(pattern))^1)/action+1)^0
 end
 
+local crlf     = lpeg.P("\r\n")
+local cr       = lpeg.P("\r")
+local lf       = lpeg.P("\n")
+local space    = lpeg.S(" \t\f\v")
+local newline  = crlf + cr + lf
+local spacing  = space^0 * newline
 
-local crlf    = lpeg.P("\r\n")
-local cr      = lpeg.P("\r")
-local lf      = lpeg.P("\n")
-local space   = lpeg.S(" \t\f\v")
-local newline = crlf + cr + lf
-local spacing = space^0 * newline
-local content = lpeg.Cs((1-spacing)^1) * spacing^-1 * (spacing * lpeg.Cc(""))^0
+local empty    = spacing * lpeg.Cc("")
+local nonempty = lpeg.Cs((1-spacing)^1) * spacing^-1
+local content  = (empty + nonempty)^1
 
 local capture = lpeg.Ct(content^0)
 
