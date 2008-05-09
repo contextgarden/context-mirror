@@ -106,7 +106,7 @@ scripts.chars.banner_utf_2 = [[
 
 scripts.chars.banner_utf_3 = [[
 
-% named characters mapped onto utf
+% named characters mapped onto utf (\\char is needed for accents)
 
 ]]
 
@@ -145,10 +145,15 @@ function scripts.chars.makeencoutf()
                 f:write(scripts.chars.banner_utf_3)
                 for i=1,#list do
                     local code = list[i]
-                    if code > 0x7F and code <= 0xFFFF then
+                    if code > 0x5B and code <= 0xFFFF then
                         local chr = characters.data[code]
                         if chr.contextname then
-                            f:write(format("\\def\\%s{%s} %% %s\n", chr.contextname:rpadd(length," "), char(code),chr.description))
+                            local ch = char(code)
+--~                             if ch:find("[~#$%%^&{}\\]") then
+                                f:write(format("\\def\\%s{\\char\"%04X } %% %s: %s\n", chr.contextname:rpadd(length," "), code, chr.description, ch))
+--~                             else
+--~                                 f:write(format("\\def\\%s{%s}           %% %s\n", chr.contextname:rpadd(length," "), ch,chr.description))
+--~                             end
                         end
                     end
                 end

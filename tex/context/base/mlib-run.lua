@@ -198,22 +198,35 @@ function metapost.process(mpx, data, trialrun, flusher)
                     result = mpx:execute(d)
                     input.stoptiming(metapost.exectime)
                     if not result then
-                        metapost.report("error", "no result object returned")
+                        metapost.report("mp error", "no result object returned")
                     elseif result.status > 0 then
-                        metapost.report("error",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
+                        local t, e, l = result.term, result.error, result.log
+                        if t then
+                            metapost.report("mp terminal",t)
+                        end
+                        if e then
+                            metapost.report("mp error",e)
+--~ metapost.reset(mpx)
+                        end
+                        if not t and not e and l then
+                            metapost.report("mp log",l)
+                        else
+                            metapost.report("mp error","unknown, no error, terminal or log messages")
+                        end
                     elseif metapost.showlog then
-                        metapost.report("info",result.term or "no-term")
+                        metapost.report("mp info",result.term or "no terminal output")
                     elseif result.fig then
                         metapost.convert(result, trialrun, flusher)
                     end
                 else
-                    metapost.report("error", "invalid graphic component " .. i)
+                    metapost.report("mp error", "invalid graphic component " .. i)
                 end
             end
        else
             input.starttiming(metapost.exectime)
             result = mpx:execute(data)
             input.stoptiming(metapost.exectime)
+            -- todo: error message
             if not result then
                 metapost.report("error", "no result object returned")
             elseif result.status > 0 then

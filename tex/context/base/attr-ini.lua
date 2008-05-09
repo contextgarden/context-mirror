@@ -578,7 +578,7 @@ do
         return backends.pdf.literal(format("/%s cs /%s CS %s SCN %s scn",n,n,p,p))
     end
 
-    local function rgbtocmyk(r,g,b)
+    local function rgbtocmyk(r,g,b) -- we could reduce
         return 1-r, 1-g, 1-b, 0
     end
 
@@ -610,7 +610,7 @@ do
     -- default color space
 
     function colors.gray(s)
-        return { 2, s, s, s, s, 0, 0, 0, s }
+        return { 2, s, s, s, s, 0, 0, 0, 1-s }
     end
 
     function colors.rgb(r,g,b)

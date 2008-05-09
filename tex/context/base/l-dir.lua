@@ -127,21 +127,27 @@ if lfs then do
         P(1)
     )^0 )
 
-    local function glob(str)
-        local split = pattern:match(str)
-        if split then
-            local t = { }
-            local action = action or function(name) t[#t+1] = name end
-            local root, path, base = split[1], split[2], split[3]
-            local recurse = base:find("**")
-            local start = root .. path
-            local result = filter:match(start .. base)
---~         print(str, start, result)
---~         print(start, result)
-            glob_pattern(start,result,recurse,action)
+    local function glob(str,t)
+        if type(str) == "table" then
+            local t = t or { }
+            for _, s in ipairs(str) do
+                glob(s,t)
+            end
             return t
         else
-            return { }
+            local split = pattern:match(str)
+            if split then
+                local t = t or { }
+                local action = action or function(name) t[#t+1] = name end
+                local root, path, base = split[1], split[2], split[3]
+                local recurse = base:find("**")
+                local start = root .. path
+                local result = filter:match(start .. base)
+                glob_pattern(start,result,recurse,action)
+                return t
+            else
+                return { }
+            end
         end
     end
 

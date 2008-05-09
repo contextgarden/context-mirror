@@ -191,20 +191,21 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
     for k,v in pairs(tfmtable) do
         t[k] = (type(v) == "table" and { }) or v
     end
--- new
-if tfmtable.fonts then
-    t.fonts = table.fastcopy(tfmtable.fonts)
-end
- -- local zerobox = { 0, 0, 0, 0 }
-    local tp = t.parameters
-    for k,v in pairs(tfmtable.parameters) do
-        if k == 1 then
-            tp[k] = v
-        else
-            tp[k] = v*delta
-        end
+    -- new
+    if tfmtable.fonts then
+        t.fonts = table.fastcopy(tfmtable.fonts)
     end
-    local protrusionfactor = 1000/tp[6] -- emwidth
+    -- local zerobox = { 0, 0, 0, 0 }
+    local tp = t.parameters
+    local tfmp = tfmtable.parameters -- let's check for indexes
+    tp.slant         = (tfmp.slant         or tfmp[1] or 0)
+    tp.space         = (tfmp.space         or tfmp[2] or 0)*delta
+    tp.space_stretch = (tfmp.space_stretch or tfmp[3] or 0)*delta
+    tp.space_shrink  = (tfmp.space_shrink  or tfmp[4] or 0)*delta
+    tp.x_height      = (tfmp.x_height      or tfmp[5] or 0)*delta
+    tp.quad          = (tfmp.quad          or tfmp[6] or 0)*delta
+    tp.extra_space   = (tfmp.extra_space   or tfmp[7] or 0)*delta
+    local protrusionfactor = (tp.quad ~= 0 and 1000/tp.quad) or 0
     local tc = t.characters
     for k,v in pairs(tfmtable.characters) do
         local description = v.description or v -- shared data
@@ -681,9 +682,9 @@ function fonts.tfm.replacements(tfm,value)
 --~     tfm.characters[0x0022] = table.fastcopy(tfm.characters[0x201D])
 --~     tfm.characters[0x0027] = table.fastcopy(tfm.characters[0x2019])
 --~     tfm.characters[0x0060] = table.fastcopy(tfm.characters[0x2018])
-    tfm.characters[0x0022] = tfm.characters[0x201D]
+--~     tfm.characters[0x0022] = tfm.characters[0x201D]
     tfm.characters[0x0027] = tfm.characters[0x2019]
-    tfm.characters[0x0060] = tfm.characters[0x2018]
+--~     tfm.characters[0x0060] = tfm.characters[0x2018]
 end
 
 -- auto complete font with missing composed characters

@@ -18,27 +18,36 @@ boolean context_mlib ; context_mlib := true ;
 
 numeric _tt_w_[], _tt_h_[], _tt_d_[] ;
 numeric _tt_n_ ; _tt_n_ := 0 ;
+picture _tt_p_ ; _tt_p_ := nullpicture ;
 boolean _trial_run_ ; _trial_run_ := false ;
 
 def resettextexts =
     _tt_n_ := 0 ;
+    _tt_p_ := nullpicture ;
 enddef ;
+
+extra_endfig   := ";draw _tt_p_; " & extra_endfig ;
+extra_beginfig := extra_beginfig & "resettextexts;";
 
 vardef textext(expr str) =
     if _trial_run_ :
         image (
-            draw unitsquare
-                withprescript "tf"
-                withpostscript str ;
+            _tt_n_ := _tt_n_ + 1 ;
+            _tt_p_ := image (
+                draw _tt_p_ ;
+                draw unitsquare withprescript "tf" withpostscript decimal _tt_n_ & ":" & str ;
+            ) ;
+            draw unitsquare ;
         )
     else :
         image (
             _tt_n_ := _tt_n_ + 1 ;
+            show _tt_n_ ;
             draw unitsquare
                 xscaled _tt_w_[_tt_n_]
                 yscaled (_tt_h_[_tt_n_] + _tt_d_[_tt_n_])
                 withprescript "ts"
-                withpostscript decimal _tt_n_ ;
+                withpostscript decimal _tt_n_ & ":" & str ;
         )
     fi
 enddef ;
@@ -82,47 +91,35 @@ def withlinearshade (expr a, b, ca, cb) =
 enddef ;
 string _defined_cs_pre_[], _defined_cs_post_[] ; numeric _defined_cs_ ; _defined_cs_:= 0 ;
 vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
-    _defined_cs_ = _defined_cs_ + 1 ;
-    _defined_cs_pre_ [_defined_cs_] = "cs" ;
-    _defined_cs_post_[_defined_cs_] = "0 1 " & decimal shadefactor & " " &
+    _defined_cs_ := _defined_cs_ + 1 ;
+    _defined_cs_pre_ [_defined_cs_] := "cs" ;
+    _defined_cs_post_[_defined_cs_] := "0 1 " & decimal shadefactor & " " &
         colordecimals ca & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
         colordecimals cb & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ;
     _defined_cs_
 enddef ;
 vardef define_linear_shade (expr a, b, ca, cb) =
-    _defined_cs_ = _defined_cs_ + 1 ;
-    _defined_cs_pre_ [_defined_cs_] = "ls" ;
-    _defined_cs_post_[_defined_cs_] = "0 1 " & decimal shadefactor & " " &
-        colordecimals ca & " " & ddecimal (a shifted shadeoffset) & " "
+    _defined_cs_ := _defined_cs_ + 1 ;
+    _defined_cs_pre_ [_defined_cs_] := "ls" ;
+    _defined_cs_post_[_defined_cs_] := "0 1 " & decimal shadefactor & " " &
+        colordecimals ca & " " & ddecimal (a shifted shadeoffset) & " " &
         colordecimals cb & " " & ddecimal (b shifted shadeoffset) ;
     _defined_cs_
 enddef ;
-def withshade(expr sc) =
-    withprescript _defined_cs_pre_[sc] withpostscript _defined_cs_post_[sc]
+primarydef p withshade sc =
+    p withprescript _defined_cs_pre_[sc] withpostscript _defined_cs_post_[sc]
 enddef ;
 def shadecolor(expr sc) = % obsolete
     1 withprescript _defined_cs_pre_[sc] withpostscript _defined_cs_post_[sc]
 enddef ;
 
-% def _graphic_text_f_(expr t) text rest =
-%     draw unitsquare withprescript "gt" withpostscript t ;
-% enddef ;
-% def _graphic_text_s_(expr t) =
-%     begingroup ;
-%     save figurepicture ; picture figurepicture ;
-%     figurepicture := currentpicture ; currentpicture := nullpicture ;
-%     currentgraphictext := currentgraphictext + 1 ;
-%     dofinishgraphictext
-% enddef ;
-
-vardef graphictext primary t =
-    save next ;
+def graphictext primary t =
     if _trial_run_ :
-        let next = nographictext ;
+        let dographictextindeed = nographictext ;
     else :
-        let next = dographictext ;
+        let dographictextindeed = dographictext ;
     fi
-    next(t)
+    dographictextindeed(t)
 enddef ;
 def dographictext (expr t) =
     begingroup ;
@@ -133,6 +130,10 @@ def dographictext (expr t) =
 enddef ;
 def nographictext (expr t) text rest =
     draw unitsquare withprescript "gt" withpostscript t ;
+enddef ;
+def savegraphictext (expr str) =
+enddef ;
+def erasegraphictextfile =
 enddef ;
 
 def doexternalfigure (expr filename) text transformation =

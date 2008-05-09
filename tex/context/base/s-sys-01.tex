@@ -19,16 +19,22 @@ function showmath()
     local escape = characters.filters.utf.private.escape
     local data   = characters.data
     tex.sprint(tex.ctxcatcodes,"\\starttabulate[|T|c|T|T|T|T||||]")
+    local texsprint =  tex.sprint
+%  -- function texsprint(a,b) print(b) end
     for _, v in ipairs(table.sortedkeys(slots)) do
         local t, d, u = slots[v], data[v], escape(utf.char(v))
+        local class, name, description = d.mathclass or "", d.mathname or "" , d.description or ""
+        if class == "accent" then
+            u = ""
+        end
         if t[3] and t[4] then
-            tex.sprint(tex.ctxcatcodes,string.format(
+            texsprint(tex.ctxcatcodes,string.format(
                 "\\NC 0x%04X\\NC $%s$\\NC %s\\NC 0x%04X\\NC %s\\NC 0x%04X\\NC %s\\NC %s\\NC %s\\NC\\NR",
-                v,u,t[1],t[2],t[3],t[4],d.mathclass or "",d.mathname or "",d.description))
+                v,u,t[1],t[2],t[3],t[4],class,name,description))
         else
-            tex.sprint(tex.ctxcatcodes,string.format(
+            texsprint(tex.ctxcatcodes,string.format(
                 "\\NC 0x%04X\\NC $%s$\\NC %s\\NC 0x%04X\\NC\\NC\\NC %s\\NC %s\\NC %s\\NC\\NR",
-                v,u,t[1],t[2],d.mathclass or "",d.mathname or "",d.description))
+                v,u,t[1],t[2],class,name,description))
         end
     end
     tex.sprint(tex.ctxcatcodes,"\\stoptabulate")
@@ -51,5 +57,5 @@ end
   [math characters -- \pagenumber]
 
 \starttext
-    \ctxlua{showmath()}
+\ctxlua{showmath()}
 \stoptext

@@ -444,14 +444,16 @@ function lpeg.splitter(pattern, action)
     return (((1-lpeg.P(pattern))^1)/action+1)^0
 end
 
+local crlf     = lpeg.P("\r\n")
+local cr       = lpeg.P("\r")
+local lf       = lpeg.P("\n")
+local space    = lpeg.S(" \t\f\v")
+local newline  = crlf + cr + lf
+local spacing  = space^0 * newline
 
-local crlf    = lpeg.P("\r\n")
-local cr      = lpeg.P("\r")
-local lf      = lpeg.P("\n")
-local space   = lpeg.S(" \t\f\v")
-local newline = crlf + cr + lf
-local spacing = space^0 * newline
-local content = lpeg.Cs((1-spacing)^1) * spacing^-1 * (spacing * lpeg.Cc(""))^0
+local empty    = spacing * lpeg.Cc("")
+local nonempty = lpeg.Cs((1-spacing)^1) * spacing^-1
+local content  = (empty + nonempty)^1
 
 local capture = lpeg.Ct(content^0)
 
@@ -1718,6 +1720,10 @@ end
 file.readdata = io.loaddata
 file.savedata = io.savedata
 
+function file.copy(oldname,newname)
+    file.savedata(newname,io.loaddata(oldname))
+end
+
 
 -- filename : l-dir.lua
 -- comment  : split off from luat-lib
@@ -1848,21 +1854,27 @@ if lfs then do
         P(1)
     )^0 )
 
-    local function glob(str)
-        local split = pattern:match(str)
-        if split then
-            local t = { }
-            local action = action or function(name) t[#t+1] = name end
-            local root, path, base = split[1], split[2], split[3]
-            local recurse = base:find("**")
-            local start = root .. path
-            local result = filter:match(start .. base)
---~         print(str, start, result)
---~         print(start, result)
-            glob_pattern(start,result,recurse,action)
+    local function glob(str,t)
+        if type(str) == "table" then
+            local t = t or { }
+            for _, s in ipairs(str) do
+                glob(s,t)
+            end
             return t
         else
-            return { }
+            local split = pattern:match(str)
+            if split then
+                local t = t or { }
+                local action = action or function(name) t[#t+1] = name end
+                local root, path, base = split[1], split[2], split[3]
+                local recurse = base:find("**")
+                local start = root .. path
+                local result = filter:match(start .. base)
+                glob_pattern(start,result,recurse,action)
+                return t
+            else
+                return { }
+            end
         end
     end
 
@@ -2147,6 +2159,8 @@ if not modules then modules = { } end modules ['l-xml'] = {
 
 -- RJ: key=value ... lpeg.Ca(lpeg.Cc({}) * (pattern-producing-key-and-value / rawset)^0)
 
+-- some code may move to l-xmlext
+
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
 handles comment and processing instructions, has a different structure, provides
@@ -2353,9 +2367,10 @@ do
         end
         local resolved = (namespace == "" and xmlns[#xmlns]) or nsremap[namespace] or namespace
         top = stack[#stack]
-        setmetatable(top, mt)
         dt = top.dt
-        dt[#dt+1] = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = top }
+        local t = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = top }
+        dt[#dt+1] = t
+        setmetatable(t, mt)
         at = { }
         if at.xmlns then
             remove(xmlns)
@@ -2521,7 +2536,7 @@ do
         return root and not root.error
     end
 
-    xml.error_handler = (logs and logs.report) or print
+    xml.error_handler = (logs and logs.report) or (input and input.report) or print
 
 end
 
@@ -2699,7 +2714,7 @@ do
                             handle("<" .. ens .. ":" .. etg .. " " .. concat(ats," ") .. "/>")
                         else
                         --  handle(format("<%s:%s/>",ens,etg))
-                            handle("<" .. ens .. ":" .. "/>")
+                            handle("<" .. ens .. ":" .. etg .. "/>")
                         end
                     end
                 else
@@ -2881,6 +2896,10 @@ will explain more about its usage in other documents.</p>
 
 do
 
+    xml.functions = xml.functions or { }
+
+    local functions = xml.functions
+
     local actions = {
         [10] = "stay",
         [11] = "parent",
@@ -2903,19 +2922,72 @@ do
         [40] = "processing instruction",
     }
 
-    local function make_expression(str) --could also be an lpeg
-        str = str:gsub("@([a-zA-Z%-_]+)", "(a['%1'] or '')")
-        str = str:gsub("position%(%)", "i")
-        str = str:gsub("text%(%)", "t")
-        str = str:gsub("!=", "~=")
-        str = str:gsub("([^=!~<>])=([^=!~<>])", "%1==%2")
-        str = str:gsub("([a-zA-Z%-_]+)%(", "functions.%1(")
-        return str, loadstring(format("return function(functions,i,a,t) return %s end", str))()
+    --~     local function make_expression(str) --could also be an lpeg
+    --~         str = str:gsub("@([a-zA-Z%-_]+)", "(a['%1'] or '')")
+    --~         str = str:gsub("position%(%)", "i")
+    --~         str = str:gsub("text%(%)", "t")
+    --~         str = str:gsub("!=", "~=")
+    --~         str = str:gsub("([^=!~<>])=([^=!~<>])", "%1==%2")
+    --~         str = str:gsub("([a-zA-Z%-_]+)%(", "functions.%1(")
+    --~         return str, loadstring(format("return function(functions,i,a,t) return %s end", str))()
+    --~     end
+
+    -- a rather dumb lpeg
+
+    local P, S, R, C, V, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc
+
+    local lp_position  = P("position()") / "id"
+    local lp_text      = P("text()")     / "tx"
+    local lp_name      = P("name()")     / "((rt.ns~='' and rt.ns..':'..rt.tg) or '')"
+    local lp_tag       = P("tag()")      / "(rt.tg or '')"
+    local lp_ns        = P("ns()")       / "(rt.ns or '')"
+    local lp_noequal   = P("!=")         / "~=" + P("<=") + P(">=") + P("==")
+    local lp_doequal   = P("=")          / "=="
+    local lp_attribute = P("@")          / "" * Cc("(at['") * R("az","AZ","--","__")^1 * Cc("'] or '')")
+
+    local lp_function  = C(R("az","AZ","--","__")^1) * P("(") / function(t)
+        if functions[t] then
+            return "functions." .. t .. "("
+        else
+            return "functions.error("
+        end
+    end
+
+    local lparent  = lpeg.P("(")
+    local rparent  = lpeg.P(")")
+    local noparent = 1 - (lparent+rparent)
+    local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
+    local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent)
+
+--~ local value = P { "(" * C(((1 - S("()")) + V(1))^0) * ")" }
+
+    local lp_special = (C(P("name")+P("text")+P("tag"))) * value / function(t,s)
+        if functions[t] then
+            if s then
+                return "functions." .. t .. "(rt,k," .. s ..")"
+            else
+                return "functions." .. t .. "(rt,k)"
+            end
+        else
+            return "functions.error(" .. t .. ")"
+        end
+    end
+
+    local converter = lpeg.Cs ( (
+        lp_position +
+        lp_text + lp_name + -- fast one
+        lp_special +
+        lp_noequal + lp_doequal +
+        lp_attribute +
+        lp_function +
+    1 )^1 )
+
+    local function make_expression(str)
+        str = converter:match(str)
+        return str, loadstring(format("return function(functions,id,at,tx,rt,k) return %s end", str))()
     end
 
     local map = { }
-
-    local P, S, R, C, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V
 
     local space             = S(' \r\n\t')
     local squote            = S("'")
@@ -2935,8 +3007,10 @@ do
     local bar               = P('|')
     local hat               = P('^')
     local valid             = R('az', 'AZ', '09') + S('_-')
-    local name_yes          = C(valid^1) * colon * C(valid^1 + star) -- permits ns:*
-    local name_nop          = C(P(true)) * C(valid^1)
+--~     local name_yes          = C(valid^1 + star) * colon * C(valid^1 + star) -- permits ns:* *:tg *:*
+--~     local name_nop          = C(P(true)) * C(valid^1)
+    local name_yes          = C(valid^1 + star) * colon * C(valid^1 + star) -- permits ns:* *:tg *:*
+    local name_nop          = Cc("*") * C(valid^1)
     local name              = name_yes + name_nop
     local number            = C((S('+-')^0 * R('09')^1)) / tonumber
     local names             = (bar^0 * name)^1
@@ -2998,8 +3072,10 @@ do
     local expression               = (is_one  * is_expression)/ function(...) map[#map+1] = { 31, true,  ... } end
     local dont_expression          = (is_none * is_expression)/ function(...) map[#map+1] = { 31, false, ... } end
 
-    local self_expression          = (         is_expression)/ function(...) map[#map+1] = { 31, true,  "", "*", ... } end
-    local dont_self_expression     = (exclam * is_expression)/ function(...) map[#map+1] = { 31, true,  "", "*", ... } end
+    local self_expression          = (         is_expression) / function(...) if #map == 0 then map[#map+1] = { 11 } end
+                                                                              map[#map+1] = { 31, true,  "*", "*", ... } end
+    local dont_self_expression     = (exclam * is_expression) / function(...) if #map == 0 then map[#map+1] = { 11 } end
+                                                                              map[#map+1] = { 31, false, "*", "*", ... } end
 
     local instruction              = (instructiontag * text ) / function(...) map[#map+1] = { 40,        ... } end
     local nothing                  = (empty                 ) / function(   ) map[#map+1] = { 15             } end -- 15 ?
@@ -3127,8 +3203,10 @@ do
     function xml.xshow(e,...) -- also handy when report is given, use () to isolate first e
         local t = { ... }
         local report = (type(t[#t]) == "function" and t[#t]) or fallbackreport
-        if not e then
+        if e == nil then
             report("<!-- no element -->\n")
+        elseif type(e) ~= "table" then
+            report(tostring(e))
         elseif e.tg then
             report(tostring(e) .. "\n")
         else
@@ -3155,8 +3233,6 @@ advance what we want to do with the found element the handle gets three argument
 functions.</p>
 --ldx]]--
 
-xml.functions = { }
-
 do
 
     local functions = xml.functions
@@ -3167,11 +3243,84 @@ do
     functions.lower    = string.lower
     functions.number   = tonumber
     functions.boolean  = toboolean
-    functions.oneof    = function(s,...) -- slow
+
+    functions.oneof = function(s,...) -- slow
         local t = {...} for i=1,#t do if s == t[i] then return true end end return false
     end
+    functions.error = function(str)
+        xml.error_handler("unknown function in lpath expression",str)
+        return false
+    end
+    functions.text = function(root,k,n) -- unchecked, maybe one deeper
+        local t = type(t)
+        if t == "string" then
+            return t
+        else -- todo n
+            local rdt = root.dt
+            return (rdt and rdt[k]) or root[k] or ""
+        end
+    end
+    functions.name = function(root,k,n)
+-- way too fuzzy
+        local found
+        if not k or not n then
+            local ns, tg = root.ns, root.tg
+            if not tg then
+                for i=1,#root do
+                    local e = root[i]
+                    if type(e) == "table" then
+                        found = e
+                        break
+                    end
+                end
+            elseif ns == "" then
+                return tg
+            else
+                return ns .. ":" .. tg
+            end
+        elseif n == 0 then
+            local e = root[k]
+            if type(e) ~= "table" then
+                found = e
+            end
+        elseif n < 0 then
+            for i=k-1,1,-1 do
+                local e = root[i]
+                if type(e) == "table" then
+                    if n == -1 then
+                        found = e
+                        break
+                    else
+                        n = n + 1
+                    end
+                end
+            end
+        else
+            for i=k+1,#root,1 do
+                local e = root[i]
+                if type(e) == "table" then
+                    if n == 1 then
+                        found = e
+                        break
+                    else
+                        n = n - 1
+                    end
+                end
+            end
+        end
+        if found then
+            local ns, tg = found.ns, found.tg
+            if ns ~= "" then
+                return ns .. ":" .. tg
+            else
+                return tg
+            end
+        else
+            return ""
+        end
+    end
 
-    local function traverse(root,pattern,handle,reverse,index,parent,wildcard)
+    local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- multiple only for tags, not for namespaces
         if not root then -- error
             return false
         elseif pattern == false then -- root
@@ -3198,11 +3347,15 @@ do
                 local rootdt = root.dt
                 for k=1,#rootdt do
                     local e = rootdt[k]
-                    local ns, tg = (e.rn or e.ns), e.tg
-                    local matched = ns == action[3] and tg == action[4]
-                    if not action[2] then matched = not matched end
-                    if matched then
-                        if handle(root,rootdt,k) then return false end
+                    local tg = e.tg
+                    if e.tg then
+                        local ns = e.rn or e.ns
+                        local ns_a, tg_a = action[3], action[4]
+                        local matched = (ns_a == "*" or ns == ns_a) and (tg_a == "*" or tg == tg_a)
+                        if not action[2] then matched = not matched end
+                        if matched then
+                            if handle(root,rootdt,k) then return false end
+                        end
                     end
                 end
             elseif command == 11 then -- parent
@@ -3245,8 +3398,14 @@ do
                         if tg then
                             idx = idx + 1
                             if command == 30 then
-                                local tg_a = action[4]
-                                if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                local ns_a, tg_a = action[3], action[4]
+                                if tg == tg_a then
+                                    matched = ns_a == "*" or ns == ns_a
+                                elseif tg_a == '*' then
+                                    matched, multiple = ns_a == "*" or ns == ns_a, true
+                                else
+                                    matched = false
+                                end
                                 if not action[2] then matched = not matched end
                                 if matched then
                                     n = n + dn
@@ -3264,57 +3423,102 @@ do
                             else
                                 local matched, multiple = false, false
                                 if command == 20 then -- match
-                                    local tg_a = action[4]
-                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    local ns_a, tg_a = action[3], action[4]
+                                    if tg == tg_a then
+                                        matched = ns_a == "*" or ns == ns_a
+                                    elseif tg_a == '*' then
+                                        matched, multiple = ns_a == "*" or ns == ns_a, true
+                                    else
+                                        matched = false
+                                    end
                                     if not action[2] then matched = not matched end
                                 elseif command == 21 then -- match one of
                                     multiple = true
                                     for i=3,#action,2 do
-                                        if ns == action[i] and tg == action[i+1] then matched = true break end
+                                        local ns_a, tg_a = action[i], action[i+1]
+                                        if (ns_a == "*" or ns == ns_a) and (tg == "*" or tg == tg_a) then
+                                            matched = true
+                                            break
+                                        end
                                     end
                                     if not action[2] then matched = not matched end
                                 elseif command == 22 then -- eq
-                                    local tg_a = action[4]
-                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
-                                    if not action[2] then matched = not matched end
+                                    local ns_a, tg_a = action[3], action[4]
+                                    if tg == tg_a then
+                                        matched = ns_a == "*" or ns == ns_a
+                                    elseif tg_a == '*' then
+                                        matched, multiple = ns_a == "*" or ns == ns_a, true
+                                    else
+                                        matched = false
+                                    end
                                     matched = matched and e.at[action[6]] == action[7]
                                 elseif command == 23 then -- ne
-                                    local tg_a = action[4]
-                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    local ns_a, tg_a = action[3], action[4]
+                                    if tg == tg_a then
+                                        matched = ns_a == "*" or ns == ns_a
+                                    elseif tg_a == '*' then
+                                        matched, multiple = ns_a == "*" or ns == ns_a, true
+                                    else
+                                        matched = false
+                                    end
                                     if not action[2] then matched = not matched end
                                     matched = mached and e.at[action[6]] ~= action[7]
                                 elseif command == 24 then -- one of eq
                                     multiple = true
                                     for i=3,#action-2,2 do
-                                        if ns == action[i] and tg == action[i+1] then matched = true break end
+                                        local ns_a, tg_a = action[i], action[i+1]
+                                        if (ns_a == "*" or ns == ns_a) and (tg == "*" or tg == tg_a) then
+                                            matched = true
+                                            break
+                                        end
                                     end
                                     if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[#action-1]] == action[#action]
                                 elseif command == 25 then -- one of ne
                                     multiple = true
                                     for i=3,#action-2,2 do
-                                        if ns == action[i] and tg == action[i+1] then matched = true break end
+                                        local ns_a, tg_a = action[i], action[i+1]
+                                        if (ns_a == "*" or ns == ns_a) and (tg == "*" or tg == tg_a) then
+                                            matched = true
+                                            break
+                                        end
                                     end
                                     if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[#action-1]] ~= action[#action]
                                 elseif command == 27 then -- has attribute
-                                    local tg_a = action[4]
-                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    local ns_a, tg_a = action[3], action[4]
+                                    if tg == tg_a then
+                                        matched = ns_a == "*" or ns == ns_a
+                                    elseif tg_a == '*' then
+                                        matched, multiple = ns_a == "*" or ns == ns_a, true
+                                    else
+                                        matched = false
+                                    end
                                     if not action[2] then matched = not matched end
                                     matched = matched and e.at[action[5]]
                                 elseif command == 28 then -- has value
-                                    local edt = e.dt
-                                    local tg_a = action[4]
-                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    local edt, ns_a, tg_a = e.dt, action[3], action[4]
+                                    if tg == tg_a then
+                                        matched = ns_a == "*" or ns == ns_a
+                                    elseif tg_a == '*' then
+                                        matched, multiple = ns_a == "*" or ns == ns_a, true
+                                    else
+                                        matched = false
+                                    end
                                     if not action[2] then matched = not matched end
                                     matched = matched and edt and edt[1] == action[5]
                                 elseif command == 31 then
-                                    local edt = e.dt
-                                    local tg_a = action[4]
-                                    if tg == tg_a then matched = ns == action[3] elseif tg_a == '*' then matched, multiple = ns == action[3], true else matched = false end
+                                    local edt, ns_a, tg_a = e.dt, action[3], action[4]
+                                    if tg == tg_a then
+                                        matched = ns_a == "*" or ns == ns_a
+                                    elseif tg_a == '*' then
+                                        matched, multiple = ns_a == "*" or ns == ns_a, true
+                                    else
+                                        matched = false
+                                    end
                                     if not action[2] then matched = not matched end
                                     if matched then
-                                        matched = action[6](functions,idx,e.at or { },edt[1])
+                                        matched = action[6](functions,idx,e.at or { },edt[1],rootdt,k)
                                     end
                                 end
                                 if matched then -- combine tg test and at test
@@ -3490,7 +3694,7 @@ do
     end
     function xml.filters.text(root,pattern,arguments) -- ?? why index, tostring slow
         local dtk, rt, dt, dk = xml.filters.index(root,pattern,arguments)
-        if dtk then
+        if dtk then -- n
             local dtkdt = dtk.dt
             if not dtkdt then
                 return "", rt, dt, dk
@@ -3503,6 +3707,22 @@ do
             return "", rt, dt, dk
         end
     end
+    function xml.filters.tag(root,pattern,n)
+        local tag = ""
+        xml.traverse(root, xml.lpath(pattern), function(r,d,k)
+            tag = xml.functions.tag(d,k,n and tonumber(n))
+            return true
+        end)
+        return tag
+    end
+    function xml.filters.name(root,pattern,n)
+        local tag = ""
+        xml.traverse(root, xml.lpath(pattern), function(r,d,k)
+            tag = xml.functions.name(d,k,n and tonumber(n))
+            return true
+        end)
+        return tag
+    end
 
     --[[ldx--
     <p>For splitting the filter function from the path specification, we can
@@ -3514,13 +3734,15 @@ do
 
     local P, S, R, C, V, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc
 
-    local name      = (R("az","AZ")+R("_-"))^1
-    local path      = C(((1-P('/'))^0 * P('/'))^1)
+    local slash     = P('/')
+    local name      = (R("az","AZ","--","__"))^1
+    local path      = C(((1-slash)^0 * slash)^1)
     local argument  = P { "(" * C(((1 - S("()")) + V(1))^0) * ")" }
     local action    = Cc(1) * path * C(name) * argument
     local attribute = Cc(2) * path * P('@') * C(name)
+    local direct    = Cc(3) * Cc("../*") * slash^0 * C(name) * argument
 
-    local parser    = action + attribute
+    local parser    = direct + action + attribute
 
     local filters          = xml.filters
     local attribute_filter = xml.filters.attributes
@@ -3528,7 +3750,7 @@ do
 
     function xml.filter(root,pattern)
         local kind, a, b, c = parser:match(pattern)
-        if kind == 1 then
+        if kind == 1 or kind == 3 then
             return (filters[b] or default_filter)(root,a,c)
         elseif kind == 2 then
             return attribute_filter(root,a,b)
@@ -3568,12 +3790,14 @@ do
     <p>The following functions collect elements and texts.</p>
     --ldx]]--
 
+    -- still somewhat bugged
+
     function xml.collect_elements(root, pattern, ignorespaces)
         local rr, dd = { }, { }
         traverse(root, lpath(pattern), function(r,d,k)
             local dk = d and d[k]
             if dk then
-                if ignorespaces and type(dk) == "string" and dk:find("^%s*$") then
+                if ignorespaces and type(dk) == "string" and dk:find("[^%S]") then
                     -- ignore
                 else
                     local n = #rr+1
@@ -3604,6 +3828,24 @@ do
             end
         end)
         return t
+    end
+
+    function xml.collect_tags(root, pattern, nonamespace)
+        local t = { }
+        xml.traverse(root, xml.lpath(pattern), function(r,d,k)
+            local dk = d and d[k]
+            if dk and type(dk) == "table" then
+                local ns, tg = e.ns, e.tg
+                if nonamespace then
+                    t[#t+1] = tg -- if needed we can return an extra table
+                elseif ns == "" then
+                    t[#t+1] = tg
+                else
+                    t[#t+1] = ns .. ":" .. tg
+                end
+            end
+        end)
+        return #t > 0 and {}
     end
 
     --[[ldx--
@@ -4165,6 +4407,17 @@ end end
 --~     <windows>my secret</mouse>
 --~ </story>
 --~ ]]
+
+--~ x = xml.convert([[
+--~     <a><b n='01'>01</b><b n='02'>02</b><x>xx</x><b n='03'>03</b><b n='04'>OK</b></a>
+--~ ]])
+--~ xml.xshow(xml.first(x,"b[tag(2) == 'x']"))
+--~ xml.xshow(xml.first(x,"b[tag(1) == 'x']"))
+--~ xml.xshow(xml.first(x,"b[tag(-1) == 'x']"))
+--~ xml.xshow(xml.first(x,"b[tag(-2) == 'x']"))
+
+--~ print(xml.filter(x,"b/tag(2)"))
+--~ print(xml.filter(x,"b/tag(1)"))
 
 
 -- filename : l-utils.lua

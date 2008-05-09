@@ -124,11 +124,11 @@ do
                             valign = valignments[valign]
                         end
                         local width = widths[col]
-                        if s or m or halign or valign or width then
+                        if s or m or halign or valign or width then -- only english interface !
                             texsprint(tex.ctxcatcodes,format("\\bTD[nx=%s,ny=%s,align={%s,%s},width=%s]",
                                 s or 1, (m or 0)+1, halign or "flushleft", valign or "high", width or "fit"))
                         else
-                            texsprint(tex.ctxcatcodes,"\\bTD")
+                            texsprint(tex.ctxcatcodes,"\\bTD[align={flushleft,high},width=fit]") -- else problems with vertical material
                         end
                     --    xmlsprint(dk)
                         xmlcprint(dk)

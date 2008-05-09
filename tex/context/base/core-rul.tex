@@ -1770,7 +1770,10 @@
 \let\framedboxheight\!!zeropoint
 \let\framedboxdepth \!!zeropoint
 
-\def\doreshapeframedbox % frozen
+\def\shapeboxstrut % put this in front if needed !
+  {\vrule\!!width\zeropoint\!!height\ht\shapebox\!!depth\dp\shapebox}
+
+\def\doreshapeframedbox % frozen, that is ... \shapeboxstrut added
   {\beginofshapebox
    \unvcopy\framebox
    \endofshapebox
@@ -1781,7 +1784,7 @@
    \resetshapeframebox
    \reshapebox
      {\setbox0\hbox
-        {\strut\ifhbox\shapebox\unhbox\else\box\fi\shapebox}%
+        {\strut\ifhbox\shapebox\shapeboxstrut\unhbox\else\box\fi\shapebox}%
       \global\advance\framednoflines \plusone
       \ifdim\framedlastlength>\zeropoint\else
         \global\framedlastlength\wd0
@@ -1797,14 +1800,14 @@
       \ifboxhasheight
         \setbox\framebox\vbox to \localheight
           {\hsize\@@globalwidth
-           \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+           \reshapebox{\hbox to \hsize{\ifhbox\shapebox\shapeboxstrut\unhbox\else\box\fi\shapebox}}%
            \dobeforeframedbox
            \innerflushshapebox
            \doafterframedbox}%
       \else
-        \setbox\framebox\vbox to \ht\framebox
+        \setbox\framebox\vbox to \framedboxheight % \ht\framebox
           {\hsize\@@globalwidth
-           \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+           \reshapebox{\hbox to \hsize{\ifhbox\shapebox\shapeboxstrut\unhbox\else\box\fi\shapebox}}%
            \ifcase\reshapeframeboxmethod
              \or \innerflushshapebox \or \innerflushshapebox
            \fi}%

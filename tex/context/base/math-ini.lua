@@ -107,14 +107,20 @@ function mathematics.setmathsymbol(name,class,family,slot,largefamily,largeslot,
     if largefamily and largeslot then
         largefamily = mathematics.families[largefamily] or largefamily
         if class == classes.radical then
-            tex.sprint(("\\xdef\\%s{%s\\relax}"):format(name,mathematics.radical(class,family,slot,largefamily,largeslot)))
+            tex.sprint(("\\unexpanded\\xdef\\%s{%s }"):format(name,mathematics.radical(class,family,slot,largefamily,largeslot)))
         elseif class == classes.open or class == classes.close then
-            tex.sprint(("\\xdef\\%s{%s\\relax}"):format(name,mathematics.delimiter(class,family,slot,largefamily,largeslot)))
+            tex.sprint(("\\unexpanded\\xdef\\%s{%s}"):format(name,mathematics.delimiter(class,family,slot,largefamily,largeslot)))
         end
     elseif class == classes.accent then
-        tex.sprint(("\\xdef\\%s{%s\\relax}"):format(name,mathematics.mathaccent(class,family,slot)))
+        tex.sprint(("\\unexpanded\\xdef\\%s{%s }"):format(name,mathematics.mathaccent(class,family,slot)))
     elseif unicode then
-        tex.sprint(("\\xdef\\%s{%s}"):format(name,utf.char(unicode)))
+        -- beware, open/close and other specials should not end up here
+        local ch = utf.char(unicode)
+        if characters.filters.utf.private.escapes[ch] then
+            tex.sprint(("\\xdef\\%s{\\char%s }"):format(name,unicode))
+        else
+            tex.sprint(("\\xdef\\%s{%s}"):format(name,ch))
+        end
     else
         tex.sprint(mathematics.mathchardef(name,class,family,slot))
     end
@@ -135,9 +141,7 @@ end
 
 -- definitions (todo: expand commands to utf instead of codes)
 
-mathematics.trace = false
-
-
+mathematics.trace = false --
 
 function mathematics.define()
     local slots = mathematics.slots.current
@@ -218,56 +222,56 @@ end
 
 mathematics.slots.traditional = {
 
-    [0x03B1] = { "lcgreek", 0x0B },
-    [0x03B2] = { "lcgreek", 0x0C },
-    [0x03B3] = { "lcgreek", 0x0D },
-    [0x03B4] = { "lcgreek", 0x0E },
+    [0x03B1] = { "lcgreek", 0x0B }, -- alpha
+    [0x03B2] = { "lcgreek", 0x0C }, -- beta
+    [0x03B3] = { "lcgreek", 0x0D }, -- gamma
+    [0x03B4] = { "lcgreek", 0x0E }, -- delta
     [0x03B5] = { "lcgreek", 0x0F }, -- epsilon
-    [0x03B6] = { "lcgreek", 0x10 },
-    [0x03B7] = { "lcgreek", 0x11 },
-    [0x03B8] = { "lcgreek", 0x12 },
-    [0x03B9] = { "lcgreek", 0x13 },
-    [0x03BA] = { "lcgreek", 0x14 },
-    [0x03BB] = { "lcgreek", 0x15 },
-    [0x03BC] = { "lcgreek", 0x16 },
-    [0x03BD] = { "lcgreek", 0x17 },
-    [0x03BE] = { "lcgreek", 0x18 },
-    [0x03BF] = { "lcgreek", 0x6F },
-    [0x03C0] = { "lcgreek", 0x19 },
-    [0x03C1] = { "lcgreek", 0x1A },
+    [0x03B6] = { "lcgreek", 0x10 }, -- zeta
+    [0x03B7] = { "lcgreek", 0x11 }, -- eta
+    [0x03B8] = { "lcgreek", 0x12 }, -- theta
+    [0x03B9] = { "lcgreek", 0x13 }, -- iota
+    [0x03BA] = { "lcgreek", 0x14 }, -- kappa
+    [0x03BB] = { "lcgreek", 0x15 }, -- lambda
+    [0x03BC] = { "lcgreek", 0x16 }, -- mu
+    [0x03BD] = { "lcgreek", 0x17 }, -- nu
+    [0x03BE] = { "lcgreek", 0x18 }, -- xi
+    [0x03BF] = { "lcgreek", 0x6F }, -- omicron
+    [0x03C0] = { "lcgreek", 0x19 }, -- po
+    [0x03C1] = { "lcgreek", 0x1A }, -- rho
 --  [0x03C2] = { "lcgreek", 0x00 }, -- varsigma
-    [0x03C3] = { "lcgreek", 0x1B },
-    [0x03C4] = { "lcgreek", 0x1C },
-    [0x03C5] = { "lcgreek", 0x1D },
+    [0x03C3] = { "lcgreek", 0x1B }, -- sigma
+    [0x03C4] = { "lcgreek", 0x1C }, -- tau
+    [0x03C5] = { "lcgreek", 0x1D }, -- upsilon
 --  [0x03C6] = { "lcgreek", 0x1E }, -- varphi
-    [0x03C7] = { "lcgreek", 0x1F },
-    [0x03C8] = { "lcgreek", 0x20 },
-    [0x03C9] = { "lcgreek", 0x21 },
+    [0x03C7] = { "lcgreek", 0x1F }, -- chi
+    [0x03C8] = { "lcgreek", 0x20 }, -- psi
+    [0x03C9] = { "lcgreek", 0x21 }, -- omega
 
-    [0x0391] = { "ucgreek", 0x41 },
-    [0x0392] = { "ucgreek", 0x42 },
-    [0x0393] = { "ucgreek", 0x00 },
-    [0x0394] = { "ucgreek", 0x01 },
-    [0x0395] = { "ucgreek", 0x45 },
-    [0x0396] = { "ucgreek", 0x5A },
-    [0x0397] = { "ucgreek", 0x48 },
-    [0x0398] = { "ucgreek", 0x02 },
-    [0x0399] = { "ucgreek", 0x49 },
-    [0x039A] = { "ucgreek", 0x4B },
-    [0x039B] = { "ucgreek", 0x03 },
-    [0x039C] = { "ucgreek", 0x4D },
-    [0x039D] = { "ucgreek", 0x4E },
-    [0x039E] = { "ucgreek", 0x04 },
-    [0x039F] = { "ucgreek", 0x4F },
-    [0x03A0] = { "ucgreek", 0x05 },
-    [0x03A1] = { "ucgreek", 0x52 },
-    [0x03A3] = { "ucgreek", 0x06 },
-    [0x03A4] = { "ucgreek", 0x54 },
-    [0x03A5] = { "ucgreek", 0x07 },
-    [0x03A6] = { "ucgreek", 0x08 },
-    [0x03A7] = { "ucgreek", 0x58 },
-    [0x03A8] = { "ucgreek", 0x09 },
-    [0x03A9] = { "ucgreek", 0x0A },
+    [0x0391] = { "ucgreek", 0x41 }, -- Alpha
+    [0x0392] = { "ucgreek", 0x42 }, -- Beta
+    [0x0393] = { "ucgreek", 0x00 }, -- Gamma
+    [0x0394] = { "ucgreek", 0x01 }, -- Delta
+    [0x0395] = { "ucgreek", 0x45 }, -- Epsilon
+    [0x0396] = { "ucgreek", 0x5A }, -- Zeta
+    [0x0397] = { "ucgreek", 0x48 }, -- Eta
+    [0x0398] = { "ucgreek", 0x02 }, -- Theta
+    [0x0399] = { "ucgreek", 0x49 }, -- Iota
+    [0x039A] = { "ucgreek", 0x4B }, -- Kappa
+    [0x039B] = { "ucgreek", 0x03 }, -- Lambda
+    [0x039C] = { "ucgreek", 0x4D }, -- Mu
+    [0x039D] = { "ucgreek", 0x4E }, -- Nu
+    [0x039E] = { "ucgreek", 0x04 }, -- Xi
+    [0x039F] = { "ucgreek", 0x4F }, -- Omicron
+    [0x03A0] = { "ucgreek", 0x05 }, -- Pi
+    [0x03A1] = { "ucgreek", 0x52 }, -- Rho
+    [0x03A3] = { "ucgreek", 0x06 }, -- Sigma
+    [0x03A4] = { "ucgreek", 0x54 }, -- Tau
+    [0x03A5] = { "ucgreek", 0x07 }, -- Upsilon
+    [0x03A6] = { "ucgreek", 0x08 }, -- Phi
+    [0x03A7] = { "ucgreek", 0x58 }, -- Chi
+    [0x03A8] = { "ucgreek", 0x09 }, -- Psi
+    [0x03A9] = { "ucgreek", 0x0A }, -- Omega
 
     [0x03F5] = { "vargreek", 0x22 }, -- varepsilon
     [0x03D1] = { "vargreek", 0x23 }, -- vartheta
@@ -306,15 +310,92 @@ mathematics.slots.traditional = {
     [0x00B7] = { "sy", 0x01 }, -- cdot
     [0x00D7] = { "sy", 0x02 }, -- times
     [0x2022] = { "sy", 0x0F }, -- bullet
+    [0x2111] = { "sy", 0x3D }, -- Im
+    [0x2118] = { "mi", 0x7D }, -- wp
+    [0x211C] = { "sy", 0x3C }, -- Re
     [0x2190] = { "sy", 0x20 }, -- leftarrow
+    [0x2191] = { "sy", 0x22, "ex", 0x78 }, -- uparrow
     [0x2192] = { "sy", 0x21 }, -- rightarrow
+    [0x2193] = { "sy", 0x23, "ex", 0x79 }, -- downarrow
     [0x2194] = { "sy", 0x24 }, -- leftrightarrow
+    [0x2195] = { "sy", 0x6C, "ex", 0x3F }, -- updownarrow
+    [0x2196] = { "sy", 0x2D }, -- nwarrow
+    [0x2197] = { "sy", 0x25 }, -- nearrow
+    [0x2198] = { "sy", 0x2E }, -- swarrow
+    [0x2199] = { "sy", 0x26 }, -- searrow
     [0x21D0] = { "sy", 0x28 }, -- Leftarrow
+    [0x21D1] = { "sy", 0x6C, "ex", 0x7E }, -- Uparrow
     [0x21D2] = { "sy", 0x29 }, -- Rightarrow
+    [0x21D3] = { "sy", 0x2B, "ex", 0x7F }, -- Downarrow
     [0x21D4] = { "sy", 0x2C }, -- Leftrightarrow
+    [0x21D5] = { "sy", 0x6D, "ex", 0x77 }, -- Updownarrow
     [0x2135] = { "sy", 0x40 }, -- aleph
     [0x2113] = { "mi", 0x60 }, -- ell
+--  ...
+    [0x2200] = { "sy", 0x38 }, -- forall
+--  [0x2201] = { "sy", 0x00 }, -- complement
+    [0x2202] = { "mi", 0x40 }, -- partial
+    [0x2203] = { "sy", 0x39 }, -- exists
+--  [0x2204] = { "sy", 0x00 }, -- not exists
+    [0x2205] = { "sy", 0x3B }, -- empty set
+--  [0x2206] = { "sy", 0x00 }, -- increment
+    [0x2207] = { "sy", 0x72 }, -- nabla
+    [0x2208] = { "sy", 0x32 }, -- in
+    [0x2209] = { "sy", 0x33 }, -- ni
+    [0x220F] = { "ex", 0x51 }, -- prod
+    [0x2210] = { "ex", 0x60 }, -- coprod
+    [0x2211] = { "ex", 0x50 }, -- sum
+--  [0x2212] = { "sy", 0x00 }, -- -
+    [0x2213] = { "sy", 0x07 }, -- mp
+    [0x2215] = { "sy", 0x3D }, -- / AM: Not sure
+    [0x2216] = { "sy", 0x6E }, -- setminus
+    [0x2217] = { "sy", 0x03 }, -- *
+    [0x2218] = { "sy", 0x0E }, -- circ
+    [0x2219] = { "sy", 0x0F }, -- bullet
+--  [0x221A] = { "sy", 0x70, "ex", 0x70 }, -- sqrt. AM: Check surd??
+--  ...
+    [0x221D] = { "sy", 0x2F }, -- propto
+    [0x221E] = { "sy", 0x31 }, -- infty
+    [0x2225] = { "sy", 0x6B }, -- parallel
+    [0x2227] = { "sy", 0x5E }, -- wedge
+    [0x2228] = { "sy", 0x5F }, -- vee
+    [0x2229] = { "sy", 0x5C }, -- cap
+    [0x222A] = { "sy", 0x5B }, -- cup
+    [0x222B] = { "ex", 0x52 }, -- intop
+--  ... other integrals
+    [0x2236] = { "mr", 0x3A }, -- colon
+    [0x223C] = { "sy", 0x18 }, -- sim
+    [0x2243] = { "sy", 0x27 }, -- simeq
+    [0x2248] = { "sy", 0x19 }, -- approx
+    [0x2261] = { "sy", 0x11 }, -- equiv
+    [0x2264] = { "sy", 0x14 }, -- leq
+    [0x2265] = { "sy", 0x15 }, -- geq
+    [0x226A] = { "sy", 0x1C }, -- ll
+    [0x226B] = { "sy", 0x1D }, -- gg
+    [0x227A] = { "sy", 0x1E }, -- prec
+    [0x227B] = { "sy", 0x1F }, -- succ
+--  [0x227C] = { "sy", 0x16 }, -- preceq, AM:No see 2AAF
+--  [0x227D] = { "sy", 0x17 }, -- succeq, AM:No see 2AB0
+    [0x2282] = { "sy", 0x1A }, -- subset
+    [0x2283] = { "sy", 0x1B }, -- supset
+    [0x2286] = { "sy", 0x12 }, -- subseteq
+    [0x2287] = { "sy", 0x13 }, -- supseteq
+    [0x2293] = { "sy", 0x75 }, -- sqcap
+    [0x2294] = { "sy", 0x74 }, -- sqcup
+    [0x2295] = { "sy", 0x08 }, -- oplus
+    [0x2296] = { "sy", 0x09 }, -- ominus
+    [0x2297] = { "sy", 0x0A }, -- otimes
+    [0x2298] = { "sy", 0x0B }, -- oslash
+    [0x2299] = { "sy", 0x0C }, -- odot
+    [0x22A4] = { "sy", 0x3E }, -- top
+    [0x22A5] = { "sy", 0x3F }, -- bop
+    [0x22C0] = { "ex", 0x56 }, -- bigwedge
+    [0x22C1] = { "ex", 0x57 }, -- bigvee
+    [0x22C2] = { "ex", 0x54 }, -- bigcap
+    [0x22C3] = { "ex", 0x53 }, -- bigcup
+    [0x22C4] = { "sy", 0x05 }, -- diamond
     [0x22C5] = { "sy", 0x01 }, -- cdot
+    [0x22C6] = { "sy", 0x3F }, -- star
     [0x25B3] = { "sy", 0x34 }, -- triangle up
 
     [0x1D6A4] = { "mi", 0x7B }, -- imath
@@ -329,34 +410,18 @@ mathematics.slots.traditional = {
     [0x005D] = { "mr", 0x5D, "ex", 0x03 }, -- ]
     [0x007C] = { "sy", 0x6A, "ex", 0x0C }, -- |
     [0x005C] = { "sy", 0x6E, "ex", 0x0F }, -- \
+    [0x007B] = { "sy", 0x66, "ex", 0x08 }, -- {
+    [0x007D] = { "sy", 0x67, "ex", 0x09 }, -- }
 
-    [0x220F] = { "ex", 0x51 }, -- prod
-    [0x2211] = { "ex", 0x50 }, -- sum
-    [0x222B] = { "ex", 0x52 }, -- intop
     [0x005E] = { "mr", 0x5E, "ex", 0x62 }, -- widehat
     [0x007E] = { "mr", 0x7E, "ex", 0x65 }, -- widetilde
+
+    [0x2AAF] = { "sy", 0x16 }, -- preceq
+    [0x2AB0] = { "sy", 0x17 }, -- succeq
 
 }
 
 mathematics.slots.current = mathematics.slots.traditional
-
---~ already obsolete
---~
---~ do
---~     local template = "\\catcode%s=13\\gdef %s{\\%s}\\global\\mathcode%s=\"8000\\relax"
---~     function mathematics.traditional()
---~         tex.sprint(tex.ctxcatcodes,"\\begingroup")
---~         for k, v in pairs(mathematics.data) do
---~             if not v.ignore then
---~                 local c = v.contextname
---~                 if c then
---~                     tex.sprint(template:format(k,utf.char(k),c,k))
---~                 end
---~             end
---~         end
---~         tex.sprint(tex.ctxcatcodes,"\\endgroup")
---~     end
---~ end
 
 function mathematics.utfmathclass(chr, default)
     local cd = characters.data[utf.byte(chr)]

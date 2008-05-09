@@ -430,14 +430,16 @@ function lpeg.splitter(pattern, action)
     return (((1-lpeg.P(pattern))^1)/action+1)^0
 end
 
+local crlf     = lpeg.P("\r\n")
+local cr       = lpeg.P("\r")
+local lf       = lpeg.P("\n")
+local space    = lpeg.S(" \t\f\v")
+local newline  = crlf + cr + lf
+local spacing  = space^0 * newline
 
-local crlf    = lpeg.P("\r\n")
-local cr      = lpeg.P("\r")
-local lf      = lpeg.P("\n")
-local space   = lpeg.S(" \t\f\v")
-local newline = crlf + cr + lf
-local spacing = space^0 * newline
-local content = lpeg.Cs((1-spacing)^1) * spacing^-1 * (spacing * lpeg.Cc(""))^0
+local empty    = spacing * lpeg.Cc("")
+local nonempty = lpeg.Cs((1-spacing)^1) * spacing^-1
+local content  = (empty + nonempty)^1
 
 local capture = lpeg.Ct(content^0)
 
@@ -1704,6 +1706,10 @@ end
 file.readdata = io.loaddata
 file.savedata = io.savedata
 
+function file.copy(oldname,newname)
+    file.savedata(newname,io.loaddata(oldname))
+end
+
 
 -- filename : l-url.lua
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -1939,21 +1945,27 @@ if lfs then do
         P(1)
     )^0 )
 
-    local function glob(str)
-        local split = pattern:match(str)
-        if split then
-            local t = { }
-            local action = action or function(name) t[#t+1] = name end
-            local root, path, base = split[1], split[2], split[3]
-            local recurse = base:find("**")
-            local start = root .. path
-            local result = filter:match(start .. base)
---~         print(str, start, result)
---~         print(start, result)
-            glob_pattern(start,result,recurse,action)
+    local function glob(str,t)
+        if type(str) == "table" then
+            local t = t or { }
+            for _, s in ipairs(str) do
+                glob(s,t)
+            end
             return t
         else
-            return { }
+            local split = pattern:match(str)
+            if split then
+                local t = t or { }
+                local action = action or function(name) t[#t+1] = name end
+                local root, path, base = split[1], split[2], split[3]
+                local recurse = base:find("**")
+                local start = root .. path
+                local result = filter:match(start .. base)
+                glob_pattern(start,result,recurse,action)
+                return t
+            else
+                return { }
+            end
         end
     end
 
@@ -5615,14 +5627,24 @@ if texconfig and not texlua then
                     input.logger('= ' .. tag .. ' closer (' .. unicode.utfname[u] .. ')',filename)
                     input.show_close(filename)
                 end,
+--~                 getline = function(n)
+--~                     local line = t.lines[n]
+--~                     if not line or line == "" then
+--~                         return ""
+--~                     else
+--~                         local translator = input.filters.utf_translator
+--~                         return (translator and translator(line)) or line
+--~                     end
+--~                 end,
                 reader = function(self)
                     self = self or t
                     local current, lines = self.current, self.lines
                     if current >= #lines then
                         return nil
                     else
-                        self.current = current + 1
-                        local line = lines[self.current]
+                        current = current + 1
+                        self.current = current
+                        local line = lines[current]
                         if line == "" then
                             return ""
                         else

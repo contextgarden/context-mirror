@@ -1114,16 +1114,16 @@ def draw_multi_pars  =
   for i=1 upto nofmultipars :
     do_draw_par(multipars[i]) ;
         if boxgridtype= 1 :
-      draw baseline_grid (multipars[i],up,true ) withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],up,true ) ; % withcolor boxgridcolor ;
     elseif boxgridtype= 2 :
-      draw baseline_grid (multipars[i],up,false) withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],up,false) ; % withcolor boxgridcolor ;
     elseif boxgridtype= 3 :
-      draw baseline_grid (multipars[i],up,true ) withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],up,true ) ; % withcolor boxgridcolor ;
       draw baseline_grid (multipars[i],up,true )
-        shifted (0,ExHeight) withcolor boxgridcolor ;
+        shifted (0,ExHeight) ; % withcolor boxgridcolor ;
     elseif boxgridtype= 4 :
       draw baseline_grid (multipars[i],up,true )
-        shifted (0,ExHeight/2) withcolor boxgridcolor ;
+        shifted (0,ExHeight/2) ; % withcolor boxgridcolor ;
     elseif boxgridtype=11 :
       draw graphic_grid(multipars[i],boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
     elseif boxgridtype=12 :
@@ -1166,8 +1166,14 @@ vardef baseline_grid (expr pxy, pdir, at_baseline) =
   if (par_line_height>0) and (bbheight(pxy)>1) and (bbwidth(pxy)>1) and (boxgridwidth>0) :
     save i, grid, bb ; picture grid ; pair start ; path bb ;
     def _do_ (expr start) =
+      % 1 = normal, 2 = with background (i.e. no shine-through)
+      if boxdashtype = 2 :
+        draw start -- start shifted (bbwidth(pxy),0)
+          withpen pencircle scaled boxgridwidth
+          withcolor boxfillcolor ;
+      fi ;
       draw start -- start shifted (bbwidth(pxy),0)
-        if boxdashtype = 1 : dashed evenly fi
+        if boxdashtype > 0 : dashed evenly fi
         withpen pencircle scaled boxgridwidth
         withcolor boxgridcolor ;
     enddef ;

@@ -2634,17 +2634,34 @@
 \unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
   {\bgroup\complexorsimpleempty\rotate}
 
+% \def\complexrotate[#1]% framed met diepte !
+%   {\getparameters[\??ro][#1]%
+%    \processaction
+%      [\@@rolocation]
+%      [  \v!depth=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
+%           \v!fit=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
+%         \v!broad=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
+%          \v!high=>\!!counta\plusone  \donetrue ,% nodepth fit   - framed
+%        \v!middle=>\!!counta\plusfour \donefalse,% centered, keep dimensions
+%       \s!default=>\!!counta\plusthree\donetrue ,% depth   fit   - framed
+%       \s!unknown=>\!!counta\plusthree\donetrue ]% depth   fit   - framed
+%    \ifdone
+%      \def\docommand{\localframed[\??ro][#1,\c!location=]}%
+%    \else
+%      \let\docommand\relax
+%    \fi
+%    \dowithnextbox{\dorotatenextbox\@@rorotation\!!counta\egroup}\vbox\docommand}
+
+\setvalue{\??ro::\c!location::\v!depth  }{\!!counta\plusthree\donefalse} % depth   fit   - raw box
+\setvalue{\??ro::\c!location::\v!fit    }{\!!counta\plustwo  \donefalse} % depth   tight - raw box
+\setvalue{\??ro::\c!location::\v!broad  }{\!!counta\plusone  \donefalse} % nodepth fit   - raw box
+\setvalue{\??ro::\c!location::\v!high   }{\!!counta\plusone  \donetrue } % nodepth fit   - framed
+\setvalue{\??ro::\c!location::\v!middle }{\!!counta\plusfour \donefalse} % centered, keep dimensions
+\setvalue{\??ro::\c!location::\v!default}{\!!counta\plusthree\donetrue } % depth   fit   - framed
+
 \def\complexrotate[#1]% framed met diepte !
   {\getparameters[\??ro][#1]%
-   \processaction
-     [\@@rolocation]
-     [  \v!depth=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
-          \v!fit=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
-        \v!broad=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
-         \v!high=>\!!counta\plusone  \donetrue ,% nodepth fit   - framed
-       \v!middle=>\!!counta\plusfour \donefalse,% centered, keep dimensions
-      \s!default=>\!!counta\plusthree\donetrue ,% depth   fit   - framed
-      \s!unknown=>\!!counta\plusthree\donetrue ]% depth   fit   - framed
+   \executeifdefined{\??ro::\c!location::\@@rolocation}{\!!counta\plusthree\donetrue}%
    \ifdone
      \def\docommand{\localframed[\??ro][#1,\c!location=]}%
    \else

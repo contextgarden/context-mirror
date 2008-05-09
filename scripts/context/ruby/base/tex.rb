@@ -930,7 +930,8 @@ end
                 case str.chomp
                     when /^\%/o then
                         # next
-                    when /\\(starttekst|stoptekst|startonderdeel|startdocument|startoverzicht)/o then
+                #   when /\\(starttekst|stoptekst|startonderdeel|startdocument|startoverzicht)/o then
+                    when /\\(starttekst|stoptekst|startonderdeel|startoverzicht)/o then
                         setvariable('texformats','nl') ; break
                     when /\\(stelle|verwende|umgebung|benutze)/o then
                         setvariable('texformats','de') ; break

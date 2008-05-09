@@ -172,11 +172,10 @@ function fonts.names.identify()
         local pathlist = fonts.names.getpaths(texmf.instance) -- input.expanded_path_list(texmf.instance,"osfontdir")
         if pathlist then
             for _, path in ipairs(pathlist) do
-                -- not that much needed
-                -- path = input.clean_path(path .. "/")
-                -- path = path:gsub("/+","/")
+                path = input.clean_path(path .. "/")
+                path = path:gsub("/+","/")
                 local pattern = path .. "*." .. suffix
-                logs.info("fontnames", "globbing path " .. pattern)
+                logs.report("fontnames", "globbing path " .. pattern)
                 local t = dir.glob(pattern)
                 for _, name in pairs(t) do -- ipairs
                     local mode = lfs.attributes(name,'mode')

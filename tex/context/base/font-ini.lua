@@ -31,7 +31,8 @@ fonts.initializers = {
 fonts.triggers = {
     'mode',
     'language',
-    'script'
+    'script',
+    'strategy',
 }
 
 fonts.manipulators = {

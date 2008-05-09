@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, pos
     license   = "see context related readme files",
 }
 
-local format, join, round = string.format, table.concat, math.round
+local format, concat, round = string.format, table.concat, math.round
 local sprint = tex.sprint
 
 colors = colors or { }
@@ -346,18 +346,27 @@ local current_format, current_graphic
 --~ metapost.first_box, metapost.last_box = 1000, 1100
 
 metapost.textext_current = metapost.first_box
+metapost.trace_texttexts = false
 
 function metapost.specials.tf(specification,object)
 --~ print("setting", metapost.textext_current)
-    sprint(tex.ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,specification))
+    local n, str = specification:match("^(%d+):(.+)$")
     if metapost.textext_current < metapost.last_box then
-        metapost.textext_current = metapost.textext_current + 1
+        metapost.textext_current = metapost.first_box + n - 1
     end
+    if metapost.trace_texttexts then
+        print("metapost", format("first pass: order %s, box %s",n,metapost.textext_current))
+    end
+    sprint(tex.ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,str))
     return { }, nil, nil, nil
 end
 
 function metapost.specials.ts(specification,object,result,flusher)
     -- print("getting", metapost.textext_current)
+    local n, str = specification:match("^(%d+):(.+)$")
+    if metapost.trace_texttexts then
+        print("metapost", format("second pass: order %s, box %s",n,metapost.textext_current))
+    end
     local op = object.path
     local first, second, fourth  = op[1], op[2], op[4]
     local tx, ty = first.x_coord      , first.y_coord
@@ -365,18 +374,18 @@ function metapost.specials.ts(specification,object,result,flusher)
     local rx, ry = second.y_coord - ty, fourth.x_coord - tx
     if sx == 0 then sx = 0.00001 end
     if sy == 0 then sy = 0.00001 end
-    local before = function()
+    local before = function() -- no need for function
     --~ flusher.flushfigure(result)
     --~ sprint(tex.ctxcatcodes,format("\\MPLIBgettext{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,metapost.textext_current))
     --~ result = { }
         result[#result+1] = format("q %f %f %f %f %f %f cm", sx,rx,ry,sy,tx,ty)
         flusher.flushfigure(result)
+        if metapost.textext_current < metapost.last_box then
+            metapost.textext_current = metapost.first_box + n - 1
+        end
         local b = metapost.textext_current
         sprint(tex.ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b, metapost.sxsy(tex.wd[b],tex.ht[b],tex.dp[b])))
         result = { "Q" }
-        if metapost.textext_current < metapost.last_box then
-            metapost.textext_current = metapost.textext_current + 1
-        end
         return object, result
     end
     return { }, before, nil, nil -- replace { } by object for tracing
@@ -458,7 +467,7 @@ end
 
 metapost.reducetogray = true
 
-function metapost.colorconverter()
+function metapost.colorconverter() -- rather generic pdf, so use this elsewhere too
     -- it no longer pays off to distinguish between outline and fill
     --  (we now have both too, e.g. in arrows)
     local model = colors.model
@@ -466,54 +475,114 @@ function metapost.colorconverter()
     if model == "all" then
         return function(cr)
             local n = #cr
-            if reduce and n == 3 then if cr[1] == cr[2] and cr[1] == cr[3] then n = 1 end end
-            if n == 1 then
+            if reduce then
+                if n == 1 then
+                    local s = cr[1]
+                    return format("%.3f g %.3f G",s,s)
+                elseif n == 3 then
+                    local r, g, b = cr[1], cr[2], cr[3]
+                    if r == g and g == b then
+                        return format("%.3f g %.3f G",r,r)
+                    else
+                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+                    end
+                else
+                    local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+                    if c == m and m == y and y == 0 then
+                        k = 1 - k
+                        return format("%.3f g %.3f G",k,k)
+                    else
+                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
+                    end
+                end
+            elseif n == 1 then
                 local s = cr[1]
                 return format("%.3f g %.3f G",s,s)
-            elseif n == 4 then
-                local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
-            else
+            elseif n == 3 then
                 local r, g, b = cr[1], cr[2], cr[3]
                 return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+            else
+                local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
             end
         end
     elseif model == "rgb" then
         return function(cr)
             local n = #cr
-            if reduce and n == 3 then if cr[1] == cr[2] and cr[1] == cr[3] then n = 1 end end
-            if n == 1 then
+            if reduce then
+                if n == 1 then
+                    local s = cr[1]
+                    return format("%.3f g %.3f G",s,s)
+                elseif n == 3 then
+                    local r, g, b = cr[1], cr[2], cr[3]
+                    if r == g and g == b then
+                        return format("%.3f g %.3f G",r,r)
+                    else
+                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+                    end
+                else
+                    local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+                    if c == m and m == y and y == 0 then
+                        k = 1 - k
+                        return format("%.3f g %.3f G",k,k)
+                    else
+                        local r, g, b = cmyktorgb(c,m,y,k)
+                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+                    end
+                end
+            elseif n == 1 then
                 local s = cr[1]
                 return format("%.3f g %.3f G",s,s)
-            end
-            local r, g, b
-            if n == 4 then
-                r, g, b = cmyktorgb(cr[1],cr[2],cr[3],cr[4])
             else
-                r, g, b = cr[1],cr[2],cr[3]
+                local r, g, b
+                if n == 3 then
+                    r, g, b = cmyktorgb(cr[1],cr[2],cr[3],cr[4])
+                else
+                    r, g, b = cr[1], cr[2], cr[3]
+                end
+                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
             end
-            return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
         end
     elseif model == "cmyk" then
         return function(cr)
             local n = #cr
-            if reduce and n == 3 then if cr[1] == cr[2] and cr[1] == cr[3] then n = 1 end end
-            if n == 1 then
+            if reduce then
+                if n == 1 then
+                    local s = cr[1]
+                    return format("%.3f g %.3f G",s,s)
+                elseif n == 3 then
+                    local r, g, b = cr[1], cr[2], cr[3]
+                    if r == g and g == b then
+                        return format("%.3f g %.3f G",r,r)
+                    else
+                        local c, m, y, k = rgbtocmyk(r,g,b)
+                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
+                    end
+                else
+                    local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+                    if c == m and m == y and y == 0 then
+                        k = 1 - k
+                        return format("%.3f g %.3f G",k,k)
+                    else
+                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
+                    end
+                end
+            elseif n == 1 then
                 local s = cr[1]
                 return format("%.3f g %.3f G",s,s)
-            end
-            local c, m, y, k
-            if n == 4 then
-                c, m, y, k = cr[1], cr[2], cr[3], cr[4]
             else
-                c, m, y, k = rgbtocmyk(cr[1],cr[2],cr[3])
+                local c, m, y, k
+                if n == 3 then
+                    c, m, y, k = rgbtocmyk(cr[1],cr[2],cr[3])
+                else
+                    c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+                end
+                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
             end
-            return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
         end
     else
         return function(cr)
-            local n = #cr
-            if reduce and n == 3 then if cr[1] == cr[2] and cr[1] == cr[3] then n = 1 end end
+            local n, s = #cr, 0
             if n == 4 then
                 s = cmyktogray(cr[1],cr[2],cr[3],cr[4])
             elseif n == 3 then
@@ -709,6 +778,9 @@ function metapost.text_texts_data()
     local t, n = { }, 0
     for i = metapost.first_box, metapost.last_box do
         n = n + 1
+        if metapost.trace_texttexts then
+            print("metapost", format("passed data: order %s, box %s",n,i))
+        end
         if tex.box[i] then
             t[#t+1] = format("_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;", n,tex.wd[i]/factor, n,tex.ht[i]/factor, n,tex.dp[i]/factor)
         else
@@ -746,6 +818,7 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
             preamble or "",
             "beginfig(1); ",
             "_trial_run_ := false ;",
+            "resettextexts;",
             str,
             "endfig ;"
         } )
@@ -757,8 +830,8 @@ function metapost.graphic_extra_pass()
     metapost.process(current_format, {
         "beginfig(0); ",
         "_trial_run_ := false ;",
-        "_tt_n_ := 0 ;", -- resettextexts
-        join(metapost.text_texts_data()," ;\n"),
+        "resettextexts;",
+        concat(metapost.text_texts_data()," ;\n"),
         current_graphic,
         "endfig ;"
     })
@@ -782,11 +855,29 @@ function metapost.getclippath(data)
     end
 end
 
+metapost.tex = metapost.tex or { }
+
+do -- only used in graphictexts
+
+    local environments = { }
+
+    function metapost.tex.set(str)
+        environments[#environments+1] = str
+    end
+    function metapost.tex.reset()
+        environments = { }
+    end
+    function metapost.tex.get()
+        return concat(environments,"\n")
+    end
+
+end
+
 do -- not that beautiful but ok, we could save a md5 hash in the tui file !
 
     local graphics = { }
     local start    = [[\starttext]]
-    local preamble = [[\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
+    local preamble = [[\long\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
     local stop     = [[\stoptext]]
 
     function metapost.specials.gt(specification,object) -- number, so that we can reorder
@@ -801,7 +892,7 @@ do -- not that beautiful but ok, we could save a md5 hash in the tui file !
             local mpyfile = file.replacesuffix(mpofile,"mpy")
             local pdffile = file.replacesuffix(mpofile,"pdf")
             local texfile = file.replacesuffix(mpofile,"tex")
-            io.savedata(texfile, { start, preamble, join(graphics,"\n"), stop }, "\n")
+            io.savedata(texfile, { start, preamble, metapost.tex.get(), concat(graphics,"\n"), stop }, "\n")
             os.execute(format("context --once %s", texfile))
             if io.exists(pdffile) then
                 os.execute(format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile))
@@ -811,7 +902,7 @@ do -- not that beautiful but ok, we could save a md5 hash in the tui file !
                     for figure in data:gmatch("beginfig(.-)endfig") do
                         result[#result+1] = format("begingraphictextfig%sendgraphictextfig ;\n", figure)
                     end
-                    io.savedata(mpyfile,join(result,""))
+                    io.savedata(mpyfile,concat(result,""))
                 end
             end
             graphics = { }

@@ -185,7 +185,7 @@ function fonts.initializers.common.protrusion(tfmdata,value)
             if vector then
                 local factor = class.factor or 1
                 local data = characters.data
-                local emwidth = tfmdata.parameters[6]
+                local emwidth = tfmdata.parameters.quad
                 for i, chr in pairs(tfmdata.characters) do
                     local v, pl, pr = vector[i], nil, nil
                     if v then

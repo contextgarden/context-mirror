@@ -16,24 +16,15 @@
 %D incomplete but I needed a quick hack for a project where I wanted
 %D to use the new \MKIV\ \XML\ handler. It's also a nice testcase.
 
-% \xmlstrip  {\xmldocument} {mml:math|mml:imath|mml:dmath}
-
-% \startxmlsetups xml:mml:process
-%     \xmlutfize {\xmldocument}
-%     \xmlgrab   {\xmldocument} {mml:math|mml:imath|mml:dmath} {*}
-%     \xmlgrab   {\xmldocument} {mml:annotation}               {ignore}
-% \stopxmlsetups
-
-% \xmlregistersetup{xml:mml:process}
-
 \startxmlsetups xml:mml:process
-%   \xmlutfize {\xmldocument}
-    \xmlgrab   {\xmldocument} {mml:*} {*}
+    \xmlgrab {\xmldocument} {mml:*} {*}
 \stopxmlsetups
 
 \xmlregistersetup{xml:mml:process}
 
 \xmlregisterns{mml}{mathml}
+
+\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[@@MML#1]}
 
 \def\MMLhack{\let\MMLpar\par \let\par\relax \everyvbox{\let\par\MMLpar}}
 
@@ -51,10 +42,8 @@
 
 % -- we need a new entity mapper (also covering unicode)
 
-\usemodule[newmme] % temporary, we will have a new one, using lua tables
-
-%loadmarkfile{x-mme}
-\loadmarkfile{x-mmp}
-%loadmarkfile{x-mmc}
+\loadmarkfile{x-mmb} % common code
+\loadmarkfile{x-mmp} % presentation mathml
+\loadmarkfile{x-mmc} % content mathml
 
 \endinput

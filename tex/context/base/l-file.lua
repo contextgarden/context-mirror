@@ -152,3 +152,7 @@ end
 
 file.readdata = io.loaddata
 file.savedata = io.savedata
+
+function file.copy(oldname,newname)
+    file.savedata(newname,io.loaddata(oldname))
+end

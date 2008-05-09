@@ -40,9 +40,9 @@ function input.locate_format(name) -- move this to core / luat-xxx
     if fmtname ~= "" then
         barename = fmtname:gsub("%.%a+$","")
         local luaname, lucname = barename .. ".lua", barename .. ".luc"
-        if io.exists(lucname) then
+        if lfs.isfile(lucname) then
             return barename, luaname
-        elseif io.exists(luaname) then
+        elseif lfs.isfile(luaname) then
             return barename, luaname
         end
     end
@@ -196,12 +196,12 @@ do
         -- mtxrun should resolve kpse: and file:
 
         local usedname = ctxdata.ctxname
-        local found    = io.exists(usedname)
+        local found    = lfs.isfile(usedname)
 
         if not found then
             for _, path in pairs(ctxdata.locations) do
                 local fullname = file.join(path,ctxdata.ctxname)
-                if io.exists(fullname) then
+                if lfs.isfile(fullname) then
                     usedname, found = fullname, true
                     break
                 end
@@ -344,7 +344,7 @@ do
                                         end
                                     end
                                 end
-                                if io.exists(newfile) then
+                                if lfs.isfile(newfile) then
                                     file.syncmtimes(oldfile,newfile)
                                     ctxdata.prepfiles[oldfile] = true
                                 else
@@ -353,7 +353,7 @@ do
                                 end
                             else
                                 input.report("old file needs no preprocessing")
-                                ctxdata.prepfiles[oldfile] = io.exists(newfile)
+                                ctxdata.prepfiles[oldfile] = lfs.isfile(newfile)
                             end
                         end
                     end
@@ -611,6 +611,68 @@ function scripts.context.ctx()
     scripts.context.run(ctxdata)
 end
 
+function scripts.context.version()
+    local name = input.find_file(instance,"context.tex")
+    if name ~= "" then
+        input.report(string.format("main context file: %s",name))
+        local data = io.loaddata(name)
+        if data then
+            local version = data:match("\\edef\\contextversion{(.-)}")
+            if version then
+                input.report(string.format("current version  : %s",version))
+            else
+                input.report("context version: unknown, no timestamp found")
+            end
+        else
+            input.report("context version: unknown, load error")
+        end
+    else
+        input.report("main context file: unknown, 'context.tex' not found")
+    end
+end
+
+function scripts.context.touch()
+    if environment.argument("expert") then
+        local function touch(name,pattern)
+            local name = input.find_file(instance,name)
+            local olddata = io.loaddata(name)
+            if olddata then
+                local oldversion, newversion = "", os.date("%Y.%M.%d %H:%m")
+                local newdata, ok = olddata:gsub(pattern,function(pre,mid,post)
+                    oldversion = mid
+                    return pre .. newversion .. post
+                end)
+                if ok > 0 then
+                    local backup = file.replacesuffix(name,"tmp")
+                    os.remove(backup)
+                    os.rename(name,backup)
+                    io.savedata(name,newdata)
+                    return true, oldversion, newversion, name
+                else
+                    return false
+                end
+            end
+        end
+        local done, oldversion, newversion, foundname = touch("context.tex", "(\\edef\\contextversion{)(.-)(})")
+        if done then
+            input.report(string.format("old version : %s", oldversion))
+            input.report(string.format("new version : %s", newversion))
+            input.report(string.format("touched file: %s", foundname))
+            local ok, _, _, foundname = touch("cont-new.tex", "(\\newcontextversion{)(.-)(})")
+            if ok then
+                input.report(string.format("touched file: %s", foundname))
+            end
+        end
+    end
+end
+
+function scripts.context.timed(action)
+    input.starttiming(scripts.context)
+    action()
+    input.stoptiming(scripts.context)
+    input.report("total runtime: " .. input.elapsedtime(scripts.context))
+end
+
 banner = banner .. " | context tools "
 
 messages.help = [[
@@ -618,30 +680,41 @@ messages.help = [[
 --make                create context formats formats
 --generate            generate file database etc.
 --ctx=name            use ctx file
+--version             report installed context version
 --autopdf             open pdf file afterwards
+
+--expert              expert options
+]]
+
+messages.expert = [[
+expert options: also provide --expert
+
+--touch               update context version (remake needed afterwards)
 ]]
 
 input.verbose = true
-
-input.starttiming(scripts.context)
 
 if environment.argument("once") then
     scripts.context.multipass.nofruns = 1
 end
 
 if environment.argument("run") then
-    scripts.context.run()
+    scripts.context.timed(scripts.context.run)
 elseif environment.argument("make") then
-    scripts.context.make()
+    scripts.context.timed(scripts.context.make)
 elseif environment.argument("ctx") then
-    scripts.context.ctx()
+    scripts.context.timed(scripts.context.ctx)
+elseif environment.argument("version") then
+    scripts.context.version()
+elseif environment.argument("touch") then
+    scripts.context.touch()
 elseif environment.argument("help") then
     input.help(banner,messages.help)
+elseif environment.argument("expert") then
+    input.help(banner,messages.expert)
 elseif environment.files[1] then
-    scripts.context.run()
+    scripts.context.timed(scripts.context.run)
 else
     input.help(banner,messages.help)
 end
 
-input.stoptiming(scripts.context)
-input.report("total runtime: " .. input.elapsedtime(scripts.context))

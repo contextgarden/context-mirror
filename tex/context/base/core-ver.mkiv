@@ -181,7 +181,7 @@
 \def\doverbatimbeginofline#1% linenumber
   {\bgroup                  % due to pretty status
    \iflinepar\else\EveryPar{}\fi
-   \dontleavehmode % \leavevmode
+   \noindent % was wrong: \dontleavehmode
    \xdef\dokeepverbatimlinedata % hm, still needed?
      {\parindent \the\parindent
       \hangindent\the\hangindent

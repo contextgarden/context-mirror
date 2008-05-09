@@ -212,7 +212,7 @@ end
       p := \ctxlua{tex.sprint(document.progress.path("#1","#2"))} ;
       if bbwidth(p) > 1 :
         h := 100 ; w := 2 * h ;
-        w := \the\textwidth ;
+        w := \the\textwidth-3pt ; % correct for pen
         p := p xstretched w ;
         b := boundingbox (llcorner p -- llcorner p shifted (w,h)) ;
         pickup pencircle scaled 3pt ; linecap := butt ;

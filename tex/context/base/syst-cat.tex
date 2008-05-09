@@ -116,6 +116,7 @@
 \ifx\nilcatcodes \undefined \newcatcodetable \nilcatcodes  \fi
 \ifx\texcatcodes \undefined \newcatcodetable \texcatcodes  \fi
 \ifx\ctxcatcodes \undefined \newcatcodetable \ctxcatcodes  \fi
+\ifx\notcatcodes \undefined \newcatcodetable \notcatcodes  \fi
 \ifx\vrbcatcodes \undefined \newcatcodetable \vrbcatcodes  \fi
 \ifx\prtcatcodes \undefined \newcatcodetable \prtcatcodes  \fi
 \ifx\mthcatcodes \undefined \newcatcodetable \mthcatcodes  \fi % math, not used, too tricky
@@ -176,6 +177,30 @@
     \catcode`\%   = 14
     \catcode`\~   = 13
     \catcode`\|   = 13
+\stopcatcodetable
+
+\startcatcodetable \notcatcodes
+    \catcode`\^^I = 10 % ascii tab is a blank space
+    \catcode`\^^M =  5 % ascii return is end-line
+    \catcode`\^^L =  5 % ascii form-feed
+    \catcode`\    = 10 % ascii space is blank space
+    \catcode`\^^Z =  9 % ascii eof is ignored
+    \catcode`\~   = 12
+    \catcode`\#   = 12 % probably too much, in principle
+    \catcode`\$   = 12 % nilcatcodes would be ok too
+    \catcode`\%   = 12
+    \catcode`\^   = 12
+    \catcode`\&   = 12
+    \catcode`\_   = 12
+    \catcode`\<   = 12
+    \catcode`\>   = 12
+    \catcode`\{   = 12
+    \catcode`\}   = 12
+    \catcode`\"   = 12
+    \catcode`\'   = 12
+    \catcode`\/   = 12
+    \catcode`\\   = 12
+    \catcode`\|   = 12
 \stopcatcodetable
 
 \startcatcodetable \mthcatcodes

@@ -19,7 +19,7 @@ away.</p>
 
 fonts                      = fonts     or { }
 fonts.afm                  = fonts.afm or { }
-fonts.afm.version          = 1.24 -- incrementing this number one up will force a re-cache
+fonts.afm.version          = 1.25 -- incrementing this number one up will force a re-cache
 fonts.afm.syncspace        = true -- when true, nicer stretch values
 fonts.afm.enhance_data     = true -- best leave this set to true
 fonts.afm.trace_features   = false
@@ -432,13 +432,13 @@ function fonts.afm.copy_to_tfm(data)
             spaceunits, tfm.spacer = data.charwidth, "charwidth variable"
         end
         spaceunits = tonumber(spaceunits)
-        parameters[1] = 0          -- slant
-        parameters[2] = spaceunits -- space
-        parameters[3] = 500        -- space_stretch
-        parameters[4] = 333        -- space_shrink
-        parameters[5] = 400        -- x_height
-        parameters[6] = 1000       -- quad
-        parameters[7] = 0          -- extra_space (todo)
+        parameters.slant         = 0
+        parameters.space         = spaceunits
+        parameters.space_stretch = 500
+        parameters.space_shrink  = 333
+        parameters.x_height      = 400
+        parameters.quad          = 1000
+        parameters.extra_space   = 0
         if spaceunits < 200 then
             -- todo: warning
         end
@@ -446,19 +446,19 @@ function fonts.afm.copy_to_tfm(data)
         tfm.ascender    = math.abs(data.ascender  or 0)
         tfm.descender   = math.abs(data.descender or 0)
         if data.italicangle then
-            parameters[1] = parameters[1] - math.round(math.tan(data.italicangle*math.pi/180))
+            parameters.slant = parameters.slant - math.round(math.tan(data.italicangle*math.pi/180))
         end
         if data.isfixedpitch then
-          parameters[3] = 0
-          parameters[4] = 0
+            parameters.space_stretch = 0
+            parameters.space_shrink  = 0
         elseif fonts.afm.syncspace then
-            parameters[3] = spaceunits/2  -- space_stretch
-            parameters[4] = spaceunits/3  -- space_shrink
+            parameters.space_stretch = spaceunits/2
+            parameters.space_shrink  = spaceunits/3
         end
         if data.xheight and data.xheight > 0 then
-            parameters[5] = data.xheight
+            parameters.x_height = data.xheight
         elseif afmcharacters['x'] and afmcharacters['x'].height then
-            parameters[5] = afmcharacters['x'].height or 0
+            parameters.x_height = afmcharacters['x'].height or 0
         end
         local fd = data.fontdimens
         if fd and fd[8] and fd[9] and fd[10] then -- math

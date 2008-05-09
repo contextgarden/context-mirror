@@ -279,6 +279,7 @@ characters.data={
   ["description"]="LEFT PARENTHESIS",
   ["linebreak"]="op",
   ["mathclass"]="open",
+  ["mathname"]="lparent",
   ["unicodeslot"]=0x0028, -- (
  },
  {
@@ -288,6 +289,7 @@ characters.data={
   ["description"]="RIGHT PARENTHESIS",
   ["linebreak"]="cl",
   ["mathclass"]="close",
+  ["mathname"]="rparent",
   ["unicodeslot"]=0x0029, -- )
  },
  {
@@ -1084,7 +1086,7 @@ characters.data={
   ["description"]="LEFT CURLY BRACKET",
   ["linebreak"]="op",
   ["mathclass"]="open",
-  ["mathname"]=false,
+  ["mathname"]="lbrace",
   ["unicodeslot"]=0x007B, -- {
  },
  {
@@ -1106,7 +1108,7 @@ characters.data={
   ["description"]="RIGHT CURLY BRACKET",
   ["linebreak"]="cl",
   ["mathclass"]="close",
-  ["mathname"]=false,
+  ["mathname"]="rbrace",
   ["unicodeslot"]=0x007D, -- }
  },
  {
@@ -42808,7 +42810,7 @@ characters.data={
   ["category"]="po",
   ["cjkwd"]="a",
   ["contextname"]="textbullet",
-  ["mathclass"]="binary", -- ok?
+  ["mathclass"]="binary", -- ok? AM: yes
   ["mathname"] = "bullet",
   ["description"]="BULLET",
   ["linebreak"]="al",
@@ -43990,6 +43992,8 @@ characters.data={
   ["category"]="lu",
   ["description"]="BLACK-LETTER CAPITAL I",
   ["linebreak"]="al",
+  ["mathclass"]="variable",
+  ["mathname"]="Im",
   ["specials"]={ "font", 0x0049 },
   ["unicodeslot"]=0x2111, -- ℑ
  },
@@ -44045,6 +44049,8 @@ characters.data={
   ["category"]="so",
   ["description"]="SCRIPT CAPITAL P",
   ["linebreak"]="al",
+  ["mathclass"]="variable",
+  ["mathname"]="wp",
   ["unicodeslot"]=0x2118, -- ℘
  },
  [0x2119]={
@@ -44073,6 +44079,8 @@ characters.data={
   ["category"]="lu",
   ["description"]="BLACK-LETTER CAPITAL R",
   ["linebreak"]="al",
+  ["mathclass"]="variable",
+  ["mathname"]="Re",
   ["specials"]={ "font", 0x0052 },
   ["unicodeslot"]=0x211C, -- ℜ
  },
@@ -44898,6 +44906,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="UPWARDS ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="uparraow",
   ["unicodeslot"]=0x2191, -- ↑
  },
  [0x2192]={
@@ -44916,6 +44926,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="DOWNWARDS ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="downarrow",
   ["unicodeslot"]=0x2193, -- ↓
  },
  [0x2194]={
@@ -44934,6 +44946,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="UP DOWN ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="updownarrow",
   ["unicodeslot"]=0x2195, -- ↕
  },
  [0x2196]={
@@ -44941,6 +44955,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="NORTH WEST ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="nwarrow",
   ["unicodeslot"]=0x2196, -- ↖
  },
  [0x2197]={
@@ -44948,6 +44964,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="NORTH EAST ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="nearrow",
   ["unicodeslot"]=0x2197, -- ↗
  },
  [0x2198]={
@@ -44955,6 +44973,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="SOUTH EAST ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="searrow",
   ["unicodeslot"]=0x2198, -- ↘
  },
  [0x2199]={
@@ -44962,6 +44982,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="SOUTH WEST ARROW",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="swarrow",
   ["unicodeslot"]=0x2199, -- ↙
  },
  [0x219A]={
@@ -45605,6 +45627,8 @@ characters.data={
   ["category"]="sm",
   ["cjkwd"]="a",
   ["description"]="FOR ALL",
+  ["mathclass"]="ord",
+  ["mathname"]="forall",
   ["linebreak"]="ai",
   ["unicodeslot"]=0x2200, -- ∀
  },
@@ -45620,6 +45644,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="PARTIAL DIFFERENTIAL",
   ["linebreak"]="ai",
+  ["mathclass"]="variable",
+  ["mathname"]="partial",
   ["unicodeslot"]=0x2202, -- ∂
  },
  [0x2203]={
@@ -45628,6 +45654,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="THERE EXISTS",
   ["linebreak"]="ai",
+  ["mathclass"]="ord",
+  ["mathname"]="exists",
   ["unicodeslot"]=0x2203, -- ∃
  },
  [0x2204]={
@@ -45642,6 +45670,8 @@ characters.data={
   ["category"]="sm",
   ["description"]="EMPTY SET",
   ["linebreak"]="al",
+  ["mathclass"]="variable",
+  ["mathname"]="emptyset",
   ["unicodeslot"]=0x2205, -- ∅
  },
  [0x2206]={
@@ -45656,6 +45686,8 @@ characters.data={
   ["category"]="sm",
   ["cjkwd"]="a",
   ["description"]="NABLA",
+  ["mathclass"]="variable",
+  ["mathname"]="nabla",
   ["linebreak"]="ai",
   ["unicodeslot"]=0x2207, -- ∇
  },
@@ -45665,6 +45697,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="ELEMENT OF",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]=false, -- "in"
   ["unicodeslot"]=0x2208, -- ∈
  },
  [0x2209]={
@@ -45673,6 +45707,8 @@ characters.data={
   ["description"]="NOT AN ELEMENT OF",
   ["linebreak"]="al",
   ["specials"]={ "char", 0x2208, 0x0338 },
+  ["mathclass"]="relation",
+  ["mathname"]="ni",
   ["unicodeslot"]=0x2209, -- ∉
  },
  [0x220A]={
@@ -45722,6 +45758,8 @@ characters.data={
   ["category"]="sm",
   ["description"]="N-ARY COPRODUCT",
   ["linebreak"]="al",
+  ["mathclass"]="relation",
+  ["mathname"]="coprod",
   ["unicodeslot"]=0x2210, -- ∐
  },
  [0x2211]={
@@ -45746,6 +45784,8 @@ characters.data={
   ["category"]="sm",
   ["description"]="MINUS-OR-PLUS SIGN",
   ["linebreak"]="pr",
+  ["mathclass"]="binary",
+  ["mathname"]="mp",
   ["unicodeslot"]=0x2213, -- ∓
  },
  [0x2214]={
@@ -45765,6 +45805,8 @@ characters.data={
   ["category"]="sm",
   ["description"]="SET MINUS",
   ["linebreak"]="al",
+  ["mathclass"]="binary",
+  ["mathname"]="setminus",
   ["unicodeslot"]=0x2216, -- ∖
  },
  [0x2217]={
@@ -45772,18 +45814,24 @@ characters.data={
   ["category"]="sm",
   ["description"]="ASTERISK OPERATOR",
   ["linebreak"]="al",
+  ["mathclass"]="binary",
+  ["mathname"]="ast",
   ["unicodeslot"]=0x2217, -- ∗
  },
  [0x2218]={
   ["category"]="sm",
   ["description"]="RING OPERATOR",
   ["linebreak"]="al",
+  ["mathclass"]="binary",
+  ["mathname"]="circ",
   ["unicodeslot"]=0x2218, -- ∘
  },
  [0x2219]={
   ["category"]="sm",
   ["description"]="BULLET OPERATOR",
   ["linebreak"]="al",
+  ["mathclass"]="binary",
+  ["mathname"]="bullet",
   ["unicodeslot"]=0x2219, -- ∙
  },
  [0x221A]={
@@ -45811,6 +45859,8 @@ characters.data={
   ["category"]="sm",
   ["cjkwd"]="a",
   ["description"]="PROPORTIONAL TO",
+  ["mathclass"]="relation",
+  ["mathname"]="propto",
   ["linebreak"]="ai",
   ["unicodeslot"]=0x221D, -- ∝
  },
@@ -45820,6 +45870,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="INFINITY",
   ["linebreak"]="ai",
+  ["mathclass"]="variable",
+  ["mathname"]="infty",
   ["unicodeslot"]=0x221E, -- ∞
  },
  [0x221F]={
@@ -45869,6 +45921,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="PARALLEL TO",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="parallel",
   ["unicodeslot"]=0x2225, -- ∥
  },
  [0x2226]={
@@ -45884,6 +45938,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="LOGICAL AND",
   ["linebreak"]="ai",
+  ["mathclass"]="limop",
+  ["mathname"]="wedge",
   ["unicodeslot"]=0x2227, -- ∧
  },
  [0x2228]={
@@ -45892,6 +45948,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="LOGICAL OR",
   ["linebreak"]="ai",
+  ["mathclass"]="limop",
+  ["mathname"]="vee",
   ["unicodeslot"]=0x2228, -- ∨
  },
  [0x2229]={
@@ -45900,6 +45958,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="INTERSECTION",
   ["linebreak"]="ai",
+  ["mathclass"]="limop",
+  ["mathname"]="cap",
   ["unicodeslot"]=0x2229, -- ∩
  },
  [0x222A]={
@@ -45908,6 +45968,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="UNION",
   ["linebreak"]="ai",
+  ["mathclass"]="limop",
+  ["mathname"]="cup",
   ["unicodeslot"]=0x222A, -- ∪
  },
  [0x222B]={
@@ -45994,6 +46056,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="RATIO",
   ["linebreak"]="ai",
+  ["mathclass"]="punctuation", -- AM: Not sure
+  ["mathname"]="colon",
   ["unicodeslot"]=0x2236, -- ∶
  },
  [0x2237]={
@@ -46033,6 +46097,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="TILDE OPERATOR",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="sim",
   ["unicodeslot"]=0x223C, -- ∼
  },
  [0x223D]={
@@ -46077,6 +46143,8 @@ characters.data={
   ["category"]="sm",
   ["description"]="ASYMPTOTICALLY EQUAL TO",
   ["linebreak"]="al",
+  ["mathclass"]="relation",
+  ["mathname"]="simeq",
   ["unicodeslot"]=0x2243, -- ≃
  },
  [0x2244]={
@@ -46112,6 +46180,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="ALMOST EQUAL TO",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="approx",
   ["unicodeslot"]=0x2248, -- ≈
  },
  [0x2249]={
@@ -46138,6 +46208,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="ALL EQUAL TO",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="equiv",
   ["unicodeslot"]=0x224C, -- ≌
  },
  [0x224D]={
@@ -46270,6 +46342,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="IDENTICAL TO",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="equiv",
   ["unicodeslot"]=0x2261, -- ≡
  },
  [0x2262]={
@@ -46291,6 +46365,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="LESS-THAN OR EQUAL TO",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="leq",
   ["unicodeslot"]=0x2264, -- ≤
  },
  [0x2265]={
@@ -46299,6 +46375,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="GREATER-THAN OR EQUAL TO",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="geq",
   ["unicodeslot"]=0x2265, -- ≥
  },
  [0x2266]={
@@ -46332,6 +46410,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="MUCH LESS-THAN",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="ll",
   ["unicodeslot"]=0x226A, -- ≪
  },
  [0x226B]={
@@ -46339,6 +46419,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="MUCH GREATER-THAN",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="gg",
   ["unicodeslot"]=0x226B, -- ≫
  },
  [0x226C]={
@@ -46439,13 +46521,21 @@ characters.data={
  [0x227A]={
   ["category"]="sm",
   ["description"]="PRECEDES",
+  ["mathclass"]="relation",
+  ["mathname"]="prec",
   ["linebreak"]="al",
+  ["mathclass"]="relation",
+  ["mathname"]="prec",
   ["unicodeslot"]=0x227A, -- ≺
  },
  [0x227B]={
   ["category"]="sm",
   ["description"]="SUCCEEDS",
+  ["mathclass"]="relation",
+  ["mathname"]="succ",
   ["linebreak"]="al",
+  ["mathclass"]="relation",
+  ["mathname"]="succ",
   ["unicodeslot"]=0x227B, -- ≻
  },
  [0x227C]={
@@ -46492,6 +46582,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="SUBSET OF",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="subset",
   ["unicodeslot"]=0x2282, -- ⊂
  },
  [0x2283]={
@@ -46500,6 +46592,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="SUPERSET OF",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="supset",
   ["unicodeslot"]=0x2283, -- ⊃
  },
  [0x2284]={
@@ -46523,6 +46617,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="SUBSET OF OR EQUAL TO",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="subseteq",
   ["unicodeslot"]=0x2286, -- ⊆
  },
  [0x2287]={
@@ -46531,6 +46627,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="SUPERSET OF OR EQUAL TO",
   ["linebreak"]="ai",
+  ["mathclass"]="relation",
+  ["mathname"]="supseteq",
   ["unicodeslot"]=0x2287, -- ⊇
  },
  [0x2288]={
@@ -46605,12 +46703,16 @@ characters.data={
   ["category"]="sm",
   ["description"]="SQUARE CAP",
   ["linebreak"]="al",
+  ["mathclass"]="relation",
+  ["mathname"]="sqcap",
   ["unicodeslot"]=0x2293, -- ⊓
  },
  [0x2294]={
   ["category"]="sm",
   ["description"]="SQUARE CUP",
   ["linebreak"]="al",
+  ["mathclass"]="relation",
+  ["mathname"]="sqcup",
   ["unicodeslot"]=0x2294, -- ⊔
  },
  [0x2295]={
@@ -46619,12 +46721,16 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="CIRCLED PLUS",
   ["linebreak"]="ai",
+  ["mathclass"]="binary",
+  ["mathname"]="oplus",
   ["unicodeslot"]=0x2295, -- ⊕
  },
  [0x2296]={
   ["category"]="sm",
   ["description"]="CIRCLED MINUS",
   ["linebreak"]="al",
+  ["mathclass"]="binary",
+  ["mathname"]="ominus",
   ["unicodeslot"]=0x2296, -- ⊖
  },
  [0x2297]={
@@ -46632,12 +46738,16 @@ characters.data={
   ["category"]="sm",
   ["description"]="CIRCLED TIMES",
   ["linebreak"]="al",
+  ["mathclass"]="binary",
+  ["mathname"]="otimes",
   ["unicodeslot"]=0x2297, -- ⊗
  },
  [0x2298]={
   ["category"]="sm",
   ["description"]="CIRCLED DIVISION SLASH",
   ["linebreak"]="al",
+  ["mathclass"]="binary",
+  ["mathname"]="oslash",
   ["unicodeslot"]=0x2298, -- ⊘
  },
  [0x2299]={
@@ -46645,6 +46755,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="CIRCLED DOT OPERATOR",
   ["linebreak"]="ai",
+  ["mathclass"]="binary",
+  ["mathname"]="odot",
   ["unicodeslot"]=0x2299, -- ⊙
  },
  [0x229A]={
@@ -46711,6 +46823,8 @@ characters.data={
   ["category"]="sm",
   ["description"]="DOWN TACK",
   ["linebreak"]="al",
+  ["mathclass"]="variable",
+  ["mathname"]="bot",
   ["unicodeslot"]=0x22A4, -- ⊤
  },
  [0x22A5]={
@@ -46719,6 +46833,8 @@ characters.data={
   ["cjkwd"]="a",
   ["description"]="UP TACK",
   ["linebreak"]="ai",
+  ["mathclass"]="variable",
+  ["mathname"]="top",
   ["unicodeslot"]=0x22A5, -- ⊥
  },
  [0x22A6]={
@@ -46886,30 +47002,40 @@ characters.data={
   ["category"]="sm",
   ["description"]="N-ARY LOGICAL AND",
   ["linebreak"]="al",
+  ["mathclass"]="limop",
+  ["mathname"]="bigwedge",
   ["unicodeslot"]=0x22C0, -- ⋀
  },
  [0x22C1]={
   ["category"]="sm",
   ["description"]="N-ARY LOGICAL OR",
   ["linebreak"]="al",
+  ["mathclass"]="limop",
+  ["mathname"]="bigvee",
   ["unicodeslot"]=0x22C1, -- ⋁
  },
  [0x22C2]={
   ["category"]="sm",
   ["description"]="N-ARY INTERSECTION",
   ["linebreak"]="al",
+  ["mathclass"]="limop",
+  ["mathname"]="bigcap",
   ["unicodeslot"]=0x22C2, -- ⋂
  },
  [0x22C3]={
   ["category"]="sm",
   ["description"]="N-ARY UNION",
   ["linebreak"]="al",
+  ["mathclass"]="limop",
+  ["mathname"]="bigcup",
   ["unicodeslot"]=0x22C3, -- ⋃
  },
  [0x22C4]={
   ["category"]="sm",
   ["description"]="DIAMOND OPERATOR",
   ["linebreak"]="al",
+  ["mathclass"]="binary",
+  ["mathname"]="diamond",
   ["unicodeslot"]=0x22C4, -- ⋄
  },
  [0x22C5]={
@@ -58667,12 +58793,16 @@ characters.data={
  [0x2AAF]={
   ["category"]="sm",
   ["description"]="PRECEDES ABOVE SINGLE-LINE EQUALS SIGN",
+  ["mathclass"]="relation",
+  ["mathname"]="preceq",
   ["linebreak"]="al",
   ["unicodeslot"]=0x2AAF, -- ⪯
  },
  [0x2AB0]={
   ["category"]="sm",
   ["description"]="SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN",
+  ["mathclass"]="relation",
+  ["mathname"]="succeq",
   ["linebreak"]="al",
   ["unicodeslot"]=0x2AB0, -- ⪰
  },

@@ -119,9 +119,10 @@
        {11}%
      \ifx\scaleboxstampa\empty
        \ifx\scaleboxstampb\scaleboxstampc
-        % no scaling, but still check; new
-        \doifsomething{\scaleparameter\c!maxwidth }{\letvalue{\currentscaletag\c!factor}\v!fit}%
-        \doifsomething{\scaleparameter\c!maxheight}{\letvalue{\currentscaletag\c!factor}\v!fit}%
+        % no scaling, but still check; new, gone again
+% wrong: scaled proportionally as side effect
+%         \doifsomething{\scaleparameter\c!maxwidth }{\letvalue{\currentscaletag\c!factor}\v!fit}%
+%         \doifsomething{\scaleparameter\c!maxheight}{\letvalue{\currentscaletag\c!factor}\v!fit}%
         \insidefloattrue % trick
         \dodoscaleboxcalculations
        \else

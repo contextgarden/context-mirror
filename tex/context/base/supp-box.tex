@@ -829,6 +829,9 @@
 \def\restoreshapebox % compensates for the signal
   {\global\setbox\tmpshapebox\vbox{\vskip-\lineheight\unvcopy\oldshapebox}}
 
+\def\shapeboxstrut % put this in front if needed !
+  {\vrule\!!width\zeropoint\!!height\ht\shapebox\!!depth\dp\shapebox}
+
 \def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\ifzeropt\lastskip % \ifdim\lastskip=\zeropoint\relax
      \ifzeropt\lastkern % \ifdim\lastkern=\zeropoint\relax

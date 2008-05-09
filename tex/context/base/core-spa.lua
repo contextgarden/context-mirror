@@ -492,7 +492,7 @@ node.slide(head) -- hm, why
 
     function nodes.handle_vbox_spacing(t)
         if t and t.next then
-node.slide(t)
+            node.slide(t)
             return collapser(t,'whole')
         else
             return t

@@ -11,10 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% -- ignored: malignmark
-% -- luacode will be moved to x-mmp.lua
-% -- { } # % _ ^ & etc escapen, {} in mathtype entities; mo/mtext
-
 \startluacode
     do
 
@@ -29,27 +25,103 @@
         --  [" "] = utf.char(0x2002),  -- "&textspace;" -> tricky, no &; in mkiv
             ["."] = "{.}",
             [","] = "{,}",
+            [" "] = "",
         }
         local o_replacements = {
-            ["{"] = "\\{",
-            ["}"] = "\\}",
+            ["{"] = "\\mmlleftdelimiter\\lbrace",
+            ["}"] = "\\mmlrightdelimiter\\rbrace",
+            ["("] = "\\mmlleftdelimiter(",
+            [")"] = "\\mmlrightdelimiter)",
+            ["["] = "\\mmlleftdelimiter[",
+            ["]"] = "\\mmlrightdelimiter]",
+            ["<"] = "\\mmlleftdelimiter<",
+            [">"] = "\\mmlrightdelimiter>",
+            ["#"] = "\\mmlchar{35}",
+            ["$"] = "\\mmlchar{36}",
+            ["%"] = "\\mmlchar{37}",
+            ["&"] = "\\mmlchar{38}",
+            ["^"] = "\\mmlchar{94}{}", -- strange, sometimes luatex math see the char instead of \char
+            ["_"] = "\\mmlchar{95}{}", -- so we need the {}
+            ["~"] = "\\mmlchar{126}",
+            [" "] = "",
+        }
+        local i_replacements = {
+            ["sin"]         = "\\mmlnolim{sin}",
+            ["cos"]         = "\\mmlnolim{cos}",
+            ["abs"]         = "\\mmlnolim{abs}",
+            ["arg"]         = "\\mmlnolim{arg}",
+            ["codomain"]    = "\\mmlnolim{codomain}",
+            ["curl"]        = "\\mmlnolim{curl}",
+            ["determinant"] = "\\mmlnolim{det}",
+            ["divergence"]  = "\\mmlnolim{div}",
+            ["domain"]      = "\\mmlnolim{domain}",
+            ["false"]       = "\\mmlnolim{false}",
+            ["gcd"]         = "\\mmlnolim{gcd}",
+            ["grad"]        = "\\mmlnolim{grad}",
+            ["identity"]    = "\\mmlnolim{id}",
+            ["image"]       = "\\mmlnolim{image}",
+            ["lcm"]         = "\\mmlnolim{lcm}",
+            ["max"]         = "\\mmlnolim{max}",
+            ["median"]      = "\\mmlnolim{median}",
+            ["min"]         = "\\mmlnolim{min}",
+            ["mode"]        = "\\mmlnolim{mode}",
+            ["mod"]         = "\\mmlnolim{mod}",
+            ["notanumber"]  = "\\mmlnolim{NaN}",
+            ["otherwise"]   = "\\mmlnolim{otherwise}",
+            ["true"]        = "\\mmlnolim{true}",
+            ["declare"]     = "\\mmlnolim{declare}",
+            ["as"]          = "\\mmlnolim{as}",
+            ["polar"]       = "\\mmlnolim{Polar}",
+            ["exp"]         = "\\mmlnolim{exp}",
+            ["ln"]          = "\\mmlnolim{ln}",
+            ["log"]         = "\\mmlnolim{log}",
+            ["sin"]         = "\\mmlnolim{sin}",
+            ["arcsin"]      = "\\mmlnolim{arcsin}",
+            ["sinh"]        = "\\mmlnolim{sinh}",
+            ["arcsinh"]     = "\\mmlnolim{arcsinh}",
+            ["cos"]         = "\\mmlnolim{cos}",
+            ["arccos"]      = "\\mmlnolim{arccos}",
+            ["cosh"]        = "\\mmlnolim{cosh}",
+            ["arccosh"]     = "\\mmlnolim{arccosh}",
+            ["tan"]         = "\\mmlnolim{tan}",
+            ["arctan"]      = "\\mmlnolim{arctan}",
+            ["tanh"]        = "\\mmlnolim{tanh}",
+            ["arctanh"]     = "\\mmlnolim{arctanh}",
+            ["cot"]         = "\\mmlnolim{cot}",
+            ["arccot"]      = "\\mmlnolim{arccot}",
+            ["coth"]        = "\\mmlnolim{coth}",
+            ["arccoth"]     = "\\mmlnolim{arccoth}",
+            ["csc"]         = "\\mmlnolim{csc}",
+            ["arccsc"]      = "\\mmlnolim{arccsc}",
+            ["csch"]        = "\\mmlnolim{csch}",
+            ["arccsch"]     = "\\mmlnolim{arccsch}",
+            ["sec"]         = "\\mmlnolim{sec}",
+            ["arcsec"]      = "\\mmlnolim{arcsec}",
+            ["sech"]        = "\\mmlnolim{sech}",
+            ["arcsech"]     = "\\mmlnolim{arcsech}",
+            [" "]           = "",
         }
 
         function lxml.mml.prepare_number(id,pattern)
             local str = xml.content(lxml.id(id),pattern) or ""
-            str = str:gsub("^%s*(.-)%s*$","%1")
-            str = str:gsub(".",n_replacements)
-            texsprint(str)
+            texsprint(tex.ctxcatcodes,(str:gsub(".",n_replacements)))
         end
-
         function lxml.mml.prepare_operator(id,pattern)
             local str = xml.content(lxml.id(id),pattern) or ""
-            str = str:gsub("^%s*(.-)%s*$","%1")
-            str = str:gsub(".",o_replacements)
-            texsprint(str)
+            tex.sprint(tex.ctxcatcodes,(str:gsub(".",o_replacements)))
+        end
+        function lxml.mml.prepare_identifier(id,pattern)
+            local str = xml.content(lxml.id(id),pattern) or ""
+            str = str:gsub("^%s*(.*)%s*$","%1")
+            local rep = i_replacements[str]
+            if rep then
+                tex.sprint(tex.ctxcatcodes,rep)
+            else
+                tex.sprint(tex.ctxcatcodes,(str:gsub(".",i_replacements)))
+            end
         end
 
-        function lxml.mml.connect(id,pattern,separators)
+        function lxml.mml.connect(id,pattern,separators) -- multiple separators
             local n = xml.count(id,pattern)
             if n == 0 then
                 -- skip
@@ -125,21 +197,6 @@
 
 \unprotect
 
-% \xmlstrip  {\xmldocument} {mml:mrow|mml:mi|mml:mn|mml:mo|mml:mroot|mml:msqrt|mml:mfenced|mml:mfrac|mml:enclose}
-
-% \startxmlsetups xml:mmp:process
-%     \xmlgrab {\xmldocument} {mml:mrow|mml:mroot|mml:msqrt|mml:mi|mml:mo|mml:mn|mml:mfenced|mml:mfrac|mml:mspace|mml:enclose} {*}
-%     \xmlgrab {\xmldocument} {mml:mover|mml:munder|mml:munderover|mml:msub|mml:msup|mml:msubsup|mml:mmultiscripts} {*}
-%     \xmlgrab {\xmldocument} {mml:mstyle|mml:mtext|mml:merror|mml:mphantom|mml:mpadded|mml:ms|mp:mglyph} {*}
-%     \xmlgrab {\xmldocument} {mml:mlabeledtr|mml:mtr|mml:mtd|mml:mtable} {*}
-% \stopxmlsetups
-
-% \startxmlsetups xml:mmp:process
-%     \xmlgrab {\xmldocument} {mml:*} {*}
-% \stopxmlsetups
-
-% \xmlregistersetup{xml:mmp:process}
-
 % helpers
 
 % \let\myspecialnormalvert\myspecialstretchvert
@@ -197,35 +254,44 @@
     \xmlflush{#1}
 \stopsetups
 
+% \startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
+%     \edef\MMPidentifier{\xmlstripped{#1}{*}}
+%     \doifXMLentityelse{\detokenize\expandafter{\MMPidentifier}} {
+%         \getXMLentity\MMPidentifier
+%     } {
+%         \MMPidentifier
+%     }
+% \stopxmlsetups
+
 \startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
-    \edef\MMPidentifier{\xmlstripped{#1}{*}}
-    \doifXMLentityelse{\detokenize\expandafter{\MMPidentifier}} {
-        \getXMLentity\MMPidentifier
-    } {
-        \MMPidentifier
-    }
+    \ctxlua{lxml.mml.prepare_identifier("#1","*")}
 \stopxmlsetups
 
 \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
     \begingroup
-        \mr  \ctxlua{lxml.mml.prepare_number("#1","*")}
+        \mr  \ctxlua{lxml.mml.prepare_number("#1","*")}%
     \endgroup
 \stopxmlsetups
 
 % hbox will make . and , behave ok, see rep patterns above as alternative
 %
 % \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
-%     % problem, we need an hbox because of . ,
 %     \mathop{\hbox{\mr \ctxlua{lxml.mml.prepare_number("#1","*")}}}% we need . and , properly spaced
 % \stopxmlsetups
 
+% \startxmlsetups mml:mo
+%     \edef\MMPoperator{\ctxlua{lxml.mml.prepare_operator("#1","*")}}
+%     \doifXMLentityelse{\detokenize\expandafter{\MMPoperator}} {
+%         \getXMLentity\MMPoperator
+%     } {
+%         \MMPoperator
+%     }
+% \stopxmlsetups
+
+% also ok:
+
 \startxmlsetups mml:mo
-    \edef\MMPoperator{\ctxlua{lxml.mml.prepare_operator("#1","*")}}
-    \doifXMLentityelse{\detokenize\expandafter{\MMPoperator}} {
-        \getXMLentity\MMPoperator
-    } {
-        \MMPoperator
-    }
+    \ctxlua{lxml.mml.prepare_operator("#1","*")}
 \stopxmlsetups
 
 \startxmlsetups mml:mrow
@@ -351,30 +417,6 @@
 \startsetups mml:msubsup
     {\xmlindex{#1}{/*}{1}}_{\xmlindex{#1}{/*}{2}}^{\xmlindex{#1}{/*}{3}}
 \stopsetups
-
-% \startsetups mml:mover
-%     \mathop {
-%         \doifelse{\xmlatt{#1}{accent}}{true} {
-%             \begingroup
-%             \xmldoif{#1}{/*[position()==2 and @stretchy=='true']} {
-%                 \let\normalorfiller\secondoftwoarguments
-%             }
-%             \xmlindex{#1}{/*}{2}{\xmlindex{#1}{/*}{1}}
-%             \endgroup
-%         } {
-%             \vbox {
-%                 \m@th\ialign {
-%                     \hss##\hss\crcr
-%                     \noalign{\kern3\p@}%
-%                     \disabledelimiter\doMMLfiller{\xmlindex{#1}{/*}{2}}\crcr
-%                     \noalign{\kern3\p@\nointerlineskip}%
-%                     \disabledelimiter\doMMLfiller{\xmlindex{#1}{/*}{1}}\crcr
-%                 }
-%             }
-%         }
-%     }
-%     \limits
-% \stopsetups
 
 \startsetups mml:mover
     \mathop {

@@ -17,56 +17,62 @@
 
 \unprotect
 
-\def\xmlload            #1#2{\ctxlua{lxml.load("#1","#2")}}
-\def\xmlloadbuffer      #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
-\def\xmlutfize            #1{\ctxlua{lxml.utfize("#1")}}
-\def\xmlfirst           #1#2{\ctxlua{lxml.first("#1","#2")}}
-\def\xmllast            #1#2{\ctxlua{lxml.last("#1","#2")}}
-\def\xmlall             #1#2{\ctxlua{lxml.all("#1","#2")}}
-\def\xmlfilter          #1#2{\ctxlua{lxml.filter("#1","#2")}}
-\def\xmlcommand       #1#2#3{\ctxlua{lxml.command("#1","#2","#3")}}
-\def\xmlnonspace        #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
-\def\xmltext            #1#2{\ctxlua{lxml.text("#1","#2")}}
-\def\xmlcontent         #1#2{\ctxlua{lxml.content("#1","#2")}}
-\def\xmlraw             #1#2{\ctxlua{lxml.raw("#1","#2")}}
-\def\xmlstripped        #1#2{\ctxlua{lxml.stripped("#1","#2")}}
-\def\xmlstrip           #1#2{\ctxlua{lxml.strip("#1","#2")}}
-\def\xmlflush             #1{\ctxlua{lxml.flush("#1")}}
-\def\xmlindex         #1#2#3{\ctxlua{lxml.index("#1","#2",\number#3)}}
-\def\xmlidx           #1#2#3{\ctxlua{lxml.idx("#1","#2",\number#3)}}
-\def\xmlcount           #1#2{\ctxlua{lxml.count("#1","#2")}}
-\def\xmlname              #1{\ctxlua{lxml.name("#1")}}
-\def\xmlnamespace         #1{\ctxlua{lxml.namespace("#1")}}
-\def\xmltag               #1{\ctxlua{lxml.tag("#1")}}
-\def\xmlattribute     #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
-\def\xmlattributedef#1#2#3#4{\ctxlua{lxml.attribute("#1","#2","#3","#4")}}
-\def\xmlatt             #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
-\def\xmlattdef        #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
-\def\xmlconcat        #1#2#3{\ctxlua{lxml.concat("#1","#2",[[\detokenize{#3}]])}}
-\def\xmlsetsetup      #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
-\def\xmlsetfunction   #1#2#3{\ctxlua{lxml.setaction("#1","#2",#3)}}
-\def\xmlloaddirectives    #1{\ctxlua{lxml.directives.load("#1")}}
-\def\xmldirectives        #1{\ctxlua{lxml.directives.setups("#1")}}
-\def\xmlregisterns      #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
-\def\xmlchecknamespace#1#2#3{\ctxlua{xml.check_namespace(lxml.id("#1"),"#2","#3")}} % element
-\def\xmlremapname   #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
-\def\xmlremapnamespace#1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
-\def\xmldelete          #1#2{\ctxlua{xml.delete(lxml.id("#1"),"#2")}}
-\def\xmlinclude       #1#2#3{\ctxlua{lxml.include("#1","#2","#3",true)}}
-\def\xmlverbatim          #1{\ctxlua{lxml.verbatim("#1")}}
+\def\xmlall              #1#2{\ctxlua{lxml.all("#1","#2")}}
+\def\xmlatt              #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
+\def\xmlattdef         #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
+\def\xmlattribute      #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
+\def\xmlattributedef #1#2#3#4{\ctxlua{lxml.attribute("#1","#2","#3","#4")}}
+\def\xmlchecknamespace #1#2#3{\ctxlua{xml.check_namespace(lxml.id("#1"),"#2","#3")}} % element
+\def\xmlcommand        #1#2#3{\ctxlua{lxml.command("#1","#2","#3")}}
+\def\xmlconcat         #1#2#3{\ctxlua{lxml.concat("#1","#2",[[\detokenize{#3}]])}}
+\def\xmlconcatrange#1#2#3#4#5{\ctxlua{lxml.concatrange("#1","#2","#3","#4",[[\detokenize{#5}]])}}
+\def\xmlcontent          #1#2{\ctxlua{lxml.content("#1","#2")}}
+\def\xmlcount            #1#2{\ctxlua{lxml.count("#1","#2")}}
+\def\xmldelete           #1#2{\ctxlua{xml.delete(lxml.id("#1"),"#2")}}
+\def\xmldirectives         #1{\ctxlua{lxml.directives.setups("#1")}}
+\def\xmlfilter           #1#2{\ctxlua{lxml.filter("#1","#2")}}
+\def\xmlfirst            #1#2{\ctxlua{lxml.first("#1","#2")}}
+\def\xmlflush              #1{\ctxlua{lxml.flush("#1")}}
+\def\xmldirect             #1{\ctxlua{lxml.direct("#1")}} % in loops, not dt but root
+\def\xmlidx            #1#2#3{\ctxlua{lxml.idx("#1","#2",\number#3)}}
+\def\xmlinclude        #1#2#3{\ctxlua{lxml.include("#1","#2","#3",true)}}
+\def\xmlindex          #1#2#3{\ctxlua{lxml.index("#1","#2",\number#3)}}
+\def\xmlinfo               #1{\hbox{\ttxx[\ctxlua{lxml.info("#1")}]}}
+\def\xmlshow               #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
+\def\xmllast             #1#2{\ctxlua{lxml.last("#1","#2")}}
+\def\xmlload             #1#2{\ctxlua{lxml.load("#1","#2")}}
+\def\xmlloadbuffer       #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
+\def\xmlloaddirectives     #1{\ctxlua{lxml.directives.load("#1")}}
+\def\xmlname               #1{\ctxlua{lxml.name("#1")}}
+\def\xmlnamespace          #1{\ctxlua{lxml.namespace("#1")}}
+\def\xmlnonspace         #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
+\def\xmlraw              #1#2{\ctxlua{lxml.raw("#1","#2")}}
+\def\xmlsnippet          #1#2{\ctxlua{lxml.snippet("#1",#2)}}
+\def\xmlregisterns       #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
+\def\xmlremapname    #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
+\def\xmlremapnamespace #1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
+\def\xmlsetfunction    #1#2#3{\ctxlua{lxml.setaction("#1","#2",#3)}}
+\def\xmlsetsetup       #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
+\def\xmlstrip            #1#2{\ctxlua{lxml.strip("#1","#2")}}
+\def\xmlstripped         #1#2{\ctxlua{lxml.stripped("#1","#2")}}
+\def\xmltag                #1{\ctxlua{lxml.tag("#1")}}
+\def\xmltext             #1#2{\ctxlua{lxml.text("#1","#2")}}
+\def\xmltags             #1#2{\ctxlua{lxml.tags("#1","#2")}}
+\def\xmlutfize             #1{\ctxlua{lxml.utfize("#1")}}
+\def\xmlverbatim           #1{\ctxlua{lxml.verbatim("#1")}}
 
-%def\xmldoifelse        #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
-%def\xmldoifelsetext    #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
+%def\xmldoifelse         #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
+%def\xmldoifelsetext     #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
 
-\def\xmldoifelse        #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",false))}}
-\def\xmldoifelsetext    #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",true ))}}
-\def\xmldoif            #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",false))}}
-\def\xmldoiftext        #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",true ))}}
-\def\xmldoifnot         #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",false))}}
-\def\xmldoifnottext     #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",true ))}}
+\def\xmldoifelse         #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",false))}}
+\def\xmldoifelsetext     #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",true ))}}
+\def\xmldoif             #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",false))}}
+\def\xmldoiftext         #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",true ))}}
+\def\xmldoifnot          #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",false))}}
+\def\xmldoifnottext      #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",true ))}}
 
-\def\xmldefaulttotext     #1{\ifcase\xmlprocessingmode\or\or   \ctxlua{lxml.set_command_to_text("#1")}\fi}
-\def\xmldefaulttonone     #1{\ifcase\xmlprocessingmode\or\or\or\ctxlua{lxml.set_command_to_none("#1")}\fi}
+\def\xmldefaulttotext      #1{\ifcase\xmlprocessingmode\or\or   \ctxlua{lxml.set_command_to_text("#1")}\fi}
+\def\xmldefaulttonone      #1{\ifcase\xmlprocessingmode\or\or\or\ctxlua{lxml.set_command_to_none("#1")}\fi}
 
 % \startxmlsetups xml:include
 %     \xmlinclude{main}{include}{filename|href}
@@ -90,6 +96,7 @@
 \def\xmlregisteredsetups
   {\xmlstarttiming
    \the\registeredxmlsetups\registeredxmlsetups\emptytoks
+   \xmldefaulttotext\xmldocument % after include
    \xmlstoptiming}
 
 \chardef\xmlprocessingmode=0 % 0=mixed, 1=mkivonly, 2=mkivonly-default-text, 3=mkivonly-default-none
@@ -103,10 +110,9 @@
    #1{#2}{#3}%
    \ifcase\xmlprocessingmode
      \enableXML
+   \else
+     \setcatcodetable\notcatcodes
    \fi
-   \xmlstarttiming
-   \xmldefaulttotext\xmldocument
-   \xmlstoptiming
    \doifelsenothing{#4}
      {\directsetup{xml:process}}
      {\directsetup{#4}}%
@@ -124,7 +130,7 @@
   {\def\xmli##1##2{\xmlidx{#1}{#2/##1}{##2}}%
    \dorecurse{\xmlcount{#1}{#2}}{#3}}
 
-\long\def\xmlconnect#1#2#3%
+\long\def\xmlconnect#1#2#3% inefficient
   {\scratchcounter\xmlcount{#1}{#2}\relax
    \ifcase\scratchcounter \or
        \xmlall{#1}{#2}%
@@ -284,4 +290,3 @@
 % \starttext
 %     \xmlprocessbuffer{main}{section}{}
 % \stoptext
-

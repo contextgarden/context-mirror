@@ -74,6 +74,7 @@
 \newconditional\fittinglistitems  \setfalse\fittinglistitems
 
 \newcount\noflists
+\newcount\currentnoflists
 \newcount\itemcolumndepth
 \newcount\itemdepth
 \newcount\maxitemdepth
@@ -94,10 +95,10 @@
 
 \def\dolistreference
   {\ifconditional\continuelistitems
-     \savetaggedtwopassdata\s!list{\number\noflists}{\number\noflists}%
+     \savetaggedtwopassdata\s!list{\number\currentnoflists}{\number\currentnoflists}%
         {\currentitemlevel:\noflistelements:c:\getitemparameter\currentitemlevel\c!maxwidth}%
    \else
-     \savetaggedtwopassdata\s!list{\number\noflists}{\number\noflists}%
+     \savetaggedtwopassdata\s!list{\number\currentnoflists}{\number\currentnoflists}%
         {\currentitemlevel:\noflistelements:n:\getitemparameter\currentitemlevel\c!maxwidth}%
    \fi}
 
@@ -109,7 +110,7 @@
   {\edef\itemdatal{#1}\edef\itemdatan{#2}\edef\itemdatat{#3}\edef\itemdataw{#4}}
 
 \def\checkcurrentnofitems
-  {\splititemtwopassdata\noflists
+  {\splititemtwopassdata\currentnoflists
    \iftwopassdatafound
      \ifcase\itemdatan\relax % \scratchcounter
        \let\currentnofitems   \!!zerocount
@@ -120,7 +121,7 @@
        \edef\currentnofitems{\the\scratchcounter}%
        \let\currentitemtag\itemdatat
        \doloop
-         {\splititemtwopassdata{\numexpr\noflists+\recurselevel\relax}%
+         {\splititemtwopassdata{\numexpr\currentnoflists+\recurselevel\relax}%
           \iftwopassdatafound
             \ifnum\itemdatal=\currentitemlevel\relax
               \doifelse{c}\itemdatat
@@ -134,7 +135,7 @@
        \scratchcounter\zerocount
        \doif{c}\currentitemtag
          {\doloop
-            {\splititemtwopassdata{\numexpr\noflists-\recurselevel\relax}%
+            {\splititemtwopassdata{\numexpr\currentnoflists-\recurselevel\relax}%
              \iftwopassdatafound
                \ifnum\itemdatal=\currentitemlevel\relax
                  \doifelse{c}\itemdatat
@@ -501,9 +502,22 @@
 \def\startitemgroup
   {\dotripleempty\dostartitemgroup}
 
+% \def\dostartitemgroup[#1][#2][#3]%
+%   {\bgroup
+%    \def\currentitemgroup{#1}%
+%    \ifthirdargument
+%      \dodostartitemgroup[#2][#3]%
+%    \else
+%      \doifassignmentelse{#2}
+%        {\dodostartitemgroup[][#2]}
+%        {\dodostartitemgroup[#2][]}%
+%    \fi}
+
 \def\dostartitemgroup[#1][#2][#3]%
   {\bgroup
-   \def\currentitemgroup{#1}%
+   \ifnum\currentitemlevel=\zerocount
+     \def\currentitemgroup{#1}% no nested mixing of itemgroups
+   \fi
    \ifthirdargument
      \dodostartitemgroup[#2][#3]%
    \else
@@ -632,6 +646,7 @@
    \doifinsetelse\v!continue{#1}{\settrue\continuelistitems}{\setfalse\continuelistitems}%
    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
    \global\advance\noflists\plusone
+   \currentnoflists=\noflists
    \newcounter\noflistelements
    \setfalse\headlistitem
    \setfalse\sublistitem
@@ -713,7 +728,7 @@
            \c!align=\v!no]%
       \fi\fi}%
 \ifconditional\fittinglistitems
-    \splititemtwopassdata\noflists
+    \splititemtwopassdata\currentnoflists
     \ifdim\itemdataw sp>\zeropoint
       \expanded{\setitemparameter{\currentitemlevel}{\c!width}{\itemdataw sp}}%
     \fi
@@ -979,7 +994,7 @@
     \ifdim\wd8>\getitemparameter\currentitemlevel\c!maxwidth sp\relax
       \expanded{\global\noexpand\setitemparameter{\currentitemlevel}{\c!maxwidth}{\number\wd8}}%
     \fi
-    \splititemtwopassdata\noflists
+    \splititemtwopassdata\currentnoflists
     \ifdim\itemdataw sp>\zeropoint
        \setbox8\simplealignedbox{\getitemparameter\currentitemlevel\c!itemalign}{\itemdataw sp}{\box8}%
     \fi

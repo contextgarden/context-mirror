@@ -84,7 +84,7 @@
 %D The second implementation expanded the whole math sequence
 %D into an internal \TEX\ representation. This is a rather clean
 %D and fast process. Filtering and testing takes place by
-%D redefining teh internal representation macros.
+%D redefining the internal representation macros.
 %D
 %D The third implementation may look a bit more messy in some
 %D respects. This is because in \TEX\ it's not that trivial to
@@ -137,13 +137,6 @@
     [apply]
     {\startsavingXMLelements}
     {\stopsavingXMLelements}
-
-% already defined
-%
-%   \defineXMLnestedenvironmentsave
-%     [xmlstack]
-%     {}
-%     {\pushXMLnameonstack}
 
 \stopXMLmapping
 
@@ -1193,7 +1186,7 @@
   {\flushXMLstackwith\plustwo{#1}
    \stopusingMMLarguments}
 
-\def\lastMMLcrelation#1%
+\def\lastMMLcrelation#1% weird, probably bugged
   {\XMLRtoks\emptytoks
    \dostepwiserecurse\plustwo\XMLstacklevel\plusone
      {\appendetoks\noexpand\getXMLstackdata{\recurselevel}\to\XMLRtoks

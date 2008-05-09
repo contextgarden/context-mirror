@@ -88,7 +88,7 @@ number by one when there's a fix in the <l n='fontforge'/> library or
 
 fonts                        = fonts or { }
 fonts.otf                    = fonts.otf or { }
-fonts.otf.version            = 2.08
+fonts.otf.version            = 2.09
 fonts.otf.pack               = true
 fonts.otf.tables             = fonts.otf.tables or { }
 fonts.otf.meanings           = fonts.otf.meanings or { }
@@ -794,7 +794,7 @@ do
                 if type(v) == "string" then
                     local b = v:is_boolean()
                     if type(b) == "nil" then
-                        v = v:lower() -- gsub("[^a-z0-9%-]") -- too dangerous, e.g. featurefiles
+                        v = tonumber(v) or v:lower() -- gsub("[^a-z0-9%-]") -- too dangerous, e.g. featurefiles
                     else
                         v = b
                     end
@@ -1864,13 +1864,13 @@ function fonts.otf.copy_to_tfm(data) -- we can save a copy when we reorder the t
             end
         end
         spaceunits = tonumber(spaceunits) or tfm.units/2 -- 500 -- brrr
-        parameters[1] = 0                     -- slant
-        parameters[2] = spaceunits            -- space
-        parameters[3] = tfm.units/2   --  500 -- space_stretch
-        parameters[4] = 2*tfm.units/3 --  333 -- space_shrink
-        parameters[5] = 4*tfm.units/5 --  400 -- x_height
-        parameters[6] = tfm.units     -- 1000 -- quad
-        parameters[7] = 0                     -- extra_space (todo)
+        parameters.slant         = 0
+        parameters.space         = spaceunits
+        parameters.space_stretch = tfm.units/2   --  500
+        parameters.space_shrink  = 2*tfm.units/3 --  333
+        parameters.x_height      = 4*tfm.units/5 --  400
+        parameters.quad          = tfm.units     -- 1000
+        parameters.extra_space   = 0
         if spaceunits < 2*tfm.units/5 then
             -- todo: warning
         end
@@ -1878,21 +1878,21 @@ function fonts.otf.copy_to_tfm(data) -- we can save a copy when we reorder the t
         tfm.ascender    = math.abs(data.ascent  or 0)
         tfm.descender   = math.abs(data.descent or 0)
         if data.italicangle then -- maybe also in afm _
-           parameters[1] = parameters[1] - math.round(math.tan(data.italicangle*math.pi/180))
+           parameters.slant = parameters.slant - math.round(math.tan(data.italicangle*math.pi/180))
         end
         if data.isfixedpitch then
-            parameters[3] = 0
-            parameters[4] = 0
+            parameters.space_stretch = 0
+            parameters.space_shrink  = 0
         elseif fonts.otf.syncspace then --
-            parameters[3] = spaceunits/2  -- space_stretch
-            parameters[4] = spaceunits/3  -- space_shrink
+            parameters.space_stretch = spaceunits/2
+            parameters.space_shrink  = spaceunits/3
         end
         if data.pfminfo and data.pfminfo.os2_xheight and data.pfminfo.os2_xheight > 0 then
-            parameters[5] = data.pfminfo.os2_xheight
+            parameters.x_height = data.pfminfo.os2_xheight
         else
             local x = characters[unicodes['x']]
             if x then
-                parameters[5] = x.description.height
+                parameters.x_height = x.description.height
             end
         end
         -- [6]
@@ -2527,17 +2527,21 @@ do
         local featuredata = tfmdata.shared.featuredata[kind]
         local anchors = featuredata[lookupname]
         if not anchors then
-            featuredata[lookupname] = { }
-            anchors = featuredata[lookupname]
+            anchors = { }
+            featuredata[lookupname] = anchors
             local otfdata = tfmdata.shared.otfdata
             local unicodes = otfdata.luatex.unicodes
             local validanchors = { }
             local glyphs = otfdata.glyphs
+            local trace = fonts.otf.trace_features
             if otfdata.anchor_classes then
                 local classes = otfdata.anchor_classes
                 for k=1,#classes do
                     local class = classes[k]
                     if class.lookup == lookupname then
+                        if trace then
+                            logs.report("define otf",string.format("%s:%s anchor -> %s",kind,lookupname,class.name))
+                        end
                         validanchors[class.name] = true
                     end
                 end
@@ -2566,6 +2570,7 @@ do
                 end
             end
         end
+--~ if kind == "mkmk" then print(lookupname,table.serialize(anchors)) end
         return anchors
     end
 
@@ -2803,17 +2808,17 @@ do
         marks = otfdata.luatex.marks
         glyphs = otfdata.glyphs
         currentfont = font
-        local script, language
+        local script, language, strategy
         if attr and attr > 0 then
             local features = context_setups[context_numbers[attr]]
-            language, script = features.language or "dflt", features.script or "dflt"
+            language, script, strategy = features.language or "dflt", features.script or "dflt", features.strategy or fonts.otf.strategy
         else
-            language, script = tfmdata.language or "dflt", tfmdata.script or "dflt"
+            language, script, strategy = tfmdata.language or "dflt", tfmdata.script or "dflt", tfmdata.strategy or fonts.otf.strategy
         end
         local fullkind = kind .. script .. language
         local lookuptable = shared.lookuptable[fullkind]
         if lookuptable then
-            local strategy = fonts.otf.strategy
+        --  local strategy = fonts.otf.strategy
             local types = otfdata.luatex.name_to_type
             local start, done, ok = head, false, false
             local processes = shared.processes[fullkind]
@@ -3195,21 +3200,30 @@ do
     end
 
     function fonts.otf.features.process.gpos_mark2mark(start,kind,lookupname,b_anchors,m_anchors)
-        local markchar = start,char
-        if marks[markchar] then
+        local basemarkchar = start.char
+--~ print(lookupname)
+        if marks[basemarkchar] then
+--~ print('')
+--~ print('basemarkchar',basemarkchar)
+--~ print('basemarkanchors', table.serialize(b_anchors))
             local baseanchors = b_anchors['basemark']
             if baseanchors then
                 local component = start.next
                 while component and component.id == glyph and component.subtype<256 and component.font == currentfont do
-                    local basechar = component.char
-                    if not marks[basechar] then
+                    local markchar = component.char
+                    if not marks[markchar] then
                         break
                     else
-                        local markattr = has_attribute(start,    marknumber) or 1
-                        local baseattr = has_attribute(component,marknumber) or 1
-                        if baseattr == markattr then -- still needed?
-                            local markanchors = m_anchors[basechar]
+--~ print('markchar',markchar)
+                        local basemarkattr = has_attribute(start,    marknumber) or 1
+                        local markattr = has_attribute(component,marknumber) or 1
+--~ print(basemarkattr,markattr)
+                        if basemarkattr == markattr then -- still needed?
+--~ print('markanchors *', table.serialize(m_anchors))
+
+                            local markanchors = m_anchors[markchar]
                             if markanchors then
+--~ print('markanchors')
                                 local markanchor = markanchors['mark']
                                 if markanchor then
                                     for anchor,ma in pairs(markanchor) do
@@ -3220,7 +3234,7 @@ do
                                             component.xoffset, component.yoffset = start.xoffset - dx, start.yoffset + dy
                                             if fonts.otf.trace_anchors then
                                                 report("otf process",format("%s:%s:%s anchoring mark 0x%04X to basemark 0x%04X => (%s,%s) => (%s,%s)",
-                                                    kind,anchor,markattr,markchar,basechar,dx,dy,component.xoffset,component.yoffset))
+                                                    kind,anchor,markattr,markchar,basemarkchar,dx,dy,component.xoffset,component.yoffset))
                                             end
                                             return start, true
                                         end
@@ -3231,7 +3245,6 @@ do
                         end
                     end
                 end
-                return start, done
             end
         end
         return start, false
@@ -4126,31 +4139,39 @@ function fonts.otf.features.mode(tfmdata,value)
     end
 end
 
+function fonts.otf.features.strategy(tfmdata,value)
+    if value then
+        tfmdata.strategy = tonumber(value) or fonts.otf.strategy
+    end
+end
+
 fonts.initializers.base.otf.language = fonts.otf.features.language
 fonts.initializers.base.otf.script   = fonts.otf.features.script
 fonts.initializers.base.otf.mode     = fonts.otf.features.mode
 fonts.initializers.base.otf.method   = fonts.otf.features.mode
+fonts.initializers.base.otf.strategy = fonts.otf.features.strategy -- not needed
 
 fonts.initializers.node.otf.language = fonts.otf.features.language
 fonts.initializers.node.otf.script   = fonts.otf.features.script
 fonts.initializers.node.otf.mode     = fonts.otf.features.mode
 fonts.initializers.node.otf.method   = fonts.otf.features.mode
+fonts.initializers.node.otf.strategy = fonts.otf.features.strategy
 
 do
 
     local tlig_list = {
         endash        = "hyphen hyphen",
         emdash        = "hyphen hyphen hyphen",
-        quotedblleft  = "quoteleft quoteleft",
-        quotedblright = "quoteright quoteright",
-        quotedblleft  = "grave grave",
-        quotedblright = "quotesingle quotesingle",
-        quotedblbase  = "comma comma",
+--~         quotedblleft  = "quoteleft quoteleft",
+--~         quotedblright = "quoteright quoteright",
+--~         quotedblleft  = "grave grave",
+--~         quotedblright = "quotesingle quotesingle",
+--~         quotedblbase  = "comma comma",
     }
     local trep_list = {
-        [0x0022] = 0x201D,
+--~         [0x0022] = 0x201D,
         [0x0027] = 0x2019,
-        [0x0060] = 0x2018,
+--~         [0x0060] = 0x2018,
     }
 
     local tlig_feature = {
@@ -4692,7 +4713,7 @@ do
         local characters = fontdata[font].characters
         local current, done, stretch, prevclass = head, false, 0, 0
         if fonts.analyzers.methods.stretch_hang then
-            stretch = fontdata[font].parameters[6]
+            stretch = fontdata[font].parameters.quad
         end
         -- penalty before break
         local interspecialskip   = - stretch * hang_data.inter_char_half_factor

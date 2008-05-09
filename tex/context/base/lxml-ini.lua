@@ -56,16 +56,6 @@ do
         content                   / texsprint
     )^0
 
---~     local function sprint(root)
---~         if not root then
---~             -- quit
---~         elseif type(root) == 'string' then
---~             capture:match(root)
---~         elseif next(root) then
---~             serialize(root,sprint,nil,nil,specialhandler)
---~         end
---~     end
-
     local function sprint(root)
         if not root then
             -- quit
@@ -84,8 +74,13 @@ do
     function xml.tprint(root) -- we can move sprint inline
         local tr = type(root)
         if tr == "table" then
-            for i=1,#root do
-                sprint(root[i])
+            local n = #root
+            if n == 0 then
+                sprint("") -- empty element, else no setup triggered (check this! )
+            else
+                for i=1,n do
+                    sprint(root[i])
+                end
             end
         elseif tr == "string" then
             sprint(root)
@@ -207,7 +202,7 @@ function lxml.utfize(id)
 end
 
 local xmlfilter, xmlfirst, xmllast, xmlall = xml.filter, xml.first, xml.last, xml.all
-local xmlcollect, xmlcontent, xmlcollect_texts = xml.collect, xml.content, xml.collect_texts
+local xmlcollect, xmlcontent, xmlcollect_texts, xmlcollect_tags = xml.collect, xml.content, xml.collect_texts, xml.collect_tags
 local xmlattribute, xmlindex = xml.filters.attribute, xml.filters.index
 local xmlelements = xml.elements
 
@@ -221,8 +216,11 @@ function lxml.last(id,pattern)
     xmlsprint(xmllast(get_id(id),pattern))
 end
 function lxml.all(id,pattern)
-    xmltprint(xmlcollect(get_id(id),pattern))
+xmltprint(xmlcollect(get_id(id),pattern))
+--~ faster, no intermediate table, we need to clean up l-xml
+--~     xml.traverse(get_id(id), xml.lpath(pattern), function(r,d,k) xmlsprint(d[k]) return false end)
 end
+
 function lxml.nonspace(id,pattern)
     xmltprint(xmlcollect(get_id(id),pattern,true))
 end
@@ -238,10 +236,25 @@ function lxml.text(id,pattern)
     xmltprint(xmlcollect_texts(get_id(id),pattern) or {})
 end
 
+function lxml.tags(id,pattern)
+    local tags = xmlcollect_tags(get_id(id),pattern)
+    if tags then
+        texsprint(concat(tags,","))
+    end
+end
+
 function lxml.raw(id,pattern) -- the content, untouched by commands
     local c = xmlfilter(get_id(id),pattern)
     if c then
         texsprint(concat(c.dt,""))
+    end
+end
+
+function lxml.snippet(id,i)
+    local e = lxml.id(id)
+    if e then
+        local edt = e.dt
+        xmlsprint((edt and edt[i]) or "")
     end
 end
 
@@ -252,6 +265,9 @@ end
 
 function lxml.flush(id)
     xmlsprint(get_id(id).dt)
+end
+function lxml.direct(id)
+    xmlsprint(get_id(id))
 end
 
 function lxml.index(id,pattern,i)
@@ -266,7 +282,7 @@ end
 function lxml.count(id,pattern)
     texsprint(xml.count(get_id(id),pattern) or 0)
 end
-function lxml.name(id) -- or remapped name?
+function lxml.name(id) -- or remapped name? -> lxml.info, combine
     local r = get_id(id)
     if r.ns then
         texsprint(r.ns .. ":" .. r.tg)
@@ -274,7 +290,7 @@ function lxml.name(id) -- or remapped name?
         texsprint(r.tg)
     end
 end
-function lxml.tag(id)
+function lxml.tag(id) -- tag vs name -> also in l-xml tag->name
     texsprint(get_id(id).tg or "")
 end
 function lxml.namespace(id) -- or remapped name?
@@ -286,20 +302,26 @@ end
 --~     texsprint(concat(xml.collect_texts(get_id(id),what,true),separator or ""))
 --~ end
 
-function lxml.concat(id,what,separator,lastseparator)
-    local t = xmlcollect_texts(get_id(id),what,true)
+function lxml.concatrange(id,what,start,stop,separator,lastseparator) -- test this on mml
+    local t = xml.collect_elements(lxml.id(id),what,true) -- ignorespaces
     local separator = separator or ""
     local lastseparator = lastseparator or separator or ""
-    for i=1,#t do
-        texsprint(t[i])
+    start, stop = (start == "" and 1) or start or 1, (stop == "" and #t) or stop or #t
+    if stop < 0 then stop = #t + stop end -- -1 == last-1
+    for i=start,stop do
+        xmlsprint(t[i])
         if i == #t then
             -- nothing
         elseif i == #t-1 and lastseparator ~= "" then
-            texsprint(tex.ctxcatcodes,lastseparator)
+            tex.sprint(tex.ctxcatcodes,lastseparator)
         elseif separator ~= "" then
-            texsprint(tex.ctxcatcodes,separator)
+            tex.sprint(tex.ctxcatcodes,separator)
         end
     end
+end
+
+function lxml.concat(id,what,separator,lastseparator)
+    lxml.concatrange(id,what,false,false,separator,lastseparator)
 end
 
 -- string   : setup
@@ -327,10 +349,7 @@ function xml.command(root, command)
         command(root)
     elseif command == true then
         -- text (no <self></self>) / so, no mkii fallback then
---~         local n = #myself + 1
---~         myself[n] = root
---~         texsprint(tex.ctxcatcodes,format("\\ctxlua{lxml.flush(%s)}",n)) -- hm, efficient?
-xmltprint(root.dt)
+        xmltprint(root.dt)
     elseif command == false then
         -- ignore
     else
@@ -425,7 +444,7 @@ function lxml.setsetup(id,pattern,setup)
     end
 end
 
-function lxml.idx(id,pattern,i)
+function lxml.idx(id,pattern,i) -- hm, hashed, needed?
     local r = get_id(id)
     if r then
         local rp = r.patterns
@@ -443,23 +462,39 @@ function lxml.idx(id,pattern,i)
     end
 end
 
+function lxml.info(id)
+    id = get_id(id)
+    local ns, tg = id.ns, id.tg
+    if ns and ns ~= "" then -- best make a function
+        tg = ns .. ":" .. tg
+    else
+        tg = tg or "?"
+    end
+    texsprint(tg)
+end
+
 do
 
     local traverse = xml.traverse
     local lpath    = xml.lpath
 
-    function xml.filters.command(root,pattern,command) -- met zonder ''
-        command = command:gsub("^([\'\"])(.-)%1$", "%2")
+    local function command(root,pattern,cmd) -- met zonder ''
+        cmd = cmd:gsub("^([\'\"])(.-)%1$", "%2")
         traverse(root, lpath(pattern), function(r,d,k)
             -- this can become pretty large
+            local m = (d and d[k]) or r -- brrr this r, maybe away
+if type(m) == "table" then -- probbaly a bug
             local n = #myself + 1
-            myself[n] = (d and d[k]) or r
-            texsprint(tex.ctxcatcodes,format("\\xmlsetup{%s}{%s}",n,command))
+            myself[n] = m
+            texsprint(tex.ctxcatcodes,format("\\xmlsetup{%s}{%s}",n,cmd))
+end
         end)
     end
 
-    function lxml.command(id,pattern,command)
-        xml.filters.command(get_id(id),pattern,command)
+    xml.filters.command = command
+
+    function lxml.command(id,pattern,cmd)
+        command(get_id(id),pattern,cmd)
     end
 
 end
@@ -661,6 +696,8 @@ do
             e.command = false -- i.e. skip
         end
     end
+
+    -- can be made faster: just recurse over whole table, todo
 
     function lxml.set_command_to_text(id)
         xml.with_elements_only(get_id(id),to_text)

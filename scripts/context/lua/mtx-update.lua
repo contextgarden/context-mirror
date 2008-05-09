@@ -220,9 +220,9 @@ function scripts.update.synchronize()
             local archives, command = table.concat(archive," "), ""
             local normalflags, deleteflags = states.get("rsync.flags.normal"), states.get("rsync.flags.delete")
             if true then -- environment.argument("keep") or destination:find("%.$") then
-                command = string.format("%s %s    %s'%s' %s", bin, normalflags,              url, archives, destination)
+                command = string.format("%s %s    %s'%s' '%s'", bin, normalflags,              url, archives, destination)
             else
-                command = string.format("%s %s %s %s'%s' %s", bin, normalflags, deleteflags, url, archives, destination)
+                command = string.format("%s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, url, archives, destination)
             end
             logs.report("mtx update", string.format("running command: %s",command))
             if not fetched[command] then

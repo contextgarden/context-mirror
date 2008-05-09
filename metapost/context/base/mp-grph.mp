@@ -59,21 +59,21 @@ string  graphictextfile    ; graphictextfile    := "dummy.mpo" ;
 def data_mpo_file = job_name & "-mp.mpo" enddef ;
 def data_mpy_file = job_name & "-mp.mpy" enddef ;
 
-% def savegraphictext (expr str) =
-%   if (graphictextstring<>"") :
-%     write graphictextstring to data_mpo_file ;
-%     graphictextstring := "" ;
-%   fi ;
-%   write str to data_mpo_file ;
-%   let erasegraphictextfile = relax ;
-% enddef ;
+def savegraphictext (expr str) =
+  if (graphictextstring<>"") :
+    write graphictextstring to data_mpo_file ;
+    graphictextstring := "" ;
+  fi ;
+  write str to data_mpo_file ;
+  let erasegraphictextfile = relax ;
+enddef ;
 
-% def erasegraphictextfile =
-%   write EOF to data_mpo_file ;
-%   let erasegraphictextfile = relax ;
-% enddef ;
+def erasegraphictextfile =
+  write EOF to data_mpo_file ;
+  let erasegraphictextfile = relax ;
+enddef ;
 
-% extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ;
+extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ;
 
 def begingraphictextfig (expr n) =
   foundpicture := n ; scratchpicture := nullpicture ;
