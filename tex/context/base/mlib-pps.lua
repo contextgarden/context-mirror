@@ -347,6 +347,7 @@ local current_format, current_graphic
 
 metapost.textext_current = metapost.first_box
 metapost.trace_texttexts = false
+metapost.multipass       = false
 
 function metapost.specials.tf(specification,object)
 --~ print("setting", metapost.textext_current)
@@ -358,6 +359,7 @@ function metapost.specials.tf(specification,object)
         print("metapost", format("first pass: order %s, box %s",n,metapost.textext_current))
     end
     sprint(tex.ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,str))
+    metapost.multipass = true
     return { }, nil, nil, nil
 end
 
@@ -478,32 +480,32 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
             if reduce then
                 if n == 1 then
                     local s = cr[1]
-                    return format("%.3f g %.3f G",s,s)
+                    return format("%.3f g %.3f G",s,s), "0 g 0 G"
                 elseif n == 3 then
                     local r, g, b = cr[1], cr[2], cr[3]
                     if r == g and g == b then
-                        return format("%.3f g %.3f G",r,r)
+                        return format("%.3f g %.3f G",r,r), "0 g 0 G"
                     else
-                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
                     end
                 else
                     local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
                     if c == m and m == y and y == 0 then
                         k = 1 - k
-                        return format("%.3f g %.3f G",k,k)
+                        return format("%.3f g %.3f G",k,k), "0 g 0 G"
                     else
-                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
+                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
                     end
                 end
             elseif n == 1 then
                 local s = cr[1]
-                return format("%.3f g %.3f G",s,s)
+                return format("%.3f g %.3f G",s,s), "0 g 0 G"
             elseif n == 3 then
                 local r, g, b = cr[1], cr[2], cr[3]
-                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
             else
                 local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
+                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
             end
         end
     elseif model == "rgb" then
@@ -512,27 +514,27 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
             if reduce then
                 if n == 1 then
                     local s = cr[1]
-                    return format("%.3f g %.3f G",s,s)
+                    return format("%.3f g %.3f G",s,s), "0 g 0 G"
                 elseif n == 3 then
                     local r, g, b = cr[1], cr[2], cr[3]
                     if r == g and g == b then
-                        return format("%.3f g %.3f G",r,r)
+                        return format("%.3f g %.3f G",r,r), "0 g 0 G"
                     else
-                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
                     end
                 else
                     local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
                     if c == m and m == y and y == 0 then
                         k = 1 - k
-                        return format("%.3f g %.3f G",k,k)
+                        return format("%.3f g %.3f G",k,k), "0 g 0 G"
                     else
                         local r, g, b = cmyktorgb(c,m,y,k)
-                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
                     end
                 end
             elseif n == 1 then
                 local s = cr[1]
-                return format("%.3f g %.3f G",s,s)
+                return format("%.3f g %.3f G",s,s), "0 g 0 G"
             else
                 local r, g, b
                 if n == 3 then
@@ -540,7 +542,7 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
                 else
                     r, g, b = cr[1], cr[2], cr[3]
                 end
-                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b)
+                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
             end
         end
     elseif model == "cmyk" then
@@ -549,27 +551,27 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
             if reduce then
                 if n == 1 then
                     local s = cr[1]
-                    return format("%.3f g %.3f G",s,s)
+                    return format("%.3f g %.3f G",s,s), "0 g 0 G"
                 elseif n == 3 then
                     local r, g, b = cr[1], cr[2], cr[3]
                     if r == g and g == b then
-                        return format("%.3f g %.3f G",r,r)
+                        return format("%.3f g %.3f G",r,r), "0 g 0 G"
                     else
                         local c, m, y, k = rgbtocmyk(r,g,b)
-                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
+                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
                     end
                 else
                     local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
                     if c == m and m == y and y == 0 then
                         k = 1 - k
-                        return format("%.3f g %.3f G",k,k)
+                        return format("%.3f g %.3f G",k,k), "0 g 0 G"
                     else
-                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
+                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
                     end
                 end
             elseif n == 1 then
                 local s = cr[1]
-                return format("%.3f g %.3f G",s,s)
+                return format("%.3f g %.3f G",s,s), "0 g 0 G"
             else
                 local c, m, y, k
                 if n == 3 then
@@ -577,7 +579,7 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
                 else
                     c, m, y, k = cr[1], cr[2], cr[3], cr[4]
                 end
-                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k)
+                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
             end
         end
     else
@@ -590,136 +592,10 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
             else
                 s = cr[1]
             end
-            return format("%.3f g %.3f G",s,s)
+            return format("%.3f g %.3f G",s,s), "0 g 0 G"
         end
     end
 end
-
--- textext stuff
-
---~ do
---~
---~     local P, V, Cs = lpeg.P, lpeg.V, lpeg.Cs
---~
---~     local btex    = P("btex")
---~     local etex    = P("etex")
---~     local vtex    = P("verbatimtex")
---~     local ttex    = P("textext")
---~     local gtex    = P("graphictext")
---~     local spacing = P(" \n\r\t\v")^0
---~     local left    = P("(")
---~     local right   = P(")")
---~     local dquote  = P('"')
---~     local ddquote = P('\\"') / "\\\" & ditto & \""
---~
---~     local found, n = false, 0
---~
---~     local function textext_first(s)
---~         local str = format('_tex_text_f_("%s")',s)
---~         found, n = true, n + 1
---~         return str
---~     end
---~     local function textext_second()
---~         local str = format('_tex_text_s_(%s,%spt,%spt,%spt)',n,tex.wd[n]/65536,tex.ht[n]/65536,tex.dp[n]/65536)
---~         found, n = true, n + 1
---~         return str
---~     end
---~     local function graphictext_first(s)
---~         local str = format('_graphic_text_f_("%s")',s)
---~         found = true
---~         return str
---~     end
---~     local function graphictext_second()
---~         local str = format('_graphic_text_s_')
---~         found = true
---~         return str
---~     end
---~
---~     -- the next lpegs can be more efficient (in code only) by not using a grammar
---~
---~     local first = P {
---~         [1] = Cs(((V(2) + V(3))/textext_first + V(4)/graphictext_first + 1)^0),
---~         [2] = (btex + vtex) * spacing * Cs((1-etex)^0) * spacing * etex,
---~         [3] = ttex * spacing * left * spacing * V(5) * spacing * right,
---~         [4] = gtex * spacing * V(5),
---~         [5] = dquote * Cs((ddquote + (1-dquote))^0) * dquote,
---~     }
---~
---~     local second = P {
---~         [1] = Cs(((V(2) + V(3))/textext_second + V(4)/graphictext_second + 1)^0),
---~         [2] = (btex + vtex) * spacing * Cs((1-etex)^0) * spacing * etex,
---~         [3] = ttex * spacing * left * spacing * V(5) * spacing * right,
---~         [4] = gtex * spacing * V(5),
---~         [5] = dquote * Cs((ddquote + (1-dquote))^0) * dquote,
---~     }
---~
---~     function metapost.texttext_first(str)
---~         found, n = false, metapost.first_box -- or 0 no fallback, better an error
---~         return first:match(str), found
---~     end
---~     function metapost.texttext_second(str)
---~         found, n = false, metapost.first_box -- or 0 no fallback, better an error
---~         return second:match(str), found
---~     end
---~
---~ end
---~
---~ local factor = 65536*(7200/7227)
---~
---~ function metapost.edefsxsy(wd,ht,dp) -- helper for text
---~     commands.edef("sx",(wd ~= 0 and 1/( wd    /(factor))) or 0)
---~     commands.edef("sy",(wd ~= 0 and 1/((ht+dp)/(factor))) or 0)
---~ end
---~
---~ function metapost.sxsy(wd,ht,dp) -- helper for text
---~     return (wd ~= 0 and 1/(wd/(factor))) or 0, (wd ~= 0 and 1/((ht+dp)/(factor))) or 0
---~ end
---~
---~ metapost.intermediate         = metapost.intermediate         or {}
---~ metapost.intermediate.actions = metapost.intermediate.actions or {}
---~ metapost.intermediate.needed  = false
---~
---~ function metapost.graphic_base_pass(mpsformat,str,preamble)
---~     local prepared, done = metapost.texttext_first(str)
---~     metapost.textext_current = metapost.first_box
---~     metapost.intermediate.needed  = false
---~     if done then
---~         current_format, current_graphic = mpsformat, str
---~         metapost.process(mpsformat, {
---~             preamble or "",
---~             "beginfig(1); ",
---~             prepared,
---~             "endfig ;"
---~         }, true ) -- true means: trialrun
---~         if metapost.intermediate.needed then
---~             for _, action in pairs(metapost.intermediate.actions) do
---~                 action()
---~             end
---~         end
---~         sprint(tex.ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
---~     else
---~         metapost.process(mpsformat, {
---~             preamble or "",
---~             "beginfig(1); ",
---~             str,
---~             "endfig ;"
---~         } )
---~     end
---~ end
---~
---~ function metapost.graphic_extra_pass()
---~     local prepared, done = metapost.texttext_second(current_graphic)
---~     metapost.textext_current = metapost.first_box
---~     metapost.process(current_format, {
---~         "beginfig(0); ",
---~         prepared,
---~         "endfig ;"
---~     })
---~ end
-
---~ At the cost of passing data about the texts to MP, the following
---~ solution also handles textexts that are more complex and part of
---~ formats.
 
 do
 
@@ -794,31 +670,74 @@ metapost.intermediate         = metapost.intermediate         or {}
 metapost.intermediate.actions = metapost.intermediate.actions or {}
 metapost.intermediate.needed  = false
 
+--~ function metapost.graphic_base_pass(mpsformat,str,preamble)
+--~     local prepared, done = metapost.check_texts(str)
+--~     metapost.textext_current = metapost.first_box
+--~     metapost.intermediate.needed  = false
+--~     if done then
+--~         current_format, current_graphic = mpsformat, prepared
+--~         metapost.process(mpsformat, {
+--~             preamble or "",
+--~             "beginfig(1); ",
+--~             "_trial_run_ := true ;",
+--~             prepared,
+--~             "endfig ;"
+--~         }, true ) -- true means: trialrun
+--~         if metapost.intermediate.needed then
+--~             for _, action in pairs(metapost.intermediate.actions) do
+--~                 action()
+--~             end
+--~         end
+--~         sprint(tex.ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
+--~     else
+--~         metapost.process(mpsformat, {
+--~             preamble or "",
+--~             "beginfig(1); ",
+--~             "_trial_run_ := false ;",
+--~             "resettextexts;",
+--~             str,
+--~             "endfig ;"
+--~         } )
+--~     end
+--~ end
+
+metapost.method = 1 -- 1:dumb 2:clever
+
 function metapost.graphic_base_pass(mpsformat,str,preamble)
-    local prepared, done = metapost.check_texts(str)
+    local done_1, done_2
+    str, done_1 = metapost.check_texts(str)
+    if preamble then
+        preamble, done_2 = metapost.check_texts(preamble)
+    else
+        preamble, done_2 = "", false
+    end
     metapost.textext_current = metapost.first_box
     metapost.intermediate.needed  = false
-    if done then
-        current_format, current_graphic = mpsformat, prepared
-        metapost.process(mpsformat, {
-            preamble or "",
+    metapost.multipass = false -- no needed here
+    current_format, current_graphic = mpsformat, str
+    if metapost.method == 1 or (metapost.method == 2 and (done_1 or done_2)) then
+        local flushed = metapost.process(mpsformat, {
+            preamble,
             "beginfig(1); ",
             "_trial_run_ := true ;",
-            prepared,
+--~             "resettextexts;",
+            str,
             "endfig ;"
-        }, true ) -- true means: trialrun
+        }, true, nil, true ) -- true means: trialrun, true means: avoid extra run if no multipass
         if metapost.intermediate.needed then
             for _, action in pairs(metapost.intermediate.actions) do
                 action()
             end
         end
-        sprint(tex.ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
+        if not flushed then
+            sprint(tex.ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
+        end
     else
         metapost.process(mpsformat, {
             preamble or "",
             "beginfig(1); ",
             "_trial_run_ := false ;",
-            "resettextexts;",
+--~             "resettextexts;",
             str,
             "endfig ;"
         } )
@@ -830,7 +749,7 @@ function metapost.graphic_extra_pass()
     metapost.process(current_format, {
         "beginfig(0); ",
         "_trial_run_ := false ;",
-        "resettextexts;",
+--~         "resettextexts;",
         concat(metapost.text_texts_data()," ;\n"),
         current_graphic,
         "endfig ;"
@@ -883,6 +802,7 @@ do -- not that beautiful but ok, we could save a md5 hash in the tui file !
     function metapost.specials.gt(specification,object) -- number, so that we can reorder
         graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",specification)
         metapost.intermediate.needed = true
+        metapost.multipass = true
         return { }, nil, nil, nil
     end
 

@@ -88,3 +88,5 @@ do
     end
 
     -- commands.hyphenatedurl.setcharacters("')]}",2)
+
+end

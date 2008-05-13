@@ -1959,6 +1959,7 @@ characters.data={
   ["description"]="LATIN SMALL LETTER SHARP S",
   ["linebreak"]="al",
   ["unicodeslot"]=0x00DF, -- ß
+  ["uccodes"]={0x0053,0x0053},
  },
  {
   ["adobename"]="agrave",

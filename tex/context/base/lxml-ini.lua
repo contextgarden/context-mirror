@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['lxml-ini'] = {
     license   = "see context related readme files"
 }
 
--- todo: speed up
+-- todo: speed up: remember last index/match combination
 
 local texsprint, texprint = tex.sprint or print, tex.print or print
 local format, concat = string.format, table.concat
@@ -306,7 +306,7 @@ function lxml.concatrange(id,what,start,stop,separator,lastseparator) -- test th
     local t = xml.collect_elements(lxml.id(id),what,true) -- ignorespaces
     local separator = separator or ""
     local lastseparator = lastseparator or separator or ""
-    start, stop = (start == "" and 1) or start or 1, (stop == "" and #t) or stop or #t
+    start, stop = (start == "" and 1) or tonumber(start) or 1, (stop == "" and #t) or tonumber(stop) or #t
     if stop < 0 then stop = #t + stop end -- -1 == last-1
     for i=start,stop do
         xmlsprint(t[i])

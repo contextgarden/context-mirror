@@ -10,17 +10,24 @@ local format, join = string.format, table.concat
 local sprint = tex.sprint
 local abs, sqrt, round = math.abs, math.sqrt, math.round
 
-metapost = metapost or { }
+metapost           = metapost or { }
+metapost.multipass = false
+metapost.n         = 0
 
-function metapost.convert(result, trialrun, flusher)
+function metapost.convert(result, trialrun, flusher, multipass)
     if trialrun then
+        metapost.multipass = false
         metapost.parse(result, flusher)
+        if multipass and not metapost.multipass then
+            metapost.flush(result, flusher) -- saves a run
+        else
+            return false
+        end
     else
         metapost.flush(result, flusher)
     end
+    return true -- done
 end
-
-metapost.n = 0
 
 function metapost.comment(message)
     if message then
@@ -240,7 +247,12 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
             local colorhandler   = metapost.colorhandler
             for f=1, #figures do
                 local figure = figures[f]
-                local objects = figure:objects()
+--~                 local objects = figure:objects()
+local objects = result.objects
+if not objects then
+    objects = figure:objects()
+    result.objects = objects
+end
                 local fignum = tonumber((figure:filename()):match("([%d]+)$") or 0)
                 local t = { }
                 local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
@@ -422,7 +434,12 @@ function metapost.parse(result)
         if figures then
             for f=1, #figures do
                 local figure = figures[f]
-                local objects = figure:objects()
+--~                 local objects = figure:objects()
+local objects = result.objects
+if not objects then
+    objects = figure:objects()
+    result.objects = objects
+end
                 if objects then
                     for o=1,#objects do
                         local object = objects[o]
@@ -451,7 +468,7 @@ do
     local flusher = {
         startfigure = function()
             t = { }
-            tex.sprint(tex.ctxcatcodes,"\\startnointerference")
+            sprint(tex.ctxcatcodes,"\\startnointerference")
         end,
         flushfigure = function(literals)
             for i=1, #literals do
@@ -459,7 +476,7 @@ do
             end
         end,
         stopfigure = function()
-            tex.sprint(tex.ctxcatcodes,"\\stopnointerference")
+            sprint(tex.ctxcatcodes,"\\stopnointerference")
         end
     }
 

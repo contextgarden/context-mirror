@@ -64,6 +64,8 @@
 %def\xmldoifelse         #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
 %def\xmldoifelsetext     #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
 
+% todo: \xmldoifelseattribute
+
 \def\xmldoifelse         #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",false))}}
 \def\xmldoifelsetext     #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",true ))}}
 \def\xmldoif             #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",false))}}

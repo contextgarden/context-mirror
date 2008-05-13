@@ -62,6 +62,7 @@ do
     local penalty    = node.new("penalty")     penalty.next,    penalty.prev     = nil, nil
     local glue       = node.new("glue")        glue.next,       glue.prev        = nil, nil
     local glue_spec  = node.new("glue_spec")   glue_spec.next,  glue_spec.prev   = nil, nil
+    local glyph      = node.new("glyph",0)     glyph.next,      glyph.prev       = nil, nil
 
     nodes.register(pdfliteral)
     nodes.register(disc)
@@ -69,9 +70,16 @@ do
     nodes.register(penalty)
     nodes.register(glue)
     nodes.register(glue_spec)
+    nodes.register(glyph)
 
     local copy = node.copy
 
+    function nodes.glyph(fnt,chr)
+        local n = copy(glyph)
+        if fnt then n.font = fnt end
+        if chr then n.char = chr end
+        return n
+    end
     function nodes.penalty(p)
         local n = copy(penalty)
         n.penalty = p

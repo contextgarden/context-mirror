@@ -29,7 +29,7 @@ enddef ;
 extra_endfig   := ";draw _tt_p_; " & extra_endfig ;
 extra_beginfig := extra_beginfig & "resettextexts;";
 
-vardef textext(expr str) =
+vardef rawtextext(expr str) =
     if _trial_run_ :
         image (
             _tt_n_ := _tt_n_ + 1 ;
@@ -42,7 +42,6 @@ vardef textext(expr str) =
     else :
         image (
             _tt_n_ := _tt_n_ + 1 ;
-            show _tt_n_ ;
             draw unitsquare
                 xscaled _tt_w_[_tt_n_]
                 yscaled (_tt_h_[_tt_n_] + _tt_d_[_tt_n_])
@@ -50,6 +49,15 @@ vardef textext(expr str) =
                 withpostscript decimal _tt_n_ & ":" & str ;
         )
     fi
+enddef ;
+
+vardef textext@#(expr txt) =
+  interim labeloffset := textextoffset ;
+  if string txt :
+    thelabel@#(rawtextext(txt),origin)
+  else :
+    thelabel@#(txt,origin)
+  fi
 enddef ;
 
 def circular_shade (expr p, n, ca, cb) =

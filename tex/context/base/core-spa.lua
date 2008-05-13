@@ -758,27 +758,56 @@ do
 
     -- hm needs to be run before glyphs: chars.plugins
 
-    local function upper(start)
+    local function helper(start, code, codes)
         local data, char = characters.data, start.char
-        if data[char] then
-            local uc = data[char].uccode
-            if uc and fonts.tfm.id[start.font].characters[uc] then
+        local dc = data[char]
+        if dc then
+            local fnt = start.font
+            local ifc = fonts.tfm.id[fnt].characters
+            local ucs = dc[codes]
+            if ucs then
+                local ok = true
+                for i=1,#ucs do
+                    ok = ok and ifc[ucs[i]]
+                end
+                if ok then
+                    local prev, original, copy = start, start, node.copy
+                    for i=1,#ucs do
+                        local chr = ucs[i]
+                        prev = start
+                        if i == 1 then
+                            start.char = chr
+                        else
+                            local g = copy(original)
+                            g.char = chr
+                            local next = start.next
+                            g.prev = start
+                            if next then
+                                g.next = next
+                                start.next = g
+                                next.prev = g
+                            end
+                            start = g
+                        end
+                    end
+                    return prev, true
+                end
+                return start, false
+            end
+            local uc = dc[code]
+            if uc and ifc[uc] then
                 start.char = uc
                 return start, true
             end
         end
         return start, false
     end
+
+    local function upper(start)
+        return helper(start,'uccode','uccodes')
+    end
     local function lower(start)
-        local data, char = characters.data, start.char
-        if data[char] then
-            local lc = data[char].lccode
-            if lc and fonts.tfm.id[start.font].characters[lc] then
-                start.char = lc
-                return start, true
-            end
-        end
-        return start, false
+        return helper(start,'lccode','lccodes')
     end
 
     cases.actions[1], cases.actions[2] = upper, lower

@@ -183,8 +183,8 @@ end
 
 metapost.showlog = false
 
-function metapost.process(mpx, data, trialrun, flusher)
-    local result
+function metapost.process(mpx, data, trialrun, flusher, multipass)
+    local converted, result = false, {}
     if type(mpx) == "string" then
         mpx = metapost.format(mpx) -- goody
     end
@@ -206,7 +206,6 @@ function metapost.process(mpx, data, trialrun, flusher)
                         end
                         if e then
                             metapost.report("mp error",e)
---~ metapost.reset(mpx)
                         end
                         if not t and not e and l then
                             metapost.report("mp log",l)
@@ -216,7 +215,7 @@ function metapost.process(mpx, data, trialrun, flusher)
                     elseif metapost.showlog then
                         metapost.report("mp info",result.term or "no terminal output")
                     elseif result.fig then
-                        metapost.convert(result, trialrun, flusher)
+                        converted = metapost.convert(result, trialrun, flusher, multipass)
                     end
                 else
                     metapost.report("mp error", "invalid graphic component " .. i)
@@ -234,15 +233,15 @@ function metapost.process(mpx, data, trialrun, flusher)
             elseif metapost.showlog then
                 metapost.report("info",result.term or "no-term")
             elseif result.fig then
-                metapost.convert(result, trialrun, flusher)
+                converted = metapost.convert(result, trialrun, flusher, multipass)
             end
         end
         input.stoptiming(metapost)
     end
-    return result
+    return converted, result
 end
 
-function metapost.convert(result, trialrun)
+function metapost.convert(result, trialrun, multipass)
     metapost.report('Warning','no converter set')
 end
 

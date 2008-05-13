@@ -61,18 +61,11 @@ vardef textext@#(expr txt) =
   interim labeloffset := textextoffset ;
   noftexpictures := noftexpictures + 1 ;
   if string txt :
-%     if textextstring <> "" :
-%       _s_ := "verbatimtex " & textextstring & " etex ;" ;
-%     else :
-%       _s_ := "" ;
-%     fi ;
     if hobbiestextext : % the tex.mp method as fallback (see tex.mp)
-%       write _s_ to "mptextmp.mp" ;
       write _s_ & "btex " & txt & " etex" to "mptextmp.mp" ;
       write EOF to "mptextmp.mp" ;
       scantokens "input mptextmp"
     else :
-%       write "% setup : " & _s_ to jobname & ".mpt" ;
       write "% figure " & decimal charcode & " : " &
         "texpictures[" & decimal noftexpictures & "] := btex " &
         txt & " etex ;" to jobname & ".mpt" ;

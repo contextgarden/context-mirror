@@ -141,6 +141,35 @@
 % \redefine\hans{hans}
 % \define\hans#1[]#2#3{hans}
 
+%D The next variant fits nicely in the setups syntax:
+%D
+%D \starttyping
+%D \starttexdefinition bagger [#1] #2
+%D     oeps
+%D     #1
+%D     oeps
+%D \stoptexdefinition
+%D
+%D \bagger [a] {b}
+%D \stoptyping
+
+\bgroup \obeylines
+
+\gdef\starttexdefinition%
+  {\bgroup%
+   \obeylines%
+   \dostarttexdefinition}
+
+\gdef\dostarttexdefinition #1 #2
+  {\catcode13=\@@ignore%
+   \dodostarttexdefinition{#1}{#2}}%
+
+\long\gdef\dodostarttexdefinition#1#2#3\stoptexdefinition%
+  {\egroup%
+   \long\setvalue{#1}#2{#3}}
+
+\egroup
+
 %D \macros
 %D   {newcounter,
 %D    increment,decrement}
