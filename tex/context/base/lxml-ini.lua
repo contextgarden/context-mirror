@@ -15,6 +15,8 @@ local type, next, tonumber = type, next, tonumber
 document     = document or { }
 document.xml = document.xml or { }
 
+-- todo: loaded and myself per document so that we can garbage collect buffers
+
 lxml         = { }
 lxml.loaded  = { }
 lxml.myself  = { }
@@ -61,7 +63,7 @@ do
             -- quit
         else
             local tr = type(root)
-            if tr == "string" then
+            if tr == "string" then -- can also be result of lpath
                 capture:match(root)
             elseif tr == "table" then
                 serialize(root,sprint,nil,nil,specialhandler)
@@ -98,7 +100,6 @@ do
             serialize(root,sprint,nil,nil,specialhandler)
         end
     end
-
 
     -- lines (untested)
 
@@ -161,7 +162,7 @@ do
         local root = get_id(id)
         if before then texsprint(tex.ctxcatcodes,format("%s[%s]",before,root.tg)) end
         serialize(root.dt,toverbatim,nil,nil,nil,true)  -- was root
-        if after  then texsprint(tex.ctxcatcodes,after) end
+        if after then texsprint(tex.ctxcatcodes,after) end
     end
     function lxml.inlineverbatim(id)
         lxml.verbatim(id,"\\startxmlinlineverbatim","\\stopxmlinlineverbatim")
@@ -169,6 +170,33 @@ do
     function lxml.displayverbatim(id)
         lxml.verbatim(id,"\\startxmldisplayverbatim","\\stopxmldisplayverbatim")
     end
+
+    local pihandlers = { }
+
+    specialhandler['@pi@'] = function(str)
+        for i=1,#pihandlers do
+            pihandlers[i](str)
+        end
+    end
+
+    xml.pihandlers = pihandlers
+
+    local kind   = lpeg.P("context-") * lpeg.C((1-lpeg.P("-"))^1) * lpeg.P("-directive")
+    local space  = lpeg.S(" \n\r")
+    local spaces = space^0
+    local class  = lpeg.C((1-space)^0)
+    local key    = class
+    local value  = lpeg.C(lpeg.P(1-(space * -1))^0)
+
+    local parser = kind * spaces * class * spaces * key * spaces * value
+
+    pihandlers[#pihandlers+1] = function(str)
+    --  local kind, class, key, value = parser:match(str)
+        texsprint(tex.ctxcatcodes,format("\\xmlcontextdirective{%s}{%s}{%s}{%s}",parser:match(str)))
+    end
+
+    -- print(contextdirective("context-mathml-directive function reduction yes yes "))
+    -- print(contextdirective("context-mathml-directive function "))
 
 end
 
@@ -284,8 +312,9 @@ function lxml.count(id,pattern)
 end
 function lxml.name(id) -- or remapped name? -> lxml.info, combine
     local r = get_id(id)
-    if r.ns then
-        texsprint(r.ns .. ":" .. r.tg)
+    local ns = t.rn or r.ns or ""
+    if ns ~= "" then
+        texsprint(ns .. ":" .. r.tg)
     else
         texsprint(r.tg)
     end
@@ -313,9 +342,9 @@ function lxml.concatrange(id,what,start,stop,separator,lastseparator) -- test th
         if i == #t then
             -- nothing
         elseif i == #t-1 and lastseparator ~= "" then
-            tex.sprint(tex.ctxcatcodes,lastseparator)
+            texsprint(tex.ctxcatcodes,lastseparator)
         elseif separator ~= "" then
-            tex.sprint(tex.ctxcatcodes,separator)
+            texsprint(tex.ctxcatcodes,separator)
         end
     end
 end
@@ -367,7 +396,7 @@ lxml.trace_setups = false
 
 function lxml.setsetup(id,pattern,setup)
     local trace = lxml.trace_setups
-    if not setup or setup == "" or setup == "*" or setup == "-" then
+    if not setup or setup == "" or setup == "*" or setup == "-" or setup == "+" then
         for rt, dt, dk in xmlelements(get_id(id),pattern) do
             local dtdk = dt and dt[dk] or rt
             local ns, tg = dtdk.rn or dtdk.ns, dtdk.tg
@@ -594,14 +623,27 @@ do
 end
 
 function xml.getbuffer(name) -- we need to make sure that commands are processed
+    if not name or name == "" then
+        name = tex.jobname
+    end
     xml.tostring(xml.convert(concat(buffers.data[name] or {},"")))
 end
 
 function lxml.loadbuffer(id,name)
+    if not name or name == "" then
+        name = tex.jobname
+    end
     input.starttiming(xml)
-    loaded[id] = xml.convert(concat(buffers.data[name or id] or {},""))
+    loaded[id] = xml.convert(buffers.collect(name or id,"\n"))
     input.stoptiming(xml)
     return loaded[id], name or id
+end
+
+function lxml.loaddata(id,str)
+    input.starttiming(xml)
+    loaded[id] = xml.convert(str or "")
+    input.stoptiming(xml)
+    return loaded[id], id
 end
 
 -- for the moment here:

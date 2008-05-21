@@ -49,7 +49,7 @@ function url.hashed(str)
         path = s[3],
         query = s[4],
         fragment = s[5],
-        original=str
+        original = str
     }
 end
 

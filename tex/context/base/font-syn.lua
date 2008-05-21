@@ -204,13 +204,13 @@ end
 function fonts.names.load(reload)
     if not fonts.names.loaded then
         if reload then
-            if containers.is_usable(fonts.names.cache, "names") then
+            if containers.is_usable(fonts.names.cache(), "names") then
                 fonts.names.identify()
-                containers.write(fonts.names.cache, "names", fonts.names.data)
+                containers.write(fonts.names.cache(), "names", fonts.names.data)
             end
             fonts.names.saved = true
         else
-            fonts.names.data = containers.read(fonts.names.cache, "names")
+            fonts.names.data = containers.read(fonts.names.cache(), "names")
             if not fonts.names.saved then
                 if table.is_empty(fonts.names.data) or table.is_empty(fonts.names.data.mapping) then
                     fonts.names.load(true)

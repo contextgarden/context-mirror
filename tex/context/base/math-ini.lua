@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['math-ini'] = {
     license   = "see context related readme files"
 }
 
-
 --[[ldx--
 <p>Math definitions. This code may move.</p>
 --ldx]]--
@@ -87,13 +86,13 @@ function mathematics.radical(small_family,small_slot,large_family,large_slot)
     return ("\\radical%s=\"%02X%04X%\"02X%04X"):format(target,small_family,small_slot,large_family,large_slot)
 end
 function mathematics.mathchar(class,family,slot)
-    return ("\\omathchar\"%X%02X%04X"):format(class,family,slot)
+    return ("\\omathchar\"%X%02X%04X "):format(class,family,slot)
 end
 function mathematics.mathaccent(class,family,slot)
-    return ("\\omathaccent\"%X%02X%04X"):format(class,family,slot)
+    return ("\\omathaccent\"%X%02X%04X "):format(class,family,slot)
 end
 function mathematics.delimiter(class,family,slot,largefamily,largeslot)
-    return ("\\odelimiter\"%X%02X%04X\"%02X%04X"):format(class,family,slot,largefamily,largeslot)
+    return ("\\odelimiter\"%X%02X%04X\"%02X%04X "):format(class,family,slot,largefamily,largeslot)
 end
 function mathematics.mathchardef(name,class,family,slot) -- we can avoid this one
     return ("\\omathchardef\\%s\"%X%02X%04X"):format(name,class,family,slot)

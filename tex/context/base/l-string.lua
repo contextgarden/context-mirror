@@ -345,7 +345,6 @@ local patterns_escapes = {
     ["]"] = "%]",
 }
 
-
 function string:pattesc()
     return (self:gsub(".",patterns_escapes))
 end

@@ -17,6 +17,18 @@
 
 \unprotect
 
+% \startlines
+% $\mathopnolimits{\rm d}x$
+% $\mathopnolimits{\kern\zeropoint \rm d}x$
+% $\puremathcomm{nolop}{\rm d}x$
+% $\puremathcomm{nolop}{\kern\zeropoint\rm d}x$
+% \blank
+% $\puremathcomm{nolop}{\mr d}x$
+% $\puremathcomm{nolop}{\kern\zeropoint\mr d}x$
+% $\mathop{\kern\zeropoint\mr d}x$
+% $\mathopnolimits{\kern\zeropoint d}x$
+% \stoplines
+
 % \definemessageconstant{math}
 
 % \startmessages  all  library: math
@@ -2759,6 +2771,7 @@
 \def\disablefiller   {\let\normalorfiller\firstoftwoarguments}
 
 \def\mathopnolimits#1{\mathop{\mr#1}\nolimits} % was \rm, which follows text fonts (used in mml parser)
+\def\mathopdolimits#1{\mathop{\mr#1}}          % was \rm, which follows text fonts (used in mml parser)
 
 %D \macros{overset, underset}
 %D

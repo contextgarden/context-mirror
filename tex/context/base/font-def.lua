@@ -277,7 +277,7 @@ function fonts.tfm.read_and_define(name,size) -- no id
                 fonts.tfm.id[id] = fontdata
                 fonts.tfm.internalized[hash] = id
                 if fonts.trace then
-                    logs.report("define font", string.format("at 1 id %s, hash: %s",id,hash))
+                    logs.report("define font", string.format("loading at 1 id %s, hash: %s",id,hash))
                 end
             else
                 id = fonts.tfm.internalized[hash]
@@ -602,7 +602,7 @@ function fonts.define.read(name,size,id)
     specification = fonts.define.resolve(specification)
     local hash = fonts.tfm.hash_instance(specification)
     if true then
-    --~         local fontdata = containers.read(fonts.cache,hash) -- for tracing purposes
+    --~         local fontdata = containers.read(fonts.cache(),hash) -- for tracing purposes
     end
     local fontdata = fonts.tfm.internalized[hash] -- id
     if not fontdata then
@@ -615,23 +615,24 @@ function fonts.define.read(name,size,id)
             end
         end
         if true then
-        --~             fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes
+        --~             fontdata = containers.write(fonts.cache(),hash,fontdata) -- for tracing purposes
         end
         if not fonts.tfm.internalized[hash] then
             fonts.tfm.id[id] = fontdata
             fonts.tfm.internalized[hash] = id
             if fonts.trace then
-                logs.report("define font", string.format("at 2 id %s, hash: %s",id,hash))
+                logs.report("define font", string.format("loading at 2 id %s, hash: %s",id,hash))
             end
         else
             fontdata = fonts.tfm.internalized[hash]
         end
     end
     if not fontdata then
-        logs.error("define font", string.format("name: %s, loading aborted",specification.name))
+        logs.error("define font", string.format("unknown font %s, loading aborted",specification.name))
     elseif fonts.trace and type(fontdata) == "table" then
-        logs.report("use font",string.format("%s font n:%s s:%s b:%s e:%s p:%s f:%s",
+        logs.report("define font",string.format("using %s font with id %s, n:%s s:%s b:%s e:%s p:%s f:%s",
             fontdata.type          or "unknown",
+            id                     or "?",
             fontdata.name          or "?",
             fontdata.size          or "default",
             fontdata.encodingbytes or "?",

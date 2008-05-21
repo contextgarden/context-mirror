@@ -35,7 +35,7 @@
 
 \def\@@mathlimopcomm#1{\mathop{#1}} %no \limits
 \def\@@mathnolopcomm#1{\mathop{#1}\nolimits}
-\def\@@mathboxcomm  #1{\leavevmode\hbox{$\m@th#1$}}
+\def\@@mathboxcomm  #1{\dontleavehmode\hbox{$\m@th#1$}}
 
 \chardef\mathordcode    = 0  \let\mathordcomm     \mathord
 \chardef\mathopcode     = 1  \let\mathopcomm      \mathop
@@ -602,7 +602,10 @@
 
 %D needed for sin, cos etc
 
-\def\mfunction#1{{\mr#1}}
+\def\mfunction        #1{{\mr#1}}
+
+% \def\mlimitsfunction  #1{\mathlimopcomm{{\mr#1}}
+% \def\mnolimitsfunction#1{\mathnolopcomm{{\mr#1}}
 
 %D Taco posted this solution as response to a mail by Olivier, so
 %D let's integrate it here.

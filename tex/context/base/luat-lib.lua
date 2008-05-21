@@ -33,13 +33,31 @@ os.platform = os.platform or os.type or (io.pathseparator == ";" and "windows") 
 --
 -- for k,v in pairs(arg) do print(k,v) end
 
-if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
-    arg[-1]=arg[0] arg[0]=arg[2] for k=3,#arg do arg[k-2]=arg[k] end arg[#arg]=nil arg[#arg]=nil
-end
-
 -- environment
 
 if not environment then environment = { } end
+
+environment.ownbin = environment.ownbin or arg[-2] or arg[-1] or arg[0] or "luatex"
+
+local ownpath = nil -- we could use a metatable here
+
+function environment.ownpath()
+    if not ownpath then
+        for p in string.gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
+            local b = file.join(p,environment.ownbin)
+            if lfs.isfile(b..".exe") or lfs.isfile(b) then
+                ownpath = p
+                break
+            end
+        end
+        if not ownpath then ownpath = '.' end
+    end
+    return ownpath
+end
+
+if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
+    arg[-1]=arg[0] arg[0]=arg[2] for k=3,#arg do arg[k-2]=arg[k] end arg[#arg]=nil arg[#arg]=nil
+end
 
 environment.arguments            = { }
 environment.files                = { }

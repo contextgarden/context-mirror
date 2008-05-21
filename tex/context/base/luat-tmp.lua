@@ -32,28 +32,45 @@ caches.more   = caches.more or "context"
 caches.direct = false -- true is faster but may need huge amounts of memory
 caches.trace  = false
 caches.tree   = false
-caches.temp   = caches.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
-caches.paths  = caches.paths or { caches.temp }
+caches.paths  = caches.paths or nil
 caches.force  = false
 
 input.usecache = not toboolean(os.getenv("TEXMFSHARECACHE") or "false",true) -- true
 
-if caches.temp and caches.temp ~= "" and lfs.attributes(caches.temp,"mode") ~= "directory" then
-    if caches.force or io.ask(string.format("Should I create the cache path %s?",caches.temp), "no", { "yes", "no" }) == "yes" then
-        dir.mkdirs(caches.temp)
+function caches.temp(instance)
+    local function checkpath(cachepath)
+        if not cachepath or cachepath == "" then
+            return nil
+        elseif lfs.attributes(cachepath,"mode") == "directory" then -- lfs.isdir(cachepath) then
+            return cachepath
+        elseif caches.force or io.ask(string.format("Should I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
+            dir.mkdirs(cachepath)
+            return (lfs.attributes(cachepath,"mode") == "directory") and cachepath
+        else
+            return nil
+        end
     end
-end
-if not caches.temp or caches.temp == "" then
-    print("\nfatal error: there is no valid cache path defined\n")
-    os.exit()
-elseif lfs.attributes(caches.temp,"mode") ~= "directory" then
-    print(string.format("\nfatal error: cache path %s is not a directory\n",caches.temp))
-    os.exit()
+    local cachepath = input.expanded_path_list(instance,"TEXMFCACHE")
+    cachepath = cachepath and #cachepath > 0 and checkpath(cachepath[1])
+    if not cachepath then
+        cachepath = os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
+        cachepath = checkpath(cachepath)
+    end
+    if not cachepath then
+        print("\nfatal error: there is no valid cache path defined\n")
+        os.exit()
+    elseif lfs.attributes(cachepath,"mode") ~= "directory" then
+        print(string.format("\nfatal error: cache path %s is not a directory\n",cachepath))
+        os.exit()
+    end
+    function caches.temp(instance)
+        return cachepath
+    end
+    return cachepath
 end
 
 function caches.configpath(instance)
     return table.concat(instance.cnffiles,";")
---~     return input.expand_var(instance,"TEXMFCNF")
 end
 
 function caches.hashed(tree)
@@ -71,19 +88,8 @@ end
 
 function caches.setpath(instance,...)
     if not caches.path then
-        if lfs and instance then
-            for _,v in pairs(caches.paths) do
-                for _,vv in pairs(input.expanded_path_list(instance,v)) do
-                    if lfs.isdir(vv) then
-                        caches.path = vv
-                        break
-                    end
-                end
-                if caches.path then break end
-            end
-        end
         if not caches.path then
-            caches.path = caches.temp
+            caches.path = caches.temp(instance)
         end
         caches.path = input.clean_path(caches.path) -- to be sure
         if lfs then
@@ -105,6 +111,12 @@ function caches.setpath(instance,...)
     end
     caches.path = dir.expand_name(caches.path)
     return caches.path
+end
+
+function caches.definepath(instance,category,subcategory)
+    return function()
+        return caches.setpath(instance,category,subcategory)
+    end
 end
 
 function caches.setluanames(path,name)
@@ -135,9 +147,9 @@ function caches.savedata(filepath,filename,data,raw) -- raw needed for file cach
     if caches.direct then
         file.savedata(tmaname, table.serialize(data,'return',true,true))
     else
-        table.tofile (tmaname,                 data,'return',true,true) -- maybe not the last true
+        table.tofile(tmaname, data,'return',true,true) -- maybe not the last true
     end
-    utils.lua.compile(tmaname, tmcname)
+    utils.lua.compile(tmaname, tmcname, input.expand_var(texmf.instance,'PURGECACHE') == 't')
 end
 
 -- here we use the cache for format loading (texconfig.[formatname|jobname])
@@ -172,19 +184,35 @@ do -- local report
         end
     end
 
+    local allocated = { }
+
+    -- tracing
+
     function containers.define(category, subcategory, version, enabled)
-        if category and subcategory then
-            return {
-                category = category,
-                subcategory = subcategory,
-                storage = { },
-                enabled = enabled,
-                version = version or 1.000,
-                trace = false,
-                path = caches.setpath(texmf.instance,category,subcategory),
-            }
-        else
-            return nil
+        return function()
+            if category and subcategory then
+                local c = allocated[category]
+                if not c then
+                    c  = { }
+                    allocated[category] = c
+                end
+                local s = c[subcategory]
+                if not s then
+                    s = {
+                        category = category,
+                        subcategory = subcategory,
+                        storage = { },
+                        enabled = enabled,
+                        version = version or 1.000,
+                        trace = false,
+                        path = caches.setpath(texmf.instance,category,subcategory),
+                    }
+                    c[subcategory] = s
+                end
+                return s
+            else
+                return nil
+            end
         end
     end
 
@@ -241,129 +269,35 @@ end
 -- since we want to use the cache instead of the tree, we will now
 -- reimplement the saver.
 
+local save_data = input.aux.save_data
+
+input.cachepath = nil
+
 function input.aux.save_data(instance, dataname, check)
-    for cachename, files in pairs(instance[dataname]) do
-        local name
+    input.cachepath = input.cachepath or caches.definepath(instance,"trees")
+    save_data(instance, dataname, check, function(cachename,dataname)
         if input.usecache then
-            name = file.join(caches.setpath(instance,"trees"),caches.hashed(cachename))
+            return file.join(input.cachepath(),caches.hashed(cachename))
         else
-            name = file.join(cachename,dataname)
+            return file.join(cachename,dataname)
         end
-        local luaname, lucname = name .. input.luasuffix, name .. input.lucsuffix
-        input.report("preparing " .. dataname .. " in", luaname)
-        for k, v in pairs(files) do
-            if not check or check(v,k) then -- path, name
-                if type(v) == "table" and #v == 1 then
-                    files[k] = v[1]
-                end
-            else
-                files[k] = nil -- false
-            end
-        end
-        local data = {
-            type    = dataname,
-            root    = cachename,
-            version = input.cacheversion,
-            date    = os.date("%Y-%m-%d"),
-            time    = os.date("%H:%M:%S"),
-            content = files,
-        }
-        local f = io.open(luaname,'w')
-        if f then
-            input.report("saving " .. dataname .. " in", luaname)
-        --  f:write(table.serialize(data,'return'))
-            f:write(input.serialize(data))
-            f:close()
-            input.report("compiling " .. dataname .. " to", lucname)
-            if not utils.lua.compile(luaname,lucname) then
-                input.report("compiling failed for " .. dataname .. ", deleting file " .. lucname)
-                os.remove(lucname)
-            end
-        else
-            input.report("unable to save " .. dataname .. " in " .. name..input.luasuffix)
-        end
-    end
+    end)
 end
 
-function input.serialize(files)
-    -- This version is somewhat optimized for the kind of
-    -- tables that we deal with, so it's much faster than
-    -- the generic serializer. This makes sense because
-    -- luatools and mtxtools are called frequently. Okay,
-    -- we pay a small price for properly tabbed tables.
-    local t = { }
-    local concat = table.concat
-    local sorted = table.sortedkeys
-    local function dump(k,v,m)
-        if type(v) == 'string' then
-            return m .. "['" .. k .. "']='" .. v .. "',"
-        elseif #v == 1 then
-            return m .. "['" .. k .. "']='" .. v[1] .. "',"
-        else
-            return m .. "['" .. k .. "']={'" .. concat(v,"','").. "'},"
-        end
-    end
-    t[#t+1] = "return {"
-    if instance.sortdata then
-        for _, k in pairs(sorted(files)) do
-            local fk  = files[k]
-            if type(fk) == 'table' then
-                t[#t+1] = "\t['" .. k .. "']={"
-                for _, kk in pairs(sorted(fk)) do
-                    t[#t+1] = dump(kk,fk[kk],"\t\t")
-                end
-                t[#t+1] = "\t},"
-            else
-                t[#t+1] = dump(k,fk,"\t")
-            end
-        end
-    else
-        for k, v in pairs(files) do
-            if type(v) == 'table' then
-                t[#t+1] = "\t['" .. k .. "']={"
-                for kk,vv in pairs(v) do
-                    t[#t+1] = dump(kk,vv,"\t\t")
-                end
-                t[#t+1] = "\t},"
-            else
-                t[#t+1] = dump(k,v,"\t")
-            end
-        end
-    end
-    t[#t+1] = "}"
-    return concat(t,"\n")
-end
+local load_data = input.aux.load_data
 
 function input.aux.load_data(instance,pathname,dataname,filename)
-    local luaname, lucname, pname, fname
-    if input.usecache then
-        pname, fname = caches.setpath(instance,"trees"), caches.hashed(pathname)
-        filename = file.join(pname,fname)
-    else
-        if not filename or (filename == "") then
-            filename = dataname
-        end
-        pname, fname = pathname, filename
-    end
-    luaname = file.join(pname,fname) .. input.luasuffix
-    lucname = file.join(pname,fname) .. input.lucsuffix
-    local blob = loadfile(lucname)
-    if not blob then
-        blob = loadfile(luaname)
-    end
-    if blob then
-        local data = blob()
-        if data and data.content and data.type == dataname and data.version == input.cacheversion then
-            input.report("loading",dataname,"for",pathname,"from",filename)
-            instance[dataname][pathname] = data.content
+    input.cachepath = input.cachepath or caches.definepath(instance,"trees")
+    load_data(instance,pathname,dataname,filename,function(dataname,filename)
+        if input.usecache then
+            return file.join(input.cachepath(),caches.hashed(pathname))
         else
-            input.report("skipping",dataname,"for",pathname,"from",filename)
-            instance[dataname][pathname] = { }
-            instance.loaderror = true
+            if not filename or (filename == "") then
+                filename = dataname
+            end
+            return file.join(pathname,filename)
         end
-    else
-        input.report("skipping",dataname,"for",pathname,"from",filename)
-    end
+    end)
 end
 
 -- we will make a better format, maybe something xml or just text or lua

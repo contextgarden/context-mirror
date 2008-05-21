@@ -134,14 +134,22 @@ end
 --~ print("../test/"       .. " == " .. file.collapse_path("../test/"))
 --~ print("a/a"            .. " == " .. file.collapse_path("a/b/c/../../a"))
 
+--~ function file.collapse_path(str)
+--~     local ok, n = false, 0
+--~     while not ok do
+--~         ok = true
+--~         str, n = str:gsub("[^%./]+/%.%./", function(s)
+--~             ok = false
+--~             return ""
+--~         end)
+--~     end
+--~     return (str:gsub("/%./","/"))
+--~ end
+
 function file.collapse_path(str)
-    local ok, n = false, 0
-    while not ok do
-        ok = true
-        str, n = str:gsub("[^%./]+/%.%./", function(s)
-            ok = false
-            return ""
-        end)
+    local n = 1
+    while n > 0 do
+        str, n = str:gsub("([^/%.]+/%.%./)","")
     end
     return (str:gsub("/%./","/"))
 end

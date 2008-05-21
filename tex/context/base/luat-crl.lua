@@ -7,12 +7,11 @@
 if not versions then versions = { } end versions['luat-crl'] = 1.001
 if not curl     then curl     = { } end
 
-curl.cachepath = caches.setpath(texmf.instance,"curl")
-
-curl.cached = { }
+curl.cached    = { }
+curl.cachepath = caches.definepath(texmf.instance,"curl")
 
 function curl.fetch(protocol, name)
-    local cachename = curl.cachepath .. "/" .. name:gsub("[^%a%d%.]+","-")
+    local cachename = curl.cachepath() .. "/" .. name:gsub("[^%a%d%.]+","-")
 --  cachename = cachename:gsub("[\\/]", io.fileseparator)
     cachename = cachename:gsub("[\\]", "/")
     if not curl.cached[name] then

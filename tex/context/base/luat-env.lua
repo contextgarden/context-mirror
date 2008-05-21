@@ -35,8 +35,8 @@ if environment.useluc == nil then environment.useluc  = true  end
 if not environment.formatname or environment.formatname == "" then if tex then environment.formatname = tex.formatname end end
 if not environment.jobname    or environment.jobname    == "" then if tex then environment.jobname    = tex.jobname    end end
 
-if not environment.progname   or environment.progname   == "" then environment.progname   = "luatex"  end
-if not environment.engine     or environment.engine     == "" then environment.engine     = "context" end
+if not environment.progname   or environment.progname   == "" then environment.progname   = "context" end
+if not environment.engine     or environment.engine     == "" then environment.engine     = "luatex"  end
 if not environment.formatname or environment.formatname == "" then environment.formatname = "cont-en" end
 if not environment.formatpath or environment.formatpath == "" then environment.formatpath = '.'       end
 if not environment.enginepath or environment.enginepath == "" then environment.enginepath = '.'       end

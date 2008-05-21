@@ -11,263 +11,63 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% todo: more consistent both pi's and attributes to apply
+
 \doifnotmode {atpragma} {\endinput}
 
 % \xmlfilter{#1}{/*/name()} -> \xmltag
 
+\xmlresolveentities
+
+\startluacode
+    function math.register_xml_entities()
+        local entities, char = xml.entities, utf.char
+        for name, unicode in pairs(math.entities) do
+            if not entities[name] then
+                entities[name] = char(unicode)
+            end
+        end
+    end
+    math.register_xml_entities()
+
+    -- not yet needed, we have class info in char-def already
+    --
+    -- characters.data[0x2190].activemath = "mathleftarrow"
+    -- characters.data[0x2190].activemath = "mathuparrow"
+    -- characters.data[0x2192].activemath = "mathrightarrow"
+    -- characters.data[0x2193].activemath = "mathdownarrow"
+    --
+    -- function characters.activate(catcodes)
+    --     local char, sprint, format = utf.char, tex.sprint, string.format
+    --     for k,v in pairs(characters.data) do
+    --         local a = v.activemath
+    --         if a then -- how fast is this?
+    --             sprint(format("\\letcatcodecommand %s  %s \\%s",catcodes,k,a))
+    --         end
+    --     end
+    -- end
+    --
+    -- better do this the official way, i.e. defineactivecharacter since it
+    -- permits different meanings for different catcode tables (todo)
+    --
+    -- characters.activate(tex.ctxcatcodes)
+    -- characters.activate(tex.notcatcodes)
+\stopluacode
+
+% \def\mathrightarrow{\normalorfiller\rightarrow\rightarrowfill}
+% \def\mathleftarrow {\normalorfiller\leftarrow \leftarrowfill}
+% \def\mathdownarrow {\mathortext    \downarrow \empty}
+% \def\mathuparrow   {\mathortext    \uparrow   \empty}
+
+% \def\mathunderbrace{\normalorfiller\empty\upbracefill}
+% \def\mathoverbrace {\normalorfiller\empty\downbracefill}
+% \def\mathunderbar  {\normalorfiller\hrule\hrulefill}
+% \def\mathoverbar   {\normalorfiller\hrule\hrulefill}
+% \def\mathhat       {\normalorfiller\empty\empty} % todo
+
 %D Remark: from now on this is a module and no longer an xtag
 %D filter. There is an intermediate cleaner module but it has
 %D some namespace limitations. Here we do it the \MKV\ way.
-
-\startluacode
-    do
-
-        lxml.mml = lxml.mml or { }
-
-        local texsprint = tex.sprint
-        local format    = string.format
-        local xmlsprint = xml.sprint
-        local xmlcprint = xml.cprint
-
-        -- an alternative is to remap to private codes, where we can have
-        -- different properties .. to be done
-
-        local n_replacements = {
-        --  [" "] = utf.char(0x2002),  -- "&textspace;" -> tricky, no &; in mkiv
-            ["."] = "{.}",
-            [","] = "{,}",
-            [" "] = "",
-        }
-        local o_replacements = {
-            ["{"] = "\\mmlleftdelimiter\\lbrace",
-            ["}"] = "\\mmlrightdelimiter\\rbrace",
-            ["("] = "\\mmlleftdelimiter(",
-            [")"] = "\\mmlrightdelimiter)",
-            ["["] = "\\mmlleftdelimiter[",
-            ["]"] = "\\mmlrightdelimiter]",
-            ["<"] = "\\mmlleftdelimiter<",
-            [">"] = "\\mmlrightdelimiter>",
-            ["#"] = "\\mmlchar{35}",
-            ["$"] = "\\mmlchar{36}", -- $ 
-            ["%"] = "\\mmlchar{37}",
-            ["&"] = "\\mmlchar{38}",
-            ["^"] = "\\mmlchar{94}{}", -- strange, sometimes luatex math see the char instead of \char
-            ["_"] = "\\mmlchar{95}{}", -- so we need the {}
-            ["~"] = "\\mmlchar{126}",
-            [" "] = "",
-        }
-        local i_replacements = {
-            ["sin"]         = "\\mmlnolim{sin}",
-            ["cos"]         = "\\mmlnolim{cos}",
-            ["abs"]         = "\\mmlnolim{abs}",
-            ["arg"]         = "\\mmlnolim{arg}",
-            ["codomain"]    = "\\mmlnolim{codomain}",
-            ["curl"]        = "\\mmlnolim{curl}",
-            ["determinant"] = "\\mmlnolim{det}",
-            ["divergence"]  = "\\mmlnolim{div}",
-            ["domain"]      = "\\mmlnolim{domain}",
-            ["false"]       = "\\mmlnolim{false}",
-            ["gcd"]         = "\\mmlnolim{gcd}",
-            ["grad"]        = "\\mmlnolim{grad}",
-            ["identity"]    = "\\mmlnolim{id}",
-            ["image"]       = "\\mmlnolim{image}",
-            ["lcm"]         = "\\mmlnolim{lcm}",
-            ["max"]         = "\\mmlnolim{max}",
-            ["median"]      = "\\mmlnolim{median}",
-            ["min"]         = "\\mmlnolim{min}",
-            ["mode"]        = "\\mmlnolim{mode}",
-            ["mod"]         = "\\mmlnolim{mod}",
-            ["notanumber"]  = "\\mmlnolim{NaN}",
-            ["otherwise"]   = "\\mmlnolim{otherwise}",
-            ["true"]        = "\\mmlnolim{true}",
-            ["declare"]     = "\\mmlnolim{declare}",
-            ["as"]          = "\\mmlnolim{as}",
-            ["polar"]       = "\\mmlnolim{Polar}",
-            ["exp"]         = "\\mmlnolim{exp}",
-            ["ln"]          = "\\mmlnolim{ln}",
-            ["log"]         = "\\mmlnolim{log}",
-            ["sin"]         = "\\mmlnolim{sin}",
-            ["arcsin"]      = "\\mmlnolim{arcsin}",
-            ["sinh"]        = "\\mmlnolim{sinh}",
-            ["arcsinh"]     = "\\mmlnolim{arcsinh}",
-            ["cos"]         = "\\mmlnolim{cos}",
-            ["arccos"]      = "\\mmlnolim{arccos}",
-            ["cosh"]        = "\\mmlnolim{cosh}",
-            ["arccosh"]     = "\\mmlnolim{arccosh}",
-            ["tan"]         = "\\mmlnolim{tan}",
-            ["arctan"]      = "\\mmlnolim{arctan}",
-            ["tanh"]        = "\\mmlnolim{tanh}",
-            ["arctanh"]     = "\\mmlnolim{arctanh}",
-            ["cot"]         = "\\mmlnolim{cot}",
-            ["arccot"]      = "\\mmlnolim{arccot}",
-            ["coth"]        = "\\mmlnolim{coth}",
-            ["arccoth"]     = "\\mmlnolim{arccoth}",
-            ["csc"]         = "\\mmlnolim{csc}",
-            ["arccsc"]      = "\\mmlnolim{arccsc}",
-            ["csch"]        = "\\mmlnolim{csch}",
-            ["arccsch"]     = "\\mmlnolim{arccsch}",
-            ["sec"]         = "\\mmlnolim{sec}",
-            ["arcsec"]      = "\\mmlnolim{arcsec}",
-            ["sech"]        = "\\mmlnolim{sech}",
-            ["arcsech"]     = "\\mmlnolim{arcsech}",
-            [" "]           = "",
-        }
-
-        function lxml.mml.prepare_number(id,pattern)
-            local str = xml.content(lxml.id(id),pattern) or ""
-            texsprint(tex.ctxcatcodes,(str:gsub(".",n_replacements)))
-        end
-        function lxml.mml.prepare_operator(id,pattern)
-            local str = xml.content(lxml.id(id),pattern) or ""
-            tex.sprint(tex.ctxcatcodes,(str:gsub(".",o_replacements)))
-        end
-        function lxml.mml.prepare_identifier(id,pattern)
-            local str = xml.content(lxml.id(id),pattern) or ""
-            str = str:gsub("^%s*(.*)%s*$","%1")
-            local rep = i_replacements[str]
-            if rep then
-                tex.sprint(tex.ctxcatcodes,rep)
-            else
-                tex.sprint(tex.ctxcatcodes,(str:gsub(".",i_replacements)))
-            end
-        end
-
-        function lxml.mml.connect(id,pattern,separators) -- multiple separators
-            local n = xml.count(id,pattern)
-            if n == 0 then
-                -- skip
-            elseif n == 1 then
-                lxml.all(id,pattern)
-            else
-                local t = { }
-                for s in utf.gmatch(separators,"([^%s])") do
-                    t[#t+1] = s
-                end
-                for i=1,n do
-                    if i > 1 then
-                        texsprint(tex.ctxcatcodes,"{")
-                        texsprint(t[i] or t[#t] or "")
-                        texsprint(tex.ctxcatcodes,"}")
-                    end
-                    lxml.idx(id,pattern,i) -- kind of slow, some day ...
-                end
-            end
-        end
-
-        local function flush(e,tag,toggle)
-         -- texsprint(tex.ctxcatcodes,(toggle and "^{") or "_{")
-            if toggle then
-                texsprint(tex.ctxcatcodes,"^{")
-            else
-                texsprint(tex.ctxcatcodes,"_{")
-            end
-            if tag == "none" then
-                texsprint(tex.ctxcatcodes,"{}")
-            else
-                xmlsprint(e.dt)
-            end
-            if not toggle then
-                texsprint(tex.ctxcatcodes,"}")
-            else
-                texsprint(tex.ctxcatcodes,"}{}")
-            end
-            return not toggle
-        end
-
-        function lxml.mml.mmultiscripts(id)
-            local done, toggle = false, false
-            id = lxml.id(id)
-            -- for i=1,#id.dt do local e = id.dt[i] if type(e) == table then ...
-            for r, d, k in xml.elements(id,"/*") do
-                local e = d[k]
-                local tag = e.tg
-                if tag == "mprescripts" then
-                    texsprint(tex.ctxcatcodes,"{}")
-                    done = true
-                elseif done then
-                    toggle = flush(e,tag,toggle)
-                end
-            end
-            local done, toggle = false, false
-            for r, d, k in xml.elements(id,"/*") do
-                local e = d[k]
-                local tag = e.tg
-                if tag == "mprescripts" then
-                    break
-                elseif done then
-                    toggle = flush(e,tag,toggle)
-                else
-                    xmlsprint(e.dt)
-                    done = true
-                end
-            end
-        end
-
-        local columnalignments = {
-            left   = "flushleft",
-            right  = "flushright",
-            center = "middle",
-        }
-
-        local rowalignments = {
-            top      = "high",
-            bottom   = "low",
-            center   = "lohi",
-            baseline = "top",
-            axis     = "lohi",
-        }
-
-        local frames = {
-            none   = "off",
-            solid  = "on",
-            dashed = "on",
-        }
-
-        function lxml.mml.mtable(root)
-
-            root = lxml.id(root)
-
-            local at           = root.at
-            local rowalign     = at.rowalign
-            local columnalign  = at.columnalign
-            local rowaligns    = rowalign    and rowalign   :split(",") -- we have a faster one
-            local columnaligns = columnalign and columnalign:split(",") -- we have a faster one
-
-            -- todo: align, rowspacing, columnspacing, rowlines, columnlines
-
-            local frame        = frames[at.frame or "none"]
-            local framespacing = at.framespacing or ".5ex"
-
-            texsprint(tex.ctxcatcodes, format("\\bTABLE[frame=%s,offset=%s]",frame,framespacing))
-            for r, d, k in xml.elements(root,"/(mml:mtr|mml:mlabeledtr)") do
-                texsprint(tex.ctxcatcodes,"\\bTR")
-                local dk = d[k]
-                local at = dk.at
-                local rra, rca, col = at.rowalign or rowalign, at.columnalign or columnalign, 0
-                for rr, dd, kk in xml.elements(dk,"/mml:mtd") do
-                    col = col + 1
-                    local dk = dd[kk]
-                    local at = dk.at
-                    local rowspan = at.rowspan or 1
-                    local columnspan = at.columnspan or 1
-                    local cra = rowalignments   [(rowaligns    and rowaligns   [col]) or at.rowalign    or rra or "center"]
-                    local cca = columnalignments[(columnaligns and columnaligns[col]) or at.columnalign or rca or "center"]
-                    texsprint(tex.ctxcatcodes,format("\\bTD[align={%s,%s},nx=%s,ny=%s]$\\ignorespaces",cra,cca,columnspan,rowspan))
-                    xmlcprint(dk)
-                    texsprint(tex.ctxcatcodes,"\\removeunwantedspaces$\\eTD") -- $ 
-                end
-                if dk.tg == "mlabeledtr" then
-                    texsprint(tex.ctxcatcodes,"\\bTD")
-                    xmlcprint(xml.first(dk,"/!mml:mtd"))
-                    texsprint(tex.ctxcatcodes,"\\eTD")
-                end
-                texsprint(tex.ctxcatcodes,"\\eTR")
-            end
-            texsprint(tex.ctxcatcodes, "\\eTABLE")
-        end
-
-    end
-\stopluacode
 
 \unprotect
 
@@ -289,15 +89,13 @@
 
 \startmodule [mathml]
 
-%D First we load the entities:
-
-\usemodule[newmme] % will be replaced by math-ent or so
+\ctxlua{environment.loadlucfile("x-mathml")}
 
 \unprotect
 
 \def\MMLrm{\mr}
 
-\def\MMLseparator#1{{#1}} % nils space after separator
+\def\MMLseparator#1{\removeunwantedspaces{#1}\ignorespaces} % nils space after separator
 
 %D First we define some general formula elements.
 
@@ -350,11 +148,13 @@
 
 %D We start with the parent elements and the option handler.
 
-                \defineXMLdirective [mathml] \setupMMLappearance % todo
+% \defineXMLdirective [mathml] \setupMMLappearance % todo
+
+\def\xmlmathmldirective#1{\dosetvalue{MML#1}}
 
 %D In the styles, options can be set with:
 
-\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[@@MML#1]}
+\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[MML#1]} % no @@ because passed to lua
 
 %D We will apply inner math to all bits and pieces made up by an
 %D \type {apply}.
@@ -364,11 +164,11 @@
 
 %D Auxiliary MathML macros: (to be generalized)
 
-\def\mmlfirst  #1{\mmlfirst{#1}{/*}}       % \xmlsnippet{1}
+\def\mmlfirst  #1{\xmlindex{#1}{/*}{1}}    % \xmlsnippet{1}
 \def\mmlsecond #1{\xmlindex{#1}{/*}{2}}    % \xmlsnippet{2}
 \def\mmlthird  #1{\xmlindex{#1}{/*}{3}}    % \xmlsnippet{3}
 \def\mmlprelast#1{\xmlindex{#1}{/*}{-2}}   %
-\def\mmllast   #1{\xmlindex{#1}{/*}{-1}}   %
+\def\mmllast   #1{\xmlin{#1}{/*}{-1}}   %
 
 \starttexdefinition doifelsemmlfunction #1
     \xmldoifelse {#1} {/mml:fn} {
@@ -491,14 +291,14 @@
            \edef\MMLdoR{\noexpand\right\mmlapplyclosetoken}
         \fi
         \let\MMLctempresetlist\empty
-%         \xmldoifelse {#1} {/mml:apply} {
+        \xmldoifelse {#1} {/mml:apply} {
 %             % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
 %             \xmldoifelse {#1} {/mml:apply(mml:plus|mml:minus)} {% [a]
 %                 % yet incomplete and rather untested
 %                 % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
-%             } {% [b]
+            } {% [b]
 %                 \MMLcreset
-%             }
+            }
 %             \MMLdoL
 %             \xmlfirst{#1}{/*}
 %             \ifconditional\somepostponedMMLactions
@@ -527,10 +327,10 @@
     \xmlall{#1}{../[position()>1]}
 \stopxmlsetups
 \startxmlsetups mml:apply:mml:fn
+    \hbox{todo}% obsolete
 \stopxmlsetups
 \startxmlsetups mml:apply:mml:csymbol
-\stopxmlsetups
-\startxmlsetups mml:apply:mml:ci
+    \hbox{todo}
 \stopxmlsetups
 
                 % \startsetups mmc:fn:apply
@@ -577,23 +377,13 @@
                 %     }
                 % \stopsetups
 
-                % \defineXMLsingular
-                %   [csymbol]
-                %   [encoding=text,
-                %    definitionURL=]
-                %   {\directsetup{mmc:csymbol:apply:singular}}
 
-                % \startsetups mmc:csymbol:apply:singular
-                %     \lowercasestring\XMLpar{csymbol}{definitionURL}{}\to\mmcSymbolURL
-                %     \directsetup{mmc:csymbol:\mmcSymbolURL}
-                % \stopsetups
-
-                % \startsetups mmc:ci:apply
-                %     \getXMLstackdata\plusone
-                %     \ifnum\XMLstacklevel>\plusone
-                %        \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
-                %     \fi
-                % \stopsetups
+\startxmlsetups mml:apply:mml:ci
+    \xmlfirst{#1}{/mml:ci}
+    \ifnum\xmlcount{#1}{/*}>\plusone
+       \left(\MMLcreset\xmlconcatrange{#1}{/*}{2}{}{\MMLseparator,}\right)
+    \fi
+\stopxmlsetups
 
 % reln
 
@@ -686,45 +476,43 @@
                             \MMLcreset
                             \getXMLentity{NegThinSpace}
                             \MMCfnleft
-                            \ifnum\XMLstacklevel=\plustwo\MMLccomma\fi
-                            \flushXMLstackwith\plustwo\MMLccomma
+                            \ifnum\XMLstacklevel=\plustwo,\fi
+                            \flushXMLstackwith\plustwo,
                             \MMCfnright
                             \endgroup
                         }
                     }
                 \stopsetups
 
-% c*
-
-                \defineXMLargument [csymbol] [encoding=text] {\XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}}
-
 %D The next definition provide a kind of plug-in mechanism (see
 %D the open math extension module).
 
-                \defineXMLsingular
-                  [csymbol]
-                  [encoding=text,
-                   definitionURL=]
-                  {\doifsomething{\XMLop{definitionURL}}{\directsetup{mmc:csymbol:apply}}}
+% http://www.publishers.com/somename
 
-                \startsetups mmc:csymbol:apply
-                    \begingroup
-                    \rawXMLstacktext\plusone % still on stack, no check, just attr test
-                    % http://www.publishers.com/SomeName
-                    \lowercasestring\XMLpar{csymbol}{definitionURL}{}\to\mmcSymbolURL
-                    \doifsetupselse{mmc:csymbol:} {\mmcSymbolURL} {
-                        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\mmcSymbolURL}}
-                    } {
-                        % SomeName (fallback)
-                        \splitfilename{\XMLpar{csymbol}{definitionURL}{}}
-                        \doifsetupselse{mmc:csymbol:\splitoffbase} {
-                            \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\splitoffbase}}
-                        } {
-                            \endgroup
-                            \XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}
-                        }
-                    }
-                \stopsetups
+\starttexdefinition mmlapplycsymbol #1#2#3#4
+    % #1=full url, #2=name, #3=encoding, #4=text
+    \doifelse {#3} {text} {
+        {\mr #4}
+    } {
+        \doifsetupselse {mml:csymbol:#1} {
+            % full url
+            \directsetup{mml:csymbol:#1}
+        } {
+            % somename (fallback)
+            \doifsetupselse {mmc:csymbol:#2} {
+                \directsetup{mml:csymbol:#2}
+            } {
+                \XMLval{mmc:cs}{#3}{}% todo
+            }
+        }
+    }
+\stoptexdefinition
+
+\startxmlsetups mml:csymbol
+    \ctxlua{lxml.mml.csymbol("#1")}
+\stopxmlsetups
+
+% \startxmlsetups mml:csymbol:<url> \stopxmlsetups
 
 %D Alternative b will convert periods into comma's:
 %D
@@ -757,7 +545,7 @@
 % helpers cn
 
 \startxmlsetups mml:cn:default
-    \mfunction{\xmlflush{#1}}
+    \mathopnolimits{\xmlflush{#1}}
 \stopxmlsetups
 
 % helpers ci
@@ -802,7 +590,7 @@
     \xmlsetup{#1}{mml:cn:polar}
 \stopxmlsetups
 
-% \doif\@@MMLcnalternative\v!b{\redefinemathcharacter [.][ord][mi]["3B]\relax}%
+% \doif\MMLcnalternative\v!b{\redefinemathcharacter [.][ord][mi]["3B]\relax}%
 %
 % todo: number function from mmp
 
@@ -817,15 +605,15 @@
     \ifx\mmlintegerbase\empty
         \xmlflush{#1}
     \else
-        \doifelse \@@MMLbasesymbol \v!no {
+        \doifelse \MMLbasesymbol \v!no {
             \MMLcCNbasedata{\xmlflush{#1}}
         } {
             \MMLcCNbasedata{\xmlflush{#1}}_{
                 \hbox {$
-                    \rm
+                    \mr
                     \scriptscriptstyle
                     \processaction
-                        [\@@MMLbasesymbol]
+                        [\MMLbasesymbol]
                         [\v!characters=>\MMLcCNbasestring BODH,
                                \v!text=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
                             \s!unknown=>\mmlintegerbase]
@@ -836,7 +624,7 @@
 \stopxmlsetups
 
 \def\MMLcCNbasedata#1%
-  {\ifnum\mmlintegerbase>10 \relax{\rm#1}\else#1\fi}
+  {\ifnum\mmlintegerbase>10 \relax{\mr#1}\else#1\fi}
 
 \def\MMLcCNbasestring#1#2#3#4%
   {\ifnum\mmlintegerbase= 2 #1\else
@@ -846,17 +634,17 @@
          \mmlintegerbase      \fi\fi\fi\fi}
 
 \startxmlsetups mml:cn:polar
-    \xmlsetup{#1}{mml:cn:polar:\@@MMLpolaralternative}
+    \xmlsetup{#1}{mml:cn:polar:\MMLpolaralternative}
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:a
     \mathopnolimits{Polar}% ? ? ?
-    \left(\xmlsnippet{#1}{1}\MMLccomma\xmlsnippet{#1}{1}\right)
+    \left(\xmlsnippet{#1}{1},\xmlsnippet{#1}{1}\right)
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:b
-%   {\rm e}^{\xmlsnippet{#1}{1}\mskip2mu\getXMLentity{imaginaryi}}
-    {\rm e}^{\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}{\rm i}}
+%   {\mr e}^{\xmlsnippet{#1}{1}\mskip2mu\getXMLentity{imaginaryi}}
+    {\mr e}^{\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}{\mr i}}
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:c
@@ -869,7 +657,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:cn:complex
-    \xmlsnippet{#1}{1} + \xmlsnippet{#1}{3}{\rm i}
+    \xmlsnippet{#1}{1} + \xmlsnippet{#1}{3}{\mr i}
 \stopxmlsetups
 
 \startxmlsetups mml:cn:complex-cartesian
@@ -877,9 +665,9 @@
 \stopxmlsetups
 
 \startxmlsetups mml:cn:float
-    \doifelse \@@MMLfloatsymbol \v!no {
+    \doifelse \MMLfloatsymbol \v!no {
         % make sure that e shows up ok
-        \mfunction{\xmlflush{#1}}
+        \mathopnolimits{\xmlflush{#1}}
     } {
         % we should ignore \entities !
         \edef\mmlfloatstring{\xmlflush{#1}}
@@ -890,7 +678,7 @@
             \mmlfloatstring
         \else
             \first
-            \doifelse \@@MMLfloatsymbol {dot} \cdot \times
+            \doifelse \MMLfloatsymbol {dot} \cdot \times
             10^{\last}
         \fi \fi
     }
@@ -901,19 +689,19 @@
 \stopxmlsetups
 
 \startxmlsetups mml:cn:e-notation
-    \doifelse \@@MMLenotationsymbol \v!no {
+    \doifelse \MMLenotationsymbol \v!no {
         \xmlsnippet{#1}{1}
-        \unskip\mfunction{e}\ignorespaces
+        \unskip\mathopnolimits{e}\ignorespaces
         \xmlsnippet{#1}{3}
     } {
         \xmlsnippet{#1}{1}
-        \doifelse \@@MMLenotationsymbol {dot} \cdot
+        \doifelse \MMLenotationsymbol {dot} \cdot
         \times10^{\xmlsnippet{#1}{3}}
     }
 \stopxmlsetups
 
 \startxmlsetups mml:cn:logical
-    \mfunction{\xmlflush{#1}}
+    \mathopnolimits{\xmlflush{#1}}
 \stopxmlsetups
 
 \startxmlsetups mml:cn:rational
@@ -935,30 +723,30 @@
 \stopxmlsetups
 
 \startxmlsetups mml:interval:closed
-    \left[\mmlsecond{#1}\MMLseparator\@@MMLintervalseparator\mmlthird{#1}\right]
+    \left[\mmlfirst{#1}\MMLseparator\MMLintervalseparator\mmlsecond{#1}\right]
 \stopxmlsetups
 
 \startxmlsetups mml:interval:open-closed
-    \doifelse \@@MMLintervalalternative \v!b {
-        \left<\mmlsecond{#1}\MMLseparator\@@MMLintervalseparator\mmlthird{#1}\right]
+    \doifelse \MMLintervalalternative \v!b {
+        \left<\mmlfirst{#1}\MMLseparator\MMLintervalseparator\mmlsecond{#1}\right]
      } {
-        \left(\mmlsecond{#1}\MMLseparator\@@MMLintervalseparator\mmlthird{#1}\right]
+        \left(\mmlfirst{#1}\MMLseparator\MMLintervalseparator\mmlsecond{#1}\right]
      }
 \stopxmlsetups
 
 \startxmlsetups mml:interval:closed-open
-    \doifelse \@@MMLintervalalternative \v!b {
-        \left[\mmlsecond{#1}\MMLseparator\@@MMLintervalseparator\mmlthird{#1}\right>
+    \doifelse \MMLintervalalternative \v!b {
+        \left[\mmlfirst{#1}\MMLseparator\MMLintervalseparator\mmlsecond{#1}\right>
      } {
-        \left[\mmlsecond{#1}\MMLseparator\@@MMLintervalseparator\mmlthird{#1}\right)
+        \left[\mmlfirst{#1}\MMLseparator\MMLintervalseparator\mmlsecond{#1}\right)
      }
 \stopxmlsetups
 
 \startxmlsetups mml:interval:open
-    \doifelse \@@MMLintervalalternative \v!b {
-        \left<\mmlsecond{#1}\MMLseparator\@@MMLintervalseparator\mmlthird{#1}\right>
+    \doifelse \MMLintervalalternative \v!b {
+        \left<\mmlfirst{#1}\MMLseparator\MMLintervalseparator\mmlsecond{#1}\right>
      } {
-        \left(\mmlsecond{#1}\MMLseparator\@@MMLintervalseparator\mmlthird{#1}\right)
+        \left(\mmlfirst{#1}\MMLseparator\MMLintervalseparator\mmlsecond{#1}\right)
      }
 \stopxmlsetups
 
@@ -981,17 +769,22 @@
     \xmlsetup{#1}{\xmlfilter{#1}{/mml:apply/*/name(1)}}
 \stopxmlsetups
 
-\startxmlsetups xml:mmc:process
+\startxmlsetups xml:mml:inverse
     \xmlsetsetup{\xmldocument}{mml:apply/mml:apply/mml:inverse/../../..}{mml:apply:inverse}
 \stopxmlsetups
 
-\xmlregistersetup{xml:mmc:process}
+\xmlregistersetup{xml:mml:inverse}
 
 % condition
 
 % maybe a fast \xmlnonfirst
 
-\startxmlsetups mmc:condition
+\startxmlsetups mml:bvar     \xmlflush{#1} \stopxmlsetups
+\startxmlsetups mml:lowlimit \xmlflush{#1} \stopxmlsetups
+\startxmlsetups mml:uplimit  \xmlflush{#1} \stopxmlsetups
+\startxmlsetups mml:degree   \xmlflush{#1} \stopxmlsetups
+
+\startxmlsetups mml:condition
 %     \xmldoif {#1} {/mml:bvar} {
 %         \xmlfirst{#1}{/mml:bvar}\mid
 %     }
@@ -1003,7 +796,7 @@
 \setupMMLappearance[declare][\c!state=\v!start]
 
 \startxmlsetups mml:declare
-    \doif \@@MMLdeclarestate \v!start {
+    \doif \MMLdeclarestate \v!start {
         \mathopnolimits{declare}
         \xmlindex{#1}{/*}{1}
         \ifnum \xmlcount{#1}{/} > \plusone
@@ -1019,15 +812,15 @@
 
 \setupMMLappearance[lambda][\c!alternative=b]
 
-\startxmlsetups mmc:lambda
+\startxmlsetups mml:lambda
     \begingroup
-    \doifelse \@@MMLlambdaalternative \v!a {
+    \doifelse \MMLlambdaalternative \v!a {
         \lambda\left(\xmlconcat{#1}{/!mml:lambda}{\MMLseparator,}\left)
     } {
         \ifnum \xmlcount {#1} {/mml:bvar} > \plusone
             \left(\xmlconcat{#1}{/mml:bvar}{\MMLseparator,}\right)
         \else
-            \xmlfirstnamed{#1}{bvar}
+            \xmlfirst{#1}{/mml:bvar}
         \fi
         \mapsto
         \MMLcreset
@@ -1043,9 +836,9 @@
     \MMLcreset
 %   \let\MMLcCIfunction\firstofoneargument % brrr ? ? ?
     \doifelsemmlfunction {
-       \left(\xmlconcatrange{#1}{2}{}{\circ}\right)
+       \left(\xmlconcatrange{#1}{/*}{2}{}{\circ}\right)
     } {
-       \xmlconcatrange{#1}{2}{}{\circ}
+       \xmlconcatrange{#1}{/*}{2}{}{\circ}
     }
     \endgroup
 \stopxmlsetups
@@ -1058,12 +851,12 @@
 
 \startxmlsetups mml:piecewise
     \processaction
-         [\@@MMLpieceseparator]
-         [    \v!yes=>\def\theMMLpieceseparator{,\@col@amp@},
-               \v!no=>\let\theMMLpieceseparator\@col@amp@,
-          \s!default=>\let\theMMLpieceseparator\@col@amp@,
-          \s!unknown=>\def\theMMLpieceseparator{\,\,\hbox{\@@MMLpieceseparator}\,\,}]
-    \cases \xmlflush{#1}
+         [\MMLpieceseparator]
+         [    \v!yes=>\def\theMMLpieceseparator{,&},
+               \v!no=>\def\theMMLpieceseparator{&},
+          \s!default=>\def\theMMLpieceseparator{&},
+          \s!unknown=>\def\theMMLpieceseparator{\,\,\hbox{\MMLpieceseparator}\,\,}]
+    \cases{\xmlflush{#1}}
 \stopxmlsetups
 
 \startxmlsetups mml:piece
@@ -1071,7 +864,8 @@
 \stopxmlsetups
 
 \startxmlsetups mml:otherwise
-    \xmlflush{#1}\MMLcPIECEseparator\@col@amp@\mathematics{otherwise}\crcr
+%     \xmlflush{#1}\MMLcPIECEseparator&{\mr otherwise}\crcr
+    \xmlflush{#1}&{\mr otherwise}\crcr
 \stopxmlsetups
 
 % end of piece
@@ -1090,10 +884,10 @@
 
 \startxmlsetups mml:divide
     \advance\mmldividelevel\plusone
-    \doifelse \@@MMLdividealternative \v!b {
+    \doifelse \MMLdividealternative \v!b {
         \mmlsecond{#1}/\mmlthird{#1}
     } {
-        \ifnum \mmldividelevel > \@@MMLdividelevel \relax % threshold
+        \ifnum \mmldividelevel > \MMLdividelevel \relax % threshold
             \mmlsecond{#1}/\mmlthird{#1}
         \else
             \MMLcreset
@@ -1105,20 +899,16 @@
 
 % min max
 
-\startxmlsetups mml:min
-    \xmldoifelse {#1} {/mml:bvar} {
-        {}_{\xmlfirst{#1}{/mml:bvar}}
-    } {
-    }
-    \left\{\xmlconcat{#1}{/!(mml:bvar\string|mml:min)}{\wedge}{\MMLseparator,}\right\}
-\stopxmlsetups
+\startxmlsetups mml:min \mathopnolimits{min} \xmlsetup{#1}{mml:minmax} \stopxmlsetups
+\startxmlsetups mml:max \mathopnolimits{max} \xmlsetup{#1}{mml:minmax} \stopxmlsetups
 
-\startxmlsetups mml:max
-    \xmldoifelse {#1} {/mml:bvar} {
+\startxmlsetups mml:minmax
+    \xmldoif {#1} {/mml:bvar} {
         {}_{\xmlfirst{#1}{/mml:bvar}}
-    } {
     }
-    \left\{\xmlconcat{#1}{/!(mml:bvar\string|mml:max)}{\wedge}{\MMLseparator,}\right\}
+    \left\{
+    \xmlconcat{#1}{/!(mml:bvar\string|mml:max\string|mml:min)}{\MMLseparator,}
+    \right\}
 \stopxmlsetups
 
 % minus plus
@@ -1135,7 +925,7 @@
 \newcount\mmlpluscounter
 
 \startxmlsetups mml:plus
-    \doifelse \@@MMLsignreduction \v!yes {
+    \doifelse \MMLsignreduction \v!yes {
         \MMLdoL
         \xmlsetup{#1}{mml:plus:reset}
         \xmlcommand{#1}{/!mml:plus}{mml:plus:body}
@@ -1176,7 +966,7 @@
 \newcount\mmlminuscounter
 
 \startsetups mml:minus
-    \doifelse \@@MMLsignreduction \v!yes {
+    \doifelse \MMLsignreduction \v!yes {
     } {
     }
     \ifnum\xmlcount{#1}{/!mml:minus}=\plusone
@@ -1210,7 +1000,7 @@
 
 \startxmlsetups mml:power
     \xmldoifelse {#1} {/mml:apply}  {
-        \doifelse \@@MMLpowerreduction \v!yes {
+        \doifelse \MMLpowerreduction \v!yes {
             \xmldoifelse {#1} {/(\MMLcfunctionlist)} {
                 \gdef\MMLpowerelement{\mmlthird{#1}}% postpone, no xdef
                 \MMLcreset\mmlsecond{#1}
@@ -1235,26 +1025,26 @@
 
 \startxmlsetups mml:times
     \setMMLcreset{\MMLcfunctionlist\string|\MMLcconstructlist}%
-    \doifelse\@@MMLtimesauto\v!no {
-        \let\@@MMLtimes@@symbol\@@MMLtimessymbol
+    \doifelse\MMLtimesauto\v!no {
+        \let\MMLtimes@@symbol\MMLtimessymbol
     } {
         \xmldoifelse {#1} {/mml:cn[name(1) == 'mml:cn']} {% name(1) is next one
-           \doifinsetelse\@@MMLtimessymbol{\v!yes,\v!no} {
-                \let\@@MMLtimes@@symbol\v!yes
+           \doifinsetelse\MMLtimessymbol{\v!yes,\v!no} {
+                \let\MMLtimes@@symbol\v!yes
             } {
-                \let\@@MMLtimes@@symbol\@@MMLtimessymbol
+                \let\MMLtimes@@symbol\MMLtimessymbol
             }
         } {
-            \let\@@MMLtimes@@symbol\@@MMLtimessymbol
+            \let\MMLtimes@@symbol\MMLtimessymbol
         }
     }
-    \doifelse\@@MMLtimes@@symbol\v!yes {
+    \doifelse\MMLtimes@@symbol\v!yes {
         \xmlconcat{#1}{/!mml:times}{\times}
     } {
-        \doifelse\@@MMLtimes@@symbol{dot} {
+        \doifelse\MMLtimes@@symbol{dot} {
             \xmlconcat{#1}{/!mml:times}{\cdot}
         } {
-            \doifelse\@@MMLtimes@@symbol{times} {
+            \doifelse\MMLtimes@@symbol{times} {
                 \xmlconcat{#1}{/!mml:times}{\times}
             } {
                 \xmlall{#1}{/!mml:times}
@@ -1268,7 +1058,7 @@
 \startxmlsetups mml:root
     \xmldoifelse {#1} {/mml:degree} {
         \root
-            \doifnot\@@MMLrootsymbol\v!no{\MMLcreset\xmltext{#1}{/mml:degree}}
+            \doifnot\MMLrootsymbol\v!no{\MMLcreset\xmltext{#1}{/mml:degree}}
         \of
     } {
         \sqrt
@@ -1286,11 +1076,11 @@
 
 % and or xor implies, not
 
-\startxmlsetups mml:and          \xmlconcat{#1}{/!mml:and}    {2}{}{\wedge}               \stopxmlsetups
-\startxmlsetups mml:or           \xmlconcat{#1}{/!mml:or}     {2}{}{\vee}                 \stopxmlsetups
-\startxmlsetups mml:xor          \xmlconcat{#1}{/!mml:xor}    {2}{}{\mathopnolimits{xor}} \stopxmlsetups
-\startxmlsetups mml:implies      \xmlconcat{#1}{/!mml:implies}{2}{}{\Rightarrow}          \stopxmlsetups
-\startxmlsetups mml:not     \neg \xmlall   {#1}{/!mml:not}                                \stopxmlsetups
+\startxmlsetups mml:and          \xmlconcat{#1}{/!mml:and}    {\wedge}               \stopxmlsetups
+\startxmlsetups mml:or           \xmlconcat{#1}{/!mml:or}     {\vee}                 \stopxmlsetups
+\startxmlsetups mml:xor          \xmlconcat{#1}{/!mml:xor}    {\mathopnolimits{xor}} \stopxmlsetups
+\startxmlsetups mml:implies      \xmlconcat{#1}{/!mml:implies}{\Rightarrow}          \stopxmlsetups
+\startxmlsetups mml:not     \neg \xmlall   {#1}{/!mml:not}                           \stopxmlsetups
 
 % forall exists
 
@@ -1393,7 +1183,7 @@
 
 \startxmlsetups mml:relation
     \edef\mmlapplyaction{\xmlfilter{#1}{/*/name()}}
-    \MMLcreset \xmlsetup{#1}{mml:relation:\xmlattdef{#1}{align}{no}}
+    \MMLcreset \xmlsetup{#1}{mml:relation:\xmlattdef{#1}{align}{\MMLrelationalign}}
 \stopxmlsetups
 
 \startxmlsetups mml:relation:default
@@ -1444,7 +1234,7 @@
 
 \setupMMLappearance[int][\c!location=\v!top]
 
-\def\doMMLlimits#1{\doifelsevalue{@@MML#1\c!location}\v!top\limits\nolimits}
+\def\doMMLlimits#1{\doifelsevalue{MML#1\c!location}\v!top\limits\nolimits}
 
 \startxmlsetups mml:int
     \MMLcreset
@@ -1478,16 +1268,13 @@
         \xmlfirst{#1}{/mml:ci}
     }
     \xmldoifelse {#1} {/mml:bvar} {
-        \thinspace \mfunction{d} \xmlfirst{#1}{/mml:bvar}
+        \thinspace {\mr d} \xmlfirst{#1}{/mml:bvar}
     } {
         % nothing
     }
 \stopxmlsetups
 
-                \setupMMLappearance[diff][\c!location=\v!top,\c!alternative=\v!a]
-
-                \defineXMLcommand [diff]        {\directsetup{mmc:diff}}
-                \defineXMLcommand [partialdiff] {\directsetup{mmc:partialdiff}}
+\setupMMLappearance[diff][\c!location=\v!top,\c!alternative=\v!a]
 
 % \setupMMLappearance[diff][alternative=b]
 %
@@ -1505,118 +1292,104 @@
 % </apply></math>
 % \stopXMLdata
 
-                \startsetups mmc:diff
-                   \MMLcreset
-                   \doifelse\@@MMLdiffalternative\v!a {
-                        \XMLdoifonstackelse{lambda} {
-                            % a special case (mathadore/openmath)
-                            \begingroup
-                                \defineXMLsave[ci]
-                                \defineXMLsave[cn]
-                                \defineXMLprocess[lambda]
-                                \defineXMLprocess[bvar]
-                                \frac {
-                                    d^{\XMLfirstnamed{bvar}\XMLflush{cn}}{\XMLfirstnamed{lambda}\XMLflush{ci}}
-                                } {
-                                    d{\XMLfirstnamed{bvar}\XMLflush{ci}}^{\XMLfirstnamed{bvar}\XMLflush{cn}}
-                                }
-                            \endgroup
+\startxmlsetups mml:diff
+   \MMLcreset
+   \doifelse \MMLdiffalternative \v!a {
+        \xmldoifelse {#1} {/mml:lambda} {
+            % a special case (mathadore/openmath)
+            \frac {
+                d^{\xmlfirst{#1}{/mml:bvar}\xmlfirst{#1}{/mml:cn}}{\xmlfirst{#1}{/mml:lambda}\xmlfirst{#1}{/mml:ci}}
+            } {
+                d{\xmlfirst{#1}{/mml:bvar}\xmlfirst{#1}{/mml:ci}}^{\xmlfirst{#1}{/mml:bvar}\xmlfirst{#1}{/mml:cn}}
+            }
+        } {
+            \xmldoifelse {#1} {/mml:bvar} {
+                \frac {
+                    {\mr d}{
+                        \xmldoifelse {#1} {/mml:degree} {
+                            ^{\xmlconcat{#1}{/mml:degree}\empty}
                         } {
-                            \XMLdoifonstackelse{bvar} {
-                                \frac {
-                                    \XMLdoifonstackelse{degree} {
-                                        \collectXMLnamedstack{degree}\empty
-                                    } {
-                                        \collectXMLnamedstacknamed{bvar}{degree}+
-                                    }
-                                    \mfunction{\getXMLentity{mathematicald}}
-                                    ^{\the\XMLRtoks}
-                                    \doif\@@MMLdifflocation\v!top {
-                                        \XMLdoifonstackelse{ci} {
-                                            \XMLfirstnamed{ci}
-                                        } {
-                                            \MMLcreset\XMLfirstnamed{apply}
-                                        }
-                                    }
-                                } {
-                                    \mfunction{\getXMLentity{mathematicald}}
-                                    \begingroup
-                                        \defineXMLsave[degree]
-                                        \XMLfirstnamed{bvar}
-                                        \doifXMLdata{degree} {
-                                            ^{\XMLflush{degree}}
-                                        }
-                                    \endgroup
-                                }
-                                \doifnot\@@MMLdifflocation\v!top {
-                                    \left(\MMLcreset\XMLfirstnamed{apply,ci}\right)
-                                }
-                            } {
-                                \flushXMLstackfrom\plustwo^\prime
-                            }
-                        }
-                    } {
-                        \MMLcreset
-                        \XMLfirstnamed{apply,ci}
-                        % there can be problems with nested diff's: ^^{} error
-                        % so we add an empty group here
-                        {}^
-                        {
-                            \XMLdoifonstackelse{degree} {
-                                \defXMLfirstnamedtext\ascii{degree}
-                                \dorecurse\ascii\prime
-                            } {
-                                \prime
+                            \xmldoif {#1} {/mml:bvar/mml:degree} {
+                                ^{\xmlconcat{#1}{/mml:bvar/mml:degree}+}
                             }
                         }
                     }
-                \stopsetups
-
-                \startsetups mmc:partialdiff
-                    \XMLdoifonstackelse{list} {
-                        \getXMLentity{capitaldifferentiald}_{
-                            \begingroup
-                                \setfalse\mmllistdelimiters
-                                \XMLallnamed{list}
-                            \endgroup
-                        }
-                        \XMLfirstnamed{apply,reln,ci,cn}
-                    } {
-                        \XMLdoifonstackelse{bvar} {
-                            \frac {
-                                \XMLdoifonstackelse{degree} {
-                                    \collectXMLnamedstack{degree}\empty
-                                } {
-                                    \collectXMLnamedstacknamed{bvar}{degree}+
-                                }
-                                \getXMLentity{differentiald}^{\the\XMLRtoks}
-                                \MMLcreset
-                                \XMLfirstnamed{apply,reln,ci,cn}
-                            } {
-                                \defineXMLnested[bvar]
-                                    {\directsetup{mmc:bvar:diff:start}}
-                                    {\directsetup{mmc:bvar:diff:stop}}
-                                \XMLfirstnamed{bvar}
-                            }
+                    \doif \MMLdifflocation \v!top {
+                        \xmldoifelse {#1} {/mml:ci} {
+                            \xmlfirst{#1}{/mml:ci}
                         } {
-                            \XMLfirstnamed{apply,reln,ci,cn}
+                            \MMLcreset
+                            \xmlfirst{#1}{/mml:apply}
                         }
                     }
-                \stopsetups
-
-                \startsetups mmc:bvar:diff:start
-                    \begingroup
-                \stopsetups
-
-                \startsetups mmc:bvar:diff:stop
-                    \getXMLentity{differentiald}\XMLfirstnamed{apply,reln,ci,cn}
-                    \XMLdoifonstackelse{degree} {
-                        ^{\XMLfirstnamed{degree}}
-                    } {
-                        % nothing
+                } {
+                    {\mr d}
+                    \xmlfirst{#1}{/mml:bvar/!mml:degree}
+                    \xmldoif {#1} {/mml:bvar/mml:degree} {
+                        ^{\xmlfirst{#1}{/mml:bvar/mml:degree}}
                     }
-                    \endgroup
-                \stopsetups
+                }
+                \doifnot \MMLdifflocation \v!top {
+                    \left(\MMLcreset\xmlfirst{#1}{/(mml:apply\string|mml:ci)}\right)
+                }
+            } {
+                \xmlconcatrange{#1}{/*}{2}{}^\prime
+            }
+        }
+    } {
+        \MMLcreset
+        \xmlfirst{#1}{/(mml:apply\string|mml:ci)}
+        % there can be problems with nested diff's: ^^{} error
+        % so we add an empty group here
+        {}^
+        {
+            \xmldoifelse {#1} {/mml:degree} {
+                \edef\mmldegree{\xmlfirst{#1}{/mml:degree/mml:cn}}
+                \ifx\mmldegree\empty
+                    % what to do here
+                \else
+                    \dorecurse\mmldegree\prime
+                \fi
+            } {
+                \prime
+            }
+        }
+    }
+\stopxmlsetups
+
+\startxmlsetups mml:partialdiff
+    \xmldoifelse {#1} {/mml:list} {
+        {\mr D}_{
+            \begingroup
+                \setfalse\mmllistdelimiters
+                \xmlall{#1}{/mml:list}
+            \endgroup
+        }
+        \xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
+    } {
+        \xmldoifelse {#1} {/mml:bvar} {
+            \frac {
+                {\mr d}^{
+                    \xmldoifelse {#1} {/mml:degree} {
+                        \xmlconcat{#1}{/mml:degree}\empty
+                    } {
+                        \xmlconcat{#1}{/mml:bvar/mml:degree}+
+                    }
+                }
+                \MMLcreset
+                \xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
+            } {
+                \xmlfirst{#1}{/mml:bvar}
+                {\mr d}\xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
+                \xmldoif {#1} {/mml:degree} {
+                    ^{\xmlfirst{#1}{/mml:degree}}
+                }
+            }
+        } {
+            \xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
+        }
+    }
+\stopxmlsetups
 
 % option: to be discussed with taco/aditya: all math functions \mathentity
 %
@@ -1627,25 +1400,25 @@
 \startxmlsetups mml:divergence \mathopnolimits{div}      \xmlall{#1}{/!mml:divergence} \stopxmlsetups
 \startxmlsetups mml:grad       \mathopnolimits{grad}     \xmlall{#1}{/!mml:grad}       \stopxmlsetups
 \startxmlsetups mml:curl       \mathopnolimits{curl}     \xmlall{#1}{/!mml:curl}       \stopxmlsetups
-\startxmlsetups mml:laplacian  \mathopnolimits{\nabla^2} \xmlall{#1}{/!mml:laplacian}  \stopxmlsetups
+\startxmlsetups mml:laplacian  \nabla^2                  \xmlall{#1}{/!mml:laplacian}  \stopxmlsetups
 \startxmlsetups mml:ident      \mathopnolimits{identity} \xmlall{#1}{/!mml:ident}      \stopxmlsetups
 
 \setupMMLappearance[domain]  [symbol=]
 \setupMMLappearance[codomain][symbol=]
 
 \startxmlsetups mml:domain
-    \doifelsenothing \@@MMLdomainsymbol {
+    \doifelsenothing \MMLdomainsymbol {
         \mathopnolimits{domain}\MMLcreset\xmlall{#1}{/!mml:domain}
     } {
-        \@@MMLdomainsymbol_{\xmlall{#1}{/!mml:domain}}
+        \MMLdomainsymbol_{\xmlall{#1}{/!mml:domain}}
     }
 \stopxmlsetups
 
 \startxmlsetups mml:codomain
-    \doifelsenothing \@@MMLcodomainsymbol {
+    \doifelsenothing \MMLcodomainsymbol {
         \mathopnolimits{codomain}\MMLcreset\xmlall{#1}{/!mml:codomain}
     } {
-        \@@MMLcodomainsymbol_{\xmlall{#1}{/!mml:codomain}}
+        \MMLcodomainsymbol_{\xmlall{#1}{/!mml:codomain}}
     }
 \stopxmlsetups
 
@@ -1653,12 +1426,13 @@
 
 \startxmlsetups mml:set
     \left\{
-    \xmldoif {#1} {/mml:condition} {
+    \xmldoifelse {#1} {/mml:condition} {
         \xmlfirst{#1}{/mml:bvar}\,\middle\vert\,\xmlfirst{#1}{/mml:condition}
     } {
         \xmlconcat{#1}{/!mml:set}{\MMLseparator,}
     }
     \right\}
+    \relax % needed
 \stopxmlsetups
 
 \settrue\mmllistdelimiters
@@ -1697,11 +1471,11 @@
 \setupMMLappearance[sum]    [\c!location=\v!top]
 \setupMMLappearance[product][\c!location=\v!top]
 
-\mapXMLvalue {mml:sumproc} {sum}     {\sum}
-\mapXMLvalue {mml:sumproc} {product} {\prod}
+\mapXMLvalue {mml:sumprod} {sum}     {\sum}
+\mapXMLvalue {mml:sumprod} {product} {\prod}
 
-\startxmlsetups mml:sum     \xmlsetup{#1}{mml:sumprod} \stopxmlsetups
-\startxmlsetups mml:product \xmlsetup{#1}{mml:sumprod} \stopxmlsetups
+\startxmlsetups mml:sum     \edef\mmlsumprodname{sum}     \xmlsetup{#1}{mml:sumprod} \stopxmlsetups
+\startxmlsetups mml:product \edef\mmlsumprodname{product} \xmlsetup{#1}{mml:sumprod} \stopxmlsetups
 
 \def\mmlstackedsubscripts#1%
   {\vbox
@@ -1745,7 +1519,7 @@
         \fi
     }
     \MMLcreset
-    \XMLval{mml:sumproc}{\xmltag{#1}}{}\doMMLlimits{#1}\mmlsumprodupper\mmlsumprodlower
+    \XMLval{mml:sumprod}{\mmlsumprodname}{}\doMMLlimits\mmlsumprodname\mmlsumprodupper\mmlsumprodlower
     \MMLcreset
     \xmldoifelse {#1} {/mml:lambda/mml:apply} {
         \xmlfirst{#1}{/mml:lambda/mml:apply}% a bit of open math conversion mess
@@ -1759,7 +1533,7 @@
 
 \startxmlsetups mml:limit
     \MMLcreset \lim
-    \doMMLlimits {#1} {limit}_{
+    \doMMLlimits {limit}_{
         \MMLcreset
         \xmldoifelse {#1} {/mml:condition} {
             \xmlfirst{#1}{/mml:condition}
@@ -1774,7 +1548,7 @@
         % a bit of open math conversion mess, lambda needed for openmath, ok?
         \MMLcreset
         \xmlfirst{#1}{/mml:lambda/mml:apply}
-        \xmlfirst{#1}{/(mml:apply\string|\mml:lambda}
+        \xmlfirst{#1}{/(mml:apply\string|mml:lambda)}
     \endgroup
 \stopxmlsetups
 
@@ -1795,28 +1569,28 @@
 \setupMMLappearance[log][\c!location=\v!right]
 
 \startxmlsetups mml:exp
-%   {\rm e}^{\xmlfirst{#1}{/mml:apply\string|mml:reln\string|mml:ci\string|mml:cn}}
-    {\rm e}^{\xmlfirst{#1}{/!mml:exp}}
+%   {\mr e}^{\xmlfirst{#1}{/mml:apply\string|mml:reln\string|mml:ci\string|mml:cn}}
+    {\mr e}^{\xmlfirst{#1}{/!mml:exp}}
 \stopxmlsetups
 
 \startxmlsetups mml:log
    \xmldoifelse {#1} {/mml:logbase} {
-        \doifelse \@@MMLloglocation \v!left {
+        \doifelse \MMLloglocation \v!left {
             \mathop {
-                {}^{\xmlfirst{#1}{/mml:logbase}}\negthinspace\mfunction{log}
+                {}^{\xmlfirst{#1}{/mml:logbase}}\negthinspace\mathopnolimits{log}
             }
         } {
-            \mfunction{log}_{\xmlfirst{#1}{/mml:logbase}}
+            \mathopnolimits{log}_{\xmlfirst{#1}{/mml:logbase}}
         }
     } {
-        \mfunction{log}
+        \mathopnolimits{log}
     }
     \MMLcreset
     \xmlsetup{#1}{mml:function}
 \stopxmlsetups
 
 \startxmlsetups mml:ln
-    \mfunction {ln}
+    \mathopnolimits{ln}
     \xmlsetup{#1}{mml:function}
 \stopxmlsetups
 
@@ -1835,7 +1609,7 @@
         \xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}^{\xmlfirst{#1}{/mml:degree}}
     \right\rangle
     \xmldoif {#1} {mml:momentabout} {
-        _{\xmlfirst{mml:momentabout}}
+        _{\xmlfirst{#1}{mml:momentabout}}
     }
 \stopxmlsetups
 
@@ -1843,16 +1617,16 @@
 
 \setupMMLappearance [vector] [\c!direction=\v!horizontal,\c!separator={,}]
 
-\startxmlsetups mml:vector:start
+\startxmlsetups mml:vector
     \begingroup
     \ifnum\xmlcount{#1}{/*}>\plusone
-        \doifelse\@@MMLvectordirection\v!horizontal {
-            \left(\xmlconcat{#1}{/*}{\MMLseparator\@@MMLvectorseparator}\right)
+        \doifelse\MMLvectordirection\v!horizontal {
+            \left(\xmlconcat{#1}{/*}{\MMLseparator\MMLvectorseparator}\right)
         } {
-            \MMLcreset\left(\matrix{\xmlconcat{#1}{/*}{\MMLseparator\@@MMLvectorseparator}}\right)
+            \MMLcreset\left(\matrix{\xmlconcat{#1}{/*}{\MMLseparator\MMLvectorseparator}}\right)
         }
     \else
-      \overrightarrow{\charhtstrut\mmlsecond{#1}}
+      \overrightarrow{\charhtstrut\mmlfirst{#1}}
     \fi
     \endgroup
 \stopxmlsetups
@@ -1879,7 +1653,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:matrixrow:do
-    \xmlconcat{#1}{/*}\crcr
+    \xmlconcat{#1}{/*}{&}\crcr
 \stopxmlsetups
 
 \startxmlsetups mml:determinant
@@ -1890,7 +1664,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:transpose
-    \mmlsecond{#1}^{\mfunction{T}}
+    \mmlsecond{#1}^{\mathopnolimits{T}}
 \stopxmlsetups
 
 \startxmlsetups mml:selector
@@ -1907,6 +1681,8 @@
     \xmlfirst{#1}{/(mml:annotation\string|apply)}
 \stopxmlsetups
 
+\usemodule[m][calcmath]
+
 \startxmlsetups mml:annotation
     \xmldoifelse {#1} {[oneof(@encoding,'TeX','tex','TEX','ConTeXt','context','CONTEXT','ctx')]} {
        \begingroup
@@ -1915,7 +1691,7 @@
        \endgroup
     } {
         \xmldoifelse {#1} {[oneof(@encoding,'calcmath','cm')]} {
-            % to be supported
+            \calcmath{\xmlflush{#1}}
         } {
             % unsupported
         }
@@ -1928,61 +1704,69 @@
 
 % misc
 
-\startxmlsetups mml:integers       \integers                  \stopxmlsetups
-\startxmlsetups mml:reals          \reals                     \stopxmlsetups
-\startxmlsetups mml:rationals      \rationals                 \stopxmlsetups
-\startxmlsetups mml:naturalnumbers \naturalnumbers            \stopxmlsetups
-\startxmlsetups mml:complexes      \complexes                 \stopxmlsetups
-\startxmlsetups mml:primes         \primes                    \stopxmlsetups
-\startxmlsetups mml:exponentiale   \mathop{\rm e}             \stopxmlsetups
-\startxmlsetups mml:imaginaryi     \mathop{\rm i}             \stopxmlsetups
-\startxmlsetups mml:notanumber     \mathop{\mfunction{NaN}}   \stopxmlsetups
-\startxmlsetups mml:true           \mathop{\mfunction{true}}  \stopxmlsetups
-\startxmlsetups mml:false          \mathop{\mfunction{false}} \stopxmlsetups
-\startxmlsetups mml:emptyset       \mathop{\O}                \stopxmlsetups
-\startxmlsetups mml:pi             \pi                        \stopxmlsetups
-\startxmlsetups mml:eulergamma     \gamma                     \stopxmlsetups
-\startxmlsetups mml:infinity       \infty                     \stopxmlsetups
+\startxmlsetups mml:integers       \integers              \stopxmlsetups
+\startxmlsetups mml:reals          \reals                 \stopxmlsetups
+\startxmlsetups mml:rationals      \rationals             \stopxmlsetups
+\startxmlsetups mml:naturalnumbers \naturalnumbers        \stopxmlsetups
+\startxmlsetups mml:complexes      \complexes             \stopxmlsetups
+\startxmlsetups mml:primes         \primes                \stopxmlsetups
+\startxmlsetups mml:exponentiale   \mathopnolimits{e}     \stopxmlsetups
+\startxmlsetups mml:imaginaryi     \mathopnolimits{i}     \stopxmlsetups
+\startxmlsetups mml:notanumber     \mathopnolimits{NaN}   \stopxmlsetups
+\startxmlsetups mml:true           \mathopnolimits{true}  \stopxmlsetups
+\startxmlsetups mml:false          \mathopnolimits{false} \stopxmlsetups
+\startxmlsetups mml:emptyset       \mathopnolimits{\O}    \stopxmlsetups
+\startxmlsetups mml:pi             \pi                    \stopxmlsetups
+\startxmlsetups mml:eulergamma     \gamma                 \stopxmlsetups
+\startxmlsetups mml:infinity       \infty                 \stopxmlsetups
 
 % gonio functions
 
 \setupMMLappearance[function][\c!reduction=\v!yes]
 
-\startxmlsetups  mml:sin  \mfunction {sin}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:sinh \mfunction{sinh}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:cos  \mfunction {cos}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:cosh \mfunction{cosh}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:tan  \mfunction {tan}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:tanh \mfunction{tanh}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:cot  \mfunction {cot}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:coth \mfunction{coth}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:csc  \mfunction {csc}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:csch \mfunction{csch}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:sec  \mfunction {sec}\xmlsetup{#1}{mml:function} \stopxmlsetups
-\startxmlsetups  mml:sech \mfunction{sech}\xmlsetup{#1}{mml:function} \stopxmlsetups
+% todo: \mfunction which adapts itself when registered as command
+
+\startxmlsetups  mml:sin  \mathopnolimits {sin}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:sinh \mathopnolimits{sinh}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:cos  \mathopnolimits {cos}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:cosh \mathopnolimits{cosh}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:tan  \mathopnolimits {tan}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:tanh \mathopnolimits{tanh}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:cot  \mathopnolimits {cot}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:coth \mathopnolimits{coth}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:csc  \mathopnolimits {csc}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:csch \mathopnolimits{csch}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:sec  \mathopnolimits {sec}\xmlsetup{#1}{mml:function} \stopxmlsetups
+\startxmlsetups  mml:sech \mathopnolimits{sech}\xmlsetup{#1}{mml:function} \stopxmlsetups
 
 \startxmlsetups mml:function
     \ifconditional\xmlinversefunction^{-1}\fi\setfalse\xmlinversefunction
     \xmlsetup{#1}{mml:function:argument}
 \stopxmlsetups
 
-                    \startxmlsetups mml:function:argument
-                %     \doifelse \@@MMLfunctionreduction \v!yes {
-                %         \xmldoifelse {#1} {/mml:apply} {
-                %             \xmldoifelse {#1} {/(\MMLcfunctionlist\string|mml:divide} \donefalse \donetrue
-                %         } {
-                %             \donefalse
-                %         }
-                %     } {
-                %         \donetrue
-                %     }
-                    % beware, we still flush from 2 up
-                %     \ifdone
-                         \left(\MMLcreset\xmlall{#1}{/[position()>1]}\right)
-                %     \else
-                %         \MMLcreset\flushXMLstackfrom\plustwo
-                %     \fi
-                    \stopxmlsetups
+\startxmlsetups mml:function:argument
+    \doifelse \MMLfunctionreduction \v!yes {
+        \xmldoifelse {#1} {/mml:apply} {
+            \xmldoifelse {#1} {/mml:apply/(\MMLcfunctionlist\string|mml:divide)}
+                \donefalse
+                \donetrue
+        } {
+            \donefalse
+        }
+    } {
+        \donetrue
+    }
+    % beware, we still flush from 2 up
+    \ifdone
+        \left(
+            \MMLcreset
+            \xmlall{#1}{/[position()>1]}% \xmlconcatrange{#1}{/*}{2}{}\empty
+        \right)
+    \else
+        \MMLcreset
+        \xmlall{#1}{/[position()>1]}
+    \fi
+\stopxmlsetups
 
 % PRESENTATION MATHML
 %
@@ -2030,7 +1814,7 @@
 \stoptexdefinition
 
 \starttexdefinition applymmlsometext #1#2
-    applymmlmathbackground {#1} {
+    \applymmlmathbackground {#1} {
         \applymmlmathcolor {#1} {
             \setmmlmathstyle {#1}
             \ignorespaces#2\removeunwantedspaces
@@ -2060,50 +1844,45 @@
 % setups
 
 \startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
-    \ctxlua{lxml.mml.prepare_identifier("#1","*")}
+    \ctxlua{lxml.mml.mi("#1","*")}
 \stopxmlsetups
 
 \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
     \begingroup
-        \mr \ctxlua{lxml.mml.prepare_number("#1","*")}% no \hbox, would be ok for . , but spoils rest
+        \mr \ctxlua{lxml.mml.mn("#1","*")}% no \hbox, would be ok for . , but spoils rest
     \endgroup
 \stopxmlsetups
 
 \startxmlsetups mml:mo
-    \ctxlua{lxml.mml.prepare_operator("#1","*")}
+    \ctxlua{lxml.mml.mo("#1","*")}
 \stopxmlsetups
 
 \startxmlsetups mml:mfenced % {} around separator is needed for spacing
-    \edef\mmlfencedopen      {\xmlatt{#1}{open}}
-    \edef\mmlfencedclose     {\xmlatt{#1}{close}}
-    \edef\mmlfencedseparators{\xmlatt{#1}{separators}}
-    \ifx \mmlfencedseparators \empty
-        \def\mmlfencedseparators{,}
-    \fi
-    \ifx \mmlfencedopen \empty
-        \left.
-    \else
-        \left\mmlfencedopen
-    \fi
-    \ctxlua{lxml.mml.connect("#1","/*","\mmlfencedseparators")}%
-    \ifx \mmlfencedclose \empty
-        \right.
-    \else
-        \right\mmlfencedclose
-    \fi
+    \def\MMLleft {\left }% weird
+    \def\MMLright{\right}
+    \ctxlua{lxml.mml.mfenced("#1","/*")}
 \stopxmlsetups
 
 \startxmlsetups mml:menclose % notation=.....
-    \doifelse {\xmlatt{#1}{notation}} {longdiv} {
-        \overline{)\xmlflush{#1}}
+    \edef\mmlmenclosenotation{\xmlattdef{#1}{notation}{longdiv}}
+    \doifelse \mmlmenclosenotation {longdiv} {
+        \overline{\left)\xmlflush{#1}\right.}
     } {
-        \xmlflush{#1}
+        \doifelse \mmlmenclosenotation {actuarial} {
+            \overline{\left.\xmlflush{#1}\right|}
+        } {
+            \doifelse \mmlmenclosenotation {radical} {
+                \sqrt{\xmlflush{#1}}
+            } {
+                \xmlflush{#1}
+            }
+        }
     }
 \stopxmlsetups
 
-\mapXMLvalue {mfrac:linethickness} {thin}   {.2pt}
-\mapXMLvalue {mfrac:linethickness} {medium} {.4pt}
-\mapXMLvalue {mfrac:linethickness} {thick}  {.8pt}
+\mapXMLvalue {mml:mfrac:linethickness} {thin}   {.2pt}
+\mapXMLvalue {mml:mfrac:linethickness} {medium} {.4pt}
+\mapXMLvalue {mml:mfrac:linethickness} {thick}  {.8pt}
 
 \startxmlsetups mml:mfrac % dodo: handle linethickness in lua + unit
     \begingroup
@@ -2114,16 +1893,16 @@
                 \mathpunct{\kern-.2ex\left.\middle/\right.\kern-.25ex}
             \mmlsecond{#1}
         } {
-            \frac{\xmlfirst{#1}}{\mmlsecond{#1}}
+            \frac{\mmlfirst{#1}}{\mmlsecond{#1}}
         }
     \else
-        \doifXMLvalelse {mfrac:linethickness} \mmlfraclinethickness {
-            \scratchdimen\XMLval{mfrac:linethickness}\mmlfraclinethickness{.4pt}
+        \doifXMLvalelse {mml:mfrac:linethickness} \mmlfraclinethickness {
+            \scratchdimen\XMLval{mml:mfrac:linethickness}\mmlfraclinethickness{.4pt}
         } {
             \setdimensionwithunit\scratchdimen\mmlfraclinethickness{pt}
         }
         {
-            {\xmlfirst{#1}}
+            {\mmlfirst{#1}}
                 \above\scratchdimen
             {\mmlsecond{#1}}
         }
@@ -2134,7 +1913,11 @@
 \startxmlsetups mml:ms
     \hbox {
         \tf % else encoding problems
+        \edef\mmllquote{\xmlatt{#1}{lquote}}
+        \edef\mmlrquote{\xmlatt{#1}{rquote}}
+        \ifx\mmllquote\empty\symbol[leftquotation]\else\mmllquote\fi
         \applymmlsometext{#1}{\xmlflush{#1}}
+        \ifx\mmlrquote\empty\symbol[rightquotation]\else\mmlrquote\fi
     }
 \stopxmlsetups
 
@@ -2166,19 +1949,42 @@
 
 % mrow
 
+% \startxmlsetups mml:mrow
+%     \begingroup
+%         \ifcase\xmlcount{#1}{/mml:mo}\relax
+%             \xmlflush{#1}
+%         \else % no \let
+%             \def\MMLleft {\left }
+%             \def\MMLright{\right}
+%             \enabledelimiter
+%             \checkdelimiters{\xmlall{#1}{/mml:mo}}
+%             \fakeleftdelimiter
+%             \xmlflush{#1}
+%             \fakerightdelimiter
+%             \disabledelimiter
+%         \fi
+%     \endgroup
+% \stopxmlsetups
+
+% option: no fenced
+
 \startxmlsetups mml:mrow
     \begingroup
-        \ifcase\xmlcount{#1}{/mml:mo}\relax
+        \ifnum\xmlcount{#1}{/mml:mo}=\plustwo
+            \xmldoifelse {#1} {/mml:mo[position()==1 or position()==\xmlcount{#1}{/*}]} {% we need a {}
+                \def\MMLleft {\left }
+                \def\MMLright{\right}
+                \enabledelimiter
+                \checkdelimiters{\xmlall{#1}{/mml:mo}}
+                \fakeleftdelimiter
+                \xmlflush{#1}
+                \fakerightdelimiter
+                \disabledelimiter
+            } {
+                \xmlflush{#1}
+            }
+        \else
             \xmlflush{#1}
-        \else % no \let
-            \def\MMLleft {\left }
-            \def\MMLright{\right}
-            \enabledelimiter
-            \checkdelimiters{\xmlall{#1}{/mml:mo}}
-            \fakeleftdelimiter
-            \xmlflush{#1}
-            \fakerightdelimiter
-            \disabledelimiter
         \fi
     \endgroup
 \stopxmlsetups
@@ -2188,13 +1994,13 @@
 \stopxmlsetups
 
 \startxmlsetups mml:mroot
-   \root{\mmlfirst{#1}}\of{\mmlsecond{#1}}
+   \root{\mmlsecond{#1}}\of{\mmlfirst{#1}}
 \stopxmlsetups
 
 \setupMMLappearance[scripts][\c!alternative=\v!a] % {} rond base
 
 \startxmlsetups mml:msub
-    \doifelse\@@MMLscriptsalternative\v!a {
+    \doifelse\MMLscriptsalternative\v!a {
         {\mmlfirst{#1}}_{\mmlsecond{#1}}
     } {
          \mmlfirst{#1} _{\mmlsecond{#1}}
@@ -2202,7 +2008,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:msup
-    \doifelse\@@MMLscriptsalternative\v!a {
+    \doifelse\MMLscriptsalternative\v!a {
         {\mmlfirst{#1}}^{\mmlsecond{#1}}
     } {
          \mmlfirst{#1} ^{\mmlsecond{#1}}
@@ -2210,7 +2016,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:msubsup
-    \doifelse\@@MMLscriptsalternative\v!a {
+    \doifelse\MMLscriptsalternative\v!a {
         {\mmlfirst{#1}}_{\mmlsecond{#1}}^{\mmlthird{#1}}
     } {
          \mmlfirst{#1} _{\mmlsecond{#1}}^{\mmlthird{#1}}
@@ -2266,7 +2072,7 @@
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)
 
 \startxmlsetups mml:mtable % some more attributes need to be supported
-    \ctxlua{lxml.mml.mtable("#1")}
+    \vcenter{\ctxlua{lxml.mml.mtable("#1")}}
 \stopxmlsetups
 
 \startxmlsetups mml:mspace % complete
@@ -2290,8 +2096,8 @@
 \startxmlsetups mml:mglyph % probably never ok
     \begingroup
     \edef\mmlglyphfontfamily{\xmlatt   {#1}{fontfamily}}
-    \edef\mmlglyphalt       {\xmlattdef{#1}{fontfamily}{unknown}}
-    \edef\mmlglyphindex     {\xmlatt   {#1}{fontfamily}}
+    \edef\mmlglyphalt       {\xmlattdef{#1}{alt}{unknown}}
+    \edef\mmlglyphindex     {\xmlatt   {#1}{index}}
     \ifx \mmlglyphfontfamily \empty
         \hbox{\tttf[no fontfamily specified for \mmlglyphalt]}
     \else\ifx\mmlglyphindex\empty
@@ -2350,8 +2156,8 @@
 %     </apply>
 % </apply>
 
-\startxmlsetups mmc:minus
-    \doif \@@MMLsignreduction \v!yes {
+\startxmlsetups mml:minus
+    \doif \MMLsignreduction \v!yes {
         \setMMLcreset{fn,\MMLcfunctionlist}
     }
     \ifcase\XMLstacklevel

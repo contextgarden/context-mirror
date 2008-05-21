@@ -115,19 +115,18 @@ end
 
 utils.lua.compile_strip = true
 
-function utils.lua.compile(luafile, lucfile)
+function utils.lua.compile(luafile, lucfile, cleanup)
  -- utils.report("compiling",luafile,"into",lucfile)
     os.remove(lucfile)
     local command = "-o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
     if utils.lua.compile_strip then
         command = "-s " .. command
     end
-    if os.spawn("texluac " .. command) == 0 then
-        return true
-    elseif os.spawn("luac " .. command) == 0 then
-        return true
-    else
-        return false
+    local done = (os.spawn("texluac " .. command) == 0) or (os.spawn("luac " .. command) == 0)
+    if done and cleanup and lfs.isfile(lucfile) and lfs.isfile(luafile) then
+     -- utils.report("removing",luafile)
+        os.remove(luafile)
     end
+    return done
 end
 

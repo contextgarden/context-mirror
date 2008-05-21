@@ -42,6 +42,7 @@
 \def\xmllast             #1#2{\ctxlua{lxml.last("#1","#2")}}
 \def\xmlload             #1#2{\ctxlua{lxml.load("#1","#2")}}
 \def\xmlloadbuffer       #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
+\def\xmlloaddata         #1#2{\ctxlua{lxml.loaddata("#1",\!!bs#2\!!es)}}
 \def\xmlloaddirectives     #1{\ctxlua{lxml.directives.load("#1")}}
 \def\xmlname               #1{\ctxlua{lxml.name("#1")}}
 \def\xmlnamespace          #1{\ctxlua{lxml.namespace("#1")}}
@@ -120,8 +121,10 @@
      {\directsetup{#4}}%
    \endgroup}
 
-\def\xmlprocess      {\doxmlprocess\xmlload}
+\def\xmlprocessfile  {\doxmlprocess\xmlload}
+\def\xmlprocessdata  {\doxmlprocess\xmlloaddata}
 \def\xmlprocessbuffer{\doxmlprocess\xmlloadbuffer}
+\let\xmlprocess       \xmlprocessfile
 
 \startsetups xml:process
     \xmlregisteredsetups
@@ -207,7 +210,14 @@
   {\ctxlua{xml.set_text_cleanup(lxml.trace_text_entities)}%
    \appendtoks\ctxlua{lxml.show_text_entities()}\to\everygoodbye}
 
+% processing instructions
+
+\def\xmlcontextdirective#1% kind class key value
+  {\executeifdefined{xml#1directive}\gobblethreearguments}
+
 % brrrr, give this at the top of a style that needs to stub mkiv loading
+%
+% this will change
 
 \def\processXMLfileMKIV
   {\dosingleempty\doprocessXMLfileMKIV}

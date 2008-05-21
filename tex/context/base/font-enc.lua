@@ -27,7 +27,7 @@ fonts.enc.known = {
 }
 
 function fonts.enc.is_known(encoding)
-    return containers.is_valid(fonts.enc.cache,encoding)
+    return containers.is_valid(fonts.enc.cache(),encoding)
 end
 
 --[[ldx--
@@ -51,7 +51,7 @@ will be used.</p>
 
 function fonts.enc.load(filename)
     local name = file.removesuffix(filename)
-    local data = containers.read(fonts.enc.cache,name)
+    local data = containers.read(fonts.enc.cache(),name)
     if data then
         return data
     end
@@ -93,7 +93,7 @@ function fonts.enc.load(filename)
         hash=hash,
         unicodes=unicodes
     }
-    return containers.write(fonts.enc.cache, name, data)
+    return containers.write(fonts.enc.cache(), name, data)
 end
 
 --[[ldx--
@@ -116,5 +116,5 @@ function fonts.enc.make_unicode_vector()
     for name, code in pairs(characters.synonyms) do
         vector[code], hash[name] = name, code
     end
-    return containers.write(fonts.enc.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
+    return containers.write(fonts.enc.cache(), 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
 end

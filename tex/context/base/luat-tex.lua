@@ -293,7 +293,6 @@ if texconfig and not texlua then
 
         if not texmf.instance then -- prevent a second loading
 
-
             texmf.instance            = input.reset()
             texmf.instance.progname   = environment.progname or 'context'
             texmf.instance.engine     = environment.engine   or 'luatex'

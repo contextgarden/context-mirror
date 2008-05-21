@@ -480,6 +480,22 @@ do
         elseif not nocommands then
             local ec = e.command
             if ec ~= nil then -- we can have all kind of types
+
+if e.special then -- todo test for true/false
+    local etg, edt = e.tg, e.dt
+    local spc = specialconverter and specialconverter[etg]
+    if spc then
+--~ print("SPECIAL",etg,table.serialize(specialconverter), spc)
+        local result = spc(edt[1])
+        if result then
+            handle(result)
+            return
+        else
+            -- no need to handle any further
+        end
+    end
+end
+
                 local xc = xml.command
                 if xc then
                     xc(e,ec)
@@ -529,12 +545,18 @@ do
                         end
                     end
                 end
-                if ern and xml.trace_remap then
-                    if ats then
-                        ats[#ats+1] = format("xmlns:remapped='%s'",ern)
-                    else
-                        ats = { format("xmlns:remapped='%s'",ern) }
-                    end
+                if ern and xml.trace_remap and ern ~= ens then
+--~                     if ats then
+--~                         ats[#ats+1] = format("xmlns:remapped='%s'",ern)
+--~                     else
+--~                         ats = { format("xmlns:remapped='%s'",ern) }
+--~                     end
+--~ if ats then
+--~     ats[#ats+1] = format("remappedns='%s'",ens or '-')
+--~ else
+--~     ats = { format("remappedns='%s'",ens or '-') }
+--~ end
+ens = ern
                 end
                 if ens ~= "" then
                     if edt and #edt > 0 then
@@ -1115,7 +1137,7 @@ do
         -- way too fuzzy
         local found
         if not k or not n then
-            local ns, tg = root.ns, root.tg
+            local ns, tg = root.rn or root.ns or "", root.tg
             if not tg then
                 for i=1,#root do
                     local e = root[i]
@@ -1124,10 +1146,10 @@ do
                         break
                     end
                 end
-            elseif ns == "" then
-                return tg
-            else
+            elseif ns ~= "" then
                 return ns .. ":" .. tg
+            else
+                return tg
             end
         elseif n == 0 then
             local e = root[k]
@@ -1161,7 +1183,7 @@ do
             end
         end
         if found then
-            local ns, tg = found.ns, found.tg
+            local ns, tg = found.rn or found.ns or "", found.tg
             if ns ~= "" then
                 return ns .. ":" .. tg
             else
@@ -2149,7 +2171,7 @@ do if unicode and unicode.utf8 then
     xml.entities = xml.entities or { } -- xml.entities.handler == function
 
     function xml.entities.handler(e)
-        return format("[s]",e)
+        return format("[%s]",e)
     end
 
     local char = unicode.utf8.char

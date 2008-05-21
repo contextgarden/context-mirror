@@ -830,7 +830,7 @@ function fonts.otf.load(filename,format,sub,featurefile)
         hash = hash:lower()
         hash = hash:gsub("[^%w%d]+","-")
     end
-    local data = containers.read(fonts.otf.cache, hash)
+    local data = containers.read(fonts.otf.cache(), hash)
     local size = lfs.attributes(filename,"size") or 0
     if data and data.size ~= size then
         data = nil
@@ -886,7 +886,7 @@ function fonts.otf.load(filename,format,sub,featurefile)
                 logs.report("load otf","file size: " .. size)
                 data.size = size
                 logs.report("load otf","saving: in cache")
-                data = containers.write(fonts.otf.cache, hash, data)
+                data = containers.write(fonts.otf.cache(), hash, data)
             else
                 logs.error("load otf","loading failed (table conversion error)")
             end
@@ -1160,7 +1160,7 @@ end
 --~  },
 
 function fonts.otf.enhance.before(data,filename)
-    local private = 0xE000
+    local private = fonts.private
     if data.subfonts and table.is_empty(data.glyphs) then
         local cidinfo = data.cidinfo
         if cidinfo.registry then
@@ -1697,7 +1697,7 @@ function fonts.otf.otf_to_tfm(specification)
     local format   = specification.format
     local features = specification.features.normal
     local cache_id = specification.hash
-    local tfmdata  = containers.read(fonts.tfm.cache,cache_id)
+    local tfmdata  = containers.read(fonts.tfm.cache(),cache_id)
     if not tfmdata then
         local otfdata = fonts.otf.load(filename,format,sub,features and features.featurefile)
         if not table.is_empty(otfdata) then
@@ -1732,7 +1732,7 @@ function fonts.otf.otf_to_tfm(specification)
                 fonts.otf.set_features(tfmdata)
             end
         end
-        containers.write(fonts.tfm.cache,cache_id,tfmdata)
+        containers.write(fonts.tfm.cache(),cache_id,tfmdata)
     end
     return tfmdata
 end
@@ -3326,7 +3326,8 @@ do
         local trace = fonts.otf.trace_kerns
         local factor = tfmdata.factor
         while next and next.id == glyph and next.subtype<256 and next.font == currentfont do
-            if characters[next.char].description.class == 'mark' then
+            local cn = characters[next.char]
+            if not cn or cn.description.class == 'mark' then
                 prev = next
                 next = next.next
             else

@@ -19,7 +19,7 @@ away.</p>
 
 fonts                      = fonts     or { }
 fonts.afm                  = fonts.afm or { }
-fonts.afm.version          = 1.25 -- incrementing this number one up will force a re-cache
+fonts.afm.version          = 1.26 -- incrementing this number one up will force a re-cache
 fonts.afm.syncspace        = true -- when true, nicer stretch values
 fonts.afm.enhance_data     = true -- best leave this set to true
 fonts.afm.trace_features   = false
@@ -254,7 +254,7 @@ way we can set them faster when defining a font.</p>
 
 function fonts.afm.load(filename)
     local name = file.removesuffix(filename)
-    local data = containers.read(fonts.afm.cache,name)
+    local data = containers.read(fonts.afm.cache(),name)
     local size = lfs.attributes(name,"size") or 0
     if data and data.size ~= size then
         data = nil
@@ -273,7 +273,7 @@ function fonts.afm.load(filename)
                 logs.report("load afm","file size: " .. size)
                 data.size = size
                 logs.report("load afm","saving: in cache")
-                data = containers.write(fonts.afm.cache, name, data)
+                data = containers.write(fonts.afm.cache(), name, data)
             end
         end
     end
@@ -281,7 +281,8 @@ function fonts.afm.load(filename)
 end
 
 function fonts.afm.unify(data, filename)
-    local unicode, private, unicodes = fonts.enc.load('unicode').hash, 0x0F0000, { }
+--~     local unicode, unicodes, private  = fonts.enc.load('unicode').hash, { }, 0x0F0000
+    local unicode, unicodes, private  = fonts.enc.load('unicode').hash, { }, fonts.private
     for name, blob in pairs(data.characters) do
         local code = unicode[name] -- or characters.name_to_unicode[name]
         if not code then
@@ -571,9 +572,10 @@ function fonts.afm.afm_to_tfm(specification)
         return nil
     else
         fonts.afm.check_features(specification)
+        specification = fonts.define.resolve(specification) -- new, was forgotten
         local features = specification.features.normal
         local cache_id = specification.hash
-        local tfmdata  = containers.read(fonts.tfm.cache, cache_id) -- cache with features applied
+        local tfmdata  = containers.read(fonts.tfm.cache(), cache_id) -- cache with features applied
         if not tfmdata then
             local afmdata = fonts.afm.load(afmname)
             if not table.is_empty(afmdata) then
@@ -589,7 +591,7 @@ function fonts.afm.afm_to_tfm(specification)
             elseif fonts.trace then
                 logs.report("load afm", string.format("no (valid) afm file found with name %s",afmname))
             end
-            tfmdata = containers.write(fonts.tfm.cache,cache_id,tfmdata)
+            tfmdata = containers.write(fonts.tfm.cache(),cache_id,tfmdata)
         end
         return tfmdata
     end
@@ -731,4 +733,13 @@ fonts.afm.features.register('encoding')
 fonts.initializers.base.afm.encoding = fonts.initializers.common.encoding
 fonts.initializers.node.afm.encoding = fonts.initializers.common.encoding
 
--- todo: oldstyle smallcaps as features for afm files
+-- todo: oldstyle smallcaps as features for afm files (use with care)
+
+fonts.initializers.base.afm.onum  = fonts.initializers.common.oldstyle
+fonts.initializers.base.afm.smcp  = fonts.initializers.common.smallcaps
+fonts.initializers.base.afm.fkcp  = fonts.initializers.common.fakecaps
+
+fonts.afm.features.register('onum',false)
+fonts.afm.features.register('smcp',false)
+fonts.afm.features.register('fkcp',false)
+

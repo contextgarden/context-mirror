@@ -336,7 +336,9 @@ do
     local starttiming, stoptiming = input.starttiming, input.stoptiming
 
     function nodes.process_characters(head)
-        if status.output_active then  -- not ok, we need a generic blocker, pagebody ! / attr tex.attibutes
+     -- not ok yet; we need a generic blocker
+     -- if status.output_active then
+        if false then -- status.output_active then
             return head, false -- true
         else
             -- either next or not, but definitely no already processed list

@@ -217,15 +217,24 @@ function buffers.content(name) -- no print
     end
 end
 
-function buffers.collect(names) -- no print
+function buffers.collect(names,separator) -- no print
     local t = { }
-    for i=1,#names do
-        local c = buffers.content(names[i])
-        if c ~= "" then
-            t[#t+1] = c
+    if type(names) == "table" then
+        for i=1,#names do
+            local c = buffers.content(names[i])
+            if c ~= "" then
+                t[#t+1] = c
+            end
+        end
+    else
+        for name in names:gmatch("[^,]+") do
+            local c = buffers.content(name)
+            if c ~= "" then
+                t[#t+1] = c
+            end
         end
     end
-    return concat(t," ")
+    return concat(t,separator or " ") -- maybe this will change to "\n"
 end
 
 function buffers.inspect(name)

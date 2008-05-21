@@ -180,8 +180,10 @@ in the process; numbers are of course copies. Here 65536 equals 1pt. (Due to
 excessive memory usage in CJK fonts, we no longer pass the boundingbox.)</p>
 --ldx]]--
 
+fonts.trace_scaling = false
+
 function fonts.tfm.do_scale(tfmtable, scaledpoints)
-    local trace = fonts.trace
+    local trace = fonts.trace_scaling
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
@@ -463,18 +465,18 @@ do
             local afmdata = tfmdata.shared.afmdata
             local characters = tfmdata.characters
             local unicodes = afmdata.luatex.unicodes
-            local function remap(pattern,name)
-                local p = pattern:match(name)
-                if p then
-                    local oldchr, newchr = unicodes[p], unicodes[name]
-                    if oldchr and newchr then
-                        characters[oldchr] = characters[newchr]
+            local done = false
+            for i, blob in pairs(characters) do
+                local name = blob.description.name
+                if name then
+                    local p = pattern:match(name)
+                    if p then
+                        local oldchr, newchr = unicodes[p], unicodes[name]
+                        if oldchr and newchr then
+                            characters[oldchr] = characters[newchr]
+                        end
                     end
                 end
-                return p
-            end
-            for _, blob in pairs(characters) do
-                remap(pattern,blob.name)
             end
         end
     end
@@ -484,6 +486,27 @@ do
     end
     function fonts.initializers.common.smallcaps(tfmdata,value)
         fonts.initializers.common.remap(tfmdata,value,smallcaps)
+    end
+
+    function fonts.initializers.common.fakecaps(tfmdata,value)
+        if value then
+            -- todo: scale down
+            local afmdata = tfmdata.shared.afmdata
+            local characters = tfmdata.characters
+            local unicodes = afmdata.luatex.unicodes
+            for i, blob in pairs(characters) do
+                local name = blob.description.name
+                if name then
+                    local p = name:lower()
+                    if p then
+                        local oldchr, newchr = unicodes[p], unicodes[name]
+                        if oldchr and newchr then
+                            characters[oldchr] = characters[newchr]
+                        end
+                    end
+                end
+            end
+        end
     end
 
 end

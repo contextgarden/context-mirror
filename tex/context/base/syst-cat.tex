@@ -452,14 +452,26 @@
 
 \chardef\activehackcode=`~
 
-\def\defineactivecharacter #1 #2%
+% \def\defineactivecharacter #1 #2%
+%   {\cctcounterc\uccode\activehackcode
+%    \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1}\empty`#1%
+%    \catcode\uccode\activehackcode13
+%    \uppercase{\def\next{~}}%
+%    \uccode\activehackcode\cctcounterc
+%    \expandafter\expandafter\expandafter\def\expandafter\next\expandafter
+%      {\expandafter\dohandleactivecharacter\next{#2}}}
+%
+% \defineactivecharacter "0EFFF {oeps} \utfchar{0xEFFF}
+
+\def\defineactivecharacter #1#2 #3%
   {\cctcounterc\uccode\activehackcode
-   \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1}\empty`#1%
+   \if#1"\uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1#2}\empty #1#2\else
+         \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1#2}\empty`#1#2\fi
    \catcode\uccode\activehackcode13
    \uppercase{\def\next{~}}%
    \uccode\activehackcode\cctcounterc
    \expandafter\expandafter\expandafter\def\expandafter\next\expandafter
-     {\expandafter\dohandleactivecharacter\next{#2}}}
+     {\expandafter\dohandleactivecharacter\next{#3}}}
 
 \chardef\activecharactermode\plusone % overloading still backward compatible
 

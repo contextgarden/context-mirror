@@ -583,7 +583,8 @@ function scripts.context.run(ctxdata)
                 --
             end
         else
-            input.error("no format found with name " .. formatname)
+            input.verbose = true
+            input.report("error", "no format found with name " .. formatname)
         end
     end
 end
