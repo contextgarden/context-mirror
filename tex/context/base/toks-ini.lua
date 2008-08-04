@@ -5,7 +5,9 @@ if not modules then modules = { } end modules ['toks-ini'] = {
     license   = "see context related readme files"
 }
 
-utf   = utf or unicode.utf8
+local format, texsprint = string.format, tex.sprint
+
+utf  = utf or unicode.utf8 -- todo: local
 
 --[[ldx--
 <p>This code is experimental.</p>
@@ -169,18 +171,18 @@ function collectors.show_token(t)
     if t then
         local cmd, chr, id, cs, name = t[1], t[2], t[3], nil, token.command_name(t) or ""
         if cmd == commands.letter or cmd == commands.other then
-            return string.format("%s-> %s -> %s", name, chr, utf.char(chr))
+            return format("%s-> %s -> %s", name, chr, utf.char(chr))
         elseif id > 0 then
             cs = token.csname_name(t) or nil
             if cs then
-                return string.format("%s-> %s", name, cs)
+                return format("%s-> %s", name, cs)
             elseif tonumber(chr) < 0 then
-                return string.format("%s-> %s", name, id)
+                return format("%s-> %s", name, id)
             else
-                return string.format("%s-> (%s,%s)", name, chr, id)
+                return format("%s-> (%s,%s)", name, chr, id)
             end
         else
-            return string.format("%s", name)
+            return format("%s", name)
         end
     else
         return "no node"
@@ -194,11 +196,11 @@ function collectors.trace()
 end
 
 collectors.show_methods.a = function(data) -- no need to store the table, just pass directly
-    local flush, ct = tex.sprint, tex.ctxcatcodes
+    local ct = tex.ctxcatcodes
     local template = "\\NC %s\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR "
-    flush(ct, "\\starttabulate[|T|Tr|cT|Tr|T|]")
-    flush(ct, template:format("cmd","chr","","id","name"))
-    flush(ct, "\\HL")
+    tex.sprint(ct, "\\starttabulate[|T|Tr|cT|Tr|T|]")
+    tex.sprint(ct, template:format("cmd","chr","","id","name"))
+    tex.sprint(ct, "\\HL")
     for _,v in pairs(data) do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
         local name = (token.command_name(v) or ""):gsub("_","\\_")
@@ -212,24 +214,24 @@ collectors.show_methods.a = function(data) -- no need to store the table, just p
             sym = "\\char " .. chr
         end
         if tonumber(chr) < 0 then
-            flush(ct, template:format(name,  "", sym, id, cs))
+            tex.sprint(ct, template:format(name,  "", sym, id, cs))
         else
-            flush(ct, template:format(name, chr, sym, id, cs))
+            tex.sprint(ct, template:format(name, chr, sym, id, cs))
         end
     end
-    flush(ct, "\\stoptabulate")
+    tex.sprint(ct, "\\stoptabulate")
 end
 
 collectors.show_methods.b_c = function(data,swap) -- no need to store the table, just pass directly
-    local flush, ct = tex.sprint, tex.ctxcatcodes
+    local ct = tex.ctxcatcodes
     local template = "\\NC %s\\NC %s\\NC %s\\NC\\NR"
     if swap then
-        flush(ct, "\\starttabulate[|Tl|Tl|Tr|]")
+        tex.sprint(ct, "\\starttabulate[|Tl|Tl|Tr|]")
     else
-        flush(ct, "\\starttabulate[|Tl|Tr|Tl|]")
+        tex.sprint(ct, "\\starttabulate[|Tl|Tr|Tl|]")
     end
-    flush(ct, template:format("cmd","chr","name"))
-    flush(ct, "\\HL")
+    tex.sprint(ct, template:format("cmd","chr","name"))
+    tex.sprint(ct, "\\HL")
     for _,v in pairs(data) do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
         local name = (token.command_name(v) or ""):gsub("_","\\_")
@@ -246,14 +248,14 @@ collectors.show_methods.b_c = function(data,swap) -- no need to store the table,
             end
         end
         if swap then
-            flush(ct, template:format(name, sym, chr))
+            tex.sprint(ct, template:format(name, sym, chr))
         elseif tonumber(chr) < 0 then
-            flush(ct, template:format(name,  "", sym))
+            tex.sprint(ct, template:format(name,  "", sym))
         else
-            flush(ct, template:format(name, chr, sym))
+            tex.sprint(ct, template:format(name, chr, sym))
         end
     end
-    flush(ct, "\\stoptabulate")
+    tex.sprint(ct, "\\stoptabulate")
 end
 
 -- Even more experimental ...

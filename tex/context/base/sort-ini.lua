@@ -116,7 +116,7 @@ function sorters.splitters.utf(str)
     for _,v in pairs(r) do
         str = str:gsub(v[1],v[2])
     end
-    for c in string.utfcharacters(str) do
+    for c in str:utfcharacters() do
         if m[c] then
             t[#t+1] = m[c]
         elseif #c == 1 then

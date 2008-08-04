@@ -89,6 +89,8 @@
     \let\mkloadregister        \gobbleoneargument
 \fi
 
+\chardef\registerpagestatus\zerocount
+
 \def\doprocesspageregister[#1]#2#3% key altnum entry
   {\ifwritetoregister
      \begingroup
@@ -568,7 +570,7 @@
        \def\dohandleregisterentry##1% dubbelop | \strut nieuw
          {\doregistertexthowto{#1}{\strut\limitedregisterentry{#1}{##1}}}%
        \getvalue
-         {#1\ifcase\currententrylevel\s!entrya\or\s!entryb\else\s!entryc\else\s!entryd\fi}%
+         {#1\ifcase\currententrylevel\s!entrya\or\s!entryb\or\s!entryc\else\s!entryd\fi}%
          {\doregisterpagehowto{#1}{\labeltexts\v!see{#3}}}%
        \c!entryletter\c!entrya\c!entryb\c!entryc\c!entryd
        \global\let\c!entrya\relax

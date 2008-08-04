@@ -150,38 +150,38 @@ function ldx.enhance(data) -- i need to use lpeg and then we can properly autoin
             cod = cod:gsub("(%a+)",function(key)
                 local class = ldx.keywords.reserved[key]
                 if class then
-                    return "<ldx:key class='" .. class .. "'>" .. key .. "</ldx:key>"
+                    return "<key class='" .. class .. "'>" .. key .. "</key>"
                 else
                     return key
                 end
             end)
             cod = cod:gsub("<<<<(%d+)>>>>", function(s)
-                return "<ldx:dqs>" .. dqs[tonumber(s)] .. "</ldx:dqs>"
+                return "<dqs>" .. dqs[tonumber(s)] .. "</dqs>"
             end)
             cod = cod:gsub("<<(%d+)>>", function(s)
-                return "<ldx:sqs>" .. sqs[tonumber(s)] .. "</ldx:sqs>"
+                return "<sqs>" .. sqs[tonumber(s)] .. "</sqs>"
             end)
             cod = cod:gsub("%[%[%[%[(%d+)%]%]%]%]", function(s)
                 return cmt[tonumber(s)]
             end)
             cod = cod:gsub("%[%[(%d+)%]%]", function(s)
-                return "<ldx:com>" .. com[tonumber(s)] .. "</ldx:com>"
+                return "<com>" .. com[tonumber(s)] .. "</com>"
             end)
             cod = cod:gsub("##d##", "\\\"")
             cod = cod:gsub("##s##", "\\\'")
             if ldx.make_index then
                 local lines = cod:split("\n")
-                local f = "(<ldx:key class='1'>function</ldx:key>)%s+([%w%.]+)%s*%("
+                local f = "(<key class='1'>function</key>)%s+([%w%.]+)%s*%("
                 for k,v in pairs(lines) do
                     -- functies
                     v = v:gsub(f,function(key, str)
-                        return "<ldx:function>" .. str .. "</ldx:function>("
+                        return "<function>" .. str .. "</function>("
                     end)
                     -- variables
                     v = v:gsub("^([%w][%w%,%s]-)(=[^=])",function(str, rest)
                         local t = string.split(str, ",%s*")
                         for k,v in pairs(t) do
-                            t[k] = "<ldx:variable>" .. v .. "</ldx:variable>"
+                            t[k] = "<variable>" .. v .. "</variable>"
                         end
                         return table.join(t,", ") .. rest
                     end)
@@ -222,19 +222,19 @@ function ldx.enhance(data) -- i need to use lpeg and then we can properly autoin
             cod = cod:gsub("(%a+)",function(key)
                 local class = ldx.keywords.reserved[key]
                 if class then
-                    return "<ldx:key class='" .. class .. "'>" .. key .. "</ldx:key>"
+                    return "<key class='" .. class .. "'>" .. key .. "</key>"
                 else
                     return key
                 end
             end)
             cod = cod:gsub("<s<<<(%d+)>>>s>", function(s)
-                return "<ldx:sqs>" .. sqs[tonumber(s)] .. "</ldx:sqs>"
+                return "<sqs>" .. sqs[tonumber(s)] .. "</sqs>"
             end)
             cod = cod:gsub("<d<<<(%d+)>>>d>", function(s)
-                return "<ldx:dqs>" .. dqs[tonumber(s)] .. "</ldx:dqs>"
+                return "<dqs>" .. dqs[tonumber(s)] .. "</dqs>"
             end)
             cod = cod:gsub("<c<<<(%d+)>>>c>", function(s)
-                return "<ldx:com>" .. com[tonumber(s)] .. "</ldx:com>"
+                return "<com>" .. com[tonumber(s)] .. "</com>"
             end)
             cod = cod:gsub("<l<<<(%d+)>>>l>", function(s)
                 return cmt[tonumber(s)]
@@ -243,17 +243,17 @@ function ldx.enhance(data) -- i need to use lpeg and then we can properly autoin
             cod = cod:gsub("##s##", "\\\'")
             if ldx.make_index then
                 local lines = cod:split("\n")
-                local f = "(<ldx:key class='1'>function</ldx:key>)%s+([%w%.]+)%s*%("
+                local f = "(<key class='1'>function</key>)%s+([%w%.]+)%s*%("
                 for k,v in pairs(lines) do
                     -- functies
                     v = v:gsub(f,function(key, str)
-                        return "<ldx:function>" .. str .. "</ldx:function>("
+                        return "<function>" .. str .. "</function>("
                     end)
                     -- variables
                     v = v:gsub("^([%w][%w%,%s]-)(=[^=])",function(str, rest)
                         local t = string.split(str, ",%s*")
                         for k,v in pairs(t) do
-                            t[k] = "<ldx:variable>" .. v .. "</ldx:variable>"
+                            t[k] = "<variable>" .. v .. "</variable>"
                         end
                         return table.join(t,", ") .. rest
                     end)
@@ -279,44 +279,46 @@ it possible to change the indentation afterwards.
 function ldx.as_xml(data)
     local t, cmode = { }, false
     t[#t+1] = "<?xml version='1.0' standalone='yes'?>\n"
-    t[#t+1] = "\n<ldx:document xmlns:ldx='http://www.pragma-ade.com/schemas/ldx.rng'>\n"
-    for _,v in pairs(data) do
+    t[#t+1] = "\n<document xmlns:ldx='http://www.pragma-ade.com/schemas/ldx.rng' xmlns='http://www.pragma-ade.com/schemas/ldx.rng'>\n"
+    for _,v in pairs(data) do -- ldx: not needed
         if v.code and not v.code:is_empty() then
-            t[#t+1] = "\n<ldx:code>\n"
+            t[#t+1] = "\n<code>\n"
             for k,v in pairs(v.code:split("\n")) do -- make this faster
                 local a, b = v:find("^(%s+)")
+                if v then v = v:gsub("[\n\r ]+$","") end
                 if a and b then
+                    v = v:sub(b+1,#v)
                     if cmode then
-                        t[#t+1] = "<ldx:line comment='yes' n='" .. b .. "'>" .. v:sub(b+1,#v) .. "</ldx:line>\n"
+                        t[#t+1] = "<line comment='yes' n='" .. b .. "'>" .. v .. "</line>\n"
                     else
-                        t[#t+1] = "<ldx:line n='" .. b .. "'>" .. v:sub(b+1,#v) .. "</ldx:line>\n"
+                        t[#t+1] = "<line n='" .. b .. "'>" .. v .. "</line>\n"
                     end
                 elseif v:is_empty() then
                     if cmode then
-                        t[#t+1] = "<ldx:line comment='yes'/>\n"
+                        t[#t+1] = "<line comment='yes'/>\n"
                     else
-                        t[#t+1] = "<ldx:line/>\n"
+                        t[#t+1] = "<line/>\n"
                     end
                 elseif v:find("^%-%-%[%[") then
-                    t[#t+1] = "<ldx:line comment='yes'>" .. v .. "</ldx:line>\n"
+                    t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
                     cmode= true
                 elseif v:find("^%]%]%-%-") then
-                    t[#t+1] = "<ldx:line comment='yes'>" .. v .. "</ldx:line>\n"
+                    t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
                     cmode= false
                 elseif cmode then
-                    t[#t+1] = "<ldx:line comment='yes'>" .. v .. "</ldx:line>\n"
+                    t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
                 else
-                    t[#t+1] = "<ldx:line>" .. v .. "</ldx:line>\n"
+                    t[#t+1] = "<line>" .. v .. "</line>\n"
                 end
             end
-            t[#t+1] = "</ldx:code>\n"
+            t[#t+1] = "</code>\n"
         elseif v.comment then
-            t[#t+1] = "\n<ldx:comment>\n" .. v.comment .. "\n</ldx:comment>\n"
+            t[#t+1] = "\n<comment>\n" .. v.comment .. "\n</comment>\n"
         else
             -- cannot happen
         end
     end
-    t[#t+1] = "\n</ldx:document>\n"
+    t[#t+1] = "\n</document>\n"
     return table.concat(t,"")
 end
 
@@ -376,6 +378,8 @@ as the module to be used.
 
 The main conversion call is:
 --ldx]]--
+
+-- todo: assume usage of "mtxrun --script x-ldx", maybe make it mtx-ldx
 
 if arg and arg[1] then
     ldx.convert(arg[1],arg[2])

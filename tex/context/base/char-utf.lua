@@ -101,7 +101,7 @@ function characters.filters.utf.collapse(str) -- old one
         end
         local tokens, first, done = { }, false, false
         local cg = characters.graphemes
-        for second in string.utfcharacters(str) do
+        for second in str:utfcharacters() do
             local cgf = cg[first]
             if cgf and cgf[second] then
                 first, done = cgf[second], true
@@ -193,7 +193,6 @@ do
     local cg = characters.graphemes
     local cr = characters.filters.utf.private.high -- kan via een lpeg
     local cf = characters.filters.utf
-    local su = string.utfcharacters
 
     local concat = table.concat
 
@@ -206,7 +205,7 @@ do
     --~                 cf.initialize()
     --~             end
     --~             local tokens, first, done = { }, false, false
-    --~             for second in su(str) do
+    --~             for second in str:utfcharacters() do
     --~                 if cr[second] then
     --~                     if first then
     --~                         tokens[#tokens+1] = first
@@ -249,7 +248,7 @@ do
                     cf.initialize()
                 end
                 local tokens, first, done, n = { }, false, false, 0
-                for second in su(str) do
+                for second in str:utfcharacters() do
                     if done then
                         if cr[second] then
                             if first then
@@ -269,7 +268,7 @@ do
                         end
                     else
                         if cr[second] then
-                            for s in su(str) do
+                            for s in str:utfcharacters() do
                                 if n == 1 then
                                     break
                                 else
@@ -283,7 +282,7 @@ do
                         else
                             local cgf = cg[first]
                             if cgf and cgf[second] then
-                                for s in su(str) do
+                                for s in str:utfcharacters() do
                                     if n == 1 then
                                         break
                                     else
@@ -332,7 +331,7 @@ do
     --~                     cf.initialize()
     --~                 end
     --~                 local tokens, first, done = { }, false, false
-    --~                 for second in su(str) do
+    --~                 for second in str:utfcharacters() do
     --~                     local cgf = cg[first]
     --~                     if cgf and cgf[second] then
     --~                         first, done = cgf[second], true

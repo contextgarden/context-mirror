@@ -6,8 +6,6 @@
 
 -- BROKEN : result is now table
 
-
-
 if not buffers                 then buffers                 = { } end
 if not buffers.visualizers     then buffers.visualizers     = { } end
 if not buffers.visualizers.lua then buffers.visualizers.lua = { } end
@@ -148,7 +146,7 @@ function buffers.visualizers.lua.flush_line(str, nested)
 --~         end
 --~     end
 --~     -- bla bla1 bla.bla
---~     for c in string.utfcharacters(code) do
+--~     for c in code:utfcharacters() do
 --~         if instr then
 --~             if c == s then
 --~                 if inesc then

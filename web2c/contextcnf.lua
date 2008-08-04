@@ -30,7 +30,9 @@
 -- not cached.
 
 return {
+--  LUACSTRIP  = 'f',         -- don't strip luc files (only use this for debugging, otherwise slower loading and bigger cache)
+--  CACHEINTDS = 't',         -- keep filedatabase and configuration in tds tree
 --  PURGECACHE = 't',         -- this saves disk space
---  TEXMFCACHE = 'c:/temp',   -- installers can change this
-    TEXMFBOGUS = 'It works!', -- a test string
+    TEXMFCACHE = 'c:/temp',   -- installers can change this
+--  TEXMFBOGUS = 'It works!', -- a test string
 }

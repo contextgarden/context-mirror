@@ -30,11 +30,17 @@ function utils.report(...)
     print(...)
 end
 
+utils.merger.strip_comment = true
+
 function utils.merger._self_load_(name)
     local f, data = io.open(name), ""
     if f then
         data = f:read("*all")
         f:close()
+    end
+    if data and utils.merger.strip_comment then
+        -- saves some 20K
+        data = data:gsub("%-%-~[^\n\r]*[\r\n]", "")
     end
     return data or ""
 end
@@ -113,17 +119,15 @@ function utils.merger.selfclean(name)
     )
 end
 
-utils.lua.compile_strip = true
-
-function utils.lua.compile(luafile, lucfile, cleanup)
+function utils.lua.compile(luafile, lucfile, cleanup, strip) -- defaults: cleanup=false strip=true
  -- utils.report("compiling",luafile,"into",lucfile)
     os.remove(lucfile)
     local command = "-o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
-    if utils.lua.compile_strip then
+    if strip ~= false then
         command = "-s " .. command
     end
     local done = (os.spawn("texluac " .. command) == 0) or (os.spawn("luac " .. command) == 0)
-    if done and cleanup and lfs.isfile(lucfile) and lfs.isfile(luafile) then
+    if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
      -- utils.report("removing",luafile)
         os.remove(luafile)
     end

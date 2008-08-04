@@ -17,6 +17,7 @@
 
 \unprotect
 
+\def\xmlmain               #1{\ctxlua{lxml.main("#1")}}
 \def\xmlall              #1#2{\ctxlua{lxml.all("#1","#2")}}
 \def\xmlatt              #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
 \def\xmlattdef         #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
@@ -33,6 +34,8 @@
 \def\xmlfilter           #1#2{\ctxlua{lxml.filter("#1","#2")}}
 \def\xmlfirst            #1#2{\ctxlua{lxml.first("#1","#2")}}
 \def\xmlflush              #1{\ctxlua{lxml.flush("#1")}}
+% \def\xmlstrip              #1{\ctxlua{lxml.strip("#1")}}
+% \def\xmlflushstripped      #1{\ctxlua{lxml.strip("#1",true)}}
 \def\xmldirect             #1{\ctxlua{lxml.direct("#1")}} % in loops, not dt but root
 \def\xmlidx            #1#2#3{\ctxlua{lxml.idx("#1","#2",\number#3)}}
 \def\xmlinclude        #1#2#3{\ctxlua{lxml.include("#1","#2","#3",true)}}
@@ -49,6 +52,8 @@
 \def\xmlnonspace         #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
 \def\xmlraw              #1#2{\ctxlua{lxml.raw("#1","#2")}}
 \def\xmlsnippet          #1#2{\ctxlua{lxml.snippet("#1",#2)}}
+\def\xmlelement          #1#2{\ctxlua{lxml.element("#1",#2)}}
+\def\xmlnofelements        #1{\ctxlua{lxml.nofelements("#1")}}
 \def\xmlregisterns       #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
 \def\xmlremapname    #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
 \def\xmlremapnamespace #1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
@@ -56,6 +61,8 @@
 \def\xmlsetsetup       #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
 \def\xmlstrip            #1#2{\ctxlua{lxml.strip("#1","#2")}}
 \def\xmlstripped         #1#2{\ctxlua{lxml.stripped("#1","#2")}}
+\def\xmlstripnolines     #1#2{\ctxlua{lxml.strip("#1","#2",true)}}
+\def\xmlstrippednolines  #1#2{\ctxlua{lxml.stripped("#1","#2",true)}}
 \def\xmltag                #1{\ctxlua{lxml.tag("#1")}}
 \def\xmltext             #1#2{\ctxlua{lxml.text("#1","#2")}}
 \def\xmltags             #1#2{\ctxlua{lxml.tags("#1","#2")}}
@@ -67,12 +74,14 @@
 
 % todo: \xmldoifelseattribute
 
-\def\xmldoifelse         #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",false))}}
-\def\xmldoifelsetext     #1#2{\ctxlua{commands.doifelse(xml.found(lxml.id("#1"),"#2",true ))}}
-\def\xmldoif             #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",false))}}
-\def\xmldoiftext         #1#2{\ctxlua{commands.doif    (xml.found(lxml.id("#1"),"#2",true ))}}
-\def\xmldoifnot          #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",false))}}
-\def\xmldoifnottext      #1#2{\ctxlua{commands.doifnot (xml.found(lxml.id("#1"),"#2",true ))}}
+\def\xmldoif             #1#2{\ctxlua{lxml.doif("#1","#2")}}
+\def\xmldoifnot          #1#2{\ctxlua{lxml.doifnot("#1","#2")}}
+\def\xmldoifelse         #1#2{\ctxlua{lxml.doifelse("#1","#2")}}
+\def\xmldoiftext         #1#2{\ctxlua{lxml.doiftext("#1","#2")}}
+\def\xmldoifnottext      #1#2{\ctxlua{lxml.doifnottext("#1","#2")}}
+\def\xmldoifelsetext     #1#2{\ctxlua{lxml.doifelsetext("#1","#2")}}
+\def\xmldoifelseempty    #1#2{\ctxlua{lxml.doifelseempty("#1","#2")}} % #2, "*" or "" == self not yet implemented
+\def\xmldoifelseselfempty  #1{\ctxlua{lxml.doifelseempty("#1")}}
 
 \def\xmldefaulttotext      #1{\ifcase\xmlprocessingmode\or\or   \ctxlua{lxml.set_command_to_text("#1")}\fi}
 \def\xmldefaulttonone      #1{\ifcase\xmlprocessingmode\or\or\or\ctxlua{lxml.set_command_to_none("#1")}\fi}
@@ -91,25 +100,46 @@
 
 \newtoks \registeredxmlsetups
 
-\def\xmlappendsetup #1{\appendtoksonce \directsetup{#1}\to\registeredxmlsetups} % to be done, made faster
-\def\xmlprependsetup#1{\prependtoksonce\directsetup{#1}\to\registeredxmlsetups} % to be done, made faster
+% todo: 1:xml:whatever alwas before 3:xml:something
 
-\let\xmlregistersetup\xmlappendsetup
+\def\xmlprependsetup           #1{\ctxlua{lxml.installsetup(1,"*","#1")}}
+\def\xmlappendsetup            #1{\ctxlua{lxml.installsetup(2,"*","#1")}}
+\def\xmlbeforesetup          #1#2{\ctxlua{lxml.installsetup(3,"*","#1","#2"))}}
+\def\xmlaftersetup           #1#2{\ctxlua{lxml.installsetup(4,"*","#1","#2"))}}
+
+\def\xmlprependdocumentsetup #1#2{\ctxlua{lxml.installsetup(1,"#1","#2")}}
+\def\xmlappenddocumentsetup  #1#2{\ctxlua{lxml.installsetup(2,"#1","#2")}}
+\def\xmlbeforedocumentsetup#1#2#3{\ctxlua{lxml.installsetup(3,"#1","#2","#3"))}}
+\def\xmlafterdocumentsetup #1#2#3{\ctxlua{lxml.installsetup(4,"#1","#2","#3"))}}
+
+\def\xmlremovesetup            #1{\ctxlua{lxml.removesetup("*","#1")}}
+\def\xmlremovedocumentsetup  #1#2{\ctxlua{lxml.removesetup("#1","#2")}}
+
+\def\xmlflushdocumentsetups    #1{\ctxlua{lxml.flushsetups("*","#1")}}
+\def\xmlresetdocumentsetups    #1{\ctxlua{lxml.resetsetups("#1")}}
+
+\let\xmlregistersetup        \xmlappendsetup
+\let\xmlregisterdocumentsetup\xmlappenddocumentsetup
 
 \def\xmlregisteredsetups
   {\xmlstarttiming
-   \the\registeredxmlsetups\registeredxmlsetups\emptytoks
+   \xmlflushsetups
    \xmldefaulttotext\xmldocument % after include
    \xmlstoptiming}
 
-\chardef\xmlprocessingmode=0 % 0=mixed, 1=mkivonly, 2=mkivonly-default-text, 3=mkivonly-default-none
+\def\xmlregistereddocumentsetups#1%
+  {\xmlstarttiming
+   % todo: test for duplicates !
+   \xmlflushdocumentsetups{#1}%
+   \xmldefaulttotext{#1}% after include
+   \xmlstoptiming}
 
 \def\xmlstarttiming{\ctxlua{input.starttiming(lxml)}}
 \def\xmlstoptiming {\ctxlua{input.stoptiming (lxml)}}
 
 \def\doxmlprocess#1#2#3#4%
   {\begingroup
-   \def\xmldocument{#2}%
+   \edef\xmldocument{#2}% #2 can be \xmldocument and set as such
    #1{#2}{#3}%
    \ifcase\xmlprocessingmode
      \enableXML
@@ -126,9 +156,13 @@
 \def\xmlprocessbuffer{\doxmlprocess\xmlloadbuffer}
 \let\xmlprocess       \xmlprocessfile
 
+% beware: \xmlmain takes the real root, so also processing
+% instructions preceing the root element; well, in some
+% sense that is the root
+
 \startsetups xml:process
-    \xmlregisteredsetups
-    \xmlall\xmldocument{/}
+    \xmlregistereddocumentsetups\xmldocument
+    \xmlmain\xmldocument
 \stopsetups
 
 \long\def\xmlloop#1#2#3%
@@ -206,6 +240,9 @@
 \def\xmlresolveentities
   {\ctxlua{xml.set_text_cleanup(xml.resolve_text_entities)}}
 
+\def\xmlkeepentities
+  {\ctxlua{xml.set_text_cleanup()}}
+
 \def\xmltraceentities
   {\ctxlua{xml.set_text_cleanup(lxml.trace_text_entities)}%
    \appendtoks\ctxlua{lxml.show_text_entities()}\to\everygoodbye}
@@ -215,14 +252,119 @@
 \def\xmlcontextdirective#1% kind class key value
   {\executeifdefined{xml#1directive}\gobblethreearguments}
 
-% brrrr, give this at the top of a style that needs to stub mkiv loading
+% setting up xml:
 %
-% this will change
+% \setupxml[\c!method=mkii]                    % mixed mkiv and mkii
+% \setupxml[\c!method=mkiv,\c!default=]        % mkiv only
+% \setupxml[\c!method=mkiv,\c!default=\v!none] % mkiv only, undefined -> hidden
+% \setupxml[\c!method=mkiv,\c!default=\v!text] % mkiv only, undefined -> text
 
-\def\processXMLfileMKIV
-  {\dosingleempty\doprocessXMLfileMKIV}
+\chardef\xmlprocessingmode=0 % 0=mixed, 1=mkivonly, 2=mkivonly-default-text, 3=mkivonly-default-none
+
+% \setupxml[method=mkiv,strip=yes,entities=yes,default=text]
+
+\newtoks\everysetupxml
+
+\def\setupxml[#1]{\getparameters[\??xm][#1]\the\everysetupxml}
+
+\def\c!entities{entities}
+\def\s!mkiv    {mkiv}
+\def\s!mkii    {mkii}
+
+\letvalue{\??xm:1:\s!mkii  }\zerocount
+\letvalue{\??xm:1:\s!mkiv  }\plusone
+\letvalue{\??xm:2:\v!none  }\plusone
+\letvalue{\??xm:2:\v!text  }\plustwo
+\letvalue{\??xm:2:\v!hidden}\plusthree
+
+\appendtoks
+    \chardef\xmlprocessingmode\executeifdefined{\??xm:1:\@@xmmethod}\zerocount
+    \ifcase\xmlprocessingmode
+        % mkii
+    \or
+        % mkiv
+%     \or
+        \chardef\xmlprocessingmode\executeifdefined{\??xm:2:\@@xmdefault}\plusone
+    \fi
+    \doifelse\@@xmentities\v!yes\xmlresolveentities\xmlkeepentities
+    \ifcase\xmlprocessingmode
+        \ctxlua{characters.setmkiientities()}%
+    \else
+        \ctxlua{characters.setmkiventities()}%
+    \fi
+    \doifelse\@@xmcompress\v!yes % this key may change, maybe compress=yes|no
+      {\ctxlua{xml.strip_cm_and_dt=true}}
+      {\ctxlua{xml.strip_cm_and_dt=false}}%
+\to \everysetupxml
+
+\appendtoks\the\everysetupxml\to\everyjob
+
+\newcount\charactersactiveoffset \charactersactiveoffset="10000
+
+\startextendcatcodetable\ctxcatcodes
+    \catcode\numexpr\charactersactiveoffset+`<\relax=13
+    \catcode\numexpr\charactersactiveoffset+`&\relax=13
+    \catcode\numexpr\charactersactiveoffset+`>\relax=13
+\stopextendcatcodetable
+\startextendcatcodetable\xmlcatcodes
+    \catcode\numexpr\charactersactiveoffset+`<\relax=13
+    \catcode\numexpr\charactersactiveoffset+`&\relax=13
+    \catcode\numexpr\charactersactiveoffset+`>\relax=13
+\stopextendcatcodetable
+
+\ctxlua { % entities are remembered in the format
+    characters.remapentity("<",characters.active_offset + utf.byte("<"))
+    characters.remapentity("&",characters.active_offset + utf.byte("&"))
+    characters.remapentity(">",characters.active_offset + utf.byte(">"))
+}
+
+\setupxml
+  [\c!method=mkii,       % mixed mode
+   \c!default=\v!hidden, % ignore elements that are not defined
+   \c!compress=\v!no,    % strip comment
+   \c!entities=\v!yes]   % replace entities
+
+% \defineXMLenvironment[y]{(}{)}
+%
+% \startxmlsetups x
+%     /\xmlflush{#1}/
+% \stopxmlsetups
+%
+% \startxmlsetups xx
+%     \xmlsetsetup{main}{x}{*}
+% \stopxmlsetups
+%
+% \xmlregistersetup{xx}
+%
+% \startbuffer
+% <x>a &lt;&amp;&gt;<y>{b}</y> c</x>
+% \stopbuffer
+%
+% mkii: [\processXMLbuffer]\quad mkiv: [\xmlprocessbuffer{main}{}{}]
+
+% some mkii commands, but mkiv-ified
+
+\def\xmlmapvalue#1#2#3{\setvalue{\??xm:v:#1:#2}{#3}} % keep #3 to grab spaces
+\def\xmlvalue   #1#2#3{\executeifdefined{\??xm:v:#1:#2}{#3}}
+
+\let\xmlmapval\xmlmapvalue
+\let\xmlval   \xmlvalue
+
+% brrrr, give this at the top of a style that needs to stub mkiv loading
+
+\def\remapXMLtoMKIV
+  {\ifx\xmldocument\undefined\def\xmldocument{main}\fi
+   \def\processXMLfile          ##1{\xmlprocessfile  \xmldocument{##1}{}}%
+   \def\processXMLfilegrouped   ##1{\xmlprocessfile  \xmldocument{##1}{}}% maybe still grouped?
+   \def\processXMLbuffer           {\dosingleempty\doprocessXMLbuffer}%
+   \def\doprocessXMLbuffer    [##1]{\xmlprocessbuffer\xmldocument{##1}{}}%
+   \def\XMLdata                 ##1{\xmlprocessdata  \xmldocument{##1}{}}%
+   \def\startXMLdata##1\stopXMLdata{\xmlprocessdata  \xmldocument{##1}{}}}
 
 \let\normalprocessXMLfilegrouped\processXMLfilegrouped
+
+\def\processXMLfileMKIV % one-shot, will become obsolete, personal hack
+  {\dosingleempty\doprocessXMLfileMKIV}
 
 \def\doprocessXMLfileMKIV[#1]%
   {\def\processXMLfilegrouped##1%
@@ -230,75 +372,3 @@
       \doifelsenothing{#1}{\xmlprocess{main}{##1}{}}{\xmlprocess{#1}{##1}{}}}}
 
 \protect \endinput
-
-% \xmlload{main}{normreader.xml}
-
-% \xmlattribute{main}{/subject/information/materialoverview/attribute}{pocketbook}
-% \xmltext{main}{/subject/information/materialoverview/@pocketbook}
-
-% \dorecurse{\xmlflush{main}{/subject/blabla/count()}}
-%    {\ifnum\recurselevel=\xmlflush{main}{/subject/blabla/count()}\relax
-%         \removeunwantedspaces and\space\ignorespaces
-%     \else\ifnum\recurselevel>1
-%         \removeunwantedspaces,\space\ignorespaces
-%     \fi
-%     \xmlflush{main}{/subject/blabla/index(\recurselevel})}
-
-% \def\xmljoin{main}{/subject/information/authors/author}{,}{and}
-% table.join(t,1,#t-1,", ") .. " and " .. t[#t]
-
-% % An example by Wolfgang Schuster:
-%
-% \startxmlsetups xml:mysetups
-%   \xmlsetsetup{\xmldocument}{section}{xml:*}
-%   \xmlsetsetup{\xmldocument}{title|p}{xml:*}
-% \stopxmlsetups
-%
-% \xmlregistersetup{xml:mysetups}
-%
-% \newcounter\sectionlevel
-%
-% \startxmlsetups xml:section
-%   \increment\sectionlevel
-%   \xmlflush{#1}
-%   \decrement\sectionlevel
-% \stopxmlsetups
-%
-% \startxmlsetups xml:title
-%   \ifcase\sectionlevel
-%   \or\chapter      {\xmlflush{#1}}
-%   \or\section      {\xmlflush{#1}}
-%   \or\subsection   {\xmlflush{#1}}
-%   \or\subsubsection{\xmlflush{#1}}
-%   \fi
-% \stopxmlsetups
-%
-% \startxmlsetups xml:p
-%   \xmlflush{#1}\endgraf
-% \stopxmlsetups
-%
-% \startbuffer[section]
-% <!-- An example by Wolfgang Schuster: -->
-% <section>
-%     <title>Section 1</title>
-%     <p>text text text text text text text text</p>
-%     <section>
-%         <title>Subsection 1</title>
-%         <p>text text text text text text text text</p>
-%     </section>
-%     <section>
-%         <title>Subsection 2</title>
-%         <p>text text text text text text text text</p>
-%     </section>
-%     <section>
-%         <title>Subsection 3</title>
-%         <p>text text text text text text text text</p>
-%     </section>
-%     <title>Section 2</title>
-%     <p>text text text text text text text text</p>
-% </section>
-% \stopbuffer
-%
-% \starttext
-%     \xmlprocessbuffer{main}{section}{}
-% \stoptext

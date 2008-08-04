@@ -224,12 +224,17 @@
      \fi
    \fi}
 
-\def\pushpostponedpagecolor
-  {\edef\savedtopofpagecolor{\topofpagecolor}%
-   \doifsomething\savedtopofpagecolor\restorecolormode}
+% \def\pushpostponedpagecolor
+%   {\edef\savedtopofpagecolor{\topofpagecolor}%
+%    \doifsomething\savedtopofpagecolor\restorecolormode}
+%
+% \def\poppostponedpagecolor
+%    {\doifsomething\savedtopofpagecolor\doactivatecolor\savedtopofpagecolor}
+%
+% no \topofpagecolor
 
-\def\poppostponedpagecolor
-   {\doifsomething\savedtopofpagecolor\doactivatecolor\savedtopofpagecolor}
+\let\pushpostponedpagecolor\relax
+\let\poppostponedpagecolor \relax
 
 % \def\pushcolor
 %   {\edef\popcolor

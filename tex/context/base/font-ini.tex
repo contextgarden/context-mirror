@@ -1399,10 +1399,12 @@
     \def\docheckfontfilename#1*#2#3*#4\relax % class overrules file
       {\edef\checkedfontfile{{%
          #1%
-         \expandafter\ifx\csname\fontclass\s!features\endcsname\empty
-           \ifx\@@fontfeatures\empty\ifx#2\empty\else*#2#3\fi\else*\@@fontfeatures\fi
-         \else
-           *\csname\fontclass\s!features\endcsname
+         \ifcsname\fontclass\s!features\endcsname
+           \expandafter\ifx\csname\fontclass\s!features\endcsname\empty
+             \ifx\@@fontfeatures\empty\ifx#2\empty\else*#2#3\fi\else*\@@fontfeatures\fi
+           \else
+             *\csname\fontclass\s!features\endcsname
+           \fi
          \fi
        }}%
        \doshowcheckedfontfeatures}
@@ -1524,7 +1526,9 @@
       {\ifx#2\empty
          % invalid feature
        \else\ifcsname @xtx@#1@#2#3\endcsname
-           \edef\convertedfontfeatures{\convertedfontfeatures\csname @xtx@#1@#2#3\endcsname;}%
+           \expandafter\ifx\csname @xtx@#1@#2#3\endcsname\empty\else
+             \edef\convertedfontfeatures{\convertedfontfeatures\csname @xtx@#1@#2#3\endcsname;}%
+           \fi
        \else
          \edef\!!stringa{#1}%
          \edef\!!stringb{#2#3}%
@@ -1542,14 +1546,14 @@
     \def\doconvertfontfeatures#1%
       {\dodoconvertfontfeatures#1=\empty=\relax}
 
-    \def\remapfontfeature #1 #2 #3 {\setvalue{@xtx@#1@#2}{#3}}
+    \def\remapfontfeature #1 #2 #3 {\setevalue{@xtx@#1@#2}{#3}}
 
     % this may move to another file, maybe font-xtx
 
     \remapfontfeature tlig          yes  mapping=tlig
     %remapfontfeature tlig          no   mapping=
-    %remapfontfeature trep          yes  mapping=tex-text
-    %remapfontfeature trep          no   mapping=
+    \remapfontfeature trep          yes  {}
+    \remapfontfeature trep          no   {}
     \remapfontfeature texligatures  yes  mapping=tlig
     %remapfontfeature texligatures  no   mapping=
     %remapfontfeature texquotes     yes  mapping=tex-text

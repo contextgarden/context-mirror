@@ -15,11 +15,17 @@
 
 \registerctxluafile{core-con}{1.001}
 
-\def\romannumerals#1{\ctxlua{converters.romannumerals(\number#1)}}
-\def\Romannumerals#1{\ctxlua{converters.Romannumerals(\number#1)}}
+\def\romannumerals       #1{\ctxlua{converters.romannumerals(\number#1)}}
+\def\Romannumerals       #1{\ctxlua{converters.Romannumerals(\number#1)}}
+\def\abjadnumerals      #1{\ctxlua{converters.arabicnumerals(\number#1)}}
+\def\abjadnodotnumerals #1{\ctxlua{converters.arabicnodotnumerals(\number#1)}}
+\def\abjadnaivenumerals #1{\ctxlua{converters.arabicnaivenumerals(\number#1)}}
 
-\def\greeknumerals#1{\ctxlua{converters.alphabetic(\number#1,"gr")}}
-\def\Greeknumerals#1{\ctxlua{converters.Alphabetic(\number#1,"gr")}}
+\defineconversion [romannumerals]      [\romannumerals]
+\defineconversion [Romannumerals]      [\Romannumerals]
+\defineconversion [abjadnumerals]      [\abjadnumerals]
+\defineconversion [abjadnodotnumerals] [\adjadnodotnumerals]
+\defineconversion [abjadnaivenumerals] [\adjadnaivenumerals]
 
 \def\character #1{\ctxlua{converters.character (\number#1)}}
 \def\Character #1{\ctxlua{converters.Character (\number#1)}}
@@ -71,20 +77,27 @@
 
 % this does not belong here, but in a lang-module
 
-\def\arabicnumerals    #1{\ctxlua{converters.alphabetic(\number#1,"arabic")}}
-\def\persiannumerals   #1{\ctxlua{converters.alphabetic(\number#1,"persian")}}
 \def\thainumerals      #1{\ctxlua{converters.alphabetic(\number#1,"thai")}}
 \def\devanagarinumerals#1{\ctxlua{converters.alphabetic(\number#1,"devanagari")}}
 \def\gurmurkhinumerals #1{\ctxlua{converters.alphabetic(\number#1,"gurmurkhi")}}
 \def\gujaratinumerals  #1{\ctxlua{converters.alphabetic(\number#1,"gujarati")}}
 \def\tibetannumerals   #1{\ctxlua{converters.alphabetic(\number#1,"tibetan")}}
+\def\greeknumerals     #1{\ctxlua{converters.alphabetic(\number#1,"greek")}}
+\def\Greeknumerals     #1{\ctxlua{converters.Alphabetic(\number#1,"greek")}}
+\def\arabicnumerals    #1{\ctxlua{converters.alphabetic(\number#1,"arabic")}}
+\def\persiannumerals   #1{\ctxlua{converters.alphabetic(\number#1,"persian")}}
 
-\defineconversion[arabicnumerals]    [\arabicnumerals]
-\defineconversion[persiannumerals]   [\persiannumerals]
-\defineconversion[thainumerals]      [\thainumerals]
-\defineconversion[devanagarinumerals][\devanagarinumerals]
-\defineconversion[gurmurkhinumerals] [\gurmurkhinumerals]
-\defineconversion[gujaratinumerals]  [\gujaratinumerals]
-\defineconversion[tibetannumerals]   [\tibetannumerals]
+\let\arabicexnumerals  \persiannumerals
+
+\defineconversion [thainumerals]       [\thainumerals]
+\defineconversion [devanagarinumerals] [\devanagarinumerals]
+\defineconversion [gurmurkhinumerals]  [\gurmurkhinumerals]
+\defineconversion [gujaratinumerals]   [\gujaratinumerals]
+\defineconversion [tibetannumerals]    [\tibetannumerals]
+\defineconversion [greeknumerals]      [\greeknumerals]
+\defineconversion [Greeknumerals]      [\Greeknumerals]
+\defineconversion [arabicnumerals]     [\arabicnumerals]
+\defineconversion [persiannumerals]    [\persiannumerals]
+\defineconversion [arabicexnumerals]   [\arabicexnumerals]
 
 \protect \endinput

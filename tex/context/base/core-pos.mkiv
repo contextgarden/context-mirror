@@ -20,7 +20,7 @@
     \immediatewriteutilitytua{local jp = job.positions}%
 \to \everyopenutilities
 
-\def\replacepospxywhd#1#2#3#4#5#6#7%
+\def\replacepospxywhd#1#2#3#4#5#6#7% maybe better just numbers, less garbage collection
   {\ctxlua{job.positions['#1']={\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax",%
      "\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax"}}}
 

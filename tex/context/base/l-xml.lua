@@ -206,7 +206,7 @@ do
         end
         dt = top.dt
         dt[#dt+1] = toclose
-        if at.xmlns then
+        if toclose.at.xmlns then
             remove(xmlns)
         end
     end
@@ -220,10 +220,10 @@ do
         local t = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = top }
         dt[#dt+1] = t
         setmetatable(t, mt)
-        at = { }
         if at.xmlns then
             remove(xmlns)
         end
+        at = { }
     end
     local function add_text(text)
         if cleanup and #text > 0 then
@@ -480,22 +480,19 @@ do
         elseif not nocommands then
             local ec = e.command
             if ec ~= nil then -- we can have all kind of types
-
-if e.special then -- todo test for true/false
-    local etg, edt = e.tg, e.dt
-    local spc = specialconverter and specialconverter[etg]
-    if spc then
---~ print("SPECIAL",etg,table.serialize(specialconverter), spc)
-        local result = spc(edt[1])
-        if result then
-            handle(result)
-            return
-        else
-            -- no need to handle any further
-        end
-    end
-end
-
+                if e.special then
+                    local etg, edt = e.tg, e.dt
+                    local spc = specialconverter and specialconverter[etg]
+                    if spc then
+                        local result = spc(edt[1])
+                        if result then
+                            handle(result)
+                            return
+                        else
+                            -- no need to handle any further
+                        end
+                    end
+                end
                 local xc = xml.command
                 if xc then
                     xc(e,ec)
@@ -546,17 +543,7 @@ end
                     end
                 end
                 if ern and xml.trace_remap and ern ~= ens then
---~                     if ats then
---~                         ats[#ats+1] = format("xmlns:remapped='%s'",ern)
---~                     else
---~                         ats = { format("xmlns:remapped='%s'",ern) }
---~                     end
---~ if ats then
---~     ats[#ats+1] = format("remappedns='%s'",ens or '-')
---~ else
---~     ats = { format("remappedns='%s'",ens or '-') }
---~ end
-ens = ern
+                    ens = ern
                 end
                 if ens ~= "" then
                     if edt and #edt > 0 then
@@ -600,7 +587,16 @@ ens = ern
                             handle("<" .. etg .. ">")
                         end
                         for i=1,#edt do
-                            serialize(edt[i],handle,textconverter,attributeconverter,specialconverter,nocommands)
+                            local ei = edt[i]
+                            if type(ei) == "string" then
+                                if textconverter then
+                                    handle(textconverter(ei))
+                                else
+                                    handle(ei)
+                                end
+                            else
+                                serialize(ei,handle,textconverter,attributeconverter,specialconverter,nocommands)
+                            end
                         end
                     --  handle(format("</%s>",etg))
                         handle("</" .. etg .. ">")
@@ -623,7 +619,16 @@ ens = ern
             end
         else
             for i=1,#e do
-                serialize(e[i],handle,textconverter,attributeconverter,specialconverter,nocommands)
+                local ei = e[i]
+                if type(ei) == "string" then
+                    if textconverter then
+                        handle(textconverter(ei))
+                    else
+                        handle(ei)
+                    end
+                else
+                    serialize(ei,handle,textconverter,attributeconverter,specialconverter,nocommands)
+                end
             end
         end
     end
@@ -653,14 +658,14 @@ ens = ern
 
     function xml.tostring(root) -- 25% overhead due to collecting
         if root then
-        if type(root) == 'string' then
-            return root
-        elseif next(root) then -- next is faster than type (and >0 test)
-            local result = { }
-            serialize(root,function(s) result[#result+1] = s end)
-            return concat(result,"")
+            if type(root) == 'string' then
+                return root
+            elseif next(root) then -- next is faster than type (and >0 test)
+                local result = { }
+                serialize(root,function(s) result[#result+1] = s end)
+                return concat(result,"")
+            end
         end
-    end
         return ""
     end
 
@@ -725,6 +730,18 @@ function xml.content(root) -- bugged
     return (root and root.dt and xml.tostring(root.dt)) or ""
 end
 
+function xml.isempty(root, pattern)
+    if pattern == "" or pattern == "*" then
+        pattern = nil
+    end
+    if pattern then
+        -- todo
+        return false
+    else
+        return not root or not root.dt or #root.dt == 0 or root.dt == ""
+    end
+end
+
 --[[ldx--
 <p>The next helper erases an element but keeps the table as it is,
 and since empty strings are not serialized (effectively) it does
@@ -766,6 +783,9 @@ end
 of <l n='xpath'/> and since we're not compatible we call it <l n='lpath'/>. We
 will explain more about its usage in other documents.</p>
 --ldx]]--
+
+local lpathcalls  = 0 -- statisctics
+local lpathcached = 0 -- statisctics
 
 do
 
@@ -1026,11 +1046,13 @@ do
     local cache = { }
 
     function xml.lpath(pattern,trace)
+        lpathcalls = lpathcalls + 1
         if type(pattern) == "string" then
             local result = cache[pattern]
-            if not result then
+            if result == nil then -- can be false which is valid -)
                 result = compose(pattern)
                 cache[pattern] = result
+                lpathcached = lpathcached + 1
             end
             if trace or xml.trace_lpath then
                 xml.lshow(result)
@@ -1039,6 +1061,10 @@ do
         else
             return pattern
         end
+    end
+
+    function lpath_cached_patterns()
+        return cache
     end
 
     local fallbackreport = (texio and texio.write) or io.write
@@ -1133,35 +1159,20 @@ do
             return (rdt and rdt[k]) or root[k] or ""
         end
     end
-    functions.name = function(root,k,n)
-        -- way too fuzzy
-        local found
-        if not k or not n then
-            local ns, tg = root.rn or root.ns or "", root.tg
-            if not tg then
-                for i=1,#root do
-                    local e = root[i]
-                    if type(e) == "table" then
-                        found = e
-                        break
-                    end
-                end
-            elseif ns ~= "" then
-                return ns .. ":" .. tg
-            else
-                return tg
-            end
+    functions.name = function(d,k,n) -- ns + tg
+        local found = false
+        n = n or 0
+        if not k then
+            -- not found
         elseif n == 0 then
-            local e = root[k]
-            if type(e) ~= "table" then
-                found = e
-            end
+            local dk = d[k]
+            found = dk and (type(dk) == "table") and dk
         elseif n < 0 then
             for i=k-1,1,-1 do
-                local e = root[i]
-                if type(e) == "table" then
+                local di = d[i]
+                if type(di) == "table" then
                     if n == -1 then
-                        found = e
+                        found = di
                         break
                     else
                         n = n + 1
@@ -1169,12 +1180,11 @@ do
                 end
             end
         else
---~ print(k,n,#root)
-            for i=k+1,#root,1 do
-                local e = root[i]
-                if type(e) == "table" then
+            for i=k+1,#d,1 do
+                local di = d[i]
+                if type(di) == "table" then
                     if n == 1 then
-                        found = e
+                        found = di
                         break
                     else
                         n = n - 1
@@ -1192,6 +1202,41 @@ do
         else
             return ""
         end
+    end
+    functions.tag = function(d,k,n) -- only tg
+        local found = false
+        n = n or 0
+        if not k then
+            -- not found
+        elseif n == 0 then
+            local dk = d[k]
+            found = dk and (type(dk) == "table") and dk
+        elseif n < 0 then
+            for i=k-1,1,-1 do
+                local di = d[i]
+                if type(di) == "table" then
+                    if n == -1 then
+                        found = di
+                        break
+                    else
+                        n = n + 1
+                    end
+                end
+            end
+        else
+            for i=k+1,#d,1 do
+                local di = d[i]
+                if type(di) == "table" then
+                    if n == 1 then
+                        found = di
+                        break
+                    else
+                        n = n - 1
+                    end
+                end
+            end
+        end
+        return (found and found.tg) or ""
     end
 
     local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- multiple only for tags, not for namespaces
@@ -1958,15 +2003,27 @@ do
         xml.each_element(xmldata, pattern, include)
     end
 
-    function xml.strip_whitespace(root, pattern)
+    function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and trailing space !
         traverse(root, lpath(pattern), function(r,d,k)
             local dkdt = d[k].dt
             if dkdt then -- can be optimized
                 local t = { }
                 for i=1,#dkdt do
                     local str = dkdt[i]
-                    if type(str) == "string" and str:find("^[ \n\r\t]*$") then
-                        -- stripped
+                    if type(str) == "string" then
+
+                        if str == "" then
+                            -- stripped
+                        else
+                            if nolines then
+                                str = str:gsub("[ \n\r\t]+"," ")
+                            end
+                            if str == "" then
+                                -- stripped
+                            else
+                                t[#t+1] = str
+                            end
+                        end
                     else
                         t[#t+1] = str
                     end
@@ -2168,9 +2225,9 @@ original entity is returned.</p>
 
 do if unicode and unicode.utf8 then
 
-    xml.entities = xml.entities or { } -- xml.entities.handler == function
+    xml.entities = xml.entities or { } -- xml.entity_handler == function
 
-    function xml.entities.handler(e)
+    function xml.entity_handler(e)
         return format("[%s]",e)
     end
 
@@ -2179,8 +2236,6 @@ do if unicode and unicode.utf8 then
     local function toutf(s)
         return char(tonumber(s,16))
     end
-
-    local entities = xml.entities -- global entities
 
     function utfize(root)
         local d = root.dt
@@ -2203,11 +2258,11 @@ do if unicode and unicode.utf8 then
         if e:find("#x") then
             return char(tonumber(e:sub(3),16))
         else
-            local ee = entities[e]
+            local ee = xml.entities[e] -- we cannot shortcut this one (is reloaded)
             if ee then
                 return ee
             else
-                local h = xml.entities.handler
+                local h = xml.entity_handler
                 return (h and h(e)) or "&" .. e .. ";"
             end
         end
@@ -2268,6 +2323,13 @@ do if unicode and unicode.utf8 then
     end
 
 end end
+
+function xml.statistics()
+    return {
+        lpathcalls = lpathcalls,
+        lpathcached = lpathcached,
+    }
+end
 
 --  xml.set_text_cleanup(xml.show_text_entities)
 --  xml.set_text_cleanup(xml.resolve_text_entities)

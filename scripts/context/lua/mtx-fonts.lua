@@ -6,15 +6,13 @@ if not modules then modules = { } end modules ['mtx-fonts'] = {
     license   = "see context related readme files"
 }
 
-dofile(input.find_file(instance,"font-syn.lua"))
-
-texmf.instance = instance -- we need to get rid of this / maybe current instance in global table
+dofile(input.find_file("font-syn.lua"))
 
 scripts       = scripts       or { }
 scripts.fonts = scripts.fonts or { }
 
-function scripts.fonts.reload()
-    fonts.names.load(true)
+function scripts.fonts.reload(verbose)
+    fonts.names.load(true,verbose)
 end
 
 function scripts.fonts.list(pattern,reload,all)
@@ -42,7 +40,8 @@ function scripts.fonts.list(pattern,reload,all)
         end)
         action(function(v,n,f,s)
             if s then s = "(sub)" else s = "" end
-            print(string.format("%s  %s  %s %s",v:padd(w[1]," "),n:padd(w[2]," "),f:padd(w[3]," "), s))
+            local str = string.format("%s  %s  %s %s",v:padd(w[1]," "),n:padd(w[2]," "),f:padd(w[3]," "), s)
+            print(str:strip())
         end)
     end
 end
@@ -51,13 +50,13 @@ function scripts.fonts.save(name,sub)
     local function save(savename,fontblob)
         if fontblob then
             savename = savename:lower() .. ".lua"
-            logs.report("fontsave","saving data in " .. savename)
+            logs.report("fontsave","saving data in %s",savename)
             table.tofile(savename,fontforge.to_table(fontblob),"return")
             fontforge.close(fontblob)
         end
     end
     if name and name ~= "" then
-        local filename = input.find_file(texmf.instance,name) -- maybe also search for opentype
+        local filename = input.find_file(name) -- maybe also search for opentype
         if filename and filename ~= "" then
             local suffix = file.extname(filename)
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' then
@@ -88,7 +87,8 @@ messages.help = [[
 ]]
 
 if environment.argument("reload") then
-    scripts.fonts.reload()
+    local verbose  = environment.argument("verbose")
+    scripts.fonts.reload(verbose)
 elseif environment.argument("list") then
     local pattern = environment.argument("pattern") or environment.files[1] or ""
     local all     = environment.argument("all")

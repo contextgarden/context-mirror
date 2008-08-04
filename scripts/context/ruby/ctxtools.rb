@@ -222,7 +222,7 @@ class Commands
         interfaces = @commandline.arguments
 
         if interfaces.empty? then
-            interfaces = ['en','cz','de','it','nl','ro','fr']
+            interfaces = ['en','cs','de','it','nl','ro','fr']
         end
 
         interfaces.each do |interface|
@@ -320,7 +320,7 @@ class Commands
         interfaces = @commandline.arguments
 
         if interfaces.empty? then
-            interfaces = ['cz','de','it','nl','ro','fr']
+            interfaces = ['cs','de','it','nl','ro','fr']
         else
             interfaces.delete('en')
         end
@@ -1219,14 +1219,15 @@ class Language
 
     def located(filename)
         begin
-            fname = Kpse.found(filename, 'context')
-            if FileTest.file?(fname) then
-                report("using file #{fname}")
-                return fname
-            else
-                report("file #{filename} is not present")
-                return nil
+            ["context","plain","latex"].each do |name| # fallbacks needed for czech patterns
+                fname = Kpse.found(filename, name)
+                if FileTest.file?(fname) then
+                    report("using file #{fname}")
+                    return fname
+                end
             end
+            report("file #{filename} is not present")
+            return nil
         rescue
             report("file #{filename} cannot be located using kpsewhich")
             return nil
@@ -1311,9 +1312,9 @@ class Language
                 remap(/\"o/, "[odiaeresis]")
                 remap(/\"u/, "[udiaeresis]")
             when 'fr' then
-                demap(/\\n\{/, "\\keep{")
-                remap(/\\ae/, "[adiaeresis]")
-                remap(/\\oe/, "[odiaeresis]")
+                demap(/\\n\{/, "\\delete{")
+                remap(/\\ae/, "[aeligature]")
+                remap(/\\oe/, "[oeligature]")
             when 'la' then
                 # \lccode`'=`' somewhere else, todo
                 demap(/\\c\{/, "\\delete{")
@@ -1324,7 +1325,7 @@ class Language
                 remap("a2|", "[greekalphaiotasub]")
                 remap("h2|", "[greeketaiotasub]")
                 remap("w2|", "[greekomegaiotasub]")
-		remap(">2r1<2r", "[2ῤ1ῥ]")
+         		remap(">2r1<2r", "[2ῤ1ῥ]")
                 remap(">a2n1wdu'", "[ἀ2ν1ωδύ]")
                 remap(">e3s2ou'", "[ἐ3σ2ού]")
                 # main conversion
@@ -1561,6 +1562,8 @@ class Language
                 remap(/\xC0/, "[cyrillicyu]")
                 remap(/\xD1/, "[cyrillicya]")
                 remap(/\xA3/, "[cyrillicyo]")
+            when 'tr' then
+                remap(/\^\^11/, "[dotlessi]")
             else
         end
 
@@ -1632,7 +1635,7 @@ class Commands
     @@languagedata['ba' ] = [ 'ec'      , ['bahyph.tex'] ]
     @@languagedata['ca' ] = [ 'ec'      , ['cahyph.tex'] ]
     @@languagedata['cy' ] = [ 'ec'      , ['cyhyph.tex'] ]
-    @@languagedata['cz' ] = [ 'ec'      , ['czhyphen.tex','czhyphen.ex'] ]
+    @@languagedata['cs' ] = [ 'ec'      , ['czhyphen.tex','czhyphen.ex'] ]
     @@languagedata['de' ] = [ 'ec'      , ['dehyphn.tex'] ]
     @@languagedata['deo'] = [ 'ec'      , ['dehypht.tex'] ]
     @@languagedata['da' ] = [ 'ec'      , ['dkspecial.tex','dkcommon.tex'] ]
@@ -1644,7 +1647,7 @@ class Commands
     # ghyphen.readme ghyph31.readme grphyph
     @@languagedata['hr' ] = [ 'ec'      , ['hrhyph.tex'] ]
     @@languagedata['hu' ] = [ 'ec'      , ['huhyphn.tex'] ]
-    @@languagedata['en' ] = [ 'default' , [['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex']] ]
+    @@languagedata['us' ] = [ 'default' , [['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex']] ]
     @@languagedata['us' ] = [ 'default' , [['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex']] ]
     # inhyph.tex
     @@languagedata['is' ] = [ 'ec'      , ['ishyph.tex'] ]
@@ -1664,7 +1667,7 @@ class Commands
     # srhyphc.tex / cyrillic
     @@languagedata['sv' ] = [ 'ec'      , ['svhyph.tex'] ]
     @@languagedata['tr' ] = [ 'ec'      , ['tkhyph.tex'] ]
-    @@languagedata['uk' ] = [ 'default' , [['ukhyphen.tex'],['ukhyph.tex']] ]
+    @@languagedata['gb' ] = [ 'default' , [['ukhyphen.tex'],['ukhyph.tex']] ]
   # @@languagedata['ru' ] = [ 't2a'     , ['ruhyphal.tex'] ] # t2a does not work
     @@languagedata['ru' ] = [ 'cyr'     , ['ruhyphal.tex'] ]
 end

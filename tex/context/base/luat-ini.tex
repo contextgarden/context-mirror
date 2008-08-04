@@ -91,13 +91,18 @@
 
 \def\s!lua{lua} \def\v!code{code} \let\@EA\expandafter
 
-\def\definelua[#1]%
+\def\setluainstancename#1#2%
+  {\ifproductionrun\else\appendtoks\setluainstancename{#1}{#2}\to\everyjob\fi
+   \directlua0{if lua.instancename then lua.instancename[\number#1]="#2" end}}
+
+\def\definelua[#1]% no ptional arg handling here yet
   {\ifcsname#1\s!lua\endcsname\else\expandafter\newlua\csname#1\s!lua\endcsname\fi
+   \setluainstancename{\csname#1\s!lua\endcsname}{#1}%
    \setevalue{\e!start#1\s!lua       }{\noexpand\dostartlua    \csname#1\s!lua\endcsname}%
    \setevalue{\e!start#1\s!lua\v!code}{\noexpand\dostartluacode\csname#1\s!lua\endcsname}%
    \setvalue {\e!stop #1\s!lua       }{\dostoplua    }%
    \setvalue {\e!stop #1\s!lua\v!code}{\dostopluacode}}
 
-\definelua[CTX]
+\definelua[CTX] \setluainstancename\CTXlua{main ctx instance}
 
 \protect \endinput

@@ -193,7 +193,8 @@ if unknown collapse_data :
   boolean collapse_data ; collapse_data := false ;
 fi ;
 
-boolean savingdata ; savingdata := false ;
+boolean savingdata     ; savingdata     := false ;
+boolean savingdatadone ; savingdatadone := false ;
 
 def savedata expr txt =
   if collapse_data :
@@ -208,6 +209,7 @@ enddef ;
 
 def startsavingdata =
   savingdata := true ;
+  savingdatadone := true ;
   if collapse_data :
     write
       "\MPdata{" & decimal charcode & "}{%"
@@ -224,7 +226,9 @@ def stopsavingdata =
 enddef ;
 
 def finishsavingdata =
-    write EOF to data_mpd_file ;
+    if savingdatadone :
+        write EOF to data_mpd_file ;
+    fi ;
 enddef ;
 
 %D Instead of a keystroke eating save and allocation

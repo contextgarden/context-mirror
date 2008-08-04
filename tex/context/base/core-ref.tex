@@ -567,39 +567,6 @@
 
 \def\currentfolioreference{0}
 
-% \def\dogetreferenceelements#1#2#3#4#5%
-%   {\chardef\currentreferencetype=\ifx#1\relax0\else#1\fi\relax
-%    \ifnum\currentreferencetype<2
-%      \edef\currentpagereference{#2}%
-%      \ifx\currentpagereference   \empty
-%        \let\currentfolioreference\folio
-%      \else
-%        \def \currentpagereference {\referencepagenumber[#2]}%
-%        \edef\currentfolioreference{\dosplitofffoliopart[#2]}%
-%      \fi
-%      \edef\currentrealreference{#3}%
-%      \settextreferences#4\end
-%      \ifnum0#5<\crossreferencenumber
-%        \forwardreferencetrue
-%      \else
-%        \forwardreferencefalse
-%      \fi
-%    \else
-%      \edef\currentrealreference {#3}%
-%      \def \currentdatareference {#2}%
-%      \let \currentfolioreference\folio
-%      \settextreferences#4\end
-%      \forwardreferencefalse
-%    \fi
-%    \ifodd\currentreferencetype
-%      \realreferencepagefalse
-%    \else
-%      \docheckrealreferencepage\currentrealreference
-%      \ifrealreferencepage \else
-%        \docheckrealreferencepage\currentdatareference
-%      \fi
-%    \fi}
-
 \let\currentlocationreference\empty
 
 \def\dogetreferenceelements#1#2#3#4#5%
@@ -947,79 +914,6 @@
 
 \beginTEX
 
-% \def\dodoifreferencefoundelse#1#2#3%
-%   {\checkreferences
-%    \bgroup
-%      \let\unharmedreferenceprefix=\referenceprefix
-%      \bgroup
-%      \splitofffullreference{#1}%
-%      \ifx\currentreferencespecial\specialREFidentifier
-%        \@EA\ifx\csname\specialREFidentifier\currentreferenceoperation\endcsname\relax
-%          \global\referencefoundfalse
-%        \else
-%          \global\referencefoundtrue
-%          \@EA\@EA\@EA\splitofffullreference\@EA\@EA\@EA % 1 level
-%             {\csname\specialREFidentifier\currentreferenceoperation\endcsname}%
-%        \fi
-%      \else
-%        \global\referencefoundtrue
-%      \fi
-%      \ifreferencefound
-%        \ifx\currentreferencespecial\empty
-%          \ifx\currentouterreference\empty
-%            \docheckinnerreference
-%            \ifreferencefound \else
-%              \checkglobalfilereferences
-%            \fi
-%          \else
-%            \docheckouterreference
-%          \fi
-%          \ifreferencefound
-%            \ifx\currentreferencearguments\empty
-%              \getreferenceelements\currentfullreference
-%            \else
-%              \getreferenceelements\currentinnerreference
-%            \fi
-%          \fi
-%        \else
-%          \docheckspecialreference
-%        \fi
-%      \fi
-%      \ifreferencefound \else
-%        \let\referenceprefix\empty
-%        \@EA\ifx\csname\specialREFidentifier#1\endcsname\relax\else
-%          \@EA\@EA\@EA\splitofffullreference\@EA\@EA\@EA % 1 level
-%             {\csname\specialREFidentifier#1\endcsname}%
-%          \ifx\currentreferencespecial\empty
-%            \ifx\currentouterreference\empty
-%              \docheckinnerreference
-%              \ifreferencefound \else
-%                \checkglobalfilereferences
-%              \fi
-%            \else
-%              \docheckouterreference
-%            \fi
-%            \ifreferencefound
-% %             \getreferenceelements\currentfullreference
-%              \ifx\currentreferencearguments\empty
-%                \getreferenceelements\currentfullreference
-%              \else
-%                \getreferenceelements\currentinnerreference
-%              \fi
-%            \fi
-%          \else
-%            \docheckspecialreference
-%          \fi
-%        \fi
-%      \fi
-%      \iftracereferences
-%        \doshowcurrentreference\space
-%        \writestatus{\m!references}{\currentreferenceshow}%
-%      \fi
-%      \ifreferencefound#2\else#3\fi
-%      \egroup
-%    \egroup}
-
 \newcount\nofexpandedreferences
 
 \def\dodoexpandreferences#1REF(#2#3)#4\relax
@@ -1041,79 +935,6 @@
 \endTEX
 
 \beginETEX \ifcsname
-
-% \def\dodoifreferencefoundelse#1#2#3%
-%   {\checkreferences
-%    \bgroup
-%      \let\unharmedreferenceprefix=\referenceprefix
-%      \bgroup
-%      \splitofffullreference{#1}%
-%      \ifx\currentreferencespecial\specialREFidentifier
-%        \ifcsname\specialREFidentifier\currentreferenceoperation\endcsname
-%          \global\referencefoundtrue
-%          \@EA\@EA\@EA\splitofffullreference\@EA\@EA\@EA % 1 level
-%             {\csname\specialREFidentifier\currentreferenceoperation\endcsname}%
-%        \else
-%          \global\referencefoundfalse
-%        \fi
-%      \else
-%        \global\referencefoundtrue
-%      \fi
-%      \ifreferencefound
-%        \ifx\currentreferencespecial\empty
-%          \ifx\currentouterreference\empty
-%            \docheckinnerreference
-%            \ifreferencefound \else
-%              \checkglobalfilereferences
-%            \fi
-%          \else
-%            \docheckouterreference
-%          \fi
-%          \ifreferencefound
-%            \ifx\currentreferencearguments\empty
-%              \getreferenceelements\currentfullreference
-%            \else
-%              \getreferenceelements\currentinnerreference
-%            \fi
-%          \fi
-%        \else
-%          \docheckspecialreference
-%        \fi
-%      \fi
-%      \ifreferencefound \else
-%        \let\referenceprefix=\empty
-%        \ifcsname\specialREFidentifier#1\endcsname
-%          \@EA\@EA\@EA\splitofffullreference\@EA\@EA\@EA % 1 level
-%             {\csname\specialREFidentifier#1\endcsname}%
-%          \ifx\currentreferencespecial\empty
-%            \ifx\currentouterreference\empty
-%              \docheckinnerreference
-%              \ifreferencefound \else
-%                \checkglobalfilereferences
-%              \fi
-%            \else
-%              \docheckouterreference
-%            \fi
-%            \ifreferencefound
-% %             \getreferenceelements\currentfullreference
-%              \ifx\currentreferencearguments\empty
-%                \getreferenceelements\currentfullreference
-%              \else
-%                \getreferenceelements\currentinnerreference
-%              \fi
-%            \fi
-%          \else
-%            \docheckspecialreference
-%          \fi
-%        \fi
-%      \fi
-%      \iftracereferences
-%        \doshowcurrentreference\space
-%        \writestatus{\m!references}{\currentreferenceshow}%
-%      \fi
-%      \ifreferencefound#2\else#3\fi
-%      \egroup
-%    \egroup}
 
 \newcount\nofexpandedreferences
 
@@ -1302,10 +1123,6 @@
 %D a fuzzy part of this mechanism and a result of the choice
 %D to let speed prevail over beauty in resolving chained
 %D references with symbolic (defined) references.
-
-% \def\localdoifreferencefoundelse#1#2#3% beware, this feeds back the (...) ref
-%   {\dodoifreferencefoundelse{#1}%
-%    \ifreferencefound#2\else#3\fi}
 
 \def\localdoifreferencefoundelse#1%
   {\dodoifreferencefoundelse{#1}%
@@ -1690,13 +1507,6 @@
 
 \def\nextinternalreference
   {\the\locationcount}
-
-% \def\thisisnextinternal#1%
-%   {\global\advance\locationcount \plusone
-%    \thisisdestination{\s!aut\iftraceinternalreferences:#1\fi:\nextinternalreference}}
-%
-% \def\gotonextinternal#1#2% #3#4
-%   {\gotodestination{}{}{\s!aut\iftraceinternalreferences:#1\fi:#2}}
 
 \def\thisisnextinternal#1%
   {\global\advance\locationcount \plusone
@@ -2265,24 +2075,6 @@
 \def\dounknownreference#1#2[#3]%
   {\unknownreference{#3}\dotextprefix{#2}\dummyreference}%
 
-% \def\docompletereference#1#2[#3]%
-%   {\doifsomespaceelse{#2}
-%      {\doifsomething{#2}{\dogotospace{#2}[#3]~}\dogotofixed{#1}[#3]}
-%      {\dogotofixed{\dotextprefix{#2}#1}[#3]}}
-%
-% better:
-
-% \def\docompletereference#1#2[#3]%
-%   {\iflocationsplit
-%       \doifsomespaceelse{#2}
-%         {\dogotospace{\dotextprefix{#2}#1}[#3]}
-%         {\dogotofixed{\dotextprefix{#2}#1}[#3]}%
-%    \else
-%      \dogotofixed{\dotextprefix{#2}#1}[#3]%
-%    \fi}
-%
-% more efficient
-
 \def\docompletereference#1#2[#3]%
   {\iflocationsplit
      \doifsomespaceelse{#2}\dogotospace\dogotofixed{\dotextprefix{#2}#1}[#3]%
@@ -2372,41 +2164,6 @@
        {\leftofreference#1\rightofreference}{#2#3}[#4]%
    \fi}
 
-% \def\dododododoinatreference#1#2[#3]%
-%   {\bgroup
-%    \forgetall
-%    \postponefootnotes
-%    \leaveoutervmode
-%    \doifreferencefoundelse{#3}
-%      {\bgroup
-%       \let\ignorespaces    \empty % rather dirty trick, but ok
-%       \let\leftofreference \empty % the same, again ok
-%       \let\rightofreference\empty % and once more
-%       \def\textofreference {#2}%  % temporary value
-%       \ifx\textofreference\empty  % simple expansion
-%        %\doifelsenothing{#1}
-%        %  {\egroup\dosymbolreference{#1}{\textofreference}[#3]}
-%        %  {\egroup\dowantedreference{#1}{\textofreference}[#3]}%
-%         \doifelsenothing{#1}%
-%           {\egroup\dosymbolreference}%
-%           {\egroup\dowantedreference}%
-%           {#1}{\textofreference}[#3]%
-%       \else
-%        %\doifelsenothing{#1}
-%        %  {\egroup\dosymbolreference{#1}{#2}[#3]}
-%        %  {\egroup\dowantedreference{#1}{#2}[#3]}%
-%         \doifelsenothing{#1}%
-%           {\egroup\dosymbolreference}%
-%           {\egroup\dowantedreference}%
-%           {#1}{#2}[#3]%
-%       \fi}
-%      {\dounknownreference{#1}{#2}[#3]}%
-%    \referenceinfo<{#3}%
-%    \global\let\leftofreference \empty
-%    \global\let\rightofreference\empty
-%    \global\let\textofreference \empty
-%    \egroup}
-
 \def\dododododoinatreference#1#2[#3]%
   {\dontleavehmode   % replaces \leaveoutervmode
    \bgroup
@@ -2459,27 +2216,17 @@
 %D split at spaces. This means that, although hyphenation is
 %D prevented, long references can cross line endings.
 
-%\unexpanded\def\naar#1[#2]%
-%  {\dontleavehmode
-%  %\leaveoutervmode
-%   \doifreferencefoundelse{#2}
-%     {\doifelsenothing{#1}
-%        {\dosymbolreference{}{}[#2]}
-%        {\dogotospace{#1}[#2]}}
-%     {\unknownreference{#2}#1}%
-%   \referenceinfo{<}{#2}}
 
 \def\dogoto#1[#2]%
   {\dontleavehmode
-  %\leaveoutervmode
-\bgroup
-\postponefootnotes
+   \bgroup
+   \postponefootnotes
    \doifreferencefoundelse{#2}
      {\doifelsenothing{#1}
         {\dosymbolreference{}{}[#2]}
         {\dogotospace{#1}[#2]}}
      {\unknownreference{#2}#1\relax}% \relax catches lookahead
-\egroup
+   \egroup
    \referenceinfo{<}{#2}}
 
 \unexpanded\def\goto#1#2%
@@ -2768,15 +2515,6 @@
 %D
 %D As can be expected, this macro used \type{\goto} to
 %D perform its task.
-
-% normal version:
-%
-% \def\from[#1]%
-%   {\dontleavehmode % added, but probably not needed
-%    \bgroup
-%    \doifinstringelse{::}{#1}{\docomplexuit[#1]}{\docomplexuit[#1::]}}
-%
-% since we need to serve active :'s we need the less readable:
 
 \def\dospecialfrom % retest this one !
   {\dosingleempty\dodospecialfrom}

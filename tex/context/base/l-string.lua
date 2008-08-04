@@ -82,7 +82,7 @@ end
 function string:splitchr(chr)
     if #self > 0 then
         local t = { }
-        for s in string.gmatch(self..chr,"(.-)"..chr) do
+        for s in (self..chr):gmatch("(.-)"..chr) do
             t[#t+1] = s
         end
         return t
@@ -90,22 +90,6 @@ function string:splitchr(chr)
         return { }
     end
 end
-
---~ function string.piecewise(str, pat, fnc) -- variant of split
---~     local fpat = "(.-)"..pat
---~     local last_end = 1
---~     local s, e, cap = string.find(str, fpat, 1)
---~     while s ~= nil do
---~         if s~=1 or cap~="" then
---~             fnc(cap)
---~         end
---~         last_end = e+1
---~         s, e, cap = string.find(str, fpat, last_end)
---~     end
---~     if last_end <= #str then
---~         fnc((string.sub(str,last_end)))
---~     end
---~ end
 
 function string.piecewise(str, pat, fnc) -- variant of split
     for k in string.splitter(str,pat) do fnc(k) end

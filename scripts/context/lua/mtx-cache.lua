@@ -6,20 +6,18 @@ if not modules then modules = { } end modules ['mtx-cache'] = {
     license   = "see context related readme files"
 }
 
-texmf.instance = instance -- we need to get rid of this / maybe current instance in global table
-
 scripts       = scripts       or { }
 scripts.cache = scripts.cache or { }
 
 function scripts.cache.collect_one(...)
-    local path = caches.setpath(instance,...)
+    local path = caches.setpath(...)
     local tmas = dir.glob(path .. "/*.tma")
     local tmcs = dir.glob(path .. "/*.tmc")
     return path, tmas, tmcs
 end
 
 function scripts.cache.collect_two(...)
-    local path = caches.setpath(instance,...)
+    local path = caches.setpath(...)
     local rest = dir.glob(path .. "/**/*")
     return path, rest
 end

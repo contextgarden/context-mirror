@@ -403,8 +403,11 @@
 %D
 %D The separator is defined as:
 
-\def\digitpowerseparator%
-  {\cdot10} % {\times10}
+% \def\digitpowerseparator%
+%   {\cdot10} % {\times10}
+
+\def\digitpowerseparator
+  {\ifx\collecteddigits\empty\else\cdot\fi10}
 
 %D \macros
 %D   {digittemplate}

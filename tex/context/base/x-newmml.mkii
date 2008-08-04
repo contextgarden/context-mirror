@@ -1,0 +1,2745 @@
+%D \module
+%D   [       file=x-newmml,
+%D        version=2005.06.10, % 1999.12.20,
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=MathML Renderer,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Remark: from now on this is a module and no longer an xtag
+%D filter. In due time it will replace the older renderer (which
+%D we will keep around for sentimental reasons). This variant has
+%D no namespace support yet, but eventually we will use a \MKIV\
+%D version.
+
+\ifx\inlinemathematics\undefined
+    \def\inlinemathematics   {\dontleavehmode\mathematics} % already in kernel
+    \long\def\inlinemath #1{\dontleavehmode\relax\ifmmode#1\else $#1$\fi}
+\fi
+
+% \defineXMLentity[x000AF]{\normalorfiller{x}\hrulefill}
+% CHECK FOR: \xmlrent
+% \enablemathpunctuation
+
+%D Then we start defining the rendering macros:
+
+\writestatus{loading}{Context XML Macros (MathML Renderer)}
+
+\startmodule [mathml]
+
+%D First we load the entities:
+
+\usemodule[newmme]
+
+% \setupmodule[a=c]
+% \setupmodule[a=c]
+
+\unprotect
+
+\def\MMLrm{\mr}
+
+\def\MMLseparator#1{{#1}} % nils space after separator
+
+%D First we define some general formula elements.
+
+\defineXMLenvironment [formula] [label=,sublabel=]
+  {\dostartXMLformula\placeformula}
+  {\dostopXMLformula}
+
+\defineXMLenvironment [subformula] [label=,sublabel=]
+  {\dostartXMLformula\placesubformula}
+  {\dostopXMLformula}
+
+\def\dostartXMLformula#1%
+  {\doifelsenothingXMLop{label}
+     {\startformula}
+     {\expanded{#1[\XMLop{label}]{\XMLop{sublabel}}}\startformula}}
+
+\def\dostopXMLformula
+  {\stopformula}
+
+%D Since I only had the draft of MathML 2 as example of
+%D rendering, there are probably a lot of omissions and
+%D misinterpretations. At least I learned some bits and
+%D pieces of math rendering.
+%D
+%D The main complications were not so much the math, but to
+%D find the most efficient way to handle elements without
+%D spacing beging messed up. The first implementation was
+%D aimed at getting reasonable output, this second
+%D implementation is already better in terms of handling
+%D nesting, and I will definitely need a third one that has
+%D more efficient and less ugly code.
+%D
+%D The \TEX\ part is not that complicated and once the
+%D preprocessor was okay, the rest way just a lot of keying
+%D and testing. It all comes down to gobbling, redefining,
+%D and not so much to parsing.
+%D
+%D The second implementation expanded the whole math sequence
+%D into an internal \TEX\ representation. This is a rather clean
+%D and fast process. Filtering and testing takes place by
+%D redefining the internal representation macros.
+%D
+%D The third implementation may look a bit more messy in some
+%D respects. This is because in \TEX\ it's not that trivial to
+%D implement a tree handler. We use a stack for the \type {apply}
+%D element and other sequential content. Occasionally we need to
+%D peek into child elements which involves messy code. This
+%D implementation is closer to the normal \XML\ handling in
+%D \CONTEXT.
+
+%D We start with the parent elements and the option handler.
+
+\defineXMLdirective [mathml] \setupMMLappearance
+
+\defineXMLargument [math]  \automathematics
+\defineXMLargument [imath] \inlinemathematics
+\defineXMLargument [dmath] \displaymathematics
+\defineXMLargument [m]     \inlinemathematics
+
+%D In the styles, options can be set with:
+
+\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[@@MML#1]}
+
+\def\startusingMMLarguments % optional maken
+  {\begingroup
+  %\expandXMLta % expand entities first
+   \getXMLta}
+
+\def\stopusingMMLarguments % optional maken
+  {\endgroup}
+
+\def\MMLargumentprefix{@@MML\currentXMLelement}
+
+%D We will apply inner math to all bits and pieces made up by an
+%D \type {apply}.
+
+\def\MMLmathinner
+  {\ifinner \expandafter \firstofoneargument \else \expandafter \mathinner \fi}
+
+%D A few math related macros:
+
+\let\MMLctempresetlist\empty \def\setMMLcreset{\edef\MMLctempresetlist}
+
+\newcount\MMLapplydepth \def\MMLcreset{\MMLapplydepth\zerocount}
+
+% Stack handler
+
+\startXMLmapping[xmlstack:test]
+
+  \defineXMLnested
+    [apply]
+    {\startsavingXMLelements}
+    {\stopsavingXMLelements}
+
+\stopXMLmapping
+
+%D Auxiliary MathML macros: (to be generalized)
+
+\def\doifelseMMCfunction
+  {\begingroup
+   \XMLdoifonstackelse{fn}
+     {\donetrue}
+     {\XMLdoifonstackelse{apply}
+        {\defXMLfirstnamedtext\ascii{apply}%
+         \startsavingXMLelements % best use a substack so that we do not need to \edef
+         \ascii
+         \stopsavingXMLelements}
+        {}%
+      \XMLdoifonstackelse{fn}
+        {\donetrue}
+        {\defineXMLsave[ci][type=]%
+         \XMLfirstnamed{ci}%
+         \doifelse{\XMLpar{ci}{type}{}}{fn}
+           {\donetrue}
+           {\donefalse}}}%
+  \ifdone
+    \endgroup\expandafter\firstoftwoarguments
+  \else
+    \endgroup\expandafter\secondoftwoarguments
+  \fi}
+
+\def\doifelseMMCfunctioninapply#1#2% grouped
+  {\begingroup
+   \startXMLmapping[xmlstack:test]% take fast alternative
+   \getXMLstackdata{#1}%
+   \expanded{\doifinsetelse{\getXMLstackname\plusone}{#2}}
+     {\stopXMLmapping
+      \endgroup\firstoftwoarguments }
+     {\stopXMLmapping
+      \endgroup\secondoftwoarguments}}
+
+\def\dodoifelseMMCfunctioninapply#1#2%
+  {\startXMLmapping[xmlstack:test]% take fast alternative
+   \getXMLstackdata{#1}%
+   \expanded{\doifinsetelse{\getXMLstackname\plusone}{#2}}
+     {\stopXMLmapping
+      \firstoftwoarguments }
+     {\stopXMLmapping
+      \secondoftwoarguments}}
+
+%D Special features:
+
+\newtoks \@@postponedMMLactions \setfalse \somepostponedMMLactions
+
+\def\postponeMMLactions#1%
+  {\global\settrue\somepostponedMMLactions
+   \global\@@postponedMMLactions\expandafter{\the\@@postponedMMLactions#1}}
+
+\def\postponedMMLactions
+  {\global\setfalse\somepostponedMMLactions
+   \@EA\global\@EA\@@postponedMMLactions\@EA\emptytoks
+   \the\@@postponedMMLactions}
+
+%D A couple of lists:
+
+\def\MMLcmainresetlist
+  {times,divide,power,%
+   lt,gt,eq,leq,geq,%
+   in,inverse,%
+   fn,%
+   floor,ceiling,%
+   mean,%
+   selector,%
+   abs,int,limit,sum,product,%
+   outerproduct,innerproduct,scalarproduct}
+
+\def\MMLcfunctionlist
+  {sin,arcsin,sinh,arcsinh,%
+   cos,arccos,cosh,arccosh,%
+   tan,arctan,tanh,arctanh,%
+   cot,arccot,coth,arccoth,%
+   csc,arccsc,csch,arccsch,%
+   sec,arcsec,sech,arcsech,%
+   ln,exp,log,%
+   abs,int,limit,sum,product,%
+   fn} % ?
+
+\def\MMLcconstructlist
+  {diff,partialdiff,root} % apply goes wrong on 1/2 * (a_2 + b_3)
+
+% apply
+%
+%D We use inner and grouping (begin/end and no b/e) else we
+%D get problems with 1/2(1+2) and alike (todo: ask taco).
+%D
+%D The problem with apply is that we need to take care of
+%D several situations, like:
+%D
+%D \starttyping
+%D <apply> <.../> ...
+%D <apply> <fn> ...
+%D <apply> <apply> <ci> ...
+%D <apply> <apply> <fn> <ci> ...
+%D \stoptyping
+%D
+%D Because we translated version 2 of this renderer into
+%D version 3 the following definitions may be sub optimal or
+%D more complex than actually needed.
+
+\defineXMLnested % why nested? could be just an environment
+  [apply]
+  [open=,close=]
+  {\setups{mmc:apply:start}}
+  {\setups{mmc:apply:stop}}
+
+\startsetups mmc:apply:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:apply:stop
+    \stopsavingXMLelements
+    \MMLmathinner {
+        \expanded{\doifinsetelse{\getXMLstackname\plusone}{\MMLcmainresetlist,\MMLctempresetlist}}
+           \MMLcreset
+           \donothing
+        \ifcase\MMLapplydepth \else
+           \doifXMLparelse{apply}{open} \donothing{\getXMLarguments{apply}{open="("}}% slow
+           \doifXMLparelse{apply}{close}\donothing{\getXMLarguments{apply}{close=")"}}% slow
+        \fi
+        \doifXMLparelse{apply}{open}{\left\XMLpar{apply}{open}{}}\donothing
+        \advance\MMLapplydepth\plusone
+        \begingroup
+            \let\MMLctempresetlist\empty
+            \doifelse {\getXMLstackname\plusone} {apply} {
+                % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
+                \doifelseMMCfunctioninapply \plusone {plus,minus} {
+                    % yet incomplete and rather untested
+                    % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
+                } {
+                    \MMLcreset
+                }
+                \getXMLstackdata\plusone
+                \ifconditional\somepostponedMMLactions
+                    \postponedMMLactions
+                \else
+                    \left(\MMLcreset\getXMLstackdata\plustwo\right)
+                \fi
+            } {
+                \doifelse {\getXMLstackname\plusone} {fn} {
+                    % also postpone
+                    \directsetup{mmc:fn:apply}
+                } {
+                    \doifelse {\getXMLstackname\plusone} {csymbol} {
+                        % also postpone
+                        \directsetup{mmc:csymbol:apply}
+                    } {
+                        \doifelse {\getXMLstackname\plusone} {ci} {
+                            \getXMLstackdata\plusone
+                            \ifnum\XMLstacklevel>\plusone
+                               \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
+                            \fi
+                        } {
+                            \getXMLstackdata\plusone
+                        }
+                    }
+                }
+            }
+        \endgroup
+        \advance\MMLapplydepth\minusone
+        \directsetup{apply:flush}
+        \doifXMLparelse{apply}{close}{\right\XMLpar{apply}{close}{}}\donothing
+      }
+    \endgroup
+\stopsetups
+
+\startsetups apply:flush
+\relax
+    \ifcase\MMLapplydepth
+        \ifconditional\somepostponedMMLactions
+            \postponedMMLactions
+            \ifx\MMLpowerelement\empty\else
+                ^{\MMLcreset\MMLpowerelement\empty}
+                \global\let\MMLpowerelement\empty
+            \fi
+        \fi
+    \fi
+\stopsetups
+
+% reln
+
+\defineXMLnestedenvironmentsave [reln]
+  {\writestatus{XML}{MathML element "reln" is obsolete}}
+  {}
+
+% fn
+
+\startsetups mmc:fn:plusminus
+    \ifnum\XMLstacklevel>\plustwo
+        \MMLcreset
+        \left(\expandafter\flushXMLstackwith\expandafter\plustwo\expandafter{\XMLfnoperator}\right)
+    \else
+        \getXMLstackdata\plustwo
+    \fi
+\stopsetups
+
+\startsetups mmc:fn:minusplus
+    \directsetup{mmc:fn:plusminus}
+\stopsetups
+
+\defineXMLnested
+    [fn]
+    {\directsetup{mmc:fn:start}}
+    {\directsetup{mmc:fn:stop}}
+
+\startsetups mmc:fn:apply
+    \begingroup
+    \startsavingXMLelements
+    \rawXMLstacktext\plusone % still on stack, no check, just fn content
+    \stopsavingXMLelements
+    \doifelse {\getXMLstackname\plusone} {ci} {
+        \flattenXMLcontent{\getXMLstackdata\plusone}
+        \doifsetupselse{mmc:fn:\flattenedXMLcontent} {
+            \global\defXMLstackdata\XMLfnoperator\plusone
+            \expanded{\endgroup\noexpand\directsetup{mmc:fn:\flattenedXMLcontent}}
+        } {
+            \endgroup
+            \MMLcreset
+            \getXMLstackdata\plusone
+            \ifnum\XMLstacklevel>\plusone
+                \getXMLentity{NegThinSpace}
+                \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
+            \fi
+        }
+    } {
+        \endgroup
+        \MMLcreset
+        \getXMLstackdata\plusone
+    }
+\stopsetups
+
+\startsetups mmc:fn:start
+    \ifnum\XMLstacklevel>\plustwo
+      \def\MMCfnleft {\left(}
+      \def\MMCfnright{\right)}
+    \else
+      \let\MMCfnleft \relax
+      \let\MMCfnright\relax
+    \fi
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:fn:stop
+    \stopsavingXMLelements
+    \doifelse {\getXMLstackname\plusone} {ci} {
+        \flattenXMLcontent{\getXMLstackdata\plusone}
+        \doifsetupselse{mmc:fn:\flattenedXMLcontent} {
+                \global\defXMLstackdata\XMLfnoperator\plusone
+                \directsetup{mmc:fn:\flattenedXMLcontent}
+            } {
+                \MMLcreset
+                \getXMLstackdata\plusone
+            }
+        \endgroup
+    } {
+        \doifelse {\getXMLstackname\plusone} {apply} {
+            \doifelseMMCfunctioninapply \plusone {plus,minus} {
+                \left(
+                \getXMLstackdata\plusone
+                \right)
+            } {
+                \getXMLstackdata\plusone
+            }
+            \endgroup
+            \ifnum\XMLstacklevel>\plusone
+                \left(
+                \getXMLstackdata\plustwo
+                \right)
+            \fi
+        } {
+            \MMLcreset
+            \getXMLentity{NegThinSpace}
+            \MMCfnleft
+            \ifnum\XMLstacklevel=\plustwo\MMLccomma\fi
+            \flushXMLstackwith\plustwo\MMLccomma
+            \MMCfnright
+            \endgroup
+        }
+    }
+\stopsetups
+
+% c*
+
+\defineXMLargument [ci]      [type=]         {\XMLval{mmc:ci}{\XMLop{type}}    {\firstofoneargument}}
+\defineXMLargument [cn]      [type=,base=]   {\XMLval{mmc:cn}{\XMLop{type}}    {\firstofoneargument}}
+\defineXMLargument [csymbol] [encoding=text] {\XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}}
+
+%D The next definition provide a kind of plug-in mechanism (see
+%D the open math extension module).
+
+\defineXMLsingular
+  [csymbol]
+  [encoding=text,
+   definitionURL=]
+  {\doifsomething{\XMLop{definitionURL}}{\directsetup{mmc:csymbol:apply}}}
+
+\startsetups mmc:csymbol:apply
+    \begingroup
+    \startsavingXMLelements
+    \rawXMLstacktext\plusone % still on stack, no check, just attr test
+    \stopsavingXMLelements
+    % http://www.publishers.com/SomeName
+    \lowercasestring\XMLpar{csymbol}{definitionURL}{}\to\mmcSymbolURL
+    \doifsetupselse{mmc:csymbol:} {\mmcSymbolURL} {
+        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\mmcSymbolURL}}
+    } {
+        % SomeName (fallback)
+        \splitfilename{\XMLpar{csymbol}{definitionURL}{}}
+        \doifsetupselse{mmc:csymbol:\splitoffbase} {
+            \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\splitoffbase}}
+        } {
+            \endgroup
+            \XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}
+        }
+    }
+\stopsetups
+
+%D Alternative b will convert periods into comma's:
+%D
+%D \startbuffer
+%D \startXMLdata
+%D <imath><apply><cn>1.23</cn></apply></imath>
+%D <dmath><apply><cn>1.23</cn></apply></dmath>
+%D \stopXMLdata
+%D
+%D \type{\setupMMLappearance[cn] [alternative=b]}
+%D
+%D \startXMLdata
+%D <imath><apply><cn>1.23</cn></apply></imath>
+%D <dmath><apply><cn>1.23</cn></apply></dmath>
+%D \stopXMLdata
+%D \stopbuffer
+%D
+%D \start \typebuffer \getbuffer \stop
+
+\setupMMLappearance[cn] [\c!alternative=\v!a]
+
+\defineXMLargument[cn][type=,base=]{\MMLdocn}
+
+\def\MMLdocn#1%
+  {\begingroup
+   \doif\@@MMLcnalternative\v!b{\redefinemathcharacter [.][ord][mi]["3B]\relax}%
+   \XMLval{mmc:cn}{\XMLop{type}}{\firstofoneargument}{#1}%
+   \endgroup}
+
+\defineXMLsingular [sep] {\MMLcsep} \def\MMLcsep{\,}
+
+\setupMMLappearance[polar]    [\c!alternative=\v!a]  % a|b|c
+\setupMMLappearance[float]    [\c!symbol=\v!no]      % \v!yes|dot
+\setupMMLappearance[enotation][\c!symbol=\v!no]      % \v!yes|dot
+\setupMMLappearance[base]     [\c!symbol=\v!numbers] % digits|characters|text|no
+
+\mapXMLvalue {mmc:ci} {set}               {\MMLcCIset}
+\mapXMLvalue {mmc:ci} {vector}            {\MMLcCIvector}
+\mapXMLvalue {mmc:ci} {matrix}            {\MMLcCImatrix}
+\mapXMLvalue {mmc:ci} {function}          {\MMLcCIfunction}
+\mapXMLvalue {mmc:ci} {complex-cartesian} {\MMLccartesian}
+\mapXMLvalue {mmc:ci} {complex}           {\MMLccartesian}
+\mapXMLvalue {mmc:ci} {complex-polar}     {\MMLcpolar}
+\mapXMLvalue {mmc:ci} {polar}             {\MMLcpolar}
+\mapXMLvalue {mmc:ci} {fn}                {\MMLcCIfunction}
+
+\mapXMLvalue {mmc:cn} {integer}           {\MMLcCNinteger}
+\mapXMLvalue {mmc:cn} {logical}           {\MMLcCNlogical}
+\mapXMLvalue {mmc:cn} {rational}          {\MMLcCNrational}
+\mapXMLvalue {mmc:cn} {complex-cartesian} {\MMLccartesian}
+\mapXMLvalue {mmc:cn} {complex}           {\MMLccartesian}
+\mapXMLvalue {mmc:cn} {complex-polar}     {\MMLcpolar}
+\mapXMLvalue {mmc:cn} {polar}             {\MMLcpolar}
+\mapXMLvalue {mmc:cn} {e-notation}        {\MMLcenotation} % new
+\mapXMLvalue {mmc:cn} {float}             {\MMLcfloat}     % obsolete
+\mapXMLvalue {mmc:cn} {real}              {\MMLcfloat}
+
+\mapXMLvalue {mmc:cs} {text}              {\MMLcCStext}
+
+\def\MMLcpolar#1%
+  {\doifdefinedelse{MMLcdopolar\@@MMLpolaralternative}
+     {\getvalue{MMLcdopolar\@@MMLpolaralternative}{#1}}
+     {#1}}
+
+\def\MMLcdopolara#1%
+  {\def\MMLcsep{\MMLseparator,}\getXMLentity{polar}\left(#1\right)}
+
+\def\MMLcdopolarb#1%
+  {\def\MMLcsep##1\empty
+     {\getXMLentity{exponentiale}^{##1\mskip2mu\getXMLentity{imaginaryi}}}
+   #1\empty}
+
+\def\MMLcdopolarc#1%
+  {\def\MMLcsep##1\empty
+     {\getXMLentity{exp}\left(##1\mskip2mu\getXMLentity{imaginaryi}\right)}%
+   #1\empty}
+
+\def\MMLccartesian#1%
+  {\def\MMLcsep{+}#1\getXMLentity{imaginaryi}}
+
+% float will be obsolete, and is replace by e-notation
+
+\def\MMLcfloat#1%
+  {\doifelse\@@MMLfloatsymbol\v!no
+%      {{\MMLrm#1}}% make sure that e shows up ok
+     {\mfunction{#1}}% make sure that e shows up ok
+     {% we should ignore \entities !
+      \beforesplitstring#1\at e\to\first
+      \aftersplitstring #1\at e\to\last
+      \ifx\first\empty #1\else
+      \ifx\last \empty #1\else
+        \first
+        \doifelse\@@MMLfloatsymbol{dot}\cdot\times
+        10^{\last}%
+      \fi\fi}}
+
+% we now have:
+
+\def\MMLcenotation#1%
+  {\doifelse\@@MMLenotationsymbol\v!no
+%      {\def\MMLcsep         {\unskip{\MMLrm e}\ignorespaces}}
+     {\def\MMLcsep         {\unskip\mfunction{e}\ignorespaces}}
+     {\def\MMLcsep##1\empty{\doifelse\@@MMLenotationsymbol{dot}\cdot\times10^{##1}}}%
+   #1\empty}
+
+\def\MMLcCIset#1%
+  {{\bbd#1}}
+
+\def\widevec#1%
+  {\vbox{\m@th\ialign{##\crcr
+     \rightarrowfill\crcr\noalign{\nointerlineskip}%
+      $\hfil\displaystyle{#1}\hfil$\crcr}}}
+
+\def\MMLcCIvector#1%
+  {\widevec{#1}}
+
+\def\MMLcCImatrix#1%
+  {{\bi#1}}
+
+\def\MMLcCIfunction#1%
+  {#1\getXMLentity{NegThinSpace}}
+
+\def\MMLcCNinteger#1%
+  {\doifXMLparelse{cn}{base}
+     {\def\MMLcCNbase{\XMLpar{cn}{base}{}}%
+      \doifelse\@@MMLbasesymbol\v!no
+        {\MMLcCNbasedata{#1}}
+%         {\MMLcCNbasedata{#1}_{\hbox{$\MMLrm\scriptscriptstyle
+        {\MMLcCNbasedata{#1}_{\mfunction{%
+         \processaction
+           [\@@MMLbasesymbol]
+           [\v!characters=>\MMLcCNbasestring BODH,
+                  \v!text=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
+%              \s!unknown=>\MMLcCNbase]$}}}}
+               \s!unknown=>\MMLcCNbase]}}}}
+     {#1}}
+
+\def\MMLcCNbasedata#1%
+%   {\ifnum\MMLcCNbase>10{\MMLrm#1}\else#1\fi}
+  {\ifnum\MMLcCNbase>10\mfunction{#1}\else#1\fi}
+
+\def\MMLcCNbasestring#1#2#3#4%
+  {\ifnum\MMLcCNbase= 2 #1\else
+   \ifnum\MMLcCNbase= 8 #2\else
+   \ifnum\MMLcCNbase=10 #3\else
+   \ifnum\MMLcCNbase=16 #4\else
+         \MMLcCNbase      \fi\fi\fi\fi}
+
+\def\MMLcCNlogical#1%
+%   {{\MMLrm#1}}
+  {\mfunction{#1}}
+
+\bgroup \catcode`\<=\active
+
+    % quick and dirty, best track the stack (todo)
+
+    \gdef\MMLcCNrational#1%
+      {\ConvertConstantAfter\doifinstringelse{sep}{#1}
+         {\doMMLcCNrational#1\empty}
+         {#1}}
+
+    \gdef\doMMLcCNrational#1<sep#2>#3\empty
+      {\hbox{$\frac{#1}{#3}$}}
+
+\egroup
+
+\def\MMLcCStext#1%
+%   {{\MMLrm#1}}
+  {\mfunction{#1}}
+
+% interval
+
+\defineXMLnested [interval]
+  [closure=closed]
+  {\directsetup{mmc:interval:start}}
+  {\directsetup{mmc:interval:stop}}
+
+\startsetups mmc:interval:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:interval:stop
+    \stopsavingXMLelements
+    \XMLval{mmc:int}{\XMLpar{interval}{closure}{closed}}{error}
+    \endgroup
+\stopsetups
+
+\startsetups mmc:interval:fetch
+    \defineXMLnested [interval]
+        [closure=closed]
+        {\directsetup{mmc:interval:fetch:start}}
+        {\directsetup{mmc:interval:fetch:stop}}
+\stopsetups
+
+\startsetups mmc:interval:fetch:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:interval:fetch:stop
+    \stopsavingXMLelements
+    \globallet\MMCintervalfrom\empty
+    \globallet\MMCintervalto  \empty
+    \ifcase\XMLstacklevel
+    \or
+      \xdef\MMCintervalfrom{\getXMLstackdata\plusone}
+    \or
+      \xdef\MMCintervalfrom{\getXMLstackdata\plusone}
+      \xdef\MMCintervalto  {\getXMLstackdata\plustwo}
+    \fi
+    \endgroup
+\stopsetups
+
+\setupMMLappearance[interval][\c!alternative=\v!a,\c!separator={,}]
+
+\mapXMLvalue {mmc:int} {closed}
+  {\left[\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right]}
+
+\mapXMLvalue {mmc:int} {open-closed}
+  {\doifelse\@@MMLintervalalternative\v!b
+     {\left<\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right]}
+     {\left(\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right]}}
+
+\mapXMLvalue {mmc:int} {closed-open}
+  {\doifelse\@@MMLintervalalternative\v!b
+     {\left[\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right>}
+     {\left[\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right)}}
+
+\mapXMLvalue {mmc:int} {open}
+  {\doifelse\@@MMLintervalalternative\v!b
+     {\left<\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right>}
+     {\left(\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right)}}
+
+% inverse
+
+\defineXMLcommand [inverse] {\directsetup{mmc:inverse}}
+
+\startsetups mmc:inverse
+    \ifnum\XMLstacklevel>\plustwo
+      \getXMLentity{\getXMLstackname\plustwo}^{-1}
+      \left[\getXMLstackdata\plusthree\right]
+    \else
+      \xdef\MMLpowerelement{-1}
+      \expanded{\postponeMMLactions{\rawXMLstackdata\plustwo}}
+      \eraseXMLdataonstack\plustwo
+    \fi
+\stopsetups
+
+% condition
+
+\defineXMLnested
+    [condition]
+    {\directsetup{mmc:condition:start}}
+    {\directsetup{mmc:condition:stop}}
+
+\startsetups mmc:condition:start
+%     \XMLdoifonstackelse{bvar} {
+%         \XMLfirstnamed{bvar}\mid
+%     } { }
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:condition:stop
+    \stopsavingXMLelements
+    \flushXMLstackfrom\plusone
+    \endgroup
+\stopsetups
+
+% declare
+
+\setupMMLappearance[declare][\c!state=\v!start]
+
+\defineXMLnested
+    [declare]
+    {\directsetup{mmc:declare:start}}
+    {\directsetup{mmc:declare:stop}}
+
+\startsetups mmc:declare:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:declare:stop
+    \stopsavingXMLelements
+    \doif\@@MMLdeclarestate\v!start {
+        \getXMLentity{declare}\getXMLstackdata\plusone
+        \ifnum\XMLstacklevel>\plusone
+            \getXMLentity{ThickSpace}
+            \getXMLentity{as}
+            \getXMLentity{ThickSpace}
+        \fi
+        \getXMLstackdata\plustwo
+    }
+    \endgroup
+\stopsetups
+
+% lambda
+
+\setupMMLappearance[lambda][\c!alternative=b]
+
+\defineXMLnested
+    [lambda]
+    {\directsetup{mmc:lambda:start}}
+    {\directsetup{mmc:lambda:stop}}
+
+\startsetups mmc:lambda:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:lambda:stop
+    \stopsavingXMLelements
+    \doifelse\@@MMLlambdaalternative\v!a {
+        \getXMLentity{lambda}(\flushXMLstackwith\plusone{\MMLseparator,})
+    } {
+        \countXMLnamedstack{bvar}
+        \ifnum\scratchcounter>\plusone
+            \left(\flushXMLnamedstackwith\plusone{bvar}{\MMLseparator,}\right)
+        \else
+            \XMLfirstnamed{bvar}
+        \fi
+        \getXMLentity{mapsto}
+        \MMLcreset
+        \XMLfirstnamed{apply,reln,ci,cn}
+    }
+    \endgroup
+\stopsetups
+
+\startsetups mmc:lambda:simple
+    \defineXMLnested
+        [lambda]
+        {\directsetup{mmc:lambda:simple:start}}
+        {\directsetup{mmc:lambda:simple:stop}}
+\stopsetups
+
+\startsetups mmc:lambda:simple:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:lambda:simple:stop
+    \stopsavingXMLelements
+    \MMLcreset % new
+    \XMLfirstnamed{apply}
+    \endgroup
+\stopsetups
+
+% compose
+
+\defineXMLcommand [compose] {\directsetup{mmc:compose}}
+
+\startsetups mmc:compose
+    \begingroup
+    \MMLcreset
+    \let\MMLcCIfunction\firstofoneargument % brrr
+    \doifelseMMCfunction {
+       \left(\flushXMLstackwith\plustwo\circ\right)
+    } {
+       \flushXMLstackwith\plustwo\circ
+    }
+    \endgroup
+\stopsetups
+
+\defineXMLcommand [image]    {\directsetup{mmc:image}}
+
+\startsetups mmc:image
+    \getXMLentity{image}
+    \left(
+    \begingroup
+    \startlocalsetups [mmc:function]
+        \getXMLentity\currentXMLelement
+    \stoplocalsetups
+    \getXMLstackdata\plustwo
+    \endgroup
+    \right)
+\stopsetups
+
+\setupMMLappearance[piece][\c!separator=]
+
+\def\setMMLcPIECEseparator
+  {\processaction
+     [\@@MMLpieceseparator]
+     [    \v!yes=>\def\theMMLpieceseparator{,\@col@amp@},
+           \v!no=>\let\theMMLpieceseparator\@col@amp@,
+      \s!default=>\let\theMMLpieceseparator\@col@amp@,
+      \s!unknown=>\def\theMMLpieceseparator{\,\,\hbox{\@@MMLpieceseparator}\,\,}]}
+
+\defineXMLargument[piecewise] {\cases}
+
+\defineXMLnested
+    [piece]
+    {\directsetup{mmc:piece:start}}
+    {\directsetup{mmc:piece:stop}}
+
+\defineXMLenvironmentsave
+    [otherwise]
+    {}
+    {\directsetup{mmc:otherwise}}
+
+\startsetups mmc:piece:start
+    \startsavingXMLelements
+    \setMMLcPIECEseparator
+\stopsetups
+
+\startsetups mmc:piece:stop
+    \stopsavingXMLelements
+    \edef\ascii{\getXMLstackdata\plusone}
+    \@EA\XMLRtoks\@EA{\ascii\theMMLpieceseparator}
+    \edef\ascii{\getXMLstackdata\plustwo}
+    \@EA\appendtoks\@EA\mathematics\@EA{\ascii}\to\XMLRtoks
+    \the\XMLRtoks\crcr
+\stopsetups
+
+\startsetups mmc:otherwise
+    \XMLflush{otherwise}\MMLcPIECEseparator\@col@amp@\mathematics{\getXMLentity{otherwise}}\crcr
+\stopsetups
+
+\defineXMLcommand [quotient] {\directsetup{mmc:quotient}}
+
+\startsetups mmc:quotient
+    \lfloor\getXMLstackdata\plustwo/\getXMLstackdata\plusthree\rfloor
+\stopsetups
+
+\defineXMLcommand [factorial] {\getXMLstackdata\plustwo !}
+
+\defineXMLcommand [divide] [\MMLargumentprefix] [] {\directsetup{mmc:divide}} % brr not nested
+
+\setupMMLappearance [divide] [\c!level=\!!maxcard,\c!alternative=\v!a]
+
+\startsetups mmc:divide
+    \startusingMMLarguments
+        \increment\MMLcDIVIDElevel
+        \doifelse \@@MMLdividealternative\v!b {
+            \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
+        } {
+            \ifnum\MMLcDIVIDElevel>\@@MMLdividelevel\space
+                \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
+            \else
+                \MMLcreset
+                \frac{\MMLcreset\getXMLstackdata\plustwo}{\MMLcreset\getXMLstackdata\plusthree}%
+            \fi
+        }
+        \decrement\MMLcDIVIDElevel
+    \stopusingMMLarguments
+\stopsetups
+
+% min max
+
+\defineXMLcommand [min] {\min\directsetup{mmc:minmax}}
+\defineXMLcommand [max] {\max\directsetup{mmc:minmax}}
+
+\startsetups mmc:minmax
+    \doifelse{\getXMLstackdata\plustwo}{bvar} {
+        {}_{\getXMLstackdata\plustwo}
+        \left\{\flushXMLstackwith\plusthree{\MMLseparator,}\right\}
+    } {
+        \left\{\flushXMLstackwith\plustwo  {\MMLseparator,}\right\}
+    }
+\stopsetups
+
+% minus plus
+
+\defineXMLcommand [minus]                         {\directsetup{mmc:minus}}
+\defineXMLcommand [plus]  [\MMLargumentprefix] [] {\directsetup{mmc:plus}}
+
+\setupMMLappearance [plus] [\c!alternative=\v!a] % b = no sign -> 3 1/4
+\setupMMLappearance [sign] [\c!reduction=\v!yes]
+
+\startsetups mmc:minus
+    \doif \@@MMLsignreduction \v!yes {
+        \setMMLcreset{fn,\MMLcfunctionlist}
+    }
+    \ifcase\XMLstacklevel
+    \or
+        % self
+    \or
+        -\getXMLstackdata\plustwo
+    \else
+        \flushXMLstackwith\plustwo-
+    \fi
+\stopsetups
+
+\startsetups mmc:plus
+    \startusingMMLarguments
+        \doifelse \@@MMLsignreduction \v!yes {
+            \setMMLcreset{fn,plus,minus,\MMLcfunctionlist,\MMLcconstructlist}% was plus/, minus/
+            \doifelse{\getXMLstackname\plustwo} {apply} {
+                % branch needed, else (a-b) + (c-d) goes wrong
+                % reset check in case of (-x) + 37
+                \begingroup
+                \dodoifelseMMCfunctioninapply \plustwo {minus} {
+                    \ifnum\XMLstacklevel>\plustwo
+                        \endgroup
+                    \else
+                        \endgroup
+                        \MMLcreset
+                    \fi
+                } {
+                    \endgroup
+                }
+                \doifelse \@@MMLplusalternative \v!b {
+                    \getXMLstackdata\plustwo \,
+                } {
+                    \flushXMLstackwith\plustwo +
+                }
+
+            } {
+                \flushXMLstackwith\plustwo {
+                    \doifelse {\getXMLstackname\recurselevel} {apply} {
+                        \begingroup
+                        \dodoifelseMMCfunctioninapply \recurselevel {minus} {
+                            \ifnum\XMLstacklevel>\plustwo +\fi
+                        } {
+                            \doifelse \@@MMLplusalternative \v!b {
+                                \, % maybe 2 1/3
+                            } {
+                                +
+                            }
+                        }
+                        \endgroup
+                        \MMLcreset
+                    } {
+                        +
+                    }
+                }
+            }
+        } {
+            \ifcase\XMLstacklevel
+            \or
+                % self
+            \or
+                +\getXMLstackdata\plustwo
+            \else
+                \flushXMLstackwith\plustwo+
+            \fi
+        }
+    \stopusingMMLarguments
+\stopsetups
+
+% power
+
+\defineXMLcommand [power] {\directsetup{mmc:power}}
+
+\setupMMLappearance[power][\c!reduction=\v!yes]
+
+\let\MMLpowerelement\empty
+
+\startsetups mmc:power
+    \doifelse {\getXMLstackname\plustwo} {apply}  {
+        \doifelse\@@MMLpowerreduction\v!yes {
+            \doifelseMMCfunctioninapply \plustwo \MMLcfunctionlist {
+                \xdef\MMLpowerelement{\getXMLstackdata\plusthree}% postpone
+                \MMLcreset\getXMLstackdata\plustwo
+            } {
+                \left(\MMLcreset\getXMLstackdata\plustwo\right)^{\MMLcreset\getXMLstackdata\plusthree}
+            }
+        } {
+            \left(\MMLcreset\getXMLstackdata\plustwo\right)^{\MMLcreset\getXMLstackdata\plusthree}
+        }
+    } {
+        \getXMLstackdata\plustwo^{\MMLcreset\getXMLstackdata\plusthree}
+    }
+\stopsetups
+
+% rem
+
+\defineXMLcommand [rem] {\flushXMLstackwith\plustwo{\getXMLentity{mod}}}
+
+\setupMMLappearance [times] [\c!symbol=\v!no,\c!auto=\v!yes] % new, auto catches cn cn cn
+
+\defineXMLcommand [times] [\MMLargumentprefix] [] {\directsetup{mmc:times}}
+
+\startsetups mmc:times
+    \startusingMMLarguments
+        \setMMLcreset{\MMLcfunctionlist,\MMLcconstructlist}%
+        \doifelse\@@MMLtimesauto\v!no {
+            \let\@@MMLtimes@@symbol\@@MMLtimessymbol
+        } {
+            \countXMLnamedstack {cn}
+            \ifnum\scratchcounter>\plusone
+               \doifinsetelse\@@MMLtimessymbol{\v!yes,\v!no} {
+                    \let\@@MMLtimes@@symbol\v!yes
+                } {
+                    \let\@@MMLtimes@@symbol\@@MMLtimessymbol
+                }
+            \else
+               \let\@@MMLtimes@@symbol\@@MMLtimessymbol
+            \fi
+        }
+        \doifelse\@@MMLtimes@@symbol\v!yes {
+            \flushXMLstackwith\plustwo\times
+        } {
+            \doifelse\@@MMLtimes@@symbol{dot} {
+                \flushXMLstackwith\plustwo\cdot
+            } {
+                \doifelse\@@MMLtimes@@symbol{times} {
+                    \flushXMLstackwith\plustwo\times
+                } {
+                    \flushXMLstackwith\plustwo\empty
+                }
+            }
+        }
+    \stopusingMMLarguments
+\stopsetups
+
+\defineXMLcommand [root] {\directsetup{mmc:root}}
+
+\setupMMLappearance[root][\c!symbol=\v!yes]
+
+\startsetups mmc:root
+    \XMLdoifonstackelse {degree} {
+        \root
+            \doifnot\@@MMLrootsymbol\v!no{\MMLcreset\XMLfirstnamed{degree}}
+        \of
+    } {
+        \sqrt
+    }
+        {\MMLcreset\XMLfirstnamed{apply,reln,ci,cn}}
+\stopsetups
+
+% gcd
+
+\defineXMLcommand [gcd] {\gcd\left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)}
+
+% and or xor implies
+
+\defineXMLcommand [and]     {\flushXMLstackwith\plustwo{\getXMLentity{and}}}
+\defineXMLcommand [or]      {\flushXMLstackwith\plustwo{\getXMLentity{or}}}
+\defineXMLcommand [xor]     {\flushXMLstackwith\plustwo{\getXMLentity{xor}}}
+\defineXMLcommand [implies] {\flushXMLstackwith\plustwo{\getXMLentity{implies}}}
+
+% not
+
+\defineXMLcommand [not]     {\getXMLentity{not}\getXMLstackdata\plustwo}
+
+% forall exists
+
+\defineXMLcommand [forall] {\directsetup{mmc:forall}}
+\defineXMLcommand [exists] {\directsetup{mmc:exists}}
+
+%D We need to shift left below rotated A.
+
+\startsetups mmc:forall
+    \getXMLentity{forall}
+    \getXMLentity{NegThinSpace}
+    \directsetup{mmc:forall-exists}
+\stopsetups
+
+\startsetups mmc:exists
+    \getXMLentity{exists}
+    \directsetup{mmc:forall-exists}
+\stopsetups
+
+\startsetups mmc:forall-exists
+    _{\flushXMLnamedstackwith\plustwo{bvar}{\MMLseparator,}}
+    \XMLdoifonstackelse {condition} {
+        \getXMLentity{ThickSpace}
+        \begingroup
+            \XMLfirstnamed{condition}
+        \endgroup
+        \countXMLnamedstack {apply,reln,ci,cn}
+        \ifcase\scratchcounter
+        \or
+            % == snelle volgende
+            \left\vert \MMLcreset
+            \getXMLentity{MediumSpace}
+            \flushXMLnamedstackwith\plustwo{apply,reln,ci,cn}\empty
+            \right.
+        \else
+            % special case
+            % \defineXMLignore[condition]
+            \collectXMLnamedstack{apply,reln,ci,cn}{\hfill\crcr}
+            \left\vert
+            \matrix{\the\XMLRtoks}
+            \right.
+        \fi
+    } {
+        :\XMLfirstnamed{apply,reln,ci,cn}
+    }
+\stopsetups
+
+\defineXMLcommand [abs]       {\left\vert \MMLcreset \flushXMLstackfrom\plustwo \right\vert}
+\defineXMLcommand [conjugate] {{\overline{\MMLcreset \flushXMLstackfrom\plustwo}}} % watch extra {}
+\defineXMLcommand [arg]       {\getXMLentity{arg}      \left(\MMLcreset\flushXMLstackfrom\plustwo\right)}
+\defineXMLcommand [real]      {\getXMLentity{real}     \left(\MMLcreset\flushXMLstackfrom\plustwo\right)}
+\defineXMLcommand [imaginary] {\getXMLentity{imaginary}\left(\MMLcreset\flushXMLstackfrom\plustwo\right)}
+\defineXMLcommand [lcm]       {\getXMLentity{lcm}      \left(\flushXMLstackwith\plustwo{\MMLseparator,}\right)}
+\defineXMLcommand [floor]     {\getXMLentity{lfloor}   \flushXMLstackfrom\plustwo \getXMLentity{rfloor}}
+\defineXMLcommand [ceiling]   {\getXMLentity{lceiling} \flushXMLstackfrom\plustwo \getXMLentity{rceiling}}
+
+% relations
+
+\defineXMLcommand [eq]         [\MMLargumentprefix] [\c!align=] {\MMLcrelation=}
+\defineXMLcommand [neq]        [\MMLargumentprefix] [\c!align=] {\MMLcrelation\neq}
+\defineXMLcommand [gt]         [\MMLargumentprefix] [\c!align=] {\MMLcrelation>}
+\defineXMLcommand [lt]         [\MMLargumentprefix] [\c!align=] {\MMLcrelation<}
+\defineXMLcommand [geq]        [\MMLargumentprefix] [\c!align=] {\MMLcrelation\geq}
+\defineXMLcommand [leq]        [\MMLargumentprefix] [\c!align=] {\MMLcrelation\leq}
+\defineXMLcommand [equivalent] [\MMLargumentprefix] [\c!align=] {\MMLcrelation\equiv}
+\defineXMLcommand [approx]     [\MMLargumentprefix] [\c!align=] {\MMLcrelation\approx}
+\defineXMLcommand [factorof]   [\MMLargumentprefix] [\c!align=] {\MMLcrelation\mid}
+
+\setupMMLappearance[relation][\c!align=\v!no]
+
+\def\MMLcrelation
+  {\startusingMMLarguments
+   \MMLcreset
+   \edef\@@MMLrelationalign{\executeifdefined{\MMLargumentprefix\c!align}\@@MMLrelationalign}%
+   \processaction
+     [\@@MMLrelationalign]
+     [\v!last=>\let\next\lastMMLcrelation ,
+     \v!first=>\let\next\firstMMLcrelation,
+       \v!yes=>\let\next\leftMMLcrelation ,
+      \v!left=>\let\next\leftMMLcrelation ,
+     \v!right=>\let\next\rightMMLcrelation,
+   \s!default=>\let\next\noMMLcrelation   ,
+   \s!unknown=>\let\next\noMMLcrelation   ]
+   \next}
+
+\def\noMMLcrelation#1%
+  {\flushXMLstackwith\plustwo{#1}
+   \stopusingMMLarguments}
+
+\def\lastMMLcrelation#1% weird, probably bugged
+  {\XMLRtoks\emptytoks
+   \dostepwiserecurse\plustwo\XMLstacklevel\plusone
+     {\appendetoks\noexpand\getXMLstackdata{\recurselevel}\to\XMLRtoks
+      \ifnum\recurselevel<\numexpr\XMLstacklevel-1\relax
+        \appendtoks\@col@amp@#1\crcr\to\XMLRtoks
+      \else\ifnum\recurselevel=\numexpr\XMLstacklevel-1\relax
+        \appendtoks\@col@amp@#1\to\XMLRtoks
+      \fi\fi}%
+   \eqalign{\the\XMLRtoks\crcr}%
+   \stopusingMMLarguments}
+
+\def\firstMMLcrelation#1%
+  {\collectXMLstackrows\plusthree{\crcr\@col@amp@#1}%
+   \eqalign{\getXMLstackdata\plustwo\@col@amp@#1\the\XMLRtoks}%
+   \stopusingMMLarguments}
+
+\def\leftMMLcrelation#1%
+  {\collectXMLstackrows\plustwo{\@col@amp@#1\crcr}%
+   \eqalign{\the\XMLRtoks}%
+   \stopusingMMLarguments}
+
+\def\rightMMLcrelation#1%
+  {\collectXMLstackrows\plustwo{\crcr#1{}\@col@amp@}%
+   \eqalign{\@col@amp@\the\XMLRtoks\crcr}%
+   \stopusingMMLarguments}
+
+\defineXMLcommand [becomes] {\MMLcrelation{:=}}
+
+\addtocommalist{becomes/}\MMLcmainresetlist
+
+% calculus and vector calculus
+
+\setupMMLappearance[int][\c!location=\v!top]
+
+\def\doMMLlimits#1%
+  {\doifelsevalue{@@MML#1\c!location}\v!top\limits\nolimits}
+
+\defineXMLnested
+    [domainofapplication]
+    {\directsetup{mmc:domainofapplication:start}}
+    {\directsetup{mmc:domainofapplication:stop}}
+
+\startsetups mmc:domainofapplication:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:domainofapplication:stop
+    \stopsavingXMLelements
+%     \MMLcreset
+    \flushXMLstackfrom\plusone
+    \endgroup
+\stopsetups
+
+\defineXMLcommand [int] {\directsetup{mmc:int}}
+
+\startsetups mmc:int
+    \MMLcreset
+    \XMLdoifonstackelse{domainofapplication} {
+        \int\doMMLlimits{int}_{\XMLfirstnamed{domainofapplication}}\relax
+    } {
+        \XMLdoifonstackelse{condition} {
+            \int\doMMLlimits{int}_{\XMLfirstnamed{condition}}\relax
+        } {
+            \XMLdoifonstackelse{lowlimit} {
+                \int\doMMLlimits{int}
+                    _{\XMLfirstnamed{lowlimit}}
+                    ^{\XMLfirstnamed{uplimit}}
+            } {
+                % funny, why do we have lowlimit/uplimit then
+                \XMLdoifonstackelse{interval} {
+                    \begingroup
+                    \startlocalsetups mmc:interval:start %
+                        \begingroup
+                        \startsavingXMLelements
+                    \stoplocalsetups
+                    \startlocalsetups mmc:interval:stop %
+                        \stopsavingXMLelements
+                        \xdef\MMLfirstelement {\getXMLstackdata\plusone}
+                        \xdef\MMLsecondelement{\getXMLstackdata\plustwo}
+                        \endgroup
+                    \stoplocalsetups
+                    \globallet\MMLfirstelement \empty
+                    \globallet\MMLsecondelement\empty
+                    \XMLfirstnamed{interval}
+                    \endgroup
+                    \int\doMMLlimits{int}
+                        _{\MMLfirstelement}
+                        ^{\MMLsecondelement}
+                } {
+                    \int
+                }
+            }
+        }
+    }
+    \MMLcreset
+    \XMLdoifonstackelse{apply} {
+        \doifelseMMCfunction {
+            \XMLfirstnamed{apply}
+        } {
+            % if there are too many () now, we need to be more clever
+            \left(\XMLfirstnamed{apply}\right)
+        }
+    } {
+        \XMLfirstnamed{ci}
+    }
+    \XMLdoifonstackelse{bvar} {
+        \,% \getXMLentity{ThinSpace}%
+%         {\MMLrm\getXMLentity{mathematicald}}
+        \mfunction{\getXMLentity{mathematicald}}
+        \XMLfirstnamed{bvar}
+    } {
+        % nothing
+    }
+\stopsetups
+
+\setupMMLappearance[diff][\c!location=\v!top,\c!alternative=\v!a]
+
+\defineXMLcommand [diff]        {\directsetup{mmc:diff}}
+\defineXMLcommand [partialdiff] {\directsetup{mmc:partialdiff}}
+
+% \setupMMLappearance[diff][alternative=b]
+%
+% \startXMLdata
+% <math><apply><apply><diff/><bvar><ci>x</ci></bvar><ci>f</ci></apply><ci>a</ci></apply></math>
+% <math><apply><apply><diff/><bvar><ci>x</ci></bvar><degree>2</degree><ci>f</ci></apply><ci>a</ci></apply></math>
+% \stopXMLdata
+
+% d^y/dx^2
+%
+% \startXMLdata
+% <math><apply><diff/>
+%   <bvar><ci>x</ci><cn type="integer">2</cn></bvar>
+%   <lambda><bvar><ci>x</ci></bvar><ci>y</ci></lambda>
+% </apply></math>
+% \stopXMLdata
+
+\startsetups mmc:diff
+   \MMLcreset
+   \doifelse\@@MMLdiffalternative\v!a {
+        \XMLdoifonstackelse{lambda} {
+            % a special case (mathadore/openmath)
+            \begingroup
+                \defineXMLsave[ci]
+                \defineXMLsave[cn]
+                \defineXMLprocess[lambda]
+                \defineXMLprocess[bvar]
+                \frac {
+                    d^{\XMLfirstnamed{bvar}\XMLflush{cn}}{\XMLfirstnamed{lambda}\XMLflush{ci}}
+                } {
+                    d{\XMLfirstnamed{bvar}\XMLflush{ci}}^{\XMLfirstnamed{bvar}\XMLflush{cn}}
+                }
+            \endgroup
+        } {
+            \XMLdoifonstackelse{bvar} {
+                \frac {
+                    \XMLdoifonstackelse{degree} {
+                        \collectXMLnamedstack{degree}\empty
+                    } {
+                        \collectXMLnamedstacknamed{bvar}{degree}+
+                    }
+                    \mfunction{\getXMLentity{mathematicald}}
+                    ^{\the\XMLRtoks}
+                    \doif\@@MMLdifflocation\v!top {
+                        \XMLdoifonstackelse{ci} {
+                            \XMLfirstnamed{ci}
+                        } {
+                            \MMLcreset\XMLfirstnamed{apply}
+                        }
+                    }
+                } {
+                    \mfunction{\getXMLentity{mathematicald}}
+                    \begingroup
+                        \defineXMLsave[degree]
+                        \XMLfirstnamed{bvar}
+                        \doifXMLdata{degree} {
+                            ^{\XMLflush{degree}}
+                        }
+                    \endgroup
+                }
+                \doifnot\@@MMLdifflocation\v!top {
+                    \left(\MMLcreset\XMLfirstnamed{apply,ci}\right)
+                }
+            } {
+                \flushXMLstackfrom\plustwo^\prime
+            }
+        }
+    } {
+        \MMLcreset
+        \XMLfirstnamed{apply,ci}
+        % there can be problems with nested diff's: ^^{} error
+        % so we add an empty group here
+        {}^
+        {
+            \XMLdoifonstackelse{degree} {
+                \defXMLfirstnamedtext\ascii{degree}
+                \dorecurse\ascii\prime
+            } {
+                \prime
+            }
+        }
+    }
+\stopsetups
+
+\startsetups mmc:partialdiff
+    \XMLdoifonstackelse{list} {
+        \getXMLentity{capitaldifferentiald}_{
+            \begingroup
+                \setfalse\MMLlistdelimiters
+                \XMLallnamed{list}
+            \endgroup
+        }
+        \XMLfirstnamed{apply,reln,ci,cn}
+    } {
+        \XMLdoifonstackelse{bvar} {
+            \frac {
+                \XMLdoifonstackelse{degree} {
+                    \collectXMLnamedstack{degree}\empty
+                } {
+                    \collectXMLnamedstacknamed{bvar}{degree}+
+                }
+                \getXMLentity{differentiald}^{\the\XMLRtoks}
+                % \let\MMLcDEGREE\gobbletwoarguments
+                % \doifelseMMCfunction\MMLcreset\donothing
+                \MMLcreset
+                \XMLfirstnamed{apply,reln,ci,cn}
+            } {
+                \defineXMLnested[bvar]
+                    {\directsetup{mmc:bvar:diff:start}}
+                    {\directsetup{mmc:bvar:diff:stop}}
+                \XMLfirstnamed{bvar}
+            }
+        } {
+            \XMLfirstnamed{apply,reln,ci,cn}
+        }
+    }
+\stopsetups
+
+\startsetups mmc:bvar:diff:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:bvar:diff:stop
+    \stopsavingXMLelements
+    \getXMLentity{differentiald}\XMLfirstnamed{apply,reln,ci,cn}
+    \XMLdoifonstackelse{degree} {
+        ^{\XMLfirstnamed{degree}}
+    } {
+        % nothing
+    }
+    \endgroup
+\stopsetups
+
+\def\subMMLcelement  #1#2{_{#2}}
+\def\superMMLcelement#1#2{^{#2}}
+
+\defineXMLprocess [lowlimit]
+\defineXMLprocess [uplimit]
+\defineXMLprocess [bvar]
+\defineXMLprocess [degree]
+
+% option:
+%
+% \defineXMLentity [div]  {\mathematics{\triangledown\times}}
+% \defineXMLentity [curl] {\mathematics{\triangledown     .}}
+% \defineXMLentity [grad] {\mathematics{\triangledown      }}
+
+\defineXMLcommand [divergence] {\getXMLentity{divergence}\directsetup{mmc:donamedfunction}}
+\defineXMLcommand [grad]       {\getXMLentity      {grad}\directsetup{mmc:donamedfunction}}
+\defineXMLcommand [curl]       {\getXMLentity      {curl}\directsetup{mmc:donamedfunction}}
+\defineXMLcommand [laplacian]  {\getXMLentity {laplacian}\directsetup{mmc:donamedfunction}}
+
+\defineXMLcommand [ident]      {\getXMLentity  {identity}\directsetup{mmc:donamedfunction}}
+% \defineXMLcommand [domain]     {\getXMLentity    {domain}\directsetup{mmc:donamedfunction}}
+% \defineXMLcommand [codomain]   {\getXMLentity  {codomain}\directsetup{mmc:donamedfunction}}
+
+\defineXMLcommand[domain]  {\directsetup{mmc:domain:action}}
+\defineXMLcommand[codomain]{\directsetup{mmc:codomain:action}}
+
+\setupMMLappearance[domain]  [symbol=]
+\setupMMLappearance[codomain][symbol=]
+
+\startsetups mmc:domain:action
+    \doifelsenothing\@@MMLdomainsymbol {
+        \getXMLentity{domain}\directsetup{mmc:donamedfunction}
+    } {
+        \@@MMLdomainsymbol_{\flushXMLstackfrom\plustwo}
+    }
+\stopsetups
+\startsetups mmc:codomain:action
+    \doifelsenothing\@@MMLcodomainsymbol {
+        \getXMLentity{codomain}\directsetup{mmc:donamedfunction}
+    } {
+        \@@MMLcodomainsymbol_{\flushXMLstackfrom\plustwo}
+    }
+\stopsetups
+
+
+\startsetups mmc:donamedfunction
+%     \left(
+%     \begingroup
+    \MMLcreset\flushXMLstackfrom\plustwo
+%     \endgroup
+%     \right)
+\stopsetups
+
+% theory of sets
+
+\defineXMLnested [set]
+  {\setups{mmc:set:start}}
+  {\setups{mmc:set:stop}}
+
+\startsetups mmc:set:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:set:stop
+    \stopsavingXMLelements
+    \XMLdoifonstackelse{condition} {
+        \left\{\XMLfirstnamed{bvar}\,\middle\vert\,\XMLfirstnamed{condition}\right\}
+    } {
+        \left\{\flushXMLstackwith\plusone{\MMLseparator,}\right\}
+    }
+    \endgroup
+\stopsetups
+
+\defineXMLnested [list]
+  {\setups{mmc:list:start}}
+  {\setups{mmc:list:stop}}
+
+\settrue\MMLlistdelimiters
+
+\startsetups mmc:list:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:list:stop
+    \stopsavingXMLelements
+    \ifconditional\MMLlistdelimiters\left [\fi
+    \begingroup
+    \settrue\MMLlistdelimiters
+    \flushXMLstackwith\plusone{\MMLseparator,}
+    \endgroup
+    \ifconditional\MMLlistdelimiters\right]\fi
+    \endgroup
+\stopsetups
+
+\defineXMLcommand [union]       {\MMLcset\cup}
+\defineXMLcommand [intersect]   {\MMLcset\cap}
+\defineXMLcommand [in]          {\MMLcset\in}
+\defineXMLcommand [notin]       {\MMLcset{\not\in}}
+\defineXMLcommand [subset]      {\MMLcset\subset}
+\defineXMLcommand [prsubset]    {\MMLcset\subseteq}
+\defineXMLcommand [notsubset]   {\MMLcset{\not\subset}}
+\defineXMLcommand [notprsubset] {\MMLcset{\not\subseteq}}
+\defineXMLcommand [setdiff]     {\MMLcset\setminus}
+
+\def\MMLcset#1{\getXMLstackdata\plustwo#1\getXMLstackdata\plusthree}
+
+\defineXMLcommand [card]             {\left\vert\flushXMLstackfrom\plustwo\right\vert}
+\defineXMLcommand [cartesianproduct] {\flushXMLstackwith\plustwo\times}
+
+% sequences and series
+
+\defineXMLcommand [sum]    {\MMLcSUMandPRODUCT{sum}\sum}
+\defineXMLcommand [product]{\MMLcSUMandPRODUCT{product}\prod}
+
+\setupMMLappearance[sum]    [\c!location=\v!top]
+\setupMMLappearance[product][\c!location=\v!top]
+
+\def\stackMMLsubscripts#1%
+  {\vbox
+     {\baselineskip\zeropoint % hack, taco vragen
+      \halign{$\scriptstyle\hss##\hss$\cr#1\crcr}}}
+
+\def\MMLcSUMandPRODUCT#1#2%
+  {\begingroup
+   \XMLdoifonstackelse{condition,bvar,lowlimit}
+     {\def\MMLcSUMlow
+        {_{\XMLdoifonstackelse{condition}
+             {\collectXMLnamedstack{condition}{\crcr}%
+              \stackMMLsubscripts{\the\XMLRtoks}}
+             {\XMLdoifonstackelse{bvar}
+                {\XMLfirstnamed{bvar}%
+                 \XMLdoifonstackelse{lowlimit}{=}{}}%
+                {}%
+              \XMLfirstnamed{lowlimit}}}}}
+     {\let\MMLcSUMlow\empty}%
+   \XMLdoifonstackelse{uplimit}
+     {\def\MMLcSUMup{^{\XMLfirstnamed{uplimit}}}}
+     {\let\MMLcSUMup\empty}%
+   \XMLdoifonstackelse{interval} % open math converter gives this
+     {\begingroup
+      \directsetup{mmc:interval:fetch}%
+      \XMLfirstnamed{interval}%
+      \endgroup
+      \ifx\MMCintervalfrom\empty\else
+        \def\MMLcSUMlow{_{\XMLdoifonstackelse{bvar}{\XMLfirstnamed{bvar}{=}}{}\MMCintervalfrom}}%
+      \fi
+      \ifx\MMCintervalto\empty \else
+        \def\MMLcSUMup{^{\MMCintervalto}}%
+      \fi}
+     {}%
+   \MMLcreset#2\doMMLlimits{#1}\MMLcSUMup\MMLcSUMlow
+   \directsetup{mmc:lambda:simple}% a bit of open math conversion mess
+   \MMLcreset\XMLfirstnamed{apply,lambda,ci}%
+   \endgroup}
+
+\defineXMLcommand [limit] {\directsetup{mmc:limit}}
+
+\setupMMLappearance[limit][\c!location=\v!top]
+
+\startsetups mmc:limit
+   \MMLcreset \lim
+   \doMMLlimits{limit}_{
+      \MMLcreset
+      \XMLdoifonstackelse {condition} {
+        \XMLfirstnamed{condition}
+      } {
+        \XMLdoifonstackelse {bvar} {
+           \XMLfirstnamed{bvar}\rightarrow
+        } {
+        }
+        \XMLfirstnamed{lowlimit}
+      }
+   }
+   \begingroup
+   \MMLcreset
+   \directsetup{mmc:lambda:simple}% a bit of open math conversion mess
+   \XMLfirstnamed{apply,lambda}% lambda needed for openmath
+   \endgroup
+\stopsetups
+
+\defineXMLcommand [tendsto] [type=default] {\directsetup{mmc:tendsto}}
+
+\startsetups mmc:tendsto
+    \MMLcreset \getXMLstackdata\plustwo
+    \processaction
+        [\XMLpar{tendsto}{type}{default}]
+        [  above=>\downarrow,
+           below=>\uparrow,
+         unknown=>\rightarrow]
+    \MMLcreset \getXMLstackdata\plusthree
+\stopsetups
+
+% elementary classical functions
+
+\defineXMLcommand [exp]     {\directsetup{mmc:exp}}
+\defineXMLcommand [ln]      {\directsetup{mmc:function}}
+\defineXMLcommand [log]     {\directsetup{mmc:log}}
+\defineXMLignore  [logbase]
+
+\setupMMLappearance[log][\c!location=\v!right]
+
+\startsetups mmc:exp
+    \getXMLentity{exponentiale}^{\XMLfirstnamed{apply,reln,ci,cn}}
+\stopsetups
+
+\startsetups mmc:log
+   \XMLdoifonstackelse {logbase} {
+        \doifelse\@@MMLloglocation\v!left {
+            \mathop{{}^{{\defineXMLprocess[logbase]\XMLfirstnamed{logbase}}}
+            \getXMLentity{NegThinSpace}
+            \getXMLentity{log}}
+        } {
+            \getXMLentity{log}_{{\defineXMLprocess[logbase]\XMLfirstnamed{logbase}}}
+        }
+    } {
+        \getXMLentity{log}
+    }
+    \MMLcreset
+    % mmc:function:argument assumes that the apply is second in the row (*1*)
+    % \removeXMLdatafromstack{logbase}
+    \directsetup{mmc:function:argument}
+\stopsetups
+
+% statistics
+
+\defineXMLcommand [mean]     {\overline{\getXMLstackdata\plustwo}}
+\defineXMLcommand [sdev]     {\sigma(\MMLcreset\getXMLstackdata\plustwo)}
+\defineXMLcommand [variance] {\sigma(\MMLcreset\getXMLstackdata\plustwo)^2}
+\defineXMLcommand [median]   {\getXMLentity{median}(\MMLcreset\getXMLstackdata\plustwo)}
+\defineXMLcommand [mode]     {\getXMLentity{mode}(\MMLcreset\getXMLstackdata\plustwo)}
+
+% moments
+
+\defineXMLcommand [moment]      {\directsetup{mmc:moment}}
+\defineXMLprocess [momentabout]
+
+\startsetups mmc:moment
+    \left\langle\XMLfirstnamed{apply,reln,ci,cn}^{\XMLfirstnamed{degree}}\right\rangle
+    \XMLdoifonstackelse{momentabout} {
+        _{\XMLfirstnamed{momentabout}}
+    } {
+    }
+\stopsetups
+
+% linear algebra
+
+\defineXMLcommand [vector] {\directsetup{mmc:vector}} % sequence
+
+\setupMMLappearance [vector] [\c!direction=\v!horizontal,\c!separator={,}]
+
+\defineXMLnested
+    [vector]
+    {\directsetup{mmc:vector:start}}
+    {\directsetup{mmc:vector:stop}}
+
+\startsetups mmc:vector:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:vector:stop
+    \stopsavingXMLelements
+    \ifnum\XMLstacklevel>\plusone
+        \doifelse\@@MMLvectordirection\v!horizontal {
+            \left(\flushXMLstackwith\plusone{\MMLseparator\@@MMLvectorseparator}\right)
+        } {
+            \collectXMLstack\crcr
+            \MMLcreset\left(\matrix{\the\XMLRtoks}\right)
+        }
+    \else
+      \overrightarrow{\charhtstrut\getXMLstackdata\plusone}
+    \fi
+    \endgroup
+\stopsetups
+
+\defineXMLnestedenvironmentsave [matrix]    {} {\directsetup{mmc:matrix}}
+\defineXMLnestedenvironmentsave [matrixrow] {} {\directsetup{mmc:matrixrow}}
+
+\unexpanded\def\@col@amp@{&}
+
+\settrue\MMCdelmatrix %( ) when true
+
+\startsetups mmc:matrix
+    \begingroup
+    \MMLcreset
+    \defineXMLnestedenvironmentsave [matrixrow] {} {\directsetup{mmc:matrixrow:do}}
+    \ifconditional\MMCdelmatrix
+        \left(\matrix{\XMLflush{matrix}}\right)
+    \else
+        \settrue\MMCdelmatrix
+        \matrix{\XMLflush{matrix}}
+    \fi
+    \endgroup
+\stopsetups
+
+\startsetups mmc:matrixrow
+    \begingroup
+    \MMLcreset
+    \left(\matrix{\directsetup{mmc:matrixrow:do}}\right)
+    \endgroup
+\stopsetups
+
+\startsetups mmc:matrixrow:do
+    \begingroup
+    \startsavingXMLelements
+    \XMLflush{matrixrow}
+    \stopsavingXMLelements
+    \collectXMLstackrows\plusone\@col@amp@
+    \edef\ascii{\the\XMLRtoks}
+    \edef\ascii{\ascii}
+    \expandafter\endgroup\ascii\crcr
+\stopsetups
+
+\defineXMLcommand [determinant] {\directsetup{mmc:determinant}}
+\defineXMLcommand [transpose]   {\directsetup{mmc:transpose}}
+\defineXMLcommand [selector]    {\directsetup{mmc:selector}}
+
+\startsetups mmc:determinant
+    \begingroup
+    \left|
+    \setfalse\MMCdelmatrix
+    \getXMLstackdata\plustwo
+    \right|
+    \endgroup
+\stopsetups
+
+\startsetups mmc:transpose
+%     \getXMLstackdata\plustwo^{\MMLrm T}
+    \getXMLstackdata\plustwo^{\mfunction{T}}
+\stopsetups
+
+\startsetups mmc:selector
+    \MMLmathinner{\getXMLstackdata\plustwo}_{\MMLcreset\flushXMLstackwith\plusthree{\MMLseparator,}}
+\stopsetups
+
+\defineXMLcommand [vectorproduct] {\getXMLstackdata\plustwo\getXMLentity{vectorproduct}\getXMLstackdata\plusthree}
+\defineXMLcommand [scalarproduct] {\getXMLstackdata\plustwo\getXMLentity{scalarproduct}\getXMLstackdata\plusthree}
+\defineXMLcommand [outerproduct]  {\getXMLstackdata\plustwo\getXMLentity {outerproduct}\getXMLstackdata\plusthree}
+
+% semantic mapping elements
+
+\defineXMLnested
+    [semantics]
+    {\directsetup{mmc:semantics:start}}
+    {\directsetup{mmc:semantics:stop}}
+
+\startsetups mmc:semantics:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:semantics:stop
+    \stopsavingXMLelements
+    \XMLdoifonstackelse {annotation} {
+        \flushXMLnamedstackwith\plusone{annotation}\empty
+    } {
+        \flushXMLnamedstackwith\plusone{apply}\empty
+    }
+    \endgroup
+\stopsetups
+
+\defineXMLenvironmentsave
+  [annotation]
+  [encoding=]
+  {}
+  {\directsetup{mmc:annotation}}
+
+\startsetups mmc:annotation
+    \expanded{\doifinset{\XMLpar{annotation}{encoding}{}}{TeX,tex,TEX,ConTeXt,context,CONTEXT}} {
+        \XMLtexdata{annotation}
+    }
+\stopsetups
+
+\defineXMLignore  [annotation-xml]
+
+% misc
+
+\defineXMLcommand [integers]       {\getXMLentity{integers}}
+\defineXMLcommand [reals]          {\getXMLentity{reals}}
+\defineXMLcommand [rationals]      {\getXMLentity{rationals}}
+\defineXMLcommand [naturalnumbers] {\getXMLentity{naturalnumbers}}
+\defineXMLcommand [complexes]      {\getXMLentity{complexes}}
+\defineXMLcommand [primes]         {\getXMLentity{primes}}
+\defineXMLcommand [exponentiale]   {\getXMLentity{ExponentialE}}
+\defineXMLcommand [imaginaryi]     {\getXMLentity{ImaginaryI}}
+\defineXMLcommand [notanumber]     {\mathop{\mfunction{NaN}}}
+\defineXMLcommand [true]           {\mathop{\mfunction{true}}}
+\defineXMLcommand [false]          {\mathop{\mfunction{false}}}
+\defineXMLcommand [emptyset]       {\mathop{\O}}
+\defineXMLcommand [pi]             {\pi}
+\defineXMLcommand [eulergamma]     {\gamma}
+\defineXMLcommand [infinity]       {\infty}
+
+% gonio functions
+
+\defineXMLcommand[sin] {\directsetup{mmc:function}} \defineXMLcommand[arcsin] {\directsetup{mmc:function}}
+\defineXMLcommand[sinh]{\directsetup{mmc:function}} \defineXMLcommand[arcsinh]{\directsetup{mmc:function}}
+\defineXMLcommand[cos] {\directsetup{mmc:function}} \defineXMLcommand[arccos] {\directsetup{mmc:function}}
+\defineXMLcommand[cosh]{\directsetup{mmc:function}} \defineXMLcommand[arccosh]{\directsetup{mmc:function}}
+\defineXMLcommand[tan] {\directsetup{mmc:function}} \defineXMLcommand[arctan] {\directsetup{mmc:function}}
+\defineXMLcommand[tanh]{\directsetup{mmc:function}} \defineXMLcommand[arctanh]{\directsetup{mmc:function}}
+\defineXMLcommand[cot] {\directsetup{mmc:function}} \defineXMLcommand[arccot] {\directsetup{mmc:function}}
+\defineXMLcommand[coth]{\directsetup{mmc:function}} \defineXMLcommand[arccoth]{\directsetup{mmc:function}}
+\defineXMLcommand[csc] {\directsetup{mmc:function}} \defineXMLcommand[arccsc] {\directsetup{mmc:function}}
+\defineXMLcommand[csch]{\directsetup{mmc:function}} \defineXMLcommand[arccsch]{\directsetup{mmc:function}}
+\defineXMLcommand[sec] {\directsetup{mmc:function}} \defineXMLcommand[arcsec] {\directsetup{mmc:function}}
+\defineXMLcommand[sech]{\directsetup{mmc:function}} \defineXMLcommand[arcsech]{\directsetup{mmc:function}}
+
+\setupMMLappearance[function][\c!reduction=\v!yes]
+
+\startsetups mmc:function
+    \getXMLentity\currentXMLelement
+    \ifx\MMLpowerelement\empty\else
+      ^{\MMLcreset\MMLpowerelement\empty}
+      \getXMLentity{NegThinSpace}
+      \global\let\MMLpowerelement\empty
+    \fi
+    \doif {\getXMLstackname\plusone} {\currentXMLelement} {
+        % rather fuzzy test; looks like an apply case
+        \directsetup{mmc:function:argument}
+    }
+\stopsetups
+
+\startsetups mmc:function:argument
+    \doifelse\@@MMLfunctionreduction\v!yes {
+        % \doifelse {\getXMLstackname\plustwo} {apply} {
+        %     \doifelseMMCfunctioninapply \plustwo \MMLcfunctionlist \donefalse \donetrue
+        %
+        % best is to grab the apply (independent of order), (*1*), so:
+        %
+        \XMLdoifonstackelse {apply} {
+            \doifelseMMCfunctioninapply \XMLstackposition {\MMLcfunctionlist,divide} \donefalse \donetrue
+        } {
+            \donefalse
+        }
+    } {
+        \donetrue
+    }
+    % beware, we still flush from 2 up
+    \ifdone
+        \left(\MMLcreset\flushXMLstackfrom\plustwo\right)
+    \else
+        \MMLcreset\flushXMLstackfrom\plustwo
+    \fi
+\stopsetups
+
+% presentation mml
+
+\def\resetMMLseparator
+  {\newcounter\MMLxxcounter
+   \let\lastMMLseparator\empty}
+
+\def\grabMMLseparator#1%
+  {\increment\MMLxxcounter
+   \newcounter\MMLyycounter
+   \expanded{\dograbMMLseparator#1\noexpand\relax}}
+
+\def\dograbMMLseparator
+  {\increment\MMLyycounter
+   \doifnextcharelse\relax
+     {\lastMMLseparator\gobbleoneargument}
+     {\doifnextcharelse\xmlrent\grabMMLseparatora\grabMMLseparatorb}}
+
+\def\grabMMLseparatora#1\xmlrent#2%
+  {\ifnum\MMLxxcounter=\MMLyycounter\space
+     \def\lastMMLseparator{\xmlrent{#2}}%
+   \fi
+   \dograbMMLseparator}
+
+\def\grabMMLseparatorb#1%
+  {\ifnum\MMLxxcounter=\MMLyycounter\space
+     \doifXMLentityelse{#1}
+       {\def\lastMMLseparator{\xmlrent{#1}}}
+       {\def\lastMMLseparator{#1}}%
+   \fi
+   \dograbMMLseparator}
+
+%
+
+\defineXMLargument [mi] \MMLpMI
+\defineXMLargument [mn] \MMLpMN
+\defineXMLargument [mo] \MMLpMO
+
+\def\MMLpMI#1%
+  {\begingroup
+   \setMMLpmathstyle{mstyle}%
+   #1%
+   \endgroup}
+
+% \def\MMLpMN#1%
+%   {\begingroup
+%    \MMLrm
+%    \setMMLpmathstyle{mstyle}%
+%    #1%
+%    \endgroup}
+
+\def\MMLpMN#1%
+  {\mfunction{\setMMLpmathstyle{mstyle}#1}}
+
+\def\MMLpMO#1% yes or no
+  {\flattenXMLcontent{#1}%
+   \doifXMLentityelse\flattenedXMLcontent
+     {\getXMLentity\flattenedXMLcontent}
+     {\ConvertConstantAfter\doifinstringelse{\xmlrent}{#1} % TODO ! ! ! ! ! ! ! !
+        {#1}
+        {\hbox
+           {\setMMLpmathstyle{mstyle}%
+            \ignorespaces#1\unskip}}}}
+
+% we need to get rid of spaces: <mo> &RightArrow; </mo>
+
+\def\MMLpMO#1% yes or no
+  {\flattenXMLcontent{#1}%
+   \doifXMLentityelse\flattenedXMLcontent
+     {\getXMLentity\flattenedXMLcontent}
+     {\ignorespaces#1\removeunwantedspaces}}
+
+\let\normalright=\right
+\let\normalleft =\left
+
+\def\doMMLleft #1{\pushmacro\left \let\left \empty\normalleft #1\popmacro\left}
+\def\doMMLright#1{\pushmacro\right\let\right\empty\normalright#1\popmacro\right}
+
+\let\MMLpopen \empty
+\let\MMLpclose\empty
+
+\defineXMLnested [mfenced] [open=(,close=),separators=]
+  {\directsetup{mmp:mfenced:start}}
+  {\directsetup{mmp:mfenced:stop}}
+
+\startsetups mmp:mfenced:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:mfenced:stop
+    \stopsavingXMLelements
+    \edef\MMLpopen {\XMLpar{mfenced}{open} {}}
+    \edef\MMLpclose{\XMLpar{mfenced}{close}{}}
+    \ifx\MMLpopen \space\let\MMLpopen \empty\fi
+    \ifx\MMLpclose\space\let\MMLpclose\empty\fi
+    \ifx\MMLpopen\empty
+        \ifx\MMLpclose\empty
+        \else
+            \doMMLleft.
+        \fi
+    \else
+      \doMMLleft\MMLpopen
+    \fi
+    \pushmacro\MMLpopen
+    \pushmacro\MMLpclose
+    \doifelsenothing{\XMLpar{mfenced}{separators}{}} {
+        \flushXMLstackfrom\plusone
+    } {
+        \resetMMLseparator
+        \flushXMLstackwith\plusone {
+            \begingroup
+            \let\myspecialnormalvert\myspecialstretchvert
+            \grabMMLseparator{\XMLpar{mfenced}{separators}{}}
+            \endgroup
+        }
+    }
+    \popmacro\MMLpclose
+    \popmacro\MMLpopen
+    \ifx\MMLpclose\empty
+        \ifx\MMLpopen\empty
+        \else
+            \doMMLright.
+        \fi
+    \else
+        \doMMLright\MMLpclose
+    \fi
+    \endgroup
+\stopsetups
+
+% \startbuffer
+% <math><mfenced separators="" open="(" close=")"><mi>x</mi></mfenced></math>
+% <math><mfenced separators="" open=""  close=")"><mi>x</mi></mfenced></math>
+% <math><mfenced separators="" open="(" close="" ><mi>x</mi></mfenced></math>
+% <math><mfenced separators="" open=""  close="" ><mi>x</mi></mfenced></math>
+% <math><mfenced separators="" open=""  close=" "><mi>x</mi></mfenced></math>
+% \stopbuffer
+%
+% \processXMLbuffer
+
+\defineXMLnestedenvironmentsave [menclose] [notation=]
+    {\directsetup{mmp:menclose:start}}
+    {\directsetup{mmp:menclose:stop}}
+
+\startsetups mmp:menclose:start
+    \begingroup
+\stopsetups
+
+\startsetups mmp:menclose:stop
+    \doifelse{\XMLpar{menclose}{notation}{}}{longdiv} {
+        \overline{)\XMLflush{menclose}}
+    } {
+        \XMLflush{menclose}
+    }
+    \endgroup
+\stopsetups
+
+\defineXMLnested [mfrac] [linethickness=]
+    {\directsetup{mmp:mfrac:start}}
+    {\directsetup{mmp:mfrac:stop}}
+
+\startsetups mmp:mfrac:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:mfrac:stop
+    \stopsavingXMLelements
+    \doifXMLparelse{mfrac}{linethickness} {
+        \edef\theXMLpar{\XMLpar{mfrac}{linethickness}{1}}
+        \processaction
+           [\theXMLpar]
+           [    thin=>\scratchdimen=.2pt,
+              medium=>\scratchdimen=.4pt,
+               thick=>\scratchdimen=.8pt,
+             unknown=>\setdimensionwithunit\scratchdimen{\theXMLpar}{}]
+         {{\getXMLstackdata\plusone}\above\scratchdimen{\getXMLstackdata\plustwo}}
+    } {
+        \frac{\getXMLstackdata\plusone}{\getXMLstackdata\plustwo}
+    }
+   \endgroup
+\stopsetups
+
+\defineXMLargument
+  [ms]
+  [lquote=\xmlrent{quot},
+   rquote=\xmlrent{quot},
+   fontweight=,
+   fontstyle=,
+   mathstyle=,
+   mathvariant=,
+   background=,
+   color=]
+  {\MMLpSTRING}
+
+\def\MMLpSTRING#1%
+  {\hbox
+    {\tf % else encoding problems
+     \MMLpTEXT{\XMLpar{ms}{lquote}{}%
+     \doMMPpbackground{ms}{\doMMPpcolor{ms}{\setMMLptextstyle{ms}\ignorespaces#1\removeunwantedspaces}}%
+     \XMLpar{ms}{rquote}{}}}}
+
+\defineXMLenvironment
+  [mstyle]
+  [fontweight=,
+   fontstyle=,
+   mathstyle=,
+   mathvariant=,
+   background=,
+   color=]
+  {\begingroup}
+  {\endgroup}
+
+\defineXMLargument [mtext]    [CPA] \MMLpTEXT
+\defineXMLargument [merror]   [CPA] \MMLpERROR
+\defineXMLargument [mphantom] [CPA] \MMLpPHANTOM
+\defineXMLargument [mpadded]  [CPA] \MMLpPADDED
+
+\mapXMLvalue{mmp}{normal}     {\tf} \mapXMLvalue{mmp}{double-stuck} {\bf}
+\mapXMLvalue{mmp}{bolditalic} {\bi} \mapXMLvalue{mmp}{bold-italic}  {\bi}
+\mapXMLvalue{mmp}{boldslanted}{\bs} \mapXMLvalue{mmp}{bold-slanted} {\bs}
+\mapXMLvalue{mmp}{boldnormal} {\bf} \mapXMLvalue{mmp}{bold}         {\bf}
+\mapXMLvalue{mmp}{slanted}    {\sl} \mapXMLvalue{mmp}{normalslanted}{\sl}
+\mapXMLvalue{mmp}{italic}     {\it} \mapXMLvalue{mmp}{normalitalic} {\it}
+\mapXMLvalue{mmp}{fraktur}    {\bf} \mapXMLvalue{mmp}{bold-fraktur} {\bf}
+\mapXMLvalue{mmp}{script}     {\tf} \mapXMLvalue{mmp}{bold-script}  {\bf}
+
+% and all kind of other crappy names
+
+\def\setMMLptextstyle#1%
+  {\XMLval{mmp}{\XMLpar{#1}{fontweight}{}\XMLpar{#1}{fontstyle}{}}{}}
+
+\def\setMMLpmathstyle#1%
+  {\XMLval{mmp}{\XMLpar{#1}{mathvariant}{}}{}}
+
+\def\doMMPpcolor#1#2%
+  {\doifXMLparelse{#1}{color}{\color[\XMLpar{#1}{color}{}]{#2}}{#2}}
+
+\def\doMMPpbackground#1#2%
+  {\doifXMLparelse{#1}{background}
+     {\inframed
+        [\c!frame=\v!off,
+         \c!background=\v!color,
+         \c!backgroundcolor=\XMLpar{#1}{background}{}]
+        {#2}}
+     {#2}}
+
+\def\MMLpTEXT#1%
+  {\hbox
+    {\tf % else encoding problems
+     \doMMPpbackground{ms}{\doMMPpcolor{ms}{\setMMLptextstyle{ms}\ignorespaces#1\removeunwantedspaces}}}}
+
+\def\MMLpERROR#1%
+  {\hbox{$\displaystyle#1$}}
+
+\def\MMLpPHANTOM#1%
+  {\phantom{\ignorespaces{}#1\unskip}} % watch spacing {} hack
+
+\def\MMLpPADDED#1%
+  {#1}
+
+% mrow
+
+\defineXMLenvironment [mrow] {\resetMMLbounds} {\finishMMLbounds}
+
+% \def\MMLleft #1{\increment\MMLboundslevel\left #1}
+% \def\MMLright#1{\right#1\decrement\MMLboundslevel}
+
+% \def\resetMMLbounds
+%   {\let\MMLboundslevel\!!plusone\left.}
+
+% \def\finishMMLbounds
+%   {\dorecurse\MMLboundslevel{\right.}}
+
+\def\resetMMLbounds
+  {\pushmacro\MMLboundslevel
+   \newcounter\MMLboundslevel}
+
+\def\MMLleft #1%
+  {\increment\MMLboundslevel
+   \normalleft#1}
+
+\def\MMLright#1%
+  {\ifnum\MMLboundslevel=0 \normalleft.\!\fi
+   \normalright#1%
+   \decrement\MMLboundslevel}
+
+\def\finishMMLbounds
+  {\ifnum\MMLboundslevel>0
+    \normalright.\!%
+    \decrement\MMLboundslevel
+    \expandafter\finishMMLbounds
+   \else
+     \popmacro\MMLboundslevel
+   \fi}
+
+\defineXMLnested [msqrt] {\directsetup{mmp:msqrt:start}} {\directsetup{mmp:msqrt:stop}}
+\defineXMLnested [mroot] {\directsetup{mmp:mroot:start}} {\directsetup{mmp:mroot:stop}}
+
+\startsetups mmp:msqrt:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:msqrt:stop
+    \stopsavingXMLelements
+    \sqrt{\flushXMLstackfrom\plusone}
+    \endgroup
+\stopsetups
+
+\startsetups mmp:mroot:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:mroot:stop
+    \stopsavingXMLelements
+    \root{\getXMLstackdata\plustwo}\of{\getXMLstackdata\plusone}
+    \endgroup
+\stopsetups
+
+\setupMMLappearance[scripts][\c!alternative=\v!a]
+
+\defineXMLnested [msub]    {\directsetup{mmp:msub:start}} {\directsetup{mmp:msub:stop}}
+\defineXMLnested [msup]    {\directsetup{mmp:msup:start}} {\directsetup{mmp:msup:stop}}
+\defineXMLnested [msubsup] {\directsetup{mmp:msbp:start}} {\directsetup{mmp:msbp:stop}}
+
+\startsetups mmp:msub:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:msub:stop
+    \stopsavingXMLelements
+    \doifelse\@@MMLscriptsalternative\v!a {
+        {\getXMLstackdata\plusone}_{\getXMLstackdata\plustwo}
+    } {
+        \getXMLstackdata\plusone_{\getXMLstackdata\plustwo}
+    }
+    \endgroup
+\stopsetups
+
+\startsetups mmp:msup:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:msup:stop
+    \stopsavingXMLelements
+    \doifelse\@@MMLscriptsalternative\v!a {
+        {\getXMLstackdata\plusone}^{\getXMLstackdata\plustwo}
+    } {
+        \getXMLstackdata\plusone^{\getXMLstackdata\plustwo}
+    }
+    \endgroup
+\stopsetups
+
+\startsetups mmp:msbp:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:msbp:stop
+    \stopsavingXMLelements
+    \getXMLstackdata\plusone_{\getXMLstackdata\plustwo}^{\getXMLstackdata\plusthree}
+    \endgroup
+\stopsetups
+
+\defineXMLnested [mover]      {\directsetup{mmp:mover:start}}      {\directsetup{mmp:mover:stop}}
+\defineXMLnested [munder]     {\directsetup{mmp:munder:start}}     {\directsetup{mmp:munder:stop}}
+\defineXMLnested [munderover] {\directsetup{mmp:munderover:start}} {\directsetup{mmp:munderover:stop}}
+
+\startsetups mmp:mover:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:mover:stop
+    \stopsavingXMLelements
+    \mathop{\vbox{\m@th\ialign{\hss##\hss\crcr\noalign{\kern3\p@}%
+      \disabledelimiter\doMMLfiller{\getXMLstackdata\plustwo}
+      \crcr\noalign{\kern3\p@\nointerlineskip}%
+      \disabledelimiter\doMMLfiller{\getXMLstackdata\plusone}
+      \crcr}}}
+    \limits
+    \endgroup
+\stopsetups
+
+\startsetups mmp:munder:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:munder:stop
+    \stopsavingXMLelements
+    \mathop{\vtop{\m@th\ialign{\hss##\hss\crcr
+      \disabledelimiter\doMMLfiller{\getXMLstackdata\plusone}
+      \crcr\noalign{\kern3\p@\nointerlineskip}%
+      \disabledelimiter\doMMLfiller{\getXMLstackdata\plustwo}
+      \crcr\noalign{\kern3\p@}}}}
+    \limits
+    \endgroup
+\stopsetups
+
+\startsetups mmp:munderover:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:munderover:stop
+    \stopsavingXMLelements
+    \getXMLstackdata\plusone
+      _{\disablefiller\disabledelimiter\getXMLstackdata\plustwo}
+      ^{\disablefiller\disabledelimiter\getXMLstackdata\plusthree}
+    \endgroup
+\stopsetups
+
+\def\doMMLfiller#1% bugged
+   {\pushmacro\doMMLfiller
+    \let\doMMLfiller\gobbleoneargument
+    \gdef\dodoMMLfiller{\disablefiller\mathematics{#1}}%
+    \hbox
+      {\def\normalorfiller##1##2%
+         {\gdef\dodoMMLfiller{\enablefiller#1}%
+          \let\normalorfiller\gobbletwoarguments}%
+       $#1$}%
+    \popmacro\doMMLfiller
+    \dodoMMLfiller}
+
+% tables
+
+% obsolete: \setupMMLappearance[mtable][\c!alternative=\v!a]
+
+\mapXMLvalue {mmp:mtable} {align:left}   {right}
+\mapXMLvalue {mmp:mtable} {align:right}  {left}
+\mapXMLvalue {mmp:mtable} {align:center} {middle}
+
+\mapXMLvalue {mmp:mtable} {frame:none}   {off}
+\mapXMLvalue {mmp:mtable} {frame:solid}  {on}
+\mapXMLvalue {mmp:mtable} {frame:on}     {on}
+
+\defineXMLnested
+    [mtable]
+    [columnalign=,
+     columnspacing=.25ex,
+     rowspacing=.25ex,
+     frame=,
+     color=,
+     background=]
+    {\directsetup{mmp:mtable:start}}
+    {\directsetup{mmp:mtable:stop}}
+
+\defineXMLnestedargument
+    [mtr]
+    {\MMPmtableHANDLEtr}
+
+\defineXMLnestedargument
+    [mlabeledtr]
+    {\MMPmtableHANDLEtr}
+
+\defineXMLnestedargument
+    [mtd]
+    [columnalign=,
+     columnspacing=.25ex,
+     rowspacing=.25ex,
+     frame=,
+     color=,
+     background=]
+    {\MMPmtableHANDLEtd}
+
+\startsetups mmp:mtable:start
+    \vcenter \bgroup
+    \MMLpTABLEsplitter{background} \c!backgroundcolor
+    \MMLpTABLEsplitter{color}      \c!color
+    \MMLpTABLEmapper  {frame}      \c!frame
+    \MMLpTABLEmapper  {columnalign}\c!align
+    \setMMLpunit{\XMLpar{mtable}{rowspacing}\empty}{.25ex}
+    \let\MMLpTABLEoffset\MMLpunit
+    \bTABLE[\c!frame=\v!off,\c!background=\v!color,\c!offset=\MMLpTABLEoffset]
+\stopsetups
+
+\startsetups mmp:mtable:stop
+    \eTABLE
+    \egroup
+\stopsetups
+
+\long\def\MMPmtableHANDLEtr#1{%
+    \bTR\ignorespaces#1\removeunwantedspaces\eTR
+}
+
+\long\def\MMPmtableHANDLEtd#1{%
+   \let\theMMLpTABLEmap\empty
+   \MMLpTABLEmap{background} \c!backgroundcolor
+   \MMLpTABLEmap{color}      \c!color
+   \MMLpTABLEmap{frame}      \c!frame
+   \MMLpTABLEmap{columnalign}\c!align
+   \expanded{\bTD[\theMMLpTABLEmap]}%
+    $\ignorespaces#1\removeunwantedspaces$\eTD
+}
+
+\def\MMLpTABLEmapper#1#2%
+  {\doifXMLparelse{mtable}{#1}
+     {\newcounter\MMLcounter
+      \def\docommand##1%
+        {\increment\MMLcounter
+         \expanded{\setupTABLE[column][\MMLcounter][#2=\XMLval{mmp:mtable}{#2:##1}\empty]}}%
+       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}\empty]}[ ]\docommand}
+     {}}
+
+\def\MMLpTABLEsplitter#1#2%
+  {\doifXMLparelse{mtable}{#1}
+     {\newcounter\MMLcounter
+      \def\docommand##1%
+        {\increment\MMLcounter
+         \expanded{\setupTABLE[column][\MMLcounter][#2=##1]}}%
+       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}\empty]}[ ]\docommand}
+     {}}
+
+\def\MMLpTABLEmap#1#2%
+  {\doifXMLparelse{mtd}{#1}
+     {\edef\theMMLpTABLEmap{#2=\XMLval{mmp:mtable}{#2:\XMLpar{mtd}{#1}\empty}\empty,\theMMLpTABLEmap}}
+     {}}
+
+\defineXMLsingular [mspace] [width=.5em] {\directsetup{mmp:mspace}}
+
+\startsetups mmp:mspace
+    \setMMLpunit{\XMLpar{mspace}{width}{}}{.5em}
+    \hskip\MMLpunit\relax
+\stopsetups
+
+\def\setMMLpunit#1#2% i've forgotten what this means
+  {\setbox\scratchbox=\hbox
+     {\edef\ascii{#1}%
+      \@EA\aftersplitstring\ascii\at.\to\ascii
+      \scratchcounter=\ifx\ascii\empty#1\else\ascii\fi
+      \unskip\unskip}%
+   \ifdim\wd\scratchbox=\zeropoint
+     \edef\MMLpunit{#1em}%
+   \else
+     \edefconvertedargument\ascii{#1}%
+     \convertasciiafter\doifinstringelse{em}{\ascii}{\edef\MMLpunit{#1}}{%
+     \convertasciiafter\doifinstringelse{ex}{\ascii}{\edef\MMLpunit{#1}}{%
+     \convertasciiafter\doifinstringelse{pt}{\ascii}{\edef\MMLpunit{#1}}{%
+                                                     \edef\MMLpunit{#2}}}}%
+  \fi}
+
+% end of tables
+
+\def\setMMLpunit#1#2%
+  {\setbox\scratchbox=\hbox
+     {\edef\ascii{#1}%
+      \@EA\aftersplitstring\ascii\at.\to\ascii
+      \scratchcounter=\ifx\ascii\empty#1\else\ascii\fi
+      \unskip\unskip}%
+   \ifdim\wd\scratchbox=\zeropoint
+     \edef\MMLpunit{#1em}%
+   \else
+     \edefconvertedargument\ascii{#1}%
+     \convertasciiafter\doifinstringelse{em}{\ascii}{\edef\MMLpunit{#1}}{%
+     \convertasciiafter\doifinstringelse{ex}{\ascii}{\edef\MMLpunit{#1}}{%
+     \convertasciiafter\doifinstringelse{pt}{\ascii}{\edef\MMLpunit{#1}}{%
+                                                     \edef\MMLpunit{#2}}}}%
+  \fi}
+
+\defineXMLsingular [mspace] [width=.5em] {\directsetup{mmp:mspace}}
+
+\startsetups mmp:mspace
+    \setMMLpunit{\XMLpar{mspace}{width}{}}{.5em}
+    \hskip\MMLpunit
+\stopsetups
+
+\defineXMLsingular [mglyph] [fontfamily=,index=1,alt=] {\directsetup{mmp:mglyph}}
+
+\startsetups mmp:mglyph
+    \def\MMLpglyph{\XMLpar{mglyph}{fontfamily}{}}%
+    \doifelsenothing{\MMLpglyph} {
+        \hbox{\tttf[fontfamily unspecified]}
+    } {
+        \doifdefinedelse{\MMLpglyph} {
+            \hbox{\getvalue{\MMLpglyph}\char0\XMLpar{mglyph}{index}{1}}
+        } {
+            \doifelsenothing{\XMLpar{mglyph}{alt}{}} {
+                \hbox{\tttf[unknown fontfamily \XMLpar{mglyph}{fontfamily}{}]}
+            } {
+                \hbox{\tttf\XMLpar{mglyph}{alt}{}}
+            }
+        }
+    }
+\stopsetups
+
+\defineXMLsingular [malignmark]  {}
+\defineXMLsingular [none]        {}
+\defineXMLsingular [mprescripts] {}
+
+\defineXMLnested
+   [mmultiscripts]
+   {\setups{mmp:mmultiscripts:start}}
+   {\setups{mmp:mmultiscripts:stop}}
+
+\startsetups mmp:mmultiscripts:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmp:mmultiscripts:stop
+    \stopsavingXMLelements
+    \donefalse
+    \scratchcounter\zerocount
+    \dorecurse\XMLstacklevel {
+        % watch the extra {}'s
+        \ifdone
+            \ifodd\scratchcounter
+                _{\getXMLstackdata\recurselevel}
+            \else
+                ^{\getXMLstackdata\recurselevel}{}
+            \fi
+        \else
+            \doif{\getXMLstackname\recurselevel}{mprescripts}{\donetrue{}}
+        \fi
+        \ifdone \advance\scratchcounter\plusone \fi
+
+    }
+    \donetrue
+    \scratchcounter\zerocount
+    \dorecurse\XMLstacklevel {
+        \ifdone
+            % watch the extra {}'s
+            \ifcase\scratchcounter
+                \getXMLstackdata\recurselevel
+            \else\ifodd\scratchcounter
+                _{\getXMLstackdata\recurselevel}
+            \else
+                ^{\getXMLstackdata\recurselevel}{}
+            \fi\fi
+        \fi
+        \doif{\getXMLstackname\recurselevel}{mprescripts}{\donefalse}
+        \ifdone \advance\scratchcounter\plusone \fi
+    }
+    \endgroup
+\stopsetups
+
+% experimental patches
+
+\startmoduletestsection
+
+\let\MMLdoL\donothing
+\let\MMLdoR\donothing
+
+\startsetups mmc:apply:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:apply:stop
+    \stopsavingXMLelements
+    \MMLmathinner {
+        \expanded{\doifinsetelse{\getXMLstackname\plusone}{\MMLcmainresetlist,\MMLctempresetlist}}
+           \MMLcreset
+           \donothing
+        \ifcase\MMLapplydepth \else
+           \doifXMLparelse{apply}{open} \donothing{\getXMLarguments{apply}{open="("}}% slow
+           \doifXMLparelse{apply}{close}\donothing{\getXMLarguments{apply}{close=")"}}% slow
+        \fi
+        \advance\MMLapplydepth\plusone
+        \begingroup
+        \doifXMLparelse{apply}{open} % now inside the group
+          {\edef\MMLdoL{\noexpand\left \XMLpar{apply}{open} {(}}
+           \edef\MMLdoR{\noexpand\right\XMLpar{apply}{close}{)}}}
+          {\let\MMLdoL\donothing
+           \let\MMLdoR\donothing}
+        \let\MMLctempresetlist\empty
+        \doifelse {\getXMLstackname\plusone} {apply} {
+            % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
+            \doifelseMMCfunctioninapply \plusone {plus,minus} {
+% [a]
+                % yet incomplete and rather untested
+                % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
+            } {
+% [b]
+                \MMLcreset
+            }
+            \MMLdoL
+            \getXMLstackdata\plusone
+            \ifconditional\somepostponedMMLactions
+                \postponedMMLactions
+            \else
+                \left(\MMLcreset\getXMLstackdata\plustwo\right)
+            \fi
+            \MMLdoR
+        } {
+            \doifelse {\getXMLstackname\plusone} {fn} {
+% [c]
+                % \MMLdoL/R are to be taken care of in the next setup
+                \directsetup{mmc:fn:apply}
+            } {
+                \doifelse {\getXMLstackname\plusone} {csymbol} {
+                    % \MMLdoL/R are to be taken care of in the next setup
+% [d]
+                    \directsetup{mmc:csymbol:apply}
+                } {
+                    \doifelse {\getXMLstackname\plusone} {ci} {
+% [e]
+                        % \MMLdoL/R are to be taken care of in the next setup
+                        \directsetup{mmc:ci:apply}
+                    } {
+% [f]
+                        \MMLdoL
+                        \getXMLstackdata\plusone
+                        \MMLdoR
+                    }
+                }
+            }
+        }
+        \endgroup
+        \advance\MMLapplydepth\minusone
+        \directsetup{apply:flush}
+      }
+    \endgroup
+\stopsetups
+
+\startsetups mmc:fn:apply
+    \begingroup
+    \startsavingXMLelements
+    \rawXMLstacktext\plusone % still on stack, no check, just fn content
+    \stopsavingXMLelements
+    \doifelse {\getXMLstackname\plusone} {ci} {
+        \flattenXMLcontent{\getXMLstackdata\plusone}
+        \doifsetupselse{mmc:fn:\flattenedXMLcontent} {
+          % \MMLdoL/MMLdoR to be handled in plugin
+            \global\defXMLstackdata\XMLfnoperator\plusone
+            \expanded{\endgroup\noexpand\directsetup{mmc:fn:\flattenedXMLcontent}}
+        } {
+            \endgroup
+            \MMLcreset
+            \MMLdoL
+            \getXMLstackdata\plusone
+            \ifnum\XMLstacklevel>\plusone
+                \getXMLentity{NegThinSpace}
+                \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
+            \fi
+            \MMLdoR
+        }
+    } {
+        \endgroup
+        \MMLcreset
+        \MMLdoL
+        \getXMLstackdata\plusone
+        \MMLdoR
+    }
+\stopsetups
+
+\startsetups mmc:csymbol:apply
+    \begingroup
+    \defineXMLsave[csymbol][definitionURL=,encoding=]
+    \rawXMLstackdata\plusone % was text % still on stack, no check, just attr test
+    % \MMLdoL/MMLdoR to be handled in plugin
+    \lowercasestring\XMLpar{csymbol}{definitionURL}{}\to\mmcSymbolURL
+    \doifsetupselse{mmc:csymbol:\mmcSymbolURL} {
+        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\mmcSymbolURL}}
+    } {
+        \endgroup
+       %\XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}% fails when no content
+        \XMLval{mmc:cs}{\XMLop{encoding}}{}
+    }
+\stopsetups
+
+\defineXMLsingular
+  [csymbol]
+  [encoding=text,
+   definitionURL=]
+  {\directsetup{mmc:csymbol:apply:singular}}
+
+\startsetups mmc:csymbol:apply:singular
+    \lowercasestring\XMLpar{csymbol}{definitionURL}{}\to\mmcSymbolURL
+    \directsetup{mmc:csymbol:\mmcSymbolURL}
+\stopsetups
+
+\startsetups mmc:ci:apply
+    \getXMLstackdata\plusone
+    \ifnum\XMLstacklevel>\plusone
+       \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
+    \fi
+\stopsetups
+
+\def\xflushXMLstackwith#1#2#3#4% num bgroup egroup whatever
+  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+     {#2\relax
+      \ifnum\recurselevel>#1\relax#4\fi
+      \getXMLstackdata\recurselevel
+      #3}}
+
+\def\xflushXMLstackfrom#1#2#3%
+  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+     {#2\getXMLstackdata\recurselevel#3}}
+
+% <apply><divide/>
+%     <apply><minus/>
+%         <apply><minus/><ci>b</ci></apply>
+%         <apply><minus/><ci>b</ci></apply>
+%         <apply><root/> <ci>a</ci></apply>
+%     </apply>
+%     <apply><minus/>
+%         <apply><minus/><ci>b</ci><ci>b</ci></apply>
+%         <apply><minus/><ci>b</ci></apply>
+%         <apply><root/> <ci>a</ci></apply>
+%     </apply>
+% </apply>
+
+\startsetups mmc:minus
+    \doif \@@MMLsignreduction \v!yes {
+        \setMMLcreset{fn,\MMLcfunctionlist}
+    }
+    \ifcase\XMLstacklevel
+    \or
+       % self
+    \or
+       -\getXMLstackdata\plustwo
+    \else
+        \dostepwiserecurse\plustwo\XMLstacklevel\plusone {
+            \begingroup
+            \doifelse {\getXMLstackname\recurselevel} {apply} {
+                \ifnum\recurselevel=\plustwo
+                    \begingroup
+                    \dodoifelseMMCfunctioninapply \recurselevel {minus} {
+                        \ifnum\XMLstacklevel>\plustwo
+                            \endgroup
+                        \else
+                            \endgroup
+                            \MMLcreset
+                        \fi
+                    } {
+                        \endgroup
+                    }
+                \else
+                    \doifelseMMCfunctioninapply \recurselevel {\MMLcfunctionlist,\MMLcconstructlist} {
+                        \MMLcreset
+                    } {
+                    }
+                \fi
+            } {
+            }
+            \getXMLstackdata\recurselevel
+            \ifnum\recurselevel<\XMLstacklevel\relax
+                -
+            \fi
+            \endgroup
+        }
+    \fi
+\stopsetups
+
+\stopmoduletestsection
+
+\stopmodule
+
+\protect \endinput

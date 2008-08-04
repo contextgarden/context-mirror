@@ -39,7 +39,7 @@ local function finder(name, mode, ftype)
     elseif input.aux.qualified_path(name) then
         return name
     else
-        return input.find_file((texmf and texmf.instance) or instance,name,ftype)
+        return input.find_file(name,ftype)
     end
 end
 
@@ -61,6 +61,24 @@ metapost.parameters = {
 
 metapost.exectime = metapost.exectime or { } -- hack
 
+local preamble = [[
+boolean mplib; string mp_parent_version;
+mplib := true;
+mp_parent_version := "%s";
+input %s ; dump ;
+]]
+
+if not mplib.pen_info then -- temp compatibility hack
+
+preamble = [[\\ ;
+boolean mplib; string mp_parent_version;
+mplib := true;
+mp_parent_version := "%s";
+input %s ; dump ;
+]]
+
+end
+
 function metapost.make(name, target, version)
     input.starttiming(mplib)
     target = file.replacesuffix(target or name, "mem")
@@ -74,14 +92,11 @@ function metapost.make(name, target, version)
     ) )
     if mpx then
         input.starttiming(metapost.exectime)
-        local result = mpx:execute(format('\\ ; boolean mplib ; mplib := true ; string mp_parent_version ; mp_parent_version := "%s" ; show mp_parent_version ; input %s ; dump ;', version or "unknown", name))
+        local result = mpx:execute(format(preamble,version or "unknown",name))
         input.stoptiming(metapost.exectime)
-        if mpx then
-            mpx:finish()
-        end
+        mpx:finish()
     end
     input.stoptiming(mplib)
-    return mpx -- mpx = nil will free memory
 end
 
 function metapost.load(name)
@@ -89,17 +104,23 @@ function metapost.load(name)
     local mpx = mplib.new ( table.merged (
         metapost.parameters,
         {
+            ini_version = false,
             mem_name = file.replacesuffix(name,"mem"),
             find_file = finder,
         }
     ) )
+    local result
     if mpx then
+if not mplib.pen_info then -- temp compatibility hack
         input.starttiming(metapost.exectime)
-        mpx:execute("\\")
+        result = mpx:execute("\\")
         input.stoptiming(metapost.exectime)
+end
+    else
+        result = { status = 99, error = "out of memory"}
     end
     input.stoptiming(mplib)
-    return mpx
+    return mpx, result
 end
 
 function metapost.unload(mpx)
@@ -108,6 +129,28 @@ function metapost.unload(mpx)
         mpx:finish()
     end
     input.stoptiming(mplib)
+end
+
+function metapost.reporterror(result)
+    if not result then
+        metapost.report("mp error: no result object returned")
+    elseif result.status > 0 then
+        local t, e, l = result.term, result.error, result.log
+        if t then
+            metapost.report("mp terminal: %s",t)
+        end
+        if e then
+            metapost.report("mp error: %s",e)
+        end
+        if not t and not e and l then
+            metapost.report("mp log: %s",l)
+        else
+            metapost.report("mp error: unknown, no error, terminal or log messages")
+        end
+    else
+        return false
+    end
+    return true
 end
 
 function metapost.checkformat(mpsinput, mpsformat)
@@ -123,27 +166,34 @@ function metapost.checkformat(mpsinput, mpsformat)
         mpsformat = file.join(pth,mpsformat)
     end
     local the_version = environment.version or "unset version"
-    if io.exists(mpsformat) then
-        commands.writestatus("mplib", format("loading format: %s, name: %s", mpsinput, mpsformat))
-        local mpx = metapost.load(mpsformat)
+    if lfs.isfile(mpsformat) then
+        commands.writestatus("mplib","loading format: %s, name: %s", mpsinput, mpsformat)
+        local mpx, result = metapost.load(mpsformat)
         if mpx then
-            local result = mpx:execute(format("show mp_parent_version ;"))
-            local version = result.log:match(">> *(.-)[\n\r]") or "unknown"
-            version = version:gsub("[\'\"]","")
-            if version ~= the_version then
-                commands.writestatus("mplib", format("version mismatch: %s <> %s", version or "unknown", the_version))
+            local result = mpx:execute("show mp_parent_version ;")
+            if not result.log then
+                metapost.reporterror(result)
             else
-                return mpx
+                local version = result.log:match(">> *(.-)[\n\r]") or "unknown"
+                version = version:gsub("[\'\"]","")
+                if version ~= the_version then
+                    commands.writestatus("mplib","version mismatch: %s <> %s", version or "unknown", the_version)
+                else
+                    return mpx
+                end
             end
+        else
+            commands.writestatus("mplib","error in loading format: %s, name: %s", mpsinput, mpsformat)
+            metapost.reporterror(result)
         end
     end
-    commands.writestatus("mplib", format("making format: %s, name: %s", mpsinput, mpsformat))
+    commands.writestatus("mplib","making format: %s, name: %s", mpsinput, mpsformat)
     metapost.make(mpsinput,mpsformat,the_version) -- somehow return ... fails here
-    if io.exists(mpsformat) then
-        commands.writestatus("mplib", format("loading format: %s, name: %s", mpsinput, mpsformat))
+    if lfs.isfile(mpsformat) then
+        commands.writestatus("mplib","loading format: %s, name: %s", mpsinput, mpsformat)
         return metapost.load(mpsformat)
     else
-        commands.writestatus("mplib", format("problems with format: %s, name: %s", mpsinput, mpsformat))
+        commands.writestatus("mplib","problems with format: %s, name: %s", mpsinput, mpsformat)
     end
 end
 
@@ -171,13 +221,13 @@ function metapost.reset(mpx)
             mpxformats[mpx] = nil
         end
     else
-        for name=1,#mpxformats do
-            if mpxformats[name] == mpx then
+        for name, instance in pairs(mpxformats) do
+            if instance == mpx then
+                mpx:finish()
                 mpxformats[name] = nil
                 break
             end
         end
-        mpx:finish()
     end
 end
 
@@ -197,28 +247,16 @@ function metapost.process(mpx, data, trialrun, flusher, multipass)
                     input.starttiming(metapost.exectime)
                     result = mpx:execute(d)
                     input.stoptiming(metapost.exectime)
-                    if not result then
-                        metapost.report("mp error", "no result object returned")
-                    elseif result.status > 0 then
-                        local t, e, l = result.term, result.error, result.log
-                        if t then
-                            metapost.report("mp terminal",t)
+                    if not metapost.reporterror(result) then
+                        if metapost.showlog then
+                            metapost.report("mp error: %s",(result.term ~= "" and result.term) or "no terminal output")
                         end
-                        if e then
-                            metapost.report("mp error",e)
+                        if result.fig then
+                            converted = metapost.convert(result, trialrun, flusher, multipass)
                         end
-                        if not t and not e and l then
-                            metapost.report("mp log",l)
-                        else
-                            metapost.report("mp error","unknown, no error, terminal or log messages")
-                        end
-                    elseif metapost.showlog then
-                        metapost.report("mp info",result.term or "no terminal output")
-                    elseif result.fig then
-                        converted = metapost.convert(result, trialrun, flusher, multipass)
                     end
                 else
-                    metapost.report("mp error", "invalid graphic component " .. i)
+                    metapost.report("mp error: invalid graphic component %s",i)
                 end
             end
        else
@@ -227,11 +265,11 @@ function metapost.process(mpx, data, trialrun, flusher, multipass)
             input.stoptiming(metapost.exectime)
             -- todo: error message
             if not result then
-                metapost.report("error", "no result object returned")
+                metapost.report("mp error: no result object returned")
             elseif result.status > 0 then
-                metapost.report("error",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
+                metapost.report("mp error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
             elseif metapost.showlog then
-                metapost.report("info",result.term or "no-term")
+                metapost.report("mp info: %s",result.term or "no-term")
             elseif result.fig then
                 converted = metapost.convert(result, trialrun, flusher, multipass)
             end
@@ -242,9 +280,9 @@ function metapost.process(mpx, data, trialrun, flusher, multipass)
 end
 
 function metapost.convert(result, trialrun, multipass)
-    metapost.report('Warning','no converter set')
+    metapost.report('mp warning: no converter set')
 end
 
 function metapost.report(...)
-    logs.report(...)
+    logs.report("mplib",...)
 end

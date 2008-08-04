@@ -102,23 +102,6 @@
 \def\reset
   {\dosingleargument\doreset}
 
-% nieuw, maar kan dit (i.v.m. (sub)page?)
-
-% \def\incrementnumber[#1]%
-%   {\checknumber[#1]%
-%    \doifelse\@@nrstatus\v!start
-%      {\pluscounter{\@@thenumber{#1}}}
-%      {\setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}}}
-
-% \def\incrementnumber[#1]% bypage tricky: needs a
-%   {\doifelse{\numberparameter{#1}\c!way}{\v!by\v!page}
-%      {\checkpagechange{#1}%
-%       \ifpagechanged\resetcounter{\@@thenumber{#1}}\fi}
-%      {\checknumber[#1]}%
-%    \doifelse\@@nrstate\v!start % only here
-%      {\pluscounter{\@@thenumber{#1}}}
-%      {\setcounter{\@@thenumber{#1}}{0\numberparameter{#1}\c!start}}}
-
 \def\incrementnumber[#1]% bypage tricky: needs a
   {\doifelse{\numberparameter{#1}\c!way}{\v!by\v!page}
      {\checkpagechange{#1}%

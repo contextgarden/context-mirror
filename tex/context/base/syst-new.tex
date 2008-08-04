@@ -558,26 +558,26 @@
 % for Simon ; watch how we make them fully expandable (i.e.
 % no \type {\relax}es) popping up
 
-\def\@@dothenumber#1\relax#2\end{#1}
+\def\@do@the@number@#1\relax#2\end{#1}
 
-\def\@@thenumber#1{\@EA\@@dothenumber\number#1\relax\end}
+\def\@the@number@#1{\@EA\@do@the@number@\number#1\relax\end}
 
 \def\doifnum#1#2%
-  {\ifnum#1=\@@thenumber{#2} % space needed
+  {\ifnum#1=\@the@number@{#2} % space needed
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
 \def\doifnotnum#1#2%
-  {\ifnum#1=\@@thenumber{#2} % space needed
+  {\ifnum#1=\@the@number@{#2} % space needed
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
 \def\doifelsenum#1#2%
-  {\ifnum#1=\@@thenumber{#2} % space needed
+  {\ifnum#1=\@the@number@{#2} % space needed
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments

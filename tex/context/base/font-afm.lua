@@ -17,18 +17,24 @@ where we handles font encodings. Eventually font encoding goes
 away.</p>
 --ldx]]--
 
-fonts                      = fonts     or { }
-fonts.afm                  = fonts.afm or { }
-fonts.afm.version          = 1.26 -- incrementing this number one up will force a re-cache
-fonts.afm.syncspace        = true -- when true, nicer stretch values
-fonts.afm.enhance_data     = true -- best leave this set to true
-fonts.afm.trace_features   = false
-fonts.afm.features         = { }
-fonts.afm.features.aux     = { }
-fonts.afm.features.data    = { }
-fonts.afm.features.list    = { }
-fonts.afm.features.default = { }
-fonts.afm.cache            = containers.define("fonts", "afm", fonts.afm.version, true)
+local format = string.format
+
+fonts      = fonts     or { }
+fonts.afm  = fonts.afm or { }
+
+local afm = fonts.afm
+local tfm = fonts.tfm
+
+afm.version          = 1.26 -- incrementing this number one up will force a re-cache
+afm.syncspace        = true -- when true, nicer stretch values
+afm.enhance_data     = true -- best leave this set to true
+afm.trace_features   = false
+afm.features         = { }
+afm.features.aux     = { }
+afm.features.data    = { }
+afm.features.list    = { }
+afm.features.default = { }
+afm.cache            = containers.define("fonts", "afm", afm.version, true)
 
 --[[ldx--
 <p>We start with the basic reader which we give a name similar to the
@@ -79,7 +85,7 @@ do
         (1-l)^0
     ) + (1-c)^1)^0
 
-    function fonts.afm.scan_comment(str)
+    function afm.scan_comment(str)
         fd = { }
         pattern:match(str)
         return fd
@@ -160,7 +166,7 @@ do
 
     local function get_indexes(data,filename)
         local trace = fonts.trace
-        local pfbname = input.find_file(texmf.instance,file.removesuffix(file.basename(filename))..".pfb","pfb") or ""
+        local pfbname = input.find_file(file.removesuffix(file.basename(filename))..".pfb","pfb") or ""
         if pfbname ~= "" then
             data.luatex = data.luatex or { }
             data.luatex.filename = pfbname
@@ -173,7 +179,7 @@ do
                     local glyphs = pfbdata.glyphs
                     if glyphs then
                         if trace then
-                            logs.report("load afm", string.format("getting index data from %s",pfbname))
+                            logs.report("load afm","getting index data from %s",pfbname)
                         end
                         -- local offset = (glyphs[0] and glyphs[0] != .notdef) or 0
                         for index, glyph in pairs(glyphs) do
@@ -182,28 +188,28 @@ do
                                 local char = characters[name]
                                 if char then
                                     if trace then
-                                        logs.report("load afm", string.format("glyph %s has index %s",name,index))
+                                        logs.report("load afm","glyph %s has index %s",name,index)
                                     end
                                     char.index = index
                                 end
                             end
                         end
                     elseif trace then
-                        logs.report("load afm", string.format("no glyph data in pfb file %s",pfbname))
+                        logs.report("load afm","no glyph data in pfb file %s",pfbname)
                     end
                 elseif trace then
-                    logs.report("load afm", string.format("no data in pfb file %s",pfbname))
+                    logs.report("load afm","no data in pfb file %s",pfbname)
                 end
             elseif trace then
-                logs.report("load afm", string.format("invalid pfb file %s",pfbname))
+                logs.report("load afm","invalid pfb file %s",pfbname)
             end
         elseif trace then
-            logs.report("load afm", string.format("no pfb file for %s",filename))
+            logs.report("load afm","no pfb file for %s",filename)
         end
     end
 
-    function fonts.afm.read_afm(filename)
-        local ok, afmblob, size = input.loadbinfile(texmf.instance,filename) -- has logging
+    function afm.read_afm(filename)
+        local ok, afmblob, size = input.loadbinfile(filename) -- has logging
     --  local ok, afmblob = true, file.readdata(filename)
         if ok and afmblob then
             local data = {
@@ -213,32 +219,32 @@ do
             }
             afmblob = afmblob:gsub("StartCharMetrics(.-)EndCharMetrics", function(charmetrics)
                 if fonts.trace then
-                    logs.report("load afm", "loading char metrics")
+                    logs.report("load afm","loading char metrics")
                 end
                 get_charmetrics(data,charmetrics,vector)
                 return ""
             end)
             afmblob = afmblob:gsub("StartKernPairs(.-)EndKernPairs", function(kernpairs)
                 if fonts.trace then
-                    logs.report("load afm", "loading kern pairs")
+                    logs.report("load afm","loading kern pairs")
                 end
                 get_kernpairs(data,kernpairs)
                 return ""
             end)
             afmblob = afmblob:gsub("StartFontMetrics%s+([%d%.]+)(.-)EndFontMetrics", function(version,fontmetrics)
                 if fonts.trace then
-                    logs.report("load afm", "loading variables")
+                    logs.report("load afm","loading variables")
                 end
                 data.afmversion = version
                 get_variables(data,fontmetrics)
-                data.fontdimens = fonts.afm.scan_comment(fontmetrics) -- todo: all lpeg, no time now
+                data.fontdimens = afm.scan_comment(fontmetrics) -- todo: all lpeg, no time now
                 return ""
             end)
             get_indexes(data,filename)
             return data
         else
             if fonts.trace then
-                logs.report("load afm", "no valid afm file " .. filename)
+                logs.report("load afm","no valid afm file %s",filename)
             end
             return nil
         end
@@ -252,35 +258,35 @@ by adding ligatures and kern information to the afm derived data. That
 way we can set them faster when defining a font.</p>
 --ldx]]--
 
-function fonts.afm.load(filename)
+function afm.load(filename)
     local name = file.removesuffix(filename)
-    local data = containers.read(fonts.afm.cache(),name)
+    local data = containers.read(afm.cache(),name)
     local size = lfs.attributes(name,"size") or 0
     if data and data.size ~= size then
         data = nil
     end
     if not data then
-        local foundname = input.find_file(texmf.instance,filename,'afm')
+        local foundname = input.find_file(filename,'afm')
         if foundname and foundname ~= "" then
-            data = fonts.afm.read_afm(foundname)
+            data = afm.read_afm(foundname)
             if data then
-                fonts.afm.unify(data,filename)
-                if fonts.afm.enhance_data then
-                    fonts.afm.add_ligatures(data,'ligatures') -- easier this way
-                    fonts.afm.add_ligatures(data,'texligatures') -- easier this way
-                    fonts.afm.add_kerns(data) -- faster this way
+                afm.unify(data,filename)
+                if afm.enhance_data then
+                    afm.add_ligatures(data,'ligatures') -- easier this way
+                    afm.add_ligatures(data,'texligatures') -- easier this way
+                    afm.add_kerns(data) -- faster this way
                 end
-                logs.report("load afm","file size: " .. size)
+                logs.report("load afm","file size: %s",size)
                 data.size = size
                 logs.report("load afm","saving: in cache")
-                data = containers.write(fonts.afm.cache(), name, data)
+                data = containers.write(afm.cache(), name, data)
             end
         end
     end
     return data
 end
 
-function fonts.afm.unify(data, filename)
+function afm.unify(data, filename)
 --~     local unicode, unicodes, private  = fonts.enc.load('unicode').hash, { }, 0x0F0000
     local unicode, unicodes, private  = fonts.enc.load('unicode').hash, { }, fonts.private
     for name, blob in pairs(data.characters) do
@@ -291,7 +297,7 @@ function fonts.afm.unify(data, filename)
             if not code then
                 code = private
                 private = private + 1
-                logs.report("afm glyph", string.format("assigning private slot 0x%04X for unknown glyph name %s", code, name))
+                logs.report("afm glyph", "assigning private slot 0x%04X for unknown glyph name %s", code, name)
             end
         end
         blob.unicode = code
@@ -299,7 +305,7 @@ function fonts.afm.unify(data, filename)
     end
     data.luatex = {
         filename = file.basename(filename),
-    --  version  = fonts.afm.version,
+    --  version  = afm.version,
         unicodes = unicodes
     }
 end
@@ -309,7 +315,7 @@ end
 and extra kerns. This saves quite some lookups later.</p>
 --ldx]]--
 
-function fonts.afm.add_ligatures(afmdata,ligatures)
+function afm.add_ligatures(afmdata,ligatures)
     local chars = afmdata.characters
     for k,v in pairs(characters[ligatures]) do
         local one = chars[k]
@@ -336,7 +342,7 @@ end
 them selectively.</p>
 --ldx]]--
 
-function fonts.afm.add_kerns(afmdata)
+function afm.add_kerns(afmdata)
     local chars = afmdata.characters
     -- add complex with values of simplified when present
     local function do_it_left(what)
@@ -380,7 +386,7 @@ end
 -- once we have otf sorted out (new format) we can try to make the afm
 -- cache similar to it (similar tables)
 
-function fonts.afm.add_dimensions(data) -- we need to normalize afm to otf i.e. indexed table instead of name
+function afm.add_dimensions(data) -- we need to normalize afm to otf i.e. indexed table instead of name
     if data then
         for n, d in pairs(data.characters) do
             local bb = d.boundingbox
@@ -394,7 +400,7 @@ function fonts.afm.add_dimensions(data) -- we need to normalize afm to otf i.e. 
     end
 end
 
-function fonts.afm.copy_to_tfm(data)
+function afm.copy_to_tfm(data)
     if data and data.characters then
         local tfm = { characters = { }, parameters = { } }
         local afmcharacters = data.characters
@@ -452,7 +458,7 @@ function fonts.afm.copy_to_tfm(data)
         if data.isfixedpitch then
             parameters.space_stretch = 0
             parameters.space_shrink  = 0
-        elseif fonts.afm.syncspace then
+        elseif afm.syncspace then
             parameters.space_stretch = spaceunits/2
             parameters.space_shrink  = spaceunits/3
         end
@@ -484,17 +490,16 @@ to treat this fontformat like any other and handle features in a
 more configurable way.</p>
 --ldx]]--
 
-function fonts.afm.features.register(name,default)
-    fonts.afm.features.list[#fonts.afm.features.list+1] = name
-    fonts.afm.features.default[name] = default
+function afm.features.register(name,default)
+    afm.features.list[#afm.features.list+1] = name
+    afm.features.default[name] = default
 end
 
-function fonts.afm.set_features(tfmdata)
+function afm.set_features(tfmdata)
     local shared = tfmdata.shared
     local afmdata = shared.afmdata
-    -- elsewhere: shared.features = fonts.define.check(shared.features,fonts.afm.features.default)
+    -- elsewhere: shared.features = fonts.define.check(shared.features,afm.features.default)
     local features = shared.features
---~ texio.write_nl(table.serialize(features))
     if not table.is_empty(features) then
         local mode = tfmdata.mode or fonts.mode
         local fi = fonts.initializers[mode]
@@ -503,9 +508,9 @@ function fonts.afm.set_features(tfmdata)
                 if list then
                     for _, f in ipairs(list) do
                         local value = features[f]
-                        if  value and fi.afm[f] then -- brr
-                            if fonts.afm.trace_features then
-                                logs.report("define afm",string.format("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown'))
+                        if value and fi.afm[f] then -- brr
+                            if afm.trace_features then
+                                logs.report("define afm","initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
                             end
                             fi.afm[f](tfmdata,value)
                             mode = tfmdata.mode or fonts.mode
@@ -515,7 +520,7 @@ function fonts.afm.set_features(tfmdata)
                 end
             end
             initialize(fonts.triggers)
-            initialize(fonts.afm.features.list)
+            initialize(afm.features.list)
             initialize(fonts.manipulators)
         end
         local fm = fonts.methods[mode]
@@ -533,37 +538,37 @@ function fonts.afm.set_features(tfmdata)
                     end
                 end
             end
-            register(fonts.afm.features.list)
+            register(afm.features.list)
         end
     end
 end
 
-function fonts.afm.check_features(specification)
-    local features, done = fonts.define.check(specification.features.normal,fonts.afm.features.default)
+function afm.check_features(specification)
+    local features, done = fonts.define.check(specification.features.normal,afm.features.default)
     if done then
         specification.features.normal = features
-        fonts.tfm.hash_instance(specification,true)
+        tfm.hash_instance(specification,true)
     end
 end
 
-function fonts.afm.afm_to_tfm(specification)
+function afm.afm_to_tfm(specification)
     local afmname = specification.filename or specification.name
     local encoding, filename = afmname:match("^(.-)%-(.*)$") -- context: encoding-name.*
     if encoding and filename and fonts.enc.known[encoding] then
-        fonts.tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
+        tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
         if fonts.trace then
-            logs.report("load afm", string.format("stripping encoding prefix from filename %s",afmname))
+            logs.report("load afm","stripping encoding prefix from filename %s",afmname)
         end
         afmname = filename
     elseif specification.forced == "afm" then
         if fonts.trace then
-            logs.report("load afm", string.format("forcing afm format for %s",afmname))
+            logs.report("load afm","forcing afm format for %s",afmname)
         end
     else
-        local tfmname = input.findbinfile(texmf.instance,afmname,"ofm") or ""
+        local tfmname = input.findbinfile(afmname,"ofm") or ""
         if tfmname ~= "" then
             if fonts.trace then
-                logs.report("load afm", string.format("fallback from afm to tfm for %s",afmname))
+                logs.report("load afm","fallback from afm to tfm for %s",afmname)
             end
             afmname = ""
         end
@@ -571,27 +576,27 @@ function fonts.afm.afm_to_tfm(specification)
     if afmname == "" then
         return nil
     else
-        fonts.afm.check_features(specification)
+        afm.check_features(specification)
         specification = fonts.define.resolve(specification) -- new, was forgotten
         local features = specification.features.normal
         local cache_id = specification.hash
-        local tfmdata  = containers.read(fonts.tfm.cache(), cache_id) -- cache with features applied
+        local tfmdata  = containers.read(tfm.cache(), cache_id) -- cache with features applied
         if not tfmdata then
-            local afmdata = fonts.afm.load(afmname)
+            local afmdata = afm.load(afmname)
             if not table.is_empty(afmdata) then
-                fonts.afm.add_dimensions(afmdata)
-                tfmdata = fonts.afm.copy_to_tfm(afmdata)
+                afm.add_dimensions(afmdata)
+                tfmdata = afm.copy_to_tfm(afmdata)
                 if not table.is_empty(tfmdata) then
                     tfmdata.shared = tfmdata.shared or { }
                     tfmdata.unique = tfmdata.unique or { }
                     tfmdata.shared.afmdata  = afmdata
                     tfmdata.shared.features = features
-                    fonts.afm.set_features(tfmdata)
+                    afm.set_features(tfmdata)
                 end
             elseif fonts.trace then
-                logs.report("load afm", string.format("no (valid) afm file found with name %s",afmname))
+                logs.report("load afm","no (valid) afm file found with name %s",afmname)
             end
-            tfmdata = containers.write(fonts.tfm.cache(),cache_id,tfmdata)
+            tfmdata = containers.write(tfm.cache(),cache_id,tfmdata)
         end
         return tfmdata
     end
@@ -605,9 +610,9 @@ those cases, but now that we can handle <l n='opentype'/> directly we no longer
 need this features.</p>
 --ldx]]--
 
-fonts.tfm.default_encoding = 'unicode'
+tfm.default_encoding = 'unicode'
 
-function fonts.tfm.set_normal_feature(specification,name,value)
+function tfm.set_normal_feature(specification,name,value)
     if specification and name then
         specification.features = specification.features or { }
         specification.features.normal = specification.features.normal or { }
@@ -615,15 +620,15 @@ function fonts.tfm.set_normal_feature(specification,name,value)
     end
 end
 
-function fonts.tfm.read_from_afm(specification)
---~ local fullname = input.findbinfile(texmf.instance,specification.name,"afm") or ""
+function tfm.read_from_afm(specification)
+--~ local fullname = input.findbinfile(specification.name,"afm") or ""
 --~ if fullname ~= "" then
 --~     specification.filename = fullname
 --~ end
-    local tfmtable = fonts.afm.afm_to_tfm(specification)
+    local tfmtable = afm.afm_to_tfm(specification)
     if tfmtable then
         tfmtable.name = specification.name
-        tfmtable = fonts.tfm.scale(tfmtable, specification.size)
+        tfmtable = tfm.scale(tfmtable, specification.size)
         local afmdata = tfmtable.shared.afmdata
         local filename = afmdata and afmdata.luatex and afmdata.luatex.filename
         if not filename then
@@ -631,7 +636,7 @@ function fonts.tfm.read_from_afm(specification)
         end
         if filename then
             tfmtable.encodingbytes = 2
-            tfmtable.filename = input.findbinfile(texmf.instance,filename,"") or filename
+            tfmtable.filename = input.findbinfile(filename,"") or filename
             tfmtable.fullname = afmdata.fontname or afmdata.fullname
             tfmtable.format   = 'type1'
             tfmtable.name     = afmdata.luatex.filename or tfmtable.fullname
@@ -649,39 +654,45 @@ end
 those that make sense for this format.</p>
 --ldx]]--
 
-function fonts.afm.features.prepare_ligatures(tfmdata,ligatures,value) -- probably faulty / check index
+function afm.features.prepare_ligatures(tfmdata,ligatures,value)
     if value then
         local charlist = tfmdata.shared.afmdata.characters
-        for k,v in pairs(tfmdata.characters) do
-            local ac = charlist[v.name]
+        for _, chr in pairs(tfmdata.characters) do
+            local ac = charlist[chr.description.name]
             if ac then
                 local al = ac[ligatures]
                 if al then
-                    local ligatures = { }
+                    local ligatures = chr.ligatures
+                    if not ligatures then
+                        ligatures = { }
+                        chr.ligatures =ligatures
+                    end
                     for k,v in pairs(al) do
                         ligatures[charlist[k].unicode] = {
                             char = charlist[v].unicode,
                             type = 0
                         }
                     end
-                    v.ligatures = ligatures
                 end
             end
         end
     end
 end
 
-function fonts.afm.features.prepare_kerns(tfmdata,kerns,value)
+function afm.features.prepare_kerns(tfmdata,kerns,value)
     if value then
         local charlist = tfmdata.shared.afmdata.characters
         for _, chr in pairs(tfmdata.characters) do
             local newkerns = charlist[chr.description.name][kerns]
             if newkerns then
-                local t = chr.kerns or { }
-                for k,v in pairs(newkerns) do
-                    t[charlist[k].unicode] = v
+                local kerns = chr.kerns
+                if not kerns then
+                    kerns = { }
+                    chr.kerns = kerns
                 end
-                chr.kerns = t
+                for k,v in pairs(newkerns) do
+                    kerns[charlist[k].unicode] = v
+                end
             end
         end
     end
@@ -689,14 +700,14 @@ end
 
 -- hm, register?
 
-function fonts.initializers.base.afm.ligatures   (tfmdata,value) fonts.afm.features.prepare_ligatures(tfmdata,'ligatures',   value) end
-function fonts.initializers.base.afm.texligatures(tfmdata,value) fonts.afm.features.prepare_ligatures(tfmdata,'texligatures',value) end
-function fonts.initializers.base.afm.kerns       (tfmdata,value) fonts.afm.features.prepare_kerns    (tfmdata,'kerns',       value) end
-function fonts.initializers.base.afm.extrakerns  (tfmdata,value) fonts.afm.features.prepare_kerns    (tfmdata,'extrakerns',  value) end
+function fonts.initializers.base.afm.ligatures   (tfmdata,value) afm.features.prepare_ligatures(tfmdata,'ligatures',   value) end
+function fonts.initializers.base.afm.texligatures(tfmdata,value) afm.features.prepare_ligatures(tfmdata,'texligatures',value) end
+function fonts.initializers.base.afm.kerns       (tfmdata,value) afm.features.prepare_kerns    (tfmdata,'kerns',       value) end
+function fonts.initializers.base.afm.extrakerns  (tfmdata,value) afm.features.prepare_kerns    (tfmdata,'extrakerns',  value) end
 
-fonts.afm.features.register('liga',true)
-fonts.afm.features.register('kerns',true)
-fonts.afm.features.register('extrakerns') -- needed?
+afm.features.register('liga',true)
+afm.features.register('kerns',true)
+afm.features.register('extrakerns') -- needed?
 
 fonts.initializers.node.afm.ligatures    = fonts.initializers.base.afm.ligatures
 fonts.initializers.node.afm.texligatures = fonts.initializers.base.afm.texligatures
@@ -708,11 +719,11 @@ fonts.initializers.node.afm.liga         = fonts.initializers.base.afm.ligatures
 fonts.initializers.base.afm.tlig         = fonts.initializers.base.afm.texligatures
 fonts.initializers.node.afm.tlig         = fonts.initializers.base.afm.texligatures
 
-fonts.initializers.base.afm.trep         = fonts.tfm.replacements
-fonts.initializers.node.afm.trep         = fonts.tfm.replacements
+fonts.initializers.base.afm.trep         = tfm.replacements
+fonts.initializers.node.afm.trep         = tfm.replacements
 
-fonts.afm.features.register('tlig',true) -- todo: also proper features for afm
-fonts.afm.features.register('trep',true) -- todo: also proper features for afm
+afm.features.register('tlig',true) -- todo: also proper features for afm
+afm.features.register('trep',true) -- todo: also proper features for afm
 
 -- tfm features
 
@@ -728,7 +739,7 @@ fonts.initializers.node.afm.compose = fonts.initializers.common.compose
 
 -- afm specific, encodings ...kind of obsolete
 
-fonts.afm.features.register('encoding')
+afm.features.register('encoding')
 
 fonts.initializers.base.afm.encoding = fonts.initializers.common.encoding
 fonts.initializers.node.afm.encoding = fonts.initializers.common.encoding
@@ -739,7 +750,7 @@ fonts.initializers.base.afm.onum  = fonts.initializers.common.oldstyle
 fonts.initializers.base.afm.smcp  = fonts.initializers.common.smallcaps
 fonts.initializers.base.afm.fkcp  = fonts.initializers.common.fakecaps
 
-fonts.afm.features.register('onum',false)
-fonts.afm.features.register('smcp',false)
-fonts.afm.features.register('fkcp',false)
+afm.features.register('onum',false)
+afm.features.register('smcp',false)
+afm.features.register('fkcp',false)
 

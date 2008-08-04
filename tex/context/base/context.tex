@@ -42,7 +42,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2008.05.21 15:21}
+\edef\contextversion{2008.08.04 15:59}
 
 %D For those who want to use this:
 
@@ -327,6 +327,8 @@
 
 \loadcorefile{lang-vn.tex}
 
+\loadcorefile{lang-ara.tex}
+
 %D All kind of symbols are handled in:
 
 \loadcorefile{symb-ini.tex}
@@ -419,6 +421,7 @@
 \loadcorefile{font-ini.tex}
 \loadcorefile{font-uni.tex}
 \loadcorefile{font-bfm.tex}
+\loadmkivfile{font-col.tex}
 
 \loadcorefile{enco-pfr.tex}
 
@@ -641,7 +644,7 @@
 \unprotect
 \beginLUATEX
     \appendtoks
-        \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath(texmf.instance))}}%
+        \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}%
         \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}%
     \to \everydump
 \endLUATEX
@@ -668,16 +671,16 @@
 
 \unprotect
 
-\installlanguage [\s!en] [\c!state=\v!start]
+\installlanguage [\s!us] [\c!state=\v!start]
 
 \startinterface english
 
-  \installlanguage [\s!uk] [\c!state=\v!start]
+  \installlanguage [\s!gb] [\c!state=\v!start]
 
 \stopinterface
 
-\appendtoks \language     [\s!en] \to \everyjob
-\appendtoks \mainlanguage [\s!en] \to \everyjob
+\appendtoks \language     [\s!us] \to \everyjob
+\appendtoks \mainlanguage [\s!us] \to \everyjob
 
 \startinterface german
 
@@ -699,10 +702,10 @@
 
 \startinterface czech
 
-  \installlanguage [\s!cz] [\c!state=\v!start]
+  \installlanguage [\s!cs] [\c!state=\v!start]
 
-  \appendtoks \language     [\s!cz] \to \everyjob
-  \appendtoks \mainlanguage [\s!cz] \to \everyjob
+  \appendtoks \language     [\s!cs] \to \everyjob
+  \appendtoks \mainlanguage [\s!cs] \to \everyjob
 
 \stopinterface
 

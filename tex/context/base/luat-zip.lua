@@ -6,6 +6,8 @@
 
 if not versions then versions = { } end versions['luat-zip'] = 1.001
 
+local format = string.format
+
 if zip and input then
     zip.supported = true
 else
@@ -37,7 +39,7 @@ else
     zip.archives        = { }
     zip.registeredfiles = { }
 
-    function zip.openarchive(instance,name)
+    function zip.openarchive(name)
         if not name or name == "" then
             return nil
         else
@@ -45,7 +47,7 @@ else
             if arch then
                 return arch
             else
-               local full = input.find_file(instance,name) or ""
+               local full = input.find_file(name) or ""
                local arch = (full ~= "" and zip.open(full)) or false
                zip.archives[name] = arch
                return arch
@@ -53,7 +55,7 @@ else
         end
     end
 
-    function zip.closearchive(instance,name)
+    function zip.closearchive(name)
         if not name or name == "" and zip.archives[name] then
             zip.close(zip.archives[name])
             zip.archives[name] = nil
@@ -64,20 +66,22 @@ else
     -- zip:///texmf.zip?tree=/tex/texmf-local
     -- zip:///texmf-mine.zip?tree=/tex/texmf-projects
 
-    function input.locators.zip(instance,specification) -- where is this used? startup zips (untested)
+    function input.locators.zip(specification) -- where is this used? startup zips (untested)
         specification = input.splitmethod(specification)
         local zipfile = specification.path
-        local zfile = zip.openarchive(instance,name) -- tricky, could be in to be initialized tree
-        if zfile then
-            input.logger('! zip locator', specification.original ..' found')
-        else
-            input.logger('? zip locator', specification.original ..' not found')
+        local zfile = zip.openarchive(name) -- tricky, could be in to be initialized tree
+        if input.trace > 0 then
+            if zfile then
+                input.logger('! zip locator, found: %s',specification.original)
+            else
+                input.logger('? zip locator, not found: %s',specification.original)
+            end
         end
     end
 
-    function input.hashers.zip(instance,tag,name)
-        input.report("loading zip file",name,"as",tag)
-        input.usezipfile(instance,tag .."?tree=" .. name)
+    function input.hashers.zip(tag,name)
+        input.report("loading zip file %s as %s",name,tag)
+        input.usezipfile(tag .."?tree=" .. name)
     end
 
     function input.concatinators.zip(tag,path,name)
@@ -92,101 +96,124 @@ else
         return true
     end
 
-    function input.finders.zip(instance,specification,filetype)
+    function input.finders.zip(specification,filetype)
         specification = input.splitmethod(specification)
         if specification.path then
             local q = url.query(specification.query)
             if q.name then
-                local zfile = zip.openarchive(instance,specification.path)
+                local zfile = zip.openarchive(specification.path)
                 if zfile then
-                    input.logger('! zip finder',specification.path)
+                    if input.trace > 0 then
+                        input.logger('! zip finder, path: %s',specification.path)
+                    end
                     local dfile = zfile:open(q.name)
                     if dfile then
                         dfile = zfile:close()
-                        input.logger('+ zip finder',q.name)
+                        if input.trace > 0 then
+                            input.logger('+ zip finder, name: %s',q.name)
+                        end
                         return specification.original
                     end
-                else
-                    input.logger('? zip finder',specification.path)
+                elseif input.trace > 0 then
+                    input.logger('? zip finder, path %s',specification.path)
                 end
             end
         end
-        input.logger('- zip finder',filename)
+        if input.trace > 0 then
+            input.logger('- zip finder, name: %s',filename)
+        end
         return unpack(input.finders.notfound)
     end
 
-    function input.openers.zip(instance,specification)
+    function input.openers.zip(specification)
         local zipspecification = input.splitmethod(specification)
         if zipspecification.path then
             local q = url.query(zipspecification.query)
             if q.name then
-                local zfile = zip.openarchive(instance,zipspecification.path)
+                local zfile = zip.openarchive(zipspecification.path)
                 if zfile then
-                    input.logger('+ zip starter',zipspecification.path)
+                    if input.trace > 0 then
+                        input.logger('+ zip starter, path: %s',zipspecification.path)
+                    end
                     local dfile = zfile:open(q.name)
                     if dfile then
                         input.show_open(specification)
                         return input.openers.text_opener(specification,dfile,'zip')
                     end
-                else
-                    input.logger('- zip starter',zipspecification.path)
+                elseif input.trace > 0 then
+                    input.logger('- zip starter, path %s',zipspecification.path)
                 end
             end
         end
-        input.logger('- zip opener',filename)
+        if input.trace > 0 then
+            input.logger('- zip opener, name: %s',filename)
+        end
         return unpack(input.openers.notfound)
     end
 
-    function input.loaders.zip(instance,specification)
+    function input.loaders.zip(specification)
         specification = input.splitmethod(specification)
         if specification.path then
             local q = url.query(specification.query)
             if q.name then
-                local zfile = zip.openarchive(instance,specification.path)
+                local zfile = zip.openarchive(specification.path)
                 if zfile then
-                    input.logger('+ zip starter',specification.path)
+                    if input.trace > 0 then
+                        input.logger('+ zip starter, path: %s',specification.path)
+                    end
                     local dfile = zfile:open(q.name)
                     if dfile then
                         input.show_load(filename)
-                        input.logger('+ zip loader',filename)
+                        if input.trace > 0 then
+                            input.logger('+ zip loader, name: %s',filename)
+                        end
                         local s = dfile:read("*all")
                         dfile:close()
                         return true, s, #s
                     end
-                else
-                    input.logger('- zip starter',specification.path)
+                elseif input.trace > 0 then
+                    input.logger('- zip starter, path: %s',specification.path)
                 end
             end
         end
-        input.logger('- zip loader',filename)
+        if input.trace > 0 then
+            input.logger('- zip loader, name: %s',filename)
+        end
         return unpack(input.openers.notfound)
     end
 
     -- zip:///somefile.zip
     -- zip:///somefile.zip?tree=texmf-local -> mount
 
-    function input.usezipfile(instance,zipname)
+    function input.usezipfile(zipname)
         zipname = validzip(zipname)
-        input.logger('! zip use','file '..zipname)
+        if input.trace > 0 then
+            input.logger('! zip use, file: %s',zipname)
+        end
         local specification = input.splitmethod(zipname)
         local zipfile = specification.path
         if zipfile and not zip.registeredfiles[zipname] then
             local tree = url.query(specification.query).tree or ""
-            input.logger('! zip register','file '..zipname)
-            local z = zip.openarchive(instance,zipfile)
+            if input.trace > 0 then
+                input.logger('! zip register, file: %s',zipname)
+            end
+            local z = zip.openarchive(zipfile)
             if z then
-                input.logger("= zipfile","registering "..zipname)
+                local instance = input.instance
+                if input.trace > 0 then
+                    input.logger("= zipfile, registering: %s",zipname)
+                end
                 input.starttiming(instance)
-                input.aux.prepend_hash(instance,'zip',zipname,zipfile)
-                input.aux.extend_texmf_var(instance,zipname) -- resets hashes too
+                input.aux.prepend_hash('zip',zipname,zipfile)
+                input.aux.extend_texmf_var(zipname) -- resets hashes too
                 zip.registeredfiles[zipname] = z
                 instance.files[zipname] = input.aux.register_zip_file(z,tree or "")
                 input.stoptiming(instance)
-            else
-                input.logger("? zipfile","unknown "..zipname)
+            elseif input.trace > 0 then
+                input.logger("? zipfile, unknown: %s",zipname)
             end
-        else
-            input.logger('! zip register','no file '..zipname)
+        elseif input.trace > 0 then
+            input.logger('! zip register, no file: %s',zipname)
         end
     end
 
@@ -197,7 +224,9 @@ else
         else
             filter = "^"..tree.."/(.+)/(.-)$"
         end
-        input.logger('= zip filter',filter)
+        if input.trace > 0 then
+            input.logger('= zip filter: %s',filter)
+        end
         local register, n = input.aux.register_file, 0
         for i in z:files() do
             local path, name = i.filename:match(filter)
@@ -213,7 +242,7 @@ else
                 n = n + 1
             end
         end
-        input.report('= zip entries',n)
+        input.logger('= zip entries: %s',n)
         return files
     end
 

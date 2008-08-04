@@ -27,6 +27,15 @@
     <cd:constant type="ano"/>
 </cd:define>
 
+<cd:define name="symalign">
+    <cd:constant type="vlevo"/>
+    <cd:constant type="vpravo"/>
+    <cd:constant type="flushleft"/>
+    <cd:constant type="flushright"/>
+    <cd:constant type="nastred"/>
+    <cd:constant type="center"/>
+</cd:define>
+
 <cd:define name="indenting">
     <cd:constant type="nikdy"/>
     <cd:constant type="zadny"/>

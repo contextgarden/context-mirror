@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2008.05.21 15:21}
+\newcontextversion{2008.08.04 15:59}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -31,7 +31,7 @@
 
 \let\then\relax % \ifnum1>2\then -)
 
-\def\TransparencyHack
+\def\TransparencyHack %  png: /CS /DeviceRGB /I true
   {\appendtoks
      \doPDFpageattribute{/Group << /S /Transparency /I true /K true>>}%
    \to \everyPDFxform
@@ -56,7 +56,7 @@
 \def\placefloatwithsetups
   {\dotripleempty\doplacefloatwithsetups}
 
-\def\doplacefloatwithsetups[#1][#2][#3]#4%
+\long\def\doplacefloatwithsetups[#1][#2][#3]#4%
   {\def\floatsetupcaption   {#4}%
    \def\floatsetupcontent   {\copy\nextbox}%
    \def\floatsetupwidth     {\wd\nextbox}%

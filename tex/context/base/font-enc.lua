@@ -62,11 +62,11 @@ function fonts.enc.load(filename)
         return data
     end
     local vector, tag, hash, unicodes = { }, "", { }, { }
-    local foundname = input.find_file(texmf.instance,filename,'enc')
+    local foundname = input.find_file(filename,'enc')
     if foundname and foundname ~= "" then
-        local ok, encoding, size = input.loadbinfile(texmf.instance,foundname)
+        local ok, encoding, size = input.loadbinfile(foundname)
         if ok and encoding then
-            local enccodes = characters.context.enccodes
+            local enccodes = characters.enccodes
             encoding = encoding:gsub("%%(.-)\n","")
             local tag, vec = encoding:match("/(%w+)%s*%[(.*)%]%s*def")
             local i = 0

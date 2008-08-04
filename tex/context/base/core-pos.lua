@@ -85,10 +85,10 @@ end
 
 function job.MPplus(id,n,default)
     local jpi = positions[id]
-    texprint((jpi and jpi[n]) or default)
+    texprint((jpi and jpi[6+n]) or default)
 end
 
 function job.MPrest(id,default)
     local jpi = positions[id]
-    texprint((jpi and jpi[8]) or default) -- was 7, bugged
+    texprint((jpi and jpi[7] and concat(jpi,",",7,#jpi)) or default)
 end

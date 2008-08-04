@@ -56,6 +56,7 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!month,\ ,\v!day,{,\ },\v!year},
+   \s!patterns=\s!us,
    \c!state=\v!stop] % elders always preloaded!
 
 \installlanguage
@@ -115,28 +116,50 @@
    \c!state=\v!stop]
 
 \installlanguage
-  [\s!no]
-  [\c!spacing=\v!packed,
-   \c!leftsentence=---,
-   \c!rightsentence=---,
-   \c!leftsubsentence=---,
-   \c!rightsubsentence=---,
-   \c!leftquote=\upperleftsinglesixquote,
-   \c!rightquote=\upperrightsingleninequote,
-   \c!leftquotation=\upperleftdoublesixquote,
-   \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
-   \c!default=\s!no,
-   \c!state=\v!stop]
+ [\s!nb]
+ [spacing=packed,
+  lefthyphenmin=2,
+  righthyphenmin=2,
+  leftsentence=---,
+  rightsentence=---,
+  leftsubsentence=---,
+  rightsubsentence=---,
+  leftquote=\upperleftsinglesixquote,
+  rightquote=\upperrightsingleninequote,
+  leftquotation=\leftguillemot,
+  rightquotation=\rightguillemot,
+  date={day,{.},\ ,month,\ ,year},
+  state=stop]
+
+\installlanguage
+ [\s!nn]
+ [spacing=packed,
+  lefthyphenmin=2,
+  righthyphenmin=2,
+  leftsentence=---,
+  rightsentence=---,
+  leftsubsentence=---,
+  rightsubsentence=---,
+  leftquote=\upperleftsinglesixquote,
+  rightquote=\upperrightsingleninequote,
+  leftquotation=\leftguillemot,
+  rightquotation=\rightguillemot,
+  date={day,{.},\ ,month,\ ,year},
+  state=stop]
+
+\installlanguage [\s!no]        [\s!nb]
+\installlanguage [\s!norwegian] [\s!nb]
+\installlanguage [\s!bokmal]    [\s!nb]
+\installlanguage [\s!nynorsk]   [\s!nn]
 
 %D Extra:
 
 % \mainlanguage[en]
 % \mainlanguage[de]
 % \mainlanguage[deo]
-% \mainlanguage[de-DE]
-% \mainlanguage[de-AT]
-% \mainlanguage[de-CH]
+% \mainlanguage[de-de]
+% \mainlanguage[de-at]
+% \mainlanguage[de-ch]
 %
 % \starttext
 %     Die Herren Meier\index{Meier}, Müller\index{Müller}, Huber\index{Huber}
@@ -161,13 +184,13 @@
    \c!state=\v!stop]
 
 \installlanguage
-  [de-DE]
+  [de-de]
   [\c!spacing=\v!packed,
    \c!default=\s!de,
    \c!state=\v!stop]
 
 \installlanguage
-  [de-AT]
+  [de-at]
   [\c!spacing=\v!packed,
    \c!default=\s!de,
    \c!leftquote=\leftguillemot,
@@ -177,7 +200,7 @@
    \c!state=\v!stop]
 
 \installlanguage
-  [de-CH]
+  [de-ch]
   [\c!spacing=\v!packed,
    \c!default=\s!de,
    \c!state=\v!stop]
@@ -185,30 +208,33 @@
 %D And some alternative (but very real) english patterns:
 
 \installlanguage
-  [uk]
+  [en-gb]
   [\c!default=\s!en,
+   \s!patterns=\s!gb,
    \c!state=\v!stop]
 
 \installlanguage
-  [us]
+  [en-us]
   [\c!default=\s!en,
+  %\s!patterns=\s!us,
    \c!state=\v!stop]
+
+\installlanguage [\s!uk] [en-gb]
+\installlanguage [\s!us] [en-us]
 
 %D For compatibility reasons we also define:
 
 \installlanguage [du]          [\s!de] % old times context
 %installlanguage [sp]          [\s!es] % old times context /lang-ita
 
-\installlanguage [usenglish]   [\s!us]
-\installlanguage [ukenglish]   [\s!uk]
-\installlanguage [english]     [\s!en]
+\installlanguage [usenglish]   [en-us]
+\installlanguage [ukenglish]   [en-uk]
+\installlanguage [english]     [en-us]
 \installlanguage [dutch]       [\s!nl]
 \installlanguage [german]      [\s!de]
 \installlanguage [danish]      [\s!da]
 \installlanguage [swedish]     [\s!sv]
 \installlanguage [afrikaans]   [\s!af]
-\installlanguage [norwegian]   [\s!no]
-\installlanguage [norsk]       [\s!no] % bonus switch
 
 \setupheadtext [\s!en] [\v!content=Contents]
 \setupheadtext [\s!nl] [\v!content=Inhoud]
@@ -216,7 +242,8 @@
 \setupheadtext [\s!da] [\v!content=Indhold]
 \setupheadtext [\s!sv] [\v!content=Inneh\aring ll]
 \setupheadtext [\s!af] [\v!content=Inhoud]
-\setupheadtext [\s!no] [\v!content=Innhold]
+\setupheadtext [\s!nb] [\v!content=Innhold]
+\setupheadtext [\s!nn] [\v!content=Innhald]
 
 \setupheadtext [\s!en] [\v!tables=Tables]
 \setupheadtext [\s!nl] [\v!tables=Tabellen]
@@ -224,7 +251,8 @@
 \setupheadtext [\s!da] [\v!tables=Tabeller]
 \setupheadtext [\s!sv] [\v!tables=Tabeller]
 \setupheadtext [\s!af] [\v!tables=Tabelle]
-\setupheadtext [\s!no] [\v!tables=Tabeller]
+\setupheadtext [\s!nb] [\v!tables=Tabeller]
+\setupheadtext [\s!nn] [\v!tables=Tabellar]
 
 \setupheadtext [\s!en] [\v!figures=Figures]
 \setupheadtext [\s!nl] [\v!figures=Figuren]
@@ -232,7 +260,8 @@
 \setupheadtext [\s!da] [\v!figures=Figurer]
 \setupheadtext [\s!sv] [\v!figures=Figurer]
 \setupheadtext [\s!af] [\v!figures=Figure]
-\setupheadtext [\s!no] [\v!figures=Figurer]
+\setupheadtext [\s!nb] [\v!figures=Figurer]
+\setupheadtext [\s!nn] [\v!figures=Figurar]
 
 \setupheadtext [\s!en] [\v!graphics=Graphics]
 \setupheadtext [\s!nl] [\v!graphics=Grafieken]
@@ -240,7 +269,8 @@
 \setupheadtext [\s!da] [\v!graphics=Grafik]
 \setupheadtext [\s!sv] [\v!graphics=Grafik]
 \setupheadtext [\s!af] [\v!graphics=Grafieke]
-\setupheadtext [\s!no] [\v!graphics=Grafikk]
+\setupheadtext [\s!nb] [\v!graphics=Bilde]
+\setupheadtext [\s!nn] [\v!graphics=Bilete]
 
 \setupheadtext [\s!en] [\v!intermezzi=Intermezzos]
 \setupheadtext [\s!nl] [\v!intermezzi=Intermezzo's]
@@ -248,7 +278,8 @@
 \setupheadtext [\s!da] [\v!intermezzi=Intermezzoer]
 \setupheadtext [\s!sv] [\v!intermezzi=Intermezzon]
 \setupheadtext [\s!af] [\v!intermezzi=Intermezzos]
-\setupheadtext [\s!no] [\v!intermezzi=Intermesso]
+\setupheadtext [\s!nb] [\v!intermezzi=Intermesso]
+\setupheadtext [\s!nn] [\v!intermezzi=Intermesso]
 
 \setupheadtext [\s!en] [\v!index=Index]
 \setupheadtext [\s!nl] [\v!index=Index]
@@ -256,7 +287,8 @@
 \setupheadtext [\s!da] [\v!index=Indeks]
 \setupheadtext [\s!sv] [\v!index=Sakregister]
 \setupheadtext [\s!af] [\v!index=Indeks]
-\setupheadtext [\s!no] [\v!index=Indeks]
+\setupheadtext [\s!nb] [\v!index=Register]
+\setupheadtext [\s!nn] [\v!index=Register]
 
 \setupheadtext [\s!en] [\v!abbreviations=Abbreviations]
 \setupheadtext [\s!nl] [\v!abbreviations=Afkortingen]
@@ -264,7 +296,8 @@
 \setupheadtext [\s!da] [\v!abbreviations=Forkortelser]
 \setupheadtext [\s!sv] [\v!abbreviations=F\oumlaut rkortningar]
 \setupheadtext [\s!af] [\v!abbreviations=Afkortings]
-\setupheadtext [\s!no] [\v!abbreviations=Forkortelser]
+\setupheadtext [\s!nb] [\v!abbreviations=Forkortelser]
+\setupheadtext [\s!nn] [\v!abbreviations=Forkortingar]
 
 \setupheadtext [\s!en] [\v!logos=Logos]
 \setupheadtext [\s!nl] [\v!logos=Logo's]
@@ -272,7 +305,8 @@
 \setupheadtext [\s!da] [\v!logos=Logoer]
 \setupheadtext [\s!sv] [\v!logos=Loggor]
 \setupheadtext [\s!af] [\v!logos=Logos]
-\setupheadtext [\s!no] [\v!logos=Logoer]
+\setupheadtext [\s!nb] [\v!logos=Logoer]
+\setupheadtext [\s!nn] [\v!logos=Logoar]
 
 \setupheadtext [\s!en] [\v!units=Units]
 \setupheadtext [\s!nl] [\v!units=Eenheden]
@@ -280,7 +314,8 @@
 \setupheadtext [\s!da] [\v!units=Enheder]
 \setupheadtext [\s!sv] [\v!units=Enheter]
 \setupheadtext [\s!af] [\v!units=Eenhede]
-\setupheadtext [\s!no] [\v!units=Enheter]
+\setupheadtext [\s!nb] [\v!units=Enheter]
+\setupheadtext [\s!nn] [\v!units=Einingar]
 
 \setuplabeltext [\s!en] [\v!table=Table ]
 \setuplabeltext [\s!nl] [\v!table=Tabel ]
@@ -288,7 +323,8 @@
 \setuplabeltext [\s!da] [\v!table=Tabel ]
 \setuplabeltext [\s!sv] [\v!table=Tabell ]
 \setuplabeltext [\s!af] [\v!table=Tabel]
-\setuplabeltext [\s!no] [\v!table=Tabell ]
+\setuplabeltext [\s!nb] [\v!table=Tabell ]
+\setuplabeltext [\s!nn] [\v!table=Tabell ]
 
 \setuplabeltext [\s!en] [\v!figure=Figure ]
 \setuplabeltext [\s!nl] [\v!figure=Figuur ]
@@ -296,7 +332,8 @@
 \setuplabeltext [\s!da] [\v!figure=Figur ]
 \setuplabeltext [\s!sv] [\v!figure=Figur ]
 \setuplabeltext [\s!af] [\v!figure=Figuur ]
-\setuplabeltext [\s!no] [\v!figure=Figur ]
+\setuplabeltext [\s!nb] [\v!figure=Figur ]
+\setuplabeltext [\s!nn] [\v!figure=Figur ]
 
 \setuplabeltext [\s!en] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!nl] [\v!intermezzo=Intermezzo ]
@@ -304,7 +341,8 @@
 \setuplabeltext [\s!da] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!sv] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!af] [\v!intermezzo=Intermezzo ]
-\setuplabeltext [\s!no] [\v!intermezzo=Intermesso ]
+\setuplabeltext [\s!nb] [\v!intermezzo=Intermesso ]
+\setuplabeltext [\s!nn] [\v!intermezzo=Intermesso ]
 
 \setuplabeltext [\s!en] [\v!graphic=Graphic ]
 \setuplabeltext [\s!nl] [\v!graphic=Grafiek ]
@@ -312,7 +350,8 @@
 \setuplabeltext [\s!da] [\v!graphic=Grafik ]
 \setuplabeltext [\s!sv] [\v!graphic=Grafik ]
 \setuplabeltext [\s!af] [\v!graphic=Grafiek ]
-\setuplabeltext [\s!no] [\v!graphic=Grafikk ]
+\setuplabeltext [\s!nb] [\v!graphic=Bilde ]
+\setuplabeltext [\s!nn] [\v!graphic=Bilete ]
 
 %D We don't set these here. One can do that in a style.
 
@@ -322,7 +361,8 @@
 \setuplabeltext [\s!da] [\v!chapter=]
 \setuplabeltext [\s!sv] [\v!chapter=]
 \setuplabeltext [\s!af] [\v!chapter=] % Hoofstuk
-\setuplabeltext [\s!no] [\v!chapter=]
+\setuplabeltext [\s!nb] [\v!chapter=]
+\setuplabeltext [\s!nn] [\v!chapter=]
 
 \setuplabeltext [\s!en] [\v!section=]
 \setuplabeltext [\s!nl] [\v!section=]
@@ -330,7 +370,8 @@
 \setuplabeltext [\s!da] [\v!section=]
 \setuplabeltext [\s!sv] [\v!section=]
 \setuplabeltext [\s!af] [\v!section=] % Paragraaf
-\setuplabeltext [\s!no] [\v!section=]
+\setuplabeltext [\s!nb] [\v!section=]
+\setuplabeltext [\s!nn] [\v!section=]
 
 \setuplabeltext [\s!en] [\v!subsection=]
 \setuplabeltext [\s!nl] [\v!subsection=]
@@ -338,7 +379,8 @@
 \setuplabeltext [\s!da] [\v!subsection=]
 \setuplabeltext [\s!sv] [\v!subsection=]
 \setuplabeltext [\s!af] [\v!subsection=]
-\setuplabeltext [\s!no] [\v!subsection=]
+\setuplabeltext [\s!nb] [\v!subsection=]
+\setuplabeltext [\s!nn] [\v!subsection=]
 
 \setuplabeltext [\s!en] [\v!subsubsection=]
 \setuplabeltext [\s!nl] [\v!subsubsection=]
@@ -346,7 +388,8 @@
 \setuplabeltext [\s!da] [\v!subsubsection=]
 \setuplabeltext [\s!sv] [\v!subsubsection=]
 \setuplabeltext [\s!af] [\v!subsubsection=]
-\setuplabeltext [\s!no] [\v!subsubsection=]
+\setuplabeltext [\s!nb] [\v!subsubsection=]
+\setuplabeltext [\s!nn] [\v!subsubsection=]
 
 \setuplabeltext [\s!en] [\v!subsubsubsection=]
 \setuplabeltext [\s!nl] [\v!subsubsubsection=]
@@ -354,7 +397,8 @@
 \setuplabeltext [\s!da] [\v!subsubsubsection=]
 \setuplabeltext [\s!sv] [\v!subsubsubsection=]
 \setuplabeltext [\s!af] [\v!subsubsubsection=]
-\setuplabeltext [\s!no] [\v!subsubsubsection=]
+\setuplabeltext [\s!nb] [\v!subsubsubsection=]
+\setuplabeltext [\s!nn] [\v!subsubsubsection=]
 
 \setuplabeltext [\s!en] [\v!appendix=] % Appendix
 \setuplabeltext [\s!nl] [\v!appendix=]
@@ -362,7 +406,8 @@
 \setuplabeltext [\s!da] [\v!appendix=] % Bilag
 \setuplabeltext [\s!sv] [\v!appendix=]
 \setuplabeltext [\s!af] [\v!appendix=] % Bylae
-\setuplabeltext [\s!no] [\v!appendix=]
+\setuplabeltext [\s!nb] [\v!appendix=] % Tillegg
+\setuplabeltext [\s!nn] [\v!appendix=] % Tillegg
 
 \setuplabeltext [\s!en] [\v!part=Part ]
 \setuplabeltext [\s!nl] [\v!part=Deel ]
@@ -370,7 +415,8 @@
 \setuplabeltext [\s!da] [\v!part=Del ]
 \setuplabeltext [\s!sv] [\v!part=Del ]
 \setuplabeltext [\s!af] [\v!part=Deel ]
-\setuplabeltext [\s!no] [\v!part=Del ]
+\setuplabeltext [\s!nb] [\v!part=Del]
+\setuplabeltext [\s!nn] [\v!part=Del]
 
 \setuplabeltext [\s!en] [\v!line=line ]
 \setuplabeltext [\s!nl] [\v!line=regel ]
@@ -378,7 +424,8 @@
 \setuplabeltext [\s!da] [\v!line=linie ] % or linje
 \setuplabeltext [\s!sv] [\v!line=rad ]
 \setuplabeltext [\s!af] [\v!line=re\ediaeresis l ]
-\setuplabeltext [\s!no] [\v!line=linje ]
+\setuplabeltext [\s!nb] [\v!line=linje ]
+\setuplabeltext [\s!nn] [\v!line=linje ]
 
 \setuplabeltext [\s!en] [\v!lines=lines ]
 \setuplabeltext [\s!nl] [\v!lines=regels ]
@@ -386,7 +433,8 @@
 \setuplabeltext [\s!da] [\v!lines=linier ] % or linjer
 \setuplabeltext [\s!sv] [\v!lines=rader ]
 \setuplabeltext [\s!af] [\v!lines=re\ediaeresis ls ]
-\setuplabeltext [\s!no] [\v!lines=linjer ]
+\setuplabeltext [\s!nb] [\v!lines=linjer ]
+\setuplabeltext [\s!nn] [\v!lines=linjer ]
 
 \setuplabeltext [\s!en]   [\v!january=January]
 \setuplabeltext [\s!en]  [\v!february=February]
@@ -466,18 +514,31 @@
 \setuplabeltext [\s!af]  [\v!november=november]
 \setuplabeltext [\s!af]  [\v!december=desember]
 
-\setuplabeltext [\s!no]   [\v!january=januar]
-\setuplabeltext [\s!no]  [\v!february=februar]
-\setuplabeltext [\s!no]     [\v!march=mars]
-\setuplabeltext [\s!no]     [\v!april=april]
-\setuplabeltext [\s!no]       [\v!may=mai]
-\setuplabeltext [\s!no]      [\v!june=juni]
-\setuplabeltext [\s!no]      [\v!july=juli]
-\setuplabeltext [\s!no]    [\v!august=august]
-\setuplabeltext [\s!no] [\v!september=september]
-\setuplabeltext [\s!no]   [\v!october=oktober]
-\setuplabeltext [\s!no]  [\v!november=november]
-\setuplabeltext [\s!no]  [\v!december=desember]
+\setuplabeltext [\s!nb]   [\v!january=januar]
+\setuplabeltext [\s!nb]  [\v!february=februar]
+\setuplabeltext [\s!nb]     [\v!march=mars]
+\setuplabeltext [\s!nb]     [\v!april=april]
+\setuplabeltext [\s!nb]       [\v!may=mai]
+\setuplabeltext [\s!nb]      [\v!june=juni]
+\setuplabeltext [\s!nb]      [\v!july=juli]
+\setuplabeltext [\s!nb]    [\v!august=august]
+\setuplabeltext [\s!nb] [\v!september=september]
+\setuplabeltext [\s!nb]   [\v!october=oktober]
+\setuplabeltext [\s!nb]  [\v!november=november]
+\setuplabeltext [\s!nb]  [\v!december=desember]
+
+\setuplabeltext [\s!nn]   [\v!january=januar]
+\setuplabeltext [\s!nn]  [\v!february=februar]
+\setuplabeltext [\s!nn]     [\v!march=mars]
+\setuplabeltext [\s!nn]     [\v!april=april]
+\setuplabeltext [\s!nn]       [\v!may=mai]
+\setuplabeltext [\s!nn]      [\v!june=juni]
+\setuplabeltext [\s!nn]      [\v!july=juli]
+\setuplabeltext [\s!nn]    [\v!august=august]
+\setuplabeltext [\s!nn] [\v!september=september]
+\setuplabeltext [\s!nn]   [\v!october=oktober]
+\setuplabeltext [\s!nn]  [\v!november=november]
+\setuplabeltext [\s!nn]  [\v!december=desember]
 
 \setuplabeltext [\s!en]    [\v!sunday=Sunday]
 \setuplabeltext [\s!en]    [\v!monday=Monday]
@@ -527,51 +588,65 @@
 \setuplabeltext [\s!af]    [\v!friday=vrydag]
 \setuplabeltext [\s!af]  [\v!saturday=saterdag]
 
-\setuplabeltext [\s!no]    [\v!sunday=s\ostroke ndag]
-\setuplabeltext [\s!no]    [\v!monday=mandag]
-\setuplabeltext [\s!no]   [\v!tuesday=tirsdag]
-\setuplabeltext [\s!no] [\v!wednesday=onsdag]
-\setuplabeltext [\s!no]  [\v!thursday=torsdag]
-\setuplabeltext [\s!no]    [\v!friday=fredag]
-\setuplabeltext [\s!no]  [\v!saturday=l\ostroke rdag]
+\setuplabeltext [\s!nb]    [\v!sunday=s\ostroke ndag]
+\setuplabeltext [\s!nb]    [\v!monday=mandag]
+\setuplabeltext [\s!nb]   [\v!tuesday=tirsdag]
+\setuplabeltext [\s!nb] [\v!wednesday=onsdag]
+\setuplabeltext [\s!nb]  [\v!thursday=torsdag]
+\setuplabeltext [\s!nb]    [\v!friday=fredag]
+\setuplabeltext [\s!nb]  [\v!saturday=l\ostroke rdag]
+
+\setuplabeltext [\s!nn]    [\v!sunday=sundag]
+\setuplabeltext [\s!nn]    [\v!monday=m\aring ndag]
+\setuplabeltext [\s!nn]   [\v!tuesday=tysdag]
+\setuplabeltext [\s!nn] [\v!wednesday=onsdag]
+\setuplabeltext [\s!nn]  [\v!thursday=torsdag]
+\setuplabeltext [\s!nn]    [\v!friday=fredag]
+\setuplabeltext [\s!nn]  [\v!saturday=laurdag]
 
 %D Rather new ...
 
-\setuplabeltext [\s!nl]    [\v!page=pagina ]
-\setuplabeltext [\s!nl]  [\v!atpage=op pagina ]
+\setuplabeltext [\s!nl]      [\v!page=pagina ]
+\setuplabeltext [\s!nl]    [\v!atpage=op pagina ]
 \setuplabeltext [\s!nl] [\v!hencefore=hierboven]
 \setuplabeltext [\s!nl] [\v!hereafter=hieronder]
 \setuplabeltext [\s!nl]       [\v!see=zie ]
 
-\setuplabeltext [\s!en]    [\v!page=page ]
-\setuplabeltext [\s!en]  [\v!atpage=at page ]
+\setuplabeltext [\s!en]      [\v!page=page ]
+\setuplabeltext [\s!en]    [\v!atpage=at page ]
 \setuplabeltext [\s!en] [\v!hencefore=as we show above]
 \setuplabeltext [\s!en] [\v!hereafter=as we show below]
 \setuplabeltext [\s!en]       [\v!see=see ]
 
-\setuplabeltext [\s!de]    [\v!page=Seite ]
-\setuplabeltext [\s!de]  [\v!atpage=auf Seite ]
+\setuplabeltext [\s!de]      [\v!page=Seite ]
+\setuplabeltext [\s!de]    [\v!atpage=auf Seite ]
 \setuplabeltext [\s!de] [\v!hencefore=siehe oben]
 \setuplabeltext [\s!de] [\v!hereafter=siehe unten]
 \setuplabeltext [\s!de]       [\v!see=siehe ]
 
-\setuplabeltext [\s!da]    [\v!page=Side ]
-\setuplabeltext [\s!da]  [\v!atpage=p\aring\ side ]
+\setuplabeltext [\s!da]      [\v!page=Side ]
+\setuplabeltext [\s!da]    [\v!atpage=p\aring\ side ]
 \setuplabeltext [\s!da] [\v!hencefore=se foroven]
 \setuplabeltext [\s!da] [\v!hereafter=se forneden]
 \setuplabeltext [\s!da]       [\v!see=se ]
 
-\setuplabeltext [\s!sv]    [\v!page=Sida ]
-\setuplabeltext [\s!sv]  [\v!atpage=p\aring\ sida ]
+\setuplabeltext [\s!sv]      [\v!page=Sida ]
+\setuplabeltext [\s!sv]    [\v!atpage=p\aring\ sida ]
 \setuplabeltext [\s!sv] [\v!hencefore=se ovan]
 \setuplabeltext [\s!sv] [\v!hereafter=se nedan]
 \setuplabeltext [\s!sv]       [\v!see=se ]
 
-\setuplabeltext [\s!no]    [\v!page=Side ]
-\setuplabeltext [\s!no]  [\v!atpage=p\aring\ side ]
-\setuplabeltext [\s!no] [\v!hencefore=se foroven]
-\setuplabeltext [\s!no] [\v!hereafter=se forneden]
-\setuplabeltext [\s!no]       [\v!see=se ]
+\setuplabeltext [\s!nb]      [\v!page=side ]
+\setuplabeltext [\s!nb]    [\v!atpage=p\aring\ side ]
+\setuplabeltext [\s!nb] [\v!hencefore=som vist over]
+\setuplabeltext [\s!nb] [\v!hereafter=som vist under]
+\setuplabeltext [\s!nb]       [\v!see=se ]
+
+\setuplabeltext [\s!nn]      [\v!page=side ]
+\setuplabeltext [\s!nn]    [\v!atpage=p\aring\ side ]
+\setuplabeltext [\s!nn] [\v!hencefore=som vist over]
+\setuplabeltext [\s!nn] [\v!hereafter=som vist under]
+\setuplabeltext [\s!nn]       [\v!see=sj\aring\ ]
 
 %D ... and to be completed!
 
@@ -609,7 +684,8 @@
 %D \ShowAllLanguageValues [\s!da] [danish]    {Danish}     {pastry}
 %D \ShowAllLanguageValues [\s!sv] [swedish]   {Swedish}    {design}
 %D \ShowAllLanguageValues [\s!af] [afrikaans] {Afrikaaner} {boer}    % afrikaanse gasvryheid
-%D \ShowAllLanguageValues [\s!no] [norwegian] {Norwegian}  {wood}
+%D \ShowAllLanguageValues [\s!nb] [bokmal]    {Norwegian}  {wood}
+%D \ShowAllLanguageValues [\s!nn] [nynorsk]   {Norwegian}  {fish}
 
 %D Extra month names:
 
@@ -625,5 +701,31 @@
 \setuplabeltext [\s!en] [\v!october  :\s!mnem=oct]
 \setuplabeltext [\s!en] [\v!november :\s!mnem=nov]
 \setuplabeltext [\s!en] [\v!december :\s!mnem=dec]
+
+\setuplabeltext [\s!nb] [\v!january  :\s!mnem=jan.]
+\setuplabeltext [\s!nb] [\v!february :\s!mnem=feb.]
+\setuplabeltext [\s!nb] [\v!march    :\s!mnem=mars]
+\setuplabeltext [\s!nb] [\v!april    :\s!mnem=april]
+\setuplabeltext [\s!nb] [\v!may      :\s!mnem=mai]
+\setuplabeltext [\s!nb] [\v!june     :\s!mnem=juni]
+\setuplabeltext [\s!nb] [\v!july     :\s!mnem=juli]
+\setuplabeltext [\s!nb] [\v!august   :\s!mnem=aug.]
+\setuplabeltext [\s!nb] [\v!september:\s!mnem=sep.]
+\setuplabeltext [\s!nb] [\v!october  :\s!mnem=okt.]
+\setuplabeltext [\s!nb] [\v!november :\s!mnem=nov.]
+\setuplabeltext [\s!nb] [\v!december :\s!mnem=des.]
+
+\setuplabeltext [\s!nn] [\v!january  :\s!mnem=jan.]
+\setuplabeltext [\s!nn] [\v!february :\s!mnem=feb.]
+\setuplabeltext [\s!nn] [\v!march    :\s!mnem=mars]
+\setuplabeltext [\s!nn] [\v!april    :\s!mnem=april]
+\setuplabeltext [\s!nn] [\v!may      :\s!mnem=mai]
+\setuplabeltext [\s!nn] [\v!june     :\s!mnem=juni]
+\setuplabeltext [\s!nn] [\v!july     :\s!mnem=juli]
+\setuplabeltext [\s!nn] [\v!august   :\s!mnem=aug.]
+\setuplabeltext [\s!nn] [\v!september:\s!mnem=sep.]
+\setuplabeltext [\s!nn] [\v!october  :\s!mnem=okt.]
+\setuplabeltext [\s!nn] [\v!november :\s!mnem=nov.]
+\setuplabeltext [\s!nn] [\v!december :\s!mnem=des.]
 
 \protect \endinput

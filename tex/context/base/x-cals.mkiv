@@ -17,7 +17,19 @@
 do
 
     lxml.cals = { }
-    lxml.cals.ignore_widths = false
+    lxml.cals.ignore_widths  = false
+
+    -- the following flags only apply to columns that have a specified width
+    --
+    -- proportional : shrink or stretch proportionally to the width
+    -- equal        : shrink or stretch equaly distributed
+    -- n < 1        : shrink or stretch proportionally to the width but multiplied by n
+    --
+    -- more clever things, e.g. the same but applied to unspecified widths
+    -- has to happen at the core-ntb level (todo)
+
+    lxml.cals.shrink_widths  = false
+    lxml.cals.stretch_widths = false
 
     local format    = string.format
     local texsprint = tex.sprint
@@ -39,7 +51,11 @@ do
     }
 
     local function getspecs(root, pattern, names, widths)
+        -- here, but actually we need this in core-ntb.tex
+        -- but ideally we need an mkiv enhanced core-ntb.tex
         local ignore_widths = lxml.cals.ignore_widths
+        local shrink_widths = lxml.cals.shrink_widths
+        local stretch_widths = lxml.cals.stretch_widths
         for r, d, k in xml.elements(root,pattern) do
             local dk = d[k]
             local at = dk.at
@@ -55,6 +71,43 @@ do
                 if name then
                     names[name] = tonumber(column)
                 end
+            end
+        end
+        local function adapt(b,w,delta,sum,n,what)
+            if b == "equal" then
+                delta = delta/n
+                for k, v in pairs(w) do
+                    widths[k] = number.todimen(v - delta)
+                end
+            elseif b == "proportional" then
+                delta = delta/sum
+                for k, v in pairs(w) do
+                    widths[k] = number.todimen(v - v*delta)
+                end
+            elseif type(b) == "number" and b < 1 then
+                delta = b*delta/sum
+                for k, v in pairs(w) do
+                    widths[k] = number.todimen(v - v*delta)
+                end
+            end
+        end
+        if ignore_width then
+            -- forget about it
+        elseif shrink_widths or stretch_widths then
+            local sum, n, w = 0, 0, { }
+            for _, v in pairs(widths) do
+                n = n + 1
+                v = (type(v) == "string" and v:todimen()) or v
+                if v then
+                    w[n] = v
+                    sum = sum + v
+                end
+            end
+            local delta = sum - tex.hsize:todimen()
+            if shrink_widths and delta > 0 then
+                adapt(shrink_widths,w,delta,sum,n,"shrink")
+            elseif stretch_widths and delta < 0 then
+                adapt(stretch_widths,w,delta,sum,n,"stretch")
             end
         end
     end

@@ -183,7 +183,7 @@
 </description>
 
 <description language='is'>
-    <sourcefile>dehyphn.tex</sourcefile>
+    <sourcefile>ishyph.tex</sourcefile>
     <title>Plain TeX hyphenation patterns for the Icelandic language</title>
     <remarks>[NOT TO BE CHANGED IN ANY WAY!]</remarks>
     <copyright>

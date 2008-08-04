@@ -1,18 +1,21 @@
--- filename : luat-inp.lua
--- comment  : companion to luat-lib.tex
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
-
--- This lib is multi-purpose and can be loaded again later on so that
--- additional functionality becomes available. We will split this
--- module in components when we're done with prototyping.
+if not modules then modules = { } end modules ['luat-inp'] = {
+    version   = 1.001,
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    comment   = "companion to luat-lib.tex",
+}
 
 -- TODO: os.getenv -> os.env[]
 -- TODO: instances.[hashes,cnffiles,configurations,522] -> ipairs (alles check, sneller)
 -- TODO: check escaping in find etc, too much, too slow
 
--- This is the first code I wrote for LuaTeX, so it needs some cleanup.
+-- This lib is multi-purpose and can be loaded again later on so that
+-- additional functionality becomes available. We will split this
+-- module in components once we're done with prototyping. This is the
+-- first code I wrote for LuaTeX, so it needs some cleanup. Before changing
+-- something in this module one can best check with Taco or Hans first; there
+-- is some nasty trickery going on that relates to traditional kpse support.
 
 -- To be considered: hash key lowercase, first entry in table filename
 -- (any case), rest paths (so no need for optimization). Or maybe a
@@ -21,12 +24,6 @@
 -- only when we run into problems with names ... well ... Iwona-Regular.
 
 -- Beware, loading and saving is overloaded in luat-tmp!
-
-if not versions    then versions    = { } end versions['luat-inp'] = 1.001
-if not environment then environment = { } end
-if not file        then file        = { } end
-
-if environment.aleph_mode == nil then environment.aleph_mode = true end -- temp hack
 
 if not input            then input            = { } end
 if not input.suffixes   then input.suffixes   = { } end
@@ -53,8 +50,16 @@ input.debug        = false
 input.cnfname      = 'texmf.cnf'
 input.luaname      = 'texmfcnf.lua'
 input.lsrname      = 'ls-R'
-input.luasuffix    = '.tma'
-input.lucsuffix    = '.tmc'
+input.homedir      = os.env[os.platform == "windows" and 'USERPROFILE'] or os.env['HOME'] or '~'
+
+--~ input.luasuffix    = 'tma'
+--~ input.lucsuffix    = 'tmc'
+
+-- for the moment we have .local but this will disappear
+input.cnfdefault   = '{$SELFAUTOLOC,$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}'
+
+-- chances are low that the cnf file is in the bin path
+input.cnfdefault   = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}'
 
 -- we use a cleaned up list / format=any is a wildcard, as is *name
 
@@ -90,7 +95,8 @@ input.suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 -- FONTFEATURES  = .;$TEXMF/fonts/fea//
 -- FONTCIDMAPS   = .;$TEXMF/fonts/cid//
 
-function input.checkconfigdata(instance) -- not yet ok, no time for debugging now
+function input.checkconfigdata() -- not yet ok, no time for debugging now
+    local instance = input.instance
     local function fix(varname,default)
         local proname = varname .. "." .. instance.progname or "crap"
         local p = instance.environment[proname]
@@ -99,7 +105,15 @@ function input.checkconfigdata(instance) -- not yet ok, no time for debugging no
             instance.variables[varname] = default -- or environment?
         end
     end
-    fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS")
+    local name = os.name
+    if name == "windows" then
+        fix("OSFONTDIR", "c:/windows/fonts//")
+    elseif name == "macosx" then
+        fix("OSFONTDIR", "$HOME/Library/Fonts//;/Library/Fonts//;/System/Library/Fonts//")
+    else
+        -- bad luck
+    end
+    fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS") -- no progname, hm
     fix("FONTFEATURES", ".;$TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
     fix("FONTCIDMAPS" , ".;$TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
 end
@@ -126,14 +140,20 @@ input.formats     ['sfd']                      = 'SFDFONTS'
 input.suffixes    ['sfd']                      = { 'sfd' }
 input.alternatives['subfont definition files'] = 'sfd'
 
-function input.reset()
+-- In practice we will work within one tds tree, but i want to keep
+-- the option open to build tools that look at multiple trees, which is
+-- why we keep the tree specific data in a table. We used to pass the
+-- instance but for practical pusposes we now avoid this and use a
+-- instance variable.
+
+function input.newinstance()
 
     local instance = { }
 
     instance.rootpath        = ''
     instance.treepath        = ''
-    instance.progname        = environment.progname or 'context'
-    instance.engine          = environment.engine   or 'luatex'
+    instance.progname        = 'context'
+    instance.engine          = 'luatex'
     instance.format          = ''
     instance.environment     = { }
     instance.variables       = { }
@@ -157,6 +177,7 @@ function input.reset()
     instance.cachepath       = nil
     instance.loaderror       = false
     instance.smallcache      = false
+    instance.sortdata        = false
     instance.savelists       = true
     instance.cleanuppaths    = true
     instance.allresults      = false
@@ -172,23 +193,13 @@ function input.reset()
     instance.fakepaths       = { }
     instance.lsrmode         = false
 
-    if os.env then
-        -- store once, freeze and faster
-        for k,v in pairs(os.env) do
-            instance.environment[k] = input.bare_variable(v)
-        end
-    else
-        -- we will access os.env frequently
-        for k,v in pairs({'HOME','TEXMF','TEXMFCNF'}) do
-            local e = os.getenv(v)
-            if e then
-            --  input.report("setting",v,"to",input.bare_variable(e))
-                instance.environment[v] = input.bare_variable(e)
-            end
-        end
+    -- store once, freeze and faster (once reset we can best use instance.environment)
+
+    for k,v in pairs(os.env) do
+        instance.environment[k] = input.bare_variable(v)
     end
 
-    -- cross referencing
+    -- cross referencing, delayed because we can add suffixes
 
     for k, v in pairs(input.suffixes) do
         for _, vv in pairs(v) do
@@ -202,9 +213,16 @@ function input.reset()
 
 end
 
-function input.reset_hashes(instance)
-    instance.lists = { }
-    instance.found = { }
+input.instance = input.instance or nil
+
+function input.reset()
+    input.instance = input.newinstance()
+    return input.instance
+end
+
+function input.reset_hashes()
+    input.instance.lists = { }
+    input.instance.found = { }
 end
 
 function input.bare_variable(str) -- assumes str is a string
@@ -212,58 +230,25 @@ function input.bare_variable(str) -- assumes str is a string
     return (str:gsub("\s*([\"\']?)(.+)%1\s*", "%2"))
 end
 
-if texio then
-    input.log = texio.write_nl
-else
-    input.log = print
-end
-
-function input.simple_logger(kind, name)
-    if name and name ~= "" then
-        if input.banner then
-            input.log(input.banner..kind..": "..name)
-        else
-            input.log("<<"..kind..": "..name..">>")
-        end
-    else
-        if input.banner then
-            input.log(input.banner..kind..": no name")
-        else
-            input.log("<<"..kind..": no name>>")
-        end
-    end
-end
-
-function input.dummy_logger()
-end
-
 function input.settrace(n)
     input.trace = tonumber(n or 0)
     if input.trace > 0 then
-        input.logger = input.simple_logger
         input.verbose = true
-    else
-        input.logger = function() end
     end
 end
 
-function input.report(...) -- inefficient
+input.log  = (texio and texio.write_nl) or print
+
+function input.report(...)
     if input.verbose then
-        if input.banner then
-            input.log(input.banner .. table.concat({...},' '))
-        elseif input.logmode() == 'xml' then
-            input.log("<t>"..table.concat({...},' ').."</t>")
-        else
-            input.log("<<"..table.concat({...},' ')..">>")
-        end
+        input.log("<<"..format(...)..">>")
     end
 end
 
-function input.reportlines(str)
-    if type(str) == "string" then
-        str = str:split("\n")
+function input.report(...)
+    if input.trace > 0 then -- extra test
+        input.log("<<"..format(...)..">>")
     end
-    for _,v in pairs(str) do input.report(v) end
 end
 
 input.settrace(tonumber(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRACE") or input.trace or 0))
@@ -292,7 +277,7 @@ do
                 instance.stoptime = stoptime
                 instance.loadtime = instance.loadtime + loadtime
                 if report then
-                    input.report('load time', format("%0.3f",loadtime))
+                    input.report("load time %0.3f",loadtime)
                 end
                 return loadtime
             end
@@ -308,18 +293,18 @@ end
 
 function input.report_loadtime(instance)
     if instance then
-        input.report('total load time', input.elapsedtime(instance))
+        input.report('total load time %s', input.elapsedtime(instance))
     end
 end
 
 input.loadtime = input.elapsedtime
 
-function input.env(instance,key)
-    return instance.environment[key] or input.osenv(instance,key)
+function input.env(key)
+    return input.instance.environment[key] or input.osenv(key)
 end
 
-function input.osenv(instance,key)
-    local ie = instance.environment
+function input.osenv(key)
+    local ie = input.instance.environment
     local value = ie[key]
     if value == nil then
      -- local e = os.getenv(key)
@@ -337,81 +322,106 @@ end
 -- we follow a rather traditional approach:
 --
 -- (1) texmf.cnf given in TEXMFCNF
--- (2) texmf.cnf searched in TEXMF/web2c
+-- (2) texmf.cnf searched in default variable
 --
--- for the moment we don't expect a configuration file in a zip
+-- also we now follow the stupid route: if not set then just assume *one*
+-- cnf file under texmf (i.e. distribution)
 
-function input.identify_cnf(instance)
-    -- we no longer support treepath and rootpath (was handy for testing);
-    -- also we now follow the stupid route: if not set then just assume *one*
-    -- cnf file under texmf (i.e. distribution)
-    if #instance.cnffiles == 0 then
-        if input.env(instance,'TEXMFCNF') == "" then
-            local ownpath = environment.ownpath() or "."
-            if ownpath then
-                -- beware, this is tricky on my own system because at that location I do have
-                -- the raw tree that ends up in the zip; i.e. I cannot test this kind of mess
-                local function locate(filename,list)
-                    local ownroot = input.normalize_name(file.join(ownpath,"../.."))
-                    if not lfs.isdir(file.join(ownroot,"texmf")) then
-                        ownroot = input.normalize_name(file.join(ownpath,".."))
-                        if not lfs.isdir(file.join(ownroot,"texmf")) then
-                            input.verbose = true
-                            input.report("error", "unable to identify cnf file")
-                            return
-                        end
-                    end
-                    local texmfcnf = file.join(ownroot,"texmf-local/web2c",filename) -- for minimals and myself
-                    if not lfs.isfile(texmfcnf) then
-                        texmfcnf = file.join(ownroot,"texmf/web2c",filename)
-                        if not lfs.isfile(texmfcnf) then
-                            input.verbose = true
-                            input.report("error", "unable to locate",filename)
-                            return
-                        end
-                    end
-                    table.insert(list,texmfcnf)
-                    local ie = instance.environment
-                    if not ie['SELFAUTOPARENT'] then ie['SELFAUTOPARENT'] = ownroot end
-                    if not ie['TEXMFCNF']       then ie['TEXMFCNF']       = file.dirname(texmfcnf) end
-                end
-                locate(input.luaname,instance.luafiles)
-                locate(input.cnfname,instance.cnffiles)
-                if #instance.luafiles == 0 and instance.cnffiles == 0 then
-                    input.verbose = true
-                    input.report("error", "unable to locate",filename)
-                    os.exit()
-                end
-                -- here we also assume then TEXMF is set in the distribution, if this trickery is
-                -- used in the minimals, then users who don't use setuptex are on their own with
-                -- regards to extra trees
-            else
-                input.verbose = true
-                input.report("error", "unable to identify own path")
-                os.exit()
-            end
+input.ownpath     = input.ownpath or nil
+input.ownbin      = input.ownbin  or arg[-2] or arg[-1] or arg[0] or "luatex"
+input.autoselfdir = true -- false may be handy for debugging
+
+function input.getownpath()
+    if not input.ownpath then
+        if input.autoselfdir and os.selfdir then
+            input.ownpath = os.selfdir
         else
-            local t = input.split_path(input.env(instance,'TEXMFCNF'))
-            t = input.aux.expanded_path(instance,t)
-            input.aux.expand_vars(instance,t)
-            local function locate(filename,list)
-                for _,v in ipairs(t) do
-                    local texmfcnf = input.normalize_name(file.join(v,filename))
-                    if lfs.isfile(texmfcnf) then
-                        table.insert(list,texmfcnf)
+            local binary = input.ownbin
+            if os.platform == "windows" then
+                binary = file.replacesuffix(binary,"exe")
+            end
+            for p in string.gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
+                local b = file.join(p,binary)
+                if lfs.isfile(b) then
+                    -- we assume that after changing to the path the currentdir function
+                    -- resolves to the real location and use this side effect here; this
+                    -- trick is needed because on the mac installations use symlinks in the
+                    -- path instead of real locations
+                    local olddir = lfs.currentdir()
+                    if lfs.chdir(p) then
+                        local pp = lfs.currentdir()
+                        if input.verbose and p ~= pp then
+                            input.report("following symlink %s to %s",p,pp)
+                        end
+                        input.ownpath = pp
+                        lfs.chdir(olddir)
+                    else
+                        if input.verbose then
+                            input.report("unable to check path %s",p)
+                        end
+                        input.ownpath =  p
                     end
+                    break
                 end
             end
-            locate(input.luaname,instance.luafiles)
-            locate(input.cnfname,instance.cnffiles)
         end
+        if not input.ownpath then input.ownpath = '.' end
+    end
+    return input.ownpath
+end
+
+function input.identify_own()
+    local instance = input.instance
+    local ownpath = input.getownpath() or lfs.currentdir()
+    local ie = instance.environment
+    if ownpath then
+        if input.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = file.collapse_path(ownpath) end
+        if input.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = file.collapse_path(ownpath .. "/..") end
+        if input.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = file.collapse_path(ownpath .. "/../..") end
+    else
+        input.verbose = true
+        input.report("error: unable to locate ownpath")
+        os.exit()
+    end
+    if input.env('TEXMFCNF') == "" then os.env['TEXMFCNF'] = input.cnfdefault end
+    if input.env('TEXOS')    == "" then os.env['TEXOS']    = input.env('SELFAUTODIR') end
+    if input.env('TEXROOT')  == "" then os.env['TEXROOT']  = input.env('SELFAUTOPARENT') end
+    if input.verbose then
+        for _,v in ipairs({"SELFAUTOLOC","SELFAUTODIR","SELFAUTOPARENT","TEXMFCNF"}) do
+            input.report("variable %s set to %s",v,input.env(v) or "unknown")
+        end
+    end
+    function input.identify_own() end
+end
+
+function input.identify_cnf()
+    local instance = input.instance
+    if #instance.cnffiles == 0 then
+        -- fallback
+        input.identify_own()
+        -- the real search
+        input.expand_variables()
+        local t = input.split_path(input.env('TEXMFCNF'))
+        t = input.aux.expanded_path(t)
+        input.aux.expand_vars(t) -- redundant
+        local function locate(filename,list)
+            for _,v in ipairs(t) do
+                local texmfcnf = input.normalize_name(file.join(v,filename))
+                if lfs.isfile(texmfcnf) then
+                    table.insert(list,texmfcnf)
+                end
+            end
+        end
+        locate(input.luaname,instance.luafiles)
+        locate(input.cnfname,instance.cnffiles)
     end
 end
 
-function input.load_cnf(instance)
+function input.load_cnf()
+    local instance = input.instance
     local function loadoldconfigdata()
         for _, fname in ipairs(instance.cnffiles) do
-            input.aux.load_cnf(instance,fname)
+            input.aux.load_cnf(fname)
         end
     end
     -- instance.cnffiles contain complete names now !
@@ -426,27 +436,27 @@ function input.load_cnf(instance)
             instance.rootpath = file.dirname(instance.rootpath)
         end
         instance.rootpath = input.normalize_name(instance.rootpath)
-        instance.environment['SELFAUTOPARENT'] = instance.rootpath -- just to be sure
         if instance.lsrmode then
             loadoldconfigdata()
         elseif instance.diskcache and not instance.renewcache then
-            input.loadoldconfig(instance,instance.cnffiles)
+            input.loadoldconfig(instance.cnffiles)
             if instance.loaderror then
                 loadoldconfigdata()
-                input.saveoldconfig(instance)
+                input.saveoldconfig()
             end
         else
             loadoldconfigdata()
             if instance.renewcache then
-                input.saveoldconfig(instance)
+                input.saveoldconfig()
             end
         end
-        input.aux.collapse_cnf_data(instance)
+        input.aux.collapse_cnf_data()
     end
-    input.checkconfigdata(instance)
+    input.checkconfigdata()
 end
 
-function input.load_lua(instance)
+function input.load_lua()
+    local instance = input.instance
     if #instance.luafiles == 0 then
         -- yet harmless
     else
@@ -458,14 +468,14 @@ function input.load_lua(instance)
             instance.rootpath = file.dirname(instance.rootpath)
         end
         instance.rootpath = input.normalize_name(instance.rootpath)
-        instance.environment['SELFAUTOPARENT'] = instance.rootpath -- just to be sure
-        input.loadnewconfig(instance)
-        input.aux.collapse_cnf_data(instance)
+        input.loadnewconfig()
+        input.aux.collapse_cnf_data()
     end
-    input.checkconfigdata(instance)
+    input.checkconfigdata()
 end
 
-function input.aux.collapse_cnf_data(instance) -- potential optmization: pass start index (setup and configuration are shared)
+function input.aux.collapse_cnf_data() -- potential optimization: pass start index (setup and configuration are shared)
+    local instance = input.instance
     for _,c in ipairs(instance.order) do
         for k,v in pairs(c) do
             if not instance.variables[k] then
@@ -480,21 +490,22 @@ function input.aux.collapse_cnf_data(instance) -- potential optmization: pass st
     end
 end
 
-function input.aux.load_cnf(instance,fname)
+function input.aux.load_cnf(fname)
+    local instance = input.instance
     fname = input.clean_path(fname)
-    local lname = fname:gsub("%.%a+$",input.luasuffix)
+    local lname = file.replacesuffix(fname,'lua')
     local f = io.open(lname)
     if f then -- this will go
         f:close()
         local dname = file.dirname(fname)
         if not instance.configuration[dname] then
-            input.aux.load_configuration(instance,dname,lname)
+            input.aux.load_configuration(dname,lname)
             instance.order[#instance.order+1] = instance.configuration[dname]
         end
     else
         f = io.open(fname)
         if f then
-            input.report("loading", fname)
+            input.report("loading %s", fname)
             local line, data, n, k, v
             local dname = file.dirname(fname)
             if not instance.configuration[dname] then
@@ -526,227 +537,226 @@ function input.aux.load_cnf(instance,fname)
             end
             f:close()
         else
-            input.report("skipping", fname)
+            input.report("skipping %s", fname)
         end
     end
 end
 
 -- database loading
 
-function input.load_hash(instance)
-    input.locatelists(instance)
+function input.load_hash()
+    local instance = input.instance
+    input.locatelists()
     if instance.lsrmode then
-        input.loadlists(instance)
+        input.loadlists()
     elseif instance.diskcache and not instance.renewcache then
-        input.loadfiles(instance)
+        input.loadfiles()
         if instance.loaderror then
-            input.loadlists(instance)
-            input.savefiles(instance)
+            input.loadlists()
+            input.savefiles()
         end
     else
-        input.loadlists(instance)
+        input.loadlists()
         if instance.renewcache then
-            input.savefiles(instance)
+            input.savefiles()
         end
     end
 end
 
-function input.aux.append_hash(instance,type,tag,name)
-    input.logger("= hash append",tag)
-    table.insert(instance.hashes, { ['type']=type, ['tag']=tag, ['name']=name } )
+function input.aux.append_hash(type,tag,name)
+    if input.trace > 0 then
+        input.logger("= hash append: %s",tag)
+    end
+    table.insert(input.instance.hashes, { ['type']=type, ['tag']=tag, ['name']=name } )
 end
 
-function input.aux.prepend_hash(instance,type,tag,name)
-    input.logger("= hash prepend",tag)
-    table.insert(instance.hashes, 1, { ['type']=type, ['tag']=tag, ['name']=name } )
+function input.aux.prepend_hash(type,tag,name)
+    if input.trace > 0 then
+        input.logger("= hash prepend: %s",tag)
+    end
+    table.insert(input.instance.hashes, 1, { ['type']=type, ['tag']=tag, ['name']=name } )
 end
 
-function input.aux.extend_texmf_var(instance,specification) -- crap
-    if instance.environment['TEXMF'] then
-        input.report("extending environment variable TEXMF with", specification)
-        instance.environment['TEXMF'] = instance.environment['TEXMF']:gsub("^%{", function()
-            return "{" .. specification .. ","
-        end)
-    elseif instance.variables['TEXMF'] then
-        input.report("extending configuration variable TEXMF with", specification)
-        instance.variables['TEXMF'] = instance.variables['TEXMF']:gsub("^%{", function()
-            return "{" .. specification .. ","
-        end)
+function input.aux.extend_texmf_var(specification) -- crap, we could better prepend the hash
+    local instance = input.instance
+--  local t = input.expanded_path_list('TEXMF') -- full expansion
+    local t = input.split_path(input.env('TEXMF'))
+    table.insert(t,1,specification)
+    local newspec = table.join(t,";")
+    if instance.environment["TEXMF"] then
+        instance.environment["TEXMF"] = newspec
+    elseif instance.variables["TEXMF"] then
+        instance.variables["TEXMF"] = newspec
     else
-        input.report("setting configuration variable TEXMF to", specification)
-        instance.variables['TEXMF'] = "{" .. specification .. "}"
+        -- weird
     end
-    if instance.variables['TEXMF']:find("%,") and not instance.variables['TEXMF']:find("^%{") then
-        input.report("adding {} to complex TEXMF variable, best do that yourself")
-        instance.variables['TEXMF'] = "{" .. instance.variables['TEXMF'] .. "}"
-    end
-    input.expand_variables(instance)
-    input.reset_hashes(instance)
+    input.expand_variables()
+    input.reset_hashes()
 end
 
 -- locators
 
-function input.locatelists(instance)
-    for _, path in pairs(input.simplified_list(input.expansion(instance,'TEXMF'))) do
-        path = file.collapse_path(path)
-        input.report("locating list of",path)
-        input.locatedatabase(instance,input.normalize_name(path))
+function input.locatelists()
+    local instance = input.instance
+    for _, path in pairs(input.clean_path_list('TEXMF')) do
+        input.report("locating list of %s",path)
+        input.locatedatabase(input.normalize_name(path))
     end
 end
 
-function input.locatedatabase(instance,specification)
-    return input.methodhandler('locators', instance, specification)
+function input.locatedatabase(specification)
+    return input.methodhandler('locators', specification)
 end
 
-function input.locators.tex(instance,specification)
+function input.locators.tex(specification)
     if specification and specification ~= '' and lfs.isdir(specification) then
-        input.logger('! tex locator', specification..' found')
-        input.aux.append_hash(instance,'file',specification,filename)
-    else
-        input.logger('? tex locator', specification..' not found')
+        if input.trace > 0 then
+            input.logger('! tex locator found: %s',specification)
+        end
+        input.aux.append_hash('file',specification,filename)
+    elseif input.trace > 0 then
+        input.logger('? tex locator not found: %s',specification)
     end
 end
 
 -- hashers
 
-function input.hashdatabase(instance,tag,name)
-    return input.methodhandler('hashers',instance,tag,name)
+function input.hashdatabase(tag,name)
+    return input.methodhandler('hashers',tag,name)
 end
 
-function input.loadfiles(instance)
+function input.loadfiles()
+    local instance = input.instance
     instance.loaderror = false
     instance.files = { }
     if not instance.renewcache then
         for _, hash in ipairs(instance.hashes) do
-            input.hashdatabase(instance,hash.tag,hash.name)
+            input.hashdatabase(hash.tag,hash.name)
             if instance.loaderror then break end
         end
     end
 end
 
-function input.hashers.tex(instance,tag,name)
-    input.aux.load_files(instance,tag)
+function input.hashers.tex(tag,name)
+    input.aux.load_files(tag)
 end
 
 -- generators:
 
-function input.loadlists(instance)
-    for _, hash in ipairs(instance.hashes) do
-        input.generatedatabase(instance,hash.tag)
+function input.loadlists()
+    for _, hash in ipairs(input.instance.hashes) do
+        input.generatedatabase(hash.tag)
     end
 end
 
-function input.generatedatabase(instance,specification)
-    return input.methodhandler('generators', instance, specification)
+function input.generatedatabase(specification)
+    return input.methodhandler('generators', specification)
 end
 
-do
+local weird = lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
 
-    local weird = lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
-
-    function input.generators.tex(instance,specification)
-        local tag = specification
-        if not instance.lsrmode and lfs and lfs.dir then
-            input.report("scanning path",specification)
-            instance.files[tag] = { }
-            local files = instance.files[tag]
-            local n, m, r = 0, 0, 0
-            local spec = specification .. '/'
-            local attributes = lfs.attributes
-            local directory = lfs.dir
-            local small = instance.smallcache
-            local function action(path)
-                local mode, full
-                if path then
-                    full = spec .. path .. '/'
-                else
-                    full = spec
-                end
-                for name in directory(full) do
-                    if name:find("^%.") then
-                      -- skip
-                --  elseif name:find("[%~%`%!%#%$%%%^%&%*%(%)%=%{%}%[%]%:%;\"\'%|%<%>%,%?\n\r\t]") then -- too much escaped
-                    elseif weird:match(name) then
-                      -- texio.write_nl("skipping " .. name)
-                      -- skip
-                    else
-                        mode = attributes(full..name,'mode')
-                        if mode == "directory" then
-                            m = m + 1
-                            if path then
-                                action(path..'/'..name)
-                            else
-                                action(name)
-                            end
-                        elseif path and mode == 'file' then
-                            n = n + 1
-                            local f = files[name]
-                            if f then
-                                if not small then
-                                    if type(f) == 'string' then
-                                        files[name] = { f, path }
-                                    else
-                                      f[#f+1] = path
-                                    end
-                                end
-                            else
-                                files[name] = path
-                                local lower = name:lower()
-                                if name ~= lower then
-                                    files["remap:"..lower] = name
-                                    r = r + 1
-                                end
-                            end
-                        end
-                    end
-                end
+function input.generators.tex(specification)
+    local instance = input.instance
+    local tag = specification
+    if not instance.lsrmode and lfs.dir then
+        input.report("scanning path %s",specification)
+        instance.files[tag] = { }
+        local files = instance.files[tag]
+        local n, m, r = 0, 0, 0
+        local spec = specification .. '/'
+        local attributes = lfs.attributes
+        local directory = lfs.dir
+        local small = instance.smallcache
+        local function action(path)
+            local mode, full
+            if path then
+                full = spec .. path .. '/'
+            else
+                full = spec
             end
-            action()
-            input.report(format("%s files found on %s directories with %s uppercase remappings",n,m,r))
-        else
-            local fullname = file.join(specification,input.lsrname)
-            local path     = '.'
-            local f        = io.open(fullname)
-            if f then
-                instance.files[tag] = { }
-                local files = instance.files[tag]
-                local small = instance.smallcache
-                input.report("loading lsr file",fullname)
-            --  for line in f:lines() do -- much slower then the next one
-                for line in (f:read("*a")):gmatch("(.-)\n") do
-                    if line:find("^[%a%d]") then
-                        local fl = files[line]
-                        if fl then
+            for name in directory(full) do
+                if name:find("^%.") then
+                  -- skip
+            --  elseif name:find("[%~%`%!%#%$%%%^%&%*%(%)%=%{%}%[%]%:%;\"\'%|%<%>%,%?\n\r\t]") then -- too much escaped
+                elseif weird:match(name) then
+                  -- texio.write_nl("skipping " .. name)
+                  -- skip
+                else
+                    mode = attributes(full..name,'mode')
+                    if mode == 'directory' then
+                        m = m + 1
+                        if path then
+                            action(path..'/'..name)
+                        else
+                            action(name)
+                        end
+                    elseif path and mode == 'file' then
+                        n = n + 1
+                        local f = files[name]
+                        if f then
                             if not small then
-                                if type(fl) == 'string' then
-                                    files[line] = { fl, path } -- table
+                                if type(f) == 'string' then
+                                    files[name] = { f, path }
                                 else
-                                    fl[#fl+1] = path
+                                  f[#f+1] = path
                                 end
                             end
                         else
-                            files[line] = path -- string
-                            local lower = line:lower()
-                            if line ~= lower then
-                                files["remap:"..lower] = line
+                            files[name] = path
+                            local lower = name:lower()
+                            if name ~= lower then
+                                files["remap:"..lower] = name
+                                r = r + 1
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        action()
+        input.report("%s files found on %s directories with %s uppercase remappings",n,m,r)
+    else
+        local fullname = file.join(specification,input.lsrname)
+        local path     = '.'
+        local f        = io.open(fullname)
+        if f then
+            instance.files[tag] = { }
+            local files = instance.files[tag]
+            local small = instance.smallcache
+            input.report("loading lsr file %s",fullname)
+        --  for line in f:lines() do -- much slower then the next one
+            for line in (f:read("*a")):gmatch("(.-)\n") do
+                if line:find("^[%a%d]") then
+                    local fl = files[line]
+                    if fl then
+                        if not small then
+                            if type(fl) == 'string' then
+                                files[line] = { fl, path } -- table
+                            else
+                                fl[#fl+1] = path
                             end
                         end
                     else
-                        path = line:match("%.%/(.-)%:$") or path -- match could be nil due to empty line
+                        files[line] = path -- string
+                        local lower = line:lower()
+                        if line ~= lower then
+                            files["remap:"..lower] = line
+                        end
                     end
+                else
+                    path = line:match("%.%/(.-)%:$") or path -- match could be nil due to empty line
                 end
-                f:close()
             end
+            f:close()
         end
     end
-
 end
 
 -- savers, todo
 
-function input.savefiles(instance)
-    input.aux.save_data(instance, 'files', function(k,v)
-        return instance.validfile(k,v) -- path, name
+function input.savefiles()
+    input.aux.save_data('files', function(k,v)
+        return input.instance.validfile(k,v) -- path, name
     end)
 end
 
@@ -754,8 +764,8 @@ end
 -- we join them and split them after the expansion has taken place. This
 -- is more convenient.
 
-function input.splitconfig(instance)
-    for i,c in ipairs(instance) do
+function input.splitconfig()
+    for i,c in ipairs(input.instance) do
         for k,v in pairs(c) do
             if type(v) == 'string' then
                 local t = file.split_path(v)
@@ -766,8 +776,9 @@ function input.splitconfig(instance)
         end
     end
 end
-function input.joinconfig(instance)
-    for i,c in ipairs(instance.order) do
+
+function input.joinconfig()
+    for i,c in ipairs(input.instance.order) do
         for k,v in pairs(c) do
             if type(v) == 'table' then
                 c[k] = file.join_path(v)
@@ -790,8 +801,9 @@ function input.join_path(str)
     end
 end
 
-function input.splitexpansions(instance)
-    for k,v in pairs(instance.expansions) do
+function input.splitexpansions()
+    local ie = input.instance.expansions
+    for k,v in pairs(ie) do
         local t, h = { }, { }
         for _,vv in pairs(file.split_path(v)) do
             if vv ~= "" and not h[vv] then
@@ -800,19 +812,19 @@ function input.splitexpansions(instance)
             end
         end
         if #t > 1 then
-            instance.expansions[k] = t
+            ie[k] = t
         else
-            instance.expansions[k] = t[1]
+            ie[k] = t[1]
         end
     end
 end
 
 -- end of split/join code
 
-function input.saveoldconfig(instance)
-    input.splitconfig(instance)
-    input.aux.save_data(instance, 'configuration', nil)
-    input.joinconfig(instance)
+function input.saveoldconfig()
+    input.splitconfig()
+    input.aux.save_data('configuration', nil)
+    input.joinconfig()
 end
 
 input.configbanner = [[
@@ -841,7 +853,7 @@ function input.serialize(files)
         end
     end
     t[#t+1] = "return {"
-    if instance.sortdata then
+    if input.instance.sortdata then
         for _, k in pairs(sorted(files)) do
             local fk  = files[k]
             if type(fk) == 'table' then
@@ -873,11 +885,11 @@ end
 
 if not texmf then texmf = {} end -- no longer needed, at least not here
 
-function input.aux.save_data(instance, dataname, check, makename) -- untested without cache overload
-    for cachename, files in pairs(instance[dataname]) do
+function input.aux.save_data(dataname, check, makename) -- untested without cache overload
+    for cachename, files in pairs(input.instance[dataname]) do
         local name = (makename or file.join)(cachename,dataname)
-        local luaname, lucname = name .. input.luasuffix, name .. input.lucsuffix
-        input.report("preparing " .. dataname .. " for", luaname)
+        local luaname, lucname = name .. ".lua", name .. ".luc"
+        input.report("preparing %s for %s",dataname,cachename)
         for k, v in pairs(files) do
             if not check or check(v,k) then -- path, name
                 if type(v) == "table" and #v == 1 then
@@ -895,38 +907,38 @@ function input.aux.save_data(instance, dataname, check, makename) -- untested wi
             time    = os.date("%H:%M:%S"),
             content = files,
         }
-        local f = io.open(luaname,'w')
-        if f then
-            input.report("saving " .. dataname .. " in", luaname)
-            f:write(input.serialize(data))
-            f:close()
-            input.report("compiling " .. dataname .. " to", lucname)
-            if not utils.lua.compile(luaname,lucname) then
-                input.report("compiling failed for " .. dataname .. ", deleting file " .. lucname)
+        local ok = io.savedata(luaname,input.serialize(data))
+        if ok then
+            input.report("%s saved in %s",dataname,luaname)
+            if utils.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
+                input.report("%s compiled to %s",dataname,lucname)
+            else
+                input.report("compiling failed for %s, deleting file %s",dataname,lucname)
                 os.remove(lucname)
             end
         else
-            input.report("unable to save " .. dataname .. " in " .. name..input.luasuffix)
+            input.report("unable to save %s in %s (access error)",dataname,luaname)
         end
     end
 end
 
-function input.aux.load_data(instance,pathname,dataname,filename,makename) -- untested without cache overload
+function input.aux.load_data(pathname,dataname,filename,makename) -- untested without cache overload
+    local instance = input.instance
     filename = ((not filename or (filename == "")) and dataname) or filename
     filename = (makename and makename(dataname,filename)) or file.join(pathname,filename)
-    local blob = loadfile(filename .. input.lucsuffix) or loadfile(filename .. input.luasuffix)
+    local blob = loadfile(filename .. ".luc") or loadfile(filename .. ".lua")
     if blob then
         local data = blob()
         if data and data.content and data.type == dataname and data.version == input.cacheversion then
-            input.report("loading",dataname,"for",pathname,"from",filename)
+            input.report("loading %s for %s from %s",dataname,pathname,filename)
             instance[dataname][pathname] = data.content
         else
-            input.report("skipping",dataname,"for",pathname,"from",filename)
+            input.report("skipping %s for %s from %s",dataname,pathname,filename)
             instance[dataname][pathname] = { }
             instance.loaderror = true
         end
     else
-        input.report("skipping",dataname,"for",pathname,"from",filename)
+        input.report("skipping %s for %s from %s",dataname,pathname,filename)
     end
 end
 
@@ -939,13 +951,14 @@ end
 --     TEXMFBOGUS = 'effe checken of dit werkt',
 -- }
 
-function input.aux.load_texmfcnf(instance,dataname,pathname)
+function input.aux.load_texmfcnf(dataname,pathname)
+    local instance = input.instance
     local filename = file.join(pathname,input.luaname)
     local blob = loadfile(filename)
     if blob then
         local data = blob()
         if data then
-            input.report("loading","configuration file",filename)
+            input.report("loading configuration file %s",filename)
             if true then
                 -- flatten to variable.progname
                 local t = { }
@@ -965,169 +978,168 @@ function input.aux.load_texmfcnf(instance,dataname,pathname)
                 instance[dataname][pathname] = data
             end
         else
-            input.report("skipping","configuration file",filename)
+            input.report("skipping configuration file %s",filename)
             instance[dataname][pathname] = { }
             instance.loaderror = true
         end
     else
-        input.report("skipping","configuration file",filename)
+        input.report("skipping configuration file %s",filename)
     end
 end
 
-function input.aux.load_configuration(instance,dname,lname)
-    input.aux.load_data(instance,dname,'configuration',lname and file.basename(lname))
+function input.aux.load_configuration(dname,lname)
+    input.aux.load_data(dname,'configuration',lname and file.basename(lname))
 end
-function input.aux.load_files(instance,tag)
-    input.aux.load_data(instance,tag,'files')
+function input.aux.load_files(tag)
+    input.aux.load_data(tag,'files')
 end
 
-function input.resetconfig(instance)
+function input.resetconfig()
+    input.identify_own()
+    local instance = input.instance
     instance.configuration, instance.setup, instance.order, instance.loaderror = { }, { }, { }, false
 end
 
-function input.loadnewconfig(instance)
+function input.loadnewconfig()
+    local instance = input.instance
     for _, cnf in ipairs(instance.luafiles) do
         local dname = file.dirname(cnf)
-        input.aux.load_texmfcnf(instance,'setup',dname)
+        input.aux.load_texmfcnf('setup',dname)
         instance.order[#instance.order+1] = instance.setup[dname]
         if instance.loaderror then break end
     end
 end
 
-function input.loadoldconfig(instance)
+function input.loadoldconfig()
+    local instance = input.instance
     if not instance.renewcache then
         for _, cnf in ipairs(instance.cnffiles) do
             local dname = file.dirname(cnf)
-            input.aux.load_configuration(instance,dname)
+            input.aux.load_configuration(dname)
             instance.order[#instance.order+1] = instance.configuration[dname]
             if instance.loaderror then break end
         end
     end
-    input.joinconfig(instance)
+    input.joinconfig()
 end
 
-function input.expand_variables(instance)
-    instance.expansions = { }
---~ instance.environment['SELFAUTOPARENT'] = instance.environment['SELFAUTOPARENT'] or instance.rootpath
-    if instance.engine   ~= "" then instance.environment['engine']   = instance.engine   end
-    if instance.progname ~= "" then instance.environment['progname'] = instance.progname end
-    for k,v in pairs(instance.environment) do
+function input.expand_variables()
+    local instance = input.instance
+    local expansions, environment, variables = { }, instance.environment, instance.variables
+    local env = input.env
+    instance.expansions = expansions
+    if instance.engine   ~= "" then environment['engine']   = instance.engine   end
+    if instance.progname ~= "" then environment['progname'] = instance.progname end
+    for k,v in pairs(environment) do
         local a, b = k:match("^(%a+)%_(.*)%s*$")
         if a and b then
-            instance.expansions[a..'.'..b] = v
+            expansions[a..'.'..b] = v
         else
-            instance.expansions[k] = v
+            expansions[k] = v
         end
     end
-    for k,v in pairs(instance.environment) do -- move environment to expansions
-        if not instance.expansions[k] then instance.expansions[k] = v end
+    for k,v in pairs(environment) do -- move environment to expansions
+        if not expansions[k] then expansions[k] = v end
     end
-    for k,v in pairs(instance.variables) do -- move variables to expansions
-        if not instance.expansions[k] then instance.expansions[k] = v end
+    for k,v in pairs(variables) do -- move variables to expansions
+        if not expansions[k] then expansions[k] = v end
     end
     while true do
         local busy = false
-        for k,v in pairs(instance.expansions) do
+        for k,v in pairs(expansions) do
             local s, n = v:gsub("%$([%a%d%_%-]+)", function(a)
                 busy = true
-                return instance.expansions[a] or input.env(instance,a)
+                return expansions[a] or env(a)
             end)
             local s, m = s:gsub("%$%{([%a%d%_%-]+)%}", function(a)
                 busy = true
-                return instance.expansions[a] or input.env(instance,a)
+                return expansions[a] or env(a)
             end)
             if n > 0 or m > 0 then
-                instance.expansions[k]= s
+                expansions[k]= s
             end
         end
         if not busy then break end
     end
-    for k,v in pairs(instance.expansions) do
-        instance.expansions[k] = v:gsub("\\", '/')
+    for k,v in pairs(expansions) do
+        expansions[k] = v:gsub("\\", '/')
     end
 end
 
-function input.aux.expand_vars(instance,lst) -- simple vars
+function input.aux.expand_vars(lst) -- simple vars
+    local instance = input.instance
+    local variables, env = instance.variables, input.env
     for k,v in pairs(lst) do
         lst[k] = v:gsub("%$([%a%d%_%-]+)", function(a)
-            return instance.variables[a] or input.env(instance,a)
+            return variables[a] or env(a)
         end)
     end
 end
 
-function input.aux.expanded_var(instance,var) -- simple vars
+function input.aux.expanded_var(var) -- simple vars
+    local instance = input.instance
     return var:gsub("%$([%a%d%_%-]+)", function(a)
-        return instance.variables[a] or input.env(instance,a)
+        return instance.variables[a] or input.env(a)
     end)
 end
 
-function input.aux.entry(instance,entries,name)
+function input.aux.entry(entries,name)
     if name and (name ~= "") then
+        local instance = input.instance
         name = name:gsub('%$','')
         local result = entries[name..'.'..instance.progname] or entries[name]
         if result then
             return result
         else
-            result = input.env(instance,name)
+            result = input.env(name)
             if result then
                 instance.variables[name] = result
-                input.expand_variables(instance)
+                input.expand_variables()
                 return instance.expansions[name] or ""
             end
         end
     end
     return ""
 end
-function input.variable(instance,name)
-    return input.aux.entry(instance,instance.variables,name)
+function input.variable(name)
+    return input.aux.entry(input.instance.variables,name)
 end
-function input.expansion(instance,name)
-    return input.aux.entry(instance,instance.expansions,name)
+function input.expansion(name)
+    return input.aux.entry(input.instance.expansions,name)
 end
 
-function input.aux.is_entry(instance,entries,name)
+function input.aux.is_entry(entries,name)
     if name and name ~= "" then
         name = name:gsub('%$','')
-        return (entries[name..'.'..instance.progname] or entries[name]) ~= nil
+        return (entries[name..'.'..input.instance.progname] or entries[name]) ~= nil
     else
         return false
     end
 end
 
-function input.is_variable(instance,name)
-    return input.aux.is_entry(instance,instance.variables,name)
-end
-function input.is_expansion(instance,name)
-    return input.aux.is_entry(instance,instance.expansions,name)
+function input.is_variable(name)
+    return input.aux.is_entry(input.instance.variables,name)
 end
 
-function input.simplified_list(str)
-    if type(str) == 'table' then
-        return str -- troubles ; ipv , in texmf
-    elseif str == '' then
-        return { }
-    else
-        local t = { }
-        for _,v in ipairs(string.splitchr(str:gsub("^\{(.+)\}$","%1"),",")) do
-            t[#t+1] = (v:gsub("^[%!]*(.+)[%/\\]*$","%1"))
-        end
-        return t
-    end
+function input.is_expansion(name)
+    return input.aux.is_entry(input.instance.expansions,name)
 end
 
-function input.unexpanded_path_list(instance,str)
-    local pth = input.variable(instance,str)
+function input.unexpanded_path_list(str)
+    local pth = input.variable(str)
     local lst = input.split_path(pth)
-    return input.aux.expanded_path(instance,lst)
+    return input.aux.expanded_path(lst)
 end
-function input.unexpanded_path(instance,str)
-    return file.join_path(input.unexpanded_path_list(instance,str))
+
+function input.unexpanded_path(str)
+    return file.join_path(input.unexpanded_path_list(str))
 end
 
 do
     local done = { }
 
-    function input.reset_extra_path(instance)
+    function input.reset_extra_path()
+        local instance = input.instance
         local ep = instance.extra_paths
         if not ep then
             ep, done = { }, { }
@@ -1137,7 +1149,8 @@ do
         end
     end
 
-    function input.register_extra_path(instance,paths,subpaths)
+    function input.register_extra_path(paths,subpaths)
+        local instance = input.instance
         local ep = instance.extra_paths or { }
         local n = #ep
         if paths and paths ~= "" then
@@ -1182,7 +1195,8 @@ do
 
 end
 
-function input.expanded_path_list(instance,str)
+function input.expanded_path_list(str)
+    local instance = input.instance
     local function made_list(list)
         local ep = instance.extra_paths
         if not ep or #ep == 0 then
@@ -1223,39 +1237,41 @@ function input.expanded_path_list(instance,str)
         -- engine+progname hash
         str = str:gsub("%$","")
         if not instance.lists[str] then -- cached
-            local lst = made_list(input.split_path(input.expansion(instance,str)))
-            instance.lists[str] = input.aux.expanded_path(instance,lst)
+            local lst = made_list(input.split_path(input.expansion(str)))
+            instance.lists[str] = input.aux.expanded_path(lst)
         end
         return instance.lists[str]
     else
-        local lst = input.split_path(input.expansion(instance,str))
-        return made_list(input.aux.expanded_path(instance,lst))
+        local lst = input.split_path(input.expansion(str))
+        return made_list(input.aux.expanded_path(lst))
     end
 end
 
-function input.expand_path(instance,str)
-    return file.join_path(input.expanded_path_list(instance,str))
+
+function input.clean_path_list(str)
+    local t = input.expanded_path_list(str)
+    if t then
+        for i=1,#t do
+            t[i] = file.collapse_path(input.clean_path(t[i]))
+        end
+    end
+    return t
 end
 
---~ function input.first_writable_path(instance,name)
---~     for _,v in pairs(input.expanded_path_list(instance,name)) do
---~         if file.is_writable(file.join(v,'luatex-cache.tmp')) then
---~             return v
---~         end
---~     end
---~     return "."
---~ end
+function input.expand_path(str)
+    return file.join_path(input.expanded_path_list(str))
+end
 
-function input.expanded_path_list_from_var(instance,str) -- brrr
+function input.expanded_path_list_from_var(str) -- brrr
     local tmp = input.var_of_format_or_suffix(str:gsub("%$",""))
     if tmp ~= "" then
-        return input.expanded_path_list(instance,str)
+        return input.expanded_path_list(str)
     else
-        return input.expanded_path_list(instance,tmp)
+        return input.expanded_path_list(tmp)
     end
 end
-function input.expand_path_from_var(instance,str)
-    return file.join_path(input.expanded_path_list_from_var(instance,str))
+function input.expand_path_from_var(str)
+    return file.join_path(input.expanded_path_list_from_var(str))
 end
 
 function input.format_of_var(str)
@@ -1285,9 +1301,9 @@ function input.var_of_format_or_suffix(str)
     return ''
 end
 
-function input.expand_braces(instance,str) -- output variable and brace expansion of STRING
-    local ori = input.variable(instance,str)
-    local pth = input.aux.expanded_path(instance,input.split_path(ori))
+function input.expand_braces(str) -- output variable and brace expansion of STRING
+    local ori = input.variable(str)
+    local pth = input.aux.expanded_path(input.split_path(ori))
     return file.join_path(pth)
 end
 
@@ -1302,6 +1318,7 @@ end
 -- {a,b,c/{p,q,r}/d/{x,y,z}//}
 -- {a,b,c/{p,q/{x,y,z}},d/{p,q,r}}
 -- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
+-- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
 
 -- this one is better and faster, but it took me a while to realize
 -- that this kind of replacement is cleaner than messy parsing and
@@ -1310,19 +1327,20 @@ end
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
 
--- get rid of piecewise here, just a gmatch is ok
-
 function input.aux.splitpathexpr(str, t, validate)
     -- no need for optimization, only called a few times, we can use lpeg for the sub
     t = t or { }
     local concat = table.concat
+    str = str:gsub(",}",",@}")
+    str = str:gsub("{,","{@,")
+ -- str = "@" .. str .. "@"
     while true do
         local done = false
         while true do
             local ok = false
-            str = str:gsub("([^{},]+){([^{}]-)}", function(a,b)
+            str = str:gsub("([^{},]+){([^{}]+)}", function(a,b)
                 local t = { }
-                b:piecewise(",", function(s) t[#t+1] = a .. s end)
+                for s in b:gmatch("[^,]+") do t[#t+1] = a .. s end
                 ok, done = true, true
                 return "{" .. concat(t,",") .. "}"
             end)
@@ -1330,9 +1348,9 @@ function input.aux.splitpathexpr(str, t, validate)
         end
         while true do
             local ok = false
-            str = str:gsub("{([^{}]-)}([^{},]+)", function(a,b)
+            str = str:gsub("{([^{}]+)}([^{},]+)", function(a,b)
                 local t = { }
-                a:piecewise(",", function(s) t[#t+1] = s .. b end)
+                for s in a:gmatch("[^,]+") do t[#t+1] = s .. b end
                 ok, done = true, true
                 return "{" .. concat(t,",") .. "}"
             end)
@@ -1340,50 +1358,41 @@ function input.aux.splitpathexpr(str, t, validate)
         end
         while true do
             local ok = false
-            str = str:gsub("([,{]){([^{}]+)}([,}])", function(a,b,c)
+            str = str:gsub("{([^{}]+)}{([^{}]+)}", function(a,b)
+                local t = { }
+                for sa in a:gmatch("[^,]+") do
+                    for sb in b:gmatch("[^,]+") do
+                        t[#t+1] = sa .. sb
+                    end
+                end
                 ok, done = true, true
-                return a .. b .. c
+                return "{" .. concat(t,",") .. "}"
             end)
             if not ok then break end
         end
+        str = str:gsub("({[^{}]*){([^{}]+)}([^{}]*})", function(a,b,c)
+            done = true
+            return a .. b.. c
+        end)
         if not done then break end
     end
-    while true do
-        local ok = false
-        str = str:gsub("{([^{}]-)}{([^{}]-)}", function(a,b)
-            local t = { }
-            a:piecewise(",", function(sa)
-                b:piecewise(",", function(sb)
-                    t[#t+1] = sa .. sb
-                end)
-            end)
-            ok = true
-            return "{" .. concat(t,",") .. "}"
-        end)
-        if not ok then break end
-    end
-    while true do
-        local ok = false
-        str = str:gsub("{([^{}]-)}", function(a)
-            ok = true
-            return a
-        end)
-        if not ok then break end
-    end
+    str = str:gsub("[{}]", "")
+    str = str:gsub("@","")
     if validate then
-        str:piecewise(",", function(s)
+        for s in str:gmatch("[^,]+") do
             s = validate(s)
             if s then t[#t+1] = s end
-        end)
+        end
     else
-        str:piecewise(",", function(s)
+        for s in str:gmatch("[^,]+") do
             t[#t+1] = s
-        end)
+        end
     end
     return t
 end
 
-function input.aux.expanded_path(instance,pathlist) -- maybe not a list, just a path
+function input.aux.expanded_path(pathlist) -- maybe not a list, just a path
+    local instance = input.instance
     -- a previous version fed back into pathlist
     local newlist, ok = { }, false
     for _,v in ipairs(pathlist) do
@@ -1415,17 +1424,16 @@ input.is_readable = { }
 function input.aux.is_readable(readable, name)
     if input.trace > 2 then
         if readable then
-            input.logger("+ readable", name)
+            input.logger("+ readable: %s",name)
         else
-            input.logger("- readable", name)
+            input.logger("- readable: %s", name)
         end
     end
     return readable
 end
 
 function input.is_readable.file(name)
- -- return input.aux.is_readable(file.is_readable(name), name)
-    return input.aux.is_readable(input.aux.is_file(name), name)
+    return input.aux.is_readable(lfs.isfile(name), name)
 end
 
 input.is_readable.tex = input.is_readable.file
@@ -1433,12 +1441,13 @@ input.is_readable.tex = input.is_readable.file
 -- name
 -- name/name
 
-function input.aux.collect_files(instance,names)
+function input.aux.collect_files(names)
+    local instance = input.instance
     local filelist = { }
     for _, fname in pairs(names) do
         if fname then
             if input.trace > 2 then
-                input.logger("? blobpath asked",fname)
+                input.logger("? blobpath asked: %s",fname)
             end
             local bname = file.basename(fname)
             local dname = file.dirname(fname)
@@ -1452,7 +1461,7 @@ function input.aux.collect_files(instance,names)
                 local files = blobpath and instance.files[blobpath]
                 if files then
                     if input.trace > 2 then
-                        input.logger('? blobpath do',blobpath .. " (" .. bname ..")")
+                        input.logger('? blobpath do: %s (%s)',blobpath,bname)
                     end
                     local blobfile = files[bname]
                     if not blobfile then
@@ -1485,7 +1494,7 @@ function input.aux.collect_files(instance,names)
                         end
                     end
                 elseif input.trace > 1 then
-                    input.logger('! blobpath no',blobpath .. " (" .. bname ..")" )
+                    input.logger('! blobpath no: %s (%s)',blobpath,bname)
                 end
             end
         end
@@ -1540,15 +1549,17 @@ do
 
 end
 
-function input.aux.register_in_trees(instance,name)
+function input.aux.register_in_trees(name)
     if not name:find("^%.") then
+        local instance = input.instance
         instance.foundintrees[name] = (instance.foundintrees[name] or 0) + 1 -- maybe only one
     end
 end
 
 -- split the next one up, better for jit
 
-function input.aux.find_file(instance,filename) -- todo : plugin (scanners, checkers etc)
+function input.aux.find_file(filename) -- todo : plugin (scanners, checkers etc)
+    local instance = input.instance
     local result = { }
     local stamp  = nil
     filename = input.normalize_name(filename)  -- elsewhere
@@ -1557,16 +1568,22 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
         if instance.found[stamp] then
-            input.logger('! remembered', filename)
+            if input.trace > 0 then
+                input.logger('! remembered: %s',filename)
+            end
             return instance.found[stamp]
         end
     end
     if filename:find('%*') then
-        input.logger('! wildcard', filename)
-        result = input.find_wildcard_files(instance,filename)
+        if input.trace > 0 then
+            input.logger('! wildcard: %s', filename)
+        end
+        result = input.find_wildcard_files(filename)
     elseif input.aux.qualified_path(filename) then
         if input.is_readable.file(filename) then
-            input.logger('! qualified', filename)
+            if input.trace > 0 then
+                input.logger('! qualified: %s', filename)
+            end
             result = { filename }
         else
             local forcedname, ok = "", false
@@ -1574,22 +1591,26 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                 if instance.format == "" then
                     forcedname = filename .. ".tex"
                     if input.is_readable.file(forcedname) then
-                        input.logger('! no suffix, forcing standard filetype tex')
+                        if input.trace > 0 then
+                            input.logger('! no suffix, forcing standard filetype: tex')
+                        end
                         result, ok = { forcedname }, true
                     end
                 else
                     for _, s in pairs(input.suffixes_of_format(instance.format)) do
                         forcedname = filename .. "." .. s
                         if input.is_readable.file(forcedname) then
-                            input.logger('! no suffix, forcing format filetype', s)
+                            if input.trace > 0 then
+                                input.logger('! no suffix, forcing format filetype: %s', s)
+                            end
                             result, ok = { forcedname }, true
                             break
                         end
                     end
                 end
             end
-            if not ok then
-                input.logger('? qualified', filename)
+            if not ok and input.trace > 0 then
+                input.logger('? qualified: %s', filename)
             end
         end
     else
@@ -1607,10 +1628,14 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                 local forcedname = filename .. '.tex'
                 wantedfiles[#wantedfiles+1] = forcedname
                 filetype = input.format_of_suffix(forcedname)
-                input.logger('! forcing filetype',filetype)
+                    if input.trace > 0 then
+                        input.logger('! forcing filetype: %s',filetype)
+                    end
             else
                 filetype = input.format_of_suffix(filename)
-                input.logger('! using suffix based filetype',filetype)
+                if input.trace > 0 then
+                    input.logger('! using suffix based filetype: %s',filetype)
+                end
             end
         else
             if ext == "" then
@@ -1619,16 +1644,18 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                 end
             end
             filetype = instance.format
-            input.logger('! using given filetype',filetype)
+            if input.trace > 0 then
+                input.logger('! using given filetype: %s',filetype)
+            end
         end
         local typespec = input.variable_of_format(filetype)
-        local pathlist = input.expanded_path_list(instance,typespec)
+        local pathlist = input.expanded_path_list(typespec)
         if not pathlist or #pathlist == 0 then
             -- no pathlist, access check only / todo == wildcard
             if input.trace > 2 then
-                input.logger('? filename',filename)
-                input.logger('? filetype',filetype or '?')
-                input.logger('? wanted files',table.concat(wantedfiles," | "))
+                input.logger('? filename: %s',filename)
+                input.logger('? filetype: %s',filetype or '?')
+                input.logger('? wanted files: %s',table.concat(wantedfiles," | "))
             end
             for _, fname in pairs(wantedfiles) do
                 if fname and input.is_readable.file(fname) then
@@ -1638,7 +1665,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                 end
             end
             -- this is actually 'other text files' or 'any' or 'whatever'
-            local filelist = input.aux.collect_files(instance,wantedfiles)
+            local filelist = input.aux.collect_files(wantedfiles)
             local fl = filelist and filelist[1]
             if fl then
                 filename = fl[3]
@@ -1647,12 +1674,12 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             end
         else
             -- list search
-            local filelist = input.aux.collect_files(instance,wantedfiles)
+            local filelist = input.aux.collect_files(wantedfiles)
             local doscan, recurse
             if input.trace > 2 then
-                input.logger('? filename',filename)
-            --                if pathlist then input.logger('? path list',table.concat(pathlist," | ")) end
-            --                if filelist then input.logger('? file list',table.concat(filelist," | ")) end
+                input.logger('? filename: %s',filename)
+            --                if pathlist then input.logger('? path list: %s',table.concat(pathlist," | ")) end
+            --                if filelist then input.logger('? file list: %s',table.concat(filelist," | ")) end
             end
             -- a bit messy ... esp the doscan setting here
             for _, path in pairs(pathlist) do
@@ -1673,11 +1700,11 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                         if f:find(expr) then
                             -- input.debug('T',' '..f)
                             if input.trace > 2 then
-                                input.logger('= found in hash',f)
+                                input.logger('= found in hash: %s',f)
                             end
                             --- todo, test for readable
                             result[#result+1] = fl[3]
-                            input.aux.register_in_trees(instance,f) -- for tracing used files
+                            input.aux.register_in_trees(f) -- for tracing used files
                             done = true
                             if not instance.allresults then break end
                         else
@@ -1691,12 +1718,12 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                         local pname = pathname:gsub("%.%*$",'')
                         if not pname:find("%*") then
                             local ppname = pname:gsub("/+$","")
-                            if input.aux.can_be_dir(instance,ppname) then
+                            if input.aux.can_be_dir(ppname) then
                                 for _, w in pairs(wantedfiles) do
                                     local fname = file.join(ppname,w)
                                     if input.is_readable.file(fname) then
                                         if input.trace > 2 then
-                                            input.logger('= found by scanning',fname)
+                                            input.logger('= found by scanning: %s',fname)
                                         end
                                         result[#result+1] = fname
                                         done = true
@@ -1725,40 +1752,29 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
     return result
 end
 
-input.aux._find_file_ = input.aux.find_file
+input.aux._find_file_ = input.aux.find_file -- frozen variant
 
-function input.aux.find_file(instance,filename) -- maybe make a lowres cache too
-    local result = input.aux._find_file_(instance,filename)
+function input.aux.find_file(filename) -- maybe make a lowres cache too
+    local result = input.aux._find_file_(filename)
     if #result == 0 then
         local lowered = filename:lower()
         if filename ~= lowered then
-            return input.aux._find_file_(instance,lowered)
+            return input.aux._find_file_(lowered)
         end
     end
     return result
 end
 
-if lfs and lfs.isfile then
-    input.aux.is_file = lfs.isfile      -- to be done: use this
-else
-    input.aux.is_file = file.is_readable
-end
-
-if lfs and lfs.isdir then
-    function input.aux.can_be_dir(instance,name)
-        if not instance.fakepaths[name] then
-            if lfs.isdir(name) then
-                instance.fakepaths[name] = 1 -- directory
-            else
-                instance.fakepaths[name] = 2 -- no directory
-            end
+function input.aux.can_be_dir(name)
+    local instance = input.instance
+    if not instance.fakepaths[name] then
+        if lfs.isdir(name) then
+            instance.fakepaths[name] = 1 -- directory
+        else
+            instance.fakepaths[name] = 2 -- no directory
         end
-        return (instance.fakepaths[name] == 1)
     end
-else
-    function input.aux.can_be_dir()
-        return true
-    end
+    return (instance.fakepaths[name] == 1)
 end
 
 if not input.concatinators  then input.concatinators = { } end
@@ -1766,7 +1782,8 @@ if not input.concatinators  then input.concatinators = { } end
 input.concatinators.tex  = file.join
 input.concatinators.file = input.concatinators.tex
 
-function input.find_files(instance,filename,filetype,mustexist)
+function input.find_files(filename,filetype,mustexist)
+    local instance = input.instance
     if type(mustexist) == boolean then
         -- all set
     elseif type(filetype) == 'boolean' then
@@ -1775,16 +1792,17 @@ function input.find_files(instance,filename,filetype,mustexist)
         filetype, mustexist = nil, false
     end
     instance.format = filetype or ''
-    local t = input.aux.find_file(instance,filename,true)
+    local t = input.aux.find_file(filename,true)
     instance.format = ''
     return t
 end
 
-function input.find_file(instance,filename,filetype,mustexist)
-    return (input.find_files(instance,filename,filetype,mustexist)[1] or "")
+function input.find_file(filename,filetype,mustexist)
+    return (input.find_files(filename,filetype,mustexist)[1] or "")
 end
 
-function input.find_given_files(instance,filename)
+function input.find_given_files(filename)
+    local instance = input.instance
     local bname, result = file.basename(filename), { }
     for k, hash in ipairs(instance.hashes) do
         local files = instance.files[hash.tag]
@@ -1812,11 +1830,12 @@ function input.find_given_files(instance,filename)
     return result
 end
 
-function input.find_given_file(instance,filename)
-    return (input.find_given_files(instance,filename)[1] or "")
+function input.find_given_file(filename)
+    return (input.find_given_files(filename)[1] or "")
 end
 
-function input.find_wildcard_files(instance,filename) -- todo: remap:
+function input.find_wildcard_files(filename) -- todo: remap:
+    local instance = input.instance
     local result = { }
     local bname, dname = file.basename(filename), file.dirname(filename)
     local path = dname:gsub("^*/","")
@@ -1872,13 +1891,14 @@ function input.find_wildcard_files(instance,filename) -- todo: remap:
     return result
 end
 
-function input.find_wildcard_file(instance,filename)
-    return (input.find_wildcard_files(instance,filename)[1] or "")
+function input.find_wildcard_file(filename)
+    return (input.find_wildcard_files(filename)[1] or "")
 end
 
 -- main user functions
 
-function input.save_used_files_in_trees(instance, filename,jobname)
+function input.save_used_files_in_trees(filename,jobname)
+    local instance = input.instance
     if not filename then filename = 'luatex.jlg' end
     local f = io.open(filename,'w')
     if f then
@@ -1897,24 +1917,24 @@ function input.save_used_files_in_trees(instance, filename,jobname)
     end
 end
 
-function input.automount(instance)
+function input.automount()
     -- implemented later
 end
 
-function input.load(instance)
-    input.starttiming(instance)
-    input.resetconfig(instance)
-    input.identify_cnf(instance)
-    input.load_lua(instance)
-    input.expand_variables(instance)
-    input.load_cnf(instance)
-    input.expand_variables(instance)
-    input.load_hash(instance)
-    input.automount(instance)
-    input.stoptiming(instance)
+function input.load()
+    input.starttiming(input.instance)
+    input.resetconfig()
+    input.identify_cnf()
+    input.load_lua()
+    input.expand_variables()
+    input.load_cnf()
+    input.expand_variables()
+    input.load_hash()
+    input.automount()
+    input.stoptiming(input.instance)
 end
 
-function input.for_files(instance, command, files, filetype, mustexist)
+function input.for_files(command, files, filetype, mustexist)
     if files and #files > 0 then
         local function report(str)
             if input.verbose then
@@ -1927,7 +1947,7 @@ function input.for_files(instance, command, files, filetype, mustexist)
             report('')
         end
         for _, file in pairs(files) do
-            local result = command(instance,file,filetype,mustexist)
+            local result = command(file,filetype,mustexist)
             if type(result) == 'string' then
                 report(result)
             else
@@ -1941,14 +1961,11 @@ end
 
 -- strtab
 
-function input.var_value(instance,str)     -- output the value of variable $STRING.
-    return input.variable(instance,str)
-end
-function input.expand_var(instance,str)    -- output variable expansion of STRING.
-    return input.expansion(instance,str)
-end
-function input.show_path(instance,str)     -- output search path for file type NAME
-    return file.join_path(input.expanded_path_list(instance,input.format_of_var(str)))
+input.var_value  = input.variable   -- output the value of variable $STRING.
+input.expand_var = input.expansion  -- output variable expansion of STRING.
+
+function input.show_path(str)     -- output search path for file type NAME
+    return file.join_path(input.expanded_path_list(input.format_of_var(str)))
 end
 
 -- input.find_file(filename)
@@ -2000,53 +2017,55 @@ function table.sequenced(t,sep) -- temp here
     return table.concat(s, sep or " | ")
 end
 
-function input.methodhandler(what, instance, filename, filetype) -- ...
+function input.methodhandler(what, filename, filetype) -- ...
     local specification = (type(filename) == "string" and input.splitmethod(filename)) or filename -- no or { }, let it bomb
     local scheme = specification.scheme
     if input[what][scheme] then
-        input.logger('= handler',specification.original .." -> " .. what .. " -> " .. table.sequenced(specification))
-        return input[what][scheme](instance,filename,filetype) -- todo: specification
+        if input.trace > 0 then
+            input.logger('= handler: %s -> %s -> %s',specification.original,what,table.sequenced(specification))
+        end
+        return input[what][scheme](filename,filetype) -- todo: specification
     else
-        return input[what].tex(instance,filename,filetype) -- todo: specification
+        return input[what].tex(filename,filetype) -- todo: specification
     end
 end
 
 -- also inside next test?
 
-function input.findtexfile(instance, filename, filetype)
-    return input.methodhandler('finders',instance, input.normalize_name(filename), filetype)
+function input.findtexfile(filename, filetype)
+    return input.methodhandler('finders',input.normalize_name(filename), filetype)
 end
-function input.opentexfile(instance,filename)
-    return input.methodhandler('openers',instance, input.normalize_name(filename))
-end
-
-function input.findbinfile(instance, filename, filetype)
-    return input.methodhandler('finders',instance, input.normalize_name(filename), filetype)
-end
-function input.openbinfile(instance,filename)
-    return input.methodhandler('loaders',instance, input.normalize_name(filename))
+function input.opentexfile(filename)
+    return input.methodhandler('openers',input.normalize_name(filename))
 end
 
-function input.loadbinfile(instance, filename, filetype)
-    local fname = input.findbinfile(instance, input.normalize_name(filename), filetype)
+function input.findbinfile(filename, filetype)
+    return input.methodhandler('finders',input.normalize_name(filename), filetype)
+end
+function input.openbinfile(filename)
+    return input.methodhandler('loaders',input.normalize_name(filename))
+end
+
+function input.loadbinfile(filename, filetype)
+    local fname = input.findbinfile(input.normalize_name(filename), filetype)
     if fname and fname ~= "" then
-        return input.openbinfile(instance,fname)
+        return input.openbinfile(fname)
     else
         return unpack(input.loaders.notfound)
     end
 end
 
-function input.texdatablob(instance, filename, filetype)
-    local ok, data, size = input.loadbinfile(instance, filename, filetype)
+function input.texdatablob(filename, filetype)
+    local ok, data, size = input.loadbinfile(filename, filetype)
     return data or ""
 end
 
 input.loadtexfile = input.texdatablob
 
-function input.openfile(filename) -- brrr texmf.instance here  / todo ! ! ! ! !
-    local fullname = input.findtexfile(texmf.instance, filename)
+function input.openfile(filename)
+    local fullname = input.findtexfile(filename)
     if fullname and (fullname ~= "") then
-        return input.opentexfile(texmf.instance, fullname)
+        return input.opentexfile(fullname)
     else
         return nil
     end
@@ -2092,16 +2111,18 @@ end
 -- beware: i need to check where we still need a / on windows:
 
 function input.clean_path(str)
---~     return (((str:gsub("\\","/")):gsub("^!+","")):gsub("//+","//"))
     if str then
-        return ((str:gsub("\\","/")):gsub("^!+",""))
+        str = str:gsub("\\","/")
+        str = str:gsub("^!+","")
+        str = str:gsub("^~",input.homedir)
+        return str
     else
         return nil
     end
 end
 
 function input.do_with_path(name,func)
-    for _, v in pairs(input.expanded_path_list(instance,name)) do
+    for _, v in pairs(input.expanded_path_list(name)) do
         func("^"..input.clean_path(v))
     end
 end
@@ -2110,7 +2131,8 @@ function input.do_with_var(name,func)
     func(input.aux.expanded_var(name))
 end
 
-function input.with_files(instance,pattern,handle)
+function input.with_files(pattern,handle)
+    local instance = input.instance
     for _, hash in ipairs(instance.hashes) do
         local blobpath = hash.tag
         local blobtype = hash.type
@@ -2137,37 +2159,22 @@ function input.with_files(instance,pattern,handle)
     end
 end
 
---~ function input.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
---~     newname = file.addsuffix(newname,"lua")
---~     local newscript = input.clean_path(input.find_file(instance, newname))
---~     local oldscript = input.clean_path(oldname)
---~     input.report("old script", oldscript)
---~     input.report("new script", newscript)
---~     if oldscript ~= newscript and (oldscript:find(file.removesuffix(newname).."$") or oldscript:find(newname.."$")) then
---~         local newdata = io.loaddata(newscript)
---~         if newdata then
---~             input.report("old script content replaced by new content")
---~             io.savedata(oldscript,newdata)
---~         end
---~     end
---~ end
-
-function input.update_script(instance,oldname,newname) -- oldname -> own.name, not per se a suffix
+function input.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
     local scriptpath = "scripts/context/lua"
     newname = file.addsuffix(newname,"lua")
     local oldscript = input.clean_path(oldname)
-    input.report("to be replaced old script", oldscript)
-    local newscripts = input.find_files(instance, newname) or { }
+    input.report("to be replaced old script %s", oldscript)
+    local newscripts = input.find_files(newname) or { }
     if #newscripts == 0 then
         input.report("unable to locate new script")
     else
         for _, newscript in ipairs(newscripts) do
             newscript = input.clean_path(newscript)
-            input.report("checking new script", newscript)
+            input.report("checking new script %s", newscript)
             if oldscript == newscript then
                 input.report("old and new script are the same")
             elseif not newscript:find(scriptpath) then
-                input.report("new script should come from",scriptpath)
+                input.report("new script should come from %s",scriptpath)
             elseif not (oldscript:find(file.removesuffix(newname).."$") or oldscript:find(newname.."$")) then
                 input.report("invalid new script name")
             else
@@ -2195,10 +2202,10 @@ do
 
     local resolvers = { }
 
-    resolvers.environment = function(instance,str)
+    resolvers.environment = function(str)
         return input.clean_path(os.getenv(str) or os.getenv(str:upper()) or os.getenv(str:lower()) or "")
     end
-    resolvers.relative = function(instance,str,n)
+    resolvers.relative = function(str,n)
         if io.exists(str) then
             -- nothing
         elseif io.exists("./" .. str) then
@@ -2216,16 +2223,16 @@ do
         end
         return input.clean_path(str)
     end
-    resolvers.locate = function(instance,str)
-        local fullname = input.find_given_file(instance,str) or ""
+    resolvers.locate = function(str)
+        local fullname = input.find_given_file(str) or ""
         return input.clean_path((fullname ~= "" and fullname) or str)
     end
-    resolvers.filename = function(instance,str)
-        local fullname = input.find_given_file(instance,str) or ""
+    resolvers.filename = function(str)
+        local fullname = input.find_given_file(str) or ""
         return input.clean_path(file.basename((fullname ~= "" and fullname) or str))
     end
-    resolvers.pathname = function(instance,str)
-        local fullname = input.find_given_file(instance,str) or ""
+    resolvers.pathname = function(str)
+        local fullname = input.find_given_file(str) or ""
         return input.clean_path(file.dirname((fullname ~= "" and fullname) or str))
     end
 
@@ -2237,15 +2244,15 @@ do
     resolvers.file = resolvers.filename
     resolvers.path = resolvers.pathname
 
-    local function resolve(instance,str)
+    local function resolve(str)
         if type(str) == "table" then
             for k, v in pairs(str) do
-                str[k] = resolve(instance,v) or v
+                str[k] = resolve(v) or v
             end
         elseif str and str ~= "" then
-            str = str:gsub("([a-z]+):([^ ]+)", function(method,target)
+            str = str:gsub("([a-z]+):([^ ]*)", function(method,target)
                 if resolvers[method] then
-                    return resolvers[method](instance,target)
+                    return resolvers[method](target)
                 else
                     return method .. ":" .. target
                 end
@@ -2254,6 +2261,24 @@ do
         return str
     end
 
+    if os.uname then
+        for k, v in pairs(os.uname()) do
+            if not resolvers[k] then
+                resolvers[k] = function() return v end
+            end
+        end
+    end
+
     input.resolve = resolve
 
+end
+
+function input.boolean_variable(str,default)
+    local b = input.expansion("PURGECACHE")
+    if b == "" then
+        return default
+    else
+        b = toboolean(b)
+        return (b == nil and default) or b
+    end
 end

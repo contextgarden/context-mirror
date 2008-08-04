@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['attr-ini'] = {
 
 nodes = nodes or { }
 
-local format, concat = string.format, table.concat
+local format, concat, texsprint = string.format, table.concat, tex.sprint
 
 -- This is not the most ideal place, but it will do. Maybe we need to move
 -- attributes to node-att.lua.
@@ -61,8 +61,9 @@ do
     local kern       = node.new("kern",1)      kern.next,       kern.prev        = nil, nil
     local penalty    = node.new("penalty")     penalty.next,    penalty.prev     = nil, nil
     local glue       = node.new("glue")        glue.next,       glue.prev        = nil, nil
-    local glue_spec  = node.new("glue_spec")   glue_spec.next,  glue_spec.prev   = nil, nil
+    local glue_spec  = node.new("glue_spec")
     local glyph      = node.new("glyph",0)     glyph.next,      glyph.prev       = nil, nil
+    local textdir    = node.new("whatsit",7)   textdir.next,    textdir.prev     = nil, nil
 
     nodes.register(pdfliteral)
     nodes.register(disc)
@@ -71,6 +72,7 @@ do
     nodes.register(glue)
     nodes.register(glue_spec)
     nodes.register(glyph)
+    nodes.register(textdir)
 
     local copy = node.copy
 
@@ -102,14 +104,17 @@ do
         s.width, s.stretch, s.shrink = width, stretch, shrink
         return s
     end
-
     function nodes.disc()
         return copy(disc)
     end
-
     function nodes.pdfliteral(str)
         local t = copy(pdfliteral)
         t.data = str
+        return t
+    end
+    function nodes.textdir(dir)
+        local t = copy(textdir)
+        t.dir = dir
         return t
     end
 
@@ -135,9 +140,9 @@ attributes.names   = attributes.names   or { }
 attributes.numbers = attributes.numbers or { }
 attributes.list    = attributes.list    or { }
 
-input.storage.register(false,"attributes/names", attributes.names, "attributes.names")
-input.storage.register(false,"attributes/numbers", attributes.numbers, "attributes.numbers")
-input.storage.register(false,"attributes/list", attributes.list, "attributes.list")
+input.storage.register(false, "attributes/names", attributes.names, "attributes.names")
+input.storage.register(false, "attributes/numbers", attributes.numbers, "attributes.numbers")
+input.storage.register(false, "attributes/list", attributes.list, "attributes.list")
 
 function attributes.define(name,number)
     attributes.numbers[name], attributes.names[number], attributes.list[number] = number, name, { }
@@ -201,13 +206,15 @@ do
     -- duplicate code once that we have more state handlers
 
     local starttiming, stoptiming = input.starttiming, input.stoptiming
+    local trigger, numbers = nodes.trigger, attributes.numbers
 
     local function process_attributes(head,plugins)
         if head then -- is already tested
             starttiming(attributes)
             local done, used = false, { }
-            local trigger, numbers = nodes.trigger, attributes.numbers
-            for name, plugin in pairs(plugins) do
+            for p=1,#plugins do
+                local plugin = plugins[p]
+                local name = plugin.name
                 local attribute = numbers[name]
                 if attribute then
                     local namespace = plugin.namespace
@@ -236,7 +243,9 @@ do
                 end
             end
             if done then
-                for name, plugin in pairs(plugins) do
+                for p=1,#plugins do
+                    local plugin = plugins[p]
+                    local name = plugin.name
                     local attribute = numbers[name]
                     if used[attribute] then
                         local namespace = plugin.namespace
@@ -495,7 +504,7 @@ function states.flush()
     local collected = states.collected
     if #collected > 0 then
         for i=1,#collected do
-            tex.sprint(tex.ctxcatcodes,collected[i]) -- we're in context mode anyway
+            texsprint(tex.ctxcatcodes,collected[i]) -- we're in context mode anyway
         end
         states.collected = { }
     end
@@ -649,7 +658,7 @@ do
             if not v then
                 local gray = graydata(0)
                 d = { gray, gray, gray, gray }
-                logs.report("attributes",format("unable to revive color %s",n or "?"))
+                logs.report("attributes","unable to revive color %s",n or "?")
             else
                 local kind, gray, rgb, cmyk = v[1], graydata(v[2]), rgbdata(v[3],v[4],v[5]), cmykdata(v[6],v[7],v[8],v[9])
                 if kind == 2 then
@@ -702,7 +711,8 @@ function colors.value(id)
     return colors.values[id]
 end
 
-shipouts.plugins.color = {
+shipouts.plugins[#shipouts.plugins+1] = {
+    name        = "color",
     namespace   = colors,
     initializer = states.initialize,
     finalizer   = states.finalize,
@@ -749,7 +759,7 @@ function transparencies.reviver(n)
         local v = transparencies.values[n]
         if not v then
             d = transparencies.reference(0)
-            logs.report("attributes",format("unable to revive transparency %s",n or "?"))
+            logs.report("attributes","unable to revive transparency %s",n or "?")
         else
             d = transparencies.reference(n)
             states.collect(format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,v[1],v[2]))
@@ -769,7 +779,8 @@ function transparencies.value(id)
     return transparencies.values[id]
 end
 
-shipouts.plugins.transparency = {
+shipouts.plugins[#shipouts.plugins+1] = {
+    name        = "transparency",
     namespace   = transparencies,
     initializer = states.initialize,
     finalizer   = states.finalize  ,
@@ -793,11 +804,12 @@ overprints.registered = {
 }
 
 function overprints.register(stamp)
---  states.collect(tex.sprint(tex.ctxcatcodes,"\\initializePDFoverprint")) -- to be testd
+--  states.collect(texsprint(tex.ctxcatcodes,"\\initializePDFoverprint")) -- to be testd
     return overprints.registered[stamp] or overprints.registered.overprint
 end
 
-shipouts.plugins.overprint = {
+shipouts.plugins[#shipouts.plugins+1] = {
+    name        = "overprint",
     namespace   = overprints,
     initializer = states.initialize,
     finalizer   = states.finalize  ,
@@ -821,11 +833,12 @@ negatives.registered = {
 }
 
 function negatives.register(stamp)
---  states.collect(tex.sprint(tex.ctxcatcodes,"\\initializePDFnegative")) -- to be testd
+--  states.collect(texsprint(tex.ctxcatcodes,"\\initializePDFnegative")) -- to be testd
     return negatives.registered[stamp] or negatives.registered.positive
 end
 
-shipouts.plugins.negative = {
+shipouts.plugins[#shipouts.plugins+1] = {
+    name        = "negative",
     namespace   = negatives,
     initializer = states.initialize,
     finalizer   = states.finalize,
@@ -872,7 +885,8 @@ end
 
 effects.none = effects.reference(0,0,0) -- faster: backends.pdf.literal("0 Tc 0 w 0 Tr")
 
-shipouts.plugins.effect = {
+shipouts.plugins[#shipouts.plugins+1] = {
+    name        = "effect",
     namespace   = effects,
     initializer = states.initialize,
     finalizer   = states.finalize,

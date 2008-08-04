@@ -13,12 +13,35 @@ local abs, sqrt, round = math.abs, math.sqrt, math.round
 metapost           = metapost or { }
 metapost.multipass = false
 metapost.n         = 0
+metapost.optimize  = true -- false
+
+--~ Because in MKiV we always have two passes, we save the objects. When an extra
+--~ mp run is done (due to for instance texts identifier in the parse pass), we
+--~ get a new result table and the stored objects are forgotten. Otherwise they
+--~ are reused.
+
+local function getobjects(result,figure,f)
+    if metapost.optimize then
+        local objects = result.objects
+        if not objects then
+            result.objects = { }
+        end
+        objects = result.objects[f]
+        if not objects then
+            objects = figure:objects()
+            result.objects[f] = objects
+        end
+        return objects
+    else
+        return figure:objects()
+    end
+end
 
 function metapost.convert(result, trialrun, flusher, multipass)
     if trialrun then
         metapost.multipass = false
         metapost.parse(result, flusher)
-        if multipass and not metapost.multipass then
+        if multipass and not metapost.multipass and metapost.optimize then
             metapost.flush(result, flusher) -- saves a run
         else
             return false
@@ -60,107 +83,20 @@ function metapost.flushers.pdf.textfigure(font,size,text,width,height,depth) -- 
     sprint(tex.ctxcatcodes,format("\\MPLIBtextext{%s}{%s}{%s}{%s}{%s}",font,size,text,0,-number.dimenfactors.bp*depth))
 end
 
--- the pen calculations are taken from metapost, first converted by
--- taco from c to lua, and then optimized by hans, so all errors are his
-
-local function pyth(a,b)
-    return sqrt(a*a + b*b) -- much faster than sqrt(a^2 + b^2)
-end
-
-local aspect_bound   =  10/65536
-local aspect_default =   1/65536
 local bend_tolerance = 131/65536
-local eps            = 0.0001
-
-local function coord_range_x(h, dz) -- direction x
-    local zlo, zhi = 0, 0
-    for i=1, #h do
-        local p = h[i]
-        local z = p.x_coord
-        if z < zlo then zlo = z elseif z > zhi then zhi = z end
-        z = p.right_x
-        if z < zlo then zlo = z elseif z > zhi then zhi = z end
-        z = p.left_x
-        if z < zlo then zlo = z elseif z > zhi then zhi = z end
-    end
-    return (zhi - zlo <= dz and aspect_bound) or aspect_default
-end
-
-local function coord_range_y(h, dz) -- direction y
-    local zlo, zhi = 0, 0
-    for i=1, #h do
-        local p = h[i]
-        local z = p.y_coord
-        if z < zlo then zlo = z elseif z > zhi then zhi = z end
-        z = p.right_y
-        if z < zlo then zlo = z elseif z > zhi then zhi = z end
-        z = p.left_y
-        if z < zlo then zlo = z elseif z > zhi then zhi = z end
-    end
-    return (zhi - zlo <= dz and aspect_bound) or aspect_default
-end
 
 local rx, sx, sy, ry, tx, ty, divider = 1, 0, 0, 1, 0, 0, 1
 
 local function pen_characteristics(object)
-    local p = object.pen[1]
-    local x_coord, y_coord, left_x, left_y, right_x, right_y = p.x_coord, p.y_coord, p.left_x, p.left_y, p.right_x, p.right_y
-    local wx, wy, width
-    if right_x == x_coord and left_y == y_coord then
-        wx = abs(left_x  - x_coord)
-        wy = abs(right_y - y_coord)
+    if mplib.pen_info then
+        local t = mplib.pen_info(object)
+        rx, ry, sx, sy, tx, ty = t.rx, t.ry, t.sx, t.sy, t.tx, t.ty
+        divider = sx*sy - rx*ry
+        return not (sx==1 and rx==0 and ry==0 and sy==1 and tx==0 and ty==0), t.width
     else
-        wx = pyth(left_x - x_coord, right_x - x_coord)
-        wy = pyth(left_y - y_coord, right_y - y_coord)
+        rx, sx, sy, ry, tx, ty, divider = 1, 0, 0, 1, 0, 0, 1
+        return false, 1
     end
-    if wy/coord_range_x(object.path, wx) >= wx/coord_range_y(object.path, wy) then
-        width = wy
-    else
-        width = wx
-    end
-    sx, rx, ry, sy, tx, ty = left_x, left_y, right_x, right_y, x_coord, y_coord
-    sx, rx, ry, sy = (sx-tx), (rx-ty), (ry-tx), (sy-ty) -- combine with previous
-    if width ~= 1 then
-        if width == 0 then
-            sx, sy = 1, 1
-        else
-            rx, ry, sx, sy = rx/width, ry/width, sx/width, sy/width
-        end
-    end
-    -- sx rx ry sy tx ty -> 1 0 0 1 0 0 is ok, but 0 0 0 0 0 0 not
-    if true then
-        if abs(sx) < eps then sx = eps end
-        if abs(sy) < eps then sy = eps end
-    else
-        -- this block looks complicated but it only captures invalid transforms
-        -- to be checked rx vs sx and so
-        local det = sx/sy - ry/rx
-        local aspect = 4*aspect_bound + aspect_default
-        if abs(det) < aspect  then
-            local s
-            if det >= 0 then
-                s, aspect = 1, aspect - det
-            else
-                s, aspect = -1, -aspect - det -- - ?
-            end
-            local absrx, absry, abssy, abssx = abs(rx), abs(ry), abs(sy), abs(sx)
-            if abssx + abssy >= absry + absrx then -- was yy
-                if abssx > abssy then
-                    sy = sy + (aspect + s*abssx) / sx
-                else
-                    sx = sx + (aspect + s*abssy) / sy
-                end
-            else
-                if absry > absrx then
-                    rx = rx + (aspect + s*absry) / ry
-                else
-                    ry = ry + (aspect + s*absrx) / rx
-                end
-            end
-        end
-    end
-    divider = sx*sy - rx*ry
-    return not (sx==1 and rx==0 and ry==0 and sy==1 and tx==0 and ty==0), width
 end
 
 local function concat(px, py) -- no tx, ty here
@@ -196,8 +132,12 @@ local function flushnormalpath(path, t, open)
         if curved(pth,one) then
             t[#t+1] = format("%f %f %f %f %f %f c",pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord )
         else
-           t[#t+1] = format("%f %f l",one.x_coord,one.y_coord)
+            t[#t+1] = format("%f %f l",one.x_coord,one.y_coord)
         end
+    elseif #path == 1 then
+        -- special case .. draw point
+        local one = path[1]
+        t[#t+1] = format("%f %f l",one.x_coord,one.y_coord)
     end
     return t
 end
@@ -225,8 +165,12 @@ local function flushconcatpath(path, t, open)
             local c, d = concat(one.left_x,one.left_y)
             t[#t+1] = format("%f %f %f %f %f %f c",a,b,c,d,concat(one.x_coord, one.y_coord))
         else
-           t[#t+1] = format("%f %f l",concat(one.x_coord,one.y_coord))
+            t[#t+1] = format("%f %f l",concat(one.x_coord,one.y_coord))
         end
+    elseif #path == 1 then
+        -- special case .. draw point
+        local one = path[1]
+        t[#t+1] = format("%f %f l",concat(one.x_coord,one.y_coord))
     end
     return t
 end
@@ -247,23 +191,18 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
             local colorhandler   = metapost.colorhandler
             for f=1, #figures do
                 local figure = figures[f]
---~                 local objects = figure:objects()
-local objects = result.objects
-if not objects then
-    objects = figure:objects()
-    result.objects = objects
-end
-                local fignum = tonumber((figure:filename()):match("([%d]+)$") or 0)
+                local objects = getobjects(result,figure,f)
+                local fignum = tonumber((figure:filename()):match("([%d]+)$") or figure:charcode() or 0)
                 local t = { }
                 local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                 local bbox = figure:boundingbox()
                 local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
                 if urx < llx then
                     -- invalid
-                    flusher.startfigure(fignum,0,0,0,0,"invalid")
+                    flusher.startfigure(fignum,0,0,0,0,"invalid",figure)
                     flusher.stopfigure()
                 else
-                    flusher.startfigure(fignum,llx,lly,urx,ury,"begin")
+                    flusher.startfigure(fignum,llx,lly,urx,ury,"begin",figure)
                     t[#t+1] = "q"
                     if objects then
                         for o=1,#objects do
@@ -328,7 +267,7 @@ end
                                     t[#t+1], cr = colorconverter(cs)
                                 end
                                 --
-                                if before then object, t = before() end
+                                if before then currentobject, t = before() end
                                 local ml = currentobject.miterlimit
                                 if ml and ml ~= miterlimit then
                                     miterlimit = ml
@@ -355,13 +294,13 @@ end
                                    t[#t+1] = "[] 0 d"
                                    dashed = false
                                 end
-                                if inbetween then object, t = inbetween() end
+                                if inbetween then currentobject, t = inbetween() end
                                 local path = currentobject.path
                                 local transformed, penwidth = false, 1
                                 local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
                                 local pen = currentobject.pen
                                 if pen then
-								   if pen.type=='elliptical' then
+								   if pen.type == 'elliptical' then
                                         transformed, penwidth = pen_characteristics(object) -- boolean, value
                                         t[#t+1] = format("%f w",penwidth) -- todo: only if changed
                                         if objecttype == 'fill' then
@@ -415,7 +354,7 @@ end
                                 if cr then
                                     t[#t+1] = cr
                                 end
-                                if after then object, t = after() end
+                                if after then currentobject, t = after() end
                             end
                        end
                     end
@@ -434,12 +373,7 @@ function metapost.parse(result)
         if figures then
             for f=1, #figures do
                 local figure = figures[f]
---~                 local objects = figure:objects()
-local objects = result.objects
-if not objects then
-    objects = figure:objects()
-    result.objects = objects
-end
+                local objects = getobjects(result,figure,f)
                 if objects then
                     for o=1,#objects do
                         local object = objects[o]
@@ -524,3 +458,105 @@ function metapost.colorconverter()
         end
     end
 end
+
+--~ -- obsolete code
+--~
+--~ -- the pen calculations are taken from metapost, first converted by
+--~ -- taco from c to lua, and then optimized by hans, so all errors are his
+--~
+--~ local aspect_bound   = 10/65536
+--~ local aspect_default =  1/65536
+--~ local eps            = 0.0001
+--~
+--~ local function pyth(a,b)
+--~     return sqrt(a*a + b*b) -- much faster than sqrt(a^2 + b^2)
+--~ end
+--~
+--~ local function coord_range_x(h, dz) -- direction x
+--~     local zlo, zhi = 0, 0
+--~     for i=1, #h do
+--~         local p = h[i]
+--~         local z = p.x_coord
+--~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
+--~         z = p.right_x
+--~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
+--~         z = p.left_x
+--~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
+--~     end
+--~     return (zhi - zlo <= dz and aspect_bound) or aspect_default
+--~ end
+--~
+--~ local function coord_range_y(h, dz) -- direction y
+--~     local zlo, zhi = 0, 0
+--~     for i=1, #h do
+--~         local p = h[i]
+--~         local z = p.y_coord
+--~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
+--~         z = p.right_y
+--~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
+--~         z = p.left_y
+--~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
+--~     end
+--~     return (zhi - zlo <= dz and aspect_bound) or aspect_default
+--~ end
+--~
+--~ local function pen_characteristics(object)
+--~     local p = object.pen[1]
+--~     local x_coord, y_coord, left_x, left_y, right_x, right_y = p.x_coord, p.y_coord, p.left_x, p.left_y, p.right_x, p.right_y
+--~     local wx, wy, width
+--~     if right_x == x_coord and left_y == y_coord then
+--~         wx = abs(left_x  - x_coord)
+--~         wy = abs(right_y - y_coord)
+--~     else
+--~         wx = pyth(left_x - x_coord, right_x - x_coord)
+--~         wy = pyth(left_y - y_coord, right_y - y_coord)
+--~     end
+--~     if wy/coord_range_x(object.path, wx) >= wx/coord_range_y(object.path, wy) then
+--~         width = wy
+--~     else
+--~         width = wx
+--~     end
+--~     sx, rx, ry, sy, tx, ty = left_x, left_y, right_x, right_y, x_coord, y_coord
+--~     sx, rx, ry, sy = (sx-tx), (rx-ty), (ry-tx), (sy-ty) -- combine with previous
+--~     if width ~= 1 then
+--~         if width == 0 then
+--~             sx, sy = 1, 1
+--~         else
+--~             rx, ry, sx, sy = rx/width, ry/width, sx/width, sy/width
+--~         end
+--~     end
+--~     -- sx rx ry sy tx ty -> 1 0 0 1 0 0 is ok, but 0 0 0 0 0 0 not
+--~     if true then
+--~         if abs(sx) < eps then sx = eps end
+--~         if abs(sy) < eps then sy = eps end
+--~     else
+--~         -- this block looks complicated but it only captures invalid transforms
+--~         -- to be checked rx vs sx and so
+--~         local det = sx/sy - ry/rx
+--~         local aspect = 4*aspect_bound + aspect_default
+--~         if abs(det) < aspect  then
+--~             local s
+--~             if det >= 0 then
+--~                 s, aspect = 1, aspect - det
+--~             else
+--~                 s, aspect = -1, -aspect - det -- - ?
+--~             end
+--~             local absrx, absry, abssy, abssx = abs(rx), abs(ry), abs(sy), abs(sx)
+--~             if abssx + abssy >= absry + absrx then -- was yy
+--~                 if abssx > abssy then
+--~                     sy = sy + (aspect + s*abssx) / sx
+--~                 else
+--~                     sx = sx + (aspect + s*abssy) / sy
+--~                 end
+--~             else
+--~                 if absry > absrx then
+--~                     rx = rx + (aspect + s*absry) / ry
+--~                 else
+--~                     ry = ry + (aspect + s*absrx) / rx
+--~                 end
+--~             end
+--~         end
+--~     end
+--~     divider = sx*sy - rx*ry
+--~     return not (sx==1 and rx==0 and ry==0 and sy==1 and tx==0 and ty==0), width
+--~ end

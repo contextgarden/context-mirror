@@ -1,10 +1,10 @@
 <?xml version='1.0' standalone='yes'?>
 
 <ctx:job>
-    <ctx:message>Lua Documentation</ctx:message>
+    <ctx:message>Lua Documentation Generator</ctx:message>
     <ctx:preprocess>
         <ctx:processors>
-            <ctx:processor name='ldx'>mtxrun --verbose --internal x-ldx.lua <ctx:value name='old'/> <ctx:value name='new'/></ctx:processor>
+            <ctx:processor name='ldx'>mtxrun --internal x-ldx.lua <ctx:value name='old'/> <ctx:value name='new'/></ctx:processor>
         </ctx:processors>
         <ctx:files>
             <ctx:file processor='ldx'><ctx:value name='old'/></ctx:file>

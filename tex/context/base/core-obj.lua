@@ -11,23 +11,25 @@ if not modules then modules = { } end modules ['core-obj'] = {
 reusable components.</p>
 --ldx]]--
 
+local texsprint = tex.sprint
+
 if not jobs        then jobs         = { } end
 if not job         then jobs['main'] = { } end job = jobs['main']
 if not job.objects then job.objects  = { } end
 
 function job.getobjectreference(tag,default)
     if job.objects[tag] then
-        tex.sprint(job.objects[tag][1] or default)
+        texsprint(job.objects[tag][1] or default)
     else
-        tex.sprint(default)
+        texsprint(default)
     end
 end
 
 function job.getobjectreferencepage(tag,default)
     if job.objects[tag] then
-        tex.sprint(job.objects[tag][2] or default)
+        texsprint(job.objects[tag][2] or default)
     else
-        tex.sprint(default)
+        texsprint(default)
     end
 end
 

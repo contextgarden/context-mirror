@@ -27,14 +27,14 @@ lmx.variables['title']         = lmx.variables['title-default']
 -- demonstrates: local, *all, gsub using tables, nil or value, loadstring
 
 function lmx.loadedfile(filename)
-    return input.texdatablob(texmf.instance, filename)
+    return input.texdatablob(filename)
 end
 
 lmx.converting = false
 
 function lmx.convert(template,result) -- todo: use lpeg instead
     if not lmx.converting then -- else, if error then again tex error and loop
-        local data = input.texdatablob(texmf.instance, template)
+        local data = input.texdatablob(template)
         local f = false
         if result then
             f = io.open(result,"w")
@@ -93,7 +93,7 @@ end
 lmx.lmxfile   = function(filename)     return filename  end
 lmx.htmfile   = function(filename)     return filename  end
 
-if environment.platform == "windows" then
+if os.platform == "windows" then
     lmx.popupfile = function(filename) os.execute("start " .. filename) end
 else
     lmx.popupfile = function(filename) os.execute(filename) end

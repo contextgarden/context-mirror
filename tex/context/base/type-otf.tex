@@ -60,6 +60,7 @@
 
 \starttypescript [palatino]
     \definetypeface [palatino] [rm] [serif] [palatino] [default]
+    \definetypeface [palatino] [ss] [sans]  [modern]   [default] [rscale=1.075]
     \definetypeface [palatino] [tt] [mono]  [modern]   [default] [rscale=1.075]
     \definetypeface [palatino] [mm] [math]  [palatino] [default]
     \quittypescriptscanning
@@ -232,7 +233,6 @@
 \stoptypescript
 
 \starttypescript [math] [modern,computer-modern,latin-modern]
-    % watch the space, it prevents remapping
     \definefontsynonym [ComputerModernMath-Roman]     [rm-lmr10]
     \definefontsynonym [ComputerModernMath-Extension] [lmex10]
     \definefontsynonym [ComputerModernMath-Italic]    [lmmi10]
@@ -240,7 +240,6 @@
 \stoptypescript
 
 \starttypescript [boldmath,bfmath] [modern,computer-modern,latin-modern]
-    % watch the space, it prevents remapping
     \definefontsynonym [ComputerModernMath-Roman-Bold]  [rm-lmb10]
     \definefontsynonym [ComputerModernMath-Extension]   [lmex10]
     \definefontsynonym [ComputerModernMath-Italic-Bold] [lmmib10]
@@ -373,11 +372,11 @@
 % qplbi TeXGyrePagella-BoldItalic
 
 \starttypescript [serif] [palatino,pagella]
-  \definefontsynonym [Palatino]             [texgyrepagella-regular]    [features=default]
-  \definefontsynonym [Palatino-Italic]      [texgyrepagella-italic]     [features=default]
-  \definefontsynonym [Palatino-Bold]        [texgyrepagella-bold]       [features=default]
-  \definefontsynonym [Palatino-BoldItalic]  [texgyrepagella-bolditalic] [features=default]
-  \definefontsynonym [Palatino-Caps]        [texgyrepagella-regular]    [features=smallcaps]
+  \definefontsynonym [Palatino]             [file:texgyrepagella-regular]    [features=default]
+  \definefontsynonym [Palatino-Italic]      [file:texgyrepagella-italic]     [features=default]
+  \definefontsynonym [Palatino-Bold]        [file:texgyrepagella-bold]       [features=default]
+  \definefontsynonym [Palatino-BoldItalic]  [file:texgyrepagella-bolditalic] [features=default]
+  \definefontsynonym [Palatino-Caps]        [file:texgyrepagella-regular]    [features=smallcaps]
   \definefontsynonym [Palatino-Slanted]     [Palatino-Italic]
   \definefontsynonym [Palatino-BoldSlanted] [Palatino-BoldItalic]
 \stoptypescript
@@ -390,11 +389,11 @@
 % qtmbi TeXGyreTermes-BoldItalic
 
 \starttypescript [serif] [times]
-  \definefontsynonym [Times-Roman]       [texgyretermes-regular]    [features=default]
-  \definefontsynonym [Times-Italic]      [texgyretermes-italic]     [features=default]
-  \definefontsynonym [Times-Bold]        [texgyretermes-bold]       [features=default]
-  \definefontsynonym [Times-BoldItalic]  [texgyretermes-bolditalic] [features=default]
-  \definefontsynonym [Times-Caps]        [texgyretermes-regular]    [features=smallcaps]
+  \definefontsynonym [Times-Roman]       [file:texgyretermes-regular]    [features=default]
+  \definefontsynonym [Times-Italic]      [file:texgyretermes-italic]     [features=default]
+  \definefontsynonym [Times-Bold]        [file:texgyretermes-bold]       [features=default]
+  \definefontsynonym [Times-BoldItalic]  [file:texgyretermes-bolditalic] [features=default]
+  \definefontsynonym [Times-Caps]        [file:texgyretermes-regular]    [features=smallcaps]
   \definefontsynonym [Times-Slanted]     [Times-Italic]
   \definefontsynonym [Times-BoldSlanted] [Times-BoldItalic]
 \stoptypescript
@@ -407,11 +406,11 @@
 % qtmbi TeXGyreHeros-BoldItalic
 
 \starttypescript [sans] [helvetica]
-  \definefontsynonym [Helvetica]             [texgyreheros-regular]    [features=default]
-  \definefontsynonym [Helvetica-Oblique]     [texgyreheros-italic]     [features=default]
-  \definefontsynonym [Helvetica-Bold]        [texgyreheros-bold]       [features=default]
-  \definefontsynonym [Helvetica-BoldOblique] [texgyreheros-bolditalic] [features=default]
-  \definefontsynonym [Helvetica-Caps]        [texgyreheros-regular]    [features=smallcaps]
+  \definefontsynonym [Helvetica]             [file:texgyreheros-regular]    [features=default]
+  \definefontsynonym [Helvetica-Oblique]     [file:texgyreheros-italic]     [features=default]
+  \definefontsynonym [Helvetica-Bold]        [file:texgyreheros-bold]       [features=default]
+  \definefontsynonym [Helvetica-BoldOblique] [file:texgyreheros-bolditalic] [features=default]
+  \definefontsynonym [Helvetica-Caps]        [file:texgyreheros-regular]    [features=smallcaps]
 \stoptypescript
 
 % TeXGyreBonum
@@ -422,13 +421,13 @@
 % qtmbi TeXGyreBonum-BoldItalic
 
 \starttypescript [serif] [bookman]
-  \definefontsynonym [Bookman-Light]           [texgyrebonum-regular]    [features=default]
-  \definefontsynonym [Bookman-LightItalic]     [texgyrebonum-italic]     [features=default]
-  \definefontsynonym [Bookman-DemiBold]        [texgyrebonum-bold]       [features=default]
-  \definefontsynonym [Bookman-DemiBoldItalic]  [texgyrebonum-bolditalic] [features=default]
-  \definefontsynonym [Bookman-Light-Caps]      [texgyrebonum-regular]    [features=smallcaps]
-  \definefontsynonym [Bookman-LightSlanted]    [Bookman-LightItalic]     [features=default]
-  \definefontsynonym [Bookman-DemiBoldSlanted] [Bookman-DemiBoldItalic]  [features=default]
+  \definefontsynonym [Bookman-Light]           [file:texgyrebonum-regular]    [features=default]
+  \definefontsynonym [Bookman-LightItalic]     [file:texgyrebonum-italic]     [features=default]
+  \definefontsynonym [Bookman-DemiBold]        [file:texgyrebonum-bold]       [features=default]
+  \definefontsynonym [Bookman-DemiBoldItalic]  [file:texgyrebonum-bolditalic] [features=default]
+  \definefontsynonym [Bookman-Light-Caps]      [file:texgyrebonum-regular]    [features=smallcaps]
+  \definefontsynonym [Bookman-LightSlanted]    [Bookman-LightItalic]          [features=default]
+  \definefontsynonym [Bookman-DemiBoldSlanted] [Bookman-DemiBoldItalic]       [features=default]
 \stoptypescript
 
 % TeXGyreScola
@@ -439,13 +438,13 @@
 % qcsbi TeXGyreSchola-BoldItalic
 
 \starttypescript [serif] [schoolbook]
-  \definefontsynonym [Schoolbook-Roman]       [texgyreschola-regular]    [features=default]
-  \definefontsynonym [Schoolbook-Italic]      [texgyreschola-italic]     [features=default]
-  \definefontsynonym [Schoolbook-Bold]        [texgyreschola-bold]       [features=default]
-  \definefontsynonym [Schoolbook-BoldItalic]  [texgyreschola-bolditalic] [features=default]
-  \definefontsynonym [Schoolbook-Roman-Caps]  [texgyreschola-regular]    [features=smallcaps]
-  \definefontsynonym [Schoolbook-Slanted]     [Schoolbook-Italic]        [features=default]
-  \definefontsynonym [Schoolbook-BoldSlanted] [Schoolbook-BoldItalic]    [features=default]
+  \definefontsynonym [Schoolbook-Roman]       [file:texgyreschola-regular]    [features=default]
+  \definefontsynonym [Schoolbook-Italic]      [file:texgyreschola-italic]     [features=default]
+  \definefontsynonym [Schoolbook-Bold]        [file:texgyreschola-bold]       [features=default]
+  \definefontsynonym [Schoolbook-BoldItalic]  [file:texgyreschola-bolditalic] [features=default]
+  \definefontsynonym [Schoolbook-Roman-Caps]  [file:texgyreschola-regular]    [features=smallcaps]
+  \definefontsynonym [Schoolbook-Slanted]     [Schoolbook-Italic]             [features=default]
+  \definefontsynonym [Schoolbook-BoldSlanted] [Schoolbook-BoldItalic]         [features=default]
 \stoptypescript
 
 % TeXGyreAdventor
@@ -463,10 +462,10 @@
 % crgbi TeXGyreCursor-BoldItalic
 
 \starttypescript [mono] [courier] [name]
-    \definefontsynonym [Courier]             [texgyrecursor-regular]    [features=default]
-    \definefontsynonym [Courier-Bold]        [texgyrecursor-bold]       [features=default]
-    \definefontsynonym [Courier-Oblique]     [texgyrecursor-italic]     [features=default]
-    \definefontsynonym [Courier-BoldOblique] [texgyrecursor-bolditalic] [features=default]
+    \definefontsynonym [Courier]             [file:texgyrecursor-regular]    [features=default]
+    \definefontsynonym [Courier-Bold]        [file:texgyrecursor-bold]       [features=default]
+    \definefontsynonym [Courier-Oblique]     [file:texgyrecursor-italic]     [features=default]
+    \definefontsynonym [Courier-BoldOblique] [file:texgyrecursor-bolditalic] [features=default]
     \fakecontrolspace
 \stoptypescript
 
@@ -475,8 +474,8 @@
 % qzcr  TeXGyreChorus-Regular
 
 \starttypescript [calligraphy] [chancery]
-    \definefontsynonym [Chancery] [texgyrechorus-mediumitalic] [features=default]
-    \definefontsynonym [texgyrechorus-regular] [texgyrechorus-mediumitalic]
+    \definefontsynonym [Chancery] [file:texgyrechorus-mediumitalic] [features=default]
+    \definefontsynonym [texgyrechorus-regular] [file:texgyrechorus-mediumitalic]
 \stoptypescript
 
 % Math Times (tx)
@@ -759,7 +758,7 @@
     \definefontsynonym [Charter-BoldItalic]  [name:CharterBT-BoldItalic]   % or: [bchbi8a]
     \definefontsynonym [Charter-Slanted]     [name:CharterBT-Italic]       % or: [bchri8a]
     \definefontsynonym [Charter-BoldSlanted] [name:CharterBT-BoldItalic]   % or: [bchbi8a]
-    \definefontsynonym [Charter-Roman-Caps]  [name:CharterBT-SmallCap]     % or: [bchrc8a]
+    \definefontsynonym [Charter-Roman-Caps]  [Charter-Roman]               % not present
 \stoptypescript
 
 \stoptypescriptcollection

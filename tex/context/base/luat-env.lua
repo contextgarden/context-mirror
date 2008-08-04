@@ -9,7 +9,8 @@
 -- A former version provides functionality for non embeded core
 -- scripts i.e. runtime library loading. Given the amount of
 -- Lua code we use now, this no longer makes sense. Much of this
--- evolved before bytecode arrays were available.
+-- evolved before bytecode arrays were available. Much code has
+-- disappeared already.
 
 if not versions then versions = { } end versions['luat-env'] = 1.001
 
@@ -17,127 +18,85 @@ if not versions then versions = { } end versions['luat-env'] = 1.001
 
 if not environment then environment = { } end
 
---~ environment.useluc  = true -- still testing, so we don't use luc yet
-
-if environment.silent == nil then environment.silent  = false end
-if environment.useluc == nil then environment.useluc  = true  end
+environment.trace = false
 
 -- kpse is overloaded by this time
 
---~ if environment.formatname  == nil then if tex  then environment.formatname = tex.formatname                              end end
---~ if environment.formatpath  == nil then if kpse then environment.formatpath = kpse.find_file(tex.formatname,"fmt") or "." end end
---~ if environment.jobname     == nil then if tex  then environment.jobname    = tex.jobname                                 end end
---~ if environment.progname    == nil then              environment.progname   = os.getenv("progname")    or "luatex"        end
---~ if environment.engine      == nil then              environment.engine     = os.getenv("engine")      or "context"       end
---~ if environment.enginepath  == nil then              environment.enginepath = os.getenv("SELFAUTOLOC") or "."             end
---~ if environment.initex      == nil then if tex  then environment.initex     = tex.formatname == ""                        end end
-
-if not environment.formatname or environment.formatname == "" then if tex then environment.formatname = tex.formatname end end
-if not environment.jobname    or environment.jobname    == "" then if tex then environment.jobname    = tex.jobname    end end
-
-if not environment.progname   or environment.progname   == "" then environment.progname   = "context" end
-if not environment.engine     or environment.engine     == "" then environment.engine     = "luatex"  end
-if not environment.formatname or environment.formatname == "" then environment.formatname = "cont-en" end
-if not environment.formatpath or environment.formatpath == "" then environment.formatpath = '.'       end
-if not environment.enginepath or environment.enginepath == "" then environment.enginepath = '.'       end
-if not environment.version    or environment.version    == "" then environment.version    = "unknown" end
-
-environment.formatpath = string.gsub(environment.formatpath:gsub("\\","/"),"/([^/]-)$","")
-environment.enginepath = string.gsub(environment.enginepath:gsub("\\","/"),"/([^/]-)$","")
+if not environment.jobname or environment.jobname == "" then if tex then environment.jobname = tex.jobname end end
+if not environment.version or environment.version == "" then             environment.version = "unknown"   end
 
 function environment.texfile(filename)
-    return input.find_file(texmf.instance,filename,'tex')
+    return input.find_file(filename,'tex')
 end
 
 function environment.luafile(filename)
-    return input.find_file(texmf.instance,filename,'tex') or input.find_file(texmf.instance,filename,'texmfscripts')
-end
-
-function environment.showmessage(...) -- todo, cleaner
-    if not environment.silent then
-        if input and input.report then
-            input.report(table.concat({...}," "))
-        elseif texio and texio.write_nl then
-            texio.write_nl("[[" .. table.concat({...}," ") .. "]]")
-        else
-            print("[[" .. table.concat({...}," ") .. "]]")
-        end
-    end
+    return input.find_file(filename,'tex') or input.find_file(filename,'texmfscripts')
 end
 
 if not environment.jobname then environment.jobname  = "unknown" end
 
-function environment.setlucpath()
-    if environment.initex then
-        environment.lucpath = nil
-    else
-        environment.lucpath = environment.formatpath .. "/lua/" .. environment.progname
-    end
-end
+environment.loadedluacode = loadfile -- can be overloaded
 
-environment.setlucpath()
-
-function environment.loadedluacode(fullname)
-    return loadfile(fullname)
-end
-
-function environment.luafilechunk(filename)
-    local filename = filename:gsub("%.%a+$", "") .. ".lua"
+function environment.luafilechunk(filename) -- used for loading lua bytecode in the format
+    filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        environment.showmessage("loading file", fullname)
+        input.report("loading file %s", fullname)
         return environment.loadedluacode(fullname)
     else
-        environment.showmessage("unknown file", filename)
+        input.report("unknown file %s", filename)
         return nil
     end
 end
 
--- the next ones can use the previous ones
+-- the next ones can use the previous ones / combine
 
-function environment.loadluafile(filename)
-    filename = filename:gsub("%.%a+$", "") .. ".lua"
-    local fullname = environment.luafile(filename)
-    if fullname and fullname ~= "" then
-        environment.showmessage("loading", fullname)
-        dofile(fullname)
+function environment.loadluafile(filename, version)
+    local lucname, luaname, chunk
+    local basename = file.removesuffix(filename)
+    if basename == filename then
+        lucname, luaname = basename .. ".luc",  basename .. ".lua"
     else
-        environment.showmessage("unknown file", filename)
+        lucname, luaname = nil, basename -- forced suffix
     end
-end
-
-function environment.loadlucfile(filename,version)
-    local filename = filename:gsub("%.%a+$", "")
-    local fullname = nil
-    if environment.initex or not environment.useluc then
-        environment.loadluafile(filename)
-    else
-        if environment.lucpath and environment.lucpath ~= "" then
-            fullname = environment.lucpath .. "/" .. filename .. ".luc"
-            local chunk = loadfile(fullname) -- this way we don't need a file exists check
-            if chunk then
-                environment.showmessage("loading", fullname)
-                assert(chunk)()
-                if version then
-                    local v = version -- can be nil
-                    if modules and modules[filename] then
-                        v = modules[filename].version -- new
-                    elseif versions and versions[filename] then
-                        v = versions[filename]        -- old
-                    end
-                    if v ~= version then
-                        environment.showmessage("version mismatch", filename,"lua=" .. v, "luc=" ..version)
-                        environment.loadluafile(filename)
-                    end
-
-                end
+    -- when not overloaded by explicit suffix we look for a luc file first
+    local fullname = (lucname and environment.luafile(lucname)) or ""
+    if fullname ~= "" then
+        input.report("loading %s", fullname)
+        chunk = loadfile(fullname) -- this way we don't need a file exists check
+    end
+    if chunk then
+        assert(chunk)()
+        if version then
+            -- we check of the version number of this chunk matches
+            local v = version -- can be nil
+            if modules and modules[filename] then
+                v = modules[filename].version -- new method
+            elseif versions and versions[filename] then
+                v = versions[filename]        -- old method
+            end
+            if v == version then
+                return true
             else
+                input.report("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
                 environment.loadluafile(filename)
             end
         else
-            environment.loadluafile(filename)
+            return true
         end
     end
+    fullname = (luaname and environment.luafile(luaname)) or ""
+    if fullname ~= "" then
+        input.report("loading %s", fullname)
+        chunk = loadfile(fullname) -- this way we don't need a file exists check
+        if not chunk then
+            input.report("unknown file %s", filename)
+        else
+            assert(chunk)()
+            return true
+        end
+    end
+    return false
 end
 
 -- -- -- the next function was posted by Peter Cawley on the lua list -- -- --
@@ -145,6 +104,8 @@ end
 -- -- -- stripping makes the compressed format file about 1MB smaller -- -- --
 -- -- --                                                              -- -- --
 -- -- -- using this trick is at your own risk                         -- -- --
+-- -- --                                                              -- -- --
+-- -- -- this is just an experiment, this feature may disappear       -- -- --
 
 local function strip_code(dump)
     local version, format, endian, int, size, ins, num = dump:byte(5, 11)

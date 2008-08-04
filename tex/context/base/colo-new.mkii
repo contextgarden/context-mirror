@@ -1822,9 +1822,10 @@
 
 %D Slow but ok \unknown
 
-\def\colorcomponents#1%
+\def\colorcomponents#1% might be broken
   {\startnointerference
      \localcolortrue
+     \globallet\thecolorcomponents\empty
      \def\doexeccolorR    ##1:##2:##3:##4:##5\od{\gdef\thecolorcomponents{r=\twodigitrounding{##1} g=\twodigitrounding{##2} b=\twodigitrounding{##3}}}%
      \def\doexeccolorC##1:##2:##3:##4:##5:##6\od{\gdef\thecolorcomponents{c=\twodigitrounding{##1} m=\twodigitrounding{##2} y=\twodigitrounding{##3} k=\twodigitrounding{##4}}}%
      \def\doexeccolorS            ##1:##2:##3\od{\gdef\thecolorcomponents{s=\twodigitrounding{##1}}}%
@@ -1837,6 +1838,7 @@
 \def\transparencycomponents#1%
   {\startnointerference
      \localcolortrue
+     \globallet\thetransparencycomponents\empty
      \def\doexeccolorR    ##1:##2:##3:##4:##5\od{\gdef\thetransparencycomponents{a=\twodigitrounding{##4} t=\twodigitrounding{##5}}}%
      \def\doexeccolorC##1:##2:##3:##4:##5:##6\od{\gdef\thetransparencycomponents{a=\twodigitrounding{##5} t=\twodigitrounding{##6}}}%
      \def\doexeccolorS            ##1:##2:##3\od{\gdef\thetransparencycomponents{a=\twodigitrounding{##2} t=\twodigitrounding{##3}}}%
@@ -1844,7 +1846,7 @@
      \let\doexeccolorPindex\doexeccolorP
      \backgroundline[#1]{}%
    \stopnointerference
-   \thecolorcomponents}
+   \thetransparencycomponents}
 
 %D \macros
 %D   {everyshapebox}

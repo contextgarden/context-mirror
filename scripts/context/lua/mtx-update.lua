@@ -11,8 +11,6 @@ if not modules then modules = { } end modules ['mtx-update'] = {
 -- Together with Arthur Reutenauer she made sure that it worked well on all
 -- platforms that matter.
 
-texmf.instance  = instance -- we need to get rid of this / maybe current instance in global table
-
 scripts         = scripts         or { }
 scripts.update  = scripts.update  or { }
 
@@ -122,17 +120,23 @@ scripts.update.engines = {
 }
 
 scripts.update.platforms = {
-    ["mswin"]     = "mswin",
-    ["windows"]   = "mswin",
-    ["win32"]     = "mswin",
-    ["win"]       = "mswin",
-    ["linux"]     = "linux",
-    ["freebsd"]   = "freebsd",
-    ["linux-32"]  = "linux",
-    ["linux-64"]  = "linux-64",
-    ["osx"]       = "osx-intel",
-    ["osx-intel"] = "osx-intel",
-    ["osx-ppc"]   = "osx-ppc",
+    ["mswin"]       = "mswin",
+    ["windows"]     = "mswin",
+    ["win32"]       = "mswin",
+    ["win"]         = "mswin",
+    ["linux"]       = "linux",
+    ["freebsd"]     = "freebsd",
+    ["linux-32"]    = "linux",
+    ["linux-64"]    = "linux-64",
+    ["linux32"]     = "linux",
+    ["linux64"]     = "linux-64",
+    ["osx"]         = "osx-intel",
+    ["osx-intel"]   = "osx-intel",
+    ["osx-ppc"]     = "osx-ppc",
+    ["osx-powerpc"] = "osx-ppc",
+    ["osxintel"]    = "osx-intel",
+    ["osxppc"]      = "osx-ppc",
+    ["osxpowerpc"]  = "osx-ppc",
 }
 
 function scripts.update.run(str)
@@ -185,7 +189,8 @@ function scripts.update.synchronize()
                             local destination = string.format("%s/%s", texroot, collection[2]:gsub("<platform>", platform))
                             destination = destination:gsub("\\","/")
                             archive = archive:gsub("<version>",version)
-                            if platform == "windows" or platform == "mswin" then
+--~                             if platform == "windows" or platform == "mswin" then
+                            if os.currentplatform() == "windows" or os.currentplatform() == "mswin" then
                                 destination = destination:gsub("([a-zA-Z]):/", "/cygdrive/%1/")
                             end
                             individual[#individual+1] = { archive, destination }

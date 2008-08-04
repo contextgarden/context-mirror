@@ -244,7 +244,7 @@
      {\expanded{\dodocomplexsplitfloat[\currentfloat][\floatlocation]}}
      {\expanded{\dodocomplexplacefloat[\currentfloat][\floatlocation]}}}
 
-\def\dodocomplexsplitfloat[#1][#2][#3]#4%
+\long\def\dodocomplexsplitfloat[#1][#2][#3]#4%
   {\splitfloat{\dodocomplexplacefloat[#1][#2][#3]{#4}}}
 
 \def\flushfloatslist
@@ -255,7 +255,7 @@
    \v!innermargin,\v!outermargin,\v!inneredge,\v!outeredge,%
    \v!text,\v!opposite}% \v!page
 
-\def\dodocomplexplacefloat[#1][#2][#3]#4%
+\long\def\dodocomplexplacefloat[#1][#2][#3]#4%
   {\flushnotes
    \flushsidefloats % here !
    \ifsomefloatwaiting
@@ -304,7 +304,7 @@
 
 \let\floatrotation\!!zerocount
 
-\def\presetfloatvariables#1#2#3#4%
+\long\def\presetfloatvariables#1#2#3#4%
   {\doifcommonelse
      {#2}
      {\v!left,\v!right,\v!inner,\v!outer,%
@@ -481,7 +481,7 @@
 \def\hangsidefloat[#1]%
   {\global\sidefloatsidelines#1\relax}
 
-\def\xdocompletefloat#1#2#3#4#5#6%
+\long\def\xdocompletefloat#1#2#3#4#5#6%
   {\ifextrafloatactions
      \doifinsetelse\v!text{#4}
        {% fuzzy, text overloads left, since then it's a directive
@@ -559,7 +559,7 @@
    \flushsidefloats % hoort eigenlijk niet hier
    \docomplexplacefloat[#1][\v!text,#2,\v!left][#3]}
 
-\def\docomplexreserveblock[#1][#2][#3][#4]#5%
+\long\def\docomplexreserveblock[#1][#2][#3][#4]#5%
   {\getvalue{\e!place#1}[#3][#4]{#5}{\localframed[\??fl#1][#2]{#1}}}
 
 \def\docomplexstartreservetextblock[#1][#2][#3][#4]%
@@ -1281,7 +1281,7 @@
 \def\placefloatcaption
   {\dodoubleempty\doplacefloatcaption}
 
-\def\doplacefloatcaption[#1][#2]#3%
+\long\def\doplacefloatcaption[#1][#2]#3%
   {\setfloatcaption[#1][#2]{#3}%
    \placefloatcaptiontext[#1]%
    \placefloatcaptionreference[#1]}
@@ -1289,7 +1289,7 @@
 \def\setfloatcaption % \dosetfloatcaption already in use
   {\dodoubleempty\dodosetfloatcaption} % beware, name clash
 
-\def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
+\long\def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
   {\ifnofloatnumber               % also handle trialtypesetting
      \letgvalue{@fl@r@#1}\relax
      \letgvalue{@fl@t@#1}\relax
@@ -1329,7 +1329,7 @@
 
 \newbox\captionbox
 
-\def\putcompletecaption#1#2%
+\long\def\putcompletecaption#1#2%
   {\doifsomething{\floatcaptionparameter\c!spacebefore}{\blank[\floatcaptionparameter\c!spacebefore]}%
 % \floatcaptionparameter\c!before % test for side effects first
    \noindent
@@ -1405,7 +1405,7 @@
 \def\dofakecaptionthings
   {\hbox{\dosetcaptionthings\hskip\leftskip\hskip\rightskip}}
 
-\def\docheckcaptioncontent#1#2%
+\long\def\docheckcaptioncontent#1#2%
   {\ifnofloatcaption \else
      \setbox\tempcaptionbox\hbox
        {\trialtypesettingtrue
@@ -1442,7 +1442,7 @@
      {\floatcaptionparameter\c!innermargin}{\floatcaptionparameter\c!outermargin}%
    \alignedline{\floatparameter\c!location}\v!middle}
 
-\def\dosetpagfloat#1#2#3% \copy wegwerken
+\long\def\dosetpagfloat#1#2#3% \copy wegwerken
   {\bgroup
    \setlocalfloathsize
    \ifnum\floatrotation>0
@@ -1977,7 +1977,7 @@
       \box\floatbox
       \ifdone\hskip\effectiverightskip\fi\hss}}
 
-\def\dosetparfloat#1#2#3%
+\long\def\dosetparfloat#1#2#3%
   {\bgroup
    \forgetall
    \postponenotes
@@ -2076,7 +2076,7 @@
    \xdef\naturalfloatwidth {\the\wd#1}%
    \xdef\naturalfloatdepth {\the\dp#1}}
 
-\def\doifelsemainfloatbody#1#2%
+\long\def\doifelsemainfloatbody#1#2%
   {\ifinsidesplitfloat\ifconditional\splitfloatfirstdone#2\else#1\fi\else#1\fi}
 
 

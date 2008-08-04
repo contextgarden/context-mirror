@@ -1,0 +1,6 @@
+\def\mksetXMLtokensreduction % mkii
+  {\ifcase\XMLtokensreduction
+     \setcatcodetable\xmlcatcodese \or
+     \setcatcodetable\xmlcatcodesr \else
+     \setcatcodetable\xmlcatcodesn
+   \fi}

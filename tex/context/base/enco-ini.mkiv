@@ -18,10 +18,12 @@
 \startruntimectxluacode
     characters.context.rehash()
 \stopruntimectxluacode
+% \ctxlua{characters.context.rehash()}
 
 \ctxlua{characters.context.define()}
 
 \startextendcatcodetable\ctxcatcodes \ctxlua{characters.context.activate()}\stopextendcatcodetable
+\startextendcatcodetable\notcatcodes \ctxlua{characters.context.activate()}\stopextendcatcodetable
 \startextendcatcodetable\xmlcatcodesn\ctxlua{characters.context.activate()}\stopextendcatcodetable
 \startextendcatcodetable\xmlcatcodese\ctxlua{characters.context.activate()}\stopextendcatcodetable
 \startextendcatcodetable\xmlcatcodesr\ctxlua{characters.context.activate()}\stopextendcatcodetable

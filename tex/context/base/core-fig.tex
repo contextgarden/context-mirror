@@ -33,14 +33,21 @@
 
 \def\doplaceexternalfigure[#1][#2][#3][#4][#5]%
   {\doifsomething{#2}% catches \defineexternalfigure dummies
-     {\bgroup
-      \pushmacro\textunderscore
-      \edef\textunderscore{\string_}% brrr, temp hack, still needed?
-      \calculateexternalfigure      [][#1][#2][#3][#4][#5]% [] is dummy dwcomp
-      \calculateexternalscreenfigure[][#1][#2][#3][#4][#5]% [] is dummy dwcomp
-      \popmacro\textunderscore
-      \box\foundexternalfigure
-      \egroup}}
+     {\doifundefinedelse{\??ef\??ef#2}
+        {\dodoplaceexternalfigure[#1][#2][#3][#4][#5]}
+        {\doifelse{#1}{#2}
+           {\dodoplaceexternalfigure[#1][#2][#3][#4][#5]}
+           {\getvalue{\??ef\??ef#2}[#5]}}}}
+
+\def\dodoplaceexternalfigure[#1][#2][#3][#4][#5]%
+  {\bgroup
+   \pushmacro\textunderscore
+   \edef\textunderscore{\string_}% brrr, temp hack, still needed?
+   \calculateexternalfigure      [][#1][#2][#3][#4][#5]% [] is dummy dwcomp
+   \calculateexternalscreenfigure[][#1][#2][#3][#4][#5]% [] is dummy dwcomp
+   \popmacro\textunderscore
+   \box\foundexternalfigure
+   \egroup}
 
 \def\externalfigurereplacement#1#2#3%
   {\setupcolors
@@ -504,6 +511,8 @@
    \c!prefix=,
    \c!cache=,
 %  \c!grid=,
+   \c!equalwidth=,
+   \c!equalheight=,
    \c!location={\v!local,\v!global}]
 
 \setupexternalfigures

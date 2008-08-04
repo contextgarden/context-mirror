@@ -10,22 +10,25 @@ if not modules then modules = { } end modules ['font-tfm'] = {
 <p>Here we only implement a few helper functions.</p>
 --ldx]]--
 
-fonts            = fonts            or { }
-fonts.loaded     = fonts.loaded     or { }
-fonts.dontembed  = fonts.dontembed  or { }
-fonts.logger     = fonts.logger     or { }
+fonts     = fonts     or { }
+fonts.tfm = fonts.tfm or { }
+
+local tfm = fonts.tfm
+
+fonts.loaded     = fonts.loaded    or { }
+fonts.dontembed  = fonts.dontembed or { }
+fonts.logger     = fonts.logger    or { }
 fonts.loadtime   = 0
-fonts.tfm        = fonts.tfm        or { }
-fonts.triggers   = fonts.triggers   or { } -- brrr
+fonts.triggers   = fonts.triggers  or { } -- brrr
 
 --[[ldx--
 <p>The next function encapsulates the standard <l n='tfm'/> loader as
 supplied by <l n='luatex'/>.</p>
 --ldx]]--
 
-fonts.tfm.resolve_vf = true -- false
+tfm.resolve_vf = true -- false
 
-function fonts.tfm.enhance(tfmdata,specification)
+function tfm.enhance(tfmdata,specification)
     local name, size = specification.name, specification.size
     local encoding, filename = name:match("^(.-)%-(.*)$") -- context: encoding-name.*
     if filename and encoding and fonts.enc.known[encoding] then
@@ -34,25 +37,26 @@ function fonts.tfm.enhance(tfmdata,specification)
             local characters = tfmdata.characters
             tfmdata.encoding = encoding
             local vector = data.vector
+            local original = { }
             for k, v in pairs(characters) do
                 v.name = vector[k]
                 v.index = k
+                original[k] = v
             end
             for k,v in pairs(data.unicodes) do
                 if k ~= v then
-                --  if not characters[k] then
-                        if fonts.trace then
-                            logs.report("define font",string.format("mapping %s onto %s",k,v))
-                        end
-                        characters[k] = characters[v]
-                --  end
+                    if fonts.trace then
+                        logs.report("define font","mapping %s onto %s",k,v)
+                    end
+                --  characters[k] = characters[v]
+                    characters[k] = original[v]
                 end
             end
         end
     end
 end
 
-function fonts.tfm.read_from_tfm(specification)
+function tfm.read_from_tfm(specification)
     local fname, tfmdata = specification.filename, nil
     if fname then
         -- safeguard, we use tfm as fallback
@@ -62,19 +66,19 @@ function fonts.tfm.read_from_tfm(specification)
         end
     end
     if not fname or fname == "" then
-        fname = input.findbinfile(texmf.instance, specification.name, 'ofm')
+        fname = input.findbinfile(specification.name, 'ofm')
     else
-        fname = input.findbinfile(texmf.instance, fname, 'ofm')
+        fname = input.findbinfile(fname, 'ofm')
     end
     if fname and fname ~= "" then
         if fonts.trace then
-            logs.report("define font",string.format("loading tfm file %s at size %s",fname,specification.size))
+            logs.report("define font","loading tfm file %s at size %s",fname,specification.size)
         end
         tfmdata = font.read_tfm(fname,specification.size) -- not cached, fast enough
         if tfmdata then
-            if fonts.tfm.resolve_vf then
+            if tfm.resolve_vf then
                 fonts.logger.save(tfmdata,file.extname(fname),specification) -- strange, why here
-                fname = input.findbinfile(texmf.instance, specification.name, 'ovf')
+                fname = input.findbinfile(specification.name, 'ovf')
                 if fname and fname ~= "" then
                     local vfdata = font.read_vf(fname,specification.size) -- not cached, fast enough
                     if vfdata then
@@ -88,11 +92,11 @@ function fonts.tfm.read_from_tfm(specification)
                 end
 --~ print(table.serialize(tfmdata))
             end
-            fonts.tfm.enhance(tfmdata,specification)
+            tfm.enhance(tfmdata,specification)
         end
     else
         if fonts.trace then
-            logs.report("define font",string.format("loading tfm with name %s fails",specification.name))
+            logs.report("define font","loading tfm with name %s fails",specification.name)
         end
     end
     return tfmdata
@@ -111,33 +115,33 @@ do
         bp = 65781.8,
     }
 
-    function fonts.tfm.setfactor(f)
-        fonts.tfm.factor = factors[f or 'pt'] or factors.pt
+    function tfm.setfactor(f)
+        tfm.factor = factors[f or 'pt'] or factors.pt
     end
 
-    fonts.tfm.setfactor()
+    tfm.setfactor()
 
 end
 
-function fonts.tfm.scaled(scaledpoints, designsize) -- handles designsize in sp as well
+function tfm.scaled(scaledpoints, designsize) -- handles designsize in sp as well
     if scaledpoints < 0 then
         if designsize then
-            if designsize > fonts.tfm.factor then -- or just 1000 / when? mp?
+            if designsize > tfm.factor then -- or just 1000 / when? mp?
                 return (- scaledpoints/1000) * designsize -- sp's
             else
-                return (- scaledpoints/1000) * designsize * fonts.tfm.factor
+                return (- scaledpoints/1000) * designsize * tfm.factor
             end
         else
-            return (- scaledpoints/1000) * 10 * fonts.tfm.factor
+            return (- scaledpoints/1000) * 10 * tfm.factor
         end
     else
         return scaledpoints
     end
 end
 
---~ function fonts.tfm.scaled(scaledpoints, designsize)
+--~ function tfm.scaled(scaledpoints, designsize)
 --~     if scaledpoints < 0 then
---~         return (- scaledpoints/1000) * (designsize or 10) * fonts.tfm.factor
+--~         return (- scaledpoints/1000) * (designsize or 10) * tfm.factor
 --~     else
 --~         return scaledpoints
 --~     end
@@ -148,7 +152,7 @@ end
 to scale virtual characters.</p>
 --ldx]]--
 
-function fonts.tfm.get_virtual_id(tfmdata)
+function tfm.get_virtual_id(tfmdata)
     --  since we don't know the id yet, we use 0 as signal
     if not tfmdata.fonts then
         tfmdata.type = "virtual"
@@ -160,7 +164,7 @@ function fonts.tfm.get_virtual_id(tfmdata)
     end
 end
 
-function fonts.tfm.check_virtual_id(tfmdata, id)
+function tfm.check_virtual_id(tfmdata, id)
     if tfmdata and tfmdata.type == "virtual" then
         if not tfmdata.fonts or #tfmdata.fonts == 0 then
             tfmdata.type, tfmdata.fonts = "real", nil
@@ -182,7 +186,7 @@ excessive memory usage in CJK fonts, we no longer pass the boundingbox.)</p>
 
 fonts.trace_scaling = false
 
-function fonts.tfm.do_scale(tfmtable, scaledpoints)
+function tfm.do_scale(tfmtable, scaledpoints)
     local trace = fonts.trace_scaling
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
@@ -222,7 +226,7 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
             class   = description.class
         }
         if trace then
-            logs.report("define font", string.format("n=%s, u=%s, i=%s, n=%s c=%s",k,description.unicode,description.index,description.name or '-',description.class or '-'))
+            logs.report("define font","n=%s, u=%s, i=%s, n=%s c=%s",k,description.unicode,description.index,description.name or '-',description.class or '-')
         end
     --  local vb = v.boundingbox
     --  if vb then
@@ -267,17 +271,29 @@ function fonts.tfm.do_scale(tfmtable, scaledpoints)
         local vc = v.commands
         if vc then
             -- we assume non scaled commands here
-            local tt = { }
+            local ok = false
             for i=1,#vc do
-                local ivc = vc[i]
-                local key = ivc[1]
+                local key = vc[i][1]
                 if key == "right" or key == "left" or key == "down" or key == "up" then
-                    tt[#tt+1] = { key, ivc[2]*delta }
-                else -- not comment
-                    tt[#tt+1] = ivc -- shared since in cache and untouched
+                    ok = true
+                    break
                 end
             end
-            chr.commands = tt
+            if ok then
+                local tt = { }
+                for i=1,#vc do
+                    local ivc = vc[i]
+                    local key = ivc[1]
+                    if key == "right" or key == "left" or key == "down" or key == "up" then
+                        tt[#tt+1] = { key, ivc[2]*delta }
+                    else -- not comment
+                        tt[#tt+1] = ivc -- shared since in cache and untouched
+                    end
+                end
+                chr.commands = tt
+            else
+                chr.commands = vc
+            end
         end
         tc[k] = chr
     end
@@ -296,14 +312,30 @@ make this profitable and the <l n='lua'/> based variant was just faster. A days
 wasted day but an experience richer.</p>
 --ldx]]--
 
-function fonts.tfm.scale(tfmtable, scaledpoints)
-    local t, factor = fonts.tfm.do_scale(tfmtable, scaledpoints)
+tfm.auto_cleanup = true
+
+local lastfont = nil
+
+function tfm.cleanup(tfmdata) -- we need a cleanup callback, now we miss the last one
+    if tfm.auto_cleanup then  -- ok, we can hook this into everyshipout or so ... todo
+        if lastfont and lastfont.type == 'virtual' then
+            for k, v in pairs(lastfont.characters) do
+                if v.commands then v.commands = nil end
+            end
+        end
+        lastfont = type(tfmdata) == "table" and tfmdata
+    end
+end
+
+function tfm.scale(tfmtable, scaledpoints)
+    local t, factor = tfm.do_scale(tfmtable, scaledpoints)
     t.factor    = factor
     t.ascender  = factor*(tfmtable.ascender  or 0)
     t.descender = factor*(tfmtable.descender or 0)
     t.shared    = tfmtable.shared or { }
     t.unique    = table.fastcopy(tfmtable.unique or {})
---~ print("scaling", t.name, t.factor) -- , fonts.tfm.hash_features(tfmtable.specification))
+--~ print("scaling", t.name, t.factor) -- , tfm.hash_features(tfmtable.specification))
+    tfm.cleanup(t)
     return t
 end
 
@@ -317,7 +349,7 @@ used for which font.</p>
 function fonts.logger.save(tfmtable,source,specification) -- save file name in spec here ! ! ! ! ! !
     if tfmtable and specification and specification.specification then
         if fonts.trace then
-            logs.report("define font",string.format("registering %s as %s",specification.name,source))
+            logs.report("define font","registering %s as %s",specification.name,source)
         end
         specification.source = source
         fonts.loaded[specification.specification] = specification
@@ -442,7 +474,7 @@ do
                     if p then
                         local oldchr, newchr = unicodes[p], unicodes[name]
                         if oldchr and newchr then
-                         -- texio.write_nl(string.format("%s (%s) -> %s (%s)",p,oldchr or -1,name,newchr or -1))
+                         -- logs.report("encoding","%s (%s) -> %s (%s)",p,oldchr or -1,name,newchr or -1)
                             characters[oldchr] = characters[newchr]
                         end
                     end
@@ -460,7 +492,7 @@ do
 
     -- when needed we can provide this as features in e.g. afm files
 
-    function fonts.initializers.common.remap(tfmdata,value,pattern)
+    function fonts.initializers.common.remap(tfmdata,value,pattern) -- will go away
         if value then
             local afmdata = tfmdata.shared.afmdata
             local characters = tfmdata.characters
@@ -529,7 +561,7 @@ fonts.analyzers.initializers = fonts.analyzers.initializers or { }
 do
 
     local glyph           = node.id('glyph')
-    local fontdata        = fonts.tfm.id
+    local fontdata        = tfm.id
     local set_attribute   = node.set_attribute
 --  local unset_attribute = node.unset_attribute
 --  local has_attribute   = node.has_attribute
@@ -593,7 +625,7 @@ end
 do
 
     local glyph         = node.id('glyph')
-    local fontdata      = fonts.tfm.id
+    local fontdata      = tfm.id
     local marknumber    = attributes.numbers['mark'] or 200
     local set_attribute = node.set_attribute
 
@@ -701,13 +733,13 @@ do
 
 end
 
-function fonts.tfm.replacements(tfm,value)
---~     tfm.characters[0x0022] = table.fastcopy(tfm.characters[0x201D])
---~     tfm.characters[0x0027] = table.fastcopy(tfm.characters[0x2019])
---~     tfm.characters[0x0060] = table.fastcopy(tfm.characters[0x2018])
---~     tfm.characters[0x0022] = tfm.characters[0x201D]
+function tfm.replacements(tfm,value)
+ -- tfm.characters[0x0022] = table.fastcopy(tfm.characters[0x201D])
+ -- tfm.characters[0x0027] = table.fastcopy(tfm.characters[0x2019])
+ -- tfm.characters[0x0060] = table.fastcopy(tfm.characters[0x2018])
+ -- tfm.characters[0x0022] = tfm.characters[0x201D]
     tfm.characters[0x0027] = tfm.characters[0x2019]
---~     tfm.characters[0x0060] = tfm.characters[0x2018]
+ -- tfm.characters[0x0060] = tfm.characters[0x2018]
 end
 
 -- auto complete font with missing composed characters
@@ -719,3 +751,135 @@ function fonts.initializers.common.compose(tfmdata,value)
         fonts.vf.aux.compose_characters(tfmdata)
     end
 end
+
+-- tfm features, experimental
+
+tfm.features         = tfm.features         or { }
+tfm.features.list    = tfm.features.list    or { }
+tfm.features.default = tfm.features.default or { }
+
+function tfm.enhance(tfmdata,specification)
+    -- we don't really share tfm data because we always reload
+    -- but this is more in sycn with afm and such
+    local features = (specification.features and specification.features.normal ) or { }
+    tfmdata.shared = tfmdata.shared or { }
+    tfmdata.shared.features = features
+    --  tfmdata.shared.tfmdata = tfmdata -- circular
+tfmdata.filename = specification.name
+    if not features.encoding then
+        local name, size = specification.name, specification.size
+        local encoding, filename = name:match("^(.-)%-(.*)$") -- context: encoding-name.*
+        if filename and encoding and fonts.enc.known[encoding] then
+            features.encoding = encoding
+        end
+    end
+    tfm.set_features(tfmdata)
+end
+
+function tfm.set_features(tfmdata)
+    local shared = tfmdata.shared
+--  local tfmdata = shared.tfmdata
+    local features = shared.features
+    if not table.is_empty(features) then
+        local mode = tfmdata.mode or fonts.mode
+        local fi = fonts.initializers[mode]
+        if fi and fi.tfm then
+            local function initialize(list) -- using tex lig and kerning
+                if list then
+                    for _, f in ipairs(list) do
+                        local value = features[f]
+                        if value and fi.tfm[f] then -- brr
+                            if tfm.trace_features then
+                                logs.report("define tfm","initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
+                            end
+                            fi.tfm[f](tfmdata,value)
+                            mode = tfmdata.mode or fonts.mode
+                            fi = fonts.initializers[mode]
+                        end
+                    end
+                end
+            end
+            initialize(fonts.triggers)
+            initialize(tfm.features.list)
+            initialize(fonts.manipulators)
+        end
+        local fm = fonts.methods[mode]
+        if fm and fm.tfm then
+            local function register(list) -- node manipulations
+                if list then
+                    for _, f in ipairs(list) do
+                        if features[f] and fm.tfm[f] then -- brr
+                            if not shared.processors then -- maybe also predefine
+                                shared.processors = { fm.tfm[f] }
+                            else
+                                shared.processors[#shared.processors+1] = fm.tfm[f]
+                            end
+                        end
+                    end
+                end
+            end
+            register(tfm.features.list)
+        end
+    end
+end
+
+function tfm.features.register(name,default)
+    tfm.features.list[#tfm.features.list+1] = name
+    tfm.features.default[name] = default
+end
+
+function tfm.reencode(tfmdata,encoding)
+    if encoding and fonts.enc.known[encoding] then
+        local data = fonts.enc.load(encoding)
+        if data then
+            local characters, original, vector = tfmdata.characters, { }, data.vector
+            tfmdata.encoding = encoding -- not needed
+            for k, v in pairs(characters) do
+                v.name, v.index, original[k] = vector[k], k, v
+            end
+            for k,v in pairs(data.unicodes) do
+                if k ~= v then
+                    if fonts.trace then
+                        logs.report("define font","reencoding %04X to %04X",k,v)
+                    end
+                    characters[k] = original[v]
+                end
+            end
+        end
+    end
+end
+
+tfm.features.register('reencode')
+
+fonts.initializers.base.tfm.reencode = tfm.reencode
+fonts.initializers.node.tfm.reencode = tfm.reencode
+
+fonts.enc            = fonts.enc            or { }
+fonts.enc.remappings = fonts.enc.remappings or { }
+
+function tfm.remap(tfmdata,remapping)
+    local vector = remapping and fonts.enc.remappings[remapping]
+    if vector then
+        local characters, original = tfmdata.characters, { }
+        for k, v in pairs(characters) do
+            original[k], characters[k] = v, nil
+        end
+        for k,v in pairs(vector) do
+            if k ~= v then
+                if fonts.trace then
+                    logs.report("define font","remapping %04X to %04X",k,v)
+                end
+                local c = original[k]
+                characters[v] = c
+                c.index = k
+            end
+        end
+        tfmdata.encodingbytes = 2
+        tfmdata.format = 'type1'
+    end
+end
+
+tfm.features.register('remap')
+
+fonts.initializers.base.tfm.remap = tfm.remap
+fonts.initializers.node.tfm.remap = tfm.remap

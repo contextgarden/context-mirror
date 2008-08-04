@@ -80,7 +80,7 @@
 
 \newif\iftmpblockstarted
 
-\def\flushbufferline#1%
+\long\def\flushbufferline#1%
   {\iftmpblockstarted
      \ifsegmentatebuffer
        \ifemptybufferline

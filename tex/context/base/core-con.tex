@@ -592,8 +592,6 @@
 %D that the number is indeed end up as number in the input, so we
 %D need to handle the second argument.
 
-\beginETEX \ifcsname
-
 \def\convertnumber#1#2%
   {\csname\??cv
      \ifcsname\??cv\currentlanguage#1\endcsname
@@ -613,36 +611,6 @@
    \else
      \@EAEAEA\secondoftwoarguments
    \fi\fi}
-
-\endETEX
-
-\beginTEX
-
-\def\convertnumber#1#2%
-  {\csname\??cv
-     \@EA\ifx\csname\??cv\currentlanguage#1\endcsname\relax
-       \@EA\ifx\csname\??cv#1\endcsname\relax
-         \s!default
-       \else
-         #1%
-       \fi
-     \else
-       \currentlanguage#1%
-     \fi
-   \endcsname{\number#2}}
-
-\def\doifconversiondefinedelse#1%
-  {\@EA\ifx\csname\??cv\currentlanguage#1\endcsname\relax
-     \@EA\ifx\csname\??cv#1\endcsname\relax
-       \@EAEAEA\secondoftwoarguments
-     \else
-       \@EAEAEA\firstoftwoarguments
-     \fi
-   \else
-     \@EA\firstoftwoarguments
-   \fi}
-
-\endTEX
 
 \def\doifelseconversionnumber#1#2% slow but seldom used
   {\doifdefinedelse{\??cv#1#2}}
@@ -700,8 +668,8 @@
 \defineconversion [\v!greek]         [\greeknumerals]
 \defineconversion [\v!Greek]         [\Greeknumerals]
 
-\defineconversion [arabicnumerals]   [\numbers]
-\defineconversion [persiannumerals]  [\numbers]
+\defineconversion [arabicnumerals]   [\arabicnumerals]
+\defineconversion [persiannumerals]  [\arabicnumerals]
 
 \defineconversion [month]            [\doconvertmonthlong]
 \defineconversion [month:mnem]       [\doconvertmonthshort]

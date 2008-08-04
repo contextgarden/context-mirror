@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['font-syn'] = {
 using a table that has keys filtered from the font related files.</p>
 --ldx]]--
 
+local texsprint = tex.sprint
+
 fonts = fonts or { }
 input = input or { }
 texmf = texmf or { }
@@ -25,6 +27,7 @@ fonts.names.be_clever  = true
 fonts.names.enabled    = true
 fonts.names.autoreload = toboolean(os.env['MTX.FONTS.AUTOLOAD'] or os.env['MTX_FONTS_AUTOLOAD'] or "no")
 fonts.names.cache      = containers.define("fonts","data",fonts.names.version,true)
+fonts.names.trace      = false
 
 --[[ldx--
 <p>It would make sense to implement the filters in the related modules,
@@ -66,7 +69,7 @@ for combination with the weight of a font.</p>
 --ldx]]--
 
 fonts.names.filters.list = {
-    "otf", "ttf", "ttc", "afm" -- pfb is quite messy, too many messages, maybe broken
+    "otf", "ttf", "ttc", "afm",
 }
 
 fonts.names.filters.fixes = {
@@ -77,9 +80,9 @@ fonts.names.filters.fixes = {
 }
 
 fonts.names.xml_configuration_file    = "fonts.conf" -- a bit weird format, bonus feature
-fonts.names.environment_path_variable = "osfontdir"  -- the official way, in minimals etc
+fonts.names.environment_path_variable = "OSFONTDIR"  -- the official way, in minimals etc
 
-function fonts.names.getpaths(instance)
+function fonts.names.getpaths()
     local hash, result = { }, { }
     local function collect(t)
         for i=1, #t do
@@ -91,13 +94,13 @@ function fonts.names.getpaths(instance)
             end
         end
     end
-    local path = fonts.names.environment_path_variable
-    if path and path ~= "" then
-        collect(input.expanded_path_list(instance,path))
+    local path = fonts.names.environment_path_variable or ""
+    if path ~= "" then
+        collect(input.expanded_path_list(path))
     end
-    local name = fonts.names.xml_configuration_file
-    if name and not name == "" then
-        local name = input.find_file(instance,name,"other")
+    local name = fonts.names.xml_configuration_file or ""
+    if name ~= "" then
+        local name = input.find_file(name,"other")
         if name ~= "" then
             collect(xml.collect_texts(xml.load(name),"dir",true))
         end
@@ -108,7 +111,7 @@ function fonts.names.getpaths(instance)
     return result
 end
 
-function fonts.names.identify()
+function fonts.names.identify(verbose)
     fonts.names.data = {
         mapping = { },
         version = fonts.names.version
@@ -135,13 +138,19 @@ function fonts.names.identify()
             add(madename, fontname, filename, suffix, is_sub)
         end
     end
+    local trace = verbose or fonts.names.trace
+    local filters = fonts.names.filters
     local function identify(completename,name,suffix)
         if not done[name] and io.exists(completename) then
             nofread = nofread + 1
-            logs.info("fontnames", "identifying " .. suffix .. " font " .. completename)
-            logs.push()
-            local result = fonts.names.filters[suffix](completename)
-            logs.pop()
+            if trace then
+                logs.report("fontnames","identifying %s font %s",suffix,completename)
+                logs.push()
+            end
+            local result = filters[suffix:lower()](completename)
+            if trace then
+                logs.pop()
+            end
             if result then
                 if not result[1] then
                     check(result,name,suffix,false)
@@ -153,35 +162,38 @@ function fonts.names.identify()
         end
     end
     local function traverse(what, method)
-        for n, suffix in pairs(fonts.names.filters.list) do
+        for n, suffix in ipairs(fonts.names.filters.list) do
             nofread, nofok  = 0, 0
             local t = os.gettimeofday() -- use elapser
-            logs.report("fontnames", string.format("identifying %s font files with suffix %s",what,suffix))
+            suffix = suffix:lower()
+            logs.report("fontnames", "identifying %s font files with suffix %s",what,suffix)
             method(suffix)
-            logs.report("fontnames", string.format("%s %s files identified, %s hash entries added, runtime %s seconds", nofread, what,nofok, os.gettimeofday()-t))
+            suffix = suffix:upper()
+            logs.report("fontnames", "identifying %s font files with suffix %s",what,suffix)
+            method(suffix)
+            logs.report("fontnames", "%s %s files identified, %s hash entries added, runtime %0.3f seconds",nofread,what,nofok,os.gettimeofday()-t)
         end
     end
-    traverse("tree", function(suffix)
-        input.with_files(texmf.instance,".*%." .. suffix .. "$", function(method,root,path,name)
+    traverse("tree", function(suffix) -- TEXTREE only
+        input.with_files(".*%." .. suffix .. "$", function(method,root,path,name)
             if method == "file" then
                 identify(root .."/" .. path .. "/" .. name,name,suffix)
             end
         end)
     end)
-    traverse("system", function(suffix)
-        local pathlist = fonts.names.getpaths(texmf.instance) -- input.expanded_path_list(texmf.instance,"osfontdir")
+    traverse("system", function(suffix) -- OSFONTDIR cum suis
+        local pathlist = fonts.names.getpaths()
         if pathlist then
             for _, path in ipairs(pathlist) do
                 path = input.clean_path(path .. "/")
                 path = path:gsub("/+","/")
                 local pattern = path .. "*." .. suffix
-                logs.report("fontnames", "globbing path " .. pattern)
+                logs.report("fontnames", "globbing path %s",pattern)
                 local t = dir.glob(pattern)
                 for _, name in pairs(t) do -- ipairs
-                    local mode = lfs.attributes(name,'mode')
-                    if mode == "file" then
+                --  if lfs.isfile(name) then -- always true anyway
                         identify(name,file.basename(name),suffix)
-                    end
+                --  end
                 end
             end
         end
@@ -201,11 +213,11 @@ function fonts.names.identify()
     end
 end
 
-function fonts.names.load(reload)
+function fonts.names.load(reload,verbose)
     if not fonts.names.loaded then
         if reload then
             if containers.is_usable(fonts.names.cache(), "names") then
-                fonts.names.identify()
+                fonts.names.identify(verbose)
                 containers.write(fonts.names.cache(), "names", fonts.names.data)
             end
             fonts.names.saved = true
@@ -314,19 +326,19 @@ end
 function fonts.names.table(pattern,reload,all)
     local t = fonts.names.list(pattern,reload)
     if t then
-        tex.sprint(tex.ctxcatcodes,"\\start\\nonknuthmode\\starttabulate[|T|T|T|T|T|]")
-        tex.sprint(tex.ctxcatcodes,"\\NC hashname\\NC type\\NC fontname\\NC filename\\NC\\NR\\HL")
+        texsprint(tex.ctxcatcodes,"\\start\\nonknuthmode\\starttabulate[|T|T|T|T|T|]")
+        texsprint(tex.ctxcatcodes,"\\NC hashname\\NC type\\NC fontname\\NC filename\\NC\\NR\\HL")
         for k,v in pairs(table.sortedkeys(t)) do
             if all or v == t[v][2]:lower() then
                 local type, name, file = unpack(t[v])
                 if type and name and file then
-                    tex.sprint(tex.ctxcatcodes,string.format("\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR",v,type, name, file))
+                    texsprint(tex.ctxcatcodes,string.format("\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR",v,type, name, file))
                 else
-                    logs.report("font table", "skipping ".. v)
+                    logs.report("font table", "skipping %s", v)
                 end
             end
         end
-        tex.sprint(tex.ctxcatcodes,"\\stoptabulate\\stop")
+        texsprint(tex.ctxcatcodes,"\\stoptabulate\\stop")
     end
 end
 

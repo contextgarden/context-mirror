@@ -10,39 +10,41 @@ if not modules then modules = { } end modules ['font-fbk'] = {
 <p>This is very experimental code!</p>
 --ldx]]--
 
-fonts                      = fonts or { }
 fonts.fallbacks            = fonts.fallbacks or { }
 fonts.vf.aux.combine.trace = false
 
-fonts.vf.aux.combine.commands["enable-tracing"] = function(g,v)
-    fonts.vf.aux.combine.trace = true
+local vf  = fonts.vf
+local tfm = fonts.tfm
+
+vf.aux.combine.commands["enable-tracing"] = function(g,v)
+    vf.aux.combine.trace = true
 end
 
-fonts.vf.aux.combine.commands["disable-tracing"] = function(g,v)
-    fonts.vf.aux.combine.trace = false
+vf.aux.combine.commands["disable-tracing"] = function(g,v)
+    vf.aux.combine.trace = false
 end
 
-fonts.vf.aux.combine.commands["set-tracing"] = function(g,v)
+vf.aux.combine.commands["set-tracing"] = function(g,v)
     if v[2] == nil then
-        fonts.vf.aux.combine.trace = true
+        vf.aux.combine.trace = true
     else
-        fonts.vf.aux.combine.trace = v[2]
+        vf.aux.combine.trace = v[2]
     end
 end
 
-function fonts.vf.aux.combine.initialize_trace()
-    if fonts.vf.aux.combine.trace then
+function vf.aux.combine.initialize_trace()
+    if vf.aux.combine.trace then
         return "special", "pdf: .8 0 0 rg .8 0 0 RG", "pdf: 0 .8 0 rg 0 .8 0 RG", "pdf: 0 0 .8 rg 0 0 .8 RG", "pdf: 0 g 0 G"
     else
         return "comment", "", "", "", ""
     end
 end
 
-fonts.vf.aux.combine.force_fallback = false
+vf.aux.combine.force_fallback = false
 
-fonts.vf.aux.combine.commands["fake-character"] = function(g,v) -- g, nr, fallback_id
+vf.aux.combine.commands["fake-character"] = function(g,v) -- g, nr, fallback_id
     local index, fallback = v[2], v[3]
-    if fonts.vf.aux.combine.force_fallback or not g.characters[index] then
+    if vf.aux.combine.force_fallback or not g.characters[index] then
         if fonts.fallbacks[fallback] then
             g.characters[index] = fonts.fallbacks[fallback](g)
         end
@@ -52,9 +54,9 @@ end
 fonts.fallbacks['textcent'] = function (g)
     local c = string.byte("c")
     local t = table.fastcopy(g.characters[c])
-    local s = fonts.tfm.scaled(g.specification.size or g.size)
+    local s = tfm.scaled(g.specification.size or g.size)
     local a = - math.tan(math.rad(g.italicangle or 0))
-    local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
+    local special, red, green, blue, black = vf.aux.combine.initialize_trace()
     if a == 0 then
         t.commands = {
             {"push"}, {"slot", 1, c}, {"pop"},
@@ -88,9 +90,9 @@ end
 fonts.fallbacks['texteuro'] = function (g)
     local c = string.byte("C")
     local t = table.fastcopy(g.characters[c])
-    local s = fonts.tfm.scaled(g.specification.size or g.size)
+    local s = tfm.scaled(g.specification.size or g.size)
     local d = math.cos(math.rad(90+(g.italicangle)))
-    local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
+    local special, red, green, blue, black = vf.aux.combine.initialize_trace()
     t.width = 1.05*t.width
     t.commands = {
         {"right", .05*t.width},
@@ -106,9 +108,9 @@ end
 
 -- maybe store llx etc instead of bbox in tfm blob / more efficient
 
-fonts.vf.aux.combine.force_composed = false
+vf.aux.combine.force_composed = false
 
-function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call location
+function vf.aux.compose_characters(g) -- todo: scaling depends on call location
     -- this assumes that slot 1 is self, there will be a proper self some day
     local chars = g.characters
     local fastcopy = table.fastcopy
@@ -116,9 +118,12 @@ function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call loc
     if xchar and xchar.description then
         local cap_lly = xchar.description.boundingbox[4]
         local ita_cor = math.cos(math.rad(90+(g.italicangle or 0)))
-        local force = fonts.vf.aux.combine.force_composed
-        local fallbacks = characters.context.fallbacks
-        local special, red, green, blue, black = fonts.vf.aux.combine.initialize_trace()
+        local force = vf.aux.combine.force_composed
+        local fallbacks = characters.fallbacks
+        local special, red, green, blue, black = vf.aux.combine.initialize_trace()
+        red, green, blue, black = { special, red }, { special, green }, { special, blue }, { special, black }
+        local push, pop = { "push" }, { "pop" }
+        local trace = vf.aux.combine.trace -- saves mem
         for i,c in pairs(characters.data) do
             if force or not chars[i] then
                 local s = c.specials
@@ -129,7 +134,21 @@ function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call loc
                         local cc = c.category
                         if cc == 'll' or cc == 'lu' or cc == 'lt' then
                             local acc = s[3]
-                            local t = fastcopy(charschr)
+                         -- local t = fastcopy(charschr) -- mem hogg but we cannot share
+                            local t = { }
+                            for k, v in pairs(charschr) do
+                                if k == "commands" then
+                                    -- skip
+                                elseif k == "description" then
+                                    local d = { }
+                                    for kk, vv in pairs(v) do
+                                        d[kk] = vv
+                                    end
+                                    t.description = d
+                                else
+                                    t[k] = v
+                                end
+                            end
                             local d = t.description
                             d.name = c.adobename or "unknown"
                             d.unicode = i
@@ -146,40 +165,73 @@ function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call loc
                                     local a_llx, a_lly, a_urx, a_ury = ab[1], ab[2], ab[3], ab[4]
                                     local dx = (c_urx - a_urx - a_llx + c_llx)/2
                                     local dd = (c_urx-c_llx)*ita_cor
+                                    -- we can use predefined tables for { special, red } ... saves space
                                     if a_ury < 0  then
                                         local dy = cap_lly-a_lly
-                                        t.commands = {
-                                            {"push"},
-                                            {"right", dx-dd},
-                                            {"down", -dy}, -- added
-                                            {special, red},
-                                            {"slot", 1, acc},
-                                            {special, black},
-                                            {"pop"},
-                                            {"slot", 1, chr},
-                                        }
+                                        if trace then
+                                            t.commands = {
+                                                push,
+                                                {"right", dx-dd},
+                                                {"down", -dy}, -- added
+                                                red,
+                                                {"slot", 1, acc},
+                                                black,
+                                                pop,
+                                                {"slot", 1, chr},
+                                            }
+                                        else
+                                            t.commands = {
+                                                push,
+                                                {"right", dx-dd},
+                                                {"down", -dy}, -- added
+                                                {"slot", 1, acc},
+                                                pop,
+                                                {"slot", 1, chr},
+                                            }
+                                        end
                                     elseif c_ury > a_lly then
                                         local dy = cap_lly-a_lly
-                                        t.commands = {
-                                            {"push"},
-                                            {"right", dx+dd},
-                                            {"down", -dy},
-                                            {special, green},
-                                            {"slot", 1, acc},
-                                            {special, black},
-                                            {"pop"},
-                                            {"slot", 1, chr},
-                                        }
+                                        if trace then
+                                            t.commands = {
+                                                push,
+                                                {"right", dx+dd},
+                                                {"down", -dy},
+                                                green,
+                                                {"slot", 1, acc},
+                                                black,
+                                                pop,
+                                                {"slot", 1, chr},
+                                            }
+                                        else
+                                            t.commands = {
+                                                push,
+                                                {"right", dx+dd},
+                                                {"down", -dy},
+                                                {"slot", 1, acc},
+                                                pop,
+                                                {"slot", 1, chr},
+                                            }
+                                        end
                                     else
-                                        t.commands = {
-                                            {"push"},
-                                            {"right", dx+dd},
-                                            {special, blue},
-                                            {"slot", 1, acc},
-                                            {special, black},
-                                            {"pop"},
-                                            {"slot", 1, chr},
-                                        }
+                                        if trace then
+                                            t.commands = {
+                                                {"push"},
+                                                {"right", dx+dd},
+                                                blue,
+                                                {"slot", 1, acc},
+                                                black,
+                                                {"pop"},
+                                                {"slot", 1, chr},
+                                            }
+                                        else
+                                            t.commands = {
+                                                {"push"},
+                                                {"right", dx+dd},
+                                                {"slot", 1, acc},
+                                                {"pop"},
+                                                {"slot", 1, chr},
+                                            }
+                                        end
                                     end
                                 end
                             end
@@ -192,8 +244,8 @@ function fonts.vf.aux.compose_characters(g) -- todo: scaling depends on call loc
     end
 end
 
-fonts.vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
-    fonts.vf.aux.compose_characters(g)
+vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
+    vf.aux.compose_characters(g)
 end
 
 --~         {'special', 'pdf: q ' .. s .. ' 0 0 '.. s .. ' 0 0 cm'},
@@ -209,13 +261,13 @@ fonts.define.methods.install("fallback", { -- todo: auto-fallback with loop over
     { "fake-character", 0x20AC, 'texteuro' }
 })
 
-fonts.vf.aux.combine.commands["enable-force"] = function(g,v)
-    fonts.vf.aux.combine.force_composed = true
-    fonts.vf.aux.combine.force_fallback = true
+vf.aux.combine.commands["enable-force"] = function(g,v)
+    vf.aux.combine.force_composed = true
+    vf.aux.combine.force_fallback = true
 end
-fonts.vf.aux.combine.commands["disable-force"] = function(g,v)
-    fonts.vf.aux.combine.force_composed = false
-    fonts.vf.aux.combine.force_fallback = false
+vf.aux.combine.commands["disable-force"] = function(g,v)
+    vf.aux.combine.force_composed = false
+    vf.aux.combine.force_fallback = false
 end
 
 fonts.define.methods.install("demo-2", {

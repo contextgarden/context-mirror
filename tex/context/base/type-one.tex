@@ -78,6 +78,7 @@
 
 \starttypescript [palatino] [texnansi,ec,qx,8r,t5,uc]
     \definetypeface [palatino] [rm] [serif] [palatino] [default] [encoding=\typescripttwo]
+    \definetypeface [palatino] [ss] [sans]  [modern]   [default] [encoding=\typescripttwo,rscale=1.075]
     \definetypeface [palatino] [tt] [mono]  [modern]   [default] [encoding=\typescripttwo,rscale=1.075]
     \definetypeface [palatino] [mm] [math]  [palatino] [default] [encoding=default]
     \usemathcollection[default]
@@ -86,8 +87,9 @@
 
 \starttypescript [fourier] [ec]
     \definetypeface [fourier] [rm] [serif] [fourier] [default] [encoding=ec]
-    \definetypeface [fourier] [mm] [math]  [fourier] [default] [encoding=default]
+    \definetypeface [fourier] [ss] [sans]  [modern]  [default] [encoding=ec,rscale=1.07]
     \definetypeface [fourier] [tt] [mono]  [modern]  [default] [encoding=ec,rscale=1.07]
+    \definetypeface [fourier] [mm] [math]  [fourier] [default] [encoding=default]
     \usemathcollection[fou]
     \quittypescriptscanning
 \stoptypescript
@@ -979,17 +981,33 @@
 
 % Kurier (JMN)
 
+% \starttypescript [sans] [kurier-light,kurier,kurier-medium] [texnansi,ec,qx,t5]
+%     \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurierr]  [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-Italic]        [\typescriptthree-kurierri] [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-Bold]          [\typescriptthree-kurierb]  [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-BoldItalic]    [\typescriptthree-kurierbi] [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-Light-Regular] [\typescriptthree-kurierl]  [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-Light-Italic]  [\typescriptthree-kurierli] [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-Medium-Regular][\typescriptthree-kurierm]  [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-Medium-Italic] [\typescriptthree-kuriermi] [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-Heavy-Regular] [\typescriptthree-kurierh]  [encoding=\typescriptthree]
+%     \definefontsynonym[Kurier-Heavy-Italic]  [\typescriptthree-kurierhi] [encoding=\typescriptthree]
+
+%     \loadmapfile[kurier-\typescriptthree.map]
+% \stoptypescript
+
 \starttypescript [sans] [kurier-light,kurier,kurier-medium] [texnansi,ec,qx,t5]
     \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurierr]  [encoding=\typescriptthree]
     \definefontsynonym[Kurier-Italic]        [\typescriptthree-kurierri] [encoding=\typescriptthree]
+    \definefontsynonym[Kurier-RegularItalic] [Kurier-Italic]
     \definefontsynonym[Kurier-Bold]          [\typescriptthree-kurierb]  [encoding=\typescriptthree]
     \definefontsynonym[Kurier-BoldItalic]    [\typescriptthree-kurierbi] [encoding=\typescriptthree]
-    \definefontsynonym[Kurier-Light-Regular] [\typescriptthree-kurierl]  [encoding=\typescriptthree]
-    \definefontsynonym[Kurier-Light-Italic]  [\typescriptthree-kurierli] [encoding=\typescriptthree]
-    \definefontsynonym[Kurier-Medium-Regular][\typescriptthree-kurierm]  [encoding=\typescriptthree]
-    \definefontsynonym[Kurier-Medium-Italic] [\typescriptthree-kuriermi] [encoding=\typescriptthree]
-    \definefontsynonym[Kurier-Heavy-Regular] [\typescriptthree-kurierh]  [encoding=\typescriptthree]
-    \definefontsynonym[Kurier-Heavy-Italic]  [\typescriptthree-kurierhi] [encoding=\typescriptthree]
+    \definefontsynonym[Kurier-Light]         [\typescriptthree-kurierl]  [encoding=\typescriptthree]
+    \definefontsynonym[Kurier-LightItalic]   [\typescriptthree-kurierli] [encoding=\typescriptthree]
+    \definefontsynonym[Kurier-Medium]        [\typescriptthree-kurierm]  [encoding=\typescriptthree]
+    \definefontsynonym[Kurier-MediumItalic]  [\typescriptthree-kuriermi] [encoding=\typescriptthree]
+    \definefontsynonym[Kurier-Heavy]         [\typescriptthree-kurierh]  [encoding=\typescriptthree]
+    \definefontsynonym[Kurier-HeavyItalic]   [\typescriptthree-kurierhi] [encoding=\typescriptthree]
 
     \loadmapfile[kurier-\typescriptthree.map]
 \stoptypescript

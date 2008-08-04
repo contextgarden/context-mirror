@@ -13,6 +13,11 @@ provide an <l n='xml'/> structured file. Actually, any logging that
 is hooked into callbacks will be \XML\ by default.</p>
 --ldx]]--
 
+-- input.logger -> special tracing, driven by log level (only input)
+-- input.report -> goes to terminal, depends on verbose, has banner
+-- logs.report  -> module specific tracing and reporting, no banner but class
+
+
 input = input or { }
 logs  = logs  or { }
 
@@ -28,8 +33,7 @@ logs.levels = {
 }
 
 logs.functions = {
-    'error', 'warning', 'info', 'debug', 'report',
-    'start', 'stop', 'push', 'pop'
+    'report', 'start', 'stop', 'push', 'pop', 'line', 'direct'
 }
 
 logs.callbacks  = {
@@ -39,89 +43,100 @@ logs.callbacks  = {
     'report_output_log'
 }
 
+logs.tracers = {
+}
+
 logs.xml = logs.xml or { }
 logs.tex = logs.tex or { }
 
 logs.level = 0
 
-do
-    local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
+local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
 
-    if texlua then
-        write_nl = print
-        write    = io.write
-    end
+if texlua then
+    write_nl = print
+    write    = io.write
+end
 
-    function logs.xml.debug(category,str)
-        if logs.level > 3 then write_nl(format("<d category='%s'>%s</d>",category,str)) end
-    end
-    function logs.xml.info(category,str)
-        if logs.level > 2 then write_nl(format("<i category='%s'>%s</i>",category,str)) end
-    end
-    function logs.xml.warning(category,str)
-        if logs.level > 1 then write_nl(format("<w category='%s'>%s</w>",category,str)) end
-    end
-    function logs.xml.error(category,str)
-        if logs.level > 0 then write_nl(format("<e category='%s'>%s</e>",category,str)) end
-    end
-    function logs.xml.report(category,str)
-        write_nl(format("<r category='%s'>%s</r>",category,str))
-    end
+function logs.xml.report(category,fmt,...) -- new
+    write_nl(format("<r category='%s'>%s</r>",category,format(fmt,...)))
+end
+function logs.xml.line(fmt,...) -- new
+    write_nl(format("<r>%s</r>",format(fmt,...)))
+end
 
-    function logs.xml.start() if logs.level > 0 then tw("<%s>" ) end end
-    function logs.xml.stop () if logs.level > 0 then tw("</%s>") end end
-    function logs.xml.push () if logs.level > 0 then tw("<!-- ") end end
-    function logs.xml.pop  () if logs.level > 0 then tw(" -->" ) end end
+function logs.xml.start() if logs.level > 0 then tw("<%s>" ) end end
+function logs.xml.stop () if logs.level > 0 then tw("</%s>") end end
+function logs.xml.push () if logs.level > 0 then tw("<!-- ") end end
+function logs.xml.pop  () if logs.level > 0 then tw(" -->" ) end end
 
-    function logs.tex.debug(category,str)
-        if logs.level > 3 then write_nl(format("debug >> %s: %s"  ,category,str)) end
-    end
-    function logs.tex.info(category,str)
-        if logs.level > 2 then write_nl(format("info >> %s: %s"   ,category,str)) end
-    end
-    function logs.tex.warning(category,str)
-        if logs.level > 1 then write_nl(format("warning >> %s: %s",category,str)) end
-    end
-    function logs.tex.error(category,str)
-        if logs.level > 0 then write_nl(format("error >> %s: %s"  ,category,str)) end
-    end
-    function logs.tex.report(category,str)
-        write_nl(format("report >> %s: %s"  ,category,str))
-    end
+function logs.tex.report(category,fmt,...) -- new
+ -- write_nl(format("%s | %s",category,format(fmt,...))) -- arg to format can be tex comment so .. .
+    write_nl(category .. " | " .. format(fmt,...))
+end
+function logs.tex.line(fmt,...) -- new
+    write_nl(format(fmt,...))
+end
 
-    function logs.set_level(level)
-        logs.level = logs.levels[level] or level
-    end
+function logs.set_level(level)
+    logs.level = logs.levels[level] or level
+end
 
-    function logs.set_method(method)
-        for _, v in pairs(logs.functions) do
-            logs[v] = logs[method][v] or function() end
-        end
-        if callback and input[method] then
-            for _, cb in pairs(logs.callbacks) do
-                callback.register(cb, input[method][cb])
-            end
+function logs.set_method(method)
+    for _, v in pairs(logs.functions) do
+        logs[v] = logs[method][v] or function() end
+    end
+    if callback and input[method] then
+        for _, cb in pairs(logs.callbacks) do
+            callback.register(cb, input[method][cb])
         end
     end
+end
 
-    function logs.xml.start_page_number()
-        write_nl(format("<p real='%s' page='%s' sub='%s'", tex.count[0], tex.count[1], tex.count[2]))
+function logs.xml.start_page_number()
+    write_nl(format("<p real='%s' page='%s' sub='%s'", tex.count[0], tex.count[1], tex.count[2]))
+end
+
+function logs.xml.stop_page_number()
+    write("/>")
+    write_nl("")
+end
+
+function logs.xml.report_output_pages(p,b)
+    write_nl(format("<v k='pages' v='%s'/>", p))
+    write_nl(format("<v k='bytes' v='%s'/>", b))
+    write_nl("")
+end
+
+function logs.xml.report_output_log()
+end
+
+function input.logger(...) -- assumes test for input.trace > n
+    if input.trace > 0 then
+        logs.report(...)
     end
+end
 
-    function logs.xml.stop_page_number()
-        write("/>")
-        write_nl("")
+function input.report(fmt,...)
+    if input.verbose then
+        logs.report(input.banner or "report",format(fmt,...))
     end
+end
 
-    function logs.xml.report_output_pages(p,b)
-        write_nl(format("<v k='pages' v='%s'/>", p))
-        write_nl(format("<v k='bytes' v='%s'/>", b))
-        write_nl("")
+function input.reportlines(str) -- todo: <lines></lines>
+    for line in str:gmatch("(.-)[\n\r]") do
+        logs.report(input.banner or "report",line)
     end
+end
 
-    function logs.xml.report_output_log()
+function input.help(banner,message)
+    if not input.verbose then
+        input.verbose = true
+    --  input.report(banner,"\n")
     end
-
+    input.report(banner,"\n")
+    input.report("")
+    input.reportlines(message)
 end
 
 logs.set_level('error')

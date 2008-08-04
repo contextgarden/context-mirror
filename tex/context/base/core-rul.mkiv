@@ -1,0 +1,35 @@
+%D \module
+%D   [       file=core-rul,
+%D        version=2008.06.05,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Ruled Stuff Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D After a few months testing this solution is now added
+%D to the core. This introduces a possible incompatibility
+%D between \MKII\ and \MKIV\ but for the better.
+
+\registerctxluafile{core-rul}{1.001}
+
+%                old  off  new
+% 4 lines oeps : 3.6  2.8  3.0
+% tufte          7.5  4.1  4.3
+
+% \newbox\luashapebox
+%
+% \def\doreshapeframedbox
+%   {\setbox\luashapebox\box\framebox
+%    \ctxlua{commands.doreshapeframedbox(\number\luashapebox)}%
+%    \setbox\framebox\box\luashapebox}
+
+\def\doreshapeframedbox{\ctxlua{commands.doreshapeframedbox(\number\framebox)}}
+
+\protect \endinput

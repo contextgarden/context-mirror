@@ -189,11 +189,11 @@ function mptopdf.flushpath(cmd)
     mptopdf.resetpath()
 end
 
-if texmf and texmf.instance then
+if input and input.instance then
     function mptopdf.loaded(name)
         local ok, n
         mptopdf.reset()
-        ok, mptopdf.data, n = input.loadbinfile(texmf.instance, name, 'tex') -- we need a binary load !
+        ok, mptopdf.data, n = input.loadbinfile(name, 'tex') -- we need a binary load !
         return ok
     end
 else

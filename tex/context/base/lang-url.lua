@@ -82,8 +82,8 @@ do
     -- todo, no interface in mkiv yet
 
     function commands.hyphenatedurl.setcharacters(str,value) -- 1, 2 == before, after
-        for ch in utf.gmatch(".") do
-            chars[ch] = value or 1
+        for s in str:utfcharacters() do
+            chars[s] = value or 1
         end
     end
 

@@ -9,8 +9,10 @@ if not versions then versions = { } end versions['l-file'] = 1.001
 if not file then file = { } end
 
 function file.removesuffix(filename)
-    return filename:gsub("%.[%a%d]+$", "")
+    return (filename:gsub("%.[%a%d]+$",""))
 end
+
+file.stripsuffix = file.removesuffix
 
 function file.addsuffix(filename, suffix)
     if not filename:find("%.[%a%d]+$") then
@@ -21,11 +23,7 @@ function file.addsuffix(filename, suffix)
 end
 
 function file.replacesuffix(filename, suffix)
-    if not filename:find("%.[%a%d]+$") then
-        return filename .. "." .. suffix
-    else
-        return (filename:gsub("%.[%a%d]+$","."..suffix))
-    end
+    return (filename:gsub("%.[%a%d]+$","")) .. "." .. suffix
 end
 
 function file.dirname(name)
@@ -45,10 +43,6 @@ function file.extname(name)
 end
 
 file.suffix = file.extname
-
-function file.stripsuffix(name)
-    return (name:gsub("%.[%a%d]+$",""))
-end
 
 --~ function file.join(...)
 --~     local t = { ... }
@@ -98,6 +92,16 @@ function file.is_readable(name)
     end
 end
 
+function file.iswritable(name)
+    local a = lfs.attributes(name)
+    return a and a.permissions:sub(2,2) == "w"
+end
+
+function file.isreadable(name)
+    local a = lfs.attributes(name)
+    return a and a.permissions:sub(1,1) == "r"
+end
+
 --~ function file.split_path(str)
 --~     if str:find(';') then
 --~         return str:splitchr(";")
@@ -125,34 +129,26 @@ function file.join_path(tab)
     return table.concat(tab,io.pathseparator) -- can have trailing //
 end
 
---~ print('test'           .. " == " .. file.collapse_path("test"))
---~ print("test/test"      .. " == " .. file.collapse_path("test/test"))
---~ print("test/test/test" .. " == " .. file.collapse_path("test/test/test"))
---~ print("test/test"      .. " == " .. file.collapse_path("test/../test/test"))
---~ print("test"           .. " == " .. file.collapse_path("test/../test"))
---~ print("../test"        .. " == " .. file.collapse_path("../test"))
---~ print("../test/"       .. " == " .. file.collapse_path("../test/"))
---~ print("a/a"            .. " == " .. file.collapse_path("a/b/c/../../a"))
-
---~ function file.collapse_path(str)
---~     local ok, n = false, 0
---~     while not ok do
---~         ok = true
---~         str, n = str:gsub("[^%./]+/%.%./", function(s)
---~             ok = false
---~             return ""
---~         end)
---~     end
---~     return (str:gsub("/%./","/"))
---~ end
-
 function file.collapse_path(str)
-    local n = 1
-    while n > 0 do
-        str, n = str:gsub("([^/%.]+/%.%./)","")
+    str = str:gsub("/%./","/")
+    local n, m = 1, 1
+    while n > 0 or m > 0 do
+        str, n = str:gsub("[^/%.]+/%.%.$","")
+        str, m = str:gsub("[^/%.]+/%.%./","")
     end
-    return (str:gsub("/%./","/"))
+    str = str:gsub("([^/])/$","%1")
+    str = str:gsub("^%./","")
+    str = str:gsub("/%.$","")
+    if str == "" then str = "." end
+    return str
 end
+
+--~ print(file.collapse_path("a/./b/.."))
+--~ print(file.collapse_path("a/aa/../b/bb"))
+--~ print(file.collapse_path("a/../.."))
+--~ print(file.collapse_path("a/.././././b/.."))
+--~ print(file.collapse_path("a/./././b/.."))
+--~ print(file.collapse_path("a/b/c/../.."))
 
 function file.robustname(str)
     return (str:gsub("[^%a%d%/%-%.\\]+","-"))
@@ -164,3 +160,95 @@ file.savedata = io.savedata
 function file.copy(oldname,newname)
     file.savedata(newname,io.loaddata(oldname))
 end
+
+-- lpeg variants, slightly faster, not always
+
+--~ local period    = lpeg.P(".")
+--~ local slashes   = lpeg.S("\\/")
+--~ local noperiod  = 1-period
+--~ local noslashes = 1-slashes
+--~ local name      = noperiod^1
+
+--~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.C(noperiod^1) * -1
+
+--~ function file.extname(name)
+--~     return pattern:match(name) or ""
+--~ end
+
+--~ local pattern = lpeg.Cs(((period * noperiod^1 * -1)/"" + 1)^1)
+
+--~ function file.removesuffix(name)
+--~     return pattern:match(name)
+--~ end
+
+--~ file.stripsuffix = file.removesuffix
+
+--~ local pattern = (noslashes^0 * slashes)^1 * lpeg.C(noslashes^1) * -1
+
+--~ function file.basename(name)
+--~     return pattern:match(name) or name
+--~ end
+
+--~ local pattern = (noslashes^0 * slashes)^1 * lpeg.Cp() * noslashes^1 * -1
+
+--~ function file.dirname(name)
+--~     local p = pattern:match(name)
+--~     if p then
+--~         return name:sub(1,p-2)
+--~     else
+--~         return ""
+--~     end
+--~ end
+
+--~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
+
+--~ function file.addsuffix(name, suffix)
+--~     local p = pattern:match(name)
+--~     if p then
+--~         return name
+--~     else
+--~         return name .. "." .. suffix
+--~     end
+--~ end
+
+--~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
+
+--~ function file.replacesuffix(name,suffix)
+--~     local p = pattern:match(name)
+--~     if p then
+--~         return name:sub(1,p-2) .. "." .. suffix
+--~     else
+--~         return name .. "." .. suffix
+--~     end
+--~ end
+
+--~ local pattern = (noslashes^0 * slashes)^0 * lpeg.Cp() * ((noperiod^1 * period)^1 * lpeg.Cp() + lpeg.P(true)) * noperiod^1 * -1
+
+--~ function file.nameonly(name)
+--~     local a, b = pattern:match(name)
+--~     if b then
+--~         return name:sub(a,b-2)
+--~     elseif a then
+--~         return name:sub(a)
+--~     else
+--~         return name
+--~     end
+--~ end
+
+--~ local test = file.extname
+--~ local test = file.stripsuffix
+--~ local test = file.basename
+--~ local test = file.dirname
+--~ local test = file.addsuffix
+--~ local test = file.replacesuffix
+--~ local test = file.nameonly
+
+--~ print(1,test("./a/b/c/abd.def.xxx","!!!"))
+--~ print(2,test("./../b/c/abd.def.xxx","!!!"))
+--~ print(3,test("a/b/c/abd.def.xxx","!!!"))
+--~ print(4,test("a/b/c/def.xxx","!!!"))
+--~ print(5,test("a/b/c/def","!!!"))
+--~ print(6,test("def","!!!"))
+--~ print(7,test("def.xxx","!!!"))
+
+--~ local tim = os.clock() for i=1,250000 do local ext = test("abd.def.xxx","!!!") end print(os.clock()-tim)

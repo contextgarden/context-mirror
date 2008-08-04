@@ -42,12 +42,12 @@ function regimes.define(c) -- is this used at all?
             regimes.data[r][regimes.number(s)] = 0
         end
     else
-        input.report(string.format("regi-ini: invalid regime code %s/%s", r, s))
+        logs.report("regime","unknown vector %s/%s",r,s) -- ctx.statusmessage
     end
 end
 
 function regimes.load(regime)
-    environment.loadlucfile("regi-"..regime, 1.001)
+    environment.loadluafile("regi-"..regime, 1.001)
     if regimes.data[regime] then
         regimes.utf[regime] = { }
         for k,v in pairs(regimes.data[regime]) do

@@ -11,9 +11,9 @@
 A bibliographic subsystem for ConTeXt
     </TPM:Description>
     <TPM:Author>Taco Hoekwater</TPM:Author>
-    <TPM:Size>555573</TPM:Size>
+    <TPM:Size>556079</TPM:Size>
     <TPM:Build/>
-    <TPM:RunFiles size="251554">
+    <TPM:RunFiles size="252060">
 tex/context/bib/bibl-ams.tex
 tex/context/bib/bibl-apa-de.tex
 tex/context/bib/bibl-apa-fr.tex

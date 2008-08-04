@@ -11,9 +11,21 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% \setupinteraction[
+%    state=start,
+%    title={ÀÂÆ ÇÉÈÊË ÎÏÔŒ ÙÜŸ},
+%    subtitle={àâæ çéèêë îïôœ ùûüÿ},
+%    author={àâæ ÀÂÆ},
+%    keyword={àâæ çéèêë îïôœ ùûüÿ}]
+
 \unprotect
 
-\def\setPDFdestination#1{\xdef\PDFdestination{\ctxlua{pdf.cleandestination("\luaescapestring{#1}")}}}
-\def\sanitizePDFstring#1\to#2{\xdef#2{\ctxlua{pdf.sanitizedstring("\luaescapestring{#1}")}}}
+\ctxloadluafile{spec-pdf}{}
+
+\PDFunicodetrue \let\enablePDFdocencoding\PDFunicodetrue
+
+\def\setPDFdestination       #1{\xdef\PDFdestination{\ctxlua{pdf.cleandestination("\luaescapestring{#1}")}}}
+\def\sanitizePDFencoding#1\to#2{\xdef#2{\ctxlua{pdf.hexify("\luaescapestring{#1}")}}}
+\def\hexifiedPDFstring       #1{\ctxlua{pdf.hexify("\luaescapestring{#1}")}}
 
 \protect \endinput

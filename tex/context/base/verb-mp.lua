@@ -177,7 +177,7 @@ function buffers.visualizers.mp.flush_line_(str,nested)
     local byte, find = utf.byte, utf.find
     local finish, change = buffers.finish_state, buffers.change_state
     buffers.currentcolors = buffers.visualizers.mp.colors
-    for c in string.utfcharacters(str) do
+    for c in str:utfcharacters() do
         if incomment then
             result[#result+1] = buffers.escaped_chr(c)
         elseif c == '%' then

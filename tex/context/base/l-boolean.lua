@@ -15,7 +15,7 @@ function toboolean(str,tolerant)
     if tolerant then
         local tstr = type(str)
         if tstr == "string" then
-            return str == "true" or str == "yes" or str == "on" or str == "1"
+            return str == "true" or str == "yes" or str == "on" or str == "1" or str == "t"
         elseif tstr == "number" then
             return tonumber(str) ~= 0
         elseif tstr == "nil" then
@@ -34,9 +34,9 @@ end
 
 function string.is_boolean(str)
     if type(str) == "string" then
-        if str == "true" or str == "yes" or str == "on" then
+        if str == "true" or str == "yes" or str == "on" or str == "t" then
             return true
-        elseif str == "false" or str == "no" or str == "off" then
+        elseif str == "false" or str == "no" or str == "off" or str == "f" then
             return false
         end
     end

@@ -551,8 +551,7 @@
 \startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete
   \edef\MPparcounter{\MPv\MPbself{1}{0}}%
   \doifpositionelse\MPwself
-    {\startMPpositiongraphic{mpos:par}%
-         {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+    {\startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
        initialize_area_par(\MPpos\MPbself,
                            \MPpos\MPeself,
                            \MPpos\MPwself) ;
@@ -561,8 +560,7 @@
        \includeMPgraphic{\MPvar{mp}} ;
        anchor_par(\MPanchor\MPbself) ;
      \stopMPpositiongraphic}
-    {\startMPpositiongraphic{mpos:par}%
-         {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+    {\startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
        initialize_par(\MPpos\MPbself,
                       \MPpos\MPeself,
                       \MPpos\textanchor,
@@ -594,9 +592,7 @@
 
 \startMPpositionmethod{mpos:par:columnset}
   \edef\MPparcounter{\MPv\MPbself{1}{0}}%
-  \startMPpositiongraphic{mpos:par}%
-    {fillcolor,filloffset,linecolor,gridcolor,%
-     linewidth,gridwidth,lineradius}
+  \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
     \includeMPgraphic{mpos:par:setup} ;
     \includeMPgraphic{mpos:par:extra} ;
     prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,
@@ -812,13 +808,14 @@
 %    \endgraf % new
 %    \getvalue{\??td\currenttextbackground\c!after}}
 
+\newskip\textbackgroundskip
+
 \def\dostarttextbackgroundpar
   {\endgraf % new
    \textbackgroundparameter\c!before
-   \doassignsomeskip\textbackgroundparameter\c!topoffset\to\scratchskip
-   \xdef\textbackgroundskip{\the\scratchskip}%
    \noindent
    \ifgridsnapping
+     \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
      \ifdim\textbackgroundskip>\zeropoint
        \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\currentparbackground}}}%
      \else
@@ -830,10 +827,12 @@
    \bgroup
    \endgraf % we need a vertical nobreak - 29/06/2004
    \nobreak \vskip-\lineheight \nobreak
-   \doassignsomeskip\textbackgroundparameter\c!topoffset\to\scratchskip
-   \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
-     \kern\textbackgroundskip\nobreak
-   \fi \fi
+   \ifgridsnapping \else
+     \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+     \ifdim\textbackgroundskip>\zeropoint
+        \kern\textbackgroundskip\nobreak
+     \fi
+   \fi
    \dosetleftskipadaption{\textbackgroundparameter\c!leftoffset}%
    \advance\leftskip\leftskipadaption
    \dosetleftskipadaption{\textbackgroundparameter\c!rightoffset}%
@@ -853,19 +852,19 @@
   {\par
    \removelastskip % new
    \dostopattributes
-   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\scratchskip
+   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
    \ifdim\lastskip>\zeropoint
-     \advance\scratchskip-\lastskip
+     \advance\textbackgroundskip-\lastskip
    \fi
-   \xdef\textbackgroundskip{\the\scratchskip}%
    \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
-     \kern\scratchskip\nobreak
+     \kern\textbackgroundskip\nobreak
    \fi \fi
    \nobreak \vskip-\lineheight \nobreak
    \nowhitespace
    \egroup
 \bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
    \nobreak \noindent \strut \hfill \kern\zeropoint
+   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
      \ifdim\textbackgroundskip>\zeropoint
        \struttedbox{\hbox{\lower\textbackgroundskip\hbox{\tpos\currentparbackground}}}%

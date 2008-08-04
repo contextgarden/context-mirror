@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=m-mathml,
+%D   [       file=x-mathml,
 %D        version=1999.12.20,
 %D          title=\CONTEXT\ XML Modules,
 %D       subtitle=Loading \MATHML\ Filters,
@@ -11,18 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D We have to make sure that some basic entities are
-%D loaded:
-
-\useXMLfilter[ent]
-
-%D Then we load the math:
-
-\useXMLfilter[mml,mmp,mmc]
-
-%D And we also load the whole bunch of entities:
-
-% \useXMLfilter[mea,meb,mec,meh,men,meo,mer]
-% \useXMLfilter[mxa,mxb,mxc,mxh,mxn,mxo,mxr]
+\loadmarkfile{x-mathml}
 
 \endinput

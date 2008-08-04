@@ -291,15 +291,16 @@
   {\doifelse{#1}\v!line
      {#2\openlineheight}
      {\ifgridsnapping
-        \assigndimension{#1}{#2}%
-          {.25\openlineheight}{.5\openlineheight}\openlineheight
+        \assigndimension{#1}{#2}{.25\openlineheight}{.5\openlineheight}\openlineheight
       \else
-        \assigndimension{#1}{#2}%
-          \smallskipamount\medskipamount\bigskipamount
-      \fi}}
+        \assigndimension{#1}{#2}\smallskipamount\medskipamount\bigskipamount
+      \fi}%
+   \relax}
 
+% \relax is really needed, else we may loose stretch due to lookahead; somehow
+% this bug was introduced a while ago but somehow went unnoticed; fixed 2/7/2008
 
-\def\addblankskip#1#2#3{\global\advance\blankskip#1\ifgridsnapping#3\else#2\fi}
+\def\addblankskip#1#2#3{\global\advance\blankskip#1\ifgridsnapping#3\else#2\fi\relax}
 
 \def\defineblankmethod[#1]#2{\setvalue{\??bo\??bo#1}{#2}}
 
@@ -358,7 +359,8 @@
      \else
        \dorepeatwithcommand[#1]\redoblank
      \fi\fi
-   \fi}
+   \fi
+   \relax}
 
 \def\redoblank#1%
   {\edefconvertedargument\ascii{#1}%
@@ -370,7 +372,8 @@
      \else
        \global\advance\blankskip#1\relax
      \fi\fi
-   \fi}
+   \fi
+   \relax}
 
 \unexpanded\def\blank % the \relax is definitely needed due to the many \if's
   {\relax\complexorsimple\doblank}
@@ -629,6 +632,7 @@
    \blankouterfalse
    \global\blankskip\zeropoint
    \expanded{\rawprocesscommalist[#1]}\doblank
+   \relax % to be sure
    \ifdim\blankskip=\zeropoint\relax
      \iflocalblankflexible
        \doglobal\advance\blankskip \currentblank
@@ -636,6 +640,7 @@
        \doglobal\advance\blankskip \currentblank
      \fi\fi
    \fi
+   \relax % to be sure
    \ifblankouter
      % do nothing
    \else
@@ -1303,9 +1308,21 @@
 
 \definecomplexorsimple\setupspacing
 
-\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\ }
+% \dorecurse{100}{\recurselevel\spacefactor 800 \space} \par
+% \dorecurse{100}{\recurselevel\spacefactor1200 \space} \par
+% \dorecurse{100}{\recurselevel\spacefactor 800 \normalspaceprimitive} \par
+% \dorecurse{100}{\recurselevel\spacefactor1200 \normalspaceprimitive} \par
 
-\letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace
+% When we don't add the % here, we effectively get \<endlinechar> and
+% since we have by default \def\^^M{\ } we get into a loop.
+
+\let\normalspaceprimitive=\ % space-comment is really needed
+
+\unexpanded\def\ {\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
+
+\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\space}
+
+\letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace % overloaded later
 
 \def\space          { }
 \def\removelastspace{\ifhmode\unskip\fi}
@@ -1430,7 +1447,7 @@
      \prevdepth\scratchdimen}
 
   \def\dohglue
-    {\leavevmode
+    {\dontleavehmode % \leavevmode
      \scratchcounter\spacefactor
      \vrule\!!width\zeropoint
      \nobreak\hskip\scratchskip
@@ -2752,16 +2769,20 @@
 \def\doifoutervmode#1%
   {\ifvmode\ifinner\else#1\fi\fi}
 
-\def\dosomebreak#1%
-  {\doifoutervmode
-     {\scratchskip\lastskip
-      \removelastskip
-      %\leavevmode\type{#1}%
-      #1\relax
-      \ifdim\scratchskip=\zeropoint % else interference with footnotes
-      \else
-        \vskip\scratchskip
-      \fi}}
+\ifx\dosomebreak\undefined % defined in mkiv
+
+    \def\dosomebreak#1%
+      {\doifoutervmode
+         {\scratchskip\lastskip
+          \removelastskip
+          %\leavevmode\type{#1}%
+          #1\relax
+          \ifdim\scratchskip=\zeropoint % else interference with footnotes
+          \else
+            \vskip\scratchskip
+          \fi}}
+
+\fi
 
 \def\forgeteverypar
   {\everypar{\the\neverypar}}
@@ -3945,6 +3966,22 @@
 \def\negthinspace {\textormathspace-\thinmuskip 1}
 \def\negmedspace  {\textormathspace-\medmuskip  2}
 \def\negthickspace{\textormathspace-\thickmuskip3}
+
+% needed for unicode:
+
+\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
+\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}
+\def\fourperemspace          {\hskip\dimexpr\emwidth/4\relax}
+\def\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax} % goodie
+\def\sixperemspace           {\hskip\dimexpr\emwidth/6\relax}
+\def\figurespace             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
+\def\punctuationspace        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
+\def\ideographicspace        {\hskip\dimexpr\emwidth/1\relax}
+\def\ideographichalffillspace{\hskip\dimexpr\emwidth/2\relax}
+\def\nobreakspace            {\penalty\plustenthousand\space}
+\def\narrownobreakspace      {\penalty\plustenthousand\thinspace}
+\def\zerowidthnobreakspace   {\penalty\plustenthousand\hskip\zeropoint}
+\def\zerowidthspace          {\hskip\zeropoint}
 
 \definehspace[.5][.1250\emspaceamount] % could also be [.1250\spaceamount]
 \definehspace[1] [.1667\emspaceamount]

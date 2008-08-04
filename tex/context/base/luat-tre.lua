@@ -12,7 +12,7 @@ do
 
     local done, found = { }, { }
 
-    function input.finders.tree(instance,specification,filetype)
+    function input.finders.tree(specification,filetype)
         local fnd = found[specification]
         if not fnd then
             local spec = input.splitmethod(specification).path or ""

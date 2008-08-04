@@ -547,26 +547,35 @@
 
 \chardef\fixedfloatmethod=3
 
+% \def\OTRONEsomefixdfloat % [#1]
+%   {\docheckiffloatfits
+%    \ifroomforfloat\else
+%      \ifzeropt\pagetotal
+%        % let's assume that there is room
+%      \else
+%        \ifcase\fixedfloatmethod
+%          % disabled
+%        \or % 1 (old method)
+%          \goodbreak
+%        \or % 2 (safe method)
+%          \page
+%        \or % 3 (keeps in stream)
+%          \vskip\textheight
+%          \vskip-\textheight
+%        \or % 4 (also keeps in place)
+%           \dosomebreak\nobreak
+%        \fi
+%      \fi
+%    \fi
+%    \showmessage\m!floatblocks9\empty
+%    \someherefloat} % [#1]
+
 \def\OTRONEsomefixdfloat % [#1]
-  {\docheckiffloatfits
-   \ifroomforfloat\else
-     \ifzeropt\pagetotal
-       % let's assume that there is room
-     \else
-       \ifcase\fixedfloatmethod
-         % disabled
-       \or % 1 (old method)
-         \goodbreak
-       \or % 2 (safe method)
-         \page
-       \or % 3 (keeps in stream)
-         \vskip-.5\floatheight % play safe
-         \vskip\textheight
-       \fi
-     \fi
-   \fi
+  {% there is (in mkii) no good way to prevent a break
+   % so better fail than mess, we can get loose from
+   % heads, so be it
    \showmessage\m!floatblocks9\empty
-   \someherefloat} % [#1]
+   \OTRONEsomeherefloat} % [#1]
 
 \def\OTRONEsomesidefloat[#1]%  links, rechts     NOG TESTEN EN AANPASSEN
   {\ifinsidecolumns

@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['mtx-check'] = {
     license   = "see context related readme files"
 }
 
-texmf.instance = instance -- we need to get rid of this / maybe current instance in global table
-
 scripts         = scripts         or { }
 scripts.checker = scripts.checker or { }
 

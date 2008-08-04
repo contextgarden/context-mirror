@@ -32,7 +32,7 @@ function buffers.visualizers.tex.flush_line(str,nested)
     local byte, find = utf.byte, utf.find
     local finish, change = buffers.finish_state, buffers.change_state
     buffers.currentcolors = buffers.visualizers.tex.colors
-    for c in string.utfcharacters(str) do
+    for c in str:utfcharacters() do
         if c == " " then
             if escaping then
                 result[#result+1] = " "

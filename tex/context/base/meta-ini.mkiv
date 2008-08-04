@@ -97,9 +97,9 @@
   {\doifnot{#1}{+}{\global\MPuserinclusions\emptytoks}%
    \global\MPuserinclusions\expandafter{\the\MPuserinclusions#2}}
 
-\ifx \overlaywidth     \undefined \def \overlaywidth     {4cm} \fi
-\ifx \overlayheight    \undefined \def \overlayheight    {3cm} \fi
-\ifx \overlaylinewidth \undefined \def \overlaylinewidth {0pt} \fi
+% \ifx \overlaywidth     \undefined \def \overlaywidth     {4cm} \fi
+% \ifx \overlayheight    \undefined \def \overlayheight    {3cm} \fi
+% \ifx \overlaylinewidth \undefined \def \overlaylinewidth {0pt} \fi
 
 \def\presetMPdefinitions
   {\edef\overlaywidth    {\overlaywidth    \space}%
@@ -110,6 +110,8 @@
 
 \def\currentMPformat{metafun}
 
+\newconditional \METAFUNinitialized
+
 \long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
   {\blabelgroup
    \enableincludeMPgraphics
@@ -117,18 +119,21 @@
    \presetMPdefinitions
    \setMPrandomseed % this has to change
    % we need to preexpand the token lists
-    \setbox\MPgraphicbox\hbox\bgroup
-      \ctxlua {
-        metapost.graphic(
-            "\currentMPformat",
-            \@EA\!!bs\the\MPinitializations;\theMPrandomseed;#1;\!!es,                 % code
-            \@EA\@EA\@EA\!!bs\@EA\the\@EA\MPextensions\@EA;\the\MPuserinclusions;\!!es % optional preamble
-        )
-     }%
+   \setbox\MPgraphicbox\hbox\bgroup
+     \ifconditional\METAFUNinitialized
+       \ctxlua { metapost.graphic(
+             "\currentMPformat", \@EA\!!bs\the\MPinitializations;#1;\!!es,
+             ""
+       ) }%
+     \else
+       \ctxlua { metapost.graphic(
+             "\currentMPformat", \@EA\!!bs\the\MPinitializations;\theMPrandomseed;#1;\!!es, % code
+             \@EA\@EA\@EA\!!bs\@EA\the\@EA\MPextensions\@EA;\the\MPuserinclusions;\!!es     % optional preamble
+       ) }%
+       \global\settrue\METAFUNinitialized
+     \fi
    \egroup
    \placeMPgraphic
-   \global\MPextensions\emptytoks
-   \global\MPuserinclusions\emptytoks
    \elabelgroup}
 
 \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
@@ -234,17 +239,15 @@
 
 \let\stopMPclip\relax
 
-\def\grabMPclippath#1#2#3#4#5%
+\def\grabMPclippath#1#2#3#4#5% #5 is alternative
   {\blabelgroup
    \edef\width {#3\space}\let\overlaywidth \width
    \edef\height{#4\space}\let\overlayheight\height
-   \doifundefined{MPC::#1}
-     {\doifdefinedelse{MPC:#1}
-        {\xdef\MPclippath{\getvalue{MPC:#1}}%
-         \ifx\MPclippath\empty\xdef\MPclippath{#5}\fi
-         \setxvalue{MPC::#1}{\MPclippath}}
-        {\setxvalue{MPC::#1}{#5}}}%
-   \xdef\MPclippath{\getvalue{MPC::#1}}%
+   \doifdefinedelse{MPC:#1}
+     {\xdef\MPclippath{\getvalue{MPC:#1}}%
+      \ifx\MPclippath\empty\xdef\MPclippath{#5}\fi
+      \setxvalue{MPC:#1}{\MPclippath}}
+     {\xdef\MPclippath{#5}}%
    % #2 : method is obsolete, only pdf now, we can always
    % gsub the result to ps
    \elabelgroup}
@@ -413,7 +416,7 @@
      \enableincludeMPgraphics
      \forgetall
      \global\advance\MPobjectcounter\plusone
-     \setobject{MP}{\number\MPobjectcounter}\vbox{\processMPgraphic{#3}}%
+     \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
      \setxvalue{\@@MPG\overlaystamp:#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
    \fi
    \getvalue{\@@MPG\overlaystamp:#1}%
@@ -472,7 +475,7 @@
    \prepareMPvariables{#2}%
    \enableincludeMPgraphics
    \global\advance\MPobjectcounter\plusone
-   \setobject{MP}{\number\MPobjectcounter}\vbox{\processMPgraphic{#3}}%
+   \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
    \setxvalue{\@@MPG#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
    \getvalue{\@@MPG#1}%
    \elabelgroup}
@@ -602,9 +605,9 @@
 %D
 %D We redefine a macro from \type {supp-mps.tex}:
 
-\def\MPdataMPDfile{\jobname-mp.mpd}
-\def\MPdataMPOfile{\jobname-mp.mpo}
-\def\MPdataMPYfile{\jobname-mp.mpy}
+\def\MPdataMPDfile{\jobname-mpgraph.mpd}
+\def\MPdataMPOfile{\jobname-mpgraph.mpo}
+\def\MPdataMPYfile{\jobname-mpgraph.mpy}
 
 \startMPextensions
     boolean collapse_data; collapse_data:=true;
@@ -1083,13 +1086,13 @@
 
 \def\dousestaticMPfigure[#1][#2]%
   {\ifsecondargument
-     \scale[#2]{\reuseMPgraphic{#1@S@}}%
+     \scale[#2]{\reuseMPgraphic{\@@MPG#1@S@}}%
    \else
-     \reuseMPgraphic{#1@S@}%
+     \reuseMPgraphic{\@@MPG#1@S@}%
    \fi}
 
 \def\startstaticMPfigure#1#2\stopstaticMPfigure
-  {\startreusableMPgraphic{static:#1}#2\stopreusableMPgraphic}
+  {\startreusableMPgraphic{\@@MPG#1@S@}#2\stopreusableMPgraphic}
 
 \long\def\startstaticMPgraphic
   {\blabelgroup

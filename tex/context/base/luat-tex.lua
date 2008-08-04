@@ -8,6 +8,8 @@ if not versions then versions = { } end versions['luat-tex'] = 1.001
 
 -- special functions that deal with io
 
+local format = string.format
+
 if texconfig and not texlua then
 
     input.level = input.level or 0
@@ -30,13 +32,17 @@ if texconfig and not texlua then
         function input.show_load () end
     end
 
-    function input.finders.generic(instance,tag,filename,filetype)
-        local foundname = input.find_file(instance,filename,filetype)
+    function input.finders.generic(tag,filename,filetype)
+        local foundname = input.find_file(filename,filetype)
         if foundname and foundname ~= "" then
-            input.logger('+ ' .. tag .. ' finder',filename,'filetype')
+            if input.trace > 0 then
+                input.logger('+ finder: %s, file: %s', tag,filename)
+            end
             return foundname
         else
-            input.logger('- ' .. tag .. ' finder',filename,'filetype')
+            if input.trace > 0 then
+                input.logger('- finder: %s, file: %s', tag,filename)
+            end
             return unpack(input.finders.notfound)
         end
     end
@@ -49,7 +55,9 @@ if texconfig and not texlua then
         local u = unicode.utftype(file_handle)
         local t = { }
         if u > 0  then
-            input.logger('+ ' .. tag .. ' opener (' .. unicode.utfname[u] .. ')',filename)
+            if input.trace > 0 then
+                input.logger('+ opener: %s (%s), file: %s',tag,unicode.utfname[u],filename)
+            end
             local l
             if u > 2 then
                 l = unicode.utf32_to_utf8(file_handle:read("*a"),u==4)
@@ -64,7 +72,9 @@ if texconfig and not texlua then
                 handle = nil,
                 noflines = #l,
                 close = function()
-                    input.logger('= ' .. tag .. ' closer (' .. unicode.utfname[u] .. ')',filename)
+                    if input.trace > 0 then
+                        input.logger('= closer: %s (%s), file: %s',tag,unicode.utfname[u],filename)
+                    end
                     input.show_close(filename)
                 end,
 --~                 getline = function(n)
@@ -100,7 +110,9 @@ if texconfig and not texlua then
                 end
             }
         else
-            input.logger('+ ' .. tag .. ' opener',filename)
+            if input.trace > 0 then
+                input.logger('+ opener: %s, file: %s',tag,filename)
+            end
             -- todo: file;name -> freeze / eerste regel scannen -> freeze
             local filters = input.filters
             t = {
@@ -120,7 +132,9 @@ if texconfig and not texlua then
                     return line
                 end,
                 close = function()
-                    input.logger('= ' .. tag .. ' closer',filename)
+                    if input.trace > 0 then
+                        input.logger('= closer: %s, file: %s',tag,filename)
+                    end
                     input.show_close(filename)
                     file_handle:close()
                 end,
@@ -136,7 +150,7 @@ if texconfig and not texlua then
         return t
     end
 
-    function input.openers.generic(instance,tag,filename)
+    function input.openers.generic(tag,filename)
         if filename and filename ~= "" then
             local f = io.open(filename,"r")
             if f then
@@ -144,16 +158,20 @@ if texconfig and not texlua then
                 return input.openers.text_opener(filename,f,tag)
             end
         end
-        input.logger('- ' .. tag .. ' opener',filename)
+        if input.trace > 0 then
+            input.logger('- opener: %s, file: %s',tag,filename)
+        end
         return unpack(input.openers.notfound)
     end
 
-    function input.loaders.generic(instance,tag,filename)
+    function input.loaders.generic(tag,filename)
         if filename and filename ~= "" then
             local f = io.open(filename,"rb")
             if f then
                 input.show_load(filename)
-                input.logger('+ ' .. tag .. ' loader',filename)
+                if input.trace > 0 then
+                    input.logger('+ loader: %s, file: %s',tag,filename)
+                end
                 local s = f:read("*a")
                 f:close()
                 if s then
@@ -161,18 +179,20 @@ if texconfig and not texlua then
                 end
             end
         end
-        input.logger('- ' .. tag .. ' loader',filename)
+        if input.trace > 0 then
+            input.logger('- loader: %s, file: %s',tag,filename)
+        end
         return unpack(input.loaders.notfound)
     end
 
-    function input.finders.tex(instance,filename,filetype)
-        return input.finders.generic(instance,'tex',filename,filetype)
+    function input.finders.tex(filename,filetype)
+        return input.finders.generic('tex',filename,filetype)
     end
-    function input.openers.tex(instance,filename)
-        return input.openers.generic(instance,'tex',filename)
+    function input.openers.tex(filename)
+        return input.openers.generic('tex',filename)
     end
-    function input.loaders.tex(instance,filename)
-        return input.loaders.generic(instance,'tex',filename)
+    function input.loaders.tex(filename)
+        return input.loaders.generic('tex',filename)
     end
 
 end
@@ -188,13 +208,13 @@ if texconfig and not texlua then do
 
     local ss = { }
 
-    function ctx.writestatus(a,b)
+    function ctx.writestatus(a,b,...)
         local s = ss[a]
         if not ss[a] then
             s = a:rpadd(15) .. ": "
             ss[a] = s
         end
-        texio.write_nl(s .. b .. "\n")
+        texio.write_nl(s .. format(b,...) .. "\n")
     end
 
     -- this will become: ctx.install_statistics(fnc() return ..,.. end) etc
@@ -207,62 +227,69 @@ if texconfig and not texlua then do
     end
 
     function ctx.show_statistics() -- todo: move calls
+        local loadtime, register_statistics = input.loadtime, ctx.register_statistics
         if caches then
-            ctx.register_statistics("used config path", "%s", function() return caches.configpath(texmf.instance) end)
-            ctx.register_statistics("used cache path", "%s", function() return caches.path end)
+            register_statistics("used config path", "%s", function() return caches.configpath() end)
+            register_statistics("used cache path", "%s", function() return caches.temp() or "?" end)
         end
         if status.luabytecodes > 0 and input.storage and input.storage.done then
-            ctx.register_statistics("modules/dumps/instances", "%s/%s/%s", function() return status.luabytecodes-500, input.storage.done, status.luastates end)
+            register_statistics("modules/dumps/instances", "%s/%s/%s", function() return status.luabytecodes-500, input.storage.done, status.luastates end)
         end
-        if texmf.instance then
-            ctx.register_statistics("input load time", "%s seconds", function() return input.loadtime(texmf.instance) end)
+        if input.instance then
+            register_statistics("input load time", "%s seconds", function() return loadtime(input.instance) end)
         end
         if fonts then
-            ctx.register_statistics("fonts load time","%s seconds", function() return input.loadtime(fonts) end)
+            register_statistics("fonts load time","%s seconds", function() return loadtime(fonts) end)
         end
         if xml then
-            ctx.register_statistics("xml load time", "%s seconds, backreferences: %i, outer filtering time: %s", function() return input.loadtime(xml), #lxml.self, input.loadtime(lxml) end)
+            register_statistics("xml load time", "%s seconds, lpath calls: %s, cached calls: %s", function()
+                local stats = xml.statistics()
+                return loadtime(xml), stats.lpathcalls, stats.lpathcached
+            end)
+            register_statistics("lxml load time", "%s seconds preparation, backreferences: %i", function()
+                return loadtime(lxml), #lxml.self
+            end)
         end
         if mptopdf then
-            ctx.register_statistics("mps conversion time", "%s seconds", function() return input.loadtime(mptopdf) end)
+            register_statistics("mps conversion time", "%s seconds", function() return loadtime(mptopdf) end)
         end
         if nodes then
-            ctx.register_statistics("node processing time", "%s seconds (including kernel)", function() return input.loadtime(nodes) end)
+            register_statistics("node processing time", "%s seconds including kernel", function() return loadtime(nodes) end)
         end
         if kernel then
-            ctx.register_statistics("kernel processing time", "%s seconds", function() return input.loadtime(kernel) end)
+            register_statistics("kernel processing time", "%s seconds", function() return loadtime(kernel) end)
         end
         if attributes then
-            ctx.register_statistics("attribute processing time", "%s seconds", function() return input.loadtime(attributes) end)
+            register_statistics("attribute processing time", "%s seconds", function() return loadtime(attributes) end)
         end
         if languages then
-            ctx.register_statistics("language load time", "%s seconds, n=%s", function() return input.loadtime(languages), languages.hyphenation.n() end)
+            register_statistics("language load time", "%s seconds, n=%s", function() return loadtime(languages), languages.hyphenation.n() end)
         end
         if figures then
-            ctx.register_statistics("graphics processing time", "%s seconds, n=%s (including tex)", function() return input.loadtime(figures), figures.n or "?" end)
+            register_statistics("graphics processing time", "%s seconds including tex, n=%s", function() return loadtime(figures), figures.n or "?" end)
         end
         if metapost then
-            ctx.register_statistics("metapost processing time", "%s seconds, loading: %s seconds, execution: %s seconds, n: %s", function() return input.loadtime(metapost), input.loadtime(mplib), input.loadtime(metapost.exectime), metapost.n end)
+            register_statistics("metapost processing time", "%s seconds, loading: %s seconds, execution: %s seconds, n: %s", function() return loadtime(metapost), loadtime(mplib), loadtime(metapost.exectime), metapost.n end)
         end
         if status.luastate_bytes then
-            ctx.register_statistics("current memory usage", "%s bytes", function() return status.luastate_bytes end)
+            register_statistics("current memory usage", "%s bytes", function() return status.luastate_bytes end)
         end
         if nodes then
-            ctx.register_statistics("cleaned up reserved nodes", "%s nodes, %s lists of %s", function() return nodes.cleanup_reserved(tex.count[24]) end) -- \topofboxstack
+            register_statistics("cleaned up reserved nodes", "%s nodes, %s lists of %s", function() return nodes.cleanup_reserved(tex.count[24]) end) -- \topofboxstack
         end
         if status.node_mem_usage then
-            ctx.register_statistics("node memory usage", "%s", function() return status.node_mem_usage end)
+            register_statistics("node memory usage", "%s", function() return status.node_mem_usage end)
         end
         if languages then
-            ctx.register_statistics("loaded patterns", "%s", function() return languages.logger.report() end)
+            register_statistics("loaded patterns", "%s", function() return languages.logger.report() end)
         end
         if fonts then
-            ctx.register_statistics("loaded fonts", "%s", function() return fonts.logger.report() end)
+            register_statistics("loaded fonts", "%s", function() return fonts.logger.report() end)
         end
         if xml then -- so we are in mkiv, we need a different check
-            ctx.register_statistics("runtime", "%s seconds, %i processed pages, %i shipped pages, %.3f pages/second", function()
-                input.stoptiming(texmf)
-                local runtime = input.loadtime(texmf)
+            register_statistics("runtime", "%s seconds, %i processed pages, %i shipped pages, %.3f pages/second", function()
+                input.stoptiming(input.instance)
+                local runtime = loadtime(input.instance)
                 local shipped = tex.count['nofshipouts']
                 local pages = tex.count['realpageno'] - 1
                 local persecond = shipped / runtime
@@ -271,8 +298,8 @@ if texconfig and not texlua then do
         end
         for _, t in ipairs(statusinfo) do
             local tag, pattern, fnc = t[1], t[2], t[3]
-            ctx.writestatus("mkiv lua stats", string.format("%s - %s", tag:rpadd(n," "), pattern:format(fnc())))
-        end
+            ctx.writestatus("mkiv lua stats", "%s - %s", tag:rpadd(n," "), pattern:format(fnc()))
+        end-- input.expanded_path_list("osfontdir")
     end
 
 end end
@@ -285,65 +312,65 @@ if texconfig and not texlua then
 
     -- if still present, we overload kpse (put it off-line so to say)
 
-    if not texmf then texmf = { } end
+    input.starttiming(input.instance)
 
-    input.starttiming(texmf)
+    if not input.instance then
 
-    if not texmf.instance then
+        if not input.instance then -- prevent a second loading
 
-        if not texmf.instance then -- prevent a second loading
+            input.instance            = input.reset()
+            input.instance.progname   = 'context'
+            input.instance.engine     = 'luatex'
+            input.instance.validfile  = input.validctxfile
 
-            texmf.instance            = input.reset()
-            texmf.instance.progname   = environment.progname or 'context'
-            texmf.instance.engine     = environment.engine   or 'luatex'
-            texmf.instance.validfile  = input.validctxfile
-
-            input.load(texmf.instance)
+            input.load()
 
         end
 
         if callback then
-            callback.register('find_read_file'      , function(id,name) return input.findtexfile(texmf.instance,name) end)
-            callback.register('open_read_file'      , function(   name) return input.opentexfile(texmf.instance,name) end)
+            callback.register('find_read_file'      , function(id,name) return input.findtexfile(name) end)
+            callback.register('open_read_file'      , function(   name) return input.opentexfile(name) end)
         end
 
         if callback then
-            callback.register('find_data_file'      , function(name) return input.findbinfile(texmf.instance,name,"tex") end)
-            callback.register('find_enc_file'       , function(name) return input.findbinfile(texmf.instance,name,"enc") end)
-            callback.register('find_font_file'      , function(name) return input.findbinfile(texmf.instance,name,"tfm") end)
-            callback.register('find_format_file'    , function(name) return input.findbinfile(texmf.instance,name,"fmt") end)
-            callback.register('find_image_file'     , function(name) return input.findbinfile(texmf.instance,name,"tex") end)
-            callback.register('find_map_file'       , function(name) return input.findbinfile(texmf.instance,name,"map") end)
-            callback.register('find_ocp_file'       , function(name) return input.findbinfile(texmf.instance,name,"ocp") end)
-            callback.register('find_opentype_file'  , function(name) return input.findbinfile(texmf.instance,name,"otf") end)
-            callback.register('find_output_file'    , function(name) return name                                         end)
-            callback.register('find_pk_file'        , function(name) return input.findbinfile(texmf.instance,name,"pk")  end)
-            callback.register('find_sfd_file'       , function(name) return input.findbinfile(texmf.instance,name,"sfd") end)
-            callback.register('find_truetype_file'  , function(name) return input.findbinfile(texmf.instance,name,"ttf") end)
-            callback.register('find_type1_file'     , function(name) return input.findbinfile(texmf.instance,name,"pfb") end)
-            callback.register('find_vf_file'        , function(name) return input.findbinfile(texmf.instance,name,"vf")  end)
+            callback.register('find_data_file'      , function(name) return input.findbinfile(name,"tex") end)
+            callback.register('find_enc_file'       , function(name) return input.findbinfile(name,"enc") end)
+            callback.register('find_font_file'      , function(name) return input.findbinfile(name,"tfm") end)
+            callback.register('find_format_file'    , function(name) return input.findbinfile(name,"fmt") end)
+            callback.register('find_image_file'     , function(name) return input.findbinfile(name,"tex") end)
+            callback.register('find_map_file'       , function(name) return input.findbinfile(name,"map") end)
+            callback.register('find_ocp_file'       , function(name) return input.findbinfile(name,"ocp") end)
+            callback.register('find_opentype_file'  , function(name) return input.findbinfile(name,"otf") end)
+            callback.register('find_output_file'    , function(name) return name                          end)
+            callback.register('find_pk_file'        , function(name) return input.findbinfile(name,"pk")  end)
+            callback.register('find_sfd_file'       , function(name) return input.findbinfile(name,"sfd") end)
+            callback.register('find_truetype_file'  , function(name) return input.findbinfile(name,"ttf") end)
+            callback.register('find_type1_file'     , function(name) return input.findbinfile(name,"pfb") end)
+            callback.register('find_vf_file'        , function(name) return input.findbinfile(name,"vf")  end)
 
-            callback.register('read_data_file'      , function(file) return input.loadbinfile(texmf.instance,file,"tex") end)
-            callback.register('read_enc_file'       , function(file) return input.loadbinfile(texmf.instance,file,"enc") end)
-            callback.register('read_font_file'      , function(file) return input.loadbinfile(texmf.instance,file,"tfm") end)
+            callback.register('read_data_file'      , function(file) return input.loadbinfile(file,"tex") end)
+            callback.register('read_enc_file'       , function(file) return input.loadbinfile(file,"enc") end)
+            callback.register('read_font_file'      , function(file) return input.loadbinfile(file,"tfm") end)
          -- format
          -- image
-            callback.register('read_map_file'       , function(file) return input.loadbinfile(texmf.instance,file,"map") end)
-            callback.register('read_ocp_file'       , function(file) return input.loadbinfile(texmf.instance,file,"ocp") end)
-            callback.register('read_opentype_file'  , function(file) return input.loadbinfile(texmf.instance,file,"otf") end)
+            callback.register('read_map_file'       , function(file) return input.loadbinfile(file,"map") end)
+            callback.register('read_ocp_file'       , function(file) return input.loadbinfile(file,"ocp") end)
+            callback.register('read_opentype_file'  , function(file) return input.loadbinfile(file,"otf") end)
          -- output
-            callback.register('read_pk_file'        , function(file) return input.loadbinfile(texmf.instance,file,"pk")  end)
-            callback.register('read_sfd_file'       , function(file) return input.loadbinfile(texmf.instance,file,"sfd") end)
-            callback.register('read_truetype_file'  , function(file) return input.loadbinfile(texmf.instance,file,"ttf") end)
-            callback.register('read_type1_file'     , function(file) return input.loadbinfile(texmf.instance,file,"pfb") end)
-            callback.register('read_vf_file'        , function(file) return input.loadbinfile(texmf.instance,file,"vf" ) end)
+            callback.register('read_pk_file'        , function(file) return input.loadbinfile(file,"pk")  end)
+            callback.register('read_sfd_file'       , function(file) return input.loadbinfile(file,"sfd") end)
+            callback.register('read_truetype_file'  , function(file) return input.loadbinfile(file,"ttf") end)
+            callback.register('read_type1_file'     , function(file) return input.loadbinfile(file,"pfb") end)
+            callback.register('read_vf_file'        , function(file) return input.loadbinfile(file,"vf" ) end)
         end
 
-        if callback and environment.aleph_mode then
-            callback.register('find_font_file'      , function(name) return input.findbinfile(texmf.instance,name,"ofm") end)
-            callback.register('read_font_file'      , function(file) return input.loadbinfile(texmf.instance,file,"ofm") end)
-            callback.register('find_vf_file'        , function(name) return input.findbinfile(texmf.instance,name,"ovf") end)
-            callback.register('read_vf_file'        , function(file) return input.loadbinfile(texmf.instance,file,"ovf") end)
+        if input.aleph_mode == nil then environment.aleph_mode = true end -- some day we will drop omega font support
+
+        if callback and input.aleph_mode then
+            callback.register('find_font_file'      , function(name) return input.findbinfile(name,"ofm") end)
+            callback.register('read_font_file'      , function(file) return input.loadbinfile(file,"ofm") end)
+            callback.register('find_vf_file'        , function(name) return input.findbinfile(name,"ovf") end)
+            callback.register('read_vf_file'        , function(file) return input.loadbinfile(file,"ovf") end)
         end
 
         if callback then
@@ -431,16 +458,16 @@ if texconfig and not texlua then
     if kpse then
 
         function kpse.find_file(filename,filetype,mustexist)
-            return input.find_file(texmf.instance,filename,filetype,mustexist)
+            return input.find_file(filename,filetype,mustexist)
         end
         function kpse.expand_path(variable)
-            return input.expand_path(texmf.instance,variable)
+            return input.expand_path(variable)
         end
         function kpse.expand_var(variable)
-            return input.expand_var(texmf.instance,variable)
+            return input.expand_var(variable)
         end
         function kpse.expand_braces(variable)
-            return input.expand_braces(texmf.instance,variable)
+            return input.expand_braces(variable)
         end
 
     end
@@ -467,7 +494,7 @@ if texconfig and not texlua then
     function luatex.variables()
         local t, x = { }, nil
         for _,v in pairs(luatex.variablenames) do
-            x = input.var_value(texmf.instance,v)
+            x = input.var_value(v)
             if x and x:find("^%d+$") then
                 t[v] = tonumber(x)
             end
@@ -491,26 +518,32 @@ if texconfig and not texlua then
 
 end
 
--- some tex basics
+-- some tex basics, maybe this will move to ctx
 
-if not cs then cs = { } end
+if tex then
 
-function cs.def(k,v)
-    tex.sprint(tex.texcatcodes, "\\def\\" .. k .. "{" .. v .. "}")
-end
+    local texsprint, texwrite = tex.sprint, tex.write
 
-function cs.chardef(k,v)
-    tex.sprint(tex.texcatcodes, "\\chardef\\" .. k .. "=" .. v .. "\\relax")
-end
+    if not cs then cs = { } end
 
-function cs.boolcase(b)
-    if b then tex.write(1) else tex.write(0) end
-end
-
-function cs.testcase(b)
-    if b then
-        tex.sprint(tex.texcatcodes, "\\firstoftwoarguments")
-    else
-        tex.sprint(tex.texcatcodes, "\\secondoftwoarguments")
+    function cs.def(k,v)
+        texsprint(tex.texcatcodes, "\\def\\" .. k .. "{" .. v .. "}")
     end
+
+    function cs.chardef(k,v)
+        texsprint(tex.texcatcodes, "\\chardef\\" .. k .. "=" .. v .. "\\relax")
+    end
+
+    function cs.boolcase(b)
+        if b then texwrite(1) else texwrite(0) end
+    end
+
+    function cs.testcase(b)
+        if b then
+            texsprint(tex.texcatcodes, "\\firstoftwoarguments")
+        else
+            texsprint(tex.texcatcodes, "\\secondoftwoarguments")
+        end
+    end
+
 end

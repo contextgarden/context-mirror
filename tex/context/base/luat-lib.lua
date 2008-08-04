@@ -1,85 +1,42 @@
--- filename : luat-lib.lua
--- comment  : companion to luat-lib.tex
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['luat-lib'] = {
+    version   = 1.001,
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    comment   = "companion to luat-lib.tex",
+}
 
-if not versions then versions = { } end versions['luat-lib'] = 1.001
-
--- mostcode moved to the l-*.lua and other luat-*.lua files
-
--- os / io
+-- most code already moved to the l-*.lua and other luat-*.lua files
 
 os.setlocale(nil,nil) -- useless feature and even dangerous in luatex
 
--- os.platform
-
--- mswin|bccwin|mingw|cygwin  windows
--- darwin|rhapsody|nextstep   macosx
--- netbsd|unix                unix
--- linux                      linux
-
-if not io.fileseparator then
-    if string.find(os.getenv("PATH"),";") then
-        io.fileseparator, io.pathseparator, os.platform = "\\", ";", os.type or "windows"
-    else
-        io.fileseparator, io.pathseparator, os.platform = "/" , ":", os.type or "unix"
-    end
-end
-
-os.platform = os.platform or os.type or (io.pathseparator == ";" and "windows") or "unix"
-
--- arg normalization
---
--- for k,v in pairs(arg) do print(k,v) end
-
--- environment
-
-if not environment then environment = { } end
-
-environment.ownbin = environment.ownbin or arg[-2] or arg[-1] or arg[0] or "luatex"
-
-local ownpath = nil -- we could use a metatable here
-
-function environment.ownpath()
-    if not ownpath then
-        for p in string.gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
-            local b = file.join(p,environment.ownbin)
-            if lfs.isfile(b..".exe") or lfs.isfile(b) then
-                ownpath = p
-                break
-            end
-        end
-        if not ownpath then ownpath = '.' end
-    end
-    return ownpath
+function os.setlocale()
+    -- no way you can mess with it
 end
 
 if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
     arg[-1]=arg[0] arg[0]=arg[2] for k=3,#arg do arg[k-2]=arg[k] end arg[#arg]=nil arg[#arg]=nil
 end
 
-environment.arguments            = { }
-environment.files                = { }
-environment.sorted_argument_keys = nil
-
-environment.platform = os.platform
+environment             = environment or { }
+environment.arguments   = { }
+environment.files       = { }
+environment.sortedflags = nil
 
 function environment.initialize_arguments(arg)
-    environment.arguments = { }
-    environment.files     = { }
-    environment.sorted_argument_keys = nil
+    local arguments, files = { }, { }
+    environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
     for index, argument in pairs(arg) do
         if index > 0 then
             local flag, value = argument:match("^%-+(.+)=(.-)$")
             if flag then
-                environment.arguments[flag] = string.unquote(value or "")
+                arguments[flag] = string.unquote(value or "")
             else
                 flag = argument:match("^%-+(.+)")
                 if flag then
-                    environment.arguments[flag] = true
+                    arguments[flag] = true
                 else
-                    environment.files[#environment.files+1] = argument
+                    files[#files+1] = argument
                 end
             end
         end
@@ -101,18 +58,20 @@ function environment.setargument(name,value)
 end
 
 function environment.argument(name)
-    if environment.arguments[name] then
-        return environment.arguments[name]
+    local arguments, sortedflags = environment.arguments, environment.sortedflags
+    if arguments[name] then
+        return arguments[name]
     else
-        if not environment.sorted_argument_keys then
-            environment.sorted_argument_keys = { }
-            for _,v in pairs(table.sortedkeys(environment.arguments)) do
-                table.insert(environment.sorted_argument_keys, "^" .. v)
+        if not sortedflags then
+            sortedflags = { }
+            for _,v in pairs(table.sortedkeys(arguments)) do
+                sortedflags[#sortedflags+1] = "^" .. v
             end
+            environment.sortedflags = sortedflags
         end
-        for _,v in pairs(environment.sorted_argument_keys) do
+        for _,v in ipairs(sortedflags) do
             if name:find(v) then
-                return environment.arguments[v:sub(2,#v)]
+                return arguments[v:sub(2,#v)]
             end
         end
     end

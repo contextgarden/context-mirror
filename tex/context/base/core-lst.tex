@@ -39,7 +39,7 @@
   {\doifelsevalue{\??li#1\c!state}\v!start
      \dodowritetolist\gobblefourarguments{#1}}
 
-\def\dodowritetolist#1#2#3#4%
+\long\def\dodowritetolist#1#2#3#4%
   {\begingroup
    \expanded{\everylistentry\emptytoks\the\everylistentry}% \emptytoks, else loop
    \def\currentlist{#1}% evt naar dowritetolist
@@ -253,7 +253,7 @@
       \c!textcommand=\listtextcommand,
       \c!pagecommand=\listpagecommand,
       \c!pagenumber=\v!yes,
-\c!headnumber=\v!yes,
+      \c!headnumber=\v!yes,
       \c!pageboundaries=,
       \c!margin=\!!zeropoint,
       \c!aligntitle=,
@@ -442,7 +442,7 @@
      {\edef\splitlistsymbol{\@EA\removefirstprefix\@EA{\currentlistnumber}}}% one level expansion
      {\doifelse{\listparameter\c!prefix}\v!none
         {\edef\splitlistsymbol{\@EA\removeallprefixes\@EA{\currentlistnumber}}}%
-        {\let\splitlistsymbol\currentlistnumber}}% geen \edef ivm Å enz
+        {\let\splitlistsymbol\currentlistnumber}}% geen \edef ivm 8 bit enz
     \doif{\listparameter\c!label}\v!yes{\leftlabeltext\currentlist}%
     \strut
     \def\numberseparator{\listparameter\c!separator}% overloaded, todo
@@ -801,26 +801,6 @@
      {}
      \midaligned
      {}}
-
-% \def\dodofixdlistelementEFG#1#2#3#4#5#6#7#8% keep this one here as reference
-%   {\noindent
-%    \hbox
-%      {#1% in case E nils the strut
-%       \let\\=\newlineinlist
-%       \setbox0\hbox
-%         {#2{\showcontrastlocation\??ia{#8}%
-%           {\dostartlistattributes\c!style\c!color\empty
-%            \ignorespaces\dontconvertfont\setstrut
-%            \begstrut
-%           %\doifelsenothing{\listparameter\c!maxwidth}
-%           %  {\listparameter\c!textcommand{#6}}
-%           %  {\listparameter\c!textcommand{\limitatetext{#6}{\listparameter\c!maxwidth}{\unknown}}}%
-%            \limitatedlistentry{#6}%
-%            \endstrut % struts new
-%            \dostoplistattributes}}}%
-%       \linklisttoelement{#4}{#7}{#8}{\box0}}%{\copy0}}%
-%    \par % should be an option
-%    \listparameter\c!inbetween}
 
 \def\dodofixdlistelementEFG#1#2#3#4#5#6#7#8%
   {\noindent

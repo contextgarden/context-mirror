@@ -7,17 +7,15 @@
 if not versions then versions = { } end versions['luat-uni'] = 1.001
 
 function unicode.utf8.split(str)
-    lst = { }
- -- for snippet in unicode.utf8.gfind(str,".") do
-    for snippet in string.utfcharacters(str) do
-        table.insert(lst,snippet)
+    local t = { }
+    for snippet in str:utfcharacters() do
+        t[#t+1] = snippet
     end
-    return lst
+    return t
 end
 
 function unicode.utf8.each(str,fnc)
- -- for snippet in unicode.utf8.gfind(str,".") do
-    for snippet in string.utfcharacters(str) do
+    for snippet in str:utfcharacters() do
         fnc(snippet)
     end
 end

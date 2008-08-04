@@ -4,6 +4,9 @@
 -- copyright: PRAGMA ADE / ConTeXt Development Team
 -- license  : see context related readme files
 
+
+--~ print(table.serialize(os.uname()))
+
 if not versions then versions = { } end versions['l-os'] = 1.001
 
 function os.resultof(command)

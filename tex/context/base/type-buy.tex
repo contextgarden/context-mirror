@@ -196,29 +196,45 @@
     \loadmapfile [\typescriptthree-bh-lucida.map]
 \stoptypescript
 
-\starttypescript [lucida,lucidabfm] [texnansi,ec,8r,uc]
-    \definetypeface [\typescriptone] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
-    \definetypeface [\typescriptone] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
-    \definetypeface [\typescriptone] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
-    \definetypeface [\typescriptone] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
-    \definetypeface [\typescriptone] [cg] [calligraphy] [lucida] [default] [encoding=\typescripttwo]
+\starttypescript [lucida,lucidabfm,lucidaboldmath] [texnansi,ec,8r,uc]
+    \definetypeface [lucida] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucida] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucida] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucida] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucida] [cg] [calligraphy] [lucida] [default] [encoding=\typescripttwo]
     \loadmapfile [\typescripttwo-bh-lucida.map]
 \stoptypescript
 
 \starttypescript [lucida] [texnansi,ec,8r]
-    \definetypeface [lucida] [mm] [math] [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucida]         [mm] [math] [lucida] [default] [encoding=\typescripttwo]
+\stoptypescript
+
+\starttypescript [lucidabfm] [texnansi,ec,8r]
+    \definetypeface [lucida]         [mm] [bfmath] [lucida] [default] [encoding=\typescripttwo]
 \stoptypescript
 
 \starttypescript [lucidaboldmath] [texnansi,ec,8r]
-    \definetypeface [lucidaboldmath] [rm] [serif]    [lucida] [default] [encoding=\typescripttwo] % needed ?
-    \definetypeface [lucidaboldmath] [ss] [sans]     [lucida] [default] [encoding=\typescripttwo] % needed ?
-    \definetypeface [lucidaboldmath] [tt] [mono]     [lucida] [default] [encoding=\typescripttwo] % needed ?
-    \definetypeface [lucidaboldmath] [mm] [boldmath] [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucida]         [mm] [boldmath] [lucida] [default] [encoding=\typescripttwo]
 \stoptypescript
 
-\starttypescript [lucidabfm,lucidaboldmath] [texnansi,ec,8r]
-    \definetypeface [lucida]         [mm] [bfmath] [lucida] [default] [encoding=\typescripttwo]
-    \definetypeface [lucidaboldmath] [mm] [bfmath] [lucida] [default] [encoding=\typescripttwo]
+\starttypescript [lucidabfm] [texnansi,ec,8r,uc]
+    \definetypeface [lucidabfm] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidabfm] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidabfm] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidabfm] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidabfm] [cg] [calligraphy] [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidabfm] [mm] [bfmath] [lucida] [default] [encoding=\typescripttwo]
+    \loadmapfile [\typescripttwo-bh-lucida.map]
+\stoptypescript
+
+\starttypescript [lucidaboldmath] [texnansi,ec,8r,uc]
+    \definetypeface [lucidaboldmath] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidaboldmath] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidaboldmath] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidaboldmath] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidaboldmath] [cg] [calligraphy] [lucida] [default] [encoding=\typescripttwo]
+    \definetypeface [lucidaboldmath] [mm] [boldmath]    [lucida] [default] [encoding=\typescripttwo]
+    \loadmapfile [\typescripttwo-bh-lucida.map]
 \stoptypescript
 
 \starttypescript [lucida,lucidabfm,lucidaboldmath] [texnansi,ec,8r]

@@ -26,4 +26,13 @@
 
 \def\utfchar#1{\ctxlua{tex.uprint(\number#1)}}
 
+% \def\checkedchar#1% #2%
+%   {\relax\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
+%
+% impossible in math mode so there always fallback (till we have gyre):
+
+\def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
+\def\checkedmathchar#1#2{#2}
+\def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
+
 \endinput

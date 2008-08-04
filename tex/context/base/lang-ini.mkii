@@ -13,6 +13,22 @@
 
 \unprotect
 
+\let\preloadedpatterns\empty
+\let\preloadedpmessage\empty
+
+\def\doshowpatterns#1#2#3#4% language number encoding mapping
+  {#1->#3:#4->#2->\xxlanguageparameter{#1}\s!lefthyphenmin:\xxlanguageparameter{#1}\s!righthyphenmin\space}
+
+\def\preloadlanguages
+  {\doifsomething\preloadedpmessage{\showmessage\m!linguals{10}\preloadedpmessage}}
+
+\def\preloadallpatterns
+  {\gdef\preloadallpatterns##1{\installlanguage[##1][\c!state=\v!start]}%
+   \processcommacommand[\installedlanguages]\preloadallpatterns
+   \global\let\preloadallpatterns\relax}
+
+\fetchruntimecommand \showpatterns {\f!languageprefix\s!run}
+
 \def\mkdoloadpatterns#1#2%
   {\expanded{\getcommacommandsize[\getvalue{\??la#2\s!encoding}]}%
    \ifnum\commalistsize>0
@@ -37,7 +53,6 @@
    \dodoloadpatterns{#1}{#2}{}{}}
 
 \endXETEX
-
 
 \def\setuphyppatencoding
   {\pathypsettings

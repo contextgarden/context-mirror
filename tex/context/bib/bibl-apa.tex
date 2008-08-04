@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=bibl-apa,
-%D        version=2004.7.16,
+%D        version=2008.06.09,
 %D          title=APA bibliography style,
 %D       subtitle=Publications,
 %D         author={Taco Hoekwater},
@@ -112,16 +112,38 @@
     {#1\insertbibtype{}{\ }{chapter\ }}{#2}%
     {#3}}
 
+% #1city, country: pubname#2
+% #1country: pubname#2
+% #1pubname#2
+% #1city, country#2
+% #3
+
 \def\insertpublisher#1#2#3%
    {\insertpubname
-       {#1}{\insertcity
-            {, }
-            {\insertcountry{, }{}{#2}}%
-            {\insertcountry{, }{}{#2}}}%
        {\insertcity
-         {}{\insertcountry{, }{}{#2}}%
-         {\insertcountry{#1}{#2}{#3}}}%
+            {#1}
+            {\insertcountry{, }{}{}: }%
+            {#1\insertcountry{}{: }{}}}%
+       {#2}%
+       {\insertcity
+            {#1}
+            {\insertcountry{, }{}{#2}}%
+            {\insertcountry{#1}{#2}{#3}}}%
     }
+
+\def\insertorg#1#2#3%
+   {\insertorganization
+       {\insertcity
+            {#1}
+            {\insertcountry{, }{}{#2}: }%
+            {\insertcountry{}{: }{#2}}}%
+       {}%
+       {\insertcity
+            {#1}
+            {\insertcountry{, }{}{#2}}%
+            {\insertcountry{}{#2}{#3}}}%
+    }
+
 
 
 \setuppublicationlayout[article]{%
@@ -131,9 +153,9 @@
    \insertjournal{\bgroup \it}{\egroup}
     {\insertcrossref{In }{}{}}%
    \insertvolume
-    {, }
-    {\insertissue{(}{)}{}\insertpages{:}{.}{.}}
-    {\insertpages{, pages }{.}{.}}%
+    {\bgroup \it, }
+    {\insertissue{\egroup\/(}{)}{}\insertpages{, }{.}{.}}
+    {\insertpages{, pp. }{.}{.}}%
    \insertnote{ }{.}{}%
    \insertcomment{}{.}{}%
 }
@@ -156,7 +178,7 @@
                     { in~\bgroup}%
                     {\egroup. }%
                     {\insertcrossref{ in~}{}{. }}}%
-                {\insertseries{ }{.}{} }%
+                {\insertseries{ }{.}{.}}%
         \else
        \insertcrossref
         {\insertchap{, }{}{}%
@@ -176,11 +198,9 @@
                 }%
         \fi}%
         {}%
-   \insertpublisher
-    { }%
-    {\insertedition{, }{ edition.}{.}}%
-    {\insertedition{, }{ edition.}{}}%
-   \insertpages{ }{p. }{}%
+   \insertedition{ }{ edition}{}%
+   \insertpublisher{. }{.}{.}%
+   \insertpages{ }{p. }{ }%
    \insertnote{}{.}{}%
 }
 
@@ -191,40 +211,38 @@
                      }{\insertthekey{}{. }{}}}%
    \insertpubyear{(}{). }{\unskip.}%
    \inserttitle
-        {\bgroup\it }%
-        {\/\egroup
-    \ifeditedbook
-           \global\editedbookfalse
-       \insertvolume
-        { number~}%
-                {\insertseries
-                    { in~\bgroup}%
-                    {\egroup. }%
-                    {\insertcrossref{ in~}{}{. }}}%
-                {\insertseries{ }{.}{} }%
-        \else
-           \insertcrossref
-        {\insertchap{, }{}{}%
-                 \insertpages{, pages }{. }{. }%
-                 \insertvolume{Volume~}{ of~}{}%
-                }%
-                {}%
-        {\insertvolume
-                   {, volume~}%
-                   {\insertseries
-                      { of~\bgroup\it}%
-                      {\egroup}
-                      {}}
-                   {}%
-                   \insertchap{, }{}{}%
-                   \insertpages{, pages }{. }{. }%
-                }%
+     {\bgroup\it }%
+     {\/\egroup
+      \ifeditedbook
+         \global\editedbookfalse
+         \insertvolume
+           { number~}%
+           {\insertseries
+              { in~\bgroup}%
+              {\egroup. }%
+              {\insertcrossref{ in~}{}{.}}}%
+           {\insertseries{ }{.}{}}%
+      \else
+        \insertcrossref
+          {\insertchap{, }{}{}%
+           \insertpages{, pages }{. }{. }%
+           \insertvolume{Volume~}{ of~}{}%
+           }%
+          {}%
+          {\insertvolume
+              {, volume~}%
+              {\insertseries
+                 { of~\bgroup\it}%
+                 {\egroup}
+                 {}}
+              {}%
+           \insertchap{, }{}{}%
+           \insertpages{, pages }{.}{}%
+           }%
         \fi}%
-        { }%
-   \insertpublisher
-    {}%
-    {\insertedition{, }{ edition. }{. }}%
-    {\insertedition{, }{ edition. }{}}%
+     { }%
+   \insertedition{ }{ edition}{}%
+   \insertpublisher{. }{.}{.}%
    \insertnote{ }{.}{}%
 }
 
@@ -232,10 +250,8 @@
    \insertauthors{}{ }{\insertthekey{}{. }{}}%
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
-   \insertpublisher
-    {}%
-    {\insertedition{, }{ edition. }{. }}%
-    {\insertedition{, }{ edition. }{}}%
+   \insertedition{ }{ edition}{}%
+   \insertpublisher{. }{.}{.}%
    \insertpages{}{p. }{}%
    \insertnote{ }{.}{}%
 }
@@ -244,12 +260,8 @@
    \insertauthors{}{ }{\insertthekey{}{. }{}}%
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup \it }{\/\egroup \insertseries{ (}{)}{}. }{}%
-   \insertorganization
-        {}%
-        {\insertcity{, }%
-            {\insertedition{, }{ edition. }{. }}%
-                {\insertedition{, }{ edition. }{. }}}%
-        {\insertedition{, }{ edition. }{}}%
+   \insertedition{ }{ edition}{}%
+   \insertorg{. }{.}{.}%
    \insertpages{}{p. }{}%
    \insertnote{ }{.}{}%
 }
@@ -270,10 +282,8 @@
               {}%
          \insertchap{\unskip, }{ }{ }%
          \insertpages{\unskip, pages~}{. }{\unskip. }% 
-         \insertpublisher
-         {}%
-         {\insertedition{, }{ edition. }{. }}%
-         {\insertedition{, }{ edition. }{}}%
+          \insertedition{ }{ edition}{}%
+          \insertpublisher{. }{.}{.}%
         }%
         {In \insertcrossref{}{}{}%
          \insertchap{\unskip, }{ }{ }%
@@ -297,14 +307,8 @@
               {}%
               {}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages
-                {\unskip, pages~}
-	            {\insertcity{, }{. }{. }}
-                {\unskip. }% 
-         \insertorganization
-         {}%
-         {\insertpubname{, }{. }{. }}%
-         {\insertpubname{}{. }{}}% was {, }{. }{}
+         \insertpages{, pages~}{}{}%
+         \insertorg{. }{.}{.}%
         }%
         {In \insertcrossref{}{}{}%
          \insertchap{\unskip, }{ }{ }%
@@ -322,19 +326,15 @@
    \inserttitle
     {\bgroup\it}%
     {\egroup 
-         \insertseries
-              {\insertvolume{, number }{~in }{ }}%
-              {}%
-              {}%
-         \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, pages~}{\insertcity{, }{. }{. }}
-        {\unskip\insertcity{, }{. }{. }}% 
-         \insertorganization
-         {}%
-         {\insertpubname{, }{. }{. }}%
-         {\insertpubname{, }{. }{}}%
-        }%
+     \insertseries
+        {\insertvolume{, number }{~in }{ }}%
         {}%
+        {}%
+     \insertchap{\unskip, }{ }{ }%
+     \insertpages{, pages~}{}{}%
+     \insertorg{. }{.}{.}%
+    }%
+    {}%
    \insertnote{ }{.}{}%
 }
 
@@ -343,8 +343,8 @@
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
    \insertbibtype{}{, }{Master's thesis, }%
-   \insertpublisher{}{. }{}%
-   \insertpages{}{p. }{}%
+   \insertpublisher{. }{.}{.}%
+   \insertpages{ }{p. }{}%
    \insertnote{ }{.}{}%
 }
 
@@ -352,9 +352,9 @@
    \insertauthors{}{ }{}%
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup\it }{\egroup \insertseries{ (}{)}{}. }{}%
-   \insertbibtype{}{, }{PhD thesis, }%
-   \insertpublisher{}{. }{}%
-   \insertpages{}{p. }{}%
+   \insertbibtype{}{, }{PhD thesis}%
+   \insertpublisher{. }{.}{.}%
+   \insertpages{ }{ p. }{}%
    \insertnote{ }{.}{}%
 }
 
@@ -362,8 +362,8 @@
    \insertauthors{}{ }{\insertthekey{}{. }{}}%
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}. }{}%
-   \insertpublisher{}{. }{}%
-   \insertpages{}{p. }{}%
+   \insertpublisher{. }{.}{.}%
+   \insertpages{ }{p. }{}%
    \insertnote{ }{.}{}%
 }
 
@@ -372,8 +372,8 @@
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
    \insertbibtype{}{\insertvolume{ }{, }{, }}{Technical Report, }%
-   \insertpublisher{}{. }{}%
-   \insertpages{}{p. }{}%
+   \insertpublisher{. }{.}{.}%
+   \insertpages{ }{p. }{}%
    \insertnote{ }{.}{}%
 }
 
@@ -381,8 +381,8 @@
    \insertauthors{}{ }{}%
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
-   \insertpublisher{}{. }{}%
-   \insertpages{}{p. }{}%
+   \insertpublisher{. }{.}{.}%
+   \insertpages{ }{p. }{}%
    \insertbibtype{(}{)}{}%
    \insertnote{ }{.}{}%
 }

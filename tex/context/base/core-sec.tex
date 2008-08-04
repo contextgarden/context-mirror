@@ -314,7 +314,7 @@
    \composedsectionnumber}
 
 \def\currentnumber[#1]% kan tekst hier weg ?
-  {\dotextprefix{\getvalue{\@@thenumber{#1}\c!text}}\sectionnumberonly[#1]}
+  {\dotextprefix{\numberparameter{#1}\c!text}\sectionnumberonly[#1]}
 
 \def\nextnumber[#1][#2][#3]%
   {\incrementnumber[#1]%
@@ -395,7 +395,7 @@
         {\def\firstsection{#1}%
          \setevalue{\??se#1\c!before}{\v!text}%
          \setevalue{\??se\v!text\c!after}{#1}}
-        {\setevalue{\??se\commalistelement\c!after}{#1}%
+        {\setevalue{\??se\commalistelement\c!after}{#1}% commalistelement ?
          \setevalue{\??se#1\c!before}{\lastsection}%
          \setevalue{\??se\lastsection\c!after}{#1}}%
       \advance\nofsections \plusone
@@ -1249,7 +1249,6 @@
 \newif\ifemptyhead
 \newif\ifwritetolist
 \newif\ifheadnumber
-\newif\ifzushead
 \newif\ifheadnumbercontent      % niet meer wijzigen / wordt mode
 \newif\ifheadprefix
 \newif\ifsomeheadconversion
@@ -1356,16 +1355,13 @@
          \fi
        \fi}}
 
-            \def   \writtenfullsectionnumber      {\string\fullsectionnumber}
-            \def   \ignoredfullsectionnumber#1#2#3{#3}
-            \let    \storedfullsectionnumber       \relax
-%           \def\expandablefullsectionnumber#1#2#3{#3}
-%\unexpanded\def   \naturalfullsectionnumber#1#2#3{\sectionblocklabel{#1}{\getvalue{\??cv#2}{#3}}}
-%\unexpanded\def   \limitedfullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
+\def\writtenfullsectionnumber
+  {\string\fullsectionnumber}
 
-% under test:
-%
-%           \def\expandablefullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
+\def\ignoredfullsectionnumber#1#2#3%
+  {#3}
+
+\let\storedfullsectionnumber\relax
 
 \def\expandablefullsectionnumber#1#2#3%
   {\convertnumber{#2}{#3}}
@@ -2449,35 +2445,42 @@
 
 \definehead
   [\v!part]
-  [\c!section=\s!section-1]
+  [\c!section=\s!section-1,
+   \c!ownnumber=\v!no]
 
 \definehead
   [\v!chapter]
-  [\c!section=\s!section-2]
+  [\c!section=\s!section-2,
+   \c!ownnumber=\v!no]
 
 \definehead
   [\v!section]
-  [\c!section=\s!section-3]
+  [\c!section=\s!section-3,
+   \c!ownnumber=\v!no]
 
 \definehead
   [\v!subsection]
   [\c!section=\s!section-4,
-   \c!default=\v!section]
+   \c!default=\v!section,
+   \c!ownnumber=\v!no]
 
 \definehead
   [\v!subsubsection]
   [\c!section=\s!section-5,
-   \c!default=\v!subsection]
+   \c!default=\v!subsection,
+   \c!ownnumber=\v!no]
 
 \definehead
   [\v!subsubsubsection]
   [\c!section=\s!section-6,
-   \c!default=\v!subsubsection]
+   \c!default=\v!subsubsection,
+   \c!ownnumber=\v!no]
 
 \definehead
   [\v!subsubsubsubsection]
   [\c!section=\s!section-7,
-   \c!default=\v!subsubsubsection]
+   \c!default=\v!subsubsubsection,
+   \c!ownnumber=\v!no]
 
 \definehead
   [\v!title]

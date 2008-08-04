@@ -12,51 +12,6 @@ dir = { }
 
 if lfs then do
 
---~     local attributes = lfs.attributes
---~     local walkdir    = lfs.dir
---~
---~     local function glob_pattern(path,patt,recurse,action)
---~         local ok, scanner = xpcall(function() return walkdir(path) end, function() end) -- kepler safe
---~         if ok and type(scanner) == "function" then
---~             if not path:find("/$") then path = path .. '/' end
---~             for name in scanner do
---~                 local full = path .. name
---~                 local mode = attributes(full,'mode')
---~                 if mode == 'file' then
---~                     if name:find(patt) then
---~                         action(full)
---~                     end
---~                 elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
---~                     glob_pattern(full,patt,recurse,action)
---~                 end
---~             end
---~         end
---~     end
---~
---~     dir.glob_pattern = glob_pattern
---~
---~     local function glob(pattern, action)
---~         local t = { }
---~         local action = action or function(name) t[#t+1] = name end
---~         local path, patt = pattern:match("^(.*)/*%*%*/*(.-)$")
---~         local recurse = path and patt
---~         if not recurse then
---~             path, patt = pattern:match("^(.*)/(.-)$")
---~             if not (path and patt) then
---~                 path, patt = '.', pattern
---~             end
---~         end
---~         patt = patt:gsub("([%.%-%+])", "%%%1")
---~         patt = patt:gsub("%*", ".*")
---~         patt = patt:gsub("%?", ".")
---~         patt = "^" .. patt .. "$"
---~      -- print('path: ' .. path .. ' | pattern: ' .. patt .. ' | recurse: ' .. tostring(recurse))
---~         glob_pattern(path,patt,recurse,action)
---~         return t
---~     end
---~
---~     dir.glob = glob
-
     local attributes = lfs.attributes
     local walkdir    = lfs.dir
 
@@ -134,13 +89,17 @@ if lfs then do
                 glob(s,t)
             end
             return t
+        elseif lfs.isfile(str) then
+            local t = t or { }
+            t[#t+1] = str
+            return t
         else
             local split = pattern:match(str)
             if split then
                 local t = t or { }
                 local action = action or function(name) t[#t+1] = name end
                 local root, path, base = split[1], split[2], split[3]
-                local recurse = base:find("**")
+                local recurse = base:find("%*%*")
                 local start = root .. path
                 local result = filter:match(start .. base)
                 glob_pattern(start,result,recurse,action)
@@ -168,16 +127,21 @@ if lfs then do
         for name in walkdir(path) do
             if name:find("^%.") then
                 --- skip
-            elseif attributes(name,'mode') == "directory" then
-                if recurse then
-                    globfiles(path .. "/" .. name,recurse,func,files)
-                end
-            elseif func then
-                if func(name) then
-                    files[#files+1] = path .. "/" .. name
-                end
             else
-                files[#files+1] = path .. "/" .. name
+                local mode = attributes(name,'mode')
+                if mode == "directory" then
+                    if recurse then
+                        globfiles(path .. "/" .. name,recurse,func,files)
+                    end
+                elseif mode == "file" then
+                    if func then
+                        if func(name) then
+                            files[#files+1] = path .. "/" .. name
+                        end
+                    else
+                        files[#files+1] = path .. "/" .. name
+                    end
+                end
             end
         end
         return files

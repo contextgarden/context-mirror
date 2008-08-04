@@ -26,7 +26,7 @@ def resettextexts =
     _tt_p_ := nullpicture ;
 enddef ;
 
-extra_endfig   := ";draw _tt_p_; " & extra_endfig ;
+extra_endfig   := ";addto currentpicture also _tt_p_; " & extra_endfig; % was draw _tt_p_
 extra_beginfig := extra_beginfig & "resettextexts;";
 
 vardef rawtextext(expr str) =

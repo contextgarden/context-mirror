@@ -27,7 +27,7 @@ do
     -- we can consider hiding data (faster access too)
 
     --~ local function filter(filename,what)
-    --~     local data = io.loaddata(input.find_file(texmf.instance,filename))
+    --~     local data = io.loaddata(input.find_file(filename))
     --~     local data = data:match(string.format("\\%s%%s*(%%b{})",what or "patterns"))
     --~     return data:match("{%s*(.-)%s*}") or ""
     --~ end
@@ -49,9 +49,9 @@ do
 
     local function filterpatterns(filename)
         if filename:find("%.rpl") then
-            return io.loaddata(input.find_file(texmf.instance,filename)) or ""
+            return io.loaddata(input.find_file(filename)) or ""
         else
-            return parser:match(io.loaddata(input.find_file(texmf.instance,filename)) or "")
+            return parser:match(io.loaddata(input.find_file(filename)) or "")
         end
     end
 
@@ -60,9 +60,9 @@ do
 
     local function filterexceptions(filename)
         if filename:find("%.rhl") then
-            return io.loaddata(input.find_file(texmf.instance,filename)) or ""
+            return io.loaddata(input.find_file(filename)) or ""
         else
-            return parser:match(io.loaddata(input.find_file(texmf.instance,filename)) or {}) -- "" ?
+            return parser:match(io.loaddata(input.find_file(filename)) or {}) -- "" ?
         end
     end
 
@@ -90,7 +90,7 @@ do
     function languages.hyphenation.load(tag, filename, filter, target)
         input.starttiming(languages)
         local data = record(tag)
-        filename = (filename and filename ~= "" and input.find_file(texmf.instance,filename)) or ""
+        filename = (filename and filename ~= "" and input.find_file(filename)) or ""
         local ok = filename ~= ""
         if ok then
             lang[target](data,filterpatterns(filename))
@@ -197,7 +197,7 @@ end
 
 function languages.loadable(tag)
     local l = languages.registered[tag]
-    if l and l.patterns and input.find_file(texmf.instance,patterns) then
+    if l and l.patterns and input.find_file(patterns) then
         return true
     else
         return false
@@ -291,7 +291,7 @@ do
     local word    = lpeg.Cs((markup/"" + disc/"" + (1-spacing))^1)
 
     function languages.words.load(tag, filename)
-        local filename = input.find_file(texmf.instance,filename,'other text file') or ""
+        local filename = input.find_file(filename,'other text file') or ""
         if filename ~= "" then
             input.starttiming(languages)
             local data = io.loaddata(filename) or ""
@@ -322,8 +322,7 @@ do
 
     local glyph, disc, kern = node.id('glyph'), node.id('disc'), node.id('kern')
 
-    local bynode        = node.traverse
-    local bychar        = string.utfcharacters
+    local bynode = node.traverse
 
     local function mark_words(head,found) -- can be optimized
         local cd = characters.data
@@ -419,7 +418,7 @@ do
     local lw = languages.words
 
     function languages.words.check(head)
-        if head.next and lw.enable then
+        if lw.enable and head.next then
             local color  = attributes.numbers['color']
             local colors = lw.colors
             local alc    = attributes.list[color]
@@ -439,7 +438,8 @@ end
 --~     return languages.check(head)
 --~ end
 
---~ chars.plugins.language = {
+--~ chars.plugins[chars.plugins+1] = {
+--~     name = "language",
 --~     namespace = languagehacks,
 --~     processor = languagehacks.process
 --~ }

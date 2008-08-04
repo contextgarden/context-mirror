@@ -238,17 +238,6 @@
 %D reports which patterns are loaded and what hyphenmin
 %D values are set.
 
-\let\preloadedpatterns\empty
-\let\preloadedpmessage\empty
-
-\def\doshowpatterns#1#2#3#4% language number encoding mapping
-  {#1->#3:#4->#2->\xxlanguageparameter{#1}\s!lefthyphenmin:\xxlanguageparameter{#1}\s!righthyphenmin\space}
-
-\def\preloadlanguages
-  {\doifsomething\preloadedpmessage{\showmessage\m!linguals{10}\preloadedpmessage}}
-
-\fetchruntimecommand \showpatterns {\f!languageprefix\s!run}
-
 \let\installedlanguages\empty
 
 \def\doiflanguageelse#1{\doifdefinedelse{\??la#1\c!state}}
@@ -278,17 +267,18 @@
      {\setvalue{\l!prefix!#1}{#2}%
       \dodoinstalllanguage{#1}{#2}}}
 
+\def\reallanguagetag#1%
+  {\ifcsname\l!prefix!#1\endcsname
+    %\expandafter\reallanguagetag\csname\l!prefix!#1\endcsname %  evt undefined en dan wel
+     \csname\l!prefix!#1\endcsname
+   \else
+      #1%
+   \fi}
+
 % ^^ \language[#1] gave unwanted side effect of loading language specifics
 
 \def\installlanguage
   {\dodoubleargument\doinstalllanguage}
-
-%D Handy
-
-\def\preloadallpatterns
-  {\gdef\preloadallpatterns##1{\installlanguage[##1][\c!state=\v!start]}%
-   \processcommacommand[\installedlanguages]\preloadallpatterns
-   \global\let\preloadallpatterns\relax}
 
 %D When the second argument is a language identifier, a
 %D synonym is created. This feature is present because we
@@ -468,12 +458,30 @@
 
 \definecomplexorsimple\language
 
+% \def\mainlanguage[#1]%
+%   {\edef\askedlanguage{#1}%
+%    \ifx\askedlanguage\empty \else
+%      \ifcsname\l!prefix!\askedlanguage\endcsname
+%        \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
+%        \ifx\currentmainlanguage\askedlanguage \else
+%          \setcurrentlanguage\askedlanguage\askedlanguage
+%          \docomplexlanguage
+%        \fi
+%      \fi
+%    \fi}
+
 \def\mainlanguage[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
      \ifcsname\l!prefix!\askedlanguage\endcsname
        \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
-       \ifx\currentmainlanguage\askedlanguage \else
+       \ifx\currentlanguage\askedlanguage
+         \ifx\currentmainlanguage\askedlanguage
+         \else
+           \setcurrentlanguage\askedlanguage\askedlanguage
+           \docomplexlanguage
+         \fi
+       \else
          \setcurrentlanguage\askedlanguage\askedlanguage
          \docomplexlanguage
        \fi
@@ -567,8 +575,8 @@
 %D
 %D \ShowLanguageValues [af] [afrikaans]  afrikaanse ...
 %D \ShowLanguageValues [ca] [catalan]    catalan ...
-%D \ShowLanguageValues [cz] [czech]      tjechisch tex
-%D \ShowLanguageValues [cz] [slovak]     slowaakse ...
+%D \ShowLanguageValues [cs] [czech]      tjechisch tex
+%D \ShowLanguageValues [cs] [slovak]     slowaakse ...
 %D \ShowLanguageValues [da] [danish]     deense ...
 %D \ShowLanguageValues [de] [german]     duitse degelijkheid
 %D \ShowLanguageValues [en] [english]    engelse humor
@@ -577,8 +585,9 @@
 %D \ShowLanguageValues [it] [italian]    italiaanse ...
 %D \ShowLanguageValues [la] [latin]      latijnse missen
 %D \ShowLanguageValues [nl] [dutch]      nederlandse zuinigheid
-%D \ShowLanguageValues [no] [norwegian]  noorse ...
-%D \ShowLanguageValues [pl] [polish]     poolse ...
+%D \ShowLanguageValues [nb] [bokmal]     noorse zalm
+%D \ShowLanguageValues [nn] [nnynorsk]   noorse zalm
+%D \ShowLanguageValues [pl] [polish]     poolse vlag
 %D \ShowLanguageValues [pt] [portuguese] portugese ...
 %D \ShowLanguageValues [es] [spanish]    spaans benauwd
 %D \ShowLanguageValues [sv] [swedish]    zweedse ...
@@ -601,7 +610,8 @@
 %D \NC \s!da        \NC danish       \NC germanic  \NC\MR
 %D \NC \s!sv        \NC swedish      \NC germanic  \NC\MR
 %D \NC \s!af        \NC afrikaans    \NC germanic  \NC\MR
-%D \NC \s!no        \NC norwegian    \NC germanic  \NC\LR
+%D \NC \s!nb        \NC bokmal       \NC germanic  \NC\LR
+%D \NC \s!nn        \NC nynorsk      \NC germanic  \NC\LR
 %D \HL
 %D \stoptable
 %D \protect
@@ -629,7 +639,7 @@
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
 %D \HL
 %D \NC \s!pl        \NC polish       \NC slavic    \NC\FR
-%D \NC \s!cz        \NC czech        \NC slavic    \NC\MR
+%D \NC \s!cs        \NC czech        \NC slavic    \NC\MR
 %D \NC \s!sk        \NC slavik       \NC slavic    \NC\LR
 %D \HL
 %D \stoptable

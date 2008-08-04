@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2008.05.21 15:21">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2008.06.30 16:04">
 
   <cd:variables>
     <cd:variable name="lesshyphenation" value="lesshyphenation"/>
@@ -133,6 +133,11 @@
     <cd:variable name="mathcases" value="mathcases"/>
     <cd:variable name="mathmatrix" value="mathmatrix"/>
   </cd:variables>
+
+  <cd:constants>
+    <cd:constant name="equalwidth" value="equalwidth"/>
+    <cd:constant name="equalheight" value="equalheight"/>
+  </cd:constants>
 
   <cd:constants>
     <cd:constant name="sorttype" value="sorttype"/>

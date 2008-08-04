@@ -25,9 +25,12 @@
 % \ctxlua{mathematics.traditional()}
 
 \ctxlua{mathematics.define()}
+\ctxlua{mathematics.register_xml_entities()}
 
-\def\utfmathclass  #1{\ctxlua{tex.sprint (mathematics.utfmathclass  ("#1"))}}
-\def\utfmathcommand#1{\ctxlua{commands.cs(mathematics.utfmathcommand("#1"))}}
+\def\utfmathclass  #1{\ctxlua{tex.sprint(mathematics.utfmathclass  ("#1"))}}
+\def\utfmathstretch#1{\ctxlua{tex.sprint(mathematics.utfmathstretch("#1"))}}
+\def\utfmathcommand#1{\ctxlua{tex.sprint(mathematics.utfmathcommand("#1"))}}
+\def\utfmathfiller #1{\ctxlua{tex.sprint(mathematics.utfmathfiller ("#1"))}}
 
 \def\utfmathclassdefault  #1#2{\ctxlua{
     tex.sprint(mathematics.utfmathclass("#1","#2"))

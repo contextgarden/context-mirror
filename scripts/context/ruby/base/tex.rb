@@ -112,8 +112,8 @@ class TEX
 
     ['tex','standard']                             .each do |b| @@mappaths[b]   = 'dvips'     end
     ['pdftex','pdfetex']                           .each do |b| @@mappaths[b]   = 'pdftex'    end
-    ['aleph','omega','xetex','petex']              .each do |b| @@mappaths[b]   = 'dvipdfm'   end
-    ['dvipdfm', 'dvipdfmx', 'xdvipdfmx']           .each do |b| @@mappaths[b]   = 'dvipdfm'   end
+    ['aleph','omega','xetex','petex']              .each do |b| @@mappaths[b]   = 'dvipdfmx'  end
+    ['dvipdfm', 'dvipdfmx', 'xdvipdfmx']           .each do |b| @@mappaths[b]   = 'dvipdfmx'  end
     ['xdv','xdv2pdf']                              .each do |b| @@mappaths[b]   = 'dvips'     end
 
     # todo norwegian (no)
@@ -124,9 +124,9 @@ class TEX
     ['cont-de','de','german']                      .each do |f| @@texformats[f] = 'cont-de'   end
     ['cont-it','it','italian']                     .each do |f| @@texformats[f] = 'cont-it'   end
     ['cont-fr','fr','french']                      .each do |f| @@texformats[f] = 'cont-fr'   end
-    ['cont-cz','cz','czech']                       .each do |f| @@texformats[f] = 'cont-cz'   end
+    ['cont-cs','cs','cont-cz','cz','czech']        .each do |f| @@texformats[f] = 'cont-cs'   end
     ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro'   end
-    ['cont-uk','uk','british']                     .each do |f| @@texformats[f] = 'cont-uk'   end
+    ['cont-gb','gb','cont-uk','uk','british']      .each do |f| @@texformats[f] = 'cont-gb'   end
     ['mptopdf']                                    .each do |f| @@texformats[f] = 'mptopdf'   end
 
     ['latex']                                      .each do |f| @@texformats[f] = 'latex.ltx' end
@@ -141,7 +141,7 @@ class TEX
 
     ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
     ['cont-en','cont-nl','cont-de','cont-it',
-     'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texmethods[f] = 'context'   end
+     'cont-fr','cont-cs','cont-ro','cont-gb']      .each do |f| @@texmethods[f] = 'context'   end
     ['latex','pdflatex']                           .each do |f| @@texmethods[f] = 'latex'     end
 
     ['plain','default','standard']                 .each do |f| @@mpsmethods[f] = 'plain'     end
@@ -151,7 +151,7 @@ class TEX
     @@mpsmakestr['plain'] = @@platformslash + "dump"
 
     ['cont-en','cont-nl','cont-de','cont-it',
-     'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = @@platformslash + "emergencyend"  end
+     'cont-fr','cont-cs','cont-ro','cont-gb']      .each do |f| @@texprocstr[f] = @@platformslash + "emergencyend"  end
 
     @@runoptions['aleph']   = ['--8bit']
     @@runoptions['luatex']  = ['--file-line-error']
@@ -640,10 +640,14 @@ class TEX
             report("using tex format path #{texformatpath}")
             Dir.chdir(texformatpath) rescue false
             if FileTest.writable?(texformatpath) then
-                if texformats.length > 0 then
-                    makeuserfile
-                    makeresponsefile
-                end
+            # from now on we no longer support this; we load
+            # all patterns and if someone wants another
+            # interface language ... cook up a fmt or usr file
+            #
+            #   if texformats.length > 0 then
+            #       makeuserfile
+            #       makeresponsefile
+            #   end
                 if texengine == 'luatex' then
                     cleanupluafiles
                     texformats.each do |texformat|
@@ -2174,30 +2178,57 @@ end
     end
 
     def checkmpgraphics(mpname)
+        # in practice the checksums will differ because of multiple instances
+        # ok, we could save the mpy/mpo files by number, but not now
         mpoptions = ''
         if getvariable('makempy') then
             mpoptions += " --makempy "
         end
+        mponame = File.suffixed(mpname,'mpo')
+        mpyname = File.suffixed(mpname,'mpy')
+        pdfname = File.suffixed(mpname,'pdf')
+        tmpname = File.suffixed(mpname,'tmp')
         if getvariable('mpyforce') || getvariable('forcempy') then
             mpoptions += " --force "
         else
-            mponame = File.suffixed(mpname,'mpo')
-            mpyname = File.suffixed(mpname,'mpy')
             return false unless File.atleast?(mponame,32)
             mpochecksum = FileState.new.checksum(mponame)
             return false if mpochecksum.empty?
             # where does the checksum get into the file?
             # maybe let texexec do it?
             # solution: add one if not present or update when different
-            if f = File.silentopen(mpyname) then
-                str = f.gets.chomp
-                f.close
-                if str =~ /^\%\s*mpochecksum\s*\:\s*(\d+)/o then
-                    return false if mpochecksum == $1
+            begin
+                mpydata = IO.read(mpyname)
+                if mpydata then
+                    if mpydata =~ /^\%\s*mpochecksum\s*\:\s*([A-Z0-9]+)$/mo then
+                        checksum = $1
+                        if mpochecksum == checksum then
+                            return false
+                        end
+                    end
                 end
+            rescue
+                # no file
             end
         end
-        return Kpse.runscript('makempy',mpname)
+        # return Kpse.runscript('makempy',mpname)
+        # only pdftex
+        flags = ['--noctx','--process','--batch','--once']
+        result = runtexexec([mponame], flags, 1)
+        runcommand(["pstoedit","-ssp -dt -f mpost", pdfname,tmpname])
+        tmpdata = IO.read(tmpname)
+        if tmpdata then
+            if mpy = openedfile(mpyname) then
+                mpy << "% mpochecksum: #{mpochecksum}\n"
+                tmpdata.scan(/beginfig(.*?)endfig/mo) do |s|
+                    mpy << "begingraphictextfig#{s}endgraphictextfig\n"
+                end
+                mpy.close()
+            end
+        end
+        File.silentdelete(tmpname)
+        File.silentdelete(pdfname)
+        return true
     end
 
     def checkmplabels(mpname)

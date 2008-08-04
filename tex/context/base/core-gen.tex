@@ -60,24 +60,24 @@
 %D   {waarde groot}
 %D \stoptyping
 
-\def\assigndimension#1#2#3#4#5%
+\def\assigndimension#1#2#3#4#5% can be a skip
   {\processaction
      [#1]
-     [   \v!small=>#2=#3,
-        \v!medium=>#2=#4,
-         \v!big=>#2=#5,
+     [   \v!small=>#2=#3\relax,
+        \v!medium=>#2=#4\relax,
+           \v!big=>#2=#5\relax,
           \v!none=>#2=\zeropoint,
-        -\v!small=>#2=-#3,
-       -\v!medium=>#2=-#4,
-        -\v!big=>#2=-#5,
-       \s!unknown=>#2=#1]}
+        -\v!small=>#2=-#3\relax,
+       -\v!medium=>#2=-#4\relax,
+          -\v!big=>#2=-#5\relax,
+       \s!unknown=>#2=#1\relax]}
 
 \def\assignalfadimension#1#2#3#4#5%
   {\processaction
      [#1]
      [   \v!small=>\edef#2{#3},
         \v!medium=>\edef#2{#4},
-         \v!big=>\edef#2{#5},
+           \v!big=>\edef#2{#5},
           \v!none=>\edef#2{0},
        \s!unknown=>\edef#2{#1}]}
 

@@ -1198,20 +1198,6 @@
 %D Well, isn't the next one ugly? Thanks to the \PDF\
 %D standard.
 
-% obsolete cq. buggy in pdfTeX
-%
-% \def\doPDFbookmark#1#2#3#4#5%
-%   {\pdfoutline
-%      goto page #4\space
-%      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
-%      {#3}}
-
-% \def\doPDFbookmark#1#2#3#4#5%
-%   {\pdfoutline
-%      user {<</S /GoTo /D [#4\space\PDFpageviewwrd]>>}%
-%      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
-%      {#3}}
-
 \def\doPDFbookmark#1#2#3#4#5%
   {\doPDFgetpagereference{#4}\PDFobjectreference
    \pdfoutline
@@ -1369,6 +1355,8 @@
   {\doiffileelse{./#1}{\includeMPasPDF{./#1}}{\message{[MP #1]}}}
 
 %D Now we can finish this module.
+
+\loadmarkfile{spec-tpd}
 
 \stopspecials
 

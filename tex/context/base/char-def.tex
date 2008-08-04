@@ -35,10 +35,12 @@
 %   \ctxlua{characters.setpdfunicodes()}% pdftounicode mappings can only be done runtime
 % \stopruntimeluacode
 
-%D This is needed for Turkish:
+%D There may be a problem with the turkisch patterns. By now it's taken care of in
+%D ctxtools (thanks to Mojca). There seems to be a bug in the patterns (^^11 refers
+%D to a double quote but it should be ^^19 since the original is in ec encoding).
 
-\setcclcuc "201C "201C "201C
-\setcclcuc "201D "201D "201D
+% \setcclcuc "201C "201C "201C
+% \setcclcuc "201D "201D "201D
 
 \protect \endinput
 

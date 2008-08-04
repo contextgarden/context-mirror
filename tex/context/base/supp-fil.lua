@@ -73,7 +73,7 @@ function support.doiffileexistelse(name)
     if not name or name == "" then
         return cs.testcase(false)
     else
-        local n = input.findtexfile(texmf.instance,name)
+        local n = input.findtexfile(name)
         return cs.testcase(n and n ~= "")
     end
 end

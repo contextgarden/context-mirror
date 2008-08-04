@@ -173,26 +173,6 @@
 
 \newconditional\moduleisloaded
 
-% \def\dododousemodules#1#2% no \unprotect/\protect when loading,
-%   {\relax                % since we need to use ? ! unprotected
-%    \ifconditional\moduleisloaded % sometimes (see xtag-map)
-%      \let\next\relax % or: \expandafter\gobbleoneargument
-%    \else
-%      \makeshortfilename[#1\truefilename{#2}]% beware: *- is not part of syn
-%      \doifelseflagged\shortfilename
-%        {\showmessage\m!systems7{#2 (line \number\inputlineno)}%
-%         \settrue\moduleisloaded
-%         \let\next\relax}
-%        {\doglobal\setflag\shortfilename
-%         \def\next
-%           {\startreadingfile
-%              \readsysfile\shortfilename
-%                {\showmessage\m!systems5{#2}\settrue\moduleisloaded}
-%                \donothing
-%            \stopreadingfile}}%
-%    \fi
-%    \next}
-
 \def\dododousemodules#1#2% no \unprotect/\protect when loading,
   {\relax                % since we need to use ? ! unprotected
    \ifconditional\moduleisloaded % sometimes (see xtag-map)

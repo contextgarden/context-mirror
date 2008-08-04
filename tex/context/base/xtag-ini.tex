@@ -49,6 +49,8 @@
 % csnames
 % XMLelse -> elseXML
 
+\loadmarkfile{xtag-ini}
+
 %D Remark: some hard coded character things will be replaced
 %D by named glyphs as soon as the upgraded encoding modules
 %D are released. At that moment, unicode support will be
@@ -432,11 +434,7 @@
 \bgroup \catcode`\<=13 \catcode`\&=13
 
 \gdef\enableXML
-  {\ifcase\XMLtokensreduction
-     \setcatcodetable\xmlcatcodese \or
-     \setcatcodetable\xmlcatcodesr \else
-     \setcatcodetable\xmlcatcodesn
-   \fi
+  {\mksetXMLtokensreduction
    \let&\doXMLentity
    \unexpanded\def<{\doXMLelement}%
    \processingXMLtrue
@@ -2850,8 +2848,8 @@
   {\doifelsenothing{#1}
      {\doprocessXMLbuffer[\jobname]}
      {\begingroup
-      \def\dodoprocessXMLbuffer##1%
-        {\enableXML\processXMLfile{\TEXbufferfile{##1}}}%
+      \enableXML
+      \def\dodoprocessXMLbuffer##1{\getbuffer[##1]}%
       \processcommalist[#1]\dodoprocessXMLbuffer
       \endgroup}}
 

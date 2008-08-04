@@ -6,12 +6,29 @@ if not modules then modules = { } end modules ['mtx-watch'] = {
     license   = "see context related readme files"
 }
 
-texmf.instance = instance -- we need to get rid of this / maybe current instance in global table
-
 scripts       = scripts       or { }
 scripts.watch = scripts.watch or { }
 
 do
+
+    function scripts.watch.save_exa_modes(modes,ctmname)
+        if modes then
+            local t= { }
+            t[#t+1] = "<?xml version='1.0' standalone='yes'?>\n"
+            t[#t+1] = "<exa:variables xmlns:exa='htpp://www.pragma-ade.com/schemas/exa-variables.rng'>"
+            if modes then
+                for k, v in ipairs(modes) do
+                    local key, value = v:match("^(.*):([^:]-)$")
+                    if key and value then
+                        t[#t+1] = string.format("\t<exa:variable label='%s'>%s</exa:variable>",key,value)
+                    end
+                end
+            end
+            t[#t+1] = "</exa:variables>"
+            os.remove(ctmname)
+            io.savedata(ctmname,table.concat(t,"\n"))
+        end
+    end
 
     function scripts.watch.watch()
         local delay   = environment.argument("delay")   or 5
@@ -74,12 +91,17 @@ do
                                         local newpath = file.dirname(name)
                                         io.flush()
                                         local result = ""
+                                        local ctmname = file.basename(replacements.filename)
+                                        if ctmname == "" then ctmname = name end -- use self as fallback
+                                        ctmname = file.replacesuffix(ctmname,"ctm")
                                         if newpath ~= "" and newpath ~= "." then
                                             local oldpath = lfs.currentdir()
                                             lfs.chdir(newpath)
+                                            scripts.watch.save_exa_modes(joblog.modes,ctmname)
                                             if pipe then result = os.resultof(command) else result = os.spawn(command) end
                                             lfs.chdir(oldpath)
                                         else
+                                            scripts.watch.save_exa_modes(joblog.modes,ctmname)
                                             if pipe then result = os.resultof(command) else result = os.spawn(command) end
                                         end
                                         logs.report("watch",string.format("return value: %s", result))

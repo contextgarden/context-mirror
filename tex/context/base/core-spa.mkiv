@@ -69,6 +69,64 @@
    % reset topskip
    \oninterlineskip}
 
+% experimental mirroring
+
+\defineattribute[mirror]
+
+\def\setcharactermirroring
+  {\ctxlua{mirror.enabled=true}%
+   \gdef\setcharactermirroring[##1]{\dosetattribute{mirror}{\number##1}}%
+   \setcharactermirroring}
+
+\def\resetcharactermirroring
+  {\doresetattribute{mirror}}
+
+\newtoks\everysetupdirections
+
+\def\setupdirections[#1]% there will be more like setting up directions themselves
+  {\getparameters[\??di][#1]%
+   \the\everysetupdirections}
+
+\chardef\directionsbidimode=0
+
+\letvalue{\??di:bidi:\v!off   }\zerocount
+\letvalue{\??di:bidi:\v!global}\plusone
+\letvalue{\??di:bidi:\v!local }\plustwo
+\letvalue{\??di:bidi:\v!on    }\plustwo
+
+\appendtoks
+    \chardef\directionsbidimode\executeifdefined{\??di:bidi:\@@dibidi}\zerocount\relax
+    \ifcase\directionsbidimode
+      \resetcharactermirroring
+    \or
+      \setcharactermirroring[1]% global, chars
+    \or
+      \setcharactermirroring[2]% local, attributes
+    \or
+      \setcharactermirroring[1]% default
+    \fi
+\to \everysetupdirections
+
+% bidi: local=obey grouping, global=ignore grouping (unicode has no grouping)
+
+\setupdirections % maybe start/stop
+  [bidi=\v!off]
+
+\unexpanded\def\bidilre{\utfchar{"0x202A}}
+\unexpanded\def\bidirle{\utfchar{"0x202B}}
+\unexpanded\def\bidipop{\utfchar{"0x202C}}
+\unexpanded\def\bidilro{\utfchar{"0x202D}}
+\unexpanded\def\bidirlo{\utfchar{"0x202E}}
+
+\unexpanded\def\dirlre{\ifcase\directionsbidimode\or\bidilre\or\textdir TLT\fi}
+\unexpanded\def\dirrle{\ifcase\directionsbidimode\or\bidirle\or\textdir TRT\fi}
+\unexpanded\def\dirlro{\ifcase\directionsbidimode\or\bidilro\or\setcharactermirroring[3]\fi}
+\unexpanded\def\dirrlo{\ifcase\directionsbidimode\or\bidirlo\or\setcharactermirroring[4]\fi}
+
+% test at end of file
+
+% for the moment: \setcharactermirroring[\plusone]
+
 % experimental spacing
 %
 % test: oeps {\setcharacterspacing[frenchpunctuation]x: xx \bfd x: xx} oeps: test
@@ -239,7 +297,7 @@
 % 4 == add to existing skip                add
 % 5 == disable (ignore following)          disable
 % 6 == kill whitespace                     nowhite
-% 7 == discard previous                    goback
+% 7 == discard previous                    back
 %
 % penalty: larger wins
 % order: larger wins
@@ -253,12 +311,27 @@
 
 % todo, in grid mode: vspacing.fixed = false
 
-\def\startblankhandling{\begingroup \blankskip \zeropoint}
-\def\stopblankhandling {\vskip \blankskip \endgroup}
+\newtoks\everybeforeblankhandling
+\newtoks\everyafterblankhandling
+
+\appendtoks
+    \dosetattribute{skip-category}\plusone
+    \doresetattribute{skip-order}%
+    \doresetattribute{skip-penalty}%
+\to \everybeforeblankhandling
+
+\appendtoks
+    \ifblankflexible \else
+        \fixedblankskip
+    \fi
+\to \everyafterblankhandling
+
+\def\startblankhandling{\begingroup \blankskip\zeropoint \the\everybeforeblankhandling}
+\def\stopblankhandling {\the\everyafterblankhandling \vskip \blankskip \endgroup}
 \def\setblankcategory#1{\dosetattribute{skip-category}{#1}}
 \def\setblankorder   #1{\dosetattribute{skip-order}{#1}}
 \def\setblankpenalty #1{\dosetattribute{skip-penalty}{#1}}
-\def\addblankskip#1#2#3{\advance\blankskip#1\dimexpr\ifgridsnapping#3\else#2\fi\relax}
+\def\addblankskip#1#2#3{\advance\blankskip#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
 \def\fixedblankskip    {\blankskip1\blankskip}
 \def\flexibleblankskip {\blankskip1\blankskip\!!plus \skipgluefactor\blankskip\!!minus\skipgluefactor\blankskip}
 
@@ -266,13 +339,13 @@
   {\dotripleempty\dodefinevspacingamount}
 
 \def\dodefinevspacingamount[#1][#2][#3]%
-  {\ctxlua{vspacing.setskip("#1","\detokenize{#2}","\detokenize{#3}")}}
+  {\ctxlua{vspacing.setskip("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
 
 \def\definevspacing
   {\dodoubleempty\dodefinevspacing}
 
 \def\dodefinevspacing[#1][#2]%
-  {\ctxlua{vspacing.setmap("#1","\detokenize{#2}")}}
+  {\ctxlua{vspacing.setmap("#1","#2")}}
 
 \def\vspacing
   {\dosingleempty\dovspacing}
@@ -287,17 +360,22 @@
 \definevspacingamount[\v!formula][\medskipamount]  [.50\openlineheight]
 \definevspacingamount[\v!white]  [\parskip]        [\openlineheight]
 
+\definevspacing[\s!default] [\v!big]
 \definevspacing[\v!halfline][.5*\v!line]
-\definevspacing[weak]       [order:0]
-\definevspacing[strong]     [order:100]
-\definevspacing[samepage]   [penalty:10000]
+\definevspacing[\v!samepage][penalty:10000]
+\definevspacing[\v!max]     [category:1]
 \definevspacing[\v!force]   [category:2]
 \definevspacing[\v!disable] [category:5]
 \definevspacing[\v!nowhite] [category:6]
-\definevspacing[goback]     [category:7]
+\definevspacing[\v!back]    [category:7]
 \definevspacing[\v!always]  [category:0]
+\definevspacing[\v!weak]    [order:0]
+\definevspacing[\v!strong]  [order:100]
 
-\definevspacing[\s!default][\v!big]
+\defineblankmethod[\v!samepage]{\writestatus\m!systems{ignoring blank method '\v!samepage'}}
+\defineblankmethod[\v!max]     {\writestatus\m!systems{ignoring blank method '\v!max'}}
+\defineblankmethod[\v!weak]    {\writestatus\m!systems{ignoring blank method '\v!weak'}}
+\defineblankmethod[\v!strong]  {\writestatus\m!systems{ignoring blank method '\v!strong'}}
 
 % \definevspacing[whatever][4*big]
 % \vspacing[2*big,-medium,-3*small,whatever,halfline,order:10,category:4,strong,samepage]
@@ -305,11 +383,30 @@
 % \vspacing[2*big,disable]
 % \vspacing[2*big,back]
 
-\def\enablevspacing{\ctxlua{
-    callback.register('vpack_filter',     nodes.handle_vbox_spacing)
-    callback.register('buildpage_filter', nodes.handle_page_spacing)
-}}
+% some temporary hacks
 
+\setfalse\vspacingenabled
+
+% \def\dosomebreak#1%
+%   {\doifoutervmode
+%      {\scratchskip\lastskip
+%       \removelastskip
+%       #1\relax
+%       \ifconditional\vspacingenabled
+%         % we have collapsed so always 0pt
+%         \vskip\scratchskip
+%       \else\ifdim\scratchskip=\zeropoint
+%         % else interference with footnotes
+%       \else
+%         \vskip\scratchskip
+%       \fi\fi}}
+
+% ! ! ! ! ! later, now each newline does a \par and call to the callback
+
+\def\enablevspacing {\settrue \vspacingenabled\ctxlua{vspacing.enable()}}
+\def\disablevspacing{\setfalse\vspacingenabled\ctxlua{vspacing.disable()}}
+
+\let\setupvspacing\setupblank % for the moment
 
 \protect \endinput
 
@@ -365,5 +462,71 @@
     \vskip10pt
     fifth
 }
+
+% bidi test
+
+\definefontfeature
+  [arab]
+  [mode=node,language=dflt,script=arab,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes]
+
+\font\Arabic=arabtype*arab at 20pt
+
+\def\LATIN{LATIN} {\setcharactermirroring[1]} % enable this
+\def\ARAB {محمد}
+
+\startluacode
+    function document.split_tokens(str)
+        for s in str:bytes() do
+            tex.sprint(tex.ctxcatcodes,string.format("\\hbox{\\char %s}",s))
+        end
+    end
+\stopluacode
+
+\def\biditest#1#2#3% font text raw
+  {\dontleavehmode\hbox
+    {\framed[offset=overlay]{\tttf#2}\quad
+     \ctxlua{mirror.trace = true}%
+     \framed[offset=overlay]{#1#3}\quad
+     \ctxlua{mirror.trace = false}
+     \tttf\ctxlua{document.split_tokens([[\detokenize{#3}]])}}}
+
+\startbuffer[bidi-sample]
+\biditest\Arabic{LATIN BARA}{\textdir TLT\relax   \LATIN\ \ARAB}\par
+\biditest\Arabic{BARA LATIN}{\textdir TRT\relax   \LATIN\ \ARAB}\par
+\biditest\Arabic{LATIN ARAB}{\textdir TLT{\bidilro \LATIN\ \ARAB}}\par % right -> left
+\biditest\Arabic{LATIN ARAB}{\textdir TRT{\bidilro \LATIN\ \ARAB}}\par % right -> left
+\biditest\Arabic{BARA NITAL}{\textdir TLT{\bidirlo \LATIN\ \ARAB}}\par % left -> right
+\biditest\Arabic{BARA NITAL}{\textdir TRT{\bidirlo \LATIN\ \ARAB}}\par % left -> right
+\stopbuffer
+
+\startbuffer[bidi-sample]
+\biditest\Arabic{LATIN BARA}{\textdir TLT\relax   \LATIN\ \ARAB}\par
+\biditest\Arabic{BARA LATIN}{\textdir TRT\relax   \LATIN\ \ARAB}\par
+\biditest\Arabic{LATIN ARAB}{\textdir TLT\bidilro \LATIN\ \ARAB}\par % right -> left
+\biditest\Arabic{LATIN ARAB}{\textdir TRT\bidilro \LATIN\ \ARAB}\par % right -> left
+\biditest\Arabic{BARA NITAL}{\textdir TLT\bidirlo \LATIN\ \ARAB}\par % left -> right
+\biditest\Arabic{BARA NITAL}{\textdir TRT\bidirlo \LATIN\ \ARAB}\par % left -> right
+\stopbuffer
+
+\startbuffer[bidi-setup]
+\setupdirections[bidi=off]
+\stopbuffer
+
+{\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
+
+\startbuffer[bidi-setup]
+\setupdirections[bidi=global]
+\stopbuffer
+
+{\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
+
+\startbuffer[bidi-setup]
+\setupdirections[bidi=local]
+\stopbuffer
+
+{\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
 
 \stoptext

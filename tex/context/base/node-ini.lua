@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['node-ini'] = {
 implement a few helper functions. These functions are rather optimized.</p>
 --ldx]]--
 
+local format = string.format
+
 nodes        = nodes or { }
 nodes.trace  = false
 nodes.ignore = nodes.ignore or false
@@ -69,65 +71,49 @@ do
 
     local remove, free = node.remove, node.free
 
-    --~     function nodes.remove(head, current, free_too)
-    --~         if head == current then
-    --~             local cn = current.next
-    --~             if cn then
-    --~                 cn.prev = nil
-    --~                 if free_too then
-    --~                     node.free(current)
-    --~                     return cn, cn, nil
-    --~                 else
-    --~                     current.prev = nil
-    --~                     current.next = nil
-    --~                     return cn, cn, current
-    --~                 end
-    --~             else
-    --~                 if free_too then
-    --~                     node.free(current)
-    --~                     return nil, nil, nil
-    --~                 else
-    --~                     return head,current,current
-    --~                 end
-    --~             end
-    --~         else
-    --~             local cp = current.prev
-    --~             local cn = current.next
-    --~             if not cp and head.next == current then
-    --~                 cp = head
-    --~             end
-    --~             if cn then
-    --~                 cn.prev = cp
-    --~                 if cp then
-    --~                     cp.next = cn
-    --~                 end
-    --~             elseif cp then
-    --~                 cp.next = nil
-    --~             end
-    --~             if free_too then
-    --~                 node.free(current)
-    --~                 return head, cn, nil
-    --~             else
-    --~                 current.prev = nil
-    --~                 current.next = nil
-    --~                 return head, cn, current
-    --~             end
-    --~         end
-    --~     end
-
     function nodes.remove(head, current, free_too)
        local t = current
        head, current = remove(head,current)
        if t then
-         if free_too then
-            free(t)
-            t = nil
-         else
-            t.next, t.prev = nil, nil
-         end
+            if free_too then
+                free(t)
+                t = nil
+            else
+                t.next, t.prev = nil, nil
+            end
        end
        return head, current, t
     end
+
+--~ function nodes.remove(head, current, delete)
+--~     local t = current
+--~     if current == head then
+--~         current = current.next
+--~         if current then
+--~             current.prev = nil
+--~         end
+--~         head = current
+--~     else
+--~         local prev, next = current.prev, current.next
+--~         if prev then
+--~             prev.next = next
+--~         end
+--~         if next then
+--~             next.prev = prev
+--~         end
+--~         current = next -- not: or next
+--~     end
+--~     if t then
+--~         if free_too then
+--~             free(t)
+--~             t = nil
+--~         else
+--~             t.next, t.prev = nil, nil
+--~         end
+--~     end
+--~     return head, current, t
+--~ end
+
 
     function nodes.delete(head,current)
         return nodes.remove(head,current,true)
@@ -167,9 +153,9 @@ do
             end
             c.next = n
             n.prev = c
-            if c ~= h then
+--~             if c ~= h then
                 return h, n
-            end
+--~             end
         end
         return n, n
     end
@@ -195,15 +181,15 @@ function nodes.report(t,done)
     if nodes.trace then -- best also test this before calling
         if done then
             if status.output_active then
-                texio.write(string.format("<++ %s>",nodes.count(t)))
+                texio.write(format("<++ %s>",nodes.count(t)))
             else
-                texio.write(string.format("<+ %s>",nodes.count(t)))
+                texio.write(format("<+ %s>",nodes.count(t)))
             end
         else
             if status.output_active then
-                texio.write(string.format("<-- %s>",nodes.count(t)))
+                texio.write(format("<-- %s>",nodes.count(t)))
             else
-                texio.write(string.format("<- %s>",nodes.count(t)))
+                texio.write(format("<- %s>",nodes.count(t)))
             end
         end
     end
@@ -320,10 +306,14 @@ end
 
 -- node-gly.lua
 
-if not fonts        then fonts        = { } end
-if not fonts.otf    then fonts.otf    = { } end
-if not fonts.tfm    then fonts.tfm    = { } end
-if not fonts.tfm.id then fonts.tfm.id = { } end
+fonts        = fonts        or { }
+fonts.otf    = fonts.otf    or { }
+fonts.tfm    = fonts.tfm    or { }
+fonts.tfm.id = fonts.tfm.id or { }
+
+local tfm   = fonts.tfm
+local otf   = fonts.otf
+local tfmid = fonts.tfm.id
 
 do
 
@@ -345,7 +335,7 @@ do
             starttiming(nodes)
             local usedfonts, attrfonts, done = { }, { }, false
             -- todo: should be independent of otf
-            local set_dynamics, font_ids = fonts.otf.set_dynamics, fonts.tfm.id -- todo: font-var.lua so that we can global this one
+            local set_dynamics = otf.set_dynamics -- todo: font-var.lua so that we can global this one
             local a, u, prevfont, prevattr = 0, 0, nil, 0
             for n in traverse_id(glyph,head) do
                 local font, attr = n.font, has_attribute(n,0) -- zero attribute is reserved for fonts, preset to 0 is faster (first match)
@@ -357,7 +347,7 @@ do
                             attrfonts[font] = used
                         end
                         if not used[attr] then
-                            local d = set_dynamics(font_ids[font],attr) -- todo, script, language -> n.language also axis
+                            local d = set_dynamics(tfmid[font],attr) -- todo, script, language -> n.language also axis
                             if d then
                                 used[attr] = d
                                 a = a + 1
@@ -369,7 +359,7 @@ do
                     prevfont, prevattr = font, 0
                     local used = usedfonts[font]
                     if not used then
-                        local data = font_ids[font]
+                        local data = tfmid[font]
                         if data then
                             local shared = data.shared -- we need to check shared, only when same features
                             if shared then
@@ -540,8 +530,18 @@ do
 
     local charplugins, listplugins = chars.plugins, lists.plugins
 
+    -- todo: move, so that we can use locals (also: n.p_c = function(...) ... end so that we can redefine
+    -- todo: normalize calls so that we can use a for loop and extent this list
+
+    if not nodes.normalize_fonts then
+        function nodes.normalize_fonts(head)
+            return head, false
+        end
+    end
+
     nodes.processors.actions = function(head,tail) -- removed: if head ... end
         local ok, done = false, false
+        head,       ok = nodes.normalize_fonts(head)                ; done = done or ok
         head,       ok = nodes.process_attributes(head,charplugins) ; done = done or ok -- attribute driven
         head, tail, ok = kernel.hyphenation      (head,tail)        ; done = done or ok -- language driven
         head,       ok = languages.words.check   (head,tail)        ; done = done or ok -- language driven
@@ -555,25 +555,69 @@ do
 
 end
 
-do
+do -- remove these
 
     local actions         = nodes.processors.actions
     local first_character = node.first_character
     local slide           = node.slide
 
-    local function tracer(what,state,head,groupcode,glyphcount)
-        texio.write_nl(string.format("%s %s: group: %s, nodes: %s",
-            (state and "Y") or "N", what, groupcode or "?", nodes.count(head,true)))
+    local hlist           = node.id('vlist')
+    local vlist           = node.id('hlist')
+    local glyph           = node.id('glyph')
+
+    local n = 0
+
+    local function reconstruct(head)
+        local t = { }
+        local h = head
+        while h do
+            local id = h.id
+            if id == glyph then
+                t[#t+1] = utf.char(h.char)
+            else
+                t[#t+1] = "[]"
+            end
+            h = h.next
+        end
+        return table.concat(t)
+    end
+
+    local function tracer(what,state,head,groupcode,before,after,show)
+        if not groupcode then
+            groupcode = "unknown"
+        elseif groupcode == "" then
+            groupcode = "mvl"
+        end
+        n = n + 1
+        if show then
+            texio.write_nl(format("%s %s: %s, group: %s, nodes: %s -> %s, string: %s",what,n,state,groupcode,before,after,reconstruct(head)))
+        else
+            texio.write_nl(format("%s %s: %s, group: %s, nodes: %s -> %s",what,n,state,groupcode,before,after))
+        end
     end
 
     function nodes.processors.pre_linebreak_filter(head,groupcode) -- todo: tail
         local first, found = first_character(head)
         if found then
-            if callbacks.trace then tracer("pre_linebreak",true,head,groupcode) end
-            local head, done = actions(head,slide(head))
-            return (done and head) or true
+            if callbacks.trace then
+                local before = nodes.count(head,true)
+                local head, done = actions(head,slide(head))
+                local after = nodes.count(head,true)
+                if done then
+                    tracer("pre_linebreak","changed",head,groupcode,before,after,true)
+                else
+                    tracer("pre_linebreak","unchanged",head,groupcode,before,after,true)
+                end
+                return (done and head) or true
+            else
+                local head, done = actions(head,slide(head))
+                return (done and head) or true
+            end
         else
-            if callbacks.trace then tracer("pre_linebreak",false,head,groupcode) end
+            if callbacks.trace then
+                local n = nodes.count(head,false)
+                tracer("pre_linebreak","no chars",head,groupcode,n,n)
+            end
             return true
         end
     end
@@ -581,11 +625,25 @@ do
     function nodes.processors.hpack_filter(head,groupcode) -- todo: tail
         local first, found = first_character(head)
         if found then
-            if callbacks.trace then tracer("hpack",true,head,groupcode) end
-            local head, done = actions(head,slide(head))
-            return (done and head) or true
+            if callbacks.trace then
+                local before = nodes.count(head,true)
+                local head, done = actions(head,slide(head))
+                local after = nodes.count(head,true)
+                if done then
+                    tracer("hpack","changed",head,groupcode,before,after,true)
+                else
+                    tracer("hpack","unchanged",head,groupcode,before,after,true)
+                end
+                return (done and head) or true
+            else
+                local head, done = actions(head,slide(head))
+                return (done and head) or true
+            end
         end
-        if callbacks.trace then tracer("hpack",false,head,groupcode) end
+        if callbacks.trace then
+            local n = nodes.count(head,false)
+            tracer("hpack","no chars",head,groupcode,n,n)
+        end
         return true
     end
 
@@ -821,7 +879,7 @@ do
         end
         node.flush_list(q)
         for k, v in pairs(l) do
-            texio.write_nl(string.format("%s * %s", v, k))
+            texio.write_nl(format("%s * %s", v, k))
         end
     end
 
@@ -919,8 +977,6 @@ do
 
     local glyph, disc = node.id('glyph'), node.id('disc')
 
-    local fontdata = fonts.tfm.id
-
     local function collect(head,list,tag,n)
         n = n or 0
         local ok, fn = false, nil
@@ -932,7 +988,7 @@ do
                     ok, fn = false, f
                 end
                 local c = head.char
-                local d = fontdata[f].characters[c]
+                local d = tfmid[f].characters[c]
                 local i = (d and d.description.index) or -1
                 if not ok then
                     ok = true
@@ -977,7 +1033,7 @@ do
             if decimal then
                 tt[i] = t[i][1]
             else
-                tt[i] = string.format("%04X",t[i][1])
+                tt[i] = format("%04X",t[i][1])
             end
         end
         return table.concat(tt," ")
@@ -988,14 +1044,14 @@ do
             if decimal then
                 tt[i] = t[i][3]
             else
-                tt[i] = string.format("%04X",t[i][3])
+                tt[i] = format("%04X",t[i][3])
             end
         end
         return table.concat(tt," ")
     end
     function nodes.tracers.characters.fonts(t)
         local f = t[1] and t[1][2]
-        return (f and file.basename(fontdata[f].filename or "unknown")) or "unknown"
+        return (f and file.basename(tfmid[f].filename or "unknown")) or "unknown"
     end
 
     function nodes.tracers.characters.start()

@@ -245,17 +245,6 @@
         \NC\showcolorbar[#1]\NC#1\NC\transparencycomponents{#1}\NC\colorcomponents{#1}\NC \NR
       \to \scratchtoks}}
 
-% \gdef\showcolorcomponents[#1]%
-%   {\bgroup
-%    \def\bars##1{\backgroundline[##1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}%
-%    \scratchtoks\emptytoks
-%    \appendtoks\starttabulate[|l|l|l|l|]\to\scratchtoks
-%    \appendtoks\NC color \NC name \NC transparency \NC specification \NC\NR\TB\to\scratchtoks
-%    \processcommacommand[#1]\dogetcolorcomponents
-%    \appendtoks\stoptabulate\to\scratchtoks
-%    \tt\the\scratchtoks
-%    \egroup}
-
 \gdef\showcolorbar[#1]%
   {\backgroundline[#1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}
 

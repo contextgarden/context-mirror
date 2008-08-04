@@ -50,7 +50,10 @@ end
 function metapost.colorhandler(cs, object, result, colorconverter)
     local cr = "0 g 0 G"
     local what = round(cs[2]*10000)
-    local data = colordata[what][round(cs[3]*10000)]
+    local data = colordata[what]
+    if data then
+        data = data[round(cs[3]*10000)]
+    end
     if not data then
         --
     elseif what == 1 then
@@ -376,6 +379,9 @@ function metapost.specials.ts(specification,object,result,flusher)
     local rx, ry = second.y_coord - ty, fourth.x_coord - tx
     if sx == 0 then sx = 0.00001 end
     if sy == 0 then sy = 0.00001 end
+    if not metapost.trace_texttexts then
+        object.path = nil
+    end
     local before = function() -- no need for function
     --~ flusher.flushfigure(result)
     --~ sprint(tex.ctxcatcodes,format("\\MPLIBgettext{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,metapost.textext_current))
@@ -720,7 +726,6 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
             preamble,
             "beginfig(1); ",
             "_trial_run_ := true ;",
---~             "resettextexts;",
             str,
             "endfig ;"
         }, true, nil, true ) -- true means: trialrun, true means: avoid extra run if no multipass
@@ -729,7 +734,9 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
                 action()
             end
         end
-        if not flushed then
+        if not flushed or not metapost.optimize then
+            -- tricky, we can only ask once for objects and therefore
+            -- we really need a second run when not optimized
             sprint(tex.ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
         end
     else
@@ -737,7 +744,6 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
             preamble or "",
             "beginfig(1); ",
             "_trial_run_ := false ;",
---~             "resettextexts;",
             str,
             "endfig ;"
         } )
@@ -747,9 +753,8 @@ end
 function metapost.graphic_extra_pass()
     metapost.textext_current = metapost.first_box
     metapost.process(current_format, {
-        "beginfig(0); ",
+        "beginfig(0); ", -- why not 1
         "_trial_run_ := false ;",
---~         "resettextexts;",
         concat(metapost.text_texts_data()," ;\n"),
         current_graphic,
         "endfig ;"
@@ -808,7 +813,7 @@ do -- not that beautiful but ok, we could save a md5 hash in the tui file !
 
     function metapost.intermediate.actions.makempy()
         if #graphics > 0 then
-            local mpofile = tex.jobname .. "-mp"
+            local mpofile = tex.jobname .. "-mpgraph"
             local mpyfile = file.replacesuffix(mpofile,"mpy")
             local pdffile = file.replacesuffix(mpofile,"pdf")
             local texfile = file.replacesuffix(mpofile,"tex")

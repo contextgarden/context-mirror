@@ -48,7 +48,7 @@ OSFONTDIR =
 TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//
 
 TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
-TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
+TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/map/{dvipdfm,pdftex,dvips,}//
 TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//
 TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/map/{pdftex,dvips,}//
 TEXFONTMAPS.luatex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//

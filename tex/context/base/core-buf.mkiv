@@ -27,7 +27,8 @@
   {\doifelsenothing{#4}
      {\expanded{\setbuffercapsules{\e!start\v!buffer}{\e!stop\v!buffer}}%
       \letvalue\bufferstop\relax}
-     {\setbuffercapsules{#3}{#4}}% not expanded, can be \cs \cs !
+    %{\@EA\setbuffercapsules\@EA{\csname#3\@EA\endcsname\@EA}\@EA{\csname#4\endcsname}}% if we strip later
+     {\setbuffercapsules{#3}{#4}}%
    \expanded{\dodowithbuffer
       {\currentbuffer}
       {\bufferstart}
@@ -68,9 +69,13 @@
      {\dosometyping{#1}{#2}{#3}\mkprocessbufferverbatim\mkprocessbufferlinesverbatim}
      {\reporttypingerror{#3}}}
 
-\def\setbuffercapsules#1#2%
-  {\edef\bufferstart{\strippedcsname#1}\edef\bufferstart{\scantextokens\expandafter{\bufferstart}}%
-   \edef\bufferstop {\strippedcsname#2}\edef\bufferstop {\scantextokens\expandafter{\bufferstop }}}
+% \def\setbuffercapsules#1#2%
+%   {\edef\bufferstart{\strippedcsname#1}\edef\bufferstart{\scantextokens\expandafter{\bufferstart}}%
+%    \edef\bufferstop {\strippedcsname#2}\edef\bufferstop {\scantextokens\expandafter{\bufferstop }}}
+
+\def\setbuffercapsules#1#2% \scantextokens not needed (had a reason at some point)
+  {\edef\bufferstart{#1}\edef\bufferstart{\scantextokens\expandafter{\bufferstart}}%
+   \edef\bufferstop {#2}\edef\bufferstop {\scantextokens\expandafter{\bufferstop }}}
 
 \def\dowithbuffer#1#2#3% name, startsequence, stopsequence, before, after
   {\setbuffercapsules{#2}{#3}%

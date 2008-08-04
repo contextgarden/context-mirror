@@ -1,0 +1,104 @@
+%D \module
+%D   [       file=font-col,
+%D        version=2008.06.11,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Fallbacks (collections),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% ! EXPERIMENTAL !
+
+% todo: missing only, force always, multiple fallbacks with test, scale
+%
+% \resetfontfallback [whatever]
+%
+% \definefontfallback [whatever] [Slanted]     [0x0060-0x007F] [force=yes]
+% \definefontfallback [whatever] [Bold]        [0x0080-0x00FF,0x00A0-0x00AF] [rscale=1.2]
+% \definefontfallback [whatever] [BoldSlanted] [0x00C0-0x00C7] [check=yes,force=yes]
+
+\writestatus{loading}{Context Font Fallbacks (col)}
+
+\registerctxluafile{font-col}{1.001}
+
+\unprotect
+
+\def\definefontfallback
+  {\doquadrupleempty\dodefinefontfallback}
+
+\def\dodefinefontfallback[#1][#2][#3][#4]%
+  {\ctxlua{fonts.collections.define("#1","#2",\!!bs#3\!!es,\!!bs#4\!!es)}}
+
+\def\resetfontfallback
+  {\dodoubleempty\doresetfontfallback}
+
+\def\doresetfontfallback[#1][#2]%
+  {\ctxlua{fonts.collections.reset("#1","#2")}}
+
+% add fallbacks to last font
+
+\def\dodefinefontfallbacks#1%
+  {\ctxlua{fonts.collections.prepare("#1")}}
+
+\def\s!fallbacks{fallbacks}
+
+\def\updatefontparameters
+  {%edef\@@fonthandling {\truefontdata\somefontname\s!handling}% goes away, is now feature
+   \edef\@@fontfeatures {\truefontdata\fontfile    \s!features}%
+   \edef\@@fontfallbacks{\truefontdata\somefontname\s!fallbacks}%
+   \edef\@@fontskewchar {\truefontdata\fontfile    \s!skewchar}} % will be replaced
+
+\appendtoks
+    \ifx\@@fontfallbacks\empty\else
+        \bgroup\dodefinefontfallbacks\@@fontfallbacks\egroup
+    \fi
+\to\everyfont
+
+\def\dostartcloningfonts
+  {\bgroup
+   \let\savedfontspec\somefontspec}
+
+\def\dostopcloningfonts
+  {\egroup}
+
+\def\doclonefonta#1#2% kind of dododefinefont
+  {\let\lastfontidentifier\s!dummy
+   %\let\localrelativefontsize\defaultrelativefontsize
+   \def\localrelativefontsize{#2}%
+   \let\localabsolutefontsize\fontbody
+   \parsefontspec{#1}\rawfontidentifier
+   %\let\localrelativefontsize\defaultrelativefontsize % not needed
+   \csname\rawfontidentifier\endcsname
+   \autofontsizefalse
+   %\setfontcharacteristics
+   }%\the\everyfontswitch}
+
+\def\doclonefontb#1{\doclonefonta{#1\savedfontspec}}
+
+% check : only replace when present in replacement font (default: no)
+% force : force replacent even when basefont has glyph  (default: yes)
+
+% \definefontfallback [whatever] [Slanted]     [0x0060-0x007F] [force=yes]
+% \definefontfallback [whatever] [Bold]        [0x0080:0x00FF,0x00A0:0x00AF] [rscale=2.0]
+% \definefontfallback [whatever] [BoldSlanted] ["00C0-"00C7] [check=yes,force=yes]
+% \definefontfallback [whatever] [Mono]        [latinextendeda] [force=yes] % 0x0100:0x017F
+% \definefontfallback [whatever] [Mono]        [latin extended a] [force=yes] % 0x0100:0x017F
+%
+% \definefontsynonym[SerifPlus][Serif][fallbacks=whatever]
+%
+% \definefont[MySerif][SerifPlus at 10pt]
+%
+% \startcolumns[n=6]
+%     \MySerif
+%     \dostepwiserecurse {0} {65000} {1} {
+%         \iffontchar\font\recurselevel
+%             {\tttf\uchexnumbers\recurselevel:} \char\recurselevel\par
+%         \fi
+%     }
+% \stopcolumns
+
+\protect \endinput

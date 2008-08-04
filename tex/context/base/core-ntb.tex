@@ -30,6 +30,16 @@
 %D optimizations were rejected in order not to complicate this
 %D module too much (and in order to prevail extensibility).
 
+% shapebox fails here in mkii
+%
+% \setupcolors[state=start]
+% \bTABLE
+% \bTR [align=middle]\bTH Range\eTH{}\bTH Value\eTH{}\eTR
+% \bTR \bTD \type{<} 12\eTD{}\bTD 3\eTD{}\eTR
+% \bTR \bTD 12--16\eTD{}\bTD 2\eTD{}\eTR
+% \bTR \bTD \type{>}16\eTD{}\bTD 1\eTD{}\eTR
+% \eTABLE
+
 % \starttext
 %     \placefigure[left]{}{}
 %     \startlinecorrection \dontleavehmode \bTABLE
@@ -1041,7 +1051,7 @@
      \@EAEAEA\notsplittblbox
    \fi\fi{\flushtbltoks}}
 
-\def\stretchtblwidths
+\def\stretchtblwidths % more variants, e.g. a max to \dimend
   {\ifcase\maximumcol\else % else division by zero
      \!!dimend\zeropoint
      \!!dimene\hsize

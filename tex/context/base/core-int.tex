@@ -582,7 +582,7 @@
      {\chardef\openbookmark\zerocount}%
    \iftracebookmarks(#6: #4)\quad(\the\openbookmark)\par\fi
    \doinsertbookmark{#2}{#3}{#4}{#5}{\openbookmark}}
-
+
 % \startinteractionmenu[rechts]
 %   \but [eerste]  eerste  \\
 %   \txt hello world       \\
@@ -851,7 +851,7 @@
      \setbox\scratchbox\vbox{\hbox{\do@@ammenuposition{#3}{\box\scratchbox}}}%
      \setbox\scratchbox\vbox
        {\ht\scratchbox\zeropoint
-        \vskip\dimexpr-\pagebackgroundvoffset+\endcsname\c!topoffset\relax
+        \vskip\dimexpr-\pagebackgroundvoffset+\menuparameter\c!topoffset\relax
         \box\scratchbox
         \vskip\pagebackgroundvoffset}% overbodig
      \ht\scratchbox\textheight

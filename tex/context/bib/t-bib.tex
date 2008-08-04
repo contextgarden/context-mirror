@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2006.12.07,
+%D        version=2008.04.17,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -107,6 +107,12 @@
 %D \item Fix numbering=short and numbering=bib (spotted by Matthias Wächter) (4/11/2006)
 %D \item third attempt to get a correct release (5/11/2006)
 %D \item fix a few missing dots in bibl-num.tex  (7/12/2006)
+%D \item Patch for DOI's by Tobias Burnus (17/4/2007)
+%D \item Patch for \type{\insertbiburl} and \type{\insertdoi} for  Tobias Burnus (18/4/2007)
+%D \item Added a missing \type{\relax} in \type{\dospecialbibinsert},
+%D       that made the space before the {\it et al.} text disappear.  (18/4/2007)
+%D \item Attempt to fix percent signs in bbl files. As a side-effect,
+%D       this prohibits comments in \tex{startpublication} blocks! (17/4/2008)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -497,10 +503,15 @@
 
 \processcommacommand[\bibcommandlist]\simplebibdef
 
+\def\insertdoi#1#2#3%
+    {{\bibdoifelse{\@@pb@doi}%
+       {\edef\ascii{\@EA\detokenize\@EA{\@@pb@doi}}%
+        #1\expanded{\gotoDOI{\@@pb@thekey}{\ascii}}#2}{#3}}}
+
 \def\insertbiburl#1#2#3%
     {{\bibdoifelse{\@@pb@biburl}%
        {\edef\ascii{\@EA\detokenize\@EA{\@@pb@biburl}}%
-        #1\@EA\hyphenatedurl\@EA{\ascii}#2}{#3}}}
+        #1\expanded{\gotoURL{\@@pb@thekey}{\ascii}}#2}{#3}}}
 
 \def\insertmonth#1#2#3%
   {\bibdoifelse{\@@pb@month}%
@@ -641,7 +652,7 @@
        \ifnum \numexpr\scratchcounter-1\relax<#2\relax
           \getvalue{\??pv data#1}##1%
           \ifnum \scratchcounter=#2\relax
-             \ifnum\etallimitcounter<\commalistsize \bibalternative{#1etaltext}\fi
+             \ifnum\etallimitcounter<\commalistsize\relax \bibalternative{#1etaltext}\fi
           \else \ifnum\numexpr\scratchcounter+1 = #2\relax
              \ifnum \commalistsize > \plustwo  \bibalternative\c!finalnamesep
              \else                            \bibalternative\c!lastnamesep \fi
@@ -726,9 +737,16 @@
 %D to \type{\startpublication}. Of course, then there
 %D is no key either, and it had better be an
 %D article (otherwise the layout will be all screwed up).
+%D
+%D Now prohibits comments, so % can be used for urls
 
-\def\startpublication{\dosingleempty\dostartpublication}
-\def\stoppublication {}
+\def\startpublication
+  {\edef\bibmodsavedpercent{\the\catcode`\%}%
+   \catcode`\%=12
+   \dosingleempty\dostartpublication}
+
+\def\stoppublication 
+  {} % the \catcode of % is reset below
 
 %D Only specifying the key in the argument is also
 %D legal. In storing this stuff into macros, some trickery with
@@ -760,7 +778,8 @@
    \setxvalue{pbdu-\@@pbk}{\@@pbu}
    \setxvalue{pbdd-\@@pbk}{\the\toks0}
    \xdef\allrefs{\allrefs,\@@pbk}%
-   \egroup }
+   \egroup 
+   \catcode`\%=\bibmodsavedpercent\relax }
 
 % intialization of the order-list:
 
@@ -1636,7 +1655,9 @@
 
 \def\gotoDOI#1#2%
   {\ifbibinteractionelse
-     {\useURL[bibfoo#1][http://dx.doi.org/#2]\goto{\url[bibfoo#1]}[url(bibfoo#1)]}
+     {\useURL[bibfooDoi#1][#2]%
+      \useURL[bibfoo#1][http://dx.doi.org/#2]%
+      \goto{\url[bibfooDoi#1]}[url(bibfoo#1)]}
      {\hyphenatedurl{#2}}}
 
 \def\bibdoiref[#1]%

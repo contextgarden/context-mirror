@@ -14,6 +14,8 @@ slower but look nicer this way.</p>
 <p>Some code may move to a module in the language namespace.</p>
 --ldx]]--
 
+local texsprint, floor, mod, format, date, time = tex.sprint, math.floor, math.mod, string.format, os.date, os.time
+
 converters = converters or { }
 languages  = languages  or { }
 
@@ -26,14 +28,14 @@ languages.counters = {
         0x0075, 0x0076, 0x0077, 0x0078, 0x0079,
         0x007A
     },
-    ['sl'] = {
+    ['slovenian'] = {
         0x0061, 0x0062, 0x0063, 0x010D, 0x0064,
         0x0065, 0x0066, 0x0067, 0x0068, 0x0069,
         0x006A, 0x006B, 0x006C, 0x006D, 0x006E,
         0x006F, 0x0070, 0x0072, 0x0073, 0x0161,
         0x0074, 0x0075, 0x0076, 0x007A, 0x017E
     },
-    ['gr'] = {
+    ['greek'] = {
         0x0391, 0x0392, 0x0393, 0x0394, 0x0395,
         0x0396, 0x0397, 0x0398, 0x0399, 0x039A,
         0x039B, 0x039C, 0x039D, 0x039E, 0x039F,
@@ -70,50 +72,52 @@ languages.counters = {
     }
 }
 
-function converters.chr(n, m)
+local counters = languages.counters
+
+counters['gr'] = counters['greek']
+counters['g']  = counters['greek']
+counters['sl'] = counters['slovenian']
+
+local utfchar  = utf.char
+local fallback = utf.byte('0')
+
+function converters.chr(n,m)
     if n > 0 and n < 27 then
-        tex.sprint(string.char(n+m))
+        texsprint(utfchar(n+m))
     end
 end
 
 function converters.maxchrs(n,m,cmd)
-    if n <= m then
-        tex.sprint(tex.texcatcodes, cmd .. "{" .. n .. "}")
-    else
-        converters.maxchrs(math.floor((n-1)/m),m,cmd)
-        tex.sprint(tex.texcatcodes, cmd .. "{" .. ((n-1)%m + 1) .. "}")
+    if n > m then
+        converters.maxchrs(floor((n-1)/m),m,cmd)
+        n = (n-1)%m + 1
     end
+    texsprint(tex.ctxcatcodes, format("%s{%s}",cmd,n))
 end
 function converters.chrs(n,m)
-    if n <= 26 then
-        tex.sprint(string.char(n+m))
-    else
-        converters.chrs(math.floor((n-1)/26),m)
-        tex.sprint(string.char(((n-1)%26 + 1)+m))
+    if n > 26 then
+        converters.chrs(floor((n-1)/26),m)
+        n = (n-1)%26 + 1
     end
+    texsprint(utfchar(n+m))
 end
 
-do
-
-    local function do_alphabetic(n,max,chr)
-        if n <= max then
-            characters.flush(chr(n))
-        else
-            do_alphabetic(math.floor((n-1)/max),max,chr)
-            characters.flush(chr((n-1)%max+1))
-        end
+local function do_alphabetic(n,max,chr)
+    if n > max then
+        do_alphabetic(floor((n-1)/max),max,chr)
+        n = (n-1)%max+1
     end
+    characters.flush(chr(n))
+end
 
-    function converters.alphabetic(n,code)
-        local code = languages.counters[code] or languages.counters['**']
-        do_alphabetic(n,#code,function(n) return code[n] end)
-    end
+function converters.alphabetic(n,code)
+    local code = counters[code] or counters['**']
+    do_alphabetic(n,#code,function(n) return code[n] or fallback end)
+end
 
-    function converters.Alphabetic(n,code)
-        local code = languages.counters[code] or languages.counters['**']
-        do_alphabetic(n,#code,function(n) return characters.uccode(code[n]) end)
-    end
-
+function converters.Alphabetic(n,code)
+    local code = counters[code] or counters['**']
+    do_alphabetic(n,#code,function(n) return characters.uccode(code[n] or fallback) end)
 end
 
 function converters.character(n)  converters.chr (n,96) end
@@ -122,34 +126,34 @@ function converters.characters(n) converters.chrs(n,96) end
 function converters.Characters(n) converters.chrs(n,64) end
 
 function converters.weekday(day,month,year)
-    tex.sprint(os.date("%w",os.time{year=year,month=month,day=day})+1)
+    texsprint(date("%w",time{year=year,month=month,day=day})+1)
 end
 
-function converters.lpy(year)
+function converters.isleapyear(year)
     return (year % 400 == 0) or ((year % 100 ~= 0) and (year % 4 == 0))
 end
 
 function converters.leapyear(year)
-    if converters.lpy(year) then tex.sprint(1) else tex.sprint(0) end
+    if converters.isleapyear(year) then texsprint(1) else texsprint(0) end
 end
 
-converters.mth = {
+local days = {
     [false] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
     [true]  = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 }
 
 function converters.nofdays(year,month)
-    tex.sprint(converters.mth[converters.lpy(year)][month])
+    texsprint(days[converters.isleapyear(year)][month])
 end
 
-function converters.year   () tex.sprint(os.date("%Y")) end
-function converters.month  () tex.sprint(os.date("%m")) end
-function converters.hour   () tex.sprint(os.date("%H")) end
-function converters.minute () tex.sprint(os.date("%M")) end
-function converters.second () tex.sprint(os.date("%S")) end
-function converters.textime() tex.sprint(tonumber(os.date("%H"))*60+tonumber(os.date("%M"))) end
+function converters.year   () texsprint(date("%Y")) end
+function converters.month  () texsprint(date("%m")) end
+function converters.hour   () texsprint(date("%H")) end
+function converters.minute () texsprint(date("%M")) end
+function converters.second () texsprint(date("%S")) end
+function converters.textime() texsprint(tonumber(date("%H"))*60+tonumber(date("%M"))) end
 
-converters.rom = {
+local roman = {
     { [0] = '', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX' },
     { [0] = '', 'X', 'XX', 'XXX', 'XL', 'L', 'LX', 'LXX', 'LXXX', 'XC' },
     { [0] = '', 'C', 'CC', 'CCC', 'CD', 'D', 'DC', 'DCC', 'DCCC', 'CM' },
@@ -157,12 +161,61 @@ converters.rom = {
 
 function converters.toroman(n)
     if n >= 4000 then
-        return converters.toroman(math.floor(n/1000)) .. " " .. converters.toroman(n%1000)
+        return converters.toroman(floor(n/1000)) .. " " .. converters.toroman(n%1000)
     else
-        return string.rep("M",math.floor(n/1000)) .. converters.rom[3][math.floor((n%1000)/100)] ..
-            converters.rom[2][math.floor((n%100)/10)] .. converters.rom[1][math.floor((n% 10)/1)]
+        return string.rep("M",floor(n/1000)) .. roman[3][floor((n%1000)/100)] ..
+            roman[2][floor((n%100)/10)] .. roman[1][floor((n% 10)/1)]
     end
 end
 
-function converters.romannumerals(n) return tex.sprint(string.lower(converters.toroman(n))) end
-function converters.Romannumerals(n) return tex.sprint(             converters.toroman(n) ) end
+function converters.romannumerals(n) return texsprint(string.lower(converters.toroman(n))) end
+function converters.Romannumerals(n) return texsprint(             converters.toroman(n) ) end
+
+--~ local small = {
+--~     0x0627, 0x066E, 0x062D, 0x062F, 0x0647, 0x0648, 0x0631
+--~ }
+
+--~ local large = {
+--~     { 0x0627, 0x0628, 0x062C, 0x062F, 0x0647, 0x0648, 0x0632, 0x062D, 0x0637, },
+--~     { 0x064A, 0x0643, 0x0644, 0x0645, 0x0646, 0x0633, 0x0639, 0x0641, 0x0635, },
+--~     { 0x0642, 0x0631, 0x0634, 0x062A, 0x062B, 0x062E, 0x0630, 0x0636, 0x0638, },
+--~     { 0x063A                                                                  },
+--~ }
+
+local small = {
+    "ا", "ٮ", "ح", "د", "ه", "و", "ر",
+}
+
+local medium = {
+     "ا", "ب", "ج", "د", "ه", "و","ز", "ح", "ط" ,
+     "ي", "ك", "ل", "م", "ن", "س", "ع", "ف", "ص" ,
+     "ق", "ر", "ش", "ت", "ث", "خ", "ذ", "ض", "ظ" ,
+     "غ" ,
+}
+
+local large = {
+    { "ا", "ب", "ج", "د", "ه", "و","ز", "ح", "ط" },
+    { "ي", "ك", "ل", "م", "ن", "س", "ع", "ف", "ص" },
+    { "ق", "ر", "ش", "ت", "ث", "خ", "ذ", "ض", "ظ" },
+    { "غ" },
+}
+
+function converters.toabjad(n,what)
+    if n <= 0 or n >= 2000 then
+        return tostring(n)
+    elseif what == 2 and n <= 7 then
+        return small[n]
+    elseif what == 3 and n <= 28 then
+        return medium[n]
+    else
+        local a, b, c, d
+        a, n = floor(n/1000), mod(n,1000)
+        b, n = floor(n/ 100), mod(n, 100)
+        c, n = floor(n/  10), mod(n,  10)
+        d, n = floor(n/   1), mod(n,   1)
+        return (large[4][a] or "") .. (large[3][b] or "") .. (large[2][c] or "") .. (large[1][d] or "")
+    end
+end
+
+function converters.abjadnumerals     (n) return texsprint(converters.toabjad(n,false)) end
+function converters.abjadnodotnumerals(n) return texsprint(converters.toabjad(n,true)) end

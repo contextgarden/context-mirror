@@ -108,3 +108,32 @@ function aux.getparameters(self,class,parentclass,settings)
     end
     aux.add_settings_to_array(sc, settings)
 end
+
+-- temporary here
+
+local digit    = lpeg.R("09")
+local period   = lpeg.P(".")
+local zero     = lpeg.P("0")
+
+--~ local finish   = lpeg.P(-1)
+--~ local nodigit  = (1-digit) + finish
+--~ local case_1   = (period * zero^1 * #nodigit)/"" -- .000
+--~ local case_2   = (period * (1-(zero^0/"") * #nodigit)^1 * (zero^0/"") * nodigit) -- .010 .10 .100100
+
+local trailingzeros = zero^0 * -digit -- suggested by Roberto R
+local case_1 = period * trailingzeros / ""
+local case_2 = period * (digit - trailingzeros)^1 * (trailingzeros / "")
+
+local number   = digit^1 * (case_1 + case_2)
+local stripper = lpeg.Cs((number + 1)^0)
+
+--~ local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
+--~ collectgarbage("collect")
+--~ str = string.rep(sample,10000)
+--~ local ts = os.clock()
+--~ stripper:match(str)
+--~ print(#str, os.clock()-ts, stripper:match(sample))
+
+function aux.strip_zeros(str)
+    return stripper:match(str)
+end

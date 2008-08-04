@@ -666,8 +666,7 @@
       \ifx\next\bgroup
         \egroup \@EA\moreplaceformula % [ref]{}
       \else
-%         \def\nextnext{$}%
-        \let\nextnext$%
+        \let\nextnext$% no def
         \ifx\next\nextnext
           \egroup \@EAEAEA\dispplaceformula % [ref]$$
         \else
@@ -679,8 +678,7 @@
 \long\def\moreplaceformula[#1]#2#3#4% #2 dummy #4 gobbles spaces
   {\def\redoplaceformula
      {\bgroup
-%       \def\nextnext{$}%
-      \let\nextnext$%
+      \let\nextnext$% no def
       \ifx\next\nextnext
         \egroup \@EA\dispplaceformula % [ref]$$
       \else

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2008.05.21 15:21">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2008.08.04 15:59">
 
   <cd:variables>
     <cd:variable name="lesshyphenation" value="lesshyphenation"/>
@@ -133,6 +133,11 @@
     <cd:variable name="mathcases" value="mathcases"/>
     <cd:variable name="mathmatrix" value="wiskundematrix"/>
   </cd:variables>
+
+  <cd:constants>
+    <cd:constant name="equalwidth" value="equalwidth"/>
+    <cd:constant name="equalheight" value="equalheight"/>
+  </cd:constants>
 
   <cd:constants>
     <cd:constant name="sorttype" value="sortering"/>
@@ -716,6 +721,7 @@
     <cd:variable name="backspace" value="rugwit"/>
     <cd:variable name="broad" value="ruim"/>
     <cd:variable name="row" value="rij"/>
+    <cd:variable name="samepage" value="zelfdepagina"/>
     <cd:variable name="slanted" value="schuin"/>
     <cd:variable name="slantedbold" value="schuinvet"/>
     <cd:variable name="synchronize" value="synchroniseer"/>
@@ -812,6 +818,8 @@
     <cd:variable name="description" value="doordefinitie"/>
     <cd:variable name="lefthanging" value="linkshangend"/>
     <cd:variable name="righthanging" value="rechtshangend"/>
+    <cd:variable name="weak" value="weak"/>
+    <cd:variable name="strong" value="strong"/>
   </cd:variables>
 
   <cd:constants>
@@ -1523,7 +1531,6 @@
     <cd:command name="setuppublications" value="stelpublicatiesin"/>
     <cd:command name="publication" value="publicatie"/>
     <cd:command name="definehbox" value="definieerhbox"/>
-    <cd:command name="adding" value="toevoegen"/>
     <cd:command name="periods" value="punten"/>
     <cd:command name="setuphyphenmark" value="stelkoppeltekenin"/>
     <cd:command name="setupinterlinespace" value="stelinterliniein"/>

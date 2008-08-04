@@ -14,38 +14,59 @@ do
     local gsprogram = (os.platform == "windows" and "gswin32c") or "gs"
     local gstemplate = "%s -q -sDEVICE=pdfwrite -dEPSCrop -dNOPAUSE -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
 
-    function graphics.converters.epstopdf(inputpath,outputpath,epsname)
-        inputpath  = inputpath  or "."
-        outputpath = outputpath or "."
-        local oldname = file.join(inputpath,epsname)
-        local newname = file.join(outputpath,file.replacesuffix(epsname,"pdf"))
-        local et = lfs.attributes(oldname,"modification")
-        local pt = lfs.attributes(newname,"modification")
-        if not pt or et > pt then
-            dir.mkdirs(outputpath)
-            local tmpname = file.replacesuffix(newname,"tmp")
-            local command = string.format(gstemplate,gsprogram,tmpname,oldname)
-            os.spawn(command)
-            os.remove(newname)
-            os.rename(tmpname,newname)
-        end
+    function graphics.converters.eps(oldname,newname)
+        return gstemplate:format(gsprogram,newname,oldname)
     end
 
+    local improgram  = "convert"
+    local imtemplate = {
+        low    = "%s -quality   0 -compress zip %s pdf:%s",
+        medium = "%s -quality  75 -compress zip %s pdf:%s",
+        high   = "%s -quality 100 -compress zip %s pdf:%s",
+    }
+
+    function graphics.converters.jpg(oldname,newname)
+        local ea = environment.arguments
+        local quality = (ea.high and 'high') or (ea.medium and 'medium') or (ea.low and 'low') or 'high'
+        return imtemplate[quality]:format(improgram,oldname,newname)
+    end
+
+    graphics.converters.tif  = graphics.converters.jpg
+    graphics.converters.tiff = graphics.converters.jpg
+    graphics.converters.png  = graphics.converters.jpg
+
     function graphics.converters.convertpath(inputpath,outputpath)
-        for name in lfs.dir(inputpath or ".") do
+        inputpath  = inputpath  or "."
+        outputpath = outputpath or "."
+        for name in lfs.dir(inputpath) do
+            local suffix = file.extname(name)
             if name:find("%.$") then
                 -- skip . and ..
-            elseif name:find("%.eps$") then
-                graphics.converters.epstopdf(inputpath,outputpath, name)
-            elseif lfs.attributes(inputpath .. "/".. name,"mode") == "directory" then
+            elseif graphics.converters[suffix] then
+                local oldname = file.join(inputpath,name)
+                local newname = file.join(outputpath,file.replacesuffix(name,"pdf"))
+                local et = lfs.attributes(oldname,"modification")
+                local pt = lfs.attributes(newname,"modification")
+                if not pt or et > pt then
+                    dir.mkdirs(outputpath)
+                    local tmpname = file.replacesuffix(newname,"tmp")
+                    local command = graphics.converters[suffix](oldname,tmpname)
+                    input.report("command: %s",command)
+                    io.flush()
+                    os.spawn(command)
+                    os.remove(newname)
+                    os.rename(tmpname,newname)
+                    if lfs.attributes(newname,"size") == 0 then
+                        os.remove(newname)
+                    end
+                end
+            elseif lfs.isdir(inputpath .. "/".. name) then
                 graphics.converters.convertpath(inputpath .. "/".. name,outputpath .. "/".. name)
             end
         end
     end
 
 end
-
-texmf.instance = instance -- we need to get rid of this / maybe current instance in global table
 
 scripts         = scripts         or { }
 scripts.convert = scripts.convert or { }

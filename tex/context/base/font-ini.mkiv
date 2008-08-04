@@ -109,9 +109,9 @@
 %D Simpler:
 
 \def\updatefontparameters
-  {\edef\@@fonthandling{\truefontdata\somefontname\s!handling}%
+  {%edef\@@fonthandling{\truefontdata\somefontname\s!handling}% goes away, is now feature
    \edef\@@fontfeatures{\truefontdata\fontfile    \s!features}%
-   \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
+   \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}} % will be replaced
 
 \def\setfontcharacteristics
   {\the\everyfont}
@@ -120,5 +120,9 @@
 
 % \installfontfeature[otf][tlig]
 % \installfontfeature[otf][trep]
+
+%D tricky but ok:
+
+\appendtoks\ctxlua{fonts.tfm.cleanup()}\to\everyshipout
 
 \protect \endinput

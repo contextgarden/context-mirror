@@ -238,9 +238,9 @@
 %D The next implementation of \type {\phantom} cum suis does
 %D not grab an argument in the non||math case, which is better.
 
-\def\phantom {\ph@nt\nextbox\nextbox\nextbox}
-\def\vphantom{\ph@nt\nextbox\nextbox\voidb@x}
-\def\hphantom{\ph@nt\voidb@x\voidb@x\nextbox}
+\unexpanded\def\phantom {\ph@nt\nextbox\nextbox\nextbox}
+\unexpanded\def\vphantom{\ph@nt\nextbox\nextbox\voidb@x}
+\unexpanded\def\hphantom{\ph@nt\voidb@x\voidb@x\nextbox}
 
 %D Due to a complicated call to \type {\mathpallete} and
 %D thereby \type {\mathchoice}, the next macro looks ugly.
@@ -274,7 +274,7 @@
 
 %D We also define plain's \type {\mathstrut}.
 
-\def\mathstrut{\vphantom{(}}
+\unexpanded\def\mathstrut{\vphantom{(}}
 
 %D \macros
 %D   {getboxheight}

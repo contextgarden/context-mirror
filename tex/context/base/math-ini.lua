@@ -13,6 +13,8 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- if needed we can use the info here to set up xetex definition files
 -- the "8000 hackery influences direct characters (utf) as indirect \char's
 
+local texsprint, format, utfchar, utfbyte = tex.sprint, string.format, utf.char, utf.byte
+
 mathematics       = mathematics       or { }
 mathematics.data  = mathematics.data  or { }
 mathematics.slots = mathematics.slots or { }
@@ -77,13 +79,15 @@ mathematics.families[2] = mathematics.families.sy
 mathematics.families[3] = mathematics.families.ex
 
 function mathematics.mathcode(target,class,family,slot)
-    return ("\\omathcode%s=\"%X%02X%04X"):format(target,class,family,slot)
+    if class <= 7 then
+        return ("\\omathcode%s=\"%X%02X%04X "):format(target,class,family,slot)
+    end
 end
 function mathematics.delcode(target,small_family,small_slot,large_family,large_slot)
-    return ("\\odelcode%s=\"%02X%04X\"%02X%04X"):format(target,small_family,small_slot,large_family,large_slot)
+    return ("\\odelcode%s=\"%02X%04X\"%02X%04X "):format(target,small_family,small_slot,large_family,large_slot)
 end
 function mathematics.radical(small_family,small_slot,large_family,large_slot)
-    return ("\\radical%s=\"%02X%04X%\"02X%04X"):format(target,small_family,small_slot,large_family,large_slot)
+    return ("\\radical%s=\"%02X%04X%\"02X%04X "):format(target,small_family,small_slot,large_family,large_slot)
 end
 function mathematics.mathchar(class,family,slot)
     return ("\\omathchar\"%X%02X%04X "):format(class,family,slot)
@@ -95,7 +99,7 @@ function mathematics.delimiter(class,family,slot,largefamily,largeslot)
     return ("\\odelimiter\"%X%02X%04X\"%02X%04X "):format(class,family,slot,largefamily,largeslot)
 end
 function mathematics.mathchardef(name,class,family,slot) -- we can avoid this one
-    return ("\\omathchardef\\%s\"%X%02X%04X"):format(name,class,family,slot)
+    return ("\\omathchardef\\%s\"%X%02X%04X "):format(name,class,family,slot)
 end
 
 function mathematics.setmathsymbol(name,class,family,slot,largefamily,largeslot,unicode)
@@ -106,22 +110,22 @@ function mathematics.setmathsymbol(name,class,family,slot,largefamily,largeslot,
     if largefamily and largeslot then
         largefamily = mathematics.families[largefamily] or largefamily
         if class == classes.radical then
-            tex.sprint(("\\unexpanded\\xdef\\%s{%s }"):format(name,mathematics.radical(class,family,slot,largefamily,largeslot)))
+            texsprint(("\\unexpanded\\xdef\\%s{%s }"):format(name,mathematics.radical(class,family,slot,largefamily,largeslot)))
         elseif class == classes.open or class == classes.close then
-            tex.sprint(("\\unexpanded\\xdef\\%s{%s}"):format(name,mathematics.delimiter(class,family,slot,largefamily,largeslot)))
+            texsprint(("\\unexpanded\\xdef\\%s{%s}"):format(name,mathematics.delimiter(class,family,slot,largefamily,largeslot)))
         end
     elseif class == classes.accent then
-        tex.sprint(("\\unexpanded\\xdef\\%s{%s }"):format(name,mathematics.mathaccent(class,family,slot)))
+        texsprint(("\\unexpanded\\xdef\\%s{%s }"):format(name,mathematics.mathaccent(class,family,slot)))
     elseif unicode then
         -- beware, open/close and other specials should not end up here
-        local ch = utf.char(unicode)
+        local ch = utfchar(unicode)
         if characters.filters.utf.private.escapes[ch] then
-            tex.sprint(("\\xdef\\%s{\\char%s }"):format(name,unicode))
+            texsprint(("\\xdef\\%s{\\char%s }"):format(name,unicode))
         else
-            tex.sprint(("\\xdef\\%s{%s}"):format(name,ch))
+            texsprint(("\\xdef\\%s{%s}"):format(name,ch))
         end
     else
-        tex.sprint(mathematics.mathchardef(name,class,family,slot))
+        texsprint(mathematics.mathchardef(name,class,family,slot))
     end
 end
 
@@ -132,28 +136,29 @@ function mathematics.setmathcharacter(target,class,family,slot,largefamily,large
     family = mathematics.families[family] or family
     if largefamily and largeslot then
         largefamily = mathematics.families[largefamily] or largefamily
-        tex.sprint(mathematics.delcode(target,family,slot,largefamily,largeslot))
+        texsprint(mathematics.delcode(target,family,slot,largefamily,largeslot))
     else
-        tex.sprint(mathematics.mathcode(target,class,family,slot))
+        texsprint(mathematics.mathcode(target,class,family,slot))
     end
 end
 
 -- definitions (todo: expand commands to utf instead of codes)
 
-mathematics.trace = false --
+mathematics.trace = false -- false
 
-function mathematics.define()
-    local slots = mathematics.slots.current
+function mathematics.define(slots)
+    local slots = slots or mathematics.slots.current
     local setmathcharacter = mathematics.setmathcharacter
     local setmathsymbol = mathematics.setmathsymbol
     local trace = mathematics.trace
-    local function report(k,c,f,i,fe,ie)
+    local function report(k,m,c,f,i,fe,ie)
+        local mc = mathematics.classes[m] or m
         if fe then
-            logs.report("mathematics",string.format("a - symbol 0x%05X -> %s -> %s %s (%s %s)",k,c,f,i,fe,ie))
+            logs.report("mathematics","a - %s:%s 0x%05X -> %s -> %s %s (%s %s) -> %s",mc,m,k,c,f,i,fe,ie,utfchar(k))
         elseif c then
-            logs.report("mathematics",string.format("b - symbol 0x%05X -> %s -> %s %s",k,c,f,i))
+            logs.report("mathematics","b - %s:%s 0x%05X -> %s -> %s %s -> %s",mc,m,k,c,f,i,utfchar(k))
         else
-            logs.report("mathematics",string.format("c - symbol 0x%05X -> %s %s",k,f,i))
+            logs.report("mathematics","c - %s:%s 0x%05X -> %s %s -> %s",mc,m,k,f,i,utfchar(k))
         end
     end
     for k,v in pairs(characters.data) do
@@ -167,7 +172,7 @@ function mathematics.define()
                 if s then
                     local f, i, fe, ie = s[1], s[2], s[3], s[4]
                     if trace then
-                        report(k,c,f,i,fe,ie)
+                        report(k,m,c,f,i,fe,ie)
                     end
                     setmathcharacter(k,m,f,i,fe,ie)
                 end
@@ -176,7 +181,7 @@ function mathematics.define()
                 if s then
                     local f, i, fe, ie = s[1], s[2], s[3], s[4]
                     if trace then
-                        report(k,c,f,i,fe,ie)
+                        report(k,m,c,f,i,fe,ie)
                     end
                     setmathsymbol(c,m,f,i,fe,ie,k)
                     setmathcharacter(k,m,f,i,fe,ie)
@@ -187,10 +192,10 @@ function mathematics.define()
                 if s then
                     local f, i, fe, ie = s[1], s[2], s[3], s[4]
                     if trace then
-                        report(k,c,f,i,fe,ie)
+                        report(k,m,c,f,i,fe,ie)
                     end
                     -- todo: mathortext
-                    -- setmathsymbol(c,m,f,i,fe,ie,k)
+                    setmathsymbol(c,m,f,i,fe,ie,k)
                     setmathcharacter(k,m,f,i,fe,ie)
                 end
             else
@@ -204,10 +209,12 @@ function mathematics.define()
                     elseif m == "number" then
                         f, i = mathematics.families.numbers, k
                     end
-                    if trace then
-                        report(k,a,f,i,fe,ie)
+                    if f and i then
+                        if trace then
+                            report(k,m,a,f,i,fe,ie)
+                        end
+                        setmathcharacter(k,m,f,i,fe,ie)
                     end
-                    setmathcharacter(k,m,f,i,fe,ie)
                 end
             end
         end
@@ -217,7 +224,7 @@ end
 -- temporary here: will become separate
 
 -- maybe we should define a nice virtual font so that we have
--- just the base n families repeated for diferent styles
+-- just the base n families repeated for different styles
 
 mathematics.slots.traditional = {
 
@@ -236,7 +243,7 @@ mathematics.slots.traditional = {
     [0x03BD] = { "lcgreek", 0x17 }, -- nu
     [0x03BE] = { "lcgreek", 0x18 }, -- xi
     [0x03BF] = { "lcgreek", 0x6F }, -- omicron
-    [0x03C0] = { "lcgreek", 0x19 }, -- po
+    [0x03C0] = { "lcgreek", 0x19 }, -- pi
     [0x03C1] = { "lcgreek", 0x1A }, -- rho
 --  [0x03C2] = { "lcgreek", 0x00 }, -- varsigma
     [0x03C3] = { "lcgreek", 0x1B }, -- sigma
@@ -305,9 +312,11 @@ mathematics.slots.traditional = {
     [0x007B] = { "sy", 0x66 }, -- {
     [0x007C] = { "sy", 0x6A }, -- |
     [0x007D] = { "sy", 0x67 }, -- }
+    [0x00AC] = { "sy", 0x3A }, -- lnot
     [0x00B1] = { "sy", 0x06 }, -- pm
     [0x00B7] = { "sy", 0x01 }, -- cdot
     [0x00D7] = { "sy", 0x02 }, -- times
+    [0x00F7] = { "sy", 0x04 }, -- div
     [0x2022] = { "sy", 0x0F }, -- bullet
     [0x2111] = { "sy", 0x3D }, -- Im
     [0x2118] = { "mi", 0x7D }, -- wp
@@ -366,6 +375,7 @@ mathematics.slots.traditional = {
     [0x223C] = { "sy", 0x18 }, -- sim
     [0x2243] = { "sy", 0x27 }, -- simeq
     [0x2248] = { "sy", 0x19 }, -- approx
+    [0x225C] = { "ma", 0x2C }, -- triangleq
     [0x2261] = { "sy", 0x11 }, -- equiv
     [0x2264] = { "sy", 0x14 }, -- leq
     [0x2265] = { "sy", 0x15 }, -- geq
@@ -397,6 +407,12 @@ mathematics.slots.traditional = {
     [0x22C6] = { "sy", 0x3F }, -- star
     [0x25B3] = { "sy", 0x34 }, -- triangle up
 
+    [0x2220] = { "ma", 0x5C }, -- angle
+    [0x2221] = { "ma", 0x5D }, -- measuredangle
+    [0x2222] = { "ma", 0x5E }, -- sphericalangle
+
+    [0x2245] = { "ma", 0x75 }, -- aproxeq
+
     [0x1D6A4] = { "mi", 0x7B }, -- imath
     [0x1D6A5] = { "mi", 0x7C }, -- jmath
 
@@ -418,15 +434,42 @@ mathematics.slots.traditional = {
     [0x2AAF] = { "sy", 0x16 }, -- preceq
     [0x2AB0] = { "sy", 0x17 }, -- succeq
 
+    [0x2145] = { "mr", 0x44 },
+    [0x2146] = { "mr", 0x64 },
+    [0x2147] = { "mr", 0x65 },
+
+    -- please let lm/gypre math show up soon
+
 }
 
 mathematics.slots.current = mathematics.slots.traditional
 
 function mathematics.utfmathclass(chr, default)
-    local cd = characters.data[utf.byte(chr)]
+    local cd = characters.data[utfbyte(chr)]
     return (cd and cd.mathclass) or default or "unknown"
 end
+function mathematics.utfmathstretch(chr, default) -- "h", "v", "b", ""
+    local cd = characters.data[utfbyte(chr)]
+    return (cd and cd.mathstretch) or default or ""
+end
 function mathematics.utfmathcommand(chr, default)
-    local cd = characters.data[utf.byte(chr)]
-    return (cd and cd.mathname) or default or "unknown"
+    local cd = characters.data[utfbyte(chr)]
+    local cmd = cd and cd.mathname
+    tex.sprint(cmd or default or "")
+end
+function mathematics.utfmathfiller(chr, default)
+    local cd = characters.data[utfbyte(chr)]
+    local cmd = cd and (cd.mathfiller or cd.mathname)
+    tex.sprint(cmd or default or "")
+end
+
+mathematics.entities = mathematics.entities or { }
+
+function mathematics.register_xml_entities()
+    local entities = xml.entities
+    for name, unicode in pairs(mathematics.entities) do
+        if not entities[name] then
+            entities[name] = utfchar(unicode)
+        end
+    end
 end

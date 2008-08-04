@@ -22,63 +22,82 @@ being written at the same time is small. We also need to extend
 luatools with a recache feature.</p>
 --ldx]]--
 
+local format = string.format
+
 caches = caches or { }
 dir    = dir    or { }
 texmf  = texmf  or { }
 
-caches.path   = caches.path or nil
-caches.base   = caches.base or "luatex-cache"
-caches.more   = caches.more or "context"
-caches.direct = false -- true is faster but may need huge amounts of memory
-caches.trace  = false
-caches.tree   = false
-caches.paths  = caches.paths or nil
-caches.force  = false
+caches.path     = caches.path or nil
+caches.base     = caches.base or "luatex-cache"
+caches.more     = caches.more or "context"
+caches.direct   = false -- true is faster but may need huge amounts of memory
+caches.trace    = false
+caches.tree     = false
+caches.paths    = caches.paths or nil
+caches.force    = false
+caches.defaults = { "TEXMFCACHE", "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 
-input.usecache = not toboolean(os.getenv("TEXMFSHARECACHE") or "false",true) -- true
-
-function caches.temp(instance)
-    local function checkpath(cachepath)
-        if not cachepath or cachepath == "" then
-            return nil
-        elseif lfs.attributes(cachepath,"mode") == "directory" then -- lfs.isdir(cachepath) then
-            return cachepath
-        elseif caches.force or io.ask(string.format("Should I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
-            dir.mkdirs(cachepath)
-            return (lfs.attributes(cachepath,"mode") == "directory") and cachepath
-        else
-            return nil
+function caches.temp()
+    local cachepath = nil
+    local function check(list,isenv)
+        if not cachepath then
+            for _, v in ipairs(list) do
+                cachepath = (isenv and (os.env[v] or "")) or v or ""
+                if cachepath == "" then
+                    -- next
+                else
+                    cachepath = input.clean_path(cachepath)
+                     if lfs.isdir(cachepath) and file.iswritable(cachepath) then -- lfs.attributes(cachepath,"mode") == "directory"
+                        break
+                    elseif caches.force or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
+                        dir.mkdirs(cachepath)
+                        if lfs.isdir(cachepath) and file.iswritable(cachepath) then
+                            break
+                        end
+                    end
+                end
+                cachepath = nil
+            end
         end
     end
-    local cachepath = input.expanded_path_list(instance,"TEXMFCACHE")
-    cachepath = cachepath and #cachepath > 0 and checkpath(cachepath[1])
+    check(input.clean_path_list("TEXMFCACHE") or { })
+    check(caches.defaults,true)
     if not cachepath then
-        cachepath = os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
-        cachepath = checkpath(cachepath)
-    end
-    if not cachepath then
-        print("\nfatal error: there is no valid cache path defined\n")
+        print("\nfatal error: there is no valid (writable) cache path defined\n")
         os.exit()
-    elseif lfs.attributes(cachepath,"mode") ~= "directory" then
-        print(string.format("\nfatal error: cache path %s is not a directory\n",cachepath))
+    elseif not lfs.isdir(cachepath) then -- lfs.attributes(cachepath,"mode") ~= "directory"
+        print(format("\nfatal error: cache path %s is not a directory\n",cachepath))
         os.exit()
     end
-    function caches.temp(instance)
+    cachepath = input.normalize_name(cachepath)
+    function caches.temp()
         return cachepath
     end
     return cachepath
 end
 
-function caches.configpath(instance)
-    return table.concat(instance.cnffiles,";")
+function caches.configpath()
+    return table.concat(input.instance.cnffiles,";")
 end
 
 function caches.hashed(tree)
     return md5.hex((tree:lower()):gsub("[\\\/]+","/"))
 end
 
-function caches.treehash(instance)
-    local tree = caches.configpath(instance)
+--~ tracing:
+
+--~ function caches.hashed(tree)
+--~     tree = (tree:lower()):gsub("[\\\/]+","/")
+--~     local hash = md5.hex(tree)
+--~     if input.verbose then -- temp message
+--~         input.report("hashing %s => %s",tree,hash)
+--~     end
+--~     return hash
+--~ end
+
+function caches.treehash()
+    local tree = caches.configpath()
     if not tree or tree == "" then
         return false
     else
@@ -86,14 +105,14 @@ function caches.treehash(instance)
     end
 end
 
-function caches.setpath(instance,...)
+function caches.setpath(...)
     if not caches.path then
         if not caches.path then
-            caches.path = caches.temp(instance)
+            caches.path = caches.temp()
         end
         caches.path = input.clean_path(caches.path) -- to be sure
         if lfs then
-            caches.tree = caches.tree or caches.treehash(instance)
+            caches.tree = caches.tree or caches.treehash()
             if caches.tree then
                 caches.path = dir.mkdirs(caches.path,caches.base,caches.more,caches.tree)
             else
@@ -113,9 +132,9 @@ function caches.setpath(instance,...)
     return caches.path
 end
 
-function caches.definepath(instance,category,subcategory)
+function caches.definepath(category,subcategory)
     return function()
-        return caches.setpath(instance,category,subcategory)
+        return caches.setpath(category,subcategory)
     end
 end
 
@@ -138,26 +157,38 @@ function caches.is_writable(filepath,filename)
     return file.is_writable(tmaname)
 end
 
-function caches.savedata(filepath,filename,data,raw) -- raw needed for file cache
+function input.boolean_variable(str,default)
+    local b = input.expansion("PURGECACHE")
+    if b == "" then
+        return default
+    else
+        b = toboolean(b)
+        return (b == nil and default) or b
+    end
+end
+
+function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
     local reduce, simplify = true, true
     if raw then
         reduce, simplify = false, false
     end
     if caches.direct then
-        file.savedata(tmaname, table.serialize(data,'return',true,true))
+        file.savedata(tmaname, table.serialize(data,'return',true,true,false)) -- no hex
     else
-        table.tofile(tmaname, data,'return',true,true) -- maybe not the last true
+        table.tofile(tmaname, data,'return',true,true,false) -- maybe not the last true
     end
-    utils.lua.compile(tmaname, tmcname, input.expand_var(texmf.instance,'PURGECACHE') == 't')
+    local cleanup = input.boolean_variable("PURGECACHE", false)
+    local strip = input.boolean_variable("LUACSTRIP", true)
+    utils.lua.compile(tmaname, tmcname, cleanup, strip)
 end
 
 -- here we use the cache for format loading (texconfig.[formatname|jobname])
 
 --~ if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
-if tex and texconfig and (not texconfig.formatname or texconfig.formatname == "") and texmf.instance then
+if tex and texconfig and (not texconfig.formatname or texconfig.formatname == "") and input and input.instance then
     if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end -- or luc
-    texconfig.formatname = caches.setpath(texmf.instance,"formats") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
+    texconfig.formatname = caches.setpath("formats") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
 end
 
 --[[ldx--
@@ -180,7 +211,7 @@ do -- local report
 
     local function report(container,tag,name)
         if caches.trace or containers.trace or container.trace then
-            logs.report(string.format("%s cache",container.subcategory),string.format("%s: %s",tag,name or 'invalid'))
+            logs.report(format("%s cache",container.subcategory),"%s: %s",tag,name or 'invalid')
         end
     end
 
@@ -205,7 +236,7 @@ do -- local report
                         enabled = enabled,
                         version = version or 1.000,
                         trace = false,
-                        path = caches.setpath(texmf.instance,category,subcategory),
+                        path = caches.setpath(category,subcategory),
                     }
                     c[subcategory] = s
                 end
@@ -270,13 +301,16 @@ end
 -- reimplement the saver.
 
 local save_data = input.aux.save_data
+local load_data = input.aux.load_data
 
-input.cachepath = nil
+input.cachepath = nil  -- public, for tracing
+input.usecache  = true -- public, for tracing
 
-function input.aux.save_data(instance, dataname, check)
-    input.cachepath = input.cachepath or caches.definepath(instance,"trees")
-    save_data(instance, dataname, check, function(cachename,dataname)
+function input.aux.save_data(dataname, check)
+    save_data(dataname, check, function(cachename,dataname)
+        input.usecache = not toboolean(input.expansion("CACHEINTDS") or "false",true)
         if input.usecache then
+            input.cachepath = input.cachepath or caches.definepath("trees")
             return file.join(input.cachepath(),caches.hashed(cachename))
         else
             return file.join(cachename,dataname)
@@ -284,12 +318,11 @@ function input.aux.save_data(instance, dataname, check)
     end)
 end
 
-local load_data = input.aux.load_data
-
-function input.aux.load_data(instance,pathname,dataname,filename)
-    input.cachepath = input.cachepath or caches.definepath(instance,"trees")
-    load_data(instance,pathname,dataname,filename,function(dataname,filename)
+function input.aux.load_data(pathname,dataname,filename)
+    load_data(pathname,dataname,filename,function(dataname,filename)
+        input.usecache = not toboolean(input.expansion("CACHEINTDS") or "false",true)
         if input.usecache then
+            input.cachepath = input.cachepath or caches.definepath("trees")
             return file.join(input.cachepath(),caches.hashed(pathname))
         else
             if not filename or (filename == "") then
@@ -304,13 +337,13 @@ end
 
 input.automounted = input.automounted or { }
 
-function input.automount(instance,usecache)
-    local mountpaths = input.simplified_list(input.expansion(instance,'TEXMFMOUNT'))
+function input.automount(usecache)
+    local mountpaths = input.clean_path_list(input.expansion('TEXMFMOUNT'))
     if table.is_empty(mountpaths) and usecache then
-        mountpaths = { caches.setpath(instance,"mount") }
+        mountpaths = { caches.setpath("mount") }
     end
     if not table.is_empty(mountpaths) then
-        input.starttiming(instance)
+        input.starttiming(input.instance)
         for k, root in pairs(mountpaths) do
             local f = io.open(root.."/url.tmi")
             if f then
@@ -319,16 +352,16 @@ function input.automount(instance,usecache)
                         if line:find("^[%%#%-]") then -- or %W
                             -- skip
                         elseif line:find("^zip://") then
-                            input.report("mounting",line)
+                            input.report("mounting %s",line)
                             table.insert(input.automounted,line)
-                            input.usezipfile(instance,line)
+                            input.usezipfile(line)
                         end
                     end
                 end
                 f:close()
             end
         end
-        input.stoptiming(instance)
+        input.stoptiming(input.instance)
     end
 end
 
@@ -377,17 +410,17 @@ function input.storage.dump()
             else
                 name = str
             end
-            initialize = string.format("%s %s = %s or {} ", initialize, name, name)
+            initialize = format("%s %s = %s or {} ", initialize, name, name)
         end
         if evaluate then
             finalize = "input.storage.evaluate(" .. name .. ")"
         end
         input.storage.max = input.storage.max + 1
         if input.storage.trace then
-            logs.report('storage',string.format('saving %s in slot %s',message,input.storage.max))
+            logs.report('storage','saving %s in slot %s',message,input.storage.max)
             code =
                 initialize ..
-                string.format("logs.report('storage','restoring %s from slot %s') ",message,input.storage.max) ..
+                format("logs.report('storage','restoring %s from slot %s') ",message,input.storage.max) ..
                 table.serialize(original,name) ..
                 finalize
         else

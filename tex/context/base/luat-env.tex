@@ -93,12 +93,9 @@
 \startruntimectxluacode
     environment = environment or { }
     environment.jobname    = "\jobname"                            % tex.jobname
-    environment.formatname = "\contextformat"                      % tex.formatname
     environment.initex     = \ifproductionrun false \else true \fi % tex.formatname == ""
     environment.version    = "\contextversion"
 \stopruntimectxluacode
-
-% no longer needed: dofile(input.find_file(texmf.instance,"luat-env.lua","tex"))
 
 \chardef\ctxluaexecutionmode \zerocount % private
 
@@ -130,14 +127,14 @@
         end
         if lua.bytecode[#1] then
             if environment.initex then
-                environment.showmessage("executing byte code " .. "#1" .. str)
+            %   logs.report("bytecode","executing blob " .. "#1" .. str)
                 assert(lua.bytecode[#1])()
             else
                 assert(lua.bytecode[#1])()
                 lua.bytecode[#1] = nil
             end
         else
-            environment.showmessage("invalid byte code " .. "#1" .. str)
+        %   logs.report("bytecode", "invalid blob " .. "#1" .. str)
         end
     end
   }}
@@ -152,10 +149,10 @@
       lua.bytecode[\the\luabytecodecounter] = environment.luafilechunk("#1")
     }}
 
-\def\ctxluafileload#1#2% load a (either not compiled) chunk at runtime
+\def\ctxloadluafile#1#2% load a (either not compiled) chunk at runtime
   {\doifelsenothing{#2}
-     {\ctxlua{environment.loadlucfile("#1")}}
-     {\ctxlua{environment.loadlucfile("#1",#2)}}}
+     {\ctxlua{environment.loadluafile("#1")}}
+     {\ctxlua{environment.loadluafile("#1",#2)}}}
 
 \def\registerctxluafile#1#2% name version
   {\ifproductionrun \else

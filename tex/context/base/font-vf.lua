@@ -7,31 +7,34 @@ if not modules then modules = { } end modules ['font-vf'] = {
 }
 
 --[[ldx--
-<p>This is very experimental code! Not yet adapted to recent changes. This will
-change.</p>
+<p>This is very experimental code! Not yet adapted to recent
+changes. This will change.</p>
 --ldx]]--
 
 -- define.methods elsewhere !
 
-fonts                 = fonts                 or { }
+fonts    = fonts    or { }
+fonts.vf = fonts.vf or { }
+
+local vf  = fonts.vf
+local tfm = fonts.tfm
 
 fonts.define          = fonts.define          or { }
 fonts.define.methods  = fonts.define.methods  or { }
 
-fonts.vf              = fonts.vf              or { }
-fonts.vf.combinations = fonts.vf.combinations or { }
-fonts.vf.aux          = fonts.vf.aux          or { }
-fonts.vf.aux.combine  = fonts.vf.aux.combine  or { }
+vf.combinations = vf.combinations or { }
+vf.aux          = vf.aux          or { }
+vf.aux.combine  = vf.aux.combine  or { }
 
 function fonts.define.methods.install(tag, rules)
-    fonts.vf.combinations[tag] = rules
+    vf.combinations[tag] = rules
     fonts.define.methods[tag] = function(specification)
-        return fonts.vf.combine(specification,tag)
+        return vf.combine(specification,tag)
     end
 end
 
-function fonts.vf.aux.combine.assign(g, name, from, to, start, force)
-    local f, id = fonts.vf.aux.combine.load(g,name)
+function vf.aux.combine.assign(g, name, from, to, start, force)
+    local f, id = vf.aux.combine.load(g,name)
     if f and id then
         -- optimize for whole range, then just g = f
         if not from  then from, to = 0, 0xFF00 end
@@ -56,20 +59,20 @@ function fonts.vf.aux.combine.assign(g, name, from, to, start, force)
     end
 end
 
-function fonts.vf.aux.combine.process(g,list)
+function vf.aux.combine.process(g,list)
     if list then
         for _,v in pairs(list) do
-            (fonts.vf.aux.combine.commands[v[1]] or nop)(g,v)
+            (vf.aux.combine.commands[v[1]] or nop)(g,v)
         end
     end
 end
 
-function fonts.vf.aux.combine.load(g,name)
-    return fonts.tfm.read_and_define(name or g.specification.name,g.specification.size)
+function vf.aux.combine.load(g,name)
+    return tfm.read_and_define(name or g.specification.name,g.specification.size)
 end
 
-function fonts.vf.aux.combine.names(g,name,force)
-    local f, id = fonts.tfm.read_and_define(name,g.specification.size)
+function vf.aux.combine.names(g,name,force)
+    local f, id = tfm.read_and_define(name,g.specification.size)
     if f and id then
         local fc, gc = f.characters, g.characters
         g.fonts[#g.fonts+1] = { id = id } -- no need to be sparse
@@ -89,19 +92,19 @@ function fonts.vf.aux.combine.names(g,name,force)
     end
 end
 
-fonts.vf.aux.combine.commands = {
-    ["initialize"]      = function(g,v) fonts.vf.aux.combine.assign    (g,g.name) end,
-    ["include-method"]  = function(g,v) fonts.vf.aux.combine.process   (g,fonts.vf.combinations[v[2]])  end, -- name
-    ["copy-parameters"] = function(g,v) fonts.vf.aux.combine.parameters(g,v[2]) end, -- name
-    ["copy-range"]      = function(g,v) fonts.vf.aux.combine.assign    (g,v[2],v[3],v[4],v[5],true) end, -- name, from-start, from-end, to-start
-    ["copy-char"]       = function(g,v) fonts.vf.aux.combine.assign    (g,v[2],v[3],v[3],v[4],true) end, -- name, from, to
-    ["fallback-range"]  = function(g,v) fonts.vf.aux.combine.assign    (g,v[2],v[3],v[4],v[5],false) end, -- name, from-start, from-end, to-start
-    ["fallback-char"]   = function(g,v) fonts.vf.aux.combine.assign    (g,v[2],v[3],v[3],v[4],false) end, -- name, from, to
-    ["copy_names"]      = function(g,v) fonts.vf.aux.combine.names     (g,v[2],true) end,
-    ["fallback_names"]  = function(g,v) fonts.vf.aux.combine.names     (g,v[2],false) end,
+vf.aux.combine.commands = {
+    ["initialize"]      = function(g,v) vf.aux.combine.assign    (g,g.name) end,
+    ["include-method"]  = function(g,v) vf.aux.combine.process   (g,vf.combinations[v[2]])  end, -- name
+    ["copy-parameters"] = function(g,v) vf.aux.combine.parameters(g,v[2]) end, -- name
+    ["copy-range"]      = function(g,v) vf.aux.combine.assign    (g,v[2],v[3],v[4],v[5],true) end, -- name, from-start, from-end, to-start
+    ["copy-char"]       = function(g,v) vf.aux.combine.assign    (g,v[2],v[3],v[3],v[4],true) end, -- name, from, to
+    ["fallback-range"]  = function(g,v) vf.aux.combine.assign    (g,v[2],v[3],v[4],v[5],false) end, -- name, from-start, from-end, to-start
+    ["fallback-char"]   = function(g,v) vf.aux.combine.assign    (g,v[2],v[3],v[3],v[4],false) end, -- name, from, to
+    ["copy_names"]      = function(g,v) vf.aux.combine.names     (g,v[2],true) end,
+    ["fallback_names"]  = function(g,v) vf.aux.combine.names     (g,v[2],false) end,
 }
 
-function fonts.vf.combine(specification,tag)
+function vf.combine(specification,tag)
     local g = {
         name = specification.name,
         type = 'virtual',
@@ -109,11 +112,11 @@ function fonts.vf.combine(specification,tag)
         characters = { },
         specification = table.fastcopy(specification)
     }
-    fonts.vf.aux.combine.process(g,fonts.vf.combinations[tag])
+    vf.aux.combine.process(g,vf.combinations[tag])
     return g
 end
 
-fonts.vf.aux.combine.commands["feature"] = function(g,v)
+vf.aux.combine.commands["feature"] = function(g,v)
     local key, value = v[2], v[3]
     if key then
         if value == nil then
@@ -172,7 +175,7 @@ fonts.define.methods["demo-1"] = function(specification)
     local size = specification.size          -- given size
 --~     specification.name = 'lmroman10-regular' -- forced base name
 --~     specification.features.vtf = { }
-    local f, id = fonts.tfm.read_and_define('lmroman10-regular',size)
+    local f, id = tfm.read_and_define('lmroman10-regular',size)
     if f and id then
         local capscale, digscale = 0.85, 0.75
         f.name, f.type = name, 'virtual'
@@ -211,7 +214,7 @@ end
 
 -- keep as example, now tfm feature
 
---~ fonts.vf.aux.combine.commands["lineheight"] = function(g,v)
+--~ vf.aux.combine.commands["lineheight"] = function(g,v)
 --~     if g.ascender and g.descender then
 --~         local ht, dp = g.ascender or 0, g.descender or 0
 --~         if v[2] == "none" then

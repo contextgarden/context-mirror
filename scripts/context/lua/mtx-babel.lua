@@ -8,8 +8,6 @@ if not modules then modules = { } end modules ['mtx-babel'] = {
 
 -- data tables by Thomas A. Schmitz
 
-texmf.instance = instance -- we need to get rid of this / maybe current instance in global table
-
 scripts       = scripts       or { }
 scripts.babel = scripts.babel or { }
 
@@ -384,22 +382,22 @@ do
                         local structure = environment.argument("structure") or "document"
                         converter = converter[structure]
                         if converter then
-                            input.report(string.format("converting '%s' using language '%s' with structure '%s'", filename, language, structure))
+                            input.report("converting '%s' using language '%s' with structure '%s'", filename, language, structure)
                             data = converter:match(data)
                             local newfilename = filename .. ".utf"
                             io.savedata(newfilename, data)
-                            input.report(string.format("converted data saved in '%s'", newfilename))
+                            input.report("converted data saved in '%s'", newfilename)
                         else
-                            input.report(string.format("unknown structure '%s' language '%s'", structure, language))
+                            input.report("unknown structure '%s' language '%s'", structure, language)
                         end
                     else
-                        input.report(string.format("no converter for language '%s'", language))
+                        input.report("no converter for language '%s'", language)
                     end
                 else
-                    input.report(string.format("provide language"))
+                    input.report("provide language")
                 end
             else
-                input.report(string.format("no data in '%s'",filename))
+                input.report("no data in '%s'",filename)
             end
         end
     end
@@ -427,4 +425,3 @@ if environment.argument("convert") then
 else
     input.help(banner,messages.help)
 end
-

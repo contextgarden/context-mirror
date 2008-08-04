@@ -105,7 +105,9 @@
         {\exportutfsortexpansion{0}{128}{255}%
          \exportutfsortexpansion{1}{0}{255}}
        {\def\defineactivecharacter##1 ##2% mkii code !
-          {\expanded{\exportsortshortcut{\rawcharacter{##1}}}{##2}}%
+          {\doifnumberelse{##1}
+              {\expanded{\exportsortshortcut{\rawcharacter{##1}}}{##2}}%
+              {\expanded{\exportsortshortcut{\rawcharacter{\number`##1}}}{##2}}}%
         \doifelsenothing\currentregime
           {\doifnot\characterencoding\nocharacterencoding % to be sure, autoregime
              {\dowalkregime\characterencoding}}%

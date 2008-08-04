@@ -13,6 +13,8 @@
 
 \registerctxluafile{core-job}{1.001}
 
+\unprotect
+
 \def\processfile      #1{\ctxlua{commands.processfile("#1",\number\maxreadlevel)}}
 \def\doifinputfileelse#1{\ctxlua{commands.doifinputfileelse("#1",\number\maxreadlevel)}}
 \def\locatefilepath   #1{\edef\locatedfilepath{\ctxlua{commands.locatefilepath("#1",\number\maxreadlevel)}}}
@@ -25,4 +27,13 @@
 \def\loadexamodes        {\dosingleempty\doloadexamodes}
 \def\doloadexamodes  [#1]{\ctxlua{commands.loadexamodes("#1")}}
 
-\endinput
+% for the moment here:
+
+\def\expdoifelse#1#2{\ctxlua{commands.doifelse(\!!bs#1\!!es==\!!bs#2\!!es)}}
+\def\expdoif    #1#2{\ctxlua{commands.doif    (\!!bs#1\!!es==\!!bs#2\!!es)}}
+\def\expdoifnot #1#2{\ctxlua{commands.doifnot (\!!bs#1\!!es==\!!bs#2\!!es)}}
+
+% \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}         % 0.3
+% \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
+
+\protect \endinput

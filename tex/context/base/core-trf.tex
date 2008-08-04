@@ -62,6 +62,7 @@
      [#1]
      [\c!scale=,\c!xscale=,\c!yscale=,\c!width=,\c!height=,\c!lines=,
       \c!factor=,\c!hfactor=,\c!wfactor=,\c!grid=,\c!sx=1,\c!sy=1,
+      \c!equalwidth=,\c!equalheight=,
       \c!maxwidth=\scaleparameter\c!width,\c!maxheight=\scaleparameter\c!height,
       #2]%
    \dowithnextbox{\dodoscalenextbox{#1}\egroup}\hbox}
@@ -74,6 +75,9 @@
 \def\scaleparameter#1%
   {\csname\currentscaletag#1\endcsname}
 
+\def\setscaleparameter#1#2%
+  {\setvalue{\currentscaletag#1}{#2}}
+
 \def\dodoscalenextbox#1%
   {\edef\currentscaletag{#1}%
    \doif{\scaleparameter\c!depth}\v!no{\setbox\nextbox\hbox{\raise\nextboxdp\box\nextbox}}% new
@@ -82,6 +86,7 @@
    \dontcomplain
    \doscaleboxcalculations
    \doscaleboxindeed
+   \doscaleboxposition
    \flushnextbox}
 
 \def\doscaleboxindeed
@@ -176,13 +181,14 @@
    \scaleboxscax   \plusone        % see note * (core-fig)
    \scaleboxscay   \plusone        % see note * (core-fig)
    % preparations
+   \setfalse\scaleboxscalingdone
    \checkscaleboxsettings
    % calculators
    % beware, they operate in sequence, and calculate missing dimensions / messy
    %setscaleboxbynature % when? needed?
-   \setscaleboxbyfactor
-   \setscaleboxbyscale
-   \setscaleboxbydimension
+   \ifconditional\scaleboxscalingdone\else\setscaleboxbyfactor   \fi
+   \ifconditional\scaleboxscalingdone\else\setscaleboxbyscale    \fi
+   \ifconditional\scaleboxscalingdone\else\setscaleboxbydimension\fi
    % finalizers / to be done (no longer needed this way, clean up)
    \convertscaleboxinsertscale\scaleboxhsize\figx\scaleboxscax\scax
    \convertscaleboxinsertscale\scaleboxvsize\figy\scaleboxscay\scay
@@ -223,8 +229,13 @@
    \doifsomething{\scaleparameter\c!xscale}       {\scaleboxscax\scaleparameter\c!xscale}%
    \doifsomething{\scaleparameter\c!yscale}       {\scaleboxscay\scaleparameter\c!yscale}} % oeps, was x
 
+% \defineexternalfigure[width-6][factor=auto,maxwidth=\textheight,maxheight=\textwidth]
+% \defineexternalfigure[width-7][factor=auto,maxwidth=\textwidth,maxheight=\textheight]
+% \placefigure{none}{\rotate[frame=on,offset=overlay]{\externalfigure[t:/sources/cow.pdf][width-6]}} \page
+% \placefigure{none}{\framed[frame=on,offset=overlay]{\externalfigure[t:/sources/cow.pdf][width-7]}}
+
 \def\setscaleboxbyfactor
-  {\doifinsetelse{\scaleparameter\c!factor}{\v!max,\v!fit,\v!broad}
+  {\doifinsetelse{\scaleparameter\c!factor}{\v!max,\v!fit,\v!broad,\v!auto}
      {\doapplyscaleboxsize
       \ifdim\scaleboxsizex>\scaleboxsizey
         \docalculatescaleboxnorm  \scaleboxdimx\c!factor\c!maxwidth\hsize\scaleboxhsize
@@ -234,12 +245,12 @@
         \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
       \fi
       \donetrue}
-     {\doifinsetelse{\scaleparameter\c!hfactor}{\v!max,\v!fit,\v!broad}
+     {\doifinsetelse{\scaleparameter\c!hfactor}{\v!max,\v!fit,\v!broad,\v!auto}
         {\doapplyscaleboxsize
          \docalculatescaleboxnorm  \scaleboxdimy\c!hfactor\c!maxheight\scaleboxoutervsize\scaleboxvsize
          \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
          \donetrue}
-        {\doifinsetelse{\scaleparameter\c!wfactor}{\v!max,\v!fit,\v!broad}
+        {\doifinsetelse{\scaleparameter\c!wfactor}{\v!max,\v!fit,\v!broad,\v!auto}
            {\doapplyscaleboxsize
             \docalculatescaleboxnorm  \scaleboxdimx\c!wfactor\c!maxwidth\hsize\scaleboxhsize
             \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
@@ -249,6 +260,7 @@
             \docalculatescaleboxnorm\scaleboxdimx\c!wfactor\c!width  \hsize     \hsize
             \donefalse}}}%
    \ifdone
+\settrue\scaleboxscalingdone
      \ifdim\scaleboxdimx>\scaleboxhsize
        \global\scaleboxdimy\zeropoint \global\scaleboxdimx\scaleboxhsize
      \else\ifdim\scaleboxdimy>\scaleboxvsize
@@ -321,6 +333,7 @@
       [     \v!max=>\global#1\dimexpr#4\relax,
             \v!fit=>\global#1\dimexpr#5\relax,
           \v!broad=>\global#1\dimexpr#5-4\@@exbodyfont\relax,
+           \v!auto=>\doifsomething{\scaleparameter#3}{\global#1\dimexpr\scaleparameter#3\relax},
         \s!default=>\doifsomething{\scaleparameter#3}{\global#1\dimexpr\scaleparameter#3\relax},
         \s!unknown=>\global#1\dimexpr\scaleparameter#2\dimexpr\@@exbodyfont/10\relax\relax]}
 
@@ -398,6 +411,22 @@
    \fi
    \edef#4{\withoutpt\the\scratchdimen}}
 
+% \startcombination
+%     {\externalfigure[cow.pdf] [frame=on,height=3cm,equalwidth=6cm]} {}
+%     {\externalfigure[mill.png][frame=on,height=3cm,equalwidth=6cm]} {}
+% \stopcombination
+
+\def\doscaleboxposition
+   {\doifsomething{\scaleparameter\c!equalwidth}
+      {\scratchdimen\scaleparameter\c!equalwidth\relax
+       \ifdim\wd\nextbox<\scratchdimen
+         \setbox\nextbox\hbox to \scratchdimen{\hss\box\nextbox\hss}%
+       \fi}%
+    \doifsomething{\scaleparameter\c!equalheight}
+      {\scratchdimen\scaleparameter\c!equalheight\relax
+       \ifdim\ht\nextbox<\scratchdimen
+         \setbox\nextbox\vbox to \scratchdimen{\vss\box\nextbox\vss}%
+       \fi}}
 
 %D \macros
 %D   {clip, setupclipping}

@@ -56,8 +56,8 @@ string  graphictextformat  ; graphictextformat  := "plain" ;
 string  graphictextstring  ; graphictextstring  := "" ;
 string  graphictextfile    ; graphictextfile    := "dummy.mpo" ;
 
-def data_mpo_file = job_name & "-mp.mpo" enddef ;
-def data_mpy_file = job_name & "-mp.mpy" enddef ;
+def data_mpo_file = job_name & "-mpgraph.mpo" enddef ;
+def data_mpy_file = job_name & "-mpgraph.mpy" enddef ;
 
 def savegraphictext (expr str) =
   if (graphictextstring<>"") :

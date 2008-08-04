@@ -57,7 +57,6 @@
     \immediatewriteutilitytua{}%
     \immediatewriteutilitytua{-- begin of utility file}%
     \immediatewriteutilitytua{}%
-%     \immediatewriteutilitytua{do}%
     \immediatewriteutilitytua{if job and job.version and not job.version == "\utilityversion" then return end}%
     \immediatewriteutilitytua{if not job then job = { } end}%
     \immediatewriteutilitytua{job.version = "\utilityversion"}%
@@ -65,9 +64,8 @@
 \to \everyopenutilities
 
 \appendtoks
-%     \immediatewriteutilitytua{end}%
-%     \immediatewriteutilitytua{}%
-%     \immediatewriteutilitytua{-- end of utility file}%
+    %\immediatewriteutilitytua{}%
+    %\immediatewriteutilitytua{-- end of utility file}%
     %\immediate\closeout\utility@tua
 \to \everycloseutilities
 
@@ -90,7 +88,8 @@
             logs.report("utilityfile","not present")
         end
     end}%
-\to \everyjob
+% \to \everyjob
+\to \everystarttext
 
 % variables
 

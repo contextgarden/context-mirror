@@ -33,11 +33,13 @@ The TeX-Lua mix is suboptimal. This has to do with the fact that we cannot
 run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
+local texsprint, format = tex.sprint, string.format
+
 backends     = backends     or { }
 backends.pdf = backends.pdf or { }
 
 --~ function backends.pdf.startscaling(sx,sy)
---~     return nodes.pdfliteral(string.format("q %s 0 0 %s 0 0 cm",(sx ~= 0 and sx) or .0001,(sy ~= 0 and sy) or .0001))
+--~     return nodes.pdfliteral(format("q %s 0 0 %s 0 0 cm",(sx ~= 0 and sx) or .0001,(sy ~= 0 and sy) or .0001))
 --~ end
 --~ function backends.pdf.stopscaling()
 --~     return nodes.pdfliteral("%Q")
@@ -62,7 +64,7 @@ function backends.pdf.insertmovie(data)
     if actions ~= "" then
         actions= "/A <<" .. actions .. ">>"
     end
-    tex.sprint(tex.ctxcatcodes, string.format(
+    texsprint(tex.ctxcatcodes, format(
         "\\doPDFannotation{%ssp}{%ssp}{/Subtype /Movie /Border [0 0 0] /T (movie %s) /Movie << /F (%s) /Aspect [%s %s] %s>> %s}",
         width, height, dr.label, du.foundname, factor * width, factor * height, options, actions
     ))
@@ -115,19 +117,20 @@ end
 
 ---
 
-figures               = figures          or { }
-figures.loaded        = figures.loaded   or { }
-figures.used          = figures.used     or { }
-figures.found         = figures.found    or { }
-figures.suffixes      = figures.suffixes or { }
-figures.patterns      = figures.patterns or { }
-figures.boxnumber     = figures.boxid    or 0
-figures.trace         = false
-figures.defaultsearch = true
-figures.defaultwidth  = 0
-figures.defaultheight = 0
-figures.defaultdepth  = 0
-figures.n             = 0
+figures                = figures          or { }
+figures.loaded         = figures.loaded   or { }
+figures.used           = figures.used     or { }
+figures.found          = figures.found    or { }
+figures.suffixes       = figures.suffixes or { }
+figures.patterns       = figures.patterns or { }
+figures.boxnumber      = figures.boxid    or 0
+figures.trace          = false
+figures.defaultsearch  = true
+figures.defaultwidth   = 0
+figures.defaultheight  = 0
+figures.defaultdepth   = 0
+figures.n              = 0
+figures.prefer_quality = true -- quality over location
 
 figures.localpaths = {
     ".", "..", "../.."
@@ -315,7 +318,7 @@ do
         callstack[#callstack] = nil
         input.stoptiming(figures)
     end
-    -- maybe move tex.sprint to tex
+    -- maybe move texsprint to tex
     function figures.get(category,tag,default)
         local value = figuredata[category][tag]
         if not value or value == "" or value == true then
@@ -325,7 +328,7 @@ do
         end
     end
     function figures.tprint(category,tag,default)
-        tex.sprint(tex.ctxcatcodes,figures.get(category,tag,default))
+        texsprint(tex.ctxcatcodes,figures.get(category,tag,default))
     end
     function figures.current()
         return callstack[#callstack]
@@ -440,7 +443,7 @@ do
                     end
                 end
                 if figures.defaultsearch then
-                    local check = input.find_file(texmf.instance,askedname)
+                    local check = input.find_file(askedname)
                     if check and check ~= "" then
                         return register(askedname, {
                             askedname = askedname,
@@ -467,23 +470,47 @@ do
                 end
             end
         else
-            for _, format in ipairs(figures.order) do
-                local list = figures.formats[format].list or { format }
-                for _, suffix in ipairs(list) do
-                    local name = file.replacesuffix(askedbase,suffix)
-                    for _, path in ipairs(figures.paths) do
-                        local check = path .. "/" .. name
-                        if figures.exists(check,format) then
-                            return register(askedname, {
-                                askedname = askedname,
-                                fullname = check,
-                                format = format,
-                                cache = askedcache,
-                            })
+            if figures.prefer_quality then
+                for _, format in ipairs(figures.order) do
+                    local list = figures.formats[format].list or { format }
+                    for _, suffix in ipairs(list) do
+                        local name = file.replacesuffix(askedbase,suffix)
+                        for _, path in ipairs(figures.paths) do
+                            local check = path .. "/" .. name
+                            if figures.exists(check,format) then
+                                return register(askedname, {
+                                    askedname = askedname,
+                                    fullname = check,
+                                    format = format,
+                                    cache = askedcache,
+                                })
+                            end
                         end
                     end
-                    if figures.defaultsearch then
-                        local check = input.find_file(texmf.instance,file.replacesuffix(askedname,suffix))
+                end
+            else -- 'location'
+                for _, path in ipairs(figures.paths) do
+                    for _, format in ipairs(figures.order) do
+                        local list = figures.formats[format].list or { format }
+                        for _, suffix in ipairs(list) do
+                            local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
+                            if figures.exists(check,format) then
+                                return register(askedname, {
+                                    askedname = askedname,
+                                    fullname = check,
+                                    format = format,
+                                    cache = askedcache,
+                                })
+                            end
+                        end
+                    end
+                end
+            end
+            if figures.defaultsearch then
+                for _, format in ipairs(figures.order) do
+                    local list = figures.formats[format].list or { format }
+                    for _, suffix in ipairs(list) do
+                        local check = input.find_file(file.replacesuffix(askedname,suffix))
                         if check and check ~= "" then
                             return register(askedname, {
                                 askedname = askedname,
@@ -550,7 +577,7 @@ do
         return (figures.includers[ds.format] or figures.includers.generic)(data)
     end
     function figures.scale(data) -- will become lua code
-        tex.sprint(tex.ctxcatcodes,"\\doscalefigure")
+        texsprint(tex.ctxcatcodes,"\\doscalefigure")
         return data
     end
     function figures.done(data)
@@ -572,7 +599,7 @@ do
 --~         r.height = du.height or figures.defaultheight
 --~         r.depth  = du.depth  or figures.defaultdepth
 --~         tex.box[figures.boxnumber] = node.write(r)
-        tex.sprint(tex.ctxcatcodes,"\\emptyfoundexternalfigure")
+        texsprint(tex.ctxcatcodes,"\\emptyfoundexternalfigure")
     end
 
 end
@@ -582,14 +609,14 @@ end
 function figures.existers.generic(askedname)
 --~     local result = io.exists(askedname)
 --~     result = (result==true and askedname) or result
---~     local result = input.find_file(texmf.instance,askedname) or ""
-    local result = input.findbinfile(texmf.instance,askedname) or ""
+--~     local result = input.find_file(askedname) or ""
+    local result = input.findbinfile(askedname) or ""
     if result == "" then result = false end
     if figures.trace then
         if result then
-            logs.report("figures", "found:" .. askedname .. " ->" .. result)
+            logs.report("figures","found: %s -> %s",askedname,result)
         else
-            logs.report("figures", "not found:" .. askedname)
+            logs.report("figures","not found: %s",askedname)
         end
     end
     return result
@@ -632,7 +659,7 @@ function figures.includers.generic(data)
         tex.box[n] = img.node(figure) -- img.write(figure)
         tex.wd[n], tex.ht[n], tex.dp[n] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         ds.objectnumber = figure.objnum
-        tex.sprint(tex.ctxcatcodes,"\\relocateexternalfigure")
+        texsprint(tex.ctxcatcodes,"\\relocateexternalfigure")
     end
     return data
 end
@@ -645,12 +672,12 @@ function figures.checkers.nongeneric(data,command)
     local hash = name
     if dr.object then
         if not job.objects["FIG::"..hash] then
-            tex.sprint(tex.ctxcatcodes,command)
-            tex.sprint(tex.ctxcatcodes,string.format("\\setobject{FIG}{%s}\\vbox{\\box\\foundexternalfigure}",hash))
+            texsprint(tex.ctxcatcodes,command)
+            texsprint(tex.ctxcatcodes,format("\\setobject{FIG}{%s}\\vbox{\\box\\foundexternalfigure}",hash))
         end
-        tex.sprint(tex.ctxcatcodes,string.format("\\global\\setbox\\foundexternalfigure\\vbox{\\getobject{FIG}{%s}}",hash))
+        texsprint(tex.ctxcatcodes,format("\\global\\setbox\\foundexternalfigure\\vbox{\\getobject{FIG}{%s}}",hash))
     else
-        tex.sprint(tex.ctxcatcodes,command)
+        texsprint(tex.ctxcatcodes,command)
     end
     return data
 end
@@ -665,9 +692,9 @@ function figures.checkers.mov(data)
     du.width = dr.width or figures.defaultwidth
     du.height = dr.height or figures.defaultheight
     du.foundname = du.fullname
-    tex.sprint(tex.ctxcatcodes,string.format("\\startfoundexternalfigure{%ssp}{%ssp}",du.width,du.height))
+    texsprint(tex.ctxcatcodes,format("\\startfoundexternalfigure{%ssp}{%ssp}",du.width,du.height))
     data = backends.pdf.insertmovie(data)
-    tex.sprint(tex.ctxcatcodes,"\\stopfoundexternalfigure")
+    texsprint(tex.ctxcatcodes,"\\stopfoundexternalfigure")
     return data
 end
 figures.includers.mov = figures.includers.nongeneric
@@ -675,7 +702,7 @@ figures.includers.mov = figures.includers.nongeneric
 -- -- -- mps -- -- --
 
 function figures.checkers.mps(data)
-    return figures.checkers.nongeneric(data,string.format("\\docheckfiguremps{%s}",data.used.fullname))
+    return figures.checkers.nongeneric(data,format("\\docheckfiguremps{%s}",data.used.fullname))
 end
 figures.includers.mps = figures.includers.nongeneric
 
@@ -686,18 +713,18 @@ function figures.existers.buffer(askedname)
     return buffers.exists(askedname) and askedname
 end
 function figures.checkers.buffer(data)
-    return figures.checkers.nongeneric(data,string.format("\\docheckfigurebuffer{%s}", file.nameonly(data.used.fullname)))
+    return figures.checkers.nongeneric(data,format("\\docheckfigurebuffer{%s}", file.nameonly(data.used.fullname)))
 end
 figures.includers.buffers = figures.includers.nongeneric
 
 -- -- -- tex -- -- --
 
 function figures.existers.tex(askedname)
-    askedname = input.find_file(texmf.instance,askedname)
+    askedname = input.find_file(askedname)
     return (askedname ~= "" and askedname) or false
 end
 function figures.checkers.tex(data)
-    return figures.checkers.nongeneric(data,string.format("\\docheckfiguretex{%s}", data.used.fullname))
+    return figures.checkers.nongeneric(data,format("\\docheckfiguretex{%s}", data.used.fullname))
 end
 figures.includers.tex = figures.includers.nongeneric
 
@@ -708,7 +735,7 @@ function figures.converters.eps(oldname,newname)
     -- rlx as alternative
     local outputpath = file.dirname(newname)
     local outputbase = file.basename(newname)
-    local command = string.format("mtxrun bin:pstopdf --outputpath=%s %s",outputpath,oldname)
+    local command = format("mtxrun bin:pstopdf --outputpath=%s %s",outputpath,oldname)
     os.spawn(command)
 end
 
@@ -719,7 +746,7 @@ figures.converters.svg = figures.converters.eps
 --~ function figures.converters.pdf(oldname,newname)
 --~     local outputpath = file.dirname(newname)
 --~     local outputbase = file.basename(newname)
---~     local command = string.format("mtxrun bin:pstopdf --method=4 --outputpath=%s %s",outputpath,oldname)
+--~     local command = format("mtxrun bin:pstopdf --method=4 --outputpath=%s %s",outputpath,oldname)
 --~     os.spawn(command)
 --~ end
 

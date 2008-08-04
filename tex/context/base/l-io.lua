@@ -24,7 +24,7 @@ function io.loaddata(filename)
 end
 
 function io.savedata(filename,data,joiner)
-    local f = io.open(filename, "wb")
+    local f = io.open(filename,"wb")
     if f then
         if type(data) == "table" then
             f:write(table.join(data,joiner or ""))
@@ -34,6 +34,9 @@ function io.savedata(filename,data,joiner)
             f:write(data)
         end
         f:close()
+        return true
+    else
+        return false
     end
 end
 

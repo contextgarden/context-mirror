@@ -16,12 +16,12 @@
 % todo: escape special chars in expr (\luaescapeexpression)
 
 \def\replacecharacters#1#2#3% macro characters replacement
-  {\dodoglobal\edef#1{\ctxlua{tex.sprint((string.gsub("#1",string.esc(#2),"#3")))}}}
+  {\dodoglobal\edef#1{\ctxlua{tex.sprint((string.gsub(\!!bs#1\!!es,\!!bs#2\!!es,"#3")))}}}
 
 \def\separatestring#1\to#2%
-  {\dodoglobal\def#2{\ctxlua{tex.sprint(string.gsub(("#1","\letterpercent s+",","))})}}
+  {\dodoglobal\def#2{\ctxlua{tex.sprint((string.gsub(\!!bs#1\!!es,"\letterpercent s+",",")))}}}
 
 \def\unspacefilename#1\to#2%
-  {\dodoglobal\def#2{\ctxlua{tex.sprint(string.gsub(("#1","\letterpercent s+","-")))}}}
+  {\dodoglobal\def#2{\ctxlua{tex.sprint((string.gsub(\!!bs#1\!!es,"\letterpercent s+","-")))}}}
 
 \protect \endinput

@@ -49,7 +49,7 @@
 \registerctxluafile{l-dir}    {1.001}
 \registerctxluafile{l-unicode}{1.001}
 \registerctxluafile{l-utils}  {1.001}
-\registerctxluafile{l-tex}    {1.001}
+\registerctxluafile{l-dimen}  {1.001}
 \registerctxluafile{l-url}    {1.001}
 \registerctxluafile{l-xml}    {1.001}
 %registerctxluafile{l-xmlctx} {1.001}
@@ -60,6 +60,7 @@
 \registerctxluafile{luat-log} {1.001}
 \registerctxluafile{luat-zip} {1.001}
 \registerctxluafile{luat-tex} {1.001}
+\registerctxluafile{luat-lua} {1.001}
 \registerctxluafile{luat-tre} {1.001}
 
 \startruntimeluacode
@@ -83,8 +84,8 @@
 
 % trace used files (only from trees)
 %
-% \ctxlua{input.register_stop_actions(function() input.save_used_files_in_trees(texmf.instance) end)}
-% \ctxlua{table.insert(input.stop_actions, function() input.save_used_files_in_trees(texmf.instance) end)}
-% \ctxlua{function input.stop_actions.trace_used_files() input.save_used_files_in_trees(texmf.instance) end}
+% \ctxlua{input.register_stop_actions(function() input.save_used_files_in_trees() end)}
+% \ctxlua{table.insert(input.stop_actions, function() input.save_used_files_in_trees() end)}
+% \ctxlua{function input.stop_actions.trace_used_files() input.save_used_files_in_trees() end}
 
 \endinput

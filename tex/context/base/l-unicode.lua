@@ -52,8 +52,8 @@ function unicode.utftype(f) -- \000 fails !
     end
 end
 
-function unicode.utf16_to_utf8(str, endian)
-    garbagecollector.push()
+function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
+--~     garbagecollector.push()
     local result = { }
     local tc, uc = table.concat, unicode.utf8.char
     local tmp, n, m, p = { }, 0, 0, 0
@@ -75,30 +75,32 @@ function unicode.utf16_to_utf8(str, endian)
         end
     end
     for l,r in str:bytepairs() do
-        if endian then
-            n = l*256 + r
-        else
-            n = r*256 + l
-        end
-        if m > 0 then
-            n = (m-0xD800)*0x400 + (n-0xDC00) + 0x10000
-            m = 0
-            doit()
-        elseif n >= 0xD800 and n <= 0xDBFF then
-            m = n
-        else
-            doit()
+        if r then
+            if endian then
+                n = l*256 + r
+            else
+                n = r*256 + l
+            end
+            if m > 0 then
+                n = (m-0xD800)*0x400 + (n-0xDC00) + 0x10000
+                m = 0
+                doit()
+            elseif n >= 0xD800 and n <= 0xDBFF then
+                m = n
+            else
+                doit()
+            end
         end
     end
     if #tmp > 0 then
         result[#result+1] = tc(tmp,"")
     end
-    garbagecollector.pop()
+--~     garbagecollector.pop()
     return result
 end
 
 function unicode.utf32_to_utf8(str, endian)
-    garbagecollector.push()
+--~     garbagecollector.push()
     local result = { }
     local tc, uc = table.concat, unicode.utf8.char
     local tmp, n, m, p = { }, 0, -1, 0
@@ -143,6 +145,32 @@ function unicode.utf32_to_utf8(str, endian)
     if #tmp > 0 then
         result[#result+1] = tc(tmp,"")
     end
-    garbagecollector.pop()
+--~     garbagecollector.pop()
     return result
+end
+
+function unicode.utf8_to_utf16(str,littleendian)
+    if littleendian then
+        return char(255,254) .. utf.gsub(str,".",function(c)
+            local b = byte(c)
+            if b < 0x10000 then
+                return char(b%256,b/256)
+            else
+                b = b - 0x10000
+                local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
+                return char(b1%256,b1/256,b2%256,b2/256)
+            end
+        end)
+    else
+        return char(254,255) .. utf.gsub(str,".",function(c)
+            local b = byte(c)
+            if b < 0x10000 then
+                return char(b/256,b%256)
+            else
+                b = b - 0x10000
+                local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
+                return char(b1/256,b1%256,b2/256,b2%256)
+            end
+        end)
+    end
 end

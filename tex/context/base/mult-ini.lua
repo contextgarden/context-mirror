@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mult-ini'] = {
     license   = "see context related readme files"
 }
 
+local format = string.format
+
 interfaces           = interfaces           or { }
 interfaces.messages  = interfaces.messages  or { }
 interfaces.constants = interfaces.constants or { }
@@ -36,9 +38,9 @@ function interfaces.makemessage(category,tag,arguments)
     elseif not arguments then
         return m
     elseif arguments:find(",") then
-        return string.format(m,unpack(arguments:split(",")))
+        return format(m,unpack(arguments:splitchr(",")))
     else
-        return string.format(m,arguments)
+        return format(m,arguments)
     end
 end
 
