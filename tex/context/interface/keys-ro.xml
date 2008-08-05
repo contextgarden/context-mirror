@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2008.08.04 15:59">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2008.08.05 18:47">
 
   <cd:variables>
     <cd:variable name="lesshyphenation" value="lesshyphenation"/>

@@ -19,7 +19,7 @@ minimals.config = minimals.config or { }
 
 os.setenv("CYGWIN","nontsec")
 
-scripts.update.formats = {
+scripts.update.allformats = {
     "cont-en",
     "cont-nl",
     "cont-cz",
@@ -28,6 +28,14 @@ scripts.update.formats = {
     "cont-it",
     "cont-ro",
     "cont-uk",
+    "metafun",
+    "mptopdf",
+    "plain"
+}
+
+scripts.update.fewformats = {
+    "cont-en",
+    "cont-nl",
     "metafun",
     "mptopdf",
     "plain"
@@ -343,7 +351,7 @@ if scripts.savestate then
         if valid[r] then states.set("platforms." .. r, true) end
     end
 
-    local valid = table.tohash(scripts.update.formats)
+    local valid = table.tohash(scripts.update.allformats)
     for r in string.gmatch(environment.argument("formats") or "","([^, ]+)") do
         if valid[r] then states.set("formats." .. r, true) end
     end

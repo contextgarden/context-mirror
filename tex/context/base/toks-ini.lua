@@ -198,9 +198,9 @@ end
 collectors.show_methods.a = function(data) -- no need to store the table, just pass directly
     local ct = tex.ctxcatcodes
     local template = "\\NC %s\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR "
-    tex.sprint(ct, "\\starttabulate[|T|Tr|cT|Tr|T|]")
-    tex.sprint(ct, template:format("cmd","chr","","id","name"))
-    tex.sprint(ct, "\\HL")
+    texsprint(ct, "\\starttabulate[|T|Tr|cT|Tr|T|]")
+    texsprint(ct, template:format("cmd","chr","","id","name"))
+    texsprint(ct, "\\HL")
     for _,v in pairs(data) do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
         local name = (token.command_name(v) or ""):gsub("_","\\_")
@@ -214,24 +214,24 @@ collectors.show_methods.a = function(data) -- no need to store the table, just p
             sym = "\\char " .. chr
         end
         if tonumber(chr) < 0 then
-            tex.sprint(ct, template:format(name,  "", sym, id, cs))
+            texsprint(ct, template:format(name,  "", sym, id, cs))
         else
-            tex.sprint(ct, template:format(name, chr, sym, id, cs))
+            texsprint(ct, template:format(name, chr, sym, id, cs))
         end
     end
-    tex.sprint(ct, "\\stoptabulate")
+    texsprint(ct, "\\stoptabulate")
 end
 
 collectors.show_methods.b_c = function(data,swap) -- no need to store the table, just pass directly
     local ct = tex.ctxcatcodes
     local template = "\\NC %s\\NC %s\\NC %s\\NC\\NR"
     if swap then
-        tex.sprint(ct, "\\starttabulate[|Tl|Tl|Tr|]")
+        texsprint(ct, "\\starttabulate[|Tl|Tl|Tr|]")
     else
-        tex.sprint(ct, "\\starttabulate[|Tl|Tr|Tl|]")
+        texsprint(ct, "\\starttabulate[|Tl|Tr|Tl|]")
     end
-    tex.sprint(ct, template:format("cmd","chr","name"))
-    tex.sprint(ct, "\\HL")
+    texsprint(ct, template:format("cmd","chr","name"))
+    texsprint(ct, "\\HL")
     for _,v in pairs(data) do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
         local name = (token.command_name(v) or ""):gsub("_","\\_")
@@ -248,14 +248,14 @@ collectors.show_methods.b_c = function(data,swap) -- no need to store the table,
             end
         end
         if swap then
-            tex.sprint(ct, template:format(name, sym, chr))
+            texsprint(ct, template:format(name, sym, chr))
         elseif tonumber(chr) < 0 then
-            tex.sprint(ct, template:format(name,  "", sym))
+            texsprint(ct, template:format(name,  "", sym))
         else
-            tex.sprint(ct, template:format(name, chr, sym))
+            texsprint(ct, template:format(name, chr, sym))
         end
     end
-    tex.sprint(ct, "\\stoptabulate")
+    texsprint(ct, "\\stoptabulate")
 end
 
 -- Even more experimental ...

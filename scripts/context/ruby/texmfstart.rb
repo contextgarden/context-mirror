@@ -2115,12 +2115,12 @@ end
 
 def make(filename,windows=false,linux=false,remove=false)
     basename = File.basename(filename).gsub(/\.[^.]+?$/, '')
-if @kpse.find_file(@tree,filename+".lua") or @kpse.find_file(@tree,filename+".rb") or @kpse.find_file(@tree,filename+".pl") then
+# if @kpse.find_file(@tree,filename+".lua") or @kpse.find_file(@tree,filename+".rb") or @kpse.find_file(@tree,filename+".pl") then
     # make stub indeed
-else
-    report("no stub needed for '#{basename}'")
-    return
-end
+# else
+    # report("no stub needed for '#{basename}'")
+    # return
+# end
     if $stubpath == 'auto' then
         basename = File.dirname($0) + '/' + basename
     else

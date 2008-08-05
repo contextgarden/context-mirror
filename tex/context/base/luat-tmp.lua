@@ -157,16 +157,6 @@ function caches.is_writable(filepath,filename)
     return file.is_writable(tmaname)
 end
 
-function input.boolean_variable(str,default)
-    local b = input.expansion("PURGECACHE")
-    if b == "" then
-        return default
-    else
-        b = toboolean(b)
-        return (b == nil and default) or b
-    end
-end
-
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
     local reduce, simplify = true, true

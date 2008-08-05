@@ -139,17 +139,17 @@
 % }
 
 % The following commands need to be taken care of, e.g. because there is not yet
-% a mkiv module for them.
+% a mkiv module for them. (Currently they're overloaded so we need to redefine them.)
 
-\definestartstop[randomized][\c!before=\dosetattribute{case}\plusfour,\c!after=]
-
-\def\WORD{\groupedcommand{\setcharactercasing[\plusone  ]}{}}
-\def\word{\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
-\def\Word{\groupedcommand{\setcharactercasing[\plusthree]}{}} % \plusfour
+\def\WORD {\groupedcommand{\setcharactercasing[\plusone  ]}{}}
+\def\word {\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
+\def\Word {\groupedcommand{\setcharactercasing[\plusthree]}{}}
+\def\Words{\groupedcommand{\setcharactercasing[\plusfour]}{}}
 
 \let\WORDS\WORD
 \let\words\word
-\let\Words\Word
+
+\definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
 
 \protect \endinput
 

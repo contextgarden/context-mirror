@@ -411,13 +411,13 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
                 end
             end
         end
-        local function setvalues(flag,format)
+        local function setvalues(flag,format,plural)
             if type(flag) == "table"  then
                 for k, v in pairs(flag) do
                     f:write(format:format(v),"\n")
                 end
             else
-                local a = someflag(flag)
+                local a = someflag(flag) or (plural and someflag(flag.."s"))
                 if a and a ~= "" then
                     for v in a:gmatch("%s*([^,]+)") do
                         f:write(format:format(v),"\n")
@@ -458,13 +458,13 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         if environment.argument('arrange') and not finalrun then
             setalways(             "\\setuparranging[\\v!disable]")
         end
-        setvalue ("arguments"    , "\\setupenv[%s]")
         setvalue ("randomseed"   , "\\setupsystem[\\c!random=%s]")
---~         setvalues("modes"        , "\\enablemode[%s]")
-        setvalues("mode"         , "\\enablemode[%s]")
-        setvalues("filters"      , "\\useXMLfilter[%s]")
-        setvalues("usemodules"   , "\\usemodule[%s]")
-        setvalues("environments" , "\\environment %s ")
+        setvalue ("arguments"    , "\\setupenv[%s]")
+        -- singular and plural
+        setvalues("mode"         , "\\enablemode[%s]", true)
+        setvalues("filter"       , "\\useXMLfilter[%s]", true)
+        setvalues("usemodule"    , "\\usemodule[%s]", true)
+        setvalues("environment"  , "\\environment %s ", true)
         -- ctx stuff
         if ctxdata then
             setvalues(ctxdata.modes,        "\\enablemode[%s]")

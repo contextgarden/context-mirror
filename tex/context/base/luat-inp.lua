@@ -2274,7 +2274,7 @@ do
 end
 
 function input.boolean_variable(str,default)
-    local b = input.expansion("PURGECACHE")
+    local b = input.expansion(str)
     if b == "" then
         return default
     else

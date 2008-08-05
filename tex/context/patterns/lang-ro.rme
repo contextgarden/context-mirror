@@ -43,7 +43,7 @@
 % - \lccode is *forbidden*, and I really mean it
 % - all the patterns should be in UTF-8
 % - the only "allowed" TeX commands in this file are: \patterns, \hyphenation,
-%   and if you really cannot do without, also  \message
+%   and if you really cannot do without, also \input and \message
 % - in particular, please no \catcode or \lccode changes,
 %   they belong to loadhyph-foo.tex,
 %   and no \lefthyphenmin and \righthyphenmin,

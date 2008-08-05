@@ -88,6 +88,7 @@ local permitted_commands = table.tohash {
 }
 
 local permitted_characters = table.tohash {
+    0x0009, -- tab
     0x0027, -- apostrofe
     0x002D, -- hyphen
 }
@@ -97,18 +98,18 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
     local data = io.loaddata(fullname) or ""
     local byte, char = utf.byte, utf.char
     if data ~= "" then
-        data = data:gsub("\\input ([^ \n\r]+)", function(subname)
+        data = data:gsub("([\n\r])\\input ([^ \n\r]+)", function(previous,subname)
             local subname = file.addsuffix(subname,"tex")
-            local subfull = file.join(file.dirname(name),subname)
+            local subfull = file.join(file.dirname(fullname),subname)
             local subdata = io.loaddata(subfull) or ""
-            if subefile == "" then
+            if subdata == "" then
                 if mnemonic then
                     input.report("no subfile %s for language %s",subname,mnemonic)
                 else
                     input.report("no subfile %s",name)
                 end
             end
-            return subdata
+            return previous .. subdata
         end)
         local comment = data:match("^(.-)[\n\r]\\patterns") or ""
         local n, okay = 0, true

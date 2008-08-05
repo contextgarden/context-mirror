@@ -1214,7 +1214,25 @@ do
 
     cases.actions[1], cases.actions[2] = upper, lower
 
-    cases.actions[3] = function(start)
+    cases.actions[3] = function(start,attribute)
+        local prev = start.prev
+        if prev and prev.id == kern and prev.subtype == 0 then
+            prev = prev.prev
+        end
+        if not prev or prev.id ~= glyph then
+            --- only the first character is treated
+            for n in traverse_id(glyph,start.next) do
+                if has_attribute(n,attribute) then
+                    unset_attribute(n,attribute)
+                end
+            end
+            return upper(start)
+        else
+            return start, false
+        end
+    end
+
+    cases.actions[4] = function(start,attribute)
         local prev = start.prev
         if prev and prev.id == kern and prev.subtype == 0 then
             prev = prev.prev
@@ -1226,22 +1244,22 @@ do
         end
     end
 
-    cases.actions[4] = function(start)
-        local prev, next = start.prev, start.next
-        if prev and prev.id == kern and prev.subtype == 0 then
-            prev = prev.prev
-        end
-        if next and next.id == kern and next.subtype == 0 then
-            next = next.next
-        end
-        if (not prev or prev.id ~= glyph) and next and next.id == glyph then
-            return upper(start)
-        else
-            return start, false
-        end
-    end
+    --~     cases.actions[5] = function(start)
+    --~         local prev, next = start.prev, start.next
+    --~         if prev and prev.id == kern and prev.subtype == 0 then
+    --~             prev = prev.prev
+    --~         end
+    --~         if next and next.id == kern and next.subtype == 0 then
+    --~             next = next.next
+    --~         end
+    --~         if (not prev or prev.id ~= glyph) and next and next.id == glyph then
+    --~             return upper(start)
+    --~         else
+    --~             return start, false
+    --~         end
+    --~     end
 
-    cases.actions[5] = function(start)
+    cases.actions[8] = function(start)
         local data = characters.data
         local ch = start.char
         local mr = math.random
@@ -1283,7 +1301,7 @@ do
                 unset_attribute(start,attribute)
                 local action = actions[attr]
                 if action then
-                    local _, ok = action(start)
+                    local _, ok = action(start,attribute)
                     done = done and ok
                 end
             end

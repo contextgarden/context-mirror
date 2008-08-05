@@ -220,21 +220,21 @@
    \gdef\setcharactercasing[##1]{\dosetattribute{case}{\number##1}}%
    \setcharactercasing}
 
-\def\WORD{\groupedcommand{\setcharactercasing[\plusone  ]}{}}
-\def\word{\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
-\def\Word{\groupedcommand{\setcharactercasing[\plusthree]}{}} % \plusfour
+\def\WORD {\groupedcommand{\setcharactercasing[\plusone  ]}{}}
+\def\word {\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
+\def\Word {\groupedcommand{\setcharactercasing[\plusthree]}{}}
+\def\Words{\groupedcommand{\setcharactercasing[\plusfour]}{}}
 
 \let\WORDS\WORD
 \let\words\word
-\let\Words\Word
 
 % \definestartstop is not yet in available at core-spa time
 %
 % \startrandomized \input tufte \stoprandomized
 %
-% \definestartstop[randomized][\c!before=\dosetattribute{case}\plusfour,\c!after=]
+% \definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
 
-\def\randomizetext{\groupedcommand{\dosetattribute{case}\plusfive}{}}
+\def\randomizetext{\groupedcommand{\dosetattribute{case}{8}}{}}
 
 % compound stuff (under construction)
 
