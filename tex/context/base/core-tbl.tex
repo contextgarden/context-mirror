@@ -198,20 +198,31 @@
 \def\tablebox#1%
   {\csname\@@tabbox@@\number#1\endcsname}
 
-\def\checktablebox#1%
-  {\ifundefinedelse{\@@tabbox@@\number#1}%
+% \def\checktablebox#1%
+%   {\ifundefinedelse{\@@tabbox@@\number#1}%
+%      \expandafter\newbox\csname\@@tabbox@@\number#1\endcsname
+%    \fi}
+
+\def\initializetablebox#1% also used elsewhere
+  {\ifcsname\@@tabbox@@\number#1\endcsname
+     \global\setbox\csname\@@tabbox@@\number#1\endcsname\box\voidb@x
+   \else
      \expandafter\newbox\csname\@@tabbox@@\number#1\endcsname
    \fi}
 
-\def\initializetablebox#1%
-  {\ifundefined{\@@tabbox@@\number#1}%
-     \expandafter\newbox\csname\@@tabbox@@\number#1\endcsname
-   \else
-     \global\setbox\csname\@@tabbox@@\number#1\endcsname\box\voidb@x
-   \fi}
+% \def\initializetableboxes#1% hm, not that efficient, best make a simple dedicated tail recurser
+%   {\dorecurse#1{\initializetablebox\recurselevel}}
 
 \def\initializetableboxes#1%
-  {\dorecurse#1{\initializetablebox\recurselevel}}
+  {\scratchcounter#1\relax
+   \doinitializetableboxes}
+
+\def\doinitializetableboxes
+  {\ifnum\scratchcounter>\zerocount
+     \initializetablebox\scratchcounter
+     \advance\scratchcounter\minusone
+     \expandafter\doinitializetableboxes
+   \fi}
 
 \initializetableboxes\noftabcolumns
 
@@ -270,7 +281,6 @@
   % some entries can be left out if we test for them being set
    \@EA\appendtoks          \@EA&\@EA\hskip\pretabskip\pretabrule##&\to\!!toksa
        \appendtoks                                     \ignorespaces\to\!!toksa
-%    \@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\the\tabulatecolumns}\to\!!toksa
    \@EA\appendtoks\@EA\global\@EA\tabulatecolumn\the\tabulatecolumns\relax\to\!!toksa
        \appendtoks                              \checktabulatesetups\to\!!toksa
        \appendtoks                                \checktabulatehook\to\!!toksa
@@ -306,6 +316,32 @@
    \let\postabskip\pretabskip
    \let\gettabulateexit\dogettabulateexit
    \tabulatewidth\zeropoint}
+
+% todo: we can speed up this module a bit
+%
+%   \expanded{\!!toksa{\the\!!toksa
+%     &\hskip\pretabskip\noexpand\pretabrule####&
+%     \ignorespaces
+%     \global\tabulatecolumn\the\tabulatecolumns
+%     \noexpand\checktabulatesetups
+%     \noexpand\checktabulatehook
+%     \preamblebox
+%     \bgroup\noexpand\bbskip\bgroup\normalunexpanded{#1}%
+%     \noexpand\ifnum\tabulatetype=\plusone \noexpand\else
+%     \the\tabulatebmath
+%     \the\tabulatefont
+%     \the\tabulatesettings
+%     \the\tabulatebefore
+%     \noexpand\fi
+%     \bgroup\ignorespaces
+%     \noexpand\tabulatehook####%
+%     \unskip\unskip\noexpand\ifmmode\noexpand\else\endgraf\noexpand\fi\egroup
+%     \noexpand\ifnum\noexpand\tabulatetype=1 \noexpand\else
+%     \the\tabulateafter
+%     \the\tabulateemath
+%     \noexpand\fi
+%     \normalunexpanded{#2}\egroup\egroup
+%     &\noexpand\posttabrule\hskip\noexpand\postabskip####}}%
 
 \def\dosettabulatepreamble
   {\ifx\next\relax
@@ -718,12 +754,13 @@
    \resetcharacteralign
    % todo: spacing around tabulate when bodyfont is set
    % expansion en test needed ?
-   \splittabulatefalse
+   \splittabulatetrue
    \processaction
      [\tabulateparameter\c!split]
-     [     \v!yes=>\splittabulatetrue,
+     [%    \v!yes=>\splittabulatetrue,
       % \v!repeat=>\splittabulatetrue, % todo, default yes
-          \v!auto=>\ifinsidesplitfloat\splittabulatetrue\fi]%
+            \v!no=>\splittabulatefalse,
+          \v!auto=>\ifinsidefloat\ifinsidesplitfloat\else\splittabulatefalse\fi\fi]%
    \doifvaluesomething{\??tt\currenttabulate\c!bodyfont}
      {\expanded{\switchtobodyfont
         [\tabulateparameter\c!bodyfont]}}%
@@ -809,7 +846,7 @@
 %\def\dotabulateruleseperator
 %  {\vskip\strutdp}
 
-\def\dotabulateruleseperator
+\def\dotabulateruleseperator % can be sped up
   {\bgroup
    \let\factor\!!plusone
    \scratchskip\strutdp
@@ -908,6 +945,14 @@
 \newcount\totalnoftabulatelines
 \newcount\minusnoftabulatelines
 
+\setvalue{\??tt:\c!align:\v!normal}{0}
+\setvalue{\??tt:\c!align:\v!right }{1}
+\setvalue{\??tt:\c!align:\v!left  }{2}
+\setvalue{\??tt:\c!align:\v!middle}{3}
+
+\setvalue{\??tt:\c!header:\v!repeat}{\plusone}
+\setvalue{\??tt:\c!header:\v!text  }{\plustwo}
+
 \bgroup  \catcode`\|=\@@other
 
 \gdef\processtabulate[|#1|]% in the process of optimizing
@@ -915,14 +960,15 @@
    \checkfulltabulatecontent
    \globallet\tabulateruledepth \!!zeropoint
    \globallet\tabulateruleheight\!!zeropoint
-   \ExpandFirstAfter\processaction % use \setalignmentswitch instead
-     [\tabulateparameter\c!align]
-     [ \v!normal=>\def\@@tabulatealign{0},% = default value
-        \v!right=>\def\@@tabulatealign{1},% chardefs gebruiken
-         \v!left=>\def\@@tabulatealign{2},%
-       \v!middle=>\def\@@tabulatealign{3},%
-      \s!default=>\def\@@tabulatealign{0},%
-      \s!unknown=>\def\@@tabulatealign{0}]%
+   \edef\@@tabulatealign{\executeifdefined{\??tt:\c!align:\tabulateparameter\c!align}0}%
+%    \ExpandFirstAfter\processaction % use \setalignmentswitch instead
+%      [\tabulateparameter\c!align]
+%      [ \v!normal=>\def\@@tabulatealign{0},% = default value
+%         \v!right=>\def\@@tabulatealign{1},% chardefs gebruiken
+%          \v!left=>\def\@@tabulatealign{2},%
+%        \v!middle=>\def\@@tabulatealign{3},%
+%       \s!default=>\def\@@tabulatealign{0},%
+%       \s!unknown=>\def\@@tabulatealign{0}]%
    \let\pretabskip\!!zeropoint
    \def\postabskip{.5\tabulateunit}%
    \global\tabulatecolumns\zerocount
@@ -941,10 +987,11 @@
      \donetrue
    \fi\fi
    \ifdone
-     \processaction
-       [\tabulateparameter\c!header]
-       [\v!repeat=>\chardef\tabulaterepeathead\plusone,
-          \v!text=>\chardef\tabulaterepeathead\plustwo]%
+     \chardef\tabulaterepeathead\executeifdefined{\??tt:\c!header:\tabulateparameter\c!header}\zerocount
+%      \processaction
+%        [\tabulateparameter\c!header]
+%        [\v!repeat=>\chardef\tabulaterepeathead\plusone,
+%           \v!text=>\chardef\tabulaterepeathead\plustwo]%
    \fi
    \unexpanded \def\NC{\tabulatenormalcolumn0}%
    \unexpanded \def\RC{\tabulatenormalcolumn1}%
@@ -1115,45 +1162,6 @@
    \totalnoftabulatelines\noftabulatelines
    \minusnoftabulatelines\numexpr\noftabulatelines+\minusone\relax
    \global\noftabulatelines\zerocount
-% not satisfying
-%    \def\doHL##1%
-%      {\TABLEnoalign
-%         {\ifnum\noftabulatelines=\zerocount
-%            \ifcase##1%
-%              \@EAEAEA\ML
-%            \or
-%              \@EAEAEA\FL
-%            \fi
-%          \else\ifnum\noftabulatelines=\totalnoftabulatelines
-%            \ifcase##1%
-%              \@EA\@EAEAEA\@EA\ML
-%            \or
-%              \@EA\@EAEAEA\@EA\LL
-%            \fi
-%          \else
-%            \@EAEAEA\ML
-%          \fi\fi}}%
-% not good either
-%    \def\doHL##1%
-%      {\TABLEnoalign
-%         {\csname\ifnum\noftabulatelines=\zerocount
-%            \ifcase##1M\or F\fi
-%          \else\ifnum\noftabulatelines=\totalnoftabulatelines
-%            \ifcase##1M\or L\fi
-%          \else
-%            M%
-%          \fi\fi L\endcsname}}%
-% ok
-%    \def\doHL##1% ##1 ignored
-%      {\TABLEnoalign
-%         {\ifnum\noftabulatelines=\zerocount
-%            \@EA\FL
-%          \else\ifnum\noftabulatelines=\totalnoftabulatelines
-%            \@EAEAEA\LL
-%          \else
-%            \@EAEAEA\ML
-%          \fi\fi}}%
-% more fun
    \def\doHL##1% ##1 ignored
      {\TABLEnoalign
         {\csname

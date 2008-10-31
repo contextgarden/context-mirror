@@ -17,39 +17,10 @@
 
 \registerctxluafile{core-obj}{1.001}
 
-\appendtoks
-    \immediatewriteutilitytua{if not job.objects then job.objects = { } end}%
-    \immediatewriteutilitytua{local ob = job.objects}%
-\to \everyopenutilities
-
-\def\mkregisterobjectreference#1#2#3%
-  {\blabelgroup
-   \expanded{\writeutilitytua{ob['#1::#2']={"#3","\noexpand\realfolio"}}}%
-   \expanded{\ctxlua{job.objects['#1::#2']={"#3","\noexpand\realfolio"}}}%
-   \elabelgroup}
-
-\def\mkoverloadobjectreference#1#2#3%
-  {\blabelgroup
-   \expanded{\ctxlua{job.objects['#1::#2']={"#3","\noexpand\realfolio"}}}%
-   \elabelgroup}
-
-\def\mkgetobjectreference#1#2#3%
-  {\blabelgroup
-   \xdef#3{\ctxlua{job.getobjectreference    ('#1::#2',"\defaultobjectreference{#1}{#2}")}}%
-   \elabelgroup}
-
-\def\mkgetobjectreferencepage#1#2#3%
-  {\blabelgroup
-   \xdef#3{\ctxlua{job.getobjectreferencepage('#1::#2',"\defaultobjectpage{#1}{#2}")}}%
-   \elabelgroup}
-
-% \def\doifobjectreferencefoundelse#1#2
-%   {\ctxlua{job.doifobjectreference('#1::#2')}}
-
-\def\doifobjectreferencefoundelse#1#2%
-  {\blabelgroup
-   \ctxlua{job.doifobjectreference('#1::#2')}%
-     {\elabelgroup\firstoftwoarguments}
-     {\elabelgroup\secondoftwoarguments}}
+\def\mkregisterobjectreference   #1#2#3{\expanded{\ctxlatelua{jobobjects.save("#1::#2",#3,\noexpand\the\realpageno)}}}
+\def\mkoverloadobjectreference   #1#2#3{\ctxlua{jobobjects.set("#1::#2",#3,\the\realpageno)}}
+\def\mkgetobjectreference        #1#2#3{\xdef#3{\ctxlua{jobobjects.number("#1::#2","\defaultobjectreference{#1}{#2}")}}}
+\def\mkgetobjectreferencepage    #1#2#3{\xdef#3{\ctxlua{jobobjects.page("#1::#2","\defaultobjectpage{#1}{#2}")}}}
+\def\mkdoifobjectreferencefoundelse#1#2{\ctxlua{jobobjects.doifelse("#1::#2")}}
 
 \protect \endinput

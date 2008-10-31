@@ -15,11 +15,6 @@
 
 %D Sorry, we only support his in \ETEX.
 
-\beginTEX
-  \def\useunicodevector[#1]{}
-  \expandafter \endinput
-\endTEX
-
 \unprotect
 
 % ÀÁÂÃÄÅàáâãäå
@@ -687,72 +682,52 @@
 % We have to compensate for etex's rounding (thanks to Taco and
 % Nanning) for pointing/sorting this out:
 
+\chardef       \utf@a=    64
+\mathchardef   \utf@b=  4096
+\newcount\utf@c\utf@c=262144
+\chardef       \utf@d=   192
+\chardef       \utf@e=   224
+\chardef       \utf@f=   240
+\chardef       \utf@g=   128
+\mathchardef   \utf@h=   256
+\chardef       \utf@i=   127
+\mathchardef   \utf@j=  2048
+\chardef       \utf@k=    32
+
+% div: \numexp#1/#2\relax
+% mod: \numexp#1-(#1/#2)*#2\relax
+
 % \def\numbertoutf#1%
-%   {\ifnum#1<128
+%   {\ifnum#1<\utf@g
 %      \rawcharacter{#1}%
 %    \else\ifnum#1<2048
-%      \rawcharacter{\the\numexpr192+(#1-32)/64\relax}%
-%      \rawcharacter{\the\numexpr128+(#1-((#1-32)/64)*64)\relax}%
+%      \rawcharacter{\numexpr192+(#1/64)\relax}%                         192 + (ud div 64)
+%      \rawcharacter{\numexpr128+(#1-(#1/64)*64)\relax}%                 128 + (ud mod 64)
+%    \else\ifnum#1<2097152
+%      \rawcharacter{\numexpr224+(#1-(#1/4096)\relax}%                   224 + (ud div 4096)
+%      \rawcharacter{\numexpr128+(#1-((#1/64)-((#1/64)/64)*64)\relax}%   128 + ((ud div 64) mod 64)
+%      \rawcharacter{\numexpr128+(#1-(#1-(#1/64)*64)\relax}%             128 + (ud mod 64)
 %    \else
-%      \rawcharacter{\the\numexpr224+(#1-2048)/4096\relax}%
-%      \rawcharacter{\the\numexpr128+(#1-(((#1-2048)/4096)*4096)-32)/64\relax}%
-%      \rawcharacter{\the\numexpr128+(#1-(((#1-2048)/4096)*4096)-((#1-(((#1-2048)/4096)*4096)-32)/64)*64)\relax}%
+%      % todo
 %    \fi\fi}
 
-\beginETEX \numexpr
-
-    \chardef       \utf@a=    64
-    \mathchardef   \utf@b=  4096
-    \newcount\utf@c\utf@c=262144
-    \chardef       \utf@d=   192
-    \chardef       \utf@e=   224
-    \chardef       \utf@f=   240
-    \chardef       \utf@g=   128
-    \mathchardef   \utf@h=   256
-    \chardef       \utf@i=   127
-    \mathchardef   \utf@j=  2048
-    \chardef       \utf@k=    32
-
-    % div: \numexp#1/#2\relax
-    % mod: \numexp#1-(#1/#2)*#2\relax
-
-    % \def\numbertoutf#1%
-    %   {\ifnum#1<\utf@g
-    %      \rawcharacter{#1}%
-    %    \else\ifnum#1<2048
-    %      \rawcharacter{\numexpr192+(#1/64)\relax}%                         192 + (ud div 64)
-    %      \rawcharacter{\numexpr128+(#1-(#1/64)*64)\relax}%                 128 + (ud mod 64)
-    %    \else\ifnum#1<2097152
-    %      \rawcharacter{\numexpr224+(#1-(#1/4096)\relax}%                   224 + (ud div 4096)
-    %      \rawcharacter{\numexpr128+(#1-((#1/64)-((#1/64)/64)*64)\relax}%   128 + ((ud div 64) mod 64)
-    %      \rawcharacter{\numexpr128+(#1-(#1-(#1/64)*64)\relax}%             128 + (ud mod 64)
-    %    \else
-    %      % todo
-    %    \fi\fi}
-
-    \def\numbertoutf#1% okay?
-      {\ifnum#1<\utf@g
-         \rawcharacter{#1}%
-       \else\ifnum#1<\utf@j
-         \rawcharacter{\the\numexpr\utf@d+(#1-\utf@k)/\utf@a\relax}%
-         \rawcharacter{\the\numexpr\utf@g+(#1-((#1-\utf@k)/\utf@a)*\utf@a)\relax}%
-       \else
-         \rawcharacter{\the\numexpr\utf@e+(#1-\utf@j)/\utf@b\relax}%
-         \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a\relax}%
-         \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-((#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a)*\utf@a)\relax}%
-       \fi\fi}
-
-\endETEX
+\def\numbertoutf#1% okay?
+  {\ifnum#1<\utf@g
+     \rawcharacter{#1}%
+   \else\ifnum#1<\utf@j
+     \rawcharacter{\the\numexpr\utf@d+(#1-\utf@k)/\utf@a\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-((#1-\utf@k)/\utf@a)*\utf@a)\relax}%
+   \else
+     \rawcharacter{\the\numexpr\utf@e+(#1-\utf@j)/\utf@b\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-((#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a)*\utf@a)\relax}%
+   \fi\fi}
 
 \def\numbertohexstring#1{0x\uchexnumbers{\utfdiv{#1}}\uchexnumbers{\utfmod{#1}}}
 
 \beginXETEX
     \let\numbertoutf\numbertohexstring
 \endXETEX
-
-\beginTEX
-    \let\numbertoutf\numbertohexstring
-\endTEX
 
 \def\uchartoutf#1#2%
   {\expandafter\numbertoutf\expandafter{\the\numexpr#1*\utf@h+#2\relax}}

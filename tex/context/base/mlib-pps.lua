@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, pos
     license   = "see context related readme files",
 }
 
+-- current limitation: if we have textext as well as a special color then due to
+-- prescript/postscript overload we can have problems
+
 local format, concat, round = string.format, table.concat, math.round
 local sprint = tex.sprint
 
@@ -39,12 +42,21 @@ function metapost.specials.register(str) -- only colors
             data[#data+1] = s
         end
         class, n = tonumber(class), tonumber(n)
-        if class == 3 or class == 4 or class == 5 then -- weird
+        if class == 3 or class == 4 or class == 5 then
+            -- hm, weird
+        else
+            n = tonumber(data[1])
+        end
+        if n then
             colordata[class][n] = data
         else
-            colordata[class][tonumber(data[1])] = data
+         -- there is some bug to be solved, so we issue a message
+            logs.report("[msr bug] %s", str or "?")
         end
     end
+--~     if str:match("^%%%%MetaPostOption: multipass") then
+--~         metapost.multipass = true
+--~     end
 end
 
 function metapost.colorhandler(cs, object, result, colorconverter)
@@ -188,7 +200,13 @@ local function normalize(ca,cb)
     end
 end
 
+-- todo: check for the same colorspace (actually a backend issue), now we can
+-- have several similar resources
+--
+-- normalize(ca,cb) fails for spotcolors
+
 function metapost.specials.cs(specification,object,result,flusher) -- spot colors?
+    -- a mess, not dynamic anyway
     nofshades = nofshades + 1
     flusher.flushfigure(result)
     result = { }
@@ -204,6 +222,14 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
             nofshades,
             t[1], t[2], 0, 1, 1, "DeviceGray",
             t[5], t[6], t[7], t[9], t[10], t[11]))
+-- terrible hack, somehow does not work
+--~ local a = ca:match("^([^ ]+)")
+--~ local b = cb:match("^([^ ]+)")
+--~ sprint(tex.ctxcatcodes,format("\\xMPLIBcircularshade{%s}{%s %s}{%s}{%s}{%s}{%s}{%s %s %s %s %s %s}",
+--~     nofshades,
+--~     --~ t[1], t[2], a, b, 1, "DeviceN",
+--~     0, 1, a, b, 1, "DeviceN",
+--~     t[5], t[6], t[7], t[9], t[10], t[11]))
     else
         if #ca > #cb then
             normalize(ca,cb)
@@ -218,6 +244,7 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
             if #ca == 4 then
                 ca[1], ca[2], ca[3] = cmyktorgb(ca[1],ca[2],ca[3],ca[4])
                 cb[1], cb[2], cb[3] = cmyktorgb(cb[1],cb[2],cb[3],cb[4])
+                ca[4], cb[4] = nil, nil
             elseif #ca == 1 then
                 local a, b = 1-ca[1], 1-cb[1]
                 ca[1], ca[2], ca[3] = a, a, a
@@ -352,6 +379,18 @@ metapost.textext_current = metapost.first_box
 metapost.trace_texttexts = false
 metapost.multipass       = false
 
+function metapost.free_boxes()
+    local tb = tex.box
+    for i = metapost.first_box,metapost.last_box do
+        local b = tb[i]
+        if b then
+            tb[i] = nil -- no node.flush_list(b) needed, else double free error
+        else
+            break
+        end
+    end
+end
+
 function metapost.specials.tf(specification,object)
 --~ print("setting", metapost.textext_current)
     local n, str = specification:match("^(%d+):(.+)$")
@@ -373,7 +412,7 @@ function metapost.specials.ts(specification,object,result,flusher)
         print("metapost", format("second pass: order %s, box %s",n,metapost.textext_current))
     end
     local op = object.path
-    local first, second, fourth  = op[1], op[2], op[4]
+    local first, second, fourth = op[1], op[2], op[4]
     local tx, ty = first.x_coord      , first.y_coord
     local sx, sy = second.x_coord - tx, fourth.y_coord - ty
     local rx, ry = second.y_coord - ty, fourth.x_coord - tx
@@ -607,15 +646,16 @@ do
 
     local P, S, V, Cs = lpeg.P, lpeg.S, lpeg.V, lpeg.Cs
 
-    local btex    = P("btex")
-    local etex    = P(" etex")
-    local vtex    = P("verbatimtex")
-    local ttex    = P("textext")
-    local gtex    = P("graphictext")
-    local spacing = S(" \n\r\t\v")^0
-    local dquote  = P('"')
+    local btex      = P("btex")
+    local etex      = P(" etex")
+    local vtex      = P("verbatimtex")
+    local ttex      = P("textext")
+    local gtex      = P("graphictext")
+    local multipass = P("forcemultipass")
+    local spacing   = S(" \n\r\t\v")^0
+    local dquote    = P('"')
 
-    local found = false
+    local found, forced = false, false
 
     local function convert(str)
         found = true
@@ -627,11 +667,15 @@ do
     local function register()
         found = true
     end
+    local function force()
+        forced = true
+    end
 
     local parser = P {
-        [1] = Cs((V(2)/register + V(3)/convert + 1)^0),
+        [1] = Cs((V(2)/register + V(3)/convert + V(4)/force + 1)^0),
         [2] = ttex + gtex,
         [3] = (btex + vtex) * spacing * Cs((dquote/ditto + (1 - etex))^0) * etex,
+        [4] = multipass, -- experimental, only for testing
     }
 
     -- currently a a one-liner produces less code
@@ -639,15 +683,16 @@ do
     local parser = Cs(((ttex + gtex)/register + ((btex + vtex) * spacing * Cs((dquote/ditto + (1 - etex))^0) * etex)/convert + 1)^0)
 
     function metapost.check_texts(str)
-        found = false
-        return parser:match(str), found
+        found, forced = false, false
+        return parser:match(str), found, forced
     end
 
 end
 
-local factor = 65536*(7200/7227)
+--~ local factor = 65536*(7200/7227)
+local factor = 65536*(7227/7200)
 
-function metapost.edefsxsy(wd,ht,dp) -- helper for text
+function metapost.edefsxsy(wd,ht,dp) -- helper for figure
     commands.edef("sx",(wd ~= 0 and 1/( wd    /(factor))) or 0)
     commands.edef("sy",(wd ~= 0 and 1/((ht+dp)/(factor))) or 0)
 end
@@ -676,59 +721,30 @@ metapost.intermediate         = metapost.intermediate         or {}
 metapost.intermediate.actions = metapost.intermediate.actions or {}
 metapost.intermediate.needed  = false
 
---~ function metapost.graphic_base_pass(mpsformat,str,preamble)
---~     local prepared, done = metapost.check_texts(str)
---~     metapost.textext_current = metapost.first_box
---~     metapost.intermediate.needed  = false
---~     if done then
---~         current_format, current_graphic = mpsformat, prepared
---~         metapost.process(mpsformat, {
---~             preamble or "",
---~             "beginfig(1); ",
---~             "_trial_run_ := true ;",
---~             prepared,
---~             "endfig ;"
---~         }, true ) -- true means: trialrun
---~         if metapost.intermediate.needed then
---~             for _, action in pairs(metapost.intermediate.actions) do
---~                 action()
---~             end
---~         end
---~         sprint(tex.ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
---~     else
---~         metapost.process(mpsformat, {
---~             preamble or "",
---~             "beginfig(1); ",
---~             "_trial_run_ := false ;",
---~             "resettextexts;",
---~             str,
---~             "endfig ;"
---~         } )
---~     end
---~ end
-
 metapost.method = 1 -- 1:dumb 2:clever
 
 function metapost.graphic_base_pass(mpsformat,str,preamble)
-    local done_1, done_2
-    str, done_1 = metapost.check_texts(str)
+    local done_1, done_2, forced_1, forced_2
+    str, done_1, forced_1 = metapost.check_texts(str)
     if preamble then
-        preamble, done_2 = metapost.check_texts(preamble)
+        preamble, done_2, forced_2 = metapost.check_texts(preamble)
     else
-        preamble, done_2 = "", false
+        preamble, done_2, forced_2 = "", false, false
     end
     metapost.textext_current = metapost.first_box
     metapost.intermediate.needed  = false
     metapost.multipass = false -- no needed here
     current_format, current_graphic = mpsformat, str
     if metapost.method == 1 or (metapost.method == 2 and (done_1 or done_2)) then
+     -- first true means: trialrun, second true means: avoid extra run if no multipass
         local flushed = metapost.process(mpsformat, {
             preamble,
             "beginfig(1); ",
             "_trial_run_ := true ;",
             str,
             "endfig ;"
-        }, true, nil, true ) -- true means: trialrun, true means: avoid extra run if no multipass
+     -- }, true, nil, true )
+        }, true, nil, not (forced_1 or forced_2))
         if metapost.intermediate.needed then
             for _, action in pairs(metapost.intermediate.actions) do
                 action()
@@ -748,12 +764,14 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
             "endfig ;"
         } )
     end
+    -- here we could free the textext boxes
+    metapost.free_boxes()
 end
 
 function metapost.graphic_extra_pass()
     metapost.textext_current = metapost.first_box
     metapost.process(current_format, {
-        "beginfig(0); ", -- why not 1
+        "beginfig(1); ",
         "_trial_run_ := false ;",
         concat(metapost.text_texts_data()," ;\n"),
         current_graphic,

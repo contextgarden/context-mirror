@@ -1127,11 +1127,6 @@
 %
 % \MPxy{word}
 
-\beginETEX \scantokens
-
-%\def\naturaltextext#1#2\relax
-%  {\bgroup\prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#2}}\egroup}
-
 \def\naturaltextext#1\relax
   {\bgroup
    \prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#1}}%
@@ -1144,15 +1139,6 @@
    \restorecatcodes
    \prettynaturalfont{\scantokens\expandafter{\ascii}\ifhmode\unskip\fi}%
    \egroup}
-
-\endETEX
-
-\beginTEX
-
-\def\naturaltextext
-  {\disableprettynow}
-
-\endTEX
 
 \installnewpretty N \naturaltextext
 

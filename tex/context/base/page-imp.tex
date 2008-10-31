@@ -1002,7 +1002,7 @@
 %D \starttext
 %D   \combinepages[slides][nx=2,ny=3,frame=on]
 %D \stoptext
-%D \starttyping
+%D \stoptyping
 %D
 %D One can influence the way the pages are combined. (This
 %D will be explained some time.)
@@ -1156,12 +1156,12 @@
    \doifelse\@@pcstate\v!start
      {\doifinsetelse\@@pclocation{\v!bottom,\v!top}
         {\setuppapersize[\c!left=\hskip\@@pcoffset]%
-         \adddimenmacro\paperheight\@@pcoffset\@@pcoffset\@@pcdistance\@@pcheight\to\@@pcpaperheight
-         \adddimenmacro\paperwidth\@@pcoffset\@@pcoffset\to\@@pcpaperwidth
+         \edef\@@pcpaperheight{\the\dimexpr\paperheight+\@@pcoffset+\@@pcoffset+\@@pcdistance+\@@pcheight\relax}%
+         \edef\@@pcpaperwidth {\the\dimexpr\paperwidth+\@@pcoffset+\@@pcoffset\relax}%
          \defineoverlay[\v!pagecomment][\placepagecommentTB]}
         {\setuppapersize[\c!top=\vskip\@@pcoffset]%
-         \adddimenmacro\paperheight\@@pcoffset\@@pcoffset\to\@@pcpaperheight
-         \adddimenmacro\paperwidth\@@pcoffset\@@pcoffset\@@pcdistance\@@pcwidth\to\@@pcpaperwidth
+         \edef\@@pcpaperheight{\the\dimexpr\paperheight+\@@pcoffset+\@@pcoffset\relax}%
+         \edef\@@pcpaperwidth {\the\dimexpr\paperwidth+\@@pcoffset+\@@pcoffset+\@@pcdistance+\@@pcwidth\relax}%
          \defineoverlay[\v!pagecomment][\placepagecommentLR]}%
       \processaction
         [\@@pclocation]
@@ -1188,7 +1188,7 @@
      {\forgetall
       \hsize\printpaperwidth
       \vskip\@@pcoffset
-      \doifelse\@@pclocation\v!bottom{\vskip\paperheight\vskip\@@pcdistance}\vss
+      \doifelse\@@pclocation\v!bottom{\vskip\dimexpr\paperheight+\@@pcdistance\relax}\vss
       \hskip\@@pcoffset
       \vbox to \@@pcheight
         {\forgetall
@@ -1198,7 +1198,7 @@
            \global\pagecommentfalse
          \fi}%
       \hfill
-      \doifelse\@@pclocation\v!bottom\vss{\vskip\paperheight\vskip\@@pcdistance}
+      \doifelse\@@pclocation\v!bottom\vss{\vskip\dimexpr\paperheight+\@@pcdistance\relax}%
       \vskip\@@pcoffset}}
 
 \def\placepagecommentLR

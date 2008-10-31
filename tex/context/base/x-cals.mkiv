@@ -103,7 +103,12 @@ do
                     sum = sum + v
                 end
             end
-            local delta = sum - tex.hsize:todimen()
+--          local delta = sum - tex.hsize:todimen()
+local hsize = tex.hsize
+if type(hsize) == "string" then
+    hsize = hsize:todimen()
+end
+local delta = sum - hsize
             if shrink_widths and delta > 0 then
                 adapt(shrink_widths,w,delta,sum,n,"shrink")
             elseif stretch_widths and delta < 0 then

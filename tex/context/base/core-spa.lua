@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['core-spa'] = {
 
 -- todo: test without unset
 
-local format = string.format
+local format, insert = string.format, table.insert
+local utfchar = utf.char
 
 -- vertical space handler
 
@@ -617,7 +618,7 @@ end
 
 -- probably a has_glyphs is rather fast too
 
-do
+do -- maybe just share these locals
 
     local has_attribute    = node.has_attribute
     local unset_attribute  = node.unset_attribute
@@ -630,6 +631,7 @@ do
 
     local glyph   = node.id("glyph")
     local whatsit = node.id("whatsit")
+    local penalty = node.id("penalty")
     local kern    = node.id("kern")
     local disc    = node.id('disc')
     local glue    = node.id('glue')
@@ -642,7 +644,7 @@ do
 
     input.storage.register(false,"spacings/mapping", spacings.mapping, "spacings.mapping")
 
-    function spacings.setspacing(id,char,left,right)
+    function spacings.setspacing(id,char,left,right,alternative)
         local mapping = spacings.mapping[id]
         if not mapping then
             mapping = { }
@@ -653,42 +655,147 @@ do
             map = { }
             mapping[char] = map
         end
-        map.left, map.right = left, right
+        map.left, map.right, map.alternative = left, right, alternative
     end
 
     -- todo: no ligatures
 
+    function nodes.somespace(n,all)
+        if n then
+            local id = n.id
+            if id == glue then
+                return (all or (n.spec.width ~= 0)) and glue
+            elseif id == kern then
+                return (all or (n.kern ~= 0)) and kern
+            elseif id == glyph then
+                local category = characters.data[n.char].category
+             -- maybe more category checks are needed
+                return (category == "zs") and glyph
+            end
+        end
+        return false
+    end
+
+    function nodes.somepenalty(n,value)
+        if n then
+            local id = n.id
+            if id == penalty then
+                if value then
+                    return n.penalty == value
+                else
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    spacings.trace = false
+
     function spacings.process(namespace,attribute,head)
         local done, mapping, fontids = false, spacings.mapping, fonts.tfm.id
-        for start in traverse_id(glyph,head) do -- tricky since we inject
-            local attr = has_attribute(start,attribute)
-            if attr and attr > 0 then
-                local map = mapping[attr]
-                if map then
-                    map = map[start.char]
-                    unset_attribute(start,attribute)
+        local start = head
+        -- head is always begin of par (whatsit), so we have at least two prev nodes
+        -- penalty followed by glue
+        while start do
+            if start.id == glyph then
+                local attr = has_attribute(start,attribute)
+                if attr and attr > 0 then
+                    local map = mapping[attr]
                     if map then
-                        local kern, prev = map.left, start.prev
-                        if kern and kern ~= 0 and prev and prev.id == glyph then
-                            node.insert_before(head,start,nodes.kern(tex.scale(fontids[start.font].parameters.quad,kern)))
-                            done = true
-                        end
-                        local kern, next = map.right, start.next
-                        if kern and kern ~= 0 and next and next.id == glyph then
-                            node.insert_after(head,start,nodes.kern(tex.scale(fontids[start.font].parameters.quad,kern)))
-                            done = true
+                        map = map[start.char]
+                        unset_attribute(start,attribute)
+                        if map then
+                            local trace = spacings.trace
+                            local left, right, alternative = map.left, map.right, map.alternative
+                            local quad = fontids[start.font].parameters.quad
+                            local prev = start.prev
+                            if left and left ~= 0 and prev then
+                                local ok = false
+                                if alternative == 1 then
+                                    local somespace = nodes.somespace(prev,true)
+                                    if somespace then
+                                        local prevprev = prev.prev
+                                        local somepenalty = nodes.somepenalty(prevprev,10000)
+                                        if somepenalty then
+                                            if trace then
+                                                logs.report("spacing","removing penalty and space before %s", utfchar(start.char))
+                                            end
+                                            head, _ = nodes.remove(head,prev,true)
+                                            head, _ = nodes.remove(head,prevprev,true)
+                                        else
+                                            local somespace = nodes.somespace(prev,true)
+                                            if somespace then
+                                                if trace then
+                                                    logs.report("spacing","removing space before %s", utfchar(start.char))
+                                                end
+                                                head, _ = nodes.remove(head,prev,true)
+                                            end
+                                        end
+                                    end
+                                    ok = true
+                                else
+                                    ok = not (nodes.somespace(prev,true) and nodes.somepenalty(prev.prev,true)) or nodes.somespace(prev,true)
+                                end
+                                if ok then
+                                    if trace then
+                                        logs.report("spacing","inserting penalty and space before %s", utfchar(start.char))
+                                    end
+                                    node.insert_before(head,start,nodes.penalty(10000))
+                                    node.insert_before(head,start,nodes.glue(tex.scale(quad,left)))
+                                    done = true
+                                end
+                            end
+                            local next = start.next
+                            if right and right ~= 0 and next then
+                                local ok = false
+                                if alternative == 1 then
+                                    local somepenalty = nodes.somepenalty(next,10000)
+                                    if somepenalty then
+                                        local nextnext = next.next
+                                        local somespace = nodes.somespace(nextnext,true)
+                                        if somespace then
+                                            if trace then
+                                                logs.report("spacing","removing penalty and space after %s", utfchar(start.char))
+                                            end
+                                            head, _ = nodes.remove(head,next,true)
+                                            head, _ = nodes.remove(head,nextnext,true)
+                                        end
+                                    else
+                                        local somespace = nodes.somespace(next,true)
+                                        if somespace then
+                                            if trace then
+                                                logs.report("spacing","removing space after %s", utfchar(start.char))
+                                            end
+                                            head, _ = nodes.remove(head,next,true)
+                                        end
+                                    end
+                                    ok = true
+                                else
+                                    ok = not (nodes.somepenalty(next,10000) and nodes.somespace(next.next,true)) or nodes.somespace(next,true)
+                                end
+                                if ok then
+                                    if trace then
+                                        logs.report("spacing","inserting penalty and space after %s", utfchar(start.char))
+                                    end
+                                    node.insert_after(head,start,nodes.glue(tex.scale(quad,right)))
+                                    node.insert_after(head,start,nodes.penalty(10000))
+                                    done = true
+                                end
+                            end
                         end
                     end
                 end
             end
+            start = start.next
         end
         return head, done
     end
 
-    lists.plugins[#lists.plugins+1] = {
-        name        = "spacing",
-        namespace   = spacings,
-        processor   = spacings.process,
+    lists.handle_spacing = nodes.install_attribute_handler {
+        name      = "spacing",
+        namespace = spacings,
+        processor = spacings.process,
     }
 
     kerns         = kerns or { }
@@ -701,8 +808,10 @@ do
         kerns.mapping[id] = factor
     end
 
--- local marks = fti[font].shared.otfdata.luatex.marks
--- if not marks[tchar] then
+    -- local marks = fti[font].shared.otfdata.luatex.marks
+    -- if not marks[tchar] then
+
+    -- todo: use node.* functions
 
     function kerns.process(namespace,attribute,head) -- todo interchar kerns / disc nodes / can be made faster
         local fti, scale = fonts.tfm.id, tex.scale
@@ -844,7 +953,7 @@ do
         return head, done
     end
 
-    lists.plugins[#lists.plugins+1] = {
+    lists.handle_kerning = nodes.install_attribute_handler {
         name = "kern",
         namespace = kerns,
         processor = kerns.process,
@@ -899,7 +1008,7 @@ do
         local function finish_auto_before()
             head, inserted = node.insert_before(head,current,nodes.textdir("-"..finish))
             finished, finidir = inserted, finish
-            if trace then table.insert(list,#list,format("finish %s",finish)) ; finipos = #list-1 end
+            if trace then insert(list,#list,format("finish %s",finish)) ; finipos = #list-1 end
             finish, autodir, done = nil, 0, true
         end
         local function finish_auto_after()
@@ -920,10 +1029,10 @@ do
             if finidir == finish then
                 nodes.remove(head,finished,true)
                 if trace then list[finipos] = list[finipos].." (deleted)" end
-                if trace then table.insert(list,#list,format("start %s (deleted)",finish)) end
+                if trace then insert(list,#list,format("start %s (deleted)",finish)) end
             else
                 head, inserted = node.insert_before(head,current,nodes.textdir("+"..finish))
-                if trace then table.insert(list,#list,format("start %s",finish)) end
+                if trace then insert(list,#list,format("start %s",finish)) end
             end
         end
         local function force_auto_right_before()
@@ -938,10 +1047,10 @@ do
             if finidir == finish then
                 nodes.remove(head,finished,true)
                 if trace then list[finipos] = list[finipos].." (deleted)" end
-                if trace then table.insert(list,#list,format("start %s (deleted)",finish)) end
+                if trace then insert(list,#list,format("start %s (deleted)",finish)) end
             else
                 head, inserted = node.insert_before(head,current,nodes.textdir("+"..finish))
-                if trace then table.insert(list,#list,format("start %s",finish)) end
+                if trace then insert(list,#list,format("start %s",finish)) end
             end
         end
         local function is_right(n)
@@ -1148,7 +1257,7 @@ do
         return head, done
     end
 
-    chars.plugins[#chars.plugins+1] = {
+    chars.handle_mirroring = nodes.install_attribute_handler {
         name = "mirror",
         namespace = mirror,
         processor = mirror.process,
@@ -1157,8 +1266,6 @@ do
     cases         = cases or { }
     cases.enabled = false
     cases.actions = { }
-
-    -- hm needs to be run before glyphs: chars.plugins
 
     local function helper(start, code, codes)
         local data, char = characters.data, start.char
@@ -1244,20 +1351,20 @@ do
         end
     end
 
-    --~     cases.actions[5] = function(start)
-    --~         local prev, next = start.prev, start.next
-    --~         if prev and prev.id == kern and prev.subtype == 0 then
-    --~             prev = prev.prev
-    --~         end
-    --~         if next and next.id == kern and next.subtype == 0 then
-    --~             next = next.next
-    --~         end
-    --~         if (not prev or prev.id ~= glyph) and next and next.id == glyph then
-    --~             return upper(start)
-    --~         else
-    --~             return start, false
-    --~         end
-    --~     end
+ -- cases.actions[5] = function(start)
+ --     local prev, next = start.prev, start.next
+ --     if prev and prev.id == kern and prev.subtype == 0 then
+ --         prev = prev.prev
+ --     end
+ --     if next and next.id == kern and next.subtype == 0 then
+ --         next = next.next
+ --     end
+ --     if (not prev or prev.id ~= glyph) and next and next.id == glyph then
+ --         return upper(start)
+ --     else
+ --         return start, false
+ --     end
+ -- end
 
     cases.actions[8] = function(start)
         local data = characters.data
@@ -1309,7 +1416,7 @@ do
         return head, done
     end
 
-    chars.plugins[#chars.plugins+1] = {
+    chars.handle_casing = nodes.install_attribute_handler {
         name = "case",
         namespace = cases,
         processor = cases.process,
@@ -1439,7 +1546,7 @@ do
         return head, done
     end
 
-    chars.plugins[#chars.plugins+1] = {
+    chars.handle_breakpoints = nodes.install_attribute_handler {
         name = "breakpoint",
         namespace   = breakpoints,
         processor   = breakpoints.process,

@@ -115,8 +115,7 @@
      {\vbox to \textheight
         {\offinterlineskip
          % optie
-         \vskip-1\topskip
-         \vskip\strutheight
+         \vskip\dimexpr-1\topskip+\strutheight\relax
          %
          \textwidth\makeupwidth
          \hsize\textwidth

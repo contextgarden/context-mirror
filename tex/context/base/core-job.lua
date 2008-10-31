@@ -39,6 +39,36 @@ function commands.doifelsespaces(str)
     return commands.doifelse(str:find("^ +$"))
 end
 
+local s = lpeg.splitat(",")
+
+local h = { }
+
+function commands.doifcommonelse(a,b)
+    local ha = h[a]
+    local hb = h[b]
+    if not ha then ha = s:match(a) h[a] = ha end
+    if not hb then hb = s:match(b) h[b] = hb end
+    for i=1,#ha do
+        for j=1,#hb do
+            if ha[i] == hb[i] then
+                return cs.testcase(true)
+            end
+        end
+    end
+    return cs.testcase(false)
+end
+
+function commands.doifinsetelse(a,b)
+    local hb = h[b]
+    if not hb then hb = s:match(b) h[b] = hb end
+    for j=1,#hb do
+        if a == hb[i] then
+            return cs.testcase(true)
+        end
+    end
+    return cs.testcase(false)
+end
+
 function commands. def(cs,value) texsprint(tex.ctxcatcodes,format( "\\def\\%s{%s}",cs,value)) end
 function commands.edef(cs,value) texsprint(tex.ctxcatcodes,format("\\edef\\%s{%s}",cs,value)) end
 function commands.gdef(cs,value) texsprint(tex.ctxcatcodes,format("\\gdef\\%s{%s}",cs,value)) end
@@ -48,7 +78,7 @@ function commands.cs(cs,args) texsprint(tex.ctxcatcodes,format("\\csname %s\\end
 
 -- main code
 
-local function find_file(name,maxreadlevel)
+function input.findctxfile(name,maxreadlevel)
     local function exists(n)
         if io.exists(n) then
             return n
@@ -82,7 +112,7 @@ local function find_file(name,maxreadlevel)
 end
 
 function commands.processfile(name,maxreadlevel)
-    name = find_file(name,maxreadlevel)
+    name = input.findctxfile(name,maxreadlevel)
     if name ~= "" then
 --~         texsprint(tex.ctxcatcodes,format('\\input {%s}',name)) -- future version
         texsprint(tex.ctxcatcodes,format("\\input %s\\relax",name)) -- we need \input {name}
@@ -90,11 +120,11 @@ function commands.processfile(name,maxreadlevel)
 end
 
 function commands.doifinputfileelse(name,maxreadlevel)
-    commands.doifelse(find_file(name,maxreadlevel) ~= "")
+    commands.doifelse(input.findctxfile(name,maxreadlevel) ~= "")
 end
 
 function commands.locatefilepath(name,maxreadlevel)
-    texsprint(tex.texcatcodes,file.dirname(find_file(name,maxreadlevel)))
+    texsprint(tex.texcatcodes,file.dirname(input.findctxfile(name,maxreadlevel)))
 end
 
 function commands.usepath(paths,maxreadlevel)
@@ -124,25 +154,18 @@ end
 --~ </exa:variables>
 
 local function convertexamodes(str)
-    local x, t = xml.convert(str), { }
+    local x = xml.convert(str)
     for e, d, k in xml.elements(x,"exa:variable") do
         local dk = d[k]
         local label = dk.at and dk.at.label
         if label and label ~= "" then
-            local data = xml.content(dk)
+            local data = xml.content(dk) or ""
             local mode = label:match("^mode:(.+)$")
             if mode then
                 texsprint(tex.ctxcatcodes,format("\\enablemode[%s:%s]",mode,data))
             end
-            if data:find("{}") then
-                t[#t+1] = format("%s={%s}",mode,data)
-            else
-                t[#t+1] = format("%s=%s",mode,data)
-            end
+            texsprint(tex.ctxcatcodes,format("\\setvariable{exa:variables}{%s}{%s}",label,data:gsub("([{}])","\\%1")))
         end
-    end
-    if #t > 0 then
-        texsprint(tex.ctxcatcodes,format("\\setvariables[exa:variables][%s]",table.concat(t,",")))
     end
 end
 

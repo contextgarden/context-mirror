@@ -524,3 +524,38 @@
   [buffer] [\jobname] [\c!type=\v!buffer,\c!object=\v!no]
 
 \protect \endinput
+
+% alternative for positioning
+
+% \definelayer[figure][width=\overlaywidth,height=\overlayheight]
+% \defineoverlay[figure][{\directsetup{figure}\tightlayer[figure]}]
+
+% \setupcolors[state=start]
+
+% \starttext
+
+%     \startsetups figure
+%         \setlayerframed[figure][preset=rightbottom,x=.25\layerwidth,y=.25\layerheight]{HERE}
+%         \setlayerframed[figure][preset=leftbottom, x=.15\layerwidth,y=.35\layerheight]{THERE}
+%     \stopsetups
+
+%     \externalfigure[cow][background={foreground,figure},width=4cm,height=8cm]
+
+%     \startsetups figure
+%         \setlayerframed[figure][preset=righttop,x=.25\layerwidth,y=.25\layerheight]{MORE}
+%         \setlayerframed[figure][preset=middle,foregroundcolor=green]{EVEN MORE}
+%     \stopsetups
+
+%     \externalfigure[cow][background={foreground,figure},width=14cm,height=2cm]
+
+%     \defineexternalfigure[whatever][background={foreground,figure}]
+
+%     \startsetups figure
+%         \setlayerframed[figure][preset=righttop,x=.25\layerwidth,y=.25\layerheight]{\red MORE}
+%         \setlayerframed[figure][preset=middle,foregroundcolor=green]{EVEN MORE}
+%     \stopsetups
+
+%     \externalfigure[cow][whatever][width=14cm,height=4cm]
+
+% \stoptext
+

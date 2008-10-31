@@ -6,68 +6,90 @@ if not modules then modules = { } end modules ['core-two'] = {
     license   = "see context related readme files"
 }
 
+local texprint = tex.print
+
 --[[ldx--
-<p>We save multi-pass information in the main utility table.</p>
+<p>We save multi-pass information in the main utility table. This is a
+bit of a mess because we support old and new methods.</p>
 --ldx]]--
 
-if not jobs        then jobs         = { } end
-if not job         then jobs['main'] = { } end job = jobs['main']
-if not job.twopass then job.twopass  = { } end
+jobpasses           = jobpasses or { }
+jobpasses.collected = jobpasses.collected or { }
+jobpasses.tobesaved = jobpasses.tobesaved or { }
 
-function job.definetwopassdata(id)
-    job.twopass[id] = job.twopass[id] or { }
+local collected, tobesaved = jobpasses.collected, jobpasses.tobesaved
+
+local function initializer()
+    collected, tobesaved = jobpasses.collected, jobpasses.tobesaved
 end
 
-function job.gettwopassdata(id)
-    local jti = job.twopass[id]
+job.register('jobpasses.collected', jobpasses.tobesaved, initializer, nil)
+
+local function allocate(id)
+    local p = tobesaved[id]
+    if not p then
+        p = { }
+        tobesaved[id] = p
+    end
+    return p
+end
+
+jobpasses.define = allocate
+
+function jobpasses.save(id,str)
+    local jti = allocate(id)
+    jti[#jti+1] = str
+end
+
+function jobpasses.savetagged(id,tag,str)
+    local jti = allocate(id)
+    jti[tag] = str
+end
+
+function jobpasses.get(id)
+    local jti = collected[id]
+    if jti and #jti > 0 then
+        tex.print(table.remove(jti,1))
+    end
+end
+
+function jobpasses.first(id)
+    local jti = collected[id]
     if jti and #jti > 0 then
         tex.print(jti[1])
-        table.remove(jti,1)
     end
 end
 
-function job.checktwopassdata(id)
-    local jti = job.twopass[id]
-    if jti and #jti > 0 then
-        tex.print(jti[1])
-    end
-end
-
-function job.getfromtwopassdata(id,n)
-    local jti = job.twopass[id]
-    if jti and jti[n] then
-        tex.print(jti[n])
-    end
-end
-
-job.findtwopassdata  = job.getfromtwopassdata
-job.getfirstpassdata = job.checktwopassdata
-
-function job.getlasttwopassdata(id)
-    local jti = job.twopass[id]
+function jobpasses.last(id)
+    local jti = collected[id]
     if jti and #jti > 0 then
         tex.print(jti[#jti])
     end
 end
 
-function job.noftwopassitems(id)
-    local jti = job.twopass[id]
-    if jti then
-        tex.print(#jti)
-    else
-        tex.print('0')
+jobpasses.check = jobpasses.first
+
+function jobpasses.find(id,n)
+    local jti = collected[id]
+    if jti and jti[n] then
+        texprint(jti[n])
     end
 end
 
-function job.twopassdatalist(id)
-    local jti = job.twopass[id]
+function jobpasses.count(id)
+    local jti = collected[id]
+    texprint((jti and #jti) or 0)
+end
+
+function jobpasses.list(id)
+    local jti = collected[id]
     if jti then
-        tex.print(table.concat(jti,','))
+        texprint(table.concat(jti,','))
     end
 end
 
-function job.doifelseintwopassdata(id,str)
-    local jti = job.twopass[id]
+function jobpasses.doifinlistelse(id,str)
+    local jti = collected[id]
     if jti then
         local found = false
         for _, v in pairs(jti) do
@@ -81,3 +103,23 @@ function job.doifelseintwopassdata(id,str)
         cs.testcase(false)
     end
 end
+
+--
+
+function jobpasses.savedata(id,data)
+    local jti = allocate(id)
+    jti[#jti+1] = data
+    return #jti
+end
+
+function jobpasses.getdata(id,index,default)
+    local jti = collected[id]
+    texprint((jit and jti[index]) or default)
+end
+
+function jobpasses.getfield(id,index,tag,default)
+    local jti = collected[id]
+    jti = jit and jti[index]
+    texprint((jit and jti[tag]) or default)
+end
+

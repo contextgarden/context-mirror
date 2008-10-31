@@ -650,16 +650,40 @@
 \def\setuphyphenmark
   {\dodoubleargument\getparameters[\??kp]}
 
-\setuphyphenmark
-  [\c!sign=\composedhyphen]
 
-\def\defaultdiscretionaryhyphen{\@@kpsign}
+\def\setuphyphenmark[#1]% sign=normal|wide
+  {\dodoubleargument\getparameters[\??kp][#1]%
+   \doifinsetelse\@@kpsign {\v!normal}
+     {\let\textmodehyphen\normalhyphen  \let\textmodehyphendiscretionary\normalhyphendiscretionary}
+     {\let\textmodehyphen\composedhyphen\let\textmodehyphendiscretionary\composedhyphendiscretionary}}
+
+\setuphyphenmark[\c!sign=\v!wide]
+% % \setuphyphenmark[\c!sign=\v!normal]
+
+\definesymbol[\c!lefthyphen]  [\languageparameter\c!lefthyphen]
+\definesymbol[\c!righthyphen] [\languageparameter\c!righthyphen]
+\definesymbol[\c!hyphen]      [\languageparameter\c!hyphen]
+
+\def\normalhyphen
+  {\hbox{\directsymbol\empty\c!hyphen}}
 
 \def\composedhyphen
+  {\hbox{\directsymbol\empty\c!compoundhyphen}}
+
+\def\normalhyphendiscretionary
+  {\discretionary
+     {\hbox{\directsymbol\empty\c!lefthyphen}}
+     {\hbox{\directsymbol\empty\c!righthyphen}}
+     {\hbox{\directsymbol\empty\c!hyphen}}}
+
+\def\composedhyphendiscretionary
   {\discretionary
      {\hbox{\directsymbol\empty\c!leftcompoundhyphen}}
      {\hbox{\directsymbol\empty\c!rightcompoundhyphen}}
      {\hbox{\directsymbol\empty\c!compoundhyphen}}}
+
+\let\textmodehyphen             \composedhyphen
+\let\textmodehyphendiscretionary\composedhyphendiscretionary
 
 \definesymbol[\c!leftcompoundhyphen]  [\languageparameter\c!leftcompoundhyphen]
 \definesymbol[\c!rightcompoundhyphen] [\languageparameter\c!rightcompoundhyphen]
@@ -924,22 +948,11 @@
     \dochecknextindentation{\??ci\currentdelimitedtext}% AM: here
     \dorechecknextindentation}% AM: This was missing!
 
-% \def\dostartdelimitedtexttxt
-%   {\let\dostopdelimitedtext\dostopdelimitedtexttxt
-%    \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
-%    \dohandledelimitedtext\c!left
-%    \ignorespaces}
-
 \def\dostartdelimitedtexttxt
   {\let\dostopdelimitedtext\dostopdelimitedtexttxt
    \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
    \dohandleleftdelimitedtext\c!left
    \ignorespaces}
-
-% \def\dostopdelimitedtexttxt
-%   {\removeunwantedspaces
-%    \dohandledelimitedtext\c!right
-%    \dostopattributes}
 
 \def\dostopdelimitedtexttxt
   {\removeunwantedspaces
@@ -952,13 +965,13 @@
    \egroup}
 
 \def\pushdelimitedtext#1%
-  {\pushmacro\currentdelimitedtext
+  {\globalpushmacro\currentdelimitedtext
    \def\currentdelimitedtext{#1}%
    \doglobal\incrementvalue{\??ci\currentdelimitedtext\c!level}}
 
 \def\popdelimitedtext
   {\doglobal\decrementvalue{\??ci\currentdelimitedtext\c!level}%
-   \popmacro\currentdelimitedtext}
+   \globalpopmacro\currentdelimitedtext}
 
 \def\delimitedtext[#1]%
   {\pushdelimitedtext{#1}%
@@ -974,13 +987,15 @@
 \def\delimited     {\delimitedtext}
 
 \def\leftdelimitedtextmark
-  {\dontleavehmode
-   \setbox\scratchbox\hbox{\delimitedtextparameter\c!left}%
-   \doif{\delimitedtextparameter\c!location}\v!margin{\hskip-\wd\scratchbox}%
-   \box\scratchbox}
+  {\doifsomething{\delimitedtextparameter\c!left}
+     {\setbox\scratchbox\hbox{\delimitedtextparameter\c!left}%
+      \dontleavehmode
+      \doif{\delimitedtextparameter\c!location}\v!margin{\hskip-\wd\scratchbox}%
+      \box\scratchbox}}
 
 \def\rightdelimitedtextmark
-  {\hsmash{\delimitedtextparameter\c!right}}
+  {\doifsomething{\delimitedtextparameter\c!right}
+     {\hsmash{\delimitedtextparameter\c!right}}}
 
 % \starttext
 %    \hyphenatedword{groepsvrijstellingsverordeningen}\par
@@ -1077,13 +1092,6 @@
 \def\handlerightdelimitedtext#1%
   {\dohandlerightdelimitedtext{#1}\relax}
 
-% \unexpanded\def\dodelimitedtextpar
-%   {\dohandledelimitedtext\c!left\relax
-%    \groupedcommand
-%      \donothing
-%      {\dohandledelimitedtext\c!right\removelastskip
-%       \popdelimitedtext}}
-
 \unexpanded\def\dodelimitedtextpar
   {\dohandleleftdelimitedtext\c!left\relax
    \groupedcommand
@@ -1094,14 +1102,6 @@
 \unexpanded\def\dodelimitedtexttxt
   {\doifelse{\delimitedtextparameter\c!style}\v!normal
      \doquoteddelimited\doattributeddelimited}
-
-% \def\doquoteddelimited
-%   {\dohandledelimitedtext\c!left\relax
-%    \groupedcommand
-%      \donothing
-%      {\dohandledelimitedtext\c!right
-%       \removelastskip
-%       \popdelimitedtext}}
 
 \def\doquoteddelimited
   {\dohandleleftdelimitedtext\c!left\relax

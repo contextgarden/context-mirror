@@ -381,14 +381,11 @@
       \calculatereducedvsizes
       \swapmargins
       \offinterlineskip
-      \vskip-\topheight
-      \vskip-\topdistance
+      \vskip\dimexpr-\topheight-\topdistance\relax
       \the\toptextcontent
-      \vskip\topheight
-      \vskip\topdistance
+      \vskip\dimexpr\topheight+\topdistance\relax
       \the\headertextcontent
-      \vskip\headerheight
-      \vskip\headerdistance
+      \vskip\dimexpr\headerheight+\headerdistance\relax
       \placepositionanchors
       \vskip-\textheight
       \the\texttextcontent
@@ -396,8 +393,7 @@
       \the\everyendoftextbody
       \vskip\footerdistance
       \the\footertextcontent
-      \vskip\footerheight
-      \vskip\bottomdistance
+      \vskip\dimexpr\footerheight+\bottomdistance\relax
       \the\bottomtextcontent
       \vskip\bottomheight
       \vfilll}%
@@ -410,9 +406,7 @@
       \calculatereducedvsizes
       \calculatehsizes
       \swapmargins
-      \vskip\headerheight
-      \vskip\headerdistance
-      \vskip\layoutparameter\c!textdistance
+      \vskip\dimexpr\headerheight+\headerdistance+\layoutparameter\c!textdistance\relax
       \hbox to \makeupwidth
         {\bgroup
            \swapmargins
@@ -430,10 +424,10 @@
          \egroup
          \mkprocesspagecontents{#2}%
          \settextpagecontent\scratchpagebox{#1}{#2}%
-\setbox\scratchpagebox\vbox
-  {\startlayoutcomponent{textbody}{text body}%
-   \box\scratchpagebox
-   \stoplayoutcomponent}%
+         \setbox\scratchpagebox\vbox % can we avoid this extra box
+           {\startlayoutcomponent{textbody}{text body}%
+            \box\scratchpagebox
+            \stoplayoutcomponent}%
          \addtextbackground\scratchpagebox
          \addtextgridlayer\scratchpagebox
          \localstarttextcolor

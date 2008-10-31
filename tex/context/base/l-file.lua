@@ -8,6 +8,8 @@ if not versions then versions = { } end versions['l-file'] = 1.001
 
 if not file then file = { } end
 
+local concat = table.concat
+
 function file.removesuffix(filename)
     return (filename:gsub("%.[%a%d]+$",""))
 end
@@ -44,14 +46,6 @@ end
 
 file.suffix = file.extname
 
---~ function file.join(...)
---~     local t = { ... }
---~     for i=1,#t do
---~         t[i] = (t[i]:gsub("\\","/")):gsub("/+$","")
---~     end
---~     return table.concat(t,"/")
---~ end
-
 --~ print(file.join("x/","/y"))
 --~ print(file.join("http://","/y"))
 --~ print(file.join("http://a","/y"))
@@ -59,7 +53,7 @@ file.suffix = file.extname
 --~ print(file.join("//nas-1","/y"))
 
 function file.join(...)
-    local pth = table.concat({...},"/")
+    local pth = concat({...},"/")
     pth = pth:gsub("\\","/")
     local a, b = pth:match("^(.*://)(.*)$")
     if a and b then
@@ -126,7 +120,7 @@ function file.split_path(str)
 end
 
 function file.join_path(tab)
-    return table.concat(tab,io.pathseparator) -- can have trailing //
+    return concat(tab,io.pathseparator) -- can have trailing //
 end
 
 function file.collapse_path(str)

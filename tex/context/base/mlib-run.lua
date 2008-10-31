@@ -140,7 +140,7 @@ function metapost.reporterror(result)
             metapost.report("mp terminal: %s",t)
         end
         if e then
-            metapost.report("mp error: %s",e)
+            metapost.report("mp error: %s",(e=="" and "?") or e)
         end
         if not t and not e and l then
             metapost.report("mp log: %s",l)
@@ -249,7 +249,10 @@ function metapost.process(mpx, data, trialrun, flusher, multipass)
                     input.stoptiming(metapost.exectime)
                     if not metapost.reporterror(result) then
                         if metapost.showlog then
-                            metapost.report("mp error: %s",(result.term ~= "" and result.term) or "no terminal output")
+                            local str = (result.term ~= "" and result.term) or "no terminal output"
+                            if not str:is_empty() then
+                                metapost.report("mp log: %s",str)
+                            end
                         end
                         if result.fig then
                             converted = metapost.convert(result, trialrun, flusher, multipass)

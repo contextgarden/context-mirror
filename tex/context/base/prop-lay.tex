@@ -13,30 +13,22 @@
 
 \writestatus{loading}{Context Property Macros / layers}
 
-%D Highly experimental, will probably change/evolve.
+%D Highly experimental, will probably change/evolve. Also, quite certainly
+%D we will no longer share code between mkii and mkiv.
 
 \unprotect
 
-\def\checklayerproperty
-  {\doifelse{\checkedpropertyparameter\v!printable\currentproperty}\v!no
-     {\def\printviewerlayer{0}}
-     {\def\printviewerlayer{1}}%
-   \dodefineviewerlayer
-     \currentproperty % tag
-     {\checkedpropertyparameter\c!title\currentproperty}%
-     {\checkedpropertyparameter\c!state\v!start}% visible or hidden
-     {0}% type (1=frozen)
-     {\printviewerlayer}}% 1=printable
+%D Plugin:
 
-\let\currentlayerproperty\empty
+\loadmarkfile{prop-lay}
 
-\def\startlayerproperty
-  {\let\currentlayerproperty\currentproperty
-   \dostartviewerlayer\currentproperty}
+% \currentlayerproperty
+% \checklayerproperty
+% \startlayerproperty
+% \stoplayerproperty
+% \domakelayerpropertylist
 
-\def\stoplayerproperty
-  {\dostopviewerlayer
-   \let\currentlayerproperty\previousproperty}
+%D shared interface, rest in mk files
 
 \setglobalsystemreference \rt!exec \v!HideLayer   {hidelayer}
 \setglobalsystemreference \rt!exec \v!VideLayer   {videlayer}
@@ -45,13 +37,6 @@
 \setexecutecommandcheck {hidelayer}   \domakelayerpropertylist
 \setexecutecommandcheck {videlayer}   \domakelayerpropertylist
 \setexecutecommandcheck {togglelayer} \domakelayerpropertylist
-
-\def\domakelayerpropertylist
-  {\iflocation
-     \expandafter\domakeviewerlayerlist
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
 
 % \defineproperty [debugging]  [\s!layer] [title=debugging]
 % \defineproperty [navigation] [\s!layer] [title=navigation]

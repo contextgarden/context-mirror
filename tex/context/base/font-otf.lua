@@ -6,15 +6,14 @@ if not modules then modules = { } end modules ['font-otf'] = {
     license   = "see context related readme files"
 }
 
--- once we have all features working, i will redo this module .. caching lookups and such
-
-local format = string.format
+local format, concat, getn = string.format, table.concat, table.getn
+local type, pairs, ipairs, next, tonumber, tostring = type, pairs, ipairs, next, tonumber, tostring
 
 local space         = lpeg.P(" ")
 local nospaces      = (1-space)^1
 local optionalspace = space^0
 
-local split_at_space = lpeg.Ct((lpeg.C(nospaces) * optionalspace)^0)
+local split_at_space = lpeg.Ct((lpeg.C(nospaces) * optionalspace)^0) -- table !
 
 -- we can use more lpegs when lpeg is extended with function args and so
 
@@ -96,13 +95,13 @@ number by one when there's a fix in the <l n='fontforge'/> library or
 --~ is also faster). A further complication is that we support static as well as dynamic
 --~ features.
 
-fonts                        = fonts or { }
-fonts.otf                    = fonts.otf or { }
+fonts                  = fonts or { }
+fonts.otf              = fonts.otf or { }
 
-local otf = fonts.otf
-local tfm = fonts.tfm
+local otf              = fonts.otf
+local tfm              = fonts.tfm
 
-otf.version            = 2.10
+otf.version            = 2.24
 otf.pack               = true
 otf.tables             = otf.tables or { }
 otf.meanings           = otf.meanings or { }
@@ -845,6 +844,9 @@ function otf.load(filename,format,sub,featurefile)
         hash = hash:gsub("[^%w%d]+","-")
     end
     local data = containers.read(otf.cache(), hash)
+    if data and data.verbose ~= fonts.verbose then
+        data = nil
+    end
     local size = lfs.attributes(filename,"size") or 0
     if data and data.size ~= size then
         data = nil
@@ -879,6 +881,8 @@ function otf.load(filename,format,sub,featurefile)
             data = fontforge.to_table(ff)
             fontforge.close(ff)
             if data then
+                logs.report("load otf","enhance: patch")
+                otf.enhance.patch(data,filename)
                 logs.report("load otf","enhance: before")
                 otf.enhance.before(data,filename)
                 logs.report("load otf","enhance: enrich")
@@ -889,16 +893,15 @@ function otf.load(filename,format,sub,featurefile)
                 otf.enhance.analyze(data,filename)
                 logs.report("load otf","enhance: after")
                 otf.enhance.after(data,filename)
-                logs.report("load otf","enhance: patch")
-                otf.enhance.patch(data,filename)
                 logs.report("load otf","enhance: strip")
                 otf.enhance.strip(data,filename)
-                if otf.pack then
+                if otf.pack and not fonts.verbose then
                     logs.report("load otf","enhance: pack")
                     otf.enhance.pack(data)
                 end
                 logs.report("load otf","file size: %s", size)
                 data.size = size
+                data.verbose = fonts.verbose
                 logs.report("load otf","saving: in cache")
                 data = containers.write(otf.cache(), hash, data)
             else
@@ -914,13 +917,17 @@ end
 
 -- memory saver ..
 
+local criterium, threshold = 1, 0
+
 function otf.enhance.pack(data)
     if data then
-        local h, t = { }, { }
-        local concat = table.concat
+        local h, t, c = { }, { }, { }
+        local hh, tt, cc = { }, { }, { }
         local function tabstr(t)
             for i=1,#t do
-                if type(t[i]) == "boolean" then
+                -- tricky, was if type(t[i]) == "boolean" then, but if no [1] then error
+                local ti = type(t[i])
+                if ti ~= "string" or ti ~= "number" then
                     local s = tostring(t[1])
                     for i=2,#t do
                         s = s .. ",".. tostring(t[i])
@@ -930,67 +937,125 @@ function otf.enhance.pack(data)
             end
             return concat(t,",")
         end
-        local function pack(v)
-            local tag = tabstr(v,",")
-            if not h[tag] then
-                t[#t+1] = v
-                h[tag] = #t
-            end
-            return h[tag]
-        end
-        for k, v in pairs(data.glyphs) do
-            v.boundingbox = pack(v.boundingbox)
-            if v.lookups then
-                for k,v in pairs(v.lookups) do
-                    for kk, vv in ipairs(v) do -- for i=
-                        v[kk] = pack(vv)
+        for pass=1,2 do
+            local pack
+            if pass == 1 then
+                pack = function(v)
+                    -- v == table
+                    local tag = tabstr(v,",")
+                    local ht = h[tag]
+                    if not ht then
+                        ht = #t+1
+                        t[ht] = v
+                        h[tag] = ht
+                        c[ht] = 1
+                    else
+                        c[ht] = c[ht] + 1
+                    end
+                    return ht
+                end
+            else
+                pack = function(v)
+                    -- v == number
+                    if c[v] <= criterium then
+                        return t[v]
+                    else
+                        -- compact hash
+                        local hv = hh[v]
+                        if not hv then
+                            hv = #tt+1
+                            tt[hv] = t[v]
+                            hh[v] = hv
+                            cc[hv] = c[v]
+                        end
+                        return hv
                     end
                 end
             end
-            if v.anchors then
-                for k,v in pairs(v.anchors) do
-                    if k == "baselig" then
-                        for kk, vv in pairs(v) do
-                            for kkk,vvv in ipairs(vv) do
-                                vv[kkk] = pack(vvv)
+            for k, v in pairs(data.glyphs) do
+                v.boundingbox = pack(v.boundingbox)
+                if v.lookups then
+                    for k,v in pairs(v.lookups) do
+                        for kk=1,#v do
+                            v[kk] = pack(v[kk])
+                        end
+                    end
+                end
+                local a = v.anchors
+                if a then
+                    for k,v in pairs(a) do
+                        if k == "baselig" then
+                            for kk, vv in pairs(v) do
+                                for kkk=1,#vv do
+                                    vv[kkk] = pack(vv[kkk])
+                                end
+                            end
+                        else
+                            for kk, vv in pairs(v) do
+                                v[kk] = pack(vv)
                             end
                         end
-                    else
-                        for kk, vv in pairs(v) do
-                            v[kk] = pack(vv)
+                    end
+                end
+            end
+            if data.lookups then
+                for k, v in pairs(data.lookups) do
+                    if v.rules then
+                        for kk, vv in pairs(v.rules) do
+                            local l = vv.lookups
+                            if l then
+                                vv.lookups = pack(l)
+                            end
+                            local c = vv.coverage
+                            if c then
+                                c.before  = c.before  and pack(c.before )
+                                c.after   = c.after   and pack(c.after  )
+                                c.current = c.current and pack(c.current)
+                            end
                         end
                     end
                 end
             end
-        end
-        if data.lookups then
-            for k, v in pairs(data.lookups) do
-                if v.rules then
-                    for kk, vv in pairs(v.rules) do
-                        local l = vv.lookups
-                        if l then
-                            vv.lookups = pack(l)
-                        end
-                        local c = vv.coverage
-                        if c then
-                            c.before  = c.before  and pack(c.before )
-                            c.after   = c.after   and pack(c.after  )
-                            c.current = c.current and pack(c.current)
-                        end
+            if data.luatex then
+                local li = data.luatex.ignore_flags
+                if li then
+                    for k, v in pairs(li) do
+                        li[k] = pack(v)
                     end
                 end
             end
-        end
-        if data.luatex then
-            local li = data.luatex.ignore_flags
-            if li then
-                for k, v in pairs(li) do
-                    li[k] = pack(v)
+            if #t == 0 then
+                logs.report("load otf","pack quality: nothing to pack")
+                break
+            elseif #t >= threshold then
+                local one, two, rest = 0, 0, 0
+                if pass == 1 then
+                    for k,v in pairs(c) do
+                        if v == 1 then
+                            one = one + 1
+                        elseif v == 2 then
+                            two = two + 1
+                        else
+                            rest = rest + 1
+                        end
+                    end
+                else
+                    for k,v in pairs(cc) do
+                        if v >20 then
+                            rest = rest + 1
+                        elseif v >10 then
+                            two = two + 1
+                        else
+                            one = one + 1
+                        end
+                    end
+                    data.tables = tt
                 end
+                logs.report("load otf","pack quality: pass %s, %s packed, 1-10:%s, 11-20:%s, rest:%s (criterium: %s)", pass, one+two+rest, one, two, rest, criterium)
+            else
+                logs.report("load otf","pack quality: pass 1, %s packed, aborting pack (threshold: %s)", #t, threshold)
+                break
             end
-        end
-        if #t > 0 then
-            data.tables = t
         end
     end
 end
@@ -1000,25 +1065,27 @@ function otf.enhance.unpack(data)
         local t = data.tables
         if t then
             for k, v in pairs(data.glyphs) do
-                v.boundingbox = t[v.boundingbox]
+                local tv = t[v.boundingbox] if tv then v.boundingbox = tv end
                 local l = v.lookups
                 if l then
                     for k,v in pairs(l) do
                         for i=1,#v do
-                            v[i] = t[v[i]]
+                            local tv = t[v[i]] if tv then v[i] = tv end
                         end
                     end
                 end
                 local a = v.anchors
                 if a then
                     for k,v in pairs(a) do
-                        for kk, vv in pairs(v) do
-                            if kk == "baselig" then
-                                for kkk,vvv in ipairs(vv) do
-                                    vv[kkk] = t[vvv]
+                        if k == "baselig" then
+                            for kk, vv in pairs(v) do
+                                for kkk=1,#vv do
+                                    local tv = t[vv[kkk]] if tv then vv[kkk] = tv end
                                 end
-                            else
-                                v[kk] = t[vv]
+                            end
+                        else
+                            for kk, vv in pairs(v) do
+                                local tv = t[vv] if tv then v[kk] = tv end
                             end
                         end
                     end
@@ -1031,13 +1098,13 @@ function otf.enhance.unpack(data)
                         for kk, vv in pairs(r) do
                             local l = vv.lookups
                             if l then
-                                vv.lookups = t[l]
+                                local tv = t[l] if tv then vv.lookups = tv end
                             end
                             local c = vv.coverage
                             if c then
-                                local cc = c.before  if cc then c.before  = t[cc] end
-                                      cc = c.after   if cc then c.after   = t[cc] end
-                                      cc = c.current if cc then c.current = t[cc] end
+                                local cc = c.before  if cc then local tv = t[cc] if tv then c.before  = tv end end
+                                      cc = c.after   if cc then local tv = t[cc] if tv then c.after   = tv end end
+                                      cc = c.current if cc then local tv = t[cc] if tv then c.current = tv end end
                             end
                         end
                     end
@@ -1047,7 +1114,7 @@ function otf.enhance.unpack(data)
                 local li = data.luatex.ignore_flags
                 if li then
                     for k, v in pairs(li) do
-                        li[k] = t[v]
+                        local tv = t[v] if tv then li[k] = tv end
                     end
                 end
             end
@@ -1060,7 +1127,8 @@ end
 
 function otf.enhance.analyze(data,filename)
     local t = {
-        filename = file.basename(filename),
+--~         filename = file.basename(filename),
+        filename = filename,
         version  = otf.version,
         creator  = "context mkiv",
         unicodes = otf.analyze_unicodes(data),
@@ -1088,8 +1156,6 @@ do
     local name    = lpeg.P("/") * lpeg.C((1-space)^1)
 
     local unicodes, names = { }, {}
-
-    local tonumber = tonumber
 
     local function do_one(a,b)
         unicodes[tonumber(a)] = tonumber(b,16)
@@ -1206,6 +1272,7 @@ function otf.enhance.before(data,filename)
     local private = fonts.private
     if data.subfonts and table.is_empty(data.glyphs) then
         local cidinfo = data.cidinfo
+        local verbose = fonts.verbose
         if cidinfo.registry then
             local cidmap = otf.cidmap(cidinfo.registry,cidinfo.ordering,cidinfo.supplement)
             if cidmap then
@@ -1221,12 +1288,12 @@ function otf.enhance.before(data,filename)
                             g.boundingbox = g.boundingbox -- or zerobox
                             g.name = g.name or name or "unknown"
                             if unicode then
-                                g.unicode = unicode
+--                                g.unicode = unicode
                                 uni_to_int[unicode] = index
                                 int_to_uni[index] = unicode
                                 nofunicodes = nofunicodes + 1
                             elseif name then
-                                g.unicode = -1
+--                                g.unicode = -1
                                 nofnames = nofnames + 1
                             end
                             glyphs[index] = g
@@ -1251,15 +1318,15 @@ function otf.enhance.before(data,filename)
         local int_to_uni = data.map.backmap       -- { [0|1] = unic, ... }
         for index, glyph in pairs(data.glyphs) do
             if glyph.name then
-                local unic = glyph.unicode or glyph.unicodeenc or -1
-                glyph.unicodeenc = nil -- older luatex version
+--                local unic = glyph.unicode or glyph.unicodeenc or -1
+local unic = int_to_uni[index] or -1
                 if index > 0 and (unic == -1 or unic >= 0x110000) then
                     while uni_to_int[private] do
                         private = private + 1
                     end
                     uni_to_int[private] = index
                     int_to_uni[index] = private
-                    glyph.unicode = private
+--                    glyph.unicode = private
                     if fonts.trace then
                         logs.report("load otf","enhance: glyph %s at index %s is moved to private unicode slot %s",glyph.name,index,private)
                     end
@@ -1292,7 +1359,6 @@ function otf.enhance.before(data,filename)
     if data.ttf_tables then
         for _, v in ipairs(data.ttf_tables) do
             if v.data then v.data = "deleted" end
-        --~ if v.data then v.data = v.data:gsub("\026","\\026") end -- does not work out well
         end
     end
     table.compact(data.glyphs)
@@ -1314,11 +1380,6 @@ function otf.enhance.before(data,filename)
             end
         end
     end
---~ for index, glyph in pairs(data.glyphs) do
---~     for k,v in pairs(glyph) do
---~         if v == 0 then glyph[k] = nil end
---~     end
---~ end
 end
 
 function otf.enhance.after(data,filename) -- to be split
@@ -1332,16 +1393,21 @@ function otf.enhance.after(data,filename) -- to be split
                     local vc, vo, vl = v.char, v.off, v.lookup
                     if vc and vo and vl then -- brrr, wrong! we miss the non unicode ones
                         local uvc = unicodes[vc]
-                        if uvc then
+                        if not uvc then
+                            logs.report("load otf","problems with unicode %s of kern %s at glyph %s",vc,k,index)
+                        else
                             local mkl = mykerns[vl]
                             if not mkl then
-                                mkl = { [unicodes[vc]] = vo }
+                                mkl = { }
                                 mykerns[v.lookup] = mkl
-                            else
-                                mkl[unicodes[vc]] = vo
                             end
-                        else
-                            logs.report("load otf","problems with unicode %s of kern %s at glyph %s",vc,k,index)
+                            if type(uvc) == "table" then
+                                for u=1,#uvc do
+                                    mkl[uvc[u]] = vo
+                                end
+                            else
+                                mkl[uvc] = vo
+                            end
                         end
                     end
                 end
@@ -1361,24 +1427,38 @@ function otf.enhance.after(data,filename) -- to be split
                         if kernclass then
                             for _, kcl in ipairs(kernclass) do
                                 local firsts, seconds, offsets, lookup = kcl.firsts, kcl.seconds, kcl.offsets, kcl.lookup
-                                local maxfirsts, maxseconds = table.getn(firsts), table.getn(seconds)
+                                local maxfirsts, maxseconds = getn(firsts), getn(seconds)
                                 logs.report("load otf", "adding kernclass %s with %s times %s pairs)",lookup, maxfirsts, maxseconds)
                                 for fk, fv in pairs(firsts) do
                                     for first in fv:gmatch("[^ ]+") do
-                                        local glyph = glyphs[mapmap[unicodes[first]]]
-                                        local mykerns = glyph.mykerns
-                                        if not mykerns then
-                                            mykerns = { } -- unicode indexed !
-                                            glyph.mykerns = mykerns
+                                        local first_unicode = unicodes[first]
+                                        if type(first_unicode) == "number" then
+                                            first_unicode = { first_unicode }
                                         end
-                                        local lookupkerns = mykerns[lookup]
-                                        if not lookupkerns then
-                                            lookupkerns = { }
-                                            mykerns[lookup] = lookupkerns
-                                        end
-                                        for sk, sv in pairs(seconds) do
-                                            for second in sv:gmatch("[^ ]+") do
-                                                lookupkerns[unicodes[second]] = offsets[(fk-1) * maxseconds + sk]
+                                        for f=1,#first_unicode do
+                                            local glyph = glyphs[mapmap[first_unicode[f]]]
+                                            local mykerns = glyph.mykerns
+                                            if not mykerns then
+                                                mykerns = { } -- unicode indexed !
+                                                glyph.mykerns = mykerns
+                                            end
+                                            local lookupkerns = mykerns[lookup]
+                                            if not lookupkerns then
+                                                lookupkerns = { }
+                                                mykerns[lookup] = lookupkerns
+                                            end
+                                            for sk, sv in pairs(seconds) do
+                                                local offset = offsets[(fk-1) * maxseconds + sk]
+                                                for second in sv:gmatch("[^ ]+") do
+                                                    local second_unicode = unicodes[second]
+                                                    if type(second_unicode) == "number" then
+                                                        lookupkerns[second_unicode] = offset
+                                                    else
+                                                        for s=1,#second_unicode do
+                                                            lookupkerns[second_unicode[s]] = offset
+                                                        end
+                                                    end
+                                                end
                                             end
                                         end
                                     end
@@ -1395,13 +1475,34 @@ function otf.enhance.after(data,filename) -- to be split
 end
 
 function otf.enhance.strip(data)
+    local verbose = fonts.verbose
+    local int_to_uni = data.map.backmap
     for k, v in pairs(data.glyphs) do
         local d = v.dependents
         if d then v.dependents = nil end
+        if verbose then
+            local code = int_to_uni[k]
+            if code then
+                local vu = v.unicode
+                if not vu then
+                    v.unicode = code
+                elseif type(vu) == "table" then
+                    vu[#bu+1] = code
+                else
+                    v.unicode = { vu, code }
+                end
+            end
+        else
+            v.unicode = nil
+            v.index = nil
+        end
     end
+    data.luatex.comment = "Glyph tables have their original index. When present, mykern tables are indexed by unicode."
+    data.luatex.indices = data.map.map -- needed for shared glyphs
     data.map = nil
     data.names = nil
-    data.luatex.comment = "Glyph tables have their original index. When present, mykern tables are indexed by unicode."
+    data.glyphcnt = nil
+    data.glyphmax = nil
 end
 
 function otf.enhance.flatten(data,filename) -- to be split
@@ -1490,7 +1591,7 @@ end
 otf.enhance.patches = { }
 
 function otf.enhance.patch(data,filename)
-    local basename = file.basename(filename)
+    local basename = file.basename(filename:lower())
     for pattern, action in pairs(otf.enhance.patches) do
         if basename:find(pattern) then
             action(data,filename)
@@ -1504,31 +1605,13 @@ function otf.enhance.enrich(data,filename)
     -- later
 end
 
--- patching
-
-do -- will move to a typescript
-
-    local function patch(data,filename)
-        if data.design_size == 0 then
-            local ds = (file.basename(filename)):match("(%d+)")
-            if ds then
-                logs.report("load otf","patching design size (%s)",ds)
-                data.design_size = tonumber(ds) * 10
-            end
-        end
-    end
-
-    otf.enhance.patches["^lmroman"]      = patch
-    otf.enhance.patches["^lmsans"]       = patch
-    otf.enhance.patches["^lmtypewriter"] = patch
-
-end
-
 function otf.analyze_class(data,class)
     local classes = { }
-    for index, glyph in pairs(data.glyphs) do
+    local glyphs = data.glyphs
+    for unicode, index in pairs(data.map.map) do
+        local glyph = glyphs[index]
         if glyph.class == class then
-            classes[glyph.unicode] = true
+            classes[unicode] = true
         end
     end
     return classes
@@ -1541,9 +1624,10 @@ function otf.analyze_subtables(data)
             for k,v in ipairs(g) do
                 if v.features then
                     local ignored = { false, false, false }
-                    if v.flags.ignorecombiningmarks then ignored[1] = 'mark'    end
-                    if v.flags.ignorebasechars      then ignored[2] = 'base'     end
-                    if v.flags.ignoreligatures      then ignored[3] = 'ligature' end
+                    local flags = v.flags
+                    if flags.ignorecombiningmarks then ignored[1] = 'mark'    end
+                    if flags.ignorebasechars      then ignored[2] = 'base'     end
+                    if flags.ignoreligatures      then ignored[3] = 'ligature' end
                     if v.subtables then
                         local type = v.type
                         for _, feature in ipairs(v.features) do
@@ -1611,12 +1695,28 @@ end
 
 function otf.analyze_unicodes(data)
     local unicodes = { }
-    for _, blob in pairs(data.glyphs) do
-        if blob.name then
-            unicodes[blob.name] = blob.unicode or 0
+    local indices = data.map.map
+    local glyphs = data.glyphs
+    local multiples = { }
+    for unicode, index in pairs(indices) do
+        local name = glyphs[index].name
+        if name then
+            local un = unicodes[name]
+            if not un then
+                unicodes[name] = unicode -- or 0
+            elseif type(un) == "number" then
+                multiples[#multiples+1] = name
+                unicodes[name] = { un, unicode }
+            else
+                un[#un+1] = unicode
+            end
         end
     end
-    unicodes['space'] = unicodes['space'] or 32 -- handly later on
+    if #multiples > 0 then
+        logs.report("load otf","%s glyph are reused: %s",#multiples, concat(multiples," "))
+    end
+    unicodes['space']  = unicodes['space']  or 32 -- handly later on
+    unicodes['hyphen'] = unicodes['hyphen'] or 45 -- handly later on
     return unicodes
 end
 
@@ -1783,11 +1883,15 @@ end
 function otf.features.prepare_base_kerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
     if value then
         local otfdata = tfmdata.shared.otfdata
-        local charlist = otfdata.glyphs
-        local unicodes = otfdata.luatex.unicodes
+        local glyphs = otfdata.glyphs
+        local unicodes = otfdata.luatex.unicodes -- names to unicodes
         local somevalid = otf.some_valid_feature(otfdata,kind,tfmdata.script,tfmdata.language)
-        for _, chr in pairs(tfmdata.characters) do
-            local d = charlist[chr.description.index]
+        local characters = tfmdata.characters
+        local descriptions = tfmdata.descriptions
+        for u, chr in pairs(characters) do
+         -- hm, maybe just use descriptions, and why still index? font is already in
+         -- unicode with private slots, so: d = glyphs[u] should work ok
+            local d = glyphs[descriptions[u].index]
             if d then
                 local dk = d.mykerns
                 if dk then
@@ -1811,8 +1915,18 @@ function otf.features.prepare_base_kerns(tfmdata,kind,value) -- todo what kind o
                         for _, v in pairs(dk) do
                             if somevalid[v.lookup] then
                                 local k = unicodes[v.char]
-                                if k > 0 then
-                                    t[k], done = v.off, true
+                                local o = v.off
+                                if type(k) == "number" then
+                                    if k > 0 then
+                                        t[k], done = o, true
+                                    end
+                                else
+                                    for i=1,#k do
+                                        local ki = k[i]
+                                        if ki > 0 then
+                                            t[ki], done = o, true
+                                        end
+                                    end
                                 end
                             end
                         end
@@ -1849,15 +1963,15 @@ end
 
 function otf.copy_to_tfm(data) -- we can save a copy when we reorder the tma to unicode
     if data then
-        local tfm = { characters = { }, parameters = { } }
-        local unicodes = data.luatex.unicodes
-        local characters = tfm.characters
-        local parameters = tfm.parameters
+        local characters, parameters, descriptions = { }, { }, { }
+        local tfm = { characters = characters, parameters = parameters, descriptions = descriptions }
+        local luatex = data.luatex
+        local indices = luatex.indices -- unicodes to indices
         local glyphs = data.glyphs
-        for k, d in pairs(glyphs) do
-            if d.name then
-                characters[d.unicode] = { description = d }
-            end
+        for u, i in pairs(indices) do
+            local d = glyphs[i]
+            characters[u] = { } -- not needed
+            descriptions[u] = d
         end
         local designsize = data.designsize or data.design_size or 100
         if designsize == 0 then
@@ -1884,23 +1998,23 @@ function otf.copy_to_tfm(data) -- we can save a copy when we reorder the tma to 
         if data.pfminfo then
             data.charwidth = data.pfminfo.avgwidth
         end
-        local endash, emdash = unicodes['space'], unicodes['emdash']
+        local endash, emdash = 0x20, 0x2014 -- unicodes['space'], unicodes['emdash']
         if data.isfixedpitch then
-            if characters[endash] then
-                spaceunits, tfm.spacer = characters[endash].description.width, "space"
+            if descriptions[endash] then
+                spaceunits, tfm.spacer = descriptions[endash].width, "space"
             end
-            if not spaceunits and characters[emdash] then
-                spaceunits, tfm.spacer = characters[emdash].description.width, "emdash"
+            if not spaceunits and descriptions[emdash] then
+                spaceunits, tfm.spacer = descriptions[emdash].width, "emdash"
             end
             if not spaceunits and data.charwidth then
                 spaceunits, tfm.spacer = data.charwidth, "charwidth"
             end
         else
-            if characters[endash] then
-                spaceunits, tfm.spacer = characters[endash].description.width, "space"
+            if descriptions[endash] then
+                spaceunits, tfm.spacer = descriptions[endash].width, "space"
             end
-            if not spaceunits and characters[emdash] then
-                spaceunits, tfm.spacer = characters[emdash].description.width/2, "emdash/2"
+            if not spaceunits and descriptions[emdash] then
+                spaceunits, tfm.spacer = descriptions[emdash].width/2, "emdash/2"
             end
             if not spaceunits and data.charwidth then
                 spaceunits, tfm.spacer = data.charwidth, "charwidth"
@@ -1933,9 +2047,12 @@ function otf.copy_to_tfm(data) -- we can save a copy when we reorder the tma to 
         if data.pfminfo and data.pfminfo.os2_xheight and data.pfminfo.os2_xheight > 0 then
             parameters.x_height = data.pfminfo.os2_xheight
         else
-            local x = characters[unicodes['x']]
+            local x = 0x78 -- unicodes['x']
             if x then
-                parameters.x_height = x.description.height
+                local x = descriptions[x]
+                if x then
+                    parameters.x_height = x.height
+                end
             end
         end
         -- [6]
@@ -2057,28 +2174,30 @@ otf.default_language = 'latn'
 otf.default_script   = 'dflt'
 
 function otf.valid_feature(otfdata,kind,script,language) -- return hash is faster
-    if otfdata.luatex.ctx_always[kind] then
+    local luatex = otfdata.luatex
+    if luatex.ctx_always[kind] then
         script, language = 'dflt', 'dflt'
     else
         script   = script   or otf.default_script
         language = language or otf.default_language
     end
     script, language = script:lower(), language:lower() -- will go away, we will lowercase values
-    local ft = otfdata.luatex.subtables[kind]
+    local ft = luatex.subtables[kind]
     local st = ft[script] or ft.dflt
     local lt = st and (st[language] or st.dflt)
-    return false, otfdata.luatex.always_valid, lt.valid
+    return false, luatex.always_valid, lt.valid
 end
 
 function otf.some_valid_feature(otfdata,kind,script,language)
-    if otfdata.luatex.ctx_always[kind] then
+    local luatex = otfdata.luatex
+    if luatex.ctx_always[kind] then
         script, language = 'dflt', 'dflt'
     else
         script   = script   or otf.default_script
         language = language or otf.default_language
         script, language = script:lower(), language:lower() -- will go away, we will lowercase values
     end
-    local t = otfdata.luatex.subtables[kind]
+    local t = luatex.subtables[kind]
     if t then
         local ts = t[script] or t.dflt
         if ts then
@@ -2092,7 +2211,8 @@ end
 function otf.features.aux.resolve_ligatures(tfmdata,ligatures,kind)
     local otfdata = tfmdata.shared.otfdata
     local unicodes  = otfdata.luatex.unicodes
-    local chars = tfmdata.characters
+    local characters = tfmdata.characters
+    local descriptions = tfmdata.descriptions
     local changed = tfmdata.changed or { }
     local done  = { }
     kind = kind or "unknown"
@@ -2104,30 +2224,51 @@ function otf.features.aux.resolve_ligatures(tfmdata,ligatures,kind)
             if not done[lig] then
                 local ligs = split_at_space:match(lig)
                 if #ligs == 2 then
-                    local c, f, s = chars[v[2]], ligs[1], ligs[2]
-                    local uf, us = unicodes[f], unicodes[s]
+                    local uc = v[2]
+                    local c, f, s = characters[uc], ligs[1], ligs[2]
+--~                     local uf, us = unicodes[f], unicodes[s]
+
+local uft, ust = unicodes[f], unicodes[s]
+if not uft or not ust then
+    logs.report("define otf","%s: unicode problem with ligature (%s->%s=%s->%s+%s->%s)",kind,descriptions[uc].name or "?",uc,f,uft or "?",s,ust or "?")
+    -- some kind of error
+else
+    if type(uft) == "number" then uft = { uft } end
+    if type(ust) == "number" then ust = { ust } end
+    for ufi=1,#uft do
+        local uf = uft[ufi]
+        for usi=1,#ust do
+            local us = ust[usi]
+
                     if changed[uf] or changed[us] then
                         if trace then
                             logs.report("define otf","%s: %s (%s) + %s (%s) ignored",kind,f,uf,s,us)
                         end
                     else
-                        local first, second = chars[uf], us
+                        local first, second = characters[uf], us
                         if first and second then
                             local t = first.ligatures
                             if not t then
                                 t = { }
                                 first.ligatures = t
                             end
-                            t[second] = {
-                                char = unicodes[c.description.name],
-                                type = 0
-                            }
+                            local uuc = unicodes[descriptions[uc].name]
+                            if type(uuc) == "number" then
+                                t[second] = { type = 0, char = uuc }
+                            else
+                                t[second] = { type = 0, char = uuc[1] }
+                            end
                             if trace then
-                                logs.report("define otf","%s: %s (%s) + %s (%s) = %s (%s)",kind,f,uf,s,us,c.description.name,unicodes[c.description.name])
+                                logs.report("define otf","%s: %s (%s) + %s (%s) = %s (%s)",kind,f,uf,s,us,descriptions[uc].name,unicodes[descriptions[uc].name])
                             end
                         end
                     end
-                    ok, done[lig] = true, c.description.name
+
+        end
+    end
+end
+
+                    ok, done[lig] = true, descriptions[uc].name
                 end
             end
         end
@@ -2152,14 +2293,15 @@ function otf.features.prepare_base_substitutions(tfmdata,kind,value) -- we can s
         local otfdata = tfmdata.shared.otfdata
         local unicodes = otfdata.luatex.unicodes
         local trace = otf.trace_features
-        local chars = tfmdata.characters
+        local characters = tfmdata.characters
+        local descriptions = tfmdata.descriptions
         local somevalid = otf.some_valid_feature(otfdata,kind,tfmdata.script,tfmdata.language)
         if not table.is_empty(somevalid) then
             tfmdata.changed = tfmdata.changed or { }
             local changed = tfmdata.changed
             local glyphs = otfdata.glyphs
-            for k,c in pairs(chars) do
-                local o = glyphs[c.description.index]
+            for k,c in pairs(characters) do
+                local o = glyphs[descriptions[k].index]
                 if o and o.lookups then
                     for lookup,ps in pairs(o.lookups) do
                         if somevalid[lookup] then
@@ -2170,12 +2312,29 @@ function otf.features.prepare_base_substitutions(tfmdata,kind,value) -- we can s
                                     local pv = p[2] -- p.variant
                                     if pv then
                                         local upv = unicodes[pv]
-                                        if upv and chars[upv] then
-                                            if trace then
-                                                logs.report("define otf","%s: %s (%s) => %s (%s)",kind,chars[k].description.name,k,chars[upv].description.name,upv)
+                                        if upv then
+                                            if type(upv) == "number" then
+                                                if characters[upv] then
+                                                    if trace then
+                                                        logs.report("define otf","%s: %s (%s) => %s (%s)",kind,descriptions[k].name,k,descriptions[upv].name,upv)
+                                                    end
+                                                    characters[k] = characters[upv]
+                                                    descriptions[k] = descriptions[upv]
+                                                    changed[k] = true
+                                                end
+                                            else
+                                                for i=1,#upv do
+                                                    local upv = upv[i]
+                                                    if characters[upv] then
+                                                        if trace then
+                                                            logs.report("define otf","%s: %s (%s) => %s (%s)",kind,descriptions[k].name,k,descriptions[upv].name,upv)
+                                                        end
+                                                        characters[k] = characters[upv]
+                                                        descriptions[k] = descriptions[upv]
+                                                        changed[k] = true
+                                                    end
+                                                end
                                             end
-                                            chars[k] = chars[upv]
-                                            changed[k] = true
                                         end
                                     end
                                 elseif t == 'alternate' then
@@ -2184,12 +2343,29 @@ function otf.features.prepare_base_substitutions(tfmdata,kind,value) -- we can s
                                         pc = pa.components:match("([^ ]+)") -- todo: selector
                                         if pc then
                                             local upc = unicodes[pc]
-                                            if upc and chars[upc] then
-                                                if trace then
-                                                    logs.report("define otf","%s: %s (%s) => %s (%s)",kind,chars[k].description.name,k,chars[upc].description.name,upc)
+                                            if upc then
+                                                if type(upc) == "number" then
+                                                    if chars[upc] then
+                                                        if trace then
+                                                            logs.report("define otf","%s: %s (%s) => %s (%s)",kind,descriptions[k].name,k,descriptions[upc].name,upc)
+                                                        end
+                                                        characters[k] = characters[upc]
+                                                        descriptions[k] = descriptions[upc]
+                                                        changed[k] = true
+                                                    end
+                                                else
+                                                    for i=1,#upc do
+                                                        local upc = upc[i]
+                                                        if chars[upc] then
+                                                            if trace then
+                                                                logs.report("define otf","%s: %s (%s) => %s (%s)",kind,descriptions[k].name,k,descriptions[upc].name,upc)
+                                                            end
+                                                            characters[k] = characters[upc]
+                                                            descriptions[k] = descriptions[upc]
+                                                            changed[k] = true
+                                                        end
+                                                    end
                                                 end
-                                                chars[k] = chars[upc]
-                                                changed[k] = true
                                             end
                                         end
                                     end
@@ -2197,7 +2373,7 @@ function otf.features.prepare_base_substitutions(tfmdata,kind,value) -- we can s
                                     local pc = p[2]
                                     if pc then
                                         if trace then
-                                            logs.report("define otf","%s: %s => %s (%s)",kind,pc,chars[k].description.name,k)
+                                            logs.report("define otf","%s: %s => %s (%s)",kind,pc,descriptions[k].name,k)
                                         end
                                         ligatures[#ligatures+1] = { pc, k }
                                     end
@@ -2258,8 +2434,9 @@ do
                     shared.featurecache[kind]     = shared.featurecache[kind] or false -- signal
                     shared.lookuptable [fullkind] = lookuptable
                     shared.processes   [fullkind] = processes
-                    local types = otfdata.luatex.name_to_type
-                    local flags = otfdata.luatex.ignore_flags
+                    local luatex = otfdata.luatex
+                    local types = luatex.name_to_type
+                    local flags = luatex.ignore_flags
                     local preparers = otf.features.prepare
                     local process = otf.features.process
                     for i=1,#lookuptable do
@@ -2284,56 +2461,91 @@ do
     -- helper: todo, we don't need to store non local ones for chains so we can pass the
     -- validator as parameter
 
-    local pairs = pairs
-
     function otf.features.collect_ligatures(tfmdata,kind) -- ligs are spread all over the place
         local otfdata = tfmdata.shared.otfdata
-        local unicodes = tfmdata.shared.otfdata.luatex.unicodes -- actually the char index is ok too
+        local glyphs = otfdata.glyphs
+        local luatex = otfdata.luatex
+        local unicodes = luatex.unicodes -- names to unicode
+        local indices = luatex.indices -- unicode to index
         local trace = otf.trace_features
         local ligatures = { }
-        local function collect(lookup,o,ps)
+        local function collect(lookup,unicode,glyph,ps)
             for i=1,#ps do
                 local p = ps[i]
                 if p[1] == 'ligature' then
                     if trace then
-                        logs.report("define otf","feature %s lookup %s ligature %s => %s",kind,lookup,p[2],o.name)
+                        logs.report("define otf","feature %s lookup %s ligature %s => %s",kind,lookup,p[2],glyph.name)
                     end
                     local t = ligatures[lookup]
                     if not t then
                         t = { }
                         ligatures[lookup] = t
                     end
+                    -- this table is kind of special:
+                    --   unicode -> tree of names/indices -> unicode
+                    -- this way we can handle multiple unicode to one glyph cases
                     local first = true
                     for s in p[2]:gmatch("[^ ]+") do
-                        local u = unicodes[s]
                         if first then
-                            if not t[u] then
-                                t[u] = { { } }
+                            local u = unicodes[s]
+                            if not u then
+                                logs.report("define otf","feature %s lookup %s ligature %s => %s ignored due to invalid unicode",kind,lookup,p[2],glyph.name)
+                            elseif type(u) == "number" then
+                                if not t[u] then
+                                    t[u] = { { } }
+                                end
+                                t = t[u]
+                            else
+                                local tt = t
+                                local tu
+                                for i=1,#u do
+                                    local u = u[i]
+                                    if i==1 then
+                                        if not t[u] then
+                                            t[u] = { { } }
+                                        end
+                                        tu = t[u]
+                                        t = tu
+                                    else
+                                        if not t[u] then
+                                            tt[u] = tu
+                                        end
+                                    end
+                                end
                             end
-                            t = t[u]
                             first = false
                         else
-                            local t1 = t[1]
-                            if not t1[u] then
-                                t1[u] = { { } }
+                         -- beware, we mix unicodes and indices, we can comment these
+                         -- lines when testing, see (*lig*)
+                            s = unicodes[s]
+                            if type(s) == "number" then
+                                s = indices[s]
+                            else
+                                s = indices[s[1]]
                             end
-                            t = t1[u]
+                         -- maybe we will introduce a names table some day
+                            local t1 = t[1]
+                            if not t1[s] then
+                                t1[s] = { { } }
+                            end
+                            t = t1[s]
                         end
                     end
-                    t[2] = o.unicode
+                    t[2] = unicode
                 end
             end
         end
         local forced, always, okay = otf.valid_feature(otfdata,kind,tfmdata.script,tfmdata.language)
-        for _,o in pairs(otfdata.glyphs) do
-            local lookups = o.lookups
+        for unicode, index in pairs(indices) do
+            local glyph = glyphs[index]
+            local lookups = glyph.lookups
             if lookups then
                 if forced then
-                    for lookup, ps in pairs(lookups) do                                        collect(lookup,o,ps)     end
+                    for lookup, ps in pairs(lookups) do                                        collect(lookup,unicode,glyph,ps)     end
                 elseif okay then
-                    for lookup, ps in pairs(lookups) do if always[lookup] or okay[lookup] then collect(lookup,o,ps) end end
+                    for lookup, ps in pairs(lookups) do if always[lookup] or okay[lookup] then collect(lookup,unicode,glyph,ps) end end
                 else
-                    for lookup, ps in pairs(lookups) do if always[lookup]                 then collect(lookup,o,ps) end end
+                    for lookup, ps in pairs(lookups) do if always[lookup]                 then collect(lookup,unicode,glyph,ps) end end
                 end
             end
         end
@@ -2359,18 +2571,25 @@ do
             substitutions = { }
             featuredata[lookupname] = substitutions
             local otfdata = tfmdata.shared.otfdata
-            local unicodes = otfdata.luatex.unicodes
+            local glyphs = otfdata.glyphs
+            local luatex = otfdata.luatex
+            local unicodes = luatex.unicodes -- names to unicode
+            local indices = luatex.indices -- unicode to index
             local trace = otf.trace_features
-            for _, o in pairs(otfdata.glyphs) do
-                local lookups = o.lookups
+            for unicode, index in pairs(indices) do
+                local glyph = glyphs[index]
+                local lookups = glyph.lookups
                 if lookups then
                     for lookup,ps in pairs(lookups) do
                         if lookup == lookupname then
                             for i=1,#ps do
                                 local p = ps[i]
                                 if p[1] == 'substitution' then
-                                    local old, new = o.unicode, unicodes[p[2]]
-                                    substitutions[old] =  new
+                                    local old, new = unicode, unicodes[p[2]]
+                                    if type(new) == "table" then
+                                        new = new[1]
+                                    end
+                                    substitutions[old] = new
                                     if trace then
                                         logs.report("define otf","%s:%s substitution %s => %s",kind,lookupname,old,new)
                                     end
@@ -2391,23 +2610,32 @@ do
             substitutions = { }
             featuredata[lookupname] = substitutions
             local otfdata = tfmdata.shared.otfdata
-            local unicodes = otfdata.luatex.unicodes
+            local glyphs = otfdata.glyphs
+            local luatex = otfdata.luatex
+            local unicodes = luatex.unicodes -- names to unicode
+            local indices = luatex.indices -- unicode to index
             local trace = otf.trace_features
-            for _,o in pairs(otfdata.glyphs) do
-                local lookups = o.lookups
+            for unicode, index in pairs(indices) do
+                local glyph = glyphs[index]
+                local lookups = glyph.lookups
                 if lookups then
                     for lookup,ps in pairs(lookups) do
                         if lookup == lookupname then
                             for i=1,#ps do
                                 local p = ps[i]
                                 if p[1] == 'multiple' then
-                                    local old, new = o.unicode, { }
+                                    local old, new = unicode, { }
                                     substitutions[old] = new
                                     for pc in p[2]:gmatch("[^ ]+") do
-                                        new[#new+1] = unicodes[pc]
+                                        local upc = unicodes[pc]
+                                        if type(upc) == "number" then
+                                            new[#new+1] = upc
+                                        else
+                                            new[#new+1] = upc[1]
+                                        end
                                     end
                                     if trace then
-                                        logs.report("define otf","%s:%s multiple %s => %s",kind,lookupname,old,table.concat(new," "))
+                                        logs.report("define otf","%s:%s multiple %s => %s",kind,lookupname,old,concat(new," "))
                                     end
                                 end
                             end
@@ -2427,24 +2655,33 @@ do
             featuredata[lookupname] = { }
             substitutions = featuredata[lookupname]
             local otfdata = tfmdata.shared.otfdata
-            local unicodes = otfdata.luatex.unicodes
+            local glyphs = otfdata.glyphs
+            local luatex = otfdata.luatex
+            local unicodes = luatex.unicodes -- names to unicode
+            local indices = luatex.indices -- unicode to index
             local trace = otf.trace_features
-            for _,o in pairs(otfdata.glyphs) do
-                local lookups = o.lookups
+            for unicode, index in pairs(indices) do
+                local glyph = glyphs[index]
+                local lookups = glyph.lookups
                 if lookups then
                     for lookup,ps in pairs(lookups) do
                         if lookup == lookupname then
                             for i=1,#ps do
                                 local p = ps[i]
                                 if p[1] == 'alternate' then
-                                    local old = o.unicode
+                                    local old = unicode
                                     local t = { }
                                     for pc in p[2]:gmatch("[^ ]+") do
-                                        t[#t+1] = unicodes[pc]
+                                        local upc = unicodes[pc]
+                                        if type(upc) == "number" then
+                                            t[#t+1] = upc
+                                        else
+                                            t[#t+1] = upc[1]
+                                        end
                                     end
                                     substitutions[old] =  t
                                     if trace then
-                                        logs.report("define otf","%s:%s alternate %s => %s",kind,lookupname,old,table.concat(substitutions,"|"))
+                                        logs.report("define otf","%s:%s alternate %s => %s",kind,lookupname,old,concat(substitutions,"|"))
                                     end
                                 end
                             end
@@ -2472,16 +2709,20 @@ do
         local featuredata = tfmdata.shared.featuredata[kind]
         local contexts = featuredata[lookupname]
         if not contexts then
-            featuredata[lookupname] = { }
-            contexts = featuredata[lookupname]
-            local otfdata = tfmdata.shared.otfdata
-            local unicodes = otfdata.luatex.unicodes
-            local internals = otfdata.luatex.internals
-            local flags = otfdata.luatex.ignore_flags
-            local types = otfdata.luatex.name_to_type
-            otfdata.luatex.covers = otfdata.luatex.covers or { }
+            contexts = { }
+            featuredata[lookupname] = contexts
             local characters = tfmdata.characters
-            local cache = otfdata.luatex.covers
+            local otfdata = tfmdata.shared.otfdata
+            local luatex = otfdata.luatex
+            local unicodes = luatex.unicodes
+            local internals = luatex.internals
+            local flags = luatex.ignore_flags
+            local types = luatex.name_to_type
+            local cache = luatex.covers
+            if not cache then
+                cache = { }
+                luatex.covers = cache
+            end
             local function uncover(covers,result)
                 -- lpeg hardly faster (.005 sec on mk)
                 for n=1,#covers do
@@ -2490,7 +2731,14 @@ do
                     if not cc then
                         local t = { }
                         for s in c:gmatch("[^ ]+") do
-                            t[unicodes[s]] = true
+                            local us = unicodes[s]
+                            if type(us) == "number" then
+                                t[us] = true
+                            else
+                                for i=1,#us do
+                                    t[us[i]] = true
+                                end
+                            end
                         end
                         cache[c] = t
                         result[#result+1] = t
@@ -2570,12 +2818,14 @@ do
             anchors = { }
             featuredata[lookupname] = anchors
             local otfdata = tfmdata.shared.otfdata
-            local unicodes = otfdata.luatex.unicodes
-            local validanchors = { }
             local glyphs = otfdata.glyphs
+            local luatex = otfdata.luatex
+            local unicodes = luatex.unicodes
+            local indices = luatex.indices
+            local validanchors = { }
             local trace = otf.trace_features
-            if otfdata.anchor_classes then
-                local classes = otfdata.anchor_classes
+            local classes = otfdata.anchor_classes
+            if classes then
                 for k=1,#classes do
                     local class = classes[k]
                     if class.lookup == lookupname then
@@ -2586,8 +2836,9 @@ do
                     end
                 end
             end
-            for _,o in pairs(glyphs) do
-                local oanchor = o.anchors
+            for unicode, index in pairs(indices) do
+                local glyph = glyphs[index]
+                local oanchor = glyph.anchors
                 if oanchor then
                     local t, ok = { }, false
                     for type, anchors in pairs(oanchor) do -- types
@@ -2605,7 +2856,7 @@ do
                         end
                     end
                     if ok then
-                        anchors[o.unicode] = t
+                        anchors[unicode] = t
                     end
                 end
             end
@@ -2636,67 +2887,95 @@ do
             featuredata[lookupname] = { }
             kerns = featuredata[lookupname]
             local otfdata = tfmdata.shared.otfdata
-            local unicodes = otfdata.luatex.unicodes
             local glyphs = otfdata.glyphs
+            local luatex = otfdata.luatex
+            local unicodes = luatex.unicodes
+            local indices = luatex.indices
             -- ff has isolated kerns in a separate table
-            for k,o in pairs(glyphs) do
-                local list = o.mykerns
+            for unicode, index in pairs(indices) do
+                local glyph = glyphs[index]
+                local list = glyph.mykerns
                 if list then
                     local omk = list[lookupname]
                     if omk then
-                        local one = o.unicode
-                        for char, off in pairs(omk) do
-                            local two = char
-                            local krn = kerns[one]
-                            if krn then
-                                krn[two] = off
-                            else
-                                kerns[one] = { two = off }
+                        local krn = kerns[unicode]
+                        for other, off in pairs(omk) do
+                            if not krn then
+                                krn = { }
+                                kerns[unicode] = krn
                             end
+                            krn[other] = off
                             if trace then
-                                logs.report("define otf","feature %s kern pair %s - %s",kind,one,two)
+                                logs.report("define otf","feature %s kern pair %s - %s",kind,unicode,other)
                             end
                         end
                     end
-                elseif o.kerns then
-                    local one = o.unicode
-                    local okerns = o.kerns
-                    for ok=1,#okerns do
-                        local k = okerns[ok]
-                        if k.lookup == lookupname then
-                            local char = k.char
-                            if char then
-                                local two = unicodes[char]
-                                local krn = kerns[one]
-                                if krn then
-                                    krn[two] = k.off
-                                else
-                                    kerns[one] = { two = k.off }
-                                end
-                                if trace then
-                                    logs.report("define otf","feature %s kern pair %s - %s",kind,one,two)
+                else
+                    list = glyph.kerns
+                    if list then
+                        local krn
+                        for ok=1,#list do
+                            local k = list[ok]
+                            if k.lookup == lookupname then
+                                local char = k.char
+                                if char then
+                                    if not krn then
+                                        krn = kerns[unicode]
+                                        if not krn then
+                                            krn = { }
+                                            kerns[unicode] = krn
+                                        end
+                                    end
+                                    local second = unicodes[char]
+                                    local off = k.off
+                                    if type(second) == "number" then
+                                        krn[second] = off
+                                        if trace then
+                                            logs.report("define otf","feature %s kern pair %s - %s",kind,unicode,second)
+                                        end
+                                    else
+                                        for i=1,#second do
+                                            local second = second[i]
+                                            krn[second] = off
+                                            if trace then
+                                                logs.report("define otf","feature %s kern pair %s - %s",kind,unicode,second)
+                                            end
+                                        end
+                                    end
                                 end
                             end
                         end
                     end
                 end
-                list = o.lookups
+                list = glyphs.lookups
                 if list then
-                    local one = o.unicode
                     for lookup,ps in pairs(list) do
                         if lookup == lookupname then
+                            local krn
                             for i=1,#ps do
                                 local p = ps[i]
                                 if p[1] == 'pair' then
-                                    local two = unicodes[p[2]]
-                                    local krn = kerns[one]
-                                    if krn then
-                                        krn[two] = p
-                                    else
-                                        kerns[one] = { two = p }
+                                    if not krn then
+                                        krn = kerns[unicode]
+                                        if not krn then
+                                            krn = { }
+                                            kerns[unicode] = krn
+                                        end
                                     end
-                                    if trace then
-                                        logs.report("define otf","feature %s kern pair %s - %s",kind,one,two)
+                                    local second = unicodes[p[2]]
+                                    if type(second) == "number" then
+                                        krn[second] = p
+                                        if trace then
+                                            logs.report("define otf","feature %s kern pair %s - %s",kind,unicode,second)
+                                        end
+                                    else
+                                        for i=1,#second do
+                                            local second = second[i]
+                                            krn[second] = p
+                                            if trace then
+                                                logs.report("define otf","feature %s kern pair %s - %s",kind,unicode,second)
+                                            end
+                                        end
                                     end
                                 end
                             end
@@ -2823,13 +3102,15 @@ do
     -- we share some vars here, after all, we have no nested lookups and
     -- less code
 
-    local tfmdata     = false
-    local otfdata     = false
-    local characters  = false
-    local marks       = false
-    local glyphs      = false
-    local currentfont = false
-    local rlmode      = 0
+    local tfmdata      = false
+    local otfdata      = false
+    local characters   = false
+    local descriptions = false
+    local marks        = false
+    local indices      = false
+    local glyphs       = false
+    local currentfont  = false
+    local rlmode       = 0
 
     -- we cheat a bit and assume that a font,attr combination are kind of ranged
 
@@ -2847,8 +3128,11 @@ do
         local shared = tfmdata.shared
         otfdata = shared.otfdata
         characters = tfmdata.characters
-        marks = otfdata.luatex.marks
+        descriptions = tfmdata.descriptions
         glyphs = otfdata.glyphs
+        local luatex = otfdata.luatex
+        marks = luatex.marks
+        indices = luatex.indices
         currentfont = font
         rlmode = 0
         local script, language, strategy
@@ -3086,59 +3370,37 @@ do
                     local prev = start.prev
                     start = start.next
                 end
-            else
+            else -- start is the ligature
+                -- to be checked: this marknum mess (sensitive for looping)
                 local deletemarks = markflag ~= "mark"
+--~ deletemarks = false
                 start.components = copy_list(start,stop)
-                slide(start.components)
-                -- todo: components
-                start.subtype = 2
-                start.char = char
-                local marknum = 1
-                local next = start.next
-                while true do
-                    if marks[next.char] then
-                        if not deletemarks then
-                            set_attribute(next,marknumber,marknum)
-                        end
-                    else
-                        marknum = marknum + 1
-                    end
-                    if next == stop then
-                        break
-                    else
-                        next = next.next
-                    end
-                end
-                next = stop.next
-                while next do
-                    if next.id == glyph and next.font == currentfont and marks[next.char] then
+                local last = slide(start.components)
+                start.components.prev, last.next = nil, nil
+                start.char, start.subtype = char, 2
+                local next, done, marknum = start.next, false, 1
+                local after = stop.next
+                while not done do
+                    done = next == stop
+                    if not deletemarks and marks[next.char] then
                         set_attribute(next,marknumber,marknum)
                         next = next.next
+                    --~ marknum = marknum + 1
                     else
-                        break
+                        marknum = marknum + 1
+                        start, next = nodes.remove(start,next,true)
                     end
                 end
-                local next = start.next
-                while next do
-                    if next == stop or deletemarks or marks[next.char] then
-                        local crap = next
-                        local np, nn = next.prev, next.next
-                        np.next = nn
-                        if nn then
-                            nn.prev = np
-                        end
-                        if next == stop then
-                            stop = crap.prev
-                            free(crap)
-                            break
-                        else
-                            next = nn
-                            free(crap)
-                        end
+                while after and after.id == glyph and after.font == currentfont and marks[after.char] do
+                    if deletemarks then
+                        start, after = nodes.remove(start,after,true)
                     else
-                        next = nn
+                        set_attribute(after,marknumber,marknum)
+                        after = after.next
+                    --~ marknum = marknum + 1
                     end
                 end
+
             end
         end
         return start
@@ -3200,10 +3462,15 @@ do
             local id = s.id
             if id == glyph and s.subtype<256 then
                 if s.font == currentfont then
-                    if marks[s.char] then
+                    local char = s.char
+                    if marks[char] then
                         s = s.next
                     else
-                        local lg = ligatures[1][s.char]
+                        -- we use indices, which saves a lookup, but we can use
+                        -- names when we comment the line after (*lig*)
+                        -- local lg = ligatures[1][glyphs[indices[char]].name]
+                        local lg = ligatures[1][indices[char]]
+                        -- mayb esome day we introduce a more efficient method
                         if not lg then
                             break
                         else
@@ -3313,13 +3580,12 @@ do
         return start, false
     end
 
+    -- hm which one is the correct one? chainprocs.gpos_mark2mark ot the next; the next one
+    -- had more tracing so might be the best
+
     function otf.features.process.gpos_mark2mark(start,kind,lookupname,b_anchors,m_anchors)
         local basemarkchar = start.char
---~ print(lookupname)
         if marks[basemarkchar] then
---~ print('')
---~ print('basemarkchar',basemarkchar)
---~ print('basemarkanchors', table.serialize(b_anchors))
             local baseanchors = b_anchors['basemark']
             if baseanchors then
                 local component = start.next
@@ -3328,16 +3594,11 @@ do
                     if not marks[markchar] then
                         break
                     else
---~ print('markchar',markchar)
-                        local basemarkattr = has_attribute(start,    marknumber) or 1
+                        local basemarkattr = has_attribute(start,marknumber) or 1
                         local markattr = has_attribute(component,marknumber) or 1
---~ print(basemarkattr,markattr)
                         if basemarkattr == markattr then -- still needed?
---~ print('markanchors *', table.serialize(m_anchors))
-
                             local markanchors = m_anchors[markchar]
                             if markanchors then
---~ print('markanchors')
                                 local markanchor = markanchors['mark']
                                 if markanchor then
                                     for anchor,ma in pairs(markanchor) do
@@ -3355,8 +3616,9 @@ do
                                     end
                                 end
                             end
-                            component = component.next
+                            -- weird, was here
                         end
+                        component = component.next
                     end
                 end
             end
@@ -3384,7 +3646,7 @@ do
                                     local exit = cexit[anchor]
                                     if exit then
                                         local factor = tfmdata.factor
-                                        local dx = -(tfmdata.characters[prevchar].description.width-exit[1]) - entry[1]
+                                        local dx = -(descriptions[prevchar].width-exit[1]) - entry[1]
                                         local dy = -(entry[2]-exit[2])
                                         start.yoffset = prev.yoffset + scale(dy, factor)
                                     --  start.xoffset = scale(tx[i], factor)
@@ -3433,7 +3695,7 @@ do
                                     local exit = cexit[anchor]
                                     if exit then
                                         local dy = -exit[2] + entry[2]
-                                        local dx = -(tfmdata.characters[nextchar].description.width-entry[1]) - exit[1] -- often width == entry 1
+                                        local dx = -(descriptions[nextchar].width-entry[1]) - exit[1] -- often width == entry 1
                                         tx[#tx+1], ty[#ty+1] = dx, dy
                                         total_x, total_y = total_x + dx, total_y + dy
                                         stack[#stack+1] = start
@@ -3465,51 +3727,55 @@ do
     end
 
     function otf.features.process.gpos_pair(start,kind,lookupname,basekerns,kerns)
-        local next, prev, done = start.next, start, false
-        -- to be optimized, we can consider using basemode for fonts without lookups
         -- todo: kerns in disc nodes: pre, post, replace -> loop over disc too
         -- todo: kerns in components of ligatures
-        local trace = otf.trace_kerns
-        local factor = tfmdata.factor
-        while next and next.id == glyph and next.subtype<256 and next.font == currentfont do
-            local cn = characters[next.char]
-            if not cn or cn.description.class == 'mark' then
-                prev = next
-                next = next.next
-            else
-                local krn = basekerns[next.char]
-                if not krn then
-                    -- skip
-                elseif type(krn) == "table" then
-                    local a, b = krn[3], krn[7]
-                    if a and a ~= 0 then
-                        local k = nodes.kern(scale(a,factor))
+        local next = start.next
+        if not next then
+            return start, false
+        else
+            local prev, done = start, false
+            local trace = otf.trace_kerns
+            local factor = tfmdata.factor
+            while next and next.id == glyph and next.subtype<256 and next.font == currentfont do
+                local cn = descriptions[next.char]
+                if not cn or cn.class == 'mark' then
+                    prev = next
+                    next = next.next
+                else
+                    local krn = basekerns[next.char]
+                    if not krn then
+                        -- skip
+                    elseif type(krn) == "table" then
+                        local a, b = krn[3], krn[7]
+                        if a and a ~= 0 then
+                            local k = nodes.kern(scale(a,factor))
+                            k.next = next
+                            k.prev = prev
+                            prev.next = k
+                            next.prev = k
+                            if trace then
+                                -- todo
+                            end
+                        end
+                        if b and b ~= 0 then
+                            report("otf process","we need to do something with the second kern xoff %s",b)
+                        end
+                    else
+                        -- todo, just start, next = node.insert_before(head,next,nodes.kern(scale(kern,factor)))
+                        if otf.trace_kerns then
+                            report("otf process","%s: inserting kern %s between 0x%04X and 0x%04X",kind,krn,prev.char,next.char)
+                        end
+                        local k = nodes.kern(scale(krn,factor))
                         k.next = next
                         k.prev = prev
                         prev.next = k
                         next.prev = k
-                        if trace then
-                            -- todo
-                        end
                     end
-                    if b and b ~= 0 then
-                        report("otf process","we need to do something with the second kern xoff %s",b)
-                    end
-                else
-                    -- todo, just start, next = node.insert_before(head,next,nodes.kern(scale(kern,factor)))
-                    if otf.trace_kerns then
-                        report("otf process","%s: inserting kern %s between 0x%04X and 0x%04X",kind,krn,prev.char,next.char)
-                    end
-                    local k = nodes.kern(scale(krn,factor))
-                    k.next = next
-                    k.prev = prev
-                    prev.next = k
-                    next.prev = k
+                    break
                 end
-                break
             end
+            return start, done
         end
-        return start, done
     end
 
 -- -- -- temp here, needs to be tested first -- -- --
@@ -3627,14 +3893,23 @@ do
                 local replacement = cacheslot[char]
                 if replacement == true then
                     if lookups then
-                        local looks = glyphs[tfmdata.characters[char].description.index].lookups -- SLOW, USE OTFDATA
+                        -- didn't we have the arrays available?
+                        local looks = glyphs[descriptions[char].index].lookups -- SLOW, USE OTFDATA
                         if looks then
-                            local glyphlookups = otfdata.luatex.internals[lookups[lookup]].lookups
-                            local unicodes = otfdata.luatex.unicodes
+                            local luatex = otfdata.luatex
+                            local glyphlookups = luatex.internals[lookups[lookup]].lookups
+                            local unicodes = luatex.unicodes
                             for gl=1,#glyphlookups do
                                 local lv = looks[glyphlookups[gl]]
                                 if lv then
-                                    replacement = unicodes[lv[1][2]] or char
+                                    local ulv = unicodes[lv[1][2]]
+                                    if not ulv then
+                                        replacement = char
+                                    elseif type(ulv) == "number" then
+                                        replacement = ulv
+                                    else
+                                        replacement = ulv[1]
+                                    end
                                     cacheslot[char] = replacement
                                     break
                                 end
@@ -3673,16 +3948,22 @@ do
         local replacement = cacheslot[char]
         if replacement == true then
             if lookups then
-                local looks = glyphs[tfmdata.characters[char].description.index].lookups
+                local looks = glyphs[descriptions[char].index].lookups
                 if looks then
-                    local lookups = otfdata.luatex.internals[lookups[1]].lookups
-                    local unicodes = otfdata.luatex.unicodes
+                    local luatex = otfdata.luatex
+                    local lookups = luatex.internals[lookups[1]].lookups
+                    local unicodes = luatex.unicodes
                     for l=1,#lookups do
                         local lv = looks[lookups[l]]
                         if lv then
                             replacement = { }
                             for c in lv[1][2]:gmatch("[^ ]+") do
-                                replacement[#replacement+1] = unicodes[c]
+                                local uc = unicodes[c]
+                                if type(uc) == "number" then
+                                    replacement[#replacement+1] = uc
+                                else
+                                    replacement[#replacement+1] = uc[1]
+                                end
                             end
                             cacheslot[char] = replacement
                             break
@@ -3724,16 +4005,22 @@ do
         local replacement = cacheslot[char]
         if replacement == true then
             if lookups then
-                local looks = glyphs[tfmdata.characters[char].description.index].lookups
+                local looks = glyphs[descriptions[char].index].lookups
                 if looks then
-                    local lookups = otfdata.luatex.internals[lookups[1]].lookups
-                    local unicodes = otfdata.luatex.unicodes
+                    local luatex = otfdata.luatex
+                    local lookups = luatex.internals[lookups[1]].lookups
+                    local unicodes = luatex.unicodes
                     for l=1,#lookups do
                         local lv = looks[lookups[l]]
                         if lv then
                             replacement = { }
                             for c in lv[1][2]:gmatch("[^ ]+") do
-                                replacement[#replacement+1] = unicodes[c]
+                                local uc = unicodes[c]
+                                if type(uc) == "number" then
+                                    replacement[#replacement+1] = uc
+                                else
+                                    replacement[#replacement+1] = uc[1]
+                                end
                             end
                             cacheslot[char] = replacement
                             break
@@ -3757,12 +4044,16 @@ do
 
     function chainprocs.gsub_ligature(start,stop,kind,lookupname,sequence,f,l,lookups,flags)
         if lookups then
+            if start == stop then
+            --    print("todo: optimize")
+            end
             local featurecache = fontdata[currentfont].shared.featurecache
-            if not featurecache[kind] then
-                featurecache[kind] = otf.features.collect_ligatures(tfmdata,kind) -- double cached ?
+            local ligaturecache = featurecache[kind]
+            if not ligaturecache then
+                ligaturecache = otf.features.collect_ligatures(tfmdata,kind) -- double cached ?
+                featurecache[kind] = ligaturecache
             end
             local lookups = otfdata.luatex.internals[lookups[1]].lookups
-            local ligaturecache = featurecache[kind]
             local trace = otf.trace_ligatures
             for i=1,#lookups do
                 local ligatures = ligaturecache[lookups[i]]
@@ -3774,7 +4065,7 @@ do
                         if id == disc then
                             s = s.next
                             discfound = true
-                        elseif characters[s.char].description.class == 'mark' then -- marks
+                        elseif descriptions[s.char].class == 'mark' then -- marks
                             s = s.next
                         else
                             local lg = ligatures[1][s.char]
@@ -3838,12 +4129,12 @@ do
                     if marks[basechar] then
                         component = component.prev
                     else
-                        local bglyph = glyphs[characters[basechar].description.index] -- startchar
+                        local bglyph = glyphs[descriptions[basechar].index] -- startchar
                         local baseanchors = bglyph.anchors['basechar']
                         if baseanchors then
                             local ba = baseanchors[anchortag]
                             if ba then
-                                local mglyph = glyphs[characters[markchar].description.index]
+                                local mglyph = glyphs[descriptions[markchar].index]
                                 local markanchors = mglyph.anchors['mark']
                                 if markanchors then
                                     local ma = markanchors[anchortag]
@@ -3897,7 +4188,7 @@ do
                     if marks[basechar] then
                         component = component.prev
                     else
-                        local bglyph = glyphs[characters[basechar].description.index] -- startchar
+                        local bglyph = glyphs[descriptions[basechar].index] -- startchar
                         local baseanchors = bglyph.anchors['baselig']
                         if baseanchors then
                             local ba = baseanchors[anchortag]
@@ -3905,7 +4196,7 @@ do
                                 local n = has_attribute(start,marknumber)
                                 ba = ba[n] -- ok ?
                                 if ba then
-                                    local mglyph = glyphs[characters[markchar].description.index]
+                                    local mglyph = glyphs[descriptions[markchar].index]
                                     local markanchors = mglyph.anchors['mark']
                                     if markanchors then
                                         local ma = markanchors[anchortag]
@@ -3931,7 +4222,7 @@ do
         return start, false
     end
 
-    -- to be checked
+    -- to be checked (see previous generic mark2mark)
 
     function chainprocs.gpos_mark2mark(start,stop,kind,lookupname,sequence,f,l,lookups)
         local component = start.next
@@ -3959,15 +4250,14 @@ do
                 local markattr = has_attribute(start,    marknumber) or 1 -- i need to check this ! 1 is new !
                 local baseattr = has_attribute(component,marknumber) or 1 -- i need to check this ! 1 is new !
                 if baseattr == markattr then
-                    local glyph = glyphs[characters[markchar].description.index]
+                    local glyph = glyphs[descriptions[markchar].index]
                     if glyph.anchors and glyph.anchors[anchortag] then
                         local trace = otf.trace_anchors
                         local done = false
                         local baseanchors = glyph.anchors['basemark'][anchortag]
-                        while true do
+                        while component do
                             local basechar = component.char
-                            local charnext = characters[basechar]
-                            local markanchors = glyphs[charnext.description.index].anchors['mark'][anchortag]
+                            local markanchors = glyphs[descriptions[basechar].index].anchors['mark'][anchortag]
                             if markanchors then
                                 for anchor,data in pairs(markanchors) do
                                     local ba = baseanchors[anchor]
@@ -4025,6 +4315,8 @@ do
 
     -- what pointer to return, spec says stop
 
+    -- to be discussed ... is bidi changer a space?
+
     function otf.features.process.contextchain(start,kind,lookupname,contextdata)
         local contexts, flags, done = contextdata.lookups, contextdata.flags, false
         local skipmark, skipligature, skipbase = unpack(flags) -- unpack slower than assignment
@@ -4042,17 +4334,22 @@ do
                         local id = last.id
                         if id == glyph and last.subtype<256 and last.font == currentfont then
                             local char = last.char
-                            local chardata = characters[char]
-                            if chardata then
-                                local class = chardata.description.class
-                                if class == skipmark or class == skipligature or class == skipbase then
-                                    -- skip 'm
-                                    last = last.next
-                                elseif sequence[n][char] then
-                                    if n < l then
+                            local cc = characters[char]
+                            if cc then
+                                local ccd = descriptions[char]
+                                if ccd then
+                                    local class = ccd.class
+                                    if class == skipmark or class == skipligature or class == skipbase then
+                                        -- skip 'm
                                         last = last.next
+                                    elseif sequence[n][char] then
+                                        if n < l then
+                                            last = last.next
+                                        end
+                                        n = n + 1
+                                    else
+                                        match = false break
                                     end
-                                    n = n + 1
                                 else
                                     match = false break
                                 end
@@ -4078,11 +4375,21 @@ do
                                 local id = prev.id
                                 if id == glyph and prev.subtype<256 and prev.font == currentfont then -- normal char
                                     local char = prev.char
-                                    local class = characters[char].description.class
-                                    if class == skipmark or class == skipligature or class == skipbase then
-                                        -- skip 'm
-                                    elseif sequence[n][char] then
-                                        n = n -1
+                                    local cc = characters[char]
+                                    if cc then
+                                        local ccd = descriptions[char]
+                                        if ccd then
+                                            local class = ccd.class
+                                            if class == skipmark or class == skipligature or class == skipbase then
+                                                -- skip 'm
+                                            elseif sequence[n][char] then
+                                                n = n -1
+                                            else
+                                                match = false break
+                                            end
+                                        else
+                                            match = false break
+                                        end
                                     else
                                         match = false break
                                     end
@@ -4120,11 +4427,21 @@ do
                                 local id = next.id
                                 if id == glyph and next.subtype<256 and next.font == currentfont then -- normal char
                                     local char = next.char
-                                    local class = characters[char].description.class
-                                    if class == skipmark or class == skipligature or class == skipbase then
-                                        -- skip 'm
-                                    elseif sequence[n][char] then
-                                        n = n + 1
+                                    local cc = characters[char]
+                                    if cc then
+                                        local ccd = descriptions[char]
+                                        if ccd then
+                                            local class = ccd.class
+                                            if class == skipmark or class == skipligature or class == skipbase then
+                                                -- skip 'm
+                                            elseif sequence[n][char] then
+                                                n = n + 1
+                                            else
+                                                match = false break
+                                            end
+                                        else
+                                            match = false break
+                                        end
                                     else
                                         match = false break
                                     end
@@ -4208,7 +4525,7 @@ do
                         local id = next.id
                         if id == glyph and next.subtype<256 and next.font == currentfont then -- normal char
                             local char = next.char
-                            local class = characters[char].description.class
+                            local class = descriptions[char].class
                             if class == skipmark or class == skipligature or class == skipbase then
                                 -- skip
                             elseif sequence[n][char] then
@@ -4406,16 +4723,16 @@ do
     local tlig_list = {
         endash        = "hyphen hyphen",
         emdash        = "hyphen hyphen hyphen",
---~         quotedblleft  = "quoteleft quoteleft",
---~         quotedblright = "quoteright quoteright",
---~         quotedblleft  = "grave grave",
---~         quotedblright = "quotesingle quotesingle",
---~         quotedblbase  = "comma comma",
+    --~ quotedblleft  = "quoteleft quoteleft",
+    --~ quotedblright = "quoteright quoteright",
+    --~ quotedblleft  = "grave grave",
+    --~ quotedblright = "quotesingle quotesingle",
+    --~ quotedblbase  = "comma comma",
     }
     local trep_list = {
---~         [0x0022] = 0x201D,
+    --~ [0x0022] = 0x201D,
         [0x0027] = 0x2019,
---~         [0x0060] = 0x2018,
+    --~ [0x0060] = 0x2018,
     }
 
     local tlig_feature = {
@@ -4436,19 +4753,22 @@ do
     }
 
     function otf.enhance.enrich(data,filename)
-        for index, glyph in pairs(data.glyphs) do
+        local glyphs = data.glyphs
+        local indices = data.map.map
+        for unicode, index in pairs(indices) do
+            local glyph = glyphs[index]
             local l = tlig_list[glyph.name]
             if l then
                 local o = glyph.lookups or { }
                 o["ctx_tlig_1"] = { { "ligature", l, glyph.name } }
                 glyph.lookups = o
             end
-            local r = trep_list[glyph.unicode]
+            local r = trep_list[unicode]
             if r then
-                local replacement = data.map.map[r]
+                local replacement = indices[r]
                 if replacement then
                     local o = glyph.lookups or { }
-                    o["ctx_trep_1"] = { { "substitution", data.glyphs[replacement].name } } ---
+                    o["ctx_trep_1"] = { { "substitution", glyphs[replacement].name } } ---
                     glyph.lookups = o
                 end
             end
@@ -4528,7 +4848,12 @@ function otf.name_to_slot(name) -- todo: afm en tfm
     if tfmdata and tfmdata.shared then
         local otfdata = tfmdata.shared.otfdata
         if otfdata and otfdata.luatex then
-            return otfdata.luatex.unicodes[name]
+            local unicode = otfdata.luatex.unicodes[name]
+            if type(unicode) == "number" then
+                return unicode
+            else
+                return unicode[1]
+            end
         end
     end
     return nil
@@ -4543,28 +4868,7 @@ function otf.char(n) -- todo: afm en tfm
     end
 end
 
---~ function otf.name_to_table(name)
---~     lcoal temp, result = { }
---~     local tfmdata = tfm.id[font.current()]
---~     if tfmdata and tfmdata.shared then
---~         local otfdata = tfmdata.shared.otfdata
---~         if otfdata and otfdata.luatex then
---~             for k,v in pairs(otfdata.glyphs) do
---~                 if v.name:find(name) then
---~                     temp[v.name] = v.unicode
---~                 end
---~             end
---~         end
---~     end
---~     for k,v in pairs(table.sortedkeys(temp)) do
---~         result[#result+1] = { v, temp[v] }
---~     end
---~     return result
---~ end
-
--- Here we plug in some analyzing code
-
--- will move to font-tfm
+-- Here we plug in some analyzing code (will move to font-tfm).
 
 do
 
@@ -4650,7 +4954,7 @@ do
     local isol_fina = {
         [0x0622] = true, [0x0623] = true, [0x0624] = true, [0x0625] = true, [0x0627] = true, [0x062F] = true,
         [0x0630] = true, [0x0631] = true, [0x0632] = true,
-        [0x0648] = true,
+        [0x0648] = true, [0x0698] = true,
         [0xFEF5] = true, [0xFEF7] = true, [0xFEF9] = true, [0xFEFB] = true,
     }
 
@@ -4659,8 +4963,8 @@ do
         [0x0633] = true, [0x0634] = true, [0x0635] = true, [0x0636] = true, [0x0637] = true, [0x0638] = true, [0x0639] = true, [0x063A] = true,
         [0x0640] = true, -- tadwil
         [0x0641] = true, [0x0642] = true, [0x0643] = true, [0x0644] = true, [0x0645] = true, [0x0646] = true, [0x0647] = true, [0x0649] = true, [0x064A] = true,
-        [0x067E] = true,
-        [0x0686] = true, [zwj] = true,
+        [0x067E] = true, [0x0686] = true, [0x06AF] = true, [0x06A9] = true, [0x06CC] = true,
+        [zwj] = true,
     }
 
     local arab_warned = { }
@@ -4685,7 +4989,9 @@ do
     otf.remove_joiners = true -- for idris who want it as option
 
     function fonts.analyzers.methods.arab(head,font,attr) -- maybe make a special version with no trace
-        local characters = fontdata[font].characters
+        local tfmdata = fontdata[font]
+        local characters = tfmdata.characters
+        local descriptions = tfmdata.descriptions
         local first, last, current, done = nil, nil, head, false
         local trace, removejoiners = fonts.color.trace, otf.remove_joiners
     --~ local laststate = 0
@@ -4736,11 +5042,11 @@ do
                 -- some day we will make a characters.marks hash
                 -- this is also more efficient since it's shared
                 local char = current.char
-                local chardata = characters[char]
+                local descriptions = descriptions[char]
                 if removejoiners and char == zwj or char == zwnj then
                     joiners[#joiners+1] = current
                 end
-                if chardata and chardata.description.class == "mark" then
+                if descriptions and descriptions.class == "mark" then
                     set_attribute(current,state,5) -- mark
                     if trace then fcs(current,"font:mark") end
                 elseif isol[char] then -- can be zwj or zwnj too
@@ -4920,15 +5226,19 @@ do
     }
 
     local function is_han_character(char)
+        -- we might add such info to char-def
         return
-            (char>=0x04E00 and char<=0x09FFF) or
+            (char>=0x03040 and char<=0x0309F) or
+            (char>=0x030A0 and char<=0x030FF) or
+            (char>=0x031F0 and char<=0x031FF) or
             (char>=0x03400 and char<=0x04DFF) or
-            (char>=0x20000 and char<=0x2A6DF) or
+            (char>=0x04E00 and char<=0x09FFF) or
             (char>=0x0F900 and char<=0x0FAFF) or
+            (char>=0x0FF00 and char<=0x0FFEF) or
+            (char>=0x20000 and char<=0x2A6DF) or
             (char>=0x2F800 and char<=0x2FA1F)
     end
-
-    -- mayeb an entry in the character table: hanclass
+    -- maybe an entry in the character table: hanclass
 
     --~ opening_parenthesis_hw / closing_parenthesis_hw
     --~ opening_parenthesis_fw / closing_parenthesis_fw
@@ -4966,7 +5276,9 @@ do
 
     function fonts.analyzers.methods.hani(head,font,attr)
         -- maybe make a special version with no trace
-        local characters = fontdata[font].characters
+        local tfmdata = fontdata[font]
+        local characters = tfmdata.characters
+        local descriptions = tfmdata.descriptions
         local current, done, stretch, prevclass = head, false, 0, 0
         if fonts.analyzers.methods.stretch_hang then
             stretch = fontdata[font].parameters.quad
@@ -4977,7 +5289,8 @@ do
         local internormalstretch =   stretch * hang_data.inter_char_stretch_factor
         local trace = fonts.color.trace
         -- todo: check for first and last
--- maybe it's better to look back
+        -- maybe it's better to look back
+-- we need to backtrack a glyph (also other font)
         while current do
             if current.id == glyph and current.subtype<256 then
                 if current.font == font then
@@ -5035,6 +5348,7 @@ do
                         head, current = insert_after(head,current,nodes.glue(0,internormalstretch,0))
                     end
                 else
+-- here we might have a mixed font
                     prevclass = 0
                 end
             elseif prevclass > 0 and current.id == glue and current.spec and current.spec.width > 0 then

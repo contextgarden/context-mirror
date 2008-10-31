@@ -221,10 +221,15 @@
    \setvalue{#1\c!inbetween}{\dobetweenlist{#1}}%
    \setvalue{#1\c!list     }{\dolistelement{#1}}}
 
+% \def\dodoresetlist#1%
+%   {\let\nolist\empty
+%    \setvalue{#1\c!inbetween}{\gobblefourarguments{#1}}%
+%    \setvalue{#1\c!list     }{\gobblesixarguments {#1}}}
+
 \def\dodoresetlist#1%
   {\let\nolist\empty
-   \setvalue{#1\c!inbetween}{\gobblefourarguments{#1}}%
-   \setvalue{#1\c!list     }{\gobblesixarguments {#1}}}
+   \letvalue{#1\c!inbetween}\gobblethreearguments
+   \letvalue{#1\c!list     }\gobblefivearguments}
 
 \let\nolist\empty
 
@@ -263,6 +268,7 @@
       \c!symbol=,
       \c!interaction=\v!sectionnumber,
       \v!part\v!number=\v!yes,  % nodig ? % v
+      %\c!prefix=\v!no, % we need to initialize it
       \c!label=\v!no,
       \c!distance=\!!zeropoint,
       \c!separator=\@@koseparator,
@@ -319,7 +325,7 @@
    \dosettoclevel\??li\firstlistelement
    \honorlocalfilterlevel
    \doutilities{listentries,#1}\jobname{#1}\relax\par
-   \stoplistreferences{#1}%
+   \stoplistreferences
    \dosetlistmode
    \endgroup}
 
@@ -1050,7 +1056,7 @@
    \doifvalue{\??ih#1\c!coupling}\v!on
      {\startlistreferences{#1}}%
    \ExpandFirstAfter\dodoplacecombinedlist[\combinedlist][#2]%
-   \stoplistreferences{#1}%
+   \stoplistreferences
    \endgroup
    \dosetlistmode}
 

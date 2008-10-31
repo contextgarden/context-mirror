@@ -182,7 +182,7 @@ trie_size                =  500000
 hyph_size                =    8191
 expand_depth             =   10000
 
-buf_size.context         = 4000000 % needed for omega bug
+buf_size.context         = 1000000 % needed for omega bug
 extra_mem_bot.context    = 2000000
 extra_mem_top.context    = 4000000
 font_max.context         =    5000

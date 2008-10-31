@@ -16,6 +16,7 @@ function io.loaddata(filename)
     local f = io.open(filename,'rb')
     if f then
         local data = f:read('*all')
+    --  garbagecollector.check(data)
         f:close()
         return data
     else

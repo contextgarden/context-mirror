@@ -661,9 +661,6 @@
   {\dogetobjectreference{#1}{#2}#3%
    \ifx#3\empty\else\edef#3{#3}\fi}
 
-% \def\doPDFgetobjectpage         #1#2#3{..}
-% \def\doPDFgetobjectpagereference#1#2#3{..}
-
 \def\doPDFgetpagereference#1#2%
   {\edef#2{@page#1}}
 
@@ -693,48 +690,24 @@
 \definespecial\dostopclipping
   {\PDFcode{Q n}}
 
-%D 4. Modified codes from \type{supp-mpe}
+%D 4. Modified codes from \type{supp-pdf}
 
-\def\stopMPshading
+\def\dosetMPsomePDFshade#1#2%
   {\global\advance\currentPDFshade \plusone
-   \setxvalue{obj:Sh:\currentMPspecial}%
-     {/Sh\the\currentPDFshade\space @obj:Sh:\currentMPspecial\space}%
-   \setxvalue{mps:Sh:\currentMPspecial}%
-     {\the\currentPDFshade}}
-
-\defineMPspecial{30}
-  {\startMPshading{14}% type 2
-   \setMPshadingcolors{4}{5}{6}{9}{10}{11}%
-   \special{pdf:object @ftn:Sh:\currentMPspecial\space
-     <</FunctionType 2
-       /Domain [\gMPs1 \gMPs2]
-       /C0 [\MPshadeA]
-       /C1 [\MPshadeB]
-       /N \gMPs3>>}%
-   \special{pdf:object @obj:Sh:\currentMPspecial\space
-     <</ShadingType 2
-       /ColorSpace /\MPshadeC\space
-       /Function @ftn:Sh:\currentMPspecial\space
-       /Coords [\gMPs7 \gMPs8 \gMPs{12} \gMPs{13}]
-       /Extend [true true]>>}%
-   \stopMPshading}
-
-\defineMPspecial{31}
-  {\startMPshading{16}% type 3
-   \setMPshadingcolors{4}{5}{6}{10}{11}{12}%
-   \special{pdf:object @ftn:Sh:\currentMPspecial\space
-     <</FunctionType 2
-       /Domain [\gMPs1 \gMPs2]
-       /C0 [\MPshadeA]
-       /C1 [\MPshadeB]
-       /N \gMPs3>>}%
-   \special{pdf:object @obj:Sh:\currentMPspecial\space
-     <</ShadingType 3
-       /ColorSpace /\MPshadeC\space
-       /Function @ftn:Sh:\currentMPspecial\space
-       /Coords [\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}]
-       /Extend [true true]>>}%
-   \stopMPshading}
+   \special{pdf:object @ftn:Sh:\currentPDFshade\space
+       <</FunctionType 2
+        /Domain [\gMPs1 \gMPs2]
+        /C0 [\MPshadeA]
+        /C1 [\MPshadeB]
+        /N \gMPs3>>}%
+   \special{pdf:object @obj:Sh:\currentPDFshade\space
+      <</ShadingType #1
+        /ColorSpace /\MPresolvedspace
+        /Function @ftn:Sh:\currentPDFshade\space
+        /Coords [\MPshadeC]
+        /Extend [true true]>>}%
+   \appendtoPDFdocumentshades{/Sh\the\currentPDFshade\space @obj:Sh:\currentPDFshade}%
+   \setxvalue{\@@MPSK#2}{\noexpand\dohandleMPshade{\the\currentPDFshade}}}
 
 \def\handleMPfigurespecial#1#2#3#4#5#6#7% toto : combine with ext fig
   {\doiffileelse{#7}

@@ -159,18 +159,13 @@
        \let\colorstyle\empty
        \setupcolor[#1]%
      \fi
-     \setupwhitespace[\v!none]
      \def\rule
-       {\vrule\!!width4em\!!height\strutht\!!depth\strutdp}
+       {\vrule\!!width4em\!!height\strutht\!!depth\strutdp}%
      \def\docommand##1%
-       {\hbox
-          {\graycolor[##1]{\rule}\quad
-           \color[##1]{\rule}\quad
-           \grayvalue{##1}\quad
-           \hbox to 12em{\colorvalue{##1}\hss}%
-           \strut##1}
-        \endgraf}
-     \processcommacommand[\colorlist]\docommand
+       {\NC\graycolor[##1]{\rule}\NC\color[##1]{\rule}\NC\grayvalue{##1}\NC\colorvalue{##1}\NC##1\NC\NR}%
+     \starttabulate[|l|l|l|l|l|l|l|]
+       \expanded{\globalprocesscommalist[\colorlist]}\docommand
+     \stoptabulate
    \egroup}
 
 \gdef\comparepalet

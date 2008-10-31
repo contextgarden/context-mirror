@@ -103,9 +103,9 @@
 %D A quick way to determine left|/|middle|/|right states
 %D (experimental).
 
-\setvalue{\??as\v!left }{0}
+\setvalue{\??as\v!left  }{0}
 \setvalue{\??as\v!middle}{1}
-\setvalue{\??as\v!right}{2}
+\setvalue{\??as\v!right }{2}
 
 \def\setalignmentswitch#1%
   {\chardef\alignmentswitch0\csname\??as#1\endcsname\relax}
@@ -631,7 +631,16 @@
    \global\blankgobackfalse
    \blankouterfalse
    \global\blankskip\zeropoint
-   \expanded{\rawprocesscommalist[#1]}\doblank
+%
+\edefconvertedargument\ascii{#1}% todo fast check for simple
+\ifcsname\??bo\??bo\ascii\endcsname % internal def
+  \csname\??bo\??bo\ascii\endcsname
+\else\ifcsname\??bo\ascii\endcsname % user def / slow
+  \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
+\else
+  \expanded{\rawprocesscommalist[#1]}\doblank
+\fi\fi
+%
    \relax % to be sure
    \ifdim\blankskip=\zeropoint\relax
      \iflocalblankflexible
@@ -1347,16 +1356,14 @@
      \unskip\unskip\unskip\unskip\unskip
    \fi}
 
+\appendtoks\let~\space\to\simplifiedcommands
+
 % still not fixed in aleph / luatex
-%
-% \beginETEX \lastnodetype
 %
 % \def\removeunwantedspaces
 %   {\ifhmode \ifnum\lastnodetype=\@@gluenode
 %       \unskip \@EAEAEA\removeunwantedspaces
 %    \fi \fi}
-%
-% \endETEX
 
 %D For old time sake, will disappear soon.
 
@@ -1397,17 +1404,25 @@
 
 \ifx\thinspace\undefined
 
-  \def\thinspace   {\kern .16667em }
-  \def\negthinspace{\kern-.16667em }
-  \def\enspace     {\kern     .5em }
+    \def\thinspace   {\kern .16667em }
+    \def\negthinspace{\kern-.16667em }
+    \def\enspace     {\kern     .5em }
+
+    \def\thinspace   {\kern .16667\fontdimen6\font}
+    \def\negthinspace{\kern-.16667\fontdimen6\font}
+    \def\enspace     {\kern     .5\fontdimen6\font}
 
 \fi
 
 \ifx\quad\undefined
 
-  \def\enskip{\hskip.5em\relax}
-  \def\quad  {\hskip 1em\relax}
-  \def\qquad {\hskip 2em\relax}
+    \def\enskip{\hskip.5em\relax}
+    \def\quad  {\hskip 1em\relax}
+    \def\qquad {\hskip 2em\relax}
+
+    \def\enskip{\hskip.5\fontdimen6\font}
+    \def\quad  {\hskip  \fontdimen6\font} % faster
+    \def\qquad {\hskip 2\fontdimen6\font}
 
 \fi
 
@@ -1529,18 +1544,57 @@
 
 \definecomplexorsimple\setupwhitespace
 
+% \def\simplesetupwhitespace
+%   {\doifnot\currentwhitespace\v!none\dosetupwhitespace}
+%
+% \def\complexsetupwhitespace[#1]%
+%   {\doifelsenothing{#1}
+%      {\simplesetupwhitespace}
+%      {\edef\currentwhitespace{#1}%
+%       \dosetupwhitespace}}
+%
+% \def\dosetupwhitespace
+%   {\processcommacommand[\currentwhitespace]\dowhitespacemethod
+%    \dodosetupwhitespace}
+
 \def\simplesetupwhitespace
   {\doifnot\currentwhitespace\v!none\dosetupwhitespace}
 
 \def\complexsetupwhitespace[#1]%
-  {\doifelsenothing{#1}
-     {\simplesetupwhitespace}
-     {\edef\currentwhitespace{#1}%
-      \dosetupwhitespace}}
+  {\edef\nextcurrentwhitespace{#1}%
+   \ifx\nextcurrentwhitespace\empty
+     \simplesetupwhitespace
+   \else
+     \let\currentwhitespace\nextcurrentwhitespace
+     \dosetupwhitespace
+   \fi}
 
-\def\dosetupwhitespace
-  {\processcommacommand[\currentwhitespace]\dowhitespacemethod
-   \dodosetupwhitespace}
+\def\dosetupwhitespace % quick test for no list
+  {\ifcsname\??ws\??ws\currentwhitespace\endcsname
+     \csname\??ws\??ws\currentwhitespace\endcsname
+   \else
+     \expandafter\processcommalist\expandafter[\currentwhitespace]\dowhitespacemethod % can be raw
+   \fi\relax
+   \ifgridsnapping
+     \setfalse\flexiblewhitespace
+     \ifdim\ctxparskip>\zeropoint
+       \ctxparskip
+       \ifcase\baselinegridmode
+         \baselineskip % normal ! ! ! ! !!
+       \or
+         \ifdim\scratchdimen=\baselineskip % maybe range
+           \baselineskip % normal ! ! ! ! !!
+         \else
+           \numexpr\ctxparskip/\dimexpr.5\lineheight\relax\relax\dimexpr.5\lineheight\relax
+         \fi
+       \else
+         \baselineskip % normal ! ! ! ! !!
+       \fi
+     \fi
+   \else
+     \ifconditional\flexiblewhitespace \else \ctxparskip1\ctxparskip \fi
+   \fi
+   \parskip\ctxparskip}
 
 \chardef\baselinegridmode=0 % option in layout / 1=permit_half_lines
 
@@ -1582,8 +1636,11 @@
 
 \definewhitespacemethod [\s!default]  {\simplesetupwhitespace} % {\stelwitruimteopnieuwin}
 
+% \def\dowhitespacemethod#1%
+%   {\executeifdefined{\??ws\??ws#1}{\ctxparskip#1}\relax}
+
 \def\dowhitespacemethod#1%
-  {\executeifdefined{\??ws\??ws#1}{\ctxparskip#1}\relax}
+  {\ifcsname\??ws\??ws#1\endcsname\csname\??ws\??ws#1\endcsname\else\ctxparskip#1\fi\relax}
 
 \def\nowhitespace
   {\ifdim\parskip>\zeropoint\relax
@@ -1909,15 +1966,8 @@
    \else
      \strutdepthfactor \openlineheight
    \fi
-   \begingroup % avoid interference
-   \scratchdimen\minimumstrutdepth
-   \advance\scratchdimen\minimumstrutheight
-   \ifdim\scratchdimen>\zeropoint
-     \endgroup
-     \openlineheight\openstrutheight % new
-     \advance\openlineheight\openstrutdepth % new
-   \else
-     \endgroup
+   \ifdim\dimexpr\minimumstrutdepth+\minimumstrutheight\relax>\zeropoint
+     \openlineheight\dimexpr\openstrutheight+\openstrutdepth\relax % new
    \fi
    \normalbaselineskip\openlineheight
      \ifgridsnapping\else
@@ -1929,29 +1979,40 @@
    \normalbaselines
    \mksetupgridsnapping}
 
-\def\setspacingfactor#1\to#2\by#3\\%
-  {\strutdimen#2\points
-   \strutdimen#3\strutdimen
-   \edef#1{\withoutpt\the\strutdimen}}
+% \def\setspacingfactor#1\to#2\by#3\\%
+%   {\strutdimen#2\points
+%    \strutdimen#3\strutdimen
+%    \edef#1{\withoutpt\the\strutdimen}}
+%
+% \def\spacing#1%
+%   {\ifgridsnapping
+%     %\doifnot{#1}{1}{\showmessage\m!layouts{11}{#1}}%
+%      \ifdim#1\points=\onepoint\else\showmessage\m!layouts{11}{#1}\fi
+%      \edef\spacingfactor{1}%
+%    \else
+%      \edef\spacingfactor{#1}%
+%    \fi
+%    \setspacingfactor\systemtopskipfactor \to\topskipfactor \by#1\\% why no \spacingfactor ?
+%    \setspacingfactor\systemmaxdepthfactor\to\maxdepthfactor\by#1\\% why no \spacingfactor ?
+%    \setnormalbaselines
+%    \setstrut}
+%
+% \def\setspacingfactor#1#2#3%
+%   {\edef#1{\withoutpt\the\dimexpr#2\points*#3\relax}}
 
 \def\spacing#1%
   {\ifgridsnapping
-    %\doifnot{#1}{1}{\showmessage\m!layouts{11}{#1}}%
      \ifdim#1\points=\onepoint\else\showmessage\m!layouts{11}{#1}\fi
      \edef\spacingfactor{1}%
    \else
      \edef\spacingfactor{#1}%
    \fi
-   \setspacingfactor\systemtopskipfactor \to\topskipfactor \by#1\\% why no \spacingfactor ?
-   \setspacingfactor\systemmaxdepthfactor\to\maxdepthfactor\by#1\\% why no \spacingfactor ?
+  %\setspacingfactor\systemtopskipfactor \topskipfactor {#1}% why no \spacingfactor ?
+  %\setspacingfactor\systemmaxdepthfactor\maxdepthfactor{#1}% why no \spacingfactor ?
+   \edef\systemtopskipfactor {\withoutpt\the\dimexpr#1\dimexpr\topskipfactor \points}%
+   \edef\systemmaxdepthfactor{\withoutpt\the\dimexpr#1\dimexpr\maxdepthfactor\points}%
    \setnormalbaselines
    \setstrut}
-
-\def\setstrutdimen#1#2#3%             % een strut is n.m maal ex
-  {\strutdimen\normallineheight       % wat niet per se \lineheight
-   \strutdimen#2\strutdimen           % is omdat een strut lokaal
-   \strutdimen#3\strutdimen           % kan afwijken van de globale
-   \edef#1{\the\strutdimen}} % macro  % strut
 
 %D Sometimes one needs to freeze the interlinespacing
 %D
@@ -1970,7 +2031,7 @@
       \normalbaselineskip \the\normalbaselineskip
       \normallineskip     \the\normallineskip
       \normallineskiplimit\the\normallineskiplimit
-      \noexpand\def\noexpand\normallineheight{\the\dimexpr\normallineheight\relax}%
+      \noexpand\def\noexpand\normallineheight{\the\dimexpr\normallineheight}%
       \noexpand\normalbaselines}}
 
 % plain definition:
@@ -1996,6 +2057,18 @@
 
 % The double \hbox construction enables us to \backtrack
 % boxes.
+
+% \def\setstrutdimen#1#2#3%             % een strut is n.m maal ex
+%   {\strutdimen\normallineheight       % wat niet per se \lineheight
+%    \strutdimen#2\strutdimen           % is omdat een strut lokaal
+%    \strutdimen#3\strutdimen           % kan afwijken van de globale
+%    \edef#1{\the\strutdimen}} % macro  % strut
+
+% \def\setstrutdimen#1#2#3%             % een strut is n.m maal ex
+%   {\strutdimen\normallineheight       % wat niet per se \lineheight
+%    \strutdimen#2\strutdimen           % is omdat een strut lokaal
+%    \strutdimen#3\strutdimen           % kan afwijken van de globale
+%    \edef#1{\the\strutdimen}} % macro  % strut
 
 % \def\setstrut
 %   {\setstrutdimen\strutheight\strutheightfactor\spacingfactor
@@ -2032,37 +2105,90 @@
 % interesting, strutdepth is 4.05064pt vs 4.05066pt depending on grid
 % nasty rounding problem
 
-\def\setstrut
+% \def\setstrut
+%   {% height
+%    \strutdimen\normallineheight
+%    \ifdim\minimumstrutheight>\zeropoint
+%      \strutdimen\minimumstrutheight
+%    \else
+%      \strutdimen\strutheightfactor\strutdimen
+%    \fi
+%    \strutdimen\spacingfactor\strutdimen
+%    \edef\strutheight{\the\strutdimen}%
+%    % depth
+%    \strutdimen\normallineheight
+%    \ifgridsnapping
+%      \ifdim\minimumstrutdepth>\zeropoint
+%        \strutdimen\minimumstrutdepth
+%      \else
+%        \advance\strutdimen-\strutheight
+%      \fi
+%    \else
+%      \ifdim\minimumstrutdepth>\zeropoint
+%        \strutdimen\minimumstrutdepth
+%      \else
+%        \strutdimen\strutdepthfactor\strutdimen
+%      \fi
+%      \strutdimen\spacingfactor\strutdimen
+%    \fi
+%    \edef\strutdepth{\the\strutdimen}%
+%    % finish
+%    \dosetstrut}
+
+% \def\setstrut
+%   {% height
+%    \ifdim\minimumstrutheight>\zeropoint
+%      \edef\strutheight{\the\dimexpr\spacingfactor\dimexpr\minimumstrutheight}%
+%    \else
+%      \edef\strutheight{\the\dimexpr\spacingfactor\dimexpr\strutheightfactor\dimexpr\normallineheight}%
+%    \fi
+%    % depth
+%    \ifgridsnapping
+%      \ifdim\minimumstrutdepth>\zeropoint
+%        \edef\strutdepth{\the\dimexpr\minimumstrutdepth}%
+%      \else
+%        \edef\strutdepth{\the\dimexpr\normallineheight-\strutheight}%
+%      \fi
+%    \else
+%      \ifdim\minimumstrutdepth>\zeropoint
+%        \edef\strutdepth{\the\dimexpr\spacingfactor\dimexpr\minimumstrutdepth}%
+%      \else
+%        \edef\strutdepth{\the\dimexpr\spacingfactor\dimexpr\strutdepthfactor\dimexpr\normallineheight}%
+%      \fi
+%    \fi
+%    % finish
+%    \dosetstrut}
+
+\unexpanded\def\setstrut
   {% height
-   \strutdimen\normallineheight
-   \ifdim\minimumstrutheight>\zeropoint
-     \strutdimen\minimumstrutheight
-   \else
-     \strutdimen\strutheightfactor\strutdimen
-   \fi
-   \strutdimen\spacingfactor\strutdimen
-   \edef\strutheight{\the\strutdimen}%
+   \edef\strutheight
+     {\the\dimexpr\spacingfactor\dimexpr
+        \ifdim\minimumstrutheight>\zeropoint
+          \minimumstrutheight
+        \else
+          \strutheightfactor\dimexpr\normallineheight
+        \fi}%
    % depth
-   \strutdimen\normallineheight
-   \ifgridsnapping
-     \ifdim\minimumstrutdepth>\zeropoint
-       \strutdimen\minimumstrutdepth
-     \else
-       \advance\strutdimen-\strutheight
-     \fi
-   \else
-     \ifdim\minimumstrutdepth>\zeropoint
-       \strutdimen\minimumstrutdepth
-     \else
-       \strutdimen\strutdepthfactor\strutdimen
-     \fi
-     \strutdimen\spacingfactor\strutdimen
-   \fi
-   \edef\strutdepth{\the\strutdimen}%
+   \edef\strutdepth%
+     {\the\dimexpr
+        \ifgridsnapping
+          \ifdim\minimumstrutdepth>\zeropoint
+            \minimumstrutdepth
+          \else
+            \normallineheight-\strutheight
+          \fi
+        \else
+          \spacingfactor\dimexpr
+            \ifdim\minimumstrutdepth>\zeropoint
+              \minimumstrutdepth
+            \else
+              \strutdepthfactor\dimexpr\normallineheight
+            \fi
+        \fi}%
    % finish
    \dosetstrut}
 
-\def\setcharstrut#1%
+\unexpanded\def\setcharstrut#1%
   {\setbox\strutbox\normalhbox{#1}%
    \edef\strutheight{\the\strutht}%
    \edef\strutdepth {\the\strutdp}%
@@ -2073,10 +2199,10 @@
 %
 % better, since some fonts have small (but descending Q etc)
 
-\def\setfontstrut
+\unexpanded\def\setfontstrut
   {\setcharstrut{(gplQT}}
 
-\def\setcapstrut% could be M, but Q has descender
+\unexpanded\def\setcapstrut% could be M, but Q has descender
   {\setcharstrut{Q}}
 
 %D Handy for math (used in mathml):
@@ -2907,7 +3033,7 @@
   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
    \ifincolor
      \ifcsname#1#3\endcsname
-        \let\dostopattributes\@@dostopattributes
+       \let\dostopattributes\@@dostopattributes
        \faststartcolor[\csname#1#3\endcsname]%
      \else
        \let\dostopattributes\@@nostopattributes
@@ -3540,7 +3666,7 @@
 \def\setupalign
   {\dosingleargument\dosetupalign}
 
-\def\dosetupalign[#1]%
+\def\dosetupalign[#1]% can be made faster by checking for defined #1
   {\!!doneafalse
    \!!donebfalse
    \processcommacommand[#1]\dodosetupngila

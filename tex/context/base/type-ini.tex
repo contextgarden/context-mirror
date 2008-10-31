@@ -234,23 +234,10 @@
 \def\dodefinetypescriptsynonym[#1][#2]%
   {\ifsecondargument\setevalue{\??tm#1}{#2}\fi}
 
-\beginTEX
-
-\def\truetypescript#1%
-  {\expandafter\ifx\csname\??tm#1\endcsname\relax
-     #1\else\@EA\truetypescript\csname\??tm#1\endcsname
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\truetypescript#1%
   {\ifcsname\??tm#1\endcsname
      \@EA\truetypescript\csname\??tm#1\endcsname\else#1%
    \fi}
-
-\endETEX
 
 % script [serif] [default]         [size]
 % script [serif] [computer-modern] [size]
@@ -421,10 +408,17 @@
 \let\usedmapfile\gobbletwoarguments
 \let\usedmapline\gobbletwoarguments
 
+\def\doregisterloadedmapfile#1%
+  {\immediatewriteutilitycommand{\usedmapfile{=}{#1}}}
+
+\beginLUATEX
+    \let\doregisterloadedmapfile\gobbleoneargument
+\endLUATEX
+
 \def\doloadfontmapfile#1%
   {\ifundefined{#1\c!state}%
      \writestatus\m!fonts{using map file: #1}%
-     \immediatewriteutilitycommand{\usedmapfile{=}{#1}}%
+     \doregisterloadedmapfile{#1}%
      \doloadmapfile{=}{#1.\f!fontmapextension}% +/add =/replace -/remove
      \setxvalue{#1\c!state}{1}%
    \fi}
@@ -560,14 +554,15 @@
   {\dododefinetypeface[#1][#2]%
    \iffifthargument % sixth is optional
      % we need to expand since in #6 there can be a \typescripttwo
-     \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,\s!features=,\s!text=,#6]}% \geteparameters
+     \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,\s!features=,\s!fallbacks=,\s!text=,#6]}% \geteparameters
      \pushmacro\relativefontsize
      \pushmacro\typefaceencoding
      \pushmacro\fontclass
      \let\relativefontsize\@@tsrscale
      \let\typefaceencoding\@@tsencoding
      \setcurrentfontclass{#1}%
-     \letvalue{\fontclass\s!features}\@@tsfeatures % new per 16/6/2007
+     \letvalue{\fontclass\s!features }\@@tsfeatures  % new per 16/6/2007
+     \letvalue{\fontclass\s!fallbacks}\@@tsfallbacks % new per 12/10/2008
      \saverelativefontsize{#2}\relativefontsize % fall back
      \savemathtextstyle\@@tstext % math text style (new per 28/4/2006)
      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4] / \typefaceencoding}\fi
@@ -581,6 +576,36 @@
    \else\ifthirdargument
      \getparameters[\??tf#1#2][#3]%
    \fi\fi\fi}
+
+% eventually we will split this module (no time now)
+
+% hm, math needs encoding
+
+% \beginLUATEX
+%     \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
+%       {\dododefinetypeface[#1][#2]%
+%        \iffifthargument % sixth is optional
+%          % we need to expand since in #6 there can be a \typescripttwo
+%          \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!features=,\s!fallbacks=,\s!text=,#6]}% \geteparameters
+%          \pushmacro\relativefontsize
+%          \pushmacro\fontclass
+%          \let\relativefontsize\@@tsrscale
+%          \setcurrentfontclass{#1}%
+%          \letvalue{\fontclass\s!features }\@@tsfeatures % new per 16/6/2007
+%          \letvalue{\fontclass\s!fallbacks}\@@tsfallbacks % new per 12/10/2008
+%          \saverelativefontsize{#2}\relativefontsize % fall back
+%          \savemathtextstyle\@@tstext % math text style (new per 28/4/2006)
+%          \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
+%          \usetypescript[#3][#4][\t!name,\t!default,\t!special]%
+%          \usetypescript[#3][#5][\t!size]%
+%          \popmacro\fontclass
+%          \popmacro\relativefontsize
+%        \else\iffourthargument
+%          \definetypeface[#1][#2][#3][#4][\s!default]%
+%        \else\ifthirdargument
+%          \getparameters[\??tf#1#2][#3]%
+%        \fi\fi\fi}
+% \endLUATEX
 
 \def\dododefinetypeface[#1][#2]% saveguard against redefinition
   {\doifsomething{#1}

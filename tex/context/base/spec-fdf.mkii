@@ -39,11 +39,7 @@
 %D 20K named destinations "x(x) x"). Of course when you use
 %D page destinations, the saving is nil.
 
-% \beginETEX \scantokens
-%
 % \doifnotmode{atpragma}{\let\next\setPDFdestination} % experimental
-%
-% \bgroup
 %
 % \catcode`\/=\@@active \catcode`\#=\@@active
 % \catcode`\<=\@@active \catcode`\>=\@@active
@@ -75,8 +71,6 @@
 %    \egroup}
 %
 % \doifnotmode{atpragma}{\let\setPDFdestination\next} % experimental
-%
-% \endETEX
 
 %D This is a slow one, that uses \type{\lccode}'s to
 %D change the glyph as well as converts sensisitve ones into a
@@ -114,8 +108,6 @@
    \@EA\handletokens\ascii\with\docommand
    \egroup}
 
-% \beginETEX \scantokens
-%
 % \doifnotmode{atpragma}{\let\next\sanitizePDFstring} % experimental
 %
 % \bgroup
@@ -148,8 +140,6 @@
 % .egroup
 %
 % \doifnotmode{atpragma}{\let\sanitizePDFstring\next} % experimental
-%
-% \endETEX
 %
 % There is an unicode variant in spec-tst!
 

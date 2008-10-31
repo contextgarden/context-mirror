@@ -42,8 +42,7 @@ do
             for i=1,nofboxes do
                 local l = tb[i]
                 if l then
-            --      flush(l)
-                    tb[i] = nil
+                    free(tb[i])
                     nl = nl + 1
                 end
             end
@@ -186,8 +185,7 @@ end
 
 -- shipouts
 
-shipouts         = shipouts or { }
-shipouts.plugins = shipouts.plugins or { }
+shipouts = shipouts or { }
 
 do
 
@@ -208,116 +206,48 @@ do
     local starttiming, stoptiming = input.starttiming, input.stoptiming
     local trigger, numbers = nodes.trigger, attributes.numbers
 
-    local function process_attributes(head,plugins)
-        if head then -- is already tested
-            starttiming(attributes)
-            local done, used = false, { }
-            for p=1,#plugins do
-                local plugin = plugins[p]
-                local name = plugin.name
-                local attribute = numbers[name]
-                if attribute then
-                    local namespace = plugin.namespace
-                    if namespace.enabled then
-                        local initializer = plugin.initializer
-                        local processor   = plugin.processor
-                        local finalizer   = plugin.finalizer
-                        local resolver    = plugin.resolver
-                        if initializer then
-                            initializer(namespace,attribute,head)
-                        end
-                        if processor then
-                            local inheritance = (resolver and resolver()) or -1
-                            local ok -- = false
-                            head, ok = processor(namespace,attribute,head,inheritance)
-                            done = done or ok
-                        end
-                        if finalizer then -- no need when not ok
-                            local ok -- = false
-                            head, ok, used[attribute] = finalizer(namespace,attribute,head)
-                            done = done or ok
-                        end
-                    end
-                else
-                    texio.write_nl(format("undefined attribute %s",name))
+    local function process_attribute(head,plugin) -- head,attribute,enabled,initializer,resolver,processor,finalizer
+        starttiming(attributes)
+        local done, used, ok = false, nil, false
+        local name = plugin.name
+        local attribute = numbers[name]
+        local namespace = plugin.namespace
+        if namespace.enabled then
+            local processor = plugin.processor
+            if processor then
+                local initializer = plugin.initializer
+                local resolver    = plugin.resolver
+                local inheritance = (resolver and resolver()) or -1
+                if initializer then
+                    initializer(namespace,attribute,head)
                 end
-            end
-            if done then
-                for p=1,#plugins do
-                    local plugin = plugins[p]
-                    local name = plugin.name
-                    local attribute = numbers[name]
-                    if used[attribute] then
-                        local namespace = plugin.namespace
-                        if namespace.enabled then
-                            local flusher  = plugin.flusher
+                head, ok = processor(namespace,attribute,head,inheritance)
+                if ok then
+                    local finalizer = plugin.finalizer
+                    if finalizer then
+                        head, ok, used = finalizer(namespace,attribute,head)
+                        if used then
+                            local flusher = plugin.flusher
                             if flusher then
-                                local h, d = flusher(namespace,attribute,head,used[attribute])
+                                local h, d = flusher(namespace,attribute,head,used)
                                 head = h
                             end
                         end
                     end
+                    done = true
                 end
             end
-            stoptiming(attributes)
-            return head, done
-        else
-            return head, false
         end
+        stoptiming(attributes)
+        return head, done
     end
 
-    nodes.process_attributes = process_attributes
+    nodes.process_attribute = process_attribute
 
-    --~ glyph   = 746876
-    --~ glue    = 376096
-    --~ hlist   = 152284
-    --~ disc    =  47224
-    --~ kern    =  41504
-    --~ penalty =  31964
-    --~ whatsit =  29048
-    --~ vlist   =  20136
-    --~ rule    =  13292
-    --~ mark    =   4304
-    --~ math    =   1072
-
-    local disc, mark, free = node.id('disc'), node.id('mark'), node.free
-
-    local function cleanup_page(head) -- rough
-        local prev, start = nil, head
-        while start do
-            local id, nx = start.id, start.next
-            if id == disc or id == mark then
-                if prev then
-                    prev.next = nx
-                end
-                if start == head then
-                    head = nx
-                end
-                local tmp = start
-                start = nx
-                free(tmp)
-            elseif id == hlist or id == vlist then
-                local sl = start.list
-                if sl then
-                    start.list = cleanup_page(sl)
-                end
-                prev, start = start, nx
-            else
-                prev, start = start, nx
-            end
+    function nodes.install_attribute_handler(plugin)
+        return function(head)
+            return process_attribute(head,plugin)
         end
-        return head
-    end
-
-    nodes.cleanup_page = cleanup_page
-
-    nodes.cleanup_page_first = false
-
-    function nodes.process_page(head)
-        if nodes.cleanup_page_first then
-            head = cleanup_page(head)
-        end
-        return process_attributes(head,shipouts.plugins)
     end
 
 end
@@ -330,18 +260,21 @@ states = { }
 
 do
 
-    local glyph, rule, whatsit, hlist, vlist = node.id('glyph'), node.id('rule'), node.id('whatsit'), node.id('hlist'), node.id('vlist')
+    local glyph, glue, rule, whatsit, hlist, vlist = node.id('glyph'), node.id('glue'), node.id('rule'), node.id('whatsit'), node.id('hlist'), node.id('vlist')
 
     local has_attribute, copy = node.has_attribute, node.copy
 
-    local current, used, done = 0, { }, false
+    local current, current_selector, used, done = 0, 0, { }, false
 
     function states.initialize(what, attribute, stack)
-        current, used, done = 0, { }, false
+        current, current_selector, used, done = 0, 0, { }, false
     end
 
     local function insert(n,stack,previous,head) -- there is a helper, we need previous because we are not slided
         if n then
+            if type(n) == "function" then
+                n = n()
+            end
             n = copy(n)
             n.next = stack
             if previous then
@@ -380,7 +313,8 @@ do
         local nsdata, nsreviver, nsnone = namespace.data, namespace.reviver, namespace.none
         while stack do
             local id = stack.id
-            if id == glyph or id == whatsit or id == rule then -- or disc
+        --  if id == glyph or (id == whatsit and stack.subtype == 8) or id == rule or (id == glue and stack.leader) then -- or disc
+            if id == glyph or id == rule or (id == glue and stack.leader) then -- or disc
                 local c = has_attribute(stack,attribute)
                 if c then
                     if default and c == inheritance then
@@ -393,6 +327,24 @@ do
                         local data = nsdata[c] or nsreviver(c)
                         stack, head = insert(data,stack,previous,head)
                         current, done, used[c] = c, true, true
+                    end
+                    if id == glue then --leader
+                        -- same as *list
+                        local content = stack.leader
+                        if content then
+                            local ok = false
+                            if trigger and has_attribute(stack,trigger) then
+                                local outer = has_attribute(stack,attribute)
+                                if outer ~= inheritance then
+                                    stack.leader, ok = process(namespace,attribute,content,inheritance,outer)
+                                else
+                                    stack.leader, ok = process(namespace,attribute,content,inheritance,default)
+                                end
+                            else
+                                stack.leader, ok = process(namespace,attribute,content,inheritance,default)
+                            end
+                            done = done or ok
+                        end
                     end
                 elseif default and inheritance then
                     if current ~= default then
@@ -430,16 +382,21 @@ do
     states.process = process
 
     -- we can force a selector, e.g. document wide color spaces, saves a little
+    -- watch out, we need to check both the selector state (like colorspace) and
+    -- the main state (like color), otherwise we get into troubles when a selector
+    -- state changes while the main state stays the same (like two glyphs following
+    -- each other with the same color but different color spaces e.g. \showcolor)
 
     local function selective(namespace,attribute,head,inheritance,default) -- two attributes
         local trigger = namespace.triggering and nodes.triggering and nodes.trigger
         local stack, previous, done = head, nil, false
-        local nsselector, nsforced, nsselector = namespace.default, namespace.forced, namespace.selector
+    --  local nsselector, nsforced, nsselector = namespace.default, namespace.forced, namespace.selector
+        local nsforced, nsselector = namespace.forced, namespace.selector
         local nsdata, nsreviver, nsnone = namespace.data, namespace.reviver, namespace.none
         while stack do
             local id = stack.id
-            if id == glyph or id == whatsit or id == rule then -- or disc
-                -- todo: maybe track two states, also selector
+        --  if id == glyph or (id == whatsit and stack.subtype == 8) or id == rule or (id == glue and stack.leader) then -- or disc
+            if id == glyph or id == rule or (id == glue and stack.leader) then -- or disc
                 local c = has_attribute(stack,attribute)
                 if c then
                     if default and c == inheritance then
@@ -448,10 +405,13 @@ do
                             stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
                             current, done, used[default] = default, true, true
                         end
-                    elseif current ~= c then
-                        local data = nsdata[c] or nsreviver(c)
-                        stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
-                        current, done, used[c] = c, true, true
+                    else
+                        local s = has_attribute(stack,nsselector)
+                        if current ~= c or current_selector ~= s then
+                            local data = nsdata[c] or nsreviver(c)
+                            stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
+                            current, current_selector, done, used[c] = c, s, true, true
+                        end
                     end
                 elseif default and inheritance then
                     if current ~= default then
@@ -461,7 +421,25 @@ do
                     end
                 elseif current > 0 then
                     stack, head = insert(nsnone,stack,previous,head)
-                    current, done, used[0] = 0, true, true
+                    current, current_selector, done, used[0] = 0, 0, true, true
+                end
+                if id == glue then -- leader
+                    -- same as *list
+                    local content = stack.leader
+                    if content then
+                        local ok = false
+                        if trigger and has_attribute(stack,trigger) then
+                            local outer = has_attribute(stack,attribute)
+                            if outer ~= inheritance then
+                                stack.leader, ok = selective(namespace,attribute,content,inheritance,outer)
+                            else
+                                stack.leader, ok = selective(namespace,attribute,content,inheritance,default)
+                            end
+                        else
+                            stack.leader, ok = selective(namespace,attribute,content,inheritance,default)
+                        end
+                        done = done or ok
+                    end
                 end
             elseif id == hlist or id == vlist then
                 local content = stack.list
@@ -642,12 +620,26 @@ do
         return { 4, s, r, g, b, c, m, y, k }
     end
 
+    --~ function colors.spot(parent,f,d,p)
+    --~     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
+    --~ end
+
     function colors.spot(parent,f,d,p)
---~         if type(p) == "string" and p:find(",") then
---~             -- use converted replacement (combination color)
---~         else
---~             -- todo: map gray, rgb, cmyk onto fraction*parent
---~         end
+        if type(p) == "number" then
+            local n = attributes.list[attributes.numbers.color][parent] -- hard coded ref to color number
+            if n then
+                local v = colors.values[n]
+                if v then
+                    -- the via cmyk hack is dirty, but it scales better
+                    local c, m, y, k = p*v[6], p*v[7], p*v[8], p*v[8]
+                    local r, g, b = cmyktorgb(c,m,y,k)
+                    local s = cmyktogray(c,m,y,k)
+                    return { 5, s, r, g, b, c, m, y, k, parent, f, d, p }
+                end
+            end
+        else
+            -- todo, multitone (maybe p should be a table)
+        end
         return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
     end
 
@@ -711,7 +703,7 @@ function colors.value(id)
     return colors.values[id]
 end
 
-shipouts.plugins[#shipouts.plugins+1] = {
+shipouts.handle_color = nodes.install_attribute_handler {
     name        = "color",
     namespace   = colors,
     initializer = states.initialize,
@@ -771,15 +763,13 @@ end
 
 -- check if there is an identity
 
---~ transparencies.none = transparencies.reference(transparencies.register(nil,1,1))
-
 transparencies.none = transparencies.reference(0) -- for the moment the pdf backend does this
 
 function transparencies.value(id)
     return transparencies.values[id]
 end
 
-shipouts.plugins[#shipouts.plugins+1] = {
+shipouts.handle_transparency = nodes.install_attribute_handler {
     name        = "transparency",
     namespace   = transparencies,
     initializer = states.initialize,
@@ -796,19 +786,22 @@ overprints.enabled = false
 overprints.data[1] = backends.pdf.literal(format("/GSoverprint gs"))
 overprints.data[2] = backends.pdf.literal(format("/GSknockout  gs"))
 
-overprints.none    = overprints.data[1]
+overprints.none    = overprints.data[2]
 
 overprints.registered = {
     overprint = 1,
     knockout  = 2,
 }
 
+--~ input.storage.register(false, "overprints/registered", overprints.registered, "overprints.registered")
+--~ input.storage.register(false, "overprints/data",       overprints.data,       "overprints.data")
+
 function overprints.register(stamp)
 --  states.collect(texsprint(tex.ctxcatcodes,"\\initializePDFoverprint")) -- to be testd
     return overprints.registered[stamp] or overprints.registered.overprint
 end
 
-shipouts.plugins[#shipouts.plugins+1] = {
+shipouts.handle_overprint = nodes.install_attribute_handler {
     name        = "overprint",
     namespace   = overprints,
     initializer = states.initialize,
@@ -818,7 +811,7 @@ shipouts.plugins[#shipouts.plugins+1] = {
 
 --- negative / positive
 
-negatives         = netatives      or { }
+negatives         = negatives      or { }
 negatives.data    = negatives.data or { }
 negatives.enabled = false
 
@@ -837,7 +830,7 @@ function negatives.register(stamp)
     return negatives.registered[stamp] or negatives.registered.positive
 end
 
-shipouts.plugins[#shipouts.plugins+1] = {
+shipouts.handle_negative = nodes.install_attribute_handler {
     name        = "negative",
     namespace   = negatives,
     initializer = states.initialize,
@@ -885,7 +878,7 @@ end
 
 effects.none = effects.reference(0,0,0) -- faster: backends.pdf.literal("0 Tc 0 w 0 Tr")
 
-shipouts.plugins[#shipouts.plugins+1] = {
+shipouts.handle_effect = nodes.install_attribute_handler {
     name        = "effect",
     namespace   = effects,
     initializer = states.initialize,
@@ -893,7 +886,69 @@ shipouts.plugins[#shipouts.plugins+1] = {
     processor   = states.process,
 }
 
--- layers
+-- layers (ugly code, due to no grouping and such)
 
---~ /OC /somename BDC
---~ EMC
+viewerlayers            = viewerlayers            or { }
+viewerlayers.data       = viewerlayers.data       or { }
+viewerlayers.registered = viewerlayers.registered or { }
+viewerlayers.stamp      = "%s"
+viewerlayers.enabled    = false
+
+input.storage.register(false, "viewerlayers/registered", viewerlayers.registered, "viewerlayers.registered")
+--~ input.storage.register(false, "viewerlayers/data",       viewerlayers.data,       "viewerlayers.data")
+
+local somedone = false
+local somedata = { }
+local nonedata = backends.pdf.literal("EMC")
+
+function viewerlayers.none() -- no local
+    if somedone then
+        somedone = false
+        return nonedata
+    else
+        return nil
+    end
+end
+
+local function some(name)
+    local sd = somedata[name]
+    if not sd then
+        sd = {
+            backends.pdf.literal(format("EMC /OC /%s BDC",name)),
+            backends.pdf.literal(format(    "/OC /%s BDC",name)),
+        }
+        somedata[name] = sd
+    end
+    if somedone then
+        return sd[1]
+    else
+        somedone = true
+        return sd[2]
+    end
+end
+
+local function initializer(...)
+    somedone = false
+    return states.initialize(...)
+end
+
+viewerlayers.register = function(name)
+    local stamp = format(viewerlayers.stamp,name)
+    local n = viewerlayers.registered[stamp]
+    if not n then
+        n = #viewerlayers.data + 1
+        viewerlayers.data[n] = function() return some(name) end
+        viewerlayers.registered[stamp] = n
+    end
+    return viewerlayers.registered[stamp]
+end
+
+shipouts.handle_viewerlayer = nodes.install_attribute_handler {
+    name        = "viewerlayer",
+    namespace   = viewerlayers,
+    initializer = initializer,
+    finalizer   = states.finalize,
+    processor   = states.process,
+}
+
+--~ nodes.tasks.appendaction("shipouts", "finishers", "shipouts.handle_viewerlayer", nil, "notail")

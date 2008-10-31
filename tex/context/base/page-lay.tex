@@ -760,7 +760,7 @@
 
 \def\reportpagedimensions
   {\ifx\poppagedimensions\relax \else
-     \space\@@zaheight\space-\space
+     \space\the\dimexpr\@@zaheight\relax\space-\space
    \fi
    \realfolio}
 
@@ -1363,6 +1363,11 @@
 \definepapersize [SRA2]  [\c!width=450mm,\c!height=640mm]
 \definepapersize [SRA3]  [\c!width=320mm,\c!height=450mm]
 \definepapersize [SRA4]  [\c!width=225mm,\c!height=320mm]
+
+%D Swedish thesis formats:
+
+\definepapersize [G5]  [\c!width=169mm,\c!height=239mm]
+\definepapersize [E5]  [\c!width=155mm,\c!height=220mm]
 
 %D Industry invention:
 

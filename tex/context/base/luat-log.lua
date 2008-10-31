@@ -129,6 +129,14 @@ function input.reportlines(str) -- todo: <lines></lines>
     end
 end
 
+input.moreinfo = [[
+more information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net
+]]
+
 function input.help(banner,message)
     if not input.verbose then
         input.verbose = true
@@ -137,6 +145,10 @@ function input.help(banner,message)
     input.report(banner,"\n")
     input.report("")
     input.reportlines(message)
+    if input.moreinfo and input.moreinfo ~= "" then
+        input.report("")
+        input.reportlines(input.moreinfo)
+    end
 end
 
 logs.set_level('error')

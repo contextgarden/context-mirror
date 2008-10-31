@@ -37,7 +37,7 @@ if not input.hashers    then input.hashers    = { } end  -- load databases
 if not input.generators then input.generators = { } end  -- generate databases
 if not input.filters    then input.filters    = { } end  -- conversion filters
 
-local format = string.format
+local format, concat, sortedkeys = string.format, table.concat, table.sortedkeys
 
 input.locators.notfound   = { nil }
 input.hashers.notfound    = { nil }
@@ -259,27 +259,44 @@ input.settrace(tonumber(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRA
 do
     local clock = os.gettimeofday or os.clock
 
+    function input.hastimer(instance)
+        return instance and instance.starttime
+    end
+
     function input.starttiming(instance)
         if instance then
-            instance.starttime = clock()
-            if not instance.loadtime then
-                instance.loadtime = 0
+            local it = instance.timing
+            if not it then
+                it = 0
             end
+            if it == 0 then
+                instance.starttime = clock()
+                if not instance.loadtime then
+                    instance.loadtime = 0
+                end
+            end
+            instance.timing = it + 1
         end
     end
 
     function input.stoptiming(instance, report)
         if instance then
-            local starttime = instance.starttime
-            if starttime then
-                local stoptime = clock()
-                local loadtime = stoptime - starttime
-                instance.stoptime = stoptime
-                instance.loadtime = instance.loadtime + loadtime
-                if report then
-                    input.report("load time %0.3f",loadtime)
+            local it = instance.timing
+            if it > 1 then
+                instance.timing = it - 1
+            else
+                local starttime = instance.starttime
+                if starttime then
+                    local stoptime = clock()
+                    local loadtime = stoptime - starttime
+                    instance.stoptime = stoptime
+                    instance.loadtime = instance.loadtime + loadtime
+                    if report then
+                        input.report("load time %0.3f",loadtime)
+                    end
+                    instance.timing = 0
+                    return loadtime
                 end
-                return loadtime
             end
         end
         return 0
@@ -841,8 +858,6 @@ function input.serialize(files)
     -- luatools and mtxtools are called frequently. Okay,
     -- we pay a small price for properly tabbed tables.
     local t = { }
-    local concat = table.concat
-    local sorted = table.sortedkeys
     local function dump(k,v,m)
         if type(v) == 'string' then
             return m .. "['" .. k .. "']='" .. v .. "',"
@@ -854,11 +869,11 @@ function input.serialize(files)
     end
     t[#t+1] = "return {"
     if input.instance.sortdata then
-        for _, k in pairs(sorted(files)) do
+        for _, k in pairs(sortedkeys(files)) do
             local fk  = files[k]
             if type(fk) == 'table' then
                 t[#t+1] = "\t['" .. k .. "']={"
-                for _, kk in pairs(sorted(fk)) do
+                for _, kk in pairs(sortedkeys(fk)) do
                     t[#t+1] = dump(kk,fk[kk],"\t\t")
                 end
                 t[#t+1] = "\t},"
@@ -1330,7 +1345,6 @@ end
 function input.aux.splitpathexpr(str, t, validate)
     -- no need for optimization, only called a few times, we can use lpeg for the sub
     t = t or { }
-    local concat = table.concat
     str = str:gsub(",}",",@}")
     str = str:gsub("{,","{@,")
  -- str = "@" .. str .. "@"
@@ -1655,7 +1669,7 @@ function input.aux.find_file(filename) -- todo : plugin (scanners, checkers etc)
             if input.trace > 2 then
                 input.logger('? filename: %s',filename)
                 input.logger('? filetype: %s',filetype or '?')
-                input.logger('? wanted files: %s',table.concat(wantedfiles," | "))
+                input.logger('? wanted files: %s',concat(wantedfiles," | "))
             end
             for _, fname in pairs(wantedfiles) do
                 if fname and input.is_readable.file(fname) then
@@ -1678,8 +1692,8 @@ function input.aux.find_file(filename) -- todo : plugin (scanners, checkers etc)
             local doscan, recurse
             if input.trace > 2 then
                 input.logger('? filename: %s',filename)
-            --                if pathlist then input.logger('? path list: %s',table.concat(pathlist," | ")) end
-            --                if filelist then input.logger('? file list: %s',table.concat(filelist," | ")) end
+            --                if pathlist then input.logger('? path list: %s',concat(pathlist," | ")) end
+            --                if filelist then input.logger('? file list: %s',concat(filelist," | ")) end
             end
             -- a bit messy ... esp the doscan setting here
             for _, path in pairs(pathlist) do
@@ -1888,6 +1902,8 @@ function input.find_wildcard_files(filename) -- todo: remap:
             if done and not allresults then break end
         end
     end
+    -- we can consider also searching the paths not in the database, but then
+    -- we end up with a messy search (all // in all path specs)
     return result
 end
 
@@ -1908,7 +1924,7 @@ function input.save_used_files_in_trees(filename,jobname)
             f:write("\t<rl:name>" .. jobname .. "</rl:name>\n")
         end
         f:write("\t<rl:files>\n")
-        for _,v in pairs(table.sortedkeys(instance.foundintrees)) do
+        for _,v in pairs(sorted(instance.foundintrees)) do -- ipairs
             f:write("\t\t<rl:file n='" .. instance.foundintrees[v] .. "'>" .. v .. "</rl:file>\n")
         end
         f:write("\t</rl:files>\n")
@@ -2014,7 +2030,7 @@ function table.sequenced(t,sep) -- temp here
     for k, v in pairs(t) do
         s[#s+1] = k .. "=" .. v
     end
-    return table.concat(s, sep or " | ")
+    return concat(s, sep or " | ")
 end
 
 function input.methodhandler(what, filename, filetype) -- ...
@@ -2250,7 +2266,7 @@ do
                 str[k] = resolve(v) or v
             end
         elseif str and str ~= "" then
-            str = str:gsub("([a-z]+):([^ ]*)", function(method,target)
+            str = str:gsub("([a-z]+):([^ \"\']*)", function(method,target)
                 if resolvers[method] then
                     return resolvers[method](target)
                 else

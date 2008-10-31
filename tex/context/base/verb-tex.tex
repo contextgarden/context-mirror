@@ -275,8 +275,6 @@
 %  {\disableprettyafterwards % only when enabled of course
 %   \ifnewpretty\expandafter\handlenewpretty\fi\TEXtypethree}
 
-\beginETEX \scantokens
-
 \long\gdef\naturalTEXtext#1#2\relax% local alternative for \naturaltextext
   {\convertargument#2\to\ascii
    \doifinstringelse{\letterpercent}{\ascii}
@@ -284,8 +282,6 @@
     %{\long\def\next{\bgroup\prettynaturalfont\restorecatcodes\scantokens{\ignorespaces#2}\egroup}}%
      {\long\def\next{\bgroup\prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#2}}\egroup}}%
    \next}
-
-\endETEX
 
 \gdef\TEXtypezero
   {\ifnaturaltextext

@@ -508,6 +508,45 @@ scripts.context.aftersuffixes = {
     "pdf", "tuo", "tuc", "log"
 }
 
+scripts.context.interfaces = {
+    en = "cont-en",
+    uk = "cont-uk",
+    de = "cont-de",
+    fr = "cont-fr",
+    nl = "cont-nl",
+    cz = "cont-cz",
+    it = "cont-it",
+    ro = "cont-ro",
+    pe = "cont-pe",
+}
+
+scripts.context.defaultformats  = {
+    "cont-en",
+    "cont-nl",
+    "mptopdf",
+    "plain"
+}
+
+local function analyze(filename)
+    local f = io.open(file.addsuffix(filename,"tex"))
+    if f then
+        local t = { }
+        local line = f:read("*line") or ""
+        local preamble = line:match("^%% *(.*)$")
+        if preamble then
+            for key, value in preamble:gmatch("(%S+)=(%S+)") do
+                t[key] = value
+            end
+            t.type = "tex"
+        elseif line:find("^<?xml ") then
+            t.type = "xml"
+        end
+        f:close()
+        return t
+    end
+    return nil
+end
+
 function scripts.context.run(ctxdata)
     local function makestub(format,filename)
         local stubname = file.replacesuffix(file.basename(filename),'run')
@@ -532,7 +571,11 @@ function scripts.context.run(ctxdata)
         input.identify_cnf()
         input.load_cnf()
         input.expand_variables()
-        local formatname = "cont-en"
+        local interface = environment.argument("interface")
+        -- todo: environment.argument("interface","en")
+        interface = (type(interface) == "string" and interface) or "en"
+        --
+        local formatname = scripts.context.interfaces[interface] or "cont-en"
         local formatfile, scriptfile = input.locate_format(formatname)
         if formatfile and scriptfile then
             for _, filename in ipairs(files) do
@@ -540,6 +583,13 @@ function scripts.context.run(ctxdata)
                 local jobname = file.removesuffix(basename)
                 if pathname == "" then
                     filename = "./" .. filename
+                end
+                local a = analyze(filename)
+                if a then
+                    if a.interface and a.interface ~= interface then
+                        formatname = scripts.context.interfaces[a.interface] or formatname
+                        formatfile, scriptfile = input.locate_format(formatname)
+                    end
                 end
                 -- we default to mkiv xml !
                 if scripts.context.xmlsuffixes[file.extname(filename) or "?"] or environment.argument("forcexml") then
@@ -560,6 +610,9 @@ function scripts.context.run(ctxdata)
                         for _, suffix in pairs(scripts.context.beforesuffixes) do
                             local oldname = file.addsuffix(oldbase,suffix)
                             local newname = file.addsuffix(newbase,suffix)
+                            local tmpname = "keep-"..oldname
+                            os.remove(tmpname)
+                            os.rename(oldname,tmpname)
                             os.remove(oldname)
                             os.rename(newname,oldname)
                         end
@@ -577,7 +630,13 @@ function scripts.context.run(ctxdata)
                     end
                 end
                 --
-                local command = "luatex --fmt=" .. string.quote(formatfile) .. " --lua=" .. string.quote(scriptfile) .. " " .. string.quote(filename)
+                local flags = { }
+                if environment.argument("batchmode") then
+                    flags[#flags+1] = "--interaction=batchmode"
+                end
+                flags[#flags+1] = "--fmt=" .. string.quote(formatfile)
+                flags[#flags+1] = "--lua=" .. string.quote(scriptfile)
+                local command = string.format("luatex %s %s", table.concat(flags," "), string.quote(filename))
                 local oldhash, newhash = scripts.context.multipass.hashfiles(jobname), { }
                 local once = environment.argument("once")
                 local maxnofruns = (once and 1) or scripts.context.multipass.nofruns
@@ -619,8 +678,10 @@ function scripts.context.run(ctxdata)
                     for _, suffix in pairs(scripts.context.aftersuffixes) do
                         local oldname = file.addsuffix(oldbase,suffix)
                         local newname = file.addsuffix(newbase,suffix)
+                        local tmpname = "keep-"..oldname
                         os.remove(newname)
                         os.rename(oldname,newname)
+                        os.rename(tmpname,oldname)
                     end
                     input.report("result renamed to: %s",newbase)
                 end
@@ -640,28 +701,10 @@ function scripts.context.run(ctxdata)
     end
 end
 
-local fallback = {
-    en = "cont-en",
-    uk = "cont-uk",
-    de = "cont-de",
-    fr = "cont-fr",
-    nl = "cont-nl",
-    cz = "cont-cz",
-    it = "cont-it",
-    ro = "cont-ro",
-}
-
-local defaults  = {
-    "cont-en",
-    "cont-nl",
-    "mptopdf",
-    "plain"
-}
-
 function scripts.context.make()
-    local list = (environment.files[1] and environment.files) or defaults
+    local list = (environment.files[1] and environment.files) or scripts.context.defaultformats
     for _, name in ipairs(list) do
-        name = fallback[name] or name
+        name = scripts.context.interfaces[name] or name
         local command = "luatools --make --compile " .. name
         input.report("running command: %s",command)
         os.spawn(command)
@@ -836,6 +879,7 @@ messages.help = [[
 --result=name         rename result to given name
 
 --expert              expert options
+--interface           use specified user interface
 ]]
 
 messages.expert = [[

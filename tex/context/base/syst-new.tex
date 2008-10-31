@@ -361,26 +361,26 @@
 %D \adddimenmacro    10pt 5pt \paperwidth \to \bagger
 %D \stoptyping
 
-\newdimen\dimentoaddto
+% \newdimen\dimentoaddto
 
-\def\adddimenregister#1\to#2% will be obsolete once full etex
-  {\begingroup
-   #2=\zeropoint
-   \dimentoaddto\zeropoint
-   \def\docommand%
-     {\advance#2 \dimentoaddto
-      \futurelet\next\dodocommand}%
-   \def\dodocommand%
-     {\ifx\next\relax
-        \expanded{\endgroup#2=\the#2}%
-      \else
-        \@EA\afterassignment\@EA\docommand\@EA\dimentoaddto
-      \fi}%
-   \docommand#1\relax}
+% \def\adddimenregister#1\to#2% will be obsolete once full etex
+%   {\begingroup
+%    #2=\zeropoint
+%    \dimentoaddto\zeropoint
+%    \def\docommand%
+%      {\advance#2 \dimentoaddto
+%       \futurelet\next\dodocommand}%
+%    \def\dodocommand%
+%      {\ifx\next\relax
+%         \expanded{\endgroup#2=\the#2}%
+%       \else
+%         \@EA\afterassignment\@EA\docommand\@EA\dimentoaddto
+%       \fi}%
+%    \docommand#1\relax}
 
-\def\adddimenmacro#1\to#2%
-  {\adddimenregister#1\to\scratchdimen
-   \edef#2{\the\scratchdimen}}
+% \def\adddimenmacro#1\to#2%
+%   {\adddimenregister#1\to\scratchdimen
+%    \edef#2{\the\scratchdimen}}
 
 %D \macros
 %D   {freezedimenmacro}
@@ -391,8 +391,11 @@
 %D \freezedimenmacro\leftmargindistance
 %D \stoptyping
 
+% \def\freezedimenmacro#1%
+%   {\scratchdimen#1\edef#1{\the\scratchdimen}}
+
 \def\freezedimenmacro#1%
-  {\scratchdimen#1\edef#1{\the\scratchdimen}}
+  {\edef#1{\the\dimexpr#1}}
 
 %D The next one is slower:
 %D

@@ -98,8 +98,6 @@
 %   {\font\test=uplr8t \test \ruledhbox{t}
 %    \font\test=uplr8r \test \ruledhbox{t}}
 
-\beginETEX \fontcharwd
-
 \gdef\showcharacterbounds
   {\bgroup
    \localcolortrue
@@ -109,31 +107,30 @@
       \fi}\unskip
    \egroup}
 
-\endETEX
+\beginOLDTEX
 
-\beginTEX
+    \gdef\showhyphenations#1%
+      {\starttabulate[|le|l|]
+       \NC language \NC \currentlanguage\ (internal code:\the\normallanguage)    \NC \NR
+       \NC font     \NC \fontname\font                                           \NC \NR
+       \NC encoding \NC \ifx\@@fontencoding\empty not set\else\@@fontencoding\fi \NC \NR
+       \NC mapping  \NC \ifx\@@fontmapping \empty not set\else\@@fontmapping \fi \NC \NR
+       \NC handling \NC \ifx\@@fonthandling\empty not set\else\@@fonthandling\fi \NC \NR
+       \NC sample   \NC \hyphenatedword{#1}                                      \NC \NR
+       \stoptabulate}
 
-\gdef\showcharacterbounds
-  {\bgroup
-   \localcolortrue
-   \dorecurse{255}
-     {\setbox\scratchbox\ruledhbox{\darkgray\char\recurselevel}%
-      \ifnum\wd\scratchbox>\zeropoint
-        \noindent\box\scratchbox\space
-      \fi}\unskip
-   \egroup}
+\endOLDTEX
 
-\endTEX
+\beginNEWTEX
 
-\gdef\showhyphenations#1%
-  {\starttabulate[|le|l|]
-   \NC language \NC \currentlanguage\ (internal code:\the\normallanguage)    \NC \NR
-   \NC font     \NC \fontname\font                                           \NC \NR
-   \NC encoding \NC \ifx\@@fontencoding\empty not set\else\@@fontencoding\fi \NC \NR
-   \NC mapping  \NC \ifx\@@fontmapping \empty not set\else\@@fontmapping \fi \NC \NR
-   \NC handling \NC \ifx\@@fonthandling\empty not set\else\@@fonthandling\fi \NC \NR
-   \NC sample   \NC \hyphenatedword{#1}                                      \NC \NR
-   \stoptabulate}
+    \gdef\showhyphenations#1%
+      {\starttabulate[|le|l|]
+       \NC language \NC \currentlanguage\ (internal code:\the\normallanguage) \NC \NR
+       \NC font     \NC \fontname\font                                        \NC \NR
+       \NC sample   \NC \hyphenatedword{#1}                                   \NC \NR
+       \stoptabulate}
+
+\endNEWTEX
 
 \gdef\showmapping
   {\dostepwiserecurse{128}{255}{1}

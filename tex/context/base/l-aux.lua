@@ -6,6 +6,9 @@
 if not versions then versions = { } end versions['l-aux'] = 1.001
 if not aux      then aux      = { } end
 
+local concat, format = table.concat, string.format
+local tostring, type = tostring, type
+
 do
 
     local hash = { }
@@ -22,9 +25,10 @@ do
     local nobrace   = 1 - (lbrace+rbrace)
     local nested    = lpeg.P{ lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
 
-    local key       = lpeg.C((1-equal)^1)
+    local key       = lpeg.C((1-equal-comma)^1)
     local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
-    local pattern   = ((space^0 * key * equal * value * comma^0) / set)^1
+--  local pattern   = (((space+comma)^0 * (key * equal * value + key) * comma^0) / set)^1
+    local pattern   = (((space+comma)^0 * (key * equal * value + key * lpeg.C(""))) / set)^1
 
     -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
 
@@ -84,7 +88,7 @@ function aux.hash_to_string(h,separator,yes,no,strict,omit)
                 end
             end
         end
-        return table.concat(t,separator or ",")
+        return concat(t,separator or ",")
     else
         return ""
     end
@@ -92,10 +96,18 @@ end
 
 function aux.array_to_string(a,separator)
     if a then
-        return table.concat(a,separator or ",")
+        return concat(a,separator or ",")
     else
         return ""
     end
+end
+
+function aux.settings_to_set(str)
+    local t = { }
+    for s in str:gmatch("%s*([^,]+)") do
+        t[s] = true
+    end
+    return t
 end
 
 -- temporary here
@@ -136,4 +148,25 @@ local stripper = lpeg.Cs((number + 1)^0)
 
 function aux.strip_zeros(str)
     return stripper:match(str)
+end
+
+function aux.definetable(target) -- defines undefined tables
+    local composed, t = nil, { }
+    for name in target:gmatch("([^%.]+)") do
+        if composed then
+            composed = composed .. "." .. name
+        else
+            composed = name
+        end
+        t[#t+1] = format("%s = %s or { }",composed,composed)
+    end
+    return concat(t,"\n")
+end
+
+function aux.accesstable(target)
+    local t = _G
+    for name in target:gmatch("([^%.]+)") do
+        t = t[name]
+    end
+    return t
 end

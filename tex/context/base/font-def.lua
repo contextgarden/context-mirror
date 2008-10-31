@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['font-def'] = {
 
 -- check reuse of lmroman1o-regular vs lmr10
 
+local texsprint, count, dimen, format, concat = tex.sprint, tex.count, tex.dimen, string.format, table.concat
+
 --[[ldx--
 <p>Here we deal with defining fonts. We do so by intercepting the
 default loader that only handles <l n='tfm'/>.</p>
@@ -44,7 +46,6 @@ fonts.define.method        = 3 -- 1: tfm  2: tfm and if not then afm  3: afm and
 fonts.define.auto_afm      = true
 fonts.define.auto_otf      = true
 fonts.define.specify       = fonts.define.specify or { }
-fonts.define.splitsymbols  = ""
 fonts.define.methods       = fonts.define.methods or { }
 
 tfm.fonts            = tfm.fonts        or { }
@@ -75,28 +76,47 @@ synonym table.</p>
 and prepares a table that will move along as we proceed.</p>
 --ldx]]--
 
-function fonts.define.analyze(name, size, id)
-    name = name or 'unknown'
-    local specification = name
-    local lookup, rest = specification:match("^(.-):(.+)$")
-    local sub = ""
-    if lookup == 'file' or lookup == 'name' then
-        name = rest
-    else
+-- beware, we discard additional specs
+--
+-- method:name method:name(sub) method:name(sub)*spec method:name*spec
+-- name name(sub) name(sub)*spec name*spec
+-- name@spec*oeps
+
+local splitter, specifiers = nil, ""
+
+function fonts.define.add_specifier(symbol)
+    specifiers = specifiers .. symbol
+    local left          = lpeg.P("(")
+    local right         = lpeg.P(")")
+    local colon         = lpeg.P(":")
+    local method        = lpeg.S(specifiers)
+    local lookup        = lpeg.C(lpeg.P("file")+lpeg.P("name")) * colon -- hard test, else problems with : method
+    local sub           = left * lpeg.C(lpeg.P(1-left-right-method)^1) * right
+    local specification = lpeg.C(method) * lpeg.C(lpeg.P(1-method)^1)
+    local name          = lpeg.C((1-sub-specification)^1)
+    splitter = lpeg.P((lookup + lpeg.Cc("")) * name * (sub + lpeg.Cc("")) * (specification + lpeg.Cc("")))
+end
+
+function fonts.define.get_specification(str)
+    return splitter:match(str)
+end
+
+function fonts.define.register_split(symbol,action)
+    fonts.define.add_specifier(symbol)
+    fonts.define.specify[symbol] = action
+end
+
+function fonts.define.makespecification(specification, lookup, name, sub, method, detail, size)
+    size = size or 655360
+    if fonts.trace then
+        logs.report("define font","%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
+            specification, (lookup ~= "" and lookup) or "[file]", (name ~= "" and name) or "-",
+            (sub ~= "" and sub) or "-", (method ~= "" and method) or "-", (detail ~= "" and detail) or "-")
+    end
+    if lookup ~= 'name' then -- for the moment only two lookups, maybe some day also system:
         lookup = 'file'
     end
-    local font, method, detail = name:match("^(.-)(["..fonts.define.splitsymbols.."])(.+)$")
-    if method and detail then
-        name = font
-    else
-        method, detail = "", ""
-    end
-    local mainfont, subfont = name:match("^(.*-)(%(.*-)(%)$")
-    if mainfont and subfont then
-        name, sub = mainfont, subfont
-    end
-    size = size or (65536*10)
-    return {
+    local t = {
         lookup        = lookup,        -- forced type
         specification = specification, -- full specification
         size          = size,          -- size in scaled points or -1000*n
@@ -106,18 +126,14 @@ function fonts.define.analyze(name, size, id)
         detail        = detail,        -- specification
         resolved      = "",            -- resolved font name
         forced        = "",            -- forced loader
-        id            = id,            -- font id
         features      = { },           -- preprocessed features
-     -- hash          = nil
-     -- filename      = nil,
-     -- encoding      = nil,
-     -- format        = nil,
     }
+    return t
 end
 
-function fonts.define.register_split(symbol,action)
-    fonts.define.splitsymbols = fonts.define.splitsymbols .. "%" .. symbol
-    fonts.define.specify[symbol] = action
+function fonts.define.analyze(specification, size)
+    local lookup, name, sub, method, detail = fonts.define.get_specification(specification or "")
+    return fonts.define.makespecification(specification,lookup, name, sub, method, detail, size)
 end
 
 --[[ldx--
@@ -130,7 +146,7 @@ function tfm.hash_features(specification)
         local t = { }
         local normal = features.normal
         if normal and next(normal) then
-            local f = table.sortedkeys(normal)
+            local f = table.sortedhashkeys(normal)
             for i=1,#f do
                 local v = f[i]
                 if v ~= "number" then
@@ -140,26 +156,18 @@ function tfm.hash_features(specification)
         end
         local vtf = features.vtf
         if vtf and next(vtf) then
-            local f = table.sortedkeys(vtf)
+            local f = table.sortedhashkeys(vtf)
             for i=1,#f do
                 local v = f[i]
                 t[#t+1] = v .. '=' .. tostring(vtf[v])
             end
         end
         if #t > 0 then
-            return table.concat(t,"+")
+            return concat(t,"+")
         end
     end
     return "unknown"
 end
-
-
---~ function tfm.hash_instance(specification)
---~     if not specification.hash then
---~         specification.hash = tfm.hash_features(specification)
---~     end
---~     return specification.hash .. ' @ ' .. tostring(specification.size)
---~ end
 
 fonts.designsizes = { }
 
@@ -172,16 +180,20 @@ loose our testcases for <l n='luatex'/>.</p>
 --ldx]]--
 
 function tfm.hash_instance(specification,force)
-    local hash, size = specification.hash, specification.size
+    local hash, size, fallbacks = specification.hash, specification.size, specification.fallbacks
     if force or not hash then
         hash = tfm.hash_features(specification)
         specification.hash = hash
     end
     if size < 1000 and fonts.designsizes[hash] then
-        size = tfm.scaled(size, fonts.designsizes[hash])
+        size = math.round(tfm.scaled(size, fonts.designsizes[hash]))
         specification.size = size
     end
-    return hash .. ' @ ' .. tostring(size)
+    if fallbacks then
+        return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
+    else
+        return hash .. ' @ ' .. tostring(size)
+    end
 end
 
 --[[ldx--
@@ -189,18 +201,22 @@ end
 --ldx]]--
 
 function fonts.define.resolve(specification)
-    if specification.lookup == 'name' then
-        specification.resolved, specification.sub = fonts.names.resolve(specification.name,specification.sub)
-        if specification.resolved then
-            specification.forced = file.extname(specification.resolved)
-            specification.name = file.removesuffix(specification.resolved)
+    if not specification.resolved or specification.resolved == "" then -- resolved itself not per se in mapping hash
+        if specification.lookup == 'name' then
+            specification.resolved, specification.sub = fonts.names.resolve(specification.name,specification.sub)
+            if specification.resolved then
+                specification.forced = file.extname(specification.resolved)
+                specification.name = file.removesuffix(specification.resolved)
+            end
+        elseif specification.lookup == 'file' then
+            specification.forced = file.extname(specification.name)
+            specification.name = file.removesuffix(specification.name)
         end
-    elseif specification.lookup == 'file' then
-        specification.forced = file.extname(specification.name)
-        specification.name = file.removesuffix(specification.name)
     end
     if specification.forced == "" then
         specification.forced = nil
+    else
+        specification.forced = specification.forced
     end
     specification.hash = specification.name .. ' @ ' .. tfm.hash_features(specification)
     if specification.sub and specification.sub ~= "" then
@@ -226,13 +242,12 @@ specification yet.</p>
 --ldx]]--
 
 function tfm.read(specification)
-    garbagecollector.push()
-    input.starttiming(fonts)
+--~     input.starttiming(fonts)
     local hash = tfm.hash_instance(specification)
     local tfmtable = tfm.fonts[hash] -- hashes by size !
     if not tfmtable then
         if specification.forced and specification.forced ~= "" then
-            tfmtable = tfm.readers[specification.forced](specification)
+            tfmtable = tfm.readers[specification.forced:lower()](specification)
             if not tfmtable then
                 logs.report("define font","forced type %s of %s not found",specification.forced,specification.name)
             end
@@ -258,8 +273,7 @@ function tfm.read(specification)
         --~ tfmtable.mode = specification.features.normal.mode or "base"
         end
     end
-    input.stoptiming(fonts)
-    garbagecollector.pop()
+--~     input.stoptiming(fonts)
     if not tfmtable then
         logs.report("define font","font with name %s is not found",specification.name)
     end
@@ -271,43 +285,27 @@ end
 --ldx]]--
 
 function tfm.read_and_define(name,size) -- no id
-    local specification = fonts.define.analyze(name,size,nil)
-    if specification.method and fonts.define.specify[specification.method] then
-        specification = fonts.define.specify[specification.method](specification)
+    local specification = fonts.define.analyze(name,size)
+    local method = specification.method
+    if method and fonts.define.specify[method] then
+        specification = fonts.define.specify[method](specification)
     end
     specification = fonts.define.resolve(specification)
     local hash = tfm.hash_instance(specification)
-    local id = tfm.internalized[hash]
+    local id = fonts.define.registered(hash)
     if not id then
         local fontdata = tfm.read(specification)
         if fontdata then
-            if not tfm.internalized[hash] then
-                id = font.define(fontdata)
-                tfm.id[id] = fontdata
-                tfm.internalized[hash] = id
-                if fonts.trace then
-                    logs.report("define font","loading at 1 id %s, hash: %s",id,hash)
-                end
-            else
-                id = tfm.internalized[hash]
-            end
+            fontdata.hash = hash
+            id = font.define(fontdata)
+            fonts.define.register(fontdata,id)
+tfm.cleanup_table(fontdata)
         else
             id = 0  -- signal
         end
     end
     return tfm.id[id], id
 end
-
---[[ldx--
-<p>A naive callback could be the following:</p>
-
-<code>
-callback.register('define_font', function(name,size,id)
-    return fonts.define.read(fonts.define.resolve(fonts.define.analyze(name,size,id)))
-end)
-</code>
---ldx]]--
-
 
 --[[ldx--
 <p>Next follow the readers. This code was written while <l n='luatex'/>
@@ -389,7 +387,7 @@ name*context specification
 function fonts.define.specify.predefined(specification)
     local detail = specification.detail
     if detail ~= "" then
-        detail = detail:gsub("["..fonts.define.splitsymbols.."].*$","") -- get rid of *whatever specs and such
+    --  detail = detail:gsub("["..fonts.define.splitsymbols.."].*$","") -- get rid of *whatever specs and such
         if fonts.define.methods[detail] then                            -- since these may be appended at the
             specification.features.vtf = { preset = detail }            -- tex end by default
         end
@@ -429,6 +427,13 @@ function fonts.define.specify.colonized(specification) -- xetex mode
 end
 
 function tfm.make(specification)
+    -- currently fonts are scaled while constructing the font, so we
+    -- have to do scaling of commands in the vf at that point using
+    -- e.g. "local scale = g.factor or 1" after all, we need to work
+    -- with copies anyway and scaling needs to be done at some point;
+    -- however, when virtual tricks are used as feature (makes more
+    -- sense) we scale the commands in fonts.tfm.scale (and set the
+    -- factor there)
     local fvm = fonts.define.methods[specification.features.vtf.preset]
     if fvm then
         return fvm(specification)
@@ -445,15 +450,6 @@ fonts.define.specify.synonyms        = fonts.define.specify.synonyms        or {
 
 input.storage.register(false,"fonts/setups" , fonts.define.specify.context_setups , "fonts.define.specify.context_setups" )
 input.storage.register(false,"fonts/numbers", fonts.define.specify.context_numbers, "fonts.define.specify.context_numbers")
-
---~     local t = aux.settings_to_hash(features)
---~     for k,v in pairs(t) do
---~         k = synonyms[k] or k
---~         t[k] = v:is_boolean()
---~         if type(t[k]) == "nil" then
---~             t[k] = v
---~         end
---~     end
 
 fonts.triggers = fonts.triggers or { }
 
@@ -507,11 +503,6 @@ function fonts.define.specify.preset_context(name,parent,features)
     setups[name] = tt
 end
 
---~ function fonts.define.specify.context_number(name)
---~     local s = fonts.define.specify.context_setups[name]
---~     return (s and s.number) or -1
---~ end
-
 do
 
     -- here we clone features according to languages
@@ -553,7 +544,7 @@ do
 
 end
 
-function fonts.define.specify.context_tostring(name,kind,separator,yes,no,strict,omit)
+function fonts.define.specify.context_tostring(name,kind,separator,yes,no,strict,omit) -- not used
     return aux.hash_to_string(table.merged(fonts[kind].features.default or {},fonts.define.specify.context_setups[name] or {}),separator,yes,no,strict,omit)
 end
 
@@ -565,9 +556,12 @@ function fonts.define.specify.split_context(features)
     end
 end
 
-function fonts.define.specify.starred(features)
-    if features.detail and features.detail ~= "" then
-        features.features.normal = fonts.define.specify.split_context(features.detail)
+local splitter = lpeg.splitat(",")
+
+function fonts.define.specify.starred(features) -- no longer fallbacks here
+    local detail = features.detail
+    if detail and detail ~= "" then
+        features.features.normal = fonts.define.specify.split_context(detail)
     else
         features.features.normal = { }
     end
@@ -609,18 +603,41 @@ introduced later in the development.</p>
 
 fonts.define.last = nil
 
-function fonts.define.read(name,size,id)
-    local specification = fonts.define.analyze(name,size,id)
-    if specification.method and fonts.define.specify[specification.method] then
-        specification = fonts.define.specify[specification.method](specification)
+function fonts.define.register(fontdata,id)
+    if fontdata and id then
+        local hash = fontdata.hash
+        if not tfm.internalized[hash] then
+            if fonts.trace then
+                logs.report("define font","loading at 2 id %s, hash: %s",id or "?",hash or "?")
+            end
+            tfm.id[id] = fontdata
+            tfm.internalized[hash] = id
+        end
+    end
+end
+
+function fonts.define.registered(hash)
+    local id = tfm.internalized[hash]
+    return id, id and tfm.id[id]
+end
+
+local cache_them = false
+
+function fonts.define.read(specification,size,id) -- id can be optional, name can already be table
+    input.starttiming(fonts)
+    if type(specification) == "string" then
+        specification = fonts.define.analyze(specification,size)
+    end
+    local method = specification.method
+    if method and fonts.define.specify[method] then
+        specification = fonts.define.specify[method](specification)
     end
     specification = fonts.define.resolve(specification)
     local hash = tfm.hash_instance(specification)
-    if true then
-    --~         local fontdata = containers.read(fonts.cache(),hash) -- for tracing purposes
+    if cache_them then
+        local fontdata = containers.read(fonts.cache(),hash) -- for tracing purposes
     end
-    local fontdata = tfm.internalized[hash] -- id
-    fonts.define.last = fontdata or id
+    local fontdata = fonts.define.registered(hash) -- id
     if not fontdata then
         if specification.features.vtf and specification.features.vtf.preset then
             fontdata = tfm.make(specification)
@@ -630,19 +647,17 @@ function fonts.define.read(name,size,id)
                 tfm.check_virtual_id(fontdata)
             end
         end
-        if true then
-        --~             fontdata = containers.write(fonts.cache(),hash,fontdata) -- for tracing purposes
+        if cache_them then
+            fontdata = containers.write(fonts.cache(),hash,fontdata) -- for tracing purposes
         end
-        if not tfm.internalized[hash] then
-            tfm.id[id] = fontdata
-            tfm.internalized[hash] = id
-            if fonts.trace then
-                logs.report("define font","loading at 2 id %s, hash: %s",id,hash)
+        if fontdata then
+            fontdata.hash = hash
+            if id then
+                fonts.define.register(fontdata,id)
             end
-        else
-            fontdata = tfm.internalized[hash]
         end
     end
+    fonts.define.last = fontdata or id -- todo ! ! ! ! !
     if not fontdata then
         logs.report("define font", "unknown font %s, loading aborted",specification.name)
     elseif fonts.trace and type(fontdata) == "table" then
@@ -656,8 +671,117 @@ function fonts.define.read(name,size,id)
             fontdata.fullname      or "?",
             file.basename(fontdata.filename or "?"))
     end
+    input.stoptiming(fonts)
     return fontdata
 end
+
+-- define (two steps)
+
+local P, C, Cc = lpeg.P, lpeg.C, lpeg.Cc
+
+local space        = P(" ")
+local spaces       = space^0
+local value        = C((1-space)^1)
+local rest         = C(P(1)^0)
+local scale_none   =               Cc(0)
+local scale_at     = P("at")     * Cc(1) * spaces * value
+local scale_sa     = P("sa")     * Cc(2) * spaces * value
+local scale_mo     = P("mo")     * Cc(3) * spaces * value
+local scale_scaled = P("scaled") * Cc(4) * spaces * value
+
+local sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_scaled + scale_none)
+local splitpattern = spaces * value * spaces * rest
+
+local specification --
+
+function fonts.define.command_1(str)
+    input.starttiming(fonts)
+    local fullname, size = splitpattern:match(str)
+    local lookup, name, sub, method, detail = fonts.define.get_specification(fullname)
+    if not name then
+        logs.report("define font","strange definition '%s'",str)
+        texsprint(tex.ctxcatcodes,"\\glet\\somefontname\\defaultfontfile")
+    elseif name == "unknown" then
+        texsprint(tex.ctxcatcodes,"\\glet\\somefontname\\defaultfontfile")
+    else
+        texsprint(tex.ctxcatcodes,format("\\xdef\\somefontname{%s}",name))
+    end
+    -- we can also use a count for the size
+    if size and size ~= "" then
+        local mode, size = sizepattern:match(size)
+        if size and mode then
+            count.scaledfontmode = mode
+            texsprint(tex.ctxcatcodes,format("\\def\\somefontsize{%s}",size))
+        else
+            count.scaledfontmode = 0
+            texsprint(tex.ctxcatcodes,format("\\let\\somefontsize\\empty",size))
+        end
+    else
+        count.scaledfontmode = 0
+        texsprint(tex.ctxcatcodes,format("\\let\\somefontsize\\empty",size))
+    end
+    specification = fonts.define.makespecification(str,lookup,name,sub,method,detail,size)
+end
+
+function fonts.define.command_2(global,cs,name,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+    local trace = fonts.trace
+    -- name is now resolved and size is scaled cf sa/mo
+    local lookup, name, sub, method, detail = fonts.define.get_specification(name or "")
+    -- asome settings can be overloaded
+    if lookup and lookup ~= "" then specification.lookup = lookup end
+    specification.name = name
+    specification.size = size
+    specification.sub = sub
+    if detail and detail ~= "" then
+        specification.method, specification.detail = method or "*", detail
+    elseif specification.detail and specification.detail ~= "" then
+        -- already set
+    elseif fontfeatures and fontfeatures ~= "" then
+        specification.method, specification.detail = "*", fontfeatures
+    elseif classfeatures and classfeatures ~= "" then
+        specification.method, specification.detail = "*", classfeatures
+    end
+    if trace then
+        logs.report("define font","memory usage before: %s",ctx.memused())
+    end
+if fontfallbacks and fontfallbacks ~= "" then
+    specification.fallbacks = fontfallbacks
+elseif classfallbacks and classfallbacks ~= "" then
+    specification.fallbacks = classfallbacks
+end
+    local tfmdata = fonts.define.read(specification,size) -- id not yet known
+    if not tfmdata then
+        logs.report("define font","unable to define %s as \\%s",name,cs)
+    elseif type(tfmdata) == "number" then
+        if trace then
+            logs.report("define font","reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+        end
+        tex.definefont(global,cs,tfmdata)
+        -- resolved (when designsize is used):
+        texsprint(tex.ctxcatcodes,format("\\def\\somefontsize{%isp}",tfm.id[tfmdata].size))
+    else
+    --  local t = os.clock(t)
+        local id = font.define(tfmdata)
+    --  print(name,os.clock()-t)
+        tfmdata.id = id
+        fonts.define.register(tfmdata,id)
+        tex.definefont(global,cs,id)
+        tfm.cleanup_table(tfmdata)
+        if fonts.trace then
+            logs.report("define font","defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+        end
+        -- resolved (when designsize is used):
+        texsprint(tex.ctxcatcodes,format("\\def\\somefontsize{%isp}",tfmdata.size))
+    --~ if specification.fallbacks then
+    --~     fonts.collections.prepare(specification.fallbacks)
+    --~ end
+    end
+    if trace then
+        logs.report("define font","memory usage after: %s",ctx.memused())
+    end
+    input.stoptiming(fonts)
+end
+
 
 --~ table.insert(tfm.readers.sequence,1,'vtf')
 

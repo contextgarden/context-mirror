@@ -121,17 +121,7 @@
 %D This macro reports the average width for the current main
 %D language (\the \dimexpr (\averagecharwidth)).
 
-\beginTEX
-
-  \def\averagecharwidth{\the\emwidth}
-
-\endTEX
-
-\beginETEX \dimexpr
-
-  \def\averagecharwidth{\dimexpr((\zeropoint\charactertable\charwidthlanguage)/100)}
-
-\endETEX
+\def\averagecharwidth{\dimexpr((\zeropoint\charactertable\charwidthlanguage)/100)}
 
 \def\showcharfreq
   {\hbox\bgroup

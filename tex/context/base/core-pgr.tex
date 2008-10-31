@@ -169,8 +169,7 @@
             %{\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
             % but this one prevents cyclic runs due to
             % rounding errors
-             {\setbox\scratchbox\hbox to \overlaywidth
-                {\dopositionaction{#1::\MPanchoridentifier}\hss}%
+             {\setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}%
               \ht\scratchbox\overlayheight
               \dp\scratchbox\zeropoint
               \box\scratchbox}}%
@@ -202,7 +201,7 @@
 \newtoks\everyinsertpositionaction
 
 \def\cleanuppositionaction#1% not in trialtypesetting
-  {\ifundefined{\POSactionprefix#1++}\else
+  {\ifcsname\POSactionprefix#1++\endcsname % \ifundefined{\POSactionprefix#1++}\else
      \the\everycleanpositionaction
      \iflocalpositioning
        \letgvalue{\POSactionprefix#1++}\empty
@@ -210,6 +209,16 @@
        \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}%
      \fi
    \fi}
+
+% \def\cleanuppositionaction#1% not in trialtypesetting
+%   {\ifcsname\POSactionprefix#1++\endcsname
+%      \the\everycleanpositionaction
+%      \iflocalpositioning
+%        \global\expandafter\let\csname\POSactionprefix#1++\endcsname\empty
+%      \else
+%        \global\expandafter\let\csname\POSactionprefix#1++\expandafter\endcsname\csname\POSactionprefix#1++\endcsname
+%      \fi
+%    \fi}
 
 \def\handlepositionaction#1\with#2\on#3%
   {\bgroup
@@ -232,11 +241,8 @@
   {\handlepositionaction\dohandlepositionboxes\with{#1}{#2}{#3}\on{#2}}
 
 \def\doinsertpositionboxes#1#2#3% pos tag setups
-  {\ifnum\MPp{#1}=\realpageno\relax
-     % \doifdefined{\MPoverlayposprefix#1}
-     %   {\getvalue{\MPoverlayposprefix#1}{#1}{#2}{#3}}%
-     \executeifdefined{\MPoverlayposprefix#1}%
-       \gobblethreearguments{#1}{#2}{#3}%
+  {\ifnum\MPp{#1}=\realpageno\relax % can be sped up
+     \executeifdefined{\MPoverlayposprefix#1}\gobblethreearguments{#1}{#2}{#3}%
    \fi}
 
 \appendtoks
@@ -267,9 +273,13 @@
 
 \let\stopMPpositiongraphic\relax
 
+% \def\prepareMPpositionvariables
+%   {\ifundefined{\@@meta self}\setvalue{\@@meta self}{\currentposition}\fi
+%    \ifundefined{\@@meta from}\setvalue{\@@meta from}{\currentposition}\fi}
+
 \def\prepareMPpositionvariables
-  {\ifundefined{\@@meta self}\setvalue{\@@meta self}{\currentposition}\fi
-   \ifundefined{\@@meta from}\setvalue{\@@meta from}{\currentposition}\fi}
+  {\ifcsname\@@meta self\endcsname\else\setvalue{\@@meta self}{\currentposition}\fi
+   \ifcsname\@@meta from\endcsname\else\setvalue{\@@meta from}{\currentposition}\fi}
 
 \newif\ifcollectMPpositiongraphics \collectMPpositiongraphicstrue
 
@@ -1250,35 +1260,37 @@
   {\bgroup
    \ifrepositionmarginbox
      \global\advance\currentmarginpos\plusone
-     \setposition{\s!margin:\number\currentmarginpos}%
+    %\setposition{\s!margin:\number\currentmarginpos}% not always
      \ifcase\marginrepositionmethod
        % nothing
      \or
        % nothing
      \or
        % stack / page check yet untested
+       \setposition{\s!margin:\number\currentmarginpos}%
        \scratchdimen\MPy{\s!margin:\number\currentmarginpos}%
        \global\advance\currentmarginpos\plusone
        \advance\scratchdimen -\MPy{\s!margin:\number\currentmarginpos}%
        \advance\scratchdimen -\strutdp
-       % new
-% bugged
-%        \setbox#1\hbox
-%          {\hskip-\MPx{\s!margin:\number\currentmarginpos}%
-%           \hskip\MPx{head:\realfolio}%
-%           \box#1}%
+       % new but bugged
+       % \setbox#1\hbox
+       %   {\hskip-\MPx{\s!margin:\number\currentmarginpos}%
+       %    \hskip\MPx{head:\realfolio}%
+       %    \box#1}%
        % so far
        \setbox#1\hbox
          {\setposition{\s!margin:\number\currentmarginpos}%
           \raise\scratchdimen\box#1}%
      \or
        % move up
+       \setposition{\s!margin:\number\currentmarginpos}%
        \ifnum\MPp{p:\number\parposcounter}=\MPp{\s!margin:\number\currentmarginpos}\relax
          \scratchdimen\dimexpr\MPy{p:\number\parposcounter}-\MPy{\s!margin:\number\currentmarginpos}\relax
          \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
        \fi
      \or
        % move up, assume end of par
+       \setposition{\s!margin:\number\currentmarginpos}%
        \ifnum\MPp{p:\number\parposcounter}=\MPp{\s!margin:\number\currentmarginpos}\relax
          \getnoflines\margincontentheight
          \advance\noflines\minusone
@@ -1332,7 +1344,6 @@
            {\global\chardef\currentamrealpage0}}% % not found
       \expanded
         {\doglobal\noexpand\appendtoks
-%            #1_menu_button(\currentamposition,\the\currentamrealpage,\noexpand\MPpos{#1:\currentamposition}) ;
            #1_menu_button(\currentamposition,\the\currentamrealpage,\MPpos{#1:\currentamposition}) ;
          \to \MPmenutoks}%
       \hpos{#1:\currentamposition}{#3}}

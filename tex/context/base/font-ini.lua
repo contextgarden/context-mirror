@@ -18,6 +18,7 @@ fonts = fonts or { }
 fonts.trace   = false -- true
 fonts.mode    = 'base'
 fonts.private = 0xE000
+fonts.verbose = false -- more verbose cache tables
 
 fonts.methods = {
     base = { tfm = { }, afm = { }, otf = { }, vtf = { }, fix = { } },
@@ -45,24 +46,20 @@ fonts.define.specify.synonyms = fonts.define.specify.synonyms or { }
 
 -- tracing
 
-do
+fonts.color = fonts.color or { }
 
-    fonts.color = fonts.color or { }
+fonts.color.trace = false
 
-    fonts.color.trace = false
+local attribute = attributes.numbers['color'] or 7 -- we happen to know this -)
+local mapping   = attributes.list[attribute]
 
-    local attribute = attributes.numbers['color'] or 7 -- we happen to know this -)
-    local mapping   = attributes.list[attribute]
+local set_attribute   = node.set_attribute
+local unset_attribute = node.unset_attribute
 
-    local set_attribute   = node.set_attribute
-    local unset_attribute = node.unset_attribute
-
-    function fonts.color.set(n,c)
-    --  local mc = mapping[c] if mc then unset_attribute((n,attribute) else set_attribute(n,attribute,mc) end
-        set_attribute(n,attribute,mapping[c] or -1) -- also handles -1 now
-    end
-    function fonts.color.reset(n)
-        unset_attribute(n,attribute)
-    end
-
+function fonts.color.set(n,c)
+--  local mc = mapping[c] if mc then unset_attribute((n,attribute) else set_attribute(n,attribute,mc) end
+    set_attribute(n,attribute,mapping[c] or -1) -- also handles -1 now
+end
+function fonts.color.reset(n)
+    unset_attribute(n,attribute)
 end

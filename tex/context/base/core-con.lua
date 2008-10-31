@@ -35,7 +35,7 @@ languages.counters = {
         0x006F, 0x0070, 0x0072, 0x0073, 0x0161,
         0x0074, 0x0075, 0x0076, 0x007A, 0x017E
     },
-    ['greek'] = {
+    ['greek'] = { -- this should be the lowercase table
         0x0391, 0x0392, 0x0393, 0x0394, 0x0395,
         0x0396, 0x0397, 0x0398, 0x0399, 0x039A,
         0x039B, 0x039C, 0x039D, 0x039E, 0x039F,
@@ -112,7 +112,7 @@ end
 
 function converters.alphabetic(n,code)
     local code = counters[code] or counters['**']
-    do_alphabetic(n,#code,function(n) return code[n] or fallback end)
+    do_alphabetic(n,#code,function(n) return characters.lccode(code[n] or fallback) end) -- lccode catches wrong tables
 end
 
 function converters.Alphabetic(n,code)

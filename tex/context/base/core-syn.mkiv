@@ -15,36 +15,19 @@
 
 \registerctxluafile{core-syn}{1.001}
 
-\appendtoks
-    \immediatewriteutilitytua{if not job.sortedlists then job.sortedlists = { } end}%
-    \immediatewriteutilitytua{local js = job.sortedlists}%
-\to \everyopenutilities
-
-\let\allsortedlists\empty
-
-\appendtoks
-    \processcommacommand[\allsortedlists]\mkdodefinesortedlist
-    \globallet\allsortedlists\empty
-\to \everyopenutilities
-
-\def\mkdodefinesortedlist#1% class
-  {\ctxlua{job.definesortedlist('#1')}%
-   \immediatewriteutilitytua{job.definesortedlist('#1')}}
-
 \def\mkdefinesortedlist#1% class
-  {\mkdodefinesortedlist{#1}%
-   \doglobal\addtocommalist{#1}\allsortedlists}
+  {\ctxlua{joblists.define('#1')}}
 
 \def\mksavesortedlistentry#1#2#3#4% class key entry meaning
-  {\immediatewriteutilitytua{ti(js['#1'],{'e','#2',\!!bs#3\!!es,\!!bs#4\!!es})}}
+  {\ctxlua{joblists.save_entry('#1','e','#2',\!!bs#3\!!es,\!!bs#4\!!es)}}
 
 \def\mksavesortedlistvariable#1#2#3% class type value
-  {\immediatewriteutilitytua{ti(js['#1'],{'#2','#3'})}}
+  {\ctxlua{joblists.save_variable('#1','#2','#3')}}
 
 \def\mkloadsortedlist#1% class
   {\bgroup
    \getvalue{\s!set#1}%
-   \ctxlua{job.loadsortedlist('#1')}%
+   \ctxlua{joblists.process('#1')}%
    \getvalue{\s!reset#1}%
    \egroup}
 

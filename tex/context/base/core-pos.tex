@@ -350,52 +350,18 @@
 
 \let\cleanuppositionaction\gobbleoneargument
 
-%D The next one will be overloaded later.
-%D
-%D \starttyping
-%D \def\dopositionaction#1% test saves hash entry in etex
-%D   {\ifundefined{\POSactionprefix#1::}\else
-%D      \ifnum\MPp{#1}>\zerocount % new
-%D        \setbox\scratchbox\hbox \bgroup
-%D          \traceposstring\clap\red{<#1>}%
-%D          \the\everyinsertpositionaction
-%D          \the\everypositionaction
-%D          \ifcollectMPpositiongraphics
-%D            % can save a lot of run time
-%D            \pushMPdrawing
-%D            \MPshiftdrawingtrue
-%D            \resetMPdrawing
-%D            \getvalue{\POSactionprefix#1::}%
-%D            \ifMPdrawingdone
-%D              \getMPdrawing
-%D            \fi
-%D            \resetMPdrawing
-%D            \popMPdrawing
-%D          \else
-%D            \getvalue{\POSactionprefix#1::}%
-%D          \fi
-%D          \cleanuppositionaction{#1}%
-%D        \egroup
-%D        \smashedbox\scratchbox
-%D      \else
-%D        % shouldn't happen too often
-%D        \traceposstring\clap\cyan{<#1>}%
-%D      \fi
-%D    \fi}
-%D \stoptyping
-
 \def\doifpositionaction#1%
-  {\ifundefined{\POSactionprefix#1::}%
-     \@EA\gobbleoneargument
-   \else
+  {\ifcsname\POSactionprefix#1::\endcsname
      \@EA\firstofoneargument
+   \else
+     \@EA\gobbleoneargument
    \fi}
 
 \def\doifpositionactionelse#1%
-  {\ifundefined{\POSactionprefix#1::}%
-     \@EA\secondoftwoarguments
-   \else
+  {\ifcsname\POSactionprefix#1::\endcsname
      \@EA\firstoftwoarguments
+   \else
+     \@EA\secondoftwoarguments
    \fi}
 
 %D We can copy a position with:
@@ -522,27 +488,38 @@
 
 \chardef\parposstrut=1 % 0 => no strut data, so fall backs used
 
+\newif\iftracepositions
+
+% \def\doregisterparoptions
+%   {\global\advance\parposcounter\plusone
+%    \begingroup
+%      \leftskip 1\leftskip
+%      \rightskip1\rightskip
+%      \setpositiondataplus
+%        {p:\number\parposcounter}% identifier
+%        {\the\zeropoint}%
+%        {\the\strutht}%
+%        {\the\strutdp}%
+%        {\the\hsize     ,% 1
+%         \the\leftskip  ,% 2
+%         \the\rightskip ,% 3
+%         \the\hangindent,% 4
+%         \the\hangafter ,% 5 (num)
+%         \the\parindent }% 6
+%     %\normalhbox{\registerparsymbol}%
+%      \registerparsymbol
+%    \endgroup}
+
 \def\doregisterparoptions
   {\global\advance\parposcounter\plusone
-   \begingroup
-     \leftskip 1\leftskip
-     \rightskip1\rightskip
-     \setpositiondataplus
-       {p:\number\parposcounter}% identifier
-       {\the\zeropoint}%
-       {\the\strutht}%
-       {\the\strutdp}%
-       {\the\hsize     ,% 1
-        \the\leftskip  ,% 2
-        \the\rightskip ,% 3
-        \the\hangindent,% 4
-        \the\hangafter ,% 5 (num)
-        \the\parindent }% 6
-    %\normalhbox{\registerparsymbol}%
-     \registerparsymbol
-   \endgroup}
-
-\newif\iftracepositions
+   \setpositiondataplus
+     {p:\number\parposcounter}% identifier
+     {\the\zeropoint}%
+     {\the\strutht}%
+     {\the\strutdp}%
+     {\the\hsize,\the\dimexpr\leftskip\relax,\the\dimexpr\rightskip\relax,\the\hangindent,\the\hangafter,\the\parindent}%
+  %\normalhbox{\registerparsymbol}%
+   \iftracepositions\registerparsymbol\fi}
 
 \def\traceposstring#1#2#3%
   {\iftracepositions\smashedhbox{#1{\infofont#2#3}}\fi}

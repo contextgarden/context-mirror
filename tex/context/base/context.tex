@@ -11,19 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% dec 07 2001 : cont-en.efmt : 4,035,912
-% aug 07 2004 : cont-en.efmt : 4,928,967 (5 more patterns)
-% aug 31 2006 : cont-en.fmt  : 7,048,748 (all patterns)
-
-% todo 1: each module english commands
-% todo 2: replace lowlevel *!* by english variants
-% todo 3: make files more independent
-% todo 4: cleanup specials + adapt interface
-% todo 5: remove/replace old stuff (by new stuff, like couplepaper)
-% todo 6: create even more hooks (so that users can overload)
-% todo 7: conditionals
-% todo 8: redesign tui/tuo
-
 \catcode`\{=1 \catcode`\}=2 \catcode`\#=6
 
 %D For many years \CONTEXT\ supported both good old \TEX\ and \ETEX, but
@@ -42,7 +29,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2008.08.05 18:47}
+\edef\contextversion{2008.10.31 13:58}
 
 %D For those who want to use this:
 
@@ -66,30 +53,10 @@
 
 \ifx\normalinput\undefined \let\normalinput\input \fi
 
-% trick:
+%D We have two versions, one for \PDFTEX\ and \XETEX, and one for
+%D \LUATEX.
 
-\ifx\directlua\undefined
-    \chardef\contextmarkmode = 2
-\else
-    \chardef\contextmarkmode = \directlua 0 { do
-        if arg then
-            local mkii = 4
-            for k,v in pairs(arg) do
-                if v == "--mkii" then mkii = 2 break end
-            end
-            tex.sprint(mkii)
-        else
-            tex.sprint(2)
-        end
-    end }
-    % \ifnum\contextmarkmode=2
-    %   \immediate\write16{}
-    %   \immediate\write16{>> Quitting LuaTeX, test mode only! <<}
-    %   \immediate\write16{}
-    %   \def\next{\errorstopmode \dump \endinput}
-    %   \expandafter \expandafter \expandafter \next
-    % \fi
-\fi
+\chardef\contextmarkmode = \ifx\directlua\undefined 2 \else 4 \fi
 
 \def\loadcorefile#1{\normalinput#1\relax}
 \def\loadmarkfile#1{\normalinput#1.\mksuffix\relax}
@@ -112,7 +79,7 @@
 %D dutch version of \CONTEXT, supplying \type {english} will of
 %D course end op in a english version.
 %D
-%D Another option is to use \TEXEXEC:
+%D Another option is to use \TEXEXEC\ (for \MKII):
 %D
 %D \starttyping
 %D texexec --make [--alone] [--engine] [--all]
@@ -120,6 +87,13 @@
 %D \stoptyping
 %D
 %D More information can be found in the \TEXEXEC\ manual.
+%D
+%D For \MKIV\ you have to do:
+%D
+%D \starttyping
+%D luatools --generate
+%D context --make en nl ...
+%D \stoptyping
 
 %D When you write modules (or extensions) you should avoid
 %D conflicts with existing macro names and mechanisms. If you are
@@ -143,517 +117,9 @@
 %D mailing list (ntg-context@ntg.nl). Much additional information
 %D can be found at the PRAGMA website (www.pragma-ade.com).
 
-%D First we load the system modules. These implement a lot of
-%D manipulation macros. The first one loads \PLAIN\ \TEX, as
-%D minimal as possible.
+%D We now go either the \MKII\ or \MKIV\ route:
 
-\loadcorefile{syst-pln.tex}
-\loadcorefile{syst-prm.tex}
-
-\loadmkivfile{luat-env.tex}
-\loadmkivfile{luat-lib.tex}
-\loadcorefile{syst-cat.tex}
-
-\loadcorefile{syst-etx.tex}
-\loadcorefile{syst-pdt.tex}
-\loadcorefile{syst-omg.tex}
-\loadcorefile{syst-xtx.tex}
-\loadcorefile{syst-mtx.tex}
-
-\loadcorefile{syst-gen.tex}
-\loadcorefile{syst-ext.tex}
-\loadcorefile{syst-chr.tex}
-\loadcorefile{syst-fnt.tex}
-\loadcorefile{syst-new.tex}
-\loadcorefile{syst-con.tex}
-\loadcorefile{syst-var.tex}
-\loadcorefile{syst-str.tex}
-
-%loadcorefile{syst-tra.tex}
-
-\loadcorefile{syst-rtp.tex}
-
-%D To enable selective loading, we say:
-
-\CONTEXTtrue
-
-%D In order to conveniently load files, we need a few
-%D support modules.
-
-\loadcorefile{supp-ini.tex}
-\loadcorefile{supp-fil.tex}
-\loadcorefile{supp-dir.tex}
-
-%D After this we're ready for the multi||lingual interface
-%D modules.
-
-\loadcorefile{mult-ini.tex}
-\loadcorefile{mult-fst.tex}
-\loadcorefile{mult-sys.tex}
-\loadcorefile{mult-con.tex}
-\loadcorefile{mult-com.tex}
-
-\loadmkivfile{luat-ini.tex}
-%loadmkivfile{luat-lib.tex}
-\loadmkivfile{luat-lmx.tex}
-
-\loadmkivfile{luat-uni.tex}
-
-\loadmkivfile{char-ini.tex}
-\loadmkivfile{char-def.tex}
-\loadmkivfile{char-utf.tex}
-
-\loadmkivfile{toks-ini.tex}
-
-\loadmkivfile{attr-ini.tex}
-\loadmkivfile{node-ini.tex}
-
-%D We also use some third party macros. These are loaded by
-%D saying:
-
-\loadcorefile{thrd-ran.tex}  % based on: Donald Arseneau
-\loadcorefile{thrd-trg.tex}  % based on: David Carlisle
-
-%D Now we're ready for some general support modules. These
-%D modules implement some basic typesetting functionality.
-
-\loadcorefile{core-var.tex}
-\loadmkivfile{luat-deb.tex}
-
-\loadcorefile{supp-box.tex}
-\loadcorefile{supp-mrk.tex}
-\loadcorefile{supp-vis.tex}
-\loadcorefile{supp-fun.tex}
-%loadcorefile{supp-eps.tex}
-\loadcorefile{supp-spe.tex}
-\loadcorefile{supp-ran.tex}
-%loadcorefile{supp-mps.tex}
-\loadmkiifile{supp-mps.tex}
-\loadmkiifile{supp-tpi.tex}
-\loadcorefile{supp-mat.tex}
-\loadcorefile{supp-ali.tex}
-\loadcorefile{supp-num.tex}
-
-%D The next module deals with language specific typographic
-%D extensions.
-
-\loadcorefile{typo-ini.tex}
-
-%D Verbatim typesetting is implemented in a separate class of
-%D modules. The pretty typesetting modules are loaded at run
-%D time.
-
-\loadcorefile{verb-ini.tex}
-
-%D The following modules are not sequentially dependent,
-%D i.e. they have ugly dependencies, which will be cleaned
-%D up by adding more overloading.
-
-%D When loading the font, color and special modules, we need a
-%D bit more advanced file handling as well as some general
-%D variables, and features, so next we load:
-
-\loadcorefile{core-ins.tex}
-\loadcorefile{core-fil.tex}
-\loadcorefile{core-con.tex}
-
-%D We already need some synonyms (patterns). At runtime this
-%D file will be reloaded.
-
-\loadcorefile{cont-fil.tex}
-
-%D \CONTEXT\ does not implement its own table handling. We
-%D just go for the best there is and load \TABLE. Just to be
-%D sure we do it here, before we redefine \type{|}.
-
-\loadcorefile{thrd-tab.tex}  % based on: Michael Wichura / will be reimplemented
-
-%D Here comes the last support modules. They take care of
-%D some language specific things.
-
-%loadcorefile{supp-lan.tex} % replaced by lang-mis
-\loadcorefile{supp-pat.tex}
-
-%D The next few modules do what their names state. They
-%D load additional definition modules when needed.
-
-\loadcorefile{regi-ini.tex}
-\loadcorefile{enco-ini.tex}
-\loadcorefile{filt-ini.tex}
-\loadcorefile{hand-ini.tex}
-\loadcorefile{regi-syn.tex}
-\loadcorefile{lang-ini.tex}
-\loadcorefile{lang-ctx.tex}
-\loadcorefile{lang-dis.tex}
-
-\loadmarkfile{unic-ini}
-
-% \readfile{lang-url.pat}{}{} % test
-
-\loadcorefile{core-gen.tex}
-\loadcorefile{core-new.tex}
-\loadcorefile{core-uti.tex}
-\loadcorefile{core-two.tex}
-\loadcorefile{core-stg.tex}
-
-\loadcorefile{spec-mis.tex}
-\loadcorefile{spec-ini.tex}
-\loadcorefile{spec-def.tex}
-\loadcorefile{spec-var.tex}
-
-\doiffileelse{colo-new.tex}{\loadcorefile{colo-new.tex}}{\loadcorefile{colo-ini.tex}}
-\loadcorefile{colo-ext.tex}
-
-%D For the moment we load a lot of languages. In the future
-%D we'll have to be more space conservative.
-
-\loadcorefile{lang-mis.tex}
-\loadcorefile{lang-url.tex}
-\loadcorefile{lang-spe.tex}
-\loadcorefile{lang-lab.tex}
-
-\loadcorefile{lang-ger.tex}
-\loadcorefile{lang-ita.tex}
-\loadcorefile{lang-sla.tex}
-
-\loadcorefile{lang-alt.tex}
-\loadcorefile{lang-ana.tex}
-\loadcorefile{lang-art.tex}
-\loadcorefile{lang-bal.tex}
-\loadcorefile{lang-cel.tex}
-\loadcorefile{lang-grk.tex}
-\loadcorefile{lang-ind.tex}
-\loadcorefile{lang-ura.tex}
-
-\loadcorefile{lang-vn.tex}
-
-\loadcorefile{lang-ara.tex}
-
-%D All kind of symbols are handled in:
-
-\loadcorefile{symb-ini.tex}
-
-%D Sorting:
-
-\loadcorefile{sort-ini.tex}
-
-%D Next we load some core macro's. These implement the
-%D macros' that are seen by the users. The order of loading
-%D is important, due to dependancies.
-
-\loadcorefile{core-spa.tex}
-\loadcorefile{core-grd.tex}
-\loadcorefile{core-mar.tex}
-\loadcorefile{core-pos.tex}
-\loadcorefile{core-mak.tex}
-\loadcorefile{core-dat.tex}
-\loadcorefile{core-ver.tex}
-\loadcorefile{core-rul.tex}
-\loadcorefile{core-vis.tex}
-\loadcorefile{core-num.tex}
-\loadcorefile{core-tsp.tex}
-\loadcorefile{core-tab.tex}
-\loadcorefile{core-nav.tex}
-\loadcorefile{core-ref.tex}
-\loadcorefile{core-obj.tex}
-\loadcorefile{core-lst.tex}
-\loadcorefile{core-itm.tex}
-\loadcorefile{core-des.tex}
-\loadcorefile{core-mat.tex}
-\loadcorefile{core-syn.tex}
-\loadcorefile{core-sys.tex}
-
-\loadcorefile{page-ini.tex}
-\loadcorefile{page-bck.tex}
-\loadcorefile{page-not.tex}
-\loadcorefile{page-one.tex}
-\loadcorefile{page-lay.tex}
-\loadcorefile{page-log.tex}
-\loadcorefile{page-txt.tex}
-\loadcorefile{page-sid.tex}
-\loadcorefile{page-flt.tex}
-\loadcorefile{page-mul.tex}
-\loadcorefile{page-set.tex}
-\loadcorefile{page-lyr.tex}
-\loadcorefile{page-mak.tex}
-\loadcorefile{page-num.tex}
-\loadmarkfile{page-lin}
-\loadcorefile{page-par.tex}
-\loadcorefile{page-mar.tex}
-
-\loadcorefile{core-job.tex} % why so late?
-
-% so far
-
-\loadcorefile{core-sec.tex}
-\loadcorefile{core-swd.tex}
-\loadcorefile{core-buf.tex}
-\loadcorefile{core-blk.tex}
-\loadcorefile{page-imp.tex}
-\loadcorefile{core-tbl.tex}
-\loadcorefile{core-int.tex}
-\loadcorefile{core-ntb.tex}
-\loadcorefile{core-ltb.tex}
-
-%D A few more languages, that have specifics using core
-%D functionality:
-
-\loadcorefile{lang-chi.tex}
-\loadcorefile{lang-jap.tex}
-
-%D How about fill||in fields and related stuff?
-
-\loadcorefile{java-ini.tex}
-\loadcorefile{core-fld.tex}
-\loadcorefile{core-hlp.tex}
-
-%D Registers can depend on fields, so we load that now.
-
-\loadcorefile{core-reg.tex}
-
-%D Of course we do need fonts. There are no \TFM\ files
-%D loaded yet, so the format file is independant of their
-%D content. Here we also redefine \type{\it} as {\it italic}
-%D instead of italian.
-
-% \loadmkivfile{font-set.tex} -- experimental but now obsolete
-
-\loadcorefile{font-ini.tex}
-\loadcorefile{font-uni.tex}
-\loadcorefile{font-bfm.tex}
-\loadmkivfile{font-col.tex}
-
-\loadcorefile{enco-pfr.tex}
-
-%loadmkiifile{pdfr-def.tex} -- dvi/pdf bugged, must be done runtime anyway
-
-\loadcorefile{type-ini.tex}
-\loadcorefile{type-def.tex}
-
-%D Properties. Don't ask.
-
-\loadcorefile{prop-ini.tex}
-\loadcorefile{prop-lay.tex}
-\loadcorefile{prop-mis.tex}
-
-%D Like languages, fonts, encodings and symbols, \METAPOST\
-%D support is also organized in its own class of modules.
-
-\loadmkivfile{mlib-ctx.tex}
-\loadmkivfile{mlib-pdf.tex}
-\loadmkivfile{mlib-pps.tex}
-
-\loadmarkfile{meta-ini}
-\loadmarkfile{meta-tex}
-
-\loadcorefile{meta-pdf.tex}
-\loadcorefile{meta-pag.tex}
-
-%D Special page handling (maybe even later)
-
-\loadcorefile{page-flw.tex}
-\loadcorefile{page-spr.tex}
-\loadcorefile{page-plg.tex}
-\loadcorefile{page-str.tex}
-
-%D Hm.
-
-\loadcorefile{core-pgr.tex}
-\loadcorefile{core-bar.tex}
-\loadcorefile{core-snc.tex}
-
-
-%D Math.
-
-\loadcorefile{math-pln.tex}
-\loadcorefile{math-ini.tex}
-\loadcorefile{math-ext.tex}
-
-%D Now we're ready for more core modules.
-
-\loadcorefile{core-fnt.tex}
-\loadcorefile{core-not.tex}
-\loadcorefile{core-lnt.tex}
-
-\loadcorefile{core-mis.tex}
-
-\loadcorefile{core-trf.tex}
-\loadcorefile{core-inc.tex}
-\loadcorefile{core-fig.tex}
-\loadcorefile{core-par.tex}
-
-\loadcorefile{core-box.tex}
-\loadcorefile{page-app.tex}
-\loadmarkfile{meta-fig}
-
-%D Language specific spacing.
-
-\loadcorefile{lang-spa.tex}
-
-%D Only the basic XML parser and remapper are part of the core.
-%D These macros are loaded last since they overload and|/|or
-%D extend previously defined ones.
-
-\loadmkivfile{lxml-ini.tex}
-
-\loadcorefile{xtag-ini.tex}
-\loadcorefile{xtag-ext.tex}
-\loadcorefile{xtag-prs.tex}
-\loadcorefile{xtag-map.tex}
-\loadcorefile{xtag-stk.tex}
-\loadcorefile{xtag-exp.tex}
-\loadcorefile{xtag-pre.tex}
-\loadcorefile{xtag-xsd.tex}
-\loadcorefile{xtag-rng.tex}
-%loadcorefile{xtag-ent.tex}
-
-%D How about this:
-
-\loadcorefile{meta-xml.tex}
-
-%D \TEX\ related logo's are always typeset in a special way.
-%D Here they come:
-
-\loadcorefile{cont-log.tex}
-
-%D This one overloads af few things:
-
-\loadcorefile{core-ctx.tex}
-
-%D Defaults go here (more will be moved to this module
-%D later):
-
-\loadcorefile{core-lme.tex}
-\loadcorefile{core-ini.tex}
-\loadcorefile{core-def.tex}
-
-%D Preloaded modules (some need xml support):
-
-%usemodule[x][res-04] % xml resource libraries
-%usemodule[x][res-08] % rlx runtime conversion
-\usemodule[x][res-12] % rli external indentification
-
-%D At run time, a few more files are loaded, like:
-%D
-%D \startitemize[packed]
-%D \item \type{cont-sys}: local (system dependant) defaults
-%D \item \type{cont-old}: substitutes for old (obsolete) macros
-%D \item \type{cont-new}: new macro implementations (for testing)
-%D \item \type{cont-fil}: filename and module synonyms
-%D \stopitemize
-
-%D Just to keep the user busy for a while, we say:
-
-\iffalse
-
-\startinterface english
-
-\writebanner{This package is based on Plain TeX. It uses an adapted version of the}
-\writebanner{extended mark mechanism of J. Fox (1987) and a few parts of the sidefloat}
-\writebanner{mechanism of D. Comenetz (1993). Most of D.E. Knuth's Plain TeX}
-\writebanner{(\fmtversion) is available and can be used without problems. This package}
-\writebanner{uses TaBlE, a package designed and copyrighted by M.J. Wichura (1988).}
-\writebanner{Only a few auxiliary files are generated, of which some must be processed}
-\writebanner{by TeXExec.}
-
-\stopinterface
-
-\startinterface dutch
-
-\writebanner{Dit pakket is gebaseerd op Plain TeX. Er wordt gebruik gemaakt van een}
-\writebanner{aangepaste versie van het mark mechanisme van J. Fox (1987) en onderdelen}
-\writebanner{van het sidefloat mechanisme van D. Comenetz (1993). De functionaliteit}
-\writebanner{van D.E. Knuth's Plain TeX (\fmtversion) is grotendeels beschikbaar en}
-\writebanner{kan zonder problemen worden gebruikt. Dit pakket gebruikt TaBlE, ontworpen door}
-\writebanner{M.J. Wichura (1988), die ook het auteursrecht bezit. Er worden slechts een}
-\writebanner{paar hulpfiles gegenereerd, waarvan er enkele moeten worden bewerkt door}
-\writebanner{TeXExec.}
-
-\stopinterface
-
-\startinterface german
-
-\writebanner{Dieses Paket basiert auf Plain-TeX und benutzt eine angepasste Version}
-\writebanner{des erweiterten mark-Mechanismus von J. Fox (1987) und einige Teile des}
-\writebanner{sidefloat-Mechanismus von D. Comenetz (1993). Ein Grossteil D.E. Knuths}
-\writebanner{Plain-TeX (\fmtversion) ist verfuegbar und kann ohne Probleme benutzt werden.}
-\writebanner{Dieses Paket benutzt TaBlE, ein von M.J. Wichura (1988) erstelltes und}
-\writebanner{geschuetztes Paket. Nur einige Hilfsdateien werden erstellt; einige davon}
-\writebanner{muessen von TeXExec bearbeitet werden.}
-
-\stopinterface
-
-\startinterface czech
-
-\writebanner{Tento balik je zalozen na Plain TeXu. Pouziva prizpusobenou verzi}
-\writebanner{rozsireneho znackovaciho mechanismu J. Foxe (1987) a nekolik casti}
-\writebanner{sidefloat mechanismu D. Comenetze (1993). Vetsina prikazu Plain TeXu}
-\writebanner{D. E. Knutha (\fmtversion) je dostupna a muze byt bez problemu pouzita.}
-\writebanner{Tento balik pouziva balik TaBlE, ktery vytvoril M. J. Wichura (1988).}
-\writebanner{Je generovano jen nekolik pomocnych souboru, z nichz nektere musi byt}
-\writebanner{zpracovany programem TeXExec.}
-
-\stopinterface
-
-\startinterface italian
-
-\writebanner{Questo pacchetto è basato sul Plain TeX. Usa una versione adattata del}
-\writebanner{meccanismo di marcatura esteso di J. Fox (1987) ad alcune parti del}
-\writebanner{meccanismo per gli oggetti mobili laterali di D. Comenetz (1993).}
-\writebanner{La maggior parte del Plain TeX (\fmtversion) di D.E. Knuth è disponibile}
-\writebanner{e può essere usata senza problemi. Questo pacchetto usa TaBlE,}
-\writebanner{un pacchetto progettato da e con diritti di copia di M.J. Wichura (1988).}
-\writebanner{Vengono generati pochi file ausiliari, alcuni dei quali devono essere}
-\writebanner{elaborati da TeXExec.}
-
-\stopinterface
-
-\startinterface romanian
-
-\writebanner{Acest pachet este bazat pe Plain TeX. Foloseste o versiune adaptata a}
-\writebanner{mecanismului extins de marcare a lui J. Fox (1987) si cateva parti a mecanismului }
-\writebanner{blocurilor marginale a lui D. Comenetz (1993). Cea mai mare parte a Plain Tex}
-\writebanner{(\fmtversion) a lui D.E. Knuth este disponibila si poate fi folosita fara probleme.}
-\writebanner{Acest pachet foloseste TaBlE, un pachet proiectat si creat de M.J. Wichura (1988).}
-\writebanner{Numai un numar de fisiere auxiliare sunt generate, din care unele trebuie procesate}
-\writebanner{de catre TeXExec.}
-
-\stopinterface
-
-\startinterface french
-
-\writebanner{Ce package est basé sur Plain TeX. Il utilise une version modifiée du}
-\writebanner{mécanisme de marquage étendu de J. Fox (1987) et une partie du}
-\writebanner{mécanisme de placement latéral des flottants de D. Comenetz (1993). La}
-\writebanner{majeure partie de Plain TeX (\fmtversion) de D.E. Knuth est disponible}
-\writebanner{et peut être utilisée sans problèmes. Ce package utilise TaBlE, un}
-\writebanner{package conçu et copyrighté par M.J. Wichura (1988). Seul quelques}
-\writebanner{fichiers auxiliaire sont générés, dont certains doivent être traités}
-\writebanner{par TeXExec.}
-
-\stopinterface
-
-\edef\copyrightversion
-  {Copyright 1990-\the\normalyear\normalspace /
-   PRAGMA ADE / J. Hagen - A.F. Otten}
-
-\writeline\writebanner{\copyrightversion}\writeline
-
-\fi
-
-\unprotect
-\beginLUATEX
-    \appendtoks
-        \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}%
-        \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}%
-    \to \everydump
-\endLUATEX
-\protect
-
-% %D Except from english, no hyphenation patterns are loaded
-% %D yet. Users can specify their needs in the next module:
-%
-% \input cont-usr.tex
+\loadmarkfile{context}
 
 %D Let's quit this file when doing a \type {cont-..} generation.
 
@@ -674,9 +140,7 @@
 \installlanguage [\s!us] [\c!state=\v!start]
 
 \startinterface english
-
   \installlanguage [\s!gb] [\c!state=\v!start]
-
 \stopinterface
 
 \appendtoks \language     [\s!us] \to \everyjob
@@ -736,11 +200,24 @@
 
 \stopinterface
 
+\startinterface persian
+
+  \installlanguage [\s!pe] [\c!state=\v!start]
+
+  \appendtoks \language     [\s!pe] \to \everyjob
+  \appendtoks \mainlanguage [\s!pe] \to \everyjob
+
+\stopinterface
+
 \protect
 
 %D Finally we (pre)load some fonts.
 
-\setupbodyfont [cmr,rm,12pt]
+\setupencoding[default=ec]
+
+\usetypescript[fallback][\defaultencoding]
+
+\setupbodyfont[rm,12pt]
 
 %D The next hook can be used to generate a local (extended)
 %D format. This file is only searched for at the current

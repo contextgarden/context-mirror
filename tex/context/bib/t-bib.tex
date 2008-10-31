@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2008.04.17,
+%D        version=2008.10.23,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -62,7 +62,7 @@
 %D \item fix a bug in \type{\cite{<item>}} (17/5/2006)
 %D \item support \type{\cite[authornum]} (18/5/2006)
 %D \item make \type{\cite} unexpandable (20/6/2006)
-%D \item allow hyperlinks in author\&year combo's 
+%D \item allow hyperlinks in author\&year combo's
 %D       (cite list compression has to be off) (20/6/2006)
 %D \item fix duplicate labels for per-chapter style (20/6/2006)
 %D \item allow \type{\setupcite[interaction=(start|stop)]}
@@ -70,7 +70,7 @@
 %D \item make the default criterium for \type{\placepublications} be \type{previous} (23/6/2006)
 %D \item fix \type{\normalauthor} and \type{\normalshortauthor} spacing (29/6/2006)
 %D \item do not typeset empty arguments to \type{\typesetapublication} (29/6/2006)
-%D \item add \type{symbol=none} to \type{\setuplist} in unnumbered 
+%D \item add \type{symbol=none} to \type{\setuplist} in unnumbered
 %D       mode to prevent typesetting of bare numbers (29/6/2006)
 %D \item remove two incorrect spaces from bibl-num.tex (1/7/2006)
 %D \item reset font styles within \type{\cite}, so that font switches
@@ -80,7 +80,7 @@
 %D \item test \type{\iflocation} before deciding to use the
 %D       interactive version of cite (18/7/2006)
 %D \item support \type{\setupcite[authoretallimit=1]} (18/7/2006)
-%D \item support use of \type{\cite} within titles and captions by 
+%D \item support use of \type{\cite} within titles and captions by
 %D       saveguarding the list item extraction and reference placement
 %D       code (19/7/2006)
 %D \item support \type{\setuppublicationlist[title=\chapter]} (4/8/2006)
@@ -88,15 +88,15 @@
 %D \item hook added for repeated authors in publication list
 %D       \type{\setuppublicationlist[artauthorcommand=\mythreeargscommand]}
 %D       (4/8/2006)
-%D \item make the bracketed arguments of \type{\artauthor}, \type{\author} 
+%D \item make the bracketed arguments of \type{\artauthor}, \type{\author}
 %D        and \type{\editor} (bbl commands) optional (4/8/2006)
 %D \item the constants \type{sorttype}, \type{compress} and
 %D        \type{autohang} have moved to the core (8/8/2006)
 %D \item bibtex is now registered as a program to be run by texexec (8/8/2006)
 %D \item fix a bug in \type{\setupcite[authoretallimit=1]} (9/8/2006)
-%D \item fix a bug inside citations that prevented lastpubsep from ever being 
+%D \item fix a bug inside citations that prevented lastpubsep from ever being
 %D       used due to a volatile \type{\commalistsize} (25/8/2006).
-%D \item added the possibility of \type{\placepublications[option=continue]} 
+%D \item added the possibility of \type{\placepublications[option=continue]}
 %D       (6/9/2006)
 %D \item Mojca translated Master's Thesis to Masterarbeit (bibl-apa-de.tex)
 %D       (12/9/2006)
@@ -113,6 +113,9 @@
 %D       that made the space before the {\it et al.} text disappear.  (18/4/2007)
 %D \item Attempt to fix percent signs in bbl files. As a side-effect,
 %D       this prohibits comments in \tex{startpublication} blocks! (17/4/2008)
+%D \item Patch from Matthias W\"achter that allows arbitrary .bst
+%D        files to be used with \tex{setupbibtex} (25/9/2008)
+%D \item Extended for the new multilingual setups for the Oct 2008 current of ConTeXt (23/10/2008)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -125,6 +128,14 @@
 %D \stopitemize
 
 \unprotect
+
+%D start with a temp hack the file will still work with pre-Oct 20078
+%D versions of ConTeXt:
+
+
+\def\startinterface #1
+  {\doifnot{#1}{all}{\doifnotinset\currentinterface{#1}{\gobbleuntil\stopinterface}}}
+
 
 %D A few new shortcuts:
 
@@ -148,67 +159,97 @@
 
 %D Some constants for the multi-lingual interface
 
-\startconstants        dutch                english
+\startinterface all
+    \setinterfaceconstant {database}             {database}
+    \setinterfaceconstant {artauthor}            {artauthor}
+    \setinterfaceconstant {editor}               {editor}
+    \setinterfaceconstant {authoretallimit}      {authoretallimit}
+    \setinterfaceconstant {artauthoretallimit}   {artauthoretallimit}
+    \setinterfaceconstant {editoretallimit}      {editoretallimit}
+    \setinterfaceconstant {authoretaldisplay}    {authoretaldisplay}
+    \setinterfaceconstant {artauthoretaldisplay} {artauthoretaldisplay}
+    \setinterfaceconstant {editoretaldisplay}    {editoretaldisplay}
+    \setinterfaceconstant {authoretaltext}       {authoretaltext}
+    \setinterfaceconstant {artauthoretaltext}    {artauthoretaltext}
+    \setinterfaceconstant {editoretaltext}       {editoretaltext}
+    \setinterfaceconstant {otherstext}           {otherstext}
+    \setinterfaceconstant {andtext}              {andtext}
+    \setinterfaceconstant {totalnumber}          {totalnumber}
+    \setinterfaceconstant {firstnamesep}         {firstnamesep}
+    \setinterfaceconstant {vonsep}               {vonsep}
+    \setinterfaceconstant {juniorsep}            {juniorsep}
+    \setinterfaceconstant {surnamesep}           {surnamesep}
+    \setinterfaceconstant {lastnamesep}          {lastnamesep}
+    \setinterfaceconstant {finalnamesep}         {finalnamesep}
+    \setinterfaceconstant {namesep}              {namesep}
+    \setinterfaceconstant {pubsep}               {pubsep}
+    \setinterfaceconstant {lastpubsep}           {lastpubsep}
+    \setinterfaceconstant {refcommand}           {refcommand}
+    \setinterfaceconstant {samplesize}           {samplesize}
+\stopinterface
 
-             database: database             database
-            artauthor: artauthor            artauthor
-               editor: editor               editor
-      authoretallimit: authoretallimit      authoretallimit
-   artauthoretallimit: artauthoretallimit   artauthoretallimit
-      editoretallimit: editoretallimit      editoretallimit
-    authoretaldisplay: authoretaldisplay    authoretaldisplay
- artauthoretaldisplay: artauthoretaldisplay artauthoretaldisplay
-    editoretaldisplay: editoretaldisplay    editoretaldisplay
-       authoretaltext: authoretaltext       authoretaltext
-    artauthoretaltext: artauthoretaltext    artauthoretaltext
-       editoretaltext: editoretaltext       editoretaltext
-           otherstext: otherstext           otherstext
-              andtext: andtext              andtext
-          totalnumber: totalnumber          totalnumber
-         firstnamesep: firstnamesep         firstnamesep
-               vonsep: vonsep               vonsep
-            juniorsep: juniorsep            juniorsep
-           surnamesep: surnamesep           surnamesep
-          lastnamesep: lastnamesep          lastnamesep
-         finalnamesep: finalnamesep         finalnamesep
-              namesep: namesep              namesep
-               pubsep: pubsep               pubsep
-           lastpubsep: lastpubsep           lastpubsep
-           refcommand: refcommand           refcommand
-           samplesize: samplesize           samplesize
+\startinterface dutch
+    \setinterfacevariable {title}  {titel}
+    \setinterfacevariable {short}  {kort}
+    \setinterfacevariable {cite}   {cite}
+    \setinterfacevariable {bbl}    {bbl}
+    \setinterfacevariable {bib}    {bib}
+    \setinterfacevariable {author} {auteur}
+\stopinterface
 
-\stopconstants
+\startinterface english
+    \setinterfacevariable {title}  {title}
+    \setinterfacevariable {short}  {short}
+    \setinterfacevariable {cite}   {cite}
+    \setinterfacevariable {bbl}    {bbl}
+    \setinterfacevariable {bib}    {bib}
+    \setinterfacevariable {author} {author}
+\stopinterface
 
-\startvariables       dutch                 english
-                      german                czech
-                      italian               romanian
-                      french
-               title: titel                 title
-                      titel                 titul
-                      titolo                titlu
-                      titre
-               short: kort                  short
-                      kurz                  short
-                      short                 short
-                      short
-                cite: cite                  cite
-                      cite                  cite
-                      cite                  cite
-                      cite
-                 bbl: bbl                   bbl
-                      bbl                   bbl
-                      bbl                   bbl
-                      bbl
-                 bib: bib                   bib
-                      bib                   bib
-                      bib                   bib
-                      bib
-              author: auteur                author
-                      autor                 autor
-                      autore                autor
-                      auteur
+\startinterface  german
+    \setinterfacevariable {title}  {titel}
+    \setinterfacevariable {short}  {kurz}
+    \setinterfacevariable {cite}   {cite}
+    \setinterfacevariable {bbl}    {bbl}
+    \setinterfacevariable {bib}    {bib}
+    \setinterfacevariable {author} {autor}
+\stopinterface
 
-\stopvariables
+\startinterface czech
+    \setinterfacevariable {title}  {titul}
+    \setinterfacevariable {short}  {short}
+    \setinterfacevariable {cite}   {cite}
+    \setinterfacevariable {bbl}    {bbl}
+    \setinterfacevariable {bib}    {bib}
+    \setinterfacevariable {author} {autor}
+\stopinterface
+
+\startinterface italian
+    \setinterfacevariable {title}  {titolo}
+    \setinterfacevariable {short}  {short}
+    \setinterfacevariable {cite}   {cite}
+    \setinterfacevariable {bbl}    {bbl}
+    \setinterfacevariable {bib}    {bib}
+    \setinterfacevariable {author} {autore}
+\stopinterface
+
+\startinterface romanian
+    \setinterfacevariable {title}  {titlu}
+    \setinterfacevariable {short}  {short}
+    \setinterfacevariable {cite}   {cite}
+    \setinterfacevariable {bbl}    {bbl}
+    \setinterfacevariable {bib}    {bib}
+    \setinterfacevariable {author} {autor}
+\stopinterface
+
+\startinterface french
+    \setinterfacevariable {title}  {titre}
+    \setinterfacevariable {short}  {short}
+    \setinterfacevariable {cite}   {cite}
+    \setinterfacevariable {bbl}    {bbl}
+    \setinterfacevariable {bib}    {bib}
+    \setinterfacevariable {author} {auteur}
+\stopinterface
 
 \def\biblistname{pubs} % for compatibility
 
@@ -216,7 +257,6 @@
 %D to support Idris' (incorrect :-)) use of projects
 
 \let\preloadbiblist\relax
-
 
 \ifx\currentcomponent\v!text
   % single file
@@ -300,15 +340,14 @@
 
 \def\dosetupbibtex[#1]%
   {\let\@@pbdatabase\empty
-   \let\@@pbsort    \empty
-   \getparameters[\??pb][#1]%
+   \getparameters[\??pb][sort=\s!default,#1]%
    \expanded{\processaction[\@@pbsort]}
         [      \v!no=>\def\bibstyle{cont-no},
            \v!author=>\def\bibstyle{cont-au},
             \v!title=>\def\bibstyle{cont-ti},
             \v!short=>\def\bibstyle{cont-ab},
           \s!default=>\def\bibstyle{cont-no},
-          \s!unknown=>\def\bibstyle{cont-no}]%
+          \s!unknown=>\def\bibstyle{\@@pbsort}]%
    \ifx\@@pbdatabase\empty\else \writeauxfile \fi}
 
 \dosetupbibtex[bibtex=bibtex]
@@ -578,11 +617,11 @@
 \def\dododocomplexbibdef[#1]#2#3%
   {\@EA\increment\csname \currentype @num\endcsname
       \setevalue{\??pb @\currentype\csname \currentype @num\endcsname}%
-        {{\secondarg}{#2}{#3}{#1}{\firstarg}}\ignorespaces}% 
+        {{\secondarg}{#2}{#3}{#1}{\firstarg}}\ignorespaces}%
 
 \def\complexbibdef#1%
   {\@EA\newcounter\csname #1@num\endcsname
-   \@EA\def\csname bib@#1\endcsname{\docomplexbibdef{#1}}%     
+   \@EA\def\csname bib@#1\endcsname{\docomplexbibdef{#1}}%
    \@EA\def\csname insert#1s\endcsname##1##2##3%
      {\specialbibinsert{#1}{\csname #1@num\endcsname}{##1}{\unskip ##2}{##3}}}
 
@@ -658,7 +697,7 @@
              \else                            \bibalternative\c!lastnamesep \fi
           \else
               \bibalternative\c!namesep
-          \fi \fi 
+          \fi \fi
         \fi}%
      \processcommacommand[#3]\processauthoritem }
 
@@ -745,7 +784,7 @@
    \catcode`\%=12
    \dosingleempty\dostartpublication}
 
-\def\stoppublication 
+\def\stoppublication
   {} % the \catcode of % is reset below
 
 %D Only specifying the key in the argument is also
@@ -778,7 +817,7 @@
    \setxvalue{pbdu-\@@pbk}{\@@pbu}
    \setxvalue{pbdd-\@@pbk}{\the\toks0}
    \xdef\allrefs{\allrefs,\@@pbk}%
-   \egroup 
+   \egroup
    \catcode`\%=\bibmodsavedpercent\relax }
 
 % intialization of the order-list:
@@ -892,9 +931,9 @@
         {\exitloop}}%
     \let\localpublist\glocalpublist}
 
-% 
+%
 \def\typesetpubslist
-  {\dobeginoflist 
+  {\dobeginoflist
    \edef\askedlevel{\csname \??li pubs\c!criterium\endcsname}%
    \ifx\askedlevel\v!all
       \def\bibrefprefix{}%
@@ -902,7 +941,7 @@
       \preparebibrefprefix
    \fi
    \ifsortbycite
-     \filllocalpublist 
+     \filllocalpublist
      \iftypesetall
        \let\localallrefs\allrefs
         \processcommacommand[\localpublist]\typesetapublication
@@ -917,11 +956,11 @@
      \iftypesetall
        \processcommacommand[\allrefs]\typesetapublication
      \else
-       % 
+       %
        \filllocalpublist
        \processcommacommand[\allrefs]\maybetypesetapublication
      \fi
-   \fi 
+   \fi
    \doendoflist }
 
 \newif\ifinpublist
@@ -997,14 +1036,27 @@
 \def\completepublications
   {\dosingleempty\docompletepublications}
 
+\def\bibdogetupsometextprefix#1#2#3%
+  {\ifcsname#2#1#3\endcsname
+     \csname#2#1#3\endcsname
+   \else\@EA\ifx\csname\??la#1\c!default\endcsname\empty
+     \ifcsname#2#3\endcsname
+       \csname#2#3\endcsname
+     \else\ifcsname#2\s!en#3\endcsname
+       \csname#2\s!en#3\endcsname
+     \else
+       \reporttextprefixerror{#1}{#2}{#3}%
+     \fi\fi
+   \else
+     \bibdogetupsometextprefix{\csname\??la#1\c!default\endcsname}{#2}{#3}%
+   \fi\fi}
+
 \def\docompletepublications[#1]%
-  {%\getparameters[\??pv data][#1]%
+  {\begingroup
+   \setuplist[pubs][\c!criterium=\v!previous,#1]
    \begingroup
-   \setuplist[pubs][\c!criterium=\v!previous,#1]   
-   \begingroup
-   \loggingall
    \let\handletextprefix\firstoftwoarguments
-   \edef\headtextpubs{\dogetupsometextprefix\headlanguage\c!title{pubs}}%
+   \edef\headtextpubs{\bibdogetupsometextprefix\headlanguage\c!title{pubs}}%
    \doifdefinedelse
       {\??pv data\v!title}
       {\doifemptyelsevalue
@@ -1035,7 +1087,7 @@
       {\global\let\bibcounter\!!zerocount }%
    \inpublisttrue
    \typesetpubslist
-   \inpublistfalse  
+   \inpublistfalse
    \endgroup }
 
 
@@ -1043,8 +1095,8 @@
 %D
 
 \unexpanded\def\typesetapublication#1%
-  {\doifsomething{#1}{\doglobal\increment\bibcounter 
-    \bgroup 
+  {\doifsomething{#1}{\doglobal\increment\bibcounter
+    \bgroup
     \makepbkvalue{#1}%
     \ifgridsnapping
       \snaptogrid\vbox{\dodolistelement{pubs}{}{\bibcounter}%
@@ -1117,7 +1169,7 @@
   {\begingroup
    \setupinteraction[\c!style=]%
    \edef\temp{#2}%
-   \ifx\empty\temp   \secondargumentfalse   
+   \ifx\empty\temp   \secondargumentfalse
    \else             \secondargumenttrue   \fi
    \ifsecondargument
      \processcommalist[#2]\docitation
@@ -1207,7 +1259,7 @@
 \newcounter\citationnumber
 
 \def\docitation#1{%
-  \iftrialtypesetting \else 
+  \iftrialtypesetting \else
     \ifdoinpututilities\else
       \doglobal\increment\citationnumber
       \expanded{\rawreference{}{cite-\jobname-\citationnumber}{#1}}%
@@ -1450,7 +1502,7 @@
 %D \macros{preparebibrefprefix}
 %D
 %D The reference list only writes bare references when the criterium
-%D is `all'. Otherwise, a prefix is added to make sure that pdfTeX 
+%D is `all'. Otherwise, a prefix is added to make sure that pdfTeX
 %D does not encounter duplicate named references. On the generation
 %D side, this is not a big problem. \type{\preparebibrefprefix}
 %D creates a suitable string to prepend if a prefix is needed.
@@ -1473,9 +1525,9 @@
 
 %D \macros{preparebibreflist}
 %D
-%D But this optional prefixing is a bit of a problem on the 
+%D But this optional prefixing is a bit of a problem on the
 %D other side. We would like to do \type{\goto{}[article-full]}
-%D but can't do it like that, because the actual label may be 
+%D but can't do it like that, because the actual label may be
 %D \type{1:2:0:3:4:article-full]} or so. The problem is solved
 %D by building a commalist that looks like this:
 %D \starttyping
@@ -1491,7 +1543,7 @@
 \def\preparebibreflist#1%
    {\let\bibreflist\empty
     \def\storeitem##1%
-      {\ifx\bibreflist\empty 
+      {\ifx\bibreflist\empty
          \edef\prefix{##1\sectionseparator}%
          \edef\bibreflist{\prefix#1,#1}%
       \else
@@ -1499,7 +1551,7 @@
          \edef\bibreflist{\prefix#1,\bibreflist}%
       \fi}%
 	\expanded{\processseparatedlist[\bibrefprefix][\sectionseparator]}\storeitem }
-  
+
 %D \macros{gotobiblink,inbiblink,atbiblink}
 %D
 %D The final task is looping over that list until a match is found.
@@ -1589,7 +1641,7 @@
   {\bibalternative\v!left
    \ixbibauthoryear{#1}
      {\bibmaybeinteractive{#1}{{\currentbibauthor}\bibalternative\c!inbetween{\currentbibyear}}}
-     {\bibalternative\c!pubsep    
+     {\bibalternative\c!pubsep
       \bibmaybeinteractive{#1}{{\currentbibauthor}\bibalternative\c!inbetween{\currentbibyear}}}
      {\bibalternative\c!lastpubsep
       \bibmaybeinteractive{#1}{{\currentbibauthor}\bibalternative\c!inbetween{\currentbibyear}}}%
@@ -1737,7 +1789,7 @@
           {\ifbibreffound\else
            \doifreferencefoundelse
                {##1}
-               {\global\bibreffoundtrue 
+               {\global\bibreffoundtrue
                 \@EA\doglobal\@EA\addtocommalist\@EA{\reftypet}\therefs }%
                {}\fi}%
     \processcommacommand[\bibreflist]\setuplink

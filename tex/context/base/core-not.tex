@@ -218,6 +218,7 @@
       \c!interaction=\v!yes,
       \c!factor=,
       \c!scope=, % \v!text \v!page
+      \c!next=\autoinsertnextspace, % new, experimental with startnotes
       \c!n=1]%
   \definenumber
     [\currentnote]
@@ -225,9 +226,14 @@
      \c!sectionnumber=\noteparameter\c!way,
      \c!conversion=\noteparameter\c!conversion]%
   \letvalue{\??vn\c!rule:\currentnote}\normalnoterule
-  \unexpanded\setvalue{\currentnote}{\setnote[#1]}%
-  \unexpanded\setvalue{\currentnote\v!text}{\setnotetext[#1]}%
+  \unexpanded\setvalue{\currentnote        }{\setnote[#1]}%
+  \unexpanded\setvalue{\currentnote\v!text }{\setnotetext[#1]}%
+  \unexpanded\setvalue{\e!start\currentnote}{\dodoubleempty\dostartcurrentnote[#1]}%
+  \unexpanded\setvalue{\e!stop\currentnote }{\dostopcurrentnote}%
   \setupnote[\currentnote][#2]}
+
+\def\dostartcurrentnote[#1][#2]{\setnote[#1][#2]\bgroup\ignorespaces}
+\def\dostopcurrentnote         {\removeunwantedspaces\egroup\noteparameter\c!next}
 
 \def\setupnotedefinition[#1]%
   {\setupdescriptions[\??vn\??vn#1]}
@@ -238,15 +244,15 @@
 \def\dosetupnote[#1][#2]%
   {\edef\currentnote{#1}%
    \ifsecondargument
-\ifcase\localnodemode\or
-  \edef\localnode@n{\noteparameter\c!n}%
-  \edef\localnode@l{\noteparameter\c!location}%
-\fi
+     \ifcase\localnodemode\or
+       \edef\localnode@n{\noteparameter\c!n}%
+       \edef\localnode@l{\noteparameter\c!location}%
+     \fi
      \getparameters[\??vn\currentnote][#2]%
-\ifcase\localnodemode\or
-  \letvalue{\??vn\currentnote\c!n       }\localnode@n
-  \letvalue{\??vn\currentnote\c!location}\localnode@l
-\fi
+     \ifcase\localnodemode\or
+       \letvalue{\??vn\currentnote\c!n       }\localnode@n
+       \letvalue{\??vn\currentnote\c!location}\localnode@l
+     \fi
      \processaction
        [\noteparameter\c!rule]
        [     \v!on=>\letvalue{\??vn\c!rule:\currentnote}\normalnoterule,
@@ -276,6 +282,10 @@
 % redefined:
 
 % so that it matches:
+
+% todo: make sure less calls, is quite some code
+
+% BEWARE, OVERLOADED IN cont-new.mkiv
 
 \def\dochecknote % only to be called locally, some bools will become class-ones
   {% for the moment no mixed text/endnotes modes, so we use
@@ -939,9 +949,7 @@
      \dochecknote
      \ifendnotes \else
        % not that accurate when multiple notes
-       \scratchdimen\pagegoal
-       \advance\scratchdimen -\pagetotal
-       \ifdim\scratchdimen<\ht\localpostponednotes
+       \ifdim\dimexpr\pagegoal-\pagetotal\relax<\ht\localpostponednotes
          \message{[moved note \currentnote]}%
        \fi
        \insert\currentnoteins\bgroup\unvbox\localpostponednotes\egroup

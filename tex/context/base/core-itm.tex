@@ -149,7 +149,11 @@
        \edef\currentminnofitems{\the\scratchcounter}%
      % [[\currentnofitems,\currentminnofitems,\currentmaxnofitems]]
      \fi
-   \fi}
+   \else % new, when no tuo yet
+     \let\currentnofitems   \!!zerocount
+     \let\currentminnofitems\!!plusone
+     \let\currentmaxnofitems\!!zerocount
+   \fi} % [[\currentnofitems,\currentminnofitems,\currentmaxnofitems]]
 
 % \startitemize[n,packed]
 % \item test \item test \item test
@@ -218,14 +222,14 @@
 \def\doinitializeitemgrouplevel#1%
   {\copyparameters
      [\??op\currentitemgroup#1][\??oo]
-     [\c!width,\c!factor,\c!distance,\c!align,\c!symalign,\c!option,
-      \c!style,\c!marstyle,\c!symstyle,\c!headstyle,
-      \c!color,\c!marcolor,\c!symcolor,\c!headcolor,
-      \c!beforehead,\c!afterhead,\c!before,\c!inbetween,\c!after,
-      \c!stopper,\c!placestopper,\c!indenting,
-      \c!n,\c!inner,\c!symbol,\c!margin,\c!items,
-      \c!leftmargin,\c!rightmargin,\c!indentnext,
-      \c!command,
+     [\c!width,\c!factor,\c!distance,\c!align,\c!symalign,\c!option,%
+      \c!style,\c!marstyle,\c!symstyle,\c!headstyle,%
+      \c!color,\c!marcolor,\c!symcolor,\c!headcolor,%
+      \c!beforehead,\c!afterhead,\c!before,\c!inbetween,\c!after,%
+      \c!stopper,\c!placestopper,\c!indenting,%
+      \c!n,\c!inner,\c!symbol,\c!margin,\c!items,%
+      \c!leftmargin,\c!rightmargin,\c!indentnext,%
+      \c!command,%
       \c!start,\c!lefttext,\c!righttext]}
 
 \def\setupitemgroups
@@ -805,6 +809,9 @@
 \def\itemgroupitem
   {\doitemgroupitem}
 
+\def\itemgroupnoitem
+  {\doitemgroupnoitem}
+
 \def\itemgroupbutton[#1]%
   {\gdef\doitemdestination{#1}%
    \itemgroupitem}
@@ -846,7 +853,8 @@
    \itemgroupitem}
 
 \appendtoks \let\item        \itemgroupitem    \to \itemgroupcommands
-%appendtoks \letvalue\v!item \itemgroupitem    \to \itemgroupcommands
+\appendtoks \let\noitem      \itemgroupnoitem  \to \itemgroupcommands
+\appendtoks \letvalue\v!item \itemgroupitem    \to \itemgroupcommands
 \appendtoks \let\itm         \itemgroupitem    \to \itemgroupcommands
 \appendtoks \let\but         \itemgroupbutton  \to \itemgroupcommands
 \appendtoks \let\nop         \itemgroupdummy   \to \itemgroupcommands
@@ -1043,6 +1051,23 @@
    \EveryPar{\ignorespaces}% needed ?
    \ignorespaces}
 
+% For Wolfgang Schuster
+
+% \startitemize[n,repeat]
+%     \noitem \startitemize[a] \item Item 1.a. \item Item 1.b. \stopitemize
+%     \noitem \startitemize[a] \item Item 2.a. \item Item 2.b. \stopitemize
+% \stopitemize
+
+\def\donolistitem % reduced \dolistitem
+  {\increment\noflistelements
+   \setbox8\hbox
+     {\doitemattributes\currentitemlevel\c!style\c!color{\listitem}}%
+   \checkforrepeatedlistitem
+   \ignorespaces}
+
+\def\doitemgroupnoitem
+  {\doadvanceitem\donolistitem}
+
 % For Frank Grieshaber and Mojca Miklavec:
 
 \newconditional\repeatlistitem
@@ -1102,7 +1127,8 @@
    \fi                           % new, concat
    \doadvanceitem
    \ifcase\itemcolumndepth \ifnum\noflistelements>0\relax
-     \doitembreak\nobreak
+     % wrong, but why was this here in the first place, probably some
+     % mistaken change when cleaning up: \doitembreak\nobreak
    \fi\fi
    \ifconditional\firstlistitem
      \setfalse\firstlistitem

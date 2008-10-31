@@ -80,8 +80,10 @@
       \c!inbetween=\synonymparameter\c!inbetween,
       \c!after=\synonymparameter\c!after,
       \c!indentnext=\synonymparameter\c!indentnext,
-      \c!headstyle=,
-      \c!style=]%
+      \c!headstyle=\synonymparameter\c!headstyle,
+      \c!headcolor=\synonymparameter\c!headcolor,
+      \c!style=,
+      \c!color=]%
    \setupwhitespace[\v!none]%
    %doutilities{#1}\jobname{#2}\relax\par % no longer \par
    \mkloadsortedlist{#1}%
@@ -196,6 +198,7 @@
    \dosetupsynonyms
      [#1]%
      [\c!synonymstyle=,\c!textstyle=,
+      \c!headstyle=,\c!headcolor=,
       \c!state=\v!start,\c!criterium=,
       \c!location=\v!left,\c!width=5em,\c!distance=0pt,
       \c!sample=,\c!hang=,\c!align=,
@@ -421,9 +424,11 @@
 \setupsynonyms
   [\v!abbreviation]
   [\c!textstyle=\v!capital,
-   \c!synonymstyle=,
    \c!textcolor=,
+   \c!synonymstyle=,
    \c!synonymcolor=,
+   \c!headstyle=,
+   \c!headcolor=,
    \c!location=\v!left,
    \c!width=5em,
    \c!state=\v!start]

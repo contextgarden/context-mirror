@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['l-xml'] = {
 -- RJ: key=value ... lpeg.Ca(lpeg.Cc({}) * (pattern-producing-key-and-value / rawset)^0)
 
 -- some code may move to l-xmlext
+-- some day we will really compile the lpaths (just construct functions)
 
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
@@ -41,11 +42,11 @@ xml.trace_lpath = false
 xml.trace_print = false
 xml.trace_remap = false
 
-local format, concat = string.format, table.concat
+local format, concat, remove, insert, type, next = string.format, table.concat, table.remove, table.insert, type, next
 
 --~ local pairs, next, type = pairs, next, type
 
--- todo: some things per xml file, liek namespace remapping
+-- todo: some things per xml file, like namespace remapping
 
 --[[ldx--
 <p>First a hack to enable namespace resolving. A namespace is characterized by
@@ -154,7 +155,7 @@ do
 
     -- not just one big nested table capture (lpeg overflow)
 
-    local remove, nsremap, resolvens = table.remove, xml.xmlns, xml.resolvens
+    local nsremap, resolvens = xml.xmlns, xml.resolvens
 
     local stack, top, dt, at, xmlns, errorstr, entities = {}, {}, {}, {}, {}, nil, {}
 
@@ -206,6 +207,7 @@ do
         end
         dt = top.dt
         dt[#dt+1] = toclose
+dt[0] = top
         if toclose.at.xmlns then
             remove(xmlns)
         end
@@ -645,8 +647,8 @@ do
                 end
             end
             if not found then
-                table.insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
-                table.insert(dt, 2, "\n" )
+                insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
+                insert(dt, 2, "\n" )
             end
         end
     end
@@ -789,9 +791,11 @@ local lpathcached = 0 -- statisctics
 
 do
 
-    xml.functions = xml.functions or { }
+    xml.functions   = xml.functions   or { }
+    xml.expressions = xml.expressions or { }
 
-    local functions = xml.functions
+    local functions   = xml.functions
+    local expressions = xml.expressions
 
     local actions = {
         [10] = "stay",
@@ -815,34 +819,32 @@ do
         [40] = "processing instruction",
     }
 
-    --~     local function make_expression(str) --could also be an lpeg
-    --~         str = str:gsub("@([a-zA-Z%-_]+)", "(a['%1'] or '')")
-    --~         str = str:gsub("position%(%)", "i")
-    --~         str = str:gsub("text%(%)", "t")
-    --~         str = str:gsub("!=", "~=")
-    --~         str = str:gsub("([^=!~<>])=([^=!~<>])", "%1==%2")
-    --~         str = str:gsub("([a-zA-Z%-_]+)%(", "functions.%1(")
-    --~         return str, loadstring(format("return function(functions,i,a,t) return %s end", str))()
-    --~     end
-
     -- a rather dumb lpeg
 
     local P, S, R, C, V, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc
 
-    local lp_position  = P("position()") / "id"
+    -- instead of using functions we just parse a few names which saves a call
+    -- later on
+
+    local lp_position  = P("position()") / "ps"
+    local lp_index     = P("index()")    / "id"
     local lp_text      = P("text()")     / "tx"
-    local lp_name      = P("name()")     / "((rt.ns~='' and rt.ns..':'..rt.tg) or '')"
-    local lp_tag       = P("tag()")      / "(rt.tg or '')"
-    local lp_ns        = P("ns()")       / "(rt.ns or '')"
+    local lp_name      = P("name()")     / "(ns~='' and ns..':'..tg)" -- "((rt.ns~='' and rt.ns..':'..rt.tg) or '')"
+    local lp_tag       = P("tag()")      / "tg" -- (rt.tg or '')
+    local lp_ns        = P("ns()")       / "ns" -- (rt.ns or '')
     local lp_noequal   = P("!=")         / "~=" + P("<=") + P(">=") + P("==")
     local lp_doequal   = P("=")          / "=="
     local lp_attribute = P("@")          / "" * Cc("(at['") * R("az","AZ","--","__")^1 * Cc("'] or '')")
 
-    local lp_function  = C(R("az","AZ","--","__")^1) * P("(") / function(t)
-        if functions[t] then
-            return "functions." .. t .. "("
+    local lp_lua_function  = C(R("az","AZ","--","__")^1 * (P(".") * R("az","AZ","--","__")^1)^1) * P("(") / function(t) -- todo: better . handling
+        return t .. "("
+    end
+
+    local lp_function  = C(R("az","AZ","--","__")^1) * P("(") / function(t) -- todo: better . handling
+        if expressions[t] then
+            return "expressions." .. t .. "("
         else
-            return "functions.error("
+            return "expressions.error("
         end
     end
 
@@ -850,34 +852,45 @@ do
     local rparent  = lpeg.P(")")
     local noparent = 1 - (lparent+rparent)
     local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
-    local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent)
+    local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
---~ local value = P { "(" * C(((1 - S("()")) + V(1))^0) * ")" }
+    -- if we use a dedicated namespace then we don't need to pass rt and k
 
     local lp_special = (C(P("name")+P("text")+P("tag"))) * value / function(t,s)
-        if functions[t] then
+        if expressions[t] then
             if s then
-                return "functions." .. t .. "(rt,k," .. s ..")"
+                return "expressions." .. t .. "(r,k," .. s ..")"
             else
-                return "functions." .. t .. "(rt,k)"
+                return "expressions." .. t .. "(r,k)"
             end
         else
-            return "functions.error(" .. t .. ")"
+            return "expressions.error(" .. t .. ")"
         end
     end
 
     local converter = lpeg.Cs ( (
         lp_position +
+        lp_index +
         lp_text + lp_name + -- fast one
         lp_special +
         lp_noequal + lp_doequal +
         lp_attribute +
+        lp_lua_function +
         lp_function +
     1 )^1 )
 
+    -- expressions,root,rootdt,k,e,edt,ns,tg,idx,hsh[tg] or 1
+
+    local template = [[
+        return function(expressions,r,d,k,e,dt,ns,tg,id,ps)
+            local at, tx = e.at or { }, dt[1] or ""
+            return %s
+        end
+    ]]
+
     local function make_expression(str)
         str = converter:match(str)
-        return str, loadstring(format("return function(functions,id,at,tx,rt,k) return %s end", str))()
+        return str, loadstring(format(template,str))()
     end
 
     local map = { }
@@ -987,7 +1000,7 @@ do
 
     local selector = (
         instruction +
-        many + any +
+--~         many + any + -- brrr, not here !
         parent + stay +
         dont_position + position +
         dont_match_one_of_and_eq + dont_match_one_of_and_ne +
@@ -999,6 +1012,7 @@ do
         has_attribute + has_value +
         dont_match_one_of + match_one_of +
         dont_match + match +
+        many + any +
         crap + empty
     )
 
@@ -1035,7 +1049,7 @@ do
                     return { map[2] }
                 end
                 if m ~= 11 and m ~= 12 and m ~= 13 and m ~= 14 and m ~= 15 and m ~= 16 then
-                    table.insert(map, 1, { 16 })
+                    insert(map, 1, { 16 })
                 end
             --  print((table.serialize(map)):gsub("[ \n]+"," "))
                 return map
@@ -1080,7 +1094,8 @@ do
             if type(pattern) == "string" then
                 report(format("pattern: %s\n",pattern))
             end
-            for k,v in ipairs(lp) do
+            for k=1,#lp do
+                local v = lp[k]
                 if #v > 1 then
                     local t = { }
                     for i=2,#v do
@@ -1134,22 +1149,25 @@ functions.</p>
 
 do
 
-    local functions = xml.functions
+    local functions   = xml.functions
+    local expressions = xml.expressions
 
-    functions.contains = string.find
-    functions.find     = string.find
-    functions.upper    = string.upper
-    functions.lower    = string.lower
-    functions.number   = tonumber
-    functions.boolean  = toboolean
+    expressions.contains = string.find
+    expressions.find     = string.find
+    expressions.upper    = string.upper
+    expressions.lower    = string.lower
+    expressions.number   = tonumber
+    expressions.boolean  = toboolean
 
-    functions.oneof = function(s,...) -- slow
+    expressions.oneof = function(s,...) -- slow
         local t = {...} for i=1,#t do if s == t[i] then return true end end return false
     end
-    functions.error = function(str)
-        xml.error_handler("unknown function in lpath expression",str)
+
+    expressions.error = function(str)
+        xml.error_handler("unknown function in lpath expression",str or "?")
         return false
     end
+
     functions.text = function(root,k,n) -- unchecked, maybe one deeper
         local t = type(t)
         if t == "string" then
@@ -1159,6 +1177,7 @@ do
             return (rdt and rdt[k]) or root[k] or ""
         end
     end
+
     functions.name = function(d,k,n) -- ns + tg
         local found = false
         n = n or 0
@@ -1203,6 +1222,7 @@ do
             return ""
         end
     end
+
     functions.tag = function(d,k,n) -- only tg
         local found = false
         n = n or 0
@@ -1238,6 +1258,10 @@ do
         end
         return (found and found.tg) or ""
     end
+
+    expressions.text = functions.text
+    expressions.name = functions.name
+    expressions.tag  = functions.tag
 
     local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- multiple only for tags, not for namespaces
         if not root then -- error
@@ -1311,10 +1335,13 @@ do
                         start, stop, step = stop, start, -1
                     end
                     local idx = 0
+                    local hsh = { } -- this will slooow down the lot
                     for k=start,stop,step do -- we used to have functions for all but a case is faster
                         local e = rootdt[k]
                         local ns, tg = e.rn or e.ns, e.tg
                         if tg then
+                         -- we can optimize this for simple searches, but it probably does not pay off
+                            hsh[tg] = (hsh[tg] or 0) + 1
                             idx = idx + 1
                             if command == 30 then
                                 local ns_a, tg_a = action[3], action[4]
@@ -1437,7 +1464,7 @@ do
                                     end
                                     if not action[2] then matched = not matched end
                                     if matched then
-                                        matched = action[6](functions,idx,e.at or { },edt[1],rootdt,k)
+                                        matched = action[6](expressions,root,rootdt,k,e,edt,ns,tg,idx,hsh[tg] or 1)
                                     end
                                 end
                                 if matched then -- combine tg test and at test
@@ -1912,11 +1939,20 @@ do
                         local r, d, k, element = m[1], m[2], m[3], m[4]
                         if not before then k = k + 1 end
                         if element.tg then
-                            table.insert(d,k,element) -- untested
-                        elseif element.dt then
-                            for _,v in ipairs(element.dt) do -- i added
-                                table.insert(d,k,v)
-                                k = k + 1
+                            insert(d,k,element) -- untested
+--~                         elseif element.dt then
+--~                             for _,v in ipairs(element.dt) do -- i added
+--~                                 insert(d,k,v)
+--~                                 k = k + 1
+--~                             end
+--~                         end
+                        else
+                            local edt = element.dt
+                            if edt then
+                                for i=1,#edt do
+                                    insert(d,k,edt[i])
+                                    k = k + 1
+                                end
                             end
                         end
                     end

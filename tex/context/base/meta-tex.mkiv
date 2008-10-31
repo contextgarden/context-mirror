@@ -17,19 +17,32 @@
 \long\def\doTeXtext[#1]#2{[do we need TeXtexts in MkIV]}
 \long\def\TeXtext{\dosingleempty\doTeXtext}
 
-\def\definetextext[#1]#2{\setvalue{textext@@#1}{#2}}
-
 % \definetextext[framed]{\framed}
 %
 % \startMPcode
 %     draw \sometxt[framed]{black} rotated 45 ;
 % \stopMPcode
 
-\def\definetextext[#1]#2{\setvalue{@@st@@[#1]}{#2}}
+\def\definetextext[#1]#2{\setvalue{@@st@@[#1]}{#2}\setvalue{@@st@@[#1] }{#2}} % we don't grab spaces after [#1]
 
 \long\def\sometxt#1#{\dosometxt{#1}}  % grab optional [args]
 
 \long\def\dosometxt#1#2%
-  {textext("\ifcsname @@st@@#1\endcsname\csname @@st@@#1\endcsname{#2}\else#2\fi")}
+  {textext.drt("\ifcsname @@st@@#1\endcsname\csname @@st@@#1\endcsname{#2}\else#2\fi")}
+
+% Best use the mp macro instead since it provides positioning.
+%
+% \startuseMPgraphic{testgraphic}
+% draw \sometxt{\ruledhbox{\strut hans hagen}} scaled 3;
+% % draw textext.drt("\ruledhbox{\strut hans hagen}") scaled 3;
+% % draw textext.dlft("\ruledhbox{\strut hans hagen}") scaled 3;
+% % draw textext.lft("\ruledhbox{\strut hans hagen}") scaled 3;
+% draw llcorner currentpicture -- urcorner currentpicture withcolor yellow;
+% draw lrcorner currentpicture -- ulcorner currentpicture withcolor yellow;
+% draw boundingbox currentpicture withcolor blue ;
+% draw origin withcolor red withpen pencircle scaled 1pt;
+% \stopuseMPgraphic
+%
+% {\showstruts\useMPgraphic{testgraphic}}
 
 \protect \endinput

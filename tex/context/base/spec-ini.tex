@@ -301,17 +301,6 @@
 
 \let\currentspecial    \empty
 \let\currentspecialfile\empty
-\let\preloadedspecials \empty
-
-%D \macros
-%D   {preloadspecials}
-%D
-%D The following command can be used to show the loaded list
-%D of specials.
-
-\def\preloadspecials
-  {\doifsomething\preloadedspecials
-     {\showmessage\m!specials1\preloadedspecials}}
 
 %D \macros
 %D   {startspecials}
@@ -330,8 +319,7 @@
    \doifelsenothing{#1}
      {\let\currentspecial\s!unknown}
      {\def\currentspecial{#1}}%
-   \unprotect
-   \addtocommalist\currentspecial\preloadedspecials}
+   \unprotect}
 
 \def\startspecials
   {\localpushmacro\currentspecial
@@ -376,11 +364,7 @@
   {\the\everyresetspecials
    \def\docommand##1%
      {\letvalue{\@@speclst@@##1}\empty}%
-   \processcommacommand[\@@allspecials]\docommand
-   \ifx\preloadedspecials\empty \else
-     \showmessage\m!specials3\preloadedspecials
-     \let\preloadedspecials\empty
-   \fi}
+   \processcommacommand[\@@allspecials]\docommand}
 
 %D \macros
 %D   {definespecial}
@@ -426,8 +410,7 @@
       \makeshortfilename[\truefilename{\f!specialprefix\currentspecialfile}]%
       \startreadingfile
         \readsysfile\shortfilename{\showmessage\m!specials5\currentspecialfile}\donothing
-      \stopreadingfile
-      \showmessage\m!specials1\preloadedspecials}}
+      \stopreadingfile}}
 
 \def\usespecials[#1]%
   {\ifnum\realpageno<2
@@ -613,8 +596,7 @@
         \let#1\gobbletenarguments   \fi}
 
   \def\resetspecials
-    {\the\everyresetspecials
-     \let\preloadedspecials\empty}
+    {\the\everyresetspecials}
 
   \def\definespecial#1%
     {\@EA\chardef\csname\@@speclst@@\string#1\endcsname=1
@@ -673,9 +655,25 @@
         {\dousespecials{#1}}
         {\showmessage\m!specials7{#1}}}}
 
+% Beware, from now on changing the (default) driver files demands
+% remaking the format (no big deal, since only i adapt the driver
+% and need delayed loading).
+
+\let\currentoutput\empty
+
 \def\setupoutput[#1]%
-  {\ifnum\realpageno<\plustwo % new
-     \resetspecials\processcommacommand[#1]\dosetupoutput
-   \fi}
+  {\doifnot{#1}{\currentoutput}
+     {\ifnum\realpageno<\plustwo % new
+        \resetspecials\processcommacommand[#1]\dosetupoutput
+        \edef\currentoutput{#1}%
+      \fi}}
+
+\def\preloadspecials % it's nicer to report this
+  {\doifsomething\currentoutput
+     {\showmessage\m!specials1\currentoutput}}
+
+\appendtoks
+   \savecurrentvalue\usedoutputdriver\currentoutput
+\to \everyfirstshipout
 
 \protect \endinput

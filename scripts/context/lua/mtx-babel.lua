@@ -1,5 +1,5 @@
 if not modules then modules = { } end modules ['mtx-babel'] = {
-    version   = 1.001,
+    version   = 1.002,
     comment   = "companion to mtxrun.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
@@ -188,6 +188,7 @@ do
         o = "ό",
         u = "ύ",
         w = "ώ",
+    ["'"] = "’",
     }
 
     local replace_20 = { -- ` *
@@ -304,8 +305,10 @@ do
         F = "Φ",
         Q = "Χ",
         Y = "Ψ",
-        W = "Ω"
-    }
+        W = "Ω",
+    [";"] = "·",
+    ["?"] = ";",
+}
 
     local skips_01 = lpeg.P("\\")  * lpeg.R("az", "AZ")^1
     local skips_02 = lpeg.P("[")   * (1- lpeg.S("[]"))^1  * lpeg.P("]")
@@ -410,7 +413,7 @@ do
 
 end
 
-banner = banner .. " | babel conversion tools "
+banner = banner .. " | babel conversion tools | version 1.2"
 
 messages.help = [[
 --language=string     conversion language (e.g. greek)

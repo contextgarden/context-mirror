@@ -57,7 +57,7 @@ function environment.setargument(name,value)
     environment.arguments[name] = value
 end
 
-function environment.argument(name)
+function environment.argument(name) -- todo: default (plus typecheck on default)
     local arguments, sortedflags = environment.arguments, environment.sortedflags
     if arguments[name] then
         return arguments[name]
@@ -92,28 +92,83 @@ function environment.split_arguments(separator) -- rather special, cut-off befor
     return before, after
 end
 
-function environment.reconstruct_commandline(arg)
+--~ function environment.reconstruct_commandline(arg)
+--~     if not arg then arg = environment.original_arguments end
+--~     local result = { }
+--~     for _,a in ipairs(arg) do -- ipairs 1 .. #n
+--~         local kk, vv = a:match("^(%-+.-)=(.+)$")
+--~         if kk and vv then
+--~             if vv:find(" ") then
+--~                 vv = vv:unquote()
+--~                 vv = vv:gsub('"','\\"')
+--~                 result[#result+1] = kk .. "=" .. vv:quote()
+--~             else
+--~                 a = a:unquote()
+--~                 a = a:gsub('"','\\"')
+--~                 result[#result+1] = a
+--~             end
+--~         elseif a:find(" ") then
+--~             a = a:unquote()
+--~             a = a:gsub('"','\\"')
+--~             result[#result+1] = a:quote()
+--~         else
+--~             result[#result+1] = a
+--~         end
+--~     end
+--~     return table.join(result," ")
+--~ end
+
+function environment.reconstruct_commandline(arg,noquote)
     if not arg then arg = environment.original_arguments end
-    local result = { }
-    for _,a in ipairs(arg) do -- ipairs 1 .. #n
-        local kk, vv = a:match("^(%-+.-)=(.+)$")
-        if kk and vv then
-            if vv:find(" ") then
-                result[#result+1] = kk .. "=" .. string.quote(vv)
+    if noquote and #arg == 1 then
+        local a = arg[1]
+        a = input.resolve(a)
+        a = a:unquote()
+        return a
+    elseif #arg == 1 then
+        local result = { }
+        for _,a in ipairs(arg) do -- ipairs 1 .. #n
+            a = input.resolve(a)
+            a = a:unquote()
+            a = a:gsub('"','\\"') -- tricky
+            if a:find(" ") then
+                result[#result+1] = a:quote()
             else
                 result[#result+1] = a
             end
-        elseif a:find(" ") then
-            result[#result+1] = string.quote(a)
-        else
-            result[#result+1] = a
         end
+        return table.join(result," ")
     end
-    return table.join(result," ")
 end
 
 if arg then
-    environment.initialize_arguments(arg)
-    environment.original_arguments = arg
+
+    -- new, reconstruct quoted snippets (maybe better just remnove the " then and add them later)
+    local newarg, instring = { }, false
+
+    for index, argument in ipairs(arg) do
+        if argument:find("^\"") then
+            newarg[#newarg+1] = argument:gsub("^\"","")
+            if not argument:find("\"$") then
+                instring = true
+            end
+        elseif argument:find("\"$") then
+            newarg[#newarg] = newarg[#newarg] .. " " .. argument:gsub("\"$","")
+            instring = false
+        elseif instring then
+            newarg[#newarg] = newarg[#newarg] .. " " .. argument
+        else
+            newarg[#newarg+1] = argument
+        end
+    end
+    for i=1,-5,-1 do
+        newarg[i] = arg[i]
+    end
+
+    environment.initialize_arguments(newarg)
+    environment.original_arguments = newarg
+    environment.raw_arguments = arg
+
     arg = { } -- prevent duplicate handling
+
 end

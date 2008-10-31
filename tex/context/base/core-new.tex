@@ -118,9 +118,17 @@
 % \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
 %   {\cleanuplabel{\??su#2:#3}\dograbuntil#1{\endgroup\dodoglobal\long\setvalue\cleanlabel}} % \doglobal
 
+% \long\def\dodostartsetups#1#2#3%
+%   {\cleanuplabel{\??su#2:#3}%
+%    \long\def\dododostartsetups##1#1{\endgroup\dodoglobal\long\setvalue\cleanlabel####1{##1}}\dododostartsetups}
+
 \long\def\dodostartsetups#1#2#3%
   {\cleanuplabel{\??su#2:#3}%
-   \long\def\dododostartsetups##1#1{\endgroup\dodoglobal\long\setvalue\cleanlabel####1{##1}}\dododostartsetups}
+   \long\def\dododostartsetups##1#1%
+     {\endgroup
+      \dodoglobal % bah
+      \long\expandafter\setvalue\expandafter\cleanlabel\expandafter####\expandafter1\expandafter{##1}}%
+   \dododostartsetups\empty} % the empty trick prevents the { } in {arg} from being eaten up
 
 \def\systemsetupsprefix{*}
 
@@ -276,23 +284,10 @@
 %
 % \def\env#1{\csname\??en#1\endcsname}
 %
-% \beginTEX
-%
-% \def\envvar#1#2%
-%   {\@EA\ifx\csname\??en#1\endcsname\relax
-%      #2\else\csname\??en#1\endcsname
-%    \fi}
-%
-% \endTEX
-%
-% \beginETEX \ifcsname
-%
 % \def\envvar#1#2%
 %   {\ifcsname\??en#1\endcsname
 %      \csname\??en#1\endcsname\else#2%
 %    \fi}
-%
-% \endETEX
 
 % low level change, now also accessible as \getvariable{environment}{...}; the
 % next macros will become obsolete some day in favor of normal variables

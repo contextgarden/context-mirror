@@ -377,26 +377,26 @@
 % test|^|test
 % \stop
 
-\def\hyphenliketextmodediscretionary#1#2#3#4%
+\def\hyphenliketextmodediscretionary#1#2%
   {\ifconditional\spaceafterdiscretionary
      \prewordbreak\hbox{#1}\relax
    \else\ifconditional\punctafterdiscretionary
      \prewordbreak\hbox{#1}\relax
    \else
-     \prewordbreak\discretionary{#2}{#3}{#4}\postwordbreak % was prewordbreak
+     \prewordbreak#2\postwordbreak % was prewordbreak
    \fi\fi}
 
 \definetextmodediscretionary {}
-  {\hyphenliketextmodediscretionary\compoundhyphen\compoundhyphen\empty\compoundhyphen}
+  {\hyphenliketextmodediscretionary\textmodehyphen\textmodehyphendiscretionary}
 
 \definetextmodediscretionary -
-  {\hyphenliketextmodediscretionary\hyphen\hyphen\empty\hyphen}
-
-\definetextmodediscretionary ~
-  {\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
+  {\hyphenliketextmodediscretionary\normalhyphen\normalhyphendiscretionary}
 
 \definetextmodediscretionary _
-  {\hyphenliketextmodediscretionary\compoundhyphen\compoundhyphen\compoundhyphen\compoundhyphen}
+  {\hyphenliketextmodediscretionary\composedhyphen\composedhyphendiscretionary}
+
+\definetextmodediscretionary )
+  {\hyphenliketextmodediscretionary{)}{\discretionary{-)}{}{)}}}
 
 \definetextmodediscretionary (
   {\ifdim\lastskip>\zeropoint
@@ -405,8 +405,8 @@
      \prewordbreak\discretionary{}{(-}{(}\prewordbreak
    \fi}
 
-\definetextmodediscretionary )
-  {\hyphenliketextmodediscretionary{)}{-)}{}{)}}
+\definetextmodediscretionary ~
+  {\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
 
 \definetextmodediscretionary '
   {\prewordbreak\discretionary{-}{}{'}\postwordbreak}

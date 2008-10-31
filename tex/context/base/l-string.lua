@@ -132,7 +132,7 @@ end
 
 --~ end end
 
-string.chr_to_esc = {
+local chr_to_esc = {
     ["%"] = "%%",
     ["."] = "%.",
     ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
@@ -142,16 +142,18 @@ string.chr_to_esc = {
     ["{"] = "%{", ["}"] = "%}"
 }
 
+string.chr_to_esc = chr_to_esc
+
 function string:esc() -- variant 2
-    return (self:gsub("(.)",string.chr_to_esc))
+    return (self:gsub("(.)",chr_to_esc))
 end
 
-function string.unquote(str)
-    return (str:gsub("^([\"\'])(.*)%1$","%2"))
+function string:unquote()
+    return (self:gsub("^([\"\'])(.*)%1$","%2"))
 end
 
-function string.quote(str)
-    return '"' .. str:unquote() .. '"'
+function string:quote()
+    return '"' .. self:unquote() .. '"'
 end
 
 function string:count(pattern) -- variant 3

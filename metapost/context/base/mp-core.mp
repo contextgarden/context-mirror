@@ -1,15 +1,3 @@
-%D \module
-%D   [       file=mp-core.mp,
-%D        version=2000.something, % 1999.08.12,
-%D          title=\CONTEXT\ \METAPOST\ graphics,
-%D       subtitle=core interfacing,
-%D         author=Hans Hagen,
-%D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
-%C
-%C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
-%C details.
 
 if unknown context_tool :    input mp-tool ; fi ;
 if   known context_core : endinput         ; fi ;
@@ -135,7 +123,6 @@ def initialize_area_par (expr fn,fx,fy,fw,fh,fd,
 
   numeric mpos ; mpos := 6 ; freeze_box(mpos) ;
 
-% do_initialize_area (fpos, tpos) ;
   do_initialize_par  (fpos, tpos, mpos, ffpos, 0,0,0,0,0,0) ;
 
 enddef ;
@@ -422,7 +409,6 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
 
   pair par_start_pos ;
 
-% par_start_pos := llxy[fpos] if par_indent<0: shifted (-par_indent,0) fi ;
 
   par_start_pos := llxy[fpos]
     if par_indent   <0: shifted (-par_indent,   0) fi
@@ -521,10 +507,8 @@ par_hang_after := ra + estimated_par_lines(py-fy) ;
     if (par_hang_indent>0) and (par_hang_after<0) and obey_multi_par_hang :
       pair _ul_ ; _ul_ := (xpart ulcorner multipar, ypart snapped_multi_pos(ulxy[fpos]));
       pair _pa_ ; _pa_ := _ul_ shifted (0,par_hang_after*par_line_height) ;
-%       _pa_ := (xpart _pa_,max(ypart _pa_,ypart llcorner multipar)) ;
       _pa_ := (xpart _pa_,max(ypart _pa_ -TopSkipCorrection,ypart llcorner multipar)) ;
       if same_area :
-%         _pa_ := (xpart _pa_,max(ypart _pa_,ypart llxy[tpos])) ;
         _pa_ := (xpart _pa_,max(ypart _pa_ -TopSkipCorrection,ypart llxy[tpos])) ;
       fi ;
       if obey_multi_par_more and (round(par_line_height)>0) :
@@ -541,7 +525,6 @@ par_hang_after := ra + estimated_par_lines(py-fy) ;
 
   vardef right_top_hang (expr same_area) =
 
-% par_hang_after := ra - estimated_par_lines(py-fy) ;
 par_hang_after := ra + estimated_par_lines(py-fy) ;
 
     if (par_hang_indent<0) and (par_hang_after<0) and obey_multi_par_hang :
@@ -588,7 +571,6 @@ fi ;
     fi
   enddef ;
 
-% here
 
   vardef x_right_top_hang (expr i, t) =
     par_hang_after := min(0,ra + estimated_multi_par_height(i,t)) ;
@@ -600,14 +582,6 @@ if t :
   _pa_ := (xpart _pa_,max(ypart _pa_,ypart snapped_multi_pos(urxy[tpos]))) ;
 fi ;
 
-%todo
-%
-%if abs(ypart _pa_-ypart llxy[tpos])<par_line_height :
-%  _pa_ := (xpart _pa_,ypart llxy[tpos]);
-%fi ;
-%if abs(ypart _pa_-ypart llcorner multipar)<par_line_height :
-%  _pa_ := (xpart _pa_,ypart llcorner multipar);
-%fi ;
 
       (xpart _ur_ + par_hang_indent, ypart _ur_) --
       (xpart _ur_ + par_hang_indent, ypart _pa_) --
@@ -702,12 +676,6 @@ fi ;
   enddef ;
 
   def test_multipar =
-%     multipar :=
-%       llcorner multipar --
-%       urcorner multipar --
-%       lrcorner multipar --
-%       ulcorner multipar --
-%       cycle ;
     multipar := boundingbox multipar ;
   enddef ;
 
@@ -908,7 +876,6 @@ fi ;
           x_left_top_hang(i,true) --
           x_right_top_hang(i,true) --
           x_right_bottom_hang(i,true) --
-%          ulxy[tpos] --
 snapped_multi_pos(ulxy[tpos]) --
           llxy[tpos] --
           x_left_bottom_hang(i,true) --
@@ -920,7 +887,6 @@ snapped_multi_pos(ulxy[tpos]) --
           ulcorner multipar --
           urcorner multipar --
           (xpart lrcorner multipar, ypart urxy[tpos]) --
-%          ulxy[tpos] --
 snapped_multi_pos(ulxy[tpos]) --
           llxy[tpos] --
           (xpart llcorner multipar, ypart llxy[tpos]) --
@@ -946,8 +912,6 @@ if force_multi_par_chain or (ii > 1) :
 
     % rest of chain / todo : hang
 
-% we need to test, else we get a <lineheight bottom one
-% triggering a whole text frame; weird
 
 if (not check_multi_par_chain) or ((nxy[fpos]<RealPageNumber) and (nxy[tpos]>RealPageNumber)) :
 
@@ -1079,9 +1043,6 @@ def sort_multi_pars =
   fi ;
 enddef ;
 
-% This collapses successive areas (possibly interrupted by
-% floats. First we need to sort the areas, since they are
-% normally in de order start, end, inbetween.
 
 def collapse_multi_pars =
   if nofmultipars>1 :
@@ -1110,20 +1071,40 @@ multirefs[_nofmultipars_] := multirefs[i+1] ;
   fi ;
 enddef ;
 
+% def draw_multi_pars  =
+%   for i=1 upto nofmultipars :
+%     do_draw_par(multipars[i]) ;
+%         if boxgridtype= 1 :
+%       draw baseline_grid (multipars[i],up,true ) ; % withcolor boxgridcolor ;
+%     elseif boxgridtype= 2 :
+%       draw baseline_grid (multipars[i],up,false) ; % withcolor boxgridcolor ;
+%     elseif boxgridtype= 3 :
+%       draw baseline_grid (multipars[i],up,true ) ; % withcolor boxgridcolor ;
+%       draw baseline_grid (multipars[i],up,true )
+%         shifted (0,ExHeight) ; % withcolor boxgridcolor ;
+%     elseif boxgridtype= 4 :
+%       draw baseline_grid (multipars[i],up,true )
+%         shifted (0,ExHeight/2) ; % withcolor boxgridcolor ;
+%     elseif boxgridtype=11 :
+%       draw graphic_grid(multipars[i],boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
+%     elseif boxgridtype=12 :
+%       draw graphic_grid(multipars[i],boxgriddistance,boxgriddistance,0,0) ;
+%     fi ;
+%   endfor ;
+% enddef ;
+
 def draw_multi_pars  =
   for i=1 upto nofmultipars :
     do_draw_par(multipars[i]) ;
         if boxgridtype= 1 :
-      draw baseline_grid (multipars[i],up,true ) ; % withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],if multilocs[i]=1: down else: up fi,true) ; % withcolor boxgridcolor ;
     elseif boxgridtype= 2 :
-      draw baseline_grid (multipars[i],up,false) ; % withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],if multilocs[i]=1: down else: up fi,false) ; % withcolor boxgridcolor ;
     elseif boxgridtype= 3 :
-      draw baseline_grid (multipars[i],up,true ) ; % withcolor boxgridcolor ;
-      draw baseline_grid (multipars[i],up,true )
-        shifted (0,ExHeight) ; % withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],if multilocs[i]=1: down else: up fi,true) ; % withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],if multilocs[i]=1: down else: up fi,true) shifted (0,ExHeight) ; % withcolor boxgridcolor ;
     elseif boxgridtype= 4 :
-      draw baseline_grid (multipars[i],up,true )
-        shifted (0,ExHeight/2) ; % withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],if multilocs[i]=1: down else: up fi,true) shifted (0,ExHeight/2) ; % withcolor boxgridcolor ;
     elseif boxgridtype=11 :
       draw graphic_grid(multipars[i],boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
     elseif boxgridtype=12 :
@@ -1231,7 +1212,6 @@ let draw_area   = draw_box ;
 let anchor_area = anchor_box ;
 let anchor_par  = anchor_box ;
 
-% new and experimental and yet undocumented
 
 numeric sync_n[], sync_p[][], sync_w[][], sync_h[][], sync_d[][], sync_t[][] ;
 pair sync_xy[][] ; color sync_c[][] ;
@@ -1286,7 +1266,6 @@ vardef PrepareSyncTasks(expr n, collapse, extendtop, prestartnext) =
         NOfSyncPaths := NOfSyncPaths + 1 ;
         if not ok :
           if i>1 :
-% not yet correct when two of the same follow each other
             if sync_t[n][i-1] = sync_t[n][i] :
               SyncPaths[NOfSyncPaths] := SyncBox(n, i, SyncLeftOffset, SyncWidth, PaperHeight, -PaperHeight) ;
               SyncTasks[NOfSyncPaths] := i ;
@@ -1394,3 +1373,5 @@ def ProcessSyncTask(expr p, c) =
 enddef ;
 
 endinput ;
+
+end

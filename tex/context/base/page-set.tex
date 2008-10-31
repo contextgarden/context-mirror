@@ -203,8 +203,6 @@
    \relax % needed ! ! ! ! else lookahead over \fi and \@EA
    \@EA\egroup\@EA\scratchdimen\the\!!dimena\relax}
 
-\beginETEX \ifcsname
-
 \def\columnerasegridboxes % maybe dedicated loops
   {\bgroup
    \increment\columnmaxcells\relax
@@ -253,59 +251,6 @@
    \global\columnfreecells\columnfirstcell
    \egroup}
 
-\endETEX
-
-\beginTEX
-
-\def\columnerasegridboxes
-  {\bgroup
-   \increment\columnmaxcells\relax
-   \ifodd\realpageno \else % we are on the other page
-     \columnspreadfalse
-   \fi
-   \ifcolumnspread
-     \dorecurse\nofcolumns
-       {\let\!!stringa\recurselevel
-        \scratchcounter\recurselevel \advance\scratchcounter\lofcolumns
-        \edef\!!stringb{\the\scratchcounter}%
-        \dostepwiserecurse \zerocount \columnmaxcells \plusone
-          {\expandafter\ifx\csname\@otr@:\!!stringa:\recurselevel\endcsname\relax
-             \expandafter\newbox\csname\@otr@:\!!stringa:\recurselevel\endcsname
-             \expandafter\ifx\csname\@otr@:\!!stringb:\recurselevel\endcsname\relax
-               \expandafter\newbox\csname\@otr@:\!!stringb:\recurselevel\endcsname
-             \else
-               \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\csname\@otr@:\!!stringb:\recurselevel\endcsname
-             \fi
-           \else
-             \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box
-             \expandafter\ifx\csname\@otr@:\!!stringb:\recurselevel\endcsname\relax
-               \voidb@x
-              %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\voidb@x
-               \expandafter\newbox\csname\@otr@:\!!stringb:\recurselevel\endcsname
-             \else
-               \csname\@otr@:\!!stringb:\recurselevel\endcsname
-              %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\csname\@otr@:\!!stringb:\recurselevel\endcsname
-             \fi
-           \fi}}%
-   \else
-     \dorecurse\tofcolumns
-       {\let\!!stringa\recurselevel
-        \dostepwiserecurse \zerocount \columnmaxcells \plusone
-          {\expandafter\ifx\csname\@otr@:\!!stringa:\recurselevel\endcsname\relax
-             \expandafter\newbox\csname\@otr@:\!!stringa:\recurselevel\endcsname
-           \else
-             \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\voidb@x
-           \fi}}%
-   \fi
-   \dorecurse\tofcolumns
-     {\global\setbox\csname\@otr@:\recurselevel:\columnmaxcells\endcsname\copy\placeholderboxa}%
-   \global\columnfirstcell\zerocount
-   \global\columnlastcell\columnfirstcell
-   \global\columnfreecells\columnfirstcell
-   \egroup}
-
-\endTEX
-
 \def\doOTRSETsetgridcells#1#2#3#4#5#6% placeholder col row wid hei {data}
   {\!!countd#2\advance\!!countd#4\advance\!!countd\minusone
    \!!counte#3\advance\!!counte#5\advance\!!counte\minusone
@@ -340,63 +285,32 @@
 \def\currentcolumnmaxcellstag #1{\??mc:l:\OTRSETidentifier:\columnsetpage:\number#1}
 \def\currentcolumnstartcelltag#1{\??mc:s:\OTRSETidentifier:\columnsetpage:\number#1}
 
-\beginTEX
+\def\doresetcolumnsetlines#1%
+  {\ifcsname\currentcolumnmaxcellstag{#1}\endcsname
+     \letgvalue{\currentcolumnmaxcellstag{#1}}\zerocount
+   \fi
+   \ifcsname\currentcolumnmaxcellstag{#1}\endcsname
+     \letgvalue{\currentcolumnmaxcellstag{#1}}\zerocount
+   \fi}
 
-  \def\doresetcolumnsetlines#1%
-    {\ifundefined{\currentcolumnmaxcellstag{#1}}\else
-       \letgvalue{\currentcolumnmaxcellstag{#1}}\zerocount
-     \fi
-     \ifundefined{\currentcolumnmaxcellstag{#1}}\else
-       \letgvalue{\currentcolumnmaxcellstag{#1}}\zerocount
-     \fi}
-
-  \def\currentcolumnsomecells#1#2%
-    {\expandafter\ifx\csname#1\mofcolumns\endcsname\relax
-       \expandafter\ifx\csname#10\endcsname\relax
-         #2%
-       \else
-         \ifnum\csname#10\endcsname=\zerocount
-           #2\else\csname#10\endcsname
-         \fi
-       \fi
-     \else
-       \ifnum\csname#1\mofcolumns\endcsname=\zerocount
-         #2\else\csname#1\mofcolumns\endcsname
-       \fi
-     \fi}
-
-\endTEX
-
-\beginETEX \numexpr
-
-  \def\doresetcolumnsetlines#1%
-    {\ifcsname\currentcolumnmaxcellstag{#1}\endcsname
-       \letgvalue{\currentcolumnmaxcellstag{#1}}\zerocount
-     \fi
-     \ifcsname\currentcolumnmaxcellstag{#1}\endcsname
-       \letgvalue{\currentcolumnmaxcellstag{#1}}\zerocount
-     \fi}
-
-  \def\currentcolumnsomecells#1#2%
-    {\ifcsname#1\mofcolumns\endcsname
-       \ifnum\csname#1\mofcolumns\endcsname=\zerocount
-         #2%
-       \else
-         \number\numexpr(\ifnum\csname#1\mofcolumns\endcsname<\zerocount
-           \columnmaxcells+\fi\csname#1\mofcolumns\endcsname)%
-       \fi
-     \else\ifcsname#10\endcsname
-       \ifnum\csname#10\endcsname=\zerocount
-         #2%
-       \else
-         \number\numexpr(\ifnum\csname#10\endcsname<\zerocount
-           \columnmaxcells+\fi\csname#10\endcsname)%
-       \fi
-     \else
+\def\currentcolumnsomecells#1#2%
+  {\ifcsname#1\mofcolumns\endcsname
+     \ifnum\csname#1\mofcolumns\endcsname=\zerocount
        #2%
-     \fi\fi}
-
-\endETEX
+     \else
+       \number\numexpr(\ifnum\csname#1\mofcolumns\endcsname<\zerocount
+         \columnmaxcells+\fi\csname#1\mofcolumns\endcsname)%
+     \fi
+   \else\ifcsname#10\endcsname
+     \ifnum\csname#10\endcsname=\zerocount
+       #2%
+     \else
+       \number\numexpr(\ifnum\csname#10\endcsname<\zerocount
+         \columnmaxcells+\fi\csname#10\endcsname)%
+     \fi
+   \else
+     #2%
+   \fi\fi}
 
 \def\currentcolumnmaxcells {\currentcolumnsomecells\currentcolumnmaxcellstag \columnmaxcells}
 \def\currentcolumnstartcell{\currentcolumnsomecells\currentcolumnstartcelltag\plusone}

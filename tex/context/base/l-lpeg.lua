@@ -40,10 +40,14 @@ function lpeg.splitter(pattern, action)
     return (((1-lpeg.P(pattern))^1)/action+1)^0
 end
 
+-- variant:
+
+--~ local parser = lpeg.Ct(lpeg.splitat(newline))
+
 local crlf     = lpeg.P("\r\n")
 local cr       = lpeg.P("\r")
 local lf       = lpeg.P("\n")
-local space    = lpeg.S(" \t\f\v")
+local space    = lpeg.S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
 local newline  = crlf + cr + lf
 local spacing  = space^0 * newline
 
@@ -55,4 +59,30 @@ local capture = lpeg.Ct(content^0)
 
 function string:splitlines()
     return capture:match(self)
+end
+
+lpeg.linebyline = content -- better make a sublibrary
+
+--~ local p = lpeg.splitat("->",false)  print(p:match("oeps->what->more"))  -- oeps what more
+--~ local p = lpeg.splitat("->",true)   print(p:match("oeps->what->more"))  -- oeps what->more
+--~ local p = lpeg.splitat("->",false)  print(p:match("oeps"))              -- oeps
+--~ local p = lpeg.splitat("->",true)   print(p:match("oeps"))              -- oeps
+
+local splitters_s, splitters_m = { }, { }
+
+function lpeg.splitat(separator,single)
+    local splitter = (single and splitters_s[separator]) or splitters_m[separator]
+    if not splitter then
+        separator = lpeg.P(separator)
+        if single then
+            local other, any = lpeg.C((1 - separator)^0), lpeg.P(1)
+            splitter = other * (separator * lpeg.C(any^0) + "")
+            splitters_s[separator] = splitter
+        else
+            local other = lpeg.C((1 - separator)^0)
+            splitter = other * (separator * other)^0
+            splitters_m[separator] = splitter
+        end
+    end
+    return splitter
 end

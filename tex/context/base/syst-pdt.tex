@@ -37,12 +37,12 @@
 \bindprimitive ifabsdim       ifpdfabsdim
 \bindprimitive ifabsnum       ifpdfabsnum
 
-\ifx\pdfobjcompresslevel\undefined \newcount\pdfobjcompresslevel \else \pdfobjcompresslevel=3 \fi
-\ifx\pdfgentounicode    \undefined \newcount\pdfgentounicode     \else \pdfgentounicode    =1 \fi
+\def\nopdfcompression     {\pdfobjcompresslevel 0 \pdfcompresslevel 0 }
+\def\maximumpdfcompression{\pdfobjcompresslevel 1 \pdfcompresslevel 9 }
+\def\normalpdfcompression {\pdfobjcompresslevel 1 \pdfcompresslevel 3 }
 
-\def\nopdfcompression % for myself
-  {\pdfcompresslevel   \zerocount
-   \pdfobjcompresslevel\zerocount}
+\ifx\pdfobjcompresslevel\undefined \newcount\pdfobjcompresslevel \fi \normalpdfcompression
+\ifx\pdfgentounicode    \undefined \newcount\pdfgentounicode     \fi \pdfgentounicode=1
 
 \let\normalquitvmode  \quitvmode
 \let\normalnoligatures\noligatures

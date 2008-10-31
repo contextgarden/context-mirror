@@ -33,6 +33,7 @@
 \edef\utilityversion{2003.07.19} % was: 1998.12.20  % object pages
 \edef\utilityversion{2006.06.23} % was: 2003.07.19  % -- instead of :
 \edef\utilityversion{2006.09.21} % pt in pos
+\edef\utilityversion{2008.10.14} % moved more to lua in mkiv
 
 % Bepaalde commando's worden als string weggeschreven. Deze
 % zijn aan het eind van deze file gedefinieerd.
@@ -114,7 +115,7 @@
 \newtoks \everycloseutilities
 \newtoks \everycheckutilities
 
-\def\openutilities {\the\everyopenutilities }
+\def\openutilities {\the\everyopenutilities } % \global\everyopenutilities\emptytoks
 \def\closeutilities{\the\everycloseutilities}
 \def\checkutilities{\the\everycheckutilities}
 

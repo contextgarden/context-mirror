@@ -21,7 +21,8 @@
 
 \newif \ifrecatcodeuppercharacters % only used in good old tex
 
-\newcount\cctdefcounter \cctdefcounter\plusone % 0 = signal
+% \newcount\cctdefcounter \cctdefcounter\plusone % 0 = signal
+\newcount\cctdefcounter \cctdefcounter\zerocount % 0 = signal, so advance before allocate
 
 \newcount\cctcountera
 \newcount\cctcounterb
@@ -123,6 +124,8 @@
 \ifx\xmlcatcodesn\undefined \newcatcodetable \xmlcatcodesn \fi % normal
 \ifx\xmlcatcodese\undefined \newcatcodetable \xmlcatcodese \fi % entitle
 \ifx\xmlcatcodesr\undefined \newcatcodetable \xmlcatcodesr \fi % reduce
+\ifx\typcatcodesa\undefined \newcatcodetable \typcatcodesa \fi % { }
+\ifx\typcatcodesb\undefined \newcatcodetable \typcatcodesb \fi % < >
 
 % was redefined in core-job anyway: \catcode`\^^L = 13 % ascii form-feed
 
@@ -140,6 +143,26 @@
     \catcode`\^^L = 12
     \catcode`\    = 12
     \catcode`\^^Z = 12
+\stopcatcodetable
+
+\startcatcodetable \typcatcodesa
+    \catcode`\^^I = 12
+    \catcode`\^^M = 12
+    \catcode`\^^L = 12
+    \catcode`\    = 12
+    \catcode`\^^Z = 12
+    \catcode`\{   =  1
+    \catcode`\}   =  2
+\stopcatcodetable
+
+\startcatcodetable \typcatcodesb
+    \catcode`\^^I = 12
+    \catcode`\^^M = 12
+    \catcode`\^^L = 12
+    \catcode`\    = 12
+    \catcode`\^^Z = 12
+    \catcode`\<   =  1
+    \catcode`\>   =  2
 \stopcatcodetable
 
 \startcatcodetable \texcatcodes

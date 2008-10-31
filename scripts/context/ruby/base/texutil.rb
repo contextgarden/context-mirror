@@ -483,10 +483,16 @@ class TeXUtil
                 attr_writer :sortkey
 
                 def build(sorter)
-                    @sortkey = sorter.normalize(sorter.tokenize(@sortkey))
-                    @sortkey = sorter.remap(sorter.simplify(@key.downcase)) # ??
-                    if @sortkey.empty? then
-                        @sortkey = sorter.remap(@command.downcase)
+                    if @key then
+                        @sortkey = sorter.normalize(sorter.tokenize(@sortkey))
+                        @sortkey = sorter.remap(sorter.simplify(@key.downcase)) # ??
+                        if @sortkey.empty? then
+                            @sortkey = sorter.remap(@command.downcase)
+                        end
+                    else
+                        @key = ""
+                        @sortkey = ""
+                        # weird
                     end
                 end
 
@@ -618,6 +624,9 @@ class TeXUtil
                     if special then
                         @sortkey = "#{@@specialsymbol}#{@sortkey}"
                     end
+                    if @realpage == 0 then
+                        @realpage = 999999
+                    end
                     @sortkey = [
                         @sortkey.downcase,
                         @sortkey,
@@ -687,7 +696,6 @@ class TeXUtil
                         alphaclass, alpha = '', ''
                         @@savedhowto, @@savedfrom, @@savedto, @@savedentry = '', '', '', ''
                         if @@debug then
-                        # if true then
                             list.each do |entry|
                                 handle << "% [#{entry.sortkey.gsub(/#{@@split}/o,'] [')}]\n"
                             end
@@ -773,7 +781,8 @@ class TeXUtil
                                 copied = true
                             end
                             @nofentries += 1 if copied
-                            if entry.realpage.to_i == 0 then
+                            # if entry.realpage.to_i == 0 then
+                            if entry.realpage.to_i == 999999 then
                                 Register.flushsavedline(handle)
                                 handle << "\\registersee{#{entry.type}}{#{entry.pagehowto},#{entry.texthowto}}{#{entry.seetoo}}{#{entry.page}}%\n" ;
                                 lastpage, lastrealpage = entry.page, entry.realpage

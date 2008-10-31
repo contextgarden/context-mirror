@@ -165,26 +165,10 @@
 
 \let\@@framed\s!unknown
 
-% \def\MPvariable#1%
-%   {\getvalue{\ifundefined{\@@framed\@@meta#1}\else\@@framed\fi\@@meta#1}}
-
-\beginTEX
-
-\def\MPvariable#1%
-  {\csname
-     \@EA\ifx\csname\@@framed\@@meta#1\endcsname\relax\else\@@framed\fi\@@meta#1%
-   \endcsname}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\MPvariable#1%
   {\csname
      \ifcsname\@@framed\@@meta#1\endcsname\@@framed\fi\@@meta#1%
    \endcsname}
-
-\endETEX
 
 \let\MPvar\MPvariable
 
@@ -286,6 +270,9 @@
    \elabelgroup}
 
 \let\stopuniqueMPcode \relax % so that we can use it in \expanded
+
+\def\includeMPgraphic#1%
+  {\executeifdefined{\@@MPG#1};} % ; if not found
 
 \long\def\handleuseMPgraphic#1#2#3%
   {\blabelgroup
@@ -513,9 +500,9 @@
 \def\getMPdata
   {\long\def\MPdata##1##2{\ifnum##1=\currentMPgraphic\relax##2\fi}%
    \startreadingfile
-   \startnointerference
+   % \startnointerference % no, else we need to do all data global
    \readlocfile\MPdataMPDfile\donothing\donothing
-   \stopnointerference
+   % \stopnointerference
    \stopreadingfile}
 
 %D We have to enable this mechanism with:
@@ -1064,7 +1051,11 @@
   \resetlanguagespecifics
 \to \everyMPgraphic
 
-% Done.
+%D Goody for preventing overflows:
+
+\def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
+
+%D Done.
 
 \protect \endinput
 

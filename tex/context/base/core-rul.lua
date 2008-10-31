@@ -24,7 +24,6 @@ function commands.doreshapeframedbox(n)
             if lastlinelength > width then
                 width = lastlinelength
             end
-            p.list = nil
             free(p)
         end
         if done then

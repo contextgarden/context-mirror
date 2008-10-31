@@ -25,29 +25,24 @@
 %D is involved, which is why the macros handling those
 %D characters look ahead.
 
-\startmessages  dutch  library: fonts
-     21: het is veiliger om (pdf)eTeX te gebruiken
-\stopmessages
-
-\startmessages  english  library: fonts
-     21: using (pdf)eTeX is more save
-\stopmessages
-
-\startmessages  german  library: fonts
-     21: Verwenden von (pdf)eTeX ist sicherer
-\stopmessages
-
-\startmessages  italian  library: fonts
-     21: l'uso di (pdf)eTeX è  più sicuro
-\stopmessages
-
-\startmessages  norwegian  library: fonts
-     21: å bruke (pdf)eTeX er tryggere
-\stopmessages
-
-\startmessages  french  library: fonts
-     21: l'utilisation de (pdf)eTeX est plus économe
-\stopmessages
+% \startmessages  dutch  library: fonts
+%      21: het is veiliger om (pdf)eTeX te gebruiken
+% \stopmessages
+% \startmessages  english  library: fonts
+%      21: using (pdf)eTeX is more save
+% \stopmessages
+% \startmessages  german  library: fonts
+%      21: Verwenden von (pdf)eTeX ist sicherer
+% \stopmessages
+% \startmessages  italian  library: fonts
+%      21: l'uso di (pdf)eTeX è  più sicuro
+% \stopmessages
+% \startmessages  norwegian  library: fonts
+%      21: å bruke (pdf)eTeX er tryggere
+% \stopmessages
+% \startmessages  french  library: fonts
+%      21: l'utilisation de (pdf)eTeX est plus économe
+% \stopmessages
 
 \unprotect
 
@@ -390,26 +385,11 @@
 %D Specific initializations can be assigned to \type
 %D {commands}.
 
-\beginTEX
-
-  \def\unicodeTEXwarning
-     {\writeline\showmessage\m!fonts{21}\empty\writeline
-      \global\let\unicodeTEXwarning\relax}
-
-\endTEX
-
-\beginETEX
-
-  \let\unicodeTEXwarning\relax
-
-\endETEX
-
 \def\defineunicodefont
   {\dotripleempty\dodefineunicodefont}
 
 \def\dodefineunicodefont[#1][#2][#3]%
-  {\unicodeTEXwarning
-   \doifassignmentelse{#3}
+  {\doifassignmentelse{#3}
      {\setupunicodefont[#1][#3]}
      {\doifelsenothing{#3}
         {\setupunicodefont[#1][#3]}

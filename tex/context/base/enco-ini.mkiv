@@ -13,30 +13,43 @@
 
 %D In the end we will cleanup enco-ini.tex!
 
+% \setinterfacecommand{setuphead}{stelleüberschriftein}
+% \section{Oeps}
+% \stelleüberschriftein[section][style=\bf]
+% \section{Oeps}
+
 % could also be a new kind of table \definecharacter {name} {char} {fallback}
 
-\startruntimectxluacode
-    characters.context.rehash()
-\stopruntimectxluacode
-% \ctxlua{characters.context.rehash()}
+% \startruntimectxluacode
+%     characters.context.rehash()
+% \stopruntimectxluacode
 
-\ctxlua{characters.context.define()}
+% % % % \ctxlua{characters.context.rehash()}
 
-\startextendcatcodetable\ctxcatcodes \ctxlua{characters.context.activate()}\stopextendcatcodetable
-\startextendcatcodetable\notcatcodes \ctxlua{characters.context.activate()}\stopextendcatcodetable
-\startextendcatcodetable\xmlcatcodesn\ctxlua{characters.context.activate()}\stopextendcatcodetable
-\startextendcatcodetable\xmlcatcodese\ctxlua{characters.context.activate()}\stopextendcatcodetable
-\startextendcatcodetable\xmlcatcodesr\ctxlua{characters.context.activate()}\stopextendcatcodetable
-
-%                               [[[\utfchar{8194}]]][[[\utfchar{8195}]]] \par
-%                              $[[[\utfchar{8194}]]][[[\utfchar{8195}]]]$\par
-% {\setcatcodetable\ctxcatcodes [[[\utfchar{8194}]]][[[\utfchar{8195}]]]}\par
-% {\setcatcodetable\texcatcodes [[[\utfchar{8194}]]][[[\utfchar{8195}]]]}\par
-% {\setcatcodetable\prtcatcodes [[[\utfchar{8194}]]][[[\utfchar{8195}]]]}\par
-% \startXMLdata
-% <oeps>((( )))</oeps>
-% \stopXMLdata
-% $\alpha\char945 \utfchar{945} abc 123$
+% \ctxlua {
+%     characters.context.define(
+%         {   % letter catcodes
+%             \number\texcatcodes,
+%             \number\ctxcatcodes,
+%             \number\notcatcodes,
+%             \number\mthcatcodes,
+%             \number\vrbcatcodes,
+%             \number\prtcatcodes,
+%             \number\xmlcatcodesn,
+%             \number\xmlcatcodese,
+%             \number\xmlcatcodesr,
+%             \number\typcatcodesa,
+%             \number\typcatcodesb,
+%         },
+%         {   % activate catcodes
+%             \number\ctxcatcodes,
+%             \number\notcatcodes,
+%             \number\xmlcatcodesn,
+%             \number\xmlcatcodese,
+%             \number\xmlcatcodesr,
+%         }
+%     )
+% }
 
 \unprotect
 

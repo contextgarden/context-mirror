@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% ! EXPERIMENTAL !
+% ! EXPERIMENTAL ! code will be made more nice
 
 % todo: missing only, force always, multiple fallbacks with test, scale
 %
@@ -44,19 +44,30 @@
 \def\dodefinefontfallbacks#1%
   {\ctxlua{fonts.collections.prepare("#1")}}
 
-\def\s!fallbacks{fallbacks}
+% we might as well move the handling to lua but then we need to pass the
+% fallbacks, skewchar etc.
 
-\def\updatefontparameters
-  {%edef\@@fonthandling {\truefontdata\somefontname\s!handling}% goes away, is now feature
-   \edef\@@fontfeatures {\truefontdata\fontfile    \s!features}%
-   \edef\@@fontfallbacks{\truefontdata\somefontname\s!fallbacks}%
-   \edef\@@fontskewchar {\truefontdata\fontfile    \s!skewchar}} % will be replaced
+\setfalse\doingfontfallbacks
+
+\def\dodefinefontfallbacksindeed#1%
+  {\begingroup
+     \settrue\doingfontfallbacks
+     \lastrawfontcall % sets current font id
+     \dodefinefontfallbacks#1%
+   \endgroup}
 
 \appendtoks
-    \ifx\@@fontfallbacks\empty\else
-        \bgroup\dodefinefontfallbacks\@@fontfallbacks\egroup
-    \fi
-\to\everyfont
+    \ifconditional\doingfontfallbacks\else
+        \ifx\@@fontfallbacks\empty
+            \ifx\@@fontclassfallbacks\empty
+            \else
+                \dodefinefontfallbacksindeed\@@fontclassfallbacks
+            \fi
+        \else
+            \dodefinefontfallbacksindeed\@@fontfallbacks
+        \fi
+   \fi
+\to\everydefinefont
 
 \def\dostartcloningfonts
   {\bgroup
@@ -66,18 +77,19 @@
   {\egroup}
 
 \def\doclonefonta#1#2% kind of dododefinefont
-  {\let\lastfontidentifier\s!dummy
-   %\let\localrelativefontsize\defaultrelativefontsize
+  {\ctxlua{fonts.collections.message("defining #1 (relative scale: #2)")}%
+   \autofontsizefalse
+   \let\lastfontidentifier\s!dummy
    \def\localrelativefontsize{#2}%
    \let\localabsolutefontsize\fontbody
-   \parsefontspec{#1}\rawfontidentifier
-   %\let\localrelativefontsize\defaultrelativefontsize % not needed
+   \lowleveldefinefont{#1}\rawfontidentifier
    \csname\rawfontidentifier\endcsname
    \autofontsizefalse
    %\setfontcharacteristics
    }%\the\everyfontswitch}
 
-\def\doclonefontb#1{\doclonefonta{#1\savedfontspec}}
+\def\doclonefontb#1% #2
+  {\doclonefonta{#1 \savedfontspec}}
 
 % check : only replace when present in replacement font (default: no)
 % force : force replacent even when basefont has glyph  (default: yes)
@@ -100,5 +112,37 @@
 %         \fi
 %     }
 % \stopcolumns
+
+% \ctxlua{fonts.trace = true ; fonts.collections.trace = true}
+%
+% \definefontfeature[zh][mode=node,script=hang,lang=zhs]
+% \definefontfallback[serifwhatever]          [lmroman10-regular]   [0x0000-0x0400][force=yes]
+% \definefontfallback[serifboldwhatever]      [lmroman10-bold]      [0x0000-0x0400][force=yes]
+% \definefontfallback[serifitalicwhatever]    [lmroman10-italic]    [0x0000-0x0400][force=yes]
+% \definefontfallback[serifbolditalicwhatever][lmroman10-bolditalic][0x0000-0x0400][force=yes]
+%
+% \starttypescript [serif] [zhfont]
+%    \definefontsynonym [zhserif]          [AdobeSongStd-Light]   [features=zh,fallbacks=serifwhatever]
+%    \definefontsynonym [zhserifbold]      [AdobeHeitiStd-Regular][features=zh,fallbacks=serifboldwhatever]
+%    \definefontsynonym [zhserifitalic]    [AdobeKaitiStd-Regular][features=zh,fallbacks=serifitalicwhatever]
+%    \definefontsynonym [zhserifbolditalic][AdobeHeitiStd-Regular][features=zh,fallbacks=serifbolditalicwhatever]
+% \stoptypescript
+%
+% \starttypescript [serif][zhfont][name]
+%    \definefontsynonym[Serif]             [zhserif]             % [fallbacks=serifwhatever]
+%    \definefontsynonym[SerifBold]         [zhserifbold]         % [fallbacks=serifboldwhatever]
+%    \definefontsynonym[SerifItalic]       [zhserifitalic]       % [fallbacks=serifitalicwhatever]
+%    \definefontsynonym[SerifBoldItalic]   [zhserifbolditalic]   % [fallbacks=serifbolditalicwhatever]
+% \stoptypescript
+%
+% \starttypescript[myfont]
+%    \definetypeface[myfont][rm][serif][zhfont]
+% \stoptypescript
+%
+% \usetypescript[myfont] \setupbodyfont[myfont,rm,12pt]
+%
+% \starttext
+%   fonts {\bf fonts} {\bi fonts} {\it fonts}
+% \stoptext
 
 \protect \endinput

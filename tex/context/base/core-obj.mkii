@@ -16,7 +16,11 @@
 \def\mkcheckobjectreferences
   {\startnointerference
    \protectlabels
-   \doutilities{objectreferences}\jobname\empty\relax\relax
+   \ifx\usedoutputdriver\currentoutput
+     \doutilities{objectreferences}\jobname\empty\relax\relax
+   \else
+     % different format (will fails on \purenumber)
+   \fi
    \global\let\checkobjectreferences\relax
    \stopnointerference}
 
@@ -63,7 +67,7 @@
 \def\mkgetobjectreferencepage
   {\dodogetobjectreference\secondoftwoarguments\defaultobjectpage}
 
-\def\mkifobjectreferencefoundelse#1#2%
+\def\mkdoifobjectreferencefoundelse#1#2%
   {\checkobjectreferences
    \blabelgroup \ifcsname\r!driver#1::#2\endcsname
      \elabelgroup \expandafter\firstoftwoarguments

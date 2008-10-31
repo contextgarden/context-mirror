@@ -30,6 +30,8 @@
 \ifx\xmlcatcodesn\undefined \newcatcodetable \xmlcatcodesn \fi % normal
 \ifx\xmlcatcodese\undefined \newcatcodetable \xmlcatcodese \fi % entitle
 \ifx\xmlcatcodesr\undefined \newcatcodetable \xmlcatcodesr \fi % reduce
+\ifx\typcatcodesa\undefined \newcatcodetable \typcatcodesa \fi % { }
+\ifx\typcatcodesb\undefined \newcatcodetable \typcatcodesb \fi % < >
 
 \newtoks \setdefaultcatcodes
 
@@ -115,6 +117,8 @@
     tex.xmlcatcodesn = \number\xmlcatcodesn ; % normal
     tex.xmlcatcodese = \number\xmlcatcodese ; % entitle
     tex.xmlcatcodesr = \number\xmlcatcodesr ; % reduce
+    tex.typcatcodesa = \number\typcatcodesa ; % { }
+    tex.typcatcodesb = \number\typcatcodesb ; % < >
 \stopruntimectxluacode
 
 \protect \endinput

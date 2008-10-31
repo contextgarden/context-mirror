@@ -2166,8 +2166,6 @@
 
 % test should happen in core-ref
 
-\beginETEX \ifcsname
-
 \def\getsecondaryPDFreferences
   {\ifcase\nofsecondaryreferences\else
      \ifcsname PDF-SR:\the\nofsecondaryreferences\endcsname
@@ -2178,23 +2176,6 @@
      \global\advance\nofsecondaryreferences \minusone
      \expandafter\getsecondaryPDFreferences
    \fi}
-
-\endETEX
-
-\beginTEX
-
-\def\getsecondaryPDFreferences
-  {\ifcase\nofsecondaryreferences\else
-     \@EA\ifx\csname PDF-SR:\the\nofsecondaryreferences\endcsname\relax\else
-       \xdef\secondaryPDFreferences
-         {/Next << \csname PDF-SR:\the\nofsecondaryreferences\endcsname\space
-                   \secondaryPDFreferences >>}%
-     \fi
-     \global\advance\nofsecondaryreferences \minusone
-     \expandafter\getsecondaryPDFreferences
-   \fi}
-
-\endTEX
 
 %D \macros
 %D   {loadFDFfields, showFDFfields,

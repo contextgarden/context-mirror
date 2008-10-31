@@ -362,7 +362,7 @@ input.storage.data       = { }
 input.storage.min        = 0 -- 500
 input.storage.max        = input.storage.min - 1
 input.storage.trace      = false -- true
-input.storage.done       = 0
+input.storage.done       = input.storage.done or 0
 input.storage.evaluators = { }
 -- (evaluate,message,names)
 
@@ -419,6 +419,8 @@ function input.storage.dump()
         lua.bytecode[input.storage.max] = loadstring(code)
     end
 end
+
+-- we also need to count at generation time (nicer for message)
 
 if lua.bytecode then -- from 0 upwards
     local i = input.storage.min

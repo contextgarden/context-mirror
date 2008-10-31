@@ -22,33 +22,6 @@
 %
 %   \fetchmark[naam][plaats]
 
-% nog expansie in mainmarking
-
-% ook nog reset koppelen aan sectie
-
-%\def\mainmarking#1%
-%  {\csname\??mk#1\c!koppeling\endcsname}
-%
-%\def\fastresetmarker#1%
-%  {\doifdefined{\??mk\maimarking{#1}}
-%     {\expandafter\resetmark\csname\??mk\mainmarking{#1}\endcsname}}
-
-\beginTEX
-
-\def\mainmarking#1%
-  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax\else
-     \csname\??mk#1\c!coupling\endcsname
-   \fi}
-
-\def\fastresetmarker#1%
-  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax\else
-     \@EA\resetmark\csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\mainmarking#1%
   {\ifcsname\??mk#1\c!coupling\endcsname
      \csname\??mk#1\c!coupling\endcsname
@@ -58,8 +31,6 @@
   {\ifcsname\??mk#1\c!coupling\endcsname
      \@EA\resetmark\csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
    \fi}
-
-\endETEX
 
 \def\fastresetmarkerlist[#1]%
   {\expanded{\rawprocesscommalist[#1]}\fastresetmarker}
@@ -140,82 +111,6 @@
 \def\doifmarkingelse#1%
   {\doifdefinedelse{\??mk#1}}
 
-% \def\fetchmark[#1][#2]% never \unexpanded
-%   {\@EA\csname\??mk\??mk#2\@EA\endcsname\csname\??mk\mainmarking{#1}\endcsname}
-
-% \beginTEX
-%
-% \def\fetchmark[#1][#2]% never \unexpanded
-%   {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax\else
-%      \csname\??mk\??mk#2\@EA\endcsname
-%      \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
-%    \fi}
-%
-% \endTEX
-%
-% \beginETEX \ifcsname
-%
-% \def\fetchmark[#1][#2]% never \unexpanded
-%   {\ifcsname\??mk#1\c!coupling\endcsname
-%      \csname\??mk\??mk#2\@EA\endcsname
-%      \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
-%    \fi}
-%
-% \endETEX
-%
-% \def\fetchtwomarks[#1]%
-%   {\doifsomething{\fetchmark[#1][\v!first]}
-%      {\fetchmark[#1][\v!first]%
-%       \doifsomething{\fetchmark[#1][\v!last]}
-%         {\doifnot{\fetchmark[#1][\v!first]}{\fetchmark[#1][\v!last]}
-%             {\getvalue{\??mk#1\c!separator}\fetchmark[#1][\v!last]}}}}
-%
-% \def\fetchallmarks[#1]%
-%   {\doifsomething{\fetchmark[#1][\v!first]}
-%      {\doifsomething{\fetchmark[#1][\v!previous]}
-%         {\doifnot{\fetchmark[#1][\v!previous]}{\fetchmark[#1][\v!first]}
-%            {\fetchmark[#1][\v!previous]\getvalue{\??mk#1\c!separator}}}}%
-%       \fetchtwomarks[#1]}
-%
-% \def\dogetmarking[#1][#2]%
-%   {\doifvalue{\??mk#1\c!state}\v!start
-%      {\bgroup
-%      %\def\nomarking##1{\unknown\ }%
-%       \def\nomarking{\splitsequence{\getvalue{\??mk#1\c!limittext}}}%
-%       \setfullsectionnumber{\??mk#1}%
-%       \processaction % slow
-%         [#2]
-%         [   \v!both=>{\fetchtwomarks[#1]},
-%              \v!all=>{\fetchallmarks[#1]},
-%          \s!default=>{\fetchmark    [#1][\v!first]},
-%          \s!unknown=>{\fetchmark    [#1][#2]}]%
-%       \egroup}}
-%
-% \def\nogetmarking[#1][#2]%
-%   {}
-%
-% \unexpanded\def\getmarking
-%   {\dodoubleargument\dogetmarking}
-
-\beginTEX
-
-\def\fetchmark[#1][#2]% % expandable / never use \unexpanded
-  {\@EA\ifx\csname\??mk::#1\endcsname\relax
-     \@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax
-       % nothing
-     \else
-       \csname\??mk\??mk#2\@EA\endcsname
-       \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
-     \fi
-   \else
-     \csname\??mk::\??mk::#2\@EA\@EA\@EA\endcsname
-     \csname\??mk::#1\endcsname
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\fetchmark[#1][#2]% % expandable / never use \unexpanded
   {\ifcsname\??mk::#1\endcsname % saved mark
      \csname\??mk::\??mk::#2\@EA\@EA\@EA\endcsname
@@ -224,17 +119,6 @@
      \csname\??mk\??mk#2\@EA\endcsname
      \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
    \fi\fi}
-
-\endETEX
-
-% \def\fetchmark[#1][#2]% % expandable / never use \unexpanded
-%   {\ifcsname\??mk::#1\endcsname % saved mark
-%      \csname\??mk::\??mk::#2\@EA\@EA\@EA\endcsname
-%      \csname\??mk::#1\endcsname
-%    \else\ifcsname\??mk#1\c!coupling\endcsname % real mark
-%      \csname\??mk\??mk#2\@EA\endcsname
-%      \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
-%    \fi\fi}
 
 \letvalue{\??mk::\??mk::\v!previous}\firstoffourarguments
 \letvalue{\??mk::\??mk::\v!first   }\secondoffourarguments
@@ -366,21 +250,6 @@
 
 \let\setsomemark\setmark
 
-\beginTEX
-
-\def\domarking[#1]#2%
-  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax\else
-     \bgroup
-     \doifelsevalue{\??mk#1\c!expansion}\v!yes
-       \expandmarkstrue\expandmarksfalse
-     \@EA\setsomemark\csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname{#2}%
-     \egroup
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\domarking[#1]#2%
   {\ifcsname\??mk#1\c!coupling\endcsname
      \bgroup
@@ -389,8 +258,6 @@
      \@EA\setsomemark\csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname{#2}%
      \egroup
    \fi}
-
-\endETEX
 
 \def\marking
   {\dosingleargument\domarking}

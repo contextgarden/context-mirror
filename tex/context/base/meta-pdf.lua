@@ -216,12 +216,10 @@ end
 
 function mptopdf.convertmpstopdf(name)
     if mptopdf.loaded(name) then
-        garbagecollector.push()
         input.starttiming(mptopdf)
         mptopdf.parse()
         mptopdf.reset()
         input.stoptiming(mptopdf)
-        garbagecollector.pop()
     else
         tex.print("file " .. name .. " not found")
     end

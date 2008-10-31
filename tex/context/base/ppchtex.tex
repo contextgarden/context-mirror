@@ -556,6 +556,10 @@
      \stopMPdrawing
    \fi}
 
+\ifx\MPdivten\undefined % hack to prevent overflows in mp
+    \def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
+\fi
+
 \def\@@setchemicalaxis#1#2#3#4%
   {\ifcase\chemicaldrawingmode
      \axis
@@ -568,6 +572,7 @@
      \psaxes[labels=none,Dx=500,Dy=500](0,0)(#1,#3)(#2,#4)%
    \or
      \global\MPdrawingdonetrue
+     % we need to div beforehand because of mp limitations
      \startMPdrawing
         x1 := \MPdivten[#1]u ; x2 := \MPdivten[#2]u;
         y1 := \MPdivten[#3]u ; y2 := \MPdivten[#4]u;

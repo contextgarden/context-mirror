@@ -377,7 +377,7 @@
 %D    \definecolor[FunnyColor][r=\FunnyR,g=\FunnyG,b=\FunnyB]%
 %D    \color[FunnyColor]}
 %D
-%D \TreatFirstLine {\bf} {} {\FunnyCommand} {\FunnyCommand}
+%D %\TreatFirstLine {\bf} {} {\FunnyCommand} {\FunnyCommand}
 %D The third and fourth argument can be used to gain special
 %D effects on the individual words. Of course one needs ...
 %D \stopbuffer
@@ -560,7 +560,7 @@
 
 \def\NormalizeFontSize#1#2#3#4#5%
   {\bgroup
-   \dimen0=#4% #4 can be \ht0 or so
+    \dimen0=#4% #4 can be \ht0 or so
    \setbox0\hbox{\definedfont[#5 at 5pt]#3}% 10pt
    \ifdim\wd0>\zeropoint
      \dimen2=#10 % #1 is \wd or \ht
@@ -573,10 +573,13 @@
    \else
      \dimen0\bodyfontsize
    \fi
-   \definedfont[#5 at \the\dimen0]%
-   \expandafter
-   \egroup
-   \expandafter\font\expandafter#2\fontname\font\relax}
+   % mkii
+   %    \definedfont[#5 at \the\dimen0]%
+   %    \expandafter
+   %    \egroup
+   %   \expandafter\font\expandafter#2\fontname\font\relax}
+   % mkiv safe (file: prefix etc)
+   \expanded{\egroup\def\noexpand#2{\definedfont[#5 at \the\dimen0]}}}
 
 %D Afterwards, we have access to the calculated size by:
 

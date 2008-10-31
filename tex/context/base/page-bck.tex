@@ -302,8 +302,7 @@
       \calculatereducedvsizes
       \offinterlineskip
       #2\relax
-      \vskip-\topheight
-      \vskip-\topdistance
+      \vskip\dimexpr-\topheight-\topdistance\relax
       \dodopagebodybackground\v!top\topheight
       \vskip\topdistance
       \dodopagebodybackground\v!header\headerheight
@@ -380,8 +379,7 @@
      \def\docommand##1%
        {\doifinsetelse{##1}{\v!paper,\v!page,\v!leftpage,\v!rightpage}
           {\getparameters[\??ma##1][#3]\checkbackground{##1}}
-          {\def\dodocommand####1%
-             {\getparameters[\??ma##1####1][#3]\checkbackground{##1####1}}%
+          {\def\dodocommand####1{\getparameters[\??ma##1####1][#3]\checkbackground{##1####1}}%
            \processcommalist[#2]\dodocommand}}%
      \processcommalist[#1]\docommand
    \else\ifsecondargument

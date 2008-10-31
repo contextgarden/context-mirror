@@ -104,15 +104,48 @@ do
 --~         content                   / function(s) texsprint(tex.xmlcatcodes,s) end
 --~     )^0
 
+    local forceraw, rawroot = false, nil
+
+    function lxml.startraw()
+        forceraw = true
+    end
+    function lxml.stopraw()
+        forceraw = false
+    end
+    function lxml.rawroot()
+        return rawroot
+    end
+    function lxml.rawpath(rootid)
+        if rawroot and type(rawroot) == "table" then
+            local text, path, rp
+            if not rawroot.dt then
+                text, path, rp = "text", "", rawroot[0]
+            else
+                path, rp = "tree", "", rawroot.__p__
+            end
+            while rp do
+                local rptg = rp.tg
+                if rptg then
+                    path = rptg .. "/" .. path
+                end
+                rp = rp.__p__
+            end
+            return { rootid, "/" .. path, text }
+        end
+    end
+
     local function sprint(root)
         if not root then
+--~             rawroot = false
             -- quit
         else
             local tr = type(root)
             if tr == "string" then -- can also be result of lpath
+--~                 rawroot = false
                 capture:match(root)
             elseif tr == "table" then
-                serialize(root,sprint,nil,nil,specialhandler)
+                rawroot = forceraw and root
+                serialize(root,sprint,nil,nil,specialhandler,forceraw)
             end
         end
     end
@@ -137,15 +170,18 @@ do
 
     function xml.cprint(root) -- content
         if not root then
+--~             rawroot = false
             -- quit
         elseif type(root) == 'string' then
+--~             rawroot = false
             capture:match(root)
         else
             local rootdt = root.dt
+            rawroot = forceraw and root
             if rootdt then -- the main one
-                serialize(rootdt,sprint,nil,nil,specialhandler)
+                serialize(rootdt,sprint,nil,nil,specialhandler,forceraw)
             else -- probably dt
-                serialize(root,sprint,nil,nil,specialhandler)
+                serialize(root,sprint,nil,nil,specialhandler,forceraw)
             end
         end
     end
@@ -162,11 +198,14 @@ do
 
     function lines(root)
         if not root then
+--~             rawroot = false
             -- quit
         elseif type(root) == 'string' then
+--~             rawroot = false
             capture:match(root)
         elseif next(root) then -- tr == 'table'
-            serialize(root, lines)
+            rawroot = forceraw and root
+            serialize(root,lines,forceraw)
         end
     end
 
@@ -189,7 +228,7 @@ do
         space   / function( ) texsprint(tex.texcatcodes,spacecommand .. "{}") end
     )^0
 
-    function toverbatim(str)
+    local function toverbatim(str)
         if beforecommand then texsprint(tex.texcatcodes,beforecommand .. "{}") end
         capture:match(str)
         if aftercommand  then texsprint(tex.texcatcodes,aftercommand  .. "{}")  end
@@ -207,11 +246,25 @@ do
         specialhandler['@cd@'] = nil
     end
 
+    -- local capture = (space^0*newline)^0 * capture * (space+newline)^0 * -1
+
+    local function toverbatim(str)
+        if beforecommand then texsprint(tex.texcatcodes,beforecommand .. "{}") end
+        -- todo: add this to capture
+        str = str:gsub("^[ \t]+[\n\r]+","")
+        str = str:gsub("[ \t\n\r]+$","")
+        capture:match(str)
+        if aftercommand  then texsprint(tex.texcatcodes,aftercommand  .. "{}")  end
+    end
+
     function lxml.verbatim(id,before,after)
         local root = get_id(id)
         if root then
             if before then texsprint(tex.ctxcatcodes,format("%s[%s]",before,root.tg)) end
-            serialize(root.dt,toverbatim,nil,nil,nil,true)  -- was root
+        --  serialize(root.dt,toverbatim,nil,nil,nil,true)  -- was root
+            local t = { }
+            serialize(root.dt,function(s) t[#t+1] = s end,nil,nil,nil,true)  -- was root
+            toverbatim(table.concat(t,""))
             if after then texsprint(tex.ctxcatcodes,after) end
         end
     end
@@ -328,9 +381,10 @@ end
 function lxml.nonspace(id,pattern) -- slow, todo loop
     xmltprint(xmlcollect(get_id(id),pattern,true))
 end
-function lxml.content(id,pattern)
-    xmlsprint(xmlcontent(get_id(id),pattern) or "")
-end
+
+--~ function lxml.content(id)
+--~     xmlsprint(xmlcontent(get_id(id)) or "")
+--~ end
 
 function lxml.strip(id,pattern,nolines)
     xml.strip(get_id(id),pattern,nolines)
@@ -350,7 +404,7 @@ end
 function lxml.raw(id,pattern) -- the content, untouched by commands
     local c = xmlfilter(get_id(id),pattern)
     if c then
-        texsprint(concat(c.dt,""))
+        xml.serialize(c.dt,texsprint,nil,nil,nil,true)
     end
 end
 
@@ -398,37 +452,7 @@ function xml.element(e,n)
 end
 
 function lxml.element(id,n)
-    local e = get_id(id)
-    if e then
-        local edt = e.dt
-        if edt then
-            if n > 0 then
-                for i=1,#edt do
-                    local ei = edt[i]
-                    if type(ei) == "table" then
-                        if n == 1 then
-                            xmlsprint(ei)
-                            return
-                        else
-                            n = n - 1
-                        end
-                    end
-                end
-            elseif n < 0 then
-                for i=#edt,1,-1 do
-                    local ei = edt[i]
-                    if type(ei) == "table" then
-                        if n == -1 then
-                            xmlsprint(ei)
-                            return
-                        else
-                            n = n + 1
-                        end
-                    end
-                end
-            end
-        end
-    end
+    xml.element(get_id(id),n)
 end
 
 function lxml.stripped(id,pattern,nolines)
@@ -441,7 +465,11 @@ function lxml.stripped(id,pattern,nolines)
 end
 
 function lxml.flush(id)
-    xmlsprint(get_id(id).dt)
+    id = get_id(id)
+    local dt = id and id.dt
+    if dt then
+        xmlsprint(dt)
+    end
 end
 
 --~ function lxml.strip(id,flush)

@@ -41,20 +41,23 @@ function vf.aux.combine.assign(g, name, from, to, start, force)
         if not to    then to       = from      end
         if not start then start    = from      end
         local fc, gc = f.characters, g.characters
-        g.fonts[#g.fonts+1] = { id = id } -- no need to be sparse
-        local hn = #g.fonts
+        local fd, gd = f.descriptions, g.descriptions
+        local hn = #g.fonts+1
+        g.fonts[hn] = { id = id } -- no need to be sparse
         for i=from,to do
             if fc[i] and (force or not gc[i]) then
-                gc[i] = table.fastcopy(fc[i])
+                gc[i] = table.fastcopy(fc[i]) -- can be optimized
                 gc[i].commands = { { 'slot', hn, start } }
+                gd[i] = fd[i]
             end
             start = start + 1
         end
         if not g.parameters and #g.fonts > 0 then -- share this code !
-            g.parameters  = table.fastcopy(f.parameters)
-            g.italicangle = f.italicangle
-            g.ascender    = f.ascender
-            g.descender   = f.descender
+            g.parameters   = table.fastcopy(f.parameters)
+            g.italicangle  = f.italicangle
+            g.ascender     = f.ascender
+            g.descender    = f.descender
+            g.factor       = f.factor -- brrr
         end
     end
 end
@@ -75,19 +78,22 @@ function vf.aux.combine.names(g,name,force)
     local f, id = tfm.read_and_define(name,g.specification.size)
     if f and id then
         local fc, gc = f.characters, g.characters
+        local fd, gd = f.descriptions, g.descriptions
         g.fonts[#g.fonts+1] = { id = id } -- no need to be sparse
         local hn = #g.fonts
         for k, v in pairs(fc) do
             if force or not gc[k] then
                 gc[k] = table.fastcopy(v)
                 gc[k].commands = { { 'slot', hn, k } }
+                gd[i] = fd[i]
             end
         end
         if not g.parameters and #g.fonts > 0 then -- share this code !
-            g.parameters  = table.fastcopy(f.parameters)
-            g.italicangle = f.italicangle
-            g.ascender    = f.ascender
-            g.descender   = f.descender
+            g.parameters   = table.fastcopy(f.parameters)
+            g.italicangle  = f.italicangle
+            g.ascender     = f.ascender
+            g.descender    = f.descender
+            g.factor       = f.factor -- brrr
         end
     end
 end
@@ -110,6 +116,7 @@ function vf.combine(specification,tag)
         type = 'virtual',
         fonts = { },
         characters = { },
+        descriptions = { },
         specification = table.fastcopy(specification)
     }
     vf.aux.combine.process(g,vf.combinations[tag])
@@ -180,30 +187,31 @@ fonts.define.methods["demo-1"] = function(specification)
         local capscale, digscale = 0.85, 0.75
         f.name, f.type = name, 'virtual'
         f.fonts = {
-            {id=id},
-            {name='lmsans10-regular'      , size=size*capscale}, -- forced extra name
-            {name='lmtypewriter10-regular', size=size*digscale}  -- forced extra name
+            { id = id },
+            { name = 'lmsans10-regular'      , size = size*capscale }, -- forced extra name
+            { name = 'lmtypewriter10-regular', size = size*digscale }  -- forced extra name
         }
-        for k,v in pairs(f.characters) do
-            local u = v.unicode
-            if u and characters.i_is_of_category(u,'lu') then
+        local i_is_of_category = characters.i_is_of_category
+        local characters, descriptions = f.characters, f.descriptions
+        for u,v in pairs(characters) do
+            if u and i_is_of_category(u,'lu') then
                 v.width = capscale*v.width
                 v.commands = {
                     {'special','pdf: 1 0 0 rg'},
-                    {'slot',2, k},
+                    {'slot',2, u},
                     {'special','pdf: 0 g'},
                 }
-            elseif u and characters.i_is_of_category(u,'nd') then
-                v.width  = digscale*v.width
+            elseif u and i_is_of_category(u,'nd') then
+                v.width = digscale*v.width
                 v.commands = {
                     {'special','pdf: 0 0 1 rg'},
-                    {'slot',3,k},
+                    {'slot',3,u},
                     {'special','pdf: 0 g'},
                 }
             else
                 v.commands = {
                     {'special','pdf: 0 1 0 rg'},
-                    {'slot',1,k},
+                    {'slot',1,u},
                     {'special','pdf: 0 g'},
                 }
             end

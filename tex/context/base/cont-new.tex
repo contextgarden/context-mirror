@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2008.08.05 18:47}
+\newcontextversion{2008.10.31 13:58}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -196,15 +196,6 @@
 %   {\ifcsname shsy:#1\endcsname
 %      \expandafter\shapesynonym\csname shsy:#1\endcsname\else#1%
 %    \fi}
-%
-% \beginTEX
-%
-% \def\shapesynonym#1%
-%   {\expandafter\ifx\csname shsy:#1\endcsname\relax
-%      #1\else\expandafter\shapesynonym\csname shsy:#1\endcsname
-%    \fi}
-%
-% \endTEX
 %
 %\defineshapesynonym[eacute] [e]
 %\defineshapesynonym[egrave] [e]
@@ -572,8 +563,6 @@
   {\executeifdefined{\??sx#1::\fontalternative}
   {\getvalue        {\??sx#1::\s!default}}}}}
 
-% \beginETEX \ifcsname
-%
 % \unexpanded\def\styleinstance[#1]%
 %   {\csname\??sx#1%
 %       \ifcsname:\fontstyle:\fontalternative\endcsname
@@ -588,8 +577,6 @@
 %         % nothing, \relax
 %       \fi\fi\fi\fi
 %     \endcsname}
-%
-% \endETEX
 
 % no, wrong! never!
 %
@@ -794,19 +781,7 @@
 \unexpanded\def\enableXML {\setinputmode[XML]} % \enableXML is used in edef's and marks
 \unexpanded\def\disableXML{\setinputmode[TEX]}
 
-\beginTEX
-
-  % else the skip aborts the reshape process
-
-  \def\shapefill{\vskip\onepoint\!!plus\lineheight\!!minus\lineheight\relax}
-
-\endTEX
-
-\beginETEX
-
-  \def\shapefill{\vskip\zeropoint\!!plus\lineheight\!!minus\lineheight\relax}
-
-\endETEX
+\def\shapefill{\vskip\zeropoint\!!plus\lineheight\!!minus\lineheight\relax}
 
 \let\normaltype\type
 

@@ -495,7 +495,9 @@
    \ifnum\multicolumnendsyncmethod=\plustwo
      \synchronizeoutput
    \else
-     \vskip\lineheight\vskip-\lineheight % take footnotes into account
+     % don't combine these
+     \vskip\lineheight
+     \vskip-\lineheight % take footnotes into account
    \fi
    \dontshowcomposition
    \doflushcolumnfloat  % added recently

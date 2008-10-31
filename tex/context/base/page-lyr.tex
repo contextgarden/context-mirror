@@ -17,6 +17,7 @@
 
 % todo : first / last / next / +... => page key
 %        test on left/right box when no doublesided option given
+%        use \ifcsname instead of doifvalue
 
 \unprotect
 
@@ -162,24 +163,27 @@
    \doifvalue{\??ll#1\c!option}\v!test\tracelayerstrue
    \iftracelayers\traceboxplacementtrue\fi
    \dowithnextbox % sneller als aparte macro
-     {\ifundefined{\@@layerbox#1}%
-        \writestatus{layer}{unknown layer #1}%
-      \else
-        \doifelse{#2}\v!even
-          {\ifodd\realpageno
+     {\ifcsname\@@layerbox#1\endcsname % nb: odd/even discard, left/right not
+        \edef\@@layerloc{#2}%
+        \ifx\@@layerloc\v!even
+          \ifodd\realpageno
           %  discard nextbox
-           \else
-             \dododosetlayer[#1][\v!left][#3]%
-           \fi}%
-          {\doifelse{#2}\v!odd
-             {\ifodd\realpageno
-                \dododosetlayer[#1][\v!right][#3]%
-             %\else
-             %  discard nextbox
-              \fi}%
-             {\dododosetlayer[#1][#2][#3]}}%
+          \else
+            \dododosetlayer[#1][\v!left][#3]%
+          \fi
+        \else\ifx\@@layerloc\v!odd
+          \ifodd\realpageno
+            \dododosetlayer[#1][\v!right][#3]%
+          %\else
+          %  discard nextbox
+          \fi
+        \else
+          \dododosetlayer[#1][#2][#3]%
+        \fi\fi
+      \else
+        \writestatus{layer}{unknown layer #1}%
       \fi
-      \egroup}
+      \egroup}%
      \hbox}
 
 \newbox\layerbox
@@ -249,7 +253,7 @@
    % etc
    \executeifdefined{\??ll\??ll\layerparameter\c!preset}\gobbletwoarguments\currentlayer{#3}%
    % that was real slow
-   \doif{\layerparameter\c!position}\v!overlay  % slow
+   \doif{\layerparameter\c!position}\v!overlay  % slow, use \dosetvalue instead
      {\getparameters[\??ll\currentlayer][\c!width=\zeropoint,\c!height=\zeropoint,\c!position=\v!yes]}%
    \doifsomething{\layerparameter\c!rotation}
      {\setbox\nextbox\hbox
@@ -379,17 +383,14 @@
       \hsize\layerparameter\c!width % new, keep box small
       \vbox to \layerparameter\c!height \bgroup
         \smashbox\nextbox
-        \vskip\@@layerypos
-        \vskip\@@layeryoff
-        \hskip\@@layerxpos
-        \hskip\@@layerxoff
+        \vskip\dimexpr\@@layerypos+\@@layeryoff\relax
+        \hskip\dimexpr\@@layerxpos+\@@layerxoff\relax
         \flushnextbox
         \ifvoid\layerpagebox
           % already flushed
         \else
           % the reverse case % check !
-          \vskip-\@@layerypos
-          \vskip-\@@layeryoff
+          \vskip-\dimexpr\@@layerypos+\@@layeryoff\relax
           \box\layerpagebox
         \fi
       \egroup}%

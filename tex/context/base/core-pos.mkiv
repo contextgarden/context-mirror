@@ -13,53 +13,51 @@
 
 \unprotect
 
+% saveposition     : tag page x y
+% savepositionwhd  : tag page x y w h d
+% savepositionplus : tag page x y w h d list
+%
+% at some point (when we no longer share code) we will move to numbers
+% do that we have less garbage collection and hashing
+%
+% the global table ptbs is equivalent to jobpositions.tobesaved
+%
+% btw, using a function is more efficient than passing longer code
+% snippets to ctxlua
+
 \registerctxluafile{core-pos}{1.001}
 
-\appendtoks
-    \immediatewriteutilitytua{if not job.positions then job.positions = { } end}%
-    \immediatewriteutilitytua{local jp = job.positions}%
-\to \everyopenutilities
+% \def\dolazysaveposition            #1#2#3#4{\expanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4"}}}}
+% \def\dolazysavepositionwhd   #1#2#3#4#5#6#7{\expanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4","#5","#6","#7"}}}}
+% \def\dolazysavepositionplus#1#2#3#4#5#6#7#8{\expanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
+% \def\dosaveposition                #1#2#3#4{\expanded{\ctxlua    {ptbs['#1']={#2,"#3","#4"}}}}
+% \def\dosavepositionwhd       #1#2#3#4#5#6#7{\expanded{\ctxlua    {ptbs['#1']={#2,"#3","#4","#5","#6","#7"}}}}
+% \def\dosavepositionplus    #1#2#3#4#5#6#7#8{\expanded{\ctxlua    {ptbs['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
 
-\def\replacepospxywhd#1#2#3#4#5#6#7% maybe better just numbers, less garbage collection
-  {\ctxlua{job.positions['#1']={\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax",%
-     "\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax"}}}
+\def\dolazysaveposition            #1#2#3#4{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4"}}}}
+\def\dolazysavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4","#5","#6","#7"}}}}
+\def\dolazysavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
+\def\dosaveposition                #1#2#3#4{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4"}}}}
+\def\dosavepositionwhd       #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4","#5","#6","#7"}}}}
+\def\dosavepositionplus    #1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
 
-\def\dolazysaveposition#1#2#3#4%
-  {\expanded{\writeutilitytua{jp['#1']={#2,"#3","#4"}}}}
+\def\doifpositionelse            #1{\ctxlua{jobpositions.doifelse('#1')}}
+\def\copyposition              #1#2{\ctxlua{jobpositions.copy('#1','#2')}}
+\def\replacepospxywhd#1#2#3#4#5#6#7{\ctxlua{jobpositions.replace('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
 
-\def\dolazysavepositionwhd#1#2#3#4#5#6#7%
-  {\expanded{\writeutilitytua{jp['#1']={#2,"#3","#4","#5","#6","#7"}}}}
-
-\def\dolazysavepositionplus#1#2#3#4#5#6#7#8%
-  {\expanded{\writeutilitytua{jp['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
-
-\def\dosaveposition#1#2#3#4% tag page x y
-  {\expanded{\immediatewriteutilitytua{jp['#1']={#2,"#3","#4"}}}}
-
-\def\dosavepositionwhd#1#2#3#4#5#6#7% tag page x y w h d
-  {\expanded{\immediatewriteutilitytua{jp['#1']={#2,"#3","#4","#5","#6","#7"}}}}
-
-\def\dosavepositionplus#1#2#3#4#5#6#7#8% tag page x y w h d list
-  {\expanded{\immediatewriteutilitytua{jp['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
-
-\def\MPp  #1{\ctxlua{job.MPp("#1")}}
-\def\MPx  #1{\ctxlua{job.MPx("#1")}}
-\def\MPy  #1{\ctxlua{job.MPy("#1")}}
-\def\MPw  #1{\ctxlua{job.MPw("#1")}}
-\def\MPh  #1{\ctxlua{job.MPh("#1")}}
-\def\MPd  #1{\ctxlua{job.MPd("#1")}}
-\def\MPxy #1{\ctxlua{job.MPxy("#1")}}
-\def\MPll #1{\ctxlua{job.MPll("#1")}}
-\def\MPlr #1{\ctxlua{job.MPlr("#1")}}
-\def\MPur #1{\ctxlua{job.MPur("#1")}}
-\def\MPul #1{\ctxlua{job.MPul("#1")}}
-\def\MPpos#1{\ctxlua{job.MPpos("#1")}}
-
-\def\MPplus#1#2#3{\ctxlua{job.MPplus("#1",#2,"#3")}}
-\def\MPrest  #1#2{\ctxlua{job.MPrest("#1","#2")}}
-
-\def\doifpositionelse#1{\ctxlua{cs.testcase(job.positions['#1'])}}
-
-\def\copyposition#1#2{\ctxlua{job.positions['#1']=job.positions['#2']}}
+\def\MPp       #1{\ctxlua{jobpositions.MPp("#1")}}
+\def\MPx       #1{\ctxlua{jobpositions.MPx("#1")}}
+\def\MPy       #1{\ctxlua{jobpositions.MPy("#1")}}
+\def\MPw       #1{\ctxlua{jobpositions.MPw("#1")}}
+\def\MPh       #1{\ctxlua{jobpositions.MPh("#1")}}
+\def\MPd       #1{\ctxlua{jobpositions.MPd("#1")}}
+\def\MPxy      #1{\ctxlua{jobpositions.MPxy("#1")}}
+\def\MPll      #1{\ctxlua{jobpositions.MPll("#1")}}
+\def\MPlr      #1{\ctxlua{jobpositions.MPlr("#1")}}
+\def\MPur      #1{\ctxlua{jobpositions.MPur("#1")}}
+\def\MPul      #1{\ctxlua{jobpositions.MPul("#1")}}
+\def\MPpos     #1{\ctxlua{jobpositions.MPpos("#1")}}
+\def\MPplus#1#2#3{\ctxlua{jobpositions.MPplus("#1",#2,"#3")}}
+\def\MPrest  #1#2{\ctxlua{jobpositions.MPrest("#1","#2")}}
 
 \protect \endinput

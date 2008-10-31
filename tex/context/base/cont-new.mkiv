@@ -11,13 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% \appendtoks
-%     \writestatus\m!lua{tfm over afm, wide fonts not yet supported}
-% \to \everystoptext
-
 % \ctxlua { fonts.define.method = 2 }  % normally 3
 
 \enablemode[mkiv] \setsystemmode{mkiv}
+
+% there is more code here that is wise, but first we need to split
+% more modules in mkii/mkiv
 
 % potential new defaults:
 
@@ -25,15 +24,62 @@
 
 \unprotect
 
-% \appendtoks
-%     \ctxlua{
-%         table.insert(input.stop_actions, function()
-%             tex.sprint(tex.ctxcatcodes,"\\immediatewriteutilitytua{end}")
-%             tex.sprint(tex.ctxcatcodes,"\\immediatewriteutilitytua{}")
-%             tex.sprint(tex.ctxcatcodes,"\\immediatewriteutilitytua{end of utility file}")
-%         end)
-%     }%
-% \to \everyopenutilities
+% we have to make an mkii/mkiv core-not
+
+\def\dochecknote % only to be called locally, some bools will become class-ones
+  {% for the moment no mixed text/endnotes modes, so we use
+   % \footnoteparameter and not \noteparameter (**)
+   \setnotedistance
+   \edef\notelocationasked{\noteparameter\c!location}% can be set
+   \count\currentnoteins\plusthousand
+   \expdoifcommonelse{\v!columns,\v!lastcolumn}\notelocationasked
+     {\chardef\clevernotes\plustwo}
+     {\expdoifinsetelse\v!firstcolumn\notelocationasked
+        {\chardef\clevernotes\plusone}%
+        {\chardef\clevernotes\zerocount}}%
+   \ifcase\clevernotes\relax
+     % notes not in column areas
+     \ifnum\noteparameter\c!n=\zerocount % no ifcase
+       \settextnotes
+       \scratchcounter\plusone
+     \else
+       \setcolumnnotes
+       \scratchcounter\noteparameter\c!n\relax
+       \divide\count\currentnoteins \scratchcounter
+     \fi
+     \global\endnotesfalse
+     \expdoifinsetelse\v!page\notelocationasked
+       {\expdoifinsetelse\v!high\notelocationasked
+          {\global\bottomnotesfalse}
+          {\global\bottomnotestrue}}
+       {\global\endnotestrue
+        \global\bottomnotestrue}% not: \postponenotes, else global
+    \else
+      % notes in column areas
+      \ifnum\@@kln=\zerocount % no ifcase / brrr dependency on \??kl
+        \scratchcounter\plusone
+      \else
+        \scratchcounter\footnoteparameter\c!n\relax % **
+      \fi
+      \global\endnotesfalse
+      \global\bottomnotestrue
+      \setclevernotes
+   \fi
+   \doifsomething{\noteparameter\c!factor}
+     {\ifnum\noteparameter\c!factor<\zerocount\else
+        \count\currentnoteins\noteparameter\c!factor
+      \fi}%
+   \ifnotelimit
+     \dimen\currentnoteins\noteparameter\c!height
+     \multiply\dimen\currentnoteins \scratchcounter
+   \fi
+   \ifendnotes
+     \dimen\currentnoteins\maxdimen
+     \count\currentnoteins\zerocount
+     \skip \currentnoteins\zeropoint
+   \fi}
+
+%
 
 \def\writestatus#1#2{\ctxlua{ctx.writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
@@ -50,22 +96,14 @@
    \global\@EA\let\csname\@@brk\string#1\endcsname\empty
    \global\@EA\let\csname\@@crk\string#1\endcsname\empty}
 
-% \appendtoks
-%     \ctxlua{garbagecollector.update()}%
-% \to \everyshipout
-
 %D Since this can be a showstopper, we report the path at the beginning
 %D as well as at the end of a run.
 
-\writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}
-\writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}
+% \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}
+% \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}
 
 %D For the moment we report some statistics. Later this will become an option,
 %D but for now we need this information.
-
-% \appendtoks
-%     \ctxlua{ctx.show_statistics()}%
-% \to \everygoodbye
 
 \def\nomkivstatistics{\ctxlua{function ctx.show_statistics() end}} % for taco
 
@@ -74,10 +112,6 @@
 \let\elapsedseconds \elapsedtime
 
 \resettimer
-
-% \appendtoks
-%     \resettimer
-% \to \everyjob
 
 %D For me.
 

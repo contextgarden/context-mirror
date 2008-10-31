@@ -30,6 +30,29 @@
 %    \ctxlua{commands.doreshapeframedbox(\number\luashapebox)}%
 %    \setbox\framebox\box\luashapebox}
 
-\def\doreshapeframedbox{\ctxlua{commands.doreshapeframedbox(\number\framebox)}}
+\def\doreshapeframedbox{\ifvbox\framebox\ctxlua{commands.doreshapeframedbox(\number\framebox)}\fi}
+
+% speedup, prelude to dedicated mkiv module
+
+\def\dobackgroundcolorbox
+  {\hbox{\faststartcolor[\framedbackgroundcolor]\dofilledbox\faststopcolor}}
+ %{\hbox{\doactivatecolor\framedbackgroundcolor\dofilledbox}}
+
+\def\docolorbox % can be more of \color[] -> \faststartcolor in mkiv
+  {\ifincolor
+     \edef\framedbackgroundcolor{\framedparameter\c!backgroundcolor}%
+     \ifx\framedbackgroundcolor\empty
+       \dophantombox
+     \else
+       \doifcolorelse\framedbackgroundcolor\dobackgroundcolorbox\dophantombox
+     \fi
+   \else
+     \dophantombox
+   \fi}
+
+\def\docolorframebox
+  {\doifcolor\framedforegroundcolor
+     {\setbox\framebox\hbox{\faststartcolor[\framedforegroundcolor]\box\framebox\faststopcolor}}}
+    %{\setbox\framebox\hbox{\doactivatecolor\framedforegroundcolor\box\framebox}}}
 
 \protect \endinput

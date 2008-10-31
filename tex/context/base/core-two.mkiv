@@ -15,69 +15,30 @@
 
 \registerctxluafile{core-two}{1.001}
 
-\appendtoks
-    \immediatewriteutilitytua{if not job.twopass then job.twopass = { } end}%
-    \immediatewriteutilitytua{local tp = job.twopass}%
-\to \everyopenutilities
-
 %D I'm not that sure if this behaves exactly like mkii. This needs a cleanup.
 
-% \def\immediatesavetwopassdata   #1#2#3{\immediatewriteutilitycommand{\twopassentry{#1}{#2}{#3}}}
-% \def\savetwopassdata            #1#2#3{\writeutilitycommand{\twopassentry{#1}{#2}{#3}}}
-% \def\lazysavetwopassdata        #1#2#3{\expanded{\writeutilitycommand{\noexpand\twopassentry{#1}{#2}{#3}}}} % expanded !
-% \def\savetaggedtwopassdata    #1#2#3#4{\immediatewriteutilitycommand{\twopassentry{#1}{#2}{#3::#4}}}
-% \def\lazysavetaggedtwopassdata#1#2#3#4{\expanded{\writeutilitycommand{\noexpand\twopassentry{#1}{#2}{#3::#4}}}} % expanded !
-
-\def\immediatesavetwopassdata        #1#2#3{\expanded{\immediatewriteutilitytua{ti(tp['#1'],"#3")}}}
-\def\savetwopassdata                 #1#2#3{\expanded{\writeutilitytua         {ti(tp['#1'],"#3")}}}
-\def\lazysavetwopassdata             #1#2#3{\expanded{\writeutilitytua         {ti(tp['#1'],"#3")}}}
-\def\savetaggedtwopassdata         #1#2#3#4{\expanded{\immediatewriteutilitytua{tp['#1']['#3']="#4"}}}
-\def\lazysavetaggedtwopassdata     #1#2#3#4{\expanded{\writeutilitytua         {tp['#1']['#3']="#4"}}}
+\def\immediatesavetwopassdata   #1#2#3{\expanded{\ctxlua    {jobpasses.save('#1',"#3")}}}
+\def\savetwopassdata            #1#2#3{\expanded{\ctxlatetua{jobpasses.save('#1',"#3")}}}
+\def\lazysavetwopassdata        #1#2#3{\expanded{\ctxlatelua{jobpasses.save('#1',"#3")}}}
+\def\savetaggedtwopassdata    #1#2#3#4{\expanded{\ctxlua    {jobpasses.savetagged('#1','#3',"#4")}}}
+\def\lazysavetaggedtwopassdata#1#2#3#4{\expanded{\ctxlatelua{jobpasses.savetagged('#1','#3',"#4")}}}
 
 % temp hack: needs a proper \starteverytimeluacode
 
-\def\dodefinetwopasslist#1%
-  {\ctxlua{job.definetwopassdata('#1')}%
-   \immediatewriteutilitytua{job.definetwopassdata('#1')}}
+\def\testtwopassdata{\ifx\twopassdata\empty\twopassdatafoundfalse\else\twopassdatafoundtrue\fi}
 
-\def\definetwopasslist#1%
-  {\dodefinetwopasslist{#1}%
-   \doglobal\addtocommalist{#1}\alltwopasslists}
+% todo: move the edef to lua
 
-\appendtoks
-    \processcommacommand[\alltwopasslists]\dodefinetwopasslist
-    \globallet\alltwopasslists\empty
-\to \everyopenutilities
+\def\definetwopasslist        #1{\ctxlua{jobpasses.define('#1')}}
+\def\gettwopassdata           #1{\edef\twopassdata{\ctxlua{jobpasses.get("#1")}}\testtwopassdata}
+\def\checktwopassdata         #1{\edef\twopassdata{\ctxlua{jobpasses.check("#1")}}\testtwopassdata}
+\def\findtwopassdata        #1#2{\edef\twopassdata{\ctxlua{jobpasses.find("#1","#2")}}\testtwopassdata}
+\def\getfirsttwopassdata      #1{\edef\twopassdata{\ctxlua{jobpasses.first("#1")}}\testtwopassdata}
+\def\getlasttwopassdata       #1{\edef\twopassdata{\ctxlua{jobpasses.last("#1")}}\edef\noftwopassitems{\ctxlua{jobpasses.count("#1")}}\testtwopassdata}
+\def\getnamedtwopassdatalist#1#2{\edef#1{\ctxlua{jobpasses.list("#2")}}}
+\def\gettwopassdatalist       #1{\edef\twopassdatalist{\ctxlua{jobpasses.list("#1")}}}
+\def\doifelseintwopassdata  #1#2{\ctxlua{jobpasses.doifinlistelse("#1","#2")}}
 
-\def\testtwopassdata
-  {\ifx\twopassdata\empty\twopassdatafoundfalse\else\twopassdatafoundtrue\fi}
-
-\def\gettwopassdata#1%
-  {\edef\twopassdata{\ctxlua{job.gettwopassdata("#1")}}\testtwopassdata}
-
-\def\checktwopassdata#1%
-  {\edef\twopassdata{\ctxlua{job.checktwopassdata("#1")}}\testtwopassdata}
-
-\def\findtwopassdata#1#2%
-  {\edef\twopassdata{\ctxlua{job.findtwopassdata("#1","#2")}}\testtwopassdata}
-
-\let\getfirsttwopassdata\checktwopassdata
-
-\def\getlasttwopassdata#1%
-  {\edef\noftwopassitems{\ctxlua{job.noftwopassitems("#1")}}%
-   \edef\twopassdata    {\ctxlua{job.getlasttwopassdata("#1")}}%
-   \testtwopassdata}
-
-\def\getfromtwopassdata#1#2%
-  {\edef\twopassdata{\ctxlua{job.getfromtwopassdata("#1",#2)}}\testtwopassdata}
-
-\def\gettwopassdatalist
-  {\getnamedtwopassdatalist\twopassdatalist}
-
-\def\getnamedtwopassdatalist#1#2% \cs tag
-  {\edef#1{\ctxlua{job.twopassdatalist("#2")}}}
-
-\def\doifelseintwopassdata#1#2% tag dat
-  {\ctxlua{job.doifelseintwopassdata("#1","#2"))}}
+\let\getfromtwopassdata\findtwopassdata
 
 \protect \endinput

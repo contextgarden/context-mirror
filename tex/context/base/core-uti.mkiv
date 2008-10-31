@@ -35,70 +35,10 @@
 %D \long\edef\luaescapestring#1{\!!bs#1\!!es}
 %D \stoptyping
 
-%D Next we implement a few helpers:
-
-\newwrite\utility@tua
-
-\prependtoks
-    \def         \writeutilitytua          {\write\utility@tua}
-    \def\immediatewriteutilitytua{\immediate\write\utility@tua}
-\to \everyjob
-
-\let         \writeutilitytua\gobbleoneargument
-\let\immediatewriteutilitytua\gobbleoneargument
-
-\appendtoks
-    \immediate\openout\utility@tua=\jobname.tua
-    \immediatewriteutilitytua{-- file\space\space\space: \jobname}%
-    \immediatewriteutilitytua{-- format\space:           \contextformat}%
-    \immediatewriteutilitytua{-- stamp\space\space:      \contextversion}%
-    \immediatewriteutilitytua{-- escape\space:           \!!bs\space...\space\!!es}%
-    \immediatewriteutilitytua{-- version:                \utilityversion}%
-    \immediatewriteutilitytua{}%
-    \immediatewriteutilitytua{-- begin of utility file}%
-    \immediatewriteutilitytua{}%
-    \immediatewriteutilitytua{if job and job.version and not job.version == "\utilityversion" then return end}%
-    \immediatewriteutilitytua{if not job then job = { } end}%
-    \immediatewriteutilitytua{job.version = "\utilityversion"}%
-    \immediatewriteutilitytua{local ti = table.insert}%
-\to \everyopenutilities
-
-\appendtoks
-    %\immediatewriteutilitytua{}%
-    %\immediatewriteutilitytua{-- end of utility file}%
-    %\immediate\closeout\utility@tua
-\to \everycloseutilities
-
-% The next file can be in lua or luc format:
-
-\appendtoks
-    \ctxlua { do
-        if not job then job = { } end
-        job.version = "\utilityversion"
-        local settings = io.loaddata("\jobname.tuc")
-        if settings then
-      % if settings and settings:find("\letterpercent -\letterpercent -\letterpercent s*end of utility file\letterpercent s*$") then
-            settings = loadstring(settings)
-            if settings then
-                settings()
-            else
-                logs.report("utilityfile","invalid, not loaded")
-            end
-        else
-            logs.report("utilityfile","not present")
-        end
-    end}%
-% \to \everyjob
-\to \everystarttext
-
 % variables
 
-\appendtoks
-    \immediatewriteutilitytua{if not job.variables then job.variables = { } end}%
-\to \everyopenutilities
-
 \def\savecurrentvalue#1#2%
-  {\immediatewriteutilitytua{job.initializevariable("\strippedcsname#1","#2")}}
+  {\ctxlua{jobvariables.save("\strippedcsname#1","#2")}}
 
 % temp
 
@@ -117,5 +57,21 @@
 \appendtoks
     \ctxlua{nodes.cleanup_reserved()}%
 \to \everydump
+
+% new
+
+% this loads and also sets the saving
+
+\appendtoks
+    \ctxlua {
+        job.comment(
+            "file: \jobname",
+            "format: \contextformat",
+            "stamp: \contextversion",
+            "escape: \!!bs\space...\space\!!es"
+        )
+        job.initialize("\jobname.tuc","\jobname.tua")
+    }%
+\to \everystarttext
 
 \protect \endinput

@@ -22,15 +22,17 @@
 \def\mkdisableregime  {\ctxlua{regimes.disable()}}
 \def\mkshowregime   #1{\ctxlua{regimes.context.show("#1")}}
 
-\appendtoks
-  \pushmacro\currentregime
-  \disableregime
-\to \everystartreadingfile
+% hm, this kind of disables regimes .. too tricky
+%
+% \appendtoks
+%   \pushmacro\currentregime
+%   \disableregime
+% \to \everystartreadingfile
 
-\appendtoks
-  \popmacro\currentregime
-  \enableregime[\currentregime]%
-\to \everystopreadingfile
+% \appendtoks
+%   \popmacro\currentregime
+%   \enableregime[\currentregime]%
+% \to \everystopreadingfile
 
 \protect \endinput
 

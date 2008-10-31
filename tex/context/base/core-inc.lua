@@ -200,31 +200,36 @@ end
 function figures.registersuffix (suffix, target) register('list',   target,suffix ) end
 function figures.registerpattern(pattern,target) register('pattern',target,pattern) end
 
-local pathhash = { }
+local last_locationset, last_pathlist = last_locationset or nil, last_pathlist or nil
 
 function figures.setpaths(locationset,pathlist)
-    local ph, iv, t = pathhash[locationset], interfaces.variables, nil
-    if ph then
-        ph = ph[pathlist]
-        if ph then
-            figures.paths = ph
-            return
+    if last_locationset == locationset and last_pathlist == pathlist then
+        -- this function can be called each graphic so we provide this optimization
+        return
+    end
+    local iv, t, h = interfaces.variables, figures.paths, locationset:tohash()
+    if last_locationset ~= locationset then
+        -- change == reset (actually, a 'reset' would indeed reset
+        if h[iv["local"]] then
+            t = table.fastcopy(figures.localpaths or { })
+        else
+            t = { }
         end
+        figures.defaultsearch = h[iv["default"]]
+        last_locationset = locationset
     end
-    if not ph then
-        ph = { }
-        pathhash[locationset] = ph
-    end
-    local h = locationset:tohash()
-    t = (h[iv["local"]] and figures.localpaths) or { }
     if h[iv["global"]] then
         for s in pathlist:gmatch("([^, ]+)") do
-            t[#t+1] = s
+            if not table.contains(t,s) then
+                t[#t+1] = s
+            end
         end
     end
-    figures.defaultsearch = h[iv["default"]]
-    ph[pathlist] = t
-    figures.paths = t
+    figures.paths, last_pathlist = t, pathlist
+    if figures.trace then
+        logs.report("figures","locations: %s",last_locationset)
+        logs.report("figures","path list: %s",table.concat(figures.paths))
+    end
 end
 
 -- check conversions and handle it here
@@ -244,7 +249,8 @@ end
 --~ end
 
 function figures.hash(data)
-    return data.status.fullname .. "+".. (data.request.page or 1) -- img is still not perfect
+    return tostring(data.status.private) -- the <img object>
+--  return data.status.fullname .. "+".. (data.status.page or data.request.page or 1) -- img is still not perfect
 end
 
 -- interfacing to tex
@@ -345,8 +351,9 @@ do
                 local converter = figures.converters[format]
                 if converter then
                     local oldname = specification.fullname
+                    local newformat = "pdf" -- todo, other target than pdf
                     local newpath = file.dirname(oldname)
-                    local newbase = file.replacesuffix(file.basename(oldname),"pdf") -- todo
+                    local newbase = file.replacesuffix(file.basename(oldname),newformat)
                     local fc = specification.cache or figures.cachepaths.path
                     if fc and fc ~= "" and fc ~= "." then
                         newpath = fc
@@ -372,13 +379,17 @@ do
                         specification.prefix    = prefix
                         specification.subpath   = subpath
                         specification.converted = true
-                    elseif exists(oldname) then
+                        format = newformat
+                    elseif io.exists(oldname) then
                         specification.fullname  = newname
                         specification.converted = false
                     end
                 end
             end
-            specification.found = true -- ?
+            specification.found = validtypes[format]
+            if figures.trace then
+                logs.report("figures","format not supported: %s",format)
+            end
         else
             specification = { }
         end
@@ -394,7 +405,7 @@ do
         end
         local askedpath= file.dirname(askedname)
         local askedbase = file.basename(askedname)
-        local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname)
+        local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
         local askedcache = request.cache
         if askedformat ~= "" then
             askedformat = askedformat:lower()
@@ -623,7 +634,7 @@ function figures.existers.generic(askedname)
 end
 function figures.checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
-    local name, page, size = du.fullname or "unknown generic", dr.page, dr.size or "crop"
+    local name, page, size = du.fullname or "unknown generic", du.page or dr.page, dr.size or "crop"
     local hash = name .. "->" .. page .. "->" .. size
     local figure = figures.loaded[hash]
     if figure == nil then
@@ -795,7 +806,7 @@ function figures.bases.find(basename,askedlabel)
             end
         end
         t = false
-        if base[2] and base[3] then
+        if base[2] and base[3] then -- rlx:library
             for e, d, k in xml.elements(base[3],"/(*:library|figurelibrary)/*:figure/*:label") do
                 page = page + 1
                 if xml.content(d[k]) == askedlabel then
@@ -806,11 +817,10 @@ function figures.bases.find(basename,askedlabel)
                         page = page,
                     }
                     figures.bases.found[askedlabel] = t
-                    break
+                    return t
                 end
             end
         end
-        figures.bases.found[askedlabel] = t
     end
     return t
 end
@@ -837,6 +847,7 @@ function figures.identifiers.base(data)
             du.fullname = fbl.base
             ds.fullname = fbl.name
             ds.format = fbl.format
+            ds.page = fbl.page
             ds.status = 10
         end
     end

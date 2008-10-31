@@ -124,6 +124,8 @@ fonts.protrusions.vectors['pure'] = {
     [0x002D] = { 0, 1    }, -- hyphen
     [0x2013] = { 0, 0.50 }, -- endash
     [0x2014] = { 0, 0.33 }, -- emdash
+    [0x3001] = { 0, 1    }, -- ideographic comma      、
+    [0x3002] = { 0, 1    }, -- ideographic full stop  。
 
 }
 
@@ -146,6 +148,20 @@ fonts.protrusions.vectors['punctuation'] = {
     [0x2014] = { 0,    0.20 }, -- emdash
 
     -- todo: left and right quotes: .5 double, .7 single
+
+    [0x2039] = { 0.70, 0.70 }, -- left single guillemet   ‹
+    [0x203A] = { 0.70, 0.70 }, -- right single guillemet  ›
+    [0x00AB] = { 0.50, 0.50 }, -- left guillemet          «
+    [0x00BB] = { 0.50, 0.50 }, -- right guillemet         »
+
+    [0x2018] = { 0.70, 0.70 }, -- left single quotation mark             ‘
+    [0x2019] = { 0,    0.70 }, -- right single quotation mark            ’
+    [0x201A] = { 0.70, 0    }, -- single low-9 quotation mark            ,
+    [0x201B] = { 0.70, 0    }, -- single high-reversed-9 quotation mark  ‛
+    [0x201C] = { 0.50, 0.50 }, -- left double quotation mark             “
+    [0x201D] = { 0,    0.50 }, -- right double quotation mark            ”
+    [0x201E] = { 0.50, 0    }, -- double low-9 quotation mark            „
+    [0x201F] = { 0.50, 0    }, -- double high-reversed-9 quotation mark  ‟
 
 }
 

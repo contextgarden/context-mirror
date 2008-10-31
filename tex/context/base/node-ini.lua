@@ -17,6 +17,14 @@ nodes        = nodes or { }
 nodes.trace  = false
 nodes.ignore = nodes.ignore or false
 
+local hlist   = node.id('vlist')
+local vlist   = node.id('hlist')
+local glyph   = node.id('glyph')
+local disc    = node.id('disc')
+local mark    = node.id('mark')
+local glue    = node.id('glue')
+local whatsit = node.id('whatsit')
+
 -- handy helpers
 
 if node.protect_glyphs then
@@ -38,7 +46,6 @@ else do
     --                             X001 0100 = 20 = 0x14 = rightghost
 
 
-    local glyph       = node.id('glyph')
     local traverse_id = node.traverse_id
 
     function nodes.protect_glyphs(head)
@@ -197,8 +204,6 @@ end
 
 do
 
-    local hlist, vlist = node.id('hlist'), node.id('vlist')
-
     local function count(stack,flat)
         local n = 0
         while stack do
@@ -317,7 +322,6 @@ local tfmid = fonts.tfm.id
 
 do
 
-    local glyph = node.id('glyph')
     local has_attribute = node.has_attribute
     local traverse_id = node.traverse_id
 
@@ -457,37 +461,9 @@ function nodes.length(head)
     end
 end
 
---~ nodes.processors.actions = nodes.processors.actions or { }
-
---~ function nodes.processors.action(head)
---~     if head then
---~         node.slide(head)
---~         local done = false
---~         local actions = nodes.processors.actions
---~         for i=1,#actions do
---~             local h, ok = actions[i](head)
---~             if ok then
---~                 head, done = h, true
---~             end
---~         end
---~         if done then
---~             return head
---~         else
---~             return true
---~         end
---~     else
---~         return head
---~     end
---~ end
-
-lists         = lists         or { }
-lists.plugins = lists.plugins or { }
-
-chars         = chars         or { }
-chars.plugins = chars.plugins or { }
-
---~ words         = words         or { }
---~ words.plugins = words.plugins or { }
+lists = lists or { }
+chars = chars or { }
+words = words or { } -- not used yet
 
 callbacks.trace = false
 
@@ -499,22 +475,34 @@ do
     local hyphenate, ligaturing, kerning = lang.hyphenate, node.ligaturing, node.kerning
 
     function kernel.hyphenation(head,tail) -- lang.hyphenate returns done
-        starttiming(kernel)
-        local done = hyphenate(head,tail)
-        stoptiming(kernel)
-        return head, tail, done
+        if head == tail then
+            return head, tail, false
+        else
+            starttiming(kernel)
+            local done = head ~= tail and hyphenate(head,tail)
+            stoptiming(kernel)
+            return head, tail, done
+        end
     end
     function kernel.ligaturing(head,tail) -- node.ligaturing returns head,tail,done
-        starttiming(kernel)
-        local head, tail, done = ligaturing(head,tail)
-        stoptiming(kernel)
-        return head, tail, done
+        if head == tail then
+            return head, tail, false
+        else
+            starttiming(kernel)
+            local head, tail, done = ligaturing(head,tail)
+            stoptiming(kernel)
+            return head, tail, done
+        end
     end
     function kernel.kerning(head,tail) -- node.kerning returns head,tail,done
-        starttiming(kernel)
-        local head, tail, done = kerning(head,tail)
-        stoptiming(kernel)
-        return head, tail, done
+        if head == tail then
+            return head, tail, false
+        else
+            starttiming(kernel)
+            local head, tail, done = kerning(head,tail)
+            stoptiming(kernel)
+            return head, tail, done
+        end
     end
 
 end
@@ -523,47 +511,154 @@ callback.register('hyphenate' , function(head,tail) return tail end)
 callback.register('ligaturing', function(head,tail) return tail end)
 callback.register('kerning'   , function(head,tail) return tail end)
 
--- used to be loop, this is faster, called often; todo: shift up tail or even better,
--- handle tail everywhere; for the moment we're safe
+nodes.tasks      = nodes.tasks      or { }
+nodes.tasks.data = nodes.tasks.data or { }
 
-do
+function nodes.tasks.new(name,list)
+    local tasklist = sequencer.reset()
+    nodes.tasks.data[name] = { list = tasklist, runner = false }
+    for _, task in ipairs(list) do
+        sequencer.appendgroup(tasklist,task)
+    end
+end
 
-    local charplugins, listplugins = chars.plugins, lists.plugins
+function nodes.tasks.appendaction(name,group,action,where,kind)
+    local data = nodes.tasks.data[name]
+    sequencer.appendaction(data.list,group,action,where,kind)
+    data.runner = false
+end
 
-    -- todo: move, so that we can use locals (also: n.p_c = function(...) ... end so that we can redefine
-    -- todo: normalize calls so that we can use a for loop and extent this list
+function nodes.tasks.prependaction(name,group,action,where,kind)
+    local data = nodes.tasks.data[name]
+    sequencer.prependaction(data.list,group,action,where,kind)
+    data.runner = false
+end
 
-    if not nodes.normalize_fonts then
-        function nodes.normalize_fonts(head)
-            return head, false
+function nodes.tasks.removeaction(name,group,action)
+    local data = nodes.tasks.data[name]
+    sequencer.removeaction(data.list,group,action)
+    data.runner = false
+end
+
+function nodes.tasks.showactions(name,group,action,where,kind)
+    local data = nodes.tasks.data[name]
+    logs.report("nodes","task %s, list:\n%s",name,sequencer.nodeprocessor(data.list))
+end
+
+function nodes.tasks.actions(name)
+    local data = nodes.tasks.data[name]
+    return function(head,tail)
+        local runner = data.runner
+        if not runner then
+            if nodes.trace_tasks then
+                logs.report("nodes","creating task runner '%s'",name)
+            end
+            runner = sequencer.compile(data.list,sequencer.nodeprocessor)
+            data.runner = runner
+        end
+        return runner(head,tail)
+    end
+end
+
+nodes.tasks.new (
+    "processors",
+    {
+        "before",      -- for users
+        "normalizers",
+        "characters",
+        "words",
+        "fonts",
+        "lists",
+        "after",       -- for users
+    }
+)
+
+-- these definitions will move
+
+nodes.tasks.appendaction("processors", "normalizers", "nodes.normalize_fonts", nil)
+nodes.tasks.appendaction("processors", "characters", "chars.handle_mirroring", nil, "notail")
+nodes.tasks.appendaction("processors", "characters", "chars.handle_casing", nil, "notail")
+nodes.tasks.appendaction("processors", "characters", "chars.handle_breakpoints", nil, "notail")
+nodes.tasks.appendaction("processors", "words", "kernel.hyphenation", nil)
+nodes.tasks.appendaction("processors", "words", "languages.words.check", nil, "notail")
+nodes.tasks.appendaction("processors", "fonts", "nodes.process_characters", nil, "notail")
+nodes.tasks.appendaction("processors", "fonts", "nodes.protect_glyphs", nil, "nohead")
+nodes.tasks.appendaction("processors", "fonts", "kernel.ligaturing", nil)
+nodes.tasks.appendaction("processors", "fonts", "kernel.kerning", nil)
+nodes.tasks.appendaction("processors", "lists", "lists.handle_spacing", nil, "notail")
+nodes.tasks.appendaction("processors", "lists", "lists.handle_kerning", nil, "notail")
+
+
+local free = node.free
+
+local function cleanup_page(head) -- rough
+    local prev, start = nil, head
+    while start do
+        local id, nx = start.id, start.next
+        if id == disc or id == mark then
+            if prev then
+                prev.next = nx
+            end
+            if start == head then
+                head = nx
+            end
+            local tmp = start
+            start = nx
+            free(tmp)
+        elseif id == hlist or id == vlist then
+            local sl = start.list
+            if sl then
+                start.list = cleanup_page(sl)
+            end
+            prev, start = start, nx
+        else
+            prev, start = start, nx
         end
     end
-
-    nodes.processors.actions = function(head,tail) -- removed: if head ... end
-        local ok, done = false, false
-        head,       ok = nodes.normalize_fonts(head)                ; done = done or ok
-        head,       ok = nodes.process_attributes(head,charplugins) ; done = done or ok -- attribute driven
-        head, tail, ok = kernel.hyphenation      (head,tail)        ; done = done or ok -- language driven
-        head,       ok = languages.words.check   (head,tail)        ; done = done or ok -- language driven
-        head,       ok = nodes.process_characters(head)             ; done = done or ok -- font driven
-                    ok = nodes.protect_glyphs    (head)             ; done = done or ok -- turn chars into glyphs
-        head, tail, ok = kernel.ligaturing       (head,tail)        ; done = done or ok -- normal ligaturing routine / needed for base mode
-        head, tail, ok = kernel.kerning          (head,tail)        ; done = done or ok -- normal kerning routine    / needed for base mode
-        head,       ok = nodes.process_attributes(head,listplugins) ; done = done or ok -- attribute driven
-        return head, done
-    end
-
+    return head
 end
+
+nodes.cleanup_page_first = false
+
+function nodes.cleanup_page(head)
+    if nodes.cleanup_page_first then
+        head = cleanup_page(head)
+    end
+    return head, false
+end
+
+nodes.tasks.new (
+    "shipouts",
+    {
+        "before",      -- for users
+        "normalizers",
+        "finishers",
+        "after",       -- for users
+    }
+)
+
+nodes.tasks.appendaction("shipouts", "normalizers", "nodes.cleanup_page", nil, "notail")
+nodes.tasks.appendaction("shipouts", "finishers", "shipouts.handle_color", nil, "notail")
+nodes.tasks.appendaction("shipouts", "finishers", "shipouts.handle_transparency", nil, "notail")
+nodes.tasks.appendaction("shipouts", "finishers", "shipouts.handle_overprint", nil, "notail")
+nodes.tasks.appendaction("shipouts", "finishers", "shipouts.handle_negative", nil, "notail")
+nodes.tasks.appendaction("shipouts", "finishers", "shipouts.handle_effect", nil, "notail")
+nodes.tasks.appendaction("shipouts", "finishers", "shipouts.handle_viewerlayer", nil, "notail")
+
+local actions = nodes.tasks.actions("shipouts")
+
+function nodes.process_page(head) -- problem, attr loaded before node, todo ...
+    return actions(head) -- no tail
+end
+
+-- or just: nodes.process_page = nodes.tasks.actions("shipouts")
+
 
 do -- remove these
 
-    local actions         = nodes.processors.actions
+    local actions         = nodes.tasks.actions("processors")
     local first_character = node.first_character
     local slide           = node.slide
-
-    local hlist           = node.id('vlist')
-    local vlist           = node.id('hlist')
-    local glyph           = node.id('glyph')
 
     local n = 0
 
@@ -601,7 +696,7 @@ do -- remove these
         if found then
             if callbacks.trace then
                 local before = nodes.count(head,true)
-                local head, done = actions(head,slide(head))
+                local head, tail, done = actions(head,slide(head))
                 local after = nodes.count(head,true)
                 if done then
                     tracer("pre_linebreak","changed",head,groupcode,before,after,true)
@@ -610,7 +705,7 @@ do -- remove these
                 end
                 return (done and head) or true
             else
-                local head, done = actions(head,slide(head))
+                local head, tail, done = actions(head,slide(head))
                 return (done and head) or true
             end
         else
@@ -627,7 +722,7 @@ do -- remove these
         if found then
             if callbacks.trace then
                 local before = nodes.count(head,true)
-                local head, done = actions(head,slide(head))
+                local head, tail, done = actions(head,slide(head))
                 local after = nodes.count(head,true)
                 if done then
                     tracer("hpack","changed",head,groupcode,before,after,true)
@@ -636,7 +731,7 @@ do -- remove these
                 end
                 return (done and head) or true
             else
-                local head, done = actions(head,slide(head))
+                local head, tail, done = actions(head,slide(head))
                 return (done and head) or true
             end
         end
@@ -783,7 +878,7 @@ do
         return ((type(k) == "number") and "["..k.."]") or k
     end
 
-    -- not ok yet:
+    -- not ok yet; this will become a module
 
     local function serialize(root,name,handle,depth,m)
         handle = handle or print
@@ -870,6 +965,34 @@ do
         tex.print("\\stoptyping")
     end
 
+    function nodes.list(head,n) -- name might change to nodes.type
+        if not n then
+            tex.print(tex.ctxcatcodes,"\\starttyping")
+        end
+        while head do
+            local id = head.id
+            tex.print(string.rep(" ",n or 0) .. tostring(head) .. "\n")
+            if id == hlist or id == vlist then
+                nodes.list(head.list,(n or 0)+1)
+            end
+            head = head.next
+        end
+        if not n then
+            tex.print("\\stoptyping")
+        end
+    end
+
+    function nodes.print(head,n)
+        while head do
+            local id = head.id
+            texio.write_nl(string.rep(" ",n or 0) .. tostring(head))
+            if id == hlist or id == vlist then
+                nodes.print(head.list,(n or 0)+1)
+            end
+            head = head.next
+        end
+    end
+
     function nodes.check_for_leaks(sparse)
         local l = { }
         local q = node.usedlist()
@@ -908,8 +1031,6 @@ function nodes.pack_list(head)
 end
 
 do
-
-    local glue, whatsit, hlist = node.id("glue"), node.id("whatsit"), node.id("hlist")
 
     function nodes.leftskip(n)
         while n do
@@ -975,8 +1096,6 @@ do
     nodes.tracers = { }
     nodes.tracers.characters = { }
 
-    local glyph, disc = node.id('glyph'), node.id('disc')
-
     local function collect(head,list,tag,n)
         n = n or 0
         local ok, fn = false, nil
@@ -988,8 +1107,8 @@ do
                     ok, fn = false, f
                 end
                 local c = head.char
-                local d = tfmid[f].characters[c]
-                local i = (d and d.description.index) or -1
+                local d = tfmid[f].descriptions[c]
+                local i = (d and d.index) or -1
                 if not ok then
                     ok = true
                     n = n + 1

@@ -64,8 +64,6 @@
 
 % Simple variant:
 %
-% \beginETEX \ifcsname
-%
 % \def\dohandlemathtoken#1%
 %   {\csname\@mt@
 %      \ifcsname\@mt@\mathcollection#1\endcsname
@@ -74,24 +72,6 @@
 %        \nomathcollection
 %      \fi\fi
 %    #1\endcsname}
-%
-% \endETEX
-%
-% \beginTEX
-%
-% \def\dohandlemathtoken#1%
-%   {\csname\@mt@
-%      \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
-%        \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
-%        \else
-%          \nomathcollection
-%        \fi
-%      \else
-%        \mathcollection
-%      \fi
-%    #1\endcsname}
-%
-% \endTEX
 
 %D Because a command can have a different meaning in math
 %D and in text mode, we provide a selector. We also provide
@@ -104,8 +84,6 @@
 \def\textcharacter\dohandlecommand % better \dohandletexttoken
 
 % More clever layout:
-%
-% \beginETEX \ifcsname
 %
 % \def\dohandlemathtoken#1%
 %   {\csname
@@ -128,40 +106,7 @@
 %      \fi
 %    #1\endcsname}
 %
-% \endETEX
-%
-% \beginTEX
-%
-% \def\dohandlemathtoken#1%
-%   {\csname
-%      \ifmmode
-%        \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
-%          \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
-%            \@EA\ifx\csname\characterencoding#1\endcsname\relax
-%              \nocharacterencoding
-%            \else
-%              \characterencoding
-%            \fi
-%          \else
-%            \@mt@\nomathcollection
-%          \fi
-%        \else
-%          \@mt@\mathcollection
-%        \fi
-%      \else
-%        \@EA\ifx\csname\characterencoding#1\endcsname\relax
-%          \nocharacterencoding
-%        \else
-%          \characterencoding
-%        \fi
-%      \fi
-%    #1\endcsname}
-%
-% \endTEX
-%
 % fallback to math when in text mode (handy for unicode vectors)
-
-\beginETEX
 
 \def\dohandlemathtoken#1%
   {\csname
@@ -190,56 +135,11 @@
      \fi
    #1\endcsname}
 
-\endETEX
-
-\beginTEX
-
-\def\dohandlemathtoken#1%
-  {\csname
-     \ifmmode
-       \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
-         \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
-           \@EA\ifx\csname\characterencoding#1\endcsname\relax
-             \nocharacterencoding
-           \else
-             \characterencoding
-           \fi
-         \else
-           \@mt@\nomathcollection
-         \fi
-       \else
-         \@mt@\mathcollection
-       \fi
-     \else
-       \@EA\ifx\csname\characterencoding#1\endcsname\relax
-         \@EA\ifx\csname\nocharacterencoding#1\endcsname\relax
-           \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
-             \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
-               \nocharacterencoding
-             \else
-                \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\nomathcollection
-             \fi
-           \else
-             \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\mathcollection
-          \fi
-         \else
-           \nocharacterencoding
-         \fi
-       \else
-         \characterencoding
-       \fi
-     \fi
-   #1\endcsname}
-
-\endTEX
-
 %D Now we redefine the text encoding handler.
 
 %D A better fallback:
 
 % Just ETEX which is the default nowadays.
-
-\beginETEX \ifcsname
 
 \def\dohandlemathtoken#1%
   {\csname
@@ -272,8 +172,6 @@
      \fi
    #1\endcsname}
 
-\endETEX
-
 \let\dohandlecommand\dohandlemathtoken
 
 \def\definefamilysynonym
@@ -291,8 +189,6 @@
 \def\purefamily   #1{\csname    \truefamily{#1}\mathsubfamily\s!fam\endcsname}
 \def\purefamilyhex#1{\csname hex\truefamily{#1}\mathsubfamily\s!fam\endcsname}
 
-\beginETEX \ifcsname
-
 \def\truefamily#1%
   {\ifcsname\@mf@\mathcollection#1\endcsname
      \@EA\truefamily\csname\@mf@\mathcollection#1\endcsname
@@ -303,27 +199,6 @@
    \else
      #1%
    \fi\fi\fi}
-
-\endETEX
-
-\beginTEX
-
-\def\truefamily#1%
-  {\@EA\ifx\csname\@mf@\mathcollection#1\endcsname\relax
-     \@EA\ifx\csname\@mf@#1\endcsname\relax
-       \@EA\ifx\csname\@mf@\nomathcollection#1\endcsname\relax
-         #1%
-       \else
-         \@EA\truefamily\csname\@mf@\nomathcollection#1\endcsname
-       \fi
-     \else
-       \@EA\truefamily\csname\@mf@#1\endcsname
-     \fi
-   \else
-     \@EA\truefamily\csname\@mf@\mathcollection#1\endcsname
-   \fi}
-
-\endTEX
 
 \newif\ifdynamicmathfamilies \dynamicmathfamiliestrue % true per 2003.11.25; needed for mixed bold math
 

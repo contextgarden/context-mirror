@@ -66,13 +66,27 @@
     \startformula\MMLhack\xmlfirst{#1}{/mml:math}\stopformula
 \stopxmlsetups
 
-\ifx\MMLleft \undefined \let\MMLleft \firstofoneargument \fi
-\ifx\MMLright\undefined \let\MMLright\firstofoneargument \fi
+\ifx\MMLleft  \undefined \let\MMLleft  \firstofoneargument \fi
+\ifx\MMLright \undefined \let\MMLright \firstofoneargument \fi
+\ifx\MMLmiddle\undefined \let\MMLmiddle\firstofoneargument \fi
 
 \setfalse\mmlignoredelimiter
 
-\def\mmlleftdelimiter #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft #1}\fi}
-\def\mmlrightdelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright#1}\fi}
+\def\mmlleftdelimiter  #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft  #1}\fi}
+\def\mmlrightdelimiter #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright #1}\fi}
+\def\mmlmiddledelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLmiddle#1}\fi}
+
+\def\mmlchar#1{\char#1 } % used in lua code
+
+% \newcount\delimiternesting \appendtoks \delimiternesting\zerocount \to \everymathematics
+
+% \def\mmlleftdelimiter  #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{%
+% \advance\delimiternesting\plusone \MMLleft  #1}\fi}
+% \def\mmlrightdelimiter #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{%
+% \advance\delimiternesting\plusone \MMLright#1}\fi}
+% \def\mmlmiddledelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{%
+% \ifcase\delimiternesting\MMLleft\else\MMLmiddle\fi#1}\fi}
+
 
 %D Remark: from now on this is a module and no longer an xtag
 %D filter. There is an intermediate cleaner module but it has
@@ -1624,8 +1638,14 @@
 
 % semantic mapping elements
 
+\setupMMLappearance[semantics][\c!state=\v!start]
+
 \startxmlsetups mml:semantics
-    \xmlfirst{#1}{/(mml:annotation\string|apply)}
+    \doifelse\MMLsemanticsstate\v!start {
+        \xmlall{#1}{/mml:annotation}
+    } {
+        \xmlall{#1}{/!mml:annotation}
+    }
 \stopxmlsetups
 
 \usemodule[x][calcmath]
@@ -1640,7 +1660,7 @@
         \xmldoifelse {#1} {[oneof(@encoding,'calcmath','cm')]} {
             \calcmath{\xmlflush{#1}}
         } {
-            % unsupported
+            \xmlall{#1}{../!mml:annotation}
         }
     }
 \stopxmlsetups
@@ -1836,8 +1856,9 @@
 \stopxmlsetups
 
 \startxmlsetups mml:mfenced % {} around separator is needed for spacing
-    \def\MMLleft {\left }% weird
-    \def\MMLright{\right}
+    \def\MMLleft  {\left }% weird
+    \def\MMLright {\right}
+    \def\MMLmiddle{\middle}
     \ctxlua{lxml.mml.mfenced("#1","/*")}
 \stopxmlsetups
 
@@ -2028,8 +2049,9 @@
 %         \ifcase\xmlcount{#1}{/mml:mo}\relax
 %             \xmlflush{#1}
 %         \else % no \let
-%             \def\MMLleft {\left }
-%             \def\MMLright{\right}
+%             \def\MMLleft  {\left }
+%             \def\MMLright {\right}
+%             \def\MMLmiddle{\middle}
 %             \enabledelimiter
 %             \checkdelimiters{\xmlall{#1}{/mml:mo}}
 %             \fakeleftdelimiter
@@ -2046,8 +2068,9 @@
     \begingroup
         \ifnum\xmlcount{#1}{/mml:mo}=\plustwo
             \xmldoifelse {#1} {/mml:mo[position()==1 or position()==\xmlnofelements{#1}]} {% we need a {}
-                \def\MMLleft {\left }
-                \def\MMLright{\right}
+                \def\MMLleft  {\left }
+                \def\MMLright {\right}
+                \def\MMLmiddle{\middle}
                 \enabledelimiter
                 \checkdelimiters{\xmlall{#1}{/mml:mo}}
                 \fakeleftdelimiter
@@ -2109,12 +2132,12 @@
 
 \startxmlsetups mml:mover
 %     \mathop {
-        \edef\mmlovertoken{\xmlraw{#1}{/mml:mo[position()==2]}}
+        \edef\mmlovertoken{\xmlraw{#1}{/mml:*[position()==2]}}
         \doifelse{\utfmathclass\mmlovertoken}{accent} {
             \edef\mmlovercommand{\utfmathcommand\mmlovertoken}
             \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
         } {
-            \edef\mmlbasetoken{\xmlraw{#1}{/mml:mo[position()==1]}}
+            \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[position()==1]}}
             \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
             \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
             \vbox {
@@ -2133,12 +2156,12 @@
 
 \startxmlsetups mml:munder
 %     \mathop {
-        \edef\mmlundertoken{\xmlraw{#1}{/mml:mo[position()==2]}}
+        \edef\mmlundertoken{\xmlraw{#1}{/mml:*[position()==2]}}
         \doifelse{\utfmathclass\mmlundertoken}{accent} {
             \edef\mmlundercommand{\utfmathcommand\mmlundertoken}
             \mmlexecuteifdefined\mmlundercommand\mathematics{\mmlfirst{#1}}
         } {
-            \edef\mmlbasetoken   {\xmlraw{#1}{/mml:mo[position()==1]}}
+            \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[position()==1]}}
             \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
             \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
             \vtop {
@@ -2156,7 +2179,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:munderover
-    \edef\mmlbasetoken{\xmlraw{#1}{/mml:mo[position()==1]}}
+    \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[position()==1]}}
     \edef\mmlbasecommand{\utfmathcommand\mmlbasetoken}
     \mmlexecuteifdefined\mmlbasecommand{\mathematics{\mmlfirst{#1}}}_{\mmlsecond{#1}}^{\mmlthird{#1}}
 \stopxmlsetups

@@ -731,14 +731,6 @@
 \def\writeMPgraph
   {\immediate\write\MPwrite{mpgraph:=\the\currentMPgraphic;}}
 
-\beginTEX
-
-\ifx \honorunexpanded \undefined \else % not really needed
-  \prependtoks \honorunexpanded \to \everyMPgraphic
-\fi
-
-\endTEX
-
 \def\startwritingMPgraphic
   {\blabelgroup
    \global\advance\nofMPgraphics \plusone
@@ -861,10 +853,10 @@
 %D   \setupbodyfont[plr]
 %D \stopMPenvironment
 %D
-%D \TeX: ± ¶
+%D \TeX: Â± Â¶
 %D
 %D \startMPcode
-%D draw btex MetaPost: ± ¶ etex scaled 5 ;
+%D draw btex MetaPost: Â± Â¶ etex scaled 5 ;
 %D \stopMPcode
 %D \stoptyping
 
@@ -1128,7 +1120,7 @@
 %D \stoptyping
 
 \def\includeMPgraphic#1%
-  {\executeifdefined{\@@MPG#1}}
+  {\executeifdefined{\@@MPG#1};} % ; if not found
 
 \def\enableincludeMPgraphics
   {\let\handleuseMPgraphic     \secondoftwoarguments
@@ -1845,6 +1837,8 @@
 \def\dodoMPdivtenD      #1#2#3{#1#2.#3}
 \def\dodoMPdivtenE        #1#2{#1.#2}
 \def\dodoMPdivtenF          #1{.#1}
+
+% if we assume etex ... \def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
 
 %D \macros
 %D   {startMPclip,grabMPclippath}

@@ -355,6 +355,12 @@ probably use a hash instead of a one-element table.</p>
 <p>Goodie:s</p>
 --ldx]]--
 
-function number.percent(n) return (n/100) * tex.hsize:todimen() end
+function number.percent(n) -- will be cleaned up once luatex 0.30 is out
+    local hsize = tex.hsize
+    if type(hsize) == "string" then
+        hsize = hsize:todimen()
+    end
+    return (n/100) * hsize
+end
 
 number["%"] = number.percent

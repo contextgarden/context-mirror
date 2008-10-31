@@ -307,15 +307,14 @@
 \def\decrementpagenumber{\getvalue{\??pn-\@@pnstate}}
 \def\incrementpagenumber{\getvalue{\??pn+\@@pnstate}}
 
-\letvalue{\??pn-\v!start   }\dodecrementpagenumber
-\letvalue{\??pn-\v!none    }\dodecrementpagenumber
-\letvalue{\??pn-\v!empty    }\dodecrementpagenumber
+\letvalue{\??pn-\v!start}\dodecrementpagenumber
+\letvalue{\??pn-\v!none }\dodecrementpagenumber
+\letvalue{\??pn-\v!empty}\dodecrementpagenumber
 
-\letvalue{\??pn+\v!start   }\doincrementpagenumber
-\letvalue{\??pn+\v!none    }\doincrementpagenumber
-\setvalue{\??pn+\v!empty   }{\doincrementpagenumber
-                            \dosynchronizepagenumber}
-\letvalue{\??pn+\v!keep}\dosynchronizepagenumber
+\letvalue{\??pn+\v!start}\doincrementpagenumber
+\letvalue{\??pn+\v!none }\doincrementpagenumber
+\setvalue{\??pn+\v!empty}{\doincrementpagenumber\dosynchronizepagenumber}
+\letvalue{\??pn+\v!keep }\dosynchronizepagenumber
 
 % so far
 
@@ -412,23 +411,21 @@
 
 \let\stelnummeringin\setuppagenumbering
 
-% listig: hangt af van \@@kolijst
-
-% erg fout
+% wrong
 %
 % \def\preparepageprefix#1%
 %   {\def\dopreparepageprefix##1%
-%      {\doifvalue{#1##1\c!nummer}{\v!ja}
-%         {\setvalue{#1\getvalue{\??by##1}\c!nummer}{\v!ja}}}%
+%      {\doifvalue{#1##1\c!number}{\v!yes}
+%         {\setvalue{#1\getvalue{\??by##1}\c!nummer}{\v!yes}}}%
 %    \processcommacommand[\@@kolijst]\dopreparepageprefix}
 %
-% nog fouter
+% more wrong
 %
 % \def\preparepageprefix#1%
 %   {\def\dopreparepageprefix##1%
-%      {\doifelsevalue{#1##1\v!nummer}{\v!ja}                    % v
-%         {\setvalue{#1\getvalue{\??by##1}\v!nummer}{\v!ja}}     % v
-%         {\setvalue{#1\getvalue{\??by##1}\v!nummer}{\v!nee}}}%  % v
+%      {\doifelsevalue{#1##1\v!number}{\v!yes}                  % v
+%         {\setvalue{#1\getvalue{\??by##1}\v!nummer}{\v!yes}}   % v
+%         {\setvalue{#1\getvalue{\??by##1}\v!nummer}{\v!no}}}%  % v
 %    \processcommacommand[\@@kolijst]\dopreparepageprefix}
 %
 % best, beware, chapter (yes) can be followed by title (no)
@@ -483,9 +480,6 @@
   {\doif{\@@nmstate\@@pnstate}{\v!start\v!start}
      {{\doif\@@nmstrut\v!yes\strut
        \@@nmcommand{\doattributes\??nm\c!style\c!color{\completepagenumber}}}}}
-
-\def\@@plaatspaginascheider% still used ?
-  {\doif{\@@nmstate\@@pnstate}{\v!start\v!start}\@@nmtextseparator}
 
 \def\userfolio {\convertednumber[\s!page]}  %  naast realfolio
 \def\pagenumber{\userfolio}

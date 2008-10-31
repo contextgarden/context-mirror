@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['mtx-server'] = {
 scripts           = scripts           or { }
 scripts.webserver = scripts.webserver or { }
 
+dofile(input.find_file("l-url.lua"))
+
 local socket = require("socket")
 local format = string.format
 
@@ -153,17 +155,22 @@ end
 --~     return { content = filename }
 --~ end
 
-function handlers.lua(client,configuration,filename,suffix,iscontent)
-    local filename = file.join(configuration.root,configuration.scripts,filename)
+function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- filename will disappear, and become hashed.filename
+    local filename = file.join(configuration.scripts,filename)
+    if not input.aux.qualified_path(filename) then
+        filename = file.join(configuration.root,filename)
+    end
     -- todo: split url in components, see l-url; rather trivial
+    input.report("locating script: %s",filename)
     if lfs.isfile(filename) then
         local result = loadfile(filename)
+        input.report("return type: %s",type(result))
         if result and type(result) == "function" then
          -- result() should return a table { [type=,] [length=,] content= }, function or string
             result = result()
         end
         if result and type(result) == "function" then
-            result = result(configuration,filename) -- sedond argument will become query
+            result = result(configuration,filename,hashed) -- second argument will become query
         end
         if result and type(result) == "string" then
             result = { content = result }
@@ -172,7 +179,7 @@ function handlers.lua(client,configuration,filename,suffix,iscontent)
             if result.content then
                 local suffix = result.type or "text/html"
                 local action = handlers[suffix] or handlers.generic
-                action(client,configuration,filename,suffix,true) -- content
+                action(client,configuration,result.content,suffix,true) -- content
             elseif result.filename then
                 local suffix = file.extname(filename) or "text/html"
                 local action = handlers[suffix] or handlers.generic
@@ -235,7 +242,11 @@ function scripts.webserver.run(configuration)
         else
             local from = client:getpeername()
             input.report("request from: %s",tostring(from))
-            local filename = request:match("GET (.+) HTTP/.*$") -- todo: more clever
+            local fullurl = request:match("GET (.+) HTTP/.*$") -- todo: more clever
+fullurl = socket.url.unescape(fullurl)
+local hashed = url.hashed(fullurl)
+local query = url.query(hashed.query)
+filename = hashed.path
             if filename then
                 filename = socket.url.unescape(filename)
                 input.report("requested action: %s",filename)
@@ -250,7 +261,7 @@ function scripts.webserver.run(configuration)
                 local action = handlers[suffix] or handlers.generic
                 if action then
                     input.report("performing action: %s",filename)
-                    action(client,configuration,filename,suffix,false) -- filename and no content
+                    action(client,configuration,filename,suffix,false,hashed) -- filename and no content
                 else
                     errormessage(client,configuration,404)
                 end

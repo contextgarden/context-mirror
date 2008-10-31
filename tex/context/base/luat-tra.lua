@@ -4,6 +4,10 @@
 -- copyright: PRAGMA ADE / ConTeXt Development Team
 -- license  : see context related readme files
 
+-- the <anonymous> tag is kind of generic and used for functions that are not
+-- bound to a variable, like node.new, node.copy etc (contrary to for instance
+-- node.has_attribute which is bound to a has_attribute local variable in mkiv)
+
 if not versions then versions = { } end versions['luat-tra'] = 1.001
 
 debugger = { }
@@ -13,23 +17,27 @@ local names    = { }
 local getinfo  = debug.getinfo
 local format   = string.format
 
+-- one
+
 local function hook()
     local f = getinfo(2,"f").func
+    local n = getinfo(2,"Sn")
+--  if n.what == "C" and n.name then print (n.namewhat .. ': ' .. n.name) end
     if f then
-        if counters[f] == nil then
+        local cf = counters[f]
+        if cf == nil then
             counters[f] = 1
-            names[f] = getinfo(2,"Sn")
+            names[f] = n
         else
-            counters[f] = counters[f] + 1
+            counters[f] = cf + 1
         end
     end
 end
-
 local function getname(func)
     local n = names[func]
     if n then
         if n.what == "C" then
-            return n.name or '<luacall>'
+            return n.name or '<anonymous>'
         else
             -- source short_src linedefined what name namewhat nups func
             local name = n.name or n.namewhat or n.what
@@ -40,7 +48,6 @@ local function getname(func)
         return "unknown"
     end
 end
-
 function debugger.showstats(printer,threshold)
     printer   = printer or texio.write or print
     threshold = threshold or 0
@@ -60,6 +67,40 @@ function debugger.showstats(printer,threshold)
     end
     printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
 end
+
+-- two
+
+--~ local function hook()
+--~     local n = getinfo(2)
+--~     if n.what=="C" and not n.name then
+--~         local f = tostring(debug.traceback())
+--~         local cf = counters[f]
+--~         if cf == nil then
+--~             counters[f] = 1
+--~             names[f] = n
+--~         else
+--~             counters[f] = cf + 1
+--~         end
+--~     end
+--~ end
+--~ function debugger.showstats(printer,threshold)
+--~     printer   = printer or texio.write or print
+--~     threshold = threshold or 0
+--~     local total, grandtotal, functions = 0, 0, 0
+--~     printer("\n") -- ugly but ok
+--~  -- table.sort(counters)
+--~     for func, count in pairs(counters) do
+--~         if count > threshold then
+--~             printer(format("%8i  %s", count, func))
+--~             total = total + count
+--~         end
+--~         grandtotal = grandtotal + count
+--~         functions = functions + 1
+--~     end
+--~     printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
+--~ end
+
+-- rest
 
 function debugger.savestats(filename,threshold)
     local f = io.open(filename,'w')

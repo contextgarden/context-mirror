@@ -922,8 +922,10 @@
 
 \def\backgroundimage#1#2#3% repeat hsize vsize
   {\bgroup
+   \forgetall
    \dowithnextbox
-     {\ifcase#1\relax
+     {\offinterlineskip
+      \ifcase#1\relax
         % just one
       \else
         \scratchdimen#2\divide\scratchdimen\nextboxwd\count0\scratchdimen\advance\count0\plusone
@@ -940,7 +942,7 @@
       \fi
       \ifdim\nextboxwd>#2\relax
         \setbox\nextbox\hbox to #2{\hss\flushnextbox\hss}%
-        \setbox\scratchbox\hbox{\expanded{\clip[\c!width=#2,\c!height=\the\nextboxht]{\box\scratchbox}}}%
+        \setbox\nextbox\hbox{\expanded{\clip[\c!width=#2,\c!height=\the\nextboxht]{\flushnextbox}}}%
       \fi
       \ifdim\nextboxht>#3\relax
         \setbox\nextbox\vbox to #3{\vss\flushnextbox\vss}%

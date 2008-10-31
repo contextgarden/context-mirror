@@ -115,6 +115,12 @@ enddef ;
 %        & "&ddecimal urcorner currentpicture"
 %        & ");";
 
+%D Crap (experimental, not used):
+
+def forcemultipass =
+    % extra_endfig := extra_endfig & "special(" & ditto  & "%%MetaPostOption: multipass" & ditto & ");" ;
+enddef ;
+
 %D Colors:
 
 nocolormodel   := 1 ;
@@ -228,6 +234,7 @@ enddef ;
 def finishsavingdata =
     if savingdatadone :
         write EOF to data_mpd_file ;
+        savingdatadone := false ;
     fi ;
 enddef ;
 

@@ -35,29 +35,51 @@ vardef rawtextext(expr str) =
             _tt_n_ := _tt_n_ + 1 ;
             _tt_p_ := image (
                 draw _tt_p_ ;
-                draw unitsquare withprescript "tf" withpostscript decimal _tt_n_ & ":" & str ;
+                addto currentpicture doublepath unitsquare withprescript "tf" withpostscript decimal _tt_n_ & ":" & str ;
             ) ;
-            draw unitsquare ;
+            draw unitsquare withpen pencircle scaled 0 ;
         )
     else :
         image (
             _tt_n_ := _tt_n_ + 1 ;
-            draw unitsquare
+            addto currentpicture doublepath unitsquare
                 xscaled _tt_w_[_tt_n_]
                 yscaled (_tt_h_[_tt_n_] + _tt_d_[_tt_n_])
                 withprescript "ts"
                 withpostscript decimal _tt_n_ & ":" & str ;
-        )
+        ) shifted (0,-_tt_d_[_tt_n_])
     fi
 enddef ;
 
+pair laboff.d, laboff.dlft, laboff.drt ; % new positional suffixes
+pair laboff.origin, laboff.raw         ; % graph mess
+
+laboff.d    := laboff     ; labxf.d    := labxf     ; labyf.d    := labyf     ;
+laboff.dlft := laboff.lft ; labxf.dlft := labxf.lft ; labyf.dlft := labyf.lft ;
+laboff.drt  := laboff.rt  ; labxf.drt  := labxf.rt  ; labyf.drt  := labyf.rt  ;
+
+labtype        :=  0 ; labtype.lft  :=  1 ; labtype.rt   :=  2 ;
+labtype.bot    :=  3 ; labtype.top  :=  4 ; labtype.ulft :=  5 ;
+labtype.urt    :=  6 ; labtype.llft :=  7 ; labtype.lrt  :=  8 ;
+labtype.d      := 10 ; labtype.dlft := 11 ; labtype.drt  := 12 ;
+labtype.origin :=  0 ; labtype.raw  :=  0 ;
+
+laboff.origin = (infinity,infinity) ; labxf.origin := 0 ; labyf.origin := 0 ;
+laboff.raw    = (infinity,infinity) ; labxf.raw    := 0 ; labyf.raw    := 0 ;
+
+vardef thetextext@#(expr p,z) = % adapted copy of thelabel@
+    p
+        if (labtype@# >= 10) : shifted (0,ypart center p) fi
+        shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+enddef;
+
 vardef textext@#(expr txt) =
-  interim labeloffset := textextoffset ;
-  if string txt :
-    thelabel@#(rawtextext(txt),origin)
-  else :
-    thelabel@#(txt,origin)
-  fi
+    interim labeloffset := textextoffset ;
+    if string txt :
+        thetextext@#(rawtextext(txt),origin)
+    else :
+        thetextext@#(txt,origin)
+    fi
 enddef ;
 
 def circular_shade (expr p, n, ca, cb) =

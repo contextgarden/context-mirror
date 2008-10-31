@@ -89,7 +89,9 @@
      {\dowritetolist
         {\descriptionparameter\c!type:\descriptionparameter\c!list}
         {}{#2}{\currentdescription}}%
-   \rawreference\s!def{#1}{#2}} % brrr moet in #4
+   % beware: with footnotes #2 can be something messy but then #1 is
+   % empty anyway, so we have an extra safeguard
+   \doifsomething{#1}{\rawreference\s!def{#1}{#2}}} % brrr moet in #4
 
 \setvalue{@@description\v!left}%
   {\@@descriptionhang\@@descriptionleftpure\@@descriptionlefthang}
@@ -440,8 +442,8 @@
 \def\definedescription
   {\dodoubleemptywithset\dodefinedescription}
 
-\def\currentdescriptionnumber
-  {\csname\??dd\currentdescription\??dd\c!number\endcsname}
+\def\currentdescriptionnumber        {\csname\??dd\currentdescription\??dd\c!number\endcsname}
+\def\directcurrentdescriptionnumber#1{\csname\??dd                  #1\??dd\c!number\endcsname}
 
 \ifx\preparednumber\undefined \let\preparednumber\empty \fi
 
@@ -570,7 +572,7 @@
    \descriptionparameter\c!right}
 
 \setvalue{\??dd\s!set\v!sub\s!sub\s!sub\c!number}#1%
-  {\edef\@@descriptionnumber{\currentdescriptionnumber}%
+  {\edef\@@descriptionnumber{\directcurrentdescriptionnumber{#1}}%
    \setnumber[\v!sub\v!sub\v!sub\@@descriptionnumber]}
 
 \setvalue{\??dd\s!set\v!sub\s!sub\c!number}#1%
@@ -586,7 +588,7 @@
    \setnumber[\@@descriptionnumber]}
 
 \setvalue{\??dd\s!reset\v!sub\v!sub\v!sub\c!number}#1%
-  {\edef\@@descriptionnumber{\currentdescriptionnumber}%
+  {\edef\@@descriptionnumber{\directcurrentdescriptionnumber{#1}}%
    \resetnumber[\v!sub\v!sub\v!sub\@@descriptionnumber]}
 
 \setvalue{\??dd\s!reset\v!sub\v!sub\c!number}#1%
@@ -601,25 +603,25 @@
   {\getvalue{\??dd\s!reset\v!sub\c!number}{#1}%
    \resetnumber[\@@descriptionnumber]}
 
-\setvalue{\??dd\e!next\v!sub\v!sub\v!sub\c!number}[#1]%
-  {\edef\@@descriptionnumber{\currentdescriptionnumber}%
+\setvalue{\??dd\e!next\v!sub\v!sub\v!sub\c!number}#1#2%
+  {\edef\@@descriptionnumber{\directcurrentdescriptionnumber{#1}}%
    \incrementnumber[\v!sub\v!sub\v!sub\@@descriptionnumber]%
-   \rawreference\s!num{#1}{\getvalue{showdn\v!sub\v!sub\v!sub\c!number}}}%
+   \rawreference\s!num{#2}{\getvalue{showdn\v!sub\v!sub\v!sub\c!number}}}%
 
-\setvalue{\??dd\e!next\v!sub\v!sub\c!number}[#1]%
+\setvalue{\??dd\e!next\v!sub\v!sub\c!number}#1#2%
   {\getvalue{\??dd\s!reset\v!sub\v!sub\v!sub\c!number}{#1}%
    \incrementnumber[\v!sub\v!sub\@@descriptionnumber]%
-   \rawreference\s!num{#1}{\getvalue{showdn\v!sub\v!sub\c!number}}}%
+   \rawreference\s!num{#2}{\getvalue{showdn\v!sub\v!sub\c!number}}}%
 
-\setvalue{\??dd\e!next\v!sub\c!number}[#1]%
+\setvalue{\??dd\e!next\v!sub\c!number}#1#2%
   {\getvalue{\??dd\s!reset\v!sub\v!sub\c!number}{#1}%
    \incrementnumber[\v!sub\@@descriptionnumber]%
-   \rawreference\s!num{#1}{\getvalue{showdn\v!sub\c!number}}}%
+   \rawreference\s!num{#2}{\getvalue{showdn\v!sub\c!number}}}%
 
-\setvalue{\??dd\e!next\c!number}[#1]%
+\setvalue{\??dd\e!next\c!number}#1#2%
   {\getvalue{\??dd\s!reset\v!sub\c!number}{#1}%
    \incrementnumber[\@@descriptionnumber]%
-   \rawreference\s!num{#1}{\getvalue{showdn\c!number}}}%
+   \rawreference\s!num{#2}{\getvalue{showdn\c!number}}}%
 
 \def\dodosetupenumerations[#1][#2]%
   {\getparameters[\??dd#1][#2]%
@@ -710,15 +712,15 @@
 \def\defineenumeration
   {\dotripleemptywithset\dodefineenumeration}
 
-\def\doresetenumerationnumber[#1][#2]%
+\def\doresetenumerationnumber[#1][#2]% name level
   {\getvalue{\??dd\s!reset#2\c!number}{#1}}%
 
-\def\dosetenumerationnumber[#1][#2]%
+\def\dosetenumerationnumber[#1][#2]% name level
   {\getvalue{\??dd\s!set#2\c!number}{#1}}%
 
-\def\donextenumerationnumber[#1][#2][#3]%
+\def\donextenumerationnumber[#1][#2][#3]% name level reference
   {\pluscounter{\??dd\c!coupling#1}% new: global crosslinking
-   \getvalue{\??dd\e!next#2\c!number}[#3]}%
+   \getvalue{\??dd\e!next#2\c!number}{#1}{#3}}%
 
 \def\@@resetdescriptionclosesymbol
   {\global\@EA\settrue\csname\??dd\currentdescription:mrk\endcsname
@@ -833,6 +835,14 @@
 
 \def\do@@nextlabel[#1][#2]%
   {\nextnumber[#1][\s!lab][#2]}
+
+\def\currentnumber[#1]% kan tekst hier weg ?
+  {\dotextprefix{\numberparameter{#1}\c!text}\sectionnumberonly[#1]}
+
+\def\nextnumber[#1][#2][#3]%
+  {\incrementnumber[#1]%
+   \currentnumber[#1]%
+   \rawreference{#2}{#3}{\composedsectionnumber}}
 
 \setupdescriptions
   [\c!location=\v!left,

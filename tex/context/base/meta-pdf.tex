@@ -74,7 +74,7 @@
 %D \pdfclippedimage <optional dimensions> {file} {l} {r} {t} {b}
 %D \stoptyping
 
-\ifx\pdftexversion\undefined \else \ifnum\pdftexversion>13
+\ifx\pdftexversion\undefined \else \ifnum\pdftexversion>13 % still relevant?
 
   \def\pdfimage#1#%
     {\dopdfimage{#1}}
@@ -592,7 +592,26 @@
 
 \newcount\currentPDFshade  % 0  % global (document wide) counter
 
-\def\dosetMPlinearshade#1%
+% \def\dosetMPsomePDFshade#1#2% generic but needs refs
+%   {\global\advance\currentPDFshade \plusone
+%    \doPDFdictionaryobject{FDF}{ftn:Sh:\the\currentPDFshade}
+%      {/FunctionType 2
+%       /Domain [\gMPs1 \gMPs2]
+%       /C0 [\MPshadeA]
+%       /C1 [\MPshadeB]
+%       /N \gMPs3}%
+%    \doPDFgetobjectreference{FDF}{ftn:Sh:\the\currentPDFshade}\PDFobjectreference
+%    \doPDFdictionaryobject{FDF}{obj:Sh:\the\currentPDFshade}
+%      {/ShadingType #1
+%       /ColorSpace /\MPresolvedspace
+%       /Function \PDFobjectreference\space
+%       /Coords [\MPshadeC]
+%       /Extend [true true]}%
+%    \doPDFgetobjectreference{FDF}{obj:Sh:\the\currentPDFshade}\PDFobjectreference
+%    \appendtoPDFdocumentshades{/Sh\the\currentPDFshade\space\PDFobjectreference}%
+%    \setxvalue{\@@MPSK#2}{\noexpand\dohandleMPshade{\the\currentPDFshade}}}
+
+\def\dosetMPsomePDFshade#1#2%
   {\immediate\pdfobj
      {<</FunctionType 2
         /Domain [\gMPs1 \gMPs2]
@@ -600,14 +619,17 @@
         /C1 [\MPshadeB]
         /N \gMPs3>>}%
    \immediate\pdfobj
-     {<</ShadingType 2
+     {<</ShadingType #1
         /ColorSpace /\MPresolvedspace
         /Function \the\pdflastobj\space 0 R
         /Coords [\MPshadeC]
         /Extend [true true]>>}%
    \global\advance\currentPDFshade \plusone
    \appendtoPDFdocumentshades{/Sh\the\currentPDFshade\space\the\pdflastobj\space0 R }%
-   \setxvalue{\@@MPSK#1}{\noexpand\dohandleMPshade{\the\currentPDFshade}}}
+   \setxvalue{\@@MPSK#2}{\noexpand\dohandleMPshade{\the\currentPDFshade}}}
+
+\def\dosetMPlinearshade  {\dosetMPsomePDFshade2}% #1
+\def\dosetMPcircularshade{\dosetMPsomePDFshade3}% #1
 
 \defineMPspecial{30}
   {\expanded{\resolveMPrgbcolor{\gMPs4}{\gMPs5}{\gMPs6}}\to\MPshadeA
@@ -615,40 +637,17 @@
    \edef\MPshadeC{\gMPs7 \gMPs8 \gMPs{12} \gMPs{13}}%
    \dosetMPlinearshade{\gMPs{14}}}
 
-\defineMPspecial{32}
-  {\expanded{\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
-   \expanded{\resolveMPcmykcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}}\to\MPshadeB
-   \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{14} \gMPs{15}}%
-   \dosetMPlinearshade{\gMPs{16}}}
-
-\defineMPspecial{34}
-  {\expanded{\resolveMPspotcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
-   \expanded{\resolveMPspotcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}}\to\MPshadeB
-   \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{14} \gMPs{15}}%
-   \dosetMPlinearshade{\gMPs{16}}}
-
-\def\dosetMPcircularshade#1%
-  {\immediate\pdfobj
-     {<</FunctionType 2
-        /Domain [\gMPs1 \gMPs2]
-        /C0 [\MPshadeA]
-        /C1 [\MPshadeB]
-        /N \gMPs3>>}%
-   \immediate\pdfobj
-     {<</ShadingType 3
-        /ColorSpace /\MPresolvedspace
-        /Function \the\pdflastobj\space 0 R
-        /Coords [\MPshadeC]
-        /Extend [true true]>>}%
-   \global\advance\currentPDFshade \plusone
-   \appendtoPDFdocumentshades{/Sh\the\currentPDFshade\space\the\pdflastobj\space0 R }%
-   \setxvalue{\@@MPSK#1}{\noexpand\dohandleMPshade{\the\currentPDFshade}}}
-
 \defineMPspecial{31}
   {\expanded{\resolveMPrgbcolor{\gMPs4}{\gMPs5}{\gMPs6}}\to\MPshadeA
    \expanded{\resolveMPrgbcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}}\to\MPshadeB
    \edef\MPshadeC{\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}}%
    \dosetMPcircularshade{\gMPs{16}}}
+
+\defineMPspecial{32}
+  {\expanded{\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
+   \expanded{\resolveMPcmykcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}}\to\MPshadeB
+   \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{14} \gMPs{15}}%
+   \dosetMPlinearshade{\gMPs{16}}}
 
 \defineMPspecial{33}
   {\expanded{\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
@@ -656,11 +655,18 @@
    \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{10} \gMPs{15} \gMPs{16} \gMPs{17}}%
    \dosetMPcircularshade{\gMPs{18}}}
 
+\defineMPspecial{34}
+  {\expanded{\resolveMPspotcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
+   \expanded{\resolveMPspotcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}}\to\MPshadeB
+   \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{14} \gMPs{15}}%
+   \dosetMPlinearshade{\gMPs{16}}}
+
 \defineMPspecial{35}
   {\expanded{\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
    \expanded{\resolveMPcmykcolor{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}{\gMPs{14}}}\to\MPshadeB
    \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{10} \gMPs{15} \gMPs{16} \gMPs{17}}%
    \dosetMPcircularshade{\gMPs{18}}}
+
 
 \newconditional\ignoreMPpath
 

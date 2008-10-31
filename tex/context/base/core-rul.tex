@@ -170,14 +170,12 @@
   {\bgroup
    \doifelse{\framedparameter\c!backgroundcorner}\v!rectangular
      {\dofilledlinedbox}
-     {\scratchdimen\framedparameter\c!backgroundradius\relax   % just in case of .x\bodyfontsize
-      \ifzeropt\scratchdimen
+     {\ifzeropt\dimexpr\framedparameter\c!backgroundradius\relax % just in case of .x\bodyfontsize
         \dofilledlinedbox
       \else
         \dofilledroundbox
       \fi}%
    \egroup}
-
 
 \def\dophantombox
   {\hphantom{\dofilledbox}}
@@ -185,23 +183,34 @@
 \def\dofilledlinedbox
   {\vrule\!!width\frameddimenwd\!!height\frameddimenht\!!depth\frameddimendp\relax}%
 
-\def\dofilledroundbox
-  {\doroundedbox\v!off\v!on{\framedparameter\c!backgroundcorner}}
+\def\dostrokedroundbox
+  {\doif{\framedparameter\c!frame}\v!on\dodostrokedroundbox}
 
-\def\doroundedbox#1#2#3%
+\def\dodostrokedroundbox
   {\bgroup
-   \doifelse{#3}\v!round{\let\ovalmod\!!zerocount}{\edef\ovalmod{\number#3}}%
+   \edef\ovalmod{\framedparameter\c!framecorner}%
+   \doifelse\ovalmod\v!round{\let\ovalmod\!!zerocount}{\edef\ovalmod{\number\ovalmod}}%
    \edef\ovalwid{\the\frameddimenwd}%
    \edef\ovalhei{\the\frameddimenht}%
    \edef\ovaldep{\the\frameddimendp}%
-   \scratchdimen\ruledlinewidth\edef\ovallin{\the\scratchdimen}%
-   \scratchdimen\framedparameter\c!frameradius\edef\ovalrad{\the\scratchdimen}%
-   \doifelse{#1}\v!on            % will be a macro that handles
-     {\let\ovalstr\!!plusone}    % start, stop, ja, nee, aan, uit
-     {\let\ovalstr\!!zerocount}% % and something \doif
-   \doifelse{#2}\v!on
-     {\let\ovalfil\!!plusone}
-     {\let\ovalfil\!!zerocount}%
+   \edef\ovallin{\the\dimexpr\ruledlinewidth}%
+   \edef\ovalrad{\the\dimexpr\framedparameter\c!frameradius}%
+   \let\ovalstr\!!plusone
+   \let\ovalfil\!!zerocount
+   \doovalbox\ovalwid\ovalhei\ovaldep\ovallin\ovalrad\ovalstr\ovalfil\ovalmod
+   \egroup}
+
+\def\dofilledroundbox
+  {\bgroup
+   \edef\ovalmod{\framedparameter\c!backgroundcorner}%
+   \doifelse\ovalmod\v!round{\let\ovalmod\!!zerocount}{\edef\ovalmod{\number\ovalmod}}%
+   \edef\ovalwid{\the\frameddimenwd}%
+   \edef\ovalhei{\the\frameddimenht}%
+   \edef\ovaldep{\the\frameddimendp}%
+   \edef\ovallin{\the\dimexpr\ruledlinewidth\relax}%
+   \edef\ovalrad{\the\dimexpr\framedparameter\c!backgroundradius\relax}%
+   \let\ovalstr\!!zerocount
+   \let\ovalfil\!!plusone
    \doovalbox\ovalwid\ovalhei\ovaldep\ovallin\ovalrad\ovalstr\ovalfil\ovalmod
    \egroup}
 
@@ -368,13 +377,7 @@
   %\edef\overlaycorner{\framedparameter\c!backgroundcorner}%
   %\edef\overlayradius{\framedparameter\c!backgroundradius}%
    \let\overlayoffset\backgroundoffset % we steal this one
-   %\writestatus
-   %  {overlay}
-   %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
    \setbox\scratchbox\hbox{\lower\overlaydepth\hbox{\the\everyoverlay#2}}%
-%    \dimen0=\dimexpr\wd\scratchbox-\overlaywidth \relax
-%    \dimen2=\dimexpr\ht\scratchbox-\frameddimenht\relax % not overlayheight !
-%    \setbox\scratchbox\hbox{\hskip-.5\dimen0\raise-.5\dimen2\box\scratchbox}%
    \setbox\scratchbox\hbox
      {\hskip-.5\dimexpr\wd\scratchbox-\overlaywidth \relax
       \raise-.5\dimexpr\ht\scratchbox-\frameddimenht\relax % not overlayheight !
@@ -423,17 +426,48 @@
 
 \let\currentbackground\empty
 
-\def\dodobackgroundbox#1% also less passing, we can get rid of the old method
+% \def\dodobackgroundbox#1% also less passing, we can get rid of the old method
+%   {\bgroup
+%    \def\currentbackground{#1}%
+%    \the\everybackgroundbox
+%    \setbox\extraframebox\hbox
+%      {\vbox{\moveleft\backgroundoffset\hbox{\executeifdefined{\??ov\currentbackground}\donothing}}}%
+%    \wd\extraframebox\zeropoint % \backgroundwidth
+%    \ht\extraframebox\backgroundheight
+%    \dp\extraframebox\backgrounddepth
+%    \box\extraframebox % \hskip-\backgroundwidth
+%    \egroup}
+
+% \def\dodobackgroundbox#1% also less passing, we can get rid of the old method
+%   {\bgroup
+%    \def\currentbackground{#1}%
+%    \ifcsname\??ov\currentbackground\endcsname
+%      \the\everybackgroundbox
+%      \setbox\extraframebox\hbox{\vbox{\moveleft\backgroundoffset\hbox{\csname\??ov\currentbackground\endcsname}}}%
+%      \wd\extraframebox\zeropoint % \backgroundwidth
+%      \ht\extraframebox\backgroundheight
+%      \dp\extraframebox\backgrounddepth
+%      \box\extraframebox % \hskip-\backgroundwidth
+%    \fi
+%    \egroup}
+
+\def\dodobackgroundbox
   {\bgroup
-   \def\currentbackground{#1}%
-   \the\everybackgroundbox
-   \setbox\extraframebox\hbox
-     {\vbox{\moveleft\backgroundoffset\hbox{\executeifdefined{\??ov\currentbackground}\donothing}}}%
-   \wd\extraframebox\zeropoint % \backgroundwidth
-   \ht\extraframebox\backgroundheight
-   \dp\extraframebox\backgrounddepth
-   \box\extraframebox % \hskip-\backgroundwidth
+   \ifcsname\??ov\currentbackground\endcsname
+     \the\everybackgroundbox
+     \setbox\extraframebox\hbox{\vbox{\moveleft\backgroundoffset\hbox{\csname\??ov\currentbackground\endcsname}}}%
+     \wd\extraframebox\zeropoint % \backgroundwidth
+     \ht\extraframebox\backgroundheight
+     \dp\extraframebox\backgrounddepth
+     \box\extraframebox % \hskip-\backgroundwidth
+   \fi
    \egroup}
+
+\def\dododobackgroundbox#1,#2% #2 gobbles spaces
+  {\edef\currentbackground{#1}%
+   \ifx\currentbackground\s!unknown\else
+     \dodobackgroundbox\expandafter\dododobackgroundbox
+   \fi#2}
 
 \let\backgroundoffset\!!zeropoint
 \let\backgrounddepth \!!zeropoint
@@ -441,6 +475,35 @@
 \def\backgroundheight{\the\vsize}
 
 %  todo: also \def\theforegroundbox{#1}
+
+% \def\dobackgroundbox#1%
+%   {\setbox\framebox\vbox
+%      {\forgetall
+%       \boxmaxdepth\maxdimen
+%       \scratchdimen \framedparameter{#1}\relax
+%       \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
+%       \frameddimenht\dimexpr\ht\framebox+ \scratchdimen\relax
+%       \frameddimendp\dimexpr\dp\framebox+ \scratchdimen+\framedparameter\c!backgrounddepth\relax
+%       \edef\backgroundoffset{\the\scratchdimen}%
+%       \edef\backgroundwidth {\the\wd\framebox}%
+%       \edef\backgroundheight{\the\ht\framebox}%
+%       \edef\backgrounddepth {\the\dp\framebox}%
+%      %\edef\foregroundbox{\box#1}%
+%       \def\foregroundbox% fuzzy but needed hack, this \vss, otherwise
+%         {\vbox to \backgroundheight{\vss\box\framebox\vss}}% vertical shift
+%       \edef\component{\framedparameter\c!component}%
+%       \hbox to \backgroundwidth % in case 'foreground' is used as overlay
+%         {\ifx\component\empty
+%            \rawprocesscommalist[\framedbackground]\dodobackgroundbox
+%          \else
+%            \startlayoutcomponent{b:\component}{\s!background\space\component}%
+%            \rawprocesscommalist[\framedbackground]\dodobackgroundbox
+%            \stoplayoutcomponent
+%          \fi
+%          \box\framebox\hss}}}
+
+\def\normalforegroundbox% fuzzy but needed hack, this \vss, otherwise
+  {\vbox to \backgroundheight{\vss\box\framebox\vss}}% vertical shift
 
 \def\dobackgroundbox#1%
   {\setbox\framebox\vbox
@@ -455,15 +518,14 @@
       \edef\backgroundheight{\the\ht\framebox}%
       \edef\backgrounddepth {\the\dp\framebox}%
      %\edef\foregroundbox{\box#1}%
-      \def\foregroundbox% fuzzy but needed hack, this \vss, otherwise
-        {\vbox to \backgroundheight{\vss\box\framebox\vss}}% vertical shift
       \edef\component{\framedparameter\c!component}%
+      \let\foregroundbox\normalforegroundbox
       \hbox to \backgroundwidth % in case 'foreground' is used as overlay
         {\ifx\component\empty
-           \expanded{\rawprocesscommalist[\framedparameter\c!background]}\dodobackgroundbox
+            \expanded{\dododobackgroundbox\framedparameter\c!background},\s!unknown,\relax
          \else
            \startlayoutcomponent{b:\component}{background \component}%
-           \expanded{\rawprocesscommalist[\framedparameter\c!background]}\dodobackgroundbox
+           \expanded{\dododobackgroundbox\framedparameter\c!background},\s!unknown,\relax
            \stoplayoutcomponent
          \fi
          \box\framebox\hss}}}
@@ -482,12 +544,14 @@
 %D by \TEX\ itself, the latter one depends on the driver. This
 %D macro also support a negative offset.
 
+\ifx\scratchoffset\undefined \newdimen\scratchoffset \fi
+
 \def\dooutlinebox % we needed to move the color command in order to apply attributes properly
   {\setbox\framebox\vbox % rules on top of box
-     {\scratchdimen \framedparameter\c!frameoffset\relax
-      \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
-      \frameddimenht\dimexpr\ht\framebox+ \scratchdimen\relax
-      \frameddimendp\dimexpr\dp\framebox+ \scratchdimen+\framedparameter\c!framedepth\relax
+     {\scratchoffset \framedparameter\c!frameoffset\relax
+      \frameddimenwd\dimexpr\wd\framebox+2\scratchoffset\relax
+      \frameddimenht\dimexpr\ht\framebox+ \scratchoffset\relax
+      \frameddimendp\dimexpr\dp\framebox+ \scratchoffset+\framedparameter\c!framedepth\relax
       \ifdim\frameddimendp<\zeropoint
         \advance\frameddimenht \frameddimendp
         \scratchdimen-\frameddimendp
@@ -499,7 +563,7 @@
         {\doifsomething{\framedparameter\c!framecolor}{\color[\framedparameter\c!framecolor]}{\dostrokedbox}}%
       \setbox\extraframebox\hbox
         {\raise\scratchdimen\vbox
-           {\moveleft\framedparameter\c!frameoffset
+           {\moveleft\scratchoffset
             \box\extraframebox}}%
       \wd\extraframebox\wd\framebox
       \ht\extraframebox\ht\framebox
@@ -577,6 +641,8 @@
 \def\@@frame@@rrules{\kern-\ruledlinewidth\vrule\!!height\dimexpr\frameddimenht-\ruledlinewidth\relax\!!depth-\ruledlinewidth\!!width\ruledlinewidth}
 \def\@@frame@@lrules{\vrule\!!height\dimexpr\frameddimenht-\ruledlinewidth\relax\!!depth-\ruledlinewidth\!!width\ruledlinewidth\kern-\ruledlinewidth}
 
+% small is relatively new
+
 \letvalue{t\@@frame@@\v!small\v!small}\@@frame@@trules
 \letvalue{t\@@frame@@\v!off  \v!small}\@@frame@@trules
 \letvalue{t\@@frame@@\v!small        }\@@frame@@trules
@@ -609,14 +675,6 @@
 %   [width=4cm,height=3cm,rulethickness=3mm,
 %    frame=off,rightframe=small,leftframe=small,topframe=small,bottomframe=on]
 %   {}
-
-%D Before we come to using these macros we yet have to define
-%D the rounded corner alternative, which after all is not that
-%D hard because it uses the previously defined macro \type
-%D {\doroundedbox}.
-
-\def\dostrokedroundbox
-  {\doif{\framedparameter\c!frame}\v!on{\doroundedbox\v!on\v!off{\framedparameter\c!framecorner}}}
 
 %D The next few macros are probably the most misused ones in
 %D \CONTEXT. They deal with putting rules around boxes, provide
@@ -670,28 +728,67 @@
 
 \unexpanded\def\framed
   {\bgroup
-   \presetlocalframed[\??ol]%
+   \copylocalframed[\??ol][\??oi]% == \presetlocalframed[\??ol]%
    \dodoubleempty\startlocalframed[\??ol]}
 
 \def\presetlocalframed[#1]%
   {\copylocalframed[#1][\??oi]}
 
-\def\copylocalframed[#1]#2[#3]%
-  {\copyparameters[#1][#3]%
-     [\c!width,\c!height,\c!autowidth,\c!offset,\c!empty,\c!rulethickness,%
-      \c!radius,\c!corner,\c!depth,\c!frame,\c!framecolor,%
-      \c!foregroundstyle,\c!foregroundcolor,\c!lines,\c!orientation,%
-      \c!topframe,\c!bottomframe,\c!leftframe,\c!rightframe,%
-      \c!rulethickness,\c!frameoffset,\c!background,\c!component,%
-      \c!backgroundoffset,\c!backgroundscreen,\c!backgroundcolor,%
-      \c!align,\c!bottom,\c!top,\c!strut,\c!autostrut,\c!location,\c!setups,\c!extras]%
-   \copyparameters[#1\c!background][#1]%
-     [\c!radius,\c!corner,\c!depth]%
-   \copyparameters[#1\c!frame][#1]%
-     [\c!radius,\c!corner,\c!depth]}
+% \def\copylocalframed[#1]#2[#3]%
+%   {\copyparameters[#1][#3]%
+%      [\c!width,\c!height,\c!radius,\c!corner,\c!depth,\c!offset,%
+%       \c!autowidth,\c!empty,\c!component,\c!orientation,\c!lines,%
+%       \c!align,\c!bottom,\c!top,\c!strut,\c!autostrut,\c!location,\c!setups,\c!extras,%
+%       \c!foregroundstyle,\c!foregroundcolor,%
+%       \c!background,\c!backgroundoffset,\c!backgroundcorner,\c!backgroundradius,\c!backgrounddepth,\c!backgroundcolor,\c!backgroundscreen,%
+%       \c!frame,\c!frameoffset,\c!framecorner,\c!frameradius,\c!framedepth,\c!framecolor,\c!rulethickness,%
+%       \c!topframe,\c!bottomframe,\c!leftframe,\c!rightframe]}
 
-% \def\setupframed
-%   {\dodoubleargument\getparameters[\??oi]}
+% since framed is used all over the place, we have a (small) speedup)
+
+\def\copylocalframed[#1]#2[#3]%
+  {\edef\copiedfrom{#1}\edef\copiedto{#3}%
+   \docopyvalue\copiedfrom\copiedto\c!width
+   \docopyvalue\copiedfrom\copiedto\c!height
+   \docopyvalue\copiedfrom\copiedto\c!autowidth
+   \docopyvalue\copiedfrom\copiedto\c!offset
+   \docopyvalue\copiedfrom\copiedto\c!empty
+   \docopyvalue\copiedfrom\copiedto\c!rulethickness
+   \docopyvalue\copiedfrom\copiedto\c!radius
+   \docopyvalue\copiedfrom\copiedto\c!corner
+   \docopyvalue\copiedfrom\copiedto\c!depth
+   \docopyvalue\copiedfrom\copiedto\c!frame
+   \docopyvalue\copiedfrom\copiedto\c!framecolor
+   \docopyvalue\copiedfrom\copiedto\c!foregroundstyle
+   \docopyvalue\copiedfrom\copiedto\c!foregroundcolor
+   \docopyvalue\copiedfrom\copiedto\c!lines
+   \docopyvalue\copiedfrom\copiedto\c!orientation
+   \docopyvalue\copiedfrom\copiedto\c!topframe
+   \docopyvalue\copiedfrom\copiedto\c!bottomframe
+   \docopyvalue\copiedfrom\copiedto\c!leftframe
+   \docopyvalue\copiedfrom\copiedto\c!rightframe
+   \docopyvalue\copiedfrom\copiedto\c!rulethickness
+   \docopyvalue\copiedfrom\copiedto\c!frameoffset
+   \docopyvalue\copiedfrom\copiedto\c!background
+   \docopyvalue\copiedfrom\copiedto\c!component
+   \docopyvalue\copiedfrom\copiedto\c!backgroundoffset
+   \docopyvalue\copiedfrom\copiedto\c!backgroundscreen
+   \docopyvalue\copiedfrom\copiedto\c!backgroundcolor
+   \docopyvalue\copiedfrom\copiedto\c!align
+   \docopyvalue\copiedfrom\copiedto\c!bottom
+   \docopyvalue\copiedfrom\copiedto\c!top
+   \docopyvalue\copiedfrom\copiedto\c!strut
+   \docopyvalue\copiedfrom\copiedto\c!autostrut
+   \docopyvalue\copiedfrom\copiedto\c!location
+   \docopyvalue\copiedfrom\copiedto\c!component
+   \docopyvalue\copiedfrom\copiedto\c!extras
+   \docopyvalue\copiedfrom\copiedto\c!setups
+   \docopyvalue\copiedfrom\copiedto\c!backgroundradius
+   \docopyvalue\copiedfrom\copiedto\c!backgroundcorner
+   \docopyvalue\copiedfrom\copiedto\c!backgrounddepth
+   \docopyvalue\copiedfrom\copiedto\c!frameradius
+   \docopyvalue\copiedfrom\copiedto\c!framecorner
+   \docopyvalue\copiedfrom\copiedto\c!framedepth}
 
 \def\setupframed
   {\dodoubleempty\dosetupframed}
@@ -775,17 +872,21 @@
    %      \edef\doframedsetups{\noexpand\setups[\doframedsetups]}%
    %    \fi
    \removeframedboxdepth
-   \docolorframebox
+   \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
+   \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
    \edef\overlaylinecolor{\framedparameter\c!framecolor}%
    \edef\overlaylinewidth{\the\ruledlinewidth}%
    \edef\@@localframing {\framedparameter\c!frame}%
    \ifx\@@localframing\v!overlay \else \ifx\@@localframing\v!none \else
-     \doifvaluesomething{\@@framed\c!rulethickness}
-       {\ruledlinewidth\framedparameter\c!rulethickness\relax
-        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi}%
+     \edef\framedrulethickness{\framedparameter\c!rulethickness}%
+     \ifx\framedrulethickness\empty\else
+        \ruledlinewidth\framedrulethickness\relax
+        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi
+     \fi
      \dooutlinebox % real or invisible frame
    \fi \fi
-   \doifvaluesomething{\@@framed\c!background}\dobackedbox
+   \edef\framedbackground{\framedparameter\c!background}%
+   \ifx\framedbackground\empty\else\dobackedbox\fi
    \restoreframedboxdepth
    \box\framebox
    \egroup}
@@ -865,9 +966,11 @@
      \boxhasframetrue
    \fi\fi
    \ifboxhasframe
-     \doifvaluesomething{\@@framed\c!rulethickness}
-       {\ruledlinewidth\framedparameter\c!rulethickness\relax
-        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi}%
+     \edef\framedrulethickness{\framedparameter\c!rulethickness}%
+     \ifx\framedrulethickness\empty\else
+        \ruledlinewidth\framedrulethickness\relax
+        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi
+     \fi
    \else
      \ruledlinewidth\zeropoint
    \fi
@@ -1125,7 +1228,8 @@
       \ht\scratchbox\ht\framebox
       \dp\scratchbox\dp\framebox
       \setbox\framebox\box\scratchbox}%
-   \docolorframebox
+   \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
+   \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
    \ifboxhasoffset
      \dooffsetframebox
    \fi
@@ -1142,7 +1246,8 @@
    \ifboxhasframe % real or invisible frame
      \dooutlinebox
    \fi
-   \doifvaluesomething{\@@framed\c!background}\dobackedbox
+   \edef\framedbackground{\framedparameter\c!background}%
+   \ifx\framedbackground\empty\else\dobackedbox\fi
    \handleframedlocator\c!after\@@locallocation
    \box\framebox
    \egroup
@@ -1916,8 +2021,8 @@
   %\endgraf\nointerlineskip\localbegstrut
    \endgraf\obeydepth\nointerlineskip
    \moveleft\dimen4\box0
-   \endgraf\nointerlineskip\localbegstrut
-   \egroup}
+   \endgraf\nointerlineskip\localbegstrut % beware, we might kill it in a style using \vskip\lineheight
+   \egroup}                               % so this must not be changed
 
 \def\hboxedhairline % use framed dimen
   {\bgroup
@@ -3332,6 +3437,9 @@
  %{\doifsomething{#1}{\dobackgroundline{#1}}\hbox}
   {\doifcolorelse{#1}{\dobackgroundline{#1}\hbox}\hbox}
 
+% \def\backgroundline[#1]%
+%   {\doifcolor{#1}{\dobackgroundline{#1}}\hbox}
+
 \def\dobackgroundline#1%
   {\dowithnextbox
      {\hbox
@@ -3382,6 +3490,12 @@
    \c!backgroundoffset=\!!zeropoint,
    \c!framecolor=,
    \c!frameoffset=\!!zeropoint,
+   \c!backgroundcorner=\framedparameter\c!corner,
+   \c!backgroundradius=\framedparameter\c!radius,
+   \c!backgrounddepth=\framedparameter\c!depth,
+   \c!framecorner=\framedparameter\c!corner,
+   \c!frameradius=\framedparameter\c!radius,
+   \c!framedepth=\framedparameter\c!depth,
    \c!component=,
    \c!align=,
    \c!bottom=\vss,

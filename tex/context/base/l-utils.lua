@@ -35,8 +35,11 @@ utils.merger.strip_comment = true
 function utils.merger._self_load_(name)
     local f, data = io.open(name), ""
     if f then
+        utils.report("reading merge from %s",name)
         data = f:read("*all")
         f:close()
+    else
+        utils.report("unknown file to merge %s",name)
     end
     if data and utils.merger.strip_comment then
         -- saves some 20K
@@ -49,6 +52,7 @@ function utils.merger._self_save_(name, data)
     if data ~= "" then
         local f = io.open(name,'w')
         if f then
+            utils.report("saving merge from %s",name)
             f:write(data)
             f:close()
         end
@@ -74,13 +78,13 @@ function utils.merger._self_libs_(libs,list)
             local name = string.gsub(pth .. "/" .. lib,"\\","/")
             f = io.open(name)
             if f then
-            --  utils.report("merging library",name)
+                utils.report("merging library %s",name)
                 result[#result+1] = f:read("*all")
                 f:close()
                 list = { pth } -- speed up the search
                 break
             else
-            --  utils.report("no library",name)
+                utils.report("no library %s",name)
             end
         end
     end

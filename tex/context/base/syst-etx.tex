@@ -274,8 +274,9 @@
 
 %D A few bonus bindings.
 
-\let\normalprotected  = \protected
-\let\normalunexpanded = \unexpanded
+\ifx\normalprotected \undefined \let\normalprotected \protected  \fi
+\ifx\normalunexpanded\undefined \let\normalunexpanded\unexpanded \fi
+\ifx\normalexpanded  \undefined \let\normalexpanded  \expanded   \fi
 
 %D \macros
 %D   {begcsname}

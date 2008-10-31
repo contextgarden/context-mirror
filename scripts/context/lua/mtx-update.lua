@@ -138,6 +138,8 @@ scripts.update.platforms = {
     ["linux-64"]    = "linux-64",
     ["linux32"]     = "linux",
     ["linux64"]     = "linux-64",
+    ["linux-ppc"]   = "linux-ppc",
+    ["ppc"]         = "linux-ppc",
     ["osx"]         = "osx-intel",
     ["osx-intel"]   = "osx-intel",
     ["osx-ppc"]     = "osx-ppc",
@@ -288,7 +290,7 @@ end
 banner = banner .. " | download tools "
 
 messages.help = [[
---platform=string     platform (windows, linux, linux-64, osx-intel, osx-ppc)
+--platform=string     platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)
 --server=string       repository url (rsync://contextgarden.net)
 --module=string       repository url (minimals)
 --repository=string   specify version (current, experimental)

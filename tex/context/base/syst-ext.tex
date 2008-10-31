@@ -470,20 +470,20 @@
 %D \starttyping
 %D \newconditional\doublesided
 %D \setfalse
-%D
+%D \stoptyping
 %D Setting a conditional is done by \type{\settrue} and
 %D \type{\setfalse}:
 %D
 %D \starttyping
 %D \settrue\doublesided
 %D \setfalse
-%D
+%D \stoptyping
 %D while testing is accomplished by:
 %D
 %D \starttyping
 %D \ifconditional\doublesided  ... \else ... \fi
 %D \setfalse
-%D
+%D \stoptyping
 %D We cannot use the simple scheme:
 %D
 %D \starttyping
@@ -1072,7 +1072,7 @@
 %D
 %D \def\EveryLine%
 %D   {\afterassignment\doEveryLine\scratchtoks}
-%D
+%D \stoptyping
 %D The real implementation is a bit more complicated but we
 %D prefer something more versatile.
 
@@ -1778,7 +1778,7 @@
 
 \long\def\HandleSimpleGroup#1#2% no inner group (so no kerning interference)
   {\bgroup
-   \long\def\BeforeGroup{\bgroup#1\aftergroup\AfterGroup}% interferes
+   %long\def\BeforeGroup{\bgroup#1\aftergroup\AfterGroup}% interferes
    \long\def\BeforeGroup{\bgroup\aftergroup\AfterGroup#1}%
    \long\def\AfterGroup {#2\egroup}%
    \afterassignment\BeforeGroup

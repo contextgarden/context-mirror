@@ -48,9 +48,8 @@
 
 \chardef\CTXlua\zerocount \luadefcounter\CTXlua \luastartup\CTXlua
 
-\def\ctxlua      {\directlua\CTXlua}
-\def\directctxlua{\directlua\CTXlua}
-\def\latectxlua  {\latelua  \CTXlua}
+\def\ctxdirectlua{\directlua\CTXlua}  \let\ctxlua\ctxdirectlua
+\def\ctxlatelua  {\latelua  \CTXlua}
 
 %D The simple \type {\lua} command is just a shortcut to the
 %D zero instance. Beware, we don't use the 0--9 range for
@@ -61,7 +60,7 @@
 \newlua \luadefault
 
 \def \lua       {\directlua\luadefault} % zero is the main one, and reserved for ctx
-\edef\luaversion{\CTXlua{tex.print(_VERSION)}}
+\edef\luaversion{\ctxlua{tex.print(_VERSION)}}
 
 %D We want to define \LUA\ related things in the format but
 %D need to reluad code because \LUA\ instances are not dumped
@@ -111,6 +110,10 @@
 
 \let\stopruntimeluacode   \relax
 \let\stopruntimectxluacode\relax
+
+\ifx\normalprotected \undefined \let\normalprotected \protected  \fi
+\ifx\normalunexpanded\undefined \let\normalunexpanded\unexpanded \fi
+\ifx\normalexpanded  \undefined \let\normalexpanded  \expanded   \fi
 
 \long\def\lastexpanded{} % todo: elsewhere we use \@@expanded
 

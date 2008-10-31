@@ -146,9 +146,9 @@
 
 \def\dosetupcharacterspacing[#1][#2][#3]%
   {\ifcsname\??ch:#1\endcsname
-     \begingroup
-     \getparameters[\??ch][\c!left=0,\c!right=0,#3]%
-     \ctxlua{spacings.setspacing(\getvalue{\??ch:#1},\number#2,\@@chleft,\@@chright)}%
+     \begingroup % for the moment we use modes, in ordere to avoid interface translation
+     \getparameters[\??ch][\c!left=0,\c!right=0,\c!alternative=0,#3]%
+     \ctxlua{spacings.setspacing(\getvalue{\??ch:#1},\number#2,\@@chleft,\@@chright,\@@chalternative)}%
      \endgroup
    \fi}
 
@@ -157,16 +157,24 @@
    \gdef\setcharacterspacing[##1]{\dosetattribute{spacing}{\csname\??ch:##1\endcsname}}%
    \setcharacterspacing}
 
+\def\resetcharacterspacing
+  {\doresetattribute{spacing}}
+
 \letvalue{\??ch:\s!reset}\minusone
+
+% \setcharacterspacing[frenchpunctuation]
+% «\type{bla}»\crlf « \type{bla}»\crlf
+% «bla »\crlf « bla»\crlf « bla »\crlf
+% bla: bla\crlf bla : bla
 
 \definecharacterspacing [frenchpunctuation] % name may change / unit is em
 
-\setupcharacterspacing [frenchpunctuation] ["003A] [\c!left =.25] % :
-\setupcharacterspacing [frenchpunctuation] ["003B] [\c!left =.25] % ;
-\setupcharacterspacing [frenchpunctuation] ["003F] [\c!left =.25] % ?
-\setupcharacterspacing [frenchpunctuation] ["0021] [\c!left =.25] % !
-\setupcharacterspacing [frenchpunctuation] ["00AB] [\c!right=.25] % guillemotleft/leftguillemot
-\setupcharacterspacing [frenchpunctuation] ["00BB] [\c!left =.25] % guillemotright/rightguillemot
+\setupcharacterspacing [frenchpunctuation] ["003A] [\c!left =.25,\c!alternative=1] % : % strip preceding space(char)
+\setupcharacterspacing [frenchpunctuation] ["003B] [\c!left =.25,\c!alternative=1] % ; % strip preceding space(char)
+\setupcharacterspacing [frenchpunctuation] ["003F] [\c!left =.25,\c!alternative=1] % ? % strip preceding space(char)
+\setupcharacterspacing [frenchpunctuation] ["0021] [\c!left =.25,\c!alternative=1] % ! % strip preceding space(char)
+\setupcharacterspacing [frenchpunctuation] ["00AB] [\c!right=.25,\c!alternative=1] % guillemotleft/leftguillemot   % strip following space(char)
+\setupcharacterspacing [frenchpunctuation] ["00BB] [\c!left =.25,\c!alternative=1] % guillemotright/rightguillemot % strip preceding space(char)
 
 % more
 %

@@ -6,15 +6,17 @@
 
 if not versions then versions = { } end versions['l-math'] = 1.001
 
+local floor = math.floor
+
 if not math.round then
     function math.round(x)
-        return math.floor(x + 0.5)
+        return floor(x + 0.5)
     end
 end
 
 if not math.div then
     function math.div(n,m)
-        return math.floor(n/m)
+        return floor(n/m)
     end
 end
 

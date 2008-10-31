@@ -404,7 +404,7 @@ mathematics.slots.traditional = {
     [0x22C3] = { "ex", 0x53 }, -- bigcup
     [0x22C4] = { "sy", 0x05 }, -- diamond
     [0x22C5] = { "sy", 0x01 }, -- cdot
-    [0x22C6] = { "sy", 0x3F }, -- star
+    [0x22C6] = { "mi", 0x3F }, -- star
     [0x25B3] = { "sy", 0x34 }, -- triangle up
 
     [0x2220] = { "ma", 0x5C }, -- angle

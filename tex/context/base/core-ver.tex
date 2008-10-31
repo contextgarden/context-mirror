@@ -99,10 +99,85 @@
 
 \def\setupprettytype{\mksetupprettytype}
 
+% \def\setupcommonverbatim
+%   {\recatcodeuppercharactersfalse % obey regime / encoding
+%    %
+%    \let\prettyidentifier\s!default
+%    %
+%    \doifelse{\typingparameter\c!text}\v!yes
+%      \naturaltextexttrue
+%      \naturaltextextfalse
+%    \def\prettyidentifierfont{\typingparameter\c!icommand}%
+%    \def\prettyvariablefont  {\typingparameter\c!vcommand}%
+%    \def\prettynaturalfont   {\typingparameter\c!ccommand}%
+%    %
+%    \doif{\typingparameter\c!space}\v!on
+%      {\def\obeyspaces{\setcontrolspaces}}%
+%    \doif{\typingparameter\c!page }\v!no
+%      {\def\obeypages {\ignorepages}}%
+%    %
+%    \doifelse{\typingparameter\c!tab}\v!yes
+%      {\def\obeytabs{\settabskips}}%
+%      {\doif{\typingparameter\c!tab}\s!ascii
+%         {\chardef\tabskipmode\plustwo % quit on >127
+%          \def\obeytabs{\settabskips}}}%
+%    %
+%    \ignorehyphens % default
+%    \ExpandFirstAfter\processaction
+%      [\typingparameter\c!lines]
+%      [        \v!yes=>\obeybreakpoints,
+%        \v!hyphenated=>\obeyhyphens]%
+%    \processaction
+%      [\typingparameter\c!empty]
+%      [\v!yes=>\obeyemptylines,
+%       \v!all=>\obeyallemptylines]%
+%    %
+%    \ExpandFirstAfter\processaction
+%      [\typingparameter\c!option]
+%      [     \v!none=>\let\obeycharacters\relax,
+%           \v!color=>\setupprettiesintype{TEX}%
+%                     \let\obeycharacters\setupprettytype
+%                     \let\obeytabs\ignoretabs,
+%          \v!normal=>\let\obeycharacters\setupgroupedtype,
+%        \v!commands=>\def\obeycharacters{\setupcommandsintype}% \let
+%                     \let\obeytabs\ignoretabs,
+%         \v!slanted=>\let\obeycharacters\setupslantedtype
+%                     \let\obeytabs\ignoretabs,
+%         \s!unknown=>\setupprettiesintype{\typingparameter\c!option}%
+%                     \let\obeycharacters\setupprettytype
+%                     \let\obeytabs\ignoretabs]%
+%    \doifnumberelse{\typingparameter\c!tab}
+%      {\def\obeytabs{\setfixedtabskips{\typingparameter\c!tab}}}%
+%      \donothing
+%   %\def\verbatimfont{\typingparameter\c!style\normalnoligatures\font}%
+%   % more generic, but beware of the \redoconvertfont (else no typing in titles and such)
+%    \def\verbatimfont{\redoconvertfont\dosetfontattribute{\currenttypingclass\currenttyping}\c!style\normalnoligatures\font}%
+%    \setupverbatimcolor}
+
+\setvalue{\??tp:\c!lines:\v!yes       }{\obeybreakpoints}
+\setvalue{\??tp:\c!lines:\v!hyphenated}{\obeyhyphens}
+
+\setvalue{\??tp:\c!empty:\v!yes       }{\obeyemptylines}
+\setvalue{\??tp:\c!empty:\v!all       }{\obeyallemptylines}
+
+\setvalue{\??tp:\c!option:\v!none     }{\let\obeycharacters\relax}
+\setvalue{\??tp:\c!option:\v!color    }{\setupprettiesintype{TEX}%
+                                        \let\obeycharacters\setupprettytype
+                                        \let\obeytabs\ignoretabs}
+\setvalue{\??tp:\c!option:\v!normal   }{\let\obeycharacters\setupgroupedtype}
+\setvalue{\??tp:\c!option:\v!commands }{\def\obeycharacters{\setupcommandsintype}%
+                                        \let\obeytabs\ignoretabs}
+\setvalue{\??tp:\c!option:\v!slanted  }{\let\obeycharacters\setupslantedtype
+                                        \let\obeytabs\ignoretabs}
+\setvalue{\??tp:\c!option:\s!unknown  }{\setupprettiesintype{\typingparameter\c!option}%
+                                        \let\obeycharacters\setupprettytype
+                                        \let\obeytabs\ignoretabs}
+
+
 \def\setupcommonverbatim
   {\recatcodeuppercharactersfalse % obey regime / encoding
    %
-   \def\prettyidentifier{TEX}%
+   \let\prettyidentifier\s!default
    %
    \doifelse{\typingparameter\c!text}\v!yes
      \naturaltextexttrue
@@ -118,34 +193,14 @@
    %
    \doifelse{\typingparameter\c!tab}\v!yes
      {\def\obeytabs{\settabskips}}%
-     {\doif{\typingparameter\c!tab}\s!ascii
+     {\doif{\typingparameter\c!tab}\s!ascii % not needed in mkiv
         {\chardef\tabskipmode\plustwo % quit on >127
          \def\obeytabs{\settabskips}}}%
    %
    \ignorehyphens % default
-   \ExpandFirstAfter\processaction
-     [\typingparameter\c!lines]
-     [        \v!yes=>\obeybreakpoints,
-       \v!hyphenated=>\obeyhyphens]%
-   \processaction
-     [\typingparameter\c!empty]
-     [\v!yes=>\obeyemptylines,
-      \v!all=>\obeyallemptylines]%
-   %
-   \ExpandFirstAfter\processaction
-     [\typingparameter\c!option]
-     [     \v!none=>\let\obeycharacters\relax,
-          \v!color=>\setupprettiesintype{TEX}%
-                    \let\obeycharacters\setupprettytype
-                    \let\obeytabs\ignoretabs,
-         \v!normal=>\let\obeycharacters\setupgroupedtype,
-       \v!commands=>\def\obeycharacters{\setupcommandsintype}% \let
-                    \let\obeytabs\ignoretabs,
-        \v!slanted=>\let\obeycharacters\setupslantedtype
-                    \let\obeytabs\ignoretabs,
-        \s!unknown=>\setupprettiesintype{\typingparameter\c!option}%
-                    \let\obeycharacters\setupprettytype
-                    \let\obeytabs\ignoretabs]%
+   \getvalue{\??tp:\c!lines:\typingparameter\c!lines}%
+   \getvalue{\??tp:\c!empty:\typingparameter\c!empty}%
+   \getvalue{\??tp:\c!option:\ifcsname\??tp:\c!option:\typingparameter\c!option\endcsname\typingparameter\c!option\else\s!unknown\fi}%
    \doifnumberelse{\typingparameter\c!tab}
      {\def\obeytabs{\setfixedtabskips{\typingparameter\c!tab}}}%
      \donothing
@@ -292,7 +347,7 @@
 %D \type{\tt} text will be implemented soon.
 
 \def\obeyhyphens
-  {\def\obeyedspace {\hskip\interwordspace}% better than spaceskip
+  {\def\obeyedspace {\hskip\interwordspace\relax}% better than spaceskip
    \def\controlspace{\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint}%
    \spaceskip.25em\relax} % hm a bit of stretch !
 
@@ -300,9 +355,15 @@
   {\ignorehyphens
    \veryraggedright}
 
+% \def\ignorehyphens
+%   {\def\obeyedspace {\null\hskip\interwordspace\null}% better than spaceskip
+%    \def\controlspace{\null\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\null}%
+%    \spaceskip.5em\relax}
+
 \def\ignorehyphens
-  {\def\obeyedspace {\null\hskip\interwordspace\null}% better than spaceskip
-   \def\controlspace{\null\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\null}%
+  {% \language\minusone % extra bonus, the \null should do the job too
+   \def\obeyedspace {\hskip\interwordspace}% better than spaceskip
+   \def\controlspace{\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint}%
    \spaceskip.5em\relax}
 
 \unexpanded\def\typ
@@ -367,15 +428,74 @@
 \let\currenttyping     \empty
 \let\currenttypingclass\??ty  % saveguard
 
+% \def\typingparameter#1%
+%   {\executeifdefined
+%      {\currenttypingclass\currenttyping#1}%
+%      {\executeifdefined{\currenttypingclass#1}\empty}}
+
 \def\typingparameter#1%
-  {\executeifdefined
-     {\currenttypingclass\currenttyping#1}%
-     {\executeifdefined{\currenttypingclass#1}\empty}}
+  {\ifcsname\currenttypingclass\currenttyping#1\endcsname
+     \csname\currenttypingclass\currenttyping#1\endcsname
+   \else\ifcsname\currenttypingclass#1\endcsname
+     \csname\currenttypingclass#1\endcsname
+   \fi\fi}
 
 \def\settypingparameter#1#2%
   {\setvalue{\currenttypingclass\currenttyping#1}{#2}}
+
 \def\setxtypingparameter#1#2%
   {\setxvalue{\currenttypingclass\currenttyping#1}{#2}}
+
+% \def\initializetyping
+%   {%\donefalse
+%    \switchtobodyfont[\typingparameter\c!bodyfont]%
+%    \donefalse
+%    \scratchskip\typingparameter\c!oddmargin\relax
+%    \ifzeropt\scratchskip\else\donetrue\fi
+%    \scratchskip\typingparameter\c!evenmargin\relax
+%    \ifzeropt\scratchskip\else\donetrue\fi
+%    \ifdone
+%      \def\doopenupverbatimline
+%        {\getpagestatus
+%         \ifrightpage
+%           \hskip\typingparameter\c!oddmargin\relax
+%         \else
+%           \hskip\typingparameter\c!evenmargin\relax
+%         \fi}%
+%    \else
+%      \doadaptleftskip{\typingparameter\c!margin}%
+%    \fi
+%    \doifdefinedelse{\??bo\typingparameter\c!blank}
+%      {\edef\!!stringa{\csname\??bo\typingparameter\c!blank\endcsname}}
+%      {\edef\!!stringa{\typingparameter\c!blank}}%
+%    \processaction
+%      [\!!stringa]
+%      [ \v!standard=>\scratchskip\ctxparskip,
+%           \v!small=>\scratchskip\blankokleinmaat,
+%          \v!medium=>\scratchskip\blankomiddelmaat,
+%             \v!big=>\scratchskip\blankogrootmaat,
+%        \v!halfline=>\scratchskip.5\baselineskip,
+%            \v!line=>\scratchskip\baselineskip,
+%            \v!none=>\scratchskip\zeropoint,
+%         \s!unknown=>\scratchskip\commalistelement]%
+%    \ifgridsnapping
+%      \ifdim\scratchskip=.5\baselineskip\relax
+%        \edef\verbatimbaselineskip{\the\scratchskip}% new
+%      \else
+%        \edef\verbatimbaselineskip{\the\baselineskip}%
+%      \fi
+%    \else
+%      \edef\verbatimbaselineskip{\the\scratchskip}%
+%    \fi
+%    \setupcommonverbatim}
+
+\setvalue{\??tp:\c!blank:\v!standard}{\ctxparskip}
+\setvalue{\??tp:\c!blank:\v!small   }{\blankokleinmaat}
+\setvalue{\??tp:\c!blank:\v!medium  }{\blankomiddelmaat}
+\setvalue{\??tp:\c!blank:\v!big     }{\blankogrootmaat}
+\setvalue{\??tp:\c!blank:\v!halfline}{.5\baselineskip}
+\setvalue{\??tp:\c!blank:\v!line    }{\baselineskip}
+\setvalue{\??tp:\c!blank:\v!none    }{\zeropoint}
 
 \def\initializetyping
   {%\donefalse
@@ -396,19 +516,8 @@
    \else
      \doadaptleftskip{\typingparameter\c!margin}%
    \fi
-   \doifdefinedelse{\??bo\typingparameter\c!blank}
-     {\edef\!!stringa{\csname\??bo\typingparameter\c!blank\endcsname}}
-     {\edef\!!stringa{\typingparameter\c!blank}}%
-   \processaction
-     [\!!stringa]
-     [ \v!standard=>\scratchskip\ctxparskip,
-          \v!small=>\scratchskip\blankokleinmaat,
-         \v!medium=>\scratchskip\blankomiddelmaat,
-            \v!big=>\scratchskip\blankogrootmaat,
-       \v!halfline=>\scratchskip.5\baselineskip,
-           \v!line=>\scratchskip\baselineskip,
-           \v!none=>\scratchskip\zeropoint,
-        \s!unknown=>\scratchskip\commalistelement]%
+   \edef\!!stringa{\executeifdefined{\??bo\typingparameter\c!blank}{\typingparameter\c!blank}}%
+   \scratchskip\executeifdefined{\??tp:\c!blank:\!!stringa}\!!stringa\relax
    \ifgridsnapping
      \ifdim\scratchskip=.5\baselineskip\relax
        \edef\verbatimbaselineskip{\the\scratchskip}% new

@@ -31,6 +31,7 @@ local o_replacements = { -- in main table
     ["@r"] = "\\mmlrightdelimiter.",
     ["{"]  = "\\mmlleftdelimiter\\lbrace",
     ["}"]  = "\\mmlrightdelimiter\\rbrace",
+--  ["|"]  = "\\mmlmiddledelimiter\\vert",
     ["("]  = "\\mmlleftdelimiter(",
     [")"]  = "\\mmlrightdelimiter)",
     ["["]  = "\\mmlleftdelimiter[",

@@ -48,8 +48,9 @@ if texconfig and not texlua then
     end
 
     input.filters.dynamic_translator = nil
-    input.filters.frozen_translator  = nil
+    input.filters.frozen_translator  = nil -- not used here
     input.filters.utf_translator     = nil
+    input.filters.user_translator    = nil
 
     function input.openers.text_opener(filename,file_handle,tag)
         local u = unicode.utftype(file_handle)
@@ -76,6 +77,7 @@ if texconfig and not texlua then
                         input.logger('= closer: %s (%s), file: %s',tag,unicode.utfname[u],filename)
                     end
                     input.show_close(filename)
+                    t = nil
                 end,
 --~                 getline = function(n)
 --~                     local line = t.lines[n]
@@ -95,16 +97,20 @@ if texconfig and not texlua then
                         current = current + 1
                         self.current = current
                         local line = lines[current]
-                        if line == "" then
+                        if not line then
+                            return nil
+                        elseif line == "" then
                             return ""
                         else
-                            local translator = input.filters.utf_translator
-                        --  return (translator and translator(line)) or line
+                            translator = filters.utf_translator
                             if translator then
-                                return translator(line)
-                            else
-                                return line
+                                line = translator(line)
+                                translator = filters.user_translator
+                                if translator then
+                                    line = translator(line)
+                                end
                             end
+                            return line
                         end
                     end
                 end
@@ -118,18 +124,21 @@ if texconfig and not texlua then
             t = {
                 reader = function(self)
                     local line = file_handle:read()
-                    if line == "" then
+                    if not line then
+                        return nil
+                    elseif line == "" then
                         return ""
+                    else
+                        translator = filters.dynamic_translator or filters.utf_translator
+                        if translator then
+                            line = translator(line)
+                            translator = filters.user_translator
+                            if translator then
+                                line = translator(line)
+                            end
+                        end
+                        return line
                     end
-                    local translator = filters.utf_translator
-                    if translator then
-                        return translator(line)
-                    end
-                    translator = filters.dynamic_translator
-                    if translator then
-                        return translator(line)
-                    end
-                    return line
                 end,
                 close = function()
                     if input.trace > 0 then
@@ -137,6 +146,7 @@ if texconfig and not texlua then
                     end
                     input.show_close(filename)
                     file_handle:close()
+                    t = nil
                 end,
                 handle = function()
                     return file_handle
@@ -173,6 +183,7 @@ if texconfig and not texlua then
                     input.logger('+ loader: %s, file: %s',tag,filename)
                 end
                 local s = f:read("*a")
+                if garbagecollector and garbagecollector.check then garbagecollector.check(#s) end
                 f:close()
                 if s then
                     return true, s, #s
@@ -206,15 +217,12 @@ if texconfig and not texlua then do
 
     ctx = ctx or { }
 
-    local ss = { }
-
-    function ctx.writestatus(a,b,...)
-        local s = ss[a]
-        if not ss[a] then
-            s = a:rpadd(15) .. ": "
-            ss[a] = s
+    function ctx.writestatus(a,b,c,...)
+        if c then
+            texio.write_nl(("%-15s: %s\n"):format(a,b:format(c,...)))
+        else
+            texio.write_nl(("%-15s: %s\n"):format(a,b)) -- b can have %'s
         end
-        texio.write_nl(s .. format(b,...) .. "\n")
     end
 
     -- this will become: ctx.install_statistics(fnc() return ..,.. end) etc
@@ -224,6 +232,12 @@ if texconfig and not texlua then do
     function ctx.register_statistics(tag,pattern,fnc)
         statusinfo[#statusinfo+1] = { tag, pattern, fnc }
         if #tag > n then n = #tag end
+    end
+
+    function ctx.memused() -- no math.round yet -)
+    --  collectgarbage("collect")
+        local round = math.round or math.floor
+        return string.format("%s MB (ctx: %s MB)",round(collectgarbage("count")/1000), round(status.luastate_bytes/1000000))
     end
 
     function ctx.show_statistics() -- todo: move calls
@@ -237,6 +251,12 @@ if texconfig and not texlua then do
         end
         if input.instance then
             register_statistics("input load time", "%s seconds", function() return loadtime(input.instance) end)
+        end
+        if ctx and input.hastimer(ctx) then
+            register_statistics("startup time","%s seconds (including runtime option file processing)", function() return loadtime(ctx) end)
+        end
+        if job then
+            register_statistics("jobdata time","%s seconds saving, %s seconds loading", function() return loadtime(job._save_), loadtime(job._load_) end)
         end
         if fonts then
             register_statistics("fonts load time","%s seconds", function() return loadtime(fonts) end)
@@ -271,8 +291,8 @@ if texconfig and not texlua then do
         if metapost then
             register_statistics("metapost processing time", "%s seconds, loading: %s seconds, execution: %s seconds, n: %s", function() return loadtime(metapost), loadtime(mplib), loadtime(metapost.exectime), metapost.n end)
         end
-        if status.luastate_bytes then
-            register_statistics("current memory usage", "%s bytes", function() return status.luastate_bytes end)
+        if status.luastate_bytes and ctx.memused then
+            register_statistics("current memory usage", "%s", ctx.memused)
         end
         if nodes then
             register_statistics("cleaned up reserved nodes", "%s nodes, %s lists of %s", function() return nodes.cleanup_reserved(tex.count[24]) end) -- \topofboxstack
@@ -285,6 +305,25 @@ if texconfig and not texlua then do
         end
         if fonts then
             register_statistics("loaded fonts", "%s", function() return fonts.logger.report() end)
+        end
+        if status.cs_count then
+            register_statistics("control sequences", "%s of %s", function() return status.cs_count, status.hash_size+status.hash_extra end)
+        end
+        if status.callbacks and xml then -- xml for being in context -)
+            ctx.register_statistics("callbacks", "direct: %s, indirect: %s, total: %s%s", function()
+                local total, indirect = status.callbacks, status.indirect_callbacks
+                local pages = tex.count['realpageno'] - 1
+                if pages > 1 then
+                    return total-indirect, indirect, total, format(" (%i per page)",total/pages)
+                else
+                    return total-indirect, indirect, total, ""
+                end
+            end)
+        else
+            ctx.register_statistics("callbacks", "direct: %s, indirect: %s, total: %s", function()
+                local total, indirect = status.callbacks, status.indirect_callbacks
+                return total-indirect, indirect, total
+            end)
         end
         if xml then -- so we are in mkiv, we need a different check
             register_statistics("runtime", "%s seconds, %i processed pages, %i shipped pages, %.3f pages/second", function()
@@ -355,12 +394,12 @@ if texconfig and not texlua then
          -- image
             callback.register('read_map_file'       , function(file) return input.loadbinfile(file,"map") end)
             callback.register('read_ocp_file'       , function(file) return input.loadbinfile(file,"ocp") end)
-            callback.register('read_opentype_file'  , function(file) return input.loadbinfile(file,"otf") end)
+--~             callback.register('read_opentype_file'  , function(file) return input.loadbinfile(file,"otf") end)
          -- output
             callback.register('read_pk_file'        , function(file) return input.loadbinfile(file,"pk")  end)
             callback.register('read_sfd_file'       , function(file) return input.loadbinfile(file,"sfd") end)
-            callback.register('read_truetype_file'  , function(file) return input.loadbinfile(file,"ttf") end)
-            callback.register('read_type1_file'     , function(file) return input.loadbinfile(file,"pfb") end)
+--~             callback.register('read_truetype_file'  , function(file) return input.loadbinfile(file,"ttf") end)
+--~             callback.register('read_type1_file'     , function(file) return input.loadbinfile(file,"pfb") end)
             callback.register('read_vf_file'        , function(file) return input.loadbinfile(file,"vf" ) end)
         end
 

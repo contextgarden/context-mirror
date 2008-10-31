@@ -156,7 +156,7 @@
      {\elabelgroup\secondoftwoarguments}}
 
 \def\includeMPgraphic#1%
-  {\executeifdefined{\@@MPG#1};}
+  {\executeifdefined{\@@MPG#1};} % ; if not found
 
 \def\enableincludeMPgraphics
   {\let\handleuseMPgraphic     \secondoftwoarguments
@@ -621,9 +621,9 @@
 \def\getMPdata
   {\let\MPdata\secondoftwoarguments
    \startreadingfile
-   \startnointerference
+   % \startnointerference % no, else we need to do all data global
    \readlocfile\MPdataMPDfile\donothing\donothing
-   \stopnointerference
+   % \stopnointerference
    \stopreadingfile}
 
 %D \macros
@@ -1122,6 +1122,10 @@
 
 \let\initializeMPgraphics\relax
 
-% Done.
+%D Goody for preventing overflows:
+
+\def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
+
+%D Done.
 
 \protect \endinput

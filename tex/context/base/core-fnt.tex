@@ -356,7 +356,9 @@
 \def\stretchedsomecase#1#2%
   {\bgroup
    #1{\def\textstring{#2}}%
-   \ifdim\stretchedspaceamount>\zeropoint
+   \ifdim\stretchedspaceamount=\zeropoint
+     \textstring
+   \else
      \def\textkern##1%
        {% beware: ##1 may not be \box\somebox -)
         \determinemidwordbreak{##1}{\stretchedbreaktokens}%
@@ -366,8 +368,6 @@
         \hskip\stretchedspacefactor\scratchdimen}%
      \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA
        \textskip\@EA{\textstring}%
-   \else
-     \textstring
    \fi
    \egroup}
 

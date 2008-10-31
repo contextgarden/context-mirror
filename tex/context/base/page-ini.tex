@@ -642,14 +642,6 @@
 %D In case we're not running \ETEX, we need to bypass a
 %D couple of primitives.
 
-\beginTEX \...discards
-
-  \chardef \savingvdiscards \zerocount
-  \let     \splitdiscards   \relax
-  \let     \pagediscards    \relax
-
-\endTEX
-
 % ONE = single column
 % MUL = multi column
 % SET = columns sets
@@ -657,8 +649,6 @@
 \def\@@OTR{OTR}
 
 \let\OTRdefault\empty
-
-\beginETEX \ifcsname
 
 \def\OTRcommand#1%
   {\csname\@@OTR
@@ -668,24 +658,6 @@
        \OTRdefault
      \fi\fi
    \strippedcsname#1\endcsname}
-
-\endETEX
-
-\beginTEX
-
-\def\OTRcommand#1%
-  {\csname\@@OTR
-     \@EA\ifx\csname\@@OTR\OTRidentifier\strippedcsname#1\endcsname\relax
-       \@EA\ifx\csname\@@OTR\OTRdefault\strippedcsname#1\endcsname\relax % fallback
-       \else
-         \OTRdefault
-       \fi
-     \else
-       \OTRidentifier
-     \fi
-   \strippedcsname#1\endcsname}
-
-\endTEX
 
 % obsolete
 

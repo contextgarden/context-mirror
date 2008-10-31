@@ -7,12 +7,8 @@
 if not versions then versions = { } end versions['l-unicode'] = 1.001
 if not unicode  then unicode  = { } end
 
-if not garbagecollector then
-    garbagecollector = {
-        push = function() collectgarbage("stop")    end,
-        pop  = function() collectgarbage("restart") end,
-    }
-end
+local concat, utfchar, utfgsub = table.concat, unicode.utf8.char, unicode.utf8.gsub
+local char, byte = string.char, string.byte
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
@@ -53,24 +49,21 @@ function unicode.utftype(f) -- \000 fails !
 end
 
 function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
---~     garbagecollector.push()
-    local result = { }
-    local tc, uc = table.concat, unicode.utf8.char
-    local tmp, n, m, p = { }, 0, 0, 0
+    local result, tmp, n, m, p = { }, { }, 0, 0, 0
     -- lf | cr | crlf / (cr:13, lf:10)
     local function doit()
         if n == 10 then
             if p ~= 13 then
-                result[#result+1] = tc(tmp,"")
+                result[#result+1] = concat(tmp)
                 tmp = { }
                 p = 0
             end
         elseif n == 13 then
-            result[#result+1] = tc(tmp,"")
+            result[#result+1] = concat(tmp)
             tmp = { }
             p = n
         else
-            tmp[#tmp+1] = uc(n)
+            tmp[#tmp+1] = utfchar(n)
             p = 0
         end
     end
@@ -93,31 +86,28 @@ function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
         end
     end
     if #tmp > 0 then
-        result[#result+1] = tc(tmp,"")
+        result[#result+1] = concat(tmp)
     end
---~     garbagecollector.pop()
     return result
 end
 
 function unicode.utf32_to_utf8(str, endian)
---~     garbagecollector.push()
     local result = { }
-    local tc, uc = table.concat, unicode.utf8.char
     local tmp, n, m, p = { }, 0, -1, 0
     -- lf | cr | crlf / (cr:13, lf:10)
     local function doit()
         if n == 10 then
             if p ~= 13 then
-                result[#result+1] = tc(tmp,"")
+                result[#result+1] = concat(tmp)
                 tmp = { }
                 p = 0
             end
         elseif n == 13 then
-            result[#result+1] = tc(tmp,"")
+            result[#result+1] = concat(tmp)
             tmp = { }
             p = n
         else
-            tmp[#tmp+1] = uc(n)
+            tmp[#tmp+1] = utfchar(n)
             p = 0
         end
     end
@@ -143,16 +133,15 @@ function unicode.utf32_to_utf8(str, endian)
         end
     end
     if #tmp > 0 then
-        result[#result+1] = tc(tmp,"")
+        result[#result+1] = concat(tmp)
     end
---~     garbagecollector.pop()
     return result
 end
 
 function unicode.utf8_to_utf16(str,littleendian)
     if littleendian then
-        return char(255,254) .. utf.gsub(str,".",function(c)
-            local b = byte(c)
+        return char(255,254) .. utfgsub(str,".",function(c)
+            local b = byte(c) -- b = c:byte()
             if b < 0x10000 then
                 return char(b%256,b/256)
             else
@@ -162,7 +151,7 @@ function unicode.utf8_to_utf16(str,littleendian)
             end
         end)
     else
-        return char(254,255) .. utf.gsub(str,".",function(c)
+        return char(254,255) .. utfgsub(str,".",function(c)
             local b = byte(c)
             if b < 0x10000 then
                 return char(b/256,b%256)

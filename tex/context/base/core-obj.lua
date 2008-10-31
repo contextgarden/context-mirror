@@ -7,32 +7,43 @@ if not modules then modules = { } end modules ['core-obj'] = {
 }
 
 --[[ldx--
-<p>We save object references in the main utility table. Objects are
+<p>We save object references in the main utility table. jobobjects are
 reusable components.</p>
 --ldx]]--
 
 local texsprint = tex.sprint
 
-if not jobs        then jobs         = { } end
-if not job         then jobs['main'] = { } end job = jobs['main']
-if not job.objects then job.objects  = { } end
+jobobjects           = jobobjects or { }
+jobobjects.collected = jobobjects.collected or { }
+jobobjects.tobesaved = jobobjects.tobesaved or { }
 
-function job.getobjectreference(tag,default)
-    if job.objects[tag] then
-        texsprint(job.objects[tag][1] or default)
-    else
-        texsprint(default)
-    end
+local collected, tobesaved = jobobjects.collected, jobobjects.tobesaved
+
+local function initializer()
+    collected, tobesaved = jobobjects.collected, jobobjects.tobesaved
 end
 
-function job.getobjectreferencepage(tag,default)
-    if job.objects[tag] then
-        texsprint(job.objects[tag][2] or default)
-    else
-        texsprint(default)
-    end
+job.register('jobobjects.collected', jobobjects.tobesaved, initializer, nil)
+
+function jobobjects.save(tag,number,page)
+    local t = { number, page }
+    tobesaved[tag], collected[tag] = t, t
 end
 
-function job.doifobjectreference(tag)
-    cs.testcase(job.objects[tag])
+function jobobjects.set(tag,number,page)
+    collected[tag] = { number, page }
+end
+
+function jobobjects.number(tag,default)
+    local o = collected[tag] or tobesaved[tag]
+    texsprint((o and o[1]) or default)
+end
+
+function jobobjects.page(tag,default)
+    local o = collected[tag] or tobesaved[tag]
+    texsprint((o and o[2]) or default)
+end
+
+function jobobjects.doifelse(tag)
+    cs.testcase(collected[tag] or tobesaved[tag])
 end

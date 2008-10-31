@@ -19,6 +19,8 @@ in special kinds of output (for instance <l n='pdf'/>).</p>
 over a string.</p>
 --ldx]]--
 
+local concat = table.concat
+
 utf = utf or unicode.utf8
 
 characters              = characters              or { }
@@ -30,6 +32,10 @@ characters.filters.utf.initialized = false
 characters.filters.utf.collapsing  = true
 characters.filters.utf.expanding   = true
 
+local graphemes  = characters.graphemes
+local utffilters = characters.filters.utf
+local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
+
 --[[ldx--
 <p>It only makes sense to collapse at runtime, since we don't expect
 source code to depend on collapsing:</p>
@@ -40,69 +46,48 @@ input.filters.utf_translator      = characters.filters.utf.collapse
 </typing>
 --ldx]]--
 
-function characters.filters.utf.initialize()
-    if characters.filters.utf.collapsing and not characters.filters.utf.initialized then
-        local cg = characters.graphemes
-        local uc = utf.char
+function utffilters.initialize()
+    if utffilters.collapsing and not utffilters.initialized then
         for k,v in pairs(characters.data) do
             -- using vs and first testing for length is faster (.02->.01 s)
             local vs = v.specials
             if vs and #vs == 3 and vs[1] == 'char' then
-                local first, second = uc(vs[2]), uc(vs[3])
-                local cgf = cg[first]
+                local first, second = utfchar(vs[2]), utfchar(vs[3])
+                local cgf = graphemes[first]
                 if not cgf then
                     cgf = { }
-                    cg[first] = cgf
+                    graphemes[first] = cgf
                 end
-                cgf[second] = uc(k)
+                cgf[second] = utfchar(k)
             end
         end
-        characters.filters.utf.initialized = true
+        utffilters.initialized = true
     end
 end
 
--- characters.filters.utf.add_grapheme(utf.char(318),'l','\string~')
--- characters.filters.utf.add_grapheme('c','a','b')
+-- utffilters.add_grapheme(utfchar(318),'l','\string~')
+-- utffilters.add_grapheme('c','a','b')
 
---~ function characters.filters.utf.add_grapheme(result,...)
---~     local cg = characters.graphemes
---~     local t = {...}
---~     local n = table.getn(t)
---~     for i=1,n do
---~         local v = t[i]
---~         if not cg[v] then
---~             cg[v] = { }
---~         end
---~         if i == n then
---~            cg[v] = result
---~         else
---~             cg = cg[v]
---~         end
---~     end
---~ end
-
-function characters.filters.utf.add_grapheme(result,first,second)
-    local cg, uc = characters.graphemes, utf.char
+function utffilters.add_grapheme(result,first,second)
     local r, f, s = tonumber(result), tonumber(first), tonumber(second)
-    if r then result = uc(r) end
-    if f then first  = uc(f) end
-    if s then second = uc(s) end
-    if not cg[first] then
-        cg[first] = { [second] = result }
+    if r then result = utfchar(r) end
+    if f then first  = utfchar(f) end
+    if s then second = utfchar(s) end
+    if not graphemes[first] then
+        graphemes[first] = { [second] = result }
     else
-        cg[first][second] = result
+        graphemes[first][second] = result
     end
 end
 
-function characters.filters.utf.collapse(str) -- old one
-    if characters.filters.utf.collapsing and str and #str > 1 then
-        if not characters.filters.utf.initialized then -- saves a call
-            characters.filters.utf.initialize()
+function utffilters.collapse(str) -- old one
+    if utffilters.collapsing and str and #str > 1 then
+        if not utffilters.initialized then -- saves a call
+            utffilters.initialize()
         end
         local tokens, first, done = { }, false, false
-        local cg = characters.graphemes
         for second in str:utfcharacters() do
-            local cgf = cg[first]
+            local cgf = graphemes[first]
             if cgf and cgf[second] then
                 first, done = cgf[second], true
             elseif first then
@@ -114,7 +99,7 @@ function characters.filters.utf.collapse(str) -- old one
         end
         if done then
             tokens[#tokens+1] = first
-            return table.concat(tokens,"")
+            return concat(tokens)
         end
     end
     return str
@@ -138,44 +123,38 @@ to their right glyph there.</p>
 0x100000.</p>
 --ldx]]--
 
-characters.filters.utf.private = {
+utffilters.private = {
     high    = { },
     low     = { },
     escapes = { },
 }
 
-do
+local low     = utffilters.private.low
+local high    = utffilters.private.high
+local escapes = utffilters.private.escapes
+local special = "~#$%^&_{}\\"
 
-    local low     = characters.filters.utf.private.low
-    local high    = characters.filters.utf.private.high
-    local escapes = characters.filters.utf.private.escapes
-    local special = "~#$%^&_{}\\"
-
-    local ub, uc, ug = utf.byte, utf.char, utf.gsub
-
-    function characters.filters.utf.private.set(ch)
-        local cb
-        if type(ch) == "number" then
-            cb, ch = ch, uc(ch)
-        else
-            cb = ub(ch)
-        end
-        if cb < 256 then
-            low    [ch]                = uc(0x0F0000 + cb)
-            high   [uc(0x0F0000 + cb)] = ch
-            escapes[ch]                = "\\" .. ch
-        end
+function utffilters.private.set(ch)
+    local cb
+    if type(ch) == "number" then
+        cb, ch = ch, utfchar(ch)
+    else
+        cb = utfbyte(ch)
     end
-
-    function characters.filters.utf.private.replace(str) return ug(str,"(.)", low    ) end
-    function characters.filters.utf.private.revert(str)  return ug(str,"(.)", high   ) end
-    function characters.filters.utf.private.escape(str)  return ug(str,"(.)", escapes) end
-
-    local set = characters.filters.utf.private.set
-
-    for ch in special:gmatch(".") do set(ch) end
-
+    if cb < 256 then
+        low[ch] = utfchar(0x0F0000 + cb)
+        high[utfchar(0x0F0000 + cb)] = ch
+        escapes[ch] = "\\" .. ch
+    end
 end
+
+function utffilters.private.replace(str) return utfgsub(str,"(.)", low    ) end
+function utffilters.private.revert(str)  return utfgsub(str,"(.)", high   ) end
+function utffilters.private.escape(str)  return utfgsub(str,"(.)", escapes) end
+
+local set = utffilters.private.set
+
+for ch in special:gmatch(".") do set(ch) end
 
 --[[ldx--
 <p>We get a more efficient variant of this when we integrate
@@ -188,172 +167,84 @@ first snippet uses the relocated dollars.</p>
 </typing>
 --ldx]]--
 
-do
+local cr = utffilters.private.high -- kan via een lpeg
+local cf = utffilters
 
-    local cg = characters.graphemes
-    local cr = characters.filters.utf.private.high -- kan via een lpeg
-    local cf = characters.filters.utf
+--[[ldx--
+<p>The next variant has lazy token collecting, on a 140 page mk.tex this saves
+about .25 seconds, which is understandable because we have no graphmes and
+not collecting tokens is not only faster but also saves garbage collecting.
+</p>
+--ldx]]--
 
-    local concat = table.concat
+-- lpeg variant is not faster
 
-    --~ keep this  one, it's the baseline
-    --~
-    --~ function characters.filters.utf.collapse(str)
-    --~     if cf.collapsing and str then
-    --~         if #str > 1 then
-    --~             if not cf.initialized then -- saves a call
-    --~                 cf.initialize()
-    --~             end
-    --~             local tokens, first, done = { }, false, false
-    --~             for second in str:utfcharacters() do
-    --~                 if cr[second] then
-    --~                     if first then
-    --~                         tokens[#tokens+1] = first
-    --~                     end
-    --~                     first, done = cr[second], true
-    --~                 else
-    --~                     local cgf = cg[first]
-    --~                     if cgf and cgf[second] then
-    --~                         first, done = cgf[second], true
-    --~                     elseif first then
-    --~                         tokens[#tokens+1] = first
-    --~                         first = second
-    --~                     else
-    --~                         first = second
-    --~                     end
-    --~                 end
-    --~             end
-    --~             if done then
-    --~                 tokens[#tokens+1] = first
-    --~                 return concat(tokens,"") -- seldom called
-    --~             end
-    --~         elseif #str > 0 then
-    --~             return cr[str] or str
-    --~         end
-    --~     end
-    --~     return str
-    --~ end
-
-    --[[ldx--
-    <p>The next variant has lazy token collecting, on a 140 page mk.tex this saves
-    about .25 seconds, which is understandable because we have no graphmes and
-    not collecting tokens is not only faster but also saves garbage collecting.
-    </p>
-    --ldx]]--
-
-    function characters.filters.utf.collapse(str) -- not really tested (we could preallocate a table)
-        if cf.collapsing and str then
-            if #str > 1 then
-                if not cf.initialized then -- saves a call
-                    cf.initialize()
-                end
-                local tokens, first, done, n = { }, false, false, 0
-                for second in str:utfcharacters() do
-                    if done then
-                        if cr[second] then
-                            if first then
-                                tokens[#tokens+1] = first
-                            end
-                            first = cr[second]
+function utffilters.collapse(str) -- not really tested (we could preallocate a table)
+    if cf.collapsing and str then
+        if #str > 1 then
+            if not cf.initialized then -- saves a call
+                cf.initialize()
+            end
+            local tokens, first, done, n = { }, false, false, 0
+            for second in str:utfcharacters() do
+                if done then
+                    local crs = cr[second]
+                    if crs then
+                        if first then
+                            tokens[#tokens+1] = first
+                        end
+                        first = crs
+                    else
+                        local cgf = graphemes[first]
+                        if cgf and cgf[second] then
+                            first = cgf[second]
+                        elseif first then
+                            tokens[#tokens+1] = first
+                            first = second
                         else
-                            local cgf = cg[first]
-                            if cgf and cgf[second] then
-                                first = cgf[second]
-                            elseif first then
-                                tokens[#tokens+1] = first
-                                first = second
+                            first = second
+                        end
+                    end
+                else
+                    local crs = cr[second]
+                    if crs then
+                        for s in str:utfcharacters() do
+                            if n == 1 then
+                                break
                             else
-                                first = second
+                                tokens[#tokens+1], n = s, n - 1
                             end
                         end
+                        if first then
+                            tokens[#tokens+1] = first
+                        end
+                        first, done = crs, true
                     else
-                        if cr[second] then
+                        local cgf = graphemes[first]
+                        if cgf and cgf[second] then
                             for s in str:utfcharacters() do
                                 if n == 1 then
                                     break
                                 else
-                                    tokens[#tokens+1], n = s, n - 1
+                                    tokens[#tokens+1], n = s, n -1
                                 end
                             end
-                            if first then
-                                tokens[#tokens+1] = first
-                            end
-                            first, done = cr[second], true
+                            first, done = cgf[second], true
                         else
-                            local cgf = cg[first]
-                            if cgf and cgf[second] then
-                                for s in str:utfcharacters() do
-                                    if n == 1 then
-                                        break
-                                    else
-                                        tokens[#tokens+1], n = s, n -1
-                                    end
-                                end
-                                first, done = cgf[second], true
-                            else
-                                first, n = second, n + 1
-                            end
+                            first, n = second, n + 1
                         end
                     end
                 end
-                if done then
-                    tokens[#tokens+1] = first
-                    return concat(tokens,"") -- seldom called
-                end
-            elseif #str > 0 then
-                return cr[str] or str
             end
+            if done then
+                tokens[#tokens+1] = first
+                return concat(tokens) -- seldom called
+            end
+        elseif #str > 0 then
+            return cr[str] or str
         end
-        return str
     end
-
-    --~ not faster (0.1 seconds on a 500 k collapsable file)
-    --~
-    --~ local specials, initials = lpeg.P(false), ""
-    --~ for k,v in pairs(cr) do
-    --~     specials, initials = specials + lpeg.P(k)/v, initials .. k:sub(1,1)
-    --~ end
-    --~ specials = lpeg.Cs(lpeg.P((1-lpeg.S(initials)) + specials)^0)
-    --~ local graphemes = ""
-    --~ for _, v in pairs(cg) do
-    --~     for kk, _ in pairs(v) do
-    --~         graphemes = graphemes .. kk:sub(1,1)
-    --~     end
-    --~ end
-    --~ graphemes = lpeg.P{ lpeg.S(graphemes) + 1 * lpeg.V(1) }
-    --~
-    --~ function characters.filters.utf.collapse(str)
-    --~     if cf.collapsing and str then
-    --~         if #str > 1 then
-    --~             str = specials:match(str)
-    --~             if graphemes:match(str) then
-    --~                 if not cf.initialized then -- saves a call
-    --~                     cf.initialize()
-    --~                 end
-    --~                 local tokens, first, done = { }, false, false
-    --~                 for second in str:utfcharacters() do
-    --~                     local cgf = cg[first]
-    --~                     if cgf and cgf[second] then
-    --~                         first, done = cgf[second], true
-    --~                     elseif first then
-    --~                         tokens[#tokens+1] = first
-    --~                         first = second
-    --~                     else
-    --~                         first = second
-    --~                     end
-    --~                 end
-    --~                 if done then
-    --~                     tokens[#tokens+1] = first
-    --~                     return table.concat(tokens,"")
-    --~                 end
-    --~             end
-    --~         elseif #str > 0 then
-    --~             return cr[str] or str
-    --~         end
-    --~     end
-    --~     return str
-    --~ end
-
+    return str
 end
 
 --[[ldx--
@@ -364,8 +255,8 @@ and since it may interfere with non-text, we will not use this feature
 by default.</p>
 
 <typing>
-characters.filters.utf.collapsing = true
-characters.filters.append(characters.filters.utf.collapse)
+utffilters.collapsing = true
+characters.filters.append(utffilters.collapse)
 characters.filters.activated = true
 callback.register('process_input_buffer', characters.filters.process)
 </typing>
@@ -423,7 +314,7 @@ function characters.filters.insert_after(name_1,name_2)
 end
 
 function characters.filters.list(separator)
-    table.concat(characters.filters.sequences,seperator or ' ')
+    concat(characters.filters.sequences,seperator or ' ')
 end
 
 function characters.filters.process(str)
@@ -455,7 +346,7 @@ function characters.filters.collector.reset()
 end
 
 function characters.filters.collector.flush(separator)
-    tex.sprint(table.concat(characters.filters.collector.data,separator))
+    tex.sprint(concat(characters.filters.collector.data,separator))
 end
 
 function characters.filters.collector.prune(n)
@@ -467,7 +358,7 @@ end
 function characters.filters.collector.numerate(str)
     if characters.filters.collector.collecting then
         table.insert(characters.filters.collector.data,(unicode.utf8.gsub(str,"(.)", function(c)
-            return string.format("0x%04X ",unicode.utf8.byte(c))
+            return ("0x%04X "):format(unicode.utf8.byte(c))
         end)))
     end
     return str

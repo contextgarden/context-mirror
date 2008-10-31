@@ -127,6 +127,7 @@ class TEX
     ['cont-cs','cs','cont-cz','cz','czech']        .each do |f| @@texformats[f] = 'cont-cs'   end
     ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro'   end
     ['cont-gb','gb','cont-uk','uk','british']      .each do |f| @@texformats[f] = 'cont-gb'   end
+    ['cont-pe','pe','persian']                     .each do |f| @@texformats[f] = 'cont-pe'   end
     ['mptopdf']                                    .each do |f| @@texformats[f] = 'mptopdf'   end
 
     ['latex']                                      .each do |f| @@texformats[f] = 'latex.ltx' end
@@ -141,7 +142,8 @@ class TEX
 
     ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
     ['cont-en','cont-nl','cont-de','cont-it',
-     'cont-fr','cont-cs','cont-ro','cont-gb']      .each do |f| @@texmethods[f] = 'context'   end
+     'cont-fr','cont-cs','cont-ro','cont-gb',
+     'cont-pe']                                    .each do |f| @@texmethods[f] = 'context'   end
     ['latex','pdflatex']                           .each do |f| @@texmethods[f] = 'latex'     end
 
     ['plain','default','standard']                 .each do |f| @@mpsmethods[f] = 'plain'     end
@@ -151,7 +153,8 @@ class TEX
     @@mpsmakestr['plain'] = @@platformslash + "dump"
 
     ['cont-en','cont-nl','cont-de','cont-it',
-     'cont-fr','cont-cs','cont-ro','cont-gb']      .each do |f| @@texprocstr[f] = @@platformslash + "emergencyend"  end
+     'cont-fr','cont-cs','cont-ro','cont-gb',
+     'cont-pe']                                    .each do |f| @@texprocstr[f] = @@platformslash + "emergencyend"  end
 
     @@runoptions['aleph']   = ['--8bit']
     @@runoptions['luatex']  = ['--file-line-error']

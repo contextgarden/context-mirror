@@ -1,0 +1,44 @@
+%D \module
+%D   [       file=prop-lay,
+%D        version=2003.04.20,
+%D          title=\CONTEXT\ Property Macros,
+%D       subtitle=Layers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\let\currentlayerproperty\empty
+
+\def\checklayerproperty
+  {\doifelse{\checkedpropertyparameter\v!printable\currentproperty}\v!no
+     {\def\printviewerlayer{0}}
+     {\def\printviewerlayer{1}}%
+   \dodefineviewerlayer
+     \currentproperty % tag
+     {\checkedpropertyparameter\c!title\currentproperty}%
+     {\checkedpropertyparameter\c!state\v!start}% visible or hidden
+     {0}% type (1=frozen)
+     {\printviewerlayer}}% 1=printable
+
+\def\startlayerproperty
+  {\let\currentlayerproperty\currentproperty
+   \dostartviewerlayer\currentproperty}
+
+\def\stoplayerproperty
+  {\dostopviewerlayer
+   \let\currentlayerproperty\previousproperty}
+
+\def\domakelayerpropertylist
+  {\iflocation
+     \expandafter\domakeviewerlayerlist
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\protect \endinput

@@ -266,6 +266,7 @@
         <cd:constant type="author"/>
         <cd:constant type="short"/>
         <cd:constant type="no" default="yes"/>
+        <cd:constant type="cd:file"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>

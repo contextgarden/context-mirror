@@ -17,6 +17,8 @@ regimes.data    = regimes.data    or { }
 regimes.utf     = regimes.utf     or { }
 regimes.context = regimes.context or { }
 
+local char, utfchar = string.char, unicode.utf8.char
+
 -- setmetatable(regimes.data,_empty_table_)
 
 regimes.currentregime = ""
@@ -51,7 +53,7 @@ function regimes.load(regime)
     if regimes.data[regime] then
         regimes.utf[regime] = { }
         for k,v in pairs(regimes.data[regime]) do
-            regimes.utf[regime][string.char(k)] = unicode.utf8.char(v)
+            regimes.utf[regime][char(k)] = utfchar(v)
         end
     end
 end
@@ -79,7 +81,7 @@ function regimes.enable(regime)
 end
 
 function regimes.disable()
-    regimes.currentregime            = ""
+    regimes.currentregime = ""
     input.filters.dynamic_translator = nil
 end
 

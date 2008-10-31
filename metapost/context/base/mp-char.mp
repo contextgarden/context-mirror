@@ -28,7 +28,7 @@ def save_text_position (expr p) =  % beware: clip shift needed
   savedata
     "\MPposition{" & decimal current_position & "}{"
                    & decimal xpart p          & "}{"
-                   & decimal ypart p          & "}" ;
+                   & decimal ypart p          & "}%" ;
 enddef ;
 
 %D settings
@@ -900,6 +900,7 @@ def begin_chart (expr n, maxx, maxy) =
   chart_figure := n ;
   chart_scale := 1 ;
   if chart_figure>0: beginfig(chart_figure) ; fi ;
+  startsavingdata ;
   initialize_grid (maxx, maxy) ;
   bboxmargin := 0 ;
   cmin_x := 1 ;
@@ -932,14 +933,15 @@ def end_chart =
     decimal xpart llcorner p & "}{" &
     decimal ypart llcorner p & "}{" &
     decimal xpart urcorner p & "}{" &
-    decimal ypart urcorner p & "}" ;
+    decimal ypart urcorner p & "}%" ;
   savedata
     "\MPareapath{" &
     decimal (xpart llcorner p + 2chart_offset) & "}{" &
     decimal (ypart llcorner p + 2chart_offset) & "}{" &
     decimal (xpart urcorner p - 2chart_offset) & "}{" &
-    decimal (ypart urcorner p - 2chart_offset) & "}" ;
+    decimal (ypart urcorner p - 2chart_offset) & "}%" ;
   currentpicture := currentpicture scaled chart_scale ;
+  stopsavingdata ;
   if chart_figure>0: endfig ; fi ;
 enddef ;
 

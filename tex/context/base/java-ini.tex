@@ -659,8 +659,6 @@
 %D The magic 500 in the next hack prevents the input stack from
 %D overflowing when large scripts are sanitized.
 
-%\beginTEX
-
 \def\dododoPSsanitizeJScode
   {\ifcase\JSisTEX\ifcase\JScomment
      \advance\scratchcounter \plusone
@@ -679,16 +677,6 @@
    \aftergroup{%
    \aftergroup\sanitizedJScode
    \let\next=}}
-
-%\endTEX
-%
-% Why is \aftergroup not doing what I expect?
-%
-% \beginETEX \aftergroup
-%
-% \let\dododoPSsanitizeJScode\relax
-%
-% \endETEX
 
 %D The macro \type{\doPSsanitizeJScode} converts its argument
 %D into the macro \type{\sanitizedJScode}, thereby prefixing

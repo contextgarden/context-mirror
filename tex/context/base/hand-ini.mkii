@@ -169,16 +169,7 @@
   \appendtoks \disableadjusting \to \everyforgetall % Here or not here?
 
   \def\dododefineadjustfactor#1#2%
-    {\adjustdimen#2pt\multiply\adjustdimen\plusthousand\divide\adjustdimen\maxcard\relax
-     \efcode\handledfont#1\adjustdimen}
-
-  \beginETEX
-
-  \def\dododefineadjustfactor#1#2%
-%     {\efcode\handledfont#1\dimexpr#2pt*\plusthousand/\maxcard\relax}
     {\efcode\handledfont#1\dimexpr#2\onepoint*\plusthousand/\maxcard\relax}
-
-  \endETEX
 
   \def\dodoinheritadjustfactor#1#2%
     {\efcode\handledfont#1\efcode\handledfont#2\relax}
@@ -251,25 +242,10 @@
   \def\setprotrudingfactor#1%
     {\doifvalue{\@fha@\@fha@#1\c!type}\v!hanging{\dosetprotrudingfactor{#1}}}
 
-  \beginTEX
-
-  \def\dosetprotrudingfactor#1% no \onepoint instead of pt
-    {\lproddimen\csname\@fha@\@fha@#1\c!left\endcsname\s!pt
-     \multiply\lproddimen\plusthousand\divide\lproddimen\maxcard\relax
-     \rproddimen\csname\@fha@\@fha@#1\c!right\endcsname\s!pt
-     \multiply\rproddimen\plusthousand\divide\rproddimen\maxcard\relax
-     \iftracefonthandling\showprotrudingfactor{#1}\fi}
-
-  \endTEX
-
-  \beginETEX \dimexpr
-
   \def\dosetprotrudingfactor#1% no \onepoint instead of pt
     {\lproddimen\dimexpr\csname\@fha@\@fha@#1\c!left \endcsname\onepoint*\plusthousand/\maxcard\relax
      \rproddimen\dimexpr\csname\@fha@\@fha@#1\c!right\endcsname\onepoint*\plusthousand/\maxcard\relax
      \iftracefonthandling\showprotrudingfactor{#1}\fi}
-
-  \endETEX
 
   \def\showprotrudingfactor#1%
     {\writestatus\m!handlings{[protrude]\space#1\space
@@ -277,86 +253,29 @@
        \csname\@fha@\@fha@#1\c!right\endcsname\space
        \fontname\handledfont}}
 
-  \beginETEX \fontcharwd
-
     % division before multiplication, else overflow with "sa>5"
 
-    \newdimen\protrudethreshold \protrudethreshold=36pt
+  \newdimen\protrudethreshold \protrudethreshold=36pt
 
-    % keep this
-
-    % \def\redodefineprotrudefactor#1%
-    %   {\ifdim\emwidth>\protrudethreshold
-    %      \divide\scratchdimen\emwidth
-    %      \multiply\scratchdimen\fontcharwd\handledfont#1\relax
-    %    \else
-    %      \multiply\scratchdimen\fontcharwd\handledfont#1\relax
-    %      \divide\scratchdimen\emwidth
-    %    \fi}
-
-    % \def\dododefineprotrudefactor#1#2#3%
-    %   {\scratchdimen#2\lproddimen
-    %    \ifembasedprotruding \else
-    %      \redodefineprotrudefactor{#1}%
-    %    \fi
-    %    \lpcode\handledfont#1\scratchdimen
-    %    \scratchdimen#3\rproddimen
-    %    \ifembasedprotruding \else
-    %      \redodefineprotrudefactor{#1}%
-    %    \fi
-    %    \rpcode\handledfont#1\scratchdimen}
-
-    \def\dododefineprotrudefactor#1#2#3%
-      {\lpcode\handledfont#1\dimexpr#2\lproddimen
-         \ifembasedprotruding \else
-           \ifdim\emwidth>\protrudethreshold
-             /\emwidth*\fontcharwd\handledfont#1%
-           \else
-             *\fontcharwd\handledfont#1/\emwidth
-           \fi
-         \fi
-       \relax
-       \rpcode\handledfont#1\dimexpr#3\rproddimen
-         \ifembasedprotruding \else
-           \ifdim\emwidth>\protrudethreshold
-             /\emwidth*\fontcharwd\handledfont#1%
-           \else
-             *\fontcharwd\handledfont#1/\emwidth
-           \fi
-         \fi
-       \relax}
-
-  \endETEX
-
-  \beginTEX
-
-    \ifx\undefined\charbox \newbox\charbox \fi
-
-    \def\protrudethreshold{36\onepoint}
-
-    \def\redodefineprotrudefactor
-      {\ifdim\emwidth>\protrudethreshold
-         \divide\scratchdimen\emwidth
-         \multiply\scratchdimen\wd\charbox
-       \else
-         \multiply\scratchdimen\wd\charbox
-         \divide\scratchdimen\emwidth
-       \fi}
-
-    \def\dododefineprotrudefactor#1#2#3%
-      {\setbox\charbox{\handledfont\char#1}% ! yet untested !
-       \scratchdimen#2\lproddimen
+  \def\dododefineprotrudefactor#1#2#3%
+    {\lpcode\handledfont#1\dimexpr#2\lproddimen
        \ifembasedprotruding \else
-         \redodefineprotrudefactor
+         \ifdim\emwidth>\protrudethreshold
+           /\emwidth*\fontcharwd\handledfont#1%
+         \else
+           *\fontcharwd\handledfont#1/\emwidth
+         \fi
        \fi
-       \lpcode\handledfont#1\scratchdimen
-       \scratchdimen#3\rproddimen
+     \relax
+     \rpcode\handledfont#1\dimexpr#3\rproddimen
        \ifembasedprotruding \else
-         \redodefineprotrudefactor
+         \ifdim\emwidth>\protrudethreshold
+           /\emwidth*\fontcharwd\handledfont#1%
+         \else
+           *\fontcharwd\handledfont#1/\emwidth
+         \fi
        \fi
-       \rpcode\handledfont#1\scratchdimen}
-
-  \endTEX
+     \relax}
 
   \def\dodoinheritprotrudefactor#1#2%
     {\lpcode\handledfont#1\lpcode\handledfont#2\relax
@@ -475,27 +394,12 @@
 
 \let\fonthandling\empty
 
-\beginTEX
-
-  \def\startfonthandling[#1]%
-    {\def\fonthandling{#1}%
-     \expandafter\ifx\csname\@fha@\fonthandling\endcsname\relax
-       \expandafter\newtoks\csname\@fha@\fonthandling\endcsname
-     \fi
-     \setfonttoks}
-
-\endTEX
-
-\beginETEX
-
-  \def\startfonthandling[#1]%
-    {\def\fonthandling{#1}%
-     \ifcsname\@fha@\fonthandling\endcsname\else
-       \expandafter\newtoks\csname\@fha@\fonthandling\endcsname
-     \fi
-     \setfonttoks}
-
-\endETEX
+\def\startfonthandling[#1]%
+  {\def\fonthandling{#1}%
+   \ifcsname\@fha@\fonthandling\endcsname\else
+     \expandafter\newtoks\csname\@fha@\fonthandling\endcsname
+   \fi
+   \setfonttoks}
 
 \def\stopfonthandling
   {\let\fonthandling\empty}
@@ -532,33 +436,6 @@
 \def\doenablehandling[#1][#2]% handling / symbolic fontname
   {\fastenablehandling{#1}{#2}} % for the moment the same as:
 
-\beginTEX
-
-\def\fastenablehandling#1#2%
-  {\edef\askedfonthandling{#1}%
-   \edef\filoffonthandling{#2}%
-   \@EA\ifx\csname\@fha@\@fha@\@fha@\askedfonthandling\endcsname\relax
-     \@EA\ifx\csname\@fha@\@fha@\askedfonthandling\endcsname\relax
-       \@EAEAEA\nofastenablehandling
-     \else
-       \@EAEAEA\dofastenablehandling
-     \fi
-   \else
-     \@EA\redofastenablehandling
-   \fi}
-
-\def\xfastenablehandling#1%
-  {\edef\askedfonthandling{#1}%
-   \@EA\ifx\csname\@fha@\@fha@\askedfonthandling\endcsname
-     \@EA\nofastenablehandling
-   \else
-     \@EA\dofastenablehandling
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\fastenablehandling#1#2% also gets #2 passed
   {\edef\askedfonthandling{#1}%
    \edef\filoffonthandling{#2}%
@@ -577,8 +454,6 @@
    \else
      \@EA\nofastenablehandling
    \fi}
-
-\endETEX
 
 \def\redofastenablehandling
   {\startdirectcharacters
@@ -600,23 +475,10 @@
    \let\fonthandling\askedfonthandling
    \dodoenablehandling\fonthandling}
 
-\beginTEX
-
-\def\dodoenablehandling#1%
-  {\@EA\ifx\csname\@fha@#1\endcsname\relax\else
-     \the\csname\@fha@#1\endcsname
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\dodoenablehandling#1%
   {\ifcsname\@fha@#1\endcsname
      \the\csname\@fha@#1\endcsname
    \fi}
-
-\endETEX
 
 %D We must not use \type {\purefontname} here (was a bug)!
 

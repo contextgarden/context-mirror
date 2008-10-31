@@ -23,143 +23,136 @@ languages.hyphenation.data = languages.hyphenation.data   or { }
 --~ lang:clear_hyphenation()
 
 
-do
-    -- we can consider hiding data (faster access too)
+-- we can consider hiding data (faster access too)
 
-    --~ local function filter(filename,what)
-    --~     local data = io.loaddata(input.find_file(filename))
-    --~     local data = data:match(string.format("\\%s%%s*(%%b{})",what or "patterns"))
-    --~     return data:match("{%s*(.-)%s*}") or ""
-    --~ end
+--~ local function filter(filename,what)
+--~     local data = io.loaddata(input.find_file(filename))
+--~     local data = data:match(string.format("\\%s%%s*(%%b{})",what or "patterns"))
+--~     return data:match("{%s*(.-)%s*}") or ""
+--~ end
 
-    -- loading the 26 languages that we normally load in mkiv, the string based variant
-    -- takes .84 seconds (probably due to the sub's) while the lpeg variant takes .78
-    -- seconds
+-- loading the 26 languages that we normally load in mkiv, the string based variant
+-- takes .84 seconds (probably due to the sub's) while the lpeg variant takes .78
+-- seconds
 
-    local leftbrace  = lpeg.P("{")
-    local rightbrace = lpeg.P("}")
-    local spaces     = lpeg.S(" \r\n\t\f")
-    local spacing    = spaces^0
-    local validchar  = 1-(spaces+rightbrace+leftbrace)
-    local validword  = validchar^1
-    local content    = spacing * leftbrace * spacing * lpeg.C((spacing * validword)^0) * spacing * rightbrace * lpeg.P(true)
+local leftbrace  = lpeg.P("{")
+local rightbrace = lpeg.P("}")
+local spaces     = lpeg.S(" \r\n\t\f")
+local spacing    = spaces^0
+local validchar  = 1-(spaces+rightbrace+leftbrace)
+local validword  = validchar^1
+local content    = spacing * leftbrace * spacing * lpeg.C((spacing * validword)^0) * spacing * rightbrace * lpeg.P(true)
 
-    local command    = lpeg.P("\\patterns")
-    local parser     = (1-command)^0 * command * content
+local command    = lpeg.P("\\patterns")
+local parser     = (1-command)^0 * command * content
 
-    local function filterpatterns(filename)
-        if filename:find("%.rpl") then
-            return io.loaddata(input.find_file(filename)) or ""
-        else
-            return parser:match(io.loaddata(input.find_file(filename)) or "")
-        end
+local function filterpatterns(filename)
+    if filename:find("%.rpl") then
+        return io.loaddata(input.find_file(filename)) or ""
+    else
+        return parser:match(io.loaddata(input.find_file(filename)) or "")
     end
-
-    local command     = lpeg.P("\\hyphenation")
-    local parser      = (1-command)^0 * command * content
-
-    local function filterexceptions(filename)
-        if filename:find("%.rhl") then
-            return io.loaddata(input.find_file(filename)) or ""
-        else
-            return parser:match(io.loaddata(input.find_file(filename)) or {}) -- "" ?
-        end
-    end
-
-    local function record(tag)
-        local data = languages.hyphenation.data[tag]
-        if not data then
-             data = lang.new()
-             languages.hyphenation.data[tag] = data
-        end
-        return data
-    end
-
-    languages.hyphenation.record = record
-
-    function languages.hyphenation.define(tag)
-        local data = record(tag)
-        return data:id()
-    end
-
-    function languages.hyphenation.number(tag)
-        local d = languages.hyphenation.data[tag]
-        return (d and d:id()) or 0
-    end
-
-    function languages.hyphenation.load(tag, filename, filter, target)
-        input.starttiming(languages)
-        local data = record(tag)
-        filename = (filename and filename ~= "" and input.find_file(filename)) or ""
-        local ok = filename ~= ""
-        if ok then
-            lang[target](data,filterpatterns(filename))
-        else
-            lang[target](data,"")
-        end
-        languages.hyphenation.data[tag] = data
-        input.stoptiming(languages)
-        return ok
-    end
-
-    function languages.hyphenation.loadpatterns(tag, patterns)
-        return languages.hyphenation.load(tag, patterns, filterpatterns, "patterns")
-    end
-
-    function languages.hyphenation.loadexceptions(tag, exceptions)
-        return languages.hyphenation.load(tag, patterns, filterexceptions, "hyphenation")
-    end
-
-    function languages.hyphenation.exceptions(tag, ...)
-        local data = record(tag)
-        data:hyphenation(...)
-    end
-
-    function languages.hyphenation.hyphenate(tag, str)
-        return lang.hyphenate(record(tag), str)
-    end
-
-    function languages.hyphenation.lefthyphenmin(tag, value)
-        local data = record(tag)
-        if value then data:lefthyphenmin(value) end
-        return data:lefthyphenmin()
-    end
-    function languages.hyphenation.righthyphenmin(tag, value)
-        local data = record(tag)
-        if value then data:righthyphenmin(value) end
-        return data:righthyphenmin()
-    end
-
-    function languages.hyphenation.n()
-        return table.count(languages.hyphenation.data)
-    end
-
 end
 
-do
+local command     = lpeg.P("\\hyphenation")
+local parser      = (1-command)^0 * command * content
 
-    -- we can speed this one up with locals if needed
-
-    local function tolang(what)
-        if type(what) == "number" then
-            return languages.hyphenation.data[languages.numbers[what]]
-        elseif type(what) == "string" then
-            return languages.hyphenation.data[what]
-        else
-            return what
-        end
+local function filterexceptions(filename)
+    if filename:find("%.rhl") then
+        return io.loaddata(input.find_file(filename)) or ""
+    else
+        return parser:match(io.loaddata(input.find_file(filename)) or {}) -- "" ?
     end
-
-    function languages.prehyphenchar(what)
-        return lang.prehyphenchar(tolang(what))
-    end
-    function languages.posthyphenchar(what)
-        return lang.posthyphenchar(tolang(what))
-    end
-
-    languages.tolang = tolang
-
 end
+
+local function record(tag)
+    local data = languages.hyphenation.data[tag]
+    if not data then
+         data = lang.new()
+         languages.hyphenation.data[tag] = data or 0
+    end
+    return data
+end
+
+languages.hyphenation.record = record
+
+function languages.hyphenation.define(tag)
+    local data = record(tag)
+    return data:id()
+end
+
+function languages.hyphenation.number(tag)
+    local d = languages.hyphenation.data[tag]
+    return (d and d:id()) or 0
+end
+
+function languages.hyphenation.load(tag, filename, filter, target)
+    input.starttiming(languages)
+    local data = record(tag)
+    filename = (filename and filename ~= "" and input.find_file(filename)) or ""
+    local ok = filename ~= ""
+    if ok then
+        lang[target](data,filterpatterns(filename))
+    else
+        lang[target](data,"")
+    end
+    languages.hyphenation.data[tag] = data
+    input.stoptiming(languages)
+    return ok
+end
+
+function languages.hyphenation.loadpatterns(tag, patterns)
+    return languages.hyphenation.load(tag, patterns, filterpatterns, "patterns")
+end
+
+function languages.hyphenation.loadexceptions(tag, exceptions)
+    return languages.hyphenation.load(tag, patterns, filterexceptions, "hyphenation")
+end
+
+function languages.hyphenation.exceptions(tag, ...)
+    local data = record(tag)
+    data:hyphenation(...)
+end
+
+function languages.hyphenation.hyphenate(tag, str)
+    return lang.hyphenate(record(tag), str)
+end
+
+function languages.hyphenation.lefthyphenmin(tag, value)
+    local data = record(tag)
+    if value then data:lefthyphenmin(value) end
+    return data:lefthyphenmin()
+end
+function languages.hyphenation.righthyphenmin(tag, value)
+    local data = record(tag)
+    if value then data:righthyphenmin(value) end
+    return data:righthyphenmin()
+end
+
+function languages.hyphenation.n()
+    return table.count(languages.hyphenation.data)
+end
+
+-- we can speed this one up with locals if needed
+
+local function tolang(what)
+    if type(what) == "number" then
+        return languages.hyphenation.data[languages.numbers[what]]
+    elseif type(what) == "string" then
+        return languages.hyphenation.data[what]
+    else
+        return what
+    end
+end
+
+function languages.prehyphenchar(what)
+    return lang.prehyphenchar(tolang(what))
+end
+function languages.posthyphenchar(what)
+    return lang.posthyphenchar(tolang(what))
+end
+
+languages.tolang = tolang
 
 languages.registered = languages.registered or { }
 languages.associated = languages.associated or { }
@@ -243,7 +236,7 @@ end
 function languages.hyphenation.loadwords(tag, filename)
     local id = languages.hyphenation.number(tag)
     if id > 0 then
-        local l = lang.new(id)
+        local l = lang.new(id) or 0
         input.starttiming(languages)
         local data = io.loaddata(filename) or ""
         l:hyphenation(data)
@@ -269,7 +262,6 @@ function languages.logger.report()
     end
     return (#result > 0 and table.concat(result," ")) or "none"
 end
-
 
 languages.words           = languages.words      or {}
 languages.words.data      = languages.words.data or {}

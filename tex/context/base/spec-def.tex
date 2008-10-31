@@ -18,6 +18,11 @@
 
 \unprotect
 
+%D Ok, messy, but we need this because we load drivers before
+%D references.
+
+\newif\ifcollectreferenceactions
+
 %D The following libraries are defined. Two postscript
 %D drivers are supported, as well as two mechanisms for
 %D interactive texts.
@@ -986,11 +991,6 @@
 \defineoutput [xdv]      [dvi,xtx,xet]
 \defineoutput [xdv2pdf]  [dvi,xtx,xet]
 
-%D Please let me know if we need more. From now on we default
-%D to:
-
-\setupoutput [dvips]
-
 %D We don't enable \ACROBAT, because pure \POSTSCRIPT\ is not
 %D that strong on objects and \PDFTEX\ does a better job.
 %D Some reasonable alternatives are:
@@ -1007,5 +1007,10 @@
 %D \stoptyping
 
 \loadmarkfile{spec-def}
+
+%D Please let me know if we need more. From now on we default
+%D to:
+
+% \setupoutput [dvips] % see mkii/mkiv files
 
 \protect \endinput

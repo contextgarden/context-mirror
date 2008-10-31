@@ -149,12 +149,9 @@
       \dodosetlogobox\v!top\blap
       \vskip\topspace
       \dodosetlogobox\v!header\blap
-      \vskip\headerheight
-      \vskip\headerdistance
+      \vskip\dimexpr\headerheight+\headerdistance\relax
       \dodosetlogobox\v!text\blap
-      \vskip\textheight
-      \vskip\footerdistance
-      \vskip\footerheight
+      \vskip\dimexpr\textheight+\footerdistance+\footerheight\relax
       \dodosetlogobox\v!footer \tlap
       \vfilll
       \dodosetlogobox\v!bottom\tlap

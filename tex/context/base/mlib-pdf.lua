@@ -205,6 +205,8 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
                     flusher.startfigure(fignum,llx,lly,urx,ury,"begin",figure)
                     t[#t+1] = "q"
                     if objects then
+                        -- once we have multiple prescripts we can do more tricky things like
+                        -- text and special colors at the same time
                         for o=1,#objects do
                             local object = objects[o]
                             local objecttype = object.type

@@ -431,11 +431,11 @@
 %D mode, even when users explicitly ask for \PDF\ output in the
 %D \PDFTEX\ configuration file.
 
-\ifx\pdfoutput\undefined \else
-
-  \prependtoks \pdfoutput=0 \to \everyjob
-
-\fi
+% we assume no pdfcontext or whatever
+%
+% \ifx\pdfoutput\undefined \else
+%   \prependtoks \pdfoutput=0 \to \everyjob
+% \fi
 
 %D \macros
 %D   {setvariables,getvariable,getvariabledefault}
@@ -503,26 +503,13 @@
 \long\def\setgvariable#1#2#3{\long\setgvalue{\??vars:#1:#2}{#3}}
 \long\def\setxvariable#1#2#3{\long\setxvalue{\??vars:#1:#2}{#3}}
 
-\beginTEX
-
-\def\getvariable#1#2% to be sped up
-  {\csname
-     \ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi
-   \endcsname}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\getvariable#1#2% to be sped up
   {\csname
      \ifcsname\??vars:#1:#2\endcsname\??vars:#1:#2\else\s!empty\fi
    \endcsname}
 
-\endETEX
-
 \def\showvariable#1#2%
-  {\showvalue{\ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi}}
+  {\showvalue{\ifcsname\??vars:#1:#2\endcsname\??vars:#1:#2\else\s!empty\fi}}
 
 \let\currentvariableclass\empty
 
@@ -532,27 +519,27 @@
 %D A few trivial macros:
 
 \def\doifelsevariable#1#2%
-  {\ifundefined{\??vars:#1:#2}%
-     \expandafter\secondoftwoarguments
-   \else
+  {\ifcsname\??vars:#1:#2\endcsname
      \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
    \fi}
 
 \def\doifvariable#1#2%
-  {\ifundefined{\??vars:#1:#2}%
-     \expandafter\gobbleoneargument
-   \else
+  {\ifcsname\??vars:#1:#2\endcsname
      \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
    \fi}
 
 \def\doifnotvariable#1#2%
-  {\ifundefined{\??vars:#1:#2}%
-     \expandafter\firstofoneargument
-   \else
+  {\ifcsname\??vars:#1:#2\endcsname
      \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
    \fi}
 
-\def\getvariabledefault#1#2% #3%
+\def\getvariabledefault#1#2% #3% can be command, so no ifcsname here
   {\executeifdefined{\??vars:#1:#2}}% {#3}
 
 %D \macros

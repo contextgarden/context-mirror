@@ -21,23 +21,53 @@
 
 % todo: obeytabs|spaces|lines|pages
 
+%     \def\mksetupprettytype % todo check
+%       {\processingverbatimtrue % will move
+%        \ctxlua{buffers.doifelsevisualizer("\prettyidentifier")}
+%          {\ctxlua{buffers.setvisualizer("\prettyidentifier")}%
+%     %       \def\obs{\obeyedspace}%
+%     %       \def\bop{\bgroup\beginofpretty}%
+%     %       \def\eop{\endofpretty\egroup}%
+%     %       \def\sop{\endofpretty\egroup\bgroup\beginofpretty}}
+%     }
+%          {\def\obs{\obeyedspace}}}
+%     \def\mkinitializeverbatim
+%       {\ctxlua{buffers.visualizers.reset()}%
+%           \localcolortrue % tricky, maybe not here
+%        \def\obs{\obeyedspace}%
+%     \def\obs{\obeyedspace}%
+%     \def\bop{\bgroup\beginofpretty}%
+%     \def\eop{\endofpretty\egroup}%
+%     \def\sop{\endofpretty\egroup\bgroup\beginofpretty}%
+%        \verbatimfont
+%        \resetfontfeature
+%        \obeycharacters}
+
 \def\mksetupprettytype % todo check
   {\processingverbatimtrue % will move
-   \ctxlua{buffers.doifelsevisualizer("\prettyidentifier")}
-     {\ctxlua{buffers.setvisualizer("\prettyidentifier")}%
-      \localcolortrue % tricky, maybe not here
-      \def\obs{\obeyedspace}%
-      \def\bop{\bgroup\beginofpretty}%
-      \def\eop{\endofpretty\egroup}%
-      \def\sop{\endofpretty\egroup\bgroup\beginofpretty}}
-     {\def\obs{\obeyedspace}}}
+   \ctxlua{buffers.visualizers.reset()}}
+
+\newtoks \everyinitializeverbatim
 
 \def\mkinitializeverbatim
   {\ctxlua{buffers.visualizers.reset()}%
    \def\obs{\obeyedspace}%
+   \ctxlua{buffers.doifelsevisualizer("\prettyidentifier")}
+     {\ctxlua{buffers.setvisualizer("\prettyidentifier")}%
+      \localcolortrue % tricky, maybe not here
+      \def\bop{\bgroup\beginofpretty}%
+      \def\eop{\endofpretty\egroup}%
+      \def\sop{\endofpretty\egroup\bgroup\beginofpretty}}%
+     {\let\bop\donothing
+      \let\eop\donothing
+      \let\sop\donothing}%
    \verbatimfont
+   \relax\the\everyinitializeverbatim\relax}
+
+\appendtoks
    \resetfontfeature
-   \obeycharacters}
+   \resetcharacterspacing
+\to \everyinitializeverbatim
 
 % \ctxluafileload{verb-tex}{}
 % \ctxluafileload{verb-mp} {}
@@ -52,9 +82,7 @@
 %    \edef\currenttyping{#1}%
 %    \initializetype % probably too much
 %    \verbatimcolor
-%    \setcatcodetable \vrbcatcodes
-%    \catcode`\{=\plusone
-%    \catcode`\}=\plustwo
+%    \setcatcodetable \typcatcodesa
 %    \dodotype}
 
 % \def\dodotype#1%
@@ -84,8 +112,7 @@
   {\ifx\next\bgroup
      \@EA\dodotypeA
    \else\if\next<%
-     \doifelse{\typingparameter\c!option}\v!none
-       {\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
+     \doifelse{\typingparameter\c!option}\v!none{\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
    \else
      \@EAEAEA\dodotypeD
    \fi\fi}
@@ -93,23 +120,19 @@
 \def\dodotypeA
   {\initializetype % probably too much
    \verbatimcolor
-   \setcatcodetable \vrbcatcodes
-   \catcode`\{=\plusone
-   \catcode`\}=\plustwo
+   \setcatcodetable \typcatcodesa
    \dodotypeAA}
 
 \def\dodotypeAA#1%
   {\mkinitializeverbatim
-\def\obs{\obeyedspace}%
+   \def\obs{\obeyedspace}%
    \ctxlua{buffers.hooks.flush_line(\!!bs\detokenize{#1}\!!es)}%
    \egroup}
 
 \def\dodotypeB#1%
   {\initializetype
    \verbatimcolor
-   \setcatcodetable \vrbcatcodes
-   \catcode`\<=\plusone
-   \catcode`\>=\plustwo
+   \setcatcodetable \typcatcodesb
    \dodotypeBB}
 
 \def\dodotypeBB#1%
@@ -121,9 +144,7 @@
 \def\dodotypeC#1%
   {\initializetype
    \verbatimcolor
-   \setcatcodetable \vrbcatcodes
-   \catcode`\<=\plusone
-   \catcode`\>=\plustwo
+   \setcatcodetable \typcatcodesb
    \dodotypeCC}
 
 \def\dodotypeCC#1%
@@ -140,7 +161,7 @@
 \def\dodotypeD#1%
   {\initializetype
    \verbatimcolor
-   \setcatcodetable \vrbcatcodes
+   \setcatcodetable \typcatcodesa
    \def\dodotypeDD##1#1{\dodotypeAA{##1}}%
    \dodotypeDD}
 

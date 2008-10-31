@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% todo, move more to mkiv, get rid of blabelgroup
+
 \writestatus{loading}{Context Core Macros / Object Handling}
 
 \unprotect
@@ -99,7 +101,7 @@
 
 \def\presetobject#1#2% \global added
   {\blabelgroup
-   \ifundefined{\r!object#1::#2}%
+   \ifcsname\r!object#1::#2\endcsname\else
      \global\@EA\let\csname\r!object#1::#2\endcsname\objectplaceholder
    \fi
    \elabelgroup}
@@ -107,10 +109,10 @@
 \def\dosetobject#1#2#3% \initializepaper this will move to \everyshipout
   {\initializepaper
    \blabelgroup
-   \ifundefined{\r!object#2::#3}%
-     \elabelgroup \expandafter\dodosetobject
-   \else % tzt, overload internal referenced objects to save entries
+   \ifcsname\r!object#2::#3\endcsname
      \elabelgroup \expandafter\gobblefivearguments
+   \else % tzt, overload internal referenced objects to save entries
+     \elabelgroup \expandafter\dodosetobject
    \fi
    {#1}{#2}{#3}}
 
@@ -325,7 +327,7 @@
      \elabelgroup \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifobjectreferencefoundelse{\mkifobjectreferencefoundelse}
+\def\doifobjectreferencefoundelse{\mkdoifobjectreferencefoundelse}
 
 %D \macros
 %D   {doifobjectssupportedelse}

@@ -23,17 +23,18 @@
 \def\xmlattdef         #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
 \def\xmlattribute      #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
 \def\xmlattributedef #1#2#3#4{\ctxlua{lxml.attribute("#1","#2","#3","#4")}}
-\def\xmlchecknamespace #1#2#3{\ctxlua{xml.check_namespace(lxml.id("#1"),"#2","#3")}} % element
 \def\xmlcommand        #1#2#3{\ctxlua{lxml.command("#1","#2","#3")}}
 \def\xmlconcat         #1#2#3{\ctxlua{lxml.concat("#1","#2",[[\detokenize{#3}]])}}
 \def\xmlconcatrange#1#2#3#4#5{\ctxlua{lxml.concatrange("#1","#2","#3","#4",[[\detokenize{#5}]])}}
-\def\xmlcontent          #1#2{\ctxlua{lxml.content("#1","#2")}}
 \def\xmlcount            #1#2{\ctxlua{lxml.count("#1","#2")}}
 \def\xmldelete           #1#2{\ctxlua{xml.delete(lxml.id("#1"),"#2")}}
-\def\xmldirectives         #1{\ctxlua{lxml.directives.setups("#1")}}
+\def\xmldirectives         #1{\ctxlua{lxml.directives.setup("#1")}}
+\def\xmldirectivesbefore   #1{\ctxlua{lxml.directives.before("#1")}}
+\def\xmldirectivesafter    #1{\ctxlua{lxml.directives.after("#1")}}
 \def\xmlfilter           #1#2{\ctxlua{lxml.filter("#1","#2")}}
 \def\xmlfirst            #1#2{\ctxlua{lxml.first("#1","#2")}}
 \def\xmlflush              #1{\ctxlua{lxml.flush("#1")}}
+% \def\xmlcontent            #1{\ctxlua{lxml.content("#1")}}
 % \def\xmlstrip              #1{\ctxlua{lxml.strip("#1")}}
 % \def\xmlflushstripped      #1{\ctxlua{lxml.strip("#1",true)}}
 \def\xmldirect             #1{\ctxlua{lxml.direct("#1")}} % in loops, not dt but root
@@ -57,6 +58,7 @@
 \def\xmlregisterns       #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
 \def\xmlremapname    #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
 \def\xmlremapnamespace #1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
+\def\xmlchecknamespace #1#2#3{\ctxlua{xml.check_namespace(lxml.id("#1"),"#2","#3")}} % element
 \def\xmlsetfunction    #1#2#3{\ctxlua{lxml.setaction("#1","#2",#3)}}
 \def\xmlsetsetup       #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
 \def\xmlstrip            #1#2{\ctxlua{lxml.strip("#1","#2")}}
@@ -68,9 +70,16 @@
 \def\xmltags             #1#2{\ctxlua{lxml.tags("#1","#2")}}
 \def\xmlutfize             #1{\ctxlua{lxml.utfize("#1")}}
 \def\xmlverbatim           #1{\ctxlua{lxml.verbatim("#1")}}
+\def\xmldisplayverbatim    #1{\ctxlua{lxml.displayverbatim("#1")}}
+\def\xmlinlineverbatim     #1{\ctxlua{lxml.inlineverbatim("#1")}}
 
 %def\xmldoifelse         #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
 %def\xmldoifelsetext     #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
+
+% kind of special:
+
+\def\xmlstartraw{\ctxlua{lxml.startraw()}}
+\def\xmlstopraw {\ctxlua{lxml.stopraw()}}
 
 % todo: \xmldoifelseattribute
 
@@ -157,7 +166,7 @@
 \let\xmlprocess       \xmlprocessfile
 
 % beware: \xmlmain takes the real root, so also processing
-% instructions preceing the root element; well, in some
+% instructions preceding the root element; well, in some
 % sense that is the root
 
 \startsetups xml:process

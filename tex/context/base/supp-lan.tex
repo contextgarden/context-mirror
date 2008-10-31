@@ -295,22 +295,6 @@
 %D but I decided to reserve it for future use. At least it
 %D remembers us of the symmetry.
 
-\beginTEX
-
-\def\installdiscretionaries#1#2#3%
-  {\defconvertedargument\ascii{#1}%
-   \setevalue{\strippedcsname\mathmodediscretionary\string#1}{\ascii}%
-   \setvalue {\strippedcsname\textmodediscretionary\string#1}{#3}%
-   \catcode`#1=\@@active
-   \scratchcounter=\the\uccode`~
-   \uccode`~=`#1
-   \uppercase{\unexpanded\def~{\discretionarycommand~}}%
-   \uccode`~=\scratchcounter}
-
-\endTEX
-
-\beginETEX \detokenize
-
 \def\installdiscretionaries#1#2#3%
   {\setevalue{\strippedcsname\mathmodediscretionary\string#1}{\detokenize{#1}}%
    \setvalue {\strippedcsname\textmodediscretionary\string#1}{#3}%
@@ -319,8 +303,6 @@
    \uccode`~=`#1
    \uppercase{\unexpanded\def~{\discretionarycommand~}}%
    \uccode`~=\scratchcounter}
-
-\endETEX
 
 \def\domathmodediscretionary#1%
   {\getvalue{\strippedcsname\mathmodediscretionary\string#1}}
@@ -1110,38 +1092,6 @@
 %D
 %D In later modules we will see how these commands are used.
 
-\beginTEX
-
-\long\def\handlecompoundcharacterone#1#2%
-  {\if\string#1\string#2% was: \ifx#1#2%
-    %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
-     \def\next{\getvalue{\@nc@\string#1}}%
-   \else\expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
-     \def\next{\getvalue{\@nc@\string#1}#2}%
-   \else
-     \def\next{\getvalue{\@cc@\string#1\string#2}}%
-   \fi\fi
-   \next}
-
-\long\def\handlecompoundcharactertwo#1#2#3%
-  {\if\string#1\string#2% was: \ifx#1#2%
-    %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}#3}%
-     \def\next{\getvalue{\@nc@\string#1}#3}%
-   \else\@EA\ifx\csname\@cs@\string#1\string#2\string#3\endcsname\relax
-     \expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
-       \def\next{\getvalue{\@nc@\string#1}#2#3}%
-     \else
-       \def\next{\getvalue{\@cc@\string#1\string#2}#3}%
-     \fi
-   \else
-     \def\next{\getvalue{\@cs@\string#1\string#2\string#3}}%
-   \fi\fi
-   \next}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \long\def\handlecompoundcharacterone#1#2%
   {\if\string#1\string#2% was: \ifx#1#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
@@ -1166,26 +1116,11 @@
    \fi\fi\fi
    \next}
 
-\endETEX
-
 %D For very obscure applications (see for an application \type
 %D {lang-sla.tex}) we provide:
 
 \def\dosimplifiedcompoundcharacter#1%
   {#1}
-
-\beginTEX
-
-\def\simplifiedcompoundcharacter#1#2%
-  {\@EA\ifx\csname\@cc@\string#1\string#2\endcsname\relax
-     #2%
-   \else
-     \@EA\@EA\@EA\dosimplifiedcompoundcharacter\csname\@cc@\string#1\string#2\endcsname
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
 
 \def\simplifiedcompoundcharacter#1#2%
   {\ifcsname\@cc@\string#1\string#2\endcsname
@@ -1193,8 +1128,6 @@
    \else
      #2%
    \fi}
-
-\endETEX
 
 %D \macros
 %D   {midworddiscretionary}

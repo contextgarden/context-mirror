@@ -186,8 +186,7 @@
   \pdfoutput\zerocount
 \to \everyresetspecials
 
-\pdfoutput       =1 % we reset that one with \everyresetspecials
-\pdfcompresslevel=9 % apart from debugging, no reason for value 0
+\pdfoutput=1 % we reset that one with \everyresetspecials
 
 %D Just in case we mimmick specials, we have to make sure no
 %D default specials end up in the process.
@@ -1070,7 +1069,7 @@
             /Border [0 0 0]
             \ifhighlighthyperlinks \else /H /N \fi
             /A \lastPDFaction}%
-      \fi}
+     \fi}
 
   % less #2 passing
 
@@ -1097,7 +1096,7 @@
             /Border [0 0 0]
             \ifhighlighthyperlinks \else /H /N \fi
             /A \lastPDFaction}%
-      \fi}
+     \fi}
 
 \else
 

@@ -48,7 +48,6 @@ function tfm.enhance(tfmdata,specification)
                     if fonts.trace then
                         logs.report("define font","mapping %s onto %s",k,v)
                     end
-                --  characters[k] = characters[v]
                     characters[k] = original[v]
                 end
             end
@@ -76,6 +75,7 @@ function tfm.read_from_tfm(specification)
         end
         tfmdata = font.read_tfm(fname,specification.size) -- not cached, fast enough
         if tfmdata then
+            tfmdata.descriptions = tfmdata.descriptions or { }
             if tfm.resolve_vf then
                 fonts.logger.save(tfmdata,file.extname(fname),specification) -- strange, why here
                 fname = input.findbinfile(specification.name, 'ovf')
@@ -90,7 +90,6 @@ function tfm.read_from_tfm(specification)
                         tfmdata.fonts = vfdata.fonts
                     end
                 end
---~ print(table.serialize(tfmdata))
             end
             tfm.enhance(tfmdata,specification)
         end
@@ -139,14 +138,6 @@ function tfm.scaled(scaledpoints, designsize) -- handles designsize in sp as wel
     end
 end
 
---~ function tfm.scaled(scaledpoints, designsize)
---~     if scaledpoints < 0 then
---~         return (- scaledpoints/1000) * (designsize or 10) * tfm.factor
---~     else
---~         return scaledpoints
---~     end
---~ end
-
 --[[ldx--
 <p>Before a font is passed to <l n='tex'/> we scale it. Here we also need
 to scale virtual characters.</p>
@@ -191,6 +182,7 @@ function tfm.do_scale(tfmtable, scaledpoints)
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
+--~ print(">>>",tfmtable.units)
     local delta = scaledpoints/(tfmtable.units or 1000) -- brr, some open type fonts have 2048
     local t = { }
     t.factor = delta
@@ -213,27 +205,37 @@ function tfm.do_scale(tfmtable, scaledpoints)
     tp.extra_space   = (tfmp.extra_space   or tfmp[7] or 0)*delta
     local protrusionfactor = (tp.quad ~= 0 and 1000/tp.quad) or 0
     local tc = t.characters
+    -- we can loop over (descriptions or characters), in which case
+    -- we don't need to init characters in afm/otf (saves some mem)
+    -- but then .. beware of protruding etc
+    local descriptions = tfmtable.descriptions or { }
+    t.descriptions = descriptions
+    local nameneeded = not tfmtable.shared.otfdata --hack
+-- loop over descriptions
+    -- afm and otf have descriptions, tfm not
     for k,v in pairs(tfmtable.characters) do
-        local description = v.description or v -- shared data
-        local chr = {
-            description = description,
-            unicode = description.unicode,
-            name    = description.name,
-            index   = description.index or k,
-            width   = delta*(description.width  or 0),
-            height  = delta*(description.height or 0),
-            depth   = delta*(description.depth  or 0),
-            class   = description.class
-        }
-        if trace then
-            logs.report("define font","n=%s, u=%s, i=%s, n=%s c=%s",k,description.unicode,description.index,description.name or '-',description.class or '-')
+        local description = descriptions[k] or v
+        local chr
+        -- there is no need (yet) to assign a value to chr.tonunicode
+        if nameneeded then
+            chr = {
+                name      = description.name, -- is this used at all?
+                index     = description.index or k,
+                width     = delta*(description.width  or 0),
+                height    = delta*(description.height or 0),
+                depth     = delta*(description.depth  or 0),
+            }
+        else
+            chr = {
+                index     = description.index or k,
+                width     = delta*(description.width  or 0),
+                height    = delta*(description.height or 0),
+                depth     = delta*(description.depth  or 0),
+            }
         end
-    --  local vb = v.boundingbox
-    --  if vb then
-    --      chr.boundingbox = { vb[1]*delta, vb[2]*delta, vb[3]*delta, vb[4]*delta }
-    --  else
-    --  --  chr.boundingbox = zerobox -- most afm en otf files have bboxes so ..
-    --  end
+        if trace then
+            logs.report("define font","t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or k,description.index,description.name or '-',description.class or '-')
+        end
         local ve = v.expansion_factor
         if ve then
             chr.expansion_factor = ve*1000 -- expansionfactor
@@ -274,7 +276,8 @@ function tfm.do_scale(tfmtable, scaledpoints)
             local ok = false
             for i=1,#vc do
                 local key = vc[i][1]
-                if key == "right" or key == "left" or key == "down" or key == "up" then
+            --  if key == "right" or key == "left" or key == "down" or key == "up" then
+                if key == "right" or key == "down" then
                     ok = true
                     break
                 end
@@ -284,7 +287,8 @@ function tfm.do_scale(tfmtable, scaledpoints)
                 for i=1,#vc do
                     local ivc = vc[i]
                     local key = ivc[1]
-                    if key == "right" or key == "left" or key == "down" or key == "up" then
+                --  if key == "right" or key == "left" or key == "down" or key == "up" then
+                    if key == "right" or key == "down" then
                         tt[#tt+1] = { key, ivc[2]*delta }
                     else -- not comment
                         tt[#tt+1] = ivc -- shared since in cache and untouched
@@ -316,15 +320,20 @@ tfm.auto_cleanup = true
 
 local lastfont = nil
 
-function tfm.cleanup(tfmdata) -- we need a cleanup callback, now we miss the last one
+-- we can get rid of the tfm instance when we hav efast access to the
+-- scaled character dimensions at the tex end, e.g. a fontobject.width
+
+function tfm.cleanup_table(tfmdata) -- we need a cleanup callback, now we miss the last one
     if tfm.auto_cleanup then  -- ok, we can hook this into everyshipout or so ... todo
-        if lastfont and lastfont.type == 'virtual' then
-            for k, v in pairs(lastfont.characters) do
+        if tfmdata.type == 'virtual' then
+            for k, v in pairs(tfmdata.characters) do
                 if v.commands then v.commands = nil end
             end
         end
-        lastfont = type(tfmdata) == "table" and tfmdata
     end
+end
+
+function tfm.cleanup(tfmdata) -- we need a cleanup callback, now we miss the last one
 end
 
 function tfm.scale(tfmtable, scaledpoints)
@@ -357,12 +366,25 @@ function fonts.logger.save(tfmtable,source,specification) -- save file name in s
     end
 end
 
+--~ function fonts.logger.report(separator)
+--~     local s = table.sortedkeys(fonts.loaded)
+--~     if #s > 0 then
+--~         local t = { }
+--~         for _,v in ipairs(s) do
+--~             t[#t+1] = v .. ":" .. fonts.loaded[v].source
+--~         end
+--~         return table.concat(t,separator or " ")
+--~     else
+--~         return "none"
+--~     end
+--~ end
+
 function fonts.logger.report(separator)
-    local s = table.sortedkeys(fonts.loaded)
+    local s = table.sortedkeys(fonts.used)
     if #s > 0 then
         local t = { }
         for _,v in ipairs(s) do
-            t[#t+1] = v .. ":" .. fonts.loaded[v].source
+            t[#t+1] = v .. ":" .. fonts.used[v]
         end
         return table.concat(t,separator or " ")
     else
@@ -461,30 +483,31 @@ do
 
     function fonts.initializers.common.encoding(tfmdata,value)
         if value then
-            local encodingfile = value .. '.enc'
-            local encoding = fonts.enc.load(encodingfile)
-            if encoding then
-            --  tfmdata.encoding = value
-                local vector = encoding.vector
-                local afmdata = tfmdata.shared.afmdata
-                local characters = tfmdata.characters
-                local unicodes = afmdata.luatex.unicodes
-                local function remap(pattern,name)
-                    local p = pattern:match(name)
-                    if p then
-                        local oldchr, newchr = unicodes[p], unicodes[name]
-                        if oldchr and newchr then
-                         -- logs.report("encoding","%s (%s) -> %s (%s)",p,oldchr or -1,name,newchr or -1)
-                            characters[oldchr] = characters[newchr]
+            local afmdata = tfmdata.shared.afmdata
+            if afmdata then
+                local encodingfile = value .. '.enc'
+                local encoding = fonts.enc.load(encodingfile)
+                if encoding then
+                    local vector = encoding.vector
+                    local characters = tfmdata.characters
+                    local unicodes = afmdata.luatex.unicodes
+                    local function remap(pattern,name)
+                        local p = pattern:match(name)
+                        if p then
+                            local oldchr, newchr = unicodes[p], unicodes[name]
+                            if oldchr and newchr and type(oldchr) == "number" and type(newchr) == "number" then
+                             -- logs.report("encoding","%s (%s) -> %s (%s)",p,oldchr or -1,name,newchr or -1)
+                                characters[oldchr] = characters[newchr]
+                            end
                         end
+                        return p
                     end
-                    return p
-                end
-                for _, name in pairs(vector) do
-                    local ok = remap(smallcaps,name) or remap(oldstyle,name)
-                end
-                if fonts.map.data[tfmdata.name] then
-                    fonts.map.data[tfmdata.name].encoding = encodingfile
+                    for _, name in pairs(vector) do
+                        local ok = remap(smallcaps,name) or remap(oldstyle,name)
+                    end
+                    if fonts.map.data[tfmdata.name] then
+                        fonts.map.data[tfmdata.name].encoding = encodingfile
+                    end
                 end
             end
         end
@@ -495,17 +518,20 @@ do
     function fonts.initializers.common.remap(tfmdata,value,pattern) -- will go away
         if value then
             local afmdata = tfmdata.shared.afmdata
-            local characters = tfmdata.characters
-            local unicodes = afmdata.luatex.unicodes
-            local done = false
-            for i, blob in pairs(characters) do
-                local name = blob.description.name
-                if name then
-                    local p = pattern:match(name)
-                    if p then
-                        local oldchr, newchr = unicodes[p], unicodes[name]
-                        if oldchr and newchr then
-                            characters[oldchr] = characters[newchr]
+            if afmdata then
+                local characters = tfmdata.characters
+                local descriptions = tfmdata.descriptions
+                local unicodes = afmdata.luatex.unicodes
+                local done = false
+                for u, _ in pairs(characters) do
+                    local name = descriptions[u].name
+                    if name then
+                        local p = pattern:match(name)
+                        if p then
+                            local oldchr, newchr = unicodes[p], unicodes[name]
+                            if oldchr and newchr and type(oldchr) == "number" and type(newchr) == "number" then
+                                characters[oldchr] = characters[newchr]
+                            end
                         end
                     end
                 end
@@ -524,16 +550,19 @@ do
         if value then
             -- todo: scale down
             local afmdata = tfmdata.shared.afmdata
-            local characters = tfmdata.characters
-            local unicodes = afmdata.luatex.unicodes
-            for i, blob in pairs(characters) do
-                local name = blob.description.name
-                if name then
-                    local p = name:lower()
-                    if p then
-                        local oldchr, newchr = unicodes[p], unicodes[name]
-                        if oldchr and newchr then
-                            characters[oldchr] = characters[newchr]
+            if afmdata then
+                local characters = tfmdata.characters
+                local descriptions = tfmdata.descriptions
+                local unicodes = afmdata.luatex.unicodes
+                for u, _ in pairs(characters) do
+                    local name = descriptions[u].name
+                    if name then
+                        local p = name:lower()
+                        if p then
+                            local oldchr, newchr = unicodes[p], unicodes[name]
+                            if oldchr and newchr and type(oldchr) == "number" and type(newchr) == "number" then
+                                characters[oldchr] = characters[newchr]
+                            end
                         end
                     end
                 end
@@ -574,13 +603,15 @@ do
     -- an example analyzer
 
     function fonts.analyzers.aux.setstate(head,font)
-        local characters = fontdata[font].characters
+        local tfmdata = fontdata[font]
+        local characters = tfmdata.characters
+        local descriptions = tfmdata.descriptions
         local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
         while current do
             if current.id == glyph and current.font == font then
-                local c = characters[current.char]
-                if c then
-                    if c.description.class == "mark" then
+                local d = descriptions[current.char]
+                if d then
+                    if d.class == "mark" then
                         done = true
                         set_attribute(current,state,5) -- mark
                     elseif n == 0 then
@@ -632,11 +663,12 @@ do
     function fonts.pushmarks(head,font)
         local tfmdata = fontdata[font]
         local characters = tfmdata.characters
+        local descriptions = tfmdata.descriptions
         local current, last, done, n = head, nil, false, 0
         while current do
             if current.id == glyph and current.font == font then
-                local c = characters[current.char]
-                if c and c.description.class == "mark" then
+                local d = descriptions[current.char]
+                if d and d.class == "mark" then
                     -- check if head
                     if last and not last.components then
                         last.components = current
@@ -677,9 +709,9 @@ do
     end
 
     function fonts.removemarks(head,font)
-        local current, done, characters = head, false, tfmdata.characters
+        local current, done, characters, descriptions = head, false, tfmdata.characters, tfmdata.descriptions
         while current do
-            if current.id == glyph and current.font == font and characters[current.char].description.class == "mark" then
+            if current.id == glyph and current.font == font and descriptions[current.char].class == "mark" then
                 local next, prev = current.next, current.prev
                 if next then
                     next.prev = prev

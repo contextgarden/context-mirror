@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['char-ini'] = {
 tex = tex or { }
 xml = xml or { }
 
-local format, texsprint, utfchar, utfbyte = string.format, tex.sprint, unicode.utf8.char, unicode.utf8.byte
+local format, texsprint, utfchar, utfbyte, concat = string.format, tex.sprint, unicode.utf8.char, unicode.utf8.byte, table.concat
 
 --[[ldx--
 <p>This module implements some methods and creates additional datastructured
@@ -201,18 +201,18 @@ function characters.getrange(name)
     tag = name:gsub("[^a-z]", "")
     local range = characters.blocks[tag]
     if range then
-        return range[1], range[2]
+        return range[1], range[2], range[3]
     end
     name = name:gsub('"',"0x") -- goodie: tex hex notation
     local start, stop = name:match("^(.-)[%-%:](.-)$")
     if start and stop then
         start, stop = tonumber(start,16) or tonumber(start), tonumber(stop,16) or tonumber(stop)
         if start and stop then
-            return start, stop
+            return start, stop, nil
         end
     end
     local slot = tonumber(name,16) or tonumber(name)
-    return slot, slot
+    return slot, slot, nil
 end
 
 characters.categories = {
@@ -382,40 +382,50 @@ function tex.uprint(n)
     texsprint(tex.ctxcatcodes,utfchar(n))
 end
 
-characters.activated = { }
-
-function characters.context.define()
+function characters.context.define(tobelettered, tobeactivated)
     local unicodes, utfcodes = characters.unicodes, characters.utfcodes
     local tc = tex.ctxcatcodes
     local is_character, is_command = characters.is_character, characters.is_command
+    local lettered, activated = { }, { }
     for u, chr in pairs(characters.data) do
         local fallback = chr.fallback
         if fallback then
             texsprint("{\\catcode"..u.."=13\\unexpanded\\gdef "..utfchar(u).."{\\checkedchar{"..u.."}{"..fallback.."}}}")
-            characters.activated[u] = true
+            activated[#activated+1] = "\\c"..u.."=".."13"
         else
             local contextname = chr.contextname
+            local category = chr.category
             if contextname then
-                local category = chr.category
                 if is_character[category] then
                  -- by this time, we're still in normal catcode mode
                     if chr.unicodeslot < 128 then
                         texsprint(tc, "\\chardef\\" .. contextname .. "=" .. u) -- unicodes[contextname])
                     else
                         texsprint(tc, "\\let\\" .. contextname .. "=" .. utfchar(u)) -- utfcodes[contextname])
+                        lettered[#lettered+1] = "\\c"..u.."=".."11"
                     end
                 elseif is_command[category] then
                     texsprint("{\\catcode"..u.."=13\\unexpanded\\gdef "..utfchar(u).."{\\"..contextname.."}}")
-                    characters.activated[u] = true
+                    activated[#activated+1] = "\\c"..u.."=".."13"
+                end
+            else
+                if is_character[category] then
+                    if u >= 128 and u <= 65536 then
+                        lettered[#lettered+1] = "\\c"..u.."=".."11"
+                    end
                 end
             end
         end
     end
-end
-
-function characters.context.activate()
-    for u,_ in pairs(characters.activated) do
-        texsprint(tex.ctxcatcodes,"\\catcode "..u.."=13 ")
+    lettered[#lettered+1] = "\\c"..0x200C.."=".."11" -- non-joiner
+    lettered[#lettered+1] = "\\c"..0x200D.."=".."11" -- joiner
+    lettered = concat(lettered)
+    for _, i in ipairs(tobelettered or { }) do
+        texsprint(tc,format("\\startextendcatcodetable{%s}\\let\\c\\catcode%s\\stopextendcatcodetable",i,lettered))
+    end
+    activated = concat(activated)
+    for _, i in ipairs(tobeactivated or { } ) do
+        texsprint(tc,format("\\startextendcatcodetable{%s}\\let\\c\\catcode%s\\stopextendcatcodetable",i,activated))
     end
 end
 

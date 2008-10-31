@@ -8,11 +8,15 @@ if not versions then versions = { } end versions['l-table'] = 1.001
 
 table.join = table.concat
 
+local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
+local format = string.format
+local getmetatable, setmetatable = getmetatable, setmetatable
+local pairs, ipairs, type, next, tostring = pairs, ipairs, type, next, tostring
+
 function table.strip(tab)
     local lst = { }
-    for k, v in ipairs(tab) do
-     -- s = string.gsub(v, "^%s*(.-)%s*$", "%1")
-        s = v:gsub("^%s*(.-)%s*$", "%1")
+    for i=1,#tab do
+        local s = tab[i]:gsub("^%s*(.-)%s*$","%1")
         if s == "" then
             -- skip this one
         else
@@ -22,16 +26,7 @@ function table.strip(tab)
     return lst
 end
 
---~ function table.sortedkeys(tab)
---~     local srt = { }
---~     for key,_ in pairs(tab) do
---~         srt[#srt+1] = key
---~     end
---~     table.sort(srt)
---~     return srt
---~ end
-
-function table.sortedkeys(tab)
+local function sortedkeys(tab)
     local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in pairs(tab) do
         srt[#srt+1] = key
@@ -51,22 +46,34 @@ function table.sortedkeys(tab)
         end
     end
     if kind == 0 or kind == 3 then
-        table.sort(srt,function(a,b) return (tostring(a) < tostring(b)) end)
+        sort(srt,function(a,b) return (tostring(a) < tostring(b)) end)
     else
-        table.sort(srt)
+        sort(srt)
     end
     return srt
 end
 
+local function sortedhashkeys(tab) -- fast one
+    local srt = { }
+    for key,_ in pairs(tab) do
+        srt[#srt+1] = key
+    end
+    sort(srt)
+    return srt
+end
+
+table.sortedkeys     = sortedkeys
+table.sortedhashkeys = sortedhashkeys
+
 function table.append(t, list)
     for _,v in pairs(list) do
-        table.insert(t,v)
+        insert(t,v)
     end
 end
 
 function table.prepend(t, list)
     for k,v in pairs(list) do
-        table.insert(t,k,v)
+        insert(t,k,v)
     end
 end
 
@@ -113,70 +120,57 @@ function table.imerged(...)
     return tmp
 end
 
-if not table.fastcopy then do
-
-    local type, pairs, getmetatable, setmetatable = type, pairs, getmetatable, setmetatable
-
-    local function fastcopy(old) -- fast one
-        if old then
-            local new = { }
-            for k,v in pairs(old) do
-                if type(v) == "table" then
-                    new[k] = fastcopy(v) -- was just table.copy
-                else
-                    new[k] = v
-                end
-            end
-            local mt = getmetatable(old)
-            if mt then
-                setmetatable(new,mt)
-            end
-            return new
-        else
-            return { }
-        end
-    end
-
-    table.fastcopy = fastcopy
-
-end end
-
-if not table.copy then do
-
-    local type, pairs, getmetatable, setmetatable = type, pairs, getmetatable, setmetatable
-
-    local function copy(t, tables) -- taken from lua wiki, slightly adapted
-        tables = tables or { }
-        local tcopy = {}
-        if not tables[t] then
-            tables[t] = tcopy
-        end
-        for i,v in pairs(t) do -- brrr, what happens with sparse indexed
-            if type(i) == "table" then
-                if tables[i] then
-                    i = tables[i]
-                else
-                    i = copy(i, tables)
-                end
-            end
-            if type(v) ~= "table" then
-                tcopy[i] = v
-            elseif tables[v] then
-                tcopy[i] = tables[v]
+local function fastcopy(old) -- fast one
+    if old then
+        local new = { }
+        for k,v in pairs(old) do
+            if type(v) == "table" then
+                new[k] = fastcopy(v) -- was just table.copy
             else
-                tcopy[i] = copy(v, tables)
+                new[k] = v
             end
         end
-        local mt = getmetatable(t)
+        local mt = getmetatable(old)
         if mt then
-            setmetatable(tcopy,mt)
+            setmetatable(new,mt)
         end
-        return tcopy
+        return new
+    else
+        return { }
     end
+end
 
-    table.copy = copy
+local function copy(t, tables) -- taken from lua wiki, slightly adapted
+    tables = tables or { }
+    local tcopy = {}
+    if not tables[t] then
+        tables[t] = tcopy
+    end
+    for i,v in pairs(t) do -- brrr, what happens with sparse indexed
+        if type(i) == "table" then
+            if tables[i] then
+                i = tables[i]
+            else
+                i = copy(i, tables)
+            end
+        end
+        if type(v) ~= "table" then
+            tcopy[i] = v
+        elseif tables[v] then
+            tcopy[i] = tables[v]
+        else
+            tcopy[i] = copy(v, tables)
+        end
+    end
+    local mt = getmetatable(t)
+    if mt then
+        setmetatable(tcopy,mt)
+    end
+    return tcopy
+end
 
-end end
+table.fastcopy = fastcopy
+table.copy     = copy
 
 -- rougly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
 
@@ -205,257 +199,22 @@ function table.starts_at(t)
     return ipairs(t,1)(t,0)
 end
 
---~ do
+function table.tohash(t,value)
+    local h = { }
+    if value == nil then value = true end
+    for _, v in pairs(t) do -- no ipairs here
+        h[v] = value
+    end
+    return h
+end
 
---~     -- one of my first exercises in lua ...
-
---~     table.serialize_functions = true
---~     table.serialize_compact   = true
---~     table.serialize_inline    = true
-
---~     local function key(k,noquotes)
---~         if type(k) == "number" then -- or k:find("^%d+$") then
---~             return "["..k.."]"
---~         elseif noquotes and k:find("^%a[%a%d%_]*$") then
---~             return k
---~         else
---~             return '["'..k..'"]'
---~         end
---~     end
-
---~     local function simple_table(t)
---~         if #t > 0 then
---~             local n = 0
---~             for _,v in pairs(t) do
---~                 n = n + 1
---~             end
---~             if n == #t then
---~                 local tt = { }
---~                 for i=1,#t do
---~                     local v = t[i]
---~                     local tv = type(v)
---~                     if tv == "number" or tv == "boolean" then
---~                         tt[#tt+1] = tostring(v)
---~                     elseif tv == "string" then
---~                         tt[#tt+1] = ("%q"):format(v)
---~                     else
---~                         tt = nil
---~                         break
---~                     end
---~                 end
---~                 return tt
---~             end
---~         end
---~         return nil
---~     end
-
---~     local function serialize(root,name,handle,depth,level,reduce,noquotes,indexed)
---~         handle = handle or print
---~         reduce = reduce or false
---~         if depth then
---~             depth = depth .. " "
---~             if indexed then
---~                 handle(("%s{"):format(depth))
---~             else
---~                 handle(("%s%s={"):format(depth,key(name,noquotes)))
---~             end
---~         else
---~             depth = ""
---~             local tname = type(name)
---~             if tname == "string" then
---~                 if name == "return" then
---~                     handle("return {")
---~                 else
---~                     handle(name .. "={")
---~                 end
---~             elseif tname == "number" then
---~                 handle("[" .. name .. "]={")
---~             elseif tname == "boolean" then
---~                 if name then
---~                     handle("return {")
---~                 else
---~                     handle("{")
---~                 end
---~             else
---~                 handle("t={")
---~             end
---~         end
---~         if root and next(root) then
---~             local compact = table.serialize_compact
---~             local inline  = compact and table.serialize_inline
---~             local first, last = nil, 0 -- #root cannot be trusted here
---~             if compact then
---~               for k,v in ipairs(root) do -- NOT: for k=1,#root do (we need to quit at nil)
---~                     if not first then first = k end
---~                     last = last + 1
---~                 end
---~             end
---~             for _,k in pairs(table.sortedkeys(root)) do
---~                 local v = root[k]
---~                 local t = type(v)
---~                 if compact and first and type(k) == "number" and k >= first and k <= last then
---~                     if t == "number" then
---~                         handle(("%s %s,"):format(depth,v))
---~                     elseif t == "string" then
---~                         if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
---~                             handle(("%s %s,"):format(depth,v))
---~                         else
---~                             handle(("%s %q,"):format(depth,v))
---~                         end
---~                     elseif t == "table" then
---~                         if not next(v) then
---~                             handle(("%s {},"):format(depth))
---~                         elseif inline then
---~                             local st = simple_table(v)
---~                             if st then
---~                                 handle(("%s { %s },"):format(depth,table.concat(st,", ")))
---~                             else
---~                                 serialize(v,k,handle,depth,level+1,reduce,noquotes,true)
---~                             end
---~                         else
---~                             serialize(v,k,handle,depth,level+1,reduce,noquotes,true)
---~                         end
---~                     elseif t == "boolean" then
---~                         handle(("%s %s,"):format(depth,tostring(v)))
---~                     elseif t == "function" then
---~                         if table.serialize_functions then
---~                             handle(('%s loadstring(%q),'):format(depth,string.dump(v)))
---~                         else
---~                             handle(('%s "function",'):format(depth))
---~                         end
---~                     else
---~                         handle(("%s %q,"):format(depth,tostring(v)))
---~                     end
---~                 elseif k == "__p__" then -- parent
---~                     if false then
---~                         handle(("%s __p__=nil,"):format(depth))
---~                     end
---~                 elseif t == "number" then
---~                     handle(("%s %s=%s,"):format(depth,key(k,noquotes),v))
---~                 elseif t == "string" then
---~                     if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
---~                         handle(("%s %s=%s,"):format(depth,key(k,noquotes),v))
---~                     else
---~                         handle(("%s %s=%q,"):format(depth,key(k,noquotes),v))
---~                     end
---~                 elseif t == "table" then
---~                     if not next(v) then
---~                         handle(("%s %s={},"):format(depth,key(k,noquotes)))
---~                     elseif inline then
---~                         local st = simple_table(v)
---~                         if st then
---~                             handle(("%s %s={ %s },"):format(depth,key(k,noquotes),table.concat(st,", ")))
---~                         else
---~                             serialize(v,k,handle,depth,level+1,reduce,noquotes)
---~                         end
---~                     else
---~                         serialize(v,k,handle,depth,level+1,reduce,noquotes)
---~                     end
---~                 elseif t == "boolean" then
---~                     handle(("%s %s=%s,"):format(depth,key(k,noquotes),tostring(v)))
---~                 elseif t == "function" then
---~                     if table.serialize_functions then
---~                         handle(('%s %s=loadstring(%q),'):format(depth,key(k,noquotes),string.dump(v)))
---~                     else
---~                         handle(('%s %s="function",'):format(depth,key(k,noquotes)))
---~                     end
---~                 else
---~                     handle(("%s %s=%q,"):format(depth,key(k,noquotes),tostring(v)))
---~                 --  handle(('%s %s=loadstring(%q),'):format(depth,key(k,noquotes),string.dump(function() return v end)))
---~                 end
---~             end
---~             if level > 0 then
---~                 handle(("%s},"):format(depth))
---~             else
---~                 handle(("%s}"):format(depth))
---~             end
---~         else
---~             handle(("%s}"):format(depth))
---~         end
---~     end
-
---~     --~ name:
---~     --~
---~     --~ true     : return     { }
---~     --~ false    :            { }
---~     --~ nil      : t        = { }
---~     --~ string   : string   = { }
---~     --~ 'return' : return     { }
---~     --~ number   : [number] = { }
-
---~     function table.serialize(root,name,reduce,noquotes)
---~         local t = { }
---~         local function flush(s)
---~             t[#t+1] = s
---~         end
---~         serialize(root, name, flush, nil, 0, reduce, noquotes)
---~         return table.concat(t,"\n")
---~     end
-
---~     function table.tohandle(handle,root,name,reduce,noquotes)
---~         serialize(root, name, handle, nil, 0, reduce, noquotes)
---~     end
-
---~     -- sometimes tables are real use (zapfino extra pro is some 85M) in which
---~     -- case a stepwise serialization is nice; actually, we could consider:
---~     --
---~     -- for line in table.serializer(root,name,reduce,noquotes) do
---~     --    ...(line)
---~     -- end
---~     --
---~     -- so this is on the todo list
-
---~     table.tofile_maxtab = 2*1024
-
---~     function table.tofile(filename,root,name,reduce,noquotes)
---~         local f = io.open(filename,'w')
---~         if f then
---~             local concat = table.concat
---~             local maxtab = table.tofile_maxtab
---~             if maxtab > 1 then
---~                 local t = { }
---~                 local function flush(s)
---~                     t[#t+1] = s
---~                     if #t > maxtab then
---~                         f:write(concat(t,"\n"),"\n") -- hm, write(sometable) should be nice
---~                         t = { }
---~                     end
---~                 end
---~                 serialize(root, name, flush, nil, 0, reduce, noquotes)
---~                 f:write(concat(t,"\n"),"\n")
---~             else
---~                 local function flush(s)
---~                     f:write(s,"\n")
---~                 end
---~                 serialize(root, name, flush, nil, 0, reduce, noquotes)
---~             end
---~             f:close()
---~         end
---~     end
-
---~ end
-
---~ t = {
---~     b = "123",
---~     a = "x",
---~     c = 1.23,
---~     d = "1.23",
---~     e = true,
---~     f = {
---~         d = "1.23",
---~         a = "x",
---~         b = "123",
---~         c = 1.23,
---~         e = true,
---~         f = {
---~             e = true,
---~             f = {
---~                 e = true
---~             },
---~         },
---~     },
---~     g = function() end
---~ }
+function table.fromhash(t)
+    local h = { }
+    for k, v in pairs(t) do -- no ipairs here
+        if v then h[#h+1] = k end
+    end
+    return h
+end
 
 --~ print(table.serialize(t), "\n")
 --~ print(table.serialize(t,"name"), "\n")
@@ -464,320 +223,342 @@ end
 --~ print(table.serialize(t,"name",true), "\n")
 --~ print(table.serialize(t,"name",true,true), "\n")
 
-do
+table.serialize_functions = true
+table.serialize_compact   = true
+table.serialize_inline    = true
 
-    table.serialize_functions = true
-    table.serialize_compact   = true
-    table.serialize_inline    = true
+local noquotes, hexify, handle, reduce, compact, inline, functions
 
-    local sortedkeys = table.sortedkeys
-    local format, concat = string.format, table.concat
-    local noquotes, hexify, handle, reduce, compact, inline, functions
-    local pairs, ipairs, type, next, tostring = pairs, ipairs, type, next, tostring
+local reserved = table.tohash { -- intercept a language flaw, no reserved words as key
+    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if',
+    'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while',
+}
 
-    local function key(k)
-        if type(k) == "number" then -- or k:find("^%d+$") then
-            if hexify then
-                return ("[0x%04X]"):format(k)
-            else
-                return "["..k.."]"
-            end
-        elseif noquotes and k:find("^%a[%a%d%_]*$") then
-            return k
+local function key(k)
+    if type(k) == "number" then -- or k:find("^%d+$") then
+        if hexify then
+            return ("[0x%04X]"):format(k)
         else
-            return '["'..k..'"]'
+            return "["..k.."]"
         end
+    elseif noquotes and not reserved[k] and k:find("^%a[%a%d%_]*$") then
+        return k
+    else
+        return '["'..k..'"]'
     end
+end
 
-    local function simple_table(t)
-        if #t > 0 then
-            local n = 0
-            for _,v in pairs(t) do
-                n = n + 1
-            end
-            if n == #t then
-                local tt = { }
-                for i=1,#t do
-                    local v = t[i]
-                    local tv = type(v)
-                    if tv == "number" then
-                        if hexify then
-                            tt[#tt+1] = ("0x%04X"):format(v)
-                        else
-                            tt[#tt+1] = tostring(v)
-                        end
-                    elseif tv == "boolean" then
-                        tt[#tt+1] = tostring(v)
-                    elseif tv == "string" then
-                        tt[#tt+1] = ("%q"):format(v)
-                    else
-                        tt = nil
-                        break
-                    end
-                end
-                return tt
-            end
+local function simple_table(t)
+    if #t > 0 then
+        local n = 0
+        for _,v in pairs(t) do
+            n = n + 1
         end
-        return nil
-    end
-
-    local function do_serialize(root,name,depth,level,indexed)
-        if level > 0 then
-            depth = depth .. " "
-            if indexed then
-                handle(("%s{"):format(depth))
-            elseif name then
-                handle(("%s%s={"):format(depth,key(name)))
-            else
-                handle(("%s{"):format(depth))
-            end
-        end
-        if root and next(root) then
-            local first, last = nil, 0 -- #root cannot be trusted here
-            if compact then
-              for k,v in ipairs(root) do -- NOT: for k=1,#root do (we need to quit at nil)
-                    if not first then first = k end
-                    last = last + 1
-                end
-            end
-        --~ for _,k in pairs(sortedkeys(root)) do -- 1% faster:
-            local sk = sortedkeys(root)
-            for i=1,#sk do
-                local k = sk[i]
-                local v = root[k]
-                local t = type(v)
-                if compact and first and type(k) == "number" and k >= first and k <= last then
-                    if t == "number" then
-                        if hexify then
-                            handle(("%s 0x%04X,"):format(depth,v))
-                        else
-                            handle(("%s %s,"):format(depth,v))
-                        end
-                    elseif t == "string" then
-                        if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
-                            handle(("%s %s,"):format(depth,v))
-                        else
-                            handle(("%s %q,"):format(depth,v))
-                        end
-                    elseif t == "table" then
-                        if not next(v) then
-                            handle(("%s {},"):format(depth))
-                        elseif inline then
-                            local st = simple_table(v)
-                            if st then
-                                handle(("%s { %s },"):format(depth,concat(st,", ")))
-                            else
-                                do_serialize(v,k,depth,level+1,true)
-                            end
-                        else
-                            do_serialize(v,k,depth,level+1,true)
-                        end
-                    elseif t == "boolean" then
-                        handle(("%s %s,"):format(depth,tostring(v)))
-                    elseif t == "function" then
-                        if functions then
-                            handle(('%s loadstring(%q),'):format(depth,string.dump(v)))
-                        else
-                            handle(('%s "function",'):format(depth))
-                        end
-                    else
-                        handle(("%s %q,"):format(depth,tostring(v)))
-                    end
-                elseif k == "__p__" then -- parent
-                    if false then
-                        handle(("%s __p__=nil,"):format(depth))
-                    end
-                elseif t == "number" then
+        if n == #t then
+            local tt = { }
+            for i=1,#t do
+                local v = t[i]
+                local tv = type(v)
+                if tv == "number" then
                     if hexify then
-                        handle(("%s %s=0x%04X,"):format(depth,key(k),v))
+                        tt[#tt+1] = ("0x%04X"):format(v)
                     else
-                        handle(("%s %s=%s,"):format(depth,key(k),v))
+                        tt[#tt+1] = tostring(v)
+                    end
+                elseif tv == "boolean" then
+                    tt[#tt+1] = tostring(v)
+                elseif tv == "string" then
+                    tt[#tt+1] = ("%q"):format(v)
+                else
+                    tt = nil
+                    break
+                end
+            end
+            return tt
+        end
+    end
+    return nil
+end
+
+local function do_serialize(root,name,depth,level,indexed)
+    if level > 0 then
+        depth = depth .. " "
+        if indexed then
+            handle(("%s{"):format(depth))
+        elseif name then
+            handle(("%s%s={"):format(depth,key(name)))
+        else
+            handle(("%s{"):format(depth))
+        end
+    end
+    if root and next(root) then
+        local first, last = nil, 0 -- #root cannot be trusted here
+        if compact then
+          for k,v in ipairs(root) do -- NOT: for k=1,#root do (we need to quit at nil)
+                if not first then first = k end
+                last = last + 1
+            end
+        end
+        local sk = sortedkeys(root)
+        for i=1,#sk do
+            local k = sk[i]
+            local v = root[k]
+--~ if v == root then
+    -- circular
+--~ else
+            local t = type(v)
+            if compact and first and type(k) == "number" and k >= first and k <= last then
+                if t == "number" then
+                    if hexify then
+                        handle(("%s 0x%04X,"):format(depth,v))
+                    else
+                        handle(("%s %s,"):format(depth,v))
                     end
                 elseif t == "string" then
                     if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
-                        handle(("%s %s=%s,"):format(depth,key(k),v))
+                        handle(("%s %s,"):format(depth,v))
                     else
-                        handle(("%s %s=%q,"):format(depth,key(k),v))
+                        handle(("%s %q,"):format(depth,v))
                     end
                 elseif t == "table" then
                     if not next(v) then
-                        handle(("%s %s={},"):format(depth,key(k)))
+                        handle(("%s {},"):format(depth))
                     elseif inline then
                         local st = simple_table(v)
                         if st then
-                            handle(("%s %s={ %s },"):format(depth,key(k),concat(st,", ")))
+                            handle(("%s { %s },"):format(depth,concat(st,", ")))
                         else
-                            do_serialize(v,k,depth,level+1)
+                            do_serialize(v,k,depth,level+1,true)
                         end
+                    else
+                        do_serialize(v,k,depth,level+1,true)
+                    end
+                elseif t == "boolean" then
+                    handle(("%s %s,"):format(depth,tostring(v)))
+                elseif t == "function" then
+                    if functions then
+                        handle(('%s loadstring(%q),'):format(depth,v:dump()))
+                    else
+                        handle(('%s "function",'):format(depth))
+                    end
+                else
+                    handle(("%s %q,"):format(depth,tostring(v)))
+                end
+            elseif k == "__p__" then -- parent
+                if false then
+                    handle(("%s __p__=nil,"):format(depth))
+                end
+            elseif t == "number" then
+                if hexify then
+                    handle(("%s %s=0x%04X,"):format(depth,key(k),v))
+                else
+                    handle(("%s %s=%s,"):format(depth,key(k),v))
+                end
+            elseif t == "string" then
+                if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                    handle(("%s %s=%s,"):format(depth,key(k),v))
+                else
+                    handle(("%s %s=%q,"):format(depth,key(k),v))
+                end
+            elseif t == "table" then
+                if not next(v) then
+                    handle(("%s %s={},"):format(depth,key(k)))
+                elseif inline then
+                    local st = simple_table(v)
+                    if st then
+                        handle(("%s %s={ %s },"):format(depth,key(k),concat(st,", ")))
                     else
                         do_serialize(v,k,depth,level+1)
                     end
-                elseif t == "boolean" then
-                    handle(("%s %s=%s,"):format(depth,key(k),tostring(v)))
-                elseif t == "function" then
-                    if functions then
-                        handle(('%s %s=loadstring(%q),'):format(depth,key(k),string.dump(v)))
-                    else
-                        handle(('%s %s="function",'):format(depth,key(k)))
-                    end
                 else
-                    handle(("%s %s=%q,"):format(depth,key(k),tostring(v)))
-                --  handle(('%s %s=loadstring(%q),'):format(depth,key(k),string.dump(function() return v end)))
+                    do_serialize(v,k,depth,level+1)
                 end
-            end
-        end
-       if level > 0 then
-            handle(("%s},"):format(depth))
-        end
-    end
-
-    local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
-        noquotes = _noquotes
-        hexify = _hexify
-        handle = _handle or print
-        reduce = _reduce or false
-        compact = table.serialize_compact
-        inline  = compact and table.serialize_inline
-        functions = table.serialize_functions
-        local tname = type(name)
-        if tname == "string" then
-            if name == "return" then
-                handle("return {")
-            else
-                handle(name .. "={")
-            end
-        elseif tname == "number" then
-            if hexify then
-                handle(format("[0x%04X]={",name))
-            else
-                handle("[" .. name .. "]={")
-            end
-        elseif tname == "boolean" then
-            if name then
-                handle("return {")
-            else
-                handle("{")
-            end
-        else
-            handle("t={")
-        end
-        if root and next(root) then
-            do_serialize(root,name,"",0,indexed)
-        end
-        handle("}")
-    end
-
-    --~ name:
-    --~
-    --~ true     : return     { }
-    --~ false    :            { }
-    --~ nil      : t        = { }
-    --~ string   : string   = { }
-    --~ 'return' : return     { }
-    --~ number   : [number] = { }
-
-    function table.serialize(root,name,reduce,noquotes,hexify)
-        local t = { }
-        local function flush(s)
-            t[#t+1] = s
-        end
-        serialize(root,name,flush,reduce,noquotes,hexify)
-        return concat(t,"\n")
-    end
-
-    function table.tohandle(handle,root,name,reduce,noquotes,hexify)
-        serialize(root,name,handle,reduce,noquotes,hexify)
-    end
-
-    -- sometimes tables are real use (zapfino extra pro is some 85M) in which
-    -- case a stepwise serialization is nice; actually, we could consider:
-    --
-    -- for line in table.serializer(root,name,reduce,noquotes) do
-    --    ...(line)
-    -- end
-    --
-    -- so this is on the todo list
-
-    table.tofile_maxtab = 2*1024
-
-    function table.tofile(filename,root,name,reduce,noquotes,hexify)
-        local f = io.open(filename,'w')
-        if f then
-            local maxtab = table.tofile_maxtab
-            if maxtab > 1 then
-                local t = { }
-                local function flush(s)
-                    t[#t+1] = s
-                    if #t > maxtab then
-                        f:write(concat(t,"\n"),"\n") -- hm, write(sometable) should be nice
-                        t = { }
-                    end
+            elseif t == "boolean" then
+                handle(("%s %s=%s,"):format(depth,key(k),tostring(v)))
+            elseif t == "function" then
+                if functions then
+                    handle(('%s %s=loadstring(%q),'):format(depth,key(k),v:dump()))
+                else
+                    handle(('%s %s="function",'):format(depth,key(k)))
                 end
-                serialize(root,name,flush,reduce,noquotes,hexify)
-                f:write(concat(t,"\n"),"\n")
             else
-                local function flush(s)
-                    f:write(s,"\n")
-                end
-                serialize(root,name,flush,reduce,noquotes,hexify)
+                handle(("%s %s=%q,"):format(depth,key(k),tostring(v)))
+            --  handle(('%s %s=loadstring(%q),'):format(depth,key(k),string.dump(function() return v end)))
             end
-            f:close()
+--~ end
         end
     end
-
+   if level > 0 then
+        handle(("%s},"):format(depth))
+    end
 end
 
-do
+local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
+    noquotes = _noquotes
+    hexify = _hexify
+    handle = _handle or print
+    reduce = _reduce or false
+    compact = table.serialize_compact
+    inline  = compact and table.serialize_inline
+    functions = table.serialize_functions
+    local tname = type(name)
+    if tname == "string" then
+        if name == "return" then
+            handle("return {")
+        else
+            handle(name .. "={")
+        end
+    elseif tname == "number" then
+        if hexify then
+            handle(("[0x%04X]={"):format(name))
+        else
+            handle("[" .. name .. "]={")
+        end
+    elseif tname == "boolean" then
+        if name then
+            handle("return {")
+        else
+            handle("{")
+        end
+    else
+        handle("t={")
+    end
+    if root and next(root) then
+        do_serialize(root,name,"",0,indexed)
+    end
+    handle("}")
+end
 
-    local function flatten(t,f,complete)
-        for i=1,#t do
-            local v = t[i]
-            if type(v) == "table" then
-                if complete or type(v[1]) == "table" then
-                    flatten(v,f,complete)
-                else
-                    f[#f+1] = v
+--~ name:
+--~
+--~ true     : return     { }
+--~ false    :            { }
+--~ nil      : t        = { }
+--~ string   : string   = { }
+--~ 'return' : return     { }
+--~ number   : [number] = { }
+
+function table.serialize(root,name,reduce,noquotes,hexify)
+    local t = { }
+    local function flush(s)
+        t[#t+1] = s
+    end
+    serialize(root,name,flush,reduce,noquotes,hexify)
+    return concat(t,"\n")
+end
+
+function table.tohandle(handle,root,name,reduce,noquotes,hexify)
+    serialize(root,name,handle,reduce,noquotes,hexify)
+end
+
+-- sometimes tables are real use (zapfino extra pro is some 85M) in which
+-- case a stepwise serialization is nice; actually, we could consider:
+--
+-- for line in table.serializer(root,name,reduce,noquotes) do
+--    ...(line)
+-- end
+--
+-- so this is on the todo list
+
+table.tofile_maxtab = 2*1024
+
+function table.tofile(filename,root,name,reduce,noquotes,hexify)
+    local f = io.open(filename,'w')
+    if f then
+        local maxtab = table.tofile_maxtab
+        if maxtab > 1 then
+            local t = { }
+            local function flush(s)
+                t[#t+1] = s
+                if #t > maxtab then
+                    f:write(concat(t,"\n"),"\n") -- hm, write(sometable) should be nice
+                    t = { }
                 end
+            end
+            serialize(root,name,flush,reduce,noquotes,hexify)
+            f:write(concat(t,"\n"),"\n")
+        else
+            local function flush(s)
+                f:write(s,"\n")
+            end
+            serialize(root,name,flush,reduce,noquotes,hexify)
+        end
+        f:close()
+    end
+end
+
+local function flatten(t,f,complete)
+    for i=1,#t do
+        local v = t[i]
+        if type(v) == "table" then
+            if complete or type(v[1]) == "table" then
+                flatten(v,f,complete)
             else
                 f[#f+1] = v
             end
+        else
+            f[#f+1] = v
         end
     end
+end
 
-    function table.flatten(t)
-        local f = { }
-        flatten(t,f,true)
-        return f
+function table.flatten(t)
+    local f = { }
+    flatten(t,f,true)
+    return f
+end
+
+function table.unnest(t) -- bad name
+    local f = { }
+    flatten(t,f,false)
+    return f
+end
+
+table.flatten_one_level = table.unnest
+
+-- the next three may disappear
+
+function table.remove_value(t,value) -- todo: n
+    if value then
+        for i=1,#t do
+            if t[i] == value then
+                remove(t,i)
+                -- remove all, so no: return
+            end
+        end
     end
-
-    function table.unnest(t) -- bad name
-        local f = { }
-        flatten(t,f,false)
-        return f
-    end
-
-    table.flatten_one_level = table.unnest
-
 end
 
 function table.insert_before_value(t,value,str)
-    for i=1,#t do
-        if t[i] == value then
-            table.insert(t,i,str)
-            return
+    if str then
+        if value then
+            for i=1,#t do
+                if t[i] == value then
+                    insert(t,i,str)
+                    return
+                end
+            end
         end
+        insert(t,1,str)
+    elseif value then
+        insert(t,1,value)
     end
-    table.insert(t,1,str)
 end
 
 function table.insert_after_value(t,value,str)
-    for i=1,#t do
-        if t[i] == value then
-            table.insert(t,i+1,str)
-            return
+    if str then
+        if value then
+            for i=1,#t do
+                if t[i] == value then
+                    insert(t,i+1,str)
+                    return
+                end
+            end
         end
+        t[#t+1] = str
+    elseif value then
+        t[#t+1] = value
     end
-    t[#t+1] = str
 end
 
 function table.are_equal(a,b,n,m)
@@ -808,28 +589,11 @@ function table.compact(t)
     end
 end
 
-function table.tohash(t,value)
-    local h = { }
-    if value == nil then value = true end
-    for _, v in pairs(t) do -- no ipairs here
-        h[v] = value
-    end
-    return h
-end
-
-function table.fromhash(t)
-    local h = { }
-    for k, v in pairs(t) do -- no ipairs here
-        if v then h[#h+1] = k end
-    end
-    return h
-end
-
 function table.contains(t, v)
     if t then
         for i=1, #t do
             if t[i] == v then
-                return true
+                return i
             end
         end
     end
@@ -866,11 +630,10 @@ function table.clone(t,p) -- t is optional or nil or table
     return t
 end
 
-
 function table.hexed(t,seperator)
     local tt = { }
-    for i=1,#t do tt[i] = string.format("0x%04X",t[i]) end
-    return table.concat(tt,seperator or " ")
+    for i=1,#t do tt[i] = ("0x%04X"):format(t[i]) end
+    return concat(tt,seperator or " ")
 end
 
 function table.reverse_hash(h)

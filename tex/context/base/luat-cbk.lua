@@ -91,61 +91,54 @@ nodes (in this case 121049).</p>
 <p>The following code is kind of experimental. In the documents
 that describe the development of <l n='luatex'/> we report
 on speed tests. One observation is thta it sometimes helps to
-restart the collector.</p>
+restart the collector. Okay, experimental code has been removed,
+because messing aroudn with the gc is too unpredictable.</p>
 --ldx]]--
 
-garbagecollector = { }
+garbagecollector = garbagecollector or { }
 
-do
-    local level = 0
+garbagecollector.trace   = false
+garbagecollector.enabled = false
 
---~     collectgarbage("setstepmul", 165)
---~     collectgarbage("setstepmul",50)
+-- Lua allocates up to 12 times the amount of memory needed for
+-- handling a string, and for large binary chunks (like chinese otf
+-- files) we get a prominent memory consumption. Even when a variable
+-- is nilled, there is some delay in freeing the associated memory (the
+-- hashed string) because if we do the same thing directly afterwards,
+-- we see only a slight increase in memory. For that reason it makes
+-- sense to do a collector pass after a huge file.
+--
+-- test file:
+--
+-- function test()
+--     local b = collectgarbage("count")
+--     local s = io.loaddata("some font table, e.g. a big tmc file")
+--     local a = collectgarbage("count")
+--     print(">>> STATUS",b,a,a-b,#s,1000*(a-b)/#s)
+-- end
+--
+-- test() test() test() test() collectgarbage("collect") test() test() test() test()
+--
+-- As a result of this, LuaTeX now uses an optimized version of f:read("*a"),
+-- one that does not use the 4K allocations but allocates in one step.
 
-    garbagecollector.trace = false
-    garbagecollector.tune  = false -- for the moment
+garbagecollector.criterium = 4*1024*1024
 
-    local function report(format)
-        if garbagecollector.trace then
-         -- texio.write_nl(string.format(format,level,status.luastate_bytes))
-            texio.write_nl(string.format(format,level,collectgarbage("count")))
-        end
-    end
-
-    function garbagecollector.update()
-        report("%s: memory before update: %s")
-        collectgarbage("restart")
-    end
-
-    function garbagecollector.push()
-        if garbagecollector.tune then
-            level = level + 1
-            if level == 1 then
-                collectgarbage("stop")
+function garbagecollector.check(size,criterium)
+    if garbagecollector.enabled then
+        criterium = criterium or garbagecollector.criterium
+        if not size or (criterium and criterium > 0 and size > criterium) then
+            if garbagecollector.trace then
+                local round = math.round or math.floor
+                local b = collectgarbage("count")
+                collectgarbage("collect")
+                local a = collectgarbage("count")
+                logs.report("memory","forced sweep, collected: %s MB, used: %s MB",round((b-a)/1000),round(a/1000))
+            else
+                collectgarbage("collect")
             end
-            report("%s: memory after push: %s")
-        else
-            garbagecollector.update()
         end
     end
-
-    function garbagecollector.pop()
-        if garbagecollector.tune then
-            report("%s: memory before pop: %s")
-            if level == 1 then
-                collectgarbage("restart")
-            end
-            level = level - 1
-        end
-    end
-
-    function garbagecollector.cycle()
-        if garbagecollector.tune then
-            report("%s: memory before collect: %s")
-            collectgarbage("collect")
-            report("%s: memory after collect: %s")
-        end
-    end
-
 end
+
 

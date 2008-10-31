@@ -94,33 +94,7 @@
         \unknowncharacter
       \fi}}
 
-\beginTEX
-
-\def\dodoconvertcharacters#1#2#3%
-  {\ifnum#3>#1
-     \bgroup
-     \!!counta#3\relax
-     \ifnum\!!counta>\zerocount
-       \advance\!!counta \minusone
-       \!!countb\!!counta
-       \divide\!!counta #1%
-       \!!countc\!!counta
-       \multiply\!!countc #1%
-       \advance\!!countb -\!!countc
-       \doconvertcharacters#3{\!!counta}%
-       \advance\!!countb \plusone
-       #3{\the\!!countb}%
-     \fi
-     \egroup
-   \else
-     #2{#3}% pure expansion, used in references
-   \fi}
-
-\endTEX
-
-%D A fully expandable alternative:
-
-\beginETEX \numexpr
+%D The fully expandable alternative:
 
 \def\dodoconvertcharacters#1#2#3%
   {\ifcase#3\else
@@ -131,8 +105,6 @@
        \expandafter#2\expandafter{\number#3}%
      \fi
    \fi}
-
-\endETEX
 
 \def\doconvertcharacters{\dodoconvertcharacters{26}}
 

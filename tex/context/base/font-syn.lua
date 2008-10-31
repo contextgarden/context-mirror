@@ -20,7 +20,7 @@ texmf = texmf or { }
 fonts.names            = { }
 fonts.names.filters    = { }
 fonts.names.data       = { }
-fonts.names.version    = 1.04
+fonts.names.version    = 1.07
 fonts.names.saved      = false
 fonts.names.loaded     = false
 fonts.names.be_clever  = true
@@ -39,23 +39,28 @@ fonts.names.filters.ttf = fontforge.info
 fonts.names.filters.ttc = fontforge.info
 
 function fonts.names.filters.afm(name)
-    local f = io.open(name)
-    if f then
-        local hash = { }
-        for line in f:lines() do
-            local key, value = line:match("^(.+)%s+(.+)%s*$")
-            if key and #key > 0 then
-                hash[key:lower()] = value
-            end
-            if line:find("StartCharMetrics") then
-                break
-            end
-        end
-        f:close()
-        return hash
-    else
-        return nil
+    local pfbname = input.find_file(file.removesuffix(name)..".pfb","pfb") or ""
+    if pfbname == "" then
+        pfbname = input.find_file(file.removesuffix(file.basename(name))..".pfb","pfb") or ""
     end
+    if pfbname ~= "" then
+        local f = io.open(name)
+        if f then
+            local hash = { }
+            for line in f:lines() do
+                local key, value = line:match("^(.+)%s+(.+)%s*$")
+                if key and #key > 0 then
+                    hash[key:lower()] = value
+                end
+                if line:find("StartCharMetrics") then
+                    break
+                end
+            end
+            f:close()
+            return hash
+        end
+    end
+    return nil
 end
 
 function fonts.names.filters.pfb(name)
@@ -81,6 +86,9 @@ fonts.names.filters.fixes = {
 
 fonts.names.xml_configuration_file    = "fonts.conf" -- a bit weird format, bonus feature
 fonts.names.environment_path_variable = "OSFONTDIR"  -- the official way, in minimals etc
+
+fonts.names.filters.paths = { }
+fonts.names.filters.names = { }
 
 function fonts.names.getpaths()
     local hash, result = { }, { }
@@ -111,38 +119,76 @@ function fonts.names.getpaths()
     return result
 end
 
+function fonts.names.cleanname(name)
+    return ((name:lower()):gsub("[^%a%d]",""))
+end
+
 function fonts.names.identify(verbose)
     fonts.names.data = {
+        version = fonts.names.version,
         mapping = { },
-        version = fonts.names.version
+    --  sorted = { },
+        fallback_mapping = { },
+    --  fallback_sorted = { },
     }
-    local done, mapping, nofread, nofok = { }, fonts.names.data.mapping, 0, 0
-    local function add(n,fontname,filename,suffix, sub)
-        n = n:lower()
-        if not mapping[n] then mapping[n], nofok = { suffix, fontname, filename, sub }, nofok + 1 end
-        n = n:gsub("[^%a%d]","")
-        if not mapping[n] then mapping[n], nofok = { suffix, fontname, filename, sub }, nofok + 1 end
-    end
+    local done, mapping, fallback_mapping, nofread, nofok = { }, fonts.names.data.mapping, fonts.names.data.fallback_mapping, 0, 0
+    local cleanname = fonts.names.cleanname
     local function check(result, filename, suffix, is_sub)
         local fontname = result.fullname
         if fontname then
-            add(result.fullname, fontname, filename, suffix, is_sub)
+            local n = cleanname(result.fullname)
+            if not mapping[n] then
+                mapping[n], nofok = { suffix, fontname, filename, is_sub }, nofok + 1
+            end
         end
         if result.fontname then
             fontname = fontname or result.fontname
-            add(result.fontname, fontname, filename, suffix, is_sub)
+            local n = cleanname(result.fontname)
+            if not mapping[n] then
+                mapping[n], nofok = { suffix, fontname, filename, is_sub }, nofok + 1
+            end
         end
-        if result.familyname and result.weight then
+        if result.familyname and result.weight and result.italicangle == 0 then
             local madename = result.familyname .. " " .. result.weight
             fontname = fontname or madename
-            add(madename, fontname, filename, suffix, is_sub)
+            local n = cleanname(madename)
+            if not mapping[n] and not fallback_mapping[n] then
+                fallback_mapping[n], nofok = { suffix, fontname, filename, is_sub }, nofok + 1
+            end
         end
     end
     local trace = verbose or fonts.names.trace
     local filters = fonts.names.filters
-    local function identify(completename,name,suffix)
+    local skip_paths = fonts.names.filters.paths
+    local skip_names = fonts.names.filters.names
+    local function identify(completename,name,suffix,storedname)
         if not done[name] and io.exists(completename) then
             nofread = nofread + 1
+            if #skip_paths > 0 then
+                local path = file.dirname(completename)
+                for i=1,#skip_paths do
+                    if path:find(skip_paths[i]) then
+                        if trace then
+                            logs.report("fontnames","rejecting path of %s font %s",suffix,completename)
+                            logs.push()
+                        end
+                        return
+                    end
+                end
+            end
+            if #skip_names > 0 then
+                local base = file.basename(completename)
+                for i=1,#skip_paths do
+                    if base:find(skip_names[i]) then
+                        done[name] = true
+                        if trace then
+                            logs.report("fontnames","rejecting name of %s font %s",suffix,completename)
+                            logs.push()
+                        end
+                        return
+                    end
+                end
+            end
             if trace then
                 logs.report("fontnames","identifying %s font %s",suffix,completename)
                 logs.push()
@@ -153,9 +199,9 @@ function fonts.names.identify(verbose)
             end
             if result then
                 if not result[1] then
-                    check(result,name,suffix,false)
+                    check(result,storedname,suffix,false) -- was name
                 else for _, r in ipairs(result) do
-                    check(r,name,suffix,true)
+                    check(r,storedname,suffix,true) -- was name
                 end end
             end
             done[name] = true
@@ -177,7 +223,8 @@ function fonts.names.identify(verbose)
     traverse("tree", function(suffix) -- TEXTREE only
         input.with_files(".*%." .. suffix .. "$", function(method,root,path,name)
             if method == "file" then
-                identify(root .."/" .. path .. "/" .. name,name,suffix)
+                local completename = root .."/" .. path .. "/" .. name
+                identify(completename,name,suffix,name,name)
             end
         end)
     end)
@@ -187,13 +234,11 @@ function fonts.names.identify(verbose)
             for _, path in ipairs(pathlist) do
                 path = input.clean_path(path .. "/")
                 path = path:gsub("/+","/")
-                local pattern = path .. "*." .. suffix
+                local pattern = path .. "**." .. suffix -- ** forces recurse
                 logs.report("fontnames", "globbing path %s",pattern)
                 local t = dir.glob(pattern)
-                for _, name in pairs(t) do -- ipairs
-                --  if lfs.isfile(name) then -- always true anyway
-                        identify(name,file.basename(name),suffix)
-                --  end
+                for _, completename in pairs(t) do -- ipairs
+                    identify(completename,file.basename(completename),suffix,completename)
                 end
             end
         end
@@ -230,6 +275,13 @@ function fonts.names.load(reload,verbose)
                 fonts.names.saved = true
             end
         end
+        local data = fonts.names.data
+        if data then
+            data.sorted = table.sortedkeys(data.mapping or { }) or { }
+            data.fallback_sorted = table.sortedkeys(data.fallback_mapping or { }) or { }
+        else
+            logs.report("font table", "accessing the data table failed")
+        end
         fonts.names.loaded = true
     end
 end
@@ -238,11 +290,19 @@ function fonts.names.list(pattern,reload)
     fonts.names.load(reload)
     if fonts.names.loaded then
         local t = { }
-        for k,v in pairs(fonts.names.data.mapping) do
-            if k:find(pattern) then
-                t[k] = v
+        local function list_them(mapping,sorted)
+            if mapping[pattern] then
+                t[pattern] = mapping[pattern]
+            else
+                for k,v in ipairs(sorted) do
+                    if v:find(pattern) then
+                        t[v] = mapping[v]
+                    end
+                end
             end
         end
+        list_them(fonts.names.data.mapping,fonts.names.data.sorted)
+        list_them(fonts.names.data.fallback_mapping,fonts.names.data.fallback_sorted)
         return t
     else
         return nil
@@ -259,36 +319,47 @@ do
 
     local function found(name)
         if fonts.names.data then
-            local result, mapping = nil, fonts.names.data.mapping
-            local mn = mapping[name]
-            if mn then
-                return mn[2], mn[3], mn[4]
-            end
-            if fonts.names.be_clever then -- this will become obsolete
-                local encoding, tag = name:match("^(.-)[%-%:](.+)$")
-                local mt = mapping[tag]
-                if tag and fonts.enc.is_known(encoding) and mt then
-                    return mt[1], encoding .. "-" .. mt[3], mt[4]
+            name = fonts.names.cleanname(name)
+            local function found_indeed(mapping,sorted)
+                local mn = mapping[name]
+                if mn then
+                    return mn[2], mn[3], mn[4]
                 end
-            end
-            -- name, type, file
-            for k,v in pairs(mapping) do
-                if k:find(name) then
-                    return v[2], v[3], v[4]
+                if fonts.names.be_clever then -- this will become obsolete
+                    local encoding, tag = name:match("^(.-)[%-%:](.+)$")
+                    local mt = mapping[tag]
+                    if tag and fonts.enc.is_known(encoding) and mt then
+                        return mt[1], encoding .. "-" .. mt[3], mt[4]
+                    end
                 end
-            end
-            local condensed = name:gsub("[^%a%d]","")
-            local mc = mapping[condensed]
-            if mc then
-                return mc[2], mc[3], mc[4]
-            end
-            for k,v in pairs(mapping) do
-                if k:find(condensed) then
-                    return v[2], v[3], v[4]
+                -- name, type, file
+                for k,v in pairs(mapping) do
+                    if k:find(name) then
+                        return v[2], v[3], v[4]
+                    end
                 end
+                local condensed = name:gsub("[^%a%d]","")
+                local mc = mapping[condensed]
+                if mc then
+                    return mc[2], mc[3], mc[4]
+                end
+                for k,v in ipairs(sorted) do
+                    if v:find(condensed) then
+                        v = mapping[v]
+                        return v[2], v[3], v[4]
+                    end
+                end
+                return nil, nil, nil
             end
+            local data = fonts.names.data
+            local fontname, filename, is_sub = found_indeed(data.mapping, data.sorted)
+            if not fontname or not filename then
+                fontname, filename, is_sub = found_indeed(data.fallback_mapping, data.fallback_sorted)
+            end
+            return fontname, filename, is_sub
+        else
+            return nil, nil, nil
         end
-        return nil, nil, nil
     end
 
     local reloaded = false
@@ -390,3 +461,18 @@ fonts.names.new_to_old = {
 }
 
 fonts.names.old_to_new = table.swapped(fonts.names.new_to_old)
+
+function fonts.names.exists(name)
+    local fna, found = fonts.names.autoreload, false
+    fonts.names.autoreload = false
+    for k,v in ipairs(fonts.names.filters.list) do
+        found = (input.find_file(name,v) or "") ~= ""
+        if found then
+            break
+        end
+    end
+    found = found or (input.find_file(name,"tfm") or "") ~= ""
+    found = found or (fonts.names.resolve(name) or "") ~= ""
+    fonts.names.autoreload = fna
+    return found
+end

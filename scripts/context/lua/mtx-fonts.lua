@@ -67,6 +67,18 @@ function scripts.fonts.list(pattern,reload,all,info)
     if reload then
         input.report("fontnames, reloading font database")
     end
+    -- make a function for this
+    pattern = pattern:lower()
+    pattern = pattern:gsub("%-","%%-")
+    pattern = pattern:gsub("%.","%%.")
+    pattern = pattern:gsub("%*",".*")
+    pattern = pattern:gsub("%?",".?")
+    if pattern == "" then
+        pattern = ".*"
+    else
+        pattern = "^" .. pattern .. "$"
+    end
+    --
     local t = fonts.names.list(pattern,reload)
     if reload then
         input.report("fontnames, done\n\n")
@@ -74,11 +86,9 @@ function scripts.fonts.list(pattern,reload,all,info)
     if t then
         local s, w = table.sortedkeys(t), { 0, 0, 0 }
         local function action(f)
-            for k,v in pairs(s) do
-                if all or v == t[v][2]:lower() then
-                    local type, name, file, sub = unpack(t[v])
-                    f(v,name,file,sub,type)
-                end
+            for k,v in ipairs(s) do
+                local type, name, file, sub = unpack(t[v])
+                f(v,name,file,sub,type)
             end
         end
         action(function(v,n,f,s,t)
@@ -122,7 +132,13 @@ function scripts.fonts.save(name,sub)
                         save(fontinfo.fullname,fontforge.open(filename))
                     end
                 end
+            else
+                input.verbose = true
+                input.report("font: %s not saved",filename)
             end
+        else
+            input.verbose = true
+            input.report("font: %s not found",name)
         end
     end
 end

@@ -16,34 +16,20 @@
 %D Beware: don't rely on \longempty things, since this may
 %D change!
 
-% \newif\ifprocessingXML
-
-\beginTEX
-  \writestatus{XML}{sorry, XML is only supported in (pdf)etex}
-  \def\startXMLdefinitions{\gobbleuntil\stopXMLdefinitions}
-  \endinput
-\endTEX
-
-% tzt nog eens child grabber maken; mooier in mathml
-
 %D This module is highly optimized for speed, which sometimes
 %D leads to rather unreadable code. Sorry for this.
 
-\beginETEX XML
+\bgroup \obeylines
 
-  \bgroup \obeylines
+\gdef\startXMLdefinitions% keep %
+  {\bgroup\obeylines\dostartXMLdefinitions}
 
-    \gdef\startXMLdefinitions% keep %
-      {\bgroup\obeylines\dostartXMLdefinitions}
+\gdef\dostartXMLdefinitions #1
+  {\egroup\doifsomething{#1}{\writestatus{XML}{loading #1 support}}}
 
-    \gdef\dostartXMLdefinitions #1
-      {\egroup\doifsomething{#1}{\writestatus{XML}{loading #1 support}}}
+\global\let\stopXMLdefinitions\relax
 
-    \global\let\stopXMLdefinitions\relax
-
-  \egroup
-
-\endETEX
+\egroup
 
 % todo: XMLfullsave == also attributes
 % csnames

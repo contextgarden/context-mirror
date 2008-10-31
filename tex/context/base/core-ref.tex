@@ -193,36 +193,11 @@
 %D full reference, but it's the concept that counts. The low
 %D level implementation is:
 
-\def\rawreference#1#2#3%
-  {\bgroup
-   \the\everyreference
-   \makesectionformat
-   \writereference{#2}
-     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}%
-     {\noexpand\realfolio}%
-     {#3}%
-   \egroup}
+\let\rawreference    \gobblethreearguments
+\let\rawpagereference\gobbletwoarguments
+\let\rawtextreference\gobbletwoarguments
 
-\def\rawpagereference#1#2%
-  {\bgroup
-   \the\everyreference
-   \makesectionformat
-   \writereference{#2}
-     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}%
-     {\noexpand\realfolio}%
-     {}%
-   \egroup}
-
-\def\rawtextreference#1#2#3%
-  {\bgroup
-   \the\everyreference
-   \writereference{#2}
-     {}%
-     {\noexpand\realfolio}%
-     {#3}%
-   \egroup}
-
-%D As we can see, these macros depend on three other ones,
+%D These macros depend on three other ones,
 %D \type {\makesectionformat}, that generated \type
 %D {\sectionformat}, \type {\pagenumber}. The not yet used
 %D argument \type{#1} is a tag that specifies the type of
@@ -256,7 +231,7 @@
 %D
 %D Therefore, during a pass, \CONTEXT\ writes the references to
 %D a the utility file. The next macro does the job and
-%D generates entries like:
+%D generates entries like: (for mkii)
 %D
 %D \starttyping
 %D \mainreference{prefix}{reference}{page}{realpage}{text}
@@ -276,49 +251,6 @@
 
 \let\referenceprefix=\empty
 \let\lastreference  =\empty
-
-%D The last reference is saved in a macro named \type
-%D {\lastreference} (indeed). To keep track of the order of
-%D references, later we will see for what purpose, we maintain
-%D a counter.
-
-\newcount\crossreferencenumber \crossreferencenumber=1
-
-\def\writereference#1#2#3#4%
-  {\ifreferencing
-     \edef\!!stringa{#1}%
-     \ifx\!!stringa\empty \else
-       \def\dowritereference##1%
-         {\xdef\lastreference{##1}%
-          \@EA\dodowritereference\lastreference\empty\empty\end{#2}{#3}{#4}}%
-       \rawprocesscommalist[\!!stringa]\dowritereference
-     \fi
-   \fi}
-
-%D Beware: \type {#2} gobbles space in references so that
-%D \typ {a nice ref} becomes \typ {anice ref}.
-
-\def\dodowritereference#1#2#3\end#4#5#6%
-  {\bgroup
-   \global\advance\crossreferencenumber \plusone\relax
-   \if#1-\if#2:%
-     \let\referenceprefix\empty
-     \xdef\lastreference{#3}%
-   \else
-     % \xdef\lastreference{#1#2#3}% here we loose the space
-   \fi\else
-     % \xdef\lastreference{#1#2#3}% here we loose the space
-   \fi
-   \ifx\lastreference\empty \else
-     \doiffirstreferenceoccurance\lastreference
-       {\thisisdestination{\referenceprefix\lastreference}}%
-     \referenceinfo>\lastreference
-     \expanded{\writeutilitycommand{\noexpand\mainreference{\referenceprefix}{\lastreference}{#4}{#5}{#6}}}%
-   \fi
-   \egroup}
-
-%D We will implement \type {\doiffirstreferenceoccurance}
-%D later on.
 
 %D When (during a second pass over the document) references are
 %D loaded, they are saved in a macro, one for each reference.
@@ -746,6 +678,14 @@
 \let\currentouterreference    =\empty
 \let\currentinnerreference    =\empty
 
+\def\setreferencevariables#1#2#3#4#5#6%
+  {\def\currentfullreference     {#1}%
+   \def\currentreferencespecial  {#2}%
+   \def\currentreferenceoperation{#3}%
+   \def\currentreferencearguments{#4}%
+   \def\currentouterreference    {#5}%
+   \def\currentinnerreference    {#6}}
+
 \def\splitofffullreference#1%
   {\edef\currentfullreference{#1}%
    \@EA\dosplitofffullreference\currentfullreference\empty(\relax)\empty\end}
@@ -912,30 +852,6 @@
 \def\resetreference[#1]%
   {\global\letbeundefined{\specialREFidentifier#1}}
 
-\beginTEX
-
-\newcount\nofexpandedreferences
-
-\def\dodoexpandreferences#1REF(#2#3)#4\relax
-  {\ifx#2\relax
-     \@EA\ifx\csname\specialREFidentifier#1\endcsname\relax
-       \global\advance\nofexpandedreferences \plusone
-       \@EA\xdef\csname REF::\number\nofexpandedreferences\endcsname{#1}%
-     \else
-       \edef\expandedreference{\csname\specialREFidentifier#1\endcsname,}%
-     \fi
-   \else
-     \@EA\ifx\csname\specialREFidentifier#2#3\endcsname\relax
-       % not set
-     \else
-       \edef\expandedreference{\csname\specialREFidentifier#2#3\endcsname,}%
-     \fi
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \newcount\nofexpandedreferences
 
 \def\dodoexpandreferences#1REF(#2#3)#4\relax
@@ -953,8 +869,6 @@
        % not set
      \fi
    \fi}
-
-\endETEX
 
 \def\doexpandreferences#1,%
   {\if]#1\else
@@ -1673,25 +1587,11 @@
 \def\setexecutecommandcheck#1#2% #2 permits \first \second
   {\setvalue{\s!do:\s!do:#1}{#2}}
 
-\beginETEX
-
 \def\checkexecutecommand#1#2% evt geen #1 en #2
   {\ifx#2\empty \else \ifcsname\s!do:\s!do:#1\endcsname
      \@EA\let\@EA\docheckexecutecommand\csname\s!do:\s!do:#1\endcsname
      \rawprocesscommalist[#2]\docheckexecutecommand
    \fi \fi }
-
-\endETEX
-
-\beginTEX
-
-\def\checkexecutecommand#1#2% evt geen #1 en #2
-  {\ifx#2\empty \else \@EA\ifx\csname\s!do:\s!do:#1\endcsname\relax \else
-     \@EA\let\@EA\docheckexecutecommand\csname\s!do:\s!do:#1\endcsname
-     \rawprocesscommalist[#2]\docheckexecutecommand
-   \fi \fi }
-
-\endTEX
 
 %D Command references (in dutch, english, german of
 %D whatever interface language) are translated into a bit
@@ -3080,6 +2980,10 @@
      \unhbox\scratchbox
    \fi
    \egroup}
+
+%D Plugin code:
+
+\loadmarkfile{core-ref}
 
 %D In the next settings we see some variables that were not
 %D used here and that concern the way the pagenumbers refered

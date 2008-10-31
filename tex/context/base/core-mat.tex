@@ -2646,8 +2646,32 @@
 
 \def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
 
+% \unexpanded\def\frac
+%   {\dofrac\mathstyle}
+%
+% \chardef\mathfracmode=0 $\frac{1}{2}$
+% \chardef\mathfracmode=1 $\frac{1}{2}$
+% \chardef\mathfracmode=2 $\frac{1}{2}$
+% \chardef\mathfracmode=3 $\frac{1}{2}$
+% \chardef\mathfracmode=4 $\frac{1}{2}$
+% \chardef\mathfracmode=5 $\frac{1}{2}$
+
+\chardef\mathfracmode=0 % 0=mathstyle, 1=displaystyle, 2=textstyle, 3=scriptstyle, 4=scriptscriptstyle
+
 \unexpanded\def\frac
-  {\dofrac\mathstyle}
+  {\ifcase\mathfracmode
+     \expandafter\dofrac\expandafter\mathstyle
+   \or
+     \expandafter\dofrac\expandafter\displaystyle
+   \or
+     \expandafter\dofrac\expandafter\textstyle
+   \or
+     \expandafter\dofrac\expandafter\scriptstyle
+   \or
+     \expandafter\dofrac\expandafter\scriptscriptstyle
+   \else
+     \expandafter\dofrac\expandafter\mathstyle
+   \fi}
 
 \unexpanded\def\xfrac#1#2%
   {\begingroup

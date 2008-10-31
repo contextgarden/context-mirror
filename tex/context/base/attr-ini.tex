@@ -126,32 +126,32 @@
 \defineattribute[overprint]
 
 \def\registeroverprint#1#2%
-  {\initializePDFoverprint % temp here, to be tested in la code (states.collect)
-   \setvalue{(os:#1)}{\dosetattribute{overprint}{\ctxlua{tex.print(overprints.register('#2'))}}}}
+  {\setevalue{(os:#1)}{\dosetattribute{overprint}{\ctxlua{tex.print(overprints.register('#2'))}}}}
 
 \def\dotriggeroverprint
-  {\ctxlua{overprints.enabled=true}%
+  {\initializePDFoverprint % temp here, to be tested in la code (states.collect)
+   \ctxlua{overprints.enabled=true}%
    \gdef\dotriggeroverprint##1{\csname(os:##1)\endcsname}%
    \dotriggeroverprint}
 
-% \registeroverprint{knockout} {knockout}
-% \registeroverprint{overprint}{overprint}
+\registeroverprint{knockout} {knockout}
+\registeroverprint{overprint}{overprint}
 
 % negative
 
 \defineattribute[negative]
 
 \def\registernegative#1#2%
-  {\initializePDFnegative % temp here, to be tested in la code (states.collect)
-   \setvalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
+  {\setevalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
 
 \def\dotriggernegative
-  {\ctxlua{negatives.enabled=true}%
+  {\initializePDFnegative % temp here, to be tested in la code (states.collect)
+   \ctxlua{negatives.enabled=true}%
    \gdef\dotriggernegative##1{\csname(ns:##1)\endcsname}%
    \dotriggernegative}
 
-% \registernegative{positive}{positive}
-% \registernegative{negative}{negative}
+\registernegative{positive}{positive}
+\registernegative{negative}{negative}
 
 % effect
 
@@ -174,8 +174,22 @@
 % \registereffect{both}
 % \registereffect{hidden}
 
-% ugly solution
-%
+% viewerlayers
+
+\defineattribute[viewerlayer]
+
+\def\registerviewerlayer#1#2%
+  {\setevalue{(vl:#1)}{\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
+
+\setevalue{(vl:)}{\doresetattribute{viewerlayer}}
+
+\def\dotriggerviewerlayer
+  {\ctxlua{viewerlayers.enabled=true}%
+   \gdef\dotriggerviewerlayer##1{\csname(vl:##1)\endcsname}%
+   \dotriggerviewerlayer}
+
+% ugly solution for backend handling
+
 % \def\shipout
 %   {%\writestatus{SHIPOUT}{CALLED AT PAGE \realfolio}%
 %    \dowithnextbox
@@ -247,3 +261,8 @@
 % \enableattributeinheritance % will become default
 
 \protect \endinput
+
+% test case
+%
+% {\green \hbox to \hsize{\leaders\hrule  \hfill a}\par}
+% {\red   \hbox to \hsize{\leaders\hbox{x}\hfill a}\par}
