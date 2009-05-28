@@ -16,61 +16,21 @@
 
 \unprotect
 
-\startmessages  dutch  library: handlings
-  title: handling
-      1: font afhandeling --
-      2: font afhandeling -- wordt geladen
-      3: onbekende font afhandeling --
-\stopmessages
+% messages moved
 
-\startmessages  english  library: handlings
-  title: handling
-      1: font handling --
-      2: font handling -- is loaded
-      3: unknown font handling --
-\stopmessages
+% messages moved
 
-\startmessages  german  library: handlings % to do
-  title: handling
-      1: Font Verarbeitung --
-      2: Font Verarbeitung -- ist geladen
-      3: unknown font handling --
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: handlings % to do
-  title: handling
-      1: font handling --
-      2: font handling -- is loaded
-      3: unknown font handling --
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: handlings % to do
-  title: handling
-      1: font handling --
-      2: font handling -- is loaded
-      3: unknown font handling --
-\stopmessages
+% messages moved
 
-\startmessages  norwegian  library: handlings % to do
-  title: handling
-      1: font handling --
-      2: font handling -- is loaded
-      3: unknown font handling --
-\stopmessages
+% messages moved
 
-\startmessages  romanian  library: handlings % to do
-  title: handling
-      1: font handling --
-      2: font handling -- is loaded
-      3: unknown font handling --
-\stopmessages
+% messages moved
 
-\startmessages  french  library: handlings
-  title: manipulation
-      1: manipulation -- de police
-      2: la manipulation -- de police est chargée
-      3: manipulation -- inconnue de police
-\stopmessages
+% messages moved
 
 \newif\iftracefonthandling % \tracefonthandlingtrue
 
@@ -80,8 +40,6 @@
 
 % much in common with hz/protruding defs
 % todo: fix others
-
-\let\normalchar\char % also done in enco-ini
 
 \def\dosetsomehandling#1#2#3 #4 % no define since directly set
   {\ifskiphandlingdef \else
@@ -105,17 +63,6 @@
            \let\char\normalchar}}%
    \fi}
 
-% \def\dosettriplethandling#1#2#3 #4 #5 #6 % no define since directly set
-%   {\ifskiphandlingdef \else
-%      \doifnumberelse{\string#2}
-%        {#1{#2#3}{#4}{#5}{#6}}
-%        {\doifelsenothing{#3}
-%           {#1{`#2}{#4}{#5}{#6}}
-%           {\let\char\empty
-%            \doifnumberelse{\csname#2#3\endcsname}{#1{\csname#2#3\endcsname}{#4}{#5}{#6}}\donothing
-%            \let\char\normalchar}}%
-%    \fi}
-
 \def\dosetquartethandling#1#2#3 #4 #5 #6 #7 % no define since directly set
   {\ifskiphandlingdef \else
      \doifnumberelse{\string#2}
@@ -126,14 +73,6 @@
            \doifnumberelse{\csname#2#3\endcsname}{#1{\csname#2#3\endcsname}{#4}{#5}{#6}{#7}}\donothing
            \let\char\normalchar}}%
    \fi}
-
-
-% \def\doinhsomehandling#1#2 #3 %
-%   {\ifskiphandlingdef \else
-%      \let\char\empty
-%      \doifnumberelse{\csname#2\endcsname}{#1{\csname#2\endcsname}{`#3}}\donothing
-%      \let\char\normalchar
-%    \fi}
 
 \def\doinhsomehandling#1#2#3 #4 % to be checked
   {\ifskiphandlingdef \else

@@ -1,8 +1,8 @@
 %D \module
 %D   [       file=xtag-mmc,
 %D        version=2000.12.20,
-%D          title=\CONTEXT\ XML Support,
-%D       subtitle=Math ML,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=Content MathML,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context XML Macros (content math ml)}
+\writestatus{loading}{ConTeXt XML Macros / Content MathML}
 
 % this is the first, experimental, shabby implementation, as
 % always, the third will do -)
@@ -113,7 +113,7 @@ complex-cartesian=>\let\next\MMLccartesian,
   {{\bbd#1}}
 
 \def\widevec#1%
-  {\vbox{\m@th\ialign{##\crcr
+  {\vbox{\mathsurround\zeropoint\ialign{##\crcr
      \rightarrowfill\crcr\noalign{\nointerlineskip}%
       $\hfil\displaystyle{#1}\hfil$\crcr}}}
 

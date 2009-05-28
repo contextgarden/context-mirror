@@ -31,129 +31,41 @@
 %D tried to overcome this problem by implementing specials as
 %D a sort of drivers themselves.
 
-\writestatus{loading}{Context Special Macros / Initialization}
+\writestatus{loading}{ConTeXt Special Macros / Initialization}
 
 \unprotect
 
-\startmessages  dutch  library: specials
-  title: specials
-      1: -- geladen
-      2: verdere nesting is niet toegestaan --
-      3: -- gereset
-      4: commando -- bestaat niet
-      5: definitiefile -- wordt geladen
-      6: nesting is niet toegestaan
-      7: onbekende driver --
-\stopmessages
+% messages moved
 
-\startmessages  english  library: specials
-  title: specials
-      1: -- loaded
-      2: no deeper nesting is permitted --
-      3: -- is reset
-      4: command -- does not exist
-      5: loading definition file --
-      6: nesting is not permitted
-      7: unknown driver --
-\stopmessages
+% messages moved
 
-\startmessages  german  library: specials
-  title: spezielles
-      1: -- geladen
-      2: keine tiefere Verschachtelung erlaubt --
-      3: -- ist zurueckgesetzt
-      4: Befehl -- existiert nicht
-      5: lade Definitionsdatei --
-      6: Verschachtelung nicht erlaubt
-      7: unbekante Driver --
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: specials
-  title: speciality
-      1: -- nacteno
-      2: neni dovoleno hlubsi zanoreni --
-      3: -- je resetovano
-      4: prikaz -- neexistuje
-      5: nacita se definicni soubor --
-      6: zanoreni neni dovoleno
-      7: neznamy ovladac (driver) --
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: specials
-  title: specialitø
-      1: -- caricato
-      2: non ø permesso un annidamento maggiore --
-      3: -- reimpostato
-      4: il comando -- non esiste
-      5: caricamento del file di definizione --
-      6: annidamento non permesso
-      7: driver sconosciuto --
-\stopmessages
+% messages moved
 
-\startmessages  norwegian  library: specials
-  title: specials
-      1: -- er lest inn
-      2: dypere 'nesting' er ikke tillatt --
-      3: -- er tilbakestilt
-      4: kommando -- eksisterer ikke
-      5: leser inn definisjonsfil for --
-      6: 'nesting' er ikke tillatt
-      7: ukjent driver --
-\stopmessages
+% messages moved
 
-\startmessages  romanian  library: specials
-  title: specials
-      1: -- incarcat
-      2: nu este permis un nivel de imbricare mai mare --
-      3: -- s-a resetat
-      4: comanda -- nu exista
-      5: se incarca fisierul de definitii --
-      6: imbricarea nu este permisa
-      7: driver necunoscut --
-\stopmessages
+% messages moved
 
-\startmessages  french  library: specials
-  title: specials
-      1: -- chargé
-      2: pas d'imbracations plus profondes ne sont permises --
-      3: -- est remis à zéro
-      4: la commande -- n'existe pas
-      5: chargement du fichier de définition --
-      6: l'imbrication n'est pas permise
-      7: pilote -- inconnu
-\stopmessages
+% messages moved
 
-\startmessages  dutch  library: interactions
-     21: -- code tussengevoegd
-\stopmessages
+% messages moved
 
-\startmessages  english  library: interactions
-     21: -- code inserted
-\stopmessages
+% messages moved
 
-\startmessages  german  library: interactions
-     21: -- Code eingefuegt
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: interactions
-     21: -- kod vlozen
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: interactions
-     21: codice -- inserito
-\stopmessages
+% messages moved
 
-\startmessages  norwegian  library: interactions
-     21: -- kode satt inn / tilføyd
-\stopmessages
+% messages moved
 
-\startmessages  romanian  library: interactions
-     21: -- cod inserat
-\stopmessages
+% messages moved
 
-\startmessages  french  library: interactions
-     21: -- code inseré
-\stopmessages
+% messages moved
 
 %D \TEX\ produces files in the \DVI\ format. This format is
 %D well defined and stable. In this format one||byte commands
@@ -201,7 +113,7 @@
 %D
 %D Now what will this one do? We'll see in a few lines.
 
-\newevery \everyresetspecials \relax
+\newtoks \everyresetspecials
 
 \appendtoksonce
   \ifx\setjobsuffix\undefined\else\setjobsuffix{dvi}\fi

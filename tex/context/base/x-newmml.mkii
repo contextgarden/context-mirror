@@ -1,8 +1,8 @@
 %D \module
 %D   [       file=x-newmml,
 %D        version=2005.06.10, % 1999.12.20,
-%D          title=\CONTEXT\ XML Modules,
-%D       subtitle=MathML Renderer,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=MathML,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE}]
@@ -17,6 +17,8 @@
 %D no namespace support yet, but eventually we will use a \MKIV\
 %D version.
 
+\useXMLfilter[stk]
+
 \ifx\inlinemathematics\undefined
     \def\inlinemathematics   {\dontleavehmode\mathematics} % already in kernel
     \long\def\inlinemath #1{\dontleavehmode\relax\ifmmode#1\else $#1$\fi}
@@ -28,7 +30,7 @@
 
 %D Then we start defining the rendering macros:
 
-\writestatus{loading}{Context XML Macros (MathML Renderer)}
+\writestatus{loading}{ConTeXt XML Macros / MathML}
 
 \startmodule [mathml]
 
@@ -570,7 +572,7 @@
   {{\bbd#1}}
 
 \def\widevec#1%
-  {\vbox{\m@th\ialign{##\crcr
+  {\vbox{\mathsurround\zeropoint\ialign{##\crcr
      \rightarrowfill\crcr\noalign{\nointerlineskip}%
       $\hfil\displaystyle{#1}\hfil$\crcr}}}
 
@@ -1960,9 +1962,6 @@
      {\getXMLentity\flattenedXMLcontent}
      {\ignorespaces#1\removeunwantedspaces}}
 
-\let\normalright=\right
-\let\normalleft =\left
-
 \def\doMMLleft #1{\pushmacro\left \let\left \empty\normalleft #1\popmacro\left}
 \def\doMMLright#1{\pushmacro\right\let\right\empty\normalright#1\popmacro\right}
 
@@ -2267,9 +2266,9 @@
 
 \startsetups mmp:mover:stop
     \stopsavingXMLelements
-    \mathop{\vbox{\m@th\ialign{\hss##\hss\crcr\noalign{\kern3\p@}%
+    \mathop{\vbox{\mathsurround\zeropoint\ialign{\hss##\hss\crcr\noalign{\kern3\points}%
       \disabledelimiter\doMMLfiller{\getXMLstackdata\plustwo}
-      \crcr\noalign{\kern3\p@\nointerlineskip}%
+      \crcr\noalign{\kern3\points\nointerlineskip}%
       \disabledelimiter\doMMLfiller{\getXMLstackdata\plusone}
       \crcr}}}
     \limits
@@ -2283,11 +2282,11 @@
 
 \startsetups mmp:munder:stop
     \stopsavingXMLelements
-    \mathop{\vtop{\m@th\ialign{\hss##\hss\crcr
+    \mathop{\vtop{\mathsurround\zeropoint\ialign{\hss##\hss\crcr
       \disabledelimiter\doMMLfiller{\getXMLstackdata\plusone}
-      \crcr\noalign{\kern3\p@\nointerlineskip}%
+      \crcr\noalign{\kern3\points\nointerlineskip}%
       \disabledelimiter\doMMLfiller{\getXMLstackdata\plustwo}
-      \crcr\noalign{\kern3\p@}}}}
+      \crcr\noalign{\kern3\points}}}}
     \limits
     \endgroup
 \stopsetups

@@ -26,6 +26,14 @@
 \installlanguage [\s!sk] [\c!state=\v!start]
 \installlanguage [\s!cs] [\c!state=\v!start]
 
-\setupencoding[default=ec] \usetypescript[fallback][\defaultencoding] \setupbodyfont[rm,12pt]
+\ifnum\texengine=\luatexengine
+    % will be runtime option: typeface
+    \appendtoks
+        \usetypescript[modern]
+        \setuptypeface[modern]
+    \to \everyjob
+\else
+    \setupencoding[default=ec] \usetypescript[fallback][\defaultencoding] \setupbodyfont[rm,12pt]
+\fi
 
 \protect \errorstopmode \dump \endinput

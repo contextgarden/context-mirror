@@ -24,10 +24,15 @@ module Tool
                     t = Time.now
                     u = t.usec.to_s % [1..2] [0..3]
                     pth = t.strftime("#{mainpath}%Y%m%d-%H%M%S-#{u}-#{Process.pid}")
-                    if pth == $constructedtempdir
-                        # sleep(0.01)
-                        retry
-                    end
+                #
+                #    problems with 1.9
+                #
+                #    if pth == $constructedtempdir
+                #        # sleep(0.01)
+                #        retry
+                #    end
+                    pth == $constructedtempdir
+                #
                     Dir.mkdir(pth) if create
                     $constructedtempdir = pth
                     return pth
@@ -216,7 +221,7 @@ module Tool
 
     def Tool.checksuffix(old)
 
-        return old unless test(?f,old)
+        return old unless FileTest.file?(old)
 
         new = old
 

@@ -28,11 +28,11 @@
 
 \setuplayout[page]
 
-\setupbodyfont[15pt]
+% \setupbodyfont[15pt]
 
 \usetypescriptfile[type-hgz]
 \usetypescript[palatino-informal]
-\setupbodyfont[palatino-informal]
+\setupbodyfont[palatino-informal,15pt]
 
 \setupsorting[logo][style=]
 
@@ -57,7 +57,8 @@
 \definecolor[TopicColor-0][t=.5,a=1,s=.5]
 \definecolor[TopicColor]  [s=1]
 
-\setupcolors[state=start,textcolor=TopicColor]
+\setupcolors[state=start]
+\setupcolors[textcolor=TopicColor]
 
 \startluacode
     local locations = {
@@ -182,6 +183,7 @@
 \logo [METAPOST] {MetaPost}
 
 \definefont[TitleFont][SansBold at 60pt]
+\definefont[TempFont] [SansBold at 12pt]
 
 \doifnotmode{demo}{\endinput}
 

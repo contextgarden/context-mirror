@@ -13,7 +13,7 @@
 
 % engels maken
 
-\writestatus{loading}{Context Core Macros / Math Fundamentals}
+\writestatus{loading}{ConTeXt Core Macros / Math Fundamentals}
 
 \unprotect
 
@@ -31,15 +31,9 @@
 
 % \definemessageconstant{math}
 
-% \startmessages  all  library: math
-%   title: math
-%       1: don't use -- here (line \the\inputlineno)
-% \stopmessages
+% % messages moved
 
 % \def\invalidmathcommand#1{\showmessage\m!math1{#1}}
-
-% \let\normaleqno \eqno
-% \let\normalleqno\leqno
 
 % \appendtoks
 %     \def\eqno {\invalidmathcommand{\string\eqno }}%
@@ -55,7 +49,7 @@
 % 	H(K|M,C) = H(K|C) - H(M|C)\eqno{\hbox{(\in{}[eq:keyapp])}}
 % \stopformula
 
-\def\mathortext
+\unexpanded\def\mathortext
   {\ifmmode
      \expandafter\firstoftwoarguments
    \else
@@ -342,11 +336,11 @@
    \switchtoformulabodyfont[#2]%
    \parskip\formulaparskip
    \def\currentformula{#1}%
-% may look better in itemizations
-\doif{\formulaparameter\c!option}\v!middle
-  {\def\leftdisplayskip{\zeropoint}%
-   \def\rightdisplayskip{\zeropoint}}%
-% this was an experiment
+   % may look better in itemizations
+   \doif{\formulaparameter\c!option}\v!middle
+     {\def\leftdisplayskip{\zeropoint}%
+      \def\rightdisplayskip{\zeropoint}}%
+   % this was an experiment
    \doifsomething{\formulaparameter\c!margin}% so we test first
      {\dosetleftskipadaption{\formulaparameter\c!margin}%
       \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
@@ -415,9 +409,11 @@
      \beforedisplayspace
      \par
      \ifvmode
-       \verticalstrut
-       \vskip-\struttotal
-       \vskip-\baselineskip
+        \prevdepth-\maxdimen % texbook pagina 79-80
+        % otherwise problems at the top of a page, don't remove:
+        \verticalstrut
+        \vskip-\struttotal
+        \vskip-\baselineskip
      \fi
    \fi
    $$\setdisplaydimensions
@@ -515,8 +511,6 @@
   [\c!indentnext=\v!yes,
    \c!alternative=multi]
 
-% in m-math
-%
 % \defineformulaalternative[multi][\begindmath][\enddmath]
 %
 % \fakewords{20}{40}\epar
@@ -622,8 +616,8 @@
 
 \setupsubformulas
   [\c!conversion=\v!character,
-%  \c!separator=\@@fmseparator,
-   \c!separator=,%AM: for compatibility with \placesubformula
+  %\c!separator=\@@fmseparator,
+   \c!separator=,% AM: for compatibility with \placesubformula
    \c!indentnext=\@@fmindentnext]
 
 %D Experimental goodie:
@@ -718,9 +712,6 @@
 \def\dispplaceformula[#1]#2$$#3$$%
   {\dodoplaceformula[#1]{#2}\dostartformula{}#3\dostopformula}
 
-\let\normalreqno\eqno
-\let\normalleqno\leqno
-
 \let\donestedformulanumber\gobbletwoarguments
 
 \def\dodoplaceformula[#1]#2% messy, needs a clean up
@@ -768,6 +759,8 @@
 
 %D The next code is derived from plain \TEX.
 
+\newcount\interdisplaylinepenalty \interdisplaylinepenalty=100
+
 \newif\ifdt@p
 
 \def\displ@y
@@ -777,7 +770,7 @@
      {\noalign
         {\ifdt@p
            \global\dt@pfalse
-           \ifdim\prevdepth>-1000\p@
+           \ifdim\prevdepth>-\thousandpoint
              \vskip-\lineskiplimit
              \vskip\normallineskiplimit
            \fi
@@ -789,7 +782,7 @@
 
 \def\displ@y{\resetdisplaymatheq\normaldispl@y}
 
-\def\m@th{\mathsurround\z@}
+\def\m@th{\mathsurround\zeropoint} % obsolete
 
 %D Here we implement a basic math alignment mechanism. Numbers
 %D are also handled. The macros \type {\startinnermath} and
@@ -1031,7 +1024,7 @@
 %D some \PLAIN\ macros.
 
 \def\@@dobig#1#2%
-  {{\hbox{$\left#2\vbox\!!to#1\bodyfontsize{}\right.\n@space$}}}
+  {{\hbox{$\left#2\vbox\!!to#1\bodyfontsize{}\right.\nulldelimiterspace\zeropoint\relax\mathsurround\zeropoint$}}}
 
 \def\big {\@@dobig{0.85}}
 \def\Big {\@@dobig{1.15}}
@@ -2554,8 +2547,8 @@
 \def\startsubstack
   {\begingroup
    \vcenter\bgroup
-   \baselineskip\dimexpr\fontdimen10 \scriptfont\plustwo + \fontdimen12 \scriptfont\plustwo\relax
-   \lineskip\plusthree\fontdimen8 \scriptfont\plusthree
+   \baselineskip\mathstacktotal
+   \lineskip\mathstackvgap
    \lineskiplimit\lineskip
    \let\stopmathmode\relax
    \def\NC{\domatrixNC}%
@@ -2863,10 +2856,10 @@
 \def\mathboldsymbol#1%
   {\preparebinrel{#1}%
    \currentbinrel{\mathchoice
-      {\hbox{\switchtoformulabodyfont             [boldmath]$\m@th#1$}}
-      {\hbox{\switchtoformulabodyfont             [boldmath]$\m@th#1$}}
-      {\hbox{\switchtoformulabodyfont      [boldmath,script]$\m@th#1$}}
-      {\hbox{\switchtoformulabodyfont[boldmath,scriptscript]$\m@th#1$}}}}
+      {\hbox{\switchtoformulabodyfont             [boldmath]$\mathsurround\zeropoint#1$}}
+      {\hbox{\switchtoformulabodyfont             [boldmath]$\mathsurround\zeropoint#1$}}
+      {\hbox{\switchtoformulabodyfont      [boldmath,script]$\mathsurround\zeropoint#1$}}
+      {\hbox{\switchtoformulabodyfont[boldmath,scriptscript]$\mathsurround\zeropoint#1$}}}}
 
 \def\boldsymbol
   {\mathortext\mathboldsymbol\bold}
@@ -2902,6 +2895,7 @@
 
 \def\dealwithmathtextencoding
   {\expanded{\everyhbox{\the\everyhbox\noexpand\fastenableencoding{\currentencoding}}}%
+   \expanded{\everyvbox{\the\everyvbox\noexpand\fastenableencoding{\currentencoding}}}%
    \def\dealwithmathtextencoding{\let\characterencoding\nocharacterencoding}%
    \dealwithmathtextencoding}
 

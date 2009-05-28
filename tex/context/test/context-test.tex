@@ -1,0 +1,27 @@
+\starttext
+
+\startmode[mkiv]
+
+    \startluacode
+        tex.sprint("hello")
+    \stopluacode
+
+    \startMPcode
+        draw textext("hello") rotated 45 ;
+    \stopMPcode
+
+    \framed{hello}
+
+\stopmode
+
+\startnotmode[mkiv]
+
+    \startMPcode
+        draw textext("hello") rotated -45 ;
+    \stopMPcode
+
+    \framed{hello}
+
+\stopnotmode
+
+\stoptext

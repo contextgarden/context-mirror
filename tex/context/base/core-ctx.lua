@@ -6,8 +6,9 @@ if not modules then modules = { } end modules ['supp-fil'] = {
     license   = "see context related readme files"
 }
 
-commands                   = commands or { }
-commands.trace_prepfiles   = false
+local trace_prepfiles = false  trackers.register("resolvers.prepfiles", function(v) trace_prepfiles = v end)
+
+commands = commands or { }
 
 local list, suffix, islocal, found = { }, "prep", false, false
 
@@ -17,11 +18,11 @@ function commands.loadctxpreplist()
         local x = xml.load(ctlname)
         if x then
             islocal = xml.found(x,"ctx:preplist[@local=='yes']")
-            if commands.trace_prepfiles then
+            if trace_prepfiles then
                 if islocal then
-                    ctx.writestatus("systems","loading ctx log file (local)") -- todo: m!systems
+                    commands.writestatus("systems","loading ctx log file (local)") -- todo: m!systems
                 else
-                    ctx.writestatus("systems","loading ctx log file (specified)") -- todo: m!systems
+                    commands.writestatus("systems","loading ctx log file (specified)") -- todo: m!systems
                 end
             end
             for r, d, k in xml.elements(x,"ctx:prepfile") do
@@ -31,8 +32,8 @@ function commands.loadctxpreplist()
                     name = file.basename(name)
                 end
                 local done = dk.at['done'] or 'no'
-                if commands.trace_prepfiles then
-                    ctx.writestatus("systems","registering %s -> %s",done)
+                if trace_prepfiles then
+                    commands.writestatus("systems","registering %s -> %s",done)
                 end
                 found = true
                 list[name] = done -- 'yes' or 'no'
@@ -41,26 +42,26 @@ function commands.loadctxpreplist()
     end
 end
 
-local function resolve(name)
-    local function found(name)
-        local prepname = name .. "." .. suffix
-        local done = list[name]
-        if done then
-            if lfs.isfile(prepname) then
-                if commands.trace_prepfiles then
-                    ctx.writestatus("systems", "preprocessing: using %s",prepname)
-                end
-                return prepname
-            end
+-- -- --
+
+local function found(name) -- used in resolve
+    local prepname = name .. "." .. suffix
+    if list[name] and lfs.isfile(prepname) then
+        if trace_prepfiles then
+            commands.writestatus("systems", "preprocessing: using %s",prepname)
         end
-        return false
+        return prepname
     end
+    return false
+end
+
+local function resolve(name) -- used a few times later on
     local filename = file.collapse_path(name)
     local prepname = islocal and found(file.basename(name))
     if prepname then
         return prepname
     end
-    local prepname = found(filename)
+    prepname = found(filename)
     if prepname then
         return prepname
     end

@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=sort-ini,
 %D        version=2005.08.08,
-%D          title=\CONTEXT\ Sort Macros,
+%D          title=\CONTEXT\ Sorting Macros,
 %D       subtitle=Initialization,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -12,6 +12,12 @@
 %C details.
 
 % todo: autokeyexpansion => igv utf: \setupregister[index][keyexpansion=yes]
+
+%D This module replaces existing sort key handling and is meant to be
+%D used with the new texutil functionality. This module defines a few
+%D auxiliary macros.
+
+\writestatus{loading}{ConTeXt Sorting Macros / Initialization}
 
 %D This module replaces existing sort key handling and is meant to be
 %D used with the new texutil functionality. This module defines a few
@@ -71,6 +77,14 @@
 % \exportsortrule {ccaron} {c+1}
 
 \unprotect
+
+\def\savesortkeys
+  {\ifproductionrun
+     \the\everysavesortkeys
+     \global\everysavesortkeys\emptytoks
+   \fi}
+
+\appendtoks \savesortkeys \to \everyshipout
 
 \let\currentexportclass\empty
 

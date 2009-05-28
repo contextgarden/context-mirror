@@ -33,7 +33,7 @@
 %D message   : floatblocks/13
 %D variables : sorttype compress autohang
 
-\writestatus{loading}{Context Multilingual Macros / Initialization}
+\writestatus{loading}{ConTeXt Multilingual Macros / Initialization}
 
 \unprotect
 
@@ -328,11 +328,7 @@
 %D example of a library.
 %D
 %D \starttyping
-%D \startmessages  english  library: alfa
-%D   title: something
-%D       1: first message
-%D       2: second (--) message --
-%D \stopmessages
+%D % messages moved
 %D \stoptyping
 %D
 %D The first message is a simple one and can be shown with:
@@ -361,9 +357,7 @@
 %D once. We can add messages to a library in the following way:
 %D
 %D \starttyping
-%D \startmessages  english  library: alfa
-%D      10: tenth message
-%D \stopmessages
+%D % messages moved
 %D \stoptyping
 %D
 %D Because such definitions can take place in different
@@ -1141,9 +1135,7 @@
   {\writeline\writebanner{\contextbanner}\writeline}
 
 \edef\formatversion
-  {\ifx\normalyear \undefined\the\year \else\the\normalyear \fi.%
-   \ifx\normalmonth\undefined\the\month\else\the\normalmonth\fi.%
-   \ifx\normalday  \undefined\the\day  \else\the\normalday  \fi}
+  {\the\normalyear.\the\normalmonth.\the\normalday}
 
 \ifx\contextversion\undefined
     \def\contextversion      {unknown}
@@ -1153,9 +1145,8 @@
     \edef\contextversionnumber{\expandafter\contextversionnumber\contextversion\relax\space\contextmark}
 \fi
 
-\ifx\undefined\normaldump
+\ifx\undefined\everydump
   \newtoks\everydump
-  \let\normaldump\dump
   \def\dump{\the\everydump\normaldump}
 \fi
 

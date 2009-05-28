@@ -1,8 +1,9 @@
-banner = ['TeXExec', 'version 6.2.0', '1997-2006', 'PRAGMA ADE/POD']
+banner = ['TeXExec', 'version 6.2.1', '1997-2009', 'PRAGMA ADE/POD']
 
 $: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
-require 'ftools'     # needed ?
+require 'fileutils'
+# require 'ftools'     # needed ?
 
 require 'base/switch'
 require 'base/logger'
@@ -277,6 +278,7 @@ class Commands
                     info = `pdfinfo #{filename}`
                     if info =~ /Pages:\s*(\d+)/ then
                         nofpages = $1.to_i
+                        result = @commandline.checkedoption('result','texexec')
                         nofpages.times do |i|
                             if f = File.open(tempfile,"w") then
                                 n = i + 1
@@ -285,8 +287,10 @@ class Commands
                                 f << "\\externalfigure[#{filename}][object=no,page=#{n}]\n"
                                 f << "\\stopTEXpage\\stoptext\n"
                                 f.close
+                                job.setvariable('result',"#{result}-#{n}")
                                 job.setvariable('interface','english') # redundant
                                 job.setvariable('simplerun',true)
+                                job.setvariable('purge',true)
                                 job.setvariable('files',[tempfile])
                                 job.processtex
                             end

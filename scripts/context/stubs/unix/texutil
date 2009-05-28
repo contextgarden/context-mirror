@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart texutil.rb "$@"
+mtxrun --usekpse --execute texutil.rb "$@"

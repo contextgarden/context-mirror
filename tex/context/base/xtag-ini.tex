@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=xtag-ini,
 %D        version=2000.12.20,
-%D          title=\CONTEXT\ XML Support,
+%D          title=\CONTEXT\ XML Macros,
 %D       subtitle=Initialization,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context XML Macros (initialization)}
+\writestatus{loading}{ConTeXt XML Macros / Initialization}
 
 %D Beware: don't rely on \longempty things, since this may
 %D change!
@@ -34,8 +34,6 @@
 % todo: XMLfullsave == also attributes
 % csnames
 % XMLelse -> elseXML
-
-\loadmarkfile{xtag-ini}
 
 %D Remark: some hard coded character things will be replaced
 %D by named glyphs as soon as the upgraded encoding modules
@@ -416,6 +414,22 @@
 \letcatcodecommand\xmlcatcodese `\| \entitybar
 
 % we speed things up by explicitly setting the active char's < &
+
+\doifmodeelse {mkiv} {
+
+    \def\mksetXMLtokensreduction % mkiv
+      {\setcatcodetable\xmlcatcodesn}
+
+} {
+
+    \def\mksetXMLtokensreduction % mkii
+      {\ifcase\XMLtokensreduction
+         \setcatcodetable\xmlcatcodese \or
+         \setcatcodetable\xmlcatcodesr \else
+         \setcatcodetable\xmlcatcodesn
+       \fi}
+
+}
 
 \bgroup \catcode`\<=13 \catcode`\&=13
 
@@ -1427,7 +1441,7 @@
 %\unexpanded\def\getXMLentity#1%
 %  {\csname\@@XMLentity:#1\endcsname}
 
-\newif\ifautoXMLentities % fall back on context commands
+\doifundefined{autoXMLentitiestrue}{\expandafter\newif\csname ifautoXMLentities\endcsname} % fall back on context commands
 
 \def\expandedXMLentity#1%
   {\ifcsname\@@XMLentity:#1\endcsname \@EA     \execXMLentity

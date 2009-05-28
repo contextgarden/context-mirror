@@ -10,7 +10,7 @@
 %
 % so we need:
 
-\def\realnumber#1{\withoutpt\the\dimexpr#1\s!pt\relax} % brrr
+\def\realnumber#1{\withoutpt\the\dimexpr#1\points\relax} % brrr
 
 \chardef     \@iv         =     4
 \chardef     \@xc         =    90 % was \nin@ty
@@ -94,6 +94,13 @@
 \def\calculatedsin#1{\executeifdefined{sin \realnumber{#1}}\!!zerocount}
 \def\calculatedcos#1{\executeifdefined{cos \realnumber{#1}}\!!plusone  }
 \def\calculatedtan#1{\executeifdefined{tan \realnumber{#1}}\!!zerocount}
+
+%D The following permits cleaner overloading (\MKIV\ will only have
+%D these):
+
+\def\setcalculatedsin#1#2{\calculatesin{#2}\edef#1{\calculatedsin{#2}}}
+\def\setcalculatedcos#1#2{\calculatecos{#2}\edef#1{\calculatedcos{#2}}}
+\def\setcalculatedtan#1#2{\calculatetan{#2}\edef#1{\calculatedtan{#2}}}
 
 %D A few values are predefined, although, on todays systems there
 %D is no real reason for that. I've added the 270 ones and changed

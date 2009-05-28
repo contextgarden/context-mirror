@@ -14,7 +14,7 @@
 %D This module used to be integrated in \type {spec-ini},
 %D but testing optimization is more convenient this way.
 
-\writestatus{loading}{Context Special Macros / Definitions}
+\writestatus{loading}{ConTeXt Special Macros / Definitions}
 
 \unprotect
 
@@ -1006,11 +1006,11 @@
 %D \setupoutput [pdftex]
 %D \stoptyping
 
-\loadmarkfile{spec-def}
-
 %D Please let me know if we need more. From now on we default
 %D to:
 
-% \setupoutput [dvips] % see mkii/mkiv files
+\appendtoks
+    \setupoutput[dvips]%
+\to \everydump
 
 \protect \endinput

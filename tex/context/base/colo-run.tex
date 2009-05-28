@@ -155,8 +155,9 @@
 \gdef\doshowcolor[#1]%
   {\bgroup
      \iffirstargument
-       \let\colorlist\empty
+       \let\colorlist\empty % not really used, only for colo-run
        \let\colorstyle\empty
+       \settrue\collectcolorsinlist
        \setupcolor[#1]%
      \fi
      \def\rule

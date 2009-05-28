@@ -337,11 +337,14 @@
 \def\flushPDFwhateverbox#1#2%
   {\doifsomething{#1}{\doPDFpageattribute{/#2Box #1}}}
 
+\def\flushPDFpageboxes
+  {\flushPDFwhateverbox\currentPDFartbox  {Art}%
+   \flushPDFwhateverbox\currentPDFcropbox {Crop}%
+   \flushPDFwhateverbox\currentPDFbleedbox{Bleed}%
+   \flushPDFwhateverbox\currentPDFtrimbox {Trim}}
+
 \appendtoksonce
-  \flushPDFwhateverbox\currentPDFartbox  {Art}%
-  \flushPDFwhateverbox\currentPDFcropbox {Crop}%
-  \flushPDFwhateverbox\currentPDFbleedbox{Bleed}%
-  \flushPDFwhateverbox\currentPDFtrimbox {Trim}%
+  \flushPDFpageboxes
 \to \everyshipout
 
 \def\doPDFsetupidentity#1#2#3#4#5#6%
@@ -470,8 +473,6 @@
 \def\doPDFstartthisislocation#1%
   {\bgroup
    \setPDFdestination{#1}%
-  %\doifsomething{\PDFdestination}
-  %  {\doPDFdestination{\PDFdestination}}%
    \ifx\PDFdestination\empty \else
      \doPDFdestination{\PDFdestination}%
    \fi
@@ -701,9 +702,14 @@
 \def\doPDFstartexecutecommand#1#2#3#4%
   {\doifdefined{PDFexecute#3}
      {\bgroup
-      \@EA\dogetcommalistelement\@EA1\@EA\from#4\to\argumentA
-      \@EA\dogetcommalistelement\@EA2\@EA\from#4\to\argumentB
       \edef\argument{#4}%
+      \ifx\argument\empty
+        \let\argumentA\empty
+        \let\argumentB\empty
+      \else
+        \@EA\dogetcommalistelement\@EA1\@EA\from#4\to\argumentA
+        \@EA\dogetcommalistelement\@EA2\@EA\from#4\to\argumentB
+      \fi
       \edef\action%
         {/S \getvalue{PDFexecute#3}}%
       \ifsecondaryreference
@@ -1653,7 +1659,7 @@
 \def\PDFpageviewkey{fit}
 \def\PDFpageviewwrd{/Fit}
 \def\PDFpageview   {/View [\PDFpageviewwrd] }
-\def\PDFpagexyzspec{0 0 0} % hack, pdftex does handle this
+\let\PDFpagexyzspec\relax % 0 0 0 hack, pdftex does handle this, for dvipdfmx we need height
 
 \def\dosetuppageview#1% watch the v-h swapping here
   {\processaction
@@ -1663,9 +1669,16 @@
           \v!height=>\def\PDFpageviewkey {fitv}\def\PDFpageviewwrd{/FitV},
         \v!minwidth=>\def\PDFpageviewkey{fitbh}\def\PDFpageviewwrd{/FitBH},
        \v!minheight=>\def\PDFpageviewkey{fitbv}\def\PDFpageviewwrd{/FitBV},
-        \v!standard=>\def\PDFpageviewkey{xyz \PDFpagexyzspec}\def\PDFpageviewwrd{/XYZ \PDFpagexyzspec},
+        \v!standard=>\ifx\PDFpagexyzspec\relax
+                        % empty does not work too wel with dpx
+                        \def\PDFpageviewkey{fit}%
+                        \def\PDFpageviewwrd{/Fit}%
+                     \else
+                       \edef\PDFpageviewkey{xyz \PDFpagexyzspec}%
+                       \edef\PDFpageviewwrd{/XYZ \PDFpagexyzspec}%
+                     \fi,
          \s!unknown=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit}]%
-   \edef\PDFpageview{/View [\PDFpageviewwrd]}}
+   \edef\PDFpageview{\ifx\PDFpageviewwrd\empty\else/View [\PDFpageviewwrd]\fi}}
 
 %D \macros
 %D   {setFDFkids}
@@ -2148,7 +2161,6 @@
 % we can (in etex) share more by testing on this
 
 \def\savesecondaryPDFreference#1%
- %{\setxvalue{PDF-SR:\the\nofsecondaryreferences}{#1}}
   {\@EA\xdef\csname PDF-SR:\the\nofsecondaryreferences\endcsname{#1}}
 
 \def\savesecondaryPDFreference % #1 == \action
@@ -2350,7 +2362,7 @@
 
 %D A bit out of place, but useful:
 
-\newevery\everysetfield\relax
+\ifdefined\everysetfield \else \newtoks\everysetfield \fi
 
 \appendtoksonce
   \enablePDFdocencoding
@@ -2574,7 +2586,8 @@
    \PointsToBigPoints{\dimen2}#3}
 
 \def\doPDFovalbox#1#2#3#4#5#6#7#8% todo: \scratchdimen/\scatchbox
-  {\bgroup
+  {\forcecolorhack
+   \bgroup
    \dimen0=#4\divide\dimen0 \plustwo
    \doPDFovalcalc{0pt}{+\dimen0}\xmin
    \doPDFovalcalc{#1}{-\dimen0}\xmax
@@ -2973,10 +2986,8 @@
 %       180=>\PDFcode{-1  0  0 -1 0 0 cm},
 %       270=>\PDFcode{ 0 -1  1  0 0 0 cm},
 %       360=>\PDFcode{ 1  0  0  1 0 0 cm},
-%        #1=>%\calculatecos{#1}% already calculated in core macro
-%            %\calculatesin{#1}% already calculated in core macro
-%            \edef\cos{\calculatedcos{#1}}%
-%            \edef\sin{\calculatedsin{#1}}%
+%        #1=>\setcalculatedcos\cos{#1}%
+%            \setcalculatedsin\sin{#1}%
 %            \PDFcode{\cos        \space %  cos
 %                     \sin        \space %  sin
 %                     \negated\sin\space % -sin
@@ -2987,10 +2998,9 @@
 % can use the next alternative without running into inaccuracies.
 
 \def\doPDFstartrotation#1% grouped
-  {\calculatecos{#1}% already calculated in core macro
-   \calculatesin{#1}% already calculated in core macro
-   \edef\cos{\calculatedcos{#1}}%
-   \edef\sin{\calculatedsin{#1}}%
+  {\setcalculatedcos\cos{#1}%
+   \setcalculatedsin\sin{#1}%
+   \forcecolorhack
    \PDFcode{q \cos\space\sin\space\negated\sin\space\cos\space0 0 cm}}
 
 \def\doPDFstoprotation
@@ -3004,7 +3014,8 @@
 \def\@@PDFzeroscale{.0001}
 
 \def\doPDFstartscaling#1#2% the test is needed because acrobat is bugged!
-  {\PDFcode{q \ifdim#1\points=\zeropoint\@@PDFzeroscale\else#1\fi\space 0 0
+  {\forcecolorhack
+   \PDFcode{q \ifdim#1\points=\zeropoint\@@PDFzeroscale\else#1\fi\space 0 0
               \ifdim#2\points=\zeropoint\@@PDFzeroscale\else#2\fi\space 0 0 cm}}
 
 % \def\doPDFstartscaling#1#2% the test is needed because acrobat is bugged!
@@ -3253,8 +3264,8 @@
 
 %D Handy for the \METAPOST\ to \PDF\ converter:
 
-\newevery \everyPDFximage \relax
-\newevery \everyPDFxform  \relax
+\ifdefined\everyPDFximage \else \newtoks\everyPDFximage \fi
+\ifdefined\everyPDFxform  \else \newtoks\everyPDFxform  \fi
 
 \appendtoksonce
     \collectPDFresources
@@ -3275,7 +3286,7 @@
       \xdef\collectedPDFresources{\collectedPDFresources/ColorSpace \PDFobjectreference}}\donothing
    \global\let\collectPDFresources\relax}
 
-%D And that was all.
+%D And that was about all.
 
 \stopspecials
 
@@ -3290,6 +3301,146 @@
 
 \fi
 
-\loadmarkfile{spec-fdf}
+%D Temporary hack:
+
+\def\TransparencyHack %  png: /CS /DeviceRGB /I true
+  {\appendtoks
+     \doPDFpageattribute{/Group << /S /Transparency /I true /K true>>}%
+   \to \everyPDFxform
+   \appendtoks
+     \doPDFpageattribute{/Group << /S /Transparency /I true /K true>>}%
+   \to \everyshipout}
+
+%D We still need to implement a few helpers:
+
+\chardef\safePDFcode=`-
+
+\def\setPDFdestination#1%
+  {\bgroup
+   \retainlccodes
+   \lccode`\/\safePDFcode \lccode`\#\safePDFcode
+   \lccode`\<\safePDFcode \lccode`\>\safePDFcode
+   \lccode`\[\safePDFcode \lccode`\]\safePDFcode
+   \lccode`\(\safePDFcode \lccode`\)\safePDFcode
+   \ifovercomePDFspace
+     \lccode`\ \safePDFcode
+   \fi
+   \ifovercomePDFbugs
+     \xdef\PDFdestination{'#1'}%
+   \else
+     \xdef\PDFdestination{#1}%
+   \fi
+   % nicer \xdef\PDFdestination{\ifovercomePDFbugs'\fi#1\ifovercomePDFbugs'\fi}%
+   \lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
+   \egroup}
+
+%D This is much faster since we don't have to set the full
+%D range of lc-codes; about 5 sec on a 1000mhz PIII for
+%D 20K named destinations "x(x) x"). Of course when you use
+%D page destinations, the saving is nil.
+
+% \doifnotmode{atpragma}{\let\next\setPDFdestination} % experimental
+%
+% \catcode`\/=\@@active \catcode`\#=\@@active
+% \catcode`\<=\@@active \catcode`\>=\@@active
+% \catcode`\[=\@@active \catcode`\]=\@@active
+% \catcode`\(=\@@active \catcode`\)=\@@active
+%
+% \gdef\PDFrepchar{-}
+%
+% \gdef\setPDFdcharacters
+%   {\catcode`\/=\@@active \let/\PDFrepchar
+%    \catcode`\#=\@@active \let#\PDFrepchar
+%    \catcode`\<=\@@active \let<\PDFrepchar
+%    \catcode`\>=\@@active \let>\PDFrepchar
+%    \catcode`\[=\@@active \let[\PDFrepchar
+%    \catcode`\]=\@@active \let]\PDFrepchar
+%    \catcode`\(=\@@active \let(\PDFrepchar
+%    \catcode`\)=\@@active \let)\PDFrepchar}
+%
+% \egroup
+%
+% \def\setPDFdestination#1% expansion is needed, otherwise embedded
+%   {\bgroup              % macros will not expand under the new
+%    \setPDFdcharacters   % catcode regime
+%    \ifovercomePDFspace
+%      \catcode32=\@@ignore
+%    \fi
+%    \xdef\PDFdestination{\ifovercomePDFbugs'\fi#1\ifovercomePDFbugs'\fi}%
+%    \scantokens\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
+%    \egroup}
+%
+% \doifnotmode{atpragma}{\let\setPDFdestination\next} % experimental
+
+%D This is a slow one, that uses \type{\lccode}'s to
+%D change the glyph as well as converts sensisitve ones into a
+%D \PDF\ command sequence, so \type{(} becomes \type{\(}.  In
+%D fact we translate the string to lowercase inactive and non
+%D special characters, limit their number and finaly convert
+%D some of the characters to save ones.
+
+\chardef\maxPDFstringsize=60
+
+\def\sanitizePDFstring#1\to#2% bugged
+  {\bgroup
+   \retainlccodes
+   \lccode`( \zerocount \lccode`) \zerocount
+   \lccode`< \zerocount \lccode`> \zerocount
+   \lccode`[ \zerocount \lccode`] \zerocount
+   \lccode`\\\zerocount \lccode`/ \zerocount
+   \lowercase{\defconvertedargument\ascii{#1}}%
+   % by integrating the split in the loop below
+   % \splitofftokens\maxPDFstringsize\from\ascii\to\ascii
+   % we diminish the processing time considerably
+   \scratchcounter\maxPDFstringsize
+   \def\docommand##1%
+     {\ifcase\scratchcounter\else
+        \advance\scratchcounter \minusone
+        \ifcase\lccode`##1\relax
+          \xdef#2{#2\expandafter\string\csname##1\endcsname}%
+        \else
+          \xdef#2{#2##1}%
+        \fi
+      \fi}%
+   %\global\let#2=\empty
+   % or to permit #2 to be \ascii too:
+   \global\@EA\let\@EA#2\@EA\empty
+   \@EA\handletokens\ascii\with\docommand
+   \egroup}
+
+% \doifnotmode{atpragma}{\let\next\sanitizePDFstring} % experimental
+%
+% \bgroup
+%
+% \catcode`\.=\@@escape
+%
+% .catcode`./=.@@active
+% .catcode`.<=.@@active .catcode`.>=.@@active
+% .catcode`.[=.@@active .catcode`.]=.@@active
+% .catcode`.(=.@@active .catcode`.)=.@@active
+%
+% .gdef.setPDFscharacters%
+%   {.catcode`.\=.@@other
+%    .catcode`./=.@@active .def/{.noexpand./}%
+%    .catcode`.<=.@@active .def<{.noexpand.<}%
+%    .catcode`.>=.@@active .def>{.noexpand.>}%
+%    .catcode`.[=.@@active .def[{.noexpand.[}%
+%    .catcode`.]=.@@active .def]{.noexpand.]}%
+%    .catcode`.(=.@@active .def({.noexpand.(}%
+%    .catcode`.)=.@@active .def){.noexpand.)}}
+%
+% .gdef.sanitizePDFstring#1.to#2%
+%   {.bgroup
+%    .setPDFscharacters
+%    .catcode`=.@@escape
+%    .edef.next{.strippedcsname#2}%
+%    .scantokens{setxvalue{next}{#1}}%
+%    .egroup}
+%
+% .egroup
+%
+% \doifnotmode{atpragma}{\let\sanitizePDFstring\next} % experimental
+%
+% There is an unicode variant in spec-tst!
 
 \protect \endinput

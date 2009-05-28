@@ -828,6 +828,15 @@ primarydef p crossed d =
    center p shifted ( 0,+d) -- ulcorner p -- cycle)
 enddef ;
 
+%D Also handy (math ladders):
+
+vardef laddered expr p =
+    point 0 of p
+    for i=1 upto length(p) :
+        -- (xpart (point i of p), ypart (point (i-1) of p)) -- (point i of p)
+    endfor
+enddef ;
+
 %D Saves typing:
 
 % vardef bottomboundary primary p = (llcorner p -- lrcorner p) enddef ;
@@ -974,6 +983,10 @@ enddef ;
 %  (q shifted (center p-center q))
 %  endgroup
 %enddef ;
+
+primarydef p paralleled d =
+    p shifted if d < 0 : - fi ((point abs(d) on (p rotatedaround(point 0 of p,90))) - point 0 of p)
+enddef ;
 
 vardef punked primary p =
   (point 0 of p for i=1 upto length(p)-1 : -- point i of p endfor
@@ -1746,10 +1759,53 @@ def condition primary b = if b : "true" else : "false" fi enddef ;
 
 primarydef p stretched s =
   begingroup
-% save pp ; path pp ; pp := p scaled s ;
   save pp ; path pp ; pp := p xyscaled s ;
   (pp shifted ((point 0 of p) - (point 0 of pp)))
   endgroup
+enddef ;
+
+% primarydef p enlonged len =
+%     begingroup
+%     save al ; al := arclength(p) ;
+%     if al > 0 :
+%         if pair p :
+%             point 1 of ((origin -- p) stretched ((al+len)/al))
+%         else :
+%             p stretched ((al+len)/al)
+%         fi
+%     else :
+%         p
+%     fi
+%     endgroup
+% enddef ;
+
+primarydef p enlonged len =
+    begingroup
+    if pair p :
+        save q ; path q ; q := origin -- p ;
+        save al ; al := arclength(q) ;
+        if al > 0 :
+            point 1 of (q stretched ((al+len)/al))
+        else :
+            p
+        fi
+    else :
+        save al ; al := arclength(p) ;
+        if al > 0 :
+            p stretched ((al+len)/al)
+        else :
+            p
+        fi
+    fi
+    endgroup
+enddef ;
+
+% path p ; p := (0,0) -- (10cm,5cm) ;
+% drawarrow p withcolor red ;
+% drawarrow p shortened 1cm withcolor green ;
+
+primarydef p shortened d =
+    reverse ( ( reverse (p enlonged -d) ) enlonged -d )
 enddef ;
 
 % yes or no, untested -)

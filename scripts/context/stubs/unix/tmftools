@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart tmftools.rb "$@"
+mtxrun --usekpse --execute tmftools.rb "$@"

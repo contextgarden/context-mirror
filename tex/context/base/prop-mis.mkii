@@ -11,7 +11,40 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\writestatus{loading}{ConTeXt Property Macros / Miscelaneous}
+
+%D This module contains some code that has been in use in some
+%D private modules (p-*). These features depend on the fact
+%D that pdftex writes the page content as one stream.
+
+%D EXPERIMENTAL
+
 \unprotect
+
+%D Stream based overprint and knockout:
+
+\defineproperty[\v!overprint][\s!overprint] [\c!method=\v!command]
+\defineproperty[\v!knockout] [\s!overprint] [\c!method=\v!command]
+
+%D Negation.
+
+\defineproperty [\v!negative] [\s!negative] [\c!method=\v!command]
+\defineproperty [\v!positive] [\s!negative] [\c!method=\v!command]
+
+%D Special font effects.
+
+\setupproperty
+  [\s!effect]
+  [\c!rulethickness=\zeropoint,
+   \c!stretch=0]
+
+\defineproperty [\v!inner]   [\s!effect] [\c!rulethickness=.25pt]
+\defineproperty [\v!outer]   [\s!effect] [\c!rulethickness=.25pt]
+\defineproperty [\v!both]    [\s!effect] [\c!rulethickness=.25pt]
+\defineproperty [\v!normal]  [\s!effect]
+\defineproperty [\v!hidden]  [\s!effect]
+
+\defineproperty [\v!stretch] [\s!effect] [\c!stretch=1]
 
 %D Overprint cum suis.
 
@@ -110,6 +143,7 @@
 \definepropertyhandler \v!outer  {1}
 \definepropertyhandler \v!both   {2}
 \definepropertyhandler \v!hidden {3}
+\definepropertyhandler \v!stretch{0}
 
 \def\effectpropertydata#1%
   {{\propertyhandler{#1}}%

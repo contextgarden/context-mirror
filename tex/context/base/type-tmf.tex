@@ -90,16 +90,6 @@
 
 % maybe we can by now just use: (to be tested first)
 
-% \starttypescript [math] [modern,computer-modern,latin-modern] [name]
-%     \definefontsynonym[xcmr12][LMRoman-Regular12]
-%     \definefontsynonym[xcmr10][LMRoman-Regular10]
-%     \definefontsynonym[xcmr9] [LMRoman-Regular9]
-%     \definefontsynonym[xcmr8] [LMRoman-Regular8]
-%     \definefontsynonym[xcmr7] [LMRoman-Regular7]
-%     \definefontsynonym[xcmr6] [LMRoman-Regular6]
-%     \definefontsynonym[xcmr5] [LMRoman-Regular5]
-% \stoptypescript
-
 \starttypescript [math] [modern,computer-modern,latin-modern] [name]
     \definefontsynonym[xcmr12][rm-lmr12]
     \definefontsynonym[xcmr10][rm-lmr10]
@@ -1083,6 +1073,99 @@
     \definefontsynonym [SerifBoldOsF]      [TeXPalladioL-BoldOsF]
     \definefontsynonym [SerifBoldItalicOsF][TeXPalladioL-BoldItalicOsF]
     \definefontsynonym [SerifCapsOsF]      [TeXPalladioL-SC]
+\stoptypescript
+
+% TeXGyre
+
+% name definitions & prefixes
+
+\definetypescriptprefix [n:pagella]    [TeXGyrePagella]  \definetypescriptprefix [n:palatino]   [TeXGyrePagella]
+\definetypescriptprefix [n:termes]     [TeXGyreTermes]   \definetypescriptprefix [n:times]      [TeXGyreTermes]
+\definetypescriptprefix [n:heros]      [TeXGyreHeros]    \definetypescriptprefix [n:helvetica]  [TeXGyreHeros]
+\definetypescriptprefix [n:bonum]      [TeXGyreBonum]    \definetypescriptprefix [n:bookman]    [TeXGyreBonum]
+\definetypescriptprefix [n:schola]     [TeXGyreSchola]   \definetypescriptprefix [n:schoolbook] [TeXGyreSchola]
+\definetypescriptprefix [n:adventor]   [TeXGyreAdventor] %definetypescriptprefix [n:adventor]   [TeXGyreAdventor]
+\definetypescriptprefix [n:cursor]     [TeXGyreCursor]   \definetypescriptprefix [n:courier]    [TeXGyreCursor]
+\definetypescriptprefix [n:chorus]     [TeXGyreChorus]   \definetypescriptprefix [n:chancery]   [TeXGyreChorus] % not the full set
+
+\starttypescript [serif] [pagella,palatino,termes,times,bonum,bookman,schola,schoolbook] [name]
+    \definefontsynonym [Serif]                [\typescriptprefix{n:\typescripttwo}-Regular]
+    \definefontsynonym [SerifItalic]          [\typescriptprefix{n:\typescripttwo}-Italic]
+    \definefontsynonym [SerifBold]            [\typescriptprefix{n:\typescripttwo}-Bold]
+    \definefontsynonym [SerifBoldItalic]      [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+    \definefontsynonym [SerifSlanted]         [SerifItalic]
+    \definefontsynonym [SerifBoldSlanted]     [SerifBoldItalic]
+    \definefontsynonym [SerifCaps]            [\typescriptprefix{n:\typescripttwo}-Caps]
+
+    \definefontvariant [Serif][osf][Caps]
+    \definefontvariant [Serif][sc] [Caps]
+
+    \definefontsynonym [SerifRegular]         [Serif]
+    \definefontsynonym [SerifRegularCaps]     [SerifCaps]
+    \definefontsynonym [SerifItalicCaps]      [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
+    \definefontsynonym [SerifBoldCaps]        [\typescriptprefix{n:\typescripttwo}-BoldCaps]
+    \definefontsynonym [SerifBoldItalicCaps]  [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
+    \definefontsynonym [SerifSlantedCaps]     [SerifItalicCaps]
+    \definefontsynonym [SerifBoldSlantedCaps] [SerifBoldItalicCaps]
+    \definefontsynonym [SerifCapsCaps]        [SerifCaps]
+\stoptypescript
+
+\starttypescript [serif] [chorus,chancery] [name]
+    \definefontsynonym [SerifMediumItalic] [TeXGyreChorus-MediumItalic]
+    \definefontsynonym [Serif]             [SerifMediumItalic]
+    \definefontsynonym [SerifItalic]       [SerifMediumItalic]
+    \definefontsynonym [SerifBold]         [SerifMediumItalic]
+    \definefontsynonym [SerifBoldItalic]   [SerifMediumItalic]
+    \definefontsynonym [SerifSlanted]      [SerifMediumItalic]
+    \definefontsynonym [SerifBoldSlanted]  [SerifMediumItalic]
+    \definefontsynonym [SerifCaps]         [SerifMediumItalic]
+\stoptypescript
+
+\starttypescript [calligraphy] [chorus,chancery] [name]
+    \definefontsynonym [Calligraphy] [TeXGyreChorus-MediumItalic]
+\stoptypescript
+
+\starttypescript [sans] [heros,helvetica,adventor] [name]
+    \definefontsynonym [Sans]                [\typescriptprefix{n:\typescripttwo}-Regular]
+    \definefontsynonym [SansItalic]          [\typescriptprefix{n:\typescripttwo}-Italic]
+    \definefontsynonym [SansBold]            [\typescriptprefix{n:\typescripttwo}-Bold]
+    \definefontsynonym [SansBoldItalic]      [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+    \definefontsynonym [SansSlanted]         [SansItalic]
+    \definefontsynonym [SansBoldSlanted]     [SansBoldItalic]
+    \definefontsynonym [SansCaps]            [\typescriptprefix{n:\typescripttwo}-Caps]
+
+    \definefontvariant [Sans][osf][Caps]
+    \definefontvariant [Sans][sc] [Caps]
+
+    \definefontsynonym [SansRegular]         [Sans]
+    \definefontsynonym [SansRegularCaps]     [SansCaps]
+    \definefontsynonym [SansItalicCaps]      [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
+    \definefontsynonym [SansBoldCaps]        [\typescriptprefix{n:\typescripttwo}-BoldCaps]
+    \definefontsynonym [SansBoldItalicCaps]  [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
+    \definefontsynonym [SansSlantedCaps]     [SansItalicCaps]
+    \definefontsynonym [SansBoldSlantedCaps] [SansBoldItalicCaps]
+    \definefontsynonym [SansCapsCaps]        [SansCaps]
+\stoptypescript
+
+\starttypescript [mono] [cursor,courier] [name]
+    \definefontsynonym [Mono]                [\typescriptprefix{n:\typescripttwo}-Regular]
+    \definefontsynonym [MonoItalic]          [\typescriptprefix{n:\typescripttwo}-Italic]
+    \definefontsynonym [MonoBold]            [\typescriptprefix{n:\typescripttwo}-Bold]
+    \definefontsynonym [MonoBoldItalic]      [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+    \definefontsynonym [MonoSlanted]         [MonoItalic]
+    \definefontsynonym [MonoBoldSlanted]     [MonoBoldItalic]
+
+    \definefontvariant [Mono][osf][Caps]
+    \definefontvariant [Mono][sc] [Caps]
+
+    \definefontsynonym [MonoRegular]         [Mono]
+    \definefontsynonym [MonoRegularCaps]     [MonoCaps]
+    \definefontsynonym [MonoItalicCaps]      [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
+    \definefontsynonym [MonoBoldCaps]        [\typescriptprefix{n:\typescripttwo}-BoldCaps]
+    \definefontsynonym [MonoBoldItalicCaps]  [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
+    \definefontsynonym [MonoSlantedCaps]     [MonoItalicCaps]
+    \definefontsynonym [MonoBoldSlantedCaps] [MonoBoldItalicCaps]
+    \definefontsynonym [MonoCapsCaps]        [MonoCaps]
 \stoptypescript
 
 \stoptypescriptcollection

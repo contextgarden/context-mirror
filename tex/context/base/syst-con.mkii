@@ -11,8 +11,43 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\writestatus{loading}{ConTeXt System Macros / Conversions}
+
 \unprotect
 
+%D When the number of conversions grew, it did no longer make
+%D sense to spread them over multiple files. So, instead of
+%D defining these in \type {font-ini}, we now have a dedicated
+%D module.
+
+\catcode127=12 % other, just to be sure
+
+%D \macros
+%D   {lchexnumber,uchexnumber,lchexnumbers,uchexnumbers}
+%D
+%D In addition to the uppercase hex conversion, as needed in
+%D math families, we occasionally need a lowercase one, for
+%D instance when we want to compose gbsong fontnames.
+%D
+%D The ugly indirectness is needed to get rid of \TEX\
+%D induced spaces and \type {\relax}'s.
+%D
+%D \starttyping
+%D [\uchexnumber{0}]
+%D [\uchexnumber\scratchcounter]
+%D [\uchexnumber\zerocount]
+%D [\uchexnumber{\number0}]
+%D [\uchexnumber{\number\scratchcounter}]
+%D [\uchexnumber{\number\zerocount}]
+%D [\uchexnumber{\the\scratchcounter}]
+%D [\uchexnumber{\the\zerocount}]
+%D [\expandafter\uchexnumber\expandafter{\number0}]
+%D [\expandafter\uchexnumber\expandafter{\number\scratchcounter}]
+%D [\expandafter\uchexnumber\expandafter{\number\zerocount}]
+%D [\expandafter\uchexnumber\expandafter{\the\scratchcounter}]
+%D [\expandafter\uchexnumber\expandafter{\the\zerocount}]
+%D \stoptyping
+%D
 %D These macros may look slow but are actually rather fast due to
 %D the fact that \TEX\ handles conditional pretty fast. We need
 %D a two step approach in order to stay relax clean in fully
@@ -64,6 +99,18 @@
      E0\or E1\or E2\or E3\or E4\or E5\or E6\or E7\or E8\or E9\or EA\or EB\or EC\or ED\or EE\or EF\or
      F0\or F1\or F2\or F3\or F4\or F5\or F6\or F7\or F8\or F9\or FA\or FB\or FC\or FD\or FE\or FF\fi}
 
+\def\lchexnumber #1{\@EA\dolchexnumber \number#1\relax}
+\def\uchexnumber #1{\@EA\douchexnumber \number#1\relax}
+\def\lchexnumbers#1{\@EA\dolchexnumbers\number#1\relax}
+\def\uchexnumbers#1{\@EA\douchexnumbers\number#1\relax}
+
+\let\hexnumber\uchexnumber
+
+%D \macros
+%D   {octnumber}
+%D
+%D For unicode remapping purposes, we need octal numbers.
+
 \def\dooctnumber#1\relax
   {\ifcase#1
      000\or 001\or 002\or 003\or 004\or 005\or 006\or 007\or
@@ -99,13 +146,55 @@
      360\or 361\or 362\or 363\or 364\or 365\or 366\or 367\or
      370\or 371\or 372\or 373\or 374\or 375\or 376\or 377\fi}
 
-\def\lchexnumber #1{\@EA\dolchexnumber \number#1\relax}
-\def\uchexnumber #1{\@EA\douchexnumber \number#1\relax}
-\def\lchexnumbers#1{\@EA\dolchexnumbers\number#1\relax}
-\def\uchexnumbers#1{\@EA\douchexnumbers\number#1\relax}
-\def\octnumber   #1{\@EA\dooctnumber   \number#1\relax}
+\def\octnumber#1{\@EA\dooctnumber\number#1\relax}
 
-%D No beauty but ok:
+%D \macros
+%D   {twodigits, threedigits}
+%D
+%D These macros provides two or three digits always:
+
+\def\twodigits  #1{\ifnum             #1<10     0\fi\number#1}
+\def\threedigits#1{\ifnum#1<100 \ifnum#1<10 0\fi0\fi\number#1}
+
+%D \macros{modulonumber}
+%D
+%D In the conversion macros described in \type {core-con} we
+%D need a wrap||around method. The following solution is
+%D provided by Taco.
+%D
+%D The \type {modulonumber} macro expands to the mathematical
+%D modulo of a positive integer. It is crucial for it's
+%D application that this macro is fully exandable.
+%D
+%D The expression inside the \type {\numexpr} itself is
+%D somewhat bizarre because \ETEX\ uses a rounding
+%D division instead of truncation. If \ETEX's division
+%D would have behaved like \TEX's normal\type{\divide}, then
+%D the expression could have been somewhat simpler, like
+%D \type {#2-(#2/#1)*#1}. This works just as well, but a bit
+%D more complex.
+
+\def\modulonumber#1#2%
+  {\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+
+%D \macros{modulatednumber}
+%D
+%D Modulo numbers run from zero to one less than the limit,
+%D but for conversion sets, we need a value between 1 and the
+%D limit. The \type{\modulatednumber} arranges that. This
+%D macro also needs to be fully expandable, resulting in
+%D two \type{\numexpr}s.
+
+\def\modulatednumber#1#2%
+  {\ifnum\the\numexpr\modulonumber{#1}{#2}\relax=0 #1%
+   \else \the\numexpr\modulonumber{#1}{#2}\relax  \fi}
+
+%D \macros
+%D   {hexstringtonumber}
+%D
+%D This macro converts a two character hexadecimal number into
+%D a decimal number, thereby taking care of lowercase characters
+%D as well.
 
 \dostepwiserecurse{0}{9}{1}{\setevalue{@@uc@@\recurselevel}{\recurselevel}}
 
@@ -122,10 +211,16 @@
 \def\dohexstringtonumber#1#2% FF
   {"\csname @@uc@@#1\endcsname\csname @@uc@@#2\endcsname}
 
+%D \macros
+%D   {rawcharacter}
+%D
 %D The next conversion macro produces raw characters. We have to
 %D construct the macro in a special way to avoid problems with
 %D characters with special meanings. So, we revert to the
 %D lowercase conversion trick to bypass \TEX's input parser.
+%D
+%D This macro can be used to produce proper 8 bit characters
+%D that we sometimes need in backends and round||trips.
 
 \bgroup
 

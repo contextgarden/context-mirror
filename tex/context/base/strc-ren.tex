@@ -1,0 +1,467 @@
+%D \module
+%D   [       file=strc-ren,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Section Rendering,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Section Rendering}
+
+\unprotect
+
+\chardef\headtimingmode=0
+
+% \chardef\headtimingmode=1 % 0 also works ok now too
+%
+% Martin Kolarik's problem:
+%
+% \setuphead[section][command=\doTitle]
+% \def\doTitle#1#2{\ruledvbox{\forgetall \hsize=4cm \ruledhbox{\ruledvtop{#1}\ruledvtop{#2}}}}
+% \section{test test test test test test test test test test test test test test test test test}
+
+\newevery \everyheadstart \relax
+
+\def\placeheadmargintexts
+  {\the\everyheadstart
+   \doif{\structureheadparameter\c!margintext}\v!yes\placemargincontent}
+
+\def\doplaceheadtextcomponent#1#2%
+  {\begingroup
+     \dosetstructureheadattributes\c!style\c!color
+     \dosetstructureheadattributes\c!textstyle\c!textcolor
+     \dontconvertfont
+     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+       \setupinterlinespace
+     \else
+       \setupspacing
+     \fi
+     % \ifcase\headtimingmode#1\fi % can introduce cr
+     \structureheadparameter\c!commandbefore
+     \placeheadmargintexts
+     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+       \structureheadparameter\c!textcommand% struts can be nilled with \setnostrut
+         {\setstrut
+          \begstrut
+          \ifcase\headtimingmode\hbox{#1}\fi
+          \executeifdefined{\??nh\currentstructurehead\c!deeptextcommand}\firstofoneargument{#2}%
+          \endstrut}% \hbox prevents break
+       \xdef\localheadheight    {\the\strutht}%
+       \xdef\localheaddepth     {\the\strutdp}%
+       \xdef\localheadlineheight{\the\lineheight}%
+       % == \globallet\localheaddepth\strutdepth
+     \else
+       \ifcase\headtimingmode#1\fi
+       \structureheadparameter\c!textcommand
+          {\executeifdefined{\??nh\currentstructurehead\c!deeptextcommand}\firstofoneargument{#2}}%
+     \fi
+     \structureheadparameter\c!commandafter
+     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+       \endgraf
+     \fi
+   \endgroup}
+
+\def\doplaceheadnumbercomponent#1#2%
+  {\begingroup
+     \dosetstructureheadattributes\c!style\c!color
+     \dosetstructureheadattributes\c!numberstyle\c!numbercolor
+     % \getvalue{\??ko\currentstructurehead\c!commandbefore}% strange, why here? moved 21/11/2005
+     \placeheadmargintexts
+     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+       % can be nilled with \setnostrut
+       \structureheadparameter\c!numbercommand
+         {\setstrut
+          \begstrut
+          \executeifdefined{\??nh\currentstructurehead\c!deepnumbercommand}\firstofoneargument{#2}%
+          \endstrut}%
+     \else
+       \structureheadparameter\c!numbercommand
+         {\executeifdefined{\??nh\currentstructurehead\c!deepnumbercommand}\firstofoneargument{#2}}%
+     \fi
+   \endgroup}
+
+% \newif\ifheadnumbercontent
+% \newif\ifemptyhead
+% \newif\ifdisplaysectionhead
+
+\def\doplacestructureheadtext#1#2#3% nodes, text, endstuff
+  {\beginheadplacement
+\postponenotes
+   \doresettructureheadnumbercontent
+   \ifconditional\structureheadleaveempty % \ifemptyhead
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi to \zeropoint{#1}%
+     \makestrutofbox\sectionheadbox
+   \else
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi
+       {\doresettructureheadnumbercontent
+        \ifcase\headtimingmode\or#1\fi                          % outerside font determines distance
+        \dosetfontattribute{\??nh\currentstructurehead}\c!style % but we don't want color to influence user command, todo: get the if-else out of it
+        \structureheadparameter\c!command{}{\doplaceheadtextcomponent{#1}{#2}}}%
+   \fi
+   \endheadplacement{#3}}
+
+\def\doplacestructureheadnumbertext#1#2#3#4% nodes number text nodes
+  {\beginheadplacement
+\postponenotes
+   \doiftextelse{#2}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
+   \ifconditional\structureheadleaveempty % \ifemptyhead % = needed
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi to \zeropoint{#1}%
+     \makestrutofbox\sectionheadbox
+   \else % = needed
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi
+       {\ifcase\headtimingmode\or#1\fi
+        \dosetfontattribute{\??nh\currentstructurehead}\c!style
+        \structureheadparameter\c!command{\doplaceheadnumbercomponent{#1}{#2}}{\doplaceheadtextcomponent{#1}{#3}}}%
+   \fi
+   \endheadplacement{#4}}
+
+\def\placestructureheadnumbertext
+  {\doplacestructureheadnumbertext\empty\getstructureheadnumber\getstructureheadtitle\getstructureheadsyncs}
+
+\def\placestructureheadtext
+  {\doplacestructureheadtext\empty\getstructureheadtitle\getstructureheadsyncs}
+
+\def\placestructureheadnothing
+  {\getstructureheadsyncs}
+
+%D \starttyping
+%D \def\StretchedBox#1%
+%D   {\framed
+%D      [frame=off,offset=.5em,align=middle,width=broad]
+%D      {\sc\def\stretchedspaceamount{.3em}\stretchednormalcase{#1}}}
+%D
+%D \definehead[MySubject][subject]
+%D \setuphead [MySubject][deeptextcommand=\StretchedBox]
+%D
+%D \MySubject{feeling stretched feeling stretched feeling stretched feeling stretched}
+%D \stoptyping
+
+\let\headlastlinewidth\!!zeropoint
+
+\def\localheadheight    {\strutht}
+\def\localheaddepth     {\strutdp}
+\def\localheadlineheight{\lineheight}
+
+\def\dolocalheadsetup  %  koppeling met standaard kopcommando / engels
+  {\forgetall          %  traag dus ...
+   \doifsomething{\structureheadparameter\c!align    }     {\normalexpanded{\noexpand\setupalign    [\structureheadparameter\c!align    ]}}%
+   \doifsomething{\structureheadparameter\c!tolerance}     {\normalexpanded{\noexpand\setuptolerance[\structureheadparameter\c!tolerance]}}%
+   \doif         {\structureheadparameter\c!strut    }\v!no{\setnostrut}% new
+   \def\\{\crlf\strut\ignorespaces}}
+
+\def\beginheadplacement
+  {\bgroup
+   \setsystemmode\currentstructurehead
+   \ifgridsnapping\iftracegridsnapping\showstruts\fi\fi
+   \xdef\localheadheight    {\the\strutht}%
+   \xdef\localheaddepth     {\the\strutdp}%
+   \xdef\localheadlineheight{\the\lineheight}%
+   % == \globallet\localheaddepth\strutdp
+   \everypar\emptytoks % needed indeed
+   \noindent           % ipv \whitespace elders, na \forgetall !
+   \bgroup
+   \doifinsetelse{\structureheadparameter\c!aligntitle}{\v!yes,\v!float}% new
+     {\skip0 1\leftskip
+      \skip2 1\rightskip
+      \xdef\localheadskip{\the\skip0}%
+      \forgetall
+      \leftskip\skip0
+      \rightskip\skip2
+      \setlocalhsize\hsize\localhsize
+      \forgetbothskips}
+     {\globallet\localheadskip\!!zeropoint
+      \forgetall}%
+   \dontcomplain
+   \postponenotes
+   \iflocation
+     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     \else
+       \noninterferingmarks
+     \fi
+   \fi
+   \resetinteractionparameter\c!style
+   \resetinteractionparameter\c!color
+   \resetinteractionparameter\c!contrastcolor
+   %\strictouterreferencestrue % tzt instelling
+   \let\localheadsetup\dolocalheadsetup
+   \startsynchronization}
+
+% \setuphead[chapter]         [style=\bfd,after=,hang=line] % fit broad 2
+% \setuphead[section]         [style=\bfc,after=,hang=line]
+% \setuphead[subsection]      [style=\bfb,after=,hang=line]
+% \setuphead[subsubsection]   [style=\bfa,after=,hang=line]
+% \setuphead[subsubsubsection][style=\bf ,after=,hang=line]
+%
+% \chapter         {Test} \input tufte \page
+% \section         {Test} \input tufte \page
+% \subsection      {Test} \input tufte \page
+% \subsubsection   {Test} \input tufte \page
+% \subsubsubsection{Test} \input tufte \page
+%
+% \chapter         {Test\\Test} \input tufte \page
+% \section         {Test\\Test} \input tufte \page
+% \subsection      {Test\\Test} \input tufte \page
+% \subsubsection   {Test\\Test} \input tufte \page
+% \subsubsubsection{Test\\Test} \input tufte \page
+
+\def\hangheadplacement
+  {\scratchdimen\localheadlineheight
+   \bgroup
+   \openlineheight\scratchdimen
+   \scratchdimen\htdp0%
+   \getnoflines\scratchdimen
+   \advance\noflines\minusone
+   \normalexpanded{\egroup\noflines\the\noflines}% brrr
+   \setbox0\hbox{\lower\noflines\scratchdimen\box0}%
+   \scratchdimen\dimexpr\htdp0-\localheadheight+\strutdp\relax
+   \ht0 \strutht
+   \dp0 \strutdp
+   \edef\localheaddepth{\the\strutdp}}
+
+\newconditional\continuoussectionhead % oeps, \newif\ifcontinuoushead got lost
+\newbox\sectionheadbox
+
+\def\endheadplacement#1%
+  {\doifelse{\structureheadparameter\c!state}\v!start
+     {\doifnothing{\structureheadparameter\c!file}{\autocrossdocumentfalse}}
+     {\autocrossdocumentfalse}%
+   % no message needed here, should be a proper switch
+   \noflines\zerocount
+   \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     % new (tod tight == one following line up)
+     \processaction
+       [\structureheadparameter\c!hang]
+       [    \v!line=>\hangheadplacement\noflines\zerocount,
+           \v!broad=>\hangheadplacement\getnoflines\scratchdimen,
+             \v!fit=>\hangheadplacement\getrawnoflines\scratchdimen,
+            \v!none=>\noflines\zerocount,
+         \v!default=>\noflines\zerocount,
+         \v!unknown=>\hangheadplacement\noflines\numexpr0\commalistelement-1\relax]%
+     % so far
+     \let\headlastlinewidth\!!zeropoint
+     \snaptogrid[\structureheadparameter\c!grid]\hbox
+       {\hskip\localheadskip
+        \hskip\structureheadparameter\c!margin\relax
+        \iflocation
+%           \ifautocrossdocument
+%             \doifreferencefoundelse{\structureheadparameter\c!file::\currentstructurehead}
+%               {\edef\currentinnerreference{\s!aut:\currenttextreference}% stored in
+%                \gotoouterlocation{}{\box\sectionheadbox}}               % text slot
+%               {\hbox{\box\sectionheadbox}}%
+%           \else
+            \hbox{\box\sectionheadbox}%
+%           \fi
+        \else
+          \hbox{\box\sectionheadbox}%
+        \fi}%
+     \doflushnotes % new, not really needed
+     \endgraf
+     \ifvmode
+       \ifnum\noflines>\zerocount
+         \dorecurse\noflines{\nointerlineskip\dosomebreak\nobreak\strut\endgraf}% to be checked
+       \fi
+       \nointerlineskip
+       \dosomebreak\nobreak
+     \fi
+     #1%
+   \else
+     \strut
+     \doflushnotes % new, here since we're in par mode
+     \iflocation
+       \ifautocrossdocument
+         \hhboxindent=\ifconditional\continuoussectionhead\headlastlinewidth\else\zeropoint\fi
+         \unhhbox\sectionheadbox\with{\gotobox{\box\hhbox}[\structureheadparameter\c!file::\currentstructurehead]}%
+         \advance\lasthhboxwidth by \numberheaddistance
+         \xdef\headlastlinewidth{\the\lasthhboxwidth}%
+       \else
+         \unhbox\sectionheadbox
+         \globallet\headlastlinewidth\!!zeropoint
+       \fi
+     \else
+       \unhbox\sectionheadbox
+       \globallet\headlastlinewidth\!!zeropoint
+     \fi
+     #1%
+     \hskip\numberheaddistance\!!plus\numberheaddistance\!!minus.25\dimexpr\numberheaddistance\relax
+     \hskip\continuousstructureheadsignal\ignorespaces
+   \fi
+   \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     \ifvmode
+       \ifgridsnapping % important, font related depth, see comment
+         \prevdepth\strutdp
+       \else
+         \prevdepth\localheaddepth
+       \fi
+     \fi
+   \fi
+   \stopsynchronization
+   \egroup
+   \egroup
+   \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     \checknextindentation[\structureheadparameter\c!indentnext]%
+   \else
+     \nonoindentation % recently added, was a bug
+   \fi}
+
+% nice testcase
+%
+% \setupheads[aligntitle=yes]
+%
+% \startnarrower
+%   \subject{\dorecurse{100}{x }}
+%   \section{\dorecurse{100}{x }}
+%   \input tufte \par
+%   \setupheads[alternative=inmargin]
+%   \subject{\dorecurse{100}{x }}
+%   \section{\dorecurse{100}{x }}
+%   \input tufte \par
+% \stopnarrower
+
+\let\numberheadalternative\v!normal
+
+\def\defineheadplacement
+  {\dodoubleargument\dodefineheadplacement}
+
+\def\dodefineheadplacement[#1][#2]% #3#4
+  {\setvalue{\??ns:#1}{#2}%
+   \setvalue{\??ns::#1}}
+
+\def\normalplacehead
+  {\executeifdefined
+     {\??ns::\numberheadalternative}
+     {\getvalue{\??ns::\v!normal}}}
+
+\defineheadplacement[\v!paragraph][\v!vertical]#1#2%
+  {\vbox
+     {\localheadsetup
+      \begstrut
+      \ifconditional\structureheadshownumber % \ifheadnumbercontent
+        #1\hskip\numberheaddistance
+      \fi
+      #2}}
+
+% \defineheadplacement[\v!normal][\v!vertical]#1#2%
+%   {\ifconditional\structureheadshownumber % \ifheadnumbercontent
+%      \setbox0\hbox{{#1}\hskip\numberheaddistance}%
+%      \vbox
+%        {\localheadsetup
+%         \hangindent 1\wd0
+%         \hangafter 1
+%         \noindent
+%         \unhbox0    %  don't use \strut's here!
+%         #2}%
+%    \else
+%      \vbox
+%        {\localheadsetup\noindent#2}%
+%    \fi}
+%
+% enhanced version:
+
+% \setuphead
+%   [chapter]
+%   [numberwidth=2cm,hang=line,after={\blank[3*line]}]
+%
+% \chapter{Oeps oeps oeps} \input tufte   \section{Oeps}
+% \chapter{Oeps oeps oeps} \section{Oeps} \input tufte
+
+\defineheadplacement[\v!normal][\v!vertical]#1#2%
+  {\vbox
+     {\localheadsetup
+      \edef\headwidth      {\structureheadparameter\c!width      }%
+      \edef\headnumberwidth{\structureheadparameter\c!numberwidth}%
+      \edef\headtextwidth  {\structureheadparameter\c!textwidth  }%
+      \ifconditional\structureheadshownumber % \ifheadnumbercontent
+        \ifx\headwidth\empty
+        \else
+          \ifx\headnumberwidth\empty
+            \ifx\headtextwidth\empty\else
+              \edef\headnumberwidth{\the\dimexpr\headwidth-\headtextwidth\relax}%
+            \fi
+          \else
+            \ifx\headtextwidth\empty
+              \edef\headtextwidth{\the\dimexpr\headwidth-\headnumberwidth\relax}%
+            \fi
+          \fi
+          \hsize\headwidth
+        \fi
+        \ifx\headnumberwidth\empty\else
+          \let\numberheaddistance\!!zeropoint
+        \fi
+        \setbox\scratchbox\hbox \ifx\headnumberwidth\empty\else to \headnumberwidth\fi{{#1}}%
+        \scratchdimen\dimexpr\wd\scratchbox+\numberheaddistance\relax
+        \ifx\headtextwidth\empty\else
+          \hsize\dimexpr\scratchdimen+\headparameter\c!textwidth\relax
+        \fi
+        \hangindent\scratchdimen
+        \hangafter \plusone
+        \noindent
+        \box\scratchbox\hskip\numberheaddistance
+      \else
+        \ifx\headtextwidth\empty
+          \ifx\headwidth\empty
+          \else
+            \hsize\headwidth
+          \fi
+        \else
+          \hsize\headtextwidth
+        \fi
+        \noindent
+      \fi
+      #2}}
+
+\def\placeheadmargin#1#2%
+  {\vbox
+     {\localheadsetup
+      \begstrut % use one \strut here!
+      \dontleavehmode % in case there is no strut, else side effects with llap
+      \ifconditional\structureheadshownumber % \ifheadnumbercontent
+        \llap{\hbox to 5em{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
+        % maybe better:
+        % \inleftmargin{\hbox{\hss{#1}\hskip\localheadskip}}%
+      \fi
+      {#2}}}
+
+\defineheadplacement[\v!inmargin][\v!vertical]#1#2{\placeheadmargin{#1}{#2}}
+\defineheadplacement[\v!margin]  [\v!vertical]#1#2{\placeheadmargin{#1}{#2}}
+
+\defineheadplacement[\v!middle][\v!vertical]#1#2%
+  {\vbox
+     {\localheadsetup
+      \veryraggedcenter
+      \let\\\endgraf
+      \let\crlf\endgraf
+      \ifconditional\structureheadshownumber % \ifheadnumbercontent
+        \strut#1\par
+      \fi
+      \begstrut#2}}
+
+\defineheadplacement[\v!text][\v!horizontal]#1#2%
+  {\bgroup
+   \localheadsetup % no stretch in distance
+   \ifconditional\structureheadshownumber % \ifheadnumbercontent
+     {#1}\kern\numberheaddistance
+   \fi
+   {\begstrut#2}%
+   \egroup}
+
+\def\placeheadlohi#1#2#3%
+  {\ifconditional\structureheadshownumber % \ifheadnumbercontent
+     \setbox0\hbox{#2}
+     \setbox2=#1{\localheadsetup\advance\hsize-\wd0\relax#3}%
+     \hbox{\box0\hskip\numberheaddistance\box2}%
+   \else
+     #1{\localheadsetup\noindent#3}%
+   \fi}
+
+% onder/boven lijnt het nummer op de onderste/bovenste regel
+% uit van een meerregelige kop
+
+\defineheadplacement[\v!bottom][\v!vertical]#1#2{\placeheadlohi\vbox{#1}{#2}}
+\defineheadplacement[\v!top]   [\v!vertical]#1#2{\placeheadlohi\vtop{#1}{#2}}
+
+\protect \endinput

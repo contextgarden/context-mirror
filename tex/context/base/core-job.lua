@@ -6,79 +6,14 @@ if not modules then modules = { } end modules ['core-job'] = {
     license   = "see context related readme files"
 }
 
--- will move
+local texsprint, texprint, format, find, gmatch = tex.sprint, tex.print, string.format, string.find, string.gmatch
 
-local texsprint, texprint, format = tex.sprint, tex.print, string.format
-
-commands.writestatus = ctx.writestatus
-
-function commands.doifelse(b)
-    if b then -- faster with if than with expression
-        texsprint(tex.texcatcodes,"\\firstoftwoarguments")
-    else
-        texsprint(tex.texcatcodes,"\\secondoftwoarguments")
-    end
-end
-function commands.doif(b)
-    if b then
-        texsprint(tex.texcatcodes,"\\firstofoneargument")
-    else
-        texsprint(tex.texcatcodes,"\\gobbleoneargument")
-    end
-end
-function commands.doifnot(b)
-    if b then
-        texsprint(tex.texcatcodes,"\\gobbleoneargument")
-    else
-        texsprint(tex.texcatcodes,"\\firstofoneargument")
-    end
-end
-cs.testcase = commands.doifelse
-
-function commands.doifelsespaces(str)
-    return commands.doifelse(str:find("^ +$"))
-end
-
-local s = lpeg.splitat(",")
-
-local h = { }
-
-function commands.doifcommonelse(a,b)
-    local ha = h[a]
-    local hb = h[b]
-    if not ha then ha = s:match(a) h[a] = ha end
-    if not hb then hb = s:match(b) h[b] = hb end
-    for i=1,#ha do
-        for j=1,#hb do
-            if ha[i] == hb[i] then
-                return cs.testcase(true)
-            end
-        end
-    end
-    return cs.testcase(false)
-end
-
-function commands.doifinsetelse(a,b)
-    local hb = h[b]
-    if not hb then hb = s:match(b) h[b] = hb end
-    for j=1,#hb do
-        if a == hb[i] then
-            return cs.testcase(true)
-        end
-    end
-    return cs.testcase(false)
-end
-
-function commands. def(cs,value) texsprint(tex.ctxcatcodes,format( "\\def\\%s{%s}",cs,value)) end
-function commands.edef(cs,value) texsprint(tex.ctxcatcodes,format("\\edef\\%s{%s}",cs,value)) end
-function commands.gdef(cs,value) texsprint(tex.ctxcatcodes,format("\\gdef\\%s{%s}",cs,value)) end
-function commands.xdef(cs,value) texsprint(tex.ctxcatcodes,format("\\xdef\\%s{%s}",cs,value)) end
-
-function commands.cs(cs,args) texsprint(tex.ctxcatcodes,format("\\csname %s\\endcsname %s",cs,args or"")) end
+local ctxcatcodes = tex.ctxcatcodes
+local texcatcodes = tex.texcatcodes
 
 -- main code
 
-function input.findctxfile(name,maxreadlevel)
+function resolvers.findctxfile(name,maxreadlevel)
     local function exists(n)
         if io.exists(n) then
             return n
@@ -90,7 +25,7 @@ function input.findctxfile(name,maxreadlevel)
         end
         return nil
     end
-    if input.aux.qualified_path(name) then
+    if file.is_qualified_path(name) then
         return name
     else
         -- not that efficient, too many ./ lookups
@@ -107,41 +42,40 @@ function input.findctxfile(name,maxreadlevel)
                 end
             end
         end
-        return input.find_file(name) or ""
+        return resolvers.find_file(name) or ""
     end
 end
 
 function commands.processfile(name,maxreadlevel)
-    name = input.findctxfile(name,maxreadlevel)
+    name = resolvers.findctxfile(name,maxreadlevel)
     if name ~= "" then
---~         texsprint(tex.ctxcatcodes,format('\\input {%s}',name)) -- future version
-        texsprint(tex.ctxcatcodes,format("\\input %s\\relax",name)) -- we need \input {name}
+        texsprint(ctxcatcodes,format("\\input %s\\relax",name)) -- we need \input {name}
     end
 end
 
 function commands.doifinputfileelse(name,maxreadlevel)
-    commands.doifelse(input.findctxfile(name,maxreadlevel) ~= "")
+    commands.doifelse(resolvers.findctxfile(name,maxreadlevel) ~= "")
 end
 
 function commands.locatefilepath(name,maxreadlevel)
-    texsprint(tex.texcatcodes,file.dirname(input.findctxfile(name,maxreadlevel)))
+    texsprint(texcatcodes,file.dirname(resolvers.findctxfile(name,maxreadlevel)))
 end
 
 function commands.usepath(paths,maxreadlevel)
-    input.register_extra_path(paths)
-    texsprint(tex.texcatcodes,table.concat(input.instance.extra_paths or {}, ""))
+    resolvers.register_extra_path(paths)
+    texsprint(texcatcodes,table.concat(resolvers.instance.extra_paths or {}, ""))
 end
 
 function commands.usesubpath(subpaths,maxreadlevel)
-    input.register_extra_path(nil,subpaths)
-    texsprint(tex.texcatcodes,table.concat(input.instance.extra_paths or {}, ""))
+    resolvers.register_extra_path(nil,subpaths)
+    texsprint(texcatcodes,table.concat(resolvers.instance.extra_paths or {}, ""))
 end
 
 function commands.usezipfile(name,tree)
     if tree and tree ~= "" then
-        input.usezipfile(format("zip:///%s?tree=%s",name,tree))
+        resolvers.usezipfile(format("zip:///%s?tree=%s",name,tree))
     else
-        input.usezipfile(format("zip:///%s",name))
+        resolvers.usezipfile(format("zip:///%s",name))
     end
 end
 
@@ -162,20 +96,20 @@ local function convertexamodes(str)
             local data = xml.content(dk) or ""
             local mode = label:match("^mode:(.+)$")
             if mode then
-                texsprint(tex.ctxcatcodes,format("\\enablemode[%s:%s]",mode,data))
+                texsprint(ctxcatcodes,format("\\enablemode[%s:%s]",mode,data))
             end
-            texsprint(tex.ctxcatcodes,format("\\setvariable{exa:variables}{%s}{%s}",label,data:gsub("([{}])","\\%1")))
+            texsprint(ctxcatcodes,format("\\setvariable{exa:variables}{%s}{%s}",label,data:gsub("([{}])","\\%1")))
         end
     end
 end
 
--- we need a system file option: ,. .. etc + paths but no tex lookup so input.find_file is wrong here
+-- we need a system file option: ,. .. etc + paths but no tex lookup so resolvers.find_file is wrong here
 
 function commands.loadexamodes(filename)
     if not filename or filename == "" then
-        filename = file.stripsuffix(tex.jobname)
+        filename = file.removesuffix(tex.jobname)
     end
-    filename = input.find_file(file.addsuffix(filename,'ctm')) or ""
+    filename = resolvers.find_file(file.addsuffix(filename,'ctm')) or ""
     if filename ~= "" then
         commands.writestatus("examodes","loading %s",filename) -- todo: message system
         convertexamodes(io.loaddata(filename))
@@ -184,59 +118,72 @@ function commands.loadexamodes(filename)
     end
 end
 
+function commands.logoptionfile(name)
+    -- todo: xml if xml logmode
+    local f = io.open(name)
+    if f then
+        texio.write_nl("log","%\n%\tbegin of optionfile\n%\n")
+        for line in f:lines() do
+            texio.write("log",format("%%\t%s\n",line))
+        end
+        texio.write("log","%\n%\tend of optionfile\n%\n")
+        f:close()
+    end
+end
+
 --~ set functions not ok and not faster on mk runs either
 --~
 --~ local function doifcommonelse(a,b)
---~     local ba = a:find(",")
---~     local bb = b:find(",")
+--~     local ba = find(a,",")
+--~     local bb = find(b,",")
 --~     if ba and bb then
---~         for sa in a:gmatch("[^ ,]+") do
---~             for sb in b:gmatch("[^ ,]+") do
+--~         for sa in gmatch(a,"[^ ,]+") do
+--~             for sb in gmatch(b,"[^ ,]+") do
 --~                 if sa == sb then
---~                     texsprint(tex.ctxcatcodes,"\\def\\commalistelement{"..sa.."}")
+--~                     texsprint(ctxcatcodes,"\\def\\commalistelement{",sa,"}")
 --~                     return true
 --~                 end
 --~             end
 --~         end
 --~     elseif ba then
---~         for sa in a:gmatch("[^ ,]+") do
+--~         for sa in gmatch(a,"[^ ,]+") do
 --~             if sa == b then
---~                 texsprint(tex.ctxcatcodes,"\\def\\commalistelement{"..b.."}")
+--~                 texsprint(ctxcatcodes,"\\def\\commalistelement{",b,"}")
 --~                 return true
 --~             end
 --~         end
 --~     elseif bb then
---~         for sb in b:gmatch("[^ ,]+") do
+--~         for sb in gmatch(b,"[^ ,]+") do
 --~             if a == sb then
---~                 texsprint(tex.ctxcatcodes,"\\def\\commalistelement{"..a.."}")
+--~                 texsprint(ctxcatcodes,"\\def\\commalistelement{",a,"}")
 --~                 return true
 --~             end
 --~         end
 --~     else
 --~         if a == b then
---~             texsprint(tex.ctxcatcodes,"\\def\\commalistelement{"..a.."}")
+--~             texsprint(ctxcatcodes,"\\def\\commalistelement{",a,"}")
 --~             return true
 --~         end
 --~     end
---~     texsprint(tex.ctxcatcodes,"\\let\\commalistelement\\empty")
+--~     texsprint(ctxcatcodes,"\\let\\commalistelement\\empty")
 --~     return false
 --~ end
 --~ local function doifinsetelse(a,b)
---~     local bb = b:find(",")
+--~     local bb = find(b,",")
 --~     if bb then
---~         for sb in b:gmatch("[^ ,]+") do
+--~         for sb in gmatch(b,"[^ ,]+") do
 --~             if a == sb then
---~                 texsprint(tex.ctxcatcodes,"\\def\\commalistelement{"..a.."}")
+--~                 texsprint(ctxcatcodes,"\\def\\commalistelement{",a,"}")
 --~                 return true
 --~             end
 --~         end
 --~     else
 --~         if a == b then
---~             texsprint(tex.ctxcatcodes,"\\def\\commalistelement{"..a.."}")
+--~             texsprint(ctxcatcodes,"\\def\\commalistelement{",a,"}")
 --~             return true
 --~         end
 --~     end
---~     texsprint(tex.ctxcatcodes,"\\let\\commalistelement\\empty")
+--~     texsprint(ctxcatcodes,"\\let\\commalistelement\\empty")
 --~     return false
 --~ end
 --~ function commands.doifcommon    (a,b) commands.doif    (doifcommonelse(a,b)) end
@@ -245,4 +192,3 @@ end
 --~ function commands.doifinset     (a,b) commands.doif    (doifinsetelse(a,b)) end
 --~ function commands.doifnotinset  (a,b) commands.doifnot (doifinsetelse(a,b)) end
 --~ function commands.doifinsetelse (a,b) commands.doifelse(doifinsetelse(a,b)) end
-

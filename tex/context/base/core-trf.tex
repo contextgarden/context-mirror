@@ -14,7 +14,7 @@
 %D It may be that some functionality got lost. If it concerns
 %D defined features, let me know and it will be sorted out.
 
-\writestatus{loading}{Context Core Macros / Transformations}
+\writestatus{loading}{ConTeXt Core Macros / Transformations}
 
 \unprotect
 
@@ -200,6 +200,14 @@
    \xdef\finalscaleboxxscale {\withoutpt\the\dimexpr\scax\points/\plushundred\relax}%
    \xdef\finalscaleboxyscale {\withoutpt\the\dimexpr\scay\points/\plushundred\relax}}
 
+
+\setvalue{\??xy:\c!grid:\v!yes     }{\getnoflines   \fighei\setevalue{\currentscaletag\c!height}{\the\noflines\lineheight}}
+\setvalue{\??xy:\c!grid:\v!height  }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+\strutdepth\relax}}
+\setvalue{\??xy:\c!grid:\v!depth   }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight-\strutdepth\relax}}
+\setvalue{\??xy:\c!grid:\v!halfline}{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+.5\lineheight\relax}}
+\setvalue{\??xy:\c!grid:\v!fit     }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\noflines\lineheight}}
+\letvalue{\??xy:\c!grid:\empty     }\donothing
+
 \def\checkscaleboxsettings
   {\doifsomething{\scaleparameter\c!maxwidth }% can be defined in itself
      {\setevalue{\currentscaletag\c!maxwidth }{\the\dimexpr\scaleparameter\c!maxwidth \relax}}%
@@ -207,19 +215,7 @@
      {\setevalue{\currentscaletag\c!maxheight}{\the\dimexpr\scaleparameter\c!maxheight\relax}}%
    \doifsomething{\scaleparameter\c!lines}
      {\setevalue{\currentscaletag\c!height}{\the\dimexpr\scaleparameter\c!lines\lineheight\relax}}%
-   \doifsomething{\scaleparameter\c!grid}
-     {\processaction
-         [\scaleparameter\c!grid]
-         [  \v!yes=>\getnoflines\fighei
-                    \setevalue{\currentscaletag\c!height}{\the\noflines\lineheight},
-         \v!height=>\getrawnoflines\fighei
-                    \setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+\strutdepth\relax},
-          \v!depth=>\getrawnoflines\fighei
-                    \setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight-\strutdepth\relax},
-       \v!halfline=>\getrawnoflines\fighei
-                    \setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+.5\lineheight\relax},
-            \v!fit=>\getrawnoflines\fighei
-                    \setevalue{\currentscaletag\c!height}{\the\noflines\lineheight}]}}
+   \getvalue{\??xy:\c!grid:\scaleparameter\c!grid}}
 
 \def\setscaleboxbynature % where ! ! ! ! !
   {\doifsomething{\scaleparameter\c!width }{\global\scaleboxdimx\scaleparameter\c!width }%
@@ -260,7 +256,7 @@
             \docalculatescaleboxnorm\scaleboxdimx\c!wfactor\c!width  \hsize     \hsize
             \donefalse}}}%
    \ifdone
-\settrue\scaleboxscalingdone
+     \settrue\scaleboxscalingdone
      \ifdim\scaleboxdimx>\scaleboxhsize
        \global\scaleboxdimy\zeropoint \global\scaleboxdimx\scaleboxhsize
      \else\ifdim\scaleboxdimy>\scaleboxvsize
@@ -327,7 +323,7 @@
          #3\relax
       \fi}}
 
-\def\docalculatescaleboxnorm#1#2#3#4#5% 2 3 parameters
+\def\docalculatescaleboxnorm#1#2#3#4#5% 2 3 parameters (dodo:speedup)
   {\processaction
       [\scaleparameter#2]
       [     \v!max=>\global#1\dimexpr#4\relax,

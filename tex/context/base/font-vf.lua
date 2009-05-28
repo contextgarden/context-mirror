@@ -64,7 +64,7 @@ end
 
 function vf.aux.combine.process(g,list)
     if list then
-        for _,v in pairs(list) do
+        for _,v in next, list do
             (vf.aux.combine.commands[v[1]] or nop)(g,v)
         end
     end
@@ -81,7 +81,7 @@ function vf.aux.combine.names(g,name,force)
         local fd, gd = f.descriptions, g.descriptions
         g.fonts[#g.fonts+1] = { id = id } -- no need to be sparse
         local hn = #g.fonts
-        for k, v in pairs(fc) do
+        for k, v in next, fc do
             if force or not gc[k] then
                 gc[k] = table.fastcopy(v)
                 gc[k].commands = { { 'slot', hn, k } }
@@ -113,7 +113,8 @@ vf.aux.combine.commands = {
 function vf.combine(specification,tag)
     local g = {
         name = specification.name,
-        type = 'virtual',
+    --  type = 'virtual',
+        virtualized = true,
         fonts = { },
         characters = { },
         descriptions = { },
@@ -180,12 +181,11 @@ fonts.define.methods.install(
 fonts.define.methods["demo-1"] = function(specification)
     local name = specification.name          -- symbolic name
     local size = specification.size          -- given size
---~     specification.name = 'lmroman10-regular' -- forced base name
---~     specification.features.vtf = { }
     local f, id = tfm.read_and_define('lmroman10-regular',size)
     if f and id then
         local capscale, digscale = 0.85, 0.75
-        f.name, f.type = name, 'virtual'
+    --  f.name, f.type = name, 'virtual'
+        f.name, f.virtualized = name, true
         f.fonts = {
             { id = id },
             { name = 'lmsans10-regular'      , size = size*capscale }, -- forced extra name
@@ -193,65 +193,21 @@ fonts.define.methods["demo-1"] = function(specification)
         }
         local i_is_of_category = characters.i_is_of_category
         local characters, descriptions = f.characters, f.descriptions
-        for u,v in pairs(characters) do
+        local red   = {'special','pdf: 1 0 0 rg'}
+        local green = {'special','pdf: 0 1 0 rg'}
+        local blue  = {'special','pdf: 0 0 1 rg'}
+        local black = {'special','pdf: 0 g'}
+        for u,v in next, characters do
             if u and i_is_of_category(u,'lu') then
                 v.width = capscale*v.width
-                v.commands = {
-                    {'special','pdf: 1 0 0 rg'},
-                    {'slot',2, u},
-                    {'special','pdf: 0 g'},
-                }
+                v.commands = { red, {'slot',2,u}, black }
             elseif u and i_is_of_category(u,'nd') then
                 v.width = digscale*v.width
-                v.commands = {
-                    {'special','pdf: 0 0 1 rg'},
-                    {'slot',3,u},
-                    {'special','pdf: 0 g'},
-                }
+                v.commands = { blue, {'slot',3,u}, black }
             else
-                v.commands = {
-                    {'special','pdf: 0 1 0 rg'},
-                    {'slot',1,u},
-                    {'special','pdf: 0 g'},
-                }
+                v.commands = { green, {'slot',1,u}, black }
             end
         end
     end
     return f
 end
-
--- keep as example, now tfm feature
-
---~ vf.aux.combine.commands["lineheight"] = function(g,v)
---~     if g.ascender and g.descender then
---~         local ht, dp = g.ascender or 0, g.descender or 0
---~         if v[2] == "none" then
---~             for _,v in pairs(g.characters) do
---~                 v.height = 0
---~                 v.depth  = 0
---~             end
---~         else
---~             if v[2] == "height" then
---~                 dp = 0
---~             elseif v[2] == "depth" then
---~                 ht = 0
---~             end
---~             if ht > 0 then
---~                 if dp > 0 then
---~                     for _,v in pairs(g.characters) do
---~                         v.height = ht
---~                         v.depth  = dp
---~                     end
---~                 else
---~                     for _,v in pairs(g.characters) do
---~                         v.height = ht
---~                     end
---~                 end
---~             elseif dp > 0 then
---~                 for _,v in pairs(g.characters) do
---~                     v.depth  = dp
---~                 end
---~             end
---~         end
---~     end
---~ end

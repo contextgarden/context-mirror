@@ -311,7 +311,7 @@
 \stopmathcollection
 
 \def\AMSwidehat#1%
-  {\setbox\scratchbox\hbox{$\m@th#1$}%
+  {\setbox\scratchbox\hbox{$\mathsurround\zeropoint#1$}%
    \ifdim\wd\scratchbox>2em
      \mathaccent"0\purefamilyhex{mb}5B{#1}%
    \else
@@ -319,7 +319,7 @@
    \fi}
 
 \def\AMSwidetilde#1%
-  {\setbox\scratchbox\hbox{$\m@th#1$}%
+  {\setbox\scratchbox\hbox{$\mathsurround\zeropoint#1$}%
    \ifdim\wd\scratchbox>2em
      \mathaccent"0\purefamilyhex{mb}5D{#1}%
    \else

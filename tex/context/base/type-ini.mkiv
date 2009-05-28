@@ -1,0 +1,705 @@
+%D \module
+%D   [       file=type-ini,
+%D        version=2001.03.05,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typescript Macros / Initialization}
+
+%D The default fontclass is empty. We could demand always using fontclasses,
+%D and then make the calling macros simplier (always assume fontclass) but
+%D apart from downward compatibility issues, it would make global, class
+%D spanning definitions a pain. Some day we will introduce a default class.
+
+% torture test : proper typefaces (and namespace)
+%
+% \starttext
+%   \usetypescript[modern][default]  default:  \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][texnansi] texnansi: \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][ec]       ec:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][qx]       qx:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][t5]       t5:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+% \stoptext
+%
+% torture test : no typeface, just definitions
+%
+% \starttext
+%   {\setupbodyfont[reset] \setupbodyfont[cmr] cmr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+%   {\setupbodyfont[reset] \setupbodyfont[plr] plr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+%   {\setupbodyfont[reset] \setupbodyfont[csr] csr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+%   {\setupbodyfont[reset] \setupbodyfont[vnr] vnr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+%   {\setupbodyfont[reset] \setupbodyfont[aer] aer: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+% \stoptext
+
+% \usetypescript [modern]  [texnansi]
+%
+% normal   : 1450 ms
+% exa quit : 1300 ms (150 ms)
+% preload  :  825 ms (635 ms) (40-50%)
+%
+% \usetypescript [modern]  [texnansi]
+% \usetypescript [palatino][texnansi]
+% \usetypescript [times]   [texnansi]
+%
+% normal   : 3200 ms
+% exa quit : 2700 ms ( 500 ms)
+% preload  : 1300 ms (1900 ms) (60-70%)
+
+% \usetypescript [modern][\defaultencoding]
+% \usetypescript [map]   [latin-modern-os] [\defaultencoding]
+% \setupbodyfont[modern]
+% test 1234 test
+
+\unprotect
+
+\def\starttypescriptcollection
+  {\dosingleempty\dostarttypescriptcollection}
+
+\def\dostarttypescriptcollection[#1]%
+  {}
+
+\def\stoptypescriptcollection
+  {}
+
+\let\typescriptfiles\empty
+
+\unexpanded\def\usetypescriptfile[#1]%
+  {\doifelse{#1}\v!reset
+     {\let\typescriptfiles\empty}
+     {\splitfiletype{#1}%
+      \addtocommalist\splitoffname\typescriptfiles}}
+
+% \usetypescriptfile[\f!typeprefix exa] % some examples
+% \usetypescriptfile[\f!typeprefix syn] % font file synonyms
+% \usetypescriptfile[\f!typeprefix enc] % files and encodings
+% %usetypescriptfile[\f!typeprefix dis] % funny name remappings, obsolete
+% \usetypescriptfile[\f!typeprefix siz] % specific font sizes
+% \usetypescriptfile[\f!typeprefix map] % pdftex mapping
+% \usetypescriptfile[\f!typeprefix spe] % special macros
+% \usetypescriptfile[\f!typeprefix akb] % adobe karl berry names
+
+\usetypescriptfile[\f!typeprefix tmf]
+\usetypescriptfile[\f!typeprefix siz]
+\usetypescriptfile[\f!typeprefix otf]
+\usetypescriptfile[\f!typeprefix loc]
+
+% SO FAR
+
+\let\currenttypescripts\empty
+
+\newif\iftypescriptfound
+
+\let\@@typescriptone  \empty \let\typescriptone  \empty
+\let\@@typescripttwo  \empty \let\typescripttwo  \empty
+\let\@@typescriptthree\empty \let\typescriptthree\empty
+
+% method 2 is for Hans van der Meer
+
+\newtoks\documenttypescripts
+
+\chardef\typescriptmethod\plusone % 1: empty==all==true  2: empty==false
+\chardef\typescriptstate \plustwo % 1: process 2: store
+
+\unexpanded\def\usetypescript     {\let\typescriptmethod\plusone\dotripleempty\dousetypescript}
+\unexpanded\def\usetypescriptexact{\let\typescriptmethod\plustwo\dotripleempty\dousetypescript}
+
+\def\dousetypescript[#1][#2][#3]%
+  {\normalexpanded{\noexpand\dodousetypescript[#1][#2][#3]}}
+
+\def\dodousetypescript[#1][#2][#3]% also loads type-loc, a user file
+  {\pushmacro\@@typescriptone  \edef\@@typescriptone  {\truetypescript{#1}}%
+   \pushmacro\@@typescripttwo  \edef\@@typescripttwo  {\truetypescript{#2}}%
+   \pushmacro\@@typescriptthree\edef\@@typescriptthree{\truetypescript{#3}}%
+   \pushmacro\typescriptone
+   \pushmacro\typescripttwo
+   \pushmacro\typescriptthree
+   \pushmacro\typescriptmethod
+   \pushmacro\typescriptstate  \let\typescriptstate\plusone % process
+   \pushmacro\stoptypescript
+   \typescriptfoundfalse
+   \iftracetypescripts\writestatus\m!fonts{request: [\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
+   \processcommacommand[\typescriptfiles]\dododousetypescript
+   \the\documenttypescripts
+   \firsttypescriptpassfalse % testen
+   \popmacro\stoptypescript
+   \popmacro\typescriptstate
+   \popmacro\typescriptmethod
+   \popmacro\typescriptthree
+   \popmacro\typescripttwo
+   \popmacro\typescriptone
+   \popmacro\@@typescriptthree
+   \popmacro\@@typescripttwo
+   \popmacro\@@typescriptone}
+
+% simple version:
+%
+% \def\dododousetypescript#1%
+%   {\startreadingfile
+%    \pushmacro\currenttypefile
+%    \def\currenttypefile{#1}%
+%    \def\currenttypefile{#1}%
+%    \readfile\currenttypefile\donothing\donothing
+%    \popmacro\currenttypefile
+%    \stopreadingfile}
+%
+% tricky version:
+
+\newconditional\preloadingtypescripts
+
+\def\preloadtypescripts{\ifproductionrun\settrue\preloadingtypescripts\fi}
+
+\long\def\xxstarttypescript#1\stoptypescript
+  {\global\loadedtypescripts\@EA{\the\loadedtypescripts\starttypescript#1\stoptypescript}}
+
+\long\def\xxstarttypescriptcollection#1\stoptypescriptcollection
+  {\global\loadedtypescripts\@EA{\the\loadedtypescripts\starttypescriptcollection#1\stoptypescriptcollection}}
+
+\def\dododousetypescript#1%
+  {\setfalse\quittingtypescript
+   \pushmacro\currenttypefile
+   \def\currenttypefile{#1}%
+   \ifconditional\preloadingtypescripts
+     % load files once, and use saved data
+     \def\loadedtypescripts{\csname\??ts:\c!file:#1\endcsname}%
+     \@EAEAEA\ifx\loadedtypescripts\relax
+       \@EAEAEA\newtoks\loadedtypescripts
+       \bgroup
+       \let\starttypescript\xxstarttypescript
+       \let\starttypescriptcollection\xxstarttypescriptcollection
+       \startreadingfile
+       \pushendofline
+       \unprotect
+       \readfile\currenttypefile\donothing\donothing
+       \protect
+       \popendofline
+       \stopreadingfile
+       \egroup
+     \fi
+     %\message{[\space\currenttypefile}%
+     \the\loadedtypescripts
+     %\message{\ifconditional\quittingtypescript quit\space\fi]}%
+   \else
+     % process files each time
+     \startreadingfile
+     \pushendofline
+     \unprotect
+     \readfile\currenttypefile\donothing\donothing
+     \protect
+     \popendofline
+     \stopreadingfile
+   \fi
+   \popmacro\currenttypefile
+   \ifconditional\quittingtypescript
+     \quitcommalist
+     \setfalse\quittingtypescript
+   \fi}
+
+% % not faster, unless maybe toks
+%
+% \newcount\nofloadedtypescripts
+%
+% \def\startloadedtypescript
+%   {\dotripleempty\dostartloadedtypescript}
+%
+% \let\stoploadedtypescript\relax
+%
+% \long\def\dostartloadedtypescript[#1][#2][#3]#4\stoptypescript
+%   {\global\advance\nofloadedtypescripts\plusone
+%    \long\setgvalue{\??ts=>\the\nofloadedtypescripts}{#4}%
+%    \edef\temp%
+%      {\iffirstargument [#1]\fi
+%       \ifsecondargument[#2]\fi
+%       \ifthirdargument [#3]\fi
+%       \noexpand\csname\??ts=>\the\nofloadedtypescripts\noexpand\endcsname}%
+%    \global\loadedtypescripts\@EA\@EA\@EA{\@EA\the\@EA\loadedtypescripts\@EA\starttypescript\temp\stoptypescript}}
+%
+% \def\startloadedtypescriptcollection
+%   {\dosingleempty\dostartloadedtypescriptcollection}
+%
+% \def\dostartloadedtypescriptcollection[#1]{}
+% \def\stoploadedtypescriptcollection       {}
+%
+% \def\dododousetypescript#1%
+%   {\setfalse\quittingtypescript
+%    \pushmacro\currenttypefile
+%    \def\currenttypefile{#1}%
+%    \ifconditional\preloadingtypescripts
+%      % load files once, and use saved data
+%      \def\loadedtypescripts{\csname\??ts:\c!file:#1\endcsname}%
+%      \@EAEAEA\ifx\loadedtypescripts\relax
+%        \@EAEAEA\newtoks\loadedtypescripts
+%        \bgroup
+%        %
+%        \let\starttypescript          \startloadedtypescript
+%        \let\stoptypescript           \stoploadedtypescript
+%        \let\starttypescriptcollection\startloadedtypescriptcollection
+%        \let\stoptypescriptcollection \stoploadedtypescriptcollection
+%        %
+%        \startreadingfile
+%        \pushendofline
+%        \unprotect
+%        \readfile\currenttypefile\donothing\donothing
+%        \protect
+%        \popendofline
+%        \stopreadingfile
+%        \egroup
+%      \fi
+%      %\message{[\space\currenttypefile}%
+%      \the\loadedtypescripts
+%      %\message{\ifconditional\quittingtypescript quit\space\fi]}%
+%    \else
+%      % process files each time
+%      \startreadingfile
+%      \pushendofline
+%      \unprotect
+%      \readfile\currenttypefile\donothing\donothing
+%      \protect
+%      \popendofline
+%      \stopreadingfile
+%    \fi
+%    \popmacro\currenttypefile
+%    \ifconditional\quittingtypescript
+%      \quitcommalist
+%      \setfalse\quittingtypescript
+%    \fi}
+
+\def\usetypescriptonce
+  {\dotripleempty\dousetypescriptonce}
+
+\def\dousetypescriptonce[#1][#2][#3]%
+  {\doifelseflagged{ts:#1:#2:#3}%
+     {\writestatus\m!fonts{once (#1) (#2) (#3)}}
+     {\setflag{ts:#1:#2:#3}%
+      \normalexpanded{\noexpand\dodousetypescript[#1][#2][#3]}}}
+
+% \definetypescriptsynonym[lbr][cmr]
+
+\def\definetypescriptsynonym
+  {\dodoubleempty\dodefinetypescriptsynonym}
+
+\def\dodefinetypescriptsynonym[#1][#2]%
+  {\ifsecondargument\setevalue{\??tm#1}{#2}\fi}
+
+\def\truetypescript#1%
+  {\ifcsname\??tm#1\endcsname
+     \@EA\truetypescript\csname\??tm#1\endcsname\else#1%
+   \fi}
+
+% script [serif] [default]         [size]
+% script [serif] [computer-modern] [size]
+% script [serif] [computer-modern] [ec]
+% script [serif] [computer-modern] [name]
+% script [serif] [computer-modern] [special]
+
+% todo, make firsttypescriptpass conditional
+
+\newif\iffirsttypescriptpass \firsttypescriptpasstrue
+
+\prependtoks\firsttypescriptpasstrue\to\everyjob
+
+\def\typescript@@all{all}
+
+\newif\iftracetypescripts
+
+\def\starttypescript
+  {\ifcase\typescriptstate
+     % 0 = skip
+     \@EA\gobbleuntil\@EA\stoptypescript
+   \or
+     % 1 = process
+     \expandafter\dostarttypescript
+   \or
+     % 2 = store
+     \expandafter\nostarttypescript
+   \else
+     % ? = skip
+     \@EA\gobbleuntil\@EA\stoptypescript
+   \fi}
+
+\long\def\nostarttypescript#1\stoptypescript
+  {\appendtoks\starttypescript#1\stoptypescript\to\documenttypescripts}
+
+\def\dostarttypescript
+  {\let\typescriptone  \@@typescriptone
+   \let\typescripttwo  \@@typescripttwo
+   \let\typescriptthree\@@typescriptthree
+   \let\typescriptmatch\empty
+   \doifnextoptionalelse\dostarttypescriptone\dostarttypescriptall}
+
+\long\def\dostarttypescriptall
+  {\iffirsttypescriptpass
+     \expandafter\doprocesstypescript
+   \else
+     % skip this since it may do unwanted resets, like
+     % setting symbolic font names to unknown, especially
+     % in run time user type scripts
+     \expandafter\noprocesstypescript
+   \fi}
+
+\long\def\dostarttypescriptyes
+  {\ifdone
+     \typescriptfoundtrue
+     \iftracetypescripts\writestatus\m!fonts{match:\ifx\currenttypefile\relax\space *\fi \typescriptmatch}\fi
+     \expandafter\doprocesstypescript
+   \else
+     \expandafter\noprocesstypescript
+   \fi}
+
+\long\def\dostarttypescriptone
+  {\dochecktypescript\@@typescriptone\typescriptone\redostarttypescriptone}
+
+\long\def\dostarttypescripttwo
+  {\dochecktypescript\@@typescripttwo\typescripttwo\redostarttypescripttwo}
+
+\long\def\dostarttypescriptthree
+  {\dochecktypescript\@@typescriptthree\typescriptthree\redostarttypescriptthree}
+
+\long\def\redostarttypescriptone
+  {\doifnextoptionalelse\dostarttypescripttwo\dostarttypescriptyes}
+
+\long\def\redostarttypescripttwo
+  {\doifnextoptionalelse\dostarttypescriptthree\dostarttypescriptyes}
+
+\long\def\redostarttypescriptthree
+  {\dostarttypescriptyes}
+
+\def\doprocesstypescript
+  {\pushmacro\fontclass}
+
+\def\stoptypescript
+  {\popmacro\fontclass}
+
+\long\def\noprocesstypescript#1\stoptypescript
+  {}
+
+\let\typescriptmatch\empty
+
+\def\dochecktypescript#1#2#3[#4]% script use value next
+  {\donefalse
+   \def\@@typescriptcheck{#4}%
+   \ifx\@@typescriptcheck\empty % no longer needed / met
+     \ifcase\typescriptmethod\or\donetrue\fi
+   \else\ifx#1\typescript@@all
+     \donetrue
+   \else\ifx\@@typescriptcheck\typescript@@all
+     \donetrue
+   \else\ifx#1\@@typescriptcheck % saves 10% trace so probably faster too
+     \donetrue
+     \let#2\@@typescriptcheck
+   \else
+     \normalexpanded{\noexpand\doifcommonelse{\@@typescriptcheck}{#1}}\donetrue\donefalse
+     \ifdone
+       \let#2\commalistelement
+     \fi
+   \fi\fi\fi\fi
+   \ifdone
+     \edef\typescriptmatch{\typescriptmatch\space[#4]}%
+     \expandafter#3%
+   \else
+     \expandafter\noprocesstypescript
+   \fi}
+
+%D Yet another speed up: when issued inside typescript, the call
+%D
+%D \starttyping
+%D \quittypescriptscanning
+%D \stoptyping
+%D
+%D quits further loading. For an example, see type-exa:
+
+\newconditional\quittingtypescript \setfalse\quittingtypescript
+
+\def\quittypescriptscanning{\settrue\quittingtypescript}
+
+% status
+%
+% 1 loaded
+% 2 reported
+% 3 preloaded
+
+% flags ipv \c!state, more flag values
+
+\def\dopreloadmapfile#1%
+  {\splitfiletype{#1}%
+   \writestatus\m!fonts{assuming map file: \splitoffname}%
+   \setxvalue{\splitoffname \c!state}{3}%
+   \doglobal\removefromcommalist\splitoffname\allfontmapsfiles}
+
+\def\preloadmapfile[#1]{\processcommacommand[#1]\dopreloadmapfile}
+\def\loadmapfile   [#1]{\processcommacommand[#1]\loadthemapfile}
+\def\unloadmapfile [#1]{\processcommacommand[#1]\unloadthemapfile}
+
+% too soon, no driver known, \ifproductionrun \loadallfontmapfiles \fi
+
+\def\loadthemapfile#1%
+  {\splitfiletype{#1}%
+   \doglobal\addtocommalist\splitoffname\allfontmapsfiles}
+
+\def\unloadthemapfile#1%
+  {\splitfiletype{#1}%
+   \doglobal\removefromcommalist\splitoffname\allfontmapsfiles}
+
+\let\usedmapfile            \gobbletwoarguments
+\let\usedmapline            \gobbletwoarguments
+\let\doregisterloadedmapfile\gobbleoneargument
+
+\def\doloadfontmapfile#1%
+  {\ifcsname#1\c!state\endcsname\else
+     \writestatus\m!fonts{using map file: #1}%
+     \doregisterloadedmapfile{#1}%
+     \doloadmapfile{=}{#1.\f!fontmapextension}% +/add =/replace -/remove
+     \setxvalue{#1\c!state}{1}%
+   \fi}
+
+\def\doreportfontmapfile#1%
+  {\ifcsname#1\c!state\endcsname\else
+     \writestatus\m!fonts{needs map file: #1}%
+     \setxvalue{#1\c!state}{2}%
+    \fi}
+
+\def\loadallfontmapfiles
+  {%\message{[\allfontmapsfiles]}%
+   \ifconditional\resettingmapfile
+     \writestatus\m!fonts{resetting map file list}%
+     \doresetmapfilelist
+     \global\setfalse\resettingmapfile
+   \fi
+   \ifx\allfontmapsfiles\empty \else
+     \ifautoloadmapfiles
+       \processcommacommand[\allfontmapsfiles]\doloadfontmapfile
+     \else
+       \processcommacommand[\allfontmapsfiles]\doreportfontmapfile
+     \fi
+     \forgetmapfiles
+   \fi}
+
+\def\loadmapline
+  {\dodoubleempty\dodoloadmapline}
+
+\def\dodoloadmapline[#1][#2]%
+  {\loadallfontmapfiles % ! ! !
+   \ifsecondargument
+     \immediatewriteutilitycommand{\usedmapline{#1}{#2}}%
+     \doloadmapline{#1}{#2}% special
+   \else
+     \loadmapline[=][#1]%
+     %\immediatewriteutilitycommand{\usedmapline{=}{#2}}%
+     %\doloadmapline{=}{#1}% special
+   \fi}
+
+% since this is driver dependent, and since we may set map files
+% before an output format is defined, we need to postpone it; we
+% cannot use starttext as hook because an output switch can be part
+% of a style; an alternative is to no longer permit driver switching
+% after the first \starttext, but that will break compatibility
+% because \startcomponent ... \environment ... is pretty legal.
+
+% the map directives need to end up in the right place in the stream
+
+% hm, the timing of when pdftex needs the map file info keeps changing;
+% it's really time to move to map line support
+
+% \appendtoks \loadallfontmapfiles \to \everyPDFximage
+% \appendtoks \loadallfontmapfiles \to \everystarttext
+% \appendtoks \loadallfontmapfiles \to \everybeforepagebody
+
+\everybeforeshipout \expandafter
+  {\expandafter\appendtoks
+   \expandafter\loadallfontmapfiles
+   \expandafter\to
+   \expandafter\pageboundsettings
+   \the\everybeforeshipout}
+
+\newif\ifautoloadmapfiles
+
+\let\allfontmapsfiles\empty
+
+\def\forgetmapfiles
+  {\globallet\allfontmapsfiles\empty}
+
+\newconditional\resettingmapfile
+
+\def\resetmapfiles
+  {\global\settrue\resettingmapfile}
+
+\def\disablemapfiles
+  {\resetmapfiles
+   \forgetmapfiles}
+
+%D A handy shortcut:
+
+% \definetypescriptprefix[serif][Serif]
+% \definetypescriptprefix[sans] [Sans]
+% \definetypescriptprefix[mono] [Mono]
+%
+%\starttypescript [serif,sans,mono] [handling,hanging,hz] [pure,normal,hz,quality]
+%  \setupfontsynonym [\typescriptprefix\typescriptone] [handling=\typescriptthree]
+% \stoptypescript
+
+\def\definetypescriptprefix
+  {\dodoubleargument\dodefinetypescriptprefix}
+
+\def\dodefinetypescriptprefix[#1][#2]%
+  {\setgvalue{\??ts::#1}{#2}} % made global
+
+% without testing:
+%
+% \def\typescriptprefix#1%
+%   {\csname\??ts::#1\endcsname}
+%
+% with testing:
+
+\def\typescriptprefix#1%
+  {\executeifdefined{\??ts::#1}{#1}}
+
+% defining typefaces:
+%
+% \definetypeface [#1:joke] [#2:rm]
+% \definetypeface [#1:joke] [#2:rm] [#3:...]
+% \definetypeface [#1:joke] [#2:rm] [#3:serif] [#4:lucida] [#5:size] [#6:...]
+
+\def\definetypeface
+  {\dosixtupleargument\dodefinetypeface}
+
+\def\tsvar#1#2% \executeifdefined{\??ts#1}{#2}
+  {\@EA\ifx\csname\??ts#1\endcsname\empty
+     #2%
+   \else
+     \csname\??ts#1\endcsname
+   \fi}
+
+% #1=main #2=rm #3=serif #4=fontname #5=size #6=settings
+
+\def\typefaceencoding{\defaultencoding}
+
+% we can use \rawgetparameters or \rawgeteparameters
+
+\ifx\mkdodefinetypeface\undefined
+    \let\mkdodefinetypeface\gobblefivearguments
+\fi
+
+\def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
+  {\dododefinetypeface[#1][#2]%
+   \iffifthargument % sixth is optional
+     % we need to expand since in #6 there can be a \typescripttwo
+     \normalexpanded{\noexpand\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,\s!features=,\s!fallbacks=,\s!text=,#6]}% \geteparameters
+     \pushmacro\relativefontsize
+     \pushmacro\typefaceencoding
+     \pushmacro\fontclass
+     \let\relativefontsize\@@tsrscale
+     \let\typefaceencoding\@@tsencoding
+     \setcurrentfontclass{#1}%
+     \letvalue{\fontclass\s!features }\@@tsfeatures  % new per 16/6/2007
+     \letvalue{\fontclass\s!fallbacks}\@@tsfallbacks % new per 12/10/2008
+     \saverelativefontsize{#2}\relativefontsize % fall back
+     \savemathtextstyle\@@tstext % math text style (new per 28/4/2006)
+     \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4] / \typefaceencoding}\fi
+%    \usetypescript[#3,\t!map][#4][\t!name,\t!default,\typefaceencoding,\t!special]% map is needed for backward cmp
+     \usetypescript[#3][#4][\t!name,\t!default,\typefaceencoding]% typefaceencoding=empty forces [#3][#4]
+     \usetypescript[#3][#5][\t!size]%
+     \popmacro\fontclass
+     \popmacro\typefaceencoding
+     \popmacro\relativefontsize
+   \else\iffourthargument
+     \definetypeface[#1][#2][#3][#4][\s!default]%
+   \else\ifthirdargument
+     \getparameters[\??tf#1#2][#3]%
+   \fi\fi\fi}
+
+\def\dododefinetypeface[#1][#2]% saveguard against redefinition
+  {\doifsomething{#1}
+     {\ifcsname\??tf#1\s!default\endcsname \else
+        \registerfontclass{#1}%
+        \setgvalue{\??tf#1\s!default}{#2}%
+      \fi
+      \ifcsname#1\endcsname \else
+        \unexpanded\setgvalue{#1}{\switchtotypeface[#1][#2]}%
+      \fi}}
+
+\def\setuptypeface% [class] [settings]
+  {\doquadrupleempty\doswitchtotypeface[\setupbodyfont][\fontclass]}
+
+\unexpanded\def\switchtotypeface% [class] [settings]
+  {\doquadrupleempty\doswitchtotypeface[\switchtobodyfont][\globalfontclass]}
+
+\def\doswitchtotypeface[#1][#2][#3][#4]%
+  {%\doifinsetelse{\s!default,\v!reset}{#3}
+   %  {\setcurrentfontclass\empty}
+   %  {\setcurrentfontclass{#3}}%
+   \setcurrentfontclass{#3}%
+   \let\globalfontclass#2%
+   \iffourthargument
+     #1[#4]%
+   \else\ifx\fontclass\empty
+     #1[\c!rm]%
+   \else
+     \doifdefinedelse{\??tf\fontclass\s!default}
+       {#1[\getvalue{\??tf\fontclass\s!default}]}
+       {#1[\c!rm]}%
+   \fi \fi
+   \ifmmode\mr\else\tf\fi} % needed ?
+
+\def\usetypefile[#1]% recurses on path !
+  {\readfile{\f!typeprefix#1}\donothing\donothing}
+
+%D For Taco:
+%D
+%D \starttyping
+%D \inherittypeface[palatino][rm][postscript]
+%D \inherittypeface[palatino][rm][\fontclass]
+%D \inherittypeface[palatino][rm] % == \fontclass
+%D \inherittypeface[palatino] % == [rm,ss,tt,mm]
+%D \stoptyping
+
+\def\inherittypeface
+  {\dotripleempty\doinherittypeface}
+
+\def\doinherittypeface[#1][#2][#3]%
+  {\doifelsenothing{#2}
+     {\doinherittypeface[#1][\c!rm,\c!ss,\c!tt,\c!mm][\fontclass]}
+     {\doifnot{#1}{#3}
+        {\def\docommand##1{\setevalue{#1-##1}{#3}}%
+         \processcommalist[#2]\docommand}}}
+
+%D This hook sinto the font mechanism with:
+
+\def\checkfontclass#1%
+  {\edef\fontclass{\executeifdefined{\fontclass-#1}{\fontclass}}}
+
+%D For backward compatibility we reimplement the font file
+%D loading macro.
+
+\ifx\normaldoreadfontdefinitionfile\undefined
+  \let\normaldoreadfontdefinitionfile\doreadfontdefinitionfile
+\fi
+
+\def\doreadfontdefinitionfile#1#2% #1 = set/switch state
+  {\ifcsname\??tf#2\c!default\endcsname
+     \ifcase#1\relax
+       \switchtotypeface[#2]%
+     \else
+       \setuptypeface[#2]%
+     \fi
+   \else
+     \pushmacro\starttypescript
+     \scratchtoks\emptytoks
+     % locate downward compatibility definitions, one argument !
+     \long\def\starttypescript[##1]##2\stoptypescript
+       {\doif{##1}{#2}{\scratchtoks{##2}}}
+     \startreadingfile
+     \readfile{\f!typeprefix pre}\donothing\donothing
+     \stopreadingfile
+     \popmacro\starttypescript
+     \the\scratchtoks
+   \fi}
+
+\fetchruntimecommand \typetypescript {\f!typeprefix\s!run}
+
+\protect \endinput

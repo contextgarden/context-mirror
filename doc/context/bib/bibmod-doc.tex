@@ -6,7 +6,6 @@
 
 \usemodule[bib,set-11,mod-01]
 
-\setuppublications[alternative=num]
 
 \startXMLmapping[zero]
 \processXMLfilegrouped{t-bib.xml}
@@ -60,7 +59,7 @@
 The bibliographic module (\type{t-bib.tex}) takes care of references
 to publications and the typesetting of publication lists, as well as
 providing an interface between \BIBTEX and \CONTEXT. This manual
-documents version 2006.09.15.
+documents version 2009.03.02.
 
 The bibliographic subsystem consists of the main module
 \type{t-bib.tex}; four \BIBTEX\ styles (\type{cont-xx.bst}); and a set
@@ -303,6 +302,7 @@ their own options:
 \starttabulate[|l|p|]
 \NC andtext  \NC separation between two authors (for \type{\cite[author]} styles)\NC \NR 
 \NC otherstext  \NC text used for `et.al.' (for \type{\cite[author]} styles)\NC \NR 
+\NC namesep   \NC the separation between consecutive authors (for \type{\cite[author]} styles)\NC \NR 
 \NC pubsep       \NC separator between publication references in a 
                   \type{\cite} command.\NC \NR 
 \NC lastpubsep   \NC same, but for the 
@@ -359,7 +359,7 @@ and select the parts that are needed for the current article.
 
 Starting with version 2006.08.08, the module registers \BIBTEX\ as a
 program to be run by texexec, so you no longer need to run \BIBTEX\ by
-hand.
+hand (and in MkIV, the module runs \BIBTEX\ on the fly using Lua).
 
 Still, you may want to create the \type{\jobname.bbl} yourself. The
 \type{.bbl} syntax is explained below. There is no default

@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=page-mul, % was: core-mul
 %D        version=1998.03.15,
-%D          title=\CONTEXT\ OTR Macros,
+%D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Multi Column Output,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context OTR Macros / Simple Multi Column}
+\writestatus{loading}{ConTeXt Page Macros / Simple Multi Column}
 
 %D This module is mostly a copy from the original multi column
 %D routine as implemented in \type {core-mul}. When the main
@@ -464,7 +464,7 @@
    \global\output{\continuousmulticolumnsout}%
    \setcolumnfloats
    \dohandleallcolumns
-     {\global\setbox\currenttopcolumnbox\box\voidb@x}%
+     {\global\setbox\currenttopcolumnbox\emptybox}%
    \checkbegincolumnfootnotes
    \activateotr{MUL}{ONE}% todo ! ! ! !
    \let\sethsize\setcolumnhsize
@@ -642,7 +642,7 @@
      {\ifdim-\ht\currenttopcolumnbox<\scratchdimen
         \scratchdimen-\ht\currenttopcolumnbox
       \fi
-      \global\setbox\currenttopcolumnbox\box\voidb@x}%
+      \global\setbox\currenttopcolumnbox\emptybox}%
    \advance\scratchdimen \ht\columnpagebox
    \setbox\scratchbox\hbox to \columntextwidth
      {\vrule

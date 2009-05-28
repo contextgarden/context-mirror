@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=page-mar, % moved here from main-001
 %D        version=1997.03.31,
-%D          title=\CONTEXT\ Core Macros,
+%D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Marginal Things,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -16,7 +16,7 @@
 %D extended en enhanced. Therefore it's always good to watch
 %D out for unexpected side effects.
 
-\writestatus{loading}{Context Core Macros / Maginal Things}
+\writestatus{loading}{ConTeXt Page Macros / Maginal Things}
 
 \unprotect
 
@@ -599,7 +599,7 @@
 % \def\dodoinmargin[#1][#2][#3][#4][#5]#6%
 %   {\bgroup
 %    \forgetall % otherwise sidefloat problems, added 2005/07/20, maybe dangerous
-%    \postponefootnotes % group is (somehow) needed
+%    \postponenotes % group is (somehow) needed
 %    \doifinsetelse\v!low{#4}
 %      {\chardef\margincontentdisplacement\plusone}
 %      {\chardef\margincontentdisplacement\zerocount}%
@@ -645,7 +645,7 @@
    \chardef\marginpagecheckmethod \executeifdefined{\??im\currentmargincontent\c!splitmethod}\plusone
    % so far
    \forgetall % otherwise sidefloat problems, added 2005/07/20, maybe dangerous
-   \postponefootnotes % group is (somehow) needed
+   \postponenotes % group is (somehow) needed
    \doifinsetelse\v!low{#4}
      {\chardef\margincontentdisplacement\plusone}
      {\chardef\margincontentdisplacement\zerocount}%
@@ -693,7 +693,7 @@
 \def\marginword {\margintext}
 \def\margintitle{\margintext} % txt mark as well
 
-\newtoks\collectedmargintexts
+\newtoks\collectedmargintexts % so .. delayed!
 \chardef\margintextcollected  \zerocount
 
 \def\domargincontent[#1][#2]#3% we used to check for #2/#1 being number, no longer now

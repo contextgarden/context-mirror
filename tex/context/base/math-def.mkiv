@@ -1,0 +1,338 @@
+%D \module
+%D   [       file=math-tex,
+%D        version=2001.04.12,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Definitions,
+%D         author={Hans Hagen, Taco Hoekwater \& Aditya Mahajan},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Definitions}
+
+\unprotect
+
+\ifx\mrfam\undefined \chardef\mrfam\plusone \fi
+
+\startluacode
+    mathematics.define()
+    mathematics.register_xml_entities()
+\stopluacode
+
+% special .. todo
+
+\mathcode`\ ="8000 \mathcode`\_="8000 \mathcode`\'="8000
+
+% will be attributes
+
+\setfalse \automathpunctuation
+
+\def\enablemathpunctuation {\settrue \automathpunctuation}
+\def\disablemathpunctuation{\setfalse\automathpunctuation}
+
+\def\v!autopunctuation{autopunctuation}
+
+\appendtoks
+    \doifelse{\mathematicsparameter\v!autopunctuation}\v!yes\enablemathpunctuation\disablemathpunctuation
+\to \everysetupmathematics
+
+\appendtoks
+    \ifconditional\automathpunctuation\dosetattribute{mathpunc}\plusone\fi
+\to \everymathematics
+
+\setupmathematics[\v!autopunctuation=\v!yes]
+
+% will go to math-ext
+
+\Umathchardef\braceld=0 \mrfam "FF07A
+\Umathchardef\bracerd=0 \mrfam "FF07B
+\Umathchardef\bracelu=0 \mrfam "FF07C
+\Umathchardef\braceru=0 \mrfam "FF07D
+
+% ctx specific
+
+\def\|{|} % still letter
+
+% The \mfunction macro is an alternative for \hbox with a
+% controlable font switch.
+
+\definemathcommand [arccos]  [nolop] {\mfunction{arccos}}
+\definemathcommand [arcsin]  [nolop] {\mfunction{arcsin}}
+\definemathcommand [arctan]  [nolop] {\mfunction{arctan}}
+\definemathcommand [arg]     [nolop] {\mfunction{arg}}
+\definemathcommand [cosh]    [nolop] {\mfunction{cosh}}
+\definemathcommand [cos]     [nolop] {\mfunction{cos}}
+\definemathcommand [coth]    [nolop] {\mfunction{coth}}
+\definemathcommand [cot]     [nolop] {\mfunction{cot}}
+\definemathcommand [csc]     [nolop] {\mfunction{csc}}
+\definemathcommand [deg]     [nolop] {\mfunction{deg}}
+\definemathcommand [det]     [limop] {\mfunction{det}}
+\definemathcommand [dim]     [nolop] {\mfunction{dim}}
+\definemathcommand [exp]     [nolop] {\mfunction{exp}}
+\definemathcommand [gcd]     [limop] {\mfunction{gcd}}
+\definemathcommand [hom]     [nolop] {\mfunction{hom}}
+\definemathcommand [inf]     [limop] {\mfunction{inf}}
+\definemathcommand [injlim]  [limop] {\mfunction{inj\,lim}}
+\definemathcommand [ker]     [nolop] {\mfunction{ker}}
+\definemathcommand [lg]      [nolop] {\mfunction{lg}}
+\definemathcommand [liminf]  [limop] {\mfunction{lim\,inf}}
+\definemathcommand [limsup]  [limop] {\mfunction{lim\,sup}}
+\definemathcommand [lim]     [limop] {\mfunction{lim}}
+\definemathcommand [ln]      [nolop] {\mfunction{ln}}
+\definemathcommand [log]     [nolop] {\mfunction{log}}
+\definemathcommand [median]  [limop] {\mfunction{median}}
+\definemathcommand [max]     [limop] {\mfunction{max}}
+\definemathcommand [min]     [limop] {\mfunction{min}}
+\definemathcommand [mod]     [limop] {\mfunction{mod}}
+\definemathcommand [div]     [limop] {\mfunction{div}}
+\definemathcommand [projlim] [limop] {\mfunction{proj\,lim}}
+\definemathcommand [Pr]      [limop] {\mfunction{Pr}}
+\definemathcommand [sec]     [nolop] {\mfunction{sec}}
+\definemathcommand [sinh]    [nolop] {\mfunction{sinh}}
+\definemathcommand [sin]     [nolop] {\mfunction{sin}}
+\definemathcommand [sup]     [limop] {\mfunction{sup}}
+\definemathcommand [tanh]    [nolop] {\mfunction{tanh}}
+\definemathcommand [tan]     [nolop] {\mfunction{tan}}
+
+\definemathcommand [integers]      {{\mathblackboard Z}}
+\definemathcommand [reals]         {{\mathblackboard R}}
+\definemathcommand [rationals]     {{\mathblackboard Q}}
+\definemathcommand [naturalnumbers]{{\mathblackboard N}}
+\definemathcommand [complexes]     {{\mathblackboard C}}
+\definemathcommand [primes]        {{\mathblackboard P}}
+
+% using attributes
+
+\def\choosemathbig#1#2{\dosetattribute{mathsize}{#1}\left#2\right.\doresetattribute{mathsize}}
+
+\definemathcommand [big]  {\choosemathbig\plusone  }
+\definemathcommand [Big]  {\choosemathbig\plustwo  }
+\definemathcommand [bigg] {\choosemathbig\plusthree}
+\definemathcommand [Bigg] {\choosemathbig\plusfour }
+
+\definemathcommand [bigl]  [open]  [one] {\big}
+\definemathcommand [bigm]  [rel]   [one] {\big}
+\definemathcommand [bigr]  [close] [one] {\big}
+\definemathcommand [Bigl]  [open]  [one] {\Big}
+\definemathcommand [Bigm]  [rel]   [one] {\Big}
+\definemathcommand [Bigr]  [close] [one] {\Big}
+\definemathcommand [biggl] [open]  [one] {\bigg}
+\definemathcommand [biggm] [rel]   [one] {\bigg}
+\definemathcommand [biggr] [close] [one] {\bigg}
+\definemathcommand [Biggl] [open]  [one] {\Bigg}
+\definemathcommand [Biggm] [rel]   [one] {\Bigg}
+\definemathcommand [Biggr] [close] [one] {\Bigg}
+
+% special
+
+%AM: Optimize this! Add similar options for sums.
+
+\def\setoperatorlimits#1#2% operator limits
+  {\savenormalmeaning{#1}%
+   \def#1{\getvalue{normal\strippedcsname#1}#2}}
+
+\setoperatorlimits\int              \intlimits
+\setoperatorlimits\iint             \intlimits
+\setoperatorlimits\iiint            \intlimits
+\setoperatorlimits\oint             \intlimits
+\setoperatorlimits\oiint            \intlimits
+\setoperatorlimits\oiiint           \intlimits
+\setoperatorlimits\intclockwise     \intlimits
+\setoperatorlimits\ointclockwise    \intlimits
+\setoperatorlimits\ointctrclockwise \intlimits
+
+%D This is a temporary hack until we figure out how to do this correctly.
+
+\unexpanded\def\implies  {\mathrel{\;\Longrightarrow\;}}
+\unexpanded\def\impliedby{\mathrel{\;\Longleftarrow\;}}
+\unexpanded\def\And      {\mathrel{\;\internalAnd\;}}
+\unexpanded\def\iff      {\;\Longleftrightarrow\;}
+
+% todo: virtual in math-vfu
+
+% \definemathcommand [mapsto]         {\mapstochar\rightarrow}
+% \definemathcommand [hookrightarrow] {\lhook\joinrel\rightarrow}
+% \definemathcommand [hookleftarrow]  {\leftarrow\joinrel\rhook}
+% \definemathcommand [bowtie]         {\mathrel\triangleright\joinrel\mathrel\triangleleft}
+% \definemathcommand [models]         {\mathrel|\joinrel=}
+% \definemathcommand [iff]            {\;\Longleftrightarrow\;}
+
+% hm
+
+% ldots = 2026
+% vdots = 22EE
+% cdots = 22EF
+% ddots = 22F1
+% udots = 22F0
+
+% \def\PLAINldots{\ldotp\ldotp\ldotp}
+% \def\PLAINcdots{\cdotp\cdotp\cdotp}
+
+% \def\PLAINvdots
+%   {\vbox{\baselineskip.4\bodyfontsize\lineskiplimit\zeropoint\kern.6\bodyfontsize\hbox{.}\hbox{.}\hbox{.}}}
+
+% \def\PLAINddots
+%   {\mkern1mu%
+%    \raise.7\bodyfontsize\vbox{\kern.7\bodyfontsize\hbox{.}}%
+%    \mkern2mu%
+%    \raise.4\bodyfontsize\relax\hbox{.}%
+%    \mkern2mu%
+%    \raise.1\bodyfontsize\hbox{.}%
+%    \mkern1mu}
+
+% \definemathcommand [ldots] [inner]   {\PLAINldots}
+% \definemathcommand [cdots] [inner]   {\PLAINcdots}
+% \definemathcommand [vdots] [nothing] {\PLAINvdots}
+% \definemathcommand [ddots] [inner]   {\PLAINddots}
+
+%D \starttyping
+%D $\sqrt[3]{10}$
+%D \stoptyping
+
+\def\rootradical{\Uroot 0 "221A } % can be done in char-def
+
+\def\root#1\of{\rootradical{#1}} % #2
+
+\unexpanded\def\sqrt{\doifnextoptionalelse\rootwithdegree\rootwithoutdegree}
+
+\def\rootwithdegree   [#1]{\rootradical{#1}}
+\def\rootwithoutdegree    {\rootradical  {}}
+
+\def\PLAINmatrix#1%
+  {\null\,\vcenter{\normalbaselines\mathsurround\zeropoint
+   \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
+   \mathstrut\crcr\noalign{\kern-\baselineskip}
+   #1\crcr\mathstrut\crcr\noalign{\kern-\baselineskip}}}\,}
+
+\definemathcommand [mathstrut] {\vphantom{(}}
+\definemathcommand [joinrel]   {\mathrel{\mkern-3mu}}
+
+% \definemathcommand [matrix]    {\PLAINmatrix}
+% \definemathcommand [over]      {\normalover} % hack, to do
+
+\unexpanded\def\{{\mathortext\lbrace\letterleftbrace }
+\unexpanded\def\}{\mathortext\rbrace\letterrightbrace}
+
+%D The following colon related definitions are provided by Aditya
+%D Mahajan who derived them from \type {mathtools.sty} and \type
+%D {colonequals.sty}.
+
+%D \macros
+%D   {centercolon, colonminus, minuscolon, colonequals, equalscolon,
+%D    colonapprox, approxcolon, colonsim, simcolon, coloncolon,
+%D    coloncolonminus, minuscoloncolon, coloncolonequals,
+%D    equalscoloncolon, coloncolonapprox, approxcoloncolon,
+%D    colonsim, simcoloncolon}
+%D
+%D In $a := b$ the colon is not vertically centered with the equal
+%D to. Also the distance between colon and equal to is a bit large.
+%D So, we define a vertically centered colon \tex {centercolon} and
+%D a few macros for colon and double colon relation symbols.
+%D
+%D \startlines
+%D \formula {A \centercolon       B}
+%D \formula {A \colonminus        B}
+%D \formula {A \minuscolon        B}
+%D \formula {A \colonequals       B}
+%D \formula {A \equalscolon       B}
+%D \formula {A \colonapprox       B}
+%D \formula {A \approxcolon       B}
+%D \formula {A \colonsim          B}
+%D \formula {A \simcolon          B}
+%D \formula {A \coloncolon        B}
+%D \formula {A \coloncolonminus   B}
+%D \formula {A \minuscoloncolon   B}
+%D \formula {A \coloncolonequals  B}
+%D \formula {A \equalscoloncolon  B}
+%D \formula {A \coloncolonapprox  B}
+%D \formula {A \approxcoloncolon  B}
+%D \formula {A \colonsim          B}
+%D \formula {A \simcoloncolon     B}
+%D \stoplines
+
+%D The next macros take care of the space between the colon and the
+%D relation symbol.
+
+\definemathcommand  [colonsep]        {\mkern-1.2mu}
+\definemathcommand  [doublecolonsep]  {\mkern-0.9mu}
+
+%D The next macro vertically centeres its contents.
+
+\def\@center@math#1%
+  {\vcenter{\hbox{$\mathsurround\zeropoint#1$}}}
+
+\def\@center@colon
+  {\mathpalette\@center@math{\colon}}
+
+%D Now we define all the colon relations.
+
+\definemathcommand [centercolon]      [rel] {\@center@colon}
+\definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}
+\definemathcommand [minuscolon]       [rel] {\mathrel{-}\colonsep\centercolon}
+\definemathcommand [colonequals]      [rel] {\centercolon\colonsep=}
+\definemathcommand [equalscolon]      [rel] {=\centercolon\colonsep}
+\definemathcommand [colonapprox]      [rel] {\centercolon\colonsep\approx}
+\definemathcommand [approxcolon]      [rel] {\approx\centercolon\colonsep}
+\definemathcommand [colonsim]         [rel] {\centercolon\colonsep\sim}
+\definemathcommand [simcolon]         [rel] {\sim\centercolon\colonsep}
+
+\definemathcommand [coloncolon]       [rel] {\centercolon\doublecolonsep\centercolon}
+\definemathcommand [coloncolonminus]  [rel] {\coloncolon\colonsep\mathrel{-}}
+\definemathcommand [minuscoloncolon]  [rel] {\mathrel{-}\colonsep\coloncolon}
+\definemathcommand [coloncolonequals] [rel] {\coloncolon\colonsep=}
+\definemathcommand [equalscoloncolon] [rel] {=\coloncolon\colonsep}
+\definemathcommand [coloncolonapprox] [rel] {\coloncolon\colonsep\approx}
+\definemathcommand [approxcoloncolon] [rel] {\approx\coloncolon\colonsep}
+\definemathcommand [colonsim]         [rel] {\coloncolon\colonsep\sim}
+\definemathcommand [simcoloncolon]    [rel] {\sim\coloncolon\colonsep}
+
+%D Goodies. We might move this elsewhere.
+
+\def\underleftarrow #1{\mathop{\Uunderdelimiter 0 "2190 {#1}}}
+\def\overleftarrow  #1{\mathop{\Uoverdelimiter  0 "2190 {#1}}}
+\def\underrightarrow#1{\mathop{\Uunderdelimiter 0 "2192 {#1}}}
+\def\overrightarrow #1{\mathop{\Uoverdelimiter  0 "2192 {#1}}}
+
+% todo: \Udelimiterover, \Udelimiterunder
+
+\def\normaldoublebrace {\Umathaccents 0 0 "23DE 0 0 "23DF }
+\def\normaldoubleparent{\Umathaccents 0 0 "23DC 0 0 "23DD }
+
+\let\normaloverbrace      \overbrace
+\let\normalunderbrace     \underbrace
+\let\normaloverparent     \overparent
+\let\normalunderparent    \underparent
+\let\normalunderleftarrow \underleftarrow
+\let\normaloverleftarrow  \overleftarrow
+\let\normalunderrightarrow\underrightarrow
+\let\normaloverrightarrow \overrightarrow
+
+\unexpanded\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
+\unexpanded\def\stackrel        #1#2{\mathrel{\mathop{#2}\limits^{#1}}}
+
+\unexpanded\def\overbrace      {\mathopwithlimits\normaloverbrace      }
+\unexpanded\def\underbrace     {\mathopwithlimits\normalunderbrace     }
+\unexpanded\def\doublebrace    {\mathopwithlimits\normaldoublebrace    }
+\unexpanded\def\overparent     {\mathopwithlimits\normaloverparent     }
+\unexpanded\def\underparent    {\mathopwithlimits\normalunderparent    }
+\unexpanded\def\doubleparent   {\mathopwithlimits\normaldoubleparent   }
+\unexpanded\def\underleftarrow {\mathopwithlimits\normalunderleftarrow }
+\unexpanded\def\overleftarrow  {\mathopwithlimits\normaloverleftarrow  }
+\unexpanded\def\underrightarrow{\mathopwithlimits\normalunderrightarrow}
+\unexpanded\def\overrightarrow {\mathopwithlimits\normaloverrightarrow }
+
+% todo mathclass=punctuation ord
+
+% \Umathcode"02C="6 "0 "02C
+% \Umathcode"02E="0 "0 "02E
+
+% tricky .. todo
+
+\appendtoks
+    \def\over{\primitive\over}%
+\to \everymathematics
+
+\protect \endinput

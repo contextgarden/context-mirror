@@ -12,14 +12,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx\directlua\undefined
-    \ifx\psaxes\undefined \ifx\beginpicture\undefined
-        \usemodule[pictex]
-    \fi \fi
-\else
-    \usemodule[pictex]
-\fi
-
-\input ppchtex.tex \relax
+\loadmarkfile{m-chemic}
 
 \endinput

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['char-cmp'] = {
     license   = "see context related readme files"
 }
 
+local utf = unicode.utf8
+
 characters            = characters            or { }
 characters.uncomposed = characters.uncomposed or { }
 

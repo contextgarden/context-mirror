@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Page Macros / Layers}
+\writestatus{loading}{ConTeXt Page Macros / Layers}
 
 %D This module is now etex dependent.
 
@@ -138,8 +138,8 @@
   {\edef\currentlayerwidth {\thelayerwidth {#2#1}}%
    \edef\currentlayerheight{\thelayerheight{#2#1}}}
 
-\def\thelayerwidth #1{\the\wd\executeifdefined{\@@layerbox#1}\voidbox}
-\def\thelayerheight#1{\the\ht\executeifdefined{\@@layerbox#1}\voidbox}
+\def\thelayerwidth #1{\the\wd\executeifdefined{\@@layerbox#1}\emptybox}
+\def\thelayerheight#1{\the\ht\executeifdefined{\@@layerbox#1}\emptybox}
 
 \def\setlayer
   {\dotripleempty\dosetlayer}
@@ -620,7 +620,7 @@
 \newskip\xdimension \newskip\ydimension
 \newskip\xoffset    \newskip\yoffset
 
-\newbox\positionbox
+% already defined \newbox\positionbox
 
 \def\startpositioning
   {\bgroup

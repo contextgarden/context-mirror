@@ -15,7 +15,7 @@
 %D system constants. By doing so we save lots of memory while
 %D at the same time we prevent ourself from typing errors.
 
-\writestatus{loading}{Context Multilingual Macros / System}
+\writestatus{loading}{ConTeXt Multilingual Macros / System}
 
 \unprotect
 
@@ -39,7 +39,7 @@
 \definesystemconstant {arabic}       \definesystemconstant {ar}
 \definesystemconstant {catalan}      \definesystemconstant {ca}
 \definesystemconstant {chinese}      \definesystemconstant {cn}
-\definesystemconstant {croation}     \definesystemconstant {hr}
+\definesystemconstant {croatian}     \definesystemconstant {hr}
 \definesystemconstant {czech}        \definesystemconstant {cs}  \definesystemconstant {cz}
 \definesystemconstant {danish}       \definesystemconstant {da}
 \definesystemconstant {dutch}        \definesystemconstant {nl}
@@ -116,9 +116,15 @@
 \definemessageconstant {textblocks}
 \definemessageconstant {verbatims}
 \definemessageconstant {versions}
+\definemessageconstant {metapost}
+\definemessageconstant {chemicals}
 
 %D Net come some \CONTEXT\ constants, used in the definition
 %D of private commands:
+
+\definesystemconstant  {tex}
+\definesystemconstant  {xml}
+\definesystemconstant  {lua}
 
 \definesystemconstant  {next}
 \definesystemconstant  {pickup}
@@ -144,6 +150,12 @@
 \definesystemconstant  {section} \let\v!sectionlevel\s!section % for old times sake
 \definesystemconstant  {handler}
 \definesystemconstant  {counter}
+\definesystemconstant  {single}
+\definesystemconstant  {multi}
+
+\definesystemconstant  {hasnumber}
+\definesystemconstant  {hastitle}
+\definesystemconstant  {hascaption}
 
 %D A more experienced \TEX\ user will recognize the next four
 %D constants. We need these because font-definitions are
@@ -184,6 +196,10 @@
 \definesystemconstant  {black}
 \definesystemconstant  {white}
 
+\definesystemconstant  {format}
+\definesystemconstant  {extensions}
+\definesystemconstant  {initializations}
+
 %D Just to be complete we define the standard \TEX\ units.
 
 \definesystemconstant  {cm}
@@ -210,8 +226,11 @@
 \definesystemconstant  {see}
 \definesystemconstant  {from}
 \definesystemconstant  {to}
-\definesystemconstant  {page}
 \definesystemconstant  {line}
+\definesystemconstant  {page}
+\definesystemconstant  {realpage}
+\definesystemconstant  {userpage}
+\definesystemconstant  {subpage}
 
 \definesystemconstant  {synonym}
 
@@ -332,22 +351,11 @@
 \def\!!twelvepoint       {12pt}
 \def\!!fourteenpointfour {14.4pt}
 
-\newdimen \onepoint       \onepoint     = 1pt
-\newdimen \onebasepoint   \onebasepoint = 1bp
-\chardef  \scaledpoint                  = 1
-
 \let\onerealpoint\onepoint % needed for latex
 
-\newcount\medcard \medcard\!!medcard % used in font module
-\newcount\maxcard \maxcard\!!maxcard % used in font module
-
-\ifx\thousandpoint\undefined \newdimen\thousandpoint \fi
-
-\thousandpoint=1000pt
-
-%D Another optimization is:
-
-\let\points\onepoint
+% D Another optimization is:
+%
+% \let\points\onepoint
 
 %D A rough test is:
 %D
@@ -402,6 +410,7 @@
 \definesystemvariable {ck}   % Character Kerning
 \definesystemvariable {cl}   % kleur (CoLor setup)
 \definesystemvariable {cn}   % CollumN
+\definesystemvariable {cm}   % CheMical
 \definesystemvariable {co}   % COmbinaties
 \definesystemvariable {cp}   % CliP
 \definesystemvariable {cr}   % kleur (ColoR)
@@ -438,9 +447,11 @@
 \definesystemvariable {fm}   % ForMules
 \definesystemvariable {fn}   % subformulas
 \definesystemvariable {fp}   % FilegroeP
+\definesystemvariable {fq}   % Features
 \definesystemvariable {fr}   % ForM
 \definesystemvariable {fs}   % FileSynonym
 \definesystemvariable {ft}   % FonTs
+\definesystemvariable {fu}   % FontSolution
 \definesystemvariable {fv}   % FontVariant
 \definesystemvariable {fx}   % FoXet
 \definesystemvariable {ha}   % HAng
@@ -484,6 +495,7 @@
 \definesystemvariable {ln}   % LijNen
 \definesystemvariable {lo}   % LOgos
 \definesystemvariable {lt}   % LiTeratuur
+\definesystemvariable {ls}   % languageScript
 \definesystemvariable {ly}   % LaYout
 \definesystemvariable {ma}   % MargeAchtergrond
 \definesystemvariable {mb}   % MargeBlokken
@@ -492,14 +504,16 @@
 \definesystemvariable {mk}   % MarKering
 \definesystemvariable {mt}   % inline MaTh
 \definesystemvariable {mo}   % Math Options
-\definesystemvariable {nm}   % Nummering
 \definesystemvariable {mx}   % MatriX
 \definesystemvariable {ng}   % parbuilders
+\definesystemvariable {nh}   % new heads (structure)
+\definesystemvariable {nm}   % Nummering
 \definesystemvariable {np}   % NaastPlaatsen
 \definesystemvariable {nr}   % Nummeren
 \definesystemvariable {of}   % OFfset
 \definesystemvariable {oi}   % OmlijndInstellingen
 \definesystemvariable {ol}   % OmLijnd
+\definesystemvariable {od}   % Omlijnd Defaults (simple)
 \definesystemvariable {on}   % ONderstreep
 \definesystemvariable {oo}   % OpsOmmingen
 \definesystemvariable {op}   % OPsomming
@@ -786,63 +800,23 @@
 
 % \ifinterfacetranslation \else % interfacetranslation is obsolete
 
-\startmessages  dutch  library: check
-  title: controle
-      1: '=' ontbreekt of zonder {} na '--' in regel --
-      2: -- argument(en) verwacht in regel --
-      3: -- -- vervangt een macro, gebruik HOOFDLETTERS!
-\stopmessages
+% messages moved
 
-\startmessages  english library: check
-  title: check
-      1: missing or ungrouped '=' after '--' in line --
-      2: -- argument(s) expected in line --
-      3: -- -- replaces a macro, use CAPITALS!
-\stopmessages
+% messages moved
 
 % 1: to be adapted
 
-\startmessages  german library: check
-  title: check
-      1: Fehlendes '=' nach '--' in Zeile --
-      2: -- Argument(e) in Zeile -- erwartet
-      3: -- -- ersetzt ein Makro, verwende VERSALIEN!
-\stopmessages
+% messages moved
 
-\startmessages  czech library: check
-  title: kontrola
-      1: postradam '=' po '--' na radku --
-      2: ocekavam -- argument(y) na radku --
-      3: -- -- nahrazuje makro, uzijte VERZALKY!
-\stopmessages
+% messages moved
 
-\startmessages  italian library: check
-  title: controllo
-      1: '=' mancante o non raggruppato dopo '--' alla riga --
-      2: -- argomento/i attesi alla riga --
-      3: -- -- sostituisce una macro, usare le MAIUSCOLE!
-\stopmessages
+% messages moved
 
-\startmessages  norwegian library: check
-  title: kontroll
-      1: manglende '=' etter '--' i linje --
-      2: -- argument forventet i linje --
-      3: -- -- overskygger en makro, bruk STORE BOKSTAVER!
-\stopmessages
+% messages moved
 
-\startmessages  romanian library: check
-  title: verificari
-      1: lipseste '=' dupa '--' in linia --
-      2: argumentul(ele) -- sunt asteptate in linia  --
-      3: -- -- inlocuieste un macro, folositi MAJUSCULE!
-\stopmessages
+% messages moved
 
-\startmessages  french library: check
-  title:  vérification
-      1: manquant ou dégroupé '=' après '--' à la ligne --
-      2: -- argument(s) attendu(s) à la ligne --
-      3: -- -- remplace une macro, utilisez des MAJUSCULES !
-\stopmessages
+% messages moved
 
 % \fi
 

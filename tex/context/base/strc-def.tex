@@ -1,0 +1,302 @@
+%D   [       file=strc-def,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Definitions}
+
+% \registerctxluafile{strc-def}{1.001}
+
+\unprotect
+
+% \def\installparameterhandler#1#2#3#4#5#6#7#8#9{%
+%     \def#3##1{\csname#5{#1#2}##1\endcsname}%
+%     \def#4##1{#6{#1#2}##1}%
+%     %
+%     \def#5##1##2{\ifcsname##1##2\endcsname##1##2\else\expandafter#7\csname##1\s!parent\endcsname##2\fi}%
+%     \def#6##1##2{\ifcsname##1##2\endcsname   ##1\else\expandafter#8\csname##1\s!parent\endcsname##2\fi}%
+%     %
+%     \def#7##1##2{\ifx##1\relax\s!empty\else#5##1##2\fi}%
+%     \def#8##1##2{\ifx##1\relax        \else#6##1##2\fi}%
+%     %
+%     \def#9##1##2% style color
+%       {\edef\fontattributehash {#4##1}%
+%        \edef\colorattributehash{#4##2}%
+%        \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash ##1\fi
+%        \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash##2\fi}%
+%     %
+% }
+
+% \installparameterhandler
+%     \empty
+%     \@@framed
+%     \framedparameter
+%     \framedparameterhash
+%     \doframedparameter
+%     \doframedparameterhash
+%     \doframedparentparameter
+%     \doframedparentparameterhash
+%     \dosetframedattributes
+
+
+% \setupheads
+
+\setupstructureheads[%
+    %\c!after=,
+    %\c!align=,
+    %\c!aligntitle=,
+    \c!alternative=\v!normal,
+    %\c!before=,
+    %\c!color=,
+    \c!command=\normalplacehead,
+    \c!continue=\v!yes,
+    %\c!coupling=,
+    %\c!deepnumbercommand=,
+    %\c!deeptextcommand=,
+    %\c!default=,
+    \c!distance=\!!zeropoint,
+    \c!expansion=\v!no,
+    %\c!file=,
+    %\c!footer=,
+    %\c!grid=,
+    \c!hang=\v!none,
+    %\c!header=,
+    \c!incrementnumber=\v!yes,
+    \c!indentnext=\v!no,
+    %\c!label=,
+    \c!limittext=\v!yes,
+    \c!margin=\zeropoint,
+    %\c!margintext=,
+    \c!number=\v!yes,
+    \c!numbercolor=\structureheadparameter\c!color,
+    %\c!numbercommand=,
+    \c!numberstyle=\structureheadparameter\c!style,
+    \c!ownnumber=\v!no,
+    %\c!page=,
+    \c!placehead=\v!yes,
+    %\c!prefix=,
+    \c!previousnumber=\v!yes,
+    \c!resetnumber=\v!yes,
+    %\c!section=,
+    \c!sectionconversionset=\s!default,
+    \c!sectionnumber=\v!yes,
+    %\c!sectionsegments=,
+    \c!sectionseparatorset=\s!default,
+    \c!sectionset=\v!all,
+    %\c!sectionstopper=,
+    %\c!strut=,
+    %\c!style=,
+    %\c!text=,
+    \c!textcolor=\structureheadparameter\c!color,
+    %\c!textcommand=,
+    \c!textstyle=\structureheadparameter\c!style,
+    %\c!tolerance=
+   ]
+
+% \setupstructureblock[appendix][sectionconversionset=appendix]
+% \setupstructurehead[chapter][sectionconversionset=\structureblockparameter\c!sectionconversionset] % \structureblockparameter]
+
+\definestructureseparatorset  [\s!default]   [] [.]
+\definestructureconversionset [\s!default]   [] [numbers]
+\definestructureresetset      [\s!default]   [] [0]
+\definestructureprefixset     [\s!default]   [section-1,section-2,section-3] []
+
+\definestructureprefixset     [\v!all]       [section-1,section-2,section-3,section-4,section-5,section-6,section-7,section-8] []
+
+\definestructureprefixset     [\v!part]      [section-1] []
+\definestructureprefixset     [\v!chapter]   [section-2] []
+
+\definestructureseparatorset  [\v!appendix:\s!default] [] [.]
+\definestructureconversionset [\v!appendix:\s!default] [Romannumerals,Characters] [numbers]
+\definestructureresetset      [\v!appendix:\s!default] [] [0]
+
+% \definesectionblock
+
+\definestructureblock [\v!frontpart] [\v!frontmatter] [\c!number=\v!no]
+\definestructureblock [\v!bodypart]  [\v!bodymatter]  [\c!number=\v!yes]
+\definestructureblock [\v!appendix]  [\v!appendices]  [\c!number=\v!yes]
+\definestructureblock [\v!backpart]  [\v!backmatter]  [\c!number=\v!no]
+
+\setstructureblock [\v!bodypart] % default
+
+\appendtoks
+    \setstructureblock [\v!bodypart]% default
+\to \everyjob
+
+% \definesection
+
+\definestructuresection[\s!section-1] % part
+\definestructuresection[\s!section-2] % chapter
+\definestructuresection[\s!section-3] % section
+\definestructuresection[\s!section-4] % subsection
+\definestructuresection[\s!section-5] % subsubsection
+\definestructuresection[\s!section-6] % subsubsubsection
+\definestructuresection[\s!section-7] % subsubsubsubsection
+
+% \definehead
+
+\definestructurehead
+  [\v!part]
+  [\c!section=\s!section-1]
+
+\definestructurehead
+  [\v!chapter]
+  [\c!section=\s!section-2]
+
+\definestructurehead
+  [\v!section]
+  [\c!section=\s!section-3]
+
+\definestructurehead
+  [\v!subsection]
+  [\c!section=\s!section-4,
+   \c!default=\v!section]
+
+\definestructurehead
+  [\v!subsubsection]
+  [\c!section=\s!section-5,
+   \c!default=\v!subsection]
+
+\definestructurehead
+  [\v!subsubsubsection]
+  [\c!section=\s!section-6,
+   \c!default=\v!subsubsection]
+
+\definestructurehead
+  [\v!subsubsubsubsection]
+  [\c!section=\s!section-7,
+   \c!default=\v!subsubsubsection]
+
+\definestructurehead
+  [\v!title]
+  [\c!coupling=\v!chapter,
+   \c!default=\v!chapter,
+   \c!incrementnumber=\v!no]
+
+\definestructurehead
+  [\v!subject]
+  [\c!coupling=\v!section,
+   \c!default=\v!section,
+   \c!incrementnumber=\v!no]
+
+\definestructurehead
+  [\v!subsubject]
+  [\c!coupling=\v!subsection,
+   \c!default=\v!subsection,
+   \c!incrementnumber=\v!no]
+
+\definestructurehead
+  [\v!subsubsubject]
+  [\c!coupling=\v!subsubsection,
+   \c!default=\v!subsubsection,
+   \c!incrementnumber=\v!no]
+
+\definestructurehead
+  [\v!subsubsubsubject]
+  [\c!coupling=\v!subsubsubsection,
+   \c!default=\v!subsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definestructurehead
+  [\v!subsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsection,
+   \c!default=\v!subsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\setupstructurehead
+  [\v!part]
+  [\c!placehead=\v!no]
+
+\setupstructurehead
+  [\v!chapter]
+  [\v!appendix\c!label=\v!appendix,
+   \v!bodypart\c!label=\v!chapter]       %   bijlageconversie=\Character
+
+\setupstructurehead
+  [\v!section]
+  [\v!appendix\c!label=\v!section,
+   \v!bodypart\c!label=\v!section]       %   bijlageconversie=\Character
+
+\setupstructurehead
+  [\v!subsection]
+  [\v!appendix\c!label=\v!subsection,
+   \v!bodypart\c!label=\v!subsection]    %   bijlageconversie=\Character
+
+\setupstructurehead
+  [\v!subsubsection]
+  [\v!appendix\c!label=\v!subsubsection,
+   \v!bodypart\c!label=\v!subsubsection] %   bijlageconversie=\Character
+
+% \setuphead
+
+\setupstructurehead
+  [\v!part,\v!chapter]
+  [%\c!align=,
+   %\c!indentnext=\v!no,
+   \c!continue=\v!no,
+   \c!page=\v!right,
+   \c!header=,
+   \c!style=\tfc,
+   \c!distance=.75em,
+   \c!before={\blank[2*\v!big]},
+   \c!after={\blank[2*\v!big]}]
+
+\setupstructurehead
+  [\v!section]
+  [%\c!align=,
+   %\c!indentnext=\v!no,
+   \c!style=\tfa,
+   \c!distance=.75em,
+   \c!before={\blank[2*\v!big]},
+   \c!after=\blank]
+
+\setupstructurehead % nieuw
+  [\v!subsection]
+  [\c!page=]
+
+% brrr
+
+% \definestructurecounter[\v!page][\c!start=1] % todo: setup
+
+% lists
+
+\definecombinedlist
+  [\v!content]
+  [\v!part,
+   \v!chapter,
+   \v!section,
+   \v!subsection,
+   \v!subsubsection,
+   \v!subsubsubsection,
+   \v!subsubsubsubsection]
+  [\c!level=\v!subsubsubsubsection,
+   \c!criterium=\v!local]
+
+\setuplist
+  [\v!part]
+  [\c!before={\blank\page[\v!preference]},
+   \c!after=\blank,
+   \c!label=\v!yes,
+   \c!distance=1em]
+
+\setuplist
+  [\v!chapter]
+  [\c!before={\blank\page[\v!preference]},
+   \c!after=]
+
+\setuplist [\v!part]                [\c!width=0em]
+\setuplist [\v!chapter]             [\c!width=2em]
+\setuplist [\v!section]             [\c!width=3em]
+\setuplist [\v!subsection]          [\c!width=4em]
+\setuplist [\v!subsubsection]       [\c!width=5em]
+\setuplist [\v!subsubsubsection]    [\c!width=6em]
+\setuplist [\v!subsubsubsubsection] [\c!width=7em]
+
+\protect \endinput

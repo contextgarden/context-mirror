@@ -4,6 +4,10 @@
 -- copyright: PRAGMA ADE / ConTeXt Development Team
 -- license  : see context related readme files
 
+local utf = unicode.utf8
+
+local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
+
 if not buffers                 then buffers                 = { } end
 if not buffers.visualizers     then buffers.visualizers     = { } end
 if not buffers.visualizers.tex then buffers.visualizers.tex = { } end
@@ -32,7 +36,7 @@ function buffers.visualizers.tex.flush_line(str,nested)
     local byte, find = utf.byte, utf.find
     local finish, change = buffers.finish_state, buffers.change_state
     buffers.currentcolors = buffers.visualizers.tex.colors
-    for c in str:utfcharacters() do
+    for c in utfcharacters(str) do
         if c == " " then
             if escaping then
                 result[#result+1] = " "

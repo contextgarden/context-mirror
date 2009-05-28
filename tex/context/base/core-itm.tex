@@ -14,39 +14,23 @@
 % new: text + lefttext=(,righttext=)
 %      start=
 
-\writestatus{loading}{Context Core Macros / Itemgroups}
+\writestatus{loading}{ConTeXt Core Macros / Itemgroups}
 
-\startmessages  dutch  library: layouts
-      9: momenteel maximaal -- niveaus in opsommingen
-\stopmessages
+% messages moved
 
-\startmessages  english  library: layouts
-      9: currently no more than -- levels in itemizations
-\stopmessages
+% messages moved
 
-\startmessages  german  library: layouts
-      9: z.Z. nicht mehr als -- Ebenen in Aufzaehlungen
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: layouts
-      9: aktualne ne vice nez -- urovne/urovni vyctu
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: layouts
-      9: attualmente non più di -- livelli di elencazione
-\stopmessages
+% messages moved
 
-\startmessages  norwegian  library: layouts
-      9: for øyeblikket maksimalt -- nivåer i opplisting
-\stopmessages
+% messages moved
 
-\startmessages  romanian  library: layouts
-      9: acum nu se supota mai mult de -- nivele de adancime la iteratii
-\stopmessages
+% messages moved
 
-\startmessages  french  library: layouts
-      9: pas plus de -- niveaux pour l'instant dans les élémentarisations
-\stopmessages
+% messages moved
 
 \unprotect
 
@@ -944,7 +928,7 @@
    \ifdim\scratchdimen>\dimen0
      \advance\scratchdimen -\dimen0
    \else
-     \scratchdimen\z@
+     \scratchdimen\zeropoint
    \fi
    \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hss}}% was: \hfill
    \hskip\scratchdimen}

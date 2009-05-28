@@ -1,2 +1,5 @@
 @echo off
-texmfstart texfont.pl %*
+setlocal
+set ownpath=%~dp0%
+texlua "%ownpath%mtxrun.lua" --usekpse --execute texfont.pl %*
+endlocal

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=math-tim,
-%D        version=2001.04.12, 
+%D        version=2001.04.12,
 %D          title=\CONTEXT\ Math Macros,
 %D       subtitle=Mathtime Specials,
 %D         author={Hans Hagen \& Taco Hoekwater},
@@ -13,24 +13,24 @@
 
 \endinput % i will clean this up after taco has gone over it
 
-%D With thanks to Berthold Horn from YandY for providing me 
-%D evaluation copies of the MathTimePlus fonts.  
+%D With thanks to Berthold Horn from YandY for providing me
+%D evaluation copies of the MathTimePlus fonts.
 
 % version 0 : Michael Spivak
 % version 1 : Taco Hoekwater
 % version 2 : Hans Hagen
-% version 3 : etc etc etc 
+% version 3 : etc etc etc
 
 \unprotect
 
 %D We use the predefined spare families \type {\mcfam} and
-%D \type {\mdfam}. 
+%D \type {\mdfam}.
 
 \let\cafam\mcfam \let\hexcafam\hexmcfam
 \let\gbfam\mdfam \let\hexgbfam\hexmdfam
 \let\gkfam\mdfam \let\hexgkfam\hexmdfam
 
-% Why is this needed? 
+% Why is this needed?
 
 % \font\tenmd  =mtgu at 10pt
 % \font\sevenmd=mtgu at 7.6pt
@@ -38,7 +38,7 @@
 % \font\tenmc  =mtms at 10pt
 % \font\sevenmc=mtms at 7.6pt
 % \font\fivemc =mtms at 6pt
-% 
+%
 % \textfont        \mcfam\tenmc   \textfont        \mdfam\tenmd
 % \scriptfont      \mcfam\sevenmc \scriptfont      \mdfam\sevenmd
 % \scriptscriptfont\mcfam\fivemc  \scriptscriptfont\mdfam\fivemd
@@ -52,7 +52,7 @@
 
 % \definealternativestyle[script]   [\ca][\ca]
 % \definealternativestyle[greek]    [\gk][\gk]
-% \definealternativestyle[boldgreek][\gb][\gb] 
+% \definealternativestyle[boldgreek][\gb][\gb]
 
 % \definebodyfont
 %   [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt] [rm]
@@ -60,9 +60,9 @@
 %    gk=mtgu  sa 1,
 %    gb=mtgub sa 1]
 
-%D Since a font size is a rather fuzzy thing, it will be no 
-%D surprise that the Math Times fonts have different specs 
-%D than the Computer Modern Roman fonts. 
+%D Since a font size is a rather fuzzy thing, it will be no
+%D surprise that the Math Times fonts have different specs
+%D than the Computer Modern Roman fonts.
 %D
 %D \starttabulate[|Bl|c|c|c|c|c|c|c|c|c|c|]
 %D \NC Computer Modern\NC
@@ -71,9 +71,9 @@
 %D     6.0\NC6.8\NC7.6\NC8.4\NC9.2\NC10.0\NC10.8\NC11.6\NC13.2\NC--\NC\NR
 %D \stoptabulate
 %D
-%D The following definitions presume the existence of \type 
-%D {tio} and \type {tibio} font alternatives. Definitions for 
-%D \type {\tf.} etc and \type {\sc} are left as they are. 
+%D The following definitions presume the existence of \type
+%D {tio} and \type {tibio} font alternatives. Definitions for
+%D \type {\tf.} etc and \type {\sc} are left as they are.
 
 %D moved code
 
@@ -100,10 +100,10 @@
 \def\tildehex{7E}
 \def\ddothex {7F}
 
-%D The \type {mtex} fonts need a recalculation of \type 
+%D The \type {mtex} fonts need a recalculation of \type
 %D {\p@renwd}, which in \CONTEXT\ is done automatically.
 
-%D The following definitions are mostly copied from the file 
+%D The following definitions are mostly copied from the file
 %D \type {mtmacs.tex}, which banner said:
 %D
 %D \starttyping
@@ -112,9 +112,9 @@
 %D ALL RIGHTS RESERVED
 %D \stoptyping
 %D
-%D We reformatted the macros and changed a few bits and 
-%D pieces. A further cleanup with regards to the scratch 
-%D registers will be done later. 
+%D We reformatted the macros and changed a few bits and
+%D pieces. A further cleanup with regards to the scratch
+%D registers will be done later.
 
 \mathchardef\Gamma         = "0130
 \mathchardef\Delta         = "0131
@@ -171,7 +171,7 @@
 % like \rm (cf. the texbook page 290)
 
 \def\ifdefaultfamelse#1#2%
-  {\ifnum\fam=\m@ne\mathaccent#1\else\mathaccent#2\fi}
+  {\ifnum\fam=\minusone\mathaccent#1\else\mathaccent#2\fi}
 
 \let\noaccents@\relax
 
@@ -190,10 +190,10 @@
 \def\mathhexbox@#1#2#3%
   {\relax
    \ifmmode
-     \mathpalette{}{\m@th\rm\mathchar"#1#2#3}%
+     \mathpalette{}{\mathsurround\zeropoint\rm\mathchar"#1#2#3}%
    \else
      \leavevmode
-     \hbox{$\m@th\rm\mathchar"#1#2#3$}%
+     \hbox{$\mathsurround\zeropoint\rm\mathchar"#1#2#3$}%
    \fi}
 
 \def\dag {\edef\next@{0\daghex }\expandafter\mathhexbox@\next@}
@@ -204,16 +204,16 @@
 
 \def\vdots%
   {\vbox
-     {\baselineskip4\p@
-      \lineskiplimit\z@
-      \kern6\p@\hbox{$\m@th.$}\hbox{$\m@th.$}\hbox{$\m@th.$}}}
+     {\baselineskip4\points
+      \lineskiplimit\zeropoint
+      \kern6\points\hbox{$\mathsurround\zeropoint.$}\hbox{$\mathsurround\zeropoint.$}\hbox{$\mathsurround\zeropoint.$}}}
 
 \def\ddots%
   {\mathinner
      {\mkern1mu
-      \raise7\p@\vbox{\kern 7\p@\hbox{$\m@th.$}}\mkern2mu
-      \raise4\p@\hbox{$\m@th.$}\mkern2mu
-      \raise \p@\hbox{$\m@th.$}\mkern1mu}}
+      \raise7\points\vbox{\kern 7\points\hbox{$\mathsurround\zeropoint.$}}\mkern2mu
+      \raise4\points\hbox{$\mathsurround\zeropoint.$}\mkern2mu
+      \raise \points\hbox{$\mathsurround\zeropoint.$}\mkern1mu}}
 
 \def\hbar
   {{\mathchoice
@@ -224,10 +224,10 @@
   \mkern-6.3muh}}
 
 \def\angle%
-  {{\vbox{\ialign{$\m@th\scriptstyle##$\crcr
+  {{\vbox{\ialign{$\mathsurround\zeropoint\scriptstyle##$\crcr
       \not\mathrel{\mkern14mu}\crcr
       \noalign{\nointerlineskip}
-      \mkern2.5mu\leaders\hrule height.48\p@\hfill\mkern2.5mu\crcr}}}}
+      \mkern2.5mu\leaders\hrule height.48\points\hfill\mkern2.5mu\crcr}}}}
 
 \newdimen\amstexex
 
@@ -235,25 +235,25 @@
 
 \def\varinjlim%
   {\mathop{\vtop{\ialign{##\crcr
-     \hfil\the\textfont\z@ lim\hfil\crcr
+     \hfil\the\textfont\zerocount lim\hfil\crcr
      \noalign{\nointerlineskip}\rightarrowfill\crcr
      \noalign{\nointerlineskip\kern-\amstexex}\crcr}}}}
 
 \def\varprojlim%
   {\mathop{\vtop{\ialign{##\crcr
-     \hfil\the\textfont\z@ lim\hfil\crcr
+     \hfil\the\textfont\zerocount lim\hfil\crcr
      \noalign{\nointerlineskip}\leftarrowfill\crcr
      \noalign{\nointerlineskip\kern-\amstexex}\crcr}}}}
 
 \def\varliminf{\mathop{\underbar  {lim}}} % context-ified
 \def\varlimsup{\mathop{\overstrike{lim}}} % context-ified
 
-\def\spdot   {^{\hbox{\raise\amstexex\hbox{\the\textfont\z@   .}}}}
-\def\spddot  {^{\hbox{\raise\amstexex\hbox{\the\textfont\z@  ..}}}}
-\def\spdddot {^{\hbox{\raise\amstexex\hbox{\the\textfont\z@ ...}}}}
-\def\spddddot{^{\hbox{\raise\amstexex\hbox{\the\textfont\z@....}}}}
+\def\spdot   {^{\hbox{\raise\amstexex\hbox{\the\textfont\zerocount   .}}}}
+\def\spddot  {^{\hbox{\raise\amstexex\hbox{\the\textfont\zerocount  ..}}}}
+\def\spdddot {^{\hbox{\raise\amstexex\hbox{\the\textfont\zerocount ...}}}}
+\def\spddddot{^{\hbox{\raise\amstexex\hbox{\the\textfont\zerocount....}}}}
 
-%D Here some code is merged in order to save strings. 
+%D Here some code is merged in order to save strings.
 
 \def\domultidot#1#2%
   {\setbox0\hbox{$#1#2$}%
@@ -303,29 +303,29 @@
    \fi}
 
 \def\root#1\of#2%
-  {\setbox\rootbox=\hbox{$\m@th\scriptscriptstyle{#1}$}%
+  {\setbox\rootbox=\hbox{$\mathsurround\zeropoint\scriptscriptstyle{#1}$}%
    \mathpalette\r@@t{#2}}
 
 \def\r@@t#1#2%
-  {\setbox\z@=\hbox{$\uproot@\z@\leftroot\z@\m@th#1\sqrt{#2}$}%
-   \dimen@\ht\z@\advance\dimen@-\dp\z@
+  {\setbox\zerocount\hbox{$\uproot@\zerocount\leftroot\zerocount\mathsurround\zeropoint#1\sqrt{#2}$}%
+   \dimen@\ht\zerocount\advance\dimen@-\dp\zerocount
    \dimen@ii\dimen@
-   \ifdim\dimen@>30\p@ \advance\dimen@ii-16\p@ \else
-   \ifdim\dimen@>24\p@ \advance\dimen@ii -8\p@ \else
-   \ifdim\dimen@>18\p@ \advance\dimen@ii -6\p@ \else
-   \ifdim\dimen@>12\p@ \advance\dimen@ii -4\p@ \else
-   \ifdim\dimen@>10\p@ \advance\dimen@ii -2\p@ \fi\fi\fi\fi\fi
-   \setbox\tw@=\hbox{$\m@th#1\mskip\uproot@ mu$}%
-   \advance\dimen@ii by1.667\wd\tw@
+   \ifdim\dimen@>30\points \advance\dimen@ii-16\points \else
+   \ifdim\dimen@>24\points \advance\dimen@ii -8\points \else
+   \ifdim\dimen@>18\points \advance\dimen@ii -6\points \else
+   \ifdim\dimen@>12\points \advance\dimen@ii -4\points \else
+   \ifdim\dimen@>10\points \advance\dimen@ii -2\points \fi\fi\fi\fi\fi
+   \setbox\plustwo=\hbox{$\mathsurround\zeropoint#1\mskip\uproot@ mu$}%
+   \advance\dimen@ii by1.667\wd\plustwo
    \mkern-\leftroot@ mu\mkern5mu\raise.6\dimen@ii\copy\rootbox
-   \mkern-8mu\mkern\leftroot@ mu\box\z@\leftroot\z@\uproot\z@}
+   \mkern-8mu\mkern\leftroot@ mu\box\zerocount\leftroot\zerocount\uproot\zerocount}
 
 \def\space@.{\futurelet\space@\relax} \space@. % really needed ?
 
 \def\jadjust%
-  {\mkern-\tw@ mu}
+  {\mkern-\plustwo mu}
 
-%D For the moment the following code is left unchanged. It is 
+%D For the moment the following code is left unchanged. It is
 %D not used anyway.
 
 \newif\ifsubscriptcorrection \subscriptcorrectionfalse
@@ -358,11 +358,11 @@
      \else
        \def\next@.%
          {\ifx\next j%
-            \mkern-\tw@ mu\else
+            \mkern-\plustwo mu\else
           \ifx\next f%
-            \mkern-\tw@ mu\else
+            \mkern-\plustwo mu\else
           \ifx\next p%
-            \mkern-\@ne mu\fi\fi\fi}%
+            \mkern-\plusone mu\fi\fi\fi}%
      \fi
      \next@.}
 

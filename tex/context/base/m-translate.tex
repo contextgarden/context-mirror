@@ -44,14 +44,14 @@
     end
 
     function translators.reset(s)
-        input.filters.user_translator = nil
+        resolvers.filters.user_translator = nil
         list, compiled = nil, nil
     end
     function translators.enable(s)
-        input.filters.user_translator = translators.translate
+        resolvers.filters.user_translator = translators.translate
     end
     function translators.disable(s)
-        input.filters.user_translator = nil
+        resolvers.filters.user_translator = nil
     end
 \stopluacode
 

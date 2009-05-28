@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Core Macros / Note Handling}
+\writestatus{loading}{ConTeXt Core Macros / Note Handling}
 
 %D Unfortunately we cannot force an even number of lines in
 %D a two column footnote placement.
@@ -36,8 +36,8 @@
 %D \stopitemize
 %D
 %D Because footnotes are declared at the location of their
-%D reference. Footnotes can be seen as a special kind of
-%D floating bodies. There placement is postponed but has to be
+%D reference they can be seen as a special kind of
+%D floating bodies. Their placement is postponed but has to be
 %D taken into account in the pagebreak calculations. This kind
 %D of calculations are forced by using \type{\insert}.
 
@@ -383,7 +383,7 @@
       \placenoterule
       \noteparameter\c!after}%
    \global\skip\currentnoteins\ht\scratchbox
-   \setbox\scratchbox\box\voidb@x} % scratchbox can be in use
+   \setbox\scratchbox\emptybox} % scratchbox can be in use
 
 \ifx\setnotehsize\undefined
 

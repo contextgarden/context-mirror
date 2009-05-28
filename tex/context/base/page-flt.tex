@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=page-flt,
 %D        version=2000.10.20,
-%D          title=\CONTEXT\ OTR Macros,
+%D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Floating Bodies,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context OTR Macros / Floating Bodies}
+\writestatus{loading}{ConTeXt Page Macros / Floating Bodies}
 
 %D Some of the sidefloat settings should move to page-sid; now it's quite
 %D fuzzy the way the variables are set/reset.
@@ -19,169 +19,24 @@
 \unprotect
 
 \ifx\addlocalbackgroundtobox\undefined \def\addlocalbackgroundtobox{\resetglobal\gobbleoneargument} \fi
-
-% naar supp-box.tex
-
-\def\voidbox{\box\voidb@x}
-
-\def\spreadhbox#1% rebuilds \hbox{<box><hss><box><hss><box>}
-  {\bgroup
-   \ifhbox#1\relax
-     \setbox2\voidbox
-     \unhbox#1%
-     \doloop
-       {\unpenalty\unskip\unpenalty\unskip\unpenalty\unskip
-        \setbox0\lastbox
-        \ifvoid0
-          \exitloop
-        \else
-          \setbox2\hbox
-            {\ifhbox0 \spreadhbox0\else\box0\fi
-             \ifvoid2 \else\hss\unhbox2\fi}%
-        \fi}%
-     \ifvoid2\else\unhbox2\fi
-   \else
-     \box#1%
-   \fi
-   \egroup}
 
 \def\placefloats{\doflushfloats}  % keep this one
 
-\startmessages  dutch  library: floatblocks
-  title: plaatsblokken
-      1: -- hernummerd / -- => --
-      2: -- bewaard
-      3: -- verplaatst
-      4: -- geplaatst
-      5: volgorde aangepast
-      6: maximaal -- boven
-      7: maximaal -- onder
-      8: minder dan -- regels
-      9: volgorde verstoord
-     10: -- begrensd
-     11: geen blok opgegeven
-     12: niet gedefinieerd
-     13: er is niets te splitsen
-\stopmessages
+% messages moved
 
-\startmessages  english  library: floatblocks
- title: floatblocks
-      1: -- renumbered / -- => --
-      2: -- saved
-      3: -- moved
-      4: -- placed
-      5: order adapted
-      6: n of top floats limited to --
-      7: n of bottom floats limited to --
-      8: less than -- lines
-      9: order disturbed
-     10: -- limited
-     11: no block given
-     12: undefined
-     13: there is nothing to split
-\stopmessages
+% messages moved
 
-\startmessages  german  library: floatblocks
- title: Gleitobjektbloecke
-      1: -- neu nummeriert / -- => --
-      2: -- gespeichert
-      3: -- verschoben
-      4: -- plaziert
-      5: Reihenfolge angepasst
-      6: Anz. der oberen Gleitobjekte beschraengt auf --
-      7: Anz. der unteren Gleitobjekte beschraengt auf  --
-      8: weniger als -- zeilen
-      9: Reigenfolge gestoert
-     10: -- begrenzt
-     11: kein Block gegeben
-     12: undefiniert
-     13: there is nothing to split
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: floatblocks
- title: plovouciobjekty
-      1: -- precislovano / -- => --
-      2: -- ulozeno
-      3: -- presunuto
-      4: -- umisteno
-      5: poradi prizpusobeno
-      6: pocet hornich plovoucich objektu je omezen na --
-      7: pocet spodnich plovoucich objektu je omezen na --
-      8: radku je mene nez --
-      9: poradi naruseno
-     10: -- omezeno
-     11: nedan zadny blok
-     12: nedefinovano
-     13: there is nothing to split
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: floatblocks
- title: oggetti mobili
-      1: -- rinumerato / -- => --
-      2: -- salvato
-      3: -- mosso
-      4: -- sistemato
-      5: ordine aggiustato
-      6: n di top floats limitato a --
-      7: n di bottom floats limitato a --
-      8: meno di -- righe
-      9: ordine disturbato
-     10: -- limitato
-     11: nessun oggetto specificato
-     12: non definito
-     13: there is nothing to split
-\stopmessages
+% messages moved
 
-\startmessages  norwegian  library: floatblocks
- title: flytblokker
-      1: -- renummerert / -- => --
-      2: -- lagret
-      3: -- flyttet
-      4: -- plassert
-      5: rekkefølge tilpasset
-      6: maksimalt -- flytblokker øverst
-      7: maksimalt -- flytblokker nederst
-      8: mindre enn -- linjer
-      9: rekkefølge endret
-     10: -- begrenset
-     11: ingen blokk oppgitt
-     12: udefinert
-     13: there is nothing to split
-\stopmessages
+% messages moved
 
-\startmessages  romanian  library: floatblocks
- title: Blocuri
-      1: -- renumerotat / -- => --
-      2: -- salvat
-      3: -- mutat
-      4: -- plasat
-      5: ordinea adaptata
-      6: nr. cadrelor de sus limitat la  --
-      7: nr. blocurilor de jos limitat la --
-      8: mai putin de -- linii
-      9: ordinea deranjata
-     10: -- limitat
-     11: nu este dat nici un bloc
-     12: nedefinit
-     13: there is nothing to split
-\stopmessages
+% messages moved
 
-\startmessages  french  library: floatblocks
- title: blocs de flottants
-      1: -- renuméroté / -- => --
-      2: -- sauvegardé
-      3: -- déplacé
-      4: -- placé
-      5: ordre adapté
-      6: n flottants de haut de page limité à --
-      7: n flottants de bas de page limité à --
-      8: moins de -- lignes
-      9: ordre perturbé
-     10: -- limité
-     11: pas de bloc donné
-     12: indéfini
-     13: there is nothing to split
-\stopmessages
+% messages moved
 
 \def\floatparameter       #1{\csname\??fl\currentfloat#1\endcsname}
 \def\floatcaptionparameter#1{\csname\??kj\currentfloat#1\endcsname}
@@ -394,8 +249,6 @@
      \seteffectivehsize
      \hsize\localhsize
    \fi}
-
-\newevery \everyinsidefloat \relax
 
 \appendtoks
   \everyinsidefloat\emptytoks % in case it's called earlier
@@ -618,6 +471,7 @@
       \c!leftframe=\@@bkleftframe,
       \c!rightframe=\@@bkrightframe,
       \c!frameoffset=\@@bkframeoffset,
+      \c!framecolor=\@@bkframecolor,
      %\c!local=\@@bklocal,
       \c!textmethod=\@@bktextmethod,
       \c!sidemethod=\@@bksidemethod,
@@ -686,32 +540,6 @@
    \setvalue              {\e!emptytwo#1}{\doemptyblock{#1}}}
 
 % \setupfloat[...][leftmargindistance=1cm,default={left,none}]
-
-% \def\redodefinefloat[#1][#2][#3]% same label/number
-%   {\presetlocalframed[\??fl#1]%
-%    \copylocalframed[\??fl#1][\??fl#3]%
-%    \copyparameters[\??fl#1][\??fl#3]
-%      [\c!width,\c!height,%\c!local,
-%       \c!maxwidth,\c!maxheight,\c!minwidth,
-%       \c!margin,\c!sidespacebefore,\c!sidespaceafter,\c!sidealign,
-%       \c!leftmargindistance,\c!rightmargindistance,\c!criterium,
-%       \c!leftmargin,\c!rightmargin,\c!innermargin,\c!outermargin,
-%       \c!frame,\c!radius,\c!corner,\c!location,\c!background,\c!framecolor,
-%       \c!backgroundscreen,\c!backgroundcolor,\c!backgroundoffset,
-%       \c!topframe,\c!bottomframe,\c!leftframe,\c!rightframe,
-%       \c!frameoffset,\c!pageboundaries,\c!default,
-%       \c!textmethod,\c!sidemethod,\c!method]%
-%    \copyparameters[\??kj#1][\??kj#3]
-%      [\c!location,\c!before,\c!inbetween,\c!after,
-%       \c!spacebefore,\c!spaceinbetween,\c!spaceafter,
-%       \c!width,\c!headstyle,\c!headcolor,\c!style,\c!color,
-%       \c!textstyle,\c!textcolor,\c!minwidth,
-%       \c!align,\c!number,\c!way,\c!blockway,\c!setups,
-%       \c!leftmargin,\c!rightmargin,\c!innermargin,\c!outermargin,
-%       \c!sectionnumber,\c!separator,\c!stopper,\c!suffix,\c!distance,\c!conversion]%
-%    \definenumber[#1][#3]%
-%    \presetlabeltext[#1=\labeltext{#3}]%
-%    \dodefinefloatcommands[#1][#2]}
 
 \def\redodefinefloat[#1][#2][#3]% same label/number
   {\presetlocalframed[\??fl#1]%
@@ -906,7 +734,7 @@
      \fi
    \else
      \global\savednoffloats\zerocount
-     \global\setbox\floatbox\box\voidb@x
+     \global\setbox\floatbox\emptybox
    \fi}
 
 \def\uncenteredfloatbox
@@ -2126,257 +1954,8 @@
    \fi
    \global\insidefloatfalse}
 
-\newif\ifmargeblokken
-
-\def\dosetupmarginblocks[#1]%
-  {\getparameters[\??mb][#1]%
-   \doifelse\@@mbstate\v!start
-     {\showmessage\m!layouts4\empty
-      \margeblokkentrue
-      \let\somenextfloat\dosomenextfloat
-      \let\startmarginblock\dostartmarginblock
-      \let\stopmarginblock\dostopmarginblock}%
-     {\showmessage\m!layouts5\empty
-      \margeblokkenfalse
-      \def\somenextfloat[##1]%
-        {\someelsefloat[##1,\v!here]}%
-      \let\startmarginblock\dontstartmargeblok
-      \let\stopmarginblock\dontstopmargeblok}}
-
-\def\setupmarginblocks
-  {\dosingleargument\dosetupmarginblocks}
-
-\newbox\marginbox
-
-\def\dosomenextfloat[#1]%
-  {\global\setbox\marginbox\vbox
-     {\hsize\@@mbwidth
-      \unvcopy\marginbox
-      \ifvoid\marginbox\else\expandafter\@@mbinbetween\fi
-      \box\floatbox\filbreak}%
-   \ifdim\ht\marginbox>\textheight
-     \dosavefloatinfo
-   \else
-     \doinsertfloatinfo
-   \fi}
-
-\newbox\preparedmarginbox
-
-\def\reshapemargin
-  {\ifdim\ht\preparedmarginbox>\zeropoint
-     \beginofshapebox
-     \unvbox\preparedmarginbox
-     \endofshapebox
-     \reshapebox
-       {\box\shapebox}%
-     \setbox\preparedmarginbox\vbox to \textheight
-       {\@@mbtop
-        \flushshapebox
-        \@@mbbottom}%
-   \fi}
-
-\def\plaatsrechtermargeblok
-  {\hskip\rightmarginwidth}
-
-\def\plaatslinkermargeblok
-  {\hskip\leftmarginwidth}
-
-\def\checkmargeblokken
-  {\ifvoid\marginbox\else\docheckmargeblokken\fi}
-
-\def\docheckmargeblokken % erg inefficient
-  {\setbox\preparedmarginbox\vbox
-     {\forgetall
-      \splittopskip\topskip
-      \ifvoid\marginbox\else
-        \ifdim\ht\marginbox>\textheight
-          \vsplit\marginbox to \textheight
-        \else
-          \unvbox\marginbox
-        \fi
-      \fi}%
-   \reshapemargin
-   \setbox\preparedmarginbox\vbox
-      {\@@mbbefore\box\preparedmarginbox\@@mbafter}%
-   \def\rightmarginbox
-     {\def\plaatsrechtermargeblok
-        {\setbox\preparedmarginbox\hbox to \rightmarginwidth
-           {\@@mbleft\box\preparedmarginbox\@@mbright}%
-         \vsmashbox\preparedmarginbox
-         \box\preparedmarginbox}}%
-   \def\leftmarginbox
-     {\def\plaatslinkermargeblok
-        {\setbox\preparedmarginbox\hbox to \leftmarginwidth
-           {\@@mbright\box\preparedmarginbox\@@mbleft}%
-         \vsmashbox\preparedmarginbox
-         \box\preparedmarginbox}}%
-   \processaction % traag
-     [\@@mblocation]
-     [ \v!inmargin=>\doifbothsidesoverruled\rightmarginbox\rightmarginbox\leftmarginbox,
-         \v!middle=>\doifbothsidesoverruled\rightmarginbox\leftmarginbox\rightmarginbox,
-           \v!left=>\leftmarginbox,
-          \v!right=>\rightmarginbox,
-        \s!unknown=>\setbox\preparedmarginbox\hbox{}]}
-
-\def\dostartmarginblock % 2 maal \vbox ivm \unvbox elders
-  {\global\setbox\marginbox\vtop\bgroup\vbox\bgroup
-     \hsize\@@mbwidth
-     \ifvoid\marginbox\else
-       \unvbox\marginbox
-       \@@mbinbetween
-     \fi
-     \setupalign[\@@mbalign]%
-     \dostartattributes\??mb\c!style\c!color{}%
-     \begstrut\ignorespaces}
-
-\def\dostopmarginblock
-  {\unskip\endstrut
-   \dostopattributes
-   \egroup
-   \egroup}
-
-\def\dontstartmargeblok
-  {\@@mbbefore
-   \bgroup
-   \dostartattributes\??mb\c!style\c!color\empty}
-
-\def\dontstopmargeblok
-  {\dostopattributes
-   \egroup
-   \@@mbafter}
-
-\newcounter\nofpostponedblocks
-
-\newif\ifinpostponing
-
-\newevery\everytopofpage\relax
-
-\appendtoks   \the\everytopofpage          \to\everystarttext
-\appendtoks\global\everytopofpage\emptytoks\to\everystoptext
-
-% \startpostponing [pagenumber] [+pageoffset]
-%
-% \startpostponing[2]
-%   PAGE 2 \blank
-% \stoppostponing
-%
-% \startpostponing[+1]
-%   PAGE +1 \blank
-% \stoppostponing
-%
-% \startpostponing[+2]
-%   PAGE +2 \blank
-% \stoppostponing
-%
-% \starttext \dorecurse{4}{\input tufte \page} \stoptext
-
-\newtoks   \postponedpageblocks
-\newcounter\nofpostponedpageblocks
-
-% \ifinpostponing: handhaven, want gebruikt in stijlen ! ! ! ! !
-
-\def\flushpagefloats
-  {\doifoddpageelse
-     {\ifvoid\collectedleftpagefloats
-        \ifvoid\collectedrightpagefloats\else
-           \unvbox\collectedrightpagefloats
-           \page
-          %\the\everytopofpage
-        \fi
-      \fi}
-     {\ifvoid\collectedleftpagefloats\else
-        \unvbox\collectedleftpagefloats
-        \page
-       %\the\everytopofpage
-      \fi
-      \ifvoid\collectedrightpagefloats\else
-         \unvbox\collectedrightpagefloats
-         \page
-        %\the\everytopofpage
-      \fi}%
-   \ifvoid\collectedpagefloats\else
-     % message
-     \unvbox\collectedpagefloats
-   \fi}
-
-% \def\flushrestfloats
-%   {\doif\@@bkcache\v!no\doflushfloats}
-
-% \let\flushrestfloats\relax
-
-\def\dopostponeblock
-  {\bgroup % new may 2004
-   \setsystemmode\v!postponing % new may 2004
-   \the\everytopofpage
-%    \flushrestfloats
-   \flushpagefloats
-   \donefalse
-   \ifinpostponing \else
-     \ifcase\nofpostponedblocks     \else \donetrue \fi
-     \ifcase\nofpostponedpageblocks \else \donetrue \fi
-   \fi
-   \ifdone
-     \bgroup % we need the color/font switch, else problems inside split verbatim
-     \setnormalcatcodes % postponing in verbatim
-     \pushpostponedpagecolor
-     \restoreglobalbodyfont                        % The \nof-test is
-     \global\pagetotal\zeropoint                   % recently added and
-     \global\inpostponingtrue                      % definitely needed else
-     \the\postponedpageblocks                      % we can loose or disorder
-     \dorecurse\nofpostponedblocks                 % floats; anyhow, this
-       {\getbuffer[pbuf-\recurselevel]}%           % mechanism is still
-     \doflushfloats % new but potential dangerous  % suboptimal and needs a
-     \doglobal\newcounter\nofpostponedblocks       % proper analysis
-     \global\inpostponingfalse
-     \poppostponedpagecolor
-     \egroup
-   \fi
-   \egroup} % new may 2004
-
-\def\getpostponedblock#1#2%
-  {\doif{#1}\realfolio{\getbuffer[rbuf-#2]}} % no \ifnum, avoid \fi
-
-% beware, \dosingleempty conflicts with buffers (feeds back the \par)
-
-\setvalue{\e!start\v!postponing}%
-  {\bgroup
-   \obeylines
-   \doifnextcharelse[%
-     {\egroup\nodostartpostponing}{\egroup\dodostartpostponing}}
-
-\def\nodostartpostponing[#1]%
-  {\doglobal\increment\nofpostponedpageblocks
-   \bgroup % a little bit of misusing grouping
-   \doifinstring{+}{#1}\advance \realpageno#1\relax % ugly but efficient
-   \doglobal\appendetoks\noexpand\getpostponedblock
-     {\realfolio}{\nofpostponedpageblocks}\to\postponedpageblocks
-   \egroup
-   \showmessage\m!layouts3\nofpostponedpageblocks
-   \dostartbuffer[rbuf-\nofpostponedpageblocks]%
-     [\e!start\v!postponing][\e!stop\v!postponing]}
-
-\def\dodostartpostponing
-  {\doglobal\increment\nofpostponedblocks
-   \showmessage\m!layouts3\nofpostponedblocks
-   \expanded{\dostartbuffer[pbuf-\nofpostponedblocks][\e!start\v!postponing][\e!stop\v!postponing]}}
-
 \def\dooutput{\sidefloatoutput}           % redefinition of \dooutput
 
-\setupmarginblocks
-  [\c!state=\v!start,
-   \c!location=\v!inmargin,
-   \c!width=\rightmarginwidth,
-   \c!style=,
-   \c!color=,
-   \c!align=,
-   \c!left=,
-   \c!right=,
-   \c!top=,
-   \c!inbetween=\blank,
-   \c!bottom=\vfill,
-   \c!before=,
-   \c!after=]
-
 \definefloat
   [\v!figure]
   [\v!figures]
@@ -2447,6 +2026,7 @@
    \c!bottomframe=,
    \c!leftframe=,
    \c!rightframe=,
+   \c!framecolor=,
    \c!frameoffset=\!!zeropoint,
    \c!before=,
    \c!after=,

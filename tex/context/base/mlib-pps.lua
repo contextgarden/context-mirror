@@ -9,8 +9,13 @@ if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, pos
 -- current limitation: if we have textext as well as a special color then due to
 -- prescript/postscript overload we can have problems
 
-local format, concat, round = string.format, table.concat, math.round
+local format, gmatch, concat, round, match = string.format, string.gmatch, table.concat, math.round, string.match
 local sprint = tex.sprint
+local tonumber, type = tonumber, type
+
+local ctxcatcodes = tex.ctxcatcodes
+
+local trace_textexts = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 
 colors = colors or { }
 
@@ -35,10 +40,11 @@ local colordata = { {}, {}, {}, {}, {} }
 --~         => rest             : r=123 g=n>10 b=whatever
 
 function metapost.specials.register(str) -- only colors
-    local size, content, n, class = str:match("^%%%%MetaPostSpecial: (%d+) (.*) (%d+) (%d+)$")
+    local size, content, n, class = match(str,"^%%%%MetaPostSpecial: (%d+) (.*) (%d+) (%d+)$")
     if class then
+        -- use lpeg splitter
         local data = { }
-        for s in content:gmatch("[^ ]+") do
+        for s in gmatch(content,"[^ ]+") do
             data[#data+1] = s
         end
         class, n = tonumber(class), tonumber(n)
@@ -110,7 +116,7 @@ function metapost.colorspec(cs)
 end
 
 function metapost.specials.tr(specification,object,result)
-    local a, t = specification:match("^(.+),(.+)$")
+    local a, t = match(specification,"^(.+),(.+)$")
     local before = a and t and function()
         result[#result+1] = format("/Tr%s gs",transparencies.register('mp',a,t))
         return object, result
@@ -122,23 +128,8 @@ function metapost.specials.tr(specification,object,result)
     return object, before, nil, after
 end
 
---~ -- possible speedup: hash registered colors
---~
---~ function metapost.specials.sp(specification,object,result) -- todo: color conversion
---~     local s = object.color[1]
---~     object.color = nil
---~     local before = function()
---~         local spec = specification:split(" ")
---~         ctx.registerspotcolor(spec[1])
---~         result[#result+1] = ctx.pdfcolor(colors.model,colors.register('color',nil,'spot',spec[1],spec[2],spec[3],s))
---~         return object, result
---~     end
---~     local after = function()
---~         result[#result+1] = "0 g 0 G"
---~         return object, result
---~     end
---~     return object, before, nil, nil
---~ end
+local specificationsplitter = lpeg.Ct(lpeg.splitat(" "))
+local colorsplitter         = lpeg.Ct(lpeg.splitat(":"))
 
 -- Unfortunately we cannot use cmyk colors natively because there is no
 -- generic color allocation primitive ... it's just an rgbcolor color.. This
@@ -151,11 +142,11 @@ end
 -- This is also an example of a simple plugin.
 
 --~ function metapost.specials.cc(specification,object,result)
---~     object.color = specification:split(" ")
+--~     object.color = specificationsplitter:match(specification)
 --~     return object, nil, nil, nil
 --~ end
 --~ function metapost.specials.cc(specification,object,result)
---~     local c = specification:split(" ")
+--~     local c = specificationsplitter:match(specification)
 --~     local o = object.color[1]
 --~     c[1],c[2],c[3],c[4] = o*c[1],o*c[2],o*c[3],o*c[4]
 --~     return object, nil, nil, nil
@@ -176,7 +167,7 @@ function metapost.specials.fg(specification,object,result,flusher)
     if sy == 0 then sy = 0.00001 end
     local before = specification and function()
         flusher.flushfigure(result)
-        sprint(tex.ctxcatcodes,format("\\MPLIBfigure{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,specification))
+        sprint(ctxcatcodes,format("\\MPLIBfigure{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,specification))
         return object, { }
     end
     return { } , before, nil, nil -- replace { } by object for tracing
@@ -210,22 +201,22 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
     nofshades = nofshades + 1
     flusher.flushfigure(result)
     result = { }
-    local t = specification:split(" ")
+    local t = specificationsplitter:match(specification)
     -- we need a way to move/scale
-    local ca = t[4]:split(":")
-    local cb = t[8]:split(":")
+    local ca = colorsplitter:match(t[4])
+    local cb = colorsplitter:match(t[8])
     if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
     if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
     if type(ca) == "string" then
         -- spot color, not supported, maybe at some point use the fallbacks
-        sprint(tex.ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s %s %s}",
+        sprint(ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s %s %s}",
             nofshades,
             t[1], t[2], 0, 1, 1, "DeviceGray",
             t[5], t[6], t[7], t[9], t[10], t[11]))
 -- terrible hack, somehow does not work
 --~ local a = ca:match("^([^ ]+)")
 --~ local b = cb:match("^([^ ]+)")
---~ sprint(tex.ctxcatcodes,format("\\xMPLIBcircularshade{%s}{%s %s}{%s}{%s}{%s}{%s}{%s %s %s %s %s %s}",
+--~ sprint(ctxcatcodes,format("\\xMPLIBcircularshade{%s}{%s %s}{%s}{%s}{%s}{%s}{%s %s %s %s %s %s}",
 --~     nofshades,
 --~     --~ t[1], t[2], a, b, 1, "DeviceN",
 --~     0, 1, a, b, 1, "DeviceN",
@@ -250,7 +241,7 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
                 ca[1], ca[2], ca[3] = a, a, a
                 cb[1], cb[2], cb[3] = b, b, b
             end
-            sprint(tex.ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f %.3f %.3f}{%.3f %.3f %.3f}{%s}{%s}{%s %s %s %s %s %s}",
+            sprint(ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f %.3f %.3f}{%.3f %.3f %.3f}{%s}{%s}{%s %s %s %s %s %s}",
                 nofshades,
                 t[1], t[2], ca[1], ca[2], ca[3], cb[1], cb[2], cb[3], 1, "DeviceRGB",
                 t[5], t[6], t[7], t[9], t[10], t[11]))
@@ -262,7 +253,7 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
                 ca[1], ca[2], ca[3], ca[4] = 0, 0, 0, ca[1]
                 cb[1], cb[2], cb[3], ca[4] = 0, 0, 0, ca[1]
             end
-            sprint(tex.ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f %.3f %.3f %.3f}{%.3f %.3f %.3f %.3f}{%s}{%s}{%s %s %s %s %s %s}",
+            sprint(ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f %.3f %.3f %.3f}{%.3f %.3f %.3f %.3f}{%s}{%s}{%s %s %s %s %s %s}",
                 nofshades,
                 t[1], t[2], ca[1], ca[2], ca[3], ca[4], cb[1], cb[2], cb[3], cb[4], 1, "DeviceCMYK",
                 t[5], t[6], t[7], t[9], t[10], t[11]))
@@ -274,7 +265,7 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
                 ca[1] = rgbtogray(ca[1],ca[2],ca[3])
                 cb[1] = rgbtogray(cb[1],cb[2],cb[3])
             end
-            sprint(tex.ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s %s %s}",
+            sprint(ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s %s %s}",
                 nofshades,
                 t[1], t[2], ca[1], cb[1], 1, "DeviceGray",
                 t[5], t[6], t[7], t[9], t[10], t[11]))
@@ -296,15 +287,15 @@ function metapost.specials.ls(specification,object,result,flusher)
     nofshades = nofshades + 1
     flusher.flushfigure(result)
     result = { }
-    local t = specification:split(" ")
+    local t = specificationsplitter:match(specification)
     -- we need a way to move/scale
-    local ca = t[4]:split(":")
-    local cb = t[7]:split(":")
+    local ca = colorsplitter:match(t[4])
+    local cb = colorsplitter:match(t[7])
     if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
     if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
     if type(ca) == "string" then
         -- spot color, not supported, maybe at some point use the fallbacks
-        sprint(tex.ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s}",
+        sprint(ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s}",
             nofshades,
             t[1], t[2], 0, 1, 1, "DeviceGray",
             t[5], t[6], t[8], t[9]))
@@ -327,7 +318,7 @@ function metapost.specials.ls(specification,object,result,flusher)
                 ca[1], ca[2], ca[3] = a, a, a
                 cb[1], cb[2], cb[3] = b, b, b
             end
-            sprint(tex.ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f %.3f %.3f}{%.3f %.3f %.3f}{%s}{%s}{%s %s %s %s}",
+            sprint(ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f %.3f %.3f}{%.3f %.3f %.3f}{%s}{%s}{%s %s %s %s}",
                 nofshades,
                 t[1], t[2], ca[1], ca[2], ca[3], cb[1], cb[2], cb[3], 1, "DeviceRGB",
                 t[5], t[6], t[8], t[9]))
@@ -339,7 +330,7 @@ function metapost.specials.ls(specification,object,result,flusher)
                 ca[1], ca[2], ca[3], ca[4] = 0, 0, 0, ca[1]
                 cb[1], cb[2], cb[3], ca[4] = 0, 0, 0, ca[1]
             end
-            sprint(tex.ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f %.3f %.3f %.3f}{%.3f %.3f %.3f %.3f}{%s}{%s}{%s %s %s %s}",
+            sprint(ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f %.3f %.3f %.3f}{%.3f %.3f %.3f %.3f}{%s}{%s}{%s %s %s %s}",
                 nofshades,
                 t[1], t[2], ca[1], ca[2], ca[3], ca[4], cb[1], cb[2], cb[3], cb[4], 1, "DeviceCMYK",
                 t[5], t[6], t[8], t[9]))
@@ -351,7 +342,7 @@ function metapost.specials.ls(specification,object,result,flusher)
                 ca[1] = rgbtogray(ca[1],ca[2],ca[3])
                 cb[1] = rgbtogray(cb[1],cb[2],cb[3])
             end
-            sprint(tex.ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s}",
+            sprint(ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s}",
                 nofshades,
                 t[1], t[2], ca[1], cb[1], 1, "DeviceGray",
                 t[5], t[6], t[8], t[9]))
@@ -373,10 +364,9 @@ end
 
 local current_format, current_graphic
 
---~ metapost.first_box, metapost.last_box = 1000, 1100
-
+metapost.first_box       = metapost.first_box or 1000
+metapost.last_box        = metapost.last_box or 1100
 metapost.textext_current = metapost.first_box
-metapost.trace_texttexts = false
 metapost.multipass       = false
 
 function metapost.free_boxes()
@@ -393,49 +383,55 @@ end
 
 function metapost.specials.tf(specification,object)
 --~ print("setting", metapost.textext_current)
-    local n, str = specification:match("^(%d+):(.+)$")
-    if metapost.textext_current < metapost.last_box then
-        metapost.textext_current = metapost.first_box + n - 1
+    local n, str = match(specification,"^(%d+):(.+)$")
+    if n and str then
+        if metapost.textext_current < metapost.last_box then
+            metapost.textext_current = metapost.first_box + n - 1
+        end
+        if trace_textexts then
+            logs.report("metapost","first pass: order %s, box %s",n,metapost.textext_current)
+        end
+        sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,str))
+        metapost.multipass = true
     end
-    if metapost.trace_texttexts then
-        print("metapost", format("first pass: order %s, box %s",n,metapost.textext_current))
-    end
-    sprint(tex.ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,str))
-    metapost.multipass = true
     return { }, nil, nil, nil
 end
 
 function metapost.specials.ts(specification,object,result,flusher)
     -- print("getting", metapost.textext_current)
-    local n, str = specification:match("^(%d+):(.+)$")
-    if metapost.trace_texttexts then
-        print("metapost", format("second pass: order %s, box %s",n,metapost.textext_current))
-    end
-    local op = object.path
-    local first, second, fourth = op[1], op[2], op[4]
-    local tx, ty = first.x_coord      , first.y_coord
-    local sx, sy = second.x_coord - tx, fourth.y_coord - ty
-    local rx, ry = second.y_coord - ty, fourth.x_coord - tx
-    if sx == 0 then sx = 0.00001 end
-    if sy == 0 then sy = 0.00001 end
-    if not metapost.trace_texttexts then
-        object.path = nil
-    end
-    local before = function() -- no need for function
-    --~ flusher.flushfigure(result)
-    --~ sprint(tex.ctxcatcodes,format("\\MPLIBgettext{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,metapost.textext_current))
-    --~ result = { }
-        result[#result+1] = format("q %f %f %f %f %f %f cm", sx,rx,ry,sy,tx,ty)
-        flusher.flushfigure(result)
-        if metapost.textext_current < metapost.last_box then
-            metapost.textext_current = metapost.first_box + n - 1
+    local n, str = match(specification,"^(%d+):(.+)$")
+    if n and str then
+        if trace_textexts then
+            logs.report("metapost","second pass: order %s, box %s",n,metapost.textext_current)
         end
-        local b = metapost.textext_current
-        sprint(tex.ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b, metapost.sxsy(tex.wd[b],tex.ht[b],tex.dp[b])))
-        result = { "Q" }
-        return object, result
+        local op = object.path
+        local first, second, fourth = op[1], op[2], op[4]
+        local tx, ty = first.x_coord      , first.y_coord
+        local sx, sy = second.x_coord - tx, fourth.y_coord - ty
+        local rx, ry = second.y_coord - ty, fourth.x_coord - tx
+        if sx == 0 then sx = 0.00001 end
+        if sy == 0 then sy = 0.00001 end
+        if not trace_textexts then
+            object.path = nil
+        end
+        local before = function() -- no need for function
+        --~ flusher.flushfigure(result)
+        --~ sprint(ctxcatcodes,format("\\MPLIBgettext{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,metapost.textext_current))
+        --~ result = { }
+            result[#result+1] = format("q %f %f %f %f %f %f cm", sx,rx,ry,sy,tx,ty)
+            flusher.flushfigure(result)
+            if metapost.textext_current < metapost.last_box then
+                metapost.textext_current = metapost.first_box + n - 1
+            end
+            local b = metapost.textext_current
+            sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b, metapost.sxsy(tex.wd[b],tex.ht[b],tex.dp[b])))
+            result = { "Q" }
+            return object, result
+        end
+        return { }, before, nil, nil -- replace { } by object for tracing
+    else
+        return { }, nil, nil, nil -- replace { } by object for tracing
     end
-    return { }, before, nil, nil -- replace { } by object for tracing
 end
 
 function metapost.colorconverter()
@@ -689,24 +685,25 @@ do
 
 end
 
---~ local factor = 65536*(7200/7227)
 local factor = 65536*(7227/7200)
 
 function metapost.edefsxsy(wd,ht,dp) -- helper for figure
-    commands.edef("sx",(wd ~= 0 and 1/( wd    /(factor))) or 0)
-    commands.edef("sy",(wd ~= 0 and 1/((ht+dp)/(factor))) or 0)
+    local hd = ht + dp
+    commands.edef("sx",(wd ~= 0 and factor/wd) or 0)
+    commands.edef("sy",(hd ~= 0 and factor/hd) or 0)
 end
 
 function metapost.sxsy(wd,ht,dp) -- helper for text
-    return (wd ~= 0 and 1/(wd/(factor))) or 0, (wd ~= 0 and 1/((ht+dp)/(factor))) or 0
+    local hd = ht + dp
+    return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
 function metapost.text_texts_data()
     local t, n = { }, 0
     for i = metapost.first_box, metapost.last_box do
         n = n + 1
-        if metapost.trace_texttexts then
-            print("metapost", format("passed data: order %s, box %s",n,i))
+        if trace_textexts then
+            logs.report("metapost","passed data: order %s, box %s",n,i)
         end
         if tex.box[i] then
             t[#t+1] = format("_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;", n,tex.wd[i]/factor, n,tex.ht[i]/factor, n,tex.dp[i]/factor)
@@ -740,7 +737,7 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
         local flushed = metapost.process(mpsformat, {
             preamble,
             "beginfig(1); ",
-            "_trial_run_ := true ;",
+            "if unknown _trial_run_ : boolean _trial_run_ fi ; _trial_run_ := true ;",
             str,
             "endfig ;"
      -- }, true, nil, true )
@@ -753,7 +750,7 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
         if not flushed or not metapost.optimize then
             -- tricky, we can only ask once for objects and therefore
             -- we really need a second run when not optimized
-            sprint(tex.ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
+            sprint(ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
         end
     else
         metapost.process(mpsformat, {
@@ -782,17 +779,17 @@ end
 function metapost.getclippath(data)
     local mpx = metapost.format("metafun")
     if mpx and data then
-        input.starttiming(metapost)
-        input.starttiming(metapost.exectime)
+        statistics.starttiming(metapost)
+        statistics.starttiming(metapost.exectime)
         local result = mpx:execute(format("beginfig(1);%s;endfig;",data))
-        input.stoptiming(metapost.exectime)
+        statistics.stoptiming(metapost.exectime)
         if result.status > 0 then
             print("error", result.status, result.error or result.term or result.log)
             result = ""
         else
             result = metapost.filterclippath(result)
         end
-        input.stoptiming(metapost)
+        statistics.stoptiming(metapost)
         sprint(result)
     end
 end
@@ -842,7 +839,7 @@ do -- not that beautiful but ok, we could save a md5 hash in the tui file !
                 local result = { }
                 if io.exists(mpyfile) then
                     local data = io.loaddata(mpyfile)
-                    for figure in data:gmatch("beginfig(.-)endfig") do
+                    for figure in gmatch(data,"beginfig(.-)endfig") do
                         result[#result+1] = format("begingraphictextfig%sendgraphictextfig ;\n", figure)
                     end
                     io.savedata(mpyfile,concat(result,""))

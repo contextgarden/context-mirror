@@ -1,50 +1,217 @@
--- filename : luat-env.lua
--- comment  : companion to luat-env.tex
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['luat-env'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
--- here we don't assume any extra libraries
-
--- A former version provides functionality for non embeded core
+-- A former version provided functionality for non embeded core
 -- scripts i.e. runtime library loading. Given the amount of
 -- Lua code we use now, this no longer makes sense. Much of this
--- evolved before bytecode arrays were available. Much code has
--- disappeared already.
+-- evolved before bytecode arrays were available and so a lot of
+-- code has disappeared already.
 
-if not versions then versions = { } end versions['luat-env'] = 1.001
+local trace_verbose  = false  trackers.register("resolvers.verbose",  function(v) trace_verbose  = v end)
+local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v trackers.enable("resolvers.verbose") end)
+
+local format = string.format
+
+-- precautions
+
+os.setlocale(nil,nil) -- useless feature and even dangerous in luatex
+
+function os.setlocale()
+    -- no way you can mess with it
+end
+
+-- dirty tricks
+
+if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
+    arg[-1]=arg[0] arg[0]=arg[2] for k=3,#arg do arg[k-2]=arg[k] end arg[#arg]=nil arg[#arg]=nil
+end
+
+if profiler and os.env["MTX_PROFILE_RUN"] == "YES" then
+    profiler.start("luatex-profile.log")
+end
 
 -- environment
 
-if not environment then environment = { } end
-
-environment.trace = false
-
--- kpse is overloaded by this time
+environment             = environment or { }
+environment.arguments   = { }
+environment.files       = { }
+environment.sortedflags = nil
 
 if not environment.jobname or environment.jobname == "" then if tex then environment.jobname = tex.jobname end end
 if not environment.version or environment.version == "" then             environment.version = "unknown"   end
+if not environment.jobname                              then             environment.jobname = "unknown"   end
+
+function environment.initialize_arguments(arg)
+    local arguments, files = { }, { }
+    environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
+    for index, argument in pairs(arg) do
+        if index > 0 then
+            local flag, value = argument:match("^%-+(.+)=(.-)$")
+            if flag then
+                arguments[flag] = string.unquote(value or "")
+            else
+                flag = argument:match("^%-+(.+)")
+                if flag then
+                    arguments[flag] = true
+                else
+                    files[#files+1] = argument
+                end
+            end
+        end
+    end
+    environment.ownname = environment.ownname or arg[0] or 'unknown.lua'
+end
+
+function environment.setargument(name,value)
+    environment.arguments[name] = value
+end
+
+-- todo: defaults, better checks e.g on type (boolean versus string)
+--
+-- tricky: too many hits when we support partials unless we add
+-- a registration of arguments so from now on we have 'partial'
+
+function environment.argument(name,partial)
+    local arguments, sortedflags = environment.arguments, environment.sortedflags
+    if arguments[name] then
+        return arguments[name]
+    elseif partial then
+        if not sortedflags then
+            sortedflags = { }
+            for _,v in pairs(table.sortedkeys(arguments)) do
+                sortedflags[#sortedflags+1] = "^" .. v
+            end
+            environment.sortedflags = sortedflags
+        end
+        -- example of potential clash: ^mode ^modefile
+        for _,v in ipairs(sortedflags) do
+            if name:find(v) then
+                return arguments[v:sub(2,#v)]
+            end
+        end
+    end
+    return nil
+end
+
+function environment.split_arguments(separator) -- rather special, cut-off before separator
+    local done, before, after = false, { }, { }
+    for _,v in ipairs(environment.original_arguments) do
+        if not done and v == separator then
+            done = true
+        elseif done then
+            after[#after+1] = v
+        else
+            before[#before+1] = v
+        end
+    end
+    return before, after
+end
+
+function environment.reconstruct_commandline(arg,noquote)
+    arg = arg or environment.original_arguments
+    if noquote and #arg == 1 then
+        local a = arg[1]
+        a = resolvers.resolve(a)
+        a = a:unquote()
+        return a
+    elseif next(arg) then
+        local result = { }
+        for _,a in ipairs(arg) do -- ipairs 1 .. #n
+            a = resolvers.resolve(a)
+            a = a:unquote()
+            a = a:gsub('"','\\"') -- tricky
+            if a:find(" ") then
+                result[#result+1] = a:quote()
+            else
+                result[#result+1] = a
+            end
+        end
+        return table.join(result," ")
+    else
+        return ""
+    end
+end
+
+if arg then
+
+    -- new, reconstruct quoted snippets (maybe better just remnove the " then and add them later)
+    local newarg, instring = { }, false
+
+    for index, argument in ipairs(arg) do
+        if argument:find("^\"") then
+            newarg[#newarg+1] = argument:gsub("^\"","")
+            if not argument:find("\"$") then
+                instring = true
+            end
+        elseif argument:find("\"$") then
+            newarg[#newarg] = newarg[#newarg] .. " " .. argument:gsub("\"$","")
+            instring = false
+        elseif instring then
+            newarg[#newarg] = newarg[#newarg] .. " " .. argument
+        else
+            newarg[#newarg+1] = argument
+        end
+    end
+    for i=1,-5,-1 do
+        newarg[i] = arg[i]
+    end
+
+    environment.initialize_arguments(newarg)
+    environment.original_arguments = newarg
+    environment.raw_arguments = arg
+
+    arg = { } -- prevent duplicate handling
+
+end
+
+-- weird place ... depends on a not yet loaded module
 
 function environment.texfile(filename)
-    return input.find_file(filename,'tex')
+    return resolvers.find_file(filename,'tex')
 end
 
 function environment.luafile(filename)
-    return input.find_file(filename,'tex') or input.find_file(filename,'texmfscripts')
+    local resolved = resolvers.find_file(filename,'tex') or ""
+    if resolved ~= "" then
+        return resolved
+    end
+    resolved = resolvers.find_file(filename,'texmfscripts') or ""
+    if resolved ~= "" then
+        return resolved
+    end
+    return resolvers.find_file(filename,'luatexlibs') or ""
 end
 
-if not environment.jobname then environment.jobname  = "unknown" end
-
 environment.loadedluacode = loadfile -- can be overloaded
+
+--~ function environment.loadedluacode(name)
+--~     if os.spawn("texluac -s -o texluac.luc " .. name) == 0 then
+--~         local chunk = loadstring(io.loaddata("texluac.luc"))
+--~         os.remove("texluac.luc")
+--~         return chunk
+--~     else
+--~         environment.loadedluacode = loadfile -- can be overloaded
+--~         return loadfile(name)
+--~     end
+--~ end
 
 function environment.luafilechunk(filename) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        input.report("loading file %s", fullname)
+        if trace_verbose then
+            logs.report("fileio","loading file %s", fullname)
+        end
         return environment.loadedluacode(fullname)
     else
-        input.report("unknown file %s", filename)
+        if trace_verbose then
+            logs.report("fileio","unknown file %s", filename)
+        end
         return nil
     end
 end
@@ -62,7 +229,9 @@ function environment.loadluafile(filename, version)
     -- when not overloaded by explicit suffix we look for a luc file first
     local fullname = (lucname and environment.luafile(lucname)) or ""
     if fullname ~= "" then
-        input.report("loading %s", fullname)
+        if trace_verbose then
+            logs.report("fileio","loading %s", fullname)
+        end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
     end
     if chunk then
@@ -78,7 +247,9 @@ function environment.loadluafile(filename, version)
             if v == version then
                 return true
             else
-                input.report("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
+                if trace_verbose then
+                    logs.report("fileio","version mismatch for %s: lua=%s, luc=%s", filename, v, version)
+                end
                 environment.loadluafile(filename)
             end
         else
@@ -87,10 +258,14 @@ function environment.loadluafile(filename, version)
     end
     fullname = (luaname and environment.luafile(luaname)) or ""
     if fullname ~= "" then
-        input.report("loading %s", fullname)
+        if trace_verbose then
+            logs.report("fileio","loading %s", fullname)
+        end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
         if not chunk then
-            input.report("unknown file %s", filename)
+            if verbose then
+                logs.report("fileio","unknown file %s", filename)
+            end
         else
             assert(chunk)()
             return true
@@ -98,82 +273,3 @@ function environment.loadluafile(filename, version)
     end
     return false
 end
-
--- -- -- the next function was posted by Peter Cawley on the lua list -- -- --
--- -- --                                                              -- -- --
--- -- -- stripping makes the compressed format file about 1MB smaller -- -- --
--- -- --                                                              -- -- --
--- -- -- using this trick is at your own risk                         -- -- --
--- -- --                                                              -- -- --
--- -- -- this is just an experiment, this feature may disappear       -- -- --
-
-local function strip_code(dump)
-    local version, format, endian, int, size, ins, num = dump:byte(5, 11)
-    local subint
-    if endian == 1 then
-        subint = function(dump, i, l)
-            local val = 0
-            for n = l, 1, -1 do
-                val = val * 256 + dump:byte(i + n - 1)
-            end
-            return val, i + l
-        end
-    else
-        subint = function(dump, i, l)
-            local val = 0
-            for n = 1, l, 1 do
-                val = val * 256 + dump:byte(i + n - 1)
-            end
-            return val, i + l
-        end
-    end
-    local strip_function
-    strip_function = function(dump)
-        local count, offset = subint(dump, 1, size)
-        local stripped, dirty = string.rep("\0", size), offset + count
-        offset = offset + count + int * 2 + 4
-        offset = offset + int + subint(dump, offset, int) * ins
-        count, offset = subint(dump, offset, int)
-        for n = 1, count do
-            local t
-            t, offset = subint(dump, offset, 1)
-            if t == 1 then
-                offset = offset + 1
-            elseif t == 4 then
-                offset = offset + size + subint(dump, offset, size)
-            elseif t == 3 then
-                offset = offset + num
-            end
-        end
-        count, offset = subint(dump, offset, int)
-        stripped = stripped .. dump:sub(dirty, offset - 1)
-        for n = 1, count do
-            local proto, off = strip_function(dump:sub(offset, -1))
-            stripped, offset = stripped .. proto, offset + off - 1
-        end
-        offset = offset + subint(dump, offset, int) * int + int
-        count, offset = subint(dump, offset, int)
-        for n = 1, count do
-            offset = offset + subint(dump, offset, size) + size + int * 2
-        end
-        count, offset = subint(dump, offset, int)
-        for n = 1, count do
-            offset = offset + subint(dump, offset, size) + size
-        end
-        stripped = stripped .. string.rep("\0", int * 3)
-        return stripped, offset
-    end
-    return dump:sub(1,12) .. strip_function(dump:sub(13,-1))
-end
-
-environment.stripcode = false -- true
-
-function environment.loadedluacode(fullname)
-    if environment.stripcode then
-        return loadstring(strip_code(string.dump(loadstring(io.loaddata(fullname)))))
-    else
-        return loadfile(fullname)
-    end
-end
-
--- -- end of stripping code -- --

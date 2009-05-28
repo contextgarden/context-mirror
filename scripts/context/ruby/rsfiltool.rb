@@ -18,7 +18,8 @@ end
 
 # todo : split session stuff from xmpl/base into an xmpl/session module and "include xmpl/session" into base and here and ...
 
-require 'ftools'
+require 'fileutils'
+# require 'ftools'
 require 'xmpl/base'
 require 'xmpl/switch'
 require 'xmpl/request'

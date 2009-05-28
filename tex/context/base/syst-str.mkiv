@@ -13,7 +13,16 @@
 
 \unprotect
 
+% nb: these macros might go away !
+%
 % todo: escape special chars in expr (\luaescapeexpression)
+
+%D I got tired of making dedicated clean up macros using the
+%D same mechanism again and again, so now we have:
+%D
+%D \starttyping
+%D \def\xxxx{abc.d} \replacecharacters\xxxx{a.}{-} \xxxx
+%D \stoptyping
 
 \def\replacecharacters#1#2#3% macro characters replacement
   {\dodoglobal\edef#1{\ctxlua{tex.sprint((string.gsub(\!!bs#1\!!es,\!!bs#2\!!es,"#3")))}}}

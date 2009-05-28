@@ -13,15 +13,6 @@
 
 \catcode`\{=1 \catcode`\}=2 \catcode`\#=6
 
-%D For many years \CONTEXT\ supported both good old \TEX\ and \ETEX, but
-%D the time has come (August 2006) to advance, especially now that all
-%D engines provide \ETEX\ functionality and more is on the horizon.
-
-\ifx\eTeXversion\undefined
-  \immediate\write16{SORRY CONTEXT NOW NEEDS ETEX}
-  \expandafter \end
-\fi
-
 %D From the next string (which is set by the script that assembles the
 %D distribution) later on we will calculate a number that can be used
 %D by use modules to identify the feature level. Starting with version
@@ -29,12 +20,12 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2008.10.31 13:58}
+\edef\contextversion{2009.05.28 11:23}
 
 %D For those who want to use this:
 
-\def\fmtname   {context}
-\def\fmtversion{3.1415926}
+\let\fmtname   \contextformat
+\let\fmtversion\contextversion
 
 \let\showcontextbanner\relax
 

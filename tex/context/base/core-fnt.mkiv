@@ -1,0 +1,498 @@
+%D \module
+%D   [       file=core-fnt,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Fonts}
+
+\unprotect
+
+%D \macros
+%D   {compound}
+%D
+%D We will overload the already active \type {|} so we have
+%D to save its meaning in order to be able to use this handy
+%D macro.
+%D
+%D \starttyping
+%D so test\compound{}test can be used instead of test||test
+%D \stoptyping
+
+\bgroup \catcode`\|=\@@active \gdef\compound#1{|#1|} \egroup
+
+%D Here we hook some code into the clean up mechanism needed
+%D for verbatim data.
+
+\appendtoks
+  \disablecompoundcharacters
+  \disablediscretionaries
+\to \everycleanupfeatures
+
+%D \macros
+%D   {stretched}
+%D
+%D Stretching characters in a word is a sort of typographical
+%D murder. Nevertheless we support this manipulation for use in
+%D for instance titles.
+%D
+%D \starttyping
+%D \hbox to 5cm{\stretched{murder}}
+%D \stoptyping
+%D
+%D \typebuffer
+%D
+%D or
+%D
+%D \startvoorbeeld
+%D \getbuffer
+%D \stopvoorbeeld
+%D
+%D \showsetup{stretched}
+
+\def\stretched#1%
+  {\ifvmode\hbox to \hsize\else\ifinner\else\hbox\fi\fi
+   \bgroup\processtokens\relax\hss\relax{\hss\hss}{#1}\egroup}
+
+%D \startbuffer
+%D \stretched{Unknown Box}
+%D \hbox to .5\hsize{\stretched{A Horizontal Box}}
+%D \vbox to 2cm{\stretched{A Vertical Box}}
+%D \hbox to 3cm{\stretched{sp{\'e}c{\`\i}{\"a}l}}
+%D \stopbuffer
+%D
+%D \getbuffer
+%D
+%D The first line of this macros takes care of boxing. Normally
+%D one will use an \type{\hbox} specification. The last line
+%D shows how special characters should be passed.
+%D
+%D \typebuffer
+
+%D \macros
+%D   {stretchednormalcase, stretcheduppercase, stretchedlowercase}
+%D
+%D A convenient alternative is:
+%D
+%D \starttyping
+%D \stretcheduppercase{Is this what you like?}
+%D \stoptyping
+%D
+%D \typebuffer
+%D
+%D this one uses fixed skips and kerns.
+%D
+%D \startvoorbeeld
+%D \getbuffer
+%D \stopvoorbeeld
+%D
+%D The default skip can be set with:
+
+% \def\stretchedspacefactor{4}
+% \def\stretchedspaceamount{.25em}
+%
+% \unexpanded\def\stretcheduppercase#1%
+%   {\bgroup
+%    \the\everyuppercase
+%    \uppercase{\def\textstring{#1}}%
+%    \ifdim\stretchedspaceamount>\zeropoint
+%      \def\textkern%
+%        {\kern\stretchedspaceamount}%
+%      \def\textskip%
+%        {\scratchdimen=\stretchedspaceamount
+%         \hskip\stretchedspacefactor\scratchdimen}%
+%      \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA
+%        \textskip\@EA{\textstring}%
+%    \else
+%      \textstring
+%    \fi
+%    \egroup}
+
+%D Given the following settings, the space is 1em by default:
+
+\def\stretchedspacefactor{4}
+\def\stretchedspaceamount{.25em}
+\def\stretchedbreaktokens{.@/}
+
+\unexpanded\def\stretchednormalcase
+  {\stretchedsomecase\firstofoneargument}
+
+\unexpanded\def\stretcheduppercase
+  {\stretchedsomecase{\the\everyuppercase\uppercase}}
+
+\unexpanded\def\stretchedlowercase
+  {\stretchedsomecase{\the\everylowercase\lowercase}}
+
+\def\stretchedsomecase#1#2%
+  {\bgroup
+   #1{\def\textstring{#2}}%
+   \ifdim\stretchedspaceamount=\zeropoint
+     \textstring
+   \else
+     \def\textkern##1%
+       {% beware: ##1 may not be \box\somebox -)
+        \determinemidwordbreak{##1}{\stretchedbreaktokens}%
+        \kern\stretchedspaceamount##1\domidwordbreak}%
+     \def\textskip
+       {\scratchdimen\stretchedspaceamount
+        \hskip\stretchedspacefactor\scratchdimen}%
+     \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA
+       \textskip\@EA{\textstring}%
+   \fi
+   \egroup}
+
+%D An auxiliary macro, see for usage \type {\stretcheduppercase}.
+
+\let\domidwordbreak\relax
+
+\def\setmidwordbreaktoken#1%
+  {\sfcode`#1=5000\relax}
+
+\def\determinemidwordbreak#1#2%
+  {\edef\midwordbreaktokens{#2}%
+   \ifx\midwordbreaktokens\empty
+     \global\let\domidwordbreak\relax
+   \else
+     \setbox\scratchbox\hbox
+       {\expandafter\handletokens\midwordbreaktokens\with\setmidwordbreaktoken
+        a\space \!!dimena\lastskip
+        #1\space\!!dimenb\lastskip \relax % needed
+        \ifdim\!!dimena=\!!dimenb
+          \globallet\domidwordbreak\relax
+        \else
+          \globallet\domidwordbreak\allowbreak
+        \fi}%
+   \fi}
+
+%D \macros
+%D   {underbar,underbars,
+%D    overbar,overbars,
+%D    overstrike,overstrikes,
+%D    setupunderbar}
+%D
+%D In the rare case that we need undelined words, for instance
+%D because all font alternatives are already in use, one can
+%D use \type{\underbar} and \type{\overstrike} and their plural
+%D forms.
+%D
+%D \startbuffer
+%D \underbars{drawing \underbar{bars} under words is a typewriter leftover}
+%D \overstrikes{striking words makes them \overstrike{unreadable} but
+%D sometimes even \overbar{top lines} come into view.}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startvoorbeeld
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D \stopvoorbeeld
+%D
+%D The next macros are derived from the \PLAIN\ \TEX\ one, but
+%D also supports nesting. The \type{$} keeps us in horizontal
+%D mode and at the same time applies grouping.
+%D
+%D \showsetup{underbar}
+%D \showsetup{underbars}
+%D \showsetup{overbar}
+%D \showsetup{overbars}
+%D \showsetup{overstrike}
+%D \showsetup{overstrikes}
+%D
+%D Although underlining is ill advised, we permit some
+%D alternatives, that can be set up by:
+%D
+%D \showsetup{setupunderbar}
+%D
+%D The alternatives show up as
+%D   {\setupunderbar [alternative=a]\underbar{alternative a}},
+%D   {\setupunderbar [alternative=b]\underbar{alternative b}},
+%D   {\setupunderbar [alternative=c]\underbar{alternative c}}
+%D and
+%D   {\setupunderbar [rulethickness=1pt]\underbar{1pt width}},
+%D   {\setupunderbar [rulethickness=2pt]\underbar{2pt width}},
+%D or whatever. Because \type{\overstrike} uses the same
+%D method, the settings also apply to that macro.
+
+\newcount\underbarlevel
+
+\def\underbarmethoda#1#2#3% RULE
+  {\hbox to #1{\vrule\!!width#1\!!height#2\!!depth#3}}
+
+\def\underbarmethodb#1#2#3% DASH
+  {\hbox to #1
+     {\hskip-.25em
+      \xleaders
+        \hbox{\hskip.25em\vrule\!!width.25em\!!height#2\!!depth#3}
+        \hfil}}
+
+\def\underbarmethodc#1#2#3% PERIOD
+  {\hbox to #1
+     {\dimen4=#3
+      \advance\dimen4 .2ex
+      \hskip-.25em
+      \xleaders
+        \hbox{\hskip.25em\lower\dimen4\hbox{.}}
+        \hfil}}
+
+\def\dododounderbar#1#2#3%
+  {\startmathmode
+   \setbox0\hbox{#3}%
+   \setbox2\hbox{\color[\@@onrulecolor]{\getvalue{underbarmethod\@@onalternative}{\wd0}{#1}{#2}}}%
+   \wd0\zeropoint
+   \ht2\ht0
+   \dp2\dp0
+   \box0\box2
+   \stopmathmode}
+
+\unexpanded\def\dodounderbar#1%
+  {\bgroup
+   \dimen0=\@@onbottomoffset
+   \dimen0=\underbarlevel\dimen0
+   \ifdone \else
+     \advance\dimen0 -\strutht
+   \fi
+   \dimen2\dimen0
+   \advance\dimen2 \@@onrulethickness
+   \dododounderbar{-\dimen0}{\dimen2}{#1}%
+   \egroup}
+
+\def\betweenunderbarwords
+  {\bgroup
+   \setbox0\hbox{\dodounderbar{\hskip\interwordspace}}%
+   \nobreak
+   \hskip\zeropoint\!!minus\interwordshrink
+   \discretionary{}{}{\box0}%
+   \egroup}
+
+\def\betweenunderbarspaces
+  {\hskip\currentspaceskip}
+
+% \unexpanded\def\dounderbar#1#2%
+%   {\let\betweenisolatedwords#1%
+%    \processisolatedwords{#2}\dodounderbar
+%    \egroup}
+
+\unexpanded\def\underbar
+  {\bgroup
+   \advance\underbarlevel\plusone
+   \donetrue
+   \dounderbar\betweenunderbarwords}
+
+\unexpanded\def\dounderbar#1%
+  {\let\betweenisolatedwords#1%
+   \dosingleempty\redounderbar}
+
+\unexpanded\def\redounderbar[#1]#2%
+  {\iffirstargument\setupunderbar[#1]\fi
+   \processisolatedwords{#2}\dodounderbar
+   \egroup}
+
+\unexpanded\def\underbars
+  {\bgroup
+   \advance\underbarlevel\plusone
+   \donetrue
+   \dounderbar\betweenunderbarspaces}
+
+\unexpanded\def\overbar
+  {\bgroup
+   \advance\underbarlevel\minusone
+   \donefalse
+   \dounderbar\betweenunderbarwords}
+
+\unexpanded\def\overbars
+  {\bgroup
+   \advance\underbarlevel\minusone
+   \donefalse
+   \dounderbar\betweenunderbarspaces}
+
+\def\dooverstrike#1%
+  {\bgroup
+   \dimen0=\@@ontopoffset
+   \dimen2=\dimen0
+   \advance\dimen2 \@@onrulethickness
+   \dododounderbar{\dimen2}{-\dimen0}{#1}%
+   \egroup}
+
+\def\betweenoverstrikewords
+  {\bgroup
+   \setbox0\hbox{\dooverstrike{\hskip\interwordspace}}%
+   \nobreak
+   \hskip\zeropoint\!!minus\interwordshrink
+   \discretionary{}{}{\box0}%
+   \egroup}
+
+\unexpanded\def\overstrike#1%
+  {\bgroup
+   \let\betweenisolatedwords\betweenoverstrikewords
+   \processisolatedwords{#1}\dooverstrike
+   \egroup}
+
+\unexpanded\def\overstrikes#1%
+  {\bgroup
+   \processisolatedwords{#1}\dooverstrike
+   \egroup}
+
+\def\underbarparameter#1{\csname\??on#1\csname}
+
+\def\setupunderbar
+  {\dodoubleargument\getparameters[\??on]}
+
+%D \macros
+%D   {shiftedword, shiftedwords}
+%D
+%D Used as \type {\shiftedwords {10pt} {some text}} this macro will
+%D move
+
+% \def\shiftedword#1% #2%
+%   {\raise#1\hbox} % {#2}} % officially: {\ifdim#1>\zeropoint\raise\else\lower\fi#1\hbox{#2}}
+
+% \def\shiftedwords#1#2%
+%   {\processisolatedwords{#2}{\shiftedword{#1}}}
+
+%D \macros
+%D   {low, high, lohi, hilo}
+%D
+%D Although \TEX\ is pretty well aware of super- and
+%D subscripts, its mechanism is mainly tuned for math mode.
+%D The next few commands take care of script texts both modes.
+%D
+%D \startbuffer
+%D The higher\high{one goes} the lower\low{one drops}, or\lohi{yes}{no}?
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+%D
+%D Note the different placement of \type {\lohi}, where we
+%D need a bit more space. The implementation looks a bit
+%D fuzzy, since some \type {\fontdimen}'s are involved to
+%D determine the optimal placement.
+
+\def\dodohighlow
+  {\ifx\fontsize\empty
+     \ifmmode
+       \ifnum\fam<0 \tx \else \holamathfont \fi
+     \else
+       \tx
+     \fi
+   \else
+     \tx
+   \fi}
+
+\def\dohighlow#1#2#3#4#5% todo, named fontdimens
+  {\dontleavehmode
+   \bgroup
+   \scratchdimen\ifdim\fontexheight\textfont2=1ex #2\textfont2\else #3ex\fi
+   \advance\scratchdimen #4ex
+   \kern.1ex
+   \setbox\scratchbox\hbox{#1\scratchdimen\hbox{\dodohighlow#5}}%
+   \ht\scratchbox\strutheight
+   \dp\scratchbox\strutdepth
+   \box\scratchbox
+   \egroup}
+
+\unexpanded\def\high{\dohighlow\raise\mathsupnormal{.86}{0}}
+\unexpanded\def\low {\dohighlow\lower\mathsubnormal{.48}{0}}
+
+\unexpanded\def\lohi
+  {\dosingleempty\dolohi}
+
+\unexpanded\def\hilo
+  {\dosingleempty\dohilo}
+
+\def\dolohi[#1]#2#3%
+  {\dontleavehmode
+   \hbox
+     {\setbox4\hbox{\dohighlow\lower\mathsubnormal{.48}{.1}{#2}}%
+      \setbox6\hbox{\dohighlow\raise\mathsupnormal{.86}{.1}{#3}}%
+      \doif{#1}{\v!left}
+        {\ifdim\wd4<\wd6
+          \setbox4\hbox to \wd6{\hss\box4}%
+        \else
+          \setbox6\hbox to \wd4{\hss\box6}%
+        \fi}%
+      \ifdim\wd4<\wd6
+        \wd4=\zeropoint\box4\box6
+      \else
+        \wd6=\zeropoint\box6\box4
+      \fi}}
+
+\def\dohilo[#1]#2#3%
+  {\dolohi[#1]{#3}{#2}}
+
+%D You can provide an optional keyword \type {left}, in which
+%D case the super and subscripts will be aligned in a way that
+%D permits placement at the left of a word (which means that
+%D it will be right aligned).
+%D
+%D \startbuffer
+%D \lohi{aha}{ah} test \lohi{aha}{ah} test
+%D \lohi[left]{aha}{ah} test \lohi[left]{aha}{ah} test
+%D \lohi{aha}{ah} test\lohi{aha}{ah} test
+%D \lohi[left]{aha}{ah}test \lohi[left]{aha}{ah}test
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+
+%D \macros
+%D   {setupinitial,placeinitial,checkinitial}
+%D
+%D {\em To be documented.}
+%D
+%D \starttyping
+%D \setupinitial[state=start] \placeinitial \input tufte
+%D \stoptyping
+%D
+%D and
+%D
+%D \starttyping
+%D \def\bpar{\ifvmode\checkinitial\fi}
+%D \def\epar{\ifhmode\par\fi\checkinitial}
+%D \stoptyping
+
+%  to do: more fine tuning
+
+\def\setupinitial
+  {\dodoubleempty\getparameters[\??dc]}
+
+\definefontsynonym[Initial][Regular] % prefered initial identifier
+\definefontsynonym[initial][Initial] % internal but accepted too
+
+\setupinitial
+  [\c!state=\v!stop,
+   \c!location=\v!text,
+   \c!n=3,
+   \c!distance=.125em,
+   \c!command=,
+   \s!font=initial]
+
+\def\AutoDroppedCapsCommand{\NiceDroppedCaps\@@dccommand\@@dcfont\@@dcdistance\@@dcn}%
+
+\def\placeinitial
+  {\doifelse\@@dclocation\v!margin{\chardef\DropMode\plusone}{\chardef\DropMode\zerocount}%
+   \doif    \@@dcstate\v!start{\ifcase\@@dcn\else\AutoDroppedCaps\fi}}
+
+\let\checkinitial\CheckDroppedCaps
+
+%D This module has only a few setups:
+
+\setupunderbar
+  [\c!alternative=a,
+   \c!rulethickness=\linewidth,
+   \c!bottomoffset=1.5pt,
+   \c!topoffset=2.5pt,
+   \c!rulecolor=]
+
+\protect \endinput

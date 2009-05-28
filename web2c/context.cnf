@@ -47,39 +47,42 @@ OSFONTDIR =
 
 TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//
 
-TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
-TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/map/{dvipdfm,pdftex,dvips,}//
-TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//
-TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/map/{pdftex,dvips,}//
-TEXFONTMAPS.luatex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//
-TEXFONTMAPS.xetex    = .;$TEXMF/fonts/map/{xetex,pdftex,dvips,}//
-TEXFONTMAPS.dvips    = .;$TEXMF/fonts/map/{dvips,pdftex,}//
+TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/{data,map}/{dvipdfm,dvips,}//
+TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/{data,map}/{dvipdfm,pdftex,dvips,}//
+TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
+TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
+TEXFONTMAPS.luatex   = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
+TEXFONTMAPS.xetex    = .;$TEXMF/fonts/{data,map}/{xetex,pdftex,dvips,}//
+TEXFONTMAPS.dvips    = .;$TEXMF/fonts/{data,map}/{dvips,pdftex,}//
 
 # TEXFONTMAPS = .;$TEXMF/fonts/map/{$backend,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//
-TEXFONTMAPS   = .;$TEXMF/fonts/map/{$progname,$engine,pdftex,dvips,}//;$TEXMF/{$progname,$engine,pdftex,dvips}/{config,}//
+TEXFONTMAPS   = .;$TEXMF/fonts/{data,map}/{$progname,$engine,pdftex,dvips,}//;$TEXMF/{$progname,$engine,pdftex,dvips}/{config,}//
 
-VFFONTS       = .;$TEXMF/fonts/vf//
-TFMFONTS      = .;$TEXMF/fonts/tfm//
-T1FONTS       = .;$TEXMF/fonts/{data,type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR;
-AFMFONTS      = .;$TEXMF/fonts/{data,afm}//;$OSFONTDIR;
-LIGFONTS      = .;$TEXMF/fonts/lig//
-TTFONTS       = .;$TEXMF/fonts/{data,truetype,ttf}//;$OSFONTDIR;
-TTF2TFMINPUTS = .;$TEXMF/ttf2pk//
-T42FONTS      = .;$TEXMF/fonts/type42//
-MISCFONTS     = .;$TEXMF/fonts/misc//
-% ENCFONTS    = .;$TEXMF/fonts/enc//
-ENCFONTS      = .;$TEXMF/{fonts/{data,enc},dvips,pdftex,dvipdfm}//
-CMAPFONTS     = .;$TEXMF/fonts/cmap//
-SFDFONTS      = .;$TEXMF/fonts/sfd//
-OPENTYPEFONTS = .;$TEXMF/fonts/{data,opentype}//;$OSFONTDIR
+VFFONTS       = $TEXMF/fonts/{data,vf}//
+TFMFONTS      = $TEXMF/fonts/{data,tfm}//
+T1FONTS       = $TEXMF/fonts/{data,type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR;
+AFMFONTS      = $TEXMF/fonts/{data,afm}//;$OSFONTDIR;
+LIGFONTS      = $TEXMF/fonts/lig//
+TTFONTS       = $TEXMF/fonts/{data,truetype,ttf}//;$OSFONTDIR;
+TTF2TFMINPUTS = $TEXMF/ttf2pk//
+T42FONTS      = $TEXMF/fonts/type42//
+MISCFONTS     = $TEXMF/fonts/misc//
+% ENCFONTS    = $TEXMF/fonts/enc//
+ENCFONTS      = $TEXMF/{fonts/{data,enc},dvips,pdftex,dvipdfm}//
+CMAPFONTS     = $TEXMF/fonts/cmap//
+SFDFONTS      = $TEXMF/fonts/sfd//
+OPENTYPEFONTS = $TEXMF/fonts/{data,opentype}//;$OSFONTDIR
 
-OFMFONTS      = .;$TEXMF/fonts/{ofm,tfm}//
-OPLFONTS      = .;$TEXMF/fonts/opl//;
-OVFFONTS      = .;$TEXMF/fonts/{ovf,vf}//
-OVPFONTS      = .;$TEXMF/fonts/ovp//;
-OTPINPUTS     = .;$TEXMF/omega/otp//
-OCPINPUTS     = .;$TEXMF/omega/ocp//
-OTFFONTS      = .;$TEXMF/fonts/otf/{xetex,}//;
+FONTFEATURES  = $TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS
+FONTCIDMAPS   = $TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS
+
+OFMFONTS      = $TEXMF/fonts/{data,ofm,tfm}//
+OPLFONTS      = $TEXMF/fonts/opl//;
+OVFFONTS      = $TEXMF/fonts/{data,ovf,vf}//
+OVPFONTS      = $TEXMF/fonts/ovp//;
+OTPINPUTS     = $TEXMF/omega/otp//
+OCPINPUTS     = $TEXMF/omega/ocp//
+OTFFONTS      = $TEXMF/fonts/otf/{data,xetex,}//;$OSFONTDIR
 
 % configurations
 
@@ -107,9 +110,9 @@ MPINPUTS          = .;{$MFRESOURCES}//;{$CTXDEVMPPATH};$TEXMF/metapost/{context,
 MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;$TEXMF/fonts/source//
 BSTINPUTS         = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/bibtex/bst//
 
-TEXCONFIG     = .;$TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
-PDFTEXCONFIG  = .;$TEXMF/pdftex/{$progname,}//
-DVIPDFMINPUTS = .;$TEXMF/{fonts/{map,enc,lig}/dvipdfm,fonts/type1,dvips,pdftex,dvipdfmx,dvipdfm}//
+TEXCONFIG     = $TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
+PDFTEXCONFIG  = $TEXMF/pdftex/{$progname,}//
+DVIPDFMINPUTS = $TEXMF/{fonts/{map,enc,lig}/dvipdfm,fonts/type1,dvips,pdftex,dvipdfmx,dvipdfm}//
 
 % this way we can hook in development paths
 
@@ -144,6 +147,9 @@ openout_any             = p
 openin_any              = a
 parse_first_line        = f
 allow_multiple_suffixes = f
+
+shell_escape.context          = t
+shell_escape_commands.context = mtxrun,luatools,texmfstart,texexec,mpost
 
 % auto generation
 
@@ -233,18 +239,23 @@ mpost_buf_size           =   30000
 
 max_print_line.pdftex    =    255
 max_print_line.luatex    =    255
+max_print_line.xetex     =    255
 max_print_line.mpost     =    255
 max_print_line.metafun   =    255
 
 extra_mem_top.mptopdf    = 1000000
 extra_mem_bot.mptopdf    = 1000000
 
-ocp_buf_size             =  500000
-ocp_stack_size           =   10000
-ocp_list_size            =    1000
+% ocp_buf_size             =  500000
+% ocp_stack_size           =   10000
+% ocp_list_size            =    1000
+
+ocp_buf_size             =       1
+ocp_stack_size           =       1
+ocp_list_size            =       1
 
 % Just for xetex:
 
 FONTCONFIG_FILE = fonts.conf
 FONTCONFIG_PATH = $TEXMFLOCAL/fonts/conf
-FC_CACHEDIR     = $TMP/fonts/cache
+FC_CACHEDIR     = $TEXMFLOCAL/fonts/cache

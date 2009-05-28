@@ -33,185 +33,35 @@
 \definecolor[usage:time] [darkblue]
 \definecolor[usage:frame][darkgray]
 
+\ctxloadluafile{trac-tim}{}
+
 \startluacode
-do
+local progress = goodies.progress
 
-    document          = document          or { }
-    document.progress = document.progress or { }
-
-    local defaultfilename = tex.jobname .. "-luatex-progress"
-
-    local params = {
-        "cs_count",
-        "dyn_used",
-        "elapsed_time",
-        "luabytecode_bytes",
-        "luastate_bytes",
-        "max_buf_stack",
-        "obj_ptr",
-        "pdf_mem_ptr",
-        "pdf_mem_size",
-        "pdf_os_cntr",
-        "pool_ptr",
-        "str_ptr",
-    }
-
-    -- storage
-
-    local last  = os.clock()
-    local data  = { }
-
-    function document.progress.save()
-        local f = io.open((name or defaultfilename) .. ".lut","w")
-        if f then
-            f:write(table.serialize(data,true))
-            f:close()
-            data = { }
-        end
+function progress.show(filename,parameters,nodes,other)
+    for n, name in pairs(parameters or progress.parameters(filename)) do
+        tex.sprint(tex.ctxcatcodes,string.format("\\ShowNamedUsage{%s}{%s}{%s}",filename or progress.defaultfilename,name,other or ""))
     end
-
-    function document.progress.store()
-        local c = os.clock()
-        local t = {
-            elapsed_time = c - last,
-            node_memory  = tex.node_mem_status(),
-        }
-        for k, v in pairs(params) do
-            if status[v] then t[v] = status[v] end
-        end
-        data[#data+1] = t
-        last = c
+    for n, name in pairs(nodes or progress.nodes(filename)) do
+        tex.sprint(tex.ctxcatcodes,string.format("\\ShowNamedUsage{%s}{%s}{%s}",filename or progress.defaultfilename,name,other or ""))
     end
-
-    -- conversion
-
-    local processed = { }
-
-    function document.progress.bot(name,tag)
-        local d = document.progress.convert(name)
-        return d.bot[tag] or 0
-    end
-    function document.progress.top(name,tag)
-        local d = document.progress.convert(name)
-        return d.top[tag] or 0
-    end
-    function document.progress.pages(name,tag)
-        local d = document.progress.convert(name)
-        return d.pages or 0
-    end
-    function document.progress.path(name,tag)
-        local d = document.progress.convert(name)
-        return d.paths[tag] or "origin"
-    end
-    function document.progress.nodes(name)
-        local d = document.progress.convert(name)
-        return d.names or { }
-    end
-    function document.progress.parameters(name)
-        local d = document.progress.convert(name)
-        return params -- shared
-    end
-
-    function document.progress.convert(name)
-        name = ((name ~= "") and name) or defaultfilename
-        if not processed[name] then
-            local names, top, bot, pages, paths, keys = { }, { }, { }, 0, { }, { }
-            local data = io.loaddata(name .. ".lut")
-            if data then data = loadstring(data) end
-            if data then data = data() end
-            if data then
-                pages = #data
-                if pages > 1 then
-                    local factor = 100
-                    for k,v in ipairs(data) do
-                        for k,v in pairs(v.node_memory) do
-                            keys[k] = true
-                        end
-                    end
-                    for k,v in ipairs(data) do
-                        local m = v.node_memory
-                        for k, _ in pairs(keys) do
-                            if not m[k] then m[k] = 0 end
-                        end
-                    end
-                    local function path(tag,subtag)
-                        local b, t, s = nil, nil, { }
-                        for k,v in ipairs(data) do
-                            local v = (subtag and v[tag][subtag]) or v[tag]
-                            if v then
-                                v = tonumber(v)
-                                if b then
-                                    if v > t then t = v end
-                                    if v < b then b = v end
-                                else
-                                    t = v
-                                    b = v
-                                end
-                                s[k] = v
-                            else
-                                s[k] = 0
-                            end
-                        end
-                        local tagname = subtag or tag
-                        top[tagname] = (string.format("%.3f",t)):gsub("%.000$","")
-                        bot[tagname] = (string.format("%.3f",b)):gsub("%.000$","")
-                        local delta = t-b
-                        if delta == 0 then
-                            delta = 1
-                        else
-                            delta = factor/delta
-                        end
-                        for k, v in ipairs(s) do
-                            s[k] = "(" .. k .. "," .. (v-b)*delta .. ")"
-                        end
-                        paths[tagname] = table.concat(s,"--")
-                    end
-                    for _, tag in pairs(params) do
-                        path(tag)
-                    end
-                    for tag, _ in pairs(keys) do
-                        path("node_memory",tag)
-                        names[#names+1] = tag
-                    end
-                    pages = pages - 1
-                end
-            end
-            table.sort(names)
-            processed[name] = {
-                names = names,
-                top = top,
-                bot = bot,
-                pages = pages,
-                paths = paths,
-            }
-        end
-        return processed[name]
-    end
-
-    function document.progress.show(filename,parameters,nodes,other)
-        for n, name in pairs(parameters or document.progress.parameters(filename)) do
-            tex.sprint(tex.ctxcatcodes,string.format("\\ShowNamedUsage{%s}{%s}{%s}",filename or defaultfilename,name,other or ""))
-        end
-        for n, name in pairs(nodes or document.progress.nodes(filename)) do
-            tex.sprint(tex.ctxcatcodes,string.format("\\ShowNamedUsage{%s}{%s}{%s}",filename or defaultfilename,name,other or ""))
-        end
-    end
-
 end
 \stopluacode
 
 % \everyfirstshipout
 
-\appendtoks\ctxlua{document.progress.store()}\to\everystarttext
-\appendtoks\ctxlua{document.progress.store()}\to\everyshipout
-
-\ctxlua{table.insert(input.stop_actions, function() document.progress.save() end)}
+\startnotmode[no-timing]
+    \appendtoks\ctxlua{goodies.progress.store()}\to\everystarttext
+    \appendtoks\ctxlua{goodies.progress.store()}\to\everyshipout
+    \ctxlua{main.register_stop_actions(function() goodies.progress.save() end)}
+\stopnotmode
 
 \def\ShowNamedUsage#1#2#3%
   {\setbox\scratchbox\vbox\bgroup\startMPcode
       begingroup ; save p, q, b, h, w ;
       path p, q, b ; numeric h, w ;
-      p := \ctxlua{tex.sprint(document.progress.path("#1","#2"))} ;
+      p := \ctxlua{tex.sprint(goodies.progress.path("#1","#2"))} ;
+% p := p shifted -llcorner p ;
       if bbwidth(p) > 1 :
         h := 100 ; w := 2 * h ;
         w := \the\textwidth-3pt ; % correct for pen
@@ -221,7 +71,8 @@ end
         draw b withcolor \MPcolor{usage:frame} ;
         draw p withcolor \MPcolor{usage:line} ;
         if ("#3" <> "") and ("#3" <> "#2") :
-          q := \ctxlua{tex.sprint(document.progress.path("#1","#3"))} ;
+          q := \ctxlua{tex.sprint(goodies.progress.path("#1","#3"))} ;
+% q := q shifted -llcorner q ;
           if bbwidth(q) > 1 :
             q := q xstretched w ;
             pickup pencircle scaled 1.5pt ; linecap := butt ;
@@ -236,16 +87,16 @@ end
      \startlinecorrection
          \box\scratchbox \endgraf
          \hbox to \scratchdimen{\tttf\strut\detokenize{#2}\hss
-          min:\ctxlua{tex.sprint(document.progress.bot("#1","\detokenize{#2}"))}, %
-          max:\ctxlua{tex.sprint(document.progress.top("#1","\detokenize{#2}"))}, %
-          pages:\ctxlua{tex.sprint(document.progress.pages("#1"))}%
+          min:\ctxlua{tex.sprint(goodies.progress.bot("#1","\detokenize{#2}"))}, %
+          max:\ctxlua{tex.sprint(goodies.progress.top("#1","\detokenize{#2}"))}, %
+          pages:\ctxlua{tex.sprint(goodies.progress.pages("#1"))}%
          }%
      \stoplinecorrection
    \fi}
 
-\def\LoadUsage      #1{\ctxlua{document.progress.convert("#1")}}
-\def\ShowUsage      #1{\ctxlua{document.progress.show("#1",nil,nil,"elapsed_time")}}
-\def\ShowMemoryUsage#1{\ctxlua{document.progress.show("#1",nil,{}, "elapsed_time")}}
-\def\ShowNodeUsage  #1{\ctxlua{document.progress.show("#1",{},nil, "elapsed_time")}}
+\def\LoadUsage      #1{\ctxlua{goodies.progress.convert("#1")}}
+\def\ShowUsage      #1{\ctxlua{goodies.progress.show("#1",nil,nil,"elapsed_time")}}
+\def\ShowMemoryUsage#1{\ctxlua{goodies.progress.show("#1",nil,{}, "elapsed_time")}}
+\def\ShowNodeUsage  #1{\ctxlua{goodies.progress.show("#1",{},nil, "elapsed_time")}}
 
 \endinput

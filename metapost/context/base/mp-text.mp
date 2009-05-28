@@ -86,8 +86,9 @@ string laboff_l  ; laboff_l  := ".lft"  ;
 string laboff_r  ; laboff_r  := ".rt"   ;
 string laboff_b  ; laboff_b  := ".bot"  ;
 string laboff_t  ; laboff_t  := ".top"  ;
+
 string laboff_lt ; laboff_lt := ".ulft" ;
-string laboff_rt ; laboff_rt := ".urt"  ;
+string laboff_rt ; laboff_rt := ".urt"  ; % bugged, conflict with r
 string laboff_lb ; laboff_lb := ".llft" ;
 string laboff_rb ; laboff_rb := ".lrt"  ;
 string laboff_tl ; laboff_tl := ".ulft" ;

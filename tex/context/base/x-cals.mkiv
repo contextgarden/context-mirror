@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context XML Macros (cals tables)}
+\writestatus{loading}{ConTeXt XML Macros / Cals Tables}
 
 \startluacode
 do
@@ -103,12 +103,11 @@ do
                     sum = sum + v
                 end
             end
---          local delta = sum - tex.hsize:todimen()
-local hsize = tex.hsize
-if type(hsize) == "string" then
-    hsize = hsize:todimen()
-end
-local delta = sum - hsize
+            local hsize = tex.hsize
+            if type(hsize) == "string" then
+                hsize = hsize:todimen()
+            end
+            local delta = sum - hsize
             if shrink_widths and delta > 0 then
                 adapt(shrink_widths,w,delta,sum,n,"shrink")
             elseif stretch_widths and delta < 0 then
@@ -201,6 +200,7 @@ local delta = sum - hsize
 
         for r, d, k in xml.elements(lxml.id(root),tgroupspec) do
             local tgroup = d[k]
+            texsprint(tex.ctxcatcodes, "\\directsetup{cals:table:before}")
             lxml.directives.before(root,"cdx") -- "cals:table"
             texsprint(tex.ctxcatcodes, "\\bgroup")
             lxml.directives.setup(root,"cdx") -- "cals:table"
@@ -211,6 +211,7 @@ local delta = sum - hsize
             texsprint(tex.ctxcatcodes, "\\eTABLE")
             texsprint(tex.ctxcatcodes, "\\egroup")
             lxml.directives.after(root,"cdx") -- "cals:table"
+            texsprint(tex.ctxcatcodes, "\\directsetup{cals:table:after}")
         end
     end
 

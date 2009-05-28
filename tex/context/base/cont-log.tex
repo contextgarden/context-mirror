@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context TeX Logos}
+\writestatus{loading}{ConTeXt TeX Logos}
 
 %D The system that is used to typeset this text is called \TEX,
 %D typeset with an lowered~E. From te beginning of \TEX,
@@ -228,6 +228,7 @@
 \def\pdfTeX           {pdf\TeX}
 \def\pdfeTeX          {pdfe-\TeX}
 \def\luaTeX           {lua\TeX}
+\def\metaTeX          {meta\TeX}
 \unexpanded\def\XeTeX {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
 
 % Better, since lm has a mirrored E (don't ask me why)
@@ -251,41 +252,39 @@
   {\setbox\scratchbox\hbox{E}%
    \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
 
-\beginNEWTEX
+\ifnum\texengine=\pdftexengine
 
-\unexpanded\def\XeTeX
-  {X\lower.5ex
-   \hbox
-     {\kern-.15em
-      \iffontchar\font"018E\relax
-        \char"018E%
-      \else
-        \ifx\fontalternative\c!bf\mirror{E}\else
-        \ifx\fontalternative\c!it  \@XeTeX@\else
-        \ifx\fontalternative\c!sl  \@XeTeX@\else
-        \ifx\fontalternative\c!bi  \@XeTeX@\else
-        \ifx\fontalternative\c!bs  \@XeTeX@\else
-                                 \mirror{E}\fi\fi\fi\fi\fi
-      \fi}%
-   \kern-.1667em \TeX}
+    \unexpanded\def\XeTeX
+      {X\lower.5ex
+       \hbox
+         {\kern-.15em
+          \ifx\fontalternative\c!bf\mirror{E}\else
+          \ifx\fontalternative\c!it  \@XeTeX@\else
+          \ifx\fontalternative\c!sl  \@XeTeX@\else
+          \ifx\fontalternative\c!bi  \@XeTeX@\else
+          \ifx\fontalternative\c!bs  \@XeTeX@\else
+                                   \mirror{E}\fi\fi\fi\fi\fi}%
+       \kern-.1667em \TeX}
 
-\endNEWTEX
+\else
 
-\beginOLDTEX
+    \unexpanded\def\XeTeX
+      {X\lower.5ex
+       \hbox
+         {\kern-.15em
+          \iffontchar\font"018E\relax
+            \char"018E%
+          \else
+            \ifx\fontalternative\c!bf\mirror{E}\else
+            \ifx\fontalternative\c!it  \@XeTeX@\else
+            \ifx\fontalternative\c!sl  \@XeTeX@\else
+            \ifx\fontalternative\c!bi  \@XeTeX@\else
+            \ifx\fontalternative\c!bs  \@XeTeX@\else
+                                     \mirror{E}\fi\fi\fi\fi\fi
+          \fi}%
+       \kern-.1667em \TeX}
 
-\unexpanded\def\XeTeX
-  {X\lower.5ex
-   \hbox
-     {\kern-.15em
-      \ifx\fontalternative\c!bf\mirror{E}\else
-      \ifx\fontalternative\c!it  \@XeTeX@\else
-      \ifx\fontalternative\c!sl  \@XeTeX@\else
-      \ifx\fontalternative\c!bi  \@XeTeX@\else
-      \ifx\fontalternative\c!bs  \@XeTeX@\else
-                               \mirror{E}\fi\fi\fi\fi\fi}%
-   \kern-.1667em \TeX}
-
-\endOLDTEX
+\fi
 
 \let\ETEX     \eTeX
 \let\PDFTEX   \pdfTeX

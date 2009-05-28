@@ -11,9 +11,72 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\writestatus{loading}{ConTeXt Core Macros / Two Pass Data}
+
+%D This is a rather old mechanism which has not changed much over
+%D time, apart from adding a few more selectors. This code used
+%D to be part of \type {core-uti}. The following examples demonstrate
+%D the interface.
+%D
+%D \startbuffer
+%D \definetwopasslist{test-1}
+%D
+%D \gettwopassdatalist{test-1} [\twopassdatalist=]
+%D \checktwopassdata  {test-1} [\twopassdata=]
+%D \checktwopassdata  {test-1} [\twopassdata=]
+%D \gettwopassdata    {test-1} [\twopassdata=]
+%D \gettwopassdata    {test-1} [\twopassdata=]
+%D
+%D \definetwopasslist{test-2}
+%D
+%D \lazysavetwopassdata{test-2}{1}{x}
+%D \lazysavetwopassdata{test-2}{2}{y}
+%D \lazysavetwopassdata{test-2}{3}{z}
+%D
+%D \gettwopassdatalist{test-2} [\twopassdatalist=x,y,z]
+%D \checktwopassdata  {test-2} [\twopassdata=x]
+%D \checktwopassdata  {test-2} [\twopassdata=x]
+%D \gettwopassdata    {test-2} [\twopassdata=x]
+%D \gettwopassdata    {test-2} [\twopassdata=y]
+%D \gettwopassdata    {test-2} [\twopassdata=z]
+%D \gettwopassdata    {test-2} [\twopassdata=]
+%D
+%D \definetwopasslist{test-3}
+%D
+%D \lazysavetaggedtwopassdata{test-3}{1}{x}{a}
+%D \lazysavetaggedtwopassdata{test-3}{2}{y}{b}
+%D \lazysavetaggedtwopassdata{test-3}{3}{z}{c}
+%D
+%D \findtwopassdata{test-3}{x} [\twopassdata=a]
+%D \findtwopassdata{test-3}{y} [\twopassdata=b]
+%D \findtwopassdata{test-3}{z} [\twopassdata=c]
+%D \findtwopassdata{test-3}{w} [\twopassdata=]
+%D
+%D \definetwopasslist{test-4}
+%D
+%D \lazysavetwopassdata{test-4}{1}{A}
+%D \lazysavetwopassdata{test-4}{2}{B}
+%D \lazysavetwopassdata{test-4}{3}{C}
+%D
+%D \getfirsttwopassdata{test-4}    [\twopassdata=A]
+%D \getlasttwopassdata {test-4}    [\twopassdata=C]
+%D \getfirsttwopassdata{test-4}    [\twopassdata=A]
+%D \getlasttwopassdata {test-4}    [\twopassdata=C]
+%D \getfromtwopassdata {test-4}{1} [\twopassdata=A]
+%D \getfromtwopassdata {test-4}{3} [\twopassdata=C]
+%D \getfromtwopassdata {test-4}{2} [\twopassdata=B]
+%D \stopbuffer
+%D
+%D \getbuffer \typebuffer
+
 \unprotect
 
-%D We save two pass information in the utility file.
+\let\alltwopasslists\empty
+\let\twopassentry   \gobblethreearguments % permits loading a MK II file
+\let\twopassdata    \empty
+\let\twopassdatalist\empty
+
+\newif\iftwopassdatafound
 
 \addutilityreset{twopassentries}
 

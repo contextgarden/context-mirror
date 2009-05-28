@@ -1,11 +1,14 @@
--- filename : l-boolean.lua
--- comment  : split off from luat-lib
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-boolean'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-boolean'] = 1.001
-if not boolean  then boolean  = { } end
+boolean = boolean or { }
+
+local type, tonumber = type, tonumber
 
 function boolean.tonumber(b)
     if b then return 1 else return 0 end

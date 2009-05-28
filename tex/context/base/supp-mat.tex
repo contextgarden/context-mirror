@@ -15,7 +15,7 @@
 %D a support module. There is nothing spectacular here. It may move
 %D back to math-ini.
 
-\writestatus{loading}{Context Support Macros / Math}
+\writestatus{loading}{ConTeXt Support Macros / Math}
 
 \unprotect
 
@@ -195,6 +195,13 @@
 %D \TEX provides no primitive to force in cramped math mode. Here is
 %D a macro that does so. It is based on a solution by Don Knuth (\useurl
 %D {http://www.ctan.org/tex-archive/digests/tex-implementors/042}).
+%D
+%D \startbuffer
+%D \ruledhbox{$\left\{{x^2\over y^2}\right\}$}
+%D \ruledhbox{$\cramped{\left\{ {x^2\over y^2}\right\}}$}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \def\cramped
   {\mathpalette\docramped}
@@ -209,7 +216,7 @@
 % \def\docramped#1#2%
 %   {\setbox\scratchbox\hbox
 %     {\nulldelimiterspace\zeropoint
-%      $\m@th#1\radical\zerocount{#2}$}%
+%      $\mathsurround\zeropoint#1\radical\zerocount{#2}$}%
 %    \ifx#1\displaystyle
 %       \scratchdimen\fontdimen8\textfont3
 %       \advance\scratchdimen .25\fontdimen5\textfont2
@@ -229,7 +236,7 @@
   {\begingroup % added HH, made even more cramped
    \setbox\scratchbox\hbox
      {\nulldelimiterspace\zeropoint
-      $\m@th#1\radical\zerocount{#2}$}%
+      $\mathsurround\zeropoint#1\radical\zerocount{#2}$}%
    \ht\scratchbox-\dimexpr
      \ifx#1\displaystyle
        \fontdimen8\textfont3

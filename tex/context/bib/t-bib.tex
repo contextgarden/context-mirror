@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2008.10.23,
+%D        version=2009.04.27,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -34,7 +34,7 @@
 %D \item added headtext for it  (23/11/2005)
 %D \item make \type{\cite[url]} and \type{\cite[doi]} interactive (23/11/2005)
 %D \item make right-aligned labels in the list work even when autohang=no
-%D \item use 'et al.' instead of 'et.al.'. Pointed out by Peter M¸nster (30/12/2005)
+%D \item use 'et al.' instead of 'et.al.'. Pointed out by Peter MÔøΩnster (30/12/2005)
 %D \item added headtext for cz (31/12/2005)
 %D \item Keep whitespace after \type{\cite} with single argument (31/12/2005)
 %D \item Fix broken \type{\cite{}} support (31/12/2005)
@@ -104,7 +104,7 @@
 %D       Thomas Schmitz (15/9/2006)
 %D \item Removed some spurious spaces pointed out by willi egger (19/9/2006)
 %D \item Add configuration of bibtex executable name (4/11/2006)
-%D \item Fix numbering=short and numbering=bib (spotted by Matthias W‰chter) (4/11/2006)
+%D \item Fix numbering=short and numbering=bib (spotted by Matthias WÔøΩchter) (4/11/2006)
 %D \item third attempt to get a correct release (5/11/2006)
 %D \item fix a few missing dots in bibl-num.tex  (7/12/2006)
 %D \item Patch for DOI's by Tobias Burnus (17/4/2007)
@@ -116,6 +116,23 @@
 %D \item Patch from Matthias W\"achter that allows arbitrary .bst
 %D        files to be used with \tex{setupbibtex} (25/9/2008)
 %D \item Extended for the new multilingual setups for the Oct 2008 current of ConTeXt (23/10/2008)
+%D \item Multilingual setups needed another fix (27/10/2008)
+%D \item Two fixes for bibl-apa by Michael Green (27/10/2008)
+%D \item Catalan translation of 'References' (10/11/2008)
+%D \item 'chapter' -> 'chapitre' in bibl-apa-fr (27/11/2008)
+%D \item Run bibtex via os.execute in  mkiv modee (01/12/2008)
+%D \item Small correction in bibl-apa's placement of volume
+%D       information in articles (05/01/2009)
+%D \item Handle multi-author (more than two) cases in \type{\cite}
+%D       (02/03/2009)
+%D \item Suppress a syntax error in \type{cont-xp} mode. The output is
+%D       probably not right, though (02/03/2009)
+%D \item Added a \tex{loadmarkfile} at the end, and two new files
+%D       from Hans. The \type{t-bib.mkiv} is needed to make the module
+%D       work with the new structure code (17/04/2009)
+%D \item Added a patch to \type{t-bib.mkiv} from Hans to make the
+%D       cross referencing between multiple citations an
+%D       bibliographies work (27/04/2009)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -129,13 +146,22 @@
 
 \unprotect
 
-%D start with a temp hack the file will still work with pre-Oct 20078
+%D start with a temp hack the file will still work with pre-Oct 2008
 %D versions of ConTeXt:
 
 
 \def\startinterface #1
   {\doifnot{#1}{all}{\doifnotinset\currentinterface{#1}{\gobbleuntil\stopinterface}}}
 
+\let\checksetvalue\gobbletwoarguments
+
+
+%\defineinterfacevariable {title}  {title}
+%\defineinterfacevariable {short}  {short}
+%\defineinterfacevariable {cite}   {cite}
+%\defineinterfacevariable {bbl}    {bbl}
+%\defineinterfacevariable {bib}    {bib}
+%\defineinterfacevariable {author} {author}
 
 %D A few new shortcuts:
 
@@ -300,6 +326,7 @@
 \setupheadtext[it][pubs=Bibliografia]
 \setupheadtext[sl][pubs=Literatura]
 \setupheadtext[fr][pubs=Bibliographie]
+\setupheadtext[ca][pubs=Refer√®ncies]
 
 %D \macros{bibdoif,bibdoifnot,bibdoifelse}
 %D
@@ -380,7 +407,9 @@
      \write   \scratchwrite {\string\bibdata{\@@pbdatabase}}%
      \closeout\scratchwrite
      \showmessage\m!bib{3}{}%
-     \expanded{\installprogram{\@@pbbibtex\space\jobname}}}}
+     \doifmodeelse{*mkiv}
+       {\ctxlua{os.execute('\@@pbbibtex\space\jobname')}}
+       {\expanded{\installprogram{\@@pbbibtex\space\jobname}}}}}
 
 %D \macros{ifsortbycite,iftypesetall,ifautohang,ifbibcitecompress}
 %D
@@ -915,9 +944,11 @@
 \fi
 
 \def\filllocalpublist%
-  {\let\dosetfilterlevel\patcheddosetfilterlevel
-   \dosettoclevel\??li{pubs}%
-   \let\dosetfilterlevel\normaldosetfilterlevel
+  {\doifdefinedelse{\alltoclevels}
+    {\let\dosetfilterlevel\patcheddosetfilterlevel
+     \dosettoclevel\??li{pubs}%
+     \let\dosetfilterlevel\normaldosetfilterlevel }%
+    {\dosettoclevel\??li{pubs}}%
    \global\let\glocalpublist\empty
    \doloop
      {\doifdefinedelse
@@ -1375,10 +1406,31 @@
   \or
    \expanded{\docurrentbibauthor#1}%
   \else
-   % this can't happen/
-   \def\currentbibauthor{}%
+   \handlemultiplebibauthors{\commalistsize}{#1}%
   \fi }
 
+
+\newcount\citescratchcounter
+
+\def\handlemultiplebibauthors#1#2%
+  {\citescratchcounter 0
+   \def\currentbibauthor{}%
+   \def\bibprocessauthoritem##1%
+       {\advance\citescratchcounter1
+        \ifnum \citescratchcounter=#1\relax
+           \edef\currentbibauthor{\currentbibauthor##1}%
+        \else \ifnum\numexpr\citescratchcounter+1 = #1\relax
+             \edef\currentbibauthor{\currentbibauthor ##1\bibalternative{andtext}}%
+          \else
+             \edef\currentbibauthor{\currentbibauthor ##1\bibalternative{namesep}}%
+          \fi 
+        \fi }%
+     \processcommalist[#2]\bibprocessauthoritem }
+
+
+\setupcite
+       [author,authoryear,authoryears]
+       [\c!namesep={, }]
 
 %D This discovery of authoretallimit is not the best one,
 %D but it will do for now.
@@ -1857,6 +1909,8 @@
 
 \setuppublications
   [\v!month\v!conversion=,\c!alternative=apa]
+
+\loadmarkfile{t-bib}
 
 \preloadbiblist
 

@@ -6,11 +6,27 @@ if not modules then modules = { } end modules ['node-seq'] = {
     license   = "see context related readme files"
 }
 
--- we assume namespace usage, i.e. unique names for functions
+--[[ldx--
+<p>Here we implement a mechanism for chaining the special functions
+that we use in <l n="context"> to deal with mode list processing. We
+assume that namespaces for the functions are used, but for speed we
+use locals to refer to them when compiling the chain.</p>
+--ldx]]--
 
-local format, concat = string.format, table.concat
+local format, gsub, concat, gmatch = string.format, string.gsub, table.concat, string.gmatch
 
 sequencer = sequencer or { }
+
+local function validaction(action)
+    local g = _G
+    for str in gmatch(action,"[^%.]+") do
+        g = g[str]
+        if not g then
+            return false
+        end
+    end
+    return true
+end
 
 function sequencer.reset()
     return {
@@ -34,18 +50,18 @@ function sequencer.appendgroup(t,group,where)
     list[group] = { }
 end
 
-function sequencer.prependaction(t,group,action,where,kind)
+function sequencer.prependaction(t,group,action,where,kind,force)
     local g = t.list[group]
-    if g then
+    if g and (force or validaction(action)) then
         table.remove_value(g,action)
         table.insert_before_value(g,where,action)
         t.kind[action] = kind
     end
 end
 
-function sequencer.appendaction(t,group,action,where,kind)
+function sequencer.appendaction(t,group,action,where,kind,force)
     local g = t.list[group]
-    if g then
+    if g and (force or validaction(action)) then
         table.remove_value(g,action)
         table.insert_after_value(g,where,action)
         t.kind[action] = kind
@@ -56,9 +72,9 @@ function sequencer.setkind(t,action,kind)
     t.kind[action] = kind
 end
 
-function sequencer.removeaction(t,group,action)
+function sequencer.removeaction(t,group,action,force)
     local g = t.list[group]
-    if g then
+    if g and (force or validaction(action)) then
         table.remove_value(g,action)
     end
 end
@@ -75,7 +91,7 @@ function sequencer.compile(t,compiler)
 end
 
 local function localize(str)
-    return str:gsub("%.","_")
+    return (gsub(str,"%.","_"))
 end
 
 local template = [[
@@ -96,12 +112,12 @@ function sequencer.tostring(t)
             calls[#calls+1] = format("  %s(...) -- %s %i", localized, group, i)
         end
     end
-    return template:format(concat(vars,"\n"),concat(calls,"\n"))
+    return format(template,concat(vars,"\n"),concat(calls,"\n"))
 end
 
 local template = [[
 %s
-return function(head,tail)
+return function(head,tail,...)
   local ok, done = false, false
 %s
   return head, tail, done
@@ -117,15 +133,16 @@ function sequencer.nodeprocessor(t)
             local localized = localize(action)
             vars[#vars+1] = format("local %s = %s",localized,action)
             if kind[action] == "nohead" then
-                calls[#calls+1] = format("              ok = %s(head,tail) done = done or ok -- %s %i",localized,group,i)
+                calls[#calls+1] = format("              ok = %s(head,tail,...) done = done or ok -- %s %i",localized,group,i)
             elseif kind[action] == "notail" then
-                calls[#calls+1] = format("  head,       ok = %s(head,tail) done = done or ok -- %s %i",localized,group,i)
+                calls[#calls+1] = format("  head,       ok = %s(head,tail,...) done = done or ok -- %s %i",localized,group,i)
             else
-                calls[#calls+1] = format("  head, tail, ok = %s(head,tail) done = done or ok -- %s %i",localized,group,i)
+                calls[#calls+1] = format("  head, tail, ok = %s(head,tail,...) done = done or ok -- %s %i",localized,group,i)
             end
         end
     end
-    return template:format(concat(vars,"\n"),concat(calls,"\n"))
+    local processor = format(template,concat(vars,"\n"),concat(calls,"\n"))
+    return processor
 end
 
 --~ hans = {}

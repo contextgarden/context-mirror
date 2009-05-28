@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart runtools.rb "$@"
+mtxrun --usekpse --execute runtools.rb "$@"

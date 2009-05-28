@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\ifnum\texengine>\pdftexengine
+    \endinput
+\fi
+
 %D This regime activates the characters $>192$ and let them
 %D handle \UTF\ encoded content streams. This regime runs on
 %D top of the \type {unic} modules. We use an active inspector
@@ -28,14 +32,6 @@
 % ÙÚÛÜùúû
 % Ýýÿ
 % ß
-
-\beginXETEX
-  \expandafter \endinput
-\endXETEX
-
-\beginLUATEX
-    \expandafter \endinput
-\endLUATEX
 
 \unprotect
 

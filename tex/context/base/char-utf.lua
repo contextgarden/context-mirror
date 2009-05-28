@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['char-utf'] = {
     version   = 1.001,
-    comment   = "companion to char-ini.tex",
+    comment   = "companion to char-utf.tex",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -19,9 +19,11 @@ in special kinds of output (for instance <l n='pdf'/>).</p>
 over a string.</p>
 --ldx]]--
 
-local concat = table.concat
+local utf = unicode.utf8
+local concat, gmatch = table.concat, string.gmatch
+local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 
-utf = utf or unicode.utf8
+local ctxcatcodes = tex.ctxcatcodes
 
 characters              = characters              or { }
 characters.graphemes    = characters.graphemes    or { }
@@ -38,17 +40,12 @@ local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
 
 --[[ldx--
 <p>It only makes sense to collapse at runtime, since we don't expect
-source code to depend on collapsing:</p>
-
-<typing>
-characters.filters.utf.collapsing = true
-input.filters.utf_translator      = characters.filters.utf.collapse
-</typing>
+source code to depend on collapsing.</p>
 --ldx]]--
 
 function utffilters.initialize()
     if utffilters.collapsing and not utffilters.initialized then
-        for k,v in pairs(characters.data) do
+        for k,v in next, characters.data do
             -- using vs and first testing for length is faster (.02->.01 s)
             local vs = v.specials
             if vs and #vs == 3 and vs[1] == 'char' then
@@ -86,7 +83,7 @@ function utffilters.collapse(str) -- old one
             utffilters.initialize()
         end
         local tokens, first, done = { }, false, false
-        for second in str:utfcharacters() do
+        for second in utfcharacters(str) do
             local cgf = graphemes[first]
             if cgf and cgf[second] then
                 first, done = cgf[second], true
@@ -132,7 +129,7 @@ utffilters.private = {
 local low     = utffilters.private.low
 local high    = utffilters.private.high
 local escapes = utffilters.private.escapes
-local special = "~#$%^&_{}\\"
+local special = "~#$%^&_{}\\|"
 
 function utffilters.private.set(ch)
     local cb
@@ -154,7 +151,7 @@ function utffilters.private.escape(str)  return utfgsub(str,"(.)", escapes) end
 
 local set = utffilters.private.set
 
-for ch in special:gmatch(".") do set(ch) end
+for ch in gmatch(special,".") do set(ch) end
 
 --[[ldx--
 <p>We get a more efficient variant of this when we integrate
@@ -186,7 +183,7 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                 cf.initialize()
             end
             local tokens, first, done, n = { }, false, false, 0
-            for second in str:utfcharacters() do
+            for second in utfcharacters(str) do
                 if done then
                     local crs = cr[second]
                     if crs then
@@ -208,7 +205,7 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                 else
                     local crs = cr[second]
                     if crs then
-                        for s in str:utfcharacters() do
+                        for s in utfcharacters(str) do
                             if n == 1 then
                                 break
                             else
@@ -222,7 +219,7 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                     else
                         local cgf = graphemes[first]
                         if cgf and cgf[second] then
-                            for s in str:utfcharacters() do
+                            for s in utfcharacters(str) do
                                 if n == 1 then
                                     break
                                 else
@@ -248,120 +245,29 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
 end
 
 --[[ldx--
-<p>In the beginning of <l n='luatex'/> we experimented with a sequence
-of filters so that we could manipulate the input stream. However, since
-this is a partial solution (not taking macro expansion into account)
-and since it may interfere with non-text, we will not use this feature
-by default.</p>
-
-<typing>
-utffilters.collapsing = true
-characters.filters.append(utffilters.collapse)
-characters.filters.activated = true
-callback.register('process_input_buffer', characters.filters.process)
-</typing>
-
-<p>The following helper functions may disappear (or become optional)
-in the future. Well, they are now.</p>
+<p>Next we implement some commands that are used in the user interface.</p>
 --ldx]]--
 
---[[obsolete--
+commands = commands or { }
 
-characters.filters.sequences = characters.filters.sequences or { }
-characters.filters.activated = false
-
-function characters.filters.append(name)
-    table.insert(characters.filters.sequences,name)
+function commands.uchar(first,second)
+    tex.sprint(ctxcatcodes,utfchar(first*256+second))
 end
-
-function characters.filters.prepend(name)
-    table.insert(characters.filters.sequences,1,name)
-end
-
-function characters.filters.remove(name)
-    for k,v in ipairs(characters.filters.sequences) do
-        if v == name then
-            table.remove(characters.filters.sequences,k)
-        end
-    end
-end
-
-function characters.filters.replace(name_1,name_2)
-    for k,v in ipairs(characters.filters.sequences) do
-        if v == name_1 then
-            characters.filters.sequences[k] = name_2
-            break
-        end
-    end
-end
-
-function characters.filters.insert_before(name_1,name_2)
-    for k,v in ipairs(characters.filters.sequences) do
-        if v == name_1 then
-            table.insert(characters.filters.sequences,k,name_2)
-            break
-        end
-    end
-end
-
-function characters.filters.insert_after(name_1,name_2)
-    for k,v in ipairs(characters.filters.sequences) do
-        if v == name_1 then
-            table.insert(characters.filters.sequences,k+1,name_2)
-            break
-        end
-    end
-end
-
-function characters.filters.list(separator)
-    concat(characters.filters.sequences,seperator or ' ')
-end
-
-function characters.filters.process(str)
-    if characters.filters.activated then
-        for _,v in ipairs(characters.filters.sequences) do
-            str = v(str)
-        end
-        return str
-    else
-        return nil -- luatex callback optimalisation
-    end
-end
-
---obsolete]]--
 
 --[[ldx--
-<p>The following code is no longer needed and replaced by token
-collectors somehwere else.</p>
+<p>A few helpers (used to be <t>luat-uni<t/>).</p>
 --ldx]]--
 
---[[obsolete--
-
-characters.filters.collector            = { }
-characters.filters.collector.data       = { }
-characters.filters.collector.collecting = false
-
-function characters.filters.collector.reset()
-    characters.filters.collector.data = { }
+function utf.split(str)
+    local t = { }
+    for snippet in utfcharacters(str) do
+        t[#t+1] = snippet
+    end
+    return t
 end
 
-function characters.filters.collector.flush(separator)
-    tex.sprint(concat(characters.filters.collector.data,separator))
-end
-
-function characters.filters.collector.prune(n)
-    for i=1,n do
-        table.remove(characters.filters.collector.data,-1)
+function utf.each(str,fnc)
+    for snippet in utfcharacters(str) do
+        fnc(snippet)
     end
 end
-
-function characters.filters.collector.numerate(str)
-    if characters.filters.collector.collecting then
-        table.insert(characters.filters.collector.data,(unicode.utf8.gsub(str,"(.)", function(c)
-            return ("0x%04X "):format(unicode.utf8.byte(c))
-        end)))
-    end
-    return str
-end
-
---obsolete]]--

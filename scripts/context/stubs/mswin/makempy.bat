@@ -1,2 +1,5 @@
 @echo off
-texmfstart makempy.pl %*
+setlocal
+set ownpath=%~dp0%
+texlua "%ownpath%mtxrun.lua" --usekpse --execute makempy.pl %*
+endlocal

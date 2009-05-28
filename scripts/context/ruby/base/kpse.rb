@@ -13,6 +13,7 @@
 # todo: web2c vs miktex module and include in kpse
 
 require 'rbconfig'
+require 'fileutils'
 
 # beware $engine is lowercase in kpse
 #
@@ -185,6 +186,7 @@ module Kpse
         return results
     end
 
+
     def Kpse.formatpaths
         # maybe we should check for writeability
         unless @@paths.key?('formatpaths') then
@@ -272,7 +274,7 @@ module Kpse
                     unless done then
                         formatpaths.each do |fp|
                             fpp = fp.sub(/#{engine}\/*$/o,'')
-                            File.makedirs(fpp) rescue false # maybe we don't have an path yet
+                            FileUtils.makedirs(fpp) rescue false # maybe we don't have an path yet
                             if FileTest.directory?(fpp) && FileTest.writable?(fpp) then
                                 # use this path
                                 formatpath, done = fp.dup, true
@@ -285,12 +287,12 @@ module Kpse
                     end
                 end
                 # needed !
-                File.makedirs(formatpath) rescue false
+                FileUtils.makedirs(formatpath) rescue false
                 # fall back to current path
                 formatpath = '.' if formatpath.empty? || ! FileTest.writable?(formatpath)
                 # append engine but prevent duplicates
                 formatpath = File.join(formatpath.sub(/\/*#{engine}\/*$/,''), engine) if enginepath
-                File.makedirs(formatpath) rescue false
+                FileUtils.makedirs(formatpath) rescue false
                 setpath(engine,formatpath)
                 # ENV['engine'] = savedengine
             end

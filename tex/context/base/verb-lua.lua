@@ -6,6 +6,12 @@
 
 -- BROKEN : result is now table
 
+local utf = unicode.utf8
+
+local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
+
+local ctxcatcodes = tex.ctxcatcodes
+
 if not buffers                 then buffers                 = { } end
 if not buffers.visualizers     then buffers.visualizers     = { } end
 if not buffers.visualizers.lua then buffers.visualizers.lua = { } end
@@ -146,7 +152,7 @@ function buffers.visualizers.lua.flush_line(str, nested)
 --~         end
 --~     end
 --~     -- bla bla1 bla.bla
---~     for c in code:utfcharacters() do
+--~     for c in utfcharacters(code) do
 --~         if instr then
 --~             if c == s then
 --~                 if inesc then
@@ -205,6 +211,6 @@ function buffers.visualizers.lua.flush_line(str, nested)
 --~     else
 --~         state, result = buffers.finish_state(state,result)
 --~     end
---~     tex.sprint(tex.ctxcatcodes,result)
+--~     tex.sprint(ctxcatcodes,result)
     return "not yet finished"
 end

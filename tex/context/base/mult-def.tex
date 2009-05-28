@@ -22,6 +22,14 @@
 \setvalue{@interface@persian@}{pe}
 \setvalue{@interface@romanian@}{ro}
 
-\input mult-\ifcsname @interface@\defaultinterface @\endcsname\csname @interface@\defaultinterface @\endcsname\else en\fi\relax
+% \def\userinterfacetag
+%   {\ifcsname @interface@\defaultinterface @\endcsname\csname @interface@\defaultinterface @\endcsname\else en\fi}
+\def\userinterfacetag
+  {\ifcsname @interface@\currentinterface @\endcsname\csname @interface@\currentinterface @\endcsname\else en\fi}
+\def\userresponsestag
+  {\ifcsname @interface@\currentresponses @\endcsname\csname @interface@\currentresponses @\endcsname\else en\fi}
+
+\input mult-\userinterfacetag  \relax
+\input mult-m\userresponsestag \relax
 
 \protect \endinput

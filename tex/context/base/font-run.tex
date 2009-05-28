@@ -213,8 +213,7 @@
      \processcommalist[#2]\docommand
      \egroup
    \else\ifsecondargument
-                      \showfontstyle[#1][#2][\alternativetextlist]%
-     \doif{#2}{\c!mm}{\showfontstyle[#1][#2][\alternativemathlist]}%
+     \showfontstyle[#1][#2][\fontalternativelist]% math is gone
    \else
      \showfontstyle[#1][\c!rm]\showfontstyle[#1][\c!ss]
      \showfontstyle[#1][\c!tt]\showfontstyle[#1][\c!mm]

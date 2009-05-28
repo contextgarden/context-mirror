@@ -23,7 +23,7 @@ if lua then do
     end
 
     function lua.flush(...)
-        tex.sprint("\\directlua0{lua.flush_delayed(" .. table.concat({...},',') .. ")}")
+        tex.sprint("\\directlua0{lua.flush_delayed(",table.concat({...},','),")}")
     end
 
 end end

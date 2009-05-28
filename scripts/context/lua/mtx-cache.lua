@@ -76,7 +76,7 @@ function scripts.cache.list(all)
     end)
 end
 
-banner = banner .. " | cache tools "
+logs.extendbanner("Cache Tools 0.10")
 
 messages.help = [[
 --purge               remove not used files
@@ -93,5 +93,5 @@ elseif environment.argument("erase") then
 elseif environment.argument("list") then
     scripts.cache.list(environment.argument("all"))
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Cyrillic Languages}
+\writestatus{loading}{ConTeXt Language Macros / Cyrillic Languages}
 
 %D The cyrillic languages always use a dedicated input regime.
 %D Therefore we define the labels using symbolic names.
@@ -37,7 +37,8 @@
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
    \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!mapping=t2a,
+   \s!encoding=t2a]
 
 \installlanguage
   [\s!ua]
@@ -53,11 +54,12 @@
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
    \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!patterns=\s!uk,
+   \s!mapping=t2a,
+   \s!encoding=t2a]
 
-\installlanguage [russian]      [\s!ru]
-\installlanguage [ukrainian]    [\s!ua]
-
+\installlanguage [russian]   [\s!ru]
+\installlanguage [ukrainian] [\s!ua]
 
 %D Labels and header texts.
 

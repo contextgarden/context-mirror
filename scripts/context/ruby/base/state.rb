@@ -1,4 +1,4 @@
-require "md5"
+require 'digest/md5'
 
 # todo: register omissions per file
 
@@ -57,7 +57,7 @@ class FileState
         begin
             if FileTest.file?(filename) && (data = IO.read(filename)) then
                 data.gsub!(/\n.*?(#{[omit].flatten.join('|')}).*?\n/) do "\n" end if omit
-                sum = MD5.new(data).hexdigest.upcase
+                sum = Digest::MD5.hexdigest(data).upcase
             end
         rescue
             sum = ''

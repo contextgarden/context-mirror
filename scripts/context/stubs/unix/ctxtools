@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart ctxtools.rb "$@"
+mtxrun --usekpse --execute ctxtools.rb "$@"

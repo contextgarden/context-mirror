@@ -13,51 +13,25 @@
 
 \unprotect
 
-%D Plugs into the common interface.
-
-\beginOLDTEX
-
-    \def\mkloadregime#1%
-      {\makeshortfilename[\truefilename{\f!regimeprefix#1}]%
-       \startreadingfile
-         \readsysfile\shortfilename
-           {\showmessage\m!regimes2{#1}}
-           {\showmessage\m!regimes3{#1}}%
-       \stopreadingfile}
-
-    \def\mkenableregime#1%
-      {\the\executeifdefined{\@reg@#1}\emptytoks}
-
-    \def\mkwalkregime#1%
-      {\the\executeifdefined{\@reg@\currentregime}\emptytoks}
-
-    \def\mkautosetregime#1#2%
-      {\ifnum#2>127
-         \expanded{\defineactivetoken #2 \@EA\noexpand\csname#1\endcsname}%
-       \fi}
-
-\endOLDTEX
-
-\beginXETEX
-
-    \let\mkloadregime   \gobbleoneargument
-    \let\mkenableregime \gobbleoneargument
-    \let\mkwalkregime   \gobbleoneargument
-    \let\mkautosetregime\gobbletwoarguments
-
-    % \def\mkenableregime#1%
-    %   {\XeTeXinputencoding "#1"\relax}
-
-    \def\mkenableregime#1%
-      {\doifelse{#1}{utf}%
-          {\writestatus\m!regimes{mapping utf to utf-8}%
-           \XeTeXinputencoding{utf-8}}
-          {\XeTeXinputencoding{#1}}}
-
-\endXETEX
-
 %D Remark: regimes accumulate, so there is no explicit reset in
 %D mkii mode.
+
+%D Variables.
+
+\def\@reg@{@r@eg@} % regime prefix
+
+%D \macros
+%D   {currentregime}
+
+\let\currentregime\empty
+\let\defaultregime\s!default
+
+%D Some low level inheritance stuff (mkii).
+
+\def\doautosetregime#1#2%
+  {\ifnum#2>127
+     \expanded{\defineactivetoken #2 \@EA\noexpand\csname#1\endcsname}%
+   \fi}
 
 %D \macros
 %D   {startregime}
@@ -153,27 +127,104 @@
   {\setregimetoks
    \regimetoks\expandafter{\the\regimetoks\defineactivecharacter#1 {#2}}}
 
-% D This is kind of obsolete (replaced by previous code).
-%
-% \def\definetoken #1 % #1 = rawtoken or number
-%   {\doifnumberelse{\string#1}
-%      {\expanded{\dodefinetoken{\rawcharacter{#1}}}}
-%      {\expanded{\dodefinetoken{\string#1}}}}
-%
-% \def\dodefinetoken#1#2%
-%   {\defineactivecharacter#1 {\dohandletoken{#1}} %
-%    \setvalue{\@reg@:t:\currentregime#1}{#2}}
-%
-% \def\dohandletoken#1%
-%   {\csname\ifcsname \@reg@:t:\currentregime#1\endcsname % regi-def sets the defaults
-%      \@reg@:t:\currentregime\else\defaultregime\fi#1\endcsname}
+%D \macros
+%D   {defineregimesynonym,trueregimename}
 
-%D Preloading:
+\def\defineregimesynonym
+  {\dodoubleargument\dodefineregimesynonym}
 
-\beginOLDTEX
+\def\dodefineregimesynonym[#1][#2]%
+  {\setevalue{\@reg@:s:#1}{#2}}
+
+\def\trueregimename#1%
+  {\executeifdefined{\@reg@:s:#1}{#1}}
+
+%D \macros
+%D   {useregime}
+
+\def\useregime[#1]%
+  {\processcommalist[#1]\douseregime}
+
+\def\douseregime#1%
+  {\doifundefined{\c!file\f!regimeprefix#1}%
+     {\letgvalue{\c!file\f!regimeprefix#1}\empty
+      \makeshortfilename[\truefilename{\f!regimeprefix#1}]%
+      \startreadingfile
+        \readsysfile\shortfilename
+          {\showmessage\m!regimes2{#1}}
+          {\showmessage\m!regimes3{#1}}%
+      \stopreadingfile}}
+
+%D \macros
+%D   {enableregime,disableregime}
+
+\let\enabledregime\empty
+
+\def\enableregime[#1]%
+  {\edef\currentregime{\trueregimename{#1}}%
+   \doifelsenothing\currentregime
+     {\disableregime}
+     {\douseregime\currentregime
+      \the\executeifdefined{\@reg@\currentregime}\emptytoks}}
+
+\def\disableregime
+  {\let\currentregime\empty}
+
+%D \macros
+%D   {protectregime, settoletterunlessactive, settocodeunlessactive}
+%D
+%D The next boolean is used later on to prevent unwanted
+%D catcode changes. Use it with care.
+
+\newif\ifprotectregime \protectregimetrue
+
+\def\settoletterunlessactive#1%
+  {\ifprotectregime\ifnum\catcode#1=\active\else
+     \catcode#1\@@letter
+   \fi\else
+     \catcode#1\@@letter
+   \fi}
+
+\def\settootherunlessactive#1%
+  {\ifprotectregime\ifnum\catcode#1=\active\else
+     \catcode#1=\@@other
+   \fi\else
+     \catcode#1=\@@other
+   \fi}
+
+\def\settocodeunlessactive#1#2%
+  {\ifprotectregime\ifnum\catcode#1=\active\else
+     \catcode#1=#2\relax
+   \fi\else
+     \catcode#1=#2\relax
+   \fi}
+
+%D Sort related:
+
+\def\dowalkregime#1%
+  {\the\executeifdefined{\@reg@#1}\emptytoks}
+
+%D Simplify matters for \XETEX.
+
+\ifnum\texengine=\xetexengine
+
+    \def\enableregime[#1]%
+      {\doifelse{#1}{utf}%
+         {\writestatus\m!regimes{mapping utf to utf-8}%
+          \XeTeXinputencoding{utf-8}}
+         {\XeTeXinputencoding{#1}}}
+
+    \def\disableregime
+      {\XeTeXinputencoding{utf-8}}
+
+    \def\loadregime[#1]{}
+    \let\walkregime      \gobbleoneargument
+    \let\doautosetregime \gobbletwoarguments
+
+\else
 
     \useregime[def,uni,utf] % we load the rest runtime
 
-\endOLDTEX
+\fi
 
 \protect \endinput

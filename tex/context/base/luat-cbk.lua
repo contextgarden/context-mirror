@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['luat-cbk'] = {
     license   = "see context related readme files"
 }
 
+local trace_checking = false  trackers.register("memory.checking", function(v) trace_checking = v end)
+
 --[[ldx--
 <p>Callbacks are the real asset of <l n='luatex'/>. They permit you to hook
 your own code into the <l n='tex'/> engine. Here we implement a few handy
@@ -67,7 +69,6 @@ end)
 <p>This does a one-shot.</p>
 --ldx]]--
 
-
 --[[ldx--
 <p>Callbacks may result in <l n='lua'/> doing some hard work
 which takes time and above all resourses. Sometimes it makes
@@ -97,8 +98,8 @@ because messing aroudn with the gc is too unpredictable.</p>
 
 garbagecollector = garbagecollector or { }
 
-garbagecollector.trace   = false
-garbagecollector.enabled = false
+garbagecollector.enabled   = false
+garbagecollector.criterium = 4*1024*1024
 
 -- Lua allocates up to 12 times the amount of memory needed for
 -- handling a string, and for large binary chunks (like chinese otf
@@ -122,13 +123,11 @@ garbagecollector.enabled = false
 -- As a result of this, LuaTeX now uses an optimized version of f:read("*a"),
 -- one that does not use the 4K allocations but allocates in one step.
 
-garbagecollector.criterium = 4*1024*1024
-
 function garbagecollector.check(size,criterium)
     if garbagecollector.enabled then
         criterium = criterium or garbagecollector.criterium
         if not size or (criterium and criterium > 0 and size > criterium) then
-            if garbagecollector.trace then
+            if trace_checking then
                 local round = math.round or math.floor
                 local b = collectgarbage("count")
                 collectgarbage("collect")
@@ -140,5 +139,3 @@ function garbagecollector.check(size,criterium)
         end
     end
 end
-
-

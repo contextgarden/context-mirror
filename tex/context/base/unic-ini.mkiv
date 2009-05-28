@@ -11,23 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context UNICODE Macros (ini)}
+\writestatus{loading}{ConTeXt Unicode Support / Initialization}
 
 %D Much of this is not needed at all in \LUATEX\ and we can save some
 %D 50K on the compressed format.
 
 \unprotect
 
-\def\keeputfcharacters            {}
-\def\registerprivateunicodechar#1 {}
-\def\defineunicodecommand    #1 #2{}
-\def\doifunicodevector          #1{\firstofoneargument}
-\def\useunicodevector         [#1]{}
-\def\startunicodevector         #1\stopunicodevector{}
-\def\unicodeinfoline        #1#2#3{}
-\def\cleanunicodechar           #1{#1}
-\def\unicodeunknowncharacter      {\unknownchar}
-
+\let    \keeputfcharacters\relax
 \chardef\utfunicodetracer \zerocount
 \chardef\utfunicommandmode\zerocount
 
@@ -38,11 +29,5 @@
 \unexpanded\def\unknownchar{{\hbox{\vrule\!!width.5em\!!height1ex\!!depth\zeropoint}}}
 
 \ifx\zwnbsp\undefined \let\zwnbsp\relax \fi % zerowidthnonbreakablespace
-
-\def\showunicodevector[#1]{}
-\def\showunicodetable [#1]{}
-
-% \fetchruntimecommand \showunicodevector {\f!unicprefix\s!run}
-% \fetchruntimecommand \showunicodetable  {\f!unicprefix\s!run}
 
 \protect  \endinput

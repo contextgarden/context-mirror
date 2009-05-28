@@ -1,0 +1,74 @@
+%D \module
+%D   [       file=core-def,
+%D        version=2002.05.07,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Defaults,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Defaults}
+
+%D Here we collect settings that cannot be done earlier due to
+%D depedencies. More code will moved to this module later.
+
+\unprotect
+
+\usesymbols[mis,mvs,nav]
+
+\setupsymbolset[navigation 1]
+
+\setupinteraction[\c!symbolset=navigation 1]
+
+% initialization order:
+
+\appendtoks  \showcontextbanner                    \to \everyjob
+\appendtoks  \initializenewlinechar                \to \everyjob
+\appendtoks  \checksystemcommandmode               \to \everyjob
+\appendtoks  \calculatecurrenttime                 \to \everyjob
+\appendtoks  \loadsystemfiles                      \to \everyjob
+\appendtoks  \loadoptionfile                       \to \everyjob % can load files !
+\appendtoks  \preloadfonts                         \to \everyjob
+\appendtoks  \settopskip                           \to \everyjob
+\appendtoks  \preloadlanguages                     \to \everyjob
+\appendtoks  \preloadspecials                      \to \everyjob
+\appendtoks  \splitjobfilename                     \to \everyjob
+\appendtoks  \checknotes                           \to \everyjob % depends on bodyfont
+\appendtoks  \initializeMPgraphics                 \to \everyjob % after loading system files
+\appendtoks  \reportsystemcommandmode              \to \everyjob
+\appendtoks  \initializemainlanguage               \to \everyjob
+\appendtoks  \MPLIBregister                        \to \everyjob
+\appendtoks  \xmlinitialize                        \to \everyjob
+\appendtoks  \settrue\trackfilenames               \to \everyjob
+\appendtoks  \newbackgroundfalse                   \to \everyjob % global
+\appendtoks  \initializepagecounters               \to \everyjob
+\appendtoks  \directsetup{*runtime:options}        \to \everyjob % we could erase them afterwards % order can change
+\appendtoks  \directsetup{*runtime:modules}        \to \everyjob % we could erase them afterwards % order can change
+\appendtoks  \checkpreprocessor                    \to \everyjob
+
+%appendtoks  \page[\v!last] \page                  \to \everybye % moved to core-job, we need to do this cleaner
+\appendtoks  \ifarrangingpages\poparrangedpages\fi \to \everybye
+\appendtoks  \registerfileinfo[end]\jobname        \to \everybye
+
+\prependtoks \resetutilities                       \to \everystarttext % moved 28-02-2002
+
+\appendtoks  \MPLIBallocate{1000}                  \to \everydump
+
+\prependtoks \resetallattributes                   \to \everybeforeoutput
+
+\appendtoks  \the\everybackendshipout              \to \everyshipout
+\prependtoks \the\everylastbackendshipout          \to \everylastshipout
+
+% temporary here:
+
+\ifx\in   \undefined\else \let\normalmathin   \in    \unexpanded\def\in   {\mathortext\normalmathin   \dospecialin   } \fi
+\ifx\at   \undefined\else \let\normalmathat   \at    \unexpanded\def\at   {\mathortext\normalmathat   \dospecialat   } \fi
+\ifx\about\undefined\else \let\normalmathabout\about \unexpanded\def\about{\mathortext\normalmathabout\dospecialabout} \fi
+\ifx\from \undefined\else \let\normalmathfrom \from  \unexpanded\def\from {\mathortext\normalmathfrom \dospecialfrom } \fi
+\ifx\over \undefined\else \let\normalmathover \over  \unexpanded\def\over {\mathortext\normalmathover \dospecialabout} \fi
+
+\protect \endinput

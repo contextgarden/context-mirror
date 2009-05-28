@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart rlxtools.rb "$@"
+mtxrun --usekpse --execute rlxtools.rb "$@"

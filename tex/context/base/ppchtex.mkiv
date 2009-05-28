@@ -1,0 +1,3359 @@
+%D \module
+%D   [       file=ppchtex (m-chemie),
+%D        version=1997.03.19,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\PPCHTEX\ (Plain Pictex Context cHemie \TEX),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten},
+%D    suggestions={Tobias Burnus, Dirk Kuypers \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% option=test    => boxes
+%        dummy   => file
+%        final   => file / local run
+%
+% constante van phantom in definitie ONE: \setchemicaltextwidth 300
+%
+% it would be interesting to rewrite this module with todays
+% experiences and new context functionality, maybe ...
+
+% Deze module ondersteunt het zetten van chemische
+% (structuur)formules. Hoewel de macro' zijn afgestemd op
+% CONTEXT, zijn ze ook buiten deze zetomgeving te gebruiken.
+%
+% Dit is, afgezien van updates, de definitieve versie van
+% PPCHTEX. Gebruikersgemak, eenvoud, flexibiliteit, en
+% snelheid zijn inmiddels redelijk geoptimaliseerd. Dit neemt
+% niet weg dat hier en daar nog verbetering mogelijk is. Dit
+% zal dan ook nog gebeuren.
+%
+% Volgende versies zullen tenminste dezelfde functionaliteit
+% hebben. We houden ons natuurlijk het recht voor de kwaliteit
+% van de output te verbeteren. Daarnaast staan nog op het
+% wensenlijstje:
+%
+% -  optimaliseren in termen van proces-tijd
+% -  aanpassen naamgeving van interne macro's
+% -  toevoegen van functionaliteit
+% -  in \x!-vorm omzetten van GIVES, TB enz.
+%
+% De mix tussen engels en nederlands lijkt soms verwarrend.
+% Meestal zijn verborgen macro's engels en zichtbare macro's
+% nederlands. Het gebruik van [ ] en { } sluit aan op andere
+% Context-macro's. Hetzelfde geldt voor instellingen en
+% \start-\stop-constructies.
+%
+% De schijnbaar overbodige \bgroup-\egroup constructie
+% garandeert aansluiting bij de Context-macro's voor het
+% plaatsen van figuren, tabellen en andere floats.
+%
+% Binnen Context worden de macro's geladen met
+% \gebruikextras[chemie]. Daarbij wordt een passende melding
+% getoont. Buiten Context genereren we een melding:
+
+\doifundefined{usemodule}
+  {\writestatus{loading}{ConTeXt Chemical Macro's / 1996.3.1}}
+
+% Er kan gebruik worden gemaakt van PiCTeX of PStricks. Een
+% van deze pakketten moet van te voren zijn geladen.
+%
+% \input prepictex.tex (i.g.v. LaTeX)
+% \input pictex.tex
+% \input postpictex.tex (i.g.v. LaTeX)
+%
+% of:
+%
+% \input multido.tex
+% \input pstricks.tex
+% \input pst-plot.tex
+%
+% In \CONTEXT\ kan men de modules m-pictex en m-pstricks
+% gebruiken. De eerste module laad of efficiente wijze PiCTeX
+% en de tweede module koppelt het PSTRICKS kleurmechanisme
+% aan dat van \CONTEXT.
+%
+
+% PSTricks: {-\chemicalangle} instead of {*0}, which produces
+% faulty ps code when \chemicalangle=0
+
+\startcommands dutch english german
+
+    gotochemical:  naarchemie       gotochemical    zurchemie
+   setupchemical:  stelchemiein     setupchemical   stellechemieein
+   startchemical:  startchemie      startchemical   startchemie
+    stopchemical:  stopchemie       stopchemical    stopchemie
+  definechemical:  definieerchemie  definechemical  definierechemie
+        chemical:  chemie           chemical        chemie
+         toptext:  boventekst       toptext         textueber
+         bottext:  ondertekst       bottext         textunter
+         midtext:  middentekst      midtext         textmitte
+
+\stopcommands
+
+\doifundefined{fiverm}  % In the more recent LaTeX versions
+  {\font\fiverm=cmr5 }  % \fiverm is no longer (pre)defined.
+
+\doifdefinedelse{beginpicture}           % PiCTeX
+  {\doifdefinedelse{startMPdrawing}
+     {\chardef\chemicaldrawingmode=2 }   % MetaPost
+     {\chardef\chemicaldrawingmode=0 }}  % raw
+  {\doifdefinedelse{psaxes}
+     {\chardef\chemicaldrawingmode=1 }   % PSTricks
+     {\chardef\chemicaldrawingmode=3 }}  % unknown
+
+\ifcase\chemicaldrawingmode
+  \writestatus{ppchtex}{using PiCTeX}
+\or
+  \writestatus{ppchtex}{using PSTricks (still experimental)}
+  \writestatus{ppchtex}{automatic sizing not (yet) supported}
+\or
+  \writestatus{ppchtex}{using PiCTeX and MetaPost}
+\else
+  \writestatus{ppchtex}{load PiCTeX (+pre/post) or PSTricks (+pst_plot) first}
+  \bgroup
+  \read16 to \exit
+  \egroup
+  \expandafter\endinput
+\fi
+
+%I n=Chemie
+%I c=\stelchemiein,\chemie
+%I
+%I Chemische formules kunnen worden gezet met behulp van de
+%I onderstaande commando's:
+%I
+%I buiten $ en $$ :
+%I
+%I   \chemie[segmenten][symbolen]
+%I
+%I   \startchemie[instellingen]
+%I     \chemie...
+%I     \chemie...
+%I   \stopchemie
+%I
+%I en binnen $ en $$:
+%I
+%I   \chemie{}{}
+%I
+%I Voor tekst, uitleg en voorbeelde verwijzen we vooralsnog
+%I naar de handleiding.
+%P
+%I Het gedrag van de macro's kan worden ingesteld met:
+%I
+%I   \stelchemiein[breedte=,hoogte=,links=,rechts=,boven=,
+%I     onder=,korps=,schaal=,status=,assenstelsel=,kader=,
+%I     variant=,optie=,formaat=,tekstformaat=,resolutie=,
+%I     offset=,letter=]
+%I
+%I Structuren kunnen worden voorgedefinieerd met het commando
+%I
+%I   \definieerchemie[naam]{\chemie...}
+
+%S \startsetup
+%S   \command
+%S     [\!stelchemiein]
+%S   \type
+%S     [\c!vars!]
+%S   \variable
+%S     [\c!breedte]
+%S     [\c!number!,\v!passend]
+%S     [0]
+%S   \variable
+%S     [\c!hoogte]
+%S     [\c!number!,\v!passend]
+%S     [0]
+%S   \variable
+%S     [\c!links]
+%S     [\c!number!]
+%S     [0]
+%S   \variable
+%S     [\c!rechts]
+%S     [\c!number!]
+%S     [0]
+%S   \variable
+%S     [\c!boven]
+%S     [\c!number!]
+%S     [0]
+%S   \variable
+%S     [\c!onder]
+%S     [\c!number!]
+%S     [0]
+%S   \variable
+%S     [\c!resolutie]
+%S     [\c!number!]
+%S     [\outputresolution]
+%S   \variable
+%S     [\c!korps]
+%S     [10pt,11pt,12pt]
+%S     [\bodyfontsize]
+%S   \variable
+%S     [\c!schaal]
+%S     [\v!klein,\v!middel,\v!groot]
+%S     [\v!middel]
+%S   \variable
+%S     [\c!formaat]
+%S     [\v!klein,\v!middel,\v!groot]
+%S     [\v!groot]
+%S   \variable
+%S     [\c!tekstformaat]
+%S     [\v!klein,\v!middel,\v!groot]
+%S     [\v!groot]
+%S   \variable
+%S     [\c!status]
+%S     [\v!start,\v!stop]
+%S     [\v!start]
+%S   \variable
+%S     [\c!kader]
+%S     [\v!aan,\v!uit]
+%S     [\v!uit]
+%S   \variable
+%S     [\c!assenstelsel]
+%S     [\v!aan,\v!uit]
+%S     [\v!uit]
+%S   \variable
+%S     [\c!optie]
+%S     [\v!test]
+%S     []
+%S   \variable
+%S     [\c!variant]
+%S     [1,2]
+%S     [1]
+%S   \variable
+%S     [\c!offset]
+%S     [HIGH,LOW]
+%S     [LOW]
+%S   \variable
+%S     [\c!letter]
+%S     [\c!command!]
+%S     [\rm]
+%S \stopsetup
+
+%S \startsetup
+%S   \command
+%S     [\v!startchemie]
+%S   \type
+%S     [\c!vars!\c!stp!]
+%S   \inheritvariable
+%S     [\v!stelchemiein]
+%S     []
+%S \stopsetup
+
+%S \startsetup
+%S   \command
+%S     [\v!chemie]
+%S   \type
+%S     [\c!vals!\c!vals!]
+%S   \value
+%S     [\c!list!]
+%S     []
+%S   \value
+%S     [\c!list!]
+%S     []
+%S \stopsetup
+
+%S \startsetup
+%S   \command
+%S     [definieerchemie]
+%S   \type
+%S     [\c!val!\c!arg!]
+%S   \value
+%S     [\c!text!]
+%S     []
+%S \stopsetup
+
+\unprotect
+
+% Om te voorkomen dat sub- en superscripts botsen passen we
+% wat fontdimen's aan (Knuth, The TeXBook, p179). Helaas
+% kunnen deze instellingen niet lokaal worden gehouden door
+% groeperen, vandaar dat een en ander moet worden geset ‚n
+% gereset.
+%
+% Er dient een relatie te worden gelegd met de afmetingen
+% van de letters. In een eerdere versie werden daartoe de
+% \fontdimen's opgehoogd. Omdat dit problemen gaf bij
+% scaled fonts, is bij nader inzien gekozen voor de
+% onderstaande oplossing, waarbij de nieuwe waarden worden
+% afgeleid van de x-height (\fontexheight). De factor 0.70
+% is min of meer experimenteel vastgesteld. Soms worden de
+% regels iets verder uit elkaar gezet. Jammer. Italic fonts
+% hebben grotere cijfers en vallen min of meer uit de boot.
+
+\newif\ifloweredsubscripts
+
+% Due to some upward incompatibality of LaTeX to LaTeX2.09
+% and/or LaTeX2e we had to force \@@dochemicalstyle. Otherwise
+% some weird \nullfont error comes up.
+
+\def\beginlatexmathmodehack
+  {\ifmmode
+     \let\endlatexmathmodehack=\relax
+   \else
+     \def\endlatexmathmodehack{$}$\@@dochemicalstyle\empty
+   \fi}
+
+\def\setsubscripts%
+  {\beginlatexmathmodehack
+   \def\dosetsubscript##1##2##3%
+     {\dimen0=##3\fontexheight##2%
+      \setxvalue{@@\string##1\string##2}{\the##1##2\relax}%
+      ##1##2=\dimen0\relax}%
+   \def\dodosetsubscript##1##2%
+     {\dosetsubscript{##1}{\textfont        2}{##2}%
+      \dosetsubscript{##1}{\scriptfont      2}{##2}%
+      \dosetsubscript{##1}{\scriptscriptfont2}{##2}}%
+   %dodosetsubscript\mathsupnormal  {?}%
+   \dodosetsubscript\mathsubnormal  {.7}%
+   \dodosetsubscript\mathsubcombined{.7}%
+   \global\loweredsubscriptstrue
+   \endlatexmathmodehack}
+
+\def\resetsubscripts
+  {\ifloweredsubscripts
+     \beginlatexmathmodehack
+     \def\doresetsubscript##1##2%
+       {\dimen0=\getvalue{@@\string##1\string##2}\relax
+        ##1##2=\dimen0}%
+     \def\dodoresetsubscript##1%
+       {\doresetsubscript{##1}{\textfont2}%
+        \doresetsubscript{##1}{\scriptfont2}%
+        \doresetsubscript{##1}{\scriptscriptfont2}}%
+     %dodoresetsubscript\mathsupnormal
+     \dodoresetsubscript\mathsubnormal
+     \dodoresetsubscript\mathsubcombined
+     \global\loweredsubscriptsfalse
+     \endlatexmathmodehack
+   \fi}
+
+\ifx\Umathchar\undefined \else
+    % for the moment we nil them, soon we will have a proper
+    % way to deal with this
+    \let\setsubscripts  \relax
+    \let\resetsubscripts\relax
+\fi
+
+\def\doresetsubscripts
+  {\resetsubscripts}
+
+\def\sethighsubscripts
+  {\resetsubscripts
+   \let\dosetsubscripts=\relax}
+
+\def\setlowsubscripts
+  {\def\dosetsubscripts{\setsubscripts}}
+
+\setlowsubscripts
+
+\newcount\horchemical % t.z.t. \newcounter
+\newcount\verchemical % t.z.t. \newcounter
+\newcount\txtchemical % t.z.t. \newcounter
+\newcount\levchemical % t.z.t. \newcounter
+
+\newif\ifinchemical            \inchemicalfalse
+\newif\iffixedchemical         \fixedchemicalfalse
+
+\newbox\chemicalsymbols
+
+% Eigenlijk moeten de constanten en variabelen in cont-nl.tex
+% staan. Dit pakket is echter relatief onafhankelijk van CONTEXT.
+
+\definesystemvariable  {chemical}
+
+\definesystemconstant  {chemical}
+
+\definesystemconstant  {translate}
+\definesystemconstant  {distance}
+\definesystemconstant  {mirror}
+\definesystemconstant  {rotate}
+\definesystemconstant  {substitute}
+\definesystemconstant  {angle}
+
+\definesystemconstant  {executechemical}
+\definesystemconstant  {chemicaltextelement}
+\definesystemconstant  {chemicallinesegment}
+\definesystemconstant  {chemicalcircsegment}
+
+\def\chemicalspace     {\quad}
+
+% begin van experiment:
+%
+% De onderstaande twee macro's kunnen worden gebruikt voor
+% bijvoorbeeld een interactiemechanisme.
+%
+% \localgotochemical   {verwijzing} {tekst}
+% \localthisischemical {verwijzing}
+
+\def\dowithchemical%
+  {}
+
+\doifdefinedelse{@@iastate}
+  {\def\localgotochemical#1#2{\naarbox{#2}[#1]}%
+   \def\localthisischemical#1{\pagereference[#1]}}
+  {\def\localgotochemical#1{}%
+   \def\localthisischemical#1{}}
+
+% eind van experiment
+
+\def\setchemicalmaximum #1
+  {\def\maxchemical{#1}}
+
+\def\doifchemicalnumber#1#2#3%
+  {\doifnumberelse{#1}
+     {\ifnum#1>\maxchemical\relax
+        \writestatus{ppchtex}{number #1 is skipped}%
+      \else
+        #3%
+      \fi}
+     {\unknownchemical{#2}}}%
+
+\newif\ifsmallchemicaltext
+
+\let\@@localchemicalstyle\empty
+
+\def\setupchemicalformat[#1]%
+  {\processaction
+     [\getvalue{#1\c!size}]
+     [  \v!small=>\def\@@localchemicalformat{\scriptscriptstyle},
+       \v!medium=>\def\@@localchemicalformat{\ifsmallchemicaltext\scriptscriptstyle\else\scriptstyle\fi},
+          \v!big=>\def\@@localchemicalformat{\ifsmallchemicaltext\scriptstyle\else\textstyle\fi},
+      \s!unknown=>\def\@@localchemicalformat{\getvalue{#1\c!size}}]%
+   \processaction
+     [\getvalue{#1\c!textsize}]
+     [  \v!small=>\def\@@localchemicalstyle{\scriptscriptstyle},
+       \v!medium=>\def\@@localchemicalstyle{\ifsmallchemicaltext\scriptscriptstyle\else\scriptstyle\fi},
+          \v!big=>\def\@@localchemicalstyle{\ifsmallchemicaltext\scriptstyle\else\textstyle\fi},
+      \s!unknown=>\def\@@localchemicalstyle{\getvalue{#1\c!textsize}}]%
+   \processaction
+     [\getvalue{#1\c!scale}]
+     [  \v!small=>\def\@@localchemicalscale{500},
+       \v!medium=>\def\@@localchemicalscale{625},
+          \v!big=>\def\@@localchemicalscale{750},
+      \s!unknown=>\def\@@localchemicalscale{\getvalue{#1\c!scale}}]}
+
+\def\@@currentchemicalformat
+  {\ifinchemical
+     \@@localchemicalformat
+   \else
+     \@@localchemicalstyle
+   \fi}
+
+\def\dosetupchemical[#1]%
+  {\getparameters[\??chemical\s!chemical][#1]%
+   \doifelse{\@@chemicalchemicaloffset}{LOW}
+     {\setlowsubscripts}
+     {\sethighsubscripts}%
+   \setupchemicalformat[\??chemical\s!chemical]%
+   \ignorespaces}
+
+\def\setupchemical
+  {\dosingleargument\dosetupchemical}
+
+\def\@@dochemicalstyle%       % default mapping
+  {\@@chemicalstyle}
+
+\def\@@dochemicalcolor%       % no mapping yet
+  {}
+
+\def\@@chemicalstyle         %  $inner-style$  % (overloaded)
+  {\@@chemicalchemicalstyle} % $$outer-style$$
+
+\def\@@writechemicalstate#1#2%
+  {}
+
+\def\@@beginchemicallocalpicture
+  {\ifcase\chemicaldrawingmode
+     \beginpicture
+   \or
+     \pspicture(0,0)(0,0) % is this permitted ?
+   \or
+     \pushMPdrawing
+     \startMPdrawing
+       %prologues := 1 ;
+       %input mp-tool ;
+       u := 10*\@@chemicalunit;
+       bboxmargin := 0pt ;
+       pickup pencircle scaled 2u ; % ???
+     \stopMPdrawing
+     \beginpicture
+   \fi}
+
+\def\@@endchemicallocalpicture#1#2%
+  {\ifcase\chemicaldrawingmode
+     \endpicture
+   \or
+     \endpspicture
+   \or
+     \resetchemicalcoordinates
+     \setbox2\hbox{\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
+     \wd2=\!!zeropoint
+     \ht2=\!!zeropoint
+     \dp2=\!!zeropoint
+     \put {\box2} at 0 0
+     \endpicture
+     \popMPdrawing
+   \fi}
+
+\def\@@beginchemicalpicture#1#2#3#4%
+  {\ifnum\chemicaldrawingmode=1
+     \pspicture(#1,#3)(#2,#4)%
+     \def\account##1##2{}%
+     \psaxes[axesstyle=none,labels=none,ticks=none](#1,#3)(#2,#4)%
+   \else
+     \beginpicture
+     \setplotarea
+       x from {#1} to {#2},
+       y from {#3} to {#4}
+     \iffixedchemical
+       \accountingon
+       \def\account##1##2%
+         {\put {} at {##1} {##2} }%
+     \else
+       \accountingoff
+       \def\account##1##2{}%
+     \fi
+   \fi
+   \ignorespaces}
+
+\def\@@endchemicalpicture%
+  {\ifcase\chemicaldrawingmode
+     \put {\box\chemicalsymbols} at 0 0 %  elders
+     \endpicture
+   \or
+     \rput(0,0){\box\chemicalsymbols}%
+     \endpspicture
+   \or
+     \put {\box\chemicalsymbols} at 0 0 %  elders
+     \ifMPdrawingdone
+       \resetchemicalcoordinates
+       \setbox2\hbox{\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
+       \wd2=\!!zeropoint
+       \ht2=\!!zeropoint
+       \dp2=\!!zeropoint
+       \put {\box2} at 0 0 %
+     \fi
+     \endpicture
+   \fi}
+
+\def\@@setchemicalcoordinatesystem#1%
+  {\edef\@@chemicalunit{#1}%
+   \ifcase\chemicaldrawingmode
+     \setcoordinatesystem units <\@@chemicalunit,\@@chemicalunit> %
+   \or
+     \psset{unit=\@@chemicalunit}%
+   \or
+     \setcoordinatesystem units <\@@chemicalunit,\@@chemicalunit> %
+     \startMPdrawing
+      %input mp-tool ;
+      %prologues := 1 ;
+       u := 10*#1;
+       bboxmargin := 0pt ;
+       pickup pencircle scaled 2u ; % ???
+     \stopMPdrawing
+   \fi}
+
+\ifx\MPdivten\undefined % hack to prevent overflows in mp
+    \def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
+\fi
+
+\def\@@setchemicalaxis#1#2#3#4%
+  {\ifcase\chemicaldrawingmode
+     \axis
+       bottom shiftedto y=0
+       ticks from {#1} to {#2} by 500 /
+     \axis
+       left shiftedto x=0
+       ticks from {#3} to {#4} by 500 / %
+   \or
+     \psaxes[labels=none,Dx=500,Dy=500](0,0)(#1,#3)(#2,#4)%
+   \or
+     \global\MPdrawingdonetrue
+     % we need to div beforehand because of mp limitations
+     \startMPdrawing
+        x1 := \MPdivten[#1]u ; x2 := \MPdivten[#2]u;
+        y1 := \MPdivten[#3]u ; y2 := \MPdivten[#4]u;
+        draw z1--(x2,y1)--z2--(x1,y2)--cycle ;
+        d := 50u ; dd := 10u ;
+        draw (x1,0)--(x2,0) ;
+        draw (0,y1)--(0,y2) ;
+        for i=d step -d until x1: draw (i,dd)--(i,-dd) ; endfor ;
+        for i=d step  d until x2: draw (i,dd)--(i,-dd) ; endfor ;
+        for i=d step -d until y1: draw (-dd,i)--(dd,i) ; endfor ;
+        for i=d step  d until y2: draw (-dd,i)--(dd,i) ; endfor ;
+     \stopMPdrawing
+   \fi}
+
+\def\@@setsecondchemicalplotsymbol%
+  {\ifcase\chemicaldrawingmode
+     \!!widtha=50.8mm
+     \divide\!!widtha by \@@chemicalresolution\relax
+     \plotsymbolspacing=\!!widtha
+     \setplotsymbol({\vrule\!!height\!!widtha\!!width\!!widtha})%
+   \fi}
+
+% Something for Dirk:
+
+\newcount \currentchemical
+
+%\newif    \ifskipchemical
+
+\def\setchemicaldimensions#1#2#3%
+  {\bgroup
+   \global\advance\currentchemical by 1
+   \dimen0=#1\relax
+   \dimen2=#2\relax
+   \dimen4=#3\relax
+   \setxvalue{chemical::\the\currentchemical}%
+     {\noexpand\docommand{\the\dimen0}{\the\dimen2}{\the\dimen4}}%
+   \egroup}
+
+\ifx\normalchemicalframe\undefined
+  \let\normalchemicalframe\hbox % hook for educational purposes
+\fi
+
+\unexpanded\def\complexstartchemical[#1]%
+  {\copyparameters
+     [\??chemical][\??chemical\s!chemical]
+     [\c!width,\c!height,\c!left,\c!right,\c!top,\c!bottom,
+      \c!bodyfont,\c!size,\c!scale,\c!state,\c!frame,\c!axis,\c!factor,
+      \c!location,\c!option,\c!alternative,\c!resolution,\c!offset,\c!style,
+      \c!color,\c!rulecolor,\c!rulethickness]%
+   \getparameters
+     [\??chemical]
+     [#1]%
+   %
+   \setupchemicalformat[\??chemical]%
+   %
+   \ifnum\chemicaldrawingmode=2
+     \resetMPdrawing
+   \fi
+   %
+   \doif{\@@chemicalalternative}{2}
+     {\@@setsecondchemicalplotsymbol}%
+   %
+   \doif{\@@chemicalaxis}\v!on
+     {\let\chemicalframe\hbox}%
+   %
+   \!!counta=250000
+   \divide\!!counta by \@@localchemicalscale
+   \!!widtha=\@@chemicalbodyfont
+   \divide\!!widtha by \!!counta
+   \@@setchemicalcoordinatesystem{\the\!!widtha}%
+   %
+   % \!!counta = -x     \!!countc = -y
+   % \!!countb = +x     \!!countd = +y
+   %
+   \def\calculateaxis##1##2##3##4##5%
+     {##1=##3\relax
+      ##2=##4\relax
+      \ifnum##5=0
+        \ifnum##3=0
+          \ifnum##4=0
+            ##1=2000
+            ##2=2000
+           \fi
+        \fi
+      \else
+        \ifnum##3=0
+          \ifnum##4=0
+            ##1=##5\relax
+            \divide##1 by 2
+            ##2=##1\relax
+          \else
+            ##1=##5\relax
+            \advance##1 by -##2\relax
+          \fi
+        \else
+          \ifnum##4=0
+            ##2=##5\relax
+            \advance##2 by -##1\relax
+          \fi
+        \fi
+      \fi}%
+   \fixedchemicalfalse
+   \doif\@@chemicalwidth\v!fit
+     {\edef\@@chemicalwidth
+        {\ifnum\chemicaldrawingmode=1 2000 \else 1 \fi}%
+      \fixedchemicaltrue}%
+   \doif\@@chemicalheight\v!fit
+     {\edef\@@chemicalheight
+        {\ifnum\chemicaldrawingmode=1 2000 \else 1 \fi}%
+      \fixedchemicaltrue}%
+   \doifelse\@@chemicallocation\v!intext
+     {\!!counta=0 \!!countb=0
+      \!!counta=0 \!!countd=0 }
+     {\calculateaxis
+        \!!counta\!!countb
+        \@@chemicalleft\@@chemicalright\@@chemicalwidth
+      \calculateaxis
+        \!!countc\!!countd
+        \@@chemicalbottom\@@chemicaltop\@@chemicalheight}%
+   %
+   \edef\@@chemheight    {\the\!!countc}%
+   \edef\@@chemdepth     {\the\!!countd}%
+   \edef\@@chemicaltop   {\the\!!countc}%
+   \edef\@@chemicalbottom{\the\!!countd}%
+   %
+   \doifinsetelse\v!on{\@@chemicalframe,\@@chemicalaxis}
+     {\def\@@chemicalborder{\chemicalframe}}
+     {\def\@@chemicalborder{\normalchemicalframe}}%
+   %
+   \setbox0=\hbox\bgroup    % this was a \vbox which took \hsize
+   %
+   \@@beginchemicalpicture
+     {-\the\!!counta}{\the\!!countb}
+     {-\the\!!countc}{\the\!!countd}%
+   \doif{\@@chemicalstate}\v!start
+     {\doif\@@chemicalaxis\v!on
+        {\@@setchemicalaxis
+           {-\the\!!counta}{\the\!!countb}
+           {-\the\!!countc}{\the\!!countd}}}%
+   \doifelse\@@chemicaloption\v!test
+     {\def\@@writechemicalstate##1##2%
+        {\convertargument##2\to\ascii
+         \writestatus{##1}{\ascii}}}
+     {\def\@@writechemicalstate##1##2{}}%
+   \ignorespaces}
+
+\def\dostartchemical%
+  {\catcode`\^=\@@superscript% t.b.v. \enableduplication
+   \catcode`\_=\@@subscript  % t.b.v. de zekerheid
+   \begingroup
+   \inchemicaltrue
+   \def\toptext##1{\gdef\thetoptext{##1}\ignorespaces}\toptext{}%
+   \def\bottext##1{\gdef\thebottext{##1}\ignorespaces}\bottext{}%
+   \def\midtext##1{\gdef\themidtext{##1}\ignorespaces}\midtext{}%
+   \def\@@chemicalpostponed{}%
+   \complexorsimpleempty\startchemical}
+
+\def\startchemical
+  {\bgroup % t.b.v. ungrouped floats
+   \dostartchemical}
+
+\def\stopchemical
+  {\checkchemicalpicture
+   \@@endchemicalpicture
+   \egroup
+   \ifnum\chemicaldrawingmode=1
+     \dimen0=\@@chemicalunit
+     \setbox0=\hbox{\lower\@@chemdepth\dimen0\box0}%
+     \ht0=\@@chemheight\dimen0
+     \dp0=\@@chemdepth\dimen0
+   \fi
+   \dimen0=\ht0
+   \advance\dimen0 by \dp0
+   \inchemicalfalse % enables \chemie{} in text
+   \setbox4=\alignedchemical\themidtext
+   \setbox6=\alignedchemical\thetoptext
+   \setbox8=\alignedchemical\thebottext
+   \setbox4=\hbox to \wd0
+     {\strut\hss$\vcenter{\box4}$\hss}%
+   \setbox2=\vbox to \dimen0
+     {\hbox to \wd0{\strut\hss\box6\hss}
+      \vfill
+      \hbox to \wd0{\strut\hss\box8\hss}
+      \vss}% disables the depth
+   \wd0=0pt  \wd4=0pt
+   \ht2=\ht0 \dp2=\dp0
+   \ht4=\ht0 \dp4=\dp0
+   \@@chemicalborder{\box0\box4\box2}% text on top of chemicals
+   \endgroup
+   \ignorespaces
+   \egroup}                  % t.b.v. ungrouped floats
+
+\def\alignedchemical#1%
+  {\vtop
+     {\def\par{\egroup\hbox\bgroup\strut}%
+      \let\\=\par
+      \let\endgraf=\par
+      \hbox\bgroup\strut#1\egroup}}
+
+% \setchemicalcoordinates{#1}{#2}
+%
+% #1: verplaatsing in x-richting
+% #2: verplaatsing in y-richting
+
+\newif\ifchemicaldirection
+
+\def\checkchemicaldirection#1#2%
+  {\ifchemicaldirection
+     \ifnum#1>0 \advance\horchemical -\chemicaldirection \fi
+     \ifnum#1<0 \advance\horchemical +\chemicaldirection \fi
+     \ifnum#2>0 \advance\verchemical -\chemicaldirection \fi
+     \ifnum#2<0 \advance\verchemical +\chemicaldirection \fi
+     \chemicaldirectionfalse
+   \fi}
+
+\def\processchemicaldirection%
+  {\chemicaldirectiontrue\processchemicaltranslate}
+
+\def\setchemicalcoordinates#1#2%
+  {\advance\horchemical #1\relax
+   \advance\verchemical #2\relax
+   \checkchemicaldirection{#1}{#2}%
+   \!!counta=-\horchemical\edef\chemicalxoffset{\the\!!counta}%
+   \!!countb=-\verchemical\edef\chemicalyoffset{\the\!!countb}%
+   \ifnum\chemicaldrawingmode=1
+     % njet
+   \else
+     \setcoordinatesystem point at {\the\horchemical} {\the\verchemical}
+   \fi}
+
+\def\resetchemicalcoordinates
+  {\horchemical=0
+   \verchemical=0
+   \edef\chemicalxoffset{0}%
+   \edef\chemicalyoffset{0}%
+   \ifnum\chemicaldrawingmode=1
+     % njet
+   \else
+     \setcoordinatesystem point at 0 0
+   \fi}
+
+\def\restorechemicalcoordinates
+  {%\writestatus{ppchtex}{restoring \the\horchemical,\the\verchemical}%
+   \edef\chemicalxoffset{\the\horchemical}%
+   \edef\chemicalyoffset{\the\verchemical}%
+   \ifnum\chemicaldrawingmode=1
+     % njet
+   \else
+     \setcoordinatesystem point at {\the\horchemical} {\the\verchemical}
+   \fi}
+
+\def\setchemicaltranslate #1 #2 #3
+  {\setvalue{\s!translate#1}{\setchemicalcoordinates{#2}{#3}}}
+
+\def\processchemicaltranslate#1%
+  {\def\doprocess[##1##2]%
+     {\doifchemicalnumber{##1}{MOV#1}
+        {\ifnum##1=0
+           \def\chemicaloffset{0}% incompatible change
+           \resetchemicalcoordinates
+         \else
+           \getvalue{\s!translate##1}%
+           \dochemicaloffset{##1}%
+           \def\chemicaloffset{0}%
+         \fi}}%
+   \doprocess[#1]}
+
+\def\setchemicaldistance #1
+  {\setvalue{\s!distance1}{\setchemicalcoordinates{-#1}{  0}}%
+   \setvalue{\s!distance2}{\setchemicalcoordinates{  0}{ #1}}%
+   \setvalue{\s!distance3}{\setchemicalcoordinates{ #1}{  0}}%
+   \setvalue{\s!distance4}{\setchemicalcoordinates{  0}{-#1}}}
+
+\def\setchemicaldirection #1
+  {\def\chemicaldirection{#1}}
+
+\def\processchemicaldistance#1%
+  {\def\doprocess[##1##2]%
+     {\doifchemicalnumber{##1}{ADJ#1}
+        {\ifnum##1=0
+           \resetchemicalcoordinates
+         \else
+           \def\@@chemicalpostponed{\getvalue{\s!distance##1}}%
+           \@@chemicalpostponed
+         \fi}}%
+   \doprocess[#1]}
+
+\def\setchemicalsubstitute #1
+  {\setvalue{\s!substitute1}{\setchemicalcoordinates{-#1}{  0}}%
+   \setvalue{\s!substitute2}{\setchemicalcoordinates{  0}{ #1}}%
+   \setvalue{\s!substitute3}{\setchemicalcoordinates{ #1}{  0}}%
+   \setvalue{\s!substitute4}{\setchemicalcoordinates{  0}{-#1}}}
+
+\def\processchemicalsubstitute#1%
+  {\def\doprocess[##1##2]%
+     {\doifchemicalnumber{##1}{SUB#1}
+        {\ifnum##1=0
+           \resetchemicalcoordinates
+         \else
+           \def\@@chemicalpostponed{\getvalue{\s!substitute##1}}%
+           \@@chemicalpostponed
+         \fi}}%
+   \doprocess[#1]}
+
+% Het is mogelijk een offset of move meerdere malen uit te
+% voeren, door een nummer voor het commando te plaatsen.
+
+\def\chemicalrepeat       {1}
+
+\def\redoprocesschemical[#1#2]%
+  {\doifinstringelse{#1}{0123456789.}
+     {\edef\chemicalrepeat{\chemicalrepeat#1}%
+      \redoprocesschemical[#2]}
+     {\processchemical[#1#2]%
+      \def\chemicalrepeat{1}}}
+
+\def\doprocesschemical[#1#2]#3%
+  {\doifinstringelse{#1}{0123456789.}
+     {\def\chemicalrepeat{#1}%
+      \redoprocesschemical[#2]}
+     {#3}}
+
+% \dochemicaloffset{#1}
+%
+% #1: binding
+
+\def\chemicaloffset{0}
+
+\def\processchemicaloffset#1%
+  {\dimen0=62500 sp  % real calc on cardinals, funny number
+   \dimen0=\chemicalrepeat\dimen0
+   \divide\dimen0 by \@@localchemicalscale
+   \!!counta=\dimen0
+   \def\doprocess[##1##2]%
+     {\doifinstringelse{##1}{128}
+        {\edef\chemicaloffset{\the\!!counta}}
+        {\doifinstringelse{##1}{456}
+           {\edef\chemicaloffset{-\the\!!counta}}
+           {\doifelse{##1}{0}
+              {\edef\chemicaloffset{0}}
+              {\unknownchemical{OFF#1}}}}}%
+   \doprocess[#1]}
+
+\def\dochemicaloffset#1%
+  {\ifnum\chemicaloffset=0
+     \def\undochemicaloffset{}%
+   \else
+     \setchemicalcoordinates{-\chemicaloffset}{0}%
+     \def\undochemicaloffset%
+       {\setchemicalcoordinates{\chemicaloffset}{0}%
+        \def\undochemicaloffset{}}%
+   \fi}
+
+\def\processchemicalphantom#1#2%
+  {\setbox0=\hbox
+     {\def\splitoff##1????{##1}%
+      $\@@dochemicalstyle{\@@localchemicalformat\splitoff#2}$}%
+   \dimen0=.25\wd0
+   \divide\dimen0 by \@@localchemicalscale
+   \!!counta=\dimen0
+   \doifinstringelse{#1}{128}
+     {\edef\chemicaloffset{\the\!!counta}}
+     {\doifinstringelse{#1}{456}
+        {\edef\chemicaloffset{-\the\!!counta}}
+        {\doifelse{#1}{0}
+           {\edef\chemicaloffset{0}}
+           {\unknownchemical{OF#1:#2}}}}}
+
+% \dosetchemicalrotation{#1}{#2}
+%
+% #1: cos(phi)
+% #2: sin(phi)
+
+\def\chemicalrotation   {1}
+\def\chemicalangle      {0}
+\def\chemicalxoffset    {0}
+\def\chemicalyoffset    {0}
+
+\def\setchemicalmirror#1%
+  {\setvalue{\s!mirror#1}{*}}
+
+\def\resetchemicalmirror#1%
+  {\resetvalue{\s!mirror#1}}
+
+\def\togglechemicalmirror#1%
+  {\doifelse{\getvalue{\s!mirror#1}}{*}
+     {\resetchemicalmirror{#1}}
+     {\setchemicalmirror{#1}}}
+
+\def\setchemicalrotation #1 #2 #3 #4 #5 #6 #7 #8 #9
+  {\setvalue{\s!rotate1.#1}{\dosetchemicalrotation{#2}{#3}}%
+   \setvalue{\s!rotate2.#1}{\dosetchemicalrotation{#4}{#5}}%
+   \setvalue{\s!rotate3.#1}{\dosetchemicalrotation{#6}{#7}}%
+   \setvalue{\s!rotate4.#1}{\dosetchemicalrotation{#8}{#9}}}
+
+\def\setchemicalangle #1 #2 #3 #4 #5
+  {\setvalue{\s!angle1.#1}{\dosetchemicalangle{#2}}%
+   \setvalue{\s!angle2.#1}{\dosetchemicalangle{#3}}%
+   \setvalue{\s!angle3.#1}{\dosetchemicalangle{#4}}%
+   \setvalue{\s!angle4.#1}{\dosetchemicalangle{#5}}}
+
+\def\chemicalrotate[#1]%
+  {\doifdefinedelse{\s!mirror#1}
+     {\getvalue{\s!rotate\chemicalrotation.#1\getvalue{\s!mirror#1}}%
+      \getvalue{\s!angle\chemicalrotation.#1\getvalue{\s!mirror#1}}}
+     {\getvalue{\s!rotate\chemicalrotation.#1}%
+      \getvalue{\s!angle\chemicalrotation.#1}}}
+
+\def\dosetchemicalangle#1%   zwak zie onder
+  {\def\chemicalangle{#1}}
+
+\def\dosetchemicalrotation#1#2%
+  {\ifnum\chemicaldrawingmode=1
+     % njet
+   \else
+     \startrotation by {#1} {#2} %% \stoprotation (t.b.v. testen)
+   \fi}
+
+\def\doresetchemicalrotation
+  {\ifnum\chemicaldrawingmode=1
+     % njet
+   \else
+     \stoprotation
+   \fi}
+
+\def\processchemicalrotation#1%
+  {\def\doprocess[##1##2]%
+     {\doifnumberelse{##1}
+        {\def\chemicalrotation{##1}}
+        {\unknownchemical{ROT#1}}}%
+   \doprocess[#1]}
+
+% \filtertextelement[#1][#2][#3][#4]
+%
+% #1: volgnummer
+% #2: offset in uitlijningen
+% #3: lijst met uitlijningen -> \chemicalloca
+% #4: lijst met teksten      -> \chemicaltext
+
+\def\setchemicallocation#1%
+  {\doifelse{#1}{}
+     {\edef\chemicalloca{c}}
+     {\edef\chemicalloca{#1}}}
+
+\newif\iffixedchemicaltext
+
+\def\filterchemicaltextelement[#1][#2][#3][#4]%
+  {\ifchemicaltextconstant
+     \def\chemicaltext{#4}%
+     \setchemicallocation{}%
+   \else
+     \ifnum#1=0\relax
+       \setchemicallocation{}%
+     \else
+       \iffixedchemicaltext
+         \!!counta#2
+       \else
+         \!!counta=\chemicalrotation
+         \advance\!!counta -1
+         \multiply\!!counta #2
+         \advance\!!counta #1
+       \fi
+       \getfromcommalist[#3][\the\!!counta]%
+       \setchemicallocation\commalistelement
+     \fi
+     \ifchemicalpicture
+       \let\chemicaltext\relax
+     \else
+       \advance\txtchemical 1
+       \getfromcommalist[#4][\txtchemical]%
+       \let\chemicaltext\commalistelement
+     \fi
+   \fi
+   \fixedchemicaltextfalse}
+
+% \putchemicaltext{#1}{#2}
+%
+% #1 : x-coordinaat
+% #2 : y-coordinaat
+%
+% \chemicaltext en \chemicalloca worden met \gettextelement
+% opgehaald uit de tweede set bij \chemie
+%
+% Ten behoeve van testdoeleinden wordt gebruik gemaakt van
+% \chemicalframe in plaats van het meer sjieke, maar tevens
+% meer trage \framed.
+
+\ifx\ruledhbox\undefined
+  \def\chemicalframe#1%
+     {\hbox
+        {\vrule\hskip-.4pt
+         \vbox{\hrule\vskip-.4pt\hbox{#1}\vskip-.4pt\hrule}%
+         \hskip-.4pt\vrule}}
+\else
+  \def\chemicalframe#1%
+    {\ruledhbox{#1}}
+\fi
+
+\def\doputchemicaltext#1 [#2] at #3 #4 %
+  {\ifnum\chemicaldrawingmode=1
+     \rput
+       {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+       {\expanded{\rput[#2]{\chemicalangle}(#3,#4){#1}}}%
+   \else
+     \put {#1} [#2] at {#3} {#4} %
+   \fi}
+
+\def\dodoifsinglelocation#1#2\\#3%
+  {\ifx#2\relax#3\fi}
+
+\def\doifsinglelocationelse#1%
+  {\expandafter\dodoifsinglelocationelse#1\relax\\}
+
+\def\putchemicaltext#1#2%
+  {\enablechemicalspecials
+   \ifchemicalpicture
+     \setchemicalpicture{#1}{#2}%
+   \else
+     \doifelse\@@chemicaloption\v!test
+       {\def\@@chemicalframe{\chemicalframe}}
+       {\def\@@chemicalframe{}}%
+     \dosetsubscripts
+     \setbox2=\hbox{\@@dochemicalcolor
+                    $\@@dochemicalstyle{\@@localchemicalformat \chemicaltext}$}%
+     \setbox4=\hbox{$\@@dochemicalstyle{\@@localchemicalformat C_2^2}$}%
+     \setbox6=\hbox{$\@@dochemicalstyle{\@@localchemicalformat O}$}% or C
+     \doresetsubscripts
+     \doifnot\@@chemicallocation\v!intext
+       {\ht2=\ht4
+        \dp2=\dp4}%
+     \setbox2=\hbox{\@@chemicalframe{\box2}}%
+     \ifdim\wd2>\wd6
+       \doifelse{#1}{0}
+         {\doifnot{#2}{0}{\wd2=\wd6}}
+         {%\doifsinglelocation\chemicalloca
+            {\doifinset{\chemicalloca}{t,b}{\wd2=\wd6}}}% common ?
+     \fi
+     \expanded
+       {\doputchemicaltext
+          {\noexpand\dowithchemical{\copy2}}     % per se \copy2 i.p.v. \box2
+          [\chemicalloca] at {#1} {#2} }
+     \nomoreaccounting
+   \fi
+   \disablechemicalspecials}
+
+\def\setchemicaltextelement #1 #2 #3
+  {\setvalue{\s!chemicaltextelement#1}{\putchemicaltext{#2}{#3}}}
+
+\def\getchemicalfixedtextelement%
+  {\fixedchemicaltexttrue
+   \getchemicaltextelement}
+
+\def\getchemicaltextelement[#1][#2][#3][#4][#5]%
+  {\filterchemicaltextelement[#2][#3][#4][#5]%
+   \doifelse{#2}{0}
+     {\dochemicaloffset{#2}%     % incompatible change
+      \putchemicaltext{0}{0}%
+      \undochemicaloffset}       % incompatible change
+     {\chemicalrotate[#2]%
+      \dochemicaloffset{#2}%
+      \def\chemicaltextelementnumber{#2}%
+      \getvalue{\s!chemicaltextelement#1}%
+      \getvalue{\s!chemicaltextelement#11}%
+      \getvalue{\s!chemicaltextelement#12}%
+      \getvalue{\s!chemicaltextelement#13}%
+      \undochemicaloffset}}
+
+\def\processchemicaltextelement#1#2#3#4#5%
+  {\def\doprocess[##1##2##3##4##5]%
+     {\doifelse{##1}{?}
+        {\doprocess[1..\maxchemical ????]}
+        {\doifchemicalnumber{##1}{#1#2}
+           {\doifelse{##2##3}{..}
+              {\doifchemicalnumber{##4}{#1#2}
+                 {\getchemicaltextelement[#1][##1][#4][#5][#3]%
+                  \doifnot{##1}{##4}
+                    {\!!counta=##1\relax
+                     \advance\!!counta by 1
+                     \edef\nextsegment{\the\!!counta}%
+                     \doprocess[\nextsegment..##4##5]}}}
+              {\getchemicaltextelement[#1][##1][#4][#5][#3]%
+               \doifnot{##2}{?}{\doprocess[##2##3##4##5]}}}}}%
+   \doprocess[#2]%
+   \smallchemicaltextfalse}
+
+\def\processchemicalsmalltextelement%
+  {\smallchemicaltexttrue\processchemicaltextelement}
+
+\def\processchemicalsmalltextconstant%
+  {\smallchemicaltexttrue\processchemicaltextconstant}
+
+\def\processchemicalunrotatedtextelement#1#2#3#4#5#6%
+  {\bgroup
+   \xdef\@@xxx{0}%
+   \xdef\@@yyy{0}%
+   \def\putchemicaltext##1##2%
+     {\xdef\@@xxx{##1}%
+      \xdef\@@yyy{##2}}%
+   \getvalue{\s!chemicaltextelement#1}%
+   \egroup
+   \bgroup
+   \def\doputchemicaltext##1 [##2] at ##3 ##4 %
+     {\ifnum\chemicaldrawingmode=1
+        \rput
+          {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+          {\rput{\chemicalangle}(\@@xxx,\@@yyy){\expanded{\rput[##2](##3,##4){##1}}}}%
+      \else
+        \put
+          {\stoprotation \setcoordinatesystem point at 0 0
+           \expanded{\put {##1} [##2] at {##3} {##4} }}
+          at {\@@xxx} {\@@yyy}
+      \fi}%
+   \processchemicaltextelement{#2}{#3}{#4}{#5}{#6}%
+   \egroup}
+
+\newif\ifchemicaltextconstant
+
+\def\processchemicaltextconstant#1#2#3#4%
+  {\chemicaltextconstanttrue
+   \let\@@oldchemicalframe\@@chemicalframe
+   \let\@@chemicalframe\relax
+   \processchemicaltextelement{#1}{#2}{#3}{#4}{}%
+   \let\@@chemicalframe\@@oldchemicalframe
+   \chemicaltextconstantfalse}
+
+% \plotchemicalline{#1}{#2}{#3}{#4}
+%
+% #1: x-coordinaat beginpunt
+% #2: y-coordinaat beginpunt
+% #3: x-coordinaat eindpunt
+% #4: y-coordinaat eindpunt
+
+\chardef\chemicallinetype=0
+
+\def\doplotchemicalline
+  {\!!counte=\!!countc \advance\!!counte by -\!!counta
+   \!!countf=\!!countd \advance\!!countf by -\!!countb
+   \bgroup
+   \ifcase\chemicaldrawingmode
+     \ifcase\chemicallinetype
+     % 0 : normal line
+       \plot {\!!counta} {\!!countb} {\!!countc} {\!!countd} /%
+     \or
+     % 1 : normal arrow
+       \arrow <5pt> [.2,.67] from {\!!counta} {\!!countb} to {\!!countc} {\!!countd}
+     \or
+     % 2 : reverse arrow
+       \arrow <5pt> [.2,.67] from {\!!countc} {\!!countd} to {\!!counta} {\!!countb}
+     \or
+     % 3 : unrotated line
+       \put {\stoprotation \setcoordinatesystem point at 0 0
+             \plot 0 0 {\!!counte} {\!!countf} /}
+            [\chemicallineposition] at {\!!counta} {\!!countb}
+     \else
+     % 4 : dashed line
+       \findlength {\plot {\!!counta} {\!!countb} {\!!countc} {\!!countd} /}%
+       \setdashesnear <2pt> for <\totalarclength>%
+       \plot {\!!counta} {\!!countb} {\!!countc} {\!!countd} /%
+     \fi
+   \or
+     \ifcase\chemicallinetype
+       \rput
+         {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+         {\psline(\!!counta,\!!countb)(\!!countc,\!!countd)}%
+     \or
+       \rput
+         {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+         {\psline{->}(\!!counta,\!!countb)(\!!countc,\!!countd)}%
+     \or
+       \rput
+         {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+         {\psline{<-}(\!!counta,\!!countb)(\!!countc,\!!countd)}%
+     \or
+       \rput
+         {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+         {\expanded{\rput[\chemicallineposition]{-\chemicalangle}%
+            (\!!counta,\!!countb){\psline(0,0)(\!!counte,\!!countf)}}}%
+     \else
+       \psset{linestyle=dashed}%
+       \rput
+         {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+         {\psline(\!!counta,\!!countb)(\!!countc,\!!countd)}%
+     \fi
+   \or
+     \global\MPdrawingdonetrue
+     \setchemicalattributes
+     \startMPdrawing
+        x0 := \MPdivten[\chemicalxoffset]u ;
+        y0 := \MPdivten[\chemicalyoffset]u ;
+        x1 := \MPdivten[\the\!!counta]u ;
+        y1 := \MPdivten[\the\!!countb]u ;
+        x2 := \MPdivten[\the\!!countc]u ;
+        y2 := \MPdivten[\the\!!countd]u ;
+        x3 := \MPdivten[\the\!!counte]u ;
+        y3 := \MPdivten[\the\!!countf]u ;
+        \ifcase\chemicallinetype
+        % 0 : normal line
+          draw ((z1--z2) rotatedaround(origin,-\chemicalangle))
+            shifted z0 ;
+        \or
+        % 1 : normal arrow
+          drawarrow ((z1--z2) rotatedaround(origin,-\chemicalangle))
+            shifted z0 ;
+        \or
+        % 2 : reverse arrow
+          drawarrow ((z2--z1) rotatedaround(origin,-\chemicalangle))
+            shifted z0 ;
+        \or
+        % 3 : unrotated line  % nog \chemicalineposition: t/b
+          draw (origin--z3)
+            shifted (z1 rotatedaround(origin,-\chemicalangle))
+            shifted z0 ;
+        \else
+        % 4 : dashed line
+          draw ((z1--z2) rotatedaround(origin,-\chemicalangle))
+            shifted z0 dashed dashpattern(on 5.5u off 6u) ;
+       \fi
+     \stopMPdrawing
+   \fi
+   \egroup
+   \account\!!counta\!!countb
+   \account\!!countc\!!countd}
+
+\def\plotchemicalline#1#2#3#4%
+  {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
+   \doplotchemicalline}
+
+\def\plotchemicalfactorline#1#2#3#4%
+  {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
+   \ifdim\@@chemicalfactor\onepoint=\onepoint \else
+     \scratchdimen\!!counta\s!sp \multiply\scratchdimen1000 \scratchdimen\@@chemicalfactor\scratchdimen \divide\scratchdimen1000 \!!counta\scratchdimen
+     \scratchdimen\!!countc\s!sp \multiply\scratchdimen1000 \scratchdimen\@@chemicalfactor\scratchdimen \divide\scratchdimen1000 \!!countc\scratchdimen
+   \fi
+   \doplotchemicalline}
+
+\def\plotchemicalzline#1#2#3#4%
+  {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
+   \ifnum\chemicaldrawingmode=2
+     \global\MPdrawingdonetrue
+     \setchemicalattributes
+     \startMPdrawing
+        x0 := \MPdivten[\chemicalxoffset]u ;
+        y0 := \MPdivten[\chemicalyoffset]u ;
+        x1 := \MPdivten[\the\!!counta]u ;
+        y1 := \MPdivten[\the\!!countb]u ;
+        x2 := \MPdivten[\the\!!countc]u ;
+        y2 := \MPdivten[\the\!!countd]u ;
+        filldraw ((
+        \ifnum\chemicalangle>180
+          z1--z2
+        \else\ifnum\chemicalangle<90
+          z1--(z2 shifted (-2u,+2u))--(z2 shifted (+2u,-2u))
+        \else\ifnum\chemicalangle=90
+          (z1 shifted (-2u,+2u))--(z1 shifted (+2u,-2u))--
+          (z2 shifted (+2u,+2u))--(z2 shifted (-2u,-2u))
+        \else
+          (z1 shifted (+2u,+2u))--(z1 shifted (-2u,-2u))--z2
+        \fi\fi\fi
+        --cycle) rotatedaround(origin,-\chemicalangle)) shifted z0 ;
+     \stopMPdrawing
+   \else
+     \doplotchemicalline
+     \ifnum\chemicalangle>180 \else
+       \ifnum\chemicalangle=90
+          \advance\!!counta by -20 \advance\!!countc by -20
+          \doplotchemicalline
+          \advance\!!counta by  40 \advance\!!countc by  40
+        \else\ifnum\chemicalangle<90
+          \advance\!!countc by -20 \advance\!!countd by +20
+          \doplotchemicalline
+          \advance\!!countc by +40 \advance\!!countd by -40
+        \else
+          \advance\!!counta by  20 \advance\!!countb by  20
+          \doplotchemicalline
+          \advance\!!counta by -40 \advance\!!countb by -40
+        \fi\fi
+     \fi
+     \doplotchemicalline
+   \fi}
+
+\def\plotchemicaldeltaline#1#2#3#4%
+  {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
+   \ifnum\chemicaldrawingmode=2
+     \global\MPdrawingdonetrue
+     \setchemicalattributes
+     \startMPdrawing
+        x0 := \MPdivten[\chemicalxoffset]u ;
+        y0 := \MPdivten[\chemicalyoffset]u ;
+        x1 := \MPdivten[\the\!!counta]u ;
+        y1 := \MPdivten[\the\!!countb]u ;
+        x2 := \MPdivten[\the\!!countc]u ;
+        y2 := \MPdivten[\the\!!countd]u ;
+        filldraw ((z1--(z2 rotatedaround(z1,5))--(z2 rotatedaround(z1,-5))
+                   --cycle) rotatedaround(origin,-\chemicalangle))
+          shifted z0 ;
+     \stopMPdrawing
+     \account{#1}{#2}%
+     \account{#3}{#4}%
+   \else
+     \doplotchemicalline
+     \advance\!!countc by  16 \advance\!!countd by -21
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -8 \advance\!!countd by  14
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+   \fi}
+
+\def\setchemicallinesegment #1 #2 #3 #4 #5
+  {\setvalue{\s!chemicallinesegment#1}{\plotchemicalline{#2}{#3}{#4}{#5}}}
+
+\def\setchemicalfactorlinesegment #1 #2 #3 #4 #5
+  {\setvalue{\s!chemicallinesegment#1}{\plotchemicalfactorline{#2}{#3}{#4}{#5}}}
+
+\def\getchemicallinesegment[#1][#2]%
+  {\chemicalrotate[#1]%
+   \dochemicaloffset{#1}%
+   \getvalue{\s!chemicallinesegment#2}%
+   \getvalue{\s!chemicallinesegment#21}%
+   \getvalue{\s!chemicallinesegment#22}%
+   \undochemicaloffset}
+
+\def\getprivatechemicallinesegment[#1][#2]%
+  {\chemicalrotate[#1]%
+   \getvalue{\s!chemicallinesegment#2#1}}
+
+\def\doprocesschemicallinesegment#1#2#3#4#5%
+  {\chardef\chemicallinetype=#1
+   \def\chemicallineposition{#2}%
+   \def\doprocess[##1##2##3##4##5]%
+     {\doifelse{##1}{?}
+        {\doprocess[1..\maxchemical ????]}
+        {\doifchemicalnumber{##1}{#4#5}
+           {\doifelse{##2##3}{..}
+              {\doifchemicalnumber{##4}{#4#5}
+                 {#3[##1][#4]%
+                  \doifnot{##1}{##4}
+                    {\!!counta=##1\relax
+                     \advance\!!counta by 1
+                     \edef\nextsegment{\the\!!counta}%
+                     \doprocess[\nextsegment..##4##5]}}}
+              {#3[##1][#4]%
+               \doifnot{##2}{?}
+                 {\doprocess[##2##3##4##5]}}}}}%
+   \doprocess[#5]}
+
+\def\processchemicallinesegment
+  {\doprocesschemicallinesegment0c\getchemicallinesegment}
+
+\def\processchemicalzlinesegment#1#2%
+  {%\doprocesschemicallinesegment0c\getchemicallinesegment{#1}{#2}%
+   \bgroup
+   \def\plotchemicalline{\plotchemicalzline}%
+   \doprocesschemicallinesegment0c\getchemicallinesegment{#1}{#2}%
+   \egroup}
+
+\def\processchemicaldeltalinesegment#1#2%
+  {%\doprocesschemicallinesegment0c\getchemicallinesegment{#1}{#2}%
+   \bgroup
+   \def\plotchemicalline{\plotchemicaldeltaline}%
+   \doprocesschemicallinesegment0c\getchemicallinesegment{#1}{#2}%
+   \egroup}
+
+\def\processprivatechemicallinesegment%
+  {\doprocesschemicallinesegment0c\getprivatechemicallinesegment}
+
+\def\processchemicaldownarrowsegment%
+  {\doprocesschemicallinesegment1c\getchemicallinesegment}
+
+\def\processchemicaluparrowsegment%
+  {\doprocesschemicallinesegment2c\getchemicallinesegment}
+
+\def\processchemicalunrotatedlinesegment#1%
+  {\doprocesschemicallinesegment3{#1}\getchemicallinesegment}
+
+\def\processchemicaldashedlinesegment%
+  {\doprocesschemicallinesegment4c\getchemicallinesegment}
+
+\def\processchemicalopenend#1#2%
+  {\doprocesschemicallinesegment0c\doprocesschemicalopenend{#1}{#2}}
+
+\def\doprocesschemicalopenend[#1][#2]%
+  {\chemicalrotate[#1]%
+   \dochemicaloffset{#1}%
+   \ifcase\chemicaldrawingmode
+     \beginpicture
+     \setquadratic\plot
+       300 0  400   0
+       500 0  550  75
+       600 0  650 -75
+       700 0  750  75
+       800 0  850 -75
+       900 0  950   0
+             1050   0 /
+     \endpicture
+   \or
+     \rput{-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+       {\psline(300,0)(500,0)%
+        \rput(500,0){\psplot[yunit=75,plotstyle=curve]{0}{720}{x sin}}%
+        \psline(950,0)(1050,0)}%
+   \or
+     \global\MPdrawingdonetrue
+     \setchemicalattributes
+     \startMPdrawing
+       x0 := \MPdivten[\chemicalxoffset]u ;
+       y0 := \MPdivten[\chemicalyoffset]u ;
+       draw
+        (((30.0u,0)--(50.0u,0){up}..(55.0u,7.5u)..
+          (60.0u,0)..(65.0u,-7.5u)..(70.0u,0)..
+          (75.0u,7.5u)..(80.0u,0)..(85.0u,-7.5u)..{up}
+          (90.0u,0)--(105.0u,0)) rotatedaround(origin,-\chemicalangle))
+        shifted z0 ;
+     \stopMPdrawing
+   \fi
+   \undochemicaloffset}
+
+% \plotchemicalcircle{#1}{#2}{#3}{#4}
+%
+% #1: lengte van de boog in graden
+% #2: x-coordinaat eindpunt
+% #3: y-coordinaat eindpunt
+
+\newif\ifchemicaldotted
+
+\def\plotchemicalcircle#1#2#3#4#5#6%
+  {\bgroup
+   \ifcase\chemicaldrawingmode
+     \ifchemicaldotted
+       \findlength{\circulararc {#4} degrees from {#5} {#6} center at {0} {0} }%
+       \divide\totalarclength by 6
+       \def\b{\the\totalarclength}%
+       \divide\totalarclength by 2
+       \def\a{\the\totalarclength}%
+       \setdashpattern <\a,\b,\b,\b,\b,\b,\a>
+     \fi
+     \circulararc {#4} degrees from {#5} {#6} center at {0} {0} %
+   \or
+     \ifchemicaldotted
+       \psset{linestyle=dashed}%
+     \fi
+     \rput
+       {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+       {\psarc(0,0){#3}{#1}{#2}}%
+   \or
+     \global\MPdrawingdonetrue
+     \setchemicalattributes
+     \startMPdrawing
+       r := \MPdivten[#3]*2u;
+       x0 := \MPdivten[\chemicalxoffset]u ;
+       y0 := \MPdivten[\chemicalyoffset]u ;
+       draw ((subpath (#1/45,#2/45) of (fullcircle scaled (r)))
+         rotatedaround (origin,\chemicalangle+150))
+         shifted z0 \ifchemicaldotted dashed withdots \fi ;
+     \stopMPdrawing
+   \fi
+   \egroup}
+
+\def\setchemicalcircsegment #1 #2 #3 #4 #5 #6 #7
+  {\setvalue{\s!chemicalcircsegment#1}{\plotchemicalcircle{#2}{#3}{#4}{#5}{#6}{#7}}}
+
+\def\getchemicalcircsegment[#1][#2]%
+  {\chemicalrotate[#1]%
+   \getvalue{\s!chemicalcircsegment#2}}
+
+\def\doprocesschemicalcircsegment#1#2%
+  {\def\doprocess[##1##2##3##4##5]%
+     {\doifelse{##1}{?}
+        {\doprocess[1..\maxchemical ????]}
+        {\doifchemicalnumber{##1}{#1#2}
+           {\doifelse{##2##3}{..}
+              {\doifchemicalnumber{##4}{#1#2}
+                 {\getchemicalcircsegment[##1][#1]%
+                  \doifnot{##1}{##4}
+                    {\!!counta=##1\relax
+                     \advance\!!counta by 1
+                     \edef\nextsegment{\the\!!counta}%
+                     \doprocess[\nextsegment..##4##5]}}}
+              {\getchemicalcircsegment[##1][#1]%
+               \doifnot{##2}{?}
+                 {\doprocess[##2##3##4##5]}}}}}%
+   \doprocess[#2]}
+
+\def\processchemicalcircsegment%
+  {\chemicaldottedfalse\doprocesschemicalcircsegment}
+
+\def\processchemicaldottsegment%
+  {\chemicaldottedtrue\doprocesschemicalcircsegment}
+
+\let\endchemicalpicture   = \relax
+\let\checkchemicalpicture = \relax
+\let\nomoreaccounting     = \relax
+
+\newif\ifchemicalpicture
+
+\def\beginchemicalpicture#1% NO PSTRICKS SUPPORT YET
+  {\checkchemicalpicture
+   \bgroup                 % DOES NOT HANDLE AUTOWIDTH/HEIGHT
+   \chemicalpicturetrue
+   \processchemical[#1]}
+
+\def\setchemicalpicture#1#2%
+  {\chemicalpicturefalse
+   \def\endchemicalpicture%
+     {\@@endchemicallocalpicture{#1}{#2}%
+      \egroup
+      \ifnum\chemicaldrawingmode=1
+        \rput
+          {-\chemicalangle}(\chemicalxoffset,\chemicalyoffset)%
+          {\expanded{\rput[\chemicalloca]{\chemicalangle}(#1,#2){\box\nextbox}}}%
+      \else
+        \expanded{\put{\box\nextbox}[\chemicalloca] at {#1} {#2} }
+      \fi
+      \egroup}%
+   \def\checkchemicalpicture%
+     {\ifx\endchemicalpicture\relax \else
+        \writestatus{ppchtex}{missing end of picture (PE)}%
+        \endchemicalpicture
+      \fi}%
+   \setbox\nextbox=\hbox\bgroup
+   \@@beginchemicallocalpicture
+   % alternatief: gewoon accounting, en zelf l,r afhandelen
+   \ifnum\chemicaldrawingmode=1
+     % njet
+   \else
+     \accountingon
+     \let\nomoreaccounting=\accountingoff
+   \fi}
+
+\def\doskipchemical[#1][#2]%
+  {{\tt[ppchtex]}}
+
+\def\skipchemical%
+  {\dodoubleargument\doskipchemical}
+
+\def\complexchemical% met \expandafter
+  {\ifinchemical
+     \expandafter\dochemical
+   \else
+     \writestatus{ppchtex}{the [][]-alternative is not permitted here}%
+     \expandafter\skipchemical
+   \fi}
+
+\newif\ifinnerchemical
+
+\def\dosimplechemical#1#2#3%
+  {\doifdefinedelse{\??chemical\c!location}
+     {\writestatus{ppchtex}{the {}{}-alternative is not permitted here}}
+     {\ifinnerchemical
+        \let\chemicalsign         = \chemicalinnersign
+        \let\chemicalmolecule     = \chemicalinnermolecule
+        \let\chemicalsinglearrow  = \chemicalsingleinnerarrow
+        \let\chemicaldoublearrow  = \chemicaldoubleinnerarrow
+        \let\chemicaltwintiparrow = \chemicaltwintipinnerarrow
+      \else
+        \let\chemicalsign         = \chemicaloutersign
+        \let\chemicalmolecule     = \chemicaloutermolecule
+        \let\chemicalsinglearrow  = \chemicalsingleouterarrow
+        \let\chemicaldoublearrow  = \chemicaldoubleouterarrow
+        \let\chemicaltwintiparrow = \chemicaltwintipouterarrow
+      \fi
+      \disablechemicalspecials
+      \unexpandedprocessallactionsinset
+        [#1]
+        [       HIGH=>\sethighsubscripts,
+                 LOW=>\setlowsubscripts,
+                PLUS=>\chemicalsign{+},
+               GIVES=>\chemicalsinglearrow{#2}{#3},
+         EQUILIBRIUM=>\chemicaldoublearrow{#2}{#3},
+           MESOMERIC=>\chemicaltwintiparrow{#2}{#3},
+              SINGLE=>\singlechemicalbond,
+              DOUBLE=>\doublechemicalbond,
+              TRIPLE=>\triplechemicalbond,
+                   +=>\chemicalsign{+},
+                  ->=>\chemicalsinglearrow{#2}{#3},
+                 <->=>\chemicaldoublearrow{#2}{#3},
+                  <>=>\chemicaltwintiparrow{#2}{#3},
+                   -=>\singlechemicalbond,
+                  --=>\doublechemicalbond,
+                 ---=>\triplechemicalbond,
+          \s!unknown=>\enablechemicalspecials
+                      \chemicalmolecule{\commalistelement}{#2}{#3}]}}
+
+\def\dosimplechemicalA#1#2#3% % evt: {#1,\relax}
+  {\let\chemicalspace=\relax
+   \@EA\dosimplechemical\@EA{\@@chemicalchemicaloffset,#1}{#2}{#3}%
+   \egroup}
+
+\def\dosimplechemicalB#1#2#3%
+  {\dosimplechemical{#1}{#2}{#3}%
+   \egroup}
+
+\def\dosimplechemicalC#1#2#3%
+  {$\simplechemical{#1}{#2}{#3}$%
+   \egroup} % erbij
+
+\def\simplechemical
+  {\ifinner
+     \innerchemicaltrue
+   \else
+     \innerchemicalfalse
+   \fi
+   \bgroup
+   \catcode`\^=\@@superscript %  t.b.v. \enableduplication
+   \catcode`\_=\@@subscript   %  t.b.v. de zekerheid
+   \ifmmode
+     \ifinnerchemical
+       \def\next{\dotriplegroupempty\dosimplechemicalA}%
+     \else
+       \def\next{\dotriplegroupempty\dosimplechemicalB}%
+     \fi
+   \else
+     \def\next{\dotriplegroupempty\dosimplechemicalC}%
+   \fi
+   \next}
+
+\definecomplexorsimple\chemical
+
+\def\dogotochemical#1#2%
+  {\def\dowithchemical%                       % experiment
+     {\localgotochemical{#1}}%                % experiment
+   \chemical}                                 % experiment
+
+\def\gotochemical%                            % experiment
+  {\dosingleargument\dogotochemical}          % experiment
+
+\def\dododochemical#1[#2][#3]%                % experiment
+  {\def\simpledododochemical%                 % experiment
+     {#1[#2][#3]}%                            % experiment
+   \def\complexdododochemical[##1]%           % experiment
+     {\def\dowithchemical%                    % experiment
+        {\localthisischemical{#2}}%           % experiment
+      #1[#3][##1]}%                           % experiment
+   \complexorsimple\dododochemical}           % experiment
+
+\def\dodochemical[#1][#2]%
+  {\ignorespaces
+   \ifinchemical
+     \drawchemical[#1][#2]%
+     \ignorespaces
+   \else
+     \startchemical[\c!location=\v!intext]%
+       \drawchemical[#1][#2]%
+     \expandafter\stopchemical
+   \fi
+   \ignorespaces}
+
+\def\dochemical[#1]%
+  {\def\simpledochemical%
+     {\@@writechemicalstate{ppchtex}{[#1][]}%
+      \dodochemical[#1][]}%
+   %
+   \def\complexdochemical[##1]%
+     {\@@writechemicalstate{ppchtex}{[#1][##1]}%
+      \txtchemical=0%
+      \dodochemical[#1][##1]}%
+   %
+   \def\complexdochemical[##1]%                   % experiment
+     {\@@writechemicalstate{ppchtex}{[#1][##1]}% % experiment
+      \txtchemical=0%                             % experiment
+      \dododochemical\dodochemical[#1][##1]}%     % experiment
+   %
+   \complexorsimple\dochemical}
+
+% \processlocalchemicals{#1}
+%
+% #1: commando's
+
+\def\dodoprocesschemical#1%
+  {\processchemical[#1????]}
+
+\def\processlocalchemicals#1%
+  {\processcommalist[#1]\dodoprocesschemical}
+
+% \drawchemical[#1][#2]
+%
+% #1: bindingen enz.
+% #2: atomen enz.
+
+\def\localdodochemical[#1][#2]%
+  {\@@writechemicalstate{ppchtex}{[#1][#2]}%
+   %\bgroup     % koppelen en afmetingen gaat fout, vandaar:
+   \advance\levchemical 1
+   \letvalue{\??chemical\s!unknown\the\levchemical}\unknownchemical
+   \setevalue{\??chemical\c!text\the\levchemical}{\the\txtchemical}%
+   \txtchemical=0
+   \dodochemical[#1][#2]%
+   % \@EA\txtchemical\@EA\csname\??chemical\c!text\the\levchemical\endcsname
+   \txtchemical\csname\??chemical\c!text\the\levchemical\endcsname
+   \@EA\let\@EA\unknownchemical\csname\??chemical\s!unknown\the\levchemical\endcsname
+   \advance\levchemical -1
+   %\egroup
+   \ignorespaces}
+
+\def\drawchemical[#1][#2]%
+  {\ignorespaces
+   \def\dodochemical[##1][##2]%
+     {\drawchemical[##1][##2]%
+      \ignorespaces}%
+   \def\dochemical[##1]%
+     {\def\simpledochemical%
+        {\@@writechemicalstate{ppchtex}{[##1][#2]}%
+         \dodochemical[##1][#2]%
+         \ignorespaces}%
+      \def\complexdochemical[####1]%
+        {\dododochemical\localdodochemical[##1][####1,#2]}%
+     \complexorsimple\dochemical}%
+   \doif\@@chemicalstate\v!start
+     {\doifelse\chemicalname\s!unknown
+        {\getvalue{\s!executechemical\defaultchemical}[#2]}
+        {\getvalue{\s!executechemical\chemicalname}[#2]}%
+      \def\unknownchemical##1%
+        {\processunknownchemical[##1][#2]}%
+      \processcommalist[\@@chemicaloffset,#1]\dodoprocesschemical}%
+   \ignorespaces}
+
+\unexpanded\def\chemicaloxidation#1#2#3%
+  {\chemicaltop
+     {\ifnum#20=0
+        0%
+      \else
+        #1\expandafter\uppercase\expandafter{\romannumeral#2}%
+      \fi}
+     {#3}}
+
+\def\chemicaltfraction{\ifinchemical.60\else.8\fi}
+\def\chemicalbfraction{\ifinchemical.45\else.6\fi}
+\def\chemicallfraction{\ifinchemical.1\else.1\fi}
+\def\chemicalrfraction{\ifinchemical.1\else.1\fi}
+
+\def\chemicaltighttext
+  {\def\chemicaltfraction{\ifinchemical.3\else.6\fi}%
+   \def\chemicalbfraction{\ifinchemical.2\else.4\fi}%
+   \def\chemicallfraction{\ifinchemical 0\else 0\fi}%
+   \def\chemicalrfraction{\ifinchemical 0\else 0\fi}}
+
+\def\dochemicaltop#1#2#3#4%
+  {\vbox
+     {\@@dochemicalcolor
+      \baselineskip=\chemicaltfraction\baselineskip \lineskip0pt
+      \halign
+        {#1###2\cr
+         $\@@dochemicalstyle{\scriptscriptstyle#3}$\cr
+         $\@@dochemicalstyle{\@@currentchemicalformat#4}$\cr}}}
+
+\def\dochemicalbottom#1#2#3#4%
+  {\vtop
+     {\@@dochemicalcolor
+      \baselineskip=\chemicalbfraction\baselineskip \lineskip0pt
+      \halign
+        {#1###2\cr
+         $\@@dochemicalstyle{\@@currentchemicalformat#4}$\cr
+         $\@@dochemicalstyle{\scriptscriptstyle#3}$\cr}}}
+
+\def\chemicalleft#1#2%
+  {\hbox
+     {\@@dochemicalcolor
+      $\@@dochemicalstyle{\scriptscriptstyle#1}$%
+      $\@@dochemicalstyle{\@@currentchemicalformat\hskip\chemicallfraction em#2}$}}
+
+\def\chemicalright#1#2%
+  {\hbox
+     {\@@dochemicalcolor
+      $\@@dochemicalstyle{\@@currentchemicalformat#2\hskip\chemicalrfraction em}$%
+      $\@@dochemicalstyle{\scriptscriptstyle#1}$}}
+
+\def\chemicalcentered#1%
+  {\setbox0=\hbox{$\@@dochemicalstyle{\scriptscriptstyle#1}$}%
+   \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}%
+   \dimen0=.5\ht2
+   \advance\dimen0 by -.5\ht0
+   \advance\dimen0 by \dp0
+   \hbox{\@@dochemicalcolor\raise\dimen0\box0}}
+
+\def\chemicalleftcentered#1#2%
+  {\hbox
+     {\@@dochemicalcolor
+      \chemicalcentered{#1}%
+      $\@@dochemicalstyle{\@@currentchemicalformat\hskip\chemicallfraction em#2}$}}
+
+\def\chemicalrightcentered#1#2%
+  {\hbox
+     {\@@dochemicalcolor
+      $\@@dochemicalstyle{\@@currentchemicalformat#2\hskip\chemicalrfraction em}$%
+      \chemicalcentered{#1}}}
+
+\def\chemicaltop          {\dochemicaltop    \hss   \hss  }
+\def\chemicallefttop      {\dochemicaltop    \relax \hss  }
+\def\chemicalrighttop     {\dochemicaltop    \hss   \relax}
+\def\chemicalbottom       {\dochemicalbottom \hss   \hss  }
+\def\chemicalleftbottom   {\dochemicalbottom \relax \hss  }
+\def\chemicalrightbottom  {\dochemicalbottom \hss   \relax}
+
+\def\chemicaltopleft    #1{\chemicalleft {\chemicallefttop   {#1}{}}}
+\def\chemicalbottomleft #1{\chemicalleft {\chemicalleftbottom{#1}{}}}
+\def\chemicaltopright   #1{\chemicalright{\chemicallefttop   {#1}{}}}
+\def\chemicalbottomright#1{\chemicalright{\chemicalleftbottom{#1}{}}}
+
+\def\chemicalsmashedleft#1%
+  {\hbox\bgroup
+   \@@dochemicalcolor
+   \setbox0=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}%
+   \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat#1}$}%
+   \wd2=\wd0
+   \box2
+   \egroup}
+
+\def\chemicalsmashedmiddle#1%
+  {\hbox\bgroup
+   \@@dochemicalcolor
+   \setbox0=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}%
+   \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat#1}$}%
+   \hbox{\hskip-.5\wd2\hskip.5\wd0\box2}
+   \egroup}
+
+\def\chemicalsmashedright#1%
+  {\hbox\bgroup
+   \@@dochemicalcolor
+   \setbox0=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}%
+   \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat#1}$}%
+   \hbox to \wd0{\hskip-\wd2\hskip\wd0\box2}%
+   \egroup}
+
+\def\+{\tabalign} % is \long in Plain
+
+\def\chemicalforever#1#2%
+  {\bgroup
+   \setbox0=\hbox
+     {\@@dochemicalcolor
+      $\@@dochemicalstyle{\scriptscriptstyle\hskip-.15em#2}$}%
+   \wd0=0pt
+   \big#1_{\hskip.1em\box0}%
+   \egroup}
+
+\def\disablechemicalspecials%
+  {\def\+##1{##1}\def\-##1{##1}%
+   \def\[{[}\def\]{]}%
+   \def\1{}\def\2{}\def\3{}\def\4{}\def\5{}\def\6{}\def\7{}%
+   \def\X{}%
+   \def\T{}\def\B{}\def\L{}\def\R{}\def\LC{}\def\RC{}%
+   \def\TL{}\def\BL{}\def\TR{}\def\BR{}%
+   \def\LT{}\def\LB{}\def\RT{}\def\RB{}%
+   \def\SL{}\def\SM{}\def\SR{}}
+
+\def\enablechemicalspecials%
+  {\def\+{\dodoublegroupempty\chemicaloxidation{+}}% {} needed!
+   \def\-{\dodoublegroupempty\chemicaloxidation{-}}% {} needed!
+   \def\[{\dodoublegroupempty\chemicalforever  {[}}% {} needed!
+   \def\]{\dodoublegroupempty\chemicalforever  {]}}% {} needed!
+   \def\1{\chemicaloxidation\relax1}%
+   \def\2{\chemicaloxidation\relax2}%
+   \def\3{\chemicaloxidation\relax3}%
+   \def\4{\chemicaloxidation\relax4}%
+   \def\5{\chemicaloxidation\relax5}%
+   \def\6{\chemicaloxidation\relax6}%
+   \def\7{\chemicaloxidation\relax7}%
+   \def\X{\chemicaltighttext}%
+   \def\T{\chemicaltop}%
+   \def\B{\chemicalbottom}%
+   \def\L{\chemicalleft}%
+   \def\LC{\chemicalleftcentered}%
+   \def\R{\chemicalright}%
+   \def\RC{\chemicalrightcentered}%
+   \def\TL{\chemicaltopleft}%
+   \def\BL{\chemicalbottomleft}%
+   \def\TR{\chemicaltopright}%
+   \def\BR{\chemicalbottomright}%
+   \def\LT{\chemicallefttop}%
+   \def\LB{\chemicalleftbottom}%
+   \def\RT{\chemicalrighttop}%
+   \def\RB{\chemicalrightbottom}%
+   \def\SL{\chemicalsmashedleft}%
+   \def\SM{\chemicalsmashedmiddle}%
+   \def\SR{\chemicalsmashedright}}
+
+% \reversechemical#1#2#3
+%
+% #1: prefix
+% #2: volgnummer enz
+% #3: tegengestelde volgnummers
+
+\def\reversechemical#1#2#3%
+  {\def\doprocess[##1##2]%
+     {\doifchemicalnumber{##1}{#1#2}%
+        {\getfromcommalist[#3][##1]%
+         \let\reversechemicalaction=\commalistelement
+         \processchemical[#1\reversechemicalaction##2]}}%
+   \doprocess[#2]}
+
+% \processunknownchemical[#1????][#2]
+%
+% #1: bindingen enz.
+% #2: atomen enz.
+
+\def\defaultchemical%
+  {SIX}
+
+\def\processunknownchemical[#1????][#2]%
+  {\processaction
+     [#1]
+     [       SAVE=>\executechemicalSAVE,
+          RESTORE=>\executechemicalRESTORE,
+             HIGH=>\sethighsubscripts,
+              LOW=>\setlowsubscripts,
+      \s!default=>,
+      \s!unknown=>\doifdefinedelse{\s!executechemical#1}
+                    {\def\chemicalrotation{1}%
+                     \def\chemicaloffset{0}%
+                     \doifdefined{\s!executechemical#1}
+                       {\getvalue{\s!executechemical#1}[#2]}%
+                     \@@chemicalpostponed}
+                    {\getpredefinedchemical{#1}}]}
+
+\newcount\chemicalstack % tzt \newwounter
+
+\setvalue{\s!chemical\c!x1}{0}
+\setvalue{\s!chemical\c!y1}{0}
+
+\def\executechemicalSAVE
+  {%\writestatus{ppchtex}{saving \the\horchemical,\the\verchemical}%
+   \advance\chemicalstack by 1
+   \letvalue {\s!chemical n\the\chemicalstack}=\chemicalname
+   %\letvalue {\s!chemical p\the\chemicalstack}=\@@chemicalpostponed
+   \setevalue{\s!chemical x\the\chemicalstack}{\the\horchemical}%
+   \setevalue{\s!chemical y\the\chemicalstack}{\the\verchemical}}
+
+\def\restorechemicalvalues#1%
+  {\let\oldprocesschemical=\processchemical
+   \doifdefined{\s!executechemical#1}{\getvalue{\s!executechemical#1}[]}%
+   \let\processchemical=\oldprocesschemical}
+
+\def\executechemicalRESTORE
+  {\ifnum\chemicalstack=0\relax
+     \horchemical=\getvalue{\s!chemical x1}\relax
+     \verchemical=\getvalue{\s!chemical y1}\relax
+   \else
+     \restorechemicalvalues{\getvalue{\s!chemical n\the\chemicalstack}}%
+     %\@EA\let\@EA\@@chemicalpostponed\@EA=\csname\s!chemical p\the\chemicalstack\endcsname
+     \let\@@chemicalpostponed=\relax
+     \horchemical=\getvalue{\s!chemical x\the\chemicalstack}\relax
+     \verchemical=\getvalue{\s!chemical y\the\chemicalstack}\relax
+     \advance\chemicalstack by -1
+   \fi
+   \restorechemicalcoordinates}
+
+% De onderstaande macro's zijn verantwoordelijk voor het zetten
+% van de + en pijlen. De +, en dus ook de pijlen, worden omhoog
+% gehaald. Dit oogt m.i. fraaier.
+
+\def\chemicalinnerclip#1%
+  {{\setbox0=\hbox{#1}\ht0\ht\strutbox\dp0\dp\strutbox\box0}}
+
+\def\chemicalraise#1#2%
+  {\chemicalinnerclip
+     {\setbox0=\hbox{$#1+$}%
+      \raise\dp0\hbox{$#1#2$}}}
+
+\def\chemicalinnersign#1% todo: \@@chemicaltextcolor
+  {\chemicalraise{\@@localchemicalstyle}{#1}}
+
+\def\chemicaloutersign#1%
+  {\chemicalraise{}{\@@dochemicalcolor#1}}
+
+\def\chemicalsingleinnerarrow#1#2%
+  {\chemicalraise{\@@localchemicalstyle}{\longrightarrow}}
+
+\def\chemicaldoubleinnerarrow#1#2% todo: \@@chemicaltextcolor
+  {\chemicalinnerclip
+     {\lower.2ex\hbox
+        {\setbox0=\hbox{$\@@localchemicalstyle\longrightarrow$}%
+         \setbox2=\hbox{$\@@localchemicalstyle\longleftarrow$}%
+         \wd0=0pt\raise\ht0\box0\box2}}}
+
+\def\chemicaltwintipinnerarrow#1#2% todo: \@@chemicaltextcolor
+  {\chemicalinnerclip
+     {\setbox0=\hbox{\chemicalraise{\@@localchemicalstyle}{\longrightarrow}}%
+      \setbox2=\hbox{\chemicalraise{\@@localchemicalstyle}{\longleftarrow}}%
+      \wd0=0pt\box0\box2}}
+
+\def\dochemicalouterarrow#1#2#3%
+  {\bgroup
+   \setbox0=\hbox{$\longrightarrow$}%
+   \setbox2=\hbox{$\@@dochemicalstyle{\scriptstyle\quad#2\quad}$}%
+   \setbox4=\hbox{$\@@dochemicalstyle{\scriptstyle\quad#3\quad}$}%
+   \dimen2=\wd0 % \dimen0 is used elsewhere
+   \ifdim\wd2>\dimen2 \dimen0=\wd2 \fi
+   \ifdim\wd4>\dimen2 \dimen0=\wd4 \fi
+   \chemicaloutermolecule
+     {#1}
+     {\ifdim\ht2>\!!zeropoint\box2\fi}  % expands to \empty in test
+     {\ifdim\ht4>\!!zeropoint\box4\fi}% % expands to \empty in test
+   \egroup}
+
+\def\chemicalsingleouterarrow
+  {\dochemicalouterarrow
+     {\hbox to \dimen2{\rightarrowfill}}}
+
+\def\chemicaldoubleouterarrow
+  {\dochemicalouterarrow
+     {\lower.5\ht0\vbox
+        {\offinterlineskip
+         \hbox to \dimen2{\rightarrowfill}
+         \hbox to \dimen2{\leftarrowfill}}}}
+
+\def\chemicaltwintipouterarrow
+  {\dochemicalouterarrow
+     {\hbox
+        {\hbox to \dimen2{\rightarrowfill}%
+         \hskip-\dimen2
+         \hbox to \dimen2{\leftarrowfill}}}}
+
+\def\chemicalinnermolecule#1#2#3% no mathop here, can generate space
+  {\chemicalspace               % todo: \@@chemicaltextcolor
+   \chemicalinnerclip
+     {\dosetsubscripts
+      $\@@dochemicalstyle{\@@localchemicalstyle\strut#1}$%
+      \doresetsubscripts}%
+   \chemicalspace}
+
+\def\chemicaloutermolecule#1#2#3%
+  {\chemicalspace
+   \bgroup
+   \@@dochemicalcolor
+   \setbox0=\hbox % else the font is reset
+     {\dosetsubscripts
+      \hbox{$\@@dochemicalstyle{\strut#1}$}%
+      \doresetsubscripts}%
+   \mathop{\box0}%
+   \ifthirdargument
+     \doifnot{#2}{}
+       {^{\@@dochemicalstyle{\strut#2}}}%
+     \doifnot{#3}{}
+       {_{\@@dochemicalstyle{\strut#3}}}%
+   \else
+     \doifnot{#2}{}
+       {_{\@@dochemicalstyle{\strut#2}}}%
+   \fi
+   \egroup
+   \chemicalspace}
+
+\def\chemicalsinglepicturearrow#1%
+  {\lower.5ex\hbox
+      {\@@dochemicalstyle
+       $\chemicalspace
+        \buildrel
+          \@@dochemicalstyle{\scriptstyle\quad#1\quad}%
+        \over{\overrightarrow
+          {\hphantom{\@chemicalstyle{\scriptstyle\quad#1\quad}}}}%
+        \chemicalspace$}}
+
+\def\chemicaldoublepicturearrow#1%
+  {\lower.5ex\hbox
+     {\@@dochemicalstyle
+      $\chemicalspace
+       \buildrel
+         \@@dochemicalstyle{\scriptstyle\quad#1\quad}%
+       \over{\overrightarrow{\overleftarrow
+         {\hphantom{\@@dochemicalstyle{\scriptstyle\quad#1\quad}}}}}%
+       \chemicalspace$}}
+
+% Bij de in-line bindingen wordt gebruik gemaakt van
+% een \hrule. De maatvoering wordt bepaald door een
+% kunstmatige em (\wd0).
+
+\def\somechemicalbond%
+  {\hrule width \wd0 height .4pt}
+
+\def\dochemicalbonds#1#2#3% todo: \@@chemicaltextstyle
+  {{\setbox0=\hbox
+      {${\@@localchemicalstyle M}$}%
+    \vbox to \ht0
+      {\@@dochemicalcolor
+       \hsize\wd0
+       \vskip.1\wd0#1\vfill#2\vfill#3\vskip.1\wd0}}}
+
+\def\singlechemicalbond%
+  {\dochemicalbonds{}{\somechemicalbond}{}}
+
+\def\doublechemicalbond%
+  {\dochemicalbonds{\somechemicalbond}{}{\somechemicalbond}}
+
+\def\triplechemicalbond%
+  {\dochemicalbonds{\somechemicalbond}{\somechemicalbond}{\somechemicalbond}}
+
+% In plaats van \def\naam{\chemie[...]...} kan beter gebruik
+% worden gemaakt van het commando
+%
+%   \definieerchemie[naam]{commando's}
+%
+% De naam krijgt, om problemen met bestaande macro's te
+% voorkomen, een prefix. Bij het ophalen van een commando
+% worden beide definities afgehandeld.
+
+\def\dodefinechemical[#1]#2%
+  {\doifdefined{\??chemical#1}
+     {\writestatus{ppchtex}{chemical definition #1 is redefined}}%
+   \setvalue{\??chemical#1}{#2}}
+
+\def\definechemical%
+  {\dosingleargument\dodefinechemical}
+
+\def\getpredefinedchemical#1%
+  {\doifdefinedelse{\??chemical#1}
+     {\getvalue{\??chemical#1}}
+     {\doifdefinedelse{#1}
+        {\getvalue{#1}}
+        {\writestatus{ppchtex}{unknown chemical definition #1}}}}
+
+% Hieronder zijn de definities van de structuren opgenomen. De
+% naam van de structuur is als volgt opgebouwd:
+%
+%   \executechemicalNUMBER[#1]
+%
+% waarbij [#1] betrekking heeft op de tekstelementen van \chemie,
+% de [tweede lijst] dus.
+%
+% De aan \chemie[#1][#2] meegegeven lijst van segmenten wordt
+% deels door de in \execute gedefinieerde macro's afgehandeld,
+% deels door algemene macro's. Segmenten hebben de vorm:
+%
+%   [+|-|]identifier[X|XYZ|X..Y]
+%
+% Voorbeelden van segmenten zijn:
+%
+%   R1
+%   R1..4
+%   R135
+%   -R1
+%   +R35
+
+\setchemicalmaximum 0
+
+\def\processchemical[#1]%
+  {\unknownchemical{#1}}
+
+\def\setchemicalname#1 %
+  {\def\chemicalname{#1}}
+
+\let\chemicalname=\s!unknown
+
+% Vooruitlopend op een gedetailleerde documentatie, zijn hier
+% vast enkele gebruikte afmetingen:
+%
+% lengte radikalen          :  500
+% afstand radikalen         :  100
+% afstand dubbele radikalen :  260
+% afstand substituenten     : +125
+
+\def\executechemicalONE[#1]%
+  {\setchemicalname ONE
+   %
+   \setchemicalmaximum      8
+   \setchemicaldistance     0
+   \setchemicalsubstitute 625
+   \setchemicaldirection  303
+   %
+   \setchemicalrotation 1  1      0      1      0      1      0      1      0
+   \setchemicalrotation 2  0.707 -0.707  0.707 -0.707  0.707 -0.707  0.707 -0.707
+   \setchemicalrotation 3  0     -1      0     -1      0     -1      0     -1
+   \setchemicalrotation 4 -0.707 -0.707 -0.707 -0.707 -0.707 -0.707 -0.707 -0.707
+   \setchemicalrotation 5 -1      0     -1      0     -1      0     -1      0
+   \setchemicalrotation 6 -0.707  0.707 -0.707  0.707 -0.707  0.707 -0.707  0.707
+   \setchemicalrotation 7  0      1      0      1      0      1      0      1
+   \setchemicalrotation 8  0.707  0.707  0.707  0.707  0.707  0.707  0.707  0.707
+   %
+   \setchemicalangle 1   0  90 180 270
+   \setchemicalangle 2  45 135 225 315
+   \setchemicalangle 3  90 180 270   0
+   \setchemicalangle 4 135 225 315  45
+   \setchemicalangle 5 180 270   0  90
+   \setchemicalangle 6 225 315  45 135
+   \setchemicalangle 7 270   0  90 180
+   \setchemicalangle 8 315  45 135 225
+   %
+   \setchemicaltranslate 1 -1000     0
+   \setchemicaltranslate 2 -1000  1000
+   \setchemicaltranslate 3     0  1000
+   \setchemicaltranslate 4  1000  1000
+   \setchemicaltranslate 5  1000     0
+   \setchemicaltranslate 6  1000 -1000
+   \setchemicaltranslate 7     0 -1000
+   \setchemicaltranslate 8 -1000 -1000
+   %
+   \setchemicallinesegment  SB  300   0 700    0
+   \setchemicallinesegment DB1  300  50 700   50
+   \setchemicallinesegment DB2  300 -50 700  -50
+   %
+   %setchemicallinesegment        EP  200 125 200 -125
+   \setchemicalfactorlinesegment  EP  200 125 200 -125
+   %
+   \setchemicaltextelement  ES  200   0
+   \setchemicaltextelement ED1  200  50
+   \setchemicaltextelement ED2  200 -50
+   \setchemicaltextelement ET1  200  75
+   \setchemicaltextelement ET2  200   0
+   \setchemicaltextelement ET3  200 -75
+   \setchemicaltextelement HB1  300   0
+   \setchemicaltextelement HB2  475   0
+   \setchemicaltextelement HB3  650   0
+   %
+   \setchemicaltextelement   Z  800    0
+   \setchemicaltextelement  RZ  950    0
+   \setchemicaltextelement  ZN  500    0
+   \setchemicaltextelement ZTN  500  150
+   \setchemicaltextelement ZBN  500 -150
+   %
+   \def\processchemical[##1##2##3##4##5]%
+     {\doprocesschemical[##1##2##3##4##5]
+        {\processaction
+           [##1##2##3##4##5]
+           [    PB:##4##5=>\beginchemicalpicture{##4##5},
+                   PE????=>\endchemicalpicture,
+                SUB##4##5=>\processchemicalsubstitute{##4##5},
+                ADJ##4##5=>\processchemicaldistance{##4##5},
+                MOV##4##5=>\processchemicaltranslate{##4##5},
+                DIR##4##5=>\processchemicaldirection{##4##5},
+                OFF##4##5=>\processchemicaloffset{##4##5},
+                CCD##4##5=>\processchemicaldottsegment{CC}{##4##5},
+                LDD##4##5=>\processchemicaldashedlinesegment{DB1}{##4##5}%
+                           \processchemicallinesegment{DB2}{##4##5},
+                RDD##4##5=>\processchemicallinesegment{DB1}{##4##5}%
+                           \processchemicaldashedlinesegment{DB2}{##4##5},
+                OF##3:##5=>\processchemicalphantom{##3}{##5},
+              OE##3##4##5=>\processchemicalopenend{OE}{##3##4##5},
+              EP##3##4##5=>\processchemicallinesegment{EP}{##3##4##5},
+              ES##3##4##5=>\processchemicaltextconstant{ES}{##3##4##5}{\hbox{$\cdot$}}{0},
+              ED##3##4##5=>\processchemicaltextconstant{ED}{##3##4##5}{\hbox{$\cdot$}}{0},
+              ET##3##4##5=>\processchemicaltextconstant{ET}{##3##4##5}{\hbox{$\cdot$}}{0},
+              HB##3##4##5=>\processchemicaltextconstant{HB}{##3##4##5}{\hbox{$\cdot$}}{0},
+              SB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5},
+              DB##3##4##5=>\processchemicallinesegment{DB}{##3##4##5},
+              SB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5},
+              BB##3##4##5=>\processchemicaldeltalinesegment{SB}{##3##4##5},
+              SD##3##4##5=>\processchemicaldashedlinesegment{SB}{##3##4##5},
+              TB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5}%
+                           \processchemicallinesegment{DB}{##3##4##5},
+              CZ##3##4##5=>\processchemicaltextelement{RZ}{##3##4##5}{#1}{0}{},
+                ZTN##4##5=>\processchemicalsmalltextconstant{ZTN}{##4##5}{\chemicaltextelementnumber}{0},
+                ZTT##4##5=>\processchemicalsmalltextelement{ZTN}{##4##5}{#1}{0}{},
+                ZBN##4##5=>\processchemicalsmalltextconstant{ZBN}{##4##5}{\chemicaltextelementnumber}{0},
+                ZBT##4##5=>\processchemicalsmalltextelement{ZBN}{##4##5}{#1}{0}{},
+              ZN##3##4##5=>\processchemicaltextconstant{ZN}{##3##4##5}{\chemicaltextelementnumber}{0},
+              ZT##3##4##5=>\processchemicaltextelement{ZN}{##3##4##5}{#1}{0}{},
+            Z##2##3##4##5=>\processchemicaltextelement{Z}{##2##3##4##5}{#1}{0}
+                             {l,l,t,r,r,r,b,l},
+            \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}}
+
+\def\executechemicalTHREE[#1]%
+  {\setchemicalname THREE
+   %
+   \setchemicalmaximum      3
+   \setchemicaldistance   289
+   \setchemicalsubstitute 952
+   %
+   \setchemicalrotation 1  1    0      0     -1   -1    0      0      1
+   \setchemicalrotation 2 -0.5 -0.866 -0.866  0.5  0.5  0.866  0.866 -0.5
+   \setchemicalrotation 3 -0.5  0.866  0.866  0.5  0.5 -0.866 -0.866 -0.5
+   %
+   \setchemicalangle 1   0  90 180 270
+   \setchemicalangle 2 120 210 300  30
+   \setchemicalangle 3 240 330  60 150
+   %
+   \setchemicaltranslate 1 -1000     0
+   \setchemicaltranslate 2     0  1000
+   \setchemicaltranslate 3  1000     0
+   \setchemicaltranslate 4     0 -1000
+   %
+   \setchemicallinesegment   B   577     0  -289  -500
+   \setchemicallinesegment  SB   352  -130   -64  -370
+   \setchemicallinesegment -SB   352  -130  -289  -500
+   \setchemicallinesegment +SB   577     0   -64  -370
+   \setchemicallinesegment DB1   327   -87   -89  -327
+   \setchemicallinesegment DB2   377  -172   -39  -413
+   \setchemicallinesegment   R   577     0  1077     0
+   \setchemicallinesegment  -R   577     0  1010   250
+   \setchemicallinesegment  +R   577     0  1010  -250
+   \setchemicallinesegment ER1   577    50  1077    50
+   \setchemicallinesegment ER2   577   -50  1077   -50
+   \setchemicallinesegment  SR   837     0  1077     0
+   \setchemicallinesegment -SR   802   130  1010   250
+   \setchemicallinesegment +SR   802  -130  1010  -250
+   \setchemicallinesegment DR1   837    50  1077    50
+   \setchemicallinesegment DR2   837   -50  1077   -50
+   %
+   \setchemicaltextelement   Z   577     0
+   \setchemicaltextelement  RZ  1177     0
+   \setchemicaltextelement -RZ  1097   300
+   \setchemicaltextelement +RZ  1097  -300
+   \setchemicaltextelement CRZ  1077     0
+   %
+   \def\processchemical[##1##2##3##4]%
+     {\processaction
+        [##1##2##3##4]
+        [    ROT##4=>\processchemicalrotation{##4},
+             MOV##4=>\processchemicaltranslate{##4},
+             SUB##4=>\processchemicalsubstitute{##4},
+             ADJ##4=>\processchemicaldistance{##4},
+             -RZ##4=>\processchemicaltextelement{-RZ}{##4}{#1}{3}
+                       {l,t,r, l,r,l, r,b,l, r,l,r},
+             +RZ##4=>\processchemicaltextelement{+RZ}{##4}{#1}{3}
+                       {l,r,b, r,r,l, r,l,t, l,l,r},
+             -SB##4=>\processchemicallinesegment{-SB}{##4},
+             +SB##4=>\processchemicallinesegment{+SB}{##4},
+             -SR##4=>\processchemicallinesegment{-SR}{##4},
+             +SR##4=>\processchemicallinesegment{+SR}{##4},
+             CRZ##4=>\processchemicaltextelement{CRZ}{##4}{#1}{0}
+                       {},
+           DB##3##4=>\processchemicallinesegment{DB}{##3##4},
+           DR##3##4=>\processchemicallinesegment{DR}{##3##4},
+           RZ##3##4=>\processchemicaltextelement{RZ}{##3##4}{#1}{3}
+                       {l,r,r, t,r,l, r,l,l, b,l,r},
+           ER##3##4=>\processchemicallinesegment{ER}{##3##4},
+           SB##3##4=>\processchemicallinesegment{SB}{##3##4},
+           SR##3##4=>\processchemicallinesegment{SR}{##3##4},
+           -R##3##4=>\processchemicallinesegment{-R}{##3##4},
+           +R##3##4=>\processchemicallinesegment{+R}{##3##4},
+         B##2##3##4=>\processchemicallinesegment{B}{##2##3##4},
+         R##2##3##4=>\processchemicallinesegment{R}{##2##3##4},
+         Z##2##3##4=>\processchemicaltextelement{Z}{##2##3##4}{#1}{0}{},
+         \s!unknown=>\unknownchemical{##1##2##3##4}]}}
+
+\def\executechemicalFOUR[#1]%
+  {\setchemicalname FOUR
+   %
+   \setchemicalmaximum      4
+   \setchemicaldistance   500
+   \setchemicalsubstitute   0
+   %
+   \setchemicalrotation 1  1  0  0 -1 -1  0  0  1
+   \setchemicalrotation 2  0 -1 -1  0  0  1  1  0
+   \setchemicalrotation 3 -1  0  0  1  1  0  0 -1
+   \setchemicalrotation 4  0  1  1  0  0 -1 -1  0
+   %
+   \setchemicalangle 1   0  90 180 270
+   \setchemicalangle 2  90 180 270   0
+   \setchemicalangle 3 180 270   0  90
+   \setchemicalangle 4 270   0  90 180
+   %
+   \setchemicaltranslate 1 -1000     0
+   \setchemicaltranslate 2     0  1000
+   \setchemicaltranslate 3  1000     0
+   \setchemicaltranslate 4     0 -1000
+   %
+   \setchemicallinesegment   B  500  500  500 -500
+   \setchemicallinesegment  SB  500  240  500 -240
+   \setchemicallinesegment -SB  500  240  500 -500
+   \setchemicallinesegment +SB  500  500  500 -240
+   \setchemicallinesegment DB1  450  240  450 -240
+   \setchemicallinesegment DB2  550  240  550 -240
+   \setchemicallinesegment  EB  360  300  360 -300
+   \setchemicallinesegment   R  500  500  854  854
+   \setchemicallinesegment  -R  500  500  500 1000
+   \setchemicallinesegment  +R  500  500 1000  500
+   \setchemicallinesegment ER1  465  535  819  889
+   \setchemicallinesegment ER2  535  465  889  819
+   \setchemicallinesegment  SR  684  684  854  854
+   \setchemicallinesegment -SR  500  760  500 1000
+   \setchemicallinesegment +SR  760  500 1000  500
+   \setchemicallinesegment DR1  649  719  819  889
+   \setchemicallinesegment DR2  719  649  889  819
+   %
+   \setchemicaltextelement   Z  500  500
+   \setchemicaltextelement  RZ  925  925
+   \setchemicaltextelement -RZ  500 1100
+   \setchemicaltextelement +RZ 1100  500
+   \setchemicaltextelement CRZ 1038 1038
+   %
+   \setchemicaltextelement  ZN  350  350
+   %
+   \def\processchemical[##1##2##3##4]%
+     {\processaction
+        [##1##2##3##4]
+        [    PB:##4=>\beginchemicalpicture{##4},
+             PE????=>\endchemicalpicture,
+             ROT##4=>\processchemicalrotation{##4},
+             SUB##4=>\processchemicalsubstitute{##4},
+             ADJ##4=>\processchemicaldistance{##4},
+             MOV##4=>\processchemicaltranslate{##4},
+             -RZ##4=>\processchemicaltextelement{-RZ}{##4}{#1}{4}
+                       {b,l,t,r, l,t,r,b, t,r,b,l, r,b,l,t},
+             +RZ##4=>\processchemicaltextelement{+RZ}{##4}{#1}{4}
+                       {l,t,r,b, t,r,b,l, r,b,l,t, b,l,t,r},
+             -SB##4=>\processchemicallinesegment{-SB}{##4},
+             +SB##4=>\processchemicallinesegment{+SB}{##4},
+             -SR##4=>\processchemicallinesegment{-SR}{##4},
+             +SR##4=>\processchemicallinesegment{+SR}{##4},
+             CRZ##4=>\processchemicaltextelement{CRZ}{##4}{#1}{0}{},
+           ZN##3##4=>\processchemicaltextconstant{ZN}{##3##4}{\chemicaltextelementnumber}{0},
+           ZT##3##4=>\processchemicaltextelement{ZN}{##3##4}{#1}{0}{},
+           DB##3##4=>\processchemicallinesegment{DB}{##3##4},
+           DR##3##4=>\processchemicallinesegment{DR}{##3##4},
+           EB##3##4=>\processchemicallinesegment{EB}{##3##4},
+           ER##3##4=>\processchemicallinesegment{ER}{##3##4},
+           RZ##3##4=>\processchemicaltextelement{RZ}{##3##4}{#1}{4}
+                       {lb,lt,rt,rb, lt,rt,rb,lb, rt,rb,lb,lt, rb,lb,lt,rt},
+           SB##3##4=>\processchemicallinesegment{SB}{##3##4},
+           SR##3##4=>\processchemicallinesegment{SR}{##3##4},
+           -R##3##4=>\processchemicallinesegment{-R}{##3##4},
+           +R##3##4=>\processchemicallinesegment{+R}{##3##4},
+         B##2##3##4=>\processchemicallinesegment{B}{##2##3##4},
+         R##2##3##4=>\processchemicallinesegment{R}{##2##3##4},
+         Z##2##3##4=>\processchemicaltextelement{Z}{##2##3##4}{#1}{0}{},
+         \s!unknown=>\unknownchemical{##1##2##3##4}]}}
+
+\def\executechemicalFIVE[#1]%
+  {\setchemicalname FIVE
+   %
+   \setchemicalmaximum       5
+   \setchemicaldistance    688
+   \setchemicalsubstitute 1226
+   %
+   \setchemicalrotation 1  1      0      0     -1     -1      0      0      1
+   \setchemicalrotation 2  0.309 -0.951 -0.951 -0.309 -0.309  0.940  0.951  0.309
+   \setchemicalrotation 3 -0.809 -0.588 -0.588  0.809  0.809  0.588  0.588 -0.809
+   \setchemicalrotation 4 -0.809  0.588  0.588  0.809  0.809 -0.588 -0.588 -0.809
+   \setchemicalrotation 5  0.309  0.951  0.951 -0.309 -0.309 -0.951 -0.951  0.309
+   %
+   \setchemicalangle 1   0  90 180 270
+   \setchemicalangle 2  72 162 252 342
+   \setchemicalangle 3 144 234 324  54
+   \setchemicalangle 4 216 306  36 126
+   \setchemicalangle 5 288  18 108 198
+   %
+   \setchemicaltranslate 1 -1376     0
+   \setchemicaltranslate 2  -425  1304
+   \setchemicaltranslate 3  1113   809
+   \setchemicaltranslate 4  1113  -809
+   \setchemicaltranslate 5  -425 -1304
+   %
+   \setchemicallinesegment   A 1188  500 1188 -500
+   \setchemicallinesegment   B  688  500  688 -500
+   \setchemicallinesegment   S -263  808  688 -500
+   \setchemicallinesegment  SS -116  606  541 -298
+   \setchemicallinesegment -SS -263  808  541 -298
+   \setchemicallinesegment +SS -116  606  688 -500
+   \setchemicallinesegment  SB  688  240  688 -240
+   \setchemicallinesegment -SB  688  240  688 -500
+   \setchemicallinesegment +SB  688  500  688 -240
+   \setchemicallinesegment DB1  638  240  638 -240
+   \setchemicallinesegment DB2  738  240  738 -240
+   \setchemicallinesegment  EB  548  340  548 -340
+   \setchemicallinesegment   R  688  500 1093  794
+   \setchemicallinesegment  -R  688  500  688 1000
+   \setchemicallinesegment  +R  688  500 1163  345
+   \setchemicallinesegment ER1  659  540 1064  834
+   \setchemicallinesegment ER2  727  460 1122  754
+   \setchemicallinesegment  SR  898  653 1093  794
+   \setchemicallinesegment -SR  688  760  688 1000
+   \setchemicallinesegment +SR  935  420 1163  345
+   \setchemicallinesegment DR1  869  693 1064  834
+   \setchemicallinesegment DR2  927  613 1122  754
+   %
+   \setchemicaltextelement   Z  688  500
+   \setchemicaltextelement  RZ 1188  863
+   \setchemicaltextelement -RZ  688 1100
+   \setchemicaltextelement +RZ 1258  315
+   \setchemicaltextelement CRZ 1323  947
+   %
+   \setchemicalcircsegment   C -36 36 590 72 475 -345
+   \setchemicalcircsegment  CC -72  0 590 72 182 -561
+   %
+   \setchemicaltextelement  ZN  468  350
+   \setchemicaltextelement  RN  860  625 % 1.25 Z
+   \setchemicaltextelement  RTN 785  728 % .12 / 103 75
+   \setchemicaltextelement  RBN 935  522
+   %
+   \def\processchemical[##1##2##3##4]%
+     {\processaction
+        [##1##2##3##4]
+        [ FRONT????=>{\executechemicalFIVEFRONT[#1]},
+             PB:##4=>\beginchemicalpicture{##4},
+             PE????=>\endchemicalpicture,
+             ROT##4=>\processchemicalrotation{##4},
+             SUB##4=>\processchemicalsubstitute{##4},
+             ADJ##4=>\processchemicaldistance{##4},
+             MOV##4=>\processchemicaltranslate{##4},
+             -RZ##4=>\processchemicaltextelement{-RZ}{##4}{#1}{5}
+                       {b,l,t,r,r, l,t,r,r,l, t,r,r,l,l, r,b,l,t,r},
+             +RZ##4=>\processchemicaltextelement{+RZ}{##4}{#1}{5}
+                       {l,t,r,r,b, t,r,r,l,l, r,r,l,l,r, b,l,l,r,r},
+             -SB##4=>\processchemicallinesegment{-SB}{##4},
+             +SB##4=>\processchemicallinesegment{+SB}{##4},
+             -SR##4=>\processchemicallinesegment{-SR}{##4},
+             +SR##4=>\processchemicallinesegment{+SR}{##4},
+             -RD##4=>\processchemicaldashedlinesegment{-R}{##4},
+             +RD##4=>\processchemicaldashedlinesegment{+R}{##4},
+             -RB##4=>\processchemicaldeltalinesegment{-R}{##4},
+             +RB##4=>\processchemicaldeltalinesegment{+R}{##4},
+             CRZ##4=>\processchemicaltextelement{CRZ}{##4}{#1}{0}{},
+             RTN##4=>\processchemicaltextconstant{RTN}{##4}{\chemicaltextelementnumber}{0},
+             RTT##4=>\processchemicaltextelement{RTN}{##4}{#1}{0}{},
+             RBN##4=>\processchemicaltextconstant{RBN}{##4}{\chemicaltextelementnumber}{0},
+             RBT##4=>\processchemicaltextelement{RBN}{##4}{#1}{0}{},
+             -SS##4=>\processchemicallinesegment{-SS}{##4},
+             +SS##4=>\processchemicallinesegment{+SS}{##4},
+             CCD##4=>\processchemicaldottsegment{CC}{##4},
+           SS##3##4=>\processchemicallinesegment{SS}{##3##4},
+           RD##3##4=>\processchemicaldashedlinesegment{R}{##3##4},
+           RB##3##4=>\processchemicaldeltalinesegment{R}{##3##4},
+           ZN##3##4=>\processchemicaltextconstant{ZN}{##3##4}{\chemicaltextelementnumber}{0},
+           ZT##3##4=>\processchemicaltextelement{ZN}{##3##4}{#1}{0}{},
+           RN##3##4=>\processchemicaltextconstant{RN}{##3##4}{\chemicaltextelementnumber}{0},
+           RT##3##4=>\processchemicaltextelement{RN}{##3##4}{#1}{0}{},
+           AU##3##4=>\processchemicaluparrowsegment{A}{##3##4},
+           AD##3##4=>\processchemicaldownarrowsegment{A}{##3##4},
+           CC##3##4=>\processchemicalcircsegment{CC}{##3##4},
+           CD##3##4=>\processchemicaldottsegment{C}{##3##4},
+           DB##3##4=>\processchemicallinesegment{DB}{##3##4},
+           DR##3##4=>\processchemicallinesegment{DR}{##3##4},
+           EB##3##4=>\processchemicallinesegment{EB}{##3##4},
+           ER##3##4=>\processchemicallinesegment{ER}{##3##4},
+           RZ##3##4=>\processchemicaltextelement{RZ}{##3##4}{#1}{5}
+                       {l,l,r,r,r, l,r,r,b,l, r,r,b,l,t, r,l,l,t,r},
+           SB##3##4=>\processchemicallinesegment{SB}{##3##4},
+           SR##3##4=>\processchemicallinesegment{SR}{##3##4},
+           -R##3##4=>\processchemicallinesegment{-R}{##3##4},
+           +R##3##4=>\processchemicallinesegment{+R}{##3##4},
+         B##2##3##4=>\processchemicallinesegment{B}{##2##3##4},
+         C##2##3##4=>\processchemicalcircsegment{C}{##2##3##4},
+         R##2##3##4=>\processchemicallinesegment{R}{##2##3##4},
+         S##2##3##4=>\processchemicallinesegment{S}{##2##3##4},
+         Z##2##3##4=>\processchemicaltextelement{Z}{##2##3##4}{#1}{0}{},
+         \s!unknown=>\unknownchemical{##1##2##3##4}]}}
+
+\def\executechemicalSIX[#1]%
+  {\setchemicalname SIX
+   %
+   \setchemicalmaximum       6
+   \setchemicalsubstitute 1375
+   \setchemicaldistance    866
+   %
+   \setchemicalrotation 1  1    0   0 -1     -1    0    0      1
+   \setchemicalrotation 2  0.5 -0.866 -0.866 -0.5 -0.5  0.866  0.866  0.5
+   \setchemicalrotation 3 -0.5 -0.866 -0.866  0.5  0.5  0.866  0.866 -0.5
+   \setchemicalrotation 4 -1    0      0      1    1    0      0     -1
+   \setchemicalrotation 5 -0.5  0.866  0.866  0.5  0.5 -0.866 -0.866 -0.5
+   \setchemicalrotation 6  0.5  0.866  0.866 -0.5 -0.5 -0.866 -0.866  0.5
+   %
+   \setchemicalangle 1   0  90 180 270
+   \setchemicalangle 2  60 150 240 330
+   \setchemicalangle 3 120 210 300  30
+   \setchemicalangle 4 180 270   0  90
+   \setchemicalangle 5 240 330  60 150
+   \setchemicalangle 6 300  30 120 210
+   %
+   \setchemicaltranslate 1 -1732     0
+   \setchemicaltranslate 2  -866  1500
+   \setchemicaltranslate 3   866  1500
+   \setchemicaltranslate 4  1732     0
+   \setchemicaltranslate 5   866 -1500
+   \setchemicaltranslate 6  -866 -1500
+   %
+   \setchemicallinesegment    A 1386   500 1386 -500
+   \setchemicallinesegment    S    0  1000  866 -500
+   \setchemicallinesegment   SS  125   783  741 -283
+   \setchemicallinesegment  -SS    0  1000  741 -283
+   \setchemicallinesegment  +SS  125   783  866 -500
+   \setchemicallinesegment    B  866   500  866 -500
+   \setchemicallinesegment   SB  866   240  866 -240
+   \setchemicallinesegment  -SB  866   240  866 -500
+   \setchemicallinesegment  +SB  866   500  866 -240
+   \setchemicallinesegment  DB1  816   240  816 -240
+   \setchemicallinesegment  DB2  916   240  916 -240
+   \setchemicallinesegment   EB  726   340  726 -340
+   \setchemicallinesegment    R  866   500 1299  750
+   \setchemicallinesegment   -R  866   500  866 1000
+   \setchemicallinesegment   +R  866   500 1299  250
+   \setchemicallinesegment  ER1  841   543 1274  793
+   \setchemicallinesegment  ER2  891   457 1324  707
+   \setchemicallinesegment   SR 1091   630 1299  750
+   \setchemicallinesegment  -SR  866   740  866 1000
+   \setchemicallinesegment  +SR 1091   370 1299  250
+   \setchemicallinesegment  DR1 1066   673 1274  793
+   \setchemicallinesegment  DR2 1116   588 1324  707
+   \setchemicallinesegment MID1    0  1000 -150  200
+   \setchemicallinesegment MID2    0 -1000 -150 -200
+   \setchemicallinesegment MIDS1   0  1000 -180    0
+   \setchemicallinesegment MIDS2   0 -1000 -180    0
+   %
+   \setchemicalcircsegment   C -30 30 700 60 600 -346
+   \setchemicalcircsegment  CC -60  0 700 60 350 -606
+   %
+   \setchemicaltextelement    Z  866  500
+   \setchemicaltextelement   RZ 1386  800
+   \setchemicaltextelement  -RZ  866 1100
+   \setchemicaltextelement  +RZ 1386  200
+   \setchemicaltextelement  CRZ 1524  880
+   \setchemicaltextelement MIDZ -150    0
+   %
+   \setchemicaltextelement  ZN   589 350
+   \setchemicaltextelement  RN  1083 625  % 1.25 Z
+   \setchemicaltextelement  RTN 1008 755  % .12 / 130 75
+   \setchemicaltextelement  RBN 1158 495
+   %
+   \def\processchemical[##1##2##3##4##5]%
+     {\processaction
+        [##1##2##3##4##5]
+        [    FRONT????=>{\executechemicalSIXFRONT[#1]},
+               MID????=>\processchemicallinesegment{MID}{1????},
+              MIDS????=>\processchemicallinesegment{MIDS}{1????},
+              MIDZ????=>\processchemicaltextelement{MIDZ}{1????}{#1}{0}{},
+             PB:##4##5=>\beginchemicalpicture{##4##5},
+                PE????=>\endchemicalpicture,
+             ROT##4##5=>\processchemicalrotation{##4##5},
+             SUB##4##5=>\processchemicalsubstitute{##4##5},
+             ADJ##4##5=>\processchemicaldistance{##4##5},
+             MOV##4##5=>\processchemicaltranslate{##4##5},
+             -RZ##4##5=>\processchemicaltextelement{-RZ}{##4##5}{#1}{6}
+                       {b,l,l,t,r,r, l,l,r,r,r,l, t,r,r,b,l,l, r,r,l,l,l,r},
+             +RZ##4##5=>\processchemicaltextelement{+RZ}{##4##5}{#1}{6}
+                       {l,t,r,r,b,l, r,r,r,l,l,l, r,b,l,l,t,r, l,l,l,r,r,r},
+             -SB##4##5=>\processchemicallinesegment{-SB}{##4##5},
+             +SB##4##5=>\processchemicallinesegment{+SB}{##4##5},
+             -SR##4##5=>\processchemicallinesegment{-SR}{##4##5},
+             +SR##4##5=>\processchemicallinesegment{+SR}{##4##5},
+             -RD##4##5=>\processchemicaldashedlinesegment{-R}{##4##5},
+             +RD##4##5=>\processchemicaldashedlinesegment{+R}{##4##5},
+             -RB##4##5=>\processchemicaldeltalinesegment{-R}{##4##5},
+             +RB##4##5=>\processchemicaldeltalinesegment{+R}{##4##5},
+             CRZ##4##5=>\processchemicaltextelement{CRZ}{##4##5}{#1}{0}{},
+             -SS##4##5=>\processchemicallinesegment{-SS}{##4##5},
+             +SS##4##5=>\processchemicallinesegment{+SS}{##4##5},
+             CCD##4##5=>\processchemicaldottsegment{CC}{##4##5},
+RTN##4##5=>\processchemicaltextconstant{RTN}{##4##5}{\chemicaltextelementnumber}{0},
+RTT##4##5=>\processchemicaltextelement{RTN}{##4##5}{#1}{0}{},
+RBN##4##5=>\processchemicaltextconstant{RBN}{##4##5}{\chemicaltextelementnumber}{0},
+RBT##4##5=>\processchemicaltextelement{RBN}{##4##5}{#1}{0}{},
+           SS##3##4##5=>\processchemicallinesegment{SS}{##3##4##5},
+           RD##3##4##5=>\processchemicaldashedlinesegment{R}{##3##4##5},
+           RB##3##4##5=>\processchemicaldeltalinesegment{R}{##3##4##5},
+           ZN##3##4##5=>\processchemicaltextconstant{ZN}{##3##4##5}{\chemicaltextelementnumber}{0},
+           ZT##3##4##5=>\processchemicaltextelement{ZN}{##3##4##5}{#1}{0}{},
+RN##3##4##5=>\processchemicaltextconstant{RN}{##3##4##5}{\chemicaltextelementnumber}{0},
+RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
+           AU##3##4##5=>\processchemicaluparrowsegment{A}{##3##4##5},
+           AD##3##4##5=>\processchemicaldownarrowsegment{A}{##3##4##5},
+           CD##3##4##5=>\processchemicaldottsegment{C}{##3##4##5},
+           CC##3##4##5=>\processchemicalcircsegment{CC}{##3##4##5},
+           DB##3##4##5=>\processchemicallinesegment{DB}{##3##4##5},
+           EB##3##4##5=>\processchemicallinesegment{EB}{##3##4##5},
+           ER##3##4##5=>\processchemicallinesegment{ER}{##3##4##5},
+           RZ##3##4##5=>\processchemicaltextelement{RZ}{##3##4##5}{#1}{6}
+                       {l,l,t,r,r,b, l,r,r,r,l,l, r,r,b,l,l,t, r,l,l,l,r,r},
+           SB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5},
+           SR##3##4##5=>\processchemicallinesegment{SR}{##3##4##5},
+           DR##3##4##5=>\processchemicallinesegment{DR}{##3##4##5},
+           -R##3##4##5=>\processchemicallinesegment{-R}{##3##4##5},
+           +R##3##4##5=>\processchemicallinesegment{+R}{##3##4##5},
+         B##2##3##4##5=>\processchemicallinesegment{B}{##2##3##4##5},
+         C##2##3##4##5=>\processchemicalcircsegment{C}{##2##3##4##5},
+         R##2##3##4##5=>\processchemicallinesegment{R}{##2##3##4##5},
+         S##2##3##4##5=>\processchemicallinesegment{S}{##2##3##4##5},
+         Z##2##3##4##5=>\processchemicaltextelement{Z}{##2##3##4##5}{#1}{0}{},
+            \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}
+
+\def\executechemicalSEVEN[#1]% incomplete !
+  {\setchemicalname SEVEN
+   %
+   \setchemicalmaximum        7
+   \setchemicalsubstitute     -
+   \setchemicaldistance    1038
+   %
+   \setchemicalrotation 1  .623  .782 - - - - - -
+   \setchemicalrotation 2 -.223  .975 - - - - - -
+   \setchemicalrotation 3 -.901  .434 - - - - - -
+   \setchemicalrotation 4 -.901 -.434 - - - - - -
+   \setchemicalrotation 5 -.223 -.975 - - - - - -
+   \setchemicalrotation 6  .623 -.782 - - - - - -
+   \setchemicalrotation 7     1     0 - - - - - -
+   %
+   \setchemicalangle 1       0 - - -
+   \setchemicalangle 2  51.429 - - -
+   \setchemicalangle 3 102.857 - - -
+   \setchemicalangle 4 154.286 - - -
+   \setchemicalangle 5 205.714 - - -
+   \setchemicalangle 6 257.143 - - -
+   \setchemicalangle 7 308.571 - - -
+   %
+   \setchemicaltranslate 1 - -
+   \setchemicaltranslate 2 - -
+   \setchemicaltranslate 3 - -
+   \setchemicaltranslate 4 - -
+   \setchemicaltranslate 5 - -
+   \setchemicaltranslate 6 - -
+   \setchemicaltranslate 7 - -
+   %
+   \setchemicallinesegment   B 1038 500 1038 -500
+   \setchemicallinesegment  SB 1038 240 1038 -240
+   \setchemicallinesegment -SB 1038 240 1038 -500
+   \setchemicallinesegment +SB 1038 500 1038 -240
+   %
+   \setchemicaltextelement Z 1038 500
+   %
+   \def\processchemical[##1##2##3##4##5]%
+     {\processaction
+        [##1##2##3##4##5]
+        [    PB:##4##5=>\beginchemicalpicture{##4##5},
+                PE????=>\endchemicalpicture,
+            %ROT##4##5=>\processchemicalrotation{##4},
+            %SUB##4##5=>\processchemicalsubstitute{##4##5},
+            %ADJ##4##5=>\processchemicaldistance{##4##5},
+            %MOV##4##5=>\processchemicaltranslate{##4##5},
+             -SB##4##5=>\processchemicallinesegment{-SB}{##4##5},
+             +SB##4##5=>\processchemicallinesegment{+SB}{##4##5},
+           SB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5},
+         B##2##3##4##5=>\processchemicallinesegment{B}{##2##3##4##5},
+         Z##2##3##4##5=>\processchemicaltextelement{Z}{##2##3##4##5}{#1}{0}{},
+            \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}
+
+\def\executechemicalEIGHT[#1]% incomplete !
+  {\setchemicalname EIGHT
+   %
+   \setchemicalmaximum       8
+   %\setchemicalsubstitute 1307
+   \setchemicaldistance    1207
+   %
+   \setchemicalrotation 1  .707  .707 - - - - - -
+   \setchemicalrotation 2     0     1 - - - - - -
+   \setchemicalrotation 3 -.707  .707 - - - - - -
+   \setchemicalrotation 4    -1     0 - - - - - -
+   \setchemicalrotation 5 -.707 -.707 - - - - - -
+   \setchemicalrotation 6    0     -1 - - - - - -
+   \setchemicalrotation 7  .707 -.707 - - - - - -
+   \setchemicalrotation 8     1     0 - - - - - -
+   %
+   \setchemicalangle 1  45 - - -
+   \setchemicalangle 2  90 - - -
+   \setchemicalangle 3 135 - - -
+   \setchemicalangle 4 180 - - -
+   \setchemicalangle 5 225 - - -
+   \setchemicalangle 6 270 - - -
+   \setchemicalangle 7 315 - - -
+   \setchemicalangle 8   0 - - -
+   %
+   \setchemicaltranslate 1 -2414     0
+   \setchemicaltranslate 2 -1706  1706
+   \setchemicaltranslate 3     0  2414
+   \setchemicaltranslate 4  1706  1706
+   \setchemicaltranslate 5  2414     0
+   \setchemicaltranslate 6  1706 -1706
+   \setchemicaltranslate 7     0 -2414
+   \setchemicaltranslate 8 -1706 -1706
+   %
+   \setchemicallinesegment    B 1207 500 1207 -500
+   \setchemicallinesegment   SB 1207 240 1207 -240
+   \setchemicallinesegment  -SB 1207 240 1207 -500
+   \setchemicallinesegment  +SB 1207 500 1207 -240
+   %
+   \setchemicaltextelement    Z 1207 500
+   %
+   \def\processchemical[##1##2##3##4##5]%
+     {\processaction
+        [##1##2##3##4##5]
+        [    PB:##4##5=>\beginchemicalpicture{##4##5},
+                PE????=>\endchemicalpicture,
+            %SUB##4##5=>\processchemicalsubstitute{##4##5},
+             ADJ##4##5=>\processchemicaldistance{##4##5},
+             MOV##4##5=>\processchemicaltranslate{##4##5},
+             -SB##4##5=>\processchemicallinesegment{-SB}{##4##5},
+             +SB##4##5=>\processchemicallinesegment{+SB}{##4##5},
+           SB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5},
+         B##2##3##4##5=>\processchemicallinesegment{B}{##2##3##4##5},
+         Z##2##3##4##5=>\processchemicaltextelement{Z}{##2##3##4##5}{#1}{0}{},
+            \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}
+
+\def\executechemicalFIVEFRONT[#1]%
+  {\executechemicalFIVE[]%
+   %
+   \setchemicalname FIVEFRONT
+   %
+   \setchemicallinesegment  -R 688 500 688 100
+   \setchemicallinesegment  +R 688 500 688 900
+   %
+   \setchemicaltextelement -RZ   0 -1300
+   \setchemicaltextelement +RZ   0  1300
+   %
+   \def\processchemical[##1##2##3##4]%
+     {\def\chemicalrotation{2}%
+      \processaction
+        [##1##2##3##4]
+        [    -RZ##4=>\processchemicalunrotatedtextelement{Z}{-RZ}{##4}{#1}{5}
+                       {,,,,, t,t,t,t,t},
+             +RZ##4=>\processchemicalunrotatedtextelement{Z}{+RZ}{##4}{#1}{5}
+                       {,,,,, b,b,b,b,b},
+             -SB##4=>\processchemicallinesegment{-SB}{##4},
+             +SB##4=>\processchemicallinesegment{+SB}{##4},
+           SB##3##4=>\processchemicallinesegment{SB}{##3##4},
+           -R##3##4=>\processchemicalunrotatedlinesegment{t}{-R}{##3##4},
+           +R##3##4=>\processchemicalunrotatedlinesegment{b}{+R}{##3##4},
+           BB##3##4=>\processchemicalzlinesegment{B}{##3##4},
+         R##2##3##4=>\processchemicalunrotatedlinesegment{t}{-R}{##2##3##4}%
+                     \processchemicalunrotatedlinesegment{b}{+R}{##2##3##4},
+         B##2##3##4=>\processchemicallinesegment{B}{##2##3##4},
+         Z##2##3##4=>\processchemicaltextelement{Z}{##2##3##4}{#1}{0}{},
+         \s!unknown=>\unknownchemical{##1##2##3##4}]}}
+
+\def\executechemicalSIXFRONT[#1]%
+  {\executechemicalSIX[]%
+   %
+   \setchemicalname SIXFRONT
+   %
+   \setchemicallinesegment -R 866 500 866 100
+   \setchemicallinesegment +R 866 500 866 900
+   %
+   \setchemicaltextelement -RZ 0 -1300
+   \setchemicaltextelement +RZ 0  1300
+   %
+   \def\processchemical[##1##2##3##4]%
+     {\def\chemicalrotation{2}%
+      \processaction
+        [##1##2##3##4]
+        [    -RZ##4=>\processchemicalunrotatedtextelement{Z}{-RZ}{##4}{#1}{6}
+                       {,,,,,, t,t,t,t,t,t},
+             +RZ##4=>\processchemicalunrotatedtextelement{Z}{+RZ}{##4}{#1}{6}
+                       {,,,,,, b,b,b,b,b,b},
+             -SB##4=>\processchemicallinesegment{-SB}{##4},
+             +SB##4=>\processchemicallinesegment{+SB}{##4},
+           SB##3##4=>\processchemicallinesegment{SB}{##3##4},
+           -R##3##4=>\processchemicalunrotatedlinesegment{t}{-R}{##3##4},
+           +R##3##4=>\processchemicalunrotatedlinesegment{b}{+R}{##3##4},
+           BB##3##4=>\processchemicalzlinesegment{B}{##3##4},
+         R##2##3##4=>\processchemicalunrotatedlinesegment{t}{-R}{##2##3##4}%
+                     \processchemicalunrotatedlinesegment{b}{+R}{##2##3##4},
+         B##2##3##4=>\processchemicallinesegment{B}{##2##3##4},
+         Z##2##3##4=>\processchemicaltextelement{Z}{##2##3##4}{#1}{0}{},
+        \s!unknown=>\unknownchemical{##1##2##3##4}]}}
+
+% 1  :    0
+% 2  : -115
+% 3* : -195
+% 3  : -165
+% 4  : -245
+
+\def\executechemicalCARBON[#1]%
+  {\setchemicalname CARBON
+   %
+   \setchemicalmaximum    4
+   \setchemicaldistance   0
+   \setchemicalsubstitute 0
+   %
+   \setchemicalrotation 1   1      0      0     -1     -1      0      0      1
+   \setchemicalrotation 2  -0.423 -0.906 -0.906  0.423  0.423  0.906  0.906 -0.423
+   \setchemicalrotation 3  -0.966 -0.259 -0.259  0.966  0.966  0.259  0.259 -0.966
+   \setchemicalrotation 3* -0.966  0.259  0.259  0.966  0.966 -0.259 -0.259 -0.966
+   \setchemicalrotation 4  -0.423  0.906  0.906  0.423  0.423 -0.906 -0.906 -0.423
+   %
+   \setchemicalangle 1     0  90 180 270
+   \setchemicalangle 2   115 205 295  25
+   \setchemicalangle 3   165 255 345  75
+   \setchemicalangle 3*  195 285  15 105
+   \setchemicalangle 4   245 335  65 155
+   %
+   \setchemicaltranslate 1 -1500     0
+   \setchemicaltranslate 2     0  1500
+   \setchemicaltranslate 3  1500     0
+   \setchemicaltranslate 4     0 -1500
+   %
+   \setchemicallinesegment B1   500 0  1000 0
+   \setchemicallinesegment B2   300 0  1000 0
+   \setchemicallinesegment B3   500 0  1000 0
+   \setchemicallinesegment B4   300 0  1000 0
+   %
+   \setchemicaltextelement  Z  1100 0
+   %
+   \setchemicalcircsegment  C  0 360 500 360 0  -500
+   %
+   \def\processchemical[##1##2##3##4##5]%
+     {\processaction
+        [##1##2##3##4##5]
+        [      MIR????=>\setchemicalmirror{3},
+              -MIR????=>\resetchemicalmirror{3},
+              *MIR????=>\togglechemicalmirror{3},
+                CB????=>\processlocalchemicals{B,C,Z},
+                 C????=>\processchemicalcircsegment{C}{1????},
+               -ROT##5=>\reversechemical{ROT}{##5}{3,4,1,2},
+             ROT##4##5=>\processchemicalrotation{##4##5},
+             MOV##4##5=>\processchemicaltranslate{##4##5},
+           CB##3##4##5=>\processlocalchemicals
+                          {ROT##3,C,B,Z2..4,
+                           MOV##3,*MIR,-ROT##3,C,B,Z2..4},
+         B##2##3##4##5=>\processprivatechemicallinesegment{B}{##2##3##4##5},
+         Z##2##3##4##5=>\processchemicaltextelement{Z}{##2##3##4##5}{#1}{4}
+                          {l,t,r,b, t,r,b,l, r,b,l,t, b,l,t,r},
+            \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}
+
+% 1:   45      2:  -90      3: -225
+% 4:  -45      5: -135      6: -270
+
+\newif\ifNEWMANstagger  \NEWMANstaggertrue
+
+\def\executechemicalNEWMANSTAGGER%
+  {\NEWMANstaggertrue\executechemicalNEWMAN}
+
+\def\executechemicalNEWMANECLIPSE%
+  {\NEWMANstaggerfalse\executechemicalNEWMAN}
+
+\def\executechemicalNEWMAN[#1]%
+  {\setchemicalname NEWMAN
+   %
+   \setchemicalmaximum    6
+   \setchemicaldistance   0
+   \setchemicalsubstitute 0
+   %
+   \ifNEWMANstagger
+     \setchemicalrotation 1  0.707  0.707  0.707 -0.707 -0.707 -0.707 -0.707  0.707
+     \setchemicalrotation 2  0     -1     -1      0      0      1      1      0
+     \setchemicalrotation 3 -0.707  0.707  0.707  0.707  0.707 -0.707 -0.707 -0.707
+   \else
+     \setchemicalrotation 1  .866 -.5   -.5   -.866 -.866  .5    .5    .866
+     \setchemicalrotation 2 -.259  .966  .966  .259  .259 -.966 -.966 -.259
+     \setchemicalrotation 3 -.5   -.866 -.866  .5    .5    .866  .866 -.5
+   \fi
+   \setchemicalrotation 4  0.707 -0.707 -0.707 -0.707 -0.707  0.707  0.707  0.707
+   \setchemicalrotation 5 -0.707 -0.707 -0.707  0.707  0.707  0.707  0.707 -0.707
+   \setchemicalrotation 6  0      1      1      0      0     -1     -1      0
+   %
+   \ifNEWMANstagger
+     \setchemicalangle 1 315  45 135 225
+     \setchemicalangle 2  90 180 270   0
+     \setchemicalangle 3 225 315  45 135
+   \else
+     \setchemicalangle 1  30 120 210 300
+     \setchemicalangle 2 255 345  75 165
+     \setchemicalangle 3 120 210 300  30
+   \fi
+   \setchemicalangle 4  45 135 225 315
+   \setchemicalangle 5 135 225 315  45
+   \setchemicalangle 6 270   0  90 180
+   %
+   \setchemicaltranslate 1 -1500     0
+   \setchemicaltranslate 2     0  1500
+   \setchemicaltranslate 3  1500     0
+   \setchemicaltranslate 4     0 -1500
+   %
+   \setchemicallinesegment B1    0 0  1000 0
+   \setchemicallinesegment B2    0 0  1000 0
+   \setchemicallinesegment B3    0 0  1000 0
+   \setchemicallinesegment B4  500 0  1000 0
+   \setchemicallinesegment B5  500 0  1000 0
+   \setchemicallinesegment B6  500 0  1000 0
+   %
+   \setchemicaltextelement  Z 1100 0
+   %
+   \setchemicalcircsegment  C 0 360 500 360 0 -500
+   %
+   \def\processchemical[##1##2##3##4]%
+     {\processaction
+        [##1##2##3##4]
+        [STAGGER????=>{\executechemicalNEWMANSTAGGER[#1]},
+         ECLIPSE????=>{\executechemicalNEWMANECLIPSE[#1]},
+               B????=>\processlocalchemicals{B1..6},
+              CB????=>\processlocalchemicals{B1..6,C,Z1..6},
+               C????=>\processchemicalcircsegment{C}{1????},
+              ROT##4=>\processchemicalrotation{##4},
+              MOV##4=>\processchemicaltranslate{##4},
+          B##2##3##4=>\processprivatechemicallinesegment{B}{##2##3##4},
+          Z##2##3##4=>\ifNEWMANstagger
+                        \processchemicaltextelement{Z}{##2##3##4}{#1}{6}
+                          {l,t,r,l,r,b, l,r,l,r,r,l, r,b,l,r,l,t, r,l,r,l,l,r}%
+                      \else
+                        \processchemicaltextelement{Z}{##2##3##4}{#1}{6}
+                          {l,r,t,t,r,b, t,b,r,r,b,l, r,l,b,b,l,t, b,t,l,l,t,r}%
+                      \fi,
+          \s!unknown=>\unknownchemical{##1##2##3##4}]}}
+
+\def\executechemicalCHAIR[#1]% smaller
+  {\setchemicalname CHAIR
+   %
+   \setchemicalmaximum 6
+   %
+   \setchemicallinesegment  B1  1600  800  2800 -800
+   \setchemicallinesegment  B2  2800 -800   800    0
+   \setchemicallinesegment  B3   800    0 -1600 -800
+   \setchemicallinesegment  B4 -1600 -800 -2800  800
+   \setchemicallinesegment  B5 -2800  800  -800    0
+   \setchemicallinesegment  B6  -800    0  1600  800
+   %
+   \setchemicallinesegment +R1  1600  800  1600  1600
+   \setchemicallinesegment +R2  2800 -800  2800 -1600
+   \setchemicallinesegment +R3   800    0   800   800
+   \setchemicallinesegment +R4 -1600 -800 -1600 -1600
+   \setchemicallinesegment +R5 -2800  800 -2800  1600
+   \setchemicallinesegment +R6  -800    0  -800  -800
+   %
+   \setchemicallinesegment -R1  1600  800  2350  522 % 750 278
+   \setchemicallinesegment -R2  2800 -800  3493 -400
+   \setchemicallinesegment -R3   800    0  1329 -600 % 528 600
+   \setchemicallinesegment -R4 -1600 -800 -2350 -522 % 750 278
+   \setchemicallinesegment -R5 -2800  800 -3493  400
+   \setchemicallinesegment -R6  -800    0 -1329  600 % 528 600
+   %
+   \setchemicaltextelement +RZ1  1600  1800
+   \setchemicaltextelement +RZ2  2800 -1800
+   \setchemicaltextelement +RZ3   800  1000
+   \setchemicaltextelement +RZ4 -1600 -1800
+   \setchemicaltextelement +RZ5 -2800  1800
+   \setchemicaltextelement +RZ6  -800 -1000
+   %
+   \setchemicaltextelement -RZ1  2538  453 % 200 lang
+   \setchemicaltextelement -RZ2  3666 -300
+   \setchemicaltextelement -RZ3  1460 -750
+   \setchemicaltextelement -RZ4 -2538 -453
+   \setchemicaltextelement -RZ5 -3666  300
+   \setchemicaltextelement -RZ6 -1460  750
+   %
+   \def\processchemical[##1##2##3##4##5]%
+     {\def\chemicalrotation{1}%
+      \processaction
+        [##1##2##3##4##5]
+        [      B????=>\processlocalchemicals{B1,B2,B3,B4,B5,B6},
+              -R????=>\processlocalchemicals{-R1,-R2,-R3,-R4,-R5,-R6},
+              +R????=>\processlocalchemicals{+R1,+R2,+R3,+R4,+R5,+R6},
+            B##2????=>{\getchemicallinesegment[0][B##2]},
+          -RZ##4????=>{\getchemicalfixedtextelement[-RZ##4][1][##4][l,l,tc,r,r,bc][#1]},
+          +RZ##4????=>{\getchemicalfixedtextelement[+RZ##4][1][##4][c][#1]},
+           -R##3????=>{\getchemicallinesegment[0][-R##3]},
+           +R##3????=>{\getchemicallinesegment[0][+R##3]},
+          \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}
+
+\def\executechemicalarrow#1#2[#3]%
+  {\dogetcommalistelement1\from#3\to\toptext
+   \dogetcommalistelement2\from#3\to\bottext
+   \def\dochemicaltext##1%
+     {\dosetsubscripts%
+      $\@@dochemicalstyle{\@@localchemicalformat\strut##1}$%
+      \doresetsubscripts}%
+   \doifelse\@@chemicallocation\v!intext
+     {#1{\dochemicaltext\toptext}}%
+     {\setbox\chemicalsymbols=\hbox
+        {\box\chemicalsymbols
+         \vbox{\halign{##\cr
+           \hbox to 3em{\hss\dochemicaltext{\toptext}\hss}\cr
+           #2%
+           \hbox to 3em{\hss\dochemicaltext{\bottext}\hss}\cr}}}}}
+
+\def\executechemicalGIVES
+  {\executechemicalarrow
+     {\chemicalsinglepicturearrow}% nodig
+     {\rightarrowfill\cr}}
+
+\def\executechemicalEQUILIBRIUM
+  {\executechemicalarrow
+     {\chemicaldoublepicturearrow}%  nodig
+     {\rightarrowfill\cr\leftarrowfill\cr}}
+
+\def\executechemicalMESOMERIC
+  {\executechemicalarrow
+     {\chemicalsinglepicturearrow}%  nodig
+     {$\leftarrow\hskip-1em$\rightarrowfill\cr}}
+
+\def\executechemicalsign#1[#2]%
+  {\doifelse\@@chemicallocation\v!intext
+     {\dosetsubscripts
+      $\@@dochemicalstyle{\@@localchemicalformat#1}$%
+      \doresetsubscripts}
+     {\setbox\chemicalsymbols\hbox
+        {\box\chemicalsymbols
+         \dosetsubscripts
+         $\@@dochemicalstyle{\@@localchemicalformat#1}$%
+         \doresetsubscripts}}}
+
+\def\executechemicalPLUS
+  {\executechemicalsign{+}}
+
+\def\executechemicalMINUS
+  {\executechemicalsign{-}}
+
+\def\executechemicalEQUAL
+  {\executechemicalsign{=}}
+
+\def\executechemicalSPACE[#1]%
+  {\doifnot\@@chemicallocation\v!intext
+     {\setbox\chemicalsymbols\hbox
+        {\box\chemicalsymbols
+         \quad}}}
+
+\def\executechemicalCHEM[#1]%
+  {\doifnot\@@chemicallocation\v!intext
+     {\setbox\chemicalsymbols\hbox
+        {\box\chemicalsymbols
+         $\@@dochemicalstyle{\@@localchemicalformat#1}$}}}
+
+\def\executechemicalTEXT[#1]%
+  {\doifnot\@@chemicallocation\v!intext
+     {\setbox\chemicalsymbols\hbox
+        {\box\chemicalsymbols#1}}}
+
+%\def\executechemicalLOW[#1]%
+%  {\setlowsubscripts}
+%
+%\def\executechemicalHIGH[#1]%
+%  {\sethighsubscripts}
+
+\def\putchemicalrule#1#2#3#4%
+  {\ifcase\chemicaldrawingmode
+     \putrule from {#1} {#2} to {#3} {#4}
+   \or
+     \psline(#1,#2)(#3,#4)%
+   \or
+     \bgroup
+     \!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
+     \global\MPdrawingdonetrue
+     \setchemicalattributes
+     \startMPdrawing
+       x1 := \MPdivten[\the\!!counta]u ;
+       y1 := \MPdivten[\the\!!countb]u ;
+       x2 := \MPdivten[\the\!!countc]u ;
+       y2 := \MPdivten[\the\!!countd]u ;
+       draw z1--z2 ;
+     \stopMPdrawing
+     \egroup
+   \fi}
+
+\def\executechemicalcomplex#1%
+  {\bgroup
+   \putchemicalrule {0} {-\@@chemicalbottom}     {0}  {\@@chemicaltop}%
+   \putchemicalrule {0}  {\@@chemicaltop}    {#1150}  {\@@chemicaltop}%
+   \putchemicalrule {0} {-\@@chemicalbottom} {#1150} {-\@@chemicalbottom}%
+   \egroup}
+
+\def\executechemicalOPENCOMPLEX[#1]%
+  {\executechemicalcomplex+\ignorespaces
+   \executechemicalSPACE[]}
+
+\def\executechemicalCLOSECOMPLEX[#1]%
+  {\executechemicalSPACE[]%
+   \executechemicalcomplex-\ignorespaces}
+
+% nog niet door midden as!
+
+\def\executechemicalverticalsymbol#1#2%
+  {\executechemicalTEXT
+     [$\left#1\relax
+       \dimen0=\@@chemicalunit
+       \scratchcounter=\@@chemicaltop
+       \advance\scratchcounter by \@@chemicalbottom
+       \dimen0=\scratchcounter\dimen0
+       \vcenter to \dimen0{}
+       \dimen2=\@@chemicalunit
+       \dimen2=\@@chemicalright\dimen0
+       \vcenter{\leftskip1em\hsize\dimen2\relax\strut#2\strut}%
+       \right.$]}%
+
+\def\executechemicalUPARROW[#1]%
+  {\executechemicalverticalsymbol\uparrow{#1}}
+
+\def\executechemicalDOWNARROW[#1]%
+  {\executechemicalverticalsymbol\downarrow{#1}}
+
+\def\executechemicalUPDOWNARROW[#1]%
+  {\executechemicalverticalsymbol\updownarrow{#1}}
+
+\let\setchemicalattributes\relax
+
+\setupchemical
+  [\c!width=0,
+   \c!height=0,
+   \c!left=0,
+   \c!right=0,
+   \c!top=0,
+   \c!bottom=0,
+   \c!bodyfont=\the\bodyfontsize,
+   \c!resolution=\outputresolution,
+   \c!scale=\v!medium,
+   \c!size=\v!medium,
+   \c!textsize=\v!big,
+   \c!frame=\v!off,
+   \c!axis=\v!off,
+   \c!state=\v!start,
+   \c!style=\rm,
+   \c!location=,
+   \c!option=,
+   \c!offset=LOW,
+   \c!alternative=1,
+   \c!color=,
+   \c!rulethickness=,
+   \c!rulecolor=,
+   \c!factor=1]
+
+% Tijdelijk plaatsen we deze extra macro's hier.
+%
+% mathontop: \mtop {} {}
+% textontop: \ttop {} {}
+
+\def\putontop#1#2%
+  {\vbox
+     {\halign
+        {\strut\hss##\hss\cr
+         #1\cr
+         #2\cr}}}
+
+\def\ttop#1#2%
+  {\putontop{\tx#1}{#2}}
+
+\def\mtop#1#2%
+  {\vbox
+     {\offinterlineskip
+      \halign
+        {\hss##\hss\cr
+         $\scriptscriptstyle#1$\cr
+         \noalign{\vskip.5ex}%
+         $#2$\cr}}}
+
+\def\ctop#1#2%
+  {\vbox
+     {\offinterlineskip
+      \halign
+        {\hss##\hss\cr
+         $\@@dochemicalstyle{\@@localchemicalformat\scriptscriptstyle#1}$\cr
+         \noalign{\vskip.5ex}%
+         $\@@dochemicalstyle{\@@localchemicalformat#2}$\cr}}}
+
+%D Here are a couple of goodies:
+%D
+%D \startitemize
+%D \item styles hooked into \CONTEXT\ style mechanism
+%D \item support for color and rulethickness (mp mode only)
+%D \item position tracking
+%D \stopitemize
+
+\let\@@chemicalrulecolor\empty
+\let\@@chemicalcolor    \empty
+
+\def\setchemicalattributes
+  {\scratchdimen\@@chemicalrulethickness
+   \def\chemicalattributes
+     {withpen pencircle scaled \the\scratchdimen\space
+      withcolor }%
+   \doifelsenothing\@@chemicalrulecolor
+     {\edef\chemicalattributes{\chemicalattributes black}}
+     {\edef\chemicalattributes{\chemicalattributes \MPcolor{\@@chemicalrulecolor}}}%
+   \startMPdrawing
+     drawoptions (\chemicalattributes) ;
+   \stopMPdrawing}
+
+\def\@@dochemicalcolor
+  {\doifsomething\@@chemicalcolor{\color[\@@chemicalcolor]}}
+
+\def\@@dochemicalstyle
+  {\doconvertfont\@@chemicalstyle}
+
+\setupchemical
+  [\c!rulethickness=\linewidth,
+   \c!rulecolor=,
+   \c!color=]
+
+\def\cpos#1#2%
+  {\iftrialtypesetting
+     #2%
+   \else
+     \bgroup
+     \globalpushmacro\dowithchemical
+     \gdef\dowithchemical##1{\hpos{#1}{##1}\globalpopmacro\dowithchemical}%
+     #2%
+     \egroup
+  \fi}
+
+\protect \endinput
+
+% \startchemical[axis=on,frame=yes]
+%     \chemical[SIX,ROT2,B,R36,RZ6][CH_3]
+%  	\chemical[PB:RZ3,ONE,Z05,SB5,EP37,PE][O,H]
+% \stopchemical
+
+% \startchemical[size=big,scale=small,axis=on,frame=yes,factor=1.5]
+%     \chemical[SIX,ROT2,B,R36,RZ6][CH_3]
+%  	\chemical[PB:RZ3,ONE,Z05,SB5,EP37,PE][O,H]
+% \stopchemical
+
+% \startchemical[size=big,scale=medium,axis=on,frame=yes,factor=1.5]
+%     \chemical[SIX,ROT2,B,R36,RZ6][CH_3]
+%  	\chemical[PB:RZ3,ONE,Z05,SB5,EP37,PE][O,H]
+% \stopchemical
+
+% \startchemical[size=big,scale=big,axis=on,frame=yes,factor=1.5]
+%     \chemical[SIX,ROT2,B,R36,RZ6][CH_3]
+%  	\chemical[PB:RZ3,ONE,Z05,SB5,EP37,PE][O,H]
+% \stopchemical

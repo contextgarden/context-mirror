@@ -14,8 +14,8 @@ local sprint = tex.sprint
 metapost = metapost or {}
 metapost.defaultformat = "metafun"
 
-function metapost.graphic(mpsformat,str,preamble)
-    local mpx = metapost.format(mpsformat or metapost.defaultformat)
+function metapost.graphic(instance,mpsformat,str,preamble)
+    local mpx = metapost.format(instance,mpsformat or metapost.defaultformat)
     metapost.graphic_base_pass(mpx,str,preamble)
 end
 
@@ -29,7 +29,7 @@ function metapost.filterclippath(result)
                 for o=1,#objects do
                     local object = objects[o]
                     if object.type == "start_clip" then
-                        return join(flushnormalpath(object.path,{ }),"\n")
+                        return join(metapost.flushnormalpath(object.path,{ }),"\n")
                     end
                 end
             end
@@ -37,3 +37,13 @@ function metapost.filterclippath(result)
     end
     return ""
 end
+
+statistics.register("metapost processing time", function()
+    local n =  metapost.n
+    if n > 0 then
+        return format("%s seconds, loading: %s seconds, execution: %s seconds, n: %s",
+            statistics.elapsedtime(metapost), statistics.elapsedtime(mplib), statistics.elapsedtime(metapost.exectime),n)
+    else
+        return nil
+    end
+end)

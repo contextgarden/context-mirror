@@ -1,17 +1,17 @@
--- filename : core-buf.lua
--- comment  : companion to core-buf.tex
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['core-buf'] = {
+    version   = 1.001,
+    comment   = "companion to core-buf.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
 -- ctx lua reference model / hooks and such
 -- to be optimized
 
 -- redefine buffers.get
 
-if not versions then versions = { } end versions['core-buf'] = 1.001
-
-if unicode and not utf then utf = unicode.utf8 end
+utf = unicode.utf8
 
 buffers             = { }
 buffers.data        = { }
@@ -22,9 +22,15 @@ buffers.visualizers = { }
 
 -- if needed we can make 'm local
 
+local utf = unicode.utf8
+
 local concat, texsprint, texprint, texwrite = table.concat, tex.sprint, tex.print, tex.write
 local utfbyte, utffind, utfgsub = utf.byte, utf.find, utf.gsub
-local byte, sub, find, char, gsub, rep = string.byte, string.sub, string.find, string.char, string.gsub, string.rep
+local byte, sub, find, char, gsub, rep, lower = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower
+local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
+
+local vrbcatcodes = tex.vrbcatcodes
+local ctxcatcodes = tex.ctxcatcodes
 
 local data, commands, flags, hooks, visualizers = buffers.data, buffers.commands, buffers.flags, buffers.hooks, buffers.visualizers
 
@@ -132,31 +138,19 @@ function buffers.type(name)
     end
 end
 
---~ function buffers.typefile(name) -- keep this one, uses tex reader
---~     local t = input.openfile(name)
---~     local action = buffers.typeline
---~     if t then
---~         local lines = { }
---~         while true do
---~             local str = t.reader()
---~             if str then
---~                 lines[#lines+1] = str
---~             else
---~                 break
---~             end
---~         end
---~         t.close()
---~         local line, n = 0, 0
---~         local first, last, m = buffers.strip(lines)
---~         for i=first,last do
---~             n, line = action(lines[i], n, m, line)
---~         end
---~     end
---~ end
+function buffers.loaddata(filename) -- this one might go away
+    -- this will be cleaned up when we have split supp-fil completely
+    -- instead of half-half
+    local ok, str, n = resolvers.loaders.tex(filename)
+    if not str then
+        ok, str, n = resolvers.loaders.tex(file.addsuffix(filename,'tex'))
+    end
+    return str or ""
+end
 
-function buffers.typefile(name)
-    local str = io.loaddata(name)
-    if str then
+function buffers.typefile(name) -- still somewhat messy, since name can be be suffixless
+    local str = buffers.loaddata(name)
+    if str and str~= "" then
         local lines = str:splitlines()
         local line, n, action = 0, 0, buffers.typeline
         local first, last, m = buffers.strip(lines)
@@ -192,21 +186,6 @@ function buffers.save(name)
     io.savedata(f,b)
 end
 
--- todo, use more locals
-
---~ function buffers.get(name)
---~     local b = data[name]
---~     if b then
---~         if type(b) == "table" then
---~             for i=1,#b do
---~                 texprint(b[i])
---~             end
---~         else
---~             string.piecewise(b, " *[\010\013]", texprint) -- hm, can be faster
---~         end
---~     end
---~ end
-
 local printer = (lpeg.linebyline/texprint)^0
 
 function buffers.get(name)
@@ -217,17 +196,16 @@ function buffers.get(name)
                 texprint(b[i])
             end
         else
-        --  b:piecewise(" *[\010\013]", texprint) -- hm, can be faster
             printer:match(b)
         end
     end
 end
 
-function buffers.content(name) -- no print
+local function content(name,separator) -- no print
     local b = data[name]
     if b then
         if type(b) == "table" then
-            return concat(b," ")
+            return concat(b,separator or "\n")
         else
             return b
         end
@@ -236,24 +214,30 @@ function buffers.content(name) -- no print
     end
 end
 
+buffers.content = content
+
 function buffers.collect(names,separator) -- no print
     local t = { }
     if type(names) == "table" then
         for i=1,#names do
-            local c = buffers.content(names[i])
+            local c = content(names[i],separator)
             if c ~= "" then
                 t[#t+1] = c
             end
         end
     else
         for name in names:gmatch("[^,]+") do
-            local c = buffers.content(name)
+            local c = content(name,separator)
             if c ~= "" then
                 t[#t+1] = c
             end
         end
     end
-    return concat(t,separator or " ") -- maybe this will change to "\n"
+    return concat(t,separator or "\n") -- "\n" is safer due to comments and such
+end
+
+local function tobyte(c)
+    return " [" .. byte(c) .. "] "
 end
 
 function buffers.inspect(name)
@@ -262,17 +246,13 @@ function buffers.inspect(name)
         if type(b) == "table" then
             for _,v in ipairs(b) do
                 if v == "" then
-                    texsprint(tex.ctxcatcodes,"[crlf]\\par ")
+                    texsprint(ctxcatcodes,"[crlf]\\par ") -- space ?
                 else
-                    texsprint(tex.ctxcatcodes,(b:gsub("(.)",function(c)
-                        return " [" .. byte(c) .. "] "
-                    end)) .. "\\par")
+                    texsprint(ctxcatcodes,(gsub(b,"(.)",tobyte)),"\\par")
                 end
             end
         else
-            texsprint(tex.ctxcatcodes,(b:gsub("(.)",function(c)
-                return " [" .. byte(c) .. "] "
-            end)))
+            texsprint(ctxcatcodes,(gsub(b,"(.)",tobyte)))
         end
     end
 end
@@ -286,7 +266,7 @@ visualizers.mp           = { }
 visualizers.escapetoken  = nil
 visualizers.tablength    = 7
 
-visualizers.enabletab    = false
+visualizers.enabletab    = true -- false
 visualizers.enableescape = false
 visualizers.obeyspace    = true
 
@@ -299,18 +279,17 @@ end
 buffers.currentvisualizer = 'default'
 
 function buffers.setvisualizer(str)
-    buffers.currentvisualizer = str:lower()
+    buffers.currentvisualizer = lower(str)
     if not visualizers[buffers.currentvisualizer] then
         buffers.currentvisualizer = 'default'
     end
 end
 
 function buffers.doifelsevisualizer(str)
-    cs.testcase((str ~= "") and (visualizers[str:lower()] ~= nil))
+    cs.testcase((str ~= "") and (visualizers[lower(str)] ~= nil))
 end
 
 -- calling routines, don't change
-
 
 function hooks.flush_line(str,nesting)
     str = str:gsub(" *[\n\r]+ *"," ")
@@ -350,7 +329,12 @@ function hooks.empty_line()
 end
 
 function hooks.line(str)
-    local empty_line = visualizers[buffers.currentvisualizer].line
+    local line = visualizers[buffers.currentvisualizer].line
+    if visualizers.enabletab then
+        str = string.tabtospace(str,visualizers.tablength)
+    else
+        str = gsub(str,"\t"," ")
+    end
     if line then
         return line(str)
     else
@@ -361,19 +345,19 @@ end
 -- defaults
 
 function visualizers.default.flush_line(str)
-    texsprint(tex.ctxcatcodes,buffers.escaped(str))
+    texsprint(ctxcatcodes,buffers.escaped(str))
 end
 
 function visualizers.default.begin_of_line(n)
-    texsprint(tex.ctxcatcodes, commands.begin_of_line_command .. "{" .. n .. "}")
+    texsprint(ctxcatcodes, commands.begin_of_line_command,"{",n,"}")
 end
 
 function visualizers.default.end_of_line()
-    texsprint(tex.ctxcatcodes,commands.end_of_line_command)
+    texsprint(ctxcatcodes,commands.end_of_line_command)
 end
 
 function visualizers.default.empty_line()
-    texsprint(tex.ctxcatcodes,commands.empty_line_command)
+    texsprint(ctxcatcodes,commands.empty_line_command)
 end
 
 function visualizers.default.line(str)
@@ -418,7 +402,7 @@ function visualizers.flush_nested(str, enable) -- no utf, kind of obsolete mess
         end
     end
     result = result .. "\\char" .. byte(sub(str,i,i)) .. " " .. string.rep("}",nested)
-    texsprint(tex.ctxcatcodes,result)
+    texsprint(ctxcatcodes,result)
 end
 
 -- handy helpers
@@ -461,14 +445,16 @@ buffers.open_nested  = rep("\\char"..byte('<').." ",2)
 buffers.close_nested = rep("\\char"..byte('>').." ",2)
 
 function buffers.replace_nested(result)
-    return (gsub(result:gsub(buffers.open_nested,"{"),buffers.close_nested,"}"))
+    result = gsub(result,buffers.open_nested, "{")
+    result = gsub(result,buffers.close_nested,"}")
+    return result
 end
 
 function buffers.flush_result(result,nested)
     if nested then
-        texsprint(tex.ctxcatcodes,buffers.replace_nested(concat(result,"")))
+        texsprint(ctxcatcodes,buffers.replace_nested(concat(result,"")))
     else
-        texsprint(tex.ctxcatcodes,concat(result,""))
+        texsprint(ctxcatcodes,concat(result,""))
     end
 end
 
@@ -489,15 +475,6 @@ function buffers.escaped(str)
     return (utfgsub(str,"(.)", escaped_token))
 end
 
---~ function buffers.escaped_chr(ch)
---~     local b = utfbyte(ch)
---~     if b == 32 then
---~         return "\\obs "
---~     else
---~         return "\\char" .. b .. " "
---~     end
---~ end
-
 function buffers.escaped_chr(ch)
     if ch == " " then
         return "\\obs "
@@ -506,58 +483,17 @@ function buffers.escaped_chr(ch)
     end
 end
 
--- redone
-
---~ function visualizers.default.flush_line(str)
---~     local tc = tex.ctxcatcodes
---~     for u in str:utfcharacters() do
---~         texsprint(tc,escaped_token(u))
---~     end
---~ end
-
---~ local a, z, A, Z, zero, nine = byte("a"), byte("z"), byte("A"), byte("Z"), byte("0"), byte("9")
-
---~ function visualizers.default.flush_line(str)
---~     local tc = tex.ctxcatcodes
---~     for b in str:utfvalues() do
---~         if (b>=a and b<=z) or (b>=A and b<=Z) or (b>=zero and b<=nine) then
---~             texsprint(tc,char(b))
---~         elseif b == 32 then
---~             texsprint(tc,"\\obs ")
---~         else
---~             texsprint(tc,"\\char",b," ")
---~         end
---~     end
---~ end
-
---~ function visualizers.default.flush_line(str)
---~     local tc = tex.ctxcatcodes
---~     local vc = tex.vrbcatcodes
---~     local vs = visualizers.obeyspace
---~     for ch in str:utfcharacters() do
---~         if ch == "{" or ch == "}" then
---~             texsprint(tc,"\\char",ch:byte()," ")
---~         elseif vs and ch == " " then
---~             texsprint(tc,"\\obs ")
---~         else
---~             texsprint(vc,ch)
---~         end
---~     end
---~ end
-
 function visualizers.default.flush_line(str)
     str = str:gsub(" *[\n\r]+ *"," ")
-    local vc = tex.vrbcatcodes
     if visualizers.obeyspace then
-        local tc = tex.ctxcatcodes
-        for c in str:utfcharacters() do
+        for c in utfcharacters(str) do
             if c == " " then
-                texsprint(tc,"\\obs ")
+                texsprint(ctxcatcodes,"\\obs ")
             else
-                texsprint(vc,c)
+                texsprint(vrbcatcodes,c)
             end
         end
     else
-        texsprint(vc,str)
+        texsprint(vrbcatcodes,str)
     end
 end

@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['math-ini'] = {
+if not modules then modules = { } end modules ['math-ext'] = {
     version   = 1.001,
     comment   = "companion to math-ini.tex",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -6,443 +6,249 @@ if not modules then modules = { } end modules ['math-ini'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>Math definitions. This code may move.</p>
---ldx]]--
-
 -- if needed we can use the info here to set up xetex definition files
 -- the "8000 hackery influences direct characters (utf) as indirect \char's
 
+local utf = unicode.utf8
+
 local texsprint, format, utfchar, utfbyte = tex.sprint, string.format, utf.char, utf.byte
 
-mathematics       = mathematics       or { }
-mathematics.data  = mathematics.data  or { }
-mathematics.slots = mathematics.slots or { }
+local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
-mathematics.classes = {
-    ord     = 0,  -- mathordcomm     mathord
-    op      = 1,  -- mathopcomm      mathop
-    bin     = 2,  -- mathbincomm     mathbin
-    rel     = 3,  -- mathrelcomm     mathrel
-    open    = 4,  -- mathopencomm    mathopen
-    close   = 5,  -- mathclosecomm   mathclose
-    punct   = 6,  -- mathpunctcomm   mathpunct
-    alpha   = 7,  -- mathalphacomm   firstofoneargument
-    accent  = 8,
-    radical = 9,
-    inner   = 0,  -- mathinnercomm   mathinner
-    nothing = 0,  -- mathnothingcomm firstofoneargument
-    choice  = 0,  -- mathchoicecomm  @@mathchoicecomm
-    box     = 0,  -- mathboxcomm     @@mathboxcomm
-    limop   = 1,  -- mathlimopcomm   @@mathlimopcomm
-    nolop   = 1,  -- mathnolopcomm   @@mathnolopcomm
+mathematics = mathematics or { }
+
+mathematics.extrabase   = 0xFE000 -- here we push some virtuals
+mathematics.privatebase = 0xFF000 -- here we push the ex
+
+local families = {
+    tf = 0, it = 1, sl = 2, bf = 3, bi = 4, bs = 5, -- virtual fonts or unicode otf
 }
 
-mathematics.classes.alphabetic  = mathematics.classes.alpha
-mathematics.classes.unknown     = mathematics.classes.nothing
-mathematics.classes.punctuation = mathematics.classes.punct
-mathematics.classes.normal      = mathematics.classes.nothing
-mathematics.classes.opening     = mathematics.classes.open
-mathematics.classes.closing     = mathematics.classes.close
-mathematics.classes.binary      = mathematics.classes.bin
-mathematics.classes.relation    = mathematics.classes.rel
-mathematics.classes.fence       = mathematics.classes.unknown
-mathematics.classes.diacritic   = mathematics.classes.accent
-mathematics.classes.large       = mathematics.classes.op
-mathematics.classes.variable    = mathematics.classes.alphabetic
-mathematics.classes.number      = mathematics.classes.nothing
-
-mathematics.families = {
-    mr = 0, bs  =  8,
-    mi = 1, bi  =  9,
-    sy = 2, sc  = 10,
-    ex = 3, tf  = 11,
-    it = 4, ma  = 12,
-    sl = 5, mb  = 13,
-    bf = 6, mc  = 14,
-    nn = 7, md  = 15,
+local classes = {
+    ord       =  0,  -- mathordcomm     mathord
+    op        =  1,  -- mathopcomm      mathop
+    bin       =  2,  -- mathbincomm     mathbin
+    rel       =  3,  -- mathrelcomm     mathrel
+    open      =  4,  -- mathopencomm    mathopen
+    close     =  5,  -- mathclosecomm   mathclose
+    punct     =  6,  -- mathpunctcomm   mathpunct
+    alpha     =  7,  -- mathalphacomm   firstofoneargument
+    accent    =  8,  -- class 0
+    radical   =  9,
+    xaccent   = 10,  -- class 3
+    topaccent = 11,  -- class 0
+    botaccent = 12,  -- class 0
+    under     = 13,
+    over      = 14,
+    delimiter = 15,
+    inner     =  0,  -- mathinnercomm   mathinner
+    nothing   =  0,  -- mathnothingcomm firstofoneargument
+    choice    =  0,  -- mathchoicecomm  @@mathchoicecomm
+    box       =  0,  -- mathboxcomm     @@mathboxcomm
+    limop     =  1,  -- mathlimopcomm   @@mathlimopcomm
+    nolop     =  1,  -- mathnolopcomm   @@mathnolopcomm
 }
 
-mathematics.families.letters   = mathematics.families.mr
-mathematics.families.numbers   = mathematics.families.mr
-mathematics.families.variables = mathematics.families.mi
-mathematics.families.operators = mathematics.families.sy
-mathematics.families.lcgreek   = mathematics.families.mi
-mathematics.families.ucgreek   = mathematics.families.mr
-mathematics.families.vargreek  = mathematics.families.mi
-mathematics.families.mitfamily = mathematics.families.mi
-mathematics.families.calfamily = mathematics.families.sy
+mathematics.families = families
+mathematics.classes  = classes
 
-mathematics.families[0] = mathematics.families.mr
-mathematics.families[1] = mathematics.families.mi
-mathematics.families[2] = mathematics.families.sy
-mathematics.families[3] = mathematics.families.ex
+classes.alphabetic  = classes.alpha
+classes.unknown     = classes.nothing
+classes.default     = classes.nothing
+classes.punctuation = classes.punct
+classes.normal      = classes.nothing
+classes.opening     = classes.open
+classes.closing     = classes.close
+classes.binary      = classes.bin
+classes.relation    = classes.rel
+classes.fence       = classes.unknown
+classes.diacritic   = classes.accent
+classes.large       = classes.op
+classes.variable    = classes.alphabetic
+classes.number      = classes.alphabetic
 
-function mathematics.mathcode(target,class,family,slot)
-    if class <= 7 then
-        return ("\\omathcode%s=\"%X%02X%04X "):format(target,class,family,slot)
-    end
+-- there will be proper functions soon (and we will move this code in-line)
+
+local function delcode(target,family,slot)
+    return format('\\Udelcode%s="%X "%X ',target,family,slot)
 end
-function mathematics.delcode(target,small_family,small_slot,large_family,large_slot)
-    return ("\\odelcode%s=\"%02X%04X\"%02X%04X "):format(target,small_family,small_slot,large_family,large_slot)
+local function mathchar(class,family,slot)
+    return format('\\Umathchar "%X "%X "%X ',class,family,slot)
 end
-function mathematics.radical(small_family,small_slot,large_family,large_slot)
-    return ("\\radical%s=\"%02X%04X%\"02X%04X "):format(target,small_family,small_slot,large_family,large_slot)
+local function mathaccent(class,family,slot)
+    return format('\\Umathaccent "%X "%X "%X ',0,family,slot) -- no class
 end
-function mathematics.mathchar(class,family,slot)
-    return ("\\omathchar\"%X%02X%04X "):format(class,family,slot)
+local function delimiter(class,family,slot)
+    return format('\\Udelimiter "%X "%X "%X ',class,family,slot)
 end
-function mathematics.mathaccent(class,family,slot)
-    return ("\\omathaccent\"%X%02X%04X "):format(class,family,slot)
+local function radical(family,slot)
+    return format('\\Uradical "%X "%X ',family,slot)
 end
-function mathematics.delimiter(class,family,slot,largefamily,largeslot)
-    return ("\\odelimiter\"%X%02X%04X\"%02X%04X "):format(class,family,slot,largefamily,largeslot)
+local function mathchardef(name,class,family,slot)
+    return format('\\Umathchardef\\%s "%X "%X "%X ',name,class,family,slot)
 end
-function mathematics.mathchardef(name,class,family,slot) -- we can avoid this one
-    return ("\\omathchardef\\%s\"%X%02X%04X "):format(name,class,family,slot)
+local function mathcode(target,class,family,slot)
+    return format('\\Umathcode%s="%X "%X "%X ',target,class,family,slot)
+end
+local function mathtopaccent(class,family,slot)
+    return format('\\Umathaccent "%X "%X "%X ',0,family,slot) -- no class
+end
+local function mathbotaccent(class,family,slot)
+    return format('\\Umathbotaccent "%X "%X "%X ',0,family,slot) -- no class
+end
+local function mathtopdelimiter(class,family,slot)
+    return format('\\Uoverdelimiter "%X "%X ',0,family,slot) -- no class
+end
+local function mathbotdelimiter(class,family,slot)
+    return format('\\Uunderdelimiter "%X "%X ',0,family,slot) -- no class
 end
 
-function mathematics.setmathsymbol(name,class,family,slot,largefamily,largeslot,unicode)
-    class = mathematics.classes[class] or class -- no real checks needed
-    family = mathematics.families[family] or family
-    -- \unexpanded ? \relax needed for the codes?
-    local classes = mathematics.classes
-    if largefamily and largeslot then
-        largefamily = mathematics.families[largefamily] or largefamily
-        if class == classes.radical then
-            texsprint(("\\unexpanded\\xdef\\%s{%s }"):format(name,mathematics.radical(class,family,slot,largefamily,largeslot)))
-        elseif class == classes.open or class == classes.close then
-            texsprint(("\\unexpanded\\xdef\\%s{%s}"):format(name,mathematics.delimiter(class,family,slot,largefamily,largeslot)))
-        end
-    elseif class == classes.accent then
-        texsprint(("\\unexpanded\\xdef\\%s{%s }"):format(name,mathematics.mathaccent(class,family,slot)))
-    elseif unicode then
+local escapes = characters.filters.utf.private.escapes
+
+local function setmathsymbol(name,class,family,slot)
+    if class == classes.accent then
+        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathaccent(class,family,slot)))
+    elseif class == classes.topaccent then
+        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathtopaccent(class,family,slot)))
+    elseif class == classes.botaccent then
+        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathbotaccent(class,family,slot)))
+    elseif class == classes.over then
+        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathtopdelimiter(class,family,slot)))
+    elseif class == classes.under then
+        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathbotdelimiter(class,family,slot)))
+    elseif class == classes.open or class == classes.close then
+        texsprint(delcode(slot,family,slot))
+        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,delimiter(class,family,slot)))
+    elseif class == classes.delimiter then
+        texsprint(delcode(slot,family,slot))
+        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,delimiter(0,family,slot)))
+    elseif class == classes.radical then
+        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,radical(family,slot)))
+    else
         -- beware, open/close and other specials should not end up here
-        local ch = utfchar(unicode)
-        if characters.filters.utf.private.escapes[ch] then
-            texsprint(("\\xdef\\%s{\\char%s }"):format(name,unicode))
-        else
-            texsprint(("\\xdef\\%s{%s}"):format(name,ch))
-        end
-    else
-        texsprint(mathematics.mathchardef(name,class,family,slot))
+--~         local ch = utfchar(slot)
+--~         if escapes[ch] then
+--~             texsprint(format("\\xdef\\%s{\\char%s }",name,slot))
+--~         else
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathchar(class,family,slot)))
+--~         end
     end
 end
 
--- direct sub call
-
-function mathematics.setmathcharacter(target,class,family,slot,largefamily,largeslot)
-    class = mathematics.classes[class] or class -- no real checks needed
-    family = mathematics.families[family] or family
-    if largefamily and largeslot then
-        largefamily = mathematics.families[largefamily] or largefamily
-        texsprint(mathematics.delcode(target,family,slot,largefamily,largeslot))
-    else
-        texsprint(mathematics.mathcode(target,class,family,slot))
+local function setmathcharacter(class,family,slot,unicode,firsttime)
+    if not firsttime and class <= 7 then
+        texsprint(mathcode(slot,class,family,unicode or slot))
     end
 end
 
--- definitions (todo: expand commands to utf instead of codes)
-
-mathematics.trace = false -- false
-
-function mathematics.define(slots)
-    local slots = slots or mathematics.slots.current
-    local setmathcharacter = mathematics.setmathcharacter
-    local setmathsymbol = mathematics.setmathsymbol
-    local trace = mathematics.trace
-    local function report(k,m,c,f,i,fe,ie)
-        local mc = mathematics.classes[m] or m
-        if fe then
-            logs.report("mathematics","a - %s:%s 0x%05X -> %s -> %s %s (%s %s) -> %s",mc,m,k,c,f,i,fe,ie,utfchar(k))
-        elseif c then
-            logs.report("mathematics","b - %s:%s 0x%05X -> %s -> %s %s -> %s",mc,m,k,c,f,i,utfchar(k))
-        else
-            logs.report("mathematics","c - %s:%s 0x%05X -> %s %s -> %s",mc,m,k,f,i,utfchar(k))
-        end
+local function setmathsynonym(class,family,slot,unicode,firsttime)
+    if not firsttime and class <= 7 then
+        texsprint(mathcode(slot,class,family,unicode))
     end
-    for k,v in pairs(characters.data) do
-        local m = v.mathclass
-        -- i need to clean this up a bit
-        if m then
-            local c = v.mathname
-            if c == false then
-                -- no command
-                local s = slots[k]
-                if s then
-                    local f, i, fe, ie = s[1], s[2], s[3], s[4]
-                    if trace then
-                        report(k,m,c,f,i,fe,ie)
-                    end
-                    setmathcharacter(k,m,f,i,fe,ie)
+    if class == classes.open or class == classes.close then
+        texsprint(delcode(slot,family,unicode))
+    end
+end
+
+local function report(class,family,unicode,name)
+    local nametype = type(name)
+    if nametype == "string" then
+        logs.report("mathematics","%s:%s %s U+%05X (%s) => %s",classname,class,family,unicode,utfchar(unicode),name)
+    elseif nametype == "number" then
+        logs.report("mathematics","%s:%s %s U+%05X (%s) => U+%05X",classname,class,family,unicode,utfchar(unicode),name)
+    else
+        logs.report("mathematics","%s:%s %s U+%05X (%s)", classname,class,family,unicode,utfchar(unicode))
+    end
+end
+
+-- there will be a combined \(math)chardef
+
+function mathematics.define(slots,family)
+    family = family or 0
+    family = families[family] or family
+    local data = characters.data
+    for unicode, character in next, data do
+        local symbol = character.mathsymbol
+        if symbol then
+            local other = data[symbol]
+            local class = other.mathclass
+            if class then
+                class = classes[class] or class -- no real checks needed
+                if trace_defining then
+                    report(class,family,unicode,symbol)
                 end
-            elseif c then
-                local s = slots[k]
-                if s then
-                    local f, i, fe, ie = s[1], s[2], s[3], s[4]
-                    if trace then
-                        report(k,m,c,f,i,fe,ie)
+                setmathsynonym(class,family,unicode,symbol)
+            end
+            local spec = other.mathspec
+            if spec then
+                for i, m in next, spec do
+                    local class = m.class
+                    if class then
+                        class = classes[class] or class -- no real checks needed
+                        setmathsynonym(class,family,unicode,symbol,i)
                     end
-                    setmathsymbol(c,m,f,i,fe,ie,k)
-                    setmathcharacter(k,m,f,i,fe,ie)
                 end
-            elseif v.contextname then
-                local s = slots[k]
-                local c = v.contextname
-                if s then
-                    local f, i, fe, ie = s[1], s[2], s[3], s[4]
-                    if trace then
-                        report(k,m,c,f,i,fe,ie)
-                    end
-                    -- todo: mathortext
-                    setmathsymbol(c,m,f,i,fe,ie,k)
-                    setmathcharacter(k,m,f,i,fe,ie)
+            end
+        end
+        local mathclass = character.mathclass
+        local mathspec = character.mathspec
+        if mathspec then
+            for i, m in next, mathspec do
+                local name = m.name
+                local class = m.class
+                if not class then
+                    class = mathclass
+                elseif not mathclass then
+                    mathclass = class
                 end
-            else
-                local a = v.adobename
-                if a and m then
-                    local s, f, i, fe, ie = slots[k], nil, nil, nil, nil
-                    if s then
-                        f, i, fe, ie = s[1], s[2], s[3], s[4]
-                    elseif m == "variable" then
-                        f, i = mathematics.families.variables, k
-                    elseif m == "number" then
-                        f, i = mathematics.families.numbers, k
-                    end
-                    if f and i then
-                        if trace then
-                            report(k,m,a,f,i,fe,ie)
+                if class then
+                    class = classes[class] or class -- no real checks needed
+                    if name then
+                        if trace_defining then
+                            report(class,family,unicode,name)
                         end
-                        setmathcharacter(k,m,f,i,fe,ie)
+                        setmathsymbol(name,class,family,unicode)
+                    -- setmathcharacter(class,family,unicode,unicode,i)
+                    else
+                        name = class == classes.variable or class == classes.number and character.adobename
+                        if name then
+                            if trace_defining then
+                                report(class,family,unicode,name)
+                            end
+                        --  setmathcharacter(class,family,unicode,unicode,i)
+                        end
+                    end
+                    setmathcharacter(class,family,unicode,unicode,i)
+                end
+            end
+        end
+        if mathclass then
+            local name = character.mathname
+            local class = classes[mathclass] or mathclass -- no real checks needed
+            if name == false then
+                if trace_defining then
+                    report(class,family,unicode,name)
+                end
+                setmathcharacter(class,family,unicode)
+            else
+                name = name or character.contextname
+                if name then
+                    if trace_defining then
+                        report(class,family,unicode,name)
+                    end
+                    setmathsymbol(name,class,family,unicode)
+                else
+                    if trace_defining then
+                        report(class,family,unicode,character.adobename)
                     end
                 end
+                setmathcharacter(class,family,unicode,unicode)
             end
         end
     end
 end
 
--- temporary here: will become separate
-
--- maybe we should define a nice virtual font so that we have
--- just the base n families repeated for different styles
-
-mathematics.slots.traditional = {
-
-    [0x03B1] = { "lcgreek", 0x0B }, -- alpha
-    [0x03B2] = { "lcgreek", 0x0C }, -- beta
-    [0x03B3] = { "lcgreek", 0x0D }, -- gamma
-    [0x03B4] = { "lcgreek", 0x0E }, -- delta
-    [0x03B5] = { "lcgreek", 0x0F }, -- epsilon
-    [0x03B6] = { "lcgreek", 0x10 }, -- zeta
-    [0x03B7] = { "lcgreek", 0x11 }, -- eta
-    [0x03B8] = { "lcgreek", 0x12 }, -- theta
-    [0x03B9] = { "lcgreek", 0x13 }, -- iota
-    [0x03BA] = { "lcgreek", 0x14 }, -- kappa
-    [0x03BB] = { "lcgreek", 0x15 }, -- lambda
-    [0x03BC] = { "lcgreek", 0x16 }, -- mu
-    [0x03BD] = { "lcgreek", 0x17 }, -- nu
-    [0x03BE] = { "lcgreek", 0x18 }, -- xi
-    [0x03BF] = { "lcgreek", 0x6F }, -- omicron
-    [0x03C0] = { "lcgreek", 0x19 }, -- pi
-    [0x03C1] = { "lcgreek", 0x1A }, -- rho
---  [0x03C2] = { "lcgreek", 0x00 }, -- varsigma
-    [0x03C3] = { "lcgreek", 0x1B }, -- sigma
-    [0x03C4] = { "lcgreek", 0x1C }, -- tau
-    [0x03C5] = { "lcgreek", 0x1D }, -- upsilon
---  [0x03C6] = { "lcgreek", 0x1E }, -- varphi
-    [0x03C7] = { "lcgreek", 0x1F }, -- chi
-    [0x03C8] = { "lcgreek", 0x20 }, -- psi
-    [0x03C9] = { "lcgreek", 0x21 }, -- omega
-
-    [0x0391] = { "ucgreek", 0x41 }, -- Alpha
-    [0x0392] = { "ucgreek", 0x42 }, -- Beta
-    [0x0393] = { "ucgreek", 0x00 }, -- Gamma
-    [0x0394] = { "ucgreek", 0x01 }, -- Delta
-    [0x0395] = { "ucgreek", 0x45 }, -- Epsilon
-    [0x0396] = { "ucgreek", 0x5A }, -- Zeta
-    [0x0397] = { "ucgreek", 0x48 }, -- Eta
-    [0x0398] = { "ucgreek", 0x02 }, -- Theta
-    [0x0399] = { "ucgreek", 0x49 }, -- Iota
-    [0x039A] = { "ucgreek", 0x4B }, -- Kappa
-    [0x039B] = { "ucgreek", 0x03 }, -- Lambda
-    [0x039C] = { "ucgreek", 0x4D }, -- Mu
-    [0x039D] = { "ucgreek", 0x4E }, -- Nu
-    [0x039E] = { "ucgreek", 0x04 }, -- Xi
-    [0x039F] = { "ucgreek", 0x4F }, -- Omicron
-    [0x03A0] = { "ucgreek", 0x05 }, -- Pi
-    [0x03A1] = { "ucgreek", 0x52 }, -- Rho
-    [0x03A3] = { "ucgreek", 0x06 }, -- Sigma
-    [0x03A4] = { "ucgreek", 0x54 }, -- Tau
-    [0x03A5] = { "ucgreek", 0x07 }, -- Upsilon
-    [0x03A6] = { "ucgreek", 0x08 }, -- Phi
-    [0x03A7] = { "ucgreek", 0x58 }, -- Chi
-    [0x03A8] = { "ucgreek", 0x09 }, -- Psi
-    [0x03A9] = { "ucgreek", 0x0A }, -- Omega
-
-    [0x03F5] = { "vargreek", 0x22 }, -- varepsilon
-    [0x03D1] = { "vargreek", 0x23 }, -- vartheta
-    [0x03D6] = { "vargreek", 0x24 }, -- varpi
-    [0x03F1] = { "vargreek", 0x25 }, -- varrho
-    [0x03C2] = { "vargreek", 0x26 }, -- varsigma
-
-    -- varphi is part of the alphabet, contrary to the other var*s'
-
-    [0x03C6] = { "vargreek", 0x27 }, -- varphi
-    [0x03D5] = { "lcgreek",  0x1E }, -- phi
-
-    [0x03F0] = { "lcgreek",  0x14 }, -- varkappa, not in tex fonts
-
-    [0x0021] = { "mr", 0x21 }, -- !
-    [0x0028] = { "mr", 0x28 }, -- (
-    [0x0029] = { "mr", 0x29 }, -- )
-    [0x002A] = { "sy", 0x03 }, -- *
-    [0x002B] = { "mr", 0x2B }, -- +
-    [0x002C] = { "mi", 0x3B }, -- ,
-    [0x002D] = { "sy", 0x00 }, -- -
-    [0x2212] = { "sy", 0x00 }, -- -
-    [0x002E] = { "mi", 0x3A }, -- .
-    [0x002F] = { "mi", 0x3D }, -- /
-    [0x003A] = { "mr", 0x3A }, -- :
-    [0x003B] = { "mr", 0x3B }, -- ;
-    [0x003C] = { "mi", 0x3C }, -- <
-    [0x003D] = { "mr", 0x3D }, -- =
-    [0x003E] = { "mi", 0x3E }, -- >
-    [0x003F] = { "mr", 0x3F }, -- ?
-    [0x005C] = { "sy", 0x6E }, -- \
-    [0x007B] = { "sy", 0x66 }, -- {
-    [0x007C] = { "sy", 0x6A }, -- |
-    [0x007D] = { "sy", 0x67 }, -- }
-    [0x00AC] = { "sy", 0x3A }, -- lnot
-    [0x00B1] = { "sy", 0x06 }, -- pm
-    [0x00B7] = { "sy", 0x01 }, -- cdot
-    [0x00D7] = { "sy", 0x02 }, -- times
-    [0x00F7] = { "sy", 0x04 }, -- div
-    [0x2022] = { "sy", 0x0F }, -- bullet
-    [0x2111] = { "sy", 0x3D }, -- Im
-    [0x2118] = { "mi", 0x7D }, -- wp
-    [0x211C] = { "sy", 0x3C }, -- Re
-    [0x2190] = { "sy", 0x20 }, -- leftarrow
-    [0x2191] = { "sy", 0x22, "ex", 0x78 }, -- uparrow
-    [0x2192] = { "sy", 0x21 }, -- rightarrow
-    [0x2193] = { "sy", 0x23, "ex", 0x79 }, -- downarrow
-    [0x2194] = { "sy", 0x24 }, -- leftrightarrow
-    [0x2195] = { "sy", 0x6C, "ex", 0x3F }, -- updownarrow
-    [0x2196] = { "sy", 0x2D }, -- nwarrow
-    [0x2197] = { "sy", 0x25 }, -- nearrow
-    [0x2198] = { "sy", 0x2E }, -- swarrow
-    [0x2199] = { "sy", 0x26 }, -- searrow
-    [0x21D0] = { "sy", 0x28 }, -- Leftarrow
-    [0x21D1] = { "sy", 0x6C, "ex", 0x7E }, -- Uparrow
-    [0x21D2] = { "sy", 0x29 }, -- Rightarrow
-    [0x21D3] = { "sy", 0x2B, "ex", 0x7F }, -- Downarrow
-    [0x21D4] = { "sy", 0x2C }, -- Leftrightarrow
-    [0x21D5] = { "sy", 0x6D, "ex", 0x77 }, -- Updownarrow
-    [0x2135] = { "sy", 0x40 }, -- aleph
-    [0x2113] = { "mi", 0x60 }, -- ell
---  ...
-    [0x2200] = { "sy", 0x38 }, -- forall
---  [0x2201] = { "sy", 0x00 }, -- complement
-    [0x2202] = { "mi", 0x40 }, -- partial
-    [0x2203] = { "sy", 0x39 }, -- exists
---  [0x2204] = { "sy", 0x00 }, -- not exists
-    [0x2205] = { "sy", 0x3B }, -- empty set
---  [0x2206] = { "sy", 0x00 }, -- increment
-    [0x2207] = { "sy", 0x72 }, -- nabla
-    [0x2208] = { "sy", 0x32 }, -- in
-    [0x2209] = { "sy", 0x33 }, -- ni
-    [0x220F] = { "ex", 0x51 }, -- prod
-    [0x2210] = { "ex", 0x60 }, -- coprod
-    [0x2211] = { "ex", 0x50 }, -- sum
---  [0x2212] = { "sy", 0x00 }, -- -
-    [0x2213] = { "sy", 0x07 }, -- mp
-    [0x2215] = { "sy", 0x3D }, -- / AM: Not sure
-    [0x2216] = { "sy", 0x6E }, -- setminus
-    [0x2217] = { "sy", 0x03 }, -- *
-    [0x2218] = { "sy", 0x0E }, -- circ
-    [0x2219] = { "sy", 0x0F }, -- bullet
---  [0x221A] = { "sy", 0x70, "ex", 0x70 }, -- sqrt. AM: Check surd??
---  ...
-    [0x221D] = { "sy", 0x2F }, -- propto
-    [0x221E] = { "sy", 0x31 }, -- infty
-    [0x2225] = { "sy", 0x6B }, -- parallel
-    [0x2227] = { "sy", 0x5E }, -- wedge
-    [0x2228] = { "sy", 0x5F }, -- vee
-    [0x2229] = { "sy", 0x5C }, -- cap
-    [0x222A] = { "sy", 0x5B }, -- cup
-    [0x222B] = { "ex", 0x52 }, -- intop
---  ... other integrals
-    [0x2236] = { "mr", 0x3A }, -- colon
-    [0x223C] = { "sy", 0x18 }, -- sim
-    [0x2243] = { "sy", 0x27 }, -- simeq
-    [0x2248] = { "sy", 0x19 }, -- approx
-    [0x225C] = { "ma", 0x2C }, -- triangleq
-    [0x2261] = { "sy", 0x11 }, -- equiv
-    [0x2264] = { "sy", 0x14 }, -- leq
-    [0x2265] = { "sy", 0x15 }, -- geq
-    [0x226A] = { "sy", 0x1C }, -- ll
-    [0x226B] = { "sy", 0x1D }, -- gg
-    [0x227A] = { "sy", 0x1E }, -- prec
-    [0x227B] = { "sy", 0x1F }, -- succ
---  [0x227C] = { "sy", 0x16 }, -- preceq, AM:No see 2AAF
---  [0x227D] = { "sy", 0x17 }, -- succeq, AM:No see 2AB0
-    [0x2282] = { "sy", 0x1A }, -- subset
-    [0x2283] = { "sy", 0x1B }, -- supset
-    [0x2286] = { "sy", 0x12 }, -- subseteq
-    [0x2287] = { "sy", 0x13 }, -- supseteq
-    [0x2293] = { "sy", 0x75 }, -- sqcap
-    [0x2294] = { "sy", 0x74 }, -- sqcup
-    [0x2295] = { "sy", 0x08 }, -- oplus
-    [0x2296] = { "sy", 0x09 }, -- ominus
-    [0x2297] = { "sy", 0x0A }, -- otimes
-    [0x2298] = { "sy", 0x0B }, -- oslash
-    [0x2299] = { "sy", 0x0C }, -- odot
-    [0x22A4] = { "sy", 0x3E }, -- top
-    [0x22A5] = { "sy", 0x3F }, -- bop
-    [0x22C0] = { "ex", 0x56 }, -- bigwedge
-    [0x22C1] = { "ex", 0x57 }, -- bigvee
-    [0x22C2] = { "ex", 0x54 }, -- bigcap
-    [0x22C3] = { "ex", 0x53 }, -- bigcup
-    [0x22C4] = { "sy", 0x05 }, -- diamond
-    [0x22C5] = { "sy", 0x01 }, -- cdot
-    [0x22C6] = { "mi", 0x3F }, -- star
-    [0x25B3] = { "sy", 0x34 }, -- triangle up
-
-    [0x2220] = { "ma", 0x5C }, -- angle
-    [0x2221] = { "ma", 0x5D }, -- measuredangle
-    [0x2222] = { "ma", 0x5E }, -- sphericalangle
-
-    [0x2245] = { "ma", 0x75 }, -- aproxeq
-
-    [0x1D6A4] = { "mi", 0x7B }, -- imath
-    [0x1D6A5] = { "mi", 0x7C }, -- jmath
-
-    [0x0028] = { "mr", 0x28, "ex", 0x00 }, -- (
-    [0x0029] = { "mr", 0x29, "ex", 0x01 }, -- )
-    [0x002F] = { "mr", 0x2F, "ex", 0x0E }, -- /
-    [0x003C] = { "sy", 0x3C, "ex", 0x0A }, -- <
-    [0x003E] = { "sy", 0x3E, "ex", 0x0B }, -- >
-    [0x005B] = { "mr", 0x5B, "ex", 0x02 }, -- [
-    [0x005D] = { "mr", 0x5D, "ex", 0x03 }, -- ]
-    [0x007C] = { "sy", 0x6A, "ex", 0x0C }, -- |
-    [0x005C] = { "sy", 0x6E, "ex", 0x0F }, -- \
-    [0x007B] = { "sy", 0x66, "ex", 0x08 }, -- {
-    [0x007D] = { "sy", 0x67, "ex", 0x09 }, -- }
-
-    [0x005E] = { "mr", 0x5E, "ex", 0x62 }, -- widehat
-    [0x007E] = { "mr", 0x7E, "ex", 0x65 }, -- widetilde
-
-    [0x2AAF] = { "sy", 0x16 }, -- preceq
-    [0x2AB0] = { "sy", 0x17 }, -- succeq
-
-    [0x2145] = { "mr", 0x44 },
-    [0x2146] = { "mr", 0x64 },
-    [0x2147] = { "mr", 0x65 },
-
-    -- please let lm/gypre math show up soon
-
-}
-
-mathematics.slots.current = mathematics.slots.traditional
+-- needed for mathml analysis
 
 function mathematics.utfmathclass(chr, default)
     local cd = characters.data[utfbyte(chr)]
@@ -473,3 +279,42 @@ function mathematics.register_xml_entities()
         end
     end
 end
+
+-- helpers
+
+function mathematics.big(tfmdata,unicode,n)
+    local t = tfmdata.characters
+    local c = t[unicode]
+    if c then
+        local next = c.next
+        while next do
+            if n <= 1 then
+                return next
+            else
+                n = n - 1
+                next = t[next].next
+            end
+        end
+    end
+    return unicode
+end
+
+-- plugins
+
+function mathematics.scaleparameters(t,tfmtable,delta)
+    local math_parameters = tfmtable.math_parameters
+    if math_parameters and next(math_parameters) then
+        delta = delta or 1
+        local _, mp = mathematics.dimensions(math_parameters)
+        for name, value in next, mp do
+            if name ~= "RadicalDegreeBottomRaisePercent" then
+                mp[name] = delta*value
+            else
+                mp[name] = value
+            end
+        end
+        t.MathConstants = mp
+    end
+end
+
+table.insert(fonts.tfm.mathactions,mathematics.scaleparameters)

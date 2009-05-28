@@ -1,15 +1,15 @@
--- filename : luat-iop.lua
--- comment  : companion to luat-lib.tex
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['luat-iop'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
 -- this paranoid stuff in web2c ... we cannot hook checks into the
 -- input functions because one can always change the callback but
 -- we can feed back specific patterns and paths into the next
 -- mechanism
-
-if not versions  then versions = { } end versions['luat-exe'] = 1.001
 
 if not io.inp then io.inp = { } end
 if not io.out then io.out = { } end
@@ -127,11 +127,11 @@ function io.inp.modes.paranoid()
     io.inp.inhibit('%.%.')
     io.inp.permit('^%./')
     io.inp.permit('[^/]')
-    input.do_with_path('TEXMF',io.inp.permit)
+    resolvers.do_with_path('TEXMF',io.inp.permit)
 end
 function io.out.modes.paranoid()
     io.out.inhibit('.*')
-    input.do_with_path('TEXMFOUTPUT',io.out.permit)
+    resolvers.do_with_path('TEXMFOUTPUT',io.out.permit)
 end
 
 -- handy

@@ -5,14 +5,15 @@ if not modules then modules = { } end modules ['toks-ini'] = {
     license   = "see context related readme files"
 }
 
-local format, texsprint = string.format, tex.sprint
+local utf = unicode.utf8
+local format, gsub, texsprint = string.format, string.gsub, tex.sprint
 
-utf  = utf or unicode.utf8 -- todo: local
+local ctxcatcodes = tex.ctxcatcodes
 
 --[[ldx--
-<p>This code is experimental.</p>
+<p>This code is experimental and needs a cleanup. The visualizers will move to
+a module.</p>
 --ldx]]--
-
 
 -- 1 = command, 2 = modifier (char), 3 = controlsequence id
 --
@@ -196,14 +197,13 @@ function collectors.trace()
 end
 
 collectors.show_methods.a = function(data) -- no need to store the table, just pass directly
-    local ct = tex.ctxcatcodes
     local template = "\\NC %s\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR "
-    texsprint(ct, "\\starttabulate[|T|Tr|cT|Tr|T|]")
-    texsprint(ct, template:format("cmd","chr","","id","name"))
-    texsprint(ct, "\\HL")
+    texsprint(ctxcatcodes, "\\starttabulate[|T|Tr|cT|Tr|T|]")
+    texsprint(ctxcatcodes, format(template,"cmd","chr","","id","name"))
+    texsprint(ctxcatcodes, "\\HL")
     for _,v in pairs(data) do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
-        local name = (token.command_name(v) or ""):gsub("_","\\_")
+        local name = gsub(token.command_name(v) or "","_","\\_")
         if id > 0 then
             cs = token.csname_name(v) or ""
             if cs ~= "" then cs = "\\string " .. cs end
@@ -214,27 +214,26 @@ collectors.show_methods.a = function(data) -- no need to store the table, just p
             sym = "\\char " .. chr
         end
         if tonumber(chr) < 0 then
-            texsprint(ct, template:format(name,  "", sym, id, cs))
+            texsprint(ctxcatcodes, format(template, name,  "", sym, id, cs))
         else
-            texsprint(ct, template:format(name, chr, sym, id, cs))
+            texsprint(ctxcatcodes, format(template, name, chr, sym, id, cs))
         end
     end
-    texsprint(ct, "\\stoptabulate")
+    texsprint(ctxcatcodes, "\\stoptabulate")
 end
 
 collectors.show_methods.b_c = function(data,swap) -- no need to store the table, just pass directly
-    local ct = tex.ctxcatcodes
     local template = "\\NC %s\\NC %s\\NC %s\\NC\\NR"
     if swap then
-        texsprint(ct, "\\starttabulate[|Tl|Tl|Tr|]")
+        texsprint(ctxcatcodes, "\\starttabulate[|Tl|Tl|Tr|]")
     else
-        texsprint(ct, "\\starttabulate[|Tl|Tr|Tl|]")
+        texsprint(ctxcatcodes, "\\starttabulate[|Tl|Tr|Tl|]")
     end
-    texsprint(ct, template:format("cmd","chr","name"))
-    texsprint(ct, "\\HL")
+    texsprint(ctxcatcodes, format(template,"cmd","chr","name"))
+    texsprint(ctxcatcodes, "\\HL")
     for _,v in pairs(data) do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
-        local name = (token.command_name(v) or ""):gsub("_","\\_")
+        local name = gsub(token.command_name(v) or "","_","\\_")
         if id > 0 then
             cs = token.csname_name(v) or ""
         end
@@ -248,14 +247,14 @@ collectors.show_methods.b_c = function(data,swap) -- no need to store the table,
             end
         end
         if swap then
-            texsprint(ct, template:format(name, sym, chr))
+            texsprint(ctxcatcodes, format(template, name, sym, chr))
         elseif tonumber(chr) < 0 then
-            texsprint(ct, template:format(name,  "", sym))
+            texsprint(ctxcatcodes, format(template, name,  "", sym))
         else
-            texsprint(ct, template:format(name, chr, sym))
+            texsprint(ctxcatcodes, format(template, name, chr, sym))
         end
     end
-    texsprint(ct, "\\stoptabulate")
+    texsprint(ctxcatcodes, "\\stoptabulate")
 end
 
 -- Even more experimental ...

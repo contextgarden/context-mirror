@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Core Macros / Register Management}
+\writestatus{loading}{ConTeXt Core Macros / Register Management}
 
 \newif \ifautoregisterhack % for the moment a private hack
 
@@ -81,14 +81,6 @@
 
 \newif\ifwritetoregister \writetoregistertrue
 
-\ifx\undefined\mkdefineregister
-    \let\mkdefineregister      \gobbleoneargument
-    \let\mksaveregistervariable\gobblethreearguments
-    \let\mksaveregisterentry   \gobblesevenarguments
-    \let\mksaveregistersee     \gobblesevenarguments
-    \let\mkloadregister        \gobbleoneargument
-\fi
-
 \chardef\registerpagestatus\zerocount
 
 \def\doprocesspageregister[#1]#2#3% key altnum entry
@@ -105,15 +97,13 @@
      \makesectionformat
      \doifelse{\registerparameter\c!ownnumber}\v!yes
        \donetrue\donefalse
-     \mksaveregisterentry
-       {\currentregister}
-       {\ifcase\registerpagestatus\space\or e\or f\or t\fi}
-       {\nextinternalreference}
-       {\asciiregisterentryA}
-       {\asciiregisterentryB}
-       {\sectionformat\sectionseparator\sectionseparator
-        \ifdone#2\else\noexpand\pagenumber\fi}
-       {\noexpand\realfolio}%
+     \expanded{\writeutility{r % spaces are essential
+       {\ifcase\registerpagestatus\space\or e\or f\or t\fi} {\currentregister} %
+       {\nextinternalreference} %
+       {\asciiregisterentryA} %
+       {\asciiregisterentryB} %
+       {\sectionformat\sectionseparator\sectionseparator\ifdone#2\else\noexpand\pagenumber\fi} %
+       {\noexpand\realfolio}}}%
      \getfirstcharacter\currentregister
      \registerinfo{> \firstcharacter}{#3}%
      \endgroup
@@ -197,14 +187,13 @@
           \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#2}%
         \fi}%
      \makesectionformat
-     \mksaveregistersee
-       {\currentregister}
-       {s}
-       {\nextinternalreference}
-       {\asciiregisterentryA}
-       {\asciiregisterentryB}
-       {\asciiregisterentryC}
-       {\sectionformat}%
+     \expanded{\writeutility{r s %
+       {\currentregister} %
+       {\nextinternalreference} %
+       {\asciiregisterentryA} %
+       {\asciiregisterentryB} %
+       {\asciiregisterentryC} %
+       {\sectionformat}}}%
      \endgroup
      \registerinfo{> see}{#2}%
    \fi}
@@ -890,7 +879,7 @@
        \let\dosetregister\doloadregisterlinks
        \def\currentregister{#1}%
        \setupregister[#1][#2]%
-       \mkloadregister\currentregister\dobeforeplaceregister\doafterplaceregister
+       \doutilities\currentregister{\registerparameter\c!file}\currentregister\dobeforeplaceregister\doafterplaceregister
        \endgroup
        \ifautoregisterhack
          \doinitializeautoregister{#1}%
@@ -1109,7 +1098,7 @@
         tolerance=stretch]%
      \dontcomplain
      \startpacked[\v!blank]%
-     \mkloadregister\currentregister\dobeforeplaceregister\doafterplaceregister
+     \doutilities\currentregister{\registerparameter\c!file}\currentregister\dobeforeplaceregister\doafterplaceregister
      \stoppacked
      \stopcolumns
      \endgroup
@@ -1138,7 +1127,7 @@
 
 \def\doregisterregisterlanguage#1%
   {\savesortlanguage{\getvalue{\??id#1\s!language}}%
-   \mksaveregistervariable{#1}{l}{\getvalue{\??id#1\s!language}}}
+   \expanded{\immediatewriteutility{r l {#1} {\getvalue{\??id#1\s!language}}}}}
 
 \def\dodefineregister[#1][#2]%
   {\setupregister[#1]%
@@ -1174,7 +1163,7 @@
      \doregisterregisterlanguage{#1}%
    \to \everysavesortkeys
    \presetheadtext[#1=\Word{#1}]%
-   \mkdefineregister{#1}%
+   \addutilityreset{#1}%
    \setvalue{#1}{\doregister{#1}}%
    \setvalue{\e!coupled#1}{\dolinkedregister{#1}}%
    \setvalue{\s!set#1}{\dosetregister{#1}}%
@@ -1204,7 +1193,7 @@
          \global\utilitydonetrue}
         {}}%
    \doglobal\newcounter\utilityregisterlength
-   \setbox0\vbox{\mkloadregister\currentregister\dobeforeplaceregister\doafterplaceregister}%
+   \setbox0\vbox{\doutilities\currentregister{\registerparameter\c!file}\currentregister\dobeforeplaceregister\doafterplaceregister}%
    \endgroup
    \ifregistergeplaatst
      \setsystemmode  \v!register
@@ -1214,10 +1203,6 @@
 
 \def\determineregistercharacteristics
   {\dodoubleempty\dodetermineregistercharacteristics}
-
-%D Plugins.
-
-\loadmarkfile{core-reg}
 
 %D Default index:
 

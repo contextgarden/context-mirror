@@ -1,7 +1,7 @@
 %D \module
-%D   [       file=char-reg,
+%D   [       file=regi-ini,
 %D        version=2005.04.25,
-%D          title=\CONTEXT\ Lua Macros,
+%D          title=\CONTEXT\ Regime Macros,
 %D       subtitle=Regime Support,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -17,25 +17,39 @@
 
 \registerctxluafile{regi-ini}{1.001}
 
-\def\mkloadregime   #1{\ctxlua{regimes.load("#1")}}
-\def\mkenableregime #1{\ctxlua{regimes.enable("#1")}}
-\def\mkdisableregime  {\ctxlua{regimes.disable()}}
-\def\mkshowregime   #1{\ctxlua{regimes.context.show("#1")}}
+%D \macros
+%D   {currentregime}
 
-% hm, this kind of disables regimes .. too tricky
-%
-% \appendtoks
-%   \pushmacro\currentregime
-%   \disableregime
-% \to \everystartreadingfile
+\def\currentregime{utf}
 
-% \appendtoks
-%   \popmacro\currentregime
-%   \enableregime[\currentregime]%
-% \to \everystopreadingfile
+%D \macros
+%D   {defineregimesynonym,trueregimename}
+
+\def\defineregimesynonym
+  {\dodoubleargument\dodefineregimesynonym}
+
+\def\dodefineregimesynonym[#1][#2]%
+  {\ctxlua{regimes.setsynonym("#1","#2")}}
+
+\def\trueregimename#1%
+  {\ctxlua{regimes.truename("#1")}}
+
+%D \macros
+%D   {useregime}
+
+\def\useregime[#1]%
+  {\processcommalist[#1]\douseregime}
+
+\def\douseregime#1%
+  {\ctxlua{regimes.load("#1")}}
+
+%D \macros
+%D   {enableregime,disableregime}
+
+\def\enableregime[#1]%
+  {\edef\currentregime{\ctxlua{regimes.load("#1") regimes.enable("#1") regimes.truename()}}}
+
+\def\disableregime
+  {\edef\currentregime{\ctxlua{regimes.disable()}}}
 
 \protect \endinput
-
-% \starttext
-%     \showregimetable{cp1250}
-% \stoptext

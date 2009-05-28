@@ -394,12 +394,12 @@
 \stopmathcollection
 
 \def\LBRroot#1#2%
-  {\setbox\z@\hbox{$\m@th#1\sqrt{#2}$}
-   \dimen@\ht\z@ \advance\dimen@-\dp\z@
-   \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-7.5mu \box\z@}
+  {\setbox\zerocount\hbox{$\mathsurround\zeropoint#1\sqrt{#2}$}
+   \dimen@\ht\zerocount \advance\dimen@-\dp\zerocount
+   \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-7.5mu \box\zerocount}
 
 \def\LBRmatrix#1%
-  {\null\,\vcenter{\normalbaselines\m@th
+  {\null\,\vcenter{\normalbaselines\mathsurround\zeropoint
    \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
    \mathstrut\crcr\noalign{\kern-0.9\baselineskip}
    #1\crcr\mathstrut\crcr\noalign{\kern-0.9\baselineskip}}}\,}

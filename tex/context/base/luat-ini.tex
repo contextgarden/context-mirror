@@ -11,14 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Lua Support Macros (initialization)}
+\writestatus{loading}{ConTeXt Lua Macros / Initialization}
 
 \unprotect
-
-%D We have to load this module in a very early stage. Therefore we
-%D cannot rely on support macros being available.
-
-% \long\def\rescan#1{\expanded{\scantextokens{#1}}}
 
 %D Loading lua code can be done using \type {startup.lua}. The following
 %D method uses the \TEX\ input file locator of kpse. At least we need to
@@ -30,36 +25,27 @@
 \ifx\obeylualines      \undefined \let\obeylualines      \relax \fi
 \ifx\obeyluatokens     \undefined \let\obeyluatokens     \relax \fi
 
-% \def\loadluacode#1#2% instance filename
-%   {\bgroup
-%    \everyeof{\noexpand}% hack to make \input nicely expandable
-%    \setnaturalcatcodes
-%    \obeylualines
-%    %message{[Lua Load: #2]}%
-%    \directlua#1\expandafter{\normalinput#2\space}\relax
-%    \egroup}
-
 %D A few more goodies:
 
-\long\def\dostartlua#1%
+\long\def\dostartlua
   {\begingroup
    \obeylualines
-   \dodostartlua{#1}}
+   \dodostartlua}
 
-\long\def\dodostartlua#1#2\stoplua
-  {\expanded{\endgroup\noexpand\directlua#1{#2}}}
+\long\def\dodostartlua#1\stoplua
+  {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
 
-\long\def\dostartluacode#1%
+\long\def\dostartluacode
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \dodostartluacode{#1}}
+   \dodostartluacode}
 
-\long\def\dodostartluacode#1#2\stopluacode
-  {\expanded{\endgroup\noexpand\directlua#1{#2}}}
+\long\def\dodostartluacode#1\stopluacode
+  {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
 
-\def\startlua    {\dostartlua    \zerocount}
-\def\startluacode{\dostartluacode\zerocount}
+\def\startlua    {\dostartlua    } % tex catcodes
+\def\startluacode{\dostartluacode} % lua catcodes
 
 %D Some delayed definitions:
 
@@ -69,40 +55,164 @@
 \ifx\obeyedspace      \undefined \let\obeyedspace      \relax \fi
 \ifx\outputnewlinechar\undefined \let\outputnewlinechar\relax \fi
 
-\def\obeylualines
-  {\obeylines  \let\obeyedline \outputnewlinechar
-   \obeyspaces \let\obeyedspace\space}
+%D A previous version used a bit less code and no catcode table,
+%D simply becaus ethey were not around at the time of writing.
+%
+% we keep it around for archival purposes
+%
+% \def\obeylualines
+%   {\obeylines  \let\obeyedline \outputnewlinechar
+%    \obeyspaces \let\obeyedspace\space}
+%
+% \def\obeyluatokens % todo: make this a proper catcode table, use let's
+%   {\catcode`\%=12 \catcode`\#=12
+%    \catcode`\_=12 \catcode`\^=12
+%    \catcode`\&=12 \catcode`\|=12
+%    \catcode`\{=12 \catcode`\}=12
+%    \catcode`\~=12 \catcode`\$=12
+%    \def\\{\string\\}\def\|{\string\|}\def\-{\string\-}%
+%    \def\({\string\(}\def\){\string\)}\def\{{\string\{}\def\}{\string\}}%
+%    \def\'{\string\'}\def\"{\string\"}%
+%    \def\n{\string\n}\def\r{\string\r}\def\f{\string\f}\def\t{\string\t}%
+%    \def\a{\string\a}\def\b{\string\b}\def\v{\string\v}\def\s{\string\s}%
+%    \def\1{\string\1}\def\2{\string\2}\def\3{\string\3}\def\4{\string\4}\def\5{\string\5}%
+%    \def\6{\string\6}\def\7{\string\7}\def\8{\string\8}\def\9{\string\9}\def\0{\string\0}}
 
-\def\obeyluatokens % todo: make this a proper catcode table, use let's
-  {\catcode`\%=12 \catcode`\#=12
-   \catcode`\_=12 \catcode`\^=12
-   \catcode`\&=12 \catcode`\|=12
-   \catcode`\{=12 \catcode`\}=12
-   \catcode`\~=12 \catcode`\$=12
-   \def\\{\string\\}\def\|{\string\|}\def\-{\string\-}%
-   \def\({\string\(}\def\){\string\)}\def\{{\string\{}\def\}{\string\}}%
-   \def\'{\string\'}\def\"{\string\"}%
-   \def\n{\string\n}\def\r{\string\r}\def\f{\string\f}\def\t{\string\t}%
-   \def\a{\string\a}\def\b{\string\b}\def\v{\string\v}\def\s{\string\s}%
-   \def\1{\string1}\def\2{\string2}\def\3{\string3}\def\4{\string\4}\def\5{\string\5}%
-   \def\6{\string6}\def\7{\string7}\def\8{\string8}\def\9{\string\9}\def\0{\string\0}}
+\let\obeylualines\relax
 
+\newtoks\everyluacode
+
+\edef\lualetterbackslash{\string\\}
+\edef\lualetterbar      {\string\|} \edef\lualetterdash     {\string\-}
+\edef\lualetterlparent  {\string\(} \edef\lualetterrparent  {\string\)}
+\edef\lualetterlbrace   {\string\{} \edef\lualetterrbrace   {\string\}}
+\edef\lualettersquote   {\string\'} \edef\lualetterdquote   {\string\"}
+\edef\lualettern        {\string\n} \edef\lualetterr        {\string\r}
+\edef\lualetterf        {\string\f} \edef\lualettert        {\string\t}
+\edef\lualettera        {\string\a} \edef\lualetterb        {\string\b}
+\edef\lualetterv        {\string\v} \edef\lualetters        {\string\s}
+\edef\lualetterone      {\string\1} \edef\lualettertwo      {\string\2}
+\edef\lualetterthree    {\string\3} \edef\lualetterfour     {\string\4}
+\edef\lualetterfive     {\string\5} \edef\lualettersix      {\string\6}
+\edef\lualetterseven    {\string\7} \edef\lualettereight    {\string\8}
+\edef\lualetternine     {\string\9} \edef\lualetterzero     {\string\0}
+
+\appendtoks
+   \let\\\lualetterbackslash
+   \let\|\lualetterbar       \let\-\lualetterdash
+   \let\(\lualetterlparent   \let\)\lualetterrparent
+   \let\{\lualetterlbrace    \let\}\lualetterrbrace
+   \let\'\lualettersquote    \let\"\lualetterdquote
+   \let\n\lualettern         \let\r\lualetterr
+   \let\f\lualetterf         \let\t\lualettert
+   \let\a\lualettera         \let\b\lualetterb
+   \let\v\lualetterv         \let\s\lualetters
+   \let\1\lualetterone       \let\2\lualettertwo
+   \let\3\lualetterthree     \let\4\lualetterfour
+   \let\5\lualetterfive      \let\6\lualettersix
+   \let\7\lualetterseven     \let\8\lualettereight
+   \let\9\lualetternine      \let\0\lualetterzero
+\to \everyluacode
+
+\def\obeyluatokens
+  {\setcatcodetable \luacatcodes
+   \the\everyluacode}
+
+%D \macros
+%D   {definenamedlua}
+%D
 %D We provide an interface for defining instances:
 
-\def\s!lua{lua} \def\v!code{code} \let\@EA\expandafter
+\def\s!lua{lua} \def\v!code{code} \def\!!name{name} \def\s!data{data}
 
-\def\setluainstancename#1#2%
-  {\ifproductionrun\else\appendtoks\setluainstancename{#1}{#2}\to\everyjob\fi
-   \directlua0{if lua.instancename then lua.instancename[\number#1]="#2" end}}
+%D Beware: because \type {\expanded} is een convert command, the error
+%D message will show \type{<inserted text>} as part of the message.
 
-\def\definelua[#1]% no ptional arg handling here yet
-  {\ifcsname#1\s!lua\endcsname\else\expandafter\newlua\csname#1\s!lua\endcsname\fi
-   \setluainstancename{\csname#1\s!lua\endcsname}{#1}%
-   \setevalue{\e!start#1\s!lua       }{\noexpand\dostartlua    \csname#1\s!lua\endcsname}%
-   \setevalue{\e!start#1\s!lua\v!code}{\noexpand\dostartluacode\csname#1\s!lua\endcsname}%
-   \setvalue {\e!stop #1\s!lua       }{\dostoplua    }%
-   \setvalue {\e!stop #1\s!lua\v!code}{\dostopluacode}}
+\long\def\dostartnamedluacode#1%
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \csname dodostartnamed#1\v!code\endcsname}
 
-\definelua[CTX] \setluainstancename\CTXlua{main ctx instance}
+\ifdefined\closelua
+
+    \def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
+      {\expanded{\long\def\csname dodostartnamed#1\v!code\endcsname####1\csname\e!stop#1\v!code\endcsname}%
+         {\normalexpanded{\endgroup\noexpand\directlua\!!name{#3}\zerocount{protect("#1\s!data")##1}}}%
+       \long\expandafter\def\csname\e!start#1\v!code\endcsname   {\dostartnamedluacode{#1}}%
+       \long\expandafter\def\csname        #1\v!code\endcsname##1{\directlua\!!name{#3}\zerocount{protect("#1\s!data")##1}}}
+
+\else
+
+    \def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
+      {\scratchcounter\ctxlua{lua.registername("#1","#3")}%
+       \expanded{\long\edef\csname dodostartnamed#1\v!code\endcsname####1\csname\e!stop#1\v!code\endcsname}%
+         {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
+       \long\expandafter\def \csname\e!start#1\v!code\endcsname   {\dostartnamedluacode{#1}}%
+       \long\expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}}
+
+\fi
+
+%D We predefine a few.
+
+\definenamedlua[user]    [private user instance]
+\definenamedlua[third]   [third party module instance]
+\definenamedlua[module]  [module instance]
+\definenamedlua[isolated][isolated instance]
+
+%D In practice this works out as follows:
+%D
+%D \startbuffer
+%D \startluacode
+%D tex.print("LUA")
+%D \stopluacode
+%D
+%D \startusercode
+%D global.tex.print("USER 1")
+%D tex.print("USER 2")
+%D if characters then
+%D     tex.print("ACCESS")
+%D else
+%D     tex.print("NO ACCESS")
+%D end
+%D \stopusercode
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D We need a way to pass strings safely to \LUA\ without the
+%D need for tricky escaping. Compare:
+%D
+%D \starttyping
+%D \ctxlua {something("anything tricky can go here")}
+%D \ctxlua {something([\luastringsep[anything tricky can go here]\luastringsep])}
+%D \stoptyping
+
+\def\luastringsep{===} % this permits \typefile{self} otherwise nested b/e sep problems
+
+\edef\!!bs{[\luastringsep[}
+\edef\!!es{]\luastringsep]}
+
+%D We have a the following available as primitive so there is no need
+%D for it:
+%D
+%D \starttyping
+%D \long\edef\luaescapestring#1{\!!bs#1\!!es}
+%D \stoptyping
+
+\def\setdocumentfilename       #1#2{\ctxlua{document.setfilename(#1,"#2")}}
+\def\setdocumentargument       #1#2{\ctxlua{document.setargument("#1","#2")}}
+\def\setdefaultdocumentargument#1#2{\ctxlua{document.getargument("#1","#2")}}
+\def\getdocumentfilename         #1{\ctxlua{document.getfilename(#1)}}
+\def\getdocumentargument         #1{\ctxlua{document.getargument(#1)}}
+\def\doifdocumentargumentelse    #1{\doifsomethingelse{\getdocumentargument{#1}}}
+\def\doifdocumentargument        #1{\doifsomething    {\getdocumentargument{#1}}}
+\def\doifnotdocumentargument     #1{\doifnothing      {\getdocumentargument{#1}}}
+
+\let\doifelsedocumentargument\doifdocumentargumentelse
+
+%D A handy helper:
+
+\def\luaexpanded#1{\luaescapestring\expandafter{\normalexpanded{#1}}}
 
 \protect \endinput

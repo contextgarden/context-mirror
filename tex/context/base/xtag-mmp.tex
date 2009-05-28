@@ -1,8 +1,8 @@
 %D \module
 %D   [       file=xtag-mmp,
 %D        version=2000.12.20,
-%D          title=\CONTEXT\ XML Support,
-%D       subtitle=Math ML,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=Presentation MathML,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -10,6 +10,8 @@
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
+
+% \points should become \bodyfontsize
 
 % under reconstruction
 %
@@ -31,18 +33,18 @@
 % \def\doMMLpUNDER
 %   {\doifelse{\XMLpar{munder}{accent}{}}{true}
 %      {\secondXMLRelement\firstXMLRelement}
-%      {\mathop{\vtop{\m@th\ialign{\hss##\hss\crcr
+%      {\mathop{\vtop{\mathsurround\zeropoint\ialign{\hss##\hss\crcr
 %         \disabledelimiter\doMMLfiller\firstXMLRelement
-%         \crcr\noalign{\kern3\p@\nointerlineskip}%
+%         \crcr\noalign{\kern3\points\nointerlineskip}%
 %         \disabledelimiter\doMMLfiller\secondXMLRelement
-%        \crcr\noalign{\kern3\p@}}}}\limits}}
+%        \crcr\noalign{\kern3\points}}}}\limits}}
 %
 % \def\doMMLpOVER
 %   {\doifelse{\XMLpar{mover}{accent}{}}{true}
 %      {\secondXMLRelement\firstXMLRelement}
-%      {\mathop{\vbox{\m@th\ialign{\hss##\hss\crcr\noalign{\kern3\p@}%
+%      {\mathop{\vbox{\mathsurround\zeropoint\ialign{\hss##\hss\crcr\noalign{\kern3\points}%
 %         \disabledelimiter\doMMLfiller\secondXMLRelement
-%         \crcr\noalign{\kern3\p@\nointerlineskip}%
+%         \crcr\noalign{\kern3\points\nointerlineskip}%
 %         \disabledelimiter\doMMLfiller\firstXMLRelement
 %         \crcr}}}\limits}}
 %
@@ -53,7 +55,7 @@
 %
 % \stoptext
 
-\writestatus{loading}{Context XML Macros (presentational math ml)}
+\writestatus{loading}{ConTeXt XML Macros / Presentational MathML}
 
 \unprotect
 
@@ -89,9 +91,6 @@
         {#2}{\hbox{\MMLpmath{#1}{\ignorespaces#2\unskip}}}}} % \hbox ?
 
 \remapXMLsequence [mfenced] [CPA] \MMLpFENCED
-
-\let\normalright=\right
-\let\normalleft =\left
 
 \def\doMMLleft #1{\pushmacro\left \let\left \empty\normalleft #1\popmacro\left}
 \def\doMMLright#1{\pushmacro\right\let\right\empty\normalright#1\popmacro\right}
@@ -304,16 +303,16 @@
     \dodoMMLfiller}
 
 \def\doMMLpUNDER
-  {\mathop{\vtop{\m@th\ialign{\hss##\hss\crcr
+  {\mathop{\vtop{\mathsurround\zeropoint\ialign{\hss##\hss\crcr
      \disabledelimiter\doMMLfiller\firstXMLRelement
-     \crcr\noalign{\kern3\p@\nointerlineskip}%
+     \crcr\noalign{\kern3\points\nointerlineskip}%
      \disabledelimiter\doMMLfiller\secondXMLRelement
-     \crcr\noalign{\kern3\p@}}}}\limits}
+     \crcr\noalign{\kern3\points}}}}\limits}
 
 \def\doMMLpOVER
-  {\mathop{\vbox{\m@th\ialign{\hss##\hss\crcr\noalign{\kern3\p@}%
+  {\mathop{\vbox{\mathsurround\zeropoint\ialign{\hss##\hss\crcr\noalign{\kern3\points}%
      \disabledelimiter\doMMLfiller\secondXMLRelement
-     \crcr\noalign{\kern3\p@\nointerlineskip}%
+     \crcr\noalign{\kern3\points\nointerlineskip}%
      \disabledelimiter\doMMLfiller\firstXMLRelement
      \crcr}}}\limits}
 

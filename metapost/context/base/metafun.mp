@@ -49,6 +49,8 @@ input mp-figs.mp ;
 
 input mp-mlib.mp ;
 
+if known context_mlib : input mp-chem.mp ; fi ; % only when mkiv
+
 %     mp-form.mp ;
 input mp-grid.mp ;
 input mp-func.mp ;

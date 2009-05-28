@@ -26,7 +26,9 @@
 
 % beware: aftergroup vs egroup/endgroup
 
-\input xtag-run
+\useXMLfilter[prs,run]
+
+% \input xtag-run
 
 \unprotect
 
@@ -3369,7 +3371,7 @@ text-indent=0pt, % yes
 
   \setbox \FOitembox \iftracingFO \ruledvtop \else \vtop \fi \bgroup
     \forgetall
-    \postponefootnotes
+    \postponenotes
     \hsize\FOlistitemlabelhsize
     \directsetup{fo:list-item-label:setup}
     \XMLflush{fo:list-item-label}
@@ -3508,7 +3510,7 @@ text-indent=0pt, % yes
 
 \startsetups fo:marker:process
 
-  \doifmarkingelse{fo:\XMLop{marker-class-name}}
+  \doifelsemarking{fo:\XMLop{marker-class-name}}
     {} {\definerawmarking[fo:\XMLop{marker-class-name}]}
 
   \expanded{\marking[fo:\XMLop{marker-class-name}]{\XMLflushself}}

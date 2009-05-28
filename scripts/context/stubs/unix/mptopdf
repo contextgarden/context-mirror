@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart mptopdf.pl "$@"
+mtxrun --usekpse --execute mptopdf.pl "$@"

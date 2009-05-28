@@ -11,7 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Core Macros / Cross Referencing}
+% we will merge mkii code back in here
+
+\writestatus{loading}{ConTeXt Core Macros / Cross Referencing}
 
 % todo : unknown/illegal reference no arg
 % todo : +n pages check on 'samepage' (contrastcolor)
@@ -42,93 +44,21 @@
 
 \unprotect
 
-\startmessages  dutch  library: references
-  title: verwijzingen
-      1: onbekende verwijzing --
-      2: dubbele verwijzing -- op pagina --
-      3: type verwijzing -- onbekend
-      4: verboden verwijzing --
-     21: document -- geladen
-     22: document -- is niet interactief
-     23: onduidelijke verwijzing -- (prefix=--)
-\stopmessages
+% messages moved
 
-\startmessages  english  library: references
-  title: references
-      1: unknown reference --
-      2: duplicate reference -- on page --
-      3: unknown reference type --
-      4: illegal reference --
-     21: document -- loaded
-     22: document -- is not interactive
-     23: obscure reference -- (prefix=--)
-\stopmessages
+% messages moved
 
-\startmessages  german  library: references
-  title: referenzen
-      1: unbekannte Referenz --
-      2: doppelte Referenz -- auf Seite --
-      3: unbekannte Referenz Typ --
-      4: illegale Referenz --
-     21: Dokument -- geladen
-     22: Dokument -- ist nicht aktiv
-     23: Obskure Referenz -- (Prefix=--)
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: references
-  title: reference
-      1: neznama reference --
-      2: duplicitni reference -- na strane --
-      3: neznamy typ reference --
-      4: nedovolena reference --
-     21: dokument -- nacten
-     22: dokument -- neni interaktivni
-     23: obskurni (nejasna) reference -- (prefix=--)
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: references
-  title: riferimenti
-      1: riferimento sconosciuto --
-      2: riferimento duplicato -- a pagina --
-      3: riferimento di tipo sconosciuto --
-      4: riferimento illecito --
-     21: documento -- caricato
-     22: il documento -- non ø interattivo
-     23: riferimento ambiguo -- (prefisso=--)
-\stopmessages
+% messages moved
 
-\startmessages  norwegian  library: references
-  title: referanser
-      1: ukjent referanse --
-      2: duplikat referanse -- pø side --
-      3: ukjent referansetype --
-      4: ulovlig referanse --
-     21: dokument -- er lest inn
-     22: dokument -- er ikke interaktivt
-     23: obskur referanse -- (Prefix=--)
-\stopmessages
+% messages moved
 
-\startmessages  romanian  library: references
-  title: referinte
-      1: referinta necunoscuta --
-      2: referinta duplicat -- la pagina --
-      3: tip necunoscut de referinta --
-      4: referinta eronata --
-     21: documentul -- este incarcat
-     22: documentul -- nu este interactiv
-     23: referinta obscura -- (prefix=--)
-\stopmessages
+% messages moved
 
-\startmessages  french  library: references
-  title: réferences
-      1: réference -- inconnue
-      2: réference -- dupliquée à la page --
-      3: type -- de réference inconnu
-      4: réference -- inconnue
-     21: document -- chargé
-     22: le document -- n'est pas interactif
-     23: reference -- indéterminé (préfixe=--)
-\stopmessages
+% messages moved
 
 %D This module deals with referencing. In \CONTEXT\ referencing
 %D is one of the core features, although at a first glance
@@ -193,9 +123,79 @@
 %D full reference, but it's the concept that counts. The low
 %D level implementation is:
 
-\let\rawreference    \gobblethreearguments
-\let\rawpagereference\gobbletwoarguments
-\let\rawtextreference\gobbletwoarguments
+\def\rawreference#1#2#3%
+  {\bgroup
+   \the\everyreference
+   \makesectionformat
+   \writereference{#2}
+     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}%
+     {\noexpand\realfolio}%
+     {#3}%
+   \egroup}
+
+\def\rawpagereference#1#2%
+  {\bgroup
+   \the\everyreference
+   \makesectionformat
+   \writereference{#2}
+     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}%
+     {\noexpand\realfolio}%
+     {}%
+   \egroup}
+
+\def\rawtextreference#1#2#3%
+  {\bgroup
+   \the\everyreference
+   \writereference{#2}
+     {}%
+     {\noexpand\realfolio}%
+     {#3}%
+   \egroup}
+
+%D The last reference is saved in a macro named \type
+%D {\lastreference} (indeed). To keep track of the order of
+%D references, later we will see for what purpose, we maintain
+%D a counter.
+
+\newcount\crossreferencenumber \crossreferencenumber\plusone
+
+\let\lastreference\empty
+
+\def\writereference#1#2#3#4%
+  {\ifreferencing
+     \edef\!!stringa{#1}%
+     \ifx\!!stringa\empty \else
+       \def\dowritereference##1%
+         {\xdef\lastreference{##1}%
+          \@EA\dodowritereference\lastreference\empty\empty\end{#2}{#3}{#4}}%
+       \rawprocesscommalist[\!!stringa]\dowritereference
+     \fi
+   \fi}
+
+%D Beware: \type {#2} gobbles space in references so that
+%D \typ {a nice ref} becomes \typ {anice ref}.
+
+\def\dodowritereference#1#2#3\end#4#5#6%
+  {\bgroup
+   \global\advance\crossreferencenumber \plusone\relax
+   \if#1-\if#2:%
+     \let\referenceprefix\empty
+     \xdef\lastreference{#3}%
+   \else
+     % \xdef\lastreference{#1#2#3}% here we loose the space
+   \fi\else
+     % \xdef\lastreference{#1#2#3}% here we loose the space
+   \fi
+   \ifx\lastreference\empty \else
+     \doiffirstreferenceoccurance\lastreference
+       {\thisisdestination{\referenceprefix\lastreference}}%
+     \referenceinfo>\lastreference
+     \expanded{\writeutilitycommand{\noexpand\mainreference{\referenceprefix}{\lastreference}{#4}{#5}{#6}}}%
+   \fi
+   \egroup}
+
+%D We will implement \type {\doiffirstreferenceoccurance}
+%D later on.
 
 %D These macros depend on three other ones,
 %D \type {\makesectionformat}, that generated \type
@@ -215,8 +215,6 @@
 %D different alphabet and needs accented entries in registers.
 
 \appendtoks
- %\def\dohandleaccent #1#2{\string#1\string#2}%
- %\def\dohandlecommand  #1{\string#1}%
   \cleanupfeatures
 \to \everyreference
 
@@ -671,20 +669,19 @@
 
 \newif\ifreferencefound
 
-\let\currentfullreference     =\empty
-\let\currentreferencespecial  =\empty
-\let\currentreferenceoperation=\empty
-\let\currentreferencearguments=\empty
-\let\currentouterreference    =\empty
-\let\currentinnerreference    =\empty
+\let\currentfullreference     \empty
+\let\currentreferencespecial  \empty
+\let\currentreferenceoperation\empty
+\let\currentreferencearguments\empty
+\let\currentouterreference    \empty
+\let\currentinnerreference    \empty
 
-\def\setreferencevariables#1#2#3#4#5#6%
-  {\def\currentfullreference     {#1}%
-   \def\currentreferencespecial  {#2}%
-   \def\currentreferenceoperation{#3}%
-   \def\currentreferencearguments{#4}%
-   \def\currentouterreference    {#5}%
-   \def\currentinnerreference    {#6}}
+\def\setreferencevariables#1#2#3#4#5%
+  {\def\currentreferencespecial  {#1}%
+   \def\currentreferenceoperation{#2}%
+   \def\currentreferencearguments{#3}%
+   \def\currentouterreference    {#4}%
+   \def\currentinnerreference    {#5}}
 
 \def\splitofffullreference#1%
   {\edef\currentfullreference{#1}%
@@ -1835,11 +1832,14 @@
 
 % \let\normalover \over
 
-\definecommand in    {\doinatreference\currenttextreference}
-\definecommand at    {\doinatreference\currentpagereference}
+\definecommand in    {\dospecialin}
+\definecommand at    {\dospecialat}
 \definecommand about {\dospecialabout}
 \definecommand from  {\dospecialfrom}
 \definecommand over  {\dospecialabout} % needed here, else math problems
+
+\unexpanded\def\dospecialin{\doinatreference\currenttextreference}
+\unexpanded\def\dospecialat{\doinatreference\currentpagereference}
 
 \unexpanded\def\dospecialabout[#1]%
   {\dontleavehmode
@@ -1896,9 +1896,7 @@
 %D in a different color and typeface).
 
 \def\doinatreference#1%
-  {\doifnextcharelse[% {[}
-     {\dodoinatreference{#1}{}}
-     {\dodoinatreference{#1}}}
+  {\doifnextoptionalelse{\dodoinatreference{#1}{}}{\dodoinatreference{#1}}}
 
 \def\dodoinatreference#1%
   {\def\dododoinatreference{\dodododoinatreference{#1}}%
@@ -2068,7 +2066,7 @@
   {\dontleavehmode   % replaces \leaveoutervmode
    \bgroup
    \forgetall
-   \postponefootnotes
+   \postponenotes
    %\leaveoutervmode % replaced by \dontleavehmode
    \doifreferencefoundelse{#3}
      {\bgroup
@@ -2120,7 +2118,7 @@
 \def\dogoto#1[#2]%
   {\dontleavehmode
    \bgroup
-   \postponefootnotes
+   \postponenotes
    \doifreferencefoundelse{#2}
      {\doifelsenothing{#1}
         {\dosymbolreference{}{}[#2]}
@@ -2283,13 +2281,6 @@
   {\egroup\doquadrupleempty\dodouseURL[#1][#2]}
 
 \let\useurl\useURL
-
-% \def\dodouseURL[#1][#2][#3][#4]%
-%   {\iffirstargument
-%      \iffourthargument\setgvalue{\v!file:::#1}{\doexternaldocument{#2}{#3}{#4}}\else
-%      \ifthirdargument \setgvalue{\v!file:::#1}{\doexternaldocument{#2}{#3}{\url[#1]}}\else
-%      \ifsecondargument\setgvalue{\v!file:::#1}{\doexternaldocument{#2}{}{\url[#1]}}\fi\fi\fi
-%    \fi}
 
 \def\dodouseURL[#1][#2][#3][#4]% to be redone: not too tricky redefs ad reuse
   {\iffirstargument
@@ -2633,31 +2624,15 @@
        \let\currentinnerreference\currentreferenceoperation
      \fi
      \ifx\currentouterreference\empty
-% numexpr
-       \doifinstringelse+\currentinnerreference
-         {\scratchcounter\realpageno
-          \advance\scratchcounter \currentinnerreference
-          \edef\currentinnerreference{\the\scratchcounter}}
-         {\doifinstringelse-\currentinnerreference
-            {\scratchcounter\realpageno
-             \advance\scratchcounter \currentinnerreference
-             \edef\currentinnerreference{\the\scratchcounter}}
-            \donothing}%
-       \doifnonzeropositiveelse\currentinnerreference
-         \donothing
-         {\edef\currentinnerreference{1}}%
+       \doifinstringelse+\currentinnerreference{\edef\currentinnerreference{\the\numexpr\realpageno\currentinnerreference}}
+      {\doifinstring    -\currentinnerreference{\edef\currentinnerreference{\the\numexpr\realpageno\currentinnerreference}}}%
+       \doifnonzeropositiveelse\currentinnerreference\donothing{\edef\currentinnerreference{1}}%
        \docheckrealreferencepage\currentinnerreference % new
        \let\currentrealreference\currentinnerreference % handy to have this available
        \gotorealpage\empty\empty\currentinnerreference{#2}%
      \else
        \setouterlocation\currentouterreference
-       \doifnonzeropositiveelse\currentinnerreference
-         \donothing
-         {\ifcsname\v!page:::\currentinnerreference\endcsname
-            \edef\currentinnerreference{\getvalue{\v!page:::\currentinnerreference}}%
-          \else
-            \edef\currentinnerreference{1}%
-          \fi}%
+       \doifnonzeropositiveelse\currentinnerreference\donothing{\edef\currentinnerreference{\executeifdefined{\v!page:::\currentinnerreference}1}}%
        \gotorealpage\otherURL\otherfile\currentinnerreference{#2}%
      \fi
    \else
@@ -2761,7 +2736,7 @@
      \endgroup
    \fi}
 
-\def\coupledocument%
+\def\coupledocument
   {\doquadrupleempty\docoupledocument}
 
 %D --- STRANGE HERE, BETTER IN CORE-NAV ---
@@ -2982,8 +2957,6 @@
    \egroup}
 
 %D Plugin code:
-
-\loadmarkfile{core-ref}
 
 %D In the next settings we see some variables that were not
 %D used here and that concern the way the pagenumbers refered

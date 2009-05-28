@@ -24,7 +24,31 @@
 
 \unprotect
 
+% we need to figure this out (to be discussed)
+
+\unexpanded\def\textminus
+  {\char  \iffontchar\font"2012 "2012 % figuredash
+     \else\iffontchar\font"2013 "2013 % endash
+     \else\iffontchar\font"2212 "2212 % math minus
+                                "002D % hyphen
+     \fi\fi\fi}
+
+\unexpanded\def\textplus
+  {\char"002B } % plus
+
+% \def\registerviewerlayer#1#2% global !
+%   {\setxvalue{(vl:#1)}{\global\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
+
+% \setevalue{(vl:)}{\global\doresetattribute{viewerlayer}}
+
+\let\\=\crlf % till we fixed all styles
+
+% \def\pagedir{\expandafter\gobblethreearguments}
+% \def\bodydir{\expandafter\gobblethreearguments}
+
 % we have to make an mkii/mkiv core-not
+
+\ifx\definestructurecounter\undefined
 
 \def\dochecknote % only to be called locally, some bools will become class-ones
   {% for the moment no mixed text/endnotes modes, so we use
@@ -79,22 +103,24 @@
      \skip \currentnoteins\zeropoint
    \fi}
 
-%
-
-\def\writestatus#1#2{\ctxlua{ctx.writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\fi
 
 \ifx\clearmarks\undefined
     \def\clearmarks  {\begingroup\afterassignment\doclearmarks\scratchcounter}
     \def\doclearmarks{\normalmarks\scratchcounter{}\endgroup}
 \fi
 
-\def\resetmark#1% we cannot use \normalmarks#1{}
-  {\global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
-   \@EA\clearmarks\csname\@@prk\string#1\endcsname
-   \global\@EA\let\csname\@@trk\string#1\endcsname\empty
-   \global\@EA\let\csname\@@frk\string#1\endcsname\empty
-   \global\@EA\let\csname\@@brk\string#1\endcsname\empty
-   \global\@EA\let\csname\@@crk\string#1\endcsname\empty}
+\ifx\@@trk\undefined \else
+
+    \def\resetmark#1% we cannot use \normalmarks#1{}
+      {\global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
+       \@EA\clearmarks\csname\@@prk\string#1\endcsname
+       \global\@EA\let\csname\@@trk\string#1\endcsname\empty
+       \global\@EA\let\csname\@@frk\string#1\endcsname\empty
+       \global\@EA\let\csname\@@brk\string#1\endcsname\empty
+       \global\@EA\let\csname\@@crk\string#1\endcsname\empty}
+
+\fi
 
 %D Since this can be a showstopper, we report the path at the beginning
 %D as well as at the end of a run.
@@ -102,14 +128,25 @@
 % \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}
 % \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}
 
+\startluacode
+    statistics.register("result saved in file", function()
+        return string.format( "%s.%s", "\outputfilename", (tex.pdfoutput>0 and "pdf") or "dvi")
+    end)
+\stopluacode
+
 %D For the moment we report some statistics. Later this will become an option,
 %D but for now we need this information.
 
-\def\nomkivstatistics{\ctxlua{function ctx.show_statistics() end}} % for taco
+\def\nomkivstatistics{\ctxlua{statistics.enable = false}} % for taco
 
 \def\resettimer    {\ctxlua{environment.starttime = os.clock()}}
 \def\elapsedtime   {\ctxlua{tex.sprint(os.clock()-environment.starttime)}}
 \let\elapsedseconds \elapsedtime
+
+% we will have a bunch of extra tracers (--dumphash --dumpdelta)
+
+\def\tracersdumphash {\ctxlua{tracers.register_dump_hash(false)}}
+\def\tracersdumpdelta{\ctxlua{tracers.register_dump_hash(true)}}
 
 \resettimer
 
@@ -145,43 +182,32 @@
 %         texio.write_nl("CREATING "..pth)
 %         os.execute("mkdir " .. pth)
 %     end
-%     input.output_files = { }
+%     resolvers.output_files = { }
 %     callback.register('find_write_file', function(id,name)
-%         input.output_files[name] = file.join(".","tmp","\jobname",name)
-%         texio.write_nl("REDIRECTING OUTPUT "..name.. " TO " .. input.output_files[name])
-%         return input.output_files[name]
+%         resolvers.output_files[name] = file.join(".","tmp","\jobname",name)
+%         texio.write_nl("REDIRECTING OUTPUT "..name.. " TO " .. resolvers.output_files[name])
+%         return resolvers.output_files[name]
 %     end)
 %     callback.register('find_read_file', function(id,name)
 %         local sname = string.gsub(name,"^\letterpercent./","")
-%         if input.output_files[sname] then
-%             return input.output_files[name]
+%         if resolvers.output_files[sname] then
+%             return resolvers.output_files[name]
 %         elseif string.find(sname,"^\jobname[\letterpercent.\letterpercent-]") then
 %             local n = file.join(".","tmp","\jobname",sname)
 %             local f = io.open(n)
 %             if f then
-%                 input.output_files[name] = n
+%                 resolvers.output_files[name] = n
 %                 texio.write_nl("REDIRECTING INPUT "..sname.. " TO " .. n)
 %                 f:close()
 %                 return n
 %             else
-%                 return input.findtexfile(name)
+%                 return resolvers.findtexfile(name)
 %             end
 %         else
-%             return input.findtexfile(name)
+%             return resolvers.findtexfile(name)
 %         end
 %     end)
 % }
-
-% The following commands need to be taken care of, e.g. because there is not yet
-% a mkiv module for them. (Currently they're overloaded so we need to redefine them.)
-
-\def\WORD {\groupedcommand{\setcharactercasing[\plusone  ]}{}}
-\def\word {\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
-\def\Word {\groupedcommand{\setcharactercasing[\plusthree]}{}}
-\def\Words{\groupedcommand{\setcharactercasing[\plusfour]}{}}
-
-\let\WORDS\WORD
-\let\words\word
 
 \definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
 

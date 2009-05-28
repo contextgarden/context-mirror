@@ -441,12 +441,12 @@
     </cd:sequence>
     <cd:arguments>
       <cd:keywords n="1">
-        <cd:constant type="cd:name"/> 
+        <cd:constant type="cd:name"/>
       </cd:keywords>
       <cd:keywords n="2">
         <cd:inherit name="impostafontdeltesto" n="2"/>
       </cd:keywords>
-      <cd:keywords n="1"> 
+      <cd:keywords n="1">
         <cd:inherit name="impostafontdeltesto" n="3"/>
       </cd:keywords>
     </cd:arguments>
@@ -463,7 +463,7 @@
       <cd:keywords n="2">
         <cd:inherit name="impostafontdeltesto" n="2"/>
       </cd:keywords>
-      <cd:keywords n="3"> 
+      <cd:keywords n="3">
         <cd:constant type="cd:name"/>
       </cd:keywords>
     </cd:arguments>
@@ -4096,7 +4096,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="setupinterlinespace2" variant="2" file="core-spa.tex"> 
+  <cd:command name="setupinterlinespace2" variant="2" file="core-spa.tex">
      <!-- attached a 2 to make this definition usable with \showsetup -->
     <cd:sequence>
       <cd:string value="impostainterlinea"/>
@@ -5647,6 +5647,10 @@
           <cd:constant type="max"/>
           <cd:constant type="adatta"/>
         </cd:parameter>
+        <cd:parameter name="metodo">
+          <cd:constant type="normale"/>
+          <cd:constant type="cd:name"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -7083,6 +7087,8 @@
         <cd:constant type="tollerante"/>
         <cd:constant type="moltotollerante"/>
         <cd:constant type="dilata"/>
+        <cd:constant type="lefttoright"/>
+        <cd:constant type="righttoleft"/>
       </cd:keywords>
     </cd:arguments>
   </cd:command>
@@ -9986,7 +9992,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="usetypescriptfile" file="type-ini.tex"> 
+  <cd:command name="usetypescriptfile" file="type-ini.tex">
     <cd:sequence>
       <cd:string value="usetypescriptfile"/>
     </cd:sequence>
@@ -9997,7 +10003,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="usetypescript" file="type-ini.tex"> 
+  <cd:command name="usetypescript" file="type-ini.tex">
     <cd:sequence>
       <cd:string value="usetypescript"/>
     </cd:sequence>
@@ -10014,7 +10020,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="definetypeface" file="type-ini.tex"> 
+  <cd:command name="definetypeface" file="type-ini.tex">
     <cd:sequence>
       <cd:string value="definetypeface"/>
     </cd:sequence>
@@ -10056,7 +10062,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="definefontfeature" file="type-ini.tex"> 
+  <cd:command name="definefontfeature" file="type-ini.tex">
     <cd:sequence>
       <cd:string value="definefontfeature"/>
     </cd:sequence>
@@ -10098,7 +10104,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="definefonthandling" file="hand-ini.mkii"> 
+  <cd:command name="definefonthandling" file="hand-ini.mkii">
     <cd:sequence>
       <cd:string value="definefonthandling"/>
     </cd:sequence>
@@ -10138,7 +10144,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="setupfonthandling" file="hand-ini.mkii"> 
+  <cd:command name="setupfonthandling" file="hand-ini.mkii">
     <cd:sequence>
       <cd:string value="setupfonthandling"/>
     </cd:sequence>
@@ -10152,7 +10158,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="definefontsynonym" file="font-ini.tex"> 
+  <cd:command name="definefontsynonym" file="font-ini.tex">
     <cd:sequence>
       <cd:string value="definiscisinonimofont"/>
     </cd:sequence>
@@ -10180,7 +10186,7 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="setupfontsynonym" file="font-ini.tex"> 
+  <cd:command name="setupfontsynonym" file="font-ini.tex">
     <cd:sequence>
       <cd:string value="setupfontsynonym"/>
     </cd:sequence>
@@ -10199,7 +10205,7 @@
       <cd:string value="mapfontsize"/>
     </cd:sequence>
     <cd:arguments>
-      <cd:keywords n="1"> 
+      <cd:keywords n="1">
         <cd:constant type="cd:dimension"/>
       </cd:keywords>
       <cd:keywords n="2">

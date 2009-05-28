@@ -45,7 +45,7 @@
   [set=\setups{set-stepper},
    nofsteps=50]
 
-\defineproperty[step:busy][layer][state=start]
+\defineproperty[step:busy][layer][state=start,global=no]
 
 \definereference [SetupStepper]  [JS(SetupStepper{step,\StepMaximum})]
 \definereference [ResetStepper]  [JS(ResetStepper)]
@@ -62,20 +62,36 @@
 \def\NextStepLayer {step:\the\numexpr\StepCounter+1\relax}
 \def\FirstStepLayer{step:1}
 
-\def\StartStep
-  {\ifvmode
-     \scratchskip\lastskip
-     \vskip-\scratchskip
-     \startproperty[\StepLayer]%
-     \vskip\scratchskip
-   \else
-     \startproperty[\StepLayer]%
-   \fi
-   \ignorespaces}
+\startmode[mkiv]
 
-\def\StopStep
-  {\removeunwantedspaces
-   \stopproperty}
+    \def\StartStep
+      {\startproperty[\StepLayer]%
+       \ignorespaces}
+
+    \def\StopStep
+      {\removeunwantedspaces
+       \stopproperty}
+
+\stopmode
+
+\startnotmode[mkiv]
+
+    \def\StartStep
+      {\ifvmode
+         \scratchskip\lastskip
+         \vskip-\scratchskip
+         \startproperty[\StepLayer]%
+         \vskip\scratchskip
+       \else
+         \startproperty[\StepLayer]%
+       \fi
+       \ignorespaces}
+
+    \def\StopStep
+      {\removeunwantedspaces
+       \stopproperty}
+
+\stopnotmode
 
 \def\StartSteps{\iftrialtypesetting\else\ResetStep\NextStep\StartStep\fi}
 \def\StopSteps {\iftrialtypesetting\else\StopStep \PrevStep          \fi}

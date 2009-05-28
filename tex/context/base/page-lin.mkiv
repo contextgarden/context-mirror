@@ -13,17 +13,16 @@
 
 % generic or not ... maybe not bother too much and simplify to mkiv only
 
-\writestatus{loading}{Context Core Macros / Line Numbering}
+\writestatus{loading}{ConTeXt Core Macros / Line Numbering}
 
 \unprotect
 
 % low level interface
 
-\defineattribute[line-number]
-\defineattribute[line-reference]
-
 \registerctxluafile{page-lin}{1.001}
-% \ctxluafileload{page-lin}{1.001}
+
+\definesystemattribute[line-number]
+\definesystemattribute[line-reference]
 
 \appendtoksonce\doresetattribute{line-number}\to\everyforgetall
 \appendtoksonce\dosetattribute{display-math}{1}\to\everybeforedisplayformula
@@ -64,6 +63,8 @@
 
 \def\makenumber#1#2{\hbox{\llap{#1\quad\hskip#2\scaledpoint}}\endgraf}%
 
+\newconditional\boxcontentneedsprocessing
+
 \def\mkdoprocesspagecontents  #1{\mkaddtextlinenumbers{#1}\plusone      \plusone}
 \def\mkdoprocessboxcontents   #1{\mkaddtextlinenumbers{#1}\plusone      \plusone}
 \def\mkdoprocesscolumncontents#1{\mkaddtextlinenumbers{#1}\currentcolumn\nofcolumns}
@@ -80,6 +81,7 @@
 \def\mkstarttextlinenumbering#1#2%
   {\globallet\mkprocesspagecontents  \mkdoprocesspagecontents
    \globallet\mkprocesscolumncontents\mkdoprocesscolumncontents
+   \global\settrue\boxcontentneedsprocessing % see core-rul.mkiv
    \ifcase#2\relax
      % continue
    \or
@@ -409,8 +411,8 @@
     \appendtoks\ctxlua{nodes.lines.flowed.cleanup()}\to\everybye
 
     \def\mkstarttextlinenumbering#1#2%
-      {\ctxlua{nodes.lines.flowed.prepare(#1)}%
-       \dosetattribute{line-number}{#1}}
+      {\ctxlua{nodes.lines.flowed.prepare("#1")}%
+       \dosetattribute{line-number}{#2}}
 
     \def\mkstoptextlinenumbering
       {\doresetattribute{line-number}}

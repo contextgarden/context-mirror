@@ -1,0 +1,46 @@
+% engine=luatex
+
+%D \module
+%D   [       file=mtx-context-timing,
+%D        version=2009.03.21,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Timing Runs,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin help
+%
+% usage: context --extra=timing filename
+%
+% end help
+
+\enablemode[no-timing] \usemodule[timing]
+
+\setuplayout
+  [topspace=1cm,
+   bottomspace=.5cm,
+   header=0pt,
+   width=middle,
+   height=middle,
+   style=\tt]
+
+\setupfootertexts
+  [\getdocumentfilename{1}-luatex-progress.lut -- \pagenumber]
+
+\setupcolors
+  [state=start]
+
+\starttext
+
+    \doifsomething {\getdocumentfilename{1}} {
+        \LoadUsage{\getdocumentfilename{1}-luatex-progress}
+        \ShowUsage{\getdocumentfilename{1}-luatex-progress}
+    }
+
+\stoptext
+

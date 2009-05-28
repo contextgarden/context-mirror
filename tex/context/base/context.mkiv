@@ -11,171 +11,119 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% syst-cat -> catc-ini + vectors
+% spec-*   -> special backends for luatex
+
 %D First we load the system modules. These implement a lot of
 %D manipulation macros. The first one loads \PLAIN\ \TEX, as
 %D minimal as possible.
 
+\loadcorefile{syst-ini.tex}
+\loadcorefile{norm-ctx.tex}
 \loadcorefile{syst-pln.tex}
-\loadcorefile{syst-prm.tex}
 
-\loadmkivfile{luat-env.tex}
+\loadmkivfile{luat-cod.tex}
+\loadmkivfile{luat-bas.tex}
 \loadmkivfile{luat-lib.tex}
-\loadcorefile{syst-cat.tex}
 
-\loadcorefile{syst-etx.tex}
-\loadcorefile{syst-pdt.tex}
-\loadcorefile{syst-omg.tex}
-\loadcorefile{syst-xtx.tex}
-\loadcorefile{syst-mtx.tex}
+\loadmarkfile{catc-ini}
+\loadcorefile{catc-act.tex}
+\loadcorefile{catc-def.tex}
+\loadcorefile{catc-ctx.tex}
+\loadcorefile{catc-sym.tex}
 
-\loadcorefile{syst-gen.tex}
-\loadcorefile{syst-ext.tex}
-\loadcorefile{syst-chr.tex}
-\loadcorefile{syst-fnt.tex}
-\loadcorefile{syst-new.tex}
-\loadcorefile{syst-con.tex}
-\loadcorefile{syst-var.tex}
-\loadcorefile{syst-str.tex}
-\loadcorefile{syst-rtp.tex}
+\newif\ifCONTEXT \CONTEXTtrue % will disappear
 
-%D To enable selective loading, we say:
+\loadcorefile{syst-aux.tex}
+\loadcorefile{syst-lua.tex}
+\loadmarkfile{syst-con}
 
-\CONTEXTtrue
+\loadmarkfile{syst-fnt}
+\loadmarkfile{syst-str}
+\loadmarkfile{syst-rtp}
 
-%D In order to conveniently load files, we need a few
-%D support modules.
-
-\loadcorefile{supp-ini.tex}
-\loadcorefile{supp-fil.tex}
-\loadcorefile{supp-dir.tex}
-
-%D We need to initialize characters.
+\loadmarkfile{supp-fil}
+\loadmarkfile{supp-dir}
 
 \loadmkivfile{char-ini.tex}
 \loadmkivfile{char-utf.tex}
-
-%D After this we're ready for the multi||lingual interface
-%D modules.
 
 \loadmarkfile{mult-ini}
 \loadcorefile{mult-fst.tex}
 \loadcorefile{mult-sys.tex}
 \loadcorefile{mult-def.tex}
+\loadmarkfile{mult-chk}
 
 \loadmkivfile{luat-ini.tex}
-\loadmkivfile{luat-lmx.tex}
-
-\loadmkivfile{luat-uni.tex}
 
 \loadmkivfile{toks-ini.tex}
 
-\loadmkivfile{attr-ini.tex}
 \loadmkivfile{node-ini.tex}
+\loadmkivfile{node-fin.tex}
 \loadmkivfile{node-par.tex}
 
-%D We also use some third party macros. These are loaded by
-%D saying:
-
-\loadcorefile{thrd-ran.tex}  % based on: Donald Arseneau
-\loadcorefile{thrd-trg.tex}  % based on: David Carlisle
-
-%D Now we're ready for some general support modules. These
-%D modules implement some basic typesetting functionality.
-
 \loadcorefile{core-var.tex}
-\loadmkivfile{luat-deb.tex}
+
+\loadcorefile{back-ini.tex}
+\loadcorefile{back-pdf.tex}
+
+\loadmkivfile{attr-ini.tex}
+
+\loadmarkfile{core-env}
+
+\loadmkivfile{trac-lmx.tex}
+\loadmkivfile{trac-deb.tex}
 
 \loadcorefile{supp-box.tex}
-\loadcorefile{supp-mrk.tex}
+
 \loadcorefile{supp-vis.tex}
 \loadcorefile{supp-fun.tex}
-\loadcorefile{supp-spe.tex}
-\loadcorefile{supp-ran.tex}
+
+\loadmarkfile{supp-ran}
 \loadcorefile{supp-mat.tex}
 \loadcorefile{supp-ali.tex}
 \loadcorefile{supp-num.tex}
 
-%D The next module deals with language specific typographic
-%D extensions.
-
 \loadcorefile{typo-ini.tex}
-
-%D Verbatim typesetting is implemented in a separate class of
-%D modules. The pretty typesetting modules are loaded at run
-%D time.
 
 \loadcorefile{verb-ini.tex}
 
-%D The following modules are not sequentially dependent,
-%D i.e. they have ugly dependencies, which will be cleaned
-%D up by adding more overloading.
-
-%D When loading the font, color and special modules, we need a
-%D bit more advanced file handling as well as some general
-%D variables, and features, so next we load:
-
 \loadcorefile{core-ins.tex}
 \loadcorefile{core-fil.tex}
-\loadcorefile{core-con.tex}
-
-%D We already need some synonyms (patterns). At runtime this
-%D file will be reloaded.
+\loadmarkfile{core-con}
 
 \loadcorefile{cont-fil.tex}
 
-%D \CONTEXT\ does not implement its own table handling. We
-%D just go for the best there is and load \TABLE. Just to be
-%D sure we do it here, before we redefine \type{|}.
-
-\loadcorefile{thrd-tab.tex}  % based on: Michael Wichura / will be reimplemented
-
-%D Here comes the last support modules. They take care of
-%D some language specific things.
-
-\loadcorefile{supp-pat.tex}
-
-%D The next few modules do what their names state. They
-%D load additional definition modules when needed.
-
-\loadcorefile{regi-ini.tex}
-\loadcorefile{enco-ini.tex}
-\loadcorefile{filt-ini.tex}
-\loadcorefile{hand-ini.tex}
+\loadmarkfile{regi-ini}
 \loadcorefile{regi-syn.tex}
-\loadcorefile{lang-ini.tex}
-\loadcorefile{lang-ctx.tex}
-\loadcorefile{lang-dis.tex}
+\loadmarkfile{enco-ini}
+\loadmarkfile{hand-ini}
+
+\loadmarkfile{lang-ini}
+\loadmarkfile{lang-spe}
+\loadmarkfile{lang-lab}
 
 \loadmarkfile{unic-ini}
 
-% \readfile{lang-url.pat}{}{} % test
-
 \loadcorefile{core-gen.tex}
-\loadcorefile{core-new.tex}
-\loadcorefile{core-uti.tex}
-\loadcorefile{core-two.tex}
+\loadmarkfile{core-uti}
+\loadmarkfile{core-two}
 \loadcorefile{core-stg.tex}
 
-\loadcorefile{spec-mis.tex}
-\loadcorefile{spec-ini.tex}
-\loadcorefile{spec-def.tex}
-\loadcorefile{spec-var.tex}
+% \loadcorefile{spec-ini.tex}
+% \loadcorefile{spec-mis.tex}
+% \loadcorefile{spec-def.tex}
+% \loadcorefile{spec-var.tex}
 
-\loadcorefile{colo-ini.tex}
-\loadcorefile{colo-ext.tex}
-
-%D For the moment we load a lot of languages. In the future
-%D we'll have to be more space conservative.
+\loadmarkfile{colo-ini}
+\loadmarkfile{colo-ext}
 
 \loadcorefile{lang-mis.tex}
-\loadcorefile{lang-url.tex}
-\loadcorefile{lang-spe.tex}
-\loadcorefile{lang-lab.tex}
+\loadmarkfile{lang-url}
 
 \loadcorefile{lang-ger.tex}
 \loadcorefile{lang-ita.tex}
 \loadcorefile{lang-sla.tex}
-
 \loadcorefile{lang-alt.tex}
 \loadcorefile{lang-ana.tex}
 \loadcorefile{lang-art.tex}
@@ -184,113 +132,118 @@
 \loadcorefile{lang-grk.tex}
 \loadcorefile{lang-ind.tex}
 \loadcorefile{lang-ura.tex}
-
+\loadcorefile{lang-cjk.tex}
 \loadcorefile{lang-vn.tex}
-
 \loadcorefile{lang-ara.tex}
-
-%D All kind of symbols are handled in:
+\loadcorefile{lang-cyr.tex}
 
 \loadcorefile{symb-ini.tex}
 
-%D Sorting:
+\loadmarkfile{sort-ini}
 
-\loadcorefile{sort-ini.tex}
+\loadmarkfile{core-rul}
 
-%D Next we load some core macro's. These implement the
-%D macros' that are seen by the users. The order of loading
-%D is important, due to dependancies.
+\loadcorefile{lxml-ini}
 
-\loadcorefile{core-spa.tex}
+\loadcorefile{strc-ini}
+\loadcorefile{strc-doc}
+\loadcorefile{strc-mar}
+\loadcorefile{strc-prc}
+\loadcorefile{strc-sbe}
+\loadcorefile{strc-lst}
+\loadcorefile{strc-sec}
+\loadcorefile{strc-num}
+\loadcorefile{strc-ren}
+\loadcorefile{strc-xml}
+\loadcorefile{strc-pag} % hm, depends on core-num
+\loadcorefile{strc-def} % might happen later
+\loadcorefile{strc-ref}
+\loadcorefile{strc-reg}
+
+\loadcorefile{bibl-bib}
+
+\loadmarkfile{core-spa}
 \loadcorefile{core-grd.tex}
-\loadcorefile{core-mar.tex}
-\loadcorefile{core-pos.tex}
-\loadcorefile{core-mak.tex}
-\loadcorefile{core-dat.tex}
-\loadcorefile{core-ver.tex}
-\loadcorefile{core-rul.tex}
-\loadcorefile{core-vis.tex}
-\loadcorefile{core-num.tex}
-\loadcorefile{core-tsp.tex}
-\loadcorefile{core-tab.tex}
-\loadcorefile{core-nav.tex}
-\loadcorefile{core-ref.tex}
-\loadcorefile{core-obj.tex}
-\loadcorefile{core-lst.tex}
-\loadcorefile{core-itm.tex}
-\loadcorefile{core-des.tex}
-\loadcorefile{core-mat.tex}
-\loadcorefile{core-syn.tex}
-\loadcorefile{core-sys.tex}
 
-\loadcorefile{page-ini.tex}
-\loadcorefile{page-bck.tex}
+\loadmarkfile{core-pos}
+\loadcorefile{core-mak.tex}
+\loadmarkfile{core-ver}
+
+\loadcorefile{core-vis.tex}
+\loadmarkfile{core-nav}
+\loadmarkfile{core-obj}
+
+\loadcorefile{strc-itm.tex}
+\loadcorefile{strc-des.tex}
+\loadcorefile{strc-syn.tex}
+
+\loadmarkfile{core-sys}
+
+\loadmarkfile{page-ini}
+\loadmarkfile{page-bck}
 \loadcorefile{page-not.tex}
-\loadcorefile{page-one.tex}
+\loadmarkfile{page-one}
 \loadcorefile{page-lay.tex}
-\loadcorefile{page-txt.tex}
+\loadmarkfile{page-txt}
 \loadcorefile{page-sid.tex}
-\loadcorefile{page-flt.tex}
+
+\loadcorefile{strc-flt.tex}
+
+\loadcorefile{page-mis.tex}
 \loadcorefile{page-mul.tex}
 \loadcorefile{page-set.tex}
 \loadcorefile{page-lyr.tex}
 \loadcorefile{page-mak.tex}
-\loadcorefile{page-num.tex}
+
 \loadmarkfile{page-lin}
 \loadcorefile{page-par.tex}
 \loadcorefile{page-mar.tex}
 
-\loadcorefile{core-job.tex} % why so late?
+\loadmarkfile{core-job} % why so late?
 
-% so far
+\loadmarkfile{core-buf}
 
-\loadmarkfile{core-sec}
-\loadcorefile{core-swd.tex}
-\loadcorefile{core-buf.tex}
-\loadcorefile{core-blk.tex}
+\loadcorefile{strc-blk.tex}
+
 \loadcorefile{page-imp.tex}
-\loadcorefile{core-tbl.tex}
-\loadcorefile{core-int.tex}
-\loadcorefile{core-ntb.tex}
-\loadcorefile{core-ltb.tex}
 
-%D A few more languages, that have specifics using core
-%D functionality:
+\loadmarkfile{core-int}
+\loadcorefile{strc-bkm.tex} % bookmarks
 
-\loadcorefile{lang-chi.tex}
-\loadcorefile{lang-jap.tex}
+\loadcorefile{tabl-pln.tex}
+\loadcorefile{thrd-tab.tex}
+\loadcorefile{tabl-tab.tex}
+\loadcorefile{tabl-tbl.tex}
+\loadmarkfile{tabl-ntb}
+\loadcorefile{tabl-nte.tex}
+\loadcorefile{tabl-ltb.tex}
+\loadcorefile{tabl-tsp.tex}
 
-%D How about fill||in fields and related stuff?
-
-\loadcorefile{java-ini.tex}
-\loadcorefile{core-fld.tex}
+\loadmarkfile{java-ini}
+\loadmarkfile{core-fld}
 \loadcorefile{core-hlp.tex}
 
-%D Registers can depend on fields, so we load that now.
-
-\loadcorefile{core-reg.tex}
-
-%D Of course we do need fonts. There are no \TFM\ files
-%D loaded yet, so the format file is independant of their
-%D content. Here we also redefine \type{\it} as {\it italic}
-%D instead of italian.
-
+\loadcorefile{char-enc.tex}
 \loadmarkfile{font-ini}
-\loadcorefile{font-uni.tex}
-\loadcorefile{font-bfm.tex}
-\loadmkivfile{font-col.tex}
+\loadmarkfile{font-unk}
+\loadmarkfile{font-tra}
+\loadmarkfile{font-uni}
+\loadmarkfile{font-col}
 
-\loadcorefile{type-ini.tex}
+\loadcorefile{typo-spa.tex}
+\loadcorefile{typo-krn.tex}
+\loadcorefile{typo-mir.tex}
+\loadcorefile{typo-brk.tex}
+\loadcorefile{typo-cap.tex}
+
+\loadmarkfile{type-ini}
 \loadcorefile{type-def.tex}
 
-%D Properties. Don't ask.
+\loadcorefile{scrp-ini.tex}
 
-\loadcorefile{prop-ini.tex}
-\loadcorefile{prop-lay.tex}
-\loadcorefile{prop-mis.tex}
-
-%D Like languages, fonts, encodings and symbols, \METAPOST\
-%D support is also organized in its own class of modules.
+\loadmarkfile{prop-ini}
+\loadmarkfile{prop-lay}
+\loadmarkfile{prop-mis}
 
 \loadmkivfile{mlib-ctx.tex}
 \loadmkivfile{mlib-pdf.tex}
@@ -298,121 +251,100 @@
 
 \loadmarkfile{meta-ini}
 \loadmarkfile{meta-tex}
+\loadmarkfile{meta-pdf}
 
-\loadcorefile{meta-pdf.tex}
 \loadcorefile{meta-pag.tex}
-
-%D Special page handling (maybe even later)
 
 \loadcorefile{page-flw.tex}
 \loadcorefile{page-spr.tex}
 \loadcorefile{page-plg.tex}
 \loadcorefile{page-str.tex}
 
-%D Hm.
-
 \loadcorefile{core-pgr.tex}
 \loadcorefile{core-bar.tex}
 \loadcorefile{core-snc.tex}
 
+\loadmarkfile{math-pln}
+\loadmarkfile{math-ini}
+\loadmarkfile{math-for}
+\loadmarkfile{math-def}
+\loadmarkfile{math-ali}
+\loadmarkfile{math-arr}
+\loadmarkfile{math-frc}
+\loadmarkfile{math-scr}
+\loadmarkfile{math-int}
+\loadmarkfile{math-del}
+\loadmarkfile{math-inl}
+\loadmarkfile{math-dis}
 
-%D Math.
+\loadcorefile{strc-mat.tex}
 
-\loadcorefile{math-pln.tex}
-\loadcorefile{math-ini.tex}
-\loadcorefile{math-ext.tex}
+\loadmarkfile{chem-ini}
+\loadmarkfile{chem-str}
 
-%D Now we're ready for more core modules.
+\loadmarkfile{core-fnt}
 
-\loadcorefile{core-fnt.tex}
-\loadcorefile{core-not.tex}
+\loadcorefile{strc-not.tex}
+
 \loadcorefile{core-lnt.tex}
 
-\loadcorefile{core-mis.tex}
+\loadmarkfile{core-mis}
 
 \loadcorefile{core-trf.tex}
-\loadcorefile{core-inc.tex}
+\loadmarkfile{core-inc}
 \loadcorefile{core-fig.tex}
-\loadcorefile{core-par.tex}
 
 \loadcorefile{core-box.tex}
 \loadcorefile{page-app.tex}
 \loadmarkfile{meta-fig}
 
-%D Language specific spacing.
-
 \loadcorefile{lang-spa.tex}
-
-%D Only the basic XML parser and remapper are part of the core.
-%D These macros are loaded last since they overload and|/|or
-%D extend previously defined ones.
-
-\loadmkivfile{lxml-ini.tex}
 
 \loadcorefile{xtag-ini.tex}
 \loadcorefile{xtag-ext.tex}
-\loadcorefile{xtag-prs.tex}
-\loadcorefile{xtag-map.tex}
-\loadcorefile{xtag-stk.tex}
 \loadcorefile{xtag-exp.tex}
 \loadcorefile{xtag-pre.tex}
 \loadcorefile{xtag-xsd.tex}
 \loadcorefile{xtag-rng.tex}
-%loadcorefile{xtag-ent.tex}
-
-%D How about this:
 
 \loadcorefile{meta-xml.tex}
 
-%D \TEX\ related logo's are always typeset in a special way.
-%D Here they come:
-
 \loadcorefile{cont-log.tex}
 
-%D This one overloads af few things:
+\loadcorefile{task-ini.tex}
 
-\loadcorefile{core-ctx.tex}
-
-%D Defaults go here (more will be moved to this module
-%D later):
+\loadmarkfile{core-ctx}
 
 \loadcorefile{core-lme.tex}
 \loadcorefile{core-ini.tex}
-\loadcorefile{core-def.tex}
-
-%D Preloaded modules (some need xml support):
+\loadmarkfile{core-def}
 
 %usemodule[x][res-04] % xml resource libraries
 %usemodule[x][res-08] % rlx runtime conversion
-\usemodule[x][res-12] % rli external indentification
-
-%D At run time, a few more files are loaded, like:
-%D
-%D \startitemize[packed]
-%D \item \type{cont-sys}: local (system dependant) defaults
-%D \item \type{cont-old}: substitutes for old (obsolete) macros
-%D \item \type{cont-new}: new macro implementations (for testing)
-%D \item \type{cont-fil}: filename and module synonyms
-%D \stopitemize
+% \usemodule[x][res-12] % rli external indentification
 
 \unprotect
 
-\beginLUATEX
-    \prependtoks
-        \ctxlua{input.starttiming(ctx)}%
-    \to \everyjob
-    \appendtoks
-        \ctxlua{input.stoptiming(ctx)}%
-    \to \everyjob
-    \appendtoks
-        \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}%
-        \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}%
-    \to \everydump
-\endLUATEX
+\prependtoks
+    \ctxlua{statistics.starttiming(ctx)}%
+\to \everyjob
+\appendtoks
+    \ctxlua{statistics.stoptiming(ctx)}%
+\to \everyjob
+\appendtoks
+    \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}%
+    \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}%
+\to \everydump
 
-\protect
+\setupcurrentlanguage[\s!en]
 
-% %D Except from english, no hyphenation patterns are loaded
-% %D yet. Users can specify their needs in the next module:
-%
-% \input cont-usr.tex
+\appendtoks
+    \ctxlua {
+        statistics.report_storage("log")
+        statistics.save_fmt_status("\jobname","\contextversion","context.tex")
+    }%
+\to \everydump
+
+\setsystemmode{experimental} % test with *experimental
+
+\protect \errorstopmode \dump \endinput

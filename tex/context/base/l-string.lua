@@ -1,136 +1,30 @@
--- filename : l-string.lua
--- comment  : split off from luat-lib
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-string'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-string'] = 1.001
+local sub, gsub, find, match, gmatch, format, char, byte, rep = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep
 
---~ function string.split(str, pat) -- taken from the lua wiki
---~     local t = {n = 0} -- so this table has a length field, traverse with ipairs then!
---~     local fpat = "(.-)"..pat
---~     local last_end = 1
---~     local s, e, cap = string.find(str, fpat, 1)
---~     while s ~= nil do
---~         if s~=1 or cap~="" then
---~             table.insert(t,cap)
---~         end
---~         last_end = e+1
---~         s, e, cap = string.find(str, fpat, last_end)
---~     end
---~     if last_end<=string.len(str) then
---~         table.insert(t,(string.sub(str,last_end)))
---~     end
---~     return t
---~ end
+if not string.split then
 
---~ function string:split(pat) -- taken from the lua wiki but adapted
---~     local t = { }          -- self and colon usage (faster)
---~     local fpat = "(.-)"..pat
---~     local last_end = 1
---~     local s, e, cap = self:find(fpat, 1)
---~     while s ~= nil do
---~         if s~=1 or cap~="" then
---~             t[#t+1] = cap
---~         end
---~         last_end = e+1
---~         s, e, cap = self:find(fpat, last_end)
---~     end
---~     if last_end <= #self then
---~         t[#t+1] = self:sub(last_end)
---~     end
---~     return t
---~ end
+    -- this will be overloaded by a faster lpeg variant
 
---~ a piece of brilliant code by Rici Lake (posted on lua list) -- only names changed
---~
---~ function string:splitter(pat)
---~    local st, g = 1, self:gmatch("()"..pat.."()")
---~    local function splitter(self)
---~      if st then
---~        local s, f = g()
---~        local rv = self:sub(st, (s or 0)-1)
---~        st = f
---~        return rv
---~      end
---~    end
---~    return splitter, self
---~ end
-
-function string:splitter(pat)
-    -- by Rici Lake (posted on lua list) -- only names changed
-    -- p 79 ref man: () returns position of match
-    local st, g = 1, self:gmatch("()("..pat..")")
-    local function strgetter(self, segs, seps, sep, cap1, ...)
-        st = sep and seps + #sep
-        return self:sub(segs, (seps or 0) - 1), cap1 or sep, ...
-    end
-    local function strsplitter(self)
-        if st then return strgetter(self, st, g()) end
-    end
-    return strsplitter, self
-end
-
-function string:split(separator)
-    local t = {}
-    for k in self:splitter(separator) do t[#t+1] = k end
-    return t
-end
-
--- faster than a string:split:
-
-function string:splitchr(chr)
-    if #self > 0 then
-        local t = { }
-        for s in (self..chr):gmatch("(.-)"..chr) do
-            t[#t+1] = s
+    function string:split(pattern)
+        if #self > 0 then
+            local t = { }
+            for s in gmatch(self..pattern,"(.-)"..pattern) do
+                t[#t+1] = s
+            end
+            return t
+        else
+            return { }
         end
-        return t
-    else
-        return { }
     end
+
 end
-
-function string.piecewise(str, pat, fnc) -- variant of split
-    for k in string.splitter(str,pat) do fnc(k) end
-end
-
---~ function string.piecewise(str, pat, fnc) -- variant of split
---~     for k in str:splitter(pat) do fnc(k) end
---~ end
-
---~ do if lpeg then
-
---~     -- this alternative is 30% faster esp when we cache them
---~     -- problem: no expressions
-
---~     splitters = { }
-
---~     function string:split(separator)
---~         if #self > 0 then
---~             local split = splitters[separator]
---~             if not split then
---~                 -- based on code by Roberto
---~                 local p = lpeg.P(separator)
---~                 local c = lpeg.C((1-p)^0)
---~                 split = lpeg.Ct(c*(p*c)^0)
---~                 splitters[separator] = split
---~             end
---~             return split:match(self)
---~         else
---~             return { }
---~         end
---~     end
-
---~     string.splitchr = string.split
-
---~     function string:piecewise(separator,fnc)
---~         for _,v in pairs(self:split(separator)) do
---~             fnc(v)
---~         end
---~     end
-
---~ end end
 
 local chr_to_esc = {
     ["%"] = "%%",
@@ -145,20 +39,20 @@ local chr_to_esc = {
 string.chr_to_esc = chr_to_esc
 
 function string:esc() -- variant 2
-    return (self:gsub("(.)",chr_to_esc))
+    return (gsub(self,"(.)",chr_to_esc))
 end
 
 function string:unquote()
-    return (self:gsub("^([\"\'])(.*)%1$","%2"))
+    return (gsub(self,"^([\"\'])(.*)%1$","%2"))
 end
 
-function string:quote()
+function string:quote() -- we could use format("%q")
     return '"' .. self:unquote() .. '"'
 end
 
 function string:count(pattern) -- variant 3
     local n = 0
-    for _ in self:gmatch(pattern) do
+    for _ in gmatch(self,pattern) do
         n = n + 1
     end
     return n
@@ -167,29 +61,25 @@ end
 function string:limit(n,sentinel)
     if #self > n then
         sentinel = sentinel or " ..."
-        return self:sub(1,(n-#sentinel)) .. sentinel
+        return sub(self,1,(n-#sentinel)) .. sentinel
     else
         return self
     end
 end
 
 function string:strip()
-    return (self:gsub("^%s*(.-)%s*$", "%1"))
+    return (gsub(self,"^%s*(.-)%s*$", "%1"))
 end
 
---~ function string.strip(str) -- slightly different
---~     return (string.gsub(string.gsub(str,"^%s*(.-)%s*$","%1"),"%s+"," "))
---~ end
-
 function string:is_empty()
-    return not self:find("%S")
+    return not find(find,"%S")
 end
 
 function string:enhance(pattern,action)
     local ok, n = true, 0
     while ok do
         ok = false
-        self = self:gsub(pattern, function(...)
+        self = gsub(self,pattern, function(...)
             ok, n = true, n + 1
             return action(...)
         end)
@@ -197,59 +87,19 @@ function string:enhance(pattern,action)
     return self, n
 end
 
---~ function string:enhance(pattern,action)
---~     local ok, n = 0, 0
---~     repeat
---~         self, ok = self:gsub(pattern, function(...)
---~             n = n + 1
---~             return action(...)
---~         end)
---~     until ok == 0
---~     return self, n
---~ end
-
---~     function string:to_hex()
---~         if self then
---~             return (self:gsub("(.)",function(c)
---~                 return string.format("%02X",c:byte())
---~             end))
---~         else
---~             return ""
---~         end
---~     end
-
---~     function string:from_hex()
---~         if self then
---~             return (self:gsub("(..)",function(c)
---~                 return string.char(tonumber(c,16))
---~             end))
---~         else
---~             return ""
---~         end
---~     end
-
-string.chr_to_hex = { }
-string.hex_to_chr = { }
+local chr_to_hex, hex_to_chr = { }, { }
 
 for i=0,255 do
-    local c, h = string.char(i), string.format("%02X",i)
-    string.chr_to_hex[c], string.hex_to_chr[h] = h, c
+    local c, h = char(i), format("%02X",i)
+    chr_to_hex[c], hex_to_chr[h] = h, c
 end
 
---~     function string:to_hex()
---~         if self then return (self:gsub("(.)",string.chr_to_hex)) else return "" end
---~     end
-
---~     function string:from_hex()
---~         if self then return (self:gsub("(..)",string.hex_to_chr)) else return "" end
---~     end
-
 function string:to_hex()
-    return ((self or ""):gsub("(.)",string.chr_to_hex))
+    return (gsub(self or "","(.)",chr_to_hex))
 end
 
 function string:from_hex()
-    return ((self or ""):gsub("(..)",string.hex_to_chr))
+    return (gsub(self or "","(..)",hex_to_chr))
 end
 
 if not string.characters then
@@ -263,7 +113,7 @@ if not string.characters then
     end
     local function nextbyte(str, index)
         index = index + 1
-        return (index <= #str) and index or nil, string.byte(str:sub(index,index))
+        return (index <= #str) and index or nil, byte(str:sub(index,index))
     end
     function string:bytes()
         return nextbyte, self, 0
@@ -271,9 +121,7 @@ if not string.characters then
 
 end
 
---~ function string:padd(n,chr)
---~     return self .. self.rep(chr or " ",n-#self)
---~ end
+-- we can use format for this (neg n)
 
 function string:rpadd(n,chr)
     local m = n-#self
@@ -295,8 +143,8 @@ end
 
 string.padd = string.rpadd
 
-function is_number(str)
-    return str:find("^[%-%+]?[%d]-%.?[%d+]$") == 1
+function is_number(str) -- tonumber
+    return find(str,"^[%-%+]?[%d]-%.?[%d+]$") == 1
 end
 
 --~ print(is_number("1"))
@@ -308,9 +156,9 @@ end
 --~ print(is_number("+.1"))
 
 function string:split_settings() -- no {} handling, see l-aux for lpeg variant
-    if self:find("=") then
+    if find(self,"=") then
         local t = { }
-        for k,v in self:gmatch("(%a+)=([^%,]*)") do
+        for k,v in gmatch(self,"(%a+)=([^%,]*)") do
             t[k] = v
         end
         return t
@@ -332,13 +180,49 @@ local patterns_escapes = {
 }
 
 function string:pattesc()
-    return (self:gsub(".",patterns_escapes))
+    return (gsub(self,".",patterns_escapes))
 end
 
 function string:tohash()
     local t = { }
-    for s in self:gmatch("([^, ]+)") do -- lpeg
+    for s in gmatch(self,"([^, ]+)") do -- lpeg
         t[s] = true
     end
     return t
 end
+
+local pattern = lpeg.Ct(lpeg.C(1)^0)
+
+function string:totable()
+    return pattern:match(self)
+end
+
+--~ for _, str in ipairs {
+--~     "1234567123456712345671234567",
+--~     "a\tb\tc",
+--~     "aa\tbb\tcc",
+--~     "aaa\tbbb\tccc",
+--~     "aaaa\tbbbb\tcccc",
+--~     "aaaaa\tbbbbb\tccccc",
+--~     "aaaaaa\tbbbbbb\tcccccc",
+--~ } do print(string.tabtospace(str)) end
+
+function string.tabtospace(str,tab)
+    -- we don't handle embedded newlines
+    while true do
+        local s = find(str,"\t")
+        if s then
+            if not tab then tab = 7 end -- only when found
+            local d = tab-(s-1)%tab
+            if d > 0 then
+                str = gsub(str,"\t",rep(" ",d),1)
+            else
+                str = gsub(str,"\t","",1)
+            end
+        else
+            break
+        end
+    end
+    return str
+end
+

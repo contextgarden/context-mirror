@@ -207,4 +207,22 @@
 \def\TitlePage   {\doTitlePage\TitleFont\relax}
 \def\SubTitlePage{\doTitlePage\TitleFont\SubTitleFont}
 
-\endinput
+\doifnotmode{demo} {\endinput}
+
+\starttext
+
+\StartTitlePage
+bla\\bla bla\\bla
+\StopTitlePage
+
+\StartRemark {Bla Bla}
+    Bla Bla Bla. \FlushStep
+    Bla Bla Bla. \FlushStep
+\StopRemark
+
+\StartRemark {Bla Bla}
+    Bla Bla Bla. \FlushStep
+    Bla Bla Bla. \FlushStep
+\StopRemark
+
+\stoptext

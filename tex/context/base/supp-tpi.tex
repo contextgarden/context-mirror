@@ -19,14 +19,16 @@
 %D \type{supp-spe} as well as the \METAPOST\ run||time support
 %D implemented in \type{supp-mps}.
 
-\beginLUATEX \endinput \endLUATEX % to be sure, we don't want to load the following
+\ifnum\texengine=\luatexengine
+    \endinput
+\fi
 
 \ifx\undefined\writestatus         \input supp-mis \relax \fi
 \ifx\undefined\mimmickspecials     \input supp-spe \relax \fi
 \ifx\undefined\MPgraphicbox        \input supp-mps \relax \fi
 \ifx\undefined\dogetEPSboundingbox \input supp-eps \relax \fi
 
-\writestatus{loading}{Context Support Macros / TPIC Conversion}
+\writestatus{loading}{ConTeXt Support Macros / TPIC Conversion}
 
 %D Beware: we haven't activated both mechanism yet. This is
 %D to be done in the calling module.

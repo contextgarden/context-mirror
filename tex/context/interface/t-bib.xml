@@ -199,6 +199,9 @@
       <cd:parameter name="otherstext">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="namesep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
       <cd:parameter name="pubsep">
         <cd:constant type="cd:text"/>
       </cd:parameter>

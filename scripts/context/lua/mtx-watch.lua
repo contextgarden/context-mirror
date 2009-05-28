@@ -58,6 +58,20 @@ do
                     end
                 end
             end
+            local function toset(t)
+                if type(t) == "table" then
+                    return table.concat(t,",")
+                else
+                    return t
+                end
+            end
+            local function noset(t)
+                if type(t) == "table" then
+                    return t[1]
+                else
+                    return t
+                end
+            end
             local function process()
                 local done = false
                 for _, path in ipairs(environment.files) do
@@ -77,8 +91,8 @@ do
                                 local command = joblog.command
                                 if command then
                                     local replacements = {
-                                        inputpath  = (joblog.paths and joblog.paths.input ) or ".",
-                                        outputpath = (joblog.paths and joblog.paths.output) or ".",
+                                        inputpath  = toset((joblog.paths and joblog.paths.input ) or "."),
+                                        outputpath = noset((joblog.paths and joblog.paths.output) or "."),
                                         filename   = joblog.filename or "",
                                     }
                                     command = command:gsub("%%(.-)%%", replacements)
@@ -225,7 +239,7 @@ function scripts.watch.show_logs(path) -- removes duplicates
     end
 end
 
-banner = banner .. " | watchdog"
+logs.extendbanner("Watchdog 1.00",true)
 
 messages.help = [[
 --logpath             optional path for log files
@@ -236,8 +250,6 @@ messages.help = [[
 --showlog             show log data
 ]]
 
-input.verbose = true
-
 if environment.argument("watch") then
     scripts.watch.watch()
 elseif environment.argument("collect") then
@@ -245,5 +257,5 @@ elseif environment.argument("collect") then
 elseif environment.argument("showlog") then
     scripts.watch.show_logs()
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

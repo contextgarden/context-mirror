@@ -2,7 +2,7 @@
 %D   [       file=lang-mis,
 %D        version=1997.03.20, % used to be supp-lan.tex
 %D          title=\CONTEXT\ Language Macros,
-%D       subtitle=Language Options,
+%D       subtitle=Compounds,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Language Macros / Compounds}
+\writestatus{loading}{ConTeXt Language Macros / Compounds}
 
 %D \gdef\starttest
 %D   {\blank
@@ -181,7 +181,7 @@
 %ifx\postwordbreak            \undefined \def\postwordbreak{\penalty\zerocount      \prewordbreak         } \fi
 \ifx\postwordbreak            \undefined \def\postwordbreak{\penalty\zerocount      \hskip\zeropoint\relax} \fi
 
-\ifx\hspaceamount             \undefined \def\hspaceamount#1#2{\kern.16667em} \fi % language specific
+\ifx\hspaceamount             \undefined \def\hspaceamount#1#2{.16667em} \fi % language specific
 
 %D \macros
 %D   {beginofsubsentencespacing,endofsubsentencespacing}

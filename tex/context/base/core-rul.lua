@@ -18,7 +18,6 @@ function commands.doreshapeframedbox(n)
         local list = tex.box[n].list
         for h in node.traverse_id('hlist',list) do
             done = true
-         -- local p = hpack(h.list)
             local p = hpack(copy(h.list))
             lastlinelength = p.width
             if lastlinelength > width then

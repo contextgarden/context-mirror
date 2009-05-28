@@ -50,7 +50,7 @@
 % \catcode`\@=11
 %
 % \def\nextrandom{\begingroup
-%  \ifnum\randomi<\@ne % then initialize with time
+%  \ifnum\randomi<\plusone % then initialize with time
 %     \global\randomi\time
 %     \global\multiply\randomi388 \global\advance\randomi\year
 %     \global\multiply\randomi31 \global\advance\randomi\day
@@ -115,7 +115,7 @@
 \newcount\randomi % the random number seed (while executing)
 \newcount\ranval
 
-\ifx\m!systems\undefined \def\m!systems{system} \fi
+\ifx\m!systems\undefined \def\m!systems{systems} \fi
 
 \def\nextrandom
   {\begingroup

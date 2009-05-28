@@ -15,7 +15,7 @@
 
 % This module is under construction and will be cleaned up.
 
-\writestatus{loading}{Context XML Macros (MathML Renderer)}
+\writestatus{loading}{ConTeXt XML Macros / MathML Renderer}
 
 \unprotect
 
@@ -66,15 +66,24 @@
     \startformula\MMLhack\xmlfirst{#1}{/mml:math}\stopformula
 \stopxmlsetups
 
+\setfalse\mmlignoredelimiter
+\settrue \mmlsomeleftdelimiter
+
+\def\MMLleftorright
+   {\ifconditional\mmlsomeleftdelimiter
+      \setfalse\mmlsomeleftdelimiter\expandafter\MMLleft
+    \else
+      \settrue \mmlsomeleftdelimiter\expandafter\MMLright
+    \fi}
+
 \ifx\MMLleft  \undefined \let\MMLleft  \firstofoneargument \fi
 \ifx\MMLright \undefined \let\MMLright \firstofoneargument \fi
 \ifx\MMLmiddle\undefined \let\MMLmiddle\firstofoneargument \fi
 
-\setfalse\mmlignoredelimiter
-
-\def\mmlleftdelimiter  #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft  #1}\fi}
-\def\mmlrightdelimiter #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright #1}\fi}
-\def\mmlmiddledelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLmiddle#1}\fi}
+\def\mmlleftdelimiter       #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft       #1}\fi}
+\def\mmlrightdelimiter      #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright      #1}\fi}
+\def\mmlmiddledelimiter     #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLmiddle     #1}\fi}
+\def\mmlleftorrightdelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleftorright#1}\fi}
 
 \def\mmlchar#1{\char#1 } % used in lua code
 
@@ -93,7 +102,7 @@
 %D some namespace limitations. Here we do it the \MKV\ way.
 
 \def\widevec#1%
-  {\vbox{\m@th\ialign{##\crcr
+  {\vbox{\mathsurround\zeropoint\ialign{##\crcr
      \rightarrowfill\crcr\noalign{\nointerlineskip}%
       $\hfil\displaystyle{#1}\hfil$\crcr}}}
 
@@ -1778,8 +1787,10 @@
 \xmlmapvalue {mml} {sans-serif-bold-italic} {\ss\bi}
 \xmlmapvalue {mml} {monospace}              {\tt}
 
+% todo: displaystyle=true/false (or whatever else shows up)
+
 \starttexdefinition setmmlmathstyle #1
-    \xmlval {mml} {\xmlatt{#1}{mathvariant}} \mmmr
+    \xmlval {mml} {\xmlatt{#1}{mathvariant}} \empty % was: \mmmr
 \stoptexdefinition
 
 \starttexdefinition applymmlmathcolor #1#2
@@ -1802,7 +1813,7 @@
     \fi
 \stoptexdefinition
 
-\newsignal\mmltextsignal
+\newsignal\mmltextsignal % not used
 
 \starttexdefinition applymmlsometext #1#2
      \applymmlmathbackground {#1} {
@@ -1861,23 +1872,6 @@
     \def\MMLmiddle{\middle}
     \ctxlua{lxml.mml.mfenced("#1","/*")}
 \stopxmlsetups
-
-% \startxmlsetups mml:menclose % notation=.....
-%     \edef\mmlmenclosenotation{\xmlattdef{#1}{notation}{longdiv}}
-%     \doifelse \mmlmenclosenotation {longdiv} {
-%         \overline{\left)\strut\xmlflush{#1}\right.}
-%     } {
-%         \doifelse \mmlmenclosenotation {actuarial} {
-%             \overline{\left.\strut\xmlflush{#1}\right|}
-%         } {
-%             \doifelse \mmlmenclosenotation {radical} {
-%                 \sqrt{\xmlflush{#1}}
-%             } {
-%                 \xmlflush{#1}
-%             }
-%         }
-%     }
-% \stopxmlsetups
 
 \defineoverlay [mml:enclose:box]                [\useMPgraphic{mml:enclose:box}]
 \defineoverlay [mml:enclose:roundedbox]         [\useMPgraphic{mml:enclose:roundedbox}]
@@ -1951,23 +1945,26 @@
                 \doifelse \mmlmenclosenotation {mml:enclose:radical} {
                     \sqrt{\xmlflush{#1}}
                 } {
-                    \framed
-                        [frame=off,background={\mmlmenclosenotation}]
-                    {$
-                            \expanded{\doifinsetelse {mml:enclose:longdiv} {\mmlmenclosenotation}} {
-                                \overline{\left)\strut\xmlflush{#1}\right.}
-                            } {
-                                \expanded{\doifinsetelse {mml:enclose:actuarial} {\mmlmenclosenotation}} {
-                                    \overline{\left.\strut\xmlflush{#1}\right|}
+                    % todo: no framed when longdiv, actuarial or radical ? spec ?
+                    \vcenter {
+                        \framed
+                            [frame=off,strut=no,background={\mmlmenclosenotation}] % offset is kind of undefined
+                            {$
+                                \expanded{\doifinsetelse {mml:enclose:longdiv} {\mmlmenclosenotation}} {
+                                    \overline{\left)\strut\xmlflush{#1}\right.}
                                 } {
-                                    \expanded{\doifinsetelse {mml:enclose:radical} {\mmlmenclosenotation}} {
-                                        \sqrt{\xmlflush{#1}}
+                                    \expanded{\doifinsetelse {mml:enclose:actuarial} {\mmlmenclosenotation}} {
+                                        \overline{\left.\strut\xmlflush{#1}\right|}
                                     } {
-                                        \xmlflush{#1}
+                                        \expanded{\doifinsetelse {mml:enclose:radical} {\mmlmenclosenotation}} {
+                                            \sqrt{\xmlflush{#1}}
+                                        } {
+                                            \xmlflush{#1}
+                                        }
                                     }
                                 }
-                            }
-                    $}
+                            $}
+                    }
                 }
             }
         }
@@ -2020,9 +2017,20 @@
     \endgroup
 \stopxmlsetups
 
+\setupMMLappearance[text][\c!alternative=\v!a] % a=normal, b=keep spaces
+
 \startxmlsetups mml:mtext
     \domathtext {
-        \applymmlsometext{#1}{\xmlflush{#1}}
+        \applymmlsometext{#1}{
+            \doifelse\MMLscriptsalternative\v!a {
+               %\ctxlua{lxml.mml.stripped(\!!bs\xmlflush{#1}\!!es)}
+                \ignorespaces
+                \xmlflush{#1}
+                \unskip
+            } {
+                \xmlflush{#1}
+            }
+        }
     }
 \stopxmlsetups
 

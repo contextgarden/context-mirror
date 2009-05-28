@@ -16,7 +16,7 @@
 %D Acrobat Distiller. This module implements some common
 %D features.
 
-\writestatus{loading}{Context Special Macros / Miscellaneous Macros}
+\writestatus{loading}{ConTeXt Special Macros / Miscellaneous Macros}
 
 \unprotect
 
@@ -92,8 +92,6 @@
 
 \def\dofileinsertion#1#2{\executeifdefined{do#1insert#2}\donothing}
 \def\dofilechecker  #1#2{\executeifdefined{do#1check#2} \donothing}
-
-\newevery \everyresetspecials \relax
 
 \appendtoks \let\supportedfileinsertions\empty \to \everyresetspecials
 \appendtoks \let\supportedfilecheckers  \empty \to \everyresetspecials
@@ -234,13 +232,17 @@
           \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
           \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
 
-    \beginXETEX
-      \def\dosetpositionpapersize#1#2%
-        {\xdef\flushDVIpositionpapersize
-           {\special{pos:papersize \number#1 \number#2}%
-            \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.xdv }%
-            \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
-    \endXETEX
+    % kind of obsolete since nowadays xetex supports \pdfsavepos as well
+
+    \ifnum\texengine=\xetexengine
+
+        \def\dosetpositionpapersize#1#2%
+          {\xdef\flushDVIpositionpapersize
+             {\special{pos:papersize \number#1 \number#2}%
+              \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.xdv }%
+              \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+
+    \fi
 
     \prependtoksonce \flushDVIpositionpapersize \to \everyshipout
 
@@ -278,7 +280,7 @@
 
 %D Handy to have this available asap:
 
-\newevery \everyPDFxform  \relax
-\newevery \everyPDFximage \relax
+\ifdefined\everyPDFxform  \newtoks\everyPDFxform  \fi
+\ifdefined\everyPDFximage \newtoks\everyPDFximage \fi
 
 \protect \endinput

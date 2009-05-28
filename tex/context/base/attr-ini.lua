@@ -6,146 +6,23 @@ if not modules then modules = { } end modules ['attr-ini'] = {
     license   = "see context related readme files"
 }
 
+-- this module is being reconstructed
+
+local type = type
+local format, gmatch = string.format, string.gmatch
+local concat = table.concat
+local texsprint = tex.sprint
+
+local ctxcatcodes = tex.ctxcatcodes
+
 -- todo: document this
 
 -- nb: attributes: color etc is much slower than normal (marks + literals) but ...
 -- nb. too many "0 g"s
 
---
--- nodes
---
-
-nodes = nodes or { }
-
-local format, concat, texsprint = string.format, table.concat, tex.sprint
-
--- This is not the most ideal place, but it will do. Maybe we need to move
--- attributes to node-att.lua.
-
-do
-
-    -- just for testing
-
-    local reserved = { }
-
-    function nodes.register(n)
-        reserved[#reserved+1] = n
-    end
-
-    function nodes.cleanup_reserved(nofboxes) -- todo
-        local nr, free = #reserved, node.free
-        for i=1,nr do
-            free(reserved[i])
-        end
-        local nl, tb, flush = 0, tex.box, node.flush_list
-        if nofboxes then
-            for i=1,nofboxes do
-                local l = tb[i]
-                if l then
-                    free(tb[i])
-                    nl = nl + 1
-                end
-            end
-        end
-        reserved = { }
-        return nr, nl, nofboxes
-    end
-
-end
-
-do
-
-    local pdfliteral = node.new("whatsit",8)   pdfliteral.next, pdfliteral.prev  = nil, nil  pdfliteral.mode = 1
-    local disc       = node.new("disc")        disc.next,       disc.prev        = nil, nil
-    local kern       = node.new("kern",1)      kern.next,       kern.prev        = nil, nil
-    local penalty    = node.new("penalty")     penalty.next,    penalty.prev     = nil, nil
-    local glue       = node.new("glue")        glue.next,       glue.prev        = nil, nil
-    local glue_spec  = node.new("glue_spec")
-    local glyph      = node.new("glyph",0)     glyph.next,      glyph.prev       = nil, nil
-    local textdir    = node.new("whatsit",7)   textdir.next,    textdir.prev     = nil, nil
-
-    nodes.register(pdfliteral)
-    nodes.register(disc)
-    nodes.register(kern)
-    nodes.register(penalty)
-    nodes.register(glue)
-    nodes.register(glue_spec)
-    nodes.register(glyph)
-    nodes.register(textdir)
-
-    local copy = node.copy
-
-    function nodes.glyph(fnt,chr)
-        local n = copy(glyph)
-        if fnt then n.font = fnt end
-        if chr then n.char = chr end
-        return n
-    end
-    function nodes.penalty(p)
-        local n = copy(penalty)
-        n.penalty = p
-        return n
-    end
-    function nodes.kern(k)
-        local n = copy(kern)
-        n.kern = k
-        return n
-    end
-    function nodes.glue(width,stretch,shrink)
-        local n = copy(glue)
-        local s = copy(glue_spec)
-        s.width, s.stretch, s.shrink = width, stretch, shrink
-        n.spec = s
-        return n
-    end
-    function nodes.glue_spec(width,stretch,shrink)
-        local s = copy(glue_spec)
-        s.width, s.stretch, s.shrink = width, stretch, shrink
-        return s
-    end
-    function nodes.disc()
-        return copy(disc)
-    end
-    function nodes.pdfliteral(str)
-        local t = copy(pdfliteral)
-        t.data = str
-        return t
-    end
-    function nodes.textdir(dir)
-        local t = copy(textdir)
-        t.dir = dir
-        return t
-    end
-
-end
-
-function tex.node_mem_status()
-    -- todo: lpeg
-    local s = status.node_mem_usage
-    local t = { }
-    for n, tag in s:gmatch("(%d+) ([a-z_]+)") do
-        t[tag] = n
-    end
-    return t
-end
-
---
--- attributes
---
-
-attributes = attributes or { }
-
-attributes.names   = attributes.names   or { }
-attributes.numbers = attributes.numbers or { }
-attributes.list    = attributes.list    or { }
-
-input.storage.register(false, "attributes/names", attributes.names, "attributes.names")
-input.storage.register(false, "attributes/numbers", attributes.numbers, "attributes.numbers")
-input.storage.register(false, "attributes/list", attributes.list, "attributes.list")
-
-function attributes.define(name,number)
-    attributes.numbers[name], attributes.names[number], attributes.list[number] = number, name, { }
-end
+nodes    = nodes or { }
+states   = states or { }
+shipouts = shipouts or { }
 
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
@@ -156,342 +33,6 @@ end
 -- i will do the resource stuff later, when we have an interface to pdf (ok, i can
 -- fake it with tokens but it will take some coding
 
-function totokens(str)
-    local t = { }
---~     for c in string.bytes(str) do
-    for c in str:bytes() do
-        t[#t+1] = { 12, c }
-    end
-    return t
-end
-
--- temp hack, will be proper driver stuff
-
-backends     = backends     or { }
-backends.pdf = backends.pdf or { }
-backend      = backend      or backends.pdf
-
-do
-
-    local pdfliteral, register = nodes.pdfliteral, nodes.register
-
-    function backends.pdf.literal(str)
-        local t = pdfliteral(str)
-        register(t)
-        return t
-    end
-
-end
-
--- shipouts
-
-shipouts = shipouts or { }
-
-do
-
-    local pairs = pairs -- in theory faster
-
-    local hlist, vlist = node.id('hlist'), node.id('vlist')
-
-    local has_attribute = node.has_attribute
-
-    nodes.trigger    = nodes.trigger    or false
-    nodes.triggering = nodes.triggering or false
-
-    -- we used to do the main processor loop here and call processor for each node
-    -- but eventually this was too much a slow down (1 sec on 23 for 120 pages mk)
-    -- so that we moved looping to the processor itself; this may lead to a bit of
-    -- duplicate code once that we have more state handlers
-
-    local starttiming, stoptiming = input.starttiming, input.stoptiming
-    local trigger, numbers = nodes.trigger, attributes.numbers
-
-    local function process_attribute(head,plugin) -- head,attribute,enabled,initializer,resolver,processor,finalizer
-        starttiming(attributes)
-        local done, used, ok = false, nil, false
-        local name = plugin.name
-        local attribute = numbers[name]
-        local namespace = plugin.namespace
-        if namespace.enabled then
-            local processor = plugin.processor
-            if processor then
-                local initializer = plugin.initializer
-                local resolver    = plugin.resolver
-                local inheritance = (resolver and resolver()) or -1
-                if initializer then
-                    initializer(namespace,attribute,head)
-                end
-                head, ok = processor(namespace,attribute,head,inheritance)
-                if ok then
-                    local finalizer = plugin.finalizer
-                    if finalizer then
-                        head, ok, used = finalizer(namespace,attribute,head)
-                        if used then
-                            local flusher = plugin.flusher
-                            if flusher then
-                                local h, d = flusher(namespace,attribute,head,used)
-                                head = h
-                            end
-                        end
-                    end
-                    done = true
-                end
-            end
-        end
-        stoptiming(attributes)
-        return head, done
-    end
-
-    nodes.process_attribute = process_attribute
-
-    function nodes.install_attribute_handler(plugin)
-        return function(head)
-            return process_attribute(head,plugin)
-        end
-    end
-
-end
-
---
--- generic handlers
---
-
-states = { }
-
-do
-
-    local glyph, glue, rule, whatsit, hlist, vlist = node.id('glyph'), node.id('glue'), node.id('rule'), node.id('whatsit'), node.id('hlist'), node.id('vlist')
-
-    local has_attribute, copy = node.has_attribute, node.copy
-
-    local current, current_selector, used, done = 0, 0, { }, false
-
-    function states.initialize(what, attribute, stack)
-        current, current_selector, used, done = 0, 0, { }, false
-    end
-
-    local function insert(n,stack,previous,head) -- there is a helper, we need previous because we are not slided
-        if n then
-            if type(n) == "function" then
-                n = n()
-            end
-            n = copy(n)
-            n.next = stack
-            if previous then
-                previous.next = n
-            else
-                head = n
-            end
-            previous = n
-        end
-        return stack, head
-    end
-
-    function states.finalize(namespace,attribute,head) -- is this one ok?
-        if current > 0 then
-            local nn = namespace.none
-            if nn then
-                local id = head.id
-                if id == hlist or id == vlist then
-                    local list = head.list
-                    if list then
-                        local _, h = insert(nn,list,nil,list)
-                        head.list = h
-                    end
-                else
-                    stack, head = insert(nn,head,nil,head)
-                end
-                return head, true, true
-            end
-        end
-        return head, false, false
-    end
-
-    local function process(namespace,attribute,head,inheritance,default) -- one attribute
-        local trigger = namespace.triggering and nodes.triggering and nodes.trigger
-        local stack, previous, done = head, nil, false
-        local nsdata, nsreviver, nsnone = namespace.data, namespace.reviver, namespace.none
-        while stack do
-            local id = stack.id
-        --  if id == glyph or (id == whatsit and stack.subtype == 8) or id == rule or (id == glue and stack.leader) then -- or disc
-            if id == glyph or id == rule or (id == glue and stack.leader) then -- or disc
-                local c = has_attribute(stack,attribute)
-                if c then
-                    if default and c == inheritance then
-                        if current ~= default then
-                            local data = nsdata[default] or nsreviver(default)
-                            stack, head = insert(data,stack,previous,head)
-                            current, done, used[default] = default, true, true
-                        end
-                    elseif current ~= c then
-                        local data = nsdata[c] or nsreviver(c)
-                        stack, head = insert(data,stack,previous,head)
-                        current, done, used[c] = c, true, true
-                    end
-                    if id == glue then --leader
-                        -- same as *list
-                        local content = stack.leader
-                        if content then
-                            local ok = false
-                            if trigger and has_attribute(stack,trigger) then
-                                local outer = has_attribute(stack,attribute)
-                                if outer ~= inheritance then
-                                    stack.leader, ok = process(namespace,attribute,content,inheritance,outer)
-                                else
-                                    stack.leader, ok = process(namespace,attribute,content,inheritance,default)
-                                end
-                            else
-                                stack.leader, ok = process(namespace,attribute,content,inheritance,default)
-                            end
-                            done = done or ok
-                        end
-                    end
-                elseif default and inheritance then
-                    if current ~= default then
-                        local data = nsdata[default] or nsreviver(default)
-                        stack, head = insert(data,stack,previous,head)
-                        current, done, used[default] = default, true, true
-                    end
-                elseif current > 0 then
-                    stack, head = insert(nsnone,stack,previous,head)
-                    current, done, used[0] = 0, true, true
-                end
-            elseif id == hlist or id == vlist then
-                local content = stack.list
-                if content then
-                    local ok = false
-                    if trigger and has_attribute(stack,trigger) then
-                        local outer = has_attribute(stack,attribute)
-                        if outer ~= inheritance then
-                            stack.list, ok = process(namespace,attribute,content,inheritance,outer)
-                        else
-                            stack.list, ok = process(namespace,attribute,content,inheritance,default)
-                        end
-                    else
-                        stack.list, ok = process(namespace,attribute,content,inheritance,default)
-                    end
-                    done = done or ok
-                end
-            end
-            previous = stack
-            stack = stack.next
-        end
-        return head, done
-    end
-
-    states.process = process
-
-    -- we can force a selector, e.g. document wide color spaces, saves a little
-    -- watch out, we need to check both the selector state (like colorspace) and
-    -- the main state (like color), otherwise we get into troubles when a selector
-    -- state changes while the main state stays the same (like two glyphs following
-    -- each other with the same color but different color spaces e.g. \showcolor)
-
-    local function selective(namespace,attribute,head,inheritance,default) -- two attributes
-        local trigger = namespace.triggering and nodes.triggering and nodes.trigger
-        local stack, previous, done = head, nil, false
-    --  local nsselector, nsforced, nsselector = namespace.default, namespace.forced, namespace.selector
-        local nsforced, nsselector = namespace.forced, namespace.selector
-        local nsdata, nsreviver, nsnone = namespace.data, namespace.reviver, namespace.none
-        while stack do
-            local id = stack.id
-        --  if id == glyph or (id == whatsit and stack.subtype == 8) or id == rule or (id == glue and stack.leader) then -- or disc
-            if id == glyph or id == rule or (id == glue and stack.leader) then -- or disc
-                local c = has_attribute(stack,attribute)
-                if c then
-                    if default and c == inheritance then
-                        if current ~= default then
-                            local data = nsdata[default] or nsreviver(default)
-                            stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
-                            current, done, used[default] = default, true, true
-                        end
-                    else
-                        local s = has_attribute(stack,nsselector)
-                        if current ~= c or current_selector ~= s then
-                            local data = nsdata[c] or nsreviver(c)
-                            stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
-                            current, current_selector, done, used[c] = c, s, true, true
-                        end
-                    end
-                elseif default and inheritance then
-                    if current ~= default then
-                        local data = nsdata[default] or nsreviver(default)
-                        stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
-                        current, done, used[default] = default, true, true
-                    end
-                elseif current > 0 then
-                    stack, head = insert(nsnone,stack,previous,head)
-                    current, current_selector, done, used[0] = 0, 0, true, true
-                end
-                if id == glue then -- leader
-                    -- same as *list
-                    local content = stack.leader
-                    if content then
-                        local ok = false
-                        if trigger and has_attribute(stack,trigger) then
-                            local outer = has_attribute(stack,attribute)
-                            if outer ~= inheritance then
-                                stack.leader, ok = selective(namespace,attribute,content,inheritance,outer)
-                            else
-                                stack.leader, ok = selective(namespace,attribute,content,inheritance,default)
-                            end
-                        else
-                            stack.leader, ok = selective(namespace,attribute,content,inheritance,default)
-                        end
-                        done = done or ok
-                    end
-                end
-            elseif id == hlist or id == vlist then
-                local content = stack.list
-                if content then
-                    local ok = false
-                    if trigger and has_attribute(stack,trigger) then
-                        local outer = has_attribute(stack,attribute)
-                        if outer ~= inheritance then
-                            stack.list, ok = selective(namespace,attribute,content,inheritance,outer)
-                        else
-                            stack.list, ok = selective(namespace,attribute,content,inheritance,default)
-                        end
-                    else
-                        stack.list, ok = selective(namespace,attribute,content,inheritance,default)
-                    end
-                    done = done or ok
-                end
-            end
-            previous = stack
-            stack = stack.next
-        end
-        return head, done
-    end
-
-    states.selective = selective
-
-end
-
-states           = states           or { }
-states.collected = states.collected or { }
-
-input.storage.register(false,"states/collected", states.collected, "states.collected")
-
-function states.collect(str)
-    local collected = states.collected
-    collected[#collected+1] = str
-end
-
-function states.flush()
-    local collected = states.collected
-    if #collected > 0 then
-        for i=1,#collected do
-            texsprint(tex.ctxcatcodes,collected[i]) -- we're in context mode anyway
-        end
-        states.collected = { }
-    end
-end
-
-function states.check()
-    texio.write_nl(concat(states.collected,"\n"))
-end
-
 --
 -- colors
 --
@@ -500,8 +41,23 @@ end
 -- at the tex end add 0, 1, 2, but this is not faster and less
 -- flexible (since sometimes we freeze color attribute values at
 -- the lua end of the game
-
+--
 -- we also need to store the colorvalues because we need then in mp
+--
+-- This is a compromis between speed and simplicity. We used to store the
+-- values and data in one array, which made in neccessary to store the
+-- converters that need node constructor into strings and evaluate them
+-- at runtime (after reading from storage). Think of:
+--
+-- colors.strings = colors.strings or { }
+--
+-- if environment.initex then
+--     colors.strings[color] = "return colors." .. colorspace .. "(" .. concat({...},",") .. ")"
+-- end
+--
+-- storage.register("colors/data", colors.strings, "colors.data") -- evaluated
+--
+-- We assume that only processcolors are defined in the format.
 
 colors            = colors            or { }
 colors.data       = colors.data       or { }
@@ -515,32 +71,17 @@ colors.default    = 1
 colors.main       = nil
 colors.triggering = true
 
--- This is a compromis between speed and simplicity. We used to store the
--- values and data in one array, which made in neccessary to store the
--- converters that need node constructor into strings and evaluate them
--- at runtime (after reading from storage). Think of:
---
--- colors.strings = colors.strings or { }
---
--- if environment.initex then
---     colors.strings[color] = "return colors." .. colorspace .. "(" .. concat({...},",") .. ")"
--- end
---
--- input.storage.register(true,"colors/data", colors.strings, "colors.data") -- evaluated
---
--- We assume that only processcolors are defined in the format.
+storage.register("colors/values",     colors.values,     "colors.values")
+storage.register("colors/registered", colors.registered, "colors.registered")
 
-input.storage.register(false,"colors/values",     colors.values,     "colors.values")
-input.storage.register(false,"colors/registered", colors.registered, "colors.registered")
-
-colors.stamps = {
+local templates = {
     rgb  = "r:%s:%s:%s",
     cmyk = "c:%s:%s:%s:%s",
     gray = "s:%s",
     spot = "p:%s:%s:%s:%s"
 }
 
-colors.models = {
+local models = {
     all  = 1,
     gray = 2,
     rgb  = 3,
@@ -549,158 +90,146 @@ colors.models = {
 
 colors.model = "all"
 
-do
+local data       = colors.data
+local values     = colors.values
+local registered = colors.registered
 
-    local min = math.min
-    local max = math.max
+local numbers    = attributes.numbers
+local list       = attributes.list
 
-    local function rgbdata(r,g,b) -- dodo: backends.pdf.rgbdata
-        return backends.pdf.literal(format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b))
-    end
+local min = math.min
+local max = math.max
 
-    local function cmykdata(c,m,y,k)
-        return backends.pdf.literal(format("%s %s %s %s k %s %s %s %s K",c,m,y,k,c,m,y,k))
-    end
+local nodeinjections = backends.nodeinjections
+local codeinjections = backends.codeinjections
+local registrations  = backends.registrations
 
-    local function graydata(s)
-        return backends.pdf.literal(format("%s g %s G",s,s))
-    end
-
-    local function spotdata(n,f,d,p)
-        if type(p) == "string" then
-            p = p:gsub(","," ") -- brr misuse of spot
-        end
-        return backends.pdf.literal(format("/%s cs /%s CS %s SCN %s scn",n,n,p,p))
-    end
-
-    local function rgbtocmyk(r,g,b) -- we could reduce
-        return 1-r, 1-g, 1-b, 0
-    end
-
-    local function cmyktorgb(c,m,y,k)
-        return 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
-    end
-
-    local function rgbtogray(r,g,b)
-        if colors.weightgray then
-            return .30*r+.59*g+.11*b
-        else
-            return r/3+g/3+b/3
-        end
-    end
-
-    local function cmyktogray(c,m,y,k)
-        return rgbtogray(cmyktorgb(c,m,y,k))
-    end
-
-    colors.rgbtocmyk  = rgbtocmyk
-    colors.rgbtogray  = rgbtogray
-    colors.cmyktorgb  = cmyktorgb
-    colors.cmyktogray = cmyktogray
-
-    -- we can share some *data by using s, rgb and cmyk hashes, but
-    -- normally the amount of colors is not that large; storing the
-    -- components costs a bit of extra runtime, but we expect to gain
-    -- some back because we have them at hand; the number indicates the
-    -- default color space
-
-    function colors.gray(s)
-        return { 2, s, s, s, s, 0, 0, 0, 1-s }
-    end
-
-    function colors.rgb(r,g,b)
-        local s = rgbtogray(r,g,b)
-        local c, m, y, k = rgbtocmyk(r,g,b)
-        return { 3, s, r, g, b, c, m, y, k }
-    end
-
-    function colors.cmyk(c,m,y,k)
-        local s = cmyktogray(c,m,y,k)
-        local r, g, b = cmyktorgb(c,m,y,k)
-        return { 4, s, r, g, b, c, m, y, k }
-    end
-
-    --~ function colors.spot(parent,f,d,p)
-    --~     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
-    --~ end
-
-    function colors.spot(parent,f,d,p)
-        if type(p) == "number" then
-            local n = attributes.list[attributes.numbers.color][parent] -- hard coded ref to color number
-            if n then
-                local v = colors.values[n]
-                if v then
-                    -- the via cmyk hack is dirty, but it scales better
-                    local c, m, y, k = p*v[6], p*v[7], p*v[8], p*v[8]
-                    local r, g, b = cmyktorgb(c,m,y,k)
-                    local s = cmyktogray(c,m,y,k)
-                    return { 5, s, r, g, b, c, m, y, k, parent, f, d, p }
-                end
-            end
-        else
-            -- todo, multitone (maybe p should be a table)
-        end
-        return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
-    end
-
-    function colors.reviver(n)
-        local d = colors.data[n]
-        if not d then
-            local v = colors.values[n]
-            if not v then
-                local gray = graydata(0)
-                d = { gray, gray, gray, gray }
-                logs.report("attributes","unable to revive color %s",n or "?")
-            else
-                local kind, gray, rgb, cmyk = v[1], graydata(v[2]), rgbdata(v[3],v[4],v[5]), cmykdata(v[6],v[7],v[8],v[9])
-                if kind == 2 then
-                    d = { gray, gray, gray, gray }
-                elseif kind == 3 then
-                    d = { rgb, gray, rgb, cmyk }
-                elseif kind == 4 then
-                    d = { cmyk, gray, rgb, cmyk }
-                elseif kind == 5 then
-                    local spot = spotdata(v[10],v[11],v[12],v[13])
-                    d = { spot, gray, rgb, cmyk }
-                end
-            end
-            colors.data[n] = d
-        end
-        return d
-    end
-
-    function colors.filter(n)
-        return concat(colors.data[n],":",5)
-    end
-
-    colors.none = graydata(0)
-
+local function rgbtocmyk(r,g,b) -- we could reduce
+    return 1-r, 1-g, 1-b, 0
 end
+
+local function cmyktorgb(c,m,y,k)
+    return 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
+end
+
+local function rgbtogray(r,g,b)
+    if colors.weightgray then
+        return .30*r+.59*g+.11*b
+    else
+        return r/3+g/3+b/3
+    end
+end
+
+local function cmyktogray(c,m,y,k)
+    return rgbtogray(cmyktorgb(c,m,y,k))
+end
+
+colors.rgbtocmyk  = rgbtocmyk
+colors.rgbtogray  = rgbtogray
+colors.cmyktorgb  = cmyktorgb
+colors.cmyktogray = cmyktogray
+
+-- we can share some *data by using s, rgb and cmyk hashes, but
+-- normally the amount of colors is not that large; storing the
+-- components costs a bit of extra runtime, but we expect to gain
+-- some back because we have them at hand; the number indicates the
+-- default color space
+
+function colors.gray(s)
+    return { 2, s, s, s, s, 0, 0, 0, 1-s }
+end
+
+function colors.rgb(r,g,b)
+    local s = rgbtogray(r,g,b)
+    local c, m, y, k = rgbtocmyk(r,g,b)
+    return { 3, s, r, g, b, c, m, y, k }
+end
+
+function colors.cmyk(c,m,y,k)
+    local s = cmyktogray(c,m,y,k)
+    local r, g, b = cmyktorgb(c,m,y,k)
+    return { 4, s, r, g, b, c, m, y, k }
+end
+
+--~ function colors.spot(parent,f,d,p)
+--~     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
+--~ end
+
+function colors.spot(parent,f,d,p)
+    if type(p) == "number" then
+        local n = list[numbers.color][parent] -- hard coded ref to color number
+        if n then
+            local v = values[n]
+            if v then
+                -- the via cmyk hack is dirty, but it scales better
+                local c, m, y, k = p*v[6], p*v[7], p*v[8], p*v[8]
+                local r, g, b = cmyktorgb(c,m,y,k)
+                local s = cmyktogray(c,m,y,k)
+                return { 5, s, r, g, b, c, m, y, k, parent, f, d, p }
+            end
+        end
+    else
+        -- todo, multitone (maybe p should be a table)
+    end
+    return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
+end
+
+function colors.reviver(n)
+    local d = data[n]
+    if not d then
+        local v = values[n]
+        if not v then
+            local gray = nodeinjections.graycolor(0)
+            d = { gray, gray, gray, gray }
+            logs.report("attributes","unable to revive color %s",n or "?")
+        else
+            local kind, gray, rgb, cmyk = v[1], nodeinjections.graycolor(v[2]), nodeinjections.rgbcolor(v[3],v[4],v[5]), nodeinjections.cmykcolor(v[6],v[7],v[8],v[9])
+            if kind == 2 then
+                d = { gray, gray, gray, gray }
+            elseif kind == 3 then
+                d = { rgb, gray, rgb, cmyk }
+            elseif kind == 4 then
+                d = { cmyk, gray, rgb, cmyk }
+            elseif kind == 5 then
+                local spot = nodeinjections.spotcolor(v[10],v[11],v[12],v[13])
+                d = { spot, gray, rgb, cmyk }
+            end
+        end
+        data[n] = d
+    end
+    return d
+end
+
+function colors.filter(n)
+    return concat(data[n],":",5)
+end
+
+colors.none = nodeinjections.graycolor(0)
 
 function colors.setmodel(attribute,name)
     colors.model = name
-    colors.selector = attributes.numbers[attribute]
-    colors.default = colors.models[name] or 1
+    colors.selector = numbers[attribute]
+    colors.default = models[name] or 1
     return colors.default
 end
 
 function colors.register(attribute, name, colorspace, ...) -- passing 9 vars is faster
-    local stamp = format(colors.stamps[colorspace], ...)
-    local color = colors.registered[stamp]
+    local stamp = format(templates[colorspace],...)
+    local color = registered[stamp]
     if not color then
-        color = #colors.values+1
-        colors.values[color] = colors[colorspace](...)
-        colors.registered[stamp] = color
+        color = #values+1
+        values[color] = colors[colorspace](...)
+        registered[stamp] = color
         colors.reviver(color)
     end
     if name then
-        attributes.list[attributes.numbers[attribute]][name] = color -- not grouped, so only global colors
+        list[numbers[attribute]][name] = color -- not grouped, so only global colors
     end
-    return colors.registered[stamp]
+    return registered[stamp]
 end
 
 function colors.value(id)
-    return colors.values[id]
+    return values[id]
 end
 
 shipouts.handle_color = nodes.install_attribute_handler {
@@ -709,7 +238,7 @@ shipouts.handle_color = nodes.install_attribute_handler {
     initializer = states.initialize,
     finalizer   = states.finalize,
     processor   = states.selective,
-    resolver    = function(...) return colors.main end,
+    resolver    = function() return colors.main end,
 }
 
 -- transparencies
@@ -722,51 +251,56 @@ transparencies.registered = transparencies.registered or { }
 transparencies.data       = transparencies.data       or { }
 transparencies.values     = transparencies.values     or { }
 transparencies.enabled    = false
-transparencies.template   = "%s:%s"
 transparencies.triggering = true
 
-input.storage.register(false, "transparencies/registered", transparencies.registered, "transparencies.registered")
-input.storage.register(false, "transparencies/values",     transparencies.values,     "transparencies.values")
+storage.register("transparencies/registered", transparencies.registered, "transparencies.registered")
+storage.register("transparencies/values",     transparencies.values,     "transparencies.values")
 
-function transparencies.reference(n)
-    return backends.pdf.literal(format("/Tr%s gs",n))
+local registered = transparencies.registered
+local data       = transparencies.data
+local values     = transparencies.values
+local template   = "%s:%s"
+
+local function reference(n)
+    reference = nodeinjections.transparency
+    return reference(n)
 end
 
 function transparencies.register(name,a,t)
-    local stamp = format(transparencies.template,a,t)
-    local n = transparencies.registered[stamp]
+    local stamp = format(template,a,t)
+    local n = registered[stamp]
     if not n then
-        n = #transparencies.data+1
-        transparencies.data[n] = transparencies.reference(n)
-        transparencies.values[n] = { a, t }
-        transparencies.registered[stamp] = n
-        states.collect(format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,a,t)) -- too many, but experimental anyway
+        n = #data+1
+        data[n] = reference(n)
+        values[n] = { a, t }
+        registered[stamp] = n
+        registrations.transparency(n,a,t)
     end
-    return transparencies.registered[stamp]
+    return registered[stamp]
 end
 
 function transparencies.reviver(n)
-    local d = transparencies.data[n]
+    local d = data[n]
     if not d then
-        local v = transparencies.values[n]
+        local v = values[n]
         if not v then
-            d = transparencies.reference(0)
+            d = reference(0)
             logs.report("attributes","unable to revive transparency %s",n or "?")
         else
-            d = transparencies.reference(n)
-            states.collect(format("\\presetPDFtransparencybynumber{%s}{%s}{%s}",n,v[1],v[2]))
+            d = reference(n)
+            registrations.transparency(n,v[1],v[2])
         end
-        transparencies.data[n] = d
+        data[n] = d
     end
     return d
 end
 
 -- check if there is an identity
 
-transparencies.none = transparencies.reference(0) -- for the moment the pdf backend does this
+transparencies.none = reference(0) -- for the moment the pdf backend does this
 
 function transparencies.value(id)
-    return transparencies.values[id]
+    return values[id]
 end
 
 shipouts.handle_transparency = nodes.install_attribute_handler {
@@ -783,8 +317,8 @@ overprints         = overprints      or { }
 overprints.data    = overprints.data or { }
 overprints.enabled = false
 
-overprints.data[1] = backends.pdf.literal(format("/GSoverprint gs"))
-overprints.data[2] = backends.pdf.literal(format("/GSknockout  gs"))
+overprints.data[1] = nodeinjections.overprint()
+overprints.data[2] = nodeinjections.knockout()
 
 overprints.none    = overprints.data[2]
 
@@ -793,12 +327,14 @@ overprints.registered = {
     knockout  = 2,
 }
 
---~ input.storage.register(false, "overprints/registered", overprints.registered, "overprints.registered")
---~ input.storage.register(false, "overprints/data",       overprints.data,       "overprints.data")
+--~ storage.register("overprints/registered", overprints.registered, "overprints.registered")
+--~ storage.register("overprints/data",       overprints.data,       "overprints.data")
+
+local data       = overprints.data
+local registered = overprints.registered
 
 function overprints.register(stamp)
---  states.collect(texsprint(tex.ctxcatcodes,"\\initializePDFoverprint")) -- to be testd
-    return overprints.registered[stamp] or overprints.registered.overprint
+    return registered[stamp] or registered.overprint
 end
 
 shipouts.handle_overprint = nodes.install_attribute_handler {
@@ -815,8 +351,8 @@ negatives         = negatives      or { }
 negatives.data    = negatives.data or { }
 negatives.enabled = false
 
-negatives.data[1] = backends.pdf.literal(format("/GSpositive gs"))
-negatives.data[2] = backends.pdf.literal(format("/GSnegative gs"))
+negatives.data[1] = nodeinjections.positive()
+negatives.data[2] = nodeinjections.negative()
 
 negatives.none    = negatives.data[1]
 
@@ -826,7 +362,6 @@ negatives.registered = {
 }
 
 function negatives.register(stamp)
---  states.collect(texsprint(tex.ctxcatcodes,"\\initializePDFnegative")) -- to be testd
     return negatives.registered[stamp] or negatives.registered.positive
 end
 
@@ -838,7 +373,7 @@ shipouts.handle_negative = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
--- effects
+-- effects -- can be optimized
 
 effects            = effects            or { }
 effects.data       = effects.data       or { }
@@ -846,8 +381,8 @@ effects.registered = effects.registered or { }
 effects.enabled    = false
 effects.stamp      = "%s:%s:%s"
 
-input.storage.register(false, "effects/registered", effects.registered, "effects.registered")
-input.storage.register(false, "effects/data",       effects.data,       "effects.data")
+storage.register("effects/registered", effects.registered, "effects.registered")
+storage.register("effects/data",       effects.data,       "effects.data")
 
 function effects.register(effect,stretch,rulethickness)
     local stamp = format(effects.stamp,effect,stretch,rulethickness)
@@ -856,27 +391,18 @@ function effects.register(effect,stretch,rulethickness)
         n = #effects.data+1
         effects.data[n] = effects.reference(effect,stretch,rulethickness)
         effects.registered[stamp] = n
-    --  states.collect("") -- nothing
     end
     return effects.registered[stamp]
 end
 
-backends.pdf.effects = {
-    normal = 0,
-    inner  = 0,
-    outer  = 1,
-    both   = 2,
-    hidden = 3,
-}
+-- valid effects: normal inner outer both hidden
 
 function effects.reference(effect,stretch,rulethickness)
-    -- always, no zero test (removed)
-    rulethickness = number.dimenfactors["bp"]*rulethickness
-    effect = backends.pdf.effects[effect] or backends.pdf.effects['normal']
-    return backends.pdf.literal(format("%s Tc %s w %s Tr",stretch,rulethickness,effect)) -- watch order
+    effects.reference = nodeinjections.effect
+    return nodeinjections.effect(stretch,rulethickness,effect)
 end
 
-effects.none = effects.reference(0,0,0) -- faster: backends.pdf.literal("0 Tc 0 w 0 Tr")
+effects.none = effects.reference(0,0,0)
 
 shipouts.handle_effect = nodes.install_attribute_handler {
     name        = "effect",
@@ -891,15 +417,18 @@ shipouts.handle_effect = nodes.install_attribute_handler {
 viewerlayers            = viewerlayers            or { }
 viewerlayers.data       = viewerlayers.data       or { }
 viewerlayers.registered = viewerlayers.registered or { }
-viewerlayers.stamp      = "%s"
 viewerlayers.enabled    = false
 
-input.storage.register(false, "viewerlayers/registered", viewerlayers.registered, "viewerlayers.registered")
---~ input.storage.register(false, "viewerlayers/data",       viewerlayers.data,       "viewerlayers.data")
+storage.register("viewerlayers/registered", viewerlayers.registered, "viewerlayers.registered")
+--~ storage.register("viewerlayers/data",       viewerlayers.data,       "viewerlayers.data")
+
+local data       = viewerlayers.data
+local registered = viewerlayers.registered
+local template   = "%s"
 
 local somedone = false
 local somedata = { }
-local nonedata = backends.pdf.literal("EMC")
+local nonedata = nodeinjections.stoplayer()
 
 function viewerlayers.none() -- no local
     if somedone then
@@ -914,8 +443,8 @@ local function some(name)
     local sd = somedata[name]
     if not sd then
         sd = {
-            backends.pdf.literal(format("EMC /OC /%s BDC",name)),
-            backends.pdf.literal(format(    "/OC /%s BDC",name)),
+            nodeinjections.switchlayer(name),
+            nodeinjections.startlayer(name),
         }
         somedata[name] = sd
     end
@@ -933,14 +462,14 @@ local function initializer(...)
 end
 
 viewerlayers.register = function(name)
-    local stamp = format(viewerlayers.stamp,name)
-    local n = viewerlayers.registered[stamp]
+    local stamp = format(template,name)
+    local n = registered[stamp]
     if not n then
-        n = #viewerlayers.data + 1
-        viewerlayers.data[n] = function() return some(name) end
-        viewerlayers.registered[stamp] = n
+        n = #data + 1
+        data[n] = function() return some(name) end -- slow but for the moment we don't store things in the format
+        registered[stamp] = n
     end
-    return viewerlayers.registered[stamp]
+    return registered[stamp] -- == n
 end
 
 shipouts.handle_viewerlayer = nodes.install_attribute_handler {
@@ -950,5 +479,3 @@ shipouts.handle_viewerlayer = nodes.install_attribute_handler {
     finalizer   = states.finalize,
     processor   = states.process,
 }
-
---~ nodes.tasks.appendaction("shipouts", "finishers", "shipouts.handle_viewerlayer", nil, "notail")

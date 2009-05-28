@@ -1,0 +1,84 @@
+%D \module
+%D   [       file=strc-prc,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Processors,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Processors}
+
+\registerctxluafile{strc-prc}{1.001}
+
+\unprotect
+
+%D Processors are used when we cannot easily associate typesetting directives
+%D with (for instance) structural elements. Instead of ending up with numerous
+%D additional definitions we can group treatments in so called processors.
+%D
+%D An example of where processors can be used is in separator sets (these are
+%D related to typesetting numbers using structure).
+%D
+%D \starttyping
+%D \defineprocessor[demo][style=\bfb,color=red]
+%D \stoptyping
+%D
+%D This defines a processor named \type {demo}. Such a name ends up as prefix in
+%D for instance:
+%D
+%D \starttyping
+%D \definestructureseparatorset [demosep] [demo->!,demo->?,demo->!,demo->?] [demo->@]
+%D \stoptyping
+%D
+%D Here the \type {!} and \type {?} are just the seperator characters that end
+%D up between part, chapter, section, etc.\ numbers. The third argument defines the
+%D default. When a separator is inserted, the \type{demo} processor will be applied.
+%D Here the number will be separated by red slightly bigger than normal bold
+%D exclamation marks and questionmarks
+%D
+%D Valid keys for defining a processor are \type {style}, \type {color}, \type {left},
+%D \type {right}, and \type {command} (the given command takes one argument).
+
+\def\defineprocessor
+  {\dodoubleargument\dodefineprocessor}
+
+\def\dodefineprocessor[#1][#2]%
+  {\ifsecondargument
+     \letbeundefined{\??po#1\c!command}%
+     \ctxlua{structure.processors.register("#1")}%
+     \getparameters[\??po#1][\c!style=,\c!color=,\c!left=,\c!right=,#2]%
+   \else
+     \letbeundefined{\??po#1\c!style}%
+     \ctxlua{structure.processors.reset("#1")}%
+   \fi}
+
+%D The following command can be used by users but normally it will be
+%D invoked behind the screens. After all, processor prefixes need to
+%D be split off first.
+
+\unexpanded\def\applyprocessor#1%
+  {\ifcsname\??po#1\c!style\endcsname
+     \expandafter\dodoapplyprocessor
+   \else
+     \expandafter\secondoftwoarguments
+   \fi{#1}}
+
+\def\dodoapplyprocessor#1#2%
+  {\begingroup
+   \dostartattributes{\??po#1}\c!style\c!color
+   \csname\??po#1\c!left\endcsname
+   \ifcsname\??po#1\c!command\endcsname
+     \csname\??po#1\c!command\endcsname{#2}%
+   \else
+     #2%
+   \fi
+   \csname\??po#1\c!right\endcsname
+   \dostopattributes
+   \endgroup}
+
+\protect \endinput

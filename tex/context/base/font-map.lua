@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['font-map'] = {
     license   = "see context related readme files"
 }
 
+local match, format, find = string.match, string.format, string.find
+
+local ctxcatcodes = tex.ctxcatcodes
+
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
 of obsolete. Some code may move to runtime or auxiliary modules.</p>
@@ -29,21 +33,21 @@ function fonts.map.line.pdftex(e) -- so far no combination of slant and stretch
         local fullname = e.fullname or ""
         if e.slant and e.slant ~= 0 then
             if e.encoding then
-                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g SlantFont" <%s <%s',e.name,fullname,e.slant,e.encoding,e.fontfile))
+                return fonts.map.line.pdfmapline("=",format('%s %s "%g SlantFont" <%s <%s',e.name,fullname,e.slant,e.encoding,e.fontfile))
             else
-                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g SlantFont" <%s',e.name,fullname,e.slant,e.fontfile))
+                return fonts.map.line.pdfmapline("=",format('%s %s "%g SlantFont" <%s',e.name,fullname,e.slant,e.fontfile))
             end
         elseif e.stretch and e.stretch ~= 1 and e.stretch ~= 0 then
             if e.encoding then
-                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g ExtendFont" <%s <%s',e.name,fullname,e.stretch,e.encoding,e.fontfile))
+                return fonts.map.line.pdfmapline("=",format('%s %s "%g ExtendFont" <%s <%s',e.name,fullname,e.stretch,e.encoding,e.fontfile))
             else
-                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g ExtendFont" <%s',e.name,fullname,e.stretch,e.fontfile))
+                return fonts.map.line.pdfmapline("=",format('%s %s "%g ExtendFont" <%s',e.name,fullname,e.stretch,e.fontfile))
             end
         else
             if e.encoding then
-                return fonts.map.line.pdfmapline("=",string.format('%s %s <%s <%s',e.name,fullname,e.encoding,e.fontfile))
+                return fonts.map.line.pdfmapline("=",format('%s %s <%s <%s',e.name,fullname,e.encoding,e.fontfile))
             else
-                return fonts.map.line.pdfmapline("=",string.format('%s %s <%s',e.name,fullname,e.fontfile))
+                return fonts.map.line.pdfmapline("=",format('%s %s <%s',e.name,fullname,e.fontfile))
             end
         end
     else
@@ -54,7 +58,7 @@ end
 function fonts.map.flush(backend) -- will also erase the accumulated data
     local flushline = fonts.map.line[backend or "pdftex"] or fonts.map.line.pdftex
     for _, e in pairs(fonts.map.data) do
-        tex.sprint(tex.ctxcatcodes,flushline(e))
+        tex.sprint(ctxcatcodes,flushline(e))
     end
     fonts.map.data = { }
 end
@@ -76,27 +80,27 @@ function fonts.map.load_file(filename, entries, encodings)
     if f then
         local data = f:read("*a")
         if data then
-            for line in data:gmatch("(.-)[\n\t]") do
-                if line:find("^[%#%%%s]") then
+            for line in gmatch(data,"(.-)[\n\t]") do
+                if find(line,"^[%#%%%s]") then
                     -- print(line)
                 else
                     local stretch, slant, name, fullname, fontfile, encoding
                     line = line:gsub('"(.+)"', function(s)
-                        stretch = s:find('"([^"]+) ExtendFont"')
-                        slant = s:find('"([^"]+) SlantFont"')
+                        stretch = find(s,'"([^"]+) ExtendFont"')
+                        slant = find(s,'"([^"]+) SlantFont"')
                         return ""
                     end)
                     if not name then
                         -- name fullname encoding fontfile
-                        name, fullname, encoding, fontfile = line:match("^(%S+)%s+(%S*)[%s<]+(%S*)[%s<]+(%S*)%s*$")
+                        name, fullname, encoding, fontfile = match(line,"^(%S+)%s+(%S*)[%s<]+(%S*)[%s<]+(%S*)%s*$")
                     end
                     if not name then
                         -- name fullname (flag) fontfile encoding
-                        name, fullname, fontfile, encoding = line:match("^(%S+)%s+(%S*)[%d%s<]+(%S*)[%s<]+(%S*)%s*$")
+                        name, fullname, fontfile, encoding = match(line,"^(%S+)%s+(%S*)[%d%s<]+(%S*)[%s<]+(%S*)%s*$")
                     end
                     if not name then
                         -- name fontfile
-                        name, fontfile = line:match("^(%S+)%s+[%d%s<]+(%S*)%s*$")
+                        name, fontfile = match(line,"^(%S+)%s+[%d%s<]+(%S*)%s*$")
                     end
                     if name then
                         if encoding == "" then encoding = nil end

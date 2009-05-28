@@ -56,7 +56,8 @@ require 'base/file'
 
 require 'rexml/document'
 require 'net/http'
-require 'ftools'
+require 'fileutils'
+# require 'ftools'
 require 'kconv'
 
 exit if defined?(REQUIRE2LIB)
@@ -2279,6 +2280,7 @@ class TexDeps
         report("loading files")
         report('')
         n = 0
+# try tex and mkiv
         @files.each do |filename|
             if File.file?(filename) and f = File.open(filename) then
                 defs, uses, l = 0, 0, 0

@@ -1,23 +1,24 @@
--- filename : l-file.lua
--- comment  : split off from luat-lib
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-file'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-file'] = 1.001
+-- needs a cleanup
 
-if not file then file = { } end
+file = file or { }
 
 local concat = table.concat
+local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
 
 function file.removesuffix(filename)
-    return (filename:gsub("%.[%a%d]+$",""))
+    return (gsub(filename,"%.[%a%d]+$",""))
 end
 
-file.stripsuffix = file.removesuffix
-
 function file.addsuffix(filename, suffix)
-    if not filename:find("%.[%a%d]+$") then
+    if not find(filename,"%.[%a%d]+$") then
         return filename .. "." .. suffix
     else
         return filename
@@ -25,23 +26,23 @@ function file.addsuffix(filename, suffix)
 end
 
 function file.replacesuffix(filename, suffix)
-    return (filename:gsub("%.[%a%d]+$","")) .. "." .. suffix
+    return (gsub(filename,"%.[%a%d]+$","")) .. "." .. suffix
 end
 
-function file.dirname(name)
-    return name:match("^(.+)[/\\].-$") or ""
+function file.dirname(name,default)
+    return match(name,"^(.+)[/\\].-$") or (default or "")
 end
 
 function file.basename(name)
-    return name:match("^.+[/\\](.-)$") or name
+    return match(name,"^.+[/\\](.-)$") or name
 end
 
 function file.nameonly(name)
-    return ((name:match("^.+[/\\](.-)$") or name):gsub("%..*$",""))
+    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
 end
 
 function file.extname(name)
-    return name:match("^.+%.([^/\\]-)$") or  ""
+    return match(name,"^.+%.([^/\\]-)$") or  ""
 end
 
 file.suffix = file.extname
@@ -54,40 +55,20 @@ file.suffix = file.extname
 
 function file.join(...)
     local pth = concat({...},"/")
-    pth = pth:gsub("\\","/")
-    local a, b = pth:match("^(.*://)(.*)$")
+    pth = gsub(pth,"\\","/")
+    local a, b = match(pth,"^(.*://)(.*)$")
     if a and b then
-        return a .. b:gsub("//+","/")
+        return a .. gsub(b,"//+","/")
     end
-    a, b = pth:match("^(//)(.*)$")
+    a, b = match(pth,"^(//)(.*)$")
     if a and b then
-        return a .. b:gsub("//+","/")
+        return a .. gsub(b,"//+","/")
     end
-    return (pth:gsub("//+","/"))
-end
-
-function file.is_writable(name)
-    local f = io.open(name, 'w')
-    if f then
-        f:close()
-        return true
-    else
-        return false
-    end
-end
-
-function file.is_readable(name)
-    local f = io.open(name,'r')
-    if f then
-        f:close()
-        return true
-    else
-        return false
-    end
+    return (gsub(pth,"//+","/"))
 end
 
 function file.iswritable(name)
-    local a = lfs.attributes(name)
+    local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
     return a and a.permissions:sub(2,2) == "w"
 end
 
@@ -96,24 +77,18 @@ function file.isreadable(name)
     return a and a.permissions:sub(1,1) == "r"
 end
 
---~ function file.split_path(str)
---~     if str:find(';') then
---~         return str:splitchr(";")
---~     else
---~         return str:splitchr(io.pathseparator)
---~     end
---~ end
+file.is_readable = file.isreadable
+file.is_writable = file.iswritable
 
 -- todo: lpeg
 
 function file.split_path(str)
     local t = { }
-    str = str:gsub("\\", "/")
-    str = str:gsub("(%a):([;/])", "%1\001%2")
-    for name in str:gmatch("([^;:]+)") do
+    str = gsub(str,"\\", "/")
+    str = gsub(str,"(%a):([;/])", "%1\001%2")
+    for name in gmatch(str,"([^;:]+)") do
         if name ~= "" then
-            name = name:gsub("\001",":")
-            t[#t+1] = name
+            t[#t+1] = gsub(name,"\001",":")
         end
     end
     return t
@@ -124,15 +99,15 @@ function file.join_path(tab)
 end
 
 function file.collapse_path(str)
-    str = str:gsub("/%./","/")
+    str = gsub(str,"/%./","/")
     local n, m = 1, 1
     while n > 0 or m > 0 do
-        str, n = str:gsub("[^/%.]+/%.%.$","")
-        str, m = str:gsub("[^/%.]+/%.%./","")
+        str, n = gsub(str,"[^/%.]+/%.%.$","")
+        str, m = gsub(str,"[^/%.]+/%.%./","")
     end
-    str = str:gsub("([^/])/$","%1")
-    str = str:gsub("^%./","")
-    str = str:gsub("/%.$","")
+    str = gsub(str,"([^/])/$","%1")
+    str = gsub(str,"^%./","")
+    str = gsub(str,"/%.$","")
     if str == "" then str = "." end
     return str
 end
@@ -145,7 +120,7 @@ end
 --~ print(file.collapse_path("a/b/c/../.."))
 
 function file.robustname(str)
-    return (str:gsub("[^%a%d%/%-%.\\]+","-"))
+    return (gsub(str,"[^%a%d%/%-%.\\]+","-"))
 end
 
 file.readdata = io.loaddata
@@ -174,8 +149,6 @@ end
 --~ function file.removesuffix(name)
 --~     return pattern:match(name)
 --~ end
-
---~ file.stripsuffix = file.removesuffix
 
 --~ local pattern = (noslashes^0 * slashes)^1 * lpeg.C(noslashes^1) * -1
 
@@ -230,7 +203,6 @@ end
 --~ end
 
 --~ local test = file.extname
---~ local test = file.stripsuffix
 --~ local test = file.basename
 --~ local test = file.dirname
 --~ local test = file.addsuffix
@@ -246,3 +218,41 @@ end
 --~ print(7,test("def.xxx","!!!"))
 
 --~ local tim = os.clock() for i=1,250000 do local ext = test("abd.def.xxx","!!!") end print(os.clock()-tim)
+
+-- also rewrite previous
+
+local letter    = lpeg.R("az","AZ") + lpeg.S("_-+")
+local separator = lpeg.P("://")
+
+local qualified = lpeg.P(".")^0 * lpeg.P("/") + letter*lpeg.P(":") + letter^1*separator + letter^1 * lpeg.P("/")
+local rootbased = lpeg.P("/") + letter*lpeg.P(":")
+
+-- ./name ../name  /name c: :// name/name
+
+function file.is_qualified_path(filename)
+    return qualified:match(filename)
+end
+
+function file.is_rootbased_path(filename)
+    return rootbased:match(filename)
+end
+
+local slash  = lpeg.S("\\/")
+local period = lpeg.P(".")
+local drive  = lpeg.C(lpeg.R("az","AZ")) * lpeg.P(":")
+local path   = lpeg.C(((1-slash)^0 * slash)^0)
+local suffix = period * lpeg.C(lpeg.P(1-period)^0 * lpeg.P(-1))
+local base   = lpeg.C((1-suffix)^0)
+
+local pattern = (drive + lpeg.Cc("")) * (path + lpeg.Cc("")) * (base + lpeg.Cc("")) * (suffix + lpeg.Cc(""))
+
+function file.splitname(str) -- returns drive, path, base, suffix
+    return pattern:match(str)
+end
+
+-- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end
+--
+-- test { "c:", "c:/aa", "c:/aa/bb", "c:/aa/bb/cc", "c:/aa/bb/cc.dd", "c:/aa/bb/cc.dd.ee" }
+-- test { "c:", "c:aa", "c:aa/bb", "c:aa/bb/cc", "c:aa/bb/cc.dd", "c:aa/bb/cc.dd.ee" }
+-- test { "/aa", "/aa/bb", "/aa/bb/cc", "/aa/bb/cc.dd", "/aa/bb/cc.dd.ee" }
+-- test { "aa", "aa/bb", "aa/bb/cc", "aa/bb/cc.dd", "aa/bb/cc.dd.ee" }

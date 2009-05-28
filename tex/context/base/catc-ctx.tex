@@ -1,0 +1,207 @@
+%D \module
+%D   [       file=catc-cys,
+%D        version=2006.09.18,
+%D          title=\CONTEXT\ Catcode Macros,
+%D       subtitle=Extra Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D We prefer to define relevant catcode tables in this file instead
+%D of everywhere around.
+
+\ifx\ctxcatcodes \undefined \newcatcodetable \ctxcatcodes  \fi
+\ifx\mthcatcodes \undefined \newcatcodetable \mthcatcodes  \fi % math, not used, too tricky
+\ifx\xmlcatcodesn\undefined \newcatcodetable \xmlcatcodesn \fi % normal
+\ifx\xmlcatcodese\undefined \newcatcodetable \xmlcatcodese \fi % entitle
+\ifx\xmlcatcodesr\undefined \newcatcodetable \xmlcatcodesr \fi % reduce
+\ifx\typcatcodesa\undefined \newcatcodetable \typcatcodesa \fi % { }
+\ifx\typcatcodesb\undefined \newcatcodetable \typcatcodesb \fi % < >
+
+\startcatcodetable \ctxcatcodes
+    \catcode`\^^I = 10
+    \catcode`\^^M =  5
+  % \catcode`\^^J = 10 % new
+    \catcode`\^^L =  5
+    \catcode`\    = 10
+    \catcode`\^^Z =  9
+    \catcode`\\   =  0
+    \catcode`\{   =  1
+    \catcode`\}   =  2
+    \catcode`\$   =  3
+    \catcode`\&   =  4
+    \catcode`\#   =  6
+    \catcode`\^   =  7
+    \catcode`\_   =  8
+    \catcode`\%   = 14
+    \catcode`\~   = 13
+    \catcode`\|   = 13
+\stopcatcodetable
+
+\startcatcodetable \prtcatcodes
+    \catcode`\^^I = 10
+    \catcode`\^^M =  5
+    \catcode`\^^L =  5
+    \catcode`\    = 10
+    \catcode`\^^Z =  9
+    \catcode`\\   =  0
+    \catcode`\{   =  1
+    \catcode`\}   =  2
+    \catcode`\$   =  3
+    \catcode`\&   =  4
+    \catcode`\#   =  6
+    \catcode`\^   =  7
+    \catcode`\_   =  8
+    \catcode`\%   = 14
+    \catcode`\@   = 11
+    \catcode`\!   = 11
+    \catcode`\?   = 11
+    \catcode`\~   = 13
+    \catcode`\|   = 13
+\stopcatcodetable
+
+\startcatcodetable \mthcatcodes
+    \catcode`\^^I = 10
+    \catcode`\^^M =  5
+   %\catcode`\^^J = 10 % new
+    \catcode`\^^L =  5
+    \catcode`\    = 10
+    \catcode`\^^Z =  9
+    \catcode`\\   =  0
+    \catcode`\{   =  1
+    \catcode`\}   =  2
+    \catcode`\$   =  3
+    \catcode`\&   =  4
+    \catcode`\#   =  6
+    \catcode`\^   =  7
+    \catcode`\_   =  8
+    \catcode`\%   = 14
+   %\catcode`\~   = 13
+   %\catcode`\|   = 13
+\stopcatcodetable
+
+\startcatcodetable \xmlcatcodesn
+    \catcode`\^^I = 10 % ascii tab is a blank space
+    \catcode`\^^M =  5 % ascii return is end-line
+    \catcode`\^^L =  5 % ascii form-feed
+    \catcode`\    = 10 % ascii space is blank space
+    \catcode`\^^Z =  9 % ascii eof is ignored
+    \catcode`\&   = 13 % entity
+    \catcode`\<   = 13 % element
+    \catcode`\>   = 12
+    \catcode`\"   = 12 % probably not needed any more
+    \catcode`\/   = 12 % probably not needed any more
+    \catcode`\'   = 12 % probably not needed any more
+    \catcode`\~   = 12 % probably not needed any more
+    \catcode`\#   = 12 % probably not needed any more
+    \catcode`\\   = 12 % probably not needed any more
+\stopcatcodetable
+
+\startcatcodetable \xmlcatcodese
+    \catcode`\^^I = 10 % ascii tab is a blank space
+    \catcode`\^^M =  5 % ascii return is end-line
+    \catcode`\^^L =  5 % ascii form-feed
+    \catcode`\    = 10 % ascii space is blank space
+    \catcode`\^^Z =  9 % ascii eof is ignored
+    \catcode`\&   = 13 % entity
+    \catcode`\<   = 13 % element
+    \catcode`\>   = 12
+    \catcode`\#   = 13
+    \catcode`\$   = 13
+    \catcode`\%   = 13
+    \catcode`\\   = 13
+    \catcode`\^   = 13
+    \catcode`\_   = 13
+    \catcode`\{   = 13
+    \catcode`\}   = 13
+    \catcode`\|   = 13
+    \catcode`\~   = 13
+\stopcatcodetable
+
+\startcatcodetable \xmlcatcodesr
+    \catcode`\^^I = 10 % ascii tab is a blank space
+    \catcode`\^^M =  5 % ascii return is end-line
+    \catcode`\^^L =  5 % ascii form-feed
+    \catcode`\    = 10 % ascii space is blank space
+    \catcode`\^^Z =  9 % ascii eof is ignored
+    \catcode`\&   = 13 % entity
+    \catcode`\<   = 13 % element
+    \catcode`\>   = 12
+    \catcode`\#   = 13
+    \catcode`\$   = 13
+    \catcode`\%   = 13
+    \catcode`\\   = 13
+    \catcode`\^   = 13
+    \catcode`\_   = 13
+    \catcode`\{   = 13
+    \catcode`\}   = 13
+    \catcode`\|   = 13
+    \catcode`\~   = 13
+\stopcatcodetable
+
+\startcatcodetable \typcatcodesa
+    \catcode`\^^I = 12
+    \catcode`\^^M = 12
+    \catcode`\^^L = 12
+    \catcode`\    = 12
+    \catcode`\^^Z = 12
+    \catcode`\{   =  1
+    \catcode`\}   =  2
+\stopcatcodetable
+
+\startcatcodetable \typcatcodesb
+    \catcode`\^^I = 12
+    \catcode`\^^M = 12
+    \catcode`\^^L = 12
+    \catcode`\    = 12
+    \catcode`\^^Z = 12
+    \catcode`\<   =  1
+    \catcode`\>   =  2
+\stopcatcodetable
+
+\letcatcodecommand \ctxcatcodes  `\|   \relax
+\letcatcodecommand \ctxcatcodes  `\~   \relax
+
+%letcatcodecommand \prtcatcodes  `\|   \relax % falls back on ctx
+%letcatcodecommand \prtcatcodes  `\~   \relax % falls back on ctx
+
+\letcatcodecommand \xmlcatcodesn `\&   \relax
+\letcatcodecommand \xmlcatcodesn `\<   \relax
+
+\letcatcodecommand \xmlcatcodese `\&   \relax
+\letcatcodecommand \xmlcatcodese `\<   \relax
+
+\letcatcodecommand \xmlcatcodesr `\&   \relax
+\letcatcodecommand \xmlcatcodesr `\<   \relax
+
+\letcatcodecommand \xmlcatcodese `\#   \relax
+\letcatcodecommand \xmlcatcodese `\$   \relax
+\letcatcodecommand \xmlcatcodese `\%   \relax
+\letcatcodecommand \xmlcatcodese `\\   \relax
+\letcatcodecommand \xmlcatcodese `\^   \relax
+\letcatcodecommand \xmlcatcodese `\_   \relax
+\letcatcodecommand \xmlcatcodese `\{   \relax
+\letcatcodecommand \xmlcatcodese `\}   \relax
+\letcatcodecommand \xmlcatcodese `\|   \relax
+\letcatcodecommand \xmlcatcodese `\~   \relax
+
+\letcatcodecommand \xmlcatcodesr `\#   \relax
+\letcatcodecommand \xmlcatcodesr `\$   \relax
+\letcatcodecommand \xmlcatcodesr `\%   \relax
+\letcatcodecommand \xmlcatcodesr `\\   \relax
+\letcatcodecommand \xmlcatcodesr `\^   \relax
+\letcatcodecommand \xmlcatcodesr `\_   \relax
+\letcatcodecommand \xmlcatcodesr `\{   \relax
+\letcatcodecommand \xmlcatcodesr `\}   \relax
+\letcatcodecommand \xmlcatcodesr `\|   \relax
+\letcatcodecommand \xmlcatcodesr `\~   \relax
+
+    \catcodetable       \ctxcatcodes
+\let\defaultcatcodetable\ctxcatcodes
+\let\xmlcatcodes        \xmlcatcodesn
+
+\endinput

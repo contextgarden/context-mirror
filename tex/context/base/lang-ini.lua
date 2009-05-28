@@ -6,12 +6,21 @@ if not modules then modules = { } end modules ['lang-ini'] = {
     license   = "see context related readme files"
 }
 
+-- needs a cleanup (share locals)
+
+local utf = unicode.utf8
+
+local find, lower, format, utfchar = string.find, string.lower, string.format, utf.char
+local concat = table.concat
+
 if lang.use_new then lang.use_new(true) end
 
 languages                  = languages or {}
 languages.version          = 1.009
 languages.hyphenation      = languages.hyphenation        or { }
 languages.hyphenation.data = languages.hyphenation.data   or { }
+
+local langdata = languages.hyphenation.data
 
 -- 002D : hyphen-minus (ascii)
 -- 2010 : hyphen
@@ -26,7 +35,7 @@ languages.hyphenation.data = languages.hyphenation.data   or { }
 -- we can consider hiding data (faster access too)
 
 --~ local function filter(filename,what)
---~     local data = io.loaddata(input.find_file(filename))
+--~     local data = io.loaddata(resolvers.find_file(filename))
 --~     local data = data:match(string.format("\\%s%%s*(%%b{})",what or "patterns"))
 --~     return data:match("{%s*(.-)%s*}") or ""
 --~ end
@@ -47,29 +56,29 @@ local command    = lpeg.P("\\patterns")
 local parser     = (1-command)^0 * command * content
 
 local function filterpatterns(filename)
-    if filename:find("%.rpl") then
-        return io.loaddata(input.find_file(filename)) or ""
+    if find(filename,"%.rpl") then
+        return io.loaddata(resolvers.find_file(filename)) or ""
     else
-        return parser:match(io.loaddata(input.find_file(filename)) or "")
+        return parser:match(io.loaddata(resolvers.find_file(filename)) or "")
     end
 end
 
-local command     = lpeg.P("\\hyphenation")
-local parser      = (1-command)^0 * command * content
+local command = lpeg.P("\\hyphenation")
+local parser  = (1-command)^0 * command * content
 
 local function filterexceptions(filename)
-    if filename:find("%.rhl") then
-        return io.loaddata(input.find_file(filename)) or ""
+    if find(filename,"%.rhl") then
+        return io.loaddata(resolvers.find_file(filename)) or ""
     else
-        return parser:match(io.loaddata(input.find_file(filename)) or {}) -- "" ?
+        return parser:match(io.loaddata(resolvers.find_file(filename)) or {}) -- "" ?
     end
 end
 
 local function record(tag)
-    local data = languages.hyphenation.data[tag]
+    local data = langdata[tag]
     if not data then
          data = lang.new()
-         languages.hyphenation.data[tag] = data or 0
+         langdata[tag] = data or 0
     end
     return data
 end
@@ -82,31 +91,31 @@ function languages.hyphenation.define(tag)
 end
 
 function languages.hyphenation.number(tag)
-    local d = languages.hyphenation.data[tag]
+    local d = langdata[tag]
     return (d and d:id()) or 0
 end
 
-function languages.hyphenation.load(tag, filename, filter, target)
-    input.starttiming(languages)
+local function loadthem(tag, filename, filter, target)
+    statistics.starttiming(languages)
     local data = record(tag)
-    filename = (filename and filename ~= "" and input.find_file(filename)) or ""
+    filename = (filename and filename ~= "" and resolvers.find_file(filename)) or ""
     local ok = filename ~= ""
     if ok then
         lang[target](data,filterpatterns(filename))
     else
         lang[target](data,"")
     end
-    languages.hyphenation.data[tag] = data
-    input.stoptiming(languages)
+    langdata[tag] = data
+    statistics.stoptiming(languages)
     return ok
 end
 
 function languages.hyphenation.loadpatterns(tag, patterns)
-    return languages.hyphenation.load(tag, patterns, filterpatterns, "patterns")
+    return loadthem(tag, patterns, filterpatterns, "patterns")
 end
 
 function languages.hyphenation.loadexceptions(tag, exceptions)
-    return languages.hyphenation.load(tag, patterns, filterexceptions, "hyphenation")
+    return loadthem(tag, patterns, filterexceptions, "hyphenation")
 end
 
 function languages.hyphenation.exceptions(tag, ...)
@@ -130,16 +139,17 @@ function languages.hyphenation.righthyphenmin(tag, value)
 end
 
 function languages.hyphenation.n()
-    return table.count(languages.hyphenation.data)
+    return table.count(langdata)
 end
 
 -- we can speed this one up with locals if needed
 
 local function tolang(what)
-    if type(what) == "number" then
-        return languages.hyphenation.data[languages.numbers[what]]
-    elseif type(what) == "string" then
-        return languages.hyphenation.data[what]
+    local kind = type(what)
+    if kind == "number" then
+        return langdata[languages.numbers[what]]
+    elseif kind == "string" then
+        return langdata[what]
     else
         return what
     end
@@ -158,15 +168,15 @@ languages.registered = languages.registered or { }
 languages.associated = languages.associated or { }
 languages.numbers    = languages.numbers    or { }
 
-input.storage.register(false,"languages/registered",languages.registered,"languages.registered")
-input.storage.register(false,"languages/associated",languages.associated,"languages.associated")
+storage.register("languages/registered",languages.registered,"languages.registered")
+storage.register("languages/associated",languages.associated,"languages.associated")
 
 function languages.register(tag,parent,patterns,exceptions)
     parent = parent or tag
     languages.registered[tag] = {
         parent     = parent,
-        patterns   = patterns   or string.format("lang-%s.pat",parent),
-        exceptions = exceptions or string.format("lang-%s.hyp",parent),
+        patterns   = patterns   or format("lang-%s.pat",parent),
+        exceptions = exceptions or format("lang-%s.hyp",parent),
         loaded     = false,
         number     = 0,
     }
@@ -190,7 +200,7 @@ end
 
 function languages.loadable(tag)
     local l = languages.registered[tag]
-    if l and l.patterns and input.find_file(patterns) then
+    if l and l.patterns and resolvers.find_file(patterns) then
         return true
     else
         return false
@@ -237,10 +247,10 @@ function languages.hyphenation.loadwords(tag, filename)
     local id = languages.hyphenation.number(tag)
     if id > 0 then
         local l = lang.new(id) or 0
-        input.starttiming(languages)
+        statistics.starttiming(languages)
         local data = io.loaddata(filename) or ""
         l:hyphenation(data)
-        input.stoptiming(languages)
+        statistics.stoptiming(languages)
     end
 end
 
@@ -257,10 +267,10 @@ function languages.logger.report()
         if l.loaded then
             local p = (l.patterns   and "pat") or '-'
             local e = (l.exceptions and "exc") or '-'
-            result[#result+1] = string.format("%s:%s:%s:%s:%s", tag, l.parent, p, e, l.number)
+            result[#result+1] = format("%s:%s:%s:%s:%s", tag, l.parent, p, e, l.number)
         end
     end
-    return (#result > 0 and table.concat(result," ")) or "none"
+    return (#result > 0 and concat(result," ")) or "none"
 end
 
 languages.words           = languages.words      or {}
@@ -283,15 +293,15 @@ do
     local word    = lpeg.Cs((markup/"" + disc/"" + (1-spacing))^1)
 
     function languages.words.load(tag, filename)
-        local filename = input.find_file(filename,'other text file') or ""
+        local filename = resolvers.find_file(filename,'other text file') or ""
         if filename ~= "" then
-            input.starttiming(languages)
+            statistics.starttiming(languages)
             local data = io.loaddata(filename) or ""
             local words = languages.words.data[tag] or {}
             parser = (spacing + word/function(s) words[s] = true end)^0
             parser:match(data)
             languages.words.data[tag] = words
-            input.stoptiming(languages)
+            statistics.stoptiming(languages)
         end
     end
 
@@ -301,7 +311,7 @@ function languages.words.found(id, str)
     local tag = languages.numbers[id]
     if tag then
         local data = languages.words.data[tag]
-        return data and (data[str] or data[str:lower()])
+        return data and (data[str] or data[lower(str)])
     else
         return false
     end
@@ -314,11 +324,10 @@ do
 
     local glyph, disc, kern = node.id('glyph'), node.id('disc'), node.id('kern')
 
-    local bynode = node.traverse
+    local bynode   = node.traverse
+    local chardata = characters.data
 
     local function mark_words(head,found) -- can be optimized
-        local cd = characters.data
-        local uc = utf.char
         local current, start, str, language, n = head, nil, "", nil, 0
         local function action()
             if #str > 0 then
@@ -347,25 +356,25 @@ do
                     action()
                     language = a
                 end
-                if current.subtype > 0 then
+                local components = current.components
+                if components then
                     start = start or current
                     n = n + 1
-                    for g in bynode(current.components) do
-                        str = str .. uc(g.char)
+                    for g in bynode(components) do
+                        str = str .. utfchar(g.char)
                     end
                 else
                     local code = current.char
-                    if cd[code].uccode or cd[code].lccode then
+                    if chardata[code].uccode or chardata[code].lccode then
                         start = start or current
                         n = n + 1
-                        str = str .. uc(code)
-                    else
-                        if start then
-                            action()
-                        end
+                        str = str .. utfchar(code)
+                    elseif start then
+                        action()
                     end
                 end
             elseif id == disc then
+                if n > 0 then n = n + 1 end
                 -- ok
             elseif id == kern and current.subtype == 0 and start then
                 -- ok
@@ -383,18 +392,20 @@ do
     languages.words.methods = { }
     languages.words.method  = 1
 
+    local lw = languages.words
+
     languages.words.methods[1] = function(head, attribute, yes, nop)
         local set   = node.set_attribute
         local unset = node.unset_attribute
-        local wrong, right = false, false
-        if nop then wrong = function(n) set(n,attribute,nop) end end
+        local right, wrong = false, false
         if yes then right = function(n) set(n,attribute,yes) end end
+        if nop then wrong = function(n) set(n,attribute,nop) end end
         for n in node.traverse(head) do
             unset(n,attribute) -- hm
         end
         local found, done = languages.words.found, false
         mark_words(head, function(language,str)
-            if #str < languages.words.threshold then
+            if #str < lw.threshold then
                 return false
             elseif found(language,str) then
                 done = true
@@ -407,11 +418,10 @@ do
         return head, done
     end
 
-    local lw = languages.words
+    local color = attributes.private('color')
 
     function languages.words.check(head)
         if lw.enable and head.next then
-            local color  = attributes.numbers['color']
             local colors = lw.colors
             local alc    = attributes.list[color]
             return lw.methods[lw.method](head, color, alc[colors.known], alc[colors.unknown])
@@ -443,3 +453,16 @@ languages.associate('uk','latn','eng')
 languages.associate('nl','latn','nld')
 languages.associate('de','latn','deu')
 languages.associate('fr','latn','fra')
+
+statistics.register("loaded patterns", function()
+    local result = languages.logger.report()
+    if result ~= "none" then
+        return result
+    end
+end)
+
+statistics.register("language load time", function()
+    if statistics.elapsedindeed(languages) then
+        return format("%s seconds, n=%s", statistics.elapsedtime(languages), languages.hyphenation.n())
+    end
+end)

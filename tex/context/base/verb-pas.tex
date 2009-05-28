@@ -14,7 +14,7 @@
 % This module will be cleaned up a bit in the process of more
 % flexible verbatim options.
 
-\writestatus{loading}{Context Support Macros / Pretty PASCAL Verbatim}
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty PASCAL Verbatim}
 
 %D Typeset Pascal(-like) code:
 %D
@@ -87,14 +87,14 @@
    \PASsetspecials
    \PLsetdiagnostics}
 
-
 % the // and /* comments
 
 \gdef\PAStypefourthree%
   {\handlenextnextpretty\doPAStypefourthree\PLtypefourtwo}
 
 \gdef\doPAStypefourthree#1#2%
-  {\ifinPLcomment
+  {\endPLtypesix
+   \ifinPLcomment
      \let\next=\PLtypefourtwo
    \else
      \ifinPLsingle

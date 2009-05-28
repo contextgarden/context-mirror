@@ -3571,6 +3571,16 @@ return {
    ["pe"]="بارگذاری‌تنظیم",
    ["ro"]="seteazaalinierea",
   },
+  ["setupanswerarea"]={
+   ["cs"]="setupanswerarea",
+   ["de"]="setupanswerarea",
+   ["en"]="setupanswerarea",
+   ["fr"]="setupanswerarea",
+   ["it"]="setupanswerarea",
+   ["nl"]="stelantwoordgebiedin",
+   ["pe"]="setupanswerarea",
+   ["ro"]="setupanswerarea",
+  },
   ["setuparranging"]={
    ["cs"]="nastavusporadani",
    ["de"]="stelleanordnenein",
@@ -6912,6 +6922,12 @@ return {
    ["pe"]="پایین",
    ["ro"]="jos",
   },
+  ["bottomafter"]={
+   ["en"]="bottomafter",
+  },
+  ["bottombefore"]={
+   ["en"]="bottombefore",
+  },
   ["bottomdistance"]={
    ["cs"]="vzdalenostspodku",
    ["de"]="abstandunten",
@@ -7181,6 +7197,9 @@ return {
    ["nl"]="comprimeren",
    ["pe"]="فشردن",
    ["ro"]="compress",
+  },
+  ["connector"]={
+   ["en"]="connector",
   },
   ["continue"]={
    ["cs"]="pokracovat",
@@ -7642,6 +7661,9 @@ return {
    ["pe"]="پرونده",
    ["ro"]="fisier",
   },
+  ["filtercommand"]={
+   ["en"]="filtercommand",
+  },
   ["focus"]={
    ["cs"]="zaostreni",
    ["de"]="focus",
@@ -7710,7 +7732,6 @@ return {
    ["it"]="coloreprimopiano",
    ["nl"]="voorgrondkleur",
    ["pe"]="رنگ‌پیش‌زمینه",
-
    ["ro"]="foregroundcolor",
   },
   ["foregroundstyle"]={
@@ -7972,6 +7993,9 @@ return {
    ["nl"]="hfil",
    ["pe"]="پرکردن‌ارتفاع",
    ["ro"]="hfil",
+  },
+  ["hidenumber"]={
+   ["en"]="hidenumber",
   },
   ["hoffset"]={
    ["cs"]="hoffset",
@@ -8853,6 +8877,12 @@ return {
    ["pe"]="فرمان‌شماره",
    ["ro"]="comandanumar",
   },
+  ["numberconversion"]={
+   ["en"]="numberconversion",
+  },
+  ["numberconversionset"]={
+   ["en"]="numberconversionset",
+  },
   ["numberdistance"]={
    ["cs"]="numberdistance",
    ["de"]="numberdistance",
@@ -8873,6 +8903,15 @@ return {
    ["pe"]="شماره‌گذاری",
    ["ro"]="numerotare",
   },
+  ["numberorder"]={
+   ["en"]="numberorder",
+  },
+  ["numberprefix"]={
+   ["en"]="numberprefix",
+  },
+  ["numbersegments"]={
+   ["en"]="numbersegments",
+  },
   ["numberseparator"]={
    ["cs"]="oddelovaccisla",
    ["de"]="nummernseperator",
@@ -8882,6 +8921,15 @@ return {
    ["nl"]="nummerscheider",
    ["pe"]="جداکننده‌شماره",
    ["ro"]="separatornumar",
+  },
+  ["numberseparatorset"]={
+   ["en"]="numberseparatorset",
+  },
+  ["numberset"]={
+   ["en"]="numberset",
+  },
+  ["numberstopper"]={
+   ["en"]="numberstopper",
   },
   ["numberstyle"]={
    ["cs"]="stylcisla",
@@ -9073,6 +9121,12 @@ return {
    ["pe"]="فرمان‌صفحه",
    ["ro"]="comandapagina",
   },
+  ["pageconversion"]={
+   ["en"]="pageconversion",
+  },
+  ["pageconversionset"]={
+   ["en"]="pageconversionset",
+  },
   ["pagenumber"]={
    ["cs"]="cislostranky",
    ["de"]="seitennummer",
@@ -9083,6 +9137,39 @@ return {
    ["pe"]="شماره‌صفحه",
    ["ro"]="numarpagina",
   },
+  ["pageprefix"]={
+   ["en"]="pageprefix",
+  },
+  ["pageprefixconnector"]={
+   ["en"]="pageprefixconnector",
+  },
+  ["pageprefixconversion"]={
+   ["en"]="pageprefixconversion",
+  },
+  ["pageprefixconversionset"]={
+   ["en"]="pageprefixconversionset",
+  },
+  ["pageprefixsegments"]={
+   ["en"]="pageprefixsegments",
+  },
+  ["pageprefixseparatorset"]={
+   ["en"]="pageprefixseparatorset",
+  },
+  ["pageprefixset"]={
+   ["en"]="pageprefixset",
+  },
+  ["pageprefixstopper"]={
+   ["en"]="pageprefixstopper",
+  },
+  ["pagesegments"]={
+   ["en"]="pagesegments",
+  },
+  ["pageseparatorset"]={
+   ["en"]="pageseparatorset",
+  },
+  ["pageset"]={
+   ["en"]="pageset",
+  },
   ["pagestate"]={
    ["cs"]="pagestate",
    ["de"]="pagestate",
@@ -9092,6 +9179,9 @@ return {
    ["nl"]="paginastatus",
    ["pe"]="وضعیت‌صفحه",
    ["ro"]="pagestate",
+  },
+  ["pagestopper"]={
+   ["en"]="pagestopper",
   },
   ["pagestyle"]={
    ["cs"]="stylstranky",
@@ -9182,6 +9272,27 @@ return {
    ["nl"]="prefix",
    ["pe"]="پیشوند",
    ["ro"]="prefix",
+  },
+  ["prefixconnector"]={
+   ["en"]="prefixconnector",
+  },
+  ["prefixconversion"]={
+   ["en"]="prefixconversion",
+  },
+  ["prefixconversionset"]={
+   ["en"]="prefixconversionset",
+  },
+  ["prefixsegments"]={
+   ["en"]="prefixsegments",
+  },
+  ["prefixseparatorset"]={
+   ["en"]="prefixseparatorset",
+  },
+  ["prefixset"]={
+   ["en"]="prefixset",
+  },
+  ["prefixstopper"]={
+   ["en"]="prefixstopper",
   },
   ["preset"]={
    ["cs"]="prednastaveni",
@@ -9282,6 +9393,9 @@ return {
    ["nl"]="verwijzing",
    ["pe"]="مرجع",
    ["ro"]="referinta",
+  },
+  ["referenceprefix"]={
+   ["en"]="referenceprefix",
   },
   ["referencing"]={
    ["cs"]="odkazujici",
@@ -9593,6 +9707,9 @@ return {
    ["pe"]="نمونه",
    ["ro"]="exemplu",
   },
+  ["saveinlist"]={
+   ["en"]="saveinlist",
+  },
   ["scale"]={
    ["cs"]="meritko",
    ["de"]="format",
@@ -9633,6 +9750,12 @@ return {
    ["pe"]="بخش",
    ["ro"]="sectiune",
   },
+  ["sectionconversion"]={
+   ["en"]="sectionconversion",
+  },
+  ["sectionconversionset"]={
+   ["en"]="sectionconversionset",
+  },
   ["sectionnumber"]={
    ["cs"]="cislooddilu",
    ["de"]="abschnittsnummer",
@@ -9642,6 +9765,18 @@ return {
    ["nl"]="sectienummer",
    ["pe"]="شماره‌بخش",
    ["ro"]="numarsectiune",
+  },
+  ["sectionsegments"]={
+   ["en"]="sectionsegments",
+  },
+  ["sectionseparatorset"]={
+   ["en"]="sectionseparatorset",
+  },
+  ["sectionset"]={
+   ["en"]="sectionset",
+  },
+  ["sectionstopper"]={
+   ["en"]="sectionstopper",
   },
   ["separator"]={
    ["cs"]="oddelovac",
@@ -10615,6 +10750,26 @@ return {
   },
  },
  ["elements"]={
+  ["answerlines"]={
+   ["cs"]="answerlines",
+   ["de"]="answerlines",
+   ["en"]="answerlines",
+   ["fr"]="answerlines",
+   ["it"]="answerlines",
+   ["nl"]="antwoordregels",
+   ["pe"]="answerlines",
+   ["ro"]="answerlines",
+  },
+  ["answerspace"]={
+   ["cs"]="answerspace",
+   ["de"]="answerspace",
+   ["en"]="answerspace",
+   ["fr"]="answerspace",
+   ["it"]="answerspace",
+   ["nl"]="antwoordruimte",
+   ["pe"]="answerspace",
+   ["ro"]="answerspace",
+  },
   ["begin"]={
    ["cs"]="zacatek",
    ["de"]="anfang",
@@ -11536,6 +11691,16 @@ return {
    ["nl"]="altijd",
    ["pe"]="همواره",
    ["ro"]="totdeauna",
+  },
+  ["answerarea"]={
+   ["cs"]="answerarea",
+   ["de"]="answerarea",
+   ["en"]="answerarea",
+   ["fr"]="answerarea",
+   ["it"]="answerarea",
+   ["nl"]="antwoordgebied",
+   ["pe"]="answerarea",
+   ["ro"]="answerarea",
   },
   ["appendices"]={
    ["cs"]="dodatky",
@@ -13227,6 +13392,16 @@ return {
    ["pe"]="صفحه‌چپ",
    ["ro"]="paginastanga",
   },
+  ["lefttoright"]={
+   ["cs"]="lefttoright",
+   ["de"]="lefttoright",
+   ["en"]="lefttoright",
+   ["fr"]="lefttoright",
+   ["it"]="lefttoright",
+   ["nl"]="lefttoright",
+   ["pe"]="lefttoright",
+   ["ro"]="lefttoright",
+  },
   ["legend"]={
    ["cs"]="legenda",
    ["de"]="legende",
@@ -13806,6 +13981,9 @@ return {
    ["nl"]="niet",
    ["pe"]="بدون",
    ["ro"]="nu",
+  },
+  ["note"]={
+   ["en"]="note",
   },
   ["nothanging"]={
    ["cs"]="nothanging",
@@ -14446,6 +14624,16 @@ return {
    ["nl"]="rechterpagina",
    ["pe"]="صفحه‌راست",
    ["ro"]="paginadreapta",
+  },
+  ["righttoleft"]={
+   ["cs"]="righttoleft",
+   ["de"]="righttoleft",
+   ["en"]="righttoleft",
+   ["fr"]="righttoleft",
+   ["it"]="righttoleft",
+   ["nl"]="righttoleft",
+   ["pe"]="righttoleft",
+   ["ro"]="righttoleft",
   },
   ["roman"]={
    ["cs"]="antikva",
@@ -15136,6 +15324,86 @@ return {
    ["nl"]="subsubsubsubsubonderwerp",
    ["pe"]="زیرزیرزیرزیرزیرموضوع",
    ["ro"]="subsubsubsubsubsubiect",
+  },
+  ["subsubsubsubsubsubsection"]={
+   ["cs"]="podpodpodpodpodpodsekce",
+   ["de"]="unterunterunterunterunterunterabsatz",
+   ["en"]="subsubsubsubsubsubsection",
+   ["fr"]="soussoussoussoussoussoussection",
+   ["it"]="sottosottosottosottosottosottocapoverso",
+   ["nl"]="subsubsubsubsubsubparagraaf",
+   ["pe"]="زیرزیرزیرزیرزیرزیربخش",
+   ["ro"]="subsubsubsubsubsubsectiune",
+  },
+  ["subsubsubsubsubsubsubject"]={
+   ["cs"]="podpodpodpodpodpodtema",
+   ["de"]="unterunterunterunterunterunterthema",
+   ["en"]="subsubsubsubsubsubsubject",
+   ["fr"]="soussoussoussoussoussoussujet",
+   ["it"]="sottosottosottosottosottosottoargomento",
+   ["nl"]="subsubsubsubsubsubonderwerp",
+   ["pe"]="زیرزیرزیرزیرزیرزیرموضوع",
+   ["ro"]="subsubsubsubsubsubsubiect",
+  },
+  ["subsubsubsubsubsubsubsection"]={
+   ["cs"]="podpodpodpodpodpodpodsekce",
+   ["de"]="unterunterunterunterunterunterunterabsatz",
+   ["en"]="subsubsubsubsubsubsubsection",
+   ["fr"]="soussoussoussoussoussoussoussection",
+   ["it"]="sottosottosottosottosottosottosottocapoverso",
+   ["nl"]="subsubsubsubsubsubsubparagraaf",
+   ["pe"]="زیرزیرزیرزیرزیرزیرزیربخش",
+   ["ro"]="subsubsubsubsubsubsubsectiune",
+  },
+  ["subsubsubsubsubsubsubsubject"]={
+   ["cs"]="podpodpodpodpodpodpodtema",
+   ["de"]="unterunterunterunterunterunterunterthema",
+   ["en"]="subsubsubsubsubsubsubsubject",
+   ["fr"]="soussoussoussoussoussoussoussujet",
+   ["it"]="sottosottosottosottosottosottosottoargomento",
+   ["nl"]="subsubsubsubsubsubsubonderwerp",
+   ["pe"]="زیرزیرزیرزیرزیرزیرزیرموضوع",
+   ["ro"]="subsubsubsubsubsubsubsubiect",
+  },
+  ["subsubsubsubsubsubsubsubsection"]={
+   ["cs"]="podpodpodpodpodpodpodpodsekce",
+   ["de"]="unterunterunterunterunterunterunterunterabsatz",
+   ["en"]="subsubsubsubsubsubsubsubsection",
+   ["fr"]="soussoussoussoussoussoussoussoussection",
+   ["it"]="sottosottosottosottosottosottosottosottocapoverso",
+   ["nl"]="subsubsubsubsubsubsubsubparagraaf",
+   ["pe"]="زیرزیرزیرزیرزیرزیرزیرزیربخش",
+   ["ro"]="subsubsubsubsubsubsubsubsectiune",
+  },
+  ["subsubsubsubsubsubsubsubsubject"]={
+   ["cs"]="podpodpodpodpodpodpodpodtema",
+   ["de"]="unterunterunterunterunterunterunterunterthema",
+   ["en"]="subsubsubsubsubsubsubsubsubject",
+   ["fr"]="soussoussoussoussoussoussoussoussujet",
+   ["it"]="sottosottosottosottosottosottosottosottoargomento",
+   ["nl"]="subsubsubsubsubsubsubsubonderwerp",
+   ["pe"]="زیرزیرزیرزیرزیرزیرزیرزیرموضوع",
+   ["ro"]="subsubsubsubsubsubsubsubsubiect",
+  },
+  ["subsubsubsubsubsubsubsubsubsection"]={
+   ["cs"]="podpodpodpodpodpodpodpodpodsekce",
+   ["de"]="unterunterunterunterunterunterunterunterunterabsatz",
+   ["en"]="subsubsubsubsubsubsubsubsubsection",
+   ["fr"]="soussoussoussoussoussoussoussoussoussection",
+   ["it"]="sottosottosottosottosottosottosottosottosottocapoverso",
+   ["nl"]="subsubsubsubsubsubsubsubsubparagraaf",
+   ["pe"]="زیرزیرزیرزیرزیرزیرزیرزیرزیربخش",
+   ["ro"]="subsubsubsubsubsubsubsubsubsectiune",
+  },
+  ["subsubsubsubsubsubsubsubsubsubject"]={
+   ["cs"]="podpodpodpodpodpodpodpodpodtema",
+   ["de"]="unterunterunterunterunterunterunterunterunterthema",
+   ["en"]="subsubsubsubsubsubsubsubsubsubject",
+   ["fr"]="soussoussoussoussoussoussoussoussoussujet",
+   ["it"]="sottosottosottosottosottosottosottosottosottoargomento",
+   ["nl"]="subsubsubsubsubsubsubsubsubonderwerp",
+   ["pe"]="زیرزیرزیرزیرزیرزیرزیرزیرزیرموضوع",
+   ["ro"]="subsubsubsubsubsubsubsubsubsubiect",
   },
   ["sunday"]={
    ["cs"]="nedele",

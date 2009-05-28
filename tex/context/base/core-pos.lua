@@ -18,6 +18,8 @@ jobpositions           = jobpositions or { }
 jobpositions.collected = jobpositions.collected or { }
 jobpositions.tobesaved = jobpositions.tobesaved or { }
 
+-- these are global since they are used often at the tex end
+
 ptbs, pcol = jobpositions.tobesaved, jobpositions.collected -- global
 
 local function initializer()
@@ -35,7 +37,7 @@ function jobpositions.replace(name,...)
 end
 
 function jobpositions.doifelse(name)
-    cs.testcase(jobpositions.collected[name] or ptbs[name])
+    commands.testcase(jobpositions.collected[name] or ptbs[name])
 end
 
 function jobpositions.MPp(id) local jpi = pcol[id] or ptbs[id] texprint((jpi and jpi[1]) or '0'  ) end

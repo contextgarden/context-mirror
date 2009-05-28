@@ -74,7 +74,7 @@ do
             end
         end
         local runner = mpbin .. rest .. fn
-        input.report("running: %s\n", runner)
+        logs.simple("running: %s\n", runner)
         return (os.execute(runner))
   end
 
@@ -93,7 +93,7 @@ function scripts.mptopdf.convertall()
         if scripts.mptopdf.aux.make_mps(fn,latex,rawmp,metafun) then
             files = dir.glob(file.nameonly(fn) .. ".*") -- reset
         else
-            input.report("error while processing mp file '%s'", fn)
+            logs.simple("error while processing mp file '%s'", fn)
             exit(1)
         end
         local report = { }
@@ -104,20 +104,20 @@ function scripts.mptopdf.convertall()
             end
         end
         if #report > 0 then
-            input.report("number of converted files: %i", #report)
-            input.report("")
+            logs.simple("number of converted files: %i", #report)
+            logs.simple("")
             for _, r in ipairs(report) do
-                input.report("%s => %s", r[1], r[2])
+                logs.simple("%s => %s", r[1], r[2])
             end
         else
-            input.report("no input files match %s", table.concat(files,' '))
+            logs.simple("no input files match %s", table.concat(files,' '))
         end
     else
-        input.report("no files match %s", table.concat(environment.files,' '))
+        logs.simple("no files match %s", table.concat(environment.files,' '))
     end
 end
 
-banner = banner .. " | mptopdf converter "
+logs.extendbanner("MetaPost to PDF Converter 0.51",true)
 
 messages.help = [[
 --rawmp               raw metapost run
@@ -125,14 +125,12 @@ messages.help = [[
 --latex               force --tex=latex
 ]]
 
-input.verbose = true
-
 if environment.files[1] then
     scripts.mptopdf.convertall()
 else
     if not environment.arguments.help then
-        input.report("provide MP output file (or pattern)")
-        input.report("")
+        logs.simple("provide MP output file (or pattern)")
+        logs.simple("")
     end
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

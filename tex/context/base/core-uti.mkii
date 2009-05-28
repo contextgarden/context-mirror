@@ -11,6 +11,154 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\writestatus{loading}{ConTeXt Core Macros / Utility File Handling}
+
+\unprotect
+
+% todo : safe lan etc too
+% todo : load all commands at once (tok)
+% todo : merge status info patch into tui file (language, encoding, etc),
+
+% Utility-file
+%
+% De onderstaande macro's ondersteunen het gebruik van de
+% zogeheten utility-file. Alle extern onder te brengen
+% informatie wordt opgeslagen in de file \jobname.tui, tenzij
+% er selectief pagina's worden gezet. In dat geval wordt de
+% file \jobname.tmp gebruikt. Informatie wordt ingelezen uit
+% de file \jobname.tuo, welke door TeXUtil wordt aangemaakt.
+
+\edef\utilityversion{1998.07.07} % was: 1996.03.15  % status variables
+\edef\utilityversion{1998.12.20} % was: 1998.07.07  % index attributes
+\edef\utilityversion{2003.07.19} % was: 1998.12.20  % object pages
+\edef\utilityversion{2006.06.23} % was: 2003.07.19  % -- instead of :
+\edef\utilityversion{2006.09.21} % pt in pos
+\edef\utilityversion{2008.10.14} % moved more to lua in mkiv
+
+% Bepaalde commando's worden als string weggeschreven. Deze
+% zijn aan het eind van deze file gedefinieerd.
+
+% Om een opbouw van spaties te voorkomen (???) moet ^^M een
+% andere betekenis krijgen:
+%
+% \catcode`\^^M=14 (comment)
+%
+% read file
+%
+% \catcode`\^^M=5  (end of line)
+
+\newwrite\utility@tui
+\newif\ifutilitydone
+
+\ifx\sectionseparator\undefined \def\sectionseparator{-} \fi
+
+\def\@@utilityerrormessage
+  {\showmessage\m!systems8\empty
+   \globallet\@@utilityerrormessage\relax}
+
+\def\thisisutilityversion#1%
+  {\doifelse\utilityversion{#1}%
+     {\checksectionseparator}
+     {\@@utilityerrormessage\resetutilities\endinput}}
+
+\def\checksectionseparator                  % catches backward compatibility conflict
+  {}% \doifnot\sectionseparator:\endinput}  % this dependency may go in a few years
+
+\def\dosplitofffoliopart[#1--#2--#3]{#3}
+
+\def\thisissectionseparator#1%
+  {\bgroup
+   \globallet\checksectionseparator\relax
+   \defconvertedcommand \asciia\sectionseparator
+   \defconvertedargument\asciib{#1}%
+   \expanded{\gdef\noexpand\dosplitofffoliopart[####1\sectionseparator
+     \sectionseparator####2\sectionseparator\sectionseparator####3]{####3}}%
+   \ifx\asciia\asciib
+     \egroup
+   \else
+     \egroup
+     % todo \@@utilityerrormessage
+     \resetutilities
+     \endinput
+   \fi}
+
+\def\writeutility         {\write\utility@tui}
+\def\writeutilitycommand#1{\write\utility@tui{c \string#1}}
+
+% less tokens
+%
+% \def\immediatewriteutility       {\immediate\writeutility}
+% \def\immediatewriteutilitycommand{\immediate\writeutilitycommand}
+%
+% more flexible (for overloading)
+
+\def\immediatewriteutility         {\immediate\write\utility@tui}
+\def\immediatewriteutilitycommand#1{\immediate\write\utility@tui{c \string#1}}
+
+% as in:
+
+\def\cwriteutility#1%
+  {\write\utility@tui{\noexpand\checkedutility{\number\nofshipouts}{#1}}}
+
+\def\cwriteutilitycommand#1%
+  {\write\utility@tui{\noexpand\checkedutility{\number\nofshipouts}{c \string#1}}}
+
+\let\checkedutility\secondoftwoarguments
+
+\def\docheckedutility#1#2{\ifnum#1=\nofshipouts#2\else\letterpercent\fi}
+
+\prependtoks
+  \let\checkedutility\docheckedutility
+\to \everybeforeshipout
+
+% Better use marks.
+
+\newtoks \everyopenutilities
+\newtoks \everycloseutilities
+\newtoks \everycheckutilities
+
+\def\openutilities {\the\everyopenutilities } % \global\everyopenutilities\emptytoks
+\def\closeutilities{\the\everycloseutilities}
+\def\checkutilities{\the\everycheckutilities}
+
+\appendtoks
+  \let\writeutility                \cwriteutility
+  \let\writeutilitycommand         \cwriteutilitycommand
+ %\let\immediatewriteutility       \cimmediatewriteutility
+ %\let\immediatewriteutilitycommand\cimmediatewriteutilitycommand
+  \let\checkutilities              \relax
+\to \everycheckutilities
+
+\appendtoks
+  \immediate\openout\utility@tui\jobname.\f!inputextension
+  \immediatewriteutilitycommand{\thisissectionseparator{\sectionseparator}}% for the moment
+  \immediatewriteutilitycommand{\thisisutilityversion  {\utilityversion  }}% in this order
+\to \everyopenutilities
+
+\appendtoks
+%   \immediate\closeout\utility@tui % niet echt nodig
+  \reportutilityproblems
+  % should be a message :
+  \let\writeutilitycommand         \gobbleoneargument
+  \let\writeutility                \gobbleoneargument
+  \let\immediatewriteutilitycommand\gobbleoneargument
+  \let\immediatewriteutility       \gobbleoneargument
+\to \everycloseutilities
+
+% \def\reopenutilities
+%   {\immediate\closeout\utility@tui
+%    \openutilities}
+
+\def\abortutilitygeneration
+  {\immediatewriteutilitycommand\utilitygenerationaborted
+   \immediatewriteutility{q {quit}}}
+
+\def\utilitygenerationaborted
+  {\showmessage\m!systems{21}\empty
+   \globallet\utilitygenerationaborted\endinput
+   \gdef\reportutilityproblems{\showmessage\m!systems{22}\empty}%
+   \endinput}
+
 \def\savecurrentvalue#1#2%
   {\immediatewriteutilitycommand{\initializevariable\string#1{#2}}}
 
@@ -19,6 +167,46 @@
 \appendtoks
     \globallet\initializevariable\gobbletwoarguments
 \to \everyafterutilityread
+
+\let\reportutilityproblems\relax
+
+\newtoks\utilityresetlist
+
+\def\addutilityreset#1%
+  {\@EA\appendtoks\csname\s!reset#1\endcsname\to\utilityresetlist}
+
+\def\resetutilities
+  {\the\utilityresetlist}
+
+% #1=type #2=file #3=melding #4=voor #5=na
+%
+% Er wordt gegroepeerd. Als binnen een lijst (bijvoorbeeld) de
+% \leftskip is aangepast, maar nog geen \par is gegeven, dan
+% geldt buiten de groep de oude \leftskip. Aan #5 kan dan
+% ook \par worden meegegeven om de paragraaf af te sluiten.
+
+\newif\ifdoinpututilities
+\newif\ifunprotectutilities   % voor't geval er \v!xxxxxx's zijn
+
+\def\currentutilityfilename{\jobname}
+
+% we need to pop and push, else problems with reading
+% utility files (toc) in xml mode and (e.g.) in a toc
+% entry doing a doifmode
+%
+% the following is not ok because we have no way to signal
+% xml content (yet), so for the moment we use this:
+
+\appendtoks
+    \ifprocessingXML
+        \processingXMLfalse
+        \enableXML
+        \catcode`\\=\@@escape
+        \catcode`\{=\@@begingroup
+        \catcode`\}=\@@endgroup
+        \catcode`\%=\@@comment\relax
+    \fi
+\to \everybeforeutilityread
 
 \edef\testbytesequence
   {\rawcharacter{7}%
@@ -36,12 +224,123 @@
    \fi
    \global\let\thisisbytesequence\gobbleoneargument}
 
-\beginXETEX
+\ifnum\texengine=\xetexengine
     \let\testbytesequence\empty
-\endXETEX
+\fi
 
 \appendtoks
   \immediatewriteutilitycommand{\thisisbytesequence{\testbytesequence}}%
 \to \everyopenutilities
 
-\endinput
+\long\def\doutilities#1#2#3#4#5% % introduceren in utility file
+  {\resetutilities
+   % more than one utility thing can be handled in one pass,
+   % for instance lists, so we process ##1 as list
+   \def\douticommand##1{\csname\s!set##1\endcsname}%
+   \processcommacommand[#1]\douticommand
+   \begingroup
+   \def\currentutilityfilename{#2}%
+   \notesenabledfalse
+   \doinpututilitiestrue
+   \global\utilitydonefalse
+   \pushendofline % geeft problemen zodra andere file wordt ingelezen
+   \pushcatcodetable
+   \setcatcodetable\ctxcatcodes
+   \ifunprotectutilities % nog nodig ?
+     \unprotect
+   \fi
+   #4%
+   \the\everybeforeutilityread
+   \readjobfile{#2.\f!outputextension}\donothing\donothing
+   \the\everyafterutilityread
+   \popcatcodetable
+   #5%
+   \relax
+   \ifunprotectutilities
+     \protect
+   \fi
+   \popendofline
+   \ifutilitydone\else
+     \doifsomething{#3}
+       {\showmessage\m!systems9{{#3}}%
+        \doifconcepttracing
+          {\blank
+           \setmessagetext\m!systems9{{#3}}%
+           \type{[\currentmessagetext]}%
+           \blank}}%
+   \fi
+   \endgroup}
+
+% Default-instellingen (verborgen)
+
+\prependtoks \resetutilities \to \everyjob
+
+% Experiment
+%
+% \installprogram{Hello World}
+% \installprogram[hw]{Hello World}
+% \installedprogram[hw]
+
+\def\installprogram
+  {\dosingleempty\doinstallprogram}
+
+\def\doinstallprogram[#1]#2%
+  {\doifelsenothing{#1}
+     {\dodoinstallprogram{#2}}
+     {\setvalue{\??up#1}{\dodoinstallprogram{#2}}}}
+
+\def\dodoinstallprogram#1%
+  {\immediatewriteutility{e p {#1}}}
+
+\def\installedprogram[#1]%
+  {\getvalue{\??up#1}}
+
+% \writeplugindata{texutil}{{alpha}}
+% \writeplugindata{texutil}{{beta}}
+% \writeplugindata{texutil}{{gamma}}
+% \writeplugindata{texutil}{{delta}}
+%
+% \loadplugindata {plugintest}
+
+\def\immediatewriteplugindata#1#2%
+  {\immediatewriteutility{p u {#1} #2}}
+
+\def\writeplugindata#1#2%
+  {\writeutility{p u {#1} #2}}
+
+\def\loadplugindata#1%
+  {\doutilities{#1}\jobname\empty\relax\relax}
+
+% \plugincommand{\command{}{}{}}
+%
+% this way we can catch undefined commands
+
+\long\def\plugincommand#1%
+  {\doplugincommand#1\relax}
+
+\long\def\doplugincommand#1%
+  {\ifx#1\undefined
+     \expandafter\noplugincommand
+   \else
+     \expandafter#1%
+   \fi}
+
+\long\def\noplugincommand#1\relax
+  {}
+
+% \addutilityreset{plugintest}
+%
+% \def\resetplugintest{\let\plugintest\gobbletwoarguments}
+% \def\setplugintest  {\let\plugintest\writestatus}
+%
+% \installplugin
+%   {plugintest}
+%   {\let\plugintest\gobbletwoarguments}
+%   {\let\plugintest\writestatus}
+
+\long\def\installplugin#1#2#3%
+  {\addutilityreset          {#1}%
+   \long\setvalue{\s!reset#1}{#2}%
+   \long\setvalue{\s!set  #1}{#3}}
+
+\protect \endinput

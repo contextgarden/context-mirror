@@ -232,7 +232,7 @@
 \stopmathcollection
 
 \def\PLAINangle
-  {{\vbox{\ialign{$\m@th\scriptstyle##$\crcr
+  {{\vbox{\ialign{$\mathsurround\zeropoint\scriptstyle##$\crcr
     \not\mathrel{\mkern14mu}\crcr
     \noalign{\nointerlineskip}
     \mkern2.5mu\leaders\hrule height.34pt\hfill\mkern2.5mu\crcr}}}}
@@ -424,12 +424,12 @@
   {\cdotp\cdotp\cdotp}
 
 \def\PLAINvdots
-  {\vbox{\baselineskip4\p@ \lineskiplimit\z@
-   \kern6\p@\hbox{.}\hbox{.}\hbox{.}}}
+  {\vbox{\baselineskip.4\bodyfontsize\lineskiplimit\zeropoint
+   \kern.6\bodyfontsize\hbox{.}\hbox{.}\hbox{.}}}
 
 \def\PLAINddots
-   {\mkern1mu\raise7\p@\vbox{\kern7\p@\hbox{.}}\mkern2mu
-    \raise4\p@\hbox{.}\mkern2mu\raise\p@\hbox{.}\mkern1mu}
+   {\mkern1mu\raise.7\bodyfontsize\vbox{\kern.7\bodyfontsize\hbox{.}}\mkern2mu
+    \raise.4\bodyfontsize\hbox{.}\mkern2mu\raise.1\bodyfontsize\hbox{.}\mkern1mu}
 
 \startmathcollection[default]
 
@@ -521,7 +521,7 @@
 
 \def\notsosqrt[#1]{\root#1\of}
 
-\unexpanded\def\sqrt{\doifnextcharelse[\notsosqrt\normalsqrt}
+\unexpanded\def\sqrt{\doifnextoptionalelse\notsosqrt\normalsqrt}
 
 \def\PLAINbig {\@@dobig{0.85}}
 \def\PLAINBig {\@@dobig{1.15}}
@@ -561,12 +561,12 @@
 \stopmathcollection
 
 \def\PLAINroot#1#2%
-  {\setbox\z@\hbox{$\m@th#1\sqrt{#2}$}\dimen@\ht\z@
-   \advance\dimen@-\dp\z@
-   \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-10mu\box\z@}
+  {\setbox\zerocount\hbox{$\mathsurround\zeropoint#1\sqrt{#2}$}\dimen@\ht\zerocount
+   \advance\dimen@-\dp\zerocount
+   \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-10mu\box\zerocount}
 
 \def\PLAINmatrix#1%
-  {\null\,\vcenter{\normalbaselines\m@th
+  {\null\,\vcenter{\normalbaselines\mathsurround\zeropoint
    \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
    \mathstrut\crcr\noalign{\kern-\baselineskip}
    #1\crcr\mathstrut\crcr\noalign{\kern-\baselineskip}}}\,}
@@ -651,7 +651,7 @@
 %D The next macro vertically centeres its contents.
 
 \def\@center@math#1%
-  {\vcenter{\hbox{$\m@th#1$}}}
+  {\vcenter{\hbox{$\mathsurround\zeropoint#1$}}}
 
 \def\@center@colon
   {\mathpalette\@center@math{\colon}}
@@ -711,7 +711,6 @@
    \mathop\bgroup
      \mkern7mu\mathchoice{\mkern2mu}{}{}{}%
      \let\dointlimits\egroup}
-
 
 \setupmathematics
   [integral=nolimits]

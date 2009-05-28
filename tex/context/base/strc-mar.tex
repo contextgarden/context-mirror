@@ -1,0 +1,493 @@
+%D \module
+%D   [       file=strc-mar,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Markings,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Markings}
+
+\registerctxluafile{strc-mar}{1.001}
+
+\unprotect
+
+%D Old stuff.
+
+\newtoks \listofmarks
+
+\let \getmarks         \gobbleoneargument
+\let \getallmarks      \relax
+\let \getsplitmarks    \gobbleoneargument
+\let \getallsplitmarks \relax
+
+%D \macros
+%D   {expandmarks}
+%D
+%D We can force expansion of marks with the following switch.
+
+% Synchronizing marks is a rather tricky and messy business. When
+% setting a mark, a node is added to the list in order for to \TEX\
+% be able to figure out the 3 current marks when a page is made
+% (last mark on previous page, first on current page, last on
+% current page; in \LUATEX\ we might at one point have the first on
+% the next page as well).
+
+% Resetting a mark is not easy. An empty one will not erase the last
+% one on the previous page for instance. In \LUATEX\ we can clear a
+% marks state register with \type {\clearmarks} but since this is an
+% immediate operation it might have unwanted side effects when \TEX\
+% has collected several pages of text and finishing off these pages
+% uses marks.
+
+% In \MKIV\ we provide a model that permits some control over the
+% way marks are used. It is not entirely compatible with \MKII\ but
+% in practice this is not a real problem. Quality has a price.
+
+% In fact we define multiple marks per visible mark and define
+% additional ones on the fly. This has some price in terms of used
+% mark registers but given the way that we fill marks in \MKIV\
+% their accumulated content is not really the issue. Also,
+% periodically we cleanup any leftovers.
+
+\newif\ifexpandmarks \expandmarkstrue
+
+\def\marksomecs #1#2{\csname\string#1:m:\number#2\endcsname}
+\def\markautocs   #1{\csname\string#1:m:\number\csname\string#1:s\endcsname\endcsname}
+\def\markmaincs   #1{\csname\string#1:m\endcsname}
+\def\markresetcs  #1{\csname\string#1:r\endcsname}
+\def\markstatecs  #1{\csname\string#1:s\endcsname}
+\def\markcurrentcs#1{\csname\string#1:c\endcsname}
+\def\marktokscs   #1{\csname\string#1:t\endcsname}
+
+\def\renewmarks#1%
+  {\ifx#1\relax
+   % \writestatus\m!systems{defining low level mark: \string#1}%
+     \newmarks#1%
+   \else
+     \clearmarks#1%
+   \fi}
+
+\def\definenewmark#1%
+  {\ifcsname\string#1:m\endcsname\else
+     \@EA\@EA\@EA\newcount  \markstatecs  #1\global\markstatecs#1\plusone
+     \@EA\@EA\@EA\renewmarks\markautocs   #1%
+     \@EA\@EA\@EA\renewmarks\markmaincs   #1%
+     \@EA\@EA\@EA\renewmarks\markresetcs  #1%
+     \@EA\@EA\@EA\newtoks   \marktokscs   #1%
+     \@EA\@EA\@EA\let       \markcurrentcs#1\empty
+     \listofmarks\expandafter{\the\listofmarks\checkmark#1}%
+   \fi}
+
+\long\def\setmark#1#2% marks expand
+  {\@EA\@EA\@EA\xdef \markcurrentcs#1{\ifexpandmarks#2\else\normalunexpanded{#2}\fi}%
+               \marks\markautocs   #1{\ifexpandmarks#2\else\normalunexpanded{#2}\fi}% we could expand current one level
+               \marks\markmaincs   #1{\ifexpandmarks#2\else\normalunexpanded{#2}\fi}% we could expand current one level
+               \marks\markresetcs  #1{\number\markstatecs#1}}
+
+\def\resetmark#1%
+  {\global\advance\markstatecs#1\plusone
+   \@EA\@EA\@EA\glet\markcurrentcs#1\empty
+   \@EA\@EA\@EA\renewmarks\markautocs#1%
+   \the\marktokscs#1\relax}
+
+\def\addmarkreset#1#2%
+  {\global\marktokscs#2\@EA{\the\marktokscs#2\resetmark#1}}
+
+% already there: \prependtoks \getallmarks \to \everybeforepagebody
+%
+% \def\getallmarks{\the\listofmarks}
+
+\let\checkmark\gobbleoneargument
+
+\prependtoks \clearmarkswhenemptypage \to \everybeforepagebody
+
+\def\clearmarkswhenemptypage
+  {\iffalse % check if page is empty
+     \clearallmarks
+   \fi}
+
+\def\clearallmarks
+  {\let\checkmark\clearmarkchain
+   \the\listofmarks
+   \let\checkmark\gobbleoneargument}
+
+\def\clearmarkchain#1%
+  {\@EA\@EA\@EA\clearmarks\markmaincs#1%
+   \@EA\@EA\@EA\clearmarks\markresetcs#1%
+   \@EA\doclearmarkchain\@EA{\number\csname\string#1:s\endcsname}#1%
+   \@EA\@EA\@EA\glet\markcurrentcs#1\empty
+   \global\markstatecs#1\plusone}
+
+\def\doclearmarkchain#1#2%
+  {\@EA\@EA\@EA\clearmarks\marksomecs#1{#2}%
+   \@EA\doclearmarkchain\@EA#1\@EA{\number\numexpr#2+\minusone}}
+
+% Fetching (expandable versions, so no intermediate counter):
+
+\def\currenttopmarknumber  #1{\number0\topmarks  \markresetcs#1}
+\def\currentfirstmarknumber#1{\number0\firstmarks\markresetcs#1}
+\def\currentbotmarknumber  #1{\number0\botmarks  \markresetcs#1}
+
+\def\checkedcurrentmarkrange#1{[\currenttopmarknumber#1,\currentfirstmarknumber#1,\currentbotmarknumber#1]}
+
+\def\checkedcurrentmarks{\markcurrentcs} % #1 shared current mark
+
+\let\currentsplittopmarknumber\currenttopmarknumber
+\let\normalsplittopmarks      \normaltopmarks
+
+\def\uncheckedautotopmark        {\normaltopmarks       \markautocs} % #1
+\def\uncheckedautofirstmark      {\normalfirstmarks     \markautocs} % #1
+\def\uncheckedautobotmark        {\normalbotmarks       \markautocs} % #1
+\def\uncheckedautosplittopmark   {\normalsplittopmarks  \markautocs} % #1
+\def\uncheckedautosplitfirstmark {\normalsplitfirstmarks\markautocs} % #1
+\def\uncheckedautosplitbotmark   {\normalsplitbotmarks  \markautocs} % #1
+
+\def\uncheckedmaintopmark        {\normaltopmarks       \markmaincs} % #1
+\def\uncheckedmainfirstmark      {\normalfirstmarks     \markmaincs} % #1
+\def\uncheckedmainbotmark        {\normalbotmarks       \markmaincs} % #1
+\def\uncheckedmainsplittopmark   {\normalsplittopmarks  \markmaincs} % #1
+\def\uncheckedmainsplitfirstmark {\normalsplitfirstmarks\markmaincs} % #1
+\def\uncheckedmainsplitbotmark   {\normalsplitbotmarks  \markmaincs} % #1
+
+\def\checkedpagetopmarks       #1{\ifcase\currentbotmarknumber       #1\else\normaltopmarks       \marksomecs#1{\currentbotmarknumber       #1}\fi}
+\def\checkedpagefirstmarks     #1{\ifcase\currentbotmarknumber       #1\else\normalfirstmarks     \marksomecs#1{\currentbotmarknumber       #1}\fi}
+\def\checkedpagebotmarks       #1{\ifcase\currentbotmarknumber       #1\else\normalbotmarks       \marksomecs#1{\currentbotmarknumber       #1}\fi}
+\def\checkedpagesplittopmarks  #1{\ifcase\currentsplitbotmarknumber  #1\else\normalsplittopmarks  \marksomecs#1{\currentsplitbotmarknumber  #1}\fi}
+\def\checkedpagesplitfirstmarks#1{\ifcase\currentsplitbotmarknumber  #1\else\normalsplitfirstmarks\marksomecs#1{\currentsplitbotmarknumber  #1}\fi}
+\def\checkedpagesplitbotmarks  #1{\ifcase\currentsplitbotmarknumber  #1\else\normalsplitbotmarks  \marksomecs#1{\currentsplitbotmarknumber  #1}\fi}
+
+\def\checkedfulltopmarks       #1{\ifcase\currenttopmarknumber       #1\else\normaltopmarks       \marksomecs#1{\currenttopmarknumber       #1}\fi}
+\def\checkedfullfirstmarks     #1{\ifcase\currentfirstmarknumber     #1\else\normalfirstmarks     \marksomecs#1{\currentfirstmarknumber     #1}\fi}
+\def\checkedfullbotmarks       #1{\ifcase\currentbotmarknumber       #1\else\normalbotmarks       \marksomecs#1{\currentbotmarknumber       #1}\fi}
+\def\checkedfullsplittopmarks  #1{\ifcase\currentsplittopmarknumber  #1\else\normalsplittopmarks  \marksomecs#1{\currentsplittopmarknumber  #1}\fi}
+\def\checkedfullsplitfirstmarks#1{\ifcase\currentsplitfirstmarknumber#1\else\normalsplitfirstmarks\marksomecs#1{\currentsplitfirstmarknumber#1}\fi}
+\def\checkedfullsplitbotmarks  #1{\ifcase\currentsplitbotmarknumber  #1\else\normalsplitbotmarks  \marksomecs#1{\currentsplitbotmarknumber  #1}\fi}
+
+% Interface macros:
+
+\def\getcurrentmark    {\checkedcurrentmarks       }
+\def\gettopmark        {\checkedfulltopmarks       }
+\def\getfirstmark      {\checkedfullfirstmarks     }
+\def\getbotmark        {\checkedfullbotmarks       }
+\def\getsplittopmark   {\checkedfullsplittopmarks  }
+\def\getsplitfirstmark {\checkedfullsplitfirstmarks}
+\def\getsplitbotmark   {\checkedfullsplitbotmarks  }
+
+\def\getbottommark     {\getbotmark}
+\def\getsplitbottommark{\getsplitbotmark}
+
+%D Some of these will go away (in the process of rewriting).
+
+\let \newmark              \definenewmark
+\let \newpersistentmark    \newmarks
+\let \normalsetmark        \setmark
+\let \rawnewmark           \newmarks
+\let \rawdefinemark        \newmarks
+\let \rawsetmark           \normalmarks
+\let \rawgettopmark        \normaltopmarks
+\let \rawgetfirstmark      \normalfirstmarks
+\let \rawgetbotmark        \normalbotmarks
+\let \rawgetsplitbotmark   \normalsplitbotmarks
+\let \rawgetsplitfirstmark \normalsplitfirstmarks
+\let \rawgetsplittopmark   \normalsplitfirstmarks
+
+\let \noninterferingmarks \relax % old color interference related hack
+
+%D Next comes the layer around the previous mechanism.
+%D
+%D Parameters
+
+\def\markingparameter        #1#2{\csname\domarkingparameter{\??mk#1}#2\endcsname}
+\def\domarkingparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\@EA\domarkingparentparameter\csname#1\s!parent\endcsname#2\fi}
+\def\domarkingparentparameter#1#2{\ifx#1\relax\s!empty\else\domarkingparameter#1#2\fi}
+\def\markingcoupling           #1{\ifcsname\??mk#1\c!coupling\endcsname\@EA\markingcoupling\csname\??mk#1\c!coupling\endcsname\else#1\fi}
+
+\let\mainmarking\markingcoupling % compatibility
+
+\def\doifelsemarking#1%
+  {\ifcsname\??mk#1\c!coupling\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\dowithmarkcommandone#1#2% \command {mark}
+  {\expandafter#1\csname\??mk:\markingcoupling{#2}\endcsname}
+
+\def\dowithmarkcommandtwo#1#2#3% \command {mark} {mark}
+  {\expandafter#1\csname\??mk:\markingcoupling{#2}\expandafter\endcsname\csname\??mk:\markingcoupling{#3}\endcsname}
+
+\def\setupmarking
+  {\dodoubleargument\dosetupmarking}
+
+\def\dosetupmarking[#1][#2]%
+  {\def\docommand##1{\getparameters[\??mk##1][#2]}%
+   \processcommalist[#1]\docommand}
+
+%D The filtercommand key is used to hook in a filtering command. Users are
+%D adviced not to misuse this key.
+
+\getparameters
+  [\??mk]
+  [\c!expansion=\v!no, % saves a macro
+   \c!separator={\space\emdash\space},
+   \c!limittext=\@@kolimittext,
+   \c!filtercommand=\firstofoneargument,
+   \c!state=\v!start]
+
+\let\alldefinedmarks\empty
+
+\def\definemarking
+  {\dodoubleempty\dodefinemarking}
+
+\def\dodefinemarking[#1][#2]%
+  {\doifelsenothing{#2}\donormaldefinemarking\docloneddefinemarking[#1][#2]}
+
+\def\donormaldefinemarking[#1][#2]% #2 empty
+  {\ifcsname\??mk#1\s!parent\endcsname
+     % already defined
+  \else
+     \letgvalue{\??mk#1\s!parent}\??mk
+     \dowithmarkcommandone\newmark{#1}%
+     \doglobal\addtocommalist{#2}\alldefinedmarks
+     \ifproductionrun\showmessage\m!systems{13}{#1,[#1]}\fi
+  \fi}
+
+\def\docloneddefinemarking[#1][#2]%
+  {\ifcsname\??mk#1\s!parent\endcsname \else \ifcsname\??mk#2\s!parent\endcsname
+     \doifnot{#1}{#2}%
+       {\setxvalue{\??mk#1\s!parent}{\??mk#2}%
+        \setxvalue{\??mk#1\c!coupling}{#2}%
+        \ifproductionrun\showmessage\m!systems{13}{#1,[#2]}\fi}%
+   \fi \fi}
+
+\def\decouplemarking[#1]%
+  {\letbeundefined{\??mk#1\c!coupling}}
+
+\def\couplemarking[#1]#2[#3]% couple 1 to 2 (this macro is not really needed)
+  {\setvalue{\??mk#1\c!coupling}{#3}}
+
+\def\relatemarking[#1]#2[#3]% define 1 as child of 2
+  {\dowithmarkcommandtwo\addmarkreset{#1}{#3}}
+
+\def\definerawmarking[#1]%
+  {\dododefinemarking[#1][#1]%
+   \getgparameters[\??mk#1][\c!limittext=]} % global !
+
+% \decouplemarking[#1]%  % no coupling with sections
+
+\def\fastresetmarker#1%
+  {\ifcsname\??mk#1\s!parent\endcsname
+     \dowithmarkcommandone\resetmark{#1}%
+   \fi}
+
+\def\fastresetmarkerlist[#1]%
+  {\normalexpanded{\noexpand\rawprocesscommalist[#1]}\fastresetmarker}
+
+\def\resetmarking
+  {\dosingleargument\doresetmarking}
+
+\def\doresetmarking[#1]%
+  {\processcommalist[#1]\fastresetmarker}
+
+%D Used elsewhere:
+
+\let\nomarking\empty
+
+%D Basic fetching:
+
+\letvalue{\??mk::\??mk::\v!previous}\firstoffourarguments
+\letvalue{\??mk::\??mk::\v!first   }\secondoffourarguments
+\letvalue{\??mk::\??mk::\v!last    }\thirdoffourarguments
+\letvalue{\??mk::\??mk::\v!current }\fourthoffourarguments
+
+\letvalue{\??mk\??mk\v!previous}\gettopmark
+\letvalue{\??mk\??mk\v!first   }\getfirstmark
+\letvalue{\??mk\??mk\v!last    }\getbotmark
+\letvalue{\??mk\??mk\v!current }\getcurrentmark
+
+\letvalue{\??mk\??mk\v!column:\v!first}\getsplitfirstmark
+\letvalue{\??mk\??mk\v!column:\v!last }\getsplitbottommark
+
+\def\fetchmark[#1]#2[#3]% % expandable / never use \unexpanded
+  {\ifcsname\??mk::#1\endcsname % saved mark
+     \markingparameter{#1}\c!filtercommand{\csname\??mk::\??mk::#3\@EA\@EA\@EA\endcsname\csname\??mk::#1\endcsname}%
+   \else\ifcsname\??mk#1\s!parent\endcsname % real mark
+     \markingparameter{#1}\c!filtercommand{\expandafter\dowithmarkcommandone\csname\??mk\??mk#3\endcsname{#1}}%
+   \fi\fi}
+
+\def\fetchtwomarks[#1]%
+  {\dofetchtwomarks[#1][#1]}
+
+\def\fetchallmarks[#1]%
+  {\dofetchallmarks[#1][#1]}
+
+\def\dofetchtwomarks[#1][#2]% class class:tag
+  {\doifsomething{\fetchmark[#2][\v!first]}
+     {\fetchmark[#2][\v!first]%
+      \doifsomething{\fetchmark[#2][\v!last]}
+        {\doifnot{\fetchmark[#2][\v!first]}{\fetchmark[#2][\v!last]}
+            {\markingparameter{#1}\c!separator\fetchmark[#2][\v!last]}}}}
+
+\def\dofetchallmarks[#1][#2]%
+  {\doifsomething{\fetchmark[#2][\v!first]}
+     {\doifsomething{\fetchmark[#2][\v!previous]}
+        {\doifnot{\fetchmark[#2][\v!previous]}{\fetchmark[#2][\v!first]}
+           {\fetchmark[#2][\v!previous]\markingparameter{#1}\c!separator}}}%
+      \fetchtwomarks[#1][#2]}
+
+% \newtoks \everymarking
+
+% \def\Interesting{\doifmodeelse{*\v!marking}{Interesting}{Boring}}
+% \setupheadertexts[chapter]
+% \starttext
+%     \chapter{This Is \Interesting}
+% \stoptext
+
+\def\markingnomarking#1{\splitsequence{\markingparameter{#1}\c!limittext}} % #2
+
+\def\dogetmarking[#1][#2][#3]%
+  {\doif{\markingparameter{#1}\c!state}\v!start
+     {\bgroup
+      \setsystemmode\v!marking
+      \the\everymarking
+      \def\nomarking{\markingnomarking{#1}}% just for good old times, might disappear
+      \ifthirdargument
+        \dodogetmarking{#3}{#1}{#1:#2}{#3}%
+      \else
+        \dodogetmarking{#2}{#1}{#1}{#2}%
+      \fi
+      \egroup}}
+
+\def\dodogetmarking#1#2#3#4% to be made faster
+  {\processaction % slow
+     [#1]
+     [   \v!both=>{\dofetchtwomarks[#2][#3]},
+          \v!all=>{\dofetchallmarks[#2][#3]},
+      \s!default=>{\fetchmark[#3][\v!first]},
+      \s!unknown=>{\fetchmark[#3][#4]}]}
+
+\def\nogetmarking[#1][#2][#3]%
+  {}
+
+\unexpanded\def\getmarking
+  {\dotripleargument\dogetmarking}
+
+\let\setsomemark\setmark
+
+\def\setmarking
+  {\dosingleargument\dosetmarking}
+
+\def\dosetmarking[#1]#2%
+  {\ifcsname\??mk#1\s!parent\endcsname
+     \begingroup
+     \doifelse{\markingparameter{#1}\c!expansion}\v!yes\expandmarkstrue\expandmarksfalse
+     \dowithmarkcommandone\setsomemark{#1}{#2}%
+     \endgroup
+   \fi}
+
+\let\marking\setmarking
+
+% to be adapted for mkiv:
+%
+% this version can be used when a page is built up in steps without
+% feedback of the otr'd list to the mvl (i.e.\ a page made of pages,
+% as in column sets where content is buffered)
+
+% reset at begin
+% preset before page
+% bubble in column
+% refresh at end
+
+% marks is a kind of toks, so maybe we need a low level \the\marks
+%
+% use \normalunexpanded here
+
+\def\refreshsavedmark[#1][#2]% mark tag (packing saves many hash entries)
+  {\setxvalue{\??mk::#1:#2}%
+     {{\@EA\ifx\csname\??mk::#1:pp\endcsname\relax
+         % empty
+       \else
+         \csname\??mk::#1:pp\endcsname
+       \fi}%
+      {\@EA\ifx\csname\??mk::#1:ff\endcsname\relax
+         \fetchmark[#1][\v!first]%
+       \else
+         \csname\??mk::#1:ff\endcsname
+       \fi}%
+      {\fetchmark[#1][\v!last]}%
+      {\fetchmark[#1][\v!current]}}%
+    \setxvalue{\??mk::#1:pp}{\fetchmark[#1][\v!first]}%
+    \letgvalue{\??mk::#1:ff}\relax
+    }
+
+\def\bubblesavedmark[#1][#2]% no packing (not now, maybe make a six-pack later)
+  {\@EA\ifx\csname\??mk::#1:ff\endcsname\relax
+     \setxvalue{\??mk::#1:ff}{\fetchmark[#1][\v!first]}%
+   \fi}
+
+\def\resetsavedmark[#1][#2]% mark tag
+  {\doifelsenothing{\fetchmark[#1][\v!previous]}
+     {\letgvalue{\??mk::#1:pp}\relax}
+     {\setxvalue{\??mk::#1:pp}{\fetchmark[#1][\v!previous]}}%
+   \doifelsenothing{\fetchmark[#1][\v!first]}
+     {\letgvalue{\??mk::#1:ff}\relax}
+     {\setxvalue{\??mk::#1:ff}{\fetchmark[#1][\v!first]}}%
+   \letgvalue{\??mk::#1:#2}\emptysavedmark}
+
+\def\presetsavedmark[#1][#2]% mark tag
+  {\letgvalue{\??mk::#1:#2}\emptysavedmark}
+
+\def\emptysavedmark{{}{}{}{}}
+
+% new (can be used in column sets)
+%
+% \getsavedmarking[M][previous]
+% \getsavedmarking[M][first]
+% \getsavedmarking[M][last]
+
+\def\getsavedmarking
+  {\dodoubleargument\dogetsavedmarking}
+
+\def\dogetsavedmarking[#1][#2]%
+  {\doifelse{#2}\v!previous
+     {\getmarking[#1][1][\v!previous]}
+     {\doifelse{#2}\v!first
+        {\getmarking[#1][1][\v!first]}
+        {\getmarking[#1][\v!last]}}}
+
+%D And then \unknown\ we had a chaptertitle packaged in a
+%D makeup environment. And we don't want to loose marks there!
+
+\newbox\collectedmarks
+
+\def\flushmarks % use with care to avoid empty pages
+  {\ifvoid\collectedmarks\else\unhbox\collectedmarks\fi}
+
+\def\postponemarks
+  {\let\setsomemark\postponemark}
+
+\def\postponemark#1#2%
+  {\global\setbox\collectedmarks\hbox{\unhbox\collectedmarks\setmark{#1}{#2}}}
+
+\protect \endinput
+
+% todo: make it work in balancing
+%
+% \definemarking[vers][]
+% \setupheadertexts
+%   [\doiftext{\getmarking[vers][first]}
+%      {\doiftextelse{\getmarking[vers][column:last]}
+%         {\getmarking[vers][first] -- \getmarking[vers][column:last]}
+%         {\getmarking[vers][first]}}]
+% \starttext
+%   \startcolumns[n=2,balance=no]
+%     \dorecurse{10}{\normalexpanded{\noexpand\marking[vers]{\recurselevel}} \recurselevel:\dorecurse{4}{\input ward } \endgraf}
+%   \stopcolumns
+% \stoptext

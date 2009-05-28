@@ -1,0 +1,107 @@
+%D \module
+%D   [       file=core-nte,
+%D        version=2009.03.08,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Natural Tables Extensions,
+%D         author=Hans Hagen \& Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Module / Natural Tables Extensions}
+
+\unprotect
+
+%D This module is suggested by Wolfgang Schuster who also prototyped
+%D it and came up with the rationale:
+%D
+%D This module provides an easy way to use natural in a similiar
+%D way as the older table module (based on the \TABLE\ macros) and
+%D the newer tabulate module.
+%D
+%D You can see the advantage in the following table, once created
+%D with the new macros and once with the normal macros provided
+%D with the natural table module.
+%D
+%D Let us start with the original macros:
+%D
+%D \starttyping
+%D \bTABLE
+%D   \bTR
+%D     \bTD Text 1 \eTD
+%D     \bTD Text 2 \eTD
+%D   \eTR
+%D   \bTR
+%D     \bTD Text 3 \eTD
+%D     \bTD Text 4 \eTD
+%D   \eTR
+%D \eTABLE
+%D \stoptyping
+%D
+%D Watch how the new macros use less code:
+%D
+%D \starttyping
+%D \startTABLE
+%D \NC Text 1 \NC Text 2 \NC\NR
+%D \NC Text 3 \NC Text 4 \NC\NR
+%D \stopTABLE
+%D \stoptyping
+%D
+%D The actual code differs from the prototype that it does not need
+%D to collect whole rows and parse them but looks ahead instead.
+
+\def\startTABLE
+  {\dosingleempty\dostartTABLE}
+
+\def\dostartTABLE[#1]%
+  {\bgroup
+   \bTABLE[#1]%
+   \let\NC\doTABLENC
+   \let\NR\doTABLENR
+   \let\bTR\relax
+   \let\bTD\relax
+   \let\bTH\relax
+   \let\bTN\relax}
+
+\def\stopTABLE
+  {\eTABLE
+   \egroup}
+
+\newconditional\inTABLEnc
+
+\unexpanded\def\doTABLENR
+  {\eTR
+   \setfalse\inTABLEnc}
+
+\unexpanded\def\doTABLENC
+  {\futurelet\next\dodoTABLENC}
+
+\def\dodoTABLENC
+  {\ifx\next\doTABLENR \else
+     \expandafter\dododoTABLENC
+   \fi}
+
+% \long\def\dododoTABLENC#1\NC
+%   {\ifconditional\inTABLEnc\else\settrue\inTABLEnc\parseTR[][]\fi
+%    \parseTD[][]#1\eTD\NC}
+
+\long\def\dododoTABLENC#1\NC
+ {\ifconditional\inTABLEnc\else\settrue\inTABLEnc\parseTR[][]\fi
+  \dodoubleempty\parseTD#1\eTD\NC}
+
+%D The related structure commands are also available:
+
+\unexpanded\def\startTABLEhead{\dosingleempty\dostartTABLEhead} \let\stopTABLEhead\relax
+\unexpanded\def\startTABLEnext{\dosingleempty\dostartTABLEnext} \let\stopTABLEnext\relax
+\unexpanded\def\startTABLEbody{\dosingleempty\dostartTABLEbody} \let\stopTABLEbody\relax
+\unexpanded\def\startTABLEfoot{\dosingleempty\dostartTABLEfoot} \let\stopTABLEfoot\relax
+
+\long\def\dostartTABLEhead[#1]#2\stopTABLEhead{\appendtoks\doTABLEsection[#1]{#2}\to\TBLhead}
+\long\def\dostartTABLEnext[#1]#2\stopTABLEnext{\appendtoks\doTABLEsection[#1]{#2}\to\TBLnext}
+\long\def\dostartTABLEbody[#1]#2\stopTABLEbody{\appendtoks\doTABLEsection[#1]{#2}\to\TBLbody}
+\long\def\dostartTABLEfoot[#1]#2\stopTABLEfoot{\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
+
+\protect \endinput

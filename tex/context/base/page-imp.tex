@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=page-imp, % was: core-pag,
 %D        version=1998.01.15,
-%D          title=\CONTEXT\ Core Macros,
+%D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Pagebody Building (Imposition),
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -13,7 +13,7 @@
 
 % much of this can more to run time loading !
 
-\writestatus{loading}{Context Core Macros / Pagebody Building}
+\writestatus{loading}{ConTeXt Page Macros / Pagebody Building}
 
 \unprotect
 
@@ -115,13 +115,26 @@
 
 % moved code:
 
+% \def\myshipout#1%
+%   {\beforeshipout % voor de pagebody dus !
+%    \dontshowcomposition
+%    \ifarrangingpages\@EA\actualarrange\else\@EA\actualshipout\fi
+%      {\thisisrealpage\realfolio#1}%
+%    \gotonextrealpage
+%    \aftershipout}
+
+\def\installpagehandler#1#2%          % a handler takes one argument: something to be boxed
+  {\setvalue{\??pp:\c!method:#1}{#2}} % and shipped out (don't depend on the exact package)
+
+\installpagehandler\v!normal
+  {\ifarrangingpages\expandafter\actualarrange\else\expandafter\actualshipout\fi}
+
 \def\myshipout#1%
-  {\beforeshipout % voor de pagebody dus !
-   \dontshowcomposition
-   \ifarrangingpages\@EA\actualarrange\else\@EA\actualshipout\fi
-     {\thisisrealpage\realfolio#1}%
-   \gotonextrealpage
-   \aftershipout}
+ {\beforeshipout % voor de pagebody dus !
+  \dontshowcomposition
+  \executeifdefined{\??pp:\c!method:\@@ppmethod}\gobbleoneargument{\thisisrealpage\realfolio#1}%
+  \gotonextrealpage
+  \aftershipout}
 
 \newbox\postponedcontent
 

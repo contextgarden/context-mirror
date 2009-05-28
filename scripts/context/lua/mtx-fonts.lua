@@ -6,7 +6,11 @@ if not modules then modules = { } end modules ['mtx-fonts'] = {
     license   = "see context related readme files"
 }
 
-dofile(input.find_file("font-syn.lua"))
+if not fontloader then fontloader = fontforge end
+
+dofile(resolvers.find_file("font-otp.lua","tex"))
+dofile(resolvers.find_file("font-syn.lua","tex"))
+dofile(resolvers.find_file("font-mis.lua","tex"))
 
 scripts       = scripts       or { }
 scripts.fonts = scripts.fonts or { }
@@ -15,57 +19,55 @@ function scripts.fonts.reload(verbose)
     fonts.names.load(true,verbose)
 end
 
+function scripts.fonts.names(name)
+    name = name or "luatex-fonts-names.lua"
+    fonts.names.identify(true)
+    local data = fonts.names.data
+    if data then
+        data.fallback_mapping = nil
+        logs.report("fontnames","saving names in '%s'",name)
+        io.savedata(name,table.serialize(data,true))
+    elseif lfs.isfile(name) then
+        os.remove(name)
+    end
+end
+
 local function showfeatures(v,n,f,s,t)
-    local iv = input.verbose
-    input.verbose = true
-    input.report("fontname: %s",v)
-    input.report("fullname: %s",n)
-    input.report("filename: %s",f)
-    if t == "otf" or t == "ttf" then
-        local filename = input.find_file(f,t) or ""
-        if filename ~= "" then
-            local ff = fontforge.open(filename)
-            if ff then
-                local data = fontforge.to_table(ff)
-                fontforge.close(ff)
-                local features = { }
-                local function collect(what)
-                    if data[what] then
-                        for _, d in ipairs(data[what]) do
-                            if d.features then
-                                for _, df in ipairs(d.features) do
-                                    features[df.tag] = features[df.tag] or { }
-                                    for _, ds in ipairs(df.scripts) do
-                                        features[df.tag][ds.script] = features[df.tag][ds.script] or { }
-                                        for _, lang in ipairs(ds.langs) do
-                                            features[df.tag][ds.script][lang] = true
-                                        end
-                                    end
-                                end
-                            end
+    logs.simple("fontname: %s",v)
+    logs.simple("fullname: %s",n)
+    logs.simple("filename: %s",f)
+    local features = fonts.get_features(f,t)
+    if features then
+        for what, v in table.sortedpairs(features) do
+            local data = features[what]
+            if data and next(data) then
+                logs.simple()
+                logs.simple("%s features:",what)
+                logs.simple()
+                logs.simple("feature  script   languages")
+                logs.simple()
+                for f,ff in table.sortedpairs(data) do
+                    local done = false
+                    for s, ss in table.sortedpairs(ff) do
+                        if s == "*"  then s       = "all" end
+                        if ss  ["*"] then ss["*"] = nil ss.all = true end
+                        if done then
+                            f = ""
+                        else
+                            done = true
                         end
-                    end
-                end
-                collect('gsub')
-                collect('gpos')
-                input.report("")
-                for _, f in ipairs(table.sortedkeys(features)) do
-                    local ff = features[f]
-                    for _, s in ipairs(table.sortedkeys(ff)) do
-                        local ss = ff[s]
-                        input.report("feature: %s, script: %s, language: %s",f:lower(),s:lower(),(table.concat(table.sortedkeys(ss), " ")):lower())
+                        logs.simple("% -8s % -8s % -8s",f,s,table.concat(table.sortedkeys(ss), " "))
                     end
                 end
             end
         end
     end
-    input.report("")
-    input.verbose = iv
+    logs.reportline()
 end
 
 function scripts.fonts.list(pattern,reload,all,info)
     if reload then
-        input.report("fontnames, reloading font database")
+        logs.simple("fontnames, reloading font database")
     end
     -- make a function for this
     pattern = pattern:lower()
@@ -81,7 +83,7 @@ function scripts.fonts.list(pattern,reload,all,info)
     --
     local t = fonts.names.list(pattern,reload)
     if reload then
-        input.report("fontnames, done\n\n")
+        logs.simple("fontnames, done\n\n")
     end
     if t then
         local s, w = table.sortedkeys(t), { 0, 0, 0 }
@@ -112,51 +114,52 @@ function scripts.fonts.save(name,sub)
     local function save(savename,fontblob)
         if fontblob then
             savename = savename:lower() .. ".lua"
-            input.report("fontsave, saving data in %s",savename)
-            table.tofile(savename,fontforge.to_table(fontblob),"return")
-            fontforge.close(fontblob)
+            logs.simple("fontsave, saving data in %s",savename)
+            table.tofile(savename,fontloader.to_table(fontblob),"return")
+            fontloader.close(fontblob)
         end
     end
     if name and name ~= "" then
-        local filename = input.find_file(name) -- maybe also search for opentype
+        local filename = resolvers.find_file(name) -- maybe also search for opentype
         if filename and filename ~= "" then
             local suffix = file.extname(filename)
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' then
-                local fontinfo = fontforge.info(filename)
+                local fontinfo = fontloader.info(filename)
                 if fontinfo then
+                    logs.simple("font: %s located as %s",name,filename)
                     if fontinfo[1] then
                         for _, v in ipairs(fontinfo) do
-                            save(v.fontname,fontforge.open(filename,v.fullname))
+                            save(v.fontname,fontloader.open(filename,v.fullname))
                         end
                     else
-                        save(fontinfo.fullname,fontforge.open(filename))
+                        save(fontinfo.fullname,fontloader.open(filename))
                     end
                 end
             else
-                input.verbose = true
-                input.report("font: %s not saved",filename)
+                logs.simple("font: %s not saved",filename)
             end
         else
-            input.verbose = true
-            input.report("font: %s not found",name)
+            logs.simple("font: %s not found",name)
         end
     end
 end
 
-banner = banner .. " | font tools "
+logs.extendbanner("Font Tools 0.20",true)
 
 messages.help = [[
 --reload              generate new font database
 --list [--info]       list installed fonts (show info)
 --save                save open type font in raw table
+--names               generate 'luatex-fonts-names.lua' (not for context!)
 
 --pattern=str         filter files
 --all                 provide alternatives
 ]]
 
 if environment.argument("reload") then
-    local verbose  = environment.argument("verbose")
-    scripts.fonts.reload(verbose)
+    scripts.fonts.reload(true)
+elseif environment.argument("names") then
+    scripts.fonts.names()
 elseif environment.argument("list") then
     local pattern = environment.argument("pattern") or environment.files[1] or ""
     local all     = environment.argument("all")
@@ -168,5 +171,5 @@ elseif environment.argument("save") then
     local sub  = environment.files[2] or ""
     scripts.fonts.save(name,sub)
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

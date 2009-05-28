@@ -36,7 +36,7 @@
 \appendtoks \disableadjusting  \to \everyforgetall % Here or not here?
 \appendtoks \disableprotruding \to \everyforgetall % Here or not here?
 
-\def\startfonthandling             #1{\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
+\def\startfonthandling             #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
 \def\definefonthandling              {\dotripleempty\dodefinefonthandling}
 \def\setupfonthandling               {\dodoubleempty\dosetupfonthandling }
 \def\dodefinefonthandling[#1][#2][#3]{\fonthandlingerror}

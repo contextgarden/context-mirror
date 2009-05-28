@@ -6,38 +6,12 @@ if not modules then modules = { } end modules ['mtx-chars'] = {
     license   = "see context related readme files"
 }
 
-local format, concat = string.format, table.concat
+local format, concat, utfchar, upper = string.format, table.concat, unicode.utf8.char, string.upper
 
 scripts       = scripts       or { }
 scripts.chars = scripts.chars or { }
 
-function scripts.chars.stixtomkiv(inname,outname)
-    if inname == "" then
-        logs.report("aquiring math data","invalid datafilename")
-    end
-    local f = io.open(inname)
-    if not f then
-        logs.report("aquiring math data","invalid datafile")
-    else
-        logs.report("aquiring math data","processing " .. inname)
-        if not outname or outname == "" then
-            outname = "char-mth.lua"
-        end
-        local classes = {
-            N = "normal",
-            A = "alphabetic",
-            D = "diacritic",
-            P = "punctuation",
-            B = "binary",
-            R = "relation",
-            L = "large",
-            O = "opening",
-            C = "closing",
-            F = "fence"
-        }
-        local valid, done = false, { }
-        local g = io.open(outname,'w')
-        g:write([[
+local banner = [[
 -- filename : char-mth.lua
 -- comment  : companion to char-mth.tex (in ConTeXt)
 -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
@@ -46,38 +20,70 @@ function scripts.chars.stixtomkiv(inname,outname)
 
 if not versions   then versions   = { } end versions['char-mth'] = 1.001
 if not characters then characters = { } end
-        ]])
-        g:write(format("\ncharacters.math = {\n"))
-        for l in f:lines() do
-            if not valid then
-                valid = l:find("AMS/TeX name")
-            end
-            if valid then
-                local unicode = l:sub(2,6)
-                if unicode:sub(1,1) ~= " " and unicode ~= "" and not done[unicode] then
-                    local mathclass, adobename, texname = l:sub(57,57) or "", l:sub(13,36) or "", l:sub(84,109) or ""
-                    texname, adobename = texname:gsub("[\\ ]",""), adobename:gsub("[\\ ]","")
-                    local t = { }
-                    if mathclass ~= "" then t[#t+1] = format("mathclass='%s'", classes[mathclass] or "unknown") end
-                    if adobename ~= "" then t[#t+1] = format("adobename='%s'", adobename                      ) end
-                    if texname   ~= "" then t[#t+1] = format("texname='%s'"  , texname                        ) end
-                    if #t > 0 then
-                        g:write(format("\t[0x%s] = { %s },\n",unicode, concat(t,", ")))
-                    end
-                    done[unicode] = true
-                end
-            end
-        end
-        if not valid then
-            g:write("\t-- The data file is corrupt, invalid or maybe the format has changed.\n")
-            logs.report("aquiring math data","problems with data table")
-        else
-            logs.report("aquiring math data","table saved in " .. outname)
-        end
-        g:write("}\n")
-        g:close()
-        f:close()
-    end
+]]
+
+--~ function scripts.chars.stixtomkiv(inname,outname)
+--~     if inname == "" then
+--~         logs.report("aquiring math data","invalid datafilename")
+--~     end
+--~     local f = io.open(inname)
+--~     if not f then
+--~         logs.report("aquiring math data","invalid datafile")
+--~     else
+--~         logs.report("aquiring math data","processing " .. inname)
+--~         if not outname or outname == "" then
+--~             outname = "char-mth.lua"
+--~         end
+--~         local classes = {
+--~             N = "normal",
+--~             A = "alphabetic",
+--~             D = "diacritic",
+--~             P = "punctuation",
+--~             B = "binary",
+--~             R = "relation",
+--~             L = "large",
+--~             O = "opening",
+--~             C = "closing",
+--~             F = "fence"
+--~         }
+--~         local valid, done = false, { }
+--~         local g = io.open(outname,'w')
+--~         g:write(banner)
+--~         g:write(format("\ncharacters.math = {\n"))
+--~         for l in f:lines() do
+--~             if not valid then
+--~                 valid = l:find("AMS/TeX name")
+--~             end
+--~             if valid then
+--~                 local unicode = l:sub(2,6)
+--~                 if unicode:sub(1,1) ~= " " and unicode ~= "" and not done[unicode] then
+--~                     local mathclass, adobename, texname = l:sub(57,57) or "", l:sub(13,36) or "", l:sub(84,109) or ""
+--~                     texname, adobename = texname:gsub("[\\ ]",""), adobename:gsub("[\\ ]","")
+--~                     local t = { }
+--~                     if mathclass ~= "" then t[#t+1] = format("mathclass='%s'", classes[mathclass] or "unknown") end
+--~                     if adobename ~= "" then t[#t+1] = format("adobename='%s'", adobename                      ) end
+--~                     if texname   ~= "" then t[#t+1] = format("texname='%s'"  , texname                        ) end
+--~                     if #t > 0 then
+--~                         g:write(format("\t[0x%s] = { %s },\n",unicode, concat(t,", ")))
+--~                     end
+--~                     done[unicode] = true
+--~                 end
+--~             end
+--~         end
+--~         if not valid then
+--~             g:write("\t-- The data file is corrupt, invalid or maybe the format has changed.\n")
+--~             logs.report("aquiring math data","problems with data table")
+--~         else
+--~             logs.report("aquiring math data","table saved in " .. outname)
+--~         end
+--~         g:write("}\n")
+--~         g:close()
+--~         f:close()
+--~     end
+--~ end
+
+function scripts.chars.stixtomkiv(inname,outname)
+    logs.report("we no longer use this options but use our own tables instead")
 end
 
 local banner_pdf_1 = [[
@@ -95,7 +101,7 @@ local banner_pdf_2 = [[
 ]]
 
 function scripts.chars.makepdfr()
-    local chartable = input.find_file("char-def.lua") or ""
+    local chartable = resolvers.find_file("char-def.lua") or ""
     if chartable ~= "" then
         dofile(chartable)
         if characters and characters.data then
@@ -117,93 +123,189 @@ function scripts.chars.makepdfr()
     end
 end
 
-local banner_utf_1 = [[
-% filename : enco-utf.tex
-% comment  : generated by mtxrun --script chars --utf
-% author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
-% copyright: PRAGMA ADE / ConTeXt Development Team
-% license  : see context related readme files
-
-\ifx\setcclcucx\undefined
-
-  \def\setcclcucx #1 #2 #3 %
-    {\global\catcode"#1=11
-     \global\lccode "#1="#2
-     \global\uccode "#1="#3 }
-
-\fi
+local banner_utf_module = [[
+%% filename : %s
+%% comment  : generated by mtxrun --script chars --xtx
+%% author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+%% copyright: PRAGMA ADE / ConTeXt Development Team
+%% license  : see context related readme files
 ]]
 
-local banner_utf_2 = [[
+local banner_utf_mappings = [[
 
 % lc/uc/catcode mappings
 
 ]]
 
-local banner_utf_3 = [[
+local banner_utf_patch = [[
+
+% patch needed for turkish
+
+\setXTXcharcodes "201C "201C "201C
+\setXTXcharcodes "201D "201D "201D
+]]
+
+local banner_utf_names = [[
 
 % named characters mapped onto utf (\\char is needed for accents)
 
 ]]
 
-local banner_utf_4 = [[
+local banner_utf_classes = [[
+
+% some character classes for xetex; seems to be rather hard coded, these numbers
+% and also a mix of several classes; here we do linebreaks
+
+]]
+
+local banner_utf_finish = [[
 
 \endinput
 ]]
 
+local xtxclasses = {
+    id =   1,
+    ex =   3,
+    is =   3,
+    cm = 256,
+    op =   2,
+    ns =   3,
+    cl =   3,
+}
+
 function scripts.chars.makeencoutf()
-    local chartable = input.find_file("char-def.lua") or ""
+    local chartable = resolvers.find_file("char-def.lua") or ""
     if chartable ~= "" then
         dofile(chartable)
-        if characters and characters.data then
-            local f = io.open("enco-utf.tex", 'w')
+        local function open(name,banner)
+            local f = io.open(name,'w')
             if f then
-                f:write(banner_utf_1)
-                f:write(banner_utf_2)
-                local list = table.sortedkeys(characters.data)
-                local length = 0
+                logs.simple("writing '%s'",name)
+                f:write(format(banner_utf_module,name))
+                f:write(banner)
+                f:write()
+                return f
+            end
+        end
+        local function close(f)
+            f:write(banner_utf_finish)
+            f:close()
+        end
+        local data = characters and characters.data
+        if data then
+            local list = table.sortedkeys(characters.data)
+            local f = open("xetx-utf.tex",banner_utf_mappings)
+            if f then
                 for i=1,#list do
                     local code = list[i]
                     if code <= 0xFFFF then
-                        local chr = characters.data[code]
+                        local chr = data[code]
                         local cc = chr.category
                         if cc == 'll' or cc == 'lu' or cc == 'lt' then
                             if not chr.lccode then chr.lccode = code end
                             if not chr.uccode then chr.uccode = code end
-                            f:write(format("\\setcclcucx %04X %04X %04X %% %s\n",code,chr.lccode,chr.uccode,chr.description))
+                            f:write(format('\\setXTXcharcodes "%05X "%05X "%05X %% %s\n',code,chr.lccode,chr.uccode,chr.description))
                         end
-                        if #(chr.contextname or "") > length then
+                    end
+                end
+                f:write("\n")
+                for i=1,#list do
+                    local code = list[i]
+                    local chr = data[code]
+                    if chr and chr.range then
+                        local cc = chr.category
+                        if cc == 'lo' then
+                            f:write(format('\\dofastrecurse{"%05X}{"%05X}{1}{\\dosetXTXcharcodes\\recurselevel\\recurselevel\\recurselevel}\n',code,chr.range))
+                        end
+                    end
+                end
+                f:write(banner_utf_patch)
+                close(f)
+            end
+            local f = open("xetx-chr.tex",banner_utf_names)
+            if f then
+                local length = 0
+                for i=1,#list do
+                    local code = list[i]
+                    if code > 0x5B and code <= 0xFFFF then
+                        local chr = data[code]
+                        if chr and #(chr.contextname or "") > length then
                             length = #chr.contextname
                         end
                     end
                 end
-                f:write(banner_utf_3)
                 for i=1,#list do
                     local code = list[i]
                     if code > 0x5B and code <= 0xFFFF then
-                        local chr = characters.data[code]
-                        if chr.contextname then
-                            local ch = char(code)
---~                             if ch:find("[~#$%%^&{}\\]") then
-                                f:write(format("\\def\\%s{\\char\"%04X } %% %s: %s\n", chr.contextname:rpadd(length," "), code, chr.description, ch))
---~                             else
---~                                 f:write(format("\\def\\%s{%s}           %% %s\n", chr.contextname:rpadd(length," "), ch,chr.description))
---~                             end
+                        local chr = data[code]
+                        if chr and chr.contextname then
+                            local ch = utfchar(code)
+                            f:write(format("\\def\\%s{\\char\"%05X } %% %s: %s\n", chr.contextname:rpadd(length," "), code, chr.description, ch))
                         end
                     end
                 end
-                f:write(banner_utf_4)
-                f:close()
+                close(f)
+            end
+            local f = open("xetx-cls.tex",banner_utf_classes)
+            if f then
+                for k, v in pairs(xtxclasses) do
+                    f:write(format("\\defineXTXcharinjectionclass[lb:%s]\n",k))
+                end
+                f:write("\n")
+                local i_first, i_last, i_clb = nil, nil, nil
+                local function flush()
+                    if i_first then
+                        if i_first == i_last then
+                            f:write(format('\\dosetXTXcharacterclass{"%05X}{lb:%s}\n',i_first,i_clb))
+                        else
+                            f:write(format('\\dofastrecurse{"%05X}{"%05X}{1}{\\dosetXTXcharacterclass\\fastrecursecounter{lb:%s}}\n',i_first,i_last,i_clb))
+                        end
+                    end
+                    i_first, i_last, i_clb = nil, nil, nil
+                end
+                for i=1,#list do
+                    local code      = list[i]
+                    local code_next = list[i+1]
+                    local chr       = data[code]
+                    local chr_next  = data[code_next]
+                    local clb       = chr and chr.linebreak
+                    local lbc       = xtxclasses[clb]
+                    if not lbc then
+                        flush()
+                    elseif clb == i_clb then
+                        if i_first then
+                            i_last = code
+                        else
+                            i_first, i_last, i_clb = code, code, clb
+                        end
+                    else
+                        flush()
+                        i_first, i_last, i_clb = code, code, clb
+                    end
+                end
+                flush()
+                f:write("\n")
+                for i=1,#list do
+                    local code = list[i]
+                    local chr = data[code]
+                    if chr and chr.range then
+                        local lbc = chr.linebreak
+                        if xtxclasses[lbc] then
+                            f:write(format('\\dofastrecurse{"%05X}{"%05X}{1}{\\dosetXTXcharacterclass\\fastrecursecounter{lb:%s}}\n',code,chr.range,lbc))
+                        end
+                    end
+                end
+                close(f)
             end
         end
     end
 end
 
-banner = banner .. " | character tools "
+logs.extendbanner("Character Tools 0.10")
 
 messages.help = [[
 --stix                convert stix table to math table
---utf                 generate enco-utf.tex (used by xetex)
+--xtx                 generate xetx-*.tex (used by xetex)
 --pdf                 generate pdfr-def.tex (used by pdftex)
 ]]
 
@@ -211,10 +313,10 @@ if environment.argument("stix") then
     local inname  = environment.files[1] or ""
     local outname = environment.files[2] or ""
     scripts.chars.stixtomkiv(inname,outname)
-elseif environment.argument("utf") then
+elseif environment.argument("xtx") then
     scripts.chars.makeencoutf()
 elseif environment.argument("pdf") then
     scripts.chars.makepdfr()
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

@@ -814,25 +814,6 @@
 \def\ignoreimplicitspaces
   {\doifnextcharelse\relax\relax\relax}
 
-%D \macros
-%D   {newconstant}
-
-\beginETEX
-
-\def\newconstant#1%
-  {\def\donewconstant{\xdef#1{\numexpr\the\scratchcounter\relax}}%
-   \afterassignment\donewconstant\scratchcounter}
-
-\endETEX
-
-\beginTEX
-
-\def\newconstant#1%
-  {\def\donewconstant{\xdef#1{\the\scratchcounter\space}}
-   \afterassignment\donewconstant\scratchcounter}
-
-\endTEX
-
 % new
 %
 % \startnointerference
@@ -847,7 +828,7 @@
 
 \def\stopnointerference
   {\egroup
-   \setbox\nointerferencebox\box\voidb@x}
+   \setbox\nointerferencebox\emptybox}
 
 \protect \endinput
 

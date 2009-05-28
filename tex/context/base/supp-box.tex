@@ -15,27 +15,12 @@
 %D are quite simple, some are more advanced and when understood
 %D well, all can be of use.
 
-\writestatus{loading}{Context Support Macros / Boxes}
+%D No longer generic, why bother.
+
+\writestatus{loading}{ConTeXt Support Macros / Boxes}
 
 \unprotect
 
-% watch this: \setbox4\emptybox \wd4\onepoint \the\wd4, no dimensions for void
-
-%D First a couple of hacks to make this module loadable
-%D in plain \TEX.
-
-\ifx\myalloc@\undefined % seems like we're not in context
-  \def\newbox{\alloc@4\box\chardef\insc@unt}
-\fi
-
-\ifx      \scratchbox\undefined \newbox      \scratchbox \fi
-\ifx\globalscratchbox\undefined \newbox\globalscratchbox \fi
-
-\ifx\normalhbox   \undefined \let\normalhbox   \hbox    \fi
-\ifx\normalvbox   \undefined \let\normalvbox   \vbox    \fi
-\ifx\normalvtop   \undefined \let\normalvtop   \vtop    \fi
-\ifx\normalvcenter\undefined \let\normalvcenter\vcenter \fi
-
 %D \macros
 %D   {strutdp,strutht,strutwd}
 %D
@@ -55,8 +40,12 @@
 %D Let's start with an easy one. The next macro hides the
 %D ugly \type {@} in \type {\voidb@x}.
 
-\def\emptybox           {\box\voidb@x}
-\def\resetbox#1{\setbox#1\box\voidb@x}
+\ifx\voidbox\undefined      \newbox\voidbox \fi
+\ifx\voidb@x\undefined \let\voidb@x\voidbox \fi
+
+\def\emptybox  {\box   \voidbox}
+\def\unvoidbox {\unhbox\voidbox}
+\def\resetbox#1{\setbox#1\box\voidbox}
 
 %D \macros
 %D   {nextdepth}
@@ -211,7 +200,7 @@
    \next}
 
 \def\mathsm@sh#1#2% redefined plain macro
-  {\finsm@sh{$\m@th#1{#2}$}}
+  {\finsm@sh{$\mathsurround\zeropoint#1{#2}$}}
 
 \def\makesm@sh#1% redefined plain macro (handles t b h d w)
   {\if#1w\nextboxwd\zeropoint\else
@@ -239,8 +228,8 @@
 %D not grab an argument in the non||math case, which is better.
 
 \unexpanded\def\phantom {\ph@nt\nextbox\nextbox\nextbox}
-\unexpanded\def\vphantom{\ph@nt\nextbox\nextbox\voidb@x}
-\unexpanded\def\hphantom{\ph@nt\voidb@x\voidb@x\nextbox}
+\unexpanded\def\vphantom{\ph@nt\nextbox\nextbox\voidbox}
+\unexpanded\def\hphantom{\ph@nt\voidbox\voidbox\nextbox}
 
 %D Due to a complicated call to \type {\mathpallete} and
 %D thereby \type {\mathchoice}, the next macro looks ugly.
@@ -249,7 +238,7 @@
 \def\ph@nt#1#2#3%
   {\def\doph@nt
      {\ifmmode
-        \def\mathph@nt####1####2{\makeph@nt#1#2#3{$\m@th####1{####2}$}}%
+        \def\mathph@nt####1####2{\makeph@nt#1#2#3{$\mathsurround\zeropoint####1{####2}$}}%
         \def\nextph@nt{\mathpalette\mathph@nt}%
       \else\ifx\nextph@nt\bgroup
         \def\nextph@nt{\makeph@nt#1#2#3}%
@@ -260,7 +249,7 @@
    \futurelet\nextph@nt\doph@nt}
 
 \def\makeph@nt#1#2#3%
-  {\begingroup % why no \bgroup
+  {\begingroup
    \dowithnextbox
      {\setbox\scratchbox\null
       \ht\scratchbox\ht#1%
@@ -470,9 +459,11 @@
 %D \doiftext     {data} {then branch}
 %D \stoptyping
 
+\newif\iftrialtypesetting
+
 \def\doiftextelse#1%
   {\bgroup
-   \setbox\scratchbox\normalhbox{\ignorespaces#1\removeunwantedspaces}%
+   \setbox\scratchbox\normalhbox{\trialtypesettingtrue\ignorespaces#1\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox
      \egroup\@EA\secondoftwoarguments
    \else
@@ -637,9 +628,9 @@
 \def\doclap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
    {\normalhss\flushnextbox\normalhss}\endgroup}\normalhbox}
 
-\def\domathclap{\mathpalette\dodomathclap} \def\dodomathclap#1#2{\doclap{$\m@th#1#2$}}
-\def\domathllap{\mathpalette\dodomathllap} \def\dodomathllap#1#2{\dollap{$\m@th#1#2$}}
-\def\domathrlap{\mathpalette\dodomathrlap} \def\dodomathrlap#1#2{\dorlap{$\m@th#1#2$}}
+\def\domathclap{\mathpalette\dodomathclap} \def\dodomathclap#1#2{\doclap{$\mathsurround\zeropoint#1#2$}}
+\def\domathllap{\mathpalette\dodomathllap} \def\dodomathllap#1#2{\dollap{$\mathsurround\zeropoint#1#2$}}
+\def\domathrlap{\mathpalette\dodomathrlap} \def\dodomathrlap#1#2{\dorlap{$\mathsurround\zeropoint#1#2$}}
 
 \unexpanded\def\rlap{\mathortext\domathrlap\dorlap}
 \unexpanded\def\llap{\mathortext\domathllap\dollap}
@@ -817,72 +808,64 @@
 
 \ifx\originalshapebox\undefined \let\originalshapebox\oldshapebox \fi
 
-\beginTEX
+% %D The old traditional tex variant:
+%
+% \def\insertshapesignal
+%   {\normalhbox to \shapesignal{\strut\hss}% plus \strut
+%    \prevdepth\strutdp} % never \nointerlineskip
+%
+% \def\restoreshapebox % compensates for the signal
+%   {\global\setbox\tmpshapebox\vbox{\vskip-\lineheight\unvcopy\oldshapebox}}
+%
+% \def\shapeboxstrut % put this in front if needed !
+%   {\vrule\!!width\zeropoint\!!height\ht\shapebox\!!depth\dp\shapebox}
+%
+% \def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
+%   {\ifzeropt\lastskip % \ifdim\lastskip=\zeropoint\relax
+%      \ifzeropt\lastkern % \ifdim\lastkern=\zeropoint\relax
+%        \ifcase\lastpenalty % \ifnum\lastpenalty=\zerocount
+%          \setbox\shapebox\lastbox
+%          \ifvoid\shapebox
+%            \unskip\unpenalty\unkern
+%          \else
+%            \ifdim\wd\shapebox=\shapesignal\relax
+%              \exitloop
+%            \else
+%              \shapecounter\zerocount
+%              \global\setbox\tmpshapebox\normalvbox{#1\unvbox\tmpshapebox}%
+%            \fi
+%          \fi
+%        \else
+%          \shapepenalty\lastpenalty
+%          \global\setbox\tmpshapebox\normalvbox{#2\unvbox\tmpshapebox}%
+%          \unpenalty
+%        \fi
+%      \else
+%        \shapekern\lastkern
+%        \global\setbox\tmpshapebox\normalvbox{#3\unvbox\tmpshapebox}%
+%        \unkern
+%      \fi
+%    \else
+%      \shapeskip\lastskip
+%      \global\setbox\tmpshapebox\normalvbox{#4\unvbox\tmpshapebox}%
+%      \unskip
+%    \fi
+%    \ifnum\shapecounter>100 % can be less
+%      \global\reshapingfailedtrue
+%      \message{!!forced exit from shapebox!!}%
+%      \restoreshapebox
+%      \exitloop
+%    \else
+%      \advance\shapecounter \plusone
+%    \fi}
+%
+% But now that the lastnode bugfixes are wide spread we can use:
+%
+% We will turn this into a \MKIV\ variant.
 
 \def\insertshapesignal
   {\normalhbox to \shapesignal{\strut\hss}% plus \strut
    \prevdepth\strutdp} % never \nointerlineskip
-
-% \def\restoreshapebox
-%   {\global\setbox\tmpshapebox\copy\originalshapebox} % \oldshapebox
-
-\def\restoreshapebox % compensates for the signal
-  {\global\setbox\tmpshapebox\vbox{\vskip-\lineheight\unvcopy\oldshapebox}}
-
-\def\shapeboxstrut % put this in front if needed !
-  {\vrule\!!width\zeropoint\!!height\ht\shapebox\!!depth\dp\shapebox}
-
-\def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
-  {\ifzeropt\lastskip % \ifdim\lastskip=\zeropoint\relax
-     \ifzeropt\lastkern % \ifdim\lastkern=\zeropoint\relax
-       \ifcase\lastpenalty % \ifnum\lastpenalty=\zerocount
-         \setbox\shapebox\lastbox
-         \ifvoid\shapebox
-           \unskip\unpenalty\unkern
-         \else
-           \ifdim\wd\shapebox=\shapesignal\relax
-             \exitloop
-           \else
-             \shapecounter\zerocount
-             \global\setbox\tmpshapebox\normalvbox{#1\unvbox\tmpshapebox}%
-           \fi
-         \fi
-       \else
-         \shapepenalty\lastpenalty
-         \global\setbox\tmpshapebox\normalvbox{#2\unvbox\tmpshapebox}%
-         \unpenalty
-       \fi
-     \else
-       \shapekern\lastkern
-       \global\setbox\tmpshapebox\normalvbox{#3\unvbox\tmpshapebox}%
-       \unkern
-     \fi
-   \else
-     \shapeskip\lastskip
-     \global\setbox\tmpshapebox\normalvbox{#4\unvbox\tmpshapebox}%
-     \unskip
-   \fi
-   \ifnum\shapecounter>100 % can be less
-     \global\reshapingfailedtrue
-     \message{!!forced exit from shapebox!!}%
-     \restoreshapebox
-     \exitloop
-   \else
-     \advance\shapecounter \plusone
-   \fi}
-
-\endTEX
-
-% Now that the lastnode bugfixes are wide spread we can use:
-
-\beginETEX \lastnodetype
-
-\def\insertshapesignal
-  {\normalhbox to \shapesignal{\strut\hss}% plus \strut
-   \prevdepth\strutdp} % never \nointerlineskip
-
-% \def\restoreshapebox
-%   {\global\setbox\tmpshapebox\copy\originalshapebox} % \oldshapebox
 
 \def\restoreshapebox % compensates for the signal
   {\global\setbox\tmpshapebox\vbox{\vskip-\lineheight\unvcopy\oldshapebox}}
@@ -920,8 +903,6 @@
    \else
      \advance\shapecounter \plusone
    \fi}
-
-\endETEX
 
 \def\beginofshapebox
   {\setbox\oldshapebox\normalvbox
@@ -1038,8 +1019,22 @@
 %D preparing a long list of words we decided to show the
 %D hyphens, but had to find out that the \PLAIN\ alternative
 %D can hardly be used and|/|or adapted to typesetting. The next
-%D two macros do the job and a little more.
-%D
+%D two macros do the job and a little more. First we define the
+%D (slightly adapted) plain variant:
+
+\def\showhyphens#1%
+  {\begingroup
+   \setbox\scratchbox\vbox
+     {\parfillskip\zerocount
+      \hsize\maxdimen
+     %\tenrm
+      \pretolerance\minusone
+      \tolerance\minusone
+      \hbadness\zerocount
+      \showboxdepth\zerocount
+      \ #1}%
+   \endgroup}
+
 %D The simple command \type{\hyphenatedword} accepts one
 %D argument and gives the hyphenated word. This macro calls for
 %D
@@ -2262,10 +2257,12 @@
       \hskip-\scratchdimen
       \normalhbox to \scratchdimen{\hss\flushnextbox\hss}}}
 
-\def\startoverlay
+\unexpanded\def\startoverlay
   {\bgroup
    \let\stopoverlay\egroup
    \processboxes\dooverlaybox}
+
+\let\stopoverlay\relax
 
 % %D \macros
 % %D   {starthspread}
@@ -2700,31 +2697,35 @@
 %D \normalhbox{y:\foundbox{two}{a}} \par
 %D \stoptyping
 
-% a first version
+% we keep it around as a demonstration of good old tex code:
 %
 % \def\@@stackbox{boxstack:b:}
 % \def\@@stackmax{boxstack:m:}
 % \def\@@stacktag{boxstack:t:}
+% \def\@@stacklst{boxstack:l:}
 %
 % \def\initializeboxstack#1%
 %   {\ifundefined{\@@stackbox#1}%
 %      \@EA\newbox\csname\@@stackbox#1\endcsname
 %    \else
 %      \global\setbox\csname\@@stackbox#1\endcsname\normalvbox{}%
+%      \def\docommand##1{\global\letbeundefined{\@@stacktag#1:##1}}%
+%      \processcommacommand[\getvalue{\@@stacklst#1}]\docommand
 %    \fi
-%    % actually we should erase the old values
-%    \setgvalue{\@@stackmax#1}{0}}
+%    \global\letvalue{\@@stacklst#1}\empty
+%    \global\letvalue{\@@stackmax#1}\!!zeropoint}
 %
 % \def\savebox#1#2% stack name
 %   {\dowithnextbox
 %      {\doifdefined{\@@stackbox#1}
 %         {\@EA\doglobal\@EA\increment\csname\@@stackmax#1\endcsname
-%          \setxvalue{\@@stacktag#2}{\csname\@@stackmax#1\endcsname}%
-%          \global\setbox\csname\@@stackbox#1\endcsname=\normalvbox
+%          \setxvalue{\@@stacktag#1:#2}{\csname\@@stackmax#1\endcsname}%
+%          \setxvalue{\@@stacklst#1}{\getvalue{\@@stacklst#1},#2}%
+%          \global\setbox\csname\@@stackbox#1\endcsname\normalvbox
 %            {\forgetall
-%             \setbox\scratchbox=\normalvbox{\flushnextbox}
-%             \ht\scratchbox=\onepoint
-%             \dp\scratchbox=\zeropoint
+%             \setbox\scratchbox\normalvbox{\flushnextbox}
+%             \ht\scratchbox\onepoint
+%             \dp\scratchbox\zeropoint
 %             \unvbox\csname\@@stackbox#1\endcsname
 %             \offinterlineskip
 %             \allowbreak
@@ -2734,76 +2735,21 @@
 % \def\foundbox#1#2%
 %   {\normalvbox
 %      {\doifdefined{\@@stackbox#1}
-%         {\doifdefined{\@@stacktag#2}
-%            {\setbox\scratchbox=\normalvbox
+%         {\doifdefined{\@@stacktag#1:#2}
+%            {\setbox\scratchbox\normalvbox
 %               {\splittopskip\zeropoint
-%                \setbox0=\copy\csname\@@stackbox#1\endcsname
-%                \dimen0=\getvalue{\@@stacktag#2}pt
-%                \advance\dimen0 by -\onepoint
-%                \setbox2=\vsplit0 to \dimen0
+%                \setbox0\copy\csname\@@stackbox#1\endcsname
+%                \dimen0=\getvalue{\@@stacktag#1:#2}\points
+%                \advance\dimen0 -\onepoint
+%                \setbox2\vsplit0 to \dimen0
 %                \ifdim\ht0>\onepoint
-%                  \setbox0=\vsplit0 to \onepoint
+%                  \setbox0\vsplit0 to \onepoint
 %                \fi
-%                \unvbox0\setbox0=\lastbox\unvbox0}%
+%                \unvbox0\setbox0\lastbox\unvbox0}%
 %             \unvbox\scratchbox}}}}
-
-\beginTEX \newbox
-
-\def\@@stackbox{boxstack:b:}
-\def\@@stackmax{boxstack:m:}
-\def\@@stacktag{boxstack:t:}
-\def\@@stacklst{boxstack:l:}
-
-\def\initializeboxstack#1%
-  {\ifundefined{\@@stackbox#1}%
-     \@EA\newbox\csname\@@stackbox#1\endcsname
-   \else
-     \global\setbox\csname\@@stackbox#1\endcsname\normalvbox{}%
-     \def\docommand##1{\global\letbeundefined{\@@stacktag#1:##1}}%
-     \processcommacommand[\getvalue{\@@stacklst#1}]\docommand
-   \fi
-   \global\letvalue{\@@stacklst#1}\empty
-   \global\letvalue{\@@stackmax#1}\!!zeropoint}
-
-\def\savebox#1#2% stack name
-  {\dowithnextbox
-     {\doifdefined{\@@stackbox#1}
-        {\@EA\doglobal\@EA\increment\csname\@@stackmax#1\endcsname
-         \setxvalue{\@@stacktag#1:#2}{\csname\@@stackmax#1\endcsname}%
-         \setxvalue{\@@stacklst#1}{\getvalue{\@@stacklst#1},#2}%
-         \global\setbox\csname\@@stackbox#1\endcsname\normalvbox
-           {\forgetall
-            \setbox\scratchbox\normalvbox{\flushnextbox}
-            \ht\scratchbox\onepoint
-            \dp\scratchbox\zeropoint
-            \unvbox\csname\@@stackbox#1\endcsname
-            \offinterlineskip
-            \allowbreak
-            \box\scratchbox}}}%
-   \normalvbox}
-
-\def\foundbox#1#2%
-  {\normalvbox
-     {\doifdefined{\@@stackbox#1}
-        {\doifdefined{\@@stacktag#1:#2}
-           {\setbox\scratchbox\normalvbox
-              {\splittopskip\zeropoint
-               \setbox0\copy\csname\@@stackbox#1\endcsname
-               \dimen0=\getvalue{\@@stacktag#1:#2}\points
-               \advance\dimen0 -\onepoint
-               \setbox2\vsplit0 to \dimen0
-               \ifdim\ht0>\onepoint
-                 \setbox0\vsplit0 to \onepoint
-               \fi
-               \unvbox0\setbox0\lastbox\unvbox0}%
-            \unvbox\scratchbox}}}}
-
-\def\doifboxelse#1#2%
-  {\doifdefinedelse{\@@stacktag#1:#2}}
-
-\endTEX
-
-\beginETEX \newbox
+%
+% \def\doifboxelse#1#2%
+%   {\doifdefinedelse{\@@stacktag#1:#2}}
 
 \def\@@stackbox{@box@}
 \def\@@stacklst{@xob@}
@@ -2992,13 +2938,6 @@
 \def\setdimentoatleast#1#2%
   {\ifdim#1>\zeropoint\else#1=#2\fi}
 
-%D We need'm raw.
-
-\ifx \normalhbox    \undefined \let \normalhbox    = \hbox    \fi
-\ifx \normalvbox    \undefined \let \normalvbox    = \vbox    \fi
-\ifx \normalvtop    \undefined \let \normalvtop    = \vtop    \fi
-\ifx \normalvcenter \undefined \let \normalvcenter = \vcenter \fi
-
 %D And even rawer:
 
 \let\naturalhbox    \normalhbox
@@ -3006,13 +2945,13 @@
 \let\naturalvtop    \normalvtop
 \let\naturalvcenter \normalvtop
 
-\beginOMEGA dir
+\ifdefined\textdir
 
-\def\naturalhbox{\normalhbox dir TLT}
-\def\naturalvbox{\normalvbox dir TLT}
-%def\naturalvtop{\normalvtop dir TLT}
+    \def\naturalhbox{\normalhbox dir TLT}
+    \def\naturalvbox{\normalvbox dir TLT}
+    %def\naturalvtop{\normalvtop dir TLT}
 
-\endOMEGA
+\fi
 
 %D \macros
 %D   {vcenter}
@@ -3044,27 +2983,17 @@
 %D
 %D A prelude to an extended \TEX:
 
-% it's about time to drop tex in favour of etex / TEX VERSION TO BE TESTED
+%   \def\setboxllx #1#2{\bgroup\scratchdimen#2\expanded{\egroup\noexpand\setevalue{b@@x\number#1}{\the\scratchdimen}}}
+%   \def\setboxlly #1#2{\bgroup\scratchdimen#2\expanded{\egroup\noexpand\setevalue{b@@y\number#1}{\the\scratchdimen}}}
+%
+%   \def\gsetboxllx#1#2{\bgroup\scratchdimen#2\setxvalue{b@@x\number#1}{\the\scratchdimen}\egroup}
+%   \def\gsetboxlly#1#2{\bgroup\scratchdimen#2\setxvalue{b@@y\number#1}{\the\scratchdimen}\egroup}
 
-\beginTEX
+\def\setboxllx#1#2{\setevalue{b@@x\number#1}{\the\dimexpr#2\relax}}
+\def\setboxlly#1#2{\setevalue{b@@y\number#1}{\the\dimexpr#2\relax}}
 
-  \def\setboxllx #1#2{\bgroup\scratchdimen#2\expanded{\egroup\noexpand\setevalue{b@@x\number#1}{\the\scratchdimen}}}
-  \def\setboxlly #1#2{\bgroup\scratchdimen#2\expanded{\egroup\noexpand\setevalue{b@@y\number#1}{\the\scratchdimen}}}
-
-  \def\gsetboxllx#1#2{\bgroup\scratchdimen#2\setxvalue{b@@x\number#1}{\the\scratchdimen}\egroup}
-  \def\gsetboxlly#1#2{\bgroup\scratchdimen#2\setxvalue{b@@y\number#1}{\the\scratchdimen}\egroup}
-
-\endTEX
-
-\beginETEX
-
-  \def\setboxllx#1#2{\setevalue{b@@x\number#1}{\the\dimexpr(#2)}}
-  \def\setboxlly#1#2{\setevalue{b@@y\number#1}{\the\dimexpr(#2)}}
-
-  \def\gsetboxllx{\global\setboxllx}
-  \def\gsetboxlly{\global\setboxlly}
-
-\endETEX
+\def\gsetboxllx{\global\setboxllx}
+\def\gsetboxlly{\global\setboxlly}
 
 \def\getboxllx#1{\executeifdefined{b@@x\number#1}\zeropoint}
 \def\getboxlly#1{\executeifdefined{b@@y\number#1}\zeropoint}
@@ -3093,6 +3022,32 @@
       \box\nextbox
       \interactionmode\scratchcounter
       \egroup}}
+
+\def\spreadhbox#1% rebuilds \hbox{<box><hss><box><hss><box>}
+  {\bgroup
+   \ifhbox#1\relax
+     \setbox2\emptybox
+     \unhbox#1%
+     \doloop
+       {\unpenalty\unskip\unpenalty\unskip\unpenalty\unskip
+        \setbox0\lastbox
+        \ifvoid0
+          \exitloop
+        \else
+          \setbox2\hbox
+            {\ifhbox0 \spreadhbox0\else\box0\fi
+             \ifvoid2 \else\hss\unhbox2\fi}%
+        \fi}%
+     \ifvoid2\else\unhbox2\fi
+   \else
+     \box#1%
+   \fi
+   \egroup}
+
+% makes sense:
+
+\showboxbreadth\maxdimen
+\showboxdepth  \maxdimen
 
 \protect \endinput
 

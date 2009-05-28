@@ -34,6 +34,10 @@ function jobobjects.set(tag,number,page)
     collected[tag] = { number, page }
 end
 
+function jobobjects.get(tag)
+    return collected[tag] or tobesaved[tag]
+end
+
 function jobobjects.number(tag,default)
     local o = collected[tag] or tobesaved[tag]
     texsprint((o and o[1]) or default)
@@ -45,5 +49,6 @@ function jobobjects.page(tag,default)
 end
 
 function jobobjects.doifelse(tag)
-    cs.testcase(collected[tag] or tobesaved[tag])
+    commands.testcase(collected[tag] or tobesaved[tag])
 end
+

@@ -22,7 +22,7 @@
 
 \ifx \undefined \writestatus \input supp-mis.tex \relax \fi
 
-\writestatus{loading}{Context Support Macros / Fun Stuff}
+\writestatus{loading}{ConTeXt Support Macros / Fun Stuff}
 
 \ifx\definefont\undefined
   \def\definedfont[#1]{\font\temp#1\relax\temp}
@@ -346,8 +346,8 @@
    \forgetall
    \bgroup
    #1%
-   \setbox0\box\voidb@x
-   \setbox2\box\voidb@x
+   \setbox0\emptybox
+   \setbox2\emptybox
    \def\grabfirstline##1 %
      {\setbox2\hbox
         {\ifvoid0
@@ -356,8 +356,8 @@
            \unhcopy0\ {#4{##1}}%
          \fi}%
       \ifdim\wd2=\zeropoint
-        \setbox0\box\voidb@x
-        \setbox2\box\voidb@x
+        \setbox0\emptybox
+        \setbox2\emptybox
         \@EA\grabfirstline
       \else\ifdim\wd2>\hsize
         \hbox to \hsize{\strut\unhbox0}#2\egroup

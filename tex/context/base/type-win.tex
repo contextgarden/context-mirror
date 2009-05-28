@@ -1,0 +1,120 @@
+%D \module
+%D   [       file=type-win,
+%D        version=2009.03.10,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=MS Windows Definitions,
+%D         author=Vyatcheslav Yatskovsky,
+%D           date=\currentdate,
+%D      copyright=Vyatcheslav Yatskovsky]
+%C
+%C This module is part of the \CONTEXT\ macro||package. See
+%C mreadme.pdf for details.
+
+\starttypescriptcollection[windows]
+
+\starttypescript [serif] [georgia,palatino,times]
+  \setups[font:fallback:serif]
+  \definefontsynonym [Serif]           [\typescripttwo-Regular]    [features=default]
+  \definefontsynonym [SerifBold]       [\typescripttwo-Bold]       [features=default]
+  \definefontsynonym [SerifItalic]     [\typescripttwo-Italic]     [features=default]
+  \definefontsynonym [SerifBoldItalic] [\typescripttwo-BoldItalic] [features=default]
+\stoptypescript
+
+\starttypescript [serif] [sylfaen]
+  \setups[font:fallback:serif]
+  \definefontsynonym [Serif]           [\typescripttwo-Regular]    [features=default]
+\stoptypescript
+
+\starttypescript [sans] [arial,trebuchet,verdana]
+  \setups[font:fallback:sans]
+  \definefontsynonym [Sans]           [\typescripttwo-Regular]    [features=default]
+  \definefontsynonym [SansBold]       [\typescripttwo-Bold]       [features=default]
+  \definefontsynonym [SansItalic]     [\typescripttwo-Italic]     [features=default]
+  \definefontsynonym [SansBoldItalic] [\typescripttwo-BoldItalic] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [arialblack,impact,lucidasans,microsans]
+  \setups[font:fallback:sans]
+  \definefontsynonym [Sans]           [\typescripttwo-Regular]    [features=default]
+\stoptypescript
+
+\starttypescript [sans] [comic,tahoma]
+  \setups[font:fallback:sans]
+  \definefontsynonym [Sans]           [\typescripttwo-Regular]    [features=default]
+  \definefontsynonym [SansBold]       [\typescripttwo-Bold]       [features=default]
+\stoptypescript
+
+\starttypescript [sans] [franklin]
+  \setups[font:fallback:sans]
+  \definefontsynonym [Sans]           [\typescripttwo-Regular]    [features=default]
+  \definefontsynonym [SansItalic]     [\typescripttwo-Italic]     [features=default]
+\stoptypescript
+
+\starttypescript [mono] [courier]
+  \setups[font:fallback:mono]
+  \definefontsynonym [Mono]           [\typescripttwo-Regular]    [features=default]
+  \definefontsynonym [MonoBold]       [\typescripttwo-Bold]       [features=default]
+  \definefontsynonym [MonoItalic]     [\typescripttwo-Italic]     [features=default]
+  \definefontsynonym [MonoBoldItalic] [\typescripttwo-BoldItalic] [features=default]
+\stoptypescript
+
+\starttypescript [mono] [lucidaconsole]
+  \setups[font:fallback:mono]
+  \definefontsynonym [Mono]           [\typescripttwo-Regular]    [features=default]
+\stoptypescript
+
+
+\definetypescriptprefix [f:arial]      [Arial]
+\definetypescriptprefix [f:arialblack] [Arial Black]
+\definetypescriptprefix [f:comic]      [Comic Sans MS]
+\definetypescriptprefix [f:courier]    [Courier New]
+\definetypescriptprefix [f:franklin]   [Franklin Gothic Medium]
+\definetypescriptprefix [f:georgia]    [Georgia]
+\definetypescriptprefix [f:impact]     [Impact]
+\definetypescriptprefix [f:lucidaconsole]  [Lucida Console]
+\definetypescriptprefix [f:lucidasans]  [Lucida Sans Unicode]
+\definetypescriptprefix [f:microsans]  [Microsoft Sans Serif]
+\definetypescriptprefix [f:palatino]   [Palatino Linotype]
+\definetypescriptprefix [f:sylfaen]    [Sylfaen]
+\definetypescriptprefix [f:tahoma]     [Tahoma]
+\definetypescriptprefix [f:times]      [Times New Roman]
+\definetypescriptprefix [f:trebuchet]  [Trebuchet MS]
+\definetypescriptprefix [f:verdana]    [Verdana]
+
+\starttypescript [serif] [georgia,palatino,sylfaen,times]
+  \definefontsynonym [\typescripttwo-Regular]    [name:\typescriptprefix{f:\typescripttwo}]             [features=default]
+  \definefontsynonym [\typescripttwo-Bold]       [name:\typescriptprefix{f:\typescripttwo} Bold]        [features=default]
+  \definefontsynonym [\typescripttwo-Italic]     [name:\typescriptprefix{f:\typescripttwo} Italic]      [features=default]
+  \definefontsynonym [\typescripttwo-BoldItalic] [name:\typescriptprefix{f:\typescripttwo} Bold Italic] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [arial,arialblack,comic,franklin,impact,lucidasans,microsans,tahoma,trebuchet,verdana]
+  \definefontsynonym [\typescripttwo-Regular]    [name:\typescriptprefix{f:\typescripttwo}]             [features=default]
+  \definefontsynonym [\typescripttwo-Bold]       [name:\typescriptprefix{f:\typescripttwo} Bold]        [features=default]
+  \definefontsynonym [\typescripttwo-Italic]     [name:\typescriptprefix{f:\typescripttwo} Italic]      [features=default]
+  \definefontsynonym [\typescripttwo-BoldItalic] [name:\typescriptprefix{f:\typescripttwo} Bold Italic] [features=default]
+\stoptypescript
+
+\starttypescript [mono] [courier,lucidaconsole]
+  \definefontsynonym [\typescripttwo-Regular]    [name:\typescriptprefix{f:\typescripttwo}]             [features=default]
+  \definefontsynonym [\typescripttwo-Bold]       [name:\typescriptprefix{f:\typescripttwo} Bold]        [features=default]
+  \definefontsynonym [\typescripttwo-Italic]     [name:\typescriptprefix{f:\typescripttwo} Italic]      [features=default]
+  \definefontsynonym [\typescripttwo-BoldItalic] [name:\typescriptprefix{f:\typescripttwo} Bold Italic] [features=default]
+\stoptypescript
+
+
+\starttypescript [georgia,palatino,sylfaen,times]
+  \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+\starttypescript [arial,arialblack,comic,franklin,impact,lucidasans,microsans,tahoma,trebuchet,verdana]
+  \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+\starttypescript [courier,lucidaconsole]
+  \definetypeface [\typescriptone] [tt] [mono] [\typescriptone] [default]
+\stoptypescript
+
+\stoptypescriptcollection
+
+\endinput

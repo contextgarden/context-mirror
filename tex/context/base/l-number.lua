@@ -1,20 +1,20 @@
--- filename : l-number.lua
--- comment  : split off from luat-lib
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-number'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-number'] = 1.001
+local format = string.format
 
-if not number then number = { } end
+number = number or { }
 
 -- a,b,c,d,e,f = number.toset(100101)
 
 function number.toset(n)
     return (tostring(n)):match("(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
 end
-
-local format = string.format
 
 function number.toevenhex(n)
     local s = format("%X",n)
@@ -36,11 +36,10 @@ end
 --
 -- of course dedicated "(.)(.)(.)(.)" matches are even faster
 
-do
-    local one = lpeg.C(1-lpeg.S(''))^1
+local one = lpeg.C(1-lpeg.S(''))^1
 
-    function number.toset(n)
-        return one:match(tostring(n))
-    end
+function number.toset(n)
+    return one:match(tostring(n))
 end
+
 

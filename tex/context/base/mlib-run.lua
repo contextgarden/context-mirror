@@ -23,7 +23,7 @@ if not modules then modules = { } end modules ['mlib-run'] = {
 <p>The directional helpers and pen analysis are more or less translated from the
 <l n='c'/> code. It really helps that Taco know that source so well. Taco and I spent
 quite some time on speeding up the <l n='lua'/> and <l n='c'/> code. There is not
-much to gain, especially if on ekeeps in mind that when integrated in <l n='tex'/>
+much to gain, especially if one keeps in mind that when integrated in <l n='tex'/>
 only a part of the time is spent in <l n='metapost'/>. Of course an integrated
 approach is way faster than an external <l n='metapost'/> and processing time
 nears zero.</p>
@@ -33,13 +33,20 @@ local format = string.format
 
 metapost = metapost or { }
 
+metapost.showlog = false
+metapost.lastlog = ""
+
+function metapost.resetlastlog()
+    metapost.lastlog = ""
+end
+
 local function finder(name, mode, ftype)
     if mode=="w" then
         return name
-    elseif input.aux.qualified_path(name) then
+    elseif file.is_qualified_path(name) then
         return name
     else
-        return input.find_file(name,ftype)
+        return resolvers.find_file(name,ftype)
     end
 end
 
@@ -80,27 +87,27 @@ input %s ; dump ;
 end
 
 function metapost.make(name, target, version)
-    input.starttiming(mplib)
+    statistics.starttiming(mplib)
     target = file.replacesuffix(target or name, "mem")
     local mpx = mplib.new ( table.merged (
         metapost.parameters,
         {
             ini_version = true,
             find_file = finder,
-            job_name = file.stripsuffix(target),
+            job_name = file.removesuffix(target),
         }
     ) )
     if mpx then
-        input.starttiming(metapost.exectime)
+        statistics.starttiming(metapost.exectime)
         local result = mpx:execute(format(preamble,version or "unknown",name))
-        input.stoptiming(metapost.exectime)
+        statistics.stoptiming(metapost.exectime)
         mpx:finish()
     end
-    input.stoptiming(mplib)
+    statistics.stoptiming(mplib)
 end
 
 function metapost.load(name)
-    input.starttiming(mplib)
+    statistics.starttiming(mplib)
     local mpx = mplib.new ( table.merged (
         metapost.parameters,
         {
@@ -111,24 +118,24 @@ function metapost.load(name)
     ) )
     local result
     if mpx then
-if not mplib.pen_info then -- temp compatibility hack
-        input.starttiming(metapost.exectime)
-        result = mpx:execute("\\")
-        input.stoptiming(metapost.exectime)
-end
+        if not mplib.pen_info then -- temp compatibility hack
+            statistics.starttiming(metapost.exectime)
+            result = mpx:execute("\\")
+            statistics.stoptiming(metapost.exectime)
+        end
     else
         result = { status = 99, error = "out of memory"}
     end
-    input.stoptiming(mplib)
+    statistics.stoptiming(mplib)
     return mpx, result
 end
 
 function metapost.unload(mpx)
-    input.starttiming(mplib)
+    statistics.starttiming(mplib)
     if mpx then
         mpx:finish()
     end
-    input.stoptiming(mplib)
+    statistics.stoptiming(mplib)
 end
 
 function metapost.reporterror(result)
@@ -143,6 +150,7 @@ function metapost.reporterror(result)
             metapost.report("mp error: %s",(e=="" and "?") or e)
         end
         if not t and not e and l then
+            metapost.lastlog = metapost.lastlog .. "\n" .. l
             metapost.report("mp log: %s",l)
         else
             metapost.report("mp error: unknown, no error, terminal or log messages")
@@ -153,21 +161,21 @@ function metapost.reporterror(result)
     return true
 end
 
-function metapost.checkformat(mpsinput, mpsformat)
+function metapost.checkformat(mpsinput, mpsformat, dirname)
     mpsinput  = file.addsuffix(mpsinput or "metafun", "mp")
-    mpsformat = file.stripsuffix(file.basename(mpsformat or texconfig.formatname or tex.formatname or mpsinput))
-    local mpsbase = file.stripsuffix(file.basename(mpsinput))
+    mpsformat = file.removesuffix(file.basename(mpsformat or texconfig.formatname or (tex and tex.formatname) or mpsinput))
+    local mpsbase = file.removesuffix(file.basename(mpsinput))
     if mpsbase ~= mpsformat then
         mpsformat = mpsformat .. "-" .. mpsbase
     end
     mpsformat = file.addsuffix(mpsformat, "mem")
-    local pth = file.dirname(texconfig.formatname or "")
+    local pth = dirname or file.dirname(texconfig.formatname or "")
     if pth ~= "" then
         mpsformat = file.join(pth,mpsformat)
     end
     local the_version = environment.version or "unset version"
     if lfs.isfile(mpsformat) then
-        commands.writestatus("mplib","loading format: %s, name: %s", mpsinput, mpsformat)
+        commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformat)
         local mpx, result = metapost.load(mpsformat)
         if mpx then
             local result = mpx:execute("show mp_parent_version ;")
@@ -183,31 +191,28 @@ function metapost.checkformat(mpsinput, mpsformat)
                 end
             end
         else
-            commands.writestatus("mplib","error in loading format: %s, name: %s", mpsinput, mpsformat)
+            commands.writestatus("mplib","error in loading '%s' from '%s'", mpsinput, mpsformat)
             metapost.reporterror(result)
         end
     end
-    commands.writestatus("mplib","making format: %s, name: %s", mpsinput, mpsformat)
+    commands.writestatus("mplib","making '%s' into '%s'", mpsinput, mpsformat)
     metapost.make(mpsinput,mpsformat,the_version) -- somehow return ... fails here
     if lfs.isfile(mpsformat) then
-        commands.writestatus("mplib","loading format: %s, name: %s", mpsinput, mpsformat)
+        commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformat)
         return metapost.load(mpsformat)
     else
-        commands.writestatus("mplib","problems with format: %s, name: %s", mpsinput, mpsformat)
+        commands.writestatus("mplib","problems with '%s' from '%s'", mpsinput, mpsformat)
     end
 end
 
---~ if environment.initex then
---~     metapost.unload(metapost.checkformat("metafun"))
---~ end
+local mpxformats = { }
 
-local mpxformats = {}
-
-function metapost.format(name)
-    local mpx = mpxformats[name]
+function metapost.format(instance,name)
+    name = name or instance
+    local mpx = mpxformats[instance]
     if not mpx then
         mpx = metapost.checkformat(name)
-        mpxformats[name] = mpx
+        mpxformats[instance] = mpx
     end
     return mpx
 end
@@ -231,26 +236,25 @@ function metapost.reset(mpx)
     end
 end
 
-metapost.showlog = false
-
 function metapost.process(mpx, data, trialrun, flusher, multipass)
     local converted, result = false, {}
     if type(mpx) == "string" then
         mpx = metapost.format(mpx) -- goody
     end
     if mpx and data then
-        input.starttiming(metapost)
+        statistics.starttiming(metapost)
         if type(data) == "table" then
             for i=1,#data do
                 local d = data[i]
                 if d then
-                    input.starttiming(metapost.exectime)
+                    statistics.starttiming(metapost.exectime)
                     result = mpx:execute(d)
-                    input.stoptiming(metapost.exectime)
+                    statistics.stoptiming(metapost.exectime)
                     if not metapost.reporterror(result) then
                         if metapost.showlog then
                             local str = (result.term ~= "" and result.term) or "no terminal output"
                             if not str:is_empty() then
+                                metapost.lastlog = metapost.lastlog .. "\n" .. str
                                 metapost.report("mp log: %s",str)
                             end
                         end
@@ -263,21 +267,25 @@ function metapost.process(mpx, data, trialrun, flusher, multipass)
                 end
             end
        else
-            input.starttiming(metapost.exectime)
+            statistics.starttiming(metapost.exectime)
             result = mpx:execute(data)
-            input.stoptiming(metapost.exectime)
+            statistics.stoptiming(metapost.exectime)
             -- todo: error message
             if not result then
                 metapost.report("mp error: no result object returned")
             elseif result.status > 0 then
                 metapost.report("mp error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
-            elseif metapost.showlog then
-                metapost.report("mp info: %s",result.term or "no-term")
-            elseif result.fig then
-                converted = metapost.convert(result, trialrun, flusher, multipass)
+            else
+                if metapost.showlog then
+                    metapost.lastlog = metapost.lastlog .. "\n" .. result.term
+                    metapost.report("mp info: %s",result.term or "no-term")
+                end
+                if result.fig then
+                    converted = metapost.convert(result, trialrun, flusher, multipass)
+                end
             end
         end
-        input.stoptiming(metapost)
+        statistics.stoptiming(metapost)
     end
     return converted, result
 end
@@ -288,4 +296,65 @@ end
 
 function metapost.report(...)
     logs.report("mplib",...)
+end
+
+-- handy
+
+function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
+    local fullname = file.addsuffix(filename,"mp")
+    local data = mpdata or io.loaddata(fullname)
+    if outputformat ~= "svg" then
+        outputformat = "mps"
+    end
+    if not data then
+        logs.simple("unknown file '%s'",filename or "?")
+    else
+        local mpx = metapost.checkformat(formatname,formatname,caches.setpath("formats"))
+        if not mpx then
+            logs.simple("unknown format '%s'",formatname or "?")
+        else
+            logs.simple("processing '%s'",(mpdata and (filename or "data")) or fullname)
+            local result = mpx:execute(data)
+            if not result then
+                logs.simple("error: no result object returned")
+            elseif result.status > 0 then
+                logs.simple("error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
+            else
+                if metapost.showlog then
+                    metapost.lastlog = metapost.lastlog .. "\n" .. result.term
+                    logs.simple("info: %s",result.term or "no-term")
+                end
+                local figures = result.fig
+                if figures then
+                    local sorted = table.sortedkeys(figures)
+                    if astable then
+                        local result = { }
+                        logs.simple("storing %s figures in table",#sorted)
+                        for k, v in ipairs(sorted) do
+                            if outputformat == "mps" then
+                                result[v] = figures[v]:postscript()
+                            else
+                                result[v] = figures[v]:svg() -- (3) for prologues
+                            end
+                        end
+                        return result
+                    else
+                        local basename = file.removesuffix(file.basename(filename))
+                        for k, v in ipairs(sorted) do
+                            local output
+                            if outputformat == "mps" then
+                                output = figures[v]:postscript()
+                            else
+                                output = figures[v]:svg() -- (3) for prologues
+                            end
+                            local outname = format("%s-%s.%s",basename,v,outputformat)
+                            logs.simple("saving %s bytes in '%s'",#output,outname)
+                            io.savedata(outname,output)
+                        end
+                        return #sorted
+                    end
+                end
+            end
+        end
+    end
 end

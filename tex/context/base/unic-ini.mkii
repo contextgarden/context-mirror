@@ -2,7 +2,7 @@
 %D   [       file=unic-ini,
 %D        version=2002.12.03,
 %D          title=\CONTEXT\ \UNICODE\ Support,
-%D       subtitle=\UNICODE\ \& UTF-8 support,
+%D       subtitle=Initialization,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context UNICODE Macros (ini)}
+\writestatus{loading}{ConTeXt Unicode Support / Initialization}
 
 %D Sorry, we only support his in \ETEX.
 
@@ -725,9 +725,9 @@
 
 \def\numbertohexstring#1{0x\uchexnumbers{\utfdiv{#1}}\uchexnumbers{\utfmod{#1}}}
 
-\beginXETEX
+\ifnum\texengine=\xetexengine
     \let\numbertoutf\numbertohexstring
-\endXETEX
+\fi
 
 \def\uchartoutf#1#2%
   {\expandafter\numbertoutf\expandafter{\the\numexpr#1*\utf@h+#2\relax}}
@@ -767,7 +767,7 @@
 %D Well, let's at least preload a few familiar ones. Here we
 %D also load the \UTF\ regime.
 
-\useunicodevector[0,1,2,3,4,5,30,31,32,33,34,37,39,251]
+\useunicodevector[0,1,2,3,4,5,30,31,32,33,34,35,37,39,251]
 \useunicodevector[cjk]
 
 \useregime[utf]

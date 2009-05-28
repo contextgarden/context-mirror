@@ -1,0 +1,21 @@
+% todo
+
+\unprotect
+
+\writestatus\m!systems{loading some mkii compatibility hacks}
+
+% Compatibility for font-ini
+
+\let\normalxi=\xi
+
+\definebodyfontswitch [xii]  [\!!twelvepoint]
+\definebodyfontswitch [xi]   [\!!elevenpoint]
+\definebodyfontswitch [x]    [\!!tenpoint]
+\definebodyfontswitch [ix]   [\!!ninepoint]
+\definebodyfontswitch [viii] [\!!eightpoint]
+\definebodyfontswitch [vii]  [\!!sevenpoint]
+\definebodyfontswitch [vi]   [\!!sixpoint]
+
+\unexpanded\def\xi{\ifmmode\normalxi\else\elevenpoint\fi}
+
+\protect \endinput

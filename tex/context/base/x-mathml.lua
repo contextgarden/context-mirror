@@ -6,18 +6,28 @@ if not modules then modules = { } end modules ['x-mathml'] = {
     license   = "see context related readme files"
 }
 
+local utf = unicode.utf8
+
 lxml     = lxml or { }
 lxml.mml = lxml.mml or { }
 
 local texsprint = tex.sprint
 local format    = string.format
-local utfchar   = unicode.utf8.char
+local lower     = string.lower
+local utfchar   = utf.char
+local utffind   = utf.find
 local xmlsprint = xml.sprint
 local xmlcprint = xml.cprint
+
+local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 
 -- an alternative is to remap to private codes, where we can have
 -- different properties .. to be done; this will move and become
 -- generic
+
+-- todo: handle opening/closing mo's here ... presentation mml is such a mess ...
+
+local doublebar = utfchar(0x2016)
 
 local n_replacements = {
 --  [" "] = utfchar(0x2002),  -- "&textspace;" -> tricky, no &; in mkiv
@@ -26,12 +36,30 @@ local n_replacements = {
     [" "] = "",
 }
 
+local l_replacements = { -- in main table
+    ["|"]  = "\\mmlleftdelimiter\\vert",
+    ["{"]  = "\\mmlleftdelimiter\\lbrace",
+    ["("]  = "\\mmlleftdelimiter(",
+    ["["]  = "\\mmlleftdelimiter[",
+    ["<"]  = "\\mmlleftdelimiter<",
+    [doublebar] = "\\mmlleftdelimiter\\Vert",
+}
+local r_replacements = { -- in main table
+    ["|"]  = "\\mmlrightdelimiter\\vert",
+    ["}"]  = "\\mmlrightdelimiter\\rbrace",
+    [")"]  = "\\mmlrightdelimiter)",
+    ["]"]  = "\\mmlrightdelimiter]",
+    [">"]  = "\\mmlrightdelimiter>",
+    [doublebar] = "\\mmlrightdelimiter\\Vert",
+}
+
 local o_replacements = { -- in main table
     ["@l"] = "\\mmlleftdelimiter.",
     ["@r"] = "\\mmlrightdelimiter.",
     ["{"]  = "\\mmlleftdelimiter\\lbrace",
     ["}"]  = "\\mmlrightdelimiter\\rbrace",
---  ["|"]  = "\\mmlmiddledelimiter\\vert",
+    ["|"]  = "\\mmlleftorrightdelimiter\\vert",
+    [doublebar]  = "\\mmlleftorrightdelimiter\\Vert",
     ["("]  = "\\mmlleftdelimiter(",
     [")"]  = "\\mmlrightdelimiter)",
     ["["]  = "\\mmlleftdelimiter[",
@@ -48,9 +76,9 @@ local o_replacements = { -- in main table
     [" "]  = "",
     ["°"]  = "^\\circ", -- hack
 
-[utf.char(0xF103C)] = "\\mmlleftdelimiter<",
-[utf.char(0xF1026)] = "\\mmlchar{38}",
-[utf.char(0xF103E)] = "\\mmlleftdelimiter>",
+    [utfchar(0xF103C)] = "\\mmlleftdelimiter<",
+    [utfchar(0xF1026)] = "\\mmlchar{38}",
+    [utfchar(0xF103E)] = "\\mmlleftdelimiter>",
 
 }
 
@@ -424,6 +452,10 @@ function lxml.mml.checked_operator(str)
     texsprint(tex.ctxcatcodes,(utf.gsub(str,".",o_replacements)))
 end
 
+function lxml.mml.stripped(str)
+    tex.sprint(tex.ctxcatcodes,str:strip())
+end
+
 function lxml.mml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
@@ -453,13 +485,24 @@ function lxml.mml.mi(id,pattern)
     end
 end
 
+function table.keys_as_string(t)
+    local k = { }
+    for k,_ in pairs(t) do
+        k[#k+1] = k
+    end
+    return concat(k,"")
+end
+
+--~ local leftdelimiters  = "[" .. table.keys_as_string(l_replacements) .. "]"
+--~ local rightdelimiters = "[" .. table.keys_as_string(r_replacements) .. "]"
+
 function lxml.mml.mfenced(id,pattern) -- multiple separators
     id = lxml.id(id)
     local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
-    local l, r = left:find("[%(%{%<%[]"), right:find("[%)%}%>%]]")
+    local l, r = l_replacements[left], r_replacements[right]
     texsprint(tex.ctxcatcodes,"\\enabledelimiter")
     if l then
-        texsprint(tex.ctxcatcodes,o_replacements[left])
+        texsprint(tex.ctxcatcodes,l_replacements[left] or o_replacements[left] or "")
     else
         texsprint(tex.ctxcatcodes,o_replacements["@l"])
         texsprint(tex.ctxcatcodes,left)
@@ -481,6 +524,8 @@ function lxml.mml.mfenced(id,pattern) -- multiple separators
                 local m = t[i] or t[#t] or ""
                 if m == "|" then
                     m = "\\enabledelimiter\\middle|\\relax\\disabledelimiter"
+                elseif m == doublebar then
+                    m = "\\enabledelimiter\\middle|\\relax\\disabledelimiter"
                 elseif m == "{" then
                     m = "\\{"
                 elseif m == "}" then
@@ -492,7 +537,7 @@ function lxml.mml.mfenced(id,pattern) -- multiple separators
     end
     texsprint(tex.ctxcatcodes,"\\enabledelimiter")
     if r then
-        texsprint(tex.ctxcatcodes,o_replacements[right])
+        texsprint(tex.ctxcatcodes,r_replacements[right] or o_replacements[right] or "")
     else
         texsprint(tex.ctxcatcodes,right)
         texsprint(tex.ctxcatcodes,o_replacements["@r"])
@@ -578,7 +623,7 @@ function lxml.mml.mcolumn(root)
         local tag = dk.tg
         if tag == "mi" or tag == "mn" or tag == "mo" or tag == "mtext" then
             local str = xml.content(dk)
-            for s in str:utfcharacters() do -- utf.gmatch(str,".") btw, the gmatch was bugged
+            for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
                 m[#m+1] = { tag, s }
             end
             if tag == "mn" then
@@ -589,7 +634,7 @@ function lxml.mml.mcolumn(root)
             end
         elseif tag == "mspace" or tag == "mline" then
             local str = dk.at.spacing or ""
-            for s in str:utfcharacters() do -- utf.gmatch(str,".") btw, the gmatch was bugged
+            for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
                 m[#m+1] = { tag, s }
             end
         elseif tag == "mline" then
@@ -653,7 +698,7 @@ function lxml.mml.mcolumn(root)
 --~                 end
                 chr = "\\hrulefill"
             elseif tag == "mspace" then
-                chr = "\\mmlmcolumndigitspace" -- utf.char(0x2007)
+                chr = "\\mmlmcolumndigitspace" -- utfchar(0x2007)
             end
             if j == numbers + 1 then
                 tex.sprint(tex.ctxcatcodes,"&")
@@ -666,6 +711,8 @@ function lxml.mml.mcolumn(root)
     tex.sprint(tex.ctxcatcodes,"\\egroup")
 end
 
+local spacesplitter = lpeg.Ct(lpeg.splitat(" "))
+
 function lxml.mml.mtable(root)
     root = lxml.id(root)
 
@@ -675,9 +722,9 @@ function lxml.mml.mtable(root)
     local rowalign     = at.rowalign
     local columnalign  = at.columnalign
     local frame        = at.frame
-    local rowaligns    = rowalign    and rowalign   :split(" ") -- we have a faster one
-    local columnaligns = columnalign and columnalign:split(" ") -- we have a faster one
-    local frames       = frame       and frame      :split(" ") -- we have a faster one
+    local rowaligns    = rowalign    and spacesplitter:match(rowalign)
+    local columnaligns = columnalign and spacesplitter:match(columnalign)
+    local frames       = frame       and spacesplitter:match(frame)
     local framespacing = at.framespacing or "0pt"
     local framespacing = at.framespacing or "-\\ruledlinewidth" -- make this an option
 
@@ -722,7 +769,7 @@ end
 function lxml.mml.csymbol(root)
     root = lxml.id(root)
     local encoding = root.at.encoding or ""
-    local hash = url.hashed((root.at.definitionUrl or ""):lower())
+    local hash = url.hashed(lower(root.at.definitionUrl or ""))
     local full = hash.original or ""
     local base = hash.path or ""
     local text = string.strip(xml.content(root) or "")

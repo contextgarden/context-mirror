@@ -1,68 +1,94 @@
--- filename : l-aux.lua
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-aux'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-aux'] = 1.001
-if not aux      then aux      = { } end
+aux = aux or { }
 
-local concat, format = table.concat, string.format
+local concat, format, gmatch = table.concat, string.format, string.gmatch
 local tostring, type = tostring, type
 
-do
+local space     = lpeg.P(' ')
+local equal     = lpeg.P("=")
+local comma     = lpeg.P(",")
+local lbrace    = lpeg.P("{")
+local rbrace    = lpeg.P("}")
+local nobrace   = 1 - (lbrace+rbrace)
+local nested    = lpeg.P{ lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
+local spaces    = space^0
 
-    local hash = { }
+local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
 
-    local function set(key,value) -- using Carg is slower here
-        hash[key] = value
+local key       = lpeg.C((1-equal-comma)^1)
+local pattern_a = (space+comma)^0 * (key * equal * value + key * lpeg.C(""))
+
+local key       = lpeg.C((1-space-equal-comma)^1)
+local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces * value) + lpeg.C("")))
+
+-- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
+
+local hash = { }
+
+local function set(key,value) -- using Carg is slower here
+    hash[key] = value
+end
+
+local pattern_a_s = (pattern_a/set)^1
+local pattern_b_s = (pattern_b/set)^1
+
+aux.settings_to_hash_pattern_a = pattern_a_s
+aux.settings_to_hash_pattern_b = pattern_b_s
+
+function aux.make_settings_to_hash_pattern(set,moretolerant)
+    if moretolerant then
+        return (pattern_b/set)^1
+    else
+        return (pattern_a/set)^1
     end
+end
 
-    local space     = lpeg.P(' ')
-    local equal     = lpeg.P("=")
-    local comma     = lpeg.P(",")
-    local lbrace    = lpeg.P("{")
-    local rbrace    = lpeg.P("}")
-    local nobrace   = 1 - (lbrace+rbrace)
-    local nested    = lpeg.P{ lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
-
-    local key       = lpeg.C((1-equal-comma)^1)
-    local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
---  local pattern   = (((space+comma)^0 * (key * equal * value + key) * comma^0) / set)^1
-    local pattern   = (((space+comma)^0 * (key * equal * value + key * lpeg.C(""))) / set)^1
-
-    -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
-
-    function aux.settings_to_hash(str)
-        if str and str ~= "" then
-            hash = { }
-            pattern:match(str)
-            return hash
+function aux.settings_to_hash(str,moretolerant)
+    if str and str ~= "" then
+        hash = { }
+        if moretolerant then
+            pattern_b_s:match(str)
         else
-            return { }
+            pattern_a_s:match(str)
         end
+        return hash
+    else
+        return { }
     end
+end
 
-    local seperator = comma * space^0
-    local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
-    local pattern   = lpeg.Ct(value*(seperator*value)^0)
+local seperator = comma * space^0
+local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
+local pattern   = lpeg.Ct(value*(seperator*value)^0)
 
-    -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
+-- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
-    function aux.settings_to_array(str)
+aux.settings_to_array_pattern = pattern
+
+function aux.settings_to_array(str)
+    if not str or str == "" then
+        return { }
+    else
         return pattern:match(str)
     end
+end
 
-    local function set(t,v)
-        t[#t+1] = v
-    end
+local function set(t,v)
+    t[#t+1] = v
+end
 
-    local value   = lpeg.P(lpeg.Carg(1)*value) / set
-    local pattern = value*(seperator*value)^0 * lpeg.Carg(1)
+local value   = lpeg.P(lpeg.Carg(1)*value) / set
+local pattern = value*(seperator*value)^0 * lpeg.Carg(1)
 
-    function aux.add_settings_to_array(t,str)
-        return pattern:match(str, nil, t)
-    end
-
+function aux.add_settings_to_array(t,str)
+    return pattern:match(str, nil, t)
 end
 
 function aux.hash_to_string(h,separator,yes,no,strict,omit)
@@ -102,9 +128,9 @@ function aux.array_to_string(a,separator)
     end
 end
 
-function aux.settings_to_set(str)
-    local t = { }
-    for s in str:gmatch("%s*([^,]+)") do
+function aux.settings_to_set(str,t)
+    t = t or { }
+    for s in gmatch(str,"%s*([^,]+)") do
         t[s] = true
     end
     return t
@@ -152,7 +178,7 @@ end
 
 function aux.definetable(target) -- defines undefined tables
     local composed, t = nil, { }
-    for name in target:gmatch("([^%.]+)") do
+    for name in gmatch(target,"([^%.]+)") do
         if composed then
             composed = composed .. "." .. name
         else
@@ -165,7 +191,7 @@ end
 
 function aux.accesstable(target)
     local t = _G
-    for name in target:gmatch("([^%.]+)") do
+    for name in gmatch(target,"([^%.]+)") do
         t = t[name]
     end
     return t

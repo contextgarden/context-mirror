@@ -1,22 +1,22 @@
--- filename : l-table.lua
--- comment  : split off from luat-lib
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
-
-if not versions then versions = { } end versions['l-table'] = 1.001
+if not modules then modules = { } end modules ['l-table'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
 table.join = table.concat
 
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
-local format = string.format
+local format, find, gsub, lower, dump = string.format, string.find, string.gsub, string.lower, string.dump
 local getmetatable, setmetatable = getmetatable, setmetatable
-local pairs, ipairs, type, next, tostring = pairs, ipairs, type, next, tostring
+local type, next, tostring, ipairs = type, next, tostring, ipairs
 
 function table.strip(tab)
     local lst = { }
     for i=1,#tab do
-        local s = tab[i]:gsub("^%s*(.-)%s*$","%1")
+        local s = gsub(tab[i],"^%s*(.-)%s*$","%1")
         if s == "" then
             -- skip this one
         else
@@ -28,7 +28,7 @@ end
 
 local function sortedkeys(tab)
     local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
-    for key,_ in pairs(tab) do
+    for key,_ in next, tab do
         srt[#srt+1] = key
         if kind == 3 then
             -- no further check
@@ -55,7 +55,7 @@ end
 
 local function sortedhashkeys(tab) -- fast one
     local srt = { }
-    for key,_ in pairs(tab) do
+    for key,_ in next, tab do
         srt[#srt+1] = key
     end
     sort(srt)
@@ -65,14 +65,25 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
+function table.sortedpairs(t)
+    local s = sortedhashkeys(t) -- maybe just sortedkeys
+    local n = 0
+    local function kv(s)
+        n = n + 1
+        local k = s[n]
+        return k, t[k]
+    end
+    return kv, s
+end
+
 function table.append(t, list)
-    for _,v in pairs(list) do
+    for _,v in next, list do
         insert(t,v)
     end
 end
 
 function table.prepend(t, list)
-    for k,v in pairs(list) do
+    for k,v in next, list do
         insert(t,k,v)
     end
 end
@@ -81,7 +92,7 @@ function table.merge(t, ...) -- first one is target
     t = t or {}
     local lst = {...}
     for i=1,#lst do
-        for k, v in pairs(lst[i]) do
+        for k, v in next, lst[i] do
             t[k] = v
         end
     end
@@ -91,7 +102,7 @@ end
 function table.merged(...)
     local tmp, lst = { }, {...}
     for i=1,#lst do
-        for k, v in pairs(lst[i]) do
+        for k, v in next, lst[i] do
             tmp[k] = v
         end
     end
@@ -123,13 +134,14 @@ end
 local function fastcopy(old) -- fast one
     if old then
         local new = { }
-        for k,v in pairs(old) do
+        for k,v in next, old do
             if type(v) == "table" then
                 new[k] = fastcopy(v) -- was just table.copy
             else
                 new[k] = v
             end
         end
+        -- optional second arg
         local mt = getmetatable(old)
         if mt then
             setmetatable(new,mt)
@@ -146,7 +158,7 @@ local function copy(t, tables) -- taken from lua wiki, slightly adapted
     if not tables[t] then
         tables[t] = tcopy
     end
-    for i,v in pairs(t) do -- brrr, what happens with sparse indexed
+    for i,v in next, t do -- brrr, what happens with sparse indexed
         if type(i) == "table" then
             if tables[i] then
                 i = tables[i]
@@ -179,7 +191,7 @@ function table.sub(t,i,j)
 end
 
 function table.replace(a,b)
-    for k,v in pairs(b) do
+    for k,v in next, b do
         a[k] = v
     end
 end
@@ -201,16 +213,18 @@ end
 
 function table.tohash(t,value)
     local h = { }
-    if value == nil then value = true end
-    for _, v in pairs(t) do -- no ipairs here
-        h[v] = value
+    if t then
+        if value == nil then value = true end
+        for _, v in next, t do -- no ipairs here
+            h[v] = value
+        end
     end
     return h
 end
 
 function table.fromhash(t)
     local h = { }
-    for k, v in pairs(t) do -- no ipairs here
+    for k, v in next, t do -- no ipairs here
         if v then h[#h+1] = k end
     end
     return h
@@ -234,24 +248,10 @@ local reserved = table.tohash { -- intercept a language flaw, no reserved words 
     'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while',
 }
 
-local function key(k)
-    if type(k) == "number" then -- or k:find("^%d+$") then
-        if hexify then
-            return ("[0x%04X]"):format(k)
-        else
-            return "["..k.."]"
-        end
-    elseif noquotes and not reserved[k] and k:find("^%a[%a%d%_]*$") then
-        return k
-    else
-        return '["'..k..'"]'
-    end
-end
-
 local function simple_table(t)
     if #t > 0 then
         local n = 0
-        for _,v in pairs(t) do
+        for _,v in next, t do
             n = n + 1
         end
         if n == #t then
@@ -261,14 +261,14 @@ local function simple_table(t)
                 local tv = type(v)
                 if tv == "number" then
                     if hexify then
-                        tt[#tt+1] = ("0x%04X"):format(v)
+                        tt[#tt+1] = format("0x%04X",v)
                     else
-                        tt[#tt+1] = tostring(v)
+                        tt[#tt+1] = tostring(v) -- tostring not needed
                     end
                 elseif tv == "boolean" then
                     tt[#tt+1] = tostring(v)
                 elseif tv == "string" then
-                    tt[#tt+1] = ("%q"):format(v)
+                    tt[#tt+1] = format("%q",v)
                 else
                     tt = nil
                     break
@@ -280,21 +280,40 @@ local function simple_table(t)
     return nil
 end
 
+-- Because this is a core function of mkiv I moved some function calls
+-- inline.
+--
+-- twice as fast in a test:
+--
+-- local propername = lpeg.P(lpeg.R("AZ","az","__") * lpeg.R("09","AZ","az", "__")^0 * lpeg.P(-1) )
+
 local function do_serialize(root,name,depth,level,indexed)
     if level > 0 then
         depth = depth .. " "
         if indexed then
-            handle(("%s{"):format(depth))
+            handle(format("%s{",depth))
         elseif name then
-            handle(("%s%s={"):format(depth,key(name)))
+        --~ handle(format("%s%s={",depth,key(name)))
+            if type(name) == "number" then -- or find(k,"^%d+$") then
+                if hexify then
+                    handle(format("%s[0x%04X]={",depth,name))
+                else
+                    handle(format("%s[%s]={",depth,name))
+                end
+            elseif noquotes and not reserved[name] and find(name,"^%a[%w%_]*$") then
+                handle(format("%s%s={",depth,name))
+            else
+                handle(format("%s[%q]={",depth,name))
+            end
         else
-            handle(("%s{"):format(depth))
+            handle(format("%s{",depth))
         end
     end
     if root and next(root) then
         local first, last = nil, 0 -- #root cannot be trusted here
         if compact then
-          for k,v in ipairs(root) do -- NOT: for k=1,#root do (we need to quit at nil)
+            -- NOT: for k=1,#root do (we need to quit at nil)
+            for k,v in ipairs(root) do -- can we use next?
                 if not first then first = k end
                 last = last + 1
             end
@@ -303,30 +322,30 @@ local function do_serialize(root,name,depth,level,indexed)
         for i=1,#sk do
             local k = sk[i]
             local v = root[k]
---~ if v == root then
-    -- circular
---~ else
+            --~ if v == root then
+                -- circular
+            --~ else
             local t = type(v)
             if compact and first and type(k) == "number" and k >= first and k <= last then
                 if t == "number" then
                     if hexify then
-                        handle(("%s 0x%04X,"):format(depth,v))
+                        handle(format("%s 0x%04X,",depth,v))
                     else
-                        handle(("%s %s,"):format(depth,v))
+                        handle(format("%s %s,",depth,v))
                     end
                 elseif t == "string" then
-                    if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
-                        handle(("%s %s,"):format(depth,v))
+                    if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                        handle(format("%s %s,",depth,v))
                     else
-                        handle(("%s %q,"):format(depth,v))
+                        handle(format("%s %q,",depth,v))
                     end
                 elseif t == "table" then
                     if not next(v) then
-                        handle(("%s {},"):format(depth))
-                    elseif inline then
+                        handle(format("%s {},",depth))
+                    elseif inline then -- and #t > 0
                         local st = simple_table(v)
                         if st then
-                            handle(("%s { %s },"):format(depth,concat(st,", ")))
+                            handle(format("%s { %s },",depth,concat(st,", ")))
                         else
                             do_serialize(v,k,depth,level+1,true)
                         end
@@ -334,39 +353,102 @@ local function do_serialize(root,name,depth,level,indexed)
                         do_serialize(v,k,depth,level+1,true)
                     end
                 elseif t == "boolean" then
-                    handle(("%s %s,"):format(depth,tostring(v)))
+                    handle(format("%s %s,",depth,tostring(v)))
                 elseif t == "function" then
                     if functions then
-                        handle(('%s loadstring(%q),'):format(depth,v:dump()))
+                        handle(format('%s loadstring(%q),',depth,dump(v)))
                     else
-                        handle(('%s "function",'):format(depth))
+                        handle(format('%s "function",',depth))
                     end
                 else
-                    handle(("%s %q,"):format(depth,tostring(v)))
+                    handle(format("%s %q,",depth,tostring(v)))
                 end
             elseif k == "__p__" then -- parent
                 if false then
-                    handle(("%s __p__=nil,"):format(depth))
+                    handle(format("%s __p__=nil,",depth))
                 end
             elseif t == "number" then
-                if hexify then
-                    handle(("%s %s=0x%04X,"):format(depth,key(k),v))
+            --~ if hexify then
+            --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
+            --~ else
+            --~     handle(format("%s %s=%s,",depth,key(k),v))
+            --~ end
+                if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if hexify then
+                        handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
+                    else
+                        handle(format("%s [%s]=%s,",depth,k,v))
+                    end
+                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    if hexify then
+                        handle(format("%s %s=0x%04X,",depth,k,v))
+                    else
+                        handle(format("%s %s=%s,",depth,k,v))
+                    end
                 else
-                    handle(("%s %s=%s,"):format(depth,key(k),v))
+                    if hexify then
+                        handle(format("%s [%q]=0x%04X,",depth,k,v))
+                    else
+                        handle(format("%s [%q]=%s,",depth,k,v))
+                    end
                 end
             elseif t == "string" then
-                if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
-                    handle(("%s %s=%s,"):format(depth,key(k),v))
+                if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                --~ handle(format("%s %s=%s,",depth,key(k),v))
+                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                        if hexify then
+                            handle(format("%s [0x%04X]=%s,",depth,k,v))
+                        else
+                            handle(format("%s [%s]=%s,",depth,k,v))
+                        end
+                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                        handle(format("%s %s=%s,",depth,k,v))
+                    else
+                        handle(format("%s [%q]=%s,",depth,k,v))
+                    end
                 else
-                    handle(("%s %s=%q,"):format(depth,key(k),v))
+                --~ handle(format("%s %s=%q,",depth,key(k),v))
+                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                        if hexify then
+                            handle(format("%s [0x%04X]=%q,",depth,k,v))
+                        else
+                            handle(format("%s [%s]=%q,",depth,k,v))
+                        end
+                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                        handle(format("%s %s=%q,",depth,k,v))
+                    else
+                        handle(format("%s [%q]=%q,",depth,k,v))
+                    end
                 end
             elseif t == "table" then
                 if not next(v) then
-                    handle(("%s %s={},"):format(depth,key(k)))
+                    --~ handle(format("%s %s={},",depth,key(k)))
+                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                        if hexify then
+                            handle(format("%s [0x%04X]={},",depth,k))
+                        else
+                            handle(format("%s [%s]={},",depth,k))
+                        end
+                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                        handle(format("%s %s={},",depth,k))
+                    else
+                        handle(format("%s [%q]={},",depth,k))
+                    end
                 elseif inline then
                     local st = simple_table(v)
                     if st then
-                        handle(("%s %s={ %s },"):format(depth,key(k),concat(st,", ")))
+                    --~ handle(format("%s %s={ %s },",depth,key(k),concat(st,", ")))
+                        if type(k) == "number" then -- or find(k,"^%d+$") then
+                            if hexify then
+                                handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
+                            else
+                                handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
+                            end
+                        elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                            handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
+                        else
+                            handle(format("%s [%q]={ %s },",depth,k,concat(st,", ")))
+                        end
                     else
                         do_serialize(v,k,depth,level+1)
                     end
@@ -374,24 +456,57 @@ local function do_serialize(root,name,depth,level,indexed)
                     do_serialize(v,k,depth,level+1)
                 end
             elseif t == "boolean" then
-                handle(("%s %s=%s,"):format(depth,key(k),tostring(v)))
+            --~ handle(format("%s %s=%s,",depth,key(k),tostring(v)))
+                if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if hexify then
+                        handle(format("%s [0x%04X]=%s,",depth,k,tostring(v)))
+                    else
+                        handle(format("%s [%s]=%s,",depth,k,tostring(v)))
+                    end
+                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    handle(format("%s %s=%s,",depth,k,tostring(v)))
+                else
+                    handle(format("%s [%q]=%s,",depth,k,tostring(v)))
+                end
             elseif t == "function" then
                 if functions then
-                    handle(('%s %s=loadstring(%q),'):format(depth,key(k),v:dump()))
-                else
-                    handle(('%s %s="function",'):format(depth,key(k)))
+                    --~ handle(format('%s %s=loadstring(%q),',depth,key(k),dump(v)))
+                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                        if hexify then
+                            handle(format("%s [0x%04X]=loadstring(%q),",depth,k,dump(v)))
+                        else
+                            handle(format("%s [%s]=loadstring(%q),",depth,k,dump(v)))
+                        end
+                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                        handle(format("%s %s=loadstring(%q),",depth,k,dump(v)))
+                    else
+                        handle(format("%s [%q]=loadstring(%q),",depth,k,dump(v)))
+                    end
                 end
             else
-                handle(("%s %s=%q,"):format(depth,key(k),tostring(v)))
-            --  handle(('%s %s=loadstring(%q),'):format(depth,key(k),string.dump(function() return v end)))
+                --~ handle(format("%s %s=%q,",depth,key(k),tostring(v)))
+                if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if hexify then
+                        handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
+                    else
+                        handle(format("%s [%s]=%q,",depth,k,tostring(v)))
+                    end
+                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    handle(format("%s %s=%q,",depth,k,tostring(v)))
+                else
+                    handle(format("%s [%q]=%q,",depth,k,tostring(v)))
+                end
             end
---~ end
+            --~ end
         end
     end
    if level > 0 then
-        handle(("%s},"):format(depth))
+        handle(format("%s},",depth))
     end
 end
+
+-- replacing handle by a direct t[#t+1] = ... (plus test) is not much
+-- faster (0.03 on 1.00 for zapfino.tma)
 
 local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
     noquotes = _noquotes
@@ -410,7 +525,7 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
         end
     elseif tname == "number" then
         if hexify then
-            handle(("[0x%04X]={"):format(name))
+            handle(format("[0x%04X]={",name))
         else
             handle("[" .. name .. "]={")
         end
@@ -561,14 +676,18 @@ function table.insert_after_value(t,value,str)
     end
 end
 
-function table.are_equal(a,b,n,m)
+local function are_equal(a,b,n,m) -- indexed
     if #a == #b then
         n = n or 1
         m = m or #a
         for i=n,m do
             local ai, bi = a[i], b[i]
-            if (ai==bi) or (type(ai)=="table" and type(bi)=="table" and table.are_equal(ai,bi)) then
-                -- continue
+            if ai==bi then
+                -- same
+            elseif type(ai)=="table" and type(bi)=="table" then
+                if not are_equal(ai,bi) then
+                    return false
+                end
             else
                 return false
             end
@@ -579,9 +698,30 @@ function table.are_equal(a,b,n,m)
     end
 end
 
+local function identical(a,b) -- assumes same structure
+    for ka, va in next, a do
+        local vb = b[k]
+        if va == vb then
+            -- same
+        elseif type(va) == "table" and  type(vb) == "table" then
+            if not identical(va,vb) then
+                return false
+            end
+        else
+            return false
+        end
+    end
+    return true
+end
+
+table.are_equal = are_equal
+table.identical = identical
+
+-- maybe also make a combined one
+
 function table.compact(t)
     if t then
-        for k,v in pairs(t) do
+        for k,v in next, t do
             if not next(v) then
                 t[k] = nil
             end
@@ -610,7 +750,7 @@ end
 
 function table.swapped(t)
     local s = { }
-    for k, v in pairs(t) do
+    for k, v in next, t do
         s[v] = k
     end
     return s
@@ -632,14 +772,14 @@ end
 
 function table.hexed(t,seperator)
     local tt = { }
-    for i=1,#t do tt[i] = ("0x%04X"):format(t[i]) end
+    for i=1,#t do tt[i] = format("0x%04X",t[i]) end
     return concat(tt,seperator or " ")
 end
 
 function table.reverse_hash(h)
     local r = { }
-    for k,v in pairs(h) do
-        r[v] = (k:gsub(" ","")):lower()
+    for k,v in next, h do
+        r[v] = lower(gsub(k," ",""))
     end
     return r
 end
@@ -653,3 +793,19 @@ function table.reverse(t)
     end
     return tt
 end
+
+--~ function table.keys(t)
+--~     local k = { }
+--~     for k,_ in next, t do
+--~         k[#k+1] = k
+--~     end
+--~     return k
+--~ end
+
+--~ function table.keys_as_string(t)
+--~     local k = { }
+--~     for k,_ in next, t do
+--~         k[#k+1] = k
+--~     end
+--~     return concat(k,"")
+--~ end

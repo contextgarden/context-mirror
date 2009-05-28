@@ -1,0 +1,2606 @@
+%D \module
+%D   [       file=core-mis,
+%D        version=1998.01.29,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Miscelaneous,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Misc Commands}
+
+% todo: kleur in legenda + letter
+
+% %D You would not expect the next macro in \CONTEXT,
+% %D wouldn't you? It's there to warn \LATEX\ users that
+% %D something is wrong.
+% %D
+% %D Obsolete now:
+% %
+% % \def\documentstyle{\showmessage\m!systems3\empty\stoptekst}
+% %
+% % \let\documentclass=\documentstyle
+% %D \macros
+% %D   {simplifiedcommands, simplifycommands}
+% %D
+% %D I first needed this simplification in bookmarks. Users can
+% %D add their own if needed.
+
+\unprotect
+
+%D Sometimes (for instance in bookmarks) we need to simplify macro
+%D behaviour, so here is the hook.
+
+\ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi
+
+\def\simplifycommands{\the\simplifiedcommands}
+
+%D A possibly growing list:
+
+%appendtoks        \def\executesynonym#1#2#3#4{#3}\to\simplifiedcommands
+%appendtoks             \def\executesort#1#2#3{#3}\to\simplifiedcommands
+
+\appendtoks                                       \def\ { }\to\simplifiedcommands
+\appendtoks  \def\type#1{\letterbackslash\strippedcsname#1}\to\simplifiedcommands
+\appendtoks                  \def\tex#1{\letterbackslash#1}\to\simplifiedcommands
+\appendtoks                                   \def\TeX{TeX}\to\simplifiedcommands
+\appendtoks                           \def\ConTeXt{ConTeXt}\to\simplifiedcommands
+\appendtoks                         \def\MetaPost{MetaPost}\to\simplifiedcommands
+\appendtoks                         \def\MetaFont{MetaFont}\to\simplifiedcommands
+\appendtoks                           \def\MetaFun{MetaFun}\to\simplifiedcommands
+%appendtoks                                       \def||{-}\to\simplifiedcommands
+\appendtoks         \def|#1|{\ifx#1\empty\empty-\else#1\fi}\to\simplifiedcommands
+
+\appendtoks\let\buildtextaccent\secondoftwoarguments\to\simplifiedcommands
+
+% THIS WAS MAIN-002.TEX
+
+%\def\checkinterlineskip
+%  {\ifvmode
+%     \ifdim\lastskip>\zeropoint
+%       \nointerlineskip
+%     \else\ifdim\lastkern>\zeropoint
+%       \nointerlineskip
+%     \fi\fi
+%   \fi}
+
+\def\horitems#1#2% #1=breedte #2=commandos
+  {\scratchdimen#1%
+   \divide\scratchdimen \nofitems
+   \!!counta\zerocount
+   \def\docommand##1%
+     {\advance\!!counta \plusone
+      \processaction
+        [\@@isalign]
+        [   \v!left=>\hbox to \scratchdimen{\strut##1\hss},
+           \v!right=>\hbox to \scratchdimen{\hss\strut##1},
+          \v!middle=>\hbox to \scratchdimen{\hss\strut##1\hss},
+          \v!margin=>\ifnum\!!counta=\plusone\hss\else\hfill\fi
+                     \strut##1%
+                     \ifnum\!!counta=\nofitems\hss\else\hfill\fi,
+         \s!default=>\hbox to \scratchdimen{\hss\strut##1\hss}, % midden
+         \s!unknown=>\hbox to \scratchdimen{\strut##1\hss}]}%   % links
+   \hbox to #1{\hss#2\hss}}
+
+\def\veritems#1#2% #1=breedte #2=commandos
+  {\scratchdimen#1%
+   \def\docommand##1%
+     {\ifdim\scratchdimen<\zeropoint % the - was a signal
+        \hbox to -\scratchdimen{\hss\strut##1}%
+      \else\ifdim\scratchdimen>\zeropoint
+        \hbox to \scratchdimen{\strut##1\hss}%
+      \else
+        \hbox{\strut##1}%
+      \fi\fi}%
+   \vbox{#2}}
+
+\def\dosetupitems[#1]%
+  {\getparameters[\??is][#1]%
+   \doif\@@iswidth\v!unknown
+     {\def\@@iswidth{\hsize}}%
+   \doifconversiondefinedelse\@@issymbol
+     {\def\doitembullet##1{\convertnumber{\@@issymbol}{##1}}}
+     {\doifsymboldefinedelse\@@issymbol
+        {\def\doitembullet##1{\symbol[\@@issymbol]}}{}}}
+
+\def\makeitemsandbullets#1%
+  {\doifelse\@@isn\v!unknown
+     {\getcommalistsize[#1]%
+      \edef\nofitems{\commalistsize}}
+     {\edef\nofitems{\@@isn}}%
+   \setbox0\hbox
+     {\doitems \@@iswidth
+        {\processcommalist[#1]\docommand}}%
+   \setbox2\hbox
+     {\doitems \@@isbulletbreedte
+        {\dorecurse\nofitems
+           {\docommand{\strut\doitembullet\recurselevel}}}}}
+
+\def\dostartitems#1#2#3%
+  {\let\doitems#2%
+   \def\@@isbulletbreedte{#3}%
+   \makeitemsandbullets{#1}%
+   \@@isbefore}
+
+\def\dostopitems
+  {\@@isafter
+   \egroup}
+
+\setvalue{doitems\v!top}#1%
+  {\dostartitems{#1}\horitems\@@iswidth
+   \noindent\vbox
+     {\forgetall
+      \doifsomething\@@issymbol
+        {\doifnot\@@issymbol\v!none
+           {\box2
+            \@@isinbetween
+            \nointerlineskip}}%
+      \box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!bottom}#1%
+  {\dostartitems{#1}\horitems\@@iswidth
+   \noindent\vbox
+     {\forgetall
+      \box0
+      \doifsomething\@@issymbol
+        {\@@isinbetween
+         \nointerlineskip
+         \box2}}%
+   \dostopitems}
+
+\setvalue{doitems\v!inmargin}#1%
+  {\dostartitems{#1}\veritems{-1.5em}%  - is a signal
+   \noindent\hbox{\llap{\box2\hskip\leftmargindistance}\box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!left}#1%
+  {\advance\hsize -1.5em%
+   \dostartitems{#1}\veritems{1.5em}%
+   \noindent\hbox{\box2\box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!right}#1%
+  {\dostartitems{#1}\veritems{0em}%
+   \noindent\hbox{\box0\hskip-\wd2\box2}%
+   \dostopitems}
+
+\def\setupitems
+  {\dosingleargument\dosetupitems}
+
+\def\complexitems[#1]%
+  {\bgroup
+   \setupitems[#1]%
+   \parindent\zeropoint
+   \setlocalhsize
+   \hsize\localhsize
+   \dontcomplain
+  %\doifundefined{doitems\@@islocation}%
+  %  {\let\@@islocation\v!left}%
+  %\getvalue{doitems\@@islocation}}
+   \executeifdefined{doitems\@@islocation}{\let\@@islocation\v!left}}
+
+\definecomplexorsimpleempty\items
+
+\setupitems
+  [\c!location=\v!left,
+   \c!symbol=5,
+   \c!width=\hsize,
+   \c!align=\v!middle,
+   \c!n=\v!unknown,
+   \c!before=\blank,
+   \c!inbetween={\blank[\v!medium]},
+   \c!after=\blank]
+
+% Te zijner tijd [plaats=boven,onder,midden] implementeren,
+% in dat geval moet eerst de maximale hoogte worden bepaald.
+%
+% Overigens kan een en ander mooier met \halign.
+
+% there is quite some historic balast in this mechanism, the next variant
+% is a first cleanup
+
+\let\currentparagraph\empty
+
+\newcount\alcounter \newcount\alnsize \newdimen\alhsize
+
+\def\paragraphparameter#1% \checkedparameter\??al\currentparagraph#1
+  {\executeifdefined{\??al\currentparagraph#1}{\executeifdefined{\??al#1}\empty}}
+
+\def\paragraphcellmeter#1#2% \checkedparameter\??al\currentparagraph#1
+  {\executeifdefined{\??al\currentparagraph\number#1#2}{\paragraphparameter{#2}}}
+
+\def\dodefineparagraphs[#1][#2]%
+  {\edef\currentparagraph{#1}%
+   \setvalue{\s!do\s!next\currentparagraph}%
+     {\def\\{\getvalue\currentparagraph}}%
+   \setvalue\currentparagraph
+     {\getvalue{\s!do\s!next#1}%
+      \dostartparagraphs{#1}}%
+   \setvalue{\e!next\currentparagraph}%
+     {\getvalue{#1}}%
+   \setvalue{\e!start\currentparagraph}%
+     {\bgroup
+      \edef\currentparagraph{#1}%
+      \letvalue{\s!do\s!next\currentparagraph}\empty
+      \setvalue{\e!stop\currentparagraph}{\getvalue\currentparagraph\egroup}%
+      \getvalue\currentparagraph}%
+   \getparameters[\??al\currentparagraph]%
+     [%\c!n=3,
+      %\c!before=\blank,
+      %\c!after=\blank,
+      %\c!distance=1em,
+      %\c!height=\v!fit,
+      %\c!rule=\v!off,
+      %\c!command=,
+      %\c!align=,
+      %\c!tolerance=\v!tolerant,
+      %\c!rulethickness=\linewidth,
+      %\c!rulecolor=,
+      %\c!style=,
+      %\c!color=,
+      %\c!top=,
+      %\c!top=\vss,
+      %\c!bottom=\vfill,
+      #2]%
+   \setvalue{\e!setup#1\e!endsetup}%
+     {\setupparagraphs[#1]}%
+   \dorecurse
+      {\paragraphparameter\c!n}
+      {\setupparagraphs
+         [\currentparagraph]
+         [\recurselevel]
+         [\c!width=,
+         %\c!bottom=\paragraphparameter\c!bottom,
+         %\c!top=\paragraphparameter\c!top,
+         %\c!height=\paragraphparameter\c!height,
+         %\c!rule=\paragraphparameter\c!rule,
+         %\c!rulethickness=\paragraphparameter\c!rulethickness,
+         %\c!rulecolor=\paragraphparameter\c!rulecolor,
+         %\c!align=\paragraphparameter\c!align,
+         %\c!tolerance=\paragraphparameter\c!tolerance, % obsolete
+         %\c!distance=\paragraphparameter\c!distance,
+          \c!style=\paragraphparameter\c!style,
+          \c!color=\paragraphparameter\c!color]}%
+   \setupparagraphs[\currentparagraph][1][\c!distance=\zeropoint]}
+
+\def\defineparagraphs
+  {\dodoubleargument\dodefineparagraphs}
+
+\def\dosetupparagraphs[#1][#2][#3]%
+  {\edef\currentparagraph{#1}%
+   \ifsecondargument
+     \doifelse{#2}\v!each
+       {\dorecurse
+          {\paragraphparameter\c!n}
+          {\getparameters[\??al\currentparagraph\recurselevel][#3]}}
+       {\doifelsenothing{#3}
+          {\getparameters[\??al\currentparagraph][#2]}
+          {\def\docommand##1{\getparameters[\??al\currentparagraph##1][#3]}%
+           \processcommalist[#2]\docommand}}%
+   \else
+     \getparameters[\??al][#1]%
+   \fi}
+
+\def\setupparagraphs
+  {\dotripleempty\dosetupparagraphs}
+
+\setupparagraphs
+  [\c!n=3,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!distance=1em,
+   \c!height=\v!fit,
+   \c!rule=\v!off,
+   \c!command=,
+   \c!align=,
+   \c!tolerance=\v!tolerant, % obsolete
+   \c!rulethickness=\linewidth,
+   \c!rulecolor=,
+   \c!style=,
+   \c!color=,
+   \c!top=,
+   \c!top=\vss,
+   \c!bottom=\vfill]
+
+\def\doparagraphrule
+  {\doifelse{\paragraphcellmeter\alcounter\c!rule}\v!on
+     {\linewidth\paragraphcellmeter\alcounter\c!rulethickness
+      \scratchdimen\paragraphcellmeter\alcounter\c!distance
+      \advance\scratchdimen-\linewidth
+      \divide\scratchdimen \plustwo
+      \hskip\scratchdimen
+      \color[\paragraphcellmeter\alcounter\c!rulecolor]{\vrule\!!width\linewidth}%
+      \hskip\scratchdimen}
+     {\hskip\paragraphcellmeter\alcounter\c!distance}}
+
+\def\dostartparagraph
+  {\doifelsenothing{\paragraphcellmeter\alcounter\c!width}
+     {\!!widtha\alhsize
+      \divide\!!widtha \alnsize}
+     {\!!widtha\paragraphcellmeter\alcounter\c!width}%
+   \dostartattributes{\??al\currentparagraph\number\alcounter}\c!style\c!color\empty
+   \doifelse{\paragraphcellmeter\alcounter\c!height}\v!fit
+     {\setbox\scratchbox\vtop}
+     {\setbox\scratchbox\vtop to \paragraphcellmeter\alcounter\c!height}%
+   \bgroup
+   \blank[\v!disable]%
+   \forgetall
+   \paragraphcellmeter\alcounter\c!top
+   \paragraphparameter\c!inner
+   \hsize\!!widtha % setting \wd afterwards removed
+   \paragraphcellmeter\alcounter\c!inner % twice
+   \expanded{\setupalign    [\paragraphcellmeter\alcounter\c!align    ]}% {normal,verytolerant,stretch}
+   \expanded{\setuptolerance[\paragraphcellmeter\alcounter\c!tolerance]}% obsolete
+   \ignorespaces
+   \endgraf
+   \ignorespaces
+   %
+   % Nadeel van de onderstaande constructie is dat \everypar
+   % binnen een groep kan staan en zo steeds \begstruts
+   % worden geplaatst. Mooi is anders dus moet het anders!
+   %
+   % Hier is \Everypar niet nodig.
+   %
+   \everypar{\begstrut\everypar\emptytoks}%
+   %
+   \nospace % remove + ignore
+   \paragraphcellmeter\alcounter\c!command}
+
+\def\dostopparagraph
+  {\ifvmode
+     \removelastskip
+   \else
+     \unskip\endstrut\endgraf
+   \fi
+   \paragraphcellmeter\alcounter\c!bottom
+   \egroup
+   \ifdim\wd\scratchbox=\zeropoint % no data
+     \wd\scratchbox\!!widtha
+   \fi
+   \box\scratchbox
+   \dostopattributes
+   \ifnum\alcounter<\paragraphparameter\c!n\relax
+     \@EA\doparagraphcell
+   \else
+     \@EA\dostopparagraphs
+   \fi}
+
+\def\doparagraphcell
+  {\global\advance\alcounter \plusone
+   \doifelsenothing{\paragraphcellmeter\alcounter\c!distance}
+     {\ifnum\alcounter=\plusone\else
+        \hskip\paragraphparameter\c!distance
+      \fi}
+     {\ifnum\alcounter=\plusone
+        \hskip\paragraphcellmeter\alcounter\c!distance
+      \else
+        \doparagraphrule
+      \fi}%
+   \letvalue\currentparagraph\dostopparagraph
+   \dostartparagraph}
+
+\def\dostartparagraphs#1%
+  {\bgroup
+   \edef\currentparagraph{#1}%
+   \global\alcounter\zerocount
+   \parindent\zeropoint
+   \setlocalhsize
+   \alhsize\localhsize
+   \alnsize\paragraphparameter\c!n\relax
+   \dorecurse \alnsize
+     {\doifelsenothing{\paragraphcellmeter\recurselevel\c!distance}
+        {\ifnum\recurselevel=\plusone\else
+           \global\advance\alhsize -\paragraphparameter\c!distance
+         \fi}
+        {\global\advance\alhsize -\paragraphcellmeter\recurselevel\c!distance}%
+      \doifsomething{\paragraphcellmeter\recurselevel\c!width}
+        {\global\advance\alnsize \minusone
+         \global\advance\alhsize -\paragraphcellmeter\recurselevel\c!width}}%
+   %whitespace % gaat fout bij \framed
+   \paragraphparameter\c!before
+   \leavevmode % gaat wel goed bij \framed, brrr
+   \setbox\scratchbox\vbox\bgroup\hbox\bgroup\doparagraphcell}
+
+\def\dostopparagraphs
+  {\egroup
+   \egroup
+   \iftrue
+     \hbox{\raise\strutheight\box\scratchbox}% new
+   \else
+     \box\scratchbox % old
+   \fi
+   \par
+   \paragraphparameter\c!after
+   \egroup}
+
+\def\dosetuptab[#1]%
+  {\getparameters[\??ta]
+     [\c!headstyle=\v!normal,
+      \c!headcolor=,
+      \c!style=\v!normal,
+      \c!color=,
+      \c!width=\v!broad,
+      \c!sample={\hskip4em},
+      \c!before=,
+      \c!after=,
+      #1]%
+   \definedescription
+     [tab]
+     [\c!headstyle=\@@taheadstyle,
+      \c!headcolor=\@@tacolor,
+      \c!sample=\@@tasample,
+      \c!width=\@@tawidth,
+      \c!before=\@@tabefore,
+      \c!after=\@@taafter]}
+
+\def\setuptab
+  {\dosingleargument\dosetuptab}
+
+\setuptab
+  [\c!location=\v!left]
+
+% The following macro's are derived from PPCHTEX and
+% therefore take some LaTeX font-switching into account.
+
+\newif\ifloweredsubscripts
+
+% Due to some upward incompatibality of LaTeX to LaTeX2.09
+% and/or LaTeX2e we had to force \@@chemieletter. Otherwise
+% some weird \nullfont error comes up.
+
+\doifundefined{@@chemieletter}{\def\@@chemieletter{\rm}}
+
+\def\beginlatexmathmodehack
+  {\ifmmode
+     \let\endlatexmathmodehack\relax
+   \else
+     \def\endlatexmathmodehack{$}$\@@chemieletter
+   \fi}
+
+\def\setsubscripts
+  {\beginlatexmathmodehack
+   \def\dosetsubscript##1##2##3%
+     {\dimen0=##3\fontexheight##2%
+      \setxvalue{@@\string##1\string##2}{\the##1##2\relax}%
+      ##1##2=\dimen0\relax}%
+   \def\dodosetsubscript##1##2%
+     {\dosetsubscript{##1}{\textfont2}{##2}%
+      \dosetsubscript{##1}{\scriptfont2}{##2}%
+      \dosetsubscript{##1}{\scriptscriptfont2}{##2}}%
+   %dodosetsubscript\mathsupnormal  {?}%
+   \dodosetsubscript\mathsubnormal  {.7}%
+   \dodosetsubscript\mathsubcombined{.7}%
+   \global\loweredsubscriptstrue
+   \endlatexmathmodehack}
+
+\def\resetsubscripts
+  {\ifloweredsubscripts
+     \beginlatexmathmodehack
+     \def\doresetsubscript##1##2%
+       {\dimen0=\getvalue{@@\string##1\string##2}\relax
+        ##1##2=\dimen0}%
+     \def\dodoresetsubscript##1%
+       {\doresetsubscript{##1}{\textfont2}%
+        \doresetsubscript{##1}{\scriptfont2}%
+        \doresetsubscript{##1}{\scriptscriptfont2}}%
+     %dodoresetsubscript\mathsupnormal
+     \dodoresetsubscript\mathsubnormal
+     \dodoresetsubscript\mathsubcombined
+     \global\loweredsubscriptsfalse
+     \endlatexmathmodehack
+   \fi}
+
+\let\beginlatexmathmodehack = \relax
+\let\endlatexmathmodehack   = \relax
+
+\def\chem#1#2#3%
+  {\bgroup
+   \setsubscripts
+   \mathematics{\hbox{#1}_{#2}^{#3}}%
+   \resetsubscripts
+   \egroup}
+
+\unexpanded\def\celsius   #1{#1\mathematics{^\circ}C}
+\unexpanded\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
+\unexpanded\def\fraction#1#2{\mathematics{#1\over#2}}
+
+% very dutch
+
+\unexpanded\def\graden      {\mathematics{^\circ}}
+
+\def\bedragprefix {\euro\normalfixedspace}
+\def\bedragsuffix {}
+\def\bedragempty  {\euro}
+
+\unexpanded\def\bedrag#1%
+  {\strut\hbox\bgroup
+   \let\normalfixedspace\nonbreakablespace
+   \doifelsenothing{#1}
+     {\bedragempty}
+     {\bedragprefix\digits{#1}\bedragsuffix}%
+   \egroup}
+
+% \definieeralineas[test][n=3]
+%
+% \stelalineasin[test][3][breedte=4cm,uitlijnen=links]
+%
+% \startopelkaar
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{~.~~1,--} \\
+% \test hans \\ ton \\ \bedrag{~.~~1,~~} \\
+% \test hans \\ ton \\ \bedrag{~.100,--} \\
+% \test hans \\ ton \\ \subtot{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \totaal{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{nihil,--} \\
+% \test hans \\ ton \\ \totaal{nihil,--} \\
+% \test hans \\ ton \\ \subtot{nihil,--} \\
+% \stopopelkaar
+
+\def\periodswidth  {.5em}
+\def\periodsdefault{3}    % was 5, but now it's like \unknown
+
+\unexpanded\def\periods
+  {\dosingleempty\doperiods}
+
+\def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
+  {\dontleavehmode
+   \begingroup
+   \scratchdimen\periodswidth
+   \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
+     {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}%
+   \endgroup}
+
+\unexpanded\def\unknown
+  {\periods\relax} % relax prevents lookahead for []
+
+% Example by Wolfgang Schuster on the context list:
+%
+% \unexpanded\def\fourdots{{\def\periodswidth{.3em}\periods[4]}}
+%
+% Hello\fourdots\ World\fourdots \par Hello\fourdots\ World.
+
+% compatibility macros
+
+\def\doorsnede
+  {\hbox{\rlap/$\circ$} }
+
+\unexpanded\def\ongeveer
+  {\mathematics\pm}
+
+\chardef\boundarycharactermode\plusone
+
+\def\midboundarycharacter#1#2%
+  {\ifcase\boundarycharactermode
+   \or
+     %\nobreak
+     \hskip\hspaceamount\currentlanguage{#2}%
+     \languageparameter#1%
+     %\nobreak
+      \hskip\hspaceamount\currentlanguage{#2}%
+   \or
+     \languageparameter#1%
+   \fi
+   \chardef\boundarycharactermode\plusone}
+
+\def\leftboundarycharacter#1#2%
+  {\ifcase\boundarycharactermode
+   \or
+     \languageparameter#1%
+     \nobreak
+     \hskip\hspaceamount\currentlanguage{#2}%
+   \or
+     \languageparameter#1%
+   \fi
+   \chardef\boundarycharactermode\plusone}
+
+\def\rightboundarycharacter#1#2%
+  {\ifcase\boundarycharactermode
+   \or
+     \prewordbreak %\nobreak
+     \hskip\hspaceamount\currentlanguage{#2}%
+     \languageparameter#1%
+   \or
+     \languageparameter#1%
+   \fi
+   \chardef\boundarycharactermode\plusone}
+
+% actually this is pretty old, but temporary moved here
+%
+% obsolete:
+
+\def\setuphyphenmark
+  {\dodoubleargument\getparameters[\??kp]}
+
+\def\setuphyphenmark[#1]% sign=normal|wide
+  {\dodoubleargument\getparameters[\??kp][#1]%
+   \doifinsetelse\@@kpsign {\v!normal}
+     {\let\textmodehyphen\normalhyphen  \let\textmodehyphendiscretionary\normalhyphendiscretionary}
+     {\let\textmodehyphen\composedhyphen\let\textmodehyphendiscretionary\composedhyphendiscretionary}}
+
+\setuphyphenmark[\c!sign=\v!wide]
+% % \setuphyphenmark[\c!sign=\v!normal]
+
+\definesymbol[\c!lefthyphen]  [\languageparameter\c!lefthyphen]
+\definesymbol[\c!righthyphen] [\languageparameter\c!righthyphen]
+\definesymbol[\c!hyphen]      [\languageparameter\c!hyphen]
+
+\def\normalhyphen
+  {\hbox{\directsymbol\empty\c!hyphen}}
+
+\def\composedhyphen
+  {\hbox{\directsymbol\empty\c!compoundhyphen}}
+
+\def\normalhyphendiscretionary
+  {\discretionary
+     {\hbox{\directsymbol\empty\c!lefthyphen}}
+     {\hbox{\directsymbol\empty\c!righthyphen}}
+     {\hbox{\directsymbol\empty\c!hyphen}}}
+
+\def\composedhyphendiscretionary
+  {\discretionary
+     {\hbox{\directsymbol\empty\c!leftcompoundhyphen}}
+     {\hbox{\directsymbol\empty\c!rightcompoundhyphen}}
+     {\hbox{\directsymbol\empty\c!compoundhyphen}}}
+
+\let\textmodehyphen             \composedhyphen
+\let\textmodehyphendiscretionary\composedhyphendiscretionary
+
+\definesymbol[\c!leftcompoundhyphen]  [\languageparameter\c!leftcompoundhyphen]
+\definesymbol[\c!rightcompoundhyphen] [\languageparameter\c!rightcompoundhyphen]
+\definesymbol[\c!compoundhyphen]      [\languageparameter\c!compoundhyphen]
+
+\definehspace [sentence]      [\zeropoint]
+\definehspace [intersentence] [.250em]
+
+\definesymbol
+  [\c!midsentence]
+  [\midboundarycharacter\c!midsentence{sentence}]
+
+\definesymbol
+  [\c!leftsentence]
+  [\leftboundarycharacter\c!leftsentence{sentence}]
+
+\definesymbol
+  [\c!rightsentence]
+  [\rightboundarycharacter\c!rightsentence{sentence}]
+
+\definesymbol
+  [\c!leftsubsentence]
+  [\leftboundarycharacter\c!leftsubsentence{sentence}]
+
+\definesymbol
+  [\c!rightsubsentence]
+  [\rightboundarycharacter\c!rightsubsentence{sentence}]
+
+\newsignal \subsentencesignal
+\newcount  \subsentencelevel
+
+\let\beforesubsentence\donothing
+\let\aftersubsentence \donothing
+
+% todo: make this language option
+%
+% \def\beforesubsentence{\removeunwantedspaces}
+% \def\aftersubsentence {\ignorespaces}
+
+\def\midsentence
+  {\symbol[\c!midsentence]}
+
+\def\beginofsubsentence
+  {\beforesubsentence
+   \ifdim\lastkern=\subsentencesignal
+     \unskip
+     \kern\hspaceamount\currentlanguage{intersentence}%
+   \fi
+   \global\advance\subsentencelevel\plusone
+   \ifnum\subsentencelevel=\plusone
+     \dontleavehmode % was \leaveoutervmode
+   \fi
+   \symbol[\ifodd\subsentencelevel\c!leftsentence\else\c!leftsubsentence\fi]%
+  }%  \ignorespaces}
+
+\def\endofsubsentence % relax prevents space gobbling
+  {\symbol[\ifodd\subsentencelevel\c!rightsentence\else\c!rightsubsentence\fi]%
+   \global\advance\subsentencelevel\minusone
+   \unskip
+   \kern\subsentencesignal\relax
+   \aftersubsentence}
+
+\def\beginofsubsentencespacing % relax prevents space gobbling
+  {\kern\subsentencesignal\relax}% \ignorespaces}
+
+\def\endofsubsentencespacing
+  {\ifdim\lastkern=\subsentencesignal
+     \unskip
+     \hskip\hspaceamount\currentlanguage{intersentence}%
+     % no good, actually language dependent:
+%     \ignorespaces
+   \else
+     \unskip
+   \fi}
+
+%D \startbuffer
+%D test |<|test |<|test|>| test|>| test \par
+%D test|<|test|<|test|>|test|>|test \par
+%D test |<||<|test|>||>| test \par
+%D test \directdiscretionary{<}test\directdiscretionary{>} test \par
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \getbuffer
+
+\def\startsubsentence{\beginofsubsentence     \prewordbreak\beginofsubsentencespacing}
+\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+
+%D \defineXMLenvironment [subsentence]
+%D   {|<|}
+%D   {|>|}
+%D \defineXMLenvironment [subsentence]
+%D   {\directdiscretionary{<}}
+%D   {\directdiscretionary{>}}
+%D \defineXMLenvironment [subsentence]
+%D   {\startsubsentence}
+%D   {\stopsubsentence}
+%D
+%D \startbuffer
+%D test <subsentence>test</subsentence> test
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \processXMLbuffer
+
+\enableactivediscretionaries
+
+\definehspace [quotation]      [\zeropoint]
+\definehspace [interquotation] [.125em]
+
+%definehspace [quote]  [\zeropoint]
+%definehspace [speech] [\zeropoint]
+
+\definehspace [quote]  [\hspaceamount\currentlanguage{quotation}]
+\definehspace [speech] [\hspaceamount\currentlanguage{quotation}]
+
+\definesymbol
+  [\c!leftquotation]
+  [\leftboundarycharacter\c!leftquotation{quotation}]
+
+\definesymbol
+  [\c!rightquotation]
+  [\rightboundarycharacter\c!rightquotation{quotation}]
+
+\definesymbol
+  [\c!leftquote]
+  [\leftboundarycharacter\c!leftquote{quote}]
+
+\definesymbol
+  [\c!rightquote]
+  [\rightboundarycharacter\c!rightquote{quote}]
+
+\definesymbol
+  [\c!leftspeech]
+  [\leftboundarycharacter\c!leftspeech{speech}]
+
+\definesymbol
+  [\c!rightspeech]
+  [\rightboundarycharacter\c!rightspeech{speech}]
+
+\definesymbol
+  [\c!middlespeech]
+  [\leftboundarycharacter\c!middlespeech{speech}]
+
+\appendtoks\def\quotation#1{"#1"}\to\simplifiedcommands
+\appendtoks\def\quote    #1{'#1'}\to\simplifiedcommands
+
+%D The next features was so desperately needed by Giuseppe
+%D Bilotta that he made a module for it. Since this is a
+%D typical example of core functionality, I decided to extend
+%D the low level quotation macros in such a way that a speech
+%D feature could be build on top of it. The speech opening and
+%D closing symbols are defined per language. Italian is an
+%D example of a language that has them set.
+
+% this will replace the quotation and speed definitions
+
+\newsignal\delimitedtextsignal
+
+\let\currentdelimitedtext\s!unknown
+
+\def\delimitedtextlevel{\csname\??ci:\currentdelimitedtext:\c!level\endcsname}
+
+\def\doinitializetextlevel#1%
+  {\ifcsname\??ci:#1:\c!level\endcsname
+     \newcount\csname\??ci:#1:\c!level\endcsname\zerocount
+   \else
+     \expandafter\newcount\csname\??ci:#1:\c!level\endcsname
+   \fi}
+
+\def\delimitedtextparameter#1% will be sped up
+  {\executeifdefined{\??ci\currentdelimitedtext:\number\delimitedtextlevel#1}%
+  {\executeifdefined{\??ci\currentdelimitedtext#1}%
+  {\executeifdefined{\??ci#1}\empty}}}
+
+\def\definedelimitedtext
+  {\dodoubleempty\dodefinedelimitedtext}
+
+\def\dodefinedelimitedtext[#1][#2]%
+  {\doinitializetextlevel{#1}%
+   \doifassignmentelse{#2}
+     {\getparameters
+        [\??ci#1]
+        [\c!location=\v!margin, % \v!text \v!paragraph
+         \c!spacebefore=,
+         \c!spaceafter=\delimitedtextparameter\c!spacebefore,
+         \c!style=\v!normal,
+         \c!color=,
+         \c!leftmargin=\zeropoint,
+         \c!rightmargin=\delimitedtextparameter\c!leftmargin,
+         \c!indentnext=\v!yes,
+         \c!before=,
+         \c!after=,
+         \c!left=,
+         \c!right=,
+        %\c!level=0,
+         \c!repeat=\v!no,
+         \c!method=,
+        #2]}%
+     {\doifdefined{#2}
+        {\copyparameters[\??ci#1][\??ci#2]
+           [\c!location,\c!spacebefore,\c!spaceafter,\c!style,\c!color,
+            \c!leftmargin,\c!rightmargin,\c!indentnext,
+            \c!before,\c!after,\c!left,\c!right]}}%
+   \doifsomething{#1}
+     {\unexpanded\setvalue{#1}{\delimitedtext[#1]}%
+      \setvalue{\e!start#1}{\startdelimitedtext[#1]}%
+      \setvalue{\e!stop #1}{\stopdelimitedtext}}}
+
+\def\setupdelimitedtext
+  {\dotripleargument\dosetupdelimitedtext}
+
+\def\dosetupdelimitedtext[#1][#2][#3]% #2 = optional level
+  {\ifthirdargument
+     \getparameters[\??ci#1:#2][#3]%
+   \else\ifsecondargument
+     \getparameters[\??ci#1][#2]%
+   \else
+     \getparameters[\??ci][#1]%
+   \fi\fi}
+
+\def\dorepeatdelimitedtext
+  {\relax\ifcase\delimitedtextlevel\else
+     \dohandledelimitedtext\c!middle % maybe better \dohandleleftdelimitedtext
+   \fi}
+
+\let\dohandlerepeatdelimitedtext\relax
+
+\def\startdelimitedtext[#1]%
+  {\bgroup
+   \pushdelimitedtext{#1}%
+   \doifelse{\delimitedtextparameter\c!method}\s!font
+     {\def\dostopdelimitedtext
+        {\removeunwantedspaces\ignoredelimitedtext\c!right}%
+      \ignoredelimitedtext\c!left\ignorespaces}
+     {\doifelse{\delimitedtextparameter\c!repeat}\v!yes
+        {\let\dohandlerepeatdelimitedtext\dorepeatdelimitedtext}%
+        {\let\dohandlerepeatdelimitedtext\relax}%
+      \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
+        {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}}
+
+\def\dostartdelimitedtextpar[#1]%
+   {\let\dostopdelimitedtext\dostopdelimitedtextpar
+    \doifsomething{\delimitedtextparameter\c!spacebefore}
+      {\blank[\delimitedtextparameter\c!spacebefore]}%
+    \delimitedtextparameter\c!before
+    % nicer:
+    % \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
+    % \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
+    % backward compatible:
+    \doifelsenothing{#1}
+      {\endgraf
+       \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
+       \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
+       \let\dodostopdelimitedtextpar\endgraf}
+      {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%
+    % so far
+    % \dochecknextindentation{\??ci\currentdelimitedtext}% AM: not here
+    \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
+    \leftdelimitedtextmark
+    \ignorespaces}
+
+\def\dostopdelimitedtextpar
+   {\removeunwantedspaces
+    \removelastskip
+    \rightdelimitedtextmark
+    \dostopattributes
+    \dodostopdelimitedtextpar
+    \delimitedtextparameter\c!after
+    \doifsomething{\delimitedtextparameter\c!spaceafter}
+      {\blank[\delimitedtextparameter\c!spaceafter]}%
+    \dochecknextindentation{\??ci\currentdelimitedtext}% AM: here
+    \dorechecknextindentation}% AM: This was missing!
+
+\def\dostartdelimitedtexttxt
+  {\let\dostopdelimitedtext\dostopdelimitedtexttxt
+   \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
+   \dohandleleftdelimitedtext\c!left
+   \ignorespaces}
+
+\def\dostopdelimitedtexttxt
+  {\removeunwantedspaces
+   \dohandlerightdelimitedtext\c!right
+   \dostopattributes}
+
+\def\stopdelimitedtext
+  {\dostopdelimitedtext
+   \popdelimitedtext
+   \egroup}
+
+\def\pushdelimitedtext#1%
+  {\globalpushmacro\currentdelimitedtext
+   \def\currentdelimitedtext{#1}%
+   \global\advance\delimitedtextlevel\plusone}
+
+\def\popdelimitedtext
+  {\global\advance\delimitedtextlevel\minusone
+   \globalpopmacro\currentdelimitedtext}
+
+\def\delimitedtext[#1]%
+  {\pushdelimitedtext{#1}%
+   \doifelse{\delimitedtextparameter\c!method}\s!font
+     {\dofontdrivendelimited}
+     {\doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
+      \dodelimitedtextpar\dodelimitedtexttxt}}
+
+% shortcuts
+
+\def\startdelimited{\startdelimitedtext}
+\def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
+\def\delimited     {\delimitedtext}
+
+\def\leftdelimitedtextmark
+  {\doifsomething{\delimitedtextparameter\c!left}
+     {\setbox\scratchbox\hbox{\delimitedtextparameter\c!left}%
+      \dontleavehmode
+      \doif{\delimitedtextparameter\c!location}\v!margin{\hskip-\wd\scratchbox}%
+      \box\scratchbox}}
+
+\def\rightdelimitedtextmark
+  {\doifsomething{\delimitedtextparameter\c!right}
+     {\hsmash{\delimitedtextparameter\c!right}}}
+
+% \starttext
+%    \hyphenatedword{groepsvrijstellingsverordeningen}\par
+%    \hyphenatedword{\quote{groepsvrijstellingsverordeningen}}\par
+%     \dorecurse{100}{\hskip300pt\hskip\recurselevel pt test \quote{xxx xxxx}.\par}
+%     \page \setuppapersize[A5][A4]
+%     \quotation {overly beautiful pusillanimous sesquipedalian
+%     longwinded} test test test test test test test test test test test
+%     test test test test test test test test test test test test test
+%     test test test test test test test test test test test test test
+%     test test test test test test test test test test test test test
+%     test test test
+% \stoptext
+
+\def\dohandledelimitedtext#1#2%
+  {\begingroup
+   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
+   \ifdim\wd\scratchbox>\zeropoint
+%      \ifdim\lastskip=\delimitedtextsignal
+%        \unskip
+     \ifdim\lastkern=\delimitedtextsignal
+       \unkern
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else
+       #2%
+     \fi
+     \ifhmode % else funny pagebeaks
+       \penalty\plustenthousand
+       \hskip\zeropoint % == \prewordbreak
+     \fi
+     \strut % new, needed below
+     \delimitedtextparameter#1% unhbox\scratchbox
+%      \penalty\plustenthousand % else overfull boxes, but that's better than dangling periods
+     \kern\delimitedtextsignal % +- \prewordbreak
+   \fi
+   \endgroup}
+
+\def\dohandleleftdelimitedtext#1#2%
+  {\begingroup
+   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
+   \ifdim\wd\scratchbox>\zeropoint
+     \ifdim\lastkern=\delimitedtextsignal
+       \unkern
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else\ifdim\lastskip=\delimitedtextsignal
+       \unskip
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else
+       #2%
+     \fi\fi
+     \strut % new, needed below
+     \ifhmode % else funny pagebeaks
+       \penalty\plustenthousand
+       \hskip\zeropoint % == \prewordbreak
+     \fi
+     \strut % new, needed below
+     \delimitedtextparameter#1% unhbox\scratchbox
+     \hskip\delimitedtextsignal % +- \prewordbreak
+   \fi
+   \endgroup}
+
+\def\dohandlerightdelimitedtext#1#2%
+  {\begingroup
+   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
+   \ifdim\wd\scratchbox>\zeropoint
+     \ifdim\lastkern=\delimitedtextsignal
+       \unkern
+       \penalty\plustenthousand
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else\ifdim\lastskip=\delimitedtextsignal
+       \unskip
+       \penalty\plustenthousand
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else
+       #2%
+     \fi\fi
+     \ifhmode % else funny pagebeaks
+       \penalty\plustenthousand
+       \hskip\zeropoint % == \prewordbreak
+     \fi
+     \strut % new, needed below
+     \delimitedtextparameter#1% unhbox\scratchbox
+     \kern\delimitedtextsignal % +- \prewordbreak
+   \fi
+   \endgroup}
+
+
+\def\ignoredelimitedtext#1%
+  {\delimitedtextparameter#1}
+
+\def\handledelimitedtext#1%
+  {\dohandledelimitedtext{#1}\relax}
+
+\def\handleleftdelimitedtext#1%
+  {\dohandleleftdelimitedtext{#1}\relax}
+
+\def\handlerightdelimitedtext#1%
+  {\dohandlerightdelimitedtext{#1}\relax}
+
+\unexpanded\def\dodelimitedtextpar
+  {\dohandleleftdelimitedtext\c!left\relax
+   \groupedcommand
+     \donothing
+     {\dohandlerightdelimitedtext\c!right\removelastskip
+      \popdelimitedtext}}
+
+\unexpanded\def\dodelimitedtexttxt
+  {\doifelse{\delimitedtextparameter\c!style}\v!normal
+     \doquoteddelimited\doattributeddelimited}
+
+\def\doquoteddelimited
+  {\dohandleleftdelimitedtext\c!left\relax
+   \groupedcommand
+     \donothing
+     {\dohandlerightdelimitedtext\c!right
+      \removelastskip
+      \popdelimitedtext}}
+
+\def\doattributeddelimited
+  {\groupedcommand
+     {\dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color}
+     {\dostopattributes
+      \popdelimitedtext}}
+
+\def\dofontdrivendelimited
+  {\simplegroupedcommand
+     {\languageparameter{\c!left\currentdelimitedtext}}
+     {\languageparameter{\c!right\currentdelimitedtext}%
+      \popdelimitedtext}}
+
+% testcase for nesting:
+%
+% \quotation{... \quotation{...} ...}
+% \startquotation ... \startquotation... \quotation{...} \stopquotation\space ...\stopquotation
+% \setupdelimitedtext[quotation][1][left=(,right=)]
+% \setupdelimitedtext[quotation][2][left={[},right={]}]
+% \setupdelimitedtext[quotation][3][left=\{,right=\}]
+% \quotation{... \quotation{...} ...}
+% \startquotation ... \startquotation... \quotation{...} \stopquotation\space ...\stopquotation
+
+\definedelimitedtext
+  [\v!quotation]
+  [\c!left={\symbol[\c!leftquotation]},
+   \c!right={\symbol[\c!rightquotation]},
+   \c!leftmargin=\v!standard]
+
+\definedelimitedtext
+  [\v!quote][\v!quotation]
+
+\setupdelimitedtext
+  [\v!quote]
+  [\c!location=\v!text,
+   \c!left={\symbol[\c!leftquote]},
+   \c!right={\symbol[\c!rightquote]}]
+
+\definedelimitedtext
+   [\v!blockquote][\v!quotation]
+
+\setupdelimitedtext
+  [\v!blockquote]
+  [\c!left=,
+   \c!right=]
+
+\definedelimitedtext
+  [\v!speech][\v!quotation]
+
+\setupdelimitedtext
+  [\v!speech]
+  [\c!repeat=\v!yes,
+   \c!left={\symbol[\c!leftspeech]},
+   \c!middle={\symbol[\c!middlespeech]},
+   \c!right={\symbol[\c!rightspeech]}]
+
+% how do we call an tight quote
+%
+% \definedelimitedtext
+%    [\v!quotation][\v!quotation]
+%
+% \setupdelimitedtext
+%   [\v!quotation]
+%   [\c!indentnext=\v!no,
+%    \c!spacebefore=\v!nowhite]
+
+\def\setupquotation{\setupdelimitedtext[\v!quotation]}
+\def\setupquote    {\setupdelimitedtext[\v!quote]}
+
+% seldom used, move from kernel to run time module
+
+\ifx\tfx\undefined \let\tfx\relax \fi
+
+\def\basegrid
+  {\dosingleempty\dobasegrid}
+
+\def\dobasegrid[#1]%
+  {\begingroup
+   \getparameters[\??rt]
+     [\c!x=0,\c!y=0,
+      \c!nx=10,\c!ny=10,
+      \c!dx=.5,\c!dy=.5,
+      \c!xstep=0,\c!ystep=0,
+      \c!unit=\s!cm,
+      \c!scale=1,
+      \c!factor=1,
+      \c!offset=\v!yes,
+      \c!location=\v!left,
+      #1]%
+   \startpositioning
+     \dimen0=\@@rtdx\@@rtunit\relax
+     \dimen0=\@@rtscale\dimen0\relax
+     \dimen0=\@@rtfactor\dimen0\relax
+     \multiply\dimen0 \@@rtnx\relax
+     \dimen2=\@@rtdy\@@rtunit\relax
+     \dimen2=\@@rtscale\dimen2\relax
+     \dimen2=\@@rtfactor\dimen2\relax
+     \multiply\dimen2 \@@rtny\relax
+     \def\horline
+       {\vbox
+          {\hrule
+             \!!width \dimen0
+             \!!height \linewidth
+             \!!depth \!!zeropoint}}%
+     \def\verline%
+       {\vrule
+          \!!width \linewidth
+          \!!height \dimen2
+          \!!depth \!!zeropoint}%
+     \doglobal\newcounter\@@gridc
+     \doglobal\newcounter\@@gridd
+     \doglobal\newcounter\@@gride
+     \def\setlegend##1##2##3%
+       {\gdef\@@gridc{0}%
+        \dimen0=2em\relax
+        \dimen2=##2\@@rtunit\relax
+        \dimen2=\@@rtscale\dimen2\relax
+        \dimen2=\@@rtfactor\dimen2\relax
+        \divide\dimen0 \dimen2\relax
+        \xdef\@@gride{\number\dimen0}%
+        \ifnum\@@gride>50
+          \gdef\@@gride{100}%
+        \else\ifnum\@@gride>10
+          \gdef\@@gride{50}%
+        \else\ifnum\@@gride>5
+          \gdef\@@gride{10}%
+        \else\ifnum\@@gride>1
+          \gdef\@@gride{5}%
+        \else
+          \gdef\@@gride{1}%
+        \fi\fi\fi\fi
+        \gdef\@@gridd{0}%
+        \def\legend
+          {\ifnum\@@gridd=\zerocount
+             \vbox
+               {\increment(\@@gridc,##1)%
+                \hbox to 2em{\hss\@@gridc\hss}}%
+             \global\let\@@gridd=\@@gride
+           \fi
+             \doglobal\decrement\@@gridd
+             \doglobal\increment(\@@gridc,##1)}}%
+     \def\draw##1##2##3##4##5##6##7##8##9%
+       {\setuppositioning
+          [\c!state=##8,
+           \c!xstep=\v!absolute,
+           \c!ystep=\v!absolute,
+           \c!unit=\@@rtunit,
+           \c!scale=\@@rtscale,
+           \c!factor=\@@rtfactor,
+           \c!offset=\@@rtoffset,
+           \c!xoffset=##6,
+           \c!yoffset=##7]%
+        \doifelse{##9}\v!middle
+          {\scratchdimen##3pt\scratchdimen.5\scratchdimen
+           \edef\@@psxx{\withoutpt\the\scratchdimen}%
+           \scratchdimen##4pt\scratchdimen.5\scratchdimen
+           \edef\@@psyy{\withoutpt\the\scratchdimen}%
+           \scratchcounter##2\advance\scratchcounter -1
+           \edef\@@pszz{\the\scratchcounter}}
+          {\edef\@@psxx{0}\edef\@@psyy{0}\edef\@@pszz{##2}}%
+        \position(\@@psxx,\@@psyy){##1}%
+        \setuppositioning
+          [\c!state=##8,
+           \c!xstep=\v!relative,
+           \c!ystep=\v!relative,
+           \c!scale=\@@rtscale,
+           \c!factor=\@@rtfactor,
+           \c!offset=\@@rtoffset,
+           \c!unit=\@@rtunit]%
+        \dorecurse\@@pszz{\position(##3,##4){##5}}}%
+     \draw
+       \verline\@@rtnx\@@rtdx0\verline\!!zeropoint\!!zeropoint\v!start\empty
+     \draw
+       \horline\@@rtny0\@@rtdy\horline\!!zeropoint\!!zeropoint\v!start\empty
+     \tfx
+     \doifnot\@@rtxstep{0}
+       {\setlegend\@@rtxstep\@@rtdx\@@rtx
+        \draw\legend\@@rtnx\@@rtdx0\legend{-1em}{-1.5em}\v!overlay\@@rtlocation}%
+     \doifnot\@@rtystep{0}
+       {\setlegend\@@rtystep\@@rtdy\@@rty
+        \draw\legend\@@rtny0\@@rtdy\legend{-2em}{-.75ex}\v!overlay\@@rtlocation}%
+  \stoppositioning
+  \endgroup}
+
+\let\grid\basegrid
+
+% only used at pragma, move from kernel to run time module
+
+\def\referraldate
+  {\currentdate[\v!referral]}
+
+\def\doreferral[#1]%
+   {\noheaderandfooterlines
+    \bgroup
+    \getparameters
+      [\??km]
+      [\c!bet=\unknown,\c!dat=\unknown,\c!ken=\unknown,
+       \c!from=,\c!to=,\c!ref=,#1]%
+    % moet anders, hoort niet in 01b
+    \assigntranslation[\s!nl=referentie,\s!en=reference,\s!de=Referenz,\s!sp=referencia]\to\@@@kmref
+    \assigntranslation[\s!nl=van,\s!en=from,\s!de=Von,\s!sp=de]\to\@@@kmvan
+    \assigntranslation[\s!nl=aan,\s!en=to,\s!de=An,\s!sp=a]\to\@@@kmaan
+    \assigntranslation[\s!nl=betreft,\s!en=concerns,\s!de=Betreff,\s!sp=]\to\@@@kmbet
+    \assigntranslation[\s!nl=datum,\s!en=date,\s!de=Datum,\s!sp=fecha]\to\@@@kmdat
+    \assigntranslation[\s!nl=kenmerk,\s!en=mark,\s!de=Kennzeichen,\s!sp=]\to\@@@kmken
+    %
+    \definetabulate[\s!dummy][|l|p|]
+    \startdummy
+      \NC\@@@kmbet\EQ\@@kmbet\NC\NR
+      \NC\@@@kmdat\EQ\@@kmdat\NC\NR
+      \NC\@@@kmken\EQ\expanded{\smallcapped{\@@kmken}}\NC\NR
+      \doifsomething{\@@kmfrom\@@kmto}{\NC\NC\NC\NR}%
+      \doifsomething \@@kmfrom         {\NC\@@@kmvan\EQ\@@kmfrom\NC\NR}%
+      \doifsomething \@@kmto         {\NC\@@@kmaan\EQ\@@kmto\NC\NR}%
+      \doifsomething \@@kmref         {\NC\NC\NC\NR\NC\@@@kmref\EQ\@@kmref\NC\NR}%
+    \stopdummy
+    \egroup}
+
+\def\referral
+  {\dosingleargument\doreferral}
+
+% FUZZY OLD STUFF: will be removed when not used in some manual;
+% rows instead of columns, i'd forgotten that this code exist
+%
+% \definesystemvariable{ri}
+%
+% \def\setuprows
+%   {\dodoubleargument\getparameters[\??ri]}
+%
+% \definecomplexorsimpleempty\startrows
+%
+% \def\complexstartrows[#1]%
+%   {\bgroup
+%    \setuprows[#1]%
+%    \let\do@@ribottom\relax
+%    \def\row
+%      {\do@@ribottom
+%       \egroup
+%       \dimen0\vsize
+%       \divide\dimen0 \@@rin
+%       \advance\dimen0 -\lineskip
+%       \vbox to \dimen0
+%         \bgroup
+%         \@@ritop
+%         \let\do@@ribottom\@@ribottom
+%         \ignorespaces}%
+%    \bgroup
+%    \row}
+%
+% \def\stoprows
+%   {\do@@ribottom
+%    \egroup
+%    \egroup}
+%
+% \setuprows
+%   [\c!n=2,
+%    \c!top=,
+%    \c!bottom=\vfill]
+
+% THIS WAS MAIN-003.TEX
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+\definetabulate
+  [\v!legend]
+  [|emj1|i1|mR|]
+
+\setuptabulate
+  [\v!legend]
+  [\c!unit=.75em,\c!inner=\setquicktabulate\leg,EQ={=}]
+
+\definetabulate
+  [\v!legend][\v!two]
+  [|emj1|emk1|i1|mR|]
+
+\definetabulate
+  [\v!fact]
+  [|R|ecmj1|i1mR|]
+
+\setuptabulate
+  [\v!fact]
+  [\c!unit=.75em,\c!inner=\setquicktabulate\fact,EQ={=}]
+
+\unexpanded\def\xbox
+  {\bgroup\aftergroup\egroup\hbox\bgroup\tx\let\next=}
+
+\unexpanded\def\xxbox
+  {\bgroup\aftergroup\egroup\hbox\bgroup\txx\let\next=}
+
+% \def\mrm#1%
+%   {$\rm#1$}
+
+%D \macros
+%D   {definepairedbox, setuppairedbox, placepairedbox}
+%D
+%D Paired boxes, formally called legends, but from now on a
+%D legend is just an instance, are primarily meant for
+%D typesetting some text alongside an illustration. Although
+%D there is quite some variation possible, the functionality is
+%D kept simple, if only because in most cases such pairs are
+%D typeset sober.
+%D
+%D The location specification accepts a pair, where the first
+%D keyword specifies the arrangement, and the second one the
+%D alignment. The first key of the location pair is one of
+%D \type {left}, \type {right}, \type {top} or \type {bottom},
+%D while the second key can also be \type {middle}.
+%D
+%D The first box is just collected in an horizontal box, but
+%D the second one is a vertical box that gets passed the
+%D bodyfont and alignment settings.
+
+%D Today we would implement this using layers .... but for the
+%D moment we keep it this way.
+
+%  \startbuffer[test]
+%  \test left   \test left,top    \test left,bottom  \test left,middle
+%  \test right  \test right,top   \test right,bottom \test right,middle
+%  \test top    \test top,left    \test top,right    \test top,middle
+%  \test bottom \test bottom,left \test bottom,right \test bottom,middle
+%  \stopbuffer
+%
+%  \def\showtest#1%
+%    {\pagina
+%     \typebuffer[demo]
+%     \def\test##1
+%       {\startlinecorrection[blank]
+%        \getbuffer[demo]%
+%        \ruledhbox\placelegend
+%          [bodyfont=6pt,location={##1}]
+%          {\framed[width=.25\textwidth]{\tttf##1}}
+%          {#1}
+%        \stoplinecorrection}
+%     \getbuffer[test]}
+%
+%  \startbuffer[demo]
+%  \setuplegend
+%    [width=\hsize,maxwidth=\makeupwidth,
+%     height=\vsize,maxheight=\makeupheight]
+%  \stopbuffer
+%
+%  \showtest{These examples demonstrate the default settings.}
+%
+%  \startbuffer[demo]
+%  \setuplegend
+%    [width=\textwidth,
+%     maxwidth=\textwidth]
+%  \stopbuffer
+%
+%  \showtest{\input tufte }
+%
+%  \startbuffer[demo]
+%  \setuplegend
+%    [width=.65\textwidth]
+%  \stopbuffer
+%
+%  \showtest{\input knuth }
+%
+%  \startbuffer[demo]
+%  \setuplegend
+%    [height=2cm]
+%  \stopbuffer
+%
+%  \showtest{These examples demonstrate some other settings.}
+%
+%  \startbuffer[demo]
+%  \setuplegend
+%    [width=.65\textwidth,
+%     height=2cm]
+%  \stopbuffer
+%
+%  \showtest{These examples demonstrate some other settings.}
+%
+%  \startbuffer[demo]
+%  \setuplegend
+%    [n=2,align=right,width=.5\textwidth]
+%  \stopbuffer
+%
+%  \showtest{\input zapf }
+
+%D \macros
+%D   {setuplegend, placelegend}
+%D
+%D It makes sense to typeset a legend to a figure in \TEX\
+%D and not in a drawing package. The macro \type {\placelegend}
+%D combines a figure (or something else) and its legend. This
+%D command is just a paired box.
+%D
+%D The legend is placed according to \type {location}, being
+%D \type {bottom} or \type {right}. The macro macro is used as
+%D follows.
+%D
+%D \starttyping
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulation
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulation}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulation[|l|l|l|l|]
+%D       \NC 1 \NC head \NC 3 \NC tail \NC \NR
+%D       \NC 2 \NC legs \NC   \NC      \NC \NR
+%D       \stoptabulation}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\starttabulation
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulation}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {head \par legs \par tail}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns
+%D       \stopitemize}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2,width=.8\hsize]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns
+%D       \stopitemize}}
+%D \stoptyping
+
+\newbox\firstpairedbox
+\newbox\secondpairedbox
+
+\def\definepairedbox
+  {\dodoubleempty\dodefinepairedbox}
+
+\def\dodefinepairedbox[#1][#2]%
+  {\getparameters
+     [\??ld#1]
+     [\c!n=1,
+      \c!distance=\bodyfontsize,
+      \c!before=,
+      \c!after=,
+      \c!color=,
+      \c!style=,
+      \c!inbetween={\blank[\v!medium]},
+      \c!width=\hsize,
+      \c!height=\vsize,
+      \c!maxwidth=\textwidth,   % \makeupwidth,
+      \c!maxheight=\textheight, % \makeupheight,
+      \c!bodyfont=,
+      \c!align=,
+      \c!location=\v!bottom,
+      #2]%
+   \setvalue{\e!setup#1\e!endsetup}{\setuppairedbox[#1]}%
+   \setvalue{\e!place#1}{\placepairedbox[#1]}}
+
+\def\setuppairedbox
+  {\dodoubleempty\dosetuppairedbox}
+
+\def\dosetuppairedbox[#1]%
+  {\getparameters[\??ld#1]}
+
+\def\placepairedbox
+  {\bgroup\dodoubleempty\doplacepairedbox}
+
+\def\doplacepairedbox[#1][#2]% watch the hsize/vsize tricks
+  {\setuppairedbox[#1][#2]%     % and don't change them
+   \copyparameters % brrr
+     [\??ld][\??ld#1]
+     [\c!n,\c!distance,\c!inbetween,\c!before,\c!after,
+      \c!width,\c!height,\c!maxwidth,\c!maxheight,
+      \c!color,\c!style,\c!bodyfont,\c!align,\c!location]%
+   \@@ldbefore\bgroup
+   \global\setsystemmode{pairedbox}%
+   \beforefirstpairedbox
+   \dowithnextbox
+     {\betweenbothpairedboxes
+      \dowithnextbox
+        {\afterbothpairedboxes
+         \egroup\@@ldafter
+         \egroup}
+      \vbox\bgroup
+        \insidesecondpairedbox
+        \let\next=}
+   \hbox}
+
+\def\beforefirstpairedbox
+  {\chardef\pairedlocationa1 % left
+   \chardef\pairedlocationb4 % middle
+   \getfromcommacommand[\@@ldlocation][1]%
+   \processaction
+     [\commalistelement]
+     [  \v!left=>\chardef\pairedlocationa0,
+       \v!right=>\chardef\pairedlocationa1,
+         \v!top=>\chardef\pairedlocationa2,
+      \v!bottom=>\chardef\pairedlocationa3]%
+   \getfromcommacommand[\@@ldlocation][2]%
+   \processaction
+     [\commalistelement]
+     [  \v!left=>\chardef\pairedlocationb0,
+       \v!right=>\chardef\pairedlocationb1,
+        \v!high=>\chardef\pairedlocationb2,
+         \v!top=>\chardef\pairedlocationb2,
+         \v!low=>\chardef\pairedlocationb3,
+      \v!bottom=>\chardef\pairedlocationb3,
+      \v!middle=>\chardef\pairedlocationb4]}
+
+\def\betweenbothpairedboxes
+  {\switchtobodyfont[\@@ldbodyfont]% split under same regime
+   \setbox\firstpairedbox\flushnextbox
+   \ifnum\pairedlocationa<2
+     \hsize\wd\firstpairedbox % trick
+     \hsize\@@ldwidth
+     \scratchdimen\wd\firstpairedbox
+     \advance\scratchdimen \@@lddistance
+     \bgroup\advance\scratchdimen \hsize
+     \ifdim\scratchdimen>\@@ldmaxwidth\relax
+       \egroup
+       \hsize\@@ldmaxwidth
+       \advance\hsize -\scratchdimen
+     \else
+       \egroup
+     \fi
+   \else
+     \hsize\wd\firstpairedbox
+     \hsize\@@ldwidth % can be \hsize
+     \ifdim\hsize>\@@ldmaxwidth\relax \hsize\@@ldmaxwidth \fi % can be \hsize
+   \fi
+   \ifnum\@@ldn>\plusone
+     \setrigidcolumnhsize\hsize\@@lddistance\@@ldn
+   \fi}
+
+\def\afterbothpairedboxes
+  {\setbox\secondpairedbox\vbox
+     {% \localstartcolor[\@@ldcolor]% does not work yet
+        \ifnum\@@ldn>1
+          \rigidcolumnbalance\nextbox
+        \else
+          \flushnextbox
+        \fi
+      }% \localstopcolor}%
+   \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize
+   \forgetall
+   \ifnum\pairedlocationa<2
+     \scratchdimen\maxoftwoboxdimens\ht\firstpairedbox\secondpairedbox
+     \vsize\scratchdimen
+     \ifdim\scratchdimen<\@@ldheight\relax % can be \vsize
+       \scratchdimen\@@ldheight
+     \fi
+     \ifdim\scratchdimen>\@@ldmaxheight\relax
+       \scratchdimen\@@ldmaxheight
+     \fi
+     \valignpairedbox\firstpairedbox \scratchdimen
+     \valignpairedbox\secondpairedbox\scratchdimen
+   \else
+     \scratchdimen\maxoftwoboxdimens\wd\firstpairedbox\secondpairedbox
+     \halignpairedbox\firstpairedbox \scratchdimen
+     \halignpairedbox\secondpairedbox\scratchdimen
+     \scratchdimen\ht\secondpairedbox
+     \vsize\scratchdimen
+     \ifdim\ht\secondpairedbox<\@@ldheight\relax % can be \vsize
+       \scratchdimen\@@ldheight\relax % \relax needed
+     \fi
+     \ifdim\scratchdimen>\@@ldmaxheight\relax % todo: totale hoogte
+       \scratchdimen\@@ldmaxheight\relax % \relax needed
+     \fi
+     \ifdim\scratchdimen>\ht\secondpairedbox
+       \setbox\secondpairedbox\vbox to \scratchdimen
+         {\ifnum\pairedlocationa=3 \vss\fi %
+          \box\secondpairedbox
+          \ifnum\pairedlocationa=2 \vss\fi}% \kern\zeropoint
+     \fi
+   \fi
+   \ifcase\pairedlocationa
+     \box\secondpairedbox\hskip\@@lddistance\box\firstpairedbox \or
+     \box\firstpairedbox \hskip\@@lddistance\box\secondpairedbox\or
+     \box\secondpairedbox\endgraf \nointerlineskip \@@ldinbetween \box\firstpairedbox \or
+     \box\firstpairedbox \endgraf \nointerlineskip \@@ldinbetween \box\secondpairedbox\else
+   \fi
+   \egroup}
+
+\def\insidesecondpairedbox
+  {\forgetall
+   \setupalign[\@@ldalign]%
+   \tolerantTABLEbreaktrue % hm.
+   \blank[\v!disable]%
+   \everypar{\begstrut}}
+
+\def\maxoftwoboxdimens#1#2#3%
+  {#1\ifdim#1#2>#1#3 #2\else#3\fi}
+
+\def\valignpairedbox#1#2%
+  {\setbox#1\vbox to #2
+     {\ifcase\pairedlocationb\or\or\or\vss\or\vss\fi
+      \box#1\relax
+      \ifcase\pairedlocationb\or\or\vss\or\or\vss\fi}}
+
+\def\halignpairedbox#1#2%
+  {\setbox#1\hbox to #2
+     {\ifcase\pairedlocationb\or\hss\or\or\or\hss\fi
+      \box#1\relax
+      \ifcase\pairedlocationb\hss\or\or\or\or\hss\fi}}
+
+\definepairedbox[\v!legend]
+
+%D Goody:
+
+\appendtoks
+  \global\resetsystemmode{combination}%
+  \global\resetsystemmode{pairedbox}%
+\to \everyinsidefloat
+
+% todo: \startcombination \startcomb \stopcomb ...
+
+\newcount\horcombination  % counter
+\newcount\totcombination
+
+\def\definecombination
+  {\dodoubleempty\dodefinecombination}
+
+\def\dodefinecombination[#1][#2]%
+  {\copyparameters
+     [\??co#1][\??co]
+     [\c!width,\c!height,\c!distance,\c!location,%
+      \c!before,\c!inbetween,\c!after,\c!align,%
+      \c!style,\c!color]%
+   \getparameters
+     [\??co#1][#2]}
+
+\def\setupcombinations
+  {\dodoubleempty\dosetupcombinations}
+
+\def\dosetupcombinations[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??co#1][#2]%
+   \else
+     \getparameters[\??co][#1]%
+   \fi}
+
+\def\combinationparameter#1%
+  {\csname\??co\currentcombination#1\endcsname}%
+
+\def\startcombination
+  {\bgroup % so we can grab a group
+   \dodoubleempty\dostartcombination}
+
+% \startcombination      {alpha} {a} {beta} {b} \stopcombination
+% \startcombination[2*1] {alpha} {a} {beta} {b} \stopcombination
+% \startcombination[1*2] {alpha} {a} {beta} {b} \stopcombination
+% \startcombination[2]   {alpha} {a} {beta} {b} \stopcombination
+
+\def\dostartcombination[#1][#2]%
+  {\global\setsystemmode{combination}%
+   \doifnothing{#1}\firstargumentfalse      % to be sure (when called in macros)
+   \doifnothing{#2}\secondargumentfalse     % to be sure (when called in macros)
+   \ifsecondargument
+     \def\currentcombination{#1}%
+     \edef\currentcombinationspec{#2*1*}%
+   \else % better : \doifcombinationelse ... \??co#1\c!location
+      \doifinstringelse{*}{#1}
+       {\let\currentcombination\empty
+        \edef\currentcombinationspec{#1*1*}}
+       {\doifnumberelse{#1}
+          {\let\currentcombination\empty
+           \edef\currentcombinationspec{#1*1*}}
+          {\def\currentcombination{#1}%
+           \edef\currentcombinationspec{2*1*}}}%
+   \fi
+   \forgetall
+   \doifelse{\combinationparameter\c!height}\v!fit
+     \vbox {\vbox to \combinationparameter\c!height}%
+   \bgroup
+   \expanded{\dodostartcombination[\currentcombinationspec]}}
+
+\long\def\dodostartcombination[#1*#2*#3]%
+  {\setuphorizontaldivision
+     [\c!n=\v!fit,\c!distance=\combinationparameter\c!distance]%
+   \global\horcombination#1%
+   \global\totcombination#2%
+   \global\setbox\combinationstack\emptybox
+   \xdef\maxhorcombination{\the\horcombination}%
+   \multiply\totcombination\horcombination
+   \tabskip\zeropoint
+   \doifelse{\combinationparameter\c!width}\v!fit
+     {\halign}{\halign to \combinationparameter\c!width}%
+   \bgroup&%
+   %\hfil##\hfil% now : location={left,top}
+   \expanded{\doifnotinset{\v!left}{\combinationparameter\c!location}}\hfil
+   ##%
+   \expanded{\doifnotinset{\v!right}{\combinationparameter\c!location}}\hfil
+   &\tabskip\zeropoint \!!plus 1fill##\cr
+   \docombination}
+
+\def\docombination % we want to add struts but still ignore an empty box
+  {\dowithnextbox
+     {\setbox0\flushnextbox
+      \dowithnextbox
+        {\setbox2\flushnextbox
+         \dodocombination}%
+      \vtop\bgroup
+        \def\next
+          {\futurelet\nexttoken\nextnext}%
+        \def\nextnext
+          {\ifx\nexttoken\egroup \else % the next box is empty
+             \hsize\wd0
+             \setupalign[\combinationparameter\c!align]%
+             \dostartattributes{\??co\currentcombination}\c!style\c!color\empty
+             \bgroup
+             \aftergroup\endstrut
+             \aftergroup\dostopattributes
+             \aftergroup\egroup
+             \begstrut
+           \fi}%
+        \afterassignment\next\let\nexttoken=}
+  \hbox}
+
+% stupid version, does not align top stuff when captions,
+% keep as example
+%
+% \def\dodocombination
+%   {\vbox
+%      {\forgetall % \setupwhitespace[\v!none]%
+%       \let\next\vbox
+%       \ExpandFirstAfter\processallactionsinset
+%         [\combinationparameter\c!location]
+%         [   \v!top=>\let\next\tbox,
+%          \v!middle=>\let\next\halfwaybox]%
+%       \next{\copy0}%
+%       \ifdim\ht2>\zeropoint % beter dan \wd2, nu \strut mogelijk
+%         \combinationparameter\c!inbetween
+%         %\vtop % wrong code
+%         %  {\nointerlineskip  % recently added
+%         %   \hsize\wd0
+%         %   \setupalign[\combinationparameter\c!align]%  % \raggedcenter
+%         %   \begstrut\unhbox2\endstrut}%
+%         \box2
+%       \fi}%
+%    \ifnum\totcombination>\plusone
+%      \global\advance\totcombination\minusone
+%      \global\advance\horcombination\minusone
+%      \ifnum\horcombination=\zerocount
+%        \def\next
+%          {\cr\noalign
+%             {\forgetall % \setupwhitespace[\v!geen]% no
+%              \nointerlineskip
+%              \combinationparameter\c!before
+%              \combinationparameter\c!after
+%              \vss
+%              \nointerlineskip}%
+%           \global\horcombination\maxhorcombination\relax
+%           \docombination}%
+%      \else
+%        \def\next
+%          {&&&\hskip\combinationparameter\c!distance&\docombination}%
+%      \fi
+%    \else
+%      \def\next
+%        {\cr\egroup}%
+%    \fi
+%    \next}
+
+% \def\dodocombination
+%   {\vbox
+%      {\forgetall % \setupwhitespace[\v!none]%
+%       \let\next\vbox
+%       \ExpandFirstAfter\processallactionsinset
+%         [\combinationparameter\c!plaats]
+%         [   \v!top=>\let\next\tbox,
+%          \v!middle=>\let\next\halfwaybox]%
+%       \next{\copy0}%
+%       % we need to save the caption for a next alignment line
+%       \saveoncombinationstack2}%
+%    \ifnum\totcombination>\plusone
+%      \global\advance\totcombination\minusone
+%      \global\advance\horcombination\minusone
+%      \ifnum\horcombination=\zerocount
+%        \def\next
+%          {\cr
+%           \flushcombinationstack
+%           \noalign
+%             {\forgetall % \setupwhitespace[\v!none]% no
+%              \global\setbox\combinationstack\emptybox
+%              \nointerlineskip
+%              \combinationparameter\c!after
+%              \combinationparameter\c!before
+%              \vss
+%              \nointerlineskip}%
+%           \global\horcombination\maxhorcombination\relax
+%           \docombination}%
+%      \else
+%        \def\next
+%          {&&&\hskip\combinationparameter\c!distance&\docombination}%
+%      \fi
+%    \else
+%      \def\next
+%        {\cr
+%         \flushcombinationstack
+%         \egroup}%
+%    \fi
+%    \next}
+
+\def\depthonlybox
+  {\dowithnextbox{\vtop{\hsize\wd\nextbox\kern\zeropoint\box\nextbox}}\vbox}
+
+% \def\boxwithstrutheight
+%   {\dowithnextbox
+%      {\scratchdimen\strutheight
+%       \advance\scratchdimen-\nextboxht
+%       \hbox{\raise\scratchdimen\box\nextbox}}%
+%      \vbox}
+
+\def\dodocombination
+  {\vbox
+     {\forgetall % \setupwhitespace[\v!none]%
+      \let\next\vbox
+      \expanded{\processallactionsinset[\combinationparameter\c!location]}
+        [    \v!top=>\let\next\depthonlybox, % \tbox,
+          \v!middle=>\let\next\halfwaybox]%
+      \next{\copy0}%
+      % we need to save the caption for a next alignment line
+      \saveoncombinationstack2}%
+   \ifnum\totcombination>\plusone
+     \global\advance\totcombination\minusone
+     \global\advance\horcombination\minusone
+     \ifnum\horcombination=\zerocount
+       \def\next
+         {\cr
+          \flushcombinationstack
+          \noalign
+            {\forgetall % \setupwhitespace[\v!none]% no
+             \global\setbox\combinationstack\emptybox
+             \nointerlineskip
+             \combinationparameter\c!after
+             \combinationparameter\c!before
+             \vss
+             \nointerlineskip}%
+          \global\horcombination\maxhorcombination\relax
+          \docombination}%
+     \else
+       \def\next
+         {&&&\hskip\combinationparameter\c!distance&\docombination}%
+     \fi
+   \else
+     \def\next
+       {\cr
+        \flushcombinationstack
+        \egroup}%
+   \fi
+   \next}
+
+% formally ok:
+%
+% \def\stopcombination
+%   {\egroup
+%    \egroup}
+%
+% more robust:
+%
+% \def\stopcombination
+%   {{}{}{}{}{}{}{}{}% catches (at most 4) missing entries
+%    \egroup
+%    \egroup}
+%
+% even better:
+
+\def\stopcombination
+  {{\scratchtoks{{}{}{}}\dorecurse\totcombination{\appendtoks{}{}{}{}\to\scratchtoks}\expandafter}\the\scratchtoks
+   \egroup
+   \egroup}
+
+\newbox\combinationstack
+
+\def\saveoncombinationstack#1%
+  {\global\setbox\combinationstack\hbox
+     {\hbox{\box#1}\unhbox\combinationstack}}
+
+\def\flushcombinationstack
+  {\noalign
+     {\ifdim\ht\combinationstack>\zeropoint
+\nointerlineskip % nieuw
+        \combinationparameter\c!inbetween
+        \global\horcombination\maxhorcombination
+        \globallet\doflushcombinationstack\dodoflushcombinationstack
+      \else
+        \global\setbox\combinationstack\emptybox
+        \globallet\doflushcombinationstack\donothing
+      \fi}%
+   \doflushcombinationstack\crcr}
+
+\gdef\dodoflushcombinationstack
+  {\global\setbox\combinationstack\hbox
+     {\unhbox\combinationstack
+      \global\setbox1\lastbox}%
+   \box1% \ruledhbox{\box1}%
+   \global\advance\horcombination\minusone\relax
+   \ifnum\horcombination>\zerocount
+     \def\next{&&&&\doflushcombinationstack}%
+   \else
+     \global\setbox\combinationstack\emptybox
+    %\let\next\relax
+     \@EA\gobbleoneargument
+   \fi
+   \next}
+
+\setupcombinations
+  [\c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!distance=1em,
+   \c!location=\v!bottom, % can be something {top,left}
+   \c!before=\blank,
+   \c!inbetween={\blank[\v!medium]},
+   \c!style=,
+   \c!color=,
+   \c!after=,
+   \c!align=\v!middle]
+
+%D \macros
+%D   {startfloatcombination}
+%D
+%D \setupexternalfigures[directory={../sample}]
+%D \startbuffer
+%D \placefigure
+%D   [left,none]
+%D   {}
+%D   {\startfloatcombination[2*2]
+%D      \placefigure{alpha}{\externalfigure[cow.pdf][width=1cm]}
+%D      \placefigure{beta} {\externalfigure[cow.pdf][width=2cm]}
+%D      \placefigure{gamma}{\externalfigure[cow.pdf][width=3cm]}
+%D      \placefigure{delta}{\externalfigure[cow.pdf][width=4cm]}
+%D    \stopfloatcombination}
+%D
+%D \input tufte
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\startfloatcombination
+  {\dodoubleempty\dostartfloatcombination}
+
+\def\dostartfloatcombination[#1][#2]%
+  {\vbox\bgroup
+  %\insidecolumnstrue % trick, forces no centering, todo: proper switch/feature
+   \chardef\postcenterfloatmethod\zerocount
+   \forcelocalfloats
+   \def\stopfloatcombination
+     {\scratchtoks\emptytoks
+      \dorecurse\noflocalfloats
+        {\appendetoks{\noexpand\getlocalfloat{\recurselevel}}{}\to\scratchtoks}%
+      \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
+      \resetlocalfloats
+     \egroup}}
+
+\def\placerelativetoeachother#1#2%
+  {\bgroup
+   \dowithnextbox
+     {\bgroup
+      \setbox0\box\nextbox
+      \dowithnextbox
+        {\setbox2\box\nextbox
+         #1{#2#########2\cr\box0\cr\box2\cr}
+         \egroup
+         \egroup}
+        \hbox}
+     \hbox}
+
+\def\placeontopofeachother{\placerelativetoeachother\halign\hss}
+\def\placesidebyside      {\placerelativetoeachother\valign\vss}
+
+% this will be replaced or go away, never used
+
+\def\douseexternalfiles[#1][#2]%
+  {\getparameters
+     [\??fi#1]
+     [\c!file=,
+      \c!bodyfont=,
+      \c!option=,
+      #2]}
+
+\def\useexternalfiles
+  {\dodoubleargument\douseexternalfiles}
+
+\def\dostelexternefilesin[#1][#2]%
+  {\doifundefinedelse{\??fi#1\c!file}
+     {\useexternalfiles[#1][#2]}
+     {\getparameters[\??fi#1][#2]}}
+
+\def\stelexternefilesin
+  {\dodoubleargument\dostelexternefilesin}
+
+\def\verwerkexternefile#1#2#3%
+  {\bgroup
+   \getparameters[\??fi#1][\c!file=,#3]%
+   \doinputonce{\getvalue{\??fi#1\c!file}}%
+   \ExpandFirstAfter\switchtobodyfont[\getvalue{\??fi#1\c!bodyfont}]%
+   \readsysfile{#2}  % beter: loc of fix gebied
+     \donothing
+     {\showmessage\m!systems{41}{#2,#1}}%
+   \egroup}
+
+\def\douseexternalfile[#1][#2][#3][#4]%
+  {\stelexternefilesin[#1][]%
+   \doinputonce{\getvalue{\??fi#1\c!file}}%
+   \doifelsenothing{#2}
+     {\setvalue{#3}{\verwerkexternefile{#1}{#3}{#4}}}
+     {\setvalue{#2}{\verwerkexternefile{#1}{#3}{#4}}}}
+
+\def\useexternalfile
+  {\doquadrupleargument\douseexternalfile}
+
+\useexternalfiles
+  [pictex]
+  [\c!bodyfont=\v!small,
+   \c!file=pictex]
+
+\useexternalfiles
+  [table]
+  [\c!file=table]
+
+%D A couple of examples, demonstrating how the depth is
+%D taken care of:
+%D
+%D \startbuffer
+%D test\rotate[frame=on, rotation=0]  {gans}%
+%D test\rotate[frame=on, rotation=90] {gans}%
+%D test\rotate[frame=on, rotation=180]{gans}%
+%D test\rotate[frame=on, rotation=270]{gans}%
+%D test
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% When we rotate over arbitrary angles, we need to relocate the
+% resulting box because rotation brings that box onto the negative
+% axis. The calculations (mostly sin and cosine) need to be tuned for
+% the way a box is packages (i.e. the refence point). A typical example
+% of drawing, scribbling, and going back to the days of school math.
+%
+% We do a bit more calculations than needed, simply because that way
+% it's easier to debug the code.
+
+\def\dododorotatenextbox
+  {\setbox\nextbox\vbox to \@@layerysiz
+     {\vfill
+      \hbox to \@@layerxsiz
+        {\dostartrotation\@@rorotation
+           \nextboxwd\zeropoint
+           \nextboxht\zeropoint
+           \flushnextbox
+         \dostoprotation
+         \hfill}%
+      \kern\@@layerypos}%
+  \setbox\nextbox\hbox
+    {\kern\@@layerxpos
+     \kern\@@layerxoff
+     \lower\@@layeryoff\flushnextbox}}
+
+\def\dodorotatenextbox#1#2% quite some trial and error -)
+  {\dontshowcomposition
+   \dontcomplain
+   \ifnum#2=\plusfour
+     % new, location=middle
+     \!!widthb \nextboxwd
+     \!!heightb\nextboxht
+     \!!depthb \nextboxdp
+     \setbox\nextbox\vbox{\vskip.5\nextboxht\hskip-.5\nextboxwd\flushnextbox}%
+     \smashbox\nextbox
+   \fi
+   \!!widtha \nextboxwd
+   \!!heighta\nextboxht
+   \!!deptha \nextboxdp
+   \!!doneafalse
+   \!!donebfalse
+   \ifcase#2\or
+     % 1: fit
+   \or
+     % 2: depth, not fit
+     \!!doneatrue
+     \!!donebtrue
+   \or
+     % 3: depth, fit
+     \!!donebtrue
+   \fi
+   \setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}%
+   \!!dimena \nextboxht
+   \setcalculatedcos\cos\@@rorotation
+   \setcalculatedsin\sin\@@rorotation
+   \@@layerxpos\zeropoint
+   \@@layerypos\zeropoint
+   \@@layerxoff\zeropoint
+   \@@layeryoff\zeropoint
+   \ifdim\sin\points>\zeropoint
+     \ifdim\cos\points>\zeropoint
+       \@@layerxsiz                    \cos\!!widtha
+       \@@layerysiz                    \sin\!!widtha
+       \advance\@@layerxsiz            \sin\!!dimena
+       \advance\@@layerysiz            \cos\!!dimena
+       \@@layerypos                    \cos\!!dimena
+       \if!!donea
+         \@@layerxoff          \negated\sin\!!dimena
+         \advance\@@layerxoff          \sin\!!deptha
+       \fi
+       \if!!doneb
+         \@@layeryoff                  \cos\!!deptha
+       \fi
+       \dododorotatenextbox
+     \else
+       \@@layerxsiz            \negated\cos\!!widtha
+       \@@layerysiz                    \sin\!!widtha
+       \advance\@@layerxsiz            \sin\!!dimena
+       \advance\@@layerysiz    \negated\cos\!!dimena
+       \@@layerxpos            \negated\cos\!!widtha
+       \if!!donea
+         \@@layerxoff                     -\@@layerxsiz
+         \advance\@@layerxoff          \sin\!!deptha
+       \fi
+       \if!!doneb
+         \@@layeryoff          \negated\cos\!!heighta
+       \fi
+       \dododorotatenextbox
+       \wd\nextbox\if!!donea\sin\!!deptha\else\@@layerxsiz\fi
+     \fi
+   \else
+     \ifdim\cos\points<\zeropoint
+       \@@layerxsiz           \negated\cos\!!widtha
+       \@@layerysiz           \negated\sin\!!widtha
+       \advance\@@layerxsiz   \negated\sin\!!dimena
+       \advance\@@layerysiz   \negated\cos\!!dimena
+       \@@layerxpos                        \@@layerxsiz
+       \@@layerypos            \negated\sin\!!widtha
+       \if!!donea
+         \@@layerxoff                     -\@@layerxsiz
+         \advance\@@layerxoff  \negated\sin\!!heighta
+       \fi
+       \if!!doneb
+         \@@layeryoff                      \@@layerysiz
+         \advance\@@layeryoff          \cos\!!deptha
+       \fi
+       \dododorotatenextbox
+       \wd\nextbox\if!!donea\negated\sin\!!heighta\else\@@layerxsiz\fi
+     \else
+       \@@layerxsiz                    \cos\!!widtha
+       \@@layerysiz            \negated\sin\!!widtha
+       \advance\@@layerxsiz    \negated\sin\!!dimena
+       \advance\@@layerysiz            \cos\!!dimena
+       \ifdim\sin\points=\zeropoint
+         \@@layerxpos                       \zeropoint
+         \@@layerxoff                       \zeropoint
+         \@@layerypos                      \@@layerysiz
+         \if!!doneb
+           \@@layeryoff                     \!!deptha
+         \fi
+       \else
+         \@@layerypos                       \@@layerysiz
+         \@@layerxpos           \negated\sin\!!dimena
+         \if!!donea
+           \@@layerxoff                    -\@@layerxsiz
+           \advance\@@layerxoff \negated\sin\!!heighta
+         \fi
+         \if!!doneb
+           \@@layeryoff          \negated\sin\!!deptha
+         \fi
+       \fi
+       \dododorotatenextbox
+       \ifdim\sin\points=\zeropoint
+       \else
+         \wd\nextbox\if!!donea\negated\sin\!!heighta\else\@@layerxsiz\fi
+       \fi
+     \fi
+   \fi
+   % new, location=middle
+   \ifnum#2=\plusfour
+     \setbox\nextbox\vbox{\vskip-.5\!!heightb\hskip.5\!!heightb\flushnextbox}%
+     \nextboxwd\!!widthb
+     \nextboxht\!!heightb
+     \nextboxdp\!!depthb
+   \fi}
+
+\def\dorotatenextbox#1#2%
+  {\doifsomething{#1}
+     {\edef\@@rorotation{\realnumber{#1}}% get rid of leading zeros and spaces
+      \setbox\nextbox\vbox{\flushnextbox}% not really needed
+      \dodorotatenextbox\@@rorotation#2}%
+   \hbox{\boxcursor\flushnextbox}}
+
+\def\dodorotatebox#1% {angle} \hbox/\vbox/\vtop
+  {\bgroup\hbox\bgroup % compatibility hack
+     \dowithnextbox
+       {\dorotatenextbox{#1}\plusone
+        \egroup\egroup}}
+
+\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
+  {\ifcase#1\relax
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\dodorotatebox
+   \fi{#1}}
+
+\unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
+  {\bgroup\complexorsimpleempty\rotate}
+
+% \def\complexrotate[#1]% framed met diepte !
+%   {\getparameters[\??ro][#1]%
+%    \processaction
+%      [\@@rolocation]
+%      [  \v!depth=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
+%           \v!fit=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
+%         \v!broad=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
+%          \v!high=>\!!counta\plusone  \donetrue ,% nodepth fit   - framed
+%        \v!middle=>\!!counta\plusfour \donefalse,% centered, keep dimensions
+%       \s!default=>\!!counta\plusthree\donetrue ,% depth   fit   - framed
+%       \s!unknown=>\!!counta\plusthree\donetrue ]% depth   fit   - framed
+%    \ifdone
+%      \def\docommand{\localframed[\??ro][#1,\c!location=]}%
+%    \else
+%      \let\docommand\relax
+%    \fi
+%    \dowithnextbox{\dorotatenextbox\@@rorotation\!!counta\egroup}\vbox\docommand}
+
+\setvalue{\??ro::\c!location::\v!depth  }{\!!counta\plusthree\donefalse} % depth   fit   - raw box
+\setvalue{\??ro::\c!location::\v!fit    }{\!!counta\plustwo  \donefalse} % depth   tight - raw box
+\setvalue{\??ro::\c!location::\v!broad  }{\!!counta\plusone  \donefalse} % nodepth fit   - raw box
+\setvalue{\??ro::\c!location::\v!high   }{\!!counta\plusone  \donetrue } % nodepth fit   - framed
+\setvalue{\??ro::\c!location::\v!middle }{\!!counta\plusfour \donefalse} % centered, keep dimensions
+\setvalue{\??ro::\c!location::\v!default}{\!!counta\plusthree\donetrue } % depth   fit   - framed
+
+\def\complexrotate[#1]% framed met diepte !
+  {\getparameters[\??ro][#1]%
+   \executeifdefined{\??ro::\c!location::\@@rolocation}{\!!counta\plusthree\donetrue}%
+   \ifdone
+     \def\docommand{\localframed[\??ro][#1,\c!location=]}%
+   \else
+     \let\docommand\relax
+   \fi
+   \dowithnextbox{\dorotatenextbox\@@rorotation\!!counta\egroup}\vbox\docommand}
+
+\presetlocalframed[\??ro]
+
+\def\setuprotate
+  {\dodoubleargument\getparameters[\??ro]}
+
+\setuprotate
+  [\c!rotation=90,
+   \c!location=\v!normal,
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!offset=\v!overlay,
+   \c!frame=\v!off]
+
+% \dostepwiserecurse{0}{360}{10}
+%   {\startlinecorrection[blank]
+%    \hbox
+%      {\expanded{\setuprotate[rotation=\recurselevel]}%
+%       \traceboxplacementtrue
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=depth] {\ruledhbox{\bfb  (depth)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=fit]   {\ruledhbox{\bfb    (fit)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=broad] {\ruledhbox{\bfb  (broad)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=normal]{\ruledhbox{\bfb (normal)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=high]  {\ruledhbox{\bfb   (high)}}}}}
+%    \stoplinecorrection}
+
+% to be used in some other places! todo!
+%
+% divides \hsize in fractions, will be made a bit more
+% clever and advanced when needed
+%
+% \horizontaldivision[n/m,elements,distance]
+%
+% \horizontaldivision[2/5,3,1em]
+% \horizontaldivision[2/5,3,1em]
+% \horizontaldivision[1/5,3,1em]
+%
+% \setuphorizontaldivision[afstand=,aantal=]  (passend,passend)
+
+\def\??fr{@@fr}
+
+\def\setuphorizontaldivision
+  {\dodoubleargument\getparameters[\??fr]}
+
+\def\horizontaldivision
+  {\dosingleargument\dohorizontaldivision}
+
+\def\dohorizontaldivision[#1]%
+  {\dodohorizontaldivision[#1,,,,,,]}
+
+\def\dodohorizontaldivision[#1/#2,#3,#4,#5]%
+  {\doifelsenothing{#3}
+     {\doifelse\@@frn\v!fit
+        {\!!counta#2\relax}
+        {\!!counta\@@frn\relax}}
+     {\!!counta#3\relax}%
+   \doifelsenothing{#4}
+     {\doifelse\@@frdistance\v!fit
+        {\!!widtha\zeropoint}
+        {\!!widtha\@@frdistance}}
+     {\!!widtha#4}%
+   \advance\!!counta \minusone
+   \multiply\!!widtha \!!counta
+   \advance\hsize -\!!widtha
+   \divide\hsize #2\relax
+   \hsize#1\hsize}
+
+\setuphorizontaldivision
+  [\c!distance=\tfskipsize,
+   \c!n=\v!fit]
+
+%D This one is for Daniel Pittman, who wanted tight
+%D fractions. We show three versions. First the simple
+%D one using \type {\low} and \type {high}:
+%D
+%D \startbuffer
+%D \def\vfrac#1#2%
+%D   {\hbox{\high{\tx#1\kern-.25em}/\low{\kern-.25em\tx#2}}}
+%D
+%D test \vfrac{1}{2} test \vfrac{123}{456} test
+%D \stopbuffer
+%D
+%D \typebuffer {\showmakeup\getbuffer}
+%D
+%D A better way to handle the kerning is the following, here
+%D we kind of assume that tye slash is symmetrical and has
+%D nearly zero width.
+%D
+%D \startbuffer
+%D \def\vfract#1#2%
+%D   {\hbox{\high{\tx#1}\hbox to \zeropoint{\hss/\hss}\low{\tx#2}}}
+%D \stopbuffer
+%D
+%D \typebuffer {\showmakeup\getbuffer}
+%D
+%D The third and best alternative is the following:
+%D
+%D {\showmakeup\getbuffer}\crlf\getbuffer
+%D
+%D This time we measure the height of the \type {/} and
+%D shift over the maximum height and depths of this
+%D character and the fractional digits (we use 57 as
+%D sample). Here we combine all methods in one macros.
+
+\chardef\vulgarfractionmethod=3
+
+\definehspace[vulgarfraction][.25em] % [.15em]
+\definesymbol[vulgarfraction][/]     % [\raise.2ex\hbox{/}]
+
+\unexpanded\def\vulgarfraction#1#2%
+  {\dontleavehmode
+   \hbox
+     {\def\vulgarfraction{vulgarfraction}%
+      \ifcase\vulgarfractionmethod
+        #1\symbol[\vulgarfraction]#2%
+      \or
+        \high{\tx#1\kern-\hspaceamount\empty\vulgarfraction}%
+        \symbol[\vulgarfraction]%
+        \low {\kern-\hspaceamount\empty\vulgarfraction\tx#2}%
+      \or
+        \high{\tx#1}%
+        \hbox to \zeropoint{\hss\symbol[\vulgarfraction]\hss}%
+        \low{\tx#2}%
+      \or
+        \setbox0\hbox{\symbol[\vulgarfraction]}%
+        \setbox2\hbox{\txx57}%
+        \raise\ht0\hbox{\lower\ht2\hbox{\txx#1}}%
+        \hbox to \zeropoint{\hss\symbol[\vulgarfraction]\hss}%
+        \lower\dp0\hbox{\raise\dp2\hbox{\txx#2}}%
+      \fi}}
+
+\ifx\vfrac\undefined \let\vfrac\vulgarfraction \fi
+
+%D \starttabulate
+%D \HL
+%D \NC \bf method \NC \bf visualization \NC\NR
+%D \HL
+%D \NC 0 \NC \chardef\vulgarfractionmethod0\vulgarfraction{1}{2} \NC\NR
+%D \NC 1 \NC \chardef\vulgarfractionmethod1\vulgarfraction{1}{2} \NC\NR
+%D \NC 2 \NC \chardef\vulgarfractionmethod2\vulgarfraction{1}{2} \NC\NR
+%D \NC 3 \NC \chardef\vulgarfractionmethod3\vulgarfraction{1}{2} \NC\NR
+%D \HL
+%D \stoptabulate
+
+%D Under construction:
+%D
+%D \starttyping
+%D \commalistsentence[aap,noot,mies]
+%D \commalistsentence[aap,noot]
+%D \commalistsentence[aap]
+%D \commalistsentence[a,b,c]
+%D \commalistsentence[a,b,c][{ \& },{ and }]
+%D \commalistsentence[a,b,c][+,-]
+%D \stoptyping
+
+\let\handlecommalistsentence\firstofoneargument
+
+\def\commalistsentenceone{and-1}
+\def\commalistsentencetwo{and-2}
+
+\def\commalistsentence
+  {\dodoubleempty\docommalistsentence}
+
+\def\docommalistsentence[#1][#2]%
+  {\bgroup
+   \getfromcommalist[#2][1]%
+   \ifx\commalistelement\empty
+     \def\@@commalistsentenceone{\labeltext\commalistsentenceone}%
+   \else
+     \let\@@commalistsentenceone\commalistelement
+   \fi
+   \getfromcommalist[#2][2]%
+   \ifx\commalistelement\empty
+     \def\@@commalistsentencetwo{\labeltext\commalistsentencetwo}%
+   \else
+     \let\@@commalistsentencetwo\commalistelement
+   \fi
+   \getcommalistsize[#1]%
+   \ifcase\commalistsize\relax
+     \def\serializedcommalist{#1}%
+   \else
+     \let\serializedcommalist\empty
+     \scratchcounter\zerocount
+     \def\docommand##1%
+       {\advance\scratchcounter \plusone
+        \ifnum\scratchcounter=\plusone
+          \scratchtoks{\handlecommalistsentence{##1}}%
+        \else
+          \ifnum\scratchcounter=\commalistsize
+            \appendtoks\@@commalistsentencetwo\handlecommalistsentence{##1}\to\scratchtoks
+          \else
+            \appendtoks\@@commalistsentenceone\handlecommalistsentence{##1}\to\scratchtoks
+          \fi
+        \fi}%
+     \processcommacommand[#1]\docommand
+     \edef\serializedcommalist{\the\scratchtoks}%
+   \fi
+   \serializedcommalist
+   \egroup}
+
+\def\commacommandsentence[#1]{\@EA\commalistsentence\@EA[#1]}
+
+\ifx\textcomma\undefined \def\textcomma{,} \fi
+
+\setuplabeltext [\s!nl] [and-1=\textcomma\ , and-2= en ]
+\setuplabeltext [\s!en] [and-1=\textcomma\ , and-2=\textcomma\ and ]
+\setuplabeltext [\s!de] [and-1=\textcomma\ , and-2= und ]
+
+%D \macros
+%D   {somekindoftab}
+%D
+%D This macro can be used to create tabs:
+%D
+%D \starttyping
+%D \setupheadertexts[{\somekindoftab[alternative=horizontal]{\framed{\realfolio}}}]
+%D \setuptexttexts  [{\somekindoftab[alternative=vertical]  {\framed{\realfolio}}}]
+%D
+%D \starttext
+%D     \showframe \dorecurse{10}{test\page}
+%D \stoptext
+%D \stoptyping
+
+\def\somekindoftab
+  {\dosingleempty\dosomekindoftab}
+
+\def\dosomekindoftab[#1]%
+  {\bgroup
+   \getparameters[xx]
+     [\c!alternative=\v!vertical,
+      \c!width=\textwidth,\c!height=\textheight,
+      \c!n=\lastpage,\c!m=\realpageno,
+      #1]%
+   \doifelse\xxalternative\v!vertical
+     {\dodosomekindoftab\vbox\vskip\xxheight}
+     {\dodosomekindoftab\hbox\hskip\xxwidth }}
+
+\def\dodosomekindoftab#1#2#3#4%
+  {#1 to #3 \bgroup
+     \forgetall
+     \ifnum\xxm>\plusone
+       #2\zeropoint \!!plus \the\numexpr\xxm   -1\relax fill\relax
+     \fi
+     #4%
+     \ifnum\xxm<\xxn\relax
+       #2\zeropoint \!!plus \the\numexpr\xxn-\xxm\relax fill\relax
+     \fi
+   \egroup
+   \egroup}
+
+\protect \endinput

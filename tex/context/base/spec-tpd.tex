@@ -75,17 +75,17 @@
 \unprotect
 
 \ifx\pdftexversion\undefined
-  \writestatus{\m!systems}{you should use pdfTeX binaries}\wait
+  \writestatus\m!systems{you should use pdfTeX binaries}\wait
   \protect\expandafter\endinput
 \fi
 
 \ifnum\pdftexversion<13
-  \writestatus{\m!systems}{your pdfTeX version is much too old}\wait
+  \writestatus\m!systems{your pdfTeX version is much too old}\wait
   \protect\expandafter\endinput
 \fi
 
 \ifnum\pdftexversion<14
-  \writestatus{\m!systems}{please update your pdfTeX binaries}
+  \writestatus\m!systems{please update your pdfTeX binaries}
 \fi
 
 \ifnum\pdftexversion>19
@@ -206,8 +206,8 @@
 %D
 %D This token register is flushed before an ximage is loaded.
 
-\newevery \everyPDFximage \relax
-\newevery \everyPDFxform  \relax
+\ifdefined\everyPDFximage \else \newtoks\everyPDFximage \fi
+\ifdefined\everyPDFxform  \else \newtoks\everyPDFxform  \fi
 
 %D \macros
 %D   {dosetuppaper}
@@ -740,7 +740,7 @@
 \definespecial\dostartgotorealpage{\doPDFstartgotorealpage}
 \definespecial\dostartgotoJS      {\doPDFstartgotoJS}
 
-\let\PDFpagexyzspec\empty % hack, pdftex does not accept spec
+\let\PDFpagexyzspec\empty % pdftex does not accept spec
 
 %D \macros
 %D   {doflushJSpreamble}
@@ -1048,32 +1048,6 @@
 \ifnum\pdftexversion>13
 
   \def\doPDFaction#1#2#3%
-    {\ifcollectreferenceactions
-       \xdef\lastPDFaction{#3}%
-     \else
-       \ifsharePDFactions
-         \ifcase\similarreference\relax
-           \xdef\lastPDFaction{<<#3>>}%
-         \or
-           \immediate\pdfobj{<<#3>>}%
-           \xdef\lastPDFaction{\PDFobjref\pdflastobj}%
-         \else
-           % leave \lastPDFaction untouched
-         \fi
-       \else
-         \xdef\lastPDFaction{<<#3>>}%
-       \fi
-       \pdfannot
-         width #1 height #2 depth \zeropoint
-           {/Subtype /Link
-            /Border [0 0 0]
-            \ifhighlighthyperlinks \else /H /N \fi
-            /A \lastPDFaction}%
-     \fi}
-
-  % less #2 passing
-
-  \def\doPDFaction#1#2#3%
     {\xdef\lastPDFcontent{#3}%
      \ifcollectreferenceactions
        \global\let\lastPDFaction\lastPDFcontent
@@ -1354,8 +1328,6 @@
   {\doiffileelse{./#1}{\includeMPasPDF{./#1}}{\message{[MP #1]}}}
 
 %D Now we can finish this module.
-
-\loadmarkfile{spec-tpd}
 
 \stopspecials
 

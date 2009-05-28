@@ -11,7 +11,9 @@ local format = string.format
 scripts           = scripts           or { }
 scripts.interface = scripts.interface or { }
 
-local flushers = { }
+local flushers          = { }
+local userinterfaces    = { 'en','cs','de','it','nl','ro','fr','pe' }
+local messageinterfaces = { 'en','cs','de','it','nl','ro','fr','pe','no' }
 
 function flushers.scite(interface,collection)
     local result, i = {}, 0
@@ -59,25 +61,23 @@ end
 
 function flushers.raw(interface,collection)
     for _, command in ipairs(collection) do
-        input.report(command)
+        logs.simple(command)
     end
 end
 
 function scripts.interface.editor(editor)
     local interfaces= environment.files
     if #interfaces == 0 then
-        interfaces= { 'en','cs','de','it','nl','ro','fr' }
+        interfaces= userinterfaces
     end
-    local xmlfile = input.find_file("cont-en.xml") or ""
+    local xmlfile = resolvers.find_file("cont-en.xml") or ""
     if xmlfile == "" then
-        input.verbose = true
-        input.report("unable to locate cont-en.xml")
+        logs.simple("unable to locate cont-en.xml")
     end
     for _, interface in ipairs(interfaces) do
-        local keyfile = input.find_file(format("keys-%s.xml",interface)) or ""
+        local keyfile = resolvers.find_file(format("keys-%s.xml",interface)) or ""
         if keyfile == "" then
-            input.verbose = true
-            input.report("unable to locate keys-*.xml")
+            logs.simple("unable to locate keys-*.xml")
         else
             local collection = { }
             local mappings   = { }
@@ -112,7 +112,7 @@ function scripts.interface.editor(editor)
 end
 
 function scripts.interface.check()
-    local xmlfile = input.find_file("cont-en.xml") or ""
+    local xmlfile = resolvers.find_file("cont-en.xml") or ""
     if xmlfile ~= "" then
         local f = io.open("cont-en-check.tex","w")
         if f then
@@ -138,14 +138,12 @@ function scripts.interface.check()
 end
 
 function scripts.interface.context()
-    local verbose = input.verbose
-    input.verbose = true
-    local filename = input.find_file("mult-def.lua") or ""
+    local filename = resolvers.find_file("mult-def.lua") or ""
     if filename ~= "" then
         local interface = dofile(filename)
         if interface and next(interface) then
             local variables, constants, commands, elements = interface.variables, interface.constants, interface.commands, interface.elements
-            local filename = input.find_file("cont-en.xml") or ""
+            local filename = resolvers.find_file("cont-en.xml") or ""
             local xmldata = filename ~= "" and (io.loaddata(filename) or "")
             local function flush(texresult,xmlresult,language,what,tag)
                 local t = interface[what]
@@ -156,7 +154,7 @@ function scripts.interface.context()
                     local v = t[key]
                     local value = v[language] or v["en"]
                     if not value then
-                        input.report(format("warning, no value for key '%s' for language '%s'",key,language))
+                        logs.simple(format("warning, no value for key '%s' for language '%s'",key,language))
                     else
                         local value = t[key][language] or t[key].en
                         texresult[#texresult+1] = format("\\setinterface%s{%s}{%s}",tag,key,value)
@@ -194,9 +192,9 @@ function scripts.interface.context()
                 local texfilename = format("mult-%s.tex",language)
                 local xmlfilename = format("keys-%s.xml",language)
                 io.savedata(texfilename,table.concat(texresult,"\n"))
-                input.report(format("saving interface definitions '%s'",texfilename))
+                logs.simple(format("saving interface definitions '%s'",texfilename))
                 io.savedata(xmlfilename,table.concat(xmlresult,"\n"))
-                input.report(format("saving interface translations '%s'",xmlfilename))
+                logs.simple(format("saving interface translations '%s'",xmlfilename))
                 if language ~= "en" and xmldata ~= "" then
                     local newdata = xmldata:gsub("(<cd:interface.*language=.)en(.)","%1"..language.."%2",1)
                     newdata = replace(newdata, 'cd:string', 'value', interface.commands, interface.elements, language)
@@ -207,17 +205,36 @@ function scripts.interface.context()
                     newdata = replace(newdata, 'cd:inherit', 'name', interface.commands, interface.elements, language)
                     local xmlfilename = format("cont-%s.xml",language)
                     io.savedata(xmlfilename,newdata)
-                    input.report(format("saving interface specification '%s'",xmlfilename))
+                    logs.simple(format("saving interface specification '%s'",xmlfilename))
                 end
             end
         end
     end
-    input.verbose = verbose
 end
 
+function scripts.interface.messages()
+    local filename = resolvers.find_file("mult-mes.lua") or ""
+    if filename ~= "" then
+        local messages = dofile(filename)
+        for _, interface in ipairs(messageinterfaces) do
+            local texresult = { }
+            for category, data in next, messages do
+                for tag, message in next, data do
+                    if tag ~= "files" then
+                        local msg = message[interface] or message["all"] or message["en"]
+                        if msg then
+                            texresult[#texresult+1] = format("\\setinterfacemessage{%s}{%s}{%s}",category,tag,msg)
+                        end
+                    end
+                end
+            end
+            texresult[#texresult+1] = format("%%\n\\endinput")
+            io.savedata(format("mult-m%s.tex",interface),table.concat(texresult,"\n"))
+        end
+    end
+end
 
-
-banner = banner .. " | interface tools "
+logs.extendbanner("Interface Tools 0.11",true)
 
 messages.help = [[
 --scite               generate scite interface
@@ -225,10 +242,13 @@ messages.help = [[
 --jedit               generate scite interface
 --check               generate check file
 --context             generate context definition files
+--messages            generate context message files
 ]]
 
 if environment.argument("context") then
     scripts.interface.context()
+elseif environment.argument("messages") then
+    scripts.interface.messages()
 elseif environment.argument("scite") or environment.argument("bbedit") or environment.argument("jedit") then
     if environment.argument("scite") then
         scripts.interface.editor("scite")
@@ -242,5 +262,5 @@ elseif environment.argument("scite") or environment.argument("bbedit") or enviro
 elseif environment.argument("check") then
     scripts.interface.check()
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

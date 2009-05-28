@@ -1,15 +1,12 @@
--- filename : char-map.lua
--- comment  : companion to char-def.tex (in ConTeXt)
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['char-map'] = {
+    version   = 1.001,
+    comment   = "companion to char-ini.tex",
+    author    = "Hans Hagen & Arthur Reutenauer",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
--- remark   : derived from 'specialcasing.txt', se Arthurs comments in char-map.txt
-
-
-if not versions   then versions   = { } end versions['char-map'] = 1.001
-if not characters then characters = { } end
-
+characters = characters or { }
 
 characters.casemap={
  [0x0049]={

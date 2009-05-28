@@ -385,22 +385,22 @@ do
                         local structure = environment.argument("structure") or "document"
                         converter = converter[structure]
                         if converter then
-                            input.report("converting '%s' using language '%s' with structure '%s'", filename, language, structure)
+                            logs.simple("converting '%s' using language '%s' with structure '%s'", filename, language, structure)
                             data = converter:match(data)
                             local newfilename = filename .. ".utf"
                             io.savedata(newfilename, data)
-                            input.report("converted data saved in '%s'", newfilename)
+                            logs.simple("converted data saved in '%s'", newfilename)
                         else
-                            input.report("unknown structure '%s' language '%s'", structure, language)
+                            logs.simple("unknown structure '%s' language '%s'", structure, language)
                         end
                     else
-                        input.report("no converter for language '%s'", language)
+                        logs.simple("no converter for language '%s'", language)
                     end
                 else
-                    input.report("provide language")
+                    logs.simple("provide language")
                 end
             else
-                input.report("no data in '%s'",filename)
+                logs.simple("no data in '%s'",filename)
             end
         end
     end
@@ -413,7 +413,7 @@ do
 
 end
 
-banner = banner .. " | babel conversion tools | version 1.2"
+logs.extendbanner("Babel Conversion Tools 1.2",true)
 
 messages.help = [[
 --language=string     conversion language (e.g. greek)
@@ -421,10 +421,8 @@ messages.help = [[
 --convert             convert babel codes into utf
 ]]
 
-input.verbose = true
-
 if environment.argument("convert") then
     scripts.babel.convert(environment.files[1] or "")
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

@@ -16,6 +16,8 @@
 
 # report ?
 
+require 'fileutils'
+
 require 'base/variables'
 require 'base/kpse'
 require 'base/system'
@@ -128,11 +130,12 @@ class TEX
     ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro'   end
     ['cont-gb','gb','cont-uk','uk','british']      .each do |f| @@texformats[f] = 'cont-gb'   end
     ['cont-pe','pe','persian']                     .each do |f| @@texformats[f] = 'cont-pe'   end
+    ['cont-xp','xp','experimental']                .each do |f| @@texformats[f] = 'cont-xp'   end
     ['mptopdf']                                    .each do |f| @@texformats[f] = 'mptopdf'   end
 
     ['latex']                                      .each do |f| @@texformats[f] = 'latex.ltx' end
 
-    ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'plain'     end
+    ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'mpost'     end
     ['metafun','context','standard']               .each do |f| @@mpsformats[f] = 'metafun'   end
 
     ['pdftex','pdfetex','aleph','omega','petex',
@@ -143,7 +146,7 @@ class TEX
     ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
     ['cont-en','cont-nl','cont-de','cont-it',
      'cont-fr','cont-cs','cont-ro','cont-gb',
-     'cont-pe']                                    .each do |f| @@texmethods[f] = 'context'   end
+     'cont-pe','cont-xp']                          .each do |f| @@texmethods[f] = 'context'   end
     ['latex','pdflatex']                           .each do |f| @@texmethods[f] = 'latex'     end
 
     ['plain','default','standard']                 .each do |f| @@mpsmethods[f] = 'plain'     end
@@ -154,7 +157,7 @@ class TEX
 
     ['cont-en','cont-nl','cont-de','cont-it',
      'cont-fr','cont-cs','cont-ro','cont-gb',
-     'cont-pe']                                    .each do |f| @@texprocstr[f] = @@platformslash + "emergencyend"  end
+     'cont-pe','cont-xp']                         .each do |f| @@texprocstr[f] = @@platformslash + "emergencyend"  end
 
     @@runoptions['aleph']   = ['--8bit']
     @@runoptions['luatex']  = ['--file-line-error']
@@ -166,7 +169,7 @@ class TEX
 
     @@tcxflag['aleph']   = true
     @@tcxflag['luatex']  = false
-    @@tcxflag['mpost']   = true
+    @@tcxflag['mpost']   = false
     @@tcxflag['pdfetex'] = true
     @@tcxflag['pdftex']  = true
     @@tcxflag['petex']   = false
@@ -174,8 +177,8 @@ class TEX
 
     @@draftoptions['pdftex'] = ['--draftmode']
 
-    @@booleanvars = [
-        'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
+    @@mainbooleanvars = [
+        'batchmode', 'nonstopmode', 'fast', 'final',
         'paranoid', 'notparanoid', 'nobanner', 'once', 'allpatterns', 'draft',
         'nompmode', 'nomprun', 'automprun', 'combine',
         'nomapfiles', 'local',
@@ -187,19 +190,19 @@ class TEX
         'globalfile', 'autopath',
         'purge', 'purgeall', 'keep', 'autopdf', 'xpdf', 'simplerun', 'verbose',
         'nooptionfile', 'nobackend', 'noctx', 'utfbom',
-        'mkii',
+        'mkii','mkiv',
     ]
-    @@stringvars = [
+    @@mainstringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
         'filters', 'usemodules', 'environments', 'separation', 'setuppath',
         'arguments', 'input', 'output', 'randomseed', 'modes', 'mode', 'filename',
         'ctxfile', 'printformat', 'paperformat', 'paperoffset',
         'timeout', 'passon'
     ]
-    @@standardvars = [
+    @@mainstandardvars = [
         'mainlanguage', 'bodyfont', 'language'
     ]
-    @@knownvars = [
+    @@mainknownvars = [
         'engine', 'distribution', 'texformats', 'mpsformats', 'progname', 'interface',
         'runs', 'backend'
     ]
@@ -208,29 +211,31 @@ class TEX
     @@extrastringvars = []
 
     def booleanvars
-        [@@booleanvars,@@extrabooleanvars].flatten.uniq
+        [@@mainbooleanvars,@@extrabooleanvars].flatten.uniq
     end
     def stringvars
-        [@@stringvars,@@extrastringvars].flatten.uniq
+        [@@mainstringvars,@@extrastringvars].flatten.uniq
     end
     def standardvars
-        [@@standardvars].flatten.uniq
+        [@@mainstandardvars].flatten.uniq
     end
     def knownvars
-        [@@knownvars].flatten.uniq
+        [@@mainknownvars].flatten.uniq
     end
     def allbooleanvars
-        [@@booleanvars,@@extrabooleanvars].flatten.uniq
+        [@@mainbooleanvars,@@extrabooleanvars].flatten.uniq
     end
     def allstringvars
-        [@@stringvars,@@extrastringvars,@@standardvars,@@knownvars].flatten.uniq
+        [@@mainstringvars,@@extrastringvars,@@mainstandardvars,@@mainknownvars].flatten.uniq
     end
 
     def setextrastringvars(vars)
-        @@extrastringvars << vars
+        # @@extrastringvars << vars -- problems in 1.9
+        @@extrastringvars = [@@extrastringvars,vars].flatten
     end
     def setextrabooleanvars(vars)
-        @@extrabooleanvars << vars
+        # @@extrabooleanvars << vars -- problems in 1.9
+        @@extrabooleanvars = [@@extrabooleanvars,vars].flatten
     end
 
     # def jobvariables(names=nil)
@@ -580,7 +585,7 @@ class TEX
         if data = (IO.readlines(@@luafiles) rescue nil) then
             report("compiling lua files (using #{File.expand_path(@@luafiles)})")
             begin
-                File.makedirs(@@luatarget) rescue false
+                FileUtils.makedirs(@@luatarget) rescue false
                 data.each do |line|
                     luafile = line.chomp
                     lucfile = File.basename(luafile).gsub(/\..*?$/,'') + ".luc"
@@ -686,7 +691,8 @@ class TEX
                 mpsformats.each do |mpsformat|
                     report("generating mps format #{mpsformat}")
                     progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
-                    if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag(mpsengine),runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
+                #   if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag(mpsengine),runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
+                    if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
                         setvariable('error','no format made')
                     end
                 end
@@ -1009,7 +1015,11 @@ end
             tmp << "\\starttext\n"
             if forcexml then
                 # tmp << checkxmlfile(rawname)
-                tmp << "\\processXMLfilegrouped{#{rawname}}\n"
+                if getvariable('mkiv') then
+                    tmp << "\\xmlprocess{\\xmldocument}{#{rawname}}{}\n"
+                else
+                    tmp << "\\processXMLfilegrouped{#{rawname}}\n"
+                end
             else
                 tmp << "\\processfile{#{rawname}}\n"
             end
@@ -1329,12 +1339,9 @@ class TEX
                 # local handies
                 opt << "\% #{topname}\n"
                 opt << "\\unprotect\n"
-                if getvariable('utfbom') then
-                    opt << "\\enableregime[utf]"
-                end
-                opt << "\\setupsystem[\\c!n=#{kindofrun},\\c!m=#{currentrun}]\n"
-                progname = validprogname(['metafun']) # [getvariable('progname'),mpsformat,mpsengine]
-                opt << "\\def\\MPOSTformatswitch\{#{prognameflag(progname)} #{formatflag('mpost')}=\}\n"
+                #
+                # feedback and basic control
+                #
                 if getvariable('batchmode') then
                     opt << "\\batchmode\n"
                 end
@@ -1344,6 +1351,21 @@ class TEX
                 if getvariable('paranoid') then
                     opt << "\\def\\maxreadlevel{1}\n"
                 end
+                if getvariable('nomapfiles') then
+                    opt << "\\disablemapfiles\n"
+                end
+                if getvariable('nompmode') || getvariable('nomprun') || getvariable('automprun') then
+                    opt << "\\runMPgraphicsfalse\n"
+                end
+                if getvariable('utfbom') then
+                    opt << "\\enableregime[utf]"
+                end
+                progname = validprogname(['metafun']) # [getvariable('progname'),mpsformat,mpsengine]
+                opt << "\\def\\MPOSTformatswitch\{#{prognameflag(progname)} #{formatflag('mpost')}=\}\n"
+                #
+                # process info
+                #
+                opt << "\\setupsystem[\\c!n=#{kindofrun},\\c!m=#{currentrun}]\n"
                 if (str = File.unixfied(getvariable('modefile'))) && ! str.empty? then
                     opt << "\\readlocfile{#{str}}{}{}\n"
                 end
@@ -1360,6 +1382,35 @@ class TEX
                 if (str = getvariable('mainlanguage').downcase) && ! str.empty? && ! str.standard? then
                     opt << "\\setuplanguage[#{str}]\n"
                 end
+                if (str = getvariable('arguments')) && ! str.empty? then
+                    opt << "\\setupenv[#{str}]\n"
+                end
+                if (str = getvariable('setuppath')) && ! str.empty? then
+                    opt << "\\setupsystem[\\c!directory=\{#{str}\}]\n"
+                end
+                if (str = getvariable('randomseed')) && ! str.empty? then
+                    report("using randomseed #{str}")
+                    opt << "\\setupsystem[\\c!random=#{str}]\n"
+                end
+                if (str = getvariable('input')) && ! str.empty? then
+                    opt << "\\setupsystem[inputfile=#{str}]\n"
+                else
+                    opt << "\\setupsystem[inputfile=#{rawname}]\n"
+                end
+                #
+                # modes
+                #
+                # we handle both "--mode" and "--modes", else "--mode" is mapped onto "--modefile"
+                if (str = getvariable('modes')) && ! str.empty? then
+                    opt << "\\enablemode[#{str}]\n"
+                end
+                if (str = getvariable('mode')) && ! str.empty? then
+                    opt << "\\enablemode[#{str}]\n"
+                end
+                #
+                # options
+                #
+                opt << "\\startsetups *runtime:options\n"
                 if str = validbackend(getvariable('backend')) then
                     opt << "\\setupoutput[#{str}]\n"
                 elsif str = validbackend(getvariable('output')) then
@@ -1368,20 +1419,8 @@ class TEX
                 if getvariable('color') then
                     opt << "\\setupcolors[\\c!state=\\v!start]\n"
                 end
-                if getvariable('nompmode') || getvariable('nomprun') || getvariable('automprun') then
-                    opt << "\\runMPgraphicsfalse\n"
-                end
-                if getvariable('fast') && ! getvariable('fastdisabled') then
-                    opt << "\\fastmode\n"
-                end
-                if getvariable('silentmode') then
-                    opt << "\\silentmode\n"
-                end
                 if (str = getvariable('separation')) && ! str.empty? then
                     opt << "\\setupcolors[\\c!split=#{str}]\n"
-                end
-                if (str = getvariable('setuppath')) && ! str.empty? then
-                    opt << "\\setupsystem[\\c!directory=\{#{str}\}]\n"
                 end
                 if (str = getvariable('paperformat')) && ! str.empty? && ! str.standard? then
                     if str =~ /^([a-z]+\d+)([a-z]+\d+)$/io then # A5A4 A4A3 A2A1 ...
@@ -1399,9 +1438,6 @@ class TEX
                 if getvariable('centerpage') then
                     opt << "\\setuplayout[\\c!location=\\v!middle,\\c!marking=\\v!on]\n"
                 end
-                if getvariable('nomapfiles') then
-                    opt << "\\disablemapfiles\n"
-                end
                 if getvariable('noarrange') then
                     opt << "\\setuparranging[\\v!disable]\n"
                 elsif getvariable('arrange') then
@@ -1418,26 +1454,6 @@ class TEX
                         arrangement << "\\v!disable"
                     end
                     opt << "\\setuparranging[#{arrangement.flatten.join(',')}]\n" if arrangement.size > 0
-                end
-                # we handle both "--mode" and "--modes", else "--mode" is
-                # mapped onto "--modefile"
-                if (str = getvariable('modes')) && ! str.empty? then
-                    opt << "\\enablemode[#{str}]\n"
-                end
-                if (str = getvariable('mode')) && ! str.empty? then
-                    opt << "\\enablemode[#{str}]\n"
-                end
-                if (str = getvariable('arguments')) && ! str.empty? then
-                    opt << "\\setupenv[#{str}]\n"
-                end
-                if (str = getvariable('randomseed')) && ! str.empty? then
-                    report("using randomseed #{str}")
-                    opt << "\\setupsystem[\\c!random=#{str}]\n"
-                end
-                if (str = getvariable('input')) && ! str.empty? then
-                    opt << "\\setupsystem[inputfile=#{str}]\n"
-                else
-                    opt << "\\setupsystem[inputfile=#{rawname}]\n"
                 end
                 if (str = getvariable('pages')) && ! str.empty? then
                     if str.downcase == 'odd' then
@@ -1459,14 +1475,18 @@ class TEX
                         opt << "\\def\\pagestoshipout\{#{pagelist.join(',')}\}\n";
                     end
                 end
-                opt << "\\protect\n";
-              # begin getvariable('modes'       ).split(',').uniq.each do |e| opt << "\\enablemode  [#{e}]\n" end ; rescue ; end
+                opt << "\\stopsetups\n"
+                #
+                # styles and modules
+                #
+                opt << "\\startsetups *runtime:modules\n"
                 begin getvariable('filters'     ).split(',').uniq.each do |f| opt << "\\useXMLfilter[#{f}]\n" end ; rescue ; end
                 begin getvariable('usemodules'  ).split(',').uniq.each do |m| opt << "\\usemodule   [#{m}]\n" end ; rescue ; end
                 begin getvariable('environments').split(',').uniq.each do |e| opt << "\\environment  #{e} \n" end ; rescue ; end
-              # this will become:
-              # begin getvariable('environments').split(',').uniq.each do |e| opt << "\\useenvironment[#{e}]\n" end ; rescue ; end
-                opt << "\\endinput\n"
+                opt << "\\stopsetups\n"
+                #
+                opt << "\\protect \\endinput\n"
+                #
                 opt.close
            else
                 report("unable to write option file #{topname}")
@@ -1579,7 +1599,9 @@ end
         if mpsengine && mpsformat then
             ENV["MPXCOMMAND"] = "0" unless mpx
             progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
-            runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag(mpsengine),runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
+            mpname.gsub!(/\.mp$/,"") # temp bug in mp
+        #   runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag(mpsengine),runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
+            runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
             true
         else
             false
@@ -1589,7 +1611,7 @@ end
     def runtexmp(filename,filetype='',purge=true)
         checktestversion
         mpname = File.suffixed(filename,filetype,'mp')
-        if File.atleast?(mpname,25) then
+        if File.atleast?(mpname,10) then
             # first run needed
             File.silentdelete(File.suffixed(mpname,'mpt'))
             doruntexmp(mpname,nil,true,purge)
@@ -1627,7 +1649,7 @@ end
     end
 
     def runtexutil(filename=[], options=['--ref','--ij','--high'], old=false)
-        filename.each do |fname|
+        [filename].flatten.each do |fname|
             if old then
                 Kpse.runscript('texutil',fname,options)
             else
@@ -2065,7 +2087,7 @@ end
         setvariable('mp.line','')
         setvariable('mp.error','')
         if mpdata = File.silentread(mpname) then
-            mpdata.gsub!(/^\%.*\n/o,'')
+        #   mpdata.gsub!(/^\%.*\n/o,'')
             File.silentrename(mpname,mpcopy)
             texfound = mergebe || (mpdata =~ /btex .*? etex/mo)
             if mp = openedfile(mpname) then
@@ -2082,10 +2104,11 @@ end
                         mp << mergebe['0'] if mergebe.key?('0')
                     end
                 end
-                mp << MPTools::splitmplines(mpdata)
+        #       mp << MPTools::splitmplines(mpdata)
+                mp << mpdata
                 mp << "\n"
-                mp << "end"
-                mp << "\n"
+        #        mp << "end"
+        #        mp << "\n"
                 mp.close
             end
             processmpx(mpname,true,true,purge) if texfound
@@ -2097,7 +2120,10 @@ end
                 options = ''
             end
             # todo plain|mpost|metafun
-            ok = runmp(mpname)
+            begin
+                ok = runmp(mpname)
+            rescue
+            end
             if f = File.silentopen(File.suffixed(mpname,'log')) then
                 while str = f.gets do
                     if str =~ /^l\.(\d+)\s(.*?)\n/o then

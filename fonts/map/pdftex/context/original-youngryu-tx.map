@@ -1,23 +1,28 @@
 % This file is a (slightly adapted) copy of the map file
 % that comes with the TX fonts by Young Ryu.
 
-% tx8r.enc replaced by 8r.enc
+% URW fonts replaced by TeX Gyre
 
-% URW times
+% TeX Gyre Termes (Times)
 
-rtxptmb  NimbusRomNo9L-Medi                      <8r.enc <utmb8a.pfb
-rtxptmbo NimbusRomNo9L-Medi     ".167 SlantFont" <8r.enc <utmb8a.pfb
-rtxptmbi NimbusRomNo9L-MediItal                  <8r.enc <utmbi8a.pfb
-rtxptmr  NimbusRomNo9L-Regu                      <8r.enc <utmr8a.pfb
-rtxptmro NimbusRomNo9L-Regu     ".167 SlantFont" <8r.enc <utmr8a.pfb
-rtxptmri NimbusRomNo9L-ReguItal                  <8r.enc <utmri8a.pfb
+rtxptmr  TeXGyreTermes-Regular     "encq8r ReEncodeFont" <q-8r.enc <qtmr.pfb
+rtxptmb  TeXGyreTermes-Bold        "encq8r ReEncodeFont" <q-8r.enc <qtmb.pfb
+rtxptmri TeXGyreTermes-Italic      "encq8r ReEncodeFont" <q-8r.enc <qtmri.pfb
+rtxptmbi TeXGyreTermes-BoldItalic  "encq8r ReEncodeFont" <q-8r.enc <qtmbi.pfb
+% no idea why these were added
+rtxptmro TeXGyreTermes-Oblique     ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qtmr.pfb
+rtxptmbo TeXGyreTermes-BoldOblique ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qtmb.pfb
 
-% URW Helvetica
+% TeX Gyre Heros (Helvetica)
 
-rtxphvr  NimbusSanL-Regu                         <8r.enc <uhv8a.pfb
-rtxphvro NimbusSanL-Regu        ".167 SlantFont" <8r.enc <uhv8a.pfb
-rtxphvb  NimbusSanL-Bold                         <8r.enc <uhvb8a.pfb
-rtxphvbo NimbusSanL-Bold        ".167 SlantFont" <8r.enc <uhvb8a.pfb
+rtxphvr  TeXGyreHeros-Regular     "encqrm ReEncodeFont" <q-rm.enc <qtmr.pfb
+rtxphvb  TeXGyreHeros-Bold        "encqrm ReEncodeFont" <q-rm.enc <qtmb.pfb
+% probably not used by txfonts
+% rtxphvri TeXGyreHeros-Italic      "encqrm ReEncodeFont" <q-rm.enc <qtmri.pfb
+% rtxphvbi TeXGyreHeros-BoldItalic  "encqrm ReEncodeFont" <q-rm.enc <qtmbi.pfb
+% followed original definitions; one could also use the italic version
+rtxphvro TeXGyreHeros-Oblique     ".167 SlantFont encqrm ReEncodeFont" <q-rm.enc <qtmr.pfb
+rtxphvbo TeXGyreHeros-BoldOblique ".167 SlantFont encqrm ReEncodeFont" <q-rm.enc <qtmb.pfb
 
 % TX Text
 

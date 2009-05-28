@@ -30,7 +30,9 @@ extra_endfig   := ";addto currentpicture also _tt_p_; " & extra_endfig; % was dr
 extra_beginfig := extra_beginfig & "resettextexts;";
 
 vardef rawtextext(expr str) =
-    if _trial_run_ :
+    if str = "" :
+        nullpicture
+    elseif _trial_run_ :
         image (
             _tt_n_ := _tt_n_ + 1 ;
             _tt_p_ := image (
@@ -51,6 +53,8 @@ vardef rawtextext(expr str) =
     fi
 enddef ;
 
+% not ok yet
+
 pair laboff.d, laboff.dlft, laboff.drt ; % new positional suffixes
 pair laboff.origin, laboff.raw         ; % graph mess
 
@@ -67,10 +71,66 @@ labtype.origin :=  0 ; labtype.raw  :=  0 ;
 laboff.origin = (infinity,infinity) ; labxf.origin := 0 ; labyf.origin := 0 ;
 laboff.raw    = (infinity,infinity) ; labxf.raw    := 0 ; labyf.raw    := 0 ;
 
+pair laboff.l   ; laboff.l  = laboff.lft  ;
+pair laboff.r   ; laboff.r  = laboff.rt   ;
+pair laboff.b   ; laboff.b  = laboff.bot  ;
+pair laboff.t   ; laboff.t  = laboff.top  ;
+pair laboff.l_t ; laboff.l_t = laboff.ulft ;
+pair laboff.r_t ; laboff.r_t = laboff.urt  ;
+pair laboff.l_b ; laboff.l_b = laboff.llft ;
+pair laboff.r_b ; laboff.r_b = laboff.lrt  ;
+pair laboff.t_l ; laboff.t_l = laboff.ulft ;
+pair laboff.t_r ; laboff.t_r = laboff.urt  ;
+pair laboff.b_l ; laboff.b_l = laboff.llft ;
+pair laboff.b_r ; laboff.b_r = laboff.lrt  ;
+
+labxf.l   ; labxf.l  = labxf.lft  ;
+labxf.r   ; labxf.r  = labxf.rt   ;
+labxf.b   ; labxf.b  = labxf.bot  ;
+labxf.t   ; labxf.t  = labxf.top  ;
+labxf.l_t ; labxf.l_t = labxf.ulft ;
+labxf.r_t ; labxf.r_t = labxf.urt  ;
+labxf.l_b ; labxf.l_b = labxf.llft ;
+labxf.r_b ; labxf.r_b = labxf.lrt  ;
+labxf.t_l ; labxf.t_l = labxf.ulft ;
+labxf.t_r ; labxf.t_r = labxf.urt  ;
+labxf.b_l ; labxf.b_l = labxf.llft ;
+labxf.b_r ; labxf.b_r = labxf.lrt  ;
+
+labyf.l   ; labyf.l  = labyf.lft  ;
+labyf.r   ; labyf.r  = labyf.rt   ;
+labyf.b   ; labyf.b  = labyf.bot  ;
+labyf.t   ; labyf.t  = labyf.top  ;
+labyf.l_t ; labyf.l_t = labyf.ulft ;
+labyf.r_t ; labyf.r_t = labyf.urt  ;
+labyf.l_b ; labyf.l_b = labyf.llft ;
+labyf.r_b ; labyf.r_b = labyf.lrt  ;
+labyf.t_l ; labyf.t_l = labyf.ulft ;
+labyf.t_r ; labyf.t_r = labyf.urt  ;
+labyf.b_l ; labyf.b_l = labyf.llft ;
+labyf.b_r ; labyf.b_r = labyf.lrt  ;
+
+labtype.l   ; labtype.l   = labtype.lft  ;
+labtype.r   ; labtype.r   = labtype.rt   ;
+labtype.b   ; labtype.b   = labtype.bot  ;
+labtype.t   ; labtype.t   = labtype.top  ;
+labtype.l_t ; labtype.l_t = labtype.ulft ;
+labtype.r_t ; labtype.r_t = labtype.urt  ;
+labtype.l_b ; labtype.l_b = labtype.llft ;
+labtype.r_b ; labtype.r_b = labtype.lrt  ;
+labtype.t_l ; labtype.t_l = labtype.ulft ;
+labtype.t_r ; labtype.t_r = labtype.urt  ;
+labtype.b_l ; labtype.b_l = labtype.llft ;
+labtype.b_r ; labtype.b_r = labtype.lrt  ;
+
 vardef thetextext@#(expr p,z) = % adapted copy of thelabel@
-    p
-        if (labtype@# >= 10) : shifted (0,ypart center p) fi
-        shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+    if string p :
+        thetextext@#(rawtextext(p),z)
+    else :
+        p
+            if (labtype@# >= 10) : shifted (0,ypart center p) fi
+            shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+    fi
 enddef;
 
 vardef textext@#(expr txt) =
@@ -80,6 +140,28 @@ vardef textext@#(expr txt) =
     else :
         thetextext@#(txt,origin)
     fi
+enddef ;
+
+% \starttext
+%   \startMPpage
+%     numeric value ; value = 123 ;
+%     label.lft(decimal value,origin) ;
+%     draw "oeps" infont defaultfont ;
+%   \stopMPpage
+% \stoptext
+
+vardef thelabel@#(expr s, z) =
+    save p ; picture p ;
+    if picture s :
+        p = s ;
+    else :
+        p = textext("\definedfont[" & defaultfont & "]" & s) scaled defaultscale ;
+    fi ;
+    p shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+enddef;
+
+primarydef str infont name = % very naughty !
+    textext("\definedfont[" & name & "]" & str)
 enddef ;
 
 def circular_shade (expr p, n, ca, cb) =

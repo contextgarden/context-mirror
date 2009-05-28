@@ -260,6 +260,7 @@ class FastCD
                 puts(Dir.pwd.gsub(/\\/o, '/'))
             end
         rescue
+            puts("some error")
         end
     end
 
@@ -272,6 +273,7 @@ class FastCD
                     else
                         f.puts("cd #{dir.gsub("\\",'/')}")
                     end
+                    f.close
                 end
                 @result = dir
                 report("changing to #{dir}",true)
@@ -283,6 +285,7 @@ class FastCD
     end
 
     def choose(args=[])
+        offset = 97
         unless @pattern.empty? then
             begin
                 case @result.size
@@ -301,7 +304,7 @@ class FastCD
                                         return
                                     end
                                 else
-                                    index = answer[0] - ?a
+                                    index = answer[0] - offset
                                     if dir = list[index] then
                                         chdir(dir)
                                         return
@@ -309,21 +312,27 @@ class FastCD
                                 end
                             end
                         rescue
+                            puts("some error")
                         end
                         loop do
                             print("\n")
                             list.each_index do |i|
+begin
                                 if i < @@maxlength then
-                                    puts("#{(i+?a).chr}  #{list[i]}")
+                                    # puts("#{(i+?a).chr}  #{list[i]}")
+                                    puts("#{(i+offset).chr}  #{list[i]}")
                                 else
                                     puts("\n   there are #{list.length-@@maxlength} entries more")
                                     break
                                 end
+rescue
+                            puts("some error")
+end
                             end
                             print("\n>> ")
                             if answer = wait then
-                                if answer >= ?a and answer <= ?z then
-                                    index = answer - ?a
+                                if answer >= offset and answer <= offset+25 then
+                                    index = answer - offset
                                     if dir = list[index] then
                                         print("#{answer.chr} ")
                                         chdir(dir)
@@ -350,7 +359,7 @@ class FastCD
                         end
                     end
             rescue
-                # report($!)
+                 report($!)
             end
         end
     end

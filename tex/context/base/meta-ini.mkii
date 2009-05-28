@@ -20,45 +20,21 @@
 
 \unprotect
 
-\startmessages  dutch  library: metapost
-  title: metapost
-      1: metapost bibliotheek -- wordt geladen
-\stopmessages
+% messages moved
 
-\startmessages  english  library: metapost
-  title: metapost
-      1: loading metapost library --
-\stopmessages
+% messages moved
 
-\startmessages  german  library: metapost
-  title: metapost
-      1: Lade metapost Bibliothek --
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: metapost
-  title: metapost
-      1: loading metapost library --
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: metapost
-  title: metapost
-      1: caricamento della libreria metapost --
-\stopmessages
+% messages moved
 
-\startmessages  norwegian  library: metapost
-  title: metapost
-      1: metapost bibliotek -- blir lest inn
-\stopmessages
+% messages moved
 
-\startmessages  romanian  library: metapost
-  title: metapost
-      1: se incarca biblioteca metapost --
-\stopmessages
+% messages moved
 
-\startmessages  french  library: metapost
-  title: metapost
-      1: chargement de la bibliothèque metapost --
-\stopmessages
+% messages moved
 
 %D This module extends the functionality of the support module
 %D \type {supp-mps}, the module that is responsible for
@@ -69,49 +45,48 @@
 
 \maxnofMPgraphics = 4000 % metafun disables the 4K boundary
 
-\appendtoks \runMPgraphicsfalse    \to \everyfastmode
-\appendtoks \insertMPgraphicsfalse \to \everyfastmode
-\appendtoks \flushMPgraphics       \to \everygoodbye  % \everylastshipout
+\appendtoks \flushMPgraphics \to \everygoodbye  % \everylastshipout
 
 \def\@@MPG{@MPG@}
 
 \startMPextensions
-  if unknown context_tool: input mp-tool; fi;
-  if unknown context_spec: input mp-spec; fi;
-  if unknown context_grph: input mp-grph; fi;
+    if unknown context_tool: input mp-tool; fi;
+    if unknown context_spec: input mp-spec; fi;
+    if unknown context_grph: input mp-grph; fi;
 \stopMPextensions
 
 %D Since we want lables to follow the document settings, we
 %D also set the font related variables.
 
-\startMPinitializations % scale is not yet ok
-  defaultfont:="\truefontname{Regular}";
-  defaultscale:=\the\bodyfontsize/10pt;
-\stopMPinitializations
-
-\beginNEWTEX
+\ifnum\texengine=\xetexengine
     \startMPinitializations % scale is not yet ok
-      defaultfont:="rm-lmtt10";
+        defaultfont:="rm-lmtt10";
+        defaultscale:=\the\bodyfontsize/10pt;
     \stopMPinitializations
-\endNEWTEX
+\else
+    \startMPinitializations % scale is not yet ok
+        defaultfont:="\truefontname{Regular}";
+        defaultscale:=\the\bodyfontsize/10pt;
+    \stopMPinitializations
+\fi
 
 %D In order to support fancy text features (like outline
 %D fonts), we set:
 
 \startMPextensions
-  graphictextformat:="context";
-  graphictextdirective "\the\everyMPTEXgraphic";
+    graphictextformat:="context";
+    graphictextdirective "\the\everyMPTEXgraphic";
 \stopMPextensions
 
 % \startMPextensions
-%   textextdirective "\the\everyMPTEXgraphic";
+%     textextdirective "\the\everyMPTEXgraphic";
 % \stopMPextensions
 
 %D A signal that we're in combines \CONTEXT||\METAFUN mode:
 
 \startMPextensions
-  string contextversion;
-  contextversion:="\contextversion";
+    string contextversion;
+    contextversion:="\contextversion";
 \stopMPextensions
 
 %D Some safeguards:

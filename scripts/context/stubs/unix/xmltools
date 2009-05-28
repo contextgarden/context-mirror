@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart xmltools.rb "$@"
+mtxrun --usekpse --execute xmltools.rb "$@"

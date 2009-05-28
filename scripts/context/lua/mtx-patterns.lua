@@ -19,8 +19,8 @@ scripts.patterns.list = {
     { "cs",  "hyph-cs.tex",            "czech" },
     { "??",  "hyph-cy.tex",            "welsh" },
     { "da",  "hyph-da.tex",            "danish" },
-    { "de",  "hyph-de-1901.tex",       "german, old spelling" },
-    { "deo", "hyph-de-1996.tex",       "german, new spelling" },
+    { "deo", "hyph-de-1901.tex",       "german, old spelling" },
+    { "de",  "hyph-de-1996.tex",       "german, new spelling" },
 --~ { "??",  "hyph-el-monoton.tex",    "" },
 --~ { "??",  "hyph-el-polyton.tex",    "" },
 --~ { "agr", "hyph-grc",               "ancient greek" },
@@ -60,7 +60,7 @@ scripts.patterns.list = {
     { "??",  "hyph-sr-cyrl.tex",       "serbian" },
     { "sv",  "hyph-sv.tex",            "swedish" },
     { "tr",  "hyph-tr.tex",            "turkish" },
-    { "??",  "hyph-uk.tex",            "ukrainian" },
+    { "uk",  "hyph-uk.tex",            "ukrainian" },
     { "??",  "hyph-zh-latn.tex",       "zh-latn, chinese Pinyin" },
 }
 
@@ -91,6 +91,7 @@ local permitted_characters = table.tohash {
     0x0009, -- tab
     0x0027, -- apostrofe
     0x002D, -- hyphen
+    0x200C, --
 }
 
 function scripts.patterns.load(path,name,mnemonic,fullcheck)
@@ -104,9 +105,9 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
             local subdata = io.loaddata(subfull) or ""
             if subdata == "" then
                 if mnemonic then
-                    input.report("no subfile %s for language %s",subname,mnemonic)
+                    logs.simple("no subfile %s for language %s",subname,mnemonic)
                 else
-                    input.report("no subfile %s",name)
+                    logs.simple("no subfile %s",name)
                 end
             end
             return previous .. subdata
@@ -122,15 +123,15 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
                 line = line:gsub("%%","%%%%")
                 if fullcheck then
                     if mnemonic then
-                        input.report("invalid utf in language %s, file %s, line %s: %s",mnemonic,name,n,line)
+                        logs.simple("invalid utf in language %s, file %s, line %s: %s",mnemonic,name,n,line)
                     else
-                        input.report("invalid utf in file %s, line %s: %s",name,n,line)
+                        logs.simple("invalid utf in file %s, line %s: %s",name,n,line)
                     end
                 else
                     if mnemonic then
-                        input.report("file %s for %s contains invalid utf",name,mnemonic)
+                        logs.simple("file %s for %s contains invalid utf",name,mnemonic)
                     else
-                        input.report("file %s contains invalid utf",name)
+                        logs.simple("file %s contains invalid utf",name)
                     end
                     break
                 end
@@ -154,17 +155,17 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
         for k, v in pairs(h) do
             if not permitted_commands[k] then okay = false end
             if mnemonic then
-                input.report("command \\%s found in language %s, file %s, n=%s",k,mnemonic,name,v)
+                logs.simple("command \\%s found in language %s, file %s, n=%s",k,mnemonic,name,v)
             else
-                input.report("command \\%s found in file %s, n=%s",k,name,v)
+                logs.simple("command \\%s found in file %s, n=%s",k,name,v)
             end
         end
         if not environment.argument("fast") then
             for k, v in pairs(c) do
                 if mnemonic then
-                    input.report("command \\%s found in comment of language %s, file %s, n=%s",k,mnemonic,name,v)
+                    logs.simple("command \\%s found in comment of language %s, file %s, n=%s",k,mnemonic,name,v)
                 else
-                    input.report("command \\%s found in comment of file %s, n=%s",k,name,v)
+                    logs.simple("command \\%s found in comment of file %s, n=%s",k,name,v)
                 end
             end
         end
@@ -222,9 +223,9 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
         local stripped = { }
         for k, v in pairs(p) do
             if mnemonic then
-                input.report("invalid character %s (0x%04X) in patterns of language %s, file %s, n=%s",char(k),k,mnemonic,name,v)
+                logs.simple("invalid character %s (0x%04X) in patterns of language %s, file %s, n=%s",char(k),k,mnemonic,name,v)
             else
-                input.report("invalid character %s (0x%04X) in patterns of file %s, n=%s",char(k),k,name,v)
+                logs.simple("invalid character %s (0x%04X) in patterns of file %s, n=%s",char(k),k,name,v)
             end
             if not permitted_characters[k] then
                 okay = false
@@ -234,9 +235,9 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
         end
         for k, v in pairs(h) do
             if mnemonic then
-                input.report("invalid character %s (0x%04X) in exceptions of language %s, file %s, n=%s",char(k),k,mnemonic,name,v)
+                logs.simple("invalid character %s (0x%04X) in exceptions of language %s, file %s, n=%s",char(k),k,mnemonic,name,v)
             else
-                input.report("invalid character %s (0x%04X) in exceptions of file %s, n=%s",char(k),k,name,v)
+                logs.simple("invalid character %s (0x%04X) in exceptions of file %s, n=%s",char(k),k,name,v)
             end
             if not permitted_characters[k] then
                 okay = false
@@ -246,15 +247,15 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
         end
         local stripset = ""
         for k, v in pairs(stripped) do
-            input.report("entries that contain character %s will be omitted",char(k))
+            logs.simple("entries that contain character %s will be omitted",char(k))
             stripset = stripset .. "%" .. char(k)
         end
         return okay, pats, hyps, comment, stripset, pused, hused
     else
         if mnemonic then
-            input.report("no file %s for language %s",fullname,mnemonic)
+            logs.simple("no file %s for language %s",fullname,mnemonic)
         else
-            input.report("no file %s",fullname)
+            logs.simple("no file %s",fullname)
         end
         return false, { }, { }, "", "", { }, { }
     end
@@ -265,14 +266,14 @@ function scripts.patterns.save(destination,mnemonic,patterns,hyphenations,commen
     local nofhyphenations = #hyphenations
     local pu = table.concat(table.sortedkeys(pused), " ")
     local hu = table.concat(table.sortedkeys(hused), " ")
-    input.report("language %s has %s patterns and %s exceptions",mnemonic,nofpatterns,nofhyphenations)
+    logs.simple("language %s has %s patterns and %s exceptions",mnemonic,nofpatterns,nofhyphenations)
     if mnemonic ~= "??" then
         local rmefile = file.join(destination,"lang-"..mnemonic..".rme")
         local patfile = file.join(destination,"lang-"..mnemonic..".pat")
         local hypfile = file.join(destination,"lang-"..mnemonic..".hyp")
         local topline = "% generated by mtxrun --script pattern --convert"
         local banner = "% for comment and copyright, see " .. rmefile
-        input.report("saving language data for %s",mnemonic)
+        logs.simple("saving language data for %s",mnemonic)
         if not comment or comment == "" then comment = "% no comment" end
         if not type(destination) == "string" then destination = "." end
         os.remove(rmefile)
@@ -285,60 +286,58 @@ function scripts.patterns.save(destination,mnemonic,patterns,hyphenations,commen
 end
 
 function scripts.patterns.prepare()
-    dofile(input.find_file("char-def.lua"))
+    dofile(resolvers.find_file("char-def.lua"))
 end
 
 function scripts.patterns.check()
     local path = environment.argument("path") or "."
     local found = false
-    local verbose = input.verbose
-    input.verbose = true
     if #environment.files > 0 then
         for _, name in ipairs(environment.files) do
-            input.report("checking language file %s", name)
+            logs.simple("checking language file %s", name)
             local okay = scripts.patterns.load(path,name,nil,not environment.argument("fast"))
             if #environment.files > 1 then
-                input.report("")
+                logs.simple("")
             end
         end
     else
         for k, v in pairs(scripts.patterns.list) do
             local mnemonic, name = v[1], v[2]
-            input.report("checking language %s, file %s", mnemonic, name)
+            logs.simple("checking language %s, file %s", mnemonic, name)
             local okay = scripts.patterns.load(path,name,mnemonic,not environment.argument("fast"))
             if not okay then
-                input.report("there are errors that need to be fixed")
+                logs.simple("there are errors that need to be fixed")
             end
-            input.report("")
+            logs.simple("")
         end
     end
-    input.verbose = verbose
 end
 
 function scripts.patterns.convert()
     local path = environment.argument("path") or "."
-    local destination = environment.argument("destination") or "."
-    if path == destination then
-        input.report("source path and destination path should differ (use --path and/or --destination)")
+    if path == "" then
+        logs.simple("provide sourcepath using --path ")
     else
-        local verbose = input.verbose
-        input.verbose = true
-        for k, v in pairs(scripts.patterns.list) do
-            local mnemonic, name = v[1], v[2]
-            input.report("converting language %s, file %s", mnemonic, name)
-            local okay, patterns, hyphenations, comment, stripped, pused, hused = scripts.patterns.load(path,name,false)
-            if okay then
-                scripts.patterns.save(destination,mnemonic,patterns,hyphenations,comment,stripped,pused,hused)
-            else
-                input.report("convertion aborted due to error(s)")
+        local destination = environment.argument("destination") or "."
+        if path == destination then
+            logs.simple("source path and destination path should differ (use --path and/or --destination)")
+        else
+            for k, v in pairs(scripts.patterns.list) do
+                local mnemonic, name = v[1], v[2]
+                logs.simple("converting language %s, file %s", mnemonic, name)
+                local okay, patterns, hyphenations, comment, stripped, pused, hused = scripts.patterns.load(path,name,false)
+                if okay then
+                    scripts.patterns.save(destination,mnemonic,patterns,hyphenations,comment,stripped,pused,hused)
+                else
+                    logs.simple("convertion aborted due to error(s)")
+                end
+                logs.simple("")
             end
-            input.report("")
         end
     end
-    input.verbose = verbose
 end
 
-banner = banner .. " | pattern tools "
+logs.extendbanner("Pattern Tools 0.20",true)
 
 messages.help = [[
 --convert             generate context language files (mnemonic driven, if not given then all)
@@ -354,10 +353,10 @@ elseif environment.argument("convert") then
     scripts.patterns.prepare()
     scripts.patterns.convert()
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end
 
 -- mtxrun --script pattern --check hyph-*.tex
--- mtxrun --script pattern --check --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
--- mtxrun --script pattern --check --fast --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
--- mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns --destination e:/tmp/patterns
+-- mtxrun --script pattern --check          --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
+-- mtxrun --script pattern --check   --fast --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
+-- mtxrun --script pattern --convert        --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns --destination=e:/tmp/patterns

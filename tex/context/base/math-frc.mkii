@@ -1,0 +1,66 @@
+%D \module
+%D   [       file=math-frc,
+%D        version=2007.07.19,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Fractions,
+%D         author={Hans Hagen \& Taco Hoekwater \& Aditya Mahajan},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Fractions}
+
+\unprotect
+
+\def\exmthfont#1{\symbolicsizedfont#1\plusone{MathExtension}}
+
+\def\domthfrac#1#2#3#4#5#6#7%
+  {\begingroup
+   \mathsurround\zeropoint
+   \setbox0\hbox{$#1 #6$}%
+   \setbox2\hbox{$#1 #7$}%
+   \dimen0\wd0
+   \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
+   \setbox4\hbox to \dimen0{\exmthfont#2#3\leaders\hbox{#4}\hss#5}%
+   \mathord{\vcenter{{\offinterlineskip
+     \hbox to \dimen0{\hss\box0\hss}%
+     \kern \ht4%
+     \hbox to \dimen0{\hss\copy4\hss}%
+     \kern \ht4%
+     \hbox to \dimen0{\hss\box2\hss}}}}%
+   \endgroup}
+
+\def\domthsqrt#1#2#3#4#5%
+  {\begingroup
+   \mathsurround\zeropoint
+   \setbox0\hbox{$#1 #5$}%
+   \dimen0=1.05\ht0 \advance\dimen0 1pt  \ht0 \dimen0
+   \dimen0=1.05\dp0 \advance\dimen0 1pt  \dp0 \dimen0
+   \dimen0\wd0
+   \setbox4\hbox to \dimen0{\exmthfont#2\leaders\hbox{#3}\hfill#4}%
+   \delimitershortfall=0pt
+   \nulldelimiterspace=0pt
+   \setbox2\hbox{$\left\delimiter"0270370 \vrule height\ht0 depth \dp0 width0pt
+                  \right.$}%
+   \mathord{\vcenter{\hbox{\copy2
+                           \rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
+   \endgroup}
+
+\def\mthfrac#1#2#3#4#5{\mathchoice
+  {\domthfrac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}
+  {\domthfrac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}
+  {\domthfrac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}
+  {\domthfrac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
+
+\def\mthsqrt#1#2#3{\mathchoice
+  {\domthsqrt\displaystyle     \textface    {#1}{#2}{#3}}
+  {\domthsqrt\textstyle        \textface    {#1}{#2}{#3}}
+  {\domthsqrt\scriptstyle      \textface    {#1}{#2}{#3}}
+  {\domthsqrt\scriptscriptstyle\textface    {#1}{#2}{#3}}}
+
+% temp here
+
+\protect \endinput

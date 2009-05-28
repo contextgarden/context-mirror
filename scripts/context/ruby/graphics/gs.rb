@@ -13,7 +13,8 @@
 
 require 'base/variables'
 require 'base/system'
-require 'ftools'
+require 'fileutils'
+# Require 'ftools'
 
 class GhostScript
 
@@ -218,15 +219,15 @@ class GhostScript
         rescue
             report("job aborted due to some error: #{$!}")
             begin
-                File.delete(resultfile) if test(?e,resultfile)
+                File.delete(resultfile) if FileTest.file?(resultfile)
             rescue
                 report("unable to delete faulty #{resultfile}")
             end
             ok = false
         ensure
             deleteprofile(getvariable('profile'))
-            File.delete(@@pstempfile)  if test(?e,@@pstempfile)
-            File.delete(@@pdftempfile) if test(?e,@@pdftempfile)
+            File.delete(@@pstempfile)  if FileTest.file?(@@pstempfile)
+            File.delete(@@pdftempfile) if FileTest.file?(@@pdftempfile)
         end
         return ok
     end
@@ -243,13 +244,14 @@ class GhostScript
 
     def pdfmethod? (str)
         case method(str).to_i
-            when 3, 4, 5 then return true
+            when 1, 3, 4, 5 then return true
         end
         return false
     end
 
     def pdfprefix (str)
         case method(str).to_i
+            when 1 then return 'raw-'
             when 4 then return 'lowres-'
             when 5 then return 'normal-'
         end
@@ -383,7 +385,7 @@ class GhostScript
             debug('piping data')
             unless pipebounded(tmp,eps) then
                 debug('something went wrong in the pipe')
-                File.delete(outfile) if test(?e,outfile)
+                File.delete(outfile) if FileTest.file?(outfile)
             end
             debug('closing pipe')
             eps.close_write
@@ -412,7 +414,7 @@ class GhostScript
             unless ok then
                 begin
                     report('no output file due to error')
-                    File.delete(outfile) if test(?e,outfile)
+                    File.delete(outfile) if FileTest.file?(outfile)
                 rescue
                     # debug("fatal error: #{$!}")
                     debug('file',outfile,'may be invalid')
@@ -421,7 +423,7 @@ class GhostScript
 
             debug('deleting temp file')
             begin
-                File.delete(@@pstempfile) if test(?e,@@pstempfile)
+                File.delete(@@pstempfile) if FileTest.file?(@@pstempfile)
             rescue
             end
 
@@ -467,7 +469,7 @@ class GhostScript
     # def convertcropped (inpfile, outfile)
         # report("converting #{inpfile} cropped")
         # do_convertbounded(inpfile, @@pdftempfile)
-        # return unless test(?e,@@pdftempfile)
+        # return unless FileTest.file?(@@pdftempfile)
         # arguments = " --offset=#{@offset} #{@@pdftempfile} #{outfile}"
         # report("calling #{@@pdftrimwhite}")
         # unless ok = System.run(@@pdftrimwhite,arguments) then

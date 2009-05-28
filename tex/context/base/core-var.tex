@@ -11,282 +11,113 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Core Macros / Variables}
+\writestatus{loading}{ConTeXt Core Macros / Variables}
 
 \unprotect
 
-%D Modes:
-%D
-%D \starttyping
-%D \enablemode[screen,paper,bound]
-%D
-%D \doifmodeelse {paper}        {this} {that}
-%D \doifmode     {paper,screen} {this}
-%D \doifnotmode  {paper,bound}  {that}
-%D
-%D \startmode [list]
-%D \stopmode
-%D
-%D \startnotmode [list]
-%D \stopnotmode
-%D \stoptyping
-%D
-%D system modes have a * as prefix
-%D
-%D Sometimes, we want to prevent a mode for being set. Think
-%D of situations where a style enables a mode, but an outer
-%D level style does not want that. Preventing can be
-%D considered a permanent disabling on forehand.
-
-% \def\systemmodeprefix{*}
-%
-% \let\currentmode   \empty
-% \let\preventedmodes\empty
-%
-% \def\preventmode[#1]%
-%   {\expanded{\addtocommalist{#1}\noexpand\preventedmodes}}
-%
-% \def\enablemode[#1]%
-%   {\expanded
-%      {\doifnotinset{#1}{\preventedmodes}
-%         {\noexpand\addtocommalist{#1}\noexpand\currentmode}}}
-%
-% \def\disablemode[#1]%
-%   {\expanded{\removefromcommalist{#1}\noexpand\currentmode}}
-%
-% \def\doifmodeelse{\unprotect\dodoifmodeelse}
-% \def\doifmode    {\unprotect\dodoifmode    }
-% \def\doifnotmode {\unprotect\dodoifnotmode }
-% \def\startmode   {\unprotect\dostartmode   }
-% \def\startnotmode{\unprotect\dostartnotmode}
-%
-% \long\def\dodoifmodeelse#1%
-%   {\protect\expanded{\doifcommonelse{#1}{\currentmode}}}
-%
-% \long\def\dodoifmode#1%
-%   {\protect\expanded{\doifcommon    {#1}{\currentmode}}}
-%
-% \long\def\dodoifnotmode#1%
-%   {\protect\expanded{\doifnotcommon {#1}{\currentmode}}}
-%
-% \let\stopmode   \relax
-% \let\stopnotmode\relax
-%
-% \long\def\dostartmode[#1]%
-%   {\protect
-%    \expanded{\doifnotcommon{#1}{\currentmode}}{\gobbleuntil\stopmode}}
-%
-% \long\def\dostartnotmode[#1]%
-%   {\protect
-%    \expanded{\doifcommon   {#1}{\currentmode}}{\gobbleuntil\stopnotmode}}
-%
-% \def\doifallmodeselse{\unprotect\dodoifallmodeselse}
-% \def\doifallmodes    {\unprotect\dodoifallmodes}
-% \def\doifnotallmodes {\unprotect\dodoifnotallmodes}
-% \def\startallmodes   {\unprotect\dostartallmodes}
-% \def\startnotallmodes{\unprotect\dostartnotallmodes}
-%
-% \long\def\dodoifallmodeselse#1%
-%   {\protect\expanded{\doifallcommonelse{#1}{\currentmode}}}
-%
-% \long\def\dodoifallmodes#1%
-%   {\protect\expanded{\doifallcommon    {#1}{\currentmode}}}
-%
-% \long\def\dodoifnotallmodes#1%
-%   {\protect\expanded{\doifnotallcommon {#1}{\currentmode}}}
-%
-% \let\stopallmodes   \relax
-% \let\stopnotallmodes\relax
-%
-% \long\def\dostartallmodes[#1]%
-%   {\protect
-%    \expanded{\doifnotallcommon{#1}{\currentmode}}{\gobbleuntil\stopallmodes}}
-%
-% \long\def\dostartnotallmodes[#1]%
-%   {\protect
-%    \expanded{\doifallcommon   {#1}{\currentmode}}{\gobbleuntil\stopnotallmodes}}
-
-% faster
-
-\def\@mode@{@md@}
-
-\def\systemmodeprefix{*}
-
-\def\disabledmode    {0}
-\def\enabledmode     {1}
-\def\preventedmode   {2}
-
-% fast internal ones
-
-\def\setmode  #1{\@EA\let\csname\@mode@#1\endcsname\enabledmode }
-\def\resetmode#1{\@EA\let\csname\@mode@#1\endcsname\disabledmode}
-
-\def\setsystemmode  #1{\@EA\let\csname\@mode@\systemmodeprefix#1\endcsname\enabledmode }
-\def\resetsystemmode#1{\@EA\let\csname\@mode@\systemmodeprefix#1\endcsname\disabledmode}
-
-% user ones
-
-\def\preventmode{\unprotect\dopreventmode}
-\def\enablemode {\unprotect\doenablemode }
-\def\disablemode{\unprotect\dodisablemode}
-
-% \def\dopreventmode[#1]{\protect\rawprocesscommalist[#1]\dodopreventmode}
-% \def\doenablemode [#1]{\protect\rawprocesscommalist[#1]\dodoenablemode }
-% \def\dodisablemode[#1]{\protect\rawprocesscommalist[#1]\dododisablemode}
-%
-% better:
-
-\def\dopreventmode[#1]{\protect\cleanuplabel{#1}\rawprocesscommalist[\cleanlabel]\dodopreventmode}
-\def\doenablemode [#1]{\protect\cleanuplabel{#1}\rawprocesscommalist[\cleanlabel]\dodoenablemode }
-\def\dodisablemode[#1]{\protect\cleanuplabel{#1}\rawprocesscommalist[\cleanlabel]\dododisablemode}
-
-\def\dodopreventmode#1%
-  {\@EA\let\csname\@mode@#1\endcsname\preventedmode}
-
-\def\dodoenablemode#1% mode can be relax
-  {\ifcase0\csname\@mode@#1\endcsname\relax
-     \@EA\let\csname\@mode@#1\endcsname\enabledmode
-   \fi}
-
-\def\dododisablemode#1%
-  {\ifcase0\csname\@mode@#1\endcsname\or
-     \@EA\let\csname\@mode@#1\endcsname\disabledmode
-   \fi}
-
-% handy for mp
-
-\def\booleanmodevalue#1% can be \relax
-  {\expandafter\ifx\csname\@mode@#1\endcsname\relax
-     fals%
-   \else\ifnum0\csname\@mode@#1\endcsname=0
-     fals%
-   \else
-     tru%
-   \fi\fi e}
-
-% check macros
-
-\newif\ifcheckedmode
-
-\def\dodocheckformode#1%
-  {\ifcase0\csname\@mode@#1\endcsname\or\checkedmodetrue\fi}
-
-\def\docheckformode#1#2#3% will be sped up with a quit
-  {\cleanuplabel{#3}%
-   \protect\checkedmodefalse\rawprocesscommacommand[\cleanlabel]\dodocheckformode
-   \ifcheckedmode\@EA#1\else\@EA#2\fi}
-
-\def\dodocheckforallmodes#1%
-  {\ifcase0\csname\@mode@#1\endcsname\relax\checkedmodefalse\or\or\checkedmodefalse\fi}
-
-\def\docheckforallmodes#1#2#3% will be sped up with a quit
-  {\cleanuplabel{#3}%
-   \protect\checkedmodetrue\rawprocesscommacommand[\cleanlabel]\dodocheckforallmodes
-   \ifcheckedmode\@EA#1\else\@EA#2\fi}
-
-% simple ones
-
-\def\doifmodeelse{\unprotect\dodoifmodeelse}
-\def\doifmode    {\unprotect\dodoifmode}
-\def\doifnotmode {\unprotect\dodoifnotmode}
-\def\startmode   {\unprotect\dostartmode}
-\def\startnotmode{\unprotect\dostartnotmode}
-
-\def\dodoifmodeelse
-  {\docheckformode\firstoftwoarguments\secondoftwoarguments}
-
-\def\dodoifmode
-  {\docheckformode\firstofoneargument\gobbleoneargument}
-
-\def\dodoifnotmode
-  {\docheckformode\gobbleoneargument\firstofoneargument}
-
-\long\def\dostartmode[#1]%
-  {\docheckformode\donothing\dostopmode{#1}}
-
-\long\def\dostartnotmode[#1]%
-  {\docheckformode\dostopnotmode\donothing{#1}}
-
-\let\stopmode   \donothing
-\let\stopnotmode\donothing
-
-\long\def\dostopmode   #1\stopmode   {}
-\long\def\dostopnotmode#1\stopnotmode{}
-
-\def\doifallmodeselse{\unprotect\dodoifallmodeselse}
-\def\doifallmodes    {\unprotect\dodoifallmodes}
-\def\doifnotallmodes {\unprotect\dodoifnotallmodes}
-\def\startallmodes   {\unprotect\dostartallmodes}
-\def\startnotallmodes{\unprotect\dostartnotallmodes}
-
-\def\dodoifallmodeselse
-  {\docheckforallmodes\firstoftwoarguments\secondoftwoarguments}
-
-\def\dodoifallmodes
-  {\docheckforallmodes\firstofoneargument\gobbleoneargument}
-
-\def\dodoifnotallmodes
-  {\docheckforallmodes\gobbleoneargument\firstofoneargument}
-
-\long\def\dostartallmodes[#1]%
-  {\docheckforallmodes\donothing\dostopallmodes{#1}}
-
-\long\def\dostartnotallmodes[#1]%
-  {\docheckforallmodes\dostopnotallmodes\donothing{#1}}
-
-\let\stopallmodes   \donothing
-\let\stopnotallmodes\donothing
-
-\long\def\dostopallmodes   #1\stopallmodes   {}
-\long\def\dostopnotallmodes#1\stopnotallmodes{}
+%D We introduce a couple of variables that are used all over
+%D \CONTEXT. Alternatively we could define them in each module
+%D but as they are part of the bigger picture we prefer to do
+%D it here.
 
 %D \macros
 %D   {every...}
 %D
-%D A few every's.
+%D A few every's. Some are only used in \MKII\ or \MKIV.
 
-\newevery \everyshipout            \relax
-\newevery \everybeforeshipout      \relax
-\newevery \everyaftershipout       \relax
-\newevery \everyfirstshipout       \relax
-\newevery \everylastshipout        \relax
-\newevery \everybye                \relax
-\newevery \everygoodbye            \relax
-\newevery \everystarttext          \relax
-\newevery \everystoptext           \relax
-\newevery \everyforgetall          \relax
-\newevery \everybeforepagebody     \relax
-\newevery \everyafterpagebody      \relax
-\newevery \everybeforeutilityread  \relax
-\newevery \everyafterutilityread   \relax
+%D Output routine:
 
-\let      \everypagebody           \everybeforepagebody % backward compatible
+\newtoks \everybeforeoutput
+\newtoks \everyafteroutput
 
-%newevery \everybeforeutilitywrite \relax
+%D Shipout:
 
-\newevery \everycleanupfeatures      \relax
-\newevery \everyinsidefloat          \relax
-\newevery \everyheadstart            \relax
-\newevery \everyendoftextbody        \relax
-\newevery \everybeginofpar           \relax
-\newevery \everyendofpar             \relax
-\newevery \everylistentry            \relax
-\newevery \everymarking              \relax
-\newevery \everysavesortkeys         \relax
+\newtoks \everyshipout
+\newtoks \everybeforeshipout
+\newtoks \everyaftershipout
+\newtoks \everyfirstshipout
+\newtoks \everylastshipout
 
-\newevery \everyfont                 \relax
-\newevery \everybodyfont             \EveryBodyFont
-\newevery \everyglobalbodyfont       \relax
-\newevery \everyfontswitch           \EveryFontSwitch
-\newevery \everydefinedfont          \relax
+%D End of run:
 
-\newevery \everybeforeoutput         \relax
-\newevery \everyafteroutput          \relax
+\newtoks \everybye
+\newtoks \everygoodbye
+\newtoks \everynotabene
 
-\newevery \everybeforedisplayformula \relax
+%D Document
+
+\newtoks \everysetupdocument
+\newtoks \everyendoftextbody
+
+\newtoks \everystarttext
+\newtoks \everystoptext
+
+%D Purity:
+
+\newtoks \everyforgetall
+\newtoks \everycleanupfeatures
 
 \def\cleanupfeatures{\the\everycleanupfeatures}
 \def\forgetall      {\the\everyforgetall}
+
+%D Page building:
+
+\newtoks \everybeforepagebody
+\newtoks \everyafterpagebody
+
+\let \everypagebody \everybeforepagebody % backward compatible
+
+%D Multipass:
+
+\newtoks \everybeforeutilityread
+\newtoks \everyafterutilityread
+
+%D Floats:
+
+\newtoks \everyinsidefloat
+
+%D Sectioning:
+
+\newtoks \everyheadstart
+
+%D Par building (experimental, used in xml <p> .. </p>)
+
+\newtoks \everybeginofpar
+\newtoks \everyendofpar
+%newtoks \everyparflush
+
+\def\bpar{\the\everybeginofpar\ignorespaces} % may interfere with \everypar
+\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
+
+%D Lists:
+
+\newtoks \everylistentry
+\newtoks \everysavesortkeys
+
+%D Marks:
+
+\newtoks \everymarking
+
+%D Fonts:
+
+\newtoks \everyfont
+\newtoks \everyglobalbodyfont
+\newtoks \everydefinedfont
+
+\newevery \everybodyfont   \EveryBodyFont
+\newevery \everyfontswitch \EveryFontSwitch
+
+%D Math:
+
+\newtoks \everybeforedisplayformula
+\newtoks \everymathematics
+
+\prependtoks \the\everymathematics \to \everymath
+\prependtoks \the\everymathematics \to \everydisplay
+
+%D Tables
+
+\newtoks \everytable
 
 %D State mess:
 
@@ -295,20 +126,6 @@
 
 \def\pushsomestates{\the\everypushsomestate}
 \def\popsomestates {\the\everypopsomestate }
-
-%D For shared \type {\everymath} and \type {\everydisplay}:
-
-\newevery \everymathematics        \relax
-
-\prependtoks \the\everymathematics \to \everymath
-\prependtoks \the\everymathematics \to \everydisplay
-
-% \newevery \everyparflush           \relax % collected nodes
-
-%D Experimental (used in xml <p> .. </p>
-
-\def\bpar{\the\everybeginofpar\ignorespaces} % may interfere with \everypar
-\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
 
 %D More generic (used to be pushcolor etc)
 
@@ -337,8 +154,9 @@
 %D
 %D New. Some work needs to be done.
 
+% not in mkiv
+
 \def\defineinputmode[#1]{\@EA\newtoks\csname every#1inputmode\endcsname}
-%def\setinputmode   [#1]{\the        \csname every#1inputmode\endcsname}
 \def\setinputmode   [#1]{\the\executeifdefined{every#1inputmode}\emptytoks}
 
 \defineinputmode [TEX]
@@ -352,7 +170,7 @@
 %D We disable trial typesetting in the output routine,
 %D just to be sure.
 
-% defined in syst-ext
+\newif\iftrialtypesetting
 
 \prependtoks \trialtypesettingfalse \to \everybeforepagebody
 
@@ -372,7 +190,7 @@
 %D
 %D We need this one even if no \XML\ is supported.
 
-\newif\ifprocessingXML
+\newif\ifprocessingXML % old way
 
 %D \macros
 %D   {ifproductionrun}
@@ -382,7 +200,9 @@
 
 \ifx\protectionlevel\undefined \newcount\protectionlevel \fi
 
-\newif\ifproductionrun \appendtoks \productionruntrue \to \everydump
+\newif\ifproductionrun
+
+\appendtoks \productionruntrue \to \everydump
 
 \appendtoks \ifcase\protectionlevel\else\reportunprotection\fi \to \everydump
 
@@ -393,8 +213,8 @@
 %D This one is relatively new and will be used as a more
 %D robust test for inner situations.
 
-\newif    \ifboxedcontent
-\newevery \everyboxedcontent \relax
+\newif  \ifboxedcontent
+\newtoks\everyboxedcontent
 
 \appendtoks \boxedcontenttrue \to \everyboxedcontent
 
@@ -402,145 +222,12 @@
 \let\stopboxedcontent  \egroup
 
 %D \macros
-%D   {fastmode}
+%D   {fastmode,silentmode}
 %D
-%D The command \type {\fastmode} disables some time consuming
-%D typesetting.
+%D These commands are obsolete.
 
-\newevery \everyfastmode \relax
-
-\newif\iffastmode
-
-\def\fastmode
-  {\fastmodetrue
-   \the\everyfastmode}
-
-\def\silentmode % ook hier \everysilentmode net als \fastmode
-  {\showmessagesfalse
-   \showwarningsfalse
-   \let\writestatus\gobbletwoarguments}
-
-%D \macros
-%D   {pdfoutput}
-%D
-%D There are some fundamental differences between producing
-%D \DVI\ and \PDF\ output, especially when we use \PDFTEX, like
-%D object reuse, one pass graphic inclusion and the lack of a
-%D postprocessing stage. Because we must make sure that
-%D \CONTEXT\ knows what it's up to, we always default to \DVI\
-%D mode, even when users explicitly ask for \PDF\ output in the
-%D \PDFTEX\ configuration file.
-
-% we assume no pdfcontext or whatever
-%
-% \ifx\pdfoutput\undefined \else
-%   \prependtoks \pdfoutput=0 \to \everyjob
-% \fi
-
-%D \macros
-%D   {setvariables,getvariable,getvariabledefault}
-%D
-%D \starttyping
-%D \setvariables[xx][title=]
-%D \setvariables[xx][title=test test]
-%D \setvariables[xx][title=test $x=1$ test]   % fatal error reported
-%D \setvariables[xx][title=test {$x=1$} test]
-%D \setvariables[xx][title]                   % fatal error reported
-%D \setvariables[xx][titletitel=e]
-%D \stoptyping
-
-\def\??vars{@@vars}
-
-\def\setvariables {\dotripleargument\dosetvariables[\getrawparameters ]}
-\def\setevariables{\dotripleargument\dosetvariables[\getraweparameters]}
-\def\setgvariables{\dotripleargument\dosetvariables[\getrawgparameters]}
-\def\setxvariables{\dotripleargument\dosetvariables[\getrawxparameters]}
-
-\def\globalsetvariables % obsolete
-  {\dotripleargument\dosetvariables[\globalgetrawparameters]}
-
-% \long\def\dosetvariables[#1][#2][#3]%
-%   {\errorisfataltrue
-%    \def\currentvariableclass{#2}%
-%    \getvariable{#2}\s!reset
-%    #1[\??vars:#2:][#3]%
-%    \getvariable{#2}\s!set
-%    \errorisfatalfalse}
-%
-% permit nested definitions while preventing nested set/reset
-%
-% wrong:
-%
-% \long\def\dosetvariables[#1][#2][#3]%
-%   {\errorisfataltrue
-%    \getrawparameters[\??vars:*:][\s!reset=*,\s!set=*,#3]%
-%    \doifelse{\getvalue{\??vars:*:\s!reset}\getvalue{\??vars:*:\s!set}}{**}
-%       {\doifelse{#2}\currentvariableclass
-%          {#1[\??vars:#2:][#3]}
-%          {\pushmacro\currentvariableclass
-%           \def\currentvariableclass{#2}%
-%           \getvariable{#2}\s!reset
-%           #1[\??vars:#2:][#3]%
-%           \getvariable{#2}\s!set
-%           \popmacro\currentvariableclass}}%
-%       {#1[\??vars:#2:][#3]}%
-%    \errorisfatalfalse}
-
-\long\def\dosetvariables[#1][#2][#3]% tricky, test on s-pre-60
-  {\errorisfataltrue
-   \doifelse{#2}\currentvariableclass
-     {#1[\??vars:#2:][#3]}%
-     {\pushmacro\currentvariableclass
-      \def\currentvariableclass{#2}%
-      \getvariable{#2}\s!reset
-      #1[\??vars:#2:][#3]%
-      \getvariable{#2}\s!set
-      \popmacro\currentvariableclass}%
-   \errorisfatalfalse}
-
-\long\def\setvariable #1#2#3{\long\setvalue {\??vars:#1:#2}{#3}}
-\long\def\setevariable#1#2#3{\long\setevalue{\??vars:#1:#2}{#3}}
-\long\def\setgvariable#1#2#3{\long\setgvalue{\??vars:#1:#2}{#3}}
-\long\def\setxvariable#1#2#3{\long\setxvalue{\??vars:#1:#2}{#3}}
-
-\def\getvariable#1#2% to be sped up
-  {\csname
-     \ifcsname\??vars:#1:#2\endcsname\??vars:#1:#2\else\s!empty\fi
-   \endcsname}
-
-\def\showvariable#1#2%
-  {\showvalue{\ifcsname\??vars:#1:#2\endcsname\??vars:#1:#2\else\s!empty\fi}}
-
-\let\currentvariableclass\empty
-
-%D \macros
-%D   {doifelsevariable,doifvariable,doifnotvariable}
-%D
-%D A few trivial macros:
-
-\def\doifelsevariable#1#2%
-  {\ifcsname\??vars:#1:#2\endcsname
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
-
-\def\doifvariable#1#2%
-  {\ifcsname\??vars:#1:#2\endcsname
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
-
-\def\doifnotvariable#1#2%
-  {\ifcsname\??vars:#1:#2\endcsname
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
-
-\def\getvariabledefault#1#2% #3% can be command, so no ifcsname here
-  {\executeifdefined{\??vars:#1:#2}}% {#3}
+\let\fastmode  \relax
+\let\silentmode\relax
 
 %D \macros
 %D   {defineselector,setupselector}
@@ -571,95 +258,20 @@
      {\executeifdefined{\??sx#1\c!max}1}
      {\executeifdefined{\??sx#1\c!n  }1}}
 
-%D \macros
-%D   {checkvariables}
-%D
-%D I'll probably forget that this on exists.
-
-\def\checkvariables
-  {\dodoubleargument\docheckvariables}
-
-\def\docheckvariables
-  {\dogetparameters\docheckrawvalue}
-
-\def\docheckrawvalue#1#2#3%
-  {\doifundefined   {\??vars:#1:#2}{\setvalue{\??vars:#1:#2}{#3}}
-  {\doifvaluenothing{\??vars:#1:#2}{\setvalue{\??vars:#1:#2}{#3}}}}
-
 %D We store some original meanings, maybe in \type
 %D {math-ini}.
 
-\let\normalat             \at
-\let\normalin             \in
-\let\normalfrom           \from
-\let\normalover           \over
-\let\normalabout          \about
-
-\let\normalabove          \above
-\let\normalatop           \atop
-
-\let\normaloverwithdelims \overwithdelims
-\let\normalabovewithdelims\abovewithdelims
-\let\normalatopwithdelims \atopwithdelims
+\let\normalat   \at
+\let\normalin   \in
+\let\normalfrom \from
+%let\normalover \over
+\let\normalabout\about
 
 %D Add-ons:
 
 \let\startlayoutcomponent\gobbletwoarguments
 \let\stoplayoutcomponent \relax
-
-%D Label cleanup:
 
-\bgroup % some day this will go away / we could use detokenize as well
-
-% actually we should handle all discretionaries here
-
-\catcode`:=\@@active
-
-\gdef\cleanuplabel#1%
-  {\begingroup
-   \let:\lettercolon
-   \xdef\cleanlabel{#1}%
-   \endgroup}
-
-\gdef\cleanupprefixedlabel#1#2%
-  {\begingroup
-   \let:\lettercolon
-   \xdef\cleanprefix{#1}%
-   \xdef\cleanlabel {#2}%
-   \endgroup}
-
-\gdef\protectlabels
-  {\let:\lettercolon}
-
-\global\def\blabelgroup {\begingroup \let:\lettercolon}
-\global\let\elabelgroup  \endgroup
-
-\gdef\labelcsname
-  {\begingroup\let:\lettercolon
-   \expandafter\endgroup\csname}
-
-\gdef\labelvalue#1%
-  {\labelcsname#1\endcsname}
-
-\egroup
-
-%D TO BE TESTED FIRST (needs changes in usage too)
-
-% \def\cleanuplabel#1%
-%   {\edef\cleanlabel{\detokenize{#1}}}
-%
-% \def\cleanupprefixedlabel#1#2%
-%   {\edef\cleanprefix{\detokenize{#1}}%
-%    \edef\cleanlabel {\detokenize{#2}}}
-%
-% \def\labelvalue#1%
-%   {\csname\detokenize{#1}\endcsname}
-%
-% \let\protectlabels\donothing
-%
-% \def\blabelgroup {\begingroup} % why no \let ?
-% \let\elabelgroup  \endgroup
-
 %D Concepts:
 
 \chardef\conceptmode\zerocount

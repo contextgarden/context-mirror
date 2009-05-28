@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Filter Macros (ini)}
+\writestatus{loading}{ConTeXt Filter Macros / Initialization}
 
 % \ifx\OmegaVersion\undefined
 
@@ -28,41 +28,17 @@
 
 %D The real work starts here.
 
-\startmessages  dutch  library: filters
-  title: filter
-      1: filter -- wordt geladen
-      2: onbekend filter --
-\stopmessages
+% messages moved
 
-\startmessages  english  library: filters
-  title: filter
-      1: filter -- is loaded
-      2: unknown filter --
-\stopmessages
+% messages moved
 
-\startmessages  german  library: filters
-  title: filter
-      1: filter -- ist geladen
-      2: unknown filter --
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: filters
-  title: filter
-      1: filter -- is loaded
-      2: unknown filter --
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: filters
-  title: filtri
-      1: filtro -- caricato
-      2: filtro sconosciuto --
-\stopmessages
+% messages moved
 
-\startmessages  french  library: filters
-  title: filtre
-      1: le filtre -- est chargé
-      2: filtre -- inconnu
-\stopmessages
+% messages moved
 
 % We need the {\??ot::#1} check because otherwise aleph will crash. Taco's
 % torture test:
@@ -108,12 +84,6 @@
 
 \def\magicocpnumber{1}
 
-% \def\dodousefiltersequence#1%
-%   {\expandafter\ocp\csname\??or:#1\endcsname=\truefiltername{#1}\relax
-%    \@EA \appendtoks
-%      \@EA \addbeforeocplist \@EA \magicocpnumber \csname\??or:#1\endcsname
-%    \to \scratchtoks}
-
 % one can do:
 %
 %  \definefiltersequence
@@ -134,14 +104,6 @@
      \!!stringb\space
      \expandafter\noexpand\csname\??or:\!!stringa\endcsname
    \to \scratchtoks}
-
-% \unexpanded\def\usefiltersequence[#1]%
-%   {\edef\currentfiltersequence{\getvalue{\??ot#1}}%
-%    \scratchtoks\emptytoks
-%    \processcommacommand[\currentfiltersequence]\dodousefiltersequence
-%    % \showthe\scratchtoks
-%    \expanded{\ocplist\csname\??ot:#1\endcsname=\the\scratchtoks}\nullocplist
-%    \expanded{\pushocplist\csname\??ot:#1\endcsname}\relax}
 
 \unexpanded\def\usefiltersequence[#1]%
   {\doifdefined{\??ot::#1}%

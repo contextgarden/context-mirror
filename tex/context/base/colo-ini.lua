@@ -18,38 +18,20 @@ if not modules then modules = { } end modules ['colo-ini'] = {
 
 -- todo: %s -> %f
 
-backends     = backends     or { }
-backends.pdf = backends.pdf or { }
-backend      = backends.pdf
-
-local texsprint, format, concat = tex.sprint, string.format, table.concat
-
-local s_template_g = "\\dodoPDFregistergrayspotcolor{%s}{%s}{%s}{%s}{%s}"             -- n f d p s (p can go away)
-local s_template_r = "\\dodoPDFregisterrgbspotcolor {%s}{%s}{%s}{%s}{%s}{%s}{%s}"     -- n f d p r g b
-local s_template_c = "\\dodoPDFregistercmykspotcolor{%s}{%s}{%s}{%s}{%s}{%s}{%s}{%s}" -- n f d p c m y k
-
-function backends.pdf.registergrayspotcolor(n,f,d,p,s)       states.collect(s_template_g:format(n,f,d,p,s))       end
-function backends.pdf.registerrgbspotcolor (n,f,d,p,r,g,b)   states.collect(s_template_r:format(n,f,d,p,r,g,b))   end
-function backends.pdf.registercmykspotcolor(n,f,d,p,c,m,y,k) states.collect(s_template_c:format(n,f,d,p,c,m,y,k)) end
-
-local m_template_g = "\\doPDFregistergrayindexcolor{%s}{%s}{%s}{%s}{%s}"             -- n f d p s (p can go away)
-local m_template_r = "\\doPDFregisterrgbindexcolor {%s}{%s}{%s}{%s}{%s}{%s}{%s}"     -- n f d p r g b
-local m_template_c = "\\doPDFregistercmykindexcolor{%s}{%s}{%s}{%s}{%s}{%s}{%s}{%s}" -- n f d p c m y k
-
-function backends.pdf.registergrayindexcolor(n,f,d,p,s)       states.collect(m_template_g:format(n,f,d,p,s))       end
-function backends.pdf.registerrgbindexcolor (n,f,d,p,r,g,b)   states.collect(m_template_r:format(n,f,d,p,r,g,b))   end
-function backends.pdf.registercmykindexcolor(n,f,d,p,c,m,y,k) states.collect(m_template_c:format(n,f,d,p,c,m,y,k)) end
-
-local s_template_e = "\\doPDFregisterspotcolorname{%s}{%s}" -- name, e
-
-function backends.pdf.registerspotcolorname(name,e)
-    if e and e ~= "" then
-       texsprint(tex.ctxcatcodes,format(s_template_e,name,e)) -- todo in new backend: e:gsub(" ","#20")
-    end
-end
+local texsprint = tex.sprint
+local concat =table.concat
+local format, gmatch, gsub, lower = string.format, string.gmatch, string.gsub, string.lower
 
 ctx     = ctx     or { }
 ctx.aux = ctx.aux or { }
+
+local ctxcatcodes = tex.ctxcatcodes
+
+local registrations = backends.registrations
+
+local a_color        = attributes.private('color')
+local a_transparency = attributes.private('transparency')
+local a_colorspace   = attributes.private('colorspace')
 
 local a_l_c_template = "\\setevalue{(ca:%s)}{%s}" ..
                        "\\setevalue{(cs:%s)}{\\dosetattribute{color}{%s}}"
@@ -59,10 +41,10 @@ local f_l_c_template = "\\setvalue {(ca:%s)}{\\doinheritca{%s}}" ..
                        "\\setvalue {(cs:%s)}{\\doinheritcs{%s}}"
 local f_g_c_template = "\\setgvalue{(ca:%s)}{\\doinheritca{%s}}" ..
                        "\\setgvalue{(cs:%s)}{\\doinheritcs{%s}}"
-local r_l_c_template = "\\letbeundefined{(ca:%s)}" ..
-                       "\\letbeundefined{(cs:%s)}"
-local r_g_c_template = "\\global\\letbeundefined{(ca:%s)}" ..
-                       "\\global\\letbeundefined{(cs:%s)}"
+local r_l_c_template = "\\localundefine{(ca:%s)}" ..
+                       "\\localundefine{(cs:%s)}"
+local r_g_c_template = "\\globalundefine{(ca:%s)}" ..
+                       "\\globalundefine{(cs:%s)}"
 
 local a_l_t_template = "\\setevalue{(ta:%s)}{%s}" ..
                        "\\setevalue{(ts:%s)}{\\dosetattribute{transparency}{%s}}"
@@ -72,68 +54,68 @@ local f_l_t_template = "\\setvalue {(ta:%s)}{\\doinheritta{%s}}" ..
                        "\\setvalue {(ts:%s)}{\\doinheritts{%s}}"
 local f_g_t_template = "\\setgvalue{(ta:%s)}{\\doinheritta{%s}}" ..
                        "\\setgvalue{(ts:%s)}{\\doinheritts{%s}}"
-local r_l_t_template = "\\letbeundefined{(ta:%s)}" ..
-                       "\\letbeundefined{(ts:%s)}"
-local r_g_t_template = "\\global\\letbeundefined{(ta:%s)}" ..
-                       "\\global\\letbeundefined{(ts:%s)}"
+local r_l_t_template = "\\localundefine{(ta:%s)}" ..
+                       "\\localundefine{(ts:%s)}"
+local r_g_t_template = "\\globalundefine{(ta:%s)}" ..
+                       "\\globalundefine{(ts:%s)}"
 
 function ctx.aux.definecolor(name, ca, global)
     if ca and ca > 0 then
         if global then
-            texsprint(tex.ctxcatcodes,a_g_c_template:format(name, ca, name, ca))
+            texsprint(ctxcatcodes,format(a_g_c_template, name, ca, name, ca))
         else
-            texsprint(tex.ctxcatcodes,a_l_c_template:format(name, ca, name, ca))
+            texsprint(ctxcatcodes,format(a_l_c_template, name, ca, name, ca))
         end
     else
         if global then
-            texsprint(tex.ctxcatcodes,r_g_c_template:format(name, name))
+            texsprint(ctxcatcodes,format(r_g_c_template, name, name))
         else
-            texsprint(tex.ctxcatcodes,r_l_c_template:format(name, name))
+            texsprint(ctxcatcodes,format(r_l_c_template, name, name))
         end
     end
 end
 function ctx.aux.inheritcolor(name, ca, global)
     if ca and ca ~= "" then
         if global then
-            texsprint(tex.ctxcatcodes,f_g_c_template:format(name, ca, name, ca))
+            texsprint(ctxcatcodes,format(f_g_c_template, name, ca, name, ca))
         else
-            texsprint(tex.ctxcatcodes,f_l_c_template:format(name, ca, name, ca))
+            texsprint(ctxcatcodes,format(f_l_c_template, name, ca, name, ca))
         end
     else
         if global then
-            texsprint(tex.ctxcatcodes,r_g_c_template:format(name, name))
+            texsprint(ctxcatcodes,format(r_g_c_template, name, name))
         else
-            texsprint(tex.ctxcatcodes,r_l_c_template:format(name, name))
+            texsprint(ctxcatcodes,format(r_l_c_template, name, name))
         end
     end
 end
 function ctx.aux.definetransparent(name, ta, global)
     if ta and ta > 0 then
         if global then
-            texsprint(tex.ctxcatcodes,a_g_t_template:format(name, ta, name, ta))
+            texsprint(ctxcatcodes,format(a_g_t_template, name, ta, name, ta))
         else
-            texsprint(tex.ctxcatcodes,a_l_t_template:format(name, ta, name, ta))
+            texsprint(ctxcatcodes,format(a_l_t_template, name, ta, name, ta))
         end
     else
         if global then
-            texsprint(tex.ctxcatcodes,r_g_t_template:format(name, name))
+            texsprint(ctxcatcodes,format(r_g_t_template, name, name))
         else
-            texsprint(tex.ctxcatcodes,r_l_t_template:format(name, name))
+            texsprint(ctxcatcodes,format(r_l_t_template, name, name))
         end
     end
 end
 function ctx.aux.inherittransparent(name, ta, global)
     if ta and ta ~= "" then
         if global then
-            texsprint(tex.ctxcatcodes,f_g_t_template:format(name, ta, name, ta))
+            texsprint(ctxcatcodes,format(f_g_t_template, name, ta, name, ta))
         else
-            texsprint(tex.ctxcatcodes,f_l_t_template:format(name, ta, name, ta))
+            texsprint(ctxcatcodes,format(f_l_t_template, name, ta, name, ta))
         end
     else
         if global then
-            texsprint(tex.ctxcatcodes,r_g_t_template:format(name, name))
+            texsprint(ctxcatcodes,format(r_g_t_template, name, name))
         else
-            texsprint(tex.ctxcatcodes,r_l_t_template:format(name, name))
+            texsprint(ctxcatcodes,format(r_l_t_template, name, name))
         end
     end
 end
@@ -173,13 +155,15 @@ local function registerspotcolor(parent,name,parentnumber,e,f,d,p)
             local kind = colors.default -- else problems with shading etc
             if kind == 1 then kind = v[1] end
             if     kind == 2 then -- name noffractions names p's r g b
-                backend.registergrayspotcolor(parent,f,d,p,v[2])
+                registrations.grayspotcolor(parent,f,d,p,v[2])
             elseif kind == 3 then
-                backend.registerrgbspotcolor (parent,f,d,p,v[3],v[4],v[5])
+                registrations.rgbspotcolor (parent,f,d,p,v[3],v[4],v[5])
             elseif kind == 4 then
-                backend.registercmykspotcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
+                registrations.cmykspotcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
             end
-            backends.pdf.registerspotcolorname(parent,e)
+            if e and e ~= "" then
+                registrations.spotcolorname(parent,e)
+            end
         end
         registered[parentnumber] = true
     end
@@ -192,11 +176,11 @@ local function registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- same 
             local kind = colors.default -- else problems with shading etc
             if kind == 1 then kind = v[1] end
             if     kind == 2 then
-                backend.registergrayindexcolor(parent,f,d,p,v[2])
+                registrations.grayindexcolor(parent,f,d,p,v[2])
             elseif kind == 3 then
-                backend.registerrgbindexcolor (parent,f,d,p,v[3],v[4],v[5])
+                registrations.rgbindexcolor (parent,f,d,p,v[3],v[4],v[5])
             elseif kind == 4 then
-                backend.registercmykindexcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
+                registrations.cmykindexcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
             end
         end
         registered[parentnumber] = true
@@ -227,8 +211,8 @@ function ctx.defineprocesscolor(name,str,global,freeze) -- still inconsistent co
             ctx.aux.definetransparent(name, 0, global) -- can be sped up
         end
     elseif freeze then
-        local ca = attributes.list[attributes.numbers['color']]       [str]
-        local ta = attributes.list[attributes.numbers['transparency']][str]
+        local ca = attributes.list[a_color]       [str]
+        local ta = attributes.list[a_transparency][str]
         if ca then
             ctx.aux.definecolor(name, ca, global)
         end
@@ -239,8 +223,8 @@ function ctx.defineprocesscolor(name,str,global,freeze) -- still inconsistent co
         ctx.aux.inheritcolor(name, str, global)
         ctx.aux.inherittransparent(name, str, global)
     --  if global and str ~= "" then -- For Peter Rolf who wants access to the numbers in Lua. (Currently only global is supported.)
-    --      attributes.list[attributes.numbers['color']]       [name] = attributes.list[attributes.numbers['color']]       [str] or -1  -- reset
-    --      attributes.list[attributes.numbers['transparency']][name] = attributes.list[attributes.numbers['transparency']][str] or -1  -- reset
+    --      attributes.list[a_color]       [name] = attributes.list[a_color]       [str] or attributes.unsetvalue  -- reset
+    --      attributes.list[a_transparency][name] = attributes.list[a_transparency][str] or attributes.unsetvalue
     --  end
     end
 end
@@ -250,20 +234,11 @@ function ctx.isblack(ca) -- maybe commands
     return (cv and cv[2] == 0) or false
 end
 
--- function ctx.aux.colorattribute(name)
---     local al = attributes.list[attributes.numbers['color']]
---     return al[name] or 0
--- end
--- function ctx.aux.transparencyattribute(name)
---     local al = attributes.list[attributes.numbers['transparency']]
---     return al[name] or 0
--- end
-
 function ctx.definespotcolor(name,parent,str,global)
     if parent == "" or parent:find("=") then
         ctx.registerspotcolor(name, parent)
     elseif name ~= parent then
-        local cp = attributes.list[attributes.numbers['color']][parent]
+        local cp = attributes.list[a_color][parent]
         if cp then
             local t = str:split_settings()
             if t then
@@ -284,7 +259,7 @@ function ctx.definespotcolor(name,parent,str,global)
 end
 
 function ctx.registerspotcolor(parent, str)
-    local cp = attributes.list[attributes.numbers['color']][parent]
+    local cp = attributes.list[a_color][parent]
     if cp then
         local e = ""
         if str then
@@ -297,7 +272,7 @@ end
 
 function ctx.definemultitonecolor(name,multispec,colorspec,selfspec)
     local dd, pp, nn = { }, { }, { }
-    for k,v in multispec:gmatch("(%a+)=([^%,]*)") do
+    for k,v in gmatch(multispec,"(%a+)=([^%,]*)") do
         dd[#dd+1] = k
         pp[#pp+1] = v
         nn[#nn+1] = k
@@ -307,9 +282,9 @@ function ctx.definemultitonecolor(name,multispec,colorspec,selfspec)
     local nof = #dd
     if nof > 0 then
         dd, pp, nn = concat(dd,','), concat(pp,','), concat(nn,'_')
-        local parent = (nn:lower()):gsub("[^%d%a%.]+","_")
+        local parent = gsub(lower(nn),"[^%d%a%.]+","_")
         ctx.defineprocesscolor(parent,colorspec..","..selfspec,true,true)
-        local cp = attributes.list[attributes.numbers['color']][parent]
+        local cp = attributes.list[a_color][parent]
         if cp then
             registerspotcolor     (parent, name, cp, "", nof, dd, pp)
             registermultitonecolor(parent, name, cp, "", nof, dd, pp)
@@ -362,28 +337,26 @@ end
 function ctx.formatcolor(ca,separator)
     local cv = colors.value(ca)
     if cv then
-        local model = cv[1]
+        local c, f, t, model = { }, 13, 13, cv[1]
         if model == 2 then
-            return tostring(cv[2])
+            f, t = 2, 2
         elseif model == 3 then
-            return concat(cv,separator,3,5)
+            f, t = 3, 5
         elseif model == 4 then
-            return concat(cv,separator,6,9)
-        else
-            return tostring(cv[13])
+            f, t = 6, 9
         end
+        for i=f,t do
+            c[#c+1] = format("%0.3f",cv[i])
+        end
+        return concat(c,separator)
     else
-        return tostring(0)
+        return format("%0.3f",0)
     end
 end
 
 function ctx.formatgray(ca,separator)
     local cv = colors.value(ca)
-    if cv then
-        return tostring(cv[2])
-    else
-        return tostring(0)
-    end
+    return format("%0.3f",(cv and cv[2]) or 0)
 end
 
 function ctx.colorcomponents(ca)
@@ -433,7 +406,7 @@ function ctx.pdfcolor(model,ca,default) -- todo: use gray when no color
         else
             local n,f,d,p = cv[10],cv[11],cv[12],cv[13]
             if type(p) == "string" then
-                p = p:gsub(","," ") -- brr misuse of spot
+                p = gsub(p,","," ") -- brr misuse of spot
             end
             return format("/%s cs /%s CS %s SCN %s scn",n,n,p,p)
         end
@@ -519,23 +492,23 @@ end
 
 function ctx.resolvempgraycolor(csa,csb,model,s)
     local ca = colors.register('color',nil,'gray',s)
-    texsprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
-    texsprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
+    texsprint(ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
+    texsprint(ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
 end
 function ctx.resolvemprgbcolor(csa,csb,model,r,g,b)
     local ca = colors.register('color',nil,'rgb',r,g,b)
-    texsprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
-    texsprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
+    texsprint(ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
+    texsprint(ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
 end
 function ctx.resolvempcmykcolor(csa,csb,model,c,m,y,k)
     local ca = colors.register('color',nil,'cmyk',c,m,y,k)
-    texsprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
-    texsprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
+    texsprint(ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
+    texsprint(ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
 end
 function ctx.resolvempspotcolor(csa,csb,model,n,f,d,p)
     local ca = colors.register('color',nil,'spot',n,f,d,p)
-    texsprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
-    texsprint(tex.ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
+    texsprint(ctxcatcodes,format("\\setxvalue{%s}{%s}",csa,ctx.pdfcolorvalue(model,ca)))
+    texsprint(ctxcatcodes,format("\\setxvalue{%s}{%s}",csb,ctx.pdfcolorspace(model,ca)))
 end
 
 -- literals needed to inject code in the mp stream, we cannot use attributes there
@@ -544,24 +517,24 @@ end
 local intransparency = false
 
 function ctx.pdfrgbliteral(model,r,g,b)
-    texsprint(tex.ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'rgb',r,g,b))))
+    texsprint(ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'rgb',r,g,b))))
 end
 function ctx.pdfcmykliteral(model,c,m,y,k)
-    texsprint(tex.ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'cmyk',c,m,y,k))))
+    texsprint(ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'cmyk',c,m,y,k))))
 end
 function ctx.pdfgrayliteral(model,s)
-    texsprint(tex.ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'gray',s))))
+    texsprint(ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'gray',s))))
 end
 function ctx.pdfspotliteral(model,n,f,d,p)
-    texsprint(tex.ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'spot',n,f,d,p)))) -- incorrect
+    texsprint(ctxcatcodes,format("\\pdfliteral{%s}",ctx.pdfcolor(model,colors.register('color',nil,'spot',n,f,d,p)))) -- incorrect
 end
 function ctx.pdftransparencyliteral(a,t)
     intransparency = true
-    texsprint(tex.ctxcatcodes,format("\\pdfliteral{/Tr%s gs}",transparencies.register(nil,a,t)))
+    texsprint(ctxcatcodes,format("\\pdfliteral{/Tr%s gs}",transparencies.register(nil,a,t)))
 end
 function ctx.pdffinishtransparency()
     if intransparency then
         intransparency = false
-        texsprint(tex.ctxcatcodes,"\\pdfliteral{/Tr0 gs}") -- we happen to know this -)
+        texsprint(ctxcatcodes,"\\pdfliteral{/Tr0 gs}") -- we happen to know this -)
     end
 end

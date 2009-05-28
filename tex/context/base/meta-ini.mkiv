@@ -15,46 +15,6 @@
 
 \unprotect
 
-\startmessages  dutch  library: metapost
-  title: metapost
-      1: metapost bibliotheek -- wordt geladen
-\stopmessages
-
-\startmessages  english  library: metapost
-  title: metapost
-      1: loading metapost library --
-\stopmessages
-
-\startmessages  german  library: metapost
-  title: metapost
-      1: Lade metapost Bibliothek --
-\stopmessages
-
-\startmessages  czech  library: metapost
-  title: metapost
-      1: loading metapost library --
-\stopmessages
-
-\startmessages  italian  library: metapost
-  title: metapost
-      1: caricamento della libreria metapost --
-\stopmessages
-
-\startmessages  norwegian  library: metapost
-  title: metapost
-      1: metapost bibliotek -- blir lest inn
-\stopmessages
-
-\startmessages  romanian  library: metapost
-  title: metapost
-      1: se incarca biblioteca metapost --
-\stopmessages
-
-\startmessages  french  library: metapost
-  title: metapost
-      1: chargement de la bibliothèque metapost --
-\stopmessages
-
 %D Instead of sharing code with \MKII, I decided to copy
 %D the code. Otherwise maintainance becomes a pain and after all,
 %D the \MKII\ code will not change.
@@ -76,6 +36,20 @@
 \newtoks \MPfinalizations    % mp, user
 \newtoks \everyMPgraphic     % mp
 \newtoks \everyMPTEXgraphic  % tex
+
+% The next command is, of course, dedicated to Mojca, who
+% needs it for gnuplot. Anyway, the whole multiple engine
+% mechanism is to keep her gnuplot from interfering.
+
+\def\startMPdefinitions
+  {\dosinglegroupempty\dostartMPdefinitions}
+
+\long\def\dostartMPdefinitions#1#2\stopMPdefinitions
+  {\edef\currentMPgraphicinstance{#1}%
+   \ifx\currentMPgraphicinstance\empty
+     \let\currentMPgraphicinstance\defaultMPgraphicinstance
+   \fi
+   \global\MPinstancetoks\expandafter{\the\MPinstancetoks#2}}
 
 \long\def\startMPextensions#1\stopMPextensions
   {\global\MPextensions\expandafter{\the\MPextensions#1}}
@@ -110,31 +84,163 @@
 
 \def\currentMPformat{metafun}
 
+% todo:
+%
+% \splitMPgraphicname[a::b]      (\currentMPgraphicformat,\currentMPgraphicname)
+% \splitMPgraphicname[a]         (\currentMPgraphicformat,\currentMPgraphicname)
+% \splitMPgraphicname[a::b::c]   (\currentMPgraphicformat,\currentMPgraphicname)
+%
+% \resetMPformat[extrafun]
+%
+% MPinclusions etc only for metafun, randomseed for all
+%
+% todo: \resetMPformat[instance] -> unload and nil
+% todo: geen page stats
+% todo: textext in plain mp
+
+% test:
+%
+% \let\processMPgraphic\extendedprocessMPgraphic \setupcolors[state=start]
+%
+% \startMPdefinitions{metafun}
+%     color MyColor ; MyColor = red ;
+% \stopMPdefinitions
+% \startuseMPgraphic{test1}
+%     fill fullcircle scaled 1cm withcolor MyColor ;
+% \stopuseMPgraphic
+% \startuseMPgraphic{test2}
+%     color MyColor ; MyColor = green ;
+%     fill fullcircle scaled 1cm withcolor MyColor ;
+% \stopuseMPgraphic
+% \startuseMPgraphic{test3}
+%     fill fullcircle scaled 1cm withcolor MyColor ;
+% \stopuseMPgraphic
+% \startuseMPgraphic{test4}
+%     color MyColor ; MyColor = blue ;
+% \stopuseMPgraphic
+%
+% \useMPgraphic{metafun::test1}
+% \useMPgraphic{metafun::test2}
+% \useMPgraphic{metafun::test3}
+% \useMPgraphic{extrafun::test4}
+% \useMPgraphic{extrafun::test3}
+% \useMPgraphic{metafun::test3}
+% \useMPgraphic{nofun::test4}
+% \useMPgraphic{nofun::test3}
+%
+% \startMPcode
+%     fill fullsquare scaled 1cm ;
+% \stopMPcode
+% \startMPcode{metafun}
+%     fill fullsquare scaled 1cm withcolor MyColor ;
+% \stopMPcode
+
+\def\@@MPF{@MPF@}
+
+\def\MPinstancetoks{\csname\@@MPF::\currentMPgraphicinstance\endcsname}
+
+\def\defineMPinstance
+  {\dodoubleargument\dodefineMPinstance}
+
+\def\dodefineMPinstance[#1][#2]%
+  {\ifcsname\@@MPF::#1\endcsname\else\expandafter\newtoks\csname\@@MPF::#1\endcsname\fi
+   \MPinstancetoks\emptytoks % in case we redefine
+   \getparameters[\@@MPF#1][\s!format=mpost,\s!extensions=\v!no,\s!initializations=\v!no,#2]}
+
+\def\resetMPinstance[#1]%
+  {\writestatus\m!metapost{reset will be implemented when needed}}
+
+\def\defaultMPgraphicinstance{metafun}
+
+\def\splitMPgraphicname[#1]%
+  {\dosplitMPgraphicname[#1::::]}
+
+\def\dosplitMPgraphicname[#1::#2::#3]% instance ::
+  {\edef\currentMPgraphicname{#2}%
+   \ifx\currentMPgraphicname\empty
+     \edef\currentMPgraphicname{#1}%
+     \let\currentMPgraphicinstance\defaultMPgraphicinstance
+   \else
+     \edef\currentMPgraphicinstance{#1}%
+   \fi
+   \edef\currentMPgraphicformat{\csname\@@MPF\currentMPgraphicinstance\s!format\endcsname}}
+
+\def\currentMPgraphicinstance{\defaultMPgraphicinstance}
+\def\currentMPgraphicformat  {\currentMPgraphicinstance}
+
+\defineMPinstance[metafun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[extrafun][\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[metapost][\s!format=mpost]
+\defineMPinstance[nofun]   [\s!format=mpost]
+
+\def\beginMPgraphicgroup#1%
+  {\begingroup
+   \splitMPgraphicname[#1]}
+
+\def\endMPgraphicgroup
+  {\endgroup}
+
+%
+
 \newconditional \METAFUNinitialized
 
+% maybe we need to force black, i.e. fake nodes
+
 \long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
-  {\blabelgroup
+  {\begingroup
    \enableincludeMPgraphics
    \the\everyMPgraphic
    \presetMPdefinitions
    \setMPrandomseed % this has to change
    % we need to preexpand the token lists
    \setbox\MPgraphicbox\hbox\bgroup
-     \ifconditional\METAFUNinitialized
-       \ctxlua { metapost.graphic(
-             "\currentMPformat", \@EA\!!bs\the\MPinitializations;#1;\!!es,
-             ""
-       ) }%
-     \else
-       \ctxlua { metapost.graphic(
-             "\currentMPformat", \@EA\!!bs\the\MPinitializations;\theMPrandomseed;#1;\!!es, % code
-             \@EA\@EA\@EA\!!bs\@EA\the\@EA\MPextensions\@EA;\the\MPuserinclusions;\!!es     % optional preamble
-       ) }%
-       \global\settrue\METAFUNinitialized
-     \fi
+     \ctxlua{metapost.graphic("\currentMPformat", "\currentMPformat",
+           \@EA\!!bs\the\MPinitializations;\theMPrandomseed;#1;\!!es, % code
+           \@EA\@EA\@EA\!!bs\@EA\the\@EA\MPextensions\@EA;\the\MPuserinclusions;\!!es     % optional preamble
+     )}%
+     \global\settrue\METAFUNinitialized
+     \global\MPextensions\emptytoks
+     \global\MPuserinclusions\emptytoks
    \egroup
    \placeMPgraphic
-   \elabelgroup}
+   \endgroup}
+
+% ! ! ! ! begin temporary ! ! ! !
+
+\let\normalprocessMPgraphic\processMPgraphic
+
+\long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
+  {\begingroup % needed?
+   \enableincludeMPgraphics
+   \the\everyMPgraphic
+   \presetMPdefinitions
+   \setMPrandomseed % this has to change
+   % we need to preexpand the token lists
+   \doifelsevalue{\@@MPF\currentMPgraphicinstance\s!extensions}\v!yes
+     {\settrue\includeMPextensions\letgvalue{\@@MPF\currentMPgraphicinstance\s!extensions}\v!no}
+     {\setfalse\includeMPextensions}%
+   \doifelsevalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!yes
+     {\settrue\includeMPinitializations\letgvalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!no}
+     {\setfalse\includeMPinitializations}%
+   \setbox\MPgraphicbox\hbox\bgroup
+     \normalexpanded{\noexpand\ctxlua{metapost.graphic("\currentMPgraphicinstance", "\currentMPgraphicformat",
+           \!!bs\ifconditional\includeMPinitializations\the\MPinitializations;\fi\theMPrandomseed;#1;\!!es,
+           \!!bs\ifconditional\includeMPextensions\the\MPextensions;\the\MPuserinclusions;\fi\the\MPinstancetoks;\!!es
+     )}}%
+   \egroup
+     \global\MPinstancetoks\emptytoks
+     \global\settrue\METAFUNinitialized % becomes obsolete
+    %\global\MPextensions\emptytoks     % multipls instances
+    %\global\MPuserinclusions\emptytoks % multipls instances
+   \placeMPgraphic
+   \endgroup}
+
+\let\extendedprocessMPgraphic\processMPgraphic
+
+\let\processMPgraphic\normalprocessMPgraphic
+% \let\processMPgraphic\extendedprocessMPgraphic
+
+% ! ! ! ! end temporary ! ! ! !
 
 \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
 
@@ -150,10 +256,7 @@
 \def\@@MPG{@MPG@}
 
 \def\doifMPgraphicelse#1%
-  {\blabelgroup
-   \doifdefinedelse{\@@MPG#1}%
-     {\elabelgroup\firstoftwoarguments}
-     {\elabelgroup\secondoftwoarguments}}
+  {\ifcsname\@@MPG#1\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
 
 \def\includeMPgraphic#1%
   {\executeifdefined{\@@MPG#1};} % ; if not found
@@ -165,7 +268,6 @@
 \let\MPdrawingdata\empty
 
 \newif\ifMPdrawingdone  \MPdrawingdonefalse
-\newif\ifMPshiftdrawing \MPshiftdrawingfalse
 
 \def\resetMPdrawing
   {\globallet\MPdrawingdata\empty
@@ -178,9 +280,25 @@
 \def\popMPdrawing
   {\globalpopmacro\MPdrawingdata}
 
-\def\getMPdrawing
+\def\getMPdrawing{\dosinglegroupempty\dogetMPdrawing}
+
+\def\nodogetMPdrawing#1%
   {\ifMPdrawingdone
      \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
+   \fi}
+
+\def\dostartMPcode
+  {\iffirstargument
+     \expandafter\dodogetMPdrawing
+   \else
+     \expandafter\nodogetMPdrawing
+   \fi}
+
+\def\dodogetMPdrawing#1%
+  {\ifMPdrawingdone
+     \beginMPgraphicgroup{#1::\s!dummy}% name does not matter
+     \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
+     \endMPgraphicgroup
    \fi}
 
 \def\startMPdrawing
@@ -199,7 +317,6 @@
 
 \let\MPdrawingdata\empty
 
-\newif\ifMPdrawingdone  \MPdrawingdonefalse
 \newif\ifMPshiftdrawing \MPshiftdrawingfalse
 
 \def\resetMPdrawing
@@ -233,24 +350,24 @@
 \let\stopMPdrawing\relax
 
 \long\def\startMPclip#1#2\stopMPclip
-  {\blabelgroup
-   \long\setgvalue{MPC:#1}{\ctxlua{metapost.getclippath(\!!bs#2\!!es)}}%
-   \elabelgroup}
+  {\long\setgvalue{MPC:#1}{\ctxlua{metapost.getclippath(\!!bs#2\!!es)}}}
 
 \let\stopMPclip\relax
 
 \def\grabMPclippath#1#2#3#4#5% #5 is alternative
-  {\blabelgroup
+  {\begingroup
    \edef\width {#3\space}\let\overlaywidth \width
    \edef\height{#4\space}\let\overlayheight\height
-   \doifdefinedelse{MPC:#1}
-     {\xdef\MPclippath{\getvalue{MPC:#1}}%
-      \ifx\MPclippath\empty\xdef\MPclippath{#5}\fi
-      \setxvalue{MPC:#1}{\MPclippath}}
-     {\xdef\MPclippath{#5}}%
+   \ifcsname MPC:#1\endcsname
+     \xdef\MPclippath{\getvalue{MPC:#1}}%
+     \ifx\MPclippath\empty\xdef\MPclippath{#5}\fi
+     \setxvalue{MPC:#1}{\MPclippath}%
+   \else
+     \xdef\MPclippath{#5}%
+   \fi
    % #2 : method is obsolete, only pdf now, we can always
    % gsub the result to ps
-   \elabelgroup}
+   \endgroup}
 
 %D Next we will use these support macros.
 
@@ -267,6 +384,8 @@
     defaultfont:="\truefontname{Regular}";
     defaultscale:=\the\bodyfontsize/10pt;
 \stopMPinitializations
+
+% watch out, this is a type1 font because mp can only handle 8 bit fonts
 
 \startMPinitializations % scale is not yet ok
     defaultfont:="rm-lmtt10";
@@ -386,18 +505,36 @@
 %D \stoptyping
 
 \newcount\MPobjectcounter
-\newif   \ifMPshiftdrawing \MPshiftdrawingfalse
 \newbox  \MPgraphicbox
+%newif   \ifMPshiftdrawing \MPshiftdrawingfalse
+
+\chardef\MPboxmode\zerocount
+
+\def\doobeyMPboxdepth % mode = 1
+  {\setbox\MPgraphicbox\hbox{\hskip\MPllx\onebasepoint\raise\MPlly\onebasepoint\box\MPgraphicbox}}
+
+\def\doignoreMPboxdepth % mode = 2
+  {\normalexpanded
+     {\noexpand\doobeyMPboxdepth
+      \wd\MPgraphicbox\the\wd\MPgraphicbox
+      \ht\MPgraphicbox\the\ht\MPgraphicbox
+      \dp\MPgraphicbox\the\dp\MPgraphicbox}}
+
+\def\obeyMPboxdepth  {\chardef\MPboxmode\plusone}
+\def\ignoreMPboxdepth{\chardef\MPboxmode\plustwo}
+\def\normalMPboxdepth{\chardef\MPboxmode\zerocount}
+
+% compatibility hack:
+
+\let\MPshiftdrawingtrue \ignoreMPboxdepth
+\let\MPshiftdrawingfalse\normalMPboxdepth
 
 \def\placeMPgraphic
-  {\ifMPshiftdrawing
-     \edef\next
-       {\wd\MPgraphicbox\the\wd\MPgraphicbox
-        \ht\MPgraphicbox\the\ht\MPgraphicbox
-        \dp\MPgraphicbox\the\dp\MPgraphicbox}%
-     \setbox\MPgraphicbox\hbox
-       {\hskip\MPllx\onebasepoint\raise\MPlly\onebasepoint\box\MPgraphicbox}%
-     \next
+  {\ifcase\MPboxmode
+   \or   % 1
+     \doobeyMPboxdepth
+   \or   % 2
+     \doignoreMPboxdepth
    \fi
    \box\MPgraphicbox}
 
@@ -409,10 +546,10 @@
    \getobject{MP}{#1}}
 
 \long\def\handleuniqueMPgraphic#1#2#3%
-  {\blabelgroup
+  {\begingroup
    \def\@@meta{#1:}%
    \extendMPoverlaystamp{#2}% incl prepare
-   \ifundefined{\@@MPG\overlaystamp:#1}%
+   \ifcsname\@@MPG\overlaystamp:#1\endcsname\else
      \enableincludeMPgraphics
      \forgetall
      \global\advance\MPobjectcounter\plusone
@@ -420,57 +557,51 @@
      \setxvalue{\@@MPG\overlaystamp:#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
    \fi
    \getvalue{\@@MPG\overlaystamp:#1}%
-   \elabelgroup}
+   \endgroup}
 
 \long\def\startuniqueMPgraphic
-  {\blabelgroup
-   \dodoublegroupempty\dostartuniqueMPgraphic}
+  {\dodoublegroupempty\dostartuniqueMPgraphic}
 
 \long\def\dostartuniqueMPgraphic#1#2#3\stopuniqueMPgraphic%
-  {\long\setgvalue{\@@MPG#1}{\handleuniqueMPgraphic{#1}{#2}{#3}}%
-   \elabelgroup}
+  {\long\setgvalue{\@@MPG#1}{\handleuniqueMPgraphic{#1}{#2}{#3}}}
 
 \unexpanded\def\uniqueMPgraphic
   {\dodoublegroupempty\douniqueMPgraphic}
 
 \def\douniqueMPgraphic#1#2%
-  {\blabelgroup
-   \setupMPvariables[#1][#2]%
-   \getvalue{\@@MPG#1}\empty
-   \elabelgroup}
+  {\beginMPgraphicgroup{#1}%
+   \setupMPvariables[\currentMPgraphicname][#2]%
+   \getvalue{\@@MPG\currentMPgraphicname}\empty
+   \endMPgraphicgroup}
 
 \let\stopuniqueMPcode \relax % so that we can use it in \expanded
 
 \long\def\handleuseMPgraphic#1#2#3%
-  {\blabelgroup
+  {\begingroup
    \forgetall % check this
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
    \enableincludeMPgraphics
    \processMPgraphic{#3}%
-   \elabelgroup}
+   \endgroup}
 
 \long\def\startuseMPgraphic
-  {\blabelgroup
-   \dodoublegroupempty\dostartuseMPgraphic}
+  {\dodoublegroupempty\dostartuseMPgraphic}
 
 \long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
-   \elabelgroup}
+  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
 
 \long\def\startusableMPgraphic % redundant but handy
-  {\blabelgroup
-   \dodoublegroupempty\dostartusableMPgraphic}
+  {\dodoublegroupempty\dostartusableMPgraphic}
 
 \long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
-   \elabelgroup}
+  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
 
 \let\stopuseMPgraphic    \relax % so that we can use it in \expanded
 \let\stopusableMPgraphic \relax % so that we can use it in \expanded
 
 \long\def\handlereusableMPgraphic#1#2#3%
-  {\blabelgroup
+  {\begingroup
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
    \enableincludeMPgraphics
@@ -478,15 +609,13 @@
    \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
    \setxvalue{\@@MPG#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
    \getvalue{\@@MPG#1}%
-   \elabelgroup}
+   \endgroup}
 
 \long\def\startreusableMPgraphic
-  {\blabelgroup
-   \dodoublegroupempty\dostartreusableMPgraphic}
+  {\dodoublegroupempty\dostartreusableMPgraphic}
 
 \long\def\dostartreusableMPgraphic#1#2#3\stopreusableMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}%
-   \elabelgroup}
+  {\long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}}
 
 \let\stopreusableMPgraphic \relax % so that we can use it in \expanded
 
@@ -494,10 +623,10 @@
   {\dodoublegroupempty\douseMPgraphic}
 
 \def\douseMPgraphic#1#2%
-  {\blabelgroup
-   \doifsomething{#2}{\setupMPvariables[#1][#2]}%
-   \getvalue{\@@MPG#1}\empty
-   \elabelgroup}
+  {\beginMPgraphicgroup{#1}%
+   \doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
+   \getvalue{\@@MPG\currentMPgraphicname}\empty
+   \endMPgraphicgroup}
 
 \let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed
 \let\reusableMPgraphic\reuseMPgraphic % we can save a setup here if needed
@@ -522,23 +651,21 @@
   {\MPpageprefix\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
 \long\def\startuniqueMPpagegraphic
-  {\blabelgroup
-   \dodoublegroupempty\dostartuniqueMPpagegraphic}
+  {\dodoublegroupempty\dostartuniqueMPpagegraphic}
 
 \long\def\dostartuniqueMPpagegraphic#1#2#3\stopuniqueMPpagegraphic
   {\long\setgvalue{\@@MPG o:#1}{\handleuniqueMPgraphic{o:#1}{#2}{#3}}%
-   \long\setgvalue{\@@MPG e:#1}{\handleuniqueMPgraphic{e:#1}{#2}{#3}}%
-   \elabelgroup}
+   \long\setgvalue{\@@MPG e:#1}{\handleuniqueMPgraphic{e:#1}{#2}{#3}}}
 
 \unexpanded\def\uniqueMPpagegraphic
   {\dodoublegroupempty\douniqueMPpagegraphic}
 
 \def\douniqueMPpagegraphic#1#2%
-  {\blabelgroup
+  {\beginMPgraphicgroup{#1}%
    \let\overlaystamp\overlaypagestamp
-   \setupMPvariables[\MPpageprefix#1][#2]% prefix is new here
-   \getvalue{\@@MPG\MPpageprefix#1}{}%
-   \elabelgroup}
+   \setupMPvariables[\MPpageprefix\currentMPgraphicname][#2]% prefix is new here
+   \getvalue{\@@MPG\MPpageprefix\currentMPgraphicname}{}%
+   \endMPgraphicgroup}
 
 %D One way of defining a stamp is:
 %D
@@ -553,10 +680,10 @@
 %D we introduce a dedicated expansion engine.
 
 \def\prepareMPvariable#1%
-  {\ifundefined{\@@framed\@@meta#1}%
-     \doprepareMPvariable{\@@meta#1}%
-   \else
+  {\ifcsname\@@framed\@@meta#1\endcsname
      \doprepareMPvariable{\@@framed\@@meta#1}%
+   \else
+     \doprepareMPvariable{\@@meta#1}%
    \fi}
 
 % \startlines
@@ -637,15 +764,35 @@
 
 %D For the moment, the next one is a private macro:
 
-% TODO ! ! ! ! ! !
-
 \def\processMPbuffer
   {\dosingleempty\doprocessMPbuffer}
+
+% this fails (keep):
+%
+% \def\doprocessMPbuffer[#1]%
+%   {\doifelsenothing{#1}
+%      {\doprocessMPbuffer[\jobname]}
+%      {\processMPgraphic{\ctxlua{tex.sprint(tex.ctxcatcodes,buffers.collect("#1"))}}}} % "\\n"
+%
+% this works (keep):
+%
+% \def\doprocessMPbuffer[#1]%
+%   {\doifelsenothing{#1}
+%      {\doprocessMPbuffer[\jobname]} % #1 can be a list of buffers, otherwise we could use:
+%      {\processMPgraphic{\ctxlua{tex.sprint(tex.ctxcatcodes,unpack(buffers.data["#1"]))}}}}
+%
+% this we use:
+
+\newtoks\mpbuffertoks
 
 \def\doprocessMPbuffer[#1]%
   {\doifelsenothing{#1}
      {\doprocessMPbuffer[\jobname]}
-     {\processMPgraphic{\ctxlua{tex.sprint(tex.ctxcatcodes,buffers.collect(string.split("#1",",")))}}}}
+     {\beginMPgraphicgroup{#1}%
+      % we need this trick because tex.sprint does not interprets newlines
+      \ctxlua{tex.toks.mpbuffertoks=buffers.collect("\currentMPgraphicname")}%
+      \processMPgraphic{\the\mpbuffertoks}%
+      \endMPgraphicgroup}}
 
 \def\runMPbuffer
   {\dosingleempty\dorunMPbuffer}
@@ -718,8 +865,22 @@
 %D
 %D The most simple case:
 
-\long\def\startMPcode#1\stopMPcode
-  {\processMPgraphic{#1}}
+\def\startMPcode{\dosinglegroupempty\dostartMPcode}
+
+\def\dostartMPcode
+  {\iffirstargument
+     \expandafter\dodostartMPcode
+   \else
+     \expandafter\nodostartMPcode
+   \fi}
+
+\def\dodostartMPcode#1#2\stopMPcode
+  {\beginMPgraphicgroup{#1::\s!dummy}% name does not matter
+   \processMPgraphic{#2}%
+   \endMPgraphicgroup}
+
+\def\nodostartMPcode#1#2\stopMPcode
+  {\processMPgraphic{#2}}
 
 \let\stopMPcode\relax
 
@@ -749,7 +910,7 @@
 %D accomplished by:
 
 \def\douseMPlibrary#1%
-  {\ifundefined{\c!file\f!metapostprefix#1}%
+  {\ifcsname\c!file\f!metapostprefix#1\endcsname\else
      \letvalueempty{\c!file\f!metapostprefix#1}%
      \makeshortfilename[\truefilename{\f!metapostprefix#1}]%
      \startreadingfile
@@ -839,7 +1000,7 @@
 \to \everyMPgraphic
 
 \appendtoks
-    \expanded{\definecolor[currentcolor][\currentcolorname]}%
+    \normalexpanded{\noexpand\definecolor[currentcolor][\currentcolorname]}%
 \to \everyMPgraphic
 
 \appendtoks
@@ -1003,9 +1164,9 @@
 
 \long\def\dostartMPcolor[#1][#2]#3\stopMPcolor % slow but sometimes handy
   {\startnointerference
-     \def\handleMPgraycolor{\expanded{\defineglobalcolor[#1][s=\!MPgMPa1,#2]}}%
-     \def\handleMPrgbcolor {\expanded{\defineglobalcolor[#1][r=\!MPgMPa1,g=\!MPgMPa2,b=\!MPgMPa3,#2]}}%
-     \def\handleMPcmykcolor{\expanded{\defineglobalcolor[#1][c=\!MPgMPa1,m=\!MPgMPa2,y=\!MPgMPa3,k=\!MPgMPa4,#2]}}%
+     \def\handleMPgraycolor{\normalexpanded{\noexpand\defineglobalcolor[#1][s=\!MPgMPa1,#2]}}%
+     \def\handleMPrgbcolor {\normalexpanded{\noexpand\defineglobalcolor[#1][r=\!MPgMPa1,g=\!MPgMPa2,b=\!MPgMPa3,#2]}}%
+     \def\handleMPcmykcolor{\normalexpanded{\noexpand\defineglobalcolor[#1][c=\!MPgMPa1,m=\!MPgMPa2,y=\!MPgMPa3,k=\!MPgMPa4,#2]}}%
      \processMPgraphic{#3}%
    \stopnointerference}
 
@@ -1095,12 +1256,10 @@
   {\startreusableMPgraphic{\@@MPG#1@S@}#2\stopreusableMPgraphic}
 
 \long\def\startstaticMPgraphic
-  {\blabelgroup
-   \dodoublegroupempty\dostartstaticMPgraphic}
+  {\dodoublegroupempty\dostartstaticMPgraphic}
 
 \long\def\dostartstaticMPgraphic#1#2#3\stopstaticMPgraphic
-  {\long\setgvalue{\@@MPG#1@S@}{\handlereusableMPgraphic{#1}{#2}{#3}}%
-   \elabelgroup}
+  {\long\setgvalue{\@@MPG#1@S@}{\handlereusableMPgraphic{#1}{#2}{#3}}}
 
 %D New:
 

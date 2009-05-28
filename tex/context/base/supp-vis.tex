@@ -11,18 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx\contextversion\undefined
-
-  \let \normalunexpanded \unexpanded
-  \let \unexpanded       \protected
-
-\fi
-
-\ifx\unexpanded\undefined
-
-   \let\unexpanded\relax
-
-\fi
+% no longer generic, who cares ...
 
 %D \gdef\ShowBufferedExample% private typeseting macro
 %D   {\startlinecorrection
@@ -91,7 +80,7 @@
 %D That's why we've implemented a mechanism that shows some of
 %D the inner secrets of \TEX.
 
-\writestatus{loading}{Context Support Macros / Visualization}
+\writestatus{loading}{ConTeXt Support Macros / Visualization}
 
 %D In this module we are going to redefine some \TEX\
 %D primitives and \PLAIN\ macro's. Their original meaning is
@@ -159,10 +148,7 @@
 %D baseline behavior. Especially \type{\vtop}'s need our
 %D special attention.
 
-\ifx \normalhbox    \undefined \let \normalhbox    = \hbox    \fi
-\ifx \normalvbox    \undefined \let \normalvbox    = \vbox    \fi
-\ifx \normalvtop    \undefined \let \normalvtop    = \vtop    \fi
-\ifx \normalvcenter \undefined \let \normalvcenter = \vcenter \fi
+% already saved
 
 %D \macros
 %D   {normalhskip,
@@ -171,8 +157,7 @@
 %D Next come the flexible skips, which come in two flavors
 %D too. Like boxes these are handled with \TEX\ primitives.
 
-\let\normalhskip    = \hskip
-\let\normalvskip    = \vskip
+% already saved
 
 %D \macros
 %D   {normalpenalty,
@@ -182,8 +167,7 @@
 %D primitives. This means that when making them visible, we
 %D have to take the current mode into account.
 
-\let\normalpenalty  = \penalty
-\let\normalkern     = \kern
+% already saved
 
 %D \macros
 %D   {normalhglue,
@@ -193,8 +177,8 @@
 %D As we will see, their definitions make the implementation of
 %D their visible counterparts a bit more \TeX{}nical.
 
-\let\normalhglue    = \hglue
-\let\normalvglue    = \vglue
+\let\normalhglue = \hglue
+\let\normalvglue = \vglue
 
 %D \macros
 %D   {normalmkern,
@@ -206,8 +190,7 @@
 %D with other dimensions. As a result, the visual appearance
 %D of these primitives is kept primitive too.
 
-\let\normalmkern = \mkern
-\let\normalmskip = \mskip
+% already saved
 
 %D \macros
 %D   {hfilneg,
@@ -231,12 +214,7 @@
 %D The positive stretch primitives are used independant and in
 %D combination with \type{\leaders}.
 
-\let\normalhss   = \hss
-\let\normalhfil  = \hfil
-\let\normalhfill = \hfill
-\let\normalvss   = \vss
-\let\normalvfil  = \vfil
-\let\normalvfill = \vfill
+% already saved
 
 %D \macros
 %D   {normalhfilneg,normalhfillneg,
@@ -247,9 +225,7 @@
 %D in standard \TEX\ documentation. They can nevertheless be
 %D used at will.
 
-\let\normalhfilneg  = \hfilneg
 \let\normalhfillneg = \hfillneg
-\let\normalvfilneg  = \vfilneg
 \let\normalvfillneg = \vfillneg
 
 %D Visualization is not always wanted. Instead of turning this
@@ -1926,11 +1902,5 @@
 %D show us how and where things happen. When somehow the last
 %D lines in this two column index don't allign, then this is
 %D due to some still unknown interference.
-
-\ifx\contextversion\undefined
-
-  \let \unexpanded \normalunexpanded
-
-\fi
 
 \endinput

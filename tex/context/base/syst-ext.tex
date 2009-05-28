@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context System Macro's / Extras}
+\writestatus{loading}{ConTeXt System Macros / Extras}
 
 %D In this second system module, we continue the definition of
 %D some handy commands.
@@ -110,8 +110,8 @@
 %D are needed:
 
 \def\newif#1%
-  {\count@\escapechar
-   \escapechar\m@ne
+  {\scratchcounter\escapechar
+   \escapechar\minusone
    \expandafter\expandafter\expandafter
      \redoglobal\expandafter\expandafter\expandafter
        \edef\@if#1{true}{\let\noexpand#1\noexpand\iftrue}%
@@ -119,7 +119,7 @@
      \redoglobal\expandafter\expandafter\expandafter
        \edef\@if#1{false}{\let\noexpand#1\noexpand\iffalse}%
    \dodoglobal\@if#1{false}%
-   \escapechar\count@}
+   \escapechar\scratchcounter}
 
 %D Also new:
 
@@ -437,7 +437,7 @@
 %D Slower but better:
 
 \ifx\letterbackslash\undefined
-    {\catcode`.=0 .catcode`.\ 12 .xdef.letterbackslash{.string\}} % hack
+  {\catcode`.=0 .catcode`.\ 12 .xdef.letterbackslash{.string\}} % hack
 \fi
 
 \def\strippedcsname#1% this permits \strippedcsname{\xxx} and \strippedcsname{xxx}
@@ -1013,6 +1013,27 @@
    \let\endofloop\dodoloop
    \dodoloop1} % no \plusone else \recurselevel wrong
 
+%D For special purposes:
+
+\newcount\fastrecursecounter
+\newcount\lastrecursecounter
+\newcount\steprecursecounter
+
+\def\dofastrecurse#1#2#3#4%
+  {\def\fastrecursebody{#4}%
+   \fastrecursecounter#1\relax
+   \lastrecursecounter#2\relax
+   \steprecursecounter#3\relax
+   \def\recurselevel{\number\fastrecursecounter}%
+   \dodofastrecurse}
+
+\def\dodofastrecurse
+  {\ifnum\fastrecursecounter>\lastrecursecounter\else
+     \fastrecursebody
+     \advance\fastrecursecounter\steprecursecounter
+     \expandafter\dodofastrecurse
+   \fi}
+
 %D This alternative looks a bit different and uses a
 %D pseudo counter. When this macro is nested, we have to use
 %D different counters. This time we use keywords.
@@ -1073,6 +1094,7 @@
 %D \def\EveryLine%
 %D   {\afterassignment\doEveryLine\scratchtoks}
 %D \stoptyping
+%D
 %D The real implementation is a bit more complicated but we
 %D prefer something more versatile.
 
@@ -1471,7 +1493,7 @@
 
 \def\ExpandFirstAfter#1%
   {\let\ExpandCommand#1%
-   \doifnextcharelse[\complexExpandFirstAfter\simpleExpandFirstAfter}
+   \doifnextoptionalelse\complexExpandFirstAfter\simpleExpandFirstAfter}
 
 \def\ExpandSecondAfter#1#2#3%
   {\scratchtoks{#2}%
@@ -1832,12 +1854,10 @@
 % compatible ?
 
 \long\unexpanded\def\groupedcommand#1#2%
-  {\doifnextcharelse\bgroup
-     {\HandleGroup{#1}{#2}}{\HandleNoGroup{#1}{#2}}}
+  {\doifnextbgroupelse{\HandleGroup{#1}{#2}}{\HandleNoGroup{#1}{#2}}}
 
 \long\unexpanded\def\simplegroupedcommand#1#2%
-  {\doifnextcharelse\bgroup
-     {\HandleSimpleGroup{#1}{#2}}{\HandleNoGroup{#1}{#2}}}
+  {\doifnextbgroupelse{\HandleSimpleGroup{#1}{#2}}{\HandleNoGroup{#1}{#2}}}
 
 %D Users should be aware of the fact that grouping can
 %D interfere with ones paragraph settings that are executed
@@ -2069,7 +2089,7 @@
 %D \def\dowithpargument#1%
 %D   {\def\nextpar##1 \par{#1{##1}}%
 %D    \def\nextarg##1{#1{##1}}%
-%D    \doifnextcharelse{\bgroup}
+%D    \doifnextcharelse\bgroup
 %D      {\nextarg}
 %D      {\nextpar}}
 %D \stoptyping
@@ -2081,7 +2101,7 @@
 %\def\dowithpargument#1%
 %  {\def\nextpar##1 \par{#1{##1}}%
 %   \def\nextarg##1{#1{##1}}%
-%   \doifnextcharelse{\bgroup}
+%   \doifnextcharelse\bgroup
 %     {\nextarg}
 %     {\doifnextcharelse{\par}
 %        {#1{}}
@@ -2090,7 +2110,7 @@
 \def\dowithpargument#1%
   {\def\nextpar##1 \par{#1{##1}}%
    \def\nextarg##1{#1{##1}}%
-   \doifnextcharelse\bgroup\nextarg{\doifnextcharelse\par{#1{}}\nextpar}}
+   \doifnextbgroupelse\nextarg{\doifnextcharelse\par{#1{}}\nextpar}}
 
 %D The \type{p} in the previous command stands for paragraph.
 %D When we want to act upon words we can use the \type{w}
@@ -2133,14 +2153,14 @@
 %\def\dowithwargument#1%
 %  {\def\nextwar##1 {#1{##1}}%
 %   \def\nextarg##1{#1{##1}}%
-%   \doifnextcharelse{\bgroup}
+%   \doifnextcharelse\bgroup
 %     {\nextarg}
 %     {\nextwar}}
 
 \def\dowithwargument#1%
   {\def\nextwar##1 {#1{##1}}%
    \def\nextarg##1{#1{##1}}%
-   \doifnextcharelse\bgroup\nextarg\nextwar}
+   \doifnextbgroupelse\nextarg\nextwar}
 
 %D \macros
 %D   {dorepeat,dorepeatwithcommand}
@@ -2367,6 +2387,8 @@
 %
 % A slightly (but in the case of large arguments
 % significantly) faster alternative is given below:
+
+\newtoks\@@toks
 
 \def\dodoappendtoks
   {\dodoglobal\@@toks\@EAEAEA{\@EA\the\@EA\@@toks\the\@@scratchtoks}}
@@ -3016,8 +3038,7 @@
    \expandafter\globalprocesscommaitem#1,],}
 
 %D \macros
-%D   {withoutunit,withoutpt,
-%D    PtToCm,
+%D   {withoutpt,PtToCm,
 %D    numberofpoints,dimensiontocount}
 %D
 %D We can convert point into centimeters with:
@@ -3025,24 +3046,6 @@
 %D \starttyping
 %D \PtToCm{dimension}
 %D \stoptyping
-%D
-%D Splitting the value and the unit is done by:
-
-\def\withoutunit#1#2%
-  {\begingroup
-   \scratchdimen#1\relax
-   \@EA\convertargument\the\scratchdimen\to\asciia
-   \@EA\convertargument#2\to\asciib
-  %\@EA\@EA\@EA\beforesplitstring\@EA\asciia\@EA\at\asciib\to\!!stringa
-   \@EA\beforesplitstring\@EA\asciia\@EA\at\asciib\to\!!stringa
-   \!!stringa
-   \endgroup}
-
-\def\withoutpt#1{\withoutunit{#1}{pt}}
-\def\withoutcm#1{\withoutunit{#1}{cm}}
-
-%D A bit faster and more robust alternative is one that
-%D manipulates the \CATCODES.
 
 {\catcode`\.=\@@other
  \catcode`\p=\@@other
@@ -3076,18 +3079,11 @@
 %D
 %D Both macros return a rounded number.
 
-% todo: etex version
+% \dimensiontocount{10.49pt}\scratchcounter \the\scratchcounter / \numberofpoints{10.49pt}
+% \dimensiontocount{10.51pt}\scratchcounter \the\scratchcounter / \numberofpoints{10.51pt}
 
-\def\numberofpoints#1%
-  {\scratchdimen#1%
-   \advance\scratchdimen .5pt
-   \withoutpt\the\scratchdimen}
-
-\def\dimensiontocount#1#2%
-  {\scratchdimen#1%
-   \advance\scratchdimen .5pt
-   #2\scratchdimen
-   \divide#2 \maxcard}
+\def\dimensiontocount#1#2{#2\numexpr\dimexpr#1\relax/\maxcard\relax}
+\def\numberofpoints    #1{\the\numexpr\dimexpr#1\relax/\maxcard\relax}
 
 %D \macros
 %D   {swapdimens,swapmacros}
@@ -3946,7 +3942,7 @@
 % %D handle the special case.
 %
 % \def\dohonorgroupedargument#1[%
-%   {\doifnextcharelse\bgroup{\dodohonorgroupedargument#1}{#1[}}
+%   {\doifnextbgroupelse{\dodohonorgroupedargument#1}{#1[}}
 %
 % \def\dodohonorgroupedargument#1#2%
 %   {#1[{{#2}}}
@@ -4470,24 +4466,43 @@
 
 \beginTEX
 
-  \let\integerrounding \firstofoneargument
-  \let\onedigitrounding\firstofoneargument
-  \let\twodigitrounding\firstofoneargument
+  \let\integerrounding   \firstofoneargument
+  \let\onedigitrounding  \firstofoneargument
+  \let\twodigitrounding  \firstofoneargument
+  \let\threedigitrounding\firstofoneargument
 
 \endTEX
 
 \beginETEX \dimexpr
 
-  \def\dointegerrounding #1.#2\relax    {#1}
-  \def\doonedigitrounding#1.#2#3\relax  {\ifx#2*#1\else#1.#2\fi}
-  \def\dotwodigitrounding#1.#2#3#4\relax{\ifx#2*#1\else#1.#2#3\fi}
+  \def\dointegerrounding   #1.#2\relax      {#1}
+  \def\doonedigitrounding  #1.#2#3\relax    {\ifx#2*#1\else#1.#2\fi}
+  \def\dotwodigitrounding  #1.#2#3#4\relax  {\ifx#2*#1\else#1.#2#3\fi}
+  \def\dothreedigitrounding#1.#2#3#4#5\relax{\ifx#2*#1\else#1.#2#3#4\fi}
 
   \def\integerrounding#1%
-    {\@EA\@EA\@EA\dointegerrounding \@EA\WITHOUTPT\the\dimexpr#1\points+.5\points\relax.\relax}
+    {\@EA\@EA\@EA\dointegerrounding   \@EA\WITHOUTPT\the\dimexpr#1\points+.5\points   \relax      .\relax}
   \def\onedigitrounding#1%
-    {\@EA\@EA\@EA\doonedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.05\points\relax00.*0\relax}
+    {\@EA\@EA\@EA\doonedigitrounding  \@EA\WITHOUTPT\the\dimexpr#1\points+.05\points  \relax  00.*0\relax}
   \def\twodigitrounding#1%
-    {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.005\points\relax000.*00\relax}
+    {\@EA\@EA\@EA\dotwodigitrounding  \@EA\WITHOUTPT\the\dimexpr#1\points+.005\points \relax 000.*00\relax}
+  \def\threedigitrounding#1%
+    {\@EA\@EA\@EA\dothreedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.0005\points\relax0000.*00\relax}
+
+%   \def\dointegerrounding   #1.#2\relax      {#1}
+%   \def\doonedigitrounding  #1.#2#3\relax    {#1.#2}
+%   \def\dotwodigitrounding  #1.#2#3#4\relax  {#1.#2#3}
+%   \def\dothreedigitrounding#1.#2#3#4#5\relax{#1.#2#3#4}
+
+%   \def\integerrounding   #1{\@EA\@EA\@EA\dointegerrounding   \@EA\WITHOUTPT\the\dimexpr   #1\points+.5\points\relax   \relax}
+%   \def\onedigitrounding  #1{\@EA\@EA\@EA\doonedigitrounding  \@EA\WITHOUTPT\the\dimexpr  #1\points+.05\points\relax  0\relax}
+%   \def\twodigitrounding  #1{\@EA\@EA\@EA\dotwodigitrounding  \@EA\WITHOUTPT\the\dimexpr #1\points+.005\points\relax 00\relax}
+%   \def\threedigitrounding#1{\@EA\@EA\@EA\dothreedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.0005\points\relax000\relax}
+
+%   \def\integerroundeddimen   #1{\@EA\@EA\@EA\dointegerrounding   \@EA\WITHOUTPT\the\dimexpr   #1+.5\points\relax   \relax}
+%   \def\onedigitroundeddimen  #1{\@EA\@EA\@EA\doonedigitrounding  \@EA\WITHOUTPT\the\dimexpr  #1+.05\points\relax  0\relax}
+%   \def\twodigitroundeddimen  #1{\@EA\@EA\@EA\dotwodigitrounding  \@EA\WITHOUTPT\the\dimexpr #1+.005\points\relax 00\relax}
+%   \def\threedigitroundeddimen#1{\@EA\@EA\@EA\dothreedigitrounding\@EA\WITHOUTPT\the\dimexpr#1+.0005\points\relax000\relax}
 
 \endETEX
 
@@ -4640,44 +4655,6 @@
          \fi\fi}
         {\comparedresult\plustwo}}
      {\comparedresult\plusone}}
-
-%D \macros
-%D   {@saveprimitive}
-%D
-%D The next definition originates in the \type {amsgen} package. In
-%D case some preceding package redefined a primitive that we also
-%D want to redefine, we had better do some checking to make sure
-%D that we are able to save the primitive meaning for internal use.
-%D Primitive control sequences can be distinguished by the fact that
-%D \type {\string} and \type {\meaning} return the same information.
-
-\def\@saveprimitive#1#2%
- {\begingroup
-  \edef\@tempa{\string#1}%
-  \edef\@tempb{\meaning#1}%
-  \ifx\@tempa\@tempb
-    \global\let#2#1%
-   %\debuggerinfo{prim}{Saving \string#1 as \string#2}%
-  \else
-    \edef\@tempb{\meaning#2}%
-   %\ifx\@tempa\@tempb
-   %  \debuggerinfo{prim}{Saving \string#1 as \string#2}%
-   %\else
-   %  \debuggerinfo{prim}{Can't define \string#2 properly;
-   %    primitive \noexpand#1 is no longer primitive}%
-   %\fi
-  \fi
-  \endgroup}
-
-\def\saveprimitive#1%
-   {\begingroup
-    \@EA\edef\@EA\@tempa\@EA{\@EA\gobbleoneargument\string#1}%
-    \@EA\let\csname normal\@tempa\endcsname\relax
-    \@EA\@saveprimitive\@EA#1\csname normal\@tempa\endcsname
-    \endgroup }
-
-%D In this macro, the message only shows up when the debugging
-%D is turned on.
 
 %D \macros
 %D   {@True, @False, @Not, @And}

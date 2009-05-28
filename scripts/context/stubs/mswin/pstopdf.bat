@@ -1,2 +1,5 @@
 @echo off
-texmfstart pstopdf.rb %*
+setlocal
+set ownpath=%~dp0%
+texlua "%ownpath%mtxrun.lua" --usekpse --execute pstopdf.rb %*
+endlocal

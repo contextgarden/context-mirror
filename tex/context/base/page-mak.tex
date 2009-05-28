@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Page Macros / MakeUp}
+\writestatus{loading}{ConTeXt Page Macros / MakeUp}
 
 \unprotect
 
@@ -164,8 +164,11 @@
      \global\pageselectedfalse
    \fi}
 
+% \def\pushpagestate{\globalpushmacro\@@pnstate}
+% \def\poppagestate {\globalpopmacro \@@pnstate}
+
 \def\doshipoutmakeup
-  {\globalpushmacro\@@pnstate % new
+  {\pushpagestate % new
    \makeupparameter\c!before
    \setbox\makeupbox\vbox{\hbox{\color[\makeupparameter\c!color]{\box\makeupbox}}}%
    % \ifgridsnapping
@@ -190,7 +193,7 @@
                   \null
                   \page}]%
    \fi \fi
-   \globalpopmacro\@@pnstate} % new
+   \poppagestate} % new
 
 %D The text surrounding the main body text can be influenced
 %D by setting their associated status variables. The

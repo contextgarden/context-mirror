@@ -3,8 +3,9 @@
 # tex.setup.setuplayout.width.[integer|real|dimension|string|key]
 # tex.[mp]var.whatever.width.[integer|real|dimension|string|key]
 
-require 'ftools'
-require 'md5'
+require 'fileutils'
+# require 'ftools'
+require 'digest/md5'
 
 # this can become a lua thing
 
@@ -40,7 +41,7 @@ module ExaEncrypt
                         pre, password, post = $1, $2, $3
                         unless password =~ /MD5:/i then
                             done = true
-                            password = "MD5:" + MD5.new(password).hexdigest.upcase
+                            password = "MD5:" + Digest::MD5.hexdigest(password).upcase
                         end
                         "#{pre}#{password}#{post}"
                     end
@@ -49,7 +50,7 @@ module ExaEncrypt
                         attributes, password = $1, $2
                         unless password =~ /^([0-9A-F][0-9A-F])+$/ then
                             done = true
-                            password = MD5.new(password).hexdigest.upcase
+                            password = Digest::MD5.hexdigest(password).upcase
                             attributes = " encryption='md5'#{attributes}"
                         end
                         "<exa:password#{attributes}>#{password}</exa:password>"

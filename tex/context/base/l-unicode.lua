@@ -1,14 +1,17 @@
--- filename : l-unicode.lua
--- comment  : split off from luat-inp
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-unicode'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-unicode'] = 1.001
-if not unicode  then unicode  = { } end
+utf = utf or unicode.utf8
 
-local concat, utfchar, utfgsub = table.concat, unicode.utf8.char, unicode.utf8.gsub
-local char, byte = string.char, string.byte
+local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
+local char, byte, find, bytepairs = string.char, string.byte, string.find, string.bytepairs
+
+unicode = unicode or { }
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
@@ -29,17 +32,17 @@ function unicode.utftype(f) -- \000 fails !
     if not str then
         f:seek('set')
         return 0
-    elseif str:find("^%z%z\254\255") then
+    elseif find(str,"^%z%z\254\255") then
         return 4
-    elseif str:find("^\255\254%z%z") then
+    elseif find(str,"^\255\254%z%z") then
         return 3
-    elseif str:find("^\254\255") then
+    elseif find(str,"^\254\255") then
         f:seek('set',2)
         return 2
-    elseif str:find("^\255\254") then
+    elseif find(str,"^\255\254") then
         f:seek('set',2)
         return 1
-    elseif str:find("^\239\187\191") then
+    elseif find(str,"^\239\187\191") then
         f:seek('set',3)
         return 0
     else
@@ -67,7 +70,7 @@ function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
             p = 0
         end
     end
-    for l,r in str:bytepairs() do
+    for l,r in bytepairs(str) do
         if r then
             if endian then
                 n = l*256 + r
@@ -111,7 +114,7 @@ function unicode.utf32_to_utf8(str, endian)
             p = 0
         end
     end
-    for a,b in str:bytepairs() do
+    for a,b in bytepairs(str) do
         if a and b then
             if m < 0 then
                 if endian then
@@ -138,28 +141,32 @@ function unicode.utf32_to_utf8(str, endian)
     return result
 end
 
+local function little(c)
+    local b = byte(c) -- b = c:byte()
+    if b < 0x10000 then
+        return char(b%256,b/256)
+    else
+        b = b - 0x10000
+        local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
+        return char(b1%256,b1/256,b2%256,b2/256)
+    end
+end
+
+local function big(c)
+    local b = byte(c)
+    if b < 0x10000 then
+        return char(b/256,b%256)
+    else
+        b = b - 0x10000
+        local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
+        return char(b1/256,b1%256,b2/256,b2%256)
+    end
+end
+
 function unicode.utf8_to_utf16(str,littleendian)
     if littleendian then
-        return char(255,254) .. utfgsub(str,".",function(c)
-            local b = byte(c) -- b = c:byte()
-            if b < 0x10000 then
-                return char(b%256,b/256)
-            else
-                b = b - 0x10000
-                local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
-                return char(b1%256,b1/256,b2%256,b2/256)
-            end
-        end)
+        return char(255,254) .. utfgsub(str,".",little)
     else
-        return char(254,255) .. utfgsub(str,".",function(c)
-            local b = byte(c)
-            if b < 0x10000 then
-                return char(b/256,b%256)
-            else
-                b = b - 0x10000
-                local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
-                return char(b1/256,b1%256,b2/256,b2%256)
-            end
-        end)
+        return char(254,255) .. utfgsub(str,".",big)
     end
 end

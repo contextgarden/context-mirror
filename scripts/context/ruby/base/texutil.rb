@@ -475,24 +475,37 @@ class TeXUtil
                 @@debug = false
 
                 def initialize(t, c, k, d)
-                    @type, @command, @key, @sortkey, @data = t, c, k, k, d
+                    @type, @command, @key, @sortkey, @data = t, c, k, c, d
                 end
 
                 attr_reader :type, :command, :key, :data
                 attr_reader :sortkey
                 attr_writer :sortkey
 
+                # def build(sorter)
+                    # if @key then
+                        # @sortkey = sorter.normalize(sorter.tokenize(@sortkey))
+                        # @sortkey = sorter.remap(sorter.simplify(@key.downcase)) # ??
+                        # if @sortkey.empty? then
+                            # @sortkey = sorter.remap(@command.downcase)
+                        # end
+                    # else
+                        # @key = ""
+                        # @sortkey = ""
+                    # end
+                # end
+
                 def build(sorter)
-                    if @key then
+                    if @sortkey and not @sortkey.empty? then
                         @sortkey = sorter.normalize(sorter.tokenize(@sortkey))
-                        @sortkey = sorter.remap(sorter.simplify(@key.downcase)) # ??
-                        if @sortkey.empty? then
-                            @sortkey = sorter.remap(@command.downcase)
-                        end
-                    else
-                        @key = ""
-                        @sortkey = ""
-                        # weird
+                        @sortkey = sorter.remap(sorter.simplify(@sortkey.downcase)) # ??
+                    end
+                    if not @sortkey or @sortkey.empty? then
+                        @sortkey = sorter.normalize(sorter.tokenize(@key))
+                        @sortkey = sorter.remap(sorter.simplify(@sortkey.downcase)) # ??
+                    end
+                    if not @sortkey or @sortkey.empty? then
+                        @sortkey = @key.dup
                     end
                 end
 

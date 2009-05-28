@@ -1,0 +1,521 @@
+%D \module
+%D   [       file=page-bck, % copied from main-001
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Backgrounds,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Backgrounds}
+
+% \chardef\kindofpagetextareas=1 will isolate graphics from backgrounds
+
+\unprotect
+
+%D \macros
+%D   {recalculatebackgrounds}
+%D
+%D We use a couple of switches so that we can minimize the
+%D amount of background calculations. The main switch is set
+%D by the recalculate directive.
+%D
+%D \starttyping
+%D \recalculatebackgrounds
+%D \stoptyping
+%D
+%D Other modules may not directly set the switches
+%D themselves.
+
+\newif\ifnewbackground
+\newif\ifsomebackground
+
+%D For special purposes, users can question the \type
+%D {*background} mode. This mode is only available when
+%D typesetting the pagebody.
+%D
+%D \starttyping
+%D \startmode[*background] ...
+%D \stoptyping
+
+\appendtoks
+  \ifsomebackground \ifnewbackground \setsystemmode\v!background \fi \fi
+\to \everybeforepagebody
+
+%D \macros
+%D   {addmainbackground, addtextbackground,
+%D    addpagebackground, addprintbackground}
+%D
+%D Apart from the previously mentioned directive, the
+%D interface between this module and the other modules
+%D is made up by four macros that add background to parts of
+%D the layout.
+%D
+%D \starttyping
+%D \addmainbackground  <box>
+%D \addtextbackground  <box>
+%D \addpagebackground  <box>
+%D \addprintbackground <box>
+%D \stoptyping
+
+%D To minimize calculations, we keep track of the state of the
+%D background of each area. A previous implementation did
+%D check each call to the background calculation macro, but
+%D using an intermediate usage flag instead of testing each
+%D time saves about 3\% on a run with a couple of backgrounds.
+%D (On the 824 pages maps bibliography runtime went down from
+%D 309 to 299 seconds.)
+
+\let\currentotrbackground\empty
+
+\def\@@docheckbackground#1#2%
+  {\ifcsname\currentotrbackground#1\endcsname
+     \edef\!!stringa{\csname\currentotrbackground#1\endcsname}\ifx\!!stringa#2\!!doneatrue\fi
+   \fi}
+
+\def\@@nocheckbackground#1#2%
+  {\ifcsname\currentotrbackground#1\endcsname
+     \edef\!!stringa{\csname\currentotrbackground#1\endcsname}\ifx\!!stringa#2\else\!!doneatrue\fi
+   \fi}
+
+\def\checkbackground#1%
+  {\edef\currentotrbackground{\??ma#1}%
+   \begingroup
+   \!!doneafalse
+   \if!!donea\else\@@nocheckbackground\c!background     \empty
+   \if!!donea\else\@@docheckbackground\c!frame          \v!on
+   \if!!donea\else\@@nocheckbackground\c!foregroundcolor\empty
+   \if!!donea\else\@@docheckbackground\c!leftframe      \v!on
+   \if!!donea\else\@@docheckbackground\c!rightframe     \v!on
+   \if!!donea\else\@@docheckbackground\c!topframe       \v!on
+   \if!!donea\else\@@docheckbackground\c!bottomframe    \v!on \fi\fi\fi\fi\fi\fi\fi
+   \if!!donea
+     \endgroup\setusage  \currentotrbackground
+   \else
+     \endgroup\resetusage\currentotrbackground
+   \fi}
+
+\def\ifsomebackgroundfound#1%
+  {\ifusage{\??ma#1}}
+
+\def\doifsomebackgroundelse#1%
+  {\ifusage{\??ma#1}%
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+%D The background mechanism falls back on the \type {\framed}
+%D macro. This means that all normal frame and overlay
+%D features can be used.
+
+\def\addsomebackground#1#2#3#4% area box width height / zero test added
+  {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
+     \ifcsname\??ma#1\c!setups\endcsname % to be done
+        \doifvaluesomething{\??ma#1\c!setups}{\setups[\getvalue{\??ma#1\c!setups}]}% should not produce funny spaces !
+     \fi
+     \setbox#2\vbox\fastlocalframed
+       [\??ma#1]
+       [\c!component=#1,\c!width=#3,\c!height=#4]% are width and height used?
+       {\dp#2\zeropoint\box#2}%
+   \fi\fi\fi}
+
+%D There are quite some backgrounds. At the bottom layer,
+%D there is the {\em paper} background. This one is only
+%D used for special purposes, like annotations to documents.
+
+\def\addprintbackground#1%
+  {\addsomebackground\v!paper#1\printpaperwidth\printpaperheight}
+
+%D The page backgrounds can be put behind the {\em left
+%D page}, the {\em right page} or {\em each page}. As with
+%D the paper background, these are calculated on each page.
+
+\def\addpagebackground#1%
+  {\doifbothsidesoverruled
+     {\addsomebackground\v!rightpage#1\paperwidth\paperheight}
+     {\addsomebackground\v!rightpage#1\paperwidth\paperheight}
+     {\addsomebackground\v!leftpage #1\paperwidth\paperheight}%
+      \addsomebackground\v!page     #1\paperwidth\paperheight}
+
+%D Then there are the 25 areas that make up the layout: {\em
+%D top, header, text, footer, bottom} times {\em left edge,
+%D left margin, text, right margin, right edge}. These are
+%D only recalculated when they change or when the \type
+%D {status} is set to \type {repeat}.
+
+\newbox\leftbackground
+\newbox\rightbackground
+
+\def\addmainbackground#1% todo: dimension spec
+  {\ifsomebackground
+     \ifnewbackground \setbackgroundboxes \fi
+     \setbox#1\vbox
+       {\offinterlineskip
+        \doifmarginswapelse{\copy\leftbackground}{\copy\rightbackground}%
+        \box#1}%
+   \fi}
+
+%D Finaly there is an aditional {\em text} background, again
+%D useful for special purposes only. This one is calculated
+%D each time. The hidden backgrounds are not meant for users!
+
+\newconditional\hiddenbackgroundenabled
+
+\def\addtextbackground#1%
+  {\ifconditional\hiddenbackgroundenabled
+     \addsomebackground\v!hidden#1\makeupwidth\textheight % mine !
+   \fi
+   \addsomebackground\v!text#1\makeupwidth\textheight}
+
+%D The next couple of macros implement the area backgrounds.
+%D As said, these are cached in dedicated boxes. The offsets
+%D and depth of the page are used for alignment purposes.
+
+\newdimen\pageoffset % bleed
+\newdimen\pagedepth
+
+\let\pagebackgroundhoffset\!!zeropoint
+\let\pagebackgroundvoffset\!!zeropoint
+\let\pagebackgrounddepth  \!!zeropoint
+
+% \def\setbackgroundboxes
+%   {\showmessage\m!layouts8\empty
+%    \setbackgroundbox\leftbackground\relax
+%    \ifdoublesided
+%      \setbackgroundbox\rightbackground\doswapmargins
+%    \fi
+%    \doifnot\@@mastatus\v!herhaal{\global\newbackgroundfalse}}
+
+%D We need a bit more clever mechanism in order to handle
+%D layers well. This means that we cannot calculate both
+%D background at the same time since something may have
+%D changed halfway a page.
+
+\chardef\newrightbackground\zerocount
+\chardef\newleftbackground \zerocount
+
+\def\recalculatebackgrounds
+  {\global\newbackgroundtrue}
+
+\def\setbackgroundboxes
+  {\ifnewbackground
+     \global\chardef\newrightbackground\plusone
+     \global\chardef\newleftbackground\plusone
+     \global\setbox\leftbackground\emptybox
+     \global\setbox\rightbackground\emptybox
+   \fi
+   \doifbothsides
+     {\ifcase\newleftbackground \else
+        % \showmessage\m!layouts8\empty
+        \setbackgroundbox\leftbackground\relax
+        \global\chardef\newleftbackground\zerocount
+        \global\chardef\newrightbackground\zerocount
+      \fi}
+     {\ifcase\newleftbackground \else
+        % \showmessage\m!layouts8\empty
+        \setbackgroundbox\leftbackground\relax
+        \global\chardef\newleftbackground\zerocount
+      \fi}
+     {\ifcase\newrightbackground \else
+        % \showmessage\m!layouts8\empty
+        \setbackgroundbox\rightbackground\doswapmargins
+        \global\chardef\newrightbackground\zerocount
+      \fi}%
+   \ifx\@@mastate\v!repeat\else\global\newbackgroundfalse\fi}
+
+\def\addmainbackground#1% todo: dimension spec
+  {\ifsomebackground
+     \setbackgroundboxes
+     \setbox#1\vbox
+       {\offinterlineskip
+        \doifmarginswapelse{\copy\leftbackground}{\copy\rightbackground}%
+        \box#1}%
+   \fi}
+
+\def\setbackgroundoffsets
+  {\ifsomebackground \ifnewbackground
+     \global\let\pagebackgroundhoffset\!!zeropoint
+     \global\let\pagebackgroundvoffset\!!zeropoint
+     \global\let\pagebackgrounddepth  \!!zeropoint
+     \doifsomebackgroundelse{\v!text\v!text}\donetrue\donefalse
+     \ifdone\else\doifsomebackgroundelse\v!text\donetrue\donothing\fi
+     \ifdone
+       \bgroup
+       \scratchdimen\getvalue{\??ma\v!page\c!offset}%
+       \doifsomebackgroundelse{\v!top\v!text}\donothing
+         {\doifsomebackgroundelse{\v!bottom\v!text}\donothing
+            {\xdef\pagebackgroundhoffset{\the\scratchdimen}}}%
+       \doifsomebackgroundelse{\v!text\v!rightedge}\donothing
+         {\doifsomebackgroundelse{\v!text\v!leftedge}\donothing
+            {\xdef\pagebackgroundvoffset{\the\scratchdimen}%
+             \scratchdimen\getvalue{\??ma\v!page\c!depth}%
+             \xdef\pagebackgrounddepth{\the\scratchdimen}}}%
+       \egroup
+     \fi
+   \fi \fi}
+
+\appendtoks \setbackgroundoffsets \to \everybeforepagebody
+
+\newconditional\swapbackgroundmargins \settrue\swapbackgroundmargins
+
+\def\setbackgroundbox#1#2%
+  {\global\setbox#1\vbox
+     {\dontcomplain
+      \swapmargins
+      \ifconditional\swapbackgroundmargins
+        \doifmarginswapelse \donothing
+          {\swapmacros\v!rightmargin\v!leftmargin
+           \swapmacros\v!rightedge  \v!leftedge}%
+      \fi
+      \calculatereducedvsizes
+      \offinterlineskip
+      #2\relax
+      \vskip\dimexpr-\topheight-\topdistance\relax
+      \dodopagebodybackground\v!top\topheight
+      \vskip\topdistance
+      \dodopagebodybackground\v!header\headerheight
+      \vskip\headerdistance
+      \dodopagebodybackground\v!text\textheight
+      \vskip\footerdistance
+      \dodopagebodybackground\v!footer\footerheight
+      \vskip\bottomdistance
+      \dodopagebodybackground\v!bottom\bottomheight
+      \vfilll}%
+  \smashbox#1}
+
+\def\dodopagebodybackground#1#2%
+  {\ifdim#2>\zeropoint % added, faster
+     \setbox\scratchbox\vbox to #2
+       \bgroup\hbox\bgroup
+       % \swapmargins
+         \goleftonpage
+         \dododopagebodybackground\leftedgewidth   #2#1\v!leftedge
+         \hskip\leftedgedistance
+         \dododopagebodybackground\leftmarginwidth #2#1\v!leftmargin
+         \hskip\leftmargindistance
+         \dododopagebodybackground\makeupwidth     #2#1\v!text
+         \hskip\rightmargindistance
+         \dododopagebodybackground\rightmarginwidth#2#1\v!rightmargin
+         \hskip\rightedgedistance
+         \dododopagebodybackground\rightedgewidth  #2#1\v!rightedge
+       \egroup\egroup
+     \wd\scratchbox\zeropoint
+     \box\scratchbox\relax
+   \fi}
+
+\def\dododopagebodybackground#1#2#3#4% width height pos pos
+  {\ifsomebackgroundfound{#3#4}%
+     \ifdim#2>\zeropoint\relax
+       \ifdim#1>\zeropoint\relax
+         \ifcsname\??ma#3#4\c!setups\endcsname % to be done
+            \doifvaluesomething{\??ma#3#4\c!setups}{\setups[\getvalue{\??ma#3#4\c!setups}]}% should not produce funny spaces !
+         \fi
+         \fastlocalframed
+           [\??ma#3#4]
+           [\c!component=#3-#4]
+           {\vbox to #2{\vss\hbox to#1{\hss\getvalue{\??ma#3#4\c!command}\hss}\vss}}%
+       \else
+         \hskip#1%
+       \fi
+     \else
+       \hskip#1%
+     \fi
+   \else
+     \hskip#1%
+   \fi}
+
+%D The background mechanism is quite demanding in terms or
+%D resources. We used to delay these definitions till runtime
+%D usage, but since today's \TEX's are large, we now do the
+%D work on forehand.
+%D
+%D \starttyping
+%D \setupbackgrounds [settings]
+%D \setupbackgrounds [paper,page,text,..] [settings]
+%D \setupbackgrounds [top,...] [leftedge,...] [settings]
+%D \stoptyping
+%D
+%D \showsetup{setupbackgrounds}
+%D
+%D Because the number of arguments runs from one to three,
+%D we need to check for it.
+
+\def\setupbackgrounds
+  {\dotripleempty\dosetupbackgrounds}
+
+\def\dosetupbackgrounds[#1][#2][#3]%
+  {\ifthirdargument
+     \global\somebackgroundtrue
+     \def\docommand##1%
+       {\doifinsetelse{##1}{\v!paper,\v!page,\v!leftpage,\v!rightpage}
+          {\getparameters[\??ma##1][#3]\checkbackground{##1}}
+          {\def\dodocommand####1{\getparameters[\??ma##1####1][#3]\checkbackground{##1####1}}%
+           \processcommalist[#2]\dodocommand}}%
+     \processcommalist[#1]\docommand
+   \else\ifsecondargument
+     \global\somebackgroundtrue
+     \doifcommonelse{#1}{\v!text,\v!hidden,\v!paper,\v!page,\v!leftpage,\v!rightpage}
+       {\def\docommand##1{\getparameters[\??ma##1][#2]\checkbackground{##1}}%
+        \processcommalist[#1]\docommand}%
+       {\setupbackgrounds
+          [#1]%
+          [\v!leftedge,\v!leftmargin,\v!text,\v!rightmargin,\v!rightedge]%
+          [#2]}%
+   \else\iffirstargument
+     \getparameters[\??ma][#1]%
+   \fi\fi\fi
+   \doifelsevalue{\??ma\v!page\c!offset}\v!overlay
+     {\global\pageoffset\zeropoint}
+     {\global\pageoffset\getvalue{\??ma\v!page\c!offset}}%
+   \global\pagedepth\getvalue{\??ma\v!page\c!depth}%
+   \xdef\pagebackgroundoffset{\the\pageoffset}%
+   \xdef\pagebackgrounddepth {\the\pagedepth }%
+   \doifelse\@@mastate\v!stop
+     {\global\newbackgroundfalse}
+     {\global\newbackgroundtrue }}
+
+\let\pagebackgroundoffset\!!zeropoint
+\let\pagebackgrounddepth \!!zeropoint
+
+%D Each areas (currently there are $1+3+25+1=30$ of them)
+%D has its own low level framed object associated.
+
+\def\installsomebackground#1#2{\inheritlocalframed[\??ma#1#2][\??od]}
+
+\installsomebackground \v!paper     \empty
+\installsomebackground \v!page      \empty
+\installsomebackground \v!leftpage  \empty
+\installsomebackground \v!rightpage \empty
+
+%D The stand alone text area inherits from the page too.
+
+\installsomebackground \v!text   \empty
+\installsomebackground \v!hidden \empty
+
+%D We save some keying by defining the areas using a helper:
+
+\def\docommand#1%
+  {\installsomebackground#1\v!leftedge
+   \installsomebackground#1\v!leftmargin
+   \installsomebackground#1\v!text
+   \installsomebackground#1\v!rightmargin
+   \installsomebackground#1\v!rightedge}
+
+\docommand \v!top
+\docommand \v!header
+\docommand \v!text
+\docommand \v!footer
+\docommand \v!bottom
+
+%D We need some cleanup now.
+
+\let\docommand\relax
+
+%D We now set up the individual areas to use reasonable
+%D defaults.
+
+\installsomebackground \v!paper     \empty
+\installsomebackground \v!page      \empty
+\installsomebackground \v!leftpage  \empty
+\installsomebackground \v!rightpage \empty
+
+\getparameters
+  [\??ma\v!page]
+  [\c!offset=\!!zeropoint, % hm, so we need to force overlay elsewhere
+   \c!depth=\!!zeropoint]
+
+%D General setup:
+
+\setupbackgrounds
+  [\c!state=\c!start]
+
+%D The hidden layer can be populated by extending the
+%D following comma separated list. This only happens in core
+%D modules.
+
+% todo page-2   .. page+2   achter pagina -> bleed
+%      spread-2 .. spread+2 achter spread -> spread (repeat 2 times)
+
+\def\enablehiddenbackground
+  {\global\settrue\hiddenbackgroundenabled
+   \global\somebackgroundtrue
+   \recalculatebackgrounds}
+
+\def\disablehiddenbackground
+  {\global\setfalse\hiddenbackgroundenabled}
+
+\def\hiddenbackground
+  {\v!text-2,\v!text-1,\v!foreground,\v!text+1,\v!text+2}
+
+\setupbackgrounds
+  [\v!hidden]
+  [\c!background=\hiddenbackground]
+
+% The next series is used in local (for instance floating)
+% backgrounds.
+
+\installsomebackground \v!local \empty % not really a background, invisible for users
+
+\getparameters
+  [\??ma\v!local]
+  [\c!component=local,
+   \c!background=\localbackground]
+
+\def\localbackground
+  {\v!local-2,\v!local-1,\v!foreground,\v!local+1,\v!local+2}
+
+\defineoverlay[\v!local-2][\positionoverlay{\v!local-2}]
+\defineoverlay[\v!local-1][\positionoverlay{\v!local-1}]
+\defineoverlay[\v!local+1][\positionoverlay{\v!local+1}]
+\defineoverlay[\v!local+2][\positionoverlay{\v!local+2}]
+
+\def\addlocalbackgroundtobox
+  {\ifconditional\hiddenbackgroundenabled
+     \expandafter\doaddlocalbackground
+   \else
+     \resetglobal \expandafter\gobbleoneargument
+   \fi}
+
+\def\doaddlocalbackground#1%
+  {\dodoglobal\setbox#1\hbox{\fastlocalframed[\??ma\v!local][]{\registerMPlocaltextarea{\box#1}}}%
+   \resetglobal % redundant
+   \doglobal\increment\localpositionnumber\relax} % afterwards !
+
+% Test how previous macro behaves with depth:
+%
+% \startcolumnset
+% \input tufte
+% \placefigure{none}{\framed[lines=5]{xxx}}
+% \input tufte
+% \placefigure{none}{\starttabulate\NC test\nc test\NC\NR\stoptabulate}
+% \input tufte
+% \stopcolumnset
+
+%D Because we haven't really set up backgrounds yet, we set
+%D the main efficiency switch to false.
+
+\somebackgroundfalse
+
+\protect \endinput
+
+%D Removed \quote {features}:
+%D
+%D \starttyping
+%D \startinteraction
+%D \doifmarginswapelse
+%D   {\copy\leftbackground}
+%D   {\copy\rightbackground}%
+%D \stopinteraction
+%D \stoptyping
+%D
+%D \starttyping
+%D \edef\setpagebackgrounddepth%
+%D   {\dp#2=\the\dp#2}%
+%D \setbox#2=\vbox\localframed[\??ma#1]{...}
+%D \setpagebackgrounddepth
+%D \stoptyping

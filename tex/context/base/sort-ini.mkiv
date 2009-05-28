@@ -11,11 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\writestatus{loading}{ConTeXt Sorting Macros / Initialization}
+
 \registerctxluafile{sort-ini}{1.001}
-
-\let\savesortlanguage\gobbleoneargument
-
-\readfile{sort-def.tex}{}{} % runtime loaded in mkii
-\readfile{sort-lan.tex}{}{} % runtime loaded in mkii
+\registerctxluafile{sort-lan}{1.001}
 
 \endinput

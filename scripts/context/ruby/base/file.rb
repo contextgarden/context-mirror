@@ -8,7 +8,8 @@
 # info      : j.hagen@xs4all.nl
 # www       : www.pragma-ade.com
 
-require 'ftools'
+require 'fileutils'
+# require 'ftools'
 
 class File
 
@@ -110,7 +111,7 @@ class File
 
     def File.silentcopy(oldname,newname)
         return if File.expand_path(oldname) == File.expand_path(newname)
-        File.makedirs(File.dirname(newname)) rescue false
+        FileUtils.makedirs(File.dirname(newname)) rescue false
         File.copy(oldname,newname) rescue false
     end
 
@@ -123,7 +124,7 @@ class File
         begin
             File.rename(oldname,newname)
         rescue
-            File.makedirs(File.dirname(newname)) rescue false
+            FileUtils.makedirs(File.dirname(newname)) rescue false
             File.copy(oldname,newname) rescue false
         end
     end

@@ -15,6 +15,8 @@ done by using the conversion factors collected in the following
 table.</p>
 --ldx]]--
 
+local format, type = string.format, type
+
 local dimenfactors = {
     ["pt"] =             1/65536,
     ["in"] = (  100/ 7227)/65536,
@@ -39,7 +41,7 @@ local function todimen(n,unit,fmt)
         return n
     else
         unit = unit or 'pt'
-        return (fmt or "%.5f%s"):format(n*dimenfactors[unit],unit)
+        return format(fmt or "%.5f%s",n*dimenfactors[unit],unit)
     end
 end
 
@@ -73,10 +75,10 @@ a number and optionally a unit. When no unit is given a constant
 capture takes place.</p>
 --ldx]]--
 
-local amount = lpeg.S("+-")^0 * lpeg.R("09")^0 * (lpeg.P(".") * lpeg.R("09")^1)^0
-local unit   = lpeg.R("az")^1 / dimenfactors -- produces a capture
+local amount = (lpeg.S("+-")^0 * lpeg.R("09")^0 * lpeg.P(".")^0 * lpeg.R("09")^0) + lpeg.Cc("0")
+local unit   = lpeg.R("az")^1
 
-local pattern = lpeg.C(amount) * (unit^1 + lpeg.Cc(1))
+local pattern = amount/tonumber * (unit^1/dimenfactors + lpeg.Cc(1)) -- tonumber is new
 
 --[[ldx--
 <p>We use a metatable to intercept errors. When no key is found in
@@ -96,6 +98,7 @@ function string:todimen()
         return self
     else
         local value, unit = pattern:match(self)
+        print(value,unit)
         return value/unit
     end
 end
@@ -260,7 +263,7 @@ yet be available.</p>
 --ldx]]--
 
 function dimensions.texify()
-    local fti, fc = fonts and fonts.tfm and fonts.tfm.id, font and font.current
+    local fti, fc = fonts and fonts.ids and fonts.ids, font and font.current
     if fti and fc then
         dimenfactors["ex"] = function() return fti[fc()].ex_height end
         dimenfactors["em"] = function() return fti[fc()].quad      end

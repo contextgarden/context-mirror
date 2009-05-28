@@ -84,6 +84,8 @@
 %D
 %D A simple one.
 
+\let\PDFpagexyzspec\relax \def\PDFpagexyzspec{@xpos @ypos 0} % untested
+
 \definespecial\dosetuppaper#1#2#3%
   {\bgroup
    \scratchdimen#2\edef\width {\the\scratchdimen\space}%
@@ -733,7 +735,7 @@
      {\vbox to \the\ht#2%
         {\vss
          \hbox to \the\wd#2%
-           {\scratchdimen\wd#2\scratchdimen.5\scratchdimen\hskip-\the\scratchdimen
+           {%\scratchdimen\wd#2\scratchdimen.5\scratchdimen\hskip-\the\scratchdimen
             \special{pdf:uxobj @MPPDF::\MPPDFobjectcounter}}}}%
    \expanded{\doDVIPDFMXstartobject\zerocount{MPPDF}\MPPDFobjectcounter{\the\wd#2}{\the\ht#2}{\the\dp#2}}%
    \finalizeobjectbox#2%

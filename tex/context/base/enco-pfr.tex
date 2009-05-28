@@ -2,7 +2,7 @@
 %D   [       file=enco-pfr,
 %D        version=2000.12.10, % adapted 2005.08.14 to more delayed loading
 %D          title=\CONTEXT\ Encoding Macros,
-%D       subtitle=PDF Font Resource Inclusion,
+%D       subtitle=PDF Resources,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,17 +11,13 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\beginXETEX
+\ifnum\texengine>\pdftexengine
     \endinput
-\endXETEX
-
-\beginLUATEX
-    \endinput
-\endLUATEX
+\fi
 
 \ifx\pdffontresource\undefined\else\endinput\fi
 
-\writestatus{loading}{Context Encoding Macros (pdf)}
+\writestatus{loading}{ConTeXt Encoding Macros / PDF Resources}
 
 %D This is an experimental module in which we implement
 %D font resource inclusion in \PDF. One reason to include
@@ -60,7 +56,11 @@
 
 \newif\ifincludepdffontresources \includepdffontresourcestrue
 
-\ifx\pdfglyphtounicode\undefined \else \loadmarkfile{enco-pfr} \fi
+\ifx\pdfglyphtounicode\undefined \else
+    \appendtoks
+        \doif\jobsuffix{pdf}{\readfile{pdfr-def.tex}\donothing\donothing}%
+    \to \everystarttext
+\fi
 
 % somehow we cannot preload this beast; also, it's mk dependent
 %

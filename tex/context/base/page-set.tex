@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=page-set,
 %D        version=2000.10.20,
-%D          title=\CONTEXT\ OTR Macros,
+%D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Column Sets,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -15,7 +15,7 @@
 
 % some day: cleanup and go etex
 
-\writestatus{loading}{Context OTR Macros / Column Sets}
+\writestatus{loading}{ConTeXt Page Macros / Column Sets}
 
 % todo : last longer than previous
 % todo : block span over last column if footnotes
@@ -217,13 +217,13 @@
         \edef\!!stringb{\the\scratchcounter}%
         \dostepwiserecurse \zerocount \columnmaxcells \plusone
           {\ifcsname\@otr@:\!!stringa:\recurselevel\endcsname
-             \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box
+             \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname
              \ifcsname\@otr@:\!!stringb:\recurselevel\endcsname
-               \csname\@otr@:\!!stringb:\recurselevel\endcsname
+               \box\csname\@otr@:\!!stringb:\recurselevel\endcsname
               %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\csname\@otr@:\!!stringb:\recurselevel\endcsname
              \else
-               \voidb@x
-              %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\voidb@x
+               \emptybox
+              %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\emptybox
                \expandafter\newbox\csname\@otr@:\!!stringb:\recurselevel\endcsname
              \fi
            \else
@@ -239,7 +239,7 @@
        {\let\!!stringa\recurselevel
         \dostepwiserecurse \zerocount \columnmaxcells \plusone
           {\ifcsname\@otr@:\!!stringa:\recurselevel\endcsname
-             \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\voidb@x
+             \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\emptybox
            \else
              \expandafter\newbox\csname\@otr@:\!!stringa:\recurselevel\endcsname
            \fi}}%
@@ -266,7 +266,7 @@
   {\doOTRSETsetgridcells{\copy\placeholderboxb}}
 
 \def\OTRSETerasegridcells#1#2#3#4%
-  {\doOTRSETsetgridcells{\box\voidb@x}{#1}{#2}{#3}{#4}{\box\voidb@x}}
+  {\doOTRSETsetgridcells{\emptybox}{#1}{#2}{#3}{#4}{\emptybox}}
 
 \def\setupcolumnsetlines{\doquintupleempty\dosetupcolumnsettrick[l]}
 \def\setupcolumnsetstart{\doquintupleempty\dosetupcolumnsettrick[s]}
@@ -298,15 +298,15 @@
      \ifnum\csname#1\mofcolumns\endcsname=\zerocount
        #2%
      \else
-       \number\numexpr(\ifnum\csname#1\mofcolumns\endcsname<\zerocount
-         \columnmaxcells+\fi\csname#1\mofcolumns\endcsname)%
+       \number\numexpr\ifnum\csname#1\mofcolumns\endcsname<\zerocount
+         \columnmaxcells+\fi\csname#1\mofcolumns\endcsname\relax
      \fi
    \else\ifcsname#10\endcsname
      \ifnum\csname#10\endcsname=\zerocount
        #2%
      \else
-       \number\numexpr(\ifnum\csname#10\endcsname<\zerocount
-         \columnmaxcells+\fi\csname#10\endcsname)%
+       \number\numexpr\ifnum\csname#10\endcsname<\zerocount
+         \columnmaxcells+\fi\csname#10\endcsname\relax
      \fi
    \else
      #2%

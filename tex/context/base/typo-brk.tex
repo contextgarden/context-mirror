@@ -1,0 +1,77 @@
+%D \module
+%D   [       file=typo-brk,
+%D        version=2009.03.27, % code moved from core-spa.mkiv
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Breakpoints,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Breakpoints}
+
+\unprotect
+
+\registerctxluafile{typo-brk}{1.001}
+
+\definesystemattribute[breakpoint]
+
+% compound stuff (under construction)
+
+\newbox\breakpointbox
+
+\definesystemvariable {bp}   % BreakPoint
+
+\exhyphenchar=\minusone % we use a different order then base tex, so we really need this
+
+\newcount \maxbreakpointsid
+
+\def\definebreakpoints
+  {\dosingleargument\dodefinebreakpoints}
+
+\def\dodefinebreakpoints[#1]%
+  {\ifcsname\??bp:#1\endcsname \else
+     \global\advance\maxbreakpointsid\plusone
+     \setxvalue{\??bp:#1}{\the\maxbreakpointsid}%
+   \fi}
+
+\def\installbreakpoint
+  {\dotripleempty\doinstallbreakpoint}
+
+% hm, we cannot prebuild lists, font dependent
+
+\def\doinstallbreakpoint[#1][#2][#3]%
+  {\ifcsname\??bp:#1\endcsname
+     \begingroup
+     \getparameters[\??bp][\c!type=1,\c!nleft=3,\c!nright=3,\s!language=,#3]%
+     \ctxlua{breakpoints.setreplacement(\csname\??bp:#1\endcsname,#2,\@@bptype,\@@bpnleft,\@@bpnright,"\@@bplanguage")}%
+     \endgroup
+   \fi}
+
+\def\setbreakpoints
+  {\ctxlua{breakpoints.enabled=true}%
+   \gdef\setbreakpoints[##1]{\dosetattribute{breakpoint}{\csname\??bp:##1\endcsname}}%
+   \setbreakpoints}
+
+\letvalue{\??bp:\s!reset}\attributeunsetvalue
+
+\definebreakpoints[compound]
+
+\installbreakpoint [compound] [\number`+] [\c!left=3,\c!right=3,\c!type=1]
+\installbreakpoint [compound] [\number`-] [\c!left=3,\c!right=3,\c!type=1]
+\installbreakpoint [compound] [\number`/] [\c!left=3,\c!right=3,\c!type=1]
+\installbreakpoint [compound] [\number`(] [\c!left=3,\c!right=3,\c!type=2]
+\installbreakpoint [compound] [\number`)] [\c!left=3,\c!right=3,\c!type=3]
+
+% \mainlanguage[czech]
+% \installbreakpoint [compound] [\number`-] [language=cs,left=3,right=3,type=4]
+% \setbreakpoints[compound]
+% \start \hsize 1mm test-test \par \stop
+
+% \setbreakpoints[compound]
+
+\protect \endinput
+

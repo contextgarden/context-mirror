@@ -11,11 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context XML Macros (phys ml)}
+\writestatus{loading}{ConTeXt XML Macros / PhysML}
 
 %D This is a reimplmentation of the old filter. This module
 %D runs on top of the mathml and units modules.
 
+\useXMLfilter[map]
 \useXMLfilter[mml,mmp,mmc]
 
 \defineXMLargument [phys]  \doXMLphys

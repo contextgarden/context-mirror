@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Germanic Languages}
+\writestatus{loading}{ConTeXt Language Macros / Germanic Languages}
 
 %D The framework of this module is set up by Hans Hagen while
 %D many of the first translations were done by Tobias. Later
@@ -42,7 +42,8 @@
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!mapping={texnansi,ec},
+   \s!encoding={texnansi,ec}]
 
 \installlanguage
   [\s!en]
@@ -57,11 +58,14 @@
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!month,\ ,\v!day,{,\ },\v!year},
    \s!patterns=\s!us,
-   \c!state=\v!stop] % elders always preloaded!
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=3]
 
 \installlanguage
   [\s!de]
   [\c!spacing=\v!packed,
+   \s!lefthyphenmin=3,
+   \s!righthyphenmin=3,
    \c!leftsentence={\hbox{--~}},
    \c!rightsentence={\hbox{~--}},
    \c!leftsubsentence={--},
@@ -71,7 +75,8 @@
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
    \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!mapping={texnansi,ec},
+   \s!encoding={texnansi,ec}]
 
 \installlanguage
   [\s!da]
@@ -84,8 +89,7 @@
    \c!rightquote=\upperrightsinglesixquote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
-   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
 
 \installlanguage
   [\s!sv]
@@ -98,8 +102,7 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperrightdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
 
 \installlanguage
   [\s!af]
@@ -113,7 +116,7 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!year,\ ,\v!month,\ ,\v!day},
-   \c!state=\v!stop]
+   \s!patterns=\s!nl]
 
 \installlanguage
  [\s!nb]
@@ -180,14 +183,12 @@
 \installlanguage % old german
   [deo]
   [\c!spacing=\v!packed,
-   \c!default=\s!de,
-   \c!state=\v!stop]
+   \c!default=\s!de]
 
 \installlanguage
   [de-de]
   [\c!spacing=\v!packed,
-   \c!default=\s!de,
-   \c!state=\v!stop]
+   \c!default=\s!de]
 
 \installlanguage
   [de-at]
@@ -196,14 +197,12 @@
    \c!leftquote=\leftguillemot,
    \c!rightquote=\rightguillemot,
    \c!leftquotation=\leftguillemot,
-   \c!rightquotation=\rightguillemot,
-   \c!state=\v!stop]
+   \c!rightquotation=\rightguillemot]
 
 \installlanguage
   [de-ch]
   [\c!spacing=\v!packed,
-   \c!default=\s!de,
-   \c!state=\v!stop]
+   \c!default=\s!de]
 
 %D And some alternative (but very real) english patterns:
 
@@ -211,24 +210,23 @@
   [en-gb]
   [\c!default=\s!en,
    \s!patterns=\s!gb,
-   \c!state=\v!stop]
+   \s!lefthyphenmin=3,
+   \s!righthyphenmin=3]
 
 \installlanguage
   [en-us]
-  [\c!default=\s!en,
-  %\s!patterns=\s!us,
-   \c!state=\v!stop]
+  [\c!default=\s!en]
 
 \installlanguage [\s!uk] [en-gb]
 \installlanguage [\s!us] [en-us]
 
 %D For compatibility reasons we also define:
 
-\installlanguage [du]          [\s!de] % old times context
+%installlanguage [du]          [\s!de] % old times context
 %installlanguage [sp]          [\s!es] % old times context /lang-ita
 
 \installlanguage [usenglish]   [en-us]
-\installlanguage [ukenglish]   [en-uk]
+\installlanguage [ukenglish]   [en-gb]
 \installlanguage [english]     [en-us]
 \installlanguage [dutch]       [\s!nl]
 \installlanguage [german]      [\s!de]

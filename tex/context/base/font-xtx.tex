@@ -1,0 +1,357 @@
+%D \module
+%D   [       file=font-xtx,
+%D        version=2004.09.11,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=\XETEX\ Hacks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifnum\texengine=\xetexengine
+    \writestatus{loading}{ConTeXt Font Macros / XeTeX Hacks}
+\else
+    \endinput
+\fi
+
+\unprotect
+
+%D Loading:
+
+%D for some reason xetex does not support [filename] for tfm files and
+%D quotes also behave kind of strange " vs ' vs [ vs ...
+%D
+%D \starttyping
+%D \font\myfont =  msam7         % ok
+%D \font\myfont = "msam7"        % also ok
+%D \font\myfont = "msam7" at 8pt % error
+%D \stoptyping
+
+\newconditional\tracexetexfonts
+
+%D Because \XETEX\ is not that fast on locating fonts we cache lookups so
+%D that we minimize the test. It saves a little bit of runtime, depending
+%D on the number of fonts loaded (which is normally not that much).
+
+\def\doiffoundXTXfontelse#1#2%
+  {\ifcsname xtx@fnt@#2\somefontspec\endcsname
+     \ifconditional\tracexetexfonts
+       \writestatus\m!fonts{already checked #1: #2\somefontspec\space (state: \number\csname xtx@fnt@#2\somefontspec\endcsname)}%
+     \fi
+   \else
+     \suppressfontnotfounderror\plusone
+     \font\xetextempfont=#2\somefontspec\relax
+     \suppressfontnotfounderror\zerocount
+     \edef\xetextempfont{\fontname\xetextempfont}%
+     \global\expandafter\chardef\csname xtx@fnt@#2\somefontspec\endcsname
+     \ifx\xetextempfont\nullfontname
+       \zerocount \ifconditional\tracexetexfonts
+         \writestatus\m!fonts{not found #1: #2\somefontspec}%
+       \fi
+     \else
+       \plusone \ifconditional\tracexetexfonts
+         \writestatus\m!fonts{found #1: #2\somefontspec}%
+       \fi
+     \fi
+   \fi
+   \ifcase\csname xtx@fnt@#2\somefontspec\endcsname
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\docheckfontfilenameprefix#1:#2:#3#4\relax
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
+   \ifx\!!stringb\empty
+     % no prefix
+     \let\checkedfontfile\!!stringa
+     \doiffoundXTXfontelse{1a}{\checkedfontfile\checkedfontfeatures}
+       {\edef\checkedfontfile{\checkedfontfile\checkedfontfeatures}}
+       {\doiffoundXTXfontelse{1b}{"\checkedfontfile\checkedfontfeatures"}
+          {\edef\checkedfontfile{"\checkedfontfile\checkedfontfeatures"}}
+          {\doiffoundXTXfontelse{1c}{"[\checkedfontfile]\checkedfontfeatures"}
+             {\edef\checkedfontfile{"[\checkedfontfile]\checkedfontfeatures"}}
+             {}}}%
+   \else\ifx\!!stringa\v!file
+     % force file, only file check when no spaces
+     \let\checkedfontfile\!!stringb
+     \doiffoundXTXfontelse{2a}{"[\checkedfontfile]\checkedfontfeatures"}
+       {\edef\checkedfontfile{"[\checkedfontfile]\checkedfontfeatures"}}
+       {\doiffoundXTXfontelse{2b}{"\checkedfontfile\checkedfontfeatures"}
+          {\edef\checkedfontfile{"\checkedfontfile\checkedfontfeatures"}}
+          {}}%
+   \else\ifx\!!stringa\v!name
+     % force name, always lookup by xetex itself, "" forces otf/ttf/type1
+     \edef\checkedfontfile{"\!!stringb\checkedfontfeatures"}%
+     \ifconditional\tracexetexfonts
+       \writestatus\m!fonts{no checking 3a: \checkedfontfile}%
+     \fi
+   \else
+     % whatever, maybe even xetex spec, forget about features
+     \edef\checkedfontfile{"\!!stringa\!!stringb"}%
+     \ifconditional\tracexetexfonts
+       \writestatus\m!fonts{no checking 3b: \checkedfontfile}%
+     \fi
+   \fi\fi\fi}
+
+\def\checkfontfilename% -- todo: integrate so that we call do.. directly
+  {\expandafter\docheckfontfilename\fontfile*\empty*\relax}
+
+\def\docheckfontfilename#1*#2#3*#4\relax % class overrules file
+  {\edef\checkedfontfeatures
+     {\expandafter\ifx\csname\fontclass\s!features\endcsname\empty
+        \ifx\@@fontfeatures\empty\ifx#2\empty\else#2#3\fi\else\@@fontfeatures\fi
+      \else\expandafter\ifx\csname\fontclass\s!features\endcsname\relax % redundant, will go away
+        \ifx\@@fontfeatures\empty\ifx#2\empty\else#2#3\fi\else\@@fontfeatures\fi
+      \else
+        \csname\fontclass\s!features\endcsname
+      \fi\fi}%
+   \ifx\checkedfontfeatures\empty
+     % done
+   \else
+     \edef\checkedfontfeatures{\executeifdefined{\??fa\checkedfontfeatures}\empty}%
+     \ifx\checkedfontfeatures\empty
+       % done
+     \else
+       \let\convertedfontfeatures\empty
+       \processcommacommand[\checkedfontfeatures]\doconvertfontfeatures % raw
+       \ifx\convertedfontfeatures\empty
+         \let\checkedfontfeatures\empty
+       \else
+         \edef\checkedfontfeatures{:\convertedfontfeatures}%
+       \fi
+     \fi
+   \fi
+   \docheckfontfilenameprefix#1:\empty:\empty\relax
+   \doshowcheckedfontfeatures}
+
+\def\dodoconvertfontfeatures#1=#2#3=#4\relax
+  {\ifx#2\empty
+     % invalid feature
+   \else\ifcsname @xtx@#1@#2#3\endcsname
+       \expandafter\ifx\csname @xtx@#1@#2#3\endcsname\empty\else
+         \edef\convertedfontfeatures{\convertedfontfeatures\csname @xtx@#1@#2#3\endcsname;}%
+       \fi
+   \else
+     \edef\!!stringa{#1}%
+     \edef\!!stringb{#2#3}%
+     \edef\convertedfontfeatures
+       {\convertedfontfeatures
+        \ifx\!!stringb\v!yes
+          +\!!stringa
+        \else\ifx\!!stringb\v!no
+          -\!!stringa
+        \else
+          \!!stringa=\!!stringb
+        \fi\fi;}%
+   \fi\fi}
+
+\def\doconvertfontfeatures#1%
+  {\dodoconvertfontfeatures#1=\empty=\relax}
+
+\def\remapfontfeature #1 #2 #3 {\setevalue{@xtx@#1@#2}{#3}}
+
+% this may move to another file, maybe font-xtx
+
+\remapfontfeature tlig          yes  mapping=tlig
+%remapfontfeature tlig          no   mapping=
+\remapfontfeature trep          yes  {}
+\remapfontfeature trep          no   {}
+\remapfontfeature texligatures  yes  mapping=tlig
+%remapfontfeature texligatures  no   mapping=
+%remapfontfeature texquotes     yes  mapping=tex-text
+%remapfontfeature texquotes     no   mapping=
+
+%D Variants:
+
+\unexpanded\def\variant[#1]%
+  {\dosetscaledfont
+   \font\variantfont\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}} at \scaledfont
+   \variantfont}
+
+%D Possible optimizations:
+
+% \def\updatefontparameters
+%   {\edef\@@fontfeatures{\truefontdata\fontfile\s!features}%
+%    \edef\@@fontskewchar{\truefontdata\fontfile\s!skewchar}}
+
+% \def\setfontcharacteristics
+%   {\updatefontparameters % redundant, will go away, faster too
+%    \the\everyfont}
+
+% \let\synchronizepatternswithfont\relax
+
+%D Names:
+
+% We need to move the feature into the filename else it may be
+% overloaded by another reference. For instance the definition of
+% a regular and caps variant can use the same font.
+
+% We could use an indirect method ... store in 'array' and refer to
+% slot.
+
+\def\definefontsynonym[#1]#2[#3]%
+  {\edef\@@fontname{#1}%
+   \edef\@@fontfile{#3}%
+   \doifnextoptionalelse\dodefinefontsynonym\nodefinefontsynonym}
+
+\def\nodefinefontsynonym
+  {\@EA\let\csname\??ff\fontclass\@@fontname\endcsname\@@fontfile}
+
+\def\dodefinefontsynonym[#1]%
+  {\edef\@@fontdata{#1}%
+   \ifx\@@fontdata\empty
+     \nodefinefontsynonym
+   \else
+     \ifx\fontclass\empty
+       \getfontparameters
+     \else
+       \getglobalfontparameters
+     \fi
+     \ifcsname\??ff\@@fontfile\s!features\endcsname
+       \@EA\edef\csname\??ff\fontclass\@@fontname\endcsname{\@@fontfile*\csname\??ff\@@fontfile\s!features\endcsname}%
+       \@EA\let\csname\??ff\@@fontfile\s!features\endcsname\undefined
+     \else
+       \nodefinefontsynonym
+     \fi
+   \fi}
+
+\let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
+
+% simple version
+%
+% \def\truefontname#1%
+%   {\@EA\dotruefontname#1*\relax}
+%
+% \def\dotruefontname#1*#2\relax
+%   {\ifcsname\??ff\fontclass#1\endcsname
+%      \@EA\truefontname\csname\??ff\fontclass#1\endcsname
+%    \else\ifcsname\??ff#1\endcsname
+%      \@EA\truefontname\csname\??ff#1\endcsname
+%    \else
+%      #1%
+%    \fi\fi}
+%
+% last counts
+%
+% \def\truefontname#1%
+%   {\@EA\dotruefontname#1*\empty*\relax}
+%
+% \def\dotruefontname#1*#2#3*#4\relax
+%   {\ifcsname\??ff\fontclass#1\endcsname
+%      \ifx#2\empty
+%        \@EA\truefontname\csname\??ff\fontclass#1\endcsname
+%      \else
+%        \@EA\truefontname\csname\??ff\fontclass#1\endcsname*#2#3%
+%      \fi
+%    \else\ifcsname\??ff#1\endcsname
+%      \ifx#2\empty
+%        \@EA\truefontname\csname\??ff#1\endcsname
+%      \else
+%        \@EA\truefontname\csname\??ff#1\endcsname*#2#3%
+%      \fi
+%    \else
+%      \ifx#2\empty
+%        #1%
+%      \else
+%        #1*#2#3%
+%      \fi
+%    \fi\fi}
+%
+% first counts
+
+\def\truefontname#1%
+  {\@EA\dotruefontname#1*\empty*\relax}
+
+\def\dotruefontname#1*#2#3*#4\relax
+  {\ifcsname\??ff\fontclass#1\endcsname
+     \ifx#2\empty
+       \@EA\truefontname\csname\??ff\fontclass#1\endcsname
+     \else
+       \@EA\redotruefontname\csname\??ff\fontclass#1\endcsname*#2#3%
+     \fi
+   \else\ifcsname\??ff#1\endcsname
+     \ifx#2\empty
+       \@EA\truefontname\csname\??ff#1\endcsname
+     \else
+       \@EA\redotruefontname\csname\??ff#1\endcsname*#2#3%
+     \fi
+   \else
+     #1\ifx#2\empty\else*#2#3\fi
+   \fi\fi}
+
+\def\redotruefontname#1%
+  {\@EA\dodotruefontname#1*\relax}
+
+\def\dodotruefontname#1*#2\relax
+  {\ifcsname\??ff\fontclass#1\endcsname
+     \@EA\redotruefontname\csname\??ff\fontclass#1\endcsname
+   \else\ifcsname\??ff#1\endcsname
+     \@EA\redotruefontname\csname\??ff#1\endcsname
+   \else
+     #1%
+   \fi\fi}
+
+%D Default:
+
+\def\defaultfontfile{file:lmmono10-regular}
+
+%D Maybe:
+
+% \def\updatefontparameters
+%   {\edef\@@fontfeatures{\truefontdata\fontfile    \s!features}%
+%    \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
+
+% \def\setfontcharacteristics
+%   {%\updatefontparameters % redundant, will go away, faster too
+%    \the\everyfont
+%    \synchronizepatternswithfont}
+
+\protect \endinput
+
+% \starttypescript[serif] [myzhfont]
+%     \definefontsynonym [Serif]           [file:SimSun]
+%     \definefontsynonym [SerifBold]       [file:SimSun]
+%     \definefontsynonym [SerifItalic]     [file:SimSun]
+%     \definefontsynonym [SerifBoldItalic] [file:SimSun]
+% \stoptypescript
+% \starttypescript[sans] [myzhfont]
+%     \definefontsynonym [Sans]           [file:SimSun]
+%     \definefontsynonym [SansBold]       [file:SimSun]
+%     \definefontsynonym [SansItalic]     [file:SimSun]
+%     \definefontsynonym [SansBoldItalic] [file:SimSun]
+% \stoptypescript
+% \starttypescript[mono] [myzhfont]
+%     \definefontsynonym [Mono]           [file:SimSun]
+%     \definefontsynonym [MonoBold]       [file:SimSun]
+%     \definefontsynonym [MonoItalic]     [file:SimSun]
+%     \definefontsynonym [MonoBoldItalic] [file:SimSun]
+% \stoptypescript
+% \definetypeface [myzhfont] [rm] [serif][myzhfont]   [default]
+% \definetypeface [myzhfont] [ss] [sans] [myzhfont]   [default]
+% \definetypeface [myzhfont] [tt] [mono] [myzhfont]   [default]
+
+% \starttext
+%     % on windows: make sure fonts.conf has no cache mentioned
+%     %
+%     % 64 sec xetex, 11 sec luatex (56 sec xetex when \nobigmath)
+%     %
+%       \setupbodyfont[myzhfont] \dorecurse{10000}{{hello {\switchtobodyfont[myzhfont] 你好}}\par}
+%     %
+%     % 67 sec xetex, 11.5 sec luatex
+%     %
+%     % \dorecurse{10000}{{hello {\switchtobodyfont[myzhfont] 你好}}\par}
+%     %
+%     % 5 sec xetex, 7 sec luatex
+%     %
+%     % \setupbodyfont[myzhfont]  \dorecurse{10000}{{hello {你好}}\par}
+%     %
+%     % 5 sec xetex, 7 sec luatex
+%     %
+%     % \setupbodyfont[myzhfont]  \dorecurse{10000}{{\bf hello {你好}}\par}
+% \stoptext
+

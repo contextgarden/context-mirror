@@ -1,0 +1,255 @@
+%D \module
+%D   [       file=catc-ini,
+%D        version=2006.09.18,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Catcode Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D We've split the functionality of syst-cat.* over more files
+%D now so that we can load more selectively.
+
+\registerctxluafile{catc-ini} {1.001}
+
+%D A long standing wish has been the availability of catcode
+%D arrays. Because traditional \TEX\ does not provide this we
+%D implement a fake method in the \MKII\ file. There is some
+%D overlap in code with \MKII\ but we take that for granted.
+
+\ifx\zerocount\undefined \chardef           \zerocount= 0 \fi
+\ifx\plusone  \undefined \chardef           \plusone  = 1 \fi
+\ifx\minusone \undefined \newcount\minusone \minusone =-1 \fi
+
+\ifx\gobbleoneargument\undefined \long\def\gobbleoneargument#1{} \fi
+
+\newif \ifrecatcodeuppercharacters % only used in good old tex
+
+\newcount\cctdefcounter \cctdefcounter\zerocount % 0 = signal, so advance before allocate
+
+\newcount\cctcountera
+\newcount\cctcounterb
+\newcount\cctcounterc
+
+\def\newcatcodetable#1%
+  {\global\advance\cctdefcounter\plusone
+   \expandafter\xdef\csname @@ccn:\number\cctdefcounter\endcsname{\string#1}% logging
+   \global\mathchardef#1\cctdefcounter
+   \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}%
+   % we have two ways to access catcodetable numbers
+   \startruntimectxluacode tex.\expandafter\gobbleoneargument\string#1 = \number#1 ;\stopruntimectxluacode}
+
+\newcatcodetable \scratchcatcodes \initcatcodetable\scratchcatcodes
+
+\newtoks \setdefaultcatcodes
+
+\setdefaultcatcodes
+  {\catcode`\\   12
+   \catcode`\^^M 12
+   \catcode`\    12
+   \catcode`\%   12
+   \catcode127   12 }
+
+\long\def\startcatcodetable#1#2\stopcatcodetable
+  {\bgroup
+   \catcodetable\scratchcatcodes
+   \the\setdefaultcatcodes
+   #2%
+   \savecatcodetable#1\relax
+   \egroup}
+
+\newcatcodetable\dummycatcodes
+
+\long\def\startextendcatcodetable#1#2\stopextendcatcodetable
+  {\bgroup
+   \catcodetable#1\relax
+   \globaldefs\plusone
+   #2%
+   \globaldefs\zerocount
+   \egroup}
+
+% ==
+%
+% \long\def\startextendcatcodetable#1#2\stopextendcatcodetable
+%   {\bgroup
+%    \scratchcounter\the\catcodetable
+%    \catcodetable #1 #2
+%    \catcodetable\scratchcounter
+%    \egroup}
+
+\def\letcatcodecommand
+  {\afterassignment\letcatcodecommanda\cctcountera}
+
+\def\letcatcodecommanda
+  {\afterassignment\letcatcodecommandb\cctcounterb}
+
+\let\currentcatcodetable\catcodetable
+
+%D The next command can be defined in a cleaner way in the
+%D Mk IV file but we want to have a fast one with a minimal
+%D chance for interference.
+
+\chardef\activehackcode=`\~
+
+%D Once a catcode is assigned, the next assignments will happen faster.
+
+% (expandable) let
+
+\def\letcatcodecommand {\afterassignment\letcatcodecommanda\cctcountera}
+\def\letcatcodecommanda{\afterassignment\letcatcodecommandb\cctcounterb}
+
+\def\letcatcodecommandb % each time
+  {\ifcsname CCL:\number\cctcountera:\number\cctcounterb\endcsname
+     \csname CCL:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+   \else
+     \expandafter\letcatcodecommandc
+   \fi}
+
+\def\letcatcodecommandc % only first time
+  {\expandafter\gdef\csname CCL:\number\cctcountera:\number\cctcounterb\expandafter\endcsname\expandafter
+     {\expandafter\let\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname}%
+   \reinstatecatcodecommanda
+   \csname CCL:\number\cctcountera:\number\cctcounterb\endcsname}
+
+% expandable def
+
+\def\defcatcodecommand {\afterassignment\defcatcodecommanda\cctcountera}
+\def\defcatcodecommanda{\afterassignment\defcatcodecommandb\cctcounterb}
+
+\def\defcatcodecommandb % each time
+  {\ifcsname CCD:\number\cctcountera:\number\cctcounterb\endcsname
+     \csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+   \else
+     \expandafter\defcatcodecommandc
+   \fi}
+
+\def\defcatcodecommandc % only first time
+  {\expandafter\gdef\csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+     \expandafter##\expandafter1\expandafter
+       {\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
+   \reinstatecatcodecommanda
+   \csname CCD:\number\cctcountera:\number\cctcounterb\endcsname}
+
+% unexpandable def (e.g. used for discretionaries)
+
+\def\uedcatcodecommand {\afterassignment\uedcatcodecommanda\cctcountera}
+\def\uedcatcodecommanda{\afterassignment\uedcatcodecommandb\cctcounterb}
+
+\def\uedcatcodecommandb % each time
+  {\ifcsname CCU:\number\cctcountera:\number\cctcounterb\endcsname
+     \csname CCU:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+   \else
+     \expandafter\uedcatcodecommandc
+   \fi}
+
+\def\uedcatcodecommandc % only first time
+  {\expandafter\gdef\csname CCU:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+     \expandafter##\expandafter1\expandafter
+       {\expandafter\unexpanded\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
+   \reinstatecatcodecommanda
+   \csname CCU:\number\cctcountera:\number\cctcounterb\endcsname}
+
+\def\reinstatecatcodecommand{\afterassignment\reinstatecatcodecommanda\cctcounterb}
+
+\def\reinstatecatcodecommanda % can be used when a direct definition has been done
+  {\bgroup                    % and the selector has been lost
+   \uccode\activehackcode\cctcounterb
+   \catcode\uccode\activehackcode13
+   \uppercase{\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
+   \egroup}
+
+\chardef\defaultcatcodetable\zerocount
+
+\def\catcodecommand#1%
+  {\csname CCC:\number
+     \ifcsname CCC:\number\currentcatcodetable:\number#1\endcsname
+       \currentcatcodetable \else \defaultcatcodetable
+     \fi
+   :\number#1\endcsname}
+
+%D \macros
+%D   {restorecatcodes,
+%D    beginrestorecatcodes,endrestorecatcodes}
+%D
+%D We're not finished dealing \CATCODES\ yet. In \CONTEXT\ we
+%D use only one auxiliary file, which deals with tables of
+%D contents, registers, two pass tracking, references etc. This
+%D file, as well as files concerning graphics, is processed when
+%D needed, which can be in the mid of typesetting verbatim.
+%D However, when reading in data in verbatim mode, we should
+%D temporary restore the normal \CATCODES, and that's exactly
+%D what the next macros do. Saving the catcodes can be
+%D disabled by saying \type{\localcatcodestrue}.
+
+\let\savedcatcodetable\relax
+
+\newcount\catcoderestorelevel
+
+\def\pushcatcodetable
+  {\advance\catcoderestorelevel\plusone
+   \tracepushcatcodetable
+   \expandafter\mathchardef\csname scct:\number\catcoderestorelevel\endcsname\currentcatcodetable}
+
+\def\popcatcodetable
+  {\ifcase\catcoderestorelevel
+     \immediate\write16{}%
+     \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this!}\wait\end
+     \immediate\write16{}%
+   \else
+     \expandafter\catcodetable\csname scct:\number\catcoderestorelevel\endcsname
+     \tracepopcatcodetable
+     \advance\catcoderestorelevel\minusone
+   \fi}
+
+\def\restorecatcodes % takes previous level
+  {\ifnum\catcoderestorelevel>\plusone
+     \expandafter\catcodetable\csname scct:\number\numexpr\catcoderestorelevel-1\relax\endcsname
+   \fi}
+
+\newtoks\everycatcodetable
+
+\def\setcatcodetable#1%
+   {\catcodetable#1%
+    \the\everycatcodetable
+    \tracesetcatcodetable}
+
+\def\dotracecatcodetable#1{\immediate\write16{[#1]}}
+
+\def\tracecatcodetables
+  {\def\tracesetcatcodetable {\dotracecatcodetable{set  \catcodetablename\space                              at \number\catcoderestorelevel}}%
+   \def\tracepushcatcodetable{\dotracecatcodetable{push \catcodetablename\space from \catcodetableprev\space at \number\catcoderestorelevel}}%
+   \def\tracepopcatcodetable {\dotracecatcodetable{pop  \catcodetablename\space to   \catcodetableprev\space at \number\catcoderestorelevel}}}
+
+\def\catcodetableprev
+  {\ifnum\numexpr\catcoderestorelevel-1\relax>\zerocount
+     \csname @@ccn:\number\csname scct:\number\numexpr\catcoderestorelevel-1\relax\endcsname\endcsname
+   \else
+     -%
+   \fi}
+
+\def\catcodetablename
+  {\ifnum\currentcatcodetable>\zerocount
+     \csname @@ccn:\number\currentcatcodetable\endcsname
+   \else
+     -%
+   \fi}
+
+\ifx\empty\undefined \def\empty{} \fi
+
+\let\tracesetcatcodetable \empty
+\let\tracepushcatcodetable\empty
+\let\tracepopcatcodetable \empty
+
+\def\beginrestorecatcodes{\pushcatcodetable}
+\def\endrestorecatcodes  {\popcatcodetable}
+
+%D Handy for debugging:
+
+% \tracecatcodetables
+
+\endinput
+

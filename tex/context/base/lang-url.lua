@@ -6,6 +6,12 @@ if not modules then modules = { } end modules ['lang-url'] = {
     license   = "see context related readme files"
 }
 
+local utf = unicode.utf8
+
+local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
+
+local ctxcatcodes = tex.ctxcatcodes
+
 commands = commands or { }
 
 --[[
@@ -76,13 +82,13 @@ do
                 return "\\a{" .. u(s) .. "}"
             end
         end )
-        tex.sprint(tex.ctxcatcodes,str)
+        tex.sprint(ctxcatcodes,str)
     end
 
     -- todo, no interface in mkiv yet
 
     function commands.hyphenatedurl.setcharacters(str,value) -- 1, 2 == before, after
-        for s in str:utfcharacters() do
+        for s in utfcharacters(str) do
             chars[s] = value or 1
         end
     end

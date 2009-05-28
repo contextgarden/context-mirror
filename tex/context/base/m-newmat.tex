@@ -182,7 +182,7 @@
 %D defined in Plain \TEX). It allows to get a math character
 %D inserted as if it was a text character.
 
-\gdef\mathhexbox#1#2#3{\mathtext{$\m@th\mathchar"#1#2#3$}}
+\gdef\mathhexbox#1#2#3{\mathtext{$\mathsurround\zeropoint\mathchar"#1#2#3$}}
 
 %D \macros
 %D   {boxed}
@@ -299,11 +299,11 @@
 
 \def\simplestartsubarray#1%
   {\vcenter\bgroup
-   \baselineskip\fontdimen10 \scriptfont\tw@
-   \advance\baselineskip\fontdimen12 \scriptfont\tw@
-   \lineskip\thr@@\fontdimen8 \scriptfont\thr@@
+   \baselineskip\fontdimen10 \scriptfont\plustwo
+   \advance\baselineskip\fontdimen12 \scriptfont\plustwo
+   \lineskip\plusthree\fontdimen8 \scriptfont\plusthree
    \lineskiplimit\lineskip
-   \ialign\bgroup\ifx c#1\hfil\fi$\m@th\scriptstyle##$\hfil\crcr}
+   \ialign\bgroup\ifx c#1\hfil\fi$\mathsurround\zeropoint\scriptstyle##$\hfil\crcr}
 
 \def\stopsubarray
   {\crcr\egroup
@@ -326,8 +326,8 @@
    \baselineskip6\ex@
    \lineskip1.5\ex@
    \lineskiplimit\lineskip
-   \ialign\bgroup\hfil$\m@th\scriptstyle##$\hfil&&\thickspace\hfil
-     $\m@th\scriptstyle##$\hfil\crcr}
+   \ialign\bgroup\hfil$\mathsurround\zeropoint\scriptstyle##$\hfil&&\thickspace\hfil
+     $\mathsurround\zeropoint\scriptstyle##$\hfil\crcr}
 
 \def\stopsmallmatrix
   {\crcr\egroup

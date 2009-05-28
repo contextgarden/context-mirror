@@ -6,58 +6,60 @@ if not modules then modules = { } end modules ['x-calcmath'] = {
     license   = "see context related readme files"
 }
 
+local format, lower, upper, gsub = string.format, string.lower, string.upper, string.gsub
 
 tex = tex or { }
 
 texsprint = tex.sprint or function(catcodes,str) print(str) end
 
--- ancient stuff, pre-lpeg so i need to redo it
-
 calcmath = { }
 
-calcmath.list_1   = {
+local list_1 = {
     "median", "min", "max", "round", "ln", "log",
     "sin", "cos", "tan", "sinh", "cosh", "tanh"
 }
-calcmath.list_2   = {
+local list_2 = {
     "int", "sum", "prod"
 }
-calcmath.list_3   = {
+local list_3 = {
     "f", "g"
 }
-calcmath.list_4   = {
+local list_4 = {
     "pi", "inf"
 }
 
-calcmath.list_1_1 = { }
-calcmath.list_2_1 = { }
-calcmath.list_2_2 = { }
-calcmath.list_2_3 = { }
-calcmath.list_4_1 = { }
+local list_1_1 = { }
+local list_2_1 = { }
+local list_2_2 = { }
+local list_2_3 = { }
+local list_4_1 = { }
 
-calcmath.frozen   = false -- we can add stuff and unfreeze
+local frozen = false
 
-function calcmath.freeze()
-    for _,v in ipairs(calcmath.list_1) do
-        calcmath.list_1_1[v] = "\\".. v:upper() .." "
+local function freeze()
+    for k=1,#list_1 do
+        local v = list_1[k]
+        list_1_1[v] = "\\".. upper(v) .." "
     end
-    for _,v in ipairs(calcmath.list_2) do
-        calcmath.list_2_1[v .. "%((.-),(.-),(.-)%)"] = "\\" .. v:upper() .. "^{%1}_{%2}{%3}"
-        calcmath.list_2_2[v .. "%((.-),(.-)%)"] = "\\" .. v:upper() .. "^{%1}{%2}"
-        calcmath.list_2_3[v .. "%((.-)%)"] = "\\" .. v:upper() .. "{%1}"
+    for k=1,#list_2 do
+        local v = list_2[k]
+        list_2_1[v .. "%((.-),(.-),(.-)%)"] = "\\" .. upper(v) .. "^{%1}_{%2}{%3}"
+        list_2_2[v .. "%((.-),(.-)%)"] = "\\" .. upper(v) .. "^{%1}{%2}"
+        list_2_3[v .. "%((.-)%)"] = "\\" .. upper(v) .. "{%1}"
     end
-    for _,v in ipairs(calcmath.list_4) do
-        calcmath.list_4_1[v] = "\\" .. v:upper()
+    for k=1,#list_4 do
+        local v = list_4[k]
+        list_4_1[v] = "\\" .. upper(v)
     end
-    calcmath.frozen = true
+    frozen = true
 end
 
-calcmath.entities = {
+local entities = {
     ['gt'] = '>',
     ['lt'] = '<',
 }
 
-calcmath.symbols = {
+local symbols = {
     ["<="] = "\\LE ",
     [">="] = "\\GE ",
     ["=<"] = "\\LE ",
@@ -68,120 +70,19 @@ calcmath.symbols = {
     ["="]  = "\\EQ ",
 }
 
---~ function calcmath.nsub(str,tag,pre,post)
---~     return (string.gsub(str, tag .. "(%b())", function(body)
---~         return pre .. calcmath.nsub(string.sub(body,2,-2),tag,pre,post) .. post
---~     end))
---~ end
-
---~ function calcmath.tex(str,mode)
---~     if not calcmath.frozen then calcmath.freeze() end
---~     local n = 0
---~     local ssub = string.gsub
---~     local nsub = calcmath.nsub
---~     local strp = string.sub
---~     -- crap
---~     str = ssub(str,"%s+"  , ' ')
---~     -- xml
---~     str = ssub(str,"&(.-);", calcmath.entities)
---~     -- ...E...
---~     str = ssub(str,"([%-%+]?[%d%.%+%-]+)E([%-%+]?[%d%.]+)", "{\\SCINOT{%1}{%2}}")
---~     -- ^-..
---~     str = ssub(str, "%^([%-%+]*%d+)", "^{%1}")
---~     -- ^(...)
---~     str = nsub(str, "%^", "^{", "}")
---~     -- 1/x^2
---~     repeat
---~         str, n = ssub(str, "([%d%w%.]+)/([%d%w%.]+%^{[%d%w%.]+})", "\\frac{%1}{%2}")
---~     until n == 0
---~     -- todo: autoparenthesis
---~     -- int(a,b,c)
---~     for k,v in pairs(calcmath.list_2_1) do -- for i=1,...
---~         repeat str, n = ssub(str, k, v) until n == 0
---~     end
---~     -- int(a,b)
---~     for k,v in pairs(calcmath.list_2_2) do
---~         repeat str, n = ssub(str, k, v) until n == 0
---~     end
---~     -- int(a)
---~     for k,v in pairs(calcmath.list_2_3) do
---~         repeat str, n = ssub(str, k, v) until n == 0
---~     end
---~     -- sin(x) => {\\sin(x)}
---~     for k,v in pairs(calcmath.list_1_1) do
---~         repeat str, n = ssub(str, k, v) until n == 0
---~     end
---~     -- mean
---~     str = nsub(str, "mean", "\\OVERLINE{", "}")
---~     -- (1+x)/(1+x) => \\FRAC{1+x}{1+x}
---~     repeat
---~         str, n = ssub(str, "(%b())/(%b())", function(a,b)
---~             return "\\FRAC{" .. strp(a,2,-2) .. "}{" .. strp(b,2,-2) .. "}"
---~         end )
---~     until n == 0
---~     -- (1+x)/x => \\FRAC{1+x}{x}
---~     repeat
---~         str, n = ssub(str, "(%b())/([%+%-]?[%.%d%w]+)", function(a,b)
---~             return "\\FRAC{" .. strp(a,2,-2) .. "}{" .. b .. "}"
---~         end )
---~     until n == 0
---~     -- 1/(1+x) => \\FRAC{1}{1+x}
---~     repeat
---~         str, n = ssub(str, "([%.%d%w]+)/(%b())", function(a,b)
---~             return "\\FRAC{" .. a .. "}{" .. strp(b,2,-2) .. "}"
---~         end )
---~     until n == 0
---~     -- 1/x => \\FRAC{1}{x}
---~     repeat
---~         str, n = ssub(str, "([%.%d%w]+)/([%+%-]?[%.%d%w]+)", "\\FRAC{%1}{%2}")
---~     until n == 0
---~     -- times
---~     str = ssub(str, "%*", " ")
---~     -- symbols -- we can use a table substitution here
---~     str = ssub(str, "([<>=][<>=]*)", calcmath.symbols)
---~     -- functions
---~     str = nsub(str, "sqrt", "\\SQRT{", "}")
---~     str = nsub(str, "exp", "e^{", "}")
---~     str = nsub(str, "abs", "\\left|", "\\right|")
---~     -- d/D
---~     str = nsub(str, "D", "{\\FRAC{\\MBOX{d}}{\\MBOX{d}x}{(", ")}}")
---~     str = ssub(str, "D([xy])", "\\FRAC{{\\RM d}%1}{{\\RM d}x}")
---~     -- f/g
---~     for k,v in pairs(calcmath.list_3) do -- todo : prepare k,v
---~         str = nsub(str, "D"..v,"{\\RM "..v.."}^{\\PRIME}(",")")
---~         str = nsub(str, v,"{\\RM "..v.."}(",")")
---~     end
---~     -- more symbols
---~     for k,v in pairs(calcmath.list_4_1) do
---~         str = ssub(str, k, v)
---~     end
---~     -- parenthesis (optional)
---~     if mode == 2 then
---~       str = ssub(str, "%(", "\\left\(")
---~       str = ssub(str, "%)", "\\right\)")
---~     end
---~     -- csnames
---~     str = ssub(str, "(\\[A-Z]+)", function(a) return a:lower() end)
---~     -- report
---~     texsprint(tex.texcatcodes,str)
---~ end
-
--- 5% faster
-
-function calcmath.nsub(str,tag,pre,post)
+local function nsub(str,tag,pre,post)
     return (str:gsub(tag .. "(%b())", function(body)
-        return pre .. calcmath.nsub(body:sub(2,-2),tag,pre,post) .. post
+        return pre .. nsub(body:sub(2,-2),tag,pre,post) .. post
     end))
 end
 
-function calcmath.totex(str,mode) -- 5% faster
-    if not calcmath.frozen then calcmath.freeze() end
+function calcmath.totex(str,mode)
+    if not frozen then freeze() end
     local n = 0
-    local nsub = calcmath.nsub
     -- crap
     str = str:gsub("%s+"  , ' ')
     -- xml
-    str = str:gsub("&(.-);", calcmath.entities)
+    str = str:gsub("&(.-);", entities)
     -- ...E...
     str = str:gsub("([%-%+]?[%d%.%+%-]+)E([%-%+]?[%d%.]+)", "{\\SCINOT{%1}{%2}}")
     -- ^-..
@@ -194,19 +95,19 @@ function calcmath.totex(str,mode) -- 5% faster
     until n == 0
     -- todo: autoparenthesis
     -- int(a,b,c)
-    for k,v in pairs(calcmath.list_2_1) do
-        repeat str, n = str:gsub(k, v) until n == 0
+    for k, v in next, list_2_1 do
+        repeat str, n = str:gsub(k,v) until n == 0
     end
     -- int(a,b)
-    for k,v in pairs(calcmath.list_2_2) do
+    for k, v in next, list_2_2 do
         repeat str, n = str:gsub(k, v) until n == 0
     end
     -- int(a)
-    for k,v in pairs(calcmath.list_2_3) do
+    for k, v in next, list_2_3 do
         repeat str, n = str:gsub(k, v) until n == 0
     end
     -- sin(x) => {\\sin(x)}
-    for k,v in pairs(calcmath.list_1_1) do
+    for k, v in next, list_1_1 do
         repeat str, n = str:gsub(k, v) until n == 0
     end
     -- mean
@@ -236,7 +137,7 @@ function calcmath.totex(str,mode) -- 5% faster
     -- times
     str = str:gsub("%*", " ")
     -- symbols -- we can use a table substitution here
-    str = str:gsub("([<>=][<>=]*)", calcmath.symbols)
+    str = str:gsub("([<>=][<>=]*)", symbols)
     -- functions
     str = nsub(str, "sqrt", "\\SQRT{", "}")
     str = nsub(str, "exp", "e^{", "}")
@@ -245,12 +146,12 @@ function calcmath.totex(str,mode) -- 5% faster
     str = nsub(str, "D", "{\\FRAC{\\MBOX{d}}{\\MBOX{d}x}{(", ")}}")
     str = str:gsub("D([xy])", "\\FRAC{{\\RM d}%1}{{\\RM d}x}")
     -- f/g
-    for k,v in pairs(calcmath.list_3) do -- todo : prepare k,v
+    for k,v in next, list_3 do -- todo : prepare k,v
         str = nsub(str, "D"..v,"{\\RM "..v.."}^{\\PRIME}(",")")
         str = nsub(str, v,"{\\RM "..v.."}(",")")
     end
     -- more symbols
-    for k,v in pairs(calcmath.list_4_1) do
+    for k,v in next, list_4_1 do
         str = str:gsub(k, v)
     end
     -- parenthesis (optional)
@@ -259,7 +160,9 @@ function calcmath.totex(str,mode) -- 5% faster
       str = str:gsub("%)", "\\right\)")
     end
     -- csnames
-    str = str:gsub("(\\[A-Z]+)", function(a) return a:lower() end)
+    str = str:gsub("(\\[A-Z]+)", lower)
+    -- trace
+--~     print(str)
     -- report
     return str
 end
@@ -299,7 +202,6 @@ if false then
     local real       = Cc("real")       * C(real_x) * space
     local float      = Cc("float")      * C(real_x) * lpeg.P("E") * lpeg.C(number_x) * space
     local identifier = Cc("identifier") * C(R("az","AZ")^1) * space
-    --    compareop  = Cc("compare")    * C(P("<") + P("=") + P(">") + P(">=") + P("<=") + P("&gt;")/">" + P("&lt;")/"<") * space
     local compareop  = P("<") + P("=") + P(">") + P(">=") + P("<=") + P("&gt;") + P("&lt;")
     local factorop   = Cc("factor")     * C(S("+-^,") + compareop ) * space
     local termop     = Cc("term")       * C(S("*/")) * space
@@ -310,7 +212,6 @@ if false then
 
     local grammar = P {
         "expression",
-    --~ comparison = Ct(V("expression") * (compareop * V("expression"))^0),
         expression = Ct(V("factor"    ) * (factorop  * V("factor"    ))^0),
         factor     = Ct(V("term"      ) * (termop    * V("term"      ))^0),
         term       = Ct(
@@ -322,8 +223,6 @@ if false then
     }
 
     local parser = space * grammar * -1
-
-    local format = string.format
 
     function totex(t)
         if t then
@@ -423,9 +322,13 @@ if false then
         return parser:match(str)
     end
 
-    function calcmath.totex(str)
+    function calcmath.tex(str)
         str = totex(parser:match(str))
+        print(str)
         return (str == "" and "[error]") or str
     end
 
 end
+
+--~ compareop  = Cc("compare")    * C(P("<") + P("=") + P(">") + P(">=") + P("<=") + P("&gt;")/">" + P("&lt;")/"<") * space
+--~ comparison = Ct(V("expression") * (compareop * V("expression"))^0),

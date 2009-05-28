@@ -6,59 +6,60 @@ if not modules then modules = { } end modules ['regi-ini'] = {
     license   = "see context related readme files"
 }
 
+local utf = unicode.utf8
+local char, utfchar = string.char, utf.char
+local texsprint = tex.sprint
+
+local ctxcatcodes = tex.ctxcatcodes
+
 --[[ldx--
 <p>Regimes take care of converting the input characters into
 <l n='utf'/> sequences. The conversion tables are loaded at
 runtime.</p>
 --ldx]]--
 
-regimes         = regimes         or { }
-regimes.data    = regimes.data    or { }
-regimes.utf     = regimes.utf     or { }
-regimes.context = regimes.context or { }
+regimes          = regimes          or { }
+regimes.data     = regimes.data     or { }
+regimes.utf      = regimes.utf      or { }
+regimes.synonyms = regimes.synonyms or { }
 
-local char, utfchar = string.char, unicode.utf8.char
+storage.register("regimes/synonyms", regimes.synonyms, "regimes.synonyms")
 
 -- setmetatable(regimes.data,_empty_table_)
 
-regimes.currentregime = ""
+regimes.currentregime = "utf"
 
 --[[ldx--
 <p>We will hook regime handling code into the input methods.</p>
 --ldx]]--
 
-input         = input         or { }
-input.filters = input.filters or { }
-
 function regimes.number(n)
     if type(n) == "string" then return tonumber(n,16) else return n end
 end
 
-function regimes.define(c) -- is this used at all?
-    local r, u, s = c.regime, c.unicodeslot, c.slot
-    regimes.data[r] = regimes.data[r] or { }
-    if s then
-        if u then
-            regimes.data[r][regimes.number(s)] = regimes.number(u)
-        else
-            regimes.data[r][regimes.number(s)] = 0
-        end
-    else
-        logs.report("regime","unknown vector %s/%s",r,s) -- ctx.statusmessage
-    end
+function regimes.setsynonym(synonym,target)
+    regimes.synonyms[synonym] = target
+end
+
+function regimes.truename(regime)
+    texsprint(ctxcatcodes,(regime and regimes.synonyms[synonym] or regime) or regimes.currentregime)
 end
 
 function regimes.load(regime)
-    environment.loadluafile("regi-"..regime, 1.001)
-    if regimes.data[regime] then
-        regimes.utf[regime] = { }
-        for k,v in pairs(regimes.data[regime]) do
-            regimes.utf[regime][char(k)] = utfchar(v)
+    regime = regimes.synonyms[regime] or regime
+    if not regimes.data[regime] then
+        environment.loadluafile("regi-"..regime, 1.001)
+        if regimes.data[regime] then
+            regimes.utf[regime] = { }
+            for k,v in pairs(regimes.data[regime]) do
+                regimes.utf[regime][char(k)] = utfchar(v)
+            end
         end
     end
 end
 
 function regimes.translate(line,regime)
+    regime = regimes.synonyms[regime] or regime
     if regime and line then
         local rur = regimes.utf[regime]
         if rur then
@@ -69,44 +70,19 @@ function regimes.translate(line,regime)
 end
 
 function regimes.enable(regime)
+    regime = regimes.synonyms[regime] or regime
     if regimes.data[regime] then
         regimes.currentregime = regime
         local translate = regimes.translate
-        input.filters.dynamic_translator = function(s)
+        resolvers.install_text_filter('input',function(s)
             return translate(s,regime)
-        end
+        end)
     else
         regimes.disable()
     end
 end
 
 function regimes.disable()
-    regimes.currentregime = ""
-    input.filters.dynamic_translator = nil
-end
-
-function input.filters.frozen_translator(regime)
-    return function(s)
-        return regimes.translate(s,regime)
-    end
-end
-
---[[ldx--
-<p>The following code is rather <l n='context'/> specific.</p>
---ldx]]--
-
-function regimes.context.show(regime)
-    local flush, tc = tex.sprint, tex.ctxcatcodes
-    local r = regimes.data[regime]
-    if r then
-        flush(tc, "\\starttabulate[|rT|T|rT|lT|lT|lT|]")
-        for k, v in ipairs(r) do
-            flush(tc, string.format("\\NC %s\\NC\\getvalue{%s}\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR", k,
-                characters.contextname(v), characters.hexindex(v), characters.contextname(v),
-                characters.category(v), characters.description(v)))
-        end
-        flush(tc, "\\stoptabulate")
-    else
-        flush(tc, "unknown regime " .. regime)
-    end
+    regimes.currentregime = "utf"
+    resolvers.install_text_filter('input',nil)
 end

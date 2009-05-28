@@ -1,26 +1,30 @@
-<!--
-    -- filename : comm-err.xml
-    -- comment  : companion to comm-xml.tex
-    -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
-    -- copyright: PRAGMA ADE / ConTeXt Development Team
-    -- license  : see context related readme files
+<?xml version="1.0" encoding="UTF-8"?>
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+    filename : context-error.lmx
+    comment  : companion to context.tex
+    author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+    copyright: PRAGMA ADE / ConTeXt Development Team
+    license  : see context related readme files
 -->
 
-<html>
-    <title><?lua pv('title')?></title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <style type="text/css">
-        <!--
-            <?lmx-include context.css ?>
-        -->
-    </style>
-    <script language="JavaScript">
-        <!--
-            window.focus();
-            parent.close();
-        -->
-    </script>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <script language="JavaScript">
+            <!--
+                window.focus();
+            -->
+        </script>
+        <title><?lua pv('title')?></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style type="text/css">
+            <!--
+                <?lmx-include context.css ?>
+            -->
+        </style>
+    </head>
     <body>
         <div id="top"><div id="top-one"><div id="top-two">
             <?lua pv('title')?>
@@ -40,7 +44,7 @@
                 <tr><td>File </td><td>&nbsp;&nbsp;&nbsp;<?lua tv('filename')    ?></td></tr>
                 <tr><td>Line </td><td>&nbsp;&nbsp;&nbsp;<?lua tv('linenumber')  ?></td></tr>
             </table>
-            </br>
+            <br/>
             <pre>
             <?lua pv('errorcontext')?>
             </pre>

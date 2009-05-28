@@ -11,16 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Core Macros / Synonyms and Sorts}
+\writestatus{loading}{ConTeXt Core Macros / Synonyms and Sorts}
 
 \unprotect
-
-\ifx\mkdefinesortedlist\undefined
-    \let\mkdefinesortedlist      \gobbleoneargument
-    \let\mksavesortedlistentry   \gobblefourarguments
-    \let\mksavesortedlistvariable\gobblethreearguments
-    \let\mkloadsortedlist        \gobbleoneargument
-\fi
 
 % \checkdefined kan hierheen
 
@@ -86,7 +79,7 @@
       \c!color=]%
    \setupwhitespace[\v!none]%
    %doutilities{#1}\jobname{#2}\relax\par % no longer \par
-   \mkloadsortedlist{#1}%
+   \doutilities{#1}\jobname{#1}\relax\relax
    \endgroup
    \ifutilitydone\else\nowhitespace\fi}
 
@@ -101,7 +94,7 @@
      \synonymmeaningfalse
      \doattributes{\??sm#1}\c!synonymstyle\c!synonymcolor{#3}%
    \else
-     \explicithmode
+     \dontleavehmode
      \doattributes{\??sm#1}\c!textstyle\c!textcolor{#2}%
    \fi
    \endgroup}
@@ -119,7 +112,7 @@
   {\begingroup  % anders in mathmode lege \hbox
    \defconvertexpanded\asciisynonym{\getvalue{\??sm#1\c!expansion}}{#3}%
    \defconvertexpanded\asciimeaning{\getvalue{\??sm#1\c!expansion}}{#4}%
-   \mksavesortedlistentry{#1}{#2}{\asciisynonym}{\asciimeaning}%
+   \immediatewriteutility{s e {#1} {#2} {\asciisynonym} {\asciimeaning}}%
    \endgroup}
 
 \def\reprocesssynonym#1#2#3%
@@ -155,7 +148,7 @@
   {\bgroup
    \let\dosetsynonym\doloadsynonym
    \showmessage\m!systems{19}{#2}%
-   \mkloadsortedlist{#1}%
+   \doutilities{#1}\jobname{#1}\relax\relax
    \egroup
    \setvalue{\s!check#1}##1{}}
 
@@ -180,7 +173,7 @@
 
 \def\doregistersynonymlanguage#1%
   {\savesortlanguage{\getvalue{\??sm#1\s!language}}%
-   \mksavesortedlistvariable{#1}{l}{\getvalue{\??sm#1\s!language}}}
+   \immediatewriteutility{s l {#1} {\getvalue{\??sm#1\s!language}}}}
 
 \def\dodefinesynonyms[#1][#2][#3][#4]%
   {\iffourthargument
@@ -210,7 +203,7 @@
      \doregistersynonymlanguage{#1}%
    \to \everysavesortkeys
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
-   \mkdefinesortedlist{#1}%
+   \addutilityreset{#1}%
    \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
    \setvalue{\s!set              #1}{\dosetsynonym{#1}}%
    \setvalue{\s!reset            #1}{\doresetsynonym{#1}}%
@@ -256,8 +249,7 @@
   {\whitespace           % ZONDER WITRUIMTE ETC ETC
    \begingroup
    \setupwhitespace[\v!none]%
-   %doutilities{#1}\jobname{#1}\relax\par % brr \par
-   \mkloadsortedlist{#1}%
+   \doutilities{#1}\jobname{#1}\relax\relax
    \endgroup
    \ifutilitydone\else\nowhitespace\fi}
 
@@ -266,7 +258,7 @@
 % \def\doplacelistofsorts#1% NOG EEN RUWE VERSIE MAKEN
 %   {\startpacked
 %    %doutilities{#1}\jobname{#1}\relax\par
-%    \mkloadsortedlist{#1}%
+%    \doutilities{#1}\jobname{#1}\relax\relax
 %    \stoppacked}
 
 \def\docompletelistofsorts#1#2%
@@ -280,7 +272,7 @@
 %   {\doplacelistofsorts{#1}}
 
 \def\processsort#1#2#3%
-  {\explicithmode
+  {\dontleavehmode
    \begingroup % was \bgroup
    \doattributes{\??so#1}\c!style\c!color{#2}%
    \endgroup}  % was \egroup
@@ -288,7 +280,7 @@
 \def\dowritesort#1#2#3%
   {\bgroup
    \defconvertexpanded\asciisynonym{\getvalue{\??so#1\c!expansion}}{#3}%
-   \mksavesortedlistentry{#1}{#2}{\asciisynonym}{}%
+   \immediatewriteutility{s e {#1} {#2} {\asciisynonym} {}}%
    \egroup}
 
 \def\synonymentry#1%
@@ -321,7 +313,7 @@
   {\bgroup
    \let\dosetsort\doloadsort
    \showmessage\m!systems{20}{#2}%
-   \mkloadsortedlist{#1}%
+   \doutilities{#1}\jobname{#1}\relax\relax
    \egroup
    \setvalue{\s!check#1}##1{}}
 
@@ -346,7 +338,7 @@
 
 \def\doregistersortinglanguage#1%
   {\savesortlanguage{\getvalue{\??so#1\s!language}}%
-   \mksavesortedlistvariable{#1}{l}{\getvalue{\??so#1\s!language}}}
+   \immediatewriteutility{s l {#1} {\getvalue{\??so#1\s!language}}}}
 
 \def\dodefinesorting[#1][#2][#3]%
   {\getparameters[\??so#1]
@@ -370,7 +362,7 @@
    \else
      \setvalue{#1}{\dotripleempty\docomplexsort[][#1]}%
    \fi
-   \mkdefinesortedlist{#1}%
+   \addutilityreset{#1}%
    \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
    \setvalue{\e!setup#2\e!endsetup}[##1]{\getparameters[\??so#1][##1]}% to be obsolete
    \setvalue{\s!set#1}{\dosetsort{#1}}%
@@ -388,7 +380,7 @@
 %D written by Taco.
 
 \def\processlistofsorts[#1]%
-  {\mkloadsortedlist{#1}}
+  {\doutilities{#1}\jobname{#1}\relax\relax}
 
 \newcounter\nofsortedalphalists
 
@@ -409,10 +401,6 @@
 %     \def\whatever{a,b,q,d,r,f}       \sortalphacommacommand\whatever \whatever \endgraf
 %     \def\whatever{ax,bx,qx,dx,rx,fx} \sortalphacommacommand\whatever \whatever \endgraf
 % \stoptext
-
-%D Plugins.
-
-\loadmarkfile{core-syn}
 
 %D Presets.
 

@@ -9,54 +9,85 @@ if not modules then modules = { } end modules ['mtx-babel'] = {
 scripts      = scripts      or { }
 scripts.grep = scripts.grep or { }
 
-banner = banner .. " | simple grepper "
+logs.extendbanner("Simple Grepper 0.10",true)
+
+local find, format = string.find, string.format
+
+local cr       = lpeg.P("\r")
+local lf       = lpeg.P("\n")
+local crlf     = cr * lf
+local newline  = crlf + cr + lf
+local content  = lpeg.C((1-newline)^0) * newline
+
+local write_nl = texio.write_nl
 
 function scripts.grep.find(pattern, files, offset)
     if pattern and pattern ~= "" then
-        local format = string.format
-        input.starttiming(scripts.grep)
-        local count, nofmatches, noffiles, nofmatchedfiles = environment.argument("count"), 0, 0, 0
-        local function grep(name)
-            local data = io.loaddata(name)
-            if data then
-                noffiles = noffiles + 1
-                local n, m = 0, 0
-                for line in data:gmatch("[^\n]+") do -- faster than loop over lines
+        statistics.starttiming(scripts.grep)
+        local nofmatches, noffiles, nofmatchedfiles = 0, 0, 0
+        local n, m, name, check = 0, 0, "", nil
+        local count, nocomment = environment.argument("count"), environment.argument("nocomment")
+        if nocomment then
+            if count then
+                check = function(line)
                     n = n + 1
-                    if line:find(pattern) then
+                    if find(line,"^[%%#]") then
+                        -- skip
+                    elseif find(line,pattern) then
                         m = m + 1
-                        if not count then
-                            input.log(format("%s %s: %s",name,n,line))
-                            io.flush()
-                        end
                     end
                 end
-                if count and m > 0 then
-                    nofmatches = nofmatches + m
-                    nofmatchedfiles = nofmatchedfiles + 1
-                    input.log(format("%s: %s",name,m))
-                    io.flush()
+            else
+                check = function(line)
+                    n = n + 1
+                    if find(line,"^[%%#]") then
+                        -- skip
+                    elseif find(line,pattern) then
+                        m = m + 1
+                        write_nl(format("%s %s: %s",name,n,line))
+                        io.flush()
+                    end
+                end
+            end
+        else
+            if count then
+                check = function(line)
+                    n = n + 1
+                    if find(line,pattern) then
+                        m = m + 1
+                    end
+                end
+            else
+                check = function(line)
+                    n = n + 1
+                    if find(line,pattern) then
+                        m = m + 1
+                        write_nl(format("%s %s: %s",name,n,line))
+                        io.flush()
+                    end
                 end
             end
         end
---~         for i=offset or 1, #files do
---~             local filename = files[i]
---~             if filename:find("%*") then
---~                 for _, name in ipairs(dir.glob(filename)) do
---~                     grep(name)
---~                 end
---~             else
---~                 grep(filename)
---~             end
---~         end
+        local capture = (content/check)^0
         for i=offset or 1, #files do
-            for _, name in ipairs(dir.glob(files[i])) do
-                grep(name)
+            for _, nam in ipairs(dir.glob(files[i])) do
+                name = nam
+                local data = io.loaddata(name)
+                if data then
+                    n, m, noffiles = 0, 0, noffiles + 1
+                    capture:match(data)
+                    if count and m > 0 then
+                        nofmatches = nofmatches + m
+                        nofmatchedfiles = nofmatchedfiles + 1
+                        write_nl(format("%s: %s",name,m))
+                        io.flush()
+                    end
+                end
             end
         end
-        input.stoptiming(scripts.grep)
+        statistics.stoptiming(scripts.grep)
         if count and nofmatches > 0 then
-            input.log(format("\nfiles: %s, matches: %s, matched files: %s, runtime: %0.3f seconds",noffiles,nofmatches,nofmatchedfiles,input.loadtime(scripts.grep)))
+            write_nl(format("\nfiles: %s, matches: %s, matched files: %s, runtime: %0.3f seconds",noffiles,nofmatches,nofmatchedfiles,statistics.elapsedtime(scripts.grep)))
         end
     end
 end
@@ -64,9 +95,10 @@ end
 messages.help = [[
 --pattern             search for pattern (optional)
 --count               count matches only
-]]
+--nocomment           skip lines that start with %% or #
 
-input.verbose = true
+patterns are lua patterns and need to be escaped accordingly
+]]
 
 local pattern = environment.argument("pattern")
 local files   = environment.files and #environment.files > 0 and environment.files
@@ -76,5 +108,5 @@ if pattern and files then
 elseif files then
     scripts.grep.find(files[1], files, 2)
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart texfont.pl "$@"
+mtxrun --usekpse --execute texfont.pl "$@"

@@ -5,6 +5,8 @@ if not modules then modules = { } end modules ['luat-sta'] = {
     license   = "see context related readme files"
 }
 
+-- this code is used in the updater
+
 states          = states          or { }
 states.data     = states.data     or { }
 states.hash     = states.hash     or { }
@@ -31,27 +33,32 @@ end
 function states.set_by_tag(tag,key,value,default,persistent)
     local d, h = states.data[tag], states.hash[tag]
     if d then
-        local dkey, hkey = key, key
-        local pre, post = key:match("(.+)%.([^%.]+)$")
-        if pre and post then
-            for k in pre:gmatch("[^%.]+") do
-                local dk = d[k]
-                if not dk then
-                    dk = { }
-                    d[k] = dk
+        if type(d) == "table" then
+            local dkey, hkey = key, key
+            local pre, post = key:match("(.+)%.([^%.]+)$")
+            if pre and post then
+                for k in pre:gmatch("[^%.]+") do
+                    local dk = d[k]
+                    if not dk then
+                        dk = { }
+                        d[k] = dk
+                    end
+                    d = dk
                 end
-                d = dk
+                dkey, hkey = post, key
             end
-            dkey, hkey = post, key
+            if type(value) == nil then
+                value = value or default
+            elseif persistent then
+                value = value or d[dkey] or default
+            else
+                value = value or default
+            end
+            d[dkey], h[hkey] = value, value
+        elseif type(d) == "string" then
+            -- weird
+            states.data[tag], states.hash[tag] = value, value
         end
-        if type(value) == nil then
-            value = value or default
-        elseif persistent then
-            value = value or d[dkey] or default
-        else
-            value = value or default
-        end
-        d[dkey], h[hkey] = value, value
     end
 end
 
@@ -170,7 +177,6 @@ end
 --~ 		["t-vim"] = false,
 --~ 	},
 --~ }
-
 
 --~ states.save("teststate", "update")
 --~ states.load("teststate", "update")

@@ -8,26 +8,26 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\writestatus{loading}{Context Support Macros / Pretty JavaScript Verbatim}
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty JavaScript Verbatim}
 
 %D In \CONTEXT\ we support \JAVASCRIPT\ inclusion in \PDF\
 %D documents and thereby enter the field of authoring. Of
 %D course we also want to pretty print such scripts, that look
-%D like: 
-%D 
+%D like:
+%D
 %D \startJS
-%D alfa = beta*2 ;       // both alfa and beta are numbers // indeed 
+%D alfa = beta*2 ;       // both alfa and beta are numbers // indeed
 %D if (odd(alfa))
-%D   { do_something() }  
+%D   { do_something() }
 %D else
 %D   { do_nothing() }    /* As we can see /* in this example */ there
 %D how_about(alfa) ;        is no fi needed. Also no semicolons are
 %D or_about(beta) ;         needed after a right brace. */
 %D \stopJS
-%D 
+%D
 %D Because \JAVASCRIPT\ looks much like \PERL, we will use
 %D a slightly adapted \PERL\ visualization. First we load the
 %D \PERL\ module:
@@ -168,4 +168,4 @@
 \useprettyidentifiers \JSvariables \JSsetspecials
   not-yet-defined
 
-\protect \endinput  
+\protect \endinput

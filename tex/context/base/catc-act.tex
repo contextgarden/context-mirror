@@ -1,0 +1,61 @@
+%D \module
+%D   [       file=catc-act,
+%D        version=2006.09.18,
+%D          title=\CONTEXT\ Catcode Macros,
+%D       subtitle=Default Catcode Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module deals with some active character handling. Use
+%D with care.
+
+%D \macros
+%D   {installactivecharacter}
+
+\def\installactivecharacter#1 %
+  {\edef\temp{\detokenize{#1}}%
+   \cctcounterc\expandafter`\temp\relax % relax needed
+   \expandafter\startextendcatcodetable
+      \expandafter\ctxcatcodes\expandafter\catcode\the\cctcounterc=13
+   \stopextendcatcodetable
+   \letcatcodecommand \ctxcatcodes \cctcounterc \temp \relax
+   \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi}
+
+%D \macros
+%D   {defineactivecharacter}
+%D
+%D Use this one with care, esp in combination with catcode
+%D vectors. There are better ways now.
+
+\chardef\activehackcode=`~
+
+\def\defineactivecharacter #1#2 #3%
+  {\cctcounterc\uccode\activehackcode
+   \if#1"\uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1#2}\empty #1#2\else
+         \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1#2}\empty`#1#2\fi
+   \catcode\uccode\activehackcode13
+   \uppercase{\def\next{~}}%
+   \uccode\activehackcode\cctcounterc
+   \expandafter\expandafter\expandafter\def\expandafter\next\expandafter
+     {\expandafter\dohandleactivecharacter\next{#3}}}
+
+\chardef\activecharactermode\plusone % overloading still backward compatible
+
+\def\dodohandleactivecharacter#1#2{#2}
+\def\donthandleactivecharacter#1#2{\noexpand#1}
+
+\def\dohandleactivecharacter
+  {\ifcase\activecharactermode
+     \expandafter\donthandleactivecharacter
+   \else
+     \expandafter\dodohandleactivecharacter
+   \fi}
+
+\def\makecharacteractive #1 {\catcode`#1\active}
+
+\endinput

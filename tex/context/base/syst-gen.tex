@@ -123,7 +123,7 @@
 %D defined.
 %D
 %D \starttyping
-%D \writestatus{laden}{Context Systeem Macro's (a)}
+%D \writestatus{laden}{Context Systeem Macros (a)}
 %D \stoptyping
 
 %D The next few macros are needed in case this module is
@@ -132,10 +132,6 @@
 \ifx\beginTEX\undefined
   \let\beginTEX\relax\let\endTEX\relax
   \long\def\beginETEX  #1\endETEX {}
-  \long\def\beginOMEGA #1\endOMEGA{}
-%   \long\def\onlyTEX  #1{#1}
-%   \long\def\onlyETEX #1{}
-%   \long\def\onlyOMEGA#1{}
 \fi
 
 %D \macros
@@ -311,6 +307,9 @@
 \newabove \newtoks    \scratchtoks      \newabove \newtoks   \globalscratchtoks
           \newbox     \scratchbox                 \newbox    \globalscratchbox
 
+\newdimen\scratchdimenone \newbox\scratchboxone \newcount\scratchcounterone
+\newdimen\scratchdimentwo \newbox\scratchboxtwo \newcount\scratchcountertwo
+
 %D \macros
 %D   {ifdone}
 
@@ -361,23 +360,21 @@
 %D Beware: we don't reuse plain counters, too dangerous
 %D when <= 20 (e.g. in supp-pdf this messed up things).
 
-\newdimen    \zeropoint
-\newcount    \zerocount
-\newcount    \minusone
-             \minusone        =    -1
-\newcount    \minustwo
-             \minustwo        =    -2
-
-\chardef     \plusone         =     1
-\chardef     \plustwo         =     2
-\chardef     \plusthree       =     3
-\chardef     \plusfour        =     4
-\chardef     \plusfive        =     5
-
-\mathchardef \plusten         =    10
-\mathchardef \plushundred     =   100
-\mathchardef \plusthousand    =  1000
-\mathchardef \plustenthousand = 10000
+\ifx\undefined\zeroskip           \newskip     \zeroskip                   \fi
+\ifx\undefined\zeropoint          \newdimen    \zeropoint                  \fi
+\ifx\undefined\zerocount          \newcount    \zerocount                  \fi
+\ifx\undefined\minusone           \newcount    \minusone                   \fi \minusone = -1
+\ifx\undefined\minustwo           \newcount    \minustwo                   \fi \minustwo = -2
+\ifx\undefined\plusone            \chardef     \plusone            =     1 \fi
+\ifx\undefined\plustwo            \chardef     \plustwo            =     2 \fi
+\ifx\undefined\plusthree          \chardef     \plusthree          =     3 \fi
+\ifx\undefined\plusfour           \chardef     \plusfour           =     4 \fi
+\ifx\undefined\plusfive           \chardef     \plusfive           =     5 \fi
+\ifx\undefined\plusten            \mathchardef \plusten            =    10 \fi
+\ifx\undefined\plushundred        \mathchardef \plushundred        =   100 \fi
+\ifx\undefined\plusthousand       \mathchardef \plusthousand       =  1000 \fi
+\ifx\undefined\plustenthousand    \mathchardef \plustenthousand    = 10000 \fi
+\ifx\undefined\plustwentythousand \mathchardef \plustwentythousand = 20000 \fi
 
 %D \macros
 %D   {s!,c!,e!,p!,v!,@@,??}
@@ -396,6 +393,8 @@
 
 \def\s!complex {complex}      \def\s!start   {start}
 \def\s!simple  {simple}       \def\s!stop    {stop}
+
+\def\s!empty   {empty}
 
 %D \macros
 %D   {@EA,@EAEA,@EAEAEA,@EAEAEAEAEAEA,expanded,startexpanded}
@@ -544,10 +543,43 @@
      \@EAEAEA\!!stringb
    \fi\fi}
 
-%\let\endoflinetoken=^^M
-%
-%\long\def\reinspectaftercharacter#1%
-%  {\futurelet\nexttoken\inspectnextcharacter}
+%D Because we will mostly use this macro for testing if the next
+%D character is \type {[}, we also make a slightly faster variant
+%D as it is not uncommon to have tens of thousands of calls to this
+%D test in a run. Of course it also is more convenient to read a
+%D trace then.
+
+\let\nextoptionalcharactertoken=[
+
+\long\def\doifnextoptionalelse#1#2%
+  {\def\nextoptionalcommandyes{#1}%
+   \def\nextoptionalcommandnop{#2}%
+   \futurelet\nexttoken\inspectnextoptionalcharacter}
+
+\def\inspectnextoptionalcharacter
+  {\ifx\nexttoken\blankspace
+     \@EA\reinspectnextoptionalcharacter
+   \else\ifx\nexttoken\nextoptionalcharactertoken
+     \@EAEAEA\nextoptionalcommandyes
+   \else
+     \@EAEAEA\nextoptionalcommandnop
+   \fi\fi}
+
+\let\nextbgroupcharactertoken\bgroup
+
+\long\def\doifnextbgroupelse#1#2%
+  {\def\nextbgroupcommandyes{#1}%
+   \def\nextbgroupcommandnop{#2}%
+   \futurelet\nexttoken\inspectnextbgroupcharacter}
+
+\def\inspectnextbgroupcharacter
+  {\ifx\nexttoken\blankspace
+     \@EA\reinspectnextbgroupcharacter
+   \else\ifx\nexttoken\nextbgroupcharactertoken
+     \@EAEAEA\nextbgroupcommandyes
+   \else
+     \@EAEAEA\nextbgroupcommandnop
+   \fi\fi}
 
 %D This macro uses some auxiliary macros. Although we were able
 %D to program quite complicated things, I only understood these
@@ -579,8 +611,13 @@
 \def\:{\let\blankspace= }  \:
 
 \def\:{\reinspectnextcharacter}
-
 \expandafter\def\: {\futurelet\nexttoken\inspectnextcharacter}
+
+\def\:{\reinspectnextoptionalcharacter}
+\expandafter\def\: {\futurelet\nexttoken\inspectnextoptionalcharacter}
+
+\def\:{\reinspectnextbgroupcharacter}
+\expandafter\def\: {\futurelet\nexttoken\inspectnextbgroupcharacter}
 
 \let\:\next
 
@@ -962,6 +999,11 @@
 
 \def\letbeundefined#1% potential stack buildup when used \global
   {\expandafter\let\csname#1\endcsname\undefined}
+
+\def\localundefine#1% conditional
+  {\ifcsname#1\endcsname\expandafter\let\csname#1\endcsname\undefined\fi}
+\def\globalundefine#1% conditional
+  {\ifcsname#1\endcsname\expandafter\global\let\csname#1\endcsname\undefined\fi}
 
 \endETEX
 
@@ -1603,6 +1645,8 @@
 %    \else
 %      \expandafter\firstofoneargument
 %    \fi}
+
+% todo: use dedicated done
 
 \def\p!dodocommoncheck#1%
   {\edef\!!stringb{#1}%
@@ -2331,6 +2375,14 @@
 %D run time, simply because the less tokens we pass, the faster
 %D \TEX\ runs. So finally the definition became:
 
+% \long\def\rawdoifinstringelse#1#2% ##2 can be {abc}
+%   {\long\def\pp!doifinstringelse##1#1##2##3\war{\if##2@}%
+%    \pp!doifinstringelse#2#1@@\war
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\firstoftwoarguments
+%    \fi}
+
 \long\def\doifinstringelse#1%
   {\edef\@@@instring{#1}% expand #1 here
    \ifx\@@@instring\empty
@@ -3033,30 +3085,55 @@
 
 \let\currentvalue\empty
 
-\def\p!n!doassign#1#2\@relax@#3=#4=#5#6\@relax@% normal
-  {\ifx#5\empty
+% \def\p!n!doassign#1#2\@relax@#3=#4=#5#6\@relax@% normal
+%   {\ifx#5\empty
+%      \@EA\xshowassignerror
+%    \else\ifx#5=%
+%      \@EAEAEA#1%
+%    \else
+%      \@EAEAEA\xshowassignerror
+%    \fi\fi
+%    {#2}{#3}{#4}}
+
+\def\p!n!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+  {\ifx\empty#3\empty
      \@EA\xshowassignerror
-   \else\ifx#5=%
-     \@EAEAEA#1%
-   \else
+   \else\ifx#5\empty
      \@EAEAEA\xshowassignerror
+   \else
+     \@EAEAEA#1%
    \fi\fi
    {#2}{#3}{#4}}
 
 \beginTEX
 
+% \def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+%   {\ifx#5\empty
+%      \@EA\xshowassignerror
+%    \else\ifx#5=%
+%      \@EA\ifx\csname#2#3\endcsname\relax
+%        \let\currentvalue\empty
+%      \else
+%        \@EA\let\@EA\currentvalue\csname#2#3\endcsname
+%      \fi
+%      \@EAEAEA#1%
+%    \else
+%      \@EAEAEA\xshowassignerror
+%    \fi\fi
+%    {#2}{#3}{#4}}
+
 \def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
-  {\ifx#5\empty
+  {\ifx\empty#3\empty
      \@EA\xshowassignerror
-   \else\ifx#5=%
+   \else\ifx#5\empty
+     \@EAEAEA\xshowassignerror
+   \else
      \@EA\ifx\csname#2#3\endcsname\relax
        \let\currentvalue\empty
      \else
        \@EA\let\@EA\currentvalue\csname#2#3\endcsname
      \fi
      \@EAEAEA#1%
-   \else
-     \@EAEAEA\xshowassignerror
    \fi\fi
    {#2}{#3}{#4}}
 
@@ -3064,18 +3141,33 @@
 
 \beginETEX
 
+% \def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+%   {\ifx#5\empty
+%      \@EA\xshowassignerror
+%    \else\ifx#5=%
+%      \ifcsname#2#3\endcsname
+%        \@EA\let\@EA\currentvalue\csname#2#3\endcsname
+%      \else
+%        \let\currentvalue\empty
+%      \fi
+%      \@EAEAEA#1%
+%    \else
+%      \@EAEAEA\xshowassignerror
+%    \fi\fi
+%    {#2}{#3}{#4}}
+
 \def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
-  {\ifx#5\empty
+  {\ifx\empty#3\empty
      \@EA\xshowassignerror
-   \else\ifx#5=%
+   \else\ifx#5\empty
+     \@EAEAEA\xshowassignerror
+   \else
      \ifcsname#2#3\endcsname
        \@EA\let\@EA\currentvalue\csname#2#3\endcsname
      \else
        \let\currentvalue\empty
      \fi
      \@EAEAEA#1%
-   \else
-     \@EAEAEA\xshowassignerror
    \fi\fi
    {#2}{#3}{#4}}
 
@@ -3464,7 +3556,7 @@
 \chardef\expectedarguments  =0
 
 \def\showargumenterror#1#2%
-  {\writestatus{system}{#1 argument(s) expected in line #2}}
+  {\writestatus{systems}{#1 argument(s) expected in line #2}}
 
 % \long\def\dogetargument#1#2#3#4% redefined in mult-ini
 %   {\doifnextcharelse{#1}
@@ -3608,19 +3700,19 @@
 
 \def\dosingleempty#1%
   {\noshowargumenterror % \relax % prevents lookahead, brr
-   \doifnextcharelse[%
+   \doifnextoptionalelse
      {\firstargumenttrue#1}
      {\dosinglefakeempty#1}}
 
 \def\dodoubleempty#1%
   {\noshowargumenterror % \relax % prevents lookahead, brr
-   \doifnextcharelse[%
+   \doifnextoptionalelse
      {\dodoubletestempty#1}
      {\dodoublefakeempty#1}}
 
 \def\dotripleempty#1%
   {\noshowargumenterror % \relax % prevents lookahead, brr
-   \doifnextcharelse[%
+   \doifnextoptionalelse
      {\dotripletestempty#1}
      {\dotriplefakeempty#1}}
 
@@ -3635,20 +3727,20 @@
 
 \long\def\dodoubletestempty#1[#2]%
   {\firstargumenttrue
-   \doifnextcharelse[%
+   \doifnextoptionalelse
      {\secondargumenttrue #1[{#2}]}
      {\secondargumentfalse#1[{#2}][]}}
 
 \long\def\dotripletestempty#1[#2]%
   {\firstargumenttrue
-   \doifnextcharelse[%
+   \doifnextoptionalelse
      {\dotripletestemptyx #1[{#2}]}
      {\secondargumentfalse
       \thirdargumentfalse #1[{#2}][][]}}
 
 \long\def\dotripletestemptyx#1[#2][#3]%
   {\secondargumenttrue
-   \doifnextcharelse[%
+   \doifnextoptionalelse
      {\thirdargumenttrue #1[{#2}][{#3}]}
      {\thirdargumentfalse#1[{#2}][{#3}][]}}
 
@@ -3736,13 +3828,13 @@
 
 \def\complexorsimple#1%
   {% \relax % prevents lookahead, brrr
-   \doifnextcharelse[%
+   \doifnextoptionalelse
      {\firstargumenttrue \csname\s!complex\strippedcsname#1\endcsname}
      {\firstargumentfalse\csname\s!simple \strippedcsname#1\endcsname}}
 
 \def\complexorsimpleempty#1%
   {% \relax % prevents lookahead, brrr
-   \doifnextcharelse[%
+   \doifnextoptionalelse
      {\firstargumenttrue \csname\s!complex\strippedcsname#1\endcsname}
      {\firstargumentfalse\csname\s!complex\strippedcsname#1\endcsname[]}}
 
@@ -3793,10 +3885,10 @@
 % faster, since no \strippedcsname needed in call, but more spacy
 
 \def\docomplexorsimple#1#2%
-  {\doifnextcharelse[{\firstargumenttrue#1}{\firstargumentfalse#2}}
+  {\doifnextoptionalelse{\firstargumenttrue#1}{\firstargumentfalse#2}}
 
 \def\docomplexorsimpleempty#1%
-  {\doifnextcharelse[{\firstargumenttrue#1}{\firstargumentfalse#1[]}}
+  {\doifnextoptionalelse{\firstargumenttrue#1}{\firstargumentfalse#1[]}}
 
 \def\definecomplexorsimple#1%
   {\unexpanded\edef#1%
@@ -3926,35 +4018,6 @@
 %D \type {\if} and friends, in practice we will use a
 %D slightly more complicated macro.
 
-\let\normalif         \if
-\let\normalifcat      \ifcat
-\let\normalifnum      \ifnum
-\let\normalifdim      \ifdim
-\let\normalifodd      \ifodd
-\let\normalifvmode    \ifvmode
-\let\normalifhmode    \ifhmode
-\let\normalifmmode    \ifmmode
-\let\normalifinner    \ifinner
-\let\normalifvoid     \ifvoid
-\let\normalifhbox     \ifhbox
-\let\normalifvbox     \ifvbox
-\let\normalifx        \ifx
-\let\normalifeof      \ifeof
-\let\normaliftrue     \iftrue
-\let\normaliffalse    \iffalse
-\let\normalifcase     \ifcase
-\let\normalifdefined  \ifdefined
-\let\normalifcsname   \ifcsname
-\let\normaliffontchar \iffontchar
-\let\normalifincsname \ifincsname
-\let\normalifprimitive\ifprimitive
-\let\normalifabsnum   \ifabsnum
-\let\normalifabsdim   \ifabsdim
-
-\let\normalelse       \else
-\let\normalor         \or
-\let\normalfi         \fi
-
 \newtoks \everyrobusttest
 
 \everyrobusttest
@@ -4000,34 +4063,65 @@
 
 \dontpermitspacesbetweengroups
 
+% \def\dogetgroupargument#1#2%
+%   {\def\nextnextargument%
+%      {\normalifx\nextargument\bgroup
+%         \endrobusttest
+%         \noshowargumenterror
+%         \def\nextargument{#1\dodogetargument}%
+%       \normalelse
+%         \normalifcase\@@permitspacesbetweengroups
+%           \normalifx\nextargument\lineending
+%             \endrobusttest
+%             \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
+%           \normalelse\normalifx\nextargument\blankspace
+%             \endrobusttest
+%             \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
+%           \normalelse
+%             \endrobusttest
+%             \doshowargumenterror
+%             \def\nextargument{#2\dodogetargument{}}%
+%           \normalfi\normalfi
+%         \normalelse
+%           \endrobusttest
+%           \doshowargumenterror
+%           \def\nextargument{#2\dodogetargument{}}%
+%         \normalfi
+%       \normalfi
+%       \nextargument}%
+%    \beginrobusttest
+%    \futurelet\nextargument\nextnextargument}
+
+\def\dodogetgroupargument
+  {\normalifx\nextargument\bgroup
+     \endrobusttest
+     \noshowargumenterror
+     \def\nextargument{\dogroupargumentyes\dodogetargument}%
+   \normalelse
+     \normalifcase\@@permitspacesbetweengroups
+       \normalifx\nextargument\lineending
+         \endrobusttest
+         \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument\dogroupargumentyes\dogroupargumentnop}\\}%
+       \normalelse\normalifx\nextargument\blankspace
+         \endrobusttest
+         \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument\dogroupargumentyes\dogroupargumentnop}\\}%
+       \normalelse
+         \endrobusttest
+         \doshowargumenterror
+         \def\nextargument{\dogroupargumentnop\dodogetargument{}}%
+       \normalfi\normalfi
+     \normalelse
+       \endrobusttest
+       \doshowargumenterror
+       \def\nextargument{\dogroupargumentnop\dodogetargument{}}%
+     \normalfi
+   \normalfi
+   \nextargument}%
+
 \def\dogetgroupargument#1#2%
-  {\def\nextnextargument%
-     {\normalifx\nextargument\bgroup
-        \endrobusttest
-        \noshowargumenterror
-        \def\nextargument{#1\dodogetargument}%
-      \normalelse
-        \normalifcase\@@permitspacesbetweengroups
-          \normalifx\nextargument\lineending
-            \endrobusttest
-            \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
-          \normalelse\normalifx\nextargument\blankspace
-            \endrobusttest
-            \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
-          \normalelse
-            \endrobusttest
-            \doshowargumenterror
-            \def\nextargument{#2\dodogetargument{}}%
-          \normalfi\normalfi
-        \normalelse
-          \endrobusttest
-          \doshowargumenterror
-          \def\nextargument{#2\dodogetargument{}}%
-        \normalfi
-      \normalfi
-      \nextargument}%
-   \beginrobusttest
-   \futurelet\nextargument\nextnextargument}
+  {\let\dogroupargumentyes#1%
+   \let\dogroupargumentnop#2%
+   \beginrobusttest\futurelet\nextargument\dodogetgroupargument}
 
 \def\dosinglegroupempty#1%
   {\def\dodogetargument%
@@ -4107,21 +4201,32 @@
 %D used to select arguments. Their names explain their
 %D functionality.
 
-\long\def\firstofoneargument            #1{#1}
-\long\def\firstoftwoarguments         #1#2{#1}
-\long\def\firstofthreearguments     #1#2#3{#1}
-\long\def\firstoffourarguments    #1#2#3#4{#1}
-\long\def\firstoffivearguments  #1#2#3#4#5{#1}
-\long\def\secondoftwoarguments        #1#2{#2}
-\long\def\secondofthreearguments    #1#2#3{#2}
-\long\def\secondoffourarguments   #1#2#3#4{#2}
-\long\def\secondoffivearguments #1#2#3#4#5{#2}
-\long\def\thirdofthreearguments     #1#2#3{#3}
-\long\def\thirdoffourarguments    #1#2#3#4{#3}
-\long\def\thirdoffivearguments  #1#2#3#4#5{#3}
-\long\def\fourthoffourarguments   #1#2#3#4{#4}
-\long\def\fourthoffivearguments #1#2#3#4#5{#4}
-\long\def\fifthoffivearguments  #1#2#3#4#5{#5}
+\long\def\firstofoneargument#1{#1}
+
+\long\def\firstoftwoarguments #1#2{#1}
+\long\def\secondoftwoarguments#1#2{#2}
+
+\long\def\firstofthreearguments #1#2#3{#1}
+\long\def\secondofthreearguments#1#2#3{#2}
+\long\def\thirdofthreearguments #1#2#3{#3}
+
+\long\def\firstoffourarguments #1#2#3#4{#1}
+\long\def\secondoffourarguments#1#2#3#4{#2}
+\long\def\thirdoffourarguments #1#2#3#4{#3}
+\long\def\fourthoffourarguments#1#2#3#4{#4}
+
+\long\def\firstoffivearguments #1#2#3#4#5{#1}
+\long\def\secondoffivearguments#1#2#3#4#5{#2}
+\long\def\thirdoffivearguments #1#2#3#4#5{#3}
+\long\def\fourthoffivearguments#1#2#3#4#5{#4}
+\long\def\fifthoffivearguments #1#2#3#4#5{#5}
+
+\long\def\firstofsixarguments #1#2#3#4#5#6{#1}
+\long\def\secondofsixarguments#1#2#3#4#5#6{#2}
+\long\def\thirdofsixarguments #1#2#3#4#5#6{#3}
+\long\def\fourthofsixarguments#1#2#3#4#5#6{#4}
+\long\def\fifthofsixarguments #1#2#3#4#5#6{#5}
+\long\def\sixthofsixarguments #1#2#3#4#5#6{#6}
 
 %D \macros
 %D   {globalletempty,letempty,letvalueempty,letgvalueempty}
@@ -4301,10 +4406,13 @@
 %D Finally we do what from now on will be done at the top of
 %D the files: we tell the user what we are loading.
 
-\ifx\writestatus\undefined \let\writestatus\normalwritestatus \fi
-\ifx\writebanner\undefined \def\writebanner{\writestring}     \fi
+% \ifx\writestatus\undefined \let\writestatus\normalwritestatus \fi
+% \ifx\writebanner\undefined \def\writebanner{\writestring}     \fi
 
-\writestatus{loading}{Context System Macros / General}
+\let\writestatus\normalwritestatus
+\def\writebanner{\writestring}
+
+\writestatus{loading}{ConTeXt System Macros / General}
 
 %D Well, the real final command is the one that resets the
 %D unprotected characters \type{@}, \type{?} and \type{!}.

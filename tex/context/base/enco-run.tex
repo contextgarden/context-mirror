@@ -98,16 +98,7 @@
 %   {\font\test=uplr8t \test \ruledhbox{t}
 %    \font\test=uplr8r \test \ruledhbox{t}}
 
-\gdef\showcharacterbounds
-  {\bgroup
-   \localcolortrue
-   \dorecurse{255}
-     {\ifdim\fontcharwd\font\recurselevel>\zeropoint
-        \noindent\ruledhbox{\darkgray\char\recurselevel}\space
-      \fi}\unskip
-   \egroup}
-
-\beginOLDTEX
+\ifnum\texengine=\pdftexengine
 
     \gdef\showhyphenations#1%
       {\starttabulate[|le|l|]
@@ -119,9 +110,28 @@
        \NC sample   \NC \hyphenatedword{#1}                                      \NC \NR
        \stoptabulate}
 
-\endOLDTEX
+    \gdef\showmapping
+      {\dostepwiserecurse{128}{255}{1}
+          {\hbox\bgroup
+             \hbox to 2em{\hss\recurselevel}%
+             \hbox to 2em{\hss\char\recurselevel\hss}%
+             \hbox to 3em{\hss\ifcase\lccode\recurselevel\else\the \lccode\recurselevel\fi}%
+             \hbox to 2em{\hss\ifcase\lccode\recurselevel\else\char\lccode\recurselevel\fi\hss}%
+             \hbox to 3em{\hss\ifcase\lccode\recurselevel\else\the \uccode\recurselevel\fi}%
+             \hbox to 2em{\hss\ifcase\uccode\recurselevel\else\char\uccode\recurselevel\fi\hss}%
+           \egroup
+           \endgraf}}
 
-\beginNEWTEX
+    \gdef\showcharacterbounds
+      {\bgroup
+       \localcolortrue
+       \dorecurse{255}
+         {\ifdim\fontcharwd\font\recurselevel>\zeropoint
+            \noindent\ruledhbox{\darkgray\char\recurselevel}\space
+          \fi}\unskip
+       \egroup}
+
+\else
 
     \gdef\showhyphenations#1%
       {\starttabulate[|le|l|]
@@ -130,18 +140,10 @@
        \NC sample   \NC \hyphenatedword{#1}                                   \NC \NR
        \stoptabulate}
 
-\endNEWTEX
+    \globallet\showmapping\relax
 
-\gdef\showmapping
-  {\dostepwiserecurse{128}{255}{1}
-      {\hbox\bgroup
-         \hbox to 2em{\hss\recurselevel}%
-         \hbox to 2em{\hss\char\recurselevel\hss}%
-         \hbox to 3em{\hss\ifcase\lccode\recurselevel\else\the \lccode\recurselevel\fi}%
-         \hbox to 2em{\hss\ifcase\lccode\recurselevel\else\char\lccode\recurselevel\fi\hss}%
-         \hbox to 3em{\hss\ifcase\lccode\recurselevel\else\the \uccode\recurselevel\fi}%
-         \hbox to 2em{\hss\ifcase\uccode\recurselevel\else\char\uccode\recurselevel\fi\hss}%
-       \egroup
-       \endgraf}}
+    \globallet\showcharacterbounds\relax
+
+\fi
 
 \protect \endinput

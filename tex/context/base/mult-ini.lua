@@ -6,23 +6,32 @@ if not modules then modules = { } end modules ['mult-ini'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local format, gmatch = string.format, string.gmatch
 
 interfaces           = interfaces           or { }
 interfaces.messages  = interfaces.messages  or { }
 interfaces.constants = interfaces.constants or { }
 interfaces.variables = interfaces.variables or { }
 
-input.storage.register(false,"interfaces/messages",  interfaces.messages,  "interfaces.messages" )
-input.storage.register(false,"interfaces/constants", interfaces.constants, "interfaces.constants")
-input.storage.register(false,"interfaces/variables", interfaces.variables, "interfaces.variables")
+storage.register("interfaces/messages",  interfaces.messages,  "interfaces.messages" )
+storage.register("interfaces/constants", interfaces.constants, "interfaces.constants")
+storage.register("interfaces/variables", interfaces.variables, "interfaces.variables")
 
-function interfaces.setmessage(category,str)
+function interfaces.setmessages(category,str)
     local m = interfaces.messages[category] or { }
-    for k, v in str:gmatch("(%S+) *: *(.-) *[\n\r]") do
+    for k, v in gmatch(str,"(%S+) *: *(.-) *[\n\r]") do
         m[k] = v:gsub("%-%-","%%s")
     end
     interfaces.messages[category] = m
+end
+
+function interfaces.setmessage(category,tag,message)
+    local m = interfaces.messages[category]
+    if not m then
+        m = { }
+        interfaces.messages[category] = m
+    end
+    m[tag] = message:gsub("%-%-","%%s")
 end
 
 function interfaces.getmessage(category,tag)
@@ -30,23 +39,23 @@ function interfaces.getmessage(category,tag)
     return (m and m[tag]) or "unknown message"
 end
 
+local messagesplitter = lpeg.splitat(",")
+
 function interfaces.makemessage(category,tag,arguments)
     local m = interfaces.messages[category]
-    m = (m and m[tag] ) or "unknown message"
+    m = (m and m[tag] ) or format("unknown message, category '%s', tag '%s'",category,tag)
     if not m then
         return m .. " " .. tag
     elseif not arguments then
         return m
-    elseif arguments:find(",") then
-        return format(m,unpack(arguments:splitchr(",")))
     else
-        return format(m,arguments)
+        return format(m,messagesplitter:match(arguments))
     end
 end
 
 function interfaces.showmessage(category,tag,arguments)
     local m = interfaces.messages[category]
-    ctx.writestatus((m and m.title) or "unknown title",interfaces.makemessage(category,tag,arguments))
+    commands.writestatus((m and m.title) or "unknown title",interfaces.makemessage(category,tag,arguments))
 end
 
 function interfaces.setvariable(variable,given)

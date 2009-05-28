@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=page-num, % moved here from main-001
 %D        version=1997.03.31,
-%D          title=\CONTEXT\ Core Macros,
+%D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Numbering,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Core Macros / Numbering}
+\writestatus{loading}{ConTeXt Page Macros / Numbering}
 
 % todo: {}{}{} ipv ...--...-...-...--... in pag ref
 
@@ -171,6 +171,8 @@
 \countdef\subpageno  = 2   \subpageno  = 0 % !!
 \countdef\arrangeno  = 3   \arrangeno  = 0 % !!
 
+\let\pageno\userpageno
+
 % we don't want conflicts when \pageno is used by other
 % packages, like CWEB, so we redefine \pageno
 
@@ -279,7 +281,10 @@
 
 % \@@pnstatus global, but \@@nmstatus local and only start/stop
 
-\global\let\@@pnstate\@@pnstate
+\global\let\@@pnstate\@@pnstate % brrr
+
+\def\pushpagestate{\globalpushmacro\@@pnstate}
+\def\poppagestate {\globalpopmacro \@@pnstate}
 
 \def\dosetuppagenumber[#1]%
   {\getparameters[\??pn][\c!number=,#1]%
@@ -432,11 +437,11 @@
 
 \def\preparepageprefix#1%
   {\def\dopreparepageprefix##1%
-     {\letvalue{#1\getvalue{\??by##1}\v!number}\v!no}%  %v
+     {\ifcsname\??by##1\endcsname\letvalue{#1\csname\??by##1\endcsname\v!number}\v!no\fi}%  %v
    \rawprocesscommalist[\@@kolist]\dopreparepageprefix
    \def\dopreparepageprefix##1%
      {\doifvalue{#1##1\v!number}\v!yes                    %v
-        {\letvalue{#1\getvalue{\??by##1}\v!number}\v!yes}}%
+        {\ifcsname\??by##1\endcsname\letvalue{#1\csname\??by##1\endcsname\v!number}\v!yes\fi}}%
    \rawprocesscommalist[\@@kolist]\dopreparepageprefix}
 
 \def\dodopageprefix#1% uti seperator --

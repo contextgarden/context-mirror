@@ -1,0 +1,214 @@
+%D \module
+%D   [       file=typo-cap,
+%D        version=2009.03.27, % code moved from core-spa.mkiv
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Mirroring,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Caps}
+
+\unprotect
+
+\registerctxluafile{typo-cap}{1.001}
+
+\definesystemattribute[case]
+
+%D \macros
+%D   {Word, Words, WORD, WORDS, doprocesswords}
+%D
+%D This is probably not the right place to present the next set
+%D of macros.
+%D
+%D \starttyping
+%D \Word {far too many words}
+%D \Words{far too many words}
+%D \WORD {far too many words}
+%D \WORDS{far too many words}
+%D \stoptyping
+%D
+%D \typebuffer
+%D
+%D This calls result in:
+%D
+%D \startvoorbeeld
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D \stopvoorbeeld
+%D
+%D \showsetup{Word}
+%D \showsetup{Words}
+%D \showsetup{WORD}
+%D \showsetup{WORDS}
+
+% \def\doprocesswords#1 #2\od
+%   {\ConvertToConstant\doifnot{#1}{}
+%      {\processword{#1} %
+%       \doprocesswords#2 \od}}
+%
+% \def\processwords#1%
+%   {\doprocesswords#1 \od\unskip}
+%
+% \let\processword\relax
+
+% test \WORD{test TEST \TeX} test
+% test \word{test TEST \TeX} test
+% test \Word{test TEST \TeX} test
+
+\def\setcharactercasing
+  {\ctxlua{cases.enabled=true}%
+   \gdef\setcharactercasing[##1]{\dosetattribute{case}{\number##1}}%
+   \setcharactercasing}
+
+\unexpanded\def\WORD {\groupedcommand{\setcharactercasing[\plusone  ]}{}}
+\unexpanded\def\word {\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
+\unexpanded\def\Word {\groupedcommand{\setcharactercasing[\plusthree]}{}}
+\unexpanded\def\Words{\groupedcommand{\setcharactercasing[\plusfour ]}{}}
+
+\let\WORDS\WORD
+\let\words\word
+
+%D \macros
+%D   {kap,KAP,Kap,Kaps,nokap,userealcaps,usepseudocaps}
+%D
+%D We already introduced \type{\cap} as way to capitalize
+%D words. This command comes in several versions:
+%D
+%D \startbuffer
+%D \cap {let's put on a \cap{cap}}
+%D \cap {let's put on a \nocap{cap}}
+%D \CAP {let's put on a \\{cap}}
+%D \Cap {let's put on a \\{cap}}
+%D \Caps{let's put on a cap}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Note the use of \type{\nocap}, \type{\\} and the nested
+%D \type{\cap}.
+%D
+%D \startvoorbeeld
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D \stopvoorbeeld
+%D
+%D These macros show te main reason why we introduced the
+%D smaller \type{\tx} and \type{\txx}.
+%D
+%D \starttyping
+%D \cap\romannumerals{1995}
+%D \stoptyping
+%D
+%D This at first sight unusual capitilization is completely
+%D legal.
+%D
+%D \showsetup{smallcapped}
+%D \showsetup{notsmallcapped}
+%D \showsetup{CAPPED}
+%D \showsetup{SmallCapped}
+%D \showsetup{SmallCaps}
+%D
+%D The difference between pseudo and real caps is demonstrated
+%D below:
+%D
+%D \startbuffer
+%D \usepseudocaps \cap{Hans Hagen}
+%D \userealcaps   \cap{Hans Hagen}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+%D
+%D The \type {\bgroup} trickery below is needed because of
+%D \type {\groupedcommand}.
+
+\let\disablepseudocaps\relax % maybe used elsewhere
+
+\newconditional\pseudocapsenabled
+
+\def\usepseudocaps{\settrue \pseudocapsenabled}
+\def\userealcaps  {\setfalse\pseudocapsenabled}
+
+\usepseudocaps
+
+% we use char0 as placeholder for the larger font
+
+\unexpanded\def\pseudosmallcapped{\groupedcommand{\setcharactercasing[\plusone ]\char\zerocount\tx}{}} % all upper
+\unexpanded\def\pseudoSmallcapped{\groupedcommand{\setcharactercasing[\plusfive]\char\zerocount\tx}{}} % one upper + font
+\unexpanded\def\pseudoSmallCapped{\groupedcommand{\setcharactercasing[\plussix ]\char\zerocount\tx}{}} % some upper + font
+
+\unexpanded\def\realsmallcapped  {\groupedcommand{\sc\setcharactercasing[\plusone  ]}{}} % all lower
+\unexpanded\def\realSmallcapped  {\groupedcommand{\sc\setcharactercasing[\plusthree]}{}} % one upper + font
+\unexpanded\def\realSmallCapped  {\groupedcommand{\sc\setcharactercasing[\plusfour ]}{}} % some upper
+
+\unexpanded\def\dohandlesmallcaps
+  {\ifconditional\pseudocapsenabled
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\unexpanded\def\smallcapped{\dohandlesmallcaps\pseudosmallcapped\realsmallcapped}
+\unexpanded\def\Smallcapped{\dohandlesmallcaps\pseudoSmallcapped\realSmallcapped}
+\unexpanded\def\SmallCapped{\dohandlesmallcaps\pseudoSmallCapped\realSmallCapped}
+
+\unexpanded\def\autocap{\ifmmode\expandafter\normalcap\else\expandafter\smallcapped\fi}
+
+\appendtoks
+    \let\normalcap\cap % mathmode cap
+    \let\cap\autocap
+\to \everydump
+
+\let\kap\cap          % for old times sake
+\let\Caps\SmallCapped % for old times sake
+
+\let\normalsmallcapped\smallcapped
+\let\normalWORD       \WORD
+\let\normalword       \word
+
+%D \macros
+%D   {setupcapitals}
+%D
+%D By default we use pseudo small caps in titles. This can be
+%D set up with:
+%D
+%D \showsetup{setupcapitals}
+
+\let\normalsmallcapped\smallcapped
+
+\def\setupcapitals
+  {\dosingleempty\dosetupcapitals}
+
+\def\dosetupcapitals[#1]%
+  {\getparameters[\??kk][#1]%
+   \doifelse\@@kktitle\v!yes
+     {\definealternativestyle[\v!capital][\normalsmallcapped][\normalsmallcapped]%
+      \definealternativestyle[\v!smallcaps][\sc][\sc]}
+     {\definealternativestyle[\v!capital][\normalsmallcapped][\normalWORD]%
+      \definealternativestyle[\v!smallcaps][\sc][\normalWORD]}%
+   \doifelse\@@kksc\v!yes\userealcaps\usepseudocaps}
+
+\let\uppercased\normalWORD
+\let\lowercased\normalword
+
+\setupcapitals
+  [\c!title=\v!yes,
+   \c!sc=\v!no]
+
+% \definestartstop is not yet in available at core-spa time
+%
+% \startrandomized \input tufte \stoprandomized
+%
+% \definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
+
+\def\randomizetext{\groupedcommand{\dosetattribute{case}{8}}{}}
+
+\protect \endinput

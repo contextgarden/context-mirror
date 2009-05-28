@@ -1,10 +1,12 @@
--- filename : sort-lan.lua
--- comment  : companion to sort-lan.tex
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['sort-lan'] = {
+    version   = 1.001,
+    comment   = "companion to sort-lan.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['sort-lan'] = 1.001
+local utf = unicode.utf8
 
 -- this is a rather preliminary and incomplete file
 -- maybe we should load this kind of stuff runtime
@@ -51,9 +53,8 @@ sorters.mappings    ['nl'] = sorters.mappings['en']
 
 -- czech
 
-
-local uc = unicode.utf8.char
-local ub = unicode.utf8.byte
+local uc = utf.char
+local ub = utf.byte
 
 sorters.replacements['cz'] = {
     [1] = { "ch", uc(0xFF01) }

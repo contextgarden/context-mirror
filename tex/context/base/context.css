@@ -12,6 +12,12 @@ a.dir-view:link, a.dir-view:active, a.dir-view:visited {
 	color: #FFFFFF ;
 	text-decoration: underline ;
 }
+.valid {
+	color: #00FF00 ;
+}
+.invalid {
+	color: #FF0000 ;
+}
 h1, .title {
 	font-style: normal ;
 	font-weight: normal ;
@@ -30,6 +36,15 @@ table {
 	line-height: 18px ;
 	font-size: 12px ;
 	margin: 0 ;
+}
+th {
+	font-weight: bold ;
+	text-align: left ;
+	padding-bottom: 6px ;
+}
+.tc {
+	font-weight: bold ;
+	text-align: left ;
 }
 p, li {
 	max-width: 60em ;

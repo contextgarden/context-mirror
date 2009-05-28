@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['core-two'] = {
     license   = "see context related readme files"
 }
 
+local remove, concat = table.remove, table.concat
+
 local texprint = tex.print
 
 --[[ldx--
@@ -49,21 +51,21 @@ end
 function jobpasses.get(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        tex.print(table.remove(jti,1))
+        texprint(remove(jti,1))
     end
 end
 
 function jobpasses.first(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        tex.print(jti[1])
+        texprint(jti[1])
     end
 end
 
 function jobpasses.last(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        tex.print(jti[#jti])
+        texprint(jti[#jti])
     end
 end
 
@@ -84,7 +86,7 @@ end
 function jobpasses.list(id)
     local jti = collected[id]
     if jti then
-        texprint(table.concat(jti,','))
+        texprint(concat(jti,','))
     end
 end
 
@@ -92,15 +94,15 @@ function jobpasses.doifinlistelse(id,str)
     local jti = collected[id]
     if jti then
         local found = false
-        for _, v in pairs(jti) do
+        for _, v in next, jti do
             if v == str then
                 found = true
                 break
             end
         end
-        cs.testcase(found)
+        commands.testcase(found)
     else
-        cs.testcase(false)
+        commands.testcase(false)
     end
 end
 
@@ -119,7 +121,7 @@ end
 
 function jobpasses.getfield(id,index,tag,default)
     local jti = collected[id]
-    jti = jit and jti[index]
-    texprint((jit and jti[tag]) or default)
+    jti = jti and jti[index]
+    texprint((jti and jti[tag]) or default)
 end
 

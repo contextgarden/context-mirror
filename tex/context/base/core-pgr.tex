@@ -2,7 +2,7 @@
 %D   [       file=core-pgr, % split off core-pos
 %D        version=1999.08.01,
 %D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Positioning Support,
+%D       subtitle=Positioning Graphics,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Positioning Grapics}
+\writestatus{loading}{ConTeXt Core Macros / Positioning Grapics}
 
 %D Before we come to graphics support, we have to make sure of
 %D the reference point on the page. The next macro does so and
@@ -898,7 +898,7 @@
 \def\calculatenexttextpardimensions
   {\docalculatetextpardimensions\nextbtbanchor\nextetbanchor\relax}
 
-\def\docalculatetextpardimensions#1#2#3%
+\def\docalculatetextpardimensions#1#2#3% todo: dimexpr
   {\scratchcounter\MPp#2%\etbanchor
    \advance\scratchcounter-\MPp#1%\btanchor
    \edef\textparpages{\the\scratchcounter}%
@@ -911,7 +911,7 @@
      \scratchdimen         \MPy#1%\btanchor
      \advance\scratchdimen-\MPy#2%\etbanchor
      \advance\scratchdimen-\MPy\textanchor
-     \advance\scratchdimen \MPy\textanchor
+     \advance\scratchdimen \MPy\textanchor % - and then + ?
      \advance\scratchdimen \MPh\textanchor\relax
      \ifcase\scratchcounter>2 \ifnum\scratchcounter<5
        % more pages
@@ -1185,7 +1185,7 @@
 % \stopbuffer
 % \getbuffer \typebuffer \flushstatus \page
 
-\newdimen\laststackvmove
+\newdimen\laststackvmove % use \scratchdimenone instead of skip
 
 \def\stackeddown
   {\bgroup
@@ -1214,7 +1214,7 @@
                    -\MPd\currentposition  % untested
                    +\MPd\previousposition % untested
                    +\MPh\currentposition
-                 \relax
+                 \relax\relax % second relax realy needed, forgotten while dimexpressing
                  % todo: also take depth into account
                  \ifdim\scratchskip<\scratchdimen
                    %\registerstatus{no \the\scratchskip}%

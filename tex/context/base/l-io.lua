@@ -1,10 +1,12 @@
--- filename : l-io.lua
--- comment  : split off from luat-lib
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-io'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-io'] = 1.001
+local byte = string.byte
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -12,8 +14,8 @@ else
     io.fileseparator, io.pathseparator = "/" , ":"
 end
 
-function io.loaddata(filename)
-    local f = io.open(filename,'rb')
+function io.loaddata(filename,textmode)
+    local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
         local data = f:read('*all')
     --  garbagecollector.check(data)
@@ -71,146 +73,83 @@ function io.noflines(f)
     return n
 end
 
-do
-
-    local sb = string.byte
-
-    local nextchar = {
-        [ 4] = function(f)
-            return f:read(1,1,1,1)
-        end,
-        [ 2] = function(f)
-            return f:read(1,1)
-        end,
-        [ 1] = function(f)
-            return f:read(1)
-        end,
-        [-2] = function(f)
-            local a, b = f:read(1,1)
-            return b, a
-        end,
-        [-4] = function(f)
-            local a, b, c, d = f:read(1,1,1,1)
-            return d, c, b, a
-        end
-    }
-
-    function io.characters(f,n)
-        if f then
-            return nextchar[n or 1], f
-        else
-            return nil, nil
-        end
+local nextchar = {
+    [ 4] = function(f)
+        return f:read(1,1,1,1)
+    end,
+    [ 2] = function(f)
+        return f:read(1,1)
+    end,
+    [ 1] = function(f)
+        return f:read(1)
+    end,
+    [-2] = function(f)
+        local a, b = f:read(1,1)
+        return b, a
+    end,
+    [-4] = function(f)
+        local a, b, c, d = f:read(1,1,1,1)
+        return d, c, b, a
     end
+}
 
+function io.characters(f,n)
+    if f then
+        return nextchar[n or 1], f
+    else
+        return nil, nil
+    end
 end
 
-do
-
-    local sb = string.byte
-
---~     local nextbyte = {
---~         [4] = function(f)
---~             local a = f:read(1)
---~             local b = f:read(1)
---~             local c = f:read(1)
---~             local d = f:read(1)
---~             if d then
---~                 return sb(a), sb(b), sb(c), sb(d)
---~             else
---~                 return nil, nil, nil, nil
---~             end
---~         end,
---~         [2] = function(f)
---~             local a = f:read(1)
---~             local b = f:read(1)
---~             if b then
---~                 return sb(a), sb(b)
---~             else
---~                 return nil, nil
---~             end
---~         end,
---~         [1] = function (f)
---~             local a = f:read(1)
---~             if a then
---~                 return sb(a)
---~             else
---~                 return nil
---~             end
---~         end,
---~         [-2] = function (f)
---~             local a = f:read(1)
---~             local b = f:read(1)
---~             if b then
---~                 return sb(b), sb(a)
---~             else
---~                 return nil, nil
---~             end
---~         end,
---~         [-4] = function(f)
---~             local a = f:read(1)
---~             local b = f:read(1)
---~             local c = f:read(1)
---~             local d = f:read(1)
---~             if d then
---~                 return sb(d), sb(c), sb(b), sb(a)
---~             else
---~                 return nil, nil, nil, nil
---~             end
---~         end
---~     }
-
-    local nextbyte = {
-        [4] = function(f)
-            local a, b, c, d = f:read(1,1,1,1)
-            if d then
-                return sb(a), sb(b), sb(c), sb(d)
-            else
-                return nil, nil, nil, nil
-            end
-        end,
-        [2] = function(f)
-            local a, b = f:read(1,1)
-            if b then
-                return sb(a), sb(b)
-            else
-                return nil, nil
-            end
-        end,
-        [1] = function (f)
-            local a = f:read(1)
-            if a then
-                return sb(a)
-            else
-                return nil
-            end
-        end,
-        [-2] = function (f)
-            local a, b = f:read(1,1)
-            if b then
-                return sb(b), sb(a)
-            else
-                return nil, nil
-            end
-        end,
-        [-4] = function(f)
-            local a, b, c, d = f:read(1,1,1,1)
-            if d then
-                return sb(d), sb(c), sb(b), sb(a)
-            else
-                return nil, nil, nil, nil
-            end
+local nextbyte = {
+    [4] = function(f)
+        local a, b, c, d = f:read(1,1,1,1)
+        if d then
+            return byte(a), byte(b), byte(c), byte(d)
+        else
+            return nil, nil, nil, nil
         end
-    }
-
-    function io.bytes(f,n)
-        if f then
-            return nextbyte[n or 1], f
+    end,
+    [2] = function(f)
+        local a, b = f:read(1,1)
+        if b then
+            return byte(a), byte(b)
         else
             return nil, nil
         end
+    end,
+    [1] = function (f)
+        local a = f:read(1)
+        if a then
+            return byte(a)
+        else
+            return nil
+        end
+    end,
+    [-2] = function (f)
+        local a, b = f:read(1,1)
+        if b then
+            return byte(b), byte(a)
+        else
+            return nil, nil
+        end
+    end,
+    [-4] = function(f)
+        local a, b, c, d = f:read(1,1,1,1)
+        if d then
+            return byte(d), byte(c), byte(b), byte(a)
+        else
+            return nil, nil, nil, nil
+        end
     end
+}
 
+function io.bytes(f,n)
+    if f then
+        return nextbyte[n or 1], f
+    else
+        return nil, nil
+    end
 end
 
 function io.ask(question,default,options)

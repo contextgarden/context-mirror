@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-enc'] = {
     license   = "see context related readme files"
 }
 
+local match, gmatch, gsub = string.match, string.gmatch, string.gsub
+
 --[[ldx--
 <p>Because encodings are going to disappear, we don't bother defining
 them in tables. But we may do so some day, for consistency.</p>
@@ -62,15 +64,15 @@ function fonts.enc.load(filename)
         return data
     end
     local vector, tag, hash, unicodes = { }, "", { }, { }
-    local foundname = input.find_file(filename,'enc')
+    local foundname = resolvers.find_file(filename,'enc')
     if foundname and foundname ~= "" then
-        local ok, encoding, size = input.loadbinfile(foundname)
+        local ok, encoding, size = resolvers.loadbinfile(foundname)
         if ok and encoding then
             local enccodes = characters.enccodes
-            encoding = encoding:gsub("%%(.-)\n","")
-            local tag, vec = encoding:match("/(%w+)%s*%[(.*)%]%s*def")
+            encoding = gsub(encoding,"%%(.-)\n","")
+            local tag, vec = match(encoding,"/(%w+)%s*%[(.*)%]%s*def")
             local i = 0
-            for ch in vec:gmatch("/([%a%d%.]+)") do
+            for ch in gmatch(vec,"/([%a%d%.]+)") do
                 if ch ~= ".notdef" then
                     vector[i] = ch
                     if not hash[ch] then
@@ -105,7 +107,7 @@ one.</p>
 
 function fonts.enc.make_unicode_vector()
     local vector, hash = { }, { }
-    for code, v in pairs(characters.data) do
+    for code, v in next, characters.data do
         local name = v.adobename
         if name then
             vector[code], hash[name] = name, code
@@ -113,7 +115,7 @@ function fonts.enc.make_unicode_vector()
             vector[code] = '.notdef'
         end
     end
-    for name, code in pairs(characters.synonyms) do
+    for name, code in next, characters.synonyms do
         vector[code], hash[name] = name, code
     end
     return containers.write(fonts.enc.cache(), 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })

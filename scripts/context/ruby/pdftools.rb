@@ -20,7 +20,8 @@ $: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.u
 require 'base/switch'
 require 'base/logger'
 
-require 'ftools'
+require 'fileutils'
+# require 'ftools'
 
 class File
 

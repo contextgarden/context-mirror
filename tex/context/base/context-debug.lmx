@@ -1,36 +1,41 @@
-<!--
-    -- filename : comm-deb.xml
-    -- comment  : companion to comm-xml.tex
-    -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
-    -- copyright: PRAGMA ADE / ConTeXt Development Team
-    -- license  : see context related readme files
+<?xml version="1.0" encoding="UTF-8"?>
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+    filename : context-debug.lmx
+    comment  : companion to context.tex
+    author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+    copyright: PRAGMA ADE / ConTeXt Development Team
+    license  : see context related readme files
 -->
 
-<html>
-    <title><?lua pv('title') ?></title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <style type="text/css">
-        <!--
-            <?lmx-include context.css ?>
-            #type {
-                text-align: center ;
-            }
-            #variable {
-                width: 10em ;
-                text-align: right ;
-                margin-right: 1em ;
-            }
-            #value {
-                text-align: left ;
-            }
-        -->
-    </style>
-    <script language="JavaScript">
-        <!--
-            window.focus();
-        -->
-    </script>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <script language="JavaScript">
+            <!--
+                window.focus();
+            -->
+        </script>
+        <title><?lua pv('title') ?></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style type="text/css">
+            <!--
+                <?lmx-include context.css ?>
+                #type {
+                    text-align: center ;
+                }
+                #variable {
+                    width: 10em ;
+                    text-align: right ;
+                    margin-right: 1em ;
+                }
+                #value {
+                    text-align: left ;
+                }
+            -->
+        </style>
+    </head>
     <body>
         <div id="top"><div id="top-one"><div id="top-two">
             <?lua pv('title') ?>
@@ -41,7 +46,6 @@
         <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five">
             <!-- empty -->
         </div></div></div></div></div></div></div>
-        <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five"></div></div></div></div></div></div></div>
         <div id="main"><div id='main-settings'>
         <?lua if tracers.knownlist('scratch') then ?>
             <h1>Scratch Variables</h1>

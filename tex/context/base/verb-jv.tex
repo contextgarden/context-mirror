@@ -8,19 +8,19 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\writestatus{loading}{Context Support Macros / Pretty Java Verbatim}
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty Java Verbatim}
 
 %D This module differs from the \JAVASCRIPT\ driver in its
 %D handling of comments. We also need a few more handlers: one
 %D for \type {//} and \type {/*} and one for \type {*/} as
-%D well as the \JAVA doc trigger \type {/**}. 
+%D well as the \JAVA doc trigger \type {/**}.
 
 %D We build this driver on top of the \PERL\ one. Since this
-%D driver looks much like the \JAVASCRIPT\ one, we don't 
-%D comment it extensively. 
+%D driver looks much like the \JAVASCRIPT\ one, we don't
+%D comment it extensively.
 
 \ifx\undefined\setupprettyPLtype \input verb-pl \relax \fi
 
@@ -32,14 +32,14 @@
   {\PLsetspecials
    \setpretty`\#=32
    \setpretty`\%=41
-   \setpretty`\-=45 
+   \setpretty`\-=45
    \setpretty`\/=43
    \setpretty`\*=44 }
 
 \gdef\JVsethandlers
   {\PLsethandlers
    \installprettyhandler 43 \JVtypefourthree
-   \installprettyhandler 44 \JVtypefourfour 
+   \installprettyhandler 44 \JVtypefourfour
    \installprettyhandler 45 \JVtypefourfive }
 
 \gdef\JVsetcontrols
@@ -128,7 +128,7 @@
      \global\advance\JVcommentlevel -1
      \ifcase\JVcommentlevel \global\inPLcommentfalse \fi
    \else
-     \ifPLdocdone 
+     \ifPLdocdone
        \getpretty{#1}%
      \else
        \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
@@ -150,7 +150,7 @@
      \expandafter#2%
    \fi}
 
-\gdef\JVtypefourfive % permit - in javadoc @tags 
+\gdef\JVtypefourfive % permit - in javadoc @tags
   {\ifinPLdoc
      \@EA\PLtypesixtwo
    \else
@@ -164,35 +164,35 @@
   int interface long native new null package private protected
   public return short static strictfp super switch synchronized
   this throw throws transient true try void volatile while
-   
-\useprettyidentifiers \JVvariables \JVsetspecials
-  @author @docRoot @deprecated @exception @inheritDoc @link 
-  @linkplain @param @return @see @serial @serialData @serialField 
-  @since @throws @value @version  
 
-%D The \JAVA doc feature was requested by Robert F.~Beeger, 
-%D who also provided this test class: 
-%D 
-%D \startJV 
+\useprettyidentifiers \JVvariables \JVsetspecials
+  @author @docRoot @deprecated @exception @inheritDoc @link
+  @linkplain @param @return @see @serial @serialData @serialField
+  @since @throws @value @version
+
+%D The \JAVA doc feature was requested by Robert F.~Beeger,
+%D who also provided this test class:
+%D
+%D \startJV
 %D package de.jwamalpha.handling.web.rbdipl;
-%D 
+%D
 %D import java.io.IOException;
 %D import java.io.PrintWriter;
 %D import javax.servlet.http.HttpServlet;
 %D import javax.servlet.http.HttpServletRequest;
 %D import javax.servlet.http.HttpServletResponse;
 %D import javax.servlet.ServletException;
-%D 
+%D
 %D /**
 %D  * The simple login servlet
 %D  *
 %D  * @author Robert F. Beeger
 %D  * @version 1.0
 %D  */
-%D 
+%D
 %D public class LoginServlet extends HttpServlet
 %D {
-%D   // 
+%D   //
 %D   // public interface
 %D   //
 %D   /**
@@ -217,6 +217,6 @@
 %D     writer.flush();
 %D   }
 %D }
-%D \stopJV 
+%D \stopJV
 
-\protect \endinput  
+\protect \endinput

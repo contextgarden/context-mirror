@@ -1,5 +1,6 @@
 require 'timeout'
-require 'ftools'
+require 'fileutils'
+# require 'ftools'
 require 'rbconfig'
 
 class File

@@ -51,7 +51,7 @@ do
                     dir.mkdirs(outputpath)
                     local tmpname = file.replacesuffix(newname,"tmp")
                     local command = graphics.converters[suffix](oldname,tmpname)
-                    input.report("command: %s",command)
+                    logs.simple("command: %s",command)
                     io.flush()
                     os.spawn(command)
                     os.remove(newname)
@@ -88,7 +88,7 @@ function scripts.convert.convertall()
     end
 end
 
-banner = banner .. " | graphic conversion tools "
+logs.extendbanner("Graphic Conversion Tools 0.10",true)
 
 messages.help = [[
 --convertall          convert all graphics on path
@@ -98,10 +98,8 @@ messages.help = [[
 --delay               time between sweeps
 ]]
 
-input.verbose = true
-
 if environment.argument("convertall") then
     scripts.convert.convertall()
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end

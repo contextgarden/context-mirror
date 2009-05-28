@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2008.10.31 13:58}
+\newcontextversion{2009.05.28 11:23}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -21,7 +21,7 @@
 
 % it's about time to clean up this file ...
 
-\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
+\writestatus\m!systems{beware: some patches loaded from cont-new.tex}
 
 % \ifx\pdfmapfile \undefined \else \pdfmapfile{ } \fi
 
@@ -31,13 +31,16 @@
 
 \let\then\relax % \ifnum1>2\then -)
 
-\def\TransparencyHack %  png: /CS /DeviceRGB /I true
-  {\appendtoks
-     \doPDFpageattribute{/Group << /S /Transparency /I true /K true>>}%
-   \to \everyPDFxform
-   \appendtoks
-     \doPDFpageattribute{/Group << /S /Transparency /I true /K true>>}%
-   \to \everyshipout}
+\def\fastscale#1%
+  {\begingroup
+   \ifnum#1=1000\relax
+     \setfalse\scaleboxdone
+   \else
+     \settrue\scaleboxdone
+     \edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1pt/1000\relax}%
+     \let\finalscaleboxyscale\finalscaleboxxscale
+   \fi
+   \dowithnextbox{\doscaleboxindeed\flushnextbox\endgroup}\hbox}
 
 % \setupcaption [figure]   [align=flushleft]
 % \setupcaption [figure-1] [align=flushleft,leftmargin=10mm]
@@ -96,9 +99,9 @@
 % normally one does not want this to happen nested, maybe there
 % is more; non public vars btw, will become conditionals
 
-\appendtoks \writetoregisterfalse \to \everybeforeutilityread
-\appendtoks \writetolistfalse     \to \everybeforeutilityread
-\appendtoks \notesenabledfalse    \to \everybeforeutilityread
+\ifx\writetoregisterfalse\undefined \else \appendtoks \writetoregisterfalse \to \everybeforeutilityread \fi
+\ifx\writetolistfalse    \undefined \else \appendtoks \writetolistfalse     \to \everybeforeutilityread \fi
+\ifx\notesenabledfalse   \undefined \else \appendtoks \notesenabledfalse    \to \everybeforeutilityread \fi
 
 % \setuplabeltext[\s!itemcount1={{I(},{)}}]
 % \def\labeledcountervalue#1{\labeltexts{#1}{\countervalue{#1}}}
@@ -515,69 +518,6 @@
 
 \egroup
 
-% todo : test low level translation (nl->en) and optimize script
-
-% \definestylecollection[mine]
-
-% \definestyleinstance[mine][default][sorry]
-% \definestyleinstance[mine][tt][bs][ttbs:\rm\sl]
-% \definestyleinstance[mine][tt][bf][ttbf:\rm\sl]
-% \definestyleinstance[mine][bf][\sl]
-% \definestyleinstance[mine][sl][\tt]
-
-% {\bf test \mine test \sl test \mine test \bs oeps \mine oeps {\tt test \mine \bf test}}
-
-\definesystemvariable{sx}
-
-\def\definestylecollection
-  {\dosingleargument\dodefinestylecollection}
-
-\def\dodefinestylecollection[#1]%
-  {\iffirstargument
-     \unexpanded\setvalue{#1}{\styleinstance[#1]}%
-     \def\docommand##1%
-       {\def\dodocommand####1{\letbeundefined{\??sx##1:####1:\commalistelement}}%
-        \processcommacommand[\alternativelist,\s!default]\dodocommand}%
-     \processcommacommand[\stylelist,\s!default]\docommand
-   \fi}
-
-\def\definestyleinstance
-  {\doquadrupleargument\dodefinestyleinstance}
-
-\def\dodefinestyleinstance[#1][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
-  {\iffirstargument
-     \doifundefined{#1}{\definestylecollection[#1]}%
-   \fi
-   \iffourthargument
-     \setvalue{\??sx#1:#2:#3}{#4}%
-   \else\ifthirdargument
-     \setvalue{\??sx#1::#2}{#3}%
-   \else\ifsecondargument
-     \letvalue{\??sx#1::#2}\empty
-   \fi\fi\fi}
-
-\unexpanded\def\styleinstance[#1]% will be faster
-  {%\begingroup\expanded{\infofont[#1:\fontstyle:\fontalternative]}\endgroup
-   \executeifdefined{\??sx#1:\fontstyle:\fontalternative}%
-  {\executeifdefined{\??sx#1:\fontstyle:\s!default}%
-  {\executeifdefined{\??sx#1::\fontalternative}
-  {\getvalue        {\??sx#1::\s!default}}}}}
-
-% \unexpanded\def\styleinstance[#1]%
-%   {\csname\??sx#1%
-%       \ifcsname:\fontstyle:\fontalternative\endcsname
-%         :\fontstyle:\fontalternative
-%       \else\ifcsname:\fontstyle:\s!default\endcsname
-%         :\fontstyle:\s!default
-%       \else\ifcsname::\fontalternative\endcsname
-%         ::\fontalternative
-%       \else\ifcsname::\s!default\endcsname
-%         ::\s!default
-%       \else
-%         % nothing, \relax
-%       \fi\fi\fi\fi
-%     \endcsname}
-
 % no, wrong! never!
 %
 % \def\tightlayer[#1]%
@@ -848,16 +788,6 @@
 %
 % externfiguur     -> grid        =ja|hoogte|diepte|halveregel|passend -> helemaal in details
 % stelplaatsblokin -> zijuitlijnen=hoogte|diepte|regel|halveregel|grid -> halveregel in 'details'
-
-% TODO: TEST FIRST, NO CORRECTION NEEDED IN GRID MODE, EVT OPTION
-
-\def\OTRONEsomeherefloat[#1]% spacing between two successive must be better
-  {\baselinecorrection                           % not really needed in grid mode:
-  %\ifgridsnapping \else \baselinecorrection \fi % ! ! ! test test test ! ! ! !
-   \doplacefloatbox
-   \doinsertfloatinfo
-   \dochecknextindentation\??bk
-   \dorechecknextindentation}
 
 % todo: switch koppelen aan par scheelt pos
 

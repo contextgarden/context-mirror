@@ -8,46 +8,46 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\writestatus{loading}{Context Support Macros / Pretty PERL Verbatim}
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty PERL Verbatim}
 
-%D When I rewrote \TEXUTIL\ in \PERL\ I decided to write a 
-%D pretty \PERL\ interpreter too. In fact, this was the main 
-%D reason for rewriting the pretty verbatim mechanisms to 
-%D handle more that \TEX. 
+%D When I rewrote \TEXUTIL\ in \PERL\ I decided to write a
+%D pretty \PERL\ interpreter too. In fact, this was the main
+%D reason for rewriting the pretty verbatim mechanisms to
+%D handle more that \TEX.
 %D
-%D \startPL 
+%D \startPL
 %D $alfa = $beta{gamma};
-%D if ($alfa="delta") 
+%D if ($alfa="delta")
 %D  { print "epsilon" }
 %D \stopPL
-%D 
-%D When looking at the macros, watch the \type{\doglobal}'s! 
-%D They're something \CONTEXT\ specific. 
+%D
+%D When looking at the macros, watch the \type{\doglobal}'s!
+%D They're something \CONTEXT\ specific.
 
 \unprotect
 
 %D \macros
 %D   {prettyPLvariables}
 %D
-%D Identifiers and system variables get a special treatment. 
-%D One can disable this option for the variables by resetting 
+%D Identifiers and system variables get a special treatment.
+%D One can disable this option for the variables by resetting
 %D the next switch.
 
-\doglobal\newif\ifprettyPLvariables 
+\doglobal\newif\ifprettyPLvariables
 
 \global\prettyPLvariablestrue
 
-%D As said before, the global assignment is needed in 
-%D \CONTEXT\ (for once||only loading on demand). 
+%D As said before, the global assignment is needed in
+%D \CONTEXT\ (for once||only loading on demand).
 
 \doglobal\newif\ifinPLsingle
 \doglobal\newif\ifinPLdouble
 \doglobal\newif\ifinPLcomment
-\doglobal\newif\ifinPLdoc     % only used in java filter 
-\doglobal\newif\ifPLdocdone   % only used in java filter 
+\doglobal\newif\ifinPLdoc     % only used in java filter
+\doglobal\newif\ifPLdocdone   % only used in java filter
 \doglobal\newif\ifPLverbose
 
 \newcount\PLverboseskipped
@@ -56,7 +56,7 @@
   {\ifnum\PLverboseskipped>0
      \obeyedspace
      \advance\PLverboseskipped -1
-     \@EA\PLverbosecorrection  
+     \@EA\PLverbosecorrection
    \fi}
 
 \gdef\PLsetcontrols%
@@ -73,7 +73,7 @@
       \global\inPLcommentfalse}%
    \def\obeyedline%
      {\PLverbosefalse
-      \PLverboseskipped=0 
+      \PLverboseskipped=0
       \PLdocdonefalse
       \oldobeyedline}%
    \let\obeytabs=\ignoretabs}
@@ -189,7 +189,7 @@
 %      \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
 %    \fi\fi\fi}
 
-\gdef\PLtypetwo#1% 
+\gdef\PLtypetwo#1%
   {\endPLtypesix
    \ifinPLdoc
      \xdef\PLsequence{\PLsequence\getpretty{#1}}%
@@ -352,7 +352,7 @@
      \global\let\PLprefix\empty
    \fi}
 
-\gdef\doendPLtypesix#1% 
+\gdef\doendPLtypesix#1%
   {\doifprettyidentifierelse{\PLsequence}{\PLverboses}
      {\PLverbosetrue\PLverboseskipped=3 }
      {\doifprettyidentifierelse{\PLsequence}{\PLidentifiers}
@@ -369,7 +369,7 @@
            \PLsequence
          \fi}}}
 
-\gdef\doendPLtypesixvar#1% 
+\gdef\doendPLtypesixvar#1%
   {\doifprettyidentifierelse{\PLprefix\PLsequence}{\PLvariables}
      {\beginofpretty[#1]%
         {\prettyvariablefont\PLsequence}%
@@ -398,7 +398,7 @@
 %      \xdef\PLsequence{\PLsequence\getpretty{#1}}%
 %    \fi\fi\fi}
 
-\gdef\PLtypesixtwo#1% 
+\gdef\PLtypesixtwo#1%
   {\ifinPLdoc
      \xdef\PLsequence{\PLsequence\getpretty{#1}}%
    \else\ifinPLcomment
@@ -468,7 +468,7 @@
    \else
      \global\inPLcommenttrue
      \PLverbosecorrection
-     \ifnaturaltextext % non tested yet 
+     \ifnaturaltextext % non tested yet
        \let\next\naturaltextext
      \else
        \def\next{\beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty}%
@@ -537,11 +537,11 @@
   &GetOptions
 
 %D A funny hack. When prefixes by \type{TEX}, a \type{\csname}
-%D is typeset as \TEX\ sequence. 
+%D is typeset as \TEX\ sequence.
 
 \useprettyidentifiers \PLverboses \PLsetspecials
   TEX
 
-\protect 
+\protect
 
-\endinput 
+\endinput

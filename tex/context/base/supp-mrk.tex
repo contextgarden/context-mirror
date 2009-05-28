@@ -31,25 +31,7 @@
 %D direct calls. The \TEX\ based multiple marks needs to store
 %D the mark data but \ETEX\ uses a different approach.
 
-\writestatus{loading}{Context Support Macros / Marks}
-
-\let\normalmark            = \mark
-\let\normaltopmark         = \topmark
-\let\normalbotmark         = \botmark
-\let\normalfirstmark       = \firstmark
-\let\normalsplitbotmark    = \splitbotmark
-\let\normalsplitfirstmark  = \splitfirstmark
-
-\beginETEX \marks cum suis
-
-\let\normalmarks           = \marks
-\let\normaltopmarks        = \topmarks
-\let\normalbotmarks        = \botmarks
-\let\normalfirstmarks      = \firstmarks
-\let\normalsplitbotmarks   = \splitbotmarks
-\let\normalsplitfirstmarks = \splitfirstmarks
-
-\endETEX
+\writestatus{loading}{ConTeXt Support Macros / Marks}
 
 \unprotect
 
@@ -289,13 +271,6 @@
 %D embedded \type{\domark} macros. When a relevant mark is
 %D found, this macro is reassigned and from then on serves
 %D in building the new list.
-
-% Although the next couple of macros are already defined
-% in syst-gen.tex, we repeat them here.
-
-\let\normalfi   \fi    % replaces \@fi
-\let\normalelse \else  % replaces \@else
-\let\normalor   \or    % replaces \@or
 
 % Hm, resetting \!!toksa got lost and took me a half a day to
 % trace down ([] showed up in the pagebody); I really have

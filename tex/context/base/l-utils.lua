@@ -1,10 +1,12 @@
--- filename : l-utils.lua
--- comment  : split off from luat-lib
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-utils'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-utils'] = 1.001
+-- hm, quite unreadable
 
 if not utils        then utils        = { } end
 if not utils.merger then utils.merger = { } end
@@ -69,24 +71,52 @@ function utils.merger._self_swap_(data,code)
     end
 end
 
+--~ stripper:
+--~
+--~ data = string.gsub(data,"%-%-~[^\n]*\n","")
+--~ data = string.gsub(data,"\n\n+","\n")
+
 function utils.merger._self_libs_(libs,list)
-    local result, f = { }, nil
+    local result, f, frozen = { }, nil, false
+    result[#result+1] = "\n"
     if type(libs) == 'string' then libs = { libs } end
     if type(list) == 'string' then list = { list } end
+    local foundpath = nil
     for _, lib in ipairs(libs) do
         for _, pth in ipairs(list) do
-            local name = string.gsub(pth .. "/" .. lib,"\\","/")
-            f = io.open(name)
-            if f then
-                utils.report("merging library %s",name)
-                result[#result+1] = f:read("*all")
-                f:close()
-                list = { pth } -- speed up the search
-                break
-            else
-                utils.report("no library %s",name)
+            pth = string.gsub(pth,"\\","/") -- file.clean_path
+            utils.report("checking library path %s",pth)
+            local name = pth .. "/" .. lib
+            if lfs.isfile(name) then
+                foundpath = pth
             end
         end
+        if foundpath then break end
+    end
+    if foundpath then
+        utils.report("using library path %s",foundpath)
+        local right, wrong = { }, { }
+        for _, lib in ipairs(libs) do
+            local fullname = foundpath .. "/" .. lib
+            if lfs.isfile(fullname) then
+            --  right[#right+1] = lib
+                utils.report("merging library %s",fullname)
+                result[#result+1] = "do -- create closure to overcome 200 locals limit"
+                result[#result+1] = io.loaddata(fullname,true)
+                result[#result+1] = "end -- of closure"
+            else
+            --  wrong[#wrong+1] = lib
+                utils.report("no library %s",fullname)
+            end
+        end
+        if #right > 0 then
+            utils.report("merged libraries: %s",table.concat(right," "))
+        end
+        if #wrong > 0 then
+            utils.report("skipped libraries: %s",table.concat(wrong," "))
+        end
+    else
+        utils.report("no valid library path found")
     end
     return table.concat(result, "\n\n")
 end

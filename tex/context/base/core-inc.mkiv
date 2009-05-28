@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\writestatus{loading}{ConTeXt Core Macros / Figure Inclusion}
+
 %D todo:
 %D
 %D - color conversion
@@ -150,6 +152,8 @@
    \let\@@efpreview   \v!no
    \let\@@efrepeat    \v!no
    %
+   \let\@@efforegroundcolor\empty
+   %
    \let\@@efhfactor   \empty
    \let\@@efwfactor   \empty
    \let\@@effactor    \empty
@@ -165,6 +169,8 @@
    \let\@@eflines     \empty
    \let\@@efgrid      \empty}
 
+\resetfigureusersettings
+
 \appendtoks
     \resetfigureusersettings
 \to \everyexternalfigureresets
@@ -176,6 +182,8 @@
    \doif\@@exoption\v!empty
      {\skipexternalfigurestrue
       \let\@@efframe\v!off}%
+   \doifsomething\@@efwidth {\doifdimensionelse\@@efwidth {\edef\@@efwidth {\the\dimexpr\@@efwidth }}\donothing}%
+   \doifsomething\@@efheight{\doifdimensionelse\@@efheight{\edef\@@efheight{\the\dimexpr\@@efheight}}\donothing}%
    % seperation, seldom used
    \doifseparatingcolorselse
      {\let\@@efforegroundcolor\empty
@@ -346,8 +354,8 @@
         \iftrialtypesetting \else \feedbackexternalfigure \fi
       \fi}}
 
-\ifx\externalfigurereplacement\undefined\let\externalfigurereplacement\gobblethrearguments\fi
-\ifx\externalfigureplaceholder\undefined\let\externalfigureplaceholder\gobblethrearguments\fi
+\ifx\externalfigurereplacement\undefined\let\externalfigurereplacement\gobblethreearguments\fi
+\ifx\externalfigureplaceholder\undefined\let\externalfigureplaceholder\gobblethreearguments\fi
 
 \let\feedbackexternalfigure\relax % \gobblefourarguments
 \let\dowithfigure          \relax

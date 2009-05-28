@@ -11,53 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Core Macros / File Support}
+\writestatus{loading}{ConTeXt Core Macros / File Support}
 
 \unprotect
-
-% NOT YET DOCUMENTED !!
-%
-% overal \normalinput
-
-\startmessages  dutch  library: files
-   title: files
-       1: file synoniem -- is al in gebruik voor --
-\stopmessages
-
-\startmessages  english  library: files
-   title: files
-       1: file synonym -- is already used for --
-\stopmessages
-
-\startmessages  german  library: files
-   title: files
-       1: Dateisynonym -- wird bereits fuer -- benutzt
-\stopmessages
-
-\startmessages  czech  library: files
-   title: soubory
-       1: synonymum souboru -- je jiz pouzito pro --
-\stopmessages
-
-\startmessages  italian  library: files
-   title: file
-       1: sinonimo file -- già in uso per --
-\stopmessages
-
-\startmessages  norwegian  library: files
-   title: filer
-       1: filesynonym -- er allerede brukt for --
-\stopmessages
-
-\startmessages  romanian  library: files
-   title: fisiere
-       1: sinonimul fisierelor -- este folosit deja pentru --
-\stopmessages
-
-\startmessages  french  library: files
-   title: fichiers
-       1: le synonyme de fichier -- est déjà utilisé pour --
-\stopmessages
 
 %D Files registered as temporary files will be deleted after a
 %D run by texexec:
@@ -99,6 +55,8 @@
 %D \starttyping
 %D \usemodules[pictex,chemie,unit]
 %D \stoptyping
+
+% will be redone in mkiv
 
 \def\definefilesynonym
   {\dodoubleempty\dodefinefilesynonym}
@@ -207,6 +165,7 @@
      {\dododousemodules{#1-}{#2}}%
    \ifconditional\moduleisloaded\else
      \showmessage\m!systems6{#2}%
+     \appendtoks\showmessage\m!systems6{#2}\to\everynotabene
    \fi}
 
 % \def\usemodules
@@ -254,7 +213,7 @@
 \let\currentmodule          \s!unknown
 
 \def\startmodule
-  {\doifnextcharelse[\dostartmodule\nostartmodule}
+  {\doifnextoptionalelse\dostartmodule\nostartmodule}
 
 \def\nostartmodule #1 %
   {\dostartmodule[#1]}
@@ -339,7 +298,7 @@
 % The following filenames are defined here:
 
 \def\TEXbufferfile   #1{\bufferprefix#1.\f!temporaryextension}
-\def\MPgraphicfile     {\bufferprefix mp\ifMPrun run\else graph\fi}
+\def\MPgraphicfile     {\bufferprefix mp\ifMPrun run\else graph\fi} % not needed in luatex
 \def\convertMPcolorfile{\bufferprefix metacmyk.tmp}
 
 %D To save memory, we implement some seldomly used commands
@@ -372,9 +331,6 @@
 %D Experimental:
 
 \let\checkpreprocessor\relax
-
-% \appendtoks\relax{\appendtoks \checkpreprocessor \to \everyjob}\to\everydump
-\appendtoks\everyjob\expandafter{\the\everyjob\checkpreprocessor}\to\everydump
 
 %D To be documented and probably moved
 

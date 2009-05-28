@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=core-uti,
-%D        version=2006.09.19,
+%D        version=1997.03.31, % 2006.09.19 mkiv
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Utility File Handling,
 %D         author=Hans Hagen,
@@ -11,67 +11,86 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Most will disappear!
+
+\writestatus{loading}{ConTeXt Core Macros / Utility File Handling}
+
 \unprotect
 
 \registerctxluafile{core-uti}{1.001}
 
-%D We need a way to pass strings safely to \LUA\ without the
-%D need for tricky escaping. Compare:
-%D
-%D \starttyping
-%D \ctxlua {something("anything tricky can go here")}
-%D \ctxlua {something([\luastringsep[anything tricky can go here]\luastringsep])}
-%D \stoptyping
-
-\def\luastringsep{===} % this permits \typefile{self} otherwise nested b/e sep problems
-
-\edef\!!bs{[\luastringsep[}
-\edef\!!es{]\luastringsep]}
-
-%D We have a the following available as primitive so there is no need
-%D for it:
-%D
-%D \starttyping
-%D \long\edef\luaescapestring#1{\!!bs#1\!!es}
-%D \stoptyping
-
-% variables
-
 \def\savecurrentvalue#1#2%
   {\ctxlua{jobvariables.save("\strippedcsname#1","#2")}}
 
-% temp
-
+\let\initializevariable\gobbletwoarguments % mkii/mkiv
 \let\thisisbytesequence\gobbleoneargument
 
-% wrong place but we need to have it someplace
+\appendtoks
+    \globallet\initializevariable\gobbletwoarguments
+\to \everyafterutilityread
 
 \appendtoks
-    \ctxlua{input.storage.dump()}%
+    \ctxlua{storage.dump()}%
 \to \everydump
 
 \appendtoks
-    \ctxlua{input.storage.finalize()}%
+    \ctxlua{storage.finalize()}%
 \to \everyfinalizeluacode
 
 \appendtoks
     \ctxlua{nodes.cleanup_reserved()}%
 \to \everydump
 
-% new
-
-% this loads and also sets the saving
-
 \appendtoks
     \ctxlua {
-        job.comment(
-            "file: \jobname",
-            "format: \contextformat",
-            "stamp: \contextversion",
-            "escape: \!!bs\space...\space\!!es"
-        )
+        job.comment("file: \jobname")
+        job.comment("format: \contextformat")
+        job.comment("stamp: \contextversion")
+        job.comment("escape: \!!bs\space...\space\!!es")
         job.initialize("\jobname.tuc","\jobname.tua")
     }%
 \to \everystarttext
+
+% cleaner, for the moment
+
+% \appendtoks
+%     \ctxlua {
+%         os.remove("\jobname.tui")
+%         os.remove("\jobname.tuo")
+%     }%
+% \to \everystarttext
+
+% keep this for a while
+
+\newif\ifutilitydone
+\newif\ifdoinpututilities
+\newif\ifunprotectutilities
+
+\let\writeutility                \gobbleoneargument
+\let\writeutilitycommand         \gobbleoneargument
+\let\immediatewriteutility       \gobbleoneargument
+\let\immediatewriteutilitycommand\gobbleoneargument
+\let\cwriteutility               \gobbleoneargument
+\let\cwriteutilitycommand        \gobbleoneargument
+\let\checkedutility              \secondoftwoarguments
+\let\doutilities                 \gobblefivearguments
+\let\abortutilitygeneration      \relax
+
+\newtoks \everyopenutilities     \let\openutilities \relax
+\newtoks \everycloseutilities    \let\closeutilities\relax
+\newtoks \everycheckutilities    \let\checkutilities\relax
+\newtoks \utilityresetlist
+
+\def\addutilityreset#1{\@EA\appendtoks\csname\s!reset#1\endcsname\to\utilityresetlist}
+\def\resetutilities   {\the\utilityresetlist}
+
+\def\currentutilityfilename{\jobname}
+
+\prependtoks \resetutilities \to \everyjob
+
+\def\installprogram      {\dosingleempty\doinstallprogram}
+\def\doinstallprogram[#1]{\gobbleoneargument}
+\def\installedprogram[#1]{}
+\let\installplugin       \gobblethreearguments
 
 \protect \endinput

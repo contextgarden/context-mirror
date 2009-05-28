@@ -346,6 +346,8 @@ boolean force_multi_par_chain  ; force_multi_par_chain  := true  ;
 boolean one_piece_multi_par    ; one_piece_multi_par    := false ;
 boolean check_multi_par_chain  ; check_multi_par_chain  := true  ; % extra page check
 
+boolean multi_column_first_page_hack; multi_column_first_page_hack := false ;
+
 def simplify_multi_pars = % boundingbox ipv shape als optie
   for i := 1 upto nofmultipars :
     multipars[i] := boundingbox multipars[i] ;
@@ -428,8 +430,6 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
 
   numeric multi_par_pages ; multi_par_pages := nxy[tpos]-nxy[fpos]+1 ;
 
-  ii := 0 ; nn := NOfTextAreas+1 ; nofmultipars := 0 ;
-
   vardef snapped_multi_pos (expr p) =
     if snap_multi_par_tops :
       if abs(ypart p - ypart ulcorner multipar) < par_line_height :
@@ -502,7 +502,7 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
 
   vardef left_top_hang (expr same_area) =
 
-par_hang_after := ra + estimated_par_lines(py-fy) ;
+    par_hang_after := ra + estimated_par_lines(py-fy) ;
 
     if (par_hang_indent>0) and (par_hang_after<0) and obey_multi_par_hang :
       pair _ul_ ; _ul_ := (xpart ulcorner multipar, ypart snapped_multi_pos(ulxy[fpos]));
@@ -525,7 +525,7 @@ par_hang_after := ra + estimated_par_lines(py-fy) ;
 
   vardef right_top_hang (expr same_area) =
 
-par_hang_after := ra + estimated_par_lines(py-fy) ;
+    par_hang_after := ra + estimated_par_lines(py-fy) ;
 
     if (par_hang_indent<0) and (par_hang_after<0) and obey_multi_par_hang :
       pair _ur_ ; _ur_ := (xpart urcorner multipar, ypart snapped_multi_pos(urxy[fpos])) ;
@@ -552,17 +552,15 @@ par_hang_after := ra + estimated_par_lines(py-fy) ;
       pair _ul_ ; _ul_ := ulcorner multipar ;
       pair _pa_ ; _pa_ := _ul_ shifted (0,par_hang_after*par_line_height) ;
       _pa_ := (xpart _pa_,max(ypart _pa_,ypart llcorner multipar)) ;
-
-if t :
-  _pa_ := (xpart _pa_,max(ypart _pa_,ypart llxy[tpos]));
-fi ;
-if abs(ypart _pa_-ypart llxy[tpos])<par_line_height :
-  _pa_ := (xpart _pa_,ypart llxy[tpos]);
-fi ;
-if abs(ypart _pa_-ypart llcorner multipar)<par_line_height :
-  _pa_ := (xpart _pa_,ypart llcorner multipar);
-fi ;
-
+      if t :
+        _pa_ := (xpart _pa_,max(ypart _pa_,ypart llxy[tpos]));
+      fi ;
+      if abs(ypart _pa_-ypart llxy[tpos])<par_line_height :
+        _pa_ := (xpart _pa_,ypart llxy[tpos]);
+      fi ;
+      if abs(ypart _pa_-ypart llcorner multipar)<par_line_height :
+        _pa_ := (xpart _pa_,ypart llcorner multipar);
+      fi ;
       (xpart _ul_, ypart _pa_) --
       (xpart _ul_ + par_hang_indent, ypart _pa_) --
       (xpart _ul_ + par_hang_indent, ypart _ul_)
@@ -571,18 +569,15 @@ fi ;
     fi
   enddef ;
 
-
   vardef x_right_top_hang (expr i, t) =
     par_hang_after := min(0,ra + estimated_multi_par_height(i,t)) ;
     if (par_hang_indent<0) and (par_hang_after<0) :
       pair _ur_ ; _ur_ := urcorner multipar ;
       pair _pa_ ; _pa_ := _ur_ shifted (0,par_hang_after*par_line_height) ;
       _pa_ := (xpart _pa_,max(ypart _pa_,ypart lrcorner multipar)) ;
-if t :
-  _pa_ := (xpart _pa_,max(ypart _pa_,ypart snapped_multi_pos(urxy[tpos]))) ;
-fi ;
-
-
+      if t :
+        _pa_ := (xpart _pa_,max(ypart _pa_,ypart snapped_multi_pos(urxy[tpos]))) ;
+      fi ;
       (xpart _ur_ + par_hang_indent, ypart _ur_) --
       (xpart _ur_ + par_hang_indent, ypart _pa_) --
       (xpart _ur_, ypart _pa_)
@@ -680,6 +675,8 @@ fi ;
   enddef ;
 
   % first loop
+
+  ii := 0 ; nn := NOfTextAreas+1 ; nofmultipars := 0 ;
 
   if enable_multi_par_fallback  and
      (nxy[fpos]=RealPageNumber) and
@@ -876,7 +873,7 @@ fi ;
           x_left_top_hang(i,true) --
           x_right_top_hang(i,true) --
           x_right_bottom_hang(i,true) --
-snapped_multi_pos(ulxy[tpos]) --
+          snapped_multi_pos(ulxy[tpos]) --
           llxy[tpos] --
           x_left_bottom_hang(i,true) --
           cycle ;
@@ -887,7 +884,7 @@ snapped_multi_pos(ulxy[tpos]) --
           ulcorner multipar --
           urcorner multipar --
           (xpart lrcorner multipar, ypart urxy[tpos]) --
-snapped_multi_pos(ulxy[tpos]) --
+          snapped_multi_pos(ulxy[tpos]) --
           llxy[tpos] --
           (xpart llcorner multipar, ypart llxy[tpos]) --
           cycle ;
@@ -896,45 +893,50 @@ snapped_multi_pos(ulxy[tpos]) --
 
       save_multipar (i,3,multipar) ;
 
+    elseif multi_column_first_page_hack and ((nxy[fpos]=RealPageNumber) and (nxy[tpos]>=RealPageNumber) and (NOfTextColumns>1)) :
+
+      save_multipar (i,2,multipar) ;
+
     else :
-
       % handled later
-
     fi ;
 
   endfor ;
 
   % second loop
 
-if force_multi_par_chain or (ii > 1) :
+  if force_multi_par_chain or (ii > 1) :
 
-  for i=ii+1 upto nn-1 :
+    for i=ii+1 upto nn-1 :
 
-    % rest of chain / todo : hang
+      % rest of chain / todo : hang
 
+% hm, the second+ column in column sets now gets lost in a NOfTextColumns
 
-if (not check_multi_par_chain) or ((nxy[fpos]<RealPageNumber) and (nxy[tpos]>RealPageNumber)) :
+    if (not check_multi_par_chain) or
+       ((nxy[fpos]<RealPageNumber) and (nxy[tpos]>RealPageNumber))
+       :
 
-    multipar := set_multipar(i) ;
+        multipar := set_multipar(i) ;
 
-    if obey_multi_par_hang and obey_multi_par_more :
+        if obey_multi_par_hang and obey_multi_par_more :
 
-      multipar :=
-        x_left_top_hang(i,false) --
-        x_right_top_hang(i,false) --
-        x_right_bottom_hang(i,false) --
-        x_left_bottom_hang(i,false) --
-        cycle ;
+          multipar :=
+            x_left_top_hang(i,false) --
+            x_right_top_hang(i,false) --
+            x_right_bottom_hang(i,false) --
+            x_left_bottom_hang(i,false) --
+            cycle ;
 
-    fi ;
+        fi ;
 
-    save_multipar(i,2,multipar) ;
+        save_multipar(i,2,multipar) ;
 
-fi ;
+      fi ;
 
-  endfor ;
+    endfor ;
 
-fi ;
+  fi ;
 
   % end of normal/fallback
 
@@ -1375,3 +1377,42 @@ enddef ;
 endinput ;
 
 end
+
+% for Jelle Huisman
+%
+% \setupcolors[state=start]
+% \dontcomplain
+% \definecolumnset[example][n=3,distance=5mm]
+% \startMPextensions
+%     multi_column_first_page_hack := true ;
+% \stopMPextensions
+% \startuseMPgraphic{mpos:par:trick}
+%     for i=1 upto nofmultipars-1 : draw (rightboundary multipars[i]) shifted (2.5mm, 0) ; endfor ;
+% \stopuseMPgraphic
+% \definetextbackground[test][mp=mpos:par:trick,method=mpos:par:columnset]
+% \starttext
+% \definecolumnsetspan[chapter][n=3]
+% \startcolumnset[example]
+% \startcolumnsetspan[chapter]
+% \chapter{Chapter One}
+% \stopcolumnsetspan
+% \starttextbackground[test] \dorecurse {3}{\input knuth } \stoptextbackground
+% \stopcolumnset
+% \startcolumnset[example]
+% \startcolumnsetspan[chapter]
+% \chapter{Chapter One}
+% \stopcolumnsetspan
+% \starttextbackground[test] \dorecurse {10}{\input knuth } \stoptextbackground
+% \stopcolumnset
+% \stoptext
+%
+% fast variant:
+%
+% \startuseMPgraphic{whatever}
+%     for i=1 upto NOfTextColumns-1 :
+%         draw (rightboundary TextColumns[i]) shifted (2.5mm,0) shifted -\MPxy\textanchor ;
+%     endfor ;
+%     setbounds currentpicture to OverlayBox ;
+% \stopuseMPgraphic
+% \defineoverlay[whatever][\useMPgraphic{whatever}]
+% \setupbackgrounds[text][background=whatever]

@@ -2,7 +2,7 @@
 %D   [       file=luat-lib,
 %D        version=2006.09.11,
 %D          title=\CONTEXT\ Lua Macros,
-%D       subtitle=Unicode Support,
+%D       subtitle=Libraries,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright=PRAGMA]
@@ -11,60 +11,41 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% \writestatus{loading}{Lua Support Macros (libs)}
+% \writestatus{loading}{ConTeXt Lua Macros / Libraries}
 
-%D For the moment we only load this lib.
-
-%D This will move cq. become configurable. The XML like output is just
-%D an example.
-
-% todo \let\normaleverytoks\everytoks \newtoks\everytoke \normaleverytoks{\the\everytoks}
-
-\chardef\statuswidth=15
-\chardef\statuswrite=16
-
-\newtoks\everywritestring
-
-\def\writedirect  {\immediate\write\statuswrite}
-\def\writeline    {\writedirect{}}
-\def\writestring#1{\begingroup\the\everywritestring\writedirect{#1}\endgroup}
-
-\ifx\normalmessage    \undefined \let\normalmessage         \message               \fi
-\ifx\normalwritestatus\undefined \def\normalwritestatus#1#2{\writedirect{#1 : #2}} \fi
-
-% this will change once we have proper write overloads
-
-\registerctxluafile{l-string} {1.001}
-\registerctxluafile{l-lpeg}   {1.001}
-\registerctxluafile{l-boolean}{1.001}
-\registerctxluafile{l-number} {1.001}
-\registerctxluafile{l-set}    {1.001}
-\registerctxluafile{l-math}   {1.001}
-\registerctxluafile{l-table}  {1.001}
-\registerctxluafile{l-md5}    {1.001}
-\registerctxluafile{l-aux}    {1.001}
-\registerctxluafile{l-io}     {1.001}
-\registerctxluafile{l-os}     {1.001}
-\registerctxluafile{l-file}   {1.001}
-\registerctxluafile{l-dir}    {1.001}
-\registerctxluafile{l-unicode}{1.001}
-\registerctxluafile{l-utils}  {1.001}
-\registerctxluafile{l-dimen}  {1.001}
-\registerctxluafile{l-url}    {1.001}
-\registerctxluafile{l-xml}    {1.001}
-%registerctxluafile{l-xmlctx} {1.001}
+\registerctxluafile{trac-inf} {1.001}
+\registerctxluafile{trac-tra} {1.001}
+\registerctxluafile{trac-log} {1.001}
 
 \registerctxluafile{luat-cbk} {1.001}
-\registerctxluafile{luat-lib} {1.001}
-\registerctxluafile{luat-inp} {1.001}
-\registerctxluafile{luat-log} {1.001}
-\registerctxluafile{luat-zip} {1.001}
-\registerctxluafile{luat-tex} {1.001}
+
+\registerctxluafile{data-res} {1.001}
+\registerctxluafile{data-tmp} {1.001}
+\registerctxluafile{data-pre} {1.001}
+\registerctxluafile{data-inp} {1.001}
+\registerctxluafile{data-out} {1.001}
+\registerctxluafile{data-tex} {1.001}
+\registerctxluafile{data-bin} {1.001}
+\registerctxluafile{data-zip} {1.001}
+\registerctxluafile{data-crl} {1.001}
+\registerctxluafile{data-tre} {1.001}
+\registerctxluafile{data-lua} {1.001}
+\registerctxluafile{data-ctx} {1.001}
+\registerctxluafile{data-con} {1.001}
+\registerctxluafile{data-use} {1.001}
+
+\registerctxluafile{luat-run} {1.001}
+\registerctxluafile{luat-fio} {1.001} % not needed, part of startup file
+\registerctxluafile{luat-cnf} {1.001} % not needed, part of startup file
 \registerctxluafile{luat-lua} {1.001}
-\registerctxluafile{luat-tre} {1.001}
+\registerctxluafile{luat-sto} {1.001}
+\registerctxluafile{luat-ini} {1.001}
+\registerctxluafile{luat-env} {1.001}
+
+\registerctxluafile{l-xml}    {1.001} % we want tracking
 
 \startruntimeluacode
-    \edef\asciia{\ctxlua{tex.sprint(input.logmode())}}
+    \edef\asciia{\ctxlua{tex.sprint(logs.mode)}}
     \edef\asciib{xml}
     \ifx\asciia\asciib % brrr
         \long\def\writebanner  #1{\writestring  {<m t='banner'>#1</m>}}
@@ -77,15 +58,8 @@
     \fi
 \stopruntimeluacode
 
-\registerctxluafile{luat-tmp}{1.001}
-\registerctxluafile{luat-crl}{1.001}
+%registerctxluafile{luat-tmp}{1.001}
 \registerctxluafile{luat-exe}{1.001}
 \registerctxluafile{luat-iop}{1.001}
-
-% trace used files (only from trees)
-%
-% \ctxlua{input.register_stop_actions(function() input.save_used_files_in_trees() end)}
-% \ctxlua{table.insert(input.stop_actions, function() input.save_used_files_in_trees() end)}
-% \ctxlua{function input.stop_actions.trace_used_files() input.save_used_files_in_trees() end}
 
 \endinput

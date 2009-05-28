@@ -33,63 +33,23 @@ The TeX-Lua mix is suboptimal. This has to do with the fact that we cannot
 run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
-local texsprint, format = tex.sprint, string.format
+local texsprint, format, lower = tex.sprint, string.format, string.lower
 
-backends     = backends     or { }
-backends.pdf = backends.pdf or { }
+local ctxcatcodes = tex.ctxcatcodes
 
---~ function backends.pdf.startscaling(sx,sy)
---~     return nodes.pdfliteral(format("q %s 0 0 %s 0 0 cm",(sx ~= 0 and sx) or .0001,(sy ~= 0 and sy) or .0001))
---~ end
---~ function backends.pdf.stopscaling()
---~     return nodes.pdfliteral("%Q")
---~ end
-
-function backends.pdf.insertmovie(data)
-    data = data or figures.current()
-    local dr, du, ds = data.request, data.used, data.status
-    local width, height, factor = du.width or dr.width, du.height or dr.height, number.dimenfactors.bp
-    local options, actions = "", ""
-    if dr["repeat"] then
-        actions = actions .. "/Mode /Repeat "
-    end
-    if dr.controls then
-        actions = actions .. "/ShowControls true "
-    else
-        actions = actions .. "/ShowControls false "
-    end
-    if dr.preview then
-        options = options .. "/Poster true "
-    end
-    if actions ~= "" then
-        actions= "/A <<" .. actions .. ">>"
-    end
-    texsprint(tex.ctxcatcodes, format(
-        "\\doPDFannotation{%ssp}{%ssp}{/Subtype /Movie /Border [0 0 0] /T (movie %s) /Movie << /F (%s) /Aspect [%s %s] %s>> %s}",
-        width, height, dr.label, du.foundname, factor * width, factor * height, options, actions
-    ))
-    return data
-end
-
---~ if node then do
---~     local n = node.new(0,0)
---~     local m = getmetatable(n)
---~     m.__concat = function(a,b)
---~         local t = node.slide(a)
---~         t.next, b.prev = b, t
---~         return a
---~     end
---~     node.free(n)
---~ end end
+local trace_figures = false  trackers.register("figures.locating",function(v) trace_figures = v end)
 
 --- some extra img functions ---
 
-function img.totable(i)
-    local t = { }
-    for _, v in ipairs(img.keys()) do
-        t[v] = i[v]
+local imgkeys = img.keys()
+
+function img.totable(imgtable)
+    local result = { }
+    for k=1,#imgkeys do
+        local key = imgkeys[k]
+        result[key] = imgtable[key]
     end
-    return t
+    return result
 end
 
 function img.serialize(i)
@@ -124,7 +84,6 @@ figures.found          = figures.found    or { }
 figures.suffixes       = figures.suffixes or { }
 figures.patterns       = figures.patterns or { }
 figures.boxnumber      = figures.boxid    or 0
-figures.trace          = false
 figures.defaultsearch  = true
 figures.defaultwidth   = 0
 figures.defaultheight  = 0
@@ -226,7 +185,7 @@ function figures.setpaths(locationset,pathlist)
         end
     end
     figures.paths, last_pathlist = t, pathlist
-    if figures.trace then
+    if trace_figures then
         logs.report("figures","locations: %s",last_locationset)
         logs.report("figures","path list: %s",table.concat(figures.paths))
     end
@@ -299,11 +258,13 @@ do
     end
 
     function figures.push(request)
-        input.starttiming(figures)
+        statistics.starttiming(figures)
         local figuredata = figures.new()
         if request then
-            local iv = interfaces.variables
-            local w, h = tonumber(request.width), tonumber(request.height)
+        local iv = interfaces.variables
+        -- request.width/height are strings and are only used when no natural dimensions
+        -- can be determined; at some point the handlers might set them to numbers instead
+--~             local w, h = tonumber(request.width), tonumber(request.height)
             request.page      = math.max(tonumber(request.page) or 1,1)
             request.size      = img.check_size(request.size)
             request.object    = iv[request.object] == "yes"
@@ -312,8 +273,8 @@ do
             request.cache     = request.cache  ~= "" and request.cache
             request.prefix    = request.prefix ~= "" and request.prefix
             request.format    = request.format ~= "" and request.format
-            request.width     = (w and w > 0) or false
-            request.height    = (h and h > 0) or false
+--~             request.width     = (w and w > 0) or false
+--~             request.height    = (h and h > 0) or false
             table.merge(figuredata.request,request)
         end
         callstack[#callstack+1] = figuredata
@@ -322,7 +283,7 @@ do
     function figures.pop()
         figuredata = callstack[#callstack]
         callstack[#callstack] = nil
-        input.stoptiming(figures)
+        statistics.stoptiming(figures)
     end
     -- maybe move texsprint to tex
     function figures.get(category,tag,default)
@@ -334,7 +295,7 @@ do
         end
     end
     function figures.tprint(category,tag,default)
-        texsprint(tex.ctxcatcodes,figures.get(category,tag,default))
+        texsprint(ctxcatcodes,figures.get(category,tag,default))
     end
     function figures.current()
         return callstack[#callstack]
@@ -342,187 +303,180 @@ do
 
 end
 
-do
-
-    local function register(askedname,specification)
-        if specification then
-            local format = specification.format
-            if format then
-                local converter = figures.converters[format]
-                if converter then
-                    local oldname = specification.fullname
-                    local newformat = "pdf" -- todo, other target than pdf
-                    local newpath = file.dirname(oldname)
-                    local newbase = file.replacesuffix(file.basename(oldname),newformat)
-                    local fc = specification.cache or figures.cachepaths.path
-                    if fc and fc ~= "" and fc ~= "." then
-                        newpath = fc
-                    end
-                    local subpath = specification.subpath or figures.cachepaths.subpath
-                    if subpath and subpath ~= "" and subpath ~= "."  then
-                        newpath = newpath .. "/" .. subpath
-                    end
-                    local prefix = specification.prefix or figures.cachepaths.prefix
-                    if prefix and prefix ~= "" then
-                        newbase = prefix .. newbase
-                    end
-                    local newname = file.join(newpath,newbase)
-                    dir.makedirs(newpath)
-                    local oldtime = lfs.attributes(oldname,'modification') or 0
-                    local newtime = lfs.attributes(newname,'modification') or 0
-                    if oldtime > newtime then
-                        converter(oldname,newname)
-                    end
-                    if io.exists(newname) then
-                        specification.foundname = oldname
-                        specification.fullname  = newname
-                        specification.prefix    = prefix
-                        specification.subpath   = subpath
-                        specification.converted = true
-                        format = newformat
-                    elseif io.exists(oldname) then
-                        specification.fullname  = newname
-                        specification.converted = false
-                    end
+local function register(askedname,specification)
+    if specification then
+        local format = specification.format
+        if format then
+            local converter = figures.converters[format]
+            if converter then
+                local oldname = specification.fullname
+                local newformat = "pdf" -- todo, other target than pdf
+                local newpath = file.dirname(oldname)
+                local newbase = file.replacesuffix(file.basename(oldname),newformat)
+                local fc = specification.cache or figures.cachepaths.path
+                if fc and fc ~= "" and fc ~= "." then
+                    newpath = fc
+                end
+                local subpath = specification.subpath or figures.cachepaths.subpath
+                if subpath and subpath ~= "" and subpath ~= "."  then
+                    newpath = newpath .. "/" .. subpath
+                end
+                local prefix = specification.prefix or figures.cachepaths.prefix
+                if prefix and prefix ~= "" then
+                    newbase = prefix .. newbase
+                end
+                local newname = file.join(newpath,newbase)
+                dir.makedirs(newpath)
+                local oldtime = lfs.attributes(oldname,'modification') or 0
+                local newtime = lfs.attributes(newname,'modification') or 0
+                if oldtime > newtime then
+                    converter(oldname,newname)
+                end
+                if io.exists(newname) then
+                    specification.foundname = oldname
+                    specification.fullname  = newname
+                    specification.prefix    = prefix
+                    specification.subpath   = subpath
+                    specification.converted = true
+                    format = newformat
+                elseif io.exists(oldname) then
+                    specification.fullname  = newname
+                    specification.converted = false
                 end
             end
-            specification.found = validtypes[format]
-            if figures.trace then
+        end
+        local found = figures.suffixes[format] -- validtypes[format]
+        if not found then
+            specification.found = false
+            if trace_figures then
                 logs.report("figures","format not supported: %s",format)
             end
         else
-            specification = { }
+            specification.found = true
+            if trace_figures then
+                if validtypes[format] then
+                    logs.report("figures","format natively supported by backend: %s",format)
+                else
+                    logs.report("figures","format supported by output file format: %s",format)
+                end
+            end
         end
-        specification.foundname = specification.foundname or specification.fullname
-        figures.found[askedname] = specification
-        return specification
+    else
+        specification = { }
     end
+    specification.foundname = specification.foundname or specification.fullname
+    figures.found[askedname] = specification
+    return specification
+end
 
-    local function locate(request) -- name, format, cache
-        local askedname = input.clean_path(request.name)
-        if figures.found[askedname] then
-            return figures.found[askedname]
+local function locate(request) -- name, format, cache
+    local askedname = resolvers.clean_path(request.name)
+    if figures.found[askedname] then
+        return figures.found[askedname]
+    end
+    local askedpath= file.dirname(askedname)
+    local askedbase = file.basename(askedname)
+    local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
+    local askedcache = request.cache
+    if askedformat ~= "" then
+        askedformat = lower(askedformat)
+        local format = figures.suffixes[askedformat]
+        if not format then
+            for _, pattern in ipairs(figures.patterns) do
+                if askedformat:find(pattern[1]) then
+                    format = pattern[2]
+                    break
+                end
+            end
         end
-        local askedpath= file.dirname(askedname)
-        local askedbase = file.basename(askedname)
-        local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
-        local askedcache = request.cache
-        if askedformat ~= "" then
-            askedformat = askedformat:lower()
-            local format = figures.suffixes[askedformat]
-            if not format then
-                for _, pattern in ipairs(figures.patterns) do
-                    if askedformat:find(pattern[1]) then
-                        format = pattern[2]
-                        break
-                    end
-                end
+        if format then
+            local foundname = figures.exists(askedname,askedformat)
+            if foundname then
+                return register(askedname, {
+                    askedname = askedname,
+                    fullname = askedname,
+                    format = format,
+                    cache = askedcache,
+                    foundname = foundname,
+                })
             end
-            if format then
-                local foundname = figures.exists(askedname,askedformat)
-                if foundname then
-                    return register(askedname, {
-                        askedname = askedname,
-                        fullname = askedname,
-                        format = format,
-                        cache = askedcache,
-                        foundname = foundname,
-                    })
-                end
+        end
+        if askedpath ~= "" then
+            -- path and type given, todo: strip pieces of path
+            if figures.exists(askedname,askedformat) then
+                return register(askedname, {
+                    askedname = askedname,
+                    fullname = askedname,
+                    format = askedformat,
+                    cache = askedcache,
+                })
             end
-            if askedpath ~= "" then
-                -- path and type given, todo: strip pieces of path
-                if figures.exists(askedname,askedformat) then
-                    return register(askedname, {
+        else
+            -- type given
+            for _, path in ipairs(figures.paths) do
+                local check = path .. "/" .. askedname
+                if figures.exists(check,askedformat) then
+                    return register(check, {
                         askedname = askedname,
-                        fullname = askedname,
+                        fullname = check,
                         format = askedformat,
                         cache = askedcache,
                     })
                 end
-            else
-                -- type given
-                for _, path in ipairs(figures.paths) do
-                    local check = path .. "/" .. askedname
-                    if figures.exists(check,askedformat) then
-                        return register(check, {
-                            askedname = askedname,
-                            fullname = check,
-                            format = askedformat,
-                            cache = askedcache,
-                        })
-                    end
-                end
-                if figures.defaultsearch then
-                    local check = input.find_file(askedname)
-                    if check and check ~= "" then
-                        return register(askedname, {
-                            askedname = askedname,
-                            fullname = check,
-                            format = askedformat,
-                            cache = askedcache,
-                        })
-                    end
+            end
+            if figures.defaultsearch then
+                local check = resolvers.find_file(askedname)
+                if check and check ~= "" then
+                    return register(askedname, {
+                        askedname = askedname,
+                        fullname = check,
+                        format = askedformat,
+                        cache = askedcache,
+                    })
                 end
             end
-        elseif askedpath ~= "" then
+        end
+    elseif askedpath ~= "" then
+        for _, format in ipairs(figures.order) do
+            local list = figures.formats[format].list or { format }
+            for _, suffix in ipairs(list) do
+                local check = file.addsuffix(askedname,suffix)
+                if figures.exists(check,format) then
+                    return register(askedname, {
+                        askedname = askedname,
+                        fullname = check,
+                        format = format,
+                        cache = askedcache,
+                    })
+                end
+            end
+        end
+    else
+        if figures.prefer_quality then
             for _, format in ipairs(figures.order) do
                 local list = figures.formats[format].list or { format }
                 for _, suffix in ipairs(list) do
-                    local check = file.addsuffix(askedname,suffix)
-                    if figures.exists(check,format) then
-                        return register(askedname, {
-                            askedname = askedname,
-                            fullname = check,
-                            format = format,
-                            cache = askedcache,
-                        })
-                    end
-                end
-            end
-        else
-            if figures.prefer_quality then
-                for _, format in ipairs(figures.order) do
-                    local list = figures.formats[format].list or { format }
-                    for _, suffix in ipairs(list) do
-                        local name = file.replacesuffix(askedbase,suffix)
-                        for _, path in ipairs(figures.paths) do
-                            local check = path .. "/" .. name
-                            if figures.exists(check,format) then
-                                return register(askedname, {
-                                    askedname = askedname,
-                                    fullname = check,
-                                    format = format,
-                                    cache = askedcache,
-                                })
-                            end
-                        end
-                    end
-                end
-            else -- 'location'
-                for _, path in ipairs(figures.paths) do
-                    for _, format in ipairs(figures.order) do
-                        local list = figures.formats[format].list or { format }
-                        for _, suffix in ipairs(list) do
-                            local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
-                            if figures.exists(check,format) then
-                                return register(askedname, {
-                                    askedname = askedname,
-                                    fullname = check,
-                                    format = format,
-                                    cache = askedcache,
-                                })
-                            end
+                    local name = file.replacesuffix(askedbase,suffix)
+                    for _, path in ipairs(figures.paths) do
+                        local check = path .. "/" .. name
+                        if figures.exists(check,format) then
+                            return register(askedname, {
+                                askedname = askedname,
+                                fullname = check,
+                                format = format,
+                                cache = askedcache,
+                            })
                         end
                     end
                 end
             end
-            if figures.defaultsearch then
+        else -- 'location'
+            for _, path in ipairs(figures.paths) do
                 for _, format in ipairs(figures.order) do
                     local list = figures.formats[format].list or { format }
                     for _, suffix in ipairs(list) do
-                        local check = input.find_file(file.replacesuffix(askedname,suffix))
-                        if check and check ~= "" then
+                        local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
+                        if figures.exists(check,format) then
                             return register(askedname, {
                                 askedname = askedname,
                                 fullname = check,
@@ -534,75 +488,92 @@ do
                 end
             end
         end
-        return register(askedname)
-    end
-
-    -- -- -- plugins -- -- --
-
-    figures.existers    = figures.existers    or { }
-    figures.checkers    = figures.checkers    or { }
-    figures.includers   = figures.includers   or { }
-    figures.converters  = figures.converters  or { }
-    figures.identifiers = figures.identifiers or { }
-
-    figures.identifiers.list = {
-        figures.identifiers.default
-    }
-
-    function figures.identifiers.default(data)
-        local dr, du, ds = data.request, data.used, data.status
-        local l = locate(dr)
-        local foundname = l.foundname
-        local fullname = l.fullname or foundname
-        if fullname then
-            du.format = l.format or false
-            du.fullname = fullname -- can be cached
-            ds.fullname = foundname -- original
-            ds.format = l.format
-            ds.status = (l.found and 10) or 0
-        end
-        return data
-    end
-
-    function figures.identify(data)
-        data = data or figures.current()
-        for _, identifier in ipairs(figures.identifiers.list) do
-            data = identifier(data)
-            if data.status.status > 0 then
-                break
+        if figures.defaultsearch then
+            for _, format in ipairs(figures.order) do
+                local list = figures.formats[format].list or { format }
+                for _, suffix in ipairs(list) do
+                    local check = resolvers.find_file(file.replacesuffix(askedname,suffix))
+                    if check and check ~= "" then
+                        return register(askedname, {
+                            askedname = askedname,
+                            fullname = check,
+                            format = format,
+                            cache = askedcache,
+                        })
+                    end
+                end
             end
         end
-        return data
     end
-    function figures.exists(askedname,format)
-        return (figures.existers[format] or figures.existers.generic)(askedname)
-    end
-    function figures.check(data)
-        data = data or figures.current()
-        local dr, du, ds = data.request, data.used, data.status
-        return (figures.checkers[ds.format] or figures.checkers.generic)(data)
-    end
-    function figures.include(data)
-        data = data or figures.current()
-        local dr, du, ds = data.request, data.used, data.status
-        return (figures.includers[ds.format] or figures.includers.generic)(data)
-    end
-    function figures.scale(data) -- will become lua code
-        texsprint(tex.ctxcatcodes,"\\doscalefigure")
-        return data
-    end
-    function figures.done(data)
-        figures.n = figures.n + 1
-        data = data or figures.current()
-        local dr, du, ds = data.request, data.used, data.status
-        ds.width = tex.wd[figures.boxnumber]
-        ds.height = tex.ht[figures.boxnumber]
-        ds.xscale = ds.width/(du.width or 1)
-        ds.yscale = ds.height/(du.height or 1)
-        return data
-    end
+    return register(askedname)
+end
 
-    function figures.dummy(data) -- fails
+-- -- -- plugins -- -- --
+
+figures.existers    = figures.existers    or { }
+figures.checkers    = figures.checkers    or { }
+figures.includers   = figures.includers   or { }
+figures.converters  = figures.converters  or { }
+figures.identifiers = figures.identifiers or { }
+
+figures.identifiers.list = {
+    figures.identifiers.default
+}
+
+function figures.identifiers.default(data)
+    local dr, du, ds = data.request, data.used, data.status
+    local l = locate(dr)
+    local foundname = l.foundname
+    local fullname = l.fullname or foundname
+    if fullname then
+        du.format = l.format or false
+        du.fullname = fullname -- can be cached
+        ds.fullname = foundname -- original
+        ds.format = l.format
+        ds.status = (l.found and 10) or 0
+    end
+    return data
+end
+
+function figures.identify(data)
+    data = data or figures.current()
+    for _, identifier in ipairs(figures.identifiers.list) do
+        data = identifier(data)
+        if data.status.status > 0 then
+            break
+        end
+    end
+    return data
+end
+function figures.exists(askedname,format)
+    return (figures.existers[format] or figures.existers.generic)(askedname)
+end
+function figures.check(data)
+    data = data or figures.current()
+    local dr, du, ds = data.request, data.used, data.status
+    return (figures.checkers[ds.format] or figures.checkers.generic)(data)
+end
+function figures.include(data)
+    data = data or figures.current()
+    local dr, du, ds = data.request, data.used, data.status
+    return (figures.includers[ds.format] or figures.includers.generic)(data)
+end
+function figures.scale(data) -- will become lua code
+    texsprint(ctxcatcodes,"\\doscalefigure")
+    return data
+end
+function figures.done(data)
+    figures.n = figures.n + 1
+    data = data or figures.current()
+    local dr, du, ds = data.request, data.used, data.status
+    ds.width = tex.wd[figures.boxnumber]
+    ds.height = tex.ht[figures.boxnumber]
+    ds.xscale = ds.width/(du.width or 1)
+    ds.yscale = ds.height/(du.height or 1)
+    return data
+end
+
+function figures.dummy(data) -- fails
 --~         data = data or figures.current()
 --~         local dr, du, ds = data.request, data.used, data.status
 --~         local r = node.new("rule")
@@ -610,9 +581,7 @@ do
 --~         r.height = du.height or figures.defaultheight
 --~         r.depth  = du.depth  or figures.defaultdepth
 --~         tex.box[figures.boxnumber] = node.write(r)
-        texsprint(tex.ctxcatcodes,"\\emptyfoundexternalfigure")
-    end
-
+    texsprint(ctxcatcodes,"\\emptyfoundexternalfigure")
 end
 
 -- -- -- generic -- -- --
@@ -620,10 +589,10 @@ end
 function figures.existers.generic(askedname)
 --~     local result = io.exists(askedname)
 --~     result = (result==true and askedname) or result
---~     local result = input.find_file(askedname) or ""
-    local result = input.findbinfile(askedname) or ""
+--~     local result = resolvers.find_file(askedname) or ""
+    local result = resolvers.findbinfile(askedname) or ""
     if result == "" then result = false end
-    if figures.trace then
+    if trace_figures then
         if result then
             logs.report("figures","found: %s -> %s",askedname,result)
         else
@@ -652,8 +621,9 @@ function figures.checkers.generic(data)
 end
 function figures.includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
-    dr.width = dr.width or du.width
-    dr.height = dr.height or du.height
+    -- here we set the 'natural dimensions'
+    dr.width = du.width
+    dr.height = du.height
     local hash = figures.hash(data)
     local figure = figures.used[hash]
     if figure == nil then
@@ -670,7 +640,7 @@ function figures.includers.generic(data)
         tex.box[n] = img.node(figure) -- img.write(figure)
         tex.wd[n], tex.ht[n], tex.dp[n] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         ds.objectnumber = figure.objnum
-        texsprint(tex.ctxcatcodes,"\\relocateexternalfigure")
+        texsprint(ctxcatcodes,"\\relocateexternalfigure")
     end
     return data
 end
@@ -682,13 +652,14 @@ function figures.checkers.nongeneric(data,command)
     local name = du.fullname or "unknown nongeneric"
     local hash = name
     if dr.object then
-        if not job.objects["FIG::"..hash] then
-            texsprint(tex.ctxcatcodes,command)
-            texsprint(tex.ctxcatcodes,format("\\setobject{FIG}{%s}\\vbox{\\box\\foundexternalfigure}",hash))
+        -- hm, bugged
+        if not jobobjects.get("FIG::"..hash) then
+            texsprint(ctxcatcodes,command)
+            texsprint(ctxcatcodes,format("\\setobject{FIG}{%s}\\vbox{\\box\\foundexternalfigure}",hash))
         end
-        texsprint(tex.ctxcatcodes,format("\\global\\setbox\\foundexternalfigure\\vbox{\\getobject{FIG}{%s}}",hash))
+        texsprint(ctxcatcodes,format("\\global\\setbox\\foundexternalfigure\\vbox{\\getobject{FIG}{%s}}",hash))
     else
-        texsprint(tex.ctxcatcodes,command)
+        texsprint(ctxcatcodes,command)
     end
     return data
 end
@@ -700,14 +671,25 @@ end
 
 function figures.checkers.mov(data)
     local dr, du, ds = data.request, data.used, data.status
-    du.width = dr.width or figures.defaultwidth
-    du.height = dr.height or figures.defaultheight
+    dr.width = (dr.width or figures.defaultwidth):todimen()
+    dr.height = (dr.height or figures.defaultheight):todimen()
+    du.width = dr.width
+    du.height = dr.height
     du.foundname = du.fullname
-    texsprint(tex.ctxcatcodes,format("\\startfoundexternalfigure{%ssp}{%ssp}",du.width,du.height))
-    data = backends.pdf.insertmovie(data)
-    texsprint(tex.ctxcatcodes,"\\stopfoundexternalfigure")
+    local code = backends.codeinjections {
+        width      = du.width or dr.width,
+        height     = du.height or dr.height,
+        factor     = number.dimenfactors.bp,
+        ["repeat"] = dr["repeat"],
+        controls   = dr.controls,
+        preview    = dr.preview,
+        label      = dr.label,
+        foundname  = du.foundname,
+    }
+    texsprint(ctxcatcodes,format("\\startfoundexternalfigure{%ssp}{%ssp}%s\\stopfoundexternalfigure",du.width,du.height,code))
     return data
 end
+
 figures.includers.mov = figures.includers.nongeneric
 
 -- -- -- mps -- -- --
@@ -731,7 +713,7 @@ figures.includers.buffers = figures.includers.nongeneric
 -- -- -- tex -- -- --
 
 function figures.existers.tex(askedname)
-    askedname = input.find_file(askedname)
+    askedname = resolvers.find_file(askedname)
     return (askedname ~= "" and askedname) or false
 end
 function figures.checkers.tex(data)
@@ -761,38 +743,39 @@ figures.converters.svg = figures.converters.eps
 --~     os.spawn(command)
 --~ end
 
-
 figures.bases         = { }
 figures.bases.list    = { } -- index      => { basename, fullname, xmlroot }
 figures.bases.used    = { } -- [basename] => { basename, fullname, xmlroot } -- pointer to list
 figures.bases.found   = { }
 figures.bases.enabled = false
 
-function figures.bases.use(basename)
+local bases = figures.bases
+
+function bases.use(basename)
     if basename == "reset" then
-        figures.bases.list = { }
-        figures.bases.used = { }
-        figures.bases.found = { }
-        figures.bases.enabled = false
+        bases.list = { }
+        bases.used = { }
+        bases.found = { }
+        bases.enabled = false
     else
         basename = file.addsuffix(basename,"xml")
-        if not figures.bases.used[basename] then
+        if not bases.used[basename] then
             local t = { basename, nil, nil }
-            figures.bases.used[basename] = t
-            figures.bases.list[#figures.bases.list+1] = t
-            if not figures.bases.enabled then
-                figures.bases.enabled = true
+            bases.used[basename] = t
+            bases.list[#bases.list+1] = t
+            if not bases.enabled then
+                bases.enabled = true
                 xml.registerns("rlx","http://www.pragma-ade.com/schemas/rlx") -- we should be able to do this per xml file
             end
         end
     end
 end
 
-function figures.bases.find(basename,askedlabel)
+function bases.find(basename,askedlabel)
     basename = file.addsuffix(basename,"xml")
-    local t = figures.bases.found[askedlabel]
+    local t = bases.found[askedlabel]
     if t == nil then
-        local base = figures.bases.used[basename]
+        local base = bases.used[basename]
         local page = 0
         if base[2] == nil then
             -- no yet located
@@ -816,7 +799,7 @@ function figures.bases.find(basename,askedlabel)
                         name = xml.filters.text(e,"*:file"),
                         page = page,
                     }
-                    figures.bases.found[askedlabel] = t
+                    bases.found[askedlabel] = t
                     return t
                 end
             end
@@ -827,9 +810,9 @@ end
 
 -- we can access sequential or by name
 
-function figures.bases.locate(askedlabel)
-    for _, entry in ipairs(figures.bases.list) do
-        local t = figures.bases.find(entry[1],askedlabel)
+function bases.locate(askedlabel)
+    for _, entry in ipairs(bases.list) do
+        local t = bases.find(entry[1],askedlabel)
         if t then
             return t
         end
@@ -838,9 +821,9 @@ function figures.bases.locate(askedlabel)
 end
 
 function figures.identifiers.base(data)
-    if figures.bases.enabled then
+    if bases.enabled then
         local dr, du, ds = data.request, data.used, data.status
-        local fbl = figures.bases.locate(dr.name or dr.label)
+        local fbl = bases.locate(dr.name or dr.label)
         if fbl then
             du.page = fbl.page
             du.format = fbl.format
@@ -858,3 +841,14 @@ figures.identifiers.list = {
     figures.identifiers.base,
     figures.identifiers.default
 }
+
+-- tracing
+
+statistics.register("graphics processing time", function()
+    local n = figures.n
+    if n > 0 then
+        return format("%s seconds including tex, n=%s", statistics.elapsedtime(figures),n)
+    else
+        return nil
+    end
+end)

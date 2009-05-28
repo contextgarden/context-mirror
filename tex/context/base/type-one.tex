@@ -58,30 +58,27 @@
     \quittypescriptscanning
 \stoptypescript
 
-\starttypescript [postscript] [texnansi,ec,qx,t5,uc,8r]
+\starttypescript [postscript] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
     \definetypeface [postscript] [rm] [serif] [times]     [default] [encoding=\typescripttwo]
-    \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=.9,encoding=\typescripttwo]
-    \definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1,encoding=\typescripttwo]
-    \definetypeface [postscript] [mm] [math]  [times]     [default]
-    \usemathcollection[default]
+    \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [encoding=\typescripttwo,rscale=0.9]
+    \definetypeface [postscript] [tt] [mono]  [courier]   [default] [encoding=\typescripttwo,rscale=1.1]
+    \definetypeface [postscript] [mm] [math]  [times]     [default] [encoding=\typescripttwo]
     \quittypescriptscanning
 \stoptypescript
 
-\starttypescript [times] [texnansi,ec,qx,8r,t5,uc]
-    \definetypeface [times] [rm] [serif] [times]     [default] [encoding=\typescripttwo]
-    \definetypeface [times] [ss] [sans]  [helvetica] [default] [encoding=\typescripttwo,rscale=0.9]
-    \definetypeface [times] [tt] [mono]  [modern]    [default] [encoding=\typescripttwo,rscale=1.05]
-    \definetypeface [times] [mm] [math]  [times]     [default] [encoding=\typescripttwo]
-    \usemathcollection[default]
+\starttypescript [times,termes] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [ss] [sans]  [helvetica]      [default] [encoding=\typescripttwo,rscale=0.9]
+    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [encoding=\typescripttwo,rscale=1.05]
+    \definetypeface [\typescriptone] [mm] [math]  [times]          [default] [encoding=\typescripttwo]
     \quittypescriptscanning
 \stoptypescript
 
-\starttypescript [palatino] [texnansi,ec,qx,8r,t5,uc]
-    \definetypeface [palatino] [rm] [serif] [palatino] [default] [encoding=\typescripttwo]
-    \definetypeface [palatino] [ss] [sans]  [modern]   [default] [encoding=\typescripttwo,rscale=1.075]
-    \definetypeface [palatino] [tt] [mono]  [modern]   [default] [encoding=\typescripttwo,rscale=1.075]
-    \definetypeface [palatino] [mm] [math]  [palatino] [default] [encoding=default]
-    \usemathcollection[default]
+\starttypescript [palatino,pagella] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [encoding=\typescripttwo,rscale=1.075]
+    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [encoding=\typescripttwo,rscale=1.075]
+    \definetypeface [\typescriptone] [mm] [math]  [palatino]       [default] [encoding=default]
     \quittypescriptscanning
 \stoptypescript
 
@@ -90,7 +87,6 @@
     \definetypeface [fourier] [ss] [sans]  [modern]  [default] [encoding=ec,rscale=1.07]
     \definetypeface [fourier] [tt] [mono]  [modern]  [default] [encoding=ec,rscale=1.07]
     \definetypeface [fourier] [mm] [math]  [fourier] [default] [encoding=default]
-    \usemathcollection[fou]
     \quittypescriptscanning
 \stoptypescript
 
@@ -117,11 +113,35 @@
     \quittypescriptscanning
 \stoptypescript
 
-\starttypescript [antykwa-torunska] [texnansi,ec,8r,uc,t2a]
+\starttypescript [antykwa-torunska] [texnansi,ec,8r,uc,t5,t2a]
     \definetypeface[antykwa][rm][serif][antykwa-torunska]   [default][encoding=\typescripttwo]
     \definetypeface[antykwa][ss][sans] [modern]             [default][encoding=\typescripttwo,rscale=1.05]
     \definetypeface[antykwa][tt][mono] [modern]             [default][encoding=\typescripttwo,rscale=1.1]
     \definetypeface[antykwa][mm][math] [antykwa-torunska]   [default][encoding=\typescripttwo]
+    \quittypescriptscanning
+\stoptypescript
+
+\starttypescript [schoolbook,schola] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [encoding=default]
+    \quittypescriptscanning
+\stoptypescript
+
+\starttypescript [bookman,bonum] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [encoding=default]
+    \quittypescriptscanning
+\stoptypescript
+
+\starttypescript [chancery,chorus] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [encoding=default]
     \quittypescriptscanning
 \stoptypescript
 
@@ -130,6 +150,30 @@
     \definetypeface[\typescriptone][rm][serif][modern]         [default][encoding=\typescripttwo]
     \definetypeface[\typescriptone][tt][mono] [modern]         [default][encoding=\typescripttwo]
     \definetypeface[\typescriptone][mm][math] [\typescriptone] [default][encoding=\typescripttwo,text=ss]
+    \quittypescriptscanning
+\stoptypescript
+
+\starttypescript [helvetica,heros] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definetypeface [\typescriptone] [ss] [sans]  [\typescriptone] [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [rm] [serif] [modern]         [default] [encoding=\typescripttwo,rscale=1.15]
+    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [encoding=\typescripttwo,rscale=1.15]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [encoding=default,rscale=1.15]
+    \quittypescriptscanning
+\stoptypescript
+
+\starttypescript [avantgarde,adventor] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definetypeface [\typescriptone] [ss] [sans]  [adventor] [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [rm] [serif] [modern]   [default] [encoding=\typescripttwo,rscale=1.15]
+    \definetypeface [\typescriptone] [tt] [mono]  [modern]   [default] [encoding=\typescripttwo,rscale=1.15]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]   [default] [encoding=default]
+    \quittypescriptscanning
+\stoptypescript
+
+\starttypescript [courier,cursor] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definetypeface [\typescriptone] [tt] [mono]  [\typescriptone] [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [rm] [serif] [modern]         [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [encoding=\typescripttwo]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [encoding=default]
     \quittypescriptscanning
 \stoptypescript
 
@@ -143,9 +187,7 @@
 \stoptypescript
 
 \starttypescript[all][modern,latin-modern][all]
-
     % fallbacks, no math in latin modern
-
     \definefontsynonym[lmdunh10][cmdunh10]
     \definefontsynonym[lmff10]  [cmff10]
     \definefontsynonym[lmfi10]  [cmfi10]
@@ -153,7 +195,6 @@
     \definefontsynonym[lmtex10] [cmtex10]
     \definefontsynonym[lmtex8]  [cmtex8]
     \definefontsynonym[lmtex9]  [cmtex9]
-
     \loadmapfile[original-public-lm.map]
 \stoptypescript
 
@@ -192,7 +233,6 @@
 
     \definefontsynonym [LMRoman10-Dunhill]        [\typescriptthree-lmdunh10] [encoding=\typescriptthree]
     \definefontsynonym [LMRoman10-DunhillOblique] [\typescriptthree-lmduno10] [encoding=\typescriptthree]
-
     \loadmapfile[lm-\typescriptthree.map]
 \stoptypescript
 
@@ -215,7 +255,6 @@
     \definefontsynonym [LMSansQuotation8-Bold]         [\typescriptthree-lmssqbx8] [encoding=\typescriptthree]
     \definefontsynonym [LMSansQuotation8-Oblique]      [\typescriptthree-lmssqo8]  [encoding=\typescriptthree]
     \definefontsynonym [LMSansQuotation8-BoldOblique]  [\typescriptthree-lmssqbo8] [encoding=\typescriptthree]
-
     \loadmapfile[lm-\typescriptthree.map]
 \stoptypescript
 
@@ -234,16 +273,13 @@
     \definefontsynonym [LMTypewriter10-LightCondensedOblique] [\typescriptthree-lmtlco10] [encoding=\typescriptthree]
     \definefontsynonym [LMTypewriter10-Dark]                  [\typescriptthree-lmtk10]   [encoding=\typescriptthree]
     \definefontsynonym [LMTypewriter10-DarkOblique]           [\typescriptthree-lmtko10]  [encoding=\typescriptthree]
-
     \definefontsynonym [LMTypewriter10-Unslanted]             [\typescriptthree-lmu10]    [encoding=\typescriptthree]
-
     \definefontsynonym [LMTypewriterVarWd10-Regular]          [\typescriptthree-lmvtt10]  [encoding=\typescriptthree]
     \definefontsynonym [LMTypewriterVarWd10-Oblique]          [\typescriptthree-lmvtto10] [encoding=\typescriptthree]
     \definefontsynonym [LMTypewriterVarWd10-Light]            [\typescriptthree-lmvtl10]  [encoding=\typescriptthree]
     \definefontsynonym [LMTypewriterVarWd10-LightOblique]     [\typescriptthree-lmvtlo10] [encoding=\typescriptthree]
     \definefontsynonym [LMTypewriterVarWd10-Dark]             [\typescriptthree-lmvtk10]  [encoding=\typescriptthree]
     \definefontsynonym [LMTypewriterVarWd10-DarkOblique]      [\typescriptthree-lmvtko10] [encoding=\typescriptthree]
-
     \loadmapfile[lm-\typescriptthree.map]
 \stoptypescript
 
@@ -283,7 +319,7 @@
     \definefontsynonym [LMMathItalic5-BoldItalic]  [lmmib5]
     \definefontsynonym [LMMathItalic7-BoldItalic]  [lmmib7]
     \definefontsynonym [LMMathItalic10-BoldItalic] [lmmib10]
-
+    \usemathcollection[default]
     \loadmapfile[lm-math.map]
     \loadmapfile[lm-rm.map]
 \stoptypescript
@@ -589,7 +625,7 @@
     \definefontsynonym [Euler-Extension]  [zeuex10]
     \definefontsynonym [Euler-Symbol]     [zeusm10]
     \definefontsynonym [Euler-Fraktur]    [eufm10]
-
+    \usemathcollection[eul]
     \loadmapfile[original-ams-euler.map]
 \stoptypescript
 
@@ -598,15 +634,16 @@
     \definefontsynonym [Euler-Extension]      [zeuex10]
     \definefontsynonym [Euler-Symbol-Bold]    [zeusb10]
     \definefontsynonym [Euler-Fraktur-Bold]   [eufb10]
-
+    \usemathcollection[eul]
     \loadmapfile[original-ams-euler.map]
 \stoptypescript
 
 % AMS (AMS)
 
 \starttypescript [math] [modern,computer-modern,latin-modern,ams] [default]
-  \definefontsynonym [AMS-SymbolA] [msam10]
-  \definefontsynonym [AMS-SymbolB] [msbm10]
+    \definefontsynonym [AMS-SymbolA] [msam10]
+    \definefontsynonym [AMS-SymbolB] [msbm10]
+    \usemathcollection[default]
 \stoptypescript
 
 % Fourier (Utopia)
@@ -617,7 +654,7 @@
     \definefontsynonym [Fourier-Math-Letters-Italic]  [futmii]
     \definefontsynonym [Fourier-Math-Symbols]         [futsy]
     \definefontsynonym [Fourier-Math-Extension]       [fourier-mex]
-
+    \usemathcollection[fou]
     \loadmapfile[fourier.map]
 \stoptypescript
 
@@ -630,7 +667,6 @@
     \definefontsynonym [Fourier-BoldSlanted]          [futbo8t]  [encoding=ec]
     \definefontsynonym [Fourier-BoldItalic]           [futbi8t]  [encoding=ec]
     \definefontsynonym [Fourier-BoldCaps]             [futbc8t]  [encoding=ec]
-
     \definefontsynonym [Fourier-Regular-Expert]       [futr9e]   [encoding=ec]
     \definefontsynonym [Fourier-Slanted-Expert]       [futro9e]  [encoding=ec]
     \definefontsynonym [Fourier-Italic-Expert]        [futri9e]  [encoding=ec]
@@ -643,7 +679,6 @@
     \definefontsynonym [Fourier-BoldSlanted-Expert]   [futbo9e]  [encoding=ec]
     \definefontsynonym [Fourier-BoldItalic-Expert]    [futbi9e]  [encoding=ec]
     \definefontsynonym [Fourier-Black-Expert]         [futc9e]   [encoding=ec]
-
     \definefontsynonym [Fourier-Regular-OldStyle]     [futr9d]   [encoding=ec]
     \definefontsynonym [Fourier-Slanted-OldStyle]     [futro9d]  [encoding=ec]
     \definefontsynonym [Fourier-Italic-OldStyle]      [futri9d]  [encoding=ec]
@@ -656,95 +691,8 @@
     \definefontsynonym [Fourier-BoldSlanted-OldStyle] [futbo9d]  [encoding=ec]
     \definefontsynonym [Fourier-BoldItalic-OldStyle]  [futbi9d]  [encoding=ec]
     \definefontsynonym [Fourier-Black-OldStyle]       [futc9d]   [encoding=ec]
-
     \loadmapfile[fourier.map]
     \loadmapfile[fourier-utopia-expert.map]
-\stoptypescript
-
-% Courier (URW)
-
-\starttypescript [mono] [courier] [qx]
-    \definefontsynonym [qx-ucrr8a]  [qcrr]  [encoding=qx]
-    \definefontsynonym [qx-ucrb8a]  [qcrb]  [encoding=qx]
-    \definefontsynonym [qx-ucrro8a] [qcrri] [encoding=qx]
-    \definefontsynonym [qx-ucrbo8a] [qcrbi] [encoding=qx]
-\stoptypescript
-
-\starttypescript [mono] [courier] [texnansi,ec,8r,t5]
-    \definefontsynonym [Courier]             [\typescriptthree-ucrr8a]  [encoding=\typescriptthree]
-    \definefontsynonym [Courier-Bold]        [\typescriptthree-ucrb8a]  [encoding=\typescriptthree]
-    \definefontsynonym [Courier-Oblique]     [\typescriptthree-ucrro8a] [encoding=\typescriptthree]
-    \definefontsynonym [Courier-BoldOblique] [\typescriptthree-ucrbo8a] [encoding=\typescriptthree]
-
-    \loadmapfile[\typescriptthree-urw-courier.map]
-\stoptypescript
-
-% Helvetica (URW)
-
-\starttypescript [sans] [helvetica] [qx]
-    \definefontsynonym [qx-uhvr8a]  [qhvr]  [encoding=qx]
-    \definefontsynonym [qx-uhvri8a] [qhvri] [encoding=qx]
-    \definefontsynonym [qx-uhvro8a] [qhvri] [encoding=qx]
-    \definefontsynonym [qx-uhvb8a]  [qhvb]  [encoding=qx]
-    \definefontsynonym [qx-uhvbi8a] [qhvbi] [encoding=qx]
-    \definefontsynonym [qx-uhvbo8a] [qhvbi] [encoding=qx]
-\stoptypescript
-
-\starttypescript [sans] [helvetica] [texnansi,ec,8r,t5]
-    \definefontsynonym [Helvetica]             [\typescriptthree-uhvr8a]  [encoding=\typescriptthree]
-    \definefontsynonym [Helvetica-Italic]      [\typescriptthree-uhvri8a] [encoding=\typescriptthree]
-    \definefontsynonym [Helvetica-Oblique]     [\typescriptthree-uhvro8a] [encoding=\typescriptthree]
-    \definefontsynonym [Helvetica-Bold]        [\typescriptthree-uhvb8a]  [encoding=\typescriptthree]
-    \definefontsynonym [Helvetica-BoldItalic]  [\typescriptthree-uhvbi8a] [encoding=\typescriptthree]
-    \definefontsynonym [Helvetica-BoldOblique] [\typescriptthree-uhvbo8a] [encoding=\typescriptthree]
-
-    \loadmapfile[\typescriptthree-urw-helvetica.map]
-\stoptypescript
-
-% Times Roman (URW)
-
-\starttypescript [serif] [times] [qx]
-    \definefontsynonym [qx-utmr8a]             [qtmr]  [encoding=qx]
-    \definefontsynonym [qx-utmri8a]            [qtmri] [encoding=qx]
-    \definefontsynonym [qx-utmb8a]             [qtmb]  [encoding=qx]
-    \definefontsynonym [qx-utmbi8a]            [qtmbi] [encoding=qx]
-    \definefontsynonym [qx-utmr8a-slanted-167] [qtmri] [encoding=qx]
-    \definefontsynonym [qx-utmb8a-slanted-167] [qtmbi] [encoding=qx]
-\stoptypescript
-
-\starttypescript [serif] [times] [texnansi,ec,8r,t5]
-    \definefontsynonym [Times-Roman]       [\typescriptthree-utmr8a]             [encoding=\typescriptthree]
-    \definefontsynonym [Times-Italic]      [\typescriptthree-utmri8a]            [encoding=\typescriptthree]
-    \definefontsynonym [Times-Bold]        [\typescriptthree-utmb8a]             [encoding=\typescriptthree]
-    \definefontsynonym [Times-BoldItalic]  [\typescriptthree-utmbi8a]            [encoding=\typescriptthree]
-    \definefontsynonym [Times-Slanted]     [\typescriptthree-utmr8a-slanted-167] [encoding=\typescriptthree]
-    \definefontsynonym [Times-BoldSlanted] [\typescriptthree-utmb8a-slanted-167] [encoding=\typescriptthree]
-    \definefontsynonym [Times-Caps]        [Times-Roman]
-    \definefontsynonym [Times]             [Times-Roman]
-
-    \loadmapfile[\typescriptthree-urw-times.map]
-\stoptypescript
-
-% Math Times (tx)
-
-\starttypescript [math] [times] [all]
-    \definefontsynonym [Times-Roman-Upright]     [txr]
-    \definefontsynonym [Times-Roman-Italic]      [txi]
-    \definefontsynonym [Times-Roman-Slanted]     [txsl]
-    \definefontsynonym [Times-Roman-Caps]        [txsc]
-    \definefontsynonym [Times-Companion-Upright] [tcxr]
-    \definefontsynonym [Times-Companion-Italic]  [tcxi]
-    \definefontsynonym [Times-Companion-Slanted] [tcxsl]
-    \definefontsynonym [Times-Math-Italic]       [txmi]
-    \definefontsynonym [Times-Math-Symbols]      [txsy]
-    \definefontsynonym [Times-Math-Extension]    [txex]
-    \definefontsynonym [Times-Math-SymbolsA]     [txsya]
-    \definefontsynonym [Times-Math-SymbolsB]     [txsyb]
-    \definefontsynonym [Times-Math-SymbolsC]     [txsyc]
-    \definefontsynonym [Times-Math-Italic-A]     [txmia]
-    \definefontsynonym [Times-Math-Extension-A]  [txexa]
-
-    \loadmapfile[original-youngryu-tx.map]
 \stoptypescript
 
 % Antykwa Torunska (GUST)
@@ -772,7 +720,6 @@
     \definefontsynonym [AntykwaTorunska-CondLightItalic][\typescriptthree-anttcli]   [encoding=\typescriptthree]
     \definefontsynonym [AntykwaTorunska-CondMedium]     [\typescriptthree-anttcm]    [encoding=\typescriptthree]
     \definefontsynonym [AntykwaTorunska-CondMedItalic]  [\typescriptthree-anttcmi]   [encoding=\typescriptthree]
-
     \loadmapfile[antt-\typescriptthree.map]
 \stoptypescript
 
@@ -793,7 +740,6 @@
     \definefontsynonym [AntykwaTorunska-CondLightItalicCap][\typescriptthree-anttclicap] [encoding=\typescriptthree]
     \definefontsynonym [AntykwaTorunska-CondMediumCap]     [\typescriptthree-anttcmcap]  [encoding=\typescriptthree]
     \definefontsynonym [AntykwaTorunska-CondMedItalicCap]  [\typescriptthree-anttcmicap] [encoding=\typescriptthree]
-
     \loadmapfile[antt-\typescriptthree.map]
 \stoptypescript
 
@@ -817,7 +763,6 @@
     \definefontsynonym [AntykwaTorunska-CondMedItalicCap]  [\typescriptthree-anttcmi] [encoding=\typescriptthree]
     \definefontsynonym [AntykwaTorunska-CondCap]           [\typescriptthree-anttcr]  [encoding=\typescriptthree]
     \definefontsynonym [AntykwaTorunska-CondItalicCap]     [\typescriptthree-anttcri] [encoding=\typescriptthree]
-
     \loadmapfile[antt-\typescriptthree.map]
 \stoptypescript
 
@@ -838,7 +783,6 @@
     \definefontsynonym [AntykwaTorunska-CondMedItalicCap]  [\typescriptthree-anttcmi] [encoding=\typescriptthree]
     \definefontsynonym [AntykwaTorunska-CondCap]           [\typescriptthree-anttcr]  [encoding=\typescriptthree]
     \definefontsynonym [AntykwaTorunska-CondItalicCap]     [\typescriptthree-anttcri] [encoding=\typescriptthree]
-
     \loadmapfile[antt-\typescriptthree.map]
 \stoptypescript
 
@@ -874,6 +818,7 @@
 \stoptypescript
 
 \starttypescript [math] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond] [default]
+    \usemathcollection[default]
     \loadmapfile[antt-rm.map]
     \loadmapfile[antt-mi.map]
     \loadmapfile[antt-sy.map]
@@ -887,7 +832,6 @@
     \definefontsynonym [AntykwaPoltawskiego-Bold]       [\typescriptthree-antpb]  [encoding=\typescriptthree]
     \definefontsynonym [AntykwaPoltawskiego-Italic]     [\typescriptthree-antpri] [encoding=\typescriptthree]
     \definefontsynonym [AntykwaPoltawskiego-BoldItalic] [\typescriptthree-antpbi] [encoding=\typescriptthree]
-
     \loadmapfile[\typescriptthree-public-antp.map]
 \stoptypescript
 
@@ -896,7 +840,6 @@
 % maybe this will change in Iwona-Math-Letters and Iwona-Math-Letters-Italic
 
 \starttypescript [sans] [iwona-light,iwona,iwona-medium,iwona-heavy,iwona-light-cond,iwona-cond,iwona-medium-cond,iwona-heavy-cond] [texnansi,ec,el,qx,t5]
-
     \definefontsynonym[Iwona-Regular]               [\typescriptthree-iwonar]      [encoding=\typescriptthree]
     \definefontsynonym[Iwona-Italic]                [\typescriptthree-iwonari]     [encoding=\typescriptthree]
     \definefontsynonym[Iwona-Bold]                  [\typescriptthree-iwonab]      [encoding=\typescriptthree]
@@ -907,7 +850,6 @@
     \definefontsynonym[Iwona-Medium-Italic]         [\typescriptthree-iwonami]     [encoding=\typescriptthree]
     \definefontsynonym[Iwona-Heavy-Regular]         [\typescriptthree-iwonah]      [encoding=\typescriptthree]
     \definefontsynonym[Iwona-Heavy-Italic]          [\typescriptthree-iwonahi]     [encoding=\typescriptthree]
-
     \definefontsynonym[Iwona-CapsRegular]           [\typescriptthree-iwonarcap]   [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CapsItalic]            [\typescriptthree-iwonaricap]  [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CapsBold]              [\typescriptthree-iwonabcap]   [encoding=\typescriptthree]
@@ -918,7 +860,6 @@
     \definefontsynonym[Iwona-CapsMedium-Italic]     [\typescriptthree-iwonamicap]  [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CapsHeavy-Regular]     [\typescriptthree-iwonahcap]   [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CapsHeavy-Italic]      [\typescriptthree-iwonahicap]  [encoding=\typescriptthree]
-
     \definefontsynonym[Iwona-CondRegular]           [\typescriptthree-iwonacr]     [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CondItalic]            [\typescriptthree-iwonacri]    [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CondBold]              [\typescriptthree-iwonacb]     [encoding=\typescriptthree]
@@ -929,7 +870,6 @@
     \definefontsynonym[Iwona-CondMedium-Italic]     [\typescriptthree-iwonacmi]    [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CondHeavy-Regular]     [\typescriptthree-iwonach]     [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CondHeavy-Italic]      [\typescriptthree-iwonachi]    [encoding=\typescriptthree]
-
     \definefontsynonym[Iwona-CapsCondRegular]       [\typescriptthree-iwonacrcap]  [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CapsCondItalic]        [\typescriptthree-iwonacricap] [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CapsCondBold]          [\typescriptthree-iwonacbcap]  [encoding=\typescriptthree]
@@ -940,7 +880,6 @@
     \definefontsynonym[Iwona-CapsCondMedium-Italic] [\typescriptthree-iwonacmicap] [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CapsCondHeavy-Regular] [\typescriptthree-iwonachcap]  [encoding=\typescriptthree]
     \definefontsynonym[Iwona-CapsCondHeavy-Italic]  [\typescriptthree-iwonachicap] [encoding=\typescriptthree]
-
     \loadmapfile[iwona-\typescriptthree.map]
 \stoptypescript
 
@@ -973,6 +912,7 @@
 \stoptypescript
 
 \starttypescript [math] [iwona,iwona-light,iwona-medium,iwona-heavy] [default]
+    \usemathcollection[default]
     \loadmapfile[iwona-rm.map]
     \loadmapfile[iwona-mi.map]
     \loadmapfile[iwona-sy.map]
@@ -980,21 +920,6 @@
 \stoptypescript
 
 % Kurier (JMN)
-
-% \starttypescript [sans] [kurier-light,kurier,kurier-medium] [texnansi,ec,qx,t5]
-%     \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurierr]  [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-Italic]        [\typescriptthree-kurierri] [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-Bold]          [\typescriptthree-kurierb]  [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-BoldItalic]    [\typescriptthree-kurierbi] [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-Light-Regular] [\typescriptthree-kurierl]  [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-Light-Italic]  [\typescriptthree-kurierli] [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-Medium-Regular][\typescriptthree-kurierm]  [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-Medium-Italic] [\typescriptthree-kuriermi] [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-Heavy-Regular] [\typescriptthree-kurierh]  [encoding=\typescriptthree]
-%     \definefontsynonym[Kurier-Heavy-Italic]  [\typescriptthree-kurierhi] [encoding=\typescriptthree]
-
-%     \loadmapfile[kurier-\typescriptthree.map]
-% \stoptypescript
 
 \starttypescript [sans] [kurier-light,kurier,kurier-medium] [texnansi,ec,qx,t5]
     \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurierr]  [encoding=\typescriptthree]
@@ -1008,7 +933,6 @@
     \definefontsynonym[Kurier-MediumItalic]  [\typescriptthree-kuriermi] [encoding=\typescriptthree]
     \definefontsynonym[Kurier-Heavy]         [\typescriptthree-kurierh]  [encoding=\typescriptthree]
     \definefontsynonym[Kurier-HeavyItalic]   [\typescriptthree-kurierhi] [encoding=\typescriptthree]
-
     \loadmapfile[kurier-\typescriptthree.map]
 \stoptypescript
 
@@ -1034,35 +958,88 @@
 \stoptypescript
 
 \starttypescript [math] [kurier,kurier-light,kurier-medium] [default]
+    \usemathcollection[default]
     \loadmapfile[kurier-rm.map]
     \loadmapfile[kurier-mi.map]
     \loadmapfile[kurier-sy.map]
     \loadmapfile[kurier-ex.map]
 \stoptypescript
 
-% Palatino (URW)
-
-\starttypescript [serif] [palatino] [qx]
-    \definefontsynonym [qx-uplr8a]                 [qplr]  [encoding=qx]
-    \definefontsynonym [qx-uplri8a]                [qplri] [encoding=qx]
-    \definefontsynonym [qx-uplb8a]                 [qplb]  [encoding=qx]
-    \definefontsynonym [qx-uplbi8a]                [qplbi] [encoding=qx]
-    \definefontsynonym [qx-uplr8a-slanted-167]     [qplri] [encoding=qx]
-    \definefontsynonym [qx-uplb8a-slanted-167]     [qplbi] [encoding=qx]
-    \definefontsynonym [qx-uplr8a-capitalized-800] [qplr]  [encoding=qx]
+\starttypescript [kurier-light,kurier,kurier-medium] [texnansi,ec,qx,t5]
+    \definetypeface[\typescriptone][ss][sans] [\typescriptone] [default][encoding=\typescripttwo]
+    \definetypeface[\typescriptone][rm][serif][modern]         [default][encoding=\typescripttwo]
+    \definetypeface[\typescriptone][tt][mono] [modern]         [default][encoding=\typescripttwo,rscale=1.05]
+    \definetypeface[\typescriptone][mm][math] [\typescriptone] [default][encoding=\typescripttwo,text=ss]
+    \quittypescriptscanning
 \stoptypescript
 
-\starttypescript [serif] [palatino] [texnansi,ec,8r,t5]
-    \definefontsynonym [Palatino]             [\typescriptthree-uplr8a]  [encoding=\typescriptthree]
-    \definefontsynonym [Palatino-Italic]      [\typescriptthree-uplri8a] [encoding=\typescriptthree]
-    \definefontsynonym [Palatino-Bold]        [\typescriptthree-uplb8a]  [encoding=\typescriptthree]
-    \definefontsynonym [Palatino-BoldItalic]  [\typescriptthree-uplbi8a] [encoding=\typescriptthree]
+% Utopia (Adobe)
 
-    \definefontsynonym [Palatino-Slanted]     [\typescriptthree-uplr8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Palatino-BoldSlanted] [\typescriptthree-uplb8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Palatino-Caps]        [\typescriptthree-uplr8a-capitalized-800] [encoding=\typescriptthree]
+\starttypescript [serif] [utopia] [ec,texnansi]
+    \definefontsynonym [Utopia-Regular]     [\typescriptthree-putr8a]                 [encoding=\typescriptthree]
+    \definefontsynonym [Utopia-Italic]      [\typescriptthree-putri8a]                [encoding=\typescriptthree]
+    \definefontsynonym [Utopia-Bold]        [\typescriptthree-putb8a]                 [encoding=\typescriptthree]
+    \definefontsynonym [Utopia-BoldItalic]  [\typescriptthree-putbi8a]                [encoding=\typescriptthree]
+    \definefontsynonym [Utopia-Slanted]     [\typescriptthree-putr8a-slanted-167]     [encoding=\typescriptthree]
+    \definefontsynonym [Utopia-BoldSlanted] [\typescriptthree-putb8a-slanted-167]     [encoding=\typescriptthree]
+    \definefontsynonym [Utopia-Regular-Caps][\typescriptthree-putr8a-capitalized-800] [encoding=\typescriptthree]
+    \loadmapfile[\typescriptthree-adobe-utopia.map]
+\stoptypescript
 
-    \loadmapfile[\typescriptthree-urw-palatino.map]
+% Charter (Bitstream)
+
+\starttypescript [serif] [charter] [ec,texnansi,8r]
+    \definefontsynonym [Charter-Roman]      [\typescriptthree-bchr8a]                 [encoding=\typescriptthree]
+    \definefontsynonym [Charter-Italic]     [\typescriptthree-bchri8a]                [encoding=\typescriptthree]
+    \definefontsynonym [Charter-Bold]       [\typescriptthree-bchb8a]                 [encoding=\typescriptthree]
+    \definefontsynonym [Charter-BoldItalic] [\typescriptthree-bchbi8a]                [encoding=\typescriptthree]
+    \definefontsynonym [Charter-Slanted]    [\typescriptthree-bchr8a-slanted-167]     [encoding=\typescriptthree]
+    \definefontsynonym [Charter-BoldSlanted][\typescriptthree-bchb8a-slanted-167]     [encoding=\typescriptthree]
+    \definefontsynonym [Charter-Roman-Caps] [\typescriptthree-bchr8a-capitalized-800] [encoding=\typescriptthree]
+    \loadmapfile[\typescriptthree-bitstrea-charter.map]
+\stoptypescript
+
+% Whatever else we need:
+
+\starttypescript
+    \definefontsynonym [ZapfDingbats]          [uzdr]
+    \definefontsynonym [RalfSmithFormalScript] [rsfs10]
+    \definefontsynonym [MartinVogel]           [fmvr8x]
+\stoptypescript
+
+%
+% TeXGyre
+%
+% We now use tex-gyre fonts by default ...
+
+\definetypescriptprefix [f:pagella] [pl]  \definetypescriptprefix [f:palatino]   [pl]
+\definetypescriptprefix [f:termes]  [tm]  \definetypescriptprefix [f:times]      [tm]
+\definetypescriptprefix [f:heros]   [hv]  \definetypescriptprefix [f:helvetica]  [hv]
+\definetypescriptprefix [f:bonum]   [bk]  \definetypescriptprefix [f:bookman]    [bk]
+\definetypescriptprefix [f:schola]  [cs]  \definetypescriptprefix [f:schoolbook] [cs]
+\definetypescriptprefix [f:adventor][ag]  %definetypescriptprefix [f:adventor]   [ag]
+\definetypescriptprefix [f:cursor]  [cr]  \definetypescriptprefix [f:courier]    [cr]
+\definetypescriptprefix [f:chorus]  [zc]  \definetypescriptprefix [f:chancery]   [zc] % not the full set
+
+\starttypescript [serif,sans,mono] [pagella,palatino,termes,times,adventor,bonum,bookman,cursor,courier,heros,helvetica,schola,schoolbook] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r]     [encoding=\typescriptthree]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\typescriptthree-q\typescriptprefix{f:\typescripttwo}ri]    [encoding=\typescriptthree]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]           [\typescriptthree-q\typescriptprefix{f:\typescripttwo}b]     [encoding=\typescriptthree]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalic]     [\typescriptthree-q\typescriptprefix{f:\typescripttwo}bi]    [encoding=\typescriptthree]
+    \loadmapfile[q\typescriptprefix{f:\typescripttwo}-\typescriptthree.map]
+\stoptypescript
+
+\starttypescript [serif,sans,mono] [pagella,palatino,termes,times,adventor,bonum,bookman,cursor,courier,heros,helvetica,schola,schoolbook] [ec,texnansi,cs,qx,rm,t5,l7x]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Caps]           [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r-sc]  [encoding=\typescriptthree]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-ItalicCaps]     [\typescriptthree-q\typescriptprefix{f:\typescripttwo}ri-sc] [encoding=\typescriptthree]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldCaps]       [\typescriptthree-q\typescriptprefix{f:\typescripttwo}b-sc]  [encoding=\typescriptthree]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps] [\typescriptthree-q\typescriptprefix{f:\typescripttwo}bi-sc] [encoding=\typescriptthree]
+    \loadmapfile[q\typescriptprefix{f:\typescripttwo}-\typescriptthree.map]
+\stoptypescript
+
+\starttypescript [serif] [chorus,chancery] [ec,texnansi,cs,qx,rm,t5,t2a,t2b,t2c,l7x]
+    \definefontsynonym [TeXGyreChorus-MediumItalic] [\typescriptthree-qzcmi] [encoding=\typescriptthree]
+    \loadmapfile[qzc-\typescriptthree.map]
 \stoptypescript
 
 % bonus definitions
@@ -1070,18 +1047,16 @@
 % when these fonts are in tex live ...
 %
 % \definefontsynonym [Palatino-Caps] [TeXPalladioL-SC] [encoding=\typescriptthree]
+%
+% \starttypescript [serif] [palatino] [ec,texnansi]
+%     \definefontsynonym[TeXPalladioL-BoldItalicOsF][\typescriptthree-fplbij8a][encoding=\typescriptthree]
+%     \definefontsynonym[TeXPalladioL-BoldOsF]      [\typescriptthree-fplbj8a] [encoding=\typescriptthree]
+%     \definefontsynonym[TeXPalladioL-SC]           [\typescriptthree-fplrc8a] [encoding=\typescriptthree]
+%     \definefontsynonym[TeXPalladioL-ItalicOsF]    [\typescriptthree-fplrij8a][encoding=\typescriptthree]
+%     \loadmapfile[\typescriptthree-urw-palatino.map]
+% \stoptypescript
 
-\starttypescript [serif] [palatino] [ec,texnansi,8r]
-
-    \definefontsynonym[TeXPalladioL-BoldItalicOsF][\typescriptthree-fplbij8a][encoding=\typescriptthree]
-    \definefontsynonym[TeXPalladioL-BoldOsF]      [\typescriptthree-fplbj8a] [encoding=\typescriptthree]
-    \definefontsynonym[TeXPalladioL-SC]           [\typescriptthree-fplrc8a] [encoding=\typescriptthree]
-    \definefontsynonym[TeXPalladioL-ItalicOsF]    [\typescriptthree-fplrij8a][encoding=\typescriptthree]
-
-    \loadmapfile[\typescriptthree-urw-palatino.map]
-\stoptypescript
-
-% Palatino Math (PX)
+% Palatino Math (px)
 
 \starttypescript [math] [palatino] [all]
     \definefontsynonym [Palatino-Roman-Upright]     [pxr]
@@ -1099,93 +1074,110 @@
     \definefontsynonym [Palatino-Math-SymbolsC]     [pxsyc]
     \definefontsynonym [Palatino-Math-Italic-A]     [pxmia]
     \definefontsynonym [Palatino-Math-Extension-A]  [pxexa]
-
+    \usemathcollection[default]
     \loadmapfile[original-youngryu-px.map]
 \stoptypescript
 
-% Bookman (URW)
+% Times Math (tx)
 
-\starttypescript [serif] [bookman] [qx]
-    \definefontsynonym [qx-ubkl8a]                 [qbkr]  [encoding=qx]
-    \definefontsynonym [qx-ubkli8a]                [qbkri] [encoding=qx]
-    \definefontsynonym [qx-ubkd8a]                 [qbkb]  [encoding=qx]
-    \definefontsynonym [qx-ubkdi8a]                [qbkbi] [encoding=qx]
-    \definefontsynonym [qx-ubkl8a-slanted-167]     [qbkri] [encoding=qx]
-    \definefontsynonym [qx-ubkd8a-slanted-167]     [qbkbi] [encoding=qx]
-    \definefontsynonym [qx-ubkl8a-capitalized-800] [qbkr]  [encoding=qx]
+\starttypescript [math] [times] [all]
+    \definefontsynonym [Times-Roman-Upright]     [txr]
+    \definefontsynonym [Times-Roman-Italic]      [txi]
+    \definefontsynonym [Times-Roman-Slanted]     [txsl]
+    \definefontsynonym [Times-Roman-Caps]        [txsc]
+    \definefontsynonym [Times-Companion-Upright] [tcxr]
+    \definefontsynonym [Times-Companion-Italic]  [tcxi]
+    \definefontsynonym [Times-Companion-Slanted] [tcxsl]
+    \definefontsynonym [Times-Math-Italic]       [txmi]
+    \definefontsynonym [Times-Math-Symbols]      [txsy]
+    \definefontsynonym [Times-Math-Extension]    [txex]
+    \definefontsynonym [Times-Math-SymbolsA]     [txsya]
+    \definefontsynonym [Times-Math-SymbolsB]     [txsyb]
+    \definefontsynonym [Times-Math-SymbolsC]     [txsyc]
+    \definefontsynonym [Times-Math-Italic-A]     [txmia]
+    \definefontsynonym [Times-Math-Extension-A]  [txexa]
+    \usemathcollection[default]
+    \loadmapfile[original-youngryu-tx.map]
 \stoptypescript
 
-\starttypescript [serif] [bookman] [ec,texnansi,8r,t5]
-    \definefontsynonym [Bookman-Light]           [\typescriptthree-ubkl8a]                 [encoding=\typescriptthree]
-    \definefontsynonym [Bookman-LightItalic]     [\typescriptthree-ubkli8a]                [encoding=\typescriptthree]
-    \definefontsynonym [Bookman-DemiBold]        [\typescriptthree-ubkd8a]                 [encoding=\typescriptthree]
-    \definefontsynonym [Bookman-DemiBoldItalic]  [\typescriptthree-ubkdi8a]                [encoding=\typescriptthree]
-    \definefontsynonym [Bookman-LightSlanted]    [\typescriptthree-ubkl8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Bookman-DemiBoldSlanted] [\typescriptthree-ubkd8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Bookman-Light-Caps]      [\typescriptthree-ubkl8a-capitalized-800] [encoding=\typescriptthree]
+%D These are just fallbacks in case anyone stil uses the old names (might also be removed?).
 
-    \loadmapfile[\typescriptthree-urw-bookman.map]
+%
+% TeXGyrePagella
+%
+\starttypescript [serif] [palatino]
+  \definefontsynonym [Palatino]             [TeXGyrePagella-Regular]
+  \definefontsynonym [Palatino-Italic]      [TeXGyrePagella-Italic]
+  \definefontsynonym [Palatino-Bold]        [TeXGyrePagella-Bold]
+  \definefontsynonym [Palatino-BoldItalic]  [TeXGyrePagella-BoldItalic]
+  \definefontsynonym [Palatino-Slanted]     [TeXGyrePagella-Italic]
+  \definefontsynonym [Palatino-BoldSlanted] [TeXGyrePagella-BoldItalic]
+  \definefontsynonym [Palatino-Caps]        [TeXGyrePagella-Caps]
 \stoptypescript
-
-% Chancery (URW)
-
-\starttypescript [calligraphy] [chancery] [qx]
-      \definefontsynonym [qx-uzcmi8a] [qzcmi] [encoding=qx]
+%
+% TeXGyreTermes
+%
+\starttypescript [serif] [times]
+  \definefontsynonym [Times-Roman]          [TeXGyreTermes-Regular]
+  \definefontsynonym [Times-Italic]         [TeXGyreTermes-Italic]
+  \definefontsynonym [Times-Bold]           [TeXGyreTermes-Bold]
+  \definefontsynonym [Times-BoldItalic]     [TeXGyreTermes-BoldItalic]
+  \definefontsynonym [Times-Slanted]        [TeXGyreTermes-Italic]
+  \definefontsynonym [Times-BoldSlanted]    [TeXGyreTermes-BoldItalic]
+  \definefontsynonym [Times-Caps]           [TeXGyreTermes-Caps]
 \stoptypescript
-
-\starttypescript [calligraphy] [chancery] [ec,texnansi,8r]
-    \definefontsynonym [Chancery] [\typescriptthree-uzcmi8a] [encoding=\typescriptthree]
-    \loadmapfile[\typescriptthree-urw-zapfchan.map]
+%
+% TeXGyreHeros
+%
+\starttypescript [sans] [helvetica]
+  \definefontsynonym [Helvetica]              [TeXGyreHeros-Regular]
+  \definefontsynonym [Helvetica-Oblique]      [TeXGyreHeros-Italic]
+  \definefontsynonym [Helvetica-Bold]         [TeXGyreHeros-Bold]
+  \definefontsynonym [Helvetica-BoldOblique]  [TeXGyreHeros-BoldItalic]
+  \definefontsynonym [Helvetica-Caps]         [TeXGyreHeros-Caps]
 \stoptypescript
-
-% New Century Schoolbook (URW)
-
-\starttypescript [serif] [schoolbook] [ec,texnansi,8r,t5]
-    \definefontsynonym [Schoolbook-Roman]        [\typescriptthree-uncr8a]                 [encoding=\typescriptthree]
-    \definefontsynonym [Schoolbook-Italic]       [\typescriptthree-uncri8a]                [encoding=\typescriptthree]
-    \definefontsynonym [Schoolbook-Bold]         [\typescriptthree-uncb8a]                 [encoding=\typescriptthree]
-    \definefontsynonym [Schoolbook-BoldItalic]   [\typescriptthree-uncbi8a]                [encoding=\typescriptthree]
-    \definefontsynonym [Schoolbook-RomanSlanted] [\typescriptthree-uncr8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Schoolbook-BoldSlanted]  [\typescriptthree-uncb8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Schoolbook-Roman-Caps]   [\typescriptthree-uncr8a-capitalized-800] [encoding=\typescriptthree]
-
-    \loadmapfile[\typescriptthree-urw-ncntrsbk.map]
+%
+% TeXGyreBonum
+%
+\starttypescript [serif] [bookman]
+  \definefontsynonym [Bookman-Light]            [TeXGyreBonum-Regular]
+  \definefontsynonym [Bookman-LightItalic]      [TeXGyreBonum-Italic]
+  \definefontsynonym [Bookman-DemiBold]         [TeXGyreBonum-Bold]
+  \definefontsynonym [Bookman-DemiBoldItalic]   [TeXGyreBonum-BoldItalic]
+  \definefontsynonym [Bookman-LightSlanted]     [TeXGyreBonum-Italic]
+  \definefontsynonym [Bookman-DemiBoldSlanted]  [TeXGyreBonum-BoldItalic]
+  \definefontsynonym [Bookman-Light-Caps]       [TeXGyreBonum-Caps]
 \stoptypescript
-
-% Utopia (Adobe)
-
-\starttypescript [serif] [utopia] [ec,texnansi]
-    \definefontsynonym [Utopia-Regular]     [\typescriptthree-putr8a]                 [encoding=\typescriptthree]
-    \definefontsynonym [Utopia-Italic]      [\typescriptthree-putri8a]                [encoding=\typescriptthree]
-    \definefontsynonym [Utopia-Bold]        [\typescriptthree-putb8a]                 [encoding=\typescriptthree]
-    \definefontsynonym [Utopia-BoldItalic]  [\typescriptthree-putbi8a]                [encoding=\typescriptthree]
-    \definefontsynonym [Utopia-Slanted]     [\typescriptthree-putr8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Utopia-BoldSlanted] [\typescriptthree-putb8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Utopia-Regular-Caps][\typescriptthree-putr8a-capitalized-800] [encoding=\typescriptthree]
-
-    \loadmapfile[\typescriptthree-adobe-utopia.map]
+%
+% TeXGyreScola
+%
+\starttypescript [serif] [schoolbook]
+  \definefontsynonym [Schoolbook-Roman]        [TeXGyreScola-Regular]
+  \definefontsynonym [Schoolbook-Italic]       [TeXGyreScola-Italic]
+  \definefontsynonym [Schoolbook-Bold]         [TeXGyreScola-Bold]
+  \definefontsynonym [Schoolbook-BoldItalic]   [TeXGyreScola-BoldItalic]
+  \definefontsynonym [Schoolbook-Slanted]      [TeXGyreScola-Italic]
+  \definefontsynonym [Schoolbook-BoldSlanted]  [TeXGyreScola-BoldItalic]
+  \definefontsynonym [Schoolbook-Roman-Caps]   [TeXGyreScola-Caps]
 \stoptypescript
-
-% Charter (Bitstream)
-
-\starttypescript [serif] [charter] [ec,texnansi,8r]
-    \definefontsynonym [Charter-Roman]      [\typescriptthree-bchr8a]                 [encoding=\typescriptthree]
-    \definefontsynonym [Charter-Italic]     [\typescriptthree-bchri8a]                [encoding=\typescriptthree]
-    \definefontsynonym [Charter-Bold]       [\typescriptthree-bchb8a]                 [encoding=\typescriptthree]
-    \definefontsynonym [Charter-BoldItalic] [\typescriptthree-bchbi8a]                [encoding=\typescriptthree]
-    \definefontsynonym [Charter-Slanted]    [\typescriptthree-bchr8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Charter-BoldSlanted][\typescriptthree-bchb8a-slanted-167]     [encoding=\typescriptthree]
-    \definefontsynonym [Charter-Roman-Caps] [\typescriptthree-bchr8a-capitalized-800] [encoding=\typescriptthree]
-
-    \loadmapfile[\typescriptthree-bitstrea-charter.map]
+%
+% TeXGyreAdventor
+%
+%
+% TeXGyreCursor
+%
+\starttypescript [mono] [courier]
+    \definefontsynonym [Courier]              [TeXGyreCursor-Regular]
+    \definefontsynonym [Courier-Bold]         [TeXGyreCursor-Bold]
+    \definefontsynonym [Courier-Oblique]      [TeXGyreCursor-Italic]
+    \definefontsynonym [Courier-BoldOblique]  [TeXGyreCursor-BoldItalic]
+    \fakecontrolspace
 \stoptypescript
-
-% Whatever else we need:
-
-\starttypescript
-  \definefontsynonym [ZapfDingbats]          [uzdr]
-  \definefontsynonym [RalfSmithFormalScript] [rsfs10]
-  \definefontsynonym [MartinVogel]           [fmvr8x]
+%
+% TeXGyreChorus
+%
+\starttypescript [calligraphy] [chancery]
+    \definefontsynonym [Chancery] [TeXGyreChorus-MediumItalic]
 \stoptypescript
 
 \stoptypescriptcollection

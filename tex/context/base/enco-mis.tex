@@ -36,30 +36,6 @@
 
 \unprotect
 
-% \def\pseudoencodeddj % like in babel
-%   {\leavevmode\hbox\bgroup
-%    \setbox0\hbox{d}%
-%    \dimen0=\ht0
-%    \advance\dimen0 1ex
-%    \dimen0=.45\dimen0
-%    \dimen2=\withoutpt\the\slantperpoint\dimen0
-%    \advance\dimen2 .5ex
-%    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
-%    \box0
-%    \egroup}
-%
-% \def\pseudoencodedDJ % like in babel
-%   {\leavevmode
-%    \hbox\bgroup
-%    \setbox0\hbox{D}%
-%    \dimen0=.55\ht0
-%    \dimen2=\withoutpt\the\slantperpoint\dimen0
-%    \advance\dimen2 .15ex
-%    \advance\dimen2 -.15\extraspace
-%    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.33em}}}%
-%    \box0
-%    \egroup}
-
 \def\pseudoencodeddj % like in babel, but safer
   {\dontleavehmode\hbox\bgroup
    \setbox\scratchbox\hbox{d}%
@@ -72,19 +48,6 @@
      {\box\scratchbox\hss
       \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
    \egroup}
-
-% \def\pseudoencodedDJ % like in babel, but safer
-%   {\leavevmode
-%    \hbox\bgroup
-%    \setbox\scratchbox\hbox{D}%
-%    \scratchdimen.55\ht\scratchbox
-%    \dimen2=\withoutpt\the\slantperpoint\scratchdimen
-%    \advance\dimen2 .15ex
-%    \advance\dimen2 -.15\extraspace
-%    \hbox to \wd\scratchbox
-%      {\box\scratchbox\hss
-%       \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
-%    \egroup}
 
 \def\pseudoencodedDJ % design: taco; quality assurance: mojca; cleanup: hans
   {\dontleavehmode

@@ -1,0 +1,47 @@
+%D \module
+%D   [       file=luatex-test,
+%D        version=2009.12.01,
+%D          title=\LUATEX\ Support Macros,
+%D       subtitle=Simple Test File,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=public domain]
+
+%D See \type {luatex-plain.tex} (or on my machine \type {luatex.tex}
+%D for how to make a format.
+
+\pdfoutput=1
+
+\font\testa=file:lmroman10-regular                  at 12pt \testa \input tufte \par
+\font\testb=file:lmroman12-regular:+liga;           at 24pt \testb effe flink fietsen \par
+\font\testc=file:lmroman12-regular:mode=node;+liga; at 24pt \testc effe flink fietsen \par
+\font\testd=name:lmroman10bold                      at 12pt \testd a bit bold \par
+
+\font\oeps=[lmroman12-regular]:+liga at 30pt \oeps crap
+\font\oeps=[lmroman12-regular]       at 40pt \oeps more crap
+
+\font\oeps=cmr10
+
+\font\testx=ptmr8t \testx abc
+
+\font\cidtest=adobesongstd-light
+
+\font\mathtest=cambria(math) {\mathtest 123}
+
+% \font\testy=file:IranNastaliq.ttf:mode=node;script=arab;language=dflt;+calt;+ccmp;+init;+isol;+medi;+fina;+liga;+rlig;+kern;+mark;+mkmk at 14pt
+% \testy این یک متن نمونه است با قلم ذر که درست آمده است.
+% \font\testz=name:linlibertineo \testz
+
+\setmplibformat{plain}
+
+\mplibcode
+    beginfig(1) ;
+        draw fullcircle
+            scaled 10cm
+            withcolor red
+            withpen pencircle xscaled 4mm yscaled 2mm rotated 30 ;
+    endfig ;
+\endmplibcode
+
+\end
+

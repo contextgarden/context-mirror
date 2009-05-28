@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\writestatus{loading}{ConTeXt Core Macros / Figure Inclusion}
+
 %  todo: directory : system -> \allinputpaths (so that we can \usesubpath)
 
 %D This is a reimplementation of the original module, which
@@ -30,82 +32,19 @@
 
 \unprotect
 
-\startmessages  dutch  library: figures
-   title: figuren
-       1: figuur -- is niet te vinden
-       2: figuur -- wordt niet preset
-       3: maten van -- worden extern vastgesteld
-       4: maten van -- geladen uit figuurfile zelf
-       5: maten van -- zijn onbekend
-       6: maten van -- berekend door rlxtools
-       8: figuurobject -- wordt opnieuw gebruikt
-\stopmessages
+% messages moved
 
-\startmessages  english  library: figures
-   title: figures
-       1: figure -- can not be found
-       2: figure -- is not preset
-       3: dimensions of -- are determined externally
-       4: dimensions of -- loaded from figurefile itself
-       5: dimensions of -- are unknown
-       6: dimensions of -- calculated by rlxtools
-       8: figureobject -- is reused
-\stopmessages
+% messages moved
 
-\startmessages  german  library: figures
-   title: Abbildungen
-       1: Abbildung -- kann nicht gefunden werden
-       2: Abbildung -- wird nicht erstellt
-       3: dimensions of -- are determined externally
-       4: Dimensionen von -- geladen aus der Abbildungsdatei selbst
-       5: Dimensions of -- are unknown
-       6: Dimensionen von -- ausgerechnet durch rlxtools
-       8: Abbildungobjekt -- wurde wiederverwandt
-\stopmessages
+% messages moved
 
-\startmessages  czech  library: figures
-   title: obrazy
-       1: obraz -- nelze nalezt
-       2: obraz -- nepritomen
-       3: dimensions of -- are determined externally
-       4: dimenze obrazu -- nacteny primo z jeho souboru
-       5: dimensions of -- are unknown
-       6: dimenze obrazu -- spocteny programem rlxtools
-       8: obrazovy objekt -- je znovu pouzit
-\stopmessages
+% messages moved
 
-\startmessages  italian  library: figures
-   title: figure
-       1: figura -- non trovata
-       2: la figura -- non è preimpostata
-       3: dimensions of -- are determined externally
-       4: dimensioni di -- caricate dal file di immagini stesso
-       5: dimensions of -- are unknown
-       6: dimensioni di -- calcolate da rlxtools
-       8: oggetto-figura -- riutilizzato
-\stopmessages
+% messages moved
 
-\startmessages  romanian  library: figures
-   title: figuri
-       1: figura -- nu poate fi gasita
-       2: figura -- nu este presetata
-       3: dimensions of -- are determined externally
-       4: dimensiunea figurii -- se incarca din fisierul insusi
-       5: dimensions of -- are unknown
-       6: dimensiunea figurii -- este calculata de rlxtools
-       8: obiectul figura -- este refolosit
-\stopmessages
+% messages moved
 
-\startmessages  french  library: figures
-   title: figures
-       1: la figure -- ne peut être trouvée
-       2: la figure -- n'est pas pré-sélectionnée
-       3: dimensions of -- are determined externally
-       4: les dimensions de -- chargées implicitement à partir du fichier de figure
-       5: dimensions of -- are unknown
-       6: les dimensions de -- calculées par rlxtools
-       8: figureobject -- est réutilisé
-\stopmessages
+% messages moved
 
 %D Due to the mere fact that \DVI|/|\PDF\ drivers differ in their
 %D needs for figure dimensions, we have to provide the width,
@@ -827,8 +766,8 @@
 \def\insertscaledfiguredriverdata
   {\insertfiguredriverdata\finalscaleboxwidth\finalscaleboxheight}
 
-\ifx\externalfigurereplacement\undefined\let\externalfigurereplacement\gobblethrearguments\fi
-\ifx\externalfigureplaceholder\undefined\let\externalfigureplaceholder\gobblethrearguments\fi
+\ifx\externalfigurereplacement\undefined\let\externalfigurereplacement\gobblethreearguments\fi
+\ifx\externalfigureplaceholder\undefined\let\externalfigureplaceholder\gobblethreearguments\fi
 
 \def\registerexternalfigure % no placement, handy for preprocessing
   {\dotripleempty\doregisterexternalfigure}

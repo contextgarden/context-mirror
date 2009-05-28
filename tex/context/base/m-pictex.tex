@@ -88,11 +88,14 @@
 %D redefinition already took place. We save the original
 %D meanings, so we can restores them afterwards.
 
-\let\normalnewdimen = \newdimen
-\let\normalnewskip  = \newskip
+% \def\temporarynewdimen {\alloc@1\dimen\dimendef\insc@unt}
+% \def\temporarynewskip  {\alloc@2\skip \skipdef \insc@unt}
 
-\def\temporarynewdimen {\alloc@1\dimen\dimendef\insc@unt}
-\def\temporarynewskip  {\alloc@2\skip \skipdef \insc@unt}
+\let\normalnewdimen   \newdimen
+\let\normalnewskip    \newskip
+
+\let\temporarynewdimen\newdimen
+\let\temporarynewskip \newskip
 
 %D Here comes the trick. Depending on how many \DIMENSIONS\ and
 %D \SKIPS\ are allocated, the \type{\newdimen} assigns a

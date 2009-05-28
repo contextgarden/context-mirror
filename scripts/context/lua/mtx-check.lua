@@ -34,7 +34,7 @@ do
         end
     end
 
-    local P, S, V, C, CP, CC = lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cp, lpeg.Cc
+    local P, R, S, V, C, CP, CC = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cp, lpeg.Cc
 
     local i_m, d_m = P("$"), P("$$")
     local l_s, r_s = P("["), P("]")
@@ -49,22 +49,27 @@ do
 
     local line = newline / function() validator.n = validator.n + 1 end
 
-    local grammar = P { "tokens",
-        ["tokens"]   = (V("whatever") + V("grouped") +  V("setup") + V("display") + V("inline") + V("errors") + 1)^0,
-        ["whatever"] = line + esc * 1 + C(P("%") * (1-line)^0),
-        ["grouped"]  = CP() * C(l_g * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_g - r_g))^0 * r_g) * CC("group") / progress,
-        ["setup"]    = CP() * C(l_s * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_s - r_s))^0 * r_s) * CC("setup") / progress,
-        ["display"]  = CP() * C(d_m * (V("whatever") + V("grouped") + (1 - d_m))^0 * d_m) * CC("display") / progress,
-        ["inline"]   = CP() * C(i_m * (V("whatever") + V("grouped") + (1 - i_m))^0 * i_m) * CC("inline") / progress,
-        ["errors"]   = (V("gerror") + V("serror") + V("derror") + V("ierror")) * true,
-        ["gerror"]   = CP() * (l_g + r_g) * CC("grouping") / message,
-        ["serror"]   = CP() * (l_s + r_g) * CC("setup error") / message,
-        ["derror"]   = CP() * d_m * CC("display math error") / message,
-        ["ierror"]   = CP() * i_m * CC("inline math error") / message,
-    }
+    --  local grammar = P { "tokens",
+    --      ["tokens"]   = (V("whatever") + V("grouped") +  V("setup") + V("display") + V("inline") + V("errors") + 1)^0,
+    --      ["whatever"] = line + esc * 1 + C(P("%") * (1-line)^0),
+    --      ["grouped"]  = CP() * C(l_g * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_g - r_g))^0 * r_g) * CC("group") / progress,
+    --      ["setup"]    = CP() * C(l_s * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_s - r_s))^0 * r_s) * CC("setup") / progress,
+    --      ["display"]  = CP() * C(d_m * (V("whatever") + V("grouped") + (1 - d_m))^0 * d_m) * CC("display") / progress,
+    --      ["inline"]   = CP() * C(i_m * (V("whatever") + V("grouped") + (1 - i_m))^0 * i_m) * CC("inline") / progress,
+    --      ["errors"]   = (V("gerror") + V("serror") + V("derror") + V("ierror")) * true,
+    --      ["gerror"]   = CP() * (l_g + r_g) * CC("grouping") / message,
+    --      ["serror"]   = CP() * (l_s + r_g) * CC("setup error") / message,
+    --      ["derror"]   = CP() * d_m * CC("display math error") / message,
+    --      ["ierror"]   = CP() * i_m * CC("inline math error") / message,
+    --  }
+
+    local startluacode = P("\\startluacode")
+    local stopluacode  = P("\\stopluacode")
+
+    local somecode  = startluacode * (1-stopluacode)^1 * stopluacode
 
     local grammar = P { "tokens",
-        ["tokens"]   = (V("whatever") + V("grouped") +  V("setup") + V("display") + V("inline") + V("errors") + 1)^0,
+        ["tokens"]   = (V("ignore") + V("whatever") + V("grouped") +  V("setup") + V("display") + V("inline") + V("errors") + 1)^0,
         ["whatever"] = line + esc * 1 + C(P("%") * (1-line)^0),
         ["grouped"]  = l_g * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_g - r_g))^0 * r_g,
         ["setup"]    = l_s * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_s - r_s))^0 * r_s,
@@ -75,6 +80,7 @@ do
         ["serror"]   = CP() * (l_s + r_g) * CC("setup error") / message,
         ["derror"]   = CP() * d_m * CC("display math error") / message,
         ["ierror"]   = CP() * i_m * CC("inline math error") / message,
+        ["ignore"]   = somecode,
     }
 
     function validator.check(str)
@@ -117,19 +123,16 @@ function scripts.checker.check(filename)
     end
 end
 
-
-banner = banner .. " | tex check tools "
+logs.extendbanner("Syntax Checking 0.10",true)
 
 messages.help = [[
 --convert             check tex file for errors
 ]]
 
-input.verbose = true
-
 if environment.argument("check") then
     scripts.checker.check(environment.files[1])
 elseif environment.argument("help") then
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 elseif environment.files[1] then
     scripts.checker.check(environment.files[1])
 end

@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=strc-xml,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=XML Processing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / XML Processing}
+
+\unprotect
+
+\startxmlsetups xml:ctx:tocentry
+    \xmlsetsetup{\xmldocument}{ctx:tocentry}{xml:ctx:tocentry}
+\stopxmlsetups
+
+\xmlregistersetup{xml:ctx:tocentry}
+
+\startxmlsetups xml:ctx:tocentry
+    \xmlflush{#1}
+\stopxmlsetups
+
+\protect \endinput
+
+% test.xml
+
+<?xml version='1.0' standalone='yes?>
+
+<document>
+  <section>
+    <title>Some <b>bold</b> title <b>bold <i>bold</i> oeps</b> and more</title>
+    <content>
+      <p>a paragraph of text</p>
+      <p>another paragraph of text</p>
+    </content>
+  </section>
+  <section>
+    <title>Another <b>bold</b> title <b>bold <i>bold</i> oeps</b> and more</title>
+    <content>
+      <p>a paragraph of text</p>
+      <p>another paragraph of text</p>
+    </content>
+  </section>
+</document>
+
+% test.tex
+
+\setupstructurehead[chapter][expansion=xml]
+
+\startxmlsetups xml:demo:define:base
+    \xmlsetsetup{demo}{document|section|p|b|i}{xml:demo:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{demo}{xml:demo:define:base}
+
+\startxmlsetups xml:demo:document
+    \title{Contents}
+    \placelist[chapter]
+    \page
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:demo:section
+    \chapter{\xmltext{#1}{/title}}
+    \xmlfirst{#1}{/content}
+\stopxmlsetups
+
+\startxmlsetups xml:demo:p
+    \xmlflush{#1}\endgraf
+\stopxmlsetups
+
+\startxmlsetups xml:demo:b
+    \bgroup\bf\xmlflush{#1}\egroup
+\stopxmlsetups
+
+\startxmlsetups xml:demo:i
+    \bgroup\it\xmlflush{#1}\egroup
+\stopxmlsetups
+
+\starttext
+    \xmlprocessfile{demo}{oeps.xml}{}
+\stoptext

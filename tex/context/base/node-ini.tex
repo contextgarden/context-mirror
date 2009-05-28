@@ -1,8 +1,8 @@
 %D \module
 %D   [       file=node-ini,
 %D        version=2006.08.20,
-%D          title=\CONTEXT\ Character Macros,
-%D       subtitle=Node Support (Initialization),
+%D          title=\CONTEXT\ Node Macros,
+%D       subtitle=Initialization,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright=PRAGMA]
@@ -11,10 +11,59 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Node Support (initialization)}
+\writestatus{loading}{ConTeXt Node Support / Initialization}
 
-\registerctxluafile{node-seq}{1.001}
+\unprotect
+
+\newcount\filterstate \filterstate\plusone
+
 \registerctxluafile{node-ini}{1.001}
+\registerctxluafile{node-tst}{1.001}
+\registerctxluafile{node-tra}{1.001} % we might split it off (module)
+\registerctxluafile{node-seq}{1.001} % we might generalize this one
+\registerctxluafile{node-tsk}{1.001}
+\registerctxluafile{node-tex}{1.001}
+\registerctxluafile{node-res}{1.001}
+\registerctxluafile{node-pro}{1.001}
+\registerctxluafile{node-shp}{1.001}
+\registerctxluafile{node-ser}{1.001}
+\registerctxluafile{node-ext}{1.001}
+\registerctxluafile{node-inj}{1.001} % we might split it off
+
+\newtoks \attributesresetlist
+
+\ifdefined \v!global \else \def\v!global{global} \fi % for metatex
+
+\def\defineattribute
+  {\dodoubleempty\dodefineattribute}
+
+\def\dodefineattribute[#1][#2]% alternatively we can let lua do the housekeeping
+  {\expandafter\newattribute\csname @attr@#1\endcsname
+   \expandafter        \xdef\csname :attr:#1\endcsname{\number\lastallocatedattribute}%
+   \ctxlua{attributes.define("#1",\number\lastallocatedattribute)}%
+  %\writestatus\m!systems{defining attribute #1 with number \number\lastallocatedattribute}%
+   \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
+
+\def\definesystemattribute
+  {\dodoubleempty\dodefinesystemattribute}
+
+\def\dodefinesystemattribute[#1][#2]% alternatively we can let lua do the housekeeping
+  {\scratchcounter\ctxlua{tex.print(attributes.private("#1"))}\relax
+   \global\expandafter\attributedef\csname @attr@#1\endcsname\scratchcounter
+          \expandafter        \xdef\csname :attr:#1\endcsname{\number\scratchcounter}%
+  %\writestatus\m!systems{defining system attribute #1 with number \number\scratchcounter}%
+   \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
+
+% expandable so we can \edef them for speed
+
+\def\dosetattribute#1#2{\csname @attr@#1\endcsname#2\relax}
+\def\doresetattribute#1{\csname @attr@#1\endcsname\attributeunsetvalue}
+\def\dogetattribute  #1{\number\csname @attr@#1\endcsname}
+\def\dogetattributeid#1{\csname :attr:#1\endcsname}
+
+\let\dompattribute\gobbletwoarguments
+
+\def\resetallattributes{\the\attributesresetlist}
 
 % \appendtoks
 %     \ctxlua {
@@ -54,4 +103,4 @@
 %     \stoptracingnodes
 % \stoptext
 
-\endinput
+\protect \endinput

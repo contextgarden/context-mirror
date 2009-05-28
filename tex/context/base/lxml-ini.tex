@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=lxml-ini,
 %D        version=2007.08.17,
-%D          title=\CONTEXT\ \LUA\ based \XML\ Support,
+%D          title=\CONTEXT\ \XML\ Support,
 %D       subtitle=Initialization,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -11,8 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context L-XML Macros (initialization)}
+\writestatus{loading}{ConTeXt XML Support / Initialization}
 
+\registerctxluafile{lxml-tab}{1.001}
+\registerctxluafile{lxml-pth}{1.001}
+\registerctxluafile{lxml-ent}{1.001}
+\registerctxluafile{lxml-mis}{1.001}
 \registerctxluafile{lxml-ini}{1.001}
 
 \unprotect
@@ -31,7 +35,7 @@
 \def\xmldirectives         #1{\ctxlua{lxml.directives.setup("#1")}}
 \def\xmldirectivesbefore   #1{\ctxlua{lxml.directives.before("#1")}}
 \def\xmldirectivesafter    #1{\ctxlua{lxml.directives.after("#1")}}
-\def\xmlfilter           #1#2{\ctxlua{lxml.filter("#1","#2")}}
+\def\xmlfilter           #1#2{\ctxlua{lxml.filter("#1",\!!bs#2\!!es)}}
 \def\xmlfirst            #1#2{\ctxlua{lxml.first("#1","#2")}}
 \def\xmlflush              #1{\ctxlua{lxml.flush("#1")}}
 % \def\xmlcontent            #1{\ctxlua{lxml.content("#1")}}
@@ -47,6 +51,7 @@
 \def\xmlload             #1#2{\ctxlua{lxml.load("#1","#2")}}
 \def\xmlloadbuffer       #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
 \def\xmlloaddata         #1#2{\ctxlua{lxml.loaddata("#1",\!!bs#2\!!es)}}
+\def\xmlloadregistered   #1#2{\ctxlua{lxml.loadregistered("#1")}}
 \def\xmlloaddirectives     #1{\ctxlua{lxml.directives.load("#1")}}
 \def\xmlname               #1{\ctxlua{lxml.name("#1")}}
 \def\xmlnamespace          #1{\ctxlua{lxml.namespace("#1")}}
@@ -130,6 +135,8 @@
 \let\xmlregistersetup        \xmlappendsetup
 \let\xmlregisterdocumentsetup\xmlappenddocumentsetup
 
+\def\xmldocument{main}
+
 \def\xmlregisteredsetups
   {\xmlstarttiming
    \xmlflushsetups
@@ -143,8 +150,8 @@
    \xmldefaulttotext{#1}% after include
    \xmlstoptiming}
 
-\def\xmlstarttiming{\ctxlua{input.starttiming(lxml)}}
-\def\xmlstoptiming {\ctxlua{input.stoptiming (lxml)}}
+\def\xmlstarttiming{\ctxlua{statistics.starttiming(lxml)}}
+\def\xmlstoptiming {\ctxlua{statistics.stoptiming (lxml)}}
 
 \def\doxmlprocess#1#2#3#4%
   {\begingroup
@@ -160,10 +167,11 @@
      {\directsetup{#4}}%
    \endgroup}
 
-\def\xmlprocessfile  {\doxmlprocess\xmlload}
-\def\xmlprocessdata  {\doxmlprocess\xmlloaddata}
-\def\xmlprocessbuffer{\doxmlprocess\xmlloadbuffer}
-\let\xmlprocess       \xmlprocessfile
+\def\xmlprocessfile      {\doxmlprocess\xmlload}
+\def\xmlprocessdata      {\doxmlprocess\xmlloaddata}
+\def\xmlprocessbuffer    {\doxmlprocess\xmlloadbuffer}
+\def\xmlprocessregistered{\doxmlprocess\xmlloadregistered}
+\let\xmlprocess           \xmlprocessfile
 
 % beware: \xmlmain takes the real root, so also processing
 % instructions preceding the root element; well, in some
@@ -244,14 +252,6 @@
 \def\inlinemessage #1{\dontleavehmode{\tttf#1}}
 \def\displaymessage#1{\blank\inlinemessage{#1}\blank}
 
-% entities
-
-\def\xmlresolveentities
-  {\ctxlua{xml.set_text_cleanup(xml.resolve_text_entities)}}
-
-\def\xmlkeepentities
-  {\ctxlua{xml.set_text_cleanup()}}
-
 \def\xmltraceentities
   {\ctxlua{xml.set_text_cleanup(lxml.trace_text_entities)}%
    \appendtoks\ctxlua{lxml.show_text_entities()}\to\everygoodbye}
@@ -268,6 +268,8 @@
 % \setupxml[\c!method=mkiv,\c!default=\v!none] % mkiv only, undefined -> hidden
 % \setupxml[\c!method=mkiv,\c!default=\v!text] % mkiv only, undefined -> text
 
+% \def\xmlctxdirective#1#2#3{\doif{#1}{clue}{\doif{#2}{page}}{\page[#3]}}
+
 \chardef\xmlprocessingmode=0 % 0=mixed, 1=mkivonly, 2=mkivonly-default-text, 3=mkivonly-default-none
 
 % \setupxml[method=mkiv,strip=yes,entities=yes,default=text]
@@ -276,26 +278,49 @@
 
 \def\setupxml[#1]{\getparameters[\??xm][#1]\the\everysetupxml}
 
-\def\c!entities{entities}
+\def\c!entities{entities} % to be internationalized
 \def\s!mkiv    {mkiv}
 \def\s!mkii    {mkii}
 
+% entities
+
+\newif\ifautoXMLentities
+
+\def\xmlkeepentities{\ctxlua{lxml.reset_entityhandler()}}
+\def\xmlmkiientities{\ctxlua{lxml.set_mkii_entityhandler()}\autoXMLentitiestrue}
+\def\xmlmkiventities{\ctxlua{lxml.set_mkiv_entityhandler()}}
+
+\let\xmlresolveentities\xmlmkiventities % will become \xmlmkiventities
+
 \letvalue{\??xm:1:\s!mkii  }\zerocount
 \letvalue{\??xm:1:\s!mkiv  }\plusone
+
 \letvalue{\??xm:2:\v!none  }\plusone
 \letvalue{\??xm:2:\v!text  }\plustwo
 \letvalue{\??xm:2:\v!hidden}\plusthree
 
+\letvalue{\??xm:ii:\v!yes }\xmlresolveentities
+\letvalue{\??xm:ii:\v!no  }\xmlkeepentities
+\letvalue{\??xm:ii:\s!mkii}\xmlmkiientities
+\letvalue{\??xm:ii:\s!mkiv}\xmlmkiventities
+
+\letvalue{\??xm:iv:\v!yes }\xmlresolveentities
+\letvalue{\??xm:iv:\v!no  }\xmlkeepentities
+\letvalue{\??xm:iv:\s!mkii}\xmlmkiventities
+\letvalue{\??xm:iv:\s!mkiv}\xmlmkiventities
+
 \appendtoks
     \chardef\xmlprocessingmode\executeifdefined{\??xm:1:\@@xmmethod}\zerocount
     \ifcase\xmlprocessingmode
-        % mkii
+        % mkii, permits both methods
+        \executeifdefined{\??xm:ii:\@@xmentities}\xmlkeepentities
     \or
-        % mkiv
-%     \or
+        % mkiv, mkiv exclusively
         \chardef\xmlprocessingmode\executeifdefined{\??xm:2:\@@xmdefault}\plusone
+        \executeifdefined{\??xm:iv:\@@xmentities}\xmlresolveentities
+    \else
+        % unset
     \fi
-    \doifelse\@@xmentities\v!yes\xmlresolveentities\xmlkeepentities
     \ifcase\xmlprocessingmode
         \ctxlua{characters.setmkiientities()}%
     \else
@@ -306,7 +331,7 @@
       {\ctxlua{xml.strip_cm_and_dt=false}}%
 \to \everysetupxml
 
-\appendtoks\the\everysetupxml\to\everyjob
+\def\xmlinitialize{\the\everysetupxml}
 
 \newcount\charactersactiveoffset \charactersactiveoffset="10000
 

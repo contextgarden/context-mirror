@@ -13,7 +13,7 @@
 
 % Todo: replace \'.. by \namedglyph
 
-\writestatus{loading}{Italic Languages}
+\writestatus{loading}{ConTeXt Language Macros / Italic Languages}
 
 %D The framework of this module is set up by Hans Hagen while
 %D many of the first translations were done by Tobias. Later
@@ -47,7 +47,8 @@
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
    \c!date={\v!day+,\v!space,\v!month,\v!space,\v!year},
-   \c!state=\v!stop]
+   \s!mapping={texnansi,ec},
+   \s!encoding={texnansi,ec}]
 
 \installlanguage
   [\s!es]
@@ -60,8 +61,7 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
 
 \installlanguage [sp] [\s!es] % old times context
 
@@ -76,8 +76,7 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
 
 % Note GB left|/|right (sub)sentences are for \quote {incisi}.
 
@@ -96,7 +95,8 @@
    \c!middlespeech=\leftguillemot,
    \c!rightspeech=\rightguillemot,
    \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!mapping={texnansi,ec},
+   \s!encoding={texnansi,ec}]
 
 \installlanguage % the same as italian
   [\s!la]
@@ -109,8 +109,7 @@
    \c!rightquote=\lowerrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\lowerrightdoubleninequote,
-   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
 
 \installlanguage
   [\s!pt]
@@ -124,7 +123,8 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!year,\ ,\v!month,\ ,\v!day},
-   \c!state=\v!stop]
+   \s!mapping={texnansi,ec},
+   \s!encoding={texnansi,ec}]
 
 \installlanguage
   [\s!ro]
@@ -137,8 +137,7 @@
    \c!rightquote=\rightguillemot,
    \c!leftquotation=\lowerrightdoubleninequote,
    \c!rightquotation=\upperleftdoublesixquote,
-   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
 
 %D For compatibility reasons we also define:
 
@@ -227,8 +226,8 @@
 \setupheadtext [\s!ro] [\v!units=Unit\u{a}\c{t}i]
 
 \setuplabeltext [\s!fr] [\v!table=Tableau ]
-\setuplabeltext [\s!es] [\v!table=Tablas ]
-\setuplabeltext [\s!ca] [\v!table=Taules ]
+\setuplabeltext [\s!es] [\v!table=Tabla ]
+\setuplabeltext [\s!ca] [\v!table=Taula ]
 \setuplabeltext [\s!it] [\v!table=Tabella ]
 \setuplabeltext [\s!la] [\v!table=Tabula ]
 \setuplabeltext [\s!pt] [\v!table=Tabela ]
@@ -259,48 +258,48 @@
 \setuplabeltext [\s!ro] [\v!graphic=Graficul ]
 
 \setuplabeltext [\s!fr] [\v!chapter=]
-\setuplabeltext [\s!es] [\v!chapter=]
-\setuplabeltext [\s!ca] [\v!chapter=]
+\setuplabeltext [\s!es] [\v!chapter=Cap\'\itulo]
+\setuplabeltext [\s!ca] [\v!chapter=Cap\'\itol]
 \setuplabeltext [\s!it] [\v!chapter=]
 \setuplabeltext [\s!la] [\v!chapter=]
 \setuplabeltext [\s!pt] [\v!chapter=]
 \setuplabeltext [\s!ro] [\v!chapter=]
 
 \setuplabeltext [\s!fr] [\v!section=]
-\setuplabeltext [\s!es] [\v!section=]
-\setuplabeltext [\s!ca] [\v!section=]
+\setuplabeltext [\s!es] [\v!section=Secci\'on]
+\setuplabeltext [\s!ca] [\v!section=Secci\'o]
 \setuplabeltext [\s!it] [\v!section=]
 \setuplabeltext [\s!la] [\v!section=]
 \setuplabeltext [\s!pt] [\v!section=]
 \setuplabeltext [\s!ro] [\v!section=]
 
 \setuplabeltext [\s!fr] [\v!subsection=]
-\setuplabeltext [\s!es] [\v!subsection=]
-\setuplabeltext [\s!ca] [\v!subsection=]
+\setuplabeltext [\s!es] [\v!subsection=Subsecci\'on]
+\setuplabeltext [\s!ca] [\v!subsection=Subsecci\'o]
 \setuplabeltext [\s!it] [\v!subsection=]
 \setuplabeltext [\s!la] [\v!subsection=]
 \setuplabeltext [\s!pt] [\v!subsection=]
 \setuplabeltext [\s!ro] [\v!subsection=]
 
 \setuplabeltext [\s!fr] [\v!subsubsection=]
-\setuplabeltext [\s!es] [\v!subsubsection=]
-\setuplabeltext [\s!ca] [\v!subsubsection=]
+\setuplabeltext [\s!es] [\v!subsubsection=Subsubsecci\'on]
+\setuplabeltext [\s!ca] [\v!subsubsection=Subsubsecci\'o]
 \setuplabeltext [\s!it] [\v!subsubsection=]
 \setuplabeltext [\s!la] [\v!subsubsection=]
 \setuplabeltext [\s!pt] [\v!subsubsection=]
 \setuplabeltext [\s!ro] [\v!subsubsection=]
 
 \setuplabeltext [\s!fr] [\v!subsubsubsection=]
-\setuplabeltext [\s!es] [\v!subsubsubsection=]
-\setuplabeltext [\s!ca] [\v!subsubsubsection=]
+\setuplabeltext [\s!es] [\v!subsubsubsection=Subsubsubsecci\'on]
+\setuplabeltext [\s!ca] [\v!subsubsubsection=Subsubsubsecci\'o]
 \setuplabeltext [\s!it] [\v!subsubsubsection=]
 \setuplabeltext [\s!la] [\v!subsubsubsection=]
 \setuplabeltext [\s!pt] [\v!subsubsubsection=]
 \setuplabeltext [\s!ro] [\v!subsubsubsection=]
 
 \setuplabeltext [\s!fr] [\v!appendix=]
-\setuplabeltext [\s!es] [\v!appendix=]
-\setuplabeltext [\s!ca] [\v!appendix=]
+\setuplabeltext [\s!es] [\v!appendix=Ap\'endice]
+\setuplabeltext [\s!ca] [\v!appendix=Ap\`endix]
 \setuplabeltext [\s!it] [\v!appendix=]
 \setuplabeltext [\s!la] [\v!appendix=]
 \setuplabeltext [\s!pt] [\v!appendix=]
@@ -479,13 +478,11 @@
 
 %D Rather new \unknown
 
-\setuplabeltext [\s!it]      [\v!page=pagina ]
-\setuplabeltext [\s!it]    [\v!atpage=a pagina ]
+\setuplabeltext [\s!it]    [\v!page=pagina ]
+\setuplabeltext [\s!it]  [\v!atpage=a pagina ]
 \setuplabeltext [\s!it] [\v!hencefore=come mostrato sopra]
 \setuplabeltext [\s!it] [\v!hereafter=come mostrato sotto]
 \setuplabeltext [\s!it]       [\v!see=cf. ]
-
-\setuplabeltext[\s!fr]        [\v!see=voir ]
 
 %D Ordinal converters:
 

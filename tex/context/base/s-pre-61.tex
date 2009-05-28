@@ -15,9 +15,13 @@
 
 \usemodule[pre-60]
 
-\usetypescriptfile[type-ghz]
-
-\definetypeface[mainface][ss][sans][optima-nova][default][encoding=\defaultencoding]
+\doifmodeelse {mkiv} {
+    \usetypescriptfile[type-hgz]
+    \definetypeface[mainface][ss][sans][optima-nova][default]
+} {
+    \usetypescriptfile[type-ghz]
+    \definetypeface[mainface][ss][sans][optima-nova][default][encoding=\defaultencoding]
+}
 
 \setupbodyfont[mainface,ss,18pt]
 \setupinterlinespace[line=3.25ex]
@@ -168,9 +172,7 @@
    style=\HeadFont]
 
 \setupheadertexts
-  [\doiftextelse{\placeheadtext[Topic]}
-     {\placeheadtext[Topic]}
-     {\placeheadtext[Nopic]}]
+  [\doiftextelse{\currentheadnumber}{\placeheadtext[Topic]}{\placeheadtext[Nopic]}]
   []
 
 \setuppagenumbering

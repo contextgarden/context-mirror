@@ -1,2 +1,5 @@
 @echo off
-texmfstart runtools.rb %*
+setlocal
+set ownpath=%~dp0%
+texlua "%ownpath%mtxrun.lua" --usekpse --execute runtools.rb %*
+endlocal

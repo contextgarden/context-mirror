@@ -1,16 +1,17 @@
 % This file a (slightly adapted) copy of the map file
 % that comes with the PX fonts by Young Ryu.
 
-% tx8r.enc replaced by 8r.enc
+% URW fonts replaced by TeX Gyre
 
-% URW Palatino
+% TeX Gyre Pagella (Palatino)
 
-rpxpplb  URWPalladioL-Bold                      <8r.enc <uplb8a.pfb
-rpxpplbo URWPalladioL-Bold     ".167 SlantFont" <8r.enc <uplb8a.pfb
-rpxpplbi URWPalladioL-BoldItal                  <8r.enc <uplbi8a.pfb
-rpxpplr  URWPalladioL-Roma                      <8r.enc <uplr8a.pfb
-rpxpplro URWPalladioL-Roma     ".167 SlantFont" <8r.enc <uplr8a.pfb
-rpxpplri URWPalladioL-Ital                      <8r.enc <uplri8a.pfb
+rpxpplr  TeXGyrePagella-Regular     "encq8r ReEncodeFont" <q-8r.enc <qplr.pfb
+rpxpplb  TeXGyrePagella-Bold        "encq8r ReEncodeFont" <q-8r.enc <qplb.pfb
+rpxpplri TeXGyrePagella-Italic      "encq8r ReEncodeFont" <q-8r.enc <qplri.pfb
+rpxpplbi TeXGyrePagella-BoldItalic  "encq8r ReEncodeFont" <q-8r.enc <qplbi.pfb
+% no idea why these were added
+rpxpplro TeXGyrePagella-Oblique     ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qplr.pfb
+rpxpplbo TeXGyrePagella-BoldOblique ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qplb.pfb
 
 % PX Text
 

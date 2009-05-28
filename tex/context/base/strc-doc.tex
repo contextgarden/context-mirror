@@ -1,0 +1,166 @@
+%D \module
+%D   [       file=strc-doc,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Document Structure,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Document Structure}
+
+\registerctxluafile{strc-doc}{1.001}
+
+\unprotect
+
+% We operate in a \type {@@ns} namespace. All data is passed through
+% variables. Of course we can built another interface on top of this
+% that accepts multiple arguments. We might change this approach and
+% remove this layer.
+
+\def\currentstructurecounter{0}
+
+\definesystemvariable {ns}
+
+\def\structureparameter#1{\csname\??ns#1\endcsname}
+
+\def\detokenizedstructureparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??ns#1\endcsname}}
+
+\def\structurecomponent{\dodoubleempty\dostructurecomponent}
+
+\getparameters % initialization, used not grouped anyway
+  [\??ns]
+  [\c!number=,\c!level=,\c!name=,\c!title=,\c!bookmark=,\c!label=,\c!coupling=,\c!ownnumber=,
+   \c!sectionseparatorset=\s!default,\c!sectionconversionset=\s!default,
+   \c!sectionstopper=,\c!sectionsegments=,
+   \c!reset=,\c!reference=,
+   \c!expansion=\v!no,
+   \c!saveinlist=\v!yes,
+   \c!command=\showstructuredata]
+
+\def\dostructurecomponent[#1][#2]% #1=interfaced-settings, #2=optional user data (not yet supported)
+  {\begingroup
+   \getparameters[\??ns][#1]%
+   \xdef\currentstructurename     {\structureparameter\c!name}%
+   \xdef\currentstructurecoupling {\structureparameter\c!coupling}%
+   \xdef\currentstructureownnumber{\structureparameter\c!ownnumber}% optional own number
+   \xdef\currentstructurelevel    {\structureparameter\c!level}%
+   \edef\currentstructureexpansion{\structureparameter\c!expansion}
+   \ifx\currentstructureexpansion\s!xml
+     % goes via lua anyway
+     \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
+     \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
+     %
+     \xmlstartraw
+       \xdef\currentstructurelisttitle   {\structureparameter\c!title}%
+     \xmlstopraw
+     \globallet\currentstructurecoding\s!xml
+   \else
+     \ifx\currentstructureexpansion\v!yes
+       \xdef\currentstructuretitle   {\structureparameter\c!title}%
+       \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
+     \else
+       \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
+       \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
+       \iflocation \ifx\currentstructurebookmark\empty
+         \begingroup
+         \simplifycommands
+         \xdef\currentstructurebookmark{\detokenize\expandafter{\normalexpanded{\structureparameter\c!title}}}%
+        \endgroup
+       \fi \fi
+     \fi
+     \globallet\currentstructurelisttitle   \currentstructuretitle
+     \globallet\currentstructurecoding\s!tex
+   \fi
+   \xdef\currentstructurelabel          {\structureparameter\c!label}%
+   \xdef\currentstructurereference      {\structureparameter\c!reference}%
+   \xdef\currentstructurereferenceprefix{\structureparameter\c!referenceprefix}%
+   \xdef\currentstructureshownumber     {\structureparameter\c!number}%
+   \xdef\currentstructuresaveinlist     {\structureparameter\c!saveinlist}%
+   \xdef\currentstructureincrementnumber{\structureparameter\c!incrementnumber}%
+   \setnextinternalreference
+   \xdef\currentstructurenumber{\ctxlua{ % todo: combine with next call, adapt marks accordingly
+        structure.sections.somelevel {
+            references = {
+                internal        = \nextinternalreference,
+                block           = "\currentstructureblock",
+                reference       = "\currentstructurereference",
+                referenceprefix = "\currentstructurereferenceprefix",
+            },
+            directives = {
+                resetset   = "\structureparameter\c!reset",
+                hidenumber = not toboolean("\currentstructureincrementnumber",true), % incremented but hidden
+            },
+            metadata = {
+                kind     = "section",
+                name     = "\currentstructurename",
+                catcodes = \the\catcodetable,
+                coding   = "\currentstructurecoding",
+                xmlroot  = \ifx\currentstructurecoding\s!xml "\xmldocument" \else nil \fi,
+                \ifx\currentstructuresaveinlist\v!no
+                    nolist = true,
+                \fi
+            },
+            titledata = { % we can add mark and reference
+                label    = \!!bs\detokenize\expandafter{\currentstructurelabel    }\!!es,
+                title    = \!!bs\detokenize\expandafter{\currentstructuretitle    }\!!es,
+            \ifx\currentstructurebookmark\currentstructuretitle \else
+                bookmark = \!!bs\detokenize\expandafter{\currentstructurebookmark }\!!es,
+            \fi
+            \ifx\currentstructurelisttitle\currentstructuretitle \else \ifx\currentstructuresaveinlist\v!no
+                list     = \!!bs\detokenize\expandafter{\currentstructurelisttitle}\!!es,
+            \fi \fi
+            },
+            numberdata = {
+                separatorset  = "\structureparameter\c!sectionseparatorset",
+                conversion    = "\structureparameter\c!sectionconversion", % for good old times sake
+                conversionset = "\structureparameter\c!sectionconversionset",
+                stopper       = \!!bs\structureparameter\c!sectionstopper\!!es,
+                set           = "\structureparameter\c!sectionset",
+                segments      = "\structureparameter\c!sectionsegments",
+                ownnumber     = "\currentstructureownnumber",
+                hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
+            },
+            userdata = structure.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
+        }
+    }}%
+   \xdef\currentstructurelistnumber{\ctxlua{structure.lists.push(structure.sections.current())}}%
+   % \currentstructuresynchronize has to be called someplace, since it introduces a node
+   \setstructuresynchronization\currentstructurelistnumber
+   \structureparameter\c!command
+   \endgroup}
+
+\let\currentstructurenumber  \!!zerocount
+\let\currentstructurecounter \!!zerocount
+\let\previousstructurecounter\!!zerocount
+
+\def\setstructuresynchronization#1%
+  {\xdef\currentstructuresynchronize
+     {\noexpand\ctxlua{jobreferences.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference)}%
+      \noexpand\ctxlatelua{structure.lists.enhance(#1)}}}
+
+\def\reportcurrentstructure{\ctxlua{structure.sections.writestatus()}}
+
+% Beware: we need to flush the data to the list explicitly. This is because
+% node in inserted and we may want control over when that happens.
+
+\def\showstructuredata
+  {\par
+   \dontleavehmode
+   \currentstructuresynchronize
+   [\currentstructurename: \showstructurelevel: \currentstructuretitle]
+   \par}
+
+% We can access the (stored) data with the following macros.
+
+\def\structurevalue    #1{\ctxlua{structure.sections.get("#1")}}
+\def\structureuservalue#1{\ctxlua{structure.sections.getuser("#1")}}
+\def\structurenumber     {\ctxlua{structure.sections.fullnumber()}}
+
+\def\structurecctvalue #1{\ctxlua{structure.sections.get("#1",nil,true)}}
+
+\protect \endinput

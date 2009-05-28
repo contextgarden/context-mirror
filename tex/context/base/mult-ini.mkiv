@@ -15,7 +15,7 @@
 %D which we keep around as \type {mult-kep.tex} for sentimental
 %D reasons. There you will find some more historic information.
 
-\writestatus{loading}{Context Multilingual Macros / Initialization}
+\writestatus{loading}{ConTeXt Multilingual Macros / Initialization}
 
 \unprotect
 
@@ -107,13 +107,14 @@
 %D used more than once. Savings like this should of course be
 %D implemented in english, just because \TEX\ is english.
 
-\def\!!width  {width}
-\def\!!height {height}
-\def\!!depth  {depth}
-\def\!!plus   {plus}
-\def\!!minus  {minus}
-\def\!!fill   {fill}
-\def\!!to     {to}
+\def\!!width {width}
+\def\!!height{height}
+\def\!!depth {depth}
+\def\!!plus  {plus}
+\def\!!minus {minus}
+\def\!!fill  {fill}
+\def\!!to    {to}
+\def\!!spread{spread}
 
 %D \macros
 %D   {defineinterfaceconstant,
@@ -240,8 +241,8 @@
 
 \fi
 
-\ifx\currentinterface\undefined \let\currentinterface=\defaultinterface \fi
-\ifx\currentresponses\undefined \let\currentresponses=\defaultinterface \fi
+\ifx\currentinterface\undefined \let\currentinterface\defaultinterface \fi
+\ifx\currentresponses\undefined \let\currentresponses\defaultinterface \fi
 
 %D \macros
 %D   {startinterface}
@@ -356,11 +357,15 @@
    \doifinsetelse{#1}{\currentresponses,all}\dostartmessages\nostartmessages{#2}}
 
 \def\dostartmessages#1#2\stopmessages
-  {\ctxlua{interfaces.setmessage("#1",[[#2]])}%
+  {\ctxlua{interfaces.setmessages("#1",\!!bs#2\!!es)}%
    \egroup}
 
 \def\nostartmessages#1#2\stopmessages
   {\egroup}
+
+\def\setinterfacemessage#1#2#3%
+  {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
+   \ctxlua{interfaces.setmessage("#1","#2",\!!bs#3\!!es)}}
 
 \unexpanded\def\setmessagetext #1#2{\edef\currentmessagetext{\ctxlua{tex.sprint(tex.ctxcatcodes,interfaces.getmessage("#1","#2"))}}}
 \unexpanded\def\getmessage     #1#2{\ctxlua{tex.sprint(tex.ctxcatcodes,interfaces.getmessage("#1","#2"))}}
@@ -821,9 +826,7 @@
   {\writeline\writebanner{\contextbanner}\writeline}
 
 \edef\formatversion
-  {\ifx\normalyear \undefined\the\year \else\the\normalyear \fi.%
-   \ifx\normalmonth\undefined\the\month\else\the\normalmonth\fi.%
-   \ifx\normalday  \undefined\the\day  \else\the\normalday  \fi}
+  {\the\normalyear .\the\normalmonth.\the\normalday}
 
 \ifx\contextversion\undefined
     \def\contextversion      {unknown}
@@ -833,9 +836,8 @@
     \edef\contextversionnumber{\expandafter\contextversionnumber\contextversion\relax\space\contextmark}
 \fi
 
-\ifx\undefined\normaldump
+\ifx\undefined\everydump
   \newtoks\everydump
-  \let\normaldump\dump
   \def\dump{\the\everydump\normaldump}
 \fi
 

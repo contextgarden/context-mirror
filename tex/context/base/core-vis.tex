@@ -25,14 +25,12 @@
 %D %\leftskip   only if explicit one
 %D %\rightskip  only if explicit one
 
-\writestatus{loading}{Context Support Macros / Visualization}
+\writestatus{loading}{ConTeXt Support Macros / Visualization}
 
 \unprotect
 
 %D \macros
-%D   {indent, noindent,
-%D    leavevmode,
-%D    par}
+%D   {indent, noindent, par}
 %D
 %D \TeX\ acts upon paragraphs. In mosts documents paragraphs
 %D are separated by empty lines, which internally are handled as
@@ -43,16 +41,10 @@
 %D Because the actual typesetting is based on both explicit
 %D user and implicit system actions, visualization is only
 %D possible for the user supplied \type{\indent},
-%D \type{\noindent}, \type{\leavevmode} and \type{\par}. Other
+%D \type{\noindent}, and \type{\par}. Other
 %D 'clever' tricks will quite certainly lead to more failures
 %D than successes, so we only support these three explicit
 %D primitives and one macro:
-
-\let\normalnoindent   = \noindent
-\let\normalindent     = \indent
-\let\normalpar        = \par
-
-\let\normalleavevmode = \leavevmode
 
 \def\showparagraphcue#1#2#3#4#5%
   {\bgroup
@@ -128,30 +120,15 @@
    \fi
    \normalhskip\parindent}
 
-\def\ruledleavevmode
-  {\relax
-   \normalleavevmode
-   \ifdim\parindent>\zeropoint
-     \normalhskip-\parindent
-     \ruledparagraphcues
-     \showparagraphcue\parindent\relax\leftrulefalse\rightrulefalse\!!height
-     \normalhskip\parindent
-   \else
-     \ruledparagraphcues
-     \showparagraphcue{40\testrulewidth}\llap\leftrulefalse\rightrulefalse\!!height
-   \fi}
-
 \def\dontshowimplicits
   {\let\noindent   \normalnoindent
    \let\indent     \normalindent
-   \let\leavevmode \normalleavevmode
    \let\par        \normalpar}
 
 \def\showimplicits
   {\testrulewidth  \defaulttestrulewidth
    \let\noindent   \rulednoindent
    \let\indent     \ruledindent
-   \let\leavevmode \ruledleavevmode
    \let\par        \ruledpar}
 
 %D The next few||line examples show the four cues. Keep in
@@ -170,18 +147,15 @@
 %D
 %D \voorbeeld \indent
 %D \voorbeeld \noindent
-%D \voorbeeld \leavevmode
 %D
 %D \parindent=60pt
 %D
 %D \voorbeeld \indent
 %D \voorbeeld \noindent
-%D \voorbeeld \leavevmode
 %D
 %D \startnarrower
 %D \voorbeeld \indent
 %D \voorbeeld \noindent
-%D \voorbeeld \leavevmode
 %D \stopnarrower
 %D \egroup
 %D

@@ -32,7 +32,7 @@
 %  Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian,
 %  Illyrian, Armenian
 
-\writestatus{loading}{Slavic Languages}
+\writestatus{loading}{ConTeXt Language Macros / Slavic Languages}
 
 \unprotect
 
@@ -77,7 +77,8 @@
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!mapping={pl0,ec,qx},
+   \s!encoding={pl0,ec,qx}]
 
 \installlanguage
   [\s!cs]
@@ -91,7 +92,8 @@
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
    \c!date={\v!day,{.\,},\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!mapping={il2,ec},
+   \s!encoding={il2,ec}]
 
 \installlanguage
   [\s!sk]
@@ -105,7 +107,8 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!day,{.\,},\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!mapping={il2,ec},
+   \s!encoding={il2,ec}]
 
 \installlanguage
   [\s!hr]
@@ -119,7 +122,8 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \s!mapping=ec,
+   \s!encoding=ec]
 
 %D The default quotation marks for Slovenian were chosen as
 %D \lowerleftdoubleninequote these ones\upperrightdoublesixquote\
@@ -168,7 +172,8 @@
   \c!leftquotation=\rightguillemot,
   \c!rightquotation=\leftguillemot,
   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
-  \c!state=\v!stop]
+  \s!mapping=ec,
+  \s!encoding=ec]
 
 \installlanguage [polish]    [\s!pl]
 \installlanguage [czech]     [\s!cs]
@@ -176,6 +181,8 @@
 \installlanguage [croatian]  [\s!hr]
 \installlanguage [slovenian] [\s!sl]
 \installlanguage [slovene]   [\s!sl] % both possible (mojca: still needed?)
+
+\installlanguage [cz]        [\s!cs]
 
 % If this is really needed we should make an enco-fhr.
 %
@@ -443,9 +450,7 @@
 %   \c!rightquote=\upperrightsinglesixquote,
 %   \c!leftquotation=\lowerleftdoubleninequote,
 %   \c!rightquotation=\upperrightdoublesixquote,
-%   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-%   \c!state=\v!stop]
-
+%   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
 
 \setuplabeltext [\s!sl]    [\v!page=stran ]
 \setuplabeltext [\s!sl]  [\v!atpage=na strani ]

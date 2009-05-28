@@ -9,9 +9,10 @@ if not modules then modules = { } end modules ['mtx-server'] = {
 scripts           = scripts           or { }
 scripts.webserver = scripts.webserver or { }
 
-dofile(input.find_file("l-url.lua"))
+dofile(resolvers.find_file("l-url.lua","tex"))
+dofile(resolvers.find_file("luat-soc.lua","tex"))
 
-local socket = require("socket")
+local socket = socket or require("socket") -- redundant in future version
 local format = string.format
 
 -- The following two lists are taken from webrick (ruby) and
@@ -126,13 +127,39 @@ local handlers = { }
 
 local function errormessage(client,configuration,n)
     local data = format("<head><title>%s %s</title></head><html><h2>%s %s</h2></html>",n,messages[n],n,messages[n])
-    input.report("handling error %s: %s",n,messages[n])
+    logs.simple("handling error %s: %s",n,messages[n])
     handlers.generic(client,configuration,data,nil,true)
+end
+
+local validpaths, registered = { }, { }
+
+function scripts.webserver.registerpath(name)
+    if not registered[name] then
+        local cleanname = string.gsub(name,"%.%.","deleted-parent")
+        logs.simple("registering path '%s'",cleanname)
+        validpaths[#validpaths+1] = cleanname
+        registered[name] = true
+    end
 end
 
 function handlers.generic(client,configuration,data,suffix,iscontent)
     if not iscontent then
-        data = io.loaddata(file.join(configuration.root,data))
+        local name = data
+        logs.simple("requested file '%s'",name)
+        local fullname = file.join(configuration.root,name)
+        data = io.loaddata(fullname) or ""
+        if data == "" then
+            for n=1,#validpaths do
+                local fullname = file.join(validpaths[n],name)
+                data = io.loaddata(fullname) or ""
+                if data ~= "" then
+                    logs.simple("sending generic file '%s'",fullname)
+                    break
+                end
+            end
+        else
+            logs.simple("sending generic file '%s'",fullname)
+        end
     end
     if data and data ~= "" then
         client:send("HTTP/1.1 200 OK\r\n")
@@ -155,21 +182,37 @@ end
 --~     return { content = filename }
 --~ end
 
+local loaded = { }
+
 function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- filename will disappear, and become hashed.filename
     local filename = file.join(configuration.scripts,filename)
-    if not input.aux.qualified_path(filename) then
+    if not file.is_qualified_path(filename) then
         filename = file.join(configuration.root,filename)
     end
     -- todo: split url in components, see l-url; rather trivial
-    input.report("locating script: %s",filename)
-    if lfs.isfile(filename) then
-        local result = loadfile(filename)
-        input.report("return type: %s",type(result))
-        if result and type(result) == "function" then
-         -- result() should return a table { [type=,] [length=,] content= }, function or string
-            result = result()
+    local result, keep = loaded[filename], false
+    if result then
+        logs.simple("reusing script: %s",filename)
+    else
+        logs.simple("locating script: %s",filename)
+        if lfs.isfile(filename) then
+            logs.simple("loading script: %s",filename)
+            result = loadfile(filename)
+            logs.simple("return type: %s",type(result))
+            if result and type(result) == "function" then
+             -- result() should return a table { [type=,] [length=,] content= }, function or string
+                result, keep = result()
+                if keep then
+                    logs.simple("saving script: %s",type(result))
+                    loaded[filename] = result
+                end
+            end
+        else
+            errormessage(client,configuration,404)
         end
-        if result and type(result) == "function" then
+    end
+    if result then
+        if type(result) == "function" then
             result = result(configuration,filename,hashed) -- second argument will become query
         end
         if result and type(result) == "string" then
@@ -181,9 +224,9 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
                 local action = handlers[suffix] or handlers.generic
                 action(client,configuration,result.content,suffix,true) -- content
             elseif result.filename then
-                local suffix = file.extname(filename) or "text/html"
+                local suffix = file.extname(result.filename) or "text/html"
                 local action = handlers[suffix] or handlers.generic
-                action(client,configuration,filename,suffix,false) -- filename
+                action(client,configuration,result.filename,suffix,false) -- filename
             else
                 errormessage(client,configuration,404)
             end
@@ -198,18 +241,19 @@ end
 handlers.luc  = handlers.lua
 handlers.html = handlers.htm
 
-local indices = { "index.htm", "index.html" }
+local indices    = { "index.htm", "index.html" }
+local portnumber = 31415 -- pi suits tex
 
 function scripts.webserver.run(configuration)
     -- check configuration
-    configuration.port = tonumber(configuration.port or os.getenv("MTX_SERVER_PORT") or 8080) or 8080
+    configuration.port = tonumber(configuration.port or os.getenv("MTX_SERVER_PORT") or portnumber) or portnumber
     if not configuration.root or not lfs.isdir(configuration.root) then
         configuration.root = os.getenv("MTX_SERVER_ROOT") or "."
     end
     -- locate root and index file in tex tree
     if not lfs.isdir(configuration.root) then
         for _, name in ipairs(indices) do
-            local root = input.resolve("path:" .. name) or ""
+            local root = resolvers.resolve("path:" .. name) or ""
             if root ~= "" then
                 configuration.root = root
                 configuration.index = configuration.index or name
@@ -217,6 +261,7 @@ function scripts.webserver.run(configuration)
             end
         end
     end
+    configuration.root = dir.expand_name(configuration.root)
     if not configuration.index then
         for _, name in ipairs(indices) do
             if lfs.isfile(file.join(configuration.root,name)) then
@@ -226,14 +271,17 @@ function scripts.webserver.run(configuration)
         end
         configuration.index = configuration.index or "unknown"
     end
-    configuration.scripts = configuration.scripts or "cgi"
+    if not configuration.scripts or configuration.scripts == "" then
+        configuration.scripts = dir.expand_name(file.join(configuration.root or ".",configuration.scripts or "."))
+    end
     -- so far for checks
-    input.report("running at port: %s",configuration.port)
-    input.report("document root: %s",configuration.root)
-    input.report("main index file: %s",configuration.index)
-    input.report("scripts subpath: %s",configuration.scripts)
+    logs.simple("running at port: %s",configuration.port)
+    logs.simple("document root: %s",configuration.root or resolvers.ownpath)
+    logs.simple("main index file: %s",configuration.index)
+    logs.simple("scripts subpath: %s",configuration.scripts)
     local server = assert(socket.bind("*", configuration.port))
     while true do -- no multiple clients
+        local start = os.clock()
         local client = server:accept()
         client:settimeout(configuration.timeout or 60)
         local request, e = client:receive()
@@ -241,26 +289,26 @@ function scripts.webserver.run(configuration)
             errormessage(client,configuration,404)
         else
             local from = client:getpeername()
-            input.report("request from: %s",tostring(from))
+            logs.simple("request from: %s",tostring(from))
             local fullurl = request:match("GET (.+) HTTP/.*$") -- todo: more clever
-fullurl = socket.url.unescape(fullurl)
-local hashed = url.hashed(fullurl)
-local query = url.query(hashed.query)
-filename = hashed.path
+            fullurl = socket.url.unescape(fullurl)
+            local hashed = url.hashed(fullurl)
+            local query = url.query(hashed.query)
+            local filename = hashed.path
             if filename then
                 filename = socket.url.unescape(filename)
-                input.report("requested action: %s",filename)
+                logs.simple("requested action: %s",filename)
                 if filename:find("%.%.") then
                     filename = nil -- invalid path
                 end
                 if filename == nil or filename == "" or filename == "/" then
                     filename = configuration.index
-                    input.report("invalid filename, forcing: %s",filename)
+                    logs.simple("invalid filename, forcing: %s",filename)
                 end
                 local suffix = file.extname(filename)
                 local action = handlers[suffix] or handlers.generic
                 if action then
-                    input.report("performing action: %s",filename)
+                    logs.simple("performing action: %s",filename)
                     action(client,configuration,filename,suffix,false,hashed) -- filename and no content
                 else
                     errormessage(client,configuration,404)
@@ -270,10 +318,11 @@ filename = hashed.path
             end
         end
         client:close()
+        logs.simple("time spent with client: %0.03f seconds",os.clock()-start)
     end
 end
 
-banner = banner .. " | webserver "
+logs.extendbanner("Simple Webserver 0.10")
 
 messages.help = [[
 --start               start server
@@ -281,15 +330,26 @@ messages.help = [[
 --root                server root
 --scripts             scripts sub path
 --index               index file
+--auto                start on own path
 ]]
 
-if environment.argument("start") then
+if environment.argument("auto") then
+    local path = resolvers.find_file("mtx-server.lua") or "."
     scripts.webserver.run {
         port    = environment.argument("port"),
-        root    = environment.argument("root"),           -- "e:/websites/www.pragma-ade.com",
+        root    = environment.argument("root") or file.dirname(path) or ".",
+        scripts = environment.argument("scripts") or file.dirname(path) or ".",
+    }
+elseif environment.argument("start") then
+    scripts.webserver.run {
+        port    = environment.argument("port"),
+        root    = environment.argument("root") or ".",           -- "e:/websites/www.pragma-ade.com",
         index   = environment.argument("index"),
-        scripts = environment.argument("scripts") or "cgi",
+        scripts = environment.argument("scripts"),
     }
 else
-    input.help(banner,messages.help)
+    logs.help(messages.help)
 end
+
+
+-- mtxrun --script server --start => http://localhost:8080/mtx-server-ctx-help.lua

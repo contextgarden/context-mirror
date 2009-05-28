@@ -19,7 +19,8 @@ require 'base/logger'
 require 'base/system'
 require 'base/kpse'
 
-require 'ftools'
+require 'fileutils'
+# require 'ftools'
 require 'rexml/document'
 
 class Commands

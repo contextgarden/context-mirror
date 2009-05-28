@@ -1,2 +1,5 @@
 @echo off
-texmfstart tmftools.rb %*
+setlocal
+set ownpath=%~dp0%
+texlua "%ownpath%mtxrun.lua" --usekpse --execute tmftools.rb %*
+endlocal

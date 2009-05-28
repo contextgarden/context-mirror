@@ -11,7 +11,7 @@ parbuilders.constructors = parbuilders.constructors or { }
 parbuilders.names        = parbuilders.names or { }
 parbuilders.attribute    = attributes.numbers['parbuilder'] or 999
 
-input.storage.register(false, "parbuilders.names", parbuilders.names, "parbuilders.names")
+storage.register("parbuilders.names", parbuilders.names, "parbuilders.names")
 
 -- store parbuilders.names
 

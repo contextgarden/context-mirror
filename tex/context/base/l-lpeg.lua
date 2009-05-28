@@ -1,9 +1,12 @@
--- filename : l-lpeg.lua
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- copyright: PRAGMA ADE / ConTeXt Development Team
--- license  : see context related readme files
+if not modules then modules = { } end modules ['l-lpeg'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-if not versions then versions = { } end versions['l-lpeg'] = 1.001
+local P, S, Ct, C, Cs, Cc = lpeg.P, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 
 --~ l-lpeg.lua :
 
@@ -27,35 +30,33 @@ if not versions then versions = { } end versions['l-lpeg'] = 1.001
 local hash = { }
 
 function lpeg.anywhere(pattern) --slightly adapted from website
-    return lpeg.P { lpeg.P(pattern) + 1 * lpeg.V(1) }
+    return P { P(pattern) + 1 * lpeg.V(1) }
 end
 
 function lpeg.startswith(pattern) --slightly adapted
-    return lpeg.P(pattern)
+    return P(pattern)
 end
 
---~ g = lpeg.splitter(" ",function(s) ... end) -- gmatch:lpeg = 3:2
-
 function lpeg.splitter(pattern, action)
-    return (((1-lpeg.P(pattern))^1)/action+1)^0
+    return (((1-P(pattern))^1)/action+1)^0
 end
 
 -- variant:
 
 --~ local parser = lpeg.Ct(lpeg.splitat(newline))
 
-local crlf     = lpeg.P("\r\n")
-local cr       = lpeg.P("\r")
-local lf       = lpeg.P("\n")
-local space    = lpeg.S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
+local crlf     = P("\r\n")
+local cr       = P("\r")
+local lf       = P("\n")
+local space    = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
 local newline  = crlf + cr + lf
 local spacing  = space^0 * newline
 
-local empty    = spacing * lpeg.Cc("")
-local nonempty = lpeg.Cs((1-spacing)^1) * spacing^-1
+local empty    = spacing * Cc("")
+local nonempty = Cs((1-spacing)^1) * spacing^-1
 local content  = (empty + nonempty)^1
 
-local capture = lpeg.Ct(content^0)
+local capture = Ct(content^0)
 
 function string:splitlines()
     return capture:match(self)
@@ -70,19 +71,32 @@ lpeg.linebyline = content -- better make a sublibrary
 
 local splitters_s, splitters_m = { }, { }
 
-function lpeg.splitat(separator,single)
+local function splitat(separator,single)
     local splitter = (single and splitters_s[separator]) or splitters_m[separator]
     if not splitter then
-        separator = lpeg.P(separator)
+        separator = P(separator)
         if single then
-            local other, any = lpeg.C((1 - separator)^0), lpeg.P(1)
-            splitter = other * (separator * lpeg.C(any^0) + "")
+            local other, any = C((1 - separator)^0), P(1)
+            splitter = other * (separator * C(any^0) + "")
             splitters_s[separator] = splitter
         else
-            local other = lpeg.C((1 - separator)^0)
+            local other = C((1 - separator)^0)
             splitter = other * (separator * other)^0
             splitters_m[separator] = splitter
         end
     end
     return splitter
+end
+
+lpeg.splitat = splitat
+
+local cache = { }
+
+function string:split(separator)
+    local c = cache[separator]
+    if not c then
+        c = Ct(splitat(separator))
+        cache[separator] = c
+    end
+    return c:match(self)
 end

@@ -15,7 +15,9 @@
 
 \registerctxluafile{mlib-pdf}{1.001}
 
-\let\MPLIBtoPDF\pdfliteral
+% \let\MPLIBtoPDF\pdfliteral
+
+\def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
 
 \def\MPLIBboundingbox#1#2#3#4%
   {\xdef\MPllx{#1}%
@@ -26,7 +28,7 @@
    \xdef\MPheight{\the\dimexpr#4\onebasepoint-#2\onebasepoint\relax}}
 
 \def\startMPLIBtoPDF#1#2#3#4% watch the transparency reset
-  {\hbox\bgroup
+  {\naturalhbox\bgroup
    \MPLIBboundingbox{#1}{#2}{#3}{#4}%
    \forgetall
    \setbox\scratchbox\vbox\bgroup

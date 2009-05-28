@@ -12,14 +12,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This file is obsolete.
-
 \unprotect \bgroup \catcode`\<=\@@other
 
 \def\setinterfacecomponent#1#2#3%
-  {\doifelse{#3}\nointerfaceobject
-     {\setgvalue{\string<#1\string:#2\string>}{#2}}
-     {\setgvalue{\string<#1\string:#2\string>}{#3}}}
+  {\setgvalue{\string<#1\string:#2\string>}{#3}}
 
 \gdef\getinterfacecomponent#1#2%
   {\executeifdefined{\string<#1\string:#2\string>}{#2}}
@@ -29,9 +25,6 @@
 \def\setinterfaceelement {\setinterfacecomponent{string}}   % element
 \def\setinterfacecommand {\setinterfacecomponent{string}}   % command
 
-\input mult-con.tex
-\input mult-com.tex
-
-% we need to replace the y! by just the name
+\input mult-\userinterfacetag
 
 \egroup \protect \endinput

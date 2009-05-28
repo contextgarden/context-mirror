@@ -14,8 +14,8 @@
 \unprotect
 
 % Speed up typescript loading, but at the cost of much memory:
-%
-% \preloadtypescripts
+
+\preloadtypescripts
 
 % If you want another default font:
 %
@@ -121,7 +121,6 @@
 % When you have your own fonts installed, you may want to predefine:
 %
 % \usetypescriptfile[type-buy]
-% \usetypescriptfile [type-gyr]
 
 % Some styles default to Lucida Bright. You can overload
 % Lucida by Times cum suis. Watch out, the pos collection
@@ -158,8 +157,8 @@
 % Enabling run time \METAPOST\ (also enable \write18 in
 % texmf.cnf):
 
-% \runMPgraphicstrue
-% \runMPTEXgraphicstrue
+\runMPgraphicstrue
+\runMPTEXgraphicstrue
 
 % This saves some runtime, but needs a format, which you can
 % make with 'texexec --make --alone metafun'. Make sure that

@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['l-xml'] = {
 
 -- some code may move to l-xmlext
 -- some day we will really compile the lpaths (just construct functions)
+-- todo: some things per xml file, like namespace remapping
 
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
@@ -38,15 +39,30 @@ optimize the code.</p>
 xml = xml or { }
 tex = tex or { }
 
-xml.trace_lpath = false
-xml.trace_print = false
-xml.trace_remap = false
+local concat, remove, insert = table.concat, table.remove, table.insert
+local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
+local format, lower, gmatch, gsub, find = string.format, string.lower, string.gmatch, string.gsub, string.find
 
-local format, concat, remove, insert, type, next = string.format, table.concat, table.remove, table.insert, type, next
+--[[ldx--
+<p>This module can be used stand alone but also inside <l n='mkiv'/> in
+which case it hooks into the tracker code. Therefore we provide a few
+functions that set the tracers.</p>
+--ldx]]--
 
---~ local pairs, next, type = pairs, next, type
+local trace_lpath, trace_remap = false, false
 
--- todo: some things per xml file, like namespace remapping
+if trackers then
+    trackers.register("xml.lpath", function(v) trace_lpath = v end)
+    trackers.register("xml.remap", function(v) trace_remap = v end)
+end
+
+function xml.settrace(str,value)
+    if str == "lpath" then
+        trace_lpath = value or false
+    elseif str == "remap" then
+        trace_remap = value or false
+    end
+end
 
 --[[ldx--
 <p>First a hack to enable namespace resolving. A namespace is characterized by
@@ -73,7 +89,7 @@ do
     --ldx]]--
 
     function xml.registerns(namespace, pattern) -- pattern can be an lpeg
-        check = check + lpeg.C(lpeg.P(pattern:lower())) / namespace
+        check = check + lpeg.C(lpeg.P(lower(pattern))) / namespace
         parse = lpeg.P { lpeg.P(check) + 1 * lpeg.V(1) }
     end
 
@@ -88,7 +104,7 @@ do
     --ldx]]--
 
     function xml.checkns(namespace,url)
-        local ns = parse:match(url:lower())
+        local ns = parse:match(lower(url))
         if ns and namespace ~= ns then
             xml.xmlns[namespace] = ns
         end
@@ -106,7 +122,7 @@ do
     --ldx]]--
 
     function xml.resolvens(url)
-         return parse:match(url:lower()) or ""
+         return parse:match(lower(url)) or ""
     end
 
     --[[ldx--
@@ -173,6 +189,9 @@ do
     end
 
     local function add_attribute(namespace,tag,value)
+        if cleanup and #value > 0 then
+            value = cleanup(value) -- new
+        end
         if tag == "xmlns" then
             xmlns[#xmlns+1] = resolvens(value)
             at[tag] = value
@@ -245,7 +264,7 @@ dt[0] = top
         end
     end
     local function set_message(txt)
-        errorstr = "garbage at the end of the file: " .. txt:gsub("([ \n\r\t]*)","")
+        errorstr = "garbage at the end of the file: " .. gsub(txt,"([ \n\r\t]*)","")
     end
 
     local P, S, R, C, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V
@@ -293,7 +312,7 @@ dt[0] = top
     local somecomment      = C((1 - endcomment    )^0)
     local somecdata        = C((1 - endcdata      )^0)
 
-    function entity(k,v) entities[k] = v end
+    local function entity(k,v) entities[k] = v end
 
     local begindoctype     = open * P("!DOCTYPE")
     local enddoctype       = close
@@ -389,7 +408,7 @@ dt[0] = top
         return root and not root.error
     end
 
-    xml.error_handler = (logs and logs.report) or (input and input.report) or print
+    xml.error_handler = (logs and logs.report) or (input and logs.report) or print
 
 end
 
@@ -535,16 +554,16 @@ do
                 local ats = eat and next(eat) and { } -- type test maybe faster
                 if ats then
                     if attributeconverter then
-                        for k,v in pairs(eat) do
+                        for k,v in next, eat do
                             ats[#ats+1] = format('%s=%q',k,attributeconverter(v))
                         end
                     else
-                        for k,v in pairs(eat) do
+                        for k,v in next, eat do
                             ats[#ats+1] = format('%s=%q',k,v)
                         end
                     end
                 end
-                if ern and xml.trace_remap and ern ~= ens then
+                if ern and trace_remap and ern ~= ens then
                     ens = ern
                 end
                 if ens ~= "" then
@@ -640,7 +659,8 @@ do
     function xml.checkbom(root) -- can be made faster
         if root.ri then
             local dt, found = root.dt, false
-            for k,v in ipairs(dt) do
+            for k=1,#dt do
+                local v = dt[k]
                 if type(v) == "table" and v.special and v.tg == "@pi" and v.dt:find("xml.*version=") then
                     found = true
                     break
@@ -913,8 +933,6 @@ do
     local bar               = P('|')
     local hat               = P('^')
     local valid             = R('az', 'AZ', '09') + S('_-')
---~     local name_yes          = C(valid^1 + star) * colon * C(valid^1 + star) -- permits ns:* *:tg *:*
---~     local name_nop          = C(P(true)) * C(valid^1)
     local name_yes          = C(valid^1 + star) * colon * C(valid^1 + star) -- permits ns:* *:tg *:*
     local name_nop          = Cc("*") * C(valid^1)
     local name              = name_yes + name_nop
@@ -1051,7 +1069,7 @@ do
                 if m ~= 11 and m ~= 12 and m ~= 13 and m ~= 14 and m ~= 15 and m ~= 16 then
                     insert(map, 1, { 16 })
                 end
-            --  print((table.serialize(map)):gsub("[ \n]+"," "))
+            --  print(gsub(table.serialize(map),"[ \n]+"," "))
                 return map
             end
         end
@@ -1068,7 +1086,7 @@ do
                 cache[pattern] = result
                 lpathcached = lpathcached + 1
             end
-            if trace or xml.trace_lpath then
+            if trace or trace_lpath then
                 xml.lshow(result)
             end
             return result
@@ -1077,14 +1095,17 @@ do
         end
     end
 
-    function lpath_cached_patterns()
+    function xml.cached_patterns()
         return cache
     end
 
-    local fallbackreport = (texio and texio.write) or io.write
+--  we run out of locals (limited to 200)
+--
+--  local fallbackreport = (texio and texio.write) or io.write
 
     function xml.lshow(pattern,report)
-        report = report or fallbackreport
+--      report = report or fallbackreport
+        report = report or (texio and texio.write) or io.write
         local lp = xml.lpath(pattern)
         if lp == false then
             report(" -: root\n")
@@ -1116,7 +1137,8 @@ do
 
     function xml.xshow(e,...) -- also handy when report is given, use () to isolate first e
         local t = { ... }
-        local report = (type(t[#t]) == "function" and t[#t]) or fallbackreport
+--      local report = (type(t[#t]) == "function" and t[#t]) or fallbackreport
+        local report = (type(t[#t]) == "function" and t[#t]) or (texio and texio.write) or io.write
         if e == nil then
             report("<!-- no element -->\n")
         elseif type(e) ~= "table" then
@@ -1636,7 +1658,7 @@ do
         local rt, dt, dk
         traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
         local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
-        return (ekat and (ekat[arguments] or ekat[arguments:gsub("^([\"\'])(.*)%1$","%2")])) or ""
+        return (ekat and (ekat[arguments] or ekat[gsub(arguments,"^([\"\'])(.*)%1$","%2")])) or ""
     end
     function xml.filters.text(root,pattern,arguments) -- ?? why index, tostring slow
         local dtk, rt, dt, dk = xml.filters.index(root,pattern,arguments)
@@ -1698,9 +1720,6 @@ do
 
     function xml.filter(root,pattern)
         local kind, a, b, c = parser:match(pattern)
---~ if xml.trace_lpath then
---~     print(pattern,kind,a,b,c)
---~ end
         if kind == 1 or kind == 3 then
             return (filters[b] or default_filter)(root,a,c)
         elseif kind == 2 then
@@ -2013,7 +2032,7 @@ do
             end
             if not name then
                 if ek.at then
-                    for a in (attribute or "href"):gmatch("([^|]+)") do
+                    for a in gmatch(attribute or "href","([^|]+)") do
                         name = ek.at[a]
                         if name then break end
                     end
@@ -2052,7 +2071,7 @@ do
                             -- stripped
                         else
                             if nolines then
-                                str = str:gsub("[ \n\r\t]+"," ")
+                                str = gsub(str,"[ \n\r\t]+"," ")
                             end
                             if str == "" then
                                 -- stripped
@@ -2069,9 +2088,8 @@ do
         end)
     end
 
-    function xml.rename_space(root, oldspace, newspace) -- fast variant
+    local function rename_space(root, oldspace, newspace) -- fast variant
         local ndt = #root.dt
-        local rename = xml.rename_space
         for i=1,ndt or 0 do
             local e = root[i]
             if type(e) == "table" then
@@ -2083,11 +2101,13 @@ do
                 end
                 local edt = e.dt
                 if edt then
-                    rename(edt, oldspace, newspace)
+                    rename_space(edt, oldspace, newspace)
                 end
             end
         end
     end
+
+    xml.rename_space = rename_space
 
     function xml.remap_tag(root, pattern, newtg)
         traverse(root, lpath(pattern), function(r,d,k)
@@ -2167,10 +2187,12 @@ put them here instead of loading mode modules there then needed.</p>
 --ldx]]--
 
 function xml.gsub(t,old,new)
-    if t.dt then
-        for k,v in ipairs(t.dt) do
+    local dt = t.dt
+    if dt then
+        for k=1,#dt do
+            local v = dt[k]
             if type(v) == "string" then
-                t.dt[k] = v:gsub(old,new)
+                dt[k] = gsub(v,old,new)
             else
                 xml.gsub(v,old,new)
             end
@@ -2195,9 +2217,9 @@ end
 --~ xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
 --~ xml.unescapes = { } for k,v in pairs(xml.escapes) do xml.unescapes[v] = k end
 
---~ function xml.escaped  (str) return str:gsub("(.)"   , xml.escapes  ) end
---~ function xml.unescaped(str) return str:gsub("(&.-;)", xml.unescapes) end
---~ function xml.cleansed (str) return str:gsub("<.->"  , ''           ) end -- "%b<>"
+--~ function xml.escaped  (str) return (gsub(str,"(.)"   , xml.escapes  )) end
+--~ function xml.unescaped(str) return (gsub(str,"(&.-;)", xml.unescapes)) end
+--~ function xml.cleansed (str) return (gsub(str,"<.->"  , ''           )) end -- "%b<>"
 
 do
 
@@ -2228,6 +2250,10 @@ do
     -- 100 * 5000 * "oeps <oeps bla='oeps' foo='bar'> oeps </oeps> oeps " : gsub:lpeg == 623:501 msec (short tags, less difference)
 
     local cleansed = Cs(((P("<") * (1-P(">"))^0 * P(">"))/"" + 1)^0)
+
+    xml.escaped_pattern   = escaped
+    xml.unescaped_pattern = unescaped
+    xml.cleansed_pattern  = cleansed
 
     function xml.escaped  (str) return escaped  :match(str) end
     function xml.unescaped(str) return unescaped:match(str) end
@@ -2273,14 +2299,14 @@ do if unicode and unicode.utf8 then
         return char(tonumber(s,16))
     end
 
-    function utfize(root)
+    local function utfize(root)
         local d = root.dt
         for k=1,#d do
             local dk = d[k]
             if type(dk) == "string" then
             --  test prevents copying if no match
-                if dk:find("&#x.-;") then
-                    d[k] = dk:gsub("&#x(.-);",toutf)
+                if find(dk,"&#x.-;") then
+                    d[k] = gsub(dk,"&#x(.-);",toutf)
                 end
             else
                 utfize(dk)
@@ -2291,8 +2317,10 @@ do if unicode and unicode.utf8 then
     xml.utfize = utfize
 
     local function resolve(e) -- hex encoded always first, just to avoid mkii fallbacks
-        if e:find("#x") then
+        if find(e,"^#x") then
             return char(tonumber(e:sub(3),16))
+        elseif find(e,"^#") then
+            return char(tonumber(e:sub(2)))
         else
             local ee = xml.entities[e] -- we cannot shortcut this one (is reloaded)
             if ee then
@@ -2310,8 +2338,8 @@ do if unicode and unicode.utf8 then
             for k=1,#d do
                 local dk = d[k]
                 if type(dk) == "string" then
-                    if dk:find("&.-;") then
-                        d[k] = dk:gsub("&(.-);",resolve)
+                    if find(dk,"&.-;") then
+                        d[k] = gsub(dk,"&(.-);",resolve)
                     end
                 else
                     resolve_entities(dk)
@@ -2323,24 +2351,24 @@ do if unicode and unicode.utf8 then
     xml.resolve_entities = resolve_entities
 
     function xml.utfize_text(str)
-        if str:find("&#") then
-            return (str:gsub("&#x(.-);",toutf))
+        if find(str,"&#") then
+            return (gsub(str,"&#x(.-);",toutf))
         else
             return str
         end
     end
 
     function xml.resolve_text_entities(str) -- maybe an lpeg. maybe resolve inline
-        if str:find("&") then
-            return (str:gsub("&(.-);",resolve))
+        if find(str,"&") then
+            return (gsub(str,"&(.-);",resolve))
         else
             return str
         end
     end
 
     function xml.show_text_entities(str)
-        if str:find("&") then
-            return (str:gsub("&(.-);","[%1]"))
+        if find(str,"&") then
+            return (gsub(str,"&(.-);","[%1]"))
         else
             return str
         end
@@ -2352,7 +2380,7 @@ do if unicode and unicode.utf8 then
         local documententities = root.entities
         local allentities = xml.entities
         if documententities then
-            for k, v in pairs(documententities) do
+            for k, v in next, documententities do
                 allentities[k] = v
             end
         end
@@ -2386,7 +2414,7 @@ end
 --~     </a>
 --~ ]])
 
---~ xml.trace_lpath = true
+--~ xml.settrace("lpath",true)
 
 --~ xml.xshow(xml.first(x,"b[position() > 2 and position() < 5 and text() == 'ok']"))
 --~ xml.xshow(xml.first(x,"b[position() > 2 and position() < 5 and text() == upper('ok')]"))

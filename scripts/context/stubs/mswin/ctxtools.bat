@@ -1,2 +1,5 @@
 @echo off
-texmfstart ctxtools.rb %*
+setlocal
+set ownpath=%~dp0%
+texlua "%ownpath%mtxrun.lua" --usekpse --execute ctxtools.rb %*
+endlocal

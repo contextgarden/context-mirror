@@ -11,7 +11,7 @@
         }
 
         function document.setups.load(filename)
-            filename = input.find_file(filename) or ""
+            filename = resolvers.find_file(filename) or ""
             if filename ~= "" and not document.setups.loaded[filename] then
                 local loaded = xml.load(filename)
                 if loaded then

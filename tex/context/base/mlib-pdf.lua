@@ -6,9 +6,13 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
     license   = "see context related readme files",
 }
 
-local format, join = string.format, table.concat
-local sprint = tex.sprint
+local format, concat = string.format, table.concat
+local texsprint = tex.sprint
 local abs, sqrt, round = math.abs, math.sqrt, math.round
+
+local copy_node, write_node = node.copy, node.write
+
+local ctxcatcodes = tex.ctxcatcodes
 
 metapost           = metapost or { }
 metapost.multipass = false
@@ -52,35 +56,71 @@ function metapost.convert(result, trialrun, flusher, multipass)
     return true -- done
 end
 
-function metapost.comment(message)
-    if message then
-        sprint(tex.ctxcatcodes,format("\\MPLIBtoPDF{\\letterpercent\\space mps graphic %s: %s}", metapost.n, message))
-    end
-end
-
 metapost.flushers = { }
 metapost.flushers.pdf = { }
 
+local savedliterals = nil
+
+local mpsliteral = nodes.register(node.new("whatsit",8))
+
+function metapost.flush_literal(d) -- \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
+    if savedliterals then
+        local literal = copy_node(mpsliteral)
+        literal.data = savedliterals[d]
+        write_node(literal)
+    else
+        logs.report("metapost","problem flushing literal %s",d)
+    end
+end
+
+function metapost.flush_reset()
+    savedliterals = nil
+end
+
+function metapost.flushers.pdf.comment(message)
+    if message then
+        message = format("%% mps graphic %s: %s", metapost.n, message)
+        if savedliterals then
+            local last = #savedliterals + 1
+            savedliterals[last] = message
+            texsprint(ctxcatcodes,"\\MPLIBtoPDF{",last,"}")
+        else
+            savedliterals = { message }
+            texsprint(ctxcatcodes,"\\MPLIBtoPDF{1}")
+        end
+    end
+end
+
 function metapost.flushers.pdf.startfigure(n,llx,lly,urx,ury,message)
+    savedliterals = nil
     metapost.n = metapost.n + 1
-    sprint(tex.ctxcatcodes,format("\\startMPLIBtoPDF{%s}{%s}{%s}{%s}",llx,lly,urx,ury))
-    if message then metapost.comment(message) end
+    texsprint(ctxcatcodes,format("\\startMPLIBtoPDF{%s}{%s}{%s}{%s}",llx,lly,urx,ury))
+    if message then metapost.flushers.pdf.comment(message) end
 end
 
 function metapost.flushers.pdf.stopfigure(message)
-    if message then metapost.comment(message) end
-    sprint(tex.ctxcatcodes,"\\stopMPLIBtoPDF")
+    if message then metapost.flushers.pdf.comment(message) end
+    texsprint(ctxcatcodes,"\\stopMPLIBtoPDF")
+    texsprint(ctxcatcodes,"\\ctxlua{metapost.flush_reset()}") -- maybe just at the beginning
 end
 
 function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
-        sprint(tex.ctxcatcodes,"\\MPLIBtoPDF{",join(pdfliterals,"\n"),"}")
+        pdfliterals = concat(pdfliterals,"\n")
+        if savedliterals then
+            local last = #savedliterals + 1
+            savedliterals[last] = pdfliterals
+            texsprint(ctxcatcodes,"\\MPLIBtoPDF{",last,"}")
+        else
+            savedliterals = { pdfliterals }
+            texsprint(ctxcatcodes,"\\MPLIBtoPDF{1}")
+        end
     end
 end
 
 function metapost.flushers.pdf.textfigure(font,size,text,width,height,depth) -- we could save the factor
     text = text:gsub(".","\\hbox{%1}") -- kerning happens in metapost (i have to check if this is true for mplib)
-    sprint(tex.ctxcatcodes,format("\\MPLIBtextext{%s}{%s}{%s}{%s}{%s}",font,size,text,0,-number.dimenfactors.bp*depth))
+    texsprint(ctxcatcodes,format("\\MPLIBtextext{%s}{%s}{%s}{%s}{%s}",font,size,text,0,-number.dimenfactors.bp*depth))
 end
 
 local bend_tolerance = 131/65536
@@ -99,15 +139,15 @@ local function pen_characteristics(object)
     end
 end
 
-local function concat(px, py) -- no tx, ty here
+local function mpconcat(px, py) -- no tx, ty here / we can move this one inline if needed
     return (sy*px-ry*py)/divider,(sx*py-rx*px)/divider
 end
 
 local function curved(ith,pth)
     local d = pth.left_x - ith.right_x
-    if abs(ith.right_x-ith.x_coord-d) <= bend_tolerance and abs(pth.x_coord-pth.left_x-d) <= bend_tolerance then
+    if abs(ith.right_x - ith.x_coord - d) <= bend_tolerance and abs(pth.x_coord - pth.left_x - d) <= bend_tolerance then
         d = pth.left_y - ith.right_y
-        if abs(ith.right_y-ith.y_coord-d) <= bend_tolerance and abs(pth.y_coord-pth.left_y-d) <= bend_tolerance then
+        if abs(ith.right_y - ith.y_coord - d) <= bend_tolerance and abs(pth.y_coord - pth.left_y - d) <= bend_tolerance then
             return false
         end
     end
@@ -148,32 +188,34 @@ local function flushconcatpath(path, t, open)
     for i=1,#path do
         pth = path[i]
         if not ith then
-           t[#t+1] = format("%f %f m",concat(pth.x_coord,pth.y_coord))
+           t[#t+1] = format("%f %f m",mpconcat(pth.x_coord,pth.y_coord))
         elseif curved(ith,pth) then
-            local a, b = concat(ith.right_x,ith.right_y)
-            local c, d = concat(pth.left_x,pth.left_y)
-            t[#t+1] = format("%f %f %f %f %f %f c",a,b,c,d,concat(pth.x_coord, pth.y_coord))
+            local a, b = mpconcat(ith.right_x,ith.right_y)
+            local c, d = mpconcat(pth.left_x,pth.left_y)
+            t[#t+1] = format("%f %f %f %f %f %f c",a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
         else
-           t[#t+1] = format("%f %f l",concat(pth.x_coord, pth.y_coord))
+           t[#t+1] = format("%f %f l",mpconcat(pth.x_coord, pth.y_coord))
         end
         ith = pth
     end
     if not open then
         local one = path[1]
         if curved(pth,one) then
-            local a, b = concat(pth.right_x,pth.right_y)
-            local c, d = concat(one.left_x,one.left_y)
-            t[#t+1] = format("%f %f %f %f %f %f c",a,b,c,d,concat(one.x_coord, one.y_coord))
+            local a, b = mpconcat(pth.right_x,pth.right_y)
+            local c, d = mpconcat(one.left_x,one.left_y)
+            t[#t+1] = format("%f %f %f %f %f %f c",a,b,c,d,mpconcat(one.x_coord, one.y_coord))
         else
-            t[#t+1] = format("%f %f l",concat(one.x_coord,one.y_coord))
+            t[#t+1] = format("%f %f l",mpconcat(one.x_coord,one.y_coord))
         end
     elseif #path == 1 then
         -- special case .. draw point
         local one = path[1]
-        t[#t+1] = format("%f %f l",concat(one.x_coord,one.y_coord))
+        t[#t+1] = format("%f %f l",mpconcat(one.x_coord,one.y_coord))
     end
     return t
 end
+
+metapost.flushnormalpath = flushnormalpath
 
 metapost.specials = metapost.specials or { }
 
@@ -287,7 +329,7 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
                                 end
                                 local dl = currentobject.dash
                                 if dl then
-                                    local d = format("[%s] %i d",join(dl.dashes or {}," "),dl.offset)
+                                    local d = format("[%s] %i d",concat(dl.dashes or {}," "),dl.offset)
                                     if d ~= dashed then
                                         dashed = d
                                         t[#t+1] = dashed
@@ -404,7 +446,7 @@ do
     local flusher = {
         startfigure = function()
             t = { }
-            sprint(tex.ctxcatcodes,"\\startnointerference")
+            texsprint(ctxcatcodes,"\\startnointerference")
         end,
         flushfigure = function(literals)
             for i=1, #literals do
@@ -412,7 +454,7 @@ do
             end
         end,
         stopfigure = function()
-            sprint(tex.ctxcatcodes,"\\stopnointerference")
+            texsprint(ctxcatcodes,"\\stopnointerference")
         end
     }
 
@@ -428,9 +470,12 @@ function metapost.totable(result)
     if figure then
         local t = { }
         local objects = figure:objects()
-        for _, object in ipairs(objects) do
+        for o=1,#objects do
+            local object = objects[o]
             local tt = { }
-            for _, field in ipairs(mplib.fields(object)) do
+            local fields = mplib.fields(object)
+            for f=1,#fields do
+                local field = fields[f]
                 tt[field] = object[field]
             end
             t[#t+1] = tt
@@ -460,105 +505,3 @@ function metapost.colorconverter()
         end
     end
 end
-
---~ -- obsolete code
---~
---~ -- the pen calculations are taken from metapost, first converted by
---~ -- taco from c to lua, and then optimized by hans, so all errors are his
---~
---~ local aspect_bound   = 10/65536
---~ local aspect_default =  1/65536
---~ local eps            = 0.0001
---~
---~ local function pyth(a,b)
---~     return sqrt(a*a + b*b) -- much faster than sqrt(a^2 + b^2)
---~ end
---~
---~ local function coord_range_x(h, dz) -- direction x
---~     local zlo, zhi = 0, 0
---~     for i=1, #h do
---~         local p = h[i]
---~         local z = p.x_coord
---~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
---~         z = p.right_x
---~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
---~         z = p.left_x
---~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
---~     end
---~     return (zhi - zlo <= dz and aspect_bound) or aspect_default
---~ end
---~
---~ local function coord_range_y(h, dz) -- direction y
---~     local zlo, zhi = 0, 0
---~     for i=1, #h do
---~         local p = h[i]
---~         local z = p.y_coord
---~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
---~         z = p.right_y
---~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
---~         z = p.left_y
---~         if z < zlo then zlo = z elseif z > zhi then zhi = z end
---~     end
---~     return (zhi - zlo <= dz and aspect_bound) or aspect_default
---~ end
---~
---~ local function pen_characteristics(object)
---~     local p = object.pen[1]
---~     local x_coord, y_coord, left_x, left_y, right_x, right_y = p.x_coord, p.y_coord, p.left_x, p.left_y, p.right_x, p.right_y
---~     local wx, wy, width
---~     if right_x == x_coord and left_y == y_coord then
---~         wx = abs(left_x  - x_coord)
---~         wy = abs(right_y - y_coord)
---~     else
---~         wx = pyth(left_x - x_coord, right_x - x_coord)
---~         wy = pyth(left_y - y_coord, right_y - y_coord)
---~     end
---~     if wy/coord_range_x(object.path, wx) >= wx/coord_range_y(object.path, wy) then
---~         width = wy
---~     else
---~         width = wx
---~     end
---~     sx, rx, ry, sy, tx, ty = left_x, left_y, right_x, right_y, x_coord, y_coord
---~     sx, rx, ry, sy = (sx-tx), (rx-ty), (ry-tx), (sy-ty) -- combine with previous
---~     if width ~= 1 then
---~         if width == 0 then
---~             sx, sy = 1, 1
---~         else
---~             rx, ry, sx, sy = rx/width, ry/width, sx/width, sy/width
---~         end
---~     end
---~     -- sx rx ry sy tx ty -> 1 0 0 1 0 0 is ok, but 0 0 0 0 0 0 not
---~     if true then
---~         if abs(sx) < eps then sx = eps end
---~         if abs(sy) < eps then sy = eps end
---~     else
---~         -- this block looks complicated but it only captures invalid transforms
---~         -- to be checked rx vs sx and so
---~         local det = sx/sy - ry/rx
---~         local aspect = 4*aspect_bound + aspect_default
---~         if abs(det) < aspect  then
---~             local s
---~             if det >= 0 then
---~                 s, aspect = 1, aspect - det
---~             else
---~                 s, aspect = -1, -aspect - det -- - ?
---~             end
---~             local absrx, absry, abssy, abssx = abs(rx), abs(ry), abs(sy), abs(sx)
---~             if abssx + abssy >= absry + absrx then -- was yy
---~                 if abssx > abssy then
---~                     sy = sy + (aspect + s*abssx) / sx
---~                 else
---~                     sx = sx + (aspect + s*abssy) / sy
---~                 end
---~             else
---~                 if absry > absrx then
---~                     rx = rx + (aspect + s*absry) / ry
---~                 else
---~                     ry = ry + (aspect + s*absrx) / rx
---~                 end
---~             end
---~         end
---~     end
---~     divider = sx*sy - rx*ry
---~     return not (sx==1 and rx==0 and ry==0 and sy==1 and tx==0 and ty==0), width
---~ end

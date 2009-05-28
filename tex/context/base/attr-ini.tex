@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Attribute Macros / initialization}
+\writestatus{loading}{ConTeXt Attribute Macros / Initialization}
 
 %D Although it's still somewhat experimental, here we introduce code
 %D related to attributes.
@@ -20,63 +20,21 @@
 
 \registerctxluafile{attr-ini}{1.001}
 
-\newcount\attdefcounter
+\definesystemattribute[state]
+\definesystemattribute[skip]
+\definesystemattribute[penalty]
+\definesystemattribute[colormodel][global] % no reset
+\definesystemattribute[color]
+\definesystemattribute[transparency]
+\definesystemattribute[overprint]
+\definesystemattribute[negative]
+\definesystemattribute[effect]
+\definesystemattribute[viewerlayer]
 
-% \def\newattribute#1%
-%   {\global\advance\attdefcounter\plusone
-%    \global\attributedef#1\attdefcounter
-%    \ctxlua{attributes.define("\strippedcsname#1",\number\attdefcounter)}}
-
-% \newattribute\statusattribute
-% \newattribute\colorattribute
-% \newattribute\skipattribute
-% \newattribute\penaltyattribute
-
-\newtoks \attributesresetlist
-
-\def\defineattribute[#1]% alternatively we can let lua do the housekeeping
-  {\global\advance\attdefcounter\plusone
-          \expandafter        \xdef\csname :attr:#1\endcsname{\number\attdefcounter}%
-   \global\expandafter\attributedef\csname @attr@#1\endcsname        \attdefcounter
-   \writestatus\m!systems{defining attribute #1 with number \the\attdefcounter}%
-   \appendetoks\csname @attr@#1\endcsname\minusone\to\attributesresetlist
-   \ctxlua{attributes.define("#1",\number\attdefcounter)}}
-
-% expandable so we can \edef them for speed
-
-\def\dosetattribute#1#2{\csname @attr@#1\endcsname#2\relax}
-\def\doresetattribute#1{\csname @attr@#1\endcsname\minusone}
-\def\dogetattribute  #1{\number\csname @attr@#1\endcsname}
-\def\dogetattributeid#1{\csname :attr:#1\endcsname}
-
-\let\dompattribute\gobbletwoarguments
-
-\defineattribute[mark]
-% \defineattribute[status] % used ? maybe combine with
-\defineattribute[state]
-\defineattribute[trigger] % feature inheritance
-\defineattribute[skip]
-\defineattribute[penalty]
-
-\startruntimectxluacode
-    nodes.trigger = \dogetattributeid{trigger}
-\stopruntimectxluacode
-
-% \defineattribute[ignore]
+% \definesystemattribute[ignore]
 %
 % \edef\startignorecontent{\dosetattribute{ignore}\plusone}
 % \edef\stopignorecontent {\doresetattribute{ignore}}
-%
-% \startruntimectxluacode
-%     nodes.ignore = \dogetattributeid{ignore}
-% \stopruntimectxluacode
-
-% \dosetattribute{status}{1}
-
-% temp here / will be indirect ! just for testing
-
-\defineattribute[colormodel]
-\defineattribute[color]
 
 % todo: no need for 'color' argument, we can set that once at startup; currently
 % a bit inconsistent
@@ -106,8 +64,6 @@
 
 % transparency
 
-\defineattribute[transparency]
-
 \def\registertransparency#1#2#3%
   {\setevalue{(ts:#1)}{\dosetattribute{transparency}{\ctxlua{tex.print(transparencies.register(#2,#3))}}}}
 
@@ -123,8 +79,6 @@
 
 % overprint
 
-\defineattribute[overprint]
-
 \def\registeroverprint#1#2%
   {\setevalue{(os:#1)}{\dosetattribute{overprint}{\ctxlua{tex.print(overprints.register('#2'))}}}}
 
@@ -139,8 +93,6 @@
 
 % negative
 
-\defineattribute[negative]
-
 \def\registernegative#1#2%
   {\setevalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
 
@@ -154,8 +106,6 @@
 \registernegative{negative}{negative}
 
 % effect
-
-\defineattribute[effect]
 
 \def\registereffect#1#2#3% #2=stretch #3=rulethickness
   {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}%
@@ -176,89 +126,24 @@
 
 % viewerlayers
 
-\defineattribute[viewerlayer]
+% \def\registerviewerlayer#1#2% global !
+%   {\setxvalue{(vl:#1)}{\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
+%
+% \setevalue{(vl:)}{\doresetattribute{viewerlayer}}
+%
+% needs to work over stopitemize grouping etc
 
-\def\registerviewerlayer#1#2%
-  {\setevalue{(vl:#1)}{\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
+\def\registerviewerlayer#1#2% global !
+  {\setxvalue{(vl:#1)}{\global\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
 
-\setevalue{(vl:)}{\doresetattribute{viewerlayer}}
+\setevalue{(vl:)}{\global\doresetattribute{viewerlayer}}
+
+%
 
 \def\dotriggerviewerlayer
   {\ctxlua{viewerlayers.enabled=true}%
    \gdef\dotriggerviewerlayer##1{\csname(vl:##1)\endcsname}%
    \dotriggerviewerlayer}
-
-% ugly solution for backend handling
-
-% \def\shipout
-%   {%\writestatus{SHIPOUT}{CALLED AT PAGE \realfolio}%
-%    \dowithnextbox
-%      {\ctxlua{callbacks.push('hpack_filter',nodes.process_page)}%
-%      %\writestatus{SHIPOUT}{START PACKAGING}%
-%       \setbox\nextbox\hbox{\box\nextbox}%
-%      %\writestatus{SHIPOUT}{STOP PACKAGING}%
-%       \ctxlua{callbacks.pop('hpack_filter')}%
-%       \primitive\shipout\box\nextbox}}
-
-% \def\shipout
-%   {\dowithnextbox
-%      {\ctxlua{nodes.process_page(tex.box[\number\nextbox])}%
-%       \primitive\shipout\box\nextbox}}
-
-% Objects are processed indepently \unknown\ actually we may need a proper callback.
-
-\newbox\finalizedshipoutbox
-
-\def\finalizeobjectbox#1{\ctxlua{nodes.process_page(tex.box[\number#1])}}
-
-\def\finalizeshipoutbox#1% % hack till we have access to pdf backend
-  {\global\setbox\finalizedshipoutbox\hbox{#1}%
-   \finalizeobjectbox\finalizedshipoutbox
-   \hbox{\ctxlua{states.flush()}\box\finalizedshipoutbox}}
-
-\let\normalshipout\shipout
-
-% tricky stuff:
-
-\newcount\attributeboxcount
-
-\edef\startinheritattributes{\dosetattribute  {trigger}{1}}
-\edef\stopinheritattributes {\doresetattribute{trigger}}
-
-\def\doattributedcopy  {\afterassignment\dodoattributedcopy\attributeboxcount}
-\def\doattributedbox   {\afterassignment\dodoattributedbox \attributeboxcount}
-
-\def\dodoattributedcopy
-  {\startinheritattributes
-   \ifvbox\attributeboxcount
-     \vbox{\unvcopy\attributeboxcount}%
-   \else
-     \hbox{\unhcopy\attributeboxcount}%
-   \fi
-   \stopinheritattributes}
-
-\def\dodoattributedbox
-  {\startinheritattributes
-   \ifvbox\attributeboxcount
-     \vbox{\unvbox\attributeboxcount}%
-   \else
-     \hbox{\unhbox\attributeboxcount}%
-   \fi
-   \stopinheritattributes}
-
-\def\enableattributeinheritance
-  {\ctxlua{nodes.triggering=true}%
-   \let\attributedcopy\doattributedcopy
-   \let\attributedbox \doattributedbox}
-
-\def\disableattributeinheritance
-  {\ctxlua{nodes.triggering=false}%
-   \let\attributedcopy\copy
-   \let\attributedbox \box}
-
-\disableattributeinheritance
-
-% \enableattributeinheritance % will become default
 
 \protect \endinput
 

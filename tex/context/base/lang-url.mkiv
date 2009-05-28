@@ -15,7 +15,30 @@
 
 \unprotect
 
-% \urlsplitmode is not (yet) supported (not that much needed)
+%D \macros
+%D   {hyphenatedurl}
+%D
+%D For those who want to put full \URL's in a text, we offer
+%D
+%D \startbuffer
+%D \hyphenatedurl{http://optimist.optimist/optimist/optimist.optimist#optimist}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D which breaks at the appropriate places. Watch the \type{#}
+%D hack.
+%D
+%D When passed as argument, like in \type {\goto}, one needs
+%D to substitute a \type {\\} for each \type{#}.
+%D
+%D \startbuffer
+%D \hyphenatedurl{http://this.is.a.rather/strange/reference#indeed}
+%D \stopbuffer
+%D
+%D \typebuffer
+
+\ifx\urlsplitmode\undefined \chardef\urlsplitmode\zerocount \fi % not supported in mkiv
 
 \newtoks\everyhyphenatedurl
 
@@ -54,11 +77,34 @@
    \let\n\dohyphenatedurlnormal
    \let\b\dohyphenatedurlbefore
    \let\a\dohyphenatedurlafter
-   \expanded{\ctxlua{commands.hyphenatedurl.action(
+   \normalexpanded{\noexpand\ctxlua{commands.hyphenatedurl.action(
         \!!bs\noexpand\detokenize{#1}\!!es,
         \number\hyphenatedurllefthyphenmin,
         \number\hyphenatedurlrighthyphenmin
     )}}%
    \endgroup}
+
+%D \macros
+%D   {hyphenatedfilename}
+%D
+%D For the moment we treat filenames in a similar way,
+%D
+%D \starttyping
+%D \hyphenatedfilename{here/there/filename.suffix}
+%D \stoptyping
+
+\ifx\hyphenatedfilename\undefined \let\hyphenatedfilename\hyphenatedurl \fi
+
+% \def\test#1%
+%   {\dontleavehmode
+%    \begingroup
+%    \tttf
+%    \hyphenatedurl {%
+%      \letterampersand #1\letterampersand #1\letterampersand #1\letterampersand #1\letterampersand
+%      \letterhash      #1\letterhash      #1\letterpercent   #1\letterslash     #1\letterampersand
+%    }%
+%    \endgroup}
+
+% \dorecurse{100}{\test{a} \test{ab} \test{abc} \test{abcd} \test{abcde} \test{abcdef}}
 
 \protect \endinput
