@@ -75,8 +75,8 @@
    \getfiguredimensionsonly[#1]% [\c!object=\v!no] already set
    \startMPcode
      externalfigure "#1"
-       xscaled \figurewidth\space
-       yscaled \figureheight\space
+       xscaled \the\dimexpr\figurewidth \relax\space % must be points
+       yscaled \the\dimexpr\figureheight\relax\space % must be points
        #2 ;
    \stopMPcode
    \egroup}

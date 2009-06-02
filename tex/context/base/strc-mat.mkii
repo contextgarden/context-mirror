@@ -1,0 +1,2923 @@
+%D \module
+%D   [       file=strc-mat,
+%D        version=2006.03.27, % 1998.12.07
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Math Fundamentals,
+%D         author={Hans Hagen, Taco Hoekwater \& Aditya Mahajan},
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% engels maken
+
+\writestatus{loading}{ConTeXt Structure Macros / Math Fundamentals}
+
+\unprotect
+
+% \startlines
+% $\mathopnolimits{\rm d}x$
+% $\mathopnolimits{\kern\zeropoint \rm d}x$
+% $\puremathcomm{nolop}{\rm d}x$
+% $\puremathcomm{nolop}{\kern\zeropoint\rm d}x$
+% \blank
+% $\puremathcomm{nolop}{\mr d}x$
+% $\puremathcomm{nolop}{\kern\zeropoint\mr d}x$
+% $\mathop{\kern\zeropoint\mr d}x$
+% $\mathopnolimits{\kern\zeropoint d}x$
+% \stoplines
+
+% \definemessageconstant{math}
+
+% % messages moved
+
+% \def\invalidmathcommand#1{\showmessage\m!math1{#1}}
+
+% \appendtoks
+%     \def\eqno {\invalidmathcommand{\string\eqno }}%
+%     \def\leqno{\invalidmathcommand{\string\leqno}}%
+% \to \everydisplay
+
+% \appendtoks
+%     \let\eqno\normaleqno
+%     \let\leqno\normaleqno
+% \to \everymath
+
+% \placeformula\startformula
+% 	H(K|M,C) = H(K|C) - H(M|C)\eqno{\hbox{(\in{}[eq:keyapp])}}
+% \stopformula
+
+\unexpanded\def\mathortext
+  {\ifmmode
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+% \defineactivecharacter _ {\mathortext{_}{\_}} text_text  $a^2$
+
+% force text mode, will be overloaded later
+
+\ifx\text\undefined \let\text\hbox \fi
+
+\newdimen\lastlinewidth
+
+% does not work at all
+%
+% \def\setlastlinewidth
+%   {\resetlastlinewidth
+%    \ifmmode\else\ifhmode\else\ifoptimizedisplayspacing
+%      \bgroup
+%      \forgetdisplayskips
+%      $$\global\lastlinewidth\predisplaysize$$
+%      \vskip-\baselineskip
+%      \egroup
+%    \fi\fi\fi}
+
+% test \par \dorecurse{10}{test } \moveformula \startformula test \stopformula test \endgraf
+% test \par \dorecurse{10}{test } \startformula test \stopformula test \endgraf
+% \dorecurse{30}{\bpar \dorecurse\recurselevel{test } \epar \startformula formula \stopformula}
+
+\def\setlastlinewidth
+  {\resetlastlinewidth
+   \ifoptimizedisplayspacing\ifmmode\else\ifhmode
+     \bgroup
+     \forgetdisplayskips
+     \displaywidowpenalty\widowpenalty % brrr, else widowpenalty does not work
+     \everymath   \emptytoks
+     \everydisplay\emptytoks
+     $$\strut\global\lastlinewidth\predisplaysize$$
+     \vskip-\lineheight
+     \vskip\zeropoint
+     \egroup
+   \fi\fi\fi}
+
+\def\resetlastlinewidth
+  {\global\lastlinewidth\zeropoint\relax}
+
+% not here: \appendtoks \setlastlinewidth \to \everyendofpar
+
+%D moved from main-001
+
+%\def\EveryMathPar{\EveryPar}
+%
+%\newevery \everymath \EveryMath
+
+\abovedisplayskip      = \zeropoint
+\abovedisplayshortskip = \zeropoint % evt. 0pt minus 3pt
+\belowdisplayskip      = \zeropoint
+\belowdisplayshortskip = \zeropoint % evt. 0pt minus 3pt
+
+\predisplaypenalty     = \zerocount
+\postdisplaypenalty    = \zerocount % -5000 gaat mis, zie penalty bij \paragraaf
+
+% we don't use the skip's
+
+\def\displayskipsize#1#2% obsolete
+  {\ifdim\ctxparskip>\zeropoint
+     #1\ctxparskip\!!plus#2\ctxparskip\!!minus#2\ctxparskip\relax
+   \else
+     #1\lineheight\!!plus#2\lineheight\!!minus#2\lineheight\relax
+   \fi}
+
+\def\displayskipfactor          {1.0} % obsolete
+\def\displayshortskipfactor     {0.8} % obsolete
+\def\displayskipgluefactor      {0.3} % obsolete
+\def\displayshortskipgluefactor {0.2} % obsolete
+
+\def\abovedisplayskipsize% obsolete
+  {\displayskipsize\displayskipfactor\displayskipgluefactor}
+
+\def\belowdisplayskipsize% obsolete
+  {\displayskipsize\displayskipfactor\displayskipgluefactor}
+
+\def\abovedisplayshortskipsize% obsolete
+  {\displayskipsize\displayshortskipfactor\displayshortskipgluefactor}
+
+\def\belowdisplayshortskipsize% obsolete
+  {\displayskipsize\displayshortskipfactor\displayshortskipgluefactor}
+
+\def\forgetdisplayskips % to do
+  {\abovedisplayskip     \zeropoint
+   \belowdisplayskip     \zeropoint
+   \abovedisplayshortskip\zeropoint
+   \belowdisplayshortskip\zeropoint}
+
+\definenumber % \definelabel
+  [\v!formula]
+  [\c!text=\v!formula,
+   \c!way=\@@fmway,
+   \c!blockway=\@@fmblockway,
+   \c!location=\v!intext,
+   \c!conversion=\@@fmconversion]
+
+\def\setupformulas
+  {\dodoubleargument\getparameters[\??fm]}
+
+\newconditional\handleformulanumber
+\newconditional\incrementformulanumber
+
+\def\formuladistance{\formulaparameter\c!distance}
+
+\def\doformulareference#1#2%
+  {\doifsomething{#1}{\doifnotinset{#1}{+,-}{\rawreference\s!for{#1}{#2}}}}
+
+\def\dododoformulanumber#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
+  {\hbox\bgroup
+   \ifconditional\handleformulanumber
+     \ifconditional\incrementformulanumber
+       \incrementnumber[\v!formula]%
+     \fi
+     \makesectionnumber[\v!formula]%
+     \setbox0\hbox{\ignorespaces#2\unskip}%
+     \ifdim\wd0>\zeropoint
+       \edef\hetsubnummer{\@@fnseparator#2}%AM: was \edef\hetsubnummer{#2}%
+     \else
+       \let\hetsubnummer\empty
+     \fi
+     \doformulareference{#1}{\composedsectionnumber\hetsubnummer}%
+     \setbox0\hbox{\ignorespaces#4\unskip}%
+     \ifdim\wd0>\zeropoint
+       \edef\hetsubnummer{\@@fnseparator#4}%AM: was \edef\hetsubnummer{#4}%
+     \fi
+     \doformulareference{#3}{\composedsectionnumber\hetsubnummer}%
+     \doflushformulalistentry{\composedsectionnumber\hetsubnummer}%
+     \rm % nodig ?
+     \doif{\formulaparameter\c!location}\v!right{\hskip\formuladistance}%
+     \@@fmnumbercommand
+       {\dostartattributes\??fm\c!numberstyle\c!numbercolor
+        \strut
+        \@@fmleft
+        \preparefullnumber\??fm\composedsectionnumber\preparednumber
+        \labeltexts\v!formula
+          {\ignorespaces\preparednumber\ignorespaces\hetsubnummer\unskip}%
+        \@@fmright
+        \dostopattributes}%
+      \doif{\formulaparameter\c!location}\v!left{\hskip\formuladistance}%
+   \fi
+   \egroup}
+
+\def\dodoformulanumber[#1][#2][#3]%
+  {\doquadruplegroupempty\dododoformulanumber{#1}{#2}{#3}}
+
+\def\doformulanumber
+  {\dotripleempty\dodoformulanumber}
+
+\setvalue{\e!start\v!formula}{\dostartformula{}}
+\setvalue{\e!stop \v!formula}{\dostopformula}
+
+\def\definieerformule
+  {\dodoubleempty\dodefinieerformule}
+
+\def\dodefinieerformule[#1][#2]%
+  {\doifsomething{#1}
+     {\copyparameters
+        [\??fm#1][\??fm]
+        [\c!spacebefore,\c!spaceafter,\c!grid,
+         \c!leftmargin,\c!rightmargin,\c!margin,
+         \c!indentnext,\c!alternative,
+         \c!strut,\c!align,\c!distance]%
+      \setupformulas[#1][#2]%
+      \setvalue{\e!start#1\v!formula}{\dostartformula{#1}}%
+      \setvalue{\e!stop #1\v!formula}{\dostopformula}}}
+
+\newtoks \everysetupformulas \relax % we need a hook for extensions in modules
+
+\def\setupformulas
+  {\dodoubleempty\dosetupformulas}
+
+\def\dosetupformulas[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??fm#1][#2]%
+   \else
+     \getparameters[\??fm][#1]%
+   \fi
+   \the\everysetupformulas}
+
+\def\formulaparameter#1%
+  {\csname\??fm\currentformula#1\endcsname}
+
+\setupformulas
+  [\c!way=\@@nrway,
+   \c!blockway=,
+   \c!sectionnumber=\@@nrsectionnumber,
+   \c!conversion=\v!numbers,
+   \c!location=\v!right,
+   \c!left=(,
+   \c!right=),
+   \c!spacebefore=,
+   \c!spaceafter=\@@fmspacebefore,
+   \c!leftmargin=\!!zeropoint,
+   \c!rightmargin=\!!zeropoint,
+   \c!margin=,
+   \c!indentnext=\v!no,
+   \c!alternative=\s!default,
+   \c!align=,
+   \c!strut=\v!no,
+   \c!separator=\@@koseparator,
+   \c!distance=1em]
+
+\def\currentformula          {}
+\def\predisplaysizethreshhold{2em} % was 3em
+
+\def\leftdisplayskip    {\leftskip}
+\def\rightdisplayskip   {\rightskip}
+\def\leftdisplaymargin  {\formulaparameter\c!leftmargin}
+\def\rightdisplaymargin {\formulaparameter\c!rightmargin}
+\def\displaygridsnapping{\formulaparameter\c!grid}
+
+\def\beforedisplayspace
+  {\doifnot{\formulaparameter\c!spacebefore}\v!none{\blank[\formulaparameter\c!spacebefore]}}
+
+\def\afterdisplayspace
+  {\doifnot{\formulaparameter\c!spaceafter }\v!none{\blank[\formulaparameter\c!spaceafter ]}}
+
+\def\setpredisplaysize#1%
+  {\predisplaysize#1\relax
+   \ifdim\predisplaysize<\maxdimen
+     \ifdim\predisplaysize>\zeropoint
+       \advance\predisplaysize \predisplaysizethreshhold
+     \fi
+     \advance\predisplaysize \displayindent % needed ?
+     \ifdim\predisplaysize>\hsize
+       \predisplaysize\hsize
+     \fi
+   \else
+     \predisplaysize\zeropoint
+   \fi}
+
+\def\setdisplaydimensions
+  {\displayindent\leftdisplayskip
+   \advance\displayindent\leftdisplaymargin
+   \displaywidth\hsize
+% \setlocalhsize
+% \displaywidth\localhsize
+   \ifdim\hangindent>\zeropoint
+     \advance\displayindent\hangindent
+   \else
+     \advance\displaywidth\hangindent
+   \fi
+   \advance\displaywidth-\displayindent
+   \advance\displaywidth-\rightdisplayskip
+   \advance\displaywidth-\rightdisplaymargin
+   \hsize\displaywidth} % new, else overfull in itemize
+
+\newif\ifoptimizedisplayspacing
+
+\def\dostartformula#1%
+  {\dodoubleempty\dodostartformula[#1]}
+
+\newskip\formulaparskip
+\newskip\formulastrutht
+\newskip\formulastrutdp
+
+% hm, invoke otr in hmode in order to move skips to mvl, could be an option
+
+%D \startbuffer
+%D \startformula[9pt] x = 1 \stopformula
+%D \startformula[7pt] x = 1 \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\dodostartformula[#1][#2]% setting leftskip adaption is slow !
+  {% todo: test first
+   %
+   % \ifdim\lastskip>\zeropoint
+   %   \resetlastlinewidth % else problems with in between stuff without \epar
+   % \fi
+   \bgroup % HERE
+   \the\everybeforedisplayformula
+   \formulaparskip\parskip
+   \formulastrutdp\strutdepth
+   \formulastrutht\strutheight
+   \switchtoformulabodyfont[#2]%
+   \parskip\formulaparskip
+   \def\currentformula{#1}%
+   % may look better in itemizations
+   \doif{\formulaparameter\c!option}\v!middle
+     {\def\leftdisplayskip{\zeropoint}%
+      \def\rightdisplayskip{\zeropoint}}%
+   % this was an experiment
+   \doifsomething{\formulaparameter\c!margin}% so we test first
+     {\dosetleftskipadaption{\formulaparameter\c!margin}%
+      \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
+   \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
+   \freezedimenmacro\leftdisplayskip
+   \freezedimenmacro\rightdisplayskip
+   \freezedimenmacro\leftdisplaymargin
+   \freezedimenmacro\rightdisplaymargin
+   \freezedimenmacro\predisplaysizethreshhold
+   \forgetdisplayskips
+   \ifoptimizedisplayspacing
+     \ifdim\lastlinewidth>\zeropoint
+       \abovedisplayshortskip-\strutht\relax
+     \fi
+   \else
+     \resetlastlinewidth
+   \fi
+   \getvalue{\e!start\formulaparameter\c!alternative\v!formula}}
+
+\def\switchtoformulabodyfont{\switchtobodyfont}
+
+\setvalue{\v!formula}{\dosingleempty\doformula}
+
+\def\doformula[#1]#2%
+  {\begingroup
+   \switchtoformulabodyfont[#1]%
+   % not : \def\doformula[##1]##2{\mathematics{##2}}%
+   \mathematics{#2}%
+   \endgroup}
+
+\let\doplaceformulanumber\empty
+
+\def\dostopformula
+  {\doplaceformulanumber
+   \getvalue{\e!stop\formulaparameter\c!alternative\v!formula}%
+   \resetlastlinewidth
+   \nonoindentation
+   \dochecknextindentation{\??fm\currentformula}%
+   \egroup
+   \hangafter\minusone   % added for side floats
+   \hangindent\zeropoint % added for side floats
+   \setfalse\handleformulanumber
+   \dorechecknextindentation} % here ?
+
+\newif\ifinformula
+
+\def\startdisplaymath
+  {\ifgridsnapping
+     \beforedisplayspace
+     \snapmathtogrid\vbox
+     \bgroup
+     \informulatrue
+    %\forgetall % breaks side floats
+   \else
+     \bgroup
+     \parskip\formulaparskip % ! !
+     \informulatrue
+    %\forgetall % otherwise backgrounds fail
+     \ifdim\lastskip<\zeropoint\else
+       \par
+       \ifvmode \ifdim\parskip>\zeropoint\relax
+         \whitespace \vskip-\parskip % kind of forces and cancels again
+       \fi \fi
+     \fi
+     \doif\displaygridcorrection{-\v!top}{\kern-\strutht}% new, currently only option/default
+     \beforedisplayspace
+     \par
+     \ifvmode
+        \prevdepth-\maxdimen % texbook pagina 79-80
+        % otherwise problems at the top of a page, don't remove:
+        \verticalstrut
+        \vskip-\struttotal
+        \vskip-\baselineskip
+     \fi
+   \fi
+   $$\setdisplaydimensions
+   \setpredisplaysize\lastlinewidth
+   \startinnermath}
+
+\def\stopdisplaymath
+  {\stopinnermath
+   $$%
+   \ifgridsnapping
+     \egroup
+     \afterdisplayspace
+   \else
+     \par\ifvmode\ifdim\parskip>\zeropoint\whitespace\vskip-\parskip\fi\fi
+     \afterdisplayspace
+     \egroup
+   \fi
+   \globallet\displaylinecorrection\empty
+   \gdef\displaygridcorrection{\displaygridsnapping}}
+
+\newif\ifclipdisplaymath \clipdisplaymathtrue
+\def\displaymathclipfactor{1.1}
+
+\def\snapmathtogrid % to do \dp
+  {\dowithnextbox
+     {\bgroup
+      \donefalse
+      \ifclipdisplaymath
+        \ifdim\nextboxht<\displaymathclipfactor\lineheight
+          \donetrue
+        \fi
+      \fi
+      \ifdone
+        \nextboxht\lineheight
+      \else
+        \getnoflines\nextboxht
+        \setbox\nextbox\vbox to \noflines\lineheight
+          {\vfill\flushnextbox\vfill}%
+        \setbox\nextbox\hbox{\lower\strutdepth\flushnextbox}%
+      \fi
+      \snaptogrid[\displaygridcorrection]\hbox{\flushnextbox}%
+      \egroup}}
+
+\def\displaygridcorrection{\displaygridsnapping}
+\let\displaygridcorrection\empty
+
+\def\moveformula
+  {\dosingleempty\domoveformula}
+
+\def\domoveformula[#1]% brr gaat mogelijk fout
+  {\iffirstargument
+     \xdef\displaygridcorrection{#1}%
+   \else
+     \gdef\displaygridcorrection{-\v!top}% handy with short preline
+   \fi
+   \globallet\displaylinecorrection\displaygridcorrection}
+
+\let\startinnermath\empty
+\let\stopinnermath \empty
+
+\def\defineformulaalternative
+  {\dotripleargument\dodefineformulaalternative}
+
+\def\dodefineformulaalternative[#1][#2][#3]%
+  {\setvalue{\e!start#1\v!formula}{#2}%
+   \setvalue{\e!stop #1\v!formula}{#3}}
+
+\defineformulaalternative[\s!default][\startdisplaymath][\stopdisplaymath]
+
+% sp = single line paragraph  sd = single line display
+% mp = multi  line paragraph  md = multy  line display
+
+\defineformulaalternative[single][\startdisplaymath][\stopdisplaymath]
+\defineformulaalternative[multi] [\startdisplaymath][\stopdisplaymath]
+
+\definieerformule
+  [sp]
+  [\c!spacebefore=\v!none,\c!spaceafter=\v!none,
+   \c!indentnext=\v!no,
+   \c!alternative=single]
+
+\definieerformule
+  [sd]
+  [\c!spacebefore=\v!none,\c!spaceafter=\v!none,
+   \c!indentnext=\v!yes,
+   \c!alternative=single]
+
+\definieerformule
+  [mp]
+  [\c!indentnext=\v!no,
+   \c!alternative=multi]
+
+\definieerformule
+  [md]
+  [\c!indentnext=\v!yes,
+   \c!alternative=multi]
+
+% \defineformulaalternative[multi][\begindmath][\enddmath]
+%
+% \fakewords{20}{40}\epar
+% \placeformula {a} $$              \fakespacingformula $$
+% \fakewords{20}{40}\epar
+% \placeformula {b} \startformule   \fakespacingformula \stopformule
+% \placeformula {b} \startformule   \fakespacingformula \stopformule
+% \fakewords{20}{40}\epar
+% \placeformula {c} \startmdformule \fakespacingformula \stopmdformule
+% \placeformula {c} \startmdformule \fakespacingformula \stopmdformule
+% \fakewords{20}{40}\epar
+% \placeformula {d} \startmpformule \fakespacingformula \stopmpformule
+% \placeformula {d} \startmpformule \fakespacingformula \stopmpformule
+% \fakewords{20}{40}\epar
+% \placeformula {e} \startsdformule \fakespacingformula \stopsdformule
+% \placeformula {e} \startsdformule \fakespacingformula \stopsdformule
+% \fakewords{20}{40}\epar
+% \placeformula {f} \startspformule \fakespacingformula \stopspformule
+% \placeformula {f} \startspformule \fakespacingformula \stopspformule
+% \fakewords{20}{40}
+
+\def\placeformula
+  {\settrue\incrementformulanumber
+   \dodoubleempty\doplaceformula}
+
+\def\placesubformula
+  {\setfalse\incrementformulanumber
+   \dodoubleempty\doplaceformula}
+
+%D \macros
+%D   {setupsubformulas, startsubformulas}
+%D
+%D New code (by Aditya Mahajan / cleaned up by HH, please check):
+
+% \setupsubformulas[conversion=romannumerals]
+%
+% \placeformula
+% \startsubformulas[Maxwell]
+%     \startformulas
+%      \startformula \startalign
+%        \NC \nabla\cdot\bf E  \NC = \frac{\rho}{\varepsilon_0} \NR[Maxwell 1]
+%        \NC \nabla\times\bf E \NC = - \frac{\partial\bf B}{\partial t} \NR[Maxwell II]
+%        \stopalign \stopformula
+%        \startformula \startalign
+%          \NC \nabla\cdot \bf B \NC = 0 \NR[Maxwell III]
+%          \NC \nabla\times\bf B \NC = \mu_0{\bf j}+\varepsilon_0\mu_0\frac{\partial\bf E}{\partial t} \NR[Maxwell IV]
+%        \stopalign \stopformula
+%    \stopformulas
+% \stopsubformulas
+%
+% Maxwell : \in [Maxwell] and II : \in [Maxwell II]
+
+\def\setupsubformulas
+  {\dodoubleargument\getparameters[\??fn]}
+
+\definenumber[\v!formula*]
+
+\def\subformulaconversion % #1
+  {\getnumber[\v!formula*]\@@fnseparator\convertnumber\@@fnconversion} % #1
+
+\defineconversion[\v!subformula][\subformulaconversion]
+
+\def\startsubformulas
+  {\dosingleempty\dostartsubformulas}
+
+\def\dostartsubformulas[#1]%
+  {\incrementnumber[\v!formula]%
+   \makesectionnumber[\v!formula]%
+   \doflushformulalistentry{\composedsectionnumber}%
+   \doformulareference{#1}\composedsectionnumber
+   \expanded{\setupnumber
+     [\v!formula*]
+     [\c!start={\rawnumber[\v!formula]},
+      \c!way=\@@fmway,
+      \c!conversion=\@@fmconversion]}%
+   \bgroup
+   \savenumber[\v!formula]%
+   \setupformulas
+     [\c!conversion=\v!subformula,
+      \c!way=\v!by\v!text]%
+   \resetnumber
+     [\v!formula]}
+
+\def\stopsubformulas
+  {\restorenumber[\v!formula]%
+   \egroup
+   \resetlastlinewidth
+   \nonoindentation
+   \dochecknextindentation\??fn
+   \dorechecknextindentation} % here ?
+
+%D Named subformulas
+
+\def\startnamedsubformulas
+  {\dosingleempty\dostartnamedsubformulas}
+
+\def\dostartnamedsubformulas[#1]#2%
+  {\setformulalistentry{#2}%
+   \startsubformulas[#1]}
+
+\def\stopnamedsubformulas
+  {\stopsubformulas}
+
+\setupsubformulas
+  [\c!conversion=\v!character,
+  %\c!separator=\@@fmseparator,
+   \c!separator=,% AM: for compatibility with \placesubformula
+   \c!indentnext=\@@fmindentnext]
+
+%D Experimental goodie:
+%D
+%D \startbuffer
+%D \placelist[formula][criterium=text] \blank[2*big]
+%D \placenamedformula[one]{first}  \startformula a = 1 \stopformula \endgraf
+%D \placeformula                   \startformula a = 2 \stopformula \endgraf
+%D \placenamedformula     {second} \startformula a = 3 \stopformula \endgraf
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\definelist[\v!formula]
+
+\global\let\doflushformulalistentry\gobbleoneargument
+
+\def\setformulalistentry#1%
+  {\gdef\doflushformulalistentry##1%
+     {\expanded{\writetolist[\v!formula]{##1}}{#1}%
+      \global\let\doflushformulalistentry\gobbleoneargument}}
+
+\def\placenamedformula
+  {\dosingleempty\doplacenamedformula}
+
+\def\doplacenamedformula[#1]#2%
+  {\iffirstargument
+     \def\next{\placeformula[#1]}%
+   \else
+     \let\next\placeformula
+   \fi
+   \setformulalistentry{#2}%
+   \next}
+
+%D The implementation of placement is a bit ugly:
+
+\def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
+  {\def\redoplaceformula
+     {\bgroup
+      \ifx\next\bgroup
+        \egroup \@EA\moreplaceformula % [ref]{}
+      \else
+        \let\nextnext$% no def
+        \ifx\next\nextnext
+          \egroup \@EAEAEA\dispplaceformula % [ref]$$
+        \else
+          \egroup \@EAEAEA\dodoplaceformula % [ref]\start
+        \fi
+      \fi[#1]{}}%
+   \futurelet\next\redoplaceformula}
+
+\long\def\moreplaceformula[#1]#2#3#4% #2 dummy #4 gobbles spaces
+  {\def\redoplaceformula
+     {\bgroup
+      \let\nextnext$% no def
+      \ifx\next\nextnext
+        \egroup \@EA\dispplaceformula % [ref]$$
+      \else
+        \egroup \@EA\dodoplaceformula % [ref]\start
+      \fi
+      [#1]{#3}}%
+   \futurelet\next\redoplaceformula#4}
+
+\let\startplaceformula\placeformula
+\let\stopplaceformula \relax
+
+\def\startformulas#1\stopformulas % new / to be internationalized
+  {\bgroup
+   \forgetdisplayskips
+   \startdisplaymath
+   \setlocalhsize
+   \long\def\startformula##1\stopformula
+     {\advance\scratchcounter\plusone}%
+   \scratchcounter\zerocount
+   #1% preroll
+   \ifcase\scratchcounter\else
+     \divide \hsize \scratchcounter
+   \fi
+   \hbox to \localhsize \bgroup
+     \hss
+     \def\normalstartformula{\vskip-\strutdepth$$}% i hate this
+     \def\normalstopformula {$$}%
+     \def\startformula      {$\vcenter\bgroup\normalstartformula}%
+     \def\stopformula       {\normalstopformula\egroup$\hss}%
+     #1%
+     \egroup
+   \stopdisplaymath
+   \egroup
+   \hangafter\minusone    % added for side floats
+   \hangindent\zeropoint} % added for side floats
+
+\def\dispplaceformula[#1]#2$$#3$$%
+  {\dodoplaceformula[#1]{#2}\dostartformula{}#3\dostopformula}
+
+\let\donestedformulanumber\gobbletwoarguments
+
+\def\dodoplaceformula[#1]#2% messy, needs a clean up
+  {\doifelse{#1}{-}
+     {\setfalse\handleformulanumber}
+     {\doifelse{#2}{-}
+        {\setfalse\handleformulanumber}
+        {\settrue\handleformulanumber}}%
+   \ifconditional\handleformulanumber
+     \def\formulanumber
+       {%\global\let\subformulanumber\doformulanumber % no, bug
+        \doformulanumber[#1][#2]}%
+     \def\donestedformulanumber##1##2%
+       {\doifsomething{##1}
+          {\doifelse{##1}{+}{\doformulanumber[#1]}{\doformulanumber[##1]}[##2][]{}}}%
+     \def\subformulanumber
+       {\setfalse\incrementformulanumber
+        \formulanumber}%
+     \gdef\doplaceformulanumber
+       {\global\let\doplaceformulanumber\empty
+        \doifelse\@@fmlocation\v!left
+          {\normalleqno{\doformulanumber[#1][#2][]{}}}
+          {\normalreqno{\doformulanumber[#1][#2][]{}}}}%
+   \else
+     \def\formulanumber{\doformulanumber[#1][#2]}%
+     \let\donestedformulanumber\gobbletwoarguments
+     \let\subformulanumber\doformulanumber % was \global
+     \global\let\doplaceformulanumber\empty
+   \fi}
+
+%D We need a hook into the plain math alignment macros
+%D
+%D \starttyping
+%D \displaylines
+%D \eqalignno
+%D \eqalignno
+%D \stoptyping
+%D
+%D Otherwise we get a missing \type {$$} error reported.
+
+\def\resetdisplaymatheq
+  {\let\normalleqno\relax \let\leqno\relax
+   \let\normalreqno\relax \let\eqno \relax
+   \let\doplaceformulanumber\empty}
+
+%D The next code is derived from plain \TEX.
+
+\newcount\interdisplaylinepenalty \interdisplaylinepenalty=100
+
+\newif\ifdt@p
+
+\def\displ@y
+  {\global\dt@ptrue
+   \openup\displayopenupvalue % was \openup\jot
+   \everycr
+     {\noalign
+        {\ifdt@p
+           \global\dt@pfalse
+           \ifdim\prevdepth>-\thousandpoint
+             \vskip-\lineskiplimit
+             \vskip\normallineskiplimit
+           \fi
+         \else
+           \penalty\interdisplaylinepenalty
+         \fi}}}
+
+\let\normaldispl@y\displ@y
+
+\def\displ@y{\resetdisplaymatheq\normaldispl@y}
+
+\def\m@th{\mathsurround\zeropoint} % obsolete
+
+%D Here we implement a basic math alignment mechanism. Numbers
+%D are also handled. The macros \type {\startinnermath} and
+%D \type {\stopinnermath} can be overloaded in specialized
+%D modules.
+
+\def\startinnermath
+  {\getvalue{\e!start\??fm\formulaparameter\c!align}}
+
+\def\stopinnermath
+  {\getvalue{\e!stop \??fm\formulaparameter\c!align}}
+
+\def\mathinnerstrut
+  {\doif{\formulaparameter\c!strut}\v!yes\strut}
+
+\long\def\defineinnermathhandler#1#2#3%
+  {\setvalue{\e!start\??fm#1}{#2}%
+   \setvalue{\e!stop \??fm#1}{#3}}
+
+\newif\iftracemath
+
+\def\mathhbox
+  {\iftracemath\ruledhbox\else\hbox\fi}
+
+\chardef\mathraggedstatus=0 % normal left center  right
+\chardef\mathnumberstatus=0 % nothing normal shift_right
+\let\mathnumbercorrection\!!zeropoint
+
+\def\startmathbox#1%
+  {\hsize\displaywidth
+   \global\chardef\mathnumberstatus\plusone
+   \chardef\mathraggedstatus#1\relax
+   \let\mathnumbercorrection\!!zeropoint
+   \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
+   \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
+   % added
+   \let\normalreqno\eqno
+   \let\normalleqno\leqno
+   % added
+   \doplaceformulanumber
+   \setbox\scratchbox\mathhbox to \displaywidth\bgroup
+     \mathinnerstrut
+     $%
+     \displaystyle
+     \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
+
+\def\llappedmathno
+  {\ifcase\mathraggedstatus\or
+     \@eqno
+   \or
+     \llap{\@eqno}%
+   \or
+     \llap{\@eqno}%
+   \fi}
+
+\def\rlappedmathno
+  {\ifcase\mathraggedstatus\or
+     \rlap{\@leqno}%
+   \or
+     \rlap{\@leqno}%
+   \or
+     \@leqno
+   \fi}
+
+\def\stopmathbox
+  {$%
+   \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
+   \egroup
+   \setbox0\hbox{\unhcopy\scratchbox}%
+   \scratchdimen\wd0
+   \ifdim\scratchdimen>\displaywidth
+     \donetrue
+   \else
+     \donefalse
+   \fi
+   \hbox to \displaywidth\bgroup
+     \ifcase\mathnumberstatus
+       \box\scratchbox
+     \or
+       \ifx\@leqno\empty
+         \ifx\@eqno\empty
+           \box\scratchbox
+         \else
+           \ifdone
+             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\llappedmathno}}%
+           \else
+             \hss\box\scratchbox\llappedmathno % hss makes room for number
+           \fi
+         \fi
+       \else
+         \ifdone
+           \vbox{\hbox to \displaywidth{\rlappedmathno\hss}\box\scratchbox}%
+         \else
+           \rlappedmathno\box\scratchbox\hss % hss makes room for number
+         \fi
+       \fi
+     \or
+        \hskip\mathnumbercorrection
+        \box\scratchbox
+        \hss
+     \else
+        \box\scratchbox
+     \fi
+   \egroup}
+
+\defineinnermathhandler\v!left      {\startmathbox\plusone  }{\stopmathbox}
+\defineinnermathhandler\v!middle    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!right     {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!flushleft {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!center    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!flushright{\startmathbox\plusone  }{\stopmathbox}
+
+%D [The examples below are in english and don't process in the
+%D  documentation style, which will be english some day.]
+%D
+%D Normally a formula is centered, but in case you want to
+%D align it left or right, you can set up formulas to behave
+%D that way. Normally a formula will adapt is left indentation
+%D to the environment:
+%D
+%D \startbuffer
+%D \fakewords{20}{40}\epar
+%D \startitemize
+%D \item \fakewords{20}{40}\epar
+%D       \placeformula \startformula \fakeformula \stopformula
+%D \item \fakewords{20}{40}\epar
+%D \stopitemize
+%D \fakewords{20}{40}\epar
+%D \stopbuffer
+%D
+%D % \getbuffer
+%D
+%D In the next examples we explicitly align formulas to the
+%D left (\type {\raggedleft}), center and right (\type
+%D {\raggedright}):
+%D
+%D \startbuffer
+%D \setupformulas[align=left]
+%D \startformula\fakeformula\stopformula
+%D \setupformulas[align=middle]
+%D \startformula\fakeformula\stopformula
+%D \setupformulas[align=right]
+%D \startformula\fakeformula\stopformula
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Or in print:
+%D
+%D % {\getbuffer}
+%D
+%D With formula numbers these formulas look as follows:
+%D
+%D \startbuffer
+%D \setupformulas[align=left]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \setupformulas[align=middle]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \setupformulas[align=right]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \stopbuffer
+%D
+%D % {\getbuffer}
+%D
+%D This was keyed in as:
+%D
+%D \typebuffer
+%D
+%D When tracing is turned on (\type {\tracemathtrue}) you can
+%D visualize the bounding box of the formula,
+%D
+%D % {\tracemathtrue\getbuffer}
+%D
+%D As you can see, the dimensions are the natural ones, but if
+%D needed you can force a normalized line:
+%D
+%D \startbuffer
+%D \setupformulas[strut=yes]
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This time we get a more spacy result.
+%D
+%D % {\tracemathtrue\getbuffer}
+%D
+%D We will now show a couple of more settings and combinations
+%D of settings. In centered formulas, the number takes no space
+%D
+%D \startbuffer
+%D \setupformulas[align=middle]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D You can influence the placement of the whole box with the
+%D parameters \type {leftmargin} and \type {rightmargin}.
+%D
+%D \startbuffer
+%D \setupformulas[align=right,leftmargin=3em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D
+%D \setupformulas[align=left,rightmargin=1em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D You can also inherit the margin from the environment.
+%D
+%D \startbuffer
+%D \setupformulas[align=right,margin=standard]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D The distance between the formula and the number is only
+%D applied when the formula is left or right aligned.
+%D
+%D \startbuffer
+%D \setupformulas[align=left,distance=2em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+
+%D \macros
+%D   {big..}
+%D
+%D Because they are related to the bodyfontsize, we redefine
+%D some \PLAIN\ macros.
+
+\def\@@dobig#1#2%
+  {{\hbox{$\left#2\vbox\!!to#1\bodyfontsize{}\right.\nulldelimiterspace\zeropoint\relax\mathsurround\zeropoint$}}}
+
+\def\big {\@@dobig{0.85}}
+\def\Big {\@@dobig{1.15}}
+\def\bigg{\@@dobig{1.45}}
+\def\Bigg{\@@dobig{1.75}}
+
+%D \macros
+%D   {bordermatrix}
+%D
+%D We already redefined \type {\bordermatrix} in \type
+%D {font-ini}.
+
+%D \macros
+%D   {setuptextformulas}
+%D
+%D This command sets up in||line math. Most features deals
+%D with grid snapping and are experimental.
+
+\newevery \everysetuptextformulas \relax
+
+\def\setuptextformulas
+  {\dosingleempty\dosetuptextformulas}
+
+\def\dosetuptextformulas[#1]%
+  {\getparameters[\??mt][#1]%
+   \the\everysetuptextformulas}
+
+%D \macros
+%D   {super, sub}
+%D
+%D \TEX\ uses \type{^} and \type{_} for entering super- and
+%D subscript mode. We want however a bit more control than
+%D normally provided, and therefore provide \type {\super}
+%D and \type{sub}.
+
+\global\let\normalsuper=^
+\global\let\normalsuber=_
+
+\newcount\supersubmode
+
+\newevery\everysupersub \EverySuperSub
+
+\appendtoks \advance\supersubmode \plusone \to \everysupersub
+
+\appendtoks
+  \gridsupsubstyle
+\to \everysupersub
+
+\appendtoks
+  \doifelse\@@mtsize\v!small
+    {\let\gridsupsubstyle    \scriptscriptstyle
+     \let\gridsupsubbodyfont \setsmallbodyfont}%
+    {\let\gridsupsubstyle    \scriptstyle
+     \let\gridsupsubbodyfont \relax}%
+\to \everysetuptextformulas
+
+\setuptextformulas
+  [\c!size=\v!normal]
+
+\def\dogridsupsub#1#2%
+  {\begingroup
+   \setbox\nextbox\iftracegridsnapping\ruledhbox\else\hbox\fi
+     {\gridsupsubbodyfont
+      $\strut^{\the\everysupersub#1}_{\the\everysupersub#2}$}%
+   \nextboxht\strutheight
+   \nextboxdp\strutdepth
+   \flushnextbox
+   \endgroup}
+
+\def\gridsupsub
+  {\ifconditional\crazymathsnapping
+     \ifgridsnapping
+       \@EAEAEA\dogridsupsub
+     \else
+       \@EAEAEA\normalsupsub
+     \fi
+   \else
+     \@EA\normalsupsub
+   \fi}
+
+\def\normalsupsub#1#2%
+  {^{\the\everysupersub#1}_{\the\everysupersub#2}}
+
+\appendtoks
+  \let\gridsupsubstyle   \relax
+  \let\gridsupsubbodyfont\relax
+  \let\gridsupsub        \normalsupsub
+\to \everydisplay
+
+\def\super#1{^{\the\everysupersub#1}}
+\def\suber#1{_{\the\everysupersub#1}}
+\def\supsub#1#2{\super{#1}\suber{#2}}
+\def\subsup#1#2{\suber{#1}\super{#2}}
+
+%\def\super#1{\gridsupsub{#1}{}} %
+%\def\suber#1{\gridsupsub{}{#1}} %
+%
+%\def\supsub#1#2{\gridsupsub{#1}{#2}}
+%\def\subsup#1#2{\gridsupsub{#2}{#1}}
+
+\def\gridsuper#1{\gridsupsub{#1}{}}
+\def\gridsuber#1{\gridsupsub{}{#1}}
+
+% \let\sup\super % math char
+% \let\sub\suber
+
+% test set:
+%
+% \startbuffer
+% \sform{x\frac{1}{2}}
+% \sform{x\sup{\frac{1}{2}} + x\sup{2} + 2}
+% \sform{x\supsub{\frac{1}{2}}{\frac{1}{2}} + x\sup{2} + 2}
+% \stopbuffer
+%
+% \typebuffer
+%
+% \startlines
+% \getbuffer
+% \stoplines
+%
+% \startbuffer
+% $x\frac{1}{2}$
+% $x\sup{\frac{1}{2}} + x^2 + 2$
+% $x\supsub{\frac{1}{2}}{\frac{1}{2}} + x^2 + 2$
+% \stopbuffer
+%
+% \typebuffer
+%
+% \start
+% \enablesupersub
+% \enableautomath
+% \startlines
+% \getbuffer
+% \stoplines
+% \stop
+
+%D \macros
+%D   {enablesupersub,enablesimplesupersub}
+%D
+%D We can let \type {^} and \type {_} act like \type {\super}
+%D and \type {\sub} by saying \type {\enablesupersub}.
+
+\bgroup
+\catcode`\^=\@@active
+\catcode`\_=\@@active
+\gdef\enablesupersub
+  {\catcode`\^=\@@active
+   \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
+   \catcode`\_=\@@active
+   \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
+\egroup
+
+%D \macros
+%D   {enableautomath}
+%D
+%D The next one can be dangerous, but handy in controlled
+%D situations.
+
+\bgroup \catcode`\$=\active
+
+\gdef\enableautomath
+  {\catcode`\$=\active
+   \def$##1${\snappedinlineformula{##1}}}
+
+% \gdef\enableautomath
+%   {\catcode`\$=\active
+%    \def${\doifnextcharelse$\doautodmath\doautoimath}%
+%    \def\doautoimath##1${\snappedinlineformula{##1}}%
+%    \def\doautodmath$##1$${\startformula##1\stopformula}}
+
+\egroup
+
+%D \macros
+%D   {...}
+%D
+%D New and experimental: snapping big inline math!
+
+\newconditional\halfcrazymathlines % \settrue\halfcrazymathlines
+\newconditional\crazymathsnapping  % \settrue\crazymathsnapping
+
+\appendtoks
+ \doifelse\@@mtgrid\v!yes        \settrue\setfalse\crazymathsnapping
+ \doifelse\@@mtstep\v!halfline\settrue\setfalse\halfcrazymathlines
+\to \everysetuptextformulas
+
+\setuptextformulas
+  [\c!grid=\v!yes,
+   \c!step=\v!line]
+
+\newcount\crazymathhack
+
+\let\lastcrazymathline     \!!zeropoint
+\let\lastcrazymathpage     \!!zerocount
+\let\lastcrazymathprelines \!!zerocount
+\let\lastcrazymathpostlines\!!zerocount
+
+\def\crazymathtag{amh:\the\crazymathhack}
+\def\crazytexttag{\v!text:\lastcrazymathpage}
+
+\def\crazymathindent{\hskip\MPx\crazymathtag\hskip-\MPx\crazytexttag}
+
+\def\flushcrazymathbox
+  {\nextboxht\strutheight
+   \nextboxdp\strutdepth
+   \hbox{\iftracegridsnapping\ruledhbox\fi{\flushnextbox}}}
+
+% possible pdftex bug:
+%
+% \dorecurse{100}{gest \vadjust     {\strut} \par} \page
+% \dorecurse{100}{gest \vadjust pre {\strut} \par} \page
+%
+% duplicate depth compensation with pre
+
+\def\snappedinlineformula
+  {\dosingleempty\dosnappedinlineformula}
+
+%D \starttabulate[|Tl|l|]
+%D \NC - \NC half lines        \NC \NR
+%D \NC + \NC full lines        \NC \NR
+%D \NC = \NC force             \NC \NR
+%D \NC < \NC force, minus pre  \NC \NR
+%D \NC > \NC force, minus post \NC \NR
+%D \stoptabulate
+
+\newif\if!!donee
+\newif\if!!donef
+
+\def\inlinemathmargin{1pt}
+
+\settrue\autocrazymathsnapping
+
+% FROM NOW ON, CHANGES AS OPTIONS
+
+% TODO: SKYLINE (PREV LINE POS SCAN)
+
+\def\dosnappedinlineformula[#1]#2%
+  {\ifvmode\dontleavehmode\fi % tricky
+   \strut % prevents funny space at line break
+   \begingroup % interesting: \bgroup can make \vadjust disappear
+   \ifconditional\crazymathsnapping
+     \ifgridsnapping
+       \ifx\pdftexversion\undefined
+         \donefalse
+       \else
+         \checktextbackgrounds % we need pos tracking, to be made less redundant
+         \donetrue
+       \fi
+     \else
+       \donefalse
+     \fi
+   \else
+     \donefalse
+   \fi
+   \!!doneafalse % forced or not auto
+   \!!donebfalse % too heigh
+   \!!donecfalse % too low
+   \!!donedfalse % less before
+   \!!doneefalse % less after
+   \ifdone
+     \setbox\nextbox\hbox{$#2$}%
+     \iftracegridsnapping
+       \setbox\nextbox\ruledhbox
+         {\incolortrue\localcolortrue
+          \backgroundline[gray]{\showstruts\strut\flushnextbox}}%
+     \fi
+     \def\docommand##1%
+       {\doif{##1}-{\settrue \halfcrazymathlines}%
+        \doif{##1}+{\setfalse\halfcrazymathlines}%
+        \doif{##1}={\!!doneatrue}%
+        \doif{##1}<{\!!donedtrue}%
+        \doif{##1}>{\!!doneetrue}}%
+     \processcommalist[#1]\docommand
+\if!!doneb
+  \if!!donec \else
+    \setfalse\halfcrazymathlines
+  \fi
+\else
+  \if!!donec
+    \setfalse\halfcrazymathlines
+  \fi
+\fi
+     \donefalse
+     \if!!donea
+       \donetrue
+\scratchdimen \nextboxht
+\advance\scratchdimen .5\lineheight
+\nextboxht\scratchdimen
+\scratchdimen \nextboxdp
+\advance\scratchdimen .5\lineheight
+\nextboxdp\scratchdimen
+     \else\ifdim\nextboxht>\strutht
+       \donetrue
+     \else\ifdim\nextboxdp>\strutdp
+       \donetrue
+     \fi\fi\fi
+     \ifconditional\autocrazymathsnapping \else \if!!donea \else
+       % don't compensate, just snap to strut
+       \donefalse
+       % signal for next else, snap line to strut
+       \!!doneatrue
+     \fi \fi
+   \fi
+   \ifdone
+     % analyze height
+     \scratchdimen\inlinemathmargin
+     \advance\scratchdimen \strutht
+     \ifdim\nextboxht<\scratchdimen \else \!!donebtrue \fi
+     % analyze depth
+     \scratchdimen\inlinemathmargin
+     \advance\scratchdimen \strutdp
+     \ifdim\nextboxdp<\scratchdimen \else \!!donectrue \fi
+     % analyzed or forced
+     \ifdone
+       \global\advance\crazymathhack\plusone
+       \donefalse
+       \ifnum\MPp\crazymathtag=\lastcrazymathpage\relax
+         \ifdim\MPy\crazymathtag=\lastcrazymathline\relax
+           \donetrue
+         \fi
+       \fi
+       \ifnum\MPp\crazymathtag=\zerocount \donefalse \fi
+       \ifdim\MPy\crazymathtag=\zeropoint \donefalse \fi
+       \ifdone
+         % same page and same line
+       \else
+         \global\let\lastcrazymathprelines \!!zerocount
+         \global\let\lastcrazymathpostlines\!!zerocount
+         \xdef\lastcrazymathpage{\MPp\crazymathtag}%
+         \xdef\lastcrazymathline{\MPy\crazymathtag}%
+       \fi
+       \if!!doneb
+       % \getrawnoflines\nextboxht
+         \scratchdimen\nextboxht
+         \advance\scratchdimen-\strutht
+         \getnoflines\scratchdimen
+         \if!!doned \advance\noflines\minusone \fi
+         \scratchcounter\noflines
+         \advance\noflines-\lastcrazymathprelines\relax
+         \ifnum\noflines>\zerocount
+           \xdef\lastcrazymathprelines{\the\scratchcounter}%
+           \scratchdimen\noflines\lineheight
+           \ifconditional\halfcrazymathlines
+             \advance\scratchdimen-.5\lineheight
+           \fi
+           \advance\scratchdimen-\strutdepth
+           \setbox\scratchbox\null
+           \wd\scratchbox2\bodyfontsize
+           \ht\scratchbox\scratchdimen
+           \dp\scratchbox\strutdepth
+           %%% top correction code (see below)
+           \normalvadjust pre
+             {%\allowbreak % sometimes breaks spacing
+              \forgetall
+              \crazymathindent
+              \iftracegridsnapping
+                \setbox\scratchbox\hbox
+                  {\incolortrue\localcolortrue\green
+                   \ruledhbox{\box\scratchbox}}%
+              \fi
+              \box\scratchbox
+              \endgraf
+              \nobreak}%
+         \else\ifnum\scratchcounter>\zerocount
+           \normalvadjust pre
+             {\nobreak}%
+         \fi\fi
+       \fi
+       \if!!donec
+       % \getrawnoflines\nextboxdp
+         \scratchdimen\nextboxdp
+         \advance\scratchdimen-\strutdp
+         \getnoflines\scratchdimen
+         \if!!donee \advance\noflines\minusone \fi
+         \scratchcounter\noflines
+         \advance\noflines-\lastcrazymathpostlines\relax
+         \ifnum\noflines>\zerocount
+           \donetrue
+         \else\ifnum\lastcrazymathpostlines=\zerocount
+           \donetrue
+         \else
+           \donefalse
+         \fi\fi
+       \else
+         \donefalse
+       \fi
+       \ifdone
+         \xdef\lastcrazymathpostlines{\the\scratchcounter}%
+         \ifnum\lastcrazymathpostlines=\zerocount
+           \global\let\lastcrazymathpostlines\!!plusone
+         \fi
+         \hbox{\setposition\crazymathtag\flushcrazymathbox}%
+         \scratchdimen\noflines\lineheight
+         \advance\scratchdimen-\lineheight
+         \advance\scratchdimen+\strutheight
+\ifdim\scratchdimen>\zeropoint \else
+  \scratchdimen=\strutheight % todo : test for half lines
+\fi
+         \ifconditional\halfcrazymathlines
+           \advance\scratchdimen-.5\lineheight
+         \fi
+         \setbox\scratchbox\null
+         \wd\scratchbox2\bodyfontsize
+         \ht\scratchbox\scratchdimen
+         \dp\scratchbox\strutdepth
+         \normalvadjust
+           {\forgetall
+            \crazymathindent
+            \iftracegridsnapping
+              \setbox\scratchbox\hbox
+                {\incolortrue\localcolortrue\color[blue]{\ruledhbox{\box\scratchbox}}}%
+            \fi
+            \box\scratchbox
+            \endgraf
+            % precaution: else we stick below the text bottom
+            \ifconditional\halfcrazymathlines
+              \allowbreak
+            \else
+              \vskip-\lineheight
+              \vskip \lineheight
+           \fi}%
+       \else
+         \hbox{\setposition\crazymathtag\flushcrazymathbox}%
+       \fi
+     \else
+       \flushcrazymathbox
+     \fi
+   \else\if!!donea
+     \flushcrazymathbox
+   \else
+     \mathematics{#2}%
+   \fi\fi
+   \endgroup}
+
+
+%%% top correction code
+%%%
+%%% correct for fuzzy top of page situations
+%
+% \scratchdimen\lastcrazymathprelines\lineheight
+% \advance\scratchdimen\MPy\crazymathtag
+% \advance\scratchdimen\lineheight
+% \advance\scratchdimen\topskip
+% \advance\scratchdimen-\strutheight
+% \dimen0=\MPy\crazytexttag
+% \advance\dimen0 \MPh\crazytexttag
+% \advance\scratchdimen-\dimen0\relax
+% % do we need correction at all
+% \ifdim\scratchdimen>\strutdepth\relax
+%   \donefalse
+% \else\ifdim\scratchdimen<\zeropoint
+%   \donefalse
+% \else
+%   \donetrue
+% \fi\fi
+% % analysis done
+% \donefalse
+% \ifdone
+%   \edef\crazymathcorrection{\the\scratchdimen}%
+%   \advance\scratchdimen-\dp\scratchbox
+%   \dp\scratchbox-\scratchdimen
+% \else
+%   \let\crazymathcorrection\zeropoint
+% \fi
+%
+%%%
+%%% keep the previous code
+%%%
+
+\let\tform\mathematics
+\let\gform\snappedinlineformula
+
+% test set:
+%
+% \startbuffer
+% Crazy math \gform {1+x} or \gform {\dorecurse {100} {1+} 1 =
+% 101} and even gore crazy \gform {2^{2^2}_{1_1}}
+% again\dorecurse {20} { and again} \gform {\sqrt {\frac
+% {x^{5^5}} {\frac {1} {2}}}} even gore\dorecurse {50} { and
+% gore} \tform {\dorecurse {12} {\gform {\sqrt {\frac
+% {x^{5^5}} {3}}}+\gform {\sqrt {\frac {x^{5^5}} {\frac {1}
+% {2}}}}+}x=10}\dorecurse{20} { super crazy math}: \tform
+% {\dorecurse {30} {\gform {\sqrt {\frac {x^{5^5}} {3}}}+
+% \gform {\sqrt {\frac {x^{5^5}} {\frac {1} {2}}}}+ }x = 10},
+% and we're\dorecurse {20} { done}!
+% \stopbuffer
+%
+% \setupcolors[state=start] \setuppapersize[S6][S6]
+%
+% \showgrid \tracegridsnappingtrue \showstruts
+%
+% \starttext
+% \setuplayout[grid=yes,lines=15]\getbuffer \page
+% \setuplayout[grid=yes,lines=16]\getbuffer \page
+% \setuplayout[grid=yes,lines=17]\getbuffer \page
+% \setuplayout[grid=yes,lines=18]\getbuffer \page
+% \setuplayout[grid=yes,lines=19]\getbuffer \page
+% \stoptext
+%
+% test
+%
+% \startregels
+% \gform[<]{35 \cdot p^{\frac{3}{4}} = 70}
+% \gform{12{,}4 \cdot d^3 = 200}
+% \gform{a \cdot x^b}.
+% \gform{12x^6 \cdot \negative 3x^4}
+% \gform{\frac{12x^6}{\negative 3x^4}}
+% \gform{(4x^2)^3}
+% \gform{4x \sqrt{x} \cdot 3x^2}
+% \gform{\frac{2x^4}{4x \sqrt{x}}}
+% \gform{y = a \cdot x^b}.
+% \gform{y_1 = \frac{15x^2}{x}}
+% \gform{y_2 = x \cdot \sqrt{x}}
+% \gform{y_3 = \frac{6x^3}{x^2}}
+% \gform[<]{y_4 = \left(2x^2\right)^{\frac{1}{2}}}
+% \gform{y_1 = \frac{4x^5}{x^2}}
+% \gform{y_2 = 4 \cdot \sqrt{x}}
+% \gform{y_3 = 4x^3}
+% \gform{y_4 = \frac{100x}{\sqrt{x}}}
+% \gform[<]{y_5 = 4 \cdot x^{\frac{1}{2}}}
+% \gform{y_6 = \frac{1}{2} x \cdot 4x^2}
+% \gform{y_7 = 2 \cdot x^3}
+% \gform{y_8 = 100 \cdot x^{\frac{1}{2}}}
+% \gform{4x^8 \cdot 8x^3}
+% \gform{\frac{4x^8}{8x^3}}
+% \gform{\left(\negative3x^4\right)^3}
+% \gform{x^3 \sqrt{x} \cdot 3x^2}
+% \gform{\frac{6x^3}{x^2 \sqrt{x}}}
+% \gform{\frac{6}{2x^4}}
+% \gform{\frac{1}{3x^6}}
+% \gform{\frac{12x^8}{4x^{10}}}
+% \gform{\frac{4}{\sqrt{x}}}
+% \gform{\frac{1}{2x \sqrt{x}}}
+% \gform{\frac{2{,}25}{p} = 0{,}35}
+% \gform{4{,}50 + \frac{300}{k} = 4{,}70}
+% \gform{\frac{1200}{k+12} - 42 = 6}
+% \stopregels
+
+%D \macros
+%D   {restoremathstyle}
+%D
+%D We can pick up the current math style by calling \type
+%D {\restoremathstyle}.
+
+\def\restoremathstyle
+  {\ifmmode
+     \ifcase\supersubmode
+       \textstyle
+     \or
+       \scriptstyle
+     \else
+       \scriptscriptstyle
+     \fi
+   \fi}
+
+%D \macros
+%D   {mathstyle}
+%D
+%D If one want to be sure that something is typeset in the
+%D appropriate style, \type {\mathstyle} can be used:
+%D
+%D \starttyping
+%D \mathstyle{something}
+%D \stoptyping
+
+\def\mathstyle#1%
+  {\mathchoice
+     {\displaystyle     #1}%
+     {\textstyle        #1}%
+     {\scriptstyle      #1}%
+     {\scriptscriptstyle#1}}
+
+%D Something similar can be used in the (re|)|definition
+%D of \type {\text}. This version is a variation on the one
+%D in the math module (see \type{m-math} and|/|or \type
+%D {m-newmat}).
+
+\unexpanded\def\mathtext
+  {\mathortext\domathtext\hbox}
+
+\def\domathtext#1%
+  {\mathchoice
+     {\dodomathtext\displaystyle\textface        {#1}}%
+     {\dodomathtext\textstyle   \textface        {#1}}%
+     {\dodomathtext\textstyle   \scriptface      {#1}}%
+     {\dodomathtext\textstyle   \scriptscriptface{#1}}}
+
+\def\dodomathtext#1#2#3% no \everymath !
+ %{\hbox{\everymath{#1}\switchtobodyfont  [#2]#3}} % 15 sec
+  {\hbox{\everymath{#1}\setcurrentfontbody{#2}#3}} %  3 sec (no math)
+
+%D Because we may overload \type {\text} in other (structuring)
+%D macros, we say:
+
+\appendtoks \let\text\mathtext \to \everymathematics
+
+%D \macros
+%D   {\definemathalignment, setupmathalignment, startmathalignment}
+%D
+%D Modules may provide additional alignment features. The following
+%D mechanisms are provided by the core.
+
+% n>1 #### needed, strange # interaction in recurse
+
+\def\presetdisplaymath{\displ@y} % some day i will relocate the plain stuff
+
+\def\buildeqalign
+  {\scratchtoks\emptytoks
+   \dorecurse{\mathalignmentparameter\c!m}
+     {\ifnum\recurselevel>\plusone
+        \appendtoks
+          \tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint
+        \to\scratchtoks
+      \fi
+      \expanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
+      \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
+        {\expanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}}%
+   \expanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}}
+
+\def\forgetalign
+  {\tabskip\zeropoint\everycr\emptytoks}
+
+\let\firstineqalign\empty
+\let\nextineqalign \empty
+\let\leftofeqalign \empty
+\let\rightofeqalign\empty
+
+\def\mathineqalign#1{$\forgetalign\displaystyle{{}#1{}}$}
+\def\textineqalign#1{$\forgetalign#1$}
+
+\def\eqalign#1% why no halign here, probably because of displaywidth
+  {\null\,\vcenter
+     {\openup.25\bodyfontsize% was: \openup\jot
+      \mathsurround\zeropoint
+      \ialign{\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##{}}$\hfil\crcr#1\crcr}%
+   }\,}
+
+% preamble is scanned for tabskips so we need the span to prevent an error message
+
+\chardef\eqalignmode\plusone
+
+\def\preparereqalignno
+  {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \ifnum\mathraggedstatus=\plusone
+     \!!toksc{\hfil&\span\textineqalign{##}\tabskip\zeropoint}%
+   \else\ifnum\mathraggedstatus=\plusthree
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\span\textineqalign{##}\tabskip\zeropoint}%
+   \else
+     \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
+   \fi\fi
+   \global\chardef\mathnumberstatus\zerocount
+   \buildeqalign
+   \presetdisplaymath
+   \tabskip\centering}
+
+\def\prepareleqalignno
+  {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   % problem: number is handled after rest and so ends up in the margin
+   \ifnum\mathraggedstatus=\plusone
+     \!!toksc{\hfil&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \else\ifnum\mathraggedstatus=\plusthree
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\kern-\displaywidth\span\mrlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \else
+     \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \fi\fi
+   \global\chardef\mathnumberstatus\zerocount
+   \buildeqalign
+   \presetdisplaymath
+   \tabskip\centering}
+
+\def\dobotheqalignno#1#2%
+  {\ifmmode
+     \displ@y % \let\doplaceformulanumber\relax % strange hack
+     \vcenter\bgroup
+     \let\finishalignno\egroup
+   \else
+     \let\finishalignno\relax
+   \fi
+   #1%
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
+   \finishalignno}
+
+\def\dobothaligneqalignno#1%
+  {\ifmmode
+    \displ@y
+    \global\chardef\mathnumberstatus\plusone
+    \ifcase\mathraggedstatus
+       \def\finishalignno{\crcr\egroup}%
+    \else
+       % we're in a mathbox
+       \vcenter\bgroup
+       \def\finishalignno{\crcr\egroup\egroup}%
+    \fi
+   \fi
+   #1%
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+
+\def\mrlap#1%
+  {\setbox\scratchbox\hbox{#1}%
+   \ifdim\wd\scratchbox>\mathnumbercorrection
+     \xdef\mathnumbercorrection{\the\wd\scratchbox}%
+   \fi
+   \box\scratchbox
+   \global\chardef\mathnumberstatus\plustwo}
+
+% \def\dobothaligneqalignno#1%
+%   {\ifmmode
+%     \displ@y
+%     \global\chardef\mathnumberstatus\plusone
+%      we're in a mathbox
+%      \vcenter\bgroup
+%      \def\finishalignno{\crcr\egroup\egroup}%
+%    \else
+%      \def\finishalignno{\crcr\egroup}%
+%    \fi
+%    #1%
+%    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+
+\def\reqalignno     {\dobotheqalignno     \preparereqalignno}
+\def\leqalignno     {\dobotheqalignno     \prepareleqalignno}
+\def\alignreqalignno{\dobothaligneqalignno\preparereqalignno}
+\def\alignleqalignno{\dobothaligneqalignno\prepareleqalignno}
+\def\finishalignno  {\crcr\egroup}
+
+\let    \equalignno     \reqalignno
+\let\aligneqalignno\alignreqalignno
+
+%D Here we implement the user interface part.
+
+\def\setupmathalignment
+  {\dodoubleempty\dosetupmathalignment}
+
+\def\dosetupmathalignment[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??eq#1][#2]%
+   \else
+     \getparameters[\??eq][#1]%
+   \fi}
+
+\let\currentmathalignment\empty
+
+\def\mathalignmentparameter#1%
+  {\executeifdefined{\??eq\currentmathalignment#1}{\executeifdefined{\??eq#1}\empty}}
+
+\setupmathalignment
+  [\c!n=2,
+   \c!m=1,
+   \c!distance=1em]
+
+\def\numberedeqalign
+  {\doifelse\@@fmlocation\v!left\alignleqalignno\alignreqalignno}
+
+\def\doxxdoubleempty#1#2%
+  {\ifx#2[\expandafter\dodoxxdoubleempty\else\expandafter\noxxdoubleempty\fi#1#2}
+
+\def\dodoxxdoubleempty#1[#2]#3%
+  {\ifx#3[\else\expandafter\nonoxxdoubleempty\fi#1[#2]#3}
+
+\def\noxxdoubleempty      #1{#1[][]}
+\def\nonoxxdoubleempty#1[#2]{#1[#2][]}
+
+\newcount\eqaligncolumn
+
+\def\firstineqalign{\global\eqaligncolumn\plusone}
+\def\nextineqalign {\global\advance\eqaligncolumn\plusone}
+\def\leftofeqalign {\getvalue{\??eq:\v!left :\number\eqaligncolumn}}
+\def\rightofeqalign{\getvalue{\??eq:\v!right:\number\eqaligncolumn}}
+
+\def\doseteqaligncolumn#1%
+  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\empty
+   \letvalue{\??eq:\v!right:\number\eqaligncolumn}\empty
+   \doif{#1}\v!left  {\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill}%
+   \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}%
+   \doif{#1}\v!middle{\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill
+                      \letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}}
+
+\def\dodoalignNC
+  {\gdef\doalignNC##1{&##1}}
+
+\def\doalignNR[#1][#2]%
+  {\donestedformulanumber{#1}{#2}\crcr}
+
+%D \starttyping
+%D \placeformula[eqn0]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn0]
+%D \placeformula[eqn1]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn1]
+%D \placeformula      \startformula \startalign[n=1] a\NR[eqn2] \stopalign \stopformula See \in[eqn2]
+%D \placeformula[eqn3]\startformula \startalign[n=1] a\NR[+]    \stopalign \stopformula See \in[eqn3]
+%D \stoptyping
+
+% todo: pop in cell
+
+\def\dostartmathalignment[#1][#2]%
+  {% \begingroup not permitted ($$...assignments...\halign... )
+   \pushmacro\doalignNC
+   \edef\currentmathalignment{#1}%
+   \doifassignmentelse{#2}{\setupmathalignment[#1][#2]}\donothing
+   \def\NC{\doalignNC}%
+   \global\let\doalignNC\dodoalignNC
+   \def\EQ{&=}%
+   \def\NR{&\global\let\doalignNC\dodoalignNC\doxxdoubleempty\doalignNR}%
+   % amstex compatibility mode: (ugly, will disappear)
+   \def\notag{\def\\{&\crcr}}%
+   \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
+   % end of compatibility mode
+   \eqaligncolumn\zerocount
+   \processcommacommand
+     [\mathalignmentparameter\c!align]
+     {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
+   % the real action
+   \global\eqaligncolumn\plusone
+   \numberedeqalign}
+
+\def\dostopmathalignment
+  {\finishalignno
+   \popmacro\doalignNC}
+
+\def\definemathalignment
+  {\dodoubleempty\dodefinemathalignment}
+
+\def\dodefinemathalignment[#1]% [#2]%
+  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathalignment[#1]}%
+   \setvalue{\e!stop #1}{\dostopmathalignment}%
+   \setupmathalignment[#1]}% [#2]
+
+%D For the moment we only provide english commands.
+
+\definemathalignment[align]            % default case (this is what amstex users expect)
+\definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
+
+%D \startbuffer
+%D \placeformula \startformula \eqalignno {
+%D  a &= b & \formulanumber \cr
+%D  c &= d \cr
+%D    &= e \cr
+%D    &= f & \formulanumber
+%D } \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC  a \EQ b \NR[+]
+%D \NC  c \EQ d \NR
+%D \NC    \EQ f \NR[for:demo-a-1]
+%D \NC    \EQ g \NR[for:demo-a-2][a]
+%D \NC    \EQ h \NR[for:demo-a-3][b]
+%D \NC    \EQ i \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC a \EQ b \NR[+]
+%D \NC c \EQ d \NR
+%D \NC   \EQ f \NR
+%D \NC   \EQ g \NR
+%D \NC   \EQ h \NR
+%D \NC   \EQ i \NR[+]
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D a &= b \\
+%D c &= d \notag \\
+%D   &= e \notag \\
+%D   &= f \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC  a \NC \eq  b \NR[+]
+%D \NC  c \NC \neq d \NR
+%D \NC    \NC \neq f \NR[for:demo-b-1]
+%D \NC    \NC \geq g \NR[for:demo-b-2][a]
+%D \NC    \NC \leq h \NR[for:demo-b-3][b]
+%D \NC    \NC \neq i \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[*]
+%D a &= b \\
+%D c &= d \\
+%D   &= e \\
+%D   &= f \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D     x &= y \\
+%D     a &= b \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[m=3]
+%D     x &= y & x &= y & z &= t \\
+%D     a &= b & p &= q & w &= s \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[m=3,distance=0pt]
+%D     x &= y &= x &= y &= z &= t \\
+%D     a &= b &= p &= q &= w &= s \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=5,distance=0pt]
+%D     x &= yy &= xx &= yy &= zz \\
+%D     a &= b  &= p  &= q  &= w  \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={left,middle,right}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={right,middle,left}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={middle,middle,middle}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformula
+%D     \startalign[n=3,align={middle,middle,middle}]
+%D         \NC a  \NC = \NC b  \NR[+]
+%D         \NC 2a \NC = \NC 2b \NR
+%D     \stopalign
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformulas
+%D     \setupmathalignment[n=3,align={middle,middle,middle}]%
+%D     \startformula
+%D         \startalign
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula
+%D     \startformula
+%D         \startalign
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula
+%D \stopformulas
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformulas
+%D     \dorecurse{5}{\startformula
+%D         \startalign[n=3,align={middle,middle,middle}]
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula}
+%D \stopformulas
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {definemathcases, setupmathcases, startmathcases}
+%D
+%D Another wish \unknown
+
+\def\setupmathcases
+  {\dodoubleempty\dosetupmathcases}
+
+\def\dosetupmathcases[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??ce#1][#2]%
+   \else
+     \getparameters[\??ce][#1]%
+   \fi}
+
+\let\currentmathcases\empty
+
+\def\mathcasesparameter#1%
+  {\executeifdefined{\??ce\currentmathcases#1}{\executeifdefined{\??ce#1}\empty}}
+
+\setupmathcases
+  [\c!distance=1em,
+   \c!numberdistance=2.5em,
+   \c!left={\left\{\,},
+   \c!right={\right.}]
+
+\def\dodocasesNC
+  {\gdef\docasesNC{\endmath&}}
+
+\let\docasesNR\doalignNR
+
+\def\dostartmathcases[#1][#2]%
+  {\begingroup
+   \edef\currentmathcases{#1}%
+   \doifassignmentelse{#2}{\setupmathcases[#1][#2]}\donothing
+   \mathcasesparameter\c!left
+   \vcenter\bgroup
+   \pushmacro\docasesNC
+   \let\endmath\relax
+   \def\NC{\docasesNC}%
+   \def\MC{\docasesNC\ifmmode\else$\def\endmath{$}\fi}%
+   \global\let\docasesNC\dodocasesNC
+   \def\NR{\unskip\endmath&\global\let\docasesNC\dodocasesNC\doxxdoubleempty\docasesNR}%
+   \normalbaselines
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \tabskip\zeropoint
+   \global\eqaligncolumn\plusone
+   \halign\bgroup
+        $\mathcasesparameter\c!style##$\hfil
+       &\hskip\mathcasesparameter\c!distance\relax
+        \popmacro\docasesNC##\hfil
+       &\hskip\mathcasesparameter\c!numberdistance\relax
+        \let\formuladistance\!!zeropoint
+        \span\textineqalign{##}%
+     \crcr} % todo: number
+
+\def\dostopmathcases
+  {\crcr
+   \egroup
+   \popmacro\docasesNC
+   \egroup
+   \mathcasesparameter\c!right
+   \endgroup}
+
+\def\definemathcases
+  {\dodoubleempty\dodefinemathcases}
+
+\def\dodefinemathcases[#1]% [#2]%
+  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathcases[#1]}%
+   \setvalue{\e!stop #1}{\dostopmathcases}%
+   \setupmathcases[#1]}% [#2]
+
+\definemathcases[cases]
+\definemathcases[\v!mathcases]
+
+%D \startbuffer
+%D \placeformula \startformula \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR[+]
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula x \startcases
+%D \NC 2 \NC $ y > 0 $ \NR[+]
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula x \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {definemathmatrix, setupmathmatrix, startmathmatrix}
+%D
+%D Yet another one \unknown
+
+\def\setupmathmatrix
+  {\dodoubleempty\dosetupmathmatrix}
+
+\def\dosetupmathmatrix[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??mx#1][#2]%
+   \else
+     \getparameters[\??mx][#1]%
+   \fi}
+
+\let\currentmathmatrix\empty
+
+\def\mathmatrixparameter#1%
+  {\executeifdefined{\??mx\currentmathmatrix#1}{\executeifdefined{\??mx#1}\empty}}
+
+\setupmathmatrix
+  [\c!distance=1em,
+   \c!left=,
+   \c!right=,
+   \c!align=\v!middle]
+
+\def\dosetmatrixcolumn#1% hh: todo: \definematrixalign
+  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+   \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil
+   \doif{#1}\v!left  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\relax
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil}%
+   \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\relax }%
+   \doif{#1}\v!middle{\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil}}
+
+\def\buildmathmatrix % beware: etex only
+  {\scratchtoks\emptytoks
+   \expanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
+   \dorecurse{\numexpr\scratchcounter-\plusone\relax}
+     {\expanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}%
+   \expanded{\scratchtoks{\the\scratchtoks\the\!!toksc }}}
+
+\def\preparemathmatrix
+  {\!!toksa{\strut \firstineqalign\leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
+   \!!toksb{&\hskip\mathmatrixparameter\c!distance
+            \nextineqalign\leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
+   \!!toksc{&&\hskip\mathmatrixparameter\c!distance
+            \leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
+   \buildmathmatrix
+   \halign \@EA \bgroup\the\scratchtoks \crcr}
+
+\def\definemathmatrix
+  {\dodoubleempty\dodefinemathmatrix}
+
+\def\dodefinemathmatrix[#1]% [#2]%
+  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
+   \setvalue{\e!stop #1}{\dostopmathmatrix}%
+   \setupmathmatrix[#1]}% [#2]
+
+\definemathmatrix[matrix]
+\definemathmatrix[\v!mathmatrix]
+
+\def\dodomatrixNC
+  {\gdef\domatrixNC{\endmath&}}
+
+\def\installmathmatrixhandler#1#2%
+  {\setvalue{\??mx:#1}{#2}}
+
+% First alternative:
+%
+% \def\processlowhighmathmatrix#1%
+%   {\def\mathmatrixleft
+%      {\setbox\nextbox}
+%    \def\mathmatrixright
+%      {#1.5\dimexpr\nextboxdp-\nextboxht\relax
+%       \hbox{$\mathmatrixparameter\c!left
+%             \vcenter{\unvbox\nextbox}%
+%             \mathmatrixparameter\c!right$}}%
+%     \let\mathmatrixbox\vbox}
+%
+% \installmathmatrixhandler\v!high  {\processlowhighmathmatrix\raise}
+% \installmathmatrixhandler\v!low   {\processlowhighmathmatrix\lower}
+%
+% \installmathmatrixhandler\v!top   {\processlowhighmathmatrix\raise}
+% \installmathmatrixhandler\v!bottom{\processlowhighmathmatrix\lower}
+%
+% \installmathmatrixhandler\v!lohi
+%   {\def\mathmatrixleft {\mathmatrixparameter\c!left}%
+%    \def\mathmatrixright{\mathmatrixparameter\c!right}%
+%    \let\mathmatrixbox\vcenter}
+%
+% An alternative
+%
+% \let\mathmatrixleft \empty
+% \let\mathmatrixright\empty
+%
+% \def\processlowhighmathmatrix#1%
+%   {\dowithnextbox
+%      {#1.5\dimexpr\nextboxdp-\nextboxht\relax
+%       \hbox{$\mathmatrixparameter\c!left
+%             \vcenter{\unvbox\nextbox}%
+%             \mathmatrixparameter\c!right$}}%
+%    \vbox}
+%
+% \def\processlohimathmatrix
+%   {\dowithnextbox
+%      {\mathmatrixparameter\c!left
+%       \vcenter{\unvbox\nextbox}%
+%       \mathmatrixparameter\c!right}%
+%    \vbox}
+%
+% \installmathmatrixhandler\v!high  {\def\mathmatrixbox{\processlowhighmathmatrix\raise}}
+% \installmathmatrixhandler\v!low   {\def\mathmatrixbox{\processlowhighmathmatrix\lower}}
+% \installmathmatrixhandler\v!top   {\def\mathmatrixbox{\processlowhighmathmatrix\raise}}
+% \installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\processlowhighmathmatrix\lower}}
+% \installmathmatrixhandler\v!lohi  {\let\mathmatrixbox \processlohimathmatrix}
+%
+% Final version
+
+\let\mathmatrixleft \empty % experimental hook
+\let\mathmatrixright\empty % experimental hook
+
+\def\processlowhighmathmatrix#1#2%
+  {\dowithnextbox
+     {\scratchdimen\dimexpr(\nextboxdp-\nextboxht)/2 \ifcase#2\or+\mathaxisheight\textfont2\fi\relax
+      \ifcase#1\relax\or\lower\scratchdimen\or\or\raise\scratchdimen\fi
+      \hbox{$\mathmatrixparameter\c!left
+            \vcenter{\unvbox\nextbox}%
+            \mathmatrixparameter\c!right$}}%
+   \vbox}
+
+\installmathmatrixhandler\v!top   {\def\mathmatrixbox{\processlowhighmathmatrix\plusthree\plusone  }}
+\installmathmatrixhandler\v!high  {\def\mathmatrixbox{\processlowhighmathmatrix\plusthree\zerocount}}
+\installmathmatrixhandler\v!lohi  {\def\mathmatrixbox{\processlowhighmathmatrix\plustwo  \zerocount}}
+\installmathmatrixhandler\v!low   {\def\mathmatrixbox{\processlowhighmathmatrix\plusone  \zerocount}}
+\installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\processlowhighmathmatrix\plusone  \plusone  }}
+
+\def\dostartmathmatrix[#1][#2]%
+  {\begingroup
+   \edef\currentmathmatrix{#1}%
+   \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
+   \null
+   \executeifdefined{\??mx:\mathmatrixparameter\c!location}{\getvalue{\??mx:\v!lohi}}%
+   \mathmatrixleft
+   \mathmatrixbox\bgroup
+   \pushmacro\domatrixNC
+   \let\endmath\relax
+   \def\NC{\domatrixNC}%
+   \def\MC{\domatrixNC\ifmmode\else$\def\endmath{$}\fi}%
+   \global\let\domatrixNC\dodomatrixNC
+   \def\NR{\endmath\global\let\domatrixNC\dodomatrixNC\crcr}%
+   \normalbaselines
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \tabskip\zeropoint
+   \eqaligncolumn\zerocount % could be \scratchcounter
+   \processcommacommand[\mathmatrixparameter\c!align]{\advance\eqaligncolumn\plusone\dosetmatrixcolumn}%
+   \scratchcounter=\ifnum\eqaligncolumn>\zerocount \eqaligncolumn \else \plusone \fi
+   \global\eqaligncolumn\plusone
+   \preparemathmatrix } % uses scratchcounter
+
+\def\dostopmathmatrix
+  {\crcr
+   \mathstrut\crcr
+   \noalign{\kern-\baselineskip}%
+   \egroup
+   \popmacro\domatrixNC
+   \egroup
+   \mathmatrixright
+   \endgroup}
+
+%D \startbuffer
+%D \placeformula \startformula[-] \startmatrix
+%D \NC 1 \NC x \NC a \NR
+%D \NC 2 \NC y \NC b \NR
+%D \NC 3 \NC z \NC c \NR
+%D \stopmatrix \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \definemathmatrix[bmatrix][left={\left[\,},right={\,\right]}]
+%D
+%D \startbuffer
+%D \placeformula \startformula[-] \startbmatrix
+%D \NC 1 \NC x \NC a \NR
+%D \NC 2 \NC y \NC b \NR
+%D \NC 3 \NC z \NC c \NR
+%D \stopbmatrix \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D Taco added some code (dedicated to Aditya Mahajan) that gives more
+%D control over aligments:
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix
+%D    \NC a + x \NC = \NC a + d \NR
+%D    \NC y     \NC = \NC d     \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix [distance=3pt,align={right,left}]
+%D    \NC a + x \NC = a + d \NR
+%D    \NC y     \NC = d     \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix [left=\left(,right=\right)]
+%D    \NC a + x \NR
+%D    \NC y    \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D A bit more complex code:
+%D
+%D \startbuffer
+%D \startformula
+%D    \text{Let }{\cal R} = \bigcup_{P_{X_1},P_{X_2}}
+%D    \left\{ (R_1, R_2) :
+%D    \startmatrix[distance=1em,align={left,left,right}]
+%D      \NC R_1        \NC < I(X_1 ; Y \mid X_2)      \NC R_1       \NR
+%D      \NC \hfill Q_2 \NC < I(X_2 ; Y \mid X_1)      \NC R_2       \NR
+%D      \NC R_1 + R_2  \NC < I(X_1 ; Y)               \NC R_1 + R_2 \NR
+%D    \stopmatrix
+%D    \right\}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {startmatrices}
+%D
+%D Just a handy keystroke safer:
+
+\def\startmatrices
+  {\begingroup
+   \setupmathmatrix}
+
+\def\stopmatrices
+  {\endgroup}
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix[left={\left(},right={\right)}]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D   =
+%D   \startmatrix[left={\left(},right={\right)},location=low]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D   =
+%D   \startmatrix[left={\left(},right={\right)},location=high]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \startformula
+%D   \startmatrices[left={\left(},right={\right)}]
+%D     \startmatrix
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D     =
+%D     \startmatrix[location=bottom]
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D     =
+%D     \startmatrix[location=top]
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D   \stopmatrices
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {startintertext}
+%D
+%D Preliminary feature:
+%D
+%D {\em example code}
+
+\def\startintertext#1\stopintertext
+  {\noalign{\dointertext{#1}}}
+
+\def\intertext#1%
+  {\noalign{\dointertext{#1}}}
+
+\unexpanded\def\dointertext#1%
+  {\penalty\postdisplaypenalty
+   \afterdisplayspace
+   \vbox{\forgetall\noindent#1\par}%
+   \penalty\predisplaypenalty
+   \beforedisplayspace}
+
+% %D \macros
+% %D   {substack}
+% %D
+% %D Preliminary code:
+% %D
+% %D \starttyping
+% %D \startformula
+% %D    \sum_{%
+% %D      \startsubstack
+% %D       i = 1 \NR
+% %D       i \neq n \NR
+% %D       i \neq m
+% %D       \stopsubstack
+% %D     }a_i
+% %D \stopformula
+% %D \stoptyping
+
+% \def\startsubstack
+%    {\begingroup
+%     \null
+%     \vcenter\bgroup
+%     \pushmacro\domatrixNC
+%     \let\stopmathmode\relax
+%     \def\NC{\domatrixNC}%
+%     \def\MC{\domatrixNC\startmathmode}%
+%     \global\let\domatrixNC\dodomatrixNC
+%     \def\NR
+%       {\stopmathmode
+%        \global\let\domatrixNC\dodomatrixNC
+%        \crcr\noalign{\nointerlineskip}}%
+%     \mathsurround\zeropoint
+%     \everycr\emptytoks
+%     \halign\bgroup\hfil$\scriptstyle\mathstrut##$\hfil\crcr}
+
+% \def\stopsubstack
+%    {\crcr
+%     \egroup
+%     \popmacro\domatrixNC
+%     \egroup
+%     \endgroup}
+
+%D \macros
+%D   {substack}
+%D
+%D Preliminary code:
+%D
+%D \startbuffer
+%D \startformula
+%D    \sum_{%
+%D      \startsubstack
+%D       i = 1 \NR
+%D       i \neq n \NR
+%D       i \neq m
+%D       \stopsubstack
+%D     }a_i
+%D \stopformula
+%D \stopbuffer
+%D
+%D \getbuffer which was typed as \typebuffer
+%D
+%D Notice that these macros give the correct spacing for
+%D subscripts. Compare for example
+%D
+%D \startbuffer
+%D \startformula
+%D \sum_{\startsubstack a \NR b \NR \stopsubstack}
+%D \text{ and }
+%D \sum_{\scriptstyle a \atop \scriptstyle}
+%D \stopformula
+%D \typebuffer which gives \getbuffer
+
+\def\startsubstack
+  {\begingroup
+   \vcenter\bgroup
+   \baselineskip\mathstacktotal
+   \lineskip\mathstackvgap
+   \lineskiplimit\lineskip
+   \let\stopmathmode\relax
+   \def\NC{\domatrixNC}%
+   \def\MC{\domatrixNC\startmathmode}%
+   \global\let\domatrixNC\dodomatrixNC
+   \def\NR
+     {\stopmathmode
+      \global\let\domatrixNC\dodomatrixNC
+      \crcr}%
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \halign\bgroup\hfil$\scriptstyle##$\hfil\crcr}
+
+\def\stopsubstack
+  {\crcr
+   \egroup
+   \egroup
+   \endgroup}
+
+%D \macros
+%D   {frac, xfrac, xxfrac}
+%D
+%D This is another one Tobias asked for. It replaces the
+%D primitive \type {\over}. We also take the opportunity to
+%D handle math style restoring, which makes sure units and
+%D chemicals come out ok.
+%D
+%D \starttyping
+%D \def\frac#1#2%
+%D   {\relax
+%D    \ifmmode
+%D       {{\mathstyle{#1}}\over{\mathstyle{#2}}}%
+%D    \else
+%D       $\frac{#1}{#2}$%
+%D    \fi}
+%D \stoptyping
+%D
+%D Better is:
+%D
+%D \starttyping
+%D \def\frac#1#2%
+%D   {\relax\mathematics{{{\mathstyle{#1}}\over{\mathstyle{#2}}}}}
+%D \stoptyping
+%D
+%D The \type {\frac} macro kind of replaces the awkward \type
+%D {\over} primitive. Say that we have the following formulas:
+%D
+%D \startbuffer[sample]
+%D test $\frac  {1}{2}$ test $$1 + \frac  {1}{2} = 1.5$$
+%D test $\xfrac {1}{2}$ test $$1 + \xfrac {1}{2} = 1.5$$
+%D test $\xxfrac{1}{2}$ test $$1 + \xxfrac{1}{2} = 1.5$$
+%D \stopbuffer
+%D
+%D \typebuffer[sample]
+%D
+%D With the most straightforward definitions, we get:
+%D
+%D \startbuffer[code]
+%D \def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
+%D
+%D \def\frac  {\dofrac\mathstyle}
+%D \def\xfrac {\dofrac\scriptstyle}
+%D \def\xxfrac{\dofrac\scriptscriptstyle}
+%D \stopbuffer
+%D
+%D \typebuffer[code] \getbuffer[code,sample]
+%D
+%D Since this does not work well, we can try:
+%D
+%D \startbuffer[code]
+%D \def\xfrac #1#2{\hbox{$\dofrac\scriptstyle      {#1}{#2}$}}
+%D \def\xxfrac#1#2{\hbox{$\dofrac\scriptscriptstyle{#1}{#2}$}}
+%D \stopbuffer
+%D
+%D \typebuffer[code] \getbuffer[code,sample]
+%D
+%D This for sure looks better than:
+%D
+%D \startbuffer[code]
+%D \def\xfrac #1#2{{\scriptstyle      \dofrac\relax{#1}{#2}}}
+%D \def\xxfrac#1#2{{\scriptscriptstyle\dofrac\relax{#1}{#2}}}
+%D \stopbuffer
+%D
+%D \typebuffer[code] \getbuffer[code,sample]
+%D
+%D So we stick to the next definitions (watch the local
+%D overloading of \type {\xfrac}).
+
+\def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
+
+% \unexpanded\def\frac
+%   {\dofrac\mathstyle}
+%
+% \chardef\mathfracmode=0 $\frac{1}{2}$
+% \chardef\mathfracmode=1 $\frac{1}{2}$
+% \chardef\mathfracmode=2 $\frac{1}{2}$
+% \chardef\mathfracmode=3 $\frac{1}{2}$
+% \chardef\mathfracmode=4 $\frac{1}{2}$
+% \chardef\mathfracmode=5 $\frac{1}{2}$
+
+\chardef\mathfracmode=0 % 0=mathstyle, 1=displaystyle, 2=textstyle, 3=scriptstyle, 4=scriptscriptstyle
+
+\unexpanded\def\frac
+  {\ifcase\mathfracmode
+     \expandafter\dofrac\expandafter\mathstyle
+   \or
+     \expandafter\dofrac\expandafter\displaystyle
+   \or
+     \expandafter\dofrac\expandafter\textstyle
+   \or
+     \expandafter\dofrac\expandafter\scriptstyle
+   \or
+     \expandafter\dofrac\expandafter\scriptscriptstyle
+   \else
+     \expandafter\dofrac\expandafter\mathstyle
+   \fi}
+
+\unexpanded\def\xfrac#1#2%
+  {\begingroup
+   \let\xfrac\xxfrac
+   \dofrac\scriptstyle{#1}{#2}%
+   \endgroup}
+
+\unexpanded\def\xxfrac#1#2%
+  {\begingroup
+   \dofrac\scriptscriptstyle{#1}{#2}%
+   \endgroup}
+
+%D The \type {xx} variant looks still ugly, so maybe it's
+%D best to say:
+
+\unexpanded\def\xxfrac#1#2%
+  {\begingroup
+   \dofrac\scriptscriptstyle{#1}{\raise.25ex\hbox{$\scriptscriptstyle#2$}}%
+   \endgroup}
+
+%D Something low level for scientific calculator notation:
+
+\unexpanded\def\scinot#1#2%
+  {#1\times10^{#2}}
+
+%D The next macro, \type {\ch}, is \PPCHTEX\ aware. In
+%D formulas one can therefore best use \type {\ch} instead of
+%D \type {\chemical}, especially in fractions.
+
+\ifx\mathstyle\undefined
+  \let\mathstyle\relax
+\fi
+
+\unexpanded\def\ch#1%
+  {\ifx\@@chemicalletter\undefined
+     \mathstyle{\rm#1}%
+   \else
+     \dosetsubscripts
+     \mathstyle{\@@chemicalletter{#1}}%
+     \doresetsubscripts
+   \fi}
+
+%D \macros
+%D   {/}
+%D
+%D Just to be sure, we restore the behavior of some typical
+%D math characters.
+
+\bgroup
+
+\catcode`\/=\@@other    \global           \let\normalforwardslash/
+\catcode`\/=\@@active \doglobal\appendtoks\let/\normalforwardslash\to\everymathematics
+
+\egroup
+
+%D These macros were first needed by Frits Spijker (also
+%D known as Gajes) for typesetting the minus sign that is
+%D keyed into scientific calculators.
+
+% This is the first alternative, which works okay for the
+% minus, but less for the plus.
+%
+% \def\dodoraisedmathord#1#2#3%
+%   {\mathord{{#2\raise.#1ex\hbox{#2#3}}}}
+%
+% \def\doraisedmathord#1%
+%   {\mathchoice
+%      {\dodoraisedmathord5\tf  #1}%
+%      {\dodoraisedmathord5\tf  #1}%
+%      {\dodoraisedmathord4\tfx #1}%
+%      {\dodoraisedmathord3\tfxx#1}}
+%
+% \def\negative{\doraisedmathord-}
+% \def\positive{\doraisedmathord+}
+%
+% So, now we use the monospaced signs, that we also
+% define as symbol, so that they can be overloaded.
+
+\def\dodoraisedmathord#1#2#3%
+  {\mathord{{#2\raise.#1ex\hbox{#2\symbol[#3]}}}}
+
+\def\doraisedmathord#1%
+  {\mathchoice
+     {\dodoraisedmathord5\tf {#1}}%
+     {\dodoraisedmathord5\tf {#1}}%
+     {\dodoraisedmathord4\tx {#1}}%
+     {\dodoraisedmathord3\txx{#1}}}
+
+\def\dodonumbermathord#1#2%
+  {\setbox\scratchbox\hbox{0}%
+   \mathord{\hbox to \wd\scratchbox{\hss#1\symbol[#2]\hss}}}
+
+\def\donumbermathord#1%
+  {\mathchoice
+     {\dodonumbermathord\tf {#1}}%
+     {\dodonumbermathord\tf {#1}}%
+     {\dodonumbermathord\tx {#1}}%
+     {\dodonumbermathord\txx{#1}}}
+
+\definesymbol[positive]  [\getglyph{Mono}{+}]
+\definesymbol[negative]  [\getglyph{Mono}{-}]
+\definesymbol[zeroamount][\getglyph{Mono}{-}]
+
+\def\negative  {\doraisedmathord{negative}}
+\def\positive  {\doraisedmathord{positive}}
+\def\zeroamount{\donumbermathord{zeroamount}}
+
+%D The following macros are used in the MathML interpreter, so
+%D there is a good change of them never being documented for
+%D other usage.
+
+\let\normalordelimiter\secondoftwoarguments
+\let\normalorfiller   \firstoftwoarguments
+
+\def\enabledelimiter {\let\normalordelimiter\secondoftwoarguments}
+\def\disabledelimiter{\let\normalordelimiter\firstoftwoarguments}
+
+\def\enablefiller    {\let\normalorfiller\secondoftwoarguments}
+\def\disablefiller   {\let\normalorfiller\firstoftwoarguments}
+
+\def\mathopnolimits#1{\mathop{\mr#1}\nolimits} % was \rm, which follows text fonts (used in mml parser)
+\def\mathopdolimits#1{\mathop{\mr#1}}          % was \rm, which follows text fonts (used in mml parser)
+
+%D \macros{overset, underset}
+%D
+%D The macros \type{\overset} and \type{\underset} are provided by
+%D \AMS\ packages in \LATEX. These macro allows you to place a symbol
+%D above or below another symbol, irrespective of whether the other
+%D symbol is a relation or something else, and without influencing the
+%D spacing.  For most cases there is a better way to do such things
+%D (declaring a math command with limop option, or using accents), but
+%D occasionally these macros can be useful, for example:
+%D
+%D \startbuffer
+%D \startformula
+%D \overset{*}{X} \underset{*}{X}
+%D \stopformula
+%D \stopbuffer
+%D \typebuffer \getbuffer
+%D
+%D Use these macros sparingly. Remember, \TEX\ was designed for
+%D mathematics, so there is usually a proper method for typesetting
+%D common math notation.
+
+%D These macros are a clearer version of \type{\binrel@} and
+%D \type{\binrel@@} macros in \AMSTEX\ packages.
+
+\def\preparebinrel#1%
+  {\begingroup
+   \setbox\scratchbox\hbox
+     {\thinmuskip   0mu
+      \medmuskip   -1mu
+      \thickmuskip -1mu
+      \setbox\scratchbox\hbox{$#1\mathsurround\zeropoint$}%
+      \kern-\wd\scratchbox
+      ${}#1{}\mathsurround\zeropoint$}%
+   \expanded
+     {\endgroup
+      \let\noexpand\currentbinrel
+      \ifdim\wd\scratchbox<\zeropoint
+        \mathbin
+      \else\ifdim\wd\scratchbox>\zeropoint
+        \mathrel
+      \else
+        \relax
+      \fi\fi}}
+
+\unexpanded\def\overset#1#2%
+  {\preparebinrel{#2}%
+   \currentbinrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
+
+\unexpanded\def\underset#1#2%
+  {\preparebinrel{#2}%
+   \currentbinrel{\mathop{\kern\zeropoint#2}\limits_{#1}}}
+
+%D \macros
+%D   {boldsymbol}
+%D
+%D The math definition is inspired by amsmath.
+%D
+%D \startbuffer
+%D \definetypeface [boldmath] [mm] [boldmath] [latin-modern] [modern] [encoding=texnansi]
+%D
+%D $a \times b$ $a \boldsymbol{\times} b$
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+
+\def\mathboldsymbol#1%
+  {\preparebinrel{#1}%
+   \currentbinrel{\mathchoice
+      {\hbox{\switchtoformulabodyfont             [boldmath]$\mathsurround\zeropoint#1$}}
+      {\hbox{\switchtoformulabodyfont             [boldmath]$\mathsurround\zeropoint#1$}}
+      {\hbox{\switchtoformulabodyfont      [boldmath,script]$\mathsurround\zeropoint#1$}}
+      {\hbox{\switchtoformulabodyfont[boldmath,scriptscript]$\mathsurround\zeropoint#1$}}}}
+
+\def\boldsymbol
+  {\mathortext\mathboldsymbol\bold}
+
+%D Some encoding hackery (for Mojca. who else):
+%D
+%D \starttyping
+%D \startmathcollection[eul:texnansi]
+%D     \definemathsymbol [breve] [accent] [tf] ["15]
+%D \stopmathcollection
+%D \startmathcollection[eul:ec]
+%D     \definemathsymbol [breve] [accent] [tf] ["08]
+%D \stopmathcollection
+%D
+%D $\breve e$
+%D \stoptyping
+
+\let\outerencoding\empty
+
+\def\checkoutermathencoding
+  {\ifx\outerencoding\empty
+     \ifx\outerencoding\s!default\else
+       \edef\outerencoding{\currentencoding}%
+     \fi
+   \fi}
+
+\prependtoks
+   \checkoutermathencoding
+\to \everymathematics
+
+%D More. (A temp hack, else no proper default fall back (like \type
+%D {\textmultiply}); todo: sync encoding.
+
+\def\dealwithmathtextencoding
+  {\expanded{\everyhbox{\the\everyhbox\noexpand\fastenableencoding{\currentencoding}}}%
+   \expanded{\everyvbox{\the\everyvbox\noexpand\fastenableencoding{\currentencoding}}}%
+   \def\dealwithmathtextencoding{\let\characterencoding\nocharacterencoding}%
+   \dealwithmathtextencoding}
+
+\appendtoks
+  \dealwithmathtextencoding
+\to \everymathematics
+
+%D How negative such a symbol looks is demonstrated in:
+%D $\negative 10^{\negative 10^{\negative 10}}$.
+
+\setupformulas
+  [\c!way=\@@nrway,
+   \c!blockway=,
+   \c!sectionnumber=\@@nrsectionnumber,
+   \c!location=\v!right,
+   \c!left=(,
+   \c!right=),
+   \c!numberstyle=,
+   \c!numbercolor=,
+   \c!numbercommand=,
+   \c!spacebefore=\v!big,
+   \c!spaceafter=\@@fmspacebefore,
+   \c!grid=]
+
+\protect \endinput

@@ -691,7 +691,7 @@
    \dosetupblank\appliedblankskip
    }%\let\deblanko\v!big}
 
-\def\dodefineblank[#1][#2]%
+\def\dodefineblank[#1][#2]% why #1 commalist?
   {\def\docommand##1{\setvalue{\??bo##1}{#2}}%
    \processcommalist[#1]\docommand}
 

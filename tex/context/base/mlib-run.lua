@@ -29,6 +29,8 @@ approach is way faster than an external <l n='metapost'/> and processing time
 nears zero.</p>
 --ldx]]--
 
+local trace_graphics = false  trackers.register("metapost.graphics", function(v) trace_graphics = v end)
+
 local format = string.format
 
 metapost = metapost or { }
@@ -143,7 +145,7 @@ function metapost.reporterror(result)
         metapost.report("mp error: no result object returned")
     elseif result.status > 0 then
         local t, e, l = result.term, result.error, result.log
-        if t then
+        if t and t ~= "" then
             metapost.report("mp terminal: %s",t)
         end
         if e then
@@ -236,20 +238,41 @@ function metapost.reset(mpx)
     end
 end
 
-function metapost.process(mpx, data, trialrun, flusher, multipass)
+local mp_inp, mp_log, mp_tag = { }, { }, 0
+
+function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass)
     local converted, result = false, {}
     if type(mpx) == "string" then
         mpx = metapost.format(mpx) -- goody
     end
     if mpx and data then
         statistics.starttiming(metapost)
+        if trace_graphics then
+            if not mp_inp[mpx] then
+                mp_tag = mp_tag + 1
+                mp_inp[mpx] = io.open(format("%s-mplib-run-%03i.mp", tex.jobname,mp_tag),"w")
+                mp_log[mpx] = io.open(format("%s-mplib-run-%03i.log",tex.jobname,mp_tag),"w")
+            end
+            local banner = format("%% begin graphic: n=%s, trialrun=%s, multipass=%s, isextrapass=%s\n\n", metapost.n, tostring(trialrun), tostring(multipass), tostring(isextrapass))
+            mp_inp[mpx]:write(banner)
+            mp_log[mpx]:write(banner)
+        end
         if type(data) == "table" then
             for i=1,#data do
                 local d = data[i]
                 if d then
+                    if trace_graphics then
+                        mp_inp[mpx]:write(d)
+                    end
                     statistics.starttiming(metapost.exectime)
                     result = mpx:execute(d)
                     statistics.stoptiming(metapost.exectime)
+                    if trace_graphics and result then
+                        local str = result.log or result.error
+                        if str and str ~= "" then
+                            mp_log[mpx]:write(str)
+                        end
+                    end
                     if not metapost.reporterror(result) then
                         if metapost.showlog then
                             local str = (result.term ~= "" and result.term) or "no terminal output"
@@ -267,9 +290,18 @@ function metapost.process(mpx, data, trialrun, flusher, multipass)
                 end
             end
        else
+            if trace_graphics then
+                mp_inp:write(data)
+            end
             statistics.starttiming(metapost.exectime)
-            result = mpx:execute(data)
+            result = mpx[mpx]:execute(data)
             statistics.stoptiming(metapost.exectime)
+            if trace_graphics and result then
+                local str = result.log or result.error
+                if str and str ~= "" then
+                    mp_log[mpx]:write(str)
+                end
+            end
             -- todo: error message
             if not result then
                 metapost.report("mp error: no result object returned")
@@ -284,6 +316,11 @@ function metapost.process(mpx, data, trialrun, flusher, multipass)
                     converted = metapost.convert(result, trialrun, flusher, multipass)
                 end
             end
+        end
+        if trace_graphics then
+            local banner = "\n% end graphic\n\n"
+            mp_inp[mpx]:write(banner)
+            mp_log[mpx]:write(banner)
         end
         statistics.stoptiming(metapost)
     end

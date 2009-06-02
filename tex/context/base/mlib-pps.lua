@@ -39,6 +39,54 @@ local colordata = { {}, {}, {}, {}, {} }
 --~         => transparent spot : r=123 g=   5 b=hash
 --~         => rest             : r=123 g=n>10 b=whatever
 
+
+local nooutercolor        = "0 g 0 G"
+local nooutertransparency = "/Tr0 gs"
+local outercolormode      = 0
+local outercolor          = nooutercolor
+local outertransparency   = nooutertransparency
+local innercolor          = nooutercolor
+local innertransparency   = nooutertransparency
+
+function metapost.set_outer_color(mode,color,transparency)
+    -- has always to be called before conversion
+    -- todo: transparency (not in the mood now)
+    outercolormode = mode
+    if mode == 1 or mode == 3 then
+        -- inherit from outer
+        outercolor        = color        or nooutercolor
+        outertransparency = transparency or nooutertransparency
+    elseif mode == 2 then
+        -- stand alone
+        outercolor        = ""
+        outertransparency = ""
+    else -- 0
+        outercolor        = nooutercolor
+        outertransparency = nooutertransparency
+    end
+    innercolor = outercolor
+    innertransparency = outertransparency
+end
+
+local function checked_color_pair(color)
+    if not color then
+        return innercolor, outercolor
+    elseif outercolormode == 3 then
+        innercolor = color
+        return innercolor, innercolor
+    else
+        return color, outercolor
+    end
+end
+
+metapost.checked_color_pair = checked_color_pair
+
+function metapost.colorinitializer()
+    innercolor = outercolor
+    innertransparency = outertransparency
+    return outercolor, outertransparency
+end
+
 function metapost.specials.register(str) -- only colors
     local size, content, n, class = match(str,"^%%%%MetaPostSpecial: (%d+) (.*) (%d+) (%d+)$")
     if class then
@@ -54,10 +102,15 @@ function metapost.specials.register(str) -- only colors
             n = tonumber(data[1])
         end
         if n then
-            colordata[class][n] = data
+            local cc = colordata[class]
+            if cc then
+                cc[n] = data
+            else
+                logs.report("mplib","problematic special: %s (no colordata class %s)", str or "?",class)
+            end
         else
          -- there is some bug to be solved, so we issue a message
-            logs.report("[msr bug] %s", str or "?")
+            logs.report("mplib","problematic special: %s", str or "?")
         end
     end
 --~     if str:match("^%%%%MetaPostOption: multipass") then
@@ -66,7 +119,7 @@ function metapost.specials.register(str) -- only colors
 end
 
 function metapost.colorhandler(cs, object, result, colorconverter)
-    local cr = "0 g 0 G"
+    local cr = outercolor
     local what = round(cs[2]*10000)
     local data = colordata[what]
     if data then
@@ -122,7 +175,7 @@ function metapost.specials.tr(specification,object,result)
         return object, result
     end
     local after = before and function()
-        result[#result+1] = "/Tr0 gs"
+        result[#result+1] = outertransparency -- here we could revert to teh outer color
         return object, result
     end
     return object, before, nil, after
@@ -157,7 +210,7 @@ local colorsplitter         = lpeg.Ct(lpeg.splitat(":"))
 -- x' = sx * x + ry * y + tx
 -- y' = rx * x + sy * y + ty
 
-function metapost.specials.fg(specification,object,result,flusher)
+function metapost.specials.fg(specification,object,result,flusher) -- graphics
     local op = object.path
     local first, second, fourth  = op[1], op[2], op[4]
     local tx, ty = first.x_coord      , first.y_coord
@@ -171,6 +224,16 @@ function metapost.specials.fg(specification,object,result,flusher)
         return object, { }
     end
     return { } , before, nil, nil -- replace { } by object for tracing
+end
+
+function metapost.specials.ps(specification,object,result) -- positions
+    local op = object.path
+    local first, third  = op[1], op[3]
+    local x, y = first.x_coord, first.y_coord
+    local w, h = third.x_coord - x, third.y_coord - y
+    local label = specification
+    logs.report("mplib", "todo: position '%s' at (%s,%s) with (%s,%s)",label,x,y,w,h)
+    return { }, nil, nil, nil
 end
 
 local nofshades = 0 -- todo: hash resources, start at 1000 in order not to clash with older
@@ -434,81 +497,8 @@ function metapost.specials.ts(specification,object,result,flusher)
     end
 end
 
-function metapost.colorconverter()
-    -- it no longer pays off to distinguish between outline and fill
-    --  (we now have both too, e.g. in arrows)
-    local model = colors.model
-    if model == "all" then
-        return function(cr)
-            local n = #cr
-            if n == 1 then
-                local s = cr[1]
-                return format("%.3f g %.3f G",s,s), "0 g 0 G"
-            elseif n == 4 then
-                local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
-            else
-                local r, g, b = cr[1], cr[2], cr[3]
-                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
-            end
-        end
-    elseif model == "rgb" then
-        return function(cr)
-            local n = #cr
-            if n == 1 then
-                local s = cr[1]
-                return format("%.3f g %.3f G",s,s), "0 g 0 G"
-            end
-            local r, g, b
-            if n == 4 then
-                r, g, b = cmyktorgb(cr[1],cr[2],cr[3],cr[4])
-            else
-                r, g, b = cr[1],cr[2],cr[3]
-            end
-            return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
-        end
-    elseif model == "cmyk" then
-        return function(cr)
-            local n = #cr
-            if n == 1 then
-                local s = cr[1]
-                return format("%.3f g %.3f G",s,s), "0 g 0 G"
-            end
-            local c, m, y, k
-            if n == 4 then
-                c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-            else
-                c, m, y, k = rgbtocmyk(cr[1],cr[2],cr[3])
-            end
-            return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
-        end
-    else
-        return function(cr)
-            local s
-            local n = #cr
-            if n == 4 then
-                s = cmyktogray(cr[1],cr[2],cr[3],cr[4])
-            elseif n == 3 then
-                s = rgbtogray(cr[1],cr[2],cr[3])
-            else
-                s = cr[1]
-            end
-            return format("%.3f g %.3f G",s,s), "0 g 0 G"
-        end
-    end
-end
-
---~ local cmyk_fill    = "%.3f %.3f %.3f %.3f k"
---~ local rgb_fill     = "%.3f %.3f %.3f rg"
---~ local gray_fill    = "%.3f g"
---~ local reset_fill   = "0 g"
-
---~ local cmyk_stroke  = "%.3f %.3f %.3f %.3f K"
---~ local rgb_stroke   = "%.3f %.3f %.3f RG"
---~ local gray_stroke  = "%.3f G"
---~ local reset_stroke = "0 G"
-
 metapost.reducetogray = true
+
 
 function metapost.colorconverter() -- rather generic pdf, so use this elsewhere too
     -- it no longer pays off to distinguish between outline and fill
@@ -518,64 +508,68 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
     if model == "all" then
         return function(cr)
             local n = #cr
-            if reduce then
+            if n == 0 then
+                return checked_color_pair()
+            elseif reduce then
                 if n == 1 then
                     local s = cr[1]
-                    return format("%.3f g %.3f G",s,s), "0 g 0 G"
+                    return checked_color_pair(format("%.3f g %.3f G",s,s))
                 elseif n == 3 then
                     local r, g, b = cr[1], cr[2], cr[3]
                     if r == g and g == b then
-                        return format("%.3f g %.3f G",r,r), "0 g 0 G"
+                        return checked_color_pair(format("%.3f g %.3f G",r,r))
                     else
-                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
+                        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
                     end
                 else
                     local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
                     if c == m and m == y and y == 0 then
                         k = 1 - k
-                        return format("%.3f g %.3f G",k,k), "0 g 0 G"
+                        return checked_color_pair(format("%.3f g %.3f G",k,k))
                     else
-                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
+                        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
                     end
                 end
             elseif n == 1 then
                 local s = cr[1]
-                return format("%.3f g %.3f G",s,s), "0 g 0 G"
+                return checked_color_pair(format("%.3f g %.3f G",s,s))
             elseif n == 3 then
                 local r, g, b = cr[1], cr[2], cr[3]
-                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
+                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
             else
                 local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
+                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
             end
         end
     elseif model == "rgb" then
         return function(cr)
             local n = #cr
-            if reduce then
+            if n == 0 then
+                return checked_color_pair()
+            elseif reduce then
                 if n == 1 then
                     local s = cr[1]
-                    return format("%.3f g %.3f G",s,s), "0 g 0 G"
+                    checked_color_pair(format("%.3f g %.3f G",s,s))
                 elseif n == 3 then
                     local r, g, b = cr[1], cr[2], cr[3]
                     if r == g and g == b then
-                        return format("%.3f g %.3f G",r,r), "0 g 0 G"
+                        return checked_color_pair(format("%.3f g %.3f G",r,r))
                     else
-                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
+                        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
                     end
                 else
                     local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
                     if c == m and m == y and y == 0 then
                         k = 1 - k
-                        return format("%.3f g %.3f G",k,k), "0 g 0 G"
+                        return checked_color_pair(format("%.3f g %.3f G",k,k))
                     else
                         local r, g, b = cmyktorgb(c,m,y,k)
-                        return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
+                        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
                     end
                 end
             elseif n == 1 then
                 local s = cr[1]
-                return format("%.3f g %.3f G",s,s), "0 g 0 G"
+                return checked_color_pair(format("%.3f g %.3f G",s,s))
             else
                 local r, g, b
                 if n == 3 then
@@ -583,36 +577,38 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
                 else
                     r, g, b = cr[1], cr[2], cr[3]
                 end
-                return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
+                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
             end
         end
     elseif model == "cmyk" then
         return function(cr)
             local n = #cr
-            if reduce then
+            if n == 0 then
+                return checked_color_pair()
+            elseif reduce then
                 if n == 1 then
                     local s = cr[1]
-                    return format("%.3f g %.3f G",s,s), "0 g 0 G"
+                    return checked_color_pair(format("%.3f g %.3f G",s,s))
                 elseif n == 3 then
                     local r, g, b = cr[1], cr[2], cr[3]
                     if r == g and g == b then
-                        return format("%.3f g %.3f G",r,r), "0 g 0 G"
+                        return checked_color_pair(format("%.3f g %.3f G",r,r))
                     else
                         local c, m, y, k = rgbtocmyk(r,g,b)
-                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
+                        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
                     end
                 else
                     local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
                     if c == m and m == y and y == 0 then
                         k = 1 - k
-                        return format("%.3f g %.3f G",k,k), "0 g 0 G"
+                        return checked_color_pair(format("%.3f g %.3f G",k,k))
                     else
-                        return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
+                        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
                     end
                 end
             elseif n == 1 then
                 local s = cr[1]
-                return format("%.3f g %.3f G",s,s), "0 g 0 G"
+                return checked_color_pair(format("%.3f g %.3f G",s,s))
             else
                 local c, m, y, k
                 if n == 3 then
@@ -620,20 +616,22 @@ function metapost.colorconverter() -- rather generic pdf, so use this elsewhere 
                 else
                     c, m, y, k = cr[1], cr[2], cr[3], cr[4]
                 end
-                return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
+                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
             end
         end
     else
         return function(cr)
             local n, s = #cr, 0
-            if n == 4 then
+            if n == 0 then
+                return checked_color_pair()
+            elseif n == 4 then
                 s = cmyktogray(cr[1],cr[2],cr[3],cr[4])
             elseif n == 3 then
                 s = rgbtogray(cr[1],cr[2],cr[3])
             else
                 s = cr[1]
             end
-            return format("%.3f g %.3f G",s,s), "0 g 0 G"
+            return checked_color_pair(format("%.3f g %.3f G",s,s))
         end
     end
 end
@@ -741,7 +739,7 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
             str,
             "endfig ;"
      -- }, true, nil, true )
-        }, true, nil, not (forced_1 or forced_2))
+        }, true, nil, not (forced_1 or forced_2), false)
         if metapost.intermediate.needed then
             for _, action in pairs(metapost.intermediate.actions) do
                 action()
@@ -759,7 +757,7 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
             "_trial_run_ := false ;",
             str,
             "endfig ;"
-        } )
+        }, false, nil, false, false )
     end
     -- here we could free the textext boxes
     metapost.free_boxes()
@@ -773,7 +771,7 @@ function metapost.graphic_extra_pass()
         concat(metapost.text_texts_data()," ;\n"),
         current_graphic,
         "endfig ;"
-    })
+    }, false, nil, false, true )
 end
 
 function metapost.getclippath(data)

@@ -465,10 +465,10 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                     if ownnumber ~= "" then
                         processors.sprint(ctxcatcodes,ownnumber)
                  -- elseif conversion and conversion ~= "" then
-                 --    tex.sprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+                 --    texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
                     elseif conversion and conversion ~= "" then
                      -- traditional (e.g. used in itemgroups)
-                        tex.sprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+                        texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
                     else
                         local theconversion = sets.get("structure:conversions",block,conversion,index,"numbers")
                         processors.sprint(ctxcatcodes,theconversion,function(str)

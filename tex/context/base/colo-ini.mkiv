@@ -119,63 +119,19 @@
 \def\definespotcolor     {\dotripleargument\dodefinespotcolor}
 \def\definemultitonecolor{\doquadrupleempty\dodefinemultitonecolor}
 
-% check: registerusedspotcolors
-% check: registerusedcolorchannels
-
 %D \macros
-%D   {doifcolorelse, doifcolor}
+%D   {startcolor,stopcolor,
+%D    faststartcolor,faststopcolor,
+%D    localstartcolor,localstopcolor,
+%D    localstartraster,localstopraster,
+%D    startraster,stopraster,raster,
+%D    color,graycolor}
 %D
-%D Switching to a color is done by means of the following
-%D command. Later on we will explain the use of palets.  We
-%D define ourselves a color conditional first.
-
-\ifx\doifcolorelse\undefined
-    \let\doifcolorelse\secondoftwoarguments
-    \let\doifcolor    \gobbleoneargument
-\fi
-
-%D \macros
-%D   {localstartcolor,localstopcolor}
-%D
-%D Simple color support, that is without nesting, is provided
-%D by:
-
-\ifx\localstartcolor\undefined
-    \let\localstartcolor\undefined
-    \let\localstopcolor \undefined
-\fi
-
-%D \macros
-%D   {faststartcolor,faststopcolor}
-%D
-%D No checking for arguments and such:
-
-\ifx\faststartcolor\undefined
-    \def\faststartcolor[#1]{}
-    \def\faststopcolor     {}
-\fi
-
-%D These local ones may go away in future versions.
-
-%D \macros
-%D   {startcolor,stopcolor}
-%D
-%D The more save method, the one that saves the current color
-%D state and returns to this state afterward, is activated by:
+%D The local and global and raster commands are here just
+%D for compatibility with \MKII.
 %D
 %D \showsetup{startcolor}
-
-\ifx\startcolor\undefined
-    \let\startcolor\undefined
-    \let\stopcolor \undefined
-\fi
-
-%D \macros
-%D   {startcurrentcolor,stopcurrentcolor}
-
-\def\startcurrentcolor{\startcolor[\outercolorname]}
-\def\stopcurrentcolor {\stopcolor}
-
+%D
 %D \macros
 %D   {color,graycolor}
 %D
@@ -183,61 +139,42 @@
 %D
 %D \showsetup{color}
 %D \showsetup{graycolor}
+%D
+%D This leaves the simple color command:
+%D
+%D \showsetup{color}
+%D \showsetup{graycolor}
 
-\ifx\color\undefined
-    \def\color    [#1]{}
-    \def\graycolor[#1]{}
-    \def\gray         {\graycolor}
-\fi
+           \def\switchtocolor      [#1]{\getvalue{#1}}
+\unexpanded\def\color              [#1]{\groupedcommand{\doactivatecolor{#1}}{}}
+\unexpanded\def\startcolor         [#1]{\begingroup\doactivatecolor{#1}}
+\unexpanded\def\stopcolor              {\endgroup}
+\unexpanded\def\graycolor          [#1]{\groupedcommand{\setcolormodel{gray}\getvalue{#1}}{}}
+\unexpanded\def\colored            [#1]{\groupedcommand{\definecolor[@colored@][#1]\doactivatecolor{@colored@}}{}}
+           \def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}
+           \def\predefineindexcolor[#1]{\flushatshipout{\hbox{\color[#1]{}}}}
+           \def\startcolorpage         {\startcolor[\ifx\maintextcolor\empty\defaulttextcolor\else\maintextcolor\fi]}
+           \def\stopcolorpage          {\stopcolor}
+           \def\startraster        [#1]{\dosetrastercolor{#1}}
+           \def\stopraster             {}
+           \def\raster             [#1]{\groupedcommand{\dosetrastercolor{#1}}{}}
+           \def\faststartcolor     [#1]{\doactivatecolor{#1}}
+           \def\faststopcolor          {}
+\unexpanded\def\dosetcolorattribute#1#2{\ifcsname#1#2\endcsname\doactivatecolor{\csname#1#2\endcsname}\fi}
+
+\let\localstartcolor \startcolor
+\let\localstopcolor  \stopcolor
+\let\globalstartcolor\startcolor
+\let\globalstopcolor \stopcolor
+\let\localstartraster\startraster
+\let\localstopraster \stopraster
+\let\grey            \graycolor
 
 %D \macros
-%D   {localstartraster,localstopraster,
-%D    startraster,stopraster,raster}
-%D
-%D The previous conversions are not linear and treat each color
-%D component according to human perception curves. Pure gray
-%D (we call them rasters) has equal color components. In
-%D \CONTEXT\ rasters are only used as backgrounds and these
-%D don't cross page boundaries in the way color does. Therefore
-%D we don't need stacks and marks. Just to be compatible with
-%D color support we offer both 'global' and 'local' commands.
+%D   {startcurrentcolor,stopcurrentcolor}
 
-\ifx\startraster\undefined
-    \def\startraster     [#1]{}
-    \def\stopraster          {}
-    \def\raster          [#1]{}
-    \def\localstartraster[#1]{}
-    \def\localstopraster     {}
-\fi
-
-%D \macros
-%D   {colorvalue, grayvalue}
-%D
-%D We can typeset the color components using \type{\colorvalue} and
-%D \type{\grayvalue}. The commands:
-%D
-%D \startbuffer
-%D color value of SomeKindOfRed: \colorvalue{SomeKindOfRed} \crlf
-%D gray value of SomeKindOfRed: \grayvalue{SomeKindOfRed}
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D show us:
-%D
-%D \startvoorbeeld
-%D \getbuffer
-%D \stopvoorbeeld
-
-\def\colorformatseparator{ }
-
-\ifx\colorvalue\undefined
-    \let\colorvalue\gobbleoneargument
-    \let\grayvalue \gobbleoneargument
-\fi
-
-% check: \currentcolorname
-% check: \outercolorname
+\def\startcurrentcolor{\startcolor[\outercolorname]}
+\def\stopcurrentcolor {\stopcolor}
 
 %D \macros
 %D   {setupcolor}
@@ -325,10 +262,6 @@
    \setsystemmode{\v!color\colorsplitsuffix}%
    \iffilterspotcolor \let\@@clrgb\v!no \fi}
 
-\ifx\dosetupcolormodel\undefined
-    \let\dosetupcolormodel\relax
-\fi
-
 \def\dosetupcolors[#1]% some no longer make sense in MkIV
   {\getparameters[\??cl][#1]%
    \doifelse\@@clspot\v!yes
@@ -393,53 +326,6 @@
                   \forcegrayMPcolorstrue]%
    \dosetupcolormodel
    \initializemaintextcolor}
-
-%D \macros
-%D   {startregistercolor,stopregistercolor,permitcolormode}
-%D
-%D If you only want to register a color, the switch \type
-%D {\ifpermitcolormode} can be used. That way the nested
-%D colors know where to go back to.
-
-\ifx\startregistercolor\undefined
-    \def\startregistercolor[#1]{}
-    \def\stopregistercolor     {}
-\fi
-
-%D We use these macros for implementing text colors
-%D (actually, the first application was in foreground
-%D colors).
-%D
-%D \starttyping
-%D \starttextcolor[red]
-%D   \dorecurse{10}{\input tufte \color[green]{oeps} \par}
-%D \stoptextcolor
-%D \stoptyping
-%D
-%D This is more efficient than the alternative:
-%D
-%D \starttyping
-%D \setupbackgrounds[text][foregroundcolor=red]
-%D \startregistercolor[red]
-%D   \dorecurse{10}{\input tufte \color[green]{oeps} \par}
-%D \stopregistercolor
-%D \stoptyping
-
-\def\maintextcolor     {}
-\def\defaulttextcolor  {black}
-\def\@@themaintextcolor{themaintextcolor}
-
-\ifx\initializemaintextcolor\undefined
-    \def\starttextcolor       [#1]{}
-    \def\stoptextcolor            {}
-    \def\initializemaintextcolor  {}
-\fi
-
-\ifx\restoretextcolor\undefined % to be redone
-    \let\restoretextcolor   \firstofoneargument
-    \let\localstarttextcolor\relax
-    \let\localstoptextcolor \relax
-\fi
 
 %D In this documentation we will not go into too much details
 %D on palets. Curious users can find more information on this
@@ -524,10 +410,6 @@
       \processcommalist[#2]\dododefinepalet}
      {\doifdefined{\??pa#2}
         {\expanded{\dodefinepalet[#1][\csname\??pa\??pa#2\endcsname]}}}}
-
-\ifx\dodefinepaletcolor\undefined
-    \let\dodefinepaletcolor\gobblethreearguments
-\fi
 
 \let\paletsize\!!zerocount
 
@@ -947,7 +829,8 @@
 \letvalue{(ts:-}\empty
 
 \def\doactivatecolor#1% : in currentpalet, maybe not, ugly
-  {\ifcsname(cs:\currentpalet#1)\endcsname
+  {\def\currentcolorname{#1}%
+   \ifcsname(cs:\currentpalet#1)\endcsname
      \csname(cs:\currentpalet#1)\endcsname
      \csname(ts:\currentpalet#1)\endcsname
    \else\ifcsname(cs:#1)\endcsname
@@ -970,7 +853,8 @@
    \fi}
 
 \def\deactivatecolor
-  {\doresetattribute\s!color
+  {\let\currentcolorname\s!black
+   \doresetattribute\s!color
    \doresetattribute\s!transparency}
 
 \def\dodefinecolorcommand#1#2%
@@ -1014,6 +898,13 @@
    \fi
    \dosetattribute\s!color{\ctxlua{tex.sprint(ctx.definesimplegray("_raster_",\@@rastervalue))}}}
 
+%D \macros
+%D   {doifcolorelse, doifcolor}
+%D
+%D Switching to a color is done by means of the following
+%D command. Later on we will explain the use of palets.  We
+%D define ourselves a color conditional first.
+
 \def\doifcolorelse#1%
   {\ifcsname(ca:\currentpalet#1)\endcsname
      \@EA\firstoftwoarguments
@@ -1032,32 +923,44 @@
      \@EAEAEA\gobbleoneargument
    \fi\fi}
 
-% currentcolor, then we can push pop in register
-
-           \def\switchtocolor      [#1]{\getvalue{#1}}
-\unexpanded\def\color              [#1]{\groupedcommand{\doactivatecolor{#1}}{}}
-\unexpanded\def\startcolor         [#1]{\begingroup\doactivatecolor{#1}}
-\unexpanded\def\stopcolor              {\endgroup}
-\unexpanded\def\graycolor          [#1]{\groupedcommand{\setcolormodel{gray}\getvalue{#1}}{}}
-\unexpanded\def\colored            [#1]{\groupedcommand{\definecolor[@colored@][#1]\doactivatecolor{@colored@}}{}}
-           \def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}
-           \def\predefineindexcolor[#1]{\flushatshipout{\hbox{\color[#1]{}}}}
-           \def\startcolorpage         {\startcolor[\ifx\maintextcolor\empty\defaulttextcolor\else\maintextcolor\fi]}
-           \def\stopcolorpage          {\stopcolor}
-           \def\localstartraster   [#1]{\dosetrastercolor{#1}}
-           \def\localstopraster        {}
-           \def\startraster        [#1]{\dosetrastercolor{#1}}
-           \def\stopraster             {}
-           \def\raster             [#1]{\groupedcommand{\dosetrastercolor{#1}}{}}
-           \def\faststartcolor     [#1]{\doactivatecolor{#1}}
-           \def\faststopcolor          {}
-\unexpanded\def\dosetcolorattribute#1#2{\ifcsname#1#2\endcsname\doactivatecolor{\csname#1#2\endcsname}\fi}
-
-% more efficient:
+%D \macros
+%D   {colored}
+%D
+%D A bit like \type {\definedfont}:
 
 \unexpanded\def\colored[#1]%
   {\ctxlua{ctx.defineprocesscolor("@colored@","#1",false,false)}%
    \groupedcommand{\doactivatecolor{@colored@}}{}}
+
+%D \macros
+%D   {startregistercolor,stopregistercolor,permitcolormode}
+%D
+%D If you only want to register a color, the switch \type
+%D {\ifpermitcolormode} can be used. That way the nested
+%D colors know where to go back to.
+%D
+%D We use these macros for implementing text colors
+%D (actually, the first application was in foreground
+%D colors).
+%D
+%D \starttyping
+%D \starttextcolor[red]
+%D   \dorecurse{10}{\input tufte \color[green]{oeps} \par}
+%D \stoptextcolor
+%D \stoptyping
+%D
+%D This is more efficient than the alternative:
+%D
+%D \starttyping
+%D \setupbackgrounds[text][foregroundcolor=red]
+%D \startregistercolor[red]
+%D   \dorecurse{10}{\input tufte \color[green]{oeps} \par}
+%D \stopregistercolor
+%D \stoptyping
+
+\let\maintextcolor     \empty
+\def\defaulttextcolor  {black}
+\def\@@themaintextcolor{themaintextcolor}
 
 \def\startregistercolor[#1]%
   {\doifelsenothing{#1}
@@ -1080,24 +983,8 @@
      \fi
    \fi}
 
-% \def\pushpostponedpagecolor
-%   {\edef\savedtopofpagecolor{\topofpagecolor}%
-%    \doifsomething\savedtopofpagecolor\restorecolormode}
-%
-% \def\poppostponedpagecolor
-%    {\doifsomething\savedtopofpagecolor\doactivatecolor\savedtopofpagecolor}
-%
-% no \topofpagecolor
-
 \let\pushpostponedpagecolor\relax
 \let\poppostponedpagecolor \relax
-
-% \def\pushcolor
-%   {\edef\popcolor
-%      {\dosetattribute\s!color       {\dogetattribute\s!color       }%
-%       \dosetattribute\s!transparency{\dogetattribute\s!transparency}}%
-%    \let\popsplitcolor\popcolor
-%    \deactivatecolor}
 
 \appendtoks\deactivatecolor\to\everybeforeoutput % maybe we don't need push pop now
 
@@ -1108,12 +995,6 @@
         {\dosetattribute\s!color       {\dogetattribute\s!color       }%
          \dosetattribute\s!transparency{\dogetattribute\s!transparency}}%
       \doactivatecolor{#1}}}
-
-\let\grey            \graycolor
-\let\localstartcolor \startcolor
-\let\localstopcolor  \stopcolor
-\let\globalstartcolor\startcolor
-\let\globalstopcolor \stopcolor
 
 \def\registermaintextcolor{\ctxlua{colors.main = \thecolorattribute\maintextcolor}}
 
@@ -1162,10 +1043,31 @@
 \def\doinheritta#1{\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
 \def\doinheritts#1{\csname(ts:\ifcsname(ts:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ts:#1)\endcsname#1\fi\fi)\endcsname}
 
+%D \macros
+%D   {colorvalue, grayvalue}
+%D
+%D We can typeset the color components using \type{\colorvalue} and
+%D \type{\grayvalue}. The commands:
+%D
+%D \startbuffer
+%D color value of SomeKindOfRed: \colorvalue{SomeKindOfRed} \crlf
+%D gray value of SomeKindOfRed: \grayvalue{SomeKindOfRed}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D show us:
+%D
+%D \startvoorbeeld
+%D \getbuffer
+%D \stopvoorbeeld
+
+\def\colorformatseparator{ }
+
 \def\MPcolor#1{\ctxlua{tex.sprint(ctx.mpcolor(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1}))}}
 
-\def\currentcolorname{\s!black} % todo
-\def\outercolorname  {\s!black} % todo
+\let\currentcolorname\s!black % todo
+\let\outercolorname  \s!black % todo
 
 \def\thecolorattribute       #1{\number\csname(ca:\ifcsname(ca:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ca:#1)\endcsname#1\fi\fi)\endcsname}
 \def\thetransparencyattribute#1{\number\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
@@ -1216,7 +1118,9 @@
 %
 % \def\forcecolorhack{\vrule\!!width\zeropoint\!!height\zeropoint\!!depth\zeropoint}
 
-\def\forcecolorhack{\leaders\hrule\hskip\zeropoint}
+% \normal added else fails in metafun manual (leaders do a hard scan)
+
+\unexpanded\def\forcecolorhack{\leaders\hrule\normalhskip\zeropoint}
 
 % \setupcolors[state=start]
 %

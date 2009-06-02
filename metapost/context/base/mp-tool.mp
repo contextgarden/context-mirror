@@ -1054,6 +1054,12 @@ enddef ;
 let normaldraw = draw ;
 let normalfill = fill ;
 
+% bugged in mplib so ...
+
+def normalfill expr c = addto currentpicture contour c _op_ enddef ;
+def normaldraw expr p = addto currentpicture if picture p: also p else: doublepath p withpen currentpen fi _op_ enddef ;
+
+
 def drawlineoptions   (text t) = def _lin_opt_ = t enddef ; enddef ;
 def drawpointoptions  (text t) = def _pnt_opt_ = t enddef ; enddef ;
 def drawcontroloptions(text t) = def _ctr_opt_ = t enddef ; enddef ;

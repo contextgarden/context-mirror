@@ -1,0 +1,93 @@
+%D \module
+%D   [       file=mlib-pdf,
+%D        version=2008.03.25,
+%D          title=\METAPOST\ Integrated Graphics,
+%D       subtitle=Conversion to PDF,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\registerctxluafile{mlib-pdf}{1.001}
+
+% \let\MPLIBtoPDF\pdfliteral
+
+\def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
+
+\def\MPLIBboundingbox#1#2#3#4%
+  {\xdef\MPllx{#1}%
+   \xdef\MPlly{#2}%
+   \xdef\MPurx{#3}%
+   \xdef\MPury{#4}%
+   \xdef\MPwidth {\the\dimexpr#3\onebasepoint-#1\onebasepoint\relax}%
+   \xdef\MPheight{\the\dimexpr#4\onebasepoint-#2\onebasepoint\relax}}
+
+\def\startMPLIBtoPDF#1#2#3#4% watch the transparency reset
+  {\naturalhbox\bgroup
+   \doactivatecolor\s!black\forcecolorhack
+   \MPLIBboundingbox{#1}{#2}{#3}{#4}%
+   \forgetall
+   \setbox\scratchbox\vbox\bgroup
+   \noindent % this is really needed in order to force tex into proper cm's
+   \startMPresources}
+
+\def\stopMPLIBtoPDF % watch the transparency reset
+  {%\dohandleMPresettransparency % not needed
+   \stopMPresources
+   \egroup
+   \setbox\scratchbox\hbox\bgroup
+     \hskip-\MPllx\onebasepoint
+     \raise-\MPlly\onebasepoint
+     \box\scratchbox
+   \egroup
+   \setbox\scratchbox\vbox to \MPheight\bgroup
+     \vfill
+     \hsize\MPwidth
+     \smashbox\scratchbox
+     \box\scratchbox
+   \egroup
+   \wd\scratchbox\MPwidth
+   \ht\scratchbox\MPheight
+   \dopackageMPgraphic\scratchbox
+   \egroup}
+
+% \def\MPLIBtextext#1#2#3#4#5%
+%   {\begingroup
+%    \def\MPtextdata{#3}% delegate the splitter to lua
+%    \defconvertedcommand\MPtextdata\MPtextdata % no edef
+%    \splitstring\MPtextdata\at::::\to\MPtexttag\and\MPtextnumber
+%    \executeifdefined{handleMPtext\MPtexttag}
+%      {\setbox\scratchbox\hbox
+%         {\font\temp=#1\space at #2\onebasepoint
+%          \let\c\char
+%          \temp
+%          \MPfshowcommand{#3}}%
+%       \setbox\scratchbox\hbox
+%         {\hskip#4\onebasepoint
+%          \raise#5\onebasepoint
+%          \box\scratchbox}%
+%       \smashbox\scratchbox
+%       \box\scratchbox}%
+%    \endgroup}
+
+\def\MPLIBtextext#1#2#3#4#5%
+  {\begingroup
+   \setbox\scratchbox\hbox
+     {\font\temp=#1\space at #2\onebasepoint
+      \let\c\char
+      \temp
+      \MPfshowcommand{#3}}%
+   \setbox\scratchbox\hbox
+     {\hskip#4\onebasepoint
+      \raise#5\onebasepoint
+      \box\scratchbox}%
+   \smashbox\scratchbox
+   \box\scratchbox
+   \endgroup}
+
+\protect \endinput

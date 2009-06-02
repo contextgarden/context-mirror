@@ -22,9 +22,9 @@
 \loadcorefile{norm-ctx.tex}
 \loadcorefile{syst-pln.tex}
 
-\loadmkivfile{luat-cod.tex}
-\loadmkivfile{luat-bas.tex}
-\loadmkivfile{luat-lib.tex}
+\loadmarkfile{luat-cod}
+\loadmarkfile{luat-bas}
+\loadmarkfile{luat-lib}
 
 \loadmarkfile{catc-ini}
 \loadcorefile{catc-act.tex}
@@ -34,8 +34,8 @@
 
 \newif\ifCONTEXT \CONTEXTtrue % will disappear
 
-\loadcorefile{syst-aux.tex}
-\loadcorefile{syst-lua.tex}
+\loadmarkfile{syst-aux}
+\loadmarkfile{syst-lua}
 \loadmarkfile{syst-con}
 
 \loadmarkfile{syst-fnt}
@@ -45,8 +45,9 @@
 \loadmarkfile{supp-fil}
 \loadmarkfile{supp-dir}
 
-\loadmkivfile{char-ini.tex}
-\loadmkivfile{char-utf.tex}
+\loadmarkfile{char-ini}
+\loadmarkfile{char-utf}
+\loadmarkfile{char-act}
 
 \loadmarkfile{mult-ini}
 \loadcorefile{mult-fst.tex}
@@ -54,25 +55,25 @@
 \loadcorefile{mult-def.tex}
 \loadmarkfile{mult-chk}
 
-\loadmkivfile{luat-ini.tex}
+\loadmarkfile{luat-ini}
 
-\loadmkivfile{toks-ini.tex}
+\loadmarkfile{toks-ini}
 
-\loadmkivfile{node-ini.tex}
-\loadmkivfile{node-fin.tex}
-\loadmkivfile{node-par.tex}
+\loadmarkfile{node-ini}
+\loadmarkfile{node-fin}
+\loadmarkfile{node-par}
 
 \loadcorefile{core-var.tex}
 
-\loadcorefile{back-ini.tex}
-\loadcorefile{back-pdf.tex}
+\loadmarkfile{back-ini}
+\loadmarkfile{back-pdf}
 
-\loadmkivfile{attr-ini.tex}
+\loadmarkfile{attr-ini}
 
 \loadmarkfile{core-env}
 
-\loadmkivfile{trac-lmx.tex}
-\loadmkivfile{trac-deb.tex}
+\loadmarkfile{trac-lmx}
+\loadmarkfile{trac-deb}
 
 \loadcorefile{supp-box.tex}
 
@@ -84,9 +85,7 @@
 \loadcorefile{supp-ali.tex}
 \loadcorefile{supp-num.tex}
 
-\loadcorefile{typo-ini.tex}
-
-\loadcorefile{verb-ini.tex}
+\loadmarkfile{typo-ini}
 
 \loadcorefile{core-ins.tex}
 \loadcorefile{core-fil.tex}
@@ -110,13 +109,10 @@
 \loadmarkfile{core-two}
 \loadcorefile{core-stg.tex}
 
-% \loadcorefile{spec-ini.tex}
-% \loadcorefile{spec-mis.tex}
-% \loadcorefile{spec-def.tex}
-% \loadcorefile{spec-var.tex}
-
 \loadmarkfile{colo-ini}
 \loadmarkfile{colo-ext}
+
+\loadmarkfile{trac-vis}
 
 \loadcorefile{lang-mis.tex}
 \loadmarkfile{lang-url}
@@ -141,41 +137,39 @@
 
 \loadmarkfile{sort-ini}
 
-\loadmarkfile{core-rul}
+\loadmarkfile{pack-rul}
 
 \loadcorefile{lxml-ini}
 
-\loadcorefile{strc-ini}
-\loadcorefile{strc-doc}
-\loadcorefile{strc-mar}
-\loadcorefile{strc-prc}
-\loadcorefile{strc-sbe}
-\loadcorefile{strc-lst}
-\loadcorefile{strc-sec}
-\loadcorefile{strc-num}
-\loadcorefile{strc-ren}
-\loadcorefile{strc-xml}
-\loadcorefile{strc-pag} % hm, depends on core-num
-\loadcorefile{strc-def} % might happen later
-\loadcorefile{strc-ref}
-\loadcorefile{strc-reg}
+\loadmarkfile{strc-ini}
+\loadmarkfile{strc-doc}
+\loadmarkfile{strc-mar}
+\loadmarkfile{strc-prc}
+\loadmarkfile{strc-sbe}
+\loadmarkfile{strc-lst}
+\loadmarkfile{strc-sec}
+\loadmarkfile{strc-num}
+\loadmarkfile{strc-ren}
+\loadmarkfile{strc-xml}
+\loadmarkfile{strc-pag} % hm, depends on core-num
+\loadmarkfile{strc-def} % might happen later
+\loadmarkfile{strc-ref}
+\loadmarkfile{strc-reg}
 
 \loadcorefile{bibl-bib}
 
 \loadmarkfile{core-spa}
 \loadcorefile{core-grd.tex}
 
-\loadmarkfile{core-pos}
+\loadmarkfile{anch-pos}
 \loadcorefile{core-mak.tex}
-\loadmarkfile{core-ver}
 
-\loadcorefile{core-vis.tex}
-\loadmarkfile{core-nav}
-\loadmarkfile{core-obj}
+\loadmarkfile{scrn-nav}
+\loadmarkfile{pack-obj}
 
-\loadcorefile{strc-itm.tex}
-\loadcorefile{strc-des.tex}
-\loadcorefile{strc-syn.tex}
+\loadmarkfile{strc-itm}
+\loadmarkfile{strc-des}
+\loadmarkfile{strc-syn}
 
 \loadmarkfile{core-sys}
 
@@ -187,12 +181,12 @@
 \loadmarkfile{page-txt}
 \loadcorefile{page-sid.tex}
 
-\loadcorefile{strc-flt.tex}
+\loadmarkfile{strc-flt}
 
 \loadcorefile{page-mis.tex}
 \loadcorefile{page-mul.tex}
 \loadcorefile{page-set.tex}
-\loadcorefile{page-lyr.tex}
+\loadmarkfile{pack-lyr}
 \loadcorefile{page-mak.tex}
 
 \loadmarkfile{page-lin}
@@ -201,14 +195,15 @@
 
 \loadmarkfile{core-job} % why so late?
 
-\loadmarkfile{core-buf}
+\loadmarkfile{buff-ini}
+\loadmarkfile{buff-ver}
 
-\loadcorefile{strc-blk.tex}
+\loadmarkfile{strc-blk}
 
 \loadcorefile{page-imp.tex}
 
-\loadmarkfile{core-int}
-\loadcorefile{strc-bkm.tex} % bookmarks
+\loadmarkfile{scrn-int}
+\loadmarkfile{strc-bkm} % bookmarks
 
 \loadcorefile{tabl-pln.tex}
 \loadcorefile{thrd-tab.tex}
@@ -220,34 +215,35 @@
 \loadcorefile{tabl-tsp.tex}
 
 \loadmarkfile{java-ini}
-\loadmarkfile{core-fld}
-\loadcorefile{core-hlp.tex}
 
-\loadcorefile{char-enc.tex}
+\loadmarkfile{scrn-fld}
+\loadmarkfile{scrn-hlp}
+
+\loadmarkfile{char-enc}
 \loadmarkfile{font-ini}
 \loadmarkfile{font-unk}
 \loadmarkfile{font-tra}
 \loadmarkfile{font-uni}
 \loadmarkfile{font-col}
 
-\loadcorefile{typo-spa.tex}
-\loadcorefile{typo-krn.tex}
-\loadcorefile{typo-mir.tex}
-\loadcorefile{typo-brk.tex}
-\loadcorefile{typo-cap.tex}
+\loadmarkfile{typo-spa}
+\loadmarkfile{typo-krn}
+\loadmarkfile{typo-mir}
+\loadmarkfile{typo-brk}
+\loadmarkfile{typo-cap}
 
 \loadmarkfile{type-ini}
 \loadcorefile{type-def.tex}
 
-\loadcorefile{scrp-ini.tex}
+\loadmarkfile{scrp-ini}
 
 \loadmarkfile{prop-ini}
 \loadmarkfile{prop-lay}
 \loadmarkfile{prop-mis}
 
-\loadmkivfile{mlib-ctx.tex}
-\loadmkivfile{mlib-pdf.tex}
-\loadmkivfile{mlib-pps.tex}
+\loadmarkfile{mlib-ctx}
+\loadmarkfile{mlib-pdf}
+\loadmarkfile{mlib-pps}
 
 \loadmarkfile{meta-ini}
 \loadmarkfile{meta-tex}
@@ -260,9 +256,9 @@
 \loadcorefile{page-plg.tex}
 \loadcorefile{page-str.tex}
 
-\loadcorefile{core-pgr.tex}
-\loadcorefile{core-bar.tex}
-\loadcorefile{core-snc.tex}
+\loadcorefile{anch-pgr.tex}
+\loadcorefile{anch-bar.tex}
+\loadcorefile{anch-snc.tex}
 
 \loadmarkfile{math-pln}
 \loadmarkfile{math-ini}
@@ -277,24 +273,24 @@
 \loadmarkfile{math-inl}
 \loadmarkfile{math-dis}
 
-\loadcorefile{strc-mat.tex}
+\loadmarkfile{strc-mat}
 
 \loadmarkfile{chem-ini}
 \loadmarkfile{chem-str}
 
 \loadmarkfile{core-fnt}
 
-\loadcorefile{strc-not.tex}
+\loadmarkfile{strc-not}
 
 \loadcorefile{core-lnt.tex}
 
 \loadmarkfile{core-mis}
 
-\loadcorefile{core-trf.tex}
-\loadmarkfile{core-inc}
-\loadcorefile{core-fig.tex}
+\loadmarkfile{grph-trf}
+\loadmarkfile{grph-inc}
+\loadmarkfile{grph-fig}
 
-\loadcorefile{core-box.tex}
+\loadmarkfile{pack-box}
 \loadcorefile{page-app.tex}
 \loadmarkfile{meta-fig}
 
@@ -311,7 +307,7 @@
 
 \loadcorefile{cont-log.tex}
 
-\loadcorefile{task-ini.tex}
+\loadmarkfile{task-ini}
 
 \loadmarkfile{core-ctx}
 
@@ -344,7 +340,5 @@
         statistics.save_fmt_status("\jobname","\contextversion","context.tex")
     }%
 \to \everydump
-
-\setsystemmode{experimental} % test with *experimental
 
 \protect \errorstopmode \dump \endinput

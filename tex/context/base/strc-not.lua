@@ -44,7 +44,8 @@ function notes.store(tag,n)
     nd[#nd+1] = n
     local state = notestates[tag]
     if state.kind ~= "insert" then
-        state.start = #nd
+--~         state.start = #nd
+        state.start = state.start or #nd
     end
     tex.write(#nd)
 end
@@ -102,7 +103,7 @@ end
 
 function notes.getstate(tag)
     local state = notestates[tag]
-    texsprint((state and state.kind ) or "unknown")
+    texsprint(ctxcatcodes,(state and state.kind ) or "unknown")
 end
 
 function notes.doifcontent(tag)

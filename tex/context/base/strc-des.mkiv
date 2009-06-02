@@ -1,0 +1,994 @@
+%D \module
+%D   [       file=strc-blk,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Descriptions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Descriptions}
+
+\registerctxluafile{strc-des}{1.001}
+
+%D In order to be more flexible with theorems Aditya Mahajan added
+%D support for titles and endsymbols. At the same time we added more
+%D flexible support for inheriting numbers.
+%D
+%D \startbuffer
+%D \defineenumeration[one]
+%D \defineenumeration[two]   [one]
+%D \defineenumeration[three] [number=one,style=slanted]
+%D \defineenumeration[four]  [three]
+%D \defineenumeration[five]  [three] [number=five]
+%D
+%D \startone   test test 1 \stopone
+%D \starttwo   test test 2 \stoptwo
+%D \startthree test test 3 \stopthree
+%D \startfour  test test 4 \stopfour
+%D \startfive  test test 1 \stopfive
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+
+% list and titles are experimental
+%
+% \definedescription[test] [location=left,hang=4,headalign={right},distance=1em,list=test]
+% \defineenumeration[lemma][title=yes,right=:,textdistance=1em, location=top, titlestyle=\bs,list=lemma]
+% \defineenumeration[ammel][title=yes,right=:,textdistance=.5em,location=left,titlestyle=\it,width=9em]
+%
+% \placelist[enumeration:lemma]
+% \placelist[description:test][width=0pt]
+%
+% \starttest  {something something something}    \input zapf  \stoptest
+% \startlemma {with a title of a certain length} \input tufte \stoplemma
+% \startammel {with a title}                     \input zapf  \stopammel
+%
+% \defineenumeration[lemma][...]
+% \defineenumeration[titledlemma][lemma][title=yes,right=:,text=lemma,list=lemma]
+
+\unprotect
+
+% description parameters
+
+\def\descriptionparameter      #1{\csname\dodescriptionparameter{\??dd\currentdescription      }#1\endcsname}
+\def\descriptionmainparameter  #1{\csname\dodescriptionparameter{\??dd\currentdescriptionmain  }#1\endcsname}
+\def\descriptionnumberparameter#1{\csname\dodescriptionparameter{\??dd\currentdescriptionnumber}#1\endcsname}
+
+\def\detokenizeddescriptionparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??dd\currentdescription#1\endcsname}}
+
+\def\dodescriptionparameter#1#2%
+  {\ifcsname#1#2\endcsname#1#2\else\expandafter\dodescriptionparentparameter\csname#1\s!parent\endcsname#2\fi}
+
+\def\dodescriptionparentparameter#1#2%
+  {\ifx#1\relax\s!empty\else\dodescriptionparameter#1#2\fi}
+
+% description hashes (needed for style/color)
+
+\def\descriptionparameterhash    #1{\dodescriptionparameterhash{\??dd\currentdescription    }#1}
+\def\descriptionmainparameterhash#1{\dodescriptionparameterhash{\??dd\currentdescriptionmain}#1}
+
+\def\dodescriptionparameterhash#1#2%
+  {\ifcsname#1#2\endcsname#1\else\expandafter\dodescriptionparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+
+\def\dodescriptionparentparameterhash#1#2%
+  {\ifx#1\relax\else\dodescriptionparameterhash#1#2\fi}
+
+\def\dosetdescriptionattributes#1#2% style color
+  {\edef\fontattributehash {\descriptionparameterhash#1}%
+   \edef\colorattributehash{\descriptionparameterhash#2}%
+   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+% typesetting code
+
+\newbox   \descriptionheadbox
+\newskip  \leftdescriptionskip
+\newskip  \rightdescriptionskip
+\newdimen \descriptionsheadwidth    % replaces \!!widtha
+\newdimen \descriptionsheaddistance % replaces \!!widthb
+
+\setvalue{@@description\v!left }{\@@descriptionhang\@@descriptionleftpure \@@descriptionlefthang \@@descriptionleftmargin }
+\setvalue{@@description\v!right}{\@@descriptionhang\@@descriptionrightpure\@@descriptionrighthang\@@descriptionrightmargin}
+
+\def\@@descriptionhang#1#2#3% \next still needed?
+  {\processaction
+     [\descriptionparameter\c!hang]
+     [   \v!none=>\let\next#1,%
+               0=>\let\next#1,%
+       \v!margin=>\let\next#3,%
+      \s!unknown=>\let\next#2,%
+      \s!default=>\let\next#1]%
+   \next}
+
+\def\@@descriptionleftpure
+  {\def\\{\crlf}%
+   \noindent
+   \leftskip\dimexpr\leftdescriptionskip+\descriptionsheadwidth\relax
+   \rightskip\rightdescriptionskip
+   \@@makedescriptionpurebox\raggedright
+   \advance\leftskip\descriptionsheaddistance
+   \llap
+     {\hbox to \leftskip
+        {\hskip\leftdescriptionskip
+         \copy\descriptionheadbox\hss}}%
+   \@@dodescription}
+
+\def\@@descriptionrightpure
+  {\def\\{\crlf}%
+   \noindent
+   \leftskip\leftdescriptionskip
+   \rightskip\dimexpr\rightdescriptionskip+\descriptionsheadwidth\relax
+   \@@makedescriptionpurebox\raggedleft
+   \rlap
+     {\hskip\dimexpr\hsize-\leftskip-\rightskip\relax
+      \copy\descriptionheadbox
+      \hskip\rightdescriptionskip}%
+   \advance\rightskip \descriptionsheaddistance
+   \@@dodescription}
+
+\def\@@descriptionleftmargin
+  {\def\\{\crlf}%
+   \noindent
+   \llap
+     {\@@makedescriptionpurebox\raggedright
+      \hbox to \descriptionparameter\c!width{\copy\descriptionheadbox\hss}%
+      \hskip\descriptionparameter\c!distance}%
+   \@@dodescription}
+
+\def\@@descriptionrightmargin % whatever this means
+  {\def\\{\crlf}%
+   \noindent
+   \rlap
+     {\hskip\descriptionparameter\c!distance
+      \@@makedescriptionpurebox\raggedright
+      \hbox to \descriptionparameter\c!width{\copy\descriptionheadbox\hss}}%
+   \@@dodescription}
+
+\def\@@makedescriptionpurebox#1%
+  {\setbox\descriptionheadbox\vtop
+     {\dontcomplain
+      \hsize\descriptionsheadwidth
+      \leftskip\zeropoint
+      \rightskip\zeropoint
+      #1\setupalign[\descriptionparameter\c!align]%
+      \ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox}%
+   \ht\descriptionheadbox\strutht
+   \dp\descriptionheadbox\strutdp}
+
+\def\@@descriptionlefthang
+  {\def\\{\crlf}%
+   \dontcomplain
+   \advance\descriptionsheadwidth \descriptionsheaddistance
+   \hangindent\descriptionsheadwidth
+   \@@makedescriptionhangbox\raggedright{\advance\rightskip \descriptionsheaddistance}%
+   \noindent
+   \llap
+     {\dontshowcomposition
+      \vtop to \zeropoint{\box\descriptionheadbox}}%
+   \@@dodescription}
+
+\def\@@descriptionrighthang
+  {\def\\{\crlf}%
+   \dontcomplain
+   \advance\descriptionsheadwidth \descriptionsheaddistance
+   \hangindent-\descriptionsheadwidth
+   \@@makedescriptionhangbox\raggedleft{\advance\leftskip \descriptionsheaddistance}%
+   \noindent
+   \rlap
+     {\dontcomplain
+      \dontshowcomposition
+      \hbox to \dimexpr\hsize-\leftskip-\rightskip\relax % can be a macro
+        {\hss\vtop to \zeropoint{\box\descriptionheadbox}}}%
+   \@@dodescription}
+
+\def\@@makedescriptionhangbox#1#2%
+  {\setbox\descriptionheadbox\vtop % \vbox gaat fout in hang
+     {\forgetall
+      \dontcomplain
+      \hsize\descriptionsheadwidth
+      #1\setupalign[\descriptionparameter\c!align]#2%
+      \ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox}%
+   \ht\descriptionheadbox\strutht
+   \dp\descriptionheadbox\strutdp
+   \doifsomething{\descriptionparameter\c!hang}
+     {\doifinsetelse{\descriptionparameter\c!hang}{\v!fit,\v!broad}
+        {\scratchdimen\htdp\descriptionheadbox
+         \doif{\descriptionparameter\c!hang}\v!broad
+           {\advance\scratchdimen .5\strutht}%
+         \getnoflines\scratchdimen
+         \hangafter-\noflines}
+        {\hangafter-\descriptionparameter\c!hang}}}
+
+\setvalue{@@description\v!top}%
+  {%\page[\v!preference]%       % Weg ermee!
+   %\dosomebreak{\goodbreak}%   % Dit is beter en nodig!
+   \dohandlepagebreakX\plusone  % En dit moet het maar worden.
+   \let\\=\space
+   \noindent
+   \copy\descriptionheadbox\par
+   \nobreak
+  %\descriptionparameter\c!inbetween % .. brrrr ... :
+   \doifelsenothing{\descriptionparameter\c!inbetween}{\blank}{\descriptionparameter\c!inbetween}%
+   \nobreak
+   \@@dodescription}
+
+\def\do@@description#1%
+  {\def\\{\crlf}%
+   \noindent
+   #1{\ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox}%
+   \@@dodescription}
+
+\setvalue{@@description\v!inmargin    }{\do@@description\inmargin}
+\setvalue{@@description\v!inleft      }{\do@@description\inleft  }
+\setvalue{@@description\v!inright     }{\do@@description\inright }
+\setvalue{@@description\v!margin      }{\do@@description\inmargin}
+\setvalue{@@description\v!leftmargin  }{\do@@description\inleft  }
+\setvalue{@@description\v!rightmargin }{\do@@description\inright }
+\setvalue{@@description\v!innermargin }{\do@@description\ininner }
+\setvalue{@@description\v!outermargin }{\do@@description\inouter }
+
+\setvalue{@@description\v!serried\v!fit}%
+  {\def\\{\crlf}%
+   \noindent
+   \ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox
+   \hskip\descriptionsheaddistance % toegevoegd
+   \@@dodescription}
+
+\setvalue{@@description\v!serried\v!broad}%
+  {\def\\{\crlf}%
+   \noindent
+   \ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox
+   \hskip\descriptionsheaddistance \!!plus .5\descriptionsheaddistance \!!minus .25\descriptionsheaddistance
+   \@@dodescription}
+
+\setvalue{@@description\v!serried\v!wide}%
+  {\def\\{\crlf}%
+   \noindent
+   \hbox to \descriptionsheadwidth
+     {\ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox\hss}%
+   \hskip\descriptionsheaddistance
+   \@@dodescription}
+
+\setvalue{@@description\v!serried}%
+  {\processaction
+      [\descriptionparameter\c!width]
+      [     \v!fit=>\let\next\v!fit,
+          \v!broad=>\let\next\v!broad,
+        \s!unknown=>\let\next\v!wide,
+        \s!default=>\let\next\v!broad]%
+   \getvalue{@@description\v!serried\next}}
+
+\setvalue{@@description\v!hanging}%
+  {\def\\{\crlf}%
+   \noindent
+   \advance\leftskip -\leftskipadaption \relax
+   \ifdim\leftskipadaption=\zeropoint
+     \leftskipadaption1.5em\relax % just some default
+     \ifnum\nesteddescriptionstate=\plusone
+       \ifdim\leftskip>\zeropoint \relax
+         \leftskipadaption\leftskip
+       \fi
+     \fi
+   \fi
+   \ifnum\nesteddescriptionstate>\zerocount % was \ifnum\nesteddescriptionstate=\plusone
+     \advance\leftskip \leftskipadaption % but we're already further on
+   \fi
+   \hskip-\leftskipadaption
+   \ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox
+   \kern\ifdim\descriptionsheaddistance=\zeropoint .75em\else\descriptionsheaddistance\fi
+   \@@dodescription}
+
+%D A bonus definition
+%D
+%D \starttyping
+%D \setupfootnotedefinition[location=command,headcommand=\llap]
+%D \stoptyping
+
+% \setvalue{@@description\v!command}%
+%   {\do@@description{\executeifdefined{\descriptionparameterhash\c!headcommand}\framed}}
+
+\setvalue{@@description\v!command}%
+  {\noindent
+   \descriptionparameter\c!headcommand{\ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox}%
+   \@@dodescription}
+
+%D A new key 'headalign' in definitions.
+
+\def\resetdescriptions % to be used in e.g. footnotes
+  {\chardef\nesteddescriptionstate\zerocount}
+
+\resetdescriptions
+
+\def\@@dostartdescription
+  {\descriptionparameter\c!before
+   \begingroup
+   \doadaptleftskip{\descriptionparameter\c!margin}%
+   \showcomposition
+   \descriptionsheaddistance\descriptionparameter\c!distance\relax
+   \ifdim\descriptionsheaddistance=\zeropoint\relax
+     \doif{\descriptionparameter\c!width}\v!broad{\descriptionsheaddistance=1em}%
+   \fi
+   \setbox\descriptionheadbox\hbox
+     {\forgetall\dontcomplain
+      \trialtypesettingtrue
+      \doifelsenothing{\descriptionparameter\c!sample}
+        {\dodescriptionhandler
+           {\begstrut\descriptionparameter\c!text\ignorespaces\currentdescriptiontext\endstrut}}%
+        {\dodescriptionhandler
+           {\begstrut\descriptionparameter\c!text\descriptionparameter\c!sample\endstrut}}}%
+   \assignwidth
+     \descriptionsheadwidth
+     {\descriptionparameter\c!width}
+     {\unhcopy\descriptionheadbox}
+     \descriptionsheaddistance
+   \setbox\descriptionheadbox\hbox
+     {\forgetall\dontcomplain
+      \doifelse{\descriptionparameter\c!location}\v!serried % brrr, hack
+        {\dodescriptionhandler
+           {\begstrut\descriptionparameter\c!text\currentdescriptiontext\endstrut}}
+        {\dodescriptionhandler
+           {\vtop
+              {\hsize\dimexpr\descriptionsheadwidth-\descriptionsheaddistance\relax
+               \begstrut\descriptionparameter\c!text\ignorespaces\currentdescriptiontext\endstrut}}}}%
+   \doifelse{\descriptionparameter\c!aligntitle}\v!no
+     {\leftdescriptionskip\leftskip\rightdescriptionskip\rightskip}
+     {\ifcase\nesteddescriptionstate\leftdescriptionskip\leftskip\rightdescriptionskip\rightskip\fi}%
+   \normalexpanded{\noexpand\indenting[\descriptionparameter\c!indenting]}%
+   % better a system mode
+   \ifcase\nesteddescriptionstate
+     \chardef\nesteddescriptionstate\plusone
+   \or
+     \chardef\nesteddescriptionstate\plustwo
+   \fi % now happens elsewhere : \noindent\ignorespaces
+   \@@resetdescriptionclosesymbol}
+
+\def\@@stopdescription
+  {\@@placedescriptionclosesymbol
+   \par % else we loose
+   \endgroup
+   \descriptionparameter\c!after % which currentdescription is taken here?
+   \egroup % temporary hack
+   \checknextindentation[\descriptionparameter\c!indentnext]
+   \dorechecknextindentation}
+
+\def\@@dodescription
+  {\dosetdescriptionattributes\c!style\c!color
+   \ignorespaces}
+
+% starters:
+
+\def\@@startdescription[#1]%
+  {\doifelse{\descriptionparameter\c!title}\v!yes
+     {\permitspacesbetweengroups
+      \dodoublegroupempty{\dohandledescriptionstart[#1]}}
+     {\dohandledescriptionstart[#1]{}}}
+
+\def\@@description[#1]%
+  {\doifelse{\descriptionparameter\c!title}\v!yes
+     {\permitspacesbetweengroups
+      \dodoublegroupempty{\dohandledescriptiondo[#1]}}
+     {\dohandledescriptiondo[#1]{}}}
+
+% these call:
+
+\long\def\@@somedescription[#1]#2%
+  {\dowithpar
+     {\bgroup % temporary hack
+      \@@makedescription[#1]{#2}}%
+     {\@@stopdescription}}
+
+\long\def\@@startsomedescription[#1]#2%
+  {\bgroup % temporary hack
+   \BeforePar{\@@makedescription[#1]{#2}}%
+   \GotoPar}
+
+\def\@@dostartdescriptionindeed
+  {\edef\currentdescriptionlocation{\descriptionparameter\c!location}%
+   \ifx\currentdescriptionlocation\empty
+     \let\currentdescriptionlocation\v!left
+   \fi
+   \ifcsname @@description\currentdescriptionlocation\endcsname \else
+     \let\currentdescriptionlocation\v!left
+   \fi
+   \@@dostartdescription
+   \csname @@description\currentdescriptionlocation\endcsname} % args not needed
+
+\def\@@makedescription[#1]#2%
+  {\postponenotes % new, assumes grouping
+   \doenumerationcheckconditions
+   \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#2},\c!bookmark=,][]%
+   \@@dostartdescriptionindeed}
+
+\def\dostartstoreddescription
+  {\@@dostartdescriptionindeed}
+
+\def\dostopstoreddescription
+  {\@@stopdescription}
+
+% % % % % % % % % % % %
+
+% helpers
+
+% todo: \dosetfontattributewithhash \descriptionparameterhash\c!headstyle
+
+% setup descriptions
+
+\def\setupdescriptions
+  {\dodoubleempty\dosetupdescriptions}
+
+\def\dosetupdescriptions[#1][#2]% % beter: \iffirstargument
+  {\ifsecondargument
+     \dodoubleargumentwithset\dodosetupdescriptions[#1][#2]%
+   \else
+     \dodosetupdescriptions[][#1]%
+   \fi}
+
+\def\dodosetupdescriptions[#1]% [#2]%
+  {\getparameters[\??dd#1]}   % [#2]}
+
+% define descriptions
+
+\def\definedescription
+  {\dotripleemptywithset\dodefinedescription}
+
+\def\dodefinedescription[#1][#2][#3]% to be simplified cf enumeration
+  {\dodescriptioninit{#1}%
+   \getparameters[\??dd#1][\c!text=,\s!handler=\v!description,\c!title=\v!yes]%
+   \ifsecondargument\doifassignmentelse{#2}\donetrue\donefalse\else\donetrue\fi
+   \ifdone
+     \getparameters[\??dd#1][\s!parent=\??dd,\c!text=,\s!handler=\v!description,#2]%
+     \dodefinedescriptioncommands{#1}{\??dd}%
+   \else % clone
+     \getparameters[\??dd#1][\s!parent=\??dd#2,\c!text=,\s!handler=\v!description,#3]% clone
+     \dodefinedescriptioncommands{#1}{\??dd#2}%
+   \fi}
+
+\def\dodefinedescriptioncommands#1#2%
+  {\unexpanded\setevalue        {#1}{\noexpand\dodescriptioncommand{#1}}%
+   \unexpanded\setevalue{\e!start#1}{\noexpand\dodescriptionstart  {#1}}%
+   \unexpanded\setevalue{\e!stop #1}{\noexpand\dodescriptionstop   {#1}}}
+
+% handle descriptions
+
+\def\dodescriptioninit#1%
+  {\let\currentdescriptionmain  \empty
+   \let\currentdescriptionlevel \empty
+   \edef\currentdescriptionname {#1}%
+   \edef\currentdescription     {#1}}
+
+\def\dodescriptioncommand#1{\dodescriptioninit{#1}\dosingleempty\@@description}
+\def\dodescriptionstart  #1{\dodescriptioninit{#1}\dosingleempty\@@startdescription}
+\def\dodescriptionstop   #1{\dodescriptioninit{#1}\@@stopdescription}
+
+\def\dodescriptionhandler    {\csname\??dd:\descriptionparameter\s!handler:\s!handler         \endcsname}
+\def\dohandledescriptiondo   {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!do   \endcsname}
+\def\dohandledescriptionstart{\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!start\endcsname}
+
+% implementation
+
+% beware: with footnotes #2 can be something messy but then #1 is
+% empty anyway, so we have an extra safeguard
+
+\newtoks \everydescription
+
+\setvalue{\??dd:\v!description:\s!handler         }{\@@dodescriptionhandler}
+\setvalue{\??dd:\v!description:\s!handler:\s!do   }{\@@somedescription}
+\setvalue{\??dd:\v!description:\s!handler:\s!start}{\@@startsomedescription}
+
+\def\@@dodescriptionhandler#1%
+  {\strut
+   \dodescriptionheadtext{#1}%
+   \iftrialtypesetting \else
+     \currentdescriptionsynchronize
+   \fi}
+
+\def\dodescriptionheadtext#1% title
+  {\begingroup
+   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \the\everydescription
+   \descriptionparameter\c!command{\strut#1}% probably incomplete
+   \endgroup}
+
+% setup enumerations
+
+\def\setupenumerations
+  {\dodoubleempty\dosetupenumerations}
+
+\def\dodosetupenumerations[#1][#2]%
+  {\doenumerationinit{#1}{1}\empty
+   \getparameters[\??dd#1][#2]%
+   \dosetupenumerationcounter{#1}}
+
+\def\dosetupenumerations[#1][#2]%
+  {\ifsecondargument
+     \dodoubleargumentwithset\dodosetupenumerations[#1][#2]%
+   \else
+     \getparameters[\??dn][#1]%
+   \fi}
+
+% define enumerations
+
+\def\defineenumeration
+  {\dotripleemptywithset\dodefineenumeration}
+
+\def\dodefineenumeration[#1][#2][#3]% #2 or #3 assignment
+  {\doenumerationinit{#1}{1}\empty
+   \getparameters[\??dd#1][\c!text=#1,\c!state=\v!start,\s!handler=\v!enumeration,\c!levels=4]%
+   \ifsecondargument\doifassignmentelse{#2}\donetrue\donefalse\else\donetrue\fi
+   \ifdone % independent
+     \getparameters[\??dd#1][\s!counter=#1,#2]%
+     \dodefineenumerationcommands{#1}{1}{}{\??dn}%
+     \let\@@subslevel\empty
+     \dostepwiserecurse{2}{\descriptionparameter\c!levels}{1}
+       {\normalexpanded{\noexpand\dodefineenumerationcommands{#1}{\recurselevel}{\@@subslevel\v!sub}{\??dd\@@subslevel#1}}%
+        \edef\@@subslevel{\@@subslevel\v!sub}}%
+   \else % clone
+     \getparameters[\??dd#1][\s!counter=#2,#3]%
+     \let\@@subslevel\empty
+     \dorecurse{\descriptionparameter\c!levels}
+       {\noemalexpanded{\noexpand\dodefineenumerationcommands{#1}{\recurselevel}{\@@subslevel}{\??dd\@@subslevel#2}}%
+        \edef\@@subslevel{\@@subslevel\v!sub}}%
+   \fi
+   \edef\currentdescriptioncounter{\descriptionparameter\c!number}%
+   \ifx\currentdescriptioncounter\empty
+     \ifdone\dodefineenumerationcounter{#1}\fi
+   \else\ifx\currentdescriptioncounter\v!yes
+     \ifdone\dodefineenumerationcounter{#1}\fi
+   \else\ifx\currentdescriptioncounter\v!no
+     \ifdone\dodefineenumerationcounter{#1}\fi
+   \else
+     \letvalue{\??dd#1\s!counter}\currentdescriptioncounter % ?
+     \doifstructurecounterelse{\currentdescriptioncounter}{}{\dodefineenumerationcounter\currentdescriptioncounter}%
+   \fi\fi\fi}
+
+\newtoks\everysetupenumerationcounter
+\let\currentenumerationcountername\empty
+
+\def\dosetupenumerationcounter#1%
+  {\edef\currentenumerationcountername{#1}% only used in the token list
+   \edef\currentdiscription{#1}%
+   \the\everysetupenumerationcounter}
+
+\appendtoks
+    \dostructurecountersetup\currentenumerationcountername\descriptionparameter
+\to \everysetupenumerationcounter
+
+\def\dodefineenumerationcounter#1% todo: fast inheritance (was mainparameter
+  {\definestructurecounter[#1]%
+   \dosetupenumerationcounter{#1}}
+
+\def\dodefineenumerationcommands#1#2#3#4% since we use \currentdescription, we need an edef
+  {\setevalue{\??dd#3#1\s!parent}{#4}%
+   \unexpanded\setevalue        {#3#1}{\noexpand\doenumerationcommand{#1}{#2}{#3}}%
+   \unexpanded\setevalue{\e!start#3#1}{\noexpand\doenumerationstart  {#1}{#2}{#3}}%
+   \unexpanded\setevalue{\e!stop #3#1}{\noexpand\doenumerationstop   {#1}{#2}{#3}}}
+
+% handle enumeration
+
+\def\currentdescriptionnumber   {\csname\??dd\currentdescriptionmain\s!counter\endcsname}% no edef (yet)
+\def\specificdescriptionnumber#1{\csname\??dd#1\s!counter\endcsname}% no edef (yet)
+
+\def\doenumerationinit#1#2#3%
+  {\edef\currentdescriptionmain {#1}%
+   \edef\currentdescriptionlevel{#2}%
+   \edef\currentdescriptionname {#1}%
+   \edef\currentdescription     {#3#1}}
+
+\def\doenumerationcommand#1#2#3{\doenumerationinit{#1}{#2}{#3}\dosingleempty\@@description}
+\def\doenumerationstart  #1#2#3{\doenumerationinit{#1}{#2}{#3}\dosingleempty\@@startdescription}
+\def\doenumerationstop   #1#2#3{\doenumerationinit{#1}{#2}{#3}\@@stopdescription}
+
+\def\doresetenumerationnumber#1#2#3{\doresetsubstructurecounter    [\specificdescriptionnumber{#1}][#2]}
+\def\dosetenumerationnumber#1#2#3#4{\dosetsubstructurecounter      [\specificdescriptionnumber{#1}][#2]{#4}}
+\def\donextenumerationnumber #1#2#3{\doincrementsubstructurecounter[\specificdescriptionnumber{#1}][#2]}
+
+% implementation
+
+\newtoks       \everyenumeration
+\newconditional\enumerationnumberenabled
+\chardef       \enumerationcouplingmode        \zerocount
+\def           \enumerationdisablenumbersignal {-}
+
+\appendtoks \disablepseudocaps \to \everyenumeration  % sorry, uppercase causes troubles
+
+\letvalue{\??dd:\c!couplingway:\v!local }\plusone
+\letvalue{\??dd:\c!couplingway:\v!global}\plustwo
+
+\setvalue{\??dd:\v!enumeration:\s!handler         }{\@@doenumerationhandler}
+\setvalue{\??dd:\v!enumeration:\s!handler:\s!do   }{\@@somedescription}
+\setvalue{\??dd:\v!enumeration:\s!handler:\s!start}{\@@startsomedescription}
+
+\def\@@doenumerationhandler#1%
+  {\strut
+   \ifconditional\enumerationnumberenabled
+     \iftrialtypesetting
+       \doenumerationfullnumber\showdntext{#1}%
+       \doenumerationcouplingsymbol
+     \else
+       \doenumerationregistercoupling
+       \doenumerationfullnumber\showdntext{#1}%
+       \doenumerationcouplingsymbol
+     \fi
+   \else
+     \doenumerationfullnumber\showdnpuretext{#1}%
+   \fi
+   \iftrialtypesetting \else
+     \currentdescriptionsynchronize
+   \fi}
+
+\def\doenumerationsavecounter     {\savestructurecounter[\currentdescriptionnumber]}
+\def\doenumerationrestorecounter  {\restorestructurecounter[\currentdescriptionnumber]}
+\def\doenumerationincrementcounter{\doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
+
+\def\doenumerationcheckconditions
+  {\doifelse{\descriptionparameter\c!number}\v!yes
+     {\ifx\currentdescriptionreference\enumerationdisablenumbersignal
+        \setfalse\enumerationnumberenabled \else \settrue\enumerationnumberenabled
+      \fi}%
+     {\setfalse\enumerationnumberenabled}%
+   \chardef\enumerationcouplingmode \iflocation
+     \executeifdefined{\??dd:\c!couplingway:\descriptionparameter\c!coupling}\zerocount
+   \else
+     \zerocount
+   \fi}
+
+\def\doenumerationregistercoupling
+  {\iflocation
+     \ifcase\enumerationcouplingmode
+     \or
+        % todo
+     \or
+        % todo
+     \fi
+   \fi}
+
+\def\doenumerationcouplingsymbol
+  {\iflocation\ifcase\enumerationcouplingmode \else
+     % todo
+   \fi\fi}
+
+\def\currentdescriptiontext
+  {\ctxlua{structure.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+
+\def\currentenumerationfullnumber
+  {\ctxlua{structure.lists.savednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+
+\def\doenumerationfullnumber#1#2% text, title
+  {\begingroup
+   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \the\everyenumeration
+   \descriptionparameter\c!command
+     {\strut
+      #1%
+      \descriptionparameter\c!left
+      \currentenumerationfullnumber
+      % save cq. treat expansion etc
+      \doifsomething{#2}
+        {\doif{\descriptionparameter\c!title}\v!yes
+           {\begingroup
+            \dosetdescriptionattributes\c!titlestyle\c!titlecolor
+            \hskip\descriptionparameter\c!titledistance
+            \descriptionparameter\c!titlecommand
+               {\descriptionparameter\c!titleleft
+                \begstrut#2\endstrut
+                \descriptionparameter\c!titleright}%
+            \endgroup}}%
+      %
+      \descriptionparameter\c!stopper
+      \descriptionparameter\c!right}%
+   \endgroup}
+
+\def\showdnpuretext{\strut\descriptionparameter\c!text} % geen spatie
+\def\showdnlisttext{\descriptionparameter\c!listtext}   % space in default
+\def\showdntext    {\doifsomething{\descriptionparameter\c!text}{\descriptionparameter\c!text\removeunwantedspaces\fixedspace}}
+
+\unexpanded\def\structurecounterreference#1%
+  {[enumref: #1]}
+
+% you can use \placeclosesymbol or \qed to place a symbol at the end of a
+% description
+
+\def\@@resetdescriptionclosesymbol
+  {\global\@EA\settrue\csname\??dd\currentdescription:mrk\endcsname
+   \let\placeclosesymbol\@@placedescriptionclosesymbol
+   \let\qed             \@@placedescriptionclosesymbol}
+
+\def\@@placedescriptionclosesymbol
+  {\ifconditional\csname\??dd\currentdescription:mrk\endcsname
+     \global\@EA\setfalse\csname\??dd\currentdescription:mrk\endcsname
+     \doifsomething{\descriptionparameter\c!closesymbol}{\descriptionparameter\c!closecommand{\descriptionparameter\c!closesymbol}}%
+   \fi}
+
+\newif\ifnodescriptioncaption
+
+\def\doifelsedescriptioncomponent
+  {\ctxlua{structure.lists.doifstoredelse(currentdescriptionnumberentry)}}
+
+\def\dodescriptioncomponent
+  {\doifelsedescriptioncomponent\nododescriptioncomponent\dododescriptioncomponent}
+
+\def\nododescriptioncomponent[#1][#2]% #1=interfaced-settings, #2=optional user data
+  {}
+
+\def\dododescriptioncomponent[#1][#2]% #1=interfaced-settings, #2=optional user data
+  {\begingroup               % similar to structure so we might generalize this
+   \getparameters[\??dd\currentdescription][#1]%
+   \edef\currentdescriptionexpansion{\descriptionparameter\c!expansion}%
+   \ifx\currentdescriptionexpansion\s!xml
+     \xdef\currentdescriptiontitle   {\detokenizeddescriptionparameter\c!title}%
+     \xdef\currentdescriptionbookmark{\detokenizeddescriptionparameter\c!bookmark}%
+     \xmlstartraw
+       \xdef\currentdescriptionlisttitle   {\descriptionparameter\c!title}%
+     \xmlstopraw
+     \globallet\currentdescriptioncoding\s!xml
+   \else
+     \ifx\currentdescriptionexpansion\v!yes
+       \xdef\currentdescriptiontitle   {\descriptionparameter\c!title}%
+       \xdef\currentdescriptionbookmark{\descriptionparameter\c!bookmark}%
+     \else
+       \xdef\currentdescriptiontitle   {\detokenizeddescriptionparameter\c!title}%
+       \xdef\currentdescriptionbookmark{\detokenizeddescriptionparameter\c!bookmark}%
+     \fi
+     \globallet\currentdescriptionlisttitle   \currentdescriptiontitle
+     \globallet\currentdescriptioncoding\s!tex
+   \fi
+   \xdef\currentdescriptionlabel     {\descriptionparameter\c!label}%
+   \xdef\currentdescriptionreference {\descriptionparameter\c!reference}%
+   %
+   \doif{\descriptionparameter\c!title}\v!none{\global\nodescriptioncaptiontrue\global\nodescriptionnumbertrue}% will become obsolete
+   %
+   \ifconditional\enumerationnumberenabled
+     \doifelsedescriptioncomponent\donothing\doenumerationincrementcounter
+   \fi
+   %
+   \ifnodescriptioncaption
+     \glet\currentdescriptionlistnumber \relax
+     \glet\currentdescriptionsynchronize\relax
+   \else
+     \setnextinternalreference
+     \xdef\currentdescriptionnumberentry{\ctxlua{structure.lists.push{
+        metadata = {
+            kind     = "description",
+            name     = "\currentdescriptionname",
+            level    = structure.sections.currentlevel(),
+            catcodes = \the\catcodetable,
+        },
+        references = {
+            internal        = \nextinternalreference,
+            reference       = "\currentdescriptionreference",
+            referenceprefix = "\referenceprefix",
+            block           = "\currentstructureblock",
+            section         = structure.sections.currentid(),
+        },
+        titledata = {
+            label    = \!!bs\detokenize\expandafter{\currentdescriptionlabel   }\!!es,
+            title    = \!!bs\detokenize\expandafter{\currentdescriptiontitle   }\!!es,
+        \ifx\currentdescriptionbookmark\currentdescriptiontitle \else
+            bookmark = \!!bs\detokenize\expandafter{\currentdescriptionbookmark}\!!es,
+        \fi
+        \ifx\currentdescriptionlisttitle\currentdescriptiontitle \else % \ifx\currentdescriptionsaveinlist\v!no
+            list     = \!!bs\detokenize\expandafter{\currentdescriptionlisttitle   }\!!es,
+        \fi % \fi
+        },
+    \ifconditional\enumerationnumberenabled
+        prefixdata = {
+            prefix        = "\descriptionparameter\c!prefix",
+            separatorset  = "\descriptionparameter\c!prefixseparatorset",
+            conversion    = \!!bs\descriptionparameter\c!prefixconversion\!!es,
+            conversionset = "\descriptionparameter\c!prefixconversionset",
+            set           = "\descriptionparameter\c!prefixset",
+            segments      = "\descriptionparameter\c!prefixsegments",
+            connector     = \!!bs\descriptionparameter\c!prefixconnector\!!es,
+        },
+        numberdata = {
+            numbers       = structure.counters.compact("\currentdescriptionname",nil,true),
+            separatorset  = "\descriptionparameter\c!numberseparatorset",
+            conversion    = "\descriptionparameter\c!numberconversion",
+            conversionset = "\descriptionparameter\c!numberconversionset",
+            stopper       = \!!bs\descriptionparameter\c!numberstopper\!!es,
+            segments      = "\descriptionparameter\c!numbersegments",
+        },
+    \fi
+        userdata = structure.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
+       }
+     }}%
+     \xdef\currentdescriptionsynchronize % make this a macro because shared
+       {\noexpand\ctxlua{jobreferences.setinternalreference(nil,nil,\nextinternalreference)}%
+        \noexpand\ctxlatelua{structure.lists.enhance(\currentdescriptionnumberentry)}}%
+   \fi
+   \endgroup}
+
+\installstructurelistprocessor{description}{\usestructurelistprocessor{number+title}}
+
+% labels, we could share with enumerations and forget about the text; anyhow, figure
+% labels etc can use enumerations; we keep labels for compatibility reasons; we need
+% the slightly different namespace; we can still define structure counters directly
+% (multiple levels) and use an enumeration without following text
+
+% unfinished
+
+\def\setuplabels
+  {\getparameters[\??db]}
+
+\def\definelabel
+  {\dotripleargumentwithset\dodefinelabel}
+
+\def\dodefinelabel[#1][#2][#3]% #2 or #3 assignment
+  {\doenumerationinit{#1}{1}\empty
+   \getparameters[\??dd#1][\c!command=,\c!state=\v!start,\c!location=,\c!text=#1]%
+   \ifsecondargument\doifassignmentelse{#2}\donetrue\donefalse\else\donetrue\fi
+   \ifdone
+     % an independent one
+     \getparameters[\??dd#1][\s!counter=#1,\s!parent=\??db,#2]%
+     \dodefinelabelcommands{#1}{\??db}%
+     \dodefineenumerationcounter{#1}%
+   \else
+     \getparameters[\??dd#1][\s!counter=#1,\s!parent=\??dd#2,#3]%
+     \dodefinelabelcommands{#1}{\??dd#2}%
+   \fi}
+
+\def\dodefinelabelcommands#1#2%
+  {\unexpanded\setevalue            {#1}{\noexpand\dolabelnumbercommand  {#1}}%
+   \unexpanded\setevalue{\c!reset    #1}{\noexpand\doresetlabelnumber    {#1}}%
+  %\unexpanded\setevalue{\c!set      #1}{\noexpand\dosetlabelnumber      {#1}}% [#2] or {#2}  ?
+   \unexpanded\setevalue{\e!next     #1}{\noexpand\donextlabelnumber     {#1}}%
+   \unexpanded\setevalue{\e!increment#1}{\noexpand\doincrementlabelnumber{#1}}%
+   \unexpanded\setevalue{\c!current  #1}{\noexpand\docurrentlabelnumber  {#1}}}
+
+% this is just for downward compatibility, we might drop it
+
+\setvalue{\??db:\c!location:\v!inmargin}{\inmargin}
+\setvalue{\??db:\c!location:\v!inleft  }{\inleft}
+\setvalue{\??db:\c!location:\v!inright }{\inright}
+\setvalue{\??db:\c!location:\v!margin  }{\inmargin}
+
+\def\dolabelinit#1%
+  {\def\currentdescriptionmain{#1}%
+   \def\currentdescription    {#1}%
+   \def\currentdescriptionlevel{1}}
+
+\def\docurrentlabelnumber   #1{\dolabelinit{#1}\dosingleempty\dodocurrentlabelnumber}
+\def\donextlabelnumber      #1{\dolabelinit{#1}\dosingleempty\dodonextlabelnumber}
+\def\dolabelnumbercommand   #1{\dolabelinit{#1}\dosingleempty\dodolabelnumbercommand}
+
+\def\doresetlabelnumber     #1{\dolabelinit{#1}\doresetsubstructurecounter    [\currentdescriptionnumber][\currentdescriptionlevel]}
+\def\dosetlabelnumber     #1#2{\dolabelinit{#1}\dosetsubstructurecounter      [\currentdescriptionnumber][\currentdescriptionlevel]{#2}}
+\def\doincrementlabelnumber #1{\dolabelinit{#1}\doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
+
+\def\dodocurrentlabelnumber[#1]%
+  {\dontleavehmode
+   \writestatus{!!!}{todo: reference of label}%
+%  \rawreference{lab}{#1}{\composedsectionnumber}%
+   \dotextprefix{\descriptionparameter\c!text}%
+   \convertedsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
+
+\def\dodonextlabelnumber[#1]% todo: ref
+  {\doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]%
+   \dodocurrentlabelnumber[\currentdescriptionnumber]}
+
+\def\dodolabelnumbercommand[#1]% todo: ref
+  {\dontleavehmode
+   \descriptionparameter\c!before
+   \begingroup
+   \doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]%
+   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \executeifdefined{\??db:\c!location:\descriptionparameter\c!location}{\descriptionparameter\c!command}{\dodocurrentlabelnumber[#1]}%
+   \endgroup
+   \descriptionparameter\c!after}
+
+% to be reimplmented
+
+\def\setupindentations
+  {\dodoubleempty\dosetupindentations}
+
+\def\dosetupindentations[#1][#2]%
+  {\ifsecondargument
+     \dodoubleargumentwithset\dodosetupindentations[#1][#2]%
+   \else
+     \dodosetupindentations[][#1]%
+   \fi}
+
+\def\dodosetupindentations[#1][#2]%
+  {\getparameters[\??ds#1][#2]}
+
+\def\defineindenting
+  {\dodoubleargumentwithset\dodefineindenting}
+
+\def\dodefineindenting[#1][#2]%
+  {\copyparameters[\??ds#1][\??ds]
+      [\c!text,\c!separator,\c!width,\c!style,\c!color,
+       \c!headstyle,\c!sample,\c!before,\c!after,\c!distance]%
+   \getparameters[\??ds#1][#2]%
+   \unexpanded\setvalue            {#1}{\dododefineindenting{#1}{0}{1}}%
+   \unexpanded\setvalue      {\v!sub#1}{\dododefineindenting{#1}{1}{2}}%
+   \unexpanded\setvalue{\v!sub\v!sub#1}{\dododefineindenting{#1}{2}{3}}}
+
+\def\dododefineindenting#1#2#3%
+  {\par
+   \getvalue{\??ds#1\c!before}%
+   \begingroup
+   \doifvaluenothing{\??ds#1\c!sample}
+     {\setvalue{\??ds#1\c!sample}{\getvalue{\??ds#1\c!text}}}%
+   \assignwidth
+     {\descriptionsheadwidth}
+     {\getvalue{\??ds#1\c!width}}
+     {\doattributes
+        {\??ds#1}\c!headstyle\c!headcolor
+        {\getvalue{\??ds#1\c!sample}%
+         \spr{\getvalue{\??ds#1\c!separator}}}}
+     {\getvalue{\??ds#1\c!distance}}%
+   \advance\descriptionsheadwidth \getvalue{\??ds#1\c!distance}%
+   \setbox\scratchbox\hbox to \descriptionsheadwidth
+     {\doattributes
+        {\??ds#1}\c!headstyle\c!headcolor
+        {\strut
+         \getvalue{\??ds#1\c!text}%
+         \hss
+         \spr{\getvalue{\??ds#1\c!separator}}%
+         \hskip\getvalue{\??ds#1\c!distance}}}%
+   \parindent\zeropoint
+   \hskip#2\descriptionsheadwidth\indent\box\scratchbox
+   \hangindent#3\descriptionsheadwidth
+   \doattributes{\??ds#1}\c!style\c!color\empty
+   \AfterPar{\endgroup\getvalue{\??ds#1\c!after}}% must be redone
+   \GetPar}
+
+\setupdescriptions
+  [\c!location=\v!left,
+   \c!headstyle=\v!bold,
+   \c!titlestyle=\v!bold,
+   \c!style=\v!normal,
+   \c!color=,
+   \c!headcolor=,
+   \c!titlecolor=,
+   \c!width=8em,
+   \c!distance=0pt,
+   \c!titledistance=0.5em,
+   \c!hang=,
+   \c!sample=,
+   \c!align=,
+   \c!margin=\v!no,
+   \c!before=\blank,
+   \c!inbetween=\blank,
+   \c!after=\blank,
+   \c!indentnext=\v!yes,
+   \c!indenting=\v!never,
+   \c!titleleft=(,
+   \c!titleright=),
+   \c!closesymbol=,
+   \c!closecommand=\wordright,
+   \c!command=,
+   \c!titlecommand=]
+
+\setupenumerations
+  [\c!location=\v!top,
+   \c!text=,
+   \c!way=\v!by\v!text,
+   \c!prefixconnector=.,
+   \c!stopper=,
+   \c!number=\v!yes, % else description
+   \c!start=0,
+   \s!parent=\??dd]
+
+\setuplabels
+  [\s!parent=\??dn]
+
+\setupindentations
+  [\c!style=\v!normal,
+   \c!headstyle=\v!normal,
+   \c!color=,
+   \c!headcolor=,
+   \c!width=\v!fit,
+   \c!text=\unknown,
+   \c!sample=,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!distance=1em,
+   \c!separator={ :}]
+
+\protect \endinput

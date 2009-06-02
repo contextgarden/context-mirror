@@ -85,11 +85,6 @@
 \loadcorefile{supp-ali.tex}
 \loadcorefile{supp-num.tex}
 
-%D The next module deals with language specific typographic
-%D extensions.
-
-\loadcorefile{typo-ini.tex}
-
 %D Verbatim typesetting is implemented in a separate class of
 %D modules. The pretty typesetting modules are loaded at run
 %D time.
@@ -173,6 +168,8 @@
 \loadcorefile{lang-ara.tex}
 \loadcorefile{lang-cyr.tex}
 
+\loadmarkfile{typo-ini}
+
 %D All kind of symbols are handled in:
 
 \loadcorefile{symb-ini.tex}
@@ -187,25 +184,27 @@
 
 \loadmarkfile{core-spa}
 \loadcorefile{core-grd.tex}
-\loadcorefile{core-mar.tex}
-\loadmarkfile{core-pos}
+\loadmarkfile{strc-mar}
+\loadmarkfile{anch-pos}
 \loadcorefile{core-mak.tex}
-\loadcorefile{core-dat.tex}
-\loadmarkfile{core-ver}
-\loadmarkfile{core-rul}
-\loadcorefile{core-vis.tex}
-\loadcorefile{core-num.tex}
+
+\loadmarkfile{buff-ver}
+\loadmarkfile{buff-ini}
+
+\loadmarkfile{pack-rul}
+\loadmarkfile{trac-vis}
+\loadmarkfile{strc-num}
 \loadcorefile{tabl-pln.tex}
 \loadcorefile{tabl-tab.tex}
 \loadcorefile{tabl-tsp.tex}
-\loadmarkfile{core-nav}
-\loadcorefile{core-ref.tex}
-\loadmarkfile{core-obj}
-\loadcorefile{core-lst.tex}
-\loadcorefile{core-itm.tex}
-\loadcorefile{core-des.tex}
-\loadcorefile{core-mat.tex} % should come after math-pln etc
-\loadcorefile{core-syn.tex}
+\loadmarkfile{scrn-nav}
+\loadmarkfile{strc-ref}
+\loadmarkfile{pack-obj}
+\loadmarkfile{strc-lst}
+\loadmarkfile{strc-itm}
+\loadmarkfile{strc-des}
+\loadmarkfile{strc-mat} % should come after math-pln etc
+\loadmarkfile{strc-syn}
 \loadmarkfile{core-sys}
 
 \loadmarkfile{page-ini}
@@ -216,13 +215,13 @@
 \loadmkiifile{page-log.tex}
 \loadmarkfile{page-txt}
 \loadcorefile{page-sid.tex}
-\loadcorefile{page-flt.tex}
+\loadmarkfile{strc-flt}
 \loadcorefile{page-mis.tex}
 \loadcorefile{page-mul.tex}
 \loadcorefile{page-set.tex}
-\loadcorefile{page-lyr.tex}
+\loadmarkfile{pack-lyr}
 \loadcorefile{page-mak.tex}
-\loadcorefile{page-num.tex}
+\loadmarkfile{strc-pag}
 \loadmarkfile{page-lin}
 \loadcorefile{page-par.tex}
 \loadcorefile{page-mar.tex}
@@ -231,13 +230,13 @@
 
 % so far
 
-\loadcorefile{core-sec.tex}
-\loadcorefile{core-swd.tex}
-\loadmarkfile{core-buf}
-\loadcorefile{core-blk.tex}
+\loadmarkfile{strc-sec}
+\loadmarkfile{strc-swd}
+\loadmarkfile{strc-blk}
+
 \loadcorefile{page-imp.tex}
 \loadcorefile{tabl-tbl.tex}
-\loadmarkfile{core-int}
+\loadmarkfile{scrn-int}
 \loadmarkfile{tabl-ntb}
 \loadcorefile{tabl-nte.tex}
 \loadcorefile{tabl-ltb.tex}
@@ -251,12 +250,12 @@
 %D How about fill||in fields and related stuff?
 
 \loadmarkfile{java-ini}
-\loadmarkfile{core-fld}
-\loadcorefile{core-hlp.tex}
+\loadmarkfile{scrn-fld}
+\loadmarkfile{scrn-hlp}
 
 %D Registers can depend on fields, so we load that now.
 
-\loadcorefile{core-reg.tex}
+\loadmarkfile{strc-reg}
 
 %D Of course we do need fonts. There are no \TFM\ files
 %D loaded yet, so the format file is independant of their
@@ -300,12 +299,11 @@
 \loadcorefile{page-plg.tex}
 \loadcorefile{page-str.tex}
 
-%D Hm.
+%D Anchoring graphics:
 
-\loadcorefile{core-pgr.tex}
-\loadcorefile{core-bar.tex}
-\loadcorefile{core-snc.tex}
-
+\loadcorefile{anch-pgr.tex}
+\loadcorefile{anch-bar.tex}
+\loadcorefile{anch-snc.tex}
 
 %D Math.
 
@@ -317,17 +315,18 @@
 %D Now we're ready for more core modules.
 
 \loadmarkfile{core-fnt}
-\loadcorefile{core-not.tex}
+\loadmarkfile{strc-not}
 \loadcorefile{core-lnt.tex}
 
 \loadmarkfile{core-mis}
 
-\loadcorefile{core-trf.tex}
-\loadmarkfile{core-inc}
-\loadcorefile{core-fig.tex}
+\loadmarkfile{grph-trf}
+\loadmarkfile{grph-inc}
+\loadmarkfile{grph-fig}
+
 \loadcorefile{core-par.tex}
 
-\loadcorefile{core-box.tex}
+\loadmarkfile{pack-box}
 \loadcorefile{page-app.tex}
 \loadmarkfile{meta-fig}
 

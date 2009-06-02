@@ -36,10 +36,10 @@ vardef rawtextext(expr str) =
         image (
             _tt_n_ := _tt_n_ + 1 ;
             _tt_p_ := image (
-                draw _tt_p_ ;
+                addto currentpicture also _tt_p_ ;
                 addto currentpicture doublepath unitsquare withprescript "tf" withpostscript decimal _tt_n_ & ":" & str ;
             ) ;
-            draw unitsquare withpen pencircle scaled 0 ;
+            addto currentpicture doublepath unitsquare withpen pencircle scaled 0 ;
         )
     else :
         image (
@@ -68,8 +68,13 @@ labtype.urt    :=  6 ; labtype.llft :=  7 ; labtype.lrt  :=  8 ;
 labtype.d      := 10 ; labtype.dlft := 11 ; labtype.drt  := 12 ;
 labtype.origin :=  0 ; labtype.raw  :=  0 ;
 
-laboff.origin = (infinity,infinity) ; labxf.origin := 0 ; labyf.origin := 0 ;
-laboff.raw    = (infinity,infinity) ; labxf.raw    := 0 ; labyf.raw    := 0 ;
+% laboff.origin = (infinity,infinity) ; labxf.origin := 0 ; labyf.origin := 0 ;
+% laboff.raw    = (infinity,infinity) ; labxf.raw    := 0 ; labyf.raw    := 0 ;
+
+% todo: thelabel.origin("xxxx",origin) (overflows)
+
+laboff.origin = (0,0) ; labxf.origin := 0 ; labyf.origin := 0 ;
+laboff.raw    = (0,0) ; labxf.raw    := 0 ; labyf.raw    := 0 ;
 
 pair laboff.l   ; laboff.l  = laboff.lft  ;
 pair laboff.r   ; laboff.r  = laboff.rt   ;
@@ -131,7 +136,7 @@ vardef thetextext@#(expr p,z) = % adapted copy of thelabel@
             if (labtype@# >= 10) : shifted (0,ypart center p) fi
             shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
     fi
-enddef;
+enddef ;
 
 vardef textext@#(expr txt) =
     interim labeloffset := textextoffset ;
@@ -161,7 +166,11 @@ vardef thelabel@#(expr s, z) =
 enddef;
 
 primarydef str infont name = % very naughty !
-    textext("\definedfont[" & name & "]" & str)
+    if name = "" :
+        textext(str)
+    else :
+        textext("\definedfont[" & name & "]" & str)
+    fi
 enddef ;
 
 def circular_shade (expr p, n, ca, cb) =
@@ -252,9 +261,17 @@ def doexternalfigure (expr filename) text transformation =
     draw unitsquare transformation withprescript "fg" withpostscript filename ;
 enddef ;
 
+def register (expr label, width, height, offset) =
+    draw unitsquare xscaled width yscaled height shifted offset withprescript "ps" withpostscript label ;
+enddef ;
+
 extra_beginfig := extra_beginfig & "currentgraphictext := 0 ; " ;
 extra_endfig   := extra_endfig   & "finishsavingdata ; " ;
 extra_endfig   := extra_endfig   & "resettextexts ; " ;
 
 boolean cmykcolors ; cmykcolors := true ;
 boolean spotcolors ; spotcolors := true ;
+
+vardef verbatim(expr str) =
+    ditto & "\detokenize{" & str & "}" & ditto
+enddef ;

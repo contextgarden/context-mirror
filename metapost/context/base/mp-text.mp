@@ -104,8 +104,8 @@ vardef textextstr(expr s, a) =
   scantokens ss
 enddef ;
 
-pair laboff.origin ; laboff.origin = (infinity,infinity) ;
-pair laboff.raw    ; laboff.raw    = (infinity,infinity) ;
+pair laboff.origin ; laboff.origin = (0,0) ; % (infinity,infinity) ;
+pair laboff.raw    ; laboff.raw    = (0,0) ; % (infinity,infinity) ;
 
 vardef thelabel@#(expr s, z) =
   save p ; picture p ;
@@ -258,4 +258,8 @@ def build_parshape (expr p, offset_or_path, dx, dy,
 
   endgroup ;
 
+enddef ;
+
+vardef verbatim(expr str) =
+    ditto & "\detokenize{" & str & "}" & ditto
 enddef ;

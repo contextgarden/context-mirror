@@ -94,7 +94,7 @@ enddef ;
 def doloadfigure (expr filename) text figureattributes =
   begingroup ;
   save figurenumber, figurepicture, number, fixedplace ;
-  numeric figurenumber  ; figurenumber  := 0 ;
+  numeric figurenumber  ; figurenumber := 0 ;
   boolean figureshift ; figureshift := true ;
   picture figurepicture ; figurepicture := currentpicture ;
   def number primary n = hide(figurenumber := n) enddef ;

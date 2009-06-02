@@ -43,12 +43,12 @@
 \def\Mkern#1%
   {{\setbox\scratchbox\hbox{M}\kern#1\wd\scratchbox}}
 
-\def\TeX
+\unexpanded\def\TeX
   {T%
    \Mkern{-.1667}\lower.5ex\hbox{E}%
    \Mkern{-.125}X}
 
-\def\ConTeXt
+\unexpanded\def\ConTeXt
                   {C%
    \CMRkern-.0333emo%
    \CMRkern-.0333emn%
@@ -56,10 +56,10 @@
    \CMRkern-.0667em\TeX%
    \CMRkern-.0333emt}
 
-\def\PPCHTeX
+\unexpanded\def\PPCHTeX
   {ppch\TeX}
 
-\def\PRAGMA
+\unexpanded\def\PRAGMA
   {Pragma ADE}
 
 %\def\LaTeX
@@ -67,7 +67,7 @@
 %   \kern-.30em\raise.3ex\hbox{\txx A}%
 %   \kern-.18em\TeX}
 
-\def\LaTeX % requested by erik frambach
+\unexpanded\def\LaTeX % requested by erik frambach
   {{\setbox\scratchbox\hbox{L}%
     \scratchdimen\ht\scratchbox
     \setbox\scratchbox\hbox{\txx A}%
@@ -75,14 +75,14 @@
     \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
     \kern-.2\wd\scratchbox\TeX}}
 
-\def\TaBlE
+\unexpanded\def\TaBlE
   {T%
    \kern-.27em\lower.5ex\hbox{A}%
    \kern-.18emB%
    \kern-.1em\lower.5ex\hbox{L}%
    \kern-.075emE}
 
-\def\PiCTeX
+\unexpanded\def\PiCTeX
   {P%
    \kern-.12em\lower.5ex\hbox{I}%
    \kern-.075em C%
@@ -91,20 +91,20 @@
 \def\AMSswitch#1%
   {$\fam2\ifdim\bodyfontsize>1.1em\scriptstyle\fi#1$}
 
-\def\AmSTeX
+\unexpanded\def\AmSTeX
   {\AMSswitch A%
    \kern-.1667em\lower.5ex\hbox{\AMSswitch M}%
    \kern-.125em\AMSswitch S%
    -\TeX}
 
-\def\LamSTeX
+\unexpanded\def\LamSTeX
   {L%
    \kern-.4em\raise.3ex\hbox{\AMSswitch A}%
    \kern-.25em\lower.4ex\hbox{\AMSswitch M}%
    \kern-.1em{\AMSswitch S}%
    -\TeX}
 
-\def\AmSLaTeX
+\unexpanded\def\AmSLaTeX
   {\AMSswitch A%
    \kern-.1667em\lower.5ex\hbox{\AMSswitch M}%
    \kern-.125em\AMSswitch S%
@@ -118,7 +118,7 @@
 %D
 %D I changed this into one that adapts itself:
 
-\def\Context
+\unexpanded\def\Context
   {{C\kern -.0667em\getscaledglyph{.8}\empty{O\kern -.0667emN\kern
    -.0549emT\doifitalicelse{\kern-.1em}{\kern-.1667em}\lower.5ex\hbox
    {E}\doifitalicelse\empty{\kern-.11em}X\kern-.055emT}}}
@@ -198,18 +198,18 @@
 %D write all user defined commands, like abbreviations, in
 %D uppercase.)
 
-\def\METAFONT {\MetaFont}
-\def\METAPOST {\MetaPost}
-\def\PPCHTEX  {\PPCHTeX}
-\def\CONTEXT  {\ConTeXt}
-\def\METAFUN  {\MetaFun}
+\unexpanded\def\METAFONT {\MetaFont}
+\unexpanded\def\METAPOST {\MetaPost}
+\unexpanded\def\PPCHTEX  {\PPCHTeX}
+\unexpanded\def\CONTEXT  {\ConTeXt}
+\unexpanded\def\METAFUN  {\MetaFun}
 
-\def\TEX      {\TeX}
-\def\LATEX    {\LaTeX}
-\def\PICTEX   {\PiCTeX}
-\def\TABLE    {\TaBlE}
-\def\AMSTEX   {\AmSTeX}
-\def\LAMSTEX  {\LamSTeX}
+\unexpanded\def\TEX      {\TeX}
+\unexpanded\def\LATEX    {\LaTeX}
+\unexpanded\def\PICTEX   {\PiCTeX}
+\unexpanded\def\TABLE    {\TaBlE}
+\unexpanded\def\AMSTEX   {\AmSTeX}
+\unexpanded\def\LAMSTEX  {\LamSTeX}
 
 %D And this is how they show up: \TeX, \MetaFont, \MetaPost,
 %D \PiCTeX, \TaBlE, \ConTeXt, \PPCHTeX, \AmSTeX, \LaTeX,
@@ -224,12 +224,12 @@
 
 %D Some placeholders:
 
-\def\eTeX             {\mathematics{\varepsilon}-\TeX}
-\def\pdfTeX           {pdf\TeX}
-\def\pdfeTeX          {pdfe-\TeX}
-\def\luaTeX           {lua\TeX}
-\def\metaTeX          {meta\TeX}
-\unexpanded\def\XeTeX {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
+\unexpanded\def\eTeX   {\mathematics{\varepsilon}-\TeX}
+\unexpanded\def\pdfTeX {pdf\TeX}
+\unexpanded\def\pdfeTeX{pdfe-\TeX}
+\unexpanded\def\luaTeX {lua\TeX}
+\unexpanded\def\metaTeX{meta\TeX}
+\unexpanded\def\XeTeX  {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
 
 % Better, since lm has a mirrored E (don't ask me why)
 

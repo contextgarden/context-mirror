@@ -247,6 +247,7 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
                     flusher.startfigure(fignum,llx,lly,urx,ury,"begin",figure)
                     t[#t+1] = "q"
                     if objects then
+t[#t+1] = metapost.colorinitializer()
                         -- once we have multiple prescripts we can do more tricky things like
                         -- text and special colors at the same time
                         for o=1,#objects do
@@ -267,7 +268,7 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
                                 t[#t+1] = "q"
                                 local ot = object.transform -- 3,4,5,6,1,2
                                 t[#t+1] = format("%f %f %f %f %f %f cm",ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: format("%f %f m %f %f %f %f 0 0 cm",unpack(ot))
-                                flusher.flushfigure(t)
+                                flusher.flushfigure(t) -- flush accumulated literals
                                 t = { }
                                 flusher.textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
                                 t[#t+1] = "Q"

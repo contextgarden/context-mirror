@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 05/28/09 11:25:26
+-- merge date  : 06/02/09 09:32:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -9084,7 +9084,7 @@ function fonts.methods.node.otf.features(head,font,attr)
             end
             ra[s] = r
         end
-featurevalue = r and r[1] -- toto: pass to function instead
+        featurevalue = r and r[1] -- todo: pass to function instead of using a global
         if featurevalue then
             local attribute, chain, typ, subtables = r[2], r[3], sequence.type, sequence.subtables
             if chain < 0 then

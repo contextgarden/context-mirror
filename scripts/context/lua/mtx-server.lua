@@ -279,6 +279,7 @@ function scripts.webserver.run(configuration)
     logs.simple("document root: %s",configuration.root or resolvers.ownpath)
     logs.simple("main index file: %s",configuration.index)
     logs.simple("scripts subpath: %s",configuration.scripts)
+    logs.simple("context services: http://localhost:%s/mtx-server-ctx-startup.lua",configuration.port)
     local server = assert(socket.bind("*", configuration.port))
     while true do -- no multiple clients
         local start = os.clock()

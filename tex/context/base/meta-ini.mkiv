@@ -37,6 +37,9 @@
 \newtoks \everyMPgraphic     % mp
 \newtoks \everyMPTEXgraphic  % tex
 
+\newif\ifMPrun
+\def\MPruntimefile{mprun}
+
 % The next command is, of course, dedicated to Mojca, who
 % needs it for gnuplot. Anyway, the whole multiple engine
 % mechanism is to keep her gnuplot from interfering.
@@ -262,8 +265,8 @@
   {\executeifdefined{\@@MPG#1};} % ; if not found
 
 \def\enableincludeMPgraphics
-  {\let\handleuseMPgraphic     \secondoftwoarguments
-   \let\handlereusableMPgraphic\secondoftwoarguments}
+  {\let\handleuseMPgraphic     \thirdofthreearguments
+   \let\handlereusableMPgraphic\thirdofthreearguments}
 
 \let\MPdrawingdata\empty
 
@@ -767,21 +770,14 @@
 \def\processMPbuffer
   {\dosingleempty\doprocessMPbuffer}
 
-% this fails (keep):
-%
-% \def\doprocessMPbuffer[#1]%
-%   {\doifelsenothing{#1}
-%      {\doprocessMPbuffer[\jobname]}
-%      {\processMPgraphic{\ctxlua{tex.sprint(tex.ctxcatcodes,buffers.collect("#1"))}}}} % "\\n"
-%
-% this works (keep):
-%
-% \def\doprocessMPbuffer[#1]%
-%   {\doifelsenothing{#1}
-%      {\doprocessMPbuffer[\jobname]} % #1 can be a list of buffers, otherwise we could use:
-%      {\processMPgraphic{\ctxlua{tex.sprint(tex.ctxcatcodes,unpack(buffers.data["#1"]))}}}}
-%
-% this we use:
+\def\doprocessMPbuffer[#1]%
+  {\doifelsenothing{#1}
+     {\dodoprocessMPbuffer{\jobname}}
+     {\dodoprocessMPbuffer{#1}}}
+
+% we need to go via a toks because we have no multiline print in
+% luatex (i.e. tex.sprint does not interpret lines) and therefore
+% omits all after a comment token
 
 \newtoks\mpbuffertoks
 
@@ -789,9 +785,10 @@
   {\doifelsenothing{#1}
      {\doprocessMPbuffer[\jobname]}
      {\beginMPgraphicgroup{#1}%
-      % we need this trick because tex.sprint does not interprets newlines
-      \ctxlua{tex.toks.mpbuffertoks=buffers.collect("\currentMPgraphicname")}%
-      \processMPgraphic{\the\mpbuffertoks}%
+      % we need this trick because tex.sprint does not interprets newlines and the scanner
+      % stops at a newline; also, we do need to flush the buffer under a normal catcode
+      % regime in order to expand embedded tex macros; #1 can be a list
+      \processMPgraphic{\ctxlua{buffers.feedback("\currentMPgraphicname")}}%
       \endMPgraphicgroup}}
 
 \def\runMPbuffer
@@ -880,6 +877,25 @@
    \endMPgraphicgroup}
 
 \def\nodostartMPcode#1#2\stopMPcode
+  {\processMPgraphic{#2}}
+
+\let\stopMPcode\relax
+
+% for old time sake
+
+\def\dostartMPgraphic
+  {\iffirstargument
+     \expandafter\dodostartMPgraphic
+   \else
+     \expandafter\nodostartMPgraphic
+   \fi}
+
+\def\dodostartMPgraphic#1#2\stopMPgraphic
+  {\beginMPgraphicgroup{#1::\s!dummy}% name does not matter
+   \processMPgraphic{#2}%
+   \endMPgraphicgroup}
+
+\def\nodostartMPgraphic#1#2\stopMPcode
   {\processMPgraphic{#2}}
 
 \let\stopMPcode\relax
@@ -999,9 +1015,19 @@
     \disablecompoundcharacters
 \to \everyMPgraphic
 
-\appendtoks
+\appendtoks % before color
     \normalexpanded{\noexpand\definecolor[currentcolor][\currentcolorname]}%
 \to \everyMPgraphic
+
+% \color[green]{abc \startMPcode
+% fill fullcircle scaled 3cm withoutcolor;
+% fill fullcircle scaled 2cm withcolor \MPcolor{currentcolor} ;
+% fill fullcircle scaled 1cm withcolor \MPcolor{red} ;
+% \stopMPcode def}
+
+% \appendtoks
+%     \doactivatecolor\s!black\forcecolorhack % we can also move this to the backend
+% \to \everyMPgraphic
 
 \appendtoks
     \baselineskip1\baselineskip
@@ -1284,6 +1310,75 @@
 %D Goody for preventing overflows:
 
 \def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
+
+%D There is no way to distinguish the black color that you get when
+%D you issue a \type {draw} without color specification from a color
+%D that has an explicit black specification unless you set the
+%D variable \type {defaultcolormodel} to 1. Hoewever, in that case
+%D you cannot distinguish that draw from one with a \type
+%D {withoutcolor} specification. This means that we have to provide
+%D multiple variants of inheritance.
+%D
+%D In any case we need to tell the converter what the inherited color
+%D is to start with. Case~3 is kind of unpredictable as it closely
+%D relates to the order in which paths are flushed. If you want to
+%Dinherit automatically from the surrounding, you can best stick to
+%D variant 1. Variant 0 (an isolated graphic) is the default.
+%D
+%D \startbuffer
+%D \startuseMPgraphic{test}
+%D     drawoptions(withpen pencircle scaled 1pt) ;
+%D     def shift_cp = currentpicture := currentpicture shifted (-15pt,0) ; enddef ;
+%D     draw fullcircle scaled 10pt withoutcolor  ; shift_cp ;
+%D     fill fullcircle scaled 10pt               ; shift_cp ;
+%D     draw fullcircle scaled 10pt withoutcolor  ; shift_cp ;
+%D     fill fullcircle scaled 10pt withcolor red ; shift_cp ;
+%D     draw fullcircle scaled 10pt withoutcolor  ; shift_cp ;
+%D     fill fullcircle scaled 10pt               ; shift_cp ;
+%D \stopuseMPgraphic
+%D
+%D \starttabulate
+%D \NC 0\quad \NC \chardef\MPcolormethod0 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 1\quad \NC \chardef\MPcolormethod1 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 2\quad \NC \chardef\MPcolormethod2 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 3\quad \NC \chardef\MPcolormethod3 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\chardef\MPcolormethod\zerocount
+
+\appendtoks
+    \ctxlua{metapost.set_outer_color(\number\MPcolormethod,"\PDFcolor{\currentcolorname}","")}%
+\to \everyMPgraphic
+
+\startMPinitializations
+    defaultcolormodel := \ifcase\MPcolormethod1\or1\or3\else3\fi;
+\stopMPinitializations
+
+%D \macros
+%D   {\setupMPgraphics}
+%D
+%D Here is a generic setup command:
+
+\newtoks \everysetupMPgraphics
+
+\def\setupMPgraphics[#1]%
+  {\getparameters[\??mp][#1]%
+   \the\everysetupMPgraphics}
+
+%D Here we hook in the outer color. When \type {color} is set to \type
+%D {global} we get the outer color automatically. If you change this
+%D setting, you should do it grouped in order not to make other graphics
+%D behave in unexpected ways.
+
+\appendtoks
+    \doifelse\@@mpcolor\v!global{\chardef\MPcolormethod\plusone}{\chardef\MPcolormethod\zerocount}%
+\to \everysetupMPgraphics
+
+\setupMPgraphics
+  [\c!color=\v!local]
 
 %D Done.
 
