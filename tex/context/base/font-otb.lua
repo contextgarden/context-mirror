@@ -334,13 +334,19 @@ function fonts.initializers.base.otf.features(tfmdata,value)
             local h = { }
             for f=1,#supported_gsub do
                 local feature = supported_gsub[f]
-                prepare_base_substitutions(tfmdata,feature,features[feature])
-                h[#h+1] = feature
+                local value = features[feature]
+                prepare_base_substitutions(tfmdata,feature,value)
+                if value then
+                    h[#h+1] = feature  .. "=" .. tostring(value)
+                end
             end
             for f=1,#supported_gpos do
                 local feature = supported_gpos[f]
+                local value = features[feature]
                 prepare_base_kerns(tfmdata,feature,features[feature])
-                h[#h+1] = feature
+                if value then
+                    h[#h+1] = feature  .. "=" .. tostring(value)
+                end
             end
             local hash = concat(h," ")
             local base = basehash[hash]
@@ -355,7 +361,8 @@ function fonts.initializers.base.otf.features(tfmdata,value)
             -- eventually (and subset later on). If needed we can use a more
             -- verbose name as long as we don't use <()<>[]{}/%> and the length
             -- is < 128.
-            tfmdata.fullname = tfmdata.fullname .. base
+            tfmdata.fullname = tfmdata.fullname .. "-" .. base
+--~ logs.report("otf define","fullname base hash: '%s', featureset '%s'",tfmdata.fullname,hash)
         end
         if trace_preparing then
             logs.report("otf define","preparation time is %0.3f seconds for %s",os.clock()-t,tfmdata.fullname or "?")

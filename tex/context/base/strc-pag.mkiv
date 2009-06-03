@@ -217,7 +217,7 @@
 \appendtoks
 %   \xdef\lastpage{\laststructurecounter[\s!realpage]}%
     \xdef\currentpage{\the\realpageno}%
-    \ifnum\realpageno>\lastpage \globallet\lastpage\lastrealpage\fi
+    \ifnum\realpageno>\lastpage \globallet\lastpage\lastrealpage \fi
 \to \everyinitializepagecounters
 
 % \def\savenofpages
@@ -470,6 +470,13 @@
         {\chardef\overallpagenumberstate\zerocount}%
 \to \everysetuppagenumbering
 
+% \appendtoks % todo: set state: none, start, stop, reset
+%    % this makes starting at an even page possible
+%    \ifnum\realpageno=1 \ifodd\pageno \else
+%      \global\shiftedrealpagenotrue
+%    \fi \fi
+% \to \everysetupuserpagenumber
+
 % Done
 
 % \c!way=\v!by\v!part
@@ -498,8 +505,33 @@
     \edef\askeduserpagenumber{\structurecounterparameter\s!userpage\c!number}%
     \ifx\askeduserpagenumber\empty \else
       \normalexpanded{\noexpand\setuppagenumber[\c!start=\structurecounterparameter\s!userpage\c!number,\c!number=]}%
+      \userpageno\rawstructurecounter[\s!userpage]%
     \fi
-\to\everysetupuserpagenumber % todo: set state: none, start, stop, reset
+\to \everysetupuserpagenumber % todo: set state: none, start, stop, reset
+
+% \setuplayout[width=300pt,backspace=4cm]
+% \setuppagenumbering [alternative=doublesided]
+% \setupuserpagenumber[start=2]
+% \starttext \dorecurse{20}{\input knuth \par} \stoptext
+
+\def\checkpagenumbershift
+  {\userpageno\rawstructurecounter[\s!userpage]\relax
+   \ifnum\realpageno=\plusone
+        \ifodd\userpageno
+        \else
+            \global\shiftedrealpagenotrue
+        \fi
+   \fi}
+
+\appendtoks % todo: set state: none, start, stop, reset
+    % this makes starting at an even page possible
+    \checkpagenumbershift
+\to \everysetupuserpagenumber
+
+\appendtoks % todo: set state: none, start, stop, reset
+    % this makes starting at an even page possible
+    \checkpagenumbershift
+\to \everysetuppagenumbering
 
 \initializepagecounters
 

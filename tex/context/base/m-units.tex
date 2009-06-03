@@ -241,9 +241,9 @@
      \ifspaceddimensions
        \ifdim\scratchdimen=\dimensionsignal\relax
          \udimensionhalfspace
-\else\ifdim\scratchdimen=\dimensionpowersignal\relax
-  \udimensionhalfspace
-\fi
+         \else\ifdim\scratchdimen=\dimensionpowersignal\relax
+           \udimensionhalfspace
+         \fi
        \fi
      \fi
    \fi
@@ -272,7 +272,6 @@
    \fi
    \global\let\thedimensionprefix\empty
    \global\let\thedimensionpower\empty}
-
 
 %D \macros
 %D   {dontbreakdimension,

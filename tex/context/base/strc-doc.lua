@@ -265,7 +265,8 @@ function sections.pluslevel(t)
     local numbers, ownnumbers, status, depth = data.numbers, data.ownnumbers, data.status, data.depth
     local directives = t.directives
     local resetter = sets.getall("structure:resets",data.block, (directives and directives.resetset) or "")
-    if not (directives and directives.hidenumber) then
+--~     if not (directives and directives.hidenumber) then
+    if t.metadata.increment then
         if numbers[depth] then
             numbers[depth] = numbers[depth] + 1
         else
@@ -404,7 +405,7 @@ end
 -- }
 
 function sections.typesetnumber(entry,kind,...) -- kind='section','number','prefix'
-    if entry then
+    if entry and entry.hidenumber ~= true then -- can be nil
         local separatorset  = ""
         local conversionset = ""
         local conversion    = ""
@@ -482,7 +483,6 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             end
             --
             local prefixlist = set and sets.getall("structure:prefixes","",set) -- "" == block
-            --
             if prefixlist and (kind == 'section' or kind == 'prefix') then
                 -- find valid set (problem: for sectionnumber we should pass the level)
             --  if kind == "section" then
@@ -562,7 +562,7 @@ function sections.fullnumber(depth)
     local data = data.status[depth or data.depth]
     if data then
         local sectiondata = jobsections.collected[data.references.section]
-        if sectiondata then
+        if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
             sections.typesetnumber(sectiondata,'section',sectiondata)
         end
     end

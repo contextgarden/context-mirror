@@ -102,7 +102,7 @@
    )}%
    \docheckstructurecountersetup{#1}}
 
-\def\donodefinestructurecounter[#1][#2]%
+\def\donodefinestructurecounter[#1][#2]% inherit
   {\getparameters[\??nn#1][\c!number=#2]%
    \docheckstructurecountersetup{#1}}
 
@@ -117,7 +117,6 @@
   {\ctxlua{structure.sections.way("\structurecounterparameter{#1}\c!way","\v!by")}}
 
 \def\thenamedstructurecounterlevel#1%
-%   {\thenamedstructureheadlevel{\structurecounterway{\structurecounterparameter{#1}\c!way}}}
   {\thenamedstructureheadlevel{\structurecounterway{#1}}}
 
 \def\docheckstructurecountersetup#1%

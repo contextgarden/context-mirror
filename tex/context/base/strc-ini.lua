@@ -255,7 +255,7 @@ function sets.getall(namespace,block,name)
     end
 end
 
-function sets.get(namespace,block,name,level,default)
+function sets.get(namespace,block,name,level,default) -- check if name is passed
     local ds = setlist[namespace]
     if not ds then
         return default
@@ -266,6 +266,12 @@ function sets.get(namespace,block,name,level,default)
             dn = ds[block..":"..name] or ds[name] or ds[block] or ds.default
         else
             dn = ds[name] or ds.default
+        end
+    else
+        if block and block ~= "" then
+            dn = ds[block] or ds[block..":default"] or ds.default
+        else
+            dn = ds.default
         end
     end
     if not dn then

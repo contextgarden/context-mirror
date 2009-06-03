@@ -1286,6 +1286,10 @@ enddef ;
 
 extra_endfig := extra_endfig & " naturalizepaths ; " ;
 
+%D Also handy:
+
+extra_beginfig := extra_beginfig & " truecorners := 0 ; " ; % restores
+
 %D Normally, arrowheads don't scale well. So we provide a
 %D hack.
 

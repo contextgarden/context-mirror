@@ -56,7 +56,7 @@
 \def\dosynonymparentparameter    #1#2{\ifx#1\relax\s!empty\else\dosynonymparameter    #1#2\fi}
 \def\dosynonymparentparameterhash#1#2{\ifx#1\relax        \else\dosynonymparameterhash#1#2\fi}
 
-\def\dosetsynonymattributes#1#2% style color
+\unexpanded\def\dosetsynonymattributes#1#2% style color
   {\edef\fontattributehash {\synonymparameterhash#1}%
    \edef\colorattributehash{\synonymparameterhash#2}%
    \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
@@ -104,12 +104,12 @@
      \ifthirdargument
        \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
      \fi
-     \setvalue{#1}{\definesynonym[\v!no][#1]}% \name
+     \unexpanded\setvalue{#1}{\definesynonym[\v!no][#1]}% \name
    \else
      \ifthirdargument
        \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
      \fi
-     \setvalue{#1}{\definesynonym[\v!yes][#1]}% \name
+     \unexpanded\setvalue{#1}{\definesynonym[\v!yes][#1]}% \name
    \fi
    \getparameters[\??sm#1][\s!parent=\??sm]%
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
@@ -151,39 +151,41 @@
    \fi
    \endgroup}
 
-\def\doinsertsynonym#1#2% name tag
+\unexpanded\def\doinsertsynonymmeaning#1#2% name tag
   {\begingroup
-   % no kap currently, of .. we need to map cap onto WORD
-   \dosetsynonymattributes\c!synonymstyle\c!synonymcolor
-   \ctxlua{joblists.synonym("#1","#2")}%
+   \def\currentsynonym{#1}%
+   \dosetsynonymattributes\c!textstyle\c!textcolor
+   \synonymparameter\c!textcommand{\ctxlua{joblists.meaning("#1","#2")}}%
    \endgroup}
 
-\def\doinsertsynonymmeaning#1#2% name tag
+\unexpanded\def\doinsertsynonym#1#2% name tag
   {\begingroup
-   % no kap currently, of .. we need to map cap onto WORD
-   \dosetsynonymattributes\c!textstyle\c!textcolor
-   \ctxlua{joblists.meaning("#1","#2")}%
+   \def\currentsynonym{#1}%
+   \dosetsynonymattributes\c!synonymstyle\c!synonymcolor
+   \synonymparameter\c!synonymcommand{\ctxlua{joblists.synonym("#1","#2")}}%
    \endgroup}
 
 \def\doplacelistofsynonyms#1#2%
   {\begingroup
    \def\currentsynonym{#1}%
-\definedescription  % todo, per class
-  [syndef]
-  [\c!location=\synonymparameter\c!location,
-   \c!width=\synonymparameter\c!width,
-   \c!distance=\synonymparameter\c!distance,
-   \c!sample=\synonymparameter\c!sample,
-   \c!hang=\synonymparameter\c!hang,
-   \c!align=\synonymparameter\c!align,
-   \c!before=\synonymparameter\c!before,
-   \c!inbetween=\synonymparameter\c!inbetween,
-   \c!after=\synonymparameter\c!after,
-   \c!indentnext=\synonymparameter\c!indentnext,
-   \c!headstyle=\synonymparameter\c!headstyle,
-   \c!headcolor=\synonymparameter\c!headcolor,
-   \c!style=,
-   \c!color=]%
+   \definedescription  % todo, per class
+    [syndef]
+    [\c!location=\synonymparameter\c!location,
+     \c!width=\synonymparameter\c!width,
+     \c!distance=\synonymparameter\c!distance,
+     \c!sample=\synonymparameter\c!sample,
+     \c!hang=\synonymparameter\c!hang,
+     \c!align=\synonymparameter\c!align,
+     \c!before=\synonymparameter\c!before,
+     \c!inbetween=\synonymparameter\c!inbetween,
+     \c!after=\synonymparameter\c!after,
+     \c!indentnext=\synonymparameter\c!indentnext,
+%      \c!headstyle=\synonymparameter\c!headstyle,
+%      \c!headcolor=\synonymparameter\c!headcolor,
+     \c!headstyle=\synonymparameter\c!textstyle,
+     \c!headcolor=\synonymparameter\c!textcolor,
+     \c!style=,
+     \c!color=]%
    \startpacked
      \ctxlua{joblists.process('#1',{ criterium = "\synonymparameter\c!criterium" })}%
    \stoppacked
@@ -199,8 +201,10 @@
 \let\startsynonymsection\gobbleoneargument
 \let\stopsynonymsection \relax
 
-\def\synonymentry#1#2#3%
-  {\syndef{\dosetsynonymattributes\c!textstyle\c!textcolor#2}#3\par}
+\unexpanded\def\synonymentry#1#2#3%
+%   {\syndef{\dosetsynonymattributes\c!textstyle\c!textcolor#2}#3\par}
+%   {\startsyndef{#2}#3\stopsyndef}
+  {\syndef{#2}#3\par}
 
 \let\currentsorting\empty
 
@@ -253,11 +257,11 @@
   {\ifthirdargument
      \doifnot{#3}\v!none
        {\ifx#3\relax \else
-          \def#3##1{\doinsertsort{#1}{##1}}%
+          \unexpanded\def#3##1{\doinsertsort{#1}{##1}}%
         \fi}%
-     \setvalue{#1}{\definesort[\v!no][#1]}%
+     \unexpanded\setvalue{#1}{\definesort[\v!no][#1]}%
    \else
-     \setvalue{#1}{\definesort[\v!yes][#1]}%
+     \unexpanded\setvalue{#1}{\definesort[\v!yes][#1]}%
    \fi
    \getparameters[\??so#1][\s!parent=\??so]%
    \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
@@ -385,8 +389,12 @@
   [\v!units]
   [\unitmeaning]
 
+% \setupsynonyms
+%   [\v!unit]
+%   [\c!textstyle=\dimension]
+
 \setupsynonyms
   [\v!unit]
-  [\c!textstyle=\dimension]
+  [\c!synonymcommand=\dimension]
 
 \protect \endinput

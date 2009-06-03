@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 06/02/09 09:32:43
+-- merge date  : 06/03/09 11:50:28
 
 do -- begin closure to overcome local limits and interference
 
@@ -3752,10 +3752,14 @@ function tfm.do_scale(tfmtable, scaledpoints)
     if not tp[22] then tp[22] =   0     end  -- mathaxisheight
     if t.MathConstants then t.MathConstants.AccentBaseHeight = nil end -- safeguard
     t.tounicode = 1
+    t.cidinfo = tfmtable.cidinfo
     -- we have t.name=metricfile and t.fullname=RealName and t.filename=diskfilename
     -- when collapsing fonts, luatex looks as both t.name and t.fullname as ttc files
     -- can have multiple subfonts
 --~ collectgarbage("collect")
+--~ t.fontname = t.fontname or t.fullname
+--~ t.name = t.name or t.fontname
+--~ print(t.fullname,table.serialize(characters[string.byte('W')].kerns))
     return t, delta
 end
 
@@ -7152,13 +7156,19 @@ function fonts.initializers.base.otf.features(tfmdata,value)
             local h = { }
             for f=1,#supported_gsub do
                 local feature = supported_gsub[f]
-                prepare_base_substitutions(tfmdata,feature,features[feature])
-                h[#h+1] = feature
+                local value = features[feature]
+                prepare_base_substitutions(tfmdata,feature,value)
+                if value then
+                    h[#h+1] = feature  .. "=" .. tostring(value)
+                end
             end
             for f=1,#supported_gpos do
                 local feature = supported_gpos[f]
+                local value = features[feature]
                 prepare_base_kerns(tfmdata,feature,features[feature])
-                h[#h+1] = feature
+                if value then
+                    h[#h+1] = feature  .. "=" .. tostring(value)
+                end
             end
             local hash = concat(h," ")
             local base = basehash[hash]
@@ -7173,7 +7183,8 @@ function fonts.initializers.base.otf.features(tfmdata,value)
             -- eventually (and subset later on). If needed we can use a more
             -- verbose name as long as we don't use <()<>[]{}/%> and the length
             -- is < 128.
-            tfmdata.fullname = tfmdata.fullname .. base
+            tfmdata.fullname = tfmdata.fullname .. "-" .. base
+--~ logs.report("otf define","fullname base hash: '%s', featureset '%s'",tfmdata.fullname,hash)
         end
         if trace_preparing then
             logs.report("otf define","preparation time is %0.3f seconds for %s",os.clock()-t,tfmdata.fullname or "?")
@@ -10418,7 +10429,7 @@ function tfm.hash_features(specification)
             end
         end
 --~ if specification.mathsize then
---~     t[#t] = "mathsize=" .. specification.mathsize
+--~     t[#t+1] = "mathsize=" .. specification.mathsize
 --~ end
         if #t > 0 then
             return concat(t,"+")

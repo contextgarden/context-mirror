@@ -140,7 +140,7 @@ end
 -- code
 
 function codeinjections.insertmovie(spec) -- width, height, factor, repeat, controls, preview, label, foundname
-    local width, height = spec.width, spec.height
+    local width, height, factor = spec.width, spec.height, spec.factor or number.dimenfactors.bp
     local options, actions = "", ""
     if spec["repeat"] then
         actions = actions .. "/Mode /Repeat "
@@ -157,7 +157,7 @@ function codeinjections.insertmovie(spec) -- width, height, factor, repeat, cont
         actions= "/A <<" .. actions .. ">>"
     end
     return format( -- todo: doPDFannotation
-        "\\doPDFannotation{%ssp}{%ssp}{/Subtype /Movie /Border [0 0 0] /T (movie %s) /Movie << /F (%s) /Aspect [%s %s] %s>> %s}",
+        "\\insertpdfannotation{%ssp}{%ssp}{/Subtype /Movie /Border [0 0 0] /T (movie %s) /Movie << /F (%s) /Aspect [%s %s] %s>> %s}",
         width, height, spec.label, spec.foundname, factor * width, factor * height, options, actions
     )
 end

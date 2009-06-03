@@ -536,10 +536,14 @@ function tfm.do_scale(tfmtable, scaledpoints)
     if not tp[22] then tp[22] =   0     end  -- mathaxisheight
     if t.MathConstants then t.MathConstants.AccentBaseHeight = nil end -- safeguard
     t.tounicode = 1
+    t.cidinfo = tfmtable.cidinfo
     -- we have t.name=metricfile and t.fullname=RealName and t.filename=diskfilename
     -- when collapsing fonts, luatex looks as both t.name and t.fullname as ttc files
     -- can have multiple subfonts
 --~ collectgarbage("collect")
+--~ t.fontname = t.fontname or t.fullname
+--~ t.name = t.name or t.fontname
+--~ print(t.fullname,table.serialize(characters[string.byte('W')].kerns))
     return t, delta
 end
 

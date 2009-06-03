@@ -225,7 +225,7 @@ do
         O = "Ὁ",
         U = "Ὑ",
         W = "Ὡ",
-	R = "Ῥ",
+        R = "Ῥ",
     }
 
     local replace_23 = { -- > *
@@ -308,37 +308,39 @@ do
         W = "Ω",
     [";"] = "·",
     ["?"] = ";",
-}
+    }
 
-    local skips_01 = lpeg.P("\\")  * lpeg.R("az", "AZ")^1
-    local skips_02 = lpeg.P("[")   * (1- lpeg.S("[]"))^1  * lpeg.P("]")
+    local P, R, S, V, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Cs
 
-    local greek_01 = (lpeg.P("<'")  * lpeg.Cs(1) * lpeg.P('|')) / replace_01
-    local greek_02 = (lpeg.P(">'")  * lpeg.Cs(1) * lpeg.P('|')) / replace_02
-    local greek_03 = (lpeg.P("<`")  * lpeg.Cs(1) * lpeg.P('|')) / replace_03
-    local greek_04 = (lpeg.P(">`")  * lpeg.Cs(1) * lpeg.P('|')) / replace_04
-    local greek_05 = (lpeg.P("<~")  * lpeg.Cs(1) * lpeg.P('|')) / replace_05
-    local greek_06 = (lpeg.P(">~")  * lpeg.Cs(1) * lpeg.P('|')) / replace_06
-    local greek_07 = (lpeg.P('"\'') * lpeg.Cs(1)              ) / replace_07
-    local greek_08 = (lpeg.P('"`')  * lpeg.Cs(1)              ) / replace_08
-    local greek_09 = (lpeg.P('"~')  * lpeg.Cs(1)              ) / replace_09
-    local greek_10 = (lpeg.P("<'")  * lpeg.Cs(1)              ) / replace_10
-    local greek_11 = (lpeg.P(">'")  * lpeg.Cs(1)              ) / replace_11
-    local greek_12 = (lpeg.P("<`")  * lpeg.Cs(1)              ) / replace_12
-    local greek_13 = (lpeg.P(">`")  * lpeg.Cs(1)              ) / replace_13
-    local greek_14 = (lpeg.P("<~")  * lpeg.Cs(1)              ) / replace_14
-    local greek_15 = (lpeg.P(">~")  * lpeg.Cs(1)              ) / replace_15
-    local greek_16 = (lpeg.P("'")   * lpeg.Cs(1) * lpeg.P('|')) / replace_16
-    local greek_17 = (lpeg.P("`")   * lpeg.Cs(1) * lpeg.P('|')) / replace_17
-    local greek_18 = (lpeg.P("~")   * lpeg.Cs(1) * lpeg.P('|')) / replace_18
-    local greek_19 = (lpeg.P("'")   * lpeg.Cs(1)              ) / replace_19
-    local greek_20 = (lpeg.P("`")   * lpeg.Cs(1)              ) / replace_20
-    local greek_21 = (lpeg.P("~")   * lpeg.Cs(1)              ) / replace_21
-    local greek_22 = (lpeg.P("<")   * lpeg.Cs(1)              ) / replace_22
-    local greek_23 = (lpeg.P(">")   * lpeg.Cs(1)              ) / replace_23
-    local greek_24 = (lpeg.Cs(1)    * lpeg.P('|')             ) / replace_24
-    local greek_25 = (lpeg.P('"')   * lpeg.Cs(1)              ) / replace_25
-    local greek_26 = (lpeg.Cs(1)                              ) / replace_26
+    local skips_01 = P("\\")   * R("az", "AZ")^1
+    local skips_02 = P("[")    * (1- S("[]"))^1  * P("]")
+
+    local greek_01 = (P("<'")  * Cs(1) * P('|')) / replace_01
+    local greek_02 = (P(">'")  * Cs(1) * P('|')) / replace_02
+    local greek_03 = (P("<`")  * Cs(1) * P('|')) / replace_03
+    local greek_04 = (P(">`")  * Cs(1) * P('|')) / replace_04
+    local greek_05 = (P("<~")  * Cs(1) * P('|')) / replace_05
+    local greek_06 = (P(">~")  * Cs(1) * P('|')) / replace_06
+    local greek_07 = (P('"\'') * Cs(1)         ) / replace_07
+    local greek_08 = (P('"`')  * Cs(1)         ) / replace_08
+    local greek_09 = (P('"~')  * Cs(1)         ) / replace_09
+    local greek_10 = (P("<'")  * Cs(1)         ) / replace_10
+    local greek_11 = (P(">'")  * Cs(1)         ) / replace_11
+    local greek_12 = (P("<`")  * Cs(1)         ) / replace_12
+    local greek_13 = (P(">`")  * Cs(1)         ) / replace_13
+    local greek_14 = (P("<~")  * Cs(1)         ) / replace_14
+    local greek_15 = (P(">~")  * Cs(1)         ) / replace_15
+    local greek_16 = (P("'")   * Cs(1) * P('|')) / replace_16
+    local greek_17 = (P("`")   * Cs(1) * P('|')) / replace_17
+    local greek_18 = (P("~")   * Cs(1) * P('|')) / replace_18
+    local greek_19 = (P("'")   * Cs(1)         ) / replace_19
+    local greek_20 = (P("`")   * Cs(1)         ) / replace_20
+    local greek_21 = (P("~")   * Cs(1)         ) / replace_21
+    local greek_22 = (P("<")   * Cs(1)         ) / replace_22
+    local greek_23 = (P(">")   * Cs(1)         ) / replace_23
+    local greek_24 = (Cs(1)    * P('|')        ) / replace_24
+    local greek_25 = (P('"')   * Cs(1)         ) / replace_25
+    local greek_26 = (Cs(1)                    ) / replace_26
 
     local skips =
         skips_01 + skips_02
@@ -351,20 +353,20 @@ do
         greek_21 + greek_22 + greek_23 + greek_24 + greek_25 +
         greek_26
 
-    local spacing      = lpeg.S(" \n\r\t")
-    local startgreek   = lpeg.P("\\startgreek")
-    local stopgreek    = lpeg.P("\\stopgreek")
-    local localgreek   = lpeg.P("\\localgreek")
-    local lbrace       = lpeg.P("{")
-    local rbrace       = lpeg.P("}")
+    local spacing      = S(" \n\r\t")
+    local startgreek   = P("\\startgreek")
+    local stopgreek    = P("\\stopgreek")
+    local localgreek   = P("\\localgreek")
+    local lbrace       = P("{")
+    local rbrace       = P("}")
 
-    local documentparser = lpeg.Cs((skips + greek + 1)^0)
+    local documentparser = Cs((skips + greek + 1)^0)
 
-    local contextgrammar = lpeg.Cs ( lpeg.P { "scan",
-        ["scan"]     = (lpeg.V("global") + lpeg.V("local") + skips + 1)^0,
+    local contextgrammar = Cs ( P { "scan",
+        ["scan"]     = (V("global") + V("local") + skips + 1)^0,
         ["global"]   = startgreek * ((skips + greek + 1)-stopgreek )^0 ,
-        ["local"]    = localgreek * lpeg.V("grouped"),
-        ["grouped"]  = spacing^0 * lbrace * (lpeg.V("grouped") + skips + (greek - rbrace))^0 * rbrace,
+        ["local"]    = localgreek * V("grouped"),
+        ["grouped"]  = spacing^0 * lbrace * (V("grouped") + skips + (greek - rbrace))^0 * rbrace,
     } )
 
     converters['greek'] = {

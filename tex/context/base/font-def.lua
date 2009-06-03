@@ -162,7 +162,7 @@ function tfm.hash_features(specification)
             end
         end
 --~ if specification.mathsize then
---~     t[#t] = "mathsize=" .. specification.mathsize
+--~     t[#t+1] = "mathsize=" .. specification.mathsize
 --~ end
         if #t > 0 then
             return concat(t,"+")

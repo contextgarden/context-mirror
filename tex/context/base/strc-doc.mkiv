@@ -93,7 +93,6 @@
             },
             directives = {
                 resetset   = "\structureparameter\c!reset",
-                hidenumber = not toboolean("\currentstructureincrementnumber",true), % incremented but hidden
             },
             metadata = {
                 kind     = "section",
@@ -103,6 +102,9 @@
                 xmlroot  = \ifx\currentstructurecoding\s!xml "\xmldocument" \else nil \fi,
                 \ifx\currentstructuresaveinlist\v!no
                     nolist = true,
+                \fi
+                \ifx\currentstructureincrementnumber\v!yes
+                    increment = "\currentstructureincrementnumber",
                 \fi
             },
             titledata = { % we can add mark and reference
@@ -116,6 +118,8 @@
             \fi \fi
             },
             numberdata = {
+block         = "\currentstructureblock",
+hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
                 separatorset  = "\structureparameter\c!sectionseparatorset",
                 conversion    = "\structureparameter\c!sectionconversion", % for good old times sake
                 conversionset = "\structureparameter\c!sectionconversionset",
@@ -123,7 +127,6 @@
                 set           = "\structureparameter\c!sectionset",
                 segments      = "\structureparameter\c!sectionsegments",
                 ownnumber     = "\currentstructureownnumber",
-                hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
             },
             userdata = structure.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
         }

@@ -260,7 +260,7 @@
    \setupcaption[#1][\s!parent=\??kj#3]%
    \definestructurecounter[#1][#3]%
    \definelist[#1][#3]%
-   \presetlabeltext[#1=\Word{#3}]%
+   \presetlabeltext[#1=\Word{#3}~]%
    \presetheadtext[#2=\Word{#2}]%
    \dodefinefloatcommands[#1][#2]}
 
@@ -300,17 +300,17 @@
 
 \def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
-%      \labeltexts\currentfloat{\convertedstructurecounter[\currentfloat]}% ! ! todo: use a lua call instead
-\ifx\currentfloatnumber\relax\else
-     \labeltexts\currentfloat{\ctxlua{structure.lists.savednumber("\currentfloat",\currentfloatnumber)}}%
-\fi
+   % \labeltexts\currentfloat{\convertedstructurecounter[\currentfloat]}% ! ! todo: use a lua call instead
+     \ifx\currentfloatnumber\relax\else
+       \labeltexts\currentfloat{\ctxlua{structure.lists.savednumber("\currentfloat",\currentfloatnumber)}}%
+     \fi
    \fi \fi}
 
 \def\thecurrentfloatcaption
   {\ifnofloatcaption \else
-\ifx\currentfloatnumber\relax\else
-     \ctxlua{structure.lists.savedtitle("\currentfloat",\currentfloatnumber)}%
-\fi
+     \ifx\currentfloatnumber\relax\else
+       \ctxlua{structure.lists.savedtitle("\currentfloat",\currentfloatnumber)}%
+     \fi
    \fi}
 
 %D Captions.
@@ -752,7 +752,7 @@
      \relax
      \relax
      \relax
-     [\c!name=\currentfloat,\s!counter=\currentfloat,%
+     [\c!name=\currentfloat,\s!counter=\@@thestructurecounter\currentfloat,%
       \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
       \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
       \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi,%

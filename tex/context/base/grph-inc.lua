@@ -676,7 +676,7 @@ function figures.checkers.mov(data)
     du.width = dr.width
     du.height = dr.height
     du.foundname = du.fullname
-    local code = backends.codeinjections {
+    local code = backends.codeinjections.insertmovie {
         width      = du.width or dr.width,
         height     = du.height or dr.height,
         factor     = number.dimenfactors.bp,

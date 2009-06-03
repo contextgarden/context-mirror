@@ -10218,6 +10218,16 @@ return {
    ["pe"]="رنگ‌مترادف",
    ["ro"]="culoaresinonim",
   },
+  ["synonymcommand"]={
+   ["cs"]="synonymcommand",
+   ["de"]="synonymbefehl",
+   ["en"]="synonymcommand",
+   ["fr"]="synonymcommand",
+   ["it"]="synonymcommand",
+   ["nl"]="synoniemcommando",
+   ["pe"]="synonymcommand",
+   ["ro"]="synonymcommand",
+  },
   ["synonymstyle"]={
    ["cs"]="stylsynonyma",
    ["de"]="synonymstil",

@@ -100,8 +100,8 @@ function lists.enhance(n)
  -- todo: symbolic names for counters
     local l = cached[n]
     if l then
-        -- save space
-        l.directives = nil
+        --
+        l.directives = nil -- might change
         -- save in the right order (happen sat shipout)
         lists.tobesaved[#lists.tobesaved+1] = l
         -- default enhancer (cross referencing)
@@ -300,6 +300,7 @@ end
 function lists.sectionnumber(name,n,spec)
     local data = lists.result[n]
     local sectiondata = jobsections.collected[data.references.section]
+    -- hm, prefixnumber?
     sections.typesetnumber(sectiondata,"prefix",spec,sectiondata) -- data happens to contain the spec too
 end
 
