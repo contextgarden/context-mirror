@@ -108,38 +108,34 @@
 
 % TO BE MERGED
 
+% \def\setpospxy#1#2#3#4%
+%   {\@EA\xdef\csname\POSprefix#1\endcsname
+%      {\number#2,%
+%       \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
+%       \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax}}
+
+% \def\setpospxywhd#1#2#3#4#5#6#7%
+%   {\@EA\xdef\csname\POSprefix#1\endcsname
+%      {\number#2,%
+%       \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
+%       \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax,%
+%       \the\dimexpr#5\relax,\the\dimexpr#6\relax,\the\dimexpr#7\relax}}
+
+% \def\setpospxyplus#1#2#3#4#5#6#7#8%
+%   {\@EA\xdef\csname\POSprefix#1\endcsname
+%      {\number#2,%
+%       \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
+%       \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax,%
+%       \the\dimexpr#5\relax,\the\dimexpr#6\relax,\the\dimexpr#7\relax,#8}}
+
+% are the next 6 still used?
+
 \def\dolazysaveposition            #1#2#3#4{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4"}}}}
 \def\dolazysavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4","#5","#6","#7"}}}}
 \def\dolazysavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
 \def\dosaveposition                #1#2#3#4{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4"}}}}
 \def\dosavepositionwhd       #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4","#5","#6","#7"}}}}
 \def\dosavepositionplus    #1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
-
-% \def\dosetposition#1%
-%   {\pdfsavepos
-%    \dolazysaveposition
-%      {#1}%
-%      {\noexpand\realfolio}%
-%      {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
-%      {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}}%
-%
-% \def\dosetpositionwhd#1#2#3#4%
-%   {\pdfsavepos
-%    \dolazysavepositionwhd
-%      {#1}%
-%      {\noexpand\realfolio}%
-%      {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
-%      {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
-%      {#2}{#3}{#4}}
-%
-% \def\dosetpositionplus#1#2#3#4#5%
-%   {\pdfsavepos
-%    \dolazysavepositionplus
-%      {#1}%
-%      {\noexpand\realfolio}%
-%      {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
-%      {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
-%      {#2}{#3}{#4}{#5}}
 
 \def\lastsavedpositionx {\the\dimexpr\pdflastxpos\scaledpoint\relax}
 \def\lastsavedpositiony {\the\dimexpr\pdflastypos\scaledpoint\relax}
@@ -239,6 +235,9 @@
 %D
 %D Access to the positional information is provided by macros
 %D with short names that are clearly meant for \METAPOST.
+
+% \the\dimexpr\noexpand\lastsavedpositionx\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
+% \the\dimexpr\noexpand\lastsavedpositiony\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
 
 \def\MPp       #1{\ctxlua{jobpositions.MPp("#1")}}
 \def\MPx       #1{\ctxlua{jobpositions.MPx("#1")}}

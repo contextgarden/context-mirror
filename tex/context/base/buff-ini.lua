@@ -236,7 +236,9 @@ function buffers.collect(names,separator) -- no print
 end
 
 function buffers.feedback(names,separator)
-    texsprint(ctxcatcodes,string.splitlines(buffers.collect(names,separator)))
+    -- don't change the texprint into texsprint as it fails on mp buffers
+    -- because (p<nl>enddef) becomes penddef then
+    texprint(ctxcatcodes,string.splitlines(buffers.collect(names,separator)))
 end
 
 local function tobyte(c)

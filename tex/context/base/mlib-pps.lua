@@ -221,6 +221,7 @@ function metapost.specials.fg(specification,object,result,flusher) -- graphics
     local before = specification and function()
         flusher.flushfigure(result)
         sprint(ctxcatcodes,format("\\MPLIBfigure{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,specification))
+        object.path = nil
         return object, { }
     end
     return { } , before, nil, nil -- replace { } by object for tracing
@@ -232,7 +233,10 @@ function metapost.specials.ps(specification,object,result) -- positions
     local x, y = first.x_coord, first.y_coord
     local w, h = third.x_coord - x, third.y_coord - y
     local label = specification
-    logs.report("mplib", "todo: position '%s' at (%s,%s) with (%s,%s)",label,x,y,w,h)
+    x = x - metapost.llx
+    y = metapost.ury - y
+ -- logs.report("mplib", "todo: position '%s' at (%s,%s) with (%s,%s)",label,x,y,w,h)
+    sprint(ctxcatcodes,format("\\dosavepositionwhd{%s}{0}{%sbp}{%sbp}{%sbp}{%sbp}{0pt}",label,x,y,w,h))
     return { }, nil, nil, nil
 end
 
@@ -810,41 +814,37 @@ do -- only used in graphictexts
 
 end
 
-do -- not that beautiful but ok, we could save a md5 hash in the tui file !
+local graphics = { }
+local start    = [[\starttext]]
+local preamble = [[\long\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
+local stop     = [[\stoptext]]
 
-    local graphics = { }
-    local start    = [[\starttext]]
-    local preamble = [[\long\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
-    local stop     = [[\stoptext]]
+function metapost.specials.gt(specification,object) -- number, so that we can reorder
+    graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",specification)
+    metapost.intermediate.needed = true
+    metapost.multipass = true
+    return { }, nil, nil, nil
+end
 
-    function metapost.specials.gt(specification,object) -- number, so that we can reorder
-        graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",specification)
-        metapost.intermediate.needed = true
-        metapost.multipass = true
-        return { }, nil, nil, nil
-    end
-
-    function metapost.intermediate.actions.makempy()
-        if #graphics > 0 then
-            local mpofile = tex.jobname .. "-mpgraph"
-            local mpyfile = file.replacesuffix(mpofile,"mpy")
-            local pdffile = file.replacesuffix(mpofile,"pdf")
-            local texfile = file.replacesuffix(mpofile,"tex")
-            io.savedata(texfile, { start, preamble, metapost.tex.get(), concat(graphics,"\n"), stop }, "\n")
-            os.execute(format("context --once %s", texfile))
-            if io.exists(pdffile) then
-                os.execute(format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile))
-                local result = { }
-                if io.exists(mpyfile) then
-                    local data = io.loaddata(mpyfile)
-                    for figure in gmatch(data,"beginfig(.-)endfig") do
-                        result[#result+1] = format("begingraphictextfig%sendgraphictextfig ;\n", figure)
-                    end
-                    io.savedata(mpyfile,concat(result,""))
+function metapost.intermediate.actions.makempy()
+    if #graphics > 0 then
+        local mpofile = tex.jobname .. "-mpgraph"
+        local mpyfile = file.replacesuffix(mpofile,"mpy")
+        local pdffile = file.replacesuffix(mpofile,"pdf")
+        local texfile = file.replacesuffix(mpofile,"tex")
+        io.savedata(texfile, { start, preamble, metapost.tex.get(), concat(graphics,"\n"), stop }, "\n")
+        os.execute(format("context --once %s", texfile))
+        if io.exists(pdffile) then
+            os.execute(format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile))
+            local result = { }
+            if io.exists(mpyfile) then
+                local data = io.loaddata(mpyfile)
+                for figure in gmatch(data,"beginfig(.-)endfig") do
+                    result[#result+1] = format("begingraphictextfig%sendgraphictextfig ;\n", figure)
                 end
+                io.savedata(mpyfile,concat(result,""))
             end
-            graphics = { }
         end
+        graphics = { }
     end
-
 end

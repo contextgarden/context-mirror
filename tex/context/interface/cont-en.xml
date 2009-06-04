@@ -598,6 +598,10 @@
           <cd:constant type="yes"/>
           <cd:constant type="no"/>
         </cd:parameter>
+        <cd:parameter name="factor">
+          <cd:constant type="yes"/>
+          <cd:constant type="no"/>
+        </cd:parameter>
         <cd:parameter name="textcolor">
           <cd:constant type="cd:name"/>
         </cd:parameter>

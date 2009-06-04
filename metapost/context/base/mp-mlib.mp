@@ -165,6 +165,8 @@ vardef thelabel@#(expr s, z) =
     p shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
 enddef;
 
+let normalinfont = infont ;
+
 primarydef str infont name = % very naughty !
     if name = "" :
         textext(str)
@@ -257,6 +259,9 @@ enddef ;
 def erasegraphictextfile =
 enddef ;
 
+def externalfigure primary filename =
+    doexternalfigure (filename)
+enddef ;
 def doexternalfigure (expr filename) text transformation =
     draw unitsquare transformation withprescript "fg" withpostscript filename ;
 enddef ;

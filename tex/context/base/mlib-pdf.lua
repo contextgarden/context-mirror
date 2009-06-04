@@ -239,6 +239,10 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
                 local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                 local bbox = figure:boundingbox()
                 local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
+metapost.llx = llx
+metapost.lly = lly
+metapost.urx = urx
+metapost.ury = ury
                 if urx < llx then
                     -- invalid
                     flusher.startfigure(fignum,0,0,0,0,"invalid",figure)
@@ -274,6 +278,7 @@ t[#t+1] = metapost.colorinitializer()
                                 t[#t+1] = "Q"
                             else
                                 -- alternatively we can pass on the stack, could be a helper
+                                -- can be optimized with locals
                                 local currentobject = { -- not needed when no extensions
                                     type = object.type,
                                     miterlimit = object.miterlimit,
@@ -287,6 +292,7 @@ t[#t+1] = metapost.colorinitializer()
                                     prescript = object.prescript,
                                     postscript = object.postscript,
                                 }
+--~ print(table.serialize(currentobject))
                                 --
                                 local before, inbetween, after = nil, nil, nil
                                 --
@@ -298,7 +304,7 @@ t[#t+1] = metapost.colorinitializer()
                                 end
                                 --
                                 local prescript = currentobject.prescript
-                                if prescript then
+                                if prescript and prescript ~= "" then
                                     -- move test to function
                                     local special = metapost.specials[prescript]
                                     if special then
@@ -418,6 +424,12 @@ function metapost.parse(result)
         if figures then
             for f=1, #figures do
                 local figure = figures[f]
+local bbox = figure:boundingbox()
+local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
+metapost.llx = llx
+metapost.lly = lly
+metapost.urx = urx
+metapost.ury = ury
                 local objects = getobjects(result,figure,f)
                 if objects then
                     for o=1,#objects do

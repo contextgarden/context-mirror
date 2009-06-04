@@ -598,6 +598,10 @@
           <cd:constant type="بله"/>
           <cd:constant type="نه"/>
         </cd:parameter>
+        <cd:parameter name="عامل">
+          <cd:constant type="بله"/>
+          <cd:constant type="نه"/>
+        </cd:parameter>
         <cd:parameter name="رنگ‌متن">
           <cd:constant type="cd:name"/>
         </cd:parameter>

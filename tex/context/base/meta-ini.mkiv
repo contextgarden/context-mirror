@@ -101,10 +101,6 @@
 % todo: geen page stats
 % todo: textext in plain mp
 
-% test:
-%
-% \let\processMPgraphic\extendedprocessMPgraphic \setupcolors[state=start]
-%
 % \startMPdefinitions{metafun}
 %     color MyColor ; MyColor = red ;
 % \stopMPdefinitions
@@ -223,7 +219,7 @@
      {\settrue\includeMPextensions\letgvalue{\@@MPF\currentMPgraphicinstance\s!extensions}\v!no}
      {\setfalse\includeMPextensions}%
    \doifelsevalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!yes
-     {\settrue\includeMPinitializations\letgvalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!no}
+     {\settrue\includeMPinitializations}% \letgvalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!no}
      {\setfalse\includeMPinitializations}%
    \setbox\MPgraphicbox\hbox\bgroup
      \normalexpanded{\noexpand\ctxlua{metapost.graphic("\currentMPgraphicinstance", "\currentMPgraphicformat",
@@ -240,8 +236,8 @@
 
 \let\extendedprocessMPgraphic\processMPgraphic
 
-\let\processMPgraphic\normalprocessMPgraphic
-% \let\processMPgraphic\extendedprocessMPgraphic
+% \let\processMPgraphic\normalprocessMPgraphic
+\let\processMPgraphic\extendedprocessMPgraphic
 
 % ! ! ! ! end temporary ! ! ! !
 
@@ -1046,6 +1042,8 @@
 %D Alas, the prologue settings differ per driver.
 
 \ifx\undefined\MPprologues \def\MPprologues{0} \fi
+
+% hm, not needed more than once so can be extensions
 
 \startMPinitializations
     prologues:=\MPprologues;

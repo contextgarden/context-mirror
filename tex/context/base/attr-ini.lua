@@ -206,10 +206,11 @@ end
 
 colors.none = nodeinjections.graycolor(0)
 
-function colors.setmodel(attribute,name)
+function colors.setmodel(attribute,name,weightgray)
     colors.model = name
     colors.selector = numbers[attribute]
     colors.default = models[name] or 1
+    colors.weightgray = weightgray ~= false
     return colors.default
 end
 

@@ -25,7 +25,7 @@
 
 %D The next macros so some housekeeping.
 
-\def\pageanchor{page:0}
+\def\pageanchor{page:0} % for the moment only one pagesize
 \def\textanchor{text:\realfolio}
 \def\headanchor{head:\realfolio} % virtual position
 \def\tailanchor{tail:\realfolio} % virtual position
@@ -281,24 +281,12 @@
   {\ifcsname\@@meta self\endcsname\else\setvalue{\@@meta self}{\currentposition}\fi
    \ifcsname\@@meta from\endcsname\else\setvalue{\@@meta from}{\currentposition}\fi}
 
-\newif\ifcollectMPpositiongraphics \collectMPpositiongraphicstrue
-
 \long\def\useMPpositiongraphic#1#2#3%
   {\bgroup
    \prepareMPvariables{#2}%
    \prepareMPpositionvariables
    \enableincludeMPgraphics
-   \ifcollectMPpositiongraphics % no longer needed in mkiv
-     \expanded{\startMPdrawing#3\noexpand\stopMPdrawing}%
-     \global\MPdrawingdonetrue
-   \else\ifx\startMPgraphic\undefined
-     \startMPcode#3\stopMPcode
-   \else
-     \startMPgraphic#3\stopMPgraphic
-     \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
-     \deallocateMPslot\currentMPgraphic
-     \placeMPgraphic
-   \fi\fi
+   \startMPcode#3\stopMPcode
    \egroup}
 
 % Now we need a adapted action handler:
@@ -312,20 +300,7 @@
        \traceposstring\clap\red{<#1>}%
        \the\everyinsertpositionaction
        \the\everypositionaction
-       \ifcollectMPpositiongraphics
-         % can save a lot of run time
-         \pushMPdrawing
-         \MPshiftdrawingtrue
-         \resetMPdrawing
-         \getvalue{\POSactionprefix#1::}%
-         \ifMPdrawingdone
-           \getMPdrawing
-         \fi
-         \resetMPdrawing
-         \popMPdrawing
-       \else
-         \getvalue{\POSactionprefix#1::}%
-       \fi
+       \getvalue{\POSactionprefix#1::}%
        \cleanuppositionaction{#1}%
        \egroup                % smashed is really needed else
        \smashedbox\scratchbox % we get problems with too big

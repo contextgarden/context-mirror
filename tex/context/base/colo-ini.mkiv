@@ -231,7 +231,7 @@
 \def\definetransparency
   {\dodoubleargument\dodefinetransparency}
 
-\def\setupcolors
+\unexpanded\def\setupcolors
   {\dosingleargument\dosetupcolors}
 
 \def\resetcolorsplitting
@@ -279,8 +279,11 @@
    \doifelse\@@clcriterium\v!all
      \hidesplitcolortrue
      \hidesplitcolorfalse
+   \doifelse\@@clfactor\v!no
+     \weightGRAYfalse
+     \weightGRAYtrue
    \doifelse\@@clrgb\v!no
-     {\ifRGBsupported     \ifproductionrun\showmessage\m!colors {9}\v!rgb         \fi\RGBsupportedfalse \fi}
+     {\ifRGBsupported      \ifproductionrun\showmessage\m!colors {9}\v!rgb         \fi\RGBsupportedfalse \fi}
      {\ifRGBsupported \else\ifproductionrun\showmessage\m!colors{10}\v!rgb        \fi\RGBsupportedtrue  \fi}%
    \doifelse\@@clcmyk\v!no
      {\ifCMYKsupported     \ifproductionrun\showmessage\m!colors {9}\v!cmyk       \fi\CMYKsupportedfalse\fi}
@@ -788,7 +791,8 @@
 \ifx\currentcolormodel\undefined \newcount\currentcolormodel \fi
 
 \def\setcolormodel#1%
-  {\currentcolormodel\ctxlua{tex.print(colors.setmodel('colormodel','#1'))}%
+  {\showmessage\m!colors1{#1}%
+   \currentcolormodel\ctxlua{tex.print(colors.setmodel('colormodel','#1',\ifweightGRAY true\else false\fi))}%
    \dosetattribute{colormodel}{\the\currentcolormodel}}
 
 \setcolormodel{all}
@@ -810,7 +814,8 @@
      \fi
    \else
      \setcolormodel{gray}%
-   \fi}
+   \fi
+   }%\aftergroup\dosetupcolormodel}
 
 \appendtoks
     \dosetupcolormodel
@@ -1175,6 +1180,7 @@
    \c!expansion=\v!no,
    \c!textcolor=,
    \c!split=\v!no,
+   \c!factor=\v!yes,
    \c!criterium=\v!all]
 
 \setupcolor

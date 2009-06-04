@@ -598,6 +598,10 @@
           <cd:constant type="da"/>
           <cd:constant type="nu"/>
         </cd:parameter>
+        <cd:parameter name="factor">
+          <cd:constant type="da"/>
+          <cd:constant type="nu"/>
+        </cd:parameter>
         <cd:parameter name="culoaretext">
           <cd:constant type="cd:name"/>
         </cd:parameter>

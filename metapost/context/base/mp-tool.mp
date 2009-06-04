@@ -1288,7 +1288,10 @@ extra_endfig := extra_endfig & " naturalizepaths ; " ;
 
 %D Also handy:
 
-extra_beginfig := extra_beginfig & " truecorners := 0 ; " ; % restores
+extra_beginfig := extra_beginfig & " truecorners :=  0 ; "   ; % restores
+extra_beginfig := extra_beginfig & " miterlimit  := 10 ; "   ; % restores
+extra_beginfig := extra_beginfig & " linejoin := rounded ; " ; % restores
+extra_beginfig := extra_beginfig & " linecap  := rounded ; " ; % restores
 
 %D Normally, arrowheads don't scale well. So we provide a
 %D hack.
@@ -2570,7 +2573,3 @@ enddef ;
 % done
 
 endinput ;
-
-end
-
-end

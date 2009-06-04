@@ -598,6 +598,10 @@
           <cd:constant type="si"/>
           <cd:constant type="no"/>
         </cd:parameter>
+        <cd:parameter name="fattore">
+          <cd:constant type="si"/>
+          <cd:constant type="no"/>
+        </cd:parameter>
         <cd:parameter name="coloretesto">
           <cd:constant type="cd:name"/>
         </cd:parameter>

@@ -159,6 +159,7 @@
    \startMPdrawing[-]
    % pic[n] := textext{\RotFont\setstrut\strut#1} ; % btex \RotFont\setstrut\strut#1 etex ;
      pic[n] := btex \RotFont\setstrut\strut#1 etex ;
+     pic[n] := pic[n] shifted - llcorner pic[n] ;
    \stopMPdrawing}
 
 \startuseMPgraphic{followtokens}
@@ -199,7 +200,7 @@
        draw RotPath withpen pencircle scaled 1pt withcolor blue ;
      fi ;
      for i=1 upto n :
-       wid := abs(xpart lrcorner pic[i] - xpart llcorner pic[i]) ;
+       wid := abs(xpart urcorner pic[i] - xpart llcorner pic[i]) ;
        pos := len[i]-wid/2 + (i-1)*pl ;
        at := arctime   pos of RotPath ;
        ap := point     at  of RotPath ;

@@ -544,6 +544,7 @@ function tfm.do_scale(tfmtable, scaledpoints)
 --~ t.fontname = t.fontname or t.fullname
 --~ t.name = t.name or t.fontname
 --~ print(t.fullname,table.serialize(characters[string.byte('W')].kerns))
+--~ print(t.id,t.fullname)
     return t, delta
 end
 

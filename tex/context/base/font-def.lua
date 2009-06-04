@@ -529,7 +529,7 @@ function define.read(specification,size,id) -- id can be optional, name can alre
     if not fontdata then
         logs.report("define font", "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(fontdata) == "table" then
-        logs.report("define font","using %s font with id %s, n:%s s:%s b:%s e:%s p:%s f:%s",
+        logs.report("define font","using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
             fontdata.type          or "unknown",
             id                     or "?",
             fontdata.name          or "?",

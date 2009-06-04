@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 06/03/09 11:50:28
+-- merge date  : 06/04/09 22:22:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -3760,6 +3760,7 @@ function tfm.do_scale(tfmtable, scaledpoints)
 --~ t.fontname = t.fontname or t.fullname
 --~ t.name = t.name or t.fontname
 --~ print(t.fullname,table.serialize(characters[string.byte('W')].kerns))
+--~ print(t.id,t.fullname)
     return t, delta
 end
 
@@ -6655,7 +6656,7 @@ function tfm.read_from_open_type(specification)
         if filename then
             tfmtable.encodingbytes = 2
             tfmtable.filename = resolvers.findbinfile(filename,"") or filename
-            tfmtable.fullname = otfdata.metadata.fontname or otfdata.metadata.fullname
+            tfmtable.fullname = tfmtable.fullname or otfdata.metadata.fontname or otfdata.metadata.fullname
             local order = otfdata and otfdata.metadata.order2
             if order == 0 then
                 tfmtable.format = 'opentype'
@@ -6668,6 +6669,7 @@ function tfm.read_from_open_type(specification)
         end
         fonts.logger.save(tfmtable,file.extname(specification.filename),specification)
     end
+--~ print(tfmtable.fullname)
     return tfmtable
 end
 
@@ -10796,7 +10798,7 @@ function define.read(specification,size,id) -- id can be optional, name can alre
     if not fontdata then
         logs.report("define font", "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(fontdata) == "table" then
-        logs.report("define font","using %s font with id %s, n:%s s:%s b:%s e:%s p:%s f:%s",
+        logs.report("define font","using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
             fontdata.type          or "unknown",
             id                     or "?",
             fontdata.name          or "?",

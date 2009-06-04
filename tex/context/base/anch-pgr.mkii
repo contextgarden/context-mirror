@@ -1,0 +1,1687 @@
+%D \module
+%D   [       file=anch-pgr, % split off core-pos
+%D        version=1999.08.01,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Positioning Graphics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Grapics}
+
+%D Before we come to graphics support, we have to make sure of
+%D the reference point on the page. The next macro does so and
+%D is hooked into the page building routine.
+
+\unprotect
+
+% in the future, the depth of tail will reflect page depth
+
+\ifx\textheight\undefined \def\textheight{\vsize} \fi
+
+%D The next macros so some housekeeping.
+
+\def\pageanchor{page:0} % for the moment only one pagesize
+\def\textanchor{text:\realfolio}
+\def\headanchor{head:\realfolio} % virtual position
+\def\tailanchor{tail:\realfolio} % virtual position
+
+%D Anchors:
+
+\def\dopresetpositionanchors % also mkii
+  {\bgroup
+   \!!dimena\ifdim\topskip>\strutht\topskip\else\strutht\fi
+   \!!dimenb\dimexpr\MPy\textanchor+\MPh\textanchor-\!!dimena\relax
+   \!!dimenc\dimexpr\MPy\textanchor+\strutdp\relax
+   \!!dimend\MPx\textanchor
+   \!!dimene\MPw\textanchor
+   \replacepospxywhd\headanchor\realfolio\!!dimend\!!dimenb\!!dimene\!!dimena\strutdp
+   \replacepospxywhd\tailanchor\realfolio\!!dimend\!!dimenc\!!dimene\strutht \strutdp
+   \egroup}
+
+\def\presetpositionanchors% compatibility hack (still needed?)
+  {\ifpositioning
+     \dopresetpositionanchors
+   \fi}
+
+%D The first version of this module implemented head and tail
+%D anchors. Currently we stick to just one anchor and derive
+%D the head and tail anchors from this one.
+
+\def\showanchor#1%
+  {\expanded{\writestatus{#1}
+     {\MPp{#1}\string|\MPx{#1}\string|\MPy{#1}\string|%
+      \MPw{#1}\string|\MPh{#1}\string|\MPd{#1}}}}
+
+%D We set these anchors before and after each page.
+
+\appendtoks \presetpositionanchors \to \beforeeverypage
+\appendtoks \presetpositionanchors \to \aftereverypage
+
+% todo: change with each page size change
+
+\def\registerpageposition#1% this one is flushed first !
+  {\ifpositioning\ifcase\realpageno\or
+     \ifdim\printpaperheight=\paperheight\else
+       \ifdim\printpaperwidth=\paperwidth\else
+         \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
+       \fi
+     \fi
+   \fi\fi}
+
+\def\placepositionanchors % todo : depth pagebox
+  {\ifpositioning
+     \setbox\scratchbox\vbox to \textheight
+       {\simpletopskipcorrection
+        \hbox{\strut\dopositionaction\headanchor}%
+        \vfill
+        \hbox{\strut\dopositionaction\tailanchor}}%
+     \dp\scratchbox\zeropoint
+     \wd\scratchbox\makeupwidth % not \zeropoint, else wrong text backgrounds
+     \hpos\textanchor{\box\scratchbox}%
+   \else
+     \vskip\textheight
+   \fi}
+
+%D \macros
+%D   {positionoverlay,startpositionoverlay}
+%D
+%D As long as we're dealing with graphics it makes much sense
+%D to use the available overlay mechanism. For this purpose, we
+%D define some dedicated overlay extensions.
+%D
+%D \startbuffer[sample]
+%D \defineoverlay [sample] [\positionoverlay{sample}]
+%D
+%D \startpositionoverlay{sample}
+%D   \setMPpositiongraphic{A-1}{connectcenter}{from=A-1,to=A-2}
+%D \stoppositionoverlay
+%D \stopbuffer
+%D
+%D \typebuffer[sample]
+%D
+%D \startbuffer[graphic]
+%D \startMPpositiongraphic{connectcenter}
+%D   path pa, pb ; pair ca, cb ;
+%D   initialize_box(\MPpos{\MPvar{from}}) ; pa := pxy ; ca := cxy ;
+%D   initialize_box(\MPpos{\MPvar{to}}) ; pb := pxy ; cb := cxy ;
+%D   draw pa withcolor red ;
+%D   draw pb withcolor red ;
+%D   draw ca -- cb withcolor blue ;
+%D   anchor_box(\MPanchor{\MPvar{from}}) ;
+%D \stopMPpositiongraphic
+%D \stopbuffer
+%D
+%D We can best demonstrate this in an example, say:
+%D
+%D \startbuffer[text]
+%D \framed
+%D   [backgroundachtergrond=sample,align=middle,width=7cm]
+%D   {We want to connect \hpos {A-1} {this} word with its
+%D    grammatical cousin \hpos {A-2} {that}.}
+%D \stopbuffer
+%D
+%D \typebuffer[text]
+%D
+%D \startlinecorrection
+%D %\getbuffer[graphic,sample,text]
+%D \stoplinecorrection
+%D
+%D The graphic is defined in the following way, using some
+%D macros defined in an auxiliary \METAPOST\ module that is
+%D preloaded.
+%D
+%D \typebuffer[graphic]
+
+\def\MPanchoridentifier{mpa} % {mp-anchor}
+\def\MPoverlayposprefix{MO::}
+
+% obsolete and wrong anyway
+%
+% \long\def\defineMPpositiongraphic#1%
+%   {\long\setvalue{\MPoverlayposprefix#1}}
+
+%D The rest of the definitions concerning such overlays may
+%D look complicated,
+
+\let\currentpositionoverlay\empty
+
+%D Position actions are automatically executed when a position
+%D is set.
+
+\let\MPanchornumber\realfolio
+
+\def\positionoverlay#1% the test prevents too many redundant positions
+  {\ifpositioning     % in (not used) text* position layers
+     \vbox to \overlayheight
+       {\doifpositionactionelse{#1::\MPanchoridentifier}%
+          {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
+           \edef\MPanchor##1{\MPpos{\MPanchorid}}%
+           \the\everyinsertpositionaction
+           \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
+           \hpos
+             {#1::\MPanchoridentifier:\MPanchornumber}%
+            % this is ok
+            %{\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
+            % but this one prevents cyclic runs due to
+            % rounding errors
+             {\setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}%
+              \ht\scratchbox\overlayheight
+              \dp\scratchbox\zeropoint
+              \box\scratchbox}}%
+          {\hbox to \overlaywidth{\hss}}%
+        \vfill}%
+   \fi}
+
+\def\startpositionoverlay#1%
+  {\iftrialtypesetting % we don't want redundant entries in the list
+     \@EA\gobbleuntil\@EA\stoppositionoverlay
+   \else
+     \def\currentpositionoverlay{#1}%
+   \fi}
+
+\def\stoppositionoverlay
+  {\let\currentpositionoverlay\empty}
+
+\def\resetpositionoverlay#1%
+  {\dosetpositionaction{#1::\MPanchoridentifier::}{}}
+
+%D Here the complication has to do with collecting actions
+%D for later execution. This collection is especially handy
+%D when we want to move actions to a specific layer.
+%D Such series of actions are stored in a macro (the one
+%D with the funny \type {++}) which is cleaned up after each
+%D invocation.
+
+\newtoks\everycleanpositionaction
+\newtoks\everyinsertpositionaction
+
+\def\cleanuppositionaction#1% not in trialtypesetting
+  {\ifcsname\POSactionprefix#1++\endcsname % \ifundefined{\POSactionprefix#1++}\else
+     \the\everycleanpositionaction
+     \iflocalpositioning
+       \letgvalue{\POSactionprefix#1++}\empty
+     \else
+       \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}%
+     \fi
+   \fi}
+
+% \def\cleanuppositionaction#1% not in trialtypesetting
+%   {\ifcsname\POSactionprefix#1++\endcsname
+%      \the\everycleanpositionaction
+%      \iflocalpositioning
+%        \global\expandafter\let\csname\POSactionprefix#1++\endcsname\empty
+%      \else
+%        \global\expandafter\let\csname\POSactionprefix#1++\expandafter\endcsname\csname\POSactionprefix#1++\endcsname
+%      \fi
+%    \fi}
+
+\def\handlepositionaction#1\with#2\on#3%
+  {\bgroup
+   \ifx\currentpositionoverlay\empty
+     \edef\!!stringa{#3}% no layer, just pos itself as anchor
+   \else
+     \edef\!!stringa{\currentpositionoverlay::\MPanchoridentifier}%
+   \fi
+   \edef\!!stringc{\POSactionprefix\!!stringa++}%
+   \expanded{\dosetpositionaction{\!!stringa}{\noexpand\getvalue{\!!stringc}}}%
+   \global\let#1\relax
+   \edef\!!stringb{\executeifdefined\!!stringc\empty}%
+   \setxvalue\!!stringc{\!!stringb#1#2}%
+   \egroup}
+
+%D The indirectness enables us redefine macros for special
+%D purposes, like a cleanup.
+
+\def\handlepositionboxes#1#2#3%
+  {\handlepositionaction\dohandlepositionboxes\with{#1}{#2}{#3}\on{#2}}
+
+\def\doinsertpositionboxes#1#2#3% pos tag setups
+  {\ifnum\MPp{#1}=\realpageno\relax % can be sped up
+     \executeifdefined{\MPoverlayposprefix#1}\gobblethreearguments{#1}{#2}{#3}%
+   \fi}
+
+\appendtoks
+  \let\dohandlepositionboxes\doinsertpositionboxes % was handle ?
+\to \everyinsertpositionaction
+
+\def\docleanpositionboxes#1#2#3% pos tag setups
+  {\ifnum\MPp{#1}<\realpageno \else
+     \noexpand \dohandlepositionboxes{#1}{#2}{#3}% reinsert
+   \fi}
+
+\appendtoks
+  \let\dohandlepositionboxes\docleanpositionboxes
+\to \everycleanpositionaction
+
+%D A position graphic is a normal (non||reused) \METAPOST\
+%D graphic, used immediately, with zero dimensions, so that a
+%D sequence of them does not harm.
+
+\newbox\positiongraphicbox
+
+\def\startMPpositiongraphic % id setups
+  {\dodoublegroupempty\dostartMPpositiongraphic}
+
+\long\def\dostartMPpositiongraphic#1#2#3\stopMPpositiongraphic
+  {\long\setgvalue{MPG:#1}% tag list mpcode
+     {\useMPpositiongraphic{#1}{#2}{#3}}}
+
+\let\stopMPpositiongraphic\relax
+
+% \def\prepareMPpositionvariables
+%   {\ifundefined{\@@meta self}\setvalue{\@@meta self}{\currentposition}\fi
+%    \ifundefined{\@@meta from}\setvalue{\@@meta from}{\currentposition}\fi}
+
+\def\prepareMPpositionvariables
+  {\ifcsname\@@meta self\endcsname\else\setvalue{\@@meta self}{\currentposition}\fi
+   \ifcsname\@@meta from\endcsname\else\setvalue{\@@meta from}{\currentposition}\fi}
+
+\newif\ifcollectMPpositiongraphics \collectMPpositiongraphicstrue
+
+\long\def\useMPpositiongraphic#1#2#3%
+  {\bgroup
+   \prepareMPvariables{#2}%
+   \prepareMPpositionvariables
+   \enableincludeMPgraphics
+   \ifcollectMPpositiongraphics % no longer needed in mkiv
+     \expanded{\startMPdrawing#3\noexpand\stopMPdrawing}%
+     \global\MPdrawingdonetrue
+   \else\ifx\startMPgraphic\undefined
+     \startMPcode#3\stopMPcode
+   \else
+     \startMPgraphic#3\stopMPgraphic
+     \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+     \deallocateMPslot\currentMPgraphic
+     \placeMPgraphic
+   \fi\fi
+   \egroup}
+
+% Now we need a adapted action handler:
+
+\def\dopositionaction#1% test saves hash entry in etex
+  {\ifundefined{\POSactionprefix#1::}\else
+     \ifnum\MPp{#1}>\zerocount % new
+       \bgroup
+       \setbox\scratchbox\hbox
+       \bgroup
+       \traceposstring\clap\red{<#1>}%
+       \the\everyinsertpositionaction
+       \the\everypositionaction
+       \ifcollectMPpositiongraphics
+         % can save a lot of run time
+         \pushMPdrawing
+         \MPshiftdrawingtrue
+         \resetMPdrawing
+         \getvalue{\POSactionprefix#1::}%
+         \ifMPdrawingdone
+           \getMPdrawing
+         \fi
+         \resetMPdrawing
+         \popMPdrawing
+       \else
+         \getvalue{\POSactionprefix#1::}%
+       \fi
+       \cleanuppositionaction{#1}%
+       \egroup                % smashed is really needed else
+       \smashedbox\scratchbox % we get problems with too big
+       \egroup                % overlays (s-pre-0x.tex)
+     \else
+       % shouldn't happen too often
+       \traceposstring\clap\cyan{<#1>}%
+     \fi
+   \fi}
+
+\def\MPpositiongraphic
+  {\dodoublegroupempty\doMPpositiongraphic}
+
+\def\doMPpositiongraphic#1#2% tag setups
+  {\bgroup
+   \def\@@meta{#1:}%
+   \setupMPvariables[#2]%
+   \prepareMPpositionvariables
+   \MPshiftdrawingtrue
+   \def\doMPpositiongraphic##1##2%
+     {{% new, see (techniek)
+       \def\@@meta{##1:}%
+       \setupMPvariables[#2,##2]%
+       \prepareMPpositionvariables
+       % and needed
+       \getvalue{MPG:##1}}}% temp hack
+   \setbox\positiongraphicbox\hbox
+     {\ignorespaces
+      \executeifdefined{MPM:#1}{\executeifdefined{MPG:#1}\donothing}%
+      \removelastspace}%
+   \smashbox\positiongraphicbox
+   \box\positiongraphicbox
+   \egroup}
+
+\long\def\startMPpositionmethod#1#2\stopMPpositionmethod
+  {\long\setgvalue{MPM:#1}{#2}} % todo: var list here
+
+\let\stopMPpositionmethod\relax
+
+%D Simple one position graphics.
+
+\def\setMPpositiongraphic
+  {\dotriplegroupempty\dosetMPpositiongraphic}
+
+\def\dosetMPpositiongraphic#1#2#3% pos tag vars
+  {\ifx\currentpositionoverlay\empty
+     \dosetpositionaction{#1}{\MPpositiongraphic{#2}{#3}}%
+   \else % silly can be one
+     \handlepositiongraphics{#1}{#2}{#3}%
+   \fi}
+
+\def\handlepositiongraphics#1#2#3% combine with boxes
+  {\handlepositionaction\dohandleMPpositiongraphic\with{#1}{#2}{#3}\on{#2}}
+
+\def\doinsertMPpositiongraphic#1#2#3% pos tag setups
+  {\ifnum\MPp{#1}=\realpageno\relax % extra saveguard
+     \def\currentposition{#1}\MPpositiongraphic{#2}{#3}%
+   \fi}
+
+\appendtoks
+  \let\dohandleMPpositiongraphic\doinsertMPpositiongraphic
+\to \everyinsertpositionaction
+
+\def\docleanMPpositiongraphic#1#2#3% pos tag setups
+  {\ifnum\MPp{#1}<\realpageno \else
+     \noexpand \dohandleMPpositiongraphic{#1}{#2}{#3}%
+   \fi}
+
+\appendtoks
+  \let\dohandleMPpositiongraphic\docleanMPpositiongraphic
+\to \everycleanpositionaction
+
+%D Graphics that span two positions.
+
+\def\setMPpositiongraphicrange
+  {\doquadruplegroupempty\dosetMPpositiongraphicrange}
+
+\def\dosetMPpositiongraphicrange#1#2#3#4% bpos epos tag vars
+  {\ifx\currentpositionoverlay\empty
+     \dosetpositionaction{#1}{\MPpositiongraphic{#3}{#4}}%
+   \else
+     \handlepositiongraphicsrange{#1}{#2}{#3}{#4}%
+   \fi}
+
+\def\handlepositiongraphicsrange#1#2#3#4%
+  {\handlepositionaction\dohandleMPpositiongraphicrange\with{#1}{#2}{#3}{#4}\on{#2}}
+
+\def\doinsertMPpositiongraphicrange#1#2#3#4% pos pos tag setups
+  {\ifnum\MPp{#1}\MPp{#2}>\zerocount
+     \iflocalpositioning
+       \donetrue
+     \else
+       \donefalse
+       \ifnum\MPp{#1}=\realpageno
+         \donetrue
+       \else\ifnum\MPp{#2}=\realpageno
+         \donetrue
+       \else\ifnum\MPp{#1}<\realpageno\relax\ifnum\MPp{#2}>\realpageno
+         \donetrue
+       \fi\fi\fi\fi
+     \fi
+     \ifdone
+       \def\currentposition{#1}\MPpositiongraphic{#3}{#4}%
+     \fi
+   \fi}
+
+\appendtoks
+  \let\dohandleMPpositiongraphicrange\doinsertMPpositiongraphicrange
+\to \everyinsertpositionaction
+
+\def\docleanMPpositiongraphicrange#1#2#3#4% pos tag setups
+  {\ifnum\MPp{#2}<\realpageno \else
+     \noexpand \dohandleMPpositiongraphicrange{#1}{#2}{#3}{#4}%
+   \fi}
+
+\appendtoks
+  \let\dohandleMPpositiongraphicrange\docleanMPpositiongraphicrange
+\to \everycleanpositionaction
+
+% will be overloaded, and/or code below moved to core-box
+
+\defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
+\defineoverlay[\v!text-1][\positionoverlay{\v!text-1}]
+\defineoverlay[\v!text+1][\positionoverlay{\v!text+1}]
+\defineoverlay[\v!text+2][\positionoverlay{\v!text+2}]
+
+%D The auxiliary \METAPOST\ macros are defined by default,
+%D by saying:
+
+\startMPextensions
+  if unknown context_core : input mp-core.mp ; fi ;
+\stopMPextensions
+
+%D Some of these macros are pretty clever but too complicated
+%D to be nice. When things are kind of stable I'll clean up
+%D this mess.
+
+%D THIS NEEDS A CLEANUP
+
+\setupMPvariables
+  [mpos:box]
+  [linecolor=blue,
+   linewidth=\linewidth,
+   fillcolor=lightgray,
+   filloffset=\!!zeropoint]
+
+\startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
+  initialize_box(\MPpos{\MPvar{self}}) ;
+  boxfillcolor  := \MPvar{fillcolor} ;
+  boxlinecolor  := \MPvar{linecolor} ;
+  boxlinewidth  := \MPvar{linewidth} ;
+  boxfilloffset := \MPvar{filloffset} ;
+  draw_box ;
+  anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+\setupMPvariables
+  [mpos:area]
+  [linecolor=blue,
+   linewidth=\linewidth,
+   fillcolor=lightgray,
+   filloffset=\!!zeropoint]
+
+\startMPpositiongraphic{mpos:area}{fillcolor,linecolor,linewidth}
+  initialize_area(\MPpos{b:\MPvar{self}},\MPpos{e:\MPvar{self}}) ;
+  boxfillcolor  := \MPvar{fillcolor} ;
+  boxlinecolor  := \MPvar{linecolor} ;
+  boxlinewidth  := \MPvar{linewidth} ;
+  boxfilloffset := \MPvar{filloffset} ;
+  draw_area ;
+  anchor_area(\MPanchor{b:\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+%D This is already cleaned up.
+
+% gridtype = 1 => baseline
+% gridtype = 2 => betweenline
+
+\setupMPvariables
+  [mpos:par]
+  [mp=mpos:par:shape,
+   gridtype=0,
+   linetype=1,
+   filltype=1,
+   dashtype=0, % 1 = dashed, 2 = dashed with background
+  %snaptops=true, % not that nice: true/false
+   gridcolor=red,
+   linecolor=blue,
+   fillcolor=lightgray,
+   filloffset=\!!zeropoint,
+   linewidth=\linewidth,
+   gridwidth=\linewidth,
+   gridshift=\!!zeropoint,
+   lineradius=.5\bodyfontsize,
+   dashtype=1]
+
+\startuseMPgraphic{mpos:par:shape}
+  \iftracepositions show_par \else draw_par \fi ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:par:setup}
+   boxgridtype   := \MPvar{gridtype} ;
+   boxlinetype   := \MPvar{linetype} ;
+   boxfilltype   := \MPvar{filltype} ;
+   boxdashtype   := \MPvar{dashtype} ;
+   boxgridcolor  := \MPvar{gridcolor} ;
+   boxlinecolor  := \MPvar{linecolor} ;
+   boxfillcolor  := \MPvar{fillcolor} ;
+   boxfilloffset := \MPvar{filloffset} ;
+   boxlinewidth  := \MPvar{linewidth} ;
+   boxgridwidth  := \MPvar{gridwidth} ;
+   boxgridshift  := \MPvar{gridshift} ;
+   boxlineradius := \MPvar{lineradius} ;
+  %snap_multi_par_tops := \MPvar{snaptops} ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:par:extra}
+  % user stuff, like:
+  % snap_multi_par_tops := false ;
+\stopuseMPgraphic
+
+\ifx\MPparcounter\undefined \newcounter\MPparcounter \fi
+
+\def\MPself     {\MPvar{self}}
+\def\MPbself    {b:\MPself}
+\def\MPeself    {e:\MPself}
+\def\MPwself    {w:\MPself}
+\def\MPparanchor{p:\MPparcounter}
+
+\def\MPl#1{\MPplus{#1}20}
+\def\MPr#1{\MPplus{#1}30}
+
+\startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete
+  \edef\MPparcounter{\MPv\MPbself{1}{0}}%
+  \doifpositionelse\MPwself
+    {\startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+       initialize_area_par(\MPpos\MPbself,
+                           \MPpos\MPeself,
+                           \MPpos\MPwself) ;
+       \includeMPgraphic{mpos:par:setup} ;
+       \includeMPgraphic{mpos:par:extra} ;
+       \includeMPgraphic{\MPvar{mp}} ;
+       anchor_par(\MPanchor\MPbself) ;
+     \stopMPpositiongraphic}
+    {\startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+       initialize_par(\MPpos\MPbself,
+                      \MPpos\MPeself,
+                      \MPpos\textanchor,
+                      \MPpos\MPparanchor,
+                      \MPvv \MPparanchor{0pt,0pt,0pt,0pt,0,0pt}) ;
+       \includeMPgraphic{mpos:par:setup} ;
+       \includeMPgraphic{mpos:par:extra} ;
+       \includeMPgraphic{\MPvar{mp}} ;
+       anchor_par(\MPanchor\MPbself) ;
+     \stopMPpositiongraphic}%
+  \MPpositiongraphic{mpos:par}{}%
+\stopMPpositionmethod
+
+%D The next alternative works in columnsets :
+
+%  \iftracepositions show\else draw\fi_multi_pars ;
+
+\startuseMPgraphic{mpos:par:columnset}
+  \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:par:sideline}{linecolor,lineoffset}
+    for i=1 upto nofmultipars :
+        fill leftboundary multipars[i]
+            shifted (-\MPvar{lineoffset},0)
+            rightenlarged 1mm withcolor \MPvar{linecolor} ;
+    endfor ;
+\stopuseMPgraphic
+
+\startMPpositionmethod{mpos:par:columnset}
+  \edef\MPparcounter{\MPv\MPbself{1}{0}}%
+  \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+    \includeMPgraphic{mpos:par:setup} ;
+    \includeMPgraphic{mpos:par:extra} ;
+    prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,
+      \MPpos\MPparanchor,\MPvv\MPparanchor{0pt,0pt,0pt,0pt,0,0pt}) ;
+    relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos
+    \includeMPgraphic{\MPvar{mp}} ;
+  \stopMPpositiongraphic
+  \MPpositiongraphic{mpos:par}{}%
+\stopMPpositionmethod
+
+%D \starttyping
+%D \setupbackground
+%D   [test]
+%D   [mp=mpos:par:columnset,
+%D    method=mpos:par:columnset]
+%D \stoptyping
+
+%D We need to treat floats in a special way.
+
+\startMPinitializations
+  local_multi_par_area:=\iflocalpositioning true\else false\fi;
+\stopMPinitializations
+
+\def\textbackgroundoverlay#1%
+  {\iflocalpositioning\v!local\else\v!text\fi#1}
+
+\newcounter\localpositionnumber
+
+\def\MPanchornumber
+  {\iflocalpositioning\localpositionnumber\else\realfolio\fi}
+
+%D So far for the trickery.
+
+\newcount\textbackgrounddepth
+
+\appendtoks
+  \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
+\to \everybye
+
+\appendtoks
+  \initializeparbackgrounds
+\to \everystarttext
+
+\ifx\totalnofparbackgrounds\undefined \newcounter\totalnofparbackgrounds \fi
+\ifx\nofparbackgrounds     \undefined \newcount  \nofparbackgrounds      \fi
+
+\def\initializeparbackgrounds
+  {\ifcase\totalnofparbackgrounds\else
+     \global\positioningtrue
+     \global\positioningpartrue
+   \fi}
+
+\unexpanded\def\starttextbackground
+  {\bgroup
+   \advance\textbackgrounddepth\plusone
+   \dodoubleempty\dostarttextbackground}
+
+\let\dodostarttextbackground\relax
+\let\dodostoptextbackground \relax
+
+\def\currentparbackground{pbg:0}
+\def\nextparbackground   {pbg:1}
+
+\def\btbanchor{b:\currentparbackground}
+\def\etbanchor{e:\currentparbackground}
+
+\def\nextbtbanchor{b:\nextparbackground}
+\def\nextetbanchor{e:\nextparbackground}
+
+\def\textbackgroundparameter#1%
+  {\csname\??td\currenttextbackground#1\endcsname}
+
+\let\backgroundvariable\textbackgroundparameter % will become obsolete
+
+% \definetextbackground[more][state=start,backgroundcolor=red] % location=paragraph
+% \definetextbackground[test][state=start,backgroundcolor=green]
+%
+% \page \placefigure[left]{}{}
+%
+% \starttextbackground[test]
+%   \readfile{ward}{}{}
+%   \starttextbackground[more]
+%     \readfile{ward}{}{}
+%   \stoptextbackground
+%   \readfile{ward}{}{}
+% \stoptextbackground
+%
+% \page \placefigure[right]{}{}
+%
+% \starttextbackground[test]
+%   \readfile{ward}{}{}
+%   \starttextbackground[more]
+%     \readfile{ward}{}{}
+%   \stoptextbackground
+%   \readfile{ward}{}{}
+% \stoptextbackground
+
+\def\dostarttextbackground[#1][#2]%
+  {\checktextbackgrounds
+   \def\currenttextbackground{#1}%
+   \global\advance\nofparbackgrounds\plusone
+   \edef\currentparbackground{pbg:\number\nofparbackgrounds}%
+%    \bgroup
+%      \advance\nofparbackgrounds\plusone
+%      \xdef\nextparbackground{pbg:\number\nofparbackgrounds}%
+%    \egroup
+   \xdef\nextparbackground{pbg:\number\numexpr\nofparbackgrounds+\plusone\relax}% still xdef ?
+   % todo : \synchonizepositionpage{b:\currentparbackground}{s:\currentparbackground}%
+   \setuptextbackground[#1][#2]%
+   \let\dodostarttextbackground\relax
+   \let\dodostoptextbackground \relax
+   \doif{\textbackgroundparameter\c!state}\v!start{\dopresettextbackground{#1}}%
+   \dodostarttextbackground}
+
+% todo \backgroundvariable\c!variant
+
+\def\dopresettextbackground#1% todo: \backgroundparameter
+  {\ExpandFirstAfter\processaction % \EFA niet echt nodig
+     [\textbackgroundparameter\c!location]
+     [   \v!text=>\let\dodostarttextbackground\dostarttextbackgroundtxt
+                  \let\dodostoptextbackground \dostoptextbackgroundtxt,
+    \v!paragraph=>\let\dodostarttextbackground\dostarttextbackgroundpar
+                  \let\dodostoptextbackground \dostoptextbackgroundpar,
+         \v!none=>\let\dodostarttextbackground\relax
+                  \let\dodostoptextbackground \relax]%
+   \ifx\dodostarttextbackground\dostarttextbackgroundpar % untested
+     \ifnum\textbackgrounddepth>\plusone % new
+       \let\dodostarttextbackground\dostarttextbackgroundtxt
+       \let\dodostoptextbackground \dostoptextbackgroundtxt
+     \fi
+   \fi
+   \doifelse{\textbackgroundparameter\c!frame}\v!on
+     {\doifelse{\textbackgroundparameter\c!corner}\v!round
+        {\setvalue{\??td#1\c!frame}{2}}
+        {\setvalue{\??td#1\c!frame}{1}}}
+     {\setvalue{\??td#1\c!frame}{0}}%
+   \doifelse{\textbackgroundparameter\c!background}\v!color
+     {\setvalue{\??td#1\c!background}{1}}
+     {\setvalue{\??td#1\c!background}{0}}%
+  %\startpositionoverlay{\v!text\getvalue{\??td#1\c!level}}%
+   \startpositionoverlay{\textbackgroundoverlay{\textbackgroundparameter\c!level}}%
+     \expanded
+       {\setMPpositiongraphicrange % moet veel efficienter
+          {\btbanchor}% {b:\currentparbackground}%
+          {\etbanchor}% {e:\currentparbackground}%
+          {\textbackgroundparameter\c!method}%
+          {self=\currentparbackground,
+           mp=\textbackgroundparameter\c!mp,
+           gridtype=\textbackgroundparameter\c!alternative,
+           filltype=\textbackgroundparameter\c!background,
+           linetype=\textbackgroundparameter\c!frame,
+           dashtype=\textbackgroundparameter{dash}, %  to be internationalized
+           gridcolor=\textbackgroundparameter\c!framecolor,
+           linecolor=\textbackgroundparameter\c!framecolor,
+           lineoffset=\textbackgroundparameter\c!frameoffset,
+           fillcolor=\textbackgroundparameter\c!backgroundcolor,
+           filloffset=\textbackgroundparameter\c!backgroundoffset,
+           gridwidth=\textbackgroundparameter\c!rulethickness,
+           gridshift=\textbackgroundparameter\c!voffset,
+           linewidth=\textbackgroundparameter\c!rulethickness,
+           lineradius=\textbackgroundparameter\c!radius}}%
+   \stoppositionoverlay}
+
+\def\stoptextbackground
+  {\dodostoptextbackground
+   \carryoverpar\egroup}
+
+\def\starttextbackgroundmanual
+  {\dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+   \fpos\currentparbackground\ignorespaces}
+
+\def\stoptextbackgroundmanual
+  {\tpos\currentparbackground
+   \dostopattributes}
+
+\def\dostarttextbackgroundtxt
+  {\ifvmode \dontleavehmode \fi % was leavevmode, brrr
+   \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+   \fpos\currentparbackground\ignorespaces}
+
+\def\dostoptextbackgroundtxt
+  {\tpos\currentparbackground
+   \dostopattributes}
+
+% keep this simple one, it's used in prikkels and alike
+%
+% \def\dostarttextbackgroundpar
+%   {\endgraf % new
+%    \getvalue{\??td\currenttextbackground\c!before}%
+%    \noindent\fpos\currentparbackground\ignorespaces
+%    \bgroup
+%    \nobreak \vskip-\lineheight \nobreak
+%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!topoffset}\to\scratchskip
+%    \kern\scratchskip\nobreak
+%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!leftoffset}}%
+%    \advance\leftskip\leftskipadaption
+%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rightoffset}}%
+%    \advance\rightskip\leftskipadaption
+%    \dostartattributes{\??td\currenttextbackground}\c!style\c!color{}%
+%    \nowhitespace
+%    \seteffectivehsize
+%    \par}
+%
+% \def\dostoptextbackgroundpar
+%   {\par
+%    \dostopattributes
+%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bottomoffset}\to\scratchskip
+%    \kern\scratchskip\nobreak
+%    \nobreak \vskip-\lineheight \nobreak
+%    \nowhitespace
+%    \egroup
+%    \nobreak \noindent \strut \hfill \kern\zeropoint \tpos\currentparbackground
+%    \endgraf % new
+%    \getvalue{\??td\currenttextbackground\c!after}}
+
+\newskip\textbackgroundskip
+
+\def\dostarttextbackgroundpar
+  {\endgraf % new
+   \textbackgroundparameter\c!before
+   \noindent
+   \ifgridsnapping
+     \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+     \ifdim\textbackgroundskip>\zeropoint
+       \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\currentparbackground}}}%
+     \else
+      \fpos\currentparbackground
+     \fi
+   \else
+     \fpos\currentparbackground
+   \fi
+   \bgroup
+   \endgraf % we need a vertical nobreak - 29/06/2004
+   \nobreak \vskip-\lineheight \nobreak
+   \ifgridsnapping \else
+     \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+     \ifdim\textbackgroundskip>\zeropoint
+        \kern\textbackgroundskip\nobreak
+     \fi
+   \fi
+   \dosetleftskipadaption{\textbackgroundparameter\c!leftoffset}%
+   \advance\leftskip\leftskipadaption
+   \dosetleftskipadaption{\textbackgroundparameter\c!rightoffset}%
+   \advance\rightskip\leftskipadaption
+   % new
+   \dosetraggedcommand{\textbackgroundparameter\c!align}%
+   \raggedcommand
+   %
+   \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+   \nowhitespace
+\nobreak % new per 23/04/2006 (else potential break when whitespace)
+   \seteffectivehsize
+   \doinhibitblank %   \blank[\v!disable]% new
+   \par}
+
+\def\dostoptextbackgroundpar
+  {\par
+   \removelastskip % new
+   \dostopattributes
+   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
+   \ifdim\lastskip>\zeropoint
+     \advance\textbackgroundskip-\lastskip
+   \fi
+   \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
+     \kern\textbackgroundskip\nobreak
+   \fi \fi
+   \nobreak \vskip-\lineheight \nobreak
+   \nowhitespace
+   \egroup
+\bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
+   \nobreak \noindent \strut \hfill \kern\zeropoint
+   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
+   \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
+     \ifdim\textbackgroundskip>\zeropoint
+       \struttedbox{\hbox{\lower\textbackgroundskip\hbox{\tpos\currentparbackground}}}%
+     \else
+       \tpos\currentparbackground
+     \fi
+   \else
+     \tpos\currentparbackground
+   \fi
+\egroup
+   \endgraf % new
+   \textbackgroundparameter\c!after}
+
+\let\textparpages \!!zeropoint
+\let\textparheight\!!zeropoint
+\let\textparwidth \!!zeropoint
+
+\def\calculatetextpardimensions
+  {\docalculatetextpardimensions\btbanchor    \etbanchor    \MPparanchor}
+
+\def\calculatenexttextpardimensions
+  {\docalculatetextpardimensions\nextbtbanchor\nextetbanchor\relax}
+
+\def\docalculatetextpardimensions#1#2#3% todo: dimexpr
+  {\scratchcounter\MPp#2%\etbanchor
+   \advance\scratchcounter-\MPp#1%\btanchor
+   \edef\textparpages{\the\scratchcounter}%
+   \ifcase\scratchcounter
+     % one page
+     \scratchdimen         \MPy#1%\btanchor
+     \advance\scratchdimen-\MPy#2%\etbanchor
+   \else
+     % two or more pages
+     \scratchdimen         \MPy#1%\btanchor
+     \advance\scratchdimen-\MPy#2%\etbanchor
+     \advance\scratchdimen-\MPy\textanchor
+     \advance\scratchdimen \MPy\textanchor % - and then + ?
+     \advance\scratchdimen \MPh\textanchor\relax
+     \ifcase\scratchcounter>2 \ifnum\scratchcounter<5
+       % more pages
+       \scratchdimen\textheight
+       \advance\scratchcounter \minusone
+       \multiply\scratchdimen \scratchcounter
+     \else
+       % keep'm small
+       \scratchdimen5\textheight
+     \fi \fi
+   \fi
+   \edef\textparheight{\the\scratchdimen}%
+   \ifcase\scratchcounter
+     % one page
+     \scratchdimen         \MPx#2%\etbanchor
+     \advance\scratchdimen-\MPx#1%\btanchor
+   \else
+     % two or more pages / maybe also hang
+     \ifx#3\relax
+       \scratchdimen\makeupwidth % \textwidth
+     \else
+       \scratchdimen\MPw\MPparanchor
+       \advance\scratchdimen-\MPl\MPparanchor
+       \advance\scratchdimen-\MPr\MPparanchor
+     \fi
+   \fi
+   \edef\textparwidth{\the\scratchdimen}}
+
+\def\mintextparheight{4\lineheight}
+
+\def\dontsplitnexttextbackground % dangerous but useful
+  {\ifdim\pagetotal>\textheight \else
+     \ifdim\pagegoal=\maxdimen \else
+      \calculatenexttextpardimensions
+      % too tricky
+      % \scratchdimen=\textparheight
+      % \advance\scratchdimen\pagetotal\relax
+      % \ifdim\scratchdimen>\pagegoal
+      % \page
+      % \fi
+      \ifdim\textparheight>\zeropoint
+        \ifdim\textparheight>\mintextparheight\else
+          \page % option
+        \fi
+      \fi
+    \fi
+   \fi}
+
+\def\definetextbackground
+  {\dodoubleempty\dodefinetextbackground}
+
+\def\dodefinetextbackground[#1][#2]%
+  {\ifsecondargument % why ?
+     \copyparameters[\??td#1][\??td]
+       [\c!state,\c!location,\c!alternative,\c!mp,\c!method,
+        \c!background,\c!backgroundcolor,\c!corner,\c!level,
+        \c!backgroundoffset,\c!before,\c!after,\c!align,dash, % dash not yet internationalized
+        \c!radius,\c!frame,\c!framecolor,\c!rulethickness,\c!voffset,\c!frameoffset,
+        \c!leftoffset,\c!rightoffset,\c!topoffset,\c!bottomoffset]%
+     \getparameters[\??td#1][#2]%
+     \doifvalue{\??td#1\c!state}\v!start\checktextbackgrounds
+     \unexpanded\setvalue{#1}%
+       {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
+     \setvalue{\e!start#1}{\starttextbackground[#1]}%
+     \setvalue{\e!stop #1}{\stoptextbackground}%
+   \fi}
+
+\def\setuptextbackground
+  {\dodoubleargument\dosetuptextbackground}
+
+\def\dosetuptextbackground[#1][#2]%
+  {\ifsecondargument
+     \doifelsenothing{#1}
+       {\dodosetuptextbackground{#2}\empty}
+       {\processcommalist[#1]{\dodosetuptextbackground{#2}}}%
+   \else
+     \dodosetuptextbackground{#1}\empty
+   \fi}
+
+\def\dodosetuptextbackground#1#2%
+  {\getparameters[\??td#2][#1]%
+   \def\currenttextbackground{#2}%
+   \doifvalue{\??td#2\c!state}\v!start\checktextbackgrounds}
+
+\let\currenttextbackground\empty
+
+\def\checktextbackgrounds
+  {\ifproductionrun
+     \enabletextarearegistration
+     \enablehiddenbackground
+   \fi}
+
+\setuptextbackground
+  [\c!mp=mpos:par:columnset,      % buggy: mpos:par:shape
+   \c!method=mpos:par:columnset, %
+   \c!state=\v!start,
+   \c!location=\v!text,
+   \c!leftoffset=\!!zeropoint, % 1em,
+   \c!rightoffset=\textbackgroundparameter\c!leftoffset,
+   \c!topoffset=\!!zeropoint,  % \v!medium,
+   \c!bottomoffset=\textbackgroundparameter\c!topoffset,
+   \c!level=-1,
+   \c!alternative=0,
+   \c!align=,
+   dash=0, % to be internationalized
+   \c!background=\v!color,
+   \c!backgroundcolor=lightgray,
+   \c!backgroundoffset=\!!zeropoint,
+   \c!corner=\v!rectangular,
+   \c!radius=.5\bodyfontsize,
+   \c!voffset=\!!zeropoint,
+   \c!frame=\v!on,
+   \c!framecolor=blue,
+   \c!rulethickness=\linewidth]
+
+%D As an example we define a grid background:
+
+\definetextbackground
+  [\v!grid]
+  [\c!state=\v!stop,
+   \c!location=\v!paragraph,
+   \c!frame=\v!off,
+   \c!framecolor=red,
+   \c!background=,
+   \c!alternative=1]
+
+\ifx\basegrid\undefined \else \letvalue\v!grid=\basegrid \fi
+
+% lelijk, aanpassen, opties
+
+\setupMPvariables
+  [mpos:connect]
+  [linecolor=red,
+   linewidth=1pt]
+
+\setupMPvariables
+  [mpos:encircle]
+  [fillcolor=lightgray,
+   filloffset=\!!zeropoint,
+   linecolor=blue,
+   linewidth=1pt]
+
+\startuseMPgraphic{mpos:common:ec}
+  path pa ; pair ca ; color lc ; numeric lw ;
+  lw := \MPvar{linewidth} ;
+  lc := \MPvar{linecolor} ;
+  initialize_box(\MPpos{\MPvar{self}}) ;
+  pa := pxy ; ca := cxy ; pa := boundingbox pa enlarged 2lw ;
+  pa := llcorner pa...lrcorner pa...urcorner pa...ulcorner pa...cycle ;
+  drawoptions (withpen pencircle scaled lw withcolor lc) ;
+\stopuseMPgraphic
+
+\startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth}
+  \includeMPgraphic{mpos:common:ec}
+  fill pa withcolor \MPvar{fillcolor} ; draw pa ;
+  anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+\startMPpositiongraphic{mpos:connect}{linecolor,linewidth}
+  path pb, pc ; pair cb, cc ;
+  \includeMPgraphic{mpos:common:ec}
+  initialize_box(\MPpos{\MPvar{to}}) ;
+  pb := pxy ; cb := cxy ; pb := boundingbox pb enlarged 2lw ;
+  pb := llcorner pb...lrcorner pb...urcorner pb...ulcorner pb...cycle ;
+  pc := ca {up} .. {down} cb ;
+  cc := (pc intersection_point pa) ;
+  if intersection_found :
+    pc := pc cutbefore cc ;
+    cc := (pc intersection_point pb) ;
+    if intersection_found :
+      pc := pc cutafter cc ;
+      drawarrow pc ; drawarrow reverse pc ;
+    fi ;
+  fi ;
+  anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+%D \macros
+%D   {stackposdown, stackposup, stackposleft,stackposright}
+%D
+%D A non graphic example of the use of positioning, is to stack
+%D text in for instance the margin.
+%D
+%D \stackposdown \inleft {some text}The text \type {some text}
+%D goes into the left margin, and \stackposdown \inleft {some
+%D more}\type {some more} as well. When they overlap, they
+%D will not touch.
+%D
+%D Here we said \type {\stackposdown \inleft{some text}}. Instead
+%D of \stackposleft \inleft {one}stacking \stackposleft \inleft
+%D {two}vertically, one can stack horizontally by \stackposleft
+%D \inleft {three}using \type {\stackposleft}.
+%D
+%D We can go in all four directions, using \type {\stackposdown},
+%D \type {\stackposup}, \type {\stackposleft} and \type
+%D {\stackposright}.
+
+\def\stackposdistance{.5em}
+
+\newcount\currentautopos
+\newcount\previousautopos
+
+\def\POSstackprefix{stack:}
+
+\def\dostackposbox#1#2%
+  {\dowithnextbox
+     {#2{\previousautopos\currentautopos
+         \global\advance\currentautopos\plusone
+         \edef\currentposition {\POSstackprefix\number\currentautopos}%
+         \edef\previousposition{\POSstackprefix\number\previousautopos}%
+         \hpos\currentposition{\doifoverlappingelse\currentposition\previousposition{#1}{\flushnextbox}}}}%
+     \hbox}
+
+\def\stackposup   {\dostackposbox{\raise\lineheight\flushnextbox}}
+\def\stackposdown {\dostackposbox{\lower\lineheight\flushnextbox}}
+\def\stackposleft {\dostackposbox{\copy\nextbox\hskip\nextboxwd\hskip\stackposdistance}}
+\def\stackposright{\dostackposbox{\hskip\stackposdistance\hskip\nextboxwd\flushnextbox}}
+
+%D \macros
+%D   {stackeddown}
+%D
+%D However, a better implementation is possible with the
+%D following macro. We now have an extra key \type {stack} for
+%D margin settings. When set to \type {yes}, this macro comes
+%D into action.
+
+% Because there can be many stacked items in a line and successive lines, we
+% play dirty and adapt the position and height of the current node so that
+% this becomes visible to a next pass.
+%
+% \startbuffer
+% \inleft {test 1} test 1 \inleft {test 2} test 2 \endgraf
+% \inleft {test 3} test 3
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft {test 1} test 1 \inleft {test 2} test 2 \inleft {test 3} test 3 \endgraf
+% \inleft {test 4} test 4
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft {test 1} test 1 \endgraf
+% \inleft {test 2} test 2 \endgraf
+% \inleft {test 3} test 3
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft {test 1\\test 1} test 1 \inleft {test 2} test 2 \endgraf
+% \inleft {test 3} test 3
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft {test 1\\test 1\\test 1\\test 1\\test 1} test 1 \endgraf
+% test 2 \endgraf
+% \inleft {test 3} test 3
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft{test 1} test \inleft{test 2} test \inleft{test 3\\test 3} test
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft{test 1\\test 1\\test 1} test \inleft{test 2\\test 2} test \inleft{test 3\\test 3\\test 3} test \endgraf
+% \inleft{test 1\\test 1\\test 1} test \inleft{test 2\\test 2} test \inleft{test 3\\test 3\\test 3} test
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+
+\newdimen\laststackvmove % use \scratchdimenone instead of skip
+
+\def\stackeddown
+  {\bgroup
+   % this macro assumes a few things and is meant to work for margin notes
+   \dowithnextbox
+     {\global\advance\currentautopos\plusone
+      \global\laststackvmove\zeropoint
+      \hpos{\POSstackprefix\number\currentautopos}
+        {\edef\next
+           {\nextboxht\the\nextboxht
+            \nextboxdp\the\nextboxdp
+            \nextboxwd\the\nextboxwd}%
+         \previousautopos\currentautopos
+         \scratchdimen\zeropoint
+         \scratchcounter\zerocount
+         \doloop
+           {\advance\previousautopos\minusone
+            \edef\currentposition {\POSstackprefix\number\currentautopos}%
+            \edef\previousposition{\POSstackprefix\number\previousautopos}%
+            \ifnum\MPp\currentposition=\MPp\previousposition\relax
+              %\registerstatus{doing \number\currentautopos/\number\previousautopos}%
+              \doifoverlappingelse\currentposition\previousposition
+                {\scratchskip\dimexpr
+                    \MPy\currentposition
+                   -\MPy\previousposition
+                   -\MPd\currentposition  % untested
+                   +\MPd\previousposition % untested
+                   +\MPh\currentposition
+                 \relax\relax % second relax realy needed, forgotten while dimexpressing
+                 % todo: also take depth into account
+                 \ifdim\scratchskip<\scratchdimen
+                   %\registerstatus{no \the\scratchskip}%
+                 \else
+                   %\registerstatus{yes \the\scratchskip}%
+                   \scratchdimen\scratchskip
+                 \fi}%
+                \donothing % {\registerstatus{next}}%
+              \ifnum\previousautopos<\zerocount\exitloop\fi
+            \else
+              \exitloop
+            \fi}%
+         \ifdim\scratchdimen=\zeropoint \else
+           \bgroup
+           \edef\currentposition{\POSstackprefix\number\currentautopos}%
+           \scratchskip\scratchdimen
+           \advance\scratchskip\MPh\currentposition
+           \scratchdimen-\scratchdimen
+           \advance\scratchdimen\MPy\currentposition
+           %\registerstatus{old \number\currentautopos: \MPy\currentposition/\MPh\currentposition}%
+           \expanded{\replacepospxywhd
+             {\currentposition}{\MPp\currentposition}{\MPx\currentposition}{\the\scratchdimen}%
+             {\MPw\currentposition}{\the\scratchskip}{\MPd\currentposition}}%
+           %\registerstatus{new \number\currentautopos: \MPy\currentposition/\MPh\currentposition}%
+           \egroup
+           \global\laststackvmove\scratchdimen % new
+           \setbox\nextbox\iftracepositions\@EA\ruledhbox\else\@EA\hbox\fi
+             {\lower\scratchdimen\flushnextbox}%
+           \next
+           %\registerstatus{\strut}%
+         \fi
+         \flushnextbox}%
+        \egroup}}
+
+%D The next hack make sure that margin texts near faulty
+%D strutted lines are handled ok.
+
+\newif\ifrepositionmarginbox \repositionmarginboxtrue
+
+\newcount\currentmarginpos
+
+\def\dopositionmarginbox#1%
+  {\bgroup
+   \ifrepositionmarginbox
+     \global\advance\currentmarginpos\plusone
+    %\setposition{\s!margin:\number\currentmarginpos}% not always
+     \ifcase\marginrepositionmethod
+       % nothing
+     \or
+       % nothing
+     \or
+       % stack / page check yet untested
+       \setposition{\s!margin:\number\currentmarginpos}%
+       \scratchdimen\MPy{\s!margin:\number\currentmarginpos}%
+       \global\advance\currentmarginpos\plusone
+       \advance\scratchdimen -\MPy{\s!margin:\number\currentmarginpos}%
+       \advance\scratchdimen -\strutdp
+       % new but bugged
+       % \setbox#1\hbox
+       %   {\hskip-\MPx{\s!margin:\number\currentmarginpos}%
+       %    \hskip\MPx{head:\realfolio}%
+       %    \box#1}%
+       % so far
+       \setbox#1\hbox
+         {\setposition{\s!margin:\number\currentmarginpos}%
+          \raise\scratchdimen\box#1}%
+     \or
+       % move up
+       \setposition{\s!margin:\number\currentmarginpos}%
+       \ifnum\MPp{p:\number\parposcounter}=\MPp{\s!margin:\number\currentmarginpos}\relax
+         \scratchdimen\dimexpr\MPy{p:\number\parposcounter}-\MPy{\s!margin:\number\currentmarginpos}\relax
+         \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
+       \fi
+     \or
+       % move up, assume end of par
+       \setposition{\s!margin:\number\currentmarginpos}%
+       \ifnum\MPp{p:\number\parposcounter}=\MPp{\s!margin:\number\currentmarginpos}\relax
+         \getnoflines\margincontentheight
+         \advance\noflines\minusone
+         \scratchdimen\noflines\lineheight
+       \else
+         \scratchdimen\dimexpr\MPy{p:\number\parposcounter}-\MPy{\s!margin:\number\currentmarginpos}\relax
+       \fi
+       \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
+     \fi
+     \dp#1\zeropoint
+     \ht#1\zeropoint
+   \fi
+   \graphicvadjust{\box#1}%
+   \egroup}
+
+\chardef\marginrepositionmethod\plusone   % sidemethod
+\chardef\margincontentmethod   \plusthree % textmethod  % beware: 1 = old method
+\chardef\marginpagecheckmethod \plusone   % splitmethod
+
+%D For a right menu, a sequence of calls to \type
+%D {right_menu_button} is generated.
+%D
+%D \starttyping
+%D right_menu_button (n, p, s=0/1/2, x, y, w, h, d) ;
+%D \stoptyping
+%D
+%D Here, n is the number of the button, s a status variable,
+%D while the rest is positional info. The status variable is
+%D 0, 1 or~2: not found, found and found but current page.
+
+% 0=not found 1=found 2=current page
+
+% geen leeg
+
+\newtoks\MPmenutoks
+
+\def\MPmenubuttons#1{\the\MPmenutoks}
+
+\appendtoks \global\MPmenutoks\emptytoks \to \everyshipout
+
+% 0=notfound  1=found  2=currentpage
+
+\def\do@@amposition#1#2#3%
+  {\doifelsevalue{\??am#1\c!position}\v!yes
+     {\doglobal\increment\currentamposition
+      \doifnumberelse{#2}
+        {\docheckrealreferencepage{#2}%
+         \global\chardef\currentamrealpage\ifrealreferencepage2\else1\fi}
+        {\doifreferencefoundelse{#2}
+           {\global\chardef\currentamrealpage\ifrealreferencepage2\else1\fi}
+           {\global\chardef\currentamrealpage0}}% % not found
+      \expanded
+        {\doglobal\noexpand\appendtoks
+           #1_menu_button(\currentamposition,\the\currentamrealpage,\MPpos{#1:\currentamposition}) ;
+         \to \MPmenutoks}%
+      \hpos{#1:\currentamposition}{#3}}
+     {#3}}
+
+\def\do@@ammenuposition#1%
+  {\ifnum\currentamposition>0
+     \dowithnextbox{\hpos{menu:#1:\realfolio}{\flushnextbox}}\hbox
+   \fi}
+
+%D \macros
+%D   {GFC, GTC, GSC}
+%D
+%D The next macros extend tables and tabulation with
+%D backgrounds and position related features. Areas are
+%D specified with symbolic names, and symbolic references to
+%D the graphics involved. Each table has its own namespace.
+
+\newcount\noftabpositions
+\newtoks \posXCtoks
+
+\def\tbPOSprefix
+  {tbp:\number\noftabpositions:}
+
+\def\tablepos
+  {\scratchtoks\posXCtoks
+   \global\posXCtoks\emptytoks
+   \the\scratchtoks}
+
+\let\tabulatepos\tablepos
+
+\def\dodododoGSC[#1:#2]%
+  {\remappositionframed{#2}{\tbPOSprefix#1}%
+   \bpos{\tbPOSprefix#1}%
+   \doglobal\appendtoks\@EA\epos\@EA{\tbPOSprefix#1}\to\posXCtoks}
+
+\def\dododoGSC[#1:#2:#3]%
+  {\doglobal\appendtoks\dodododoGSC[#1:#2]\to\posXCtoks\NC}
+
+\def\dodoGSC[#1]%
+  {\def\docommand##1{\dododoGSC[##1:##1]}%
+   \processcommalist[#1]\docommand}
+
+\def\dodododoGFC[#1:#2:#3]%
+  {\remappositionframed{#2}{\tbPOSprefix#1}%
+   \bpos{\tbPOSprefix#1}}
+
+\def\dododoGFC[#1]%
+  {\def\docommand##1{\dodododoGFC[##1:##1]}%
+   \processcommalist[#1]\docommand}
+
+\def\dodoGFC[#1]%
+  {\doglobal\appendtoks\dododoGFC[#1]\to\posXCtoks\NC}
+
+\def\dododododoGTC[#1:#2]%
+  {\epos{\tbPOSprefix#1}}
+
+\def\dodododoGTC[#1]%
+  {\def\docommand##1{\dododododoGTC[##1:##1]}%
+   \processcommalist[#1]\docommand}
+
+\def\dododoGTC[#1]%
+  {\doglobal\appendtoks\dodododoGTC[#1]\to\posXCtoks}
+
+\def\dodoGTC[#1]%
+  {\doglobal\appendtoks\dododoGTC[#1]\to\posXCtoks\NC}
+
+\def\dodododoXC[#1#2]%
+  {\if#1>\dodoGFC  [#2:#2]\else
+   \if#1+\dodoGFC  [#2:#2]\else
+   \if#1<\dodoGTC  [#2:#2]\else
+   \if#1-\dodoGTC  [#2:#2]\else
+   \if#1=\dodoGSC  [#2:#2]\else
+         \dodoGSC[#1#2:#1#2]\fi\fi\fi\fi\fi}
+
+\def\dododoXC#1%
+  {\dodododoXC[#1]}
+
+\def\dodoXC[#1]%
+  {{\let\NC\relax\processcommalist[#1]\dododoXC}}
+
+\def\doGSC[#1]{\iffirstargument\dodoGSC[#1]\else\expandafter\NC\fi}
+\def\doGFC[#1]{\iffirstargument\dodoGFC[#1]\else\expandafter\NC\fi}
+\def\doGTC[#1]{\iffirstargument\dodoGTC[#1]\else\expandafter\NC\fi}
+\def\doXC [#1]{\iffirstargument\dodoXC [#1]\else\expandafter\fi\NC}
+
+\def\tbGSC{\dosingleempty\doGSC}
+\def\tbGFC{\dosingleempty\doGFC}
+\def\tbGTC{\dosingleempty\doGTC}
+\def\tbXC {\dosingleempty\doXC }
+
+%D The amount of code to support tables and tabulation is
+%D rather minimalistic.
+
+\let\tabulatepos\tablepos
+
+\def\tabulatenormalpos
+  {\hss\tabulatepos\hss}
+
+\def\tabulateequalpos
+  {\setbox\scratchbox\hbox{\tabulateEQ}%
+   \hbox to \wd\scratchbox{\hss\kern\zeropoint\tabulatepos\hss}%
+   \hskip-\wd\scratchbox
+   \box\scratchbox}
+
+\def\tabulatenormalcolumn#1% overloaded
+  {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi
+   &\global\chardef\tabulatetype#1&}
+
+\def\tabulateequalcolumn#1% overloaded
+  {&\tabulateequalpos
+   &\global\chardef\tabulatetype#1&}
+
+\appendtoks
+  \global\advance\noftabpositions\plusone
+\to \everytabulate
+
+%D In order to prevent potential clashes with abbreviations,
+%D postpone the mapping.
+
+\appendtoks
+  \let\GSC\tbGSC \let\GFC\tbGFC \let\GTC\tbGTC \let\XC\tbXC
+\to \everytabulate
+
+%D \macros
+%D   {definepositionframed}
+%D
+%D The next example show how to provide backgrounds to table
+%D cells. First we define some framed backgrounds.
+%D
+%D \startbuffer
+%D \definepositionframed[x][background=color,backgroundcolor=red]
+%D \definepositionframed[y][background=color,backgroundcolor=green]
+%D \definepositionframed[z][background=color,backgroundcolor=blue]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D % \getbuffer
+%D
+%D \startbuffer
+%D \starttabulate[|c|c|c|]
+%D \GFC[f:x] this is a small  \NC       table            \NC     in which we \NC \FR
+%D \NC       will demonstrate \GFC[g:z] that this        \GTC[g] positioning \NC \MR
+%D \GSC[e:y] mechanism also   \GTC[f]   works quite well \NC     in tables   \NC \LR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D The table itself defines three areas (a, b and~c) using
+%D these frames.
+%D
+%D \typebuffer
+%D % \getbuffer
+%D
+%D Tables (based on \TABLE) are supported by:
+
+\def\normalTABLEsimplebar {\unskip\!ttRightGlue&\tablepos&}                       % |
+\def\normalTABLEcomplexbar{\unskip\!ttRightGlue&\omit\tablepos\!ttAlternateVrule} % \|
+\def\normalTABLEquote     {\unskip\!ttRightGlue&\omit\tablepos&}                  % "
+
+\appendtoks
+  \global\advance\noftabpositions\plusone
+\to \everytable
+
+%D Since we don't want nameclashes:
+
+\appendtoks
+  \let\GSC\tbGSC \let\GFC\tbGFC \let\GTC\tbGTC \let\XC\tbXC
+\to \everytable
+
+%D In the previous example, we could have provided an overlay to
+%D the framed definition. A more direct approach is demonstrated
+%D below:
+%D
+%D \startbuffer
+%D \def\cw#1{\color[white]{#1}}
+%D
+%D \startMPpositiongraphic{tableshade}
+%D   initialize_area(\MPpos{\MPvar{from}},\MPpos{\MPvar{to}}) ;
+%D   color c ; c := \MPvar{color} ;
+%D   linear_shade(pxy,0,.4c,.9c) ;
+%D   anchor_area(\MPanchor{\MPvar{from}}) ;
+%D \stopMPpositiongraphic
+%D
+%D \setMPpositiongraphic{b:x}{tableshade}{from=b:x,to=e:x,color=red}
+%D \setMPpositiongraphic{b:y}{tableshade}{from=b:y,to=e:y,color=green}
+%D \setMPpositiongraphic{b:z}{tableshade}{from=b:z,to=e:z,color=blue}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D The definition of the table looks about the same as the
+%D previous one:
+%D
+%D \startbuffer
+%D \starttable[|c|c|c|]
+%D \GFC[b:z] \cw{this is a small}  \NC       \cw{table}            \NC     in which we      \NC \FR
+%D \NC       \cw{will demonstrate} \GFC[c:y] \cw{that this}        \GTC[c] \cw{positioning} \NC \MR
+%D \GSC[a:x] \cw{mechanism also}   \GTC[b]   \cw{works quite well} \NC     in tables        \NC \LR
+%D \stoptable
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+
+% \definepositionframed[w][background=color,backgroundcolor=yellow]
+% \definepositionframed[x][background=color,backgroundcolor=red]
+% \definepositionframed[y][background=color,backgroundcolor=green]
+% \definepositionframed[z][background=color,backgroundcolor=blue]
+%
+% \starttabulate[|c|c|c|]
+% \NC this is a small  \NC table            \NC in which we \NC \FR
+% \NC will demonstrate \NC that this        \NC positioning \NC \MR
+% \NC mechanism also   \NC works quite well \NC in tables   \NC \LR
+% \stoptabulate
+%
+% \starttabulate[|c|c|c|]
+% \GFC[f:x] this is a small      \GTC      table            \NC     in which we \NC \FR
+% \NC       will demonstrate     \GFC[g:z] that this        \GTC[g] positioning \NC \MR
+% \GSC[e:y] mechanism also       \GTC[f]   works quite well \NC     in tables   \NC \LR
+% \stoptabulate
+%
+% \starttabulate[|c|c|c|]
+% \GFC[f:x,d:w] this is a small  \GTC[d]   table            \NC     in which we \NC \FR
+% \NC           will demonstrate \GFC[g:z] that this        \GTC[g] positioning \NC \MR
+% \GSC[e:y]     mechanism also   \GTC[f]   works quite well \NC     in tables   \NC \LR
+% \stoptabulate
+%
+% \starttabulate[|c|c|c|]
+% \XC[+f:x] this is a small  \XC      table            \NC     in which we \NC \FR
+% \NC      will demonstrate  \XC[+g:z] that this       \XC[-g] positioning \NC \MR
+% \XC[=e:y] mechanism also   \XC[-f]  works quite well \NC     in tables   \NC \LR
+% \stoptabulate
+%
+% \starttabulate[|c|c|c|]
+% \XC[+f:x,+d:w] this is a small  \XC[-d]   table            \NC     in which we \NC \FR
+% \NC            will demonstrate \XC[+g:z] that this        \XC[-g] positioning \NC \MR
+% \XC[=e:y]       mechanism also  \XC[-f]   works quite well \NC     in tables   \NC \LR
+% \stoptabulate
+
+% evt                  [b:x]
+%
+% \definepositionframed[x][background=color,fillcolor=red]
+% \definepositionframed[y][background=color,fillcolor=green]
+% \definepositionframed[z][background=color,fillcolor=blue]
+
+\def\remappositionframed#1#2% from to
+  {\copyposition{b:#1}{b:#2}%
+   \copyposition{e:#1}{e:#2}%
+   \dosetpositionaction{b:#2}{\dopositionaction{b:#1}}}
+
+\def\definepositionframed
+  {\dodoubleargument\dodefinepositionframed}
+
+\def\dodefinepositionframed[#1][#2]%
+  {\dosetpositionaction{b:#1}{\dopositionframed[#1][#2]}}
+
+\def\positionframed
+  {\dodoubleempty\dopositionframed}
+
+\def\dopositionframed[#1][#2]%
+  {\bgroup
+   \setbox\scratchbox\hbox
+     {\dimen0=\MPx{e:#1}%
+      \advance\dimen0 -\MPx{b:#1}%
+      \dimen2=\MPy{b:#1}%
+      \advance\dimen2 -\MPy{e:#1}%
+      \advance\dimen2 \MPd{e:#1}%
+      \lower\dimen2\hbox
+        {\advance\dimen2 \MPh{b:#1}%
+         \framed
+           [\c!width=\dimen0,\c!height=\dimen2,
+            \c!offset=\v!overlay,#2]{}}}%
+   \smashedbox\scratchbox
+   \egroup}
+
+% \def\sethdistances#1%
+%   {\hbox{\lpos{ml:#1}\hpos{mh:#1}{\strut}\rpos{mr:#1}}}
+%
+% \def\gethdistances#1%
+%   {\scratchdimen\MPx{mh:#1}%
+%    \advance\scratchdimen -\MPx{ml#1}%
+%    \edef\lefthdistance{\the\scratchdimen}%
+%    \scratchdimen\MPx{mr:#1}%
+%    \advance\scratchdimen -\MPx{mh:#1}%
+%    \edef\righthdistance{\the\scratchdimen}}
+
+\protect \endinput
+
+% todo 1: shift down option
+
+% \startuseMPgraphic{mpos:par:columnset}
+%   \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
+%   path p ; p := boundingbox currentpicture ;
+%   currentpicture := currentpicture shifted (0,-StrutDepth/2) ;
+%   setbounds currentpicture to p ;
+% \stopuseMPgraphic
+
+\definetextbackground[underline]    [location=text,alternative=1,background=,frame=off]
+\definetextbackground[overstrike]   [location=text,alternative=2,background=,frame=off]
+\definetextbackground[exlines]      [location=text,alternative=3,background=,frame=off]
+\definetextbackground[strikethrough][location=text,alternative=4,background=,frame=off]
+
+\definestartstop [underline]
+  [before={\starttextbackground[underline]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [overstrike]
+  [before={\starttextbackground[overstrike]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [exlines]
+  [before={\starttextbackground[exlines]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [strikethrough]
+  [before={\starttextbackground[strikethrough]},
+   after=\stoptextbackground]
+
+\definetextbackground
+  [sideline]
+  [mp=mpos:par:sideline,
+   location=paragraph,
+   framecolor=red,
+   frameoffset=5mm]
+
+\definestartstop [sideline]
+  [before={\starttextbackground[sideline]},
+   after=\stoptextbackground]
+
+\starttext
+    \startunderline     \input tufte \stopunderline      \blank
+    \startoverstrike    \input tufte \stopoverstrike     \blank
+    \startexlines       \input tufte \stopexlines        \blank
+    \startstrikethrough \input tufte \stopstrikethrough  \blank
+    \startsideline      \input tufte \stopsideline       \blank
+\stoptext

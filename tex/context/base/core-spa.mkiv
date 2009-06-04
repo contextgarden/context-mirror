@@ -1044,6 +1044,11 @@
 
 \unexpanded\def\ {\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
 
+% Because I strip spaces at the end of lines (in the editor) we need a bit of
+% a trick to define slash+newline, so \<space> and \<newline> are the same
+
+\ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\unexpanded\string\\def\string\\\string\n{\string\\ }")}
+
 \unexpanded\def\nonbreakablespace{\penalty\plustenthousand\space}
 
 \letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace % overloaded later
