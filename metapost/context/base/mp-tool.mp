@@ -822,10 +822,17 @@ enddef ;
 %D Handy for testing/debugging:
 
 primarydef p crossed d =
-  (center p shifted (-d, 0) -- llcorner p --
-   center p shifted ( 0,-d) -- lrcorner p --
-   center p shifted (+d, 0) -- urcorner p --
-   center p shifted ( 0,+d) -- ulcorner p -- cycle)
+    if pair p :
+      (p shifted (-d, 0) -- p --
+       p shifted ( 0,-d) -- p --
+       p shifted (+d, 0) -- p --
+       p shifted ( 0,+d) -- p -- cycle)
+    else :
+      (center p shifted (-d, 0) -- llcorner p --
+       center p shifted ( 0,-d) -- lrcorner p --
+       center p shifted (+d, 0) -- urcorner p --
+       center p shifted ( 0,+d) -- ulcorner p -- cycle)
+    fi
 enddef ;
 
 %D Also handy (math ladders):
@@ -1009,35 +1016,18 @@ enddef ;
 
 %D Rather fundamental.
 
-% vardef rightpath expr p =
-%   save q, t, b ; path q ; pair t, b ;
-%   t := (ulcorner p -- urcorner p) intersection_point p ;
-%   b := (llcorner p -- lrcorner p) intersection_point p ;
-%   if xpart directionpoint t of p < 0 : p := reverse p ; fi ;
-%   q := p cutbefore b ;
-%   q := q if xpart point 0 of p > 0 : & p fi cutafter t ;
-%   q
-% enddef ;
-%
-% vardef leftpath expr p =
-%   save q, t, b ; path q ; pair t, b ;
-%   t := (ulcorner p -- urcorner p) intersection_point p ;
-%   b := (llcorner p -- lrcorner p) intersection_point p ;
-%   if xpart directionpoint t of p < 0 : p := reverse p ; fi ;
-%   q := p cutbefore t ;
-%   q := q if xpart point 0 of p > 0 : & p fi cutafter b ;
-%   q
-% enddef ;
+% not yet ok
 
 def leftrightpath(expr p, l) =
-  save q, t, b ; path q ; pair t, b ;
+  save q, r, t, b ; path q, r ; pair t, b ;
   t := (ulcorner p -- urcorner p) intersection_point p ;
   b := (llcorner p -- lrcorner p) intersection_point p ;
-  if xpart directionpoint t of p < 0 : p := reverse p ; fi ;
-  q := p    cutbefore if l: t else: b fi ;
-  q := q if xpart point 0 of p > 0 : &
-       p fi cutafter  if l: b else: t fi ;
+  r := if xpart directionpoint t of p < 0 : reverse p else : p fi ; % r is needed, else problems when reverse is fed
+  q := r    cutbefore if l: t else: b fi ;
+  q := q if xpart point 0 of r > 0 : &
+       r fi cutafter  if l: b else: t fi ;
   q
+  x
 enddef ;
 
 vardef  leftpath expr p = leftrightpath(p,true ) enddef ;

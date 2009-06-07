@@ -35,8 +35,10 @@
    \c!rightmargin=\!!zeropoint,\c!rightedge=\!!zeropoint,
    \c!header=\!!zeropoint,\c!footer=\!!zeropoint]
 
+
 \def\dostartfittingpage[#1][#2]%
   {\page % this is kind of tricky! there can be preceding page refs
+   \autostarttext
    \bgroup % resulting in a zero height page; test fig-make !
    \def\currentfittingpage{#1}%
    \dontcomplain
@@ -87,7 +89,8 @@
      \centerbox{\box\scratchbox}%
    \stopmakeup
    \stoplocallayout
-   \egroup}
+   \egroup
+   \autostoptext}
 
 %D \TEX\ pages (for \METAPOST\ pages, see \type {meta-fig}):
 

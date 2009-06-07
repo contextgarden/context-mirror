@@ -401,7 +401,8 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
         -- we can use a macro instead of direct settings
         local fallback = chr.fallback
         if fallback then
-            texprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}")
+        --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\checkedchar{%s}{%s}}}",u,utfchar(u),u,fallback))
+            texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}") -- no texprint
             activated[#activated+1] = "\\c"..u.."\\a"
         else
             local contextname = chr.contextname
@@ -411,15 +412,18 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
                  -- by this time, we're still in normal catcode mode
                  -- subtle: not "\\",contextname but "\\"..contextname
                     if chr.unicodeslot < 128 then
-                        texprint(ctxcatcodes, "\\chardef\\"..contextname,"=",u)
+                    --  texprint(ctxcatcodes, "\\chardef\\"..contextname,"=",u)
+                        texprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u))
                     else
-                        texprint(ctxcatcodes, "\\let\\"..contextname,"=",utfchar(u))
+                    --  texprint(ctxcatcodes, "\\let\\"..contextname,"=",utfchar(u))
+                        texprint(ctxcatcodes,format("\\let\\%s=%s",contextname,utfchar(u)))
                         if is_letter[category] then
                             lettered[#lettered+1] = "\\c"..u.."\\l"
                         end
                     end
                 elseif is_command[category] then
-                    texprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}")
+                --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\%s}}",u,utfchar(u),contextname))
+                    texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
                     activated[#activated+1] = "\\c"..u.."\\a"
                 end
             elseif is_letter[category] then

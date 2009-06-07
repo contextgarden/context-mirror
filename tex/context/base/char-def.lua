@@ -523,7 +523,7 @@ characters.data={
   linebreak="is",
 --~   mathclass="punctuation",
   mathclass="relation",
-  mathname="colon",
+--  mathname="colon",
   unicodeslot=0x003A,
  },
  {

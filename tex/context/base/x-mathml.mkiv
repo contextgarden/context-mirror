@@ -1552,11 +1552,17 @@
         } {
             \mathopnolimits{log}_{\xmlfirst{#1}{/mml:logbase}}
         }
+%         \MMLcreset
+        \xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
+%         \xmlsetup{#1}{mml:function} % todo, we start elsewhere
+%         \mmlthird{#1}
     } {
         \mathopnolimits{log}
+%         \MMLcreset
+%         \xmlsetup{#1}{mml:function} % todo, we start elsewhere
+            \xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
+%         \mmlsecond{#1}
     }
-    \MMLcreset
-    \xmlsetup{#1}{mml:function}
 \stopxmlsetups
 
 \startxmlsetups mml:ln

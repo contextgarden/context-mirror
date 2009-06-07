@@ -203,6 +203,16 @@
      \expandafter\finalend
    \fi}
 
+
+\let\autostoptext\relax
+
+\def\autostarttext
+  {\ifcase\textlevel
+     \starttext
+     \writestatus\m!systems{auto \string\starttext..\string\stoptext}%
+     \let\autostoptext\stoptext
+   \fi}
+
 \def\finalend
   {\ifnum\textlevel>\zerocount \else
      \the\everybye
