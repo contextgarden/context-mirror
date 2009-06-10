@@ -190,7 +190,7 @@ function jobreferences.urls.get(name,method,space) -- method: none, before, afte
     local u = urls[name]
     if u then
         local url, file = u[1], u[2]
-        if file ~= "" then
+        if file and file ~= "" then
             texsprint(ctxcatcodes,url,"/",file)
         else
             texsprint(ctxcatcodes,url)
@@ -246,7 +246,7 @@ function jobreferences.from(name,method,space)
         local url, file, description = u[1], u[2], u[3]
         if description ~= "" then
             texsprint(ctxcatcodes,description)
-        elseif file then
+        elseif file and file ~= "" then
             texsprint(ctxcatcodes,url,"/",file)
         else
             texsprint(ctxcatcodes,url)

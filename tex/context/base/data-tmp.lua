@@ -133,7 +133,9 @@ function caches.loaddata(path,name)
     local tmaname, tmcname = caches.setluanames(path,name)
     local loader = loadfile(tmcname) or loadfile(tmaname)
     if loader then
-        return loader()
+        loader = loader()
+        collectgarbage("step")
+        return loader
     else
         return false
     end

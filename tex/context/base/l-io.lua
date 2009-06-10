@@ -17,6 +17,7 @@ end
 function io.loaddata(filename,textmode)
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
+    --  collectgarbage("step") -- sometimes makes a big difference in mem consumption
         local data = f:read('*all')
     --  garbagecollector.check(data)
         f:close()

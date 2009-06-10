@@ -214,7 +214,7 @@ function colors.setmodel(attribute,name,weightgray)
     return colors.default
 end
 
-function colors.register(attribute, name, colorspace, ...) -- passing 9 vars is faster
+function colors.register(attribute, name, colorspace, ...) -- passing 9 vars is faster (but not called that often)
     local stamp = format(templates[colorspace],...)
     local color = registered[stamp]
     if not color then

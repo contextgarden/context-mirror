@@ -56,18 +56,20 @@ if not resolvers.instance then
      -- image
         callback.register('read_map_file'       , function(file) return resolvers.loadbinfile(file,"map") end)
         callback.register('read_ocp_file'       , function(file) return resolvers.loadbinfile(file,"ocp") end)
-     -- callback.register('read_opentype_file'  , function(file) return resolvers.loadbinfile(file,"otf") end)
      -- output
         callback.register('read_pk_file'        , function(file) return resolvers.loadbinfile(file,"pk")  end)
         callback.register('read_sfd_file'       , function(file) return resolvers.loadbinfile(file,"sfd") end)
-     -- callback.register('read_truetype_file'  , function(file) return resolvers.loadbinfile(file,"ttf") end)
-     -- callback.register('read_type1_file'     , function(file) return resolvers.loadbinfile(file,"pfb") end)
         callback.register('read_vf_file'        , function(file) return resolvers.loadbinfile(file,"vf" ) end)
 
         callback.register('find_font_file'      , function(name) return resolvers.findbinfile(name,"ofm") end)
-        callback.register('read_font_file'      , function(file) return resolvers.loadbinfile(file,"ofm") end)
         callback.register('find_vf_file'        , function(name) return resolvers.findbinfile(name,"ovf") end)
+
+        callback.register('read_font_file'      , function(file) return resolvers.loadbinfile(file,"ofm") end)
         callback.register('read_vf_file'        , function(file) return resolvers.loadbinfile(file,"ovf") end)
+
+     -- callback.register('read_opentype_file'  , function(file) return resolvers.loadbinfile(file,"otf") end)
+     -- callback.register('read_truetype_file'  , function(file) return resolvers.loadbinfile(file,"ttf") end)
+     -- callback.register('read_type1_file'     , function(file) return resolvers.loadbinfile(file,"pfb") end)
 
         callback.register('find_write_file'     , function(id,name) return name end)
         callback.register('find_format_file'    , function(name)    return name end)

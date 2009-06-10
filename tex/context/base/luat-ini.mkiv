@@ -215,4 +215,33 @@
 
 \def\luaexpanded#1{\luaescapestring\expandafter{\normalexpanded{#1}}}
 
+%D Experimental:
+
+\def\startluaparameterset[#1]%
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \dostartluaparameterset{#1}}
+
+\long\def\dostartluaparameterset#1#2\stopluaparameterset
+  {\ctxlua{parametersets["#1"]={#2}}%
+   \endgroup}
+
+\def\luaparameterset#1#2{\ctxlua{parametersets["#1"]={#2} tex.sprint("#1")}}
+
+% todo: \mergeparameterset
+
+% usage:
+%
+% \startluaparameterset [u3d:myset:display:1]
+%     toolbar=false,
+%     tree=true
+% \stopluaparameterset
+%
+% options=u3d:myset:display:1
+%
+% or:
+%
+% options=\luaparameterset{u3d:myset:display:1}{toolbar=false,tree=true}
+
 \protect \endinput

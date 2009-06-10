@@ -646,14 +646,7 @@ end
 
 function afm.afm_to_tfm(specification)
     local afmname = specification.filename or specification.name
-    local encoding, filename = match(afmname,"^(.-)%-(.*)$") -- context: encoding-name.*
-    if encoding and filename and fonts.enc.known[encoding] then
-        tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
-        if trace_loading then
-            logs.report("load afm","stripping encoding prefix from filename %s",afmname)
-        end
-        afmname = filename
-    elseif specification.forced == "afm" or specification.format == "afm" then -- move this one up
+    if specification.forced == "afm" or specification.format == "afm" then -- move this one up
         if trace_loading then
             logs.report("load afm","forcing afm format for %s",afmname)
         end

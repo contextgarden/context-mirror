@@ -134,6 +134,7 @@ function openers.text_opener(filename,file_handle,tag)
                 logs.show_close(filename)
                 file_handle:close()
                 t = nil
+collectgarbage("step")
             end,
             handle = function()
                 return file_handle

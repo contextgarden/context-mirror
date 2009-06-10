@@ -14,10 +14,11 @@ These can be used for runtime user data or third party modules and will not be
 cluttered by macro package code.</p>
 --ldx]]--
 
-userdata   = userdata   or { } -- might be used
-thirddata  = thirddata  or { } -- might be used
-moduledata = moduledata or { } -- might be used
-document   = document   or { }
+userdata      = userdata      or { } -- might be used
+thirddata     = thirddata     or { } -- might be used
+moduledata    = moduledata    or { } -- might be used
+document      = document      or { }
+parametersets = parametersets or { } -- experimental
 
 --[[ldx--
 <p>These can be used/set by the caller program; <t>mtx-context.lua</t> does it.</p>

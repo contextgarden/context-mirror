@@ -6,9 +6,10 @@ if not modules then modules = { } end modules ['back-pdf'] = {
     license   = "see context related readme files"
 }
 
-local setmetatable, getmetatable, type, next, tostring = setmetatable, getmetatable, type, next, tostring
-local char, byte, format, gsub = string.char, string.byte, string.format, string.gsub
-local concat = table.concat
+-- This code is very experimental !
+
+local setmetatable, getmetatable, type, next, tostring, tonumber = setmetatable, getmetatable, type, next, tostring, tonumber
+local char, byte, format, gsub, concat = string.char, string.byte, string.format, string.gsub, table.concat
 local utfvalues = string.utfvalues
 
 lpdf = lpdf or { }
@@ -37,7 +38,7 @@ local function merge_t(a,b)
     return setmetatable(t,getmetatable(a))
 end
 
-local tostring_a, tostring_d, tosting_n, tostring_s, tostring_c
+local tostring_a, tostring_d
 
 tostring_d = function(t)
     if not next(t) then
@@ -93,27 +94,30 @@ tostring_a = function(t)
     end
 end
 
-tostring_n = function(t)
-    return tostring(t[1]) -- tostring not needed
-end
+local tostring_s = function(t) return tosixteen(t[1]) end
+local tostring_n = function(t) return tostring(t[1])  end -- tostring not needed
+local tostring_c = function(t) return t[1]            end -- already prefixed (hashed)
+local tostring_z = function()  return "null"          end
+local tostring_t = function()  return "true"          end
+local tostring_f = function()  return "false"         end
 
-tostring_s = function(t)
-    return tosixteen(t[1])
-end
+local function value_s(t) return t[1]        end -- the call is experimental
+local function value_n(t) return t[1]        end -- the call is experimental
+local function value_c(t) return sub(t[1],2) end -- the call is experimental
+local function value_d(t) return t           end -- the call is experimental
+local function value_a(t) return t           end -- the call is experimental
+local function value_z()  return nil         end -- the call is experimental
+local function value_t()  return true        end -- the call is experimental
+local function value_b()  return false       end -- the call is experimental
 
-tostring_c = function(t)
-    return t[1]
-end
-
-local mt_d = { __lpdftype = "dictionary", __tostring = tostring_d }
-local mt_a = { __lpdftype = "array",      __tostring = tostring_a }
-local mt_s = { __lpdftype = "string",     __tostring = tostring_s }
-local mt_n = { __lpdftype = "number",     __tostring = tostring_n }
-local mt_c = { __lpdftype = "constant",   __tostring = tostring_c }
-
-local mt_z = { __lpdftype = "null",       __tostring = function(s) return "null"  end }
-local mt_t = { __lpdftype = "true",       __tostring = function(s) return "true"  end }
-local mt_f = { __lpdftype = "false",      __tostring = function(s) return "false" end }
+local mt_d = { __lpdftype = "dictionary", __tostring = tostring_d, __call = value_d }
+local mt_a = { __lpdftype = "array",      __tostring = tostring_a, __call = value_a }
+local mt_s = { __lpdftype = "string",     __tostring = tostring_s, __call = value_s }
+local mt_n = { __lpdftype = "number",     __tostring = tostring_n, __call = value_n }
+local mt_c = { __lpdftype = "constant",   __tostring = tostring_c, __call = value_c }
+local mt_z = { __lpdftype = "null",       __tostring = tostring_z, __call = value_z }
+local mt_t = { __lpdftype = "true",       __tostring = tostring_t, __call = value_t }
+local mt_f = { __lpdftype = "false",      __tostring = tostring_f, __call = value_f }
 
 function lpdf.dictionary(t)
     return setmetatable(t or { },mt_d)
@@ -165,10 +169,12 @@ local p_null  = { } setmetatable(p_null, mt_z)
 local p_true  = { } setmetatable(p_true, mt_t)
 local p_false = { } setmetatable(p_false,mt_f)
 
-function lpdf.null () return p_null  end
+function lpdf.null()
+    return p_null
+end
 
 function lpdf.boolean(b,default)
-    if (type(b) == boolean and b) or default then
+    if ((type(b) == boolean) and b) or default then
         return p_true
     else
         return p_false
@@ -205,3 +211,58 @@ end
 --~ local d = lpdf.array()
 --~ d[#d+1] = { a=1, b=2, c=3, d="test" }
 --~ print(d)
+
+--~ local s = lpdf.boolean(false)
+--~ print(s()) -- fails somehow
+
+function lpdf.checkedkey(t,key,kind)
+    local pn = t[key]
+    if pn then
+        local tn = type(pn)
+        if tn == kind then
+            if kind == "string" then
+                return pn ~= "" and pn
+            elseif kind == "table" then
+                return next(pn) and pn
+            else
+                return pn
+            end
+        elseif tn == "string" and kind == "number" then
+            return tonumber(pn)
+        end
+    end
+end
+
+function lpdf.checkedvalue(value,kind) -- code not shared
+    if value then
+        local tv = type(value)
+        if tv == kind then
+            if kind == "string" then
+                return value ~= "" and value
+            elseif kind == "table" then
+                return next(value) and value
+            else
+                return value
+            end
+        elseif tv == "string" and kind == "number" then
+            return tonumber(value)
+        end
+    end
+end
+
+function lpdf.limited(n,min,max,default)
+    if not n then
+        return default
+    else
+        n = tonumber(n)
+        if not n then
+            return default
+        elseif n > max then
+            return max
+        elseif n < min then
+            return min
+        else
+            return n
+        end
+    end
+end

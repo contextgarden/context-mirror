@@ -79,13 +79,13 @@ function sequencer.removeaction(t,group,action,force)
     end
 end
 
-function sequencer.compile(t,compiler)
+function sequencer.compile(t,compiler,n)
     if type(t) == "string" then
         -- already compiled
     elseif compiler then
-        t = compiler(t)
+        t = compiler(t,n)
     else
-        t = sequencer.tostring(t)
+        t = sequencer.tostring(t,n)
     end
     return loadstring(t)()
 end
@@ -100,7 +100,7 @@ return function(...)
 %s
 end]]
 
-function sequencer.tostring(t)
+function sequencer.tostring(t,n) -- n not done
     local list, order, kind, vars, calls = t.list, t.order, t.kind, { }, { }
     for i=1,#order do
         local group = order[i]
@@ -117,14 +117,23 @@ end
 
 local template = [[
 %s
-return function(head,tail,...)
+return function(head,tail%s)
   local ok, done = false, false
 %s
   return head, tail, done
 end]]
 
-function sequencer.nodeprocessor(t)
-    local list, order, kind, vars, calls = t.list, t.order, t.kind, { }, { }
+function sequencer.nodeprocessor(t,n)
+    local list, order, kind, vars, calls, args = t.list, t.order, t.kind, { }, { }, nil
+    if n == 0 then
+        args = ""
+    elseif n == 1 then
+        args = ",one"
+    elseif n == 2 then
+        args = ",one,two"
+    else
+        args = ",..."
+    end
     for i=1,#order do
         local group = order[i]
         local actions = list[group]
@@ -133,16 +142,16 @@ function sequencer.nodeprocessor(t)
             local localized = localize(action)
             vars[#vars+1] = format("local %s = %s",localized,action)
             if kind[action] == "nohead" then
-                calls[#calls+1] = format("              ok = %s(head,tail,...) done = done or ok -- %s %i",localized,group,i)
+                calls[#calls+1] = format("              ok = %s(head,tail%s) done = done or ok -- %s %i",localized,args,group,i)
             elseif kind[action] == "notail" then
-                calls[#calls+1] = format("  head,       ok = %s(head,tail,...) done = done or ok -- %s %i",localized,group,i)
+                calls[#calls+1] = format("  head,       ok = %s(head,tail%s) done = done or ok -- %s %i",localized,args,group,i)
             else
-                calls[#calls+1] = format("  head, tail, ok = %s(head,tail,...) done = done or ok -- %s %i",localized,group,i)
+                calls[#calls+1] = format("  head, tail, ok = %s(head,tail%s) done = done or ok -- %s %i",localized,args,group,i)
             end
         end
     end
-    local processor = format(template,concat(vars,"\n"),concat(calls,"\n"))
---~ print(processor)
+    local processor = format(template,concat(vars,"\n"),args,concat(calls,"\n"))
+ -- print(processor)
     return processor
 end
 

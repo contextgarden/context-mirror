@@ -43,6 +43,8 @@ tfm.internalized     = tfm.internalized or { } -- internal tex numbers
 
 tfm.readers.sequence = { 'otf', 'ttf', 'afm', 'tfm' }
 
+tfm.auto_afm = true
+
 local readers  = tfm.readers
 local sequence = readers.sequence
 
@@ -334,10 +336,31 @@ local function check_tfm(specification,fullname)
     end
 end
 
+--~ local function check_afm(specification,fullname)
+--~     fullname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
+--~     if fullname ~= "" then
+--~         specification.filename, specification.format = fullname, "afm"
+--~         return tfm.read_from_afm(specification)
+--~     end
+--~ end
+
 local function check_afm(specification,fullname)
-    fullname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
-    if fullname ~= "" then
-        specification.filename, specification.format = fullname, "afm"
+    local foundname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
+    if foundname == "" and tfm.auto_afm then
+        local encoding, shortname = match(fullname,"^(.-)%-(.*)$") -- context: encoding-name.*
+        if encoding and shortname and fonts.enc.known[encoding] then
+            shortname = resolvers.findbinfile(shortname,'afm') or "" -- just to be sure
+            if shortname ~= "" then
+                foundname = shortname
+             -- tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
+                if trace_loading then
+                    logs.report("load afm","stripping encoding prefix from filename %s",afmname)
+                end
+            end
+        end
+    end
+    if foundname ~= "" then
+        specification.filename, specification.format = foundname, "afm"
         return tfm.read_from_afm(specification)
     end
 end

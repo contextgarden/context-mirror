@@ -30,11 +30,7 @@ lists = lists or { }
 chars = chars or { }
 words = words or { } -- not used yet
 
--- or just:
---
--- nodes.process_page = tasks.actions("shipouts")
-
-local actions = tasks.actions("processors")
+local actions = tasks.actions("processors",2) -- head, tail, where, boolean
 
 local n = 0
 
@@ -120,7 +116,7 @@ end
 callback.register('pre_linebreak_filter', nodes.processors.pre_linebreak_filter)
 callback.register('hpack_filter'        , nodes.processors.hpack_filter)
 
-local actions = tasks.actions("finalizers")
+local actions = tasks.actions("finalizers",2) -- head, tail, where, boolean
 
 -- beware, these are packaged boxes so no first_character test
 -- maybe some day a hash with valid groupcodes

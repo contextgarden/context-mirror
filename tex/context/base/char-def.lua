@@ -48709,7 +48709,7 @@ characters.data={
  },
  [0x2009]={
   category="zs",
-  contextname="thinspace",
+  contextname="breakablethinspace",
   description="THIN SPACE",
   direction="ws",
   linebreak="ba",

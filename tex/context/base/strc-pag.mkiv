@@ -150,9 +150,62 @@
 
 % Counters
 
-\def\firstpage    {1} \def\prevpage    {1} \def\nextpage    {1} \def\lastpage    {1}
-\def\firstuserpage{1} \def\prevuserpage{1} \def\nextuserpage{1} \def\lastuserpage{1}
-\def\firstsubpage {1} \def\prevsubpage {1} \def\nextsubpage {1} \def\lastsubpage {1}
+% \def\firstpage    {1} \def\prevpage    {1} \def\nextpage    {1} \def\lastpage    {1}
+% \def\firstuserpage{1} \def\prevuserpage{1} \def\nextuserpage{1} \def\lastuserpage{1}
+% \def\firstsubpage {1} \def\prevsubpage {1} \def\nextsubpage {1} \def\lastsubpage {1}
+
+% \def\firstrealpage{\firststructurecounter[\s!realpage]}
+% \def\prevrealpage {\prevstructurecounter [\s!realpage]}
+% \def\nextrealpage {\nextstructurecounter [\s!realpage]}
+% \def\lastrealpage {\laststructurecounter [\s!realpage]}
+
+% \let\firstpage\firstrealpage
+% \let\prevpage \prevrealpage
+% \let\nextpage \nextrealpage
+% \let\lastpage \lastrealpage
+
+\def\firstrealpagenumber{\convertedstructurecounter[\s!realpage][\c!type=\v!first]}
+\def\firstuserpagenumber{\convertedstructurecounter[\s!userpage][\c!type=\v!first]}
+\def\firstsubpagenumber {\convertedstructurecounter[\s!subpage ][\c!type=\v!first]}
+
+\def\lastrealpagenumber {\convertedstructurecounter[\s!realpage][\c!type=\v!last]}
+\def\lastuserpagenumber {\convertedstructurecounter[\s!userpage][\c!type=\v!last]}
+\def\lastsubpagenumber  {\convertedstructurecounter[\s!subpage ][\c!type=\v!last]}
+
+\def\prevrealpagenumber {\convertedstructurecounter[\s!realpage][\c!type=\v!previous]}
+\def\prevuserpagenumber {\convertedstructurecounter[\s!userpage][\c!type=\v!previous]}
+\def\prevsubpagenumber  {\convertedstructurecounter[\s!subpage ][\c!type=\v!previous]}
+
+\def\nextrealpagenumber {\convertedstructurecounter[\s!realpage][\c!type=\v!next]}
+\def\nextuserpagenumber {\convertedstructurecounter[\s!userpage][\c!type=\v!next]}
+\def\nextsubpagenumber  {\convertedstructurecounter[\s!subpage ][\c!type=\v!next]}
+
+\def\firstrealpage{\firststructurecounter[\s!realpage]}
+\def\firstuserpage{\firststructurecounter[\s!userpage]}
+\def\firstsubpage {\firststructurecounter[\s!subpage ]}
+
+\def\prevrealpage {\prevstructurecounter [\s!realpage]}
+\def\prevuserpage {\prevstructurecounter [\s!userpage]}
+\def\prevsubpage  {\prevstructurecounter [\s!subpage ]}
+
+\def\nextrealpage {\nextstructurecounter [\s!realpage]}
+\def\nextuserpage {\nextstructurecounter [\s!userpage]}
+\def\nextsubpage  {\nextstructurecounter [\s!subpage ]}
+
+\def\lastrealpage {\laststructurecounter [\s!realpage]}
+\def\lastuserpage {\laststructurecounter [\s!userpage]}
+\def\lastsubpage  {\laststructurecounter [\s!subpage ]}
+
+\let\firstpage\firstrealpage
+\let\prevpage \prevrealpage
+\let\nextpage \nextrealpage
+\let\lastpage \lastrealpage
+
+% Compatibility counters:
+
+\def\nofrealpages {\lastrealpage} \def\totalnumberofpages{\lastrealpage}
+\def\nofuserpages {\lastuserpage} \def\lastpagenumber    {\lastuserpage}
+\def\nofsubpages  {\lastsubpage }
 
 % Renderers:
 
@@ -193,29 +246,9 @@
 \def\userpage{\userfolio}
 \def\subpage {\subfolio}
 
-% \def\firstrealpage{\firstpage}
-% \def\prevrealpage {\prevpage}
-% \def\nextrealpage {\nextpage}
-% \def\lastrealpage {\lastpage}
-
-\def\firstrealpage{\firststructurecounter[\s!realpage]}
-\def\prevrealpage {\prevstructurecounter[\s!realpage]}
-\def\nextrealpage {\nextstructurecounter[\s!realpage]}
-\def\lastrealpage {\laststructurecounter[\s!realpage]}
-
-\let\firstpage\firstrealpage
-\let\prevpage \prevrealpage
-\let\nextpage \nextrealpage
-\let\lastpage \lastrealpage
-
-\def\nofrealpages {\lastrealpage} \def\totalnumberofpages{\lastrealpage}
-\def\nofuserpages {\lastuserpage} \def\lastpagenumber    {\lastuserpage}
-\def\nofsubpages  {\lastsubpage }
-
 % Hooks:
 
 \appendtoks
-%   \xdef\lastpage{\laststructurecounter[\s!realpage]}%
     \xdef\currentpage{\the\realpageno}%
     \ifnum\realpageno>\lastpage \globallet\lastpage\lastrealpage \fi
 \to \everyinitializepagecounters

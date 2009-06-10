@@ -3581,8 +3581,8 @@
 %D Taken from Taco's math module (cq. \AMS\ macros), but
 %D adapted to \type {\hspace}:
 
-\unexpanded\def\textormathspace#1#2#3%
-  {\ifmmode\mskip#1#2\else\kern#1\hspaceamount\empty{#3}\fi\relax}
+\unexpanded\def\textormathspace         #1#2#3{\ifmmode\mskip#1#2\else\kern #1\hspaceamount\empty{#3}\fi\relax}
+\unexpanded\def\breakabletextormathspace#1#2#3{\ifmmode\mskip#1#2\else\hskip#1\hspaceamount\empty{#3}\fi\relax}
 
 \newmuskip\hairmuskip \hairmuskip=.15mu
 
@@ -3596,6 +3596,8 @@
 \unexpanded\def\negthickspace{\textormathspace-\thickmuskip3}
 
 % needed for unicode:
+
+\unexpanded\def\breakablethinspace      {\breakabletextormathspace+\thinmuskip 1}
 
 \unexpanded\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
 \unexpanded\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}

@@ -668,7 +668,7 @@ function xml.tostring(root) -- 25% overhead due to collecting
             return root
         elseif next(root) then -- next is faster than type (and >0 test)
             local result = { }
-            serialize(root,function(s) result[#result+1] = s end)
+            serialize(root,function(s) result[#result+1] = s end) -- brrr, slow (direct printing is faster)
             return concat(result,"")
         end
     end

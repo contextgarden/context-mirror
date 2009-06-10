@@ -78,6 +78,7 @@ function storage.dump()
             code = initialize .. table.serialize(original,name) .. finalize
         end
         lua.bytecode[storage.max] = loadstring(code)
+        collectgarbage("step")
     end
 end
 

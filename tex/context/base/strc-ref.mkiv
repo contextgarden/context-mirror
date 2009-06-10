@@ -1236,27 +1236,63 @@
 
 % inefficient, we need to save the shared one (just reuse last command in lua)
 
+% \def\dogotospace#1[#2]%
+%   {\iflocationsplit
+%      \ifsecondaryreference
+%        \setbox\scratchbox\hbox % will change anyway
+%      \fi % due to space insertion
+%        {\let\dogotospace\dogotofixed
+%         \iflocation
+%           \def\processisolatedword##1%
+%             {\ifisolatedwords\ifsharesimilarreferences
+%                \global\advance\similarreference \plusone
+%              \fi\fi
+%              \hbox\bgroup
+%                \doprocessreferenceelse{#2}{##1\presetgoto}{\unknownreference{#2}##1\relax}%
+%              \egroup}%
+%           \dosetfontattribute \??ia\c!style
+%           \dosetcolorattribute\??ia\c!color
+%           \processisolatedwords{#1}\processisolatedword
+%         \else
+%           #1\relax % \relax prevents #1's next macros from gobbling \fi
+%         \fi}%
+%    \else
+%      \iflocation
+%        \hbox{\doattributes\??ia\c!style\c!color{\doprocessreferenceelse{#2}{#1\presetgoto}{\unknownreference{#2}#1\relax}}}%
+%      \else
+%        #1\relax % \relax prevents #1's next macros from gobbling \fi
+%      \fi
+%    \fi
+%    \global\similarreference\zerocount}
+
+\def\dogotoprocessisolatedword#1#2%
+  {\ifisolatedwords\ifsharesimilarreferences
+     \global\advance\similarreference \plusone
+   \fi\fi
+   \hbox\bgroup
+     \doprocessreferenceelse{#1}{#2\presetgoto}{\unknownreference{#1}#2\relax}%
+   \egroup}%
+
 \def\dogotospace#1[#2]%
   {\iflocationsplit
-     \ifsecondaryreference
-       \setbox\scratchbox\hbox % will change anyway
-     \fi % due to space insertion
-       {\let\dogotospace\dogotofixed
-        \iflocation
-          \def\processisolatedword##1%
-            {\ifisolatedwords\ifsharesimilarreferences
-               \global\advance\similarreference \plusone
-             \fi\fi
-             \hbox\bgroup
-               \doprocessreferenceelse{#2}{##1\presetgoto}{\unknownreference{#2}##1\relax}%
-             \egroup}%
-          \doattributes\??ia\c!style\c!color{\processisolatedwords{#1}\processisolatedword}%
-        \else
-          #1\relax % \relax prevents #1's next macros from gobbling \fi
-        \fi}%
+     \ifsecondaryreference\setbox\scratchbox\hbox\fi % due to space insertion
+       \bgroup
+         \let\dogotospace\dogotofixed
+         \iflocation
+           \dosetfontattribute \??ia\c!style
+           \dosetcolorattribute\??ia\c!color
+           \processisolatedwords{#1}{\dogotoprocessisolatedword{#2}}%
+         \else
+           #1\relax % \relax prevents #1's next macros from gobbling \fi
+         \fi
+       \egroup
    \else
      \iflocation
-       \hbox{\doattributes\??ia\c!style\c!color{\doprocessreferenceelse{#2}{#1\presetgoto}{\unknownreference{#2}#1\relax}}}%
+       \hbox\bgroup
+         \dosetfontattribute \??ia\c!style
+         \dosetcolorattribute\??ia\c!color
+         \doprocessreferenceelse{#2}{#1\presetgoto}{\unknownreference{#2}#1\relax}%
+       \egroup%
      \else
        #1\relax % \relax prevents #1's next macros from gobbling \fi
      \fi
@@ -1332,8 +1368,8 @@
 %D specified. This is logical when one keeps in mind that a
 %D valid \URL\ can also be a mail address.
 
-\def\usefile{\dotripleargument\dousefile}
-\def\useurl {\doquadrupleempty\douseurl}
+\unexpanded\def\usefile{\dotripleargument\dousefile}  % so that they can be used in expanded arguments
+\unexpanded\def\useurl {\doquadrupleempty\douseurl }  % so that they can be used in expanded arguments
 
 \let\useURL             \useurl
 \let\useexternaldocument\usefile
@@ -1373,7 +1409,6 @@
    \dosetfontattribute\??ur\c!style
    \dosetcolorattribute\??ur\c!color
    \ctxlua{jobreferences.urls.get("#1","\@@uralternative","\@@urspace")}%
-   \dostopattributes
    \endgroup}
 
 %D This macro is hooked into a support macro, and thereby

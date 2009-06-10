@@ -314,7 +314,7 @@ tasks.new (
 --~ tasks.appendaction("math", "normalizers", "noads.respace_characters",  nil, "nohead")
 --~ tasks.appendaction("math", "builders",    "noads.mlist_to_hlist",      nil, "notail")
 
-local actions = tasks.actions("math")
+local actions = tasks.actions("math",2) -- head, tail, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 

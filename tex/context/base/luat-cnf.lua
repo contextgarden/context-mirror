@@ -67,6 +67,7 @@ function texconfig.init()
         local i = start
         while b[i] do
             b[i]() ; b[i] = nil ; i = i + 1
+         -- collectgarbage('step')
         end
         return i - start
     end

@@ -26,6 +26,10 @@ function table.strip(tab)
     return lst
 end
 
+local function compare(a,b)
+    return (tostring(a) < tostring(b))
+end
+
 local function sortedkeys(tab)
     local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in next, tab do
@@ -46,7 +50,7 @@ local function sortedkeys(tab)
         end
     end
     if kind == 0 or kind == 3 then
-        sort(srt,function(a,b) return (tostring(a) < tostring(b)) end)
+        sort(srt,compare)
     else
         sort(srt)
     end

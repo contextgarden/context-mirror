@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 06/10/09 11:24:52
+-- merge date  : 06/11/09 00:09:35
 
 do -- begin closure to overcome local limits and interference
 
@@ -483,6 +483,10 @@ function table.strip(tab)
     return lst
 end
 
+local function compare(a,b)
+    return (tostring(a) < tostring(b))
+end
+
 local function sortedkeys(tab)
     local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in next, tab do
@@ -503,7 +507,7 @@ local function sortedkeys(tab)
         end
     end
     if kind == 0 or kind == 3 then
-        sort(srt,function(a,b) return (tostring(a) < tostring(b)) end)
+        sort(srt,compare)
     else
         sort(srt)
     end
@@ -1553,6 +1557,7 @@ end
 function io.loaddata(filename,textmode)
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
+    --  collectgarbage("step") -- sometimes makes a big difference in mem consumption
         local data = f:read('*all')
     --  garbagecollector.check(data)
         f:close()
@@ -3776,11 +3781,6 @@ function tfm.do_scale(tfmtable, scaledpoints)
     -- we have t.name=metricfile and t.fullname=RealName and t.filename=diskfilename
     -- when collapsing fonts, luatex looks as both t.name and t.fullname as ttc files
     -- can have multiple subfonts
---~ collectgarbage("collect")
---~ t.fontname = t.fontname or t.fullname
---~ t.name = t.name or t.fontname
---~ print(t.fullname,table.serialize(characters[string.byte('W')].kerns))
---~ print(t.id,t.fullname)
     return t, delta
 end
 
@@ -3928,7 +3928,7 @@ function tfm.enhance(tfmdata,specification)
     tfmdata.shared = tfmdata.shared or { }
     tfmdata.shared.features = features
     --  tfmdata.shared.tfmdata = tfmdata -- circular
-tfmdata.filename = specification.name
+    tfmdata.filename = specification.name
     if not features.encoding then
         local name, size = specification.name, specification.size
         local encoding, filename = match(name,"^(.-)%-(.*)$") -- context: encoding-name.*
@@ -8982,7 +8982,7 @@ function otf.setcontextchain(method)
         logwarning("installing contextchain handler '%s'",method)
         local handler = otf.chainhandlers[method]
         handlers.contextchain = function(...)
-            return handler(currentfont,...)
+            return handler(currentfont,...) -- hm, get rid of ...
         end
     end
     handlers.gsub_context             = handlers.contextchain
@@ -10332,6 +10332,8 @@ tfm.internalized     = tfm.internalized or { } -- internal tex numbers
 
 tfm.readers.sequence = { 'otf', 'ttf', 'afm', 'tfm' }
 
+tfm.auto_afm = true
+
 local readers  = tfm.readers
 local sequence = readers.sequence
 
@@ -10623,10 +10625,31 @@ local function check_tfm(specification,fullname)
     end
 end
 
+--~ local function check_afm(specification,fullname)
+--~     fullname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
+--~     if fullname ~= "" then
+--~         specification.filename, specification.format = fullname, "afm"
+--~         return tfm.read_from_afm(specification)
+--~     end
+--~ end
+
 local function check_afm(specification,fullname)
-    fullname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
-    if fullname ~= "" then
-        specification.filename, specification.format = fullname, "afm"
+    local foundname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
+    if foundname == "" and tfm.auto_afm then
+        local encoding, shortname = match(fullname,"^(.-)%-(.*)$") -- context: encoding-name.*
+        if encoding and shortname and fonts.enc.known[encoding] then
+            shortname = resolvers.findbinfile(shortname,'afm') or "" -- just to be sure
+            if shortname ~= "" then
+                foundname = shortname
+             -- tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
+                if trace_loading then
+                    logs.report("load afm","stripping encoding prefix from filename %s",afmname)
+                end
+            end
+        end
+    end
+    if foundname ~= "" then
+        specification.filename, specification.format = foundname, "afm"
         return tfm.read_from_afm(specification)
     end
 end
@@ -11100,5 +11123,8 @@ end
 
 fonts.initializers.base.otf.itlc = itlc
 fonts.initializers.node.otf.itlc = itlc
+
+function fonts.register_message()
+end
 
 end -- closure

@@ -59,7 +59,7 @@ function nodes.cleanup_page(head)
     return head, false
 end
 
-local actions = tasks.actions("shipouts")
+local actions = tasks.actions("shipouts",0)  -- no extra arguments
 
 function nodes.process_page(head) -- problem, attr loaded before node, todo ...
     return actions(head) -- no tail

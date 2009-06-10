@@ -57,19 +57,80 @@ function tasks.showactions(name,group,action,where,kind)
     end
 end
 
-function tasks.actions(name)
+-- Optimizing for the number of arguments makes sense, but getting rid of
+-- the nested call (no problem but then we also need to register the
+-- callback with this mechanism so that it gets updated) does not save
+-- much time (24K calls on mk.tex).
+
+local created, total = 0, 0
+
+statistics.register("node list callback tasks", function()
+    if total > 0 then
+        return string.format("%s unique tasks, %s created, %s calls",table.count(tasks.data),created,total)
+    else
+        return nil
+    end
+end)
+
+function tasks.actions(name,n) -- we optimize for the number or arguments (no ...)
     local data = tasks.data[name]
     if data then
-        return function(head,tail,...)
-            local runner = data.runner
-            if not runner then
-                if trace_tasks then
-                    logs.report("nodes","creating task runner '%s'",name)
+        if n == 0 then
+            return function(head,tail)
+                local runner = data.runner
+                total = total + 1 -- will go away
+                if not runner then
+                    created = created + 1
+                    if trace_tasks then
+                        logs.report("nodes","creating task runner '%s'",name)
+                    end
+                    runner = sequencer.compile(data.list,sequencer.nodeprocessor,0)
+                    data.runner = runner
                 end
-                runner = sequencer.compile(data.list,sequencer.nodeprocessor)
-                data.runner = runner
+                return runner(head,tail)
             end
-            return runner(head,tail,...)
+        elseif n == 1 then
+            return function(head,tail,one)
+                total = total + 1 -- will go away
+                local runner = data.runner
+                if not runner then
+                    created = created + 1
+                    if trace_tasks then
+                        logs.report("nodes","creating task runner '%s'",name)
+                    end
+                    runner = sequencer.compile(data.list,sequencer.nodeprocessor,1)
+                    data.runner = runner
+                end
+                return runner(head,tail,one)
+            end
+        elseif n == 2 then
+            return function(head,tail,one,two)
+                total = total + 1 -- will go away
+                local runner = data.runner
+                if not runner then
+                    created = created + 1
+                    if trace_tasks then
+                        logs.report("nodes","creating task runner '%s'",name)
+                    end
+                    runner = sequencer.compile(data.list,sequencer.nodeprocessor,2)
+                    data.runner = runner
+                end
+                return runner(head,tail,one,two)
+            end
+        else
+            return function(head,tail,...)
+                total = total + 1 -- will go away
+                local runner = data.runner
+                if not runner then
+                    created = created + 1
+                    if trace_tasks then
+                        logs.report("nodes","creating task runner '%s'",name)
+                    end
+                    runner = sequencer.compile(data.list,sequencer.nodeprocessor,3)
+                    data.runner = runner
+                end
+                return runner(head,tail,...)
+            end
         end
     else
         return nil
