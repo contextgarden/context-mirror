@@ -3893,6 +3893,7 @@
           <cd:constant type="رنگ"/>
           <cd:constant type="پرده"/>
           <cd:constant type="cd:text"/>
+          <cd:constant type="صفحه"/>
         </cd:parameter>
         <cd:parameter name="مکان">
           <cd:constant type="چپ"/>

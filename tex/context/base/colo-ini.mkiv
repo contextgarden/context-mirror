@@ -869,6 +869,8 @@
 \setfalse\collectcolorsinlist
 \def\collectcolorinlist#1{\doglobal\addtocommalist{#1}\colorlist}
 
+\def\doregistercolor#1#2{\ctxlua{ctx.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}}
+
 \def\dodefinecolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
    \ctxlua{ctx.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%

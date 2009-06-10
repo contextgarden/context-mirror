@@ -447,30 +447,29 @@
 % \appendtoks \setbuffer[typeset-b]\endbuffer\to \everystarttext
 % \appendtoks \setbuffer[typeset-a]\endbuffer\to \everystarttext
 
+\newcount\noftypesetbuffers
+
 \def\typesetbuffer
   {\dodoubleempty\dotypesetbuffer}
 
-\newcounter\noftypesetbuffers % all loaded at the end
-
-\defineexternalfigure
-  [typeset]
-  [\c!background=\v!color,
-   \c!backgroundcolor=\s!white]
-
 \def\dotypesetbuffer[#1][#2]% beware: this will mix up the mp graphics
+  {\ifsecondargument
+     \dodotypesetbuffer[#1][#2]%
+   \else\iffirstargument
+     \doifassignmentelse{#1}
+       {\dodotypesetbuffer[\jobname][#1]}%
+       {\dodotypesetbuffer[#1][]}%
+   \else
+     \dodotypesetbuffer[\jobname][]
+   \fi\fi}
+
+\def\dodotypesetbuffer[#1][#2]% beware: this will mix up the mp graphics
   {\bgroup
-   \def\TEXbufferfile##1{\bufferprefix##1.tex}%
-   \expanded{\setbuffer[typeset]%
-     \def\noexpand\bufferprefix{\ifprotectbuffers\jobname-\fi typeset-}}%
-     \starttext
-     \getbuffer[b,#1,a]%
-     \stoptext
-   \endbuffer
-   \doglobal\increment\noftypesetbuffers
-   % batch is needed
-   \executesystemcommand{texmfstart texexec --batch --pdf --result=\bufferprefix typeset-\noftypesetbuffers\space \bufferprefix typeset.tex}%
-   %\externalfigure[\bufferprefix typeset-\noftypesetbuffers.pdf][\c!object=\v!no,#2]%
-   \externalfigure[\bufferprefix typeset-\noftypesetbuffers.pdf][#2]%
+   \global\advance\noftypesetbuffers\plusone
+   \edef\bufferfilename{\jobname-buffer-\the\noftypesetbuffers}%
+   \ctxlua{buffers.save("\bufferfilename.tmp","#1",true)}%
+   \executesystemcommand{context \bufferfilename.tmp}%
+   \externalfigure[\bufferfilename.pdf][#2]%
    \egroup}
 
 % for me only (manuals and such)
@@ -519,7 +518,7 @@
    \c!xmax=]
 
 \useexternalfigure
-  [buffer] [\jobname] [\c!type=\v!buffer,\c!object=\v!no]
+  [buffer] [\jobname.buffer] [\c!object=\v!no]
 
 \protect \endinput
 

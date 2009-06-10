@@ -279,10 +279,10 @@
 
 \def\setsubmitoutputformat#1%
   {\doifinsetelse{#1}{FDF,fdf}
-     {\chardef\submitoutputformat2}
+     {\chardef\submitoutputformat\plustwo}
      {\doifinsetelse{#1}{XML,xml}
-        {\chardef\submitoutputformat3}
-        {\chardef\submitoutputformat1}}%
+        {\chardef\submitoutputformat\plusthree}
+        {\chardef\submitoutputformat\plusone}}%
    \relax}
 
 %D Handy to have this available asap:

@@ -3893,6 +3893,7 @@
           <cd:constant type="barevne"/>
           <cd:constant type="rastr"/>
           <cd:constant type="cd:text"/>
+          <cd:constant type="stranka"/>
         </cd:parameter>
         <cd:parameter name="misto">
           <cd:constant type="vlevo"/>

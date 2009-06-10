@@ -1049,7 +1049,7 @@
 
 \ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\unexpanded\string\\def\string\\\string\n{\string\\ }")}
 
-\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\space}
+\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\mathortext\ \space} % no space in math
 
 \letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace % overloaded later
 

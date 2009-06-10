@@ -338,8 +338,8 @@
    \normalexpanded{\noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}}%
    \currentstructuresynchronize}
 
-\def\thestructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
-\def\thestructureheadtitle {\structurecctvalue{titledata.title}}                            % todo
+\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
+\def\fullstructureheadtitle {\structurecctvalue{titledata.title}}                            % todo
 
 \let\currentstructurehead        \empty
 \let\currentstructureheadcoupling\empty
@@ -387,7 +387,7 @@
    \setupinterlinespace
    % temp hack most be fixed (see s-pre-61)
    % \begstrut\getmarking[#4#3]\endstrut
-   \doifelse{#3}\v!number\currentheadnumber\currentheadtext
+   \doifelse{#3}\v!number\fullstructureheadnumber\fullstructureheadtitle
    \endgraf
    \endgroup}
 
@@ -429,9 +429,9 @@
        \dostructureheadspacingbeforeyes
        \doregisterstructurehead{#1}{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
-       \let\getstructureheadtitle\thestructureheadtitle
+       \let\getstructureheadtitle\fullstructureheadtitle
        \ifconditional\structureheadshownumber
-         \let\getstructureheadnumber\thestructureheadnumber
+         \let\getstructureheadnumber\fullstructureheadnumber
          \placestructureheadnumbertext
        \else
          \placestructureheadtext
@@ -448,8 +448,8 @@
      \ifconditional\structureheaddoplace
        \dostructureheadspacingbeforeyes
        \doregisterstructurehead{#1}{#2}{#3}% after optional \page
-       \let\getstructureheadtitle\thestructureheadtitle
        \let\getstructureheadsyncs\thestructureheadsynchonization
+       \let\getstructureheadtitle\fullstructureheadtitle
        \placestructureheadtext
        \dostructureheadspacingafteryes
      \else
@@ -637,7 +637,11 @@
 \def\currentstructureheadnumber{0} % ==> \currentheadnumber
 
 \def\determineheadnumber[#1]%
-  {\xdef\currentstructureheadnumber{\getstructurenumber{\thecurrentstructureheadlevel{#1}}}}
+  {\xdef\currentstructureheadnumber{\getstructurenumber{\thenamedstructureheadlevel{#1}}}}
+
+% The previous macro is been replaced by the expandable:
+
+\def\namedheadnumber#1{\getstructurenumber{\thenamedstructureheadlevel{#1}}}
 
 \def\structureheadnumber
   {\dosingleempty\dostructureheadnumber}
@@ -646,6 +650,8 @@
   {\getfullstructurenumber{\iffirstargument\thecurrentstructureheadlevel{#1}\fi}}
 
 % compatibility code (after all, we might offer different structure handlers as well
+% but we might as well remove the 'structure' substring at some point (we needed it
+% in order to test the old and new methods alongside)
 
 \let\definesectionblock \definestructureblock
 \let\definesection      \definestructuresection
@@ -655,9 +661,11 @@
 \let\setuphead          \setupstructurehead
 \let\headnumber         \structureheadnumber
 \let\setupsectionblock  \setupstructureblock
-\let\currentheadnumber  \thestructureheadnumber
-\let\currentheadtext    \thestructureheadtitle
+
 \let\sectioncountervalue\structurevalue
+
+\def\currentheadnumber  {\currentstructureheadnumber}
+\def\currentheadtext    {obsolete, use marks}
 
 % list references, will be redone in lua when we need it
 

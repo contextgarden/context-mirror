@@ -33,7 +33,7 @@ The TeX-Lua mix is suboptimal. This has to do with the fact that we cannot
 run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
-local texsprint, format, lower = tex.sprint, string.format, string.lower
+local texsprint, format, lower, find, match = tex.sprint, string.format, string.lower, string.find, string.match
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -383,14 +383,14 @@ local function locate(request) -- name, format, cache
         local format = figures.suffixes[askedformat]
         if not format then
             for _, pattern in ipairs(figures.patterns) do
-                if askedformat:find(pattern[1]) then
+                if find(askedformat,pattern[1]) then
                     format = pattern[2]
                     break
                 end
             end
         end
         if format then
-            local foundname = figures.exists(askedname,askedformat)
+            local foundname = figures.exists(askedname,format) -- not askedformat
             if foundname then
                 return register(askedname, {
                     askedname = askedname,
@@ -694,8 +694,30 @@ figures.includers.mov = figures.includers.nongeneric
 
 -- -- -- mps -- -- --
 
+local function internal(askedname)
+    local spec, mprun, mpnum = match(lower(askedname),"mprun(:?)(.-)%.(%d+)")
+    if spec == ":" then
+        return mprun, mpnum
+    else
+        return "", mpnum
+    end
+end
+
+function figures.existers.mps(askedname)
+    local mprun, mpnum = internal(askedname)
+    if mpnum then
+        return askedname
+    else
+        return figures.existers.generic(askedname)
+    end
+end
 function figures.checkers.mps(data)
-    return figures.checkers.nongeneric(data,format("\\docheckfiguremps{%s}",data.used.fullname))
+    local mprun, mpnum = internal(data.used.fullname)
+    if mpnum then
+        return figures.checkers.nongeneric(data,format("\\docheckfiguremprun{%s}{%s}",mprun,mpnum))
+    else
+        return figures.checkers.nongeneric(data,format("\\docheckfiguremps{%s}",data.used.fullname))
+    end
 end
 figures.includers.mps = figures.includers.nongeneric
 

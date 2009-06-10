@@ -226,3 +226,8 @@ function string.tabtospace(str,tab)
     return str
 end
 
+function string:compactlong() -- strips newlines and leading spaces
+    self = gsub(self,"[\n\r]+ *","")
+    self = gsub(self,"^ *","")
+    return self
+end

@@ -41,17 +41,17 @@ local function getobjects(result,figure,f)
     end
 end
 
-function metapost.convert(result, trialrun, flusher, multipass)
+function metapost.convert(result, trialrun, flusher, multipass, askedfig)
     if trialrun then
         metapost.multipass = false
-        metapost.parse(result, flusher)
+        metapost.parse(result, askedfig)
         if multipass and not metapost.multipass and metapost.optimize then
-            metapost.flush(result, flusher) -- saves a run
+            metapost.flush(result, flusher, askedfig) -- saves a run
         else
             return false
         end
     else
-        metapost.flush(result, flusher)
+        metapost.flush(result, flusher, askedfig)
     end
     return true -- done
 end
@@ -224,7 +224,7 @@ metapost.specials = metapost.specials or { }
 -- the flusher is pdf based, if another backend is used, we need to overload the
 -- flusher; this is beta code, the organization will change
 
-function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is sneller, 1 literal
+function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan concat is sneller, 1 literal
     if result then
         local figures = result.fig
         if figures then
@@ -234,216 +234,223 @@ function metapost.flush(result,flusher) -- pdf flusher, table en dan concat is s
             for f=1, #figures do
                 local figure = figures[f]
                 local objects = getobjects(result,figure,f)
-                local fignum = tonumber((figure:filename()):match("([%d]+)$") or figure:charcode() or 0)
-                local t = { }
-                local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
-                local bbox = figure:boundingbox()
-                local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
-metapost.llx = llx
-metapost.lly = lly
-metapost.urx = urx
-metapost.ury = ury
-                if urx < llx then
-                    -- invalid
-                    flusher.startfigure(fignum,0,0,0,0,"invalid",figure)
-                    flusher.stopfigure()
-                else
-                    flusher.startfigure(fignum,llx,lly,urx,ury,"begin",figure)
-                    t[#t+1] = "q"
-                    if objects then
-t[#t+1] = metapost.colorinitializer()
-                        -- once we have multiple prescripts we can do more tricky things like
-                        -- text and special colors at the same time
-                        for o=1,#objects do
-                            local object = objects[o]
-                            local objecttype = object.type
-                            if objecttype == "start_bounds" or objecttype == "stop_bounds" then
-                                -- skip
-                            elseif objecttype == "start_clip" then
-                                t[#t+1] = "q"
-                                flushnormalpath(object.path,t,false)
-                                t[#t+1] = "W n"
-                            elseif objecttype == "stop_clip" then
-                                t[#t+1] = "Q"
-                                miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
-                            elseif objecttype == "special" then
-                                metapost.specials.register(object.prescript)
-                            elseif objecttype == "text" then
-                                t[#t+1] = "q"
-                                local ot = object.transform -- 3,4,5,6,1,2
-                                t[#t+1] = format("%f %f %f %f %f %f cm",ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: format("%f %f m %f %f %f %f 0 0 cm",unpack(ot))
-                                flusher.flushfigure(t) -- flush accumulated literals
-                                t = { }
-                                flusher.textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
-                                t[#t+1] = "Q"
-                            else
-                                -- alternatively we can pass on the stack, could be a helper
-                                -- can be optimized with locals
-                                local currentobject = { -- not needed when no extensions
-                                    type = object.type,
-                                    miterlimit = object.miterlimit,
-                                    linejoin = object.linejoin,
-                                    linecap = object.linecap,
-                                    color = object.color,
-                                    dash = object.dash,
-                                    path = object.path,
-                                    htap = object.htap,
-                                    pen = object.pen,
-                                    prescript = object.prescript,
-                                    postscript = object.postscript,
-                                }
---~ print(table.serialize(currentobject))
-                                --
-                                local before, inbetween, after = nil, nil, nil
-                                --
-                                local cs, cr = currentobject.color, nil
-                                -- todo document why ...
-                                if cs and colorhandler and #cs > 0 and round(cs[1]*10000) == 123 then -- test in function
-                                    currentobject, cr = colorhandler(cs,currentobject,t,colorconverter)
-                                    objecttype = currentobject.type
-                                end
-                                --
-                                local prescript = currentobject.prescript
-                                if prescript and prescript ~= "" then
-                                    -- move test to function
-                                    local special = metapost.specials[prescript]
-                                    if special then
-                                        currentobject, before, inbetween, after = special(currentobject.postscript,currentobject,t,flusher)
+                local fignum = figure:charcode() or 0
+                if not askedfig or (askedfig == fignum) then
+                    local t = { }
+                    local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
+                    local bbox = figure:boundingbox()
+                    local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
+                    metapost.llx = llx
+                    metapost.lly = lly
+                    metapost.urx = urx
+                    metapost.ury = ury
+                    if urx < llx then
+                        -- invalid
+                        flusher.startfigure(fignum,0,0,0,0,"invalid",figure)
+                        flusher.stopfigure()
+                    else
+                        flusher.startfigure(fignum,llx,lly,urx,ury,"begin",figure)
+                        t[#t+1] = "q"
+                        if objects then
+                            t[#t+1] = metapost.colorinitializer()
+                            -- once we have multiple prescripts we can do more tricky things like
+                            -- text and special colors at the same time
+                            for o=1,#objects do
+                                local object = objects[o]
+                                local objecttype = object.type
+                                if objecttype == "start_bounds" or objecttype == "stop_bounds" then
+                                    -- skip
+                                elseif objecttype == "start_clip" then
+                                    t[#t+1] = "q"
+                                    flushnormalpath(object.path,t,false)
+                                    t[#t+1] = "W n"
+                                elseif objecttype == "stop_clip" then
+                                    t[#t+1] = "Q"
+                                    miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
+                                elseif objecttype == "special" then
+                                    metapost.specials.register(object.prescript)
+                                elseif objecttype == "text" then
+                                    t[#t+1] = "q"
+                                    local ot = object.transform -- 3,4,5,6,1,2
+                                    t[#t+1] = format("%f %f %f %f %f %f cm",ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: format("%f %f m %f %f %f %f 0 0 cm",unpack(ot))
+                                    flusher.flushfigure(t) -- flush accumulated literals
+                                    t = { }
+                                    flusher.textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
+                                    t[#t+1] = "Q"
+                                else
+                                    -- alternatively we can pass on the stack, could be a helper
+                                    -- can be optimized with locals
+                                    local currentobject = { -- not needed when no extensions
+                                        type = object.type,
+                                        miterlimit = object.miterlimit,
+                                        linejoin = object.linejoin,
+                                        linecap = object.linecap,
+                                        color = object.color,
+                                        dash = object.dash,
+                                        path = object.path,
+                                        htap = object.htap,
+                                        pen = object.pen,
+                                        prescript = object.prescript,
+                                        postscript = object.postscript,
+                                    }
+    --~ print(table.serialize(currentobject))
+                                    --
+                                    local before, inbetween, after = nil, nil, nil
+                                    --
+                                    local cs, cr = currentobject.color, nil
+                                    -- todo document why ...
+                                    if cs and colorhandler and #cs > 0 and round(cs[1]*10000) == 123 then -- test in function
+                                        currentobject, cr = colorhandler(cs,currentobject,t,colorconverter)
                                         objecttype = currentobject.type
                                     end
-                                end
-                                --
-                                cs = currentobject.color
-                                if cs and #cs > 0 then
-                                    t[#t+1], cr = colorconverter(cs)
-                                end
-                                --
-                                if before then currentobject, t = before() end
-                                local ml = currentobject.miterlimit
-                                if ml and ml ~= miterlimit then
-                                    miterlimit = ml
-                                    t[#t+1] = format("%f M",ml)
-                                end
-                                local lj = currentobject.linejoin
-                                if lj and lj ~= linejoin then
-                                    linejoin = lj
-                                    t[#t+1] = format("%i j",lj)
-                                end
-                                local lc = currentobject.linecap
-                                if lc and lc ~= linecap then
-                                    linecap = lc
-                                    t[#t+1] = format("%i J",lc)
-                                end
-                                local dl = currentobject.dash
-                                if dl then
-                                    local d = format("[%s] %i d",concat(dl.dashes or {}," "),dl.offset)
-                                    if d ~= dashed then
-                                        dashed = d
-                                        t[#t+1] = dashed
-                                    end
-                                elseif dashed then
-                                   t[#t+1] = "[] 0 d"
-                                   dashed = false
-                                end
-                                if inbetween then currentobject, t = inbetween() end
-                                local path = currentobject.path
-                                local transformed, penwidth = false, 1
-                                local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
-                                local pen = currentobject.pen
-                                if pen then
-								   if pen.type == 'elliptical' then
-                                        transformed, penwidth = pen_characteristics(object) -- boolean, value
-                                        t[#t+1] = format("%f w",penwidth) -- todo: only if changed
-                                        if objecttype == 'fill' then
-                                            objecttype = 'both'
+                                    --
+                                    local prescript = currentobject.prescript
+                                    if prescript and prescript ~= "" then
+                                        -- move test to function
+                                        local special = metapost.specials[prescript]
+                                        if special then
+                                            currentobject, before, inbetween, after = special(currentobject.postscript,currentobject,t,flusher)
+                                            objecttype = currentobject.type
                                         end
-                                   else -- calculated by mplib itself
-                                        objecttype = 'fill'
-                                   end
-                                end
-                                if transformed then
-                                    t[#t+1] = "q"
-                                end
-                                if path then
-                                    if transformed then
-                                        flushconcatpath(path,t,open)
-                                    else
-                                        flushnormalpath(path,t,open)
                                     end
-                                    if objecttype == "fill" then
-                                        t[#t+1] = "h f"
-                                    elseif objecttype == "outline" then
-                                        t[#t+1] = (open and "S") or "h S"
-                                    elseif objecttype == "both" then
-                                        t[#t+1] = "h B"
+                                    --
+                                    cs = currentobject.color
+                                    if cs and #cs > 0 then
+                                        t[#t+1], cr = colorconverter(cs)
                                     end
-                                end
-                                if transformed then
-                                    t[#t+1] = "Q"
-                                end
-                                local path = currentobject.htap
-                                if path then
+                                    --
+                                    if before then currentobject, t = before() end
+                                    local ml = currentobject.miterlimit
+                                    if ml and ml ~= miterlimit then
+                                        miterlimit = ml
+                                        t[#t+1] = format("%f M",ml)
+                                    end
+                                    local lj = currentobject.linejoin
+                                    if lj and lj ~= linejoin then
+                                        linejoin = lj
+                                        t[#t+1] = format("%i j",lj)
+                                    end
+                                    local lc = currentobject.linecap
+                                    if lc and lc ~= linecap then
+                                        linecap = lc
+                                        t[#t+1] = format("%i J",lc)
+                                    end
+                                    local dl = currentobject.dash
+                                    if dl then
+                                        local d = format("[%s] %i d",concat(dl.dashes or {}," "),dl.offset)
+                                        if d ~= dashed then
+                                            dashed = d
+                                            t[#t+1] = dashed
+                                        end
+                                    elseif dashed then
+                                       t[#t+1] = "[] 0 d"
+                                       dashed = false
+                                    end
+                                    if inbetween then currentobject, t = inbetween() end
+                                    local path = currentobject.path
+                                    local transformed, penwidth = false, 1
+                                    local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
+                                    local pen = currentobject.pen
+                                    if pen then
+                                       if pen.type == 'elliptical' then
+                                            transformed, penwidth = pen_characteristics(object) -- boolean, value
+                                            t[#t+1] = format("%f w",penwidth) -- todo: only if changed
+                                            if objecttype == 'fill' then
+                                                objecttype = 'both'
+                                            end
+                                       else -- calculated by mplib itself
+                                            objecttype = 'fill'
+                                       end
+                                    end
                                     if transformed then
                                         t[#t+1] = "q"
                                     end
-                                    if transformed then
-                                        flushconcatpath(path,t,open)
-                                    else
-                                        flushnormalpath(path,t,open)
-                                    end
-                                    if objecttype == "fill" then
-                                        t[#t+1] = "h f"
-                                    elseif objecttype == "outline" then
-                                        t[#t+1] = (open and "S") or "h S"
-                                    elseif objecttype == "both" then
-                                        t[#t+1] = "h B"
+                                    if path then
+                                        if transformed then
+                                            flushconcatpath(path,t,open)
+                                        else
+                                            flushnormalpath(path,t,open)
+                                        end
+                                        if objecttype == "fill" then
+                                            t[#t+1] = "h f"
+                                        elseif objecttype == "outline" then
+                                            t[#t+1] = (open and "S") or "h S"
+                                        elseif objecttype == "both" then
+                                            t[#t+1] = "h B"
+                                        end
                                     end
                                     if transformed then
                                         t[#t+1] = "Q"
                                     end
+                                    local path = currentobject.htap
+                                    if path then
+                                        if transformed then
+                                            t[#t+1] = "q"
+                                        end
+                                        if transformed then
+                                            flushconcatpath(path,t,open)
+                                        else
+                                            flushnormalpath(path,t,open)
+                                        end
+                                        if objecttype == "fill" then
+                                            t[#t+1] = "h f"
+                                        elseif objecttype == "outline" then
+                                            t[#t+1] = (open and "S") or "h S"
+                                        elseif objecttype == "both" then
+                                            t[#t+1] = "h B"
+                                        end
+                                        if transformed then
+                                            t[#t+1] = "Q"
+                                        end
+                                    end
+                                    if cr then
+                                        t[#t+1] = cr
+                                    end
+                                    if after then currentobject, t = after() end
                                 end
-                                if cr then
-                                    t[#t+1] = cr
-                                end
-                                if after then currentobject, t = after() end
-                            end
-                       end
+                           end
+                        end
+                        t[#t+1] = "Q"
+                        flusher.flushfigure(t)
+                        flusher.stopfigure("end")
                     end
-                    t[#t+1] = "Q"
-                    flusher.flushfigure(t)
-                    flusher.stopfigure("end")
+                    break
                 end
             end
         end
     end
 end
 
-function metapost.parse(result)
+function metapost.parse(result,askedfig)
     if result then
         local figures = result.fig
         if figures then
             for f=1, #figures do
                 local figure = figures[f]
-local bbox = figure:boundingbox()
-local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
-metapost.llx = llx
-metapost.lly = lly
-metapost.urx = urx
-metapost.ury = ury
-                local objects = getobjects(result,figure,f)
-                if objects then
-                    for o=1,#objects do
-                        local object = objects[o]
-                        if object.type == "outline" then
-                            local prescript = object.prescript
-                            if prescript then
-                                local special = metapost.specials[prescript]
-                                if special then
-                                    special(object.postscript,object)
+                local fignum = figure:charcode() or 0
+                if not askedfig or (askedfig == fignum) then
+                    local bbox = figure:boundingbox()
+                    local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
+                    metapost.llx = llx
+                    metapost.lly = lly
+                    metapost.urx = urx
+                    metapost.ury = ury
+                    local objects = getobjects(result,figure,f)
+                    if objects then
+                        for o=1,#objects do
+                            local object = objects[o]
+                            if object.type == "outline" then
+                                local prescript = object.prescript
+                                if prescript then
+                                    local special = metapost.specials[prescript]
+                                    if special then
+                                        special(object.postscript,object)
+                                    end
                                 end
-                            end
-                       end
+                           end
+                        end
                     end
+                    break
                 end
             end
         end

@@ -213,7 +213,6 @@
       alternative = 2 : 36pt squeezed      squeezeness elseif
       alternative = 3 : 36pt randomized    randomness  else
                       : 36pt                           fi ;
-
     pickup pencircle scaled 3pt ;
 
     fill Page withcolor \MPcolor{PageColor} ;
@@ -232,7 +231,8 @@
 
     % calls to *_menu_button are generated automatically ...
 
-    def right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =
+    vardef right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =
+      save q ; path q ;
       if (pp>0) and (rr>0) :
         q := rightsuperbutton(p,xx,yy,RightEdgeWidth,hh) ; % \MPw{menu:right:\realfolio}
         fill q withcolor \MPcolor{TextColor} ;

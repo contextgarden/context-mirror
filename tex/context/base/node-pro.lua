@@ -74,7 +74,7 @@ function nodes.processors.pre_linebreak_filter(head,groupcode) -- todo: tail
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, tail, done = actions(head,slide_nodes(head))
+            local head, tail, done = actions(head,slide_nodes(head),groupcode)
             local after = nodes.count(head,true)
             if done then
                 tracer("pre_linebreak","changed",head,groupcode,before,after,true)
@@ -83,7 +83,7 @@ function nodes.processors.pre_linebreak_filter(head,groupcode) -- todo: tail
             end
             return (done and head) or true
         else
-            local head, tail, done = actions(head,slide_nodes(head))
+            local head, tail, done = actions(head,slide_nodes(head),groupcode)
             return (done and head) or true
         end
     elseif trace_callbacks then
@@ -98,7 +98,7 @@ function nodes.processors.hpack_filter(head,groupcode) -- todo: tail
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, tail, done = actions(head,slide_nodes(head))
+            local head, tail, done = actions(head,slide_nodes(head),groupcode)
             local after = nodes.count(head,true)
             if done then
                 tracer("hpack","changed",head,groupcode,before,after,true)
@@ -107,7 +107,7 @@ function nodes.processors.hpack_filter(head,groupcode) -- todo: tail
             end
             return (done and head) or true
         else
-            local head, tail, done = actions(head,slide_nodes(head))
+            local head, tail, done = actions(head,slide_nodes(head),groupcode)
             return (done and head) or true
         end
     elseif trace_callbacks then
@@ -122,12 +122,15 @@ callback.register('hpack_filter'        , nodes.processors.hpack_filter)
 
 local actions = tasks.actions("finalizers")
 
+-- beware, these are packaged boxes so no first_character test
+-- maybe some day a hash with valid groupcodes
+
 function nodes.processors.post_linebreak_filter(head,groupcode) -- todo: tail
-    local first, found = first_character(head)
-    if found then
+--~     local first, found = first_character(head)
+--~     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, tail, done = actions(head,slide_nodes(head))
+            local head, tail, done = actions(head,slide_nodes(head),groupcode)
             local after = nodes.count(head,true)
             if done then
                 tracer("finalizer","changed",head,groupcode,before,after,true)
@@ -136,14 +139,14 @@ function nodes.processors.post_linebreak_filter(head,groupcode) -- todo: tail
             end
             return (done and head) or true
         else
-            local head, tail, done = actions(head,slide_nodes(head))
+            local head, tail, done = actions(head,slide_nodes(head),groupcode)
             return (done and head) or true
         end
-    elseif trace_callbacks then
-        local n = nodes.count(head,false)
-        tracer("finalizer","no chars",head,groupcode,n,n)
-    end
-    return true
+--~     elseif trace_callbacks then
+--~         local n = nodes.count(head,false)
+--~         tracer("finalizer","no chars",head,groupcode,n,n)
+--~     end
+--~     return true
 end
 
 callback.register('post_linebreak_filter', nodes.processors.post_linebreak_filter)

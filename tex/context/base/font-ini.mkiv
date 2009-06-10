@@ -467,42 +467,42 @@
 
 % \let\mathsizesuffix\empty
 
-\chardef\currentmathsize\zerocount
+\let\currentmathsize\empty
 
-\def\mathsizesuffix{\ifcase\currentmathsize\or\mathtextsuffix\or\mathscriptscriptsuffix\or\mathscriptsuffix\fi}
+\def\mathsizesuffix{\ifcase0\currentmathsize\or\mathtextsuffix\or\mathscriptscriptsuffix\or\mathscriptsuffix\fi}
 
 \def\dodosetmathfamily#1#2%
-  {\ifcsname\fontclass       \fontbody\c!mm\fontfamily\fontsize\the\currentmathsize\endcsname \autofontsizefalse
-     \csname\fontclass       \fontbody\c!mm\fontfamily\fontsize\the\currentmathsize\endcsname \else
-   \ifcsname\fontclass       \fontbody\c!mm\fontfamily         \the\currentmathsize\endcsname \autofontsizetrue
-     \csname\fontclass       \fontbody\c!mm\fontfamily         \the\currentmathsize\endcsname \else
+  {\ifcsname\fontclass       \fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \autofontsizefalse
+     \csname\fontclass       \fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \else
+   \ifcsname\fontclass       \fontbody\c!mm\fontfamily         \currentmathsize\endcsname \autofontsizetrue
+     \csname\fontclass       \fontbody\c!mm\fontfamily         \currentmathsize\endcsname \else
      \dodosetmathfamilyx#1#2%
    \fi\fi
    #1#2\font}
 
 \def\dodosetmathfamilyx#1#2%
-  {\ifcsname\defaultfontclass\fontbody\c!mm\fontfamily\fontsize\the\currentmathsize\endcsname \autofontsizefalse
-     \csname\defaultfontclass\fontbody\c!mm\fontfamily\fontsize\the\currentmathsize\endcsname \else
-   \ifcsname\defaultfontclass\fontbody\c!mm\fontfamily         \the\currentmathsize\endcsname \autofontsizetrue
-     \csname\defaultfontclass\fontbody\c!mm\fontfamily         \the\currentmathsize\endcsname \else
+  {\ifcsname\defaultfontclass\fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \autofontsizefalse
+     \csname\defaultfontclass\fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \else
+   \ifcsname\defaultfontclass\fontbody\c!mm\fontfamily         \currentmathsize\endcsname \autofontsizetrue
+     \csname\defaultfontclass\fontbody\c!mm\fontfamily         \currentmathsize\endcsname \else
      \dodosetmathfamilyxx#1#2%
    \fi\fi}
 
 \def\dodosetmathfamilyxx#1#2%
-  {\ifcsname                 \fontbody\c!mm\fontfamily\fontsize\the\currentmathsize\endcsname \autofontsizefalse
-     \csname                 \fontbody\c!mm\fontfamily\fontsize\the\currentmathsize\endcsname \else
-   \ifcsname                 \fontbody\c!mm\fontfamily         \the\currentmathsize\endcsname \autofontsizetrue
-     \csname                 \fontbody\c!mm\fontfamily         \the\currentmathsize\endcsname \else
+  {\ifcsname                 \fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \autofontsizefalse
+     \csname                 \fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \else
+   \ifcsname                 \fontbody\c!mm\fontfamily         \currentmathsize\endcsname \autofontsizetrue
+     \csname                 \fontbody\c!mm\fontfamily         \currentmathsize\endcsname \else
                              \nullfont                                    \autofontsizetrue
    \fi\fi}
 
 \def\dosetmathfamily#1#2%
   {\let\savedfontbody\fontbody % op hoger plan
    \let\fontfamily#2%
-   \let\currentmathsize\plusthree\let\fontbody\scriptscriptface\dodosetmathfamily\scriptscriptfont#1%
-   \let\currentmathsize\plustwo  \let\fontbody\scriptface      \dodosetmathfamily\scriptfont      #1%
-   \let\currentmathsize\plusone  \let\fontbody\textface        \dodosetmathfamily\textfont        #1%
-   \let\currentmathsize\zerocount
+   \let\currentmathsize\!!plusthree\let\fontbody\scriptscriptface\dodosetmathfamily\scriptscriptfont#1%
+   \let\currentmathsize\!!plustwo  \let\fontbody\scriptface      \dodosetmathfamily\scriptfont      #1%
+   \let\currentmathsize\!!plusone  \let\fontbody\textface        \dodosetmathfamily\textfont        #1%
+   \let\currentmathsize\empty
    \let\fontbody\savedfontbody
    \autofontsizefalse}
 
@@ -675,7 +675,7 @@
       "\@@fontfeatures",
       "\@@fontclassfallbacks",
       "\@@fontfallbacks",
-      \number\currentmathsize,
+      0\currentmathsize,
       \number\dimexpr\textface\relax
    )}%
    \edef\somefontspec{at \somefontsize}% we need the resolved designsize (for fallbacks)
@@ -903,21 +903,25 @@
 
 % hm, was wrong, class/global reversed
 
+\let\fcglobal\global
+\let\fcxdef  \xdef
+\let\fcglet  \glet
+
 \def\nonodefinefontsynonymnop
   {\@EA\let\csname\??ff\@@fontname\s!features \endcsname\undefined
    \@EA\let\csname\??ff\@@fontname\s!fallbacks\endcsname\undefined}
 
 \def\nonodefinefontsynonymyes
-  {\global\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\undefined
-   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\undefined}
+  {\fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\undefined
+   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\undefined}
 
 \def\dodododefinefontsynonymnop
   {\@EA\let\csname\??ff\@@fontname\s!features \endcsname\@@ff@@features
    \@EA\let\csname\??ff\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks}
 
 \def\dodododefinefontsynonymyes
-  {\global\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\@@ff@@features
-   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks}
+  {\fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\@@ff@@features
+   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks}
 
 \let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
 
@@ -934,52 +938,6 @@
        \getglobalfontparameters
      \fi
    \fi}
-
-% \def\truefontname#1%
-%   {\@EA\dotruefontname#1*\empty*\relax}
-%
-% \def\dotruefontname#1*#2#3*#4\relax
-%   {\ifcsname\??ff\fontclass#1\endcsname
-%      \ifx#2\empty
-%        \@EA\truefontname\csname\??ff\fontclass#1\endcsname
-%      \else
-%        \@EA\redotruefontname\csname\??ff\fontclass#1\endcsname*#2#3%
-%      \fi
-%    \else\ifcsname\??ff#1\endcsname
-%      \ifx#2\empty
-%        \@EA\truefontname\csname\??ff#1\endcsname
-%      \else
-%        \@EA\redotruefontname\csname\??ff#1\endcsname*#2#3%
-%      \fi
-%    \else
-%      #1\ifx#2\empty\else*#2#3\fi
-%    \fi\fi}
-%
-% \def\redotruefontname#1%
-%   {\@EA\dodotruefontname#1*\relax}
-%
-% \def\dodotruefontname#1*#2\relax
-%   {\ifcsname\??ff\fontclass#1\endcsname
-%      \@EA\redotruefontname\csname\??ff\fontclass#1\endcsname
-%    \else\ifcsname\??ff#1\endcsname
-%      \@EA\redotruefontname\csname\??ff#1\endcsname
-%    \else
-%      #1%
-%    \fi\fi}
-%
-% \def\expandfontsynonym#1#2% #2 := onelevelexpansion(#1)
-%   {\ifcsname\??ff\fontclass#2\endcsname
-%      \expandafter\def\expandafter#1\expandafter{\csname\??ff\fontclass#2\endcsname}%
-%    \fi}
-%
-% \def\doifelsefontsynonym#1%
-%   {\ifcsname\??ff\fontclass#1\endcsname
-%      \expandafter\firstoftwoarguments
-%    \else
-%      \expandafter\secondoftwoarguments
-%    \fi}
-
-% maybe we need to stick in one branch
 
 \def\truefontname#1%
   {\@EA\dotruefontname#1*\empty*\relax}
@@ -1090,17 +1048,6 @@
 \def\definefont
   {\dotripleempty\dodefinefont}
 
-% \def\dodefinefont[#1][#2][#3]% [name][spec][1.6 | line=10pt | setup_id]
-%   {\doifinstringelse{ }{#2}
-%      {\ifthirdargument
-%         \unexpanded\setvalue{#1}{\redodefinefont{#1}{#2}{#3}}%
-%       \else
-%         \unexpanded\setvalue{#1}{\dododefinefont{#1}{#2}}%
-%       \fi}
-%      {\definefont[#1][#2 sa *][#3]}}
-
-% we moved the unspecified size check to lua
-
 \def\dodefinefont[#1][#2][#3]% [name][spec][1.6 | line=10pt | setup_id]
   {\ifthirdargument
      \unexpanded\setvalue{#1}{\redodefinefont{#1}{#2}{#3}}%
@@ -1129,8 +1076,11 @@
 
 \let\lastfontidentifier\empty
 
-\def\rawfontidentifier{**\lastfontidentifier\fontsize**}
-\def\newfontidentifier{*\fontclass\lastfontidentifier\fontsize*}
+\def\rawfontidentifier{**\lastfontidentifier\fontsize\currentmathsize**}
+\def\newfontidentifier{*\fontclass\lastfontidentifier\fontsize\currentmathsize*}
+
+\let\oldrawfontidentifier\rawfontidentifier
+\let\oldnewfontidentifier\newfontidentifier
 
 % best we can add the style as well because otherwise we get math encoding mixups
 %
@@ -1149,7 +1099,8 @@
    \csname\rawfontidentifier\endcsname
    \autofontsizefalse
    \setfontcharacteristics
-   \the\everyfontswitch}
+   \the\everyfontswitch
+   \let\rawfontidentifier\oldrawfontidentifier}
 
 \def\xxdododefinefont#1#2#3#4% \autofontsizetrue is set by calling routine
   {\edef\lastfontidentifier{#3}%
@@ -1165,7 +1116,8 @@
    \ifskipfontcharacteristics \else
      \setfontcharacteristics
      \the\everyfontswitch
-   \fi}
+   \fi
+   \let\newfontidentifier\oldnewfontidentifier}
 
 %D \macros
 %D   {mapfontsize}
@@ -1614,8 +1566,8 @@
 
 \def\dodefinebodyfontyesxx#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
-   \global\@EA\let\csname*\fontclass#2#1#3#4#5*\endcsname\undefined
-   \normalprotected\@EA\xdef\csname\fontclass#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
+   \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#5*\endcsname\undefined
+   \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
 
 \def\dodefinebodyfontnopmm#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
@@ -1628,12 +1580,12 @@
 
 \def\dodefinebodyfontyesmm#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
-   \global\@EA\let\csname*\fontclass#2#1#3#4#51*\endcsname\undefined
-   \global\@EA\let\csname*\fontclass#2#1#3#4#52*\endcsname\undefined
-   \global\@EA\let\csname*\fontclass#2#1#3#4#53*\endcsname\undefined
-   \normalprotected\@EA\xdef\csname\fontclass#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
-   \normalprotected\@EA\xdef\csname\fontclass#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
-   \normalprotected\@EA\xdef\csname\fontclass#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
+   \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#51*\endcsname\undefined
+   \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#52*\endcsname\undefined
+   \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#53*\endcsname\undefined
+   \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
+   \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
+   \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
 
 \def\checkbodyfont#1% tests for ttsl mmbf
   {\def\c!!mm{#1}%

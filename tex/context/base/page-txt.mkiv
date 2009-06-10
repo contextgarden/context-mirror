@@ -271,8 +271,18 @@
      \fi
    \endcsname{#1}} % {#2}
 
+% \def\doifelselayouttextline#1% shown or not
+%   {\doifinsetelse{\getvalue{\??tk#1\c!state}}{\v!normal,\v!start}}
+
 \def\doifelselayouttextline#1% shown or not
-  {\doifinsetelse{\getvalue{\??tk#1\c!state}}{\v!normal,\v!start}}
+  {\edef\!!stringa{\csname\??tk#1\c!state\endcsname}%
+   \ifx\!!stringa\v!normal
+      \@EA\firstoftwoarguments
+   \else\ifx\!!stringa\v!start
+      \@EAEAEA\firstoftwoarguments
+   \else
+      \@EAEAEA\secondoftwoarguments
+   \fi\fi}
 
 \def\doifelselayoutsomeline#1% present or not
   {\edef\!!stringa{\csname\??tk#1\c!state\endcsname}%

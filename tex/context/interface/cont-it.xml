@@ -3893,6 +3893,7 @@
           <cd:constant type="colore"/>
           <cd:constant type="schermo"/>
           <cd:constant type="cd:text"/>
+          <cd:constant type="pagina"/>
         </cd:parameter>
         <cd:parameter name="luogo">
           <cd:constant type="sinistra"/>

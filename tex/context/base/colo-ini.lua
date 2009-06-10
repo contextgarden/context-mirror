@@ -31,7 +31,8 @@ local registrations = backends.registrations
 
 local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')
-local a_colorspace   = attributes.private('colorspace')
+local a_colorspace   = attributes.private('colormodel')
+local a_background   = attributes.private('background')
 
 local a_l_c_template = "\\setevalue{(ca:%s)}{%s}" ..
                        "\\setevalue{(cs:%s)}{\\dosetattribute{color}{%s}}"

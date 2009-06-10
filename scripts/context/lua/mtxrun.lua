@@ -274,6 +274,11 @@ function string.tabtospace(str,tab)
     return str
 end
 
+function string:compactlong() -- strips newlines and leading spaces
+    self = gsub(self,"[\n\r]+ *","")
+    self = gsub(self,"^ *","")
+    return self
+end
 
 
 end -- of closure
@@ -1894,6 +1899,26 @@ end
 function file.is_rootbased_path(filename)
     return rootbased:match(filename)
 end
+
+local slash  = lpeg.S("\\/")
+local period = lpeg.P(".")
+local drive  = lpeg.C(lpeg.R("az","AZ")) * lpeg.P(":")
+local path   = lpeg.C(((1-slash)^0 * slash)^0)
+local suffix = period * lpeg.C(lpeg.P(1-period)^0 * lpeg.P(-1))
+local base   = lpeg.C((1-suffix)^0)
+
+local pattern = (drive + lpeg.Cc("")) * (path + lpeg.Cc("")) * (base + lpeg.Cc("")) * (suffix + lpeg.Cc(""))
+
+function file.splitname(str) -- returns drive, path, base, suffix
+    return pattern:match(str)
+end
+
+-- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end
+--
+-- test { "c:", "c:/aa", "c:/aa/bb", "c:/aa/bb/cc", "c:/aa/bb/cc.dd", "c:/aa/bb/cc.dd.ee" }
+-- test { "c:", "c:aa", "c:aa/bb", "c:aa/bb/cc", "c:aa/bb/cc.dd", "c:aa/bb/cc.dd.ee" }
+-- test { "/aa", "/aa/bb", "/aa/bb/cc", "/aa/bb/cc.dd", "/aa/bb/cc.dd.ee" }
+-- test { "aa", "aa/bb", "aa/bb/cc", "aa/bb/cc.dd", "aa/bb/cc.dd.ee" }
 
 
 end -- of closure

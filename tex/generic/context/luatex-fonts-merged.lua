@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 06/07/09 13:14:18
+-- merge date  : 06/10/09 11:24:52
 
 do -- begin closure to overcome local limits and interference
 
@@ -232,6 +232,11 @@ function string.tabtospace(str,tab)
     return str
 end
 
+function string:compactlong() -- strips newlines and leading spaces
+    self = gsub(self,"[\n\r]+ *","")
+    self = gsub(self,"^ *","")
+    return self
+end
 
 end -- closure
 
@@ -2210,6 +2215,7 @@ local glue       = nodes.register(new_node("glue"))
 local glue_spec  = nodes.register(new_node("glue_spec"))
 local glyph      = nodes.register(new_node("glyph",0))
 local textdir    = nodes.register(new_node("whatsit",7))
+local rule       = nodes.register(new_node("rule"))
 
 function nodes.glyph(fnt,chr)
     local n = copy_node(glyph)
@@ -2250,6 +2256,13 @@ function nodes.textdir(dir)
     local t = copy_node(textdir)
     t.dir = dir
     return t
+end
+function nodes.rule(w,h,d)
+    local n = copy_node(rule)
+    if w then n.width  = w end
+    if h then n.height = h end
+    if d then n.depth  = d end
+    return n
 end
 
 statistics.register("cleaned up reserved nodes", function()
@@ -2434,7 +2447,7 @@ end
 
 -- todo: reuse tables (i.e. no collection), but will be extra fields anyway
 
-function nodes.inject_kerns(head,tail,keep)
+function nodes.inject_kerns(head,tail,where,keep)
     if trace_injections then
         nodes.trace_injection(head)
     end
@@ -2442,10 +2455,10 @@ function nodes.inject_kerns(head,tail,keep)
     if has_marks or has_cursives then
         -- in the future variant we will not copy items but refs to tables
         local done, ky, rl, valid, cx, wx = false, { }, { }, { }, { }, { }
-        for n in traverse_id(glyph,head) do
-            if n.subtype < 256 then
-                valid[#valid+1] = n
-                if has_kerns then -- move outside loop
+        if has_kerns then -- move outside loop
+            for n in traverse_id(glyph,head) do
+                if n.subtype < 256 then
+                    valid[#valid+1] = n
                     local k = has_attribute(n,kernpair)
                     if k then
                         local kk = kerns[k]
@@ -2461,6 +2474,12 @@ function nodes.inject_kerns(head,tail,keep)
                             rl[n] = kk[1] -- could move in test
                         end
                     end
+                end
+            end
+        else
+            for n in traverse_id(glyph,head) do
+                if n.subtype < 256 then
+                    valid[#valid+1] = n
                 end
             end
         end
@@ -2481,6 +2500,7 @@ function nodes.inject_kerns(head,tail,keep)
                     n = valid[i]
                     if n.font ~= nf then
                         nf = n.font
+--~ print(n.font,nf,fontdata[nf])
                         tm = fontdata[nf].marks
                         -- maybe flush
                         maxt = 0
@@ -10807,6 +10827,7 @@ function define.read(specification,size,id) -- id can be optional, name can alre
             fontdata.encodingname  or "unicode",
             fontdata.fullname      or "?",
             file.basename(fontdata.filename or "?"))
+
     end
     statistics.stoptiming(fonts)
     return fontdata

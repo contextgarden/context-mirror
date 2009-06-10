@@ -97,7 +97,7 @@ tasks.new (
 --      "characters",
 --      "finishers",
         "fonts",
---      "lists",
+        "lists",
         "after",       -- for users
     }
 )

@@ -14,9 +14,9 @@ local sprint = tex.sprint
 metapost = metapost or {}
 metapost.defaultformat = "metafun"
 
-function metapost.graphic(instance,mpsformat,str,preamble)
+function metapost.graphic(instance,mpsformat,str,preamble,askedfig)
     local mpx = metapost.format(instance,mpsformat or metapost.defaultformat)
-    metapost.graphic_base_pass(mpx,str,preamble)
+    metapost.graphic_base_pass(mpx,str,preamble,askedfig)
 end
 
 function metapost.filterclippath(result)

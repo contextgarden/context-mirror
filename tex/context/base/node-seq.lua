@@ -142,6 +142,7 @@ function sequencer.nodeprocessor(t)
         end
     end
     local processor = format(template,concat(vars,"\n"),concat(calls,"\n"))
+--~ print(processor)
     return processor
 end
 

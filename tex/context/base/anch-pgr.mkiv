@@ -373,7 +373,7 @@
   \let\dohandleMPpositiongraphic\docleanMPpositiongraphic
 \to \everycleanpositionaction
 
-%D Graphics that span two positions.
+%D Graphics that span two positions (beware, does not cross pages).
 
 \def\setMPpositiongraphicrange
   {\doquadruplegroupempty\dosetMPpositiongraphicrange}
@@ -1340,6 +1340,9 @@
 \newcount\noftabpositions
 \newtoks \posXCtoks
 
+\def\dotablebpos{\bpos}
+\def\dotableepos{\epos}
+
 \def\tbPOSprefix
   {tbp:\number\noftabpositions:}
 
@@ -1352,8 +1355,8 @@
 
 \def\dodododoGSC[#1:#2]%
   {\remappositionframed{#2}{\tbPOSprefix#1}%
-   \bpos{\tbPOSprefix#1}%
-   \doglobal\appendtoks\@EA\epos\@EA{\tbPOSprefix#1}\to\posXCtoks}
+   \dotablebpos{\tbPOSprefix#1}%
+   \doglobal\appendtoks\@EA\dotableepos\@EA{\tbPOSprefix#1}\to\posXCtoks}
 
 \def\dododoGSC[#1:#2:#3]%
   {\doglobal\appendtoks\dodododoGSC[#1:#2]\to\posXCtoks\NC}
@@ -1364,7 +1367,7 @@
 
 \def\dodododoGFC[#1:#2:#3]%
   {\remappositionframed{#2}{\tbPOSprefix#1}%
-   \bpos{\tbPOSprefix#1}}
+   \dotablebpos{\tbPOSprefix#1}}
 
 \def\dododoGFC[#1]%
   {\def\docommand##1{\dodododoGFC[##1:##1]}%
@@ -1374,7 +1377,7 @@
   {\doglobal\appendtoks\dododoGFC[#1]\to\posXCtoks\NC}
 
 \def\dododododoGTC[#1:#2]%
-  {\epos{\tbPOSprefix#1}}
+  {\dotableepos{\tbPOSprefix#1}}
 
 \def\dodododoGTC[#1]%
   {\def\docommand##1{\dododododoGTC[##1:##1]}%
@@ -1434,6 +1437,39 @@
 
 \appendtoks
   \global\advance\noftabpositions\plusone
+\to \everytabulate
+
+% We need to handle paragraphs as well.
+
+\let\doflushtabulateepos\relax
+
+\def\dotabulatebpos
+  {\bpos}
+
+\def\dotabulateepos#1%
+  {\ifvoid\tablebox\tabulatecolumn
+     \epos{#1}%
+     \glet\doflushtabulateepos\relax
+   \else
+     \gdef\doflushtabulateepos{\epos{#1}}%
+   \fi}
+
+\def\splitofftabulatebox
+  {\dontcomplain
+   \global\setbox\tabulatebox % % % global ? % % %
+     \vsplit\tablebox\tabulatecolumn to \lineheight
+   \setbox\tabulatebox\normalvbox
+     {\unvbox\tabulatebox}%
+   \setbox\tabulatebox\hbox to \wd\tabulatebox
+     {\hss\dotabulatehook{\box\tabulatebox}\hss}%
+   \ht\tabulatebox\strutht
+   \dp\tabulatebox\strutdp
+   \box\tabulatebox
+   \doflushtabulateepos}
+
+\appendtoks
+  \let\dotablebpos\dotabulatebpos
+  \let\dotableepos\dotabulateepos
 \to \everytabulate
 
 %D In order to prevent potential clashes with abbreviations,

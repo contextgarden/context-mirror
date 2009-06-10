@@ -220,9 +220,10 @@
 \def\doprocessmpslikefigure#1% retrofit into mkii
   {\global\setbox\foundexternalfigure\vbox{\convertMPtoPDF{#1}11}}
 
-\def\docheckfigurebuffer#1{\doprocesstexlikefigure{\getbuffer[#1]}}
-\def\docheckfiguretex   #1{\doprocesstexlikefigure{\input#1\relax}}
-\def\docheckfiguremps   #1{\doprocessmpslikefigure{#1}}
+\def\docheckfigurebuffer  #1{\doprocesstexlikefigure{\getbuffer[#1]}}
+\def\docheckfiguretex     #1{\doprocesstexlikefigure{\input#1\relax}}
+\def\docheckfiguremps     #1{\doprocessmpslikefigure{#1}}
+\def\docheckfiguremprun #1#2{\doprocesstexlikefigure{\useMPrun{#1}{#2}}}
 
 \def\doscalefigure
   {\global\setbox\foundexternalfigure\vbox{\doscalebox\??ef{\dowithfigure{\box\foundexternalfigure}}}}

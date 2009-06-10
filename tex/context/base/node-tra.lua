@@ -275,7 +275,7 @@ function nodes.tracers.steppers.check(head)
     if collecting then
         nodes.tracers.steppers.reset()
         local n = copy_node_list(head)
-        nodes.inject_kerns(n,nil,true)
+        nodes.inject_kerns(n,nil,"trace",true)
         nodes.protect_glyphs(n) -- can be option
         collection[1] = n
     end
@@ -286,7 +286,7 @@ function nodes.tracers.steppers.register(head)
         local nc = #collection+1
         if messages[nc] then
             local n = copy_node_list(head)
-            nodes.inject_kerns(n,nil,true)
+            nodes.inject_kerns(n,nil,"trace",true)
             nodes.protect_glyphs(n) -- can be option
             collection[nc] = n
         end

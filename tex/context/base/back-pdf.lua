@@ -13,8 +13,9 @@ parenthesis; they are needed because otherwise we would pass more
 than one argument to <l n='tex'/>.</p>
 --ldx]]--
 
-local type, next = type, next
+local type, next, tostring = type, next, tostring
 local char, byte, format, gsub = string.char, string.byte, string.format, string.gsub
+local concat = table.concat
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local texsprint, texwrite = tex.sprint, tex.write
 

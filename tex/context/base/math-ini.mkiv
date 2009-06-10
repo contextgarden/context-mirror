@@ -329,27 +329,52 @@
 %D The result is as expected: the first line typesets ok, while the second
 %D one triggers an error message.
 
-\bgroup
+\newtoks\everydonknuthmode
+\newtoks\everynonknuthmode
 
-    \ifx\normalsuber\undefined \def\normalsuber{_} \fi
-    \ifx\normalsuper\undefined \def\normalsuper{^} \fi
+\def\nonknuthmode{\the\everynonknuthmode\let\nonknuthmode\relax}
+\def\donknuthmode{\the\everydonknuthmode}
+
+\ifdefined\normalsuber\else \def\normalsuber{_} \fi
+\ifdefined\normalsuper\else \def\normalsuper{^} \fi
+
+\bgroup
 
     \catcode`_=\active
     \catcode`^=\active
 
-    \gdef\nonknuthmode
-      {\appendtoks\let_\normalsuber\let^\normalsuper\to\everymathematics
-       \mathcode`_="8000
-       \mathcode`^="8000
-       \catcode`_=\@@other
-       \catcode`^=\@@other
-       \let\nonknuthmode\relax}
-
-    \gdef\donknuthmode
-      {\catcode`_=\@@subscript
-       \catcode`^=\@@superscript}
+    \global \everynonknuthmode {\appendtoks
+        \let_\normalsuber
+        \let^\normalsuper
+    \to \everymathematics}
 
 \egroup
+
+\appendtoks
+    \mathcode`_="8000
+    \mathcode`^="8000
+    \catcode`_=\@@other
+    \catcode`^=\@@other
+\to \everynonknuthmode
+
+\appendtoks
+    \catcode`_=\@@subscript
+    \catcode`^=\@@superscript
+\to \everydonknuthmode
+
+\appendtoks
+    \startextendcatcodetable\ctxcatcodes
+        \catcode`_=\@@other
+        \catcode`^=\@@other
+    \stopextendcatcodetable
+\to \everynonknuthmode
+
+\appendtoks
+    \startextendcatcodetable\ctxcatcodes
+        \catcode`_=\@@subscript
+        \catcode`^=\@@superscript
+    \stopextendcatcodetable
+\to \everydonknuthmode
 
 %D Needed for unicode:
 

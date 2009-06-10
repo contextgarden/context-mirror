@@ -116,6 +116,7 @@ function metapost.load(name)
             ini_version = false,
             mem_name = file.replacesuffix(name,"mem"),
             find_file = finder,
+--~             job_name = "mplib",
         }
     ) )
     local result
@@ -213,6 +214,7 @@ function metapost.format(instance,name)
     name = name or instance
     local mpx = mpxformats[instance]
     if not mpx then
+        commands.writestatus("mplib","initializing instance '%s' using format '%s'",instance,name)
         mpx = metapost.checkformat(name)
         mpxformats[instance] = mpx
     end
@@ -240,7 +242,7 @@ end
 
 local mp_inp, mp_log, mp_tag = { }, { }, 0
 
-function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass)
+function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
     local converted, result = false, {}
     if type(mpx) == "string" then
         mpx = metapost.format(mpx) -- goody
@@ -282,7 +284,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass)
                             end
                         end
                         if result.fig then
-                            converted = metapost.convert(result, trialrun, flusher, multipass)
+                            converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
                         end
                     end
                 else
@@ -313,7 +315,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass)
                     metapost.report("mp info: %s",result.term or "no-term")
                 end
                 if result.fig then
-                    converted = metapost.convert(result, trialrun, flusher, multipass)
+                    converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
                 end
             end
         end
@@ -327,7 +329,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass)
     return converted, result
 end
 
-function metapost.convert(result, trialrun, multipass)
+function metapost.convert()
     metapost.report('mp warning: no converter set')
 end
 

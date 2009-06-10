@@ -542,7 +542,7 @@
      \expandafter\nexttabulate
    \fi}
 
-\def\splitofftabulatebox
+\def\splitofftabulatebox % overloaded in anch-pgr
   {\dontcomplain
    \global\setbox\tabulatebox % % % global ? % % %
      \vsplit\tablebox\tabulatecolumn to \lineheight
@@ -954,6 +954,8 @@
 
 \bgroup  \catcode`\|=\@@other
 
+\newtoks\everyaftertabulaterow
+
 \gdef\processtabulate[|#1|]% in the process of optimizing
   {\tabulateunit\tabulateparameter\c!unit
    \checkfulltabulatecontent
@@ -1014,6 +1016,8 @@
       \global\tabulatecolumn\zerocount
       \resettabulatepheight
       \unskip\unskip\crcr\flushtabulated
+\TABLEnoalign
+  {\the\everyaftertabulaterow}%
       \TABLEnoalign
         {\iftolerantTABLEbreak\else
            \ifconditional\tabulatesomeamble \ifcase\tabulaterepeathead \else

@@ -113,9 +113,11 @@ boolean insidefigure ; insidefigure := false ;
 extra_beginfig :=
   " insidefigure := true ; " &
   " reset_extra_specials ; " &
-    extra_beginfig ;
+    extra_beginfig           &
+  " ; "                      ;
 
 extra_endfig :=
+  " ; "                       &
   " add_special_signal ; "    &
     extra_endfig              &
   " add_extra_specials ; "    &
@@ -474,7 +476,7 @@ enddef ;
 
 _cmyk_counter_ := 0 ;
 
-extra_endfig := " resetcmykcolors ; " & extra_endfig ;
+extra_endfig := " ; resetcmykcolors ; " & extra_endfig ;
 
 def resetcmykcolors =
   numeric cmykcolorhash[][][][] ;
@@ -522,7 +524,7 @@ enddef ;
 _spotcolor_counter_ := 0 ;
 _spotcolor_number_ := 0 ;
 
-extra_endfig := " resetspotcolors ; " & extra_endfig ;
+extra_endfig := " ; resetspotcolors ; " & extra_endfig ;
 
 def resetspotcolors =
   numeric spotcolorhash[][] ;

@@ -174,13 +174,25 @@ function buffers.typeline(str,n,m,line)
     return n, line
 end
 
-function buffers.save(name)
+function buffers.save(name,list,encapsulate)
     if not name or name == "" then
         name = tex.jobname
     end
-    local b, f = data[name], tex.jobname .. "-" .. name .. ".tmp"
-    b = (b and type(b) == "table" and table.join(b,"\n")) or b or ""
-    io.savedata(f,b)
+    if list then
+        -- ok
+    else
+        list = name
+        name = tex.jobname .. "-" .. name .. ".tmp"
+    end
+    local content = buffers.collect(list)
+    if content == "" then
+        content = "empty buffer"
+    end
+    if encapsulate then
+        io.savedata(name, "\\starttext\n"..content.."\n\\stoptext\n")
+    else
+        io.savedata(name, content)
+    end
 end
 
 local printer = (lpeg.linebyline/texprint)^0
@@ -214,7 +226,7 @@ end
 buffers.content = content
 
 function buffers.collect(names,separator) -- no print
-    -- maybe we shoul always store a buffer as table so
+    -- maybe we should always store a buffer as table so
     -- that we can pass if directly
     local t = { }
     if type(names) == "table" then

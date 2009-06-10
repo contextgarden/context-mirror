@@ -596,6 +596,21 @@ local function makestub(format,filename)
     return filename
 end
 
+function scripts.context.openpdf(name)
+    os.spawn(string.format('pdfopen --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
+end
+function scripts.context.closepdf(name)
+    os.spawn(string.format('pdfclose --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
+end
+
+--~ function scripts.context.openpdf(name)
+--~     -- somehow two instances start up, one with a funny filename
+--~     os.spawn(string.format("\"c:/program files/kde/bin/okular.exe\" --unique %s",file.replacesuffix(name,"pdf")))
+--~ end
+--~ function scripts.context.closepdf(name)
+--~     --
+--~ end
+
 function scripts.context.run(ctxdata,filename)
     -- filename overloads environment.files
     local files = (filename and { filename }) or environment.files
@@ -663,7 +678,11 @@ function scripts.context.run(ctxdata,filename)
                         --
                         -- todo: also other stubs
                         --
-                        local resultname, oldbase, newbase = environment.argument("result"), "", ""
+                        local suffix, resultname = environment.argument("suffix"), environment.argument("result")
+                        if type(suffix) == "string" then
+                            resultname = file.removesuffix(jobname) .. suffix
+                        end
+                        local oldbase, newbase = "", ""
                         if type(resultname) == "string" then
                             oldbase = file.removesuffix(jobname)
                             newbase = file.removesuffix(resultname)
@@ -685,9 +704,9 @@ function scripts.context.run(ctxdata,filename)
                         end
                         --
                         if environment.argument("autopdf") then
-                            os.spawn(string.format('pdfclose --file "%s" 2>&1', file.replacesuffix(filename,"pdf")))
+                            scripts.context.closepdf(filename)
                             if resultname then
-                                os.spawn(string.format('pdfclose --file "%s" 2>&1', file.replacesuffix(resultname,"pdf")))
+                                scripts.context.closepdf(resultname)
                             end
                         end
                         --
@@ -786,11 +805,7 @@ function scripts.context.run(ctxdata,filename)
                         end
                         --
                         if environment.argument("autopdf") then
-                            if resultname then
-                                os.spawn(string.format('pdfopen --file "%s" 2>&1', file.replacesuffix(resultname,"pdf")))
-                            else
-                                os.spawn(string.format('pdfopen --file "%s" 2>&1', file.replacesuffix(filename,"pdf")))
-                            end
+                            scripts.context.openpdf(resultname or filename)
                         end
                         --
                         if environment.argument("timing") then
@@ -999,8 +1014,8 @@ local obsolete_results = {
 local temporary_runfiles = {
     "tui", "tua", "tup", "ted", "tes", "top",
     "log", "tmp", "run", "bck", "rlg",
-    "mpt", "mpx", "mpd", "mpo", "mpb",
-    "ctl",
+    "mpt", "mpx", "mpd", "mpo", "mpb", "ctl",
+    "synctex.gz", "pgf"
 }
 
 local persistent_runfiles = {

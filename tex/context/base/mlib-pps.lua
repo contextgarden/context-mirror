@@ -39,7 +39,6 @@ local colordata = { {}, {}, {}, {}, {} }
 --~         => transparent spot : r=123 g=   5 b=hash
 --~         => rest             : r=123 g=n>10 b=whatever
 
-
 local nooutercolor        = "0 g 0 G"
 local nooutertransparency = "/Tr0 gs"
 local outercolormode      = 0
@@ -722,7 +721,8 @@ metapost.intermediate.needed  = false
 
 metapost.method = 1 -- 1:dumb 2:clever
 
-function metapost.graphic_base_pass(mpsformat,str,preamble)
+function metapost.graphic_base_pass(mpsformat,str,preamble,askedfig)
+    local nofig = (askedfig and "") or false
     local done_1, done_2, forced_1, forced_2
     str, done_1, forced_1 = metapost.check_texts(str)
     if preamble then
@@ -738,12 +738,12 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
      -- first true means: trialrun, second true means: avoid extra run if no multipass
         local flushed = metapost.process(mpsformat, {
             preamble,
-            "beginfig(1); ",
+            nofig or "beginfig(1); ",
             "if unknown _trial_run_ : boolean _trial_run_ fi ; _trial_run_ := true ;",
             str,
-            "endfig ;"
+            nofig or "endfig ;"
      -- }, true, nil, true )
-        }, true, nil, not (forced_1 or forced_2), false)
+        }, true, nil, not (forced_1 or forced_2), false, askedfig)
         if metapost.intermediate.needed then
             for _, action in pairs(metapost.intermediate.actions) do
                 action()
@@ -752,30 +752,31 @@ function metapost.graphic_base_pass(mpsformat,str,preamble)
         if not flushed or not metapost.optimize then
             -- tricky, we can only ask once for objects and therefore
             -- we really need a second run when not optimized
-            sprint(ctxcatcodes,"\\ctxlua{metapost.graphic_extra_pass()}")
+            sprint(ctxcatcodes,format("\\ctxlua{metapost.graphic_extra_pass(%s)}",askedfig or "false"))
         end
     else
         metapost.process(mpsformat, {
             preamble or "",
-            "beginfig(1); ",
+            nofig or "beginfig(1); ",
             "_trial_run_ := false ;",
             str,
-            "endfig ;"
-        }, false, nil, false, false )
+            nofig or "endfig ;"
+        }, false, nil, false, false, askedfig )
     end
     -- here we could free the textext boxes
     metapost.free_boxes()
 end
 
-function metapost.graphic_extra_pass()
+function metapost.graphic_extra_pass(askedfig)
+    local nofig = (askedfig and "") or false
     metapost.textext_current = metapost.first_box
     metapost.process(current_format, {
-        "beginfig(1); ",
+        nofig or "beginfig(1); ",
         "_trial_run_ := false ;",
         concat(metapost.text_texts_data()," ;\n"),
         current_graphic,
-        "endfig ;"
-    }, false, nil, false, true )
+        nofig or "endfig ;"
+    }, false, nil, false, true, askedfig )
 end
 
 function metapost.getclippath(data)

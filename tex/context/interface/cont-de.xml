@@ -3893,6 +3893,7 @@
           <cd:constant type="farbe"/>
           <cd:constant type="raster"/>
           <cd:constant type="cd:text"/>
+          <cd:constant type="seite"/>
         </cd:parameter>
         <cd:parameter name="platz">
           <cd:constant type="links"/>

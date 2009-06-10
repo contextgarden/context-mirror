@@ -521,7 +521,7 @@ tertiarydef m thru n =
 %% Overall adminstration
 
 string extra_beginfig, extra_endfig;
-extra_beginfig = extra_endfig = "";
+extra_beginfig = extra_endfig = "" ;
 
 def beginfig(expr c) =
   begingroup
@@ -533,8 +533,9 @@ def beginfig(expr c) =
 enddef;
 
 def endfig =
+  ; % added by HH
   scantokens extra_endfig;
-  shipit;
+  shipit ;
   endgroup
 enddef;
 

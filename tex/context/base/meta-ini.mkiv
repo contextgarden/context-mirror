@@ -169,6 +169,7 @@
 
 \defineMPinstance[metafun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[extrafun][\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[mprun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[metapost][\s!format=mpost]
 \defineMPinstance[nofun]   [\s!format=mpost]
 
@@ -183,6 +184,8 @@
 
 \newconditional \METAFUNinitialized
 
+\def\MPaskedfigure{false}
+
 % maybe we need to force black, i.e. fake nodes
 
 \long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
@@ -195,7 +198,8 @@
    \setbox\MPgraphicbox\hbox\bgroup
      \ctxlua{metapost.graphic("\currentMPformat", "\currentMPformat",
            \@EA\!!bs\the\MPinitializations;\theMPrandomseed;#1;\!!es, % code
-           \@EA\@EA\@EA\!!bs\@EA\the\@EA\MPextensions\@EA;\the\MPuserinclusions;\!!es     % optional preamble
+           \@EA\@EA\@EA\!!bs\@EA\the\@EA\MPextensions\@EA;\the\MPuserinclusions;\!!es,     % optional preamble
+           \MPaskedfigure
      )}%
      \global\settrue\METAFUNinitialized
      \global\MPextensions\emptytoks
@@ -224,7 +228,8 @@
    \setbox\MPgraphicbox\hbox\bgroup
      \normalexpanded{\noexpand\ctxlua{metapost.graphic("\currentMPgraphicinstance", "\currentMPgraphicformat",
            \!!bs\ifconditional\includeMPinitializations\the\MPinitializations;\fi\theMPrandomseed;#1;\!!es,
-           \!!bs\ifconditional\includeMPextensions\the\MPextensions;\the\MPuserinclusions;\fi\the\MPinstancetoks;\!!es
+           \!!bs\ifconditional\includeMPextensions\the\MPextensions;\the\MPuserinclusions;\fi\the\MPinstancetoks;\!!es,
+           \MPaskedfigure
      )}}%
    \egroup
      \global\MPinstancetoks\emptytoks
@@ -281,24 +286,24 @@
 
 \def\getMPdrawing{\dosinglegroupempty\dogetMPdrawing}
 
-\def\nodogetMPdrawing#1%
-  {\ifMPdrawingdone
-     \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
-   \fi}
-
-\def\dostartMPcode
-  {\iffirstargument
-     \expandafter\dodogetMPdrawing
-   \else
-     \expandafter\nodogetMPdrawing
-   \fi}
-
-\def\dodogetMPdrawing#1%
-  {\ifMPdrawingdone
-     \beginMPgraphicgroup{#1::\s!dummy}% name does not matter
-     \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
-     \endMPgraphicgroup
-   \fi}
+% \def\nodogetMPdrawing#1%
+%   {\ifMPdrawingdone
+%      \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
+%    \fi}
+%
+% \def\dostartMPcode
+%   {\iffirstargument
+%      \expandafter\dodogetMPdrawing
+%    \else
+%      \expandafter\nodogetMPdrawing
+%    \fi}
+%
+% \def\dodogetMPdrawing#1%
+%   {\ifMPdrawingdone
+%      \beginMPgraphicgroup{#1::\s!dummy}% name does not matter
+%      \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
+%      \endMPgraphicgroup
+%    \fi}
 
 \def\startMPdrawing
   {\dosingleempty\dostartMPdrawing}
@@ -877,6 +882,48 @@
 
 \let\stopMPcode\relax
 
+% a bit nasty (also needed for compatibility:
+
+% \startMPrun input mp-www.mp ; \stopMPrun
+% \externalfigure[mprun.3][width=10cm,height=8cm]
+
+% \startMPrun{mprun} input mp-www.mp ; \stopMPrun % instance
+% \externalfigure[mprun.4][width=10cm,height=8cm]
+
+\let\MPruninstance\defaultMPgraphicinstance
+
+% \def\useMPrun#1#2% name n
+%   {\begingroup
+%    \def\MPaskedfigure{#2}%
+%    \doifelsenothing{#1}
+%      {\useMPgraphic{\MPruninstance::mprun}}%
+%      {\useMPgraphic{\MPruninstance::#1}}%
+%    \endgroup}
+% \def\startMPrun
+%   {\dosinglegroupempty\dostartMPrun}
+% \long\def\dostartMPrun#1#2\stopMPrun
+%   {\edef\MPruninstance{\iffirstargument#1\else\defaultMPgraphicinstance\fi}%
+%    \startuseMPgraphic{mprun}#2\stopuseMPgraphic}
+
+
+\def\useMPrun#1#2% name n
+  {\begingroup
+   \def\MPaskedfigure{#2}%
+   \doifelsenothing{#1}
+     {\useMPgraphic{mprun}}%
+     {\useMPgraphic{#1}}%
+   \endgroup}
+
+\def\startMPrun
+  {\dosinglegroupempty\dostartMPrun}
+
+\long\def\dostartMPrun#1#2\stopMPrun
+  {\iffirstargument
+     \startuseMPgraphic{#1}#2\stopuseMPgraphic
+   \else
+     \startuseMPgraphic{mprun}#1\stopuseMPgraphic
+   \fi}
+
 % for old time sake
 
 \def\dostartMPgraphic
@@ -1012,7 +1059,8 @@
 \to \everyMPgraphic
 
 \appendtoks % before color
-    \normalexpanded{\noexpand\definecolor[currentcolor][\currentcolorname]}%
+   %\normalexpanded{\noexpand\definecolor[currentcolor][\currentcolorname]}%
+    \doregistercolor{currentcolor}\currentcolorname
 \to \everyMPgraphic
 
 % \color[green]{abc \startMPcode

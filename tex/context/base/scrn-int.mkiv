@@ -746,7 +746,7 @@
       \setlocationboxyes
         {\??am#1}% % needed !
         []% no settings
-        {\limitatetext{#5}{\getvalue{\??li#2\c!maxwidth}}{\unknown}}% % needed !
+        {\limitatetext{#5}{\namedlistparameter{#2}\c!maxwidth}{\unknown}}% % needed !
         []}% normally the destination, catch by gobble
    \@@amboxcommand\do@@amposition{#1}{#7}% beware, we pass the pagenumber
      {\ignorespaces\linklisttoelement{#3}{#6}{#7}{\box0}\unskip}\\}

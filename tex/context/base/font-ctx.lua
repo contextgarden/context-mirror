@@ -282,17 +282,20 @@ local specification --
 
 local get_specification = define.get_specification
 
+-- we can make helper macros which saves parsing (but normaly not
+-- that many calls, e.g. in mk a couple of 100 and in metafun 3500)
+
 function define.command_1(str)
     statistics.starttiming(fonts)
     local fullname, size = splitpattern:match(str)
     local lookup, name, sub, method, detail = get_specification(fullname)
     if not name then
         logs.report("define font","strange definition '%s'",str)
-        texsprint(ctxcatcodes,"\\glet\\somefontname\\defaultfontfile")
+        texsprint(ctxcatcodes,"\\fcglet\\somefontname\\defaultfontfile")
     elseif name == "unknown" then
-        texsprint(ctxcatcodes,"\\glet\\somefontname\\defaultfontfile")
+        texsprint(ctxcatcodes,"\\fcglet\\somefontname\\defaultfontfile")
     else
-        texsprint(ctxcatcodes,format("\\xdef\\somefontname{%s}",name))
+        texsprint(ctxcatcodes,format("\\fcxdef\\somefontname{%s}",name))
     end
     -- we can also use a count for the size
     if size and size ~= "" then
@@ -315,6 +318,8 @@ function define.command_1(str)
     end
     specification = define.makespecification(str,lookup,name,sub,method,detail,size)
 end
+
+local n = 0
 
 function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,mathsize,textsize)
     -- name is now resolved and size is scaled cf sa/mo

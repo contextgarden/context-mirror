@@ -538,6 +538,7 @@ function define.read(specification,size,id) -- id can be optional, name can alre
             fontdata.encodingname  or "unicode",
             fontdata.fullname      or "?",
             file.basename(fontdata.filename or "?"))
+
     end
     statistics.stoptiming(fonts)
     return fontdata

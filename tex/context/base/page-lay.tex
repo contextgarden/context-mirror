@@ -82,29 +82,6 @@
 
 \let\currentlayout\empty
 
-%\def\layoutparameter#1%
-%  {\ifundefined{\??ly\currentlayout#1}%
-%     \getvalue{\??ly#1}%
-%   \else
-%     \getvalue{\??ly\currentlayout#1}%
-%   \fi}
-%
-% faster
-
-\def\layoutparameter#1%
-  {\csname\??ly
-     \ifundefined{\??ly\currentlayout#1}\else\currentlayout\fi
-   #1\endcsname}
-
-\def\namedlayoutparameter#1#2%
-  {\ifundefined{\??ly#1#2}%
-     \layoutparameter{#2}%
-   \else
-     \getvalue{\??ly#1#2}%
-   \fi}
-
-%D Look how ugly a speed up looks:
-
 \def\layoutparameter#1%
   {\csname\??ly\ifcsname
      \??ly\currentlayout#1\endcsname\currentlayout
@@ -595,12 +572,12 @@
    \xdef\currentlayout{#1}\recalculatelayout}
 
 \def\checkcurrentoddlayout
-  {\ifundefined{\??ly\v!odd\c!state}\else
+  {\ifcsname\??ly\v!odd\c!state\endcsname
      \doifvalue{\??ly\v!odd\c!state}\v!start{\changetolayout\v!odd}%
    \fi}
 
 \def\checkcurrentevenlayout
-  {\ifundefined{\??ly\v!even\c!state}\else
+  {\ifcsname\??ly\v!even\c!state\endcsname
      \doifvalue{\??ly\v!even\c!state}\v!start{\changetolayout\v!even}%
    \fi}
 
@@ -618,17 +595,6 @@
    \else
      \!!zerocount
    \fi}
-
-% \def\checkcurrentlayout % public and used in naw, so keep this name
-%   {\doifundefinedelse{\??ly\realfolio\c!state}
-%      {\doifundefinedelse{\??ly\reverserealfolio\c!state}
-%         {\doifundefinedelse{\??ly\v!current\c!state}
-%            {\doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout}
-%            {\changetolayout\v!current}}
-%         {\doifvalue{\??ly\reverserealfolio\c!state}\v!start
-%            {\changetolayout\reverserealfolio}}}
-%      {\doifvalue{\??ly\realfolio\c!state}\v!start
-%         {\changetolayout\realfolio}}}
 
 \def\checkcurrentlayout % public and used in naw, so keep this name
   {\ifcsname\??ly\realfolio\c!state\endcsname
@@ -915,26 +881,34 @@
    \let\cutmarkbottomtext\pagecutmarkbottomtext
    \makecutbox}
 
+\setvalue{\??ly:n:\c!marking:\v!on}%
+  {\makepagecutbox}
+
+\setvalue{\??ly:n:\c!marking:\v!page}% only at outer when nx/ny > 0
+  {\makepagecutbox}
+
+\setvalue{\??ly:n:\c!marking:\v!empty}%
+  {\let\pagecutmarksymbol\empty
+   \let\pagecutmarktoptext\empty
+   \let\pagecutmarkbottomtext\empty
+   \makepagecutbox}
+
+\setvalue{\??ly:n:\c!marking:\v!text}%
+  {\let\pagecutmarksymbol\empty
+   \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext
+   \makepagecutbox}
+
+\setvalue{\??ly:c:\c!marking:\v!color}%
+  {\doaddpagecolormarks\colormarkbox}
+
+\setvalue{\??ly:c:\c!marking:\v!screen}%
+  {\doaddpagecolormarks\rastermarkbox}
+
 \def\addpagecutmarks % #1
-  {\doifelse\@@lymarking\v!on
-     \makepagecutbox
-     {\doifelse\@@lymarking\v!empty
-        {\let\pagecutmarksymbol\empty
-         \let\pagecutmarktoptext\empty
-         \let\pagecutmarkbottomtext\empty
-         \makepagecutbox}
-        {\doifelse\@@lymarking\v!text
-           {\let\pagecutmarksymbol\empty
-            \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext
-            \makepagecutbox}
-           \gobbleoneargument}}}
+  {\executeifdefined{\??ly:n:\c!marking:\@@lymarking}\gobbleoneargument}
 
 \def\addpagecolormarks % #1
-  {\doifelse\@@lymarking\v!color
-     {\doaddpagecolormarks\colormarkbox}
-     {\doifelse\@@lymarking\v!screen
-        {\doaddpagecolormarks\rastermarkbox}
-        \gobbleoneargument}}
+  {\executeifdefined{\??ly:c:\c!marking:\@@lymarking}\gobbleoneargument}
 
 \def\doaddpagecolormarks#1#2%
   {\makepagecutbox{#2}%
@@ -1041,22 +1015,42 @@
 
 % what are those \relax'es doing there?
 
-\def\doifbothsidesoverruled#1#2#3%
+% \def\doifbothsidesoverruled#1#2#3%
+%   {\ifdoublesided
+%      \doifoddpageelse{#2}{#3}\relax
+%    \else
+%      #1\relax
+%    \fi}
+
+% \def\doifbothsides#1#2#3%
+%   {\ifdoublesided
+%      \ifsinglesided
+%        #1\relax
+%      \else
+%        \doifoddpageelse{#2}{#3}\relax
+%      \fi
+%    \else
+%      #1\relax
+%    \fi}
+
+\def\redoifoddpageelse#1{\doifoddpageelse}
+
+\def\doifbothsidesoverruled
   {\ifdoublesided
-     \doifoddpageelse{#2}{#3}\relax
+     \@EA\redoifoddpageelse
    \else
-     #1\relax
+     \@EA\firstofthreearguments
    \fi}
 
-\def\doifbothsides#1#2#3%
+\def\doifbothsides
   {\ifdoublesided
      \ifsinglesided
-       #1\relax
+       \@EAEAEA\firstofthreearguments
      \else
-       \doifoddpageelse{#2}{#3}\relax
+       \@EAEAEA\redoifoddpageelse
      \fi
    \else
-     #1\relax
+     \@EA\firstofthreearguments
    \fi}
 
 \newdimen\texthoffset

@@ -1018,7 +1018,7 @@ enddef ;
 
 % not yet ok
 
-def leftrightpath(expr p, l) =
+def leftrightpath(expr p, l) = % used in s-pre-19
   save q, r, t, b ; path q, r ; pair t, b ;
   t := (ulcorner p -- urcorner p) intersection_point p ;
   b := (llcorner p -- lrcorner p) intersection_point p ;
@@ -1027,7 +1027,6 @@ def leftrightpath(expr p, l) =
   q := q if xpart point 0 of r > 0 : &
        r fi cutafter  if l: b else: t fi ;
   q
-  x
 enddef ;
 
 vardef  leftpath expr p = leftrightpath(p,true ) enddef ;

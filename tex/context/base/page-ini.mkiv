@@ -819,8 +819,11 @@
         \shiftpaperpagebox \pagebox % \v!paper
       \else
         \clippagebox       \pagebox
-        \addpagecutmarks   \pagebox
-        \replicatepagebox  \pagebox
+        \doifelse\@@lymarking\v!page
+          {\replicatepagebox  \pagebox
+           \addpagecutmarks   \pagebox}
+          {\addpagecutmarks   \pagebox
+           \replicatepagebox  \pagebox}%
         \scalepagebox      \pagebox
         \mirrorpaperbox    \pagebox
         \orientpaperbox    \pagebox
