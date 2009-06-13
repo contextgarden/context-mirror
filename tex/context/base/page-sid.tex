@@ -453,7 +453,7 @@
          \ifdim\wd\floatbottom<\sidefloathsize
            \parskip\zeropoint
            %\noindent
-           \vadjust{\penalty\minusone}%
+           \ifinner\else\vadjust{\penalty\minusone}\fi
            \iffloatlefteqo
              \global\floatlefteqofalse
            \else
@@ -488,7 +488,7 @@
      \parskip\zeropoint % here ?
      \ifdim\sidefloatwidth>\zeropoint % new, see prikkels
        \noindent
-       \vadjust{\penalty\minusone}%
+       \ifinner\else\vadjust{\penalty\minusone}\fi
        \hskip\sidefloatwidth
     %\else
     %  we have a margin or edge float

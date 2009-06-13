@@ -531,7 +531,7 @@
      \getparameters[\??dd#1][\s!counter=#2,#3]%
      \let\@@subslevel\empty
      \dorecurse{\descriptionparameter\c!levels}
-       {\noemalexpanded{\noexpand\dodefineenumerationcommands{#1}{\recurselevel}{\@@subslevel}{\??dd\@@subslevel#2}}%
+       {\normalexpanded{\noexpand\dodefineenumerationcommands{#1}{\recurselevel}{\@@subslevel}{\??dd\@@subslevel#2}}%
         \edef\@@subslevel{\@@subslevel\v!sub}}%
    \fi
    \edef\currentdescriptioncounter{\descriptionparameter\c!number}%

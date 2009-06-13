@@ -326,14 +326,27 @@ function nodes.check_glyphs(head,message)
     return false
 end
 
-function nodes.tosequence(start,stop)
+function nodes.tosequence(start,stop,compact)
     if start then
         local t = { }
         while start do
             if start.id == glyph then
-                t[#t+1] = format("U+%04X:%s",start.char,utfchar(start.char))
+                local c = start.char
+                if compact then
+                    if start.components then
+                        t[#t+1] = nodes.tosequence(start.components,nil,compact)
+                    else
+                        t[#t+1] = format("%s",utfchar(c))
+                    end
+                else
+                    t[#t+1] = format("U+%04X:%s",c,utfchar(c))
+                end
             else
-                t[#t+1] = match(tostring(start),": (%S+)")
+                if compact then
+                    t[#t+1] = "[]"
+                else
+                    t[#t+1] = match(tostring(start),": (%S+)")
+                end
             end
             if start == stop then
                 break
@@ -341,7 +354,11 @@ function nodes.tosequence(start,stop)
                 start = start.next
             end
         end
-        return concat(t," ")
+        if compact then
+            return concat(t)
+        else
+            return concat(t," ")
+        end
     else
         return "<empty>"
     end

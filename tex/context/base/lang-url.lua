@@ -66,7 +66,7 @@ do
 
     local chars = commands.hyphenatedurl.characters
 
-    function commands.hyphenatedurl.action(str, left, right)
+    function commands.hyphenatedurl.convert(str, left, right)
         local n = 0
         local b = math.max(left or commands.hyphenatedurl.lefthyphenmin,2)
         local e = math.min(#str-(right or commands.hyphenatedurl.righthyphenmin)+2,#str)
@@ -82,7 +82,10 @@ do
                 return "\\a{" .. u(s) .. "}"
             end
         end )
-        tex.sprint(ctxcatcodes,str)
+        return str
+    end
+    function commands.hyphenatedurl.action(str, left, right)
+        tex.sprint(ctxcatcodes,commands.hyphenatedurl.convert(str, left, right))
     end
 
     -- todo, no interface in mkiv yet

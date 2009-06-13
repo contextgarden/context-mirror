@@ -216,18 +216,20 @@
   \localpositioningfalse
 \to \everypagebody
 
-\def\checkpositions
-  {\startnointerference
-   \protectlabels
-   \doutilities{positions}\jobname\empty\relax\relax
-   \global\let\checkpositions\relax
-   \stopnointerference}
+% \def\checkpositions
+%   {\startnointerference
+%    \protectlabels
+%    \doutilities{positions}\jobname\empty\relax\relax
+%    \global\let\checkpositions\relax
+%    \stopnointerference}
+
+\let\checkpositions\relax
 
 %D Since the positional values are to be fully expandable, we
 %D need to preload them as soon as possible, which is why we
 %D load the data when we start a text.
 
-\appendtoks \checkpositions \to \everystarttext
+% \appendtoks \checkpositions \to \everystarttext
 
 %D \macros
 %D   {MPp, MPx, MPy, MPw, MPh, MPd,

@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 local format, gmatch, texsprint, texwrite, count = string.format, string.gmatch, tex.sprint, tex.write, tex.count
 
 local ctxcatcodes = tex.ctxcatcodes
+local variables   = interfaces.variables
+local constants   = interfaces.constants
 
 -- beware, this is a first step in the rewrite (just getting rid of
 -- the tuo file); later all access and parsing will also move to lua
@@ -29,6 +31,13 @@ local tobesaved, collected = jobreferences.tobesaved, jobreferences.collected
 local defined, derived, specials, runners = jobreferences.defined, jobreferences.derived, jobreferences.specials, jobreferences.runners
 
 local currentreference = nil
+
+local gotoinner             = "\\gotoinner{%s}{%s}{%s}{%s}"              -- prefix inner page data
+local gotoouterfilelocation = "\\gotoouterfilelocation{%s}{%s}{%s}{%s}"  -- file location page data
+local gotoouterfilepage     = "\\gotoouterfilepage{%s}{%s}{%s}"          -- file page data
+local gotoouterurl          = "\\gotoouterurl{%s}{%s}{%s}"               -- url args data
+local gotoinnerpage         = "\\gotoinnerpage{%s}{%s}"                  -- page data
+local gotospecial           = "\\gotospecial{%s}{%s}{%s}{%s}{%s}"        -- action, special, operation, arguments, data
 
 jobreferences.initializers = jobreferences.initializers or { }
 
@@ -240,26 +249,32 @@ end
 
 -- shared by urls and files
 
+function jobreferences.whatfrom(name)
+    texsprint(ctxcatcodes,(urls[name] and variables.url) or (files[name] and variables.file) or variables.unknown)
+end
+
 function jobreferences.from(name,method,space)
     local u = urls[name]
     if u then
         local url, file, description = u[1], u[2], u[3]
         if description ~= "" then
-            texsprint(ctxcatcodes,description)
+            -- ok
         elseif file and file ~= "" then
-            texsprint(ctxcatcodes,url,"/",file)
+            description = url .. "/" .. file
         else
-            texsprint(ctxcatcodes,url)
+            description = url
         end
+        texsprint(ctxcatcodes,description)
     else
         local f = files[name]
         if f then
             local description, file = f[1], f[2]
             if description ~= "" then
-                texsprint(ctxcatcodes,description)
+                --
             else
-                texsprint(ctxcatcodes,file)
+                description = file
             end
+            texsprint(ctxcatcodes,description)
         end
     end
 end
@@ -706,13 +721,6 @@ end
 --~ filters.float.page   = filters.generic.page
 
 -- each method gets its own call, so that we can later move completely to lua
-
-local gotoinner             = "\\gotoinner{%s}{%s}{%s}{%s}"              -- prefix inner page data
-local gotoouterfilelocation = "\\gotoouterfilelocation{%s}{%s}{%s}{%s}"  -- file location page data
-local gotoouterfilepage     = "\\gotoouterfilepage{%s}{%s}{%s}"          -- file page data
-local gotoouterurl          = "\\gotoouterurl{%s}{%s}{%s}"               -- url args data
-local gotoinnerpage         = "\\gotoinnerpage{%s}{%s}"                  -- page data
-local gotospecial           = "\\gotospecial{%s}{%s}{%s}{%s}{%s}"        -- action, special, operation, arguments, data
 
 runners["inner"] = function(var,content)
     -- inner

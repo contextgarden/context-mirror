@@ -69,28 +69,26 @@ class TEX
 
     include Variables
 
-    @@texengines   = Hash.new
-    @@mpsengines   = Hash.new
-    @@backends     = Hash.new
-    @@mappaths     = Hash.new
-    @@runoptions   = Hash.new
-    @@tcxflag      = Hash.new
-    @@draftoptions = Hash.new
-    @@texformats   = Hash.new
-    @@mpsformats   = Hash.new
-    @@prognames    = Hash.new
-    @@texmakestr   = Hash.new
-    @@texprocstr   = Hash.new
-    @@mpsmakestr   = Hash.new
-    @@mpsprocstr   = Hash.new
-
-    @@texmethods   = Hash.new
-    @@mpsmethods   = Hash.new
-
-    @@pdftex       = 'pdftex' # new default, pdfetex is gone
-
-    @@luafiles     = "luafiles.tmp"
-    @@luatarget    = "lua/context"
+    @@texengines      = Hash.new
+    @@mpsengines      = Hash.new
+    @@backends        = Hash.new
+    @@mappaths        = Hash.new
+    @@runoptions      = Hash.new
+    @@tcxflag         = Hash.new
+    @@draftoptions    = Hash.new
+    @@synctexcoptions = Hash.new
+    @@texformats      = Hash.new
+    @@mpsformats      = Hash.new
+    @@prognames       = Hash.new
+    @@texmakestr      = Hash.new
+    @@texprocstr      = Hash.new
+    @@mpsmakestr      = Hash.new
+    @@mpsprocstr      = Hash.new
+    @@texmethods      = Hash.new
+    @@mpsmethods      = Hash.new
+    @@pdftex          = 'pdftex' # new default, pdfetex is gone
+    @@luafiles        = "luafiles.tmp"
+    @@luatarget       = "lua/context"
 
     @@platformslash = if System.unix? then "\\\\" else "\\" end
 
@@ -159,13 +157,17 @@ class TEX
      'cont-fr','cont-cs','cont-ro','cont-gb',
      'cont-pe','cont-xp']                         .each do |f| @@texprocstr[f] = @@platformslash + "emergencyend"  end
 
-    @@runoptions['aleph']   = ['--8bit']
-    @@runoptions['luatex']  = ['--file-line-error']
-    @@runoptions['mpost']   = ['--8bit']
-    @@runoptions['pdfetex'] = ['--8bit']           # obsolete
-    @@runoptions['pdftex']  = ['--8bit']           # pdftex is now pdfetex
-  # @@runoptions['petex']   = []
-    @@runoptions['xetex']   = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5"']
+    @@runoptions['aleph']      = ['--8bit']
+    @@runoptions['luatex']     = ['--file-line-error']
+    @@runoptions['mpost']      = ['--8bit']
+    @@runoptions['pdfetex']    = ['--8bit']           # obsolete
+    @@runoptions['pdftex']     = ['--8bit']           # pdftex is now pdfetex
+  # @@runoptions['petex']      = []
+    @@runoptions['xetex']      = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5"']
+    @@draftoptions['pdftex']   = ['--draftmode']
+    @@synctexcoptions['pdftex'] = ['--synctex=1']
+    @@synctexcoptions['luatex'] = ['--synctex=1']
+    @@synctexcoptions['xetex']  = ['--synctex=1']
 
     @@tcxflag['aleph']   = true
     @@tcxflag['luatex']  = false
@@ -174,8 +176,6 @@ class TEX
     @@tcxflag['pdftex']  = true
     @@tcxflag['petex']   = false
     @@tcxflag['xetex']   = false
-
-    @@draftoptions['pdftex'] = ['--draftmode']
 
     @@mainbooleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'final',
@@ -191,6 +191,7 @@ class TEX
         'purge', 'purgeall', 'keep', 'autopdf', 'xpdf', 'simplerun', 'verbose',
         'nooptionfile', 'nobackend', 'noctx', 'utfbom',
         'mkii','mkiv',
+        'synctex',
     ]
     @@mainstringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
@@ -386,6 +387,7 @@ class TEX
 
     def runoptions(engine)
         options = if getvariable('draft') then @@draftoptions[engine] else [] end
+        options = if getvariable('synctex') then @@synctexcoptions[engine] else [] end
         begin
             if str = getvariable('passon') then
                 options = [options,str.split(' ')].flatten

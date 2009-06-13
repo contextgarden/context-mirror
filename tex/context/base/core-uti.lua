@@ -239,7 +239,10 @@ function job.load(filename)
         if version ~= jobs.version then
             logs.report("job","version mismatch with jobfile: %s <> %s", version or "?", jobs.version)
         else
-            loadstring(data)()
+            local data = loadstring(data)
+            if data then
+                data()
+            end
             for l=1,#savelist do
                 local list = savelist[l]
                 local target, initializer = list[1], list[3]

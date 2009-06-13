@@ -543,6 +543,7 @@ class Commands
         "log", "tmp", "run", "bck", "rlg",
         "mpt", "mpx", "mpd", "mpo", "mpb",
         "ctl",
+        "pgf", "synctex.gz",
         "tmp.md5", "tmp.out"
     ]
     $texonlysuffixes = [

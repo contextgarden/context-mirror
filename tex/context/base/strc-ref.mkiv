@@ -561,15 +561,15 @@
      {#5}%
    \fi}
 
-        \def\gotorealpage#1#2#3#4% url file page data
-          {\iflocation
-             \dohandlegoto
-               {#4}%
-               {\dostartgotorealpage\buttonwidth\buttonheight{#1}{#2}{\number#3}}%
-               {\dostopgotorealpage}%
-           \else
-             {#4}%
-        \fi}
+\def\gotorealpage#1#2#3#4% url file page data
+  {\iflocation
+     \dohandlegoto
+       {#4}%
+       {\dostartgotorealpage\buttonwidth\buttonheight{#1}{#2}{\number#3}}%
+       {\dostopgotorealpage}%
+   \else
+     {#4}%
+   \fi}
 
 \def\gotoinnerpage#1#2% page data
   {\iflocation
@@ -1200,7 +1200,6 @@
    \referenceinfo<{#3}%
    \endgroup}
 
-
 %D In interactive documents going to a specific location is not
 %D bound to cross references. The \type{\goto} commands can be
 %D used to let users access another part of the document. In
@@ -1228,42 +1227,11 @@
    \bgroup
    \postponenotes
    % todo: handle empty #1
-   \doifelsenothing{#1}
-     {\dosymbolreference{}{}[#2]}
-     {\dogotospace{#1}[#2]}%
+   \doifelsenothing{#1}{\dosymbolreference{}{}}{\dogotospace{#1}}[#2]%
    \egroup
    \referenceinfo{<}{#2}}
 
 % inefficient, we need to save the shared one (just reuse last command in lua)
-
-% \def\dogotospace#1[#2]%
-%   {\iflocationsplit
-%      \ifsecondaryreference
-%        \setbox\scratchbox\hbox % will change anyway
-%      \fi % due to space insertion
-%        {\let\dogotospace\dogotofixed
-%         \iflocation
-%           \def\processisolatedword##1%
-%             {\ifisolatedwords\ifsharesimilarreferences
-%                \global\advance\similarreference \plusone
-%              \fi\fi
-%              \hbox\bgroup
-%                \doprocessreferenceelse{#2}{##1\presetgoto}{\unknownreference{#2}##1\relax}%
-%              \egroup}%
-%           \dosetfontattribute \??ia\c!style
-%           \dosetcolorattribute\??ia\c!color
-%           \processisolatedwords{#1}\processisolatedword
-%         \else
-%           #1\relax % \relax prevents #1's next macros from gobbling \fi
-%         \fi}%
-%    \else
-%      \iflocation
-%        \hbox{\doattributes\??ia\c!style\c!color{\doprocessreferenceelse{#2}{#1\presetgoto}{\unknownreference{#2}#1\relax}}}%
-%      \else
-%        #1\relax % \relax prevents #1's next macros from gobbling \fi
-%      \fi
-%    \fi
-%    \global\similarreference\zerocount}
 
 \def\dogotoprocessisolatedword#1#2%
   {\ifisolatedwords\ifsharesimilarreferences
@@ -1301,7 +1269,11 @@
 
 \def\dogotofixed#1[#2]%
   {{\iflocation
-      \hbox{\doattributes\??ia\c!style\c!color{\doprocessreferenceelse{#2}{#1\presetgoto}{\unknownreference{#2}#1\relax}}}%
+      \hbox\bgroup
+        \dosetfontattribute \??ia\c!style
+        \dosetcolorattribute\??ia\c!color
+        \doprocessreferenceelse{#2}{#1\presetgoto}{\unknownreference{#2}#1\relax}%
+      \egroup
     \else
       #1%
     \fi}}
@@ -1453,7 +1425,7 @@
   {\dosingleempty\dodospecialfrom}
 
 \def\dodospecialfrom[#1]%
-  {\dontleavehmode\ctxlua{jobreferences.from("#1","","")}}
+  {\dontleavehmode\goto{\ctxlua{jobreferences.from("#1")}}[#1]}
 
 %D We also support:
 %D
