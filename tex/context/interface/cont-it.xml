@@ -5356,6 +5356,9 @@
           <cd:constant type="si"/>
           <cd:constant type="no"/>
         </cd:parameter>
+        <cd:parameter name="opzione">
+          <cd:constant type="impaccato"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

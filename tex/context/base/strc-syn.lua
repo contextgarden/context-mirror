@@ -122,20 +122,10 @@ function joblists.finalize(data,options)
     local result = data.result
     data.metadata.nofsorted = #result
     local split = { }
-    local se = sorters.entries[options.language or sorters.defaultlanguage] or sorters.entries[sorters.defaultlanguage]
     for k=1,#result do
         local v = result[k]
-        local entry, tag = v.split[1], ""
-        if se and se[entry] then
-            if type(se[entry]) == "number" then
-                entry = se[entry]
-            end
-            tag = se[entry]
-        else
-            entry = 0
-            tag = "unknown"
-        end
-        local s = split[entry]
+        local entry, tag = sorters.firstofsplit(v.split)
+        local s = split[entry] -- keeps track of change
         if not s then
             s = { tag = tag, data = { } }
             split[entry] = s

@@ -1,0 +1,70 @@
+if not modules then modules = { } end modules ['demo-font.lum'] = {
+    version   = 1.001,
+    comment   = "companion to font-map.lua",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+--[[
+
+    After some testing Taco and I decided that the lack of information
+    with regards to unicode mapping of alternative shapes can best be
+    handled by an auxiliary table. So, here is an example. This file
+    gets its place in TDS in:
+
+        <texroot>/fonts/map/luatex/context/demo-file.lum
+
+    We recommend that you use a lowercase filename, just to prevent
+    lookup errors. Font filenames are already such a mess.
+
+    A test file, dedicated to Dohyun Kim is:
+
+        \usemodule[fnt-20]
+
+        \starttext
+
+        \definefontfeature
+          [otftracker-kozminprovi-regular]
+          [mode=node,vrt2=yes,script=latn]
+
+        \setvariables
+          [otftracker]
+          [font=kozminprovi-regular,
+           sample=\char"3002]
+
+        \stoptext
+
+    In the resulting pdf file you will then find:
+
+        begincmap
+        /CIDSystemInfo
+        << /Registry (TeX)
+        /Ordering (FNUMTE-KozMinProVI-Regular)
+        /Supplement 0
+        >> def
+        /CMapName /TeX-Identity-FNUMTE-KozMinProVI-Regular def
+        /CMapType 2 def
+        1 begincodespacerange
+        <0000> <FFFF>
+        endcodespacerange
+        0 beginbfrange
+        endbfrange
+        2 beginbfchar
+        <027B> <3002>
+        <1ED0> <3002>
+        endbfchar
+        endcmap
+
+    Of course this assumes that the font used is the same as we
+    have on our machines.
+
+]]--
+
+return {
+    version = 1.00,
+    fontname = "kozminprovi-regular.otf",
+    tounicode = {
+        ["Japan1.7888"] = 0x3002,
+    },
+}

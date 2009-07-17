@@ -11,12 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This is s stripped down version of th eoriginal enco-ini.tex
+%D This is stripped down version of th eoriginal enco-ini.tex
 %D file. For more details you might want to study the \MKII\ file
 %D but since \LUATEX\ is unicode inside we need less code.
 
-% When dealing with characters we have four cases to take into account when moving
-% from mkii to mkiv:
+% When dealing with characters we have four cases to take into account
+% when moving from mkii to mkiv:
 
 % 1. <byte 200>   => ref to slot 200 in current font
 % 2. \char 200    => ref to slot 200 in current font
@@ -36,36 +36,19 @@
 
 \unprotect
 
-%D Quite some commands are now obsolete. These nillers will disappear soon.
+%D Quite some commands are now obsolete. We keep only a few commands
+%D around, just in case they are used in styles (and in for instance
+%D symb and xtag files).
 
-\def\currentencoding    {utf}
-\def\currentmapping     {utf}
+\def\startencoding [#1]{} % used in symb
+\let\stopencoding  \relax
+\def\setupencoding [#1]{}
+\def\enablemapping [#1]{}
+\def\enableencoding[#1]{}
 
-\let\defaultencoding    \s!default
-\let\characterencoding  \s!default
-\let\nocharacterencoding\s!default
-
-\def\setupencoding          [#1]{}
-\def\startmapping           [#1]{\gobbleuntil\stopmapping}
-\def\startencoding          [#1]{}
-\let\stopencoding           \relax
-\let\startcoding            \startencoding
-\let\stopcoding             \relax
-\def\optimizemapping        [#1]{}
-\def\enablemapping          [#1]{}
-\def\enableencoding         [#1]{}
-\def\enablecoding           [#1]{}
-\def\fastenableencoding       #1{}
-\def\enablelanguagespecifics[#1]{}
-\def\useencoding            [#1]{}
-
-\let\dontexpandencoding     \relax
-\let\keepencodedtokens      \relax
-\let\literateencodedtokens  \relax
-\let\stringifyencodedtokens \relax
-\let\dontexpandencodedtokens\relax
-\let\convertencodedtokens   \relax
-\let\ignoreencoding         \relax
+\def\currentencoding{utf}
+\def\currentmapping {utf}
+\let\defaultencoding\s!default
 
 % todo:
 
@@ -78,14 +61,12 @@
 %D \macros
 %D   {defineaccent, definecharacter, definecommand}
 
-\def\accentprefix{@acc@}
-
 \def\defineaccent#1 #2 #3 %
   {\setevalue{\string#1}{\noexpand\dohandleaccent{\string#1}}%
-   \setvalue{\accentprefix\string#1\string#2}{#3}}
+   \setvalue{\??ac\string#1\string#2}{#3}}
 
 \def\dohandleaccent#1#2%
-  {\csname\accentprefix\string#1\string#2\endcsname}
+  {\csname\??ac\string#1\string#2\endcsname}
 
 \def\definecharacter#1 #2 %
   {\doifnumberelse{\string#2}
@@ -102,7 +83,7 @@
 
 \newevery \everyuppercase \EveryUppercase
 \newevery \everylowercase \EveryLowercase
-\newevery \everysanitize \EverySanitize
+\newevery \everysanitize  \EverySanitize
 
 %D Some saved meanings (not really needed):
 
@@ -371,21 +352,6 @@
       \vrule \!!width\scratchdimen              \!!height5.5\scratchdimen\!!depth3\scratchdimen
       \kern\scratchdimen}}
 
-% what to do with these:
-%
-% \definecharacter mathacute      "7013
-% \definecharacter mathgrave      "7012
-% \definecharacter mathddot       "707F
-% \definecharacter mathtilde      "707E
-% \definecharacter mathbar        "7016
-% \definecharacter mathbreve      "7015
-% \definecharacter mathcheck      "7014
-% \definecharacter mathhat        "705E
-% \definecharacter mathvec        "017E
-% \definecharacter mathdot        "705F
-% \definecharacter mathwidetilde  "0365
-% \definecharacter mathwidehat    "0362
-
 % from enco-acc:
 
 \defineaccent ^ A {\Acircumflex}   \defineaccent ^ a {\acircumflex}
@@ -412,6 +378,7 @@
 \defineaccent ~ I {\Itilde}        \defineaccent ~ i {\itilde}       \defineaccent ~ {\i} {\itilde}
 \defineaccent ~ O {\Otilde}        \defineaccent ~ o {\otilde}
 \defineaccent ~ U {\Utilde}        \defineaccent ~ u {\utilde}
+\defineaccent ~ N {\Ntilde}        \defineaccent ~ n {\ntilde}
 
 \defineaccent " A {\Adiaeresis}    \defineaccent " a {\adiaeresis}
 \defineaccent " E {\Ediaeresis}    \defineaccent " e {\ediaeresis}
@@ -511,7 +478,6 @@
         \!!depth \scratchdimen
         \!!width \wd\scratchbox
         \!!height\zeropoint}}
-
 
 \def\fakeunderscores{\let\_\fakeunderscore}
 \def\textunderscores{\let\_\textunderscore}

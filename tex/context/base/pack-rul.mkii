@@ -2777,6 +2777,19 @@
 
 \setfalse\framedtextlocationnone
 
+\def\checkframedtext % messy dependency
+  {\ifinsidefloat
+     \localhsize\hsize
+   \else\ifdim\sidefloatvsize>\zeropoint % will be proper handle
+   % \strut            % rather clean way to invoke the sidefloat OTR
+   % \setbox0=\lastbox % and get the widths set, so from now on we
+   % \setlocalhsize    % can have framed texts alongside sidefloats
+     \checksidefloat
+     \setlocalhsize
+   \else
+     \localhsize\hsize
+   \fi\fi}
+
 \def\dododostartframedtext[#1][#2][#3]% #3 only passed to framed, not to framedtext
   {\doifsomething{#2}{\setvalue{\??kd#1\c!location}{#2}}% does not listen to #3
    \setfalse\framedtextlocationnone

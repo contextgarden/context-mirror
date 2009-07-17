@@ -19,8 +19,6 @@
 
 \unprotect
 
-\let\dodummypageskip\gobbleoneargument % obsolete
-
 %D Interfacing between this and other modules is handled by
 %D the following macros. The current state of a text line
 %D (header, footer, etc.) is checked by:
@@ -74,16 +72,18 @@
      \getparameters[\??tk#1#2][#3]%
    \else
     %\getparameters[\??tk#1\v!text][#2]%
-     \edef\previoustextstate{\getvalue{\??tk#1\c!state}}%
+     \edef\previoustextstate{\csname\??tk#1\c!state\endcsname}%
      \getparameters[\??tk#1][#2]%
-     \doifnotvalue{\??tk#1\c!state}\previoustextstate
-       {%\checkcurrentlayout % no
-        \edef\currenttextstate{\getvalue{\??tk#1\c!state}}%
-        % speed optimization (calculating backgrounds takes time)
-        \doifcommon{\previoustextstate,\currenttextstate}{\v!high,\v!none}
-          {\calculatevsizes
-           \recalculatebackgrounds
-           \recalculatelogos}}%
+     \edef\currenttextstate{\csname\??tk#1\c!state\endcsname}%
+     \ifx\currenttextstate\previoustextstate
+       % no change in state
+     \else
+       %\checkcurrentlayout % no
+       % speed optimization (calculating backgrounds takes time)
+       \doifcommon{\previoustextstate,\currenttextstate}{\v!high,\v!none}
+         {\calculatevsizes
+          \recalculatebackgrounds}%
+     \fi
    \fi}
 
 \def\setuptop    {\dotripleempty\dosetuplayouttext[\v!top]}
@@ -125,11 +125,11 @@
 %D \showsetup{setupfootertexts}
 %D \showsetup{setupbottomtexts}
 
-\def\setuptoptexts    {\dosixtupleempty\dosetuptexts[\v!top]}
-\def\setupheadertexts {\dosixtupleempty\dosetuptexts[\v!header]}
-\def\setuptexttexts   {\dosixtupleempty\dosetuptexts[\v!text]}
+\def\setuptoptexts    {\dosixtupleempty\dosetuptexts[\v!top    ]}
+\def\setupheadertexts {\dosixtupleempty\dosetuptexts[\v!header ]}
+\def\setuptexttexts   {\dosixtupleempty\dosetuptexts[\v!text   ]}
 \def\setupfootertexts {\dosixtupleempty\dosetuptexts[\v!footer ]}
-\def\setupbottomtexts {\dosixtupleempty\dosetuptexts[\v!bottom]}
+\def\setupbottomtexts {\dosixtupleempty\dosetuptexts[\v!bottom ]}
 
 %D The left, right and center variables can also be set
 %D directly using the previously discussed macros.
@@ -137,97 +137,78 @@
 \def\dosetuptexts[#1][#2][#3][#4][#5][#6]%
   {\ifsixthargument
      \setvalue{\??tk#1#2\c!lefttext}%
-       {\dodoubletexts{\??tk#1}{#2}%
+       {\dodoubletexts{#1}{#2}%
           {\c!leftstyle \c!leftcolor \c!leftwidth }{#3}%
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#6}}%
      \setvalue{\??tk#1#2\c!righttext}%
-       {\dodoubletexts{\??tk#1}{#2}%
+       {\dodoubletexts{#1}{#2}%
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}%
           {\c!leftstyle \c!leftcolor \c!leftwidth }{#5}}%
    \else\iffifthargument
      \setvalue{\??tk#1\v!text\c!lefttext}%
-       {\dodoubletexts{\??tk#1}\v!text
+       {\dodoubletexts{#1}\v!text
           {\c!leftstyle \c!leftcolor \c!leftwidth }{#2}%
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#5}}%
      \setvalue{\??tk#1\v!text\c!righttext}%
-       {\dodoubletexts{\??tk#1}\v!text
+       {\dodoubletexts{#1}\v!text
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}%
           {\c!leftstyle \c!leftcolor \c!leftwidth }{#4}}%
    \else\iffourthargument
      \setvalue{\??tk#1#2\c!lefttext}%
-       {\dodoubletexts{\??tk#1}{#2}
+       {\dodoubletexts{#1}{#2}
           {\c!leftstyle\c!leftcolor\c!leftwidth}{#3}%
           {\c!leftstyle\c!leftcolor\c!leftwidth}{#3}}%
      \setvalue{\??tk#1#2\c!righttext}%
-       {\dodoubletexts{\??tk#1}{#2}
+       {\dodoubletexts{#1}{#2}
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}%
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}}%
    \else\ifthirdargument
      \setvalue{\??tk#1\v!text\c!lefttext}%
-       {\dodoubletexts{\??tk#1}\v!text
+       {\dodoubletexts{#1}\v!text
           {\c!leftstyle\c!leftcolor\c!leftwidth}{#2}%
           {\c!leftstyle\c!leftcolor\c!leftwidth}{#2}}%
      \setvalue{\??tk#1\v!text\c!righttext}%
-       {\dodoubletexts{\??tk#1}\v!text
+       {\dodoubletexts{#1}\v!text
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}%
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}}%
    \else\ifsecondargument % new
-     \letvalue{\??tk#1\v!text\c!lefttext }\empty
-     \letvalue{\??tk#1\v!text\c!righttext}\empty
-     \setvalue{\??tk#1\v!text\c!middletext }%
-       {\dosingletexts{\??tk#1}\v!text\c!style\c!color\c!width{#2}}%
+     \letvalue{\??tk#1\v!text\c!lefttext  }\empty
+     \letvalue{\??tk#1\v!text\c!righttext }\empty
+     \setvalue{\??tk#1\v!text\c!middletext}{\dosingletexts{#1}\v!text\c!style\c!color\c!width{#2}}%
    \else
-     \dosixtupleempty\dosetuptexts[#1][\v!text][][][][]%
+     \dosixtupleempty\dosetuptexts[#1][\v!text  ][][][][]%
      \dosixtupleempty\dosetuptexts[#1][\v!margin][][][][]%
-     \dosixtupleempty\dosetuptexts[#1][\v!edge ][][][][]%
+     \dosixtupleempty\dosetuptexts[#1][\v!edge  ][][][][]%
    \fi\fi\fi\fi\fi}
 
 %D Left and right texts are swapped on odd and even pages, but
 %D only when double sided typesetting is enabled.
 
-\def\dodoubletexts#1#2#3#4#5#6%
-  {\doifoddpageelse
-     {\dosingletexts{#1}{#2}#3{#4}}  % #3 => provides three arguments
-     {\dosingletexts{#1}{#2}#5{#6}}} % #5 => provides three arguments
+\def\dodoubletexts{\doifoddpageelse\dodoubletextsodd\dodoubletextseven}
 
-%D The next macro will be cleaned up amd made less messy and
+\def\dodoubletextsodd #1#2#3#4#5#6{\dosingletexts{#1}{#2}#3{#4}} % #3 => provides three arguments
+\def\dodoubletextseven#1#2#3#4#5#6{\dosingletexts{#1}{#2}#5{#6}} % #5 => provides three arguments
+
+%D The next macro will be cleaned up and made less messy and
 %D dependent.
 
 \def\placetextlinestrut#1%
   {\doifvalue{#1\c!strut}\v!yes{\setstrut\strut}}
 
-% \def\dosingletexts#1#2#3#4#5#6%
-%   {\bgroup
-%    \defconvertedargument\ascii{#6}%
-%    \doifsomething\ascii
-%      {\doattributes{#1#2}#3#4%
-%         {\placetextlinestrut{#1}% here !
-%         %\doifdefinedelse{\??mk\ascii\c!coupling} % brrr
-%          \doifelsemarking\ascii
-%            {\dolimitatetexts{#1#2#5}{\getmarking[\ascii][\v!first]}}
-%            {\ConvertConstantAfter\doifelse\v!pagenumber{#6}
-%                \placelocationpagenumber % pretty low level
-%               {\ConvertConstantAfter\doifelse\v!date{#6}
-%                  {\currentdate}
-%                  {% #6{}{}{} -> {} needed for macros that look
-%                   % ahead, like \uniqueMPgraphic
-%                   \ignorecrlf\dolimitatetexts{#1#2#5}{#6{}{}{}}}}}}}%
-%   \egroup}
-
 \def\dosingletexts#1#2#3#4#5#6%
   {\bgroup
    \defconvertedargument\ascii{#6}% no longer \defconvertedargument
    \ifx\ascii\empty\else
-     \dostartattributes{#1#2}#3#4\empty
-       \placetextlinestrut{#1}% here !
+     \dostartattributes{\??tk#1#2}#3#4\empty
+       \placetextlinestrut{\??tk#1}% here !
        \doifelsemarking\ascii
-         {\dolimitatetexts{#1#2#5}{\getmarking[\ascii][\v!first]}}%
+         {\dolimitatetexts{\??tk#1#2#5}{\getmarking[\ascii][\v!first]}}%
          {\ifcsname\??tk->\ascii\endcsname
             \csname\??tk->\ascii\endcsname
           \else
             % #6{}{}{} -> {} needed for macros that look
             % ahead, like \uniqueMPgraphic
-            \ignorecrlf\dolimitatetexts{#1#2#5}{#6{}{}{}}%
+            \ignorecrlf\dolimitatetexts{\??tk#1#2#5}{#6{}{}{}}%
           \fi}%
      \dostopattributes
   \fi
@@ -240,7 +221,7 @@
 %D length.
 
 \def\dolimitatetexts#1#2%
-  {\doifelsevaluenothing{#1}{#2}{\limitatetext{#2}{\getvalue{#1}}{\unknown}}}
+  {\doifelsevaluenothing{#1}{#2}{\limitatetext{#2}{\csname#1\endcsname}{\unknown}}}
 
 %D The placement of text is hooked into the token lists
 %D associated to the area at hand.
@@ -255,24 +236,15 @@
 %D the \type {status} variable. This is handled by the next
 %D couple of macros.
 
-\def\settextlinestatus  #1{\edef\textlinestatus{\csname\??tk#1\c!state\endcsname}}
-%def\resettextlinestatus#1{\letgvalue{\??tk#1\c!state}\v!normal}
+\def\settextlinestatus#1%
+  {\edef\textlinestatus{\csname\??tk#1\c!state\endcsname}}
 
 \def\resettextlinestatus#1% postpone
-  {\setgvalue{\??tk#1\s!reset}{\letgvalue{\??tk#1\c!state}\v!normal}}
+  {\expandafter\gdef\csname\??tk#1\s!reset\endcsname{\global\expandafter\let\csname\??tk#1\c!state\endcsname\v!normal}}
 
 \def\placelayouttextline#1% #2
-  {\settextlinestatus{#1}%
-   \csname\string\placelayouttextline
-     \ifcsname\string\placelayouttextline\textlinestatus\endcsname
-       \textlinestatus
-     \else
-       \s!unknown
-     \fi
-   \endcsname{#1}} % {#2}
-
-% \def\doifelselayouttextline#1% shown or not
-%   {\doifinsetelse{\getvalue{\??tk#1\c!state}}{\v!normal,\v!start}}
+  {\settextlinestatus#1%
+   \csname\??tk::\ifcsname\??tk::\textlinestatus\endcsname\textlinestatus\else\s!unknown\fi\endcsname#1} % {#2}
 
 \def\doifelselayouttextline#1% shown or not
   {\edef\!!stringa{\csname\??tk#1\c!state\endcsname}%
@@ -298,50 +270,49 @@
 
 \newconditional\resyncaftertextline
 
-\setvalue{\string\placelayouttextline\v!normal }{\doplacelayouttextline}
-\setvalue{\string\placelayouttextline          }{\doplacelayouttextline}
+% there is no need for {#1} etc since we use symbolic names
 
-\setvalue{\string\placelayouttextline\v!none}#1#2%
-  {}
+\setvalue{\??tk::\v!normal}{\doplacelayouttextline}
+\setvalue{\??tk::\empty   }{\doplacelayouttextline}
 
-\setvalue{\string\placelayouttextline\v!high}#1#2%
+\setvalue{\??tk::\v!none  }#1#2{}
+\setvalue{\??tk::\v!stop  }#1#2{}
+
+\setvalue{\??tk::\v!high}#1#2%
   {\global\settrue\resyncaftertextline
-   \resettextlinestatus{#1}}
+   \resettextlinestatus#1}
 
-\setvalue{\string\placelayouttextline\v!empty}#1#2%
-  {\resettextlinestatus{#1}}
+\setvalue{\??tk::\v!empty}#1#2%
+  {\resettextlinestatus#1}
 
-\setvalue{\string\placelayouttextline\v!start}#1#2%
-  {\resettextlinestatus{#1}%
-   \doplacelayouttextline{#1}{#2}}
+\setvalue{\??tk::\v!start}#1#2%
+  {\resettextlinestatus#1%
+   \doplacelayouttextline#1#2}
 
-\setvalue{\string\placelayouttextline\v!stop}#1#2%
-  {}
-
-\setvalue{\string\placelayouttextline\v!nomarking}#1#2%
+\setvalue{\??tk::\v!nomarking}#1#2%
   {\bgroup
-   \resettextlinestatus{#1}%
+   \resettextlinestatus#1%
    \let\dogetmarking\nogetmarking
-   \doplacelayouttextline{#1}{#2}%
+   \doplacelayouttextline#1#2%
    \egroup}
 
-\setvalue{\string\placelayouttextline\s!unknown}#1#2%
+\setvalue{\??tk::\s!unknown}#1#2%
   {\global\settrue\resyncaftertextline
    \bgroup % new
-   \resettextlinestatus{#1}%
-   \getvalue{\??tk#1\textlinestatus}%
-   \getvalue{\??tk#1\v!text  \textlinestatus}%
-   \getvalue{\??tk#1\v!margin\textlinestatus}%
-   \getvalue{\??tk#1\v!edge  \textlinestatus}%
-   \doplacelayouttextline{#1}{#2}%
+   \resettextlinestatus#1%
+   \csname\??tk#1\textlinestatus\endcsname
+   \csname\??tk#1\v!text  \textlinestatus\endcsname
+   \csname\??tk#1\v!margin\textlinestatus\endcsname
+   \csname\??tk#1\v!edge  \textlinestatus\endcsname
+   \doplacelayouttextline#1#2%
    \egroup}
 
 %D The following macro has to be called after a page
 %D is flushed.
 
 \def\resetlayouttextline#1%
-  {\getvalue {\??tk#1\s!reset}%
-   \letgvalue{\??tk#1\s!reset}\relax}
+  {\csname\??tk#1\s!reset\endcsname
+   \global\expandafter\let\csname\??tk#1\s!reset\endcsname\relax}
 
 \def\resetlayouttextlines
   {\resetlayouttextline\v!top
@@ -350,9 +321,8 @@
    \resetlayouttextline\v!footer
    \resetlayouttextline\v!bottom
    \ifconditional\resyncaftertextline
-     \doglobal\calculatevsizes
+     \calculateglobalvsizes
      \recalculatebackgrounds
-     \recalculatelogos
      \global\setfalse\resyncaftertextline
    \fi}
 
@@ -458,15 +428,9 @@
          \egroup
          \mkprocesspagecontents{#2}%
          \settextpagecontent\scratchpagebox{#1}{#2}%
-         \setbox\scratchpagebox\vbox % can we avoid this extra box
-           {\startlayoutcomponent{textbody}{text body}%
-            \box\scratchpagebox
-            \stoplayoutcomponent}%
          \addtextbackground\scratchpagebox
          \addtextgridlayer\scratchpagebox
-         \localstarttextcolor % does not work in mkiv
          \box\scratchpagebox
-         \localstoptextcolor  % so we have to change this
          \bgroup
            \hskip\rightmargindistance
            \ifdim\rightmarginwidth>\zeropoint
@@ -486,17 +450,20 @@
 %D The main text area has to be combined with some additional
 %D (tracing) information.
 
-% will be overloaded in page-lyr
+% will be stored as normal and overloaded in page-lyr and later in
+% page-spr we overload the the stored version .. evenatually i will
+% clear up the experimental mess
 
 \def\settextpagecontent#1#2#3% #2 and #3 will disappear
   {\setbox#1\hbox to \makeupwidth
-     {\hss                        % so don't change this
-      \vbox to \textheight
+     {\hss                     % so don't change this
+      \setlayoutcomponentattribute\v!page\v!text
+      \vbox \layoutcomponentboxattribute to \textheight
         {\offinterlineskip
          \freezetextwidth
          \hsize\textwidth      % local variant of \sethsize
          \boxmaxdepth\maxdepth
-         \noindent                % content can be < \hsize
+         \noindent             % content can be < \hsize
          \dopagecontents#2#3}%
       \hss}%
    \dp#1\zeropoint}
@@ -506,17 +473,17 @@
   [grid=red,
    page=green]
 
-\def\addtextgridlayer#1% tzt run time
+\def\addtextgridlayer#1% to be checked for color and layer
   {\ifcase\showgridstate\else % 1=bottom 2=top
-     \setgridbox\scratchbox\makeupwidth\textheight
+     \startcolor[layout:grid]%
+     \setgridbox\scratchbox\makeupwidth\textheight % todo: check color
      \setbox#1\hbox
        {\ifcase\showgridstate\or\or\box#1\hskip-\makeupwidth\fi
         \bgroup % color
-        \startlayoutcomponent{gridcolumns}{grid columns}%
-        \incolortrue
         \ifcase\layoutcolumns\else
           \gray
-          \hbox to \makeupwidth
+          \setlayoutcomponentattribute\v!grid\v!columns
+          \hbox \layoutcomponentboxattribute to \makeupwidth
             {\dorecurse\layoutcolumns
                {\hskip\layoutcolumnwidth
                 \ifnum\recurselevel<\layoutcolumns
@@ -527,12 +494,11 @@
                 \fi}}%
           \hskip-\makeupwidth
         \fi
-        \stoplayoutcomponent
-        \startlayoutcomponent{gridlines}{grid lines}%
-        \startcolor[layout:grid]\box\scratchbox\stopcolor
-        \stoplayoutcomponent
+        \setlayoutcomponentattribute\v!grid\v!lines
+        \hbox \layoutcomponentboxattribute{\box\scratchbox}%
         \egroup
         \ifcase\showgridstate\or\hskip-\makeupwidth\box#1\fi}%
+      \stopcolor
    \fi}
 
 %D The placement of a whole line is handled by the next two
@@ -541,89 +507,158 @@
 
 \def\ignoredlinebreak{\unskip\space\ignorespaces}
 
-\def\doplacelayouttextline#1#2%
-  {\ifdim#2>\zeropoint\relax  % prevents pagenumbers when zero height
-     \goleftonpage
-     \hbox
-       {\setbox\scratchpagebox\vbox to #2
-          {%\forgetall
-           \vsize#2\relax
-           \normalbaselines
-           \let\\\ignoredlinebreak
-           \let\crlf\ignoredlinebreak
-          %\getvalue{\??tk#1\v!text\c!before}%
-           \getvalue{\??tk#1\c!before}%
-           \doifbothsidesoverruled
-             {\dodoplacelayouttextline#1\c!lefttext \c!middletext\c!righttext\gobbleoneargument\getvalue}
-             {\dodoplacelayouttextline#1\c!lefttext \c!middletext\c!righttext\gobbleoneargument\getvalue}
-             {\dodoplacelayouttextline#1\c!righttext\c!middletext\c!lefttext \getvalue\gobbleoneargument}%
-          %\getvalue{\??tk#1\v!text\c!after}%
-           \getvalue{\??tk#1\c!after}%
-           \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
-        \dp\scratchpagebox\zeropoint
-        \box\scratchpagebox}%
-     \vskip-#2\relax
-   \fi}
-
-\def\dodoplacelayouttextline#1#2#3#4#5#6% \hsize toegevoegd, \hss's niet meer wijzigen
-  {\hbox
-     {\ifdim\leftedgewidth>\zeropoint
-        \dododoplacelayouttextline\leftedgewidth{#1}\v!edge
-          {\hss\getvalue{\??tk#1\v!edge#2}}%
-        \hskip\leftedgedistance
-      \fi
-      \ifdim\leftmarginwidth>\zeropoint
-        \dododoplacelayouttextline\leftmarginwidth{#1}\v!margin
-          {\hbox to \leftmarginwidth
-             {\hss\getvalue{\??tk#1\v!margin#2}}%
-           \hskip-\leftmarginwidth
-           \hbox to \leftmarginwidth
-             {\hss#5{\??tk#1\v!margin\c!margintext}}}%
-        \hskip\leftmargindistance
-      \fi
-      \ifdim\makeupwidth>\zeropoint
-        \dododoplacelayouttextline\makeupwidth{#1}\v!text
-          {\hbox to \makeupwidth
-             {\@@nmpre{#5{\??tk#1\v!text\c!marginedgetext}}%
-              \getvalue{\??tk#1\v!text#2}\hss}%
-           \hskip-\makeupwidth
-           \hbox to \makeupwidth
-             {\hss\getvalue{\??tk#1\v!text#3}\hss}%
-           \hskip-\makeupwidth
-           \hbox to \makeupwidth
-             {\hss\getvalue{\??tk#1\v!text#4}%
-              \@@nmpos{#6{\??tk#1\v!text\c!marginedgetext}}}}%
-      \fi
-      \ifdim\rightmarginwidth>\zeropoint
-        \hskip\rightmargindistance
-        \dododoplacelayouttextline\rightmarginwidth{#1}\v!margin
-          {\hbox to \rightmarginwidth
-             {\getvalue{\??tk#1\v!margin#4}\hss}%
-           \hskip-\rightmarginwidth
-           \hbox to \rightmarginwidth
-             {#6{\??tk#1\v!margin\c!margintext}\hss}}%
-      \fi
-      \ifdim\rightedgewidth>\zeropoint
-        \hskip\rightedgedistance
-        \dododoplacelayouttextline\rightedgewidth{#1}\v!edge
-          {\getvalue{\??tk#1\v!edge#4}\hss}%
-      \fi}}
-
+% \def\doplacelayouttextline#1#2%
+%   {\ifdim#2>\zeropoint\relax  % prevents pagenumbers when zero height
+%      \goleftonpage
+%      \hbox
+%        {\setbox\scratchpagebox\vbox to #2
+%           {\vsize#2\relax
+%            \normalbaselines
+%            \let\\\ignoredlinebreak
+%            \let\crlf\ignoredlinebreak
+%            \csname\??tk#1\c!before\endcsname
+%            \doifbothsidesoverruled
+%              {\dodoplacelayouttextline#1\c!lefttext \c!middletext\c!righttext\zerocount\plusone}
+%              {\dodoplacelayouttextline#1\c!lefttext \c!middletext\c!righttext\zerocount\plusone}
+%              {\dodoplacelayouttextline#1\c!righttext\c!middletext\c!lefttext \plusone\zerocount}%
+%            \csname\??tk#1\c!after\endcsname
+%            \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
+%         \dp\scratchpagebox\zeropoint
+%         \box\scratchpagebox}%
+%      \vskip-#2\relax
+%    \fi}
+%
+% \def\dodoplacelayouttextline#1#2#3#4#5#6% \hsize toegevoegd, \hss's niet meer wijzigen
+%   {\hbox
+%      {\ifdim\leftedgewidth>\zeropoint
+%         \dododoplacelayouttextline\leftedgewidth#1\v!edge
+%           {\hss\csname\??tk#1\v!edge#2\endcsname}%
+%         \hskip\leftedgedistance
+%       \fi
+%       \ifdim\leftmarginwidth>\zeropoint
+%         \dododoplacelayouttextline\leftmarginwidth#1\v!margin
+%           {\hbox to \leftmarginwidth
+%              {\hss\csname\??tk#1\v!margin#2\endcsname}%
+%            \hskip-\leftmarginwidth
+%            \hbox to \leftmarginwidth
+%              {\hss\ifcase#5\or\csname\??tk#1\v!margin\c!margintext\endcsname\fi}}%
+%         \hskip\leftmargindistance
+%       \fi
+%       \ifdim\makeupwidth>\zeropoint
+%         \dododoplacelayouttextline\makeupwidth{#1}\v!text
+%           {\hbox to \makeupwidth
+%              {\ifcase#5\or\@@nmpre{\csname\??tk#1\v!text\c!marginedgetext\endcsname}\fi
+%               \csname\??tk#1\v!text#2\endcsname\hss}%
+%            \hskip-\makeupwidth
+%            \hbox to \makeupwidth
+%              {\hss\csname\??tk#1\v!text#3\endcsname\hss}%
+%            \hskip-\makeupwidth
+%            \hbox to \makeupwidth
+%              {\hss\csname\??tk#1\v!text#4\endcsname
+%               \ifcase#6\or\@@nmpos{\csname\??tk#1\v!text\c!marginedgetext\endcsname}\fi}}%
+%       \fi
+%       \ifdim\rightmarginwidth>\zeropoint
+%         \hskip\rightmargindistance
+%         \dododoplacelayouttextline\rightmarginwidth{#1}\v!margin
+%           {\hbox to \rightmarginwidth
+%              {\csname\??tk#1\v!margin#4\endcsname\hss}%
+%            \hskip-\rightmarginwidth
+%            \hbox to \rightmarginwidth
+%              {\ifcase#6\or\csname\??tk#1\v!margin\c!margintext\endcsname\fi\hss}}%
+%       \fi
+%       \ifdim\rightedgewidth>\zeropoint
+%         \hskip\rightedgedistance
+%         \dododoplacelayouttextline\rightedgewidth{#1}\v!edge
+%           {\csname\??tk#1\v!edge#4\endcsname\hss}%
+%       \fi}}
+%
 % \def\dododoplacelayouttextline#1#2#3#4%
 %   {\vbox % to \vsize
 %      {\hsize#1\relax
-%       \getvalue{\??tk#2#3\c!voor}
-%       \hbox to #1{#4}%
-%       \getvalue{\??tk#2#3\c!na}}}
+%       \csname\??tk#2#3\c!before\endcsname
+%       \setlayoutcomponentattribute#2#3%
+%       \hbox \layoutcomponentboxattribute to #1{#4}%
+%       \csname\??tk#2#3\c!after\endcsname}}
+
+\def\doplacelayouttextline#1#2%
+  {\let\currentlayouttextline#1%
+   \ifdim#2>\zeropoint\relax  % prevents pagenumbers when zero height
+     \doplacelayouttextlineindeed{#2}%
+   \fi}
+
+\def\doplacelayouttextlineindeed#1%
+  {\goleftonpage
+   \hbox
+     {\setbox\scratchpagebox\vbox to #1
+        {\vsize#1\relax
+         \normalbaselines
+         \let\\\ignoredlinebreak
+         \let\crlf\ignoredlinebreak
+         \csname\??tk\currentlayouttextline\c!before\endcsname
+         \doifbothsidesoverruled\dodoplacelayouttextlineright\dodoplacelayouttextlineright\dodoplacelayouttextlineleft
+         \csname\??tk\currentlayouttextline\c!after\endcsname
+         \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
+      \dp\scratchpagebox\zeropoint
+      \box\scratchpagebox}%
+   \vskip-#1\relax}
+
+\def\dodoplacelayouttextlineright{\dodoplacelayouttextline\c!lefttext \c!middletext\c!righttext\zerocount\plusone}
+\def\dodoplacelayouttextlineleft {\dodoplacelayouttextline\c!righttext\c!middletext\c!lefttext \plusone\zerocount}
+
+\def\dodoplacelayouttextline#1#2#3#4#5% \hsize toegevoegd, \hss's niet meer wijzigen
+  {\hbox
+     {\ifdim\leftedgewidth>\zeropoint
+        \dododoplacelayouttextline\leftedgewidth\currentlayouttextline\v!edge{\thelayoutleftedgeline#1}%
+        \hskip\leftedgedistance
+      \fi
+      \ifdim\leftmarginwidth>\zeropoint
+        \dododoplacelayouttextline\leftmarginwidth\currentlayouttextline\v!margin{\thelayoutleftmarginline#1#4}%
+        \hskip\leftmargindistance
+      \fi
+      \ifdim\makeupwidth>\zeropoint
+        \dododoplacelayouttextline\makeupwidth\currentlayouttextline\v!text{\thelayouttextline#1#2#3#4#5}%
+      \fi
+      \ifdim\rightmarginwidth>\zeropoint
+        \hskip\rightmargindistance
+        \dododoplacelayouttextline\rightmarginwidth\currentlayouttextline\v!margin{\thelayoutrightmarginline#3#5}%
+      \fi
+      \ifdim\rightedgewidth>\zeropoint
+        \hskip\rightedgedistance
+        \dododoplacelayouttextline\rightedgewidth\currentlayouttextline\v!edge{\thelayoutrightedgeline#1}%
+      \fi}}
+
+\def\thelayoutleftedgeline#1%
+  {\hss\csname\??tk\currentlayouttextline\v!edge#1\endcsname}%
+
+\def\thelayoutrightedgeline#1%
+  {\csname\??tk\currentlayouttextline\v!edge#1\endcsname\hss}
+
+\def\thelayoutleftmarginline#1#2%
+  {\hbox to \leftmarginwidth{\hss\csname\??tk\currentlayouttextline\v!margin#1\endcsname}%
+   \hskip-\leftmarginwidth
+   \hbox to \leftmarginwidth{\hss\ifcase#2\or\csname\??tk\currentlayouttextline\v!margin\c!margintext\endcsname\fi}}
+
+\def\thelayoutrightmarginline#1#2%
+  {\hbox to \rightmarginwidth{\csname\??tk\currentlayouttextline\v!margin#1\endcsname\hss}%
+   \hskip-\rightmarginwidth
+   \hbox to \rightmarginwidth{\ifcase#2\or\csname\??tk\currentlayouttextline\v!margin\c!margintext\endcsname\fi\hss}}
+
+\def\thelayoutedgetextline{\csname\??tk\currentlayouttextline\v!text\c!marginedgetext\endcsname}
+
+\def\thelayouttextline#1#2#3#4#5%
+  {\hbox to \makeupwidth{\ifcase#4\or\@@nmpre\thelayoutedgetextline\fi\csname\??tk\currentlayouttextline\v!text#1\endcsname\hss}%
+   \hskip-\makeupwidth
+   \hbox to \makeupwidth{\hss\csname\??tk\currentlayouttextline\v!text#2\endcsname\hss}%
+   \hskip-\makeupwidth
+   \hbox to \makeupwidth{\hss\csname\??tk\currentlayouttextline\v!text#3\endcsname\ifcase#5\or\@@nmpos\thelayoutedgetextline\fi}}
 
 \def\dododoplacelayouttextline#1#2#3#4%
   {\vbox % to \vsize
      {\hsize#1\relax
-      \getvalue{\??tk#2#3\c!before}%
-      \startlayoutcomponent{t:#2:#3}{area #2 #3}%
-        \hbox to #1{#4}%
-      \stoplayoutcomponent
-      \getvalue{\??tk#2#3\c!after}}}
+      \csname\??tk#2#3\c!before\endcsname
+      \setlayoutcomponentattribute#2#3%
+      \hbox \layoutcomponentboxattribute to #1{#4}%
+      \csname\??tk#2#3\c!after\endcsname}}
 
 %D Although it is far better to use backgrounds for this
 %D purpose, one can add a rule in the following way. This
@@ -649,19 +684,41 @@
 % \def\@@nmpos#1{\setbox0\hbox{#1}\ifdim\wd0=\zeropoint\else\tfskip\unhbox0\fi}
 
 % cleaner
-
-\def\@@nmpre#1{\doiftext{#1}{{#1}\tfskip}}
-\def\@@nmpos#1{\doiftext{#1}{\tfskip{#1}}}
-
+%
+% \def\@@nmpre#1{\doiftext{#1}{{#1}\tfskip}}
+% \def\@@nmpos#1{\doiftext{#1}{\tfskip{#1}}}
+%
 % newer
+%
+% \def\@@nmprepos#1#2#3#4#5%
+%   {\doifelsenothing\@@nmwidth
+%      {\doiftext{#5}{#1{#5}#2}}
+%      {\doiftext{#5}{\hbox to \@@nmwidth{#3{#5}#4}}}}
+%
+% \def\@@nmpre{\@@nmprepos\empty\tfskip\relax\hss}
+% \def\@@nmpos{\@@nmprepos\tfskip\empty\hss\relax}
+%
+% faster
 
-\def\@@nmprepos#1#2#3#4#5%
-  {\doifelsenothing\@@nmwidth
-     {\doiftext{#5}{#1{#5}#2}}
-     {\doiftext{#5}{\hbox to \@@nmwidth{#3{#5}#4}}}}
+\def\@@nmpre#1%
+  {\begingroup
+   \setbox\scratchbox\normalhbox{\trialtypesettingtrue\ignorespaces#1\removeunwantedspaces}%
+   \ifzeropt\wd\scratchbox\else
+     \doifelsenothing\@@nmwidth
+       {\box\scratchbox\tfskip}
+       {\hbox to \@@nmwidth{\box\scratchbox\hss}}%
+   \fi
+   \endgroup}
 
-\def\@@nmpre{\@@nmprepos\empty\tfskip\relax\hss}
-\def\@@nmpos{\@@nmprepos\tfskip\empty\hss\relax}
+\def\@@nmpos#1%
+  {\begingroup
+   \setbox\scratchbox\normalhbox{\trialtypesettingtrue\ignorespaces#1\removeunwantedspaces}%
+   \ifzeropt\wd\scratchbox\else
+     \doifelsenothing\@@nmwidth
+       {\tfskip\box\scratchbox}
+       {\hbox to \@@nmwidth{\hss\box\scratchbox}}%
+   \fi
+   \endgroup}
 
 %D This code will move to \type {page-flt.tex}.
 
@@ -768,21 +825,21 @@
   {\getparameters
      [\??tk#1#2]
      [%\c!state=\v!normal, % moved
-      \c!before=,  % both global and local are used
-      \c!after=,    % both global and local are used
-      \c!strut=, % the local one, not (yet) used
-      \c!style=\getvalue{\??tk#1\c!style},% hm, got lost
-      \c!color=\getvalue{\??tk#1\c!color},  % hm, got lost
+      \c!before=,% both global and local are used
+      \c!after=,%  both global and local are used
+      \c!strut=,%  the local one, not (yet) used
+      \c!style=\csname\??tk#1\c!style\endcsname,% hm, got lost
+      \c!color=\csname\??tk#1\c!color\endcsname,% hm, got lost
       \c!lefttext=,
       \c!middletext=,
       \c!righttext=,
       \c!marginedgetext=,
       \c!margintext=,
       \c!width=]%
-   \inheritparameter[\??tk#1#2][\c!leftstyle  ][\c!style ]%
-   \inheritparameter[\??tk#1#2][\c!rightstyle ][\c!style ]%
-   \inheritparameter[\??tk#1#2][\c!leftcolor   ][\c!color  ]%
-   \inheritparameter[\??tk#1#2][\c!rightcolor  ][\c!color  ]%
+   \inheritparameter[\??tk#1#2][\c!leftstyle ][\c!style ]%
+   \inheritparameter[\??tk#1#2][\c!rightstyle][\c!style ]%
+   \inheritparameter[\??tk#1#2][\c!leftcolor ][\c!color  ]%
+   \inheritparameter[\??tk#1#2][\c!rightcolor][\c!color  ]%
    \inheritparameter[\??tk#1#2][\c!leftwidth ][\c!width]%
    \inheritparameter[\??tk#1#2][\c!rightwidth][\c!width]}
 

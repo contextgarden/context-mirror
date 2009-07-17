@@ -42,7 +42,7 @@
 \registerctxluafile{luat-ini} {1.001}
 \registerctxluafile{luat-env} {1.001}
 
-\registerctxluafile{l-xml}    {1.001} % we want tracking
+\registerctxluafile{l-xml}    {1.001} % we need to load lxml-tab earlier so this will change !
 
 \startruntimeluacode
     \edef\asciia{\ctxlua{tex.sprint(logs.mode)}}

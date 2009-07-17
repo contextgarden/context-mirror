@@ -30,13 +30,12 @@
 \let   \baselinecorrection      \relax
 \let   \offbaselinecorrection   \relax
 
-\appendtoks \spacing                  1\to \everybodyfont
+\appendtoks \spacing\plusone           \to \everybodyfont
 \appendtoks \presetnormallineheight    \to \everybodyfont
 \appendtoks \setnormalbaselines        \to \everybodyfont % check if redundant
 \appendtoks \setstrut                  \to \everybodyfont % check if redundant
 \appendtoks \settopskip                \to \everybodyfont
 \appendtoks \setmaxdepth               \to \everybodyfont
-%appendtoks \spacing                  1\to \everybodyfont
 \appendtoks \simplesetupindenting      \to \everybodyfont
 \appendtoks \simplesetupblank          \to \everybodyfont
 \appendtoks \simplesetupwhitespace     \to \everybodyfont
@@ -87,7 +86,7 @@
 \global\let\carriedoverpar\relax
 
 \def\carryoverpar#1%
-  {\expanded     % \scratchtoks{#1}%
+  {\normalexpanded     % \scratchtoks{#1}%
      {\noexpand#1% \the\scratchtoks
       \hangindent\the\hangindent
       \hangafter \the\hangafter
@@ -284,32 +283,34 @@
 
 \def\defineblankmethod[#1]#2{\setvalue{\??bo\??bo#1}{#2}}
 
-\defineblankmethod       [\v!big] {\addblankskip+\bigskipamount      \openlineheight}
-\defineblankmethod      [-\v!big] {\addblankskip-\bigskipamount      \openlineheight}
-\defineblankmethod    [\v!medium] {\addblankskip+\medskipamount   {.5\openlineheight}}
-\defineblankmethod   [-\v!medium] {\addblankskip-\medskipamount   {.5\openlineheight}}
-\defineblankmethod     [\v!small] {\addblankskip+\smallskipamount{.25\openlineheight}}
-\defineblankmethod    [-\v!small] {\addblankskip-\smallskipamount{.25\openlineheight}}
-\defineblankmethod     [\v!white] {\addblankskip+\parskip            \openlineheight}
-\defineblankmethod    [-\v!white] {\addblankskip-\parskip            \openlineheight}
-\defineblankmethod      [\v!line] {\addblankskip+\openlineheight     \openlineheight}
-\defineblankmethod     [-\v!line] {\addblankskip-\openlineheight     \openlineheight}
+\defineblankmethod        [\v!big] {\addblankskip+\bigskipamount      \openlineheight}
+\defineblankmethod       [-\v!big] {\addblankskip-\bigskipamount      \openlineheight}
+\defineblankmethod     [\v!medium] {\addblankskip+\medskipamount   {.5\openlineheight}}
+\defineblankmethod    [-\v!medium] {\addblankskip-\medskipamount   {.5\openlineheight}}
+\defineblankmethod      [\v!small] {\addblankskip+\smallskipamount{.25\openlineheight}}
+\defineblankmethod     [-\v!small] {\addblankskip-\smallskipamount{.25\openlineheight}}
+\defineblankmethod      [\v!white] {\addblankskip+\parskip            \openlineheight}
+\defineblankmethod     [-\v!white] {\addblankskip-\parskip            \openlineheight}
+\defineblankmethod       [\v!line] {\addblankskip+\openlineheight     \openlineheight}
+\defineblankmethod      [-\v!line] {\addblankskip-\openlineheight     \openlineheight}
 
-\defineblankmethod   [\v!formula] {\global\advance\blankskip\medskipamount}
-\defineblankmethod   [\v!nowhite] {\global\blanknowhitetrue}
-\defineblankmethod   [\v!disable] {\global\blankdisabletrue}
-\defineblankmethod     [\v!force] {\global\blankforcetrue}
-\defineblankmethod     [\v!outer] {\ifvmode\ifinner\blankoutertrue\fi\fi}
-\defineblankmethod     [\v!reset] {\global\blankresettrue}
-\defineblankmethod  [\v!flexible] {\global\localblankflexibletrue}
-\defineblankmethod     [\v!fixed] {\global\localblankfixedtrue}
-\defineblankmethod      [\v!back] {\global\blankgobacktrue} % {\geenblanko}
-\defineblankmethod  [\v!halfline] {\ifgridsnapping\global\fuzzyvskiptrue\fi
-                                   \global\advance\blankskip .5\lineheight}
+\defineblankmethod    [\v!formula] {\global\advance\blankskip\medskipamount}
+\defineblankmethod    [\v!nowhite] {\global\blanknowhitetrue}
+\defineblankmethod    [\v!disable] {\global\blankdisabletrue}
+\defineblankmethod      [\v!force] {\global\blankforcetrue}
+\defineblankmethod      [\v!outer] {\ifvmode\ifinner\blankoutertrue\fi\fi}
+\defineblankmethod      [\v!reset] {\global\blankresettrue}
+\defineblankmethod   [\v!flexible] {\global\localblankflexibletrue}
+\defineblankmethod      [\v!fixed] {\global\localblankfixedtrue}
+\defineblankmethod       [\v!back] {\global\blankgobacktrue} % {\geenblanko}
+\defineblankmethod   [\v!halfline] {\ifgridsnapping\global\fuzzyvskiptrue\fi
+                                    \global\advance\blankskip .5\lineheight}
+\defineblankmethod       [\v!none] {\global\blankresettrue}
+\defineblankmethod   [\v!joinedup] {\ifvmode\nointerlineskip\fi}
+\defineblankmethod[\v!synchronize] {\verticalstrut\vskip-2\lineheight\verticalstrut}
 
-\defineblankmethod      [\v!none] {\global\blankresettrue}
-\defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
-
+% \vtop{\blank[synchronize]\blank[line]test}
+
 \defineblankmethod    [\v!always] {\redowhitespace} % experimental
 
 % happens often, so we speed this up:
@@ -443,7 +444,7 @@
 \else\ifcsname\??bo\ascii\endcsname % user def / slow
   \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
 \else
-  \expanded{\rawprocesscommalist[#1]}\doblank
+  \rawprocesscommacommand[#1]\doblank
 \fi\fi
 %
    \relax % to be sure
@@ -642,13 +643,11 @@
   {\ifgridsnapping
      \blankflexiblefalse
    \else
-     \ExpandFirstAfter\processallactionsinset
-       [#1]
+     \normalexpanded{\noexpand\processallactionsinset[#1]}
        [ \v!flexible=>\blankflexibletrue,
             \v!fixed=>\blankflexiblefalse]%
    \fi
-   \ExpandFirstAfter\processallactionsinset
-     [#1]
+   \normalexpanded{\noexpand\processallactionsinset[#1]}
      [ \v!flexible=>\dosetupblank\appliedblankskip,
           \v!fixed=>\dosetupblank\appliedblankskip,
            \v!line=>\edef\appliedblankskip{\linedistance}%
@@ -698,17 +697,22 @@
 \def\defineblank
   {\dodoubleargument\dodefineblank}
 
-\def\savecurrentblank
-  {\edef\restorecurrentblank
-     {\bigskipamount\the\bigskipamount
-      \medskipamount\the\medskipamount
-      \smallskipamount\the\smallskipamount
-      \noexpand\def\noexpand\currentblank{\currentblank}%
-      \ifblankflexible
-        \noexpand\blankflexibletrue
-      \else
-        \noexpand\blankflexiblefalse
-      \fi}}
+% \def\savecurrentblank
+%   {\edef\restorecurrentblank
+%      {\bigskipamount\the\bigskipamount
+%       \medskipamount\the\medskipamount
+%       \smallskipamount\the\smallskipamount
+%       \noexpand\def\noexpand\currentblank{\currentblank}%
+%       \ifblankflexible
+%         \noexpand\blankflexibletrue
+%       \else
+%         \noexpand\blankflexiblefalse
+%       \fi}}
+
+\def\savecurrentblank   {\edef\savedcurrentblank{\currentblank}}
+\def\restorecurrentblank{\edef\currentblank{\savedcurrentblank}}
+
+\def\savedcurrentblank{\currentblank}
 
 %D Now.
 
@@ -764,11 +768,12 @@
       \toggleindentation}}
 
 \def\docomplexsetupindentingA#1%
-  {\edefconvertedargument\!!stringa{#1}%
-   \doifundefined{\??in:\!!stringa}%
-     {\edef\currentindentation{#1}%
-      \let\normalindentation\currentindentation
-      \simplesetupindenting}}
+  {\edefconvertedargument\!!stringa{#1}% can this be doen differently now?
+   \ifcsname\??in:\!!stringa\endcsname \else
+     \edef\currentindentation{#1}%
+     \let\normalindentation\currentindentation
+     \simplesetupindenting
+   \fi}
 
 \def\docomplexsetupindentingB#1%
   {\edefconvertedargument\!!stringa{#1}% catch #1=\somedimen
@@ -1070,25 +1075,23 @@
 \def\fixedspaces
   {\letcatcodecommand \ctxcatcodes `\~ \fixedspace}
 
-\def\removeunwantedspaces
-  {\ifhmode % we also need to unskip 0pt skips
-     \unskip\unskip\unskip\unskip\unskip
-     \unskip\unskip\unskip\unskip\unskip
-   \fi}
-
 \appendtoks\let~\space\to\simplifiedcommands
 
-% still not fixed in aleph / luatex
-%
 % \def\removeunwantedspaces
-%   {\ifhmode \ifnum\lastnodetype=\@@gluenode
-%       \unskip \@EAEAEA\removeunwantedspaces
-%    \fi \fi}
+%   {\ifhmode % we also need to unskip 0pt skips
+%      \unskip\unskip\unskip\unskip\unskip
+%      \unskip\unskip\unskip\unskip\unskip
+%    \fi}
 
-%D For old time sake, will disappear soon.
+\def\removeunwantedspaces
+  {\ifhmode
+     \expandafter \doremoveunwantedspace
+   \fi}
 
-\let\hardespatie\fixedspace
-\let\geenspatie \nospace
+\def\doremoveunwantedspace
+  {\ifnum\lastnodetype=\@@gluenode
+     \unskip \expandafter\doremoveunwantedspace
+   \fi}
 
 % \startbuffer
 % \startlines \tt \fixedspaces
@@ -1367,16 +1370,21 @@
      \vskip\parskip
    \fi}
 
-\def\savecurrentwhitespace
-  {\edef\restorecurrentwhitespace
-     {\ctxparskip\the\ctxparskip
-      \parskip\the\parskip
-      \noexpand\def\noexpand\currentwhitespace{\currentwhitespace}%
-      \ifconditional\flexiblewhitespace
-        \noexpand\settrue\flexiblewhitespace
-      \else
-        \noexpand\setfalse\flexiblewhitespace
-      \fi}}
+% \def\savecurrentwhitespace
+%   {\edef\restorecurrentwhitespace
+%      {\ctxparskip\the\ctxparskip
+%       \parskip\the\parskip
+%       \noexpand\def\noexpand\currentwhitespace{\currentwhitespace}%
+%       \ifconditional\flexiblewhitespace
+%         \noexpand\settrue\flexiblewhitespace
+%       \else
+%         \noexpand\setfalse\flexiblewhitespace
+%       \fi}}
+
+\def\savecurrentwhitespace   {\edef\savedcurrentwhitespace{\currentwhitespace}}
+\def\restorecurrentwhitespace{\edef\currentwhitespace{\savedcurrentwhitespace}}
+
+\def\savedcurrentwhitespace{\currentwhitespace}
 
 % deze variant is nodig binnen \startopelkaar
 % steeds testen:
@@ -1402,6 +1410,37 @@
 
 \def\noblanko
   {\dosingleempty\nonoblanko}
+
+% I'm not sure if the restore is still needed. Anyway, when we do
+% restore, we get a parskip someplace in the output that will push
+% the content off page (\vbox to pageheight{skip smashed-box}) so
+% we have now disabled this hack. If it is introduced again it needs
+% to be more controlled. Test case:
+%
+% \setupwhitespace[big]
+% \starttext
+%     \startcolumns[n=2]\dorecurse{200}{test\crlf}\stopcolumns
+% \stoptext
+%
+% \def\saveouterspacing
+%   {\savecurrentblank
+%    \savecurrentwhitespace
+%    \def\restoreouterspacing
+%      {\restorecurrentblank
+%       \restorecurrentwhitespace}}
+%
+% \let\restoreouterspacing\relax
+% \let\saveouterspacing   \relax % mult-ini: i will look into it when needed
+%
+% let's test this (restore before we restore the global bodyfont):
+
+\def\saveouterspacing
+  {\savecurrentblank
+   \savecurrentwhitespace}
+
+\def\restoreouterspacing
+  {\restorecurrentblank
+   \restorecurrentwhitespace}
 
 % De onderstaande macro handelt ook de situatie dat er geen
 % tekst tussen \start ... \stop is geplaatst. Daartoe wordt de
@@ -1562,7 +1601,7 @@
 \def\strutdepth             {0pt}
 \def\strutwidth             {0pt}
 
-\def\spacingfactor          {1}
+\let\spacingfactor          \plusone
 
 \def\topskipfactor          {1.0}
 \def\maxdepthfactor         {0.5}
@@ -1653,13 +1692,11 @@
 
 \def\spacing#1%
   {\ifgridsnapping
-     \ifdim#1\points=\onepoint\else\showmessage\m!layouts{11}{#1}\fi
-     \edef\spacingfactor{1}%
+    %\ifdim#1\points=\onepoint\else\showmessage\m!layouts{11}{\withoutpt\the\dimexpr#1\points\relax}\fi
+     \let\spacingfactor\plusone
    \else
      \edef\spacingfactor{#1}%
    \fi
-  %\setspacingfactor\systemtopskipfactor \topskipfactor {#1}% why no \spacingfactor ?
-  %\setspacingfactor\systemmaxdepthfactor\maxdepthfactor{#1}% why no \spacingfactor ?
    \edef\systemtopskipfactor {\withoutpt\the\dimexpr#1\dimexpr\topskipfactor \points}%
    \edef\systemmaxdepthfactor{\withoutpt\the\dimexpr#1\dimexpr\maxdepthfactor\points}%
    \setnormalbaselines
@@ -1697,9 +1734,8 @@
 
   \newbox\strutbox
 
-  \setbox\strutbox=\normalhbox{\vrule height8.5pt depth3.5pt width\zeropoint}
+  \setbox\strutbox\normalhbox{\vrule height8.5pt depth3.5pt width\zeropoint}
 
- %\def\strut{\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
   \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
 \fi
@@ -1709,39 +1745,50 @@
 % The double \hbox construction enables us to \backtrack
 % boxes.
 
+\let\strutht\undefined \newdimen\strutht
+\let\strutdp\undefined \newdimen\strutdp
+
 \unexpanded\def\setstrut
-  {% height
-   \edef\strutheight
-     {\the\dimexpr\spacingfactor\dimexpr
-        \ifdim\minimumstrutheight>\zeropoint
-          \minimumstrutheight
-        \else
-          \strutheightfactor\dimexpr\normallineheight
-        \fi}%
-   % depth
-   \edef\strutdepth
-     {\the\dimexpr
-        \ifgridsnapping
-          \ifdim\minimumstrutdepth>\zeropoint
-            \minimumstrutdepth
-          \else
-            \normallineheight-\strutheight
-          \fi
-        \else
-          \spacingfactor\dimexpr
-            \ifdim\minimumstrutdepth>\zeropoint
-              \minimumstrutdepth
-            \else
-              \strutdepthfactor\dimexpr\normallineheight
-            \fi
-        \fi}%
-   % finish
+  {\ifgridsnapping
+     \setstrutgridyes
+   \else
+     \setstrutgridnop
+   \fi}
+
+\unexpanded\def\setstrutgridyes
+  {\strutht\spacingfactor\dimexpr
+     \ifdim\minimumstrutheight>\zeropoint
+       \minimumstrutheight
+     \else
+       \strutheightfactor\dimexpr\normallineheight
+     \fi
+   \strutdp\dimexpr
+     \ifdim\minimumstrutdepth>\zeropoint
+       \minimumstrutdepth
+     \else
+       \normallineheight-\strutht
+     \fi
+   \dosetstrut}
+
+\unexpanded\def\setstrutgridnop
+  {\strutht\spacingfactor\dimexpr
+     \ifdim\minimumstrutheight>\zeropoint
+       \minimumstrutheight
+     \else
+       \strutheightfactor\dimexpr\normallineheight
+     \fi
+   \strutdp\spacingfactor\dimexpr
+       \ifdim\minimumstrutdepth>\zeropoint
+         \minimumstrutdepth
+       \else
+         \strutdepthfactor\dimexpr\normallineheight
+       \fi
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
   {\setbox\strutbox\normalhbox{#1}%
-   \edef\strutheight{\the\strutht}%
-   \edef\strutdepth {\the\strutdp}%
+   \strutht\ht\strutbox
+   \strutdp\dp\strutbox
    \dosetstrut}
 
 \unexpanded\def\setfontstrut
@@ -1771,27 +1818,49 @@
 
 \def\dosetstrut
   {\let\strut\normalstrut
+   \edef\strutheight{\the\strutht}%
+   \edef\strutdepth {\the\strutdp}%
    \ifdim\strutwidth=\zeropoint
-       \setbox\strutbox\normalhbox
-         {\vrule
-            \!!width \zeropoint
-            \!!height\strutheight
-            \!!depth \strutdepth}%
+      \dosetstruthide
    \else
-       \setbox\strutbox\normalhbox
-         {\normalhbox to \zeropoint
-            {% \hss % new, will be option
-             \vrule
-               \!!width \strutwidth
-               \!!height\strutheight
-               \!!depth \strutdepth
-             \hss}}%
+      \dosetstrutvide
    \fi
    \struttotal\dimexpr\strutht+\strutdp\relax}
+
+\def\dosetstruthide
+  {\setbox\strutbox\normalhbox
+     {\vrule
+        \!!width \zeropoint
+        \!!height\strutht
+        \!!depth \strutdp}}
+
+\def\dosetstrutvide
+  {\setbox\strutbox\normalhbox
+     {\normalhbox to \zeropoint
+        {% \hss % new, will be option
+         \vrule
+           \!!width \strutwidth
+           \!!height\strutht
+           \!!depth \strutdp
+         \hss}}}
 
 %D The dimen \type {\struttotal} holds the exact size of the
 %D strut; occasionally a one scaled point difference can show
 %D up with the lineheight.
+
+% experiment
+
+\newbox\emptystrutbox \setbox\emptystrutbox\hbox{}
+
+\def\dosetstruthide
+  {\setbox\strutbox\copy\emptystrutbox
+   \ht\strutbox\strutht
+   \dp\strutbox\strutdp}
+
+\def\strut{\relax\dontleavehmode\copy\strutbox} % still callbacks for \hbox{\strut}
+
+
+\let\normalstrut\strut
 
 %D Sometimes a capstrut comes in handy
 %D
@@ -1828,9 +1897,9 @@
   {\begingroup
    \setbox\scratchbox\copy\strutbox
    \setstrut
-   \ifdim\ht\strutbox>\autostrutfactor\ht\scratchbox
+   \ifdim\strutht>\autostrutfactor\ht\scratchbox
      \endgroup \setstrut
-   \else\ifdim\dp\strutbox>\autostrutfactor\dp\scratchbox
+   \else\ifdim\strutdp>\autostrutfactor\dp\scratchbox
      \endgroup \setstrut
    \else
      \endgroup
@@ -1938,15 +2007,21 @@
 
 %D My own one:
 
+\def\dopushinterlineskip
+  {\edef\oninterlineskip
+     {\baselineskip\the\baselineskip
+      \lineskip\the\lineskip
+      \lineskiplimit\the\lineskiplimit
+      \let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}}
+
+\def\nopushinterlineskip
+  {\let\oninterlineskip\setnormalbaselines}
+
 \def\offinterlineskip
   {\ifdim\baselineskip>\zeropoint
-     \edef\oninterlineskip
-       {\baselineskip\the\baselineskip
-        \lineskip\the\lineskip
-        \lineskiplimit\the\lineskiplimit
-        \let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}%
+     \dopushinterlineskip
    \else
-     \let\oninterlineskip\setnormalbaselines
+     \nopushinterlineskip
    \fi
    \normaloffinterlineskip}
 
@@ -2135,6 +2210,20 @@
    \let\effectiveleftskip \@@effectiveleftskip
    \let\effectiverightskip\@@effectiverightskip}
 
+% We will not use bodydir and pagedir so we disable them. That way we get
+% normal hyperlink support.
+
+\let\@@bodydir\normalbodydir
+\let\@@pagedir\normalpagedir
+
+\unexpanded\def\bodydir{\afterassignment\do@@bodydir\@@bodydir} \let\normalbodydir\bodydir
+\unexpanded\def\pagedir{\afterassignment\do@@pagedir\@@pagedir} \let\normalpagedir\pagedir
+
+\def\do@@bodydir{\@@bodydir TLT\relax}
+\def\do@@pagedir{\@@pagedir TLT\relax}
+
+% This will become a more advanced layout controller soon:
+
 \unexpanded\def\lefttoright{\textdir TLT\pardir TLT\relax}
 \unexpanded\def\righttoleft{\textdir TRT\pardir TRT\relax}
 
@@ -2185,7 +2274,7 @@
        \v!center=>\def\raggedbox{\doalignedline\v!middle}]}
 
 \def\dosetraggedcommand#1%
-  {\expanded{\dodosetraggedcommand{#1}}}
+  {\normalexpanded{\noexpand\dodosetraggedcommand{#1}}}
 
 \newtoks\everyraggedcommand
 
@@ -2369,7 +2458,7 @@
 \appendtoks \forgetparindent    \to \everyforgetall
 \appendtoks \forgetbothskips    \to \everyforgetall
 \appendtoks \forgetspacing      \to \everyforgetall % i.v.m. funny spacing in pagebody
-\appendtoks \spacing\!!plusone  \to \everyforgetall % new per 10/08/2004, else problems in otr / !! needed
+\appendtoks \spacing\plusone    \to \everyforgetall % new per 10/08/2004, else problems in otr / !! needed
 \appendtoks \everypar\emptytoks \to \everyforgetall % indeed!
 
 \def\localvbox#1#%
@@ -3352,14 +3441,12 @@
 
 \def\dosetuptolerance[#1]%
   {\doifinsetelse\v!vertical{#1}%
-     {\ExpandFirstAfter\processallactionsinset
-        [#1]
+     {\normalexpanded{\noexpand\processallactionsinset[#1]}
         [  \v!verystrict=>\def\bottomtolerance{},
                \v!strict=>\def\bottomtolerance{.050},
              \v!tolerant=>\def\bottomtolerance{.075},
          \v!verytolerant=>\def\bottomtolerance{.100}]}%
-     {\ExpandFirstAfter\processallactionsinset
-        [#1]
+     {\normalexpanded{\noexpand\processallactionsinset[#1]}
         [     \v!stretch=>\emergencystretch\bodyfontsize,
                 \v!space=>\spaceskip.5em\!!plus.25em\!!minus.25em\relax,
            \v!verystrict=>\tolerance 200,
@@ -3884,29 +3971,28 @@
 
 \let\normalvadjust\vadjust
 
-% test this prikkels/pascal margin text before heads (mode
-% 1) as well as uitwerkingen (mode 2)
+% \def\graphicvadjust % bad, those low level color calls here
+%   {\dowithnextboxcontent
+%      {\forgetall}
+%      {\normalvadjust
+%         {\unvbox\nextbox
+%          % corrects for one line paragraphs
+%          \nointerlineskip
+%          \kern-\struttotal
+%          \nointerlineskip
+%          \verticalstrut}}%
+%      \vbox}
 
-%chardef\graphicvadjustmode=0 % fake
-%chardef\graphicvadjustmode=1 % normal
-\chardef\graphicvadjustmode=2 % normal + compensate (== default)
-
-\def\graphicvadjust % bad, those low level color calls here
+\def\graphicvadjust % nasty bidi handling
   {\dowithnextboxcontent
      {\forgetall}
-     {\ifcase\graphicvadjustmode \@EA \fakedvadjust \else \@EA\normalvadjust \fi
-        {\dostartgraphicgroup % don't ask
-         \localstarttextcolor
-         \unvbox\nextbox
-         \localstoptextcolor  % don't ask
-         \dostopgraphicgroup
-         \ifcase\graphicvadjustmode \or \or
-           % corrects for one line paragraphs
-           \nointerlineskip
-           \kern-\struttotal
-           \nointerlineskip
-           \verticalstrut
-         \fi}}%
+     {\vadjust{\vbox attr \graphicvadjustattribute \plusone
+        {\unvbox\nextbox
+         % corrects for one line paragraphs
+         \nointerlineskip
+         \kern-\struttotal
+         \nointerlineskip
+         \verticalstrut}}}%
      \vbox}
 
 %D This works only in a properly strutted line, and is meant
@@ -4029,10 +4115,9 @@
    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
      {\gdef\afterfirstobeyedline
         {\nobreak
-         \global\let\afterfirstobeyedline\relax}}%
+         \doifnot\@@rgoption\v!packed{\global\let\afterfirstobeyedline\relax}}}%
    \def\obeyedline
      {\par
-      \afterfirstobeyedline
       \futurelet\next\dobetweenthelines}%
    \activatespacehandler\@@rgspace
    \GotoPar}
@@ -4043,10 +4128,13 @@
    \@@rgafter}
 
 \def\dobetweenthelines
-  {\doifmeaningelse\next\obeyedline\@@rginbetween\donothing}
+  {\doifmeaningelse\next\obeyedline
+    {\@@rginbetween}
+    {\afterfirstobeyedline}}
 
 \setuplines
-  [\c!before=\blank,
+  [\c!option=,
+   \c!before=\blank,
    \c!after=\blank,
    \c!inbetween=\blank,
    \c!indenting=\v!no,

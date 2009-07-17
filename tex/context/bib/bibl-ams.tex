@@ -282,30 +282,30 @@
 }
 
 \setuppublicationlayout[incollection]{%
-   \insertartauthors{}{}{\insertthekey{}{, }{}}%
-%   \insertarttitle{\bgroup }{\egroup. }{}%
-   \inserttitle
-    {, in %
-    \bgroup\it}%
-    {\egroup 
-     \inserteditors{, edited by }%
-        {}%
-        {}
-         \insertseries
-              {\insertvolume{, number }{~in }{ }}%
-              {}%
-              {}%
-         \insertchap{\unskip, }{ }{ }%
-         \insertpubyear{(%
-           \insertpublisher{}%{, }%{}%
-          }{)\insertEdition{, }{ ed. }{}}{}%
-         \insertpages{\unskip, p.~}{. }{\unskip. }% 
-        }%
-        {In \insertcrossref{}{}{}%
-         \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, p.~}{. }{\unskip. }% 
-        }%
-   \insertNote{ }{.}{}%
+  \insertartauthors{}{}{\insertthekey{}{, }{}}%
+  \insertarttitle{, \bgroup }{\egroup}{}%
+  \inserttitle
+   {, in %
+   \bgroup\it}%
+   {\egroup
+    \inserteditors{, edited by }%
+       {}%
+       {}
+        \insertseries
+             {\insertvolume{, number }{~in }{ }}%
+             {}%
+             {}%
+        \insertchap{\unskip, }{ }{ }%
+        \insertpubyear{(%
+          \insertpublisher{}%{, }%{}%
+         }{)\insertEdition{, }{ ed. }{}}{}%
+        \insertpages{\unskip, p.~}{. }{\unskip. }%
+       }%
+       {In \insertcrossref{}{}{}%
+        \insertchap{\unskip, }{ }{ }%
+        \insertpages{\unskip, p.~}{. }{\unskip. }%
+       }%
+  \insertNote{ }{.}{}%
 }
 
 \setuppublicationlayout[inproceedings]{%

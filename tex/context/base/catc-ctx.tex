@@ -205,3 +205,46 @@
 \let\xmlcatcodes        \xmlcatcodesn
 
 \endinput
+
+% under consideration:
+%
+% \newcatcodetable\txtcatcodes
+%
+% \startcatcodetable \txtcatcodes
+%     \catcode`\^^I = 10
+%     \catcode`\^^M =  5
+%     \catcode`\^^L =  5
+%     \catcode`\    = 10
+%     \catcode`\\   =  0
+%     \catcode`\{   =  1
+%     \catcode`\}   =  2
+% \stopcatcodetable
+%
+% \newcount\relaxedcatcodedepth
+%
+% \def\startrelaxedcatcodes
+%   {\global\chardef\relaxedcatcodeparent\catcodetable
+%    \global\advance\relaxedcatcodedepth\plusone
+%    \nonknuthmode\setcatcodetable\txtcatcodes}
+%
+% \def\stoprelaxedcatcodes
+%   {\ifcase\relaxedcatcodedepth
+%      % error
+%    \or
+%      \setcatcodetable\relaxedcatcodeparent
+%      \global\relaxedcatcodedepth\zerocount
+%    \else
+%      \global\advance\relaxedcatcodedepth\minusone
+%      \setcatcodetable\txtcatcodes
+%    \fi}
+%
+% \starttext
+%
+% \startrelaxedcatcodes
+%     \startcomment test \stopcomment
+%     test $ test 10% whatever|test \mathematics{x^2=1}
+% \stoprelaxedcatcodes
+%
+% $x^2=1$
+%
+% \stoptext

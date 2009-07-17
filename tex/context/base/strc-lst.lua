@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 -- shared cache [we can use a fast and stupid serializer]
 
 local format, tonumber = string.format, tonumber
-local texsprint, texprint, texwrite, count = tex.sprint, tex.print, tex.write, tex.count
+local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write, tex.count
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -40,7 +40,7 @@ local function initializer()
     -- create a cross reference between internal references
     -- and list entries
     local collected = lists.collected
-    local internals = lists.internals
+    local internals = jobreferences.internals
     local ordered   = lists.ordered
     for i=1,#collected do
         local c = collected[i]
@@ -105,7 +105,7 @@ function lists.enhance(n)
         -- save in the right order (happen sat shipout)
         lists.tobesaved[#lists.tobesaved+1] = l
         -- default enhancer (cross referencing)
-        l.references.realpage = count[0]
+        l.references.realpage = texcount.realpageno
         -- specific enhancer (kind of obsolete)
         local kind = l.metadata.kind
         local enhancer = kind and lists.enhancers[kind]
@@ -240,7 +240,8 @@ local function filter_collected(names, criterium, number, collected)
                     local cnumbers = sectionnumber.numbers
                     local metadata = v.metadata
                     if cnumbers then
-                        if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth and cnumbers[depth] == number then
+--                      if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth and cnumbers[depth] == number then
+                        if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth and (number == 0 or cnumbers[depth] == number) then
                             result[#result+1] = v
                         end
                     end
@@ -272,7 +273,7 @@ function lists.analyze(...)
     lists.result = lists.filter(...)
 end
 
-function lists.userdata(name,r,tag)
+function lists.userdata(name,r,tag) -- to tex
     local str = lists.result[r]
     str = str and str.userdata
     str = str and str[tag]
@@ -281,7 +282,7 @@ function lists.userdata(name,r,tag)
     end
 end
 
-function lists.uservalue(name,r,tag,default)
+function lists.uservalue(name,r,tag,default) -- to lua
     local str = lists.result[r]
     str = str and str.userdata
     str = str and str[tag]
@@ -311,7 +312,7 @@ function lists.title(name,n,tag) -- tag becomes obsolete
     if data then
         local titledata = data.titledata
         if titledata then
-            texsprint(ctxcatcodes,titledata[tag] or titledata.title or "")
+            texsprint(ctxcatcodes,titledata[tag] or titledata.list or titledata.title or "")
         end
     end
 end

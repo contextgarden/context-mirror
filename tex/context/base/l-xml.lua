@@ -457,7 +457,7 @@ can speed up things a bit. The second argument is not to be used!</p>
 
 do
 
-    function copy(old,tables)
+    local function copy(old,tables)
         if old then
             tables = tables or { }
             local new = { }

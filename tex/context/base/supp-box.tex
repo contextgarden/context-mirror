@@ -210,8 +210,7 @@
    \if#1b\nextboxdp\zeropoint\fi\fi\fi\fi\fi}
 
 \def\finsm@sh % redefined plain macro
-  {\dowithnextbox
-     {\@EA\handletokens\@@smash\with\makesm@sh\flushnextbox}\normalhbox}
+  {\dowithnextbox{\@EA\handletokens\@@smash\with\makesm@sh\flushnextbox}\normalhbox}
 
 %D \starttabulate[|l|l|]
 %D \NC w   \NC \ruledhbox{\smash  [w]{This is some great smashing, isn't it?}} \NC \NR
@@ -300,7 +299,7 @@
 %D number.
 
 \def\getboxheight#1\of#2\box#3%
-  {\def\next{#1\ht\registercount\advance#1\dp\registercount}%
+  {\def\next{#1\dimexpr\ht\registercount+\dp\registercount\relax}%
    \afterassignment\next\registercount=#3}
 
 %D For a long time the following three macros were part of
@@ -351,46 +350,92 @@
 \newcount\noflines
 \newdimen\noflinesheight
 
-\def\getnoflines       {\xdogetnoflines\plusone  } % compensated
-\def\getroundednoflines{\xdogetnoflines\plustwo  } % rounded
-\def\getrawnoflines    {\xdogetnoflines\plusthree} % truncated
+% \def\getnoflines       {\xdogetnoflines\plusone  } % compensated
+% \def\getroundednoflines{\xdogetnoflines\plustwo  } % rounded
+% \def\getrawnoflines    {\xdogetnoflines\plusthree} % truncated
+%
+% \def\xdogetnoflines#1#2%
+%   {\noflinesheight#2\relax
+%    \ifzeropt\noflinesheight
+%      \noflines\zerocount
+%    \else\ifdim\noflinesheight>\zeropoint
+%      \ifcase#1\or
+%        \advance\noflinesheight-\roundingeps
+%        \divide\noflinesheight\openlineheight
+%        \noflines\noflinesheight
+%        \advance\noflines\plusone
+%      \or
+%        \advance\noflinesheight\roundingeps
+%        \divide\noflinesheight\openlineheight
+%        \noflines\noflinesheight
+%      \or
+%        \advance\noflinesheight\roundingeps
+%        \advance\noflinesheight.5\openlineheight
+%        \divide\noflinesheight\openlineheight
+%        \noflines\noflinesheight
+%      \fi
+%    \else
+%      \ifcase#1\or
+%        \advance\noflinesheight\roundingeps
+%        \divide\noflinesheight\openlineheight
+%        \noflines\noflinesheight
+%        \advance\noflines\minusone
+%      \or
+%        \advance\noflinesheight-\roundingeps
+%        \divide\noflinesheight\openlineheight
+%        \noflines\noflinesheight
+%      \or
+%        \advance\noflinesheight-\roundingeps
+%        \advance\noflinesheight-.5\openlineheight
+%        \divide\noflinesheight\openlineheight
+%        \noflines\noflinesheight
+%      \fi
+%    \fi\fi}
 
-\def\xdogetnoflines#1#2%
-  {\noflinesheight#2\relax
+\def\getnoflines#1%
+  {\noflinesheight#1\relax
    \ifzeropt\noflinesheight
      \noflines\zerocount
-   \else\ifdim#2>\zeropoint
-     \ifcase#1\or
-       \advance\noflinesheight-\roundingeps
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-       \advance\noflines\plusone
-     \or
-       \advance\noflinesheight\roundingeps
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-     \or
-       \advance\noflinesheight\roundingeps
-       \advance\noflinesheight.5\openlineheight
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-     \fi
+   \else\ifdim\noflinesheight>\zeropoint
+     \advance\noflinesheight-\roundingeps
+     \divide\noflinesheight\openlineheight
+     \noflines\noflinesheight
+     \advance\noflines\plusone
    \else
-     \ifcase#1\or
-       \advance\noflinesheight\roundingeps
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-       \advance\noflines\minusone
-     \or
-       \advance\noflinesheight-\roundingeps
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-     \or
-       \advance\noflinesheight-\roundingeps
-       \advance\noflinesheight-.5\openlineheight
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-     \fi
+     \advance\noflinesheight\roundingeps
+     \divide\noflinesheight\openlineheight
+     \noflines\noflinesheight
+     \advance\noflines\minusone
+   \fi\fi}
+
+\def\getroundednoflines#1%
+  {\noflinesheight#1\relax
+   \ifzeropt\noflinesheight
+     \noflines\zerocount
+   \else\ifdim\noflinesheight>\zeropoint
+     \advance\noflinesheight\roundingeps
+     \divide\noflinesheight\openlineheight
+     \noflines\noflinesheight
+   \else
+     \advance\noflinesheight-\roundingeps
+     \divide\noflinesheight\openlineheight
+     \noflines\noflinesheight
+   \fi\fi}
+
+\def\getrawnoflines#1%
+  {\noflinesheight#1\relax
+   \ifzeropt\noflinesheight
+     \noflines\zerocount
+   \else\ifdim\noflinesheight>\zeropoint
+     \advance\noflinesheight\roundingeps
+     \advance\noflinesheight.5\openlineheight
+     \divide\noflinesheight\openlineheight
+     \noflines\noflinesheight
+   \else
+     \advance\noflinesheight-\roundingeps
+     \advance\noflinesheight-.5\openlineheight
+     \divide\noflinesheight\openlineheight
+     \noflines\noflinesheight
    \fi\fi}
 
 %D Let's proof that it works:
@@ -430,7 +475,7 @@
 %D \determinenoflines{\definedfont[Sans at 40pt]test\\test}
 %D \stoptyping
 
-\def\determinenoflines
+\def\determinenoflines % can be mkiv'd
   {\bgroup
    \forgetall
    \let\crlf\endgraf
@@ -515,6 +560,14 @@
 
 \long\def\dowithnextbox#1%
   {\long\def\dodowithnextbox{#1}%
+   \afterassignment\dododowithnextbox
+   \setbox\nextbox}
+
+\def\dododowithnextbox
+  {\aftergroup\dodowithnextbox}
+
+\long\def\dowithnextboxcs#1%
+  {\let\dodowithnextbox#1%
    \afterassignment\dododowithnextbox
    \setbox\nextbox}
 
@@ -619,14 +672,13 @@
 %D Some well known friends, but we implement them our own
 %D way. We want the macros to work in both math and text mode.
 
-\def\dorlap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-   {\flushnextbox\normalhss}\endgroup}\normalhbox}
+\def\dodorlap{\normalhbox to \zeropoint{\flushnextbox\normalhss}\endgroup}
+\def\dodollap{\normalhbox to \zeropoint{\normalhss\flushnextbox}\endgroup}
+\def\dodoclap{\normalhbox to \zeropoint{\normalhss\flushnextbox\normalhss}\endgroup}
 
-\def\dollap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-   {\normalhss\flushnextbox}\endgroup}\normalhbox}
-
-\def\doclap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-   {\normalhss\flushnextbox\normalhss}\endgroup}\normalhbox}
+\def\dorlap{\begingroup\dowithnextboxcs\dodorlap\normalhbox}
+\def\dollap{\begingroup\dowithnextboxcs\dodollap\normalhbox}
+\def\doclap{\begingroup\dowithnextboxcs\dodoclap\normalhbox}
 
 \def\domathclap{\mathpalette\dodomathclap} \def\dodomathclap#1#2{\doclap{$\mathsurround\zeropoint#1#2$}}
 \def\domathllap{\mathpalette\dodomathllap} \def\dodomathllap#1#2{\dollap{$\mathsurround\zeropoint#1#2$}}
@@ -636,11 +688,11 @@
 \unexpanded\def\llap{\mathortext\domathllap\dollap}
 \unexpanded\def\clap{\mathortext\domathclap\doclap}
 
-\def\tlap{\begingroup\dowithnextbox{\normalvbox to \zeropoint
-  {\normalvss\flushnextbox}\endgroup}\normalvbox}
+\def\dodotlap{\normalvbox to \zeropoint{\normalvss\flushnextbox}\endgroup}
+\def\dodoblap{\normalvbox to \zeropoint{\flushnextbox\normalvss}\endgroup}
 
-\def\blap{\begingroup\dowithnextbox{\normalvbox to \zeropoint
-  {\flushnextbox\normalvss}\endgroup}\normalvbox}
+\def\tlap{\begingroup\dowithnextboxcs\dodotlap\normalvbox}
+\def\blap{\begingroup\dowithnextboxcs\dodoblap\normalvbox}
 
 %D \macros
 %D   {beginofshapebox,
@@ -1327,7 +1379,7 @@
   %\def\limitatetext##1##2##3{##1}% \def !
    \let\limitatetext\firstofthreearguments
    \fakecompoundhyphen % dangerous ! ! ! ! ! ! ! ! !
-   \dowithnextbox\dolimitatetext\normalhbox}
+   \dowithnextboxcs\dolimitatetext\normalhbox}
 
 \def\dolimitatetext#1#2%
   {\doifelsenothing{#1}
@@ -2389,13 +2441,17 @@
 %D
 %D A few more boxes.
 
-\def\lhbox{\dowithnextbox{\normalhbox to \hsize{\flushnextbox\hss    }}\normalhbox}
-\def\mhbox{\dowithnextbox{\normalhbox to \hsize{\hss\flushnextbox\hss}}\normalhbox}
-\def\rhbox{\dowithnextbox{\normalhbox to \hsize{\hss\flushnextbox    }}\normalhbox}
+\def\dodolhbox{\normalhbox to \hsize{\flushnextbox\hss    }}
+\def\dodomhbox{\normalhbox to \hsize{\hss\flushnextbox\hss}}
+\def\dodorhbox{\normalhbox to \hsize{\hss\flushnextbox    }}
 
-\let\lefthbox =\lhbox
-\let\midhbox  =\mhbox
-\let\righthbox=\rhbox
+\def\lhbox{\dowithnextboxcs\dodolhbox\normalhbox}
+\def\mhbox{\dowithnextboxcs\dodomhbox\normalhbox}
+\def\rhbox{\dowithnextboxcs\dodorhbox\normalhbox}
+
+\let\lefthbox \lhbox
+\let\midhbox  \mhbox
+\let\righthbox\rhbox
 
 %D \macros
 %D   {boxofsize}

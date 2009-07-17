@@ -37,12 +37,19 @@
    \fi
    \decrement \XMLfilenesting \relax}
 
-\def\enableXMLfiledata
-  {\prependtoks \enableXMLelements      \to \mainoutput % brrr, will change
-   \appendtoks  \startXMLreading        \to \everybeforeutilityread
-   \appendtoks  \stopXMLreading         \to \everyafterutilityread
-   \appendtoks  \forcefileexpansiontrue \to \everyenableXML
-   \let\enableXMLfiledata\relax}
+\ifnum\texengine=\luatexengine
+    \def\enableXMLfiledata
+      {\prependtoks \enableXMLelements      \to \mainoutput % brrr, will change
+       \appendtoks  \forcefileexpansiontrue \to \everyenableXML
+       \let\enableXMLfiledata\relax}
+\else
+    \def\enableXMLfiledata
+      {\prependtoks \enableXMLelements      \to \mainoutput % brrr, will change
+       \appendtoks  \startXMLreading        \to \everybeforeutilityread
+       \appendtoks  \stopXMLreading         \to \everyafterutilityread
+       \appendtoks  \forcefileexpansiontrue \to \everyenableXML
+       \let\enableXMLfiledata\relax}
+\fi
 
 \setupXMLprocessing[\c!state=\v!start]
 
@@ -52,26 +59,30 @@
 
 %D Here we overload the mark handler.
 
-\def\XMLexpanded#1%
-  {\bgroup
-   \honorunexpanded
-   \dontexpandencoding
-   \xdef\@@globalexpanded{\noexpand#1}% why \noexpand?
-   \egroup
-   \@@globalexpanded}
+\ifnum\texengine=\luatexengine \else
 
-\let\normalsetnormalmark\setnormalmark
+    \def\XMLexpanded#1%
+      {\bgroup
+       \honorunexpanded
+       \dontexpandencoding
+       \xdef\@@globalexpanded{\noexpand#1}% why \noexpand?
+       \egroup
+       \@@globalexpanded}
 
-\long\def\setnormalmark#1% overloaded
-  {\ifprocessingXML
-     \expandafter\setXMLexpandedmark
-   \else
-     \expandafter\normalsetnormalmark
-   \fi#1}
+    \let\normalsetnormalmark\setnormalmark
 
-\def\setXMLexpandedmark#1#2% using a tok prevents unwanted expansion in mark
-  {\XMLexpanded{\scratchtoks{\enableXMLelements#2}}%
-   \setxvalue{\@@crk\string#1}{\the\scratchtoks}%
-   \normalmarks#1{\the\scratchtoks}}
+    \long\def\setnormalmark#1% overloaded
+      {\ifprocessingXML
+         \expandafter\setXMLexpandedmark
+       \else
+         \expandafter\normalsetnormalmark
+       \fi#1}
+
+    \def\setXMLexpandedmark#1#2% using a tok prevents unwanted expansion in mark
+      {\XMLexpanded{\scratchtoks{\enableXMLelements#2}}%
+       \setxvalue{\@@crk\string#1}{\the\scratchtoks}%
+       \normalmarks#1{\the\scratchtoks}}
+
+\fi
 
 \protect \endinput

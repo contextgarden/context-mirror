@@ -6,7 +6,10 @@ if not modules then modules = { } end modules ['strc-reg'] = {
     license   = "see context related readme files"
 }
 
-local texwrite, texsprint, count, format, gmatch = tex.write, tex.sprint, tex.count, string.format, string.gmatch
+local next, type = next, type
+local texwrite, texsprint, texcount = tex.write, tex.sprint, tex.count
+local format, gmatch = string.format, string.gmatch
+local utfchar = utf.char
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -118,12 +121,16 @@ local function filter_collected(names,criterium,number,collected,prevmode)
         local number = tonumber(number) or 0
         for i=1,#collected do
             local v = collected[i]
-            local sectionnumber = jobsections.collected[v.references.section]
-            if sectionnumber then
-                local cnumbers = sectionnumber.numbers
-                if (all or hash[v.metadata.name]) and #cnumbers >= depth then -- was >
-                    if cnumbers[depth] == number then
-                        result[#result+1] = v
+            local r = v.references
+            if r then
+                local sectionnumber = jobsections.collected[r.section]
+                if sectionnumber then
+                    local metadata = v.metadata
+                    local cnumbers = sectionnumber.numbers
+                    if cnumbers then
+                        if (all or hash[metadata.name or false]) and #cnumbers >= depth and (number == 0 or cnumbers[depth] == number) then
+                            result[#result+1] = v
+                        end
                     end
                 end
             end
@@ -146,6 +153,20 @@ local tobesaved, collected = jobregisters.tobesaved, jobregisters.collected
 
 local function initializer()
     tobesaved, collected = jobregisters.tobesaved, jobregisters.collected
+    local internals = jobreferences.internals
+    for name, list in next, collected do
+        local entries = list.entries
+        for e=1,#entries do
+            local entry = entries[e]
+            local r = entry.references
+            if r then
+                local internal = r and r.internal
+                if internal then
+                    internals[internal] = entry
+                end
+            end
+        end
+    end
 end
 
 job.register('jobregisters.collected', jobregisters.tobesaved, initializer)
@@ -170,34 +191,68 @@ jobregisters.define = allocate
 
 local entrysplitter = lpeg.Ct(lpeg.splitat('+'))
 
-function jobregisters.store(rawdata)
-    local data = allocate(rawdata.metadata.name).entries
+local tagged = { }
+
+local function preprocessentries(rawdata)
     local entries = rawdata.entries
-    local et = entrysplitter:match(entries[1]) -- alse &
-    local kt = entrysplitter:match(entries[2]) -- alse &
-    entries = { }
-    for k=1,#et do
-        entries[k] = { et[k] or "", kt[k] or "" }
+    if entries then
+        local et = entrysplitter:match(entries[1]) -- alse &
+        local kt = entrysplitter:match(entries[2]) -- alse &
+        entries = { }
+        for k=1,#et do
+            entries[k] = { et[k] or "", kt[k] or "" }
+        end
+        rawdata.list = entries
+        rawdata.entries = nil
+    else
+        rawdata.list = { "", "" } -- br
     end
-    rawdata.list = entries
-    rawdata.entries = nil
+end
+
+function jobregisters.store(rawdata) -- metadata, references, entries
+    local data = allocate(rawdata.metadata.name).entries
+    local references = rawdata.references
+    references.realpage = references.realpage or 0 -- just to be sure as it can be refered to
+    preprocessentries(rawdata)
     data[#data+1] = rawdata
+    local label = references.label
+    if label and label ~= "" then tagged[label] = #data end
     texwrite(#data)
 end
 
 function jobregisters.enhance(name,n)
     local r = tobesaved[name].entries[n]
     if r then
-        r.references.realpage = tex.count[0]
+        r.references.realpage = texcount.realpageno
     end
 end
 
-function jobregisters.extend(name,n,lastsection)
-    local r = tobesaved[name].entries[n]
-    if r then
-        r.references.lastrealpage = tex.count[0]
-        r.references.lastsection = lastsection
-
+function jobregisters.extend(name,tag,rawdata) -- maybe do lastsection internally
+    if type(tag) == "string" then
+        tag = tagged[tag]
+    end
+    if tag then
+        local r = tobesaved[name].entries[tag]
+        if r then
+            local rr = r.references
+            rr.lastrealpage = texcount.realpageno
+            rr.lastsection = structure.sections.currentid()
+            if rawdata then
+                preprocessentries(rawdata)
+                for k,v in pairs(rawdata) do
+                    if not r[k] then
+                        r[k] = v
+                    else
+                        local rk = r[k]
+                        for kk,vv in pairs(v) do
+                            if vv ~= "" then
+                                rk[kk] = vv
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -225,7 +280,10 @@ function jobregisters.compare(a,b)
         return -1
     elseif a.metadata.kind == 'entry' then -- e/f/t
         local page_a, page_b = a.references.realpage, b.references.realpage
-        if page_a < page_b then
+        if not page_a or not page_b then
+--~ print(table.serialize(a),table.serialize(b))
+            return 0
+        elseif page_a < page_b then
             return -1
         elseif page_a > page_b then
             return  1
@@ -248,13 +306,15 @@ function jobregisters.prepare(data)
         for i=1, #result do
             local entry, split = result[i], { }
             local list = entry.list
-            for l=1,#list do
-                local ll = list[l]
-                local key, word = ll[1], ll[2]
-                if key == "" then
-                    key = word
+            if list then
+                for l=1,#list do
+                    local ll = list[l]
+                    local word, key = ll[1], ll[2]
+                    if not key or key == "" then
+                        key = word
+                    end
+                    split[l] = splitter(strip(key))
                 end
-                split[l] = splitter(strip(key))
             end
             entry.split = split
         end
@@ -262,7 +322,7 @@ function jobregisters.prepare(data)
 end
 
 function jobregisters.sort(data,options)
-    sorters.sort(data.entries,jobregisters.compare)
+    sorters.sort(data.result,jobregisters.compare)
 end
 
 function jobregisters.unique(data,options)
@@ -298,23 +358,13 @@ function jobregisters.finalize(data,options)
     data.metadata.nofsorted = #result
     local split = { }
     -- maps character to index (order)
-    local se = sorters.entries[options.language or sorters.defaultlanguage] or sorters.entries[sorters.defaultlanguage]
     for k=1,#result do
         local v = result[k]
-        local entry, tag = v.split[1][1], ""
-        if se and se[entry] then
-            if type(se[entry]) == "number" then
-                entry = se[entry]
-            end
-            tag = se[entry]
-        else
-            entry = 0
-            tag = "unknown"
-        end
-        local s = split[entry]
+        local entry, tag = sorters.firstofsplit(v.split)
+        local s = split[tag] -- keeps track of change
         if not s then
             s = { tag = tag, data = { } }
-            split[entry] = s
+            split[tag] = s
         end
         s.data[#s.data+1] = v
     end
@@ -324,6 +374,7 @@ end
 function jobregisters.analysed(class,options)
     local data = collected[class]
     if data and data.entries then
+        sorters.language = options.language or sorters.defaultlanguage
         jobregisters.filter(data,options)   -- filter entries into results (criteria)
         jobregisters.prepare(data,options)  -- adds split table parallel to list table
         jobregisters.sort(data,options)     -- sorts results
@@ -346,18 +397,21 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
     local result = data.result
     -- todo ownnumber
     local function pagenumber(entry)
-        texsprint(ctxcatcodes,"\\registeronepage{")
+        local er = entry.references
+        texsprint(ctxcatcodes,format("\\registeronepage{%s}{%s}{",er.internal or 0,er.realpage or 0)) -- internal realpage content
         helpers.prefixpage(entry,prefixspec,pagespec)
         texsprint(ctxcatcodes,"}")
     end
     local function pagerange(f_entry,t_entry,is_last)
-        texsprint(ctxcatcodes,"\\registerpagerange{")
+        local er = f_entry.references
+        texsprint(ctxcatcodes,format("\\registerpagerange{%s}{%s}{",er.internal or 0,er.realpage or 0))
         helpers.prefixpage(f_entry,prefixspec,pagespec)
-        texsprint(ctxcatcodes,"}{")
+        local er = t_entry.references
+        texsprint(ctxcatcodes,format("}{%s}{%s}{",er.internal or 0,er.realpage or 0))
         if is_last then
-            helpers.prefixpage(t_entry,prefixspec,pagespec)
+            helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
         else
-            helpers.prefixlastpage(t_entry,prefixspec,pagespec)
+            helpers.prefixpage(t_entry,prefixspec,pagespec)
         end
         texsprint(ctxcatcodes,"}")
     end
@@ -424,7 +478,7 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
                             first, last, prev = nil, nil, nil
                         elseif not first then
                             first, prev = next, next
-                        elseif next.references.realpage - prev.references.realpage == 1 then
+                        elseif next.references.realpage - prev.references.realpage == 1 then -- 1 ?
                             last, prev = next, next
                         else
                             pages[#pages+1] = { first, last or first }
@@ -449,7 +503,7 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
                                 local first_last_pn     = first_last  .references.realpage
                                 local second_first_pn   = second_first.references.realpage
                                 local second_last_pn    = second_last .references.realpage
-                                local first_last_last   = first_last.references.lastrealpage
+                                local first_last_last   = first_last  .references.lastrealpage
                                 local second_first_last = second_first.references.lastrealpage
                                 if first_last_last then
                                     first_last_pn = first_last_last
@@ -550,7 +604,7 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
             elseif kind == 'see' then
                 -- maybe some day more words
                 texsprint(ctxcatcodes,"\\startregisterseewords")
-                texsprint(ctxcatcodes,format("\\registeroneword{%s}",entry.seeword.text))
+                texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
                 texsprint(ctxcatcodes,"\\stopregisterseewords")
             end
         end

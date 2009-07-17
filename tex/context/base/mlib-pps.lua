@@ -27,6 +27,7 @@ local cmyktogray = colors.cmyktogray  or function() return 0       end
 metapost               = metapost or { }
 metapost.specials      = metapost.specials or { }
 metapost.specials.data = metapost.specials.data or { }
+metapost.externals     = metapost.externals or { n = 0 }
 
 local data = metapost.specials.data
 
@@ -40,21 +41,25 @@ local colordata = { {}, {}, {}, {}, {} }
 --~         => rest             : r=123 g=n>10 b=whatever
 
 local nooutercolor        = "0 g 0 G"
-local nooutertransparency = "/Tr0 gs"
+local nooutertransparency = "/Tr0 gs" -- only when set
 local outercolormode      = 0
 local outercolor          = nooutercolor
 local outertransparency   = nooutertransparency
 local innercolor          = nooutercolor
 local innertransparency   = nooutertransparency
 
-function metapost.set_outer_color(mode,color,transparency)
+local pdfcolor, pdftransparency = lpdf.color, lpdf.transparency
+local registercolor, registerspotcolor = colors.register, colors.registerspotcolor
+local registertransparencies = transparencies.register
+
+function metapost.set_outer_color(mode,colormodel,colorattribute,transparencyattribute)
     -- has always to be called before conversion
     -- todo: transparency (not in the mood now)
     outercolormode = mode
     if mode == 1 or mode == 3 then
-        -- inherit from outer
-        outercolor        = color        or nooutercolor
-        outertransparency = transparency or nooutertransparency
+        -- inherit from outer (registered color)
+        outercolor        = pdfcolor(colormodel,colorattribute)    or nooutercolor
+        outertransparency = pdftransparency(transparencyattribute) or nooutertransparency
     elseif mode == 2 then
         -- stand alone
         outercolor        = ""
@@ -63,8 +68,8 @@ function metapost.set_outer_color(mode,color,transparency)
         outercolor        = nooutercolor
         outertransparency = nooutertransparency
     end
-    innercolor = outercolor
-    innertransparency = outertransparency
+    innercolor        = outercolor
+    innertransparency = outertransparency -- not yet used
 end
 
 local function checked_color_pair(color)
@@ -117,7 +122,12 @@ function metapost.specials.register(str) -- only colors
 --~     end
 end
 
-function metapost.colorhandler(cs, object, result, colorconverter)
+local function spotcolorconverter(parent, n, d, p)
+    registerspotcolor(parent)
+    return pdfcolor(colors.model,registercolor('color',nil,'spot',parent,n,d,p))
+end
+
+function metapost.colorhandler(cs, object, result, colorconverter) -- handles specials
     local cr = outercolor
     local what = round(cs[2]*10000)
     local data = colordata[what]
@@ -129,16 +139,14 @@ function metapost.colorhandler(cs, object, result, colorconverter)
     elseif what == 1 then
         result[#result+1], cr = colorconverter({ data[2], data[3], data[4], data[5] })
     elseif what == 2 then
-        ctx.registerspotcolor(data[2])
-        result[#result+1] = ctx.pdfcolor(colors.model,colors.register('color',nil,'spot',data[2],data[3],data[4],data[5]))
+        result[#result+1] = spotcolorconverter(data[2],data[3],data[4],data[5])
     else
         if what == 3 then
             result[#result+1], cr = colorconverter({ data[3], data[4], data[5]})
         elseif what == 4 then
             result[#result+1], cr = colorconverter({ data[3], data[4], data[5], data[6]})
         elseif what == 5 then
-            ctx.registerspotcolor(data[3])
-            result[#result+1] = ctx.pdfcolor(colors.model,colors.register('color',nil,'spot',data[3],data[4],data[5],data[6]))
+            result[#result+1] = spotcolorconverter(data[3],data[4],data[5],data[6])
         end
         object.prescript = "tr"
         object.postscript = data[1] .. "," .. data[2]
@@ -147,30 +155,28 @@ function metapost.colorhandler(cs, object, result, colorconverter)
     return object, cr
 end
 
-function metapost.colorspec(cs)
+function metapost.colorspec(cs) -- used for shades ... returns table (for checking) or string (spot)
     local what = round(cs[2]*10000)
     local data = colordata[what][round(cs[3]*10000)]
     if not data then
         return { 0 }
     elseif what == 1 then
-        return { data[2], data[3], data[4], data[5] }
+        return { tonumber(data[2]), tonumber(data[3]), tonumber(data[4]), tonumber(data[5]) }
     elseif what == 2 then
-        ctx.registerspotcolor(data[2])
-        return ctx.pdfcolor(colors.model,colors.register('color',nil,'spot',data[2],data[3],data[4],data[5]))
+        return spotcolorconverter(data[2],data[3],data[4],data[5])
     elseif what == 3 then
-        return { data[3], data[4], data[5] }
+        return { tonumber(data[3]), tonumber(data[4]), tonumber(data[5]) }
     elseif what == 4 then
-        return { data[3], data[4], data[5], data[6] }
+        return { tonumber(data[3]), tonumber(data[4]), tonumber(data[5]), tonumber(data[6]) }
     elseif what == 5 then
-        ctx.registerspotcolor(data[3])
-        return ctx.pdfcolor(colors.model,colors.register('color',nil,'spot',data[3],data[4],data[5],data[6]))
+        return spotcolorconverter(data[3],data[4],data[5],data[6])
     end
 end
 
 function metapost.specials.tr(specification,object,result)
     local a, t = match(specification,"^(.+),(.+)$")
     local before = a and t and function()
-        result[#result+1] = format("/Tr%s gs",transparencies.register('mp',a,t))
+        result[#result+1] = format("/Tr%s gs",registertransparencies('mp',a,t))
         return object, result
     end
     local after = before and function()
@@ -182,6 +188,7 @@ end
 
 local specificationsplitter = lpeg.Ct(lpeg.splitat(" "))
 local colorsplitter         = lpeg.Ct(lpeg.splitat(":"))
+local colorsplitter         = lpeg.Ct(lpeg.splitter(":",tonumber))
 
 -- Unfortunately we cannot use cmyk colors natively because there is no
 -- generic color allocation primitive ... it's just an rgbcolor color.. This
@@ -273,20 +280,12 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
     local cb = colorsplitter:match(t[8])
     if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
     if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
+    local name = format("MplSh%s",nofshades)
+    local domain = { tonumber(t[1]), tonumber(t[2]) }
+    local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[7]), tonumber(t[9]), tonumber(t[10]), tonumber(t[11]) }
     if type(ca) == "string" then
-        -- spot color, not supported, maybe at some point use the fallbacks
-        sprint(ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s %s %s}",
-            nofshades,
-            t[1], t[2], 0, 1, 1, "DeviceGray",
-            t[5], t[6], t[7], t[9], t[10], t[11]))
--- terrible hack, somehow does not work
---~ local a = ca:match("^([^ ]+)")
---~ local b = cb:match("^([^ ]+)")
---~ sprint(ctxcatcodes,format("\\xMPLIBcircularshade{%s}{%s %s}{%s}{%s}{%s}{%s}{%s %s %s %s %s %s}",
---~     nofshades,
---~     --~ t[1], t[2], a, b, 1, "DeviceN",
---~     0, 1, a, b, 1, "DeviceN",
---~     t[5], t[6], t[7], t[9], t[10], t[11]))
+        -- backend specific (will be renamed)
+        lpdf.circularshade(name,domain,{ 0 },{ 1 },1,"DeviceGray",coordinates)
     else
         if #ca > #cb then
             normalize(ca,cb)
@@ -307,10 +306,8 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
                 ca[1], ca[2], ca[3] = a, a, a
                 cb[1], cb[2], cb[3] = b, b, b
             end
-            sprint(ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f %.3f %.3f}{%.3f %.3f %.3f}{%s}{%s}{%s %s %s %s %s %s}",
-                nofshades,
-                t[1], t[2], ca[1], ca[2], ca[3], cb[1], cb[2], cb[3], 1, "DeviceRGB",
-                t[5], t[6], t[7], t[9], t[10], t[11]))
+            -- backend specific (will be renamed)
+            lpdf.circularshade(name,domain,ca,cb,1,"DeviceRGB",coordinates)
         elseif model == "cmyk" then
             if #ca == 3 then
                 ca[1], ca[2], ca[3], ca[4] = rgbtocmyk(ca[1],ca[2],ca[3])
@@ -319,10 +316,8 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
                 ca[1], ca[2], ca[3], ca[4] = 0, 0, 0, ca[1]
                 cb[1], cb[2], cb[3], ca[4] = 0, 0, 0, ca[1]
             end
-            sprint(ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f %.3f %.3f %.3f}{%.3f %.3f %.3f %.3f}{%s}{%s}{%s %s %s %s %s %s}",
-                nofshades,
-                t[1], t[2], ca[1], ca[2], ca[3], ca[4], cb[1], cb[2], cb[3], cb[4], 1, "DeviceCMYK",
-                t[5], t[6], t[7], t[9], t[10], t[11]))
+            -- backend specific (will be renamed)
+            lpdf.circularshade(name,domain,ca,cb,1,"DeviceCMYK",coordinates)
         else
             if #ca == 4 then
                 ca[1] = cmyktogray(ca[1],ca[2],ca[3],ca[4])
@@ -331,10 +326,8 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
                 ca[1] = rgbtogray(ca[1],ca[2],ca[3])
                 cb[1] = rgbtogray(cb[1],cb[2],cb[3])
             end
-            sprint(ctxcatcodes,format("\\MPLIBcircularshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s %s %s}",
-                nofshades,
-                t[1], t[2], ca[1], cb[1], 1, "DeviceGray",
-                t[5], t[6], t[7], t[9], t[10], t[11]))
+            -- backend specific (will be renamed)
+            lpdf.circularshade(name,domain,ca,cb,1,"DeviceGRAY",coordinates)
         end
     end
     local before = function()
@@ -342,7 +335,7 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
         return object, result
     end
     local after = function()
-        result[#result+1] = format("W n /MpSh%s sh Q", nofshades)
+        result[#result+1] = format("W n /%s sh Q", name)
         return object, result
     end
     object.color, object.type = nil, nil
@@ -359,12 +352,12 @@ function metapost.specials.ls(specification,object,result,flusher)
     local cb = colorsplitter:match(t[7])
     if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
     if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
+    local name = format("MpSh%s",nofshades)
+    local domain = { tonumber(t[1]), tonumber(t[2]) }
+    local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[7]), tonumber(t[9]) }
     if type(ca) == "string" then
-        -- spot color, not supported, maybe at some point use the fallbacks
-        sprint(ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s}",
-            nofshades,
-            t[1], t[2], 0, 1, 1, "DeviceGray",
-            t[5], t[6], t[8], t[9]))
+        -- backend specific (will be renamed)
+        lpdf.linearshade(name,domain,{ 0 },{ 1 },1,"DeviceGray",coordinates)
     else
         if #ca > #cb then
             normalize(ca,cb)
@@ -384,10 +377,8 @@ function metapost.specials.ls(specification,object,result,flusher)
                 ca[1], ca[2], ca[3] = a, a, a
                 cb[1], cb[2], cb[3] = b, b, b
             end
-            sprint(ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f %.3f %.3f}{%.3f %.3f %.3f}{%s}{%s}{%s %s %s %s}",
-                nofshades,
-                t[1], t[2], ca[1], ca[2], ca[3], cb[1], cb[2], cb[3], 1, "DeviceRGB",
-                t[5], t[6], t[8], t[9]))
+            -- backend specific (will be renamed)
+            lpdf.linearshade(name,domain,ca,cb,1,"DeviceRGB",coordinates)
         elseif model == "cmyk" then
             if #ca == 3 then
                 ca[1], ca[2], ca[3], ca[4] = rgbtocmyk(ca[1],ca[2],ca[3])
@@ -396,10 +387,8 @@ function metapost.specials.ls(specification,object,result,flusher)
                 ca[1], ca[2], ca[3], ca[4] = 0, 0, 0, ca[1]
                 cb[1], cb[2], cb[3], ca[4] = 0, 0, 0, ca[1]
             end
-            sprint(ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f %.3f %.3f %.3f}{%.3f %.3f %.3f %.3f}{%s}{%s}{%s %s %s %s}",
-                nofshades,
-                t[1], t[2], ca[1], ca[2], ca[3], ca[4], cb[1], cb[2], cb[3], cb[4], 1, "DeviceCMYK",
-                t[5], t[6], t[8], t[9]))
+            -- backend specific (will be renamed)
+            lpdf.linearshade(name,domain,ca,cb,1,"DeviceCMYK",coordinates)
         else
             if #ca == 4 then
                 ca[1] = cmyktogray(ca[1],ca[2],ca[3],ca[4])
@@ -408,10 +397,8 @@ function metapost.specials.ls(specification,object,result,flusher)
                 ca[1] = rgbtogray(ca[1],ca[2],ca[3])
                 cb[1] = rgbtogray(cb[1],cb[2],cb[3])
             end
-            sprint(ctxcatcodes,format("\\MPLIBlinearshade{%s}{%s %s}{%.3f}{%.3f}{%s}{%s}{%s %s %s %s}",
-                nofshades,
-                t[1], t[2], ca[1], cb[1], 1, "DeviceGray",
-                t[5], t[6], t[8], t[9]))
+            -- backend specific (will be renamed)
+            lpdf.linearshade(name,domain,ca,cb,1,"DeviceGRAY",coordinates)
         end
     end
     local before = function()
@@ -419,7 +406,7 @@ function metapost.specials.ls(specification,object,result,flusher)
         return object, result
     end
     local after = function()
-        result[#result+1] = format("W n /MpSh%s sh Q", nofshades)
+        result[#result+1] = format("W n /%s sh Q", name)
         return object, result
     end
     object.color, object.type = nil, nil
@@ -500,143 +487,144 @@ function metapost.specials.ts(specification,object,result,flusher)
     end
 end
 
+-- rather generic pdf, so use this elsewhere too it no longer pays
+-- off to distinguish between outline and fill (we now have both
+-- too, e.g. in arrows)
+
 metapost.reducetogray = true
 
+local models = { }
 
-function metapost.colorconverter() -- rather generic pdf, so use this elsewhere too
-    -- it no longer pays off to distinguish between outline and fill
-    --  (we now have both too, e.g. in arrows)
-    local model = colors.model
-    local reduce = metapost.reducetogray
-    if model == "all" then
-        return function(cr)
-            local n = #cr
-            if n == 0 then
-                return checked_color_pair()
-            elseif reduce then
-                if n == 1 then
-                    local s = cr[1]
-                    return checked_color_pair(format("%.3f g %.3f G",s,s))
-                elseif n == 3 then
-                    local r, g, b = cr[1], cr[2], cr[3]
-                    if r == g and g == b then
-                        return checked_color_pair(format("%.3f g %.3f G",r,r))
-                    else
-                        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
-                    end
-                else
-                    local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                    if c == m and m == y and y == 0 then
-                        k = 1 - k
-                        return checked_color_pair(format("%.3f g %.3f G",k,k))
-                    else
-                        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
-                    end
-                end
-            elseif n == 1 then
-                local s = cr[1]
-                return checked_color_pair(format("%.3f g %.3f G",s,s))
-            elseif n == 3 then
-                local r, g, b = cr[1], cr[2], cr[3]
-                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
-            else
-                local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
-            end
-        end
-    elseif model == "rgb" then
-        return function(cr)
-            local n = #cr
-            if n == 0 then
-                return checked_color_pair()
-            elseif reduce then
-                if n == 1 then
-                    local s = cr[1]
-                    checked_color_pair(format("%.3f g %.3f G",s,s))
-                elseif n == 3 then
-                    local r, g, b = cr[1], cr[2], cr[3]
-                    if r == g and g == b then
-                        return checked_color_pair(format("%.3f g %.3f G",r,r))
-                    else
-                        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
-                    end
-                else
-                    local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                    if c == m and m == y and y == 0 then
-                        k = 1 - k
-                        return checked_color_pair(format("%.3f g %.3f G",k,k))
-                    else
-                        local r, g, b = cmyktorgb(c,m,y,k)
-                        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
-                    end
-                end
-            elseif n == 1 then
-                local s = cr[1]
-                return checked_color_pair(format("%.3f g %.3f G",s,s))
-            else
-                local r, g, b
-                if n == 3 then
-                    r, g, b = cmyktorgb(cr[1],cr[2],cr[3],cr[4])
-                else
-                    r, g, b = cr[1], cr[2], cr[3]
-                end
-                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
-            end
-        end
-    elseif model == "cmyk" then
-        return function(cr)
-            local n = #cr
-            if n == 0 then
-                return checked_color_pair()
-            elseif reduce then
-                if n == 1 then
-                    local s = cr[1]
-                    return checked_color_pair(format("%.3f g %.3f G",s,s))
-                elseif n == 3 then
-                    local r, g, b = cr[1], cr[2], cr[3]
-                    if r == g and g == b then
-                        return checked_color_pair(format("%.3f g %.3f G",r,r))
-                    else
-                        local c, m, y, k = rgbtocmyk(r,g,b)
-                        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
-                    end
-                else
-                    local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                    if c == m and m == y and y == 0 then
-                        k = 1 - k
-                        return checked_color_pair(format("%.3f g %.3f G",k,k))
-                    else
-                        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
-                    end
-                end
-            elseif n == 1 then
-                local s = cr[1]
-                return checked_color_pair(format("%.3f g %.3f G",s,s))
-            else
-                local c, m, y, k
-                if n == 3 then
-                    c, m, y, k = rgbtocmyk(cr[1],cr[2],cr[3])
-                else
-                    c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-                end
-                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
-            end
-        end
-    else
-        return function(cr)
-            local n, s = #cr, 0
-            if n == 0 then
-                return checked_color_pair()
-            elseif n == 4 then
-                s = cmyktogray(cr[1],cr[2],cr[3],cr[4])
-            elseif n == 3 then
-                s = rgbtogray(cr[1],cr[2],cr[3])
-            else
-                s = cr[1]
-            end
+function models.all(cr)
+    local n = #cr
+    if n == 0 then
+        return checked_color_pair()
+    elseif metapost.reducetogray then
+        if n == 1 then
+            local s = cr[1]
             return checked_color_pair(format("%.3f g %.3f G",s,s))
+        elseif n == 3 then
+            local r, g, b = cr[1], cr[2], cr[3]
+            if r == g and g == b then
+                return checked_color_pair(format("%.3f g %.3f G",r,r))
+            else
+                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+            end
+        else
+            local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            if c == m and m == y and y == 0 then
+                k = 1 - k
+                return checked_color_pair(format("%.3f g %.3f G",k,k))
+            else
+                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+            end
         end
+    elseif n == 1 then
+        local s = cr[1]
+        return checked_color_pair(format("%.3f g %.3f G",s,s))
+    elseif n == 3 then
+        local r, g, b = cr[1], cr[2], cr[3]
+        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+    else
+        local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
     end
+end
+
+function models.rgb(cr)
+    local n = #cr
+    if n == 0 then
+        return checked_color_pair()
+    elseif metapost.reducetogray then
+        if n == 1 then
+            local s = cr[1]
+            checked_color_pair(format("%.3f g %.3f G",s,s))
+        elseif n == 3 then
+            local r, g, b = cr[1], cr[2], cr[3]
+            if r == g and g == b then
+                return checked_color_pair(format("%.3f g %.3f G",r,r))
+            else
+                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+            end
+        else
+            local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            if c == m and m == y and y == 0 then
+                k = 1 - k
+                return checked_color_pair(format("%.3f g %.3f G",k,k))
+            else
+                local r, g, b = cmyktorgb(c,m,y,k)
+                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+            end
+        end
+    elseif n == 1 then
+        local s = cr[1]
+        return checked_color_pair(format("%.3f g %.3f G",s,s))
+    else
+        local r, g, b
+        if n == 3 then
+            r, g, b = cmyktorgb(cr[1],cr[2],cr[3],cr[4])
+        else
+            r, g, b = cr[1], cr[2], cr[3]
+        end
+        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+    end
+end
+
+function models.cmyk(cr)
+    local n = #cr
+    if n == 0 then
+        return checked_color_pair()
+    elseif metapost.reducetogray then
+        if n == 1 then
+            local s = cr[1]
+            return checked_color_pair(format("%.3f g %.3f G",s,s))
+        elseif n == 3 then
+            local r, g, b = cr[1], cr[2], cr[3]
+            if r == g and g == b then
+                return checked_color_pair(format("%.3f g %.3f G",r,r))
+            else
+                local c, m, y, k = rgbtocmyk(r,g,b)
+                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+            end
+        else
+            local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            if c == m and m == y and y == 0 then
+                k = 1 - k
+                return checked_color_pair(format("%.3f g %.3f G",k,k))
+            else
+                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+            end
+        end
+    elseif n == 1 then
+        local s = cr[1]
+        return checked_color_pair(format("%.3f g %.3f G",s,s))
+    else
+        local c, m, y, k
+        if n == 3 then
+            c, m, y, k = rgbtocmyk(cr[1],cr[2],cr[3])
+        else
+            c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+        end
+        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+    end
+end
+
+function models.gray(cr)
+    local n, s = #cr, 0
+    if n == 0 then
+        return checked_color_pair()
+    elseif n == 4 then
+        s = cmyktogray(cr[1],cr[2],cr[3],cr[4])
+    elseif n == 3 then
+        s = rgbtogray(cr[1],cr[2],cr[3])
+    else
+        s = cr[1]
+    end
+    return checked_color_pair(format("%.3f g %.3f G",s,s))
+end
+
+function metapost.colorconverter()
+    return models[colors.model] or gray
 end
 
 do
@@ -829,6 +817,9 @@ end
 
 function metapost.intermediate.actions.makempy()
     if #graphics > 0 then
+        local externals = metapost.externals
+        externals.n = externals.n + 1
+        statistics.starttiming(externals)
         local mpofile = tex.jobname .. "-mpgraph"
         local mpyfile = file.replacesuffix(mpofile,"mpy")
         local pdffile = file.replacesuffix(mpofile,"pdf")
@@ -846,6 +837,7 @@ function metapost.intermediate.actions.makempy()
                 io.savedata(mpyfile,concat(result,""))
             end
         end
-        graphics = { }
+        statistics.stoptiming(externals)
+        graphics = { } -- ?
     end
 end

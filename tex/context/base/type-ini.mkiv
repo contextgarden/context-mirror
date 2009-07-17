@@ -201,75 +201,6 @@
      \setfalse\quittingtypescript
    \fi}
 
-% % not faster, unless maybe toks
-%
-% \newcount\nofloadedtypescripts
-%
-% \def\startloadedtypescript
-%   {\dotripleempty\dostartloadedtypescript}
-%
-% \let\stoploadedtypescript\relax
-%
-% \long\def\dostartloadedtypescript[#1][#2][#3]#4\stoptypescript
-%   {\global\advance\nofloadedtypescripts\plusone
-%    \long\setgvalue{\??ts=>\the\nofloadedtypescripts}{#4}%
-%    \edef\temp%
-%      {\iffirstargument [#1]\fi
-%       \ifsecondargument[#2]\fi
-%       \ifthirdargument [#3]\fi
-%       \noexpand\csname\??ts=>\the\nofloadedtypescripts\noexpand\endcsname}%
-%    \global\loadedtypescripts\@EA\@EA\@EA{\@EA\the\@EA\loadedtypescripts\@EA\starttypescript\temp\stoptypescript}}
-%
-% \def\startloadedtypescriptcollection
-%   {\dosingleempty\dostartloadedtypescriptcollection}
-%
-% \def\dostartloadedtypescriptcollection[#1]{}
-% \def\stoploadedtypescriptcollection       {}
-%
-% \def\dododousetypescript#1%
-%   {\setfalse\quittingtypescript
-%    \pushmacro\currenttypefile
-%    \def\currenttypefile{#1}%
-%    \ifconditional\preloadingtypescripts
-%      % load files once, and use saved data
-%      \def\loadedtypescripts{\csname\??ts:\c!file:#1\endcsname}%
-%      \@EAEAEA\ifx\loadedtypescripts\relax
-%        \@EAEAEA\newtoks\loadedtypescripts
-%        \bgroup
-%        %
-%        \let\starttypescript          \startloadedtypescript
-%        \let\stoptypescript           \stoploadedtypescript
-%        \let\starttypescriptcollection\startloadedtypescriptcollection
-%        \let\stoptypescriptcollection \stoploadedtypescriptcollection
-%        %
-%        \startreadingfile
-%        \pushendofline
-%        \unprotect
-%        \readfile\currenttypefile\donothing\donothing
-%        \protect
-%        \popendofline
-%        \stopreadingfile
-%        \egroup
-%      \fi
-%      %\message{[\space\currenttypefile}%
-%      \the\loadedtypescripts
-%      %\message{\ifconditional\quittingtypescript quit\space\fi]}%
-%    \else
-%      % process files each time
-%      \startreadingfile
-%      \pushendofline
-%      \unprotect
-%      \readfile\currenttypefile\donothing\donothing
-%      \protect
-%      \popendofline
-%      \stopreadingfile
-%    \fi
-%    \popmacro\currenttypefile
-%    \ifconditional\quittingtypescript
-%      \quitcommalist
-%      \setfalse\quittingtypescript
-%    \fi}
-
 \def\usetypescriptonce
   {\dotripleempty\dousetypescriptonce}
 
@@ -486,12 +417,9 @@
 \def\dodoloadmapline[#1][#2]%
   {\loadallfontmapfiles % ! ! !
    \ifsecondargument
-     \immediatewriteutilitycommand{\usedmapline{#1}{#2}}%
      \doloadmapline{#1}{#2}% special
    \else
-     \loadmapline[=][#1]%
-     %\immediatewriteutilitycommand{\usedmapline{=}{#2}}%
-     %\doloadmapline{=}{#1}% special
+     \doloadmapline{=}{#1}% special
    \fi}
 
 % since this is driver dependent, and since we may set map files
@@ -506,16 +434,16 @@
 % hm, the timing of when pdftex needs the map file info keeps changing;
 % it's really time to move to map line support
 
-% \appendtoks \loadallfontmapfiles \to \everyPDFximage
-% \appendtoks \loadallfontmapfiles \to \everystarttext
-% \appendtoks \loadallfontmapfiles \to \everybeforepagebody
+% \everybeforeshipout \expandafter % will move as it is backend dependent
+%   {\expandafter\appendtoks
+%    \expandafter\loadallfontmapfiles
+%    \expandafter\to
+%    \expandafter\pageboundsettings
+%    \the\everybeforeshipout}
 
-\everybeforeshipout \expandafter
-  {\expandafter\appendtoks
-   \expandafter\loadallfontmapfiles
-   \expandafter\to
-   \expandafter\pageboundsettings
-   \the\everybeforeshipout}
+\appendtoks
+   \loadallfontmapfiles
+\to \pageboundsettings
 
 \newif\ifautoloadmapfiles
 
@@ -577,13 +505,9 @@
 
 % #1=main #2=rm #3=serif #4=fontname #5=size #6=settings
 
-\def\typefaceencoding{\defaultencoding}
-
 % we can use \rawgetparameters or \rawgeteparameters
 
-\ifx\mkdodefinetypeface\undefined
-    \let\mkdodefinetypeface\gobblefivearguments
-\fi
+\def\typefaceencoding{\defaultencoding}
 
 \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
   {\dododefinetypeface[#1][#2]%
@@ -600,9 +524,14 @@
      \letvalue{\fontclass\s!fallbacks}\@@tsfallbacks % new per 12/10/2008
      \saverelativefontsize{#2}\relativefontsize % fall back
      \savemathtextstyle\@@tstext % math text style (new per 28/4/2006)
-     \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4] / \typefaceencoding}\fi
-%    \usetypescript[#3,\t!map][#4][\t!name,\t!default,\typefaceencoding,\t!special]% map is needed for backward cmp
-     \usetypescript[#3][#4][\t!name,\t!default,\typefaceencoding]% typefaceencoding=empty forces [#3][#4]
+     \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
+     % we need to keep typefaceencoding for a while as it can still be used to filter
+     % old scripts as we just strip the texnansi- prefix
+     \ifx\typefaceencoding\t!default
+       \usetypescript[#3][#4][\t!name,\t!default]% will be default some day
+     \else
+       \usetypescript[#3][#4][\t!name,\t!default,\typefaceencoding]%
+     \fi
      \usetypescript[#3][#5][\t!size]%
      \popmacro\fontclass
      \popmacro\typefaceencoding
@@ -612,6 +541,32 @@
    \else\ifthirdargument
      \getparameters[\??tf#1#2][#3]%
    \fi\fi\fi}
+
+% will become (once we've adapted the typescripts):
+%
+% \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
+%   {\dododefinetypeface[#1][#2]%
+%    \iffifthargument % sixth is optional
+%      % we need to expand since in #6 there can be a \typescripttwo
+%      \normalexpanded{\noexpand\getparameters[\??ts][\s!rscale=\plusone,\s!features=,\s!fallbacks=,\s!text=,#6]}% \geteparameters
+%      \pushmacro\relativefontsize
+%      \pushmacro\fontclass
+%      \let\relativefontsize\@@tsrscale
+%      \setcurrentfontclass{#1}%
+%      \letvalue{\fontclass\s!features }\@@tsfeatures  % new per 16/6/2007
+%      \letvalue{\fontclass\s!fallbacks}\@@tsfallbacks % new per 12/10/2008
+%      \saverelativefontsize{#2}\relativefontsize % fall back
+%      \savemathtextstyle\@@tstext % math text style (new per 28/4/2006)
+%      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
+%      \usetypescript[#3][#4][\t!name,\t!default,\empty]% brr, this empty, no encoding
+%      \usetypescript[#3][#5][\t!size]%
+%      \popmacro\fontclass
+%      \popmacro\relativefontsize
+%    \else\iffourthargument
+%      \definetypeface[#1][#2][#3][#4][\s!default]%
+%    \else\ifthirdargument
+%      \getparameters[\??tf#1#2][#3]%
+%    \fi\fi\fi}
 
 \def\dododefinetypeface[#1][#2]% saveguard against redefinition
   {\doifsomething{#1}
@@ -639,11 +594,11 @@
      #1[#4]%
    \else\ifx\fontclass\empty
      #1[\c!rm]%
+   \else\ifcsname\??tf\fontclass\s!default\endcsname
+     #1[\csname\??tf\fontclass\s!default\endcsname]%
    \else
-     \doifdefinedelse{\??tf\fontclass\s!default}
-       {#1[\getvalue{\??tf\fontclass\s!default}]}
-       {#1[\c!rm]}%
-   \fi \fi
+     #1[\c!rm]%
+   \fi \fi \fi
    \ifmmode\mr\else\tf\fi} % needed ?
 
 \def\usetypefile[#1]% recurses on path !
@@ -700,6 +655,6 @@
      \the\scratchtoks
    \fi}
 
-\fetchruntimecommand \typetypescript {\f!typeprefix\s!run}
+\fetchruntimecommand \typetypescript {\f!typeprefix\s!run.mkiv} % will become module
 
 \protect \endinput

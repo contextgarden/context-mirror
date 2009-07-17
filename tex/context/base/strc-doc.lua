@@ -181,64 +181,93 @@ function sections.getcurrentlevel()
     texwrite(data.depth)
 end
 
-function sections.nextlevel()
-    local depth = data.depth + 1
-    data.depth = depth
-    return depth
-end
-
-function sections.prevlevel()
-    local numbers, ownnumbers, status, depth = data.numbers, data.ownnumbers, data.status, data.depth
-    local resetter = sets.getall("structure:resets",data.block,status[depth].resets or "")
-    local rd = resetter and resetter[depth]
-    numbers[depth] = (rd and rd > 0 and rd < depth and numbers[depth]) or 0
-    status[depth] = nil
-    depth = depth - 1
-    data.depth = depth
-    return depth
-end
-
-function sections.somelevel(t)
-    local numbers, ownnumbers, status, depth = data.numbers, data.ownnumbers, data.status, data.depth
-    local d = tonumber(levelmap[t.metadata.name] or (depth > 0 and depth) or 1)
-    local resetter = sets.getall("structure:resets",data.block,(t and t.resets) or "")
-    local previous = { }
-    if d > depth then
-        local rd = resetter and resetter[i]
-        for i=depth+1,d do
-            numbers[i] = (rd and rd[i] and rd[i] > 0 and rd[i] < i and numbers[i]) or 0
-            status[i] = { }
-        end
-    elseif d < depth then
-        local rd = resetter and resetter[i]
-        for i=depth,d+1,-1 do
-            numbers[i] = (rd and rd[i] and rd[i] > 0 and rd[i] < i and numbers[i]) or 0
-            status[i] = nil
-        end
-    end
-    for i=1,d do
-     -- selective resetter
-        if numbers[i] == 0 then
-            ownnumbers[i] = ""
-        end
-    end
+function sections.somelevel(given)
+    -- old number
+    local numbers, ownnumbers, status, olddepth = data.numbers, data.ownnumbers, data.status, data.depth
+    local newdepth = tonumber(levelmap[given.metadata.name] or (olddepth > 0 and olddepth) or 1)
+    local directives = given.directives
+    local resetset = (directives and directives.resetset) or ""
+    local resetter = sets.getall("structure:resets",data.block,resetset)
     -- a trick to permits userdata to overload title, ownnumber and reference
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)
-    local u = t.userdata
+    local u = given.userdata
     if u then
-        if u.reference and u.reference ~= "" then t.metadata.reference   = u.reference ; u.reference = nil end
-        if u.ownnumber and u.ownnumber ~= "" then t.numberdata.ownnumber = u.ownnumber ; u.ownnumber = nil end
-        if u.title     and u.title     ~= "" then t.titledata.title      = u.title     ; u.title     = nil end
-        if u.bookmark  and u.bookmark  ~= "" then t.titledata.bookmark   = u.bookmark  ; u.bookmark  = nil end
-        if u.label     and u.label     ~= "" then t.titledata.label      = u.label     ; u.label     = nil end
+        -- kind of obsolete as we can pass them directly anyway
+        if u.reference and u.reference ~= "" then given.metadata.reference   = u.reference ; u.reference = nil end
+        if u.ownnumber and u.ownnumber ~= "" then given.numberdata.ownnumber = u.ownnumber ; u.ownnumber = nil end
+        if u.title     and u.title     ~= "" then given.titledata.title      = u.title     ; u.title     = nil end
+        if u.bookmark  and u.bookmark  ~= "" then given.titledata.bookmark   = u.bookmark  ; u.bookmark  = nil end
+        if u.label     and u.label     ~= "" then given.titledata.label      = u.label     ; u.label     = nil end
     end
     -- so far for the trick
-    ownnumbers[d] = t.numberdata.ownnumber or ""
-    t.numberdata.ownnumber = nil
---  t.numberdata = helpers.simplify(t.numberdata)
-    data.depth = d
-    sections.pluslevel(t)
+    if newdepth > olddepth then
+        for i=olddepth+1,newdepth do
+            local s = tonumber(sets.get("structure:resets",data.block,resetset,i))
+--~ logs.report("structure >","old: %s, new:%s, reset: %s (%s: %s)",olddepth,newdepth,s,resetset,table.concat(resetter,","))
+            if not s or s == 0 then
+                numbers[i] = numbers[i] or 0
+                ownnumbers[i] = ownnumbers[i] or ""
+            else
+                numbers[i] = s - 1
+                ownnumbers[i] = ""
+            end
+            status[i] = { }
+        end
+    elseif newdepth < olddepth then
+        for i=olddepth,newdepth+1,-1 do
+            local s = tonumber(sets.get("structure:resets",data.block,resetset,i))
+--~ logs.report("structure <","old: %s, new:%s, reset: %s (%s: %s)",olddepth,newdepth,s,resetset,table.concat(resetter,","))
+            if not s or s == 0 then
+                numbers[i] = numbers[i] or 0
+                ownnumbers[i] = ownnumbers[i] or ""
+            else
+                numbers[i] = s - 1
+                ownnumbers[i] = ""
+            end
+            status[i] = nil
+        end
+    end
+    ownnumbers[newdepth] = given.numberdata.ownnumber or ""
+    given.numberdata.ownnumber = nil
+    data.depth = newdepth
+    -- new number
+    olddepth = newdepth
+    if given.metadata.increment then
+        if numbers[newdepth] then
+            numbers[newdepth] = numbers[newdepth] + 1
+        else
+            local s = tonumber(sets.get("structure:resets",data.block,resetset,newdepth))
+--~ logs.report("structure =","old: %s, new:%s, reset: %s (%s: %s)",olddepth,newdepth,s,resetset,table.concat(resetter,","))
+            if not s or s == 0 then
+                numbers[newdepth] = numbers[newdepth] or 0
+            else
+                numbers[newdepth] = s - 1
+            end
+        end
+    end
+    status[newdepth] = given or { }
+    for k, v in pairs(data.checkers) do
+        if v[1] == newdepth and v[2] then
+            v[2](k)
+        end
+    end
+    local numberdata= given.numberdata
+    if not numberdata then
+        -- probably simplified to nothing
+        numberdata = { }
+        given.numberdata = numberdata
+    end
+    local n = { }
+    for i=1,newdepth do
+        n[i] = numbers[i]
+    end
+    numberdata.numbers = n
+    if #ownnumbers > 0 then
+        numberdata.ownnumbers = table.fastcopy(ownnumbers)
+    end
+    given.references.section = sections.save(given)
+ -- given.numberdata = nil
 end
 
 function sections.writestatus()
@@ -258,44 +287,6 @@ function sections.writestatus()
             commands.writestatus("structure","%s @ level %i : %s -> %s",m,depth,n,t)
         end
     end
-end
-
-function sections.pluslevel(t)
-    -- data has saved level data
-    local numbers, ownnumbers, status, depth = data.numbers, data.ownnumbers, data.status, data.depth
-    local directives = t.directives
-    local resetter = sets.getall("structure:resets",data.block, (directives and directives.resetset) or "")
---~     if not (directives and directives.hidenumber) then
-    if t.metadata.increment then
-        if numbers[depth] then
-            numbers[depth] = numbers[depth] + 1
-        else
-            numbers[depth] = 1
-        end
-    end
-    for k, v in pairs(resetter) do -- sparse
-        if v > 0 and depth == v then
-            numbers[k] = 0
-        end
-    end
-    status[depth] = t or { }
-    for k, v in pairs(data.checkers) do
-        if v[1] == depth and v[2] then
-            v[2](k)
-        end
-    end
-    local numberdata= t.numberdata
-    if not numberdata then
-        -- probably simplified to nothing
-        numberdata = { }
-        t.numberdata = numberdata
-    end
-    numberdata.numbers = table.fastcopy(numbers)
-    if #ownnumbers > 0 then
-        numberdata.ownnumbers = table.fastcopy(ownnumbers)
-    end
-    t.references.section = sections.save(t)
---~     t.numberdata = nil
 end
 
 function sections.setnumber(depth,n)
@@ -331,7 +322,7 @@ function sections.cct()
     texsprint((metadata and metadata.catcodes) or ctxcatcodes)
 end
 
-function sections.get(key,default,honorcatcodetable)
+function sections.structuredata(key,default,honorcatcodetable)
     local data = data.status[data.depth]
     local d = data
     for k in key:gmatch("([^.]+)") do
@@ -357,11 +348,14 @@ function sections.get(key,default,honorcatcodetable)
     end
 end
 
-function sections.getuser(key,default)
-    local userdata = data.status[data.depth].userdata
-    local str = (userdata and userdata[key]) or default
-    if str then
-        texsprint(ctxcatcodes,str)
+function sections.userdata(key,default)
+    if data.depth > 0 then
+        local userdata = data.status[data.depth]
+        userdata = userdata and userdata.userdata
+        userdata = (userdata and userdata[key]) or default
+        if userdata then
+            texsprint(ctxcatcodes,userdata)
+        end
     end
 end
 

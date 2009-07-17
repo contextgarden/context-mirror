@@ -240,6 +240,8 @@ function fonts.basecopy(tfmtable)
     return t
 end
 
+local reported = { }
+
 function fonts.vf.math.define(specification,set)
     if not reverse then
         reverse = { }
@@ -335,9 +337,16 @@ function fonts.vf.math.define(specification,set)
                     for unicode, index in next, vector do
                         local fci = fc[index]
                         if not fci then
-                        -- if trace_virtual then
-                                logs.report("math virtual", "unicode point U+%04X has no index %04X in %s",unicode,index,vectorname)
-                        --  end
+                            local fontname = fs.name
+                            local rf = reported[fontname]
+                            if not rf then rf = { } reported[fontname] = rf end
+                            local rv = rf[vectorname]
+                            if not rv then rv = { } rf[vectorname] = rv end
+                            local ru = rv[unicode]
+                            if not ru then
+                                logs.report("math virtual", "unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
+                                rv[unicode] = true
+                            end
                         else
                             local ref = si[index]
                             if not ref then
@@ -503,6 +512,7 @@ function fonts.vf.math.define(specification,set)
     main.has_italic = true
     main.type = "virtual" -- not needed
     mathematics.scaleparameters(main,main,1)
+main.nomath = false
     return main
 end
 
@@ -1327,8 +1337,8 @@ mathematics.make_font ( "lmroman6-math", {
     { name = "lmmib5.tfm", vector = "tex-bi", skewchar=0x7F } ,
     { name = "lmsans8-regular.otf", vector = "tex-ss", optional=true },
     { name = "lmmono8-regular.otf", vector = "tex-tt", optional=true },
-    { name = "eufm6.tfm", vector = "tex-fraktur", optional=true },
-    { name = "eufb6.tfm", vector = "tex-fraktur-bold", optional=true },
+    { name = "eufm5.tfm", vector = "tex-fraktur", optional=true },
+    { name = "eufb5.tfm", vector = "tex-fraktur-bold", optional=true },
 } )
 
 -- rm-lmr7  : LMMathRoman7-Regular
@@ -1373,8 +1383,8 @@ mathematics.make_font ( "lmroman8-math", {
     { name = "lmmib7.tfm", vector = "tex-bi", skewchar=0x7F } ,
     { name = "lmsans8-regular.otf", vector = "tex-ss", optional=true },
     { name = "lmmono8-regular.otf", vector = "tex-tt", optional=true },
-    { name = "eufm8.tfm", vector = "tex-fraktur", optional=true },
-    { name = "eufb8.tfm", vector = "tex-fraktur-bold", optional=true },
+    { name = "eufm7.tfm", vector = "tex-fraktur", optional=true },
+    { name = "eufb7.tfm", vector = "tex-fraktur-bold", optional=true },
 } )
 
 -- rm-lmr9  : LMMathRoman9-Regular
@@ -1395,8 +1405,8 @@ mathematics.make_font ( "lmroman9-math", {
     { name = "lmmib10.tfm", vector = "tex-bi", skewchar=0x7F } ,
     { name = "lmsans9-regular.otf", vector = "tex-ss", optional=true },
     { name = "lmmono9-regular.otf", vector = "tex-tt", optional=true },
-    { name = "eufm9.tfm", vector = "tex-fraktur", optional=true },
-    { name = "eufb9.tfm", vector = "tex-fraktur-bold", optional=true },
+    { name = "eufm10.tfm", vector = "tex-fraktur", optional=true },
+    { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional=true },
 } )
 
 -- rm-lmr10  : LMMathRoman10-Regular
@@ -1413,6 +1423,24 @@ mathematics.make_font ( "lmroman10-math", {
     { name = "lmmi10.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+ -- { name = "rm-lmbx10.tfm", vector = "tex-bf" } ,
+    { name = "lmroman10-bold.otf", "tex-bf" } ,
+    { name = "lmmib10.tfm", vector = "tex-bi", skewchar=0x7F } ,
+    { name = "lmsans10-regular.otf", vector = "tex-ss", optional=true },
+    { name = "lmmono10-regular.otf", vector = "tex-tt", optional=true },
+    { name = "eufm10.tfm", vector = "tex-fraktur", optional=true },
+    { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional=true },
+} )
+
+mathematics.make_font ( "lmroman10-boldmath", {
+    { name = "lmroman10-bold.otf", features = "virtualmath", main = true },
+ -- { name = "rm-lmr10.tfm", vector = "tex-mr" } ,
+    { name = "lmmib10.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmbsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+-- copied from roman:
     { name = "msam10.tfm", vector = "tex-ma" },
     { name = "msbm10.tfm", vector = "tex-mb" },
  -- { name = "rm-lmbx10.tfm", vector = "tex-bf" } ,
@@ -1468,8 +1496,8 @@ mathematics.make_font ( "lmroman17-math", {
 
 mathematics.make_font ( "px-math", {
     { name = "texgyrepagella-regular.otf", features = "virtualmath", main = true },
-    { name = "pxr.tfm", vector = "tex-mr" } ,
-    { name = "pxmi.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "rpxr.tfm", vector = "tex-mr" } ,
+    { name = "rpxmi.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "pxsy.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "pxex.tfm", vector = "tex-ex", extension = true } ,
     { name = "pxsya.tfm", vector = "tex-ma" },
@@ -1478,8 +1506,8 @@ mathematics.make_font ( "px-math", {
 
 mathematics.make_font ( "tx-math", {
     { name = "texgyretermes-regular.otf", features = "virtualmath", main = true },
-    { name = "txr.tfm", vector = "tex-mr" } ,
-    { name = "txmi.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "rtxr.tfm", vector = "tex-mr" } ,
+    { name = "rtxmi.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "txsy.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "txex.tfm", vector = "tex-ex", extension = true } ,
     { name = "txsya.tfm", vector = "tex-ma" },

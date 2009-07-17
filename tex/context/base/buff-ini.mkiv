@@ -15,6 +15,41 @@
 
 \registerctxluafile{buff-ini}{1.001}
 
+% todo:
+%
+% \startluacode
+%     local locations = { }
+%     function document.set_number(name)
+%         locations[name] = {
+%             line = status.linenumber,
+%             file = status.filename
+%         }
+%     end
+%     function document.add_number(name)
+%         local b, l = buffers.raw(name), locations[name]
+%         if b and l then
+%             for i=1,#b do
+%                 b[i] = string.gsub(b[i],"# line: <number>","# line: " .. l.line + 2)
+%             end
+%         end
+%     end
+% \stopluacode
+%
+% \starttext
+%
+% \ctxlua{document.set_number("oeps")}
+% \startbuffer[oeps]
+% # line: <number>
+%
+% test
+% test
+% \stopbuffer
+% \ctxlua{document.add_number("oeps")}
+%
+% \typebuffer[oeps]
+%
+% \stoptext
+
 \ifdefined\doinitializeverbatim \else% temp hack
     \ifdefined\mkinitializeverbatim
         \let\doinitializeverbatim\mkinitializeverbatim

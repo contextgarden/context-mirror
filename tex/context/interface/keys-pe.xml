@@ -236,6 +236,7 @@
 		<cd:variable name='lastpage' value='صفحه‌آخر'/>
 		<cd:variable name='lastpagenumber' value='شماه‌صفحه‌آخر'/>
 		<cd:variable name='lastsubpage' value='زیرصفحه‌آخر'/>
+		<cd:variable name='layer' value='layer'/>
 		<cd:variable name='left' value='چپ'/>
 		<cd:variable name='leftedge' value='لبه‌چپ'/>
 		<cd:variable name='lefthanging' value='آویزان‌چپ'/>
@@ -849,6 +850,7 @@
 		<cd:constant name='sectionconversion' value='sectionconversion'/>
 		<cd:constant name='sectionconversionset' value='sectionconversionset'/>
 		<cd:constant name='sectionnumber' value='شماره‌بخش'/>
+		<cd:constant name='sectionresetset' value='sectionresetset'/>
 		<cd:constant name='sectionsegments' value='sectionsegments'/>
 		<cd:constant name='sectionseparatorset' value='sectionseparatorset'/>
 		<cd:constant name='sectionset' value='sectionset'/>

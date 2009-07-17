@@ -11,13 +11,8 @@ local format, concat = string.format, table.concat
 
 local trace_callbacks = false  trackers.register("nodes.callbacks", function(v) trace_callbacks = v end)
 
-local hlist = node.id('hlist')
-local vlist = node.id('vlist')
 local glyph = node.id('glyph')
-local disc  = node.id('disc')
-local mark  = node.id('mark')
 
-local slide_nodes     = node.slide
 local free_node       = node.free
 local first_character = node.first_character
 
@@ -30,7 +25,7 @@ lists = lists or { }
 chars = chars or { }
 words = words or { } -- not used yet
 
-local actions = tasks.actions("processors",2) -- head, tail, where, boolean
+local actions = tasks.actions("processors",2) -- head, where, boolean
 
 local n = 0
 
@@ -65,12 +60,12 @@ end
 
 nodes.processors.enabled = true -- thsi will become a proper state (like trackers)
 
-function nodes.processors.pre_linebreak_filter(head,groupcode) -- todo: tail
+function nodes.processors.pre_linebreak_filter(head,groupcode)
     local first, found = first_character(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, tail, done = actions(head,slide_nodes(head),groupcode)
+            local head, done = actions(head,groupcode)
             local after = nodes.count(head,true)
             if done then
                 tracer("pre_linebreak","changed",head,groupcode,before,after,true)
@@ -79,7 +74,7 @@ function nodes.processors.pre_linebreak_filter(head,groupcode) -- todo: tail
             end
             return (done and head) or true
         else
-            local head, tail, done = actions(head,slide_nodes(head),groupcode)
+            local head, done = actions(head,groupcode)
             return (done and head) or true
         end
     elseif trace_callbacks then
@@ -89,12 +84,12 @@ function nodes.processors.pre_linebreak_filter(head,groupcode) -- todo: tail
     return true
 end
 
-function nodes.processors.hpack_filter(head,groupcode) -- todo: tail
+function nodes.processors.hpack_filter(head,groupcode)
     local first, found = first_character(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, tail, done = actions(head,slide_nodes(head),groupcode)
+            local head, done = actions(head,groupcode)
             local after = nodes.count(head,true)
             if done then
                 tracer("hpack","changed",head,groupcode,before,after,true)
@@ -103,7 +98,7 @@ function nodes.processors.hpack_filter(head,groupcode) -- todo: tail
             end
             return (done and head) or true
         else
-            local head, tail, done = actions(head,slide_nodes(head),groupcode)
+            local head, done = actions(head,groupcode)
             return (done and head) or true
         end
     elseif trace_callbacks then
@@ -116,17 +111,19 @@ end
 callback.register('pre_linebreak_filter', nodes.processors.pre_linebreak_filter)
 callback.register('hpack_filter'        , nodes.processors.hpack_filter)
 
-local actions = tasks.actions("finalizers",2) -- head, tail, where, boolean
+local actions = tasks.actions("finalizers",2) -- head, where, boolean
 
 -- beware, these are packaged boxes so no first_character test
 -- maybe some day a hash with valid groupcodes
+--
+-- beware, much can pass twice, for instance vadjust passes two times
 
-function nodes.processors.post_linebreak_filter(head,groupcode) -- todo: tail
+function nodes.processors.post_linebreak_filter(head,groupcode)
 --~     local first, found = first_character(head)
 --~     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, tail, done = actions(head,slide_nodes(head),groupcode)
+            local head, done = actions(head,groupcode)
             local after = nodes.count(head,true)
             if done then
                 tracer("finalizer","changed",head,groupcode,before,after,true)
@@ -135,7 +132,7 @@ function nodes.processors.post_linebreak_filter(head,groupcode) -- todo: tail
             end
             return (done and head) or true
         else
-            local head, tail, done = actions(head,slide_nodes(head),groupcode)
+            local head, done = actions(head,groupcode)
             return (done and head) or true
         end
 --~     elseif trace_callbacks then

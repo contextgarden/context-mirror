@@ -13,40 +13,25 @@ kernel = kernel or { }
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 local hyphenate, ligaturing, kerning = lang.hyphenate, node.ligaturing, node.kerning
 
-function kernel.hyphenation(head,tail) -- lang.hyphenate returns done
-    if head == tail then
-        return head, tail, false
-    else
+function kernel.hyphenation(head)
     --  starttiming(kernel)
-    --  local done = hyphenate(head,tail)
+    local done = hyphenate(head)
     --  stoptiming(kernel)
-    --  return head, tail, done
-        return head, tail, hyphenate(head,tail)
-    end
+    return head, done
 end
 
-function kernel.ligaturing(head,tail) -- node.ligaturing returns head,tail,done
-    if head == tail then
-        return head, tail, false
-    else
+function kernel.ligaturing(head)
     --  starttiming(kernel)
-    --  local head, tail, done = ligaturing(head,tail)
+    local head, tail, done = ligaturing(head) -- todo: check what is returned
     --  stoptiming(kernel)
-    --  return head, tail, done
-        return ligaturing(head,tail)
-    end
+    return head, done
 end
 
-function kernel.kerning(head,tail) -- node.kerning returns head,tail,done
-    if head == tail then
-        return head, tail, false
-    else
+function kernel.kerning(head)
     --  starttiming(kernel)
-    --  local head, tail, done = kerning(head,tail)
+    local head, tail, done = kerning(head) -- todo: check what is returned
     --  stoptiming(kernel)
-    --  return head, tail, done
-        return kerning(head,tail)
-    end
+    return head, done
 end
 
 callback.register('hyphenate' , false)

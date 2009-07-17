@@ -10070,6 +10070,12 @@ function runners.execute_ctx_script(filename,arguments)
     end
 end
 
+function runners.timedrun(filename) -- just for me
+    if filename and filename ~= "" then
+        runners.timed(function() os.execute(filename) end)
+    end
+end
+
 function runners.timed(action)
     statistics.timed(action)
 end
@@ -10197,6 +10203,9 @@ elseif environment.argument("locate") then
 elseif environment.argument("platform")then
     -- locate platform
     runners.locate_platform()
+elseif environment.argument("timedrun") then
+    -- locate platform
+    runners.timedrun(filename)
 elseif environment.argument("help") or filename=='help' or filename == "" then
     logs.help(messages.help)
     -- execute script

@@ -94,8 +94,7 @@
      \setbox\nextbox\hbox{$#2$}%
      \iftracegridsnapping
        \setbox\nextbox\ruledhbox
-         {\incolortrue\localcolortrue
-          \backgroundline[gray]{\showstruts\strut\flushnextbox}}%
+         {\backgroundline[gray]{\showstruts\strut\flushnextbox}}%
      \fi
      \def\docommand##1%
        {\doif{##1}-{\settrue \halfcrazymathlines}%
@@ -187,9 +186,7 @@
               \forgetall
               \crazymathindent
               \iftracegridsnapping
-                \setbox\scratchbox\hbox
-                  {\incolortrue\localcolortrue\green
-                   \ruledhbox{\box\scratchbox}}%
+                \setbox\scratchbox\hbox{\green\ruledhbox{\box\scratchbox}}%
               \fi
               \box\scratchbox
               \endgraf
@@ -240,8 +237,7 @@
            {\forgetall
             \crazymathindent
             \iftracegridsnapping
-              \setbox\scratchbox\hbox
-                {\incolortrue\localcolortrue\color[blue]{\ruledhbox{\box\scratchbox}}}%
+              \setbox\scratchbox\hbox{\blue\ruledhbox{\box\scratchbox}}%
             \fi
             \box\scratchbox
             \endgraf

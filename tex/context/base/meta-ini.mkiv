@@ -74,10 +74,6 @@
   {\doifnot{#1}{+}{\global\MPuserinclusions\emptytoks}%
    \global\MPuserinclusions\expandafter{\the\MPuserinclusions#2}}
 
-% \ifx \overlaywidth     \undefined \def \overlaywidth     {4cm} \fi
-% \ifx \overlayheight    \undefined \def \overlayheight    {3cm} \fi
-% \ifx \overlaylinewidth \undefined \def \overlaylinewidth {0pt} \fi
-
 \def\presetMPdefinitions
   {\edef\overlaywidth    {\overlaywidth    \space}%
    \edef\overlayheight   {\overlayheight   \space}%
@@ -86,53 +82,6 @@
    \edef\currentheight   {\the\vsize       \space}}
 
 \def\currentMPformat{metafun}
-
-% todo:
-%
-% \splitMPgraphicname[a::b]      (\currentMPgraphicformat,\currentMPgraphicname)
-% \splitMPgraphicname[a]         (\currentMPgraphicformat,\currentMPgraphicname)
-% \splitMPgraphicname[a::b::c]   (\currentMPgraphicformat,\currentMPgraphicname)
-%
-% \resetMPformat[extrafun]
-%
-% MPinclusions etc only for metafun, randomseed for all
-%
-% todo: \resetMPformat[instance] -> unload and nil
-% todo: geen page stats
-% todo: textext in plain mp
-
-% \startMPdefinitions{metafun}
-%     color MyColor ; MyColor = red ;
-% \stopMPdefinitions
-% \startuseMPgraphic{test1}
-%     fill fullcircle scaled 1cm withcolor MyColor ;
-% \stopuseMPgraphic
-% \startuseMPgraphic{test2}
-%     color MyColor ; MyColor = green ;
-%     fill fullcircle scaled 1cm withcolor MyColor ;
-% \stopuseMPgraphic
-% \startuseMPgraphic{test3}
-%     fill fullcircle scaled 1cm withcolor MyColor ;
-% \stopuseMPgraphic
-% \startuseMPgraphic{test4}
-%     color MyColor ; MyColor = blue ;
-% \stopuseMPgraphic
-%
-% \useMPgraphic{metafun::test1}
-% \useMPgraphic{metafun::test2}
-% \useMPgraphic{metafun::test3}
-% \useMPgraphic{extrafun::test4}
-% \useMPgraphic{extrafun::test3}
-% \useMPgraphic{metafun::test3}
-% \useMPgraphic{nofun::test4}
-% \useMPgraphic{nofun::test3}
-%
-% \startMPcode
-%     fill fullsquare scaled 1cm ;
-% \stopMPcode
-% \startMPcode{metafun}
-%     fill fullsquare scaled 1cm withcolor MyColor ;
-% \stopMPcode
 
 \def\@@MPF{@MPF@}
 
@@ -180,40 +129,13 @@
 \def\endMPgraphicgroup
   {\endgroup}
 
-%
-
 \newconditional \METAFUNinitialized
 
 \def\MPaskedfigure{false}
 
-% maybe we need to force black, i.e. fake nodes
-
-\long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
-  {\begingroup
-   \enableincludeMPgraphics
-   \the\everyMPgraphic
-   \presetMPdefinitions
-   \setMPrandomseed % this has to change
-   % we need to preexpand the token lists
-   \setbox\MPgraphicbox\hbox\bgroup
-     \ctxlua{metapost.graphic("\currentMPformat", "\currentMPformat",
-           \@EA\!!bs\the\MPinitializations;\theMPrandomseed;#1;\!!es, % code
-           \@EA\@EA\@EA\!!bs\@EA\the\@EA\MPextensions\@EA;\the\MPuserinclusions;\!!es,     % optional preamble
-           \MPaskedfigure
-     )}%
-     \global\settrue\METAFUNinitialized
-     \global\MPextensions\emptytoks
-     \global\MPuserinclusions\emptytoks
-   \egroup
-   \placeMPgraphic
-   \endgroup}
-
-% ! ! ! ! begin temporary ! ! ! !
-
-\let\normalprocessMPgraphic\processMPgraphic
-
 \long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
   {\begingroup % needed?
+\forgetall
    \enableincludeMPgraphics
    \the\everyMPgraphic
    \presetMPdefinitions
@@ -223,7 +145,7 @@
      {\settrue\includeMPextensions\letgvalue{\@@MPF\currentMPgraphicinstance\s!extensions}\v!no}
      {\setfalse\includeMPextensions}%
    \doifelsevalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!yes
-     {\settrue\includeMPinitializations}% \letgvalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!no}
+     {\settrue\includeMPinitializations }%
      {\setfalse\includeMPinitializations}%
    \setbox\MPgraphicbox\hbox\bgroup
      \normalexpanded{\noexpand\ctxlua{metapost.graphic("\currentMPgraphicinstance", "\currentMPgraphicformat",
@@ -234,17 +156,8 @@
    \egroup
      \global\MPinstancetoks\emptytoks
      \global\settrue\METAFUNinitialized % becomes obsolete
-    %\global\MPextensions\emptytoks     % multipls instances
-    %\global\MPuserinclusions\emptytoks % multipls instances
    \placeMPgraphic
    \endgroup}
-
-\let\extendedprocessMPgraphic\processMPgraphic
-
-% \let\processMPgraphic\normalprocessMPgraphic
-\let\processMPgraphic\extendedprocessMPgraphic
-
-% ! ! ! ! end temporary ! ! ! !
 
 \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
 
@@ -285,25 +198,6 @@
   {\globalpopmacro\MPdrawingdata}
 
 \def\getMPdrawing{\dosinglegroupempty\dogetMPdrawing}
-
-% \def\nodogetMPdrawing#1%
-%   {\ifMPdrawingdone
-%      \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
-%    \fi}
-%
-% \def\dostartMPcode
-%   {\iffirstargument
-%      \expandafter\dodogetMPdrawing
-%    \else
-%      \expandafter\nodogetMPdrawing
-%    \fi}
-%
-% \def\dodogetMPdrawing#1%
-%   {\ifMPdrawingdone
-%      \beginMPgraphicgroup{#1::\s!dummy}% name does not matter
-%      \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
-%      \endMPgraphicgroup
-%    \fi}
 
 \def\startMPdrawing
   {\dosingleempty\dostartMPdrawing}
@@ -395,14 +289,6 @@
     defaultfont:="rm-lmtt10";
 \stopMPinitializations
 
-%D In order to support fancy text features (like outline
-%D fonts), we set:
-
-% \startMPextensions
-%     graphictextformat:="context";
-%     graphictextdirective "\the\everyMPTEXgraphic";
-% \stopMPextensions
-
 %D A signal that we're in combines \CONTEXT||\METAFUN mode:
 
 \startMPextensions
@@ -422,16 +308,6 @@
 
 \prependtoks \MPstaticgraphictrue \to \everyoverlay
 \prependtoks \MPstaticgraphictrue \to \everypagebody
-
-% %D We save the number of graphics for the sake of \TEXEXEC.
-%
-% \newcounter\totalnofMPgraphics
-%
-% \def\thenofMPgraphics{\the\nofMPgraphics} % from supp-mps
-%
-% \appendtoks
-%   \savecurrentvalue\totalnofMPgraphics\thenofMPgraphics
-% \to \everybye
 
 %D \macros
 %D   {setupMPvariables}
@@ -472,6 +348,19 @@
 
 \def\MPrawvar#1#2{\csname#1:#2\endcsname}
 
+\def\presetMPvariable
+  {\dodoubleargument\dopresetMPvariable}
+
+\def\dopresetMPvariable[#1][#2=#3]%
+  {\ifcsname#1:#2\endcsname\else\setvalue{#1:#2}{#3}\fi}
+
+\def\useMPvariables
+  {\dodoubleargument\douseMPvariables}
+
+\def\douseMPvariables[#1][#2]%
+  {\def\@@meta{#1:}%
+   \prepareMPvariables{#2}}
+
 %D \macros
 %D   {startuniqueMPgraphic, uniqueMPgraphic}
 %D
@@ -510,7 +399,6 @@
 
 \newcount\MPobjectcounter
 \newbox  \MPgraphicbox
-%newif   \ifMPshiftdrawing \MPshiftdrawingfalse
 
 \chardef\MPboxmode\zerocount
 
@@ -555,7 +443,7 @@
    \extendMPoverlaystamp{#2}% incl prepare
    \ifcsname\@@MPG\overlaystamp:#1\endcsname\else
      \enableincludeMPgraphics
-     \forgetall
+%      \forgetall
      \global\advance\MPobjectcounter\plusone
      \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
      \setxvalue{\@@MPG\overlaystamp:#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
@@ -582,7 +470,7 @@
 
 \long\def\handleuseMPgraphic#1#2#3%
   {\begingroup
-   \forgetall % check this
+%    \forgetall % check this
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
    \enableincludeMPgraphics
@@ -810,25 +698,6 @@
 
 %D A more general way of passing environments is:
 
-% \def\startMPenvironment % second arg gobbles spaces, so that reset gives \emptytoks
-%   {\bgroup
-%    \catcode`\^^M=\@@space
-%    \dodoubleempty\dostartMPenvironment}
-
-% \long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
-%   {\egroup
-%    \doif{#1}\s!reset\resetMPenvironment % reset mp toks
-%    \doif{#1}\v!global{#3}%              % use in main doc too
-%    \doif{#1}+{#3}%                      % use in main doc too
-%    \defconvertedargument\ascii{#3}%
-%    \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
-
-% \def\resetMPenvironment
-%   {\everyMPTEXgraphic\emptytoks % = is really needed !
-%    \startMPenvironment
-%      \global\loadfontfileoncetrue
-%    \stopMPenvironment}
-
 \def\startMPenvironment % second arg gobbles spaces, so that reset gives \emptytoks
   {\dodoubleempty\dostartMPenvironment}
 
@@ -845,8 +714,6 @@
 
 \def\useMPenvironmentbuffer[#1]%
   {\ctxlua{metapost.tex.set(buffers.content("#1"))}}
-
-% \useMPenvironmentbuffer[mp] % hm, what is this?
 
 %D This command takes \type {[reset]} as optional
 %D argument.
@@ -891,20 +758,6 @@
 % \externalfigure[mprun.4][width=10cm,height=8cm]
 
 \let\MPruninstance\defaultMPgraphicinstance
-
-% \def\useMPrun#1#2% name n
-%   {\begingroup
-%    \def\MPaskedfigure{#2}%
-%    \doifelsenothing{#1}
-%      {\useMPgraphic{\MPruninstance::mprun}}%
-%      {\useMPgraphic{\MPruninstance::#1}}%
-%    \endgroup}
-% \def\startMPrun
-%   {\dosinglegroupempty\dostartMPrun}
-% \long\def\dostartMPrun#1#2\stopMPrun
-%   {\edef\MPruninstance{\iffirstargument#1\else\defaultMPgraphicinstance\fi}%
-%    \startuseMPgraphic{mprun}#2\stopuseMPgraphic}
-
 
 \def\useMPrun#1#2% name n
   {\begingroup
@@ -1087,21 +940,10 @@
     \let \} \letterclosebrace
 \to \everyMPgraphic
 
-%D Alas, the prologue settings differ per driver.
-
-\ifx\undefined\MPprologues \def\MPprologues{0} \fi
-
-% hm, not needed more than once so can be extensions
-
 \startMPinitializations
-    prologues:=\MPprologues;
+    prologues:=0;
     mpprocset:=1;
 \stopMPinitializations
-
-\appendtoks
-    \def\MPprologues{0}%
-    \def\MPOSTdriver{dvips}%
-\to \everyresetspecials
 
 %D \macros
 %D   {PDFMPformoffset}
@@ -1112,63 +954,68 @@
 
 \def\PDFMPformoffset{\objectoffset}
 
-%D \macros
-%D   {insertMPfile}
-%D
-%D Bypassing the special driver and figure mechanism is not
-%D that nice but saves upto 5\% time in embedding \METAPOST\
-%D graphics by using the low level \PDF\ converter directly,
-%D given of course that we use \PDFTEX. As a result we need to
-%D fool around with the object trigger.
+% %D \macros
+% %D   {insertMPfile}
+% %D
+% %D Bypassing the special driver and figure mechanism is not
+% %D that nice but saves upto 5\% time in embedding \METAPOST\
+% %D graphics by using the low level \PDF\ converter directly,
+% %D given of course that we use \PDFTEX. As a result we need to
+% %D fool around with the object trigger.
 
 \newtoks\everyinsertMPfile
 
-\let\insertMPfileARG\insertMPfile
-
-\def\insertMPfile#1#2% in context #2 is empty
-  {\doifelsenothing{#2}{\doinsertMPfile{#1}}{\insertMPfileARG{#1}{#2}}}
-
-\def\includeMPasEPS#1% untested !!
-  {\bgroup
-   \message{[MP as EPS #1]}%
-   \the\everyinsertMPfile
-   \dogetEPSboundingbox{#1}\!!widtha\!!heighta\!!widthb\!!heightb
-   \setbox\scratchbox\vbox to \!!heightb
-     {\vfill
-      \let \@@DriverImageType  \c!mps
-      \def \@@DriverImageFile  {#1}%
-      \edef\@@DriverImageWidth {\the\!!widthb }%
-      \edef\@@DriverImageHeight{\the\!!heightb}%
-      \doinsertfile}%
-   \wd\scratchbox\!!widthb
-   \dp\scratchbox\zeropoint
-   \box\scratchbox
-   \egroup}
-
-\def\includeMPasPDF#1%
-  {\bgroup
-   \the\everyinsertMPfile
-   \ifinobject \else \chardef\makeMPintoPDFobject\plustwo \fi % when needed
-   \convertMPtoPDF{#1}{1}{1}% no \plusone !
-   \egroup}
-
-%D So, using a low level approach (thereby avoiding the slower
-%D figure analysis macros) pays off. This kind of
-%D optimizations are a bit tricky since we must make sure that
-%D special resources end up in the (PDF) files. Because the
-%D \METAPOST\ to \PDF\ can handle objects itself, it is not
-%D that complicated.
-
-%D We hook a couple of initializations into the graphic
-%D macros.
-
-\appendtoks
-    \let\figuretypes\c!mps
-    \runutilityfilefalse
-    \consultutilityfilefalse
-\to \everyinsertMPfile
-
-%D One more: (still needed?)
+% removed in backend:
+%
+% \def\doinsertMPfile#1%
+%   {\doiffileelse{./#1}{\includeMPasPDF{./#1}}{\message{[MP #1]}}}
+%
+% \let\insertMPfileARG\insertMPfile
+%
+% \def\insertMPfile#1#2% in context #2 is empty
+%   {\doifelsenothing{#2}{\doinsertMPfile{#1}}{\insertMPfileARG{#1}{#2}}}
+%
+% \def\includeMPasEPS#1% untested !!
+%   {\bgroup
+%    \message{[MP as EPS #1]}%
+%    \the\everyinsertMPfile
+%    \dogetEPSboundingbox{#1}\!!widtha\!!heighta\!!widthb\!!heightb
+%    \setbox\scratchbox\vbox to \!!heightb
+%      {\vfill
+%       \let \@@DriverImageType  \c!mps
+%       \def \@@DriverImageFile  {#1}%
+%       \edef\@@DriverImageWidth {\the\!!widthb }%
+%       \edef\@@DriverImageHeight{\the\!!heightb}%
+%       \doinsertfile}%
+%    \wd\scratchbox\!!widthb
+%    \dp\scratchbox\zeropoint
+%    \box\scratchbox
+%    \egroup}
+%
+% \def\includeMPasPDF#1%
+%   {\bgroup
+%    \the\everyinsertMPfile
+%    \ifinobject \else \chardef\makeMPintoPDFobject\plustwo \fi % when needed
+%    \convertMPtoPDF{#1}{1}{1}% no \plusone !
+%    \egroup}
+%
+% %D So, using a low level approach (thereby avoiding the slower
+% %D figure analysis macros) pays off. This kind of
+% %D optimizations are a bit tricky since we must make sure that
+% %D special resources end up in the (PDF) files. Because the
+% %D \METAPOST\ to \PDF\ can handle objects itself, it is not
+% %D that complicated.
+%
+% %D We hook a couple of initializations into the graphic
+% %D macros.
+%
+% \appendtoks
+%     \let\figuretypes\c!mps
+%     \runutilityfilefalse
+%     \consultutilityfilefalse
+% \to \everyinsertMPfile
+%
+% %D One more: (still needed?)
 
 \startMPextensions
     def initialize_form_numbers =
@@ -1343,12 +1190,6 @@
   _special_div_ := 1000\ifconditional\manyMPspecials0\fi ;
 \to \MPextensions
 
-%D Needed (will become default):
-
-\prependtoks
-  \resetlanguagespecifics
-\to \everyMPgraphic
-
 %D Needed too.
 
 \let\initializeMPgraphics\relax
@@ -1395,8 +1236,11 @@
 
 \chardef\MPcolormethod\zerocount
 
+% can be faster, just
+
 \appendtoks
-    \ctxlua{metapost.set_outer_color(\number\MPcolormethod,"\PDFcolor{\currentcolorname}","")}%
+%     \ctxlua{metapost.set_outer_color(\number\MPcolormethod,"\PDFcolor{\currentcolorname}","")}%
+    \ctxlua{metapost.set_outer_color(\number\MPcolormethod,\number\currentcolormodel,\number\dogetattribute{color},\number\dogetattribute{transparency})}%
 \to \everyMPgraphic
 
 \startMPinitializations

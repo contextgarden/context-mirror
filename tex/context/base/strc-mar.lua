@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['strc-mar'] = {
 structure.marks = structure.marks or { }
 
 function structure.marks.title(tag,n)
-    structure.lists.savedtitle(tag,n,"mark")
+    structure.lists.savedtitle(tag,n,"marking")
 end
 
 function structure.marks.number(tag,n) -- no spec

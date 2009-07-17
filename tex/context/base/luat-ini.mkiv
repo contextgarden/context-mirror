@@ -134,24 +134,12 @@
    \obeyluatokens
    \csname dodostartnamed#1\v!code\endcsname}
 
-\ifdefined\closelua
-
-    \def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
-      {\expanded{\long\def\csname dodostartnamed#1\v!code\endcsname####1\csname\e!stop#1\v!code\endcsname}%
-         {\normalexpanded{\endgroup\noexpand\directlua\!!name{#3}\zerocount{protect("#1\s!data")##1}}}%
-       \long\expandafter\def\csname\e!start#1\v!code\endcsname   {\dostartnamedluacode{#1}}%
-       \long\expandafter\def\csname        #1\v!code\endcsname##1{\directlua\!!name{#3}\zerocount{protect("#1\s!data")##1}}}
-
-\else
-
-    \def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
-      {\scratchcounter\ctxlua{lua.registername("#1","#3")}%
-       \expanded{\long\edef\csname dodostartnamed#1\v!code\endcsname####1\csname\e!stop#1\v!code\endcsname}%
-         {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
-       \long\expandafter\def \csname\e!start#1\v!code\endcsname   {\dostartnamedluacode{#1}}%
-       \long\expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}}
-
-\fi
+\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
+  {\scratchcounter\ctxlua{lua.registername("#1","#3")}%
+   \normalexpanded{\long\edef\csname dodostartnamed#1\v!code\endcsname##1\csname\e!stop#1\v!code\endcsname}%
+     {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
+   \long\expandafter\def \csname\e!start#1\v!code\endcsname   {\dostartnamedluacode{#1}}%
+   \long\expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}}
 
 %D We predefine a few.
 
@@ -243,5 +231,9 @@
 % or:
 %
 % options=\luaparameterset{u3d:myset:display:1}{toolbar=false,tree=true}
+
+%D A Handy helper:
+
+\def\luaconditional#1{\ifcase#1tru\else fals\fi e}
 
 \protect \endinput

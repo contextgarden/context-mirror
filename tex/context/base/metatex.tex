@@ -37,12 +37,12 @@
 
 \def\loadcorefile#1{\normalinput#1\relax}
 
-\loadcorefile{syst-ini.tex}  % some basic commands and allocations that are expected down the line
-\loadcorefile{syst-pln.tex}  % plain tex initializations of internal registers (no further code)
+\loadcorefile{syst-ini}      % some basic commands and allocations that are expected down the line
+\loadcorefile{syst-pln}      % plain tex initializations of internal registers (no further code)
 
-\loadcorefile{luat-cod.tex}  %
-\loadcorefile{luat-bas.tex}  %
-\loadcorefile{luat-lib.tex}  %
+\loadmarkfile{luat-cod}      %
+\loadmarkfile{luat-bas}      %
+\loadmarkfile{luat-lib}      %
 
 % needs stripping:
 
@@ -54,12 +54,12 @@
 
 % helpers, maybe less
 
-\loadcorefile{syst-aux.tex}  % a whole lot of auxiliary macros
-%loadcorefile{syst-lua.tex}  % some helpers using lua instead
-%loadcorefile{syst-con.mkiv} % some rather basic conversions
-%loadcorefile{syst-fnt.mkiv}
-%loadcorefile{syst-str.mkiv}
-%loadcorefile{syst-rtp.mkiv}
+\loadmarkfile{syst-aux}      % a whole lot of auxiliary macros
+%loadmarkfile{syst-lua}      % some helpers using lua instead
+%loadmarkfile{syst-con}      % some rather basic conversions
+%loadmarkfile{syst-fnt}
+%loadmarkfile{syst-str}
+%loadmarkfile{syst-rtp}
 
 % not needed
 
@@ -68,24 +68,24 @@
 
 % characters
 
-\loadcorefile{char-utf.tex}
-\loadcorefile{char-ini.tex}
-\loadcorefile{char-enc.tex} % \registerctxluafile{char-enc}{1.001}
+\loadmarkfile{char-utf}
+\loadmarkfile{char-ini}
+\loadmarkfile{char-enc}      % \registerctxluafile{char-enc}{1.001}
 
 % nodes
 
-\loadcorefile{node-ini.tex}
-%loadcorefile{node-fin.tex}
-%loadcorefile{node-par.tex}
+\loadmarkfile{node-ini}
+%loadmarkfile{node-fin}
+%loadmarkfile{node-par}
 
 % attributes, not needed:
 
-%loadcorefile{attr-ini.tex}
+%loadmarkfile{attr-ini}
 
 % regimes
 
-% \loadcorefile{regi-ini.mkiv}
-% \loadcorefile{regi-syn.tex}
+% \loadmarkfile{regi-ini}
+% \loadcorefile{regi-syn}
 
 % languages
 
@@ -131,10 +131,6 @@
 \registerctxluafile{task-ini}{1.001}
 
 %registerctxluafile{l-xml}{1.001} % needed for font database
-
-% plain
-
-%loadcorefile{syst-stp.tex} % stripped plain
 
 % why not ...
 

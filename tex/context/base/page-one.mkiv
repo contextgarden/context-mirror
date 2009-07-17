@@ -116,6 +116,8 @@
 
 \chardef\kindofpagetextareas=2 % whole page (public variable! never change)
 
+% can we avoind the extra vboxing here?
+
 \def\OTRONEregisteredtextarea#1%
   {\ifregistertextareas
      \setbox0\vbox{#1}%
@@ -132,8 +134,7 @@
      \xypos{pbd:\realfolio:b}% we could save bytes by only saving the y
      \endgraf
      \begingroup
-     \scratchdimen\MPy{pbd:\realfolio:b}%
-     \advance\scratchdimen-\MPy{pbd:\realfolio:e}%
+     \scratchdimen\dimexpr\MPy{pbd:\realfolio:b}-\MPy{pbd:\realfolio:e}\relax
      \setbox\scratchbox\null
      \wd\scratchbox\makeupwidth
      \ht\scratchbox\scratchdimen
@@ -174,36 +175,31 @@
       \ifgridsnapping
         \OTRONEregisteredtextareaA{#1#2}%
         \vskip-\currentpagedepth\vskip\openstrutdepth
-        \pushproperties % moved from just after #1#2
         \prevdepth\openstrutdepth
         \dobotinsertions
         \vfil
       \else\ifr@ggedbottom
         \OTRONEregisteredtextareaA{#1#2}%
         \vskip-\currentpagedepth\vskip\openstrutdepth
-        \pushproperties % moved from just after #1#2
         \prevdepth\openstrutdepth
         \dobotinsertions
         \vfil
       \else\ifb@selinebottom
         \OTRONEregisteredtextareaA{#1#2}%
         \kern-\currentpagedepth\kern\maxdepth
-        \pushproperties % moved from just after #1#2
         \dobotinsertions
       \else
         \OTRONEregisteredtextareaA{#1#2}%
-        \pushproperties % moved from just after #1#2
         \dobotinsertions % added
       \fi\fi\fi
       \fakepagenotes}% was \fakenotes, but wrong! (check with \setupalign[height])
    \ifbottomnotes
      \ifgridsnapping
-\ifcase\layoutlines % todo: make macro of this
-    \getrawnoflines\textheight
-\else
-    \noflines\layoutlines
-\fi
-%        \getnoflines\textheight
+       \ifcase\layoutlines % todo: make macro of this
+         \getrawnoflines\textheight
+       \else
+         \noflines\layoutlines
+        \fi
        \advance\noflines \minusone
        \scratchdimen\noflines\lineheight
        \advance\scratchdimen \topskip
@@ -626,9 +622,7 @@
    \else
      \topofinsertfalse
    \fi
-   \global\advance\topinserted \ht\floatbox
-   \global\advance\topinserted \dp\floatbox
-   \global\advance\topinserted \floatbottomskip
+   \global\advance\topinserted \ht\floatbox+\dp\floatbox+\floatbottomskip\relax
    \insert\topins
      {\forgetall
       \iftopofinsert
@@ -643,9 +637,7 @@
    \doinsertfloatinfo}
 
 \def\OTRONEsomebotsfloat[#1]%
-  {\global\advance\botinserted \ht\floatbox
-   \global\advance\botinserted \dp\floatbox
-   \global\advance\botinserted \floattopskip
+  {\global\advance\botinserted\dimexpr\ht\floatbox+\dp\floatbox+\floattopskip\relax
    \insert\botins
      {\forgetall
       \blank[\@@bkspacebefore]%

@@ -1,0 +1,225 @@
+%D \module
+%D   [       file=page-app, % from meta-fig
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Independent page building,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Applications}
+
+%D The fitting page code is moved from \type {meta-fig} to
+%D here.
+
+\unprotect
+
+\definepapersize
+  [\??fp\s!dummy]
+  [\c!width=\fittingwd,
+   \c!height=\fittinght]
+
+\definelayout
+  [\??fp\s!dummy]
+  [\c!width=\fittingwd,\c!height=\fittinght,\c!location=\v!middle,
+   \c!topspace=\!!zeropoint,\c!backspace=\!!zeropoint,
+   \c!cutspace=\!!zeropoint,\c!bottomspace=\!!zeropoint,
+   \c!textdistance=\!!zeropoint,\c!lines=0,\c!grid=\v!no,
+   \c!top=\!!zeropoint,\c!bottom=\!!zeropoint,
+   \c!margin=\!!zeropoint,\c!edge=\!!zeropoint,
+   \c!leftmargin=\!!zeropoint,\c!leftedge=\!!zeropoint,
+   \c!rightmargin=\!!zeropoint,\c!rightedge=\!!zeropoint,
+   \c!header=\!!zeropoint,\c!footer=\!!zeropoint]
+
+
+\def\dostartfittingpage[#1][#2]%
+  {\page % this is kind of tricky! there can be preceding page refs
+   \autostarttext
+   \bgroup % resulting in a zero height page; test fig-make !
+   \def\currentfittingpage{#1}%
+   \dontcomplain
+   % runs under current page regime, i.e. page variables passed to mp
+   \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
+   \setbox\scratchbox\hbox
+     \bgroup
+     % needed later \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
+     \doifvalue{\currentfittingpage\c!margin}\v!page % undocumented
+       {\offsetbox
+          [\c!leftoffset=\backspace,
+           \c!rightoffset=\cutspace,
+           \c!topoffset=\topspace,
+           \c!bottomoffset=\bottomspace]\hbox}%
+     \bgroup
+     \scale[\c!scale=\getvalue{\currentfittingpage\c!scale}]%
+     \bgroup\localframed[\currentfittingpage]%
+     \bgroup}
+
+\def\dostopfittingpage
+  {\egroup % localframed
+   \egroup % scale
+   \egroup % offsetbox
+   \egroup % scratchbox
+   \edef\fittingwd{\the\wd\scratchbox}%
+   \edef\fittinght{\the\ht\scratchbox}%
+   \startlocallayout
+   \ifdim\fittinght<\lineheight
+     % write status : too small
+     \setbox\scratchbox\vbox to \lineheight{\vss\box\scratchbox\vss}%
+     \edef\fittinght{\the\lineheight}%
+   \fi
+   \let\checkcurrentlayout\relax % else interference with odd/even layout
+   \processaction
+     [\getvalue{\currentfittingpage\c!paper}]
+     [   \v!auto=>\let\fittingpapersize\printpapersize,
+      \s!unknown=>\let\fittingpapersize\commalistelement,
+      \s!default=>\def\fittingpapersize{\??fp\s!dummy}]%
+   \expanded{\setuppapersize[\??fp\s!dummy][\fittingpapersize]}%
+   \definelayout
+     [\v!page]%
+     [\c!location=\v!middle,
+      \c!width=\fittingwd,
+      \c!height=\fittinght]%
+   \setuplayout
+     [\v!page]%
+   \startmakeup[\v!standard][\c!textstate=\v!empty,\c!doublesided=\v!no,\c!page=]%
+     \centerbox{\box\scratchbox}%
+   \stopmakeup
+   \stoplocallayout
+   \egroup
+   \autostoptext}
+
+%D \TEX\ pages (for \METAPOST\ pages, see \type {meta-fig}):
+
+\presetlocalframed[\??tg]
+
+\def\setupTEXpage
+  {\dodoubleargument\getparameters[\??tg]}
+
+\def\startTEXpage
+  {\dosingleempty\dostartTEXpage}
+
+\def\dostartTEXpage[#1]%
+  {\dostartfittingpage[\??tg][#1]\gobblespacetokens}
+
+\def\stopTEXpage
+  {\removelastspace
+   \dostopfittingpage}
+
+\setupTEXpage
+  [\c!scale=1000,
+   \c!strut=\v!no,
+   \c!align=\v!normal, % needed, else problems !
+   \c!offset=\v!overlay,
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!frame=\v!off]
+
+%D For Mojca:
+%D
+%D \starttyping
+%D \startTEXstream \chapter{Bla} Hello world!\crlf Hello world! \stopTEXstream
+%D \startTEXpage   \chapter{Bla} Hello world!\crlf Hello world! \stopTEXpage
+%D \stoptyping
+%D
+%D maybe I should support stream=yes in framed.
+
+\def\startTEXstream
+  {\dosingleempty\dostartTEXstream}
+
+\def\dostartTEXstream[#1]%
+  {\page
+   \defineoutputstream[tex]%
+   \enableoutputstream[tex]%
+   \def\stopTEXstream
+     {\disableoutputstream
+      \startTEXpage
+      \outputstreamunvbox[tex]%
+      \stopTEXpage}}
+
+%D Application pages (for an example, see \type {m-pstric}):
+
+\def\@@texapp{texapp}
+\def\@@texdim{texdim}
+
+\def\saveTEXapplication#1#2%
+  {\immediate\openout\scratchwrite=\bufferprefix\@@texdim.tmp
+   \immediate\write\scratchwrite{\dimen#1=\the\ht\scratchbox}%
+   \immediate\write\scratchwrite{\dimen#2=\the\wd\scratchbox}%
+   \immediate\closeout\scratchwrite}
+
+\def\restoreTEXapplication
+  {\readlocfile{\bufferprefix\@@texdim.tmp}\donothing\donothing}
+
+\def\startTEXapplication
+  {\dosingleempty\dostartTEXapplication}
+
+\long\def\dostartTEXapplication[#1]#2#3\stopTEXapplication
+  {\bgroup
+   \bgroup
+   \let\f!temporaryextension\c!tex
+   \setbuffer[\@@texapp]%
+     \starttext
+     #2% preamble
+     \startTEXpage[#1]%
+       \topskip\zeropoint
+       \setbox\scratchbox\hbox{#3}%
+       \saveTEXapplication02% dimensions
+       \box\scratchbox
+     \stopTEXpage
+     \stoptext
+   \endbuffer
+   \egroup
+   \doifelse\jobsuffix{dvi}\donetrue\donefalse
+   \executesystemcommand{texexec \bufferprefix\@@texapp.tex --once --batch}%
+   \ifdone % eps
+     \executesystemcommand{dvips -E* -o \@@texapp.eps \@@texapp}%
+   \else % pdf
+     \executesystemcommand{dvips \bufferprefix\@@texapp}%
+     \executesystemcommand{ps2pdf \bufferprefix\@@texapp.ps \bufferprefix\@@texapp.pdf}%
+%      \executesystemcommand{texmfstart pstopdf \bufferprefix\@@texapp.ps \bufferprefix\@@texapp.pdf}%
+   \fi
+   \restoreTEXapplication % dimensions
+   \doifelse\jobsuffix{dvi}\donetrue\donefalse
+   \setbox\scratchbox\hbox
+     {\expanded{\externalfigure
+        [\bufferprefix\@@texapp.\ifdone eps\else pdf\fi]
+        [\c!object=\v!no]}}%
+   \setbox\scratchbox\hbox
+     {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
+   \wd\scratchbox\dimen0
+   \ht\scratchbox\dimen2
+   \dp\scratchbox\zeropoint
+   \box\scratchbox
+   \egroup}
+
+%D \macros
+%D   {startpagefigure}
+%D
+%D \starttyping
+%D \starttext \pagefigure[two.1] \stoptext
+%D \stoptyping
+
+\def\startpagefigure
+  {\dodoubleempty\dostartpagefigure}
+
+\def\dostartpagefigure[#1][#2]%
+  {\bgroup
+   \getparameters[\??ex][\c!offset=\v!overlay,#2]%
+   \startTEXpage[\c!offset=\@@exoffset]%
+     \externalfigure[#1][#2]\ignorespaces} % so we can put some text below the graphic
+
+\def\stoppagefigure
+  {\stopTEXpage
+   \egroup}
+
+\def\pagefigure
+  {\dodoubleempty\dopagefigure}
+
+\def\dopagefigure[#1][#2]%
+  {\dostartpagefigure[#1][#2]\stoppagefigure}
+
+\protect \endinput

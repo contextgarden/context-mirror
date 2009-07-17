@@ -8,9 +8,11 @@ if not modules then modules = { } end modules ['back-pdf'] = {
 
 -- This code is very experimental !
 
-local setmetatable, getmetatable, type, next, tostring, tonumber = setmetatable, getmetatable, type, next, tostring, tonumber
+local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat = string.char, string.byte, string.format, string.gsub, table.concat
 local utfvalues = string.utfvalues
+local texwrite = tex.write
+local sind, cosd = math.sind, math.cosd
 
 lpdf = lpdf or { }
 
@@ -31,6 +33,47 @@ local function tosixteen(str)
     end
 end
 
+lpdf.tosixteen = tosixteen
+
+-- lpeg is some 5 times faster than gsub (in test) on escaping
+
+local escapes = {
+    ["\\"] = "\\\\",
+    ["/"] = "\\/", ["#"] = "\\#",
+    ["<"] = "\\<", [">"] = "\\>",
+    ["["] = "\\[", ["]"] = "\\]",
+    ["("] = "\\(", [")"] = "\\)",
+}
+
+local escaped = lpeg.Cs(lpeg.Cc("(") * (lpeg.S("\\/#<>[]()")/escapes + lpeg.P(1))^0 * lpeg.Cc(")"))
+
+local function toeight(str)
+ -- if not str or str == "" then
+ --     return "()"
+ -- else
+ --     return escaped:match(str)
+ -- end
+ --
+ -- no need for escaping .. just use unicode instead
+    return "(" .. str .. ")"
+end
+
+lpdf.toeight = toeight
+
+local escapes = "-"
+
+local escaped = lpeg.Cs(lpeg.Cc("(") * (lpeg.S("\\/#<>[]()")/escapes + lpeg.P(1))^0 * lpeg.Cc(")"))
+
+local function cleaned(str)
+    if not str or str == "" then
+        return "()"
+    else
+        return escaped:match(str)
+    end
+end
+
+lpdf.cleaned = cleaned
+
 local function merge_t(a,b)
     local t = { }
     for k,v in next, a do t[k] = v end
@@ -40,14 +83,20 @@ end
 
 local tostring_a, tostring_d
 
-tostring_d = function(t)
+tostring_d = function(t,contentonly,key)
     if not next(t) then
-        return "<< >>"
+        if contentonly then
+            return ""
+        else
+            return "<< >>"
+        end
     else
-        local r = { "<<" }
+        local r = { }
         for k, v in next, t do
             local tv = type(v)
             if tv == "string" then
+                r[#r+1] = format("/%s %s",k,toeight(v))
+            elseif tv == "unicode" then
                 r[#r+1] = format("/%s %s",k,tosixteen(v))
             elseif tv == "table" then
                 local mv = getmetatable(v)
@@ -62,19 +111,30 @@ tostring_d = function(t)
                 r[#r+1] = format("/%s %s",k,tostring(v))
             end
         end
-        r[#r+1] = ">>"
-        return concat(r, " ")
+        if contentonly then
+            return concat(r, " ")
+        elseif key then
+            return format("/%s << %s >>", key, concat(r, " "))
+        else
+            return format("<< %s >>", concat(r, " "))
+        end
     end
 end
 
-tostring_a = function(t)
+tostring_a = function(t,contentonly,key)
     if #t == 0 then
-        return "[ ]"
+        if contentonly then
+            return ""
+        else
+            return "[ ]"
+        end
     else
-        local r = { "[" }
+        local r = { }
         for k, v in next, t do
             local tv = type(v)
             if tv == "string" then
+                r[#r+1] = toeight(v)
+            elseif tv == "unicode" then
                 r[#r+1] = tosixteen(v)
             elseif tv == "table" then
                 local mv = getmetatable(v)
@@ -89,54 +149,82 @@ tostring_a = function(t)
                 r[#r+1] = tostring(v)
             end
         end
-        r[#r+1] = "]"
-        return concat(r, " ")
+        if contentonly then
+            return concat(r, " ")
+        elseif key then
+            return format("/%s [ %s ]", key, concat(r, " "))
+        else
+            return format("[ %s ]", concat(r, " "))
+        end
     end
 end
 
-local tostring_s = function(t) return tosixteen(t[1]) end
+local tostring_x = function(t) return concat(t, " ")  end
+local tostring_s = function(t) return toeight(t[1])   end
+local tostring_u = function(t) return tosixteen(t[1]) end
 local tostring_n = function(t) return tostring(t[1])  end -- tostring not needed
 local tostring_c = function(t) return t[1]            end -- already prefixed (hashed)
 local tostring_z = function()  return "null"          end
 local tostring_t = function()  return "true"          end
 local tostring_f = function()  return "false"         end
+local tostring_r = function(t) return t[1] .. " 0 R"  end
+local tostring_v = function(t) return concat(t, "")   end
 
-local function value_s(t) return t[1]        end -- the call is experimental
-local function value_n(t) return t[1]        end -- the call is experimental
-local function value_c(t) return sub(t[1],2) end -- the call is experimental
-local function value_d(t) return t           end -- the call is experimental
-local function value_a(t) return t           end -- the call is experimental
-local function value_z()  return nil         end -- the call is experimental
-local function value_t()  return true        end -- the call is experimental
-local function value_b()  return false       end -- the call is experimental
+local function value_x(t)     return t                      end -- the call is experimental
+local function value_s(t,key) return t[1]                   end -- the call is experimental
+local function value_u(t,key) return t[1]                   end -- the call is experimental
+local function value_n(t,key) return t[1]                   end -- the call is experimental
+local function value_c(t)     return sub(t[1],2)            end -- the call is experimental
+local function value_d(t)     return tostring_d(t,true,key) end -- the call is experimental
+local function value_a(t)     return tostring_a(t,true,key) end -- the call is experimental
+local function value_z()      return nil                    end -- the call is experimental
+local function value_t()      return true                   end -- the call is experimental
+local function value_b()      return false                  end -- the call is experimental
+local function value_r()      return t[1]                   end -- the call is experimental
+local function value_v()      return t                      end -- the call is experimental
 
+local function add_x(t,k,v) rawset(t,k,tostring(v)) end
+
+local mt_x = { __lpdftype = "stream",     __tostring = tostring_x, __call = value_x, __newindex = add_x }
 local mt_d = { __lpdftype = "dictionary", __tostring = tostring_d, __call = value_d }
 local mt_a = { __lpdftype = "array",      __tostring = tostring_a, __call = value_a }
+local mt_u = { __lpdftype = "unicode",    __tostring = tostring_u, __call = value_u }
 local mt_s = { __lpdftype = "string",     __tostring = tostring_s, __call = value_s }
 local mt_n = { __lpdftype = "number",     __tostring = tostring_n, __call = value_n }
 local mt_c = { __lpdftype = "constant",   __tostring = tostring_c, __call = value_c }
 local mt_z = { __lpdftype = "null",       __tostring = tostring_z, __call = value_z }
 local mt_t = { __lpdftype = "true",       __tostring = tostring_t, __call = value_t }
 local mt_f = { __lpdftype = "false",      __tostring = tostring_f, __call = value_f }
+local mt_r = { __lpdftype = "reference",  __tostring = tostring_r, __call = value_r }
+local mt_v = { __lpdftype = "verbose",    __tostring = tostring_v, __call = value_v }
+
+function lpdf.stream(t)
+    if t then
+        for i=1,#t do
+            t[i] = tostring(t[i])
+        end
+    end
+    return setmetatable(t or { },mt_x)
+end
 
 function lpdf.dictionary(t)
     return setmetatable(t or { },mt_d)
 end
 
 function lpdf.array(t)
-    return setmetatable(t or { },mt_a)
+    if type(t) == "string"then
+        return setmetatable({ t },mt_a)
+    else
+        return setmetatable(t or { },mt_a)
+    end
 end
 
-local cache = { } -- can be weak
-
 function lpdf.string(str,default)
-    str = str or default or ""
-    local c = cache[str]
-    if not c then
-        c = setmetatable({ str },mt_s)
-        cache[str] = c
-    end
-    return c
+    return setmetatable({ str or default or "" },mt_s)
+end
+
+function lpdf.unicode(str,default)
+    return setmetatable({ str or default or "" },mt_u)
 end
 
 local cache = { } -- can be weak
@@ -179,6 +267,14 @@ function lpdf.boolean(b,default)
     else
         return p_false
     end
+end
+
+function lpdf.reference(r)
+    return setmetatable({ r or 0 },mt_r)
+end
+
+function lpdf.verbose(t)
+    return setmetatable(t or { },mt_v)
 end
 
 --~ local d = lpdf.dictionary()
@@ -266,3 +362,157 @@ function lpdf.limited(n,min,max,default)
         end
     end
 end
+
+-- there will be more of this
+
+local pdfreference    = lpdf.reference
+local pdfdictionary   = lpdf.dictionary
+local pdfreserveobj   = pdf.reserveobj
+local pdfimmediateobj = pdf.immediateobj
+
+local texset, texsprint, ctxcatcodes = tex.set, tex.sprint, tex.ctxcatcodes
+
+local pdfobjcache = { }
+
+function lpdf.sharedobj(content)
+    local r = pdfobjcache[content]
+    if not r then
+        r = pdfreference(pdfimmediateobj(content))
+        pdfobjcache[content] = r
+    end
+    return r
+end
+
+-- saves definitions later on
+
+backends     = backends or { }
+backends.pdf = backends.pdf or {
+    comment        = "backend for directly generating pdf output",
+    nodeinjections = { },
+    codeinjections = { },
+    registrations  = { },
+    helpers        = { },
+}
+
+--
+
+local pagefinalizers, documentfinalizers = { }, { }
+
+local pageresources, pageattributes, pagesattributes
+
+local function resetpageproperties()
+    pageresources   = pdfdictionary()
+    pageattributes  = pdfdictionary()
+    pagesattributes = pdfdictionary()
+end
+
+local function setpageproperties()
+    texset("global", "pdfpageresources", pageresources  ())
+    texset("global", "pdfpageattr",      pageattributes ())
+    texset("global", "pdfpagesattr",     pagesattributes())
+end
+
+function lpdf.addtopageresources  (k,v) pageresources  [k] = v end
+function lpdf.addtopageattributes (k,v) pageattributes [k] = v end
+function lpdf.addtopagesattributes(k,v) pagesattributes[k] = v end
+
+local function set(where, f)
+    where[#where+1] = f
+end
+
+local function run(where)
+    for i=1,#where do
+        where[i]()
+    end
+end
+
+function lpdf.registerpagefinalizer(f)
+    set(pagefinalizers,f)
+end
+
+function lpdf.registerdocumentfinalizer(f)
+    set(documentfinalizers,f)
+end
+
+function lpdf.finalizepage()
+    if not environment.initex then
+        resetpageproperties()
+        run(pagefinalizers)
+        setpageproperties()
+    end
+end
+
+function lpdf.finalizedocument()
+    if not environment.initex then
+        run(documentfinalizers)
+    end
+end
+
+local c_template = "\\normalpdfcatalog{/%s %s}"
+local i_template = "\\normalpdfinfo{/%s %s}"
+local n_template = "\\normalpdfnames{/%s %s}"
+
+function lpdf.addtocatalog(k,v) if not environment.initex then texsprint(ctxcatcodes,format(c_template,k,tostring(v))) end end
+function lpdf.addtoinfo   (k,v) if not environment.initex then texsprint(ctxcatcodes,format(i_template,k,tostring(v))) end end
+function lpdf.addtonames  (k,v) if not environment.initex then texsprint(ctxcatcodes,format(n_template,k,tostring(v))) end end
+
+local r_extgstates,  d_extgstates  = pdfreserveobj(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
+local r_colorspaces, d_colorspaces = pdfreserveobj(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
+local r_patterns,    d_patterns    = pdfreserveobj(), pdfdictionary()  local p_patterns    = pdfreference(r_patterns)
+local r_shades,      d_shades      = pdfreserveobj(), pdfdictionary()  local p_shades      = pdfreference(r_shades)
+
+local function checkextgstates () if next(d_extgstates ) then lpdf.addtopageresources("ExtGState", p_extgstates ) end end
+local function checkcolorspaces() if next(d_colorspaces) then lpdf.addtopageresources("ColorSpace",p_colorspaces) end end
+local function checkpatterns   () if next(d_patterns   ) then lpdf.addtopageresources("Pattern",   p_patterns   ) end end
+local function checkshades     () if next(d_shades     ) then lpdf.addtopageresources("Shading",   p_shades     ) end end
+
+local function flushextgstates () pdfimmediateobj(r_extgstates, tostring(d_extgstates )) end
+local function flushcolorspaces() pdfimmediateobj(r_colorspaces,tostring(d_colorspaces)) end
+local function flushpatterns   () pdfimmediateobj(r_patterns,   tostring(d_patterns   )) end
+local function flushshades     () pdfimmediateobj(r_shades,     tostring(d_shades     )) end
+
+--~ function lpdf.collectedresources()
+--~     local collected = pdfdictionary {
+--~         ExtGState  = (next(d_extgstates)  and p_extgstates ) or nil,
+--~         ColorSpace = (next(d_colorspaces) and p_colorspaces) or nil,
+--~         Pattern    = (next(d_patterns)    and p_patterns   ) or nil,
+--~         Shading    = (next(d_shades)      and p_shades     ) or nil,
+--~     }
+--~     if next(collected) then
+--~         tex.sprint(tex.ctxcatcodes,collected())
+--~     end
+--~ end
+
+local collected = pdfdictionary {
+    ExtGState  = p_extgstates,
+    ColorSpace = p_colorspaces,
+    Pattern    = p_patterns,
+    Shading    = p_shades,
+} ; collected = collected()
+
+function lpdf.collectedresources()
+    tex.sprint(tex.ctxcatcodes,collected)
+end
+
+function lpdf.adddocumentextgstate (k,v) d_extgstates [k] = v end
+function lpdf.adddocumentcolorspace(k,v) d_colorspaces[k] = v end
+function lpdf.adddocumentpattern   (k,v) d_patterns   [k] = v end
+function lpdf.adddocumentshade     (k,v) d_shades     [k] = v end
+
+lpdf.registerdocumentfinalizer(flushextgstates)
+lpdf.registerdocumentfinalizer(flushcolorspaces)
+lpdf.registerdocumentfinalizer(flushpatterns)
+lpdf.registerdocumentfinalizer(flushshades)
+
+lpdf.registerpagefinalizer(checkextgstates)
+lpdf.registerpagefinalizer(checkcolorspaces)
+lpdf.registerpagefinalizer(checkpatterns)
+lpdf.registerpagefinalizer(checkshades)
+
+--
+
+function lpdf.rotationcm(a)
+    local s, c = sind(a), cosd(a)
+    texwrite(format("%s %s %s %s 0 0 cm",c,s,-s,c))
+end
+

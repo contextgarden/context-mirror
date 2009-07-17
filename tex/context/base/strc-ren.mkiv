@@ -89,15 +89,17 @@
 % \newif\ifemptyhead
 % \newif\ifdisplaysectionhead
 
+\def\structureheadattribute{\iflocation attr \destinationattribute \currentstructureattribute\fi}
+
 \def\doplacestructureheadtext#1#2#3% nodes, text, endstuff
   {\beginheadplacement
-\postponenotes
+%    \postponenotes
    \doresettructureheadnumbercontent
-   \ifconditional\structureheadleaveempty % \ifemptyhead
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi to \zeropoint{#1}%
+   \ifconditional\structureheadleaveempty
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint {#1}%
      \makestrutofbox\sectionheadbox
    \else
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute
        {\doresettructureheadnumbercontent
         \ifcase\headtimingmode\or#1\fi                          % outerside font determines distance
         \dosetfontattribute{\??nh\currentstructurehead}\c!style % but we don't want color to influence user command, todo: get the if-else out of it
@@ -107,13 +109,13 @@
 
 \def\doplacestructureheadnumbertext#1#2#3#4% nodes number text nodes
   {\beginheadplacement
-\postponenotes
+%    \postponenotes
    \doiftextelse{#2}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
-   \ifconditional\structureheadleaveempty % \ifemptyhead % = needed
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi to \zeropoint{#1}%
+   \ifconditional\structureheadleaveempty
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint{#1}%
      \makestrutofbox\sectionheadbox
    \else % = needed
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute
        {\ifcase\headtimingmode\or#1\fi
         \dosetfontattribute{\??nh\currentstructurehead}\c!style
         \structureheadparameter\c!command{\doplaceheadnumbercomponent{#1}{#2}}{\doplaceheadtextcomponent{#1}{#3}}}%
@@ -127,7 +129,7 @@
   {\doplacestructureheadtext\empty\getstructureheadtitle\getstructureheadsyncs}
 
 \def\placestructureheadnothing
-  {\getstructureheadsyncs}
+  {\hbox \structureheadattribute {\getstructureheadsyncs}}
 
 %D \starttyping
 %D \def\StretchedBox#1%
@@ -188,8 +190,7 @@
    \resetinteractionparameter\c!color
    \resetinteractionparameter\c!contrastcolor
    %\strictouterreferencestrue % tzt instelling
-   \let\localheadsetup\dolocalheadsetup
-   \startsynchronization}
+   \let\localheadsetup\dolocalheadsetup}
 
 % \setuphead[chapter]         [style=\bfd,after=,hang=line] % fit broad 2
 % \setuphead[section]         [style=\bfc,after=,hang=line]
@@ -227,13 +228,9 @@
 \newbox\sectionheadbox
 
 \def\endheadplacement#1%
-  {\doifelse{\structureheadparameter\c!state}\v!start
-     {\doifnothing{\structureheadparameter\c!file}{\autocrossdocumentfalse}}
-     {\autocrossdocumentfalse}%
-   % no message needed here, should be a proper switch
-   \noflines\zerocount
+  {\noflines\zerocount
    \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
-     % new (tod tight == one following line up)
+     % new (todo tight == one following line up)
      \processaction
        [\structureheadparameter\c!hang]
        [    \v!line=>\hangheadplacement\noflines\zerocount,
@@ -247,19 +244,8 @@
      \snaptogrid[\structureheadparameter\c!grid]\hbox
        {\hskip\localheadskip
         \hskip\structureheadparameter\c!margin\relax
-        \iflocation
-%           \ifautocrossdocument
-%             \doifreferencefoundelse{\structureheadparameter\c!file::\currentstructurehead}
-%               {\edef\currentinnerreference{\s!aut:\currenttextreference}% stored in
-%                \gotoouterlocation{}{\box\sectionheadbox}}               % text slot
-%               {\hbox{\box\sectionheadbox}}%
-%           \else
-            \hbox{\box\sectionheadbox}%
-%           \fi
-        \else
-          \hbox{\box\sectionheadbox}%
-        \fi}%
-     \doflushnotes % new, not really needed
+        \box\sectionheadbox}%
+     \flushnotes % new, not really needed
      \endgraf
      \ifvmode
        \ifnum\noflines>\zerocount
@@ -271,21 +257,9 @@
      #1%
    \else
      \strut
-     \doflushnotes % new, here since we're in par mode
-     \iflocation
-       \ifautocrossdocument
-         \hhboxindent=\ifconditional\continuoussectionhead\headlastlinewidth\else\zeropoint\fi
-         \unhhbox\sectionheadbox\with{\gotobox{\box\hhbox}[\structureheadparameter\c!file::\currentstructurehead]}%
-         \advance\lasthhboxwidth by \numberheaddistance
-         \xdef\headlastlinewidth{\the\lasthhboxwidth}%
-       \else
-         \unhbox\sectionheadbox
-         \globallet\headlastlinewidth\!!zeropoint
-       \fi
-     \else
-       \unhbox\sectionheadbox
-       \globallet\headlastlinewidth\!!zeropoint
-     \fi
+     \flushnotes % new, here since we're in par mode
+     \unhbox\sectionheadbox
+     \globallet\headlastlinewidth\!!zeropoint
      #1%
      \hskip\numberheaddistance\!!plus\numberheaddistance\!!minus.25\dimexpr\numberheaddistance\relax
      \hskip\continuousstructureheadsignal\ignorespaces
@@ -299,7 +273,6 @@
        \fi
      \fi
    \fi
-   \stopsynchronization
    \egroup
    \egroup
    \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
@@ -331,10 +304,13 @@
   {\setvalue{\??ns:#1}{#2}%
    \setvalue{\??ns::#1}}
 
+% \def\normalplacehead
+%   {\executeifdefined
+%      {\??ns::\numberheadalternative}
+%      {\getvalue{\??ns::\v!normal}}}
+
 \def\normalplacehead
-  {\executeifdefined
-     {\??ns::\numberheadalternative}
-     {\getvalue{\??ns::\v!normal}}}
+  {\csname\??ns::\ifcsname\??ns::\numberheadalternative\endcsname\numberheadalternative\else\v!normal\fi\endcsname}
 
 \defineheadplacement[\v!paragraph][\v!vertical]#1#2%
   {\vbox

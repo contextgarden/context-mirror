@@ -41,31 +41,32 @@ function states.disabletriggering()
     triggering = false
 end
 
+-- the following code is no longer needed due to the new backend
+-- but we keep it around for a while as an example
 --
-
-states.collected = states.collected or { }
-
-storage.register("states/collected", states.collected, "states.collected")
-
-local collected = states.collected
-
-function states.collect(str)
-    collected[#collected+1] = str
-end
-
-function states.flush()
-    if #collected > 0 then
-        for i=1,#collected do
-            texsprint(ctxcatcodes,collected[i]) -- we're in context mode anyway
-        end
-        collected = { }
-        states.collected = collected
-    end
-end
-
-function states.check()
-    texio.write_nl(concat(collected,"\n"))
-end
+-- states.collected = states.collected or { }
+--
+-- storage.register("states/collected", states.collected, "states.collected")
+--
+-- local collected = states.collected
+--
+-- function states.collect(str)
+--     collected[#collected+1] = str
+-- end
+--
+-- function states.flush()
+--     if #collected > 0 then
+--         for i=1,#collected do
+--             texsprint(ctxcatcodes,collected[i]) -- we're in context mode anyway
+--         end
+--         collected = { }
+--         states.collected = collected
+--     end
+-- end
+--
+-- function states.check()
+--     texio.write_nl(concat(collected,"\n"))
+-- end
 
 -- we used to do the main processor loop here and call processor for each node
 -- but eventually this was too much a slow down (1 sec on 23 for 120 pages mk)
@@ -82,7 +83,7 @@ local function process_attribute(head,plugin) -- head,attribute,enabled,initiali
         if processor then
             local initializer = plugin.initializer
             local resolver    = plugin.resolver
-            local inheritance = (resolver and resolver()) or -0x7FFFFFFF -- we can best use nil and skip !
+            local inheritance = (resolver and resolver()) or nil -- -0x7FFFFFFF -- we can best use nil and skip !
             if initializer then
                 initializer(namespace,attribute,head)
             end
@@ -94,8 +95,7 @@ local function process_attribute(head,plugin) -- head,attribute,enabled,initiali
                     if used then
                         local flusher = plugin.flusher
                         if flusher then
-                            local h, d = flusher(namespace,attribute,head,used)
-                            head = h
+                            head = flusher(namespace,attribute,head,used)
                         end
                     end
                 end
@@ -115,76 +115,54 @@ function nodes.install_attribute_handler(plugin)
     end
 end
 
--- a few handlers
+-- the injectors
 
-local current, current_selector, used, done = 0, 0, { }, false
+local insert_node_before = node.insert_before
+local insert_node_after  = node.insert_after
 
-local function insert(n,stack,previous,head) -- there is a helper, we need previous because we are not slided
-    if n then
-        if type(n) == "function" then
-            n = n()
-        end
-        if n then
-            n = copy_node(n)
-            n.next = stack
-            if previous then
-                previous.next = n
-            else
-                head = n
-            end
-            previous = n -- ?
-        else
-            -- weird
-        end
-    end
-    return stack, head
-end
+local nsdata, nsdone, nsforced, nsselector, nstrigger
+local current, current_selector, done = 0, 0, false -- nb, stack has a local current !
 
-function states.initialize(what, attribute, stack)
-    current, current_selector, used, done = 0, 0, { }, false
+function states.initialize(namespace,attribute,head)
+    nsdata, nsnone = namespace.data, namespace.none
+    nsforced, nsselector = namespace.forced, namespace.selector
+    nstrigger = triggering and namespace.triggering and trigger
+    current, current_selector, done = 0, 0, false -- todo: done cleanup
 end
 
 function states.finalize(namespace,attribute,head) -- is this one ok?
-    if current > 0 then
-        local nn = namespace.none
-        if nn then
-            local id = head.id
-            if id == hlist or id == vlist then
-                local list = head.list
-                if list then
-                    local _, h = insert(nn,list,nil,list)
-                    head.list = h
-                end
-            else
-                stack, head = insert(nn,head,nil,head)
+    if current > 0 and nsnone then
+        local id = head.id
+        if id == hlist or id == vlist then
+            local list = head.list
+            if list then
+                head.list = insert_node_before(list,list,copy_node(nsnone))
             end
-            return head, true, true
+        else
+            head = insert_node_before(head,head,copy_node(nsnone))
         end
+        return head, true, true
     end
     return head, false, false
 end
 
 local function process(namespace,attribute,head,inheritance,default) -- one attribute
-    local trigger = triggering and namespace.triggering and trigger
-    local stack, previous, done = head, nil, false
-    local nsdata, nsreviver, nsnone = namespace.data, namespace.reviver, namespace.none
+    local stack, done = head, false
     while stack do
         local id = stack.id
         -- we need to deal with literals too (reset as well as oval)
---~             if id == glyph or (id == whatsit and stack.subtype == 8) or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
+        -- if id == glyph or (id == whatsit and stack.subtype == 8) or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
         if id == glyph or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
             local c = has_attribute(stack,attribute)
             if c then
                 if default and c == inheritance then
                     if current ~= default then
-                        local data = nsdata[default] or nsreviver(default)
-                        stack, head = insert(data,stack,previous,head)
-                        current, done, used[default] = default, true, true
+                        head = insert_node_before(head,stack,copy_node(nsdata[default]))
+                        current, done = default, true
                     end
                 elseif current ~= c then
-                    local data = nsdata[c] or nsreviver(c)
-                    stack, head = insert(data,stack,previous,head)
-                    current, done, used[c] = c, true, true
+                    head = insert_node_before(head,stack,copy_node(nsdata[c]))
+                    current, done = c, true
                 end
                 -- here ? compare selective
                 if id == glue then --leader
@@ -200,7 +178,7 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                             current = 0
                         end
                         local ok = false
-                        if trigger and has_attribute(stack,trigger) then
+                        if nstrigger and has_attribute(stack,nstrigger) then
                             local outer = has_attribute(stack,attribute)
                             if outer ~= inheritance then
                                 stack.leader, ok = process(namespace,attribute,content,inheritance,outer)
@@ -216,19 +194,18 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                 end
             elseif default and inheritance then
                 if current ~= default then
-                    local data = nsdata[default] or nsreviver(default)
-                    stack, head = insert(data,stack,previous,head)
-                    current, done, used[default] = default, true, true
+                    head = insert_node_before(head,stack,copy_node(nsdata[default]))
+                    current, done = default, true
                 end
             elseif current > 0 then
-                stack, head = insert(nsnone,stack,previous,head)
-                current, done, used[0] = 0, true, true
+                head = insert_node_before(head,stack,copy_node(nsnone))
+                current, done = 0, true
             end
         elseif id == hlist or id == vlist then
             local content = stack.list
             if content then
                 local ok = false
-                if trigger and has_attribute(stack,trigger) then
+                if nstrigger and has_attribute(stack,nstrigger) then
                     local outer = has_attribute(stack,attribute)
                     if outer ~= inheritance then
                         stack.list, ok = process(namespace,attribute,content,inheritance,outer)
@@ -241,15 +218,8 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                 done = done or ok
             end
         end
-        previous = stack
         stack = stack.next
     end
-    -- we need to play safe
--- i need a proper test set for this, maybe controlled per feature
---~         if current > 0 then
---~             stack, head = insert(nsnone,stack,previous,head)
---~             current, current_selector, done, used[0] = 0, 0, true, true
---~         end
     return head, done
 end
 
@@ -262,40 +232,37 @@ states.process = process
 -- each other with the same color but different color spaces e.g. \showcolor)
 
 local function selective(namespace,attribute,head,inheritance,default) -- two attributes
-    local trigger = triggering and namespace.triggering and trigger
-    local stack, previous, done = head, nil, false
-    local nsforced, nsselector = namespace.forced, namespace.selector
-    local nsdata, nsreviver, nsnone = namespace.data, namespace.reviver, namespace.none
+    local stack, done = head, false
     while stack do
         local id = stack.id
         -- we need to deal with literals too (reset as well as oval)
---~             if id == glyph or (id == whatsit and stack.subtype == 8) or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
+        -- if id == glyph or (id == whatsit and stack.subtype == 8) or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
         if id == glyph or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
             local c = has_attribute(stack,attribute)
             if c then
                 if default and c == inheritance then
                     if current ~= default then
-                        local data = nsdata[default] or nsreviver(default)
-                        stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
-                        current, done, used[default] = default, true, true
+                        local data = nsdata[default]
+                        head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+                        current, done = default, true
                     end
                 else
                     local s = has_attribute(stack,nsselector)
                     if current ~= c or current_selector ~= s then
-                        local data = nsdata[c] or nsreviver(c)
-                        stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
-                        current, current_selector, done, used[c] = c, s, true, true
+                        local data = nsdata[c]
+                        head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+                        current, current_selector, done = c, s, true
                     end
                 end
             elseif default and inheritance then
                 if current ~= default then
-                    local data = nsdata[default] or nsreviver(default)
-                    stack, head = insert(data[nsforced or has_attribute(stack,nsselector) or nsselector],stack,previous,head)
-                    current, done, used[default] = default, true, true
+                    local data = nsdata[default]
+                    head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+                    current, done = default, true
                 end
             elseif current > 0 then
-                stack, head = insert(nsnone,stack,previous,head)
-                current, current_selector, done, used[0] = 0, 0, true, true
+                head = insert_node_before(head,stack,copy_node(nsnone))
+                current, current_selector, done = 0, 0, true
             end
             if id == glue then -- leader
                 -- same as *list
@@ -310,7 +277,7 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                         current = 0
                     end
                     local ok = false
-                    if trigger and has_attribute(stack,trigger) then
+                    if nstrigger and has_attribute(stack,nstrigger) then
                         local outer = has_attribute(stack,attribute)
                         if outer ~= inheritance then
                             stack.leader, ok = selective(namespace,attribute,content,inheritance,outer)
@@ -328,7 +295,7 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
             local content = stack.list
             if content then
                 local ok = false
-                if trigger and has_attribute(stack,trigger) then
+                if nstrigger and has_attribute(stack,nstrigger) then
                     local outer = has_attribute(stack,attribute)
                     if outer ~= inheritance then
                         stack.list, ok = selective(namespace,attribute,content,inheritance,outer)
@@ -341,20 +308,74 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                 done = done or ok
             end
         end
-        previous = stack
         stack = stack.next
     end
-    -- we need to play safe, this is subptimal since now we end each box
-    -- even if it's not needed
--- i need a proper test set for this, maybe controlled per feature
---~         if current > 0 then
---~             stack, head = insert(nsnone,stack,previous,head)
---~             current, current_selector, done, used[0] = 0, 0, true, true
---~         end
     return head, done
 end
 
 states.selective = selective
+
+-- todo: each line now gets the (e.g. layer) property, hard to avoid (and not needed too)
+
+local function stacked(namespace,attribute,head,default) -- no triggering, no inheritance, but list-wise
+    local stack, done = head, false
+--~     local current, depth = 0, 0
+local current, depth = default or 0, 0
+    while stack do
+        local id = stack.id
+        if id == glyph or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
+            local c = has_attribute(stack,attribute)
+            if c then
+                if current ~= c then
+                    head = insert_node_before(head,stack,copy_node(nsdata[c]))
+                    depth = depth + 1
+                    current, done = c, true
+                end
+                if id == glue then
+                    local content = stack.leader
+                    if content then -- unchecked
+                        local ok = false
+                        stack.leader, ok = stacked(namespace,attribute,content,current)
+                        done = done or ok
+                    end
+                end
+            elseif default then
+                --
+            elseif current > 0 then
+                head = insert_node_before(head,stack,copy_node(nsnone))
+                depth = depth - 1
+                current, done = 0, true
+            end
+        elseif id == hlist or id == vlist then
+            local content = stack.list
+            if content then
+                local c = has_attribute(stack,attribute)
+                if c and current ~= c then
+                    local p = current
+                    current, done = c, true
+                    head = insert_node_before(head,stack,copy_node(nsdata[c]))
+                    stack.list = stacked(namespace,attribute,content,current)
+                    head, stack = insert_node_after(head,stack,copy_node(nsnone))
+                    current = p
+                else
+                    local ok = false
+                    stack.list, ok = stacked(namespace,attribute,content,current)
+                    done = done or ok
+                end
+            end
+        end
+        stack = stack.next
+    end
+    while depth > 0 do
+        head = insert_node_after(head,stack,copy_node(nsnone))
+        depth = depth -1
+    end
+    return head, done
+end
+
+states.stacked = stacked
+
+-- -- --
 
 statistics.register("attribute processing time", function()
     if statistics.elapsedindeed(attributes) then

@@ -132,7 +132,7 @@
 
 \def\setoperatorlimits#1#2% operator limits
   {\savenormalmeaning{#1}%
-   \def#1{\getvalue{normal\strippedcsname#1}#2}}
+   \def#1{\csname normal\strippedcsname#1\endcsname#2}}
 
 \setoperatorlimits\int              \intlimits
 \setoperatorlimits\iint             \intlimits

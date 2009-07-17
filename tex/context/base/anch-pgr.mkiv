@@ -17,6 +17,9 @@
 %D the reference point on the page. The next macro does so and
 %D is hooked into the page building routine.
 
+%D I will speed up this module when I have a proper torture
+%D test file.
+
 \unprotect
 
 % in the future, the depth of tail will reflect page depth
@@ -26,9 +29,9 @@
 %D The next macros so some housekeeping.
 
 \def\pageanchor{page:0} % for the moment only one pagesize
-\def\textanchor{text:\realfolio}
-\def\headanchor{head:\realfolio} % virtual position
-\def\tailanchor{tail:\realfolio} % virtual position
+\def\textanchor{text:\the\realpageno}
+\def\headanchor{head:\the\realpageno} % virtual position
+\def\tailanchor{tail:\the\realpageno} % virtual position
 
 %D Anchors:
 
@@ -201,7 +204,7 @@
 \newtoks\everyinsertpositionaction
 
 \def\cleanuppositionaction#1% not in trialtypesetting
-  {\ifcsname\POSactionprefix#1++\endcsname % \ifundefined{\POSactionprefix#1++}\else
+  {\ifcsname\POSactionprefix#1++\endcsname
      \the\everycleanpositionaction
      \iflocalpositioning
        \letgvalue{\POSactionprefix#1++}\empty
@@ -273,10 +276,6 @@
 
 \let\stopMPpositiongraphic\relax
 
-% \def\prepareMPpositionvariables
-%   {\ifundefined{\@@meta self}\setvalue{\@@meta self}{\currentposition}\fi
-%    \ifundefined{\@@meta from}\setvalue{\@@meta from}{\currentposition}\fi}
-
 \def\prepareMPpositionvariables
   {\ifcsname\@@meta self\endcsname\else\setvalue{\@@meta self}{\currentposition}\fi
    \ifcsname\@@meta from\endcsname\else\setvalue{\@@meta from}{\currentposition}\fi}
@@ -292,23 +291,26 @@
 % Now we need a adapted action handler:
 
 \def\dopositionaction#1% test saves hash entry in etex
-  {\ifundefined{\POSactionprefix#1::}\else
-     \ifnum\MPp{#1}>\zerocount % new
-       \bgroup
-       \setbox\scratchbox\hbox
-       \bgroup
-       \traceposstring\clap\red{<#1>}%
-       \the\everyinsertpositionaction
-       \the\everypositionaction
-       \getvalue{\POSactionprefix#1::}%
-       \cleanuppositionaction{#1}%
-       \egroup                % smashed is really needed else
-       \smashedbox\scratchbox % we get problems with too big
-       \egroup                % overlays (s-pre-0x.tex)
-     \else
-       % shouldn't happen too often
-       \traceposstring\clap\cyan{<#1>}%
-     \fi
+  {\ifcsname\POSactionprefix#1::\endcsname
+     \dodopositionaction{#1}%
+   \fi}
+
+\def\dodopositionaction#1%
+  {\ifnum\MPp{#1}>\zerocount % new
+     \bgroup
+     \setbox\scratchbox\hbox
+     \bgroup
+     \traceposstring\clap\red{<#1>}%
+     \the\everyinsertpositionaction
+     \the\everypositionaction
+     \csname\POSactionprefix#1::\endcsname
+     \cleanuppositionaction{#1}%
+     \egroup                % smashed is really needed else
+     \smashedbox\scratchbox % we get problems with too big
+     \egroup                % overlays (s-pre-0x.tex)
+   \else
+     % shouldn't happen too often
+     \traceposstring\clap\cyan{<#1>}%
    \fi}
 
 \def\MPpositiongraphic
@@ -607,28 +609,29 @@
 \newcounter\localpositionnumber
 
 \def\MPanchornumber
-  {\iflocalpositioning\localpositionnumber\else\realfolio\fi}
+  {\iflocalpositioning\localpositionnumber\else\the\realpageno\fi}
 
 %D So far for the trickery.
 
 \newcount\textbackgrounddepth
 
-\appendtoks
-  \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
-\to \everybye
-
-\appendtoks
-  \initializeparbackgrounds
-\to \everystarttext
-
-\ifx\totalnofparbackgrounds\undefined \newcounter\totalnofparbackgrounds \fi
 \ifx\nofparbackgrounds     \undefined \newcount  \nofparbackgrounds      \fi
 
-\def\initializeparbackgrounds
-  {\ifcase\totalnofparbackgrounds\else
-     \global\positioningtrue
-     \global\positioningpartrue
-   \fi}
+% \ifx\totalnofparbackgrounds\undefined \newcounter\totalnofparbackgrounds \fi
+%
+% \appendtoks
+%   \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
+% \to \everybye
+%
+% \appendtoks
+%   \initializeparbackgrounds
+% \to \everystarttext
+%
+% \def\initializeparbackgrounds
+%   {\ifcase\totalnofparbackgrounds\else
+%      \global\positioningtrue
+%      \global\positioningpartrue
+%    \fi}
 
 \unexpanded\def\starttextbackground
   {\bgroup
@@ -680,10 +683,6 @@
    \def\currenttextbackground{#1}%
    \global\advance\nofparbackgrounds\plusone
    \edef\currentparbackground{pbg:\number\nofparbackgrounds}%
-%    \bgroup
-%      \advance\nofparbackgrounds\plusone
-%      \xdef\nextparbackground{pbg:\number\nofparbackgrounds}%
-%    \egroup
    \xdef\nextparbackground{pbg:\number\numexpr\nofparbackgrounds+\plusone\relax}% still xdef ?
    % todo : \synchonizepositionpage{b:\currentparbackground}{s:\currentparbackground}%
    \setuptextbackground[#1][#2]%
@@ -695,8 +694,7 @@
 % todo \backgroundvariable\c!variant
 
 \def\dopresettextbackground#1% todo: \backgroundparameter
-  {\ExpandFirstAfter\processaction % \EFA niet echt nodig
-     [\textbackgroundparameter\c!location]
+  {\normalexpanded{\noexpand\processaction[\textbackgroundparameter\c!location]}
      [   \v!text=>\let\dodostarttextbackground\dostarttextbackgroundtxt
                   \let\dodostoptextbackground \dostoptextbackgroundtxt,
     \v!paragraph=>\let\dodostarttextbackground\dostarttextbackgroundpar
@@ -754,44 +752,13 @@
    \dostopattributes}
 
 \def\dostarttextbackgroundtxt
-  {\ifvmode \dontleavehmode \fi % was leavevmode, brrr
+  {\ifvmode \dontleavehmode \fi
    \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
    \fpos\currentparbackground\ignorespaces}
 
 \def\dostoptextbackgroundtxt
   {\tpos\currentparbackground
    \dostopattributes}
-
-% keep this simple one, it's used in prikkels and alike
-%
-% \def\dostarttextbackgroundpar
-%   {\endgraf % new
-%    \getvalue{\??td\currenttextbackground\c!before}%
-%    \noindent\fpos\currentparbackground\ignorespaces
-%    \bgroup
-%    \nobreak \vskip-\lineheight \nobreak
-%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!topoffset}\to\scratchskip
-%    \kern\scratchskip\nobreak
-%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!leftoffset}}%
-%    \advance\leftskip\leftskipadaption
-%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rightoffset}}%
-%    \advance\rightskip\leftskipadaption
-%    \dostartattributes{\??td\currenttextbackground}\c!style\c!color{}%
-%    \nowhitespace
-%    \seteffectivehsize
-%    \par}
-%
-% \def\dostoptextbackgroundpar
-%   {\par
-%    \dostopattributes
-%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bottomoffset}\to\scratchskip
-%    \kern\scratchskip\nobreak
-%    \nobreak \vskip-\lineheight \nobreak
-%    \nowhitespace
-%    \egroup
-%    \nobreak \noindent \strut \hfill \kern\zeropoint \tpos\currentparbackground
-%    \endgraf % new
-%    \getvalue{\??td\currenttextbackground\c!after}}
 
 \newskip\textbackgroundskip
 
@@ -868,52 +835,83 @@
 \let\textparwidth \!!zeropoint
 
 \def\calculatetextpardimensions
-  {\docalculatetextpardimensions\btbanchor    \etbanchor    \MPparanchor}
+  {\docalculatetextpardimensions\btbanchor\etbanchor\MPparanchor}
 
 \def\calculatenexttextpardimensions
   {\docalculatetextpardimensions\nextbtbanchor\nextetbanchor\relax}
 
-\def\docalculatetextpardimensions#1#2#3% todo: dimexpr
-  {\scratchcounter\MPp#2%\etbanchor
-   \advance\scratchcounter-\MPp#1%\btanchor
-   \edef\textparpages{\the\scratchcounter}%
-   \ifcase\scratchcounter
-     % one page
-     \scratchdimen         \MPy#1%\btanchor
-     \advance\scratchdimen-\MPy#2%\etbanchor
-   \else
-     % two or more pages
-     \scratchdimen         \MPy#1%\btanchor
-     \advance\scratchdimen-\MPy#2%\etbanchor
-     \advance\scratchdimen-\MPy\textanchor
-     \advance\scratchdimen \MPy\textanchor % - and then + ?
-     \advance\scratchdimen \MPh\textanchor\relax
-     \ifcase\scratchcounter>2 \ifnum\scratchcounter<5
-       % more pages
-       \scratchdimen\textheight
-       \advance\scratchcounter \minusone
-       \multiply\scratchdimen \scratchcounter
-     \else
-       % keep'm small
-       \scratchdimen5\textheight
-     \fi \fi
-   \fi
-   \edef\textparheight{\the\scratchdimen}%
-   \ifcase\scratchcounter
-     % one page
-     \scratchdimen         \MPx#2%\etbanchor
-     \advance\scratchdimen-\MPx#1%\btanchor
-   \else
-     % two or more pages / maybe also hang
-     \ifx#3\relax
-       \scratchdimen\makeupwidth % \textwidth
-     \else
-       \scratchdimen\MPw\MPparanchor
-       \advance\scratchdimen-\MPl\MPparanchor
-       \advance\scratchdimen-\MPr\MPparanchor
-     \fi
-   \fi
-   \edef\textparwidth{\the\scratchdimen}}
+% \def\docalculatetextpardimensions#1#2#3% #1=\btbanchor #2=\etbanchor
+%   {\scratchcounter\numexpr\MPp#2-\MPp#1\relax
+%    \edef\textparpages{\the\scratchcounter}%
+%    \ifcase\scratchcounter
+%      % one page
+%      \scratchdimen\dimexpr\MPy#1-\MPy#2\relax
+%    \else
+%      % two or more pages
+%      \ifnum\scratchcounter>2
+%        \ifnum\scratchcounter<5
+%          % more pages
+%          \scratchdimen\textheight
+%          \advance\scratchcounter \minusone
+%          \multiply\scratchdimen \scratchcounter
+%        \else
+%          % keep'm small
+%          \scratchdimen5\textheight
+%        \fi
+%      \else
+%        \scratchdimen\dimexpr\MPy#1-\MPy#2-\MPy\textanchor+\MPy\textanchor+\MPh\textanchor\relax
+%      \fi
+%    \fi
+%    \edef\textparheight{\the\scratchdimen}%
+%    \ifcase\scratchcounter
+%      % one page
+%      \scratchdimen\dimexpr\MPx#2-\MPx#1\relax
+%    \else
+%      % two or more pages / maybe also hang
+%      \ifx#3\relax
+%        \scratchdimen\makeupwidth % \textwidth
+%      \else
+%        \scratchdimen\dimexpr\MPw\MPparanchor-\MPl\MPparanchor-\MPr\MPparanchor\relax
+%      \fi
+%    \fi
+%    \edef\textparwidth{\the\scratchdimen}}
+
+\def\docalculatetextpardimensions#1#2#3% #1=\btbanchor #2=\etbanchor (adapted 8/6/2009)
+  {\scratchcounter\numexpr\MPp#2-\MPp#1\relax
+   \edef\textparpages
+     {\the\scratchcounter}%
+   \edef\textparheight
+     {\the\dimexpr
+        \ifcase\scratchcounter
+          % one page
+          \MPy#1-\MPy#2%
+        \else
+          % two or more pages
+          \ifnum\scratchcounter>2
+            \ifnum\scratchcounter<5
+              % more pages
+              \textheight*\numexpr\scratchcounter+\minusone
+            \else
+              % keep'm small
+              5\textheight
+            \fi
+          \else
+            \MPy#1-\MPy#2-\MPy\textanchor+\MPy\textanchor+\MPh\textanchor
+          \fi
+        \fi}%
+   \edef\textparwidth
+     {\the\dimexpr
+        \ifcase\scratchcounter
+          % one page
+          \dimexpr\MPx#2-\MPx#1%
+        \else
+          % two or more pages / maybe also hang
+          \ifx#3\relax
+            \makeupwidth % \textwidth
+          \else
+            \MPw\MPparanchor-\MPl\MPparanchor-\MPr\MPparanchor
+          \fi
+        \fi}}
 
 \def\mintextparheight{4\lineheight}
 
@@ -938,7 +936,7 @@
 \def\definetextbackground
   {\dodoubleempty\dodefinetextbackground}
 
-\def\dodefinetextbackground[#1][#2]%
+\def\dodefinetextbackground[#1][#2]% parent and ..parameter
   {\ifsecondargument % why ?
      \copyparameters[\??td#1][\??td]
        [\c!state,\c!location,\c!alternative,\c!mp,\c!method,
@@ -1250,7 +1248,7 @@
        % new but bugged
        % \setbox#1\hbox
        %   {\hskip-\MPx{\s!margin:\number\currentmarginpos}%
-       %    \hskip\MPx{head:\realfolio}%
+       %    \hskip\MPx{head:\the\realpageno}%
        %    \box#1}%
        % so far
        \setbox#1\hbox
@@ -1278,7 +1276,7 @@
      \dp#1\zeropoint
      \ht#1\zeropoint
    \fi
-   \graphicvadjust{\box#1}%
+   \graphicvadjust{\dontleavehmode\box#1}% dontleavehmode is needed to get direction right
    \egroup}
 
 \chardef\marginrepositionmethod\plusone   % sidemethod
@@ -1308,25 +1306,22 @@
 
 % 0=notfound  1=found  2=currentpage
 
-\def\do@@amposition#1#2#3%
+\def\domenuitemposition#1#2#3%
   {\doifelsevalue{\??am#1\c!position}\v!yes
      {\doglobal\increment\currentamposition
-      \doifnumberelse{#2}
-        {\docheckrealreferencepage{#2}%
-         \global\chardef\currentamrealpage\ifrealreferencepage2\else1\fi}
-        {\doifreferencefoundelse{#2}
-           {\global\chardef\currentamrealpage\ifrealreferencepage2\else1\fi}
-           {\global\chardef\currentamrealpage0}}% % not found
+      \doifreferencefoundelse{#2}% 0=not found, 1=same page, >1=elsewhere
+        {\chardef\currentamrealpage\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
+        {\chardef\currentamrealpage\plustwo}%
       \expanded
         {\doglobal\noexpand\appendtoks
-           #1_menu_button(\currentamposition,\the\currentamrealpage,\MPpos{#1:\currentamposition}) ;
+           #1_menu_button(\number\currentamposition,\the\currentamrealpage,\MPpos{#1:\currentamposition}) ;
          \to \MPmenutoks}%
       \hpos{#1:\currentamposition}{#3}}
      {#3}}
 
-\def\do@@ammenuposition#1%
+\def\dowholemenuposition#1%
   {\ifnum\currentamposition>0
-     \dowithnextbox{\hpos{menu:#1:\realfolio}{\flushnextbox}}\hbox
+     \dowithnextbox{\hpos{menu:#1:\the\realpageno}{\flushnextbox}}\hbox
    \fi}
 
 %D \macros
@@ -1337,6 +1332,7 @@
 %D specified with symbolic names, and symbolic references to
 %D the graphics involved. Each table has its own namespace.
 
+\newconditional\tablehaspositions
 \newcount\noftabpositions
 \newtoks \posXCtoks
 
@@ -1346,10 +1342,13 @@
 \def\tbPOSprefix
   {tbp:\number\noftabpositions:}
 
+% \def\tableposindeed
+%   {\scratchtoks\posXCtoks
+%    \global\posXCtoks\emptytoks
+%    \the\scratchtoks}
+
 \def\tablepos
-  {\scratchtoks\posXCtoks
-   \global\posXCtoks\emptytoks
-   \the\scratchtoks}
+  {\normalexpanded{\global\posXCtoks\emptytoks\the\posXCtoks}}
 
 \let\tabulatepos\tablepos
 
@@ -1403,10 +1402,16 @@
 \def\dodoXC[#1]%
   {{\let\NC\relax\processcommalist[#1]\dododoXC}}
 
-\def\doGSC[#1]{\iffirstargument\dodoGSC[#1]\else\expandafter\NC\fi}
-\def\doGFC[#1]{\iffirstargument\dodoGFC[#1]\else\expandafter\NC\fi}
-\def\doGTC[#1]{\iffirstargument\dodoGTC[#1]\else\expandafter\NC\fi}
-\def\doXC [#1]{\iffirstargument\dodoXC [#1]\else\expandafter\fi\NC}
+\def\@@checktablepositionstate
+  {\iftrialtypesetting
+     \global\settrue\tablehaspositions
+     \firstargumentfalse
+   \fi}
+
+\def\doGSC[#1]{\@@checktablepositionstate\iffirstargument\dodoGSC[#1]\else\expandafter\NC\fi}
+\def\doGFC[#1]{\@@checktablepositionstate\iffirstargument\dodoGFC[#1]\else\expandafter\NC\fi}
+\def\doGTC[#1]{\@@checktablepositionstate\iffirstargument\dodoGTC[#1]\else\expandafter\NC\fi}
+\def\doXC [#1]{\@@checktablepositionstate\iffirstargument\dodoXC [#1]\else\expandafter\fi\NC}
 
 \def\tbGSC{\dosingleempty\doGSC}
 \def\tbGFC{\dosingleempty\doGFC}
@@ -1419,15 +1424,30 @@
 \let\tabulatepos\tablepos
 
 \def\tabulatenormalpos
-  {\hss\tabulatepos\hss}
+  {\iftrialtypesetting
+     % nothing
+   \else\ifconditional\tablehaspositions
+     \hss\tabulatepos\hss
+   \else
+     % nothing
+   \fi\fi}
 
 \def\tabulateequalpos
+  {\iftrialtypesetting
+     \tabulateEQ
+   \else\ifconditional\tablehaspositions
+     \tabulateEQpos
+   \else
+     \tabulateEQ
+   \fi\fi}
+
+\def\tabulateEQpos
   {\setbox\scratchbox\hbox{\tabulateEQ}%
    \hbox to \wd\scratchbox{\hss\kern\zeropoint\tabulatepos\hss}%
    \hskip-\wd\scratchbox
    \box\scratchbox}
 
-\def\tabulatenormalcolumn#1% overloaded
+\def\tabulatenormalcolumn#1% overloaded later in node-bck
   {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi
    &\global\chardef\tabulatetype#1&}
 
@@ -1437,6 +1457,7 @@
 
 \appendtoks
   \global\advance\noftabpositions\plusone
+  \global\setfalse\tablehaspositions
 \to \everytabulate
 
 % We need to handle paragraphs as well.
@@ -1454,7 +1475,7 @@
      \gdef\doflushtabulateepos{\epos{#1}}%
    \fi}
 
-\def\splitofftabulatebox
+\def\splitofftabulatebox % overloaded in node-bck
   {\dontcomplain
    \global\setbox\tabulatebox % % % global ? % % %
      \vsplit\tablebox\tabulatecolumn to \lineheight
@@ -1465,11 +1486,12 @@
    \ht\tabulatebox\strutht
    \dp\tabulatebox\strutdp
    \box\tabulatebox
-   \doflushtabulateepos}
+   \iftrialtypesetting\else\ifconditional\tablehaspositions\doflushtabulateepos\fi\fi}
 
 \appendtoks
   \let\dotablebpos\dotabulatebpos
   \let\dotableepos\dotabulateepos
+  \glet\doflushtabulateepos\relax
 \to \everytabulate
 
 %D In order to prevent potential clashes with abbreviations,
@@ -1517,6 +1539,7 @@
 
 \appendtoks
   \global\advance\noftabpositions\plusone
+  \global\setfalse\tablehaspositions
 \to \everytable
 
 %D Since we don't want nameclashes:

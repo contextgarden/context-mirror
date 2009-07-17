@@ -25,56 +25,33 @@
 
 \unprotect
 
-\let\currentlayerproperty\empty
+% will be redone ... no longer using property mechanism (less clashes)
+
+\let\currentviewerlayer\empty
+
+\appendtoks
+    \let\currentviewerlayer\empty
+\to \everypagebody
 
 \def\startlayerproperty
-  {\let\currentlayerproperty\currentproperty
+  {\pushmacro\currentviewerlayer % grouped (used in interaction)
+   \let\currentlayerproperty\currentproperty % can be cross group
    \dotriggerviewerlayer\currentlayerproperty}
 
 \def\stoplayerproperty
-  {\let\currentlayerproperty\previousproperty
+  {\popmacro\currentviewerlayer % grouped (used in interaction)
+   \let\currentlayerproperty\previousproperty % can be cross group
    \dotriggerviewerlayer\currentlayerproperty}
 
 \def\checklayerproperty % could be made more clever
-  {\doifelse{\checkedpropertyparameter\v!printable\currentproperty}\v!no
-     {\def\printviewerlayer{0}}
-     {\def\printviewerlayer{1}}%
-   \registerviewerlayer\currentproperty\currentproperty
-   \dodefineviewerlayer
-     \currentproperty % tag
-     {\checkedpropertyparameter\c!title\currentproperty}%
-     {\checkedpropertyparameter\c!state\v!start}% visible or hidden
-     {0}% type (1=frozen)
-     {\printviewerlayer}}% 1=printable
-
-\def\domakelayerpropertylist
-  {\iflocation
-     \expandafter\domakeviewerlayerlist
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
-
-\ifdefined\setglobalsystemreference
-
-    \setglobalsystemreference \rt!exec \v!HideLayer   {hidelayer}
-    \setglobalsystemreference \rt!exec \v!VideLayer   {videlayer}
-    \setglobalsystemreference \rt!exec \v!ToggleLayer {togglelayer}
-
-    \setexecutecommandcheck {hidelayer}   \domakelayerpropertylist
-    \setexecutecommandcheck {videlayer}   \domakelayerpropertylist
-    \setexecutecommandcheck {togglelayer} \domakelayerpropertylist
-
-\else
-
-    % todo, but after a full split (saves dev time)
-
-\fi
-
-% \currentlayerproperty
-% \checklayerproperty
-% \startlayerproperty
-% \stoplayerproperty
-% \domakelayerpropertylist
+  {\registerviewerlayer\currentproperty\currentproperty
+   \ctxlua{backends.codeinjections.defineviewerlayer{
+     tag       = "\currentproperty",
+     title     = "\checkedpropertyparameter\c!title\currentproperty",
+     visible   = "\checkedpropertyparameter\c!state\v!start",
+     kind      = 0, % 1 == frozen
+     printable = "\checkedpropertyparameter\v!printable\v!yes"  % v! looks wrong
+   }}}
 
 %D \starttext
 %D
@@ -118,42 +95,48 @@
 %D
 %D \stoptext
 
-%D Handy for tracing:
+\def\doinitializelayoutcomponent#1#2%
+  {\ctxlua{backends.codeinjections.defineviewerlayer{
+     tag       = "#1:#2",
+     title     = "#1 #2",
+     visible   = "\v!start",
+     kind      = 0, % 1 == frozen
+     printable = "\v!yes"
+   }}%
+   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \ctxlua{tex.write(viewerlayers.register('#1:#2'))} }%
+   \expandafter\glet\csname\??ly>#1:#2\endcsname\layoutcomponentboxattribute}
+
+\def\dosetlayoutcomponentattribute#1#2% make this faster
+  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??ly>#1:#2\endcsname
+   \ifx\layoutcomponentboxattribute\relax
+     \doinitializelayoutcomponent{#1}{#2}% get rid of { }
+   \fi}
+
+\def\doresetlayoutcomponentattribute
+  {\let\layoutcomponentboxattribute\empty}
+
+\let\startlayoutcomponent         \gobbletwoarguments % obsolete
+\let\stoplayoutcomponent          \relax              % obsolete
+\let\setlayoutcomponentattribute  \gobbletwoarguments
+\let\resetlayoutcomponentattribute\relax
+\let\layoutcomponentboxattribute  \empty
 
 \def\showlayoutcomponents
-  {\let\startlayoutcomponent\dostartlayoutcomponent
-   \let\stoplayoutcomponent \dostoplayoutcomponent}
-
-\def\dodefinelayoutcomponent#1#2%
-  {\doifelsenothing{#2}%
-     {\defineproperty[#1][\s!layer]}%
-     {\defineproperty[#1][\s!layer][\c!title=#2]}}
-
-\def\dostartlayoutcomponent#1#2%
-  {\doifelseproperty{#1}\donothing{\dodefinelayoutcomponent{#1}{#2}}%
-   \startproperty[#1]}
-
-\def\dostoplayoutcomponent
-  {\stopproperty}
-
-\let\startlayoutcomponent\gobbletwoarguments
-\let\stoplayoutcomponent \relax
+  {\ctxlua{viewerlayers.enabled=true}%
+   \let\setlayoutcomponentattribute  \dosetlayoutcomponentattribute
+   \let\resetlayoutcomponentattribute\doresetlayoutcomponentattribute}
 
 \protect \endinput
 
-% \def\remaplayering
-%   {\dodoubleargument\doremaplayering}
-%
-% \def\remaplayering[#1][#2]%
-%   {\setvalue{\??lm#1}{#2}}
-%
-% \def\remappedlayering#1%
-%   {\ifcsname\??lm#1\endcsname
-%      \@EA\remappedlayering\csname\??lm#1\endcsname\else#1%
-%    \fi}
-%
-% \def\startshowlayering#1#2%
-%   {\ifshowlayering
-%      \defineproperty[\remappedlayering{#1}][\s!layer][\c!titel=#2]%
-%      \startproperty[\remappedlayering{#1}]%
-%    \fi}
+% \starttext
+% \showlayoutcomponents
+% \setupinteraction[state=start]
+% \setupheadertexts[{\goto{page 1}[page(2)]}]
+% test \setlayoutcomponentattribute{test}{aap}\hbox \layoutcomponentboxattribute \bgroup aap
+%     \setlayoutcomponentattribute{test}{noot}\hbox \layoutcomponentboxattribute \bgroup noot
+%     \setlayoutcomponentattribute{test}{mies}\hbox \layoutcomponentboxattribute \bgroup mies
+%     \egroup noot \egroup aap \egroup
+% test \setlayoutcomponentattribute{test}{hans}\hbox \layoutcomponentboxattribute \bgroup aap \hbox{!} aap\egroup
+% test \page test \page
+% \stoptext
+

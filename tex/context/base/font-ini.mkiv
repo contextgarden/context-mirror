@@ -405,7 +405,7 @@
 %D defining it here, we have at least an safeguard for utility
 %D file reading.
 
-\ifx\uchar\undefined \unexpanded\def\uchar#1#2{[#1,#2]} \fi
+\ifdefined\uchar\else \unexpanded\def\uchar#1#2{[#1,#2]} \fi
 
 %D We define some (very private) constants to improve speed,
 %D memory usage and consistency.
@@ -459,7 +459,10 @@
 %D tests but it does not help us when no math is defined.
 
 \chardef\mrfam\zerocount % math regular
-\chardef\mbfam\zerocount % math bold
+\chardef\mbfam\plusone   % math bold
+
+\unexpanded\def\mr{\ifmmode\fam\zerocount\else\setcurrentfontalternative\c!mr\fi} % \fam\csname\c!mr fam\endcsname
+\unexpanded\def\mb{\ifmmode\fam\plusone  \else\setcurrentfontalternative\c!mb\fi} % \fam\csname\c!mb fam\endcsname
 
 \def\mathtextsuffix        {-text}
 \def\mathscriptsuffix      {-script}
@@ -508,7 +511,17 @@
 
 \appendtoks
     \dosetmathfamily\mrfam\c!mr
-   %\dosetmathfamily\mbfam\c!mb % some day, only when defined, else equivalent to 0
+\to \mathstrategies
+
+% not official !
+
+\chardef\boldmathmode\zerocount % might change ... maybe \mathfontsupport 1 (normal) 2 (bold too)
+
+\def\enableboldmath {\chardef\boldmathmode\plusone  } % todo: \setupbodyfont[boldmath,...]
+\def\disableboldmath{\chardef\boldmathmode\zerocount}
+
+\appendtoks
+    \ifcase\boldmathmode\or\dosetmathfamily\mbfam\c!mb\fi
 \to \mathstrategies
 
 %D All used styles, like rm, ss and tt, are saved in a comma
@@ -825,7 +838,6 @@
 
 \def \defaultfontfile{\truefontname{Normal}} % was cmtt10, but that one is gone
 \edef\nullfontname   {\fontname\nullfont}
-\edef\dummyfontname  {font\strippedcsname\\}
 
 %D \macros
 %D  {everyfont,everyfontswitch}
@@ -1082,12 +1094,6 @@
 \let\oldrawfontidentifier\rawfontidentifier
 \let\oldnewfontidentifier\newfontidentifier
 
-% best we can add the style as well because otherwise we get math encoding mixups
-%
-% \setupbodyfont   [8pt] [\currentencoding/\ccaron\scaron\zcaron]
-% \blank
-% \switchtobodyfont[7pt] [\currentencoding/\ccaron\scaron\zcaron]
-
 \def\newfontidentifier{*\fontclass\lastfontidentifier\fontstyle\fontsize*}
 
 \def\dododefinefont#1#2%
@@ -1176,7 +1182,7 @@
 \let\fontalternativelist\empty
 \let\fontstylelist      \empty
 
-\def\checkfontnamecombinations
+\def\checkfontnamecombinations % we need to split math and text here ... todo (math only has mr and mb)
   {\def\docommand##1%
      {\def\dodocommand####1%
         {\def\dododocommand########1{\checkbodyfont{########1}{####1}{##1}}%
@@ -1508,7 +1514,7 @@
      \doifnumberelse{#1}
        {\doifassignmentelse{#3}
           {% [12pt] [style] [settings]
-           \doifundefined{#2}{\normalexpanded{\noexpand\definefontstyle[#2][#2]}}% new
+           \ifcsname#2\endcsname\else\normalexpanded{\noexpand\definefontstyle[#2][#2]}\fi % new
            \processcommalist[#1]{\dododefinebodyfont{#2}{#3}}}
           {% [12pt] [style] [identifier]
            \dodefinedefaultbodyfont[#1][#2][#3]}} % body style identifier
@@ -1517,10 +1523,14 @@
    \else\ifsecondargument
      \definebodyfont[#1][\c!rm][#2]%
    \else
-     \doifundefined{\@size@#1} % Maybe there are default dependancies
-       {\defineunknownfont{#1}}% defined which we can use ([unknown])
-     \doifundefined{\@size@#1} % and if not, then we have at least to
-       {\definebodyfont[#1][\c!rm][]}% make sure some basics are set up.
+     % Maybe there are default dependencies defined which we can use ([unknown]) and
+     % if not, then we have at least to make sure some basics are set up.
+     \ifcsname\@size@#1\endcsname \else
+       \defineunknownfont{#1}%
+     \fi
+     \ifcsname\@size@#1\endcsname \else
+       \definebodyfont[#1][\c!rm][]%
+     \fi
    \fi\fi}
 
 \def\xdodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
@@ -1588,18 +1598,19 @@
    \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
 
 \def\checkbodyfont#1% tests for ttsl mmbf
-  {\def\c!!mm{#1}%
+  {\edef\c!!mm{#1}%
    \ifx\c!!mm\c!mm % prevents \max and alike (re)defs
      \expandafter\checkmathbodyfont
    \else
      \expandafter\checktextbodyfont
    \fi{#1}} % no \c!!mm, not expanded later on
 
+% some day we can do an auto-fam if needed
+
 \def\checkmathbodyfont#1#2#3% style alt size / gdef % #3 can be empty
   {%\message{!m #1 #2 #3!}%
    % #1 #2 #3 = signal
-   %unexpanded\setgvalue {#1#2#3}{\setcurrentfontstylealternativesize{#1}{#2}{#3}}% \mmsla
-   \unexpanded\setgvalue     {#2}{\setcurrentfontalternative         {#2}}%         \sl
+   %unexpanded\setgvalue     {#2}{\setcurrentfontalternative         {#2}}%         \mr \mb
    \unexpanded\setgvalue     {#1}{\setcurrentfontstyle               {#1}}}%        \mm
 
 \def\checktextbodyfont#1#2#3% style alt size / gdef % #3 can be empty
@@ -1619,9 +1630,10 @@
   {\def\dododefinedefaultbodyfont##1%
      {\def\dodododefinedefaultbodyfont####1%
         {\def\dododododefinedefaultbodyfont########1%
-           {\doifdefined{\s!default########1####1}
-              {% [12pt] [style] [identifier]
-               \getvalue{\s!default########1####1}{##1}{####1}}}%
+           {\ifcsname\s!default########1####1\endcsname
+              % [12pt] [style] [identifier]
+              \csname\s!default########1####1\endcsname{##1}{####1}%
+            \fi}%
          \processcommalist[#3]\dododododefinedefaultbodyfont}%
       \processcommalist[#2]\dodododefinedefaultbodyfont}%
    \processcommalist[#1]\dododefinedefaultbodyfont}
@@ -1643,14 +1655,14 @@
 \def\dodefineunknownbodyfont#1#2% see ***
   {\ifcsname\s!default\s!default#2\endcsname % somehow related to */*
      \donetrue
-     \getvalue{\s!default\s!default#2}{#1}{#2}%
+     \csname\s!default\s!default#2\endcsname{#1}{#2}%
    \fi}
 
 \def\dodefineunknownsubfont#1#2%
-  {\ifcsname\@size@\getvalue{\??ft#1#2}\endcsname
+  {\ifcsname\@size@\csname\??ft#1#2\endcsname\endcsname
    \else
      \donetrue
-     \defineunknownfont{\getvalue{\??ft#1#2}}%
+     \defineunknownfont{\csname\??ft#1#2\endcsname}%
    \fi}
 
 \def\defineunknownfont#1%
@@ -1832,27 +1844,32 @@
 % can be made faster (only used internally now)
 
 \def\doswitchpoints[#1]%
-  {\normalexpanded{\noexpand\dodoswitchpoints{#1}}}
+  {\normalexpanded{\dodoswitchpoints{#1}}}
 
-\def\dodoswitchpoints#1%
-  {\doifundefined{\@size@#1}
-     {\defineunknownfont{#1}}%
+\unexpanded \def\dodoswitchpoints#1%
+  {\ifcsname\@size@#1\endcsname \else
+     \defineunknownfont{#1}%
+   \fi%
   %\defineunknownfontstyles{#1}%
-   \doifdefinedelse{\@size@#1}
-     {\getvalue{\@size@#1}%
-      \localbodyfontsize#1\relax
-      \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
-% \edef\fontbody{\fontbody}% to be tested but we can clean up mkiv further
-      \checkbodyfontenvironment[\normalizedbodyfontsize]}
-     {\showmessage\m!fonts4{#1}}}
+   \ifcsname\@size@#1\endcsname
+     \csname\@size@#1\endcsname
+     \localbodyfontsize#1\relax
+     \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
+   % \edef\fontbody{\fontbody}% to be tested but we can clean up mkiv further
+     \checkbodyfontenvironment[\normalizedbodyfontsize]%
+   \else
+     \showmessage\m!fonts4{#1}%
+   \fi}
 
-\unprotected \def\doswitchstyle[#1]%
-  {\doifdefinedelse{\@style@#1}
-     {\getvalue{\@style@#1}%
-      \edef\fontstyle{#1}%
-      \ifmmode\mr\fi % in order to be compatible with \rm in math mode
-      }% \the\everybodyfont}  % cleaner, in setting size as well as style
-     {\showmessage\m!fonts5{#1}}}
+\unexpanded \def\doswitchstyle[#1]%
+  {\ifcsname\@style@#1\endcsname
+     \csname\@style@#1\endcsname
+     \edef\fontstyle{#1}%
+     \ifmmode\mr\fi % in order to be compatible with \rm in math mode
+     % \the\everybodyfont % cleaner, in setting size as well as style
+   \else
+     \showmessage\m!fonts5{#1}%
+   \fi}
 
 %D \TEX\ loads font metric files like \type{cmr10.tfm} and
 %D \type{tir.tfm} only once. In \PLAIN\ \TEX\ some font files
@@ -2450,9 +2467,11 @@
 
 \unexpanded\def\switchtobodyfont[#1]%
   {\doifsomething{#1}
-     {\doifdefinedelse{\??ft\normalizedbodyfontsize\interfaced{#1}}
-        {\setbodyfontstep{#1}} % so we have a fast [small] switch
-        {\dosetfont0{#1}}%
+     {\ifcsname\??ft\normalizedbodyfontsize\interfaced{#1}\endcsname
+        \setbodyfontstep{#1}% so we have a fast [small] switch
+      \else
+        \dosetfont0{#1}%
+      \fi
       \the\everybodyfont}} % indeed needed in case nothing is executed
 
 %D The following alternative is meant for math||to||text
@@ -2512,6 +2531,10 @@
   [oldstyle]
   [%mode=node,%
    liga=yes,kern=yes,tlig=yes,trep=yes,onum=yes] % texligatures=yes,texquotes=yes
+
+\definefontfeature % can be used for type1 fonts
+  [complete]
+  [liga=yes,kern=yes,compose=yes,tlig=yes,trep=yes]
 
 \definefontfeature
   [arabic]
@@ -2633,10 +2656,10 @@
 \definecomplexorsimple\switchstyleonly
 
 \def\simpleswitchstyleonly#1% stupid version
-  {\complexswitchstyleonly[\strippedcsname#1]}
+  {\complexswitchstyleonly[\checkedstrippedcsname#1]}
 
 \def\complexswitchstyleonly[#1]% todo : check
-  {\setcurrentfontstyle{\getvalue{\@shortstyle@#1}}%
+  {\setcurrentfontstyle{\csname\@shortstyle@#1\endcsname}%
    \the\everybodyfont} % needed ?
 
 %D \macros
@@ -2814,7 +2837,7 @@
 
 \def\dodefinealternativestyle[#1][#2][#3]%
   {\def\docommand##1%
-     {\doifundefined{##1}{\setvalue{##1}{\groupedcommand{#2}{}}}%
+     {\ifcsname##1\endcsname\else\setvalue{##1}{\groupedcommand{#2}{}}\fi
       \setvalue{\@letter@  ##1}{#2}%
       \setvalue{\@noletter@##1}{#3}}%
    \processcommalist[#1]\docommand}
@@ -2947,37 +2970,37 @@
 
 %D or even better:
 
-\def\doemphasistypeface#1#2% slow
-  {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!slanted
-     {#1}%
-     {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!italic
-        {#2}%
-        {\doifelsevaluenothing{\??ft\fontclass\normalizedbodyfontsize\c!em}
-           {\doifelsevalue{\??ft\normalizedbodyfontsize\c!em}\v!slanted
-              {#1}%
-              {\doifelsevalue{\??ft\normalizedbodyfontsize\c!em}\v!italic
-                 {#2}%
-                 {\getvalue{\??ft\normalizedbodyfontsize\c!em}}}}
-           {\getvalue{\??ft\fontclass\normalizedbodyfontsize\c!em}}}}}
+% \def\doemphasistypeface#1#2% slow
+%   {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!slanted
+%      {#1}%
+%      {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!italic
+%         {#2}%
+%         {\doifelsevaluenothing{\??ft\fontclass\normalizedbodyfontsize\c!em}
+%            {\doifelsevalue{\??ft\normalizedbodyfontsize\c!em}\v!slanted
+%               {#1}%
+%               {\doifelsevalue{\??ft\normalizedbodyfontsize\c!em}\v!italic
+%                  {#2}%
+%                  {\getvalue{\??ft\normalizedbodyfontsize\c!em}}}}
+%            {\getvalue{\??ft\fontclass\normalizedbodyfontsize\c!em}}}}}
 
-% \def\doemphasistypeface#1#2%
-%   {\edef\emphasizedtypeface{\csname\??ft\fontclass\normalizedbodyfontsize\c!em\endcsname}%
-%    \ifx\emphasizedtypeface\v!slanted
-%      #1%
-%    \else\ifx\emphasizedtypeface\v!italic
-%      #2%
-%    \else\ifx\emphasizedtypeface\v!empty
-%      \edef\emphasizedtypeface{\csname\??ft\normalizedbodyfontsize\c!em\endcsname}%
-%      \ifx\emphasizedtypeface\v!slanted
-%        #1%
-%      \else\ifx\emphasizedtypeface\v!italic
-%        #2%
-%      \else
-%        \getvalue\emphasizedtypeface
-%      \fi\fi
-%    \else
-%      \getvalue\emphasizedtypeface
-%    \fi\fi\fi}
+\def\doemphasistypeface#1#2%
+  {\edef\emphasizedtypeface{\csname\??ft\fontclass\normalizedbodyfontsize\c!em\endcsname}%
+   \ifx\emphasizedtypeface\v!slanted
+     #1%
+   \else\ifx\emphasizedtypeface\v!italic
+     #2%
+   \else\ifx\emphasizedtypeface\v!empty
+     \edef\emphasizedtypeface{\csname\??ft\normalizedbodyfontsize\c!em\endcsname}%
+     \ifx\emphasizedtypeface\v!slanted
+       #1%
+     \else\ifx\emphasizedtypeface\v!italic
+       #2%
+     \else
+       \getvalue\emphasizedtypeface
+     \fi\fi
+   \else
+     \getvalue\emphasizedtypeface
+   \fi\fi\fi}
 
 \def\emphasistypeface{\doemphasistypeface\sl\it}
 \def\emphasisboldface{\doemphasistypeface\bs\bi}
@@ -3182,7 +3205,7 @@
 %D The implementation is rather straightforward in using
 %D \type{\halign}.
 
-\fetchruntimecommand \showbodyfont  {\f!fontprefix\s!run}
+\fetchruntimecommand \showbodyfont  {\f!fontprefix\s!run.mkii}
 
 %D \macros
 %D   {showfontstrip, testminimalbaseline, showminimalbaseline}
@@ -3193,9 +3216,9 @@
 %D
 %D \showfontstrip \blank \showminimalbaseline
 
-\fetchruntimecommand \showfontstrip       {\f!fontprefix\s!run}
-\fetchruntimecommand \testminimalbaseline {\f!fontprefix\s!run}
-\fetchruntimecommand \showminimalbaseline {\f!fontprefix\s!run}
+\fetchruntimecommand \showfontstrip       {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \testminimalbaseline {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showminimalbaseline {\f!fontprefix\s!run.mkii}
 
 %D \macros
 %D   {showkerning}
@@ -3204,7 +3227,7 @@
 %D
 %D \showkerning{Can you guess what kerning is?}
 
-\fetchruntimecommand \showkerning         {\f!fontprefix\s!run}
+\fetchruntimecommand \showkerning         {\f!fontprefix\s!run.mkii}
 
 %D \macros
 %D   {showbodyfontenvironment}
@@ -3217,7 +3240,7 @@
 %D
 %D \showsetup{showbodyfontenvironment}
 
-\fetchruntimecommand \showbodyfontenvironment {\f!fontprefix\s!run}
+\fetchruntimecommand \showbodyfontenvironment {\f!fontprefix\s!run.mkii}
 
 %D \macros
 %D   {showfont,showfontstyle,showligatures}
@@ -3233,11 +3256,11 @@
 
 % to be internationalized
 
-\fetchruntimecommand \showfont      {\f!fontprefix\s!run}
-\fetchruntimecommand \showfontstyle {\f!fontprefix\s!run}
-\fetchruntimecommand \showligature  {\f!fontprefix\s!run}
-\fetchruntimecommand \showligatures {\f!fontprefix\s!run}
-\fetchruntimecommand \showcharratio {\f!fontprefix\s!run}
+\fetchruntimecommand \showfont      {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showfontstyle {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showligature  {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showligatures {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showcharratio {\f!fontprefix\s!run.mkii}
 
 %D \macros
 %D   {getglyph, symbolicfont}
@@ -3746,7 +3769,7 @@
 
 \def\dodefinestyleinstance[#1][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
   {\iffirstargument
-     \doifundefined{#1}{\definestylecollection[#1]}%
+     \ifcsname#1\endcsname\else\definestylecollection[#1]\fi
    \fi
    \iffourthargument
      \setvalue{\??sx#1:#2:#3}{#4}%
@@ -3756,7 +3779,7 @@
      \letvalue{\??sx#1::#2}\empty
    \fi\fi\fi}
 
-\unexpanded\def\styleinstance[#1]% will be faster
+\unexpanded\def\styleinstance[#1]% will be made faster
   {%\begingroup\normalexpanded{\noexpand\infofont[#1:\fontstyle:\fontalternative]}\endgroup
    \executeifdefined{\??sx#1:\fontstyle:\fontalternative}%
   {\executeifdefined{\??sx#1:\fontstyle:\s!default}%

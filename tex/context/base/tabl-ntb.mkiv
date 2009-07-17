@@ -665,7 +665,6 @@
    \processaction
      [\tbltblheader]
      [\v!repeat=>\multipleTBLheadstrue]%
-   \localcolortrue
    \presetallTABLEparameters
    \ExpandFirstAfter\processallactionsinset
      [\tbltbloption]
@@ -955,7 +954,7 @@
    \ifx\!!stringa\empty
      \box\scratchbox
    \else
-     \normalexpanded{\noexpand\gotobox{\box\scratchbox}[\!!stringa]}%
+     \normalexpanded{\noexpand\directgotobox{\box\scratchbox}[\!!stringa]}% to be checked
    \fi
    \box\scratchbox}
 

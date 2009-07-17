@@ -245,8 +245,8 @@
   % hack to prevent mapping of filenames, watch the space! before
   % latin modern came aroudn we needed this trick to make sure that
   % we loaded the raw cmr12 etc instead of the ones mapped onto
-  % an encoding
-
+  % an encoding (this trick is no longer needed with lm)
+  %
   % \definefontsynonym[xcmr12][cmr12 ]
   % \definefontsynonym[xcmr10][cmr10 ]
   % \definefontsynonym[xcmr9] [cmr9 ]
@@ -254,6 +254,14 @@
   % \definefontsynonym[xcmr7] [cmr7 ]
   % \definefontsynonym[xcmr6] [cmr6 ]
   % \definefontsynonym[xcmr5] [cmr5 ]
+
+  \definefontsynonym[xcmr12][rm-lmr12]
+  \definefontsynonym[xcmr10][rm-lmr10]
+  \definefontsynonym[xcmr9] [rm-lmr9]
+  \definefontsynonym[xcmr8] [rm-lmr8]
+  \definefontsynonym[xcmr7] [rm-lmr7]
+  \definefontsynonym[xcmr6] [rm-lmr6]
+  \definefontsynonym[xcmr5] [rm-lmr5]
 
   \definebodyfont [12pt] [mm]
     [mr=xcmr12,

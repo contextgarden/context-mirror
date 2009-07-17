@@ -1,0 +1,51 @@
+%D \module
+%D   [       file=regi-utf,
+%D        version=2002.12.03,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=UTF-8,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifnum\texengine>\pdftexengine
+    \expandafter \endinput
+\fi
+
+%D This regime activates the characters $>192$ and let them
+%D handle \UTF\ encoded content streams. This regime runs on
+%D top of the \type {unic} modules. We use an active inspector
+%D instead of a active token handler because here we don't want
+%D the \type {{}}. We only support this in \ETEX.
+
+% ÀÁÂÃÄÅàáâãäå
+% ÆÇæç
+% ÈÉÊËèéêë
+% ÌÍÎÏÞìíîïþ
+% Ðð
+% Ññ
+% ÒÓÔÕÖòóôõö
+% Øø
+% ÙÚÛÜùúû
+% Ýýÿ
+% ß
+
+\unprotect
+
+\startregime[utf]
+
+\dostepwiserecurse{192}{223}{1}
+  {\expanded{\defineactiveinspector{\recurselevel} {\noexpand\utftwouniglph  {\recurselevel}}}} % space delimited
+
+\dostepwiserecurse{224}{239}{1}
+  {\expanded{\defineactiveinspector{\recurselevel} {\noexpand\utfthreeuniglph{\recurselevel}}}} % space delimited
+
+\dostepwiserecurse{240}{247}{1}
+  {\expanded{\defineactiveinspector{\recurselevel} {\noexpand\utffouruniglph {\recurselevel}}}} % space delimited
+
+\stopregime
+
+\protect \endinput

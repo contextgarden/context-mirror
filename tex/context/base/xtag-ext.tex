@@ -382,6 +382,8 @@
 %     \processXMLfilegrouped{test.xml}
 % \stoptext
 
+% obsolete in mkiv
+
 \chardef\xmlexpandmode\plusone
 
 \def\defexpandedxmlargumentcmd {\chardef\xmlexpandmode\plusone\defexpandedxmlargument\defconvertedcommand}
@@ -392,7 +394,7 @@
 \installexpander {xml}     \defexpandedxmlargumentcmd \gdefexpandedxmlargumentcmd
 \installexpander {xml:cmd} \defexpandedxmlargumentcmd \gdefexpandedxmlargumentcmd
 \installexpander {xml:utf} \defexpandedxmlargumentutf \gdefexpandedxmlargumentutf
-
+
 \def\XMLtexmath#1{\begingroup\setnormalcatcodes\scantokens{\mathematics{#1}\ignorespaces}\endgroup}
 
 % \defineXMLargument[tm]{\XMLtexmath}
@@ -402,5 +404,36 @@
 % \stopbuffer
 %
 % \processXMLbuffer[test]
+
+%D Undocumented ...
+
+\def\defineXMLstore {\doquadrupleargument\dodefineXMLstore[\saveXMLasdata]}
+\def\defineXMLgstore{\doquadrupleargument\dodefineXMLstore[\gsaveXMLasdata]}
+
+\def\dodefineXMLstore[#1][#2][#3][#4]% element attribute prefix % will become faster
+  {\defineXMLargument[#2][#3=\s!dummy]{#1{#4:\XMLop{#3}}}}
+
+\def\countXMLchildren[#1]#2%
+  {\startnointerference
+     \doglobal\newcounter\nofXMLchildren
+     \defineXMLargument[#1]{\doglobal\increment\nofXMLchildren}%
+     \startXMLignore
+       #2%
+     \stopXMLignore
+   \stopnointerference}
+
+% Typical \MKII. We will not explore this route any further as in \MKIV\ we
+% have better ways.
+
+\prependtoks \setnormalcatcodes  \to \everyTEXinputmode
+\appendtoks  \processingXMLfalse \to \everyTEXinputmode
+
+\let\normalenableXML\enableXML % some day we move the normal \enableXML into the toks
+
+\prependtoks \normalenableXML    \to \everyXMLinputmode
+\appendtoks  \processingXMLtrue  \to \everyXMLinputmode
+
+\unexpanded\def\enableXML {\setinputmode[XML]} % \enableXML is used in edef's and marks
+\unexpanded\def\disableXML{\setinputmode[TEX]}
 
 \protect \endinput

@@ -5356,6 +5356,9 @@
           <cd:constant type="ja"/>
           <cd:constant type="nee"/>
         </cd:parameter>
+        <cd:parameter name="optie">
+          <cd:constant type="opelkaar"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

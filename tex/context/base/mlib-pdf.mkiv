@@ -15,8 +15,6 @@
 
 \registerctxluafile{mlib-pdf}{1.001}
 
-% \let\MPLIBtoPDF\pdfliteral
-
 \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
 
 \def\MPLIBboundingbox#1#2#3#4%
@@ -31,7 +29,7 @@
   {\naturalhbox\bgroup
    \doactivatecolor\s!black\forcecolorhack
    \MPLIBboundingbox{#1}{#2}{#3}{#4}%
-   \forgetall
+  %\forgetall % done already elsewhere
    \setbox\scratchbox\vbox\bgroup
    \noindent % this is really needed in order to force tex into proper cm's
    \startMPresources}
@@ -81,7 +79,7 @@
      {\font\temp=#1\space at #2\onebasepoint
       \let\c\char
       \temp
-      \MPfshowcommand{#3}}%
+      #3}%
    \setbox\scratchbox\hbox
      {\hskip#4\onebasepoint
       \raise#5\onebasepoint

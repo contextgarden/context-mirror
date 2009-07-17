@@ -32,7 +32,7 @@
 \def\negatecolorbox#1%
   {\setbox#1\hbox
      {\dostartnegative
-      \localstartcolor[white]\vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1\localstopcolor
+      \startcolor[white]\vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1\stopcolor
       \hskip-\wd#1%
       \box#1%
       \dostopnegative}}

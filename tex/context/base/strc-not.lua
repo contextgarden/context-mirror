@@ -8,9 +8,11 @@ if not modules then modules = { } end modules ['strc-not'] = {
 
 local format = string.format
 local next = next
-local texsprint, texwrite = tex.sprint, tex.write
+local texsprint, texwrite, texcount = tex.sprint, tex.write, tex.count
 
 local ctxcatcodes = tex.ctxcatcodes
+
+local trace_notes = false  trackers.register("structure.notes", function(v) trace_notes = v end)
 
 structure              = structure          or { }
 structure.helpers      = structure.helpers  or { }
@@ -41,11 +43,14 @@ function notes.store(tag,n)
         nd = { }
         notedata[tag] = nd
     end
-    nd[#nd+1] = n
+    local nnd = #nd+1
+    nd[nnd] = n
     local state = notestates[tag]
     if state.kind ~= "insert" then
---~         state.start = #nd
-        state.start = state.start or #nd
+        if trace_notes then
+            logs.report("notes","storing %s with state %s as %s",tag,state.kind,nnd)
+        end
+        state.start = state.start or nnd
     end
     tex.write(#nd)
 end
@@ -53,8 +58,12 @@ end
 function notes.get(tag,n)
     local nd = notedata[tag]
     if nd then
-        nd = nd[n or #notedata]
+        n = n or #notedata
+        nd = nd[n or n]
         if nd then
+            if trace_notes then
+                logs.report("notes","getting %s of %s",n,tag)
+            end
             return structure.lists.collected[nd]
         end
     end
@@ -86,6 +95,9 @@ end
 
 function notes.setstate(tag,newkind)
     local state = notestates[tag]
+    if trace_notes then
+        logs.report("notes","setting state of %s from %s to %s",tag,(state and state.kind) or "unset",newkind)
+    end
     if not state then
         state = {
             kind = newkind
@@ -98,6 +110,7 @@ function notes.setstate(tag,newkind)
     else
         state.kind = newkind
     end
+    --  state.start can already be set and will be set when an entry is added or flushed
     return state
 end
 
@@ -128,7 +141,8 @@ local function internal(tag,n)
         local r = nd.references
         if r then
             local i = r.internal
-            return i and lists.internals[i]
+--~             return i and lists.internals[i]
+            return i and jobreferences.internals[i]
         end
     end
     return nil
@@ -152,7 +166,7 @@ function notes.checkpagechange(tag) -- called before increment !
             end
         elseif current then
             -- we need to locate the next one, best guess
-            if tex.count[0] > current.pagenumber.number then
+            if texcount.realpageno > current.pagenumber.number then
                 counters.reset(tag)
             end
         end
@@ -187,6 +201,9 @@ function notes.deltapage(tag,n)
 end
 
 function notes.postpone()
+    if trace_notes then
+        logs.report("notes","postponing all insert notes")
+    end
     for tag, state in next, notestates do
         if state.kind ~= "store" then
             notes.setstate(tag,"postpone")
@@ -197,7 +214,7 @@ end
 function notes.setsymbolpage(tag,n)
     local nd = notes.get(tag,n)
     if nd then
-        nd.metadata.symbolpage = tex.count[0] -- realpage
+        nd.metadata.symbolpage = texcount.realpageno
     end
 end
 
@@ -216,26 +233,59 @@ function notes.getnumberpage(tag,n)
 end
 
 function notes.flush(tag,whatkind) -- store and postpone
-    local nd = notedata[tag]
-    if nd then
-        local state = notestates[tag]
-        local ns = state and state.start -- first index
-        if ns then
-            local kind = state.kind
-            if kind == whatkind then
-                if kind == "postpone" then
-                    for i=ns,#nd do
-                        texsprint(ctxcatcodes,format("\\handlenoteinsert{%s}{%s}",tag,i))
-                    end
-                    state.start = nil
-                    state.kind = "insert"
-                elseif kind == "store" then
-                    for i=ns,#nd do
-                        texsprint(ctxcatcodes,format("\\handlenoteitself{%s}{%s}",tag,i))
-                    end
-                    state.start = nil
+    local state = notestates[tag]
+    local kind = state.kind
+    if kind == whatkind then
+        if kind == "postpone" then
+            local nd = notedata[tag]
+            local ns = state.start -- first index
+            if nd and ns then
+                if trace_notes then
+                    logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+                end
+                for i=ns,#nd do
+                    texsprint(ctxcatcodes,format("\\handlenoteinsert{%s}{%s}",tag,i))
                 end
             end
+            state.start = nil
+            state.kind = "insert"
+        elseif kind == "store" then
+            local nd = notedata[tag]
+            local ns = state.start -- first index
+            if trace_notes then
+                logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+            end
+            if nd and ns then
+                for i=ns,#nd do
+                    texsprint(ctxcatcodes,format("\\handlenoteitself{%s}{%s}",tag,i))
+                end
+            end
+            state.start = nil
+        elseif trace_notes then
+            logs.report("notes","not flushing state %s of %s",whatkind,tag)
+        end
+    elseif trace_notes then
+        logs.report("notes","not flushing state %s of %s",whatkind,tag)
+    end
+end
+
+function notes.flushpostponed()
+    if trace_notes then
+        logs.report("notes","flushing all postponed notes")
+    end
+    for tag, _ in next, notestates do
+        notes.flush(tag,"postpone")
+    end
+end
+
+function notes.resetpostponed()
+    if trace_notes then
+        logs.report("notes","resetting all postponed notes")
+    end
+    for tag, state in next, notestates do
+        if state.kind == "postpone" then
+            state.start = nil
+            state.kind = "insert"
         end
     end
 end

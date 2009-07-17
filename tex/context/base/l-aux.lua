@@ -24,6 +24,7 @@ local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.
 
 local key       = lpeg.C((1-equal-comma)^1)
 local pattern_a = (space+comma)^0 * (key * equal * value + key * lpeg.C(""))
+local pattern_c = (space+comma)^0 * (key * equal * value)
 
 local key       = lpeg.C((1-space-equal-comma)^1)
 local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces * value) + lpeg.C("")))
@@ -38,19 +39,23 @@ end
 
 local pattern_a_s = (pattern_a/set)^1
 local pattern_b_s = (pattern_b/set)^1
+local pattern_c_s = (pattern_c/set)^1
 
 aux.settings_to_hash_pattern_a = pattern_a_s
 aux.settings_to_hash_pattern_b = pattern_b_s
+aux.settings_to_hash_pattern_c = pattern_c_s
 
-function aux.make_settings_to_hash_pattern(set,moretolerant)
-    if moretolerant then
+function aux.make_settings_to_hash_pattern(set,how)
+    if how == "strict" then
+        return (pattern_c/set)^1
+    elseif how == "tolerant" then
         return (pattern_b/set)^1
     else
         return (pattern_a/set)^1
     end
 end
 
-function aux.settings_to_hash(str,moretolerant)
+function aux.settings_to_hash(str)
     if str and str ~= "" then
         hash = { }
         if moretolerant then
@@ -61,6 +66,26 @@ function aux.settings_to_hash(str,moretolerant)
         return hash
     else
         return { }
+    end
+end
+
+function aux.settings_to_hash_tolerant(str)
+    if str and str ~= "" then
+        hash = { }
+        pattern_b_s:match(str)
+        return hash
+    else
+        return { }
+    end
+end
+
+function aux.settings_to_hash_strict(str)
+    if str and str ~= "" then
+        hash = { }
+        pattern_c_s:match(str)
+        return next(hash) and hash
+    else
+        return nil
     end
 end
 

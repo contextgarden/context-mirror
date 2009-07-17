@@ -122,7 +122,8 @@
   {\processcommalist[#1]{\dodosetupstructurehead{#2}}}
 
 \def\dodosetupstructurehead#1#2%
-  {\getparameters[\??nh#2][#1]%
+  {\edef\currentstructurehead{#2}%
+   \getparameters[\??nh#2][#1]%
    \the\everystructureheadsetup}
 
 \def\dodefinestructurehead[#1][#2]%
@@ -218,25 +219,24 @@
 
 \def\dodohandlestructureheadown[#1][#2]#3#4%
   {\settrue\currentstructureown
-   \dohandlestructurehead{#1}{\c!reference=#2,\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
+   \dohandlestructurehead{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
 
 \def\dodohandlestructureheadnop[#1][#2]#3%
   {\setfalse\currentstructureown
-   \dohandlestructurehead{#1}{\c!reference=#2,\c!title={#3}}{}} % name ref nr title --
+   \dohandlestructurehead{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
 
 \newtoks\everybeforestructurehead % hook, todo: before/after keys
 \newtoks\everyafterstructurehead  % hook, todo: before/after keys
 
 \def\dodostartstructurehead[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
   {\setfalse\currentstructureown
-   \globalpushmacro\currentstructurehead
+  %\globalpushmacro\currentstructurehead
    \xdef\currentstructurehead{#1}%
    \the\everybeforestructurehead
    \dohandlestructurehead{#1}{#2}{#3}} % name -- -- -- userdata
 
 \def\dostopstructurehead[#1]%
-  {\globalpopmacro\currentstructurehead
-   \doifnot{#1}\currentstructurehead{\writestatus\m!systems{missing \letterbackslash\e!stop#1}}%
+  {%\globalpopmacro\currentstructurehead
    \xdef\currentstructurehead{#1}% recover
    \the\everyafterstructurehead}
 
@@ -300,11 +300,6 @@
       \v!empty=>\settrue\structureheadleaveempty,
          \v!no=>\settrue\structureheadleaveempty\setfalse\structureheaddoplace]}
 
-\def\setstructureheadreset % todo, also set resetset here
-  {\doifelse{\structureheadparameter\c!resetnumber}\v!no
-     {\setfalse\@@resetsubheadnumbers}%
-     {\settrue \@@resetsubheadnumbers}}
-
 \def\setstructureheaddisplay
   {\doifelsevalue{\??nh:\structureheadparameter\c!alternative}\v!horizontal
      {\setfalse\structureheadisdisplay}
@@ -329,17 +324,13 @@
      \setfalse\structureheadshownumber
    \fi}
 
-% \defconvertexpanded\asciititle{\getvalue{\??ko#1\c!expansion}}{#4}%
-
-% \unexpanded\def\\{\space}
-
 \def\thestructureheadsynchonization
   {\pagetype[\currentstructureheadcoupling]% hm also number
    \normalexpanded{\noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}}%
    \currentstructuresynchronize}
 
 \def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
-\def\fullstructureheadtitle {\structurecctvalue{titledata.title}}                            % todo
+\def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
 
 \let\currentstructurehead        \empty
 \let\currentstructureheadcoupling\empty
@@ -356,8 +347,10 @@
       \c!name=#1,
       \c!number=\ifconditional\structureheadshownumber\v!yes\else\v!no\fi,
       \c!bookmark=,
+      \c!marking=,
+      \c!list=,
       \c!expansion=\structureheadparameter\c!expansion,
-      \c!reset=\structureheadparameter\c!reset,
+      \c!sectionresetset=\structureheadparameter\c!sectionresetset,
       \c!sectionseparatorset=\structureheadparameter\c!sectionseparatorset,
       \c!sectionconversionset=\structureheadparameter\c!sectionconversionset,
       \c!sectionconversion=\structureheadparameter\c!conversion, % just for compatibility
@@ -401,7 +394,6 @@
    \setstructureheadreference{#3}% will change
    \setstructureheadincrement
    \setstructureheadplacement
-   \setstructureheadreset
    \setstructureheaddisplay
    \setstructureheadnumber
    %
@@ -496,15 +488,26 @@
   {\docheckstructureheadbefore\docheckstructureheadlayout
    \structureheadparameter\c!inbetween}
 
+% \def\emptystructureheadcorrection
+%   {\ifconditional\structureheadleaveempty % inlined \emptyheadcorrection (with after=\blank)
+%      \vskip-\lineheight
+%      \dosomebreak\nobreak % \penalty10000 in vspacing
+%      \kern\zeropoint
+%      \prevdepth\strutdepth
+%    \fi}
+
+\def\emptystructureheadcorrection
+  {\ifconditional\structureheadleaveempty % inlined \emptyheadcorrection (with after=\blank)
+     \penalty10000 % first ... we need to adapt this all to vspacing
+     \vskip-\lineheight
+     \kern\zeropoint
+     \prevdepth\strutdepth
+   \fi}
+
 \def\dostructureheadspacingafteryes
   {\ifconditional\structureheadisdisplay
-     \dosomebreak\nobreak
-     \ifconditional\structureheadleaveempty % inlined \emptyheadcorrection (with after=\blank)
-       \vskip-\lineheight
-       \dosomebreak\nobreak
-       \kern\zeropoint
-       \prevdepth\strutdepth
-     \fi
+     \dosomebreak\nobreak % needs to be adapted to vspacing
+     \emptystructureheadcorrection
      \structureheadparameter\c!after
    \fi}
 

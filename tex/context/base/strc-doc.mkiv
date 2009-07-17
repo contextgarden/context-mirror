@@ -34,13 +34,15 @@
 
 \getparameters % initialization, used not grouped anyway
   [\??ns]
-  [\c!number=,\c!level=,\c!name=,\c!title=,\c!bookmark=,\c!label=,\c!coupling=,\c!ownnumber=,
+  [\c!number=,\c!level=,\c!name=,\c!title=,\c!bookmark=,\c!marking=,\c!list=,\c!label=,\c!coupling=,\c!ownnumber=,
    \c!sectionseparatorset=\s!default,\c!sectionconversionset=\s!default,
    \c!sectionstopper=,\c!sectionsegments=,
-   \c!reset=,\c!reference=,
+   \c!sectionresetset=,\c!reference=,
    \c!expansion=\v!no,
    \c!saveinlist=\v!yes,
    \c!command=\showstructuredata]
+
+% maybe flags for list, bm, mark
 
 \def\dostructurecomponent[#1][#2]% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
@@ -49,23 +51,38 @@
    \xdef\currentstructurecoupling {\structureparameter\c!coupling}%
    \xdef\currentstructureownnumber{\structureparameter\c!ownnumber}% optional own number
    \xdef\currentstructurelevel    {\structureparameter\c!level}%
+\ifnum\catcodetable=\xmlcatcodes
+   \let\currentstructureexpansion\s!xml
+\else
    \edef\currentstructureexpansion{\structureparameter\c!expansion}
+\fi
+
    \ifx\currentstructureexpansion\s!xml
      % goes via lua anyway
      \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
      \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
+     \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%
+     \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%
+     \ifx\currentstructurelist\empty
+        \globallet\currentstructurelist\currentstructuretitle
+     \else
+       \xmlstartraw
+         \xdef\currentstructurelist{\structureparameter\c!list}%
+       \xmlstopraw
+     \fi
      %
-     \xmlstartraw
-       \xdef\currentstructurelisttitle   {\structureparameter\c!title}%
-     \xmlstopraw
      \globallet\currentstructurecoding\s!xml
    \else
      \ifx\currentstructureexpansion\v!yes
        \xdef\currentstructuretitle   {\structureparameter\c!title}%
        \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
+       \xdef\currentstructuremarking {\structureparameter\c!marking}%
+       \xdef\currentstructurelist    {\structureparameter\c!list}%
      \else
        \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
        \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
+       \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%
+       \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%
        \iflocation \ifx\currentstructurebookmark\empty
          \begingroup
          \simplifycommands
@@ -73,7 +90,9 @@
         \endgroup
        \fi \fi
      \fi
-     \globallet\currentstructurelisttitle   \currentstructuretitle
+     \ifx\currentstructurelist\empty
+       \globallet\currentstructurelist\currentstructuretitle
+     \fi
      \globallet\currentstructurecoding\s!tex
    \fi
    \xdef\currentstructurelabel          {\structureparameter\c!label}%
@@ -92,7 +111,7 @@
                 referenceprefix = "\currentstructurereferenceprefix",
             },
             directives = {
-                resetset   = "\structureparameter\c!reset",
+                resetset   = "\structureparameter\c!sectionresetset",
             },
             metadata = {
                 kind     = "section",
@@ -113,9 +132,14 @@
             \ifx\currentstructurebookmark\currentstructuretitle \else
                 bookmark = \!!bs\detokenize\expandafter{\currentstructurebookmark }\!!es,
             \fi
-            \ifx\currentstructurelisttitle\currentstructuretitle \else \ifx\currentstructuresaveinlist\v!no
-                list     = \!!bs\detokenize\expandafter{\currentstructurelisttitle}\!!es,
-            \fi \fi
+            \ifx\currentstructuremarking\currentstructuretitle \else
+                marking  = \!!bs\detokenize\expandafter{\currentstructuremarking  }\!!es,
+            \fi
+            \ifx\currentstructuresaveinlist\v!no \else
+              \ifx\currentstructurelist\currentstructuretitle \else
+                list     = \!!bs\detokenize\expandafter{\currentstructurelist}\!!es,
+              \fi
+            \fi
             },
             numberdata = {
 block         = "\currentstructureblock",
@@ -142,9 +166,8 @@ hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
 \let\previousstructurecounter\!!zerocount
 
 \def\setstructuresynchronization#1%
-  {\xdef\currentstructuresynchronize
-     {\noexpand\ctxlua{jobreferences.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference)}%
-      \noexpand\ctxlatelua{structure.lists.enhance(#1)}}}
+  {\xdef\currentstructureattribute  {\ctxlua    {tex.write(jobreferences.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\@@iafocus"))}}%
+   \xdef\currentstructuresynchronize{\ctxlatelua{structure.lists.enhance(#1)}}}
 
 \def\reportcurrentstructure{\ctxlua{structure.sections.writestatus()}}
 
@@ -153,17 +176,32 @@ hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
 
 \def\showstructuredata
   {\par
-   \dontleavehmode
+   \dontleavehmode\begingroup
    \currentstructuresynchronize
+   \currentstructureattribute
    [\currentstructurename: \showstructurelevel: \currentstructuretitle]
-   \par}
+   \endgroup\par}
 
 % We can access the (stored) data with the following macros.
+%
+% \def\MyHeadCommand  #1#2{\framed{#1}\framed{#2 / \structureuservariable{subtitle}}}
+% \def\MyListCommand#1#2#3{\externalfigure[\structurelistuservariable{figure}][height=5mm]#2}
+%
+% \setuphead[chapter][command=\MyHeadCommand]
+% \setuplist[chapter][alternative=command,command=\MyListCommand]
+%
+% \starttext
+%     \setupheadertexts[chapter]
+%     \setupinteraction[state=start]
+%     \placebookmarks[chapter]
+%     \placelist[chapter]
+%     \startchapter[ownnumber=10,title=Ton,list=Hans,marking=Kees,bookmark=Bram][figure=cow.pdf,subtitle=oeps]
+%     \stopchapter
+% \stoptext
 
-\def\structurevalue    #1{\ctxlua{structure.sections.get("#1")}}
-\def\structureuservalue#1{\ctxlua{structure.sections.getuser("#1")}}
-\def\structurenumber     {\ctxlua{structure.sections.fullnumber()}}
-
-\def\structurecctvalue #1{\ctxlua{structure.sections.get("#1",nil,true)}}
+\def\structurevariable    #1{\ctxlua{structure.sections.structuredata("#1")}}
+\def\structureuservariable#1{\ctxlua{structure.sections.userdata("#1")}}
+\def\structurenumber        {\ctxlua{structure.sections.fullnumber()}}
+\def\structurecatcodedget #1{\ctxlua{structure.sections.structuredata("#1",nil,true)}} % bad name
 
 \protect \endinput

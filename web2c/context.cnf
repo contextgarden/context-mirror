@@ -146,7 +146,9 @@ shell_escape            = t
 openout_any             = p
 openin_any              = a
 parse_first_line        = f
-allow_multiple_suffixes = f
+
+% allow_multiple_suffixes = f
+try_std_extension_first = f
 
 shell_escape.context          = t
 shell_escape_commands.context = mtxrun,luatools,texmfstart,texexec,mpost

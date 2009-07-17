@@ -93,7 +93,7 @@
      {\letvalue{\c!file\f!encodingprefix#1}\empty
       \makeshortfilename[\truefilename{\f!encodingprefix#1}]%
       \startreadingfile
-        \readsysfile\shortfilename
+        \readsysfile{\shortfilename.mkii}
           {\showmessage\m!encodings2{#1}}
           {\showmessage\m!encodings3{#1}}%
       \stopreadingfile}}
@@ -747,11 +747,11 @@
 %D can be used to check the correct loading of hyphenation
 %D patterns.
 
-\fetchruntimecommand \showaccents         {\f!encodingprefix\s!run}
-\fetchruntimecommand \showcharacters      {\f!encodingprefix\s!run}
-\fetchruntimecommand \showcharacterbounds {\f!encodingprefix\s!run}
-\fetchruntimecommand \showhyphenations    {\f!encodingprefix\s!run}
-\fetchruntimecommand \showmapping         {\f!encodingprefix\s!run}
+\fetchruntimecommand \showaccents         {\f!encodingprefix\s!run.mkii}
+\fetchruntimecommand \showcharacters      {\f!encodingprefix\s!run.mkii}
+\fetchruntimecommand \showcharacterbounds {\f!encodingprefix\s!run.mkii}
+\fetchruntimecommand \showhyphenations    {\f!encodingprefix\s!run.mkii}
+\fetchruntimecommand \showmapping         {\f!encodingprefix\s!run.mkii}
 
 %D \macros
 %D   {everyuppercase, EveryUppercase,

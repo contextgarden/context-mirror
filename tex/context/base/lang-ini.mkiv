@@ -76,14 +76,18 @@
 \def\setupcurrentlanguage[#1]{\setcurrentlanguage\currentmainlanguage{#1}}
 
 \def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
-  {\doifsomething{#1}
-     {\ifx\currentmainlanguage\empty\else\resetsystemmode{\systemmodeprefix\currentmainlanguage}\fi
-      \edef\currentmainlanguage{#1}%
-      \setsystemmode{\systemmodeprefix\currentmainlanguage}}%
-   \doifsomething{#2}
-     {\ifx\currentlanguage\empty\else\resetsystemmode\currentlanguage\fi
-      \edef\currentlanguage{#2}%
-      \setsystemmode\currentlanguage}}
+  {\edef\xaskedlanguage{#1}% otherwise clash with \askedlanguage
+   \ifx\xaskedlanguage\empty \else
+     \ifx\currentmainlanguage\empty\else\resetsystemmode{\systemmodeprefix\currentmainlanguage}\fi
+     \let\currentmainlanguage\xaskedlanguage
+     \setsystemmode{\systemmodeprefix\currentmainlanguage}%
+   \fi
+   \edef\xaskedlanguage{#2}%
+   \ifx\xaskedlanguage\empty \else
+     \ifx\currentlanguage\empty\else\resetsystemmode\currentlanguage\fi
+     \let\currentlanguage\xaskedlanguage
+     \setsystemmode\currentlanguage
+   \fi}
 
 %D The internal macros will be defined later.
 
@@ -120,9 +124,9 @@
 %D preloaded format).
 
 \def\dodoinstalllanguage#1#2% #2 added
-  {\doifundefined{#1}{\setvalue{#1}{\complexlanguage[#2]}}%
-   \expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
-   \doifundefined\ascii{\setvalue\ascii{\complexlanguage[#2]}}}
+  {\expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
+   \ifcsname    #1\endcsname\else\setvalue  {#1}{\complexlanguage[#2]}\fi
+   \ifcsname\ascii\endcsname\else\setvalue\ascii{\complexlanguage[#2]}\fi}
 
 %D \macros
 %D   {preloadlanguages}
@@ -144,11 +148,6 @@
       "\truefilename{\f!languageprefix#2.\f!patternsextension}",
       "\truefilename{\f!languageprefix#2.\f!hyphensextension }")
    }}
-
-% \def\doloadlanguagefiles#1%
-%   {\doifelsevaluenothing{\??la#1\s!patterns}
-%      {\doloadpatterns{#1}{#1}}
-%      {\doloadpatterns{#1}{\getvalue{\??la#1\s!patterns}}}}
 
 \def\doloadlanguagefiles#1%
   {\edef\languagesuffix{\specificlanguageparameter{#1}\s!patterns}%
@@ -318,9 +317,6 @@
 
 \newtoks \everylanguage
 
-\def\disablelanguagespecifics
-  {\ignorecompoundcharacter}
-
 \def\sethyphenationvariables
   {\lefthyphenmin 0\languageparameter\s!lefthyphenmin \relax
    \righthyphenmin0\languageparameter\s!righthyphenmin\relax
@@ -331,20 +327,13 @@
   {\edef\currentdefaultlanguage{\defaultlanguage\currentlanguage}%
    \setnormallanguage\currentlanguage\currentdefaultlanguage
    \the\everylanguage
-   \enablelanguagespecifics[\currentlanguage]%
    \sethyphenationvariables
    \relax
    % will be definable and move to core-spa !
    \doifelse{\languageparameter\c!spacing}\v!broad\nonfrenchspacing\frenchspacing}
 
-\ifx\enablelanguagespecifics\undefined \def\enablelanguagespecifics[#1]{} \fi
-
 % The following may be a solution for the fact that one cannot
 % change catcodes of characters like : and ; inside an environment.
-
-\appendtoks
-  \enablelanguagespecifics[\currentlanguage]%
-\to \everystarttext
 
 \def\complexlanguage[#1]%
   {\edef\askedlanguage{#1}%
@@ -585,5 +574,7 @@
   [\c!state=\v!stop]
 
 \uchyph=1
+
+\exhyphenchar=45 % to permit breaking at explicit hyphens
 
 \protect \endinput

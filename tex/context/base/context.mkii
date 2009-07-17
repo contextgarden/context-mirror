@@ -15,35 +15,35 @@
 %D manipulation macros. The first one loads \PLAIN\ \TEX, as
 %D minimal as possible.
 
-\loadcorefile{syst-ini.tex}
-\loadcorefile{norm-tex.tex}
-\loadcorefile{norm-etx.tex}
-\loadcorefile{norm-ptx.tex}
-\loadcorefile{norm-xtx.tex}
-\loadcorefile{norm-ctx.tex}
-\loadcorefile{syst-pln.tex}
+\loadcorefile{syst-ini}
+\loadcorefile{norm-tex}
+\loadcorefile{norm-etx}
+\loadcorefile{norm-ptx}
+\loadcorefile{norm-xtx}
+\loadcorefile{norm-ctx}
+\loadcorefile{syst-pln}
 
 \loadmarkfile{catc-ini}
-\loadcorefile{catc-act.tex}
-\loadcorefile{catc-def.tex}
-\loadcorefile{catc-ctx.tex}
-\loadcorefile{catc-sym.tex}
+\loadcorefile{catc-act}
+\loadcorefile{catc-def}
+\loadcorefile{catc-ctx}
+\loadcorefile{catc-sym}
 
-\loadcorefile{syst-gen.tex}
-\loadcorefile{syst-ext.tex}
-\loadcorefile{syst-new.tex}
+\loadmarkfile{syst-gen}
+\loadmarkfile{syst-ext}
+\loadmarkfile{syst-new}
 \loadmarkfile{syst-con}
-\loadcorefile{thrd-trg.tex}  % based on: David Carlisle
+\loadmarkfile{thrd-trg}  % based on: David Carlisle
 
 \loadmarkfile{syst-fnt}
 \loadmarkfile{syst-str}
 \loadmarkfile{syst-rtp}
 
 \ifnum\texengine=\xetexengine
-    \loadcorefile{xetx-ini.tex}
-    \loadcorefile{xetx-utf.tex}
-    \loadcorefile{xetx-chr.tex}
-    \loadcorefile{xetx-cls.tex}
+    \loadmarkfile{xetx-ini}
+    \loadmarkfile{xetx-utf}
+    \loadmarkfile{xetx-chr}
+    \loadmarkfile{xetx-cls}
 \fi
 
 %D To enable selective loading, we say:
@@ -60,36 +60,35 @@
 %D modules.
 
 \loadmarkfile{mult-ini}
-\loadcorefile{mult-fst.tex}
-\loadcorefile{mult-sys.tex}
-\loadcorefile{mult-def.tex}
+\loadcorefile{mult-fst}
+\loadcorefile{mult-sys}
+\loadcorefile{mult-def}
 \loadmarkfile{mult-chk}
 
 %D Now we're ready for some general support modules. These
 %D modules implement some basic typesetting functionality.
 
-\loadcorefile{core-var.tex}
+\loadmarkfile{core-var}
 \loadmarkfile{core-env}
 
-\loadcorefile{supp-box.tex}
-\loadcorefile{supp-mrk.tex}
-\loadcorefile{supp-vis.tex}
-\loadcorefile{supp-fun.tex}
-%loadcorefile{supp-eps.tex}
-\loadcorefile{supp-spe.tex}
+\loadcorefile{supp-box}
+\loadmarkfile{supp-mrk}
+\loadcorefile{supp-vis}
+\loadcorefile{supp-fun}
+%loadmarkfile{supp-eps}
+\loadmarkfile{supp-spe}
 \loadmarkfile{supp-ran}
-%loadcorefile{supp-mps.tex}
-\loadmkiifile{supp-mps.tex}
-\loadmkiifile{supp-tpi.tex}
-\loadcorefile{supp-mat.tex}
-\loadcorefile{supp-ali.tex}
-\loadcorefile{supp-num.tex}
+\loadmarkfile{supp-mps}
+\loadmarkfile{supp-tpi}
+\loadcorefile{supp-mat}
+\loadcorefile{supp-ali}
+\loadcorefile{supp-num}
 
 %D Verbatim typesetting is implemented in a separate class of
 %D modules. The pretty typesetting modules are loaded at run
 %D time.
 
-\loadcorefile{verb-ini.tex}
+\loadmarkfile{verb-ini}
 
 %D The following modules are not sequentially dependent,
 %D i.e. they have ugly dependencies, which will be cleaned
@@ -99,33 +98,33 @@
 %D bit more advanced file handling as well as some general
 %D variables, and features, so next we load:
 
-\loadcorefile{core-ins.tex}
-\loadcorefile{core-fil.tex}
+\loadmarkfile{page-ins}
+\loadmarkfile{core-fil}
 \loadmarkfile{core-con}
 
 %D We already need some synonyms (patterns). At runtime this
 %D file will be reloaded.
 
-\loadcorefile{cont-fil.tex}
+\loadcorefile{cont-fil}
 
 %D \CONTEXT\ does not implement its own table handling. We
 %D just go for the best there is and load \TABLE. Just to be
 %D sure we do it here, before we redefine \type{|}.
 
-\loadcorefile{thrd-tab.tex}  % based on: Michael Wichura / will be reimplemented
+\loadcorefile{thrd-tab}  % based on: Michael Wichura / will be reimplemented
 
 %D Here comes the last support modules. They take care of
 %D some language specific things.
 
-\loadcorefile{supp-pat.tex}
+\loadmarkfile{supp-pat}
 
 %D The next few modules do what their names state. They
 %D load additional definition modules when needed.
 
 \loadmarkfile{regi-ini}
-\loadcorefile{regi-syn.tex}
+\loadcorefile{regi-syn}
 \loadmarkfile{enco-ini}
-%loadcorefile{filt-ini.tex}
+%loadmarkfile{filt-ini}
 \loadmarkfile{hand-ini}
 
 \loadmarkfile{lang-ini}
@@ -134,15 +133,15 @@
 
 \loadmarkfile{unic-ini}
 
-\loadcorefile{core-gen.tex}
+\loadmarkfile{core-gen}
 \loadmarkfile{core-uti}
 \loadmarkfile{core-two}
-\loadcorefile{core-stg.tex}
+\loadmarkfile{core-stg}
 
-\loadcorefile{spec-ini.tex}
-\loadcorefile{spec-mis.tex}
-\loadcorefile{spec-def.tex}
-\loadcorefile{spec-var.tex}
+\loadmarkfile{spec-ini}
+\loadmarkfile{spec-mis}
+\loadmarkfile{spec-def}
+\loadmarkfile{spec-var}
 
 \loadmarkfile{colo-ini}
 \loadmarkfile{colo-ext}
@@ -150,29 +149,28 @@
 %D For the moment we load a lot of languages. In the future
 %D we'll have to be more space conservative.
 
-\loadcorefile{lang-mis.tex}
+\loadmarkfile{lang-mis}
 \loadmarkfile{lang-url}
 
-\loadcorefile{lang-ger.tex}
-\loadcorefile{lang-ita.tex}
-\loadcorefile{lang-sla.tex}
-\loadcorefile{lang-alt.tex}
-\loadcorefile{lang-ana.tex}
-\loadcorefile{lang-art.tex}
-\loadcorefile{lang-bal.tex}
-\loadcorefile{lang-cel.tex}
-\loadcorefile{lang-grk.tex}
-\loadcorefile{lang-ind.tex}
-\loadcorefile{lang-ura.tex}
-\loadcorefile{lang-vn.tex}
-\loadcorefile{lang-ara.tex}
-\loadcorefile{lang-cyr.tex}
+\loadcorefile{lang-ger}
+\loadcorefile{lang-ita}
+\loadcorefile{lang-sla}
+\loadcorefile{lang-alt}
+\loadcorefile{lang-ana}
+\loadcorefile{lang-art}
+\loadcorefile{lang-bal}
+\loadcorefile{lang-cel}
+\loadcorefile{lang-grk}
+\loadcorefile{lang-ind}
+\loadcorefile{lang-ura}
+\loadcorefile{lang-vn}
+\loadcorefile{lang-cyr}
 
 \loadmarkfile{typo-ini}
 
 %D All kind of symbols are handled in:
 
-\loadcorefile{symb-ini.tex}
+\loadmarkfile{symb-ini}
 
 %D Sorting:
 
@@ -183,10 +181,9 @@
 %D is important, due to dependancies.
 
 \loadmarkfile{core-spa}
-\loadcorefile{core-grd.tex}
+\loadmarkfile{core-grd}
 \loadmarkfile{strc-mar}
 \loadmarkfile{anch-pos}
-\loadcorefile{core-mak.tex}
 
 \loadmarkfile{buff-ver}
 \loadmarkfile{buff-ini}
@@ -194,9 +191,9 @@
 \loadmarkfile{pack-rul}
 \loadmarkfile{trac-vis}
 \loadmarkfile{strc-num}
-\loadcorefile{tabl-pln.tex}
-\loadcorefile{tabl-tab.tex}
-\loadcorefile{tabl-tsp.tex}
+\loadmarkfile{tabl-pln}
+\loadmarkfile{tabl-tab}
+\loadmarkfile{tabl-tsp}
 \loadmarkfile{scrn-nav}
 \loadmarkfile{strc-ref}
 \loadmarkfile{pack-obj}
@@ -209,22 +206,22 @@
 
 \loadmarkfile{page-ini}
 \loadmarkfile{page-bck}
-\loadcorefile{page-not.tex}
+\loadmarkfile{page-not}
 \loadmarkfile{page-one}
-\loadcorefile{page-lay.tex}
-\loadmkiifile{page-log.tex}
+\loadmarkfile{page-lay}
+\loadmarkfile{page-log}
 \loadmarkfile{page-txt}
-\loadcorefile{page-sid.tex}
+\loadmarkfile{page-sid}
 \loadmarkfile{strc-flt}
-\loadcorefile{page-mis.tex}
-\loadcorefile{page-mul.tex}
-\loadcorefile{page-set.tex}
+\loadmarkfile{page-mis}
+\loadmarkfile{page-mul}
+\loadmarkfile{page-set}
 \loadmarkfile{pack-lyr}
-\loadcorefile{page-mak.tex}
+\loadmarkfile{page-mak}
 \loadmarkfile{strc-pag}
 \loadmarkfile{page-lin}
-\loadcorefile{page-par.tex}
-\loadcorefile{page-mar.tex}
+\loadmarkfile{page-par}
+\loadmarkfile{page-mar}
 
 \loadmarkfile{core-job} % why so late?
 
@@ -234,18 +231,19 @@
 \loadmarkfile{strc-swd}
 \loadmarkfile{strc-blk}
 
-\loadcorefile{page-imp.tex}
-\loadcorefile{tabl-tbl.tex}
+\loadmarkfile{page-imp}
+\loadmarkfile{tabl-tbl}
 \loadmarkfile{scrn-int}
 \loadmarkfile{tabl-ntb}
-\loadcorefile{tabl-nte.tex}
-\loadcorefile{tabl-ltb.tex}
+\loadmarkfile{tabl-nte}
+\loadmarkfile{tabl-ltb}
 
 %D A few more languages, that have specifics using core
 %D functionality:
 
-\loadcorefile{lang-chi.tex}
-\loadcorefile{lang-jap.tex}
+%loadmarkfile{lang-ara} % undefined
+\loadmarkfile{lang-chi}
+\loadmarkfile{lang-jap}
 
 %D How about fill||in fields and related stuff?
 
@@ -265,17 +263,17 @@
 \loadmarkfile{font-ini}
 
 \ifnum\texengine=\xetexengine
-    \loadcorefile{font-xtx.tex}
+    \loadmarkfile{font-xtx}
 \fi
 
 \loadmarkfile{font-unk}
 \loadmarkfile{font-uni}
-\loadcorefile{font-bfm.tex}
+\loadmarkfile{font-bfm}
 
-\loadcorefile{enco-pfr.tex}
+\loadmarkfile{enco-pfr}
 
 \loadmarkfile{type-ini}
-\loadcorefile{type-def.tex}
+\loadcorefile{type-def}
 
 %D Properties. Don't ask.
 
@@ -290,20 +288,20 @@
 \loadmarkfile{meta-tex}
 \loadmarkfile{meta-pdf}
 
-\loadcorefile{meta-pag.tex}
+\loadmarkfile{meta-pag}
 
 %D Special page handling (maybe even later)
 
-\loadcorefile{page-flw.tex}
-\loadcorefile{page-spr.tex}
-\loadcorefile{page-plg.tex}
-\loadcorefile{page-str.tex}
+\loadmarkfile{page-flw}
+\loadmarkfile{page-spr}
+\loadmarkfile{page-plg}
+\loadmarkfile{page-str}
 
 %D Anchoring graphics:
 
 \loadmarkfile{anch-pgr}
-\loadcorefile{anch-bar.tex}
-\loadcorefile{anch-snc.tex}
+\loadcorefile{anch-bar}
+\loadcorefile{anch-snc}
 
 %D Math.
 
@@ -316,7 +314,7 @@
 
 \loadmarkfile{core-fnt}
 \loadmarkfile{strc-not}
-\loadcorefile{core-lnt.tex}
+\loadmarkfile{strc-lnt}
 
 \loadmarkfile{core-mis}
 
@@ -324,35 +322,35 @@
 \loadmarkfile{grph-inc}
 \loadmarkfile{grph-fig}
 
-\loadcorefile{core-par.tex}
+\loadmarkfile{core-par}
 
 \loadmarkfile{pack-box}
-\loadcorefile{page-app.tex}
+\loadmarkfile{page-app}
 \loadmarkfile{meta-fig}
 
 %D Language specific spacing.
 
-\loadcorefile{lang-spa.tex}
+\loadcorefile{lang-spa}
 
 %D Only the basic XML parser and remapper are part of the core.
 %D These macros are loaded last since they overload and|/|or
 %D extend previously defined ones.
 
-\loadcorefile{xtag-ini.tex}
-\loadcorefile{xtag-ext.tex}
-\loadcorefile{xtag-exp.tex}
-\loadcorefile{xtag-pre.tex}
-\loadcorefile{xtag-xsd.tex}
-\loadcorefile{xtag-rng.tex}
+\loadcorefile{xtag-ini}
+\loadcorefile{xtag-ext}
+\loadcorefile{xtag-exp}
+\loadcorefile{xtag-pre}
+\loadcorefile{xtag-xsd}
+\loadcorefile{xtag-rng}
 
 %D How about this:
 
-\loadcorefile{meta-xml.tex}
+\loadcorefile{meta-xml}
 
 %D \TEX\ related logo's are always typeset in a special way.
 %D Here they come:
 
-\loadcorefile{cont-log.tex}
+\loadcorefile{cont-log}
 
 %D This one overloads af few things:
 
@@ -361,8 +359,7 @@
 %D Defaults go here (more will be moved to this module
 %D later):
 
-\loadcorefile{core-lme.tex}
-\loadcorefile{core-ini.tex}
+\loadmarkfile{core-ini}
 \loadmarkfile{core-def}
 
 %D Preloaded modules (some need xml support):
@@ -383,4 +380,4 @@
 % %D Except from english, no hyphenation patterns are loaded
 % %D yet. Users can specify their needs in the next module:
 %
-% \input cont-usr.tex
+% \input cont-usr

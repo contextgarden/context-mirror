@@ -5356,6 +5356,9 @@
           <cd:constant type="oui"/>
           <cd:constant type="non"/>
         </cd:parameter>
+        <cd:parameter name="option">
+          <cd:constant type="groupe"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

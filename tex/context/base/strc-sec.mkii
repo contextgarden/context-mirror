@@ -1325,6 +1325,25 @@
 
 \let\fullsectionnumber\limitedfullsectionnumber
 
+% from cont-new:
+
+\def\expandifnonempty#1%
+  {\@EA\ifx\csname#1\endcsname\empty
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi
+   {\csname#1\endcsname}}
+
+\def\@@sectiekoppeling#1%
+  {\expandifnonempty{\??ko#1\c!coupling}{#1}}
+
+\def\@@sectiesectie#1%
+  {\expandifnonempty{\??ko#1\c!section}{\@@sectiekoppeling{#1}}}
+
+\def\sectioncountervalue#1%
+  {\@@sectionvalue{\@@sectiesectie{#1}}}
+
 % \dodododoconstructhead IS NON GROUPED, SO WE NEED TO RESTORE !!!!
 %
 % dit kan dus beter \everyaroundhead zijn

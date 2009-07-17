@@ -25,7 +25,7 @@ local trace_vspacing         = false  trackers.register("nodes.vspacing",       
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local set_attribute      = node.set_attribute
-local slide_node_list    = node.slide
+local find_node_tail     = node.tail
 local free_node          = node.free
 local copy_node          = node.copy
 local traverse_nodes     = node.traverse
@@ -35,6 +35,7 @@ local remove_node        = nodes.remove
 local make_penalty_node  = nodes.penalty
 local count_nodes        = nodes.count
 local node_ids_to_string = nodes.ids_to_string
+local hpack_node         = node.hpack
 
 local glyph   = node.id("glyph")
 local penalty = node.id("penalty")
@@ -42,6 +43,7 @@ local kern    = node.id("kern")
 local glue    = node.id('glue')
 local hlist   = node.id('hlist')
 local vlist   = node.id('vlist')
+local adjust  = node.id('adjust')
 
 vspacing = vspacing or { }
 
@@ -550,7 +552,7 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
             current = current.next
         end
     end
-    local tail = slide_node_list(head) -- still needed, check previous code ?
+    local tail = find_node_tail(head) -- still needed, check previous code ?
     if trace then trace_info("stop analyzing",where,what) end
     --~ if natural_penalty and (not penalty_data or natural_penalty > penalty_data) then
     --~     penalty_data = natural_penalty
@@ -596,7 +598,7 @@ function nodes.handle_page_spacing(where)
     local newhead = texlists.contrib_head
     if newhead then
         statistics.starttiming(vspacing)
-        local newtail = slide_node_list(newhead)
+        local newtail = find_node_tail(newhead)
         local flush = false
         for n in traverse_nodes(newhead) do
             local id = n.id
@@ -655,7 +657,7 @@ local ignore = table.tohash {
 function nodes.handle_vbox_spacing(head,where)
     if head and not ignore[where] and head.next then
         statistics.starttiming(vspacing)
-        head = collapser(slide_node_list(head),"vbox",where,trace_vbox_vspacing)
+        head = collapser(head,"vbox",where,trace_vbox_vspacing)
         statistics.stoptiming(vspacing)
     end
     return head
@@ -679,3 +681,54 @@ function vspacing.disable()
     callback.register('vpack_filter', nil)
     callback.register('buildpage_filter', nil)
 end
+
+-- we will split this module
+
+local attribute = attributes.private('graphicvadjust')
+
+--~ local hlist = node.id('hlist')
+--~ local vlist = node.id('vlist')
+
+--~ local remove_node   = nodes.remove
+--~ local hpack_node    = node.hpack
+--~ local has_attribute = node.has_attribute
+
+function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
+    if groupcode == "" then -- mvl only
+        local h, p, done = head, nil, false
+        while h do
+            local id = h.id
+            if id == hlist or id == vlist then
+                local a = has_attribute(h,attribute)
+                if a then
+                    if p then
+                        local n
+                        head, h, n = remove_node(head,h)
+                        local pl = p.list
+                        if n.width ~= 0 then
+                            n = hpack_node(n,0,'exactly')
+                        end
+                        if pl then
+                            pl.prev = n
+                            n.next = pl
+                        end
+                        p.list = n
+                        done = true
+                    else
+                        -- can't happen
+                    end
+                else
+                    p = h
+                    h = h.next
+                end
+            else
+                h = h.next
+            end
+        end
+        return head, done
+    else
+        return head, false
+    end
+end
+
+--~ tasks.appendaction("finalizers", "lists", "nodes.repackage_graphicvadjust")

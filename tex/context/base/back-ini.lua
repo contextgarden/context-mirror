@@ -8,7 +8,11 @@ if not modules then modules = { } end modules ['back-ini'] = {
 
 backends = backends or { }
 
+local trace_backend = false
+
 local function nothing() return nil end
+
+backends.nothing = nothing
 
 backends.nodeinjections = {
     rgbcolor     = nothing,
@@ -24,10 +28,61 @@ backends.nodeinjections = {
     startlayer   = nothing,
     stoplayer    = nothing,
     switchlayer  = nothing,
+
+    reference    = nothing,
+    destination  = nothing,
+
 }
 
 backends.codeinjections = {
-    insertmovie        = nothing,
+
+    prerollreference      = nothing,
+
+    insertmovie           = nothing,
+    insertsound           = nothing,
+
+    presetsymbollist      = nothing,
+    registersymbol        = nothing,
+    registeredsymbol      = nothing,
+
+    registercomment       = nothing,
+    attachfile            = nothing,
+    adddocumentinfo       = nothing,
+    setupidentity         = nothing,
+    setpagetransition     = nothing,
+    defineviewerlayer     = nothing,
+    addbookmarks          = nothing,
+    addtransparencygroup  = nothing,
+
+    typesetfield          = nothing,
+    finishfields          = nothing,
+    doiffieldelse         = nothing,
+    doiffieldgroupelse    = nothing,
+    definefield           = nothing,
+    clonefield            = nothing,
+    definefieldset        = nothing,
+    getfieldgroup         = nothing,
+    setformsmethod        = nothing,
+    getdefaultfieldvalue  = nothing,
+
+    setupcanvas           = nothing,
+
+    initializepage        = nothing,
+    initializedocument    = nothing,
+    finalizepage          = nothing,
+    finalizedocument      = nothing,
+
+    flushpageactions      = nothing,
+    flushdocumentactions  = nothing,
+
+    insertrenderingwindow = nothing,
+    processrendering      = nothing,
+    kindofrendering       = nothing,
+    flushrenderingwindow  = nothing,
+
+    setfigurecolorspace   = nothing,
+    setfigurealternative  = nothing,
+
 }
 
 backends.registrations = {
@@ -49,27 +104,40 @@ backends.current = "unknown"
 
 function backends.install(what)
     if type(what) == "string" then
-        backends.current = what
-        what = backends[what]
-        if what then
-            local wi = what.nodeinjections
-            if wi then
-                for k, v in next, wi do
-                    nodeinjections[k] = v
+        local backend = backends[what]
+        if backend then
+            if trace_backend then
+                logs.report("backend", "initializing backend %s (%s)",what,backend.comment or "no comment")
+            end
+            backends.current = what
+            for _, category in next, { "nodeinjections", "codeinjections", "registrations"} do
+                local plugin = backend[category]
+                if plugin then
+                    local whereto = backends[category]
+                    for name, meaning in next, whereto do
+                        if plugin[name] then
+                            whereto[name] = plugin[name]
+                        --  logs.report("backend", "installing function %s in category %s of %s",name,category,what)
+                        elseif trace_backend then
+                            logs.report("backend", "no function %s in category %s of %s",name,category,what)
+                        end
+                    end
+                elseif trace_backend then
+                    logs.report("backend", "no category %s in %s",category,what)
                 end
             end
-            local wi = what.codeinjections
-            if wi then
-                for k, v in next, wi do
-                    codeinjections[k] = v
-                end
-            end
-            local wi = what.registrations
-            if wi then
-                for k, v in next, wi do
-                    registrations[k] = v
-                end
-            end
+            backends.helpers = backend.helpers
+        elseif trace_backend then
+            logs.report("backend", "no backend named %s",what)
         end
     end
 end
+
+statistics.register("used backend", function()
+    local bc = backends.current
+    if bc ~= "unknown" then
+        return string.format("%s (%s)",bc,backends[bc].comment or "no comment")
+    else
+        return nil
+    end
+end)

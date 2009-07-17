@@ -9766,6 +9766,9 @@ return {
    ["pe"]="شماره‌بخش",
    ["ro"]="numarsectiune",
   },
+  ["sectionresetset"]={
+   ["en"]="sectionresetset",
+  },
   ["sectionsegments"]={
    ["en"]="sectionsegments",
   },
@@ -13351,6 +13354,16 @@ return {
    ["nl"]="laatstesubpagina",
    ["pe"]="زیرصفحه‌آخر",
    ["ro"]="ultimasubpagina",
+  },
+  ["layer"]={
+   ["cs"]="layer",
+   ["de"]="layer",
+   ["en"]="layer",
+   ["fr"]="layer",
+   ["it"]="layer",
+   ["nl"]="layer",
+   ["pe"]="layer",
+   ["ro"]="layer",
   },
   ["left"]={
    ["cs"]="vlevo",

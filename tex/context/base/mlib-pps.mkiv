@@ -15,15 +15,7 @@
 
 \registerctxluafile{mlib-pps}{1.001}
 
-\def\MPLIBcircularshade#1#2#3#4#5#6#7% nr domain color-a color-b ? colorspace oordinates
-  {\immediate\pdfobj{<</FunctionType 2 /Domain [#2] /C0 [#3] /C1 [#4] /N #5>>}%
-   \immediate\pdfobj{<</ShadingType 3 /ColorSpace /#6 /Function \the\pdflastobj\space 0 R /Coords [#7] /Extend [true true]>>}%
-   \appendtoPDFdocumentshades{/MpSh#1 \the\pdflastobj\space0 R }}
-
-\def\MPLIBlinearshade#1#2#3#4#5#6#7% nr domain color-a color-b ? colorspace oordinates
-  {\immediate\pdfobj{<</FunctionType 2 /Domain [#2] /C0 [#3] /C1 [#4] /N #5>>}%
-   \immediate\pdfobj{<</ShadingType 2 /ColorSpace /#6 /Function \the\pdflastobj\space 0 R /Coords [#7] /Extend [true true]>>}%
-   \appendtoPDFdocumentshades{/MpSh#1 \the\pdflastobj\space0 R }}
+% this will move !
 
 \def\MPLIBfigure#1#2#3#4#5#6#7% todo: move Q q to lua
   {\setbox\scratchbox\hbox{\externalfigure[#7]}%
@@ -38,13 +30,7 @@
 \def\MPLIBfreetext#1%
   {\global\setbox#1\emptybox}
 
-% \def\MPLIBgettext#1#2#3#4#5#6#7% we can also use this for the figure and pass sx/sy
-%   {\ctxlua{metapost.edefsxsy(\number\wd#7,\number\ht#7,\number\dp#7)}%
-%    \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}%
-%    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[sx=\sx,sy=\sy]{\raise\dp#7\box#7}\hss}}%
-%    \pdfliteral{Q}}
-
-\def\MPLIBgettextscaled#1#2#3%
+\def\MPLIBgettextscaled#1#2#3%  why a copy
   {\vbox to \zeropoint{\vss\hbox to \zeropoint{\black\scale[sx=#2,sy=#3]{\raise\dp#1\copy#1}\hss}}}
 
 \def\MPLIBallocate#1%

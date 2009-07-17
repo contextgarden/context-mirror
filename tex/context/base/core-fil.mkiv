@@ -1,0 +1,317 @@
+%D \module
+%D   [       file=core-fil,
+%D        version=1997.11.15,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=File Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / File Support}
+
+\unprotect
+
+%D \macros
+%D   {definefilesynonym}
+%D
+%D One of the problems with loading files is that their names
+%D can depend on the interface language. We therefore need a
+%D method to define filesynonyms. The actual synonyms are
+%D defined elsewhere, but look like:
+%D
+%D \starttyping
+%D \definefilesynonym [chemic]  [chemie]
+%D \definefilesynonym [einheit] [unit]
+%D \definefilesynonym [unit]    [unit]
+%D \stoptyping
+%D
+%D So we can say in english:
+%D
+%D \starttyping
+%D \usemodules[pictex,chemic,unit]
+%D \stoptyping
+%D
+%D and in dutch:
+%D
+%D \starttyping
+%D \usemodules[pictex,chemie,unit]
+%D \stoptyping
+
+% will be redone in mkiv
+
+\def\definefilesynonym
+  {\dodoubleempty\dodefinefilesynonym}
+
+\def\dodefinefilesynonym[#1][#2]%
+  {\ifcsname\??fs#1\endcsname
+     \doifnotvalue{\??fs#1}{#2}{\showmessage\m!files1{#1 (#2),\getvalue{\??fs#1}}}%
+   \fi
+   \doifelse{#1}{#2}{\letbeundefined{\??fs#1}{#2}}{\setevalue{\??fs#1}{#2}}}
+
+%D \macros
+%D   {definefilefallback}
+
+\def\definefilefallback
+  {\dodoubleargument\dodefinefilefallback}
+
+\def\dodefinefilefallback[#1][#2]%
+  {\doifnotfile{#1}
+     {\def\docommand##1{\doiffile{##1}{\definefilesynonym[#1][##1]\quitcommalist}}%
+      \processcommalist[#2]\docommand}}
+
+%D \macros
+%D   {truefilename}
+%D
+%D At the system level such a filename can be called upon by
+%D saying:
+%D
+%D \starttyping
+%D \truefilename{filename/filesynonym}
+%D \stoptyping
+%D
+%D The implementation shows that nesting is supported.
+
+\def\truefilename#1%
+  {\ifcsname\??fs#1\endcsname\expandafter\truefilename\csname\??fs#1\endcsname\else#1\fi}
+
+%D \macros
+%D   {makeshortfilename}
+%D
+%D To prevent cross platform problems with filenames, we
+%D lowercase them as well as only use the first 8~characters.
+%D
+%D \starttyping
+%D \def\domakeshortfilename[#1#2#3#4#5#6#7#8#9]%
+%D   {\lowercase{\edef\shortfilename{#1#2#3#4#5#6#7#8.}}%
+%D    \expandafter\beforesplitstring\shortfilename\at.\to\shortfilename}
+%D
+%D \def\makeshortfilename[#1]%
+%D   {\edef\fullfilename{#1.........}%
+%D    \expanded{\domakeshortfilename[\fullfilename]}}
+%D \stoptyping
+%D
+%D In 2005 there is no need for the 8~character limit any more, so:
+
+\def\makeshortfilename[#1]% no need for further cleanup and shortening
+  {\lowercase{\edef\shortfilename{#1.}}%
+   \expandafter\beforesplitstring\shortfilename\at.\to\shortfilename}
+
+%D \macros
+%D   {usemodule}
+%D
+%D Most of \CONTEXT is preloaded in the format file. Some very
+%D domain specific typesetting topics are however dealt with in
+%D separate modules, e.g. typesetting of chemical structure
+%D formulas. These modules are loaded by:
+%D
+%D \showsetup{usemodule}
+%D
+%D More information on the specific modules can be found in
+%D their dedicated manuals. We use \type {\next} so that we
+%D can \type {\end} in modules.
+
+\newconditional\moduleisloaded
+
+\def\dododousemodules#1#2% no \unprotect/\protect when loading,
+  {\relax                % since we need to use ? ! unprotected
+   \ifconditional\moduleisloaded % sometimes (see xtag-map)
+     \let\next\relax % or: \expandafter\gobbleoneargument
+   \else
+     \makeshortfilename[#1\truefilename{#2}]% beware: *- is not part of syn
+     \doifelseflagged\shortfilename
+       {\showmessage\m!systems7{#2 (line \number\inputlineno)}%
+        \settrue\moduleisloaded
+        \let\next\relax}
+       {\doglobal\setflag\shortfilename
+        \def\next
+          {\startreadingfile
+             \readsysfile\shortfilename
+               {\showmessage\m!systems5{#2}\settrue\moduleisloaded}
+               {\readsysfile{\shortfilename.\mksuffix} % new
+                  {\showmessage\m!systems5{#2 (\mksuffix)}\settrue\moduleisloaded}
+                  \donothing}%
+           \stopreadingfile}}%
+   \fi
+   \next}
+
+\def\dodousemodules#1#2%
+  {\setfalse\moduleisloaded
+   \doifelsenothing{#1}
+     {\dododousemodules\f!moduleprefix {#2}%
+      \dododousemodules\f!privateprefix{#2}%
+      \dododousemodules\f!styleprefix  {#2}%
+      \dododousemodules\f!xstyleprefix {#2}%
+      \dododousemodules\f!thirdprefix  {#2}%
+      \dododousemodules\empty          {#2}}% new, fall back on raw name
+     {\dododousemodules{#1-}{#2}}%
+   \ifconditional\moduleisloaded\else
+     \showmessage\m!systems6{#2}%
+     \appendtoks\showmessage\m!systems6{#2}\to\everynotabene
+   \fi}
+
+\def\usemodules
+  {\dotripleempty\dousemodules}
+
+\def\dousemodules[#1][#2][#3]%
+  {\pushmacro\currentmodule
+   \pushmacro\currentmoduleparameters
+   \let\currentmoduleparameters\empty
+   \ifthirdargument
+     \doifelsenothing{#2}
+       {\let\next\relax}
+       {\def\currentmoduleparameters{#3}%
+        \def\next{\processcommalist[#2]{\dodousemodules{#1}}}}%
+   \else\ifsecondargument
+     \doifelsenothing{#2}
+       {\let\next\relax}
+       {\doifassignmentelse{#2}
+          {\def\currentmoduleparameters{#2}%
+           \def\next{\processcommalist[#1]{\dodousemodules{}}}}
+          {\def\next{\processcommalist[#2]{\dodousemodules{#1}}}}}%
+   \else
+     \def\next{\processcommalist[#1]{\dodousemodules{}}}%
+   \fi\fi
+   \next
+   \popmacro\currentmoduleparameters
+   \popmacro\currentmodule}
+
+\let\currentmoduleparameters\empty
+\let\currentmodule          \s!unknown
+
+\def\startmodule
+  {\doifnextoptionalelse\dostartmodule\nostartmodule}
+
+\def\nostartmodule #1 %
+  {\dostartmodule[#1]}
+
+\def\dostartmodule[#1]%
+  {\pushmacro\currentmodule
+   \pushmacro\currentmoduleparameters
+   \def\currentmodule{#1}}
+
+\def\stopmodule
+  {\popmacro\currentmoduleparameters
+   \popmacro\currentmodule}
+
+\def\setupmodule
+  {\dodoubleempty\dosetupmodule}
+
+\def\dosetupmodule[#1][#2]%
+  {\scratchtoks\expandafter{\currentmoduleparameters}%
+   \ifsecondargument
+     \getparameters[\??md:#1:][#2]%
+     \expanded{\getparameters[\??md:#1:][\the\scratchtoks]}%
+   \else
+     \getparameters[\??md:\currentmodule:][#1]%
+     \expanded{\getparameters[\??md:\currentmodule:][\the\scratchtoks]}%
+   \fi
+   \let\currentmoduleparameters\empty}
+
+\def\moduleparameter     #1#2{\executeifdefined{\??md:#1:#2}\s!empty}
+\def\currentmoduleparameter#1{\executeifdefined{\??md:\currentmodule:#1}\s!empty}
+
+% \usemodule[newmml]
+% \usemodule[newmml][a=b]
+% \usemodule[x][newmml]
+% \usemodule[x][newmml][a=b]
+%
+% \startmodule [mathml]
+%   \setupmodule[a=c] \relax [\currentmoduleparameter{a}] % user vars will be set afterwards
+%   \setupmodule[a=c] \relax [\currentmoduleparameter{a}] % user vars are now forgotten
+% \stopmodule
+
+% one can introduce test sections with:
+%
+% \enablemode[newmml:test:\currentmoduleparameter{test}]
+% \startmode[newmml:test:yes} ... \stopmode
+%
+% these will be ignored unless test=yes
+%
+% however, a better way is:
+
+\let\stopmoduletestsection\donothing
+
+\def\startmoduletestsection
+  {\bgroup
+   \setupmodule % we need to make sure that the vars are set
+   \doifelse{\currentmoduleparameter\v!test}\v!yes
+     {\egroup
+      \writestatus{\currentmodule}{loading experimental code}}
+     {\egroup
+      \writestatus{\currentmodule}{skipping experimental code}%
+      \gobbleuntil\stopmoduletestsection}}
+
+%D We also support a singular call, which saves us for
+%D frustrations when we do a typo.
+
+\let\usemodule=\usemodules
+
+% %D The definition shows that the language specific settings
+% %D are activated after loading all the modules specified.
+
+%D \macros
+%D   {ifprotectbuffers, bufferprefix,
+%D    TEXbufferfile, MPgraphicfile}
+%D
+%D The next switch enables protection of temporary filenames,
+%D which is needed when we process more files on one path at
+%D the same time.
+
+\newif\ifprotectbuffers
+
+\def\bufferprefix{\ifprotectbuffers\jobname-\fi}
+
+% The following filenames are defined here:
+
+\def\TEXbufferfile   #1{\bufferprefix#1.\f!temporaryextension}
+\def\MPgraphicfile     {\bufferprefix mp\ifMPrun run\else graph\fi} % not needed in luatex
+\def\convertMPcolorfile{\bufferprefix metacmyk.tmp}
+
+%D To save memory, we implement some seldomly used commands
+%D in a lazy way. Nota bene: such runtime definitions are
+%D global.
+%D
+%D \starttyping
+%D \fetchruntimecommand\showaccents{\f!encodingprefix ...}
+%D \stoptyping
+
+\def\fetchruntimecommand#1#2%
+  {\def#1{\dofetchruntimecommand#1{#2}}}
+
+\def\dofetchruntimecommand#1#2%
+  {\doifnotflagged{#2}
+     {\let#1\undefined
+      \startreadingfile
+      \startnointerference % \bgroup
+      \cleanupfeatures % better \setnormalcatcodes / test first
+      \readfile{#2}\donothing\donothing
+      \stopnointerference  % \egroup
+      \stopreadingfile
+      \doglobal\setflag{#2}}%
+   \ifx#1\undefined
+     \writestatus\m!systems{command \string#1 not found in file #2}%
+     \def#1{{\infofont[unknown command \string#1]}}%
+   \fi
+   #1}
+
+%D Experimental:
+
+\let\checkpreprocessor\relax
+
+%D To be documented and probably moved
+
+\def\documentresources{\@@erurl}
+
+\def\setupexternalresources
+  {\dodoubleargument\getparameters[\??er]}
+
+\setupexternalresources
+  [url=]
+
+%D This module will be perfected / changed / weeded.
+
+\protect \endinput

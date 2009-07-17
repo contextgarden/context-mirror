@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Most will go away here as it is replaced by \LUA\ calls to
+%D backend functions.
+
 \writestatus{loading}{ConTeXt Backend Macros / Initialization}
 
 \registerctxluafile{back-ini}{1.001}
@@ -19,6 +22,9 @@
 %D handling but eventually most will move to lua.
 
 \unprotect
+
+\ifdefined\everybackendshipout     \else \newtoks\everybackendshipout     \fi
+\ifdefined\everylastbackendshipout \else \newtoks\everylastbackendshipout \fi
 
 %D Right from the start \CONTEXT\ had a backend system based on
 %D runtime pluggable code. As most backend issues involved specials
@@ -44,122 +50,6 @@
 %D Not everything here makes sense and the content of this file will
 %D definitely change.
 
-%D We use a couple of (global) variables because it saves us the
-%D trouble of dealing with arguments.
-
-\letempty \@@DriverFieldName
-\letempty \@@DriverFieldWidth
-\letempty \@@DriverFieldHeight
-\letempty \@@DriverFieldDefault
-\letempty \@@DriverFieldNumber
-\letempty \@@DriverFieldNumber
-\letempty \@@DriverFieldStyle
-\letempty \@@DriverFieldColor
-\letempty \@@DriverFieldBackgroundColor
-\letempty \@@DriverFieldFrameColor
-\letempty \@@DriverFieldLayer
-\letempty \@@DriverFieldOption
-\letempty \@@DriverFieldAlign
-\letempty \@@DriverFieldClickIn
-\letempty \@@DriverFieldClickOut
-\letempty \@@DriverFieldRegionIn
-\letempty \@@DriverFieldRegionOut
-\letempty \@@DriverFieldAfterKey
-\letempty \@@DriverFieldFormat
-\letempty \@@DriverFieldValidate
-\letempty \@@DriverFieldCalculate
-\letempty \@@DriverFieldFocusIn
-\letempty \@@DriverFieldFocusOut
-
-\letempty \@@DriverCommentLayer
-\letempty \@@DriverAttachmentLayer
-
-\letempty \@@DriverImageBox
-\letempty \@@DriverImageOptions
-\letempty \@@DriverImageWidth
-\letempty \@@DriverImageHeight
-\letempty \@@DriverImageFile
-\letempty \@@DriverImageLabel
-\letempty \@@DriverImageType
-\letempty \@@DriverImageMethod
-\letempty \@@DriverImagePage
-
-\newif\ifcollectreferenceactions
-
-%D \macros
-%D   {dostartgraymode,dostopgraymode,
-%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode}
-%D
-%D Switching to and from color can be done in two ways:
-%D
-%D \startitemize[packed,n]
-%D \item  insert driver specific commands
-%D \item  pass instructions to the output device
-%D \stopitemize
-%D
-%D The first approach is more general and lays the
-%D responsibility at the driver side. Probably due to the fact
-%D that \TEX\ does not directly support color, we have been
-%D confronted for the last few years with changing special
-%D definitions. The need for support depends on how a macro
-%D package handles colored text that crosses the page boundary.
-%D Again, there are two approaches.
-%D
-%D \startitemize[packed,n]
-%D \item  let \TEX\ do the job
-%D \item  let the driver handle things
-%D \stopitemize
-%D
-%D The first approach is as driver independant as possible and
-%D can easily be accomplished by using \TEX's mark mechanism.
-%D In \CONTEXT\ we follow this approach. More and more, drivers
-%D are starting to support color, including stacking them.
-%D
-%D Colors as well as grayscales can be represented in scales
-%D from~0 to~1. When drivers use values in the range 0..255,
-%D this value has to be adapted in the translation process.
-%D Technically it's possible to get a grayscale from combining
-%D colors. In the \cap{RGB} color system, a color with Red,
-%D Green and Blue components of 0.80 show the same gray as a
-%D Gray Scale specified 0.80. The \cap{CMYK} color system
-%D supports a Black component apart from Cyan, Magenta and
-%D Yellow.
-%D
-%D Depending on the target format, color support differs from
-%D gray support. PostScript for example offers different
-%D operators for setting gray and color. This is because
-%D printing something using three colors is someting else than
-%D printing with just black.
-%D
-%D In \CONTEXT\ we have implemented a color subsystem that
-%D supports the use of well defined colors that, when printed
-%D in black and white, still can be distinguished. This
-%D approach enables us to serve both printed and electronic
-%D versions, using colored text and illustrations. More on the
-%D fundamentals of this topic can be found in the \cap{MAPS} of
-%D the Dutch User Group, 14 (95.1).
-%D
-%D To satisfy all those needs, we define four specials which
-%D supply enough information for drivers to act upon. We
-%D could have used more general commands with the keywords
-%D 'rgb' and 'gray', but because these specials are used often,
-%D we prefer the more direct and shorter alternative.
-%D
-%D We start with the installation of color and grayscale
-%D specials. The values are in the range 0..1 (e.g. 0.25).
-%D
-%D \starttyping
-%D \dostartgraymode      {gray} ... \dostopgraymode
-%D \dostartrgbcolormode  {red} {green} {blue} ... \dostopcolormode
-%D \dostartcmykcolormode {cyan} {magenta} {yellow} {black} ... \dostopcolormode
-%D \dostartgraycolormode {gray} ... \dostopcolormode
-%D \stoptyping
-%D
-%D Because we can expect conflicts between drivers, we
-%D implement them as category \type{or}. In previous versions
-%D of \DVIPSONE\ the use of their color||specials did not
-%D interfere with the PostScript ones, but recent versions do.
-
 \let \dostartgraymode          \gobbleoneargument
 \let \dostopgraymode           \donothing
 \let \dostartrgbcolormode      \gobblethreearguments
@@ -167,70 +57,24 @@
 \let \dostartgraycolormode     \gobbleoneargument
 \let \dostopcolormode          \donothing
 \let \dostartspotcolormode     \gobbletwoarguments
-\let \doregisterrgbspotcolor   \gobblesevenarguments
-\let \doregistercmykspotcolor  \gobbleeightarguments
-\let \doregistergrayspotcolor  \gobblefourarguments
-\let \doregisterrgbindexcolor  \gobblesevenarguments
-\let \doregistercmykindexcolor \gobbleeightarguments
-\let \doregistergrayindexcolor \gobblefourarguments
 \let \doregisterspotcolorname  \gobbletwoarguments
 \let \dostartnonecolormode     \donothing
 \let \doregisternonecolor      \donothing
 
-%D \macros
-%D   {doinsertsoundtrack}
-%D
-%D Sounds are (for the moment) just files with
-%D associated options.
-%D
-%D \starttyping
-%D \doinsertsoundtrack {file} {label} {options}
-%D \stoptyping
+\let \doinsertsoundtrack       \gobblethreearguments
 
-\let \doinsertsoundtrack \gobblethreearguments
-
-%D \macros
-%D   {dostartrotation,dostoprotation,
-%D    dostartscaling,dostopscaling,
-%D    dostartmirroring,dostopmirroring,
-%D    dostartnegative,dostopnegative}
-%D    dostartoverprint,dostopoverprint}
-%D
-%D We support a couple of transformations and renderings:
-%D
-%D \starttyping
-%D \dostartrotation {angle} ... \dostoprotation
-%D \dostartscaling {x} {y} ... \dostopscaling
-%D \dostartmirroring {x} {y} ... \dostopmirroring
-%D \stoptyping
-
-\let \dostartrotation  \gobbleoneargument
-\let \dostoprotation   \donothing
-\let \dostartscaling   \gobbletwoarguments
-\let \dostopscaling    \donothing
-\let \dostartmirroring \donothing
-\let \dostopmirroring  \donothing
-
-\let \dostartnegative  \donothing
-\let \dostopnegative   \donothing
-\let \dostartoverprint \donothing
-\let \dostopoverprint  \donothing
-
-%D The following two specials are used in for instance \type
-%D {\vadjust}'d margin material inside colored paragraphs.
-
-\let \dostartgraphicgroup \donothing
-\let \dostopgraphicgroup  \donothing
-
-%D \macros
-%D   {doselectfirstpaperbin,
-%D    doselectsecondpaperbin}
-%D
-%D Here are some very printer||specific ones. No further
-%D comment.
-
-\let \doselectfirstpaperbin  \donothing
-\let \doselectsecondpaperbin \donothing
+\let \dostartrotation          \gobbleoneargument
+\let \dostoprotation           \donothing
+\let \dostartscaling           \gobbletwoarguments
+\let \dostopscaling            \donothing
+\let \dostartmirroring         \donothing
+\let \dostopmirroring          \donothing
+\let \dostartnegative          \donothing
+\let \dostopnegative           \donothing
+\let \dostartoverprint         \donothing
+\let \dostopoverprint          \donothing
+\let \dostartgraphicgroup      \donothing
+\let \dostopgraphicgroup       \donothing
 
 %D \macros
 %D   {doovalbox}
@@ -263,300 +107,8 @@
 \let \dostartclipping \gobblethreearguments
 \let \dostopclipping  \donothing
 
-%D \macros
-%D   {dosetupidentity}
-%D
-%D We can declare some characteristics of the document with
-%D
-%D \starttyping
-%D \dosetupidentity {title} {subject} {author} {creator} {date} {keys}
-%D \stoptyping
-%D
-%D All data is in string format.
-
-\let \dosetupidentity \gobblesixarguments
-
-%D \macros
-%D   {dosetuppaper}
-%D
-%D This special can be used to tell the driver what page size
-%D to use. The special takes three arguments.
-%D
-%D \starttyping
-%D \dosetuppaper {type} {width} {height}
-%D \stoptyping
-%D
-%D The type is one of the common identifiers, like A4, A5 or
-%D B2.
-
-\let \dosetuppaper \gobblethreearguments
-
-%D \macros
-%D   {dosetupprinter}
-%D
-%D Some drivers enable the user to specify the paper type
-%D used and/or page dimensions to be taken into account.
-%D
-%D \starttyping
-%D \dosetupprinter {type} {hoffset} {voffset} {width} {height}
-%D \stoptyping
-%D
-%D The first argument is one of \type{letter}, \type{legal},
-%D \type{A4}, \type{A5} etc. The dimensions are in
-%D basepoints.
-
-\let \dosetupprinter \gobblefourarguments
-
-%D \macros
-%D   {dosetupopenaction, dosetupclosaction,
-%D    dosetupopenpageaction, dosetupclospageaction,
-%D    dosetupinteraction,
-%D    dosetupscreen,
-%D    dosetupviewmode}
-%D
-%D Here come some obscure interactive commands. Probably the
-%D specs will change with the development of the macros that
-%D use them.
-%D
-%D The first ones can be used to set up the interaction.
-%D
-%D \starttyping
-%D \dosetupinteraction
-%D \stoptyping
-%D
-%D Normally this command does nothing but giving a message
-%D that some scheme is supported.
-%D
-%D \starttyping
-%D \dosetupstartaction
-%D \dosetupstopaction
-%D \stoptyping
-%D
-%D These two setup the actions to be executed when the document
-%D is opened and closed.
-%D
-%D The next commands sets up the page and screen. They are
-%D kind of related.
-%D
-%D \starttyping
-%D \dosetuppage   {hoffset} {voffset} {width} {height} {options}
-%D \dosetupscreen {hoffset} {voffset} {width} {height} {options}
-%D \stoptyping
-%D
-%D The first four arguments are in points. Option~1 results in a
-%D full screen launch.
-%D
-%D \starttyping
-%D \dosetuppageview {keyword}
-%D \stoptyping
-%D
-%D For the moment we only support \type{fit}.
-
-\let \dosetupinteraction              \donothing
-\let \dosetupopenaction               \donothing
-\let \dosetupscreen                   \gobblefourarguments
-\let \dosetuppageview                 \gobbleoneargument
-\let \dosetupcloseaction              \donothing
-\let \dosetupopenpageaction           \donothing
-\let \dosetupclosepageaction          \donothing
 \let \dosetuprenderingopenpageaction  \donothing
 \let \dosetuprenderingclosepageaction \donothing
-\let \dosetupcropbox                  \gobblefourarguments
-\let \dosetuptrimbox                  \gobblefourarguments
-\let \dosetupartbox                   \gobblefourarguments
-\let \dosetupbleedbox                 \gobblefourarguments
-
-%D \macros
-%D   {dostarthide,
-%D    dostophide}
-%D
-%D Not every part of the screen is suitable for paper. Menus
-%D for instance have no meaning on an non||interactive medium.
-%D These elements are hidden by means of:
-%D
-%D \starttyping
-%D \dostarthide .. \dostophide
-%D \stoptyping
-
-\let \dostarthide \donothing
-\let \dostophide  \donothing
-
-%D \macros
-%D   {dostartgotolocation, dostopgotolocation,
-%D    dostartgotorealpage, dostopgotorealpage}
-%D
-%D When we want to support hypertext buttons, again we have
-%D to deal with two concepts.
-%D
-%D \startitemize[packed,n]
-%D \item let \TEX\ highlight the text
-%D \item let the driver show us where to click
-%D \stopitemize
-%D
-%D The first approach is the most secure one. It gives us
-%D complete control over the visual appearance of hyper
-%D buttons. The second alternative lets the driver guess what
-%D part of the text needs highlighting. As long as we deal with
-%D not too complicated textual buttons, this is no problem.
-%D It's even a bit more efficient when we take long mid
-%D paragraph active regions into account. When we let \TEX\
-%D handle active sentences {\em for instance marked like this
-%D one}, we have to take care of line- and pagebreaks ourselve.
-%D However, it's no trivial matter to let a driver find out
-%D where things begin and end. Because most hyperlinks can be
-%D found in tables of contents and registers, the saving in
-%D terms of bytes can be neglected and the first approach is a
-%D clear winner.
-%D
-%D The most convenient way of cross||referencing is using named
-%D destinations. A more simple scheme is using page numbers as
-%D destinations. Because the latter alternative can often be
-%D implemented more efficient, and because we cannot be sure
-%D what scheme a driver supports, we always have to supply a
-%D pagenumber, even when we use named destinations.
-%D
-%D To enable a driver to find out what to make active, we have
-%D to provide begin and endpoints, so like with color, we use
-%D pairs of specials. The first scheme can be satisfied with
-%D proper dimensions of the areas to be made active.
-%D
-%D The interactive real work is done by the following four
-%D specials. The reason for providing the first one with both
-%D a label and a number, is a result of the quite poor
-%D implementation of \type{pdfmarks} in version 1.0 of
-%D Acrobat. Because only pagenumbers were supported as
-%D destination, we had to provide both labels (\DVIWINDO) and
-%D pagenumbers (\PDF). Some drivers use start stop pairs.
-%D
-%D \starttyping
-%D \dostartgotolocation {w} {h} {url} {file} {label} {page}
-%D \dostartgotorealpage {w} {h} {url} {file}         {page}
-%D \stoptyping
-%D
-%D Their counterparts are:
-%D
-%D \starttyping
-%D \dostopgotolocation
-%D \dostopgotorealpage
-%D \stoptyping
-%D
-%D The internal alternative is used for system||generated
-%D links, the external one for user||generated links. The
-%D Uniform Resource Locator can be used to let the reader
-%D surf the net.
-
-\let \dostartgotolocation \gobblesixarguments
-\let \dostopgotolocation  \donothing
-\let \dostartgotorealpage \gobblefourarguments
-\let \dostopgotorealpage  \donothing
-
-%D One may wonder why jumps to page and location are not
-%D combined. By splitting them, we enable macro||packages to
-%D force the prefered alternative, while on the other hand
-%D drivers can pick up the alternative desired most.
-
-%D \macros
-%D  {dostartgotoJS, doflushJSpreamble}
-%D
-%D Rather special is the option to include and execute
-%D JavaScript code. This is a typical \PDF\ option.
-%D
-%D \starttyping
-%D \dostartgotoJS {w} {h} {script}
-%D \stoptyping
-%D
-%D This not so standard \TEX\ feature should be used with
-%D care. Preamble scripts are flushed by
-%D
-%D \doflushJSpreamble {script}
-
-\let \dostartgotoJS      \gobblethreearguments
-\let \dostopgotoJS       \donothing
-\let \doflushJSpreamble  \gobbleoneargument
-
-%D \macros
-%D   {dostartthisislocation, dostopthisislocation,
-%D    dostartthisisrealpage, dostopthisisrealpage}
-%D
-%D Before we can goto some location or page, we have to tell
-%D the system where it can be found. Because some drivers
-%D follow the \SGML\ approach of begin||end tags, we have to
-%D support pairs. A possible extension to this scheme is
-%D supplying coordinates for viewing the text.
-%D
-%D The opposite commands of \type{\dogotosomething} have only
-%D one argument:
-%D
-%D \starttyping
-%D \dostartthisislocation {label}
-%D \dostartthisisrealpage {page}
-%D \stoptyping
-%D
-%D These commands are accompanied by:
-%D
-%D \starttyping
-%D \dostopthisislocation
-%D \dostopthisisrealpage
-%D \stoptyping
-%D
-%D As with all interactive commands's they are installed as
-%D \type{and} category specials.
-
-\let \dostartthisislocation \gobbleoneargument
-\let \dostopthisislocation  \donothing
-\let \dostartthisisrealpage \gobbleoneargument
-\let \dostopthisisrealpage  \donothing
-
-%D In \CONTEXT\ we don't use the \type{\stopsomething}
-%D macros because we let \TEX\ take care of typographic
-%D issues.
-
-%D \macros
-%D   {doresetgotowhereever}
-%D
-%D These and others need:
-
-\let \doresetgotowhereever \donothing
-
-%D \macros
-%D   {dostartexecutecommand, dostopexecutecommand}
-%D
-%D The actual behavior of the next pair of commands depends
-%D much on the viewing engine. Therefore one cannot depend
-%D too much on their support.
-%D
-%D \starttyping
-%D \dostartexecutecommand {w} {h} {command} {options}
-%D \stoptyping
-%D
-%D At least the next commands are supported (more examples
-%D can be found in \type {spec-fdf.tex}:
-%D
-%D \startlinecorrection\setupalign[middle]\leavevmode
-%D \starttable[|l|l|]
-%D \HL
-%D \NC \bf command  \NC \bf action                  \NC\SR
-%D \HL
-%D \NC first        \NC go to the first page        \NC\FR
-%D \NC previous     \NC go to the previous page     \NC\MR
-%D \NC next         \NC go to the next page         \NC\MR
-%D \NC last         \NC go to the last page         \NC\MR
-%D \NC backward     \NC go back to the  link list   \NC\MR
-%D \NC forward      \NC go forward in the link list \NC\MR
-%D \NC print        \NC enter print mode            \NC\MR
-%D \NC exit         \NC exit viewer                 \NC\MR
-%D \NC close        \NC close document              \NC\MR
-%D \NC enter        \NC enter viewer                \NC\MR
-%D \NC help         \NC show help on the viewer     \NC\LR
-%D \HL
-%D \stoptable
-%D \stoplinecorrection
-%D
-%D Options are to be passed as a comma separated list of
-%D assignments.
-
-\let \dostartexecutecommand \gobblefourarguments
-\let \dostopexecutecommand  \donothing
 
 %D \macros
 %D   {dostartobject,
@@ -590,229 +142,6 @@
 \let \doinsertobject  \gobbletwoarguments
 \let \doresetobjects  \donothing
 
-%D \macros
-%D   {doregisterfigure, doregisterfigurecolor}
-%D
-%D Images can be objects as well and it's up to the driver to
-%D handle this. Alternative images are also up to the driver,
-%D and the next macro tells the driver that the previous image
-%D is somehow followed by another and that both have to be
-%D handled together. This is a rather fuzzy model, but for the
-%D moment it suits its purpose: low res screen versions combined
-%D with high res printable ones.
-
-\let \doregisterfigure      \gobbletwoarguments
-\let \doregisterfigurecolor \gobbleoneargument
-
-% %D \macros
-% %D   {dogetobjectreference}
-% %D
-% %D For very special purposes, one can ask for the internal
-% %D reference to the object. Beware!
-%
-% \let \dogetobjectreference \gobblethreearguments
-%
-% %D The first argument is the name, the second a macro that
-% %D gets the associated value.
-
-%D \macros
-%D   {dostartrunprogram, dostoprunprogram,
-%D    dostartgotoprofile, dostopgotoprofile,
-%D    dobeginofprofile,
-%D    doendofprofile}
-%D
-%D These specials are still experimental. They are not yet
-%D supported by the programs the way they should be.
-%D
-%D {\em --- still undocumented ---}
-
-\let \dostartrunprogram  \gobblefourarguments
-\let \dostoprunprogram   \donothing
-\let \dostartgotoprofile \gobblethreearguments
-\let \dostopgotoprofile  \donothing
-\let \dobeginofprofile   \gobblefourarguments
-\let \doendofprofile     \donothing
-
-%D \macros
-%D   {doinsertbookmark}
-%D
-%D Bookmarks, that is viewer generated tables of contents, are
-%D a strange phenomena, mainly because \TEX\ can provide
-%D whatever kind of table in much better quality.
-
-\let \doinsertbookmark \gobblefourarguments
-
-%D This special is called as:
-%D
-%D \starttyping
-%D \doinstallbookmark {level} {nofsubentries} {text} {page} {open}
-%D \stoptyping
-%D
-%D This definition is very \PDF\ oriented, so for more
-%D information we kindly refer to the \PDF\ manuals.
-
-%D \macros
-%D   {dosetpagetransition}
-%D
-%D In presentations, fancy page transitions can, at least for a
-%D short moment, let the audience focus at the screen. Like the
-%D previous one, this special is very \PDF.
-%D
-%D \starttyping
-%D \dosetpagetransition{dissolve}{0}
-%D \stoptyping
-%D
-%D Transitions have symbolic names, like dissolve, box, split,
-%D blinds, wipe and glitter. The second argument determines
-%D the wait time (unless zero).
-
-\let \dosetpagetransition \gobbletwoarguments
-
-%D \macros
-%D   {dopresettextfield,dopresetlinefield,
-%D    dopresetchoicefield,dopresetpopupfield,dopresetcombofield,
-%D    dopresetbuttonfield,dopresetcheckfield,
-%D    dopresetradiofield,dopresetradiorecord}
-%D
-%D The special drivers are programmed independant from their
-%D calling macros are thereby use the standard \TEX\ way of
-%D passing parameters. Unfortunately fields often have more
-%D than nine characteristics, so we pack some arguments in one.
-%D
-%D \starttyping
-%D \dopresettextfield / \dopresetlinefield
-%D   {name} {width} {height} {default} {length}
-%D   {style,color} {options} {alignment} {actions}
-%D
-%D \dopresetchoicefield / \dopresetpopupfield / \dopresetcombofield
-%D   {name} {width} {height} {default}
-%D   {style,color} {options} {values} {actions}
-%D
-%D \dopresetpushfield
-%D   {name} {width} {height} {default}
-%D   {options} {values} {actions}
-%D
-%D \dopresetcheckfield
-%D   {name} {width} {height} {default}
-%D   {options} {values} {actions}
-%D
-%D \dopresetradiofield
-%D   {name} {width} {height} {default}
-%D   {options} {parent} {values} {actions}
-%D
-%D \dopresetradiorecord
-%D   {name} {top} {options} {kids} {actions}
-%D \stoptyping
-
-\let \dopresetlinefield   \gobbleninearguments
-\let \dopresettextfield   \gobbleninearguments
-\let \dopresetchoicefield \gobbleeightarguments
-\let \dopresetpopupfield  \gobbleeightarguments
-\let \dopresetcombofield  \gobbleeightarguments
-\let \dopresetpushfield   \gobblesevenarguments
-\let \dopresetcheckfield  \gobblesevenarguments
-\let \dopresetradiofield  \gobbleeightarguments
-\let \dopresetradiorecord \gobblefourarguments
-
-%D \macros
-%D   {dodefinefieldset,dogetfieldset,doiffieldset}
-%D
-%D Field sets, used in resetting and submitting, are handled
-%D by:
-
-\let \dodefinefieldset \gobbletwoarguments
-\let \dogetfieldset    \gobbleoneargument
-\let \doiffieldset     \gobbletwoarguments
-
-%D \macros
-%D   {dosetfieldstatus}
-%D
-%D For practical reasons we set some field characteristics
-%D using:
-%D
-%D \starttyping
-%D \dosetfieldstatus {mode} {parent} {kids} {root}
-%D \stoptyping
-
-\let \dosetfieldstatus \gobblefourarguments
-
-%D with:
-
-\def\fieldlonermode {0} % no \chardef here
-\def\fieldparentmode{1} % no \chardef here
-\def\fieldchildmode {2} % no \chardef here
-\def\fieldcopymode  {3} % no \chardef here
-
-%D \macros
-%D   {doregistercalculationset}
-%D
-%D We can define a calculation order list with:
-%D
-%D \starttyping
-%D \doregistercalculationset {set identifier}
-%D \stoptyping
-
-\let \doregistercalculationset \gobbleoneargument
-
-%D \macros
-%D   {doinsertcomment, doflushcomments}
-%D
-%D Not so much out of need, but to be complete, we also
-%D implement text annotations, so called  comment:
-%D
-%D \starttyping
-%D \doinsertcomment
-%D   {title} {width} {height} {color} {open} {symbol} {collect} {data}
-%D \stoptyping
-%D
-%D When enables, comments can be collected and flushed:
-%D
-%D \starttyping
-%D \doflushcomments
-%D \stoptyping
-
-\let \doinsertcomment \gobbleeightarguments
-\let \doflushcomments \donothing
-
-%D \macros
-%D   {dostarttransparency,dostoptransparency}
-%D
-%D \starttyping
-%D \dostarttransparency{fraction}{type}
-%D \dostoptransparency
-%D \stoptyping
-%D
-%D Although in \CONTEXT\ transparency is closely integrated
-%D in the color drivers, in the end it is an independent
-%D feature.
-
-\let \dostarttransparency \gobbletwoarguments
-\let \dostoptransparency  \donothing
-
-%D \macros
-%D   {doattachfile}
-%D
-%D \starttyping
-%D \doattachfile{title}{width}{height}{depth}{color}{symbol}{filename}{source}
-%D \stoptyping
-
-\let \doattachfile \gobbleeightarguments
-
-%D Experimental (properties):
-
-\let \dostartviewerlayer      \gobbleoneargument
-\let \dostopviewerlayer       \donothing
-\let \dodefineviewerlayer     \gobblefivearguments
-\let \domakeviewerlayerlist   \gobbleoneargument
-
-\let \doinsertrenderingwindow \gobblefourarguments
-\let \doinsertrendering       \gobblefourarguments
-\let \doinsertrenderingobject \gobblefourarguments
-\let \doinsertrenderingobject \gobblefourarguments
-
-\let \dostartfonteffect       \gobblethreearguments
-\let \dostopfonteffect        \donothing
-
 %D From now on, mapfile loading is also a special; we assume the
 %D more or less standard dvips syntax.
 
@@ -837,32 +166,12 @@
 \newif\ifusepagedestinations
 
 %D \macros
-%D   {ifhighlighthyperlinks}
-%D
-%D The next switch can be used to make user hyperlinks are
-%D not highlighted when clicked on.
-
-\newif\ifhighlighthyperlinks
-
-%D \macros
-%D   {ifgotonewwindow}
-%D
-%D To make the {\em goto previous jump} feature more
-%D convenient when using more than one file, it makes sense
-%D to force the viewer to open a new window for each file
-%D opened.
-
-\newif\ifgotonewwindow
-
-%D \macros
 %D   {jobsuffix}
 %D
 %D By default, \TEX\ produces \DVI\ files which can be
 %D converted to other filetypes. Sometimes it is handy to
 %D know what the target file will be. In other driver
 %D modules we wil set \type {\jobsuffix} to \type {pdf}.
-
-% this will become a mode
 
 \def\jobsuffix{pdf}
 
@@ -876,21 +185,6 @@
    \edef\jobsuffix{#1}%
    \setsystemmode\jobsuffix}
 
-%D \macros
-%D   {everyresetspecials}
-%D
-%D Now what will this one do? We'll see in a few lines.
-
-\newtoks\everyresetspecials
-
-\appendtoksonce
-  \ifdefined\setjobsuffix\setjobsuffix{pdf}\fi
-\to \everyresetspecials
-
-\def\defineoutput{\dodoubleargument\dodefineoutput}
-
-\def\usespecials       [#1]{}
-\def\dodefineoutput[#1][#2]{}
-\def\setupoutput       [#1]{}
+\def\setupoutput[#1]{} % will be command line switch
 
 \protect \endinput

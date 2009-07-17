@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['pack-obj'] = {
 reusable components.</p>
 --ldx]]--
 
-local texsprint = tex.sprint
+local texsprint, texcount = tex.sprint, tex.count
 
 jobobjects           = jobobjects or { }
 jobobjects.collected = jobobjects.collected or { }

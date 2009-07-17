@@ -126,21 +126,21 @@
 % let's see who complains ... \mathstyle is now a primitive
 %
 % \unexpanded\def\ch#1%
-%   {\ifundefined\@@chemicalletter
-%      \mathstyle{\rm#1}%
-%    \else
+%   {\ifdefined\@@chemicalletter
 %      \dosetsubscripts
 %      \mathstyle{\@@chemicalletter{#1}}%
 %      \doresetsubscripts
+%    \else
+%      \mathstyle{\rm#1}%
 %    \fi}
 
 % \unexpanded\def\ch#1%
-%   {\ifundefined\@@chemicalletter
-%      \mathematics{\rm#1}%
-%    \else
+%   {\ifdefined\@@chemicalletter
 %      \dosetsubscripts
 %      \mathematics{\@@chemicalletter{#1}}%
 %      \doresetsubscripts
+%    \else
+%      \mathematics{\rm#1}%
 %    \fi}
 
 %D \macros

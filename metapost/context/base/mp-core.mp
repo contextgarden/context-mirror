@@ -346,7 +346,7 @@ boolean force_multi_par_chain  ; force_multi_par_chain  := true  ;
 boolean one_piece_multi_par    ; one_piece_multi_par    := false ;
 boolean check_multi_par_chain  ; check_multi_par_chain  := true  ; % extra page check
 
-boolean multi_column_first_page_hack; multi_column_first_page_hack := false ;
+boolean multi_column_first_page_hack; multi_column_first_page_hack := true ; % seems to work ok
 
 def simplify_multi_pars = % boundingbox ipv shape als optie
   for i := 1 upto nofmultipars :

@@ -6,66 +6,88 @@ if not modules then modules = { } end modules ['mtx-convert'] = {
     license   = "see context related readme files"
 }
 
-do
+-- todo: eps and svg
 
-    graphics            = graphics            or { }
-    graphics.converters = graphics.converters or { }
+graphics            = graphics            or { }
+graphics.converters = graphics.converters or { }
 
-    local gsprogram = (os.platform == "windows" and "gswin32c") or "gs"
-    local gstemplate = "%s -q -sDEVICE=pdfwrite -dEPSCrop -dNOPAUSE -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
+local gsprogram = (os.platform == "windows" and "gswin32c") or "gs"
+local gstemplate = "%s -q -sDEVICE=pdfwrite -dEPSCrop -dNOPAUSE -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
 
-    function graphics.converters.eps(oldname,newname)
-        return gstemplate:format(gsprogram,newname,oldname)
+function graphics.converters.eps(oldname,newname)
+    return gstemplate:format(gsprogram,newname,oldname)
+end
+
+local improgram  = "convert"
+local imtemplate = {
+    low    = "%s -quality   0 -compress zip %s pdf:%s",
+    medium = "%s -quality  75 -compress zip %s pdf:%s",
+    high   = "%s -quality 100 -compress zip %s pdf:%s",
+}
+
+function graphics.converters.jpg(oldname,newname)
+    local ea = environment.arguments
+    local quality = (ea.high and 'high') or (ea.medium and 'medium') or (ea.low and 'low') or 'high'
+    return imtemplate[quality]:format(improgram,oldname,newname)
+end
+
+graphics.converters.tif  = graphics.converters.jpg
+graphics.converters.tiff = graphics.converters.jpg
+graphics.converters.png  = graphics.converters.jpg
+
+local function convert(kind,oldname,newname)
+    if graphics.converters[kind] then -- extra test
+        local tmpname = file.replacesuffix(newname,"tmp")
+        local command = graphics.converters[kind](oldname,tmpname)
+        logs.simple("command: %s",command)
+        io.flush()
+        os.spawn(command)
+        os.remove(newname)
+        os.rename(tmpname,newname)
+        if lfs.attributes(newname,"size") == 0 then
+            os.remove(newname)
+        end
     end
+end
 
-    local improgram  = "convert"
-    local imtemplate = {
-        low    = "%s -quality   0 -compress zip %s pdf:%s",
-        medium = "%s -quality  75 -compress zip %s pdf:%s",
-        high   = "%s -quality 100 -compress zip %s pdf:%s",
-    }
-
-    function graphics.converters.jpg(oldname,newname)
-        local ea = environment.arguments
-        local quality = (ea.high and 'high') or (ea.medium and 'medium') or (ea.low and 'low') or 'high'
-        return imtemplate[quality]:format(improgram,oldname,newname)
+function graphics.converters.convertpath(inputpath,outputpath)
+    inputpath  = inputpath  or "."
+    outputpath = outputpath or "."
+    for name in lfs.dir(inputpath) do
+        local suffix = file.extname(name)
+        if name:find("%.$") then
+            -- skip . and ..
+        elseif graphics.converters[suffix] then
+            local oldname = file.join(inputpath,name)
+            local newname = file.join(outputpath,file.replacesuffix(name,"pdf"))
+            local et = lfs.attributes(oldname,"modification")
+            local pt = lfs.attributes(newname,"modification")
+            if not pt or et > pt then
+                dir.mkdirs(outputpath)
+                convert(suffix,oldname,newname)
+            end
+        elseif lfs.isdir(inputpath .. "/".. name) then
+            graphics.converters.convertpath(inputpath .. "/".. name,outputpath .. "/".. name)
+        end
     end
+end
 
-    graphics.converters.tif  = graphics.converters.jpg
-    graphics.converters.tiff = graphics.converters.jpg
-    graphics.converters.png  = graphics.converters.jpg
-
-    function graphics.converters.convertpath(inputpath,outputpath)
-        inputpath  = inputpath  or "."
-        outputpath = outputpath or "."
-        for name in lfs.dir(inputpath) do
-            local suffix = file.extname(name)
-            if name:find("%.$") then
-                -- skip . and ..
-            elseif graphics.converters[suffix] then
-                local oldname = file.join(inputpath,name)
-                local newname = file.join(outputpath,file.replacesuffix(name,"pdf"))
-                local et = lfs.attributes(oldname,"modification")
-                local pt = lfs.attributes(newname,"modification")
-                if not pt or et > pt then
-                    dir.mkdirs(outputpath)
-                    local tmpname = file.replacesuffix(newname,"tmp")
-                    local command = graphics.converters[suffix](oldname,tmpname)
-                    logs.simple("command: %s",command)
-                    io.flush()
-                    os.spawn(command)
-                    os.remove(newname)
-                    os.rename(tmpname,newname)
-                    if lfs.attributes(newname,"size") == 0 then
-                        os.remove(newname)
-                    end
-                end
-            elseif lfs.isdir(inputpath .. "/".. name) then
-                graphics.converters.convertpath(inputpath .. "/".. name,outputpath .. "/".. name)
+function graphics.converters.convertfile(oldname)
+    local suffix = file.extname(oldname)
+    if graphics.converters[suffix] then
+        local newname = file.replacesuffix(name,"pdf")
+        if oldname == newname then
+            -- todo: downsample, crop etc
+        elseif environment.argument("force") then
+            convert(suffix,oldname,newname)
+        else
+            local et = lfs.attributes(oldname,"modification")
+            local pt = lfs.attributes(newname,"modification")
+            if not pt or et > pt then
+                convert(suffix,oldname,newname)
             end
         end
     end
-
 end
 
 scripts         = scripts         or { }
@@ -88,6 +110,13 @@ function scripts.convert.convertall()
     end
 end
 
+function scripts.convert.convertgiven()
+    for _, name in ipairs(environment.files) do
+        graphics.converters.convertfile(name)
+    end
+end
+
+
 logs.extendbanner("Graphic Conversion Tools 0.10",true)
 
 messages.help = [[
@@ -95,11 +124,14 @@ messages.help = [[
 --inputpath=string    original graphics path
 --outputpath=string   converted graphics path
 --watch               watch folders
+--force               force conversion (even if older)
 --delay               time between sweeps
 ]]
 
 if environment.argument("convertall") then
     scripts.convert.convertall()
+elseif environment.files[1] then
+    scripts.convert.convertgiven()
 else
     logs.help(messages.help)
 end

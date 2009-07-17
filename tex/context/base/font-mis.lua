@@ -11,7 +11,7 @@ local lower, strip = string.lower, string.strip
 
 fonts.otf = fonts.otf or { }
 
-fonts.otf.version = fonts.otf.version or 2.626
+fonts.otf.version = fonts.otf.version or 2.628
 fonts.otf.pack    = true
 fonts.otf.cache   = containers.define("fonts", "otf", fonts.otf.version, true)
 

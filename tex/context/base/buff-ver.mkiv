@@ -142,7 +142,6 @@
    \def\obs{\obeyedspace}%
    \ctxlua{buffers.doifelsevisualizer("\prettyidentifier")}
      {\ctxlua{buffers.setvisualizer("\prettyidentifier")}%
-      \localcolortrue % tricky, maybe not here
       \def\bop{\bgroup\beginofpretty}%
       \def\eop{\endofpretty\egroup}%
       \def\sop{\endofpretty\egroup\bgroup\beginofpretty}}%
@@ -568,14 +567,14 @@
    \ctxlua{buffers.typefile("\readfilename")}%
    #2}
 
-\def\dotypeblockverbatim#1#2%
+\unexpanded\def\dotypeblockverbatim#1#2%
    {\dowithbuffer{_typing_}{#1}{#2}
       {}
       {\doinitializeverbatim
        \beginofverbatimlines
        \ctxlua{buffers.type("_typing_")}%
        \endofverbatimlines
-       \getvalue{\strippedcsname#2}}}
+       \csname#2\endcsname}}
 
 \def\dododostarttyping[#1]%
   {\typingparameter\c!before
@@ -583,7 +582,7 @@
    \dosetuptypelinenumbering{#1}%
    \initializetyping
    \startverbatimcolor
-   \expanded{\dotypeblockverbatim{\s!start\currenttyping}{\s!stop\currenttyping}}}
+   \normalexpanded{\dotypeblockverbatim{\e!start\currenttyping}{\e!stop\currenttyping}}} % was s!start
 
 \def\dostoptyping#1% hm, currenttyping
   {\stopverbatimcolor
@@ -753,8 +752,9 @@
    \fi\fi}
 
 \def\dosetuptypelinenumbering#1% fuzzy
-  {\doifundefined{\currenttypingclass\currenttyping\c!start}
-     {\setuptyping[\currenttyping][\c!start=1,\c!stop=,\c!step=1,\c!nlines=]}%
+  {\ifcsname\currenttypingclass\currenttyping\c!start\endcsname \else
+     \setuptyping[\currenttyping][\c!start=1,\c!stop=,\c!step=1,\c!nlines=]%
+   \fi
    \setuptyping[\currenttyping][#1]%
    \doifelse{\typingparameter\c!numbering}\v!file
      {% kind of special: filters lines !
@@ -804,11 +804,13 @@
       \settypingparameter\c!option{\prettyidentifier}}%
    \initializetyping
    \startverbatimcolor
-   \doifundefinedelse{\currenttypingclass#3\v!global\c!start}
-     {\scratchcounter\zerocount}
-     {\scratchcounter\getvalue{\currenttypingclass#3\v!global\c!start}}%
-   \advance\scratchcounter\plusone
-   \setxvalue{\currenttypingclass#3\v!global\c!start}{\the\scratchcounter}%
+   \scratchcounter
+     \ifcsname\currenttypingclass#3\v!global\c!start\endcsname
+       \numexpr\csname\currenttypingclass#3\v!global\c!start\endcsname+\plusone\relax
+     \else
+       \plusone
+     \fi
+   \setxvalue{\currenttypingclass#3\v!global\c!start}{\the\scratchcounter}% no direct setxvalue as it defines beforehand
    \doifelsenothing{\typingparameter\c!start}
      {#4}
      {\doif{\typingparameter\c!start}\v!continue

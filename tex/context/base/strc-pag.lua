@@ -6,10 +6,10 @@ if not modules then modules = { } end modules ['strc-pag'] = {
     license   = "see context related readme files"
 }
 
-local count, format = tex.count, string.format
+local texcount, format = tex.count, string.format
 
 local ctxcatcodes = tex.ctxcatcodes
-local texsprint = tex.sprint
+local texsprint, texwrite = tex.sprint, tex.write
 
 structure.pages  = structure.pages      or { }
 
@@ -38,7 +38,7 @@ job.register('jobpages.collected', jobpages.tobesaved, initializer)
 local specification = { }
 
 function pages.save(userspec)
-    local realpage, userpage = count[0], count[1]
+    local realpage, userpage = texcount.realpageno, texcount.userpageno
     local data = {
         number = userpage,
         specification = helpers.simplify(userspec or specification),
@@ -61,9 +61,9 @@ function pages.pagenumber(localspec)
         end
     end
     if deltaspec then
-        return { realpage = count[0], specification = deltaspec }
+        return { realpage = texcount.realpageno, specification = deltaspec }
     else
-        return { realpage = count[0] }
+        return { realpage = texcount.realpageno }
     end
 end
 
@@ -142,7 +142,8 @@ end
 
 function helpers.prefixpage(data,prefixspec,pagespec)
     if data then
-        local pagedata, prefixdata = pages.analyse(data,pagespec)
+        local pagedata, prefixdata, e = pages.analyse(data,pagespec)
+--~ tex.write(e)
         if pagedata then
             if prefixdata then
                 sections.typesetnumber(prefixdata,"prefix",prefixspec or false,prefixdata or false,pagedata.specification or false)
@@ -156,7 +157,7 @@ function helpers.prefixlastpage(data,prefixspec,pagespec)
     if data then
         local r = data.references
         local ls, lr = r.section, r.realpage
-        r.section, r.realpage = r.lastsection, r.lastrealpage
+        r.section, r.realpage = r.lastsection or r.section, r.lastrealpage or r.realpage
         helpers.prefixpage(data,prefixspec,pagespec)
         r.section, r.realpage = ls, lr
     end

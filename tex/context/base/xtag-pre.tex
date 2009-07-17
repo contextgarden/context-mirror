@@ -37,8 +37,13 @@
 %D We can use the default handler to implement automatic
 %D element hiding. Beware: this overloads the tracer.
 
-\def\startXMLignore{\dododefineXMLignore \s!default}
-\def\stopXMLignore {\dododefineXMLprocess\s!default}
+% \def\startXMLignore{\dododefineXMLignore \s!default}
+% \def\stopXMLignore {\dododefineXMLprocess\s!default}
+
+\newcount\xmlignoredepth
+
+\def\startXMLignore{\ifcase\xmlignoredepth\dododefineXMLignore\s!default\fi\advance\xmlignoredepth\plusone}
+\def\stopXMLignore {\advance\xmlignoredepth\minusone\ifcase\xmlignoredepth\dododefineXMLprocess\s!default\fi}
 
 %D The following entities need to be defined anyway. They
 %D may be overloaded later.

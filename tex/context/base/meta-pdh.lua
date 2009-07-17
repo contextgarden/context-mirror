@@ -24,6 +24,7 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 
 local concat, format = table.concat, string.format
 
+local texsprint = tex.sprint
 local ctxcatcodes = tex.ctxcatcodes
 
 mptopdf         = { }
@@ -148,11 +149,11 @@ end
 -- from lua to tex
 
 function mptopdf.pdfcode(str)
-    tex.sprint(ctxcatcodes,"\\PDFcode{" .. str .. "}") -- \\MPScode
+    texsprint(ctxcatcodes,"\\pdfliteral{" .. str .. "}") -- \\MPScode
 end
 
 function mptopdf.texcode(str)
-    tex.sprint(ctxcatcodes,str)
+    texsprint(ctxcatcodes,str)
 end
 
 -- auxiliary functions
@@ -350,52 +351,23 @@ end
 --~     end
 --~ end
 
-if false and ctx and ctx.aux and ctx.aux.definecolor then
-
-    logs.report("mptopdf", "using attribute based mps colors")
-
-    -- does not work due to Q-q mess-up
-
-    function mps.setrgbcolor(r,g,b) -- extra check
-        r, g, b = tonumber(r), tonumber(g), tonumber(b) -- needed when we use lpeg
-        if r == 0.0123 and g < 0.1 then -- g is extra check
-            mptopdf.texcode("\\doresetattribute{transparency}\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
-        elseif r == 0.123 and g < 0.1 then -- g is extra check
-            mptopdf.texcode("\\doresetattribute{transparency}\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
-        else
-            mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'rgb',r,g,b) .. "}")
-        end
+function mps.setrgbcolor(r,g,b) -- extra check
+    r, g = tonumber(r), tonumber(g) -- needed when we use lpeg
+    if r == 0.0123 and g < 0.1 then
+        mptopdf.texcode("\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
+    elseif r == 0.123 and g < 0.1 then
+        mptopdf.texcode("\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
+    else
+        mptopdf.texcode("\\MPSrgb{" .. r .. "}{" .. g .. "}{" .. b .. "}")
     end
+end
 
-    function mps.setcmykcolor(c,m,y,k)
-        mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'cmyk',tonumber(c),tonumber(m),tonumber(y),tonumber(k)) .. "}")
-    end
+function mps.setcmykcolor(c,m,y,k)
+    mptopdf.texcode("\\MPScmyk{" .. c .. "}{" .. m .. "}{" .. y .. "}{" .. k .. "}")
+end
 
-    function mps.setgray(s)
-        mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'gray',tonumber(s)) .. "}")
-    end
-
-else
-
-    function mps.setrgbcolor(r,g,b) -- extra check
-        r, g = tonumber(r), tonumber(g) -- needed when we use lpeg
-        if r == 0.0123 and g < 0.1 then
-            mptopdf.texcode("\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
-        elseif r == 0.123 and g < 0.1 then
-            mptopdf.texcode("\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
-        else
-            mptopdf.texcode("\\MPSrgb{" .. r .. "}{" .. g .. "}{" .. b .. "}")
-        end
-    end
-
-    function mps.setcmykcolor(c,m,y,k)
-        mptopdf.texcode("\\MPScmyk{" .. c .. "}{" .. m .. "}{" .. y .. "}{" .. k .. "}")
-    end
-
-    function mps.setgray(s)
-        mptopdf.texcode("\\MPSgray{" .. s .. "}")
-    end
-
+function mps.setgray(s)
+    mptopdf.texcode("\\MPSgray{" .. s .. "}")
 end
 
 function mps.specials(version,signal,factor) -- 2.0 123 1000

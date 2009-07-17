@@ -1,0 +1,1298 @@
+%D \module
+%D   [       file=page-imp, % was: core-pag,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Pagebody Building (Imposition),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% much of this can more to run time loading !
+
+\writestatus{loading}{ConTeXt Page Macros / Pagebody Building}
+
+\unprotect
+
+% sizing bug:
+%
+% \setuppapersize[A4][A4,landscape] \setuparranging[2UP] \showframe
+%
+% \starttext \dorecurse{10}{\input tufte \par} \stoptext
+
+% to be moved code:
+
+\newif\ifclipprintbox \clipprintboxtrue
+%newif\ifclippagebox  \clippageboxtrue
+
+\def\clippedprintbox#1#2% can be made more efficient, see other clipper
+  {\ifclipprintbox
+     \!!widthc \pagebackgroundoffset
+     \!!widtha \dimexpr\paperwidth + \!!widthc\relax
+     \!!heighta\dimexpr\paperheight+2\!!widthc\relax
+     \setbox#2\vbox to \paperheight{\vfill\box#2}%
+     \ht#2\paperheight
+     \wd#2\paperwidth
+     \setbox#2\vbox
+       {\framed
+          [\c!offset=\!!widthc,\c!strut=\v!no,\c!frame=\v!off]
+          {\box#2}}%
+     \setbox#2\hbox to \paperwidth
+       {\ifcase#1\relax
+          \!!widthb\zeropoint
+          \hskip-\!!widthc
+        \else
+          \!!widthb\!!widthc
+        \fi
+        \lower\!!widthc\hbox
+          {\clip
+             [\c!width=\!!widtha,\c!height=\!!heighta,
+              \c!hoffset=\!!widthb,\c!voffset=\zeropoint]
+             {\box#2}}}%
+     \wd#2\paperwidth
+     \ht#2\paperheight
+   \fi
+   \box#2\relax}
+
+\let\clippagebox \gobbleoneargument
+\let\clipprintbox\gobbleoneargument
+
+% \setuppagenumbering[alternative=doublesided]
+% \setupcolors[state=start]
+% \setuppapersize[A4][A4,oversized]
+% \setuplayout[location=middle,clipoffset=5mm]
+% \setupbackgrounds
+%   [page]
+%   [frame=on,rulethickness=1mm,
+%    backgroundoffset=10mm,background=color,backgroundcolor=red]
+% \starttext \dorecurse{10}{\input tufte \par} \stoptext
+
+\def\clippagebox % skip fast over false
+  {\ifdim\@@lyclipoffset>\zeropoint
+      \expandafter\doclippagebox
+   \else
+      \expandafter\gobbleoneargument
+   \fi}
+
+\def\doclippagebox#1%
+  {\!!widtha \wd#1%
+   \!!heighta\ht#1%
+   \!!deptha \dp#1%
+   \setbox#1\hbox
+     {\!!widthb \@@lyclipoffset
+      \advance\!!heighta\dimexpr\!!deptha+2\!!widthb\relax
+      \advance\!!widtha \!!widthb
+      \doifbothsides
+        {\advance\!!widtha\!!widthb \!!widthc-\!!widthb \hskip\!!widthc}%
+        {\!!widthc\zeropoint}
+        {\!!widthc-\!!widthb \hskip\!!widthc}%
+      \lower\!!widthb\hbox
+        {\clip
+           [\c!hoffset=\!!widthc,
+            \c!voffset=-\!!widthb,
+              \c!width=\!!widtha,
+             \c!height=\!!heighta]%
+           {\box#1}}}%
+   \wd#1\!!widtha
+   \ht#1\!!heighta
+   \dp#1\!!deptha}
+
+%D \macros
+%D   {starttextdata}
+%D
+%D This is a user macro (appending to every last shipout is not
+%D really user friendly.
+
+\newtoks \collectedtextdata
+
+\long\def\starttextdata#1\stoptextdata
+  {\doglobal\appendtoks#1\to\collectedtextdata}
+
+\def\flushtextdata
+  {\vsmashed{\the\collectedtextdata}% all dimensions zero
+   \global\collectedtextdata\emptytoks
+   \globallet\flushtextdata\donothing}
+
+\prependtoks \flushtextdata \to \everylastshipout
+
+\def\installpagehandler#1#2%                  % a handler takes one argument: something to be boxed
+  {\setgvalue{\??pp:\c!method:#1}##1{#2{##1}}} % and shipped out (don't depend on the exact package)
+
+\installpagehandler\v!normal
+  {\ifarrangingpages\expandafter\actualarrange\else\expandafter\actualshipout\fi}
+
+\def\myshipout#1%
+ {\beforeshipout % voor de pagebody dus !
+  \dontshowcomposition
+  \executeifdefined{\??pp:\c!method:\@@ppmethod}\gobbleoneargument{#1}%
+  \setnextrealpageno
+  \aftershipout}
+
+\newbox\postponedcontent
+
+\def\flushatshipout
+  {\dowithnextbox
+     {\global\setbox\postponedcontent\hbox to \zeropoint
+        {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
+         \unhbox\postponedcontent\unhbox\nextbox}% was \box
+      \global\ht\postponedcontent\zeropoint
+      \global\dp\postponedcontent\zeropoint
+      \global\wd\postponedcontent\zeropoint}%
+   \hbox}
+
+% \starttypen
+% \def\pagestoshipout{1,3,5}
+% \stoptypen
+
+\newcount\shippedoutpages
+
+\let\pagestoshipout\empty      % {1,3,6}
+\chardef\whichpagetoshipout=0  % 0=all 1=odd 2=even
+
+\def\actualshipout#1%
+  {\global\advance\shippedoutpages\plusone
+   % this is not resource safe!
+   \ifx\pagestoshipout\empty
+     \ifcase\whichpagetoshipout\relax
+       \donetrue
+     \or % 1
+       \ifodd\shippedoutpages\relax\donetrue\else\donefalse\fi
+     \or % 2
+       \ifodd\shippedoutpages\relax\donefalse\else\donetrue\fi
+     \else
+       \donetrue
+     \fi
+   \else % testen, aangepast / expanded nodig ?
+     \normalexpanded{\noexpand\doifinsetelse{\the\shippedoutpages}{\pagestoshipout}}%
+       \donetrue\donefalse
+   \fi
+   \ifdone
+     \shipout\vbox
+       {%\forgetall
+        \offinterlineskip
+        \dontcomplain
+        \scratchdimen-1in
+        \vskip\scratchdimen
+        \hskip\scratchdimen
+        \setbox0\hbox{#1}% just in case there are objects there, hook for testing
+        \finalizeshipoutbox0%
+        \setbox\scratchbox\hbox
+          {% before the main one !
+           \ifcase\realfolio \or
+             \the\everyfirstshipout
+             \global\everyfirstshipout\emptytoks
+           \fi
+           % the main one
+           \the\everyshipout\relax
+           % always last (and after the main one)
+           \ifnum\realpageno=\lastpage\relax
+             \the\everylastshipout
+             \global\everylastshipout\emptytoks
+           \fi}%
+        \smashbox\scratchbox
+        \hbox % \setbox0=\box.. is nicer
+          {\box\scratchbox
+           \ifvoid\postponedcontent\else\box\postponedcontent\fi % evt ver naar links !
+           \box0}}%
+   \else
+     \message
+       {[\ifarrangingpages arranged \fi page
+         \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
+         not flushed]}%
+     \setbox0\hbox{#1}%
+     \deadcycles\zerocount
+   \fi}
+
+\def\actualarrange#1%
+  {\setbox0\hbox{#1}%
+   \pusharrangedpage0%
+   \deadcycles\zerocount}
+
+%D We need a couple of boxes for duplex printing \unknown
+
+\newbox\arrangedpageA \newbox\arrangedpageB
+
+%D \unknown\ and some for simulating big sheets.
+
+\newbox\arrangedpageC \newbox\arrangedpageD
+\newbox\arrangedpageE \newbox\arrangedpageF
+\newbox\arrangedpageG \newbox\arrangedpageH
+
+\newif\ifswaparranged
+\newif\ifnegatearranged
+\newif\ifmirrorarranged
+\newif\ifdoublearranged
+
+\newif\ifarrangingdisabled
+
+\def\arrangedrotationO{0}
+\def\arrangedrotationE{0}
+
+\newcounter\arrangedpageN
+\newcounter\arrangedpageM
+
+\chardef\arrangedpageT=1
+\chardef\arrangedpageX=1
+\chardef\arrangedpageY=1
+
+\def\calculatepaperoffsets#1%
+  {\scratchdimen\getvalue{\??pp#1\c!offset}%
+   \divide\scratchdimen \arrangedpageX
+   \global\advance\paperwidth -2\scratchdimen
+   \scratchdimen\getvalue{\??pp#1\c!offset}%
+   \divide\scratchdimen \arrangedpageY
+   \global\advance\paperheight-2\scratchdimen}
+
+\newconditional\arrangedbackgroundokay % more ifs -> conditionals
+
+\def\setuparranging[#1]%
+  {\ifarrangingdisabled \else
+     \doifelse{#1}\v!disable
+       {\global\arrangingdisabledtrue}
+       {\global\arrangingdisabledfalse}%
+     \global\arrangingpagestrue
+     \global\negatearrangedfalse
+     \global\mirrorarrangedfalse
+     \global\doublearrangedfalse
+     \gdef\arrangedrotationO{0}%
+     \gdef\arrangedrotationE{180}%
+     \processallactionsinset
+       [#1]
+       [    \v!mirrored=>\global\mirrorarrangedtrue,
+         \v!doublesided=>\global\doublearrangedtrue,
+            \v!negative=>\global\negatearrangedtrue,
+             \v!rotated=>\gdef\arrangedrotationO {90}\gdef\arrangedrotationE{270},
+                     90=>\gdef\arrangedrotationO {90}\gdef\arrangedrotationE{270},
+                    180=>\gdef\arrangedrotationO{180}\gdef\arrangedrotationE{0},
+                    270=>\gdef\arrangedrotationO{270}\gdef\arrangedrotationE{90},
+               \s!reset=>\global\arrangingpagesfalse,
+          \v!background=>\global\settrue\arrangedbackgroundokay,
+             \s!unknown=>\checkinstalledpagearrangement\commalistelement]%
+        % no \s!default=> we can have aaa,,bbb
+     \ifx\handlearrangedpage\undefined
+       \global\arrangingpagesfalse
+     \fi
+     \doifcommonelse{#1}{90,270,\v!rotated}
+       {\swapmacros\horizontalcutmarks\verticalcutmarks}{}% ugly solution
+     \setuppapersize
+   \fi}
+
+\def\installpagearrangement #1 %
+  {\setgvalue{\??pp\??pp#1}}
+
+\def\checkinstalledpagearrangement#1% can be empty: aaa,,bbb
+  {\executeifdefined{\??pp\??pp#1}\donothing}
+
+\def\dosetuparrangement#1#2#3#4#5#6#7#8%
+  {\global\chardef\arrangedpageX     #1%
+   \global\chardef\arrangedpageY     #2%
+   \global\chardef\arrangedpageT     #3%
+   \global\chardef\horizontalcutmarks#4%
+   \global\chardef\verticalcutmarks  #5%
+   \global\let    \pusharrangedpage  #6%
+   \global\let    \poparrangedpages  #7%
+   \global\let    \handlearrangedpage#8}
+
+\installpagearrangement {\v!normal}
+  {\global\arrangingpagesfalse}
+
+\installpagearrangement 2*16
+  {\dosetuparrangement{4}{4}{16}{5}{5}%
+     \pusharrangedpageTHIRTYTWO\poparrangedpagesAB\relax}
+
+\installpagearrangement 2*8
+  {\dosetuparrangement{4}{2}{8}{5}{3}%
+     \pusharrangedpageSIXTEEN\poparrangedpagesAB\relax}
+
+\installpagearrangement 2*4
+  {\dosetuparrangement{2}{2}{4}{3}{3}%
+     \pusharrangedpageEIGHT\poparrangedpagesAB\relax}
+
+\installpagearrangement 2*2
+  {\dosetuparrangement{2}{1}{2}{3}{2}%
+     \pusharrangedpageFOURA\poparrangedpagesAB\relax}
+
+\installpagearrangement 2**2
+  {\dosetuparrangement{2}{1}{2}{3}{2}%
+     \pusharrangedpageFOURB\poparrangedpagesAB\relax}
+
+\installpagearrangement 2SIDE
+  {\dosetuparrangement{2}{1}{2}{3}{2}%
+     \pusharrangedpageSIDETOP\poparrangedpagesTWO\handlearrangedpageSIDE}
+
+\installpagearrangement 2TOP
+  {\dosetuparrangement{1}{2}{2}{2}{3}%
+     \pusharrangedpageSIDETOP\poparrangedpagesTWO\handlearrangedpageTOP}
+
+\installpagearrangement 2UP
+  {\dosetuparrangement{2}{1}{4}{3}{2}%
+     \pusharrangedpageTWO\poparrangedpagesTWO\handlearrangedpageTWOUP}
+
+\installpagearrangement 2DOWN
+  {\dosetuparrangement{1}{2}{4}{2}{3}%
+     \pusharrangedpageTWO\poparrangedpagesTWO\handlearrangedpageTWODOWN}
+
+\installpagearrangement 2*4*2 % one defined by Willy Egger:
+  {\dosetuparrangement{2}{2}{4}{3}{2}%
+     \pusharrangedpageSIXTEENTWO\poparrangedpagesAtoD\relax}
+
+\installpagearrangement 2*2*4 % onother one of Willy Egger
+  {\dosetuparrangement{2}{1}{8}{3}{2}%
+     \pusharrangedpageSIXTEENFOUR\poparrangedpagesAtoH\relax}
+
+\installpagearrangement 2TOPSIDE
+  {\dosetuparrangement{1}{2}{4}{2}{3}%
+     \pusharrangedpageTWOTOPSIDE\poparrangedpagesTWOTOPSIDE\handlearrangedpageTOP}
+
+% \def\filluparrangedpages % beware: \realpageno is 1 ahead
+%   {\ifarrangingpages
+%      \scratchcounter-\realpageno
+%      \divide\scratchcounter \arrangedpageT
+%      \multiply\scratchcounter \arrangedpageT
+%      \advance\scratchcounter \realpageno
+%      \advance\scratchcounter \minusone
+%      \dorecurse\scratchcounter{\noheaderandfooterlines\ejectdummypage}%
+%    \fi}
+
+\def\filluparrangedpages % beware: \realpageno is 1 ahead
+  {\ifarrangingpages
+     \scratchcounter\numexpr\realpageno-\plusone\relax
+     \dosetmodulo\scratchcounter\arrangedpageT\scratchcounter
+     \ifcase\scratchcounter\else
+       \advance\scratchcounter \plusone
+       \dostepwiserecurse\scratchcounter\arrangedpageT\plusone
+         {\noheaderandfooterlines\ejectdummypage}%
+     \fi
+   \fi}
+
+\def\handlearrangedpageXandY#1#2#3#4#5%
+  {\global\setbox#5\hbox to \arrangedpageX\paperwidth
+     {\setbox\scratchbox\vbox to \arrangedpageY\paperheight
+        {%\forgetall
+         \offinterlineskip
+         \dontcomplain
+         \vskip#4\paperheight
+         \hskip#3\paperwidth
+         \dorotatebox{\ifcase#2 0\else180\fi}\hbox{\box#1}%
+         \vfill}%
+      \wd\scratchbox\zeropoint
+      \box\scratchbox\box#5\hss}}
+
+\def\gotonextarrangepage
+  {\global\advance\arrangeno \plusone
+   \def\pagecutmarksymbol{\the\arrangeno}}
+
+\def\outputarrangedbox#1%
+  {\bgroup
+   \gotonextarrangepage
+   \ifnum\arrangedrotationO\arrangedrotationE>\zerocount
+     \setbox#1\vbox
+       {\ifdoublearranged
+          \ifodd\arrangeno
+            \dorotatebox\arrangedrotationO\hbox{\box#1}%
+          \else
+            \dorotatebox\arrangedrotationE\hbox{\box#1}%
+          \fi
+        \else
+          \dorotatebox\arrangedrotationO\hbox{\box#1}%
+        \fi}%
+   \fi
+   \ifmirrorarranged
+     \setbox#1\vbox{\domirrorbox\vbox{\box#1}}%
+   \fi
+   \ifnegatearranged
+     \negatecolorbox{#1}%
+   \fi
+   \finishpagebox#1%
+   \ifconditional\arrangedbackgroundokay\addprintbackground#1\fi
+   \actualshipout{\box#1}%
+   \egroup}
+
+%D The format file can be 16K smaller when we postpone the
+%D real arrangments. Some day ...
+
+% TOP
+
+% 32/16/8/4/SIDE
+
+\def\poparrangedpagesAB
+  {\ifnum\arrangedpageN>\zerocount
+     \dontcomplain
+     \paperwidth\arrangedpageX\paperwidth
+     \paperheight\arrangedpageY\paperheight
+     \outputarrangedbox\arrangedpageA
+     \outputarrangedbox\arrangedpageB
+     \doglobal\newcounter\arrangedpageN
+   \fi}
+
+\def\pusharrangedpageTHIRTYTWO#1% taco's challenge
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}033\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}003\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}100\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}130\arrangedpageA %  4
+   \or \handlearrangedpageXandY{#1}100\arrangedpageA %  5
+   \or \handlearrangedpageXandY{#1}130\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}033\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}003\arrangedpageA %  8
+   \or \handlearrangedpageXandY{#1}102\arrangedpageA %  9
+   \or \handlearrangedpageXandY{#1}132\arrangedpageB % 10
+   \or \handlearrangedpageXandY{#1}031\arrangedpageB % 11
+   \or \handlearrangedpageXandY{#1}001\arrangedpageA % 12
+   \or \handlearrangedpageXandY{#1}031\arrangedpageA % 13
+   \or \handlearrangedpageXandY{#1}001\arrangedpageB % 14
+   \or \handlearrangedpageXandY{#1}102\arrangedpageB % 15
+   \or \handlearrangedpageXandY{#1}132\arrangedpageA % 16
+   \or \handlearrangedpageXandY{#1}122\arrangedpageA % 17
+   \or \handlearrangedpageXandY{#1}112\arrangedpageB % 18
+   \or \handlearrangedpageXandY{#1}011\arrangedpageB % 19
+   \or \handlearrangedpageXandY{#1}021\arrangedpageA % 20
+   \or \handlearrangedpageXandY{#1}011\arrangedpageA % 21
+   \or \handlearrangedpageXandY{#1}021\arrangedpageB % 22
+   \or \handlearrangedpageXandY{#1}122\arrangedpageB % 23
+   \or \handlearrangedpageXandY{#1}112\arrangedpageA % 24
+   \or \handlearrangedpageXandY{#1}013\arrangedpageA % 25
+   \or \handlearrangedpageXandY{#1}023\arrangedpageB % 26
+   \or \handlearrangedpageXandY{#1}120\arrangedpageB % 27
+   \or \handlearrangedpageXandY{#1}110\arrangedpageA % 28
+   \or \handlearrangedpageXandY{#1}120\arrangedpageA % 29
+   \or \handlearrangedpageXandY{#1}110\arrangedpageB % 30
+   \or \handlearrangedpageXandY{#1}013\arrangedpageB % 31
+   \or \handlearrangedpageXandY{#1}023\arrangedpageA % 32
+     \poparrangedpages
+   \fi}
+
+\def\pusharrangedpageSIXTEEN#1% changed to match the official way of doing
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}031\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}001\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}031\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}001\arrangedpageA %  4
+   \or \handlearrangedpageXandY{#1}100\arrangedpageA %  5
+   \or \handlearrangedpageXandY{#1}130\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}100\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}130\arrangedpageA %  8
+   \or \handlearrangedpageXandY{#1}120\arrangedpageA %  9
+   \or \handlearrangedpageXandY{#1}110\arrangedpageB % 10
+   \or \handlearrangedpageXandY{#1}120\arrangedpageB % 11
+   \or \handlearrangedpageXandY{#1}110\arrangedpageA % 12
+   \or \handlearrangedpageXandY{#1}011\arrangedpageA % 13
+   \or \handlearrangedpageXandY{#1}021\arrangedpageB % 14
+   \or \handlearrangedpageXandY{#1}011\arrangedpageB % 15
+   \or \handlearrangedpageXandY{#1}021\arrangedpageA % 16
+     \poparrangedpages
+   \fi}
+
+\def\pusharrangedpageEIGHT#1% changed to match the official way of doing
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}011\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}001\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}100\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}110\arrangedpageA %  4
+   \or \handlearrangedpageXandY{#1}100\arrangedpageA %  5
+   \or \handlearrangedpageXandY{#1}110\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}011\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}001\arrangedpageA %  8
+     \poparrangedpages
+   \fi}
+
+\def\pusharrangedpageFOURA{\pusharrangedpageFOURdo01}
+\def\pusharrangedpageFOURB{\pusharrangedpageFOURdo10}
+
+\def\pusharrangedpageFOURdo#1#2#3%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#3}010\arrangedpageA    %  1
+   \or \handlearrangedpageXandY{#3}0{#1}0\arrangedpageB %  2/3 not {1}
+   \or \handlearrangedpageXandY{#3}0{#2}0\arrangedpageB %  3/2 not {1}
+   \or \handlearrangedpageXandY{#3}000\arrangedpageA    %  4
+     \poparrangedpages
+   \fi}
+
+\def\pusharrangedpageSIDETOP#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+     \poparrangedpages
+   \fi}
+
+\def\handlearrangedpageSIDE
+  {\global\wd\arrangedpageA\paperwidth
+   \global\wd\arrangedpageB\paperwidth
+   \global\setbox\arrangedpageA\hbox
+     {\box\arrangedpageA\box\arrangedpageB}%
+   \global\ht\arrangedpageA\paperheight}
+
+\def\handlearrangedpageTOP
+  {\global\ht\arrangedpageA\paperheight
+   \global\ht\arrangedpageB\paperheight
+   \global\setbox\arrangedpageA\vbox
+     {%\forgetall
+      \offinterlineskip\vskip\paperheight
+      \box\arrangedpageA\box\arrangedpageB}%
+   \global\setbox\arrangedpageB\box\scratchbox} % ?
+
+% 2UP/2DOWN / 1pt prevents overflow
+
+\def\splitoffarrangedpagesTWO
+  {\splittopskip\zeropoint
+   \global\setbox\arrangedpageA\vsplit\arrangedpageB to \onepoint
+   \scratchdimen\dimexpr\ht\arrangedpageB-\onepoint\relax
+   \ifdim\scratchdimen>\onepoint
+     \setbox\scratchbox\vsplit\arrangedpageB to \scratchdimen
+   \fi}
+
+\def\handlearrangedpageTWOUP
+  {\splitoffarrangedpagesTWO
+   \ifswaparranged
+     \global\setbox\arrangedpageA\hbox
+       {\clippedprintbox0\arrangedpageA
+        \clippedprintbox1\arrangedpageB}%
+     \swaparrangedfalse
+   \else
+     \global\setbox\arrangedpageA\hbox
+       {\clippedprintbox0\arrangedpageB
+        \clippedprintbox1\arrangedpageA}%
+     \swaparrangedtrue
+   \fi
+   \global\ht\arrangedpageA\paperheight
+   \global\setbox\arrangedpageB\box\scratchbox}
+
+\def\handlearrangedpageTWODOWN
+  {\splitoffarrangedpagesTWO
+   \global\ht\arrangedpageA\paperheight
+   \global\ht\arrangedpageB\paperheight
+   \ifswaparranged
+     \global\setbox\arrangedpageA\vbox
+       {%\forgetall
+        \offinterlineskip\vskip\paperheight
+        \box\arrangedpageA\box\arrangedpageB}%
+     \swaparrangedfalse
+   \else
+     \global\setbox\arrangedpageA\vbox
+       {%\forgetall
+        \offinterlineskip\vskip\paperheight
+        \box\arrangedpageB\box\arrangedpageA}%
+     \swaparrangedtrue
+   \fi
+   \global\setbox\arrangedpageB\box\scratchbox}
+
+\def\poparrangedpagesTWO
+  {\ifnum\arrangedpageN>\zerocount
+     \dontcomplain
+     \swaparrangedfalse
+     \doloop
+       {\handlearrangedpage
+        \bgroup
+        \paperwidth\arrangedpageX\paperwidth
+        \paperheight\arrangedpageY\paperheight
+        \ht\arrangedpageA\paperheight
+        \wd\arrangedpageA\paperwidth
+        \outputarrangedbox\arrangedpageA
+        \egroup
+        \ifdim\ht\arrangedpageB=\zeropoint
+          \exitloop
+        \fi}%
+     \doglobal\newcounter\arrangedpageN
+   \fi}
+
+\def\pusharrangedpageTWO#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \global\setbox\arrangedpageB\vbox
+     {%\forgetall
+      \offinterlineskip
+      \unvbox\arrangedpageB
+      \allowbreak
+      \ht#1\onepoint
+      \dp#1\zeropoint
+      \vbox{\box#1}}}
+
+\def\poparrangedpagesTWOTOPSIDE
+  {\ifnum\arrangedpageN>\zerocount
+     \bgroup
+     \gdef\arrangedpageN{2}\poparrangedpagesTWO
+     \let\arrangedpageA\arrangedpageC
+     \let\arrangedpageB\arrangedpageD
+     \gdef\arrangedpageN{2}\poparrangedpagesTWO
+     \doglobal\newcounter\arrangedpageN
+     \egroup
+  \fi}
+
+\def\pusharrangedpageTWOTOPSIDE#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}000\arrangedpageC %  2
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  1
+   \or \handlearrangedpageXandY{#1}000\arrangedpageD %  2
+     \poparrangedpages
+   \fi}
+
+%D Willy Egger's sheet simulations:
+
+\def\poparrangedpagesAtoH
+  {\ifnum\arrangedpageN>\zerocount
+     \dontcomplain
+     \paperwidth\arrangedpageX\paperwidth
+     \paperheight\arrangedpageY\paperheight
+     \outputarrangedbox\arrangedpageA
+     \outputarrangedbox\arrangedpageB
+     \outputarrangedbox\arrangedpageC
+     \outputarrangedbox\arrangedpageD
+     \outputarrangedbox\arrangedpageE
+     \outputarrangedbox\arrangedpageF
+     \outputarrangedbox\arrangedpageG
+     \outputarrangedbox\arrangedpageH
+     \doglobal\newcounter\arrangedpageN
+   \fi}
+
+% to arrange 16 pages on 2 sheets to form one booklet
+
+\def\poparrangedpagesAtoD
+  {\ifnum\arrangedpageN>\zerocount
+     \dontcomplain
+     \paperwidth\arrangedpageX\paperwidth
+     \paperheight\arrangedpageY\paperheight
+     \outputarrangedbox\arrangedpageA
+     \outputarrangedbox\arrangedpageB
+     \outputarrangedbox\arrangedpageC
+     \outputarrangedbox\arrangedpageD
+     \doglobal\newcounter\arrangedpageN
+   \fi}
+
+% to arrange 16 pages on 4 sheets to form one booklet
+
+\def\pusharrangedpageSIXTEENFOUR#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}010\arrangedpageC %  3
+   \or \handlearrangedpageXandY{#1}000\arrangedpageD %  4
+   \or \handlearrangedpageXandY{#1}010\arrangedpageE %  5
+   \or \handlearrangedpageXandY{#1}000\arrangedpageF %  6
+   \or \handlearrangedpageXandY{#1}010\arrangedpageG %  7
+   \or \handlearrangedpageXandY{#1}000\arrangedpageH %  8
+   \or \handlearrangedpageXandY{#1}010\arrangedpageH %  9
+   \or \handlearrangedpageXandY{#1}000\arrangedpageG % 10
+   \or \handlearrangedpageXandY{#1}010\arrangedpageF % 11
+   \or \handlearrangedpageXandY{#1}000\arrangedpageE % 12
+   \or \handlearrangedpageXandY{#1}010\arrangedpageD % 13
+   \or \handlearrangedpageXandY{#1}000\arrangedpageC % 14
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB % 15
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA % 16
+     \poparrangedpages
+   \fi}
+
+% to arrange 16 pages on 2 sheets to form one booklet
+
+\def\pusharrangedpageSIXTEENTWO#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}011\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}001\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}011\arrangedpageC %  3
+   \or \handlearrangedpageXandY{#1}001\arrangedpageD %  4
+   \or \handlearrangedpageXandY{#1}100\arrangedpageD %  5
+   \or \handlearrangedpageXandY{#1}110\arrangedpageC %  6
+   \or \handlearrangedpageXandY{#1}100\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}110\arrangedpageA %  8
+   \or \handlearrangedpageXandY{#1}100\arrangedpageA %  9
+   \or \handlearrangedpageXandY{#1}110\arrangedpageB % 10
+   \or \handlearrangedpageXandY{#1}100\arrangedpageC % 11
+   \or \handlearrangedpageXandY{#1}110\arrangedpageD % 12
+   \or \handlearrangedpageXandY{#1}011\arrangedpageD % 13
+   \or \handlearrangedpageXandY{#1}001\arrangedpageC % 14
+   \or \handlearrangedpageXandY{#1}011\arrangedpageB % 15
+   \or \handlearrangedpageXandY{#1}001\arrangedpageA % 16
+     \poparrangedpages
+   \fi}
+
+% % handy for stickers etc, this way we can treat them as page
+%
+% \setuppapersize [XY][A4]
+% \setuppaper     [topspace=5mm,backspace=5mm,dx=1mm,dy=1mm,nx=2,ny=6]
+% \setuplayout    [page] [topspace=5mm,backspace=5mm]
+% \setuplayout    [page]
+% \setuplayout    [location=middle]
+% \setuparranging [XY]
+% \showframe
+%
+% \starttext \dorecurse{30}{test \recurselevel \page} \stoptext
+
+\def\pusharrangedpageXY#1%
+   {\doglobal\increment\arrangedpageN
+    \reportarrangedpage\arrangedpageN
+    \doglobal\increment\arrangedpageM
+    \global\setbox\arrangedpageB\hbox
+      \ifdim\@@ppwidth>\zeropoint to \@@ppwidth \fi
+      {\ifvoid\arrangedpageB\else
+         \unhbox\arrangedpageB
+         \ifdim\@@ppdx>\zeropoint \else \hss\fi
+         \hskip\@@ppdx
+         \ifdim\@@ppdx>\zeropoint \else \hss\fi
+       \fi
+       \box#1}%
+    \ifnum\arrangedpageM<\arrangedpageX\else
+      \global\setbox\arrangedpageA\vbox
+        \ifdim\@@ppheight>\zeropoint to \@@ppheight \fi
+        {\offinterlineskip
+         \ifvoid\arrangedpageA\else
+           \unvbox\arrangedpageA
+           \ifdim\@@ppdy>\zeropoint \else \vss\fi
+           \vskip\@@ppdy
+           \ifdim\@@ppdy>\zeropoint \else \vss\fi
+         \fi
+         \box\arrangedpageB}%
+      \doglobal\newcounter\arrangedpageM
+    \fi
+    \ifnum\arrangedpageN<\arrangedpageT\else
+      \poparrangedpages
+    \fi}
+
+\def\poparrangedpagesXY
+  {\ifnum\arrangedpageN>\zerocount
+     \dontcomplain
+     \paperwidth\arrangedpageX\paperwidth
+     \paperheight \arrangedpageY\paperheight
+     \outputarrangedbox\arrangedpageA
+     \doglobal\newcounter\arrangedpageN
+     \doglobal\newcounter\arrangedpageM
+   \fi}
+
+\installpagearrangement XY
+  {\dosetuparrangement\@@ppnx\@@ppny\@@ppxy\!!zerocount\!!zerocount
+     \pusharrangedpageXY\poparrangedpagesXY\relax}
+
+%D A crazy definition, don't guess who pushed me for the landscape option.
+
+\definepapersize
+  [XY]
+  [\c!height=\dimexpr\dimexpr\@@ppheight-\numexpr\@@ppny-1\relax\dimexpr\@@ppdy\relax\relax/\@@ppny\relax,
+   \c!width =\dimexpr\dimexpr\@@ppwidth -\numexpr\@@ppnx-1\relax\dimexpr\@@ppdx\relax\relax/\@@ppnx\relax]
+
+\setuppaper
+  [\c!width =\dimexpr\printpaperwidth -2\dimexpr\@@ppbackspace\relax\relax,
+   \c!height=\dimexpr\printpaperheight-2\dimexpr\@@pptopspace \relax\relax]
+
+% \definepageshift[test][horizontal][10pt,20pt,30pt,40pt,50pt]
+% \definepageshift[test][vertical]  [10pt,20pt,30pt,40pt,50pt]
+%
+% \setuppageshift[test]
+% \setuppageshift[test][test]
+% \setuppageshift[test][none]
+% \setuppageshift[none][test]
+% \setuppageshift[paper][test][test] % arrange only
+% \setuppageshift[paper][test]       % arrange only
+% \setuppageshift[print][test][test]
+%
+% \showframe \dorecurse{100}{\input tufte \par}
+
+% #1=name #2=horizontal|vertical #3=shiftlist
+
+\def\definepageshift
+  {\dotripleargument\dodefinepageshift}
+
+\def\dodefinepageshift[#1][#2][#3]%
+  {\setvalue{\??pt#2:#1}{#3}}
+
+\letempty \hpageshifts \newcounter\nofhpageshifts
+\letempty \vpageshifts \newcounter\nofvpageshifts
+
+% \let\shiftprintpagebox\gobbleoneargument
+% \let\shiftpaperpagebox\gobbleoneargument
+
+\def\dogetpageshift#1#2#3% #1=\dimenx #2=\xpageshifts #3=\nofxpageshifts
+  {\ifx#2\empty
+     #1\zeropoint
+   \else
+     \doglobal\increment#3%
+     \getfromcommacommand[#2][#3]%
+     \ifx\commalistelement\empty
+       \globallet#3\!!plusone
+       \getfromcommacommand[#2][#3]%
+     \fi
+     \ifx\commalistelement\empty
+       #1\zeropoint
+     \else
+       #1=\commalistelement
+       \donetrue
+     \fi
+   \fi}
+
+\def\shiftpagebox#1%
+  {\donefalse
+   \dogetpageshift{\dimen0}\hpageshifts\nofhpageshifts
+   \dogetpageshift{\dimen2}\vpageshifts\nofvpageshifts
+   \ifdone % see also layout offsets, maybe \movebox
+     \edef\next{\wd#1\the\wd#1\ht#1\the\ht#1\dp#1\the\dp#1}%
+     \setbox#1\vbox
+       {\offinterlineskip\vskip\dimen2\hskip\dimen0\box#1}%
+     \next
+   \fi}
+
+\def\setuppageshift
+  {\dotripleempty\dosetuppageshift}
+
+\def\dosetuppageshift[#1][#2][#3]% page|paper horizontal vertical
+  {\ifthirdargument              % paper=arrange
+     \let\hpageshifts\empty
+     \let\vpageshifts\empty
+     \let\shiftprintpagebox\gobbleoneargument
+     \let\shiftpaperpagebox\gobbleoneargument
+     \doifdefined{\??pt\v!horizontal:#2}
+       {\edef\hpageshifts{\getvalue{\??pt\v!horizontal:#2}}}%
+     \doifdefined{\??pt\v!vertical  :#3}
+       {\edef\vpageshifts{\getvalue{\??pt\v!vertical  :#3}}}%
+     \doif{#1}\v!page{\let\shiftprintpagebox\shiftpagebox}%
+     \doif{#1}\v!paper{\let\shiftpaperpagebox\shiftpagebox}%
+   \else\ifsecondargument
+     \doifinsetelse{#1}{\v!page,\v!paper}
+       {\setuppageshift[#1][#2][#2]}
+       {\setuppageshift[\v!page][#1][#2]}%
+   \else\iffirstargument
+     \setuppageshift[\v!page][#1][#1]%
+   \fi\fi\fi}
+
+%D One can (mis)use this mechanism, in close cooperation
+%D with \PDFTEX\ to arrange pages of already produced files.
+%D
+%D \starttyping
+%D \insertpages[file.pdf][1,3][n=30,width=18cm]
+%D \stoptyping
+%D
+%D The pages are inserted in the text area, and even pages
+%D are repositioned according to the width. In this example
+%D empty pages are added after page 1 and 3.
+%D
+%D Selecting pages can be accomplished by:
+%D
+%D \starttyping
+%D \filterpages[file.pdf][1,3,5][n=30,width=18cm]
+%D \stoptyping
+%D
+%D One may pass \type {odd} or \type {even} instead of a
+%D comma separated list. A third alternative is:
+%D
+%D \starttyping
+%D \copypages[file.pdf][n=30,scale=950]
+%D \stoptyping
+%D
+%D This macros inserts the page, according to the settings
+%D provided.
+
+\def\insertpages
+  {\dotripleempty\doinsertpages}
+
+\def\doinsertpages[#1][#2][#3]%
+  {\doifassignmentelse{#2}
+     {\dodoinsertpages[#1][][#2]}
+     {\dodoinsertpages[#1][#2][#3]}}
+
+\def\dodoinsertpages[#1][#2][#3]%
+  {\bgroup
+   \dontcomplain
+   \getfiguredimensions[#1]%
+   \getparameters[\??ip][\c!n=\noffigurepages,\c!width=\!!zeropoint,#3]%
+   \doifinset0{#2}{\null\page}%
+   \dorecurse\@@ipn
+     {\dofilterpage{#1}\recurselevel
+      \doifinset\recurselevel{#2}{\null\page}}%
+   \egroup}
+
+\def\filterpages
+  {\dotripleempty\dofilterpages}
+
+\def\dofilterpages[#1][#2][#3]% % \noffigurepages not yet supported
+  {\bgroup
+   \dontcomplain
+   \getfiguredimensions[#1]%
+   \getparameters[\??ip][\c!n=\noffigurepages,\c!width=\!!zeropoint,#3]%
+   \doifelse{#2}\v!even
+     {\dorecurse\@@ipn
+        {\ifodd\recurselevel\relax\else\dofilterpage{#1}\recurselevel\fi}}
+     {\doifelse{#2}\v!odd
+        {\dorecurse\@@ipn
+           {\ifodd\recurselevel\relax\dofilterpage{#1}\recurselevel\fi}}
+        {\def\dodocommand##1%
+           {\ifnum##1>\@@ipn\else\dofilterpage{#1}{##1}\fi}%
+         \def\docommand##1%
+           {\dowithrange{##1}\dodocommand}%
+         \processcommalist[#2]\docommand}}%
+   \egroup}
+
+\def\dofilterpage#1#2%
+  {\hbox to \textwidth
+     {\ifdoublesided\ifdim\@@ipwidth>\zeropoint\relax\ifodd\realpageno\else
+        \hfill
+        \def\dowithfigure{\hskip-\@@ipwidth}%
+      \fi\fi\fi
+      \setbox0\hbox
+        {\externalfigure[#1][\c!page=#2,\c!height=\textheight]}%
+      \wd0\zeropoint
+      \box0}
+   \page}
+
+\def\copypages
+  {\dodoubleempty\docopypages}
+
+\def\docopypages[#1][#2]%
+  {\bgroup
+   \getfiguredimensions[#1]%
+   \getparameters[\??ip]
+     [\c!n=\noffigurepages,
+      \c!marking=\v!off,
+      \c!scale=\!!thousand,
+      \c!offset=\!!zeropoint,
+      #2]%
+   \dorecurse\@@ipn
+     {\vbox to \textheight
+        {\hsize\textwidth
+         \scratchdimen\@@ipoffset
+         \centeredbox
+           {\doifelse\@@ipmarking\v!on\cuthbox\hbox
+              {\ifdim\scratchdimen>\zeropoint\relax
+                 \advance\vsize -2\scratchdimen
+                 \advance\hsize -2\scratchdimen
+                 \externalfigure[#1][\c!page=\recurselevel,#2,\c!scale=,\c!factor=\v!max,\c!offset=\v!overlay]%
+               \else
+                 \externalfigure[#1][\c!page=\recurselevel,#2,\c!offset=\v!overlay]%
+               \fi}}}
+      \page}
+   \egroup}
+
+%D \macros
+%D   {combinepages}
+%D
+%D Yet another way of postprocessing is handles by \type
+%D {\combinepages}. This macro builds a matrix of pages from a
+%D file, for example:
+%D
+%D \starttyping
+%D \setuppapersize
+%D   [A4][A4] % or [A4,landscape][A4,landscape]
+%D
+%D \setuplayout
+%D   [header=0pt,footer=1cm,
+%D    backspace=1cm,topspace=1cm,
+%D    width=middle,height=middle]
+%D
+%D \setupfootertexts
+%D   [presentation---\currentdate\space---\space\pagenumber]
+%D
+%D \starttext
+%D   \combinepages[slides][nx=2,ny=3,frame=on]
+%D \stoptext
+%D \stoptyping
+%D
+%D One can influence the way the pages are combined. (This
+%D will be explained some time.)
+
+\def\combinepages
+  {\dodoubleempty\docombinepages}
+
+\def\docombinepages[#1][#2]% a=perpag b=free
+  {\bgroup
+   \dontcomplain
+   \getfiguredimensions[#1]%
+   \getparameters
+     [\??ip]
+     [\c!alternative=\v!a,
+      \c!n=\noffigurepages,\c!nx=2,\c!ny=2,\c!start=1,\c!stop=\!!maxcard,
+      \c!distance=\bodyfontsize,
+      \c!bottom=\vfill,\c!top=\vss,
+      \c!left=\hss,\c!right=\hss,
+      \c!before=\page,\c!after=\page,\c!inbetween=\blank,
+      \c!frame=,\c!background=,\c!backgroundcolor=,
+      #2]%
+   \def\@@ipname{#1}%
+   \@@ipbefore
+   \expandcheckedcsname{\??ip::\c!alternative:}\@@ipalternative\v!b
+   \@@ipafter
+   \egroup}
+
+\setvalue{\??ip::\c!alternative:\v!a}%
+  {\globallet\combinedpagescounter\@@ipstart
+   \doloop
+     {\vbox to \textheight
+        {\hsize\textwidth % ? ?
+         \scratchdimen\@@ipdistance
+         \!!widtha \dimexpr(\hsize-\@@ipnx\scratchdimen+\scratchdimen)/\@@ipnx\relax
+         \!!heighta\dimexpr(\vsize-\@@ipny\scratchdimen+\scratchdimen)/\@@ipny\relax
+         \dorecurse\@@ipny
+           {\hbox to \hsize
+              {\dorecurse\@@ipnx
+                 {\vbox to \!!heighta
+                    {\hsize\!!widtha
+                     \vsize\!!heighta
+                     \@@iptop
+                     \hbox to \hsize
+                       {\@@ipleft
+                        \ifnum\combinedpagescounter>\@@ipstop\relax
+                          \globallet\@@ipn\!!zerocount
+                        \else\ifnum\combinedpagescounter>\@@ipn \else
+                          \externalfigure[\@@ipname]
+                            [\c!object=\v!no,
+                             \c!page=\combinedpagescounter,
+                             \c!factor=\v!max,
+                             \c!background=\@@ipbackground,
+                             \c!backgroundcolor=\@@ipbackgroundcolor,
+                             \c!frame=\@@ipframe]%
+                        \fi\fi
+                        \@@ipright}
+                     \@@ipbottom}%
+                  \doglobal\increment\combinedpagescounter
+                  \hfil}%
+               \hfilneg}
+            \vfil}%
+         \vfilneg}%
+         \page
+         \ifnum\combinedpagescounter>\@@ipn \exitloop\fi}}
+
+\setvalue{\??ip::\c!alternative:\v!c}%
+  {\globallet\combinedpagescounter\@@ipstart
+   \doloop
+     {\vbox to \textheight
+        {\hsize\textwidth % ? ?
+         \scratchdimen\@@ipdistance
+         \!!widtha \dimexpr(\hsize-\@@ipnx\scratchdimen+\scratchdimen)/\@@ipnx\relax
+         \!!heighta\dimexpr(\vsize-\@@ipny\scratchdimen+\scratchdimen)/\@@ipny\relax
+         \hbox to \hsize
+           {\dorecurse\@@ipnx
+              {\@@ipleft
+               \vbox to \textheight
+                 {\hsize\!!widtha
+                    {\dorecurse\@@ipny
+                       {\@@iptop
+                        \hbox to \hsize
+                          {\vbox to \!!heighta
+                             {\hsize\!!widtha
+                              \vsize\!!heighta
+                              \ifnum\combinedpagescounter>\@@ipstop\relax
+                                \globallet\@@ipn\!!zerocount
+                              \else\ifnum\combinedpagescounter>\@@ipn \else
+                                \externalfigure[\@@ipname]
+                                  [\c!object=\v!no,
+                                   \c!page=\combinedpagescounter,
+                                   \c!factor=\v!max,
+                                   \c!background=\@@ipbackground,
+                                   \c!backgroundcolor=\@@ipbackgroundcolor,
+                                   \c!frame=\@@ipframe]%
+                              \fi\fi}}
+                         \doglobal\increment\combinedpagescounter
+                         \@@ipbottom}%
+                      \vfil}%
+                   \vfilneg}
+                \hfil}%
+            \hfilneg}}
+         \page
+         \ifnum\combinedpagescounter>\@@ipn \exitloop\fi}}
+
+\setvalue{\??ip::\c!alternative:\v!horizontal}{\getvalue{\??ip::\c!alternative:\v!a}}
+\setvalue{\??ip::\c!alternative:\v!vertical  }{\getvalue{\??ip::\c!alternative:\v!c}}
+
+\setvalue{\??ip::\c!alternative:\v!b}%
+  {\globallet\combinedpagescounter\@@ipstart
+   \doloop
+     {\startbaselinecorrection
+        \scratchdimen\@@ipdistance
+        \!!widtha\dimexpr(\hsize-\@@ipnx\scratchdimen+\scratchdimen)/\@@ipnx\relax
+        \hbox to \hsize
+          {\dorecurse\@@ipnx
+             {\doglobal\increment\combinedpagescounter
+              \ifnum\combinedpagescounter>\@@ipn \else
+                 \normalexpanded{\noexpand\externalfigure[\@@ipname]
+                   [\c!page=\combinedpagescounter,
+                    \c!width=\the\!!widtha,% todo \freezedimenmacro
+                    \c!background=\@@ipbackground,
+                    \c!backgroundcolor=\@@ipbackgroundcolor,
+                    \c!frame=\@@ipframe]}%
+                 \hfill
+              \fi}\hfillneg}%
+      \stopbaselinecorrection
+      \ifnum\combinedpagescounter<\@@ipn\relax
+        \@@ipinbetween
+      \else
+        \exitloop
+      \fi}}
+
+%D \macros
+%D   {setuppagecomment,startpagecomment}
+%D
+%D This command is not yet documented. Usage:
+%D
+%D \starttyping
+%D \setuppagecomment[state=start,location=right]
+%D
+%D \startpagecomment
+%D \input knuth
+%D \stoppagecomment
+%D \stoptyping
+
+\def\setuppagecomment
+  {\dosingleempty\dosetuppagecomment}
+
+\def\dosetuppagecomment[#1]%
+  {\getparameters[\??pc][#1]%
+   \doifelse\@@pcstate\v!start
+     {\doifinsetelse\@@pclocation{\v!bottom,\v!top}
+        {\setuppapersize[\c!left=\hskip\@@pcoffset]%
+         \edef\@@pcpaperheight{\the\dimexpr\paperheight+\@@pcoffset+\@@pcoffset+\@@pcdistance+\@@pcheight\relax}%
+         \edef\@@pcpaperwidth {\the\dimexpr\paperwidth+\@@pcoffset+\@@pcoffset\relax}%
+         \defineoverlay[\v!pagecomment][\placepagecommentTB]}
+        {\setuppapersize[\c!top=\vskip\@@pcoffset]%
+         \edef\@@pcpaperheight{\the\dimexpr\paperheight+\@@pcoffset+\@@pcoffset\relax}%
+         \edef\@@pcpaperwidth {\the\dimexpr\paperwidth+\@@pcoffset+\@@pcoffset+\@@pcdistance+\@@pcwidth\relax}%
+         \defineoverlay[\v!pagecomment][\placepagecommentLR]}%
+      \processaction
+        [\@@pclocation]
+        [ \v!bottom=>{\setuppapersize[\c!bottom =\vss,\c!top =\vskip\@@pcoffset]},
+             \v!top=>{\setuppapersize[\c!top =\vss,\c!bottom =\vskip\@@pcoffset]},
+            \v!left=>{\setuppapersize[\c!left =\hss,\c!right=\hskip\@@pcoffset]},
+           \v!right=>{\setuppapersize[\c!right=\hss,\c!left =\hskip\@@pcoffset]}]%
+      \definepapersize
+        [\v!pagecomment]
+        [\c!height=\@@pcpaperheight,
+          \c!width=\@@pcpaperwidth]%
+      \let\@@pcprintpapersize\printpapersize
+      \setuppapersize[\papersize][\v!pagecomment]%
+      \setupbackgrounds[\v!paper][\c!background=\v!pagecomment]}
+    {\doif\@@pcstate\v!stop % else initialization  invokes backgrounds
+       {% this should be tested first
+        % \normalexpanded{\noexpand\setuppapersize[\papersize][\@@pcprintpapersize]}%
+        \setupbackgrounds[\v!paper][\c!background=]}}}
+
+\def\@@pcprintpapersize{\printpapersize}
+
+\def\placepagecommentTB
+  {\vbox to \printpaperheight
+     {%\forgetall
+      \hsize\printpaperwidth
+      \vskip\@@pcoffset
+      \doifelse\@@pclocation\v!bottom{\vskip\dimexpr\paperheight+\@@pcdistance\relax}\vss
+      \hskip\@@pcoffset
+      \vbox to \@@pcheight
+        {%\forgetall
+         \hsize\paperwidth
+         \ifpagecomment
+           \getbuffer[\v!pagecomment]%
+           \global\pagecommentfalse
+         \fi}%
+      \hfill
+      \doifelse\@@pclocation\v!bottom\vss{\vskip\dimexpr\paperheight+\@@pcdistance\relax}%
+      \vskip\@@pcoffset}}
+
+\def\placepagecommentLR
+  {\hbox to \printpaperwidth
+     {\hskip\@@pcoffset
+      \doifelse\@@pclocation\v!right{\hskip\paperwidth\hskip\@@pcdistance}\hss
+      \vbox to \printpaperheight
+        {%\forgetall
+         \vskip\@@pcoffset
+         \hsize\@@pcwidth
+         \ifpagecomment
+           \getbuffer[\v!pagecomment]%
+           \global\pagecommentfalse
+         \fi
+         \vss}%
+      \doifelse\@@pclocation\v!right\hss{\hskip\paperwidth\hskip\@@pcdistance}%
+      \hskip\@@pcoffset}}
+
+\newif\ifpagecomment
+
+\setvalue{\e!start\v!pagecomment}%
+  {\global\pagecommenttrue
+   \dostartbuffer[\v!pagecomment][\e!start\v!pagecomment][\e!stop\v!pagecomment]}
+
+\setuppagecomment
+  [\c!state=, % \v!stop would invoke background calculation
+   \c!location=\v!bottom,
+   \c!offset=.5cm,
+   \c!distance=.5cm,
+   \c!height=5cm,
+   \c!width=10cm]
+
+% This macro cuts a page into n parts that can be pasted
+% together.
+
+\def\slicepages
+  {\dotripleempty\doslicepages}
+
+\def\doslicepages[#1][#2][#3]%
+  {\ifthirdargument
+     \dodoslicepages[#1][#2][#3]%
+   \else
+     \dodoslicepages[#1][#2][#2]%
+   \fi}
+
+\newcounter\slicedpagenumber
+
+\def\dodoslicepages[#1][#2][#3]%
+  {\bgroup
+   \dontcomplain
+   \globallet\slicedpagenumber\!!zerocount
+   \getfiguredimensions[#1]
+   \getparameters
+     [\??ip]
+     [\c!n=1,
+      \c!offset=\!!zeropoint,
+      \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
+      \c!width=\figurewidth,\c!height=\figureheight,#2]
+   \ifnum\@@ipn>\zerocount
+     \definepapersize
+       [\s!dummy][\c!height=\@@ipheight,\c!width=\@@ipwidth]
+     \setuppapersize
+       [\s!dummy][\s!dummy]
+     \setuplayout
+       [\c!backspace=\!!zeropoint,\c!topspace=\!!zeropoint,
+        \c!height=\v!middle,\c!width=\v!middle,
+        \c!textdistance=\!!zeropoint,
+        \c!header=\!!zeropoint,\c!footer=\!!zeropoint]
+   \fi
+   \dorecurse\noffigurepages
+     {\global\let\slicedpagenumber\recurselevel
+      \ifnum\@@ipn>\plusone
+        \dorecurse\@@ipn
+          {\let\xslice\recurselevel
+           \dorecurse\@@ipn
+             {\let\yslice\recurselevel
+              \clip
+                [\c!nx=\@@ipn,\c!ny=\@@ipn,\c!x=\xslice,\c!y=\yslice]
+                {\scale
+                   [\c!scale=\@@ipn000]
+                   {\externalfigure[#1][\c!page=\slicedpagenumber]}}
+              \page}}
+      \else
+        \ifodd\slicedpagenumber\relax
+          \getparameters[\??ip][#2]
+        \else
+          \getparameters[\??ip][#3]
+        \fi
+        \hskip\@@ipoffset
+        \clip
+          [\c!hoffset=\@@iphoffset,\c!voffset=\@@ipvoffset,
+           \c!height=\@@ipheight,\c!width=\@@ipwidth]
+          {\externalfigure[#1][\c!page=\slicedpagenumber]}
+        \page
+      \fi}
+   \egroup}
+
+% \starttext \slicepages[slice1.pdf][n=3] \stoptext
+
+\protect \endinput

@@ -297,7 +297,6 @@
   {\def\nextoptionalcommandyes{#1}%
    \def\nextoptionalcommandnop{#2}%
    \futurelet\nexttoken\inspectnextoptionalcharacter}
-
 \def\inspectnextoptionalcharacter
   {\ifx\nexttoken\blankspace
      \@EA\reinspectnextoptionalcharacter
@@ -317,7 +316,6 @@
   {\def\nextbgroupcommandyes{#1}%
    \def\nextbgroupcommandnop{#2}%
    \futurelet\nexttoken\inspectnextbgroupcharacter}
-
 \def\inspectnextbgroupcharacter
   {\ifx\nexttoken\blankspace
      \@EA\reinspectnextbgroupcharacter
@@ -329,6 +327,37 @@
      \@EA\nextbgroupcommandyes
    \else
      \@EA\nextbgroupcommandnop
+   \fi}
+
+\let\nextparenthesischaractertoken(
+
+\long\def\doifnextparenthesiselse#1#2%
+  {\def\nextparenthesiscommandyes{#1}%
+   \def\nextparenthesiscommandnop{#2}%
+   \futurelet\nexttoken\inspectnextparenthesischaracter}
+\def\inspectnextparenthesischaracter
+  {\ifx\nexttoken\blankspace
+     \@EA\reinspectnextparenthesischaracter
+   \else
+     \@EA\inspectnextparenthesischaracterindeed
+   \fi}
+\def\inspectnextparenthesischaracterindeed
+  {\ifx\nexttoken\nextparenthesischaractertoken
+     \@EA\nextparenthesiscommandyes
+   \else
+     \@EA\nextparenthesiscommandnop
+   \fi}
+
+%D The next one is handy in predictable situations:
+
+\def\doiffastoptionalcheckelse
+  {\futurelet\nexttoken\dodoiffastoptionalcheckelse}
+
+\def\dodoiffastoptionalcheckelse
+  {\ifx\nexttoken\nextoptionalcharactertoken
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
    \fi}
 
 %D This macro uses some auxiliary macros. Although we were able
@@ -1499,14 +1528,14 @@
      \expandafter\rawprocesscommaitem
    \fi#2}
 
-\def\rawprocesscommalist[#1]#2% accepteert ook [\cs]
+\unexpanded\def\rawprocesscommalist[#1]#2% accepteert ook [\cs]
   {\global\advance\commalevel \plusone
    \expandafter\let\csname\s!next\the\commalevel\endcsname#2%
    \expandafter\rawprocesscommaitem#1,],% \relax
    \global\advance\commalevel \minusone }
 
 \def\rawprocesscommacommand[#1]% not really needed
-  {\expanded{\rawprocesscommalist[#1]}}
+  {\normalexpanded{\rawprocesscommalist[#1]}}
 
 % \def\rawdoifinsetelse#1#2{\doifinstringelse{,#1,}{,#2,}}
 % \def\rawdoifinset    #1#2{\doifinstring    {,#1,}{,#2,}}
@@ -2020,13 +2049,13 @@
      \expandafter\quitcommalist
    \fi}
 
-\def\getfromcommalist[#1]#2[#3]%
+\unexpanded\def\getfromcommalist[#1]#2[#3]%
   {\let\commalistelement\empty
    \commalistcounter#3\relax
    \processcommalist[#1]\p!dogetfromcommalist}
 
-\def\getfromcommacommand[#1]%
-  {\expanded{\getfromcommalist[#1]}}
+\unexpanded\def\getfromcommacommand[#1]%
+  {\normalexpanded{\getfromcommalist[#1]}}
 
 %D Watertight (and efficient) solutions are hard to find, due
 %D to the handling of braces during parameters passing and
@@ -3013,10 +3042,10 @@
   {\catcode`.=0 .catcode`.\ 12 .xdef.letterbackslash{.string\}} % hack
 \fi
 
-\def\strippedcsname#1% this permits \strippedcsname{\xxx} and \strippedcsname{xxx}
-  {\expandafter\dostrippedcsname\string#1}
+\def\checkedstrippedcsname#1% this permits \strippedcsname{\xxx} and \strippedcsname{xxx}
+  {\expandafter\docheckedstrippedcsname\string#1}
 
-\def\dostrippedcsname#1%
+\def\docheckedstrippedcsname#1%
   {\if\noexpand#1\letterbackslash\else#1\fi}
 
 %D \macros
@@ -3032,7 +3061,7 @@
 %D \macros
 %D   {newconditional,
 %D    settrue, setfalse,
-%D    ifconditional}
+%D    ifconditional,then}
 %D
 %D \TEX's lacks boolean variables, although the \PLAIN\ format
 %D implements \type{\newif}. The main disadvantage of this
@@ -3074,8 +3103,10 @@
 \def\settrue #1{\let#1\zerocount}
 \def\setfalse#1{\let#1\plusone}
 
-\let\newconditional = \setfalse
-\let\ifconditional  = \ifcase
+\let\newconditional\setfalse
+\let\ifconditional \ifcase
+
+\let\then\relax % so that we can say: \ifnum1>2\then -)
 
 %D \macros
 %D   {ifzeropt}
@@ -3164,7 +3195,7 @@
      \else
        \let\nextrecurse\exitstepwiserecurse
      \fi
-   \fi\expanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
+   \fi\normalexpanded{\noexpand\nextrecurse{\number#1}{\number#2}{\number#3}}}
 
 \long\def\dodostepwiserecurse#1#2#3% from to step
   {\ifnum#1>#2\relax
@@ -3393,7 +3424,7 @@
      \else
        \let\nextrecurse\exitstepwiserecurse
      \fi
-   \fi\expanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
+   \fi\normalexpanded{\noexpand\nextrecurse{\number#1}{\number#2}{\number#3}}}
 
 \long\def\doloop#1%
   {\global\advance\outerrecurse \plusone
@@ -3635,25 +3666,6 @@
 %D \starttyping
 %D \doifassignmentelse {...} {then ...} {else ...}
 %D \stoptyping
-
-% \def\doifassignmentelse#1%
-%   {\convertargument#1\to\ascii
-%    \doifinstringelse=\ascii}
-
-% \def\doifassignmentelse#1%
-%   {\edef\ascii{\detokenize{#1}}%
-%    \ifx\ascii\empty
-%      \expandafter\secondoftwoarguments
-%    \else
-%      \expandafter\docheckifassignmentelse
-%    \fi}
-
-% \long\def\dodoifassignmentelse
-%   {\expandafter\dododoifnotassignmentelse\ascii=@@\@end@
-%      \expandafter\secondoftwoarguments
-%    \else
-%      \expandafter\firstoftwoarguments
-%    \fi}
 
 \long\def\docheckifassignmentelse#1=#2#3\@end@{\if#2@}%
 
@@ -4347,7 +4359,7 @@
      #4{#1}%
    \else\ifnum#1<\zerocount
      \bgroup\scratchcounter#1%
-     \expanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#4{-#2#3}}%
+     \normalexpanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#4{-#2#3}}%
    \else\ifx#2+%
      \dorecurse{#1}{#4{#3}}%
    \else
@@ -4494,6 +4506,8 @@
   {\@@scratchtoks#1\relax
    \dodoglobal#1\emptytoks
    \the\@@scratchtoks\relax}
+
+% better: \def\flushtoks#1{\normalexpanded{\noexpand\dodoglobal#1\emptytoks\the#\relax}}
 
 \let\dotoks\the
 
@@ -6864,5 +6878,10 @@
 % \appendtovaluelist{mylist}{mies}
 
 % \showvalue{mylist}
+
+%D A variant for \type {\executeifdefined}:
+
+\def\expandcheckedcsname#1#2#3%
+  {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
 
 \protect \endinput

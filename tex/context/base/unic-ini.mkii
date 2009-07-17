@@ -533,7 +533,7 @@
 \def\douseunicodevector#1%
   {\ifundefined{\@@univector#1}%
    % \readsysfile{\f!unicprefix\threedigits{#1}}
-     \readsysfile{\f!unicprefix\doifnumberelse{#1}{\threedigits{#1}}{#1}}
+     \readsysfile{\f!unicprefix\doifnumberelse{#1}{\threedigits{#1}}{#1}.mkii}
        {\writestatus{unicode}{loading vector #1}}
        {\writestatus{unicode}{unknown vector #1}}%
    \fi}
@@ -761,8 +761,8 @@
 
 %D Goodies:
 
-\fetchruntimecommand \showunicodevector {\f!unicprefix\s!run}
-\fetchruntimecommand \showunicodetable  {\f!unicprefix\s!run}
+\fetchruntimecommand \showunicodevector {\f!unicprefix\s!run.mkii}
+\fetchruntimecommand \showunicodetable  {\f!unicprefix\s!run.mkii}
 
 %D Well, let's at least preload a few familiar ones. Here we
 %D also load the \UTF\ regime.

@@ -150,7 +150,7 @@
      {\letgvalue{\c!file\f!regimeprefix#1}\empty
       \makeshortfilename[\truefilename{\f!regimeprefix#1}]%
       \startreadingfile
-        \readsysfile\shortfilename
+        \readsysfile{\shortfilename.mkii}
           {\showmessage\m!regimes2{#1}}
           {\showmessage\m!regimes3{#1}}%
       \stopreadingfile}}
@@ -198,6 +198,24 @@
    \fi\else
      \catcode#1=#2\relax
    \fi}
+
+%D Goodie:
+
+\def\showregime[#1]%
+  {\doifnot{#1}{utf}
+     {\bgroup
+      \enableregime[#1]%
+      \starttabulate[|l|l|l|]
+      \dostepwiserecurse{128}{255}{1}
+        {\expanded
+           {\scantokens
+              {\NC \recurselevel
+               \NC \rawcharacter\recurselevel
+               \NC \noexpand\tttf
+                   \noexpand\meaning\rawcharacter\recurselevel \NC \NR}}}%
+      \stoptabulate
+      \unskip
+      \egroup}}
 
 %D Sort related:
 

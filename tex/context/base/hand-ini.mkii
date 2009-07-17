@@ -16,22 +16,6 @@
 
 \unprotect
 
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
 \newif\iftracefonthandling % \tracefonthandlingtrue
 
 \newif\ifskiphandlingdef  \skiphandlingdeffalse
@@ -452,7 +436,7 @@
      {\letvalueempty{\c!file\f!handlingprefix#1}%
       \makeshortfilename[\truefilename{\f!handlingprefix#1}]%
       \startreadingfile
-        \readsysfile\shortfilename
+        \readsysfile{\shortfilename.mkii}
           {\showmessage\m!handlings2{#1}}
           {\showmessage\m!handlings3{#1}}%
       \stopreadingfile}}

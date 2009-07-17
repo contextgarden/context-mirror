@@ -27,64 +27,9 @@
 
 \newcounter\numberoflinks
 
-\def\stelkoppelingenin%
+\def\stelkoppelingenin
   {\dodoubleargument\getparameters[\??lk]}
 
-\def\definieerkoppeling[#1]%  % local loading !
-  {\doifundefined{\s!link:#1:\s!list}
-     {\expanded{\definetwopasslist{\s!link:#1}}%
-      \expanded{\doloadtwopassdata{\s!link:#1}}%
-      \getfirsttwopassdata{\s!link:#1}%
-      \letgvalue{\s!link:#1:f}\twopassdata
-      \getlasttwopassdata{\s!link:#1}%
-      \letgvalue{\s!link:#1:l}\twopassdata
-      \letgvalue{\s!link:#1:s}\noftwopassitems
-      \gettwopassdata{\s!link:#1}%
-      \letgvalue{\s!link:#1:c}\twopassdata
-      \letgvalue{\s!link:#1:n}\twopassdata}}
-
-\def\koppeling[#1]#2%
-  {\bgroup
-   \definieerkoppeling[#1]%
-   \doglobal\increment\numberoflinks
-   \gettwopassdata{\s!link:#1}%
-   \edef\numberoflinks{0\getvalue{\s!link:#1:s}}%
-   \edef\firstlink    {0\getvalue{\s!link:#1:f}}%
-   \edef\lastlink     {0\getvalue{\s!link:#1:l}}%
-   \edef\currentlink  {0\getvalue{\s!link:#1:n}}%
-   \edef\prevlink     {0\getvalue{\s!link:#1:c}}%
-   \iftwopassdatafound
-     \edef\nextlink{0\twopassdata}%
-     \letgvalue{\s!link:#1:n}\nextlink
-     \letgvalue{\s!link:#1:c}\currentlink
-   \else
-     \edef\nextlink{0\getvalue{\s!link:#1:l}}%
-   \fi
-   \lazysavetwopassdata{\s!link:#1}{\numberoflinks}{\noexpand\realfolio}%
-   \ifnum\noflinks<\plustwo
-     \locationfalse
-   \fi
-   \iflocation
-     \hbox
-       {\setinteractionparameter\c!width\!!zeropoint
-        \dogotosomepage\??lk\gotobegincharacter\firstlink\hss
-        \ifnum\noflinks>\plustwo
-          \hskip\@@lkdistance
-          \dogotosomepage\??lk\gobackwardcharacter\prevlink\hss
-        \fi
-        \hskip\@@lkdistance
-        #2\relax
-        \hskip\@@lkdistance
-        \ifnum\noflinks>\plustwo
-          \dogotosomepage\??lk\goforwardcharacter\nextlink\hss
-          \hskip\@@lkdistance
-        \fi
-        \dogotosomepage\??lk\gotoendcharacter\lastlink}%
-   \else
-     \hbox{#2}%
-   \fi
-   \egroup}
-
 \def\definieerkoppeling[#1]%  % local loading !
   {\doifundefined{\s!link:#1:\s!list}
      {\expanded{\definetwopasslist{\s!link:#1}}%      \expanded{\doloadtwopassdata{\s!link:#1}}%
@@ -560,7 +505,7 @@
          \fi}}%
    \ifskippedmenuitem\else\box\locationbox\fi}
 
-\def\setlocationboxnop#1[#2]#3[#4]%
+\def\setlocationboxnop#1[#2]#3[#4]% inefficient as text can be outside box
   {\locationclickfalse
    \setbox\locationbox\hbox
      {\resetgoto % anders cyclische aanroep !
@@ -1932,7 +1877,6 @@
 %
 % \starttext \attachment[whatever] \stoptext
 
-\definesystemvariable{at}
 
 \def\useattachment
   {\doquadrupleempty\douseattachment}
@@ -2027,6 +1971,144 @@
 
 \def\registermenubuttons
   {\dodoubleempty\doregistermenubuttons}
+
+% It took quite a while to figure this out (using the preliminary 1.5
+% spec). There are still a lot of things to be implemented. This is
+% the third alternative.
+
+% todo: multiple instances, dus indirect
+
+\let\currentrendering\empty
+
+\definereference[StartCurrentRendering] [\v!StartRendering {\currentrendering}]
+\definereference[StopCurrentRendering]  [\v!StopRendering  {\currentrendering}]
+\definereference[PauseCurrentRendering] [\v!PauseRendering {\currentrendering}]
+\definereference[ResumeCurrentRendering][\v!ResumeRendering{\currentrendering}]
+
+\newcounter\nofexternalrenderings
+
+\def\useexternalrendering{\doquadrupleempty\douseexternalrendering}
+\def\setinternalrendering{\dodoubleempty   \dosetinternalrendering}
+
+\def\douseexternalrendering[#1][#2][#3][#4]% tag mime file options
+  {\setgvalue{\??rd:#1}{\plusone{#1}{#2}{#3}{#4}}}
+
+\def\dosetinternalrendering[#1][#2]% tag options {content}
+  {\bgroup
+   \dowithnextbox
+     {\setgvalue{\??rd:#1}{\plustwo{#1}{IRO}{#1}{#2}}%
+      \let\objectoffset\zeropoint
+      \setobject{IRO}{#1}\hbox{\box\nextbox}%
+      \egroup}%
+     \hbox}
+
+\def\checkrendering#1% let's hope that \next is not used
+  {\iflocation
+    \doifsomething{#1}%
+      {\doifdefined{\??rd:#1}%
+         {\expanded{\getvalue{\??rd::\number\renderingtype{#1}}%
+            {\filterfromvalue{\??rd:#1}52}{\filterfromvalue{\??rd:#1}53}%
+            {\filterfromvalue{\??rd:#1}54}{\filterfromvalue{\??rd:#1}55}}}}%
+   \fi}
+
+\setvalue{\??rd::1}{\doinsertrendering}
+\setvalue{\??rd::2}{\doinsertrenderingobject}
+
+\def\renderingtype   #1{\filterfromvalue{\??rd:#1}51}
+\def\renderingoptions#1{\filterfromvalue{\??rd:#1}55}
+
+\setexecutecommandcheck {startrendering}  \checkrendering
+\setexecutecommandcheck {stoprendering}   \checkrendering
+\setexecutecommandcheck {pauserendering}  \checkrendering
+\setexecutecommandcheck {resumerendering} \checkrendering
+
+% by using a nice trick (used in other places of context as well) we
+% can easily overload the default size to match the opbject size
+
+\def\renderingwidth {8cm}
+\def\renderingheight{6cm}
+
+\def\definerenderingwindow
+  {\dodoubleempty\dodefinerenderingwindow}
+
+\def\dodefinerenderingwindow[#1][#2]%
+  {\presetlocalframed[\??rw#1]%
+   \getparameters%
+     [\??rw#1]%
+     [\c!openpageaction=,\c!closepageaction=,%
+      \c!width=\renderingwidth,\c!height=\renderingheight,%
+      #2]}
+
+\def\setuprenderingwindow
+  {\dodoubleargument\dosetuprenderingwindow}
+
+\def\dosetuprenderingwindow[#1]%
+  {\getparameters[\??rw#1]}
+
+\def\placerenderingwindow
+  {\dodoubleempty\doplacerenderingwindow}
+
+\def\doplacerenderingwindow[#1][#2]%
+  {\bgroup
+   \edef\currentrendering{\ifsecondargument#2\else#1\fi}%
+   \ifcase\renderingtype\currentrendering\or
+     % a file
+   \or
+     % an object
+     \getobjectdimensions{IRO}\currentrendering
+     \scratchdimen\objectheight
+     \advance\scratchdimen\objectdepth
+     \edef\renderingheight{\the\scratchdimen}%
+     \edef\renderingwidth{\objectwidth}%
+   \fi
+   % create fall back if needed
+   \doifdefinedelse{\??rw#1\c!width}
+     {\def\currentrenderingwindow{#1}}
+     {\let\currentrenderingwindow\s!default
+      \definerenderingwindow[\currentrenderingwindow]}%
+   \checkrendering\currentrendering
+   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!openpageaction }}\dosetuprenderingopenpageaction
+   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!closepageaction}}\dosetuprenderingclosepageaction
+   \localframed
+     [\??rw\currentrenderingwindow][\c!offset=\v!overlay]%
+     {\expanded{\doinsertrenderingwindow
+        \noexpand\currentrendering\hsize\vsize{\renderingoptions\currentrendering}}}%
+   \egroup}
+
+% todo:
+%
+% \setinternalrendering[example-1][options]{}
+
+% test file:
+%
+% \definerenderingwindow
+%   [example]
+%   [width=320pt,height=150pt,frame=off,
+%    background=color,backgroundcolor=gray,
+%    openpageaction=StartCurrentRendering,
+%    closepageaction=NextPage]% StopCurrentRendering]
+%
+% \useexternalrendering[example-1][audio/mpeg]                   [eldorado.mp3]
+% \useexternalrendering[example-2][audio/mpeg]                   [myst-12.mp3]
+% \useexternalrendering[example-3][application/x-shockwave-flash][http://localhost/mb.swf] [auto]
+% \useexternalrendering[example-4][application/x-shockwave-flash][celebration.swf]
+% \useexternalrendering[example-5][video/quicktime]              [p1000726.mov]
+% \useexternalrendering[example-6][application/smil]             [quadratic_map.smi]
+%
+% \def\renderingmenu[#1]%
+%   {\hbox
+%      {\setupbuttons[width=2.5em]%
+%       \button{\symbol[StartRendering]} [StartRendering{#1}]\enspace
+%       \button{\symbol[StopRendering]}  [StopRendering{#1}]\enspace
+%       \button{\symbol[PauseRendering]} [PauseRendering{#1}]\enspace
+%       \button{\symbol[ResumeRendering]}[ResumeRendering{#1}]}}
+%
+% \renderingmenu[example-1]\blank
+% \renderingmenu[example-2]\blank
+% \renderingmenu[example-3]\blank
+% \renderingmenu[example-4] \placefigure{A ShockWave}{\placerenderingwindow[example][example-4]} \page
+% \renderingmenu[example-5] \placefigure{A Movie}{\placerenderingwindow[example][example-5]} \page
+% \renderingmenu[example-6] \placefigure{A Smile}{\placerenderingwindow[example][example-6]}
 
 \stelkoppelingenin
   [\c!distance=.25em,

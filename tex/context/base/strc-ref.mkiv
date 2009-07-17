@@ -14,6 +14,7 @@
 \writestatus{loading}{ConTeXt Structure Macros / Cross Referencing}
 
 \registerctxluafile{strc-ref}{1.001}
+\registerctxluafile{node-ref}{1.001}
 
 \unprotect
 
@@ -91,21 +92,16 @@
 %D full reference, but it's the concept that counts. The low
 %D level implementation is:
 
-\newcount\crossreferencenumber
+\newcount\lastreferenceattribute
+\newcount\lastdestinationattribute
 
-\def\dofinishfullreference#1#2%
-  {\normalexpanded{\noexpand\ctxlatelua{jobreferences.enhance("#1","#2")}}%
-   \referenceinfo>{#1\letterbar#2}}
+\def\dofinishfullreference#1#2{\normalexpanded{\ctxlatelua{jobreferences.enhance("#1","#2")}}}
+\def\dofinishtextreference#1#2{\normalexpanded{\ctxlatelua{jobreferences.enhance("#1","#2",{})}}}
 
 \let\dofinishpagereference\dofinishfullreference
 
-\def\dofinishtextreference#1#2%
-  {\normalexpanded{\noexpand\ctxlatelua{jobreferences.enhance("#1","#2",{})}}%
-   \referenceinfo>{#1\letterbar#2}}
-
 \def\dosetreference#1#2#3% kind labels text -> todo: userdata
   {\ifreferencing
-     \global\advance\crossreferencenumber\plusone
      \edef\currentreferencekind{#1}%
      \edef\currentreferencelabels{#2}%
      \edef\currentreferenceexpansion{\@@rfexpansion}% {\referenceparameter\c!expansion}
@@ -123,34 +119,29 @@
          \fi
          \globallet\currentreferencecoding\s!tex
        \fi
-       \setnextinternalreference
-       \ctxlua {
-            jobreferences.set("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
-                {
-                    references = {
-                        internal = \nextinternalreference,
-                        block    = "\currentstructureblock",
-                        section  = structure.sections.currentid(),
-                    },
-                    metadata = {
-                        kind     = "#1",
-                        catcodes = \the\catcodetable,
-                        xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
-                    },
-                    entries = {
-                        text = \!!bs\currentreferencetext\!!es
-                    }
-                })
-            jobreferences.setinternalreference("\referenceprefix","\currentreferencelabels",\nextinternalreference)
-         }%
+       % beware, the jobreferences.set writes a
+       % \setnextinternalreference
+       \ctxlua{jobreferences.setandgetattribute("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
+            {
+                references = {
+                %   internal = \nextinternalreference, % no need for an internal as we have an explicit
+                    block    = "\currentstructureblock",
+                    section  = structure.sections.currentid(),
+                },
+                metadata = {
+                    kind     = "#1",
+                    catcodes = \the\catcodetable,
+                    xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
+                },
+                entries = {
+                    text = \!!bs\currentreferencetext\!!es
+                }
+            })
+       }%
+       \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+       \begingroup\dosetattribute{destination}\currentdestinationattribute\hbox{}\endgroup % todo
      \fi
    \fi}
-
-%D For compatibility we provide:
-
-\def\rawreference    #1#2#3{\dosetreference\s!full{#2}{#3}} % tag, labels, text
-\def\rawpagereference  #1#2{\dosetreference\s!page{#2}{}}   % tag, labels
-\def\rawtextreference#1#2#3{\dosetreference\s!text{#2}{#3}} % tag, labels, text
 
 \def\defaultreferencepage#1{[[[#1]]]}
 \def\defaultreferencetext#1{[[[#1]]]}
@@ -200,7 +191,7 @@
 %D \NC               \NC $\star$              \NC         \NC\NR
 %D \stoptabulate
 
-\def\usereferences[#1]%
+\def\usereferences[#1]% not yet
   {\writestatus\m!systems{references from other files are handled automatically}}
 
 %D As mentioned we will also use the cross reference mechanism
@@ -233,19 +224,12 @@
 \let\currentsubtextreference   \empty
 \let\currentsubsubtextreference\empty
 
-%D System references only have one component:
+\newcount\referencepagestate   % set in backend
+\newcount\referencehastexstate % set in backend
 
-\newif\ifforwardreference
-\newif\ifrealreferencepage
-
-\def\docheckrealreferencepage#1% todo
-  {\doifnumberelse{#1}
-     {\ifnum#1=\realpageno
-        \realreferencepagetrue
-      \else
-        \realreferencepagefalse
-      \fi}
-     {\realreferencepagefalse}}
+% referencepagestate:
+%
+% 0 = no page ref, 1=same page, 2=before, 3=after
 
 %D Text references can contain more than one entry and
 %D therefore we check for
@@ -261,11 +245,6 @@
 %D \stoptyping
 %D
 %D and split accordingly.
-
-% todo:
-
-\def\doifforwardreferenceelse#1#2% todo
-  {\iffalse}
 
 %D Cross references appear as numbers (figure~1.1, chapter~2)
 %D or pagenumbers (page~2, page 3--2), and are called with
@@ -302,19 +281,12 @@
 
 \newif\ifreferencefound
 
-\let\currentfullreference     \empty
-\let\currentreferencespecial  \empty
-\let\currentreferenceoperation\empty
-\let\currentreferencearguments\empty
-\let\currentouterreference    \empty
-\let\currentinnerreference    \empty
-
-\def\setreferencevariables#1#2#3#4#5%
- {\def\currentreferencespecial  {#1}%
-  \def\currentreferenceoperation{#2}%
-  \def\currentreferencearguments{#3}%
-  \def\currentouterreference    {#4}%
-  \def\currentinnerreference    {#5}}
+% \let\currentfullreference     \empty
+% \let\currentreferencespecial  \empty
+% \let\currentreferenceoperation\empty
+% \let\currentreferencearguments\empty
+% \let\currentouterreference    \empty
+% \let\currentinnerreference    \empty
 
 %D Now we've come to the testing step. As we can see below,
 %D this macro does bit more than testing: it also resolves
@@ -364,7 +336,7 @@
 %D
 %D \starttyping
 %D \definereference[startup][JS(My_Script{"test",123}),titlepage]
-%D \goto{do}[REF(startup)]
+%D \goto{do}[startup]
 %D \stoptyping
 %D
 %D Now is this is a handy feature or not?
@@ -395,22 +367,41 @@
 %D Actually supporting chains is up to the special driver. Here
 %D we only provide the hooks.
 
-\newif   \ifsecondaryreference
-\newcount\nofsecondaryreferences
+%D \macros
+%D   {highlighthyperlinks}
+%D
+%D The next switch can be used to make user hyperlinks are
+%D not highlighted when clicked on.
 
-% the counter stuff should move to the (mkiv) backend
+\newconditional\highlighthyperlinks \settrue\highlighthyperlinks
 
-\def\doifreferencefoundelse#1%
-  {\ctxlua{jobreferences.doifelse("\referenceprefix","#1")}}
+%D \macros
+%D   {gotonewwindow}
+%D
+%D To make the {\em goto previous jump} feature more
+%D convenient when using more than one file, it makes sense
+%D to force the viewer to open a new window for each file
+%D opened.
 
-\def\doprocessreferenceelse#1#2#3%
-  {\doresetgotowhereever
-   \nofsecondaryreferences\zerocount
-   \def\primaryreferencefoundaction  {\secondaryreferencefalse#2}%
-   \def\secondaryreferencefoundaction{\advance\nofsecondaryreferences\plusone\secondaryreferencetrue#2}%
-   \def\referenceunknownaction       {#3}%
-   \ctxlua{jobreferences.handle("\referenceprefix","#1")}%
-   \doresetgotowhereever} % to prevent problems with direct goto's
+\newconditional\gotonewwindow \setfalse\gotonewwindow
+
+\def\expandtexincurrentreference % will happen in lua some time
+  {\ifcase\referencehastexstate\else\ctxlua{jobreferences.expandcurrent()}\fi}
+
+\def\doifreferencefoundelse#1#2#3%
+  {\ctxlua{jobreferences.doifelse("\referenceprefix","#1",\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
+     {\expandtexincurrentreference#2}%
+     {#3}}
+
+%D The tester only splits the reference in components but does
+%D not look into them. The following macro does a preroll and
+%D determines for instance the current real reference pagenumber.
+%D The \type {\currentrealreference} macro does the same so unless
+%D one wants to use the pagestate the next macro seldom needs to
+%D be called.
+
+\def\analyzecurrentreference
+  {\ctxlua{jobreferences.analyse()}}
 
 %D The inner case is simple. Only two cases have to be taken
 %D care of:
@@ -453,37 +444,6 @@
 %D being defined, we set such an unknown reference to an empty
 %D one after the first encounter.
 
-%D Sometimes we want to temporary put a reference out of
-%D order. An example can be found in the menu macros.
-%D
-%D \starttyping
-%D \doifreferencepermittedelse{reference}{set}{true}{false}
-%D \stoptyping
-%D
-%D The second argument can be a comma seperated list.
-
-\let\permittedreferences\empty
-
-        \def\doifreferencepermittedelse#1#2#3% ref found notfound
-          {\doprocessreferenceelse{#1}
-             {\donetrue
-              \ifx\permittedreferences\empty \else
-                \docheckifreferencepermitted{#1}%
-              \fi
-              \ifdone#2\else#3\fi}
-             {#3\unknownreference{#1}}}
-
-        \def\docheckifreferencepermitted#1%
-          {\ifx\currentinnerreference\empty
-             \ifx\currentouterreference\empty \else
-               \doifinstring{\currentouterreference::}\permittedreferences\donefalse
-             \fi
-           \else\ifx\currentouterreference\empty
-             \doifinstring{\currentinnerreference}\permittedreferences\donefalse
-           \else
-             \doifinstring{\currentouterreference::\currentinnerreference}\permittedreferences\donefalse
-           \fi\fi}
-
 %D Apart from cross references supplied by the user, \CONTEXT\
 %D generates cross references itself. Most of them are not
 %D saved as a reference, but stored with their source, for
@@ -521,102 +481,8 @@
 %D the special driver modules (see \type{spec-ini}). The flag
 %D \type{\iflocation} signals if we're in interactive mode.
 
-\def\thisisdestination#1% destination
-  {\iflocation \ifusepagedestinations \else
-     \dostartthisislocation{#1}\dostopthisislocation
-   \fi \fi}
-
-\def\thisisrealpage#1% pagenumber
-  {\iflocation
-     \dostartthisisrealpage{#1}\dostopthisisrealpage
-   \fi}
-
-%D The previous tho macros were easy ones, opposite to their
-%D counterparts. A common component in these is:
-%D
-%D \starttyping
-%D \dohandlegoto{..}{..}{..}
-%D \stoptyping
-%D
-%D Here data can be whatever needs highlighting, e.g. {\em
-%D figure 2.4}, and the start and stop entries handle the
-%D specials. The two \DIMENSIONS\ \type{\buttonwidth} and
-%D \type{\buttonheight} have to be set when handling the
-%D data~(\type{#2}).
-
 \ifx\buttonheight\undefined \newdimen\buttonheight \fi
 \ifx\buttonwidth \undefined \newdimen\buttonwidth  \fi
-
-\def\gotodestination#1#2#3#4#5% url file destination page data
-  {\iflocation
-     \ifusepagedestinations
-       \gotorealpage{#1}{#2}{\number#4}{#5}%
-     \else
-       \dohandlegoto
-         {#5}%
-         {\the\everyreference\dostartgotolocation\buttonwidth\buttonheight{#1}{#2}{#3}{\number#4}}%
-         {\dostopgotolocation}%
-     \fi
-   \else
-     {#5}%
-   \fi}
-
-\def\gotorealpage#1#2#3#4% url file page data
-  {\iflocation
-     \dohandlegoto
-       {#4}%
-       {\dostartgotorealpage\buttonwidth\buttonheight{#1}{#2}{\number#3}}%
-       {\dostopgotorealpage}%
-   \else
-     {#4}%
-   \fi}
-
-\def\gotoinnerpage#1#2% page data
-  {\iflocation
-     \dohandlegoto
-       {#2}%
-       {\dostartgotorealpage\buttonwidth\buttonheight\empty\empty{\number#1}}%
-       {\dostopgotorealpage}%
-   \else
-     {#2}%
-   \fi}
-
-\def\gotoouterfilepage#1#2#3% file page data
-  {\iflocation
-     \dohandlegoto
-       {#3}%
-       {\dostartgotorealpage\buttonwidth\buttonheight\empty{#1}{\number#2}}%
-       {\dostopgotorealpage}%
-   \else
-     {#3}%
-   \fi}
-
-%D \macros
-%D   {setreferencefilename}
-%D
-%D This command can be used in the special drivers to
-%D uppercase filenames. This is needed when one wants to
-%D produce \CDROM's conforming to ISO9660. We consider is the
-%D savest to enable this feature by default. We cannot handle
-%D uppercase here, since the suffix is handled in the special
-%D driver. Conversion is taken care of by:
-%D
-%D \starttyping
-%D \setreferencefilename somefilename\to\SomeFileName
-%D \stoptyping
-
-\chardef\referencefilecase=0
-
-        \def\setreferencefilename#1\to#2%
-          {\ifcase\referencefilecase
-             \edef#2{#1}%
-           \or
-             \uppercasestring#1\to#2%
-           \or
-             \lowercasestring#1\to#2%
-           \else
-             \edef#2{#1}%
-           \fi}
 
 %D Internal references can best be set using the next few
 %D macros. Setting such references to unique values is
@@ -627,30 +493,9 @@
 %D \gotosomeinternal  {tag}{identifier}{pagenumber}{text}
 %D \stoptyping
 
-\def\thisissomeinternal#1#2%  tag reference
-  {\doifsomething{#2}{\thisisdestination{#1:#2}}}
-
-\def\gotosomeinternal#1#2% #3#4
-  {\gotodestination\empty\empty{#1:#2}}
-
-%D An automatic mechanism is provided too:
-%D
-%D \starttyping
-%D \thisisnextinternal{tag}
-%D \gotonextinternal  {tag}{number}{pagenumber}{text}
-%D \stoptyping
-%D
-%D The first macro increments a counter. The value of this
-%D counter is available in the macro \type{\nextinternalreference}
-%D and should be saved somewhere (for instance in a file) for
-%D future reference. The second argument of
-%D \type {\gotonextinternal} takes such a saved number. One can
-%D turn on tracing these references, in which case the
-%D references are a bit more verbose.
-
+\newif   \iflocation
 \newcount\locationcount
-
-\newif\ifinternalnamedreferences \internalnamedreferencestrue
+\newbox  \locationbox
 
 \def\nextinternalreference
   {\the\locationcount}
@@ -658,120 +503,18 @@
 \def\setnextinternalreference
   {\global\advance\locationcount\plusone}
 
-\def\thisisnextinternal#1% #1 will be removed when we are done with mkiv
-  {\ifinternalnamedreferences
-     \thisisdestination{\s!aut:\nextinternalreference}%
-   \fi}
+\def\thisissomeinternal#1#2%  tag reference (only for old time sake)
+  {\begingroup\dosetattribute{destination}{\ctxlua{jobreferences.mark("#1:#2")}}\hbox{}\endgroup}
 
-\def\insertnextinternal#1%
+\def\gotosomeinternal#1#2#3#4%
   {\ifinternalnamedreferences
-     \thisisdestination{\s!aut:\number#1}%
-   \fi}
-
-\def\gotonextinternal#1#2#3#4% #1 will be removed when we are done with mkiv
-  {\ifinternalnamedreferences
-     \gotodestination\empty\empty{\s!aut:#2}{#3}{#4}%
+     \directgoto{#4}[#1:#2]%
    \else
-     \gotorealpage\empty\empty{#3}{#4}%
+     \directgoto{#4}[page(#3)]%
    \fi}
 
-%D We already went through a lot of problems to sort out what
-%D kind of reference we're dealing with. Sorting out the user
-%D supplied cross references (show/goto this or that) as well
-%D as user supplied system references (invoke this or that) is
-%D already taken care of in the test routine, but we still have
-%D to direct the request to the right (first) routine.
-
-\def\gotolocation#1#2{\doprocessreferenceelse{#1}{#2}{\unknownreference{#1}}} % obsolete
-
-%D An inner reference refers to some place in the document
-%D itself.
-
-        \def\gotoinnerlocation#1% #2%
-          {\gotodestination\empty\empty{\referenceprefix\currentinnerreference}\currentrealreference} % {#2}
-
-\def\gotoinner#1#2#3% prefix inner page data
-  {\gotodestination\empty\empty{#1#2}{#3}} % {#4}
-
-%D The outer location refers to another document, specified as
-%D file or \URL.
-
-        \def\gotoouterlocation#1#2% % page checken!
-          {\bgroup
-           \let\referenceprefix\empty
-           \setouterlocation\currentouterreference
-           \ifx\currentinnerreference\empty
-             \gotorealpage\otherURL\otherfile1{#2}%
-           \else
-             \gotodestination\otherURL\otherfile\currentinnerreference\currentrealreference{#2}%
-           \fi
-           \egroup}
-
-\def\gotoouterfile#1#2% file location page data #3 #4
-  {\doifelsenothing{#2}{\gotorealpage\empty{#1}}{\gotodestination\empty{#1}{#2}}}
-
-\def\gotoouterfilepage#1% file page data
-  {\gotorealpage\empty{#1}\empty}
-
-\def\gotoouterfilelocation% file location page data
-  {\gotodestination\empty}
-
-\def\gotoouterurl#1#2% url args data #2
-  {\gotodestination{#1}\empty{#2}1}
-
-%D Special locations are those that are accessed by saying
-%D things like:
-%D
-%D \starttyping
-%D \goto{calculate total}[JS(summarize{10,23,56}]
-%D \stoptyping
-%D
-%D After several intermediate steps this finally arrives at
-%D the next macro and expands into (simplified):
-%D
-%D \starttyping
-%D \gotoJSlocation{total{summarize{10,23,56}}}{calculate total}
-%D \stoptyping
-%D
-%D The first argument is the full reference, the second one
-%D is the text, in some kind of manipulated form. In practice
-%D we split references, so we get:
-%D
-%D \starttyping
-%D \gotoJSlocation{summarize{10,23,56}}{calculate}
-%D \gotoJSlocation{summarize{10,23,56}}{total}
-%D \stoptyping
-%D
-%D where \type{calculate} and \type{total} are colored, boxed
-%D or whatever \type{\goto} is told to do.
-%D
-%D The macro \type{\gotoJSlocation} can use \type
-%D {\currentreferenceoperation} (in our example
-%D \type{summarize}) and \type{\currentreference} (here
-%D being \type {10,23,56}) to perform its task.
-
-        \def\gotospeciallocation
-          {\executeifdefined{goto\currentreferencespecial location}\gobbleoneargument}
-
-%D Such special macros can be defined by:
-
-        \def\definespeciallocation#1%
-          {\setvalue{goto#1location}}
-
-%D The associated test is to be defined by:
-
-\def\definespecialtest#1%
-  {\setvalue{\s!do:\v!test:#1}}
-
-%D This \type{\def} alike macro is to be used as:
-%D
-%D \starttyping
-%D \definespeciallocation{JS}#1#2{... #1 ... #2 ...}
-%D \stoptyping
-%D
-%D In module \type {java-ini} one can see that \type
-%D {\gotoJSlocation} looks much like the previous goto
-%D definitions.
+\def\gotonextinternal#1#2%
+  {\directgoto{#1}[internal(#2)]}
 
 %D In this module we define three system references: one for
 %D handling navigational, viewer specific, commands, another
@@ -795,40 +538,6 @@
 % compatibility hack
 
 \def\setglobalsystemreference#1#2#3{\definereference[#2][\v!action(#3)]}
-
-% action actions
-
-\def\gotoactionspecial#1#2#3#4% special operation arguments data
-  {\begingroup
-   \iflocation
-     \dohandlegoto
-       {#4}%
-       {\dostartexecutecommand\buttonwidth\buttonheight{#2}{#3}}%
-       {\dostopexecutecommand}%
-   \else
-     #4%
-   \fi
-   \endgroup}
-
-\def\gotopagespecial#1#2#3#4% page(n) page(+n) page(-n) page(file::1)
-  {\begingroup
-   \iflocation
-     \doifnonzeropositiveelse{#2}
-       {\doifinstringelse+{#2}
-          {\edef\currenttargetpage{\the\numexpr\realpageno#2}}
-          {\doifinstringelse-{#2}
-             {\edef\currenttargetpage{\the\numexpr\realpageno#2}}
-             {\edef\currenttargetpage{#2}}}}%
-       {\edef\currenttargetpage{1}}%
-     \docheckrealreferencepage\currenttargetpage % new
-     \gotorealpage\empty\empty\currenttargetpage{#4}%
-   \else
-     #4%
-   \fi
-   \endgroup}
-
-%D It is possible to disable the writing of references to the
-%D utility file by setting:
 
 \newif\ifreferencing \referencingtrue
 
@@ -902,33 +611,6 @@
      \edef\referenceprefix{\@@rfprefix:}%
    \fi\fi\fi\fi}
 
-%D \macros
-%D   {handlereferenceactions,
-%D    collectreferenceactions}
-%D
-%D Sometimes we need to pass the actions connected to
-%D references to variables instead of rectangular areas on
-%D which one can click. The next macro collects the actions
-%D and passes them to a handle. This is a rather dreadfull
-%D hack!
-%D
-%D \starttyping
-%D \handlereferenceactions{references}\handle
-%D \stoptyping
-%D
-%D So, \type {\handle} does the final job, which in for
-%D instance the \PDF\ drivers comes down to doing something
-%D with \type {\lastPDFaction}.
-
-\newif\ifcollectreferenceactions
-
-\def\handlereferenceactions#1#2%
-  {\doifsomething{#1}
-     {\bgroup
-      \collectreferenceactionstrue
-      \doprocessreferenceelse{#1}{#2}{\unknownreference{#1}}%
-      \egroup}}
-
 %D The most straightforward way of retrieving references is
 %D using \type{\ref}. Consider the reference:
 %D
@@ -957,20 +639,23 @@
 %D \startlines
 %D \getbuffer
 %D \stoplines
+%D
+%D This is a cheap compatibility hack. Don't use this command
+%D as there will be more advanced access to user data.
 
 \def\ref{\dodoubleargument\doref}
 
-\def\reftypep{\currentpagereference}
-\def\reftypet{\currenttextreference}
-\def\reftyper{\currentrealreference}
-\def\reftypes{\currentsubtextreference}
-\def\reftypee{\currentsubsubtextreference}
+\def\reftypep{\currentreferencepage}
+\def\reftypet{\currentreferencetext}
+\def\reftyper{\currentreferencepage}
+\def\reftypes{\currentreferencetext}
+\def\reftypee{\currentreferencetext}
 
 \def\doref[#1][#2]%
   {\ifsecondargument
-%      \doifreferencefoundelse{#2}
-%        {\executeifdefined{reftype#1}\reftypep}
-%        {\unknownreference{#2}\dummyreference}%
+     \doifreferencefoundelse{#2}
+       {\executeifdefined{reftype#1}\reftypep}
+       {\unknownreference{#2}\dummyreference}%
    \else
      \dummyreference
    \fi}
@@ -1025,9 +710,10 @@
 \definecommand from  {\dospecialfrom}
 \definecommand over  {\dospecialabout} % needed here, else math problems
 
-\def\currentreferencenumber{\ctxlua{jobreferences.filter("number")}}
-\def\currentreferencepage  {\ctxlua{jobreferences.filter("page")}}
-\def\currentreferencetitle {\ctxlua{jobreferences.filter("title")}}
+\def\currentreferencenumber  {\ctxlua{jobreferences.filter("number")}}
+\def\currentreferencepage    {\ctxlua{jobreferences.filter("page")}}
+\def\currentreferencetitle   {\ctxlua{jobreferences.filter("title")}}
+\def\currentreferencerealpage{\ctxlua{jobreferences.realpage()}} % there will eb a few more
 
 \unexpanded\def\dospecialin{\doinatreference\currentreferencenumber}
 \unexpanded\def\dospecialat{\doinatreference\currentreferencepage}
@@ -1039,18 +725,14 @@
   {\def\dododoinatreference{\dodododoinatreference{#1}}%
    \futurelet\next\dododoinatreference}
 
-\unexpanded\def\dospecialabout[#1]%
+\unexpanded\def\dospecialabout[#1]% hm, does this work?
   {\dontleavehmode
    \bgroup
+   \let\crlf\space
+   \let\\\space
    \@@rfleft
-   \doprocessreferenceelse{#1}
-     {\let\crlf\space
-      \let\\\space
-      \let\dogotofixed\dogotospace
-      \dogotospace{\limitatetext\currentreferencetitle\@@rfwidth\unknown}[#1]}
-     {\unknownreference{#1}\dummyreference}%
+   \goto{\limitatetext\currentreferencetitle\@@rfwidth\unknown}[#1]%
    \@@rfright
-   \referenceinfo{<}{#1}%
    \egroup}
 
 %D We arrived at the last step. Before we do the typesetting,
@@ -1065,31 +747,44 @@
 %D $^\gobackwardcharacter$ $^\gonowherecharacter$}, depending
 %D on the direction to go.
 
-        \def\dosymbolreference#1#2[#3]% todo
-          {\bgroup
-           \setupsymbolset[\@@iasymbolset]%
-           \removelastskip
-           \ifx\currentreferencespecial\empty
-             \ifx\currentouterreference\empty
-               \ifnum0\currentrealreference=\zerocount
-                 \ifhmode\strut\high{\symbol[\v!nowhere]}\fi
-               \else\ifnum0\currentrealreference>\realpageno
-                 \dodosymbolreference{#2}{\high{\symbol[\v!next]}}%
-               \else\ifnum0\currentrealreference<\realpageno
-                 \dodosymbolreference{#2}{\high{\symbol[\v!previous]}}%
-               \else
-                 \ifhmode\strut\high{\symbol[\v!nowhere]}\fi
-               \fi\fi\fi
-             \else
-               \gotoouterlocation{#3}{\showlocation{\high{\symbol[\v!somewhere]}}}%
-             \fi
-           \else
-             \gotospeciallocation{#3}{\showlocation{\high{\symbol[\v!somewhere]}}}%
-           \fi
-        \egroup}
+% 1 = whatever
+% 2 = forward, following page
+% 3 = backward, preceding page
+% 4 = forward, same page
+% 5 = backward, same page
 
-        \def\dodosymbolreference#1#2% todo
-          {#1\hbox{\gotorealpage\empty\empty\currentrealreference{\dolocationattributes\??ia\c!style\c!color{#2}}}}
+% Yet untested:
+
+\unexpanded\def\somewhere#1#2#3[#4]% #3 gobbles space around #2 % todo
+  {\goto{\ifcase\referencepagestate#1/#2\or#2\or#1\or#2\fi}[#4]}
+
+\unexpanded\def\atpage[#1]% todo
+  {\goto{\ifcase\referencepagestate
+     \labeltexts\v!page\dummyreference
+   \or
+     \labeltexts\v!atpage\currentreferencepage
+   \or
+     \labeltexts\v!atpage\currentreferencepage
+   \or
+     \labeltexts\v!atpage\currentreferencepage
+   \or
+     \labeltext\v!hereafter
+   \or
+     \labeltext\v!hencefore
+   \fi}[#1]}
+
+\def\dosymbolreference#1#2[#3]%
+  {\removeunwantedspaces
+   \goto{\setupsymbolset[\@@iasymbolset]\high{\symbol
+     [\ifcase\referencepagestate
+        \v!somewhere
+      \or % same
+        \v!nowhere
+      \or % before
+        \v!previous
+      \or % after
+        \v!next%
+      \fi]}}[#3]}
 
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.
@@ -1098,19 +793,18 @@
   {\unknownreference{#3}\dotextprefix{#2}\dummyreference}%
 
 \def\docompletereference#1#2[#3]%
-  {\iflocationsplit
-     \doifsomespaceelse{#2}\dogotospace\dogotofixed{\dotextprefix{#2}#1}[#3]%
-   \else
-     \dogotofixed{\dotextprefix{#2}#1}[#3]%
-   \fi}
+  {\goto{\dotextprefix{#2}#1}[#3]}
+
+% \def\dolabelonlyreference#1#2[#3]%
+%   {\doifsomespaceelse{#2}% space?
+%      {\doifsomething{#2}{\goto{#2}[#3]}}
+%      {\goto{\dotextprefix{#2}}[#3]}}
 
 \def\dolabelonlyreference#1#2[#3]%
-  {\doifsomespaceelse{#2}
-     {\doifsomething{#2}{\dogotospace{#2}[#3]}}
-     {\dogotofixed{\dotextprefix{#2}}[#3]}}
+  {\goto{\dotextprefix{#2}}[#3]}
 
 \def\dotextonlyreference#1#2[#3]%
-  {\dotextprefix{#2}\dogotofixed{#1}[#3]}
+  {\dotextprefix{#2}\goto{#1}[#3]}
 
 \let\dowantedreference\docompletereference
 
@@ -1158,8 +852,7 @@
    \fi}
 
 \def\noexecutelabelreferenceformat#1%
-  {\doifvaluesomething{\??rf#1\c!text}
-     {\gdef\textofreference{\csname\??rf#1\c!text\endcsname}}%
+  {\doifvaluesomething{\??rf#1\c!text}{\gdef\textofreference{\csname\??rf#1\c!text\endcsname}}%
    \csname\??rf#1\c!command\endcsname}
 
 \def\doexecutelabelreferenceformat#1%
@@ -1171,8 +864,7 @@
   {\gdef\leftofreference {\csname\??rf#1\c!left \endcsname}%
    \gdef\rightofreference{\csname\??rf#1\c!right\endcsname}%
    \global\let\textofreference\empty % otherwise ~ added
-   \doifelsevaluenothing{\??rf#1\c!label}
-     \noexecutelabelreferenceformat\doexecutelabelreferenceformat{#1}}
+   \doifelsevaluenothing{\??rf#1\c!label}\noexecutelabelreferenceformat\doexecutelabelreferenceformat{#1}}
 
 \let\leftofreference \relax
 \let\rightofreference\relax
@@ -1192,12 +884,10 @@
 \def\dododododoinatreference#1#2[#3]%
   {\dontleavehmode   % replaces \leaveoutervmode
    \begingroup
-   \forgetall
    \postponenotes
    \doifreferencefoundelse{#3}
      {\doifelsenothing{#1}\dosymbolreference\dowantedreference{#1}{#2}[#3]}%
      {\dounknownreference{#1}{#2}[#3]}%
-   \referenceinfo<{#3}%
    \endgroup}
 
 %D In interactive documents going to a specific location is not
@@ -1211,85 +901,127 @@
 %D
 %D \showsetup{goto}
 %D
-%D One important chaacteristic is that the first argument of
+%D One important characteristic is that the first argument of
 %D \type{\goto} (and therefore \type{\at} and \type{\in} is
 %D split at spaces. This means that, although hyphenation is
 %D prevented, long references can cross line endings.
 
-\newif\ifsharesimilarreferences \sharesimilarreferencestrue
-\newcount\similarreference % 0=noppes 1=create/refer 2,3,..=refer
+\newconditional\uselocationstrut \settrue\uselocationstrut
 
-\unexpanded\def\goto#1#2%
-  {\dogoto{#1}#2}
+\def\extrareferencearguments{\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow,"\currentviewerlayer"}
+
+\unexpanded\def\directgoto    {\ifconditional\uselocationstrut\expandafter\dodirectgoto\else\expandafter\directgotohtdp\fi}
+\unexpanded\def\goto          {\ifconditional\uselocationstrut\expandafter\dogoto      \else\expandafter\gotohtdp      \fi}
+
+\def\dodirectgoto#1[#2]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \iflocation
+     \ctxlua{jobreferences.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+     \setlocationattributes\??ia
+     \setstrut % can be option
+     \attribute\referenceattribute\lastreferenceattribute
+   \fi
+   #1%
+   \endgroup}
+
+\def\dodirectgotohtdp#1[#2]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \iflocation
+     \ctxlua{jobreferences.inject("\referenceprefix","#2",\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax,\extrareferencearguments)}%
+     \setlocationattributes\??ia
+     \attribute\referenceattribute\lastreferenceattribute
+   \fi
+   #1%
+   \endgroup}
 
 \def\dogoto#1[#2]%
   {\dontleavehmode
-   \bgroup
-   \postponenotes
-   % todo: handle empty #1
-   \doifelsenothing{#1}{\dosymbolreference{}{}}{\dogotospace{#1}}[#2]%
-   \egroup
-   \referenceinfo{<}{#2}}
-
-% inefficient, we need to save the shared one (just reuse last command in lua)
-
-\def\dogotoprocessisolatedword#1#2%
-  {\ifisolatedwords\ifsharesimilarreferences
-     \global\advance\similarreference \plusone
-   \fi\fi
-   \hbox\bgroup
-     \doprocessreferenceelse{#1}{#2\presetgoto}{\unknownreference{#1}#2\relax}%
-   \egroup}%
-
-\def\dogotospace#1[#2]%
-  {\iflocationsplit
-     \ifsecondaryreference\setbox\scratchbox\hbox\fi % due to space insertion
-       \bgroup
-         \let\dogotospace\dogotofixed
-         \iflocation
-           \dosetfontattribute \??ia\c!style
-           \dosetcolorattribute\??ia\c!color
-           \processisolatedwords{#1}{\dogotoprocessisolatedword{#2}}%
-         \else
-           #1\relax % \relax prevents #1's next macros from gobbling \fi
-         \fi
-       \egroup
-   \else
-     \iflocation
-       \hbox\bgroup
-         \dosetfontattribute \??ia\c!style
-         \dosetcolorattribute\??ia\c!color
-         \doprocessreferenceelse{#2}{#1\presetgoto}{\unknownreference{#2}#1\relax}%
-       \egroup%
-     \else
-       #1\relax % \relax prevents #1's next macros from gobbling \fi
-     \fi
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \iflocation
+     \ctxlua{jobreferences.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
+       {\expandtexincurrentreference
+        \ctxlua{jobreferences.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
+        \setlocationattributes\??ia
+        \setstrut % can be option
+        \attribute\referenceattribute\lastreferenceattribute}%
+       {\unknownreference{#2}}%
    \fi
-   \global\similarreference\zerocount}
+   #1%
+   \endgroup}
 
-\def\dogotofixed#1[#2]%
-  {{\iflocation
-      \hbox\bgroup
-        \dosetfontattribute \??ia\c!style
-        \dosetcolorattribute\??ia\c!color
-        \doprocessreferenceelse{#2}{#1\presetgoto}{\unknownreference{#2}#1\relax}%
-      \egroup
-    \else
-      #1%
-    \fi}}
-
-%D In case the auto split feature is not needed or even not
-%D even wanted, \type{\gotobox} can be used.
-
-\unexpanded\def\gotobox#1[#2]%
+\def\dogotohtdp#1[#2]%
   {\dontleavehmode
-   \bgroup
-   \locationstrutfalse
-   \doprocessreferenceelse{#2}
-     {\dogotofixed{#1}[#2]}
-     {\hbox{\unknownreference{#2}#1}}%
-   \referenceinfo{<}{#2}%
-   \egroup}
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \iflocation
+     \ctxlua{jobreferences.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
+       {\expandtexincurrentreference
+        \ctxlua{jobreferences.injectcurrentset(\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax)}%
+        \setlocationattributes\??ia
+        \attribute\referenceattribute\lastreferenceattribute}%
+       {\unknownreference{#2}}%
+   \fi
+   #1%
+   \endgroup}
+
+\unexpanded\def\directgotobox#1[#2]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \iflocation
+     \ctxlua{jobreferences.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
+     \setlocationattributes\??ia
+     \hbox attr \referenceattribute \lastreferenceattribute {#1}%
+   \else
+     #1%
+   \fi
+   \endgroup}
+
+\unexpanded\def\directgotospecbox#1#2[#3]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \iflocation
+     \ctxlua{jobreferences.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
+     \setlocationcolorspec{#1}% no consequence for strut
+     \hbox attr \referenceattribute \lastreferenceattribute {#2}%
+   \else
+     #2%
+   \fi
+   \endgroup}
+
+\unexpanded\def\directgotodumbbox#1[#2]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \iflocation
+     \ctxlua{jobreferences.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
+     \hbox attr \referenceattribute \lastreferenceattribute {#1}%
+   \else
+     #1%
+   \fi
+   \endgroup}
+
+\unexpanded\def\gotobox#1[#2]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \iflocation
+     \ctxlua{jobreferences.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
+       {\expandtexincurrentreference
+        \ctxlua{jobreferences.injectcurrentset(nil,nil)}%
+        \setlocationattributes\??ia
+        \hbox attr \referenceattribute \lastreferenceattribute {#1}}%
+       {\unknownreference{#2}}%
+   \else
+     #1%
+   \fi
+   \endgroup}
 
 %D An reference to another document can be specified as a file
 %D or as an \URL. Both are handled by the same mechanism and
@@ -1351,9 +1083,6 @@
 
 \def\dousefile[#1][#2][#3]%
   {\ctxlua{jobreferences.files.define("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
-
-% \doifsomething\@@urstyle{\let\@@iastyle\@@urstyle\let\@@urstyle\empty}%
-% \doifsomething\@@urcolor{\let\@@iacolor\@@urcolor\let\@@urcolor\empty}%
 
 %D \macros
 %D   {url,setupurl}
@@ -1439,12 +1168,6 @@
 %D \goto{some text}[identifier::location]
 %D \stoptyping
 
-\def\gotofilespecial#1#2#3#4% special operation arguments data
-  {\begingroup\iflocation\gotoouterfile{#2}{#3}{#4}\else#4\fi\endgroup}
-
-\def\gotourlspecial#1#2#3#4% special operation arguments data
-  {\begingroup\iflocation\gotoouterurl{#2}{#3}{#4}\else#4\fi\endgroup}
-
 %D A special case of references are those to programs. These,
 %D very system dependant references are implemented by abusing
 %D some of the previous macros.
@@ -1473,20 +1196,6 @@
    \dosetfontattribute\??pr\c!style
    \dosetcolorattribute\??pr\c!color
    \ctxlua{jobreferences.programs.get("#1","\@@pralternative","\@@prspace")}%
-   \endgroup}
-
-% needs an update: program(abc{arg})
-
-\def\gotoprogramspecial#1#2#3#4% special operation arguments data
-  {\begingroup
-   \iflocation
-     \dohandlegoto
-       {#4}%
-       {\dostartrunprogram\buttonwidth\buttonheight{\@@prdirectory#2}{#3}}%
-       {\dostoprunprogram}%
-   \else
-     #4%
-   \fi
    \endgroup}
 
 %D As we can see, we directly use the special reference
@@ -1544,40 +1253,12 @@
 %D
 %D In future versions there will be more sophisticated
 
-%D support, also suitable for references to floating bodies.
-
-\def\analysedreference#1%
-  {\ctxlua{jobreferences.analysis("\referenceprefix","#1")}}
-
-\unexpanded\def\somewhere#1#2#3[#4]% #3 gobbles space around #2 % todo
-  {\dontleavehmode
-   \ifcase\analysedreference{#4}\relax
-     \unknownreference{#4}#1/#2%
-   \or
-     \doifelsenothing{#2}{\dosymbolreference{}{}[#4]}{\dogotospace{#2}[#4]}%
-   \or % forward
-     \doifelsenothing{#1}{\dosymbolreference{}{}[#4]}{\dogotospace{#1}[#4]}%
-   \or % backward
-     \doifelsenothing{#2}{\dosymbolreference{}{}[#4]}{\dogotospace{#2}[#4]}%
-   \fi
-   \referenceinfo{<}{#4}}
-
-\unexpanded\def\atpage[#1]% todo
-  {\dontleavehmode
-% \docheckrealreferencepage{}%
-%    \doifreferencefoundelse{#1}
-%      {\ifrealreferencepage
-%         \ifforwardreference
-%           \dogotofixed{\labeltext\v!hencefore}[#1]%
-%         \else
-%           \dogotofixed{\labeltext\v!hereafter}[#1]%
-%         \fi
-%       \else
-%         \dogotofixed{\labeltexts\v!atpage\currentpagereference}[#1]%
-%       \fi}
-%      {\unknownreference{#1}%
-%       \labeltexts\v!page\dummyreference}%
-   \referenceinfo{<}{#1}}
+% 0 = no page reference
+% 1 = same page
+% 2 = preceding page
+% 3 = following page
+% 4 = backward, same page (todo)
+% 5 = forward, same page  (todo)
 
 %D We can cross link documents by using:
 %D
@@ -1653,7 +1334,6 @@
   {\begingroup
    \doifvalue{#1\c!state}\v!stop\locationfalse
    \iflocation
-     \resetgoto
      \ConvertConstantAfter\doifelse{#3}\v!none\hphantom\hbox
        {\doifelsenothing{#4}
           {\setlocationboxnop#1[#2]{#3}[#4]}
@@ -1663,6 +1343,9 @@
               \setlocationboxnop#1[#2]{#3}[#4]}}}%
    \fi
    \endgroup}
+
+\setupbuttons
+  [\c!state=\v!start]
 
 %D Interaction buttons, in fact a row of tiny buttons, are
 %D typically only used for navigational purposed. The next
@@ -1722,7 +1405,7 @@
            \divide\!!widtha \!!counta
            \!!widthb\@@ibwidth
          \fi
-         \def\goto##1% clash ?
+         \def\xgoto##1% clash ?
            {\setnostrut
             \edef\localreference{##1}%
             \normalexpanded{\noexpand\dodocomplexbutton\??ib[\c!height=\the\!!heighta,\c!width=\the\!!widtha]}%
@@ -1732,15 +1415,15 @@
          \hbox to \!!widthb
            {\processallactionsinset
               [#2]
-              [      \v!page=>\goto\v!firstpage
-                              \goto\v!nextpage
-                              \goto\v!previouspage
-                              \goto\v!lastpage,
-                  \v!subpage=>\goto\v!firstsubpage
-                              \goto\v!nextsubpage
-                              \goto\v!previoussubpage
-                              \goto\v!lastsubpage,
-                  \s!unknown=>\goto\commalistelement]%
+              [      \v!page=>\xgoto\v!firstpage
+                              \xgoto\v!nextpage
+                              \xgoto\v!previouspage
+                              \xgoto\v!lastpage,
+                  \v!subpage=>\xgoto\v!firstsubpage
+                              \xgoto\v!nextsubpage
+                              \xgoto\v!previoussubpage
+                              \xgoto\v!lastsubpage,
+                  \s!unknown=>\xgoto\commalistelement]%
             \unskip}%
        \else
          \interactionbuttons[][#1]%
@@ -1777,17 +1460,14 @@
 
 \def\complexoverlaybutton[#1]%
   {\iflocation
-     \doprocessreferenceelse{#1}
-       {\overlayfakebox  {#1}}
-       {\unknownreference{#1}}%
+     \gotobox{\overlayfakebox}[#1]%
    \fi}
 
-\def\overlayfakebox#1%
+\def\overlayfakebox
   {\hbox
      {\setbox\scratchbox\null
       \wd\scratchbox\overlaywidth
       \ht\scratchbox\overlayheight
-      \locationstrutfalse
       \box\scratchbox}}
 
 %D \macros
@@ -1804,11 +1484,10 @@
 
 \def\dotextprefix#1%
   {\begingroup
-   \global\labeltextdonefalse  % this is an ugly dependancy,
    \setbox\scratchbox\hbox{#1}% to be solved some day
    \ifdim\wd\scratchbox>\zeropoint
      \unhbox\scratchbox
-     \iflabeltextdone\else\@@rfseparator\fi
+     \@@rfseparator
    \else
      \unhbox\scratchbox
    \fi
@@ -1890,22 +1569,27 @@
 \definereference [\v!ShowThumbs       ] [action(thumbnails)]
 \definereference [\v!ShowBookmarks    ] [action(bookmarks)]
 
-\definereference [\v!firstpage]       [page(\firstpage)]
-\definereference [\v!previouspage]    [page(\prevpage)]
-\definereference [\v!nextpage]        [page(\nextpage)]
-\definereference [\v!lastpage]        [page(\lastpage)]
-\definereference [\v!firstsubpage]    [page(\firstsubpage)]
-\definereference [\v!previoussubpage] [page(\prevsubpage)]
-\definereference [\v!nextsubpage]     [page(\nextsubpage)]
-\definereference [\v!lastsubpage]     [page(\lastsubpage)]
-\definereference [\v!first]           [page(\firstpage)]
-\definereference [\v!previous]        [page(\prevpage)]
-\definereference [\v!next]            [page(\nextpage)]
-\definereference [\v!last]            [page(\lastpage)]
-\definereference [\v!first\v!sub]     [page(\firstsubpage)]
-\definereference [\v!previous\v!sub]  [page(\prevsubpage)]
-\definereference [\v!next\v!sub]      [page(\nextsubpage)]
-\definereference [\v!last\v!sub]      [page(\lastsubpage)]
+\definereference [\v!firstpage]       [page(firstpage)]
+\definereference [\v!previouspage]    [page(previouspage)]
+\definereference [\v!nextpage]        [page(nextpage)]
+\definereference [\v!lastpage]        [page(lastpage)]
+\definereference [\v!forward]         [page(forward)]
+\definereference [\v!backward]        [page(backward)]
+\definereference [\v!firstsubpage]    [page(firstsubpage)]
+\definereference [\v!previoussubpage] [page(previoussubpage)]
+\definereference [\v!nextsubpage]     [page(nextsubpage)]
+\definereference [\v!lastsubpage]     [page(lastsubpage)]
+
+% we can do this but only when later in resolve (else problems with \chapter[first]{...}
+%
+% \definereference [\v!first]           [page(firstpage)]
+% \definereference [\v!previous]        [page(prevpage)]
+% \definereference [\v!next]            [page(nextpage)]
+% \definereference [\v!last]            [page(lastpage)]
+% \definereference [\v!first\v!sub]     [page(firstsubpage)]
+% \definereference [\v!previous\v!sub]  [page(prevsubpage)]
+% \definereference [\v!next\v!sub]      [page(nextsubpage)]
+% \definereference [\v!last\v!sub]      [page(lastsubpage)]
 
 %D We cannot set up buttons (not yet, this one calls a menu macro):
 

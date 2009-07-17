@@ -93,13 +93,8 @@
         {\donodefinestructurecounter[#1][#2]}}}
 
 \def\dododefinestructurecounter[#1][#2]%
-  {\getparameters
-     [\??nn#1]
-     [\s!counter=,#2]% counter is for internal purposes
-   \ctxlua{structure.counters.define("#1",
-     tonumber("\structurecounterparameter{#1}\c!start") or 0,
-     tonumber("\structurecounterparameter{#1}\s!counter") or 0
-   )}%
+  {\getparameters[\??nn#1][\s!counter=,#2]% counter is for internal purposes
+   \ctxlua{structure.counters.define("#1",tonumber("\structurecounterparameter{#1}\c!start") or 0,"\structurecounterparameter{#1}\s!counter")}%
    \docheckstructurecountersetup{#1}}
 
 \def\donodefinestructurecounter[#1][#2]% inherit
@@ -223,6 +218,32 @@
        stopper       = \!!bs\structurecounterparameter{#1}\c!numberstopper\!!es,
        segments      = "\structurecounterparameter{#1}\c!numbersegments",
        type          = "\structurecounterparameter{#1}\c!type",
+     }
+   )}%
+   \endgroup}
+
+\def\directconvertedstructurecounter#1#2% name, type
+  {\begingroup
+   \ctxlua{structure.counters.prefixedconverted(
+     "\@@thestructurecounter{#1}",
+     {
+       prefix        = "\structurecounterparameter{#1}\c!prefix",
+       separatorset  = "\structurecounterparameter{#1}\c!prefixseparatorset",
+       conversion    = "\structurecounterparameter{#1}\c!prefixconversion",
+       conversionset = "\structurecounterparameter{#1}\c!prefixconversionset",
+       stopper       = \!!bs\structurecounterparameter{#1}\c!prefixstopper\!!es,
+       set           = "\structurecounterparameter{#1}\c!prefixset",
+       segments      = "\structurecounterparameter{#1}\c!prefixsegments",
+       connector     = \!!bs\structurecounterparameter{#1}\c!prefixconnector\!!es,
+     },
+     {
+       order         = "\structurecounterparameter{#1}\c!numberorder",
+       separatorset  = "\structurecounterparameter{#1}\c!numberseparatorset",
+       conversion    = \!!bs\structurecounterparameter{#1}\c!numberconversion\!!es,
+       conversionset = "\structurecounterparameter{#1}\c!numberconversionset",
+       stopper       = \!!bs\structurecounterparameter{#1}\c!numberstopper\!!es,
+       segments      = "\structurecounterparameter{#1}\c!numbersegments",
+       type          = "#2",
      }
    )}%
    \endgroup}
@@ -414,11 +435,11 @@
         userdata = structure.helpers.touserdata(\!!bs\detokenize{#9}\!!es)
        }
      }}%
-     \xdef\laststructurecountersynchronize % make this a macro because shared
-       {\noexpand\ctxlua{jobreferences.setinternalreference(nil,nil,\nextinternalreference)}%
-        \noexpand\ctxlatelua{structure.lists.enhance(\laststructurecounternumber)}}%
+     \xdef\laststructurecounterattribute  {\ctxlua    {tex.write(jobreferences.setinternalreference(nil,nil,\nextinternalreference))}}%
+     \xdef\laststructurecountersynchronize{\ctxlatelua{structure.lists.enhance(\laststructurecounternumber)}}%
    \else
      \glet\laststructurecounternumber     \relax
+     \glet\laststructurecounterattribute  \relax
      \glet\laststructurecountersynchronize\relax
    \fi
    \endgroup}

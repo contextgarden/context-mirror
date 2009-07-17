@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['strc-num'] = {
 
 local format = string.format
 local next, type = next, type
-local texsprint = tex.sprint
+local min, max = math.min, math.max
+local texsprint, texcount = tex.sprint, tex.count
 
 structure              = structure           or { }
 structure.helpers      = structure.helpers   or { }
@@ -71,15 +72,29 @@ local function constructor(t,s,name,i)
             return t.stop
         end
     elseif s == "first" then
-        if t.offset then
+        if t.start > 0 then
+            return t.start -- brrr
+        elseif t.offset then
             return t.start + t.step + 1
         else
             return t.start + 1
         end
     elseif s == "prev" or s == "previous" then
-        return math.max(t.first,t.number-1) -- todo: step
+        return max(t.first,t.number-1) -- todo: step
     elseif s == "next" then
-        return math.min(t.last,t.number+1) -- todo: step
+        return min(t.last,t.number+1) -- todo: step
+    elseif s == "backward" then
+        if t.number - 1 < t.first then
+            return t.last
+        else
+            return t.previous
+        end
+    elseif s == "forward" then
+        if t.number + 1 > t.last then
+            return t.first
+        else
+            return t.next
+        end
     elseif s == "subs" then
         local cc = collected[name]
         t.subs = (cc and cc[i+1] and cc[i+1][t.range]) or 0
@@ -134,6 +149,10 @@ local function allocate(name,i)
     return ci
 end
 
+function counters.record(name,i)
+    return allocate(name,i or 1)
+end
+
 local function savevalue(name,i)
     local cd = counterdata[name].data[i]
     local cs = tobesaved[name][i]
@@ -148,8 +167,8 @@ end
 function counters.define(name, start, counter) -- todo: step
     local d = allocate(name,1)
     d.start = start
-    if counter and counter > 0 then
-        d.counter = counter -- only for special purposes
+    if counter ~= "" then
+        d.counter = counter -- only for special purposes, cannot be false
     end
 end
 
@@ -248,7 +267,7 @@ function counters.reset(name,n)
             savevalue(name,i)
             d.number = d.start or 0
             d.own = nil
-        --  if d.counter then tex.count[d.counter] = d.number end
+            if d.counter then texcount[d.counter] = d.number end
         end
         cd.numbers = nil
     end
@@ -260,7 +279,7 @@ function counters.set(name,n,value)
         local d = allocate(name,n)
         d.number = value or 0
         d.own = nil
-    --  if d.counter then tex.count[d.counter] = d.number end
+        if d.counter then texcount[d.counter] = d.number end
     end
 end
 
@@ -270,7 +289,7 @@ local function check(name,data,start,stop)
         savevalue(name,i)
         d.number = d.start or 0
         d.own = nil
-    --  if d.counter then tex.count[d.counter] = d.number end
+        if d.counter then texcount[d.counter] = d.number end
     end
 end
 
@@ -283,6 +302,7 @@ function counters.setown(name,n,value)
         if cd.level and cd.level > 0 then -- 0 is signal that we reset manually
             check(name,data,n+1) -- where is check defined
         end
+        if d.counter then texcount[d.counter] = d.number end
     end
 end
 
@@ -322,6 +342,7 @@ function counters.add(name,n,delta)
         if cd.level and cd.level > 0 then -- 0 is signal that we reset manually
             check(name,data,n+1)
         end
+        if d.counter then texcount[d.counter] = d.number end
         return d.number
     end
     return 0

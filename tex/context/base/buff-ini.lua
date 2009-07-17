@@ -31,6 +31,10 @@ local ctxcatcodes = tex.ctxcatcodes
 
 local data, commands, flags, hooks, visualizers = buffers.data, buffers.commands, buffers.flags, buffers.hooks, buffers.visualizers
 
+function buffers.raw(name)
+    return data[name] or { }
+end
+
 function buffers.erase(name)
     data[name] = nil
 end
@@ -484,3 +488,48 @@ function buffers.flush_result(result,nested)
         texsprint(ctxcatcodes,concat(result,""))
     end
 end
+
+-- THIS WILL BECOME A FRAMEWORK: the problem with prety printing is that
+-- we deal with snippets and therefore we need tolerant parsing
+
+--~ local type = type
+
+--~ visualizers = visualizers or { }
+
+--~ local function fallback(s) return s end
+
+--~ function visualizers.visualize(visualizer,kind,pattern)
+--~     if type(visualizer) == "table" and type(kind) == "string" then
+--~         kind = visualizer[kind] or visualizer.default or fallback
+--~     else
+--~         kind = fallback
+--~     end
+--~     return (lpeg.C(pattern))/kind
+--~ end
+
+--~ local flusher = texio.write
+--~ local format = string.format
+
+--~ local visualizer = {
+--~     word    = function(s) return flusher(format("\\bold{%s}",s)) end,
+--~     number  = function(s) return flusher(format("\\slanted{%s}",s)) end,
+--~     default = function(s) return flusher(s) end,
+--~ }
+
+--~ local word   = lpeg.R("AZ","az")^1
+--~ local number = lpeg.R("09")^1
+--~ local any    = lpeg.P(1)
+
+--~ local pattern = lpeg.P { "start",
+--~     start = (
+--~         visualizers.visualize(visualizer,"word",word) +
+--~         visualizers.visualize(visualizer,"number",number) +
+--~         visualizers.visualize(visualizer,"default",any)
+--~     )^1
+--~ }
+
+--~ str = [[test 123 test $oeps$]]
+
+--~ pattern:match(str)
+
+

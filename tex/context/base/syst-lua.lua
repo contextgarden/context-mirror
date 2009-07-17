@@ -13,8 +13,6 @@ local ctxcatcodes = tex.ctxcatcodes
 
 commands = commands or { } cs = commands -- shorter
 
-ctx = ctx or { } -- special context namespace, code might move from there
-
 function commands.writestatus(a,b,c,...)
     if c then
         texiowrite_nl(format("%-16s: %s\n",a,format(b,c,...)))

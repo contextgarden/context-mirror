@@ -1,0 +1,326 @@
+%D \module
+%D   [       file=font-run,
+%D        version=1998.09.11, % (second)
+%D        version=2001.02.20, % (third)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Runtime Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D [This code is hooked into the core macros and saves some
+%D format space.]
+
+\unprotect
+
+\gdef\@@onlyenglish#1%
+  {\blank{\tttf \type {#1} is only available in the english interface}\blank}
+
+\gdef\dosetshowfonttitle#1%
+  {\tabskip\zeropoint
+   \parindent\zeropoint
+   \setlocalhsize
+   \doifelsenothing{#1}
+     {\def\title{[\the\bodyfontsize]}}
+     {\switchtobodyfont[#1]\def\title{[#1]}}
+   \doifsomething\fontclass
+     {\doifnot{[\fontclass]}\title
+        {\edef\title{[\fontclass]\space\title}}}}
+
+\gdef\showbodyfont
+  {\dosingleempty\doshowbodyfont}
+
+\gdef\doshowbodyfont[#1]%
+  {\ifinsidefloat\else\startbaselinecorrection\fi
+   \vbox
+     {\dosetshowfonttitle{#1}%
+      \def\bigstrut##1##2%
+        {\hbox{\vrule
+           \!!height##1\strutht
+           \!!depth ##2\strutdp
+           \!!width \zeropoint}}
+      \def\next##1##2##3%
+        {&&##1&&##2\tf##3&&##2\sc##3%
+         &&##2\sl##3&&##2\it##3&&##2\bf##3&&##2\bs##3&&##2\bi##3%
+         &&##2\tfx##3&&##2\tfxx##3%
+         &&##2\tfa##3&&##2\tfb##3&&##2\tfc##3&&##2\tfd##3&\cr}%
+      \halign to \localhsize
+        {\bigstrut{1.5}{2}##&\vrule##
+         \tabskip=\!!zeropoint \!!plus 1fill
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&##\vrule
+         \tabskip=\!!zeropoint\cr
+         \noalign{\hrule}
+         &\multispan{29}{\vrule\hfil\tttf\strut\title\hfil
+          \llap{\string\mr\hbox to 1em{\hss:\hss}$\mr \languageparameter\c!text$\quad}\vrule}\cr
+         \noalign{\hrule}\next{}{\tt\string}{}
+         \noalign{\hrule}\next{\tt\string\rm}\rm{\languageparameter\c!text}
+         \noalign{\hrule}\next{\tt\string\ss}\ss{\languageparameter\c!text}
+         \noalign{\hrule}\next{\tt\string\tt}\tt{\languageparameter\c!text}
+         \noalign{\hrule}}}
+   \ifinsidefloat\else\stopbaselinecorrection\fi}
+
+\gdef\showbodyfontenvironment
+  {\dosingleempty\doshowbodyfontenvironment}
+
+\gdef\doshowbodyfontenvironment[#1]%
+  {\ifinsidefloat\else\startbaselinecorrection\fi
+   \vbox
+     {\dosetshowfonttitle{#1}%
+      \def\next##1%
+        {&&\getvalue{\bodyfontvariable{##1\s!text}}%
+         &&\getvalue{\bodyfontvariable{##1\s!script}}%
+         &&\getvalue{\bodyfontvariable{##1\s!scriptscript}}%
+         &&\getvalue{\bodyfontvariable{##1\c!x}}%
+         &&\getvalue{\bodyfontvariable{##1\c!xx}}%
+         &&\getvalue{\bodyfontvariable{##1\interfaced\v!small}}%
+         &&\getvalue{\bodyfontvariable{##1\interfaced\v!big}}%
+         &&\edef\next{\getvalue{\bodyfontvariable{##1\c!interlinespace}}}\ifx\next\empty not set\else\next\fi&\cr
+         \noalign{\hrule}}
+      \halign to \localhsize
+        {##&\vrule##\strut
+         \tabskip=\!!zeropoint \!!plus 1fill
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&##\vrule
+         \tabskip\zeropoint\cr
+         \noalign{\hrule}
+         &\multispan{17}{\vrule\hfil\tttf\strut\title\hfil}\vrule\cr
+         \noalign{\hrule}
+         &&\tttf\tx\s!text&&\tttf\tx\s!script&&\tttf\tx\s!scriptscript
+         &&\tttf\tx\c!x&&\tttf\tx\c!xx&&\tttf\tx\v!small&&\tttf\tx\v!big
+         &&\tttf\tx\c!interlinespace&\cr
+         \noalign{\hrule}
+         \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\next}}
+   \ifinsidefloat\else\stopbaselinecorrection\fi}
+
+\gdef\showfont
+  {\dodoubleempty\doshowfont}
+
+\gdef\doshowfont[#1][#2]%
+  {\bgroup
+   \boxrulewidth=.1pt
+   \setupcolors[\c!state=\v!local]%
+   \iffirstargument
+     \definefont[\s!dummy][#1]\dummy
+   \else\ifdim2.5em>.05\hsize \tx
+        \ifdim2.5em>.05\hsize \txx
+   \fi\fi\fi
+   \ifinsidefloat\else\startbaselinecorrection\fi
+   \vbox\bgroup
+   \forgetall
+   \startoverlay
+     {\vbox
+        {\tf \setstrut \dummy
+         \offinterlineskip
+         \dostepwiserecurse{0}{15}{1}
+           {\let\row\recurselevel
+            \hbox
+              {\red
+               \dostepwiserecurse{0}{15}{1}
+                 {\let\col\recurselevel
+                  \@EA\scratchcounter\normaldblquote\hexnumber\row\hexnumber\col\relax
+                  \edef\rowcol{\the\scratchcounter}%
+                  \iffontchar\font\scratchcounter
+                    \setbox\scratchbox\ruledhbox{\black\char\scratchcounter}%
+                    \ifdim\wd\scratchbox>\zeropoint
+                      \donetrue \else \donefalse
+                    \fi
+                  \else
+                    \setbox\scratchbox\hbox{\gray\vrule\!!width1ex\!!height.5ex\!!depth.5ex}%
+                  \fi
+                  \startoverlay
+                    {\tf\vbox to 2.5em
+                       {\vss
+                        \hbox to 2.5em
+                          {\dummy\ifdim\interwordspace=\zeropoint
+                             \setbox\scratchbox\hbox
+                               {\raise.5\dp\scratchbox\hbox
+                                  {\lower.5\ht\scratchbox\copy\scratchbox}}%
+                             \ht\scratchbox\zeropoint
+                             \dp\scratchbox\zeropoint
+                           \else
+                             \ht\scratchbox\strutht
+                             \dp\scratchbox\strutdp
+                             \strut
+                           \fi
+                           \hss\copy\scratchbox\hss}
+                        \vss}}
+                    {\tf\vbox to 2.3em
+                       {\ifdone
+                          \hsize2.4em
+                          \blue
+                          \edef\theshowfontspecs
+                            {\ifnum\hyphenchar\font=\rowcol hyph\else
+                             \ifnum\skewchar  \font=\rowcol skew\fi\fi}%
+                          \tinyfont % after \edef, else wrong font analyzed
+                          \doifnot\v!unknown{#2}{{\red\theshowfontspecs}}\hfill\number\rowcol
+                          \vfill
+                          \octnumber\rowcol\hfill\lchexnumbers\rowcol
+                          \par
+                        \fi}}
+                  \stopoverlay}}}
+          \par}}
+     {\tf\basegrid[\c!nx=16,\c!ny=16,\c!dx=2.5,\c!dy=2.5,\c!unit=em]}
+   \stopoverlay
+   \nointerlineskip
+   \vskip2pt
+   % the \noexpand before \blank is needed for non etex
+   \edef\ascii{name: {\noexpand\black\fontname\font}}
+   \def\do##1##2{\ifx##1\undefined\else\ifx##1\empty\else##2\fi\fi}%
+   \doifelse\v!unknown{#2}
+     {\edef\theshowfontspecs
+        {name: {\noexpand\black\fontname\font}}}
+     {\edef\theshowfontspecs
+        {name: {\noexpand\black\fontname\font}\noexpand\quad
+         \do\currentencoding{encoding: {\noexpand\black\currentencoding\noexpand\quad}}%
+         \do\currentmapping {mapping:  {\noexpand\black\currentmapping \noexpand\quad}}%
+         \do\fonthandling   {handling: {\noexpand\black\fonthandling                 }}}}%
+   \tf % also sets em
+   \hbox to 40em{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
+   \egroup
+   \ifinsidefloat\else\stopbaselinecorrection\fi
+   \egroup}
+
+\gdef\showfontstyle
+  {\dotripleempty\doshowfontstyle}
+
+\gdef\doshowfontstyle[#1][#2][#3]%
+  {\ifthirdargument
+     \bgroup
+     \raggedright
+     \switchtobodyfont[#1]
+     \def\dodocommand##1##2%
+       {\starttextrule{\tttf #1 ##1 ##2}
+        \nobreak \getvalue{##2}%
+        \dorecurse{255}
+          {\iffontchar\font\recurselevel\relax
+             \char\recurselevel\relax\space
+           \fi}
+        \par \nobreak
+        \stoptextrule}
+     \def\docommand##1%
+       {\getvalue{##1}\processcommacommand[#3]{\dodocommand{##1}}}
+     \processcommalist[#2]\docommand
+     \egroup
+   \else\ifsecondargument
+     \showfontstyle[#1][#2][\fontalternativelist]% math is gone
+   \else
+     \showfontstyle[#1][\c!rm]\showfontstyle[#1][\c!ss]
+     \showfontstyle[#1][\c!tt]\showfontstyle[#1][\c!mm]
+   \fi\fi}
+
+\gdef\showligature#1%
+  {\hbox{\type{#1}\enspace\red\ruledhbox{\black#1}}}
+
+\gdef\showligatures[#1]%
+  {\ifx\starttabulate\undefined
+     \@@onlyenglish\showligatures
+   \else
+     \bgroup
+     \setupcolors[\c!state=\v!local]%
+     \def\show##1{\hbox{\red\ruledhbox{\black##1}}}%
+     \definefont[\s!dummy][#1]\dummy
+     \starttabulate[|*{9}{c|}]
+     \NC\type{ff}\NC\type{fi}\NC\type{fl}\NC\type{ffi}\NC\type{ffl}\NC
+        \type{``}\NC\type{''}\NC\type{--}\NC\type{---}\NC\NR
+     \NC\show{ff}\NC\show{fi}\NC\show{fl}\NC\show{ffi}\NC\show{ffl}\NC
+        \show{``}\NC\show{''}\NC\show{--}\NC\show{---}\NC\NR
+     \stoptabulate
+     \egroup
+   \fi}
+
+\gdef\showfontstrip
+  {\dosingleempty\doshowfontstrip}
+
+\gdef\doshowfontstrip[#1]%
+  {\ifx\starttabulate\undefined
+     \@@onlyenglish\showfontstrip
+   \else
+     \bgroup
+     \def\dofontstripa##1##2%
+       {\tttf\string##1}
+     \def\dofontstripb##1##2%
+       {\ruledhbox{\switchtobodyfont[#1]##1{##2}}}
+     \def\dofontstripc##1##2%
+       {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
+        \tt\tfx\the\ht\scratchbox}%
+     \def\dofontstripd##1##2%
+       {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
+        \tt\tfx\the\wd\scratchbox}%
+     \def\fontstrip##1##2##3%
+       {\NC##2\rm{##3}\NC
+           ##2\ss{##3}\NC
+           ##2\tt{##3}\NC
+           ##2\mathematics{##3}\NC
+           \tttf##1\NR}
+     \starttabulate[|c|c|c|c|c|]
+       \fontstrip\relax\dofontstripa\empty
+       \TB
+       \fontstrip\relax\dofontstripb{xxxx}
+       \fontstrip\relax\dofontstripb{12345}
+       \fontstrip\relax\dofontstripb{(Agw)}
+       \TB
+       \fontstrip{(x height)}\dofontstripc{x}
+       \fontstrip{(m  width)}\dofontstripd{m}
+     \stoptabulate
+     \egroup
+   \fi}
+
+\ifx\databox\undefined \newbox\databox \fi
+
+\gdef\testminimalbaseline#1%
+  {\setbox\databox\ruledhbox{#1}%
+   \scratchdimen\ht\databox
+   \advance\scratchdimen\dp\databox
+   \scratchtoks{#1}%
+   \expanded
+     {\NC \ruledhbox{\the\scratchtoks}
+      \noexpand \NC ->
+      \noexpand \NC \the\scratchdimen
+      \noexpand \NC =
+      \noexpand \NC \the\ht\databox
+      \noexpand \NC +
+      \noexpand \NC \the\dp\databox
+      \noexpand \NC \ifdim\scratchdimen<\baselineskip <
+                    \else\ifdim\scratchdimen=\baselineskip =
+                    \else > \fi\fi
+      \noexpand \NC \the\baselineskip
+      \noexpand \NC (\ifdim\scratchdimen>\baselineskip not \fi ok)
+      \noexpand \NC \noexpand \NR }}
+
+\gdef\showminimalbaseline
+  {\ifx\starttabulate\undefined
+     \@@onlyenglish\showminimalbaseline
+   \else
+     \starttabulate[||T|T|T|T|T|T|T|T|T|]
+     \testminimalbaseline{\hbox to 1em{\hss\showstruts\strut\hss}}%
+     \testminimalbaseline{(/)}%
+     \testminimalbaseline{$\frac{1}{2}x^2_3$}
+     \stoptabulate
+   \fi}
+
+\gdef\showkerning#1%
+  {\bgroup
+   \let\MPfshowcommand\ruledhbox
+   \setMPtext\s!dummy{#1}%
+   \startMPcode draw textext(\MPstring\s!dummy);\stopMPcode
+   \egroup}
+
+\gdef\showcharratio
+  {\dowithnextboxcontent
+     {\switchtobodyfont[10pt]}%
+     {(\expanded{\withoutpt\the\nextboxht},%
+       \expanded{\withoutpt\the\nextboxdp})}%
+     \hbox}
+
+\protect \endinput

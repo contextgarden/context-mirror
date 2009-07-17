@@ -128,10 +128,8 @@
           {\dowalkregime\characterencoding}}%
    \egroup
    \startnointerference
-%    \startreadingfile
-\setcatcodetable\ctxcatcodes
-   \readsysfile{\f!sortprefix def}\donothing\donothing % default
-%    \stopreadingfile
+   \setcatcodetable\ctxcatcodes
+   \readsysfile{\f!sortprefix def.mkii}\donothing\donothing % default
    \stopnointerference
    \global\let\savesortdefinitions\relax}
 
@@ -142,10 +140,8 @@
          \global\letvalue{\f!sortprefix::#1}\empty
          \def\currentexportclass{#1}%
          \enablemode[sortorder-#1]%
-%          \startreadingfile
-\setcatcodetable\ctxcatcodes
-         \readsysfile{\f!sortprefix lan}\donothing\donothing
-%          \stopreadingfile
+         \setcatcodetable\ctxcatcodes
+         \readsysfile{\f!sortprefix lan.mkii}\donothing\donothing
          \stopnointerference}}}
 
 \prependtoks

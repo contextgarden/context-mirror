@@ -1275,9 +1275,14 @@
 
 \def\simpleXMLencoding{raw}
 
-\def\simplifyXMLentities
-  {\fastenableencoding\simpleXMLencoding
-   \XMLsimpleentitiestrue}
+\ifnum\texengine=\luatexengine
+    \def\simplifyXMLentities
+      {\XMLsimpleentitiestrue}
+\else
+    \def\simplifyXMLentities
+      {\fastenableencoding\simpleXMLencoding
+       \XMLsimpleentitiestrue}
+\fi
 
 \def\defineXMLentity
   {\dodoubleempty\dodefineXMLentity}
@@ -2181,7 +2186,7 @@
 %D Interesting what kind of things are needed \unknown
 
 \appendtoks
-  \disablelanguagespecifics
+  \ifdefined\disablelanguagespecifics\disablelanguagespecifics\fi
 \to \everyenableXML
 
 \long\def\longempty{}

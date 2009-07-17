@@ -5356,6 +5356,9 @@
           <cd:constant type="da"/>
           <cd:constant type="nu"/>
         </cd:parameter>
+        <cd:parameter name="optiune">
+          <cd:constant type="impachetat"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

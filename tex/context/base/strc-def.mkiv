@@ -81,10 +81,6 @@
     \c!ownnumber=\v!no,
     %\c!page=,
     \c!placehead=\v!yes,
-    %\c!prefix=,
-    \c!previousnumber=\v!yes,
-    \c!resetnumber=\v!yes,
-    %\c!section=,
     \c!sectionconversionset=\s!default,
     \c!sectionnumber=\v!yes,
     %\c!sectionsegments=,
@@ -103,9 +99,17 @@
 % \setupstructureblock[appendix][sectionconversionset=appendix]
 % \setupstructurehead[chapter][sectionconversionset=\structureblockparameter\c!sectionconversionset] % \structureblockparameter]
 
+% \definestructureresetset[default][0,1,1,0][1] % this will not reset parts and subsections
+% \setuphead[part][sectionresetset=default]
+% \starttext
+%     \placelist[chapter,section,subsection][criterium=all,width=3cm]
+%     \part{first}  \chapter{alpha} \section{a} \section{b} \subsection{x} \subsection{y} \chapter{beta}
+%     \part{second} \chapter{gamma} \section{a} \section{b} \subsection{x} \subsection{y} \chapter{delta}
+% \stoptext
+
 \definestructureseparatorset  [\s!default]   [] [.]
 \definestructureconversionset [\s!default]   [] [numbers]
-\definestructureresetset      [\s!default]   [] [0]
+\definestructureresetset      [\s!default]   [] [1]
 \definestructureprefixset     [\s!default]   [section-1,section-2,section-3] []
 
 \definestructureprefixset     [\v!all]       [section-1,section-2,section-3,section-4,section-5,section-6,section-7,section-8] []

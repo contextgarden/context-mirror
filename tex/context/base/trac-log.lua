@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['luat-log'] = {
 -- this is old code that needs an overhaul
 
 local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
+local texcount = tex and tex.count
 
 if texlua then
     write_nl = print
@@ -88,10 +89,8 @@ function logs.tex.line(fmt,...) -- new
     end
 end
 
-local texcount = tex and tex.count
-
 function logs.tex.start_page_number()
-    local real, user, sub = texcount[0], texcount[1], texcount[2]
+    local real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
     if real > 0 then
         if user > 0 then
             if sub > 0 then
@@ -146,7 +145,7 @@ function logs.xml.stop_run()
 end
 
 function logs.xml.start_page_number()
-    write_nl(format("<p real='%s' page='%s' sub='%s'", texcount[0], texcount[1], texcount[2]))
+    write_nl(format("<p real='%s' page='%s' sub='%s'", texcount.realpageno, texcount.userpageno, texcount.subpageno))
 end
 
 function logs.xml.stop_page_number()

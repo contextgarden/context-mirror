@@ -38,7 +38,17 @@
 
 \unprotect
 
-\newdimen\hexcolorfraction \hexcolorfraction=\dimexpr(1pt/256)
+% \definecolor[rgbtestcolor] [r=0.87843,g=0.87451,b=0.89020] % RGB(224,223,227)
+% \definecolor[hextestcolor] [h=E0DFE3]
+%
+% \startMPpage
+%     path p ; % example by Peter Rolf
+%     p := unitsquare xyscaled(5cm,5cm) ;
+%     fill (point 0 of p -- point 1 of p -- point 2 of p --cycle) withcolor \MPcolor{rgbtestcolor} ; % bottom right part of the square
+%     fill (point 0 of p -- point 3 of p -- point 2 of p --cycle) withcolor \MPcolor{hextestcolor} ; % top left part
+% \stopMPpage
+
+\newdimen\hexcolorfraction \hexcolorfraction=\dimexpr1pt/255\relax
 
 \chardef\hexcolorprefix=`#
 
@@ -49,7 +59,7 @@
 
 \def\hexcolorcomponent#1#2%
   {\ifnum\dohexstringtonumber#1#2=\zerocount0\else\ifnum\dohexstringtonumber#1#2=\plusone1\else
-     \expandafter\withoutpt\the\dimexpr(\dohexstringtonumber#1#2\hexcolorfraction)%
+     \expandafter\withoutpt\the\dimexpr\dohexstringtonumber#1#2\hexcolorfraction\relax
    \fi\fi}
 
 \def\dohexcolorspec#1#2#3#4#5#6#7#8\relax
@@ -98,7 +108,7 @@
 
 \def\colorhexcomponent#1%
   {\ifdim#1\points<.005\points
-     00\else\lchexnumbers{\the\dimexpr(255\dimexpr(#1\points)\relax+.5\points)\relax}%
+     00\else\lchexnumbers{\the\dimexpr255\dimexpr#1\points\relax+.5\points\relax}%
    \fi}
 
 % the faster one
@@ -109,7 +119,7 @@
 
 \def\colorhexcomponent#1%
   {\ifdim#1\points<\hex@color@a
-     00\else\lchexnumbers{\the\dimexpr(#1\points*\hex@color@c+\hex@color@b)\relax}%
+     00\else\lchexnumbers{\the\dimexpr#1\points*\hex@color@c+\hex@color@b\relax}%
    \fi}
 
 \protect \endinput

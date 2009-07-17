@@ -11,18 +11,25 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% 2009-07-15 / vista sp 2 / 2.2G duo dell M90 precision:
+%
+% \dorecurse{10000}{test \page} % 300 pps
+% \dorecurse {2000}{test \page} % 260 pps
+% \dorecurse  {300}{test \page} % 135 pps
+
 % \ctxlua { fonts.define.method = 2 }  % normally 3
 
 \enablemode[mkiv] \setsystemmode{mkiv}
 
-% there is more code here that is wise, but first we need to split
-% more modules in mkii/mkiv
-
 % potential new defaults:
-
+%
 % \setbreakpoints[compound]
 
 \unprotect
+
+% % % % % % needs testing but saves runtime
+
+\let\checknotes\relax % probably not needed, checking already done
 
 % we need to figure this out (to be discussed)
 
@@ -45,82 +52,6 @@
 
 % \def\pagedir{\expandafter\gobblethreearguments}
 % \def\bodydir{\expandafter\gobblethreearguments}
-
-% we have to make an mkii/mkiv core-not
-
-\ifx\definestructurecounter\undefined
-
-\def\dochecknote % only to be called locally, some bools will become class-ones
-  {% for the moment no mixed text/endnotes modes, so we use
-   % \footnoteparameter and not \noteparameter (**)
-   \setnotedistance
-   \edef\notelocationasked{\noteparameter\c!location}% can be set
-   \count\currentnoteins\plusthousand
-   \expdoifcommonelse{\v!columns,\v!lastcolumn}\notelocationasked
-     {\chardef\clevernotes\plustwo}
-     {\expdoifinsetelse\v!firstcolumn\notelocationasked
-        {\chardef\clevernotes\plusone}%
-        {\chardef\clevernotes\zerocount}}%
-   \ifcase\clevernotes\relax
-     % notes not in column areas
-     \ifnum\noteparameter\c!n=\zerocount % no ifcase
-       \settextnotes
-       \scratchcounter\plusone
-     \else
-       \setcolumnnotes
-       \scratchcounter\noteparameter\c!n\relax
-       \divide\count\currentnoteins \scratchcounter
-     \fi
-     \global\endnotesfalse
-     \expdoifinsetelse\v!page\notelocationasked
-       {\expdoifinsetelse\v!high\notelocationasked
-          {\global\bottomnotesfalse}
-          {\global\bottomnotestrue}}
-       {\global\endnotestrue
-        \global\bottomnotestrue}% not: \postponenotes, else global
-    \else
-      % notes in column areas
-      \ifnum\@@kln=\zerocount % no ifcase / brrr dependency on \??kl
-        \scratchcounter\plusone
-      \else
-        \scratchcounter\footnoteparameter\c!n\relax % **
-      \fi
-      \global\endnotesfalse
-      \global\bottomnotestrue
-      \setclevernotes
-   \fi
-   \doifsomething{\noteparameter\c!factor}
-     {\ifnum\noteparameter\c!factor<\zerocount\else
-        \count\currentnoteins\noteparameter\c!factor
-      \fi}%
-   \ifnotelimit
-     \dimen\currentnoteins\noteparameter\c!height
-     \multiply\dimen\currentnoteins \scratchcounter
-   \fi
-   \ifendnotes
-     \dimen\currentnoteins\maxdimen
-     \count\currentnoteins\zerocount
-     \skip \currentnoteins\zeropoint
-   \fi}
-
-\fi
-
-\ifx\clearmarks\undefined
-    \def\clearmarks  {\begingroup\afterassignment\doclearmarks\scratchcounter}
-    \def\doclearmarks{\normalmarks\scratchcounter{}\endgroup}
-\fi
-
-\ifx\@@trk\undefined \else
-
-    \def\resetmark#1% we cannot use \normalmarks#1{}
-      {\global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
-       \@EA\clearmarks\csname\@@prk\string#1\endcsname
-       \global\@EA\let\csname\@@trk\string#1\endcsname\empty
-       \global\@EA\let\csname\@@frk\string#1\endcsname\empty
-       \global\@EA\let\csname\@@brk\string#1\endcsname\empty
-       \global\@EA\let\csname\@@crk\string#1\endcsname\empty}
-
-\fi
 
 %D Since this can be a showstopper, we report the path at the beginning
 %D as well as at the end of a run.
@@ -169,12 +100,12 @@
 %     remapper.define('encoding','^qtm','^(.*)$','q-\letterpercent1')
 % }
 
-\appendtoksonce \loadallXfontmapfiles \to \everyPDFxform
-\appendtoksonce \loadallXfontmapfiles \to \everyPDFximage
-\appendtoksonce \loadallXfontmapfiles \to \everystarttext
-\appendtoksonce \loadallXfontmapfiles \to \everybeforepagebody
+% \appendtoksonce \loadallXfontmapfiles \to \pdfbackendeveryximage
+% \appendtoksonce \loadallXfontmapfiles \to \pdfbackendeveryxform
+% \appendtoksonce \loadallXfontmapfiles \to \everystarttext
+% \appendtoksonce \loadallXfontmapfiles \to \everybeforepagebody
 
-\def\loadallXfontmapfiles{\ctxlua{fonts.map.flush("pdftex")}}
+% \def\loadallXfontmapfiles{\ctxlua{fonts.map.flush("pdftex")}}
 
 % \ctxlua{
 %     do

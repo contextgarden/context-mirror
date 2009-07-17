@@ -30,8 +30,8 @@
 
 %D First we load some auxiliary macro's:
 
-\input supp-mis.tex  \let\writestatus\undefined
-\input syst-gen.tex
+\input supp-mis.mkii \let\writestatus\undefined
+\input syst-gen.mkii
 \input syst-fnt.mkii
 
 %D after which we can go on with:

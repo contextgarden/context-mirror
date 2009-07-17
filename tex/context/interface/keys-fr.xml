@@ -236,6 +236,7 @@
 		<cd:variable name='lastpage' value='dernierepage'/>
 		<cd:variable name='lastpagenumber' value='derniernumeropage'/>
 		<cd:variable name='lastsubpage' value='dernieresouspage'/>
+		<cd:variable name='layer' value='layer'/>
 		<cd:variable name='left' value='gauche'/>
 		<cd:variable name='leftedge' value='bordgauche'/>
 		<cd:variable name='lefthanging' value='lefthanging'/>
@@ -849,6 +850,7 @@
 		<cd:constant name='sectionconversion' value='sectionconversion'/>
 		<cd:constant name='sectionconversionset' value='sectionconversionset'/>
 		<cd:constant name='sectionnumber' value='numerosection'/>
+		<cd:constant name='sectionresetset' value='sectionresetset'/>
 		<cd:constant name='sectionsegments' value='sectionsegments'/>
 		<cd:constant name='sectionseparatorset' value='sectionseparatorset'/>
 		<cd:constant name='sectionset' value='sectionset'/>

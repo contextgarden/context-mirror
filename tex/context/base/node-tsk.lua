@@ -76,7 +76,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
     local data = tasks.data[name]
     if data then
         if n == 0 then
-            return function(head,tail)
+            return function(head)
                 local runner = data.runner
                 total = total + 1 -- will go away
                 if not runner then
@@ -87,10 +87,10 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                     runner = sequencer.compile(data.list,sequencer.nodeprocessor,0)
                     data.runner = runner
                 end
-                return runner(head,tail)
+                return runner(head)
             end
         elseif n == 1 then
-            return function(head,tail,one)
+            return function(head,one)
                 total = total + 1 -- will go away
                 local runner = data.runner
                 if not runner then
@@ -101,10 +101,10 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                     runner = sequencer.compile(data.list,sequencer.nodeprocessor,1)
                     data.runner = runner
                 end
-                return runner(head,tail,one)
+                return runner(head,one)
             end
         elseif n == 2 then
-            return function(head,tail,one,two)
+            return function(head,one,two)
                 total = total + 1 -- will go away
                 local runner = data.runner
                 if not runner then
@@ -115,10 +115,10 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                     runner = sequencer.compile(data.list,sequencer.nodeprocessor,2)
                     data.runner = runner
                 end
-                return runner(head,tail,one,two)
+                return runner(head,one,two)
             end
         else
-            return function(head,tail,...)
+            return function(head,...)
                 total = total + 1 -- will go away
                 local runner = data.runner
                 if not runner then
@@ -129,7 +129,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                     runner = sequencer.compile(data.list,sequencer.nodeprocessor,3)
                     data.runner = runner
                 end
-                return runner(head,tail,...)
+                return runner(head,...)
             end
         end
     else

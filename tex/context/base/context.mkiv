@@ -18,19 +18,25 @@
 %D manipulation macros. The first one loads \PLAIN\ \TEX, as
 %D minimal as possible.
 
-\loadcorefile{syst-ini.tex}
-\loadcorefile{norm-ctx.tex}
-\loadcorefile{syst-pln.tex}
+\loadcorefile{syst-ini}
+
+\ifnum\luatexversion<42
+    \writestatus{!!!!}{Your luatex binary is way too old, you need at least version 0.42.}
+    \expandafter\end
+\fi
+
+\loadcorefile{norm-ctx}
+\loadcorefile{syst-pln}
 
 \loadmarkfile{luat-cod}
 \loadmarkfile{luat-bas}
 \loadmarkfile{luat-lib}
 
 \loadmarkfile{catc-ini}
-\loadcorefile{catc-act.tex}
-\loadcorefile{catc-def.tex}
-\loadcorefile{catc-ctx.tex}
-\loadcorefile{catc-sym.tex}
+\loadcorefile{catc-act}
+\loadcorefile{catc-def}
+\loadcorefile{catc-ctx}
+\loadcorefile{catc-sym}
 
 \newif\ifCONTEXT \CONTEXTtrue % will disappear
 
@@ -50,10 +56,11 @@
 \loadmarkfile{char-act}
 
 \loadmarkfile{mult-ini}
-\loadcorefile{mult-fst.tex}
-\loadcorefile{mult-sys.tex}
-\loadcorefile{mult-def.tex}
+\loadcorefile{mult-fst}
+\loadcorefile{mult-sys}
+\loadcorefile{mult-def}
 \loadmarkfile{mult-chk}
+\loadmarkfile{mult-cld}
 
 \loadmarkfile{luat-ini}
 
@@ -63,12 +70,11 @@
 \loadmarkfile{node-fin}
 \loadmarkfile{node-par}
 
-\loadcorefile{core-var.tex}
-
-\loadmarkfile{lpdf-ini}
+\loadmarkfile{core-var}
 
 \loadmarkfile{back-ini}
-\loadmarkfile{back-pdf}
+\loadmarkfile{lpdf-ini} % some day back-ini will load this
+\loadmarkfile{back-pdf} % some day back-ini will load this
 
 \loadmarkfile{attr-ini}
 
@@ -77,71 +83,70 @@
 \loadmarkfile{trac-lmx}
 \loadmarkfile{trac-deb}
 
-\loadcorefile{supp-box.tex}
+\loadcorefile{supp-box}
 
-\loadcorefile{supp-vis.tex}
-\loadcorefile{supp-fun.tex}
+\loadcorefile{supp-vis}
+\loadcorefile{supp-fun}
 
 \loadmarkfile{supp-ran}
-\loadcorefile{supp-mat.tex}
-\loadcorefile{supp-ali.tex}
-\loadcorefile{supp-num.tex}
+\loadcorefile{supp-mat}
+\loadcorefile{supp-ali}
+\loadcorefile{supp-num}
 
 \loadmarkfile{typo-ini}
 
-\loadcorefile{core-ins.tex}
-\loadcorefile{core-fil.tex}
+\loadmarkfile{page-ins}
+\loadmarkfile{core-fil}
 \loadmarkfile{core-con}
 
-\loadcorefile{cont-fil.tex}
+\loadcorefile{cont-fil}
 
 \loadmarkfile{regi-ini}
-\loadcorefile{regi-syn.tex}
+\loadcorefile{regi-syn}
 \loadmarkfile{enco-ini}
 \loadmarkfile{hand-ini}
 
 \loadmarkfile{lang-ini}
-\loadmarkfile{lang-spe}
 \loadmarkfile{lang-lab}
 
 \loadmarkfile{unic-ini}
 
-\loadcorefile{core-gen.tex}
+\loadmarkfile{core-gen}
 \loadmarkfile{core-uti}
 \loadmarkfile{core-two}
-\loadcorefile{core-stg.tex}
 
 \loadmarkfile{colo-ini}
 \loadmarkfile{colo-ext}
 
 \loadmarkfile{trac-vis}
 
-\loadcorefile{lang-mis.tex}
+\loadmarkfile{lang-mis}
 \loadmarkfile{lang-url}
 
-\loadcorefile{lang-ger.tex}
-\loadcorefile{lang-ita.tex}
-\loadcorefile{lang-sla.tex}
-\loadcorefile{lang-alt.tex}
-\loadcorefile{lang-ana.tex}
-\loadcorefile{lang-art.tex}
-\loadcorefile{lang-bal.tex}
-\loadcorefile{lang-cel.tex}
-\loadcorefile{lang-grk.tex}
-\loadcorefile{lang-ind.tex}
-\loadcorefile{lang-ura.tex}
-\loadcorefile{lang-cjk.tex}
-\loadcorefile{lang-vn.tex}
-\loadcorefile{lang-ara.tex}
-\loadcorefile{lang-cyr.tex}
+\loadcorefile{lang-ger}
+\loadcorefile{lang-ita}
+\loadcorefile{lang-sla}
+\loadcorefile{lang-alt}
+\loadcorefile{lang-ana}
+\loadcorefile{lang-art}
+\loadcorefile{lang-bal}
+\loadcorefile{lang-cel}
+\loadcorefile{lang-grk}
+\loadcorefile{lang-ind}
+\loadcorefile{lang-ura}
+\loadcorefile{lang-vn}
+\loadcorefile{lang-cyr}
 
-\loadcorefile{symb-ini.tex}
+\loadmarkfile{lang-ara}
+\loadmarkfile{lang-cjk}
+
+\loadmarkfile{symb-ini}
 
 \loadmarkfile{sort-ini}
 
 \loadmarkfile{pack-rul}
 
-\loadcorefile{lxml-ini}
+\loadmarkfile{lxml-ini}
 
 \loadmarkfile{strc-ini}
 \loadmarkfile{strc-doc}
@@ -158,13 +163,12 @@
 \loadmarkfile{strc-ref}
 \loadmarkfile{strc-reg}
 
-\loadcorefile{bibl-bib}
+\loadmarkfile{bibl-bib}
 
 \loadmarkfile{core-spa}
-\loadcorefile{core-grd.tex}
+\loadmarkfile{core-grd}
 
 \loadmarkfile{anch-pos}
-\loadcorefile{core-mak.tex}
 
 \loadmarkfile{scrn-nav}
 \loadmarkfile{pack-obj}
@@ -177,23 +181,23 @@
 
 \loadmarkfile{page-ini}
 \loadmarkfile{page-bck}
-\loadcorefile{page-not.tex}
+\loadmarkfile{page-not}
 \loadmarkfile{page-one}
-\loadcorefile{page-lay.tex}
+\loadmarkfile{page-lay}
 \loadmarkfile{page-txt}
-\loadcorefile{page-sid.tex}
+\loadmarkfile{page-sid}
 
 \loadmarkfile{strc-flt}
 
-\loadcorefile{page-mis.tex}
-\loadcorefile{page-mul.tex}
-\loadcorefile{page-set.tex}
+\loadmarkfile{page-mis}
+\loadmarkfile{page-mul}
+\loadmarkfile{page-set}
 \loadmarkfile{pack-lyr}
-\loadcorefile{page-mak.tex}
+\loadmarkfile{page-mak}
 
 \loadmarkfile{page-lin}
-\loadcorefile{page-par.tex}
-\loadcorefile{page-mar.tex}
+\loadmarkfile{page-par}
+\loadmarkfile{page-mar}
 
 \loadmarkfile{core-job} % why so late?
 
@@ -202,19 +206,22 @@
 
 \loadmarkfile{strc-blk}
 
-\loadcorefile{page-imp.tex}
+\loadmarkfile{page-imp}
 
 \loadmarkfile{scrn-int}
+\loadmarkfile{scrn-men}
+\loadmarkfile{scrn-but}
+\loadmarkfile{scrn-bar}
 \loadmarkfile{strc-bkm} % bookmarks
 
-\loadcorefile{tabl-pln.tex}
-\loadcorefile{thrd-tab.tex}
-\loadcorefile{tabl-tab.tex}
-\loadcorefile{tabl-tbl.tex}
+\loadmarkfile{tabl-pln}
+\loadcorefile{thrd-tab}
+\loadmarkfile{tabl-tab}
+\loadmarkfile{tabl-tbl}
 \loadmarkfile{tabl-ntb}
-\loadcorefile{tabl-nte.tex}
-\loadcorefile{tabl-ltb.tex}
-\loadcorefile{tabl-tsp.tex}
+\loadmarkfile{tabl-nte}
+\loadmarkfile{tabl-ltb}
+\loadmarkfile{tabl-tsp}
 
 \loadmarkfile{java-ini}
 
@@ -235,7 +242,7 @@
 \loadmarkfile{typo-cap}
 
 \loadmarkfile{type-ini}
-\loadcorefile{type-def.tex}
+\loadcorefile{type-def}
 
 \loadmarkfile{scrp-ini}
 
@@ -252,16 +259,16 @@
 \loadmarkfile{meta-pdf}
 \loadmarkfile{meta-fun}
 
-\loadcorefile{meta-pag.tex}
+\loadmarkfile{meta-pag}
 
-\loadcorefile{page-flw.tex}
-\loadcorefile{page-spr.tex}
-\loadcorefile{page-plg.tex}
-\loadcorefile{page-str.tex}
+\loadmarkfile{page-flw}
+\loadmarkfile{page-spr}
+\loadmarkfile{page-plg}
+\loadmarkfile{page-str}
 
-\loadmarkfile{anch-pgr}
-\loadcorefile{anch-bar.tex}
-\loadcorefile{anch-snc.tex}
+\loadmarkfile{anch-pgr} % overloads tabl-tbl
+\loadcorefile{anch-bar}
+\loadcorefile{anch-snc}
 
 \loadmarkfile{math-pln}
 \loadmarkfile{math-ini}
@@ -284,8 +291,7 @@
 \loadmarkfile{core-fnt}
 
 \loadmarkfile{strc-not}
-
-\loadcorefile{core-lnt.tex}
+\loadmarkfile{strc-lnt}
 
 \loadmarkfile{core-mis}
 
@@ -294,28 +300,28 @@
 \loadmarkfile{grph-fig}
 
 \loadmarkfile{pack-box}
-\loadcorefile{page-app.tex}
+\loadmarkfile{pack-bar}
+\loadmarkfile{page-app}
 \loadmarkfile{meta-fig}
 
-\loadcorefile{lang-spa.tex}
+\loadcorefile{lang-spa}
 
-\loadcorefile{xtag-ini.tex} % might go away
-\loadcorefile{xtag-ext.tex} % might go away
-\loadcorefile{xtag-exp.tex} % will go away
-\loadcorefile{xtag-pre.tex} % has old encoding code
-\loadcorefile{xtag-xsd.tex} % will go away (stub anyway)
-\loadcorefile{xtag-rng.tex} % will go away (stub anyway)
+\loadcorefile{xtag-ini} % might go away
+\loadcorefile{xtag-ext} % might go away
+\loadcorefile{xtag-exp} % will go away
+\loadcorefile{xtag-pre} % has old encoding code
+\loadcorefile{xtag-xsd} % will go away (stub anyway)
+\loadcorefile{xtag-rng} % will go away (stub anyway)
 
-\loadcorefile{meta-xml.tex}
+\loadcorefile{meta-xml}
 
-\loadcorefile{cont-log.tex}
+\loadcorefile{cont-log}
 
 \loadmarkfile{task-ini}
 
 \loadmarkfile{core-ctx}
 
-\loadcorefile{core-lme.tex}
-\loadcorefile{core-ini.tex}
+\loadmarkfile{core-ini}
 \loadmarkfile{core-def}
 
 %usemodule[x][res-04] % xml resource libraries

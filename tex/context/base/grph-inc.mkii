@@ -1212,4 +1212,28 @@
      \setanalyzedfiguredimensions\plustwo
    \fi}
 
+%D This is \MKII\ only and comes from cont-new (maybe used in a project).
+
+% maybe to be integrated (option=...)
+
+\def\directexternalfigure
+  {\dodoubleempty\dodirectexternalfigure}
+
+\def\dodirectexternalfigure[#1][#2]%
+  {\bgroup
+   \getparameters[\??ef][\c!type=\splitofftype,\c!page=1,#2]%
+   \sanitizefilename#1\to\expandedfigurename
+   \splitfilename\expandedfigurename
+   \let\@@DriverImageWidth  \!!zeropoint
+   \let\@@DriverImageHeight \!!zeropoint
+   \let\@@DriverImageFile   \splitofffull
+   \let\@@DriverImageType   \@@eftype
+   \let\@@DriverImageMethod \@@eftype
+   \let\@@DriverImageLabel  \empty
+   \let\@@DriverImagePage   \@@efpage
+   \doinsertfile
+   \egroup}
+
+% \directexternalfigure[cow.pdf]
+
 \protect \endinput

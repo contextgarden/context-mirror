@@ -151,6 +151,14 @@
 \def\setitemparameter #1#2{\@EA\def\csname\??op\currentitemgroup#1#2\endcsname} % #3 -> {#3}
 \def\letitemparameter #1#2{\@EA\let\csname\??op\currentitemgroup#1#2\endcsname}
 
+% works ok but not needed (also possible compatibility problem)
+%
+% \def\getitemparameter#1#2%
+%   {\executeifdefined{\??op\currentitemgroup#1#2}%
+%   {\executeifdefined{\??op\currentitemgroup  #2}%
+%   {\executeifdefined{\??oo                   #2}%
+%   {}}}}
+
 % test this: saves hash entries and is also faster
 %
 % \let\doinitializeitemgrouplevel\gobbleoneargument % todo ! ! !

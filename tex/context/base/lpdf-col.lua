@@ -1,0 +1,150 @@
+if not modules then modules = { } end modules ['lpdf-mis'] = {
+    version   = 1.001,
+    comment   = "companion to back-pdf.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type = type
+local format, gsub = string.format, string.gsub
+
+-- colors         = colors         or { }
+-- transparencies = transparencies or { }
+
+local registercolor        = colors.register
+local registertransparancy = transparencies.register
+local colorsvalue          = colors.value
+local transparenciesvalue  = transparencies.value
+
+-- Literals needed to inject code in the mp stream, we cannot use attributes there
+-- since literals may have qQ's, much may go away once we have mplib code in place.
+--
+-- This module assumes that some functions are defined in the colors namespace
+-- which mostlikely will be loaded later.
+
+function lpdf.color(model,ca,default) -- todo: use gray when no color
+    local cv = colorsvalue(ca)
+    if cv then
+        if model == 1 then
+            model = cv[1]
+        end
+        if model == 2 then
+            local s = cv[2]
+            return format("%s g %s G",s,s)
+        elseif model == 3 then
+            local r, g, b = cv[3], cv[4], cv[5]
+            return format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)
+        elseif model == 4 then
+            local c, m, y, k = cv[6],cv[7],cv[8],cv[9]
+            return format("%s %s %s %s k %s %s %s %s K",c,m,y,k,c,m,y,k)
+        else
+            local n,f,d,p = cv[10],cv[11],cv[12],cv[13]
+            if type(p) == "string" then
+                p = gsub(p,","," ") -- brr misuse of spot
+            end
+            return format("/%s cs /%s CS %s SCN %s scn",n,n,p,p)
+        end
+    else
+        return format("%s g %s G",default or 0,default or 0)
+    end
+end
+
+function lpdf.transparency(ct,default)
+    -- beware, we need this hack because normally transparencies are not
+    -- yet registered and therefore the number is not not known ... we
+    -- might use the attribute number itself in the future
+    local ct = transparenciesvalue(ct)
+    if ct then
+        return format("/Tr%s gs",registertransparancy(nil,ct[1],ct[2]))
+    else
+        return "/Tr0 gs"
+    end
+end
+
+function lpdf.colorvalue(model,ca,default)
+    local cv = colorsvalue(ca)
+    if cv then
+        if model == 1 then
+            model = cv[1]
+        end
+        if model == 2 then
+            return format("%s",cv[2])
+        elseif model == 3 then
+            return format("%s %s %s",cv[3],cv[4],cv[5])
+        elseif model == 4 then
+            return format("%s %s %s %s",cv[6],cv[7],cv[8],cv[9])
+        else
+            return format("%s",cv[13])
+        end
+    else
+        return format("%s",default or 0)
+    end
+end
+
+function lpdf.fdfcolor(model,ca,default)
+    local cv = colorsvalue(ca)
+    if cv then
+        if model == 1 then
+            model = cv[1]
+        end
+        if model == 2 then
+            return format("[%s]",cv[2])
+        elseif model == 3 then
+            return format("[%s %s %s]",cv[3],cv[4],cv[5])
+        elseif model == 4 then
+            return format("[%s %s %s %s]",cv[6],cv[7],cv[8],cv[9])
+        elseif model == 4 then
+            return format("[%s]",cv[13])
+        end
+    else
+        return format("[%s]",default or 0)
+    end
+end
+
+function lpdf.colorspace(model,ca)
+    local cv = colorsvalue(ca)
+    if cv then
+        if model == 1 then
+            model = cv[1]
+        end
+        if model == 2 then
+            return "DeviceGray"
+        elseif model == 3 then
+            return "DeviceRGB"
+        elseif model == 4 then
+            return "DeviceCMYK"
+        end
+    end
+    return "DeviceGRAY"
+end
+
+-- by registering we getconversion for free (ok, at the cost of overhead)
+
+local intransparency = false
+local pdfcolor       = lpdf.color
+
+function lpdf.rgbcode(model,r,g,b)
+    return pdfcolor(model,registercolor('color',nil,'rgb',r,g,b))
+end
+function lpdf.cmykcode(model,c,m,y,k)
+    return pdfcolor(model,registercolor('color',nil,'cmyk',c,m,y,k))
+end
+function lpdf.graycode(model,s)
+    return pdfcolor(model,registercolor('color',nil,'gray',s))
+end
+function lpdf.spotcode(model,n,f,d,p)
+    return pdfcolor(model,registercolor('color',nil,'spot',n,f,d,p)) -- incorrect
+end
+function lpdf.transparencycode(a,t)
+    intransparency = true
+    return format("/Tr%s gs",registertransparancy(nil,a,t))
+end
+function lpdf.finishtransparencycode()
+    if intransparency then
+        intransparency = false
+        return "/Tr0 gs"  -- we happen to know this -)
+    else
+        return ""
+    end
+end

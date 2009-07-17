@@ -38,13 +38,6 @@
 
 \fi
 
-\ifx\recalculatelogos\undefined
-
-  \let \recalculatelogos  \relax
-  \let \addlogobackground \gobbleoneargument % <box>
-
-\fi
-
 \ifx\recalculatebackgrounds\undefined
 
   \let \recalculatebackgrounds \relax
@@ -132,22 +125,6 @@
 % floats:
 %
 % tricky in balancing mode, a la huidige multi columns
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
 
 \ifx\dosetuplayout\undefined % overloaded in page-lay !
 
@@ -455,17 +432,9 @@
 \ifx\bye\undefined \def\bye{\par\vfill\supereject\end} \fi % plain tex command
 
 % floats
-%
-% \def\ejectinsert
-%   {\flushnotes
-%    \bgroup
-%    \noftopfloats\plusthousand
-%    \nofbotfloats\zerocount
-%    \doflushfloats
-%    \egroup}
 
 \def\ejectinsert
-  {\flushnotes
+  {%\flushnotes already done
    \bgroup
    \noftopfloats\plusthousand
    \nofbotfloats\zerocount
@@ -481,7 +450,7 @@
 \def\ejectdummypage
   {\endgraf \ifvmode
      \ejectinsert
-     \hardespatie % will be different
+     \fixedspace
      \vfill
      \gotonextpage
    \fi}
@@ -490,7 +459,7 @@
   {}
 
 \def\afterfinaloutput
-  {\forgetall
+  {%\forgetall
    \vskip\zeropoint\relax
    \ifvoid\normalpagebox \else
      \unvbox\normalpagebox
@@ -507,36 +476,32 @@
    \adaptfuzzypagegoal} % watch this hack!
 
 \def\dofinaloutput#1#2% \vbox: prevents spurious spaces in every..pagebody
-  {\beforefinaloutput
+  {\forgetall
+   \beforefinaloutput
    \the\everybeforeshipout % brrr not in shipout
    \the\pageboundsettings
-   \myshipout{\hbox{\vbox{\dopagebody#1#2\setpagecounters}}}%
+   \myshipout{\hbox{\vbox{\dopagebody#1#2}}}% is this hbox needed
    \the\everyaftershipout
-   \afterfinaloutput
-   \popproperties}  % ... and here ...
+   \afterfinaloutput}
 
 \def\donofinaloutput#1#2%
-  {\beforefinaloutput
+  {\forgetall
+   \beforefinaloutput
    \the\everybeforeshipout
    \setpagecounters
    \message{[-\the\realpageno]}%
-   \setbox\scratchbox\hbox
-     {%\the\everyshipout % still needed here ?
-      \dopagebody#1#2}%
+   \setbox\scratchbox\hbox{\dopagebody#1#2}%
    \deadcycles\zerocount
-   \gotonextrealpage
+   \setnextrealpageno
    \the\everyaftershipout
-   \afterfinaloutput
-   \popproperties}  % ... and here
+   \afterfinaloutput}
 
 % beware: \ifprocessingpages is in use
 
-\ifx\checkpageversion\undefined \let\checkpageversion\relax \fi % todo: hook into \everybeforeshipout
-\ifx\doflushspread   \undefined \let\doflushspread   \relax \fi % todo
+\ifdefined\doflushspread\else \let\doflushspread\relax \fi % todo
 
 \def\finaloutput#1#2%
-  {\checkpageversion
-   \ifprocessingpages
+  {\ifprocessingpages
      \ifpageselected
        \@EAEAEA\dofinaloutput
      \else
@@ -624,9 +589,8 @@
       \offinterlineskip
       \vskip\topspace
       \hsize\paperwidth
-      \hfill\hbox{\placetestinfo\hskip.5cm}\vss
+     %\hfill\hbox{\placetestinfo\hskip.5cm}\vss % obsolete
       \settexthoffset\hskip\texthoffset % brrrr
-     %\tlap{\placeversioninfo}\vskip.5cm
       \vbox to 1cm{\vss\placeversioninfo\vss}}}
 
 \def\dotestinfo#1#2#3%
@@ -651,44 +615,6 @@
      \fi
    \fi\fi}
 
-% this will be inserts some day
-
-% \installinsertion\referenceinfobox
-% \installinsertion\registerinfobox
-% \installinsertion\floatinfobox
-
-\newbox\referenceinfobox
-\newbox\registerinfobox
-\newbox\floatinfobox
-
-\def\referenceinfo{\dotestinfo\referenceinfobox}
-\def\registerinfo  {\dotestinfo\registerinfobox}
-\def\floatinfo     {\dotestinfo\floatinfobox}
-
-\def\placetestinfo
-  {\vbox to \makeupheight
-     {\forgetall
-      \infofont
-      \hsize10em
-      \ifvoid\floatinfobox\else
-        \strut \getmessage\m!systems{24}%
-        \vskip\!!sixpoint
-        \unvbox\floatinfobox
-        \vskip\!!twelvepoint
-      \fi
-      \ifvoid\referenceinfobox\else
-        \strut \getmessage\m!systems{25}%
-        \vskip\!!sixpoint
-        \unvbox\referenceinfobox
-        \vskip\!!twelvepoint
-      \fi
-      \ifvoid\registerinfobox\else
-        \strut \getmessage\m!systems{26}%
-        \vskip\!!sixpoint
-        \unvbox\registerinfobox
-      \fi
-      \vss}}
-
 \version[\v!final]
 
 % bewaren tvb documentatie
@@ -803,7 +729,7 @@
   {\ifsavepagebody\global\setbox\savedpagebody\fi
    \vbox
      {\beginrestorecatcodes
-      \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
+%       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
       \boxmaxdepth\maxdimen % new
       \dontcomplain
       % the following plugin uses and sets pagebox; beware: this
@@ -854,7 +780,6 @@
       \getmainbox#1#2}% including footnotes
    \ifcase\pageornamentstate
      \addmainbackground \pagebox
-     \addlogobackground \pagebox
    \fi
    \buildpagebox  \pagebox
    \addstatusinfo \pagebox}
@@ -870,8 +795,9 @@
      \negateprintbox   #1%
    \fi}
 
+\appendtoks \restoreouterspacing   \to \everybeforepagebody
 \appendtoks \restoreglobalbodyfont \to \everybeforepagebody
-\appendtoks \restorecolumnsettings \to \everybeforepagebody
+%appendtoks \restoreouterspacing   \to \everybeforepagebody
 
 \ifx\nestednewbox\undefined \newbox\nestednextbox \fi
 
@@ -881,14 +807,14 @@
   {%\getallmarks % now in following token register
    \the\everybeforepagebody
    \starttextproperties
-   \gotonextsubpage  % nog eens: als in pagina (tbv standaard opmaak)
-   \dontshowboxes    % dan hier blokkeren en verderop resetten
+   \setnextsubpageno  % nog eens: als in pagina (tbv standaard opmaak)
+   \dontshowboxes     % dan hier blokkeren en verderop resetten
 %    \shipoutfacingpage
    \checkmargeblokken
    \the\beforeeverypage
-   \flushtoks\beforepage
+   \normalexpanded{\global\beforepage\emptytoks\the\beforepage}% \scratchtoks\beforepage\global\beforepage\emptytoks\the\scratchtoks % was \flushtoks\beforepage
    \inpagebodytrue\buildpagebody#1#2%
-   \flushtoks\afterpage
+   \normalexpanded{\global\afterpage \emptytoks\the\afterpage }% \scratchtoks\afterpage \global\afterpage \emptytoks\the\scratchtoks % was \flushtoks\afterpage
    \the\aftereverypage
    \resetpagebreak
    %updatelistreferences % now in aftereverypage
@@ -898,65 +824,12 @@
 
 \newtoks\pageboundsettings
 
-\prependtoks \initializepaper \to \pageboundsettings
+% \prependtoks \initializepaper \to \pageboundsettings
 
 % not here
 
 \newif\ifpagebreakdisabled \pagebreakdisabledfalse
 
-% \chardef\testpagemethod=0 % todo: \testnewpage[method=,lines=,voffset=]
-%
-% \def\testpage    {\dotripleempty\dotestpage[\plusone]}
-% \def\testpageonly{\dotripleempty\dotestpage[\plustwo]}
-%
-% \def\dotestpage[#1][#2][#3]%
-%   {%\relax % needed  before \if
-%    \endgraf
-%    \ifpagebreakdisabled
-%      % do nothing
-%    \else
-%      %ifnum#1=\plusone\synchronizeoutput\fi
-%      \ifdim\pagegoal<\maxdimen \relax
-%        \ifdim\pagetotal<\pagegoal \relax
-%          \scratchdimen\lineheight
-%          \multiply\scratchdimen#2\relax
-%          \advance\scratchdimen \pagetotal
-%          \ifdim\lastskip<\parskip
-%            \advance\scratchdimen \parskip
-%          \fi
-%          \ifthirdargument
-%            \advance\scratchdimen#3\relax
-%          \fi
-%          \ifcase\testpagemethod
-%            \ifdim\scratchdimen>.99\pagegoal
-%              \vfill\eject % \penalty-\!!tenthousand\relax
-%            \fi
-%          \or
-%            \advance\scratchdimen-\pagegoal
-%            \ifdim\scratchdimen>-\lineheight
-%              \vfill\eject % \penalty-\!!tenthousand\relax
-%            \fi
-%          \or
-%            \getnoflines\pagegoal
-%            \advance\scratchdimen-\noflines\lineheight \relax
-%            \ifdim\scratchdimen>-\lineheight
-%              \vfill\eject % \penalty-\!!tenthousand\relax
-%            \fi
-%          \or % same as 0 but more accurate
-%            \advance\scratchdimen-10\s!sp\relax
-%            \ifdim\scratchdimen>\pagegoal
-%              \vfill\eject % \penalty-\!!tenthousand\relax
-%            \fi
-%          \fi
-%        \else
-%          % force page break / new
-%          % \vfill\eject % \penalty-\!!tenthousand\relax
-%        \fi
-%      \else
-%        \ifnum#1=\plusone\goodbreak\fi
-%      \fi
-%    \fi}
-
 \chardef\testpagemethod \zerocount % todo: \testnewpage[method=,lines=,voffset=]
 \chardef\testpagetrigger\zerocount
 
@@ -1075,38 +948,32 @@
 
 \def\executepagebreakhandler#1%
   {\edef\@@pagespecification{#1}%
-   \doifdefinedelse{\??pe:\@@pagespecification}
-     {\getvalue{\??pe:\@@pagespecification}}
-     {\doifdefinedelse{\??pe::\@@pagespecification}
-        {\executepagebreakhandlers{\getvalue{\??pe::\@@pagespecification}}}
-        {\getvalue{\??pe:\s!unknown}}}}
+   \ifcsname\??pe:\@@pagespecification\endcsname
+     \csname\??pe:\@@pagespecification\endcsname
+   \else\ifcsname\??pe::\@@pagespecification\endcsname
+     \executepagebreakhandlers{\csname\??pe::\@@pagespecification\endcsname}%
+   \else
+     \csname\??pe:\s!unknown\endcsname
+   \fi\fi}
 
 \long\def\installpagebreakhandler#1#2%
   {\long\setvalue{\??pe:#1}{#2}}
-
-% \definecomplexorsimple\pagebreak
-
-% \def\simplepagebreak
-%   {\executepagebreakhandler\v!ja}
-
-% \def\complexpagebreak[#1]% if empty, do nothing and avoid processing,
-%   {\flushnotes           % see head's; watch how we group
-%    \doifsomething{#1}{\bgroup\executepagebreakhandlers{#1}\egroup}}
 
 \unexpanded\def\pagebreak
   {\dosingleempty\dopagebreak}
 
 \def\dopagebreak[#1]% so, page ornaments are reset after a pagebreak command, unless set
   {\bgroup
+   \flushnotes
    \edef\prevrealpageno{\the\realpageno}%
    \ifcase\pageornamentstate \or
      % disable reset after shipout
      \global\chardef\pageornamentstate\plustwo
    \fi
    \iffirstargument % or if empty i.e. []
-     \flushnotes\executepagebreakhandlers{#1}%
+     \executepagebreakhandlers{#1}%
    \else % so, no pagebreak when \pagebreak[] ! ! !
-     \flushnotes\executepagebreakhandler\v!yes
+     \executepagebreakhandler\v!yes
    \fi
    \ifnum\prevrealpageno<\realpageno
      \global\chardef\pageornamentstate\zerocount
@@ -1375,7 +1242,7 @@
 
 \def\dodobeforeshipout#1%
   {\global\let\beforeshipout\relax
-   \getvalue{\??pg#1\c!before}}
+   \csname\??pg#1\c!before\endcsname}
 
 \def\dobeforeshipout
   {\doifsomething\currentpageselection
@@ -1384,7 +1251,7 @@
 \def\dododoaftershipout#1%
   {\global\let\aftershipout\relax
    \global\let\currentpageselection\empty
-   \getvalue{\??pg#1\c!after}}
+   \csname\??pg#1\c!after\endcsname}
 
 \def\dodoaftershipout#1%
   {\doifelsevalue{\??pg#1\c!option}\v!doublesided

@@ -60,7 +60,7 @@
 %D Here we operate in the \TEX\ catcode regime as we haven't yet defined
 %D catcode regimes. A chicken or egg problem.
 
-\long\def\startruntimeluacode#1\stopruntimeluacode % only simple code (load +init)
+\normalprotected\long\def\startruntimeluacode#1\stopruntimeluacode % only simple code (load +init)
   {\ifproductionrun
      \global\let\startruntimeluacode\relax
      \global\let\stopruntimeluacode \relax
@@ -69,7 +69,7 @@
    \fi
    #1} % maybe no interference
 
-\long\def\startruntimectxluacode#1\stopruntimectxluacode
+\normalprotected\long\def\startruntimectxluacode#1\stopruntimectxluacode
   {\startruntimeluacode\ctxlua{#1}\stopruntimeluacode}
 
 %D Next we load the initialization code.
@@ -133,7 +133,7 @@
 
 \def\ctxluabyteload#1#2% registers and compiles chunk
   {\global\advance\luabytecodecounter \plusone
-   \expanded{\startruntimectxluacode
+   \normalexpanded{\startruntimectxluacode
      lua.bytedata[\the\luabytecodecounter] = { "#1", "#2" }
    \stopruntimectxluacode}%
    \ctxlua {

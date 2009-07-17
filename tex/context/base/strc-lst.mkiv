@@ -25,11 +25,6 @@
 % auto refs to lists (chain)  -> todo (\dododowritetolist)
 % todo: \normalexpanded{\noexpand\everylistentry\emptytoks\the\everylistentry}% \emptytoks, else loop
 
-% \def\linklisttoelement#1#2#3#4{#4}% list location format page data
-
-\def\linklisttoelement#1#2#3#4% % list location format page data
-  {\gotonextinternal\currentlist{#1}{#3}{#4}}
-
 % interface to lua
 
 % we have to deal with compatible processing, i.e. list elements that have two
@@ -70,7 +65,6 @@
    \fi}
 
 % handling
-
 
 % The next code injects data into the list at the current level.
 
@@ -125,6 +119,9 @@
 
 \def\structurelistsecond
   {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"second")}}
+
+\def\structurelistuservariable#1%
+  {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"#1")}}
 
 % \appendtoks
 % \to \everystructurelist
@@ -523,17 +520,19 @@
      {\listparameter\c!command{#3}{#4}{#5}}
      {[\currentlist: #3 -- #4 -- #5]}}
 
+\def\domakelistelement#1#2#3#4% ref internal command data
+ {\dontleavehmode
+  \doifnot{\listparameter\c!interaction}{#1}\locationfalse
+  \iflocation
+    \directgotobox{\setlocationcolor\??ia#4}[internal(#2)]%
+  \else
+    #3{#4}%
+  \fi}
+
 \def\dodofreelistelement#1#2#3#4#5#6#7#8%
-  {\def\makelistelement##1##2%
-     {\noindent % new and needed
-      \hbox
-        {\doifelse{\listparameter\c!interaction}{##1} % \??li ipv \??ia
-           {\setbox0\hbox{\showcontrastlocation{\??li\currentlist}{#6}{##2}}%
-            \linklisttoelement{#2}{#5}{#6}{\box0}}%{\copy0}}%
-           {##2}}}%
-   \listparameter\c!before% can be \hskip
+  {\listparameter\c!before% can be \hskip
    \doifdefinedelse{\??li#1\c!command}
-     {\makelistelement{\listparameter\c!interaction}% this forces all
+     {\domakelistelement{\listparameter\c!interaction}{#2}\hbox
         {\listparameter\c!command
            {#3}% geen conversies etc
            {#4}% geen conversies etc
@@ -541,19 +540,19 @@
      {#7%
       \vbox
         {\forgetall
-         \makelistelement\v!all
+         \domakelistelement\v!all{#2}\hbox
            {\doif{\listparameter\c!headnumber}\v!yes
-              {\makelistelement\v!sectionnumber
+              {\domakelistelement\v!sectionnumber{#2}\hbox
                  {\donestedlistattributes\c!numberstyle\c!numbercolor
                     {\listparameter\c!numbercommand{\currentlistsymbol}}}}%
-            \makelistelement\v!text
+            \domakelistelement\v!text{#2}\hbox
               {\donestedlistattributes\c!textstyle\c!textcolor
                  {\let\\=\newlineinlist
                   \dontconvertfont
                   \listparameter\c!textcommand{#4}}}%
             \doif{\listparameter\c!pagenumber}\v!yes
               {\doifsomething{#5}
-                 {\makelistelement\v!pagenumber
+                 {\domakelistelement\v!pagenumber{#2}\hbox
                     {\donestedlistattributes\c!pagestyle\c!pagecolor
                        {\listparameter\c!pagecommand{#5}}}}}}}%
       #8}%
@@ -594,16 +593,11 @@
         {\!!widtha\listparameter\c!width}}%
    \getvalue{\??li\c!alternative\listparameter\c!alternative}%
    \endgraf
-   \def\makelistelement##1##2%
-     {\doifelse{\listparameter\c!interaction}{##1}
-        {\setbox0\hbox{\showcontrastlocation\??ia{#6}{##2}}%
-         \linklisttoelement{#2}{#5}{#6}{\box0}}%{\copy0}}%
-        {\hbox{##2}}}%
    \doif{\listparameter\c!interaction}\v!text % not supported ! ! ! ! ! ! text == all
      {\setlistparameter\currentlist\c!interaction\v!all}%
  % \dontleavehmode % new, else no margin, but wrong, better (else \indent as well):
    \noindent
-   \makelistelement\v!all
+   \domakelistelement\v!all{#2}\hbox
      {\setlocalhsize
       \hsize\localhsize
       \hbox to \hsize
@@ -612,7 +606,7 @@
          \!!widthb\hsize
          \doifelse{\listparameter\c!headnumber}\v!yes
            {\setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
-              {\makelistelement\v!sectionnumber
+              {\domakelistelement\v!sectionnumber{#2}\hbox
                  {\donestedlistattributes\c!numberstyle\c!numbercolor
                     {\listparameter\c!numbercommand{\currentlistsymbol}}%
                \hfill}}}
@@ -624,7 +618,7 @@
               {\doifsomething{#5}    % \listwidth is new ; temp hack
                  {\hbox \ifdim\listwidth>\zeropoint to \listwidth\fi
                     {\hfill
-                     \makelistelement\v!pagenumber
+                     \domakelistelement\v!pagenumber{#2}\hbox
                        {\donestedlistattributes\c!pagestyle\c!pagecolor
                           {\listparameter\c!pagecommand{#5}}}}}}}%
          \vbox
@@ -711,15 +705,10 @@
      {\setlistparameter\currentlist\c!interaction\v!sectionnumber}%
    \doif{\listparameter\c!interaction}\v!all % not supported
      {\setlistparameter\currentlist\c!interaction\v!sectionnumber}%
-   \def\makelistelement##1##2%
-     {\doifelse{\listparameter\c!interaction}{##1}
-        {\setbox0\hbox{\showcontrastlocation\??ia{#6}{##2}}%
-         \linklisttoelement{#2}{#5}{#6}{\box0}}%{\copy0}}%
-        {\hbox{##2}}}%
    \setbox4\hbox
      {\doif{\listparameter\c!pagenumber}\v!yes
         {\doifsomething{#5}
-           {\makelistelement\v!pagenumber
+           {\domakelistelement\v!pagenumber{#2}\hbox
               {\donestedlistattributes\c!pagestyle\c!pagecolor
                  {\listparameter\c!pagecommand{#5}}}}}}%
    \doif{\listparameter\c!headnumber}\v!yes
@@ -729,7 +718,7 @@
       \ifdone
         \hbox
           {\listparameter\c!left
-           \makelistelement\v!sectionnumber
+           \domakelistelement\v!sectionnumber{#2}\hbox
              {\donestedlistattributes\c!numberstyle\c!numbercolor
                 {\listparameter\c!numbercommand{\currentlistsymbol}}}%
            \listparameter\c!right
@@ -777,12 +766,7 @@
 \def\dodofixdlistelementEFG#1#2#3#4#5#6#7#8%
   {\noindent
    \bgroup
-   \def\makelistelement##1##2% isolated by Wolfgang Schuster
-     {\doifelse{\listparameter\c!interaction}{##1}
-        {#2{##2}}
-        {\setbox0\hbox{#2{\showcontrastlocation\??ia{#8}{##2}}}%
-         \linklisttoelement{#4}{#7}{#8}{\box0}}}%
-   \makelistelement\v!no
+   \domakelistelement\v!no{#4}{#2}%
      {\let\\=\newlineinlist
       #1% in case E nils the strut (still needed?)
       \dosetlistattributes\c!style\c!color

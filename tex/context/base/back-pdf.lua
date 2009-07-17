@@ -14,63 +14,30 @@ than one argument to <l n='tex'/>.</p>
 --ldx]]--
 
 local type, next, tostring = type, next, tostring
-local char, byte, format, gsub = string.char, string.byte, string.format, string.gsub
+local char, byte, format, gsub, rep, gmatch = string.char, string.byte, string.format, string.gsub, string.rep, string.gmatch
 local concat = table.concat
+local round = math.round
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local texsprint, texwrite = tex.sprint, tex.write
 
 ctxcatcodes = tex.ctxcatcodes
 
-pdf = pdf or { } -- global
+local copy_node = node.copy
 
-backends.pdf = pdf -- registered
-
-function pdf.cleandestination(str)
-    texsprint((gsub(str,"[%/%#%<%>%[%]%(%)%-%s]+","-")))
-end
-
-function pdf.cleandestination(str)
-    texsprint((gsub(str,"[%/%#%<%>%[%]%(%)%-%s]+","-")))
-end
-
-function pdf.sanitizedstring(str)
-    texsprint((gsub(str,"([\\/#<>%[%]%(%)])","\\%1")))
-end
-
-function pdf.hexify(str)
-    texwrite("feff")
-    for b in utfvalues(str) do
-		if b < 0x10000 then
-            texwrite(format("%04x",b))
-        else
-            texwrite(format("%04x%04x",b/1024+0xD800,b%1024+0xDC00))
-        end
-    end
-end
-
-function pdf.utf8to16(s,offset) -- derived from j. sauter's post on the list
-    offset = (offset and 0x110000) or 0 -- so, only an offset when true
-	texwrite(char(offset+254,offset+255))
-	for c in utfvalues(s) do
-		if c < 0x10000 then
-			texwrite(char(offset+c/256,offset+c%256))
-		else
-			c = c - 0x10000
-			local c1, c2 = c / 1024 + 0xD800, c % 1024 + 0xDC00
-			texwrite(char(offset+c1/256,offset+c1%256,offset+c2/256,offset+c2%256))
-		end
-	end
-end
-
-pdf.nodeinjections = pdf.nodeinjections or { } -- we hash elsewhere
-pdf.codeinjections = pdf.codeinjections or { } -- we hash elsewhere
-pdf.registrations  = pdf.registrations  or { } -- we hash elsewhere
+local nodeinjections = backends.pdf.nodeinjections
+local codeinjections = backends.pdf.codeinjections
+local registrations  = backends.pdf.registrations
 
 local pdfliteral, register = nodes.pdfliteral, nodes.register
 
-local nodeinjections = pdf.nodeinjections
-local codeinjections = pdf.codeinjections
-local registrations  = pdf.registrations
+local pdfconstant   = lpdf.constant
+local pdfdictionary = lpdf.dictionary
+local pdfarray      = lpdf.array
+local pdfreference  = lpdf.reference
+local pdfverbose    = lpdf.verbose
+
+local pdfreserveobj   = pdf.reserveobj
+local pdfimmediateobj = pdf.immediateobj
 
 function nodeinjections.rgbcolor(r,g,b)
     return register(pdfliteral(format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)))
@@ -80,7 +47,7 @@ function nodeinjections.cmykcolor(c,m,y,k)
     return register(pdfliteral(format("%s %s %s %s k %s %s %s %s K",c,m,y,k,c,m,y,k)))
 end
 
-function nodeinjections.graycolor(s)
+function nodeinjections.graycolor(s) -- caching 0/1 does not pay off
     return register(pdfliteral(format("%s g %s G",s,s)))
 end
 
@@ -95,21 +62,15 @@ function nodeinjections.transparency(n)
     return register(pdfliteral(format("/Tr%s gs",n)))
 end
 
-function nodeinjections.overprint()
-    return register(pdfliteral("/GSoverprint gs"))
-end
+local positive  = register(pdfliteral("/GSpositive gs"))
+local negative  = register(pdfliteral("/GSnegative gs"))
+local overprint = register(pdfliteral("/GSoverprint gs"))
+local knockout  = register(pdfliteral("/GSknockout gs"))
 
-function nodeinjections.knockout()
-    return register(pdfliteral("/GSknockout gs"))
-end
-
-function nodeinjections.positive()
-    return register(pdfliteral("/GSpositive gs"))
-end
-
-function nodeinjections.negative()
-    return register(pdfliteral("/GSnegative gs"))
-end
+function nodeinjections.positive () return copy_node(positive)  end
+function nodeinjections.negative () return copy_node(negative)  end
+function nodeinjections.overprint() return copy_node(overprint) end
+function nodeinjections.knockout () return copy_node(knockout)  end
 
 local effects = {
     normal = 0,
@@ -126,65 +87,387 @@ function nodeinjections.effect(stretch,rulethickness,effect)
     return register(pdfliteral(format("%s Tc %s w %s Tr",stretch,rulethickness,effect))) -- watch order
 end
 
+-- cached ..
+
+local cache = { }
+
 function nodeinjections.startlayer(name)
-    return register(pdfliteral(format("/OC /%s BDC",name)))
+    local c = cache[name]
+    if not c then
+        c = register(pdfliteral(format("/OC /%s BDC",name)))
+        cache[name] = c
+    end
+    return copy_node(c)
 end
+
+local stop = register(pdfliteral("EMC"))
 
 function nodeinjections.stoplayer()
-    return register(pdfliteral("EMC"))
+    return copy_node(stop)
 end
 
+local cache = { }
+
 function nodeinjections.switchlayer(name)
-    return register(pdfliteral(format("EMC /OC /%s BDC",name)))
+    local c = cache[name]
+    if not c then
+        c = register(pdfliteral(format("EMC /OC /%s BDC",name)))
+    end
+    return copy_node(c)
 end
 
 -- code
 
-function codeinjections.insertmovie(spec) -- width, height, factor, repeat, controls, preview, label, foundname
-    local width, height, factor = spec.width, spec.height, spec.factor or number.dimenfactors.bp
-    local options, actions = "", ""
-    if spec["repeat"] then
-        actions = actions .. "/Mode /Repeat "
-    end
-    if spec.controls then
-        actions = actions .. "/ShowControls true "
-    else
-        actions = actions .. "/ShowControls false "
-    end
-    if spec.preview then
-        options = options .. "/Poster true "
-    end
-    if actions ~= "" then
-        actions= "/A <<" .. actions .. ">>"
-    end
-    return format( -- todo: doPDFannotation
-        "\\insertpdfannotation{%ssp}{%ssp}{/Subtype /Movie /Border [0 0 0] /T (movie %s) /Movie << /F (%s) /Aspect [%s %s] %s>> %s}",
-        width, height, spec.label, spec.foundname, factor * width, factor * height, options, actions
-    )
+function codeinjections.insertmovie(specification)
+    -- managed in figure inclusion: width, height, factor, repeat, controls, preview, label, foundname
+    local width  = specification.width
+    local height = specification.height
+    local factor = specification.factor or number.dimenfactors.bp
+    local moviedict = pdfdictionary {
+        F      = specification.foundname,
+        Aspect = pdfarray { factor * width, factor * height },
+        Poster = (specification.preview and true) or false,
+    }
+    local controldict = pdfdictionary {
+        ShowControls = (specification.controls and true) or false,
+        Mode         = (specification["repeat"] and pdfconstant("Repeat")) or nil,
+    }
+    local action = pdfdictionary {
+        Subtype = pdfconstant("Movie"),
+        Border  = pdfarray { 0, 0, 0 },
+        T       = format("movie %s",specification.label),
+        Movie   = moviedict,
+        A       = controldict,
+    }
+    node.write(nodes.pdfannot(width,height,0,action()))
 end
 
-local s_template_g = "\\dodoPDFregistergrayspotcolor{%s}{%s}{%s}{%s}{%s}"             -- n f d p s (p can go away)
-local s_template_r = "\\dodoPDFregisterrgbspotcolor {%s}{%s}{%s}{%s}{%s}{%s}{%s}"     -- n f d p r g b
-local s_template_c = "\\dodoPDFregistercmykspotcolor{%s}{%s}{%s}{%s}{%s}{%s}{%s}{%s}" -- n f d p c m y k
-local m_template_g = "\\doPDFregistergrayindexcolor{%s}{%s}{%s}{%s}{%s}"              -- n f d p s (p can go away)
-local m_template_r = "\\doPDFregisterrgbindexcolor {%s}{%s}{%s}{%s}{%s}{%s}{%s}"      -- n f d p r g b
-local m_template_c = "\\doPDFregistercmykindexcolor{%s}{%s}{%s}{%s}{%s}{%s}{%s}{%s}"  -- n f d p c m y k
-local s_template_e = "\\doPDFregisterspotcolorname{%s}{%s}"                           -- name, e -- todo in new backend: gsub(e," ","#20")
-local t_template   = "\\presetPDFtransparencybynumber{%s}{%s}{%s}"                    -- n, a, t
+function codeinjections.insertsound(specification)
+    -- rmanaged in interaction: repeat, label, foundname
+    local soundclip = interactions.soundclip(specification.label)
+    if soundclip then
+        local controldict = pdfdictionary {
+            Mode = (specification["repeat"] and pdfconstant("Repeat")) or nil
+        }
+        local sounddict = pdfdictionary {
+            F = soundclip.filename
+        }
+        local action = pdfdictionary {
+            Subtype = pdfconstant("Movie"),
+            Border  = pdfarray { 0, 0, 0 },
+            T       = format("sound %s",specification.label),
+            Movie   = sounddict,
+            A       = controldict,
+        }
+        node.write(nodes.pdfannot(0,0,0,action()))
+    end
+end
 
-function registrations.grayspotcolor (n,f,d,p,s)       states.collect(format(s_template_g,n,f,d,p,s))       end
-function registrations.rgbspotcolor  (n,f,d,p,r,g,b)   states.collect(format(s_template_r,n,f,d,p,r,g,b))   end
-function registrations.cmykspotcolor (n,f,d,p,c,m,y,k) states.collect(format(s_template_c,n,f,d,p,c,m,y,k)) end
-function registrations.grayindexcolor(n,f,d,p,s)       states.collect(format(m_template_g,n,f,d,p,s))       end
-function registrations.rgbindexcolor (n,f,d,p,r,g,b)   states.collect(format(m_template_r,n,f,d,p,r,g,b))   end
-function registrations.cmykindexcolor(n,f,d,p,c,m,y,k) states.collect(format(m_template_c,n,f,d,p,c,m,y,k)) end
-function registrations.spotcolorname (name,e)          states.collect(format(s_template_e,name,e))          end -- texsprint(ctxcatcodes,format(s_template_e,name,e))
-function registrations.transparency  (n,a,t)           states.collect(format(t_template  ,n,a,t))           end -- too many, but experimental anyway
+-- spot- and indexcolors
+
+local pdf_separation  = pdfconstant("Separation")
+local pdf_indexed     = pdfconstant("Indexed")
+local pdf_device_n    = pdfconstant("DeviceN")
+local pdf_device_rgb  = pdfconstant("DeviceRGB")
+local pdf_device_cmyk = pdfconstant("DeviceCMYK")
+local pdf_device_gray = pdfconstant("Devicegray")
+local pdf_extgstate   = pdfconstant("ExtGState")
+
+local pdf_rbg_range  = pdfarray { 0, 1, 0, 1, 0, 1 }
+local pdf_cmyk_range = pdfarray { 0, 1, 0, 1, 0, 1, 0, 1 }
+local pdf_gray_range = pdfarray { 0, 1 }
+
+local rgb_function  = "dup %s mul exch dup %s mul exch %s mul"
+local cmyk_function = "dup %s mul exch dup %s mul exch dup %s mul exch %s mul"
+local gray_function = "%s mul"
+
+local documentcolorspaces = pdfdictionary()
+
+local spotcolorhash      = { } -- not needed
+local spotcolornames     = { }
+local indexcolorhash     = { }
+local delayedindexcolors = { }
+
+function registrations.spotcolorname(name,e)
+    spotcolornames[name] = e or name
+end
+
+local function registersomespotcolor(name,noffractions,names,p,colorspace,range,funct)
+    noffractions = tonumber(noffractions) or 1 -- to be checked
+    if noffractions == 0 then
+        -- can't happen
+    elseif noffractions == 1 then
+        local dictionary = pdfdictionary {
+            FunctionType = 4,
+            Domain       = { 0, 1 },
+            Range        = range,
+        }
+        local n = pdfimmediateobj("stream",format("{ %s }",funct),dictionary())
+        local array = pdfarray {
+            pdf_separation,
+            pdfconstant(spotcolornames[name] or name),
+            colorspace,
+            pdfreference(n),
+        }
+        local m = pdfimmediateobj(tostring(array))
+        local mr = pdfreference(m)
+        spotcolorhash[name] = m
+        documentcolorspaces[name] = mr
+        lpdf.adddocumentcolorspace(name,mr)
+    else
+        local cnames = pdfarray()
+        local domain = pdfarray()
+        for n in gmatch(names,"[^,]+") do
+            cnames[#cnames+1] = pdfconstant(spotcolornames[n] or n)
+            domain[#domain+1] = 0
+            domain[#domain+1] = 1
+        end
+        local dictionary = pdfdictionary {
+            FunctionType = 4,
+            Domain       = domain,
+            Range        = range,
+        }
+        local n = pdfimmediateobj("stream",format("{ %s %s }",rep("pop ",noffractions),funct),dictionary())
+        local array = pdfarray {
+            pdf_device_n,
+            cnames,
+            colorspace,
+            pdfreference(n),
+        }
+        local m = pdfimmediateobj(tostring(array))
+        local mr = pdfreference(m)
+        spotcolorhash[name] = m
+        documentcolorspaces[name] = mr
+        lpdf.adddocumentcolorspace(name,mr)
+    end
+end
+
+function registersomeindexcolor(name,noffractions,names,p,colorspace,range,funct)
+    noffractions = tonumber(noffractions) or 1 -- to be checked
+    local cnames = pdfarray()
+    local domain = pdfarray()
+    if names == "" then
+        names = name .. ",None"
+    else
+        names = names .. ",None"
+    end
+    for n in gmatch(names,"[^,]+") do
+        cnames[#cnames+1] = pdfconstant(spotcolornames[n] or n)
+        domain[#domain+1] = 0
+        domain[#domain+1] = 1
+    end
+    local dictionary = pdfdictionary {
+        FunctionType = 4,
+        Domain       = domain,
+        Range        = range,
+    }
+    local n = pdfimmediateobj("stream",format("{ %s %s }",rep("exch pop ",noffractions),funct),dictionary()) -- exch pop
+    local a = pdfarray {
+        pdf_device_n,
+        cnames,
+        colorspace,
+        pdfreference(n),
+    }
+    if p == "" then
+        p = "1"
+    else
+        p = p .. ",1"
+    end
+    local pi = { }
+    for pp in gmatch(p,"[^,]+") do
+        pi[#pi+1] = tonumber(pp)
+    end
+    local vector, set, n = { }, { }, #pi
+    for i=255,0,-1 do
+        for j=1,n do
+            set[j] = format("%02X",round(pi[j]*i))
+        end
+        vector[#vector+1] = concat(set)
+    end
+    vector = pdfverbose { "<", concat(vector, " "), ">" }
+    local n = pdfimmediateobj(tostring(pdfarray{ pdf_indexed, a, 255, vector }))
+    lpdf.adddocumentcolorspace(format("%s_indexed",name),pdfreference(n))
+    return n
+end
+
+-- actually, names (parent) is the hash
+
+local function delayindexcolor(name,names,func)
+    local hash = (names ~= "" and names) or name
+ -- logs.report("index colors","delaying '%s'",name)
+    delayedindexcolors[hash] = func
+end
+
+local function indexcolorref(name) -- actually, names (parent) is the hash
+    if not indexcolorhash[name] then
+     -- logs.report("index colors","registering '%s'",name)
+        local delayedindexcolor = delayedindexcolors[name]
+        if type(delayedindexcolor) == "function" then
+            indexcolorhash[name] = delayedindexcolor()
+            delayedindexcolors[name] = true
+        end
+    end
+    return indexcolorhash[name]
+end
+
+function registrations.rgbspotcolor(name,noffractions,names,p,r,g,b)
+    if noffractions == 1 then
+        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rbg_range,format(rgb_function,r,g,b))
+    else
+        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rbg_range,format("%s %s %s",r,g,b))
+    end
+    delayindexcolor(name,names,function()
+        return registersomeindexcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,format(rgb_function,r,g,b))
+    end)
+end
+
+function registrations.cmykspotcolor(name,noffractions,names,p,c,m,y,k)
+    if noffractions == 1 then
+        registersomespotcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,format(cmyk_function,c,m,y,k))
+    else
+        registersomespotcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,format("%s %s %s %s",c,m,y,k))
+    end
+    delayindexcolor(name,names,function()
+        return registersomeindexcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,format(cmyk_function,c,m,y,k))
+    end)
+end
+
+function registrations.grayspotcolor(name,noffractions,names,p,s)
+    if noffractions == 1 then
+        registersomespotcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,format(gray_function,s))
+    else
+        registersomespotcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,s)
+    end
+    delayindexcolor(name,names,function()
+        return registersomeindexcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,format(gray_function,s))
+    end)
+end
+
+function registrations.rgbindexcolor(name,noffractions,names,p,r,g,b)
+    registersomeindexcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,format(rgb_function,r,g,b))
+end
+
+function registrations.cmykindexcolor(name,noffractions,names,p,c,m,y,k)
+    registersomeindexcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,format(cmyk_function,c,m,y,k))
+end
+
+function registrations.grayindexcolor(name,noffractions,names,p,s)
+    registersomeindexcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,gray_function)
+end
+
+function codeinjections.setfigurecolorspace(data,figure)
+    local color = data.request.color
+    if color then
+        local ref = indexcolorref(color)
+        if ref then
+            figure.colorspace = ref
+            data.used.color = color
+        end
+    end
+end
+
+-- transparency
+
+local transparencies = { [0] =
+    pdfconstant("Normal"),
+    pdfconstant("Normal"),
+    pdfconstant("Multiply"),
+    pdfconstant("Screen"),
+    pdfconstant("Overlay"),
+    pdfconstant("SoftLight"),
+    pdfconstant("HardLight"),
+    pdfconstant("ColorDodge"),
+    pdfconstant("ColorBurn"),
+    pdfconstant("Darken"),
+    pdfconstant("Lighten"),
+    pdfconstant("Difference"),
+    pdfconstant("Exclusion"),
+    pdfconstant("Compatible"),
+}
+
+local documenttransparencies = { }
+local transparencyhash       = { } -- not needed
+
+local done = false
+
+function registrations.transparency(n,a,t)
+    if not done then
+        local d = pdfdictionary {
+              Type = pdf_extgstate,
+              ca   = 1,
+              CA   = 1,
+              BM   = transparencies[1],
+              AIS  = false,
+            }
+        local m = pdfimmediateobj(tostring(d))
+        local mr = pdfreference(m)
+        transparencyhash[0] = m
+        documenttransparencies[0] = mr
+        lpdf.adddocumentextgstate("Tr0",mr)
+        done = true
+    end
+    if n > 0 then
+        local d = pdfdictionary {
+              Type = pdf_extgstate,
+              ca   = tonumber(t),
+              CA   = tonumber(t),
+              BM   = transparencies[a] or transparencies[0],
+              AIS  = false,
+            }
+        local m = pdfimmediateobj(tostring(d))
+        local mr = pdfreference(m)
+        transparencyhash[n] = m
+        documenttransparencies[n] = mr
+        lpdf.adddocumentextgstate(format("Tr%s",n),mr)
+    end
+end
+
+function codeinjections.adddocumentinfo(key,value)
+    lpdf.addtoinfo(key,lpdf.tosixteen(value))
+end
+
+-- graphics
+
+function codeinjections.setfigurealternative(data,figure)
+    local display = data.request.display
+    if display and display ~= ""  then
+        local request = data.request
+        figures.push {
+            name   = request.display,
+            page   = request.page,
+            size   = request.size,
+            prefix = request.prefix,
+            cache  = request.cache,
+            width  = request.width,
+            height = request.height,
+        }
+        figures.identify()
+        local displayfigure = figures.check()
+        if displayfigure then
+        --  figure.aform = true
+            img.immediatewrite(figure)
+            local a = lpdf.array {
+                lpdf.dictionary {
+                    Image              = lpdf.reference(figure.objnum),
+                    DefaultForPrinting = true,
+                }
+            }
+            local d = lpdf.dictionary {
+                Alternates = lpdf.reference(pdf.immediateobj(tostring(a))),
+            }
+            displayfigure.attr = d()
+            return displayfigure, figures.current()
+        end
+    end
+end
 
 -- eventually we need to load this runtime
 --
 -- backends.install((environment and environment.arguments and environment.arguments.backend) or "pdf")
 --
 -- but now we need to force this as we also load the pdf tex part which hooks into all kind of places
+
+codeinjections.finalizepage     = lpdf.finalizepage
+codeinjections.finalizedocument = lpdf.finalizedocument
 
 backends.install("pdf")

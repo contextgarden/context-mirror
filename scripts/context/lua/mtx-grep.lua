@@ -44,7 +44,7 @@ function scripts.grep.find(pattern, files, offset)
                         -- skip
                     elseif find(line,pattern) then
                         m = m + 1
-                        write_nl(format("%s %s: %s",name,n,line))
+                        write_nl(format("%s %6i: %s",name,n,line))
                         io.flush()
                     end
                 end
@@ -62,7 +62,7 @@ function scripts.grep.find(pattern, files, offset)
                     n = n + 1
                     if find(line,pattern) then
                         m = m + 1
-                        write_nl(format("%s %s: %s",name,n,line))
+                        write_nl(format("%s %6i: %s",name,n,line))
                         io.flush()
                     end
                 end

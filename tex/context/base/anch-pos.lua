@@ -29,7 +29,7 @@ local dx, dy = "0pt", "0pt"
 
 local function initializer()
     ptbs, pcol = jobpositions.tobesaved, jobpositions.collected
-    local p = pcol["page:0"]
+    local p = pcol["page:0"] -- page:1
     if p then
 -- to be checked !
 --~ dx, dy = p[2] or "0pt", p[3] or "0pt"

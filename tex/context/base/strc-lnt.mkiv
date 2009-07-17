@@ -1,0 +1,193 @@
+%D \module
+%D   [       file=strc-lnt,
+%D        version=2002.05.10,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Line Notes,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Line Notes}
+
+%D This module loads on top of the footnote and line numbering macros.
+
+\unprotect
+
+\newcounter\linenotecounter
+\newtoks   \collectedlinenotes
+\newif     \iftracelinenotes
+
+\appendtoks
+  \the\collectedlinenotes
+\to \everylinenumber
+
+\appendtoks
+  \global\collectedlinenotes\emptytoks
+\to \beforeeverylinenumbering
+
+\def\dohandlelinenote#1#2#3%
+  {\bgroup
+   \expanded{\beforesplitstring#2}\at--\to\linenotelinenumber
+   \ifnum\linenotelinenumber=\linenumber\relax
+      \def\linenotelinenumber##1{#2}%
+      \setupnote[#1][\c!numbercommand=\linenotelinenumber,\c!textcommand=\gobbleoneargument]%
+      \setnote[#1]{#3}%
+   \fi
+   \egroup}
+
+\def\dotracedlinenote#1%
+  {\iftracelinenotes
+     \hbox to \zeropoint
+       {\forgetall
+        \hsize\zeropoint
+        \hss
+        \vbox to \strutheight{\llap{\red\infofont\setstrut\linenotecounter}\vss}%
+        {\color[blue]{\vl}}%
+        \vbox to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
+        \hss}%
+      \prewordbreak
+   \fi}
+
+\def\dolinenote#1#2%
+  {\doglobal\increment\linenotecounter
+   \doifreferencefoundelse{\??rr:\linenotecounter}%
+     {\expanded{\doglobal\noexpand\appendtoks\noexpand\dohandlelinenote
+        {#1}{\currenttextreference}}{#2}\to\collectedlinenotes}
+     \donothing
+   \dotracedlinenote\empty
+   \expanded{\someline[\??rr:\linenotecounter]}}
+
+\def\dostartlinenote#1[#2]#3%
+  {\doifreferencefoundelse{\??rr:#2}%
+     {\expanded{\doglobal\noexpand\appendtoks\noexpand\dohandlelinenote
+        {#1}{\currenttextreference}}{#3}\to\collectedlinenotes}%
+     {\unknownreference{#2}}%
+   \dotracedlinenote{#2}%
+   \startline[\??rr:#2]}
+
+\def\dostoplinenote#1[#2]%
+  {\stopline[\??rr:#2]}
+
+% defining them
+
+\def\definelinenote
+  {\dodoubleempty\dodefinelinenote}
+
+\def\dodefinelinenote[#1][#2]%
+  {\definenote[#1][#2]%
+   \setvalue        {#1}{\dolinenote     {#1}}%
+   \setvalue{\e!start#1}{\dostartlinenote{#1}}%
+   \setvalue{\e!stop #1}{\dostoplinenote {#1}}}
+
+\def\setuplinenote % convenient
+  {\setupnote}
+
+% We predefine one, namely \type {\linenote} cum suis.
+
+\definelinenote[\v!linenote]
+
+% \startbuffer[test]
+% \startlinenumbering[100]
+% test \linenote {oeps} test test test test test test
+% test \startlinenote [well] {oeps} test test test test test test
+% test \linenote {oeps} test test test test test test
+% test \linenote {oeps} test test test test test test
+% test \linenote {oeps} test test test test test test
+% test \linenote {oeps} test test test test test test
+% test \stoplinenote [well] test test test test test test
+% \stoplinenumbering
+% \stopbuffer
+%
+% \setupnotedefinition[linenote] [location=serried,distance=.5em]
+%
+% {\typebuffer[test] \getbuffer[test]} \page
+%
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [align=left]
+% \stopbuffer
+%
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
+%
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=1em,
+%    align=left]
+% \stopbuffer
+%
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
+%
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=2em,
+%    distance=.5em,
+%    align=left]
+% \stopbuffer
+%
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
+%
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=2em,
+%    align=middle]
+% \stopbuffer
+%
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
+%
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [conversion=romannumerals,
+%    start=1,
+%    step=1,
+%    location=text,
+%    style=slanted,
+%    color=blue,
+%    width=1.5em]
+% \stopbuffer
+%
+% {\typebuffer[setup] \startnarrower\getbuffer[setup,test]\stopnarrower} \page
+%
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=4em,
+%    left=--,
+%    right=--,
+%    align=middle]
+% \stopbuffer
+%
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
+%
+% \startbuffer[setup-1]
+% \setuplinenumbering
+%   [style=\bfxx,
+%    command=\WatchThis]
+% \stopbuffer
+%
+% \startbuffer[setup-2]
+% \def\WatchThis#1%
+%   {\ifodd\linenumber
+%      \definecolor[linecolor][red]%
+%    \else
+%      \definecolor[linecolor][green]%
+%    \fi
+%    \inframed
+%      [offset=1pt,frame=off,background=color,backgroundcolor=linecolor]
+%      {#1}}
+% \stopbuffer
+%
+% {\typebuffer[setup-1,setup-2] \getbuffer[setup-1,setup-2,test]} \page
+%
+% \startbuffer[setup-1]
+% \setuplinenumbering
+%   [location=inright,
+%    style=\bfxx,
+%    command=\WatchThis]
+% \stopbuffer
+%
+% {\typebuffer[setup-1] \getbuffer[setup-1,setup-2,test]} \page
+
+\protect \endinput

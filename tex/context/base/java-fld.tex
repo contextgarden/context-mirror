@@ -19,15 +19,7 @@
 
   function Sanitized_TeX_String (value)
     { var v = value ;
-    % v = v.replace(/\\\\\\/L/g,"\\225") ; % problematic
-    % v = v.replace(  /\\\\OE/g,"\\226") ; % problematic
-    % v = v.replace(  /\\\\vS/g,"\\227") ; % problematic
-    % v = v.replace(  /\\\\"Y/g,"\\230") ; % problematic
-    % v = v.replace(  /\\\\vZ/g,"\\231") ; % problematic
-    % v = v.replace(/\\\\\\/l/g,"\\233") ; % problematic
       v = v.replace(  /\\\\oe/g,"\\234") ;
-    % v = v.replace(  /\\\\vs/g,"\\235") ; % problematic
-    % v = v.replace(  /\\\\vz/g,"\\236") ; % problematic
       v = v.replace(  /\\\\<</g,"\\253") ;
       v = v.replace(  /\\\\>>/g,"\\273") ;
       v = v.replace(  /\\\\`A/g,"\\300") ;
@@ -52,7 +44,6 @@
       v = v.replace(  /\\\\^O/g,"\\324") ;
       v = v.replace(  /\\\\~O/g,"\\325") ;
       v = v.replace(  /\\\\"O/g,"\\326") ;
-    % v = v.replace(/\\\\\\/O/g,"\\330") ; % problematic
       v = v.replace(  /\\\\`U/g,"\\331") ;
       v = v.replace(  /\\\\'U/g,"\\332") ;
       v = v.replace(  /\\\\^U/g,"\\333") ;
@@ -81,7 +72,6 @@
       v = v.replace(  /\\\\^o/g,"\\364") ;
       v = v.replace(  /\\\\~o/g,"\\365") ;
       v = v.replace(  /\\\\"o/g,"\\366") ;
-    % v = v.replace(/\\\\\\/o/g,"\\370") ; % problematic
       v = v.replace(  /\\\\`u/g,"\\371") ;
       v = v.replace(  /\\\\'u/g,"\\372") ;
       v = v.replace(  /\\\\^u/g,"\\373") ;
@@ -129,7 +119,7 @@
 
 \startJSpreamble fields_1 used now
 
-var visible_field  = new Array() ; % no garbage collection !
+var visible_field  = new Array() ;
 var visible_fields = 0 ;
 
 function PresetFields ( )
@@ -140,13 +130,11 @@ function Preset_Fields ( )
 
 function Hide_When_Down ( )
   { event.target.hidden = true }
-% { event.target.display = display.hidden }
 
 function Hide_Field ( Name )
   { var v = this.getField(Name) ;
     if (v)
       { v.hidden = true ;
-    % { v.display = display.hidden ;
         v.readonly = true ;
         this.dirty = false } }
 
@@ -173,11 +161,11 @@ function Hide_Fields ()
       { Hide_Field(visible_field[visible_fields]) ;
         --visible_fields } }
 
-function Vide_Fields ( Name ) % show only one field
+function Vide_Fields ( Name )
   { Hide_Fields () ;
     Vide_Field ( Name) }
 
-function Vide_Hide_Fields ( Name ) % show only one field
+function Vide_Hide_Fields ( Name )
   { Hide_Fields () ;
     Vide_Hide_Field ( Name) }
 
@@ -185,10 +173,6 @@ function Toggle_Hide ( Name )
   { var v = this.getField(Name) ;
     if (v)
       { v.hidden = !v.hidden ;
-      % if v.display == display.hidden
-      %   { v.display = display.visible }
-      % else
-      %   { v.display = display.hidden }
         this.dirty = false } }
 
 function Field_On ( Name )
@@ -218,10 +202,6 @@ function Flip_Fields ( Name )
       { v = this.getField(Names[i]) ;
         if (v)
           { v.hidden = !v.hidden ;
-          % if v.display == display.hidden
-          %   { v.display = display.visible }
-          % else
-          %   { v.display = display.hidden }
             v.value = "On" } } }
 
 function Forget_Changes ()
@@ -229,7 +209,6 @@ function Forget_Changes ()
 
 function ForgetChanges ()
   { this.dirty = false }
-
 \stopJSpreamble
 
 %\startJScode{Hide_When_Down}  Hide_When_Down()     \stopJScode

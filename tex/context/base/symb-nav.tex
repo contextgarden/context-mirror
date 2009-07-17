@@ -15,11 +15,13 @@
 
 \loadmapfile[original-base.map] % \loadmapfile [original-context-symbol.map]
 
-\definefontsynonym [ContextNavigation] [contnav]
+\ifnum\texengine=\luatexengine
+    \definefontsynonym [ContextNavigation] [contnav.tfm]
+\else
+    \definefontsynonym [ContextNavigation] [contnav]
+\fi
 
-% \def\ContextNavigationGlyph#1{\getglyph{ContextNavigation}{\char#1}}
-
-\def\ContextNavigationGlyph#1{\getrawglyph{contnav}{\char#1}}
+\def\ContextNavigationGlyph#1{\getglyph{ContextNavigation}{\char#1}}
 
 \startsymbolset [navigation 1]
 

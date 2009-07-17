@@ -1,0 +1,866 @@
+%D \module
+%D   [       file=core-ltb,
+%D        version=2002.10.31,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Line Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% testfile: tfmetrics.tex
+
+% todo: als nx>1, dan in geval van rek tussenruimte berekenen en optellen
+% bij breedte, dus: nx nog niet gebruiken in combinatie met rek ! ! ! ! !
+
+% This module is experimental, undocumented, and currently only set up
+% eTeX. It provides a mechanism for typesetting very large tables,
+% spanning many pages horizontally and vertically, with repeated
+% header lines and (entry) columns, tab tracking, color, etc. In does
+% two passes over a table, which is why the table goes into a
+% buffer or file. As said, tables can be real huge.
+
+% \BH \BC .. \EC \BC .. \EC \EH % append
+% \BR \BC .. \EC \BC .. \EC \ER
+%
+% or
+%
+% \NC .. \NC .. \NC \NR (todo: optional last \NC)
+
+% alternative:
+%
+% (1) direct run, save content in macro, but only if needed
+%
+% todo
+%
+% (2) buffered table content
+%
+% \startbuffer
+%   \startlinetablehead
+%   \stoplinetablehead
+%   \startlinetablebody
+%   \stoplinetablebody
+% \stopbuffer
+%
+% \processlinetablebuffer[buffer]
+%
+% in buffer : head and body
+%
+% (3) unbuffered run, multipass
+%
+% - run with starting width zero / prev run
+% - clip on prev run
+% - flush real widths
+
+\writestatus{loading}{ConTeXt Table Macros / Line Tables}
+
+\unprotect
+
+\chardef\linetablesplitstate\zerocount
+\chardef\linetableheadstate \zerocount
+
+\edef\??ler{\??le:r:}
+\edef\??lec{\??le:c:}
+\edef\??lew{\??le:w:}
+\edef\??leh{\??le:h:}
+\edef\??led{\??le:d:}
+
+\newif\iflinetablepreroll
+\newif\ifinlinetable
+
+\newcount\linetablecolumn
+\newcount\linetablesubcol
+\newdimen\linetablewidth
+\newdimen\linetableheight
+\newbox  \linetablecell
+
+\let\noflinetablecolumns\!!zerocount
+\let\noflinetablerows   \!!zerocount
+\let\noflinetablelines  \!!zerocount
+\let\noflinetableparts  \!!zerocount
+\let\linetablepart      \!!plusone
+\let\linetablestep      \!!plusone
+\let\linetableline      \!!zerocount
+\let\linetablerow       \!!zerocount
+\let\linetablerows      \!!zerocount
+
+\initializetablebox     \zerocount % holds repeater
+
+\chardef\linetablehmode \zerocount
+\chardef\linetablepage  \zerocount
+\chardef\linetablerepeat\zerocount
+
+\def\setuplinetable
+  {\dotripleempty\dosetuplinetable}
+
+\def\dosetuplinetable[#1][#2][#3]%
+  {\ifthirdargument
+     \getparameters[\??le:#1:#2][#3]%
+   \else\ifsecondargument
+     \getparameters[\??lec#1][#2]%
+   \else
+     \getparameters[\??le][#1]%
+   \fi\fi}
+
+\setuplinetable
+  [\c!n=\!!maxcard,
+   \c!lines=\!!maxcard,
+   \c!nx=\plusone,
+   \c!nleft=0,
+   \c!repeat=\v!yes, % when \c!nleft>0, repeat on both pages
+   \c!before=,
+   \c!after=,
+   \c!inbetween=\page,
+   \c!distance=\zeropoint,
+   \c!stretch=\v!no,
+   \c!align=\c!right,
+   \c!leftoffset=.25ex,
+   \c!rightoffset=\linetableparameter\c!leftoffset,
+   \c!maxwidth=\zeropoint,
+   \c!width=5em,
+   \c!height=\v!fit, % \v!line = faster
+   \c!background=,
+   \c!backgroundcolor=]
+
+\def\linetableparameter#1%
+  {\csname\??le#1\endcsname}
+
+\def\doifelselinetablecparameter#1%
+  {\ifcsname\??lec\number\linetablecolumn#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\linetablecparameter#1%
+  {\csname
+     \ifcsname\??lec\number\linetablecolumn#1\endcsname
+       \??lec\number\linetablecolumn
+     \else
+       \??le
+     \fi
+   #1\endcsname}
+
+\def\linetablerparameter#1% faster, leaner and meaner
+  {\csname
+     \ifnum\linetablerow=\zerocount % geen ifcase
+       \ifcsname\??ler\v!header#1\endcsname
+         \??ler\v!header#1%
+       \else\ifcsname\??ler0#1\endcsname
+         \??ler0#1%
+       \else
+         \s!empty
+       \fi\fi
+     \else
+       \ifcsname\??ler\number\linetablerow#1\endcsname
+         \??ler\number\linetablerow#1%
+       \else\ifcsname\??ler\v!oddeven\linetablerow#1\endcsname
+         \??ler\v!oddeven\linetablerow#1%
+       \else
+         \s!empty
+       \fi\fi
+     \fi
+   \endcsname}
+
+\def\setnoftableslines
+  {\doifelse{\linetableparameter\c!lines}\v!fit
+     {% whitespace already added by vertical strut
+      \ifdim\pagegoal<\maxdimen
+        \scratchdimen\pagegoal
+        \advance\scratchdimen -\pagetotal
+      \else
+        \scratchdimen\textheight
+      \fi
+      \getrawnoflines\scratchdimen
+      \xdef\noflinetablelines{\the\noflines}
+\iflinetablepreroll \else \ifnum\noflinetablelines<\plustwo
+  \page \setnoftableslines
+\fi \fi
+}
+     {\xdef\noflinetablelines{\linetableparameter\c!lines}}}
+
+\def\startlinetablecell
+  {\dosingleempty\dostartlinetablecell}
+
+\def\dostartlinetablecell[#1]%
+  {\global\setbox\linetablecell\hbox\bgroup
+   \iffirstargument
+     \getparameters[\??lec\number\linetablecolumn][#1]%
+   \fi
+   \xdef\linetablestep{\linetablecparameter\c!nx}%
+   \ifcase\linetablestep\or
+     \scratchdimen\linetablecparameter\c!width
+     \scratchskip \linetablecparameter\c!distance
+   \else
+     \scratchdimen  \zeropoint
+     \scratchskip   \zeropoint
+     \scratchcounter\linetablecolumn
+     \dorecurse\linetablestep
+       {\advance\scratchdimen\linetablecparameter\c!width
+       %\advance\scratchskip \linetablecparameter\c!distance
+        \global\advance      \linetablecolumn\plusone
+        \advance\scratchskip \linetablecparameter\c!distance
+       }%
+     \global\linetablecolumn\scratchcounter
+   \fi
+   \chardef\linetablemode
+     \iflinetablepreroll
+       \ifdim\scratchdimen>\zeropoint \zerocount \else \plustwo \fi
+     \else
+       \zerocount
+     \fi
+   \ifcase\linetablemode
+     \ifcase\linetablehmode
+       % nothing
+     \or
+       % fit, keep it simple
+     \or
+       \chardef\linetablemode\plusone % line
+     \else
+       % some already calculated height
+     \fi
+   \fi
+   \setbox\scratchbox\hbox
+     \bgroup
+     \dontcomplain
+     \hskip\linetablecparameter\c!leftoffset\relax
+     % 0 = width, unknown height
+     % 1 = width, fixed height
+     % 2 = no width, auto hsize
+     \ifnum\linetablemode<\plustwo
+       \advance\scratchdimen-\linetablecparameter\c!leftoffset
+       \advance\scratchdimen-\linetablecparameter\c!rightoffset
+     \fi
+     \ifcase\linetablemode
+       \dosetraggedcommand{\linetablecparameter\c!align}%
+       \vtop \ifdim\linetableheight>\zeropoint to\linetableheight \fi \bgroup
+         \hsize\scratchdimen
+         \raggedcommand
+     \else
+       \setalignmentswitch{\linetablecparameter\c!align}%
+       \hbox \ifcase\linetablemode \or to\scratchdimen \fi \bgroup
+         \ifcase\alignmentswitch\hss\or\hss\fi
+     \fi
+     \dostartattributes{\??lec\number\linetablecolumn}\c!style\c!color\empty
+     \begstrut \ignorespaces}
+
+% \def\stoplinetablecell
+%   {\unskip \endstrut
+%    \dostopattributes
+%    \ifcase\linetablemode
+%      \endgraf
+%    \else
+%      \ifcase\alignmentswitch\else\hss\fi
+%    \fi
+%    \egroup
+%    \hskip\linetablecparameter\c!rightoffset
+%    \egroup
+%    \iflinetablepreroll
+%      \box\scratchbox
+%    \else
+%      \doif{\linetablecparameter\c!background}\v!color
+%        {\backgroundline[\linetablecparameter\c!backgroundcolor]}%
+%        {\box\scratchbox}%
+%    \fi
+%    \egroup}
+
+\newconditional\linetableautoheight  \settrue\linetableautoheight
+
+\def\stoplinetablecell
+  {\unskip \endstrut
+   \dostopattributes
+   \ifcase\linetablemode
+     \endgraf
+   \else
+     \ifcase\alignmentswitch\else\hss\fi
+   \fi
+   \egroup
+   \hskip\linetablecparameter\c!rightoffset
+   \egroup
+   \iflinetablepreroll
+     \box\scratchbox
+   \else
+     \doifelse{\linetablecparameter\c!background}\v!color
+       {\ifconditional\linetableautoheight
+          \hbox{\blackrule
+            [ \c!color=\linetablecparameter\c!backgroundcolor,
+             \c!height=\linetablerparameter{x\c!height},
+              \c!depth=\linetablerparameter{x\c!depth},
+              \c!width=\wd\scratchbox]%
+           \hskip-\wd\scratchbox\box\scratchbox}%
+         \else
+           \backgroundline[\linetablecparameter\c!backgroundcolor]{\box\scratchbox}%
+         \fi}%
+       {\box\scratchbox}%
+   \fi
+   \egroup}
+
+% \def\stoplinetablecell
+%   {\unskip \endstrut
+%    \dostopattributes
+%    \ifcase\linetablemode
+%      \endgraf
+%    \else
+%      \ifcase\alignmentswitch\else\hss\fi
+%    \fi
+%    \egroup
+%    \hskip\linetablecparameter\c!rightoffset
+%    \egroup
+%    \iflinetablepreroll
+%      \box\scratchbox
+%    \else
+%      \doifelse{\linetablecparameter\c!background}\v!color
+%        {\ifconditional\linetableautoheight
+%         %           \hbox{\blackrule
+%         %             [ \c!color=\linetablecparameter\c!backgroundcolor,
+%         %              \c!height=\linetablerparameter{x\c!height},
+%         %               \c!depth=\linetablerparameter{x\c!depth},
+%         %               \c!width=\wd\scratchbox]%
+%         %            \hskip-\wd\scratchbox\box\scratchbox}%
+%           \dp\scratchbox\linetablerparameter{x\c!depth}%
+%           \ht\scratchbox\linetablerparameter{x\c!height}%
+%           \framed
+%             [\c!offset=\v!overlay,
+%              \c!frameoffset=.5\linewidth,
+%              \c!leftframe=\v!off,\c!rightframe=\v!off,
+%              \c!background=\v!color,
+%              \c!backgroundcolor=\linetablecparameter\c!backgroundcolor%
+%             ]{\box\scratchbox}%
+%          \else
+%            \backgroundline[\linetablecparameter\c!backgroundcolor]{\box\scratchbox}%
+%          \fi}%
+%        {\box\scratchbox}%
+%    \fi
+%    \egroup}
+
+\def\savelinetablepart
+  {\global\setbox\tablebox\linetablepart
+   \ifnum\linetablepart=\zerocount
+     \box\scratchbox % just storing
+   \else
+     \vbox
+       {\ifvoid\tablebox\linetablepart\else\unvbox\tablebox\linetablepart\fi
+        \doif{\linetablerparameter\c!background}\v!color
+          {\backgroundline[\linetablerparameter\c!backgroundcolor]}%
+          {\box\scratchbox}% is also arg to \backgroundline
+        \endgraf
+        \linetablerparameter\c!after}%
+   \fi}
+
+\def\flushlinetableparts
+  {\doglobal\increment\linetableline
+   \ifnum\linetableline<\noflinetablelines
+     % keep collecting
+   \else
+     \iflinetablepreroll
+       % forget about them
+     \else
+       \dorecurse\noflinetableparts
+         {\let\linetablepart\recurselevel
+          \dp\tablebox\linetablepart\strutdepth
+          % noindent en endgraf needed else whitespace mess-up!
+          \whitespace % here not after verticalstrut
+          \ifdim\topskipgap=\zeropoint\else
+            \verticalstrut\nobreak\kern-\struttotal\kern-\parskip\nobreak\nointerlineskip % fix topskip
+          \fi
+          \noindent\strut\hbox to \hsize{\box\tablebox\linetablepart\hss}\endgraf
+          \ifnum\linetablepart<\noflinetableparts\relax
+            \linetableparameter\c!inbetween
+          \fi}%
+       \ifnum\linetablerows<\noflinetablerows\relax
+         \linetableparameter\c!inbetween
+       \else
+         % after, later
+       \fi
+       \chardef\linetableheadstate\plusthree
+       \global\setbox\tablebox\zerocount\emptybox % here
+     \fi
+     % reset \linetablerow will be an option, currently
+     % starts at zero after split
+     \globallet\linetablerow\!!zerocount
+     \globallet\linetableline\!!zerocount
+     \global\chardef\linetablepage\zerocount
+     \global\linetablewidth\zeropoint
+     \setnoftableslines
+   \fi}
+
+\def\startlinetablepart
+  {\global\linetablesubcol\zerocount
+   \setbox\scratchbox\hbox\bgroup
+   \doconvertfont{\linetablerparameter\c!style}%
+   \startcolor[\linetablerparameter\c!color]%
+   \ignorespaces}
+
+\def\stoplinetablepart
+  {\ifnum\linetablepart>\zerocount
+     \unskip \unskip % remove last intercolumn skip (distance+fill)
+   \fi
+   \stopcolor
+   \egroup
+   \iflinetablepreroll \else
+     \ifcase\linetablepart
+       % we're collecting the repeater
+     \else
+       \scratchdimen\hsize \advance\scratchdimen-\wd\scratchbox\relax
+       \ifdim\scratchdimen>\linetableparameter\c!stretch\else
+         \setbox\scratchbox\hbox to \hsize{\unhbox\scratchbox}%
+       \fi
+     \fi
+   \fi}
+
+\def\checklinetablepart
+  {\global\advance\linetablewidth\wd\linetablecell
+   \global\advance\linetablecolumn\linetablestep
+   \global\advance\linetablesubcol\linetablestep
+   \relax
+   %\message{\the\linetablecolumn,\the\linetablesubcol}\wait
+   % from now on the column counter is already incremented
+   \ifcase\linetablesplitstate
+     \iflinetablepreroll \else
+       \box\linetablecell
+       % the columncounter is one ahead !
+%      \hskip\linetablecparameter\c!afstand
+       \hskip\scratchskip
+     \fi
+     %%%
+     \donefalse
+     \ifcase\linetablerepeat\else
+       % van te voren berekenen
+       \scratchcounter\linetablecolumn\advance\scratchcounter-\plustwo
+       \ifnum\linetablerepeat=\scratchcounter
+         \donetrue % collecting repeater
+       \fi
+     \fi
+     %%%%
+     \ifdone
+       % collecting repeater
+     \else
+       \ifnum\linetablecolumn>\getvalue{\??le::\linetablepart}\relax
+         \donetrue
+       \fi
+     \fi
+     \ifdone
+       \stoplinetablepart
+       \iflinetablepreroll \else
+         \savelinetablepart
+       \fi
+       \ifcase\linetablepage \or
+         \global\chardef\linetablepage \plustwo
+       \else
+         \global\chardef\linetablepage \plusone
+       \fi
+       \doglobal\increment\linetablepart
+       \global\linetablewidth\wd\tablebox\zerocount
+       \startlinetablepart
+     \fi
+   \else
+     \donefalse
+     \!!doneafalse
+     \ifcase\linetablerepeat\else
+       % van te voren berekenen
+       \scratchcounter\linetablecolumn \advance\scratchcounter-\plustwo
+       \ifnum\linetablerepeat=\scratchcounter
+         \donetrue % collecting repeater
+       \fi
+     \fi
+     \ifdone
+       \!!doneatrue
+       % collecting repeater
+     \else\ifdim\linetablewidth>\hsize
+       \donetrue
+     \else
+%       \global\advance\linetablewidth\linetablecparameter\c!afstand\relax
+       \global\advance\linetablewidth\scratchskip
+       \ifdim\linetablewidth>\hsize % ?
+         \donetrue
+       \fi
+     \fi\fi
+     \ifdone
+       \stoplinetablepart
+       \savelinetablepart
+       \ifcase\linetablepage \or
+         \global\chardef\linetablepage \plustwo
+       \else
+         \global\chardef\linetablepage \plusone
+       \fi
+       \doglobal\increment\linetablepart
+       \ifnum\linetablepart>\noflinetableparts
+         \globallet\noflinetableparts\linetablepart
+         \initializetablebox\linetablepart
+       \fi
+       \global\linetablewidth\wd\linetablecell
+       \startlinetablepart
+       \if!!doneb \else \ifcase\linetablerepeat \else
+         % check for left/right page
+         \ifcase\linetablepage\donetrue\or\donetrue\or\donefalse\fi\ifdone
+           % insert repeater
+           \global\advance\linetablewidth\wd\tablebox\zerocount
+           \iflinetablepreroll\kern\wd\else\unhcopy\fi\tablebox\zerocount
+         \fi
+       \fi \fi
+     \fi
+     \iflinetablepreroll \else
+       \box\linetablecell
+       % the columncounter is one ahead !
+%       \hskip\linetablecparameter\c!afstand
+%       \hskip\scratchskip
+\dorecurse\linetablestep{\strut\hfil}%
+       \hskip\scratchskip
+     \fi
+   \fi}
+
+% \linetableparameter\c!var -> \@@levar (when no classes)
+
+\def\startlinetablerun % to do: quit when nested
+  {\bgroup
+   \inlinetabletrue
+   % autowidth
+   \doif{\linetableparameter\c!maxwidth}\v!fit
+     {\setuplinetable[\c!maxwidth=\zeropoint]}%
+   \processaction
+     [\linetableparameter\c!stretch]
+     [ \v!no=>{\setuplinetable[\c!stretch=\maxdimen]},% no stretch
+      \v!yes=>{\setuplinetable[\c!stretch=\zeropoint]}]% max stretch
+   \chardef\linetablerepeat\linetableparameter\c!nleft
+   \chardef\linetablesplitstate % =
+     \ifdim\linetableparameter\c!maxwidth>\zeropoint
+       \zerocount \else \plusone
+     \fi
+   % optional prevdepth correction
+   \iflinetablepreroll
+     \globallet\noflinetablerows\!!zerocount
+   \else
+     \linetableparameter\c!before
+   \fi
+   \globallet\linetablerows\!!zerocount
+   \globallet\noflinetablecolumns\!!zerocount
+   \globallet\noflinetableparts\!!zerocount
+   \!!counta\zerocount
+   \def\docommand##1%
+     {\doglobal\increment\noflinetableparts
+      \advance\!!counta##1%
+      \setxvalue{\??le::\noflinetableparts}{\the\!!counta}}%
+   \processcommacommand[\linetableparameter\c!n]\docommand
+   \initializetableboxes\noflinetableparts
+   \ifcase\linetablerepeat
+     \globallet\linetablepart\!!plusone
+   \else
+     \globallet\linetablepart\!!zerocount % repeater
+   \fi
+   \globallet\linetablestep\!!plusone
+   \globallet\linetableline\!!zerocount
+   \globallet\linetablerow \!!zerocount
+   \global\linetablecolumn \zerocount
+   \global\linetablesubcol \zerocount
+   \global\linetablewidth  \zeropoint
+\iflinetablepreroll \else \ifdim\pagetotal>\zeropoint
+  \verticalstrut\kern-\struttotal
+\fi \fi
+   \setnoftableslines
+   \checklinetablepage
+   \let\BR\linetableBR
+   \let\ER\linetableER
+   \let\BH\linetableBR
+   \let\EH\linetableER
+   \let\BC\linetableBC
+   \let\EC\linetableEC
+   \let\NC\linetableNC
+   \let\NR\linetableNR
+   \flushlinetablehead}
+
+\def\stoplinetablerun
+  {\globallet\linetableline\!!maxcard
+   \chardef\linetableheadstate\zerocount % blocked
+   \flushlinetableparts
+   \iflinetablepreroll \else
+     \linetableparameter\c!after
+   \fi
+   \globallet\linetablepart    \!!zerocount
+   \globallet\noflinetableparts\!!zerocount
+   \egroup}
+
+% \def\checklinecolumnwidth
+%   {\ifundefined{\??lew\number\linetablecolumn}%
+%      \donetrue
+%    \else\ifdim\getvalue{\??lew\number\linetablecolumn}<\wd\linetablecell
+%      \donetrue
+%    \else
+%      \donefalse
+%    \fi\fi
+%    \ifdone
+%      \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
+%    \fi}
+%
+% \def\checklinecolumnwidth
+%   {\ifcsname\??lew\number\linetablecolumn\endcsname
+%      \ifdim\csname\??lew\number\linetablecolumn\endcsname<\wd\linetablecell
+%        \donetrue
+%      \else
+%        \donefalse
+%      \fi
+%    \else
+%      \donetrue
+%    \fi
+%    \ifdone
+%      \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
+%    \fi}
+
+% \def\checklinecolumnwidth
+%   {\expandafter\xdef\csname\??lew\number\linetablecolumn\endcsname
+%      {\expandafter\ifx\csname\??lew\number\linetablecolumn\endcsname\relax
+%         \the\wd\linetablecell
+%       \else\ifdim\csname\??lew\number\linetablecolumn\endcsname<\wd\linetablecell
+%         \the\wd\linetablecell
+%       \else
+%         \csname\??lew\number\linetablecolumn\endcsname
+%       \fi\fi}}
+
+\def\checklinecolumndimension#1#2#3%
+  {\expandafter\xdef\csname#1\number#3\endcsname
+     {\expandafter\ifx\csname#1\number#3\endcsname\relax
+        \the#2\linetablecell
+      \else\ifdim\csname#1\number#3\endcsname<#2\linetablecell
+        \the#2\linetablecell
+      \else
+        \csname#1\number#3\endcsname
+      \fi\fi}}
+
+\def\checklinecolumnwidth {\checklinecolumndimension\??lew\wd\linetablecolumn}
+\def\checklinecolumnheight{\checklinecolumndimension\??leh\ht\linetablerow}
+\def\checklinecolumndepth {\checklinecolumndimension\??led\dp\linetablerow}
+
+\def\linetableBR
+  {\dosingleempty\dolinetableBR}
+
+\def\dolinetableBR[#1]% #1 not yet implemented
+  {\ifnum\linetableheadstate=1\else
+     \doglobal\increment\linetablerow
+     \doglobal\increment\linetablerows
+   \fi
+   \global\linetablecolumn\plusone
+   \global\linetablesubcol\plusone
+%   \linetableheight\linetablerparameter\c!height
+%
+%   \ifx\linetableheight\empty
+%     % nothing
+%   \else\ifx\linetableheight\v!fit
+%     % keep it simple
+%   \else\ifx\linetableheight\v!line
+%     \chardef\linetablemode\plusone
+%   \else
+%     \!!heighta\linetableheight
+%     \advance\!!heighta-\strutdepth
+%   \fi\fi\fi
+%
+   \linetableheight\zeropoint
+   \edef\!!stringa{\linetablerparameter\c!height}%
+   \ifx\!!stringa\empty
+     \chardef\linetablehmode\zerocount
+   \else\ifx\!!stringa\v!fit
+     \chardef\linetablehmode\plusone
+   \else\ifx\!!stringa\v!line
+     \chardef\linetablehmode\plustwo
+   \else
+     \linetableheight\!!stringa
+     \advance\linetableheight-\strutdepth
+   \fi\fi\fi
+%
+   \startlinetablepart}
+
+\def\linetableBC
+  {\startlinetablecell}
+
+\def\linetableEC
+  {\stoplinetablecell
+   \iflinetablepreroll
+     \checklinecolumnwidth
+     \checklinecolumnheight
+     \checklinecolumndepth
+   \fi
+   \checklinetablepart}
+
+\def\linetableER
+  {% \stoplinetablecell
+   % no \box\linetablecell, i.e. dummy columnn, last \NC \NR
+   \stoplinetablepart
+   \savelinetablepart
+   \advance\linetablecolumn \minusone
+   \ifnum\linetablecolumn>\noflinetablecolumns
+     \xdef\noflinetablecolumns{\number\linetablecolumn}%
+   \fi
+   \flushlinetableparts
+   \global\linetablecolumn\zerocount
+   \global\linetablewidth \zeropoint
+   \ifcase\linetablerepeat
+     \globallet\linetablepart\!!plusone
+   \else
+     \globallet\linetablepart\!!zerocount % repeater
+   \fi
+   \checklinetablepage
+   \flushlinetablehead}
+
+\def\checklinetablepage
+  {\global\chardef\linetablepage\zerocount
+   \ifcase\linetablerepeat \else \ifcase\linetablepage
+     \doif{\linetableparameter\c!repeat}\v!no
+       {\global\chardef\linetablepage\doifoddpageelse\plusone\plustwo}%
+   \fi \fi}
+
+\def\flushlinetablehead
+  {\ifcase\linetableheadstate
+     % 0 blocked
+   \or
+     % 1 doing head
+   \or
+     % 2 head done
+   \or
+     % 3 trigger flush
+     \chardef\linetableheadstate\plusone
+     \the\@@linetablehead\relax
+     \chardef\linetableheadstate\plustwo
+   \fi}
+
+\def\linetableNC % first time special treatment
+  {\relax
+   \ifcase\linetablecolumn
+     \linetableBR
+   \else
+     \linetableEC
+   \fi
+   \linetableBC} % beware, this will result in BR BC EC BC NR
+
+\def\linetableNR
+  {\stoplinetablecell % dummy
+   \linetableER}
+
+\def\startlinetable
+  {\startlinetablerun}
+
+\def\stoplinetable
+  {\stoplinetablerun}
+
+\def\startlinetableanalysis
+  {\bgroup
+   \linetableprerolltrue
+   \trialtypesettingtrue
+   \startlinetablerun}
+
+\def\stoplinetableanalysis
+  {\stoplinetablerun
+   \egroup
+   \globallet\noflinetablerows\linetablerows
+   \dorecurse\noflinetablerows % global, from last run {\linetableparameter\c!n}
+     {%\writestatus{linetable}{\recurselevel->\getvalue{\??lew\recurselevel}}%
+      \setevalue{\??ler\recurselevel x\c!height}{\getvalue{\??leh\recurselevel}}%
+      \setevalue{\??ler\recurselevel x\c!depth }{\getvalue{\??led\recurselevel}}%
+      \letgvalue{\??leh\recurselevel}\!!zeropoint
+      \letgvalue{\??led\recurselevel}\!!zeropoint}
+   \dorecurse\noflinetablecolumns % global, from last run {\linetableparameter\c!n}
+     {%\writestatus{linetable}{\recurselevel->\getvalue{\??lew\recurselevel}}%
+      \setevalue{\??lec\recurselevel\c!width}{\getvalue{\??lew\recurselevel}}%
+      \letgvalue{\??lew\recurselevel}\!!zeropoint}} % init next table
+
+% todo: store in box instead of macro
+
+\newtoks \@@linetablehead
+
+\long\def\startlinetablehead#1\stoplinetablehead
+  {\ifinlinetable
+     \@@linetablehead\emptytoks
+   \fi
+   \chardef\linetableheadstate3 % full
+   \@@linetablehead{#1}%
+   \ifinlinetable
+     \flushlinetablehead
+   \fi}
+
+\def\linetableBH
+  {\ifx\EC\relax
+     % signal, grabbing lines
+   \else
+     \@@linetablehead\emptytoks
+   \fi
+   \pushmacro\BC
+   \pushmacro\EC
+   \def\BC##1\EC{\appendtoks##1\to\@@linetablehead}%
+   \let\EC\relax} % signal
+
+\def\linetableEH
+  {\popmacro\EC
+   \popmacro\BC
+   \@EA\startlinetablehead\the\@@linetablehead\stoplinetablehead}
+
+\let\startlinetablebody\donothing
+\let\stoplinetablebody \donothing
+
+\def\processlinetablebuffer
+  {\dosingleempty\doprocesslinetablebuffer}
+
+\def\doprocesslinetablebuffer[#1]%
+  {\bgroup
+   \let\startlinetable\donothing
+   \let\stoplinetable \donothing
+   \startlinetableanalysis\getbuffer[#1]\stoplinetableanalysis
+   \startlinetablerun     \getbuffer[#1]\stoplinetablerun
+   \egroup}
+
+\def\processlinetablefile#1%
+  {\bgroup
+   \let\startlinetable\donothing
+   \let\stoplinetable \donothing
+   \startlinetableanalysis\readfile{#1}\donothing\donothing\stoplinetableanalysis
+   \startlinetablerun     \readfile{#1}\donothing\donothing\stoplinetablerun
+   \egroup}
+
+% will go away:
+
+\def\processlinetableXMLfile#1%
+  {\bgroup
+   \let\startlinetable\donothing
+   \let\stoplinetable \donothing
+   \startlinetableanalysis\processXMLfile{#1}\stoplinetableanalysis
+   \startlinetablerun     \processXMLfile{#1}\stoplinetablerun
+   \egroup}
+
+\protect \endinput
+
+\doifnotmode{demo}{\endinput}
+
+\setuplinetable[n=6,m={2,2,2},lines=25] % m ?
+
+\setuplinetable[c][1]   [width=2cm,background=color,backgroundcolor=red]
+\setuplinetable[c][4]   [width=3cm,background=color,backgroundcolor=yellow]
+\setuplinetable[c][6]   [width=3cm,background=color,backgroundcolor=magenta]
+\setuplinetable[r][odd] [background=color,backgroundcolor=gray]
+\setuplinetable[r][even][background=color,backgroundcolor=green]
+
+\starttext
+
+\showframe \showstruts
+
+\setupcolors[state=start]
+
+\setuppagenumbering[alternative=doublesided]\page[left]
+
+\startlinetable
+\NC aaa\crlf aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR
+\dorecurse{100}{\NC aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR}
+\stoplinetable
+
+\startlinetable
+\NC[style=slanted,color=green,background=color,backgroundcolor=darkred,nx=2,uitlijnen=middle] xxx
+                 \NC yy \NC ddddd \NC eeee \NC ff \NC \NR
+\dorecurse{100}{\NC aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR}
+\stoplinetable
+
+% \startbuffer[lt]
+% \NC aaa\crlf aaa \NC bb \NC c  \NC ddddd \NC ee   \NC ff \NC \NR
+% \NC aaa\crlf aaa \NC b  \NC cc \NC ddd   \NC eeee \NC f  \NC \NR
+% \stopbuffer
+%
+% \processlinetablebuffer[lt]
+
+\stoptext

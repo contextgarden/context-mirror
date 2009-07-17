@@ -20,6 +20,7 @@
 %D different approach, this module only implements a few generic mechanisms.
 
 \registerctxluafile{colo-ini}{1.000}
+\registerctxluafile{lpdf-col}{1.000}
 
 \unprotect
 
@@ -80,7 +81,6 @@
 
 \newif\iffreezecolors  \freezecolorsfalse
 \newif\ifincolor                          % true if colors enabled
-\newif\iflocalcolor
 
 \let\colorlist        \empty
 \let\currentspotcolor \empty
@@ -122,8 +122,6 @@
 %D \macros
 %D   {startcolor,stopcolor,
 %D    faststartcolor,faststopcolor,
-%D    localstartcolor,localstopcolor,
-%D    localstartraster,localstopraster,
 %D    startraster,stopraster,raster,
 %D    color,graycolor}
 %D
@@ -162,13 +160,7 @@
            \def\faststopcolor          {}
 \unexpanded\def\dosetcolorattribute#1#2{\ifcsname#1#2\endcsname\doactivatecolor{\csname#1#2\endcsname}\fi}
 
-\let\localstartcolor \startcolor
-\let\localstopcolor  \stopcolor
-\let\globalstartcolor\startcolor
-\let\globalstopcolor \stopcolor
-\let\localstartraster\startraster
-\let\localstopraster \stopraster
-\let\grey            \graycolor
+\let\grey\graycolor
 
 %D \macros
 %D   {startcurrentcolor,stopcurrentcolor}
@@ -211,8 +203,8 @@
   {\makeshortfilename[\truefilename{\f!colorprefix#1}]%
    \startreadingfile
      \readsysfile\shortfilename
-       {\showmessage\m!colors4\colorstyle}
-       {\showmessage\m!colors5\colorstyle}%
+       {\showcolormessage\m!colors4\colorstyle}
+       {\showcolormessage\m!colors5\colorstyle}%
    \stopreadingfile}
 
 \let\usecolors\setupcolor
@@ -262,6 +254,8 @@
    \setsystemmode{\v!color\colorsplitsuffix}%
    \iffilterspotcolor \let\@@clrgb\v!no \fi}
 
+\let\showcolormessage\gobblethreearguments
+
 \def\dosetupcolors[#1]% some no longer make sense in MkIV
   {\getparameters[\??cl][#1]%
    \doifelse\@@clspot\v!yes
@@ -283,17 +277,17 @@
      \weightGRAYfalse
      \weightGRAYtrue
    \doifelse\@@clrgb\v!no
-     {\ifRGBsupported      \ifproductionrun\showmessage\m!colors {9}\v!rgb         \fi\RGBsupportedfalse \fi}
-     {\ifRGBsupported \else\ifproductionrun\showmessage\m!colors{10}\v!rgb        \fi\RGBsupportedtrue  \fi}%
+     {\ifRGBsupported      \showcolormessage\m!colors {9}\v!rgb        \RGBsupportedfalse \fi}
+     {\ifRGBsupported \else\showcolormessage\m!colors{10}\v!rgb        \RGBsupportedtrue  \fi}%
    \doifelse\@@clcmyk\v!no
-     {\ifCMYKsupported     \ifproductionrun\showmessage\m!colors {9}\v!cmyk       \fi\CMYKsupportedfalse\fi}
-     {\ifCMYKsupported\else\ifproductionrun\showmessage\m!colors{10}\v!cmyk       \fi\CMYKsupportedtrue \fi}%
+     {\ifCMYKsupported     \showcolormessage\m!colors {9}\v!cmyk       \CMYKsupportedfalse\fi}
+     {\ifCMYKsupported\else\showcolormessage\m!colors{10}\v!cmyk       \CMYKsupportedtrue \fi}%
    \doifelse\@@clmpcmyk\v!no
-     {\ifMPcmykcolors      \ifproductionrun\showmessage\m!colors {9}{\v!mp\v!cmyk}\fi\MPcmykcolorsfalse \fi}
-     {\ifMPcmykcolors \else\ifproductionrun\showmessage\m!colors{10}{\v!mp\v!cmyk}\fi\MPcmykcolorstrue  \fi}%
+     {\ifMPcmykcolors      \showcolormessage\m!colors {9}{\v!mp\v!cmyk}\MPcmykcolorsfalse \fi}
+     {\ifMPcmykcolors \else\showcolormessage\m!colors{10}{\v!mp\v!cmyk}\MPcmykcolorstrue  \fi}%
    \doifelse\@@clmpspot\v!no
-     {\ifMPspotcolors      \ifproductionrun\showmessage\m!colors {9}{\v!mp\v!spot}\fi\MPspotcolorsfalse \fi}
-     {\ifMPspotcolors \else\ifproductionrun\showmessage\m!colors{10}{\v!mp\v!spot}\fi\MPspotcolorstrue  \fi}%
+     {\ifMPspotcolors      \showcolormessage\m!colors {9}{\v!mp\v!spot}\MPspotcolorsfalse \fi}
+     {\ifMPspotcolors \else\showcolormessage\m!colors{10}{\v!mp\v!spot}\MPspotcolorstrue  \fi}%
    \preferGRAYfalse
    \processaction
      [\@@clconversion]
@@ -310,23 +304,15 @@
        \reduceMPcolorstrue
      \fi
    \else
-     \ifconverttoGRAY\else\showmessage\m!colors{11}\empty\fi
+     \ifconverttoGRAY\else\showcolormessage\m!colors{11}\empty\fi
      \converttoGRAYtrue
      \forcegrayMPcolorstrue
      \convertMPcolorsfalse
      \reduceMPcolorsfalse
    \fi\fi
-   \processaction
-     [\@@clstate]
-     [ \v!global=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
-                  \incolortrue\localcolorfalse,
-        \v!local=>\ifincolor\else\showmessage\m!colors2\colorstyle\fi
-                  \incolortrue\localcolortrue,
-        \v!start=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
-                  \incolortrue\localcolorfalse
-                  \let\@@clstate\v!global,
-         \v!stop=>\incolorfalse\localcolorfalse
-                  \forcegrayMPcolorstrue]%
+   \doifelse\@@clstate\v!stop
+     {\incolorfalse\forcegrayMPcolorstrue}%
+     {\ifincolor\else\showcolormessage\m!colors1\colorstyle\fi\incolortrue\let\@@clstate\v!start}%
    \dosetupcolormodel
    \initializemaintextcolor}
 
@@ -400,7 +386,7 @@
 
 \def\dodefinepalet[#1][#2]%
   {\doifassignmentelse{#2}
-     {%\showmessage\m!colors6{#1}%
+     {%\showcolormessage\m!colors6{#1}%
       \letvalue{\??pa#1}\empty
       \setevalue{\??pa\??pa#1}{#2}%
       \def\dodododefinepalet[##1=##2]%
@@ -448,7 +434,7 @@
    \else\ifcsname\??pa\currentpalet\endcsname
      \edef\currentpalet{#1:}%
    \else
-     \showmessage\m!colors7\currentpalet
+     \showcolormessage\m!colors7\currentpalet
      \let\currentpalet\empty
    \fi\fi}
 
@@ -695,11 +681,6 @@
     \def\MPcolor#1{(0,0,0)}
 \fi
 
-%D \macros
-%D   {PDFcolor,FDFcolor}
-%D
-%D Similar alternatives are avaliable for \PDF:
-
 %D For the moment we keep the next downward compatibility
 %D switch, i.e.\ expanded colors. However, predefined colors
 %D and palets are no longer expanded (which is what I wanted
@@ -791,7 +772,7 @@
 \ifx\currentcolormodel\undefined \newcount\currentcolormodel \fi
 
 \def\setcolormodel#1%
-  {\showmessage\m!colors1{#1}%
+  {\showcolormessage\m!colors1{#1}%
    \currentcolormodel\ctxlua{tex.print(colors.setmodel('colormodel','#1',\ifweightGRAY true\else false\fi))}%
    \dosetattribute{colormodel}{\the\currentcolormodel}}
 
@@ -859,8 +840,8 @@
 
 \def\deactivatecolor
   {\let\currentcolorname\s!black
-   \doresetattribute\s!color
-   \doresetattribute\s!transparency}
+   \attribute\colorattribute\attributeunsetvalue
+   \attribute\transparencyattribute\attributeunsetvalue}
 
 \def\dodefinecolorcommand#1#2%
   {\unexpanded#1{#2}{\doactivatecolor{#2}}}
@@ -869,41 +850,41 @@
 \setfalse\collectcolorsinlist
 \def\collectcolorinlist#1{\doglobal\addtocommalist{#1}\colorlist}
 
-\def\doregistercolor#1#2{\ctxlua{ctx.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}}
+\def\doregistercolor#1#2{\ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}}
 
 \def\dodefinecolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{ctx.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefineglobalcolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{ctx.defineprocesscolor("#1","#2",true,\iffreezecolors true\else false\fi)}%
+   \ctxlua{colors.defineprocesscolor("#1","#2",true,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setgvalue{#1}}
 
 \def\dodefinenamedcolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{ctx.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefinespotcolor[#1][#2][#3]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{ctx.definespotcolor("#1","#2","#3",true)}%
+   \ctxlua{colors.definespotcolor("#1","#2","#3",true)}%
    \dodefinecolorcommand\setxvalue{#1}}
 
 \def\dodefinemultitonecolor[#1][#2][#3][#4]%
-  {\ctxlua{ctx.definemultitonecolor("#1","#2","#3","#4",true)}%
+  {\ctxlua{colors.definemultitonecolor("#1","#2","#3","#4",true)}%
    \dodefinecolorcommand\setxvalue{#1}}
 
 \def\dodefinetransparency[#1][#2]%
-  {\ctxlua{ctx.definetransparency("#1",#2)}}
+  {\ctxlua{colors.definetransparency("#1",#2)}}
 
 \def\dosetrastercolor#1% slow, we need a fast one
   {\edef\@@rastervalue{#1}%
    \ifx\@@rastervalue\empty
      \let\@@rastervalue\@@rsscreen
    \fi
-   \dosetattribute\s!color{\ctxlua{tex.sprint(ctx.definesimplegray("_raster_",\@@rastervalue))}}}
+   \dosetattribute\s!color{\ctxlua{tex.sprint(colors.definesimplegray("_raster_",\@@rastervalue))}}}
 
 %D \macros
 %D   {doifcolorelse, doifcolor}
@@ -936,7 +917,7 @@
 %D A bit like \type {\definedfont}:
 
 \unexpanded\def\colored[#1]%
-  {\ctxlua{ctx.defineprocesscolor("@colored@","#1",false,false)}%
+  {\ctxlua{colors.defineprocesscolor("@colored@","#1",false,false)}%
    \groupedcommand{\doactivatecolor{@colored@}}{}}
 
 %D \macros
@@ -965,37 +946,15 @@
 %D \stopregistercolor
 %D \stoptyping
 
+% can be cleaned up
+
 \let\maintextcolor     \empty
 \def\defaulttextcolor  {black}
 \def\@@themaintextcolor{themaintextcolor}
 
-\def\startregistercolor[#1]%
-  {\doifelsenothing{#1}
-     {\let\stopregistercolor\relax}
-     {\edef\stopregistercolor
-        {\dosetattribute\s!color       {\dogetattribute\s!color       }%
-         \dosetattribute\s!transparency{\dogetattribute\s!transparency}}%
-      \doactivatecolor{#1}}}
+\appendtoks\deactivatecolor\to\everybeforeoutput
 
-\let\resynccolor  \relax % ?
-\let\pushcolor    \relax
-\let\popcolor     \relax
-\let\popsplitcolor\relax
-
-\def\restorecolormode
-  {\ifincolor
-     \deactivatecolor
-     \ifx\maintextcolor\empty \else
-       \doactivatecolor\maintextcolor
-     \fi
-   \fi}
-
-\let\pushpostponedpagecolor\relax
-\let\poppostponedpagecolor \relax
-
-\appendtoks\deactivatecolor\to\everybeforeoutput % maybe we don't need push pop now
-
-\def\startregistercolor[#1]%
+\def\startregistercolor[#1]% probably obsolete
   {\doifelsenothing{#1}
      {\let\stopregistercolor\relax}
      {\edef\stopregistercolor
@@ -1023,10 +982,6 @@
    \registermaintextcolor}
 
 \appendtoks \initializemaintextcolor \to \everyjob
-
-\def\localstarttextcolor{\normalexpanded{\noexpand\startcolor[\ifx\maintextcolor\empty\defaulttextcolor\else\maintextcolor\fi]}}
-\let\localstoptextcolor  \stopcolor
-\let\restoretextcolor    \firstofoneargument
 
 \def\dodefinepaletcolor#1#2#3%
   {\doifassignmentelse{#3}% \definepalet[test][xx={y=.4}]
@@ -1071,7 +1026,7 @@
 
 \def\colorformatseparator{ }
 
-\def\MPcolor#1{\ctxlua{tex.sprint(ctx.mpcolor(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1}))}}
+\def\MPcolor#1{\ctxlua{tex.sprint(colors.mp(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1}))}}
 
 \let\currentcolorname\s!black % todo
 \let\outercolorname  \s!black % todo
@@ -1079,33 +1034,18 @@
 \def\thecolorattribute       #1{\number\csname(ca:\ifcsname(ca:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ca:#1)\endcsname#1\fi\fi)\endcsname}
 \def\thetransparencyattribute#1{\number\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
 
-\def\PDFcolor     #1{\ctxlua{tex.sprint(ctx.pdfcolor     (\number\currentcolormodel, \thecolorattribute{#1}))}}
-\def\PDFcolorvalue#1{\ctxlua{tex.sprint(ctx.pdfcolorvalue(\number\currentcolormodel, \thecolorattribute{#1}))}}
-\def\FDFcolor     #1{\ctxlua{tex.sprint(ctx.fdfcolor     (\number\currentcolormodel, \thecolorattribute{#1}))}}
+\def\internalspotcolorname  #1{\ctxlua{tex.sprint(colors.spotcolorname  (\thecolorattribute{#1}))}}
+\def\internalspotcolorparent#1{\ctxlua{tex.sprint(colors.spotcolorparent(\thecolorattribute{#1}))}}
+\def\internalspotcolorsize  #1{\ctxlua{tex.sprint(colors.spotcolorvalue (\thecolorattribute{#1}))}}
 
-\def\internalspotcolorname#1{\ctxlua{tex.sprint(ctx.spotcolorname (\thecolorattribute{#1}))}}
-\def\internalspotcolorsize#1{\ctxlua{tex.sprint(ctx.spotcolorvalue(\thecolorattribute{#1}))}}
+\def\colorcomponents       #1{\ctxlua{tex.sprint(colors.colorcomponents       (\thecolorattribute       {#1}))}}
+\def\transparencycomponents#1{\ctxlua{tex.sprint(colors.transparencycomponents(\thetransparencyattribute{#1}))}}
 
-\def\colorcomponents       #1{\ctxlua{tex.sprint(ctx.colorcomponents       (\thecolorattribute       {#1}))}}
-\def\transparencycomponents#1{\ctxlua{tex.sprint(ctx.transparencycomponents(\thetransparencyattribute{#1}))}}
+\def\colorvalue#1{\ctxlua{tex.sprint(colors.formatcolor(\thecolorattribute{#1},"\colorformatseparator"))}}
+\def\grayvalue #1{\ctxlua{tex.sprint(colors.formatgray (\thecolorattribute{#1},"\colorformatseparator"))}}
 
-\def\colorvalue#1{\ctxlua{tex.sprint(ctx.formatcolor(\thecolorattribute{#1},"\colorformatseparator"))}}
-\def\grayvalue #1{\ctxlua{tex.sprint(ctx.formatgray (\thecolorattribute{#1},"\colorformatseparator"))}}
-
-% \definecolor[foo][black] {\red red {\foo (\doifblackelse{foo}{YES}{NO} \doifdrawingblackelse{YES}{NO}) black} red}
-% \definecolor[foo][green] {\red red {\foo (\doifblackelse{foo}{YES}{NO} \doifdrawingblackelse{YES}{NO}) green} red}
-
-\def\doifblackelse       #1{\ctxlua{commands.doifelse(ctx.isblack(\thecolorattribute{#1}))}}
-\def\doifdrawingblackelse  {\ctxlua{commands.doifelse(ctx.isblack(tex.attribute[attributes.numbers['color']]))}}
-
-% hack, till we have adapted backend: (move it there)
-
-\def\presetPDFtransparencybynumber#1#2#3%
-  {\initializetransparency
-   \ifcase#1\else
-     \global\PDFcurrenttransparency\numexpr#1+\minusone\relax
-     \presetPDFtransparency{#2}{#3}%
-   \fi}
+\def\doifblackelse       #1{\ctxlua{commands.doifelse(colors.isblack(\thecolorattribute{#1}))}}
+\def\doifdrawingblackelse  {\ctxlua{commands.doifelse(colors.isblack(tex.attribute[attributes.numbers['color']]))}}
 
 %D \macros
 %D   {forcecolorhack}
@@ -1128,21 +1068,6 @@
 % \normal added else fails in metafun manual (leaders do a hard scan)
 
 \unexpanded\def\forcecolorhack{\leaders\hrule\normalhskip\zeropoint}
-
-% \setupcolors[state=start]
-%
-% \starttext
-%     \defineglobalcolor[foo][black] {\red red {\foo black} red}
-%     \ctxlua{tex.print(ctx.aux.colorattribute("foo"))}
-%     \ctxlua{tex.print(ctx.aux.colorattribute("red"))}
-%     \ctxlua{tex.print(ctx.aux.colorattribute("green"))}
-%     \ctxlua{tex.print(ctx.aux.colorattribute("black"))}
-%     \definecolor[black][green] {\red red {\foo black} red}
-%     \ctxlua{tex.print(ctx.aux.colorattribute("foo"))}
-%     \ctxlua{tex.print(ctx.aux.colorattribute("red"))}
-%     \ctxlua{tex.print(ctx.aux.colorattribute("green"))}
-%     \ctxlua{tex.print(ctx.aux.colorattribute("black"))}
-% \stoptext
 
 %D We default to the colors defined in \module{colo-rgb} and
 %D support both \cap{RGB} and \cap{CMYK} output. As you can
@@ -1168,6 +1093,10 @@
 
 \appendtoks
     \setupcolors[\c!state=\v!start]% later direct
+\to \everyjob
+
+\appendtoks
+    \let\showcolormessage\showmessage
 \to \everyjob
 
 \setupcolors

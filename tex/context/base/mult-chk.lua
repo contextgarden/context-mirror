@@ -53,7 +53,7 @@ local function set(key,value)
     end
 end
 
-local pattern = aux.make_settings_to_hash_pattern(set,true)
+local pattern = aux.make_settings_to_hash_pattern(set,"tolerant")
 
 function commands.getcheckedparameters(k,p,s)
     if s and s ~= "" then

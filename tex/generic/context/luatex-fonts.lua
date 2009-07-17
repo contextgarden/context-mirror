@@ -120,6 +120,7 @@ else
     loadmodule('font-otc.lua')
     loadmodule('font-def.lua')
     loadmodule('font-xtx.lua')
+    loadmodule('font-map.lua') -- for loading lum file (will be stripped)
     loadmodule('font-dum.lua')
 
 end
@@ -127,8 +128,8 @@ end
 -- In order to deal with the fonts we need to initialize some
 -- callbacks. One can overload them later on if needed.
 
-callback.register('ligaturing',           nodes.simple_font_dummy)
-callback.register('kerning',              nodes.simple_font_dummy)
+callback.register('ligaturing',           nodes.simple_font_dummy) -- better: false
+callback.register('kerning',              nodes.simple_font_dummy) -- better: false
 callback.register('pre_linebreak_filter', nodes.simple_font_handler)
 callback.register('hpack_filter',         nodes.simple_font_handler)
 callback.register('define_font' ,         fonts.define.read)

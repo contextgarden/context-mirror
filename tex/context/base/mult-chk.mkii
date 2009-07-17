@@ -15,6 +15,9 @@
 
 %D No checking in \MKII.
 
+\def\gobbleparameters{\doquadrupleempty\dogobbleparameters} % todo: 1,2,3,4 case
+\def\dogobbleparameters[#1][#2][#3][#4]{}
+
 \def\setvalidparameterkeys{\gobbleparameters} % forward reference, so no \let
 \def\addvalidparameterkeys{\gobbleparameters} % forward reference, so no \let
 

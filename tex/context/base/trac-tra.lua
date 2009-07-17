@@ -148,7 +148,11 @@ trackers = trackers or { }
 local data, done = { }, { }
 
 local function set(what,value)
-    for w in gmatch(lower(what),"[^, ]+") do
+    if type(what) == "string" then
+        what = aux.settings_to_array(what)
+    end
+    for i=1,#what do
+        local w = what[i]
         for d, f in next, data do
             if done[d] then
                 -- prevent recursion due to wildcards

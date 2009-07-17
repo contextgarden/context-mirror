@@ -60,7 +60,7 @@
         \restorecatcodes % also needed when loading during \newpretty
         \startreadingfile % restore < and > if needed
         \lowercasestring verb-\prettyidentifier.tex\to\filename
-        \readsysfile\filename\donothing\donothing
+        \readsysfile{\filename.mkii}\donothing\donothing
         \stopreadingfile
       \stopnointerference}%
    \doifdefinedelse{setuppretty\prettyidentifier type}%

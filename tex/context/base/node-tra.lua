@@ -388,9 +388,9 @@ function nodes.pack_list(head)
     return t
 end
 
-function nodes.ids_to_string(head)
+function nodes.ids_to_string(head,tail)
     local t, last_id, last_n = { }, nil, 0
-    for n in traverse_nodes(head) do
+    for n in traverse_nodes(head,tail) do
         local id = n.id
         if not last_id then
             last_id, last_n = id, 1

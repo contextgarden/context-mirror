@@ -16,13 +16,21 @@
 %D This filter is kind of obsolete, since \UTF\ is not
 %D limited to \XML.  So, here we only enable \UTF\ support.
 
-\defineXMLenvironment [hyphenations] [language=\currentlanguage,regime=utf,encoding=\defaultencoding]
-  {\startnointerference
-   \defineXMLargument [hyphenation] \hyphenation
-   \language[\XMLop{language}]%
-   \enableregime[\XMLop{regime}]%
-   \enableencoding[\XMLop{encoding}]}
-  {\stopnointerference}
+\ifnum\texengine=\luatexengine
+    \defineXMLenvironment [hyphenations] [language=\currentlanguage,regime=utf,encoding=\defaultencoding]
+      {\startnointerference
+       \defineXMLargument [hyphenation] \hyphenation
+       \language[\XMLop{language}]}
+      {\stopnointerference}
+\else
+    \defineXMLenvironment [hyphenations] [language=\currentlanguage,regime=utf,encoding=\defaultencoding]
+      {\startnointerference
+       \defineXMLargument [hyphenation] \hyphenation
+       \language[\XMLop{language}]%
+       \enableregime[\XMLop{regime}]%
+       \enableencoding[\XMLop{encoding}]}
+      {\stopnointerference}
+\fi
 
 \defineXMLsingular [hyphenate]
   {\-}

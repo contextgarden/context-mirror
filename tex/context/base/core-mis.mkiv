@@ -44,16 +44,16 @@
 %appendtoks        \def\executesynonym#1#2#3#4{#3}\to\simplifiedcommands
 %appendtoks             \def\executesort#1#2#3{#3}\to\simplifiedcommands
 
-\appendtoks                                       \def\ { }\to\simplifiedcommands
-\appendtoks  \def\type#1{\letterbackslash\strippedcsname#1}\to\simplifiedcommands
-\appendtoks                  \def\tex#1{\letterbackslash#1}\to\simplifiedcommands
-\appendtoks                                   \def\TeX{TeX}\to\simplifiedcommands
-\appendtoks                           \def\ConTeXt{ConTeXt}\to\simplifiedcommands
-\appendtoks                         \def\MetaPost{MetaPost}\to\simplifiedcommands
-\appendtoks                         \def\MetaFont{MetaFont}\to\simplifiedcommands
-\appendtoks                           \def\MetaFun{MetaFun}\to\simplifiedcommands
-%appendtoks                                       \def||{-}\to\simplifiedcommands
-\appendtoks         \def|#1|{\ifx#1\empty\empty-\else#1\fi}\to\simplifiedcommands
+\appendtoks                                              \def\ { }\to\simplifiedcommands
+\appendtoks  \def\type#1{\letterbackslash\checkedstrippedcsname#1}\to\simplifiedcommands
+\appendtoks                         \def\tex#1{\letterbackslash#1}\to\simplifiedcommands
+\appendtoks                                          \def\TeX{TeX}\to\simplifiedcommands
+\appendtoks                                  \def\ConTeXt{ConTeXt}\to\simplifiedcommands
+\appendtoks                                \def\MetaPost{MetaPost}\to\simplifiedcommands
+\appendtoks                                \def\MetaFont{MetaFont}\to\simplifiedcommands
+\appendtoks                                  \def\MetaFun{MetaFun}\to\simplifiedcommands
+%appendtoks                                              \def||{-}\to\simplifiedcommands
+\appendtoks                \def|#1|{\ifx#1\empty\empty-\else#1\fi}\to\simplifiedcommands
 
 \appendtoks\let\buildtextaccent\secondoftwoarguments\to\simplifiedcommands
 
@@ -195,6 +195,72 @@
    \c!before=\blank,
    \c!inbetween={\blank[\v!medium]},
    \c!after=\blank]
+
+% \definieerplaats[naam][instellingen]
+% \stelplaatsin[naam][instellingen]
+% \plaats<naam>[[instellingen]]
+%
+% - still undocumented and also not in setupb yet
+% - kan ook intern/direct (scheelt duplicatie), zie \framedtext
+
+\def\dodefineplacement[#1][#2]%
+  {\getparameters
+     [\??pl#1]
+     [\c!left=\hss,
+      \c!right=\hss,
+      \c!linecorrection=\v!off,
+      \c!depthcorrection=\v!off,
+      \c!margin=\v!standard,
+      \c!grid=\v!middle,
+      %\c!before=,
+      %\c!after=,
+      #2]%
+   \setvalue{\e!place#1}{\doplacement[\??pl#1]}}
+
+\def\defineplacement
+  {\dodoubleempty\dodefineplacement}
+
+\def\setupplacement
+  {\dodoubleempty\dosetupplacement}
+
+\def\dosetupplacement[#1]%
+  {\dodoubleempty\getparameters[\??pl#1]}
+
+\def\doplacement
+  {\dodoubleempty\dodoplacement}
+
+\def\dodoplacement[#1][#2]% correctie moet mooier
+  {\bgroup
+   \dowithnextboxcontent
+     {\forgetall}
+     {\setlocalhsize
+      \getparameters[#1][#2]%
+      \getvalue{#1\c!before}%
+      \begingroup
+      \positioningparfalse
+      \setbox\nextbox\hbox to \localhsize
+        {\getvalue{#1\c!left}%
+         \flushnextbox
+         \getvalue{#1\c!right}}%
+      \ifinsidefloat \else
+        \addlocalbackgroundtobox\nextbox
+      \fi
+      \ifgridsnapping
+        \doifundefined{#1\c!grid}{\letvalue{#1\c!grid}\v!middle}%
+        % unchecked
+        \doifinset{\getvalue{#1\c!margin}}{\v!standard,\v!yes}\noindent
+        \snaptogrid[\getvalue{#1\c!grid}]\hbox{\flushnextbox}%
+      \else
+        \doifvalue{#1\c!linecorrection}\v!on \startbaselinecorrection
+        \doifinset{\getvalue{#1\c!margin}}{\v!standard,\v!yes}\noindent
+        \flushnextbox
+        \doifvalue{#1\c!depthcorrection}\v!on\baselinecorrection
+        \doifvalue{#1\c!linecorrection }\v!on\stopbaselinecorrection
+      \fi
+      \endgroup
+      \getvalue{#1\c!after}%
+      \egroup}
+   \vbox}
 
 % Te zijner tijd [plaats=boven,onder,midden] implementeren,
 % in dat geval moet eerst de maximale hoogte worden bepaald.
@@ -1654,13 +1720,11 @@
 
 \def\afterbothpairedboxes
   {\setbox\secondpairedbox\vbox
-     {% \localstartcolor[\@@ldcolor]% does not work yet
-        \ifnum\@@ldn>1
-          \rigidcolumnbalance\nextbox
-        \else
-          \flushnextbox
-        \fi
-      }% \localstopcolor}%
+     {\ifnum\@@ldn>1
+        \rigidcolumnbalance\nextbox
+      \else
+        \flushnextbox
+      \fi}%
    \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize
    \forgetall
    \ifnum\pairedlocationa<2
@@ -1836,100 +1900,8 @@
         \afterassignment\next\let\nexttoken=}
   \hbox}
 
-% stupid version, does not align top stuff when captions,
-% keep as example
-%
-% \def\dodocombination
-%   {\vbox
-%      {\forgetall % \setupwhitespace[\v!none]%
-%       \let\next\vbox
-%       \ExpandFirstAfter\processallactionsinset
-%         [\combinationparameter\c!location]
-%         [   \v!top=>\let\next\tbox,
-%          \v!middle=>\let\next\halfwaybox]%
-%       \next{\copy0}%
-%       \ifdim\ht2>\zeropoint % beter dan \wd2, nu \strut mogelijk
-%         \combinationparameter\c!inbetween
-%         %\vtop % wrong code
-%         %  {\nointerlineskip  % recently added
-%         %   \hsize\wd0
-%         %   \setupalign[\combinationparameter\c!align]%  % \raggedcenter
-%         %   \begstrut\unhbox2\endstrut}%
-%         \box2
-%       \fi}%
-%    \ifnum\totcombination>\plusone
-%      \global\advance\totcombination\minusone
-%      \global\advance\horcombination\minusone
-%      \ifnum\horcombination=\zerocount
-%        \def\next
-%          {\cr\noalign
-%             {\forgetall % \setupwhitespace[\v!geen]% no
-%              \nointerlineskip
-%              \combinationparameter\c!before
-%              \combinationparameter\c!after
-%              \vss
-%              \nointerlineskip}%
-%           \global\horcombination\maxhorcombination\relax
-%           \docombination}%
-%      \else
-%        \def\next
-%          {&&&\hskip\combinationparameter\c!distance&\docombination}%
-%      \fi
-%    \else
-%      \def\next
-%        {\cr\egroup}%
-%    \fi
-%    \next}
-
-% \def\dodocombination
-%   {\vbox
-%      {\forgetall % \setupwhitespace[\v!none]%
-%       \let\next\vbox
-%       \ExpandFirstAfter\processallactionsinset
-%         [\combinationparameter\c!plaats]
-%         [   \v!top=>\let\next\tbox,
-%          \v!middle=>\let\next\halfwaybox]%
-%       \next{\copy0}%
-%       % we need to save the caption for a next alignment line
-%       \saveoncombinationstack2}%
-%    \ifnum\totcombination>\plusone
-%      \global\advance\totcombination\minusone
-%      \global\advance\horcombination\minusone
-%      \ifnum\horcombination=\zerocount
-%        \def\next
-%          {\cr
-%           \flushcombinationstack
-%           \noalign
-%             {\forgetall % \setupwhitespace[\v!none]% no
-%              \global\setbox\combinationstack\emptybox
-%              \nointerlineskip
-%              \combinationparameter\c!after
-%              \combinationparameter\c!before
-%              \vss
-%              \nointerlineskip}%
-%           \global\horcombination\maxhorcombination\relax
-%           \docombination}%
-%      \else
-%        \def\next
-%          {&&&\hskip\combinationparameter\c!distance&\docombination}%
-%      \fi
-%    \else
-%      \def\next
-%        {\cr
-%         \flushcombinationstack
-%         \egroup}%
-%    \fi
-%    \next}
-
 \def\depthonlybox
   {\dowithnextbox{\vtop{\hsize\wd\nextbox\kern\zeropoint\box\nextbox}}\vbox}
-
-% \def\boxwithstrutheight
-%   {\dowithnextbox
-%      {\scratchdimen\strutheight
-%       \advance\scratchdimen-\nextboxht
-%       \hbox{\raise\scratchdimen\box\nextbox}}%
-%      \vbox}
 
 \def\dodocombination
   {\vbox
@@ -2087,56 +2059,6 @@
 
 \def\placeontopofeachother{\placerelativetoeachother\halign\hss}
 \def\placesidebyside      {\placerelativetoeachother\valign\vss}
-
-% this will be replaced or go away, never used
-
-\def\douseexternalfiles[#1][#2]%
-  {\getparameters
-     [\??fi#1]
-     [\c!file=,
-      \c!bodyfont=,
-      \c!option=,
-      #2]}
-
-\def\useexternalfiles
-  {\dodoubleargument\douseexternalfiles}
-
-\def\dostelexternefilesin[#1][#2]%
-  {\doifundefinedelse{\??fi#1\c!file}
-     {\useexternalfiles[#1][#2]}
-     {\getparameters[\??fi#1][#2]}}
-
-\def\stelexternefilesin
-  {\dodoubleargument\dostelexternefilesin}
-
-\def\verwerkexternefile#1#2#3%
-  {\bgroup
-   \getparameters[\??fi#1][\c!file=,#3]%
-   \doinputonce{\getvalue{\??fi#1\c!file}}%
-   \ExpandFirstAfter\switchtobodyfont[\getvalue{\??fi#1\c!bodyfont}]%
-   \readsysfile{#2}  % beter: loc of fix gebied
-     \donothing
-     {\showmessage\m!systems{41}{#2,#1}}%
-   \egroup}
-
-\def\douseexternalfile[#1][#2][#3][#4]%
-  {\stelexternefilesin[#1][]%
-   \doinputonce{\getvalue{\??fi#1\c!file}}%
-   \doifelsenothing{#2}
-     {\setvalue{#3}{\verwerkexternefile{#1}{#3}{#4}}}
-     {\setvalue{#2}{\verwerkexternefile{#1}{#3}{#4}}}}
-
-\def\useexternalfile
-  {\doquadrupleargument\douseexternalfile}
-
-\useexternalfiles
-  [pictex]
-  [\c!bodyfont=\v!small,
-   \c!file=pictex]
-
-\useexternalfiles
-  [table]
-  [\c!file=table]
 
 %D A couple of examples, demonstrating how the depth is
 %D taken care of:

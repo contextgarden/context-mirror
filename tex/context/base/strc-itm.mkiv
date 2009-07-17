@@ -67,30 +67,30 @@
 \def\dohandleitemreference % we will make a decent number helper
   {\ifx\currentitemreference \empty \else
      \setnextinternalreference
-     \ctxlua {
-        jobreferences.set("\s!full", "\referenceprefix","\currentitemreference",
-            {
-                metadata = {
-                    kind     = "list",
-                    catcodes = \the\catcodetable,
-                    xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
-                },
-                references = {
-                    internal = \nextinternalreference,
-                    section  = structure.sections.currentid(),
-                },
-                numberdata = structure.helpers.simplify {
-                    numbers       = structure.counters.compact("\currentitemgroupcounter",nil,true),
-                    separatorset  = "\structurecounterparameter\currentitemgroupcounter\c!numberseparatorset",
-                    conversion    = "\structurecounterparameter\currentitemgroupcounter\c!numberconversion",
-                    conversionset = "\structurecounterparameter\currentitemgroupcounter\c!numberconversionset",
-                  % for the moment no stopper, we need to make references configurable first
-                  % stopper       = \!!bs\structurecounterparameter\currentitemgroupcounter\c!numberstopper\!!es,
-                    segments      = "\structurecounterparameter\currentitemgroupcounter\c!numbersegments",
-                },
-            })
-        jobreferences.setinternalreference("\referenceprefix","\currentitemreference",\nextinternalreference)
+     \ctxlua { jobreferences.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
+        {
+            metadata = {
+                kind     = "list",
+                catcodes = \the\catcodetable,
+                xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
+            },
+            references = {
+                internal = \nextinternalreference,
+                section  = structure.sections.currentid(),
+            },
+            numberdata = structure.helpers.simplify {
+                numbers       = structure.counters.compact("\currentitemgroupcounter",nil,true),
+                separatorset  = "\structurecounterparameter\currentitemgroupcounter\c!numberseparatorset",
+                conversion    = "\structurecounterparameter\currentitemgroupcounter\c!numberconversion",
+                conversionset = "\structurecounterparameter\currentitemgroupcounter\c!numberconversionset",
+              % for the moment no stopper, we need to make references configurable first
+              % stopper       = \!!bs\structurecounterparameter\currentitemgroupcounter\c!numberstopper\!!es,
+                segments      = "\structurecounterparameter\currentitemgroupcounter\c!numbersegments",
+            },
+        })
      }%
+     \xdef\currentitemattribute{\number\lastdestinationattribute}%
+     \begingroup\dosetattribute{destination}\currentitemattribute\kern\zeropoint\endgroup % todo
    \fi}
 
 % \startitemize[n,packed]
@@ -925,7 +925,7 @@
       \fi
    \fi
    \doifsomething\doitemdestination
-     {\setbox\itemgroupitembox\hbox{\goto{\box\itemgroupitembox}[\doitemdestination]}}%
+     {\setbox\itemgroupitembox\hbox{\directgotobox{\box\itemgroupitembox}[\doitemdestination]}}%
    \globallet\doitemdestination\empty
    \itemgroupaskedwidth\getitemparameter\currentitemlevel\c!width\relax
    % new, prevents loops when symbol is (not yet found) graphic

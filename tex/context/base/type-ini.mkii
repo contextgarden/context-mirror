@@ -84,8 +84,7 @@
     \usetypescriptfile[\f!typeprefix xtx]
 \else
     \usetypescriptfile[\f!typeprefix one]
-    %usetypescriptfile[\f!typeprefix gyr] % to be merged into one
-    \usetypescriptfile[\f!typeprefix akb] % will go away when gyre is merged
+    %usetypescriptfile[\f!typeprefix akb] % we have gyre now
 \fi
 
 \usetypescriptfile[\f!typeprefix loc]
@@ -591,10 +590,6 @@
 
 % we can use \rawgetparameters or \rawgeteparameters
 
-\ifx\mkdodefinetypeface\undefined
-    \let\mkdodefinetypeface\gobblefivearguments
-\fi
-
 \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
   {\dododefinetypeface[#1][#2]%
    \iffifthargument % sixth is optional
@@ -736,7 +731,7 @@
      \the\scratchtoks
    \fi}
 
-\fetchruntimecommand \typetypescript {\f!typeprefix\s!run}
+\fetchruntimecommand \typetypescript {\f!typeprefix\s!run.mkii}
 
 % \usetypescript [berry] [ec]
 

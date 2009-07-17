@@ -1,0 +1,255 @@
+%D \module
+%D   [      file=s-pre-26,
+%D        version=2001.02.18,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 26,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D modes: reverse
+
+%D This is a nice and simple style, written in februari
+%D 2001. It uses a square papersize, derived from \type {S4}.
+%D Because this style is meant to be used with Zapf
+%D Chancery, I dedicate this style to Volker Schaa, a fan of
+%D Zapf.
+
+\setuppapersize
+  [S44][S44]
+
+\startmode[asintended]
+  \definetypeface[zaphy][cg][calligraphy][chancery]
+  \setupbodyfont[zaphy,cg,12pt]
+\stopmode
+
+\startnotmode[asintended]
+  \setupbodyfont[13pt]
+\stopnotmode
+
+%D We use the whole page.
+
+\setuplayout
+  [backspace=0pt,
+   topspace=0pt,
+   header=0pt,
+   footer=0pt,
+   bottom=0pt,
+   width=middle,
+   height=middle]
+
+%D We will be very tolerant in alignment.
+
+\setuptolerance
+  [verytolerant,stretch]
+
+%D Of course use navigation, but we hide the in this case
+%D ugly reverse video hyper spot.
+
+\setupinteraction
+  [state=start,
+   color=white,
+   contrastcolor=white,
+   style=\underbar,
+   click=no]
+
+%D This style looks best in a dark room, full screen.
+
+\setupinteractionscreen
+  [option=max]
+
+%D We use colors and remap a couple of standard colors.
+
+\setupcolors
+  [state=start]
+
+\definecolor[white] [s=.8]
+\definecolor[red]   [r=.7]
+\definecolor[green] [g=.7]
+\definecolor[blue]  [b=.7]
+\definecolor[yellow][r=.7,g=.7]
+
+\definecolor [PageColor][black]
+
+%D These colors will cyclic be assigned to \type
+%D {TextColor}.
+
+\definecolor [TextColor 0][white]
+\definecolor [TextColor 1][red]
+\definecolor [TextColor 2][green]
+\definecolor [TextColor 3][blue]
+\definecolor [TextColor 4][yellow]
+
+\definecolor [TextColor] [TextColor 0]
+
+%D We will collect everything in a layer.
+
+\definelayer
+  [main]
+  [state=repeat]
+
+%D We have quite some overlays.
+
+\defineoverlay [page] [\reuseMPgraphic{page}]
+\defineoverlay [text] [\useMPgraphic{text}]
+\defineoverlay [next] [\overlaybutton{nextpage}]
+\defineoverlay [prev] [\overlaybutton{previouspage}]
+\defineoverlay [main] [\composedlayer{main}]
+
+%D These end up as paper, page and text backgrounds. We need
+%D to locate the foreground, otherwise hyperlinks will not
+%D work.
+
+\setupbackgrounds % otherwise in acrobat 5 rounding error
+  [paper]         % and one pixel white line
+  [backgroundcolor=Pagecolor,
+   background=page]
+
+\setupbackgrounds
+  [page]
+  [background={page,prev,foreground,main}]
+
+\setupbackgrounds
+  [text]
+  [background=next,
+   backgroundoffset=-10pt]
+
+%D This means that clicking on the center brings you to the
+%D next page, while clicking on teh page frame brings you one
+%D page back.
+
+%D As usual, the graphics are handled by \METAPOST:
+
+\startuseMPgraphic{text}
+  path p ; p := unitsquare xyscaled (OverlayWidth,OverlayHeight) ;
+  color c ; c := (.7+uniformdeviate.3)*\MPcolor{TextColor} ;
+  p := p enlarged -1.25pt ;
+  filldraw p withcolor c ;
+  draw p withpen pencircle scaled 2.5pt withcolor .75c ;
+\stopuseMPgraphic
+
+\startreusableMPgraphic{page}
+  path p ; p := unitsquare xyscaled (OverlayWidth,OverlayHeight) ;
+  color c ; c := \MPcolor{PageColor} ;
+  filldraw p enlarged 5pt withcolor c ; % bleeding
+\stopreusableMPgraphic
+
+%D The text is typeset in a framed text. We cycle trough the
+%D colors by means of a counter. This counter also determines
+%D the positioning on the main layer. The width is slightly
+%D random.
+
+\newcounter\KindOfTopic  % and cycle through corners
+\newdimen  \TopicWidth   % with randomized widths
+
+\defineframedtext
+  [TopicText]
+  [frame=off,
+   offset=10pt,
+   style=bold,
+   width=\TopicWidth,
+   background=text,
+   before=,
+   after=,
+   align=normal]
+
+\def\BeforeTopic
+  {\ifcase\KindOfTopic\relax
+     \TopicWidth=.7\textwidth
+     \definecolor[CharColor][black]
+   \else
+     \getrandomdimen\TopicWidth{.55\textwidth}{.7\textwidth}
+     \definecolor[CharColor][white]
+   \fi
+   \doifmode{reverse}
+     {\setupframedtexts[TopicText][foregroundcolor=CharColor]}
+   \definecolor[TextColor][TextColor \KindOfTopic]
+   \ifcase\KindOfTopic\relax
+     \setuplayer[main][x=.5\textwidth,y=.5\textheight,location=c]  \or
+     \setuplayer[main][x=0pt,         y=0pt,          location=rb] \or
+     \setuplayer[main][x=\textwidth,  y=0pt,          location=lb] \or
+     \setuplayer[main][x=\textwidth,  y=\textheight,  location=lt] \or
+     \setuplayer[main][x=0pt,         y=\textheight,  location=rt] \fi}
+
+\def\AfterTopic
+  {\ifnum\KindOfTopic=4
+     \gdef\KindOfTopic{1}
+   \else
+     \doglobal\increment\KindOfTopic
+   \fi}
+
+\def\StartTopic
+  {\BeforeTopic
+   \startstandardmakeup
+   \setlayer[main] \bgroup \startTopicText[none]
+     }%\setupwhitespace[big]} % generates an empty line
+
+\def\StopTopic
+  {\stopTopicText \egroup
+   \stopstandardmakeup
+   \AfterTopic}
+
+%D The title and colofon page are centered on the page.
+
+\def\StartNopic
+  {\doglobal\newcounter\KindOfTopic % centered at the page
+   \StartTopic
+     \bfd\setupinterlinespace
+     \setupinteraction[color=,contrastcolor=]%
+     \def\\{\blank\bfb\setupinterlinespace\def\\{\blank}}%
+     \raggedcenter\ignorespaces}
+
+\def\StopNopic
+  {\StopTopic}
+
+\let\StartTitlePage\StartNopic \let\StartColofonPage\StartNopic
+\let\StopTitlePage \StopNopic  \let\StopColofonPage \StopNopic
+
+\def\TitlePage  #1{\StartTitlePage  #1\StopTitlePage}
+\def\ColofonPage#1{\StartColofonPage#1\StopColofonPage}
+
+%D We provide a minimum of title commands.
+
+\definehead
+  [Title]
+  [title]
+
+\definehead
+  [Subject]
+  [subject]
+
+\setuphead
+  [Title]
+  [style=\bfb,
+   page=,
+   before=,
+   after=\blank]
+
+\setuphead
+  [Subject]
+  [style=\bfa,
+   before=\blank,
+   after=\blank]
+
+\doifnotmode{demo}{\endinput}
+
+\def\Sample #1 {\input #1 \par \rightaligned{--- #1 ---}}
+
+\starttext
+
+\StartNopic The \ConTeXt\ Test Quotes \\ \currentdate \StopNopic
+
+\StartTopic \Sample tufte   \StopTopic
+\StartTopic \Sample knuth   \StopTopic
+\StartTopic \Sample zapf    \StopTopic
+\StartTopic \Sample douglas \StopTopic
+\StartTopic \Sample stork   \StopTopic
+\StartTopic \Sample materie \StopTopic
+
+\StartNopic There Will Be Some More \StopNopic
+
+\stoptext

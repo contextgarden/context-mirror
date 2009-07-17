@@ -43,8 +43,7 @@
   {\bgroup
    \pushmacro\textunderscore
    \edef\textunderscore{\string_}% brrr, temp hack, still needed?
-   \calculateexternalfigure      [][#1][#2][#3][#4][#5]% [] is dummy dwcomp
-   \calculateexternalscreenfigure[][#1][#2][#3][#4][#5]% [] is dummy dwcomp
+   \calculateexternalfigure[][#1][#2][#3][#4][#5]% [] is dummy dwcomp
    \popmacro\textunderscore
    \box\foundexternalfigure
    \egroup}
@@ -56,13 +55,15 @@
      [\??ef]
      [\c!width=\figurewidth,
       \c!height=\figureheight,
-      \c!background=\v!screen,
-      \c!backgroundscreen=.8,
+      \c!background=\v!color,
+      \c!backgroundcolor=missingfigurecolor,
       \c!frame=\@@efframe]}%
      {\tt\tfxx \nohyphens
         name:  \expanded{\verbatimstring{#1}}\\%
         file:  \expanded{\verbatimstring{#2}}\\%
         state: \expanded{\verbatimstring{#3}}}}
+
+\definecolor[missingfigurecolor][s=.8]
 
 \def\externalfigureplaceholder#1#2#3%
   {\localframed
@@ -186,89 +187,91 @@
 
 %D Still undocumented! No one uses it I think, better be done with layers.
 
-\newcount\efreference
-\newdimen\efxsteps
-\newdimen\efysteps
-
-\def\calculateefsteps
-  {\ifnum0\@@exxmax=\zerocount
-     \ifnum0\@@exymax=\zerocount
-       \def\@@exymax{24}%
-     \fi
-     \efysteps\figureheight \divide\efysteps \@@exymax
-     \efxsteps\efysteps
-     \dimen0=\figurewidth
-     \advance\dimen0 \efysteps
-     \divide \dimen0 \efysteps
-     \edef\@@exxmax{\number\dimen0}%
-   \else
-     \efxsteps\figurewidth  \divide\efxsteps \@@exxmax
-     \efysteps\figureheight \divide\efysteps \@@exymax
-   \fi}
-
-\def\efcomment#1(#2,#3)#4(#5,#6)%    {kader}(x,y)(h,b)[...]{tekst}
-  {\def\complexefdocomment[##1]##2%
-     {\position(#2,#3)%
-        {\setnostrut
-         \framed
-           [\c!width=#5\efxsteps,
-            \c!height=#6\exysteps,
-            \c!offset=\v!none,
-            \c!frame=#1,
-            ##1]%
-           {##2}}}%
-   \complexorsimpleempty\efdocomment}
-
-\def\efnocomment(#1,#2)#3(#4,#5)%    (x,y)(h,b)[...]{tekst}
-  {\def\complexefdonocomment[##1]##2{}%
-   \complexorsimpleempty\efdonocomment}
-
-\def\efdomarker(#1,#2)#3#4%    (h,b){kader}{tekst}
-  {\framed
-     [\c!width=#1\efxsteps,
-      \c!height=#2\efysteps,
-      \c!offset=\v!none,
-      \c!frame=#3]%
-     {#4}}
-
-\def\effigure#1%
-  {\position(0,0){\getvalue{#1}}}
-
-\def\efdoarea(#1,#2)#3#4%    (h,b){kader}{tekst}
-  {\bgroup
-   \setnostrut
-   \framed
-     [\c!width=#1\efxsteps,
-      \c!height=#2\efysteps,
-      \c!offset=\!!zeropoint,
-      \c!frame=#3]
-     {#4}%
-   \egroup}
-
-\def\efgoto(#1,#2)#3[#4]%    (h,b)kader[ref]
-  {\setbox0=\vbox{\efdoarea(#1,#2)#3{}}%
-   \gotobox{\copy0}[#4]}
-
-\def\efmark(#1,#2)#3(#4,#5)#6[#7]%
-  {\advance\efreference \plusone
-   \position(#1,#2)
-     {\hbox{\the\efreference}}%
-   \position(#1,#2)
-     {\gotosomeinternal\s!vwb{#7}\realfolio
-        {\efdomarker(#4,#5)\v!on{\thisissomeinternal\s!vwa{#7}}}}}
-
-\def\eftext#1(#2,#3)#4(#5,#6)#7[#8]%
-  {\advance\efreference \plusone
-   \hbox
-     {\quad
-      \thisissomeinternal\s!vwb{#8}%
-      \gotosomeinternal  \s!vwa{#8}\realfolio
-        {\hbox to 1.5em{\the\efreference\presetgoto\hfill}}%
-      \quad#1 (#2,#3) (#5,#6) [#8]\hfill}%
-   \endgraf}
-
-\def\efthisis(#1,#2)#3[#4]%
-  {\efdoarea(#1,#2){#3}{\pagereference[#4]}}
+% when there is need for this i'll reimplement it
+%
+% \newcount\efreference
+% \newdimen\efxsteps
+% \newdimen\efysteps
+%
+% \def\calculateefsteps
+%   {\ifnum0\@@exxmax=\zerocount
+%      \ifnum0\@@exymax=\zerocount
+%        \def\@@exymax{24}%
+%      \fi
+%      \efysteps\figureheight \divide\efysteps \@@exymax
+%      \efxsteps\efysteps
+%      \dimen0=\figurewidth
+%      \advance\dimen0 \efysteps
+%      \divide \dimen0 \efysteps
+%      \edef\@@exxmax{\number\dimen0}%
+%    \else
+%      \efxsteps\figurewidth  \divide\efxsteps \@@exxmax
+%      \efysteps\figureheight \divide\efysteps \@@exymax
+%    \fi}
+%
+% \def\efcomment#1(#2,#3)#4(#5,#6)%    {kader}(x,y)(h,b)[...]{tekst}
+%   {\def\complexefdocomment[##1]##2%
+%      {\position(#2,#3)%
+%         {\setnostrut
+%          \framed
+%            [\c!width=#5\efxsteps,
+%             \c!height=#6\exysteps,
+%             \c!offset=\v!none,
+%             \c!frame=#1,
+%             ##1]%
+%            {##2}}}%
+%    \complexorsimpleempty\efdocomment}
+%
+% \def\efnocomment(#1,#2)#3(#4,#5)%    (x,y)(h,b)[...]{tekst}
+%   {\def\complexefdonocomment[##1]##2{}%
+%    \complexorsimpleempty\efdonocomment}
+%
+% \def\efdomarker(#1,#2)#3#4%    (h,b){kader}{tekst}
+%   {\framed
+%      [\c!width=#1\efxsteps,
+%       \c!height=#2\efysteps,
+%       \c!offset=\v!none,
+%       \c!frame=#3]%
+%      {#4}}
+%
+% \def\effigure#1%
+%   {\position(0,0){\getvalue{#1}}}
+%
+% \def\efdoarea(#1,#2)#3#4%    (h,b){kader}{tekst}
+%   {\bgroup
+%    \setnostrut
+%    \framed
+%      [\c!width=#1\efxsteps,
+%       \c!height=#2\efysteps,
+%       \c!offset=\!!zeropoint,
+%       \c!frame=#3]
+%      {#4}%
+%    \egroup}
+%
+% \def\efgoto(#1,#2)#3[#4]%    (h,b)kader[ref]
+%   {\setbox0=\vbox{\efdoarea(#1,#2)#3{}}%
+%    \gotobox{\copy0}[#4]}
+%
+% \def\efmark(#1,#2)#3(#4,#5)#6[#7]%
+%   {\advance\efreference \plusone
+%    \position(#1,#2)
+%      {\hbox{\the\efreference}}%
+%    \position(#1,#2)
+%      {\gotosomeinternal\s!vwb{#7}\realfolio
+%         {\efdomarker(#4,#5)\v!on{\thisissomeinternal\s!vwa{#7}}}}}
+%
+% \def\eftext#1(#2,#3)#4(#5,#6)#7[#8]%
+%   {\advance\efreference \plusone
+%    \hbox
+%      {\quad
+%       \thisissomeinternal\s!vwb{#8}%
+%       \gotosomeinternal  \s!vwa{#8}\realfolio
+%         {\hbox to 1.5em{\the\efreference\presetgoto\hfill}}%
+%       \quad#1 (#2,#3) (#5,#6) [#8]\hfill}%
+%    \endgraf}
+%
+% \def\efthisis(#1,#2)#3[#4]%
+%   {\efdoarea(#1,#2){#3}{\pagereference[#4]}}
 
 \newbox\colorbarbox
 
@@ -401,41 +404,6 @@
 
 \def\startfigure
   {\grabuntil{\e!stop\v!figure}\dostartfigure}
-
-%D defining sound tracks:
-%D
-%D \starttyping
-%D \useexternalsoundtrack[label][file]
-%D \stoptyping
-%D
-%D associated actions: StartSound StopSound PauseSound ResumeSound
-%D
-%D Todo: like external figures, also search on path,
-%D although, they need to be present ar viewing time, so ...
-
-\def\useexternalsoundtrack
-  {\dodoubleargument\douseexternalsoundtrack}
-
-\def\douseexternalsoundtrack[#1][#2]%
-  {\setgvalue{\??sd:#1}{#2}}
-
-\def\checksoundtrack#1%
-  {\iflocation
-     \doifdefined{\??sd:#1}{\doifvaluesomething{\??sd:#1}
-       {\doinsertsoundtrack{\getvalue{\??sd:#1}}{#1}\@@sdoption
-        % brr, \..empty not really needed and maybe even wrong;
-        % also, not here but in driver
-        % well, no: sounds need to be reinitialize each time (i.e., be on page), so no
-        }}% \letgvalueempty{\??sd:#1}}}%
-   \fi}
-
-\setexecutecommandcheck {startsound} \checksoundtrack
-
-\def\setupexternalsoundtracks
-  {\dodoubleargument\getparameters[\??sd]}
-
-\setupexternalsoundtracks
-  [\c!option=]
 
 %D NEW: used in styledesign manual
 

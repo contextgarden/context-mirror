@@ -17,12 +17,25 @@
 
 \unprotect
 
+\def\c!keys   {keys}
+\def\c!entries{entries}
+
 % todo: tag:: becomes rendering
 % todo: language, character, linked, location
 
 %D Helper:
 
-\def\doflushatpar{\ifvmode\expandafter\dogotopar\else\expandafter\firstofoneargument\fi}
+% \def\doflushatpar{\ifvmode\expandafter\dogotopar\else\expandafter\firstofoneargument\fi}
+
+\def\doflushatpar{\ifvmode\expandafter\flushatnextpar\else\expandafter\firstofoneargument\fi}
+
+% \starttext
+% \placeregister[index]
+% \chapter{a} \index{93} \index{456} \index{***} \index{*} \index{@}
+% test \index{aa} test \startregister[index][x]{bb} test \page test \page test \page test \stopregister[index][x]
+% test \index{aa} test \setregisterentry[index][label=x,entries=bb] test \page test \page test \page test \finishregisterentry[index][label=x]
+% test \index{aa} test \setregisterentry[index][label=y] test \page test \page test \page test \finishregisterentry[index][label=y,entries=yy]
+% \stoptext
 
 %  In plaats van + kan een & worden gebruikt. Ook kan als
 %  eerste karakter worden opgegeven wat de scheider is.
@@ -40,7 +53,9 @@
 
 \let\currentregister\empty
 
-\def\registerparameter#1{\csname\??id\currentregister#1\endcsname}
+% \def\registerparameter#1{\csname\??id\currentregister#1\endcsname}
+
+\def\detokenizedregisterparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??id#1\endcsname}} % always root
 
 \def\registerparameter    #1{\csname\doregisterparameter{\??id\currentregister}#1\endcsname}
 \def\registerparameterhash#1{\doregisterparameterhash   {\??id\currentregister}#1}
@@ -129,66 +144,72 @@
 
 % tzt variant met n entries, parameters en userdata (altnum)
 
-\def\doprocesspageregister#1#2#3#4#5% register tag key altnum entry
+\def\doregisterstructurepageregister#1#2#3% register data userdata
   {\begingroup
    \edef\currentregister{#1}%
-   \edef\currentregistertag{#2}%
+   \getparameters[\??id][\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
+   \edef\currentregisterlabel    {\registerparameter\c!label}%
    \edef\currentregisterexpansion{\registerparameter\c!expansion}%
    \edef\currentregisterownnumber{\registerparameter\c!ownnumber}%
+   \xdef\currentregisterkeys     {\registerparameter\c!keys}%
    \ifx\currentregisterexpansion\s!xml
      \xmlstartraw
-       \xdef\currentregisterentries{\detokenize{#5}}% not ok yet
+       \xdef\currentregisterentries{\registerparameter\c!entries}%
      \xmlstopraw
      \globallet\currentregistercoding\s!xml
    \else
      \ifx\currentregisterexpansion\v!yes
-       \xdef\currentregisterentries{#5}% not ok yet
+       \xdef\currentregisterentries{\registerparameter\c!entries}%
      \else
-       \xdef\currentregisterentries{\detokenize{#5}}% not ok yet
+       \xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
      \fi
      \globallet\currentregistercoding\s!tex
    \fi
    \setnextinternalreference
-   % we could consider storing register entries in list
+   % we could consider storing register entries in a list which we
+   % could then sort
    \xdef\currentregisternumber{\ctxlua{
     jobregisters.store {
         metadata = {
             kind     = "entry",
             name     = "\currentregister",
             level    = structure.sections.currentlevel(),
+            coding   = "\currentregistercoding",
             catcodes = \the\catcodetable,
-            own      = \ifx\currentregisterownnumber\v!yes "#4" \else nil \fi, % can be used instead of pagenumber
+        \ifx\currentregisterownnumber\v!yes
+            own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
+        \fi
         },
         references = {
             internal = \nextinternalreference,
-            section = structure.sections.currentid(),
+            section = structure.sections.currentid(), % hm, why then not also lastsection the same way
+            label = "\currentregisterlabel",
         },
+    \ifx\currentregisterentries\empty \else
         entries = {
             % we need a special one for xml, this is just a single one
-            \!!bs\currentregisterentries\!!es, \!!bs#3\!!es
+            \!!bs\currentregisterentries\!!es, \!!bs\currentregisterkeys\!!es
         },
+    \fi
+        userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
      }
    } }%
-   \xdef\currentregistersynchronize % make this a macro because shared
-     {\noexpand\ctxlua{jobreferences.setinternalreference(nil,nil,\nextinternalreference)}%
-      \ifx\currentregisterownnumber\v!yes \else
-        \noexpand\ctxlatelua{jobregisters.enhance("\currentregister",\currentregisternumber)}%
-      \fi}%
-   \ifx\currentregistertag\empty \else
-     \setxvalue{\??id#1->#2}{\noexpand\dofinishpageregister{\currentregister}{\currentregisternumber}}%
+   \ctxlua{jobreferences.setinternalreference(nil,nil,\nextinternalreference)}%
+   \ifx\currentregisterownnumber\v!yes
+     \glet\currentregistersynchronize\relax
+   \else
+     \xdef\currentregistersynchronize{\ctxlatelua{jobregisters.enhance("\currentregister",\currentregisternumber)}}%
    \fi
    \currentregistersynchronize % here?
+   \attribute\destinationattribute\lastdestinationattribute \strut % todo
    \endgroup}
-
-\def\dofinishpageregister#1#2%
-  {\ctxlatelua{jobregisters.extend("#1",#2,\ctxlua{tex.write(structure.currentsectionnumber())}}}
 
 \def\doregister[#1][#2]%
   {\def\currentregister{#1}%
    \doifelse{\registerparameter\c!ownnumber}\v!yes\dodoregister\donoregister{#1}{#2}}
 
-\def\donoregister  #1#2{\doflushatpar{\doprocesspageregister{#1}{}{}{#2}}}   % register key - entry
-\def\dodoregister#1#2#3{\doflushatpar{\doprocesspageregister{#1}{}{#2}{#3}}} % register key altnum entry
+\def\donoregister  #1#2#3{\doflushatpar{\doregisterstructurepageregister{#1}{\c!keys={#2},\c!entries={#3}}{}}}
+\def\dodoregister#1#2#3#4{\doflushatpar{\doregisterstructurepageregister{#1}{\c!keys={#2},\c!alternative=#3,\c!entries={#4}}{}}}
 
 \def\startregister{\doquadrupleempty\dostartregister}
 \def\stopregister {\dodoubleargument\dostopregister}
@@ -199,19 +220,72 @@
 \let\closeregisterrange\stopregister
 
 \def\dostartregister[#1][#2][#3][#4]#5%
-   {\iffourthargument
-      % #1=register #2=tag #3=own #4=sortkey #5=entry
-      \doflushatpar{\doprocesspageregister{#1}{#2}{#4}{#3}{#5}}%
-    \else
-      % #1=register #2=tag #3=sortkey #5=entry
-      \doflushatpar{\doprocesspageregister{#1}{#2}{#3}{}{#5}}%
-    \fi}
+  {\iffourthargument
+     % #1=register #2=tag #3=own #4=sortkey #5=entry
+     \doflushatpar{\doregisterstructurepageregister{#1}{\c!label=#2,\c!alternative=#3,\c!keys={#4},\c!entries={#5}}{}}%
+   \else
+     % #1=register #2=tag #3=sortkey #5=entry
+     \doflushatpar{\doregisterstructurepageregister{#1}{\c!label=#2,\c!keys={#3},\c!entries={#5}}{}}%
+   \fi}
 
 \def\dostopregister[#1][#2]%
-  {\ifcsname\??id#1->#2\endcsname
-     \getvalue{\??id#1->#2}%
-     \letgvalue{\??id#1->#2}\relax
-   \fi}
+  {\normalexpanded{\ctxlatelua{jobregisters.extend("#1","#2")}}}
+
+\def\setregisterentry   {\dotripleempty\dosetregisterentry}
+\def\finishregisterentry{\dotripleempty\dofinishregisterentry}
+
+\def\dosetregisterentry   [#1][#2][#3]{\doflushatpar{\doregisterstructurepageregister{#1}{#2}{#3}}}
+\def\dofinishregisterentry[#1][#2][#3]{\dofinishregisterstructurepageregister{#1}{#2}{#3}}
+
+\def\dofinishregisterstructurepageregister#1#2#3% register data userdata
+  {\begingroup
+   \edef\currentregister{#1}%
+   \getparameters[\??id][\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
+   \edef\currentregisterlabel    {\registerparameter\c!label}%
+   \edef\currentregisterexpansion{\registerparameter\c!expansion}%
+   \edef\currentregisterownnumber{\registerparameter\c!ownnumber}%
+   \xdef\currentregisterkeys     {\registerparameter\c!keys}%
+   \ifx\currentregisterexpansion\s!xml
+     \xmlstartraw
+       \xdef\currentregisterentries{\registerparameter\c!entries}%
+     \xmlstopraw
+     \globallet\currentregistercoding\s!xml
+   \else
+     \ifx\currentregisterexpansion\v!yes
+       \xdef\currentregisterentries{\registerparameter\c!entries}%
+     \else
+       \xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
+     \fi
+     \globallet\currentregistercoding\s!tex
+   \fi
+   \ifx\currentregisterentries\empty
+       \normalexpanded{\ctxlua{jobregisters.extend("\currentregister","\currentregisterlabel", {
+            metadata = {
+            \ifx\currentregisterownnumber\v!yes
+                own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
+            \fi
+            },
+            userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+         })%
+       }}%
+   \else
+       \normalexpanded{\ctxlua{jobregisters.extend("\currentregister","\currentregisterlabel", {
+            metadata = {
+                catcodes = \the\catcodetable,
+                coding   = "\currentregistercoding",
+            \ifx\currentregisterownnumber\v!yes
+                own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
+            \fi
+            },
+            entries = {
+                % we need a special one for xml, this is just a single one
+                \!!bs\currentregisterentries\!!es, \!!bs\currentregisterkeys\!!es
+            },
+            userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+         })
+       }}%
+   \fi
+   \endgroup}
 
 \def\doseeregister[#1][#2]#3#4%
   {\doflushatpar{\doprocessseeregister{#1}{#2}{#3}{#4}}}
@@ -278,7 +352,7 @@
 \newtoks\everyplaceregister
 
 \appendtoks
-     \dontcomplain
+    \dontcomplain
 \to \everyplaceregister
 
 \def\placeregister
@@ -287,6 +361,7 @@
 \def\doplaceregister[#1][#2]%
   {\iffirstargument
      \begingroup
+%      \forgetall
      \edef\currentregister{#1}%
      \setupregister[\currentregister][#2]%
      \the\everyplaceregister
@@ -371,9 +446,10 @@
 
 \def\defaultregistercharacter#1%
   {\doifsomething{#1}
-     {\doifelse{\registerparameter\c!indicator}\v!yes
-        {\executeifdefined{\strippedcsname\doregistercharacter\registerparameter\c!alternative}\doregistercharactera{#1}}
-        {\noregistercharacter{#1}}}}
+     {\doifnot{#1}\s!unknown
+        {\doifelse{\registerparameter\c!indicator}\v!yes
+           {\expandcheckedcsname{\??id:\c!indicator:}{\registerparameter\c!alternative}{a}{#1}}
+           {\noregistercharacter{#1}}}}}
 
 \def\noregistercharacter#1%
   {\registerparameter\c!before
@@ -381,10 +457,9 @@
 
 % a = <before> <goodbreak> <character> <par> <after> <nobreak>
 
-\def\doregistercharactera#1%
+\setvalue{\??id:\c!indicator:a}#1%
   {\registerparameter\c!before
    \vskip\lineheight\goodbreak\vskip-\lineheight
-   \ifhmode\unskip\else\noindent\fi % brrr
    \begingroup\dosetregisterattributes\c!style\c!color
    \registerparameter\c!command{\strut#1}%
    \endgroup
@@ -393,28 +468,29 @@
 
 % b = <goodbreak> <before> <character> <after> <nobreak>
 
-\def\doregistercharacterb#1% here no lineheight hackery ! ! !
+\setvalue{\??id:\c!indicator:b}#1%
   {\registerparameter\c!before
-   \ifhmode\unskip\else\noindent\fi % brrr
    \begingroup\dosetregisterattributes\c!style\c!color
    \registerparameter\c!command{\strut#1}%
    \endgroup
    \registerparameter\c!after
    \nobreak}
 
-% extra:
-
-\def\doregistercharacterA#1{\doregistercharactera{\WORD{#1}}}
-\def\doregistercharacterB#1{\doregistercharacterb{\WORD{#1}}}
+\setvalue{\??id:\c!indicator:A}#1{\getvalue{\??id:\c!indicator:a}{\WORD{#1}}}
+\setvalue{\??id:\c!indicator:B}#1{\getvalue{\??id:\c!indicator:b}{\WORD{#1}}}
 
 %D The following macros are the interface to the rendering. These are
 %D generated by \LUA. This might change.
 
 \def\startregisteroutput
-  {\endgraf}
+  {\endgraf
+   \begingroup
+   \forgetparindent
+   \forgetparskip}
 
 \def\stopregisteroutput
-  {\endgraf}
+  {\endgraf
+   \endgroup}
 
 \def\startregisterentries#1% depth
   {\endgraf
@@ -459,14 +535,14 @@
      \settrue\registerpagedone
    \fi}
 
-\def\registeronepage#1% content
-  {\registerpageseparator\registerparameter\c!pagecommand{#1}}
+\def\registeronepage#1#2#3% content
+  {\registerpageseparator\registerparameter\c!pagecommand{\goto{#3}[internal(#1)]}}
 
-\def\registerpagerange#1#2% content, content todo: -- configurable
-  {\registerpageseparator\registerparameter\c!pagecommand{#1}|--|\registerparameter\c!pagecommand{#2}}
+\def\registerpagerange#1#2#3#4#5#6% content, content todo: -- configurable
+  {\registerpageseparator\registerparameter\c!pagecommand{\goto{#3}[internal(#1)]}|--|\registerparameter\c!pagecommand{\goto{#6}[internal(#4)]}}
 
-\def\registeroneword#1% content
-  {\registerpageseparator\registerseeword{#1}}
+\def\registeroneword#1#2#3% content
+  {\registerpageseparator\registerseeword{#3}}
 
 \def\defaultregisterentry  #1{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#1}}}}
 \def\defaultregisterseeword#1{\labeltexts\v!see{#1}}
@@ -505,14 +581,6 @@
 \appendtoks
      \setregisterpagerendering
 \to \everyplaceregister
-
-%D Don't use \type{\string#2}; another hack is needed, since
-%D \type {#2} can be \type {\string} itself.
-%
-% \def\doregisterreference[#1]#2%
-%   {\doifsomething{#2}
-%      {\doif{\registerparameter\c!referencing}\v!on
-%         {\pagereference[#1:\strippedcsname#2]}}}
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %

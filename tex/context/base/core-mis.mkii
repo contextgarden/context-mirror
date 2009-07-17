@@ -196,6 +196,72 @@
    \c!inbetween={\blank[\v!medium]},
    \c!after=\blank]
 
+% \definieerplaats[naam][instellingen]
+% \stelplaatsin[naam][instellingen]
+% \plaats<naam>[[instellingen]]
+%
+% - still undocumented and also not in setupb yet
+% - kan ook intern/direct (scheelt duplicatie), zie \framedtext
+
+\def\dodefineplacement[#1][#2]%
+  {\getparameters
+     [\??pl#1]
+     [\c!left=\hss,
+      \c!right=\hss,
+      \c!linecorrection=\v!off,
+      \c!depthcorrection=\v!off,
+      \c!margin=\v!standard,
+      \c!grid=\v!middle,
+      %\c!before=,
+      %\c!after=,
+      #2]%
+   \setvalue{\e!place#1}{\doplacement[\??pl#1]}}
+
+\def\defineplacement
+  {\dodoubleempty\dodefineplacement}
+
+\def\setupplacement
+  {\dodoubleempty\dosetupplacement}
+
+\def\dosetupplacement[#1]%
+  {\dodoubleempty\getparameters[\??pl#1]}
+
+\def\doplacement
+  {\dodoubleempty\dodoplacement}
+
+\def\dodoplacement[#1][#2]% correctie moet mooier
+  {\bgroup
+   \dowithnextboxcontent
+     {\forgetall}
+     {\setlocalhsize
+      \getparameters[#1][#2]%
+      \getvalue{#1\c!before}%
+      \begingroup
+      \positioningparfalse
+      \setbox\nextbox\hbox to \localhsize
+        {\getvalue{#1\c!left}%
+         \flushnextbox
+         \getvalue{#1\c!right}}%
+      \ifinsidefloat \else
+        \addlocalbackgroundtobox\nextbox
+      \fi
+      \ifgridsnapping
+        \doifundefined{#1\c!grid}{\letvalue{#1\c!grid}\v!middle}%
+        % unchecked
+        \doifinset{\getvalue{#1\c!margin}}{\v!standard,\v!yes}\noindent
+        \snaptogrid[\getvalue{#1\c!grid}]\hbox{\flushnextbox}%
+      \else
+        \doifvalue{#1\c!linecorrection}\v!on \startbaselinecorrection
+        \doifinset{\getvalue{#1\c!margin}}{\v!standard,\v!yes}\noindent
+        \flushnextbox
+        \doifvalue{#1\c!depthcorrection}\v!on\baselinecorrection
+        \doifvalue{#1\c!linecorrection }\v!on\stopbaselinecorrection
+      \fi
+      \endgroup
+      \getvalue{#1\c!after}%
+      \egroup}
+   \vbox}
+
 % Te zijner tijd [plaats=boven,onder,midden] implementeren,
 % in dat geval moet eerst de maximale hoogte worden bepaald.
 %

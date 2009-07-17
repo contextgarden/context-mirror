@@ -5356,6 +5356,9 @@
           <cd:constant type="ano"/>
           <cd:constant type="ne"/>
         </cd:parameter>
+        <cd:parameter name="volba">
+          <cd:constant type="zhustene"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

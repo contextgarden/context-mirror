@@ -40,8 +40,13 @@
 
 \loadmapfile[original-base.map] % \loadmapfile [original-context-symbol.map]
 
-\definefontsynonym[NavigationNormal]   [hans]
-\definefontsynonym[NavigationShadowed] [hans-sh]
+\ifnum\texengine=\luatexengine
+    \definefontsynonym[NavigationNormal]   [hans.tfm]
+    \definefontsynonym[NavigationShadowed] [hans-sh.tfm]
+\else
+    \definefontsynonym[NavigationNormal]   [hans]
+    \definefontsynonym[NavigationShadowed] [hans-sh]
+\fi
 
 \definefontsynonym[NavigationFont] [NavigationNormal]
 %definefontsynonym[NavigationFont] [NavigationShadowed]

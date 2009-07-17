@@ -292,4 +292,18 @@
 \let\LUATEX   \luaTeX
 \let\XETEX    \XeTeX
 
+\def\MkApproved
+  {\rotate
+     [\c!rotation={\ifnum\texengine=\luatexengine\ctxlua{tex.write(45-45*\the\luatexversion/100)}\else0\fi},
+      \c!align=\v!middle,
+      \c!foregroundstyle=\v!type,
+      \c!foregroundcolor=darkred,
+      \c!frame=\v!on,
+      \c!offset=1ex,
+      \c!background=\v!color,
+      \c!backgroundcolor=lightgray,
+      \c!framecolor=darkred,
+      \c!rulethickness=2pt]
+     {Mk\ifnum\texengine=\luatexengine IV\else II\fi\\approved}}
+
 \protect \endinput

@@ -1077,4 +1077,169 @@
 \setupforms
   [\c!method=HTML]
 
+%D Goodie:
+
+\def\definepushbutton % name optional setup
+  {\dodoubleempty\dodefinepushbutton}
+
+\def\dodefinepushbutton[#1][#2]% name setup
+  {\dododefinepushbutton{#1}{n}{push}%
+   \dododefinepushbutton{#1}{r}{\symbol[psym:#1:n]}%
+   \dododefinepushbutton{#1}{d}{\symbol[psym:#1:r]}%
+   \setvalue{pushbutton:#1}{\dohandlepushbutton{#1}{#2}}}
+
+\def\dododefinepushbutton#1#2#3%
+  {\doifsymboldefinedelse{psym:#1:#2}%
+     \donothing{\definesymbol[psym:#1:#2][{#3}]}}
+
+\def\definepushsymbol
+  {\dotripleargument\dodefinepushsymbol}
+
+\def\dodefinepushsymbol[#1][#2]% [#3]
+  {\definesymbol[psym:#1:#2]}
+
+\def\dopushbutton[#1][#2]%
+  {\executeifdefined{pushbutton:#1}\gobbleoneargument{#2}}
+
+\def\pushbutton
+  {\dodoubleargument\dopushbutton}
+
+\def\dohandlepushbutton#1#2#3% identifier setup script
+  {\bgroup
+   \nextsystemfield
+   \setupfield
+     [pushbutton]
+     [\c!frame=\v!overlay,
+      \c!offset=\v!overlay,
+      \c!clickout=#3,#2]%
+   \definefield
+     [\currentsystemfield]
+     [push]
+     [pushbutton]
+     [psym:#1:n,psym:#1:r,psym:#1:d]%
+   \fitfield
+     [\currentsystemfield]%
+   \egroup}
+
+% \def\do@@ampsh
+%   {\dodoubleargument\dodo@@ampsh}
+%
+% \def\dodo@@ampsh[#1][#2]#3\\%
+%   {\txt\pushbutton[#1][#2]\\}%
+%
+%\appendtoks \let\psh\do@@ampsh \to \everysetmenucommands
+
+\def\@@ampsh{\txt\pushbutton}
+
+\appendtoks \let\psh\@@ampsh \to \everysetmenucommands
+
+% \definepushbutton [reset]
+%
+% \definepushsymbol [reset] [n] [\uniqueMPgraphic{whatever}{color=green}]
+% \definepushsymbol [reset] [r] [\uniqueMPgraphic{whatever}{color=white}]
+%
+% \startinteractionmenu[bottom]
+%   \psh [reset] [JS(reset_something)] \\
+% \stopinteractionmenu
+
+%D Another goodie:
+
+% \definecolor[rollover:n][red]
+% \definecolor[rollover:r][green]
+% \definecolor[rollover:d][blue]
+
+\definepalet
+  [rollover]
+  [n=red,
+   r=green,
+   d=blue]
+
+\newcounter\nofrollovers
+\newcounter\nofrollbuttons
+
+\def\dorollbutton[#1][#2]#3[#4]%
+  {\dontleavehmode
+   \bgroup
+   \doglobal\increment\nofrollovers
+   \doglobal\increment\nofrollbuttons
+   \unexpanded\def\dosetlocationbox[##1]##2[##3]%
+     {\getparameters[##1][##3]%
+      \definecolor[rollover][rollover:##2]%
+      \doifelse{##2}{n}{\doifelsevalue{##1\c!alternative}\v!hidden\phantom\hbox}\hbox
+        {\localframed[##1]
+           [\c!framecolor=rollover,\c!backgroundcolor=rollover,\c!color=rollover]%
+           {\dolocationattributes{##1}\c!style\c!color{#3}}}}%
+   \iffirstargument
+     \ifsecondargument
+       \def\setlocationbox##1{\dosetlocationbox[\??am#1]{##1}[#2]}%
+     \else
+       \doifassignmentelse{#1}
+         {\def\setlocationbox##1{\dosetlocationbox[\??bt]{##1}[#1]}}
+         {\def\setlocationbox##1{\dosetlocationbox[\??am#1]{##1}[]}}%
+     \fi
+   \else
+     \def\setlocationbox##1{\dosetlocationbox[\??bt]{##1}[]}%
+   \fi
+   % todo: share symbols, tricky since different dimensions
+   \definesymbol[rsym:\nofrollovers:n][\setlocationbox n]%
+   \definesymbol[rsym:\nofrollovers:r][\setlocationbox r]%
+   \definesymbol[rsym:\nofrollovers:d][\setlocationbox d]%
+   \setupfield
+     [rollbutton]
+     [\c!frame=\v!off,
+      \c!offset=\v!overlay,
+      \c!clickout={#4}]%
+   \definefield
+     [roll:\nofrollbuttons][push][rollbutton]
+     [rsym:\nofrollovers:n,%
+      rsym:\nofrollovers:r,%
+      rsym:\nofrollovers:d]%
+   \fitfield[roll:\nofrollbuttons]%
+   \egroup}
+
+\unexpanded\def\rollbutton
+  {\dodoubleempty\dorollbutton}
+
+\def\menu@rob[#1]#2\\%
+  {\txt\rollbutton[\currentmenu]{\ignorespaces#2\unskip}[#1]\\}%
+
+\appendtoks \let\rob\menu@rob \to \everysetmenucommands
+
+% calls:
+%              {..} [JS..]
+% [left]       {..} [JS..]
+%        [a=b] {..} [JS..]
+% [left] [a=b] {..} [JS..]
+%
+% \setupbuttons[offset=0pt,frame=off] % alternative=hidden
+%
+% \rollbutton {Manuals}       [JS(Goto_File{show-man.pdf})]
+% \rollbutton {Articles}      [JS(Goto_File{show-art.pdf})]
+% \rollbutton {Papers}        [JS(Goto_File{show-pap.pdf})]
+% \rollbutton {Presentations} [JS(Goto_File{show-pre.pdf})]
+% \rollbutton {Resources}     [JS(Goto_File{show-res.pdf})]
+%
+% \rob [JS(...)] bla bla \\
+
+\unexpanded\def\overlayrollbutton
+  {\dodoubleargument\dooverlayrollbutton}
+
+\def\dooverlayrollbutton[#1][#2]%
+  {\bgroup
+   \nextsystemfield
+   \setupfield
+     [overlayrollbutton]
+     [\c!frame=\v!off,\c!offset=\v!overlay,\c!regionin={#1},\c!regionout={#2}]%
+   \definesymbol
+     [\currentsystemfield]
+     [{\framed[\c!frame=\v!off,\c!width=\overlaywidth,\c!height=\overlayheight]{}}]%
+   \definefield
+     [\currentsystemfield][push][overlayrollbutton][\currentsystemfield][\currentsystemfield]%
+   \fitfield[\currentsystemfield]%
+   \egroup}
+
+% \defineoverlay
+%   [ShowMenu]
+%   [{\overlayrollbutton[VideLayer{navigation}][HideLayer{navigation}]}]
+
 \protect \endinput

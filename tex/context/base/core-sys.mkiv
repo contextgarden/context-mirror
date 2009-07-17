@@ -283,6 +283,9 @@
 %D processaction alternative on an string of average length.
 %D Since this feature is used in XML processing, it made sense
 %D to support this faster alternative. It's installable as well.
+%D
+%D We keep this around for \MKII\ \XML\ but it's not used in \MKIV\
+%D code as expansion is controlled in another way there.
 
 \def\installexpander#1#2#3% changed, no longer \convert..\to...
   {\setvalue{\s!do\c!expansion#1l}{#2}%
@@ -315,12 +318,8 @@
 \installexpander\v!strict  \defreducedargument   \gdefreducedargument
 \installexpander {utf}     \defreducedtoutf      \gdefreducedtoutf
 
-%installexpander {xml}    {see xtag-ext}
-
 \def\dodefconvertedmeaning#1#2#3% watch the double expansion !
   {\bgroup
-     \honorunexpanded
-     \convertencodedtokens % can be overloaded
      \xdef\@@globalexpanded{#3}%
      \xdef\@@globalexpanded{\@@globalexpanded}%
    \egroup
@@ -337,44 +336,6 @@
 
 \def\defreducedargument {\dodefreducedargument\edef}
 \def\gdefreducedargument{\dodefreducedargument\xdef}
-
-% \setupindex[expansion=utf]\index{\eacute}
-
-\def\dodefreducedtoutf#1#2#3%
-  {\begingroup
-   \reducetocoding[uc]%
-   \let\uchar\uchartoutf
-   \let\unicodechar\numbertoutf
-   \edef\ascii{#3}%
-   \expandafter\endgroup\expandafter#1\expandafter#2\expandafter{\ascii}}
-
-\def\defreducedtoutf {\dodefreducedtoutf\edef}
-\def\gdefreducedtoutf{\dodefreducedtoutf\xdef}
-
-% old syntax:
-
-\def\convertmeaning#1\to#2% watch the double expansion !
-  {\bgroup
-     \honorunexpanded
-     \convertencodedtokens % can be overloaded
-     \xdef\@@globalexpanded{#1}%
-     \xdef\@@globalexpanded{\@@globalexpanded}%
-   \egroup
-   \defconvertedcommand#2\@@globalexpanded}
-
-\def\reduceargument#1\to#2%
-  {\begingroup
-   \reducetocoding[raw]%
-   \edef\ascii{#1}%
-   \expandafter\endgroup\expandafter\edef\expandafter#2\expandafter{\ascii}}
-
-\def\reducetoutf#1\to#2%
-  {\begingroup
-   \reducetocoding[uc]%
-   \let\uchar\uchartoutf
-   \let\unicodechar\numbertoutf
-   \edef\ascii{#1}%
-   \expandafter\endgroup\expandafter\edef\expandafter#2\expandafter{\ascii}}
 
 \startruntimeluacode
     \ctxlua {

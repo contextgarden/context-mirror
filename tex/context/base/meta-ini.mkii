@@ -20,22 +20,6 @@
 
 \unprotect
 
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
 %D This module extends the functionality of the support module
 %D \type {supp-mps}, the module that is responsible for
 %D \METAPOST\ inclusion in \CONTEXT. Some basic macros will be
@@ -150,6 +134,19 @@
 \let\setMPvariables\setupMPvariables
 
 \def\MPrawvar#1#2{\csname#1:#2\endcsname}
+
+\def\presetMPvariable
+  {\dodoubleargument\dopresetMPvariable}
+
+\def\dopresetMPvariable[#1][#2=#3]%
+  {\doifundefined{#1:#2}{\setvalue{#1:#2}{#3}}}
+
+\def\useMPvariables
+  {\dodoubleargument\douseMPvariables}
+
+\def\douseMPvariables[#1][#2]%
+  {\def\@@meta{#1:}%
+   \prepareMPvariables{#2}}
 
 %D \macros
 %D   {startuniqueMPgraphic, uniqueMPgraphic}

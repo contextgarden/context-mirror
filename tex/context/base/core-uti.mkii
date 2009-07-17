@@ -208,29 +208,32 @@
     \fi
 \to \everybeforeutilityread
 
-\edef\testbytesequence
-  {\rawcharacter{7}%
-   \rawcharacter{27}%
-   %rawcharacter{227}% invalid in xetex, which expects utf
-   \rawcharacter{195}\rawcharacter{128}} % valid utf code
+% \edef\testbytesequence
+%   {\rawcharacter{7}%
+%    \rawcharacter{27}%
+%    %rawcharacter{227}% invalid in xetex, which expects utf
+%    \rawcharacter{195}\rawcharacter{128}} % valid utf code
+%
+% \def\thisisbytesequence#1%
+%   {\ifx\testbytesequence\empty\else
+%      \defconvertedcommand\testbytesequence\testbytesequence
+%      \defconvertedargument\ascii{#1}%
+%      \ifx\testbytesequence\ascii \else
+%        \writestatus\m!systems{possible problem with 8 bit output}%
+%      \fi
+%    \fi
+%    \global\let\thisisbytesequence\gobbleoneargument}
+%
+% \ifnum\texengine=\xetexengine
+%     \let\testbytesequence\empty
+% \fi
+%
+% \appendtoks
+%   \immediatewriteutilitycommand{\thisisbytesequence{\testbytesequence}}%
+% \to \everyopenutilities
 
-\def\thisisbytesequence#1%
-  {\ifx\testbytesequence\empty\else
-     \defconvertedcommand\testbytesequence\testbytesequence
-     \defconvertedargument\ascii{#1}%
-     \ifx\testbytesequence\ascii \else
-       \writestatus\m!systems{possible problem with 8 bit output}%
-     \fi
-   \fi
-   \global\let\thisisbytesequence\gobbleoneargument}
-
-\ifnum\texengine=\xetexengine
-    \let\testbytesequence\empty
-\fi
-
-\appendtoks
-  \immediatewriteutilitycommand{\thisisbytesequence{\testbytesequence}}%
-\to \everyopenutilities
+\let\testbytesequence  \empty             % keep this
+\let\thisisbytesequence\gobbleoneargument % keep this
 
 \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
   {\resetutilities

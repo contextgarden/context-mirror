@@ -36,6 +36,7 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 local texsprint, format, lower, find, match = tex.sprint, string.format, string.lower, string.find, string.match
 
 local ctxcatcodes = tex.ctxcatcodes
+local variables = interfaces.variables
 
 local trace_figures = false  trackers.register("figures.locating",function(v) trace_figures = v end)
 
@@ -107,16 +108,16 @@ figures.order =  {
 }
 
 figures.formats = {
-    ["pdf"]    = { },
-    ["mps"]    = { patterns = { "%d+" } },
+    ["pdf"]    = { list = { "pdf" } },
+    ["mps"]    = { patterns = { "mps", "%d+" } },
     ["jpg"]    = { list = { "jpg", "jpeg" } },
-    ["png"]    = { } ,
+    ["png"]    = { list = { "png" } },
     ["jbig"]   = { list = { "jbig", "jbig2", "jb2" } },
     ["svg"]    = { list = { "svg", "svgz" } },
     ["eps"]    = { list = { "eps", "ai" } },
     ["mov"]    = { list = { "mov", "avi" } },
     ["buffer"] = { list = { "tmp", "buffer", "buf" } },
-    ["tex"]    = { },
+    ["tex"]    = { list = { "tex" } },
 }
 
 function figures.setlookups()
@@ -142,16 +143,19 @@ end
 figures.setlookups()
 
 local function register(tag,target,what)
-    local data = figures.formats[target]
-    if data then
-        local d = data[tag]
-        if d and not table.contains(d,what) then
-            d[#d+1] = what
-        else
-            data[tag] = { what }
-        end
+    local data = figures.formats[target] -- resolver etc
+    if not data then
+        data = { }
+        figures.formats[target] = data
+    end
+    local d = data[tag] -- list or pattern
+    if d and not table.contains(d,what) then
+        d[#d+1] = what -- suffix or patternspec
     else
-        figures.formats[target] = { }
+        data[tag] = { what }
+    end
+    if not table.contains(figures.order,target) then
+        figures.order[#figures.order+1] = target
     end
     figures.setlookups()
 end
@@ -208,7 +212,7 @@ end
 --~ end
 
 function figures.hash(data)
-    return tostring(data.status.private) -- the <img object>
+    return data.status.hash or tostring(data.status.private) -- the <img object>
 --  return data.status.fullname .. "+".. (data.status.page or data.request.page or 1) -- img is still not perfect
 end
 
@@ -267,9 +271,9 @@ do
 --~             local w, h = tonumber(request.width), tonumber(request.height)
             request.page      = math.max(tonumber(request.page) or 1,1)
             request.size      = img.check_size(request.size)
-            request.object    = iv[request.object] == "yes"
-            request["repeat"] = iv[request["repeat"]] == "yes"
-            request.preview   = iv[request.preview] == "yes"
+            request.object    = iv[request.object] == variables.yes
+            request["repeat"] = iv[request["repeat"]] == variables.yes
+            request.preview   = iv[request.preview] == variables.yes
             request.cache     = request.cache  ~= "" and request.cache
             request.prefix    = request.prefix ~= "" and request.prefix
             request.format    = request.format ~= "" and request.format
@@ -603,12 +607,15 @@ function figures.existers.generic(askedname)
 end
 function figures.checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
-    local name, page, size = du.fullname or "unknown generic", du.page or dr.page, dr.size or "crop"
-    local hash = name .. "->" .. page .. "->" .. size
+    local name, page, size, color = du.fullname or "unknown generic", du.page or dr.page, dr.size or "crop", dr.color or "natural"
+    local hash = name .. "->" .. page .. "->" .. size .. "->" .. color
     local figure = figures.loaded[hash]
     if figure == nil then
         figure = img.new { filename = name, page = page, pagebox = dr.size }
+        backends.codeinjections.setfigurecolorspace(data,figure)
         figure = (figure and img.scan(figure)) or false
+        local f, d = backends.codeinjections.setfigurealternative(data,figure)
+        figure, data = f or figure, d or data
         figures.loaded[hash] = figure
     end
     if figure then
@@ -616,6 +623,7 @@ function figures.checkers.generic(data)
         du.height = figure.height
         du.pages = figure.pages
         ds.private = figure
+        ds.hash = hash
     end
     return data
 end
@@ -629,7 +637,6 @@ function figures.includers.generic(data)
     if figure == nil then
         figure = ds.private
         if figure then
---~ figure.page = dr.page or '1'
             figure = img.copy(figure)
             figure = (figure and img.clone(figure,data.request)) or false
         end

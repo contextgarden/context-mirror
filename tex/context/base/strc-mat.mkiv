@@ -50,7 +50,7 @@
   [\v!formula]
   [\c!numberconversionset=\v!formula]
 
-\def\storecurrentformulanumber#1#2#3% ref, todo:str, \sync % todo: title etc (like float)
+\def\storecurrentformulanumber#1#2#3#4% ref, todo:str, \sync % todo: title etc (like float)
   {\dostructurecountercomponent
      {formula}%
      \getfloatparameters
@@ -64,7 +64,8 @@
       \c!reference=#1,\c!title=,\c!bookmark=]%
      [#2]%
    \globallet\currentformulanumber\laststructurecounternumber
-   \globallet#3\laststructurecountersynchronize}
+   \globallet#3\laststructurecountersynchronize
+   \globallet#4\laststructurecounterattribute}
 
 \def\thecurrentformulanumber
   {%\ifnoformulacaption \else \ifnoformulanumber \else
@@ -72,13 +73,10 @@
    }%\fi \fi}
 
 \def\placecurrentformulanumber
-  {\currentformulassynchronize
-   \currentformulasynchronize
-   \currentsubformulasynchronize
-   \thecurrentformulanumber} %\convertedstructurecounter[\v!formula]\relax}
-
-\def\doformulareference#1#2%
-  {\doifsomething{#1}{\doifnotinset{#1}{+,-}{\rawreference\s!for{#1}{#2}}}}
+  {\currentformulassynchronize   \currentformulasattribute   % todo
+   \currentformulasynchronize    \currentformulasattribute   % todo
+   \currentsubformulasynchronize \currentsubformulaattribute % todo
+   \thecurrentformulanumber}
 
 \def\doformulanumber
   {\dotripleempty\dodoformulanumber}
@@ -88,8 +86,9 @@
 
 \let\subformulasreference\empty % temp hack
 
-\let\currentformulasynchronize \relax
-\let\currentformulassynchronize\relax
+\let\currentformulasynchronize   \relax  \let\currentformulaattribute   \relax
+\let\currentsubformulasynchronize\relax  \let\currentsubformulaattribute\relax
+\let\currentformulassynchronize  \relax  \let\currentformulasattribute  \relax
 
 \def\dododoformulanumber#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
   {\hbox\bgroup
@@ -110,8 +109,9 @@
      \edef\currentformulareference{#1}%
      \ifx\currentformulareference\empty
        \glet\currentformulasynchronize\relax
+       \glet\currentformulaattribute  \relax
      \else
-       \storecurrentformulanumber\currentformulareference\empty\currentformulasynchronize
+       \storecurrentformulanumber\currentformulareference\empty\currentformulasynchronize\currentformulaattribute
      \fi
      % subcounter
      \setbox0\hbox{\ignorespaces#4\unskip}%
@@ -121,8 +121,9 @@
      \edef\currentsubformulareference{#3}%
      \ifx\currentsubformulareference\empty
        \glet\currentsubformulasynchronize\relax
+       \glet\currentsubformulaattribute  \relax
      \else
-       \storecurrentformulanumber\currentsubformulareference\empty\currentsubformulasynchronize
+       \storecurrentformulanumber\currentsubformulareference\empty\currentsubformulasynchronize\currentsubformulaattribute
      \fi
      %
      \rm % nodig ?
@@ -546,8 +547,9 @@
      \edef\subformulasreference{#1}% messy
      \ifx\subformulasreference\empty
        \glet\currentformulassynchronize\relax
+       \glet\currentformulasattribute  \relax
      \else
-       \storecurrentformulanumber\subformulasreference\empty\currentformulassynchronize
+       \storecurrentformulanumber\subformulasreference\empty\currentformulassynchronize\currentformulasattribute
      \fi
    \fi
    \settrue\insidesubformulas}

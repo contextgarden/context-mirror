@@ -18,6 +18,7 @@ local chardata     = characters.data
 
 local glyph        = node.id('glyph')
 local traverse_id  = node.traverse_id
+local remove_node  = nodes.remove
 
 -- maybe in fonts namespace
 -- deletion can be option
@@ -44,7 +45,7 @@ function fonts.register_message(font,char,message)
     end
 end
 
-function checkers.missing(head,tail)
+function checkers.missing(head)
     if checkers.enabled then
         local lastfont, characters, found = nil, nil, nil
         for n in traverse_id(glyph,head) do
@@ -67,14 +68,9 @@ function checkers.missing(head,tail)
         end
         if found and checkers.delete then
             for i=1,#found do
-                local n = found[i]
-                if n == tail then
-                    head, tail = nodes.remove(head,n,true)
-                else
-                    head, _ = nodes.remove(head,n,true)
-                end
+                head = remove_node(head,found[i],true)
             end
         end
     end
-    return head, tail, false
+    return head, false
 end

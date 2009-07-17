@@ -681,7 +681,7 @@ function table.insert_after_value(t,value,str)
 end
 
 local function are_equal(a,b,n,m) -- indexed
-    if #a == #b then
+    if a and b and #a == #b then
         n = n or 1
         m = m or #a
         for i=n,m do

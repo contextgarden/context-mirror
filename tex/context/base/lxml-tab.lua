@@ -445,7 +445,7 @@ generic table copier. Since we know what we're dealing with we
 can speed up things a bit. The second argument is not to be used!</p>
 --ldx]]--
 
-function copy(old,tables)
+local function copy(old,tables)
     if old then
         tables = tables or { }
         local new = { }

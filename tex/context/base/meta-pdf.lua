@@ -7,14 +7,20 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 }
 
 -- Finally we used an optimized version. The test code can be found in
--- meta-pdh.lua but since we no longer want to overload functione we
--- use more locals now.
+-- meta-pdh.lua but since we no longer want to overload functione we use
+-- more locals now. This module keeps changing as it is also a testbed.
 
 local concat, format, gsub, find = table.concat, string.format, string.gsub, string.find
-local byte = string.byte
+local byte, round = string.byte, math.round
 local texsprint = tex.sprint
-
 local ctxcatcodes = tex.ctxcatcodes
+
+local pdfrgbcode                = lpdf.rgbcode
+local pdfcmykcode               = lpdf.cmykcode
+local pdfgraycode               = lpdf.graycode
+local pdfspotcode               = lpdf.spotcode
+local pdftransparencycode       = lpdf.transparencycode
+local pdffinishtransparencycode = lpdf.finishtransparencycode
 
 mptopdf   = { }
 mptopdf.n = 0
@@ -22,40 +28,56 @@ mptopdf.n = 0
 local m_path, m_stack, m_texts, m_version, m_date, m_shortcuts = { }, { }, { }, 0, 0, false
 
 local m_stack_close, m_stack_path, m_stack_concat = false, { }, nil
+local extra_path_code, ignore_path = nil, false
+local specials = { }
 
 local function resetpath()
-    m_stack_close   = false
-    m_stack_path    = { }
-    m_stack_concat  = nil
+    m_stack_close, m_stack_path, m_stack_concat = false, { }, nil
 end
 
 local function resetall()
     m_path, m_stack, m_texts, m_version, m_shortcuts = { }, { }, { }, 0, false
+    extra_path_code, ignore_path = nil, false
+    specials = { }
     resetpath()
 end
 
 resetall()
 
--- code injection, todo: collect and flush packed using node injection
+-- todo: collect and flush packed using pdfliteral node injection but we're
+-- in no hurry as this kind of conversion does not happen that often in mkiv
 
-local function pdfcode(str) -- not used
-    texsprint(ctxcatcodes,"\\MPScode{",str,"}")
+local function pdfcode(str)
+    texsprint(ctxcatcodes,"\\pdfliteral{" .. str .. "}")
 end
+
 local function texcode(str)
     texsprint(ctxcatcodes,str)
+end
+
+function mpscode(str)
+    if ignore_path then
+        pdfcode("h W n")
+        if extra_path_code then
+            pdfcode(extra_path_code)
+            extra_path_code = nil
+        end
+        ignore_path = false
+    else
+        pdfcode(str)
+    end
 end
 
 -- auxiliary functions
 
 local function flushconcat()
     if m_stack_concat then
-        texsprint(ctxcatcodes,"\\MPScode{",concat(m_stack_concat," ")," cm}")
+        mpscode(concat(m_stack_concat," ") .. " cm")
         m_stack_concat = nil
     end
 end
 
 local function flushpath(cmd)
-    -- faster: no local function
     if #m_stack_path > 0 then
         local path = { }
         if m_stack_concat then
@@ -63,9 +85,6 @@ local function flushpath(cmd)
             local rx, ry = m_stack_concat[2], m_stack_concat[3]
             local tx, ty = m_stack_concat[5], m_stack_concat[6]
             local d = (sx*sy) - (rx*ry)
-        --  local function mpconcat(px, py) -- move this inline
-        --      return (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d
-        --  end
             for k=1,#m_stack_path do
                 local v = m_stack_path[k]
                 local px, py = v[1], v[2] ; v[1], v[2] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[1],v[2])
@@ -81,11 +100,11 @@ local function flushpath(cmd)
             end
         end
         flushconcat()
-        texcode("\\MPSpath{" .. concat(path," ") .. "}")
+        pdfcode(concat(path," "))
         if m_stack_close then
-            texcode("\\MPScode{h " .. cmd .. "}")
+            mpscode("h " .. cmd)
         else
-            texcode("\\MPScode{" .. cmd .."}")
+            mpscode(cmd)
         end
     end
     resetpath()
@@ -132,7 +151,7 @@ function mps.rlineto(x,y)
 end
 
 function mps.translate(tx,ty)
-    texsprint(ctxcatcodes,"\\MPScode{1 0 0 0 1 ",tx," ",ty," cm}")
+    mpscode("1 0 0 0 1 " .. tx .. " " .. ty .. " cm")
 end
 
 function mps.scale(sx,sy)
@@ -144,36 +163,36 @@ function mps.concat(sx, rx, ry, sy, tx, ty)
 end
 
 function mps.setlinejoin(d)
-    texsprint(ctxcatcodes,"\\MPScode{",d," j}")
+    mpscode(d .. " j")
 end
 
 function mps.setlinecap(d)
-    texsprint(ctxcatcodes,"\\MPScode{",d," J}")
+    mpscode(d .. " J")
 end
 
 function mps.setmiterlimit(d)
-    texsprint(ctxcatcodes,"\\MPScode{",d," M}")
+    mpscode(d .. " M")
 end
 
 function mps.gsave()
-    texsprint(ctxcatcodes,"\\MPScode{q}")
+    mpscode("q")
 end
 
 function mps.grestore()
-    texsprint(ctxcatcodes,"\\MPScode{Q}")
+    mpscode("Q")
 end
 
 function mps.setdash(...) -- can be made faster, operate on t = { ... }
     local n = select("#",...)
-    texsprint(ctxcatcodes,"\\MPScode{","[",concat({...}," ",1,n-1),"] ",select(n,...)," d}")
+    mpscode("[" .. concat({...}," ",1,n-1) .. "] " .. select(n,...) .. " d")
 end
 
 function mps.resetdash()
-    texsprint(ctxcatcodes,"\\MPScode{[ ] 0 d}")
+    mpscode("[ ] 0 d")
 end
 
 function mps.setlinewidth(d)
-    texsprint(ctxcatcodes,"\\MPScode{",d," w}")
+    mpscode(d .. " w")
 end
 
 function mps.closepath()
@@ -206,31 +225,136 @@ function mps.textext(font, scale, str) -- old parser
     resetpath()
 end
 
+local handlers = { }
+
+handlers[1] = function(s)
+    pdfcode(pdffinishtransparencycode())
+    pdfcode(pdfcmykcode(mps.colormodel,s[3],s[4],s[5],s[6]))
+end
+handlers[2] = function(s)
+    pdfcode(pdffinishtransparencycode())
+    pdfcode(pdfspotcode(mps.colormodel,s[3],s[4],s[5],s[6]))
+end
+handlers[3] = function(s)
+    pdfcode(pdfrgbcode(mps.colormodel,s[4],s[5],s[6]))
+    pdfcode(pdftransparencycode(s[2],s[3]))
+end
+handlers[4] = function(s)
+    pdfcode(pdfcmykcode(mps.colormodel,s[4],s[5],s[6],s[7]))
+    pdfcode(pdftransparencycode(s[2],s[3]))
+end
+handlers[5] = function(s)
+    pdfcode(pdfspotcode(mps.colormodel,s[4],s[5],s[6],s[7]))
+    pdfcode(pdftransparencycode(s[2],s[3]))
+end
+
+-- todo: color conversion
+
+local nofshades, tn = 0, tonumber
+
+local function linearshade(colorspace,domain,ca,cb,coordinates)
+    pdfcode(pdffinishtransparencycode())
+    nofshades = nofshades + 1
+    local name = format("MpsSh%s",nofshades)
+    lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates)
+    extra_path_code, ignore_path = format("/%s sh Q",name), true
+    pdfcode("q /Pattern cs")
+end
+
+local function circularshade(colorspace,domain,ca,cb,coordinates)
+    pdfcode(pdffinishtransparencycode())
+    nofshades = nofshades + 1
+    local name = format("MpsSh%s",nofshades)
+    lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates)
+    extra_path_code, ignore_path = format("/%s sh Q",name), true
+    pdfcode("q /Pattern cs")
+end
+
+handlers[30] = function(s)
+    linearshade("DeviceRGB", { tn(s[ 2]), tn(s[ 3]) },
+        { tn(s[ 5]), tn(s[ 6]), tn(s[ 7]) }, { tn(s[10]), tn(s[11]), tn(s[12]) },
+        { tn(s[ 8]), tn(s[ 9]), tn(s[13]), tn(s[14]) } )
+end
+
+handlers[31] = function(s)
+    circularshade("DeviceRGB", { tn(s[ 2]), tn(s[ 3]) },
+        { tn(s[ 5]), tn(s[ 6]), tn(s[ 7]) }, { tn(s[11]), tn(s[12]), tn(s[13]) },
+        { tn(s[ 8]), tn(s[ 9]), tn(s[10]), tn(s[14]), tn(s[15]), tn(s[16]) } )
+end
+
+handlers[32] = function(s)
+    linearshade("DeviceCMYK", { tn(s[ 2]), tn(s[ 3]) },
+        { tn(s[ 5]), tn(s[ 6]), tn(s[ 7]), tn(s[ 8]) }, { tn(s[11]), tn(s[12]), tn(s[13]), tn(s[14]) },
+        { tn(s[ 9]), tn(s[10]), tn(s[15]), tn(s[16]) } )
+end
+
+handlers[33] = function(s)
+    circularshade("DeviceCMYK", { tn(s[ 2]), tn(s[ 3]) },
+        { tn(s[ 5]), tn(s[ 6]), tn(s[ 7]), tn(s[ 8]) }, { tn(s[12]), tn(s[13]), tn(s[14]), tn(s[15]) },
+        { tn(s[ 9]), tn(s[10]), tn(s[11]), tn(s[16]), tn(s[17]), tn(s[18]) } )
+end
+
+handlers[34] = function(s) -- todo (after further cleanup)
+    linearshade("DeviceGray", { tn(s[ 2]), tn(s[ 3]) }, { 0 }, { 1 }, { tn(s[9]), tn(s[10]), tn(s[15]), tn(s[16]) } )
+end
+
+handlers[35] = function(s) -- todo (after further cleanup)
+    circularshade("DeviceGray",  { tn(s[ 2]), tn(s[ 3]) }, { 0 }, { 1 }, { tn(s[9]), tn(s[10]), tn(s[15]), tn(s[16]) } )
+end
+
+-- not supported in mkiv , use mplib instead
+
+handlers[10] = function() logs.report("mptopdf","skipping special %s",10) end
+handlers[20] = function() logs.report("mptopdf","skipping special %s",20) end
+handlers[50] = function() logs.report("mptopdf","skipping special %s",50) end
+
+--end of not supported
+
 function mps.setrgbcolor(r,g,b) -- extra check
     r, g = tonumber(r), tonumber(g) -- needed when we use lpeg
     if r == 0.0123 and g < 0.1 then
-        texcode("\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
+        g, b = round(g*10000), round(b*10000)
+        local s = specials[b]
+        local h = round(s[#s])
+        local handler = handlers[h]
+        if handler then
+            handler(s)
+        else
+            logs.report("mptopdf","unknown special handler %s (1)",h)
+        end
     elseif r == 0.123 and g < 0.1 then
-        texcode("\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
+        g, b = round(g*1000), round(b*1000)
+        local s = specials[b]
+        local h = round(s[#s])
+        local handler = handlers[h]
+        if handler then
+            handler(s)
+        else
+            logs.report("mptopdf","unknown special handler %s (2)",h)
+        end
     else
-        texcode("\\MPSrgb{" .. r .. "}{" .. g .. "}{" .. b .. "}")
+        pdfcode(pdffinishtransparencycode())
+        pdfcode(pdfrgbcode(mps.colormodel,r,g,b))
     end
 end
 
 function mps.setcmykcolor(c,m,y,k)
-    texcode("\\MPScmyk{" .. c .. "}{" .. m .. "}{" .. y .. "}{" .. k .. "}")
+    pdfcode(pdffinishtransparencycode())
+    pdfcode(pdfcmykcode(mps.colormodel,c,m,y,k))
 end
 
 function mps.setgray(s)
-    texcode("\\MPSgray{" .. s .. "}")
+    pdfcode(pdffinishtransparencycode())
+    pdfcode(pdfgrayliteral(mps.colormodel,s))
 end
 
 function mps.specials(version,signal,factor) -- 2.0 123 1000
 end
 
 function mps.special(...) -- 7 1 0.5 1 0 0 1 3
-    local n = select("#",...)
-    texcode("\\MPSbegin\\MPSset{" .. concat({...},"}\\MPSset{",2,n) .. "}\\MPSend")
+    local t = { ... }
+    local n = tonumber(t[#t-1])
+    specials[n] = t
 end
 
 function mps.begindata()
@@ -240,10 +364,6 @@ function mps.enddata()
 end
 
 function mps.showpage()
-end
-
-function mps.attribute(id,value)
-    texcode("\\attribute " .. id .. "=" .. value .. " ")
 end
 
 -- lpeg parser
@@ -350,9 +470,6 @@ local t   = (lpegP("[") * (cnumber * sp^0)^6 * lpegP("]") * sp * lpegP("t") ) / 
 
 -- experimental
 
-local attribute = ((cnumber * sp)^2 * lpegP("attribute")) / mps.attribute
-local A         = ((cnumber * sp)^2 * lpegP("A"))         / mps.attribute
-
 local preamble = (
     prolog + setup +
     boundingbox + highresboundingbox + specials + special +
@@ -362,7 +479,6 @@ local preamble = (
 local procset = (
     lj + ml + lc +
     c + l + m + n + p + r +
-    A +
     R + C + G +
     S + F + B + W +
     vlw + hlw +
@@ -376,7 +492,6 @@ local procset = (
 local verbose = (
     curveto + lineto + moveto + newpath + closepath + rlineto +
     setrgbcolor + setcmykcolor + setgray +
-    attribute +
     setlinejoin + setmiterlimit + setlinecap +
     stroke + fill + clip + both +
     setlinewidth_x + setlinewidth_y +
@@ -390,7 +505,8 @@ local verbose = (
 -- order matters in terms of speed / we could check for procset first
 
 local captures_old = ( space + verbose + preamble           )^0
-local captures_new = ( space + procset + preamble + verbose )^0
+--~ local captures_new = ( space + procset + preamble + verbose )^0
+local captures_new = ( space + verbose + procset + preamble )^0
 
 local function parse(m_data)
     if find(m_data,"%%%%BeginResource: procset mpost") then
@@ -402,17 +518,25 @@ end
 
 -- main converter
 
+local a_colorspace = attributes.private('colormodel')
+
 function mptopdf.convertmpstopdf(name)
     resetall()
     local ok, m_data, n = resolvers.loadbinfile(name, 'tex') -- we need a binary load !
     if ok then
+        mps.colormodel = tex.attribute[a_colorspace]
         statistics.starttiming(mptopdf)
         mptopdf.n = mptopdf.n + 1
+        pdfcode(format("\\letterpercent\\space mptopdf begin: n=%s, file=%s",mptopdf.n,file.basename(name)))
+        pdfcode("q 1 0 0 1 0 0 cm")
         parse(m_data)
+        pdfcode(pdffinishtransparencycode())
+        pdfcode("Q")
+        pdfcode("\\letterpercent\\space mptopdf end")
         resetall()
         statistics.stoptiming(mptopdf)
     else
-        tex.print("file " .. name .. " not found")
+        commands.writestatus("mptopdf","file '%s' not found",name)
     end
 end
 

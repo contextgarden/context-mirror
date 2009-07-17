@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
     license   = "see context related readme files"
 }
 
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 
 interfaces           = interfaces           or { }
 interfaces.messages  = interfaces.messages  or { }
@@ -17,32 +17,34 @@ storage.register("interfaces/messages",  interfaces.messages,  "interfaces.messa
 storage.register("interfaces/constants", interfaces.constants, "interfaces.constants")
 storage.register("interfaces/variables", interfaces.variables, "interfaces.variables")
 
+local messages, constants, variables = interfaces.messages, interfaces.constants, interfaces.variables
+
 function interfaces.setmessages(category,str)
-    local m = interfaces.messages[category] or { }
+    local m = messages[category] or { }
     for k, v in gmatch(str,"(%S+) *: *(.-) *[\n\r]") do
-        m[k] = v:gsub("%-%-","%%s")
+        m[k] = gsub(v,"%-%-","%%s")
     end
-    interfaces.messages[category] = m
+    messages[category] = m
 end
 
 function interfaces.setmessage(category,tag,message)
-    local m = interfaces.messages[category]
+    local m = messages[category]
     if not m then
         m = { }
-        interfaces.messages[category] = m
+        messages[category] = m
     end
     m[tag] = message:gsub("%-%-","%%s")
 end
 
 function interfaces.getmessage(category,tag)
-    local m = interfaces.messages[category]
+    local m = messages[category]
     return (m and m[tag]) or "unknown message"
 end
 
 local messagesplitter = lpeg.splitat(",")
 
 function interfaces.makemessage(category,tag,arguments)
-    local m = interfaces.messages[category]
+    local m = messages[category]
     m = (m and m[tag] ) or format("unknown message, category '%s', tag '%s'",category,tag)
     if not m then
         return m .. " " .. tag
@@ -54,14 +56,15 @@ function interfaces.makemessage(category,tag,arguments)
 end
 
 function interfaces.showmessage(category,tag,arguments)
-    local m = interfaces.messages[category]
+    local m = messages[category]
     commands.writestatus((m and m.title) or "unknown title",interfaces.makemessage(category,tag,arguments))
 end
 
 function interfaces.setvariable(variable,given)
-    interfaces.variables[given] = variable
+--~     variables[given] = variable
+    variables[variable] = given
 end
 
 function interfaces.setconstant(constant,given)
-    interfaces.constants[given] = constant
+    constants[given] = constant
 end

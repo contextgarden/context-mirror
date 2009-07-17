@@ -102,6 +102,15 @@ scripts.update.engines = {
     },
 }
 
+scripts.update.goodies = {
+    ["scite"] = {
+        { "bin/<platform>/scite/",     "texmf-<platform>" },
+    },
+    ["texworks"] = {
+        { "bin/<platform>/texworks/",  "texmf-<platform>" },
+    },
+}
+
 scripts.update.platforms = {
     ["mswin"]         = "mswin",
     ["windows"]       = "mswin",
@@ -163,7 +172,8 @@ function scripts.update.synchronize()
     local bin = states.get("rsync.program")         -- rsync
     local url = states.get("rsync.server")          -- contextgarden.net
     local version = states.get("context.version")   -- current (or beta)
-    local extras = states.get("extras")             -- extra goodies (like modules)
+    local extras = states.get("extras")             -- extras (like modules)
+    local goodies = states.get("goodies")           -- goodies (like editors)
     local force = environment.argument("force")
 
     bin = string.gsub(bin,"\\","/")
@@ -285,6 +295,14 @@ function scripts.update.synchronize()
             end
         end
 
+        if goodies and type(goodies) == "table" then
+            for goodie, _ in pairs(goodies) do
+                for platform, _ in pairs(platforms) do
+                    add_collection(scripts.update.goodies[goodie],platform)
+                end
+            end
+        end
+
         local combined = { }
         for _, repository in ipairs(scripts.update.repositories) do
             if repositories[repository] then
@@ -374,7 +392,8 @@ function scripts.update.make()
 
     local force = environment.argument("force")
     local texroot = scripts.update.fullpath(states.get("paths.root"))
-    local engines= states.get('engines')
+    local engines = states.get('engines')
+    local goodies = states.get('goodies')
     local platforms = states.get('platforms')
     local formats = states.get('formats')
 
@@ -431,6 +450,7 @@ messages.help = [[
 --texroot=string      installation directory (not guessed for the moment)
 --engine=string       tex engine (luatex, pdftex, xetex)
 --extras=string       extra modules (can be list or 'all')
+--goodies=string      extra binaries (like scite and texworks)
 --force               instead of a dryrun, do the real thing
 --update              update minimal tree
 --make                also make formats and generate file databases
@@ -499,6 +519,9 @@ if scripts.savestate then
 
     for r in gmatch(environment.argument("extras") or "","([^, ]+)") do
         states.set("extras." .. r, true)
+    end
+    for r in gmatch(environment.argument("goodies") or "","([^, ]+)") do
+        states.set("goodies." .. r, true)
     end
 
     logs.report("state","loaded")

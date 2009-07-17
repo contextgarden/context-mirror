@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['attr-ini'] = {
 }
 
 -- this module is being reconstructed
+-- we can also do the nsnone via a metatable and then also se index 0
 
 local type = type
 local format, gmatch = string.format, string.gmatch
@@ -27,11 +28,6 @@ shipouts = shipouts or { }
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
 -- costs more resourses for transparencies. So why bother.
-
--- namespace for all those features / plural becomes singular
-
--- i will do the resource stuff later, when we have an interface to pdf (ok, i can
--- fake it with tokens but it will take some coding
 
 --
 -- colors
@@ -63,6 +59,7 @@ colors            = colors            or { }
 colors.data       = colors.data       or { }
 colors.values     = colors.values     or { }
 colors.registered = colors.registered or { }
+
 colors.enabled    = true
 colors.weightgray = true
 colors.attribute  = 0
@@ -174,37 +171,48 @@ function colors.spot(parent,f,d,p)
     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
 end
 
-function colors.reviver(n)
-    local d = data[n]
-    if not d then
-        local v = values[n]
-        if not v then
-            local gray = nodeinjections.graycolor(0)
-            d = { gray, gray, gray, gray }
-            logs.report("attributes","unable to revive color %s",n or "?")
-        else
-            local kind, gray, rgb, cmyk = v[1], nodeinjections.graycolor(v[2]), nodeinjections.rgbcolor(v[3],v[4],v[5]), nodeinjections.cmykcolor(v[6],v[7],v[8],v[9])
-            if kind == 2 then
-                d = { gray, gray, gray, gray }
-            elseif kind == 3 then
-                d = { rgb, gray, rgb, cmyk }
-            elseif kind == 4 then
-                d = { cmyk, gray, rgb, cmyk }
-            elseif kind == 5 then
-                local spot = nodeinjections.spotcolor(v[10],v[11],v[12],v[13])
-                d = { spot, gray, rgb, cmyk }
-            end
-        end
-        data[n] = d
+local function graycolor(...) graycolor = nodeinjections.graycolor return graycolor(...) end
+local function rgbcolor (...) rgbcolor  = nodeinjections.rgbcolor  return rgbcolor (...) end
+local function cmykcolor(...) cmykcolor = nodeinjections.cmykcolor return cmykcolor(...) end
+local function spotcolor(...) spotcolor = nodeinjections.spotcolor return spotcolor(...) end
+
+local function extender(colors,key)
+    if key == "none" then
+        local d = graycolor(0)
+        colors.none = d
+        return d
     end
+end
+
+local function reviver(data,n)
+    local v = values[n]
+    if not v then
+        local gray = graycolor(0)
+        d = { gray, gray, gray, gray }
+        logs.report("attributes","unable to revive color %s",n or "?")
+    else
+        local kind, gray, rgb, cmyk = v[1], graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
+        if kind == 2 then
+            d = { gray, gray, gray, gray }
+        elseif kind == 3 then
+            d = { rgb, gray, rgb, cmyk }
+        elseif kind == 4 then
+            d = { cmyk, gray, rgb, cmyk }
+        elseif kind == 5 then
+            local spot = spotcolor(v[10],v[11],v[12],v[13])
+            d = { spot, gray, rgb, cmyk }
+        end
+    end
+    data[n] = d
     return d
 end
+
+setmetatable(colors,      { __index = extender })
+setmetatable(colors.data, { __index = reviver  })
 
 function colors.filter(n)
     return concat(data[n],":",5)
 end
-
-colors.none = nodeinjections.graycolor(0)
 
 function colors.setmodel(attribute,name,weightgray)
     colors.model = name
@@ -221,7 +229,7 @@ function colors.register(attribute, name, colorspace, ...) -- passing 9 vars is 
         color = #values+1
         values[color] = colors[colorspace](...)
         registered[stamp] = color
-        colors.reviver(color)
+    -- colors.reviver(color)
     end
     if name then
         list[numbers[attribute]][name] = color -- not grouped, so only global colors
@@ -244,9 +252,6 @@ shipouts.handle_color = nodes.install_attribute_handler {
 
 -- transparencies
 
--- for the moment we manage transparencies in the pdf driver because
--- first we need a nice interface to some pdf things
-
 transparencies            = transparencies            or { }
 transparencies.registered = transparencies.registered or { }
 transparencies.data       = transparencies.data       or { }
@@ -262,43 +267,45 @@ local data       = transparencies.data
 local values     = transparencies.values
 local template   = "%s:%s"
 
-local function reference(n)
-    reference = nodeinjections.transparency
-    return reference(n)
-end
+local function inject_transparency  (...) inject_transparency   = nodeinjections.transparency return inject_transparency  (...) end
+local function register_transparency(...) register_transparency = registrations.transparency  return register_transparency(...) end
 
 function transparencies.register(name,a,t)
     local stamp = format(template,a,t)
     local n = registered[stamp]
     if not n then
-        n = #data+1
-        data[n] = reference(n)
+        n = #values + 1
         values[n] = { a, t }
         registered[stamp] = n
-        registrations.transparency(n,a,t)
+        register_transparency(n,a,t)
     end
     return registered[stamp]
 end
 
-function transparencies.reviver(n)
-    local d = data[n]
-    if not d then
-        local v = values[n]
-        if not v then
-            d = reference(0)
-            logs.report("attributes","unable to revive transparency %s",n or "?")
-        else
-            d = reference(n)
-            registrations.transparency(n,v[1],v[2])
-        end
-        data[n] = d
+local function extender(transparencies,key)
+    if key == "none" then
+        local d = inject_transparency(0)
+        transparencies.none = d
+        return d
     end
+end
+
+local function reviver(data,n)
+    local v = values[n]
+    if not v then
+        d = inject_transparency(0)
+    else
+        d = inject_transparency(n)
+        register_transparency(n,v[1],v[2])
+    end
+    data[n] = d
     return d
 end
 
--- check if there is an identity
+setmetatable(transparencies,      { __index = extender })
+setmetatable(transparencies.data, { __index = reviver  })
 
-transparencies.none = reference(0) -- for the moment the pdf backend does this
+-- check if there is an identity
 
 function transparencies.value(id)
     return values[id]
@@ -308,8 +315,8 @@ shipouts.handle_transparency = nodes.install_attribute_handler {
     name        = "transparency",
     namespace   = transparencies,
     initializer = states.initialize,
-    finalizer   = states.finalize  ,
-    processor   = states.process   ,
+    finalizer   = states.finalize,
+    processor   = states.process,
 }
 
 --- overprint / knockout
@@ -318,21 +325,35 @@ overprints         = overprints      or { }
 overprints.data    = overprints.data or { }
 overprints.enabled = false
 
-overprints.data[1] = nodeinjections.overprint()
-overprints.data[2] = nodeinjections.knockout()
-
-overprints.none    = overprints.data[2]
-
 overprints.registered = {
     overprint = 1,
     knockout  = 2,
 }
 
---~ storage.register("overprints/registered", overprints.registered, "overprints.registered")
---~ storage.register("overprints/data",       overprints.data,       "overprints.data")
+local data, registered = overprints.data, overprints.registered
 
-local data       = overprints.data
-local registered = overprints.registered
+local function extender(overprints,key)
+    if key == "none" then
+        local d = data[2]
+        overprints.none = d
+        return d
+    end
+end
+
+local function reviver(data,n)
+    if n == 1 then
+        local d = nodeinjections.overprint() -- called once
+        data[1] = d
+        return d
+    elseif n == 2 then
+        local d = nodeinjections.knockout() -- called once
+        data[2] = d
+        return d
+    end
+end
+
+setmetatable(overprints,      { __index = extender })
+setmetatable(overprints.data, { __index = reviver  })
 
 function overprints.register(stamp)
     return registered[stamp] or registered.overprint
@@ -348,22 +369,42 @@ shipouts.handle_overprint = nodes.install_attribute_handler {
 
 --- negative / positive
 
-negatives         = negatives      or { }
-negatives.data    = negatives.data or { }
-negatives.enabled = false
-
-negatives.data[1] = nodeinjections.positive()
-negatives.data[2] = nodeinjections.negative()
-
-negatives.none    = negatives.data[1]
+negatives            = negatives      or { }
+negatives.data       = negatives.data or { }
+negatives.enabled    = false
 
 negatives.registered = {
     positive = 1,
     negative = 2,
 }
 
+local data, registered = negatives.data, negatives.registered
+
+local function extender(negatives,key)
+    if key == "none" then
+        local d = data[1]
+        negatives.none = d
+        return d
+    end
+end
+
+local function reviver(data,n)
+    if n == 1 then
+        local d = nodeinjections.positive() -- called once
+        data[1] = d
+        return d
+    elseif n == 2 then
+        local d = nodeinjections.negative() -- called once
+        data[2] = d
+        return d
+    end
+end
+
+setmetatable(negatives,      { __index = extender })
+setmetatable(negatives.data, { __index = reviver  })
+
 function negatives.register(stamp)
-    return negatives.registered[stamp] or negatives.registered.positive
+    return registered[stamp] or registered.positive
 end
 
 shipouts.handle_negative = nodes.install_attribute_handler {
@@ -374,36 +415,52 @@ shipouts.handle_negative = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
--- effects -- can be optimized
+-- effects -- can be optimized (todo: metatables)
 
 effects            = effects            or { }
 effects.data       = effects.data       or { }
+effects.values     = effects.values     or { }
 effects.registered = effects.registered or { }
 effects.enabled    = false
 effects.stamp      = "%s:%s:%s"
 
 storage.register("effects/registered", effects.registered, "effects.registered")
-storage.register("effects/data",       effects.data,       "effects.data")
+storage.register("effects/values",     effects.values,     "effects.values")
+
+local data, registered, values = effects.data, effects.registered, effects.values
+
+-- valid effects: normal inner outer both hidden (stretch,rulethickness,effect)
+
+local function effect(...) effect = nodeinjections.effect return effect(...) end
+
+local function extender(effects,key)
+    if key == "none" then
+        local d = effect(0,0,0)
+        effects.none = d
+        return d
+    end
+end
+
+local function reviver(data,n)
+    local e = values[n] -- we could nil values[n] now but hardly needed
+    local d = effect(v[1],v[2],v[3])
+    data[n] = d
+    return d
+end
+
+setmetatable(effects,      { __index = extender })
+setmetatable(effects.data, { __index = reviver  })
 
 function effects.register(effect,stretch,rulethickness)
     local stamp = format(effects.stamp,effect,stretch,rulethickness)
-    local n = effects.registered[stamp]
+    local n = registered[stamp]
     if not n then
-        n = #effects.data+1
-        effects.data[n] = effects.reference(effect,stretch,rulethickness)
-        effects.registered[stamp] = n
+        n = #values + 1
+        values[n] = { effect, stretch, rulethickness }
+        registered[stamp] = n
     end
-    return effects.registered[stamp]
+    return n
 end
-
--- valid effects: normal inner outer both hidden
-
-function effects.reference(effect,stretch,rulethickness)
-    effects.reference = nodeinjections.effect
-    return nodeinjections.effect(stretch,rulethickness,effect)
-end
-
-effects.none = effects.reference(0,0,0)
 
 shipouts.handle_effect = nodes.install_attribute_handler {
     name        = "effect",
@@ -413,61 +470,101 @@ shipouts.handle_effect = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
--- layers (ugly code, due to no grouping and such)
+-- layers (ugly code, due to no grouping and such); currently we use exclusive layers
+-- but when we need it stacked layers might show up too; the next function based
+-- approach can be replaced by static (metatable driven) resolvers
 
 viewerlayers            = viewerlayers            or { }
 viewerlayers.data       = viewerlayers.data       or { }
 viewerlayers.registered = viewerlayers.registered or { }
+viewerlayers.values     = viewerlayers.values     or { }
 viewerlayers.enabled    = false
 
 storage.register("viewerlayers/registered", viewerlayers.registered, "viewerlayers.registered")
---~ storage.register("viewerlayers/data",       viewerlayers.data,       "viewerlayers.data")
+storage.register("viewerlayers/values",     viewerlayers.values,     "viewerlayers.values")
 
 local data       = viewerlayers.data
+local values     = viewerlayers.values
 local registered = viewerlayers.registered
 local template   = "%s"
 
-local somedone = false
-local somedata = { }
-local nonedata = nodeinjections.stoplayer()
+-- interwoven
 
-function viewerlayers.none() -- no local
-    if somedone then
-        somedone = false
-        return nonedata
-    else
-        return nil
+--~ local somedone = false
+--~ local somedata = { }
+--~ local nonedata = nodeinjections.stoplayer()
+--~
+--~ function viewerlayers.none() -- no local
+--~     if somedone then
+--~         somedone = false
+--~         return nonedata
+--~     else
+--~         return nil
+--~     end
+--~ end
+--~
+--~ local function some(name)
+--~     local sd = somedata[name]
+--~     if not sd then
+--~         sd = {
+--~             nodeinjections.switchlayer(name),
+--~             nodeinjections.startlayer(name),
+--~         }
+--~         somedata[name] = sd
+--~     end
+--~     if somedone then
+--~         return sd[1]
+--~     else
+--~         somedone = true
+--~         return sd[2]
+--~     end
+--~ end
+--~
+--~ local function initializer(...)
+--~     somedone = false
+--~     return states.initialize(...)
+--~ end
+--~
+--~ viewerlayers.register = function(name) -- if not inimode redefine data[n] in first call
+--~     local stamp = format(template,name)
+--~     local n = registered[stamp]
+--~     if not n then
+--~         n = #data + 1
+--~         data[n] = function() return some(name) end -- slow but for the moment we don't store things in the format
+--~         registered[stamp] = n
+--~     end
+--~     return registered[stamp] -- == n
+--~ end
+
+-- stacked
+
+local function extender(viewerlayers,key)
+    if key == "none" then
+        local d = nodeinjections.stoplayer()
+        viewerlayers.none = d
+        return d
     end
 end
 
-local function some(name)
-    local sd = somedata[name]
-    if not sd then
-        sd = {
-            nodeinjections.switchlayer(name),
-            nodeinjections.startlayer(name),
-        }
-        somedata[name] = sd
-    end
-    if somedone then
-        return sd[1]
-    else
-        somedone = true
-        return sd[2]
-    end
+local function reviver(data,n)
+    local d = nodeinjections.startlayer(values[n])
+    data[n] = d
+    return d
 end
+
+setmetatable(viewerlayers,      { __index = extender })
+setmetatable(viewerlayers.data, { __index = reviver  })
 
 local function initializer(...)
-    somedone = false
     return states.initialize(...)
 end
 
-viewerlayers.register = function(name)
+viewerlayers.register = function(name) -- if not inimode redefine data[n] in first call
     local stamp = format(template,name)
     local n = registered[stamp]
     if not n then
-        n = #data + 1
-        data[n] = function() return some(name) end -- slow but for the moment we don't store things in the format
+        n = #values + 1
+        values[n] = name
         registered[stamp] = n
     end
     return registered[stamp] -- == n
@@ -478,5 +575,5 @@ shipouts.handle_viewerlayer = nodes.install_attribute_handler {
     namespace   = viewerlayers,
     initializer = initializer,
     finalizer   = states.finalize,
-    processor   = states.process,
+    processor   = states.stacked,
 }

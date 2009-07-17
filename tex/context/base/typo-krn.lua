@@ -13,7 +13,7 @@ local utfchar = utf.char
 
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
-local slide_node_list    = node.slide
+local find_node_tail     = node.tail or node.slide
 local free_node          = node.free
 local copy_node          = node.copy
 local insert_node_before = node.insert_before
@@ -66,7 +66,7 @@ local function process(namespace,attribute,head,force)
                     local c = start.components
                     if c then
                         local s = start
-                        local tail = slide_node_list(c)
+                        local tail = find_node_tail(c)
                         if s.prev then
                             s.prev.next = c
                             c.prev = s.prev
@@ -128,7 +128,7 @@ local function process(namespace,attribute,head,force)
                             end
                             if post then  -- must pair with start
                                 local after = copy_node(disc.next)
-                                local tail = slide_node_list(post)
+                                local tail = find_node_tail(post)
                                 tail.next = after
                                 after.prev = tail
                                 after.next = nil
@@ -140,7 +140,7 @@ local function process(namespace,attribute,head,force)
                             if replace then -- must pair with start and start.prev
                                 local before = copy_node(disc.prev)
                                 local after = copy_node(disc.next)
-                                local tail = slide_node_list(replace)
+                                local tail = find_node_tail(replace)
                                 replace.prev = before
                                 before.next = replace
                                 before.prev = nil

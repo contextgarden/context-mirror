@@ -15,6 +15,8 @@
 
 % \chardef\kindofpagetextareas=1 will isolate graphics from backgrounds
 
+% todo \fastlocalframed -> \localbackgroundframed
+
 \unprotect
 
 %D \macros
@@ -70,6 +72,45 @@
 %D (On the 824 pages maps bibliography runtime went down from
 %D 309 to 299 seconds.)
 
+% \let\currentotrbackground\empty
+%
+% \def\@@docheckbackground#1#2%
+%   {\ifcsname\currentotrbackground#1\endcsname
+%      \edef\!!stringa{\csname\currentotrbackground#1\endcsname}\ifx\!!stringa#2\!!doneatrue\fi
+%    \fi}
+%
+% \def\@@nocheckbackground#1#2%
+%   {\ifcsname\currentotrbackground#1\endcsname
+%      \edef\!!stringa{\csname\currentotrbackground#1\endcsname}\ifx\!!stringa#2\else\!!doneatrue\fi
+%    \fi}
+%
+% \def\checkbackground#1%
+%   {\edef\currentotrbackground{\??ma#1}%
+%    \begingroup
+%    \!!doneafalse
+%    \if!!donea\else\@@nocheckbackground\c!background     \empty
+%    \if!!donea\else\@@docheckbackground\c!frame          \v!on
+%    \if!!donea\else\@@nocheckbackground\c!foregroundcolor\empty
+%    \if!!donea\else\@@docheckbackground\c!leftframe      \v!on
+%    \if!!donea\else\@@docheckbackground\c!rightframe     \v!on
+%    \if!!donea\else\@@docheckbackground\c!topframe       \v!on
+%    \if!!donea\else\@@docheckbackground\c!bottomframe    \v!on \fi\fi\fi\fi\fi\fi\fi
+%    \if!!donea
+%      \endgroup\setusage  \currentotrbackground
+%    \else
+%      \endgroup\resetusage\currentotrbackground
+%    \fi}
+%
+% \def\ifsomebackgroundfound#1%
+%   {\ifusage{\??ma#1}}
+%
+% \def\doifsomebackgroundelse#1%
+%   {\ifusage{\??ma#1}%
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+
 \let\currentotrbackground\empty
 
 \def\@@docheckbackground#1#2%
@@ -82,7 +123,7 @@
      \edef\!!stringa{\csname\currentotrbackground#1\endcsname}\ifx\!!stringa#2\else\!!doneatrue\fi
    \fi}
 
-\def\checkbackground#1%
+\def\checkbackground#1% here we need an \ifempty primitive
   {\edef\currentotrbackground{\??ma#1}%
    \begingroup
    \!!doneafalse
@@ -94,34 +135,49 @@
    \if!!donea\else\@@docheckbackground\c!topframe       \v!on
    \if!!donea\else\@@docheckbackground\c!bottomframe    \v!on \fi\fi\fi\fi\fi\fi\fi
    \if!!donea
-     \endgroup\setusage  \currentotrbackground
+     \endgroup\expandafter\let\csname\currentotrbackground\endcsname\relax
    \else
-     \endgroup\resetusage\currentotrbackground
+     \endgroup\expandafter\let\csname\currentotrbackground\endcsname\undefined
    \fi}
 
 \def\ifsomebackgroundfound#1%
-  {\ifusage{\??ma#1}}
+  {\ifcsname\??ma#1\endcsname}
 
 \def\doifsomebackgroundelse#1%
-  {\ifusage{\??ma#1}%
+  {\ifcsname\??ma#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
+   \fi}
+
+\def\doifsomebackground#1%
+  {\ifcsname\??ma#1\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
    \fi}
 
 %D The background mechanism falls back on the \type {\framed}
 %D macro. This means that all normal frame and overlay
 %D features can be used.
 
+% \def\addsomebackground#1#2#3#4% area box width height / zero test added
+%   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
+%      \ifcsname\??ma#1\c!setups\endcsname % to be done
+%         \doifvaluesomething{\??ma#1\c!setups}{\setups[\csname\??ma#1\c!setups\endcsname]}% should not produce funny spaces !
+%      \fi
+%      \setbox#2\vbox\fastlocalframed % maybe \superfastlocalframed{tag}{w}{h}
+%        [\??ma#1]%
+%        [\c!component=#1,\c!width=#3,\c!height=#4]% are width and height used?
+%        {\dp#2\zeropoint\box#2}%
+%    \fi\fi\fi}
+
 \def\addsomebackground#1#2#3#4% area box width height / zero test added
   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
      \ifcsname\??ma#1\c!setups\endcsname % to be done
-        \doifvaluesomething{\??ma#1\c!setups}{\setups[\getvalue{\??ma#1\c!setups}]}% should not produce funny spaces !
+        \doifvaluesomething{\??ma#1\c!setups}{\setups[\csname\??ma#1\c!setups\endcsname]}% should not produce funny spaces !
      \fi
-     \setbox#2\vbox\fastlocalframed
-       [\??ma#1]
-       [\c!component=#1,\c!width=#3,\c!height=#4]% are width and height used?
-       {\dp#2\zeropoint\box#2}%
+     \localbackgroundframed{#1}{#2}{#3}{#4}%
    \fi\fi\fi}
 
 %D There are quite some backgrounds. At the bottom layer,
@@ -179,10 +235,6 @@
 \newdimen\pageoffset % bleed
 \newdimen\pagedepth
 
-\let\pagebackgroundhoffset\!!zeropoint
-\let\pagebackgroundvoffset\!!zeropoint
-\let\pagebackgrounddepth  \!!zeropoint
-
 % \def\setbackgroundboxes
 %   {\showmessage\m!layouts8\empty
 %    \setbackgroundbox\leftbackground\relax
@@ -204,29 +256,35 @@
 
 \def\setbackgroundboxes
   {\ifnewbackground
-     \global\chardef\newrightbackground\plusone
-     \global\chardef\newleftbackground\plusone
-     \global\setbox\leftbackground\emptybox
-     \global\setbox\rightbackground\emptybox
+     \dosetbackgroundboxesr
    \fi
-   \doifbothsides
-     {\ifcase\newleftbackground \else
-        % \showmessage\m!layouts8\empty
-        \setbackgroundbox\leftbackground\relax
-        \global\chardef\newleftbackground\zerocount
-        \global\chardef\newrightbackground\zerocount
-      \fi}
-     {\ifcase\newleftbackground \else
-        % \showmessage\m!layouts8\empty
-        \setbackgroundbox\leftbackground\relax
-        \global\chardef\newleftbackground\zerocount
-      \fi}
-     {\ifcase\newrightbackground \else
-        % \showmessage\m!layouts8\empty
-        \setbackgroundbox\rightbackground\doswapmargins
-        \global\chardef\newrightbackground\zerocount
-      \fi}%
+   \doifbothsides\dosetbackgroundboxesa\dosetbackgroundboxesb\dosetbackgroundboxesc
    \ifx\@@mastate\v!repeat\else\global\newbackgroundfalse\fi}
+
+\def\dosetbackgroundboxesr
+  {\global\chardef\newrightbackground\plusone
+   \global\chardef\newleftbackground\plusone
+   \global\setbox\leftbackground\emptybox
+   \global\setbox\rightbackground\emptybox}
+\def\dosetbackgroundboxesa
+  {\ifcase\newleftbackground \else
+     % \showmessage\m!layouts8\empty
+     \setbackgroundbox\leftbackground\relax
+     \global\chardef\newleftbackground\zerocount
+     \global\chardef\newrightbackground\zerocount
+   \fi}
+\def\dosetbackgroundboxesb
+  {\ifcase\newleftbackground \else
+     % \showmessage\m!layouts8\empty
+     \setbackgroundbox\leftbackground\relax
+     \global\chardef\newleftbackground\zerocount
+   \fi}
+\def\dosetbackgroundboxesc
+  {\ifcase\newrightbackground \else
+     % \showmessage\m!layouts8\empty
+     \setbackgroundbox\rightbackground\doswapmargins
+     \global\chardef\newrightbackground\zerocount
+   \fi}
 
 \def\addmainbackground#1% todo: dimension spec
   {\ifsomebackground
@@ -237,25 +295,29 @@
         \box#1}%
    \fi}
 
-\def\setbackgroundoffsets
+\newdimen\pagebackgroundhoffset
+\newdimen\pagebackgroundvoffset
+\newdimen\pagebackgrounddepth
+\newdimen\pagebackgroundoffset
+
+\def\setbackgroundoffsets % used in menus (we can use ifcsname's here)
   {\ifsomebackground \ifnewbackground
-     \global\let\pagebackgroundhoffset\!!zeropoint
-     \global\let\pagebackgroundvoffset\!!zeropoint
-     \global\let\pagebackgrounddepth  \!!zeropoint
+     \global\pagebackgroundhoffset\zeropoint
+     \global\pagebackgroundvoffset\zeropoint
+     \global\pagebackgrounddepth  \zeropoint
      \doifsomebackgroundelse{\v!text\v!text}\donetrue\donefalse
      \ifdone\else\doifsomebackgroundelse\v!text\donetrue\donothing\fi
      \ifdone
-       \bgroup
-       \scratchdimen\getvalue{\??ma\v!page\c!offset}%
+       \begingroup
+       \scratchdimen\csname\??ma\v!page\c!offset\endcsname
        \doifsomebackgroundelse{\v!top\v!text}\donothing
          {\doifsomebackgroundelse{\v!bottom\v!text}\donothing
-            {\xdef\pagebackgroundhoffset{\the\scratchdimen}}}%
+            {\global\pagebackgroundhoffset\scratchdimen}}%
        \doifsomebackgroundelse{\v!text\v!rightedge}\donothing
          {\doifsomebackgroundelse{\v!text\v!leftedge}\donothing
-            {\xdef\pagebackgroundvoffset{\the\scratchdimen}%
-             \scratchdimen\getvalue{\??ma\v!page\c!depth}%
-             \xdef\pagebackgrounddepth{\the\scratchdimen}}}%
-       \egroup
+            {\global\pagebackgroundvoffset\scratchdimen
+             \global\pagebackgrounddepth\csname\??ma\v!page\c!depth\endcsname}}%
+       \endgroup
      \fi
    \fi \fi}
 
@@ -288,7 +350,7 @@
       \vfilll}%
   \smashbox#1}
 
-\def\dodopagebodybackground#1#2%
+\def\dodopagebodybackground#1#2% maybe helper
   {\ifdim#2>\zeropoint % added, faster
      \setbox\scratchbox\vbox to #2
        \bgroup\hbox\bgroup
@@ -308,17 +370,17 @@
      \box\scratchbox\relax
    \fi}
 
-\def\dododopagebodybackground#1#2#3#4% width height pos pos
+\def\dododopagebodybackground#1#2#3#4% width height pos pos %  maybe helper
   {\ifsomebackgroundfound{#3#4}%
      \ifdim#2>\zeropoint\relax
        \ifdim#1>\zeropoint\relax
          \ifcsname\??ma#3#4\c!setups\endcsname % to be done
-            \doifvaluesomething{\??ma#3#4\c!setups}{\setups[\getvalue{\??ma#3#4\c!setups}]}% should not produce funny spaces !
+            \doifvaluesomething{\??ma#3#4\c!setups}{\setups[\csname\??ma#3#4\c!setups\endcsname]}% should not produce funny spaces !
          \fi
          \fastlocalframed
-           [\??ma#3#4]
-           [\c!component=#3-#4]
-           {\vbox to #2{\vss\hbox to#1{\hss\getvalue{\??ma#3#4\c!command}\hss}\vss}}%
+           [\??ma#3#4]%
+           [\c!component=#3-#4]%
+           {\vbox to #2{\vss\hbox to#1{\hss\csname\??ma#3#4\c!command\endcsname\hss}\vss}}%
        \else
          \hskip#1%
        \fi
@@ -371,16 +433,13 @@
    \fi\fi\fi
    \doifelsevalue{\??ma\v!page\c!offset}\v!overlay
      {\global\pageoffset\zeropoint}
-     {\global\pageoffset\getvalue{\??ma\v!page\c!offset}}%
-   \global\pagedepth\getvalue{\??ma\v!page\c!depth}%
-   \xdef\pagebackgroundoffset{\the\pageoffset}%
-   \xdef\pagebackgrounddepth {\the\pagedepth }%
+     {\global\pageoffset\csname\??ma\v!page\c!offset\endcsname}%
+   \global\pagedepth\csname\??ma\v!page\c!depth\endcsname
+   \global\pagebackgroundoffset\pageoffset
+   \global\pagebackgrounddepth\pagedepth
    \doifelse\@@mastate\v!stop
      {\global\newbackgroundfalse}
      {\global\newbackgroundtrue }}
-
-\let\pagebackgroundoffset\!!zeropoint
-\let\pagebackgrounddepth \!!zeropoint
 
 %D Each areas (currently there are $1+3+25+1=30$ of them)
 %D has its own low level framed object associated.
@@ -426,8 +485,8 @@
 
 \getparameters
   [\??ma\v!page]
-  [\c!offset=\!!zeropoint, % hm, so we need to force overlay elsewhere
-   \c!depth=\!!zeropoint]
+  [\c!offset=\zeropoint, % hm, so we need to force overlay elsewhere
+   \c!depth=\zeropoint]
 
 %D General setup:
 
@@ -502,20 +561,3 @@
 \somebackgroundfalse
 
 \protect \endinput
-
-%D Removed \quote {features}:
-%D
-%D \starttyping
-%D \startinteraction
-%D \doifmarginswapelse
-%D   {\copy\leftbackground}
-%D   {\copy\rightbackground}%
-%D \stopinteraction
-%D \stoptyping
-%D
-%D \starttyping
-%D \edef\setpagebackgrounddepth%
-%D   {\dp#2=\the\dp#2}%
-%D \setbox#2=\vbox\localframed[\??ma#1]{...}
-%D \setpagebackgrounddepth
-%D \stoptyping

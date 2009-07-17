@@ -86,7 +86,11 @@
 
 \newif\ifnotesenabled \notesenabledtrue
 
-\appendtoks \notesenabledfalse \to \everymarking
+% better mark a note .. once flushed no more flushing
+
+%appendtoks \notesenabledfalse \to \everymarking
+\appendtoks \notesenabledfalse \to \everypagebody
+\appendtoks \notesenabledfalse \to \everystructurelist % quick hack
 
 %D Often we need to process the whole set of notes and to make that
 %D fast, we use a token register:
@@ -94,7 +98,7 @@
 \newtoks\tobeprocessednotes
 
 \def\processnotes#1% #1: \macro that uses \currentnote
-  {\def\doprocesssomenote##1{\edef\currentdescription{##1}\edef\currentnote{##1}#1}%
+  {\def\doprocesssomenote##1{\edef\currentnote{##1}\let\currentdescription\currentnote#1}%
    \the\tobeprocessednotes}
 
 %D Notes have their own paremater handlers. The complication here
@@ -105,6 +109,8 @@
 
 \def\noteparameter    #1{\csname\donoteparameter{\??vn\currentnote}#1\endcsname}
 \def\noteparameterhash#1{\donoteparameterhash   {\??vn\currentnote}#1}
+
+\def\namednoteparameter#1#2{\csname\donoteparameter{\??vn#1}#2\endcsname}
 
 \def\donoteparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\donoteparentparameter    \csname#1\s!parent\endcsname#2\fi}
 \def\donoteparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\donoteparentparameterhash\csname#1\s!parent\endcsname#2\fi}
@@ -239,13 +245,19 @@
    \definestructurecounter
      [\currentnote]%
    \ctxlua{structure.notes.define("\currentnote","insert",\number\csname\??vn:\currentnote\endcsname)}%
-   \the\everysetupnote}
+   \the\everysetupnote
+   \dochecknote}
 
 \let\setupnotedefinition\setupenumerations
 
 \appendtoks
     \setupenumerations[\currentnote][]%
 \to \everysetupnote
+
+% \appendtoks
+%     \dochecknote
+% \to \everysetupnote
+
 
 \def\setupnote
   {\dodoubleempty\dosetupnote}
@@ -309,8 +321,8 @@
 \def\s!notefmt{nodefmt} % 1 text
 \def\s!notecol{nodecol}
 
-\def\clevernotes % compatibility hack
-  {\numexpr\ifcase\noteparameter\s!noteloc\or0\or2\or2\or1\else0\fi\relax}
+\def\clevernotes % compatibility hack, will be redone
+  {\numexpr\ifcase\namednoteparameter\v!footnote\s!noteloc\or0\or2\or2\or1\else0\fi\relax}
 
 \def\setnotelocation  #1{\expandafter\chardef\csname\??vn\currentnote\s!noteloc\endcsname#1\relax}
 \def\setnoteposition  #1{\expandafter\chardef\csname\??vn\currentnote\s!notepos\endcsname#1\relax}
@@ -319,21 +331,22 @@
 
 \def\currentnofcolumns{\@@kln}
 
+\setvalue{\??vn @\v!page       }{\setnotelocation\plusone}
+\setvalue{\??vn @\v!columns    }{\setnotelocation\plustwo}
+\setvalue{\??vn @\v!firstcolumn}{\setnotelocation\plusthree}
+\setvalue{\??vn @\v!lastcolumn }{\setnotelocation\plusfour}
+\setvalue{\??vn @\v!none       }{\setnotelocation\plusfive}
+\setvalue{\??vn @\v!text       }{\setnotelocation\plusfive \setnoteformatting\plusone} % test
+\setvalue{\??vn @\v!high       }{\setnoteposition\plusone}
+\setvalue{\??vn @\v!bottom     }{\setnoteposition\plustwo}
+
+\def\dosetcheckednote#1{\csname\??vn @#1\endcsname}
+
 \def\dochecknote
   {% node states
    \setnotelocation\plusone
    \setnoteposition\plustwo
-   \processallactionsinset
-     [\noteparameter\c!location]
-     [       \v!page=>\setnotelocation  \plusone,
-          \v!columns=>\setnotelocation  \plustwo,
-      \v!firstcolumn=>\setnotelocation  \plusthree,
-       \v!lastcolumn=>\setnotelocation  \plusfour,
-             \v!none=>\setnotelocation  \plusfive,
-             \v!text=>\setnotelocation  \plusfive
-                      \setnoteformatting\plusone, % test
-             \v!high=>\setnoteposition  \plusone,
-           \v!bottom=>\setnoteposition  \plustwo]%
+   \normalexpanded{\noexpand\rawprocesscommalist[\noteparameter\c!location]}\dosetcheckednote
    % compatibility hack
    \ifnum\noteparameter\s!noteloc=\plusfive \endnotestrue    \else \endnotesfalse    \fi
    \ifnum\noteparameter\s!notepos=\plustwo  \bottomnotestrue \else \bottomnotesfalse \fi
@@ -383,8 +396,10 @@
      \global\skip \currentnoteins\zeropoint
    \fi}
 
-\def\checknotes
-  {\processnotes\dochecknote}
+% \def\checknotes
+%   {\processnotes\dochecknote}
+
+\let\checknotes\relax % experiment, avoiding this saves a lot of time
 
 % D When \type{n} exceeds~1, footnotes are typeset in
 % D multi||columns, using the algoritm presented on page~397
@@ -505,35 +520,37 @@
 \newconditional\skipnoteplacement
 
 \def\@@notemakedescription[#1]#2#3% todo ... proper [key=value] etc
-  {\begingroup
-   \doenumerationcheckconditions
-   \let\currentnote\currentdescriptionmain
-   \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#3},\c!bookmark=,][]%
-   \xdef\currentnotenumber{\ctxlua{structure.notes.store("\currentnote",\currentdescriptionnumberentry)}}%
-   \settrue\processingnote
-   \ifconditional\skipnoteplacement
-     \globallet\lastnotesymbol\dolastnotesymbol
-   \else
-     \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
-       \ignorelines % makes footnotes work in \startlines ... \stoplines
-     \fi
-     \ifnotesymbol
-       \dolastnotesymbol
-     \else
-       \unskip\unskip
+  {\ifnotesenabled
+     \begingroup
+     \doenumerationcheckconditions
+     \let\currentnote\currentdescriptionmain
+     \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#3},\c!bookmark=,][]%
+     \xdef\currentnotenumber{\ctxlua{structure.notes.store("\currentnote",\currentdescriptionnumberentry)}}%
+     \settrue\processingnote
+     \ifconditional\skipnoteplacement
        \globallet\lastnotesymbol\dolastnotesymbol
+     \else
+       \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
+         \ignorelines % makes footnotes work in \startlines ... \stoplines
+       \fi
+       \ifnotesymbol
+         \dolastnotesymbol
+       \else
+         \unskip\unskip
+         \globallet\lastnotesymbol\dolastnotesymbol
+       \fi
      \fi
-   \fi
-   \ifconditional\postponingnotes
-     \global\settrue\postponednote
-   \else
-     \handlenoteinsert\currentnote\currentnotenumber
-   \fi
-   \ifconditional\skipnoteplacement \else
-     \kern\notesignal\relax % \relax is needed to honor spaces
-     \iftrialtypesetting \else \global\setfalse\skipnoteplacement \fi
-   \fi
-   \endgroup}
+     \ifconditional\postponingnotes
+       \global\settrue\postponednote
+     \else
+       \handlenoteinsert\currentnote\currentnotenumber
+     \fi
+     \ifconditional\skipnoteplacement \else
+       \kern\notesignal\relax % \relax is needed to honor spaces
+       \iftrialtypesetting \else \global\setfalse\skipnoteplacement \fi
+     \fi
+     \endgroup
+   \fi}
 
 \def\dolastnotesymbol{\typesetsomenotesymbol\currentnote\currentnotenumber}
 
@@ -552,7 +569,7 @@
    \nobreak
    \doifelse{\noteparameter\c!interaction}\v!no
      {\dotypesetsomenotesymbol{#1}{#2}}
-     {\gotobox{\dotypesetsomenotesymbol{#1}{#2}}[page(\ctxlua{structure.notes.getnumberpage("#1",\number#2)})]}% f:
+     {\directgotobox{\dotypesetsomenotesymbol{#1}{#2}}[page(\ctxlua{structure.notes.getnumberpage("#1",\number#2)})]}% f:
    \globallet\lastnotesymbol\relax}
 
 \def\currentnotedescriptiontext % todo: can be other number
@@ -561,7 +578,7 @@
 \def\currentnoteenumerationfullnumber
   {\doifelse{\noteparameter\c!interaction}\v!no
      {\docurrentnoteenumerationfullnumber}%
-     {\gotobox
+     {\directgotobox
         {\docurrentnoteenumerationfullnumber}%
         [page(\ctxlua{structure.notes.getsymbolpage("\currentnote",\currentdescriptionnumberentry)})]}}
 
@@ -632,7 +649,7 @@
 \newtoks\everyafternoteinsert
 
 \appendtoks
-   \let\doflushnotes\relax
+   \let\flushnotes\relax
    \let\postponenotes\relax
    \forgetall
 \to \everybeforenoteinsert
@@ -782,52 +799,19 @@
      \ctxlua{structure.notes.postpone()}%
    \fi}
 
-% \def\flushnotes
-%   {\ifconditional\processingnote \else
-%      \ifconditional\postponednote
-%        \ifinner \else
-%          \ifinpagebody \else
-%            %ifvmode % less interference, but also less secure
-%              \doflushnotes
-%            %fi
-%          \fi
-%        \fi
-%      \fi
-%    \fi}
-
 \def\flushnotes
-  {\ifconditional\postponednote
+  {\ifconditional\postponingnotes
      \flushnotesindeed
    \fi}
 
 \def\flushnotesindeed
-  {\ifconditional\processingnote \else
-     \ifinner \else
-       \ifinpagebody \else
-         %ifvmode % less interference, but also less secure
-           \doflushnotes
-         %fi
-       \fi
-     \fi
-   \fi}
-
-\def\doflushnotes % also called directly, \ifvoid is needed !
   {\begingroup
-   \let\doflushnotes\relax
+   \let\flushnotes   \relax
    \let\postponenotes\relax
-   \ifconditional\processingnote \else
-     \ifconditional\postponednote
-       \processnotes\dodoflushnotes
-       \global\setfalse\postponednote
-       \setfalse\postponingnotes
-     \fi
-   \fi
-   \endgroup}
-
-\def\dodoflushnotes % per class, todo: handle endnotes here
-  {%\writestatus{notes}{flushing \currentnote}%
+   \ctxlua{structure.notes.flushpostponed()}% this also resets the states !
+   \global\setfalse\postponednote
    \global\setfalse\postponingnotes
-   \ctxlua{structure.notes.flush("\currentnote","postpone")}}
+   \endgroup}
 
 %D \macros
 %D   {startlocalfootnotes,placelocalfootnotes}
@@ -843,7 +827,7 @@
 \newtoks\everyplacelocalnotes
 
 \appendtoks
-    \let\doflushnotes\relax
+    \let\flushnotes   \relax
     \let\postponenotes\relax
 \to \everyplacelocalnotes
 
@@ -1003,6 +987,8 @@
 %D \macros
 %D   {fakenotes}
 
+    % is this ok? endnotes and such
+
     \def\fakenotes
       {\ifhmode\endgraf\fi\ifvmode
          \calculatetotalclevernoteheight
@@ -1123,8 +1109,6 @@
             \def\placelocalfootnotes    {\dodoubleempty\doplacelocalfootnotes[\v!footnote]}
             \def\startlocalfootnotes    {\startlocalnotes                    [\v!footnote]} %  alleen footnote
             \def\stoplocalfootnotes     {\stoplocalnotes }
-            \def\flushfootnotes         {\flushnotes}
-            \def\doflushfootnotes       {\doflushnotes}
 
 \def\doplacefootnotes     [#1][#2]{\ifsecondargument\placenotes     [#1][#2,\c!height=\textheight]\else\placenotes     [#1]\fi}
 \def\doplacelocalfootnotes[#1][#2]{\ifsecondargument\placelocalnotes[#1][#2,\c!height=\textheight]\else\placelocalnotes[#1]\fi}

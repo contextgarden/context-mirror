@@ -188,11 +188,6 @@
 %D positions.
 
 \newcount\currentpositions  % current number of positions
-\newcounter\totalnofpositions % total from previous run
-
-\appendtoks
-  \expanded{\savecurrentvalue\noexpand\totalnofpositions{\the\currentpositions}}%
-\to \everybye
 
 %D The next switch can be used to communicate a special
 %D situation. Positioning and associated actions can be
@@ -215,15 +210,6 @@
 \appendtoks
   \localpositioningfalse
 \to \everypagebody
-
-% \def\checkpositions
-%   {\startnointerference
-%    \protectlabels
-%    \doutilities{positions}\jobname\empty\relax\relax
-%    \global\let\checkpositions\relax
-%    \stopnointerference}
-
-\let\checkpositions\relax
 
 %D Since the positional values are to be fully expandable, we
 %D need to preload them as soon as possible, which is why we

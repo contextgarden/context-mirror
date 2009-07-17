@@ -19,7 +19,7 @@
 \ifnum\texengine=\xetexengine
     \unexpanded\def\uchar#1#2{\char\numexpr#2+#1*\pluscclvi\relax}
     \let\uc\uchar
-    \endinput
+    \expandafter \endinput
 \fi
 
 %D Now comes the more traditional 8 bit \TEX\ hackery.

@@ -13,46 +13,9 @@
 
 \writestatus{loading}{ConTeXt JavaScript Macros / Initialization}
 
-% BUG: preamble zonder used/used en split
-
-% todo: lua sanitizer
-
-% JavaScript support is under development. In the near future
-% a slightly different model will be used. The JScode stuff
-% will probably become just auto function inclusion and the
-% JS_* things will disappear. First I have to find a way to
-% deal with global variables so the 'uses' thing will remain.
-
-% ook p{ref}
-% documentation should be corrected to JS(
-
-% Also, obeylines will be supported.
+\registerctxluafile{java-ini}{1.001}
 
 \unprotect
-
-%D \JAVA\ support is not implemented as a generic support
-%D module. The main reason for this is that passing system
-%D variables to a \JAVASCRIPT\ is closely related to other core
-%D macros. First some messages:
-
-%D \TEX\ is not the right tool to check the \JAVA\ code; the
-%D most we can do is reporting some passed variables:
-
-\newif\iftraceJScode \traceJScodefalse
-
-\let\traceJScode\traceJScodetrue
-
-%D A bit out of place, but not dangerous:
-
-\bgroup
-\catcode127=\@@letter
-\gdef\delcharacter{^^7f}
-\egroup
-
-%D The number of passed variables is minimalized by setting the
-%D next switch.
-
-\newif\ifminimalizeJScode    \minimalizeJScodetrue
 
 %D \macros
 %D   {JS*}
@@ -74,50 +37,7 @@
 %D \starttyping
 %D \goto{calculate total}[Sum(1.5,2.3)]
 %D \stoptyping
-%D
-%D References are passed by using the \type{R{}} classifier.
-%D
-%D \starttyping
-%D \goto{calculate total}[Sum(1.5,2.3,R{overflow})]
-%D \stoptyping
-%D
-%D The last call calls the script \type{Sum} and passes the
-%D next set of variables:
-%D
-%D \starttyping
-%D JS_S_1="1.5";
-%D JS_S_2="2.3";
-%D JS_R_3="overflow";
-%D JS_P_3=3;
-%D \stoptyping
-%D
-%D The first two parameters are just strings, the third one
-%D however is treated as a reference and results in passing the
-%D reference (if needed this references is prefixed) and the
-%D (real) page number. The alternative:
-%D
-%D \starttyping
-%D \goto{calculate total}[JS(Sum{V{1.5},V{2.3},R{overflow}})]
-%D \stoptyping
-%D
-%D does a verbose passing:
-%D
-%D \starttyping
-%D JS_V_1=1.5;
-%D JS_V_2=2.3;
-%D JS_R_3="overflow";
-%D JS_P_3=3;
-%D \stoptyping
-% %D
-% %D Finally we have a counter that tells\JAVA\ how many
-% %D arguments were passed,
-% %D
-% %D \starttyping
-% %D JS_N
-% %D \stoptyping
 
-%D We will also support direct function calls. In that case
-%D no intermediate variables are used.
 
 %D \macros
 %D   {startJScode}
@@ -125,32 +45,12 @@
 %D A piece of \JAVASCRIPT\ code is defined by saying:
 %D
 %D \starttyping
-%D \startJScode{SomeScript}
-%D   var Item=this.getField("item");
-%D          N=Item.getArray();
-%D      Total=this.getField("total");
-%D   Total.value=0;
-%D   for (j=0; j<N.length; j++)
-%D     { if (N[j].value!="")
-%D       { Total.value += N[j].value } } ;
-%D   if ((JS_N>0) && (JS_R_1!=""))
-%D     { gotoNamedDest(JS_R_1) };
-%D \stopJScode
-%D \stoptyping
-%D
-%D Such a piece of code is closely related to the interpreter
-%D used. Watch the last two lines, here the script adapts
-%D itself to the presence of a reference.
-%D
-%D While
-%D
-%D \starttyping
 %D \startJScode{name}
 %D   name = 4 ;
 %D \stopJScode
 %D \stoptyping
 %D
-%D assumes uses no preamble or presumes that the preamble is
+%D This assumes uses no preamble or presumes that the preamble is
 %D always loaded, the next definition also tells \CONTEXT\ to
 %D actually include the preamble needed.
 %D
@@ -159,109 +59,9 @@
 %D   uses = 6 ;
 %D \stopJScode
 %D \stoptyping
-
-\long\def\startJScode#1 #2
-  {\doifelse{#2}{uses}
-     {\dostartJScodeA{#1}}
-     {\dostartJScodeB{#1} #2 }}
-
-\long\def\dostartJScodeA#1#2 #3\stopJScode
-  {\long\setgvalue{\r!java#1}{\do{#2}{#3}}}
-
-\long\def\dostartJScodeB#1#2\stopJScode
-  {\long\setgvalue{\r!java#1}{\do{}{#2}}}
-
-\let\stopJScode\relax
-
+%D
 %D \macros
-%D   {presetJScode}
-%D
-%D The code can be retrieved by saying
-%D
-%D \starttyping
-%D \presetJScode{SomeScript}{template}
-%D \stoptyping
-%D
-%D Such a template is a comma separated list, where
-%D individual entries can optionally be transformed by
-%D \type{R{}} and \type{V{}}.
-%D
-%D After this call, the code is available in \type{\JScode}.
-
-\newif\ifdirectJScode
-
-\def\presetJScode#1#2% #1=operation #2=arguments
-  {\setverbosecscharacters
-   \def\par{\delcharacter}% was: { }
-   \scratchcounter\zerocount
-   \globallet\JScode\empty
-   \def\do##1##2%
-     {\doifelse{##2}{!}\directJScodetrue\directJScodefalse}%
-   \getvalue{\r!java#1}%
-   \edef\!!stringa{#2}%
-   \ifx\!!stringa\empty \else
-     \processcommacommand[\!!stringa]\dopresetJSvariables
-   \fi
-   \def\docommand##1%
-     {\doifundefinedelse{\r!java\r!java##1}
-        {\showmessage\m!javascript2{##1}}
-        {\useJSpreamblenow{##1}}}%
-%        {\doglobal\increment\currentJSpreamble
-%         \doglobal\addtocommalist{##1}\allJSpreambles}}%
-   \def\do##1##2%
-     {\xdef\JScode{\ifdirectJScode#1(\JScode)\else\JScode##2\fi}%
-     %\xdef\JScode{JS\string_N=\the\scratchcounter;\JScode}%
-      \processcommalist[##1]\docommand}%
-   \getvalue{\r!java#1}}
-
-\def\dopresetJSvariables#1%
-  {\advance\scratchcounter \plusone
-   \donefalse
-   \dodopresetJSvariables#1\end}%
-
-\def\dodopresetJSvariables
-  {\doifnextcharelse R\dodopresetJSrefvariables
-  {\doifnextcharelse V\dodopresetJSvervariables
-  {\doifnextcharelse S\dodopresetJSstrvariables
-                      \dodopresetJSrawvariables}}}
-
-\def\dodopresetJSrefvariables R#1\end
-  {\doifreferencefoundelse{#1}
-     {\donetrue \dododopresetJSvariables R{\referenceprefix#1}%
-      \donefalse\dododopresetJSvariables P{\currentrealreference}}
-     {\unknownreference{#1}}%
-   \ifminimalizeJScode \else
-     \donetrue\dododopresetJSvariables S{#1}%
-   \fi}
-
-\def\dodopresetJSvervariables V#1\end
-  {\donefalse\dododopresetJSvariables V{#1}%
-   \ifminimalizeJScode \else
-     \donetrue\dododopresetJSvariables S{#1}%
-   \fi}
-
-\def\dodopresetJSstrvariables S#1\end
-  {\donetrue\dododopresetJSvariables S{#1}}
-
-\def\dodopresetJSrawvariables #1\end
-  {\donetrue\dododopresetJSvariables S{#1}}
-
-\def\JSprefix#1%
-  {JS\string_#1\string_\the\scratchcounter}
-
-\def\dododopresetJSvariables#1#2%
-  {\iftraceJScode
-     \writestatus{JavaScript}{\JSprefix#1=#2}
-     \xdef\JScode{\JScode console.println("\JSprefix#1=#2"); }%
-   \fi
-   \ifdirectJScode
-     \xdef\JScode{\ifx\JScode\empty\else\JScode,\fi\ifdone"#2"\else#2\fi}%
-   \else
-     \xdef\JScode{\JScode\JSprefix#1=\ifdone"#2"\else#2\fi; }%
-   \fi}
-
-%D \macros
-%D   {startJSpreamble, flushJSpreamble}
+%D   {startJSpreamble}
 %D
 %D One can define insert \JAVASCRIPT\ code at the document level
 %D by using:
@@ -291,365 +91,40 @@
 %D
 %D This command may be used more that once, but always before
 %D the first page is shipped out.
-
-\newif\ifoneJSpreamble \oneJSpreamblefalse
-
-\let\allJSpreambles\empty
-\newcounter\nofJSpreambles
-\newcounter\currentJSpreamble
-
-\long\def\startJSpreamble#1 #2 %
-  {\bgroup           % we need to restore the catcodes
-   \restoreendofline % just in case it happens while reading lists
-   \doifelse{#2}{used}
-     {\dostartJSpreamble#1 }
-     {\dostartJSpreamble#1 now #2 }}
-
-\long\def\dostartJSpreamble#1 #2 %
-  {\processaction
-     [#2]
-     [     later=>\chardef\JSstatus\zerocount,%
-             now=>\chardef\JSstatus\plusone  ,%
-      \s!default=>\chardef\JSstatus\plustwo  ,%
-      \s!unknown=>\chardef\JSstatus\plustwo  ]%
-    \ifaddJSlinebreaks
-      \obeylines  \let\obeyedline \normalpar
-      \obeyspaces \let\obeyedspace\normalspace
-    \fi
-    \dodostartJSpreamble{#1}}
-
-\long\def\dodostartJSpreamble#1#2\stopJSpreamble
-  {\presetJSfunctions #2function ()\end
-   \long\setgvalue{\r!java\r!java#1}{#2}%
-   \ifcase\JSstatus \else
-     \useJSpreamblenow{#1}%
-   \fi
-   \egroup}
-
+%D
 %D \macros
 %D   {setJSpreamble, addtoJSpreamble}
 %D
 %D In addition to the previous preamble definitions, we can
 %D set a preamble \quote {in||line} and add tokens to a
 %D preamble.
-
-\def\setJSpreamble#1#2%
-  {\doifundefined{\r!java\r!java#1}
-     {\setgvalue{\r!java\r!java#1}{#2;}%
-      \doglobal\increment\currentJSpreamble
-      \doglobal\addtocommalist{#1}\allJSpreambles}}
-
-\def\addtoJSpreamble#1#2%
-  {\doifdefinedelse{\r!java\r!java#1}
-     {\edef\!!stringa{\r!java\r!java#1}%
-      \edef\!!stringb{\csname\!!stringa\endcsname}%
-      \@EA\setgvalue\@EA\!!stringa\@EA{\!!stringb #2;}}
-     {\setJSpreamble{#1}{#2}}}
-
+%D
 %D \macros
 %D   {useJSpreamblenow}
 %D
-%D The next macro can be used to force inclusion of postponed
+%D This macro can be used to force inclusion of postponed
 %D \JAVASCRIPT\ preambles.
 
-\def\useJSpreamblenow#1%
-  {\doglobal\increment\currentJSpreamble
-   \doglobal\addtocommalist{#1}\allJSpreambles}
+\unexpanded\def\startJScode
+  {\begingroup\obeylualines\obeyluatokens\dostartJScode}
 
-%D Because we want to check for valid calls, we preload the
-%D functions. This means that we can call them directly as
-%D well as indirectly when defined by \type {\startJScode} etc.
+\long\def\dostartJScode#1\stopJScode
+  {\normalexpanded{\endgroup\ctxlua{javascripts.storecode(\!!bs#1\!!es)}}}
 
-% \long\def\presetJSfunctions#1function #2(#3)%
-%   {\doifelsenothing{#2}
-%      {\long\def\presetJSfunctions##1\end{}}
-%      {\stripspaces\from#2\to\ascii
-%       \doifundefined{\r!java\ascii}{\setgvalue{\r!java\ascii}{\do{}{!}}}}%
-%    \presetJSfunctions}
+\let\stopJScode\relax
 
-\long\def\presetJSfunctions#1function#2(#3)%
-  {\doifelse{#2}\space
-     {\long\def\presetJSfunctions##1\end{}}
-     {\stripspaces\from#2\to\ascii
-      \doifundefined{\r!java\ascii}{\setgvalue{\r!java\ascii}{\do{}{!}}}}%
-   \presetJSfunctions}
+\unexpanded\def\startJSpreamble
+  {\begingroup\obeylualines\obeyluatokens\dostartJSpreamble}
 
-\def\getJSpreamble#1%
-  {\getvalue{\r!java\r!java#1}}
+\long\def\dostartJSpreamble#1\stopJSpreamble
+  {\normalexpanded{\endgroup\ctxlua{javascripts.storepreamble(\!!bs#1\!!es)}}}
 
-\def\presetJSpreamble
-  {\ifx\allJSpreambles\empty\else
-     \bgroup
-     \setverbosecscharacters
-     \obeyspaces \let\obeyedspace\normalspace
-     \def\par{\delcharacter}% was: { }
-     \globallet\JSpreamble\empty
-     \def\@@collectedJSpreamble{\r!java\r!java collected}%
-     \letvalue{\@@collectedJSpreamble}=\empty
-     \def\docommand##1%
-       {\xdef\JScode{\getvalue{\r!java\r!java##1}}%
-        \ifoneJSpreamble % \global\letcdcsname
-          \@EA\setxvalue\@EA\@@collectedJSpreamble\@EA
-            {\csname\@@collectedJSpreamble\endcsname\JScode}%
-        \else
-          \setxvalue{\r!java\r!java##1}{\JScode}%
-        \fi}%
-     \processcommacommand[\allJSpreambles]\docommand
-     \ifoneJSpreamble
-       \gdef\allJSpreambles{collected}%
-     \fi
-     \globallet\presetJSpreamble\relax
-     \egroup
-   \fi}
+\let\stopJSpreamble\relax
 
-\def\flushJSpreamble
-  {\iflocation\ifx\allJSpreambles\empty\else
-     \ifcase\nofJSpreambles\else\ifnum\nofJSpreambles=\currentJSpreamble
-       \bgroup
-       \presetJSpreamble
-       \expanded{\doflushJSpreamble{\allJSpreambles}}%
-       \globallet\flushJSpreamble\relax
-       \globallet\allJSpreambles\empty
-       \egroup
-     \fi\fi
-   \fi\fi}
-
-\def\finalflushJSpreamble
-  {\iflocation
-     \flushJSpreamble
-     \ifcase\currentJSpreamble\relax\else
-       \savecurrentvalue\nofJSpreambles\currentJSpreamble
-       \globallet\currentJSpreamble\nofJSpreambles
-     \fi
-   \fi}
-
-%D \macros
-%D   {doPSsanitizeJScode}
-%D
-%D Before the code can be passed to the (\POSTSCRIPT\ or \PDF)
-%D output file, some precautions must be made concerning the
-%D use of \type{(} and~\type{)}. Here we use a beautiful
-%D \type{\aftergroup} trick I discovered in the \TABLE\ format.
-
-\def\doPSsanitizeJScode#1\to#2%
-  {\begingroup
-   \scratchcounter\zerocount % \aftergroup counter
-   \aftergroup\xdef
-   \aftergroup#2%
-   \aftergroup{%
-   \expanded{\defconvertedargument\noexpand\JScode{#1}}%
-   \expandafter\handletokens\JScode\with\dodoPSsanitizeJScode
-   \aftergroup}%
-   \endgroup
-   \iftraceJScode
-     \writestatus{JS trace}{#2}%
-   \fi}
-
-%D I started with:
-%D
-%D \starttyping
-%D \def\dodoPSsanitizeJScode#1%
-%D   {\aftergroup\string
-%D    \if#1(%
-%D      \expandafter\aftergroup\csname#1\endcsname
-%D    \else\if#1)%
-%D      \expandafter\aftergroup\csname#1\endcsname
-%D    \else\if#1;%
-%D      \aftergroup;\aftergroup\string\expandafter\aftergroup\
-%D    \else
-%D      \expandafter\aftergroup#1%
-%D    \fi\fi\fi
-%D    \advance\scratchcounter by 1
-%D    \ifnum\scratchcounter=500
-%D      \expandafter\dododoPSsanitizeJScode
-%D    \fi}
-%D \stoptyping
-%D
-%D For pretty printing purposes, we need some way to signal
-%D \TEX\ macros. Therefore we introduce a special keyword
-%D \type{TEX}. When followed by a space, this keyword is
-%D ignored, that is, filtered from the stream. Now we have:
-
-\chardef\JSisTEX  \zerocount
-\chardef\JScomment\zerocount
-
-\newif\ifaddJSlinebreaks \addJSlinebreakstrue
-
-\def\flushJSisTEX
-  {\ifcase\JSisTEX
-   \or \aftergroup T%
-   \or \aftergroup T\aftergroup E%
-   \or \aftergroup T\aftergroup E\aftergroup X%
-   \fi
-   \chardef\JSisTEX\zerocount}
-
-% \def\doJSlinebreak
-%  {\ifaddJSlinebreaks
-%     \aftergroup\string\aftergroup\n%
-%   \fi}
-%
-% \def\dodoPSsanitizeJScode#1%  % input stack>500 & TEX check
-%   {\if#1/%
-%      \ifnum\JScomment=0
-%        \chardef\JScomment\plusone
-%      \else\ifnum\JScomment=1
-%        \chardef\JScomment\plustwo
-%      \fi\fi
-%    \else
-%      \ifnum\JScomment=1
-%        \aftergroup/%
-%        \chardef\JScomment\zerocount
-%      \fi
-%      \ifnum\JScomment=2
-%        \if#1\delcharacter
-%          \chardef\JScomment\zerocount
-%        \fi
-%      \else
-%        \if#1\delcharacter
-%          \flushJSisTEX\doJSlinebreak
-%        \else\if#1(%
-%          \flushJSisTEX\aftergroup\string\expandafter\aftergroup\csname#1\endcsname
-%        \else\if#1)%
-%          \flushJSisTEX\aftergroup\string\expandafter\aftergroup\csname#1\endcsname
-%        \else\if#1;%
-%          \flushJSisTEX\aftergroup;\doJSlinebreak
-%        \else\if#1T%
-%          \ifnum\JSisTEX=0 \chardef\JSisTEX\plusone   \else\flushJSisTEX\aftergroup T\fi
-%        \else\if#1E%
-%          \ifnum\JSisTEX=1 \chardef\JSisTEX\plustwo   \else\flushJSisTEX\aftergroup E\fi
-%        \else\if#1X%
-%          \ifnum\JSisTEX=2 \chardef\JSisTEX\plusthree \else\flushJSisTEX\aftergroup X\fi
-%        \else\if#1\normalspace
-%          \ifnum\JSisTEX=3 \chardef\JSisTEX\zerocount \else\flushJSisTEX\aftergroup#1\fi
-%        \else
-%          \flushJSisTEX\aftergroup\string\expandafter\aftergroup#1%
-%        \fi\fi\fi\fi\fi\fi\fi\fi
-%      \fi
-%    \fi
-%    \dododoPSsanitizeJScode}
-
-% todo: "http:\\" -> simple. maar wel \" afvangen
-%
-% use new pdftex escape mechanism or make fully expandable version, not used that often btw
-
-\chardef\JSstring\zerocount
-
-\def\doJSlinebreak
- {\chardef\JScomment\zerocount
-  \chardef\JSstring\zerocount
-  \ifaddJSlinebreaks
-    \aftergroup\string\aftergroup\n%
-  \fi}
-
-\def\dodoPSsanitizeJScode#1%  % input stack>500 & TEX check
-  {\if#1/%
-     \ifnum\JSstring=0
-       \ifnum\JScomment=0
-         \chardef\JScomment\plusone
-       \else\ifnum\JScomment=1
-         \chardef\JScomment\plustwo
-       \fi\fi
-     \else
-       \aftergroup/%
-     \fi
-   \else
-     \ifnum\JScomment=1
-       \aftergroup/%
-       \chardef\JScomment\zerocount
-     \fi
-     % is the delchar trick still needed?
-     \ifnum\JScomment=2
-       \ifnum`#1=13 % brrr
-         \doJSlinebreak
-       \else\if#1\par
-         \doJSlinebreak
-       \else\if#1\delcharacter
-         \doJSlinebreak
-       \fi\fi\fi
-     \else
-       \ifnum`#1=13 % brrr
-         \flushJSisTEX\doJSlinebreak
-       \else\if#1\par
-         \flushJSisTEX\doJSlinebreak
-       \else\if#1\delcharacter
-         \flushJSisTEX\doJSlinebreak
-       \else\if#1(%
-         \flushJSisTEX\aftergroup\string\expandafter\aftergroup\csname#1\endcsname
-       \else\if#1)%
-         \flushJSisTEX\aftergroup\string\expandafter\aftergroup\csname#1\endcsname
-       %\else\if#1;%
-       %  \flushJSisTEX\aftergroup;\doJSlinebreak
-       \else\if#1T%
-         \ifnum\JSisTEX=0 \chardef\JSisTEX\plusone   \else\flushJSisTEX\aftergroup T\fi
-       \else\if#1E%
-         \ifnum\JSisTEX=1 \chardef\JSisTEX\plustwo   \else\flushJSisTEX\aftergroup E\fi
-       \else\if#1X%
-         \ifnum\JSisTEX=2 \chardef\JSisTEX\plusthree \else\flushJSisTEX\aftergroup X\fi
-       \else\if#1\normalspace
-         \ifnum\JSisTEX=3 \chardef\JSisTEX\zerocount \else\flushJSisTEX\aftergroup#1\fi
-       \else
-          % todo: "test\"test"
-         \if#1"%
-           \ifcase\JSstring
-             \chardef\JSstring\plusone
-           \else
-             \chardef\JSstring\zerocount
-           \fi
-         \fi
-         \flushJSisTEX\aftergroup\string\expandafter\aftergroup#1%
-       \fi\fi\fi\fi\fi\fi\fi\fi\fi % \fi
-     \fi
-   \fi
-   \dododoPSsanitizeJScode}
-
-%D Close reading learns that one line comments (\type{// ...})
-%D are removed from the stream. This permits switching in
-%D pretty printing \JAVASCRIPT\ sources as well as saves
-%D some bytes.
-
-%D The magic 500 in the next hack prevents the input stack from
-%D overflowing when large scripts are sanitized.
-
-\def\dododoPSsanitizeJScode
-  {\ifcase\JSisTEX\ifcase\JScomment
-     \advance\scratchcounter \plusone
-   \fi\fi
-   \ifnum\scratchcounter=500
-     \expandafter\dodododoPSsanitizeJScode
-   \fi}
-
-\def\dodododoPSsanitizeJScode
-  {\let\next={%
-   \aftergroup}%
-   \endgroup
-   \begingroup
-   \aftergroup\xdef
-   \aftergroup\sanitizedJScode
-   \aftergroup{%
-   \aftergroup\sanitizedJScode
-   \let\next=}}
-
-%D The macro \type{\doPSsanitizeJScode} converts its argument
-%D into the macro \type{\sanitizedJScode}, thereby prefixing
-%D each \type{(} and \type{)} by a slash.
-
-%D Hooking this mechanism into the general \CONTEXT\ reference
-%D mechanism does not take much effort:
-
-\definespecialtest{JS}%
-  {\doifdefinedelse{\r!java\currentreferenceoperation}}
-
-\def\gotojavascriptspecial#1#2#3#4% special operation arguments data
-  {\begingroup
-   \iflocation
-     \bgroup
-       \presetJScode{#2}{#3}%
-     \egroup
-     \dohandlegoto{#4}{\dostartgotoJS\buttonwidth\buttonheight\JScode}{\dostopgotoJS}%
-   \else
-     #4%
-   \fi
-   \endgroup}
+\def\setJSpreamble   #1#2{\ctxlua{javascripts.storepreamble ("#1",\!!bs#2\!!es)}}
+\def\addtoJSpreamble #1#2{\ctxlua{javascripts.addtopreamble ("#1",\!!bs#2\!!es)}}
+\def\useJSpreamblenow  #1{\ctxlua{javascripts.usepreamblenow("#1")}}
+\def\finalflushJSpreamble{\iflocation\ctxlua{javascripts.flushpreambles()}\fi}
 
 %D \macros
 %D   {useJSscripts}
@@ -669,14 +144,15 @@
 \def\dodouseJSscripts#1%
   {\doifelse{#1}\v!reset
      {\let\allJSpreambles\empty}
-     {\doifundefined{\c!file\f!javascriptprefix#1}
-        {\startnointerference
-           \letgvalueempty{\c!file\f!javascriptprefix#1}%
-           \makeshortfilename[\f!javascriptprefix#1]%
-           \startreadingfile
-             \readsysfile\shortfilename{\showmessage\m!javascript1{#1}}\donothing
-           \stopreadingfile
-         \stopnointerference}}}
+     {\ifcsname\c!file\f!javascriptprefix#1\endcsname \else
+        \startnointerference
+          \letgvalueempty{\c!file\f!javascriptprefix#1}%
+          \makeshortfilename[\f!javascriptprefix#1]%
+          \startreadingfile
+            \readsysfile\shortfilename{\showmessage\m!javascript1{#1}}\donothing
+          \stopreadingfile
+        \stopnointerference
+      \fi}}
 
 \def\douseJSscripts[#1][#2]%
   {\processcommalist[#1]\dodouseJSscripts

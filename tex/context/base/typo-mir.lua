@@ -172,7 +172,7 @@ function mirror.process(namespace,attribute,start) -- todo: make faster
             local attr = has_attribute(current,attribute)
             if attr and attr > 0 then
                 unset_attribute(current,attribute) -- slow, needed?
-            --~ set_attribute(current,attribute,0) -- might be faster
+--~             set_attribute(current,attribute,0) -- might be faster
                 if attr == 1 then
                     -- bidi parsing mode
                 elseif attr ~= prevattr then
@@ -319,8 +319,8 @@ function mirror.process(namespace,attribute,start) -- todo: make faster
                 local subtype = current.subtype
                 if subtype == 6 then
                     local dir = current.dir
-                    local d = dir:sub(2,2)
-                    if dir:find(".R.") then
+                    local d = dir:sub(2,2) -- -- -- -- -- why is this not used
+                    if dir:find(".R.") then -- -- d == "R" or just dir == "TRT"
                         autodir = -1
                     else
                         autodir = 1

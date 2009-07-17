@@ -1,0 +1,559 @@
+%D \module
+%D   [       file=spec-ini,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: make this one more plain so that i can use it in plain jobs
+% todo: no args, named vars instead
+% maybe also drop multiple drivers and make simplify the default, then simplier defs
+
+\newif\ifsimplifyspecials \simplifyspecialstrue % see later
+
+%D We will forbid loading specials after the first page is
+%D shipped out.
+
+\ifx\realpageno\undefined
+  \countdef\realpageno=0 \realpageno=1
+\fi
+
+%D Specials are \TEX's channel to the outside world. They make
+%D \TEX\ even more platform independant and permit easy
+%D adaption to new developments. One major drawback of specials
+%D is that they have to be supported by printer drivers. We've
+%D tried to overcome this problem by implementing specials as
+%D a sort of drivers themselves.
+
+\writestatus{loading}{ConTeXt Special Macros / Initialization}
+
+\unprotect
+
+%D \TEX\ produces files in the \DVI\ format. This format is
+%D well defined and stable. In this format one||byte commands
+%D are used which can optionally be followed by length
+%D specifiers and arguments. The \DVI||format incorporates a
+%D channel to the outside world. This channel is activated by
+%D the \TEX\ primitive \type {\special}. The sequence
+%D
+%D \starttyping
+%D \special{Hello here I am.}
+%D \stoptyping
+%D
+%D results in \DVI||codes:
+%D
+%D \starttyping
+%D xxx1 16 Hello here I am.
+%D \stoptyping
+%D
+%D The \type {xxx1} is represented in byte code 239 and the
+%D number of following bytes in a~1, 2, 3 or~4 byte number. So
+%D here we get $1+1+16$ bytes of code.
+%D
+%D Translating these codes is upto the \DVI\ driver. It's
+%D common use to ignore specials that cannot be interpreted, so
+%D the example string should have no consequences for the
+%D output.
+
+%D \macros
+%D   {jobsuffix}
+%D
+%D By default, \TEX\ produces \DVI\ files which can be
+%D converted to other filetypes. Sometimes it is handy to
+%D know what the target file will be. In other driver
+%D modules we wil set \type {\jobsuffix} to \type {pdf}.
+
+\def\jobsuffix{dvi}
+
+\def\setjobsuffix#1%
+  {\resetsystemmode\jobsuffix
+   \edef\jobsuffix{#1}%
+   \setsystemmode\jobsuffix}
+
+%D \macros
+%D   {everyresetspecials}
+%D
+%D Now what will this one do? We'll see in a few lines.
+
+\newtoks \everyresetspecials
+
+\appendtoksonce
+  \ifx\setjobsuffix\undefined\else\setjobsuffix{dvi}\fi
+\to \everyresetspecials
+
+%D A rather fundamental difference between special and direct
+%D settings is that the latter don't interfere with typesetting
+%D but must be set before the first shipout, while the specials
+%D must be packaged in the shipped out box in such a way that
+%D they don't interfere.
+
+\newif\ifspecialbasedsettings \specialbasedsettingstrue
+
+\appendtoksonce
+  \specialbasedsettingstrue
+\to \everyresetspecials
+
+%D Because there is no standardization in the use of specials,
+%D more than one driver or program can be supported. The
+%D specials are grouped in libraries. Some of these are
+%D general, such as the \type{postscript} library, some are
+%D tuned to a special kind of program, like the \type{pdf}
+%D ones, and some support a specific driver, as we can see in
+%D the \type{yandy} library. A library is build with the
+%D commands:
+%D
+%D \starttyping
+%D \startspecials[name][inheritance]
+%D
+%D \definespecial\none{...}
+%D \definespecial\onlyone#1{...}
+%D \definespecial\alot#1#2#3#4{...}
+%D
+%D \stopspecials
+%D \stoptyping
+%D
+%D Because drivers can have overlap in low level macros, a
+%D mechanism of inheritance is implemented. The libraries
+%D defined as second argument are loaded first.
+%D
+%D Every special has to be predefined first. We  do this with
+%D the command:
+%D
+%D \starttyping
+%D \installspecial [\none]    [and] [0]
+%D \installspecial [\onlyone] [and] [1]
+%D \installspecial [\alot]    [or]  [4]
+%D \stoptyping
+%D
+%D This means as much as: there is a special names
+%D \type{\none} which has no arguments and has more than one
+%D appearance. The special \type{\alot} on the other hand has
+%D four arguments and is only defined once. Every instance in
+%D the libraries of a special of category \type{and} is
+%D executed when called upon, but only one special of
+%D category \type{or} can be active. Most of the
+%D \type{postscript}||specials are of category \type{or},
+%D because they tend to interfere with driver specific ones.
+%D The interactive specials of \type{dviwindo} and \type{pdf}
+%D are an example of specials that can be called both.
+%D
+%D A library is defined in a file with the name
+%D \type{spec-...}. We load a library with the command:
+%D
+%D \starttyping
+%D \usespecials [list]
+%D \stoptyping
+%D
+%D where the list can contain one or more file tags, the
+%D \type{...} in the filename. The keyword \type{reset}
+%D resets all loaded specials. This is equivalent to
+%D \type{\resetspecials}.
+
+%D Although a mechanism of nesting can be implemented, we
+%D prefer to use a inheritance mechanism as mentioned. Calls
+%D upon \type{\usespecials} within a \type{\startspecials}
+%D would lead to confusion and errors.
+
+\newif\ifinheritspecials
+
+%D We define some local constants and variables. They look a
+%D bit horrible but we don't want conflicts.
+
+\def\@@specfil@@{@@spcfil@@}
+\def\@@speclst@@{@@spclst@@}
+\def\@@speccat@@{@@spccat@@}
+\def\@@specarg@@{@@spcarg@@}
+\def\@@specexc@@{@@spcexc@@}
+
+% not faster
+%
+% \def\@@specfil@@{@sp@f@}
+% \def\@@speclst@@{@sp@l@}
+% \def\@@speccat@@{@sp@c@}
+% \def\@@specarg@@{@sp@a@}
+% \def\@@specexc@@{@sp@e@}
+
+\let\currentspecial    \empty
+\let\currentspecialfile\empty
+
+%D \macros
+%D   {startspecials}
+%D
+%D Every library has a unique name, which is given as the first
+%D argument to \type{\startspecials}. When another library is
+%D defined with the same name, previous specials can be
+%D overruled. The name may differ from the file||tag.
+%D
+%D The optional second argument can consist of a list of
+%D libraries that are to be loaded first.
+
+\def\dostartspecials[#1][#2]%
+  {\doifsomething{#2}
+     {\processcommalist[#2]\dousespecials}%
+   \doifelsenothing{#1}
+     {\let\currentspecial\s!unknown}
+     {\def\currentspecial{#1}}%
+   \unprotect}
+
+\def\startspecials
+  {\localpushmacro\currentspecial
+   \dodoubleempty\dostartspecials}
+
+\def\stopspecials
+  {\localpopmacro\currentspecial
+   \protect}
+
+%D \macros
+%D   {installspecial,
+%D    resetspecials}
+%D
+%D We have to install specials before we can define and use
+%D them. The command itself is defined as a call to another
+%D command that executes one or more user||defined specials,
+%D depending of it's category: \type{or} versus \type{and}.
+%D
+%D The command \type{\installspecial} takes three
+%D (non||optional) arguments: the name of the command, the
+%D category it belongs to and the number of arguments it
+%D takes.
+%D
+%D With \type{\resetspecials} we can unload the predefined
+%D specials. Special reset actions |<|look in \type{spec-mis}
+%D for an example|>| can be assigned to the token register
+%D \type{\everyresetspecials}.
+
+\let\@@allspecials=\empty
+
+\def\doinstallspecial[#1][#2][#3]%
+  {\letvalue{\@@speclst@@\string#1}\empty
+   \setvalue{\@@speccat@@\string#1}{#2}%
+   \setvalue{\@@specarg@@\string#1}{#3}%
+   \addtocommalist{\string#1}\@@allspecials
+   \def#1{\executespecial#1}}
+
+\def\installspecial
+  {\dotripleargument\doinstallspecial}
+
+\def\resetspecials
+  {\the\everyresetspecials
+   \def\docommand##1%
+     {\letvalue{\@@speclst@@##1}\empty}%
+   \processcommacommand[\@@allspecials]\docommand}
+
+%D \macros
+%D   {definespecial}
+%D
+%D The command \type{\definespecial} take the place of
+%D \type{\def} in the definition of a special. Just to be
+%D sure, we first check if the command is permitted, i.e.
+%D installed. If not, we give a warning and gobble the
+%D illegal command in an quite elegant way.
+%D
+%D If the command can be combined (\type{and}) with others,
+%D we append it to a list, otherwise (\type{or}) it becomes
+%D the only item in the list.
+
+\def\definespecial#1%
+  {\ifx#1\undefined
+     \showmessage\m!specials4{\string#1}%
+     \def\next
+       {\def\@@illegalspecial@@}%
+   \else
+     \def\next
+       {\doifelsevalue{\@@speccat@@\string#1}{or}
+          {\edef\@@newspeclst@@{\currentspecial}}
+          {\edef\@@newspeclst@@{\getvalue{\@@speclst@@\string#1}}%
+           \addtocommalist\currentspecial\@@newspeclst@@}%
+        \setevalue{\@@speclst@@\string#1}{\@@newspeclst@@}%
+        \setvalue{\currentspecial\string#1}}%
+   \fi
+   \next}
+
+%D \macros
+%D   {usespecials}
+%D
+%D We use \type{\usespecials} to load a specific library.
+%D This command is only permitted outside the definition part.
+
+\def\dousespecials#1%
+  {\doifelse{#1}\v!reset
+     {\resetspecials}
+     {\doifdefinedelse{\@@specfil@@#1}
+        {\edef\currentspecialfile{\getvalue{\@@specfil@@#1}}}
+        {\edef\currentspecialfile{#1}}%
+      \makeshortfilename[\truefilename{\f!specialprefix\currentspecialfile}]%
+      \startreadingfile
+        \readsysfile{\shortfilename.mkii}{\showmessage\m!specials5\currentspecialfile}\donothing
+      \stopreadingfile}}
+
+\def\usespecials[#1]%
+  {\ifnum\realpageno<2
+     \doifelsenothing\currentspecial
+       {\processcommalist[#1]\dousespecials}
+       {\showmessage\m!specials6\empty}%
+   \fi}
+
+%D \macros
+%D   {executespecials}
+%D
+%D The command \type{\executespecials} is used to execute the
+%D defined specials. Once a special is installed, the special
+%D itself calls for this command, so it's not needed outside
+%D this module. One can use it if wanted.
+%D
+%D A former implementation grouped the execution. Recent
+%D additions however |<|like the specials that implement object
+%D handling|>| asked for non||grouped execution.
+
+%D \starttyping
+%D \def\executespecials#1#2%
+%D   {\def\doonespecial##1%
+%D      {\getvalue{##1\string#1}#2\relax}%
+%D    \processcommacommand
+%D      [\getvalue{\@@speclst@@\string#1}]\doonespecial}
+%D
+%D \def\executespecial#1%
+%D   {\expandafter\ifcase\getvalue{\@@specarg@@\string#1}\relax
+%D      \def\next%
+%D        {\executespecials#1{}}%
+%D    \or
+%D      \def\next##1%
+%D        {\executespecials#1{{##1}}}%
+%D    \or
+%D      \def\next##1##2%
+%D        {\executespecials#1{{##1}{##2}}}%
+%D    \or
+%D      \def\next##1##2##3%
+%D        {\executespecials#1{{##1}{##2}{##3}}}%
+%D    \or
+%D      \def\next##1##2##3##4%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5##6%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5##6##7%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5##6##7##8%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5##6##7##8##9%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{##9}}}%
+%D    \else
+%D      \def\next%
+%D        {\message{illegal special: \string#1}}%
+%D    \fi
+%D    \next}
+%D \stoptyping
+%D
+%D Because specials happen quite often, we will use a bit more
+%D brute force. Keep in mind that we have to collect the
+%D arguments because we want to support more drivers at once.
+%D
+%D I tested this on the next test. Where the previous alternative
+%D took about 32 seconds, the new alternative takes 25 seconds.
+%D
+%D \starttyping
+%D \testfeature{10000}{\setbox0=\hbox{test \color[red]{oeps} test}}
+%D \stoptyping
+
+\def\@@exsp{exsp}
+
+\setvalue{\@@exsp0}{{}}
+\setvalue{\@@exsp1}#1{{{#1}}}
+\setvalue{\@@exsp2}#1#2{{{#1}{#2}}}
+\setvalue{\@@exsp3}#1#2#3{{{#1}{#2}{#3}}}
+\setvalue{\@@exsp4}#1#2#3#4{{{#1}{#2}{#3}{#4}}}
+\setvalue{\@@exsp5}#1#2#3#4#5{{{#1}{#2}{#3}{#4}{#5}}}
+\setvalue{\@@exsp6}#1#2#3#4#5#6{{{#1}{#2}{#3}{#4}{#5}{#6}}}
+\setvalue{\@@exsp7}#1#2#3#4#5#6#7{{{#1}{#2}{#3}{#4}{#5}{#6}{#7}}}
+\setvalue{\@@exsp8}#1#2#3#4#5#6#7#8{{{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}
+\setvalue{\@@exsp9}#1#2#3#4#5#6#7#8#9{{{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}}
+
+%D \starttyping
+%D \def\executespecials#1%
+%D   {\def\doonespecial##1%
+%D      {\csname##1\xspecialcommand\endcsname#1\relax}%
+%D    \@EA\rawprocesscommalist\@EA
+%D      [\csname\@@speclst@@\xspecialcommand\endcsname]\doonespecial}
+%D
+%D \def\executespecial#1%
+%D   {\def\xspecialcommand{\string#1}%
+%D    \@EA\@EA\@EA\executespecials\csname\@@exsp\csname\@@specarg@@\xspecialcommand\endcsname\endcsname}
+%D \stoptyping
+
+%D Some more speed can be gained by using a dedicated string
+%D processing routine. Now we can bring down the execution
+%D time to 21 seconds, one third less than the original run time.
+
+\def\executespecials#1%
+  {\@EA\let\@EA\speciallist\csname\@@speclst@@\xspecialcommand\endcsname
+   \ifx\speciallist\empty\else
+     \def\doonespecial##1%
+       {\csname##1\xspecialcommand\endcsname#1\relax}%
+     \@EA\dodoonespecial\speciallist,\end,%
+   \fi}
+
+\def\executespecial#1%
+  {\def\xspecialcommand{\string#1}%
+   \@EA\@EA\@EA\executespecials\csname\@@exsp\csname\@@specarg@@\xspecialcommand\endcsname\endcsname}
+
+\def\dodoonespecial#1,%
+  {\ifx\end#1\else
+     \doonespecial{#1}\expandafter\dodoonespecial
+   \fi}
+
+%D This kind of saving only shows up when making interative
+%D documents with lots of color switches. In such documents
+%D tens of thousands of special calls are rather normal.
+%D On a 650 Mhz Pentium, the previous test takes 15 seconds
+%D less (on about 65 seconds). When processing 2000 page
+%D interactive documents this saving can be neglected.
+
+%D In the previous macros, the \type{{{...}}} are needed
+%D because we pass all those arguments to the specials support
+%D macro.
+
+\let\openspecialfile  \relax
+\let\closespecialfile \relax
+
+%D \macros
+%D   {doifspecialavailableelse}
+%D
+%D For testing purposes (this was first needed when object
+%D support was implemented) we have:
+%D
+%D \starttyping
+%D \doifspecialavailableelse\specialcommand{true}{false}
+%D \stoptyping
+%D
+%D e.g:
+%D
+%D \starttyping
+%D \doifspecialavailableelse\doinsertobject{...}{...}
+%D \stoptyping
+
+\def\doifspecialavailableelse#1#2#3%
+  {\doifelsevaluenothing{\@@speclst@@\string#1}{#3}{#2}}
+
+%D So far for the macros that deal with installing specials.
+%D In the file \type {spec-def} you will find the predefined
+%D specials.
+
+%D Now that we have seen the flexible way (permitting
+%D special chains) we will implement a faster and flat
+%D alternative. But only if flag si set.
+
+\ifsimplifyspecials
+
+  \def\doinstallspecial[#1][#2][#3]%
+    {\appendtoks\forgetspecial#1{#3}\to\everyresetspecials
+     \@EA\chardef\csname\@@speclst@@\string#1\endcsname\zerocount
+     \forgetspecial#1{#3}}
+
+  \def\forgetspecial#1#2%
+    {\ifcase#2\relax
+        \let#1\relax                \or
+        \let#1\gobbleoneargument    \or
+        \let#1\gobbletwoarguments   \or
+        \let#1\gobblethreearguments \or
+        \let#1\gobblefourarguments  \or
+        \let#1\gobblefivearguments  \or
+        \let#1\gobblesixarguments   \or
+        \let#1\gobblesevenarguments \or
+        \let#1\gobbleeightarguments \or
+        \let#1\gobbleninearguments  \or
+        \let#1\gobbletenarguments   \fi}
+
+  \def\resetspecials
+    {\the\everyresetspecials}
+
+  \def\definespecial#1%
+    {\@EA\chardef\csname\@@speclst@@\string#1\endcsname=1
+     \def#1}
+
+  \def\doifspecialavailableelse#1%
+    {\ifcase\csname\@@speclst@@\string#1\endcsname
+       \expandafter\secondoftwoarguments
+     \else
+       \expandafter\firstoftwoarguments
+     \fi}
+
+\fi
+
+%D For quite some time the \CONTEXT\ way of specifying the
+%D output format has been:
+%D
+%D \starttyping
+%D \usespecials[ps,yy,win,pdf]
+%D \stoptyping
+%D
+%D Because at \PRAGMA\ we use \DVIPSONE, this was a suitable
+%D setting, but with \CONTEXT\ going public, the next sequence
+%D is more suitable for \DVIPS\ users:
+%D
+%D \starttyping
+%D \usespecials[reset,ps,tr,pdf]
+%D \stoptyping
+%D
+%D On the other hand, for \PDFTEX\ we needed:
+%D
+%D \starttyping
+%D \usespecials[tpd]
+%D \stoptyping
+%D
+%D To simplify things, I decided to provide a higher level
+%D command.
+%D
+%D \starttyping
+%D \defineoutput[name][specials]
+%D \setupoutput[name,...]
+%D \stoptyping
+%D
+%D In a \type {spec-def} you can find some examples.
+
+\def\defineoutput
+  {\dodoubleargument\dodefineoutput}
+
+\def\dodefineoutput[#1][#2]%
+  {\setvalue{\??ui#1}{#2}}
+
+\def\dosetupoutput#1%
+  {\doifdefinedelse{\??ui#1}
+     {\processcommacommand[\getvalue{\??ui#1}]\dousespecials}
+     {\doifdefinedelse{\@@specfil@@#1}
+        {\dousespecials{#1}}
+        {\showmessage\m!specials7{#1}}}}
+
+% Beware, from now on changing the (default) driver files demands
+% remaking the format (no big deal, since only i adapt the driver
+% and need delayed loading).
+
+\let\currentoutput\empty
+
+\def\setupoutput[#1]%
+  {\doifnot{#1}{\currentoutput}
+     {\ifnum\realpageno<\plustwo % new
+        \resetspecials\processcommacommand[#1]\dosetupoutput
+        \edef\currentoutput{#1}%
+      \fi}}
+
+\def\preloadspecials % it's nicer to report this
+  {\doifsomething\currentoutput
+     {\showmessage\m!specials1\currentoutput}}
+
+\appendtoks
+   \savecurrentvalue\usedoutputdriver\currentoutput
+\to \everyfirstshipout
+
+\protect \endinput

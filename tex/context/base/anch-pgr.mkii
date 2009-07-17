@@ -1352,6 +1352,7 @@
 \def\do@@ammenuposition#1%
   {\ifnum\currentamposition>0
      \dowithnextbox{\hpos{menu:#1:\realfolio}{\flushnextbox}}\hbox
+   %  \hpos{menu:#1:\realfolio} % also ok if we skip over fi
    \fi}
 
 %D \macros

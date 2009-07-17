@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['strc-ref'] = {
     license   = "see context related readme files"
 }
 
-local format, gmatch, texsprint, texwrite, count = string.format, string.gmatch, tex.sprint, tex.write, tex.count
+local format, find, gmatch, match = string.format, string.find, string.gmatch, string.match
+local texsprint, texwrite, texcount = tex.sprint, tex.write, tex.count
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
@@ -32,13 +33,6 @@ local defined, derived, specials, runners = jobreferences.defined, jobreferences
 
 local currentreference = nil
 
-local gotoinner             = "\\gotoinner{%s}{%s}{%s}{%s}"              -- prefix inner page data
-local gotoouterfilelocation = "\\gotoouterfilelocation{%s}{%s}{%s}{%s}"  -- file location page data
-local gotoouterfilepage     = "\\gotoouterfilepage{%s}{%s}{%s}"          -- file page data
-local gotoouterurl          = "\\gotoouterurl{%s}{%s}{%s}"               -- url args data
-local gotoinnerpage         = "\\gotoinnerpage{%s}{%s}"                  -- page data
-local gotospecial           = "\\gotospecial{%s}{%s}{%s}{%s}{%s}"        -- action, special, operation, arguments, data
-
 jobreferences.initializers = jobreferences.initializers or { }
 
 function jobreferences.registerinitializer(func) -- we could use a token register instead
@@ -56,9 +50,11 @@ if job then
     job.register('jobreferences.collected', jobreferences.tobesaved, initializer)
 end
 
+-- todo: delay split till later as in destinations we split anyway
+
 function jobreferences.set(kind,prefix,tag,data)
     for ref in gmatch(tag,"[^,]+") do
-        local p, r = ref:match("^(%-):(.-)$")
+        local p, r = match(ref,"^(%-):(.-)$")
         if p and r then
             prefix, ref = p, r
         else
@@ -76,10 +72,15 @@ function jobreferences.set(kind,prefix,tag,data)
     end
 end
 
+function jobreferences.setandgetattribute(kind,prefix,tag,data) -- maybe do internal automatically here
+    jobreferences.set(kind,prefix,tag,data)
+    texcount.lastdestinationattribute = jobreferences.setinternalreference(prefix,tag) or -0x7FFFFFFF
+end
+
 function jobreferences.enhance(prefix,tag,spec)
     local l = tobesaved[prefix][tag]
     if l then
-        l.references.realpage = tex.count[0]
+        l.references.realpage = texcount.realpageno
     end
 end
 
@@ -87,14 +88,22 @@ end
 
 local result = { }
 
-local lparent, rparent, lbrace, rbrace, dcolon = lpeg.P("("), lpeg.P(")"), lpeg.P("{"), lpeg.P("}"), lpeg.P("::")
+local lparent, rparent, lbrace, rbrace, dcolon, backslash = lpeg.P("("), lpeg.P(")"), lpeg.P("{"), lpeg.P("}"), lpeg.P("::"), lpeg.P("\\")
 
-local reset     = lpeg.P("")                          / function (s) result           = { } end
-local outer     = (1-dcolon-lparent-lbrace        )^1 / function (s) result.outer     = s   end
-local operation = (1-rparent-rbrace-lparent-lbrace)^1 / function (s) result.operation = s   end
-local arguments = (1-rbrace                       )^0 / function (s) result.arguments = s   end
-local special   = (1-lparent-lbrace-lparent-lbrace)^1 / function (s) result.special   = s   end
-local inner     = (1-lparent-lbrace               )^1 / function (s) result.inner     = s   end
+local reset     = lpeg.P("") / function()  result = { } end
+local b_token   = backslash  / function(s) result.has_tex = true return s end
+
+local o_token   = 1 - rparent - rbrace - lparent - lbrace
+local a_token   = 1 - rbrace
+local s_token   = 1 - lparent - lbrace - lparent - lbrace
+local i_token   = 1 - lparent - lbrace
+local f_token   = 1 - lparent - lbrace - dcolon
+
+local outer     =         (f_token          )^1  / function (s) result.outer     = s   end
+local operation = lpeg.Cs((b_token + o_token)^1) / function (s) result.operation = s   end
+local arguments = lpeg.Cs((b_token + a_token)^0) / function (s) result.arguments = s   end
+local special   =         (s_token          )^1  / function (s) result.special   = s   end
+local inner     =         (i_token          )^1  / function (s) result.inner     = s   end
 
 local outer_reference    = (outer * dcolon)^0
 
@@ -110,12 +119,8 @@ function jobreferences.analyse(str)
     return scanner:match(str)
 end
 
-local splittemplate = "\\setreferencevariables{%s}{%s}{%s}{%s}{%s}" -- will go away
-
 function jobreferences.split(str)
-    local t = scanner:match(str or "")
-    texsprint(ctxcatcodes,format(splittemplate,t.special or "",t.operation or "",t.arguments or "",t.outer or "",t.inner or ""))
-    return t
+    return scanner:match(str or "")
 end
 
 --~ print(table.serialize(jobreferences.analyse("")))
@@ -173,7 +178,10 @@ local function register_from_lists(collected,derived)
                 local kind, realpage = m.kind, r.realpage
                 if kind and realpage then
                     local d = derived[prefix] if not d then d = { } derived[prefix] = d end
-                    d[reference] = { kind, i }
+--~                     d[reference] = { kind, i }
+for s in gmatch(reference,"[^,]+") do
+                    d[s] = { kind, i }
+end
                 end
             end
         end
@@ -345,6 +353,7 @@ end
 local settings_to_array = aux.settings_to_array
 
 local function resolve(prefix,reference,args,set) -- we start with prefix,reference
+    texcount.referencehastexstate = 0
     if reference and reference ~= "" then
         set = set or { }
         local r = settings_to_array(reference)
@@ -369,10 +378,16 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                         if args then var.arguments = args end
                         set[#set+1] = var
                     end
+                    if var.has_tex then
+                        set.has_tex = true
+                    end
                 else
                 --  logs.report("references","funny pattern: %s",ri or "?")
                 end
             end
+        end
+        if set.has_tex then
+            texcount.referencehastexstate = 1
         end
         return set
     else
@@ -382,6 +397,44 @@ end
 
 -- prefix == "" is valid prefix which saves multistep lookup
 
+jobreferences.currentset = nil
+
+local b, e = "\\ctxlua{local jc = jobreferences.currentset;", "}"
+local o, a = 'jc[%s].operation=[[%s]];', 'jc[%s].arguments=[[%s]];'
+
+function jobreferences.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
+    local currentset = jobreferences.currentset
+    if currentset and currentset.has_tex then
+        local done = false
+        for i=1,#currentset do
+            local ci = currentset[i]
+            local operation = ci.operation
+            if operation then
+                if find(operation,"\\") then -- if o_has_tex then
+                    if not done then
+                        texsprint(ctxcatcodes,b)
+                        done = true
+                    end
+                    texsprint(ctxcatcodes,format(o,i,operation))
+                end
+            end
+            local arguments = ci.arguments
+            if arguments then
+                if find(arguments,"\\") then -- if a_has_tex then
+                    if not done then
+                        texsprint(ctxcatcodes,b)
+                        done = true
+                    end
+                    texsprint(ctxcatcodes,format(a,i,arguments))
+                end
+            end
+        end
+        if done then
+            texsprint(ctxcatcodes,e)
+        end
+    end
+end
+
 local function identify(prefix,reference)
     local set = resolve(prefix,reference)
     local bug = false
@@ -390,7 +443,6 @@ local function identify(prefix,reference)
         local special, inner, outer, arguments, operation = var.special, var.inner, var.outer, var.arguments, var.operation
         if special then
             local s = specials[special]
---~ print(table.serialize(specials))
             if s then
                 if outer then
                     if operation then
@@ -535,9 +587,6 @@ local function identify(prefix,reference)
                             if s then
                                 var.kind = "special"
                             else
---~                                 i = (tobesaved[""] and tobesaved[""][inner]) or
---~                                     (derived  [""] and derived  [""][inner]) or
---~                                     (collected[""] and collected[""][inner])
                                 i = (collected[""] and collected[""][inner]) or
                                     (derived  [""] and derived  [""][inner]) or
                                     (tobesaved[""] and tobesaved[""][inner])
@@ -558,91 +607,45 @@ local function identify(prefix,reference)
         bug = bug or var.error
         set[i] = var
     end
---~ print(prefix,reference,table.serialize(set))
+    jobreferences.currentset = set
     return set, bug
 end
 
 jobreferences.identify = identify
 
-function jobreferences.doifelse(prefix,reference)
+function jobreferences.doifelse(prefix,reference,highlight,newwindow,layer)
     local set, bug = identify(prefix,reference)
     local unknown = bug or #set == 0
     if unknown then
-        currentreference = nil
+        currentreference = nil -- will go away
     else
+        set.highlight, set.newwindow,set.layer = highlight, newwindow, layer
         currentreference = set[1]
     end
+    -- we can do the expansion here which saves a call
     commands.doifelse(not unknown)
 end
 
-function jobreferences.analysis(prefix,reference)
-    local set, bug = identify(prefix,reference)
-    local unknown = bug or #set == 0
-    if unknown then
-        currentreference = nil
-        texwrite(0) -- unknown
-    else
-        currentreference = set[1]
-        texwrite(1) -- whatever
---~         texwrite(2) -- forward, following page
---~         texwrite(3) -- backward, preceding page
---~         texwrite(4) -- forward, same page
---~         texwrite(5) -- backward, same page
-    end
-end
-
-function jobreferences.handle(prefix,reference) -- todo: use currentreference is possible
-    local set, bug = identify(prefix,reference)
-    if bug or #set == 0 then
-        texsprint(ctxcatcodes,"\\referenceunknownaction")
-    else
-        for i=2,#set do
-            local s = set[i]
-currentreference = s
-            -- not that needed, but keep it for a while
-            texsprint(ctxcatcodes,format(splittemplate,s.special or "",s.operation or "",s.arguments or "",s.outer or "",s.inner or ""))
-            --
-            if s.error then
-                texsprint(ctxcatcodes,"\\referenceunknownaction")
-            else
-                local runner = runners[s.kind]
-                if runner then
-                    texsprint(ctxcatcodes,runner(s,"\\secondaryreferencefoundaction"))
-                end
-            end
-        end
-        local s = set[1]
-currentreference = s
-        -- not that needed, but keep it for a while
-        texsprint(ctxcatcodes,format(splittemplate,s.special or "",s.operation or "",s.arguments or "",s.outer or "",s.inner or ""))
-        --
-        if s.error then
-            texsprint(ctxcatcodes,"\\referenceunknownaction")
-        else
-            local runner = runners[s.kind]
-            if runner then
-                texsprint(ctxcatcodes,runner(s,"\\primaryreferencefoundaction"))
-            end
-        end
-    end
-end
-
-local thisdestinationyes = "\\thisisdestination{%s:%s}"
-local thisdestinationnop = "\\thisisdestination{%s}"
-local thisdestinationaut = "\\thisisdestination{aut:%s}"
-
-function jobreferences.setinternalreference(prefix,tag,internal)
+function jobreferences.setinternalreference(prefix,tag,internal,view)
+    local t = { }
     if tag then
-        for ref in gmatch(tag,"[^,]+") do
-            if not prefix or prefix == "" then
-                texsprint(ctxcatcodes,format(thisdestinationnop,ref))
-            else
-                texsprint(ctxcatcodes,format(thisdestinationyes,prefix,ref))
+        if prefix and prefix ~= "" then
+            prefix = prefix .. ":"
+            for ref in gmatch(tag,"[^,]+") do
+                t[#t+1] = prefix .. ref
+            end
+        else
+            for ref in gmatch(tag,"[^,]+") do
+                t[#t+1] = ref
             end
         end
     end
-    texsprint(ctxcatcodes,format(thisdestinationaut,internal))
- -- texsprint(ctxcatcodes,"[["..internal.."]]")
+    if internal then
+        t[#t+1] = "aut:" .. internal
+    end
+    local destination = jobreferences.mark(t,nil,nil,view) -- returns an attribute
+    texcount.lastdestinationattribute = destination
+    return destination
 end
 
 --
@@ -708,160 +711,25 @@ function filters.text.page(data,prefixspec,pagespec)
     helpers.prefixpage(data,prefixspec,pagespec)
 end
 
---~ filters.section = { }
+filters.section = { }
 
---~ filters.section.title  = filters.generic.title
---~ filters.section.number = filters.generic.number
---~ filters.section.page   = filters.generic.page
+filters.section.title  = filters.generic.title
+filters.section.page   = filters.generic.page
+
+function filters.section.number(data) -- todo: spec and then no stopper
+    if data then
+        local numberdata = data.numberdata
+        if numberdata then
+            sections.typesetnumber(numberdata,"number",numberdata or false)
+        end
+    end
+end
 
 --~ filters.float = { }
 
 --~ filters.float.title  = filters.generic.title
 --~ filters.float.number = filters.generic.number
 --~ filters.float.page   = filters.generic.page
-
--- each method gets its own call, so that we can later move completely to lua
-
-runners["inner"] = function(var,content)
-    -- inner
-    currentreference = var
-    local r = var.r
-    return (r and format(gotoinner,var.p or "",var.inner,r,content)) or "error"
-end
-
-runners["inner with arguments"] = function(var,content)
-    -- inner{argument}
-    currentreference = var
-    return "todo: " .. var.kind or "?"
-end
-
-runners["outer"] = function(var,content)
-    -- outer::
-    -- todo: resolve url/file name
-    currentreference = var
-    local url = ""
-    local file = var.o
-    return format(gotoouterfilepage,url,file,1,content)
-end
-
-runners["outer with inner"] = function(var,content)
-    -- outer::inner
-    -- todo: resolve url/file name
-    currentreference = var
-    local r = var.r
-    return (r and format(gotoouterfilelocation,var.f,var.inner,r,content)) or "error"
-end
-
-runners["special outer with operation"] = function(var,content)
-    -- special(outer::operation)
-    currentreference = var
-    return "todo: " .. var.kind or "?"
-end
-
-runners["special outer"] = function(var,content)
-    -- special()
-    currentreference = var
-    return "todo: " .. var.kind or "?"
-end
-
-runners["special"] = function(var,content)
-    -- special(operation)
-    currentreference = var
-    local handler = specials[var.special]
-    if handler then
-        return handler(var,content) -- var.special wegwerken
-    else
-        return ""
-    end
-end
-
-runners["outer with inner with arguments"] = function(var,content)
-    -- outer::inner{argument}
-    currentreference = var
-    return "todo: " .. var.kind or "?"
-end
-
-runners["outer with special and operation and arguments"] = function(var,content)
-    -- outer::special(operation{argument,argument})
-    currentreference = var
-    return "todo: " .. var.kind or "?"
-end
-
-runners["outer with special"] = function(var,content)
-    -- outer::special()
-    currentreference = var
-    return "todo: " .. var.kind or "?"
-end
-
-runners["outer with special and operation"] = function(var,content)
-    -- outer::special(operation)
-    currentreference = var
-    return "todo: " .. var.kind or "?"
-end
-
-runners["special operation"]                = runners["special"]
-runners["special operation with arguments"] = runners["special"]
-
-local gotoactionspecial     = "\\gotoactionspecial{%s}{%s}{%s}{%s}"
-local gotopagespecial       = "\\gotopagespecial{%s}{%s}{%s}{%s}"
-local gotourlspecial        = "\\gotourlspecial{%s}{%s}{%s}{%s}"
-local gotofilespecial       = "\\gotofilespecial{%s}{%s}{%s}{%s}"
-local gotoprogramspecial    = "\\gotoprogramspecial{%s}{%s}{%s}{%s}"
-local gotojavascriptspecial = "\\gotojavascriptspecial{%s}{%s}{%s}{%s}"
-
-function specials.action(var,content)
-    return format(gotoactionspecial,var.special,var.operation,var.arguments or "",content)
-end
-
-function specials.page(var,content)
-    -- we need to deal with page(inner) and page(outer::1) and outer::page(1)
-    return format(gotopagespecial,var.special,var.operation,var.arguments or "",content)
-end
-
-function specials.url(var,content)
-    local url = var.operation
-    if url then
-        local u = urls[url]
-        if u then
-            local u, f = u[1], u[2]
-            if f and f ~= "" then
-                url = u .. "/" .. f
-            else
-                url = u
-            end
-        end
-    end
-    return format(gotourlspecial,var.special,url,var.arguments or "",content)
-end
-
-function specials.file(var,content)
-    local file = var.operation
-    if file then
-        local f = files[file]
-        if f then
-            file = f[1]
-        end
-    end
-    return format(gotofilespecial,var.special,file,var.arguments or "",content)
-end
-
-function specials.program(var,content)
-    local program = var.operation
-    if program then
-        local p = programs[program]
-        if p then
-            programs = p[1]
-        end
-    end
-    return format(gotoprogramspecial,var.special,program,var.arguments or "",content)
-end
-
-function specials.javascript(var,content)
-    -- todo: store js code in lua
-    return format(gotojavascriptspecial,var.special,var.operation,var.arguments or "",content)
-end
-
-specials.JS = specials.javascript
 
 structure.references = structure.references or { }
 structure.helpers    = structure.helpers    or { }
@@ -881,3 +749,108 @@ function references.sectionpage(n,prefixspec,pagespec)
     helpers.prefixedpage(lists.collected[tonumber(n) or 0],prefixspec,pagespec)
 end
 
+-- analyse
+
+jobreferences.testrunners  = jobreferences.testrunners  or { }
+jobreferences.testspecials = jobreferences.testspecials or { }
+
+local runners  = jobreferences.testrunners
+local specials = jobreferences.testspecials
+
+function jobreferences.analyse(actions)
+    actions = actions or jobreferences.currentset
+    if not actions then
+        actions = { realpage = 0 }
+    elseif actions.realpage then
+        -- already analysed
+    else
+        -- we store some analysis data alongside the indexed array
+        -- at this moment only the real reference page is analysed
+        -- normally such an analysis happens in the backend code
+        texcount.referencepagestate = 0
+        local nofactions = #actions
+        if nofactions > 0 then
+            for i=1,nofactions do
+                local a = actions[i]
+                local what = runners[a.kind]
+                if what then
+                    what = what(a,actions)
+                end
+            end
+            local realpage, p = texcount.realpageno, tonumber(actions.realpage)
+            if not p then
+                -- sorry
+            elseif p > realpage then
+                texcount.referencepagestate = 3
+            elseif p < realpage then
+                texcount.referencepagestate = 2
+            else
+                texcount.referencepagestate = 1
+            end
+        end
+    end
+    return actions
+end
+
+
+function jobreferences.realpage() -- special case, we always want result
+    local cs = jobreferences.analyse()
+    texwrite(cs.realpage or 0)
+end
+
+--
+
+jobreferences.pages = {
+    [variables.firstpage]       = function() return structure.counters.record("realpage")["first"]    end,
+    [variables.previouspage]    = function() return structure.counters.record("realpage")["previous"] end,
+    [variables.nextpage]        = function() return structure.counters.record("realpage")["next"]     end,
+    [variables.lastpage]        = function() return structure.counters.record("realpage")["last"]     end,
+
+    [variables.firstsubpage]    = function() return structure.counters.record("subpage" )["first"]    end,
+    [variables.previoussubpage] = function() return structure.counters.record("subpage" )["previous"] end,
+    [variables.nextsubpage]     = function() return structure.counters.record("subpage" )["next"]     end,
+    [variables.lastsubpage]     = function() return structure.counters.record("subpage" )["last"]     end,
+
+    [variables.forward]         = function() return structure.counters.record("realpage")["forward"]  end,
+    [variables.backward]        = function() return structure.counters.record("realpage")["backward"] end,
+}
+
+-- maybe some day i will merge this in the backend code with a testmode (so each
+-- runner then implements a branch)
+
+runners["inner"] = function(var,actions)
+    local r = var.r
+    if r then
+        actions.realpage = r
+    end
+end
+
+runners["special"] = function(var,actions)
+    local handler = specials[var.special]
+    return handler and handler(var,actions)
+end
+
+runners["special operation"]                = runners["special"]
+runners["special operation with arguments"] = runners["special"]
+
+local pages = jobreferences.pages
+
+function specials.internal(var,actions)
+    local v = jobreferences.internals[tonumber(var.operation)]
+    local r = v and v.references.realpage
+    if r then
+        actions.realpage = r
+    end
+end
+
+specials.i = specials.internal
+
+function specials.page(var,actions)
+    local p = pages[var.operation]
+    if type(p) == "function" then
+        p = p()
+    end
+    if p then
+        actions.realpage = p
+    end
+end

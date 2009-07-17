@@ -23,15 +23,17 @@
 \definesystemattribute[state]
 \definesystemattribute[skip]
 \definesystemattribute[penalty]
-\definesystemattribute[colormodel][global] % no reset
-\definesystemattribute[color]
-\definesystemattribute[transparency]
-\definesystemattribute[background]
+\definesystemattribute[colormodel][global] % no reset          \chardef\colormodelattribute    \dogetattributeid{colormodel}
+\definesystemattribute[color]                                  \chardef\colorattribute         \dogetattributeid{color}
+\definesystemattribute[transparency]                           \chardef\transparencyattribute  \dogetattributeid{transparency}
+\definesystemattribute[background]                             \chardef\backgroundattribute    \dogetattributeid{background}
 \definesystemattribute[overprint]
 \definesystemattribute[negative]
 \definesystemattribute[effect]
-\definesystemattribute[viewerlayer]
-\definesystemattribute[reference]
+\definesystemattribute[viewerlayer]                            \chardef\viewerlayerattribute   \dogetattributeid{viewerlayer}
+\definesystemattribute[reference]                              \chardef\referenceattribute     \dogetattributeid{reference}
+\definesystemattribute[destination]                            \chardef\destinationattribute   \dogetattributeid{destination}
+\definesystemattribute[graphicvadjust]                         \chardef\graphicvadjustattribute\dogetattributeid{graphicvadjust}
 
 % \definesystemattribute[ignore]
 %
@@ -85,8 +87,7 @@
   {\setevalue{(os:#1)}{\dosetattribute{overprint}{\ctxlua{tex.print(overprints.register('#2'))}}}}
 
 \def\dotriggeroverprint
-  {\initializePDFoverprint % temp here, to be tested in la code (states.collect)
-   \ctxlua{overprints.enabled=true}%
+  {\ctxlua{overprints.enabled=true}%
    \gdef\dotriggeroverprint##1{\csname(os:##1)\endcsname}%
    \dotriggeroverprint}
 
@@ -99,8 +100,7 @@
   {\setevalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
 
 \def\dotriggernegative
-  {\initializePDFnegative % temp here, to be tested in la code (states.collect)
-   \ctxlua{negatives.enabled=true}%
+  {\ctxlua{negatives.enabled=true}%
    \gdef\dotriggernegative##1{\csname(ns:##1)\endcsname}%
    \dotriggernegative}
 
@@ -126,7 +126,7 @@
 % \registereffect{both}
 % \registereffect{hidden}
 
-% viewerlayers
+% viewerlayers (will probably change a bit)
 
 % \def\registerviewerlayer#1#2% global !
 %   {\setxvalue{(vl:#1)}{\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
@@ -139,8 +139,6 @@
   {\setxvalue{(vl:#1)}{\global\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
 
 \setevalue{(vl:)}{\global\doresetattribute{viewerlayer}}
-
-%
 
 \def\dotriggerviewerlayer
   {\ctxlua{viewerlayers.enabled=true}%

@@ -298,32 +298,34 @@
 
 \def\defineblankmethod[#1]#2{\setvalue{\??bo\??bo#1}{#2}}
 
-\defineblankmethod       [\v!big] {\addblankskip+\bigskipamount      \openlineheight}
-\defineblankmethod      [-\v!big] {\addblankskip-\bigskipamount      \openlineheight}
-\defineblankmethod    [\v!medium] {\addblankskip+\medskipamount   {.5\openlineheight}}
-\defineblankmethod   [-\v!medium] {\addblankskip-\medskipamount   {.5\openlineheight}}
-\defineblankmethod     [\v!small] {\addblankskip+\smallskipamount{.25\openlineheight}}
-\defineblankmethod    [-\v!small] {\addblankskip-\smallskipamount{.25\openlineheight}}
-\defineblankmethod     [\v!white] {\addblankskip+\parskip            \openlineheight}
-\defineblankmethod    [-\v!white] {\addblankskip-\parskip            \openlineheight}
-\defineblankmethod      [\v!line] {\addblankskip+\openlineheight     \openlineheight}
-\defineblankmethod     [-\v!line] {\addblankskip-\openlineheight     \openlineheight}
+\defineblankmethod        [\v!big] {\addblankskip+\bigskipamount      \openlineheight}
+\defineblankmethod       [-\v!big] {\addblankskip-\bigskipamount      \openlineheight}
+\defineblankmethod     [\v!medium] {\addblankskip+\medskipamount   {.5\openlineheight}}
+\defineblankmethod    [-\v!medium] {\addblankskip-\medskipamount   {.5\openlineheight}}
+\defineblankmethod      [\v!small] {\addblankskip+\smallskipamount{.25\openlineheight}}
+\defineblankmethod     [-\v!small] {\addblankskip-\smallskipamount{.25\openlineheight}}
+\defineblankmethod      [\v!white] {\addblankskip+\parskip            \openlineheight}
+\defineblankmethod     [-\v!white] {\addblankskip-\parskip            \openlineheight}
+\defineblankmethod       [\v!line] {\addblankskip+\openlineheight     \openlineheight}
+\defineblankmethod      [-\v!line] {\addblankskip-\openlineheight     \openlineheight}
 
-\defineblankmethod   [\v!formula] {\global\advance\blankskip\medskipamount}
-\defineblankmethod   [\v!nowhite] {\global\blanknowhitetrue}
-\defineblankmethod   [\v!disable] {\global\blankdisabletrue}
-\defineblankmethod     [\v!force] {\global\blankforcetrue}
-\defineblankmethod     [\v!outer] {\ifvmode\ifinner\blankoutertrue\fi\fi}
-\defineblankmethod     [\v!reset] {\global\blankresettrue}
-\defineblankmethod  [\v!flexible] {\global\localblankflexibletrue}
-\defineblankmethod     [\v!fixed] {\global\localblankfixedtrue}
-\defineblankmethod      [\v!back] {\global\blankgobacktrue} % {\geenblanko}
-\defineblankmethod  [\v!halfline] {\ifgridsnapping\global\fuzzyvskiptrue\fi
-                                   \global\advance\blankskip .5\lineheight}
+\defineblankmethod    [\v!formula] {\global\advance\blankskip\medskipamount}
+\defineblankmethod    [\v!nowhite] {\global\blanknowhitetrue}
+\defineblankmethod    [\v!disable] {\global\blankdisabletrue}
+\defineblankmethod      [\v!force] {\global\blankforcetrue}
+\defineblankmethod      [\v!outer] {\ifvmode\ifinner\blankoutertrue\fi\fi}
+\defineblankmethod      [\v!reset] {\global\blankresettrue}
+\defineblankmethod   [\v!flexible] {\global\localblankflexibletrue}
+\defineblankmethod      [\v!fixed] {\global\localblankfixedtrue}
+\defineblankmethod       [\v!back] {\global\blankgobacktrue} % {\geenblanko}
+\defineblankmethod   [\v!halfline] {\ifgridsnapping\global\fuzzyvskiptrue\fi
+                                    \global\advance\blankskip .5\lineheight}
+\defineblankmethod       [\v!none] {\global\blankresettrue}
+\defineblankmethod   [\v!joinedup] {\ifvmode\nointerlineskip\fi}
+\defineblankmethod[\v!synchronize] {\verticalstrut\vskip-2\lineheight\verticalstrut}
 
-\defineblankmethod      [\v!none] {\global\blankresettrue}
-\defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
-
+% \vtop{\blank[synchronize]\blank[line]test}
+
 \defineblankmethod    [\v!always] {\redowhitespace} % experimental
 
 % happens often, so we speed this up:
@@ -4571,10 +4573,9 @@
    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
      {\gdef\afterfirstobeyedline
         {\nobreak
-         \global\let\afterfirstobeyedline\relax}}%
+         \doifnot\@@rgoption\v!packed{\global\let\afterfirstobeyedline\relax}}}%
    \def\obeyedline
      {\par
-      \afterfirstobeyedline
       \futurelet\next\dobetweenthelines}%
    \activatespacehandler\@@rgspace
    \GotoPar}
@@ -4585,10 +4586,13 @@
    \@@rgafter}
 
 \def\dobetweenthelines
-  {\doifmeaningelse\next\obeyedline\@@rginbetween\donothing}
+  {\doifmeaningelse\next\obeyedline
+    {\@@rginbetween}
+    {\afterfirstobeyedline}}
 
 \setuplines
-  [\c!before=\blank,
+  [\c!option=,
+   \c!before=\blank,
    \c!after=\blank,
    \c!inbetween=\blank,
    \c!indenting=\v!no,

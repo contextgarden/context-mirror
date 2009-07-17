@@ -386,7 +386,7 @@
    \else
      \edef\mathclass{#1}%
    \fi
-   \doinputonce{\truefilename{\f!mathprefix\mathclass}}%
+   \doinputonce{\truefilename{\f!mathprefix\mathclass}.mkii}%
    \doifsomething\fontclass{\setevalue{\@mc@\fontclass\@mc@}{\mathclass}}%
    \popmacro\mathclass
    \popmacro\fontclass}
@@ -410,7 +410,7 @@
 
 \def\resetmathcollection[#1]%
   {\def\mathcollection{#1}%
-   \forgetdoingonce{\f!mathprefix\mathcollection}%
+   \forgetdoingonce{\f!mathprefix\mathcollection.mkii}%
    \setmathtoks
    \ifx\mathtoks\relax\else\mathtoks\emptytoks\fi}
 

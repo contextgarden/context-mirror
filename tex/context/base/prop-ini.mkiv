@@ -93,7 +93,7 @@
      \expandafter\newcount\csname\??py:l:#2\endcsname % current level
      \expandafter\newcount\csname\??py:p:#2\endcsname % previous level
      \global\csname\??py:p:#2\endcsname\minusone
-     \global\expandafter\expandafter\let\csname\??py:c:0\endcsname\empty
+     \global\expandafter\let\csname\??py:c:0\endcsname\empty
    \fi
    \letgvalue{\??py\s!check#1}\docheckproperty
    \doifelsevalue{\??py#1\c!method}\v!command
@@ -130,9 +130,9 @@
 \def\propertyparameter#1#2% expands to #1 when not defined (see \define...)
   {\csname\??py
      \ifcsname\??py#1#2\endcsname
-       #1#2%
+                   #1#2%
      \else\ifcsname\??py\csname\??py#1\c!type\endcsname#2\endcsname
-       \csname\??py#1\c!type\endcsname#2%
+                        \csname\??py#1\c!type\endcsname#2%
      \else
        \s!empty
      \fi\fi
@@ -142,7 +142,7 @@
   {\propertyparameter\currentproperty}
 
 \def\checkedpropertyparameter#1% only self
-  {\executeifdefined{\??py\currentproperty#1}}
+  {\ifcsname\??py\currentproperty#1\endcsname\csname\??py\currentproperty#1\endcsname\fi}
 
 \def\definepropertyhandler#1{\setvalue{\??py*#1}}
 \def\propertyhandler      #1{\getvalue{\??py*#1}}

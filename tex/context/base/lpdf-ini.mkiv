@@ -14,5 +14,246 @@
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
 \registerctxluafile{lpdf-ini}{1.001}
+\registerctxluafile{lpdf-nod}{1.001}
+%registerctxluafile{lpdf-col}{1.001} % will be loaded later
+\registerctxluafile{lpdf-mis}{1.001}
+\registerctxluafile{lpdf-ano}{1.001}
+\registerctxluafile{lpdf-ren}{1.001}
+\registerctxluafile{lpdf-grp}{1.001}
+\registerctxluafile{lpdf-wid}{1.001}
+\registerctxluafile{lpdf-fld}{1.001}
+\registerctxluafile{lpdf-u3d}{1.001}
 
-\endinput
+\unprotect
+
+% for the moment here
+
+%D \macros
+%D  {doovalbox}
+%D
+%D Drawing frames with round corners is inherited from the
+%D main module.
+%D
+%D For drawing ovals we use quite raw \PDF\ code. The next
+%D implementation does not differ that much from the one
+%D implemented in the \POSTSCRIPT\ driver.
+
+\def\doPDFovalcalc#1#2#3%
+  {\PointsToBigPoints{\dimexpr#1+#2\relax}#3}
+
+\def\doovalbox#1#2#3#4#5#6#7#8% todo: \scratchdimen/\scatchbox
+  {\forcecolorhack
+   \bgroup
+   \dimen0=#4\divide\dimen0 \plustwo
+   \doPDFovalcalc{0pt}{+\dimen0}\xmin
+   \doPDFovalcalc{#1}{-\dimen0}\xmax
+   \doPDFovalcalc{#2}{-\dimen0}\ymax
+   \doPDFovalcalc{-#3}{+\dimen0}\ymin
+   \advance\dimen0 by #5%
+   \doPDFovalcalc{0pt}{+\dimen0}\xxmin
+   \doPDFovalcalc{#1}{-\dimen0}\xxmax
+   \doPDFovalcalc{#2}{-\dimen0}\yymax
+   \doPDFovalcalc{-#3}{+\dimen0}\yymin
+   \doPDFovalcalc{#4}{\zeropoint}\stroke
+   \doPDFovalcalc{#5}{\zeropoint}\radius
+   \edef\dostroke{#6}%
+   \edef\dofill{#7}%
+   \edef\mode{\number#8 \space}%
+   % no \ifcase, else \relax in pdfcode
+   \setbox\scratchbox\hbox
+     {\ifnum\dostroke\dofill>\zerocount
+        \pdfliteral
+          {q
+           \stroke\space               w
+           \ifcase\mode
+             \xxmin\space \ymin \space m
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax\space \ymax \space y
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             h
+           \or % 1
+             \xxmin\space \ymin \space m
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \ymax \space l
+             \xmin \space \ymax \space l
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             h
+           \or % 2
+             \xxmin\space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \ymax \space l
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             h
+           \or % 3
+             \xmin \space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax\space \ymax \space y
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \ymin \space l
+             h
+           \or % 4
+             \xmin \space \ymin \space m
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax\space \ymax \space y
+             \xmin \space \ymax \space l
+             \xmin \space \ymin\space l
+             h
+           \or % 5
+             \xmin \space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax\space \ymax \space y
+             \xmin \space \ymax \space l
+             \xmin \space \ymin \space l
+             h
+           \or % 6
+             \xmin \space \ymin \space m
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \ymax \space l
+             \xmin \space \ymax \space l
+             \xmin \space \ymin \space l
+             h
+           \or
+             \xxmin\space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \ymax \space l
+             \xmin \space \ymax \space l
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             h
+           \or
+             \xmin \space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \ymax \space l
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \ymin \space l
+             h
+           \or % 9 top open
+             \xmin \space \ymax \space m
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \ymax \space l
+           \or % 10 right open
+             \xmax \space \ymax \space m
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             \xmax\space  \ymin \space l
+           \or % 11 bottom open
+             \xmax \space \ymin \space m
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax \space \ymax\space y
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \ymin \space l
+           \or % 12 left open
+             \xmin \space \ymax \space m
+             \xxmax\space \ymax \space l
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmax \space \yymin\space l
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xmin \space \ymin \space l
+           \or % 13
+             \xmin \space \ymax \space m
+             \xxmax\space \ymax \space l
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmax\space  \ymin \space l
+           \or % 14
+             \xmax \space \ymax \space m
+             \xmax \space \yymin\space l
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xmin \space \ymin \space l
+           \or % 15
+             \xmax \space \ymin \space m
+             \xxmin\space \ymin \space l
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xmin \space \ymax \space l
+           \or % 16
+             \xmin \space \ymin \space m
+             \xmin \space \yymax\space l
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+             \xmax \space \ymax \space l
+           \or % 17
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+           \or % 18
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+           \or % 19
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+           \or % 20
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 21
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 22
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+           \or % 23
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+           \or % 24
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 25
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 26
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 27
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+           \or % 28
+           \fi
+           \ifnum\mode>8
+                                       S
+           \else
+             \ifnum\dostroke=\plusone  S \fi
+             \ifnum\dofill  =\plusone  f \fi
+           \fi
+           Q}%
+      \fi}%
+   \wd\scratchbox#1\ht\scratchbox#2\dp\scratchbox#3\box\scratchbox
+   \egroup}
+
+\protect \endinput

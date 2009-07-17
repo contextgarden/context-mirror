@@ -60,10 +60,10 @@
   {\dosingleargument\doanchor}
 
 \def\doanchor[#1]%
-  {\ifundefined{\??an#1}\@EA\dodoanchor\else\@EA\nonoanchor\fi[#1]}
+  {\ifcsname\??an#1\endcsname\@EA\nonoanchor\else\@EA\dodoanchor\fi[#1]}
 
 \def\nonoanchor[#1]%
-  {\getvalue{\??an#1}}
+  {}
 
 \def\dodoanchor[#1]%
   {\dotripleempty\dododoanchor[#1]}
@@ -127,7 +127,7 @@
   {\dodoubleargument\dodefinecollector}
 
 \def\dodefinecollector[#1][#2]%
-  {\ifundefined{\@@collectorbox#1}%
+  {\ifcsname\@@collectorbox#1\endcsname \else
      \expandafter\newbox\csname\@@collectorbox#1\endcsname
    \fi
    \resetcollector[#1]%
@@ -154,10 +154,10 @@
    \forgetall
    \dontcomplain
    \dowithnextbox
-     {\ifundefined{\@@collectorbox#1}%
-        \writestatus{collector}{unknown layer #1}%
-      \else
+     {\ifcsname\@@collectorbox#1\endcsname
         \dodosetcollector[#1][#2]%
+      \else
+        \writestatus{collector}{unknown layer #1}%
       \fi
       \egroup}
      \hbox}
@@ -188,12 +188,12 @@
       \ifdim\@@layerysiz>\zeropoint
         \advance\@@layerypos.5\@@layerysiz
       \fi}%
-     {\ExpandBothAfter\doifinset\v!bottom{\collectorparameter\c!corner}
+     {\normalexpanded{\noexpand\doifinset{\v!bottom}{\collectorparameter\c!corner}}
         {\ifdim\@@layerysiz>\zeropoint
            \advance\@@layerypos-\@@layerysiz
            \@@layerypos-\@@layerypos
          \fi}%
-      \ExpandBothAfter\doifinset\v!right{\collectorparameter\c!corner}
+      \normalexpanded{\noexpand\doifinset{\v!right}{\collectorparameter\c!corner}}
         {\ifdim\@@layerxsiz>\zeropoint
            \advance\@@layerxpos-\@@layerxsiz
            \@@layerxpos-\@@layerxpos
@@ -238,9 +238,7 @@
    \fi}
 
 \def\flushcollector[#1]%
-  {\ifundefined{\@@collectorbox#1}%
-     \writestatus{collector}{unknown collector #1}%
-   \else
+  {\ifcsname\@@collectorbox#1\endcsname
      \doifnotvalue{\??cb#1\c!state}\v!stop
        {\vbox
           {\hbox
@@ -248,12 +246,14 @@
                 {\let\next\copy}{\let\next\box}%
               \raise\dp\csname\@@collectorbox#1\endcsname
               \next\csname\@@collectorbox#1\endcsname}}}%
+   \else
+     \writestatus{collector}{unknown collector #1}%
    \fi}
 
 \def\composedcollector#1{\flushcollector[#1]}
 
 \def\resetcollector[#1]%
-  {\ifundefined{\@@collectorbox#1}\else
+  {\ifcsname\@@collectorbox#1\endcsname
      \global\setbox\csname\@@collectorbox#1\endcsname\emptybox
    \fi}
 
@@ -264,8 +264,7 @@
   {\bgroup
    \def\currentcollector{#1}%
    \mathchardef\collectorbox\csname\@@collectorbox#1\endcsname
-   \getparameters
-     [\??cb#1][\c!voffset=\zeropoint,\c!hoffset=\zeropoint,#2]%
+   \getparameters[\??cb#1][\c!voffset=\zeropoint,\c!hoffset=\zeropoint,#2]%
    \scratchdimen\wd\collectorbox
    \advance\scratchdimen\collectorparameter\c!hoffset
    \global\wd\collectorbox\scratchdimen
@@ -574,13 +573,9 @@
    \hbox\framed[#3]}
 
 \def\dosetlayerframedS[#1][#2][#3]%
-  {\dowithnextbox
-     {\setlayer
-        [#1]
-        [\c!width=\nextboxwd,\c!height=\nextboxht,
-         \c!offset=\!!zeropoint,#2]
-        {\flushnextbox}}%
-   \hbox\framed[\c!location=\v!normal,#2]}
+  {\dowithnextbox % we could use a local setlayer command (no doif..empty) which also saves a nextbox
+     {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,\c!offset=\!!zeropoint,#2]{\flushnextbox}}%
+     \hbox\framed[\c!location=\v!normal,#2]}
 
 \def\setlayertext
   {\dotripleempty\dosetlayertext}

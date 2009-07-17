@@ -116,7 +116,7 @@ function metapost.load(name)
             ini_version = false,
             mem_name = file.replacesuffix(name,"mem"),
             find_file = finder,
---~             job_name = "mplib",
+         -- job_name = "mplib",
         }
     ) )
     local result

@@ -293,7 +293,6 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                         prescript = object.prescript,
                                         postscript = object.postscript,
                                     }
-    --~ print(table.serialize(currentobject))
                                     --
                                     local before, inbetween, after = nil, nil, nil
                                     --
@@ -457,33 +456,31 @@ function metapost.parse(result,askedfig)
     end
 end
 
-do
+-- tracing:
 
-    -- just tracing
+local t = { }
 
-    local t = { }
-
-    local flusher = {
-        startfigure = function()
-            t = { }
-            texsprint(ctxcatcodes,"\\startnointerference")
-        end,
-        flushfigure = function(literals)
-            for i=1, #literals do
-                t[#t+1] = literals[i]
-            end
-        end,
-        stopfigure = function()
-            texsprint(ctxcatcodes,"\\stopnointerference")
+local flusher = {
+    startfigure = function()
+        t = { }
+        texsprint(ctxcatcodes,"\\startnointerference")
+    end,
+    flushfigure = function(literals)
+        for i=1, #literals do
+            t[#t+1] = literals[i]
         end
-    }
-
-    function metapost.pdfliterals(result)
-        metapost.flush(result,flusher)
-        return t
+    end,
+    stopfigure = function()
+        texsprint(ctxcatcodes,"\\stopnointerference")
     end
+}
 
+function metapost.pdfliterals(result)
+    metapost.flush(result,flusher)
+    return t
 end
+
+-- so far
 
 function metapost.totable(result)
     local figure = result and result.fig and result.fig[1]
@@ -509,6 +506,8 @@ function metapost.totable(result)
         return nil
     end
 end
+
+-- will be overloaded later
 
 function metapost.colorconverter()
     return function(cr)

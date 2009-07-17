@@ -37,41 +37,65 @@
 %D \showsetup{setupheadtext}
 %D \showsetup{setuplabeltext}
 %D
-%D In a few paragraphs we'll show quite a lot of examples
-%D of its use.
+%D A regular \CONTEXT\ stores some 1500 labels at most.
 
 \let\handletextprefix\relax
 
-\def\setupheadtext {\dosetupsometextprefix[\c!title]}
-\def\setuplabeltext{\dosetupsometextprefix[\c!label]}
+\newconditional\protecttextprefixes
 
-\def\dosetupsometextprefix
-  {\let\dodocommand\xdosetupsometextprefix
-   \dotripleempty\dodosetupsometextprefix}
+\let\currenttextprefixtag  \s!unknown
+\let\currenttextprefixclass\s!unknown
 
-% \def\dodosetupsometextprefix[#1][#2][#3]%
-%   {\ifthirdargument
-%      \def\docommand##1{\dodocommand[#1#2][##1]}%
-%      \processcommalist[#3]\docommand
-%    \else
-%      \def\docommand##1{\dodocommand[#1\currentmainlanguage][##1]}%
-%      \processcommalist[#2]\docommand
-%    \fi}
+\def\setupheadtext {\setfalse\protecttextprefixes\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
+\def\setuplabeltext{\setfalse\protecttextprefixes\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
 
-\def\dodosetupsometextprefix[#1][#2][#3]%
-  {\ifthirdargument
-     \def\docommand##1{\expanded{\dodocommand[#1\reallanguagetag{#2}]}[##1]}%
-     \processcommalist[#3]\docommand
+\def\dosetupsometextprefix[#1][#2]%
+  {\ifsecondargument
+     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
+     \processcommalist[#2]\dodosetupsometextprefix
    \else
-     \def\docommand##1{\expanded{\dodocommand[#1\reallanguagetag\currentmainlanguage]}[##1]}%
-     \processcommalist[#2]\docommand
+     \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
+     \processcommalist[#1]\dodosetupsometextprefix
    \fi}
 
-\def\doassignsometextprefix[#1][#2,#3,#4]%
-  {\setvalue{#1}{\handletextprefix{#2}{#3}}}
+\def\dodosetupsometextprefix#1%
+  {\dododosetupsometextprefix[#1]}
 
-\def\xdosetupsometextprefix[#1][#2=#3]%
-  {\doassignsometextprefix[#1#2][#3,,]}
+\def\dododosetupsometextprefix[#1=#2]%
+  {\doassignsometextprefix{#1}[#2,,]}
+
+\def\doassignsometextprefix#1%
+  {\ifconditional\protecttextprefixes
+     \ifcsname\currenttextprefixclass\currenttextprefixtag#1\endcsname
+       \expandafter\expandafter\expandafter\doassignsometextprefixnop
+     \else
+       \expandafter\expandafter\expandafter\doassignsometextprefixyes
+     \fi
+   \else
+     \expandafter\doassignsometextprefixyes
+   \fi{#1}}
+
+\ifdefined\Word\else \let\Word\relax \fi
+
+% Checking saves some 8K in the compressed format and getting rid of the embedded
+% \handletextprefix was good for another 6K. In the end the new solution is not
+% even that inefficient. And the checking is done at format generation time anyway.
+
+\def\doassignsometextprefixyes#1[#2,#3,#4]%
+  {\edef\!!stringa{#2}%
+   \edef\!!stringb{#3}%
+   \ifx\!!stringb\empty
+     \ifx\!!stringa\empty
+       \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{\empty\empty}%
+     \else
+       \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{{#2}\empty}%
+     \fi
+   \else
+       \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{{#2}{#3}}%
+   \fi}
+
+\def\doassignsometextprefixnop[#1][#2]%
+  {}
 
 %D By changing the meaning of \type {\handletextprefix} we
 %D can filter the left and right labeltext as well as convert
@@ -100,86 +124,61 @@
 %D
 %D The latter one has an upcased alternative \type{\LABELTEXT}.
 
-% \def\labellanguage{\currentmainlanguage}
-% \def\headlanguage {\currentmainlanguage}
-
-% \def\labellanguage{\defaultlanguage\currentmainlanguage}
-% \def\headlanguage {\defaultlanguage\currentmainlanguage}
-
 \def\labellanguage{\reallanguagetag{\defaultlanguage\currentmainlanguage}}
 \def\headlanguage {\reallanguagetag{\defaultlanguage\currentmainlanguage}}
 
 \appendtoks \let\labellanguage\currentlanguage \to \everycurrentdate
 
-\unexpanded\def\headtext
-  {\let\handletextprefix\firstoftwoarguments
-   \let\reporttextprefixerror\doreporttextprefixerror
-   \global\labeltextdonetrue
-   \dogetupsometextprefix\headlanguage\c!title}
+\def\dummytextprefix{\empty\empty}
 
-\unexpanded\def\leftlabeltext
-  {\let\handletextprefix\firstoftwoarguments
-   \let\reporttextprefixerror\doreporttextprefixerror
-   \global\labeltextdonetrue
-   \dogetupsometextprefix\labellanguage\c!label}
-
-\unexpanded\def\rightlabeltext
-  {\let\handletextprefix\secondoftwoarguments
-   \let\reporttextprefixerror\doreporttextprefixerror
-   \global\labeltextdonetrue
-   \dogetupsometextprefix\labellanguage\c!label}
-
-\unexpanded\def\LEFTLABELTEXT
-  {\def\handletextprefix##1##2{\uppercase{##1}}\DOLABELTEXT}
-
-\unexpanded\def\RIGHTLABELTEXT
-  {\def\handletextprefix##1##2{\uppercase{##2}}\DOLABELTEXT}
-
-\def\DOLABELTEXT#1%
-  {\bgroup
-   \the\everyuppercase
-   \let\reporttextprefixerror\doreporttextprefixerror
-   \global\labeltextdonetrue
-   \dogetupsometextprefix\labellanguage\c!label{#1}% not \labeltext (see \MONTH)
-   \egroup}
-
-\let\labeltext      \leftlabeltext
-\let\LABELTEXT      \LEFTLABELTEXT
-
-\unexpanded\def\labeltexts#1#2{\leftlabeltext{#1}#2\rightlabeltext{#1}}
-\unexpanded\def\LABELTEXTS#1#2{\LEFTLABELTEXT{#1}#2\RIGHTLABELTEXT{#1}}
-
-\newif\iflabeltextdone % needs to be reset elsewhere
-\newif\iftracelabels % shows missing labels
-
-\def\doreporttextprefixerror#1#2#3%
-  {\iftracelabels{\tttf[#2:~#3/#1]~}\fi}
-
-\def\dosetexpandedheadlabeltext#1#2#3%
-  {\bgroup
-   \let\handletextprefix\firstoftwoarguments
-   \let\reporttextprefixerror\gobblethreearguments
-   \keepencodedtokens % test on multilingual pascal, ok in stretched
-  %\dontexpandencodedtokens % not usable in token handler
-   \expanded
-     {\egroup\noexpand\def\noexpand#2% watch out, no \edef
-        {\dogetupsometextprefix{\headlanguage}{#1}{#3}}}}
-
-\def\setexpandedheadtext {\dosetexpandedheadlabeltext\c!title}
-\def\setexpandedlabeltext{\dosetexpandedheadlabeltext\c!label}
-
-\def\dogetupsometextprefix#1#2#3% must be expandable ! #1 == language
-  {\ifcsname#2#1#3\endcsname
-     \csname#2#1#3\endcsname
-   \else\ifcsname\??la#1\s!default\endcsname
-     \expandafter\dogetupsometextprefix\csname\??la#1\s!default\endcsname{#2}{#3}%
-   \else\ifcsname#2#3\endcsname
-     \csname#2#3\endcsname
-   \else\ifcsname#1\s!en#3\endcsname
-     \csname#2\s!en#3\endcsname
+\def\dogetupsomelabeltext#1%
+  {\ifcsname\??ml\labellanguage#1\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??ml\labellanguage#1\endcsname
+   \else\ifcsname\??la\labellanguage\s!default\endcsname
+     \expandafter\dogetupsometextprefix\csname\??la\labellanguage\s!default\endcsname\??ml#1%
+   \else\ifcsname\??ml#1\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??ml#1\endcsname
+   \else\ifcsname\??ml\s!en#1\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??ml\s!en#1\endcsname
    \else
-     % \doreporttextprefixerror{#1}{#2}{#3}%
+     \let\thetextprefix\dummytextprefix
    \fi\fi\fi\fi}
+
+\def\dogetupsomeheadtext#1%
+  {\ifcsname\??mh\headlanguage#1\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??mh\headlanguage#1\endcsname
+   \else\ifcsname\??la\headlanguage\s!default\endcsname
+     \expandafter\dogetupsometextprefix\csname\??la\headlanguage\s!default\endcsname\??mh#1%
+   \else\ifcsname\??mh#1\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??mh#1\endcsname
+   \else\ifcsname\??mh\s!en#1\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??mh\s!en#1\endcsname
+   \else
+     \let\thetextprefix\dummytextprefix
+   \fi\fi\fi\fi}
+
+% The WORD variants are a bit inefficient when #1/#2 are empty but they are
+% seldom used (one can better set the style).
+
+\let\flushleftlabeltext \firstoftwoarguments
+\let\flushrightlabeltext\secondoftwoarguments
+
+\def\flushleftlabelWORD #1#2{\WORD{#1}}
+\def\flushrightlabelWORD#1#2{\WORD{#2}}
+
+\def\flushbothlabeltexts#1#2#3{#1#3#2}
+\def\flushbothlabelTEXTS#1#2#3{\WORD{#1}#3\WORD{#2}}
+
+\unexpanded\def\headtext      #1{\dogetupsomeheadtext {#1}\expandafter\flushleftlabeltext \thetextprefix}
+\unexpanded\def\leftlabeltext #1{\dogetupsomelabeltext{#1}\expandafter\flushleftlabeltext \thetextprefix}
+\unexpanded\def\rightlabeltext#1{\dogetupsomelabeltext{#1}\expandafter\flushrightlabeltext\thetextprefix}
+\unexpanded\def\LEFTLABELTEXT #1{\dogetupsomelabeltext{#1}\expandafter\flushleftlabelWORD \thetextprefix}
+\unexpanded\def\RIGHTLABELTEXT#1{\dogetupsomelabeltext{#1}\expandafter\flushrightlabelWORD\thetextprefix}
+\unexpanded\def\labeltexts    #1{\dogetupsomelabeltext{#1}\expandafter\flushbothlabeltexts\thetextprefix} % #2
+\unexpanded\def\LABELTEXTS    #1{\dogetupsomelabeltext{#1}\expandafter\flushbothlabelTEXTS\thetextprefix} % #2
+
+\let\labeltext\leftlabeltext
+\let\LABELTEXT\LEFTLABELTEXT
 
 \ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi
 
@@ -201,15 +200,8 @@
 %D head and label texts without replacing predefined ones.
 %D These are internal macros.
 
-\def\xdopresetsometextprefix[#1][#2=#3]%
-  {\ifundefined{#1#2}\doassignsometextprefix[#1\reallanguagetag{#2}][#3,,]\fi}
-
-\def\dopresetsometextprefix
-  {\let\dodocommand\xdopresetsometextprefix
-   \dotripleempty\dodosetupsometextprefix}
-
-\def\presetheadtext {\dopresetsometextprefix[\c!title]}
-\def\presetlabeltext{\dopresetsometextprefix[\c!label]}
+\def\presetheadtext {\settrue\protecttextprefixes\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
+\def\presetlabeltext{\settrue\protecttextprefixes\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
 
 %D \macros
 %D   {translate}

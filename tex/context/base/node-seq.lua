@@ -115,12 +115,18 @@ function sequencer.tostring(t,n) -- n not done
     return format(template,concat(vars,"\n"),concat(calls,"\n"))
 end
 
+-- we used to deal with tail as well but now that the lists are always
+-- double linked and the kernel function no longer expect tail as
+-- argument we stick to head and done (done can probably also go
+-- as luatex deals with return values efficiently now .. in the
+-- past there was some copying involved, but no longer)
+
 local template = [[
 %s
-return function(head,tail%s)
+return function(head%s)
   local ok, done = false, false
 %s
-  return head, tail, done
+  return head, done
 end]]
 
 function sequencer.nodeprocessor(t,n)
@@ -142,11 +148,9 @@ function sequencer.nodeprocessor(t,n)
             local localized = localize(action)
             vars[#vars+1] = format("local %s = %s",localized,action)
             if kind[action] == "nohead" then
-                calls[#calls+1] = format("              ok = %s(head,tail%s) done = done or ok -- %s %i",localized,args,group,i)
-            elseif kind[action] == "notail" then
-                calls[#calls+1] = format("  head,       ok = %s(head,tail%s) done = done or ok -- %s %i",localized,args,group,i)
+                calls[#calls+1] = format("        ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
             else
-                calls[#calls+1] = format("  head, tail, ok = %s(head,tail%s) done = done or ok -- %s %i",localized,args,group,i)
+                calls[#calls+1] = format("  head, ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
             end
         end
     end
@@ -177,7 +181,7 @@ end
 --~ sequencer.prependaction(t,"taco","taco.j")
 --~ sequencer.removeaction(t,"hans","hans.x")
 
---~ sequencer.setkind(t,"hans.b","notail")
+--~ sequencer.setkind(t,"hans.b")
 --~ sequencer.setkind(t,"taco.j","nohead")
 
 --~ print(sequencer.tostring(t))

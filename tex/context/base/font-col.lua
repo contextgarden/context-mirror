@@ -187,7 +187,7 @@ function collections.message(message)
     end
 end
 
-function collections.process(head,tail)
+function collections.process(head)
     if active then
         local done = false
         for n in traverse_id(glyph,head) do
@@ -211,5 +211,5 @@ function collections.process(head,tail)
             end
         end
     end
-    return head, tail, done
+    return head, done
 end

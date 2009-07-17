@@ -6,6 +6,17 @@ if not modules then modules = { } end modules ['node-tst'] = {
     license   = "see context related readme files"
 }
 
+local glue    = node.id("glue")
+local penalty = node.id("penalty")
+local kern    = node.id("kern")
+local glyph   = node.id("glyph")
+local whatsit = node.id("whatsit")
+local hlist   = node.id("hlist")
+
+local find_node_tail = node.tail or node.slide
+
+local chardata = characters.data
+
 function nodes.leftskip(n)
     while n do
         local id = n.id
@@ -28,7 +39,7 @@ end
 
 function nodes.rightskip(n)
     if n then
-        n = slide_nodes(n)
+        n = find_node_tail(n)
         while n do
             local id = n.id
             if id == glue then

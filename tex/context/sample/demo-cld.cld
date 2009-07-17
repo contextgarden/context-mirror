@@ -1,0 +1,74 @@
+-- context.enabletrackers {"tud.trace"}
+
+context.setuplayout( {
+  width  = "middle",
+  height = "middle",
+})
+
+context.showframe()
+
+context.starttext()
+
+context.chapter({ "someref" }, "Hello There")
+
+context.readfile("tufte","","not found")
+
+context.startitemize({ "packed" })
+  for i=1,10 do
+    context.startitem()
+      context("this is item %i",i)
+    context.stopitem()
+  end
+context.stopitemize()
+
+context.startchapter({ title = "test" }, { more = "oeps" })
+
+  context["in"]("chapter",{ "someref" })
+
+  context.startlinecorrection( { "blank" })
+  context.bTABLE()
+    for i=1,10 do
+      context.bTR()
+        for i=1,20 do
+          context.bTD({ align= "middle", style = "type" })
+            context("%#2i",math.random(99))
+          context.eTD()
+        end
+      context.eTR()
+    end
+  context.eTABLE()
+  context.stoplinecorrection()
+
+  context.mathematics("x^{2 \\times 4}")
+
+  context.placefigure("caption", function()
+    context.externalfigure( { "cow.pdf" } )
+  end)
+
+  context.placefigure("caption", function()
+    context.bTABLE()
+      context.bTR()
+        context.bTD()
+          context.externalfigure( { "cow.pdf" }, { width = "3cm", height = "3cm" } )
+        context.eTD()
+        context.bTD({ align = "{lohi,middle}" } )
+          context("and")
+        context.eTD()
+        context.bTD()
+          context.externalfigure( { "cow.pdf" }, { width = "4cm", height = "3cm" } )
+        context.eTD()
+      context.eTR()
+    context.eTABLE()
+  end)
+
+context.stopchapter()
+
+context.chapter("Speed Test 1")
+
+for i=1,50 do
+  context.readfile("tufte","","not found")
+  context.par()
+end
+
+context.stoptext()
+

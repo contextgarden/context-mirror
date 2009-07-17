@@ -343,7 +343,7 @@
       \dp\scratchbox\ruleddepth
       \wd\scratchbox\zeropoint
       \resetcolorseparation
-      \localstartcolor[\defaulttextcolor]%
+      \startcolor[\defaulttextcolor]%
       \box\scratchbox
       \ifx\cutmarksymbol\relax \else
         \setbox\scratchbox\normalvbox
@@ -360,7 +360,7 @@
         \wd\scratchbox\zeropoint
         \box\scratchbox
       \fi
-      \localstopcolor
+      \stopcolor
       \box#1}%
    \wd#1=\ruledwidth
    \ht#1=\ruledheight
@@ -407,21 +407,21 @@
                \c!m=#3##1\else0\fi,
                \c!y=#4##1\else0\fi,
                \c!k=0]%
-            \localstartcolor[\s!dummy]%
+            \startcolor[\s!dummy]%
             \hrule
               \!!width 3em
               \!!height \scratchdimen
               \!!depth  \zeropoint
-            \localstopcolor
+            \stopcolor
             \ifdim\scratchdimen>1ex
               \vskip-\scratchdimen
               \vbox to \scratchdimen
                 {\vss
                  \hbox to 3em
                    {\hss
-                    \localstartcolor[\s!white]%
+                    \startcolor[\s!white]%
                     \ifdim##1\points=\zeropoint#1\else##1\fi
-                    \localstopcolor
+                    \stopcolor
                     \hss}%
                  \vss}%
             \fi}}%
@@ -441,21 +441,21 @@
             \c!m=##4##2\else0\fi,
             \c!y=##5##2\else0\fi,
             \c!k=##6##2\else0\fi]%
-         \localstartcolor[\s!dummy]%
+         \startcolor[\s!dummy]%
          \vrule
            \!!width  \scratchdimen
            \!!height \colormarklength
            \!!depth  \zeropoint
-         \localstopcolor
+         \stopcolor
          \ifdim\scratchdimen>2em
            \hskip-\scratchdimen
            \vbox to \colormarklength
              {\vss
               \hbox to \scratchdimen
                 {\hss
-                 \localstartcolor[\s!white]%
+                 \startcolor[\s!white]%
                  \ifdim##2\points=.5\points##2~\fi##1%
-                 \localstopcolor
+                 \stopcolor
                  \hss}
               \vss}%
          \fi}%
@@ -480,19 +480,19 @@
       \divide\scratchdimen 14
       \def\docommand##1%
         {\definecolor[\s!dummy][\c!s=##1]%
-         \localstartcolor[\s!dummy]%
+         \startcolor[\s!dummy]%
          \vrule
            \!!width  \scratchdimen
            \!!height \colormarklength
            \!!depth  \zeropoint
-         \localstopcolor
+         \stopcolor
          \ifdim\scratchdimen>2em
            \hskip-\scratchdimen
            \vbox to \colormarklength
              {\vss
-              \localstartcolor[\s!white]%
+              \startcolor[\s!white]%
               \hbox to \scratchdimen{\hss##1\hss}
-              \localstopcolor
+              \stopcolor
              \vss}%
          \fi}%
       \processcommalist[1,.95,.9,.85,.8,.75,.7,.6,.5,.4,.3,.2,.1,0]\docommand}}

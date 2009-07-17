@@ -9,6 +9,13 @@ if not modules then modules = { } end modules ['mtx-context'] = {
 scripts         = scripts         or { }
 scripts.context = scripts.context or { }
 
+-- a demo cld file:
+--
+-- context.starttext()
+-- context.chapter("Hello There")
+-- context.readfile("tufte","","not found")
+-- context.stoptext()
+
 -- l-file / todo
 
 function file.needsupdate(oldfile,newfile)
@@ -521,6 +528,10 @@ end
 --     end
 -- end
 
+scripts.context.cldsuffixes = table.tohash {
+    "cld",
+}
+
 scripts.context.xmlsuffixes = table.tohash {
     "xml",
 }
@@ -648,6 +659,7 @@ function scripts.context.run(ctxdata,filename)
                 if a and (a.engine == 'pdftex' or a.engine == 'xetex' or environment.argument("pdftex") or environment.argument("xetex")) then
                     local texexec = resolvers.find_file("texexec.rb") or ""
                     if texexec ~= "" then
+                        os.setenv("RUBYOPT","")
                         local command = string.format("ruby %s %s",texexec,environment.reconstruct_commandline(environment.arguments_after))
                         os.exec(command)
                     end
@@ -672,7 +684,9 @@ function scripts.context.run(ctxdata,filename)
                             else
                                 filename = makestub("\\xmlprocess{\\xmldocument}{%s}{}",filename)
                             end
-                        elseif scripts.context.luasuffixes[suffix] then
+                        elseif scripts.context.cldsuffixes[suffix] or environment.argument("forcecld") then
+                            filename = makestub("\\ctxlua{context.runfile('%s')}",filename)
+                        elseif scripts.context.luasuffixes[suffix] or environment.argument("forcelua") then
                             filename = makestub("\\ctxlua{dofile('%s')}",filename)
                         end
                         --
@@ -1333,6 +1347,7 @@ messages.help = [[
 --ctx=name            use ctx file
 --version             report installed context version
 --forcexml            force xml stub (optional flag: --mkii)
+--forcecld            force cld (context lua document) stub
 --autopdf             close pdf file in viewer and start pdf viewer afterwards
 --once                only one run
 --purge(all)          purge files (--pattern=...)

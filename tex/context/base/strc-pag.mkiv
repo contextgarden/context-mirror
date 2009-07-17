@@ -20,9 +20,6 @@
 % Hacks:
 
 \let\preparepageprefix\gobbleoneargument
-\let\checkrealpage    \relax
-\let\checksubpages    \relax
-\let\setpagecounters  \relax
 
 % Allocation:
 
@@ -58,9 +55,9 @@
 %    prefixset=mine,
 %    prefixseparatorset=mine]
 
-\definestructurecounter[\s!realpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % [\s!counter=0]
-\definestructurecounter[\s!userpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % [\s!counter=1]
-\definestructurecounter[\s!subpage] [\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % [\s!counter=2]
+\definestructurecounter[\s!realpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % \c!counter=realpage
+\definestructurecounter[\s!userpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % \c!counter=userpage
+\definestructurecounter[\s!subpage] [\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % \c!counter=subpage
 
 \newtoks\everysetuprealpagenumber % todo: set state: none, start, stop, reset
 \newtoks\everysetupuserpagenumber % todo: set state: none, start, stop, reset
@@ -88,26 +85,6 @@
 
 \let\setuppagenumber\setupuserpagenumber
 \let\resetpagenumber\resetuserpagenumber
-
-%      {
-%        prefix        = "\structurecounterparameter{#1}\c!prefix",
-%        separatorset  = "\structurecounterparameter{#1}\c!prefixseparatorset",
-%        conversion    = "\structurecounterparameter{#1}\c!prefixconversion",
-%        conversionset = "\structurecounterparameter{#1}\c!prefixconversionset",
-%        stopper       = \!!bs\structurecounterparameter{#1}\c!prefixstopper\!!es,
-%        set           = "\structurecounterparameter{#1}\c!prefixset",
-%        segments      = "\structurecounterparameter{#1}\c!prefixsegments",
-%        connector     = \!!bs\structurecounterparameter{#1}\c!prefixconnector\!!es,
-%      },
-%      {
-%        order         = "\structurecounterparameter{#1}\c!numberorder",
-%        separatorset  = "\structurecounterparameter{#1}\c!numberseparatorset",
-%        conversion    = "\structurecounterparameter{#1}\c!numberconversion",
-%        conversionset = "\structurecounterparameter{#1}\c!numberconversionset",
-%        stopper       = \!!bs\structurecounterparameter{#1}\c!numberstopper\!!es,
-%        segments      = "\structurecounterparameter{#1}\c!numbersegments",
-%        type          = "\structurecounterparameter{#1}\c!type",
-%      }
 
 \def\savecurrentpagestate
   {\ctxlua{structure.pages.save {
@@ -138,15 +115,6 @@
 \setupsubpagenumber
   [\c!way=\v!by\v!part,
    \c!state=\v!stop]
-
-% We don't want conflicts when \type {\pageno} is used by other
-% packages, like \CWEB, so we redefine \type {\pageno}.
-
-\newcount\pageno \pageno\userpageno \let\folio\userfolio
-
-\appendtoks
-    \global\pageno\userpageno
-\to \everyinitializepagecounters
 
 % Counters
 
@@ -209,28 +177,28 @@
 
 % Renderers:
 
-\def\realpagenumber{\convertedstructurecounter[\s!realpage]}
-\def\userpagenumber{\convertedstructurecounter[\s!userpage]}
-\def\subpagenumber {\convertedstructurecounter[\s!subpage]}
+\def\pagenumber         {\rawstructurecounter[\s!userpage]}
+\def\prefixedpagenumber {\directconvertedstructurecounter\s!userpage\empty} % \userpagenumber
 
-\def\pagenumber        {\rawstructurecounter[\s!userpage]}
-\def\prefixedpagenumber{\convertedstructurecounter[\s!userpage]} % \userpagenumber
+\def\realpagenumber     {\directconvertedstructurecounter\s!realpage\empty}
+\def\userpagenumber     {\directconvertedstructurecounter\s!userpage\empty}
+\def\subpagenumber      {\directconvertedstructurecounter\s!subpage \empty}
 
-\def\firstrealpagenumber{\convertedstructurecounter[\s!realpage][\c!type=\v!first]}
-\def\firstuserpagenumber{\convertedstructurecounter[\s!userpage][\c!type=\v!first]}
-\def\firstsubpagenumber {\convertedstructurecounter[\s!subpage ][\c!type=\v!first]}
+\def\firstrealpagenumber{\directconvertedstructurecounter\s!realpage\v!first}
+\def\firstuserpagenumber{\directconvertedstructurecounter\s!userpage\v!first}
+\def\firstsubpagenumber {\directconvertedstructurecounter\s!subpage \v!first}
 
-\def\lastrealpagenumber {\convertedstructurecounter[\s!realpage][\c!type=\v!last]}
-\def\lastuserpagenumber {\convertedstructurecounter[\s!userpage][\c!type=\v!last]}
-\def\lastsubpagenumber  {\convertedstructurecounter[\s!subpage ][\c!type=\v!last]}
+\def\lastrealpagenumber {\directconvertedstructurecounter\s!realpage\v!last}
+\def\lastuserpagenumber {\directconvertedstructurecounter\s!userpage\v!last}
+\def\lastsubpagenumber  {\directconvertedstructurecounter\s!subpage \v!last}
 
-\def\prevrealpagenumber {\convertedstructurecounter[\s!realpage][\c!type=\v!previous]}
-\def\prevuserpagenumber {\convertedstructurecounter[\s!userpage][\c!type=\v!previous]}
-\def\prevsubpagenumber  {\convertedstructurecounter[\s!subpage ][\c!type=\v!previous]}
+\def\prevrealpagenumber {\directconvertedstructurecounter\s!realpage\v!previous}
+\def\prevuserpagenumber {\directconvertedstructurecounter\s!userpage\v!previous}
+\def\prevsubpagenumber  {\directconvertedstructurecounter\s!subpage \v!previous}
 
-\def\nextrealpagenumber {\convertedstructurecounter[\s!realpage][\c!type=\v!next]}
-\def\nextuserpagenumber {\convertedstructurecounter[\s!userpage][\c!type=\v!next]}
-\def\nextsubpagenumber  {\convertedstructurecounter[\s!subpage ][\c!type=\v!next]}
+\def\nextrealpagenumber {\directconvertedstructurecounter\s!realpage\v!next}
+\def\nextuserpagenumber {\directconvertedstructurecounter\s!userpage\v!next}
+\def\nextsubpagenumber  {\directconvertedstructurecounter\s!subpage \v!next}
 
 \appendtoks
     \decrementstructurecounter[\s!realpage]%
@@ -242,9 +210,9 @@
 %
 % todo: maybe leave lastpage etc lua calls
 
-\def\realpage{\realfolio}
-\def\userpage{\userfolio}
-\def\subpage {\subfolio}
+\def\realpage{\the\realpageno}
+\def\userpage{\the\userpageno}
+\def\subpage {\the\subpageno}
 
 % Hooks:
 
@@ -253,71 +221,26 @@
     \ifnum\realpageno>\lastpage \globallet\lastpage\lastrealpage \fi
 \to \everyinitializepagecounters
 
-% \def\savenofpages
-%   {\global\realpageno\decrementedstructurecounter[\s!realpage]\relax
-%    \global\pageno    \decrementedstructurecounter[\s!userpage]\relax}
-
-\let\savenofpages\relax
-
 % States:
 
 \newif\ifrightpage    \rightpagetrue
 \newif\ifdoublesided
 \newif\ifsinglesided
 
-% Real page numbers:
+% Realpage and subpage numbers:
 
-\def\gotonextrealpage
-  {\global\realpageno\incrementedstructurecounter[\s!realpage]\relax
-   \ifnum\realpageno>\lastpage
-     \xdef\lastpage{\realfolio}%
-   \fi
-   \setpagereference\v!firstpage\firstpage
-   \setpagereference\v!lastpage\lastpage
-   \ifnum\realpageno>\plusone
-     \xdef\prevpage{\the\numexpr\realpageno+\minusone}%
-     \setpagereference\v!backward\prevpage
-   \else
-     \global\let\prevpage\firstpage
-     \setpagereference\v!backward\lastpage
-   \fi
-   \setpagereference\v!previouspage\prevpage
-   \ifnum\realpageno<\lastpage\relax
-     \xdef\nextpage{\the\numexpr\realpageno+\plusone}%
-     \setpagereference\v!page\nextpage
-     \setpagereference\v!forward\nextpage
-     \glet\nextnextpage\nextpage
-     \ifodd\nextpage\relax
-       \setpagereference\v!nextoddpage\nextnextpage
-     \else
-       \setpagereference\v!nextevenpage\nextnextpage
-     \fi
-     \xdef\nextnextpage{\the\numexpr\realpageno+\plustwo}%
-     \ifnum\nextnextpage>\lastpage\else
-       \ifodd\nextnextpage\relax
-         \setpagereference\v!nextoddpage\nextnextpage
-       \else
-         \setpagereference\v!nextevenpage\nextnextpage
-       \fi
-     \fi
-   \else
-     \glet\nextpage\lastpage
-     \setpagereference\v!page\firstpage
-     \setpagereference\v!forward\firstpage
-     \setpagereference\v!nextoddpage\lastpage
-     \setpagereference\v!nextevenpage\lastpage
-   \fi
-   \setpagereference\v!nextpage\realfolio}
+\def\setnextrealpageno{\global\realpageno\incrementedstructurecounter[\s!realpage]\relax}
+\def\setnextsubpageno {\global\subpageno \incrementedstructurecounter[\s!subpage ]\relax}
 
-% Pagenumbers:
+% Page numbers:
 
-\def\dodecrementpagenumber{\global\userpageno\decrementedstructurecounter[\s!userpage]\relax\global\pageno\userpageno}
-\def\doincrementpagenumber{\global\userpageno\incrementedstructurecounter[\s!userpage]\relax\global\pageno\userpageno}
+\def\dodecrementpagenumber{\global\userpageno\decrementedstructurecounter[\s!userpage]\relax}
+\def\doincrementpagenumber{\global\userpageno\incrementedstructurecounter[\s!userpage]\relax}
 
 \def\dosynchronizepagenumber{\global\let\@@pnstate\v!start}
 
-\def\decrementpagenumber{\getvalue{\??pn-\structurecounterparameter\s!userpage\c!state}}
-\def\incrementpagenumber{\getvalue{\??pn+\structurecounterparameter\s!userpage\c!state}}
+\def\decrementpagenumber{\csname\??pn-\structurecounterparameter\s!userpage\c!state\endcsname}
+\def\incrementpagenumber{\csname\??pn+\structurecounterparameter\s!userpage\c!state\endcsname}
 
 \letvalue{\??pn-\v!start}\dodecrementpagenumber
 \letvalue{\??pn-\v!none }\dodecrementpagenumber
@@ -329,36 +252,6 @@
 \letvalue{\??pn+\v!keep }\dosynchronizepagenumber
 
 % todo: check if number set, and reset it after testing; also take care of \global\shiftedrealpagenotrue
-
-% Subpagenumbers:
-
-\def\gotonextsubpage
-  {\global\subpageno\incrementedstructurecounter[\s!subpage]\relax
-   \ifnum\subpageno>\lastsubpage
-     \xdef\lastsubpage{\subfolio}%
-   \fi
-   \setpagereference\v!firstsubpage\firstsubpage
-   \setpagereference\v!lastsubpage\lastsubpage
-   \ifnum\subpageno>\plusone
-     \xdef\prevsubpage{\the\numexpr\subpageno+\minusone}%
-     \setpagereference\v!subbackward\prevsubpage
-   \else
-     \global\let\prevsubpage\firstsubpage
-     \setpagereference\v!subbackward\lastsubpage
-   \fi
-   \setpagereference\v!previoussubpage\prevsubpage
-   \ifnum\subpageno<\lastsubpage\relax
-     \xdef\nextsubpage{\the\numexpr\subpageno+\plusone}%
-     \setpagereference\v!subpage\nextsubpage
-     \setpagereference\v!subforward\nextsubpage
-     \glet\nextnextpage\nextsubpage
-     \xdef\nextnextpage{\the\numexpr\subpageno+\plustwo}%
-   \else
-     \glet\nextsubpage\lastsubpage
-     \setpagereference\v!subpage\firstsubpage
-     \setpagereference\v!subforward\firstsubpage
-   \fi
-   \setpagereference\v!nextsubpage\subfolio}
 
 % Control:
 
@@ -383,8 +276,7 @@
 \appendtoks
    \singlesidedfalse
    \doublesidedfalse
-   \ExpandFirstAfter\processallactionsinset
-     [\@@nmalternative]
+   \normalexpanded{\noexpand\processallactionsinset[\@@nmalternative]}
      [ \v!singlesided=>\singlesidedtrue,
        \v!doublesided=>\doublesidedtrue]%
    \ifx\trackingmarginnotestrue\undefined\else

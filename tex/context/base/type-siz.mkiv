@@ -13,360 +13,224 @@
 
 \starttypescriptcollection[size-mkiv]
 
-% todo: instead of assuming designsize we will set it explicitly (saves these
-% -1000 problems at the lua end)
-
-% cmr
-
 \starttypescript [serif] [computer-modern] [size]
 
   \definebodyfont [12pt] [rm]
-    [tf=cmr12,
-     bf=cmbx12,
-     it=cmti12,
-     sl=cmsl12,
-     bi=cmbxti10 at 12pt,
-     bs=cmbxsl10 at 12pt,
-     sc=cmcsc10 at 12pt]
+    [tf=LMRoman12-Regular,
+     bf=LMRoman12-Bold,
+     it=LMRoman12-Italic,
+     sl=LMRoman12-Oblique,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [11pt] [rm]
-    [tf=cmr10 at 11pt,
-     bf=cmbx10 at 11pt,
-     sl=cmsl10 at 11pt,
-     it=cmti10 at 11pt,
-     bi=cmbxti10 at 11pt,
-     bs=cmbxsl10 at 11pt,
-     sc=cmcsc10 at 11pt]
+    [tf=LMRoman10-Regular sa 1,
+     bf=LMRoman10-Bold sa 1,
+     it=LMRoman10-Italic sa 1,
+     sl=LMRoman10-Oblique sa 1,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [10pt] [rm]
-    [tf=cmr10,
-     bf=cmbx10,
-     it=cmti10,
-     sl=cmsl10,
-     bi=cmbxti10,
-     bs=cmbxsl10,
-     sc=cmcsc10]
+    [tf=LMRoman10-Regular,
+     bf=LMRoman10-Bold,
+     it=LMRoman10-Italic,
+     sl=LMRoman10-Oblique,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [9pt] [rm]
-    [tf=cmr9,
-     bf=cmbx9,
-     it=cmti9,
-     sl=cmsl9,
-     bi=cmbxti10 at 9pt,
-     bs=cmbxsl10 at 9pt,
-     sc=cmcsc10 at 9pt]
+    [tf=LMRoman9-Regular,
+     bf=LMRoman9-Bold,
+     it=LMRoman9-Italic,
+     sl=LMRoman9-Oblique,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [8pt] [rm]
-    [tf=cmr8,
-     bf=cmbx8,
-     it=cmti8,
-     sl=cmsl8,
-     bi=cmbxti10 at 8pt,
-     bs=cmbxsl10 at 8pt,
-     sc=cmcsc10 at 8pt]
+    [tf=LMRoman8-Regular,
+     bf=LMRoman8-Bold,
+     it=LMRoman8-Italic,
+     sl=LMRoman8-Oblique,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [7pt] [rm]
-    [tf=cmr7,
-     bf=cmbx7,
-     it=cmti10 at 7pt,
-     sl=cmsl10 at 7pt,
-     bi=cmbxti10 at 7pt,
-     bs=cmbxsl10 at 7pt,
-     sc=cmcsc10 at 7pt]
+    [tf=LMRoman7-Regular,
+     bf=LMRoman7-Bold,
+     it=LMRoman7-Italic sa 1,
+     sl=LMRoman8-Oblique sa 1,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [6pt] [rm]
-    [tf=cmr6,
-     bf=cmbx6,
-     it=cmti10 at 6pt,
-     sl=cmsl10 at 6pt,
-     bi=cmbxti10 at 6pt,
-     bs=cmbxsl10 at 6pt,
-     sc=cmcsc10 at 6pt]
+    [tf=LMRoman6-Regular,
+     bf=LMRoman6-Bold,
+     it=LMRoman7-Italic sa 1,
+     sl=LMRoman8-Oblique sa 1,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [5pt] [rm]
-    [tf=cmr5,
-     bf=cmbx5,
-     it=cmti10 at 5pt,
-     sl=cmsl10 at 5pt,
-     bi=cmbxti10 at 5pt,
-     bs=cmbxsl10 at 5pt,
-     sc=cmcsc10 at 5pt]
+    [tf=LMRoman5-Regular,
+     bf=LMRoman5-Bold,
+     it=LMRoman7-Italic sa 1,
+     sl=LMRoman8-Oblique sa 1,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [4pt] [rm]
-    [tf=cmr10 at 4pt,
-     bf=cmbx10 at 4pt,
-     it=cmti10 at 4pt,
-     sl=cmsl10 at 4pt,
-     bi=cmbxti10 at 4pt,
-     bs=cmbxsl10 at 4pt,
-     sc=cmr10 at 4pt]
+    [tf=LMRoman5-Regular sa 1,
+     bf=LMRoman5-Bold sa 1,
+     it=LMRoman7-Italic sa 1,
+     sl=LMRoman8-Oblique sa 1,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
   \definebodyfont [14.4pt,17.3pt,20.7pt] [rm]
-    [tf=cmr12 sa 1,
-     bf=cmbx12 sa 1,
-     it=cmti12 sa 1,
-     sl=cmsl12 sa 1,
-     bi=cmbxti10 sa 1,
-     bs=cmbxsl10 sa 1,
-     sc=cmcsc10 sa 1]
+    [tf=LMRoman12-Regular sa 1,
+     bf=LMRoman12-Bold sa 1,
+     it=LMRoman12-Italic sa 1,
+     sl=LMRoman12-Oblique sa 1,
+     bi=LMRoman10-BoldItalic sa 1,
+     bs=LMRoman10-BoldObliqu sa 1,
+     sc=LMRoman10-CapsRegular sa 1]
 
 \stoptypescript
 
 \starttypescript [sans] [computer-modern] [size]
 
   \definebodyfont [12pt] [ss]
-    [tf=cmss12,
-     bf=cmssbx10 at 12pt,
-     it=cmssi12,
-     sl=cmssi12,
-     bi=cmssbx10 at 12pt,
-     bs=cmssbx10 at 12pt,
-     sc=cmss10 at 12pt]
+    [tf=LMSans12-Regular,
+     bf=LMSans10-Bold sa 1,
+     it=LMSans12-Oblique,
+     sl=LMSans12-Oblique,
+     bi=LMSans10-BoldOblique sa 1,
+     bs=LMSans10-BoldOblique sa 1,
+     sc=LMSans12-Regular]
 
   \definebodyfont [11pt] [ss]
-    [tf=cmss10 at 11pt,
-     bf=cmssbx10 at 11pt,
-     it=cmssi10 at 11pt,
-     sl=cmssi10 at 11pt,
-     bi=cmssbx10 at 11pt,
-     bs=cmssbx10 at 11pt,
-     sc=cmss10 at 11pt]
+    [tf=LMSans10-Regular sa 1,
+     bf=LMSans10-Bold sa 1,
+     it=LMSans10-Oblique sa 1,
+     sl=LMSans10-Oblique sa 1,
+     bi=LMSans10-BoldOblique sa 1,
+     bs=LMSans10-BoldOblique sa 1,
+     sc=LMSans10-Regular sa 1]
 
   \definebodyfont [10pt] [ss]
-    [tf=cmss10,
-     bf=cmssbx10,
-     it=cmssi10,
-     sl=cmssi10,
-     bi=cmssbx10,
-     bs=cmssbx10,
-     sc=cmss10]
+    [tf=LMSans10-Regular,
+     bf=LMSans10-Bold,
+     it=LMSans10-Oblique,
+     sl=LMSans10-Oblique,
+     bi=LMSans10-BoldOblique,
+     bs=LMSans10-BoldOblique,
+     sc=LMSans10-Regular]
 
   \definebodyfont [9pt] [ss]
-    [tf=cmss9,
-     bf=cmssbx10 at 9pt,
-     it=cmssi9,
-     sl=cmssi9,
-     bi=cmssbx10 at 9pt,
-     bs=cmssbx10 at 9pt,
-     sc=cmss9]
+    [tf=LMSans9-Regular,
+     bf=LMSans10-Bold sa 1,
+     it=LMSans9-Oblique sa 1,
+     sl=LMSans9-Oblique sa 1,
+     bi=LMSans10-BoldOblique sa 1,
+     bs=LMSans10-BoldOblique sa 1,
+     sc=LMSans9-Regular]
 
   \definebodyfont [8pt] [ss]
-    [tf=cmss8,
-     bf=cmssbx10 at 8pt,
-     it=cmssi8,
-     sl=cmssi8,
-     bi=cmssbx10 at 8pt,
-     bs=cmssbx10 at 8pt,
-     sc=cmss8]
+    [tf=LMSans8-Regular,
+     bf=LMSans10-Bold sa 1,
+     it=LMSans8-Oblique,
+     sl=LMSans8-Oblique,
+     bi=LMSans10-BoldOblique sa 1,
+     bs=LMSans10-BoldOblique sa 1,
+     sc=LMSans8-Regular]
 
-  \definebodyfont [7pt] [ss]
-    [tf=cmss10 at 7pt,
-     bf=cmssbx10 at 7pt,
-     it=cmssi10 at 7pt,
-     sl=cmssi10 at 7pt,
-     bs=cmssbx10 at 7pt,
-     bi=cmssbx10 at 7pt,
-     sc=cmss10 at 7pt]
-
-  \definebodyfont [6pt] [ss]
-    [tf=cmss10 at 6pt,
-     bf=cmssbx10 at 6pt,
-     it=cmssi10 at 6pt,
-     sl=cmssi10 at 6pt,
-     bs=cmssbx10 at 6pt,
-     bi=cmssbx10 at 6pt,
-     sc=cmss10 at 6pt]
-
-  \definebodyfont [5pt] [ss]
-    [tf=cmss10 at 5pt,
-     bf=cmssbx10 at 5pt,
-     it=cmssi10 at 5pt,
-     sl=cmssi10 at 5pt,
-     bs=cmssbx10 at 5pt,
-     bi=cmssbx10 at 5pt,
-     sc=cmss10 at 5pt]
-
-  \definebodyfont [4pt] [ss]
-    [tf=cmss10 at 4pt,
-     bf=cmssbx10 at 4pt,
-     it=cmssi10 at 4pt,
-     sl=cmssi10 at 4pt,
-     bs=cmssbx10 at 4pt,
-     bi=cmssbx10 at 4pt,
-     sc=cmss10 at 4pt]
+  \definebodyfont [7pt,6pt,5pt,4pt] [ss]
+    [tf=LMSans8-Regular sa 1,
+     bf=LMSans10-Bold sa 1,
+     it=LMSans8-Oblique sa 1,
+     sl=LMSans8-Oblique sa 1,
+     bi=LMSans10-BoldOblique sa 1,
+     bs=LMSans10-BoldOblique sa 1,
+     sc=LMSans8-Regular sa 1]
 
   \definebodyfont [14.4pt,17.3pt,20.7pt] [ss]
-    [tf=cmss12 sa 1,
-     bf=cmssbx10 sa 1,
-     it=cmssi12 sa 1,
-     sl=cmssi12 sa 1,
-     bi=cmssbx10 sa 1,
-     bs=cmssbx10 sa 1,
-     sc=cmss12 sa 1]
+    [tf=LMSans12-Regular sa 1,
+     bf=LMSans10-Bold sa 1,
+     it=LMSans12-Oblique sa 1,
+     sl=LMSans12-Oblique sa 1,
+     bi=LMSans10-BoldOblique sa 1,
+     bs=LMSans10-BoldOblique sa 1,
+     sc=LMSans12-Regular sa 1]
 
 \stoptypescript
 
 \starttypescript [mono] [computer-modern] [size]
 
   \definebodyfont [12pt] [tt]
-    [tf=cmtt12,
-     sl=cmsltt10 at 12pt,
-     it=cmitt10 at 12pt,
-     sc=cmtcsc10 at 12pt]
+    [tf=LMTypewriter12-Regular,
+     it=LMTypewriter10-Italic sa 1,
+     sl=LMTypewriter10-Oblique sa 1,
+     bf=LMTypewriter10-Dark sa 1,
+     bs=LMTypewriter10-DarkOblique sa 1,
+     sc=LMTypewriter10-CapsRegular sa 1]
 
   \definebodyfont [9pt] [tt]
-    [tf=cmtt9,
-     sl=cmsltt10 at 9pt,
-     it=cmitt10 at 9pt,
-     sc=cmtcsc10 at 9pt]
+    [tf=LMTypewriter9-Regular,
+     it=LMTypewriter10-Italic sa 1,
+     sl=LMTypewriter10-Oblique sa 1,
+     bf=LMTypewriter10-Dark sa 1,
+     bs=LMTypewriter10-DarkOblique sa 1,
+     sc=LMTypewriter10-CapsRegular sa 1]
 
   \definebodyfont [8pt] [tt]
-    [tf=cmtt8,
-     sl=cmsltt10 at 8pt,
-     it=cmitt10 at 8pt,
-     sc=cmtcsc10 at 8pt]
+    [tf=LMTypewriter8-Regular,
+     it=LMTypewriter10-Italic sa 1,
+     sl=LMTypewriter10-Oblique sa 1,
+     bf=LMTypewriter10-Dark sa 1,
+     bs=LMTypewriter10-DarkOblique sa 1,
+     sc=LMTypewriter10-CapsRegular sa 1]
 
   \definebodyfont [11pt,10pt,7pt,6pt,5pt,4pt] [tt]
-    [tf=cmtt10 sa 1,
-     sl=cmsltt10 sa 1,
-     it=cmitt10 sa 1,
-     sc=cmtcsc10 sa 1]
+    [tf=LMTypewriter10-Regular sa 1,
+     it=LMTypewriter10-Italic sa 1,
+     sl=LMTypewriter10-Oblique sa 1,
+     bf=LMTypewriter10-Dark sa 1,
+     bs=LMTypewriter10-DarkOblique sa 1,
+     sc=LMTypewriter10-CapsRegular sa 1]
 
   \definebodyfont [14.4pt,17.3pt,20.7pt] [tt]
-    [tf=cmtt12 sa 1,
-     sl=cmsltt10 sa 1,
-     it=cmitt10 sa 1,
-     sc=cmtcsc10 sa 1]
+    [tf=LMTypewriter12-Regular sa 1,
+     it=LMTypewriter10-Italic sa 1,
+     sl=LMTypewriter10-Oblique sa 1,
+     bf=LMTypewriter10-Dark sa 1,
+     bs=LMTypewriter10-DarkOblique sa 1,
+     sc=LMTypewriter10-CapsRegular sa 1]
 
 \stoptypescript
 
 \starttypescript [math] [modern,computer-modern,latin-modern] [size]
 
-  \definebodyfont [12pt] [mm]
-    [mr=xcmr12]
+  \definebodyfont [12pt] [mm] [mr=LMMathRoman12-Regular sa 1, mb=LMMathRoman12-Bold sa 1]
+  \definebodyfont [11pt] [mm] [mr=LMMathRoman10-Regular sa 1, mb=LMMathRoman10-Bold sa 1]
+  \definebodyfont [10pt] [mm] [mr=LMMathRoman10-Regular sa 1, mb=LMMathRoman10-Bold sa 1]
+  \definebodyfont  [9pt] [mm] [mr=LMMathRoman9-Regular  sa 1, mb=LMMathRoman9-Bold  sa 1]
+  \definebodyfont  [8pt] [mm] [mr=LMMathRoman8-Regular  sa 1, mb=LMMathRoman8-Bold  sa 1]
+  \definebodyfont  [7pt] [mm] [mr=LMMathRoman7-Regular  sa 1, mb=LMMathRoman7-Bold  sa 1]
+  \definebodyfont  [6pt] [mm] [mr=LMMathRoman6-Regular  sa 1, mb=LMMathRoman6-Bold  sa 1]
+  \definebodyfont  [5pt] [mm] [mr=LMMathRoman5-Regular  sa 1, mb=LMMathRoman5-Bold  sa 1]
+  \definebodyfont  [4pt] [mm] [mr=LMMathRoman5-Regular  sa 1, mb=LMMathRoman5-Bold  sa 1]
 
-  \definebodyfont [11pt] [mm]
-    [mr=xcmr10 at 11pt]
-
-  \definebodyfont [10pt] [mm]
-    [mr=xcmr10]
-
-  \definebodyfont [9pt] [mm]
-    [mr=xcmr9]
-
-  \definebodyfont [8pt] [mm]
-    [mr=xcmr8]
-
-  \definebodyfont [7pt] [mm]
-    [mr=xcmr7]
-
-  \definebodyfont [6pt] [mm]
-    [mr=xcmr6]
-
-  \definebodyfont [5pt] [mm]
-    [mr=xcmr5]
-
-  \definebodyfont [4pt] [mm]
-    [mr=xcmr5 at 4pt]
-
-  \definebodyfont [14.4pt,17.3pt,20.7pt] [mm]
-    [mr=xcmr12 sa 1]
-
-\stoptypescript
-
-\starttypescript [boldmath] [modern,computer-modern,latin-modern] [size]
-
-  \definebodyfont [12pt] [mm] [mr=xcmb12]
-  \definebodyfont [11pt] [mm] [mr=xcmb10 at 11pt]
-  \definebodyfont [10pt] [mm] [mr=xcmb10]
-  \definebodyfont  [9pt] [mm] [mr=xcmb9]
-  \definebodyfont  [8pt] [mm] [mr=xcmb8]
-  \definebodyfont  [7pt] [mm] [mr=xcmb7]
-  \definebodyfont  [6pt] [mm] [mr=xcmb6]
-  \definebodyfont  [5pt] [mm] [mr=xcmb5]
-  \definebodyfont  [4pt] [mm] [mr=xcmb5 at 4pt]
-
-  \definebodyfont  [14.4pt,17.3pt,20.7pt] [mm] [mr=xcmb12 sa 1]
-
-\stoptypescript
-
-\starttypescript [math] [euler] [size]
-
-  \definebodyfont [9pt,10pt,11pt,12pt,14.4pt,17.3pt,20.7pt] [mm]
-    [mr=zeurm10 sa 1,
-     ex=zeuex10 sa 1,
-     sy=zeusm10 sa 1,
-     mi=eufm10 sa 1]
-
-  \definebodyfont [6pt,7pt,8pt] [mm]
-    [mr=zeurm7 sa 1,
-     sy=zeusm7 sa 1,
-     mi=eufm7 sa 1,
-     ex=zeuex10 sa 1]
-
-  \definebodyfont [5pt] [mm]
-    [mr=zeurm5,
-     sy=zeusm5,
-     mi=eufm5,
-     ex=zeuex10 at 5pt]
-
-\stoptypescript
-
-\starttypescript [bfmath] [euler] [size]
-
-  \definebodyfont [9pt,10pt,11pt,12pt,14.4pt,17.3pt,20.7pt] [mm]
-    [mrbf=zeurb10 sa 1,
-     exbf=zeuex10 sa 1,
-     sybf=zeusb10 sa 1,
-     mibf=eufb10 sa 1]
-
-  \definebodyfont [6pt,7pt,8pt] [mm]
-    [mrbf=zeurb7 sa 1,
-     sybf=zeusb7 sa 1,
-     mibf=eufb7 sa 1,
-     exbf=zeuex10 sa 1]
-
-  \definebodyfont [5pt] [mm]
-    [mrbf=zeurb5,
-     sybf=zeusb5,
-     mibf=eufb5,
-     exbf=zeuex10 at 5pt]
-
-\stoptypescript
-
-\starttypescript [boldmath] [euler] [size]
-
-  \definebodyfont [9pt,10pt,11pt,12pt,14.4pt,17.3pt,20.7pt] [mm]
-    [mr=zeurb10 sa 1,
-     ex=zeuex10 sa 1,
-     sy=zeusb10 sa 1,
-     mi=eufb10 sa 1]
-
-  \definebodyfont [6pt,7pt,8pt] [mm]
-    [mr=zeurb7 sa 1,
-     sy=zeusb7 sa 1,
-     mi=eufb7 sa 1,
-     ex=zeuex10 sa 1]
-
-  \definebodyfont [5pt] [mm]
-    [mr=zeurb5,
-     sy=zeusb5,
-     mi=eufb5,
-     ex=zeuex10 at 5pt]
-
-\stoptypescript
-
-\starttypescript [math] [times] [size]
-
-  \mapfontsize [5pt]    [6.0pt]
-  \mapfontsize [6pt]    [6.8pt]
-  \mapfontsize [7pt]    [7.6pt]
-  \mapfontsize [8pt]    [8.4pt]
-  \mapfontsize [9pt]    [9.2pt]
-  \mapfontsize [10pt]   [10pt]
-  \mapfontsize [11pt]   [10.8pt]
-  \mapfontsize [12pt]   [11.6pt]
-  \mapfontsize [14.4pt] [13.2pt]
+  \definebodyfont [14.4pt,17.3pt,20.7pt] [mm] [mr=LMMathRoman12-Regular sa 1, mb=LMMathRoman12-Bold sa 1]
 
 \stoptypescript
 

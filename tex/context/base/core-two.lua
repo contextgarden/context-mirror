@@ -48,6 +48,14 @@ function jobpasses.savetagged(id,tag,str)
     jti[tag] = str
 end
 
+function jobpasses.getcollected(id)
+    return collected[id] or { }
+end
+
+function jobpasses.gettobesaved(id)
+    return allocate(id)
+end
+
 function jobpasses.get(id)
     local jti = collected[id]
     if jti and #jti > 0 then

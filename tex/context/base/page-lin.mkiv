@@ -99,7 +99,8 @@
   {\dontleavehmode\begingroup
    \global\advance\linerefcounter\plusone
    \dosetattribute{line-reference}\linerefcounter
-   #3\rawtextreference\s!lin{#2}{\noexpand\ctxlua{tex.sprint(nodes.lines.number(\the\linerefcounter))}}%
+   % this will change and is troublesome anyway
+   #3\textreference[#2]{\noexpand\ctxlua{tex.sprint(nodes.lines.number(\the\linerefcounter))}}%
    \endgroup}
 
 \def\mkstartlinereference#1{\mksomelinereference{#1}{lr:b:#1}{}\ignorespaces}
@@ -391,8 +392,8 @@
       \doifreferencefoundelse{lr:e:#1}
         {\let\tline\currenttextreference
          \ifx\fline\tline#2\else#3\fi}
-        {#2}}
-     {#2}}
+        {\unknownreference{#1}#2}}
+     {\unknownreference{#1}#2}}
 
 \def\inline#1[#2]%
   {\doifelsenothing{#1}

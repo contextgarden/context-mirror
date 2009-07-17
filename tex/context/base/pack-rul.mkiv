@@ -26,7 +26,12 @@
 \unprotect
 
 %D We have removed the rather old and out dated raster methods. They
-%D have not been used for ages.
+%D have not been used for ages. You can still find the old code in
+%D the \MKII\ counterpart of this module.
+
+%D This module is rather optimized so sometimes readability has been
+%D sacrisfied for speed. This is because the framing mechanism is used
+%D all over the place.
 
 %D \macros
 %D   {linewidth, setuplinewidth}
@@ -58,81 +63,6 @@
 
 \newdimen\ruledlinewidth \newif\ifinheritruledlinewidth
 
-% %D \TEX\ lacks support for color and even gray scales. The next
-% %D macros can provide a sort of poor mans gray scales as well
-% %D as give access to more suitable methods of rendering. Such a
-% %D method looks like:
-% %D
-% %D \starttyping
-% %D \def\methodegraybox#1#2#3#4#5#6%
-% %D   { ... }
-% %D \stoptyping
-% %D
-% %D The string \type{graybox} is a common element in the name,
-% %D so we can have for instance \type {\postscriptgraybox} or
-% %D \type {\texgraybox}. The first three arguments take a
-% %D dimension, the fourth one takes a number between~0 and~1,
-% %D and the last argument specifies a radius of the box when
-% %D rounded corners are used, so:
-% %D
-% %D \startbuffer
-% %D \dotgraybox{.5\hsize}{1cm}{0cm}{.85}{\v!no}{0pt}
-% %D \stopbuffer
-% %D
-% %D \typebuffer
-% %D
-% %D becomes:
-% %D
-% %D %\startlinecorrection
-% %D %  \vbox to 1cm{\getbuffer}
-% %D %\stoplinecorrection
-% %D
-% %D \startlinecorrection
-% %D   \unprotect
-% %D   \vbox to 1cm{\dotgraybox{.5\hsize}{1cm}{0cm}{.85}{\v!no}{0pt}}
-% %D   \protect
-% %D \stoplinecorrection
-% %D
-% %D There are two predefined methodes, one uses periods and the
-% %D other uses small rules. The second method is less
-% %D efficient, but sometimes give better results. The dimensions
-% %D of the resullting box are set to zero.
-%
-% \setvalue{\v!dot  graybox}{\processraster\symbol\rasterdot}
-% \setvalue{\v!rule graybox}{\processraster\symbol\rasterbox}
-%
-% \def\rasterdot{\rasterfont.}
-% \def\rasterbox{\hss\vrule\!!width.4pt\!!height.4pt\!!depth\zeropoint}
-%
-% %D Now of course we need:
-%
-% \ifx\rasterfont\undefined \def\rasterfont{\fivepoint} \fi
-%
-% %D We implement two pure \TEX\ based generators, that use
-% %D \type{\leaders} to quickly gerenate the gray pattern. One
-% %D should beware of \DIMENSION\ conflicts, so we use some
-% %D registers above~8. These macros are memory hungry and byte
-% %D spoiling.
-%
-% \def\processraster#1#2#3#4#5#6#7%
-%   {\bgroup
-%    \forgetall
-%    \dontcomplain
-%    \dimen10=\onepoint
-%    \dimen10=\@@rsfactor\dimen10
-%    \dimen10=#5\dimen10
-%    \setbox2\hbox to #2
-%      {\cleaders\hbox to 2\dimen10{#1\hss}\hss}%
-%    \dimen12=#3%
-%    \advance\dimen12 #4%
-% %    \setbox0\vbox to \dimen12
-%      {\cleaders\vbox to 2\dimen10{\box2\vss}\vss}%
-%    \setbox0\hbox
-%      {\hskip-.5\dimen10\lower0.5\dimen10\copy0
-%       \hskip-\wd0\hskip\dimen10\lower1.5\dimen10\box0}%
-%    \box0
-%    \egroup}
-
 %D \macros
 %D   {setupscreens}
 %D
@@ -143,25 +73,6 @@
 
 \def\setupscreens
   {\dodoubleargument\getparameters[\??rs]}
-
-% %D The most appropriate way to call for this feature is
-% %D using \type{\graybox}, which is defined as:
-%
-% \def\graybox{\getvalue{\@@rsmethod graybox}}
-%
-% %D We just introduced two pure \TEX\ methods for generating
-% %D rasters. However, it's far more efficient and comfortable in
-% %D terms of speed, memory usage and file size, to use a driver
-% %D supported method.
-%
-% \setvalue{\v!external graybox}{\setgraybox}
-%
-% %D For compatibility reasons we also define the original one:
-%
-% \setvalue{\v!postscript graybox}{\getvalue{\v!external graybox}}
-%
-% %D A quite valid way of letting drivers do the job, is giving
-% %D a solid rule a gray texture.
 
 %D We will communicate through module specific variables, current
 %D framed parameters and some reserved dimension registers.
@@ -176,13 +87,14 @@
 
 \def\dofilledbox
   {\bgroup
-   \doifelse{\framedparameter\c!backgroundcorner}\v!rectangular
-     {\dofilledlinedbox}
-     {\ifzeropt\dimexpr\framedparameter\c!backgroundradius\relax % just in case of .x\bodyfontsize
-        \dofilledlinedbox
-      \else
-        \dofilledroundbox
-      \fi}%
+   \edef\@@framedfilledmod{\framedparameter\c!backgroundcorner}%
+   \ifx\@@framedfilledmod\v!rectangular
+     \dofilledlinedbox
+   \else\ifzeropt\dimexpr\framedparameter\c!backgroundradius\relax % just in case of .x\bodyfontsize
+     \dofilledlinedbox
+   \else
+     \dofilledroundbox
+   \fi\fi
    \egroup}
 
 \def\dophantombox
@@ -197,7 +109,11 @@
 \def\dodostrokedroundbox
   {\bgroup
    \edef\ovalmod{\framedparameter\c!framecorner}%
-   \doifelse\ovalmod\v!round{\let\ovalmod\!!zerocount}{\edef\ovalmod{\number\ovalmod}}%
+   \ifx\ovalmod\v!round
+     \let\ovalmod\!!zerocount
+   \else
+     \edef\ovalmod{\number\ovalmod}%
+   \fi
    \edef\ovalwid{\the\frameddimenwd}%
    \edef\ovalhei{\the\frameddimenht}%
    \edef\ovaldep{\the\frameddimendp}%
@@ -212,7 +128,11 @@
 \def\dofilledroundbox
   {\bgroup
    \edef\ovalmod{\framedparameter\c!backgroundcorner}%
-   \doifelse\ovalmod\v!round{\let\ovalmod\!!zerocount}{\edef\ovalmod{\number\ovalmod}}%
+   \ifx\ovalmod\v!round
+     \let\ovalmod\!!zerocount
+   \else
+     \edef\ovalmod{\number\ovalmod}%
+   \fi
    \edef\ovalwid{\the\frameddimenwd}%
    \edef\ovalhei{\the\frameddimenht}%
    \edef\ovaldep{\the\frameddimendp}%
@@ -387,6 +307,7 @@
 
 \long\def\executedefinedoverlay#1#2%
   {\bgroup
+   \setlayoutcomponentattribute\v!overlay{#1}%
    \edef\overlaywidth {\the\frameddimenwd\space}%
    \edef\overlayheight{\the\dimexpr\frameddimenht+\frameddimendp\relax\space}%
    \edef\overlaydepth {\the\frameddimendp\space}%
@@ -395,16 +316,14 @@
   %\edef\overlayradius{\framedparameter\c!backgroundradius}%
    \let\overlayoffset\backgroundoffset % we steal this one
    \setbox\scratchbox\hbox{\lower\overlaydepth\hbox{\the\everyoverlay#2}}%
-   \setbox\scratchbox\hbox
+   \setbox\scratchbox\hbox \layoutcomponentboxattribute
      {\hskip-.5\dimexpr\wd\scratchbox-\overlaywidth \relax
       \raise-.5\dimexpr\ht\scratchbox-\frameddimenht\relax % not overlayheight !
       \box\scratchbox}%
-   \wd\scratchbox\overlaywidth
-   \ht\scratchbox\overlayheight
-   \dp\scratchbox\overlaydepth
-   \startlayoutcomponent{o:#1}{overlay #1}%
-     \box\scratchbox
-   \stoplayoutcomponent
+   \wd\scratchbox\frameddimenwd
+   \ht\scratchbox\frameddimenht
+   \dp\scratchbox\frameddimendp
+   \box\scratchbox
    \egroup}
 
 %D The empty case is:
@@ -414,7 +333,11 @@
 %D For testing we provide:
 
 \def\doifoverlayelse#1%
-  {\doifdefinedelse{\??ov#1}}
+  {\ifcsname\??ov#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 %D We predefine two already familiar backgrounds:
 
@@ -447,31 +370,6 @@
 
 \let\currentbackground\empty
 
-% \def\dodobackgroundbox#1% also less passing, we can get rid of the old method
-%   {\bgroup
-%    \def\currentbackground{#1}%
-%    \the\everybackgroundbox
-%    \setbox\extraframebox\hbox
-%      {\vbox{\moveleft\backgroundoffset\hbox{\executeifdefined{\??ov\currentbackground}\donothing}}}%
-%    \wd\extraframebox\zeropoint % \backgroundwidth
-%    \ht\extraframebox\backgroundheight
-%    \dp\extraframebox\backgrounddepth
-%    \box\extraframebox % \hskip-\backgroundwidth
-%    \egroup}
-
-% \def\dodobackgroundbox#1% also less passing, we can get rid of the old method
-%   {\bgroup
-%    \def\currentbackground{#1}%
-%    \ifcsname\??ov\currentbackground\endcsname
-%      \the\everybackgroundbox
-%      \setbox\extraframebox\hbox{\vbox{\moveleft\backgroundoffset\hbox{\csname\??ov\currentbackground\endcsname}}}%
-%      \wd\extraframebox\zeropoint % \backgroundwidth
-%      \ht\extraframebox\backgroundheight
-%      \dp\extraframebox\backgrounddepth
-%      \box\extraframebox % \hskip-\backgroundwidth
-%    \fi
-%    \egroup}
-
 \def\dodobackgroundbox
   {\bgroup
    \ifcsname\??ov\currentbackground\endcsname
@@ -486,7 +384,7 @@
 
 \def\dododobackgroundbox#1,#2% #2 gobbles spaces
   {\edef\currentbackground{#1}%
-   \ifx\currentbackground\s!unknown\else
+   \ifx\currentbackground\s!unknown\else % use $ instead of s!unknown
      \dodobackgroundbox\expandafter\dododobackgroundbox
    \fi#2}
 
@@ -495,60 +393,30 @@
 \def\backgroundwidth {\the\hsize}
 \def\backgroundheight{\the\vsize}
 
-%  todo: also \def\theforegroundbox{#1}
-
-% \def\dobackgroundbox#1%
-%   {\setbox\framebox\vbox
-%      {\forgetall
-%       \boxmaxdepth\maxdimen
-%       \scratchdimen \framedparameter{#1}\relax
-%       \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
-%       \frameddimenht\dimexpr\ht\framebox+ \scratchdimen\relax
-%       \frameddimendp\dimexpr\dp\framebox+ \scratchdimen+\framedparameter\c!backgrounddepth\relax
-%       \edef\backgroundoffset{\the\scratchdimen}%
-%       \edef\backgroundwidth {\the\wd\framebox}%
-%       \edef\backgroundheight{\the\ht\framebox}%
-%       \edef\backgrounddepth {\the\dp\framebox}%
-%      %\edef\foregroundbox{\box#1}%
-%       \def\foregroundbox% fuzzy but needed hack, this \vss, otherwise
-%         {\vbox to \backgroundheight{\vss\box\framebox\vss}}% vertical shift
-%       \edef\component{\framedparameter\c!component}%
-%       \hbox to \backgroundwidth % in case 'foreground' is used as overlay
-%         {\ifx\component\empty
-%            \rawprocesscommalist[\framedbackground]\dodobackgroundbox
-%          \else
-%            \startlayoutcomponent{b:\component}{\s!background\space\component}%
-%            \rawprocesscommalist[\framedbackground]\dodobackgroundbox
-%            \stoplayoutcomponent
-%          \fi
-%          \box\framebox\hss}}}
-
 \def\normalforegroundbox% fuzzy but needed hack, this \vss, otherwise
   {\vbox to \backgroundheight{\vss\box\framebox\vss}}% vertical shift
 
-\def\dobackgroundbox#1%
+\def\dobackedbox
   {\setbox\framebox\vbox
-     {\forgetall
+     {\framedforgetall
       \boxmaxdepth\maxdimen
-      \scratchdimen \framedparameter{#1}\relax
-      \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
-      \frameddimenht\dimexpr\ht\framebox+ \scratchdimen\relax
-      \frameddimendp\dimexpr\dp\framebox+ \scratchdimen+\framedparameter\c!backgrounddepth\relax
-      \edef\backgroundoffset{\the\scratchdimen}%
+      \frameddimenwd\dimexpr\wd\framebox+2\!!framedbackgroundoffset\relax
+      \frameddimenht\dimexpr\ht\framebox+ \!!framedbackgroundoffset\relax
+      \frameddimendp\dimexpr\dp\framebox+ \!!framedbackgroundoffset+\framedparameter\c!backgrounddepth\relax
+      \edef\backgroundoffset{\the\!!framedbackgroundoffset}%
       \edef\backgroundwidth {\the\wd\framebox}%
       \edef\backgroundheight{\the\ht\framebox}%
       \edef\backgrounddepth {\the\dp\framebox}%
      %\edef\foregroundbox{\box#1}%
       \edef\component{\framedparameter\c!component}%
+      \ifx\component\empty
+        \resetlayoutcomponentattribute
+      \else
+        \setlayoutcomponentattribute\v!background\component
+      \fi
       \let\foregroundbox\normalforegroundbox
-      \hbox to \backgroundwidth % in case 'foreground' is used as overlay
-        {\ifx\component\empty
-            \normalexpanded{\noexpand\dododobackgroundbox\framedparameter\c!background},\s!unknown,\relax
-         \else
-           \startlayoutcomponent{b:\component}{background \component}%
-           \normalexpanded{\noexpand\dododobackgroundbox\framedparameter\c!background},\s!unknown,\relax
-           \stoplayoutcomponent
-         \fi
+      \hbox to \backgroundwidth \layoutcomponentboxattribute % width in case 'foreground' is used as overlay
+        {\expandafter\dododobackgroundbox\framedbackground,\s!unknown,\relax % hm, messy .. look into it
          \box\framebox\hss}}}
 
 %D One can explictly insert the foreground box. For that
@@ -565,14 +433,11 @@
 %D by \TEX\ itself, the latter one depends on the driver. This
 %D macro also support a negative offset.
 
-\ifx\scratchoffset\undefined \newdimen\scratchoffset \fi
-
 \def\dooutlinebox % we needed to move the color command in order to apply attributes properly
   {\setbox\framebox\vbox % rules on top of box
-     {\scratchoffset \framedparameter\c!frameoffset\relax
-      \frameddimenwd\dimexpr\wd\framebox+2\scratchoffset\relax
-      \frameddimenht\dimexpr\ht\framebox+ \scratchoffset\relax
-      \frameddimendp\dimexpr\dp\framebox+ \scratchoffset+\framedparameter\c!framedepth\relax
+     {\frameddimenwd\dimexpr\wd\framebox+2\!!framedframeoffset\relax
+      \frameddimenht\dimexpr\ht\framebox+ \!!framedframeoffset\relax
+      \frameddimendp\dimexpr\dp\framebox+ \!!framedframeoffset+\framedparameter\c!framedepth\relax
       \ifdim\frameddimendp<\zeropoint
         \advance\frameddimenht \frameddimendp
         \scratchdimen-\frameddimendp
@@ -584,7 +449,7 @@
         {\doifsomething{\framedparameter\c!framecolor}{\color[\framedparameter\c!framecolor]}{\dostrokedbox}}%
       \setbox\extraframebox\hbox
         {\raise\scratchdimen\vbox
-           {\moveleft\scratchoffset
+           {\moveleft\!!framedframeoffset
             \box\extraframebox}}%
       \wd\extraframebox\wd\framebox
       \ht\extraframebox\ht\framebox
@@ -592,13 +457,14 @@
       \hbox{\box\framebox\hskip-\wd\extraframebox\box\extraframebox}}}
 
 \def\dostrokedbox
-  {\doifelse{\framedparameter\c!framecorner}\v!rectangular
-     {\dostrokedlinedbox}
-     {\ifzeropt\dimexpr\framedparameter\c!frameradius\relax   % just in case of .x\bodyfontsize
-        \dostrokedlinedbox
-      \else
-        \dostrokedroundbox
-      \fi}}
+  {\edef\@@framedcornermod{\framedparameter\c!framecorner}%
+   \ifx\@@framedcornermod\v!rectangular
+     \dostrokedlinedbox
+   \else\ifzeropt\dimexpr\framedparameter\c!frameradius\relax   % just in case of .x\bodyfontsize
+     \dostrokedlinedbox
+   \else
+     \dostrokedroundbox
+    \fi\fi}
 
 \def\dostrokedlinedbox
   {\setbox\scratchbox\null
@@ -746,16 +612,12 @@
 
 \presetlocalframed[\??ol]
 
-% \unexpanded\def\framed
-%   {\bgroup
-%    \dodoubleempty\startlocalframed[\??ol]}
-
 \newcount\framednesting
 
 \unexpanded\def\framed
   {\bgroup
    \advance\framednesting\plusone
-   \letvalue{\??ol:\the\framednesting\s!parent}\??ol
+   \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
    \dodoubleempty\startlocalframed[\??ol:\the\framednesting]}
 
 \def\setupframed
@@ -820,19 +682,19 @@
   {\bgroup
    \inframedtrue
    \edef\@@framed{#1}%
-   % some hackery (no \dimexpr)
-   \scratchdimen\framedparameter\c!frameoffset
-   \setevalue{\@@framed\c!frameoffset}{\the\scratchdimen}%
-   \doifnot{\framedparameter\c!backgroundoffset}\v!frame
-     {\scratchdimen\framedparameter\c!backgroundoffset
-      \setevalue{\@@framed\c!backgroundoffset}{\the\scratchdimen}}%
-   % so far
    \setbox\framebox\hbox{#4}%
    \getparameters[\@@framed][#3]% no \expanded !
+   \!!framedframeoffset\framedparameter\c!frameoffset
+   \edef\@@framedbackgroundoffset{\framedparameter\c!backgroundoffset}%
+   \ifx\@@framedbackgroundoffset\v!frame
+     \!!framedbackgroundoffset\!!framedframeoffset
+   \else
+     \!!framedbackgroundoffset\@@framedbackgroundoffset
+   \fi
    % not here, in calling macro: setups
    \removeframedboxdepth
-   \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
-   \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
+%    \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
+%    \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
    \edef\overlaylinecolor{\framedparameter\c!framecolor}%
    \edef\overlaylinewidth{\the\ruledlinewidth}%
    \edef\@@localframing {\framedparameter\c!frame}%
@@ -847,6 +709,44 @@
    \edef\framedbackground{\framedparameter\c!background}%
    \ifx\framedbackground\empty\else\dobackedbox\fi
    \restoreframedboxdepth
+   \box\framebox
+   \egroup}
+
+%D Here is another fast one:
+
+\def\localbackgroundframed#1#2#3#4% tag box wd ht
+  {\setbox#2\vbox\bgroup
+   \inframedtrue
+   \edef\@@framed{\??ma#1}%
+   \expandafter\def\csname\??ma#1\c!component\endcsname{#1}%
+   \expandafter\def\csname\??ma#1\c!width    \endcsname{#3}%
+   \expandafter\def\csname\??ma#1\c!height   \endcsname{#4}%
+   \!!framedframeoffset\framedparameter\c!frameoffset
+   \edef\@@framedbackgroundoffset{\framedparameter\c!backgroundoffset}%
+   \ifx\@@framedbackgroundoffset\v!frame
+     \!!framedbackgroundoffset\!!framedframeoffset
+   \else
+     \!!framedbackgroundoffset\@@framedbackgroundoffset
+   \fi
+   \setbox\framebox\box#2%
+   \dp\framebox\zeropoint
+%  \removeframedboxdepth
+%    \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
+%    \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
+   \edef\overlaylinecolor{\framedparameter\c!framecolor}%
+   \edef\overlaylinewidth{\the\ruledlinewidth}%
+   \edef\@@localframing {\framedparameter\c!frame}%
+   \ifx\@@localframing\v!overlay \else \ifx\@@localframing\v!none \else
+     \edef\framedrulethickness{\framedparameter\c!rulethickness}%
+     \ifx\framedrulethickness\empty\else
+        \ruledlinewidth\framedrulethickness\relax
+        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi
+     \fi
+     \dooutlinebox % real or invisible frame
+   \fi \fi
+   \edef\framedbackground{\framedparameter\c!background}%
+   \ifx\framedbackground\empty\else\dobackedbox\fi
+%  \restoreframedboxdepth
    \box\framebox
    \egroup}
 
@@ -907,15 +807,15 @@
    \c!radius=.5\bodyfontsize,
    \c!rulethickness=\linewidth,
    \c!corner=\v!rectangular,
-   \c!depth=\!!zeropoint,
+   \c!depth=\zeropoint,
   %\c!foregroundcolor=,
   %\c!foregroundstyle=,
   %\c!background=,
   %\c!backgroundscreen=,
   %\c!backgroundcolor=,
-   \c!backgroundoffset=\!!zeropoint,
+   \c!backgroundoffset=\zeropoint,
   %\c!framecolor=,
-   \c!frameoffset=\!!zeropoint,
+   \c!frameoffset=\zeropoint,
    \c!backgroundcorner=\framedparameter\c!corner,
    \c!backgroundradius=\framedparameter\c!radius,
    \c!backgrounddepth=\framedparameter\c!depth,
@@ -943,8 +843,8 @@
    \c!radius=.5\bodyfontsize,
    \c!rulethickness=\linewidth,
    \c!corner=\v!rectangular,
-   \c!backgroundoffset=\!!zeropoint,
-   \c!frameoffset=\!!zeropoint,
+   \c!backgroundoffset=\zeropoint,
+   \c!frameoffset=\zeropoint,
    \c!backgroundcorner=\framedparameter\c!corner,
    \c!backgroundradius=\framedparameter\c!radius,
    \c!backgrounddepth=\framedparameter\c!depth,
@@ -958,29 +858,33 @@
 \newdimen\!!framedwidth
 \newdimen\!!framedheight
 \newdimen\!!framedscratch % so that users can use \scratchdimen
+\newdimen\!!framedframeoffset
+\newdimen\!!framedbackgroundoffset
 
 \let\setextraframedoffsets  \relax
 \let\applyextraframedoffsets\relax
+
+% todo: protect local \framednames
 
 \def\startlocalframed[#1][#2]%
   {\bgroup
    \inframedtrue
    \edef\@@framed{#1}%
-   % this piece of pre expansion is needed (sometimes used circular)
-   \!!framedscratch\framedparameter\c!frameoffset
-   \setevalue{\@@framed\c!frameoffset}{\the\!!framedscratch}%
-   \doifnot{\framedparameter\c!backgroundoffset}\v!frame
-     {\!!framedscratch\framedparameter\c!backgroundoffset
-      \setevalue{\@@framed\c!backgroundoffset}{\the\!!framedscratch}}%
-   % to prevent deadlock in case of self refering
    \ifsecondargument % faster
      \getparameters[\@@framed][#2]% here !
+   \fi
+   \!!framedframeoffset\framedparameter\c!frameoffset
+   \edef\@@framedbackgroundoffset{\framedparameter\c!backgroundoffset}%
+   \ifx\@@framedbackgroundoffset\v!frame
+     \!!framedbackgroundoffset\!!framedframeoffset
+   \else
+     \!!framedbackgroundoffset\@@framedbackgroundoffset
    \fi
    % new, experimental dirty hook
    \framedparameter\c!extras
    % to get the right spacing
-   \doifsomething{\framedparameter\c!foregroundstyle}
-     {\@EA\doconvertfont\csname\@@framed\c!foregroundstyle\endcsname\empty}%
+   \edef\fontattributehash{\framedparameterhash\c!foregroundstyle}%
+   \ifx\fontattributehash\empty\else\dosetfontattribute \fontattributehash\c!foregroundstyle\fi
    % beware, both the frame and background offset can be overruled
    %
    \edef\doframedsetups{\framedparameter\c!setups}%
@@ -1043,7 +947,7 @@
      \boxisoverlaidfalse
      \ifx\localoffset\v!default % new per 2-6-2000
        \let\localoffset\defaultframeoffset
-       \letvalue{\@@framed\c!offset}\defaultframeoffset
+       \expandafter\let\csname\@@framed\c!offset\endcsname\defaultframeoffset
      \else
        \let\defaultframeoffset\localoffset
      \fi
@@ -1087,12 +991,14 @@
    \ifboxhasheight
      % obey user set height, also downward compatible
    \else
-     \doifsomething{\framedparameter\c!lines}
-       {\ifcase\framedparameter\c!lines\else
-          \!!framedheight\framedparameter\c!lines\lineheight
+     \edef\@@framedlines{\framedparameter\c!lines}%
+     \ifx\@@framedlines\empty\else
+       \ifcase\@@framedlines\else
+          \!!framedheight\@@framedlines\lineheight
           \edef\localheight{\the\!!framedheight}%
           \boxhasheighttrue
-        \fi}%
+        \fi
+     \fi
    \fi
    % this is now an option: width=local
    %
@@ -1173,24 +1079,15 @@
      \fi
    \fi
    \setextraframedoffsets
-   \edef\framedwidth % a new feature, visible for user
-     {\ifdim\!!framedwidth >\zeropoint\the\!!framedwidth \else\zeropoint\fi}%
-   \edef\framedheight% a new feature, visible for user
-     {\ifdim\!!framedheight>\zeropoint\the\!!framedheight\else\zeropoint\fi}%
-   % we need to register the (outer) color
-   \startregistercolor[\framedparameter\c!foregroundcolor]%
-   % first alternative
-   %\def\dowithframedbox%
-   %  {\let\postprocessframebox\relax %new
-   %   \aftergroup\stoplocalframed}%
-   % \afterassignment\dowithframedbox
-   % \setbox\framebox=\next}
-   % second alternative
-   %\dowithnextbox
-   %  {\setbox\framebox\flushnextbox
-   %   \let\postprocessframebox\relax %new
-   %   \stoplocalframed}
-   %  \next}
+   \edef\framedbackground{\framedparameter\c!background}%
+   \ifx\framedbackground\empty
+     \let\framedforgetall\forgetall
+   \else
+     \let\framedforgetall\relax
+     \forgetall
+   \fi
+   \edef\framedwidth {\ifdim\!!framedwidth >\zeropoint\the\!!framedwidth \else\!!zeropoint\fi}% a new feature, visible for user
+   \edef\framedheight{\ifdim\!!framedheight>\zeropoint\the\!!framedheight\else\!!zeropoint\fi}% a new feature, visible for user
    \@@startframedorientation
    \afterassignment\dodowithframebox
    \setbox\framebox\next}
@@ -1240,7 +1137,6 @@
 \def\stoplocalframed
   {\dontshowcomposition
    \@@stopframedorientation % hm, wrong place ! should rotate the result (after reshape)
-   \stopregistercolor
    \handleframedlocator\c!before\@@locallocation
    \ifboxhasformat
      \ifx\@@localautowidth\v!force
@@ -1258,9 +1154,9 @@
          \resetshapeframebox
        \fi\fi
      \fi
-\ifconditional\boxcontentneedsprocessing
-    \mkdoprocessboxcontents\framebox
-\fi
+    \ifconditional\boxcontentneedsprocessing
+      \mkdoprocessboxcontents\framebox
+    \fi
     \else
      \resetshapeframebox
    \fi
@@ -1270,14 +1166,7 @@
    \ifboxhasheight
      \ht\framebox\!!framedheight
    \fi
-   \doif{\framedparameter\c!empty}\v!yes
-     {\setbox\scratchbox\null
-      \wd\scratchbox\wd\framebox
-      \ht\scratchbox\ht\framebox
-      \dp\scratchbox\dp\framebox
-      \setbox\framebox\box\scratchbox}%
-   \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
-   \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
+   \doif{\framedparameter\c!empty}\v!yes\dosetfakedframebox
    \ifboxhasextraoffset
      \applyextraframedoffsets
    \fi
@@ -1297,19 +1186,35 @@
    \ifboxhasframe % real or invisible frame
      \dooutlinebox
    \fi
-   \edef\framedbackground{\framedparameter\c!background}%
    \ifx\framedbackground\empty\else\dobackedbox\fi
    \handleframedlocator\c!after\@@locallocation
    \box\framebox
    \egroup
    \egroup}
 
+\def\dosetfakedframebox
+  {\setbox\scratchbox\null
+   \wd\scratchbox\wd\framebox
+   \ht\scratchbox\ht\framebox
+   \dp\scratchbox\dp\framebox
+   \setbox\framebox\box\scratchbox}
+
+% test: (saves one forgetall)
+%
+% \edef\framedbackground{\framedparameter\c!background}%
+% \ifx\framedbackground\empty
+%     \let\framedforgetall\forgetall
+% \else
+%     \let\framedforgetall\relax
+%     \forgetall
+% \fi
+
 \def\installframedlocator#1#2#3%
   {\setvalue{\??oi:\c!location:\c!before:#1}{#2}%
    \setvalue{\??oi:\c!location:\c!after :#1}{#3}}
 
 \def\handleframedlocator#1#2%
-  {\getvalue{\??oi:\c!location:#1:#2}}
+  {\csname\??oi:\c!location:#1:#2\endcsname}
 
 \def\doprelocframedbox#1%
   {\scratchdimen\dimexpr#1+\ruledlinewidth\relax
@@ -1688,14 +1593,6 @@
 %D additional offset capabilities. The lot of calls to other
 %D macros makes this mechanism not that easy to comprehend.
 
-%D Getting the backgrounds right takes less code. Again we
-%D have to take care of additional offsets.
-
-\def\dobackedbox
-  {\doifelsevalue{\@@framed\c!backgroundoffset}\v!frame % new
-     {\dobackgroundbox\c!frameoffset}
-     {\dobackgroundbox\c!backgroundoffset}}
-
 %D We handle left, right or middle alignment as well as fixed
 %D or free widths and heights. Each combination gets its own
 %D macro.
@@ -1728,11 +1625,18 @@
 
 %D The handlers:
 
+\def\framedforgetall{\forgetall}
+
+\def\setframedforegroundcolor
+  {\edef\colorattributehash{\framedparameterhash\c!foregroundcolor}%
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash\c!foregroundcolor\fi}
+
 \def\doformatboxSomeFormat
   {\vbox to \!!framedheight
      \bgroup
        \let\postprocessframebox\relax
-       \forgetall
+       \framedforgetall
+       \setframedforegroundcolor
        \oninterlineskip
        \hsize\!!framedwidth
        \vsize\!!framedheight
@@ -1750,7 +1654,8 @@
   {\vbox to \!!framedheight
      \bgroup
        \let\postprocessframebox\relax
-       \forgetall
+       \framedforgetall
+       \setframedforegroundcolor
        \oninterlineskip
        \hsize\!!framedwidth
        \vsize\!!framedheight
@@ -1768,7 +1673,8 @@
   {\vbox to \!!framedheight
      \bgroup
        \let\postprocessframebox\relax
-       \forgetall
+       \framedforgetall
+       \setframedforegroundcolor
        \oninterlineskip
        \doframedsetups
        \raggedcommand
@@ -1784,7 +1690,8 @@
   {\vbox
      \bgroup
        \let\postprocessframebox\relax
-       \forgetall
+       \framedforgetall
+       \setframedforegroundcolor
        \oninterlineskip
        \hsize\!!framedwidth
        \doframedsetups
@@ -1801,7 +1708,8 @@
   {\vbox to \!!framedheight
      \bgroup
        \let\postprocessframebox\relax
-       \forgetall
+       \framedforgetall
+       \setframedforegroundcolor
        \vsize\!!framedheight
        \doframedsetups
        \vss
@@ -1818,7 +1726,8 @@
   {\hbox to \!!framedwidth
      \bgroup
        \let\postprocessframebox\relax
-       \forgetall
+       \framedforgetall
+       \setframedforegroundcolor
        \doframedsetups
        \hss
        \localstrut
@@ -1830,6 +1739,7 @@
 \def\doformatboxNoSize
   {\hbox
      \bgroup
+       \setframedforegroundcolor
        \let\postprocessframebox\relax
        \doframedsetups
        \localstrut
@@ -1895,10 +1805,6 @@
 %D of a centered box automatically (\type {fit}). When
 %D doing so, we need to reshape the box:
 
-% The next implementation is frozen! It preserves the depth,
-% otherwise we get problems with framed display math and auto
-% width.
-
 \newcount\framednoflines
 \newdimen\framedlastlength
 
@@ -1909,15 +1815,6 @@
 \let\framedboxwidth \!!zeropoint
 \let\framedboxheight\!!zeropoint
 \let\framedboxdepth \!!zeropoint
-
-\chardef\reshapeframeboxmethod\plusone % 0=no flush, 1=old method 2=no depth messing
-
-% \newbox\luashapebox
-%
-% \def\doreshapeframedbox
-%   {\setbox\luashapebox\box\framebox
-%    \ctxlua{commands.doreshapeframedbox(\number\luashapebox)}%
-%    \setbox\framebox\box\luashapebox}
 
 \def\doreshapeframedbox{\ifvbox\framebox\ctxlua{commands.doreshapeframedbox(\number\framebox)}\fi}
 
@@ -2164,23 +2061,24 @@
 %D
 %D \showsetup{blackrule}
 
-\def\doblackrule[#1]%
-  {\hbox\bgroup
-   \getparameters[\??bj][#1]%
-   \setstrut
-   \doif\@@bjwidth \v!max{\def\@@bjwidth {1em}}%
-   \doif\@@bjheight\v!max{\def\@@bjheight{\strutht}}%
-   \doif\@@bjdepth \v!max{\def\@@bjdepth {\strutdp}}%
-   \localstartcolor[\@@bjcolor]%
+\def\complexblackrule[#1]%
+  {\hbox\bgroup\getparameters[\??bj][#1]\domakeblackrule\egroup}
+
+\def\simpleblackrule
+  {\hbox\bgroup\domakeblackrule\egroup}
+
+\def\domakeblackrule
+  {\doif\@@bjwidth \v!max{\def\@@bjwidth {1em}}%
+   \doif\@@bjheight\v!max{\setstrut\let\setstrut\relax\def\@@bjheight{\strutht}}%
+   \doif\@@bjdepth \v!max{\setstrut\def\@@bjdepth {\strutdp}}%
+   \startcolor[\@@bjcolor]% can be made faster, just direct attr
      \vrule
        \!!width \@@bjwidth
        \!!height\@@bjheight
        \!!depth \@@bjdepth
-   \localstopcolor
-   \egroup}
+   \stopcolor}
 
-\unexpanded\def\blackrule
-  {\dosingleempty\doblackrule}
+\definecomplexorsimple\blackrule
 
 %D \macros
 %D   {blackrules}
@@ -2225,7 +2123,7 @@
         \advance\!!widtha -\scratchcounter\!!widthb
         \divide \!!widtha \@@bjn
       \fi}%
-   \localstartcolor[\@@bjcolor]%
+   \startcolor[\@@bjcolor]%
      \dorecurse\@@bjn
        {\vrule
           \!!width \!!widtha
@@ -2233,7 +2131,7 @@
           \!!depth \@@bjdepth
         \hskip\!!widthb}%
      \unskip
-   \localstopcolor
+   \stopcolor
    \egroup}
 
 \unexpanded\def\blackrules
@@ -2774,6 +2672,19 @@
 
 \setfalse\framedtextlocationnone
 
+\def\checkframedtext % messy dependency
+  {\ifinsidefloat
+     \localhsize\hsize
+   \else\ifdim\sidefloatvsize>\zeropoint % will be proper handle
+   % \strut            % rather clean way to invoke the sidefloat OTR
+   % \setbox0=\lastbox % and get the widths set, so from now on we
+   % \setlocalhsize    % can have framed texts alongside sidefloats
+     \checksidefloat
+     \setlocalhsize
+   \else
+     \localhsize\hsize
+   \fi\fi}
+
 \def\dododostartframedtext[#1][#2][#3]% #3 only passed to framed, not to framedtext
   {\doifsomething{#2}{\setvalue{\??kd#1\c!location}{#2}}% does not listen to #3
    \setfalse\framedtextlocationnone
@@ -2829,7 +2740,7 @@
       \vskip-\struttotal
       \verticalstrut
       \egroup
-      \forgetall
+      \forgetall % brrr too often
       \vskip-\lineheight
       % will be an option, not default
       % \setbaselinecorrections
@@ -3322,7 +3233,6 @@
          \fi
          \setbox2\vbox \ifcase\backgroundsplit\or to \textheight \fi % max split
            {\vskip\@@agtopoffset
-            \popsplitproperties
             \unvcopy2
             \prevdepth\dp2
             \obeydepth
@@ -3430,14 +3340,15 @@
 
 \def\startframedcontent[#1]%
   {\bgroup
-   \let\stopframedcontent\egroup
-   \doifnot{#1}\v!off
-     {\doifdefined{\??fc#1\c!frame}
-        {\def\stopframedcontent{\dostopframedcontent{#1}}%
-         \dostartframedcontent{#1}}}}
+   \doifelse{#1}\v!off
+     {\let\stopframedcontent\egroup}
+     {\ifcsname\??fc#1\c!frame\endcsname
+        \dostartframedcontent{#1}%
+      \fi}}
 
 \def\dostartframedcontent#1%
-  {\setbox\framebox\hbox\bgroup
+  {\def\stopframedcontent{\dostopframedcontent{#1}}%
+   \setbox\framebox\hbox\bgroup
      \setlocalhsize
      \hsize\localhsize
      \advance\hsize\dimexpr-\getvalue{\??fc#1\c!leftoffset}-\getvalue{\??fc#1\c!rightoffset} \relax
@@ -3487,8 +3398,7 @@
 \def\dobackgroundline#1%
   {\dowithnextbox
      {\hbox
-        {\localcolortrue
-         \startcolor[#1]%
+        {\startcolor[#1]%
          \vrule
            \!!width \nextboxwd
            \!!height\nextboxht
@@ -3525,15 +3435,15 @@
    \c!radius=.5\bodyfontsize,
    \c!rulethickness=\linewidth,
    \c!corner=\v!rectangular,
-   \c!depth=\!!zeropoint,
+   \c!depth=\zeropoint,
    \c!foregroundcolor=,
    \c!foregroundstyle=,
    \c!background=,
    \c!backgroundscreen=\@@rsscreen,
    \c!backgroundcolor=,
-   \c!backgroundoffset=\!!zeropoint,
+   \c!backgroundoffset=\zeropoint,
    \c!framecolor=,
-   \c!frameoffset=\!!zeropoint,
+   \c!frameoffset=\zeropoint,
    \c!backgroundcorner=\framedparameter\c!corner,
    \c!backgroundradius=\framedparameter\c!radius,
    \c!backgrounddepth=\framedparameter\c!depth,

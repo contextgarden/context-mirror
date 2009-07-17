@@ -21,6 +21,7 @@
 %D - a few more obscure things
 
 \registerctxluafile{grph-inc}{1.001}
+\registerctxluafile{grph-u3d}{1.001} % this will change
 
 \unprotect
 
@@ -198,12 +199,7 @@
    % a transparent color is used
    \doifsomething\@@efforegroundcolor
      {\def\@@efbackground{\v!foreground,\v!color}%
-      \def\@@efbackgroundcolor{\@@efforegroundcolor}}%
-   \doifsomething\@@efcolor
-     {\doifcolorelse\@@efcolor
-        {\checkpredefinedcolor[\@@efcolor]%
-         \doregisterfigurecolor\@@efcolor}}%
-        \donothing}
+      \def\@@efbackgroundcolor{\@@efforegroundcolor}}}
 
 \appendtoks
     \checkfigureusersettings
@@ -237,6 +233,9 @@
    \resetfigurevariables
    \dosetefparameters{#4}{#5}{#6}%
    \checkfigurevariables
+%    \begingroup
+%    \color[\@@efcolor]{\xdef\globcolorattr{\internalspotcolorname}}
+%    \endgroup
    \ctxlua{figures.push {
         name="#3",
         label="#2", % todo: \@eflabel
@@ -250,6 +249,7 @@
         controls="\@@efcontrols",
         preview="\@@efpreview",
         display="\@@efdisplay",
+        color="\internalspotcolorparent\@@efcolor", % hack is needed
         ["repeat"]="\@@efrepeat",
         width="\@@efwidth", % can be crap
         height="\@@efheight", % can be crap
@@ -361,25 +361,6 @@
 \let\feedbackexternalfigure\relax % \gobblefourarguments
 \let\dowithfigure          \relax
 
-% \let\lastfigureobjectname\empty
-
-\def\calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
-  {\ifx\@@efdisplay\empty\else
-%      \doifnot\@@efobject\v!no
-%        {\doifobjectssupportedelse
-%           {\doifspecialavailableelse\doregisterfigure
-%              {\doshowfigurestate{screen alternative : start}%
-%               \bgroup
-%               \dosetefparameters{#4}{#5}{#6}%
-%               \doregisterfigure{FIG}{\lastfigureobjectname}%
-%               \let\@@ef@@scherm\@@efdisplay
-%               \calculateexternalfigure[#1][\@@ef@@scherm][\@@ef@@scherm][#4,\c!display=][#5][#6]%
-%               \doshowfigurestate{screen alternative : stop}%
-%               \egroup}
-%              {}}
-%           {}}%
-   \fi}
-
 \def\getfiguredimensions
   {\dodoubleempty\dogetfiguredimensions}
 
@@ -416,3 +397,49 @@
   {\ctxlua{figures.bases.use("#1")}}
 
 \protect \endinput
+
+% \startbuffer
+% \definecolor [blue]   [c=1,m=.38,y=0,k=.64]
+% \definecolor [yellow] [c=0,m=.28,y=1,k=.06]
+%
+% \definespotcolor [blue-100]   [blue]   [p=1]
+% \definespotcolor [yellow-100] [yellow] [p=1]
+%
+% \definemultitonecolor [combicolor]   [blue=.12,yellow=.28] [c=.1,m=.1,y=.3,k=.1]
+%
+% \definemultitonecolor [combicolor-b] [blue=1]   [c=1,m=.38,y=0,k=.64] % force multitone
+% \definemultitonecolor [combicolor-y] [yellow=1] [c=0,m=.28,y=1,k=.06] % force multitone
+%
+% \useexternalfigure[demo-a][mill.png]     [object=no,width=.2\textwidth]
+% \useexternalfigure[demo-b][hacker-bw.jpg][object=no,width=.2\textwidth]
+%
+% \startbaselinecorrection \startcombination[4*1]
+%   {\externalfigure[demo-a]}                     {no color}
+%   {\externalfigure[demo-a][color=combicolor]}   {indexed duotone}
+%   {\externalfigure[demo-a][color=combicolor-b]} {spot color}
+%   {\externalfigure[demo-a][color=combicolor-y]} {spot color}
+% \stopcombination \stopbaselinecorrection
+%
+% \startbaselinecorrection \startcombination[4*1]
+%   {\externalfigure[demo-b]}                     {no color}
+%   {\externalfigure[demo-b][color=combicolor]}   {indexed duotone}
+%   {\externalfigure[demo-b][color=combicolor-b]} {spot color}
+%   {\externalfigure[demo-b][color=combicolor-y]} {spot color}
+% \stopcombination \stopbaselinecorrection
+%
+% \startbaselinecorrection \startcombination[4*1]
+%   {\externalfigure[demo-a]}                     {no color}
+%   {\externalfigure[demo-a][color=combicolor]}   {indexed duotone}
+%   {\externalfigure[demo-a][color=blue-100]}     {spot color}
+%   {\externalfigure[demo-a][color=yellow-100]}   {spot color}
+% \stopcombination \stopbaselinecorrection
+%
+% \startbaselinecorrection \startcombination[4*1]
+%   {\externalfigure[demo-b]}                     {no color}
+%   {\externalfigure[demo-b][color=combicolor]}   {indexed duotone}
+%   {\externalfigure[demo-b][color=blue-100]}     {spot color}
+%   {\externalfigure[demo-b][color=yellow-100]}   {spot color}
+% \stopcombination \stopbaselinecorrection
+% \stopbuffer
+%
+% \getbuffer \typebuffer

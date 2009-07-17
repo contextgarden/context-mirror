@@ -19,6 +19,170 @@
 
 \registerctxluafile{pack-obj}{1.001}
 
+% \startluacode
+% local texbox, texdimen, texcount, texwrite = tex.box, tex.dimen, tex.count, tex.write
+% local pdfxform, pdfrefxform = pdf.xform, pdf.refxform
+%
+% function pdf.xform   (l) texbox["objectbox"] = nil return l end
+% function pdf.refxform(l) return node.copy_list(l) end
+%
+% backends.codeinjections.register = pdf.xform
+% backends.codeinjections.restore  = pdf.refxform
+%
+% local codeinjections = backends.codeinjections
+%
+% objects = objects or { }
+%
+% local data = { }
+%
+% objects.data = data
+% objects.n    = 0
+%
+% function objects.register(name)
+%     objects.n = objects.n + 1
+%     local list = texbox.objectbox
+%     nodes.process_page(list)
+%     data[name] = {
+%         codeinjections.restore(list),
+%         texdimen.objectwd,
+%         texdimen.objectht,
+%         texdimen.objectdp,
+%         texdimen.objectoff,
+%     }
+% end
+%
+% function objects.restore(name)
+%     local d = data[name]
+%     if d then
+%         texbox  .objectbox = codeinjections.restore(d[1])
+%         texdimen.objectwd  = d[2]
+%         texdimen.objectht  = d[3]
+%         texdimen.objectdp  = d[4]
+%         texdimen.objectoff = d[5]
+%     else
+%         texbox  .objectbox = nil
+%         texdimen.objectwd  = 0
+%         texdimen.objectht  = 0
+%         texdimen.objectdp  = 0
+%         texdimen.objectoff = 0
+%     end
+% end
+%
+% function objects.reference(name)
+%     local d = data[name]
+%     texwrite((d and d[1]) or 0)
+% end
+%
+% function objects.enhance(name)
+%     local d = data[name]
+%     if d then
+%         d[6] = texcount.realpageno
+%     end
+% end
+%
+% function objects.page(name)
+%     local d = data[name]
+%     texwrite((d and d[6]) or texcount.realpageno)
+% end
+%
+% function objects.doifelse(name)
+%     commands.testcase(data[name])
+% end
+% \stopluacode
+%
+% \newbox  \objectbox
+% \newtoks \everyobject
+% \newif   \ifinobject
+%
+% \newdimen\objectoff  \def\objectmargin{\the\objectoff}
+% \newdimen\objectwd   \def\objectwidth {\the\objectwd }
+% \newdimen\objectht   \def\objectheight{\the\objectht }
+% \newdimen\objectdp   \def\objectdepth {\the\objectdp }
+%
+% \def\objectoffset{1cm}
+%
+% \everyobject{\the\everyPDFxform}
+%
+% \let\doresetobjects\relax
+%
+% \def\setobject     #1#2{\begingroup\objectoff\objectoffset\inobjecttrue\the\everyobject\dowithnextbox{\dosetobject{#1}{#2}}}
+% \def\settightobject#1#2{\begingroup\objectoff\zeropoint   \inobjecttrue\the\everyobject\dowithnextbox{\dosetobject{#1}{#2}}}
+%
+% \let\objectsetvbox\vbox  %\def\objectsetvbox{\ruledvbox}
+% \let\objectgetvbox\vbox  %\def\objectgetvbox{\ruledvbox}
+% \let\objectsethbox\hbox  %\def\objectsethbox{\ruledhbox}
+% \let\objectgethbox\hbox  %\def\objectgethbox{\ruledhbox}
+%
+% \def\dosetobject#1#2%
+%   {\objectwd\wd\nextbox
+%    \objectht\ht\nextbox
+%    \objectdp\dp\nextbox
+%    \ifdim\objectoff=\zeropoint\relax
+%      \setbox\objectbox\box\nextbox
+%    \else
+%      \setbox\objectbox\objectsetvbox spread 2\objectoff{\vss\objectsethbox spread 2\objectoff{\hss\flushnextbox\hss}\vss}%
+%    \fi
+%    \ctxlua{objects.register("#1::#2")}%
+%    \endgroup}
+%
+% \def\getobject#1#2%
+%   {\begingroup
+%    \ctxlua{objects.restore("#1::#2")}%
+%    \ifdim\objectoff=\zeropoint\relax \else
+%      \setbox\objectbox\objectgetvbox to \dimexpr\objectht+\objectdp\relax
+%        {\vss\objectgethbox to \objectwd{\hss\box\objectbox\hss}\vss}%
+%      \wd\objectbox\objectwd
+%      \ht\objectbox\objectht
+%      \dp\objectbox\objectdp
+%    \fi
+%    \box\objectbox
+%    \endgroup}
+%
+% \def\getpageobject#1#2%
+%   {\begingroup
+%    \ctxlua{objects.restore("#1::#2")}%
+%    \ifdim\objectoff=\zeropoint\relax
+%       \setbox\objectbox\objectgethbox{\ctxlatelua{objects.enhance("#1::#2")}\box\objectbox}
+%    \else
+%      \setbox\objectbox\objectgetvbox to \dimexpr\objectht+\objectdp\relax
+%        {\vss\objectgethbox to \objectwd{\ctxlatelua{objects.enhance("#1::#2")}\hss\box\objectbox\hss}\vss}%
+%      \wd\objectbox\objectwd
+%      \ht\objectbox\objectht
+%      \dp\objectbox\objectdp
+%    \fi
+%    \box\objectbox
+%    \endgroup}
+%
+% \def\setobjectdirectly           #1#2{\ctxlua{objects.register("#1::#2")}}
+% \def\getobjectdirectly           #1#2{\ctxlua{objects.restore ("#1::#2")}}
+% \def\getobjectdimensions         #1#2{\ctxlua{objects.restore ("#1::#2")}}
+% \def\doifobjectfoundelse         #1#2{\ctxlua{objects.doifelse("#1::#2")}}
+% \def\doifobjectreferencefoundelse#1#2{\ctxlua{objects.doifelse("#1::#2")}}
+%
+% \let\objectreferenced\relax
+% \let\driverreferenced\relax
+%
+% \def\doregisterobjectreference{\writestatus{objects}{obsolete: register object reference}\gobblethreearguments}
+% \def\dooverloadobjectreference{\writestatus{objects}{obsolete: overload object reference}\gobblethreearguments}
+% \def\dosetobjectreference     {\writestatus{objects}{obsolete: set      object reference}\gobblethreearguments}
+% \def\dosetdriverreference     {\writestatus{objects}{obsolete: set      driver reference}\gobblethreearguments}
+%
+% \def\defaultobjectreference{0}
+% \def\defaultobjectpage     {\realfolio}
+%
+% \def\dogetobjectreference    #1#2#3{\xdef#3{\ctxlua{objects.reference("#1::#2)}}}
+% \def\dogetobjectreferencepage#1#2#3{\xdef#3{\ctxlua{objects.page("#1::#2))}}}
+%
+% \protect
+%
+% \starttext
+%     test \setobject{a}{b}\ruledhbox{xxx}\getobject{a}{b} test
+%     \vskip3cm
+%     test \settightobject{a}{b}\ruledhbox{xxx}\getobject{a}{b} test
+%     test \settightobject{a}{c}\ruledhbox{xxx}\getobject{a}{c} test
+%     \dorecurse{5000}{test \setobject{a}{b}\ruledhbox{xxx}\getobject{a}{b} test }
+% \stoptext
+
 %D \macros
 %D   {setobject,getobject,ifinobject}
 %D
@@ -63,7 +227,7 @@
    \fi}
 
 \def\dosetobject#1#2#3% \initializepaper this will move to \everyshipout
-  {\initializepaper
+  {% \initializepaper
    \ifcsname\r!object#2::#3\endcsname
      \expandafter\gobblefivearguments
    \else % tzt, overload internal referenced objects to save entries
@@ -125,7 +289,7 @@
    \csname\r!object#1::#2\endcsname}
 
 \def\dogetobject#1#2#3#4#5#6#7% don't change this, should work for dvi & pdf
-  {\initializepaper
+  {% \initializepaper
    \forgetall
    \dontshowcomposition
    \setbox\scratchbox\vbox

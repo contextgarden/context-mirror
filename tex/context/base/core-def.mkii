@@ -74,4 +74,11 @@
 
 % \appendtoks\everyjob\expandafter{\the\everyjob\checkpreprocessor}\to\everydump
 
+% normally one does not want this to happen nested, maybe there
+% is more; non public vars btw, will become conditionals
+
+\ifx\writetoregisterfalse\undefined \else \appendtoks \writetoregisterfalse \to \everybeforeutilityread \fi
+\ifx\writetolistfalse    \undefined \else \appendtoks \writetolistfalse     \to \everybeforeutilityread \fi
+\ifx\notesenabledfalse   \undefined \else \appendtoks \notesenabledfalse    \to \everybeforeutilityread \fi
+
 \protect \endinput

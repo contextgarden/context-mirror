@@ -99,6 +99,7 @@
 \definemessageconstant {encodings}
 \definemessageconstant {regimes}
 \definemessageconstant {figures}
+\definemessageconstant {fields}
 \definemessageconstant {files}
 \definemessageconstant {floatblocks}
 \definemessageconstant {fonts}
@@ -383,11 +384,13 @@
 % vervallen : hd hr hm vt vr vm tr tn te br bm bo on om or
 
 \definesystemvariable {ab}   % AlignedBoxes
+\definesystemvariable {ac}   % ACcent
 \definesystemvariable {ag}   % AchterGrond
 \definesystemvariable {al}   % ALinea's
 \definesystemvariable {am}   % interActieMenu
 \definesystemvariable {an}   % ANchor
 \definesystemvariable {as}   % AlignmentSwitch
+\definesystemvariable {at}   % ATtachments
 \definesystemvariable {ba}   % synchronisatieBAlk
 \definesystemvariable {be}   % startstop (BeginEnd)
 \definesystemvariable {bj}   % BlokJe
@@ -501,7 +504,9 @@
 \definesystemvariable {mb}   % MargeBlokken
 \definesystemvariable {md}   % MoDule
 \definesystemvariable {mg}   % Metapost paGe
+\definesystemvariable {mh}   % MultilingualHead
 \definesystemvariable {mk}   % MarKering
+\definesystemvariable {ml}   % MultilingualLabel
 \definesystemvariable {mt}   % inline MaTh
 \definesystemvariable {mo}   % Math Options
 \definesystemvariable {mp}   % MetaPost
@@ -686,7 +691,7 @@
 \definefileconstant {filfilename} {cont-fil}
 \definefileconstant {modfilename} {cont-mod}
 
-%D Handy for typescripts:
+%D Handy for typescripts (we could use s! instead:
 
 \definetypescriptconstant {name}    {name}
 \definetypescriptconstant {default} {default}
@@ -796,31 +801,6 @@
 %D done so, selection is permitted.
 
 \selectinterface
-
-%D And only after this selection is done, we can define
-%D messages, otherwise the default language is in use.
-
-% \ifinterfacetranslation \else % interfacetranslation is obsolete
-
-% messages moved
-
-% messages moved
-
-% 1: to be adapted
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% \fi
 
 %D Ok, here are some more, because we've got ouselves some
 %D extensions to \CONTEXT.

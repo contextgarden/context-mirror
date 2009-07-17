@@ -485,6 +485,7 @@
    \dodescriptionheadtext{#1}%
    \iftrialtypesetting \else
      \currentdescriptionsynchronize
+     \dosetattribute{destination}\currentdescriptionattribute % todo
    \fi}
 
 \def\dodescriptionheadtext#1% title
@@ -619,6 +620,7 @@
    \fi
    \iftrialtypesetting \else
      \currentdescriptionsynchronize
+     \dosetattribute{destination}\currentdescriptionattribute % todo
    \fi}
 
 \def\doenumerationsavecounter     {\savestructurecounter[\currentdescriptionnumber]}
@@ -737,8 +739,8 @@
      \globallet\currentdescriptionlisttitle   \currentdescriptiontitle
      \globallet\currentdescriptioncoding\s!tex
    \fi
-   \xdef\currentdescriptionlabel     {\descriptionparameter\c!label}%
-   \xdef\currentdescriptionreference {\descriptionparameter\c!reference}%
+   \xdef\currentdescriptionlabel    {\descriptionparameter\c!label}%
+   \xdef\currentdescriptionreference{\descriptionparameter\c!reference}%
    %
    \doif{\descriptionparameter\c!title}\v!none{\global\nodescriptioncaptiontrue\global\nodescriptionnumbertrue}% will become obsolete
    %
@@ -749,6 +751,7 @@
    \ifnodescriptioncaption
      \glet\currentdescriptionlistnumber \relax
      \glet\currentdescriptionsynchronize\relax
+     \glet\currentdescriptionattribute  \relax
    \else
      \setnextinternalreference
      \xdef\currentdescriptionnumberentry{\ctxlua{structure.lists.push{
@@ -797,9 +800,8 @@
         userdata = structure.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
        }
      }}%
-     \xdef\currentdescriptionsynchronize % make this a macro because shared
-       {\noexpand\ctxlua{jobreferences.setinternalreference(nil,nil,\nextinternalreference)}%
-        \noexpand\ctxlatelua{structure.lists.enhance(\currentdescriptionnumberentry)}}%
+     \xdef\currentdescriptionattribute  {\ctxlua    {tex.write(jobreferences.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\@@iafocus"))}}%
+     \xdef\currentdescriptionsynchronize{\ctxlatelua{structure.lists.enhance(\currentdescriptionnumberentry)}}%
    \fi
    \endgroup}
 
@@ -863,7 +865,6 @@
 \def\dodocurrentlabelnumber[#1]%
   {\dontleavehmode
    \writestatus{!!!}{todo: reference of label}%
-%  \rawreference{lab}{#1}{\composedsectionnumber}%
    \dotextprefix{\descriptionparameter\c!text}%
    \convertedsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
 

@@ -192,7 +192,7 @@ noads.processors.relocate[math_delim] = function(pointer)
     end
 end
 
-function noads.relocate_characters(head,tail,style,penalties)
+function noads.relocate_characters(head,style,penalties)
     process(head,noads.processors.relocate)
     return true
 end
@@ -227,7 +227,7 @@ noads.processors.resize[math_fence] = function(pointer)
     end
 end
 
-function noads.resize_characters(head,tail,style,penalties)
+function noads.resize_characters(head,style,penalties)
     process(head,noads.processors.resize)
     return true
 end
@@ -290,14 +290,14 @@ noads.processors.respace[math_noad] = function(pointer)
 end
 
 
-function noads.respace_characters(head,tail,style,penalties)
+function noads.respace_characters(head,style,penalties)
     noads.process(head,noads.processors.respace)
     return true
 end
 
 -- the normal builder
 
-function noads.mlist_to_hlist(head,tail,style,penalties)
+function noads.mlist_to_hlist(head,style,penalties)
     return mlist_to_hlist(head,style,penalties), true
 end
 
@@ -309,12 +309,7 @@ tasks.new (
     }
 )
 
---~ tasks.appendaction("math", "normalizers", "noads.relocate_characters", nil, "nohead")
---~ tasks.appendaction("math", "normalizers", "noads.resize_characters",   nil, "nohead")
---~ tasks.appendaction("math", "normalizers", "noads.respace_characters",  nil, "nohead")
---~ tasks.appendaction("math", "builders",    "noads.mlist_to_hlist",      nil, "notail")
-
-local actions = tasks.actions("math",2) -- head, tail, style, penalties
+local actions = tasks.actions("math",2) -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 

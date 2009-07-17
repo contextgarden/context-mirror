@@ -107,6 +107,7 @@ function statistics.show(reporter)
                 reporter(s[1],r,n)
             end
         end
+        texio.write_nl("") -- final newline
         statistics.enable = false
     end
 end
