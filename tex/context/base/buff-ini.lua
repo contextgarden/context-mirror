@@ -89,18 +89,20 @@ end
 flags.optimize_verbatim        = true
 flags.count_empty_lines        = false
 
-commands.no_break              = "\\doverbatimnobreak"
-commands.do_break              = "\\doverbatimgoodbreak"
-commands.begin_of_line_command = "\\doverbatimbeginofline"
-commands.end_of_line_command   = "\\doverbatimendofline"
-commands.empty_line_command    = "\\doverbatimemptyline"
+local no_break_command        = "\\doverbatimnobreak"
+local do_break_command        = "\\doverbatimgoodbreak"
+local begin_of_line_command   = "\\doverbatimbeginofline"
+local end_of_line_command     = "\\doverbatimendofline"
+local empty_line_command      = "\\doverbatimemptyline"
+local begin_of_buffer_command = "\\doverbatimbeginofbuffer"
+local end_of_buffer_command   = "\\doverbatimendofbuffer"
 
 function buffers.verbatimbreak(n,m)
     if flags.optimize_verbatim then
         if n == 2 or n == m then
-            texsprint(commands.no_break)
+            texsprint(no_break_command)
         else
-            texsprint(commands.do_break)
+            texsprint(do_break_command)
         end
     end
 end
@@ -280,58 +282,75 @@ end
 
 -- maybe just line(n,str) empty(n,str)
 
-visualizers.default      = visualizers.default or { }
-visualizers.tex          = visualizers.tex     or { }
-visualizers.mp           = visualizers.mp      or { }
-
+visualizers.handlers     = visualizers.handlers or { }
 visualizers.escapetoken  = nil
 visualizers.tablength    = 7
-
 visualizers.enabletab    = true -- false
 visualizers.enableescape = false
 visualizers.obeyspace    = true
 
-local default = visualizers.default
+local handlers = visualizers.handlers
 
-function visualizers.reset()
---~     visualizers.enabletab     = false
---~     visualizers.enableescape  = false
---~     buffers.currentvisualizer = 'default'
+function buffers.newvisualizer(name)
+    local handler = { }
+    handlers[name] = handler
+    return handler
 end
 
-buffers.currentvisualizer = 'default' -- could become a local
+function buffers.getvisualizer(name)
+    return handlers[name]
+end
+
+local default = buffers.newvisualizer("default")
+
+local currentvisualizer, currenthandler
 
 function buffers.setvisualizer(str)
-    buffers.currentvisualizer = lower(str)
-    local v = visualizers[buffers.currentvisualizer]
-    if not v then
-        buffers.currentvisualizer = 'default'
-    elseif v.reset then
-        v.reset()
+    currentvisualizer = lower(str)
+    currenthandler = handlers[currentvisualizer]
+    if not currenthandler then
+        currentvisualizer = 'default'
+        currenthandler = handlers.default
+    end
+    if currenthandler.reset then
+        currenthandler.reset()
     end
 end
 
+buffers.setvisualizer("default")
+
+function visualizers.reset()
+end
+
 function buffers.doifelsevisualizer(str)
-    cs.testcase((str ~= "") and (visualizers[lower(str)] ~= nil))
+    cs.testcase((str ~= "") and (handlers[lower(str)] ~= nil))
 end
 
 -- calling routines, don't change
 
+function hooks.begin_of_buffer()
+    (currenthandler.begin_of_buffer or default.begin_of_buffer)(currentvisualizer)
+end
+
+function hooks.end_of_buffer()
+    (currenthandler.end_of_buffer or default.end_of_buffer)()
+end
+
 function hooks.flush_line(str,nesting)
     str = gsub(str," *[\n\r]+ *"," ") ; -- semi colon needed
-    (visualizers[buffers.currentvisualizer].flush_line or default.flush_line)(str,nesting)
+    (currenthandler.flush_line or default.flush_line)(str,nesting)
 end
 
 function hooks.begin_of_line(n)
-    (visualizers[buffers.currentvisualizer].begin_of_line or default.begin_of_line)(n)
+    (currenthandler.begin_of_line or default.begin_of_line)(n)
 end
 
 function hooks.end_of_line()
-    (visualizers[buffers.currentvisualizer].end_of_line or default.end_of_line)()
+    (currenthandler.end_of_line or default.end_of_line)()
 end
 
 function hooks.empty_line()
-    (visualizers[buffers.currentvisualizer].empty_line or default.empty_line)()
+    (currenthandler.empty_line or default.empty_line)()
 end
 
 function hooks.line(str)
@@ -340,21 +359,29 @@ function hooks.line(str)
     else
         str = gsub(str,"\t"," ")
     end
-    return (visualizers[buffers.currentvisualizer].line or default.line)(str)
+    return (currenthandler.line or default.line)(str)
 end
 
 -- defaults
 
+function default.begin_of_buffer(currentvisualizer)
+    texsprint(ctxcatcodes,begin_of_buffer_command,"{",currentvisualizer,"}")
+end
+
+function default.end_of_buffer()
+    texsprint(ctxcatcodes,end_of_buffer_command)
+end
+
 function default.begin_of_line(n)
-    texsprint(ctxcatcodes, commands.begin_of_line_command,"{",n,"}")
+    texsprint(ctxcatcodes, begin_of_line_command,"{",n,"}")
 end
 
 function default.end_of_line()
-    texsprint(ctxcatcodes,commands.end_of_line_command)
+    texsprint(ctxcatcodes,end_of_line_command)
 end
 
 function default.empty_line()
-    texsprint(ctxcatcodes,commands.empty_line_command)
+    texsprint(ctxcatcodes,empty_line_command)
 end
 
 function default.line(str)

@@ -179,6 +179,8 @@
       \definestructurecounter[itemgroup:#1]%
       \popmacro\currentitemgroup}}
 
+\newtoks\everysetupitemgroup
+
 \def\setupitemgroups % [#1]
   {\dodoubleargument\getparameters[\??oo]} % [#1]
 
@@ -347,6 +349,7 @@
    \def\currentitemgroup{#1}%
    \dododosetupitemgroup[#2][#3]%
    \doifsomething{#4}{\dododosetupitemgroup[#2][#4]}%
+   \the\everysetupitemgroup
    \popmacro\currentitemgroup}
 
 \def\dosetupitemgroup[#1][#2][#3][#4]%
@@ -383,6 +386,7 @@
    \setupstructurecounter
      [\currentitemgroupcounter]
      [\c!prefix=\v!no,
+      \c!criterium=\getitemparameter\currentitemlevel\c!criterium,
       \c!numberorder=\ifconditional\reverselistitem\v!reverse\else\v!normal\fi,
       \c!numberstopper=\expdoif{\getitemparameter\currentitemlevel\c!placestopper}\v!yes{\getitemparameter\currentitemlevel\c!stopper},
      %\c!numberseparatorset=,
@@ -1180,6 +1184,7 @@
    \c!lefttext=(,
    \c!righttext=),
    \c!start=1,
+   \c!criterium=\v!all, % permits 0 and negative numbers
   %\c!option=,
    \c!command=\defaultitemcommand,
    \c!symbol=\currentitemlevel]

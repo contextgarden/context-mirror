@@ -8722,6 +8722,9 @@
           <cd:constant type="max"/>
           <cd:constant type="adatta"/>
           <cd:constant type="doppiafaccia"/>
+          <cd:constant type="facciasingola"/>
+          <cd:constant type="auto"/>
+          <cd:constant type="nessuno"/>
           <cd:constant type="segnalibro"/>
         </cd:parameter>
         <cd:parameter name="attesa">

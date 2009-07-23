@@ -257,52 +257,49 @@
 %D By setting the next macros one can influence the length of
 %D the marks as well as the horizontal and vertical divisions.
 
+\newdimen\tractempwidth
+\newdimen\tractempheight
+\newdimen\tractempdepth
+
 \def\cutmarklength           {2\bodyfontsize}
+
 \chardef\horizontalcutmarks = 2
 \chardef\verticalcutmarks   = 2
 \chardef\cutmarkoffset      = 1
+
 \let\cutmarksymbol          = \relax
 \let\cutmarktoptext         = \empty
 \let\cutmarkbottomtext      = \empty
 
 \def\horizontalcuts
-  {\normalhbox to \ruledwidth
-     {\dorecurse\horizontalcutmarks
-        {\vrule\!!width\boxrulewidth\!!height\cutmarklength\normalhfill}%
+  {\normalhbox to \tractempwidth
+     {\dorecurse\horizontalcutmarks{\vrule\!!width\boxrulewidth\!!height\cutmarklength\normalhfill}%
       \unskip}}
 
 \def\verticalcuts
-  {\scratchdimen\ruledheight
-   \advance\scratchdimen \ruleddepth
-   \normalvbox to \scratchdimen
+  {\normalvbox to \dimexpr\tractempheight+\tractempdepth\relax
      {\hsize\cutmarklength
-      \dorecurse\verticalcutmarks
-        {\vrule\!!height\boxrulewidth\!!width\hsize\normalvfill}%
+      \dorecurse\verticalcutmarks{\vrule\!!height\boxrulewidth\!!width\hsize\normalvfill}%
       \unskip}}
 
 \def\baselinecuts
-  {\ifdim\ruleddepth>\zeropoint
-     \scratchdimen\ruledheight
-     \advance\scratchdimen \ruleddepth
-     \normalvbox to \scratchdimen
-       {\scratchdimen\cutmarklength
-        \divide\scratchdimen 2
-        \hsize\scratchdimen
-        \normalvskip\zeropoint\!!plus\ruledheight
+  {\ifdim\tractempdepth>\zeropoint
+     \normalvbox to \dimexpr\tractempheight+\tractempdepth\relax
+       {\hsize\dimexpr\cutmarklength/2\relax
+        \normalvskip\zeropoint\!!plus\tractempheight
         \vrule\!!height\boxrulewidth\!!width\hsize
-        \normalvskip\zeropoint\!!plus\ruleddepth}%
+        \normalvskip\zeropoint\!!plus\tractempdepth}%
    \fi}
 
 \def\cutmarksymbols#1%
-  {\normalhbox to \ruledwidth
+  {\normalhbox to \tractempwidth
      {\setbox\scratchbox\normalhbox to \cutmarklength
         {\normalhss\infofont\cutmarksymbol\normalhss}%
       \normalhss
       \normalvbox to \cutmarklength
-        {\scratchdimen\cutmarklength
-         \divide\scratchdimen \plustwo
+        {\scratchdimen\dimexpr\cutmarklength/2\relax
          \normalvss
-         \hbox to \ruledwidth
+         \hbox to \tractempwidth
            {\llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
             \normalhskip\scratchdimen\hss\infofont#1\hss\normalhskip\scratchdimen
             \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}%
@@ -310,24 +307,22 @@
       \normalhss}}
 
 \def\makecutbox#1% simplier with layers, todo
-  {\edef\ruledheight{\the\ht#1}%
-   \edef\ruleddepth {\the\dp#1}%
-   \edef\ruledwidth {\the\wd#1}%
+  {\tractempheight\ht#1%
+   \tractempdepth \dp#1%
+   \tractempwidth \wd#1%
    \setbox#1\normalhbox
      {\dontcomplain
       \forgetall
       \boxmaxdepth\maxdimen
       \offinterlineskip
-      \scratchdimen\cutmarklength
-      \divide\scratchdimen \plustwo
-      \hsize\ruledwidth
+      \scratchdimen\dimexpr\cutmarklength/2\relax
+      \hsize\tractempwidth
       \setbox\scratchbox\normalvbox
         {\setbox\scratchbox\normalhbox{\horizontalcuts}%
-         \normalvskip-\cutmarkoffset\scratchdimen
-         \normalvskip-2\scratchdimen
+         \normalvskip\dimexpr-\cutmarkoffset\scratchdimen-2\scratchdimen\relax
          \copy\scratchbox
          \normalvskip\cutmarkoffset\scratchdimen
-         \hbox to \ruledwidth
+         \hbox to \tractempwidth
            {\setbox\scratchbox\normalhbox{\verticalcuts}%
             \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
             \bgroup
@@ -339,10 +334,9 @@
             \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}%
          \normalvskip\cutmarkoffset\scratchdimen
          \copy\scratchbox}%
-      \ht\scratchbox\ruledheight
-      \dp\scratchbox\ruleddepth
+      \ht\scratchbox\tractempheight
+      \dp\scratchbox\tractempdepth
       \wd\scratchbox\zeropoint
-      \resetcolorseparation
       \startcolor[\defaulttextcolor]%
       \box\scratchbox
       \ifx\cutmarksymbol\relax \else
@@ -351,32 +345,24 @@
            \vskip-\cutmarklength
            \normalhbox{\cutmarksymbols\cutmarktoptext}%
            \vskip\cutmarkoffset\scratchdimen
-           \vskip\ruledheight
-           \vskip\ruleddepth
+           \vskip\tractempheight
+           \vskip\tractempdepth
            \vskip\cutmarkoffset\scratchdimen
            \normalhbox{\cutmarksymbols\cutmarkbottomtext}}%
-        \ht\scratchbox\ruledheight
-        \dp\scratchbox\ruleddepth
+        \ht\scratchbox\tractempheight
+        \dp\scratchbox\tractempdepth
         \wd\scratchbox\zeropoint
         \box\scratchbox
       \fi
       \stopcolor
       \box#1}%
-   \wd#1=\ruledwidth
-   \ht#1=\ruledheight
-   \dp#1=\ruleddepth}
+   \wd#1\tractempwidth
+   \ht#1\tractempheight
+   \dp#1\tractempdepth}
 
-\def\cuthbox
-  {\normalhbox\bgroup
-   \dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalhbox}
-
-\def\cutvbox
-  {\normalvbox\bgroup
-   \dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvbox}
-
-\def\cutvtop
-  {\normalvtop\bgroup
-   \dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvtop}
+\def\cuthbox{\normalhbox\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalhbox}
+\def\cutvbox{\normalvbox\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvbox}
+\def\cutvtop{\normalvtop\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvtop}
 
 %D \macros
 %D   {colormarkbox,rastermarkbox}
@@ -391,167 +377,136 @@
 \def\colormarkoffset{\cutmarkoffset}
 \def\colormarklength{\cutmarklength}
 
-\def\colorrangeA#1#2#3#4%
+\def\dodocolorrangeA#1%
+  {\fastcolored[#1]{\hrule\!!width3em\!!height\scratchdimen\!!depth\zeropoint}}
+
+\def\docolorrangeA#1 #2 %
   {\vbox
-     {\scratchdimen-\colormarklength
-      \multiply\scratchdimen 4
-      \advance\scratchdimen \ruledheight
-      \advance\scratchdimen \ruleddepth
-      \divide\scratchdimen 21
-      \def\docommand##1%
-        {\vbox
-           {\hsize3em % \scratchdimen
-            \definecolor
-              [\s!dummy]
-              [\c!c=#2##1\else0\fi,
-               \c!m=#3##1\else0\fi,
-               \c!y=#4##1\else0\fi,
-               \c!k=0]%
-            \startcolor[\s!dummy]%
-            \hrule
-              \!!width 3em
-              \!!height \scratchdimen
-              \!!depth  \zeropoint
-            \stopcolor
-            \ifdim\scratchdimen>1ex
-              \vskip-\scratchdimen
-              \vbox to \scratchdimen
-                {\vss
-                 \hbox to 3em
-                   {\hss
-                    \startcolor[\s!white]%
-                    \ifdim##1\points=\zeropoint#1\else##1\fi
-                    \stopcolor
-                    \hss}%
-                 \vss}%
-            \fi}}%
+     {\hsize3em % \scratchdimen
+      \ifcase#1\or
+        \dodocolorrangeA{c=#2}\or
+        \dodocolorrangeA{m=#2}\or
+        \dodocolorrangeA{y=#2}\or
+        \dodocolorrangeA{m=#2,y=#2}\or
+        \dodocolorrangeA{c=#2,y=#2}\or
+        \dodocolorrangeA{c=#2,m=#2}\fi
+      \ifdim\scratchdimen>1ex
+        \vskip-\scratchdimen
+        \vbox to \scratchdimen
+          {\vss\hbox to 3em{\hss#2\hss}\vss}%
+      \fi}}
+
+\def\colorrangeA#1%
+  {\vbox
+     {\startcolor[\s!white]%
+      \scratchdimen\dimexpr(-\colormarklength*4+\tractempheight+\tractempdepth)/21\relax
       \offinterlineskip
-      \processcommalist[1.00,0.95,0.75,0.50,0.25,0.05,0.00]\docommand}}
+      \docolorrangeA #1 1.00 \docolorrangeA #1 0.95
+      \docolorrangeA #1 0.75
+      \docolorrangeA #1 0.50
+      \docolorrangeA #1 0.25 \docolorrangeA #1 0.05
+      \docolorrangeA #1 0.00
+      \stopcolor}}
+
+\def\docolorrangeB #1 #2 #3 #4 #5 %
+  {\fastcolored
+    [\c!c=#2,\c!m=#3,\c!y=#4,\c!k=#5]
+    {\vrule\!!width\scratchdimen\!!height\colormarklength\!!depth\zeropoint}%
+   \ifdim\scratchdimen>2em
+     \hskip-\scratchdimen
+     \vbox to \colormarklength
+       {\vss\hbox to \scratchdimen{\hss#1\hss}\vss}%
+   \fi}
 
 \def\colorrangeB
   {\hbox
-     {\scratchdimen-\colormarklength
-      \multiply\scratchdimen \plustwo
-      \advance\scratchdimen \ruledwidth
-      \divide\scratchdimen 11
-      \def\docommand ##1 ##2 ##3##4##5##6%
-        {\definecolor
-           [\s!dummy]
-           [\c!c=##3##2\else0\fi,
-            \c!m=##4##2\else0\fi,
-            \c!y=##5##2\else0\fi,
-            \c!k=##6##2\else0\fi]%
-         \startcolor[\s!dummy]%
-         \vrule
-           \!!width  \scratchdimen
-           \!!height \colormarklength
-           \!!depth  \zeropoint
-         \stopcolor
-         \ifdim\scratchdimen>2em
-           \hskip-\scratchdimen
-           \vbox to \colormarklength
-             {\vss
-              \hbox to \scratchdimen
-                {\hss
-                 \startcolor[\s!white]%
-                 \ifdim##2\points=.5\points##2~\fi##1%
-                 \stopcolor
-                 \hss}
-              \vss}%
-         \fi}%
-      \docommand C .5 \iftrue \iffalse\iffalse\iffalse
-      \docommand M .5 \iffalse\iftrue \iffalse\iffalse
-      \docommand Y .5 \iffalse\iffalse\iftrue \iffalse
-      \docommand K .5 \iffalse\iffalse\iffalse\iftrue
-      \docommand C 1  \iftrue \iffalse\iffalse\iffalse
-      \docommand G 1  \iftrue \iffalse\iftrue \iffalse
-      \docommand Y 1  \iffalse\iffalse\iftrue \iffalse
-      \docommand R 1  \iffalse\iftrue \iftrue \iffalse
-      \docommand M 1  \iffalse\iftrue \iffalse\iffalse
-      \docommand B 1  \iftrue \iftrue \iffalse\iffalse
-      \docommand K 1  \iffalse\iffalse\iffalse\iftrue}}
+     {\startcolor[\s!white]%
+      \scratchdimen\dimexpr(-\colormarklength*\plustwo+\tractempwidth)/11\relax
+      \docolorrangeB .5~C .5  0  0  0
+      \docolorrangeB .5~M  0 .5  0  0
+      \docolorrangeB .5~Y  0  0 .5  0
+      \docolorrangeB .5~K  0  0  0 .5
+      \docolorrangeB    C  1  0  0  0
+      \docolorrangeB    G  1  0  1  0
+      \docolorrangeB    Y  0  0  1  0
+      \docolorrangeB    R  0  1  1  0
+      \docolorrangeB    M  0  1  0  0
+      \docolorrangeB    B  1  1  0  0
+      \docolorrangeB    K  0  0  0  1
+      \stopcolor}}
+
+\def\docolorrangeC#1 %
+  {\fastcolored
+     [\c!s=#1]%
+     {\vrule\!!width\scratchdimen\!!height\colormarklength\!!depth\zeropoint}%
+   \ifdim\scratchdimen>2em
+     \hskip-\scratchdimen
+     \vbox to \colormarklength
+       {\vss\hbox to \scratchdimen{\hss#1\hss}\vss}%
+   \fi}
 
 \def\colorrangeC
   {\hbox
-     {\resetcolorseparation
-      \scratchdimen-\colormarklength
-      \multiply\scratchdimen 2
-      \advance\scratchdimen \ruledwidth
-      \divide\scratchdimen 14
-      \def\docommand##1%
-        {\definecolor[\s!dummy][\c!s=##1]%
-         \startcolor[\s!dummy]%
-         \vrule
-           \!!width  \scratchdimen
-           \!!height \colormarklength
-           \!!depth  \zeropoint
-         \stopcolor
-         \ifdim\scratchdimen>2em
-           \hskip-\scratchdimen
-           \vbox to \colormarklength
-             {\vss
-              \startcolor[\s!white]%
-              \hbox to \scratchdimen{\hss##1\hss}
-              \stopcolor
-             \vss}%
-         \fi}%
-      \processcommalist[1,.95,.9,.85,.8,.75,.7,.6,.5,.4,.3,.2,.1,0]\docommand}}
+     {\startcolor[\s!white]%
+      \scratchdimen\dimexpr(-\colormarklength*2+\tractempwidth)/14\relax
+      \docolorrangeC  1  \docolorrangeC .95
+      \docolorrangeC .9  \docolorrangeC .85
+      \docolorrangeC .8  \docolorrangeC .75
+      \docolorrangeC .7
+      \docolorrangeC .6
+      \docolorrangeC .5
+      \docolorrangeC .4
+      \docolorrangeC .3
+      \docolorrangeC .2
+      \docolorrangeC .1
+      \docolorrangeC  0
+      \stopcolor}}
 
 \def\docolormarkbox#1#2%
-  {\edef\ruledheight{\the\ht#2}%
-   \edef\ruleddepth {\the\dp#2}%
-   \edef\ruledwidth {\the\wd#2}%
+  {\tractempheight\ht#2%
+   \tractempdepth \dp#2%
+   \tractempwidth \wd#2%
    \setbox#2\hbox
-     {\scratchdimen\colormarklength
-      \divide\scratchdimen \plustwo
+     {\scratchdimen\dimexpr\colormarklength/2\relax
       \forgetall
       \ssxx
       \setbox\scratchbox\vbox
         {\offinterlineskip
-         \vskip-\colormarkoffset\scratchdimen
-         \vskip-2\scratchdimen\relax % relax needed
-         % beware: no \ifcase, due to nested \iftrue/\iffalse
-         % and lacking \fi's
-         \doifelse{#1}{0}%
-           {\vskip\colormarklength
-            \vskip\colormarkoffset\scratchdimen
-            \vskip\ruledheight}
-           {\hbox to \ruledwidth{\hss\hbox{\colorrangeB}\hss}%
-            \vskip\colormarkoffset\scratchdimen
-            \vbox to \ruledheight
-              {\vss
-               \hbox to \ruledwidth
-                 {\llap{\colorrangeA C\iftrue\iffalse\iffalse\hskip\colormarkoffset\scratchdimen}%
-                  \hfill
-                  \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA R\iffalse\iftrue\iftrue}}%
-               \vss
-               \hbox to \ruledwidth
-                 {\llap{\colorrangeA M\iffalse\iftrue\iffalse\hskip\colormarkoffset\scratchdimen}%
-                  \hfill
-                  \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA G\iftrue\iffalse\iftrue}}%
-               \vss
-               \hbox to \ruledwidth
-                 {\llap{\colorrangeA Y\iffalse\iffalse\iftrue\hskip\colormarkoffset\scratchdimen}%
-                  \hfill
-                  \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA B\iftrue\iftrue\iffalse}}%
-               \vss}}%
+         \vskip\dimexpr-\colormarkoffset\scratchdimen-2\scratchdimen\relax
+         \ifcase#1\relax
+           \vskip\dimexpr\colormarklength+\scratchdimen+\tractempheight\relax
+         \else
+           \hbox to \tractempwidth{\hss\hbox{\colorrangeB}\hss}%
+           \vskip\colormarkoffset\scratchdimen
+           \vbox to \tractempheight
+             {\vss
+              \hbox to \tractempwidth
+                {\llap{\colorrangeA1\hskip\colormarkoffset\scratchdimen}\hfill
+                 \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA4}}%
+              \vss
+              \hbox to \tractempwidth
+                {\llap{\colorrangeA2\hskip\colormarkoffset\scratchdimen}\hfill
+                 \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA5}}%
+              \vss
+              \hbox to \tractempwidth
+                {\llap{\colorrangeA3\hskip\colormarkoffset\scratchdimen}\hfill
+                 \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA6}}%
+              \vss}%
+         \fi
          \vskip\colormarkoffset\scratchdimen
-         \hbox to \ruledwidth
-           {\hss\lower\ruleddepth\hbox{\colorrangeC}\hss}}%
-      \ht\scratchbox\ruledheight
-      \dp\scratchbox\ruleddepth
+         \hbox to \tractempwidth
+           {\hss\lower\tractempdepth\hbox{\colorrangeC}\hss}}%
+      \ht\scratchbox\tractempheight
+      \dp\scratchbox\tractempdepth
       \wd\scratchbox\zeropoint
       \box\scratchbox
       \box#2}%
-   \wd#2=\ruledwidth
-   \ht#2=\ruledheight
-   \dp#2=\ruleddepth}
+   \wd#2\tractempwidth
+   \ht#2\tractempheight
+   \dp#2\tractempdepth}
 
-\def\colormarkbox % #1
-  {\ifincolor\@EA\docolormarkbox\else\@EA\gobbletwoarguments\fi1}
-
-\def\rastermarkbox % #1
-  {\ifincolor\@EA\docolormarkbox\else\@EA\gobbletwoarguments\fi0}
+\def\colormarkbox {\ifincolor\@EA\docolormarkbox\else\@EA\gobbletwoarguments\fi\plusone  } % #1
+\def\rastermarkbox{\ifincolor\@EA\docolormarkbox\else\@EA\gobbletwoarguments\fi\zerocount} % #1
 
 %D \macros
 %D   {showwhatsits, dontshowwhatsits}
@@ -618,11 +573,17 @@
      \ttx
      \ifvmode\donetrue\else\donefalse\fi
      \setbox\scratchbox\hbox
-       {\ifdone\dostartgraycolormode0\else\dostartrgbcolormode#1#2#3\fi
-        #5\dostopcolormode}%
+       {\ifdone
+          \colored[r=#1,g=#2,b=#3]{#5}% temp hack
+        \else
+          \colored[s=0]{#5}% temp hack
+        \fi}%
      \setbox\scratchbox\hbox
-       {\ifdone\dostartrgbcolormode#1#2#3\else\dostartgraycolormode0\fi
-        \vrule\!!width\wd\scratchbox\dostopcolormode
+       {\ifdone
+          \colored[r=#1,g=#2,b=#3]{\vrule\!!width\wd\scratchbox}% temp hack
+        \else
+          \colored[s=0]{\vrule\!!width\wd\scratchbox}% temp hack
+        \fi
         \hskip-\wd\scratchbox\box\scratchbox}%
      \scratchdimen1ex
      \setbox\scratchbox\hbox

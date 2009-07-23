@@ -21,7 +21,7 @@
   {\edef\temp{\detokenize{#1}}%
    \cctcounterc\expandafter`\temp\relax % relax needed
    \expandafter\startextendcatcodetable
-      \expandafter\ctxcatcodes\expandafter\catcode\the\cctcounterc=13
+      \expandafter\ctxcatcodes\expandafter\catcode\the\cctcounterc\activecatcode
    \stopextendcatcodetable
    \letcatcodecommand \ctxcatcodes \cctcounterc \temp \relax
    \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi}
@@ -38,7 +38,7 @@
   {\cctcounterc\uccode\activehackcode
    \if#1"\uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1#2}\empty #1#2\else
          \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1#2}\empty`#1#2\fi
-   \catcode\uccode\activehackcode13
+   \catcode\uccode\activehackcode\activecatcode
    \uppercase{\def\next{~}}%
    \uccode\activehackcode\cctcounterc
    \expandafter\expandafter\expandafter\def\expandafter\next\expandafter

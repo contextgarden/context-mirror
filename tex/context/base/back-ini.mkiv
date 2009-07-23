@@ -50,31 +50,12 @@
 %D Not everything here makes sense and the content of this file will
 %D definitely change.
 
-\let \dostartgraymode          \gobbleoneargument
-\let \dostopgraymode           \donothing
-\let \dostartrgbcolormode      \gobblethreearguments
-\let \dostartcmykcolormode     \gobblefourarguments
-\let \dostartgraycolormode     \gobbleoneargument
-\let \dostopcolormode          \donothing
-\let \dostartspotcolormode     \gobbletwoarguments
-\let \doregisterspotcolorname  \gobbletwoarguments
-\let \dostartnonecolormode     \donothing
-\let \doregisternonecolor      \donothing
-
-\let \doinsertsoundtrack       \gobblethreearguments
-
-\let \dostartrotation          \gobbleoneargument
-\let \dostoprotation           \donothing
-\let \dostartscaling           \gobbletwoarguments
-\let \dostopscaling            \donothing
-\let \dostartmirroring         \donothing
-\let \dostopmirroring          \donothing
-\let \dostartnegative          \donothing
-\let \dostopnegative           \donothing
-\let \dostartoverprint         \donothing
-\let \dostopoverprint          \donothing
-\let \dostartgraphicgroup      \donothing
-\let \dostopgraphicgroup       \donothing
+\let \dostartrotation  \gobbleoneargument
+\let \dostoprotation   \donothing
+\let \dostartscaling   \gobbletwoarguments
+\let \dostopscaling    \donothing
+\let \dostartmirroring \donothing
+\let \dostopmirroring  \donothing
 
 %D \macros
 %D   {doovalbox}
@@ -106,9 +87,6 @@
 
 \let \dostartclipping \gobblethreearguments
 \let \dostopclipping  \donothing
-
-\let \dosetuprenderingopenpageaction  \donothing
-\let \dosetuprenderingclosepageaction \donothing
 
 %D \macros
 %D   {dostartobject,
@@ -163,7 +141,7 @@
 %D version 3.0 (\PDF\ version 1.2) viewers proved to be too
 %D bugged to support named destinations.
 
-\newif\ifusepagedestinations
+\newif\ifusepagedestinations % not yet interfaced in mkiv
 
 %D \macros
 %D   {jobsuffix}

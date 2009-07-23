@@ -31,11 +31,11 @@
 
 \def\negatecolorbox#1%
   {\setbox#1\hbox
-     {\dostartnegative
+     {\startnegativeproperty % might change
       \startcolor[white]\vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1\stopcolor
       \hskip-\wd#1%
       \box#1%
-      \dostopnegative}}
+      \stopnegativeproperty}}
 
 %D There are in principle two ways to handle overprint: bound to colors
 %D or independent. For the moment we only support independent overprint
@@ -46,7 +46,7 @@
 
 \def\starttextoverprint
   {\doifelse\@@cloverprint\v!yes
-     {\let\stoptextoverprint\dostopoverprint\dostartoverprint}
+     {\let\stoptextoverprint\stopoverprintproperty\startoverprintproperty}
      {\let\stoptextoverprint\donothing}}
 
 \let\stoptextoverprint\donothing

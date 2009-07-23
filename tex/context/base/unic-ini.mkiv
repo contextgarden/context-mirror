@@ -13,14 +13,10 @@
 
 \writestatus{loading}{ConTeXt Unicode Support / Initialization}
 
-%D Much of this is not needed at all in \LUATEX\ and we can save some
-%D 50K on the compressed format.
-
 \unprotect
 
-\let    \keeputfcharacters\relax
-\chardef\utfunicodetracer \zerocount
-\chardef\utfunicommandmode\zerocount
+\let    \keeputfcharacters\relax       % used in xtag
+\chardef\utfunicodetracer \zerocount   % used in xtag
 
 \def\unicodechar     #1{\char\numexpr#1\relax} % no lookahead
 \def\unicodenumber   #1{\the \numexpr#1\relax} % no lookahead

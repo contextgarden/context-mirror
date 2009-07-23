@@ -63,9 +63,11 @@
 \def\dohyphenatedurlbefore#1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}%
 \def\dohyphenatedurlnormal#1{\char#1\relax}%
 
-\def\sethyphenatedurlnormal#1{\ctxlua{commands.hyphenatedurl.characters[\!!bs#1\!!es]=0}}
-\def\sethyphenatedurlbefore#1{\ctxlua{commands.hyphenatedurl.characters[\!!bs#1\!!es]=1}}
-\def\sethyphenatedurlafter #1{\ctxlua{commands.hyphenatedurl.characters[\!!bs#1\!!es]=2}}
+\def\sethyphenatedurlnormal#1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}}
+\def\sethyphenatedurlbefore#1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}}
+\def\sethyphenatedurlafter #1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}}
+
+% \sethyphenatedurlafter{ABCDEF}
 
 \chardef\hyphenatedurllefthyphenmin  = 3
 \chardef\hyphenatedurlrighthyphenmin = 3

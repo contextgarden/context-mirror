@@ -22,9 +22,10 @@ local kern  = node.id("kern")
 local fontdata = fonts.ids
 local chardata = characters.data
 
-cases         = cases or { }
-cases.enabled = false
-cases.actions = { }
+cases           = cases or { }
+cases.enabled   = false
+cases.actions   = { }
+cases.attribute = attributes.private("case")
 
 local actions  = cases.actions
 local lastfont = nil

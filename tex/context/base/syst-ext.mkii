@@ -3040,6 +3040,19 @@
    \expandafter\globalprocesscommaitem#1,],}
 
 %D \macros
+%D   {startprocesscommalist,startprocesscommacommand}
+%D
+%D Two more:
+
+\long\def\startprocesscommalist[#1]#2\stopprocesscommalist
+  {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
+   \processcommalist[#1]\currentcommalistcommand}
+
+\long\def\startprocesscommacommand[#1]#2\stopprocesscommacommand
+  {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
+   \processcommacommand[#1]\currentcommalistcommand}
+
+%D \macros
 %D   {withoutpt,PtToCm,
 %D    numberofpoints,dimensiontocount}
 %D

@@ -10,41 +10,30 @@ local hlist = node.id('hlist')
 local vlist = node.id('vlist')
 local disc  = node.id('disc')
 local mark  = node.id('mark')
+local kern  = node.id('kern')
+local glue  = node.id('glue')
 
-local free_node = node.free
+local free_node   = node.free
+local remove_node = node.remove
 
 local function cleanup_page(head) -- rough
-    local prev, start = nil, head
+    local start = head
     while start do
-        local id, nx = start.id, start.next
-        if id == disc or id == mark then
-            if prev then
-                prev.next = nx
-            end
-            if start == head then
-                head = nx
-            end
-            local tmp = start
-            start = nx
+        local id = start.id
+        if id == disc or (id == glue and not start.spec) or (id == kern and start.kern == 0) or id == mark then
+            head, start, tmp = remove_node(head,start)
             free_node(tmp)
         elseif id == hlist or id == vlist then
             local sl = start.list
             if sl then
                 start.list = cleanup_page(sl)
-                prev, start = start, nx
+                start = start.next
             else
-                if prev then
-                    prev.next = nx
-                end
-                if start == head then
-                    head = nx
-                end
-                local tmp = start
-                start = nx
+                head, start, tmp = remove_node(head,start)
                 free_node(tmp)
             end
         else
-            prev, start = start, nx
+            start = start.next
         end
     end
     return head
@@ -53,6 +42,7 @@ end
 nodes.cleanup_page_first = false
 
 function nodes.cleanup_page(head)
+    -- about 10% of the nodes make no sense for the backend
     if nodes.cleanup_page_first then
         head = cleanup_page(head)
     end
@@ -64,3 +54,5 @@ local actions = tasks.actions("shipouts",0)  -- no extra arguments
 function nodes.process_page(head) -- problem, attr loaded before node, todo ...
     return actions(head)
 end
+
+--~ nodes.process_page = actions

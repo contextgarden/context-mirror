@@ -13,6 +13,8 @@ local format, gmatch, concat, round, match = string.format, string.gmatch, table
 local sprint = tex.sprint
 local tonumber, type = tonumber, type
 
+local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+
 local ctxcatcodes = tex.ctxcatcodes
 
 local trace_textexts = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
@@ -124,7 +126,7 @@ end
 
 local function spotcolorconverter(parent, n, d, p)
     registerspotcolor(parent)
-    return pdfcolor(colors.model,registercolor('color',nil,'spot',parent,n,d,p))
+    return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p))
 end
 
 function metapost.colorhandler(cs, object, result, colorconverter) -- handles specials
@@ -770,17 +772,17 @@ end
 function metapost.getclippath(data)
     local mpx = metapost.format("metafun")
     if mpx and data then
-        statistics.starttiming(metapost)
-        statistics.starttiming(metapost.exectime)
+        starttiming(metapost)
+        starttiming(metapost.exectime)
         local result = mpx:execute(format("beginfig(1);%s;endfig;",data))
-        statistics.stoptiming(metapost.exectime)
+        stoptiming(metapost.exectime)
         if result.status > 0 then
             print("error", result.status, result.error or result.term or result.log)
             result = ""
         else
             result = metapost.filterclippath(result)
         end
-        statistics.stoptiming(metapost)
+        stoptiming(metapost)
         sprint(result)
     end
 end
@@ -819,15 +821,17 @@ function metapost.intermediate.actions.makempy()
     if #graphics > 0 then
         local externals = metapost.externals
         externals.n = externals.n + 1
-        statistics.starttiming(externals)
+        starttiming(externals)
         local mpofile = tex.jobname .. "-mpgraph"
         local mpyfile = file.replacesuffix(mpofile,"mpy")
         local pdffile = file.replacesuffix(mpofile,"pdf")
         local texfile = file.replacesuffix(mpofile,"tex")
         io.savedata(texfile, { start, preamble, metapost.tex.get(), concat(graphics,"\n"), stop }, "\n")
-        os.execute(format("context --once %s", texfile))
+        local command = format("context --once %s %s", (tex.interactionmode == 0 and "--batchmode") or "", texfile)
+        os.execute(command)
         if io.exists(pdffile) then
-            os.execute(format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile))
+            command = format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile)
+            os.execute(command)
             local result = { }
             if io.exists(mpyfile) then
                 local data = io.loaddata(mpyfile)
@@ -837,7 +841,7 @@ function metapost.intermediate.actions.makempy()
                 io.savedata(mpyfile,concat(result,""))
             end
         end
-        statistics.stoptiming(externals)
+        stoptiming(externals)
         graphics = { } -- ?
     end
 end

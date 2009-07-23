@@ -150,55 +150,88 @@
 
 \let\OTRdefault\empty
 
-\def\OTRcommand#1%
-  {\csname\@@OTR
-     \ifcsname\@@OTR\OTRidentifier\strippedcsname#1\endcsname
-       \OTRidentifier
-     \else\ifcsname\@@OTR\OTRdefault\strippedcsname#1\endcsname % fallback
-       \OTRdefault
-     \fi\fi
-   \strippedcsname#1\endcsname}
-
 % obsolete
 
 \def\installotr#1% andere naam, beter \connectotr of zo
   {\def\OTRidentifier{#1}}
 
+% \def\OTRcommand#1%
+%   {\csname\@@OTR
+%      \ifcsname\@@OTR\OTRidentifier\strippedcsname#1\endcsname
+%        \OTRidentifier
+%      \else\ifcsname\@@OTR\OTRdefault\strippedcsname#1\endcsname % fallback
+%        \OTRdefault
+%      \fi\fi
+%    \strippedcsname#1\endcsname}
+%
+% maybe faster but at least less tracing:
+
+\def\OTRcommand#1%
+  {\csname\@@OTR
+     \ifcsname\@@OTR\OTRidentifier\expandafter\gobbleoneargument\string#1\endcsname
+       \OTRidentifier
+     \else\ifcsname\@@OTR\OTRdefault\expandafter\gobbleoneargument\string#1\endcsname % fallback
+       \OTRdefault
+     \fi\fi
+   \expandafter\gobbleoneargument\string#1\endcsname}
+
 \def\activateotr#1#2%
   {\def\OTRidentifier{#1}%
    \def\OTRdefault   {#2}}
 
+% variant that does a preset:
+
+\newtoks\registeredotrcommands
+
+\def\registerotrcommand#1%
+  {\appendtoks\dowithotrcommand#1\to\registeredotrcommands}
+
+\def\dopresetotrcommand#1%
+ {\expandafter\let\expandafter#1\csname\@@OTR
+    \ifcsname\@@OTR\OTRidentifier\expandafter\gobbleoneargument\string#1\endcsname
+      \OTRidentifier
+    \else\ifcsname\@@OTR\OTRdefault\expandafter\gobbleoneargument\string#1\endcsname % fallback
+      \OTRdefault
+    \fi\fi
+  \expandafter\gobbleoneargument\string#1\endcsname}
+
+\def\activateotr#1#2%
+  {\def\OTRidentifier{#1}%
+   \def\OTRdefault   {#2}%
+   \let\dowithotrcommand\dopresetotrcommand
+   \the\registeredotrcommands}
+
+\appendtoks
+  \activateotr{ONE}{}%
+\to\everydump
+
 %D The initialization of the \type {\hsize} and \type {\vsize}
 %D depends on the OTR used.
 
-\def\setvsize             {\OTRcommand\setvsize}
-\def\sethsize             {\OTRcommand\sethsize}
-\def\finalsidefloatoutput {\OTRcommand\finalsidefloatoutput}
-\def\dopagecontents       {\OTRcommand\dopagecontents}
+% todo: \registerotrcommand\output, is a toks
 
-\def\dosettopinserts      {\OTRcommand\dosettopinserts}
-\def\dosetbotinserts      {\OTRcommand\dosetbotinserts}
-\def\dotopinsertions      {\OTRcommand\dotopinsertions}
-\def\dobotinsertions      {\OTRcommand\dobotinsertions}
-\def\dosetbothinserts     {\OTRcommand\dosetbothinserts}
-
-\def\doflushfloats        {\OTRcommand\doflushfloats}
-\def\flushfloatbox        {\OTRcommand\flushfloatbox}
-\def\docheckiffloatfits   {\OTRcommand\docheckiffloatfits}
-
-\def\someherefloat        {\OTRcommand\someherefloat}
-\def\somefixdfloat        {\OTRcommand\somefixdfloat}
-\def\somepagefloat        {\OTRcommand\somepagefloat}
-\def\sometopsfloat        {\OTRcommand\sometopsfloat}
-\def\somebotsfloat        {\OTRcommand\somebotsfloat}
-\def\somesidefloat        {\OTRcommand\somesidefloat}
-
-\def\flushsavedfloats     {\OTRcommand\flushsavedfloats}
-
-\def\synchronizehsize     {\OTRcommand\synchronizehsize}
-
-\def\gotonextpage {\OTRcommand\gotonextpage }
-\def\gotonextpageX{\OTRcommand\gotonextpageX} % will become obsolete
+\registerotrcommand\setvsize             % \def\setvsize             {\OTRcommand\setvsize}
+\registerotrcommand\sethsize             % \def\sethsize             {\OTRcommand\sethsize}
+\registerotrcommand\finalsidefloatoutput % \def\finalsidefloatoutput {\OTRcommand\finalsidefloatoutput}
+\registerotrcommand\dopagecontents       % \def\dopagecontents       {\OTRcommand\dopagecontents}
+\registerotrcommand\dosettopinserts      % \def\dosettopinserts      {\OTRcommand\dosettopinserts}
+\registerotrcommand\dosetbotinserts      % \def\dosetbotinserts      {\OTRcommand\dosetbotinserts}
+\registerotrcommand\dotopinsertions      % \def\dotopinsertions      {\OTRcommand\dotopinsertions}
+\registerotrcommand\dobotinsertions      % \def\dobotinsertions      {\OTRcommand\dobotinsertions}
+\registerotrcommand\dosetbothinserts     % \def\dosetbothinserts     {\OTRcommand\dosetbothinserts}
+\registerotrcommand\doflushfloats        % \def\doflushfloats        {\OTRcommand\doflushfloats}
+\registerotrcommand\flushfloatbox        % \def\flushfloatbox        {\OTRcommand\flushfloatbox}
+\registerotrcommand\docheckiffloatfits   % \def\docheckiffloatfits   {\OTRcommand\docheckiffloatfits}
+\registerotrcommand\someherefloat        % \def\someherefloat        {\OTRcommand\someherefloat}
+\registerotrcommand\somefixdfloat        % \def\somefixdfloat        {\OTRcommand\somefixdfloat}
+\registerotrcommand\somepagefloat        % \def\somepagefloat        {\OTRcommand\somepagefloat}
+\registerotrcommand\sometopsfloat        % \def\sometopsfloat        {\OTRcommand\sometopsfloat}
+\registerotrcommand\somebotsfloat        % \def\somebotsfloat        {\OTRcommand\somebotsfloat}
+\registerotrcommand\somesidefloat        % \def\somesidefloat        {\OTRcommand\somesidefloat}
+\registerotrcommand\flushsavedfloats     % \def\flushsavedfloats     {\OTRcommand\flushsavedfloats}
+\registerotrcommand\synchronizehsize     % \def\synchronizehsize     {\OTRcommand\synchronizehsize}
+\registerotrcommand\gotonextpage         % \def\gotonextpage         {\OTRcommand\gotonextpage }
+\registerotrcommand\gotonextpageX        % \def\gotonextpageX        {\OTRcommand\gotonextpageX} % will become obsolete
 
 % beter een \installotr#1 met #1 = macro en auto test
 

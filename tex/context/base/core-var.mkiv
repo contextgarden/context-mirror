@@ -184,13 +184,7 @@
 %D This boolean can be used to bypass certain
 %D initializations.
 
-\ifx\protectionlevel\undefined \newcount\protectionlevel \fi
-
-\newif\ifproductionrun
-
-\appendtoks \productionruntrue \to \everydump
-
-\appendtoks \ifcase\protectionlevel\else\reportunprotection\fi \to \everydump
+\newif\ifproductionrun   \appendtoks \productionruntrue \to \everydump
 
 %D \macros
 %D   {everyboxedcontent, ifboxedcontent,
@@ -255,8 +249,6 @@
 
 %D Add-ons:
 
-\let\startlayoutcomponent         \gobbletwoarguments % obsolete
-\let\stoplayoutcomponent          \relax              % obsolete
 \let\setlayoutcomponentattribute  \gobbletwoarguments
 \let\resetlayoutcomponentattribute\relax
 \let\layoutcomponentboxattribute  \empty

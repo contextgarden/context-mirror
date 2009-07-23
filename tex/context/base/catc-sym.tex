@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\unprotect
+% we now have loaded syst-* so we have all @@catcode constants
 
 %D We want to have access to the raw alternatives of the
 %D special characters. We use a \type {\xdef} instead of
@@ -20,9 +20,9 @@
 
 \bgroup
 
-\catcode`B=\@@begingroup
-\catcode`E=\@@endgroup
-\catcode`.=\@@escape
+\catcode`B=\begingroupcatcode
+\catcode`E=\endgroupcatcode
+\catcode`.=\escapecatcode
 
 .catcode `.{ 12 .xdef .letteropenbrace       B.string{E
 .catcode `.} 12 .xdef .letterclosebrace      B.string}E
@@ -70,10 +70,10 @@
 \def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
 
 \def\uncatcodespacetokens
-  {\catcode`\   =\@@space
-   \catcode`\^^L=\@@ignore
-   \catcode`\^^M=\@@endofline
-   \catcode`\^^?=\@@ignore}
+  {\catcode`\   =\spacecatcode
+   \catcode`\^^L=\ignorecatcode
+   \catcode`\^^M=\endoflinecatcode
+   \catcode`\^^?=\ignorecatcode}
 
 %D \macros
 %D   {setverbosecharacter,setverbosecscharacters}
@@ -94,8 +94,8 @@
 
     % if used often we can move the code inline
 
-    \catcode`\|=\@@active
-    \catcode`\~=\@@active
+    \catcode`\|=\activecatcode
+    \catcode`\~=\activecatcode
 
     \global \everyverbosechacters =
       {\setverbosecscharacter |\setverbosecscharacter ~% context specific
@@ -184,4 +184,4 @@
   \long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantextokens{#2}\endgroup}
 \fi
 
-\protect \endinput
+\endinput

@@ -142,10 +142,10 @@
    \setMPrandomseed % this has to change
    % we need to preexpand the token lists
    \doifelsevalue{\@@MPF\currentMPgraphicinstance\s!extensions}\v!yes
-     {\settrue\includeMPextensions\letgvalue{\@@MPF\currentMPgraphicinstance\s!extensions}\v!no}
+     {\settrue \includeMPextensions\letgvalue{\@@MPF\currentMPgraphicinstance\s!extensions}\v!no}
      {\setfalse\includeMPextensions}%
    \doifelsevalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!yes
-     {\settrue\includeMPinitializations }%
+     {\settrue \includeMPinitializations}%
      {\setfalse\includeMPinitializations}%
    \setbox\MPgraphicbox\hbox\bgroup
      \normalexpanded{\noexpand\ctxlua{metapost.graphic("\currentMPgraphicinstance", "\currentMPgraphicformat",

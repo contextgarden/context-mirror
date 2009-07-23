@@ -1,0 +1,140 @@
+% todo: version of placement that also takes the sync node
+
+\usemodule[s][abr-02]
+\usemodule[s][pre-60]
+
+\definecolor[red:fullcolor]    [r=1]
+\definecolor[red:lightcolor]   [r=.5]
+\definecolor[red:darkcolor]    [r=.375]
+
+\definecolor[green:fullcolor]  [g=1]
+\definecolor[green:lightcolor] [g=.5]
+\definecolor[green:darkcolor]  [g=.375]
+
+\definecolor[blue:fullcolor]   [b=1]
+\definecolor[blue:lightcolor]  [b=.5]
+\definecolor[blue:darkcolor]   [b=.375]
+
+\definepalet[red-scheme]  [fullcolor=red:fullcolor,  lightcolor=red:lightcolor,  darkcolor=red:darkcolor]
+\definepalet[green-scheme][fullcolor=green:fullcolor,lightcolor=green:lightcolor,darkcolor=green:darkcolor]
+\definepalet[blue-scheme] [fullcolor=blue:fullcolor, lightcolor=blue:lightcolor, darkcolor=blue:darkcolor]
+
+\setuppalet[red-scheme]
+
+\setupcolors
+  [textcolor=darkcolor]
+
+\setupinteraction
+  [color=darkcolor,
+   contrastcolor=darkcolor]
+
+\startuseMPgraphic{bullet}
+    path b, p ;
+    p := fullsquare scaled .5LineHeight ;
+    b := boundingbox p ;
+    p := p rotatedaround(center p, 45) ;
+    p := p shifted (0,-.125StrutDepth) ;
+    fill p withcolor \MPcolor{lightcolor} ;
+    setbounds currentpicture to b ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{bar}
+    path b, p ;
+    p := fullsquare scaled .25LineHeight ;
+    b := boundingbox p ;
+    p := p rotatedaround(center p, 45) ;
+    p := p shifted (0,+.25StrutDepth) ;
+    fill p withcolor \MPcolor{lightcolor} ;
+    setbounds currentpicture to b ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{page}
+    StartPage ;
+        fill Page enlarged 5mm withcolor .1[white,\MPcolor{fullcolor}] ;
+        interim linecap := butt ;
+        numeric h ; h := bbheight(Page)/4 ;
+        numeric w ; w := bbwidth(Page)/4 ;
+        h := h randomized(h) ;
+        w := w randomized(w) ;
+        draw
+            ulcorner Page shifted (0,-h) -- ulcorner Page -- ulcorner Page shifted (w,0)
+            withpen pensquare scaled .5cm
+            withcolor \MPcolor{lightcolor} ;
+        numeric h ; h := bbheight(Page)/4 ;
+        numeric w ; w := bbwidth(Page)/4 ;
+        h := h randomized(h) ;
+        w := w randomized(w) ;
+        draw
+            lrcorner Page shifted (0,h) -- lrcorner Page -- lrcorner Page shifted (-w,0)
+            withpen pensquare scaled .5cm
+            withcolor \MPcolor{lightcolor} ;
+        setbounds currentpicture to Page ;
+    StopPage ;
+\stopuseMPgraphic
+
+\defineoverlay[page][\useMPgraphic{page}]
+
+\definesymbol[1][\reuseMPgraphic{bullet}]
+\definesymbol[2][\reuseMPgraphic{bar}]
+
+\setupitemgroup[itemize][2][width=1em]
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   header=0pt,
+   footer=0pt,
+   backspace=1cm,
+%    topspace=1cm]
+   topspace=.5cm]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\setuphead
+  [chapter]
+  [command=\MyCommand,
+   before=,
+   after={\blank[disable]},
+   color=lightcolor,
+   style=\bfc]
+
+\definelayer
+  [title]
+  [width=\paperwidth,
+   height=\paperheight]
+
+\setupbackgrounds
+  [page]
+  [background={page,title}]
+
+\setupwhitespace
+  [big]
+
+\def\MyCommand#1#2%
+  {\setlayer[title][preset=rightbottom,x=.75cm,y=.5cm]{#2}}
+
+\def\titlepage#1#2%
+  {\startstandardmakeup
+     \definefont[LargeFont][Normal at 120pt]
+     \setlayerframed
+        [title]
+        [preset=lefttop,x=1cm,y=.25cm]
+        [align=flushleft,foregroundstyle=\LargeFont,offset=0pt,foregroundcolor=lightcolor,frame=off]
+        {#1}
+     \definefont[SmallFont][Normal at  60pt]
+     \setlayerframed
+        [title]
+        [preset=rightbottom,x=1cm,y=.5cm]
+        [align=flushright,foregroundstyle=\SmallFont,offset=0pt,foregroundcolor=lightcolor,frame=off]
+        {#2}
+   \stopstandardmakeup}
+
+\let\Title\title
+\let\TitlePage\titlepage
+
+\endinput

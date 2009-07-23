@@ -178,7 +178,7 @@ local function do_registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- sa
 end
 
 function colors.definesimplegray(name,s)
-    return colors.register('color',name,'gray',s) -- we still need to get rid of 'color'
+    return colors.register(name,'gray',s) -- we still need to get rid of 'color'
 end
 
 function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
@@ -187,13 +187,13 @@ function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent
     if t then
         if t.h then
             local r, g, b = match(t.h .. "000000","(..)(..)(..)") -- watch the 255
-            definecolor(name, colors.register('color',name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255               ), global)
+            definecolor(name, colors.register(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255               ), global)
         elseif t.r or t.g or t.b then
-            definecolor(name, colors.register('color',name,'rgb', tonumber(t.r)  or 0,      tonumber(t.g)  or 0,      tonumber(t.b)  or 0                    ), global)
+            definecolor(name, colors.register(name,'rgb', tonumber(t.r)  or 0,      tonumber(t.g)  or 0,      tonumber(t.b)  or 0                    ), global)
         elseif t.c or t.m or t.y or t.k then
-            definecolor(name, colors.register('color',name,'cmyk',tonumber(t.c)  or 0,      tonumber(t.m)  or 0,      tonumber(t.y)  or 0, tonumber(t.k) or 0), global)
+            definecolor(name, colors.register(name,'cmyk',tonumber(t.c)  or 0,      tonumber(t.m)  or 0,      tonumber(t.y)  or 0, tonumber(t.k) or 0), global)
         else
-            definecolor(name, colors.register('color',name,'gray',tonumber(t.s)  or 0), global)
+            definecolor(name, colors.register(name,'gray',tonumber(t.s)  or 0), global)
         end
         if t.a and t.t then
             definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
@@ -236,7 +236,7 @@ function colors.definespotcolor(name,parent,str,global)
                 t.p = tonumber(t.p) or 1
                 do_registerspotcolor(parent, name, cp, t.e, 1, "", t.p) -- p not really needed, only diagnostics
                 if name and name ~= "" then
-                    definecolor(name, colors.register('color',name,'spot', parent, 1, "", t.p), true)
+                    definecolor(name, colors.register(name,'spot', parent, 1, "", t.p), true)
                     if t.a and t.t then
                         definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
                     elseif colors.couple then
@@ -279,7 +279,7 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
         if cp then
             do_registerspotcolor(parent, name, cp, "", nof, dd, pp)
             do_registermultitonecolor(parent, name, cp, "", nof, dd, pp)
-            definecolor(name, colors.register('color', name, 'spot', parent, nof, dd, pp), true)
+            definecolor(name, colors.register(name, 'spot', parent, nof, dd, pp), true)
             local t = settings_to_hash_strict(selfspec)
             if t and t.a and t.t then
                 definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)

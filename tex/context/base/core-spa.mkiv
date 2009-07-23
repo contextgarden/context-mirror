@@ -1047,6 +1047,8 @@
 
 \let\normalspaceprimitive=\ % space-comment is really needed
 
+% hm ...
+
 \unexpanded\def\ {\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
 
 % Because I strip spaces at the end of lines (in the editor) we need a bit of
@@ -2057,9 +2059,23 @@
 %D
 %D Dirty hack, needed in margin content that can run of a page.
 
+% just before margintexts ... will eventually be done differently in mkiv using
+% attributes
+
+\newcount\nofkeeplinestogether
+\let\restoreinterlinepenalty\relax
+
+\def\dorestoreinterlinepenalty
+  {\global\let\restoreinterlinepenalty\relax
+   \global\resetpenalties\interlinepenalties
+   \global\nofkeeplinestogether\zerocount}
+
 \def\keeplinestogether#1%
-  {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
-   \global\setpenalties\interlinepenalties{#1}\plustenthousand}
+  {\ifnum#1>\nofkeeplinestogether
+     \global\nofkeeplinestogether#1%
+     \global\setpenalties\interlinepenalties\nofkeeplinestogether\plustenthousand
+     \global\let\restoreinterlinepenalty\dorestoreinterlinepenalty
+   \fi}
 
 \newif\ifgridsnapping % to be sure
 
@@ -2852,29 +2868,12 @@
 % using just flushleft is not okay here due to the fact that
 % leftskip has less stretch than the inter character spacing
 
-% category:
-%
-% 0 == discard
-% 1 == only if larger
-% 2 == force even if smaller
-% 3 == only take penalty component
-% 4 == add to existing skip
-% 5 == ignore following skips (== disable)
-
-% penalty:
-%
-% larger wins
-
-% order:
-%
-% larger wins
-
 \registerctxluafile{core-spa}{1.001}
 
 \definesystemattribute[kern-chars]
-\definesystemattribute[skip-category]
-\definesystemattribute[skip-penalty]
-\definesystemattribute[skip-order]
+\definesystemattribute[skip-category]  \chardef\skipcategoryattribute  \dogetattributeid{skip-category}
+\definesystemattribute[skip-penalty]   \chardef\skippenaltyattribute   \dogetattributeid{skip-penalty}
+\definesystemattribute[skip-order]     \chardef\skiporderattribute     \dogetattributeid{skip-order}
 \definesystemattribute[snap-category]
 \definesystemattribute[display-math]
 
@@ -2922,25 +2921,47 @@
 \newtoks\everyafterblankhandling
 
 \appendtoks
-    \dosetattribute{skip-category}\plusone
-    \doresetattribute{skip-order}%
-    \doresetattribute{skip-penalty}%
+    \blankskip\zeropoint
+    \attribute\skipcategoryattribute\plusone
+    \attribute\skippenaltyattribute \attributeunsetvalue
+    \attribute\skiporderattribute   \attributeunsetvalue
+    \ifblankflexible
+        \setfalse\blankisfixed
+    \else
+        \settrue\blankisfixed
+    \fi
 \to \everybeforeblankhandling
 
 \appendtoks
-    \ifblankflexible \else
-        \fixedblankskip
+    \ifconditional\blankisfixed
+        \blankskip1\blankskip
+    \else
+        \blankskip1\blankskip\!!plus\skipgluefactor\blankskip\!!minus\skipgluefactor\blankskip
     \fi
 \to \everyafterblankhandling
 
-\def\startblankhandling{\begingroup \blankskip\zeropoint \the\everybeforeblankhandling}
-\def\stopblankhandling {\the\everyafterblankhandling \vskip \blankskip \endgroup}
-\def\setblankcategory#1{\dosetattribute{skip-category}{#1}}
-\def\setblankorder   #1{\dosetattribute{skip-order}{#1}}
-\def\setblankpenalty #1{\dosetattribute{skip-penalty}{#1}}
+\def\setblankcategory#1{\attribute\skipcategoryattribute#1\relax}
+\def\setblankorder   #1{\attribute\skiporderattribute   #1\relax}
+\def\setblankpenalty #1{\attribute\skippenaltyattribute #1\relax}
 \def\addblankskip#1#2#3{\advance\blankskip#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
-\def\fixedblankskip    {\blankskip1\blankskip}
-\def\flexibleblankskip {\blankskip1\blankskip\!!plus \skipgluefactor\blankskip\!!minus\skipgluefactor\blankskip}
+\def\fixedblankskip    {\settrue \blankisfixed} % \blankskip1\blankskip}
+\def\flexibleblankskip {\setfalse\blankisfixed} % \blankskip1\blankskip\!!plus\skipgluefactor\blankskip\!!minus\skipgluefactor\blankskip}
+
+\def\startblankhandling
+  {\begingroup
+   \the\everybeforeblankhandling}
+
+\def\stopblankhandling
+  {\the\everyafterblankhandling
+   \vskip\blankskip
+   \endgroup}
+
+\def\flushblankhandling
+  {\the\everyafterblankhandling
+   \vskip\blankskip
+   \the\everybeforeblankhandling}
+
+% % % %
 
 \def\definevspacingamount
   {\dotripleempty\dodefinevspacingamount}
@@ -2959,6 +2980,8 @@
 
 \def\dovspacing[#1]%
   {\ctxlua{vspacing.analyse("\iffirstargument#1\else default\fi")}}
+
+% category:4 is default
 
 \definevspacingamount[\v!big]    [\bigskipamount]  [\openlineheight]
 \definevspacingamount[\v!medium] [\medskipamount]  [0.50\openlineheight]
@@ -3901,9 +3924,13 @@
 
 \def\flushatparagraph#1%
   {\global\chardef\everyparagraphintro\plusone
-   \global\appendtoks{#1}\to\everyfirstparagraphintro}
+   \global\appendtoks{#1}\to\everyfirstparagraphintro
+   \global\let\insertparagraphintro\doinsertparagraphintro}
 
-\def\doinsertparagraphintro
+\def\doinsertparagraphintro % can be merged with the next
+  {\ifcase\everyparagraphintro\else\@EA\dodoinsertparagraphintro\fi}
+
+\def\dodoinsertparagraphintro
   {\begingroup
    \everypar\emptytoks
    \ifcase\everyparagraphintro\relax
@@ -3919,12 +3946,10 @@
      \@@everyparagraphtoks\everynextparagraphintro
    \fi
    \the\@@everyparagraphtoks
+   \global\let\insertparagraphintro\relax
    \endgroup}
 
-\def\insertparagraphintro
-  {\ifcase\everyparagraphintro\else\@EA\doinsertparagraphintro\fi}
-
-%  \appendtoksonce\insertparagraphintro\to\everypar % should come last
+\let\insertparagraphintro\relax
 
 %D \starttyping
 %D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]
@@ -3953,18 +3978,19 @@
 %D This macro collects data that will be flushed at the next paragraph.
 %D By using this macro you can avoid interfering nodes (writes, etc).
 
-\newbox \postponednodedata
+\newbox\postponednodedata
+\let\flushpostponednodedata\relax
 
 \def\flushatnextpar
   {\bgroup
-   \dowithnextbox
-     {\global\setbox\postponednodedata\hbox{\box\postponednodedata\box\nextbox}\egroup}%
-     \hbox}
+   \global\let\flushpostponednodedata\doflushpostponednodedata
+   \dowithnextbox{\global\setbox\postponednodedata\hbox{\box\postponednodedata\box\nextbox}\egroup}\hbox}
 
-\def\flushpostponednodedata
+\def\doflushpostponednodedata
   {\ifvoid\postponednodedata\else
      \hbox{\smashedbox\postponednodedata}%
-   \fi}
+   \fi
+   \global\let\flushpostponednodedata\relax}
 
 % Very nasty but needed for margin stuff inside colored
 % paragraphs.

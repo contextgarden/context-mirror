@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['lang-url'] = {
 local utf = unicode.utf8
 
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
+local utfbyte, utfgsub = utf.byte, utf.gsub
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -70,16 +71,15 @@ do
         local n = 0
         local b = math.max(left or commands.hyphenatedurl.lefthyphenmin,2)
         local e = math.min(#str-(right or commands.hyphenatedurl.righthyphenmin)+2,#str)
-        local u = utf.byte
-        str = utf.gsub(str,"(.)",function(s)
+        str = utfgsub(str,"(.)",function(s)
             n = n + 1
             local c = chars[s]
             if not c or n<=b or n>=e then
-                return "\\n{" .. u(s) .. "}"
+                return "\\n{" .. utfbyte(s) .. "}"
             elseif c == 1 then
-                return "\\b{" .. u(s) .. "}"
+                return "\\b{" .. utfbyte(s) .. "}"
             elseif c == 2 then
-                return "\\a{" .. u(s) .. "}"
+                return "\\a{" .. utfbyte(s) .. "}"
             end
         end )
         return str

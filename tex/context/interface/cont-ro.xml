@@ -8722,6 +8722,9 @@
           <cd:constant type="max"/>
           <cd:constant type="ajustat"/>
           <cd:constant type="douafete"/>
+          <cd:constant type="ofata"/>
+          <cd:constant type="auto"/>
+          <cd:constant type="niciunul"/>
           <cd:constant type="semncarte"/>
         </cd:parameter>
         <cd:parameter name="intarziere">

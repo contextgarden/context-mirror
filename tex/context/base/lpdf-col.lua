@@ -125,16 +125,16 @@ local intransparency = false
 local pdfcolor       = lpdf.color
 
 function lpdf.rgbcode(model,r,g,b)
-    return pdfcolor(model,registercolor('color',nil,'rgb',r,g,b))
+    return pdfcolor(model,registercolor(nil,'rgb',r,g,b))
 end
 function lpdf.cmykcode(model,c,m,y,k)
-    return pdfcolor(model,registercolor('color',nil,'cmyk',c,m,y,k))
+    return pdfcolor(model,registercolor(nil,'cmyk',c,m,y,k))
 end
 function lpdf.graycode(model,s)
-    return pdfcolor(model,registercolor('color',nil,'gray',s))
+    return pdfcolor(model,registercolor(nil,'gray',s))
 end
 function lpdf.spotcode(model,n,f,d,p)
-    return pdfcolor(model,registercolor('color',nil,'spot',n,f,d,p)) -- incorrect
+    return pdfcolor(model,registercolor(nil,'spot',n,f,d,p)) -- incorrect
 end
 function lpdf.transparencycode(a,t)
     intransparency = true

@@ -37,6 +37,11 @@
 
 \def\molecule#1{\ctxlua{commands.molecule(\!!bs#1\!!es)}}
 
+%D For old times sake:
+
+\def\chem#1#2#3%
+  {\dontleavehmode\begingroup#1\lohi{#2}{#3}\endgroup}
+
 \protect \endinput
 
 

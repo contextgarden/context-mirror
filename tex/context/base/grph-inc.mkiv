@@ -16,7 +16,6 @@
 %D todo:
 %D
 %D - color conversion
-%D - color separation
 %D - alternative images
 %D - a few more obscure things
 
@@ -33,7 +32,6 @@
 \newtoks \everyexternalfigureresets
 \newtoks \everyexternalfigurechecks
 \newtoks \externalfigurepostprocessors
-\chardef \splitexternalfigure \zerocount % 0 nosplit 1 split/yes 2 split/no
 
 \let\traceexternalfigures  \traceexternalfigurestrue
 
@@ -185,16 +183,6 @@
       \let\@@efframe\v!off}%
    \doifsomething\@@efwidth {\doifdimensionelse\@@efwidth {\edef\@@efwidth {\the\dimexpr\@@efwidth }}\donothing}%
    \doifsomething\@@efheight{\doifdimensionelse\@@efheight{\edef\@@efheight{\the\dimexpr\@@efheight}}\donothing}%
-   % seperation, seldom used
-   \doifseparatingcolorselse
-     {\let\@@efforegroundcolor\empty
-      \doifelsenothing\@@efsplit
-        {\chardef\splitexternalfigure\zerocount}
-        {\doifcolorchannelelse\@@efsplit
-           {\let\@@efobject\v!no  % why?
-            \chardef\splitexternalfigure\plusone}
-           {\chardef\splitexternalfigure\plustwo}}}
-     {\chardef\splitexternalfigure\zerocount}%
    % fake color in gray bitmaps, assumes that
    % a transparent color is used
    \doifsomething\@@efforegroundcolor
@@ -311,10 +299,10 @@
             \fakebox\foundexternalfigure
           \else\ifcase\figurestatus
             % nothing
-          \else\ifnum\splitexternalfigure=\plustwo\else
+          \else
             \the\externalfigurepostprocessors
             \box\foundexternalfigure
-          \fi\fi\fi
+          \fi\fi
         \else
           \iftrialtypesetting \else \feedbackexternalfigure \fi
           \settrue\externalfigurelevel
@@ -326,8 +314,6 @@
             \fi
           \else\ifcase\figurestatus
             \externalfigurereplacement\figurelabel\figurefileoriginal{unknown}%
-          \else\ifnum\splitexternalfigure=\plustwo
-            \backgroundline[\@@efsplitcolor]{\fakebox\foundexternalfigure}%
           \else
             \the\externalfigurepostprocessors
             \doifelse\@@efreset\v!yes
@@ -340,15 +326,8 @@
                  [\c!offset=\v!overlay,
                   \c!width=\figurewidth,
                   \c!height=\figureheight]
-                 {\vfilll
-                  \ifnum\splitexternalfigure=\plusone
-                    % hm, eigenlijk in dit geval achtergrondkleur
-                    \hidesplitcolorfalse % really needed
-                    \backgroundline[\@@efsplitcolor]{\box\foundexternalfigure}%
-                  \else % = 0, no split mode
-                    \box\foundexternalfigure
-                  \fi}}%
-          \fi\fi\fi
+                 {\vfilll\box\foundexternalfigure}}%
+          \fi\fi
         \fi
       \else
         % maybe also \the\externalfigurepostprocessors

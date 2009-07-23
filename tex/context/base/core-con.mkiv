@@ -690,6 +690,22 @@
 %
 % \doloop{\doifelseconversionnumber{ctx}{\recurselevel}{[\recurselevel]}{\exitloop}}
 
+%D \macros
+%D   {ordinaldaynumber, highordinalstr, ordinalstr}
+%D
+%D Efficient general ordinal number converters are sometimes
+%D difficult to implement. Fortunately dates never exceed the
+%D number~31.
+
+\ifx\high          \undefined \let\high          \firstofoneargument \fi
+\ifx\notsmallcapped\undefined \let\notsmallcapped\firstofoneargument \fi
+
+\def\highordinalstr#1{\high{\notsmallcapped{#1}}}
+\def\ordinalstr    #1{\notsmallcapped{#1}}
+
+\def\ordinaldaynumber#1% \strippedcsname\ordinaldaynumber
+  {\expanded{\executeifdefined{\currentlanguage ordinaldaynumber}\noexpand\firstofoneargument{\number#1}}}
+
 %D As longs as symbols are linked to levels or numbers, we can
 %D also use the conversion mechanism, but in for instance the
 %D itemization macros, we prefer symbols because they can more

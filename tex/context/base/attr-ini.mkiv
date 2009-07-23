@@ -23,17 +23,18 @@
 \definesystemattribute[state]
 \definesystemattribute[skip]
 \definesystemattribute[penalty]
-\definesystemattribute[colormodel][global] % no reset          \chardef\colormodelattribute    \dogetattributeid{colormodel}
-\definesystemattribute[color]                                  \chardef\colorattribute         \dogetattributeid{color}
-\definesystemattribute[transparency]                           \chardef\transparencyattribute  \dogetattributeid{transparency}
-\definesystemattribute[background]                             \chardef\backgroundattribute    \dogetattributeid{background}
+\definesystemattribute[colormodel][global] % no reset          \chardef\colormodelattribute     \dogetattributeid{colormodel}
+\definesystemattribute[color]                                  \chardef\colorattribute          \dogetattributeid{color}
+\definesystemattribute[transparency]                           \chardef\transparencyattribute   \dogetattributeid{transparency}
+\definesystemattribute[background]                             \chardef\backgroundattribute     \dogetattributeid{background}
 \definesystemattribute[overprint]
 \definesystemattribute[negative]
 \definesystemattribute[effect]
-\definesystemattribute[viewerlayer]                            \chardef\viewerlayerattribute   \dogetattributeid{viewerlayer}
-\definesystemattribute[reference]                              \chardef\referenceattribute     \dogetattributeid{reference}
-\definesystemattribute[destination]                            \chardef\destinationattribute   \dogetattributeid{destination}
-\definesystemattribute[graphicvadjust]                         \chardef\graphicvadjustattribute\dogetattributeid{graphicvadjust}
+\definesystemattribute[viewerlayer]                            \chardef\viewerlayerattribute    \dogetattributeid{viewerlayer}
+\definesystemattribute[layoutcomponent]                        \chardef\layoutcomponentattribute\dogetattributeid{layoutcomponent}
+\definesystemattribute[reference]                              \chardef\referenceattribute      \dogetattributeid{reference}
+\definesystemattribute[destination]                            \chardef\destinationattribute    \dogetattributeid{destination}
+\definesystemattribute[graphicvadjust]                         \chardef\graphicvadjustattribute \dogetattributeid{graphicvadjust}
 
 % \definesystemattribute[ignore]
 %
@@ -53,7 +54,7 @@
 \newcount\currentcolormodel
 
 \def\setcolormodel#1%
-  {\currentcolormodel\ctxlua{tex.print(colors.setmodel('colormodel','#1'))}%
+  {\currentcolormodel\ctxlua{tex.print(colors.setmodel('#1'))}%
    \dosetattribute{colormodel}{\the\currentcolormodel}}
 
 \setcolormodel{all}
@@ -62,9 +63,9 @@
     \setcolormodel{all}% redundant?
 \to \everyjob
 
-\def\registerrgbcolor   #1#2#3#4{\ctxlua{colors.register('color','#1','rgb' ,#2,#3,#4)}}
-\def\registercmykcolor#1#2#3#4#5{\ctxlua{colors.register('color','#1','cmyk',#2,#3,#4,#5)}}
-\def\registergraycolor      #1#2{\ctxlua{colors.register('color','#1','gray',#2)}}
+\def\registerrgbcolor   #1#2#3#4{\ctxlua{colors.register('#1','rgb' ,#2,#3,#4)}}
+\def\registercmykcolor#1#2#3#4#5{\ctxlua{colors.register('#1','cmyk',#2,#3,#4,#5)}}
+\def\registergraycolor      #1#2{\ctxlua{colors.register('#1','gray',#2)}}
 
 % transparency
 

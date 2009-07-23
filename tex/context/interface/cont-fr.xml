@@ -8722,6 +8722,9 @@
           <cd:constant type="max"/>
           <cd:constant type="adapte"/>
           <cd:constant type="rectoverso"/>
+          <cd:constant type="recto"/>
+          <cd:constant type="auto"/>
+          <cd:constant type="rien"/>
           <cd:constant type="marquepage"/>
         </cd:parameter>
         <cd:parameter name="delai">

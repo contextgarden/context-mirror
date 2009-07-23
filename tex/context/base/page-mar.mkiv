@@ -215,7 +215,7 @@
    \getparameters[\??im#2][#1]%
    % will become an \everyinmarginsetup thing
    \ifcase\executeifdefined{\??im#2\c!sidemethod}{0}\else
-     \positioningtrue \positioningpartrue % global ?
+     \enableparpositions
    \fi}
 
 \def\checkinmargin[#1]%
@@ -654,8 +654,6 @@
 %D flushed at every paragraph by the following macro. Note for
 %D myself: here the location (plaats) is no longer a tag (number).
 
-% gone: \def\doflushmargincontent{\doinmargin[\@@implaats][\v!normaal][]} % + [#1][#2]{#3}}
-
 %D These are now all the same (long ago they had different
 %D implementations, somewhere in Sork time if I remember
 %D right).
@@ -669,6 +667,7 @@
 
 \def\domargincontent[#1][#2]#3% we used to check for #2/#1 being number, no longer now
   {\global\chardef\margintextcollected\plusone
+   \global\let\flushmargincontents\doflushmargincontents
    \edef\margincontenttag{#1}%
    \ifx\margincontenttag\empty
      \global\advance\margincontentlevel\plusone
@@ -683,15 +682,14 @@
      {#3}%
    \to \collectedmargintexts}
 
-\let\restoreinterlinepenalty\relax
+\def\doflushmargincontents % plural
+  {\ifcase\margintextcollected\else
+     \expandafter\flushmargincontentsindeed
+   \fi}
 
-\def\flushmargincontents % plural
-  {\restoreinterlinepenalty % here?
-   \ifcase\margintextcollected\else     % called quite often, so we
-     \expandafter\doflushmargincontents % speed up the \fi scan by
-   \fi}                                 % using a \do..
+\let\flushmargincontents\relax
 
-\def\doflushmargincontents % links + rechts
+\def\flushmargincontentsindeed % links + rechts
   {\bgroup
    \forgetall
    \global\margincontentheight\zeropoint
@@ -736,6 +734,7 @@
      % a  bit dangerous
      \vadjust{\nobreak}%
    \fi
+   \global\let\flushmargincontents\relax
    \egroup}
 
 \def\setmargincontentpenalties
@@ -765,22 +764,12 @@
    \global\chardef\margintextcollected\zerocount
    \global\collectedmargintexts\emptytoks}
 
-% \def\placemargincontent
-%   {\ifcase\margintextcollected\else
-%      \bgroup
-%        \chardef\graphicvadjustmode\zerocount
-%        \doflushmargincontents
-%      \egroup
-%    \fi}
-%
-% font fix:
-
 \def\placemargincontent
   {\ifcase\margintextcollected\else % was level check
      \bgroup
        \redoconvertfont % !!
        \chardef\graphicvadjustmode\zerocount
-       \doflushmargincontents
+       \flushmargincontentsindeed
      \egroup
    \fi}
 

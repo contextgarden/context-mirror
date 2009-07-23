@@ -25,10 +25,11 @@ local make_disc_node     = nodes.disc
 local glyph   = node.id("glyph")
 local kern    = node.id("kern")
 
-breakpoints         = breakpoints         or { }
-breakpoints.mapping = breakpoints.mapping or { }
-breakpoints.methods = breakpoints.methods or { }
-breakpoints.enabled = false
+breakpoints           = breakpoints         or { }
+breakpoints.mapping   = breakpoints.mapping or { }
+breakpoints.methods   = breakpoints.methods or { }
+breakpoints.enabled   = false
+breakpoints.attribute = attributes.private("breakpoint")
 
 storage.register("breakpoints/mapping", breakpoints.mapping, "breakpoints.mapping")
 
@@ -183,4 +184,4 @@ chars.handle_breakpoints = nodes.install_attribute_handler {
     name = "breakpoint",
     namespace = breakpoints,
     processor = breakpoints.process,
-    }
+}

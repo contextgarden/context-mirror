@@ -1136,6 +1136,19 @@
    \processcommalist[#1]\docommand}
 
 %D \macros
+%D   {startprocesscommalist,startprocesscommacommand}
+%D
+%D Two more:
+
+\long\def\startprocesscommalist[#1]#2\stopprocesscommalist
+  {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
+   \processcommalist[#1]\currentcommalistcommand}
+
+\long\def\startprocesscommacommand[#1]#2\stopprocesscommacommand
+  {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
+   \normalexpanded{\noexpand\processcommacommand[#1]}\currentcommalistcommand}
+
+%D \macros
 %D   {processaction,
 %D    processfirstactioninset,
 %D    processallactionsinset}
@@ -1768,14 +1781,6 @@
 
 \let\getexpandedparameters=\geteparameters
 
-% \def\dogetparameters#1[#2]#3[#4%
-%   {\if\noexpand#4]%
-%      \expandafter\gobbleoneargument
-%    \else
-%      \def\p!dogetparameter{\p!doassign#1#2}%
-%      \expandafter\xdogetparameters
-%    \fi#4}
-
 \def\dogetparameters#1[#2]#3[#4%
   {\if\noexpand#4]%
      \expandafter\gobbleoneargument
@@ -1801,31 +1806,6 @@
 \def\xshowassignerror#1#2#3%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
 
-% \def\p!n!doassign#1#2\@relax@#3=#4=#5#6\@relax@
-%   {\ifx\empty#3\empty
-%      \@EA\xshowassignerror
-%    \else\ifx#5\empty
-%      \@EAEAEA\xshowassignerror
-%    \else
-%      \@EAEAEA#1%
-%    \fi\fi
-%    {#2}{#3}{#4}}
-
-% \def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
-%   {\ifx\empty#3\empty
-%      \@EA\xshowassignerror
-%    \else\ifx#5\empty
-%      \@EAEAEA\xshowassignerror
-%    \else
-%      \ifcsname#2#3\endcsname
-%        \@EA\let\@EA\currentvalue\csname#2#3\endcsname
-%      \else
-%        \let\currentvalue\empty
-%      \fi
-%      \@EAEAEA#1%
-%    \fi\fi
-%    {#2}{#3}{#4}}
-
 \def\p!n!doassign#1\@relax@#2=#3=#4#5\@relax@
   {\ifx\empty#2\empty
      \@EA\xshowassignerror
@@ -1835,7 +1815,6 @@
      \@EAEAEA\setsomevalue
    \fi\fi
    {#1}{#2}{#3}}
-
 
 \def\p!e!doassign#1\@relax@#2=#3=#4#5\@relax@
   {\ifx\empty#2\empty
@@ -1861,6 +1840,26 @@
 \def\doassign  [#1][#2]{\let\setsomevalue\dosetvalue  \p!doassign#1\@relax@#2==\empty\@relax@}
 \def\doeassign [#1][#2]{\let\setsomevalue\dosetevalue \p!doassign#1\@relax@#2==\empty\@relax@}
 \def\undoassign[#1][#2]{\let\setsomevalue\doresetvalue\p!doassign#1\@relax@#2==\empty\@relax@}
+
+%D \macros
+%D   {processassignmentlist,processassignmentcommand}
+%D
+%D For Wolfgang:
+%D
+%D \starttyping
+%D \def\showpair#1#2{key:#1, value:#2\par}
+%D \processassignmentlist[a=1,b=2]\showpair
+%D \stoptyping
+%D
+%D We can optimize this one if needed but it's not a core macro so hardly
+%D worth the trouble and tokens.
+
+\def\processassignmentlist[#1]#2% #2 == \command{key}{value]
+  {\def\doprocessassignmententry##1{#2}% {##2}{##3} % namespace is ignored
+   \dogetparameters\doprocessassignmententry[][#1]}
+
+\def\processassignmentcommand[#1]%
+  {\normalexpanded{\noexpand\processassignmentlist[#1]}}
 
 %D \macros{currentvalue}
 %D

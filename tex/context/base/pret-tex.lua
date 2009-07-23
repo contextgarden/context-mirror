@@ -14,7 +14,7 @@ local rep = string.rep
 local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes, vrbcatcodes = tex.ctxcatcodes, tex.vrbcatcodes
 
-buffers.visualizers.tex = { }
+local visualizer = buffers.newvisualizer("tex")
 
 local colors = {
     "prettytwo",
@@ -36,7 +36,7 @@ local change_state, finish_state = buffers.change_state, buffers.finish_state
 local chardata = characters.data
 local is_letter = characters.is_letter
 
-function buffers.visualizers.tex.flush_line(str,nested)
+function visualizer.flush_line(str,nested)
     local state, first = 0, false
     buffers.currentcolors = colors
     for c in utfcharacters(str) do

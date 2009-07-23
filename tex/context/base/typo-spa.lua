@@ -23,9 +23,10 @@ local make_glue_node     = nodes.glue
 local glyph              = node.id("glyph")
 local fontdata           = fonts.ids
 
-spacings         = spacings         or { }
-spacings.mapping = spacings.mapping or { }
-spacings.enabled = false
+spacings           = spacings         or { }
+spacings.mapping   = spacings.mapping or { }
+spacings.enabled   = false
+spacings.attribute = attributes.private("spacing")
 
 storage.register("spacings/mapping", spacings.mapping, "spacings.mapping")
 

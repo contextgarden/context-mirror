@@ -41,12 +41,11 @@ end
 statistics.register("metapost processing time", function()
     local n =  metapost.n
     if n > 0 then
-        local e = metapost.externals.n
+        local e, t = metapost.externals.n, statistics.elapsedtime
         local str = format("%s seconds, loading: %s seconds, execution: %s seconds, n: %s",
-            statistics.elapsedtime(metapost), statistics.elapsedtime(mplib),
-            statistics.elapsedtime(metapost.exectime), n)
+            t(metapost), t(mplib), t(metapost.exectime), n)
         if e > 0 then
-            return format("%s, external: %s seconds (%s calls)", str, statistics.elapsedtime(metapost.externals), e)
+            return format("%s, external: %s seconds (%s calls)", str, t(metapost.externals), e)
         else
             return str
         end

@@ -215,7 +215,7 @@
    \getparameters[\??im#2][#1]%
    % will become an \everyinmarginsetup thing
    \ifcase\executeifdefined{\??im#2\c!sidemethod}{0}\else
-     \positioningtrue \positioningpartrue % global ?
+     \enableparpositions
    \fi}
 
 \def\checkinmargin[#1]%

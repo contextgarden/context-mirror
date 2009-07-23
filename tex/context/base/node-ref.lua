@@ -250,14 +250,14 @@ local function colorize(width,height,depth,n)
     local ucolor = u_colors[n]
     if not ucolor then
         if n == 1 then
-            u_color = register_color('color',nil,'rgb',.75,0,0)
+            u_color = register_color(nil,'rgb',.75,0,0)
         elseif n == 2 then
-            u_color = register_color('color',nil,'rgb',0,.75,0)
+            u_color = register_color(nil,'rgb',0,.75,0)
         elseif n == 3 then
-            u_color = register_color('color',nil,'rgb',0,0,.75)
+            u_color = register_color(nil,'rgb',0,0,.75)
         else
             n = 0
-            u_color = register_color('color',nil,'gray',.5)
+            u_color = register_color(nil,'gray',.5)
         end
         u_colors[n] = u_color
     end

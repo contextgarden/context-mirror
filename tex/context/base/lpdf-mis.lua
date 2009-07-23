@@ -37,6 +37,8 @@ local pdfimmediateobj = pdf.immediateobj
 
 local tobasepoints = number.tobasepoints
 
+local variables = interfaces.variables
+
 lpdf.addtoinfo   ("Trapped", pdfboolean(false))
 lpdf.addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
 
@@ -133,7 +135,7 @@ function codeinjections.setupidentity(specification)
         lpdf.addtoinfo("ModDate", pdfstring(date))
     end
     local keywords = specification.keywords or "" if keywords ~= "" then
-        keywords = string.gsub("[%s,]+", " ")
+        keywords = string.gsub(keywords, "[%s,]+", " ")
         lpdf.addtoinfo("Keywords",pdfunicode(keywords))
     end
     lpdf.addtoinfo("ID", pdfstring(format("%s.%s",tex.jobname,os.date("%Y%m%d.%H%M")))) -- needed for pdf/x
@@ -160,11 +162,14 @@ lpdf.registerdocumentfinalizer(flushjavascripts)
 -- -- --
 
 local pagespecs = {
-    max         = { "FullScreen", false, false },
-    bookmark    = { "UseOutlines", false, false },
-    fit         = { "UseNone", false, true },
-    doublesided = { "UseNone", "TwoColumnRight", true },
-    default     = { "UseNone", "auto", false },
+    [variables.max]         = { "FullScreen", false, false },
+    [variables.bookmark]    = { "UseOutlines", false, false },
+    [variables.fit]         = { "UseNone", false, true },
+    [variables.doublesided] = { "UseNone", "TwoColumnRight", true },
+    [variables.singlesided] = { "UseNone", false, false },
+    [variables.default]     = { "UseNone", "auto", false },
+    [variables.auto]        = { "UseNone", "auto", false },
+    [variables.none]        = { false, false, false },
 }
 
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
@@ -190,11 +195,15 @@ function codeinjections.setupcanvas(specification)
 end
 
 local function documentspecification()
-    local spec = pagespecs[pagespec] or pagespecs.default
+    local spec = pagespecs[pagespec] or pagespecs[variables.default]
     local mode, layout, fit = spec[1], spec[2], spec[3]
-    if layout == "auto" and doublesided then
-        spec = pagespecs.doublesided
-        mode, layout, fit = spec[1], spec[2], spec[3]
+    if layout == variables.auto then
+        if doublesided then
+            spec = pagespecs.doublesided
+            mode, layout, fit = spec[1], spec[2], spec[3]
+        else
+            layout = false
+        end
     end
     mode = mode and pdfconstant(mode)
     layout = layout and pdfconstant(layout)

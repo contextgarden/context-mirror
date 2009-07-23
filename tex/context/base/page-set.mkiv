@@ -2230,8 +2230,12 @@
      \startcolor[blue](\the\vsize->\number\columnfirstcell\#\number\columnfreecells)\stopcolor
      \hskip\leftskip}}
 
-\def\OTRSETshowstatus
-  {\iftracecolumnset \doOTRSETshowstatus \fi}
+\installtextracer{OTRSET} % low level
+
+\def\enabletextracerOTRSET {\tracecolumnsettrue \let\OTRSETshowstatus\doOTRSETshowstatus}
+\def\disabletextracerOTRSET{\tracecolumnsetfalse\let\OTRSETshowstatus\relax}
+
+\disabletextracerOTRSET
 
 % \appendtoks \OTRSETshowstatus \to \everypar
 

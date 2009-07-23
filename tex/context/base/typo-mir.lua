@@ -59,6 +59,7 @@ local chardata = characters.data
 mirror         = mirror or { }
 mirror.enabled = false
 mirror.strip   = false
+mirror.attribute = attributes.private("mirror")
 
 local state   = attributes.private('state')
 local mirrora = attributes.private('mirror')

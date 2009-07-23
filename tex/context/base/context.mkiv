@@ -80,6 +80,7 @@
 
 \loadmarkfile{core-env}
 
+\loadmarkfile{trac-tex}
 \loadmarkfile{trac-lmx}
 \loadmarkfile{trac-deb}
 
@@ -267,11 +268,11 @@
 \loadmarkfile{page-str}
 
 \loadmarkfile{anch-pgr} % overloads tabl-tbl
-\loadcorefile{anch-bar}
-\loadcorefile{anch-snc}
+\loadmarkfile{anch-bar}
+\loadmarkfile{anch-snc}
 
-\loadmarkfile{math-pln}
 \loadmarkfile{math-ini}
+\loadmarkfile{math-pln}
 \loadmarkfile{math-for}
 \loadmarkfile{math-def}
 \loadmarkfile{math-ali}
@@ -326,22 +327,24 @@
 
 %usemodule[x][res-04] % xml resource libraries
 %usemodule[x][res-08] % rlx runtime conversion
-% \usemodule[x][res-12] % rli external indentification
+%usemodule[x][res-12] % rli external indentification
 
 \unprotect
+
+\setupcurrentlanguage[\s!en]
 
 \prependtoks
     \ctxlua{statistics.starttiming(ctx)}%
 \to \everyjob
+
 \appendtoks
     \ctxlua{statistics.stoptiming(ctx)}%
 \to \everyjob
+
 \appendtoks
     \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}%
     \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}%
 \to \everydump
-
-\setupcurrentlanguage[\s!en]
 
 \appendtoks
     \ctxlua {

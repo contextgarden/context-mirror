@@ -33,6 +33,9 @@ local trace_graphics = false  trackers.register("metapost.graphics", function(v)
 
 local format = string.format
 
+local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+
+
 metapost = metapost or { }
 
 metapost.showlog = false
@@ -54,13 +57,6 @@ end
 
 metapost.finder = finder
 
---~ statistics = {
---~     ["hash_size"]=1774,
---~     ["main_memory"]=50237,
---~     ["max_in_open"]=5,
---~     ["param_size"]=4,
---~ }
-
 metapost.parameters = {
     hash_size = 100000,
     main_memory = 2000000,
@@ -77,19 +73,8 @@ mp_parent_version := "%s";
 input %s ; dump ;
 ]]
 
-if not mplib.pen_info then -- temp compatibility hack
-
-preamble = [[\\ ;
-boolean mplib; string mp_parent_version;
-mplib := true;
-mp_parent_version := "%s";
-input %s ; dump ;
-]]
-
-end
-
 function metapost.make(name, target, version)
-    statistics.starttiming(mplib)
+    starttiming(mplib)
     target = file.replacesuffix(target or name, "mem")
     local mpx = mplib.new ( table.merged (
         metapost.parameters,
@@ -100,16 +85,16 @@ function metapost.make(name, target, version)
         }
     ) )
     if mpx then
-        statistics.starttiming(metapost.exectime)
+        starttiming(metapost.exectime)
         local result = mpx:execute(format(preamble,version or "unknown",name))
-        statistics.stoptiming(metapost.exectime)
+        stoptiming(metapost.exectime)
         mpx:finish()
     end
-    statistics.stoptiming(mplib)
+    stoptiming(mplib)
 end
 
 function metapost.load(name)
-    statistics.starttiming(mplib)
+    starttiming(mplib)
     local mpx = mplib.new ( table.merged (
         metapost.parameters,
         {
@@ -120,25 +105,19 @@ function metapost.load(name)
         }
     ) )
     local result
-    if mpx then
-        if not mplib.pen_info then -- temp compatibility hack
-            statistics.starttiming(metapost.exectime)
-            result = mpx:execute("\\")
-            statistics.stoptiming(metapost.exectime)
-        end
-    else
+    if not mpx then
         result = { status = 99, error = "out of memory"}
     end
-    statistics.stoptiming(mplib)
+    stoptiming(mplib)
     return mpx, result
 end
 
 function metapost.unload(mpx)
-    statistics.starttiming(mplib)
+    starttiming(mplib)
     if mpx then
         mpx:finish()
     end
-    statistics.stoptiming(mplib)
+    stoptiming(mplib)
 end
 
 function metapost.reporterror(result)
@@ -248,7 +227,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
         mpx = metapost.format(mpx) -- goody
     end
     if mpx and data then
-        statistics.starttiming(metapost)
+        starttiming(metapost)
         if trace_graphics then
             if not mp_inp[mpx] then
                 mp_tag = mp_tag + 1
@@ -266,9 +245,9 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                     if trace_graphics then
                         mp_inp[mpx]:write(d)
                     end
-                    statistics.starttiming(metapost.exectime)
+                    starttiming(metapost.exectime)
                     result = mpx:execute(d)
-                    statistics.stoptiming(metapost.exectime)
+                    stoptiming(metapost.exectime)
                     if trace_graphics and result then
                         local str = result.log or result.error
                         if str and str ~= "" then
@@ -295,9 +274,9 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             if trace_graphics then
                 mp_inp:write(data)
             end
-            statistics.starttiming(metapost.exectime)
+            starttiming(metapost.exectime)
             result = mpx[mpx]:execute(data)
-            statistics.stoptiming(metapost.exectime)
+            stoptiming(metapost.exectime)
             if trace_graphics and result then
                 local str = result.log or result.error
                 if str and str ~= "" then
@@ -324,7 +303,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             mp_inp[mpx]:write(banner)
             mp_log[mpx]:write(banner)
         end
-        statistics.stoptiming(metapost)
+        stoptiming(metapost)
     end
     return converted, result
 end

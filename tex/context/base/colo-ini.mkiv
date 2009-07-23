@@ -24,8 +24,6 @@
 
 \unprotect
 
-\chardef\colorversion=1 % temp, needed for tracing purposes, mkiv transition
-
 %D We use a couple of local registers. That way we don't have
 %D to group when converting colors. By the way, this is not
 %D really faster. We can sqeeze half a second runtime for 50K
@@ -33,7 +31,6 @@
 %D ugly then. To mention one such improvement: no colon
 %D after the key character (.25 sec).
 
-\newdimen\colordimen
 \newcount\colorcount
 
 %D When typesetting for paper, we prefer using the \cap{CMYK}
@@ -86,7 +83,6 @@
 \let\currentspotcolor \empty
 \let\allspotcolors    \empty
 \let\usedspotcolors   \empty
-\let\usedcolorchannels\empty
 \let\currentpalet     \empty
 
 %D \macros
@@ -149,6 +145,7 @@
 \unexpanded\def\stopcolor              {\endgroup}
 \unexpanded\def\graycolor          [#1]{\groupedcommand{\setcolormodel{gray}\getvalue{#1}}{}}
 \unexpanded\def\colored            [#1]{\groupedcommand{\definecolor[@colored@][#1]\doactivatecolor{@colored@}}{}}
+\unexpanded\def\fastcolored      [#1]#2{\begingroup\dodefinefastcolor[@colored@][#1]\doactivatecolor{@colored@}#2\endgroup}
            \def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}
            \def\predefineindexcolor[#1]{\flushatshipout{\hbox{\color[#1]{}}}}
            \def\startcolorpage         {\startcolor[\ifx\maintextcolor\empty\defaulttextcolor\else\maintextcolor\fi]}
@@ -209,11 +206,7 @@
 
 \let\usecolors\setupcolor
 
-% check: \chardef\currentcolorchannel=0
 % check: \startcolormode
-% check: \newif\iffilterspotcolor \filterspotcolorfalse
-% check: \newif\ifdoingspotcolor  \doingspotcolorfalse
-% check: \registercolorchannel
 
 %D \macros
 %D   {definetransparency}
@@ -226,34 +219,6 @@
 \unexpanded\def\setupcolors
   {\dosingleargument\dosetupcolors}
 
-\def\resetcolorsplitting
-  {\chardef\currentcolorchannel\zerocount
-   \let\currentspotcolor\empty
-   \filterspotcolorfalse}
-
-\def\colorsplitsuffix{\ifcase\currentcolorchannel\else-\@@clsplit\fi}
-\def\colorsplitprefix{\ifcase\currentcolorchannel\else\@@clsplit-\fi}
-
-\def\setcolorsplitting
-  {\resetsystemmode{\v!color\colorsplitsuffix}%
-   \resetcolorsplitting
-   \processaction
-     [\@@clsplit]
-     [         c=>\chardef\currentcolorchannel1,%
-               m=>\chardef\currentcolorchannel2,%
-               y=>\chardef\currentcolorchannel3,%
-               k=>\chardef\currentcolorchannel4,%
-               r=>\chardef\currentcolorchannel5,%
-               g=>\chardef\currentcolorchannel6,%
-               b=>\chardef\currentcolorchannel7,%
-               s=>\chardef\currentcolorchannel8,%
-           \v!no=>,%      \currentcolorchannel0,% all colors
-      \s!default=>,%      \currentcolorchannel0,% all colors
-      \s!unknown=>\filterspotcolortrue
-                  \edef\currentspotcolor{\commalistelement}]%
-   \setsystemmode{\v!color\colorsplitsuffix}%
-   \iffilterspotcolor \let\@@clrgb\v!no \fi}
-
 \let\showcolormessage\gobblethreearguments
 
 \def\dosetupcolors[#1]% some no longer make sense in MkIV
@@ -261,18 +226,12 @@
    \doifelse\@@clspot\v!yes
      \SPOTsupportedtrue
      \SPOTsupportedfalse
-   \doifelsenothing\@@clsplit
-     \resetcolorsplitting
-     \setcolorsplitting
    \doifelse\@@clreduction\v!yes
      \reduceCMYKtrue
      \reduceCMYKfalse
    \doifelse\@@clexpansion\v!yes
      \freezecolorstrue
      \freezecolorsfalse
-   \doifelse\@@clcriterium\v!all
-     \hidesplitcolortrue
-     \hidesplitcolorfalse
    \doifelse\@@clfactor\v!no
      \weightGRAYfalse
      \weightGRAYtrue
@@ -436,7 +395,8 @@
    \else
      \showcolormessage\m!colors7\currentpalet
      \let\currentpalet\empty
-   \fi\fi}
+   \fi\fi
+   \initializemaintextcolor}
 
 %D \macros
 %D   {showpalet}
@@ -508,9 +468,11 @@
      \doifinstringelse{:}{#2}
        {\definecolorgroup[#1][\v!rgb][#2]}
        {\doloop
-          {\doifdefinedelse{\??cr#2:\recurselevel}
-             {\setevalue{\??cr#1:\recurselevel}{\csname\??cr#2:\recurselevel\endcsname}}
-             {\exitloop}}}%
+          {\ifcsname\??cr#2:\recurselevel\endcsname
+             \setevalue{\??cr#1:\recurselevel}{\csname\??cr#2:\recurselevel\endcsname}%
+           \else
+             \exitloop
+           \fi}}%
    \fi}
 
 %D \macros
@@ -693,72 +655,28 @@
 %D predefined in RGB color space, so a redefinition in CMYK
 %D coordinates before RGB mode is disabled, would give
 %D unexpected results due to the already frozen color spec.)
-%D
-%D So, from now on, colors are not frozen any more!
 
-\chardef\currentcolorchannel=0
+%D In \MKIV\ we don't support color separation as we might now assume
+%D that printing houses have the right programs to do it themselves.
+%D The \MKII\ color separator was implemented as part of a project
+%D that needed. If it's ever needed in \MKIV\ i'll do it in the
+%D backend.
 
-\newif\iffilterspotcolor \filterspotcolorfalse
-\newif\ifdoingspotcolor  \doingspotcolorfalse
-
-\def\registercolorchannel#1%
-  {\ifdoingspotcolor \else
-     \global\expandafter\chardef\csname\??cs#1\endcsname\zerocount
-   \fi}
-
-\newif\ifhidesplitcolor \hidesplitcolortrue
-
-%D The next macro is for instance used in figure splitting:
-
-\def\doifseparatingcolorselse
-  {\iffilterspotcolor
-     \@EA\firstoftwoarguments
-   \else\ifcase\currentcolorchannel
-     \@EAEAEA\secondoftwoarguments
-   \else
-     \@EAEAEA\firstoftwoarguments
-   \fi\fi}
-
-\def\doifcolorchannelelse#1%
-  {\doifseparatingcolorselse
-     {\doifelsenothing{#1}
-        \secondoftwoarguments
-        {\doifelse{#1}\@@clsplit
-           \firstoftwoarguments
-           \secondoftwoarguments}}
-     \secondoftwoarguments}
-
-\def\resetcolorseparation
-  {\filterspotcolorfalse
-   \chardef\currentcolorchannel\zerocount}
-
-%D These can be used in selecting specific files (like
-%D figuredatabases).
-
-% we already have:
-%
-% \def\colorsplitsuffix{\ifcase\currentcolorchannel\else-\@@clsplitsen\fi}
-% \def\colorsplitprefix{\ifcase\currentcolorchannel\else\@@clsplitsen-\fi}
-
-\def\colorchannelprefix{\doifseparatingcolorselse\@@clsplit\empty-}
-\def\colorchannelsuffix{-\doifseparatingcolorselse\@@clsplit\empty}
+\let\doifseparatingcolorselse\secondoftwoarguments
+\let\doifcolorchannelelse    \secondofthreearguments
+\let\resetcolorseparation    \relax
+\let\colorchannelprefix      \empty
+\let\colorchannelsuffix      \empty
 
 %D We now define the low level macros:
-
-\chardef\colorversion=2
 
 % todo: palets in definecolor
 % todo: {\red xx} vs \red{xx}
 
 % check: registerusedspotcolors
-% check: registerusedcolorchannels
 % check: \currentcolorname
 % check: \outercolorname
-% check: \chardef\currentcolorchannel=0
 % check: \startcolormode
-% check: \newif\iffilterspotcolor \filterspotcolorfalse
-% check: \newif\ifdoingspotcolor  \doingspotcolorfalse
-% check: \registercolorchannel
 
 % \def\mptexcolor#1{"\dogetattributeid\s!color \somecolorattribute{#1} A"}
 %
@@ -773,7 +691,7 @@
 
 \def\setcolormodel#1%
   {\showcolormessage\m!colors1{#1}%
-   \currentcolormodel\ctxlua{tex.print(colors.setmodel('colormodel','#1',\ifweightGRAY true\else false\fi))}%
+   \currentcolormodel\ctxlua{tex.print(colors.setmodel('#1',\ifweightGRAY true\else false\fi))}%
    \dosetattribute{colormodel}{\the\currentcolormodel}}
 
 \setcolormodel{all}
@@ -885,6 +803,10 @@
      \let\@@rastervalue\@@rsscreen
    \fi
    \dosetattribute\s!color{\ctxlua{tex.sprint(colors.definesimplegray("_raster_",\@@rastervalue))}}}
+
+\def\dodefinefastcolor[#1][#2]% still not fast but ok
+  {\ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \dodefinecolorcommand\setvalue{#1}}
 
 %D \macros
 %D   {doifcolorelse, doifcolor}
@@ -1091,16 +1013,8 @@
 \definetransparency [difference] [11]
 \definetransparency [exclusion]  [12]
 
-\appendtoks
-    \setupcolors[\c!state=\v!start]% later direct
-\to \everyjob
-
-\appendtoks
-    \let\showcolormessage\showmessage
-\to \everyjob
-
 \setupcolors
-  [\c!state=\v!stop, % in mkii: \v!stop
+  [\c!state=\v!stop,         % will be enabled later on
    \c!conversion=\v!yes,
    \c!reduction=\v!no,
    \c!rgb=\v!yes,
@@ -1110,9 +1024,17 @@
    \c!mp\c!spot=\@@clspot,
    \c!expansion=\v!no,
    \c!textcolor=,
-   \c!split=\v!no,
+   \c!split=\v!no,           % obsolete
    \c!factor=\v!yes,
-   \c!criterium=\v!all]
+   \c!criterium=\v!all]      % obsolete
+
+\appendtoks
+    \setupcolors[\c!state=\v!start]% later direct
+\to \everyjob
+
+\appendtoks
+    \let\showcolormessage\showmessage
+\to \everyjob
 
 \setupcolor
   [\v!rgb]

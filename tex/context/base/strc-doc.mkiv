@@ -39,10 +39,13 @@
    \c!sectionstopper=,\c!sectionsegments=,
    \c!sectionresetset=,\c!reference=,
    \c!expansion=\v!no,
+   \s!catcodes=,
    \c!saveinlist=\v!yes,
    \c!command=\showstructuredata]
 
 % maybe flags for list, bm, mark
+%
+% hm messed up
 
 \def\dostructurecomponent[#1][#2]% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
@@ -56,18 +59,16 @@
 \else
    \edef\currentstructureexpansion{\structureparameter\c!expansion}
 \fi
-
    \ifx\currentstructureexpansion\s!xml
-     % goes via lua anyway
-     \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
-     \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
-     \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%
-     \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%
+     % maybe just title xml and inherit xml then in which case we have to test
+     % when typesetting marks, lists, refs etc (+specific env)
+     \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%    maybe xml
+     \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}% no xml
+     \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%  no xml
+     \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%     no xml
      \ifx\currentstructurelist\empty
-        \globallet\currentstructurelist\currentstructuretitle
-     \else
        \xmlstartraw
-         \xdef\currentstructurelist{\structureparameter\c!list}%
+         \xdef\currentstructurelist{\structureparameter\c!title}%
        \xmlstopraw
      \fi
      %
@@ -199,9 +200,11 @@ hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
 %     \stopchapter
 % \stoptext
 
-\def\structurevariable    #1{\ctxlua{structure.sections.structuredata("#1")}}
-\def\structureuservariable#1{\ctxlua{structure.sections.userdata("#1")}}
-\def\structurenumber        {\ctxlua{structure.sections.fullnumber()}}
-\def\structurecatcodedget #1{\ctxlua{structure.sections.structuredata("#1",nil,true)}} % bad name
+\def\structurevariable          #1{\ctxlua{structure.sections.structuredata(nil,"#1")}}
+\def\structureuservariable      #1{\ctxlua{structure.sections.userdata(nil,"#1")}}
+\def\structurenumber              {\ctxlua{structure.sections.fullnumber()}}
+\def\structurecatcodedget       #1{\ctxlua{structure.sections.structuredata(nil,"#1",nil,true)}} % bad name
+\def\structuregivencatcodedget#1#2{\ctxlua{structure.sections.structuredata(nil,"#1",nil,\number#2)}} % bad name
+\def\structureautocatcodedget #1#2{\ctxlua{structure.sections.structuredata(nil,"#1",nil,"#2")}}
 
 \protect \endinput

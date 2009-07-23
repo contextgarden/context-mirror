@@ -13,10 +13,11 @@ local utfbyte, utffind = utf.byte, utf.find
 local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes = tex.ctxcatcodes
 
-buffers.visualizers.mp             = buffers.visualizers.mp             or { }
-buffers.visualizers.mp.identifiers = buffers.visualizers.mp.identifiers or { }
+local visualizer = buffers.newvisualizer("mp")
 
-buffers.visualizers.mp.identifiers.primitives = {
+visualizer.identifiers = { }
+
+visualizer.identifiers.primitives = {
     'charcode', 'day', 'linecap', 'linejoin', 'miterlimit', 'month', 'pausing',
     'prologues', 'showstopping', 'time', 'tracingcapsules', 'tracingchoices',
     'tracingcommands', 'tracingequations', 'tracinglostchars',
@@ -58,7 +59,7 @@ buffers.visualizers.mp.identifiers.primitives = {
     'end', 'btex', 'etex', 'verbatimtex'
 }
 
-buffers.visualizers.mp.identifiers.plain = {
+visualizer.identifiers.plain = {
     'ahangle', 'ahlength', 'bboxmargin', 'defaultpen', 'defaultscale',
     'labeloffset', 'background', 'currentpen', 'currentpicture', 'cuttings',
     'defaultfont', 'extra_beginfig', 'extra_endfig',
@@ -85,7 +86,7 @@ buffers.visualizers.mp.identifiers.plain = {
     'font_extra_space'
 }
 
-buffers.visualizers.mp.identifiers.metafun = {
+visualizer.identifiers.metafun = {
     'unitcircle', 'fulldiamond', 'unitdiamond',
     'halfcircle', 'quartercircle',
     'llcircle', 'lrcircle', 'urcircle', 'ulcircle',
@@ -107,13 +108,13 @@ buffers.visualizers.mp.identifiers.metafun = {
     'loadfigure', 'externalfigure'
 }
 
-buffers.visualizers.mp.styles = buffers.visualizers.mp.styles or {
+visualizer.styles = {
     primitives = "",
     plain      = "\\sl",
     metafun    = "\\sl",
 }
 
-local styles = buffers.visualizers.mp.styles
+local styles = visualizer.styles
 
 -- btex .. etex
 
@@ -134,7 +135,7 @@ local states = {
 
 local known_words = { }
 
-for k,v in pairs(buffers.visualizers.mp.identifiers) do
+for k,v in pairs(visualizer.identifiers) do
     for _,w in pairs(v) do
         known_words[w] = k
     end
@@ -181,7 +182,7 @@ end
 
 -- to be considered: visualizer => table [result, instr, incomment, word]
 
-function buffers.visualizers.mp.flush_line(str,nested)
+function visualizer.flush_line(str,nested)
     local state, word, instr, intex, incomment = 0, nil, false, false, false
     buffers.currentcolors = colors
     for c in utfcharacters(str) do

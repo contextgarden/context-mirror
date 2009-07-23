@@ -100,7 +100,7 @@ names.environment_path_variable = "OSFONTDIR"  -- the official way, in minimals 
 filters.paths = { }
 filters.names = { }
 
-function names.getpaths()
+function names.getpaths(trace)
     local hash, result = { }, { }
     local function collect(t)
         for i=1, #t do
@@ -117,11 +117,45 @@ function names.getpaths()
         collect(resolvers.expanded_path_list(path))
     end
     if xml then
-        local name = names.xml_configuration_file or ""
-        if name ~= "" then
-            local name = resolvers.find_file(name,"other")
-            if name ~= "" then
-                collect(xml.collect_texts(xml.load(name),"dir",true))
+        local confname = names.xml_configuration_file or ""
+        if confname ~= "" then
+            -- first look in the tex tree
+            local name = resolvers.find_file(confname,"other")
+            if name == "" then
+                -- after all, fontconfig is a unix thing
+                name = file.join("/etc",confname)
+                if not lfs.isfile(name) then
+                    name = "" -- force quit
+                end
+            end
+            if name ~= "" and lfs.isfile(name) then
+                if trace then
+                    logs.report("fontnames","loading fontconfig file: %s",name)
+                end
+                local xmldata = xml.load(name)
+                -- begin of untested mess
+                xml.include(xmldata,"include","",true,function(incname)
+                    if not file.is_qualified_path(incname) then
+                        local path = file.dirname(name) -- main name
+                        if path ~= "" then
+                            incname = file.join(path,incname)
+                        end
+                    end
+                    if lfs.isfile(incname) then
+                        if trace then
+                            logs.report("fontnames","merging included fontconfig file: %s",incname)
+                        end
+                        return io.loaddata(incname)
+                    elseif trace then
+                        logs.report("fontnames","ignoring included fontconfig file: %s",incname)
+                    end
+                end)
+                -- end of untested mess
+                local fontdirs = xml.collect_texts(xmldata,"dir",true)
+                if trace then
+                    logs.report("fontnames","%s dirs found in fontconfig",#fontdirs)
+                end
+                collect(fontdirs)
             end
         end
     end
@@ -266,7 +300,7 @@ function names.identify(verbose) -- lsr is for kpse
         end)
     else
         traverse("system", function(suffix) -- OSFONTDIR cum suis
-            walk_tree(names.getpaths(),suffix)
+            walk_tree(names.getpaths(trace),suffix)
         end)
     end
     local t = { }

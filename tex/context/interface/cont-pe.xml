@@ -8722,6 +8722,9 @@
           <cd:constant type="بیشترین"/>
           <cd:constant type="پرکردن"/>
           <cd:constant type="دورو"/>
+          <cd:constant type="یک‌رو"/>
+          <cd:constant type="خودکار"/>
+          <cd:constant type="هیچکدام"/>
           <cd:constant type="چوبخط"/>
         </cd:parameter>
         <cd:parameter name="تاخیر">

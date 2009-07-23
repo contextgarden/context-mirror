@@ -11,6 +11,7 @@ local format, gsub, find, concat = string.format, string.gsub, string.find, tabl
 local texsprint, texwrite = tex.sprint, tex.write
 
 local ctxcatcodes = tex.ctxcatcodes
+local variables   = interfaces.variables
 
 if not trackers then trackers = { register = function() end } end
 
@@ -41,6 +42,7 @@ local data
 function documents.initialize()
     data = {
         numbers = { },
+        forced = { },
         ownnumbers = { },
         status = { },
         checkers = { },
@@ -53,6 +55,7 @@ end
 
 function documents.reset()
     data.numbers = { }
+    data.forced = { }
     data.ownnumbers = { }
     data.status = { }
     data.checkers = { }
@@ -183,8 +186,8 @@ end
 
 function sections.somelevel(given)
     -- old number
-    local numbers, ownnumbers, status, olddepth = data.numbers, data.ownnumbers, data.status, data.depth
-    local newdepth = tonumber(levelmap[given.metadata.name] or (olddepth > 0 and olddepth) or 1)
+    local numbers, ownnumbers, forced, status, olddepth = data.numbers, data.ownnumbers, data.forced, data.status, data.depth
+    local newdepth = tonumber(levelmap[given.metadata.name] or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
     local directives = given.directives
     local resetset = (directives and directives.resetset) or ""
     local resetter = sets.getall("structure:resets",data.block,resetset)
@@ -234,17 +237,30 @@ function sections.somelevel(given)
     -- new number
     olddepth = newdepth
     if given.metadata.increment then
-        if numbers[newdepth] then
-            numbers[newdepth] = numbers[newdepth] + 1
+        local oldn, newn = numbers[newdepth], 0
+        local fd = forced[newdepth]
+        if fd then
+            if fd[1] == "add" then
+                newn = oldn + fd[2] + 1
+            else
+                newn = fd[2] + 1
+            end
+            if newn < 0 then
+                newn = 1 -- maybe zero is nicer
+            end
+            forced[newdepth] = nil
+        elseif newn then
+            newn = oldn + 1
         else
             local s = tonumber(sets.get("structure:resets",data.block,resetset,newdepth))
 --~ logs.report("structure =","old: %s, new:%s, reset: %s (%s: %s)",olddepth,newdepth,s,resetset,table.concat(resetter,","))
             if not s or s == 0 then
-                numbers[newdepth] = numbers[newdepth] or 0
+                newn = oldn or 0
             else
-                numbers[newdepth] = s - 1
+                newn = s - 1
             end
         end
+        numbers[newdepth] = newn
     end
     status[newdepth] = given or { }
     for k, v in pairs(data.checkers) do
@@ -290,19 +306,16 @@ function sections.writestatus()
 end
 
 function sections.setnumber(depth,n)
-    local numbers, depth = data.numbers, data.depth
-    local d = numbers[depth]
+    local forced, depth, new = data.forced, depth or data.depth, tonumber(n)
     if type(n) == "string" then
         if n:find("^[%+%-]") then
-            d = d + tonumber(n)
+            forced[depth] = { "add", new }
         else
-            d = tonumber(n)
+            forced[depth] = { "set", new }
         end
     else
-        d = n
+        forced[depth] = { "set", new }
     end
-    numbers[depth] = d
-    -- todo reset
 end
 
 function sections.number_at_depth(depth)
@@ -322,8 +335,9 @@ function sections.cct()
     texsprint((metadata and metadata.catcodes) or ctxcatcodes)
 end
 
-function sections.structuredata(key,default,honorcatcodetable)
-    local data = data.status[data.depth]
+function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: spec table and then also depth
+    if not depth or depth == 0 then depth = data.depth end
+    local data = data.status[depth]
     local d = data
     for k in key:gmatch("([^.]+)") do
         if type(d) == "table" then
@@ -334,9 +348,16 @@ function sections.structuredata(key,default,honorcatcodetable)
             end
         end
         if type(d) == "string" then
-            if honorcatcodetable then
+            if honorcatcodetable == true or honorcatcodetable == variables.auto then
                 local metadata = data.metadata
                 texsprint((metadata and metadata.catcodes) or ctxcatcodes,d)
+            elseif not honorcatcodetable then
+                texsprint(ctxcatcodes,d)
+            elseif type(honorcatcodetable) == "number" then
+                texsprint(honorcatcodetable,d)
+            elseif type(honorcatcodetable) == "string" and honorcatcodetable ~= "" then
+                honorcatcodetable = tex[honorcatcodetable] or ctxcatcodes-- we should move ctxcatcodes to another table, ctx or so
+                texsprint(honorcatcodetable,d)
             else
                 texsprint(ctxcatcodes,d)
             end
@@ -348,9 +369,10 @@ function sections.structuredata(key,default,honorcatcodetable)
     end
 end
 
-function sections.userdata(key,default)
-    if data.depth > 0 then
-        local userdata = data.status[data.depth]
+function sections.userdata(depth,key,default)
+    if not depth or depth == 0 then depth = data.depth end
+    if depth > 0 then
+        local userdata = data.status[depth]
         userdata = userdata and userdata.userdata
         userdata = (userdata and userdata[key]) or default
         if userdata then
@@ -398,6 +420,10 @@ end
 --                      \section{bla 2} \subsection{bla 2 1} \subsection{bla 2 2}
 -- }
 
+-- sign=all      => also zero and negative
+-- sign=positive => also zero
+-- sign=hang     => llap sign
+
 function sections.typesetnumber(entry,kind,...) -- kind='section','number','prefix'
     if entry and entry.hidenumber ~= true then -- can be nil
         local separatorset  = ""
@@ -407,7 +433,8 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local connector     = ""
         local set           = ""
         local segments      = ""
-        for _, data in ipairs { ... } do
+        local criterium     = ""
+        for _, data in ipairs { ... } do -- can be multiple parametersets
             if data then
                 if separatorset  == "" then separatorset  = data.separatorset  or "" end
                 if conversionset == "" then conversionset = data.conversionset or "" end
@@ -416,15 +443,26 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 if connector     == "" then connector     = data.connector     or "" end
                 if set           == "" then set           = data.set           or "" end
                 if segments      == "" then segments      = data.segments      or "" end
+                if criterium     == "" then criterium     = data.criterium     or "" end
             end
         end
-        if separatorset  == "" then separatorset  = "default" end
-        if conversionset == "" then conversionset = "default" end
-        if conversion    == "" then conversion    = nil       end
-        if stopper       == "" then stopper       = nil       end
-        if connector     == "" then connector     = nil       end
-        if set           == "" then set           = "default" end
-        if segments      == "" then segments      = nil       end
+        if separatorset  == "" then separatorset  = "default"  end
+        if conversionset == "" then conversionset = "default"  end
+        if conversion    == "" then conversion    = nil        end
+        if stopper       == "" then stopper       = nil        end
+        if connector     == "" then connector     = nil        end
+        if set           == "" then set           = "default"  end
+        if segments      == "" then segments      = nil        end
+        --
+        if criterium == variables.strict then
+            criterium = 0
+        elseif criterium == variables.positive then
+            criterium = -1
+        elseif criterium == variables.all then
+            criterium = -1000000
+        else
+            criterium = 0
+        end
         --
         local firstprefix, lastprefix = 0, 100
         if segments then
@@ -448,7 +486,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             local function process(index) -- move to outer
                 local number = numbers and (numbers[index] or 0)
                 local ownnumber = ownnumbers and ownnumbers[index] or ""
-                if number > 0 or (ownnumber ~= "") then
+                if number > criterium or (ownnumber ~= "") then
                     local block = entry.block
                     if preceding then
                         local separator = sets.get("structure:separators",b,s,preceding,".")

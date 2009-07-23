@@ -8722,6 +8722,9 @@
           <cd:constant type="max"/>
           <cd:constant type="prizpusobive"/>
           <cd:constant type="dvoustranny"/>
+          <cd:constant type="jednostranne"/>
+          <cd:constant type="auto"/>
+          <cd:constant type="zadny"/>
           <cd:constant type="zalozka"/>
         </cd:parameter>
         <cd:parameter name="prodleva">

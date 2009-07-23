@@ -85,3 +85,50 @@
 \starttext
     \xmlprocessfile{demo}{oeps.xml}{}
 \stoptext
+
+% example by thomas:
+
+\startbuffer[test]
+<auth>
+  <section>
+  <title><emph>MyTitle</emph></title>
+    <content>
+     Hello world
+   </content>
+  </section>
+</auth>
+\stopbuffer
+
+\startxmlsetups xml:mysetups
+    \xmlsetsetup{\xmldocument}{auth|section|title|content|emph}{xml:*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:mysetups}
+
+\startxmlsetups xml:auth
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:section
+    \xmlflush{#1}\par \midaligned{\hl[5]}
+\stopxmlsetups
+
+\startxmlsetups xml:title
+    \section{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:content
+    \xmlflush{#1}\par
+\stopxmlsetups
+
+\startxmlsetups xml:emph
+    {\bgroup\em \xmlflush{#1}\egroup}
+\stopxmlsetups
+
+\setuphead
+  [section]
+  [style=normal,number=no,expansion=yes,page=yes]
+
+\starttext
+  \xmlprocessbuffer{main}{test}{}
+\stoptext

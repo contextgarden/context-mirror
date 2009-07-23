@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Buffer Macros / Verbatim}
 
+%D We can optimize esp the initializations a bit.
+
 \unprotect
 
 \ifx\startlinenumbering\undefined \let\startlinenumbering\relax \fi
@@ -103,10 +105,12 @@
                                         \let\obeycharacters\setupprettytype
                                         \let\obeytabs\ignoretabs}
 
+\def\dosetverbatimfont
+  {\redoconvertfont\dosetfontattribute{\currenttypingclass\currenttyping}\c!style
+   \normalnoligatures\font}
+
 \def\setupcommonverbatim
-  {\recatcodeuppercharactersfalse % obey regime / encoding
-   %
-   \let\prettyidentifier\s!default
+  {\let\prettyidentifier\s!default
    %
 %  \doifelse{\typingparameter\c!text}\v!yes
 %    \naturaltextexttrue
@@ -120,9 +124,6 @@
    \doif{\typingparameter\c!page }\v!no
      {\def\obeypages {\ignorepages}}%
    %
-%  \doifelse{\typingparameter\c!tab}\v!yes
-%    {}% todo
-   %
    \ignorehyphens % default
    \getvalue{\??tp:\c!lines:\typingparameter\c!lines}%
    \getvalue{\??tp:\c!empty:\typingparameter\c!empty}%
@@ -130,9 +131,6 @@
    \doifnumberelse{\typingparameter\c!tab}
      {\def\obeytabs{\setfixedtabskips{\typingparameter\c!tab}}}%
      \donothing
-  %\def\verbatimfont{\typingparameter\c!style\normalnoligatures\font}%
-  % more generic, but beware of the \redoconvertfont (else no typing in titles and such)
-   \def\verbatimfont{\redoconvertfont\dosetfontattribute{\currenttypingclass\currenttyping}\c!style\normalnoligatures\font}%
    \setupverbatimcolor}
 
 \newtoks \everyinitializeverbatim
@@ -148,7 +146,6 @@
      {\let\bop\donothing
       \let\eop\donothing
       \let\sop\donothing}%
-   \verbatimfont
    \relax\the\everyinitializeverbatim\relax}
 
 \appendtoks
@@ -265,26 +262,43 @@
 \unexpanded\def\type{\dotype\empty}
 
 \def\dotype#1% was \dotype
-  {\bgroup
-   \begstrut % new, enables leading space in \type { abc } at par start / begstrut else no hyphenation
+  {\dontleavehmode \bgroup
+   % new, \strut enables leading space in \type { abc } at par start / begstrut
+   % else no hyphenation (replaced by \dontleavehmode which saves unboxing)
+   % \begstrut
    \let\currenttypingclass\??ty
    \edef\currenttyping{#1}%
    \catcode`\<=\@@other
    \catcode`\>=\@@other
    \futurelet\next\dodotype}
 
+% \def\dodotype
+%   {\ifx\next\bgroup
+%      \@EA\dodotypeA
+%    \else\if\next<%
+%      \doifelse{\typingparameter\c!option}\v!none{\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
+%    \else
+%      \@EAEAEA\dodotypeD
+%    \fi\fi}
+
 \def\dodotype
   {\ifx\next\bgroup
      \@EA\dodotypeA
-   \else\if\next<%
-     \doifelse{\typingparameter\c!option}\v!none{\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
    \else
-     \@EAEAEA\dodotypeD
-   \fi\fi}
+     \@EA\dodotypeAD
+   \fi}
+
+\def\dodotypeAD
+  {\if\next<%
+     \doifelse{\typingparameter\c!option}\v!none{\@EA\dodotypeB}{\@EA\dodotypeC}%
+   \else
+     \@EA\dodotypeD
+   \fi}
 
 \def\dodotypeA
   {\initializetype % probably too much
    \verbatimcolor
+   \dosetverbatimfont
    \setcatcodetable \typcatcodesa
    \dodotypeAA}
 
@@ -297,6 +311,7 @@
 \def\dodotypeB#1%
   {\initializetype
    \verbatimcolor
+   \dosetverbatimfont
    \setcatcodetable \typcatcodesb
    \dodotypeBB}
 
@@ -309,6 +324,7 @@
 \def\dodotypeC#1%
   {\initializetype
    \verbatimcolor
+   \dosetverbatimfont
    \setcatcodetable \typcatcodesb
    \dodotypeCC}
 
@@ -326,6 +342,7 @@
 \def\dodotypeD#1%
   {\initializetype
    \verbatimcolor
+   \dosetverbatimfont
    \setcatcodetable \typcatcodesa
    \def\dodotypeDD##1#1{\dodotypeAA{##1}}%
    \dodotypeDD}
@@ -343,7 +360,7 @@
 \def\initializetype
   {\let\obeylines\ignorelines
    \setupcommonverbatim
-   \verbatimfont              % needed for \tex
+  %\dosetverbatimfont
   %\setverbatimspaceskip
   %\let\obeytabs \ignoretabs  % probably not needed
   %\let\obeylines\ignorelines % probably not needed
@@ -377,9 +394,12 @@
 %D works all right, but a decent hyphenation support of
 %D \type{\tt} text will be implemented soon.
 
+\def\specialobeyedspace {\hskip\interwordspace\relax} % better than spaceskip
+\def\specialcontrolspace{\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
+
 \def\obeyhyphens
-  {\def\obeyedspace {\hskip\interwordspace\relax}% better than spaceskip
-   \def\controlspace{\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}%
+  {\let\obeyedspace \specialobeyedspace
+   \let\controlspace\specialcontrolspace
    \spaceskip.25em\relax} % hm a bit of stretch !
 
 \def\obeybreakpoints
@@ -388,8 +408,8 @@
 
 \def\ignorehyphens
   {% \language\minusone % extra bonus, the \null should do the job too
-   \def\obeyedspace {\hskip\interwordspace\relax}% better than spaceskip
-   \def\controlspace{\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}%
+   \let\obeyedspace \specialobeyedspace
+   \let\controlspace\specialcontrolspace
    \spaceskip.5em\relax}
 
 \unexpanded\def\typ
@@ -435,6 +455,7 @@
   {\let\currenttypingclass\??ty
    \initializetype
    \verbatimcolor
+   \dosetverbatimfont
   %\setcatcodetable \typcatcodesa
    \catcode`\{=\@@begingroup
    \catcode`\}=\@@endgroup}
@@ -477,6 +498,14 @@
 \setvalue{\??tp:\c!blank:\v!line    }{\baselineskip}
 \setvalue{\??tp:\c!blank:\v!none    }{\zeropoint}
 
+\def\doopenupverbatimlineindeed
+  {\getpagestatus
+   \ifrightpage
+     \hskip\typingparameter\c!oddmargin\relax
+   \else
+     \hskip\typingparameter\c!evenmargin\relax
+   \fi}
+
 \def\initializetyping
   {%\donefalse
    \switchtobodyfont[\typingparameter\c!bodyfont]%
@@ -486,13 +515,7 @@
    \scratchskip\typingparameter\c!evenmargin\relax
    \ifzeropt\scratchskip\else\donetrue\fi
    \ifdone
-     \def\doopenupverbatimline
-       {\getpagestatus
-        \ifrightpage
-          \hskip\typingparameter\c!oddmargin\relax
-        \else
-          \hskip\typingparameter\c!evenmargin\relax
-        \fi}%
+     \let\doopenupverbatimline\doopenupverbatimlineindeed
    \else
      \doadaptleftskip{\typingparameter\c!margin}%
    \fi
@@ -517,6 +540,9 @@
 
 \let \beginofverbatimlines \relax
 \let \endofverbatimlines   \relax
+
+\let \doverbatimbeginofbuffer\gobbleoneargument
+\let \doverbatimbeginofbuffer\relax
 
 \def\doverbatimnobreak
   {\ifoptimizeverbatim\penalty500 \fi}
@@ -581,6 +607,7 @@
    \startpacked % includes \bgroup
    \dosetuptypelinenumbering{#1}%
    \initializetyping
+   \dosetverbatimfont
    \startverbatimcolor
    \normalexpanded{\dotypeblockverbatim{\e!start\currenttyping}{\e!stop\currenttyping}}} % was s!start
 
@@ -690,18 +717,41 @@
 %D Since we support a global color too, the folowing
 %D definition is better:
 
-\def\setupverbatimcolor
-  {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}%
-   \let\endofpretty        \stopcolor
-   \def\startverbatimcolor{\startcolor[\typingparameter\c!color]}%
-   \let\stopverbatimcolor  \stopcolor
-   \def\verbatimcolor     {\getvalue{\typingparameter\c!color}}% command !
-   \doifelsenothing{\typingparameter\c!palet}
-     {\let\prettypalet\empty
-      \let\endofpretty\relax
-      \def\beginofpretty[##1]{}}
-     {\edef\prettypalet{\prettyidentifier\typingparameter\c!palet}}}
+\def\normalbeginofpretty [#1]{\startcolor[\prettypalet:#1]}%
+\def\normalendofpretty       {\stopcolor}
+\def\normalstartverbatimcolor{\startcolor[\typingparameter\c!color]}%
+\def\normalstopverbatimcolor {\stopcolor}
+\def\normalverbatimcolor     {\getvalue{\typingparameter\c!color}}% command !
 
+\def\ignorebeginofpretty [#1]{}
+\def\ignoreendofpretty       {}
+
+\def\setupnormalprettyverbatim
+  {\edef\prettypalet{\prettyidentifier\prettypalet}%
+   \let\beginofpretty     \normalbeginofpretty
+   \let\endofpretty       \normalendofpretty
+   \let\startverbatimcolor\normalstartverbatimcolor
+   \let\stopverbatimcolor \normalstopverbatimcolor
+   \let\verbatimcolor     \normalverbatimcolor}
+
+\def\setupignoreprettyverbatim
+  {\let\prettypalet       \empty
+   \let\beginofpretty     \ignorebeginofpretty
+   \let\endofpretty       \ignoreendofpretty
+   \let\startverbatimcolor\normalstartverbatimcolor
+   \let\stopverbatimcolor \normalstopverbatimcolor
+   \let\verbatimcolor     \normalverbatimcolor}
+
+\def\setupverbatimcolor
+  {\edef\prettypalet{\typingparameter\c!palet}%
+   \ifx\prettypalet\empty
+     \setupignoreprettyverbatim
+   \else
+     \setupnormalprettyverbatim
+   \fi}
+
+\let\beginofpretty     \ignorebeginofpretty
+\let\endofpretty       \ignoreendofpretty
 \let\prettypalet       \empty
 \let\startverbatimcolor\relax
 \let\stopverbatimcolor \relax
@@ -769,9 +819,9 @@
          \doifnothing{\typingparameter\c!step}{\settypingparameter\c!step{1}}%
          \setuplinenumbering
            [\c!method=\v!type,
-            \c!start=\typingparameter\c!start,
-            \c!stop=\typingparameter\c!stop,
-            \c!step=\typingparameter\c!step]%
+             \c!start=\typingparameter\c!start,
+              \c!stop=\typingparameter\c!stop,
+              \c!step=\typingparameter\c!step]%
          \donetrue}
         {\donefalse}}%
    \ifdone
@@ -803,6 +853,7 @@
      {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
       \settypingparameter\c!option{\prettyidentifier}}%
    \initializetyping
+   \dosetverbatimfont
    \startverbatimcolor
    \scratchcounter
      \ifcsname\currenttypingclass#3\v!global\c!start\endcsname

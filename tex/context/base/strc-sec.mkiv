@@ -39,13 +39,14 @@
 % \section{test} \subsection{test} \subsection{test}
 % \section{test} \subsection{test} \subsection{test}
 
-% lua interface
+% lua interface / names and interface might change
 
-\def\setstructurelevel   #1#2{\ctxlua{structure.sections.setlevel("#1","#2")}}  % name, level|parent
-\def\getstructurelevel     #1{\ctxlua{structure.sections.getcurrentlevel("#1")}}% name
-\def\setstructurenumber  #1#2{\ctxlua{structure.sections.setnumber(#1,"#2")}}   % level, number (+/-)
-\def\getstructurenumber    #1{\ctxlua{structure.sections.getnumber(#1)}}        % level
-\def\getfullstructurenumber#1{\ctxlua{structure.sections.fullnumber(#1)}}       % level
+\def\setstructurelevel      #1#2{\ctxlua{structure.sections.setlevel("#1","#2")}}  % name, level|parent
+\def\getstructurelevel        #1{\ctxlua{structure.sections.getcurrentlevel("#1")}}% name
+\def\setstructurenumber     #1#2{\ctxlua{structure.sections.setnumber(#1,"#2")}}   % level, number (+/-)
+\def\getstructurenumber       #1{\ctxlua{structure.sections.getnumber(#1)}}        % level
+\def\getfullstructurenumber   #1{\ctxlua{structure.sections.fullnumber(#1)}}       % level
+\def\getspecificstructuretitle#1{\ctxlua{structure.sections.structuredata(#1,"titledata.title",nil,"\structureheadparameter\s!catcodes")}}%
 
 % interface
 
@@ -193,8 +194,9 @@
    \doifelse{\structureheadparameter\c!ownnumber}\v!yes
      {\setevalue\currentstructurehead{\noexpand\dohandlestructureheadown[\currentstructurehead]}}
      {\setevalue\currentstructurehead{\noexpand\dohandlestructureheadnop[\currentstructurehead]}}%
+   \setevalue{\e!next \currentstructurehead}{\noexpand\donextstructurehead [\currentstructurehead]}%
    \setevalue{\e!start\currentstructurehead}{\noexpand\dostartstructurehead[\currentstructurehead]}%
-   \setevalue{\e!stop\currentstructurehead }{\noexpand\dostopstructurehead[\currentstructurehead]}%
+   \setevalue{\e!stop \currentstructurehead}{\noexpand\dostopstructurehead [\currentstructurehead]}%
 \to \everystructureheadsetup
 
 % todo, check if section is defined
@@ -239,6 +241,11 @@
   {%\globalpopmacro\currentstructurehead
    \xdef\currentstructurehead{#1}% recover
    \the\everyafterstructurehead}
+
+\def\donextstructurehead[#1][#2][#3]%
+  {\setfalse\currentstructureown
+   \xdef\currentstructurehead{#1}%
+   \dohandlestructurehead{#1}{#2}{#3}} % name -- -- -- userdata
 
 % \newconditional\structurereversesectionnumbers  % todo: key/val
 
@@ -332,6 +339,9 @@
 \def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
 \def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
 
+\unexpanded\def\fullstructureheadtitle
+  {\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}
+
 \let\currentstructurehead        \empty
 \let\currentstructureheadcoupling\empty
 \let\currentstructureheadsection \empty
@@ -364,23 +374,32 @@
      [#3]%
      \reportcurrentstructure}
 
-\unexpanded\def\placeheadtext  {\doquintupleempty\doplaceheadtextornumber[\c!textstyle]  [\c!textcolor]  [\empty]}
-\unexpanded\def\placeheadnumber{\doquintupleempty\doplaceheadtextornumber[\c!numberstyle][\c!numbercolor][\v!number]}
+\unexpanded\def\placeheadtext  {\dosingleempty\doplaceheadtext  } % use with care
+\unexpanded\def\placeheadnumber{\dosingleempty\doplaceheadnumber} % use with care
 
-\def\doplaceheadtextornumber[#1][#2][#3][#4][#5]%
+\def\doplaceheadtext[#1]%
   {\dontleavehmode
    \begingroup
-   \xdef\currentstructurehead        {\iffifthargument#5\else#4\fi}%
-   \xdef\currentstructureheadcoupling{\structuresectionheadcoupling\currentstructurehead}%
-   \xdef\currentstructureheadsection {\structuresectionheadsection \currentstructureheadcoupling}%
-   \xdef\currentstructureheadlevel   {\structuresectionlevel       \currentstructureheadsection}%
+   \edef\currentstructurehead{#1}%
    \dosetstructureheadattributes\c!style\c!color
-   \dosetstructureheadattributes#1#2%
+   \dosetstructureheadattributes\c!textstyle\c!textcolor
    \dontconvertfont
    \setupinterlinespace
-   % temp hack most be fixed (see s-pre-61)
-   % \begstrut\getmarking[#4#3]\endstrut
-   \doifelse{#3}\v!number\fullstructureheadnumber\fullstructureheadtitle
+   \relax
+   \getspecificstructuretitle{\thenamedstructureheadlevel{#1}}%
+   \endgraf
+   \endgroup}
+
+\def\doplaceheadnumber[#1]%
+  {\dontleavehmode
+   \begingroup
+   \edef\currentstructurehead{#1}%
+   \dosetstructureheadattributes\c!style\c!color
+   \dosetstructureheadattributes\c!numberstyle\c!numbercolor
+   \dontconvertfont
+   \setupinterlinespace
+   \relax
+   \getfullstructurenumber{\thenamedstructureheadlevel{#1}}%
    \endgraf
    \endgroup}
 
@@ -464,15 +483,15 @@
 
 % typesetting
 
-\def\placestructureheadnumbertext
+\def\placestructureheadnumbertext % dummy, will be overloaded
   {\getstructureheadnumber/\getstructureheadtitle
    \getstructureheadsyncs}
 
-\def\placestructureheadtext
+\def\placestructureheadtext % dummy, will be overloaded
   {\getstructureheadtitle
    \getstructureheadsyncs}
 
-\def\placestructureheadnothing
+\def\placestructureheadnothing % dummy, will be overloaded
   {\getstructureheadsyncs}
 
 % pagebreaks
@@ -623,10 +642,14 @@
 
 \def\dohandlepagebreakX{\dopreventbreakafterstructureheadspec} % no \let so we can redefind
 
-% todo:
+% we do support negative numbers but it can have side effects that we won't
+% catch
+%
+% \chapter{some} \setupheadnumber[chapter][3] \chapter{more}
+% \setupheadnumber[section][8] \section{b} \section{c} \setupheadnumber[section][-1] \section{d}
 
 \def\thecurrentstructureheadlevel#1%
-  {\getstructurelevel{#1}}
+  {\getcurrentstructurelevel{#1}}
 
 \def\thenamedstructureheadlevel#1%
   {\structuresectionlevel{\structuresectionheadsection{\structuresectionheadcoupling{#1}}}}
@@ -635,7 +658,7 @@
   {\dodoubleargument\dosetupheadnumber}
 
 \def\dosetupheadnumber[#1][#2]% todo: reset if at other level
-  {\setstructurenumber{\thecurrentstructureheadlevel{#1}}{#2}}
+  {\setstructurenumber{\thenamedstructureheadlevel{#1}}{#2}}
 
 \def\currentstructureheadnumber{0} % ==> \currentheadnumber
 

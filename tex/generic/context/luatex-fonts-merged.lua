@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 07/17/09 13:18:01
+-- merge date  : 07/23/09 20:13:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -2923,11 +2923,6 @@ if not modules then modules = { } end modules ['node-dum'] = {
 }
 
 nodes = nodes or { }
-
-function nodes.simple_font_dummy(head,tail)
-    -- ligaturing, kerning
-    return head, tail
-end
 
 function nodes.simple_font_handler(head)
 --  lang.hyphenate(head)

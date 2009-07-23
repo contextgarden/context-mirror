@@ -583,6 +583,13 @@
 
 % we can check for used entries, and if not, then not add one
 
+\def\enableparpositions % global
+  {\global\positioningtrue
+   \global\positioningpartrue}
+
+\def\disableparpositions % local
+  {\positioningparfalse}
+
 \def\registerparoptions
   {\ifpositioningpar \ifpositioning \iftrialtypesetting \else
      \ifinpagebody \else \ifmmode \else \ifinformula \else
@@ -854,11 +861,8 @@
    \rawprocesscommalist[#2]\docommand
    \ifdone\egroup#3\else\egroup#4\fi}
 
-\def\doifpositionsonsamepageelse
-  {\dodoifpositionsonsamepageelse{0}}
-
-\def\doifpositionsonthispageelse#1#2#3%
-  {\dodoifpositionsonsamepageelse\realfolio}
+\def\doifpositionsonsamepageelse{\dodoifpositionsonsamepageelse\!!zerocount}
+\def\doifpositionsonthispageelse{\dodoifpositionsonsamepageelse\realfolio  }
 
 %D Plugins:
 

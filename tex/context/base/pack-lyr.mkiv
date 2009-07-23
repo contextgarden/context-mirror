@@ -508,8 +508,7 @@
        \fi\fi
      \fi
    \fi
-   \chardef\layerbox\csname\@@layerbox#2\endcsname % mathchardef no longer needed can be chardef or just let
-%    \chardef\layerbox\csname\@@layerbox\currentlayer\endcsname % mathchardef no longer needed can be chardef or just let
+   \chardef\layerbox\csname\@@layerbox#2\endcsname % \@@layerbox\currentlayer
    % we need to copy in order to retain the negative offsets for a next
    % stage of additions, i.e. llx/lly accumulate in repeat mode and the
    % compensation may differ each flush depending on added content

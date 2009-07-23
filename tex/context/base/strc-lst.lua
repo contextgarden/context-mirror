@@ -13,6 +13,7 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 
 local format, tonumber = string.format, tonumber
 local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write, tex.count
+local insert, remove = table.insert, table.remove
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -117,7 +118,19 @@ end
 
 -- we can use level instead but we can also decide to remove level from the metadata
 
--- we need level instead of cnumbers and we also need to deal with inbetween
+local nesting = { }
+
+function lists.pushnesting(i)
+    local r = lists.result[i]
+    local name = r.metadata.name
+    local n = (r and r.numberdata.numbers[sections.getlevel(name)]) or 0
+    insert(nesting, { number = n, name = name, result = lists.result })
+end
+
+function lists.popnesting()
+    local old = remove(nesting)
+    lists.result = old.result
+end
 
 local function filter_collected(names, criterium, number, collected)
     local numbers, depth = documents.data.numbers, documents.data.depth
@@ -222,8 +235,11 @@ local function filter_collected(names, criterium, number, collected)
                 end
             end
         end
-    elseif criterium == variables["local"] then
-        if sections.autodepth(documents.data.numbers) == 0 then
+    elseif criterium == variables["local"] then -- not yet ok
+        local nested = nesting[#nesting]
+        if nested then
+            return filter_collected(names,nested.name,nested.number,collected)
+        elseif sections.autodepth(documents.data.numbers) == 0 then
             return filter_collected(names,variables.all,number,collected)
         else
             return filter_collected(names,variables.current,number,collected)
@@ -312,7 +328,8 @@ function lists.title(name,n,tag) -- tag becomes obsolete
     if data then
         local titledata = data.titledata
         if titledata then
-            texsprint(ctxcatcodes,titledata[tag] or titledata.list or titledata.title or "")
+            helpers.title(titledata[tag] or titledata.list or titledata.title or "",data.metadata)
+--~             texsprint(ctxcatcodes,titledata[tag] or titledata.list or titledata.title or "")
         end
     end
 end
@@ -322,7 +339,8 @@ function lists.savedtitle(name,n,tag)
     if data then
         local titledata = data.titledata
         if titledata then
-            texsprint(ctxcatcodes,titledata[tag] or titledata.title or "")
+            helpers.title(titledata[tag] or titledata.title or "",data.metadata)
+--~             texsprint(ctxcatcodes,titledata[tag] or titledata.title or "")
         end
     end
 end

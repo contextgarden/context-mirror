@@ -538,25 +538,7 @@
 
 \def\doifparentfileelse#1{\ctxlua{support.doifparentfileelse([[#1]])}}
 
-\def\normalless    {<} % geen \let !
-\def\normalmore    {>} % geen \let !
-\def\normalequal   {=} % geen \let !
-\def\normaldblquote{"} % geen \let !
-
 \newcount\readingfilelevel
-
-\def\popfilecharacter#1#2%
-  {\ifnum\catcode`#1=\@@other \ifnum#2=\@@other \else
-    %\message{[popping catcode #1 to #2]}%
-     \catcode`#1=#2\relax
-   \fi \fi}
-
-\ifx\\\undefined \let\\\relax \fi
-
-%D This changing catcodes is a direct result from the fact
-%D that we support some long standing conventions with
-%D regards to active characters (german ", polish /,
-%D french : and ;).
 
 %D We need to redo this: catcode sets and such
 
@@ -573,9 +555,6 @@
   {\endrestorecatcodes
    \the\everystopreadingfile
    \global\advance\readingfilelevel\minusone}
-
-\let\normalstartreadingfile\startreadingfile
-\let\normalstopreadingfile \stopreadingfile
 
 %D \macros
 %D   {splitfilename}

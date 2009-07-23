@@ -833,7 +833,7 @@
 %D Instead of a text, one can specify a label, which should
 %D be defined with \type {\setuplabeltext}.
 
-% todo: inherit
+% todo: inherit; probably not yet mkiv okay
 
 \def\definereferenceformat
   {\dodoubleargument\dodefinereferenceformat}
@@ -871,24 +871,90 @@
 \let\textofreference \relax
 
 % fails on metafun  {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
+%
+% \def\dodododoinatreference#1#2#3[#4]% no \removeunwantedspaces (fails on metafun)
+%   {\ifx\next\bgroup
+%      \dododododoinatreference{\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
+%    \else
+%      \dododododoinatreference{\leftofreference#1\rightofreference}{#2#3}[#4]%
+%    \fi}
+%
+% \def\dododododoinatreference#1#2[#3]%
+%   {\dontleavehmode   % replaces \leaveoutervmode
+%    \begingroup
+%    \postponenotes
+%    \doifreferencefoundelse{#3}
+%      {\doifelsenothing{#1}\dosymbolreference\dowantedreference{#1}{#2}[#3]}%
+%      {\dounknownreference{#1}{#2}[#3]}%
+%    \endgroup}
 
-\def\dodododoinatreference#1#2#3[#4]% no \removeunwantedspaces (fails on metafun)
+% \starttext
+%     \definereferenceformat[inxx]  [left=(,right=),text=txt]
+%     \setupinteraction[state=start]
+%     \chapter[one]{xx}
+%     [\goto{state}[file(mk-last-state)]]
+%     [\goto{state} [file(mk-last-state)]]
+%     [\at{page} [one]]
+%     [\at{page}[one]]
+%     [\at{page}{okay}[one]]
+%     [\inxx{a}{b}[one]]
+% \stoptext
+
+\unexpanded\def\dospecialin{\let\currentreferencecontent\currentreferencenumber\doinatreference}
+\unexpanded\def\dospecialat{\let\currentreferencecontent\currentreferencepage  \doinatreference}
+
+\newtoks\leftreferencetoks
+\newtoks\rightreferencetoks
+
+\def\doinatreference
+  {\futurelet\next\doinatreferenceone}
+
+\def\doinatreferenceone
   {\ifx\next\bgroup
-     \dododododoinatreference{\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
+     \afterassignment\doinatreferenceonetwo
+     \expandafter\leftreferencetoks
    \else
-     \dododododoinatreference{\leftofreference#1\rightofreference}{#2#3}[#4]%
+     \leftreferencetoks\emptytoks
+     \expandafter\dodoinatreferencenone
    \fi}
 
-\let\dosymbolreference\dowantedreference
+\def\doinatreferenceonetwo
+  {\futurelet\next\doinatreferencetwo}
 
-\def\dododododoinatreference#1#2[#3]%
+\def\doinatreferencetwo
+  {\ifx\next\bgroup
+     \afterassignment\dodoinatreferenceboth
+     \expandafter\rightreferencetoks
+   \else
+     \rightreferencetoks\emptytoks
+     \expandafter\dodoinatreferenceleft
+   \fi}
+
+\def\dodoinatreferencenone
+  {\dodoinatreferenceindeed
+     {\leftofreference\currentreferencecontent\rightofreference}
+     {}}
+
+\def\dodoinatreferenceleft
+  {\dodoinatreferenceindeed
+     {\leftofreference\currentreferencecontent\rightofreference}
+     {\the\leftreferencetoks}}
+
+\def\dodoinatreferenceboth
+  {\dodoinatreferenceindeed
+     {\leftofreference\currentreferencecontent\the\rightreferencetoks\rightofreference}
+     {\the\leftreferencetoks}}
+
+\def\dodoinatreferenceindeed#1#2#3[#4]% #3 gobbles space
   {\dontleavehmode   % replaces \leaveoutervmode
    \begingroup
    \postponenotes
-   \doifreferencefoundelse{#3}
-     {\doifelsenothing{#1}\dosymbolreference\dowantedreference{#1}{#2}[#3]}%
-     {\dounknownreference{#1}{#2}[#3]}%
+   \doifreferencefoundelse{#4}
+     {\doifelsenothing{#1}\dosymbolreference\dowantedreference{#1}{#2}[#4]}%
+     {\dounknownreference{#1}{#2}[#4]}%
    \endgroup}
+
+\let\dosymbolreference\dowantedreference
 
 %D In interactive documents going to a specific location is not
 %D bound to cross references. The \type{\goto} commands can be
@@ -905,6 +971,12 @@
 %D \type{\goto} (and therefore \type{\at} and \type{\in} is
 %D split at spaces. This means that, although hyphenation is
 %D prevented, long references can cross line endings.
+
+% \starttext
+%     \setupinteraction[state=start]
+%     [\goto{state}[file(mk-last-state)]]
+%     [\goto{state} [file(mk-last-state)]]
+% \stoptext
 
 \newconditional\uselocationstrut \settrue\uselocationstrut
 
@@ -938,33 +1010,33 @@
    #1%
    \endgroup}
 
-\def\dogoto#1[#2]%
+\def\dogoto#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
   {\dontleavehmode
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{jobreferences.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
+     \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \ctxlua{jobreferences.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
         \setlocationattributes\??ia
         \setstrut % can be option
         \attribute\referenceattribute\lastreferenceattribute}%
-       {\unknownreference{#2}}%
+       {\unknownreference{#3}}%
    \fi
    #1%
    \endgroup}
 
-\def\dogotohtdp#1[#2]%
+\def\dogotohtdp#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
   {\dontleavehmode
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{jobreferences.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
+     \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \ctxlua{jobreferences.injectcurrentset(\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax)}%
         \setlocationattributes\??ia
         \attribute\referenceattribute\lastreferenceattribute}%
-       {\unknownreference{#2}}%
+       {\unknownreference{#3}}%
    \fi
    #1%
    \endgroup}

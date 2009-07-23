@@ -796,22 +796,23 @@
 \def\postponenotes
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
+     \global\let\flushnotes\doflushnotes
      \ctxlua{structure.notes.postpone()}%
    \fi}
 
-\def\flushnotes
-  {\ifconditional\postponingnotes
-     \flushnotesindeed
-   \fi}
+\let\flushnotes\relax
 
-\def\flushnotesindeed
-  {\begingroup
-   \let\flushnotes   \relax
-   \let\postponenotes\relax
-   \ctxlua{structure.notes.flushpostponed()}% this also resets the states !
-   \global\setfalse\postponednote
-   \global\setfalse\postponingnotes
-   \endgroup}
+\def\doflushnotes
+  {\ifconditional\postponingnotes
+     \begingroup
+     \let\flushnotes   \relax
+     \let\postponenotes\relax
+     \ctxlua{structure.notes.flushpostponed()}% this also resets the states !
+     \global\setfalse\postponednote
+     \global\setfalse\postponingnotes
+     \global\let\flushnotes\relax
+     \endgroup
+   \fi}
 
 %D \macros
 %D   {startlocalfootnotes,placelocalfootnotes}

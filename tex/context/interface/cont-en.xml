@@ -8722,6 +8722,9 @@
           <cd:constant type="max"/>
           <cd:constant type="fit"/>
           <cd:constant type="doublesided"/>
+          <cd:constant type="singlesided"/>
+          <cd:constant type="auto"/>
+          <cd:constant type="none"/>
           <cd:constant type="bookmark"/>
         </cd:parameter>
         <cd:parameter name="delay">

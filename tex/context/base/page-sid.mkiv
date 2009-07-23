@@ -107,37 +107,6 @@
 \newdimen\sidefloatrightskip
 \newdimen\sidefloatmaximum
 
-% \def\checksidefloatshift
-%   {\ifdim\sidefloatmaximum>\zeropoint
-%      \ifcase\sidefloattype
-%        % invalid
-%      \or
-%        % backspace
-%      \or
-%        \global\sidefloatshift-\sidefloatmaximum
-%        \global\advance\sidefloatshift-\rightorleftpageaction \leftedgedistance   \rightedgedistance
-%        \global\advance\sidefloatshift-\rightorleftpageaction \leftmarginwidth    \rightmarginwidth
-%        \global\advance\sidefloatshift-\rightorleftpageaction \leftmargindistance \rightmargindistance
-%      \or
-%        \global\sidefloatshift-\sidefloatmaximum
-%        \global\advance\sidefloatshift-\rightorleftpageaction \leftmargindistance \rightmargindistance
-%      \or
-%        % left
-%      \or
-%        % right
-%      \or
-%        \global\sidefloatshift-\sidefloatmaximum
-%        \global\advance\sidefloatshift-\rightorleftpageaction \leftmargindistance \rightmargindistance
-%      \or
-%        \global\sidefloatshift-\sidefloatmaximum
-%        \global\advance\sidefloatshift-\rightorleftpageaction \leftedgedistance   \rightedgedistance
-%        \global\advance\sidefloatshift-\rightorleftpageaction \leftmarginwidth    \rightmarginwidth
-%        \global\advance\sidefloatshift-\rightorleftpageaction \leftmargindistance \rightmargindistance
-%      \or
-%        % cutspace
-%      \fi
-%    \fi}
-
 \def\checksidefloatshift
   {\ifdim\sidefloatmaximum>\zeropoint
      \ifcase\sidefloattype
@@ -276,71 +245,6 @@
 % pagetotal enz niet zijn aangepast. Inner kan overigens niet
 % betrouwbaar worden getest!
 
-% \def\flushsidefloats%
-%   {\par
-%    \sidefloatprogress=\sidefloatvsize
-%    \advance\sidefloatprogress by -\pagetotal
-%    \ifdim\sidefloatprogress>\zeropoint
-%      \witruimte % nog checken op interferentie
-%      \kern\sidefloatprogress
-%    \fi
-%    \global\sidefloatvsize=\nofloatvsize
-%    \global\floatflagfalse}
-%
-% no, too buggy, leads to top of page crap
-%
-%\def\flushsidefloats
-%  {\par
-%   \dochecksidefloat
-%   \scratchcounter=-\hangafter
-%   \dorecurse{\scratchcounter}{\strut\hfill\strut\par}}
-%
-%\def\flushsidefloats
-%  {\par
-%   \!!heighta\sidefloatvsize
-%   \advance\!!heighta -\pagetotal
-%   \ifdim\!!heighta>\zeropoint
-%     % to be checked for interference
-%     \witruimte
-%     % will be option
-%     \getnoflines\!!heighta
-%     \!!heighta\noflines\lineheight
-%     % so far for option
-%     \kern\!!heighta
-%   \fi
-%   % == \forgetsidefloats
-%   \global\sidefloatvsize\nofloatvsize
-%   \global\floatshortfalse
-%   \global\floatflagfalse}
-
-% \def\flushsidefloats
-%   {\par
-%    \!!heighta\sidefloatvsize
-%    \advance\!!heighta -\pagetotal
-%    \ifdim\!!heighta>\zeropoint
-%      % to be checked for interference
-%      \witruimte
-%      % will be option
-%      \getnoflines\!!heighta
-%      \!!heighta\noflines\lineheight
-%      % so far for option
-%      \ifdim\sidefloatbottomskip>\zeropoint\relax
-%        \ifdim\!!heighta>\sidefloatbottomskip
-%          \advance\!!heighta-\sidefloatbottomskip
-%          \kern\!!heighta
-%          \vskip\sidefloatbottomskip
-%        \else
-%          \kern\!!heighta
-%        \fi
-%      \else
-%        \kern\!!heighta
-%      \fi
-%    \fi
-%    % == \forgetsidefloats
-%    \global\sidefloatvsize\nofloatvsize
-%    \global\floatshortfalse
-%    \global\floatflagfalse}
-
 \newif\iftracesidefloats
 
 \def\flushsidefloats
@@ -389,15 +293,17 @@
    % also here if used at all \global\holdinginserts\zerocount
    \global\floatflagfalse}
 
+\def\dochecksidefloatafterpar
+  {\dochecksidefloat
+   \ifdim\oldpagetotal=\pagetotal \else
+     \global\let\checksidefloat\dochecksidefloat
+     \flushsidefloats
+     \global\sidefloatsidelines\zerocount % here !
+   \fi}
+
 \def\flushsidefloatsafterpar
   {\xdef\oldpagetotal{\the\pagetotal}%
-   \gdef\checksidefloat
-     {\dochecksidefloat
-      \ifdim\oldpagetotal=\pagetotal \else
-        \global\let\checksidefloat\dochecksidefloat
-        \flushsidefloats
-        \global\sidefloatsidelines\zerocount % here !
-      \fi}}
+   \global\let\checksidefloat\dochecksidefloatafterpar}
 
 \def\forgetsidefloats
   {\global\sidefloatvsize\nofloatvsize
@@ -568,51 +474,45 @@
    {\everypar\emptytoks\forgetall\verticalstrut\vskip-\struttotal}% moved
    \checksidefloatshift
    \ifdim\sidefloatshift=\zeropoint \relax
-     \ifnum\sidefloattype=4
+     \ifnum\sidefloattype=\plusfour
        \global\advance\sidefloatshift\sidefloatextrashift
        \global\sidefloatextrashift\zeropoint
-     \else\ifnum\sidefloattype=5
+     \else\ifnum\sidefloattype=\plusfive
        \global\advance\sidefloatshift\sidefloatextrashift
        \global\sidefloatextrashift\zeropoint
      \fi\fi
    \else
-     \ifnum\sidefloattype<4
-       \global\chardef\sidefloattype4
-     \else\ifnum\sidefloattype>5
-       \global\chardef\sidefloattype5
+     \ifnum\sidefloattype<\plusfour
+       \global\chardef\sidefloattype\plusfour
+     \else\ifnum\sidefloattype>\plusfive
+       \global\chardef\sidefloattype\plusfive
      \fi\fi
    \fi
    \previoussidefloat
    \stallsidefloat
-  %\global\setbox\floatbox\hbox
-  %  {\ifmarginfloat\else\ifrightfloat\else\kern\sidefloatleftshift\fi\fi
-  %   \hskip\ifrightfloat-\sidefloatextrashift\else\sidefloatshift\fi
-  %   \vbox{#1\ifnum\sidefloatalign=4 \removedepth\fi}%
-  %   \kern\ifrightfloat\sidefloatshift\else-\sidefloatextrashift\fi
-  %   \ifmarginfloat\else\ifrightfloat\kern\sidefloatrightshift\fi\fi}%
    \global\setbox\floatbox\hbox % no \hskip, but \kern here
-     {\ifnum\sidefloattype=4
+     {\ifnum\sidefloattype=\plusfour
         \hskip\sidefloatleftshift
-      \else\ifnum\sidefloattype=1
+      \else\ifnum\sidefloattype=\plusone
         \hskip\sidefloatleftshift
       \fi\fi
-      \ifnum\sidefloattype>4
+      \ifnum\sidefloattype>\plusfour
         \hskip-\sidefloatextrashift
       \else
         \hskip\sidefloatshift
       \fi
-      \vbox{#1\ifnum\sidefloatalign=4 \removedepth\fi}%
-      \ifnum\sidefloattype>4
+      \vbox{#1\ifnum\sidefloatalign=\plusfour \removedepth\fi}%
+      \ifnum\sidefloattype>\plusfour
         \kern\sidefloatshift
       \else
         \kern-\sidefloatextrashift
       \fi
       \ifnum\sidefloattype=8
         \kern\sidefloatrightshift
-      \else\ifnum\sidefloattype=5
+      \else\ifnum\sidefloattype=\plusfive
         \kern\sidefloatrightshift
       \fi\fi}%
-   \ifnum\sidefloatalign=4
+   \ifnum\sidefloatalign=\plusfour
      \getnoflines{\ht\floatbox}%
      \scratchdimen\noflines\lineheight
      \advance\scratchdimen-\strutdepth
@@ -628,9 +528,9 @@
      \global\sidefloattopskip\zeropoint
    \fi
    \scratchdimen
-     \ifnum\sidefloattype<4
+     \ifnum\sidefloattype<\plusfour
        \sidefloattopskip
-     \else\ifnum\sidefloattype>5
+     \else\ifnum\sidefloattype>\plusfive
        \sidefloattopskip
      \else
        \zeropoint
@@ -661,39 +561,42 @@
         {\vskip\scratchdimen
          \nointerlineskip
          \box\floatbox
-         \ifnum\sidefloatalign=5 \vskip-\lineheight \fi}}%
-   \ifnum\sidefloattype<4
+         \ifnum\sidefloatalign=\plusfive \vskip-\lineheight \fi}}%
+   \ifnum\sidefloattype<\plusfour
      \global\sidefloattopskip\zeropoint
-   \else\ifnum\sidefloattype>5
+   \else\ifnum\sidefloattype>\plusfive
      \global\sidefloattopskip\zeropoint
    \fi\fi
    \global\sidefloatdownshift\zeropoint
    \measuresidefloat
    \ifroomforfloat \else
-     \tosssidefloat
+     \vfill\eject % inline \tosssidefloat
      \measuresidefloat
      \stallsidefloat
    \fi
    \setsidefloat}
 
+% \def\progresssidefloat
+%   {\sidefloatprogress\sidefloatvsize
+%    \iffloatflag
+%      \advance\sidefloatprogress -\sidefloatpagetotal
+%      \global\floatflagfalse
+%    \else
+%      \advance\sidefloatprogress -\pagetotal
+%    \fi}
+%
+% more compact:
+
 \def\progresssidefloat
   {\sidefloatprogress\sidefloatvsize
-   \iffloatflag
-     \advance\sidefloatprogress -\sidefloatpagetotal
-     \global\floatflagfalse
-   \else
-     \advance\sidefloatprogress -\pagetotal
-   \fi}
-
-\def\tosssidefloat
-  {\vfill\eject}
+   \advance\sidefloatprogress-\iffloatflag\sidefloatpagetotal\global\floatflagfalse\else\pagetotal\fi}
 
 \def\measuresidefloat
   {\global\floatflagtrue
    \global\sidefloatpagetotal \pagetotal % global
-   \ifnum\sidefloattype<4
+   \ifnum\sidefloattype<\plusfour
      \global        \sidefloatwidth \zeropoint
-   \else\ifnum\sidefloattype>5
+   \else\ifnum\sidefloattype>\plusfive
      \global        \sidefloatwidth \zeropoint
    \else
      \global        \sidefloatwidth \wd\floatbox
@@ -742,14 +645,13 @@
 \def\setsidefloat% nilling everypar saves time and redudant pos's
   {% removed here dec 2001
    % {\everypar\emptytoks\forgetall\verticalstrut\vskip-\struttotal}%
-   \ifnum\sidefloattype=4 \kern\sidefloattopskip \fi
-   \ifnum\sidefloattype=5 \kern\sidefloattopskip \fi
+   \ifnum\sidefloattype=\plusfour \kern\sidefloattopskip \fi
+   \ifnum\sidefloattype=\plusfive \kern\sidefloattopskip \fi
    \edef\presidefloatdepth{\the\prevdepth}%
    \nointerlineskip
    \bgroup
    \everypar\emptytoks
    \parskip\zeropoint
-  %\checksidefloatshift
    \setsidefloatskips
    \logsidefloat
    \relax
@@ -840,7 +742,7 @@
          \advance\!!counta -\sidefloatsidelines\relax
          \advance\scratchcounter\!!counta
          \dorecurse\!!counta
-           {\ifnum\sidefloattype>4
+           {\ifnum\sidefloattype>\plusfour
               \appendtoks \zeropoint \scratchdimen \to \scratchtoks
             \else
               \appendtoks \sidefloatwidth \scratchdimen \to \scratchtoks
@@ -850,7 +752,7 @@
        \parshape \scratchcounter \the\scratchtoks \zeropoint \hsize\relax
      \else
        % new till here
-       \hangindent \ifnum\sidefloattype>4 -\fi\sidefloatwidth
+       \hangindent \ifnum\sidefloattype>\plusfour -\fi\sidefloatwidth
        \hangafter-\!!counta
      \fi
    \fi
@@ -864,7 +766,7 @@
    \fi}
 
 \def\resetsidefloatparagraph
-  {\global\sidefloatparagraph\zerocount }
+  {\global\sidefloatparagraph\zerocount}
 
 \def\dochecksidefloat
   {\progresssidefloat
@@ -875,8 +777,7 @@
    \fi
    \parskip\ctxparskip}
 
-\def\checksidefloat
-  {\dochecksidefloat}
+\let\checksidefloat\dochecksidefloat
 
 \def\synchronizesidefloats
   {\ifinner \else \checksidefloat \fi}
@@ -895,7 +796,7 @@
    \ifdim\sidefloatprogress>\zeropoint \relax
      \iffloatshort
        \global\floatshortfalse
-       \tosssidefloat
+       \vfill\eject % inline \tosssidefloat
      \else
        \kern\sidefloatprogress
      \fi
@@ -925,7 +826,7 @@
 % \let\OTRMULflushsidefloats      \forgetsidefloats
 % \let\OTRMULsynchronizesidefloats\forgetsidefloats
 
-\def\synchronizesidefloats{\OTRcommand\synchronizesidefloats}
-\def\flushsidefloats      {\OTRcommand\flushsidefloats}
+\registerotrcommand\synchronizesidefloats % \def\synchronizesidefloats{\OTRcommand\synchronizesidefloats}
+\registerotrcommand\flushsidefloats       % \def\flushsidefloats      {\OTRcommand\flushsidefloats}
 
 \protect \endinput

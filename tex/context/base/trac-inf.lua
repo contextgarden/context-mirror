@@ -19,27 +19,34 @@ statistics.threshold = 0.05
 
 local clock = os.gettimeofday or os.clock
 
+local notimer
+
 function statistics.hastimer(instance)
     return instance and instance.starttime
 end
 
 function statistics.starttiming(instance)
-    if instance then
-        local it = instance.timing
-        if not it then
-            it = 0
-        end
-        if it == 0 then
-            instance.starttime = clock()
-            if not instance.loadtime then
-                instance.loadtime = 0
-            end
-        end
-        instance.timing = it + 1
+    if not instance then
+        notimer = { }
+        instance = notimer
     end
+    local it = instance.timing
+    if not it then
+        it = 0
+    end
+    if it == 0 then
+        instance.starttime = clock()
+        if not instance.loadtime then
+            instance.loadtime = 0
+        end
+    end
+    instance.timing = it + 1
 end
 
 function statistics.stoptiming(instance, report)
+    if not instance then
+        instance = notimer
+    end
     if instance then
         local it = instance.timing
         if it > 1 then
@@ -63,10 +70,16 @@ function statistics.stoptiming(instance, report)
 end
 
 function statistics.elapsedtime(instance)
+    if not instance then
+        instance = notimer
+    end
     return format("%0.3f",(instance and instance.loadtime) or 0)
 end
 
 function statistics.elapsedindeed(instance)
+    if not instance then
+        instance = notimer
+    end
     local t = (instance and instance.loadtime) or 0
     return t > statistics.threshold
 end

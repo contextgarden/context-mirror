@@ -83,9 +83,6 @@
 
 %D Transformations. Some day we will use primitives (once they're fixed).
 
-\def\dostartgraphicgroup{\pdfliteral{q}}
-\def\dostopgraphicgroup {\pdfliteral{Q}}
-
 \def\dostartrotation#1% grouped
   {\forcecolorhack
    \pdfliteral{q \ctxlua{lpdf.rotationcm(#1)}}}

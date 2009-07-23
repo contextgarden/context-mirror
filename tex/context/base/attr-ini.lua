@@ -62,8 +62,8 @@ colors.registered = colors.registered or { }
 
 colors.enabled    = true
 colors.weightgray = true
-colors.attribute  = 0
-colors.selector   = 0
+colors.attribute  = attributes.private('color')
+colors.selector   = attributes.private('colormodel')
 colors.default    = 1
 colors.main       = nil
 colors.triggering = true
@@ -186,6 +186,7 @@ end
 
 local function reviver(data,n)
     local v = values[n]
+    local d
     if not v then
         local gray = graycolor(0)
         d = { gray, gray, gray, gray }
@@ -214,15 +215,14 @@ function colors.filter(n)
     return concat(data[n],":",5)
 end
 
-function colors.setmodel(attribute,name,weightgray)
+function colors.setmodel(name,weightgray)
     colors.model = name
-    colors.selector = numbers[attribute]
     colors.default = models[name] or 1
     colors.weightgray = weightgray ~= false
     return colors.default
 end
 
-function colors.register(attribute, name, colorspace, ...) -- passing 9 vars is faster (but not called that often)
+function colors.register(name, colorspace, ...) -- passing 9 vars is faster (but not called that often)
     local stamp = format(templates[colorspace],...)
     local color = registered[stamp]
     if not color then
@@ -232,7 +232,7 @@ function colors.register(attribute, name, colorspace, ...) -- passing 9 vars is 
     -- colors.reviver(color)
     end
     if name then
-        list[numbers[attribute]][name] = color -- not grouped, so only global colors
+        list[colors.attribute][name] = color -- not grouped, so only global colors
     end
     return registered[stamp]
 end
@@ -258,6 +258,7 @@ transparencies.data       = transparencies.data       or { }
 transparencies.values     = transparencies.values     or { }
 transparencies.enabled    = false
 transparencies.triggering = true
+transparencies.attribute  = attributes.private('transparency')
 
 storage.register("transparencies/registered", transparencies.registered, "transparencies.registered")
 storage.register("transparencies/values",     transparencies.values,     "transparencies.values")
@@ -292,6 +293,7 @@ end
 
 local function reviver(data,n)
     local v = values[n]
+    local d
     if not v then
         d = inject_transparency(0)
     else
@@ -321,9 +323,10 @@ shipouts.handle_transparency = nodes.install_attribute_handler {
 
 --- overprint / knockout
 
-overprints         = overprints      or { }
-overprints.data    = overprints.data or { }
-overprints.enabled = false
+overprints           = overprints      or { }
+overprints.data      = overprints.data or { }
+overprints.enabled   = false
+overprints.attribute = attributes.private('overprint')
 
 overprints.registered = {
     overprint = 1,
@@ -369,9 +372,10 @@ shipouts.handle_overprint = nodes.install_attribute_handler {
 
 --- negative / positive
 
-negatives            = negatives      or { }
-negatives.data       = negatives.data or { }
-negatives.enabled    = false
+negatives           = negatives      or { }
+negatives.data      = negatives.data or { }
+negatives.enabled   = false
+negatives.attribute = attributes.private("negative")
 
 negatives.registered = {
     positive = 1,
@@ -423,6 +427,7 @@ effects.values     = effects.values     or { }
 effects.registered = effects.registered or { }
 effects.enabled    = false
 effects.stamp      = "%s:%s:%s"
+effects.attribute  = attributes.private("effect")
 
 storage.register("effects/registered", effects.registered, "effects.registered")
 storage.register("effects/values",     effects.values,     "effects.values")
@@ -478,63 +483,18 @@ viewerlayers            = viewerlayers            or { }
 viewerlayers.data       = viewerlayers.data       or { }
 viewerlayers.registered = viewerlayers.registered or { }
 viewerlayers.values     = viewerlayers.values     or { }
+viewerlayers.listwise   = viewerlayers.listwise   or { }
 viewerlayers.enabled    = false
+viewerlayers.attribute  = attributes.private("viewerlayer")
 
 storage.register("viewerlayers/registered", viewerlayers.registered, "viewerlayers.registered")
 storage.register("viewerlayers/values",     viewerlayers.values,     "viewerlayers.values")
 
 local data       = viewerlayers.data
 local values     = viewerlayers.values
+local listwise   = viewerlayers.listwise
 local registered = viewerlayers.registered
 local template   = "%s"
-
--- interwoven
-
---~ local somedone = false
---~ local somedata = { }
---~ local nonedata = nodeinjections.stoplayer()
---~
---~ function viewerlayers.none() -- no local
---~     if somedone then
---~         somedone = false
---~         return nonedata
---~     else
---~         return nil
---~     end
---~ end
---~
---~ local function some(name)
---~     local sd = somedata[name]
---~     if not sd then
---~         sd = {
---~             nodeinjections.switchlayer(name),
---~             nodeinjections.startlayer(name),
---~         }
---~         somedata[name] = sd
---~     end
---~     if somedone then
---~         return sd[1]
---~     else
---~         somedone = true
---~         return sd[2]
---~     end
---~ end
---~
---~ local function initializer(...)
---~     somedone = false
---~     return states.initialize(...)
---~ end
---~
---~ viewerlayers.register = function(name) -- if not inimode redefine data[n] in first call
---~     local stamp = format(template,name)
---~     local n = registered[stamp]
---~     if not n then
---~         n = #data + 1
---~         data[n] = function() return some(name) end -- slow but for the moment we don't store things in the format
---~         registered[stamp] = n
---~     end
---~     return registered[stamp] -- == n
---~ end
 
 -- stacked
 
@@ -559,13 +519,14 @@ local function initializer(...)
     return states.initialize(...)
 end
 
-viewerlayers.register = function(name) -- if not inimode redefine data[n] in first call
+viewerlayers.register = function(name,lw) -- if not inimode redefine data[n] in first call
     local stamp = format(template,name)
     local n = registered[stamp]
     if not n then
         n = #values + 1
         values[n] = name
         registered[stamp] = n
+        listwise[n] = lw or false
     end
     return registered[stamp] -- == n
 end

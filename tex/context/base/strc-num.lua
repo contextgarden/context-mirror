@@ -121,7 +121,7 @@ local function allocate(name,i)
         cd = {
             level = 1,
             numbers = nil,
-            state = interfaces.variables.start, -- true
+            state = variables.start, -- true
             data = { }
         }
         tobesaved[name] = { }
@@ -245,7 +245,7 @@ function counters.setvalue(name,tag,value)
 end
 
 function counters.setstate(name,value) -- true/false
-    value = interfaces.variables[value]
+    value = variables[value]
     if value then
         counters.setvalue(name,"state",value)
     end
@@ -335,7 +335,7 @@ end
 
 function counters.add(name,n,delta)
     local cd = counterdata[name]
-    if cd and cd.state == interfaces.variables.start then
+    if cd and cd.state == variables.start then
         local data = cd.data
         local d = allocate(name,n)
         d.number = (d.number or d.start or 0) + delta*(d.step or 0)
@@ -382,12 +382,11 @@ function counters.converted(name,spec) -- name can be number and reference to st
         cd = counterdata[name]
     end
     if cd then
-        local vars = interfaces.variables
         local spec = spec or { }
         local numbers, ownnumbers = { }, { }
-        local reverse = spec.order == vars["reverse"]
+        local reverse = spec.order == variables["reverse"]
         local kind = spec.type or "number"
-        local v_first, v_next, v_previous, v_last = vars.first, vars.next, vars.previous, vars.last
+        local v_first, v_next, v_previous, v_last = variables.first, variables.next, variables.previous, variables.last
         local data = cd.data
         for k=1,#data do
             local v = data[k]

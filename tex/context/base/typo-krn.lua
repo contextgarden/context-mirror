@@ -31,9 +31,10 @@ local vlist = node.id('vlist')
 local fontdata = fonts.ids
 local chardata = characters.data
 
-kerns         = kerns or { }
-kerns.mapping = kerns.mapping or { }
-kerns.enabled = false
+kerns           = kerns or { }
+kerns.mapping   = kerns.mapping or { }
+kerns.enabled   = false
+kerns.attribute = attributes.private("kern")
 
 storage.register("kerns/mapping", kerns.mapping, "kerns.mapping")
 

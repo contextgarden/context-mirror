@@ -227,14 +227,19 @@
 \setvalue{\??cc:\c!location:\v!leftmargin }{\raisedcommentanchors\inleftmargin }
 \setvalue{\??cc:\c!location:\v!rightmargin}{\raisedcommentanchors\inrightmargin}
 
+\let\flushcommentanchors\relax
+
 \def\doflushcommentanchors
+  {\global\let\flushcommentanchors\relax
+   \ifvoid\commentbox\else\dodoflushcommentanchors\fi} % in everypar so indirect
+
+\def\dodoflushcommentanchors
   {\executeifdefined{\??cc:\c!location:\@@cclocation}\hbox{\box\commentbox}}
 
 \def\setupcomment
   {\dodoubleargument\getparameters[\??cc]}
 
-\def\placecomments      {\box\commentcollection}                           % when option=buffer
-\def\flushcommentanchors{\ifvoid\commentbox\else\doflushcommentanchors\fi} % in everypar so indirect
+\def\placecomments{\box\commentcollection} % when option=buffer
 
 \def\doinsertcomment#1%
   {\begingroup
@@ -270,7 +275,8 @@
 
 \def\stopcomment
   {\doif\@@ccstate\v!start
-     {\global\setbox\commentbox\frozenhbox
+     {\global\let\flushcommentanchors\doflushcommentanchors
+      \global\setbox\commentbox\frozenhbox
         {\hbox to \zeropoint{\struttedbox{\tbox{\doinsertcomment{\v!comment\v!buffer}}}\hss}%
          \hskip\ifvoid\commentbox\@@ccmargin\else\@@ccdistance\fi
          \box\commentbox}}%
@@ -583,7 +589,7 @@
    \c!veroffset=\!!zeropoint,
    \c!backspace=\backspace,
    \c!topspace=\topspace,
-   \c!option=\v!min,
+   \c!option=\v!auto,
    \c!delay=\v!none]
 
 \protect \endinput

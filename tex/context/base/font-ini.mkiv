@@ -1101,7 +1101,7 @@
    \let\localrelativefontsize\defaultrelativefontsize
    \let\localabsolutefontsize\fontbody
    \lowleveldefinefont{#2}\rawfontidentifier
-   \let\localrelativefontsize\defaultrelativefontsize % not needed
+%    \let\localrelativefontsize\defaultrelativefontsize % not needed
    \csname\rawfontidentifier\endcsname
    \autofontsizefalse
    \setfontcharacteristics
@@ -1114,7 +1114,7 @@
      \def\localrelativefontsize{#1}%
      \def\localabsolutefontsize{#2}%
      \lowleveldefinefont{#4}\newfontidentifier
-     \let\localrelativefontsize\defaultrelativefontsize % not needed
+%      \let\localrelativefontsize\defaultrelativefontsize % not needed
    \fi
    \csname\newfontidentifier\endcsname
    \autofontsizefalse
@@ -2091,8 +2091,9 @@
   \fi
 \to \everymathematics
 
-\def\nobigmath{\chardef\synchronizebigmathflag 0 }
-\def\bigmath  {\chardef\synchronizebigmathflag 2 \synchronizebigmath}
+\def\nobigmath  {\chardef\synchronizebigmathflag\zerocount}
+\def\autobigmath{\chardef\synchronizebigmathflag\plusone\synchronizebigmath}
+\def\bigmath    {\chardef\synchronizebigmathflag\plustwo\synchronizebigmath}
 
 \let\bigmathfontsize\empty
 
@@ -2113,7 +2114,7 @@
      \synchronizebigmath
    \fi}
 
-%D So far for synchronisation.
+%D So far for synchronisation. (We can inline the following macros.)
 
 \def\dosetcurrentfontsize#1%
   {\edef\fontsize{#1}%
@@ -2139,10 +2140,17 @@
 
 \ifx\checkfontclass\undefined \let\checkfontclass\gobbleoneargument \fi % implemented in type-ini
 
+% \def\setcurrentfontstyle#1%
+%   {%\message{[3 #1]}%
+%    \checkfontclass{#1}%
+%    \edef\fontstyle{#1}%
+%    \ifmmode\mr\fi % otherwise \rm not downward compatible
+%    \synchronizefont}
+
 \def\setcurrentfontstyle#1%
   {%\message{[3 #1]}%
-   \checkfontclass{#1}%
    \edef\fontstyle{#1}%
+   \checkfontclass\fontstyle
    \ifmmode\mr\fi % otherwise \rm not downward compatible
    \synchronizefont}
 
@@ -2221,8 +2229,6 @@
      #1\csname\fontclass#2#3#4#5\endcsname \tryingfontfalse
    \fi}
 
-% old sequence
-
 \appendtoks \iftryingfont \fontstrategy \autofontsizefalse % --- --- --- --- % pt tt bf a
   \fontbody \fontstyle \fontalternative \fontsize
 \fi \to \fontstrategies
@@ -2258,7 +2264,7 @@
   \fi
 \to \everybodyfont
 
-%D Setting the normal sized as well as the x and xx smaller
+%D Setting the normal sizes as well as the x and xx smaller
 %D sizes is accomplished by the next set of macros. When in
 %D math mode, the commands \type{\tx} and \type{\txx} are
 %D just a switch to the script and double script styles, but

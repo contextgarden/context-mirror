@@ -237,7 +237,7 @@
       \getparameters[#1][#2]%
       \getvalue{#1\c!before}%
       \begingroup
-      \positioningparfalse
+      \disableparpositions
       \setbox\nextbox\hbox to \localhsize
         {\getvalue{#1\c!left}%
          \flushnextbox
@@ -376,9 +376,7 @@
 \def\doparagraphrule
   {\doifelse{\paragraphcellmeter\alcounter\c!rule}\v!on
      {\linewidth\paragraphcellmeter\alcounter\c!rulethickness
-      \scratchdimen\paragraphcellmeter\alcounter\c!distance
-      \advance\scratchdimen-\linewidth
-      \divide\scratchdimen \plustwo
+      \scratchdimen\dimexpr(\paragraphcellmeter\alcounter\c!distance-\linewidth)/2\relax
       \hskip\scratchdimen
       \color[\paragraphcellmeter\alcounter\c!rulecolor]{\vrule\!!width\linewidth}%
       \hskip\scratchdimen}
@@ -510,67 +508,6 @@
 \setuptab
   [\c!location=\v!left]
 
-% The following macro's are derived from PPCHTEX and
-% therefore take some LaTeX font-switching into account.
-
-\newif\ifloweredsubscripts
-
-% Due to some upward incompatibality of LaTeX to LaTeX2.09
-% and/or LaTeX2e we had to force \@@chemieletter. Otherwise
-% some weird \nullfont error comes up.
-
-\doifundefined{@@chemieletter}{\def\@@chemieletter{\rm}}
-
-\def\beginlatexmathmodehack
-  {\ifmmode
-     \let\endlatexmathmodehack\relax
-   \else
-     \def\endlatexmathmodehack{$}$\@@chemieletter
-   \fi}
-
-\def\setsubscripts
-  {\beginlatexmathmodehack
-   \def\dosetsubscript##1##2##3%
-     {\dimen0=##3\fontexheight##2%
-      \setxvalue{@@\string##1\string##2}{\the##1##2\relax}%
-      ##1##2=\dimen0\relax}%
-   \def\dodosetsubscript##1##2%
-     {\dosetsubscript{##1}{\textfont2}{##2}%
-      \dosetsubscript{##1}{\scriptfont2}{##2}%
-      \dosetsubscript{##1}{\scriptscriptfont2}{##2}}%
-   %dodosetsubscript\mathsupnormal  {?}%
-   \dodosetsubscript\mathsubnormal  {.7}%
-   \dodosetsubscript\mathsubcombined{.7}%
-   \global\loweredsubscriptstrue
-   \endlatexmathmodehack}
-
-\def\resetsubscripts
-  {\ifloweredsubscripts
-     \beginlatexmathmodehack
-     \def\doresetsubscript##1##2%
-       {\dimen0=\getvalue{@@\string##1\string##2}\relax
-        ##1##2=\dimen0}%
-     \def\dodoresetsubscript##1%
-       {\doresetsubscript{##1}{\textfont2}%
-        \doresetsubscript{##1}{\scriptfont2}%
-        \doresetsubscript{##1}{\scriptscriptfont2}}%
-     %dodoresetsubscript\mathsupnormal
-     \dodoresetsubscript\mathsubnormal
-     \dodoresetsubscript\mathsubcombined
-     \global\loweredsubscriptsfalse
-     \endlatexmathmodehack
-   \fi}
-
-\let\beginlatexmathmodehack = \relax
-\let\endlatexmathmodehack   = \relax
-
-\def\chem#1#2#3%
-  {\bgroup
-   \setsubscripts
-   \mathematics{\hbox{#1}_{#2}^{#3}}%
-   \resetsubscripts
-   \egroup}
-
 \unexpanded\def\celsius   #1{#1\mathematics{^\circ}C}
 \unexpanded\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
 \unexpanded\def\fraction#1#2{\mathematics{#1\over#2}}

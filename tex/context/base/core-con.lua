@@ -16,8 +16,10 @@ slower but look nicer this way.</p>
 
 local utf = unicode.utf8
 
-local floor, mod, date, time, concat, format = math.floor, math.mod, os.date, os.time, table.concat, string.format
+local floor, mod, date, time, concat = math.floor, math.mod, os.date, os.time, table.concat
+local lower, format, rep = string.lower, string.format, string.rep
 local texsprint, utfchar = tex.sprint, utf.char
+local tonumber, tostring = tonumber, tostring
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -121,26 +123,29 @@ counters['kr-c']    = counters['korean-circle']
 
 local fallback = utf.byte('0')
 
-function converters.chr(n,m)
+local function chr(n,m)
     if n > 0 and n < 27 then
         texsprint(utfchar(n+m))
     end
 end
-
-function converters.maxchrs(n,m,cmd)
-    if n > m then
-        converters.maxchrs(floor((n-1)/m),m,cmd)
-        n = (n-1)%m + 1
-    end
-    texsprint(ctxcatcodes, format("%s{%s}",cmd,n))
-end
-function converters.chrs(n,m)
+local function chrs(n,m)
     if n > 26 then
-        converters.chrs(floor((n-1)/26),m)
+        chrs(floor((n-1)/26),m)
         n = (n-1)%26 + 1
     end
     texsprint(utfchar(n+m))
 end
+local function maxchrs(n,m,cmd)
+    if n > m then
+        maxchrs(floor((n-1)/m),m,cmd)
+        n = (n-1)%m + 1
+    end
+    texsprint(ctxcatcodes, format("%s{%s}",cmd,n))
+end
+
+converters.chr     = chr
+converters.chrs    = chrs
+converters.maxchrs = maxchrs
 
 local function do_alphabetic(n,max,chr)
     if n > max then
@@ -150,20 +155,38 @@ local function do_alphabetic(n,max,chr)
     characters.flush(chr(n))
 end
 
+--~ more efficient but needs testing
+--~
+--~ local escapes = utffilters.private.escapes
+--~
+--~ local function do_alphabetic(n,max,chr)
+--~     if n > max then
+--~         do_alphabetic(floor((n-1)/max),max,chr)
+--~         n = (n-1)%max+1
+--~     end
+--~     n = chr(n)
+--~     texsprint(ctxcatcodes,escapes[n] or utfchar(n))
+--~ end
+
+--~ local lccodes, uccodes = characters.lccode, characters.uccode
+
+local function lowercased(n) return characters.lccode(code[n] or fallback) end
+local function uppercased(n) return characters.uccode(code[n] or fallback) end
+
 function converters.alphabetic(n,code)
     local code = counters[code] or counters['**']
-    do_alphabetic(n,#code,function(n) return characters.lccode(code[n] or fallback) end) -- lccode catches wrong tables
+    do_alphabetic(n,#code,lowercased) -- lccode catches wrong tables
 end
 
 function converters.Alphabetic(n,code)
     local code = counters[code] or counters['**']
-    do_alphabetic(n,#code,function(n) return characters.uccode(code[n] or fallback) end)
+    do_alphabetic(n,#code,uppercased)
 end
 
-function converters.character(n)  converters.chr (n,96) end
-function converters.Character(n)  converters.chr (n,64) end
-function converters.characters(n) converters.chrs(n,96) end
-function converters.Characters(n) converters.chrs(n,64) end
+function converters.character (n) chr (n,96) end
+function converters.Character (n) chr (n,64) end
+function converters.characters(n) chrs(n,96) end
+function converters.Characters(n) chrs(n,64) end
 
 function converters.weekday(day,month,year)
     texsprint(date("%w",time{year=year,month=month,day=day})+1)
@@ -199,17 +222,19 @@ local roman = {
     { [0] = '', 'C', 'CC', 'CCC', 'CD', 'D', 'DC', 'DCC', 'DCCC', 'CM' },
 }
 
-function converters.toroman(n)
+local function toroman(n)
     if n >= 4000 then
-        return converters.toroman(floor(n/1000)) .. " " .. converters.toroman(n%1000)
+        return toroman(floor(n/1000)) .. " " .. toroman(n%1000)
     else
-        return string.rep("M",floor(n/1000)) .. roman[3][floor((n%1000)/100)] ..
+        return rep("M",floor(n/1000)) .. roman[3][floor((n%1000)/100)] ..
             roman[2][floor((n%100)/10)] .. roman[1][floor((n% 10)/1)]
     end
 end
 
-function converters.romannumerals(n) return texsprint(string.lower(converters.toroman(n))) end
-function converters.Romannumerals(n) return texsprint(             converters.toroman(n) ) end
+function converters.romannumerals(n) return texsprint(lower(toroman(n))) end
+function converters.Romannumerals(n) return texsprint(      toroman(n) ) end
+
+converters.toroman = toroman
 
 --~ local small = {
 --~     0x0627, 0x066E, 0x062D, 0x062F, 0x0647, 0x0648, 0x0631

@@ -181,7 +181,7 @@ local function value_z()      return nil                    end -- the call is e
 local function value_t()      return true                   end -- the call is experimental
 local function value_b()      return false                  end -- the call is experimental
 local function value_r()      return t[1]                   end -- the call is experimental
-local function value_v()      return t                      end -- the call is experimental
+local function value_v()      return t[1]                   end -- the call is experimental
 
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end
 
@@ -273,8 +273,8 @@ function lpdf.reference(r)
     return setmetatable({ r or 0 },mt_r)
 end
 
-function lpdf.verbose(t)
-    return setmetatable(t or { },mt_v)
+function lpdf.verbose(t) -- maybe check for type
+    return setmetatable({ t or "" },mt_v)
 end
 
 --~ local d = lpdf.dictionary()

@@ -22,6 +22,22 @@
 \ifx\plusone  \undefined \chardef           \plusone  = 1 \fi
 \ifx\minusone \undefined \newcount\minusone \minusone =-1 \fi
 
+\chardef\escapecatcode      =  0
+\chardef\begingroupcatcode  =  1
+\chardef\endgroupcatcode    =  2
+\chardef\mathshiftcatcode   =  3
+\chardef\alignmentcatcode   =  4
+\chardef\endoflinecatcode   =  5
+\chardef\parametercatcode   =  6
+\chardef\superscriptcatcode =  7
+\chardef\subscriptcatcode   =  8
+\chardef\ignorecatcode      =  9
+\chardef\spacecatcode       = 10
+\chardef\lettercatcode      = 11
+\chardef\othercatcode       = 12   \chardef\other  = 12
+\chardef\activecatcode      = 13   \chardef\active = 13
+\chardef\commentcatcode     = 14
+
 \newif \ifrecatcodeuppercharacters % only used in good old tex
 
 % \newcount\cctdefcounter \cctdefcounter\plusone % 0 = signal
@@ -43,7 +59,8 @@
 \newtoks \setdefaultuppercatcodes
 
 \def\next#1% we don't have a proper loop defined yet
-  {\edef\nextnext{#1{\the#1\catcode\the\cctcountera\space\ifnum\catcode\cctcountera=11 11\else12\fi}}%
+  {\edef\nextnext{#1{\the#1\catcode\the\cctcountera\space
+     \ifnum\catcode\cctcountera=\lettercatcode \lettercatcode\else\othercatcode\fi}}%
    \nextnext\ifnum\cctcountera<\cctcounterb \advance\cctcountera\plusone \expandafter\next\expandafter#1\fi}
 
 \cctcountera   0  \cctcounterb 127  \next\setdefaultlowercatcodes
@@ -132,7 +149,7 @@
 \def\reinstatecatcodecommanda % can be used when a direct definition has been done
   {\bgroup                    % and the selector has been lost
    \uccode\activehackcode\cctcounterb
-   \catcode\uccode\activehackcode13
+   \catcode\uccode\activehackcode\activecatcode
    \uppercase{\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
    \egroup}
 
@@ -170,14 +187,17 @@
 
 \def\popcatcodetable
   {\ifcase\catcoderestorelevel
-     \immediate\write16{}%
-     \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this!}\wait\end
-     \immediate\write16{}%
+     \showcatcodenestingerror
    \else
      \expandafter\catcodetable\csname scct:\number\catcoderestorelevel\endcsname
      \tracepopcatcodetable
      \advance\catcoderestorelevel\minusone
    \fi}
+
+\def\showcatcodenestingerror % can be overloaded
+  {\immediate\write16{}%
+   \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this!}\wait\end
+   \immediate\write16{}}
 
 \def\restorecatcodes % takes previous level
   {\ifnum\catcoderestorelevel>\plusone

@@ -74,11 +74,11 @@ end
 -- duplicate code once that we have more state handlers
 
 local function process_attribute(head,plugin) -- head,attribute,enabled,initializer,resolver,processor,finalizer
-    starttiming(attributes)
-    local done, used, ok = false, nil, false
-    local attribute = numbers[plugin.name] -- todo: plugin.attribute
     local namespace = plugin.namespace
     if namespace.enabled then
+        starttiming(attributes)
+        local done, used, ok = false, nil, false
+        local attribute = namespace.attribute or numbers[plugin.name] -- todo: plugin.attribute
         local processor = plugin.processor
         if processor then
             local initializer = plugin.initializer
@@ -102,18 +102,68 @@ local function process_attribute(head,plugin) -- head,attribute,enabled,initiali
                 done = true
             end
         end
+        stoptiming(attributes)
+        return head, done
+    else
+        return head, false
     end
-    stoptiming(attributes)
-    return head, done
 end
 
 nodes.process_attribute = process_attribute
 
-function nodes.install_attribute_handler(plugin)
+function nodes.install_attribute_handler(plugin) -- we need to avoid this nested function
     return function(head)
         return process_attribute(head,plugin)
     end
 end
+
+--~ experiment (maybe local to function makes more sense)
+--~
+--~ plugindata = { }
+--~
+--~ local template = [[
+--~ local plugin = plugindata["%s"]
+--~ local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+--~ local namespace = plugin.namespace
+--~ local attribute = namespace.attribute
+--~ local processor = plugin.processor
+--~ local initializer = plugin.initializer
+--~ local resolver = plugin.resolver
+--~ local finalizer = plugin.finalizer
+--~ local flusher = plugin.flusher
+--~ return function (head)
+--~     if namespace.enabled then
+--~         starttiming(attributes)
+--~         local done, used, ok = false, nil, false
+--~         if procesxsor then
+--~             local inheritance = (resolver and resolver()) or nil -- -0x7FFFFFFF -- we can best use nil and skip !
+--~             if initializer then
+--~                 initializer(namespace,attribute,head)
+--~             end
+--~             head, ok = processor(namespace,attribute,head,inheritance)
+--~             if ok then
+--~                 if finalizer then
+--~                     head, ok, used = finalizer(namespace,attribute,head)
+--~                     if used and flusher then
+--~                         head = flusher(namespace,attribute,head,used)
+--~                     end
+--~                 end
+--~                 done = true
+--~             end
+--~         end
+--~         stoptiming(attributes)
+--~         return head, done
+--~     else
+--~         return head, false
+--~     end
+--~ end
+--~ ]]
+--~
+--~ function nodes.install_attribute_handler(plugin) -- we need to avoid this nested function
+--~     plugindata[plugin.name] = plugin
+--~     local str = format(template,plugin.name)
+--~     return loadstring(str)()
+--~ end
 
 -- the injectors
 
@@ -125,7 +175,7 @@ local current, current_selector, done = 0, 0, false -- nb, stack has a local cur
 
 function states.initialize(namespace,attribute,head)
     nsdata, nsnone = namespace.data, namespace.none
-    nsforced, nsselector = namespace.forced, namespace.selector
+    nsforced, nsselector, nslistwise = namespace.forced, namespace.selector, namespace.listwise
     nstrigger = triggering and namespace.triggering and trigger
     current, current_selector, done = 0, 0, false -- todo: done cleanup
 end
@@ -315,12 +365,15 @@ end
 
 states.selective = selective
 
--- todo: each line now gets the (e.g. layer) property, hard to avoid (and not needed too)
+-- Ideally the next one should be merged with the previous but keeping it separate is
+-- safer. We deal with two situations: efficient boxwise (layoutareas) and mixed layers
+-- (as used in the stepper). In the stepper we cannot use the box branch as it involves
+-- paragraph lines and then getsmixed up. A messy business (esp since we want to be
+-- efficient).
 
 local function stacked(namespace,attribute,head,default) -- no triggering, no inheritance, but list-wise
     local stack, done = head, false
---~     local current, depth = 0, 0
-local current, depth = default or 0, 0
+    local current, depth = default or 0, 0
     while stack do
         local id = stack.id
         if id == glyph or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
@@ -349,14 +402,21 @@ local current, depth = default or 0, 0
         elseif id == hlist or id == vlist then
             local content = stack.list
             if content then
-                local c = has_attribute(stack,attribute)
-                if c and current ~= c then
-                    local p = current
-                    current, done = c, true
-                    head = insert_node_before(head,stack,copy_node(nsdata[c]))
-                    stack.list = stacked(namespace,attribute,content,current)
-                    head, stack = insert_node_after(head,stack,copy_node(nsnone))
-                    current = p
+             -- the problem is that broken lines gets the attribute which can be a later one
+                if nslistwise then
+                    local c = has_attribute(stack,attribute)
+                    if c and current ~= c and nslistwise[c] then -- viewerlayer
+                        local p = current
+                        current, done = c, true
+                        head = insert_node_before(head,stack,copy_node(nsdata[c]))
+                        stack.list = stacked(namespace,attribute,content,current)
+                        head, stack = insert_node_after(head,stack,copy_node(nsnone))
+                        current = p
+                    else
+                        local ok = false
+                        stack.list, ok = stacked(namespace,attribute,content,current)
+                        done = done or ok
+                    end
                 else
                     local ok = false
                     stack.list, ok = stacked(namespace,attribute,content,current)
@@ -379,6 +439,6 @@ states.stacked = stacked
 
 statistics.register("attribute processing time", function()
     if statistics.elapsedindeed(attributes) then
-        return format("%s seconds",statistics.elapsedtime(attributes))
+        return format("%s seconds (front- and backend)",statistics.elapsedtime(attributes))
     end
 end)

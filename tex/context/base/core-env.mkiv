@@ -15,22 +15,6 @@
 
 \unprotect
 
-%D Clean labels (no longer needed in \MKIV\ but we keep the grouping
-%D till we hav ea full separation of code.):
-
-\def\cleanuplabel#1%
-  {\xdef\cleanlabel{#1}}
-
-\def\cleanupprefixedlabel#1#2%
-  {\xdef\cleanprefix{#1}%
-   \xdef\cleanlabel {#2}}
-
-\let\protectlabels\donothing
-\let\blabelgroup  \begingroup % obsolete
-\let\elabelgroup  \endgroup   % obsolete
-\let\labelcsname  \csname
-\let\labelvalue   \getvalue
-
 %D Modes:
 %D
 %D \starttyping

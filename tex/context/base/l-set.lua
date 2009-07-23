@@ -11,6 +11,7 @@ set = set or { }
 local nums   = { }
 local tabs   = { }
 local concat = table.concat
+local next, type = next, type
 
 set.create = table.tohash
 
@@ -18,17 +19,19 @@ function set.tonumber(t)
     if next(t) then
         local s = ""
     --  we could save mem by sorting, but it slows down
-        for k, v in pairs(t) do
+        for k, v in next, t do
             if v then
             --  why bother about the leading space
                 s = s .. " " .. k
             end
         end
-        if not nums[s] then
-            tabs[#tabs+1] = t
-            nums[s] = #tabs
+        local n = nums[s]
+        if not n then
+            n = #tabs + 1
+            tabs[n] = t
+            nums[s] = n
         end
-        return nums[s]
+        return n
     else
         return 0
     end
@@ -39,6 +42,20 @@ function set.totable(n)
         return { }
     else
         return tabs[n] or { }
+    end
+end
+
+function set.tolist(n)
+    if n == 0 or not tabs[n] then
+        return ""
+    else
+        local t = { }
+        for k, v in next, tabs[n] do
+            if v then
+                t[#t+1] = k
+            end
+        end
+        return concat(t," ")
     end
 end
 

@@ -149,8 +149,17 @@
 \installstructurelistprocessor\s!default
   {no list method}
 
+% push pop test:
+%
+% \starttext
+%   \placelist[chapter] [after={\placelist[section][criterium=local]}]
+%   \chapter{One} \section{Alpha} \section{Beta}
+%   \chapter{Two} \section{First} \section{Second}
+% \stoptext
+
 \def\processlistofstructure#1#2#3% name, method, n
-  {\edef\currentlist      {#1}%
+  {\ctxlua{structure.lists.pushnesting(#3)}%
+   \edef\currentlist      {#1}%
    \edef\currentlistmethod{#2}%
    \edef\currentlistindex {#3}%
    \csname\@@structurelistprocess
@@ -158,7 +167,8 @@
      \ifcsname\@@structurelistprocess\currentlistmethod             \endcsname\currentlistmethod             \else
      \ifcsname\@@structurelistprocess\currentlist                   \endcsname\currentlist                   \else
                                                                               \s!default                     \fi\fi\fi
-   \endcsname}
+   \endcsname
+   \ctxlua{structure.lists.popnesting()}}
 
 % \installstructcurelistprocessor{pubs:userdata}
 %   {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"bibref")}}
@@ -333,7 +343,7 @@
    \edef\currentlist{\firststructureelementinlist{#1}}%
    \the\everystructurelist
    \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#1}}%
-   \placestructurelist{#1}{\listparameter\c!criterium}{\listparameter\c!number}%
+   \placestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
    \stoplistreferences
    \endgroup
    \dosetlistmode}
@@ -422,7 +432,7 @@
 \def\listsymbol@default
   {% prefix = no, none, yes
     \strut
-    \doif{\listparameter\c!label}\v!yes{\leftlabeltext\currentlist}%
+    \doif{\listparameter\c!label}\v!yes{\leftlabeltext\currentlist}% we can use the new command that does left and right
     \currentlistnumber
     \listparameter\c!stopper
     \doif{\listparameter\c!label}\v!yes{\rightlabeltext\currentlist}}
@@ -791,7 +801,7 @@
    \dosetuplist[#1][#2]%
    \edef\currentlist{\firststructureelementinlist{#1}}%
    \the\everystructurelist
-   \analysestructurelist{#1}{\listparameter\c!criterium}{\listparameter\c!number}%
+   \analysestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
    \xdef\utilitylistlength{\structurelistsize}%
    \endgroup
    \dosetlistmode}

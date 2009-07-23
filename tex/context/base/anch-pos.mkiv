@@ -106,28 +106,6 @@
 %D method is implemented in a special driver. If needed, the
 %D driver can fall back on the following macros.
 
-% TO BE MERGED
-
-% \def\setpospxy#1#2#3#4%
-%   {\@EA\xdef\csname\POSprefix#1\endcsname
-%      {\number#2,%
-%       \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
-%       \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax}}
-
-% \def\setpospxywhd#1#2#3#4#5#6#7%
-%   {\@EA\xdef\csname\POSprefix#1\endcsname
-%      {\number#2,%
-%       \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
-%       \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax,%
-%       \the\dimexpr#5\relax,\the\dimexpr#6\relax,\the\dimexpr#7\relax}}
-
-% \def\setpospxyplus#1#2#3#4#5#6#7#8%
-%   {\@EA\xdef\csname\POSprefix#1\endcsname
-%      {\number#2,%
-%       \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
-%       \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax,%
-%       \the\dimexpr#5\relax,\the\dimexpr#6\relax,\the\dimexpr#7\relax,#8}}
-
 % are the next 6 still used?
 
 \def\dolazysaveposition            #1#2#3#4{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4"}}}}
@@ -520,47 +498,34 @@
 %D based on information collected in the previous pass.
 
 \newcount\parposcounter
-
-\newif\ifpositioningpar
+\newif   \ifpositioningpar
+\chardef \parposstrut = 1 % 0 => no strut data, so fall backs used
+\newif   \iftracepositions
 
 % we can check for used entries, and if not, then not add one
 
-\def\registerparoptions
+\def\enableparpositions % global
+  {\global\let\registerparoptions\doregisterparoptions
+   \global\positioningtrue
+   \global\positioningpartrue}
+
+\def\disableparpositions % local
+  {\positioningparfalse}
+
+\let\registerparoptions\relax
+
+\def\doregisterparoptions
   {\ifpositioningpar \ifpositioning \iftrialtypesetting \else
      \ifinpagebody \else \ifmmode \else \ifinformula \else
        \ifprocessingverbatim
-         \iflinepar \doregisterparoptions \fi
+         \iflinepar \dodoregisterparoptions \fi
        \else
-         \doregisterparoptions
+         \dodoregisterparoptions
        \fi
      \fi \fi \fi
    \fi \fi \fi}
 
-\chardef\parposstrut=1 % 0 => no strut data, so fall backs used
-
-\newif\iftracepositions
-
-% \def\doregisterparoptions
-%   {\global\advance\parposcounter\plusone
-%    \begingroup
-%      \leftskip 1\leftskip
-%      \rightskip1\rightskip
-%      \setpositiondataplus
-%        {p:\number\parposcounter}% identifier
-%        {\the\zeropoint}%
-%        {\the\strutht}%
-%        {\the\strutdp}%
-%        {\the\hsize     ,% 1
-%         \the\leftskip  ,% 2
-%         \the\rightskip ,% 3
-%         \the\hangindent,% 4
-%         \the\hangafter ,% 5 (num)
-%         \the\parindent }% 6
-%     %\normalhbox{\registerparsymbol}%
-%      \registerparsymbol
-%    \endgroup}
-
-\def\doregisterparoptions
+\def\dodoregisterparoptions
   {\global\advance\parposcounter\plusone
    \setpositiondataplus
      {p:\number\parposcounter}% identifier
@@ -717,7 +682,21 @@
 
 \def\overlappingmargin{-2\scaledpoint}
 
-\def\doifoverlappingelse#1#2%
+\def\overlappingcheckone#1#2%
+  {\ifdim#1<\!!dimena \else \ifdim#1>\!!dimenb \else
+     \ifdim#2<\!!dimenc \else \ifdim#2>\!!dimend \else
+       \donetrue
+     \fi\fi
+   \fi\fi}
+
+\def\overlappingchecktwo#1#2%
+  {\ifdim#1<\!!dimene \else \ifdim#1>\!!dimenf \else
+     \ifdim#2<\!!dimeng \else \ifdim#2>\!!dimenh \else
+       \donetrue
+     \fi\fi
+   \fi\fi}
+
+\def\doifoverlappingelse#1#2% maybe do this in lua
   {\begingroup
    \donefalse
    \edef\!!stringa{#1}\edef\!!stringb{#2}%
@@ -741,26 +720,14 @@
        \advance\!!dimenh+\overlappingmargin
      \fi
      % more often eh fb eg fg
-     \def\checkone##1##2%
-       {\ifdim##1<\!!dimena \else \ifdim##1>\!!dimenb \else
-          \ifdim##2<\!!dimenc \else \ifdim##2>\!!dimend \else
-            \donetrue
-          \fi\fi
-        \fi\fi}%
-     \def\checktwo##1##2%
-       {\ifdim##1<\!!dimene \else \ifdim##1>\!!dimenf \else
-          \ifdim##2<\!!dimeng \else \ifdim##2>\!!dimenh \else
-            \donetrue
-          \fi\fi
-        \fi\fi}%
-     \checkone\!!dimene\!!dimeng \ifdone \else
-     \checkone\!!dimene\!!dimenh \ifdone \else
-     \checkone\!!dimenf\!!dimeng \ifdone \else
-     \checkone\!!dimenf\!!dimenh \ifdone \else
-     \checktwo\!!dimena\!!dimenc \ifdone \else
-     \checktwo\!!dimena\!!dimend \ifdone \else
-     \checktwo\!!dimenb\!!dimene \ifdone \else
-     \checktwo\!!dimenb\!!dimenc \fi \fi \fi \fi \fi \fi \fi
+     \overlappingcheckone\!!dimene\!!dimeng \ifdone \else
+     \overlappingcheckone\!!dimene\!!dimenh \ifdone \else
+     \overlappingcheckone\!!dimenf\!!dimeng \ifdone \else
+     \overlappingcheckone\!!dimenf\!!dimenh \ifdone \else
+     \overlappingchecktwo\!!dimena\!!dimenc \ifdone \else
+     \overlappingchecktwo\!!dimena\!!dimend \ifdone \else
+     \overlappingchecktwo\!!dimenb\!!dimene \ifdone \else
+     \overlappingchecktwo\!!dimenb\!!dimenc \fi \fi \fi \fi \fi \fi \fi
    \fi
    \ifdone
      \endgroup\expandafter\firstoftwoarguments
@@ -784,23 +751,25 @@
 %D   {action when not on this page}
 %D \stoptyping
 
-\def\dodoifpositionsonsamepageelse#1#2#3#4%
-  {\bgroup
+\def\dododoifpositionsonsamepageelse#1%
+  {\ifcase\scratchcounter
+     \scratchcounter\MPp{##}\donetrue
+   \else
+     \ifnum\scratchcounter=\MPp{#1}\relax\else\donefalse\fi
+   \fi}%
+
+\def\dodoifpositionsonsamepageelse#1#2%
+  {\begingroup
    \scratchcounter#1\donefalse
-   \def\docommand##1%
-     {\ifcase\scratchcounter
-        \scratchcounter\MPp{##1}\donetrue
-      \else
-        \ifnum\scratchcounter=\MPp{##1}\relax\else\donefalse\fi
-      \fi}%
-   \rawprocesscommalist[#2]\docommand
-   \ifdone\egroup#3\else\egroup#4\fi}
+   \rawprocesscommalist[#2]\dododoifpositionsonsamepageelse
+   \ifdone
+     \endgroup\expandafter\firstoftwoarguments
+   \else
+     \endgroup\expandafter\secondoftwoarguments
+   \fi}
 
-\def\doifpositionsonsamepageelse
-  {\dodoifpositionsonsamepageelse{0}}
-
-\def\doifpositionsonthispageelse#1#2#3%
-  {\dodoifpositionsonsamepageelse\realfolio}
+\def\doifpositionsonsamepageelse{\dodoifpositionsonsamepageelse\!!zerocount}
+\def\doifpositionsonthispageelse{\dodoifpositionsonsamepageelse\realfolio  }
 
 %D Plugins:
 

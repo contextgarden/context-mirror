@@ -125,7 +125,7 @@
    \pushmacro\stoptypescript
    \typescriptfoundfalse
    \iftracetypescripts\writestatus\m!fonts{request: [\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
-   \processcommacommand[\typescriptfiles]\dododousetypescript
+   \processcommacommand[\typescriptfiles]\dododousetypescriptfile
    \the\documenttypescripts
    \firsttypescriptpassfalse % testen
    \popmacro\stoptypescript
@@ -138,19 +138,6 @@
    \popmacro\@@typescripttwo
    \popmacro\@@typescriptone}
 
-% simple version:
-%
-% \def\dododousetypescript#1%
-%   {\startreadingfile
-%    \pushmacro\currenttypefile
-%    \def\currenttypefile{#1}%
-%    \def\currenttypefile{#1}%
-%    \readfile\currenttypefile\donothing\donothing
-%    \popmacro\currenttypefile
-%    \stopreadingfile}
-%
-% tricky version:
-
 \newconditional\preloadingtypescripts
 
 \def\preloadtypescripts{\ifproductionrun\settrue\preloadingtypescripts\fi}
@@ -161,45 +148,45 @@
 \long\def\xxstarttypescriptcollection#1\stoptypescriptcollection
   {\global\loadedtypescripts\@EA{\the\loadedtypescripts\starttypescriptcollection#1\stoptypescriptcollection}}
 
-\def\dododousetypescript#1%
+\def\dododousetypescriptfile#1%
   {\setfalse\quittingtypescript
    \pushmacro\currenttypefile
    \def\currenttypefile{#1}%
    \ifconditional\preloadingtypescripts
-     % load files once, and use saved data
-     \def\loadedtypescripts{\csname\??ts:\c!file:#1\endcsname}%
-     \@EAEAEA\ifx\loadedtypescripts\relax
-       \@EAEAEA\newtoks\loadedtypescripts
-       \bgroup
-       \let\starttypescript\xxstarttypescript
-       \let\starttypescriptcollection\xxstarttypescriptcollection
-       \startreadingfile
-       \pushendofline
-       \unprotect
-       \readfile\currenttypefile\donothing\donothing
-       \protect
-       \popendofline
-       \stopreadingfile
-       \egroup
-     \fi
-     %\message{[\space\currenttypefile}%
-     \the\loadedtypescripts
-     %\message{\ifconditional\quittingtypescript quit\space\fi]}%
+     \doprocessandbuffertypescriptfile
    \else
-     % process files each time
-     \startreadingfile
-     \pushendofline
-     \unprotect
-     \readfile\currenttypefile\donothing\donothing
-     \protect
-     \popendofline
-     \stopreadingfile
+     \doprocesstypescriptfile
    \fi
    \popmacro\currenttypefile
    \ifconditional\quittingtypescript
      \quitcommalist
      \setfalse\quittingtypescript
    \fi}
+
+\def\doprocessandbuffertypescriptfile
+  {\expandafter\let\expandafter\loadedtypescripts\csname\??ts:\c!file:\currenttypefile\endcsname
+   \ifx\loadedtypescripts\relax
+     \dobuffertypescriptfile
+   \fi
+   \the\loadedtypescripts}
+
+\def\dobuffertypescriptfile
+  {\newtoks\loadedtypescripts
+   \bgroup
+     \let\starttypescript\xxstarttypescript
+     \let\starttypescriptcollection\xxstarttypescriptcollection
+     \doprocesstypescriptfile
+   \egroup
+   \expandafter\let\csname\??ts:\c!file:\currenttypefile\endcsname\loadedtypescripts}
+
+\def\doprocesstypescriptfile
+  {\startreadingfile
+   \pushendofline
+   \unprotect
+   \readfile\currenttypefile\donothing\donothing
+   \protect
+   \popendofline
+   \stopreadingfile}
 
 \def\usetypescriptonce
   {\dotripleempty\dousetypescriptonce}
@@ -274,10 +261,13 @@
      \expandafter\noprocesstypescript
    \fi}
 
+\def\typescriptwritestatus
+  {\writestatus\m!fonts{match:\ifx\currenttypefile\relax\space *\fi \typescriptmatch}}
+
 \long\def\dostarttypescriptyes
   {\ifdone
      \typescriptfoundtrue
-     \iftracetypescripts\writestatus\m!fonts{match:\ifx\currenttypefile\relax\space *\fi \typescriptmatch}\fi
+     \iftracetypescripts\typescriptwritestatus\fi
      \expandafter\doprocesstypescript
    \else
      \expandafter\noprocesstypescript
@@ -620,40 +610,24 @@
   {\doifelsenothing{#2}
      {\doinherittypeface[#1][\c!rm,\c!ss,\c!tt,\c!mm][\fontclass]}
      {\doifnot{#1}{#3}
-        {\def\docommand##1{\setevalue{#1-##1}{#3}}%
+        {\global\let\checkfontclass\docheckfontclass
+         \def\docommand##1{\setevalue{#1-##1}{#3}}%
          \processcommalist[#2]\docommand}}}
 
-%D This hook sinto the font mechanism with:
+%D This hooks into the font mechanism with:
 
-\def\checkfontclass#1%
-  {\edef\fontclass{\executeifdefined{\fontclass-#1}{\fontclass}}}
+% \def\checkfontclass#1% called often
+%   {\edef\fontclass{\executeifdefined{\fontclass-#1}{\fontclass}}}
 
-%D For backward compatibility we reimplement the font file
-%D loading macro.
+% \def\checkfontclass#1% called often
+%   {\edef\fontclass{\ifcsname\fontclass-#1\endcsname\csname\fontclass-#1\endcsname\else\fontclass\fi}}
 
-\ifx\normaldoreadfontdefinitionfile\undefined
-  \let\normaldoreadfontdefinitionfile\doreadfontdefinitionfile
-\fi
-
-\def\doreadfontdefinitionfile#1#2% #1 = set/switch state
-  {\ifcsname\??tf#2\c!default\endcsname
-     \ifcase#1\relax
-       \switchtotypeface[#2]%
-     \else
-       \setuptypeface[#2]%
-     \fi
-   \else
-     \pushmacro\starttypescript
-     \scratchtoks\emptytoks
-     % locate downward compatibility definitions, one argument !
-     \long\def\starttypescript[##1]##2\stoptypescript
-       {\doif{##1}{#2}{\scratchtoks{##2}}}
-     \startreadingfile
-     \readfile{\f!typeprefix pre}\donothing\donothing
-     \stopreadingfile
-     \popmacro\starttypescript
-     \the\scratchtoks
+\def\docheckfontclass#1% called often
+  {\ifcsname\fontclass-#1\endcsname
+     \expandafter\let\expandafter\fontclass\csname\fontclass-#1\endcsname
    \fi}
+
+\let\checkfontclass\gobbleoneargument
 
 \fetchruntimecommand \typetypescript {\f!typeprefix\s!run.mkiv} % will become module
 

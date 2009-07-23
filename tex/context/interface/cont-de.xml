@@ -8722,6 +8722,9 @@
           <cd:constant type="max"/>
           <cd:constant type="passend"/>
           <cd:constant type="doppelseitig"/>
+          <cd:constant type="einzelseitig"/>
+          <cd:constant type="auto"/>
+          <cd:constant type="kein"/>
           <cd:constant type="bookmark"/>
         </cd:parameter>
         <cd:parameter name="wartezeit">

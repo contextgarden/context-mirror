@@ -25,6 +25,22 @@
 \ifx\plusone  \undefined \chardef           \plusone  = 1 \fi
 \ifx\minusone \undefined \newcount\minusone \minusone =-1 \fi
 
+\chardef\escapecatcode      =  0
+\chardef\begingroupcatcode  =  1
+\chardef\endgroupcatcode    =  2
+\chardef\mathshiftcatcode   =  3
+\chardef\alignmentcatcode   =  4
+\chardef\endoflinecatcode   =  5
+\chardef\parametercatcode   =  6
+\chardef\superscriptcatcode =  7
+\chardef\subscriptcatcode   =  8
+\chardef\ignorecatcode      =  9
+\chardef\spacecatcode       = 10
+\chardef\lettercatcode      = 11
+\chardef\othercatcode       = 12   \chardef\other  = 12
+\chardef\activecatcode      = 13   \chardef\active = 13
+\chardef\commentcatcode     = 14
+
 \ifx\gobbleoneargument\undefined \long\def\gobbleoneargument#1{} \fi
 
 \newif \ifrecatcodeuppercharacters % only used in good old tex
@@ -38,7 +54,7 @@
 \def\newcatcodetable#1%
   {\global\advance\cctdefcounter\plusone
    \expandafter\xdef\csname @@ccn:\number\cctdefcounter\endcsname{\string#1}% logging
-   \global\mathchardef#1\cctdefcounter
+   \global\chardef#1\cctdefcounter
    \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}%
    % we have two ways to access catcodetable numbers
    \startruntimectxluacode tex.\expandafter\gobbleoneargument\string#1 = \number#1 ;\stopruntimectxluacode}
@@ -48,11 +64,11 @@
 \newtoks \setdefaultcatcodes
 
 \setdefaultcatcodes
-  {\catcode`\\   12
-   \catcode`\^^M 12
-   \catcode`\    12
-   \catcode`\%   12
-   \catcode127   12 }
+  {\catcode`\\   \othercatcode
+   \catcode`\^^M \othercatcode
+   \catcode`\    \othercatcode
+   \catcode`\%   \othercatcode
+   \catcode127   \othercatcode}
 
 \long\def\startcatcodetable#1#2\stopcatcodetable
   {\bgroup
@@ -127,7 +143,7 @@
      \expandafter\defcatcodecommandc
    \fi}
 
-\def\defcatcodecommandc % only first time
+\def\defcatcodecommandc % only first time (we could use \normalexpanded here)
   {\expandafter\gdef\csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
      \expandafter##\expandafter1\expandafter
        {\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
@@ -158,7 +174,7 @@
 \def\reinstatecatcodecommanda % can be used when a direct definition has been done
   {\bgroup                    % and the selector has been lost
    \uccode\activehackcode\cctcounterb
-   \catcode\uccode\activehackcode13
+   \catcode\uccode\activehackcode\activecatcode
    \uppercase{\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
    \egroup}
 
@@ -192,18 +208,21 @@
 \def\pushcatcodetable
   {\advance\catcoderestorelevel\plusone
    \tracepushcatcodetable
-   \expandafter\mathchardef\csname scct:\number\catcoderestorelevel\endcsname\currentcatcodetable}
+   \expandafter\chardef\csname scct:\number\catcoderestorelevel\endcsname\currentcatcodetable}
 
 \def\popcatcodetable
   {\ifcase\catcoderestorelevel
-     \immediate\write16{}%
-     \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this!}\wait\end
-     \immediate\write16{}%
+     \showcatcodenestingerror
    \else
      \expandafter\catcodetable\csname scct:\number\catcoderestorelevel\endcsname
      \tracepopcatcodetable
      \advance\catcoderestorelevel\minusone
    \fi}
+
+\def\showcatcodenestingerror % can be overloaded
+  {\immediate\write16{}%
+   \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this!}\wait\end
+   \immediate\write16{}}
 
 \def\restorecatcodes % takes previous level
   {\ifnum\catcoderestorelevel>\plusone

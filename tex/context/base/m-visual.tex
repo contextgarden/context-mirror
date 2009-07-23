@@ -281,32 +281,36 @@
   {\def\PDFcode{\lowlevelstream\PDFcode\gobbleoneargument}%
    \def\special{\lowlevelstream\special\gobbleoneargument}}
 
-\let\normaldostartgraymode     \dostartgraymode
-\let\normaldostartgraycolormode\dostartgraycolormode
-\let\normaldostartrgbcolormode \dostartrgbcolormode
-\let\normaldostartcmykcolormode\dostartcmykcolormode
-\let\normaldostartspotcolormode\dostartspotcolormode
+\startnotmode[mkiv]
 
-\def\traceddostartgraymode#1%
-  {#1\normaldostartgraymode{#1}}
+    \let\normaldostartgraymode     \dostartgraymode
+    \let\normaldostartgraycolormode\dostartgraycolormode
+    \let\normaldostartrgbcolormode \dostartrgbcolormode
+    \let\normaldostartcmykcolormode\dostartcmykcolormode
+    \let\normaldostartspotcolormode\dostartspotcolormode
 
-\def\traceddostartgraycolormode#1%
-  {#1\normaldostartgraycolormode{#1}}
+    \def\traceddostartgraymode#1%
+      {#1\normaldostartgraymode{#1}}
 
-\def\traceddostartrgbcolormode#1#2#3%
-  {#1 #2 #3\normaldostartrgbcolormode{#1}{#2}{#3}}
+    \def\traceddostartgraycolormode#1%
+      {#1\normaldostartgraycolormode{#1}}
 
-\def\traceddostartcmykcolormode#1#2#3#4%
-  {#1 #2 #3 #4\normaldostartcmykcolormode{#1}{#2}{#3}{#4}}
+    \def\traceddostartrgbcolormode#1#2#3%
+      {#1 #2 #3\normaldostartrgbcolormode{#1}{#2}{#3}}
 
-\def\traceddostartspotcolormode#1#2%
-  {#1 #2\normaldostartspotcolormode{#1}{#2}}
+    \def\traceddostartcmykcolormode#1#2#3#4%
+      {#1 #2 #3 #4\normaldostartcmykcolormode{#1}{#2}{#3}{#4}}
 
-\def\showcolormodes
-  {\let\dostartgraymode     \traceddostartgraymode
-   \let\dostartgraycolormode\traceddostartgraycolormode
-   \let\dostartrgbcolormode \traceddostartrgbcolormode
-   \let\dostartcmykcolormode\traceddostartcmykcolormode
-   \let\dostartspotcolormode\traceddostartspotcolormode}
+    \def\traceddostartspotcolormode#1#2%
+      {#1 #2\normaldostartspotcolormode{#1}{#2}}
+
+    \def\showcolormodes
+      {\let\dostartgraymode     \traceddostartgraymode
+       \let\dostartgraycolormode\traceddostartgraycolormode
+       \let\dostartrgbcolormode \traceddostartrgbcolormode
+       \let\dostartcmykcolormode\traceddostartcmykcolormode
+       \let\dostartspotcolormode\traceddostartspotcolormode}
+
+\stopnotmode
 
 \protect \endinput

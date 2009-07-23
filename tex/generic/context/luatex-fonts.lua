@@ -37,7 +37,7 @@ local function loadmodule(name,continue)
         end
     else
         if verbose then
-            texio.write(string.format(" <%s>",string.match(name,"([a-z%-]-%.[a-z]-)$"))) -- no file.basename yet
+            texio.write(string.format(" <%s>",foundname)) -- no file.basename yet
         end
         dofile(foundname)
     end
@@ -128,8 +128,8 @@ end
 -- In order to deal with the fonts we need to initialize some
 -- callbacks. One can overload them later on if needed.
 
-callback.register('ligaturing',           nodes.simple_font_dummy) -- better: false
-callback.register('kerning',              nodes.simple_font_dummy) -- better: false
+callback.register('ligaturing',           false)
+callback.register('kerning',              false)
 callback.register('pre_linebreak_filter', nodes.simple_font_handler)
 callback.register('hpack_filter',         nodes.simple_font_handler)
 callback.register('define_font' ,         fonts.define.read)

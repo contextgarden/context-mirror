@@ -56,7 +56,6 @@ function backends.pdf.layerreference(name)
     return pdfln[name]
 end
 
-
 function codeinjections.defineviewerlayer(specification)
     if textlayers then
         local tag = specification.tag

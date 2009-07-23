@@ -22,6 +22,12 @@ local trace_page_vspacing    = false  trackers.register("nodes.page_vspacing",  
 local trace_collect_vspacing = false  trackers.register("nodes.collect_vspacing", function(v) trace_collect_vspacing = v end)
 local trace_vspacing         = false  trackers.register("nodes.vspacing",         function(v) trace_vspacing         = v end)
 
+local skip_category = attributes.private('skip-category')
+local skip_penalty  = attributes.private('skip-penalty')
+local skip_order    = attributes.private('skip-order')
+local snap_category = attributes.private('snap-category')
+local display_math  = attributes.private('display-math')
+
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local set_attribute      = node.set_attribute
@@ -88,7 +94,12 @@ vspacing.data.skip = vspacing.data.skip or { }
 storage.register("vspacing/data/map", vspacing.data.map, "vspacing.data.map")
 storage.register("vspacing/data/skip", vspacing.data.skip, "vspacing.data.skip")
 
-do
+do -- todo: interface.variables
+
+    local function logger(c,s)
+        logs.report("vspacing",s)
+        texsprint(c,s)
+    end
 
     vspacing.fixed = false
 
@@ -100,80 +111,61 @@ do
     local keyword    = lpeg.C((1-category)^1)
     local splitter   = (multiplier + lpeg.Cc(1)) * keyword * (category + lpeg.Cc(false))
 
-    local function analyse(str,category,order,penalty,command,fixed)
+    local function analyse(str,oldcategory,texsprint)
         for s in gmatch(str,"([^ ,]+)") do
             local amount, keyword, detail = splitter:match(s)
             if keyword then
                 local mk = map[keyword]
                 if mk then
-                    analyse(mk,category,order,penalty,command,fixed)
+                    category = analyse(mk,category,texsprint)
                 elseif keyword == "fixed" then
-                    fixed = true
+                    texsprint(ctxcatcodes,"\\fixedblankskip")
                 elseif keyword == "flexible" then
-                    fixed = false
+                    texsprint(ctxcatcodes,"\\flexibleblankskip")
                 elseif keyword == "category" then
-                    -- is a set
-                    local n = tonumber(detail)
-                    if n then
-                        category[categories[n]] = true
-                    else
-                        category[detail] = true
+                    local category = tonumber(detail)
+                    if category then
+                        texsprint(ctxcatcodes,format("\\setblankcategory{%s}",category))
+                        if category ~= oldcategory then
+                            texsprint(ctxcatcodes,"\\flushblankhandling")
+                            oldcategory = category
+                        end
                     end
-                elseif keyword == "order" then
-                    -- last one counts
-                    order = tonumber(detail) or 0
-                elseif keyword == "penalty" then
-                    -- last one counts
-                    penalty = tonumber(detail) or 0
-                elseif keyword == "skip" then
-                    -- last one counts
-                    command[#command+1] = { 1, tonumber(detail or 1) or 1}
+                elseif keyword == "order" and detail then
+                    local order = tonumber(detail)
+                    if order then
+                        texsprint(ctxcatcodes,format("\\setblankorder{%s}",order))
+                    end
+                elseif keyword == "penalty" and detail then
+                    local penalty = tonumber(detail)
+                    if penalty then
+                        texsprint(ctxcatcodes,format("\\setblankpenalty{%s}",penalty))
+                        texsprint(ctxcatcodes,"\\flushblankhandling")
+                    end
                 else
                     amount = tonumber(amount) or 1
                     local sk = skip[keyword]
                     if sk then
-                        command[#command+1] = { amount, sk[1], sk[2] or sk[1]}
+                        texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,sk[1],sk[2] or sk[1]))
                     else -- no check
-                        command[#command+1] = { amount, keyword, keyword, keyword}
+                        texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,keyword,keyword))
                     end
                 end
             else
-                logs.report("vspacing","unknown directive: %s",str)
+                logs.report("vspacing","unknown directive: %s",s)
             end
         end
-    end
-
-    local function logger(c,s)
-        logs.report("vspacing",s)
-        texsprint(c,s)
+        return category
     end
 
     function vspacing.analyse(str)
         local texsprint = (trace_vspacing and logger) or texsprint
-        local category, order, penalty, command, fixed = { }, 0, 0, { }, vspacing.fixed
-        analyse(str,category,order,penalty,command,fixed)
-        category = set.tonumber(category)
         texsprint(ctxcatcodes,"\\startblankhandling")
-        if category > 0 then
-            texsprint(ctxcatcodes,format("\\setblankcategory{%s}",category))
-        end
-        if order > 0 then
-            texsprint(ctxcatcodes,format("\\setblankorder{%s}",order))
-        end
-        if penalty > 0 then
-            texsprint(ctxcatcodes,format("\\setblankpenalty{%s}",penalty))
-        end
-        for i=1,#command do
-            local c = command[i]
-            texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",c[1],c[2],c[3] or c[2]))
-        end
-        if fixed then
-            texsprint(ctxcatcodes,"\\fixedblankskip")
-        else
-            texsprint(ctxcatcodes,"\\flexibleblankskip")
-        end
+        analyse(str,1,texsprint)
         texsprint(ctxcatcodes,"\\stopblankhandling")
     end
+
+    --
 
     function vspacing.setmap(from,to)
         map[from] = to
@@ -295,14 +287,6 @@ local function show_tracing(head)
     end
 end
 
--- we assume that these are defined
-
-local skip_category = attributes.private('skip-category')
-local skip_penalty  = attributes.private('skip-penalty')
-local skip_order    = attributes.private('skip-order')
-local snap_category = attributes.private('snap-category')
-local display_math  = attributes.private('display-math')
-
 -- alignment box begin_of_par vmode_par hmode_par insert penalty before_display after_display
 
 local user_skip                =  0
@@ -349,8 +333,7 @@ local skips = {
 
 local free_glue_node = free_node
 local free_glue_spec = free_node
---~ local free_glue_node = function(n) free_node(n) end
---~ local free_glue_spec = function(n) end
+local discard, largest, force, penalty, add, disable, nowhite, goback = 0, 1, 2, 3, 4, 5, 6, 7
 
 local function collapser(head,where,what,trace) -- maybe also pass tail
     if trace then
@@ -402,16 +385,15 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
                     current = current.next
                 end
             else
-                local sct = categories[sc] -- or 'unknown'
-                if sct == 'disable' then
+                if sc == disable then
                     ignore_following = true
-                    if trace then trace_skip(sct,sc,so,sp,current) end
+                    if trace then trace_skip("disable",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
-                elseif sct == 'nowhite' then
+                elseif sc == nowhite then
                     ignore_whitespace = true
                     head, current = remove_node(head, current, true)
-                elseif sct == 'discard' then
-                    if trace then trace_skip(sct,sc,so,sp,current) end
+                elseif sc == discard then
+                    if trace then trace_skip("discard",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
                 else
                     if sp then
@@ -427,7 +409,7 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
                         if trace then trace_skip("disabled",sc,so,sp,current) end
                         head, current = remove_node(head, current, true)
                     elseif not glue_data then
-                        if trace then trace_skip("assign " .. sct,sc,so,sp,current) end
+                        if trace then trace_skip("assign",sc,so,sp,current) end
                         glue_order = so
                         head, current, glue_data = remove_node(head, current)
                     elseif glue_order < so then
@@ -436,7 +418,8 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
                         free_glue_node(glue_data)
                         head, current, glue_data = remove_node(head, current)
                     elseif glue_order == so then
-                        if sct == 'largest' then
+                        -- is now exclusive, maybe support goback as combi, else why a set
+                        if sc == largest then
                             local cs, gs = current.spec, glue_data.spec
                             local cw = (cs and cs.width) or 0
                             local gw = (gs and gs.width) or 0
@@ -448,21 +431,21 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
                                 if trace then trace_skip('remove smallest',sc,so,sp,current) end
                                 head, current = remove_node(head, current, true)
                             end
-                        elseif sct == 'goback' then
+                        elseif sc == goback then
                             if trace then trace_skip('goback',sc,so,sp,current) end
                             free_glue_node(glue_data) -- also free spec
                             head, current, glue_data = remove_node(head, current)
-                        elseif sct == 'force' then
+                        elseif sc == force then
                             -- todo: inject kern
                             if trace then trace_skip('force',sc,so,sp,current) end
                             free_glue_node(glue_data) -- also free spec
                             head, current, glue_data = remove_node(head, current)
-                        elseif sct == 'penalty' then
+                        elseif sc == penalty then
                             if trace then trace_skip('penalty',sc,so,sp,current) end
                             free_glue_node(glue_data) -- also free spec
                             glue_data = nil
                             head, current = remove_node(head, current, true)
-                        elseif sct == 'add' then
+                        elseif sc == add then
                             if trace then trace_skip('add',sc,so,sp,current) end
                             local old, new = glue_data.spec, current.spec
                             old.width   = old.width   + new.width
@@ -522,16 +505,17 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
         --~ current.spec = nil
         --~ current = current.next
         else
-            if glue_data then
-                if trace then trace_done("flushed",glue_data) end
-                head, current = insert_node_before(head,current,glue_data)
-                glue_order, glue_data = 0, nil
-            end
+-- reversed
             if penalty_data then
                 local p = make_penalty_node(penalty_data)
                 if trace then trace_done("flushed",p) end
                 head, current = insert_node_before(head,current,p)
                 penalty_data = nil
+            end
+            if glue_data then
+                if trace then trace_done("flushed",glue_data) end
+                head, current = insert_node_before(head,current,glue_data)
+                glue_order, glue_data = 0, nil
             end
             if trace then trace_node(current) end
             if id == hlist and where == 'hmode_par' then
@@ -552,7 +536,6 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
             current = current.next
         end
     end
-    local tail = find_node_tail(head) -- still needed, check previous code ?
     if trace then trace_info("stop analyzing",where,what) end
     --~ if natural_penalty and (not penalty_data or natural_penalty > penalty_data) then
     --~     penalty_data = natural_penalty
@@ -560,12 +543,15 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
     if trace and (glue_data or penalty_data) then
         trace_info("start flushing",where,what)
     end
+    local tail
     if penalty_data then
+        tail = find_node_tail(head)
         local p = make_penalty_node(penalty_data)
         if trace then trace_done("result",p) end
         head, tail = insert_node_after(head,tail,p)
     end
     if glue_data then
+        if not tail then tail = find_node_tail(head) end
         if trace then trace_done("result",glue_data) end
         head, tail = insert_node_after(head,tail,glue_data)
     end
@@ -600,7 +586,7 @@ function nodes.handle_page_spacing(where)
         statistics.starttiming(vspacing)
         local newtail = find_node_tail(newhead)
         local flush = false
-        for n in traverse_nodes(newhead) do
+        for n in traverse_nodes(newhead) do -- we could just look for glue nodes
             local id = n.id
             if id == glue then
                 if n.subtype == 0 then
@@ -682,16 +668,16 @@ function vspacing.disable()
     callback.register('buildpage_filter', nil)
 end
 
--- we will split this module
+-- we will split this module hence the locals
 
 local attribute = attributes.private('graphicvadjust')
 
---~ local hlist = node.id('hlist')
---~ local vlist = node.id('vlist')
+local hlist = node.id('hlist')
+local vlist = node.id('vlist')
 
---~ local remove_node   = nodes.remove
---~ local hpack_node    = node.hpack
---~ local has_attribute = node.has_attribute
+local remove_node   = nodes.remove
+local hpack_node    = node.hpack
+local has_attribute = node.has_attribute
 
 function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
     if groupcode == "" then -- mvl only

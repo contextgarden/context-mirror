@@ -95,26 +95,6 @@
 %D
 %D The default skip can be set with:
 
-% \def\stretchedspacefactor{4}
-% \def\stretchedspaceamount{.25em}
-%
-% \unexpanded\def\stretcheduppercase#1%
-%   {\bgroup
-%    \the\everyuppercase
-%    \uppercase{\def\textstring{#1}}%
-%    \ifdim\stretchedspaceamount>\zeropoint
-%      \def\textkern%
-%        {\kern\stretchedspaceamount}%
-%      \def\textskip%
-%        {\scratchdimen=\stretchedspaceamount
-%         \hskip\stretchedspacefactor\scratchdimen}%
-%      \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA
-%        \textskip\@EA{\textstring}%
-%    \else
-%      \textstring
-%    \fi
-%    \egroup}
-
 %D Given the following settings, the space is 1em by default:
 
 \def\stretchedspacefactor{4}
@@ -255,13 +235,11 @@
 
 \unexpanded\def\dodounderbar#1%
   {\bgroup
-   \dimen0=\@@onbottomoffset
-   \dimen0=\underbarlevel\dimen0
+   \dimen0=\underbarlevel\dimexpr\@@onbottomoffset\relax
    \ifdone \else
      \advance\dimen0 -\strutht
    \fi
-   \dimen2\dimen0
-   \advance\dimen2 \@@onrulethickness
+   \dimen2\dimexpr\dimen0+\@@onrulethickness\relax
    \dododounderbar{-\dimen0}{\dimen2}{#1}%
    \egroup}
 
@@ -275,11 +253,6 @@
 
 \def\betweenunderbarspaces
   {\hskip\currentspaceskip}
-
-% \unexpanded\def\dounderbar#1#2%
-%   {\let\betweenisolatedwords#1%
-%    \processisolatedwords{#2}\dodounderbar
-%    \egroup}
 
 \unexpanded\def\underbar
   {\bgroup
@@ -317,8 +290,7 @@
 \def\dooverstrike#1%
   {\bgroup
    \dimen0=\@@ontopoffset
-   \dimen2=\dimen0
-   \advance\dimen2 \@@onrulethickness
+   \dimen2=\dimexpr\dimen0+\@@onrulethickness\relax
    \dododounderbar{\dimen2}{-\dimen0}{#1}%
    \egroup}
 

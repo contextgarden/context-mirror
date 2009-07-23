@@ -94,7 +94,7 @@ local function link(url,filename,destination,page,actions)
     elseif filename and filename ~= "" then
         return pdfdictionary {
             S = pdf_gotor,
-            F = pdffile,
+            F = filename,
             D = destination and destination ~= "" and destination,
             NewWindow = (actions.newwindow and true) or nil,
         }
@@ -337,7 +337,7 @@ end
 function specials.url(var,actions)
     local url = var.operation
     if url then
-        local u = urls[url]
+        local u = jobreferences.urls[url]
         if u then
             local u, f = u[1], u[2]
             if f and f ~= "" then
@@ -353,9 +353,9 @@ end
 function specials.file(var,actions)
     local file = var.operation
     if file then
-        local f = files[file]
+        local f = jobreferences.files[file]
         if f then
-            file = f[1]
+            file = f[1] or file
         end
     end
     return link(nil,file,var.arguments,nil,actions)
@@ -364,7 +364,7 @@ end
 function specials.program(var,content)
     local program = var.operation
     if program then
-        local p = programs[program]
+        local p = jobreferences.programs[program]
         if p then
             program = p[1]
         end
@@ -556,7 +556,7 @@ local function build(levels,start,parent,method)
         end
     end
     pdfimmediateobj(child,tostring(entry))
-    return _, n, first, last
+    return nil, n, first, last
 end
 
 function codeinjections.addbookmarks(levels,method)

@@ -615,23 +615,25 @@
 
 \newcount\textbackgrounddepth
 
-\ifx\nofparbackgrounds     \undefined \newcount  \nofparbackgrounds      \fi
+\ifdefined\nofparbackgrounds\else \newcount\nofparbackgrounds \fi
 
-% \ifx\totalnofparbackgrounds\undefined \newcounter\totalnofparbackgrounds \fi
-%
-% \appendtoks
-%   \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
-% \to \everybye
-%
-% \appendtoks
-%   \initializeparbackgrounds
-% \to \everystarttext
-%
-% \def\initializeparbackgrounds
-%   {\ifcase\totalnofparbackgrounds\else
-%      \global\positioningtrue
-%      \global\positioningpartrue
-%    \fi}
+\ifx\totalnofparbackgrounds\undefined \newcounter\totalnofparbackgrounds \fi
+
+\appendtoks
+  \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
+\to \everybye
+
+% actually we can just ask lua to give us the nofpositions (or a least n<>0)
+
+\appendtoks
+  % a position can be mid paragraph in which case we're behind
+  \initializeparbackgrounds
+\to \everystarttext
+
+\def\initializeparbackgrounds
+  {\ifcase\totalnofparbackgrounds\else
+     \enableparpositions
+   \fi}
 
 \unexpanded\def\starttextbackground
   {\bgroup

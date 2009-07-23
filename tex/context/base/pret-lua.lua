@@ -14,30 +14,31 @@ local byte, sub, find, match = string.byte, string.sub, string.find, string.matc
 local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes = tex.ctxcatcodes
 
-buffers.visualizers.lua             = buffers.visualizers.lua             or { }
-buffers.visualizers.lua.identifiers = buffers.visualizers.lua.identifiers or { }
+local visualizer = buffers.newvisualizer("lua")
+
+visualizer.identifiers = { }
 
 -- borrowed from scite
 
-buffers.visualizers.lua.identifiers.core = {
+visualizer.identifiers.core = {
     "and", "break", "do", "else", "elseif", "end", "false", "for", "function",
     "if", "in", "local", "nil", "not", "or", "repeat", "return", "then",
     "true", "until", "while"
 }
 
-buffers.visualizers.lua.identifiers.base = {
+visualizer.identifiers.base = {
     "assert", "collectgarbage", "dofile", "error", "gcinfo", "loadfile",
     "loadstring", "print", "rawget", "rawset", "require", "tonumber",
     "tostring", "type", "unpack",
 }
 
-buffers.visualizers.lua.identifiers.five = {
+visualizer.identifiers.five = {
     "_G", "getfenv", "getmetatable", "ipairs", "loadlib", "next", "pairs",
     "pcall", "rawequal", "setfenv", "setmetatable", "xpcall", "string", "table",
     "math", "coroutine", "io", "os", "debug", "load", "module", "select"
 }
 
-buffers.visualizers.lua.identifiers.libs = {
+visualizer.identifiers.libs = {
     -- coroutine
     "coroutine.create", "coroutine.resume", "coroutine.status", "coroutine.wrap",
     "coroutine.yield", "coroutine.running",
@@ -70,20 +71,20 @@ buffers.visualizers.lua.identifiers.libs = {
 
 local known_words = { }
 
-for k,v in pairs(buffers.visualizers.lua.identifiers) do
+for k,v in pairs(visualizer.identifiers) do
     for _,w in pairs(v) do
         known_words[w] = k
     end
 end
 
-buffers.visualizers.lua.styles = {
+visualizer.styles = {
     core = "",
     base = "\\sl ",
     five = "\\sl ",
     libs = "\\sl ",
 }
 
-local styles = buffers.visualizers.lua.styles
+local styles = visualizer.styles
 
 local colors = {
     "prettyone",
@@ -123,14 +124,14 @@ end
 
 local incomment, inlongstring = false, false
 
-function buffers.visualizers.lua.reset()
+function visualizer.reset()
     incomment, inlongstring = false, false -- needs to be hooked into flusher
 end
 
 -- we will also provide a proper parser based pretty printer although normaly
 -- a pretty printer should handle faulty code too (educational purposes)
 
-function buffers.visualizers.lua.flush_line(str, nested)
+function visualizer.flush_line(str, nested)
     local state, instr, inesc, word = 0, false, false, nil
     buffers.currentcolors = colors
     local code, comment = match(str,"^(.-)%-%-%[%[(.*)$")
