@@ -315,7 +315,7 @@ local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 function nodes.processors.mlist_to_hlist(head,style,penalties)
     starttiming(noads)
-    local head, done = actions(head,nil,style,penalties)
+    local head, done = actions(head,style,penalties)
     stoptiming(noads)
     return head, done
 end

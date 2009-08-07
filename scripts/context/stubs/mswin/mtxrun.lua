@@ -10058,13 +10058,29 @@ function runners.execute_ctx_script(filename,arguments)
         end
     else
         logs.setverbose(true)
-        filename = file.addsuffix(filename,"lua")
         if filename == "" then
             logs.simple("unknown script, no name given")
-        elseif file.is_qualified_path(filename) then
-            logs.simple("unknown script '%s'",filename)
+            local context = resolvers.find_file("mtx-context.lua")
+            if context ~= "" then
+                local result = dir.glob((string.gsub(context,"mtx%-context","mtx-*"))) -- () needed
+                local valid = { }
+                for _, scriptname in ipairs(result) do
+                    scriptname = string.match(scriptname,".*mtx%-([^%-]-)%.lua")
+                    if scriptname then
+                        valid[#valid+1] = scriptname
+                    end
+                end
+                if #valid > 0 then
+                    logs.simple("known scripts: %s",table.concat(valid,", "))
+                end
+            end
         else
-            logs.simple("unknown script '%s' or 'mtx-%s'",filename,filename)
+            filename = file.addsuffix(filename,"lua")
+            if file.is_qualified_path(filename) then
+                logs.simple("unknown script '%s'",filename)
+            else
+                logs.simple("unknown script '%s' or 'mtx-%s'",filename,filename)
+            end
         end
         return false
     end

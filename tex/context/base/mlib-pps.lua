@@ -356,7 +356,7 @@ function metapost.specials.ls(specification,object,result,flusher)
     if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
     local name = format("MpSh%s",nofshades)
     local domain = { tonumber(t[1]), tonumber(t[2]) }
-    local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[7]), tonumber(t[9]) }
+    local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[8]), tonumber(t[9]) }
     if type(ca) == "string" then
         -- backend specific (will be renamed)
         lpdf.linearshade(name,domain,{ 0 },{ 1 },1,"DeviceGray",coordinates)

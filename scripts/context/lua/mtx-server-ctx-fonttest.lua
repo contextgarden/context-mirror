@@ -153,7 +153,7 @@ local function showfeatures(f)
             if not features then
                 logs.simple("building cache for '%s'",f)
                 io.savedata(file.join(temppath,file.addsuffix(tempname,"tex")),format(process_templates.cache,f,f))
-                os.execute(format("mtxrun --path=%s --script context --once --batchmode --mode=*nofonts %s",temppath,tempname))
+                os.execute(format("mtxrun --path=%s --script context --once --batchmode %s",temppath,tempname))
                 features = fonts.get_features(f)
             end
             cache[f] = features or false
@@ -332,7 +332,7 @@ local function process_font(currentfont,detail) -- maybe just fontname
     if sample == "" then sample = sample_line end
     logs.simple("sample text: %s",sample)
     io.savedata(file.join(temppath,file.addsuffix(tempname,"tex")),format(variant,concat(features,","),currentfont,sample))
-    os.execute(format("mtxrun --path=%s --script context --once --batchmode --mode=*nofonts %s",temppath,tempname))
+    os.execute(format("mtxrun --path=%s --script context --once --batchmode %s",temppath,tempname))
     return edit_font(currentfont,detail,tempname)
 end
 

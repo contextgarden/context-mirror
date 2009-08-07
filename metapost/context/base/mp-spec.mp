@@ -260,7 +260,7 @@ vardef define_linear_shade (expr a, b, ca, cb) =
     elseif (mp_shade_version > 1) and _is_spot_(ca) and _is_spot_(cb) :
         flush_special(34, 17, "0 1 " & decimal shadefactor & " " &
             spotcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " &
-            cmykcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) ) ;
+            spotcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) ) ;
     else :
         flush_special(30, 15, "0 1 " & decimal shadefactor & " " &
             dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " &

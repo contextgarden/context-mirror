@@ -498,7 +498,7 @@
    \!!donectrue
    \ifcase#1\else
      \edef\@@currentlayerposition{\csname\??ll\currentlayer\c!position\endcsname}%
-     \ifx\@@currentlayerposition\v!yes
+     \ifx\@@currentlayerposition\v!yes \else
        \edef\@@currentlayerrepeat{\csname\??ll\currentlayer\c!repeat\endcsname}%
      % \edef\@@currentlayerstate {\csname\??ll\currentlayer\c!state\endcsname}% actually this is already set
        \ifx\@@currentlayerrepeat\v!yes

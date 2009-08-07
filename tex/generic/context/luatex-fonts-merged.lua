@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 07/23/09 20:13:36
+-- merge date  : 08/07/09 11:24:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -2967,6 +2967,11 @@ fonts.mode    = 'base'
 fonts.private = 0xF0000 -- 0x10FFFF
 fonts.verbose = false -- more verbose cache tables
 
+fonts.ids[0] = { -- nullfont
+    characters   = { },
+    descriptions = { },
+}
+
 fonts.methods = fonts.methods or {
     base = { tfm = { }, afm = { }, otf = { }, vtf = { }, fix = { } },
     node = { tfm = { }, afm = { }, otf = { }, vtf = { }, fix = { }  },
@@ -4692,6 +4697,16 @@ local features     = otf.tables.features
 local to_scripts   = otf.tables.to_scripts
 local to_languages = otf.tables.to_languages
 local to_features  = otf.tables.to_features
+
+for k, v in pairs(to_features) do
+    local stripped = gsub(k,"%-"," ")
+    to_features[stripped] = v
+    local stripped = gsub(k,"[^a-zA-Z0-9]","")
+    to_features[stripped] = v
+end
+for k, v in pairs(to_features) do
+    to_features[lower(k)] = v
+end
 
 function otf.meanings.normalize(features)
     local h = { }
@@ -10490,21 +10505,17 @@ evolved. Each one has its own way of dealing with its format.</p>
 --ldx]]--
 
 local function check_tfm(specification,fullname)
-    -- ofm directive blocks local path search unless set
-    fullname = resolvers.findbinfile(fullname, 'tfm') or "" -- just to be sure
-    if fullname ~= "" then
-        specification.filename, specification.format = fullname, "ofm"
+    -- ofm directive blocks local path search unless set; btw, in context we
+    -- don't support ofm files anyway as this format is obsolete
+    local foundname = resolvers.findbinfile(fullname, 'tfm') or "" -- just to be sure
+    if foundname == "" then
+        foundname = resolvers.findbinfile(fullname, 'ofm') or "" -- bonus for usage outside context
+    end
+    if foundname ~= "" then
+        specification.filename, specification.format = foundname, "ofm"
         return tfm.read_from_tfm(specification)
     end
 end
-
---~ local function check_afm(specification,fullname)
---~     fullname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
---~     if fullname ~= "" then
---~         specification.filename, specification.format = fullname, "afm"
---~         return tfm.read_from_afm(specification)
---~     end
---~ end
 
 local function check_afm(specification,fullname)
     local foundname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
@@ -10837,7 +10848,7 @@ local function isfalse(s)   list[s]     = 'no' end
 local function iskey  (k,v) list[k]     = v end
 
 local spaces     = lpeg.P(" ")^0
-local namespec   = (1-lpeg.S("/: ("))^0
+local namespec   = (1-lpeg.S("/:("))^0 -- was: (1-lpeg.S("/: ("))^0
 local crapspec   = spaces * lpeg.P("/") * (((1-lpeg.P(":"))^0)/iscrap) * spaces
 local filename   = (lpeg.P("file:")/isfile * (namespec/thename)) + (lpeg.P("[") * lpeg.P(true)/isname * (((1-lpeg.P("]"))^0)/thename) * lpeg.P("]"))
 local fontname   = (lpeg.P("name:")/isname * (namespec/thename)) + lpeg.P(true)/issome * (namespec/thename)
@@ -11181,7 +11192,7 @@ function fonts.names.resolve(name,sub)
         loaded = true
     end
     if type(data) == "table" and data.version == 1.08 then
-        local condensed = string.gsub(name,"[^%a%d]","")
+        local condensed = string.gsub(string.lower(name),"[^%a%d]","")
         local found = data.mapping and data.mapping[condensed]
         if found then
             local filename, is_sub = found[3], found[4]
