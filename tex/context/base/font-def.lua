@@ -436,9 +436,10 @@ function readers.opentype(specification,suffix,what)
     end
 end
 
-function readers.otf(specification) return readers.opentype(specification,"otf","opentype") end
-function readers.ttf(specification) return readers.opentype(specification,"ttf","truetype") end
-function readers.ttc(specification) return readers.opentype(specification,"ttf","truetype") end -- !!
+function readers.otf  (specification) return readers.opentype(specification,"otf","opentype") end
+function readers.ttf  (specification) return readers.opentype(specification,"ttf","truetype") end
+function readers.ttc  (specification) return readers.opentype(specification,"ttf","truetype") end -- !!
+function readers.dfont(specification) return readers.opentype(specification,"ttf","truetype") end -- !!
 
 --[[ldx--
 <p>We need to check for default features. For this we provide

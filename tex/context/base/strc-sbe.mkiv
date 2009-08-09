@@ -96,7 +96,8 @@
 
 \def\getstructureblockenvironment#1%
   {\let\do\firstofoneargument
-   \structureblockparameter{\s!do#1}}
+  %\structureblockparameter{\s!do#1}}
+   \csname\??nb\s!do#1\endcsname}
 
 %D \starttyping
 %D \startsectionblockenvironment[frontpart]
@@ -123,7 +124,8 @@
 
 \def\dostartstructureblockenvironment[#1]% evt \pushendofline \popendofline
   {\long\def\do##1##2{\setstructureblockenvironment{#1}{##1##2}}%
-   \grabuntil{\e!stop\v!structureblockenvironment}{\structureblockparameter{\s!do#1}}}
+  %\grabuntil{\e!stop\v!structureblockenvironment}{\structureblockparameter{\s!do#1}}}
+   \grabuntil{\e!stop\v!structureblockenvironment}{\csname\??nb\s!do#1\endcsname}}
 
 % this will become: (we ran in parallel for a while during transition)
 
@@ -132,6 +134,7 @@
 
 \def\dostartsectionblockenvironment[#1]% evt \pushendofline \popendofline
   {\long\def\do##1##2{\setstructureblockenvironment{#1}{##1##2}}%
-   \grabuntil{\e!stop\v!sectionblockenvironment}{\structureblockparameter{\s!do#1}}}
+  %\grabuntil{\e!stop\v!sectionblockenvironment}{\structureblockparameter{\s!do#1}}}
+   \grabuntil{\e!stop\v!sectionblockenvironment}{\csname\??nb\s!do#1\endcsname}}
 
 \protect \endinput

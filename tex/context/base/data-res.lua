@@ -90,7 +90,7 @@ formats['ovf'] = 'OVFFONTS'       suffixes['ovf'] = { 'ovf', 'vf' }
 formats['ovp'] = 'OVPFONTS'       suffixes['ovp'] = { 'ovp' }
 formats['tex'] = 'TEXINPUTS'      suffixes['tex'] = { 'tex' }
 formats['tfm'] = 'TFMFONTS'       suffixes['tfm'] = { 'tfm' }
-formats['ttf'] = 'TTFONTS'        suffixes['ttf'] = { 'ttf', 'ttc' }
+formats['ttf'] = 'TTFONTS'        suffixes['ttf'] = { 'ttf', 'ttc', 'dfont' }
 formats['pfb'] = 'T1FONTS'        suffixes['pfb'] = { 'pfb', 'pfa' }
 formats['vf']  = 'VFFONTS'        suffixes['vf']  = { 'vf' }
 
@@ -112,6 +112,7 @@ alternatives['fea files']            = 'fea'
 alternatives['opentype fonts']       = 'otf'
 alternatives['truetype fonts']       = 'ttf'
 alternatives['truetype collections'] = 'ttc'
+alternatives['truetype dictionary']  = 'dfont'
 alternatives['type1 fonts']          = 'pfb'
 
 -- obscure ones

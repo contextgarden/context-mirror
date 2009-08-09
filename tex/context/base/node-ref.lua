@@ -19,19 +19,8 @@ local cleanupreferences, cleanupdestinations = false, true
 local nodeinjections = backends.nodeinjections
 local codeinjections = backends.codeinjections
 
-local hpack_list = node.hpack
-local copy_list  = node.copy_list
-local flush_list = node.flush_list
-
-local function dimensions(parent,start,stop) -- so we need parent for glue_set info
-    local n = stop.next
-    stop.next = nil
-    local p = hpack_list(copy_list(start))
-    stop.next = n
-    local w, h, d = p.width, p.height, p.depth
-    flush_list(p)
-    return w, h, d
-end
+local hpack_list      = node.hpack
+local list_dimensions = node.dimensions
 
 -- current.glue_set current.glue_sign
 
@@ -50,6 +39,28 @@ local has_attribute  = node.has_attribute
 local traverse       = node.traverse
 local find_node_tail = node.tail or node.slide
 local tosequence     = nodes.tosequence
+
+--~ local copy_list       = node.copy_list
+--~ local flush_list      = node.flush_list
+--~
+--~ local function dimensions(parent,start,stop) -- so we need parent for glue_set info
+--~     local n = stop.next
+--~     stop.next = nil
+--~     local p = hpack_list(copy_list(start))
+--~     stop.next = n
+--~     local w, h, d = p.width, p.height, p.depth
+--~     flush_list(p)
+--~     return w, h, d
+--~ end
+
+local function dimensions(parent,start,stop) -- so we need parent for glue_set info
+    stop = stop and stop.next
+    if stop then
+        return list_dimensions(start,stop)
+    else
+        return list_dimensions(start)
+    end
+end
 
 local function inject_range(head,first,last,reference,make,stack,parent,pardir,txtdir)
     local width, height, depth = dimensions(parent,first,last)
@@ -103,7 +114,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
                 if last.id == glue and last.subtype == 9 then
                     local prev = last.prev
                     moveright = first.id == glue and first.subtype == 8
-                    if prev.id == glue and prev.subtype == 15 then
+                    if prev and prev.id == glue and prev.subtype == 15 then
                         width = dimensions(current,first,prev.prev) -- maybe not current as we already take care of it
                     else
                         if moveright and first.spec then
@@ -173,7 +184,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 end
                 local list = current.list
                 if list then
-                    local pd
+                    local _
                     current.list, _, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
                 end
             elseif not r then

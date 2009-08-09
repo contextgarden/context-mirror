@@ -60,7 +60,7 @@ function fonts.names.resolve(name,sub)
                         local d = {  }
                         for k, v in pairs(data.mapping) do
                             local t = v[1]
-                            if t == "ttf" or t == "otf" or t == "ttc" then
+                            if t == "ttf" or t == "otf" or t == "ttc" or t = "dfont" then
                                 d[k] = v
                             end
                         end

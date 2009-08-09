@@ -63,7 +63,7 @@ function metapost.set_outer_color(mode,colormodel,colorattribute,transparencyatt
         outercolor        = pdfcolor(colormodel,colorattribute)    or nooutercolor
         outertransparency = pdftransparency(transparencyattribute) or nooutertransparency
     elseif mode == 2 then
-        -- stand alone
+        -- stand alone (see m-punk.tex)
         outercolor        = ""
         outertransparency = ""
     else -- 0

@@ -123,7 +123,7 @@ function scripts.fonts.save(name,sub)
         local filename = resolvers.find_file(name) -- maybe also search for opentype
         if filename and filename ~= "" then
             local suffix = file.extname(filename)
-            if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' then
+            if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' or suffix == "dfont" then
                 local fontinfo = fontloader.info(filename)
                 if fontinfo then
                     logs.simple("font: %s located as %s",name,filename)

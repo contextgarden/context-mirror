@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 08/07/09 11:24:12
+-- merge date  : 08/09/09 22:59:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -1771,10 +1771,11 @@ texconfig.kpse_init = true
 resolvers = resolvers or { } -- no fancy file helpers used
 
 local remapper = {
-    otf = "opentype fonts",
-    ttf = "truetype fonts",
-    ttc = "truetype fonts",
-    cid = "other text files", -- will become "cid files"
+    otf   = "opentype fonts",
+    ttf   = "truetype fonts",
+    ttc   = "truetype fonts",
+    dfont = "truetype dictionary",
+    cid   = "other text files", -- will become "cid files"
 }
 
 function resolvers.find_file(name,kind)
@@ -10613,9 +10614,10 @@ function readers.opentype(specification,suffix,what)
     end
 end
 
-function readers.otf(specification) return readers.opentype(specification,"otf","opentype") end
-function readers.ttf(specification) return readers.opentype(specification,"ttf","truetype") end
-function readers.ttc(specification) return readers.opentype(specification,"ttf","truetype") end -- !!
+function readers.otf  (specification) return readers.opentype(specification,"otf","opentype") end
+function readers.ttf  (specification) return readers.opentype(specification,"ttf","truetype") end
+function readers.ttc  (specification) return readers.opentype(specification,"ttf","truetype") end -- !!
+function readers.dfont(specification) return readers.opentype(specification,"ttf","truetype") end -- !!
 
 --[[ldx--
 <p>We need to check for default features. For this we provide
@@ -11179,7 +11181,7 @@ function fonts.names.resolve(name,sub)
                         local d = {  }
                         for k, v in pairs(data.mapping) do
                             local t = v[1]
-                            if t == "ttf" or t == "otf" or t == "ttc" then
+                            if t == "ttf" or t == "otf" or t == "ttc" or t = "dfont" then
                                 d[k] = v
                             end
                         end

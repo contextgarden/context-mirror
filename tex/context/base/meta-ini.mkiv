@@ -1239,7 +1239,6 @@
 % can be faster, just
 
 \appendtoks
-%     \ctxlua{metapost.set_outer_color(\number\MPcolormethod,"\PDFcolor{\currentcolorname}","")}%
     \ctxlua{metapost.set_outer_color(\number\MPcolormethod,\number\currentcolormodel,\number\dogetattribute{color},\number\dogetattribute{transparency})}%
 \to \everyMPgraphic
 

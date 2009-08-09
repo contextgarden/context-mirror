@@ -150,7 +150,9 @@
      {\ifthirdargument
         \dodosetlayer[#1][#2][#3]%
       \else
-        \dodosetlayer[#1][][#2]%
+        \doifassignmentelse{#2}
+          {\dodosetlayer[#1][][#2]}%
+          {\dodosetlayer[#1][#2][]}%
       \fi}}
 
 \def\dodosetlayer[#1][#2][#3]% #2 = links/rechts

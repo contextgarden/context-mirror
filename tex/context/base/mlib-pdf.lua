@@ -413,7 +413,9 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                         flusher.flushfigure(t)
                         flusher.stopfigure("end")
                     end
-                    break
+                    if askedfig then
+                        break
+                    end
                 end
             end
         end

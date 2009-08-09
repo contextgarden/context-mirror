@@ -40,10 +40,11 @@ texconfig.kpse_init = true
 resolvers = resolvers or { } -- no fancy file helpers used
 
 local remapper = {
-    otf = "opentype fonts",
-    ttf = "truetype fonts",
-    ttc = "truetype fonts",
-    cid = "other text files", -- will become "cid files"
+    otf   = "opentype fonts",
+    ttf   = "truetype fonts",
+    ttc   = "truetype fonts",
+    dfont = "truetype dictionary",
+    cid   = "other text files", -- will become "cid files"
 }
 
 function resolvers.find_file(name,kind)

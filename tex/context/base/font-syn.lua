@@ -43,9 +43,10 @@ names.cache      = containers.define("fonts","data",names.version,true)
 but to keep the overview, we define them here.</p>
 --ldx]]--
 
-filters.otf = fontloader.info
-filters.ttf = fontloader.info
-filters.ttc = fontloader.info
+filters.otf   = fontloader.info
+filters.ttf   = fontloader.info
+filters.ttc   = fontloader.info
+filters.dfont = fontloader.info
 
 function filters.afm(name)
     local pfbname = resolvers.find_file(file.removesuffix(name)..".pfb","pfb") or ""
@@ -83,7 +84,7 @@ for combination with the weight of a font.</p>
 --ldx]]--
 
 filters.list = {
-    "otf", "ttf", "ttc", "afm",
+    "otf", "ttf", "ttc", "dfont", "afm",
 }
 
 filters.fixes = {
