@@ -1028,7 +1028,7 @@ class TeXUtil
                 tuifile = File.suffixed(filename,'tui')
                 if FileTest.file?(tuifile) then
                     report("parsing file #{tuifile}")
-                    if f = open(tuifile) then
+                    if f = File.open(tuifile,'rb') then
                         f.each do |line|
                             case line.chomp
                                 when /^f (.*)$/o then @plugins.reader('MyFiles',    $1.splitdata)

@@ -894,7 +894,7 @@ class TEX
 
     def scantexpreamble(filename)
         begin
-            if FileTest.file?(filename) and tex = File.open(filename) then
+            if FileTest.file?(filename) and tex = File.open(filename,'rb') then
                 bomdone = false
                 while str = tex.gets and str.chomp! do
                     unless bomdone then
@@ -940,7 +940,7 @@ end
     end
 
     def scantexcontent(filename)
-        if FileTest.file?(filename) and tex = File.open(filename) then
+        if FileTest.file?(filename) and tex = File.open(filename,'rb') then
             while str = tex.gets do
                 case str.chomp
                     when /^\%/o then
@@ -1075,7 +1075,7 @@ end
     end
 
     def checkxmlfile(rawname)
-        if FileTest.file?(rawname) && (xml = File.open(rawname)) then
+        if FileTest.file?(rawname) && (xml = File.open(rawname,'rb')) then
             xml.each do |line|
                 case line
                     when /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
@@ -2011,7 +2011,7 @@ end
                         end
                         if true then # autopurge
                             begin
-                                File.open(File.suffixed(rawbase, 'tuo')) do |f|
+                                File.open(File.suffixed(rawbase, 'tuo'),'rb') do |f|
                                     ok = 0
                                     f.each do |line|
                                         case ok

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 08/09/09 22:59:38
+-- merge date  : 08/10/09 15:06:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -11181,7 +11181,7 @@ function fonts.names.resolve(name,sub)
                         local d = {  }
                         for k, v in pairs(data.mapping) do
                             local t = v[1]
-                            if t == "ttf" or t == "otf" or t == "ttc" or t = "dfont" then
+                            if t == "ttf" or t == "otf" or t == "ttc" or t == "dfont" then
                                 d[k] = v
                             end
                         end

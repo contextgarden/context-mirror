@@ -985,6 +985,11 @@
 \unexpanded\def\directgoto    {\ifconditional\uselocationstrut\expandafter\dodirectgoto\else\expandafter\directgotohtdp\fi}
 \unexpanded\def\goto          {\ifconditional\uselocationstrut\expandafter\dogoto      \else\expandafter\gotohtdp      \fi}
 
+% The unbox trick is needed in order to permit \par inside a reference. Otherwise
+% the reference attribute migrates to the outer boxes.
+
+\newbox\referencebox
+
 \def\dodirectgoto#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
@@ -1013,6 +1018,7 @@
 \def\dogoto#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
   {\dontleavehmode
    \begingroup
+  %\setbox\referencebox\hbox\bgroup % experiment, might change again to non \par support
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
@@ -1024,6 +1030,7 @@
        {\unknownreference{#3}}%
    \fi
    #1%
+  %\egroup\unhbox\referencebox}
    \endgroup}
 
 \def\dogotohtdp#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
@@ -1666,3 +1673,23 @@
 %D We cannot set up buttons (not yet, this one calls a menu macro):
 
 \protect \endinput
+
+% tricky:
+%
+% \enabletrackers[nodes.references]
+% \setupinteraction[state=start]
+% \def\KnuthTest{\input knuth }
+% \def\KnuthTest{\input tufte }
+% \def\TufteTest{\input tufte }
+% \defineoverlay[xxx][\overlaybutton{page(3)}]
+% \setupbackgrounds[text][background=xxx]
+% \starttext
+% test {\red \KnuthTest} test \par
+% \button{test}[page(1)] \par
+% \goto{page 2 \TeX}[page(2)] \goto{page 2 \TeX}[page(2)] \goto{\TufteTest}[page(2)] test \page
+% test \goto{page 3}[page(3)] \goto{\TufteTest\space\par\TufteTest}[page(4)] test \page
+% \goto{page 1}[page(1)] \goto{\TufteTest\space test}[page(1)] \page
+% \goto{page 1}[page(1)] \goto{\KnuthTest\space test}[page(1)] \page
+% test \goto{page 1}[page(1)] {\goto{\KnuthTest\space test}[page(1)]} test
+% \goto{page 1}[page(1)] \goto{\TufteTest}[page(1)] test \page
+% \stoptext

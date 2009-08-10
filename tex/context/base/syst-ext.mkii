@@ -160,13 +160,24 @@
    \obeylines%
    \dostarttexdefinition}
 
-\gdef\dostarttexdefinition #1 #2
+\gdef\dostarttexdefinition #1
   {\catcode13=\@@ignore%
-   \dodostarttexdefinition{#1}{#2}}%
+   \doifinstringelse\letterhash{\detokenize{#1}}\dodostarttexdefinition\nonostarttexdefinition#1
+  }
 
-\long\gdef\dodostarttexdefinition#1#2#3\stoptexdefinition%
+\long\gdef\dodostarttexdefinition#1 #2
+  {\dododostarttexdefinition{#1}{#2}}
+
+\long\gdef\dododostarttexdefinition#1#2#3\stoptexdefinition%
   {\egroup%
    \long\setvalue{#1}#2{#3}}
+
+\long\gdef\nonostarttexdefinition#1
+  {\nononostarttexdefinition{#1}{}}
+
+\long\gdef\nononostarttexdefinition#1#2#3\stoptexdefinition%
+  {\egroup%
+   \long\setvalue{#1}{#3}}
 
 \egroup
 
