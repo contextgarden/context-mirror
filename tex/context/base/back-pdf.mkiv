@@ -161,7 +161,7 @@
 
 \def\predefinesymbol[#1]%
   {\begingroup
-   \setobject{SYM}{#1}\hbox{\symbol[#1]}%
+   \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
    \dogetobjectreference{SYM}{#1}\lastref
    \ctxlua{backends.codeinjections.registersymbol("#1",\lastref)}%
    \endgroup}

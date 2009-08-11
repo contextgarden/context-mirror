@@ -150,6 +150,32 @@
 \def\donormalfield{\doprocessfield\dohandlefield}
 \def\dofitfield   {\doprocessfield\dohandlefitfield}
 
+% \def\doprocessfield#1[#2][#3]% \method [name] [label]
+%   {\dontleavehmode
+%    \begingroup
+%    \loadfieldscripts
+%    \edef\currentfieldname {#2}%
+%    \edef\currentfieldlabel{#3}%
+%    \edef\currentfieldgroup{\ctxlua{backends.codeinjections.getfieldgroup("#2")}}%
+%    \ifx\currentfieldlabel\empty
+%      \let\currentfieldlabel\currentfieldname
+%    \fi
+%    \ifx\currentfieldgroup\empty
+%      #1[#2][\v!label,\v!frame,\v!horizontal][][][]%
+%    \else
+%      \getvalue{\??fd::\currentfieldgroup}%
+%      #1[#2][][][][]% todo: pass setups
+%    \fi
+%    \endgroup}
+
+% \def\dosetupfieldindeed#1#2[#3][#4][#5][#6][#7]%
+%   {#1[#2][#4][#5][#6][#7]}
+%
+% equals:
+
+\def\dosetupfieldindeed#1#2[#3]% [#4][#5][#6][#7]%
+  {#1[#2]} % [#4][#5][#6][#7]}
+
 \def\doprocessfield#1[#2][#3]% \method [name] [label]
   {\dontleavehmode
    \begingroup
@@ -163,7 +189,8 @@
    \ifx\currentfieldgroup\empty
      #1[#2][\v!label,\v!frame,\v!horizontal][][][]%
    \else
-     #1[#2][][][][]% todo: pass setups
+     \def\dosetupfield{\dosetupfieldindeed{#1}{#2}}%
+     \getvalue{\??fd::\currentfieldgroup}%
    \fi
    \endgroup}
 
@@ -246,11 +273,11 @@
        \v!horizontal=>\HorizontalFieldtrue,
          \v!vertical=>\VerticalFieldtrue]%
    \ifVerticalField
-     \getparameters[\??fd][\c!distance=\!!zeropoint,\c!inbetween=\vskip\@@localoffset,\c!align=\v!right,\c!width=20em]%
+     \getparameters[\??fd][\c!distance=\zeropoint,\c!inbetween=\vskip\@@localoffset,\c!align=\v!right,\c!width=20em]%
    \else\ifHorizontalField
      \getparameters[\??fd][\c!distance=\@@localoffset,\c!inbetween=,\c!align=\c!left,\c!height=10ex]%
    \else
-     \getparameters[\??fd][\c!distance=\!!zeropoint,\c!inbetween=,\c!align=\c!left]%
+     \getparameters[\??fd][\c!distance=\zeropoint,\c!inbetween=,\c!align=\c!left]%
    \fi\fi
    \getparameters[\??fd][\c!n=,\c!before=,\c!after=\vss,\c!style=,\c!color=,#3]%
    \ifShowFieldFrame
@@ -283,7 +310,7 @@
               \c!clickin=,\c!clickout=,\c!regionin=,\c!regionout=,
               \c!afterkey=,\c!format=,\c!validate=,\c!calculate=,
               \c!focusin=,\c!focusout=,
-              \c!fieldoffset=\!!zeropoint,\c!fieldbackgroundcolor=,
+              \c!fieldoffset=\zeropoint,\c!fieldbackgroundcolor=,
               \c!fieldframecolor=,\c!fieldlayer=\@@iafieldlayer,#5]%
             \scratchdimen\framedwidth \edef\@@fdwidth {\the\scratchdimen}%
             \scratchdimen\framedheight\edef\@@fdheight{\the\scratchdimen}%
@@ -324,11 +351,11 @@
       \c!clickin=,\c!clickout=,\c!regionin=,\c!regionout=,
       \c!focusin=,\c!focusout=,
       \c!afterkey=,\c!format=,\c!validate=,\c!calculate=,
-      \c!fieldoffset=\!!zeropoint,\c!fieldbackgroundcolor=,
+      \c!fieldoffset=\zeropoint,\c!fieldbackgroundcolor=,
       \c!fieldframecolor=,\c!fieldlayer=\@@iafieldlayer,#5,\c!align=]
      {\edef\defaultfield{\ctxlua{backends.codeinjections.getdefaultfieldvalue("#1")}}%
-\dopresetsymbol\defaultfield
-\setbox\scratchbox\hbox{\dogetsymbol\defaultfield}%
+    % \dopresetsymbol\defaultfield
+    \setbox\scratchbox\hbox{\symbol[\defaultfield]}%
       \edef\@@fdwidth {\the\wd\scratchbox}%
       \ifcase\fitfieldmode
         \edef\@@fdheight{\the\ht\scratchbox}%
@@ -376,7 +403,7 @@
       \setupfield
         [systemfield]
         [\c!n=1024, % beware: weblink plugin truncates
-         \c!location=\v!low,\c!strut=\v!yes,\c!fieldoffset=0pt,
+         \c!location=\v!low,\c!strut=\v!yes,\c!fieldoffset=\zeropoint,
          \c!height=1.2\openlineheight,\c!width=\dimen0,\c!offset=\v!overlay,
          \c!style=,\c!align=\v!middle,\c!frame=\v!off,
          \c!color=red,\c!fieldbackgroundcolor=\s!white,\c!fieldframecolor=blue,
@@ -438,7 +465,7 @@
          {\fitfield[\currentsystemfield:but]}%
       #2}%
   \ht0\strutht\dp0\strutdp\box0
-  \enfgroup}
+  \endgroup}
 
 %D And one more:
 

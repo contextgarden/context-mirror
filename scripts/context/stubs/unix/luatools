@@ -6657,7 +6657,7 @@ logs.setprogram('LuaTools',"TDS Management Tool 1.31",environment.arguments["ver
 
 local instance = resolvers.reset()
 
-resolvers.defaultlibs = { -- not all are needed
+resolvers.defaultlibs = { -- not all are needed (this will become: context.lus (lua spec)
     'l-string.lua',
     'l-lpeg.lua',
     'l-table.lua',

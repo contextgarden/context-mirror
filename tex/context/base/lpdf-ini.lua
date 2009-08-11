@@ -168,7 +168,7 @@ local tostring_z = function()  return "null"          end
 local tostring_t = function()  return "true"          end
 local tostring_f = function()  return "false"         end
 local tostring_r = function(t) return t[1] .. " 0 R"  end
-local tostring_v = function(t) return concat(t, "")   end
+local tostring_v = function(t) return concat(t[1],"") end
 
 local function value_x(t)     return t                      end -- the call is experimental
 local function value_s(t,key) return t[1]                   end -- the call is experimental

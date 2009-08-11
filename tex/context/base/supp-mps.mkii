@@ -1174,8 +1174,8 @@
 
   \ifx\undefined\interactionmode \chardef\interactionmode=255 \fi
 
-  \def\MPOSTbatchswitch   {-int=batchmode}
-  \def\MPOSTnonstopswitch {-int=nonstopmode}
+  \def\MPOSTbatchswitch   {-interaction=batchmode}   % was -int, but newer mpost does not support partial flags
+  \def\MPOSTnonstopswitch {-interaction=nonstopmode} % was -int, but newer mpost does not support partial flags
   \def\MPOSTformatswitch  {-progname=metafun -mem=}
   \def\MPOSTdriver        {dvips}
 

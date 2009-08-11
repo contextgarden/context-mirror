@@ -2911,7 +2911,8 @@
   {\ifundefined{#1#2}\dosetvalue{#1}{#2}{#3}\fi}
 
 %D \macros
-%D   {processassignmentlist,processassignmentcommand}
+%D   {processassignmentlist,processassignmentcommand,
+%D    startprocessassignmentlist,startprocessassignmentcommand}
 %D
 %D For Wolfgang:
 %D
@@ -2926,6 +2927,14 @@
 
 \def\processassignmentcommand[#1]%
   {\normalexpanded{\noexpand\processassignmentlist[#1]}}
+
+\long\def\startprocessassignmentlist[#1]#2\stopprocessassignmentlist
+  {\long\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
+   \processassignmentlist[#1]\currentassignmentlistcommand}
+
+\long\def\startprocessassignmentcommand[#1]#2\stopprocessassignmentcommand
+  {\long\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
+   \normalexpanded{\noexpand\processassignmentlist[#1]}\currentassignmentlistcommand}
 
 %D \macros
 %D   {getparameters,geteparameters,getgparameters,

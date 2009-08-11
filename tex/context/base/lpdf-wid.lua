@@ -241,7 +241,7 @@ local function insertrenderingwindow(label,width,height,specification)
         AA      = actions,
     }
     local r = pdfreserveobj("annot")
-    node.write(nodes.pdfannot(label,width,height,d(),r)) -- save ref
+    node.write(nodes.pdfannot(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
 

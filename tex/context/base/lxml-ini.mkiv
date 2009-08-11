@@ -109,7 +109,7 @@
 \let\xmlgrab\xmlsetsetup
 
 \def\xmlsetup#1#2%              % we pass the reference so that we have access to the frozen number
-  {\def\xmlself{#1}%            % by using #1 inside a setup
+  {\def\xmlself{#1}%            % by using #1 inside a setup; maybe self becomes obsolete
    \setupwithargument{#2}{#1}}
 
 \newtoks \registeredxmlsetups

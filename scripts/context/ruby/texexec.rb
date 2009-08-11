@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+#encoding: ASCII-8BIT
+
 banner = ['TeXExec', 'version 6.2.1', '1997-2009', 'PRAGMA ADE/POD']
 
 $: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!

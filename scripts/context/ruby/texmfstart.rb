@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+#encoding: ASCII-8BIT
 
 # We have removed the fast, server and client variants and no longer
 # provide the distributed 'serve trees' option. After all, we're now

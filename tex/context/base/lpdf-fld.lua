@@ -73,6 +73,8 @@ local plus = {
     AutoView        =      256, -- 288 (6+9)
 }
 
+-- todo: check what is interfaced
+
 flag.readonly    = flag.ReadOnly
 flag.required    = flag.Required
 flag.protected   = flag.Password
@@ -86,7 +88,7 @@ plus.hidden      = plus.Hidden
 plus.printable   = plus.Printable
 plus.auto        = plus.AutoView
 
--- some day .. lpeg with function
+-- some day .. lpeg with function or table
 
 local function fieldflag(specification)
     local o, n = specification.options, 0
@@ -101,7 +103,7 @@ end
 local function fieldplus(specification)
     local o, n = specification.options, 0
     if o and o ~= "" then
-        for p in gmatch(o,"[^, ]") do
+        for p in gmatch(o,"[^, ]+") do
             n = n + (plus[p] or 0)
         end
     end
@@ -117,11 +119,12 @@ local function checked(what)
 end
 
 local function fieldactions(specification) -- share actions
+--~ print(table.serialize(specification))
     local d, a = { }, nil
     a = specification.mousedown         if a and a ~= "" then d.D  = checked(a) end
     a = specification.mouseup           if a and a ~= "" then d.U  = checked(a) end
-    a = specification.enterregion       if a and a ~= "" then d.E  = checked(a) end
-    a = specification.exitregion        if a and a ~= "" then d.X  = checked(a) end
+    a = specification.regionin          if a and a ~= "" then d.E  = checked(a) end -- Enter
+    a = specification.regionout         if a and a ~= "" then d.X  = checked(a) end -- eXit
     a = specification.afterkeystroke    if a and a ~= "" then d.K  = checked(a) end
     a = specification.formatresult      if a and a ~= "" then d.F  = checked(a) end
     a = specification.validateresult    if a and a ~= "" then d.V  = checked(a) end
@@ -218,9 +221,8 @@ local function fieldappearances(specification)
     return lpdf.sharedobj(tostring(appearance))
 end
 
-local function fieldstates(specification)
-    -- splitter not needed, wil go
-    -- todo: caching
+local function fieldstates(specification,forceyes)
+    -- we don't use Opt here (too messy for radio buttons)
     local values, default = specification.values, specification.default
     if not values then
         -- error
@@ -263,15 +265,16 @@ local function fieldstates(specification)
     if not offvalue then
         offvalue = offn
     end
+    forceyes = forceyes and "On" -- spec likes Yes more but we've used On for ages now
     if default == yesn then
-        default = pdfconstant(yesn)
+        default = pdfconstant(forceyes or yesn)
     else
         default = pdfconstant("Off")
     end
-    local appearance = pdfdictionary { -- mayeb also cache components
-        N = pdfdictionary { [yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
-        R = pdfdictionary { [yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
-        D = pdfdictionary { [yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
+    local appearance = pdfdictionary { -- maybe also cache components
+        N = pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
+        R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
+        D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
     }
     local appearanceref = lpdf.sharedobj(tostring(appearance))
     return appearanceref, default
@@ -630,14 +633,15 @@ function methods.combo(name,specification)
     methods.choice(name,specification,"PopUp,Edit")
 end
 
--- probably no default appearance needed for first kid
+-- Probably no default appearance needed for first kid and no javascripts for the
+-- parent ... I will look into it when I have to make a complex document.
 
 function methods.check(name,specification)
     -- no /Opt because (1) it's messy - see pdf spec, (2) it discouples kids and
     -- contrary to radio there is no way to associate then
     local field = fields[name]
     local kind = field.kind
-    local appearance, default = fieldstates(field)
+    local appearance, default = fieldstates(field,true)
     if not field.pobj then
         local d = pdfdictionary {
             Subtype  = pdf_widget,

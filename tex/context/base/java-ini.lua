@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['java-ini'] = {
     license   = "see context related readme files"
 }
 
+local format = string.format
+
 javascripts           = javascripts           or { }
 javascripts.codes     = javascripts.codes     or { }
 javascripts.preambles = javascripts.preambles or { }
@@ -96,7 +98,9 @@ function javascripts.code(name,arguments)
     end
     local f = functions[name]
     if f then
-        return string.format("%s(%s)",name,arguments or "")
+        -- temporary hack, i need a more clever approach
+        arguments = '"' .. arguments.gsub(arguments,'%s*,%s*','"%1",') .. '"'
+        return format("%s(%s)",name,arguments or "")
     end
 end
 
