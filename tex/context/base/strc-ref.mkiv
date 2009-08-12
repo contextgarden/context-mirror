@@ -713,32 +713,20 @@
 \def\currentreferencenumber  {\ctxlua{jobreferences.filter("number")}}
 \def\currentreferencepage    {\ctxlua{jobreferences.filter("page")}}
 \def\currentreferencetitle   {\ctxlua{jobreferences.filter("title")}}
-\def\currentreferencerealpage{\ctxlua{jobreferences.realpage()}} % there will eb a few more
+\def\currentreferencerealpage{\ctxlua{jobreferences.realpage()}}
 
-\unexpanded\def\dospecialin{\doinatreference\currentreferencenumber}
-\unexpanded\def\dospecialat{\doinatreference\currentreferencepage}
-
-\def\doinatreference#1%
-  {\doifnextoptionalelse{\dodoinatreference{#1}{}}{\dodoinatreference{#1}}}
-
-\def\dodoinatreference#1%
-  {\def\dododoinatreference{\dodododoinatreference{#1}}%
-   \futurelet\next\dododoinatreference}
-
-\unexpanded\def\dospecialabout[#1]% hm, does this work?
+\unexpanded\def\dospecialabout[#1]%
   {\dontleavehmode
-   \bgroup
+   \begingroup
    \let\crlf\space
    \let\\\space
+   \postponenotes
    \@@rfleft
-   \goto{\limitatetext\currentreferencetitle\@@rfwidth\unknown}[#1]%
+   \doifreferencefoundelse{#1}
+     {\goto{\limitatetext\currentreferencetitle\@@rfwidth\unknown}[#1]}% not so efficient (dup lookup)
+     {}% todo
    \@@rfright
-   \egroup}
-
-%D We arrived at the last step. Before we do the typesetting,
-%D we forget all previous (paragraph bound) settings and make
-%D sure that we remain in horizontal mode. Next we choose
-%D among the several representations.
+   \endgroup}
 
 %D The previously discussed setup macro lets us specify the
 %D representation of references. A symbol reference does not

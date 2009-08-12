@@ -473,6 +473,30 @@
     \quittypescriptscanning
 \stoptypescript
 
+% lucida
+
+\starttypescript [math] [lucida,lucidanewmath] [all]
+    \definefontsynonym[MathRoman][lucidamath@lucida-math]
+    \loadmapfile[lucida.map]
+\stoptypescript
+
+% mathdesign
+
+\starttypescript [math] [charter,mathdesignch] [all]
+    \definefontsynonym[MathRoman][chartermath@charter-math]
+    \loadmapfile[mdbch.map]
+\stoptypescript
+
+\starttypescript [math] [garamond,mathdesigngm] [all]
+    \definefontsynonym[MathRoman][garamondmath@garamond-math]
+    \loadmapfile[mdugm.map]
+\stoptypescript
+
+\starttypescript [math] [utopia,mathdesignut] [all]
+    \definefontsynonym[MathRoman][utopiamath@utopia-math]
+    \loadmapfile[mdput.map]
+\stoptypescript
+
 \stoptypescriptcollection
 
 \endinput

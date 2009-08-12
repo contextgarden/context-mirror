@@ -1560,3 +1560,42 @@ mathematics.make_font ( "mathtimes-math", {
     { name = "msam10.tfm", vector = "tex-ma" },
     { name = "msbm10.tfm", vector = "tex-mb" },
 } )
+
+mathematics.make_font ( "lucida-math", {
+    { name = "lbr.afm", features = "virtualmath", main = true },
+    { name = "hlcrim.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "hlcry.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+    { name = "hlcrv.tfm", vector = "tex-ex", extension = true },
+    { name = "hlcra.tfm", vector = "tex-ma" },
+    { name = "hlcrm.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "charter-math", {
+   { name = "file:bchr8a", features = "virtualmath", main = true },
+-- { name = "md-chr7m.tfm", vector = "tex-mr" },
+   { name = "md-chri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+   { name = "md-chr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+   { name = "md-chr7v.tfm", vector = "tex-ex", extension = true },
+   { name = "msam10.tfm", vector = "tex-ma" },
+   { name = "msbm10.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "garamond-math", {
+   { name = "file:ugmr8y", features = "virtualmath", main = true },
+-- { name = "md-gmr7m.tfm", vector = "tex-mr" },
+   { name = "md-gmri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+   { name = "md-gmr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+   { name = "md-gmr7v.tfm", vector = "tex-ex", extension = true },
+   { name = "msam10.tfm", vector = "tex-ma" },
+   { name = "msbm10.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "utopia-math", {
+   { name = "file:putr8y", features = "virtualmath", main = true },
+-- { name = "md-utr7m.tfm", vector = "tex-mr" },
+   { name = "md-utri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+   { name = "md-utr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+   { name = "md-utr7v.tfm", vector = "tex-ex", extension = true },
+   { name = "msam10.tfm", vector = "tex-ma" },
+   { name = "msbm10.tfm", vector = "tex-mb" },
+} )

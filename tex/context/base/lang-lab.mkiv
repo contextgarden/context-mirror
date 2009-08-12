@@ -94,7 +94,7 @@
        \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{{#2}{#3}}%
    \fi}
 
-\def\doassignsometextprefixnop[#1][#2]%
+\def\doassignsometextprefixnop#1[#2]%
   {}
 
 %D By changing the meaning of \type {\handletextprefix} we
@@ -131,28 +131,31 @@
 
 \def\dummytextprefix{\empty\empty}
 
-\def\dogetupsomelabeltext#1%
-  {\ifcsname\??ml\labellanguage#1\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??ml\labellanguage#1\endcsname
+\def\dogetupsomelabeltext{\dodogetupsomelabeltext\labellanguage} % second argument is textlabel
+\def\dogetupsomeheadtext {\dodogetupsomeheadtext \headlanguage } % second argument is headlabel
+
+\def\dodogetupsomelabeltext#1#2%
+  {\ifcsname\??ml#1#2\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??ml#1#2\endcsname
    \else\ifcsname\??la\labellanguage\s!default\endcsname
-     \expandafter\dogetupsometextprefix\csname\??la\labellanguage\s!default\endcsname\??ml#1%
-   \else\ifcsname\??ml#1\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??ml#1\endcsname
-   \else\ifcsname\??ml\s!en#1\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??ml\s!en#1\endcsname
+     \expandafter\dodogetupsomelabeltext\csname\??la\labellanguage\s!default\endcsname{#2}%
+   \else\ifcsname\??ml#2\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??ml#2\endcsname
+   \else\ifcsname\??ml\s!en#2\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??ml\s!en#2\endcsname
    \else
      \let\thetextprefix\dummytextprefix
    \fi\fi\fi\fi}
 
-\def\dogetupsomeheadtext#1%
-  {\ifcsname\??mh\headlanguage#1\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mh\headlanguage#1\endcsname
+\def\dodogetupsomeheadtext#1#2%
+  {\ifcsname\??mh#1#2\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??mh#1#2\endcsname
    \else\ifcsname\??la\headlanguage\s!default\endcsname
-     \expandafter\dogetupsometextprefix\csname\??la\headlanguage\s!default\endcsname\??mh#1%
-   \else\ifcsname\??mh#1\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mh#1\endcsname
-   \else\ifcsname\??mh\s!en#1\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mh\s!en#1\endcsname
+     \expandafter\dodogetupsomeheadtext\csname\??la\headlanguage\s!default\endcsname{#2}%
+   \else\ifcsname\??mh#2\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??mh#2\endcsname
+   \else\ifcsname\??mh\s!en#2\endcsname
+     \expandafter\let\expandafter\thetextprefix\csname\??mh\s!en#2\endcsname
    \else
      \let\thetextprefix\dummytextprefix
    \fi\fi\fi\fi}

@@ -13,9 +13,33 @@
 
 \unprotect
 
-\long\def\startTeXtexts#1\stopTeXtexts{[do we need TeXtexts in MkIV]}
-\long\def\doTeXtext[#1]#2{[do we need TeXtexts in MkIV]}
-\long\def\TeXtext{\dosingleempty\doTeXtext}
+% Ok, we support this in MkIV because Mojca kept the pressure on. It
+% looks a bit like a hack.
+
+\long\def\startTeXtexts#1\stopTeXtexts
+  {#1}
+
+\long\def\TeXtext
+  {\dosingleempty\doTeXtext}
+
+\long\def\doTeXtext[#1]#2#3% contrary to mkii we don't process yet but we do expand
+  {\long\setxvalue{@@st@@::#2}{\noexpand\dodoTeXtext{#1}{#3}}}
+
+\long\def\dodoTeXtext#1#2%
+  {\begingroup
+   \setbox\nextbox\hbox{\executeifdefined{textext@@#1}\firstofoneargument{#2}}%
+   \executeifdefined{textext::#1}{\getvalue{textext::depth}}%
+   \box\nextbox
+   \endgroup}
+
+\def\getTeXtext#1%
+  {\getvalue{@@st@@::#1}}
+
+\setvalue{textext::d}{\setbox\nextbox\hbox{\lower\dp\nextbox\box\nextbox}}  % unchecked
+\setvalue{textext::n}{}                                                     % unchecked
+
+\setvalue  {textext::depth}{\getvalue{textext::d}}
+\setvalue{textext::nodepth}{\getvalue{textext::n}}
 
 % \definetextext[framed]{\framed}
 %

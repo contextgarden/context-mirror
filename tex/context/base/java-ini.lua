@@ -99,8 +99,11 @@ function javascripts.code(name,arguments)
     local f = functions[name]
     if f then
         -- temporary hack, i need a more clever approach
-        arguments = '"' .. arguments.gsub(arguments,'%s*,%s*','"%1",') .. '"'
-        return format("%s(%s)",name,arguments or "")
+        if arguments then
+            return format("%s(%s)",name,'"' .. arguments.gsub(arguments,'%s*,%s*','"%1",') .. '"')
+        else
+            return format("%s()",name)
+        end
     end
 end
 

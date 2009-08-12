@@ -110,12 +110,13 @@ pair laboff.raw    ; laboff.raw    = (0,0) ; % (infinity,infinity) ;
 vardef thelabel@#(expr s, z) =
   save p ; picture p ;
   p = s if not picture s : infont defaultfont scaled defaultscale fi ;
-  if laboff@#<>laboff.origin :
+%   wrong, see myway textext
+%   if laboff@#<>laboff.origin :
     (p shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p +
          labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p)))
-  else :
-    (p shifted z)
-  fi
+%   else :
+%     (p shifted z)
+%   fi
 enddef;
 
 def build_parshape (expr p, offset_or_path, dx, dy,

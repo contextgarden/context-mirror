@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 local format, find, gmatch, match = string.format, string.find, string.gmatch, string.match
 local texsprint, texwrite, texcount = tex.sprint, tex.write, tex.count
 
+local trace_referencing = false  trackers.register("structure.referencing", function(v) trace_referencing = v end)
+
 local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
 local constants   = interfaces.constants
@@ -665,8 +667,14 @@ function jobreferences.filter(name) -- number page title ...
             filter = filter and (filter[name] or filters.generic[name])
             if filter then
                 filter(data)
+            elseif trace_referencing then
+                logs.report("referencing","no (generic) filter.name for '%s'",name)
             end
+        elseif trace_referencing then
+            logs.report("referencing","no metadata.kind for '%s'",name)
         end
+    elseif trace_referencing then
+        logs.report("referencing","no current reference for '%s'",name)
     end
 end
 
