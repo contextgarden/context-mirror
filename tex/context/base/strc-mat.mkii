@@ -409,11 +409,13 @@
      \beforedisplayspace
      \par
      \ifvmode
-        \prevdepth-\maxdimen % texbook pagina 79-80
-        % otherwise problems at the top of a page, don't remove:
-        \verticalstrut
-        \vskip-\struttotal
-        \vskip-\baselineskip
+        \ifindentfirstparagraph % tricky, probably needs more testing
+          \prevdepth-\maxdimen % texbook pagina 79-80
+          % otherwise problems at the top of a page, don't remove:
+          \verticalstrut
+          \vskip-\struttotal
+          \vskip-\baselineskip
+        \fi
      \fi
    \fi
    $$\setdisplaydimensions

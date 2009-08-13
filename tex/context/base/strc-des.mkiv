@@ -670,7 +670,7 @@
       \descriptionparameter\c!left
       \currentenumerationfullnumber
       % save cq. treat expansion etc
-      \doifsomething{#2}
+      \doiftext{#2} % always true anyway
         {\doif{\descriptionparameter\c!title}\v!yes
            {\begingroup
             \dosetdescriptionattributes\c!titlestyle\c!titlecolor

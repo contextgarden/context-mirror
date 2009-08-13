@@ -1072,16 +1072,22 @@
 \def\bibdogetupsometextprefix#1#2#3%
   {\ifcsname#2#1#3\endcsname
      \csname#2#1#3\endcsname
-   \else\@EA\ifx\csname\??la#1\c!default\endcsname\empty
+   \else\ifcsname\??la#1\c!default\endcsname
+     \@EA\ifx\csname\??la#1\c!default\endcsname\empty
+       \ifcsname#2#3\endcsname
+         \csname#2#3\endcsname
+       \else\ifcsname#2\s!en#3\endcsname
+         \csname#2\s!en#3\endcsname
+       \fi\fi
+     \else
+       \expandafter\bibdogetupsometextprefix\csname\??la#1\c!default\endcsname{#2}{#3}%
+     \fi
+   \else
      \ifcsname#2#3\endcsname
        \csname#2#3\endcsname
      \else\ifcsname#2\s!en#3\endcsname
        \csname#2\s!en#3\endcsname
-     \else
-       \reporttextprefixerror{#1}{#2}{#3}%
      \fi\fi
-   \else
-     \bibdogetupsometextprefix{\csname\??la#1\c!default\endcsname}{#2}{#3}%
    \fi\fi}
 
 \def\docompletepublications[#1]%
@@ -1425,7 +1431,7 @@
              \edef\currentbibauthor{\currentbibauthor ##1\bibalternative{andtext}}%
           \else
              \edef\currentbibauthor{\currentbibauthor ##1\bibalternative{namesep}}%
-          \fi 
+          \fi
         \fi }%
      \processcommalist[#2]\bibprocessauthoritem }
 

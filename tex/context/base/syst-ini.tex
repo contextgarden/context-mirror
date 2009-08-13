@@ -471,7 +471,13 @@
 \chardef\@@scrollmode    = 2
 \chardef\@@errorstopmode = 3
 
-%D Constants to be used with \type {\lastnodetype}.
+%D Constants to be used with \type {\lastnodetype}. The \type
+%D {\lastnodetype} primitive is \ETEX\ compliant. The valid range is
+%D still -1 .. 15 and glyph nodes have number 0 (used to be char
+%D node) and ligature nodes are mapped to 7. That way macro packages
+%D can use the same symbolic names as in traditional \ETEX. Keep in
+%D mind that the internal node numbers are different and that there
+%D are more node types that 15.
 
 \chardef\@@charnode          =  0
 \chardef\@@hlistnode         =  1

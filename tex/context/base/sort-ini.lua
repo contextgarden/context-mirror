@@ -26,7 +26,8 @@ sorters.replacements = { }
 sorters.language     = 'en'
 
 function sorters.comparers.basic(sort_a,sort_b)
-    local sm = sorters.mappings[sorters.language or sorters.defaultlanguage] -- slow, will become sorters.initialize
+    -- sm assignment is slow, will become sorters.initialize
+    local sm = sorters.mappings[sorters.language or sorters.defaultlanguage] or sorters.mappings.en
     if #sort_a > #sort_b then
         if #sort_b == 0 then
             return 1
