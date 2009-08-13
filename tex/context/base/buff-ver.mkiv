@@ -305,7 +305,7 @@
 \def\dodotypeAA#1%
   {\doinitializeverbatim
    \def\obs{\obeyedspace}%
-   \ctxlua{buffers.hooks.flush_line(\!!bs\detokenize{#1}\!!es)}%
+   \ctxlua{buffers.hooks.flush_inline(\!!bs\detokenize{#1}\!!es)}%
    \egroup}
 
 \def\dodotypeB#1%
@@ -331,7 +331,7 @@
 \def\dodotypeCC#1%
   {\doinitializeverbatim
    \ifx\obeycharacters\setupprettytype % temp hack, we need a proper signal
-     \ctxlua{buffers.hooks.flush_line([\!!bs\detokenize{#1}\!!es,true)}%
+     \ctxlua{buffers.hooks.flush_inline([\!!bs\detokenize{#1}\!!es,true)}%
    \else
      \def\obs{\obeyedspace}%
      \ctxlua{buffers.visualizers.flush_nested(\!!bs\detokenize{#1}\!!es,true)}%
@@ -349,7 +349,7 @@
 
 \def\dodotypeDD#1%
   {\doinitializeverbatim
-   \ctxlua{buffers.hooks.flush_line(\!!bs\detokenize{#1}\!!es,true)}%
+   \ctxlua{buffers.hooks.flush_inline(\!!bs\detokenize{#1}\!!es,true)}%
    \egroup
    \gobbleoneargument} % grab last >
 
@@ -540,9 +540,6 @@
 
 \let \beginofverbatimlines \relax
 \let \endofverbatimlines   \relax
-
-\let \doverbatimbeginofbuffer\gobbleoneargument
-\let \doverbatimbeginofbuffer\relax
 
 \def\doverbatimnobreak
   {\ifoptimizeverbatim\penalty500 \fi}
@@ -1070,9 +1067,36 @@
 
 % patched from verb-ini (todo)
 
-\let\beginverbatimline   \relax
-\let\endverbatimline     \relax
+% \let\beginverbatimline\relax
+% \let\endverbatimline  \relax
+
+% \appendtoks whatever\par\to\everyverbatimbeginofdisplay
+% \appendtoks whatever\to\everyverbatimendofdisplay
+% \appendtoks [\to\everyverbatimbeginofinline
+% \appendtoks ]\to\everyverbatimendofinline
+
 \let\doopenupverbatimline\empty
+
+\newtoks\everyverbatimbeginofdisplay
+\newtoks\everyverbatimendofdisplay
+\newtoks\everyverbatimbeginofinline
+\newtoks\everyverbatimendofinline
+
+\let\currentverbatimpretty\empty
+
+\def\doverbatimbeginofdisplay#1%
+  {\edef\currentverbatimpretty{#1}%
+   \the\everyverbatimbeginofdisplay}
+
+\def\doverbatimendofdisplay
+  {\the\everyverbatimendofdisplay}
+
+\def\doverbatimbeginofinline#1%
+  {\edef\currentverbatimpretty{#1}%
+   \the\everyverbatimbeginofinline}
+
+\def\doverbatimendofinline
+  {\the\everyverbatimendofinline}
 
 \def\doverbatimbeginofline#1% linenumber
   {\bgroup                  % due to pretty status
@@ -1088,10 +1112,10 @@
    \dokeepverbatimlinedata
    \doopenupverbatimline
    \the\everyline\strut
-   \beginverbatimline}
+   }%\beginverbatimline}
 
 \def\doverbatimendofline
-  {\endverbatimline
+  {%\endverbatimline
    \global\lineparfalse
    \obeyedline\par}
 

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=bibl-ams,
-%D        version=2005.11.18
+%D        version=2009.07.22
 %D          title=AMS bibliography style,
 %D       subtitle=Publications,
 %D         author={Taco Hoekwater, Giuseppe Bilotta},
@@ -427,12 +427,11 @@
 }
 
 \setuppublicationlayout[unpublished]{%
-   \insertauthors{}{}{}%
-   \inserttitle{\bgroup \it }{\egroup \insertseries{ (}{)}{}}{}%
-   \insertbibtype{ (}{)}{}%
-   \insertpubyear{ (unpublished,}{)}{ (unpublished)}%
-   \insertpages{\unskip, }{ }{}%
-   \insertNote{\unskip. }{.}{\unskip.}%
-}
-
+  \insertauthors{}{, }{}%
+  \inserttitle{\bgroup \it }{\egroup \insertseries{ (}{)}{}}{}%
+  \insertbibtype{ (}{)}{}%
+  \insertpubyear{ (unpublished, }{)}{ (unpublished)}%
+  \insertpages{\unskip, }{ }{}%
+  \insertNote{\unskip. }{.}{\unskip.}%
+} 
 \protect

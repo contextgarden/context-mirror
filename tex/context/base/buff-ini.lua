@@ -89,13 +89,16 @@ end
 flags.optimize_verbatim        = true
 flags.count_empty_lines        = false
 
-local no_break_command        = "\\doverbatimnobreak"
-local do_break_command        = "\\doverbatimgoodbreak"
-local begin_of_line_command   = "\\doverbatimbeginofline"
-local end_of_line_command     = "\\doverbatimendofline"
-local empty_line_command      = "\\doverbatimemptyline"
-local begin_of_buffer_command = "\\doverbatimbeginofbuffer"
-local end_of_buffer_command   = "\\doverbatimendofbuffer"
+local no_break_command         = "\\doverbatimnobreak"
+local do_break_command         = "\\doverbatimgoodbreak"
+local begin_of_line_command    = "\\doverbatimbeginofline"
+local end_of_line_command      = "\\doverbatimendofline"
+local empty_line_command       = "\\doverbatimemptyline"
+
+local begin_of_display_command = "\\doverbatimbeginofdisplay"
+local end_of_display_command   = "\\doverbatimendofdisplay"
+local begin_of_inline_command  = "\\doverbatimbeginofinline"
+local end_of_inline_command    = "\\doverbatimendofinline"
 
 function buffers.verbatimbreak(n,m)
     if flags.optimize_verbatim then
@@ -135,9 +138,11 @@ function buffers.type(name)
         end
         local line, n = 0, 0
         local first, last, m = buffers.strip(lines)
+        hooks.begin_of_display()
         for i=first,last do
             n, line = action(lines[i], n, m, line)
         end
+        hooks.end_of_display()
     end
 end
 
@@ -157,9 +162,11 @@ function buffers.typefile(name) -- still somewhat messy, since name can be be su
         local lines = str:splitlines()
         local line, n, action = 0, 0, buffers.typeline
         local first, last, m = buffers.strip(lines)
+        hooks.begin_of_display()
         for i=first,last do
             n, line = action(lines[i], n, m, line)
         end
+        hooks.end_of_display()
     end
 end
 
@@ -328,17 +335,32 @@ end
 
 -- calling routines, don't change
 
-function hooks.begin_of_buffer()
-    (currenthandler.begin_of_buffer or default.begin_of_buffer)(currentvisualizer)
+function hooks.begin_of_display()
+    (currenthandler.begin_of_display or default.begin_of_display)(currentvisualizer)
 end
 
-function hooks.end_of_buffer()
-    (currenthandler.end_of_buffer or default.end_of_buffer)()
+function hooks.end_of_display()
+    (currenthandler.end_of_display or default.end_of_display)()
 end
+
+function hooks.begin_of_inline()
+    (currenthandler.begin_of_inline or default.begin_of_inline)(currentvisualizer)
+end
+
+function hooks.end_of_inline()
+    (currenthandler.end_of_inline or default.end_of_inline)()
+end
+
 
 function hooks.flush_line(str,nesting)
     str = gsub(str," *[\n\r]+ *"," ") ; -- semi colon needed
     (currenthandler.flush_line or default.flush_line)(str,nesting)
+end
+
+function hooks.flush_inline(str,nesting)
+    hooks.begin_of_inline()
+    hooks.flush_line(str,nesting)
+    hooks.end_of_inline()
 end
 
 function hooks.begin_of_line(n)
@@ -364,12 +386,20 @@ end
 
 -- defaults
 
-function default.begin_of_buffer(currentvisualizer)
-    texsprint(ctxcatcodes,begin_of_buffer_command,"{",currentvisualizer,"}")
+function default.begin_of_display(currentvisualizer)
+    texsprint(ctxcatcodes,begin_of_display_command,"{",currentvisualizer,"}")
 end
 
-function default.end_of_buffer()
-    texsprint(ctxcatcodes,end_of_buffer_command)
+function default.end_of_display()
+    texsprint(ctxcatcodes,end_of_display_command)
+end
+
+function default.begin_of_inline(currentvisualizer)
+    texsprint(ctxcatcodes,begin_of_inline_command,"{",currentvisualizer,"}")
+end
+
+function default.end_of_inline()
+    texsprint(ctxcatcodes,end_of_inline_command)
 end
 
 function default.begin_of_line(n)
@@ -459,7 +489,7 @@ function visualizers.flush_nested(str, enable) -- no utf, kind of obsolete mess
             i = i + 1
         end
     end
-    result = result .. "\\char" .. byte(sub(str,i,i)) .. " " .. string.rep("}",nested)
+    result = result .. "\\char" .. byte(sub(str,i,i)) .. " " .. rep("}",nested)
     texsprint(ctxcatcodes,result)
 end
 

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2009.06.08,
+%D        version=2009.08.13,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -135,6 +135,9 @@
 %D       bibliographies work (27/04/2009)
 %D \item Remove a superfluous \type{\unprotect} in t-bib.mkiv (11/05/2009).
 %D \item Patch of incollection in bibl-ams.tex from Xan (08/06/2009).
+%D \item Patch of unpublished in bibl-ams.tex from Xan (22/07/2009).
+%D \item Modified \type{\bibdogetupsometextprefix} so it works for undefined
+%D       language labels, from Hans (13/08/2009).
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -1080,7 +1083,8 @@
          \csname#2\s!en#3\endcsname
        \fi\fi
      \else
-       \expandafter\bibdogetupsometextprefix\csname\??la#1\c!default\endcsname{#2}{#3}%
+       \expandafter\bibdogetupsometextprefix
+          \csname\??la#1\c!default\endcsname{#2}{#3}%
      \fi
    \else
      \ifcsname#2#3\endcsname
@@ -1088,7 +1092,7 @@
      \else\ifcsname#2\s!en#3\endcsname
        \csname#2\s!en#3\endcsname
      \fi\fi
-   \fi\fi}
+   \fi\fi} 
 
 \def\docompletepublications[#1]%
   {\begingroup
@@ -1431,7 +1435,7 @@
              \edef\currentbibauthor{\currentbibauthor ##1\bibalternative{andtext}}%
           \else
              \edef\currentbibauthor{\currentbibauthor ##1\bibalternative{namesep}}%
-          \fi
+          \fi 
         \fi }%
      \processcommalist[#2]\bibprocessauthoritem }
 
