@@ -49,6 +49,8 @@ filters.ttc   = fontloader.info
 filters.dfont = fontloader.info
 
 function filters.afm(name)
+    -- we could parse the afm file as well, and then report an error but
+    -- it's not worth the trouble
     local pfbname = resolvers.find_file(file.removesuffix(name)..".pfb","pfb") or ""
     if pfbname == "" then
         pfbname = resolvers.find_file(file.removesuffix(file.basename(name))..".pfb","pfb") or ""
@@ -70,7 +72,7 @@ function filters.afm(name)
             return hash
         end
     end
-    return nil
+    return nil, "no matching pfb file"
 end
 
 function filters.pfb(name)
@@ -239,7 +241,7 @@ function names.identify(verbose) -- lsr is for kpse
                 logs.report("fontnames","identifying %s font %s",suffix,completename)
                 logs.push()
             end
-            local result = filters[lower(suffix)](completename)
+            local result, message = filters[lower(suffix)](completename)
             if trace then
                 logs.pop()
             end
@@ -251,6 +253,11 @@ function names.identify(verbose) -- lsr is for kpse
                         check(result[r],storedname,suffix,true) -- was name
                     end
                 end
+                if message and message ~= "" then
+                    logs.report("fontnames","warning when identifying %s font %s: %s",suffix,completename,message)
+                end
+            else
+                logs.report("fontnames","error when identifying %s font %s: %s",suffix,completename,message or "unknown")
             end
             done[name] = true
         end

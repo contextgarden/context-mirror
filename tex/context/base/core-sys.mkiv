@@ -268,6 +268,82 @@
 
 \definecomplexorsimpleempty\define
 
+% \startluacode
+%     local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+%     local format, match, gmatch, rep = string.format, string.match, string.gmatch, string.rep
+%     local empty = {
+%         "single",
+%         "double",
+%         "triple",
+%         "quadruple",
+%         "quintuple",
+%     }
+%     local check = {
+%         "first",
+%         "second",
+%         "third",
+%         "fourth",
+%         "fifth",
+%     }
+%     function commands.define(str)
+%         -- we could store the defaults in lua and call lua instead but why bother
+%         local arg, cmd = match(str,"(.*)\\(.-)$")
+%         local a = { }
+%         for s in gmatch(arg,"%[(.-)%]") do
+%             a[#a+1] = s
+%         end
+%         local n = tonumber(a[#a])
+%         if n then
+%             a[#a] = nil
+%         else
+%             n = 0
+%         end
+%         texsprint(ctxcatcodes,format("\\unexpanded\\def\\%s",cmd))
+%         if #a > 0 then
+%             texsprint(ctxcatcodes,format("{\\do%sempty\\do%s}",empty[#a],cmd))
+%             texsprint(ctxcatcodes,format("\\def\\do%s",cmd))
+%             for i=1,#a do
+%                 texsprint(ctxcatcodes,"[#",i,"]")
+%             end
+%             texsprint(ctxcatcodes,"{")
+%             for i=#a,1,-1 do
+%                 texsprint(ctxcatcodes,format("\\if%sargument",check[i]))
+%                 texsprint(ctxcatcodes,format("\\def\\next{\\dodo%s",cmd))
+%                 for j=1,#a-i do
+%                     texsprint(ctxcatcodes,format("[%s]",a[j]))
+%                 end
+%                 for j=1,i do
+%                     texsprint(ctxcatcodes,format("[#%s]",j))
+%                 end
+%                 texsprint(ctxcatcodes,"}")
+%                 if i == 1 then
+%                     texsprint(ctxcatcodes,rep("\\fi",#a))
+%                 else
+%                     texsprint(ctxcatcodes,"\\else")
+%                 end
+%             end
+%             texsprint(ctxcatcodes,"\\next}")
+%             texsprint(ctxcatcodes,format("\\def\\dodo%s",cmd))
+%             for i=1,#a do
+%                 texsprint(ctxcatcodes,"[#",i,"]")
+%             end
+%         end
+%         for i=1,n do
+%             texsprint(ctxcatcodes,"#",#a+i)
+%         end
+%     end
+% \stopluacode
+%
+% \def\define#1#{\ctxlua{commands.define([[\detokenize{#1}]])}}
+%
+% \starttext
+%     \define[2]\whatevera{#1+#2}
+%     \whatevera{A}{B}
+%     \define[me][too][2]\whateverb{#1+#2+#3+#4}
+%     \whateverb[A]{B}{C}
+%     \whateverb[A][B]{C}{D}
+% \stoptext
+
 \unexpanded\def\macroname#1% brrr
   {\executeifdefined{#1}\empty}
 

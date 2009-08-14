@@ -40,27 +40,32 @@ local traverse       = node.traverse
 local find_node_tail = node.tail or node.slide
 local tosequence     = nodes.tosequence
 
---~ local copy_list       = node.copy_list
---~ local flush_list      = node.flush_list
---~
---~ local function dimensions(parent,start,stop) -- so we need parent for glue_set info
---~     local n = stop.next
---~     stop.next = nil
---~     local p = hpack_list(copy_list(start))
---~     stop.next = n
---~     local w, h, d = p.width, p.height, p.depth
---~     flush_list(p)
---~     return w, h, d
---~ end
-
-local function dimensions(parent,start,stop) -- so we need parent for glue_set info
+local function dimensions(parent,start,stop)
     stop = stop and stop.next
-    if stop then
-        return list_dimensions(start,stop)
+    if parent then
+        if stop then
+            return list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,start,stop)
+        else
+            return list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,start)
+        end
     else
-        return list_dimensions(start)
+        if stop then
+            return list_dimensions(start,stop)
+        else
+            return list_dimensions(start)
+        end
     end
 end
+
+--~ more compact
+--~
+--~ local function dimensions(parent,start,stop)
+--~     if parent then
+--~         return list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,start,stop and stop.next)
+--~     else
+--~         return list_dimensions(start,stop and stop.next)
+--~     end
+--~ end
 
 local function inject_range(head,first,last,reference,make,stack,parent,pardir,txtdir)
     local width, height, depth = dimensions(parent,first,last)

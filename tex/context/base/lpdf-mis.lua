@@ -143,18 +143,20 @@ end
 
 local function flushjavascripts()
     local t = javascripts.flushpreambles()
-    local a = pdfarray()
-    local pdf_javascript = pdfconstant("JavaScript")
-    for i=1,#t do
-        local name, script = t[i][1], t[i][2]
-        local j = pdfdictionary {
-            S  = pdf_javascript,
-            JS = pdfreference(pdfimmediateobj("stream",script)),
-        }
-        a[#a+1] = pdfstring(name)
-        a[#a+1] = pdfreference(pdfimmediateobj(tostring(j)))
+    if #t > 0 then
+        local a = pdfarray()
+        local pdf_javascript = pdfconstant("JavaScript")
+        for i=1,#t do
+            local name, script = t[i][1], t[i][2]
+            local j = pdfdictionary {
+                S  = pdf_javascript,
+                JS = pdfreference(pdfimmediateobj("stream",script)),
+            }
+            a[#a+1] = pdfstring(name)
+            a[#a+1] = pdfreference(pdfimmediateobj(tostring(j)))
+        end
+        lpdf.addtonames("JavaScript",pdfreference(pdfimmediateobj(tostring(pdfdictionary{ Names = a }))))
     end
-    lpdf.addtonames("JavaScript",pdfreference(pdfimmediateobj(tostring(pdfdictionary{ Names = a }))))
 end
 
 lpdf.registerdocumentfinalizer(flushjavascripts)

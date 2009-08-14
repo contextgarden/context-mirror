@@ -229,12 +229,12 @@ local function reset_hashes()
 end
 
 local function check_configuration() -- not yet ok, no time for debugging now
-    local ie = instance.environment
+    local ie, iv = instance.environment, instance.variables
     local function fix(varname,default)
         local proname = varname .. "." .. instance.progname or "crap"
-        local p, v = ie[proname], ie[varname]
+        local p, v = ie[proname], ie[varname] or iv[varname]
         if not ((p and p ~= "") or (v and v ~= "")) then
-            instance.variables[varname] = default -- or environment?
+            iv[varname] = default -- or environment?
         end
     end
     local name = os.name

@@ -265,6 +265,11 @@ function string.tabtospace(str,tab)
     return str
 end
 
+function string:compactlong() -- strips newlines and leading spaces
+    self = gsub(self,"[\n\r]+ *","")
+    self = gsub(self,"^ *","")
+    return self
+end
 
 
 end -- of closure
@@ -407,6 +412,10 @@ function table.strip(tab)
     return lst
 end
 
+local function compare(a,b)
+    return (tostring(a) < tostring(b))
+end
+
 local function sortedkeys(tab)
     local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in next, tab do
@@ -427,7 +436,7 @@ local function sortedkeys(tab)
         end
     end
     if kind == 0 or kind == 3 then
-        sort(srt,function(a,b) return (tostring(a) < tostring(b)) end)
+        sort(srt,compare)
     else
         sort(srt)
     end
@@ -1058,7 +1067,7 @@ function table.insert_after_value(t,value,str)
 end
 
 local function are_equal(a,b,n,m) -- indexed
-    if #a == #b then
+    if a and b and #a == #b then
         n = n or 1
         m = m or #a
         for i=n,m do
@@ -1215,6 +1224,7 @@ end
 function io.loaddata(filename,textmode)
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
+    --  collectgarbage("step") -- sometimes makes a big difference in mem consumption
         local data = f:read('*all')
     --  garbagecollector.check(data)
         f:close()
@@ -1451,6 +1461,7 @@ set = set or { }
 local nums   = { }
 local tabs   = { }
 local concat = table.concat
+local next, type = next, type
 
 set.create = table.tohash
 
@@ -1458,17 +1469,19 @@ function set.tonumber(t)
     if next(t) then
         local s = ""
     --  we could save mem by sorting, but it slows down
-        for k, v in pairs(t) do
+        for k, v in next, t do
             if v then
             --  why bother about the leading space
                 s = s .. " " .. k
             end
         end
-        if not nums[s] then
-            tabs[#tabs+1] = t
-            nums[s] = #tabs
+        local n = nums[s]
+        if not n then
+            n = #tabs + 1
+            tabs[n] = t
+            nums[s] = n
         end
-        return nums[s]
+        return n
     else
         return 0
     end
@@ -1479,6 +1492,20 @@ function set.totable(n)
         return { }
     else
         return tabs[n] or { }
+    end
+end
+
+function set.tolist(n)
+    if n == 0 or not tabs[n] then
+        return ""
+    else
+        local t = { }
+        for k, v in next, tabs[n] do
+            if v then
+                t[#t+1] = k
+            end
+        end
+        return concat(t," ")
     end
 end
 
@@ -1678,8 +1705,8 @@ function file.replacesuffix(filename, suffix)
     return (gsub(filename,"%.[%a%d]+$","")) .. "." .. suffix
 end
 
-function file.dirname(name)
-    return match(name,"^(.+)[/\\].-$") or ""
+function file.dirname(name,default)
+    return match(name,"^(.+)[/\\].-$") or (default or "")
 end
 
 function file.basename(name)
@@ -1717,15 +1744,8 @@ function file.join(...)
 end
 
 function file.iswritable(name)
-    local a = lfs.attributes(name)
-    if a and a.permissions:sub(2,2) == "w" then
-        return true
-    else
-        name = file.dirname(name) or "."
-        if name == "" then name = "." end
-        a = lfs.attributes(name)
-        return a and a.permissions:sub(2,2) == "w"
-    end
+    local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
+    return a and a.permissions:sub(2,2) == "w"
 end
 
 function file.isreadable(name)
@@ -1893,6 +1913,26 @@ function file.is_rootbased_path(filename)
     return rootbased:match(filename)
 end
 
+local slash  = lpeg.S("\\/")
+local period = lpeg.P(".")
+local drive  = lpeg.C(lpeg.R("az","AZ")) * lpeg.P(":")
+local path   = lpeg.C(((1-slash)^0 * slash)^0)
+local suffix = period * lpeg.C(lpeg.P(1-period)^0 * lpeg.P(-1))
+local base   = lpeg.C((1-suffix)^0)
+
+local pattern = (drive + lpeg.Cc("")) * (path + lpeg.Cc("")) * (base + lpeg.Cc("")) * (suffix + lpeg.Cc(""))
+
+function file.splitname(str) -- returns drive, path, base, suffix
+    return pattern:match(str)
+end
+
+-- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end
+--
+-- test { "c:", "c:/aa", "c:/aa/bb", "c:/aa/bb/cc", "c:/aa/bb/cc.dd", "c:/aa/bb/cc.dd.ee" }
+-- test { "c:", "c:aa", "c:aa/bb", "c:aa/bb/cc", "c:aa/bb/cc.dd", "c:aa/bb/cc.dd.ee" }
+-- test { "/aa", "/aa/bb", "/aa/bb/cc", "/aa/bb/cc.dd", "/aa/bb/cc.dd.ee" }
+-- test { "aa", "aa/bb", "aa/bb/cc", "aa/bb/cc.dd", "aa/bb/cc.dd.ee" }
+
 
 end -- of closure
 
@@ -1948,7 +1988,7 @@ function file.checksum(name)
     if md5 then
         local data = io.loaddata(name)
         if data then
-            return md5.HEXsum(data)
+            return md5.HEX(data)
         end
     end
     return nil
@@ -2862,6 +2902,235 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+if not modules then modules = { } end modules ['l-aux'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+aux = aux or { }
+
+local concat, format, gmatch = table.concat, string.format, string.gmatch
+local tostring, type = tostring, type
+
+local space     = lpeg.P(' ')
+local equal     = lpeg.P("=")
+local comma     = lpeg.P(",")
+local lbrace    = lpeg.P("{")
+local rbrace    = lpeg.P("}")
+local nobrace   = 1 - (lbrace+rbrace)
+local nested    = lpeg.P{ lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
+local spaces    = space^0
+
+local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
+
+local key       = lpeg.C((1-equal-comma)^1)
+local pattern_a = (space+comma)^0 * (key * equal * value + key * lpeg.C(""))
+local pattern_c = (space+comma)^0 * (key * equal * value)
+
+local key       = lpeg.C((1-space-equal-comma)^1)
+local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces * value) + lpeg.C("")))
+
+-- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
+
+local hash = { }
+
+local function set(key,value) -- using Carg is slower here
+    hash[key] = value
+end
+
+local pattern_a_s = (pattern_a/set)^1
+local pattern_b_s = (pattern_b/set)^1
+local pattern_c_s = (pattern_c/set)^1
+
+aux.settings_to_hash_pattern_a = pattern_a_s
+aux.settings_to_hash_pattern_b = pattern_b_s
+aux.settings_to_hash_pattern_c = pattern_c_s
+
+function aux.make_settings_to_hash_pattern(set,how)
+    if how == "strict" then
+        return (pattern_c/set)^1
+    elseif how == "tolerant" then
+        return (pattern_b/set)^1
+    else
+        return (pattern_a/set)^1
+    end
+end
+
+function aux.settings_to_hash(str)
+    if str and str ~= "" then
+        hash = { }
+        if moretolerant then
+            pattern_b_s:match(str)
+        else
+            pattern_a_s:match(str)
+        end
+        return hash
+    else
+        return { }
+    end
+end
+
+function aux.settings_to_hash_tolerant(str)
+    if str and str ~= "" then
+        hash = { }
+        pattern_b_s:match(str)
+        return hash
+    else
+        return { }
+    end
+end
+
+function aux.settings_to_hash_strict(str)
+    if str and str ~= "" then
+        hash = { }
+        pattern_c_s:match(str)
+        return next(hash) and hash
+    else
+        return nil
+    end
+end
+
+local seperator = comma * space^0
+local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
+local pattern   = lpeg.Ct(value*(seperator*value)^0)
+
+-- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
+
+aux.settings_to_array_pattern = pattern
+
+function aux.settings_to_array(str)
+    if not str or str == "" then
+        return { }
+    else
+        return pattern:match(str)
+    end
+end
+
+local function set(t,v)
+    t[#t+1] = v
+end
+
+local value   = lpeg.P(lpeg.Carg(1)*value) / set
+local pattern = value*(seperator*value)^0 * lpeg.Carg(1)
+
+function aux.add_settings_to_array(t,str)
+    return pattern:match(str, nil, t)
+end
+
+function aux.hash_to_string(h,separator,yes,no,strict,omit)
+    if h then
+        local t, s = { }, table.sortedkeys(h)
+        omit = omit and table.tohash(omit)
+        for i=1,#s do
+            local key = s[i]
+            if not omit or not omit[key] then
+                local value = h[key]
+                if type(value) == "boolean" then
+                    if yes and no then
+                        if value then
+                            t[#t+1] = key .. '=' .. yes
+                        elseif not strict then
+                            t[#t+1] = key .. '=' .. no
+                        end
+                    elseif value or not strict then
+                        t[#t+1] = key .. '=' .. tostring(value)
+                    end
+                else
+                    t[#t+1] = key .. '=' .. value
+                end
+            end
+        end
+        return concat(t,separator or ",")
+    else
+        return ""
+    end
+end
+
+function aux.array_to_string(a,separator)
+    if a then
+        return concat(a,separator or ",")
+    else
+        return ""
+    end
+end
+
+function aux.settings_to_set(str,t)
+    t = t or { }
+    for s in gmatch(str,"%s*([^,]+)") do
+        t[s] = true
+    end
+    return t
+end
+
+-- temporary here
+
+function aux.getparameters(self,class,parentclass,settings)
+    local sc = self[class]
+    if not sc then
+        sc = table.clone(self[parent])
+        self[class] = sc
+    end
+    aux.add_settings_to_array(sc, settings)
+end
+
+-- temporary here
+
+local digit    = lpeg.R("09")
+local period   = lpeg.P(".")
+local zero     = lpeg.P("0")
+
+--~ local finish   = lpeg.P(-1)
+--~ local nodigit  = (1-digit) + finish
+--~ local case_1   = (period * zero^1 * #nodigit)/"" -- .000
+--~ local case_2   = (period * (1-(zero^0/"") * #nodigit)^1 * (zero^0/"") * nodigit) -- .010 .10 .100100
+
+local trailingzeros = zero^0 * -digit -- suggested by Roberto R
+local case_1 = period * trailingzeros / ""
+local case_2 = period * (digit - trailingzeros)^1 * (trailingzeros / "")
+
+local number   = digit^1 * (case_1 + case_2)
+local stripper = lpeg.Cs((number + 1)^0)
+
+--~ local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
+--~ collectgarbage("collect")
+--~ str = string.rep(sample,10000)
+--~ local ts = os.clock()
+--~ stripper:match(str)
+--~ print(#str, os.clock()-ts, stripper:match(sample))
+
+function aux.strip_zeros(str)
+    return stripper:match(str)
+end
+
+function aux.definetable(target) -- defines undefined tables
+    local composed, t = nil, { }
+    for name in gmatch(target,"([^%.]+)") do
+        if composed then
+            composed = composed .. "." .. name
+        else
+            composed = name
+        end
+        t[#t+1] = format("%s = %s or { }",composed,composed)
+    end
+    return concat(t,"\n")
+end
+
+function aux.accesstable(target)
+    local t = _G
+    for name in gmatch(target,"([^%.]+)") do
+        t = t[name]
+    end
+    return t
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
 if not modules then modules = { } end modules ['trac-tra'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.tex",
@@ -3012,7 +3281,11 @@ trackers = trackers or { }
 local data, done = { }, { }
 
 local function set(what,value)
-    for w in gmatch(lower(what),"[^, ]+") do
+    if type(what) == "string" then
+        what = aux.settings_to_array(what)
+    end
+    for i=1,#what do
+        local w = what[i]
         for d, f in next, data do
             if done[d] then
                 -- prevent recursion due to wildcards
@@ -3391,27 +3664,34 @@ statistics.threshold = 0.05
 
 local clock = os.gettimeofday or os.clock
 
+local notimer
+
 function statistics.hastimer(instance)
     return instance and instance.starttime
 end
 
 function statistics.starttiming(instance)
-    if instance then
-        local it = instance.timing
-        if not it then
-            it = 0
-        end
-        if it == 0 then
-            instance.starttime = clock()
-            if not instance.loadtime then
-                instance.loadtime = 0
-            end
-        end
-        instance.timing = it + 1
+    if not instance then
+        notimer = { }
+        instance = notimer
     end
+    local it = instance.timing
+    if not it then
+        it = 0
+    end
+    if it == 0 then
+        instance.starttime = clock()
+        if not instance.loadtime then
+            instance.loadtime = 0
+        end
+    end
+    instance.timing = it + 1
 end
 
 function statistics.stoptiming(instance, report)
+    if not instance then
+        instance = notimer
+    end
     if instance then
         local it = instance.timing
         if it > 1 then
@@ -3435,10 +3715,16 @@ function statistics.stoptiming(instance, report)
 end
 
 function statistics.elapsedtime(instance)
+    if not instance then
+        instance = notimer
+    end
     return format("%0.3f",(instance and instance.loadtime) or 0)
 end
 
 function statistics.elapsedindeed(instance)
+    if not instance then
+        instance = notimer
+    end
     local t = (instance and instance.loadtime) or 0
     return t > statistics.threshold
 end
@@ -3479,6 +3765,7 @@ function statistics.show(reporter)
                 reporter(s[1],r,n)
             end
         end
+        texio.write_nl("") -- final newline
         statistics.enable = false
     end
 end
@@ -3536,6 +3823,7 @@ if not modules then modules = { } end modules ['luat-log'] = {
 -- this is old code that needs an overhaul
 
 local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
+local texcount = tex and tex.count
 
 if texlua then
     write_nl = print
@@ -3615,10 +3903,8 @@ function logs.tex.line(fmt,...) -- new
     end
 end
 
-local texcount = tex and tex.count
-
 function logs.tex.start_page_number()
-    local real, user, sub = texcount[0], texcount[1], texcount[2]
+    local real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
     if real > 0 then
         if user > 0 then
             if sub > 0 then
@@ -3673,7 +3959,7 @@ function logs.xml.stop_run()
 end
 
 function logs.xml.start_page_number()
-    write_nl(format("<p real='%s' page='%s' sub='%s'", texcount[0], texcount[1], texcount[2]))
+    write_nl(format("<p real='%s' page='%s' sub='%s'", texcount.realpageno, texcount.userpageno, texcount.subpageno))
 end
 
 function logs.xml.stop_page_number()
@@ -3908,7 +4194,7 @@ formats['ovf'] = 'OVFFONTS'       suffixes['ovf'] = { 'ovf', 'vf' }
 formats['ovp'] = 'OVPFONTS'       suffixes['ovp'] = { 'ovp' }
 formats['tex'] = 'TEXINPUTS'      suffixes['tex'] = { 'tex' }
 formats['tfm'] = 'TFMFONTS'       suffixes['tfm'] = { 'tfm' }
-formats['ttf'] = 'TTFONTS'        suffixes['ttf'] = { 'ttf', 'ttc' }
+formats['ttf'] = 'TTFONTS'        suffixes['ttf'] = { 'ttf', 'ttc', 'dfont' }
 formats['pfb'] = 'T1FONTS'        suffixes['pfb'] = { 'pfb', 'pfa' }
 formats['vf']  = 'VFFONTS'        suffixes['vf']  = { 'vf' }
 
@@ -3930,6 +4216,7 @@ alternatives['fea files']            = 'fea'
 alternatives['opentype fonts']       = 'otf'
 alternatives['truetype fonts']       = 'ttf'
 alternatives['truetype collections'] = 'ttc'
+alternatives['truetype dictionary']  = 'dfont'
 alternatives['type1 fonts']          = 'pfb'
 
 -- obscure ones
@@ -4046,12 +4333,12 @@ local function reset_hashes()
 end
 
 local function check_configuration() -- not yet ok, no time for debugging now
-    local ie = instance.environment
+    local ie, iv = instance.environment, instance.variables
     local function fix(varname,default)
         local proname = varname .. "." .. instance.progname or "crap"
-        local p, v = ie[proname], ie[varname]
+        local p, v = ie[proname], ie[varname] or iv[varname]
         if not ((p and p ~= "") or (v and v ~= "")) then
-            instance.variables[varname] = default -- or environment?
+            iv[varname] = default -- or environment?
         end
     end
     local name = os.name
@@ -5890,10 +6177,6 @@ caches.paths    = caches.paths or nil
 caches.force    = false
 caches.defaults = { "TEXMFCACHE", "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 
-function caches.cleanname(name)
-    return (gsub(lower(name),"[^%w%d]+","-"))
-end
-
 function caches.temp()
     local cachepath = nil
     local function check(list,isenv)
@@ -5990,7 +6273,9 @@ function caches.loaddata(path,name)
     local tmaname, tmcname = caches.setluanames(path,name)
     local loader = loadfile(tmcname) or loadfile(tmaname)
     if loader then
-        return loader()
+        loader = loader()
+        collectgarbage("step")
+        return loader
     else
         return false
     end
@@ -6132,7 +6417,7 @@ function containers.define(category, subcategory, version, enabled)
                     enabled = enabled,
                     version = version or 1.000,
                     trace = false,
-                    path = caches and caches.setpath(category,subcategory),
+                    path = caches and caches.setpath and caches.setpath(category,subcategory),
                 }
                 c[subcategory] = s
             end
@@ -6189,6 +6474,10 @@ end
 
 function containers.content(container,name)
     return container.storage[name]
+end
+
+function containers.cleanname(name)
+    return (gsub(lower(name),"[^%w%d]+","-"))
 end
 
 
@@ -6585,6 +6874,7 @@ own.libs = { -- todo: check which ones are really needed
     'l-unicode.lua',
     'l-math.lua',
     'l-utils.lua',
+    'l-aux.lua',
     'trac-tra.lua',
     'luat-env.lua',
     'trac-inf.lua',
