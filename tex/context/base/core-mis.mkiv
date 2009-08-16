@@ -953,8 +953,9 @@
   {\global\advance\delimitedtextlevel\minusone
    \globalpopmacro\currentdelimitedtext}
 
-\def\delimitedtext[#1]%
-  {\pushdelimitedtext{#1}%
+\unexpanded\def\delimitedtext[#1]%
+  {\dontleavehmode % following ones can be omited
+   \pushdelimitedtext{#1}%
    \doifelse{\delimitedtextparameter\c!method}\s!font
      {\dofontdrivendelimited}
      {\doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%

@@ -58,14 +58,14 @@ local function dimensions(parent,start,stop)
 end
 
 --~ more compact
---~
---~ local function dimensions(parent,start,stop)
---~     if parent then
---~         return list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,start,stop and stop.next)
---~     else
---~         return list_dimensions(start,stop and stop.next)
---~     end
---~ end
+
+local function dimensions(parent,start,stop)
+    if parent then
+        return list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,start,stop and stop.next)
+    else
+        return list_dimensions(start,stop and stop.next)
+    end
+end
 
 local function inject_range(head,first,last,reference,make,stack,parent,pardir,txtdir)
     local width, height, depth = dimensions(parent,first,last)
@@ -185,58 +185,6 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                     txtdir = current.dir
                 end
             elseif id == hlist or id == vlist then
-                if r and (not skip or r > skip) then
-                    inject_list(id,current,r,make,stack,pardir,txtdir)
-                    done[r] = true
-                end
---~ if r then done[r] = (done[r] or 0) + 1 end
-                local list = current.list
-                if list then
-                    local _
-                    current.list, _, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
-                end
---~ if r then done[r] = done[r] - 1 end
-            elseif not r then
-                -- just go on, can be kerns
-            elseif not reference then
-                reference, first, last, firstdir = r, current, current, txtdir
-            elseif r == reference then
-                last = current
-            elseif not done[reference] then
---~ elseif (done[reference] or 0) == 0 then
-                if not skip or r > skip then
-                    head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
-                    reference, first, last, firstdir = nil, nil, nil, nil
-                end
-            else
-                reference, first, last, firstdir = r, current, current, txtdir
-            end
-            current = current.next
-        end
-        if reference and not done[reference] then
---~         if reference and (done[reference] or 0) == 0 then
-            head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
-        end
-    end
-    return head, true, pardir, txtdir
-end
-
-local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
-    if head then
-        local current, first, last, firstdir, reference = head, nil, nil, nil, nil
-        pardir = pardir or "==="
-        txtdir = txtdir or "==="
-        while current do
-            local id = current.id
-            local r = has_attribute(current,attribute)
-            if id == whatsit then
-                local subtype = current.subtype
-                if subtype == 6 then
-                    pardir = current.dir
-                elseif subtype == 7 then
-                    txtdir = current.dir
-                end
-            elseif id == hlist or id == vlist then
 --~                 if r and (not skip or r > skip) then
                 if not reference and r and (not skip or r > skip) then
                     inject_list(id,current,r,make,stack,pardir,txtdir)
@@ -274,9 +222,7 @@ elseif (done[reference] or 0) == 0 then
     return head, true, pardir, txtdir
 end
 
-
-
-local function inject_area(head,attribute,make,stack,done,pardir,txtdir) -- singular  !
+local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) -- singular  !
     if head then
         pardir = pardir or "==="
         txtdir = txtdir or "==="
@@ -296,10 +242,10 @@ local function inject_area(head,attribute,make,stack,done,pardir,txtdir) -- sing
                     done[r] = true
                     inject_list(id,current,r,make,stack,pardir,txtdir)
                 end
-                current.list = inject_area(current.list,attribute,make,stack,done,pardir,txtdir)
+                current.list = inject_area(current.list,attribute,make,stack,done,current,pardir,txtdir)
             elseif r and not done[r] then
                 done[r] = true
-                head, current = inject_range(head,current,current,r,make,stack,pardir,txtdir)
+                head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
             end
             current = current.next
         end

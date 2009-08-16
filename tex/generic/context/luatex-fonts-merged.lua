@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 08/14/09 10:50:13
+-- merge date  : 08/16/09 18:24:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -10449,10 +10449,14 @@ function tfm.read(specification)
                 local reader = sequence[s]
                 if readers[reader] then -- not really needed
                     if trace_defining then
-                        logs.report("define font","trying type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
+                        logs.report("define font","trying (sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
                     end
                     tfmtable = readers[reader](specification)
-                    if tfmtable then break end
+                    if tfmtable then
+                        break
+                    else
+                        specification.filename = nil
+                    end
                 end
             end
         end
