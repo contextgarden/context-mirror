@@ -386,7 +386,7 @@ local transparencies = { [0] =
 }
 
 local documenttransparencies = { }
-local transparencyhash       = { } -- not needed
+local transparencyhash       = { } -- share objects
 
 local done = false
 
@@ -406,7 +406,7 @@ function registrations.transparency(n,a,t)
         lpdf.adddocumentextgstate("Tr0",mr)
         done = true
     end
-    if n > 0 then
+    if n > 0 and not transparencyhash[n] then
         local d = pdfdictionary {
               Type = pdf_extgstate,
               ca   = tonumber(t),

@@ -361,8 +361,8 @@ function fonts.initializers.base.otf.features(tfmdata,value)
             -- eventually (and subset later on). If needed we can use a more
             -- verbose name as long as we don't use <()<>[]{}/%> and the length
             -- is < 128.
-            tfmdata.fullname = tfmdata.fullname .. "-" .. base
---~ logs.report("otf define","fullname base hash: '%s', featureset '%s'",tfmdata.fullname,hash)
+            tfmdata.fullname = tfmdata.fullname .. "-" .. base -- tfmdata.psname is the original
+        --~ logs.report("otf define","fullname base hash: '%s', featureset '%s'",tfmdata.fullname,hash)
         end
         if trace_preparing then
             logs.report("otf define","preparation time is %0.3f seconds for %s",os.clock()-t,tfmdata.fullname or "?")

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 08/16/09 18:24:09
+-- merge date  : 08/17/09 19:08:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -3051,7 +3051,7 @@ if not modules then modules = { } end modules ['font-tfm'] = {
 
 local utf = unicode.utf8
 
-local next, format, match, lower = next, string.format, string.match, string.lower
+local next, format, match, lower, gsub = next, string.format, string.match, string.lower, string.gsub
 local concat, sortedkeys, utfbyte, serialize = table.concat, table.sortedkeys, utf.byte, table.serialize
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
@@ -3268,7 +3268,7 @@ end
 local charactercache = { }
 
 -- The scaler is only used for otf and afm and virtual fonts. If
--- a virtual font has italic correction make sur eto set the
+-- a virtual font has italic correction make sure to set the
 -- has_italic flag. Some more flags will be added in the future.
 
 function tfm.do_scale(tfmtable, scaledpoints)
@@ -3595,6 +3595,10 @@ end
             logs.report("define font","math disabled for: %s %s %s",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
         end
         t.nomath, t.MathConstants = true, nil
+    end
+    -- fullname is used in the subsetting
+    if not t.psname then
+        t.psname = t.fullname -- else bad luck
     end
     return t, delta
 end
@@ -6442,6 +6446,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         -- we need a runtime lookup because of running from cdrom or zip, brrr
         tfm.filename           = resolvers.findbinfile(luatex.filename,"") or luatex.filename
         tfm.fullname           = metadata.fontname or metadata.fullname
+        tfm.psname             = tfm.fullname
         tfm.encodingbytes      = 2
         tfm.cidinfo            = data.cidinfo
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
@@ -7094,8 +7099,8 @@ function fonts.initializers.base.otf.features(tfmdata,value)
             -- eventually (and subset later on). If needed we can use a more
             -- verbose name as long as we don't use <()<>[]{}/%> and the length
             -- is < 128.
-            tfmdata.fullname = tfmdata.fullname .. "-" .. base
---~ logs.report("otf define","fullname base hash: '%s', featureset '%s'",tfmdata.fullname,hash)
+            tfmdata.fullname = tfmdata.fullname .. "-" .. base -- tfmdata.psname is the original
+        --~ logs.report("otf define","fullname base hash: '%s', featureset '%s'",tfmdata.fullname,hash)
         end
         if trace_preparing then
             logs.report("otf define","preparation time is %0.3f seconds for %s",os.clock()-t,tfmdata.fullname or "?")

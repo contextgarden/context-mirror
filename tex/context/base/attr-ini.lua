@@ -268,8 +268,15 @@ local data       = transparencies.data
 local values     = transparencies.values
 local template   = "%s:%s"
 
-local function inject_transparency  (...) inject_transparency   = nodeinjections.transparency return inject_transparency  (...) end
-local function register_transparency(...) register_transparency = registrations.transparency  return register_transparency(...) end
+local function inject_transparency  (...)
+    inject_transparency = nodeinjections.transparency
+    return inject_transparency(...)
+end
+
+local function register_transparency(...)
+    register_transparency = registrations.transparency
+    return register_transparency(...)
+end
 
 function transparencies.register(name,a,t)
     local stamp = format(template,a,t)
@@ -278,7 +285,7 @@ function transparencies.register(name,a,t)
         n = #values + 1
         values[n] = { a, t }
         registered[stamp] = n
-        register_transparency(n,a,t)
+        register_transparency(n,a,t) -- needed here for metapost converter
     end
     return registered[stamp]
 end
@@ -366,8 +373,8 @@ shipouts.handle_overprint = nodes.install_attribute_handler {
     name        = "overprint",
     namespace   = overprints,
     initializer = states.initialize,
-    finalizer   = states.finalize  ,
-    processor   = states.process   ,
+    finalizer   = states.finalize,
+    processor   = states.process,
 }
 
 --- negative / positive

@@ -477,6 +477,7 @@ function afm.copy_to_tfm(data)
             tfm.fullname           = metadata.fullname
             tfm.filename           = metadata.filename
             tfm.name               = tfm.fullname
+            tfm.psname             = tfm.fullname
             tfm.type               = "real"
             tfm.units              = 1000
             tfm.stretch            = stretch -- nil

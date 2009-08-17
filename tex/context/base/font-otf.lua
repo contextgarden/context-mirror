@@ -1464,6 +1464,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         -- we need a runtime lookup because of running from cdrom or zip, brrr
         tfm.filename           = resolvers.findbinfile(luatex.filename,"") or luatex.filename
         tfm.fullname           = metadata.fontname or metadata.fullname
+        tfm.psname             = tfm.fullname
         tfm.encodingbytes      = 2
         tfm.cidinfo            = data.cidinfo
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""

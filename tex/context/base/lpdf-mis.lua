@@ -58,6 +58,7 @@ local function initializenegative()
     lpdf.adddocumentextgstate("GSPositive", pdfreference(pdfimmediateobj(tostring(positive))))
 end
 
+
 local function initializeoverprint()
     local g = pdfconstant("ExtGState")
     local knockout  = pdfdictionary { Type = g, OP = false, OPM  = 0 }
@@ -76,7 +77,7 @@ function codeinjections.addtransparencygroup()
         I = true,
         K = true,
     }
-    lpdf.registerpagefinalizer(function() lpdf.addtopageattributes("Group",d) end)
+    lpdf.registerpagefinalizer(function() lpdf.addtopageattributes("Group",d) end) -- hm
 end
 
 -- actions (todo: store and update when changed)

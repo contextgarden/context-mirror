@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-tfm'] = {
 
 local utf = unicode.utf8
 
-local next, format, match, lower = next, string.format, string.match, string.lower
+local next, format, match, lower, gsub = next, string.format, string.match, string.lower, string.gsub
 local concat, sortedkeys, utfbyte, serialize = table.concat, table.sortedkeys, utf.byte, table.serialize
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
@@ -225,7 +225,7 @@ end
 local charactercache = { }
 
 -- The scaler is only used for otf and afm and virtual fonts. If
--- a virtual font has italic correction make sur eto set the
+-- a virtual font has italic correction make sure to set the
 -- has_italic flag. Some more flags will be added in the future.
 
 function tfm.do_scale(tfmtable, scaledpoints)
@@ -552,6 +552,10 @@ end
             logs.report("define font","math disabled for: %s %s %s",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
         end
         t.nomath, t.MathConstants = true, nil
+    end
+    -- fullname is used in the subsetting
+    if not t.psname then
+        t.psname = t.fullname -- else bad luck
     end
     return t, delta
 end

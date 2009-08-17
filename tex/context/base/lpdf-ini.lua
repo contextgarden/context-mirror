@@ -394,9 +394,9 @@ backends.pdf = backends.pdf or {
     helpers        = { },
 }
 
---
+-- three priority levels, default=2
 
-local pagefinalizers, documentfinalizers = { }, { }
+local pagefinalizers, documentfinalizers = { { }, { }, { } }, { { }, { }, { } }
 
 local pageresources, pageattributes, pagesattributes
 
@@ -416,22 +416,26 @@ function lpdf.addtopageresources  (k,v) pageresources  [k] = v end
 function lpdf.addtopageattributes (k,v) pageattributes [k] = v end
 function lpdf.addtopagesattributes(k,v) pagesattributes[k] = v end
 
-local function set(where, f)
-    where[#where+1] = f
+local function set(where,f,when)
+    local w = where[when or 2]
+    w[#w+1] = f
 end
 
 local function run(where)
     for i=1,#where do
-        where[i]()
+        local w = where[i]
+        for j=1,#w do
+            w[j]()
+        end
     end
 end
 
-function lpdf.registerpagefinalizer(f)
-    set(pagefinalizers,f)
+function lpdf.registerpagefinalizer(f,when)
+    set(pagefinalizers,f,when)
 end
 
-function lpdf.registerdocumentfinalizer(f)
-    set(documentfinalizers,f)
+function lpdf.registerdocumentfinalizer(f,when)
+    set(documentfinalizers,f,when)
 end
 
 function lpdf.finalizepage()
@@ -466,22 +470,10 @@ local function checkcolorspaces() if next(d_colorspaces) then lpdf.addtopagereso
 local function checkpatterns   () if next(d_patterns   ) then lpdf.addtopageresources("Pattern",   p_patterns   ) end end
 local function checkshades     () if next(d_shades     ) then lpdf.addtopageresources("Shading",   p_shades     ) end end
 
-local function flushextgstates () pdfimmediateobj(r_extgstates, tostring(d_extgstates )) end
-local function flushcolorspaces() pdfimmediateobj(r_colorspaces,tostring(d_colorspaces)) end
-local function flushpatterns   () pdfimmediateobj(r_patterns,   tostring(d_patterns   )) end
-local function flushshades     () pdfimmediateobj(r_shades,     tostring(d_shades     )) end
-
---~ function lpdf.collectedresources()
---~     local collected = pdfdictionary {
---~         ExtGState  = (next(d_extgstates)  and p_extgstates ) or nil,
---~         ColorSpace = (next(d_colorspaces) and p_colorspaces) or nil,
---~         Pattern    = (next(d_patterns)    and p_patterns   ) or nil,
---~         Shading    = (next(d_shades)      and p_shades     ) or nil,
---~     }
---~     if next(collected) then
---~         tex.sprint(tex.ctxcatcodes,collected())
---~     end
---~ end
+local function flushextgstates () if next(d_extgstates ) then pdfimmediateobj(r_extgstates, tostring(d_extgstates )) end end
+local function flushcolorspaces() if next(d_colorspaces) then pdfimmediateobj(r_colorspaces,tostring(d_colorspaces)) end end
+local function flushpatterns   () if next(d_patterns   ) then pdfimmediateobj(r_patterns,   tostring(d_patterns   )) end end
+local function flushshades     () if next(d_shades     ) then pdfimmediateobj(r_shades,     tostring(d_shades     )) end end
 
 local collected = pdfdictionary {
     ExtGState  = p_extgstates,
@@ -499,15 +491,15 @@ function lpdf.adddocumentcolorspace(k,v) d_colorspaces[k] = v end
 function lpdf.adddocumentpattern   (k,v) d_patterns   [k] = v end
 function lpdf.adddocumentshade     (k,v) d_shades     [k] = v end
 
-lpdf.registerdocumentfinalizer(flushextgstates)
-lpdf.registerdocumentfinalizer(flushcolorspaces)
-lpdf.registerdocumentfinalizer(flushpatterns)
-lpdf.registerdocumentfinalizer(flushshades)
+lpdf.registerdocumentfinalizer(flushextgstates,3)
+lpdf.registerdocumentfinalizer(flushcolorspaces,3)
+lpdf.registerdocumentfinalizer(flushpatterns,3)
+lpdf.registerdocumentfinalizer(flushshades,3)
 
-lpdf.registerpagefinalizer(checkextgstates)
-lpdf.registerpagefinalizer(checkcolorspaces)
-lpdf.registerpagefinalizer(checkpatterns)
-lpdf.registerpagefinalizer(checkshades)
+lpdf.registerpagefinalizer(checkextgstates,3)
+lpdf.registerpagefinalizer(checkcolorspaces,3)
+lpdf.registerpagefinalizer(checkpatterns,3)
+lpdf.registerpagefinalizer(checkshades,3)
 
 --
 
