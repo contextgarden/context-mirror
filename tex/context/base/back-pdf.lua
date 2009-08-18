@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['back-pdf'] = {
     license   = "see context related readme files"
 }
 
+-- we will move code to lpdf-* files (second cleanup stage)
+
 --[[ldx--
 <p>This module implements a couple of cleanup methods. We need these
 in order to meet the <l n='pdf'/> specification. Watch the double
@@ -61,16 +63,6 @@ end
 function nodeinjections.transparency(n)
     return register(pdfliteral(format("/Tr%s gs",n)))
 end
-
-local positive  = register(pdfliteral("/GSpositive gs"))
-local negative  = register(pdfliteral("/GSnegative gs"))
-local overprint = register(pdfliteral("/GSoverprint gs"))
-local knockout  = register(pdfliteral("/GSknockout gs"))
-
-function nodeinjections.positive () return copy_node(positive)  end
-function nodeinjections.negative () return copy_node(negative)  end
-function nodeinjections.overprint() return copy_node(overprint) end
-function nodeinjections.knockout () return copy_node(knockout)  end
 
 local effects = {
     normal = 0,

@@ -52,7 +52,7 @@ local innertransparency   = nooutertransparency
 
 local pdfcolor, pdftransparency = lpdf.color, lpdf.transparency
 local registercolor, registerspotcolor = colors.register, colors.registerspotcolor
-local registertransparencies = transparencies.register
+local registertransparency = transparencies.register
 
 function metapost.set_outer_color(mode,colormodel,colorattribute,transparencyattribute)
     -- has always to be called before conversion
@@ -178,11 +178,11 @@ end
 function metapost.specials.tr(specification,object,result)
     local a, t = match(specification,"^(.+),(.+)$")
     local before = a and t and function()
-        result[#result+1] = format("/Tr%s gs",registertransparencies('mp',a,t))
+        result[#result+1] = format("/Tr%s gs",registertransparency(nil,a,t,true)) -- maybe nil instead of 'mp'
         return object, result
     end
     local after = before and function()
-        result[#result+1] = outertransparency -- here we could revert to teh outer color
+        result[#result+1] = outertransparency -- here we could revert to the outer color
         return object, result
     end
     return object, before, nil, after

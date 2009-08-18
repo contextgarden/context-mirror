@@ -24,6 +24,10 @@ local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
 local registrations  = backends.pdf.registrations
 
+local copy_node = node.copy
+
+local pdfliteral, register = nodes.pdfliteral, nodes.register
+
 local pdfdictionary = lpdf.dictionary
 local pdfarray      = lpdf.array
 local pdfboolean    = lpdf.boolean
@@ -42,7 +46,12 @@ local variables = interfaces.variables
 lpdf.addtoinfo   ("Trapped", pdfboolean(false))
 lpdf.addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
 
--- we could do this selectively
+--
+
+local positive  = register(pdfliteral("/GSpositive gs"))
+local negative  = register(pdfliteral("/GSnegative gs"))
+local overprint = register(pdfliteral("/GSoverprint gs"))
+local knockout  = register(pdfliteral("/GSknockout gs"))
 
 local function initializenegative()
     local a = pdfarray { 0, 1 }
@@ -56,8 +65,8 @@ local function initializenegative()
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
     lpdf.adddocumentextgstate("GSnegative", pdfreference(pdfimmediateobj(tostring(negative))))
     lpdf.adddocumentextgstate("GSPositive", pdfreference(pdfimmediateobj(tostring(positive))))
+    initializenegative = nil
 end
-
 
 local function initializeoverprint()
     local g = pdfconstant("ExtGState")
@@ -65,10 +74,28 @@ local function initializeoverprint()
     local overprint = pdfdictionary { Type = g, OP = true,  OPM  = 1 }
     lpdf.adddocumentextgstate("GSknockout",  pdfreference(pdfimmediateobj(tostring(knockout ))))
     lpdf.adddocumentextgstate("GSoverprint", pdfreference(pdfimmediateobj(tostring(overprint))))
+    initializeoverprint = nil
 end
 
-lpdf.registerdocumentfinalizer(initializenegative)
-lpdf.registerdocumentfinalizer(initializeoverprint)
+function nodeinjections.overprint()
+    if initializeoverprint then initializeoverprint() end
+    return copy_node(overprint)
+end
+function nodeinjections.knockout ()
+    if initializeoverprint then initializeoverprint() end
+    return copy_node(knockout)
+end
+
+function nodeinjections.positive()
+    if initializenegative then initializenegative() end
+    return copy_node(positive)
+end
+function nodeinjections.negative()
+    if initializenegative then initializenegative() end
+    return copy_node(negative)
+end
+
+--
 
 function codeinjections.addtransparencygroup()
     -- png: /CS /DeviceRGB /I true

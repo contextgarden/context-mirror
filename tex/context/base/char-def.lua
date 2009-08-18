@@ -50320,7 +50320,7 @@ characters.data={
   direction="l",
   linebreak="al",
   mathclass="variable",
-  mathname="hbar",
+  mathname="hslash",
   specials={ "font", 0x0127 },
   unicodeslot=0x210F,
  },

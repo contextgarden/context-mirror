@@ -263,7 +263,7 @@ transparencies.attribute  = attributes.private('transparency')
 storage.register("transparencies/registered", transparencies.registered, "transparencies.registered")
 storage.register("transparencies/values",     transparencies.values,     "transparencies.values")
 
-local registered = transparencies.registered
+local registered = transparencies.registered -- we could use a 2 dimensional table instead
 local data       = transparencies.data
 local values     = transparencies.values
 local template   = "%s:%s"
@@ -278,14 +278,22 @@ local function register_transparency(...)
     return register_transparency(...)
 end
 
-function transparencies.register(name,a,t)
+function transparencies.register(name,a,t,force) -- name is irrelevant here (can even be nil)
+    -- Force needed here for metapost converter. We could always force
+    -- but then we'd end up with transparencies resources even if we
+    -- would not use transparencies (but define them only). This is
+    -- somewhat messy.
     local stamp = format(template,a,t)
     local n = registered[stamp]
     if not n then
         n = #values + 1
         values[n] = { a, t }
         registered[stamp] = n
-        register_transparency(n,a,t) -- needed here for metapost converter
+        if force then
+            register_transparency(n,a,t)
+        end
+    elseif force and not data[n] then
+        register_transparency(n,a,t)
     end
     return registered[stamp]
 end
@@ -312,7 +320,7 @@ local function reviver(data,n)
 end
 
 setmetatable(transparencies,      { __index = extender })
-setmetatable(transparencies.data, { __index = reviver  })
+setmetatable(transparencies.data, { __index = reviver  }) -- register if used
 
 -- check if there is an identity
 

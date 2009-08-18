@@ -50,13 +50,13 @@ function lpdf.color(model,ca,default) -- todo: use gray when no color
     end
 end
 
-function lpdf.transparency(ct,default)
+function lpdf.transparency(ct,default) -- kind of overlaps with transparencycode
     -- beware, we need this hack because normally transparencies are not
     -- yet registered and therefore the number is not not known ... we
     -- might use the attribute number itself in the future
     local ct = transparenciesvalue(ct)
     if ct then
-        return format("/Tr%s gs",registertransparancy(nil,ct[1],ct[2]))
+        return format("/Tr%s gs",registertransparancy(nil,ct[1],ct[2],true))
     else
         return "/Tr0 gs"
     end
@@ -138,7 +138,7 @@ function lpdf.spotcode(model,n,f,d,p)
 end
 function lpdf.transparencycode(a,t)
     intransparency = true
-    return format("/Tr%s gs",registertransparancy(nil,a,t))
+    return format("/Tr%s gs",registertransparancy(nil,a,t,true)) -- true forces resource
 end
 function lpdf.finishtransparencycode()
     if intransparency then

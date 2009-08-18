@@ -123,7 +123,8 @@ local nesting = { }
 function lists.pushnesting(i)
     local r = lists.result[i]
     local name = r.metadata.name
-    local n = (r and r.numberdata.numbers[sections.getlevel(name)]) or 0
+    local numberdata = r and r.numberdata
+    local n = (numberdata and numberdata.numbers[sections.getlevel(name)]) or 0
     insert(nesting, { number = n, name = name, result = lists.result })
 end
 

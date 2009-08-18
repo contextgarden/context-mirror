@@ -361,7 +361,8 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
         local r = settings_to_array(reference)
         for i=1,#r do
             local ri = r[i]
-            local d = defined[prefix][ri] or defined[""][ri]
+            local dp = defined[prefix] or defined[""]
+            local d = dp[ri]
             if d then
                 resolve(prefix,d[2],nil,set)
             else

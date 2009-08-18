@@ -14,6 +14,8 @@ local utfvalues = string.utfvalues
 local texwrite = tex.write
 local sind, cosd = math.sind, math.cosd
 
+local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
+
 lpdf = lpdf or { }
 
 local function tosixteen(str)
@@ -416,39 +418,46 @@ function lpdf.addtopageresources  (k,v) pageresources  [k] = v end
 function lpdf.addtopageattributes (k,v) pageattributes [k] = v end
 function lpdf.addtopagesattributes(k,v) pagesattributes[k] = v end
 
-local function set(where,f,when)
-    local w = where[when or 2]
+local function set(where,f,when,what)
+    when = when or 2
+    local w = where[when]
     w[#w+1] = f
+    if trace_finalizers then
+        logs.report("backend","%s set: [%s,%s]",what,when,#w)
+    end
 end
 
-local function run(where)
+local function run(where,what)
     for i=1,#where do
         local w = where[i]
         for j=1,#w do
+            if trace_finalizers then
+                logs.report("backend","%s finalizer: [%s,%s]",what,i,j)
+            end
             w[j]()
         end
     end
 end
 
 function lpdf.registerpagefinalizer(f,when)
-    set(pagefinalizers,f,when)
+    set(pagefinalizers,f,when,"page")
 end
 
 function lpdf.registerdocumentfinalizer(f,when)
-    set(documentfinalizers,f,when)
+    set(documentfinalizers,f,when,"document")
 end
 
 function lpdf.finalizepage()
     if not environment.initex then
         resetpageproperties()
-        run(pagefinalizers)
+        run(pagefinalizers,"page")
         setpageproperties()
     end
 end
 
 function lpdf.finalizedocument()
     if not environment.initex then
-        run(documentfinalizers)
+        run(documentfinalizers,"document")
     end
 end
 
