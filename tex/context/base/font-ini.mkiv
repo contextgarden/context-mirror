@@ -2211,15 +2211,54 @@
 
 \let\fontstrategy\relax
 
-\def\synchronizefont
+% \def\synchronizefont
+%   {\tryingfonttrue
+%    \ifx\fontclass\empty\else
+%      \global\let\fontstrategy\dofontclassstrategy
+%      \the\fontstrategies \relax % \relax still needed ?
+%    \fi
+%    \iftryingfont
+%      \global\let\fontstrategy\dofontstrategy
+%      \the\fontstrategies \relax % \relax still needed ?
+%    \fi
+%    \autofontsizefalse
+%    \ifskipfontcharacteristics
+%      \setfontcharacteristics
+%      \the\everyfontswitch
+%    \fi}
+
+% \def\dofontstrategy#1#2#3#4#5%
+%   {\ifcsname#2#3#4#5\endcsname
+%      #1\csname#2#3#4#5\endcsname \tryingfontfalse
+%    \fi}
+
+% \def\dofontclassstrategy#1#2#3#4#5%
+%   {\ifcsname\fontclass#2#3#4#5\endcsname
+%      #1\csname\fontclass#2#3#4#5\endcsname \tryingfontfalse
+%    \fi}
+
+% \def\synchronizefont % we can have dups i.e. no need to let fontstrategy
+%   {\tryingfonttrue
+%    \ifx\fontclass\empty\else
+%      \global\let\fontstrategy\dofontclassstrategy
+%      \applyfontstrategies
+%    \fi
+%    \iftryingfont
+%      \global\let\fontstrategy\dofontstrategy
+%      \applyfontstrategies
+%    \fi
+%    \autofontsizefalse
+%    \ifskipfontcharacteristics
+%      \setfontcharacteristics
+%      \the\everyfontswitch
+%    \fi}
+
+\def\synchronizefont % we can have dups i.e. no need to let fontstrategy
   {\tryingfonttrue
-   \ifx\fontclass\empty\else
-     \global\let\fontstrategy\dofontclassstrategy
-     \the\fontstrategies \relax % \relax still needed ?
-   \fi
-   \iftryingfont
-     \global\let\fontstrategy\dofontstrategy
-     \the\fontstrategies \relax % \relax still needed ?
+   \ifx\fontclass\empty
+     \applyfontstrategies
+   \else
+     \applyfontclassstrategies
    \fi
    \autofontsizefalse
    \ifskipfontcharacteristics
@@ -2227,39 +2266,185 @@
      \the\everyfontswitch
    \fi}
 
-\def\dofontstrategy#1#2#3#4#5%
-  {\ifcsname#2#3#4#5\endcsname
-     #1\csname#2#3#4#5\endcsname \tryingfontfalse
+% \appendtoks \iftryingfont \fontstrategy \autofontsizefalse % --- --- --- --- % pt tt bf a
+%   \fontbody \fontstyle \fontalternative \fontsize
+% \fi \to \fontstrategies
+%
+% \appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- --- def % pt tt bf
+%   \fontbody \fontstyle \fontalternative \defaultfontsize
+% \fi \to \fontstrategies
+%
+% \appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- def --- % pt tt tf a
+%   \fontbody \fontstyle \defaultfontalternative \fontsize
+% \fi \to \fontstrategies
+%
+% \appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- def def % pt tt tf
+%   \fontbody \fontstyle \defaultfontalternative \defaultfontsize
+% \fi \to \fontstrategies
+%
+% \appendtoks \iftryingfont \fontstrategy \autofontsizefalse % --- def def def % pt rm tf
+%   \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
+% \fi \to \fontstrategies
+%
+% \appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % def def def def % rm tf
+%   \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
+% \fi \to \fontstrategies
+
+% \def\fontstrategiesa % --- --- --- --- % pt tt bf a
+%   {\fontstrategy \autofontsizefalse \fontbody \fontstyle \fontalternative \fontsize
+%    \iftryingfont \fontstrategiesb \fi}
+% \def\fontstrategiesb % --- --- --- def % pt tt bf
+%   {\fontstrategy \autofontsizetrue  \fontbody \fontstyle \fontalternative \defaultfontsize
+%    \iftryingfont \fontstrategiesc \fi}
+% \def\fontstrategiesc % --- --- def --- % pt tt tf a
+%   {\fontstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \fontsize
+%    \iftryingfont \fontstrategiesd \fi}
+% \def\fontstrategiesd % --- --- def def % pt tt tf
+%   {\fontstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \defaultfontsize
+%    \iftryingfont \fontstrategiese \fi}
+% \def\fontstrategiese % --- def def def % pt rm tf
+%   {\fontstrategy \autofontsizefalse \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
+%    \iftryingfont \fontstrategiesf \fi}
+% \def\fontstrategiesf % def def def def % rm tf
+%   {\fontstrategy \autofontsizetrue \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize}
+
+% \fontstrategies {\fontstrategiesa}
+% \let\applyfontstrategies\fontstrategiesa
+
+% \def\fontclassstrategiesa % --- --- --- --- % pt tt bf a
+%   {\dofontclassstrategy \autofontsizefalse \fontbody \fontstyle \fontalternative \fontsize
+%    \iftryingfont \fontclassstrategiesb \fi}
+% \def\fontclassstrategiesb % --- --- --- def % pt tt bf
+%   {\dofontclassstrategy \autofontsizetrue  \fontbody \fontstyle \fontalternative \defaultfontsize
+%    \iftryingfont \fontclassstrategiesc \fi}
+% \def\fontclassstrategiesc % --- --- def --- % pt tt tf a
+%   {\dofontclassstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \fontsize
+%    \iftryingfont \fontclassstrategiesd \fi}
+% \def\fontclassstrategiesd % --- --- def def % pt tt tf
+%   {\dofontclassstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \defaultfontsize
+%    \iftryingfont \fontclassstrategiese \fi}
+% \def\fontclassstrategiese % --- def def def % pt rm tf
+%   {\dofontclassstrategy \autofontsizefalse \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
+%    \iftryingfont \fontclassstrategiesf \fi}
+% \def\fontclassstrategiesf % def def def def % rm tf
+%   {\dofontclassstrategy \autofontsizetrue \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize}
+
+\def\fontclassstrategiesa % --- --- --- --- % pt tt bf a
+  {\ifcsname\fontclass\fontbody \fontstyle \fontalternative \fontsize\endcsname
+     \autofontsizefalse
+     \csname\fontclass\fontbody \fontstyle \fontalternative \fontsize\endcsname
+   \else
+     \expandafter\fontclassstrategiesb
    \fi}
 
-\def\dofontclassstrategy#1#2#3#4#5%
-  {\ifcsname\fontclass#2#3#4#5\endcsname
-     #1\csname\fontclass#2#3#4#5\endcsname \tryingfontfalse
+\def\fontclassstrategiesb % --- --- --- def % pt tt bf
+  {\ifcsname\fontclass\fontbody \fontstyle \fontalternative \defaultfontsize\endcsname
+     \autofontsizetrue
+     \csname\fontclass\fontbody \fontstyle \fontalternative \defaultfontsize\endcsname
+   \else
+     \expandafter\fontclassstrategiesc
    \fi}
 
-\appendtoks \iftryingfont \fontstrategy \autofontsizefalse % --- --- --- --- % pt tt bf a
-  \fontbody \fontstyle \fontalternative \fontsize
-\fi \to \fontstrategies
+\def\fontclassstrategiesc % --- --- def --- % pt tt tf a
+  {\ifcsname\fontclass\fontbody \fontstyle \defaultfontalternative \fontsize\endcsname
+     \autofontsizetrue
+     \csname\fontclass\fontbody \fontstyle \defaultfontalternative \fontsize\endcsname
+   \else
+     \expandafter\fontclassstrategiesd
+   \fi}
 
-\appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- --- def % pt tt bf
-  \fontbody \fontstyle \fontalternative \defaultfontsize
-\fi \to \fontstrategies
+\def\fontclassstrategiesd % --- --- def def % pt tt tf
+  {\ifcsname\fontclass\fontbody \fontstyle \defaultfontalternative \defaultfontsize\endcsname
+     \autofontsizetrue
+     \csname\fontclass\fontbody \fontstyle \defaultfontalternative \defaultfontsize\endcsname
+   \else
+     \expandafter\fontclassstrategiese
+   \fi}
 
-\appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- def --- % pt tt tf a
-  \fontbody \fontstyle \defaultfontalternative \fontsize
-\fi \to \fontstrategies
+\def\fontclassstrategiese % --- def def def % pt rm tf
+  {\ifcsname\fontclass\fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize\endcsname
+     \autofontsizefalse
+     \csname\fontclass\fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize\endcsname
+   \else
+     \expandafter\fontclassstrategiesf
+   \fi}
 
-\appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- def def % pt tt tf
-  \fontbody \fontstyle \defaultfontalternative \defaultfontsize
-\fi \to \fontstrategies
+\def\fontclassstrategiesf % def def def def % rm tf
+  {\ifcsname\fontclass\defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize\endcsname
+     \autofontsizetrue
+     \csname\fontclass\defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize\endcsname
+   \else
+     \expandafter\fontstrategiesa
+   \fi}
 
-\appendtoks \iftryingfont \fontstrategy \autofontsizefalse % --- def def def % pt rm tf
-  \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
-\fi \to \fontstrategies
+% no class
 
-\appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % def def def def % rm tf
-  \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
-\fi \to \fontstrategies
+% \def\fontstrategiesa % --- --- --- --- % pt tt bf a
+%   {\dofontstrategy \autofontsizefalse \fontbody \fontstyle \fontalternative \fontsize
+%    \iftryingfont \fontstrategiesb \fi}
+% \def\fontstrategiesb % --- --- --- def % pt tt bf
+%   {\dofontstrategy \autofontsizetrue  \fontbody \fontstyle \fontalternative \defaultfontsize
+%    \iftryingfont \fontstrategiesc \fi}
+% \def\fontstrategiesc % --- --- def --- % pt tt tf a
+%   {\dofontstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \fontsize
+%    \iftryingfont \fontstrategiesd \fi}
+% \def\fontstrategiesd % --- --- def def % pt tt tf
+%   {\dofontstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \defaultfontsize
+%    \iftryingfont \fontstrategiese \fi}
+% \def\fontstrategiese % --- def def def % pt rm tf
+%   {\dofontstrategy \autofontsizefalse \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
+%    \iftryingfont \fontstrategiesf \fi}
+% \def\fontstrategiesf % def def def def % rm tf
+%   {\dofontstrategy \autofontsizetrue \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize}
+
+\def\fontstrategiesa % --- --- --- --- % pt tt bf a
+  {\ifcsname\fontbody \fontstyle \fontalternative \fontsize\endcsname
+     \autofontsizefalse
+     \csname\fontbody \fontstyle \fontalternative \fontsize\endcsname
+   \else
+     \expandafter\fontstrategiesb
+   \fi}
+
+\def\fontstrategiesb % --- --- --- --- % pt tt bf a
+  {\ifcsname\fontbody \fontstyle \fontalternative \defaultfontsize\endcsname
+     \autofontsizetrue
+     \csname\fontbody \fontstyle \fontalternative \defaultfontsize\endcsname
+   \else
+     \expandafter\fontstrategiesc
+   \fi}
+
+\def\fontstrategiesc % --- --- --- --- % pt tt bf a
+  {\ifcsname\fontbody \fontstyle \defaultfontalternative \fontsize\endcsname
+     \autofontsizetrue
+     \csname\fontbody \fontstyle \defaultfontalternative \fontsize\endcsname
+   \else
+     \expandafter\fontstrategiesd
+   \fi}
+
+\def\fontstrategiesd % --- --- --- --- % pt tt bf a
+  {\ifcsname\fontbody \fontstyle \defaultfontalternative \defaultfontsize\endcsname
+     \autofontsizetrue
+     \csname\fontbody \fontstyle \defaultfontalternative \defaultfontsize\endcsname
+   \else
+     \expandafter\fontstrategiese
+   \fi}
+
+\def\fontstrategiese % --- --- --- --- % pt tt bf a
+  {\ifcsname\fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize\endcsname
+     \autofontsizefalse
+     \csname\fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize\endcsname
+   \else
+     \expandafter\fontstrategiesf
+   \fi}
+
+\def\fontstrategiesf % --- --- --- --- % pt tt bf a
+  {\ifcsname\defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize\endcsname
+     \autofontsizetrue
+     \csname\defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize\endcsname
+   \fi}
+
+\let\applyfontstrategies     \fontstrategiesa
+\let\applyfontclassstrategies\fontclassstrategiesa
 
 %D Let's synchronize:
 

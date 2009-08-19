@@ -350,14 +350,16 @@
 
 %D The next one is handy in predictable situations:
 
-\def\doiffastoptionalcheckelse
-  {\futurelet\nexttoken\dodoiffastoptionalcheckelse}
+\long\def\doiffastoptionalcheckelse#1#2%
+  {\def\nextoptionalcommandyes{#1}%
+   \def\nextoptionalcommandnop{#2}%
+   \futurelet\nexttoken\dodoiffastoptionalcheckelse}
 
 \def\dodoiffastoptionalcheckelse
   {\ifx\nexttoken\nextoptionalcharactertoken
-     \expandafter\firstoftwoarguments
+     \expandafter\nextoptionalcommandyes
    \else
-     \expandafter\secondoftwoarguments
+     \expandafter\nextoptionalcommandnop
    \fi}
 
 %D This macro uses some auxiliary macros. Although we were able

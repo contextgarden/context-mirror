@@ -690,6 +690,15 @@ function filters.generic.title(data)
     end
 end
 
+function filters.generic.text(data)
+    if data then
+        local entries = data.entries
+        if entries then
+            helpers.title(entries.text or "?",data.metadata)
+        end
+    end
+end
+
 function filters.generic.number(data) -- todo: spec and then no stopper
     if data then
         helpers.prefix(data)

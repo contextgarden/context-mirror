@@ -611,6 +611,7 @@
      \doshowfigurestate{state : figure not found (\expandedfigurename)}%
      \global\setbox\foundexternalfigure\naturalvbox
        {\doscalebox\??ef{\blackrule[\c!width=\naturalfigurewidth,\c!height=\naturalfigureheight]}}%
+     \xdef\noffigurepages{0}%
    \or
      \doshowfiguremessage8\expandedfigurename
      \doshowfigurestate{state : reusing existing figure}%
@@ -896,8 +897,8 @@
    \doresetobjects}
 
 \def\doiffigureelse#1%
-  {\getfiguredimensions[#1]%
-   \ifcase\figurewidth
+  {\getfiguredimensions[#1]% so data is available !
+   \ifdim\analyzedfigurewidth=\zeropoint % todo: \figurestatus
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments

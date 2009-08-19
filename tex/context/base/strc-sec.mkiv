@@ -145,7 +145,7 @@
 
 % deeptextcommand and deepnumbercommand are left undefined !
 
-\def\dodefineuniquestructurehead#1#2% class, parameters
+\def\dodefineuniquestructurehead#1#2% class, parent
   {\def\currentstructurehead{#1}%
    \presetlabeltext[#1=]%
    \getparameters[\??nh#1][\c!label=#1,#2]%
@@ -183,14 +183,15 @@
    \doifelse{#1}{#2}
      {\getparameters[\??nh#1][\c!label=#1]%
       \doifundefined{\??li#1}{\definelist[#1][\c!prefix=\v!no]}}%  definestructurelist ?
-     {\getparameters[\??nh#1][\s!parent=\??nh#2,\c!label=#1]%
+     {\getparameters[\??nh#1][\s!parent=\??nh#2,\c!label=#1,\c!coupling=#2]%
       \definemarking[#1][#2]%
       \definemarking[#1\v!number][#2\c!number]%
       \doifundefined{\??li#1}{\definelist[#1][#2][\c!prefix=\v!no]}}% definestructurelist ?
    \the\everystructureheadsetup}
 
 \appendtoks
-   \setstructurelevel\currentstructurehead{\structuresectionheadsection{\structuresectionheadcoupling\currentstructurehead}}%
+%    \setstructurelevel\currentstructurehead{\structuresectionheadsection{\structuresectionheadcoupling\currentstructurehead}}%
+   \setstructurelevel\currentstructurehead{\thenamedstructureheadlevel\currentstructurehead}%
    \doifelse{\structureheadparameter\c!ownnumber}\v!yes
      {\setevalue\currentstructurehead{\noexpand\dohandlestructureheadown[\currentstructurehead]}}
      {\setevalue\currentstructurehead{\noexpand\dohandlestructureheadnop[\currentstructurehead]}}%

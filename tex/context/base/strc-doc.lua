@@ -187,7 +187,9 @@ end
 function sections.somelevel(given)
     -- old number
     local numbers, ownnumbers, forced, status, olddepth = data.numbers, data.ownnumbers, data.forced, data.status, data.depth
+--~ print("old",olddepth,given.metadata.name,levelmap[given.metadata.name])
     local newdepth = tonumber(levelmap[given.metadata.name] or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
+--~ print("new",newdepth)
     local directives = given.directives
     local resetset = (directives and directives.resetset) or ""
     local resetter = sets.getall("structure:resets",data.block,resetset)

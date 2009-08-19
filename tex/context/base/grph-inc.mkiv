@@ -270,11 +270,11 @@
      \egroup
    \egroup}
 
-\def\signalexternalfigure
+\def\signalexternalfigure % global
   {\ifcase\figurestatus
-     \resetsystemmode\v!figure % todo, also: \v!resource
+     \global\resetsystemmode\v!figure % todo, also: \v!resource
    \else
-     \setsystemmode  \v!figure % todo, also: \v!resource
+     \global\setsystemmode  \v!figure % todo, also: \v!resource
    \fi}
 
 \def\startfoundexternalfigure#1#2%
@@ -345,15 +345,15 @@
 
 \def\dogetfiguredimensions[#1][#2]%
   {\startnointerference
-     \testexternalfigureonly
+     \settrue\testexternalfigureonly
      \externalfigure[#1][#2,\c!display=,\c!object=\v!no]%
    \stopnointerference}
 
 \let\getfiguredimensionsonly\getfiguredimensions
 
 \def\doiffigureelse#1%
-  {\getfiguredimensions[#1]%
-   \ifcase\figurewidth % todo: \figurestatus
+  {\getfiguredimensions[#1]% so data is available !
+   \ifdim\figurewidth=\zeropoint % todo: \figurestatus
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments

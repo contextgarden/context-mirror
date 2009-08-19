@@ -792,17 +792,17 @@
 \def\doparsetabulate
   {\futurelet\next\dodoparsetabulate}
 
-\def\dodoparsetabulate % \@EAEAEA gebruiken
-  {\ifx\next\relax
-     % exit
-   \else\ifx*\next
-     \let\next\dorepeatparsetabulate
-   \else\ifx\bgroup\next
-     \let\next\dododoparsetabulate
-   \else
-     \let\next\dodododoparsetabulate
-   \fi\fi\fi
-   \next}%
+% \def\dodoparsetabulate % \@EAEAEA gebruiken
+%   {\ifx\next\relax
+%      % exit
+%    \else\ifx*\next
+%      \let\next\dorepeatparsetabulate
+%    \else\ifx\bgroup\next
+%      \let\next\dododoparsetabulate
+%    \else
+%      \let\next\dodododoparsetabulate
+%    \fi\fi\fi
+%    \next}%
 
 \def\dorepeatparsetabulate*#1#2%
   {\dorecurse{#1}{\!!toksb\expandafter{\the\!!toksb#2}}% \dorecurse{#1}{\appendtoks#2\to\!!toksb}%
@@ -815,6 +815,14 @@
 \def\dodododoparsetabulate#1%
   {\!!toksb\expandafter{\the\!!toksb#1}% \appendtoks#1\to\!!toksb
    \doparsetabulate}
+
+\letvalue{\??tt<\meaning       *}\dorepeatparsetabulate
+\letvalue{\??tt<\meaning \bgroup}\dododoparsetabulate
+\letvalue{\??tt<\meaning  \relax}\donothing
+\letvalue{\??tt<\s!unknown      }\dodododoparsetabulate
+
+\def\dodoparsetabulate
+  {\csname\??tt<\ifcsname\??tt<\meaning\next\endcsname\meaning\next\else\s!unknown\fi\endcsname}
 
 \setvalue{\??tt:\c!split:\v!yes   }{\splittabulatetrue}
 \setvalue{\??tt:\c!split:\v!repeat}{\splittabulatetrue}
