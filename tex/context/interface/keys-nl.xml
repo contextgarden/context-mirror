@@ -78,6 +78,7 @@
 		<cd:variable name='atmargin' value='opmarge'/>
 		<cd:variable name='atpage' value='oppagina'/>
 		<cd:variable name='august' value='augustus'/>
+		<cd:variable name='author' value='auteur'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>
 		<cd:variable name='back' value='terug'/>
@@ -86,7 +87,9 @@
 		<cd:variable name='backpart' value='uitleiding'/>
 		<cd:variable name='backspace' value='rugwit'/>
 		<cd:variable name='backward' value='achteruit'/>
+		<cd:variable name='bbl' value='bbl'/>
 		<cd:variable name='before' value='voor'/>
+		<cd:variable name='bib' value='bib'/>
 		<cd:variable name='big' value='groot'/>
 		<cd:variable name='bigbodyfont' value='grootkorps'/>
 		<cd:variable name='bigpreference' value='grotevoorkeur'/>
@@ -111,6 +114,7 @@
 		<cd:variable name='chapter' value='hoofdstuk'/>
 		<cd:variable name='character' value='letter'/>
 		<cd:variable name='characters' value='letters'/>
+		<cd:variable name='cite' value='cite'/>
 		<cd:variable name='color' value='kleur'/>
 		<cd:variable name='column' value='kolom'/>
 		<cd:variable name='columns' value='kolommen'/>
@@ -389,6 +393,7 @@
 		<cd:variable name='serried' value='aanelkaar'/>
 		<cd:variable name='setups' value='instellingen'/>
 		<cd:variable name='sheet' value='sheet'/>
+		<cd:variable name='short' value='kort'/>
 		<cd:variable name='singlesided' value='enkelzijdig'/>
 		<cd:variable name='slanted' value='schuin'/>
 		<cd:variable name='slantedbold' value='schuinvet'/>
@@ -510,10 +515,18 @@
 		<cd:constant name='alignmentcharacter' value='uitlijnkarakter'/>
 		<cd:constant name='aligntitle' value='titeluitlijnen'/>
 		<cd:constant name='alternative' value='variant'/>
+		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
 		<cd:constant name='arrow' value='pijl'/>
+		<cd:constant name='artauthor' value='artauthor'/>
+		<cd:constant name='artauthoretaldisplay' value='artauthoretaldisplay'/>
+		<cd:constant name='artauthoretallimit' value='artauthoretallimit'/>
+		<cd:constant name='artauthoretaltext' value='artauthoretaltext'/>
 		<cd:constant name='at' value='op'/>
 		<cd:constant name='author' value='auteur'/>
+		<cd:constant name='authoretaldisplay' value='authoretaldisplay'/>
+		<cd:constant name='authoretallimit' value='authoretallimit'/>
+		<cd:constant name='authoretaltext' value='authoretaltext'/>
 		<cd:constant name='auto' value='auto'/>
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autofocus'/>
@@ -582,6 +595,7 @@
 		<cd:constant name='cutspace' value='snijwit'/>
 		<cd:constant name='dash' value='streep'/>
 		<cd:constant name='dat' value='dat'/>
+		<cd:constant name='database' value='database'/>
 		<cd:constant name='date' value='datum'/>
 		<cd:constant name='deepnumbercommand' value='diepnummercommando'/>
 		<cd:constant name='deeptextcommand' value='dieptekstcommando'/>
@@ -600,6 +614,10 @@
 		<cd:constant name='dy' value='dy'/>
 		<cd:constant name='edge' value='rand'/>
 		<cd:constant name='edgedistance' value='randafstand'/>
+		<cd:constant name='editor' value='editor'/>
+		<cd:constant name='editoretaldisplay' value='editoretaldisplay'/>
+		<cd:constant name='editoretallimit' value='editoretallimit'/>
+		<cd:constant name='editoretaltext' value='editoretaltext'/>
 		<cd:constant name='empty' value='leeg'/>
 		<cd:constant name='equalheight' value='equalheight'/>
 		<cd:constant name='equalwidth' value='equalwidth'/>
@@ -616,6 +634,8 @@
 		<cd:constant name='fieldoffset' value='veldoffset'/>
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
+		<cd:constant name='finalnamesep' value='finalnamesep'/>
+		<cd:constant name='firstnamesep' value='firstnamesep'/>
 		<cd:constant name='focus' value='focus'/>
 		<cd:constant name='focusin' value='focusin'/>
 		<cd:constant name='focusout' value='focusuit'/>
@@ -668,10 +688,13 @@
 		<cd:constant name='interlinespace' value='interlinie'/>
 		<cd:constant name='itemalign' value='itemuitlijnen'/>
 		<cd:constant name='items' value='items'/>
+		<cd:constant name='juniorsep' value='juniorsep'/>
 		<cd:constant name='ken' value='ken'/>
 		<cd:constant name='keyexpansion' value='sleutelexpansie'/>
 		<cd:constant name='keyword' value='trefwoord'/>
 		<cd:constant name='label' value='label'/>
+		<cd:constant name='lastnamesep' value='lastnamesep'/>
+		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='left' value='links'/>
 		<cd:constant name='leftcolor' value='linkerkleur'/>
 		<cd:constant name='leftcompoundhyphen' value='linkerkoppelteken'/>
@@ -713,6 +736,7 @@
 		<cd:constant name='max' value='max'/>
 		<cd:constant name='maxheight' value='maxhoogte'/>
 		<cd:constant name='maxwidth' value='maxbreedte'/>
+		<cd:constant name='maybeyear' value='maybeyear'/>
 		<cd:constant name='menu' value='menu'/>
 		<cd:constant name='method' value='methode'/>
 		<cd:constant name='middle' value='midden'/>
@@ -725,6 +749,7 @@
 		<cd:constant name='minwidth' value='minbreedte'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='naam'/>
+		<cd:constant name='namesep' value='namesep'/>
 		<cd:constant name='nbottom' value='nonder'/>
 		<cd:constant name='nc' value='nc'/>
 		<cd:constant name='next' value='volgende'/>
@@ -761,6 +786,7 @@
 		<cd:constant name='openpageaction' value='openpaginaactie'/>
 		<cd:constant name='option' value='optie'/>
 		<cd:constant name='orientation' value='orientatie'/>
+		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='buitenmarge'/>
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownnumber' value='eigennummer'/>
@@ -805,10 +831,12 @@
 		<cd:constant name='previous' value='vorige'/>
 		<cd:constant name='previousnumber' value='vorigenummer'/>
 		<cd:constant name='process' value='proces'/>
+		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='straal'/>
 		<cd:constant name='random' value='willekeur'/>
 		<cd:constant name='reduction' value='reductie'/>
 		<cd:constant name='ref' value='ref'/>
+		<cd:constant name='refcommand' value='refcommand'/>
 		<cd:constant name='reference' value='verwijzing'/>
 		<cd:constant name='referenceprefix' value='referenceprefix'/>
 		<cd:constant name='referencing' value='refereren'/>
@@ -842,6 +870,7 @@
 		<cd:constant name='rulethickness' value='lijndikte'/>
 		<cd:constant name='samepage' value='zelfdepagina'/>
 		<cd:constant name='sample' value='monster'/>
+		<cd:constant name='samplesize' value='samplesize'/>
 		<cd:constant name='saveinlist' value='saveinlist'/>
 		<cd:constant name='scale' value='schaal'/>
 		<cd:constant name='scope' value='scope'/>
@@ -866,6 +895,7 @@
 		<cd:constant name='sign' value='teken'/>
 		<cd:constant name='size' value='formaat'/>
 		<cd:constant name='small' value='klein'/>
+		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sortering'/>
 		<cd:constant name='source' value='bron'/>
 		<cd:constant name='space' value='spatie'/>
@@ -890,6 +920,7 @@
 		<cd:constant name='sub' value='sub'/>
 		<cd:constant name='subtitle' value='subtitel'/>
 		<cd:constant name='suffix' value='suffix'/>
+		<cd:constant name='surnamesep' value='surnamesep'/>
 		<cd:constant name='sx' value='sx'/>
 		<cd:constant name='sy' value='sy'/>
 		<cd:constant name='symalign' value='symuitlijnen'/>
@@ -929,6 +960,7 @@
 		<cd:constant name='topoffset' value='bovenoffset'/>
 		<cd:constant name='topspace' value='kopwit'/>
 		<cd:constant name='topstate' value='bovenstatus'/>
+		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='type' value='type'/>
 		<cd:constant name='unit' value='eenheid'/>
 		<cd:constant name='unknownreference' value='onbekendeverwijzing'/>
@@ -939,6 +971,7 @@
 		<cd:constant name='veroffset' value='kopoffset'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='voffset' value='voffset'/>
+		<cd:constant name='vonsep' value='vonsep'/>
 		<cd:constant name='way' value='wijze'/>
 		<cd:constant name='wfactor' value='bfactor'/>
 		<cd:constant name='white' value='wit'/>

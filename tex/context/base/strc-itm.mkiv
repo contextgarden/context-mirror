@@ -734,40 +734,50 @@
    \dorechecknextindentation}
 
 \newtoks\itemgroupcommands
+\newtoks\itemgroupfinalizer
 
 \def\itemgroupitem
-  {\doitemgroupitem}
+  {\the\itemgroupfinalizer
+   \doitemgroupitem}
 
 \def\itemgroupnoitem
-  {\doitemgroupnoitem}
+  {\the\itemgroupfinalizer
+   \doitemgroupnoitem}
 
 \def\itemgroupbutton[#1]%
-  {\gdef\doitemdestination{#1}%
+  {\the\itemgroupfinalizer
+   \gdef\doitemdestination{#1}%
    \itemgroupitem}
 
 \def\itemgroupdummy
-  {\itemgroupsymbol{\strut}\strut}
+  {\the\itemgroupfinalizer
+   \itemgroupsymbol{\strut}\strut}
 
 \def\itemgroupsubitem
-  {\settrue\sublistitem
+  {\the\itemgroupfinalizer
+   \settrue\sublistitem
    \itemgroupitem}
 
 \def\itemgroupsymbol#1%
-  {\def\symsymbol{#1}%
+  {\the\itemgroupfinalizer
+   \def\symsymbol{#1}%
    \settrue\symbollistitem
    \itemgroupitem}
 
 \def\itemgroupedge#1%
-  {\itemgroupsymbol
+  {\the\itemgroupfinalizer
+   \itemgroupsymbol
      {\calculatelistwidth\currentitemlevel
       \hbox to \itemgrouplistwidth
         {#1\hskip\getitemparameter\currentitemlevel\c!distance}}}
 
 \def\itemgrouphead
-  {\settrue\headlistitem\doitemgrouphead}
+  {\the\itemgroupfinalizer
+   \settrue\headlistitem\doitemgrouphead}
 
 \def\itemgroupitems
-  {\dosingleempty\doitemgroupitems}
+  {\the\itemgroupfinalizer
+   \dosingleempty\doitemgroupitems}
 
 \def\doitemgroupitems[#1]%
   {\itemgroupedge
@@ -775,7 +785,8 @@
       \unskip}}
 
 \def\itemgroupmargin#1%
-  {\def\marsymbol
+  {\the\itemgroupfinalizer
+   \def\marsymbol
      {\llap
         {\dosetitemattributes\currentitemlevel\c!marstyle\c!marcolor{#1}%
          \hskip\leftskip\hskip\leftmargindistance}}%
@@ -1113,6 +1124,8 @@
 
 % the next solution accepts \head test \type{x{x}x} test ...
 
+\let\doenditemhead\relax
+
 \def\complexdoitemgrouphead[#1]% beter in \complexdosom hangen met een if
   {\ifconditional\firstlistitem\else\allowitembreak\fi
    \ifconditional\packlistitem\else\itembeforeheadcommand\fi
@@ -1123,6 +1136,7 @@
      \bgroup
      \dosetitemattributes\currentitemlevel\c!headstyle\c!headcolor\empty
      \ignorespaces
+     \itemgroupfinalizer{\enditemhead}%
      \let\par\enditemhead} % brrrr but simple anyway
 
 \def\enditemhead

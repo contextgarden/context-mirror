@@ -1,4 +1,28 @@
 return {
+ ["publications"]={
+  ["files"]={ "bibl-tra.mkiv" },
+  ["title"]={
+   ["en"]="publications",
+  },
+  ["1"]={
+   ["en"]="file -- not found, unknown style ignored",
+  },
+  ["2"]={
+   ["en"]="file -- not found, waiting for bibtex",
+  },
+  ["3"]={
+   ["en"]="wrote a new auxiliary file \\jobname.aux",
+  },
+  ["4"]={
+   ["en"]="loading database from --",
+  },
+  ["5"]={
+   ["en"]="warning: cite argument -- on line \\the\\inputlineno",
+  },
+  ["6"]={
+   ["en"]="loading formatting style from --",
+  },
+ },
  ["check"]={
   ["1"]={
    ["cs"]="postradam '=' po '--' na radku --",

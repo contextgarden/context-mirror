@@ -281,8 +281,11 @@ function scripts.webserver.run(configuration)
     logs.simple("scripts subpath: %s",configuration.scripts)
     logs.simple("context services: http://localhost:%s/mtx-server-ctx-startup.lua",configuration.port)
     local server = assert(socket.bind("*", configuration.port))
+--~ local reading = { server }
     while true do -- no multiple clients
         local start = os.clock()
+--~ local input = socket.select(reading)
+--~ local client = input:accept()
         local client = server:accept()
         client:settimeout(configuration.timeout or 60)
         local request, e = client:receive()

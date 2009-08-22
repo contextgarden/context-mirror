@@ -444,6 +444,15 @@ local function identify(prefix,reference)
     for i=1,#set do
         local var = set[i]
         local special, inner, outer, arguments, operation = var.special, var.inner, var.outer, var.arguments, var.operation
+--~ local uo = urls[outer]
+--~ if uo then
+--~     special, operation, argument = "url", uo[1], inner or uo[2] -- maybe more is needed
+--~ else
+--~     local fo = files[outer]
+--~     if fo then
+--~         special, operation, argument = "file", fo[1], inner -- maybe more is needed
+--~     end
+--~ end
         if special then
             local s = specials[special]
             if s then
@@ -665,9 +674,9 @@ function jobreferences.filter(name) -- number page title ...
         local kind = data.metadata and data.metadata.kind
         if kind then
             local filter = filters[kind] or filters.generic
-            filter = filter and (filter[name] or filters.generic[name])
+            filter = filter and (filter[name] or filter.unknown or filters.generic[name] or filters.generic.unknown)
             if filter then
-                filter(data)
+                filter(data,name)
             elseif trace_referencing then
                 logs.report("referencing","no (generic) filter.name for '%s'",name)
             end
@@ -711,6 +720,27 @@ end
 
 function filters.generic.page(data,prefixspec,pagespec)
     helpers.prefixpage(data,prefixspec,pagespec)
+end
+
+filters.user = { }
+
+function filters.user.unknown(data,name)
+    if data then
+        local userdata = data.userdata
+        local userkind = userdata and userdata.kind
+        if userkind then
+            local filter = filters[userkind] or filters.generic
+            filter = filter and (filter[name] or filter.unknown)
+            if filter then
+                filter(data,name)
+                return
+            end
+        end
+        local namedata = userdata and userdata[name]
+        if namedata then
+            texsprint(ctxcatcodes,namedata)
+        end
+    end
 end
 
 filters.text = { }

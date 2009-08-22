@@ -46,6 +46,7 @@
 \let\setexecutecommandcheck\gobbletwoarguments
 
 \def\s!full{full}
+\def\s!user{user}
 \def\s!text{text}
 \def\s!page{page}
 
@@ -92,12 +93,14 @@
 \def\textreference {\dosingleargument\dotextreference}
 \def\pagereference {\dosingleargument\dopagereference}
 \def\reference     {\dosingleargument\doreference    }
+\def\setreference  {\dodoubleargument\dosetreference }
 
 %D These are implemented in a low level form as:
 
-\def\dotextreference[#1]{\dosetreference\s!text{#1}}
-\def\dopagereference[#1]{\dosetreference\s!page{#1}{}}
-\def\doreference    [#1]{\dosetreference\s!full{#1}}
+\def\dotextreference   [#1]{\dodosetreference\s!text{#1}{}}
+\def\dopagereference   [#1]{\dodosetreference\s!page{#1}{}{}}
+\def\doreference       [#1]{\dodosetreference\s!full{#1}{}}
+\def\dosetreference[#1][#2]{\dodosetreference\s!user{#1}{#2}{}}
 
 %D Actually there is not much difference between a text and a
 %D full reference, but it's the concept that counts. The low
@@ -110,8 +113,9 @@
 \def\dofinishtextreference#1#2{\normalexpanded{\ctxlatelua{jobreferences.enhance("#1","#2",{})}}}
 
 \let\dofinishpagereference\dofinishfullreference
+\let\dofinishuserreference\dofinishfullreference
 
-\def\dosetreference#1#2#3% kind labels text -> todo: userdata
+\def\dodosetreference#1#2#3#4% kind labels userdata text -> todo: userdata
   {\ifreferencing
      \edef\currentreferencekind{#1}%
      \edef\currentreferencelabels{#2}%
@@ -119,14 +123,14 @@
      \ifx\currentreferencelabels\empty \else
        \ifx\currentreferenceexpansion\s!xml
          \xmlstartraw
-           \xdef\currentreferencetext{#3}%
+           \xdef\currentreferencedata{#4}% data, no text else conflict
          \xmlstopraw
          \globallet\currentreferencecoding\s!xml
        \else
          \ifx\currentreferenceexpansion\v!yes
-           \xdef\currentreferencetext{#3}%
+           \xdef\currentreferencedata{#4}%
          \else
-           \xdef\currentreferencetext{\detokenize{#3}}%
+           \xdef\currentreferencedata{\detokenize{#4}}%
          \fi
          \globallet\currentreferencecoding\s!tex
        \fi
@@ -144,9 +148,12 @@
                     catcodes = \the\catcodetable,
                     xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
                 },
-                entries = {
-                    text = \!!bs\currentreferencetext\!!es
-                }
+                \ifx\currentreferencedata\empty\else
+                    entries = {
+                        text = \!!bs\currentreferencedata\!!es
+                    },
+                \fi
+                userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
             })
        }%
        \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
@@ -733,6 +740,8 @@
 \def\currentreferencetext    {\ctxlua{jobreferences.filter("text")}}
 \def\currentreferencerealpage{\ctxlua{jobreferences.realpage()}}
 
+\def\getreferenceentry#1{\ctxlua{jobreferences.filter("#1")}} % user entry
+
 \unexpanded\def\dospecialabout[#1]%
   {\dontleavehmode
    \begingroup
@@ -1239,7 +1248,7 @@
   {\dosingleempty\dodospecialfrom}
 
 \def\dodospecialfrom[#1]%
-  {\dontleavehmode\goto{\ctxlua{jobreferences.from("#1")}}[url(#1)]}
+  {\dontleavehmode\goto{\ctxlua{jobreferences.from("#1")}}[fileorurl(#1)]}
 
 %D We also support:
 %D

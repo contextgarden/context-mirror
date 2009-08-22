@@ -4997,6 +4997,8 @@
           <cd:constant type="local"/>
           <cd:constant type="previous"/>
           <cd:constant type="current"/>
+          <cd:constant type="here"/>
+          <cd:constant type="intro"/>
           <cd:constant type="all"/>
         </cd:parameter>
         <cd:parameter name="pageboundaries">

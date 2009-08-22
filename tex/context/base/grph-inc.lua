@@ -291,7 +291,8 @@ do
     end
     -- maybe move texsprint to tex
     function figures.get(category,tag,default)
-        local value = figuredata[category][tag]
+        local value = figuredata[category]
+        value = value and value[tag]
         if not value or value == "" or value == true then
             return default or ""
         else
@@ -299,6 +300,7 @@ do
         end
     end
     function figures.tprint(category,tag,default)
+--~ print("!!!!!!!!",category,tag,default)
         texsprint(ctxcatcodes,figures.get(category,tag,default))
     end
     function figures.current()

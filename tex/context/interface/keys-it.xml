@@ -78,6 +78,7 @@
 		<cd:variable name='atmargin' value='almargine'/>
 		<cd:variable name='atpage' value='apagina'/>
 		<cd:variable name='august' value='agosto'/>
+		<cd:variable name='author' value='autore'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>
 		<cd:variable name='back' value='dietro'/>
@@ -86,7 +87,9 @@
 		<cd:variable name='backpart' value='postfazione'/>
 		<cd:variable name='backspace' value='backspace'/>
 		<cd:variable name='backward' value='indietro'/>
+		<cd:variable name='bbl' value='bbl'/>
 		<cd:variable name='before' value='prima'/>
+		<cd:variable name='bib' value='bib'/>
 		<cd:variable name='big' value='grande'/>
 		<cd:variable name='bigbodyfont' value='grossofontdeltesto'/>
 		<cd:variable name='bigpreference' value='grandepreferenza'/>
@@ -111,6 +114,7 @@
 		<cd:variable name='chapter' value='capitolo'/>
 		<cd:variable name='character' value='lettera'/>
 		<cd:variable name='characters' value='lettere'/>
+		<cd:variable name='cite' value='cite'/>
 		<cd:variable name='color' value='colore'/>
 		<cd:variable name='column' value='colonna'/>
 		<cd:variable name='columns' value='colonne'/>
@@ -389,6 +393,7 @@
 		<cd:variable name='serried' value='vicino'/>
 		<cd:variable name='setups' value='nastaveni'/>
 		<cd:variable name='sheet' value='sheet'/>
+		<cd:variable name='short' value='short'/>
 		<cd:variable name='singlesided' value='facciasingola'/>
 		<cd:variable name='slanted' value='inclinato'/>
 		<cd:variable name='slantedbold' value='inclinatograssetto'/>
@@ -510,10 +515,18 @@
 		<cd:constant name='alignmentcharacter' value='carattereallineamento'/>
 		<cd:constant name='aligntitle' value='allineatitolo'/>
 		<cd:constant name='alternative' value='alternativa'/>
+		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
 		<cd:constant name='arrow' value='freccia'/>
+		<cd:constant name='artauthor' value='artauthor'/>
+		<cd:constant name='artauthoretaldisplay' value='artauthoretaldisplay'/>
+		<cd:constant name='artauthoretallimit' value='artauthoretallimit'/>
+		<cd:constant name='artauthoretaltext' value='artauthoretaltext'/>
 		<cd:constant name='at' value='ad'/>
 		<cd:constant name='author' value='autore'/>
+		<cd:constant name='authoretaldisplay' value='authoretaldisplay'/>
+		<cd:constant name='authoretallimit' value='authoretallimit'/>
+		<cd:constant name='authoretaltext' value='authoretaltext'/>
 		<cd:constant name='auto' value='auto'/>
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autofocus'/>
@@ -582,6 +595,7 @@
 		<cd:constant name='cutspace' value='cutspace'/>
 		<cd:constant name='dash' value='dash'/>
 		<cd:constant name='dat' value='dat'/>
+		<cd:constant name='database' value='database'/>
 		<cd:constant name='date' value='data'/>
 		<cd:constant name='deepnumbercommand' value='deepnumbercommand'/>
 		<cd:constant name='deeptextcommand' value='deeptextcommand'/>
@@ -600,6 +614,10 @@
 		<cd:constant name='dy' value='dy'/>
 		<cd:constant name='edge' value='bordo'/>
 		<cd:constant name='edgedistance' value='distanzabordo'/>
+		<cd:constant name='editor' value='editor'/>
+		<cd:constant name='editoretaldisplay' value='editoretaldisplay'/>
+		<cd:constant name='editoretallimit' value='editoretallimit'/>
+		<cd:constant name='editoretaltext' value='editoretaltext'/>
 		<cd:constant name='empty' value='vuoto'/>
 		<cd:constant name='equalheight' value='equalheight'/>
 		<cd:constant name='equalwidth' value='equalwidth'/>
@@ -616,6 +634,8 @@
 		<cd:constant name='fieldoffset' value='offsetcampo'/>
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
+		<cd:constant name='finalnamesep' value='finalnamesep'/>
+		<cd:constant name='firstnamesep' value='firstnamesep'/>
 		<cd:constant name='focus' value='focus'/>
 		<cd:constant name='focusin' value='focusin'/>
 		<cd:constant name='focusout' value='focusout'/>
@@ -668,10 +688,13 @@
 		<cd:constant name='interlinespace' value='interlinea'/>
 		<cd:constant name='itemalign' value='itemalign'/>
 		<cd:constant name='items' value='elementi'/>
+		<cd:constant name='juniorsep' value='juniorsep'/>
 		<cd:constant name='ken' value='ken'/>
 		<cd:constant name='keyexpansion' value='keyexpansion'/>
 		<cd:constant name='keyword' value='parolachiave'/>
 		<cd:constant name='label' value='etichetta'/>
+		<cd:constant name='lastnamesep' value='lastnamesep'/>
+		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='left' value='sinistra'/>
 		<cd:constant name='leftcolor' value='coloresinistra'/>
 		<cd:constant name='leftcompoundhyphen' value='leftcompoundhyphen'/>
@@ -713,6 +736,7 @@
 		<cd:constant name='max' value='max'/>
 		<cd:constant name='maxheight' value='altezzamax'/>
 		<cd:constant name='maxwidth' value='ampiezzamax'/>
+		<cd:constant name='maybeyear' value='maybeyear'/>
 		<cd:constant name='menu' value='menu'/>
 		<cd:constant name='method' value='metodo'/>
 		<cd:constant name='middle' value='centro'/>
@@ -725,6 +749,7 @@
 		<cd:constant name='minwidth' value='ampiezzamin'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='nome'/>
+		<cd:constant name='namesep' value='namesep'/>
 		<cd:constant name='nbottom' value='nfondo'/>
 		<cd:constant name='nc' value='nc'/>
 		<cd:constant name='next' value='successivo'/>
@@ -761,6 +786,7 @@
 		<cd:constant name='openpageaction' value='azioneapripagina'/>
 		<cd:constant name='option' value='opzione'/>
 		<cd:constant name='orientation' value='orientation'/>
+		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='margineesterno'/>
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownnumber' value='numeroproprio'/>
@@ -805,10 +831,12 @@
 		<cd:constant name='previous' value='precedente'/>
 		<cd:constant name='previousnumber' value='numeroprecedente'/>
 		<cd:constant name='process' value='process'/>
+		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='raggio'/>
 		<cd:constant name='random' value='casuale'/>
 		<cd:constant name='reduction' value='riduzione'/>
 		<cd:constant name='ref' value='ref'/>
+		<cd:constant name='refcommand' value='refcommand'/>
 		<cd:constant name='reference' value='riferimento'/>
 		<cd:constant name='referenceprefix' value='referenceprefix'/>
 		<cd:constant name='referencing' value='referencing'/>
@@ -842,6 +870,7 @@
 		<cd:constant name='rulethickness' value='spessorelinea'/>
 		<cd:constant name='samepage' value='stessapagina'/>
 		<cd:constant name='sample' value='campione'/>
+		<cd:constant name='samplesize' value='samplesize'/>
 		<cd:constant name='saveinlist' value='saveinlist'/>
 		<cd:constant name='scale' value='scala'/>
 		<cd:constant name='scope' value='scope'/>
@@ -866,6 +895,7 @@
 		<cd:constant name='sign' value='segno'/>
 		<cd:constant name='size' value='dimensione'/>
 		<cd:constant name='small' value='piccolo'/>
+		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>
 		<cd:constant name='source' value='origine'/>
 		<cd:constant name='space' value='spazio'/>
@@ -890,6 +920,7 @@
 		<cd:constant name='sub' value='sotto'/>
 		<cd:constant name='subtitle' value='sottotitolo'/>
 		<cd:constant name='suffix' value='suffix'/>
+		<cd:constant name='surnamesep' value='surnamesep'/>
 		<cd:constant name='sx' value='sx'/>
 		<cd:constant name='sy' value='sy'/>
 		<cd:constant name='symalign' value='symallinea'/>
@@ -929,6 +960,7 @@
 		<cd:constant name='topoffset' value='offsetcima'/>
 		<cd:constant name='topspace' value='spaziocima'/>
 		<cd:constant name='topstate' value='statocima'/>
+		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='type' value='type'/>
 		<cd:constant name='unit' value='unita'/>
 		<cd:constant name='unknownreference' value='riferimentoingoto'/>
@@ -939,6 +971,7 @@
 		<cd:constant name='veroffset' value='veroffset'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='voffset' value='voffset'/>
+		<cd:constant name='vonsep' value='vonsep'/>
 		<cd:constant name='way' value='modo'/>
 		<cd:constant name='wfactor' value='wfactor'/>
 		<cd:constant name='white' value='bianco'/>

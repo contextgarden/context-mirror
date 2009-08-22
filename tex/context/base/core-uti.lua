@@ -195,7 +195,7 @@ local packlist = {
     "pagedata",
     "directives",
     "specification",
---~     "references",
+    "references",
 }
 
 local jobpacker = packer.new(packlist,1.01)

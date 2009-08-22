@@ -141,7 +141,16 @@ local function filter_collected(names, criterium, number, collected)
             hash[s] = true
         end
     end
-    if criterium == variables.all or criterium == variables.text then
+    if criterium == variables.intro then
+        -- special case, no structure yet
+        for i=1,#collected do
+            local v = collected[i]
+            local r = v.references
+            if r and r.section == 0 then
+                result[#result+1] = v
+            end
+        end
+    elseif criterium == variables.all or criterium == variables.text then
         for i=1,#collected do
             local v = collected[i]
             local r = v.references
@@ -156,26 +165,30 @@ local function filter_collected(names, criterium, number, collected)
             end
         end
     elseif criterium == variables.current then
-        for i=1,#collected do
-            local v = collected[i]
-            local r = v.references
-            if r then
-                local sectionnumber = jobsections.collected[r.section]
-                if sectionnumber then -- and not sectionnumber.hidenumber then
-                    local cnumbers = sectionnumber.numbers
-                    local metadata = v.metadata
-                    if cnumbers then
-                        if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers > depth then
-                            local ok = true
-                            for d=1,depth do
-                                local cnd = cnumbers[d]
-                                if not (cnd == 0 or cnd == numbers[d]) then
-                                    ok = false
-                                    break
+        if depth == 0 then
+            return filter_collected(names,variables.intro,number,collected)
+        else
+            for i=1,#collected do
+                local v = collected[i]
+                local r = v.references
+                if r then
+                    local sectionnumber = jobsections.collected[r.section]
+                    if sectionnumber then -- and not sectionnumber.hidenumber then
+                        local cnumbers = sectionnumber.numbers
+                        local metadata = v.metadata
+                        if cnumbers then
+                            if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers > depth then
+                                local ok = true
+                                for d=1,depth do
+                                    local cnd = cnumbers[d]
+                                    if not (cnd == 0 or cnd == numbers[d]) then
+                                        ok = false
+                                        break
+                                    end
                                 end
-                            end
-                            if ok then
-                                result[#result+1] = v
+                                if ok then
+                                    result[#result+1] = v
+                                end
                             end
                         end
                     end
@@ -183,26 +196,30 @@ local function filter_collected(names, criterium, number, collected)
             end
         end
     elseif criterium == variables.here then
-        for i=1,#collected do
-            local v = collected[i]
-            local r = v.references
-            if r then
-                local sectionnumber = jobsections.collected[r.section]
-                if sectionnumber then -- and not sectionnumber.hidenumber then
-                    local cnumbers = sectionnumber.numbers
-                    local metadata = v.metadata
-                    if cnumbers then
-                        if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth then
-                            local ok = true
-                            for d=1,depth do
-                                local cnd = cnumbers[d]
-                                if not (cnd == 0 or cnd == numbers[d]) then
-                                    ok = false
-                                    break
+        if depth == 0 then
+            return filter_collected(names,variables.intro,number,collected)
+        else
+            for i=1,#collected do
+                local v = collected[i]
+                local r = v.references
+                if r then
+                    local sectionnumber = jobsections.collected[r.section]
+                    if sectionnumber then -- and not sectionnumber.hidenumber then
+                        local cnumbers = sectionnumber.numbers
+                        local metadata = v.metadata
+                        if cnumbers then
+                            if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth then
+                                local ok = true
+                                for d=1,depth do
+                                    local cnd = cnumbers[d]
+                                    if not (cnd == 0 or cnd == numbers[d]) then
+                                        ok = false
+                                        break
+                                    end
                                 end
-                            end
-                            if ok then
-                                result[#result+1] = v
+                                if ok then
+                                    result[#result+1] = v
+                                end
                             end
                         end
                     end
@@ -210,26 +227,30 @@ local function filter_collected(names, criterium, number, collected)
             end
         end
     elseif criterium == variables.previous then
-        for i=1,#collected do
-            local v = collected[i]
-            local r = v.references
-            if r then
-                local sectionnumber = jobsections.collected[r.section]
-                if sectionnumber then -- and not sectionnumber.hidenumber then
-                    local cnumbers = sectionnumber.numbers
-                    local metadata = v.metadata
-                    if cnumbers then
-                        if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth then
-                            local ok = true
-                            for d=1,depth-1 do
-                                local cnd = cnumbers[d]
-                                if not (cnd == 0 or cnd == numbers[d]) then
-                                    ok = false
-                                    break
+        if depth == 0 then
+            return filter_collected(names,variables.intro,number,collected)
+        else
+            for i=1,#collected do
+                local v = collected[i]
+                local r = v.references
+                if r then
+                    local sectionnumber = jobsections.collected[r.section]
+                    if sectionnumber then -- and not sectionnumber.hidenumber then
+                        local cnumbers = sectionnumber.numbers
+                        local metadata = v.metadata
+                        if cnumbers then
+                            if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth then
+                                local ok = true
+                                for d=1,depth-1 do
+                                    local cnd = cnumbers[d]
+                                    if not (cnd == 0 or cnd == numbers[d]) then
+                                        ok = false
+                                        break
+                                    end
                                 end
-                            end
-                            if ok then
-                                result[#result+1] = v
+                                if ok then
+                                    result[#result+1] = v
+                                end
                             end
                         end
                     end

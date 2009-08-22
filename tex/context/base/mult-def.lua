@@ -6532,6 +6532,87 @@ return {
   },
  },
  ["constants"]={
+  ["database"]={
+   ["en"]="database"
+  },
+  ["artauthor"]={
+   ["en"]="artauthor"
+  },
+  ["editor"]={
+   ["en"]="editor"
+  },
+  ["authoretallimit"]={
+   ["en"]="authoretallimit"
+  },
+  ["artauthoretallimit"]={
+   ["en"]="artauthoretallimit"
+  },
+  ["editoretallimit"]={
+   ["en"]="editoretallimit"
+  },
+  ["authoretaldisplay"]={
+   ["en"]="authoretaldisplay"
+  },
+  ["artauthoretaldisplay"]={
+   ["en"]="artauthoretaldisplay"
+  },
+  ["editoretaldisplay"]={
+   ["en"]="editoretaldisplay"
+  },
+  ["authoretaltext"]={
+   ["en"]="authoretaltext"
+  },
+  ["artauthoretaltext"]={
+   ["en"]="artauthoretaltext"
+  },
+  ["editoretaltext"]={
+   ["en"]="editoretaltext"
+  },
+  ["otherstext"]={
+   ["en"]="otherstext"
+  },
+  ["andtext"]={
+   ["en"]="andtext"
+  },
+  ["totalnumber"]={
+   ["en"]="totalnumber"
+  },
+  ["firstnamesep"]={
+   ["en"]="firstnamesep"
+  },
+  ["vonsep"]={
+   ["en"]="vonsep"
+  },
+  ["juniorsep"]={
+   ["en"]="juniorsep"
+  },
+  ["surnamesep"]={
+   ["en"]="surnamesep"
+  },
+  ["lastnamesep"]={
+   ["en"]="lastnamesep"
+  },
+  ["finalnamesep"]={
+   ["en"]="finalnamesep"
+  },
+  ["namesep"]={
+   ["en"]="namesep"
+  },
+  ["pubsep"]={
+   ["en"]="pubsep"
+  },
+  ["lastpubsep"]={
+   ["en"]="lastpubsep"
+  },
+  ["refcommand"]={
+   ["en"]="refcommand"
+  },
+  ["samplesize"]={
+   ["en"]="samplesize"
+  },
+  ["maybeyear"]={
+   ["en"]="maybeyear"
+  },
   ["action"]={
    ["cs"]="akce",
    ["de"]="aktion",
@@ -9891,6 +9972,9 @@ return {
    ["pe"]="کوچک",
    ["ro"]="mic",
   },
+  ["sort"]={
+   ["en"]="sort",
+  },
   ["sorttype"]={
    ["cs"]="sorttype",
    ["de"]="sorttype",
@@ -11045,6 +11129,33 @@ return {
   },
  },
  ["variables"]={
+  ["short"]={
+   ["nl"]="kort",
+   ["en"]="short",
+   ["de"]="kurz",
+   ["cs"]="short",
+   ["it"]="short",
+   ["ro"]="short",
+   ["fr"]="short",
+  },
+  ["cite"]={
+   ["en"]="cite",
+  },
+  ["bbl"]={
+   ["en"]="bbl",
+  },
+  ["bib"]={
+   ["en"]="bib",
+  },
+  ["author"]={
+   ["nl"]="auteur",
+   ["en"]="author",
+   ["de"]="autor",
+   ["cs"]="autor",
+   ["it"]="autore",
+   ["ro"]="autor",
+   ["fr"]="auteur",
+  },
   ["Addition"]={
    ["cs"]="Pridavek",
    ["de"]="Zusatz",

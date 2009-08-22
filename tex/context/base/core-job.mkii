@@ -203,6 +203,11 @@
      \expandafter\finalend
    \fi}
 
+\def\forcequitjob#1%
+  {\writestatus\m!systems{forcing quit: #1}%
+   \batchmode
+   \dorecurse\textlevel\stoptext
+   \normalend}
 
 \let\autostoptext\relax
 

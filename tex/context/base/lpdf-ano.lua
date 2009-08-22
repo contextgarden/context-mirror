@@ -337,7 +337,7 @@ end
 function specials.url(var,actions)
     local url = var.operation
     if url then
-        local u = jobreferences.urls[url]
+        local u = jobreferences.urls.data[url]
         if u then
             local u, f = u[1], u[2]
             if f and f ~= "" then
@@ -353,12 +353,33 @@ end
 function specials.file(var,actions)
     local file = var.operation
     if file then
-        local f = jobreferences.files[file]
+        local f = jobreferences.files.data[file]
         if f then
             file = f[1] or file
         end
     end
     return link(nil,file,var.arguments,nil,actions)
+end
+
+function specials.fileorurl(var,actions)
+    local whatever, url, file = var.operation, nil, nil
+    if whatever then
+        local w = jobreferences.files.data[whatever]
+        if w then
+            file = w[1]
+        else
+            w = jobreferences.urls.data[whatever]
+            if w then
+                local u, f = w[1], w[2]
+                if f and f ~= "" then
+                    url = u .. "/" .. f
+                else
+                    url = u
+                end
+            end
+        end
+    end
+    return link(url,file,var.arguments,nil,actions)
 end
 
 function specials.program(var,content)

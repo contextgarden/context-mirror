@@ -355,11 +355,11 @@
      \utilitydonetrue  \setsystemmode  \v!list
    \fi}
 
-\def\systemsuppliedchapter {\getvalue{\v!chapter}} % brrr
-\def\systemsuppliedtitle   {\getvalue{\v!title}}   % brrr
+\unexpanded\def\systemsuppliedchapter {\getvalue{\v!chapter}} % brrr
+\unexpanded\def\systemsuppliedtitle   {\getvalue{\v!title}}   % brrr
 
 \def\dodocompletelist[#1][#2][#3]%  enkelvoud, meervoud, instellingen
-  {\normalexpanded{\noexpand\systemsuppliedtitle[#2]{\noexpand\headtext{#2}}}% expansion needed for v! vs french !
+  {\normalexpanded{\systemsuppliedtitle[#2]{\noexpand\headtext{#2}}}% expansion needed for v! vs french !
    \doplacelist[#1][#3]}
 
 \def\docompletelist[#1][#2]%
@@ -850,7 +850,7 @@
    \dosetlistmode}
 
 \def\docompletecombinedlist[#1][#2]%
-  {\normalexpanded{\noexpand\systemsuppliedtitle[#1]{\noexpand\headtext{#1}}}% expansion due to v! vs french !
+  {\normalexpanded{\systemsuppliedtitle[#1]{\noexpand\headtext{#1}}}% expansion due to v! vs french !
    \doplacecombinedlist[#1][#2]}
 
 % lists that have a number/title are kind of generic and can share code
