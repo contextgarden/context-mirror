@@ -337,11 +337,12 @@
    \normalexpanded{\noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}}%
    \currentstructuresynchronize}
 
-\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
-\def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
+\unexpanded\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
 
-\unexpanded\def\fullstructureheadtitle
-  {\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}
+% \def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
+% \unexpanded\def\fullstructureheadtitle{\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}
+
+\unexpanded\def\fullstructureheadtitle{\ctxlua{structure.sections.title()}}
 
 \let\currentstructurehead        \empty
 \let\currentstructureheadcoupling\empty
@@ -361,6 +362,8 @@
       \c!marking=,
       \c!list=,
       \c!expansion=\structureheadparameter\c!expansion,
+      \c!xmlsetup=\structureheadparameter\c!xmlsetup,
+      \s!catcodes=\structureheadparameter\s!catcodes,
       \c!sectionresetset=\structureheadparameter\c!sectionresetset,
       \c!sectionseparatorset=\structureheadparameter\c!sectionseparatorset,
       \c!sectionconversionset=\structureheadparameter\c!sectionconversionset,

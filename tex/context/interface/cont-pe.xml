@@ -4763,6 +4763,10 @@
           <cd:constant type="بله"/>
           <cd:constant type="نه"/>
         </cd:parameter>
+        <cd:parameter name="export">
+          <cd:constant type="بله"/>
+          <cd:constant type="نه"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -4997,6 +5001,8 @@
           <cd:constant type="موضعی"/>
           <cd:constant type="قبلی"/>
           <cd:constant type="جاری"/>
+          <cd:constant type="اینجا"/>
+          <cd:constant type="پیشگفتار"/>
           <cd:constant type="همه"/>
         </cd:parameter>
         <cd:parameter name="مرزهای‌صفحه">

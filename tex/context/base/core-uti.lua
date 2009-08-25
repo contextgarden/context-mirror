@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['core-uti'] = {
     version   = 1.001,
-    comment   = "companion to core-uti.tex",
+    comment   = "companion to core-uti.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -38,8 +38,6 @@ function job.comment(str)
 end
 
 job.comment(format("version: %1.2f",jobs.version))
-
-job._save_, job._load_ = { }, { }
 
 function job.initialize(loadname,savename)
     job.load(loadname)
@@ -185,7 +183,6 @@ function packer.strip(p)
     p.hash = nil
 end
 
-
 local packlist = {
     "numbers",
     "metadata",
@@ -195,12 +192,14 @@ local packlist = {
     "pagedata",
     "directives",
     "specification",
-    "references",
+--  "references", -- we need to rename of them as only one packs (not structure.lists.references)
 }
 
 local jobpacker = packer.new(packlist,1.01)
 
 job.pack = true
+
+job._save_, job._load_ = { }, { } -- registers timing
 
 function job.save(filename)
     statistics.starttiming(job._save_)
@@ -246,7 +245,7 @@ function job.load(filename)
             for l=1,#savelist do
                 local list = savelist[l]
                 local target, initializer = list[1], list[3]
-                    packer.unpack(aux.accesstable(target),job.packer,true)
+                packer.unpack(aux.accesstable(target),job.packer,true)
                 if type(initializer) == "function" then
                     initializer(aux.accesstable(target))
                 end

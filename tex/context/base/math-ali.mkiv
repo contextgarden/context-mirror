@@ -610,14 +610,14 @@
   {\dodoubleempty\dodefinemathmatrix}
 
 \def\dodefinemathmatrix[#1]% [#2]%
-  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
-   \setvalue{\e!stop #1}{\dostopmathmatrix}%
+  {\unexpanded\setvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
+   \unexpanded\setvalue{\e!stop #1}{\dostopmathmatrix}%
    \setupmathmatrix[#1]}% [#2]
 
 \definemathmatrix[matrix]
 \definemathmatrix[\v!mathmatrix]
 
-\def\dodomatrixNC
+\unexpanded\def\dodomatrixNC
   {\gdef\domatrixNC{\endmath&}}
 
 \def\installmathmatrixhandler#1#2%

@@ -163,6 +163,7 @@
 %D \item All constants, variables, message etc.\ are now in the core.
 %D \item Added: method=local|global (when global, previous shown entries are
 %D       not shown again.
+%D \item Added: state=start for initial loading.
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -326,12 +327,13 @@
 
 %D \macros{usepublications}
 %D
-%D We need \type{\usereferences} so that it is possible to
-%D refer to page and/or appearance number for publications
-%D in the other document.
+%D After discussing it with Thomas Schmitz it became clear that using external
+%D references makes no sense as one needs to refer to it in special ways and
+%D because similar numbers can be confusing. So, for the moment this is not
+%D supported in \MKIV. (So no: see reference [3-5,9] in "some other document")
 
 \def\usepublications[#1]%
-  {\usereferences[#1]\processcommalist[#1]\dousepublications}
+  {\processcommalist[#1]\dousepublications}
 
 \def\dousepublications#1%
   {\doonlyonce{#1.\f!bibextension}
@@ -436,7 +438,7 @@
   {\bibdoifelse\@@pb@month
      {#1\doifnumberelse\@@pb@month
        {\doifconversiondefinedelse\@@pbmonthconversion
-          {\convertnumber\@@pbmonthconversion{\@@pb@month}}{\@@pb@month}}%
+          {\convertnumber\@@pbmonthconversion\@@pb@month}{\@@pb@month}}%
           {\@@pb@month}#2}%
      {#3}}
 
@@ -884,27 +886,28 @@
 % we'll define proper handlers later
 
 \def\doplacepublicationindeed#1%
-  {\global\advance\bibtexcounter\plusone
-   \def\currentpublicationkey{#1}%
-   \ctxlua{bibtex.hacks.registerplaced("#1")}%
-   \dodolistelement
-     {pubs}%
-     {}%
-     {\number\bibtexcounter}%
-     {\expanded{\reference[\bibrefprefix#1]{\number\bibtexcounter}}%
-      \strut\dotypesetapublication{#1}\strut}%
-     {}%
-     {}}
+  {\doifbibreferencefoundelse{#1}
+     {\global\advance\bibtexcounter\plusone
+      \def\currentpublicationkey{#1}%
+      \ctxlua{bibtex.hacks.registerplaced("#1")}%
+      \dodolistelement
+        {pubs}%
+        {}%
+        {\number\bibtexcounter}%
+        {\expanded{\reference[\bibrefprefix#1]{\number\bibtexcounter}}%
+         \strut\dotypesetapublication{#1}\strut}%
+        {}%
+        {}}
+     {}} % invalid
 
 \def\dotypesetapublication#1%
   {\bgroup
    \def\@@currentalternative{:l:}%
    \presetbibvariables
    \let\biblanguage\empty
-   \ignorespaces\bibgetvard{#1}%
-   %\ifcsname pbdt-#1\endcsname
-     \bibalternative{\bibgetvart{#1}}%
-   %\fi
+   \ignorespaces
+   \bibgetvard{#1}%
+   \bibalternative{\bibgetvart{#1}}%
    \egroup}
 
 %D An few afterthoughts:
@@ -1484,15 +1487,22 @@
 
 %D And some defaults are loaded from bibl-apa:
 
+\def\c!monthconversion{monthconversion} % todo
+
 \setuppublications
-  [\v!month\v!conversion=, % hm, will become \c!monthconversion
+  [\c!state=\v!stop,
+   \c!monthconversion=,
    \c!alternative=apa,
    \c!method=\v!global,
    \c!refcommand=num,
    \c!numbercommand=\bibleftnumber]
 
-\def\preloadbiblist{\dousepublications\jobname}
+\def\preloadbiblist
+  {\doif\@@pbstate\v!start
+     {\globallet\preloadbiblist\relax
+      \dousepublications\jobname}}
 
+\appendtoks \preloadbiblist \to \everysetuppublications
 \appendtoks \preloadbiblist \to \everystarttext
 
 \protect \endinput

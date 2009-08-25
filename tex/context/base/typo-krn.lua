@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['typo-krn'] = {
     version   = 1.001,
-    comment   = "companion to typo-krn.tex",
+    comment   = "companion to typo-krn.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

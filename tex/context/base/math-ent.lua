@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['math-ent'] = {
     version   = 1.001,
-    comment   = "companion to math-ini.tex",
+    comment   = "companion to math-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "derived from the mathml 2.0 specification",
 }

@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['lxml-ini'] = {
     version   = 1.001,
-    comment   = "companion to lxml-ini.tex",
+    comment   = "companion to lxml-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['lxml-ini'] = {
 
 local utf = unicode.utf8
 
-local texsprint, texprint, utfchar = tex.sprint or print, tex.print or print, utf.char
+local texsprint, texprint, texwrite, utfchar = tex.sprint or print, tex.print or print, tex.write or print, utf.char
 local format, concat, insert, remove = string.format, table.concat, table.insert, table.remove
 local type, next, tonumber = type, next, tonumber
 
@@ -18,6 +18,7 @@ local vrbcatcodes = tex.vrbcatcodes
 
 local trace_setups  = false  trackers.register("lxml.setups",  function(v) trace_setups  = v end)
 local trace_loading = false  trackers.register("lxml.loading", function(v) trace_loading = v end)
+local trace_access  = false  trackers.register("lxml.access",  function(v) trace_access  = v end)
 
 -- for the moment here
 
@@ -76,8 +77,86 @@ local stack  = lxml.stack
 
 lxml.self = myself -- be backward compatible for a while
 
+--~ local function get_id(id)
+--~     return (type(id) == "table" and id) or loaded[id] or myself[tonumber(id)] -- no need for tonumber if we pass without ""
+--~ end
+
+-- experiment
+
+local currentdocuments, currentloaded, currentdocument, defaultdocument = { }, { }, "", ""
+
+function lxml.pushdocument(name) -- catches double names
+    if #currentdocuments == 0 then
+        defaultdocument = name
+    end
+    currentdocument = name
+    insert(currentdocuments,currentdocument)
+    insert(currentloaded,loaded[currentdocument])
+    if trace_access then
+        logs.report("lxml","pushed: %s",currentdocument)
+    end
+end
+
+function lxml.popdocument()
+    currentdocument = remove(currentdocuments)
+    if not currentdocument or currentdocument == "" then
+        currentdocument = defaultdocument
+    end
+    loaded[currentdocument] = remove(currentloaded)
+    if trace_access then
+        logs.report("lxml","popped: %s",currentdocument)
+    end
+end
+
+--~ local splitter = lpeg.splitat("::")
+local splitter = lpeg.C((1-lpeg.P(":"))^1) * lpeg.P("::") * lpeg.C(lpeg.P(1)^1)
+
 local function get_id(id)
-    return (type(id) == "table" and id) or loaded[id] or myself[tonumber(id)] -- no need for tonumber if we pass without ""
+    if type(id) == "table" then
+        return id
+    else
+        local lid = loaded[id]
+        if lid then
+            return lid
+        else
+            local d, i = splitter:match(id)
+            if d then
+                local ld = loaded[d]
+                if ld then
+                    local ldi = ld.index
+                    if ldi then
+                        local root = ldi[tonumber(i)]
+                        if root then
+                            return root
+                        elseif trace_access then
+                            logs.report("lxml","'%s' has no index entry '%s'",d,i)
+                        end
+                    elseif trace_access then
+                        logs.report("lxml","'%s' has no index",d)
+                    end
+                elseif trace_access then
+                    logs.report("lxml","'%s' is not loaded",d)
+                end
+            else
+                local ld = loaded[currentdocument]
+                if ld then
+                    local ldi = ld.index
+                    if ldi then
+                        local root = ldi[tonumber(id)]
+                        if root then
+                            return root
+                        elseif trace_access then
+                            logs.report("lxml","current document '%s' has no index entry '%s'",currentdocument,id)
+                        end
+                    elseif trace_access then
+                        logs.report("lxml","current document '%s' has no index",currentdocument)
+                    end
+                elseif trace_access then
+                    logs.report("lxml","current document '%s' not loaded",currentdocument)
+                end
+            end
+        end
+    end
 end
 
 lxml.id = get_id
@@ -348,7 +427,7 @@ function lxml.load(id,filename)
     lxml.n = lxml.n + 1
     filename = commands.preparedfile(filename)
     if trace_loading then
-        commands.writestatus("lxml","loading file: %s",filename)
+        commands.writestatus("lxml","loading file '%s' as '%s'",filename,id)
     end
     loaded[id] = xml.load(filename)
     return loaded[id], filename
@@ -602,9 +681,10 @@ function xml.command(root, command)
     local tc = type(command)
     if tc == "string" then
         -- setup
-        local n = #myself + 1
-        myself[n] = root
-        texsprint(ctxcatcodes,format("\\xmlsetup{%i}{%s}",n,command))
+--~         local n = #myself + 1
+--~         myself[n] = root
+--~         texsprint(ctxcatcodes,format("\\xmlsetup{%i}{%s}",n,command))
+        texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",root.ix,command))
     elseif tc == "function" then
         -- function
         command(root)
@@ -740,9 +820,10 @@ local function command(root,pattern,cmd) -- met zonder ''
         -- this can become pretty large
         local m = (d and d[k]) or r -- brrr this r, maybe away
         if type(m) == "table" then -- probably a bug
-            local n = #myself + 1
-            myself[n] = m
-            texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",n,cmd))
+--~             local n = #myself + 1
+--~             myself[n] = m
+--~             texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",n,cmd))
+            texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",tostring(m.ix),cmd))
         end
     end)
 end
@@ -1099,6 +1180,96 @@ function lxml.removesetup(document,setup)
         end
     end
 end
+
+-- rather new, indexed storage (backward refs), maybe i will merge this
+
+function lxml.addindex(name,check_sum)
+    local root = get_id(name)
+    if root and not root.index then -- weird, only called once
+        local index, maxindex, check = { }, 0, { }
+        local function nest(root)
+            local dt = root.dt
+            maxindex = maxindex + 1
+            root.ix = maxindex -- no needed if we don't want to test (extend)
+            check[maxindex] = root.tg
+            index[maxindex] = root
+            if dt then
+                for k=1,#dt do
+                    local dk = dt[k]
+                    if type(dk) == "table" then
+                        nest(dk)
+                    end
+                end
+            end
+        end
+        nest(root)
+        --
+        if type(name) ~= "string" then
+            name = "unknown"
+        end
+        --
+        if check_sum then
+            local tag = format("lxml:%s:checksum",name)
+            local oldchecksum = jobvariables.collected[tag]
+            local newchecksum = md5.HEX(concat(check,".")) -- maybe no "." needed
+            jobvariables.tobesaved[tag] = newchecksum
+            --
+            if oldchecksum and oldchecksum ~= "" and oldchecksum ~= newchecksum then
+                root.index = { }
+                root.maxindex = 0
+                root.checksum = newchecksum
+                commands.writestatus("lxml",format("checksum mismatch for %s (extra run needed)",tostring(name)))
+            else
+                root.index = index
+                root.maxindex = maxindex
+                root.checksum = newchecksum
+                commands.writestatus("lxml",format("checksum match for %s: %s",tostring(name),newchecksum))
+            end
+        else
+            root.index = index
+            root.maxindex = maxindex
+        end
+    end
+end
+
+-- we can share the index
+
+function lxml.checkindex(name)
+    local root = get_id(name)
+--~     if root then
+--~         local index = root.index
+--~         if not index then
+--~             lxml.addindex(name,jobvariables.collected[tag])
+--~             index = root.index
+--~         end
+--~         return index
+--~     end
+    return root.index
+end
+
+function lxml.withindex(name,n,command)
+--~     local index = lxml.checkindex(name)
+--~     if index then
+--~         local root = index[n]
+--~         if root then
+            -- lxml.command ...
+--~             local m = #myself + 1
+--~             myself[m] = root
+--~             texsprint(ctxcatcodes,format("\\xmlsetup{%i}{%s}",m,command))
+            texsprint(ctxcatcodes,format("\\xmlsetup{%s::%s}{%s}",name,n,command))
+--~         end
+--~     end
+end
+
+function lxml.getindex(name,n)
+--~     local index = lxml.checkindex(name)
+--~     if index then
+--~         texwrite(myself[n].ix or 0)
+--~     end
+    texsprint(ctxcatcodes,format("%s::%s",name,n))
+end
+
+--
 
 local found, isempty = xml.found, xml.isempty
 

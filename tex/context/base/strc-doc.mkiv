@@ -17,6 +17,8 @@
 
 \unprotect
 
+\def\c!xmlsetup{xmlsetup}
+
 % We operate in a \type {@@ns} namespace. All data is passed through
 % variables. Of course we can built another interface on top of this
 % that accepts multiple arguments. We might change this approach and
@@ -39,6 +41,7 @@
    \c!sectionstopper=,\c!sectionsegments=,
    \c!sectionresetset=,\c!reference=,
    \c!expansion=\v!no,
+   \c!xmlsetup=,
    \s!catcodes=,
    \c!saveinlist=\v!yes,
    \c!command=\showstructuredata]
@@ -54,24 +57,19 @@
    \xdef\currentstructurecoupling {\structureparameter\c!coupling}%
    \xdef\currentstructureownnumber{\structureparameter\c!ownnumber}% optional own number
    \xdef\currentstructurelevel    {\structureparameter\c!level}%
-\ifnum\catcodetable=\xmlcatcodes
-   \let\currentstructureexpansion\s!xml
-\else
-   \edef\currentstructureexpansion{\structureparameter\c!expansion}
-\fi
+   \edef\currentstructureexpansion{\structureparameter\c!expansion}%
+   \xdef\currentstructurexmlsetup {\structureparameter\c!xmlsetup}%
+   \xdef\currentstructurecatcodes {\structureparameter\s!catcodes}%
    \ifx\currentstructureexpansion\s!xml
-     % maybe just title xml and inherit xml then in which case we have to test
-     % when typesetting marks, lists, refs etc (+specific env)
-     \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%    maybe xml
-     \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}% no xml
-     \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%  no xml
-     \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%     no xml
+     \xmlstartraw
+       \xdef\currentstructuretitle   {\structureparameter\c!title}%
+       \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
+       \xdef\currentstructuremarking {\structureparameter\c!marking}%
+       \xdef\currentstructurelist    {\structureparameter\c!list}%
+     \xmlstopraw
      \ifx\currentstructurelist\empty
-       \xmlstartraw
-         \xdef\currentstructurelist{\structureparameter\c!title}%
-       \xmlstopraw
+       \globallet\currentstructurelist\currentstructuretitle
      \fi
-     %
      \globallet\currentstructurecoding\s!xml
    \else
      \ifx\currentstructureexpansion\v!yes
@@ -115,17 +113,22 @@
                 resetset   = "\structureparameter\c!sectionresetset",
             },
             metadata = {
-                kind     = "section",
-                name     = "\currentstructurename",
-                catcodes = \the\catcodetable,
-                coding   = "\currentstructurecoding",
-                xmlroot  = \ifx\currentstructurecoding\s!xml "\xmldocument" \else nil \fi,
-                \ifx\currentstructuresaveinlist\v!no
-                    nolist = true,
-                \fi
-                \ifx\currentstructureincrementnumber\v!yes
-                    increment = "\currentstructureincrementnumber",
-                \fi
+                kind      = "section",
+                name      = "\currentstructurename",
+                catcodes  = \the\ifx\currentstructurecatcodes\empty\catcodetable\else\csname\currentstructurecatcodes\endcsname\fi,
+                coding    = "\currentstructurecoding",
+            \ifx\currentstructurecoding\s!xml
+                xmlroot   =  "\xmldocument",
+            \fi
+            \ifx\currentstructurexmlsetup\empty \else
+                xmlsetup  = "\currentstructurexmlsetup",
+            \fi
+            \ifx\currentstructuresaveinlist\v!no
+                nolist    = true,
+            \fi
+            \ifx\currentstructureincrementnumber\v!yes
+                increment = "\currentstructureincrementnumber",
+            \fi
             },
             titledata = { % we can add mark and reference
                 label    = \!!bs\detokenize\expandafter{\currentstructurelabel    }\!!es,
@@ -143,8 +146,10 @@
             \fi
             },
             numberdata = {
-block         = "\currentstructureblock",
-hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
+                % needed ?
+                block         = "\currentstructureblock",
+                hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
+                % so far
                 separatorset  = "\structureparameter\c!sectionseparatorset",
                 conversion    = "\structureparameter\c!sectionconversion", % for good old times sake
                 conversionset = "\structureparameter\c!sectionconversionset",

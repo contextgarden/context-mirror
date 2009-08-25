@@ -4763,6 +4763,10 @@
           <cd:constant type="si"/>
           <cd:constant type="no"/>
         </cd:parameter>
+        <cd:parameter name="export">
+          <cd:constant type="si"/>
+          <cd:constant type="no"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -4997,6 +5001,8 @@
           <cd:constant type="locale"/>
           <cd:constant type="precedente"/>
           <cd:constant type="corrente"/>
+          <cd:constant type="qui"/>
+          <cd:constant type="intro"/>
           <cd:constant type="tutti"/>
         </cd:parameter>
         <cd:parameter name="limitipagina">

@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['char-map'] = {
     version   = 1.001,
-    comment   = "companion to char-ini.tex",
+    comment   = "companion to char-ini.mkiv",
     author    = "Hans Hagen & Arthur Reutenauer",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

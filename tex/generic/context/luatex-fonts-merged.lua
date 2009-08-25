@@ -1,12 +1,12 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 08/22/09 18:36:59
+-- merge date  : 08/26/09 01:45:51
 
 do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['l-string'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -244,7 +244,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['l-lpeg'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -351,7 +351,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['l-boolean'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -411,7 +411,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['l-math'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -457,7 +457,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['l-table'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1277,7 +1277,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['l-file'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1540,7 +1540,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['l-io'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1797,7 +1797,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['data-con'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1924,7 +1924,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['node-ini'] = {
     version   = 1.001,
-    comment   = "companion to node-ini.tex",
+    comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2161,7 +2161,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['node-res'] = {
     version   = 1.001,
-    comment   = "companion to node-ini.tex",
+    comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2284,7 +2284,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['node-inj'] = {
     version   = 1.001,
-    comment   = "companion to node-ini.tex",
+    comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2455,6 +2455,7 @@ end
 function nodes.inject_kerns(head,where,keep)
     local has_marks, has_cursives, has_kerns = next(marks), next(cursives), next(kerns)
     if has_marks or has_cursives then
+--~     if true  then
         if trace_injections then
             nodes.trace_injection(head)
         end
@@ -2474,7 +2475,7 @@ function nodes.inject_kerns(head,where,keep)
                     if k then
                         local kk = kerns[k]
                         if kk then
-                            local x, y, w, h = kk[2], kk[3], kk[4], kk[5]
+                            local x, y, w, h = kk[2] or 0, kk[3] or 0, kk[4] or 0, kk[5] or 0
                             local dy = y - h
                             if dy ~= 0 then
                                 ky[n] = dy
@@ -2621,12 +2622,21 @@ function nodes.inject_kerns(head,where,keep)
                     local rl, x, w = k[1], k[2] or 0, k[4] or 0
                     local wx = w - x
                     if rl < 0 then
+--~ if false then
                         if wx ~= 0 then
                             insert_node_before(head,n,newkern(wx))
                         end
                         if x ~= 0 then
                             insert_node_after (head,n,newkern(x))
                         end
+--~ else
+--~     if wx ~= 0 then
+--~         insert_node_after(head,n,newkern(wx))
+--~     end
+--~     if x ~= 0 then
+--~         insert_node_before(head,n,newkern(x))
+--~     end
+--~ end
                     else
                     --  if wx ~= 0 then
                     --      insert_node_after(head,n,newkern(wx))
@@ -2660,35 +2670,46 @@ function nodes.inject_kerns(head,where,keep)
         if trace_injections then
             nodes.trace_injection(head)
         end
-        -- we assume done is true because there are kerns
-        for n in traverse_id(glyph,head) do
-            local k = has_attribute(n,kernpair)
-            if k then
-                local kk = kerns[k]
-                if kk then
-                 -- only w can be nil, can be sped up when w == nil
-                    local rl, x, y, w = kk[1], kk[2] or 0, kk[3] or 0, kk[4] or 0
-                    if y ~= 0 then
-                        n.yoffset = y -- todo: h ?
-                    end
-                    local wx = w - x
-                    if rl < 0 then
-                        if wx ~= 0 then
-                            insert_node_before(head,n,newkern(wx))
+        local n = head
+        while n do
+            local id = n.id
+            if id == glyph then
+                local k = has_attribute(n,kernpair)
+                if k then
+                    local kk = kerns[k]
+                    if kk then
+                        local rl, x, y, w = kk[1], kk[2] or 0, kk[3], kk[4]
+                        if y and y ~= 0 then
+                            n.yoffset = y -- todo: h ?
                         end
-                        if x ~= 0 then
-                            insert_node_after (head,n,newkern(x))
-                        end
-                    else
-                    --  if wx ~= 0 then
-                    --      insert_node_after(head,n,newkern(wx))
-                    --  end
-                        if x ~= 0 then
-                            insert_node_before(head,n,newkern(x))
+                        if w then
+                            -- gpospair kerns
+                            local wx = w - x
+                            if rl < 0 then
+                                if wx ~= 0 then
+                                    head, _ = insert_node_before(head,n,newkern(wx))
+                                end
+                                if x ~= 0 then
+                                    head, n = insert_node_after(head,n,newkern(x))
+                                end
+                            else
+                            --  if wx ~= 0 then
+                            --      head, n =  insert_node_after(head,n,newkern(wx))
+                            --  end
+                                if x ~= 0 then
+                                    head, _ = insert_node_before(head,n,newkern(x))
+                                end
+                            end
+                        else
+                            -- simple (e.g. kernclass kerns)
+                            if x ~= 0 then
+                                head, _ = insert_node_before(head,n,newkern(x))
+                            end
                         end
                     end
                 end
             end
+            n = n.next
         end
         if not keep then
             kerns = { }
@@ -2700,13 +2721,52 @@ function nodes.inject_kerns(head,where,keep)
     return head, false
 end
 
+--~         for n in traverse_id(glyph,head) do
+--~             local k = has_attribute(n,kernpair)
+--~             if k then
+--~                 local kk = kerns[k]
+--~                 if kk then
+--~                  -- only w can be nil, can be sped up when w == nil
+--~                     local rl, x, y, w = kk[1], kk[2] or 0, kk[3] or 0, kk[4] or 0
+--~                     if y ~= 0 then
+--~                         n.yoffset = y -- todo: h ?
+--~                     end
+--~                     local wx = w - x
+--~                     if rl < 0 then
+--~ if false then
+--~                         if wx ~= 0 then
+--~                             insert_node_before(head,n,newkern(wx))
+--~                         end
+--~                         if x ~= 0 then
+--~                             insert_node_after (head,n,newkern(x))
+--~                         end
+--~ else
+--~     if wx ~= 0 then
+--~         insert_node_after(head,n,newkern(wx))
+--~     end
+--~     if x ~= 0 then
+--~         insert_node_before(head,n,newkern(x))
+--~     end
+--~ end
+--~                     else
+--~                     --  if wx ~= 0 then
+--~                     --      insert_node_after(head,n,newkern(wx))
+--~                     --  end
+--~                         if x ~= 0 then
+--~                             insert_node_before(head,n,newkern(x))
+--~                         end
+--~                     end
+--~                 end
+--~             end
+--~         end
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['node-fnt'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2941,7 +3001,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-ini'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -3043,7 +3103,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-tfm'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -4982,7 +5042,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-otf'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -6593,7 +6653,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-otd'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -6676,7 +6736,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-oti'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -6738,7 +6798,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-otb'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -7114,7 +7174,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-otn'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -9746,7 +9806,8 @@ local isol_fina = {
     [0x06D3] = true, [0x06D5] = true, [0x06EE] = true, [0x06EF] = true,
     [0x0759] = true, [0x075A] = true, [0x075B] = true, [0x076B] = true,
     [0x076C] = true, [0x0771] = true, [0x0773] = true, [0x0774] = true,
-    [0x0778] = true, [0x0779] = true,
+	[0x0778] = true, [0x0779] = true, [0xFEF5] = true, [0xFEF7] = true,
+	[0xFEF9] = true, [0xFEFB] = true,
 }
 
 local isol_fina_medi_init = {
@@ -10183,7 +10244,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-def'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -10787,7 +10848,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-xtx'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -10907,7 +10968,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules = { } end modules ['font-map'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

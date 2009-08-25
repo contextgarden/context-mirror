@@ -1,12 +1,12 @@
 if not modules then modules = { } end modules ['strc-ref'] = {
     version   = 1.001,
-    comment   = "companion to strc-ref.tex",
+    comment   = "companion to strc-ref.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
-local format, find, gmatch, match = string.format, string.find, string.gmatch, string.match
+local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
 local texsprint, texwrite, texcount = tex.sprint, tex.write, tex.count
 
 local trace_referencing = false  trackers.register("structure.referencing", function(v) trace_referencing = v end)
@@ -18,20 +18,25 @@ local constants   = interfaces.constants
 -- beware, this is a first step in the rewrite (just getting rid of
 -- the tuo file); later all access and parsing will also move to lua
 
+-- the useddata and pagedata names might change
+-- todo: pack exported data
+
 jobreferences           = jobreferences or { }
 jobreferences.tobesaved = jobreferences.tobesaved or { }
 jobreferences.collected = jobreferences.collected or { }
-jobreferences.documents = jobreferences.documents or { }
 jobreferences.defined   = jobreferences.defined   or { } -- indirect ones
 jobreferences.derived   = jobreferences.derived   or { } -- taken from lists
 jobreferences.specials  = jobreferences.specials  or { } -- system references
 jobreferences.runners   = jobreferences.runners   or { }
 jobreferences.internals = jobreferences.internals or { }
+jobreferences.exporters = jobreferences.exporters or { }
+jobreferences.imported  = jobreferences.imported  or { }
 
 storage.register("jobreferences/defined", jobreferences.defined, "jobreferences.defined")
 
 local tobesaved, collected = jobreferences.tobesaved, jobreferences.collected
-local defined, derived, specials, runners = jobreferences.defined, jobreferences.derived, jobreferences.specials, jobreferences.runners
+local defined, derived, specials = jobreferences.defined, jobreferences.derived, jobreferences.specials
+local exporters, runners = jobreferences.exporters, jobreferences.runners
 
 local currentreference = nil
 
@@ -74,9 +79,9 @@ function jobreferences.set(kind,prefix,tag,data)
     end
 end
 
-function jobreferences.setandgetattribute(kind,prefix,tag,data) -- maybe do internal automatically here
+function jobreferences.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
     jobreferences.set(kind,prefix,tag,data)
-    texcount.lastdestinationattribute = jobreferences.setinternalreference(prefix,tag) or -0x7FFFFFFF
+    texcount.lastdestinationattribute = jobreferences.setinternalreference(prefix,tag,nil,view) or -0x7FFFFFFF
 end
 
 function jobreferences.enhance(prefix,tag,spec)
@@ -147,7 +152,7 @@ function jobreferences.resolvers.section(var)
     local vi = structure.lists.collected[var.i[2]]
     if vi then
         var.i = vi
-        var.r = (vi.references and vi.references.realpage) or 1
+        var.r = (vi.references and vi.references.realpage) or (vi.pagedata and vi.pagedata.realpage) or 1
     else
         var.i = nil
         var.r = 1
@@ -163,7 +168,7 @@ function jobreferences.resolvers.reference(var)
     local vi = var.i[2]
     if vi then
         var.i = vi
-        var.r = (vi.references and vi.references.realpage) or 1
+        var.r = (vi.references and vi.references.realpage) or (vi.pagedata and vi.pagedata.realpage) or 1
     else
         var.i = nil
         var.r = 1
@@ -180,10 +185,10 @@ local function register_from_lists(collected,derived)
                 local kind, realpage = m.kind, r.realpage
                 if kind and realpage then
                     local d = derived[prefix] if not d then d = { } derived[prefix] = d end
---~                     d[reference] = { kind, i }
-for s in gmatch(reference,"[^,]+") do
-                    d[s] = { kind, i }
-end
+                --~ d[reference] = { kind, i }
+                    for s in gmatch(reference,"[^,]+") do
+                        d[s] = { kind, i }
+                    end
                 end
             end
         end
@@ -263,7 +268,7 @@ function jobreferences.whatfrom(name)
     texsprint(ctxcatcodes,(urls[name] and variables.url) or (files[name] and variables.file) or variables.unknown)
 end
 
-function jobreferences.from(name,method,space)
+function jobreferences.from(name)
     local u = urls[name]
     if u then
         local url, file, description = u[1], u[2], u[3]
@@ -274,7 +279,7 @@ function jobreferences.from(name,method,space)
         else
             description = url
         end
-        texsprint(ctxcatcodes,description)
+        texsprint(ctxcatcodes,format("\\dofromurl{%s}",description))
     else
         local f = files[name]
         if f then
@@ -284,50 +289,160 @@ function jobreferences.from(name,method,space)
             else
                 description = file
             end
-            texsprint(ctxcatcodes,description)
+            texsprint(ctxcatcodes,format("\\dofromfile{%s}",description))
         end
     end
 end
 
-function jobreferences.load(name)
-    if name then
-        local jdn = jobreferences.documents[name]
+-- export
+
+exporters.references = exporters.references or { }
+exporters.lists      = exporters.lists      or { }
+
+function exporters.references.generic(data)
+    local useddata = {}
+    local entries, userdata = data.entries, data.userdata
+    if entries then
+        for k, v in next, entries do
+            useddata[k] = v
+        end
+    end
+    if userdata then
+        for k, v in next, userdata do
+            useddata[k] = v
+        end
+    end
+    return useddata
+end
+
+function exporters.lists.generic(data)
+    local useddata = { }
+    local titledata, numberdata = data.titledata, data.numberdata
+    if titledata then
+        useddata.title = titledata.title
+    end
+    if numberdata then
+        local numbers = numberdata.numbers
+        local t = { }
+        for i=1,#numbers do
+            local n = numbers[i]
+            if n ~= 0 then
+                t[#t+1] = n
+            end
+        end
+        useddata.number = concat(t,".")
+    end
+    return useddata
+end
+
+local function referencer(data)
+    local references = data.references
+    local realpage = references.realpage
+    local numberdata = jobpages.tobesaved[realpage]
+    local specification = numberdata.specification
+    return {
+        realpage = references.realpage,
+        number = numberdata.number,
+        conversion = specification.conversion,
+     -- prefix = only makes sense when bywhatever
+    }
+end
+
+function jobreferences.export(usedname)
+    local exported = { }
+    local e_references, e_lists = exporters.references, exporters.lists
+    local g_references, g_lists = e_references.generic, e_lists.generic
+    -- todo: pagenumbers
+    -- todo: some packing
+    for prefix, references in next, jobreferences.tobesaved do
+        local pe = exported[prefix] if not pe then pe = { } exported[prefix] = pe end
+        for key, data in next, references do
+            local metadata = data.metadata
+            local exporter = e_references[metadata.kind] or g_references
+            if exporter then
+                pe[key] = {
+                    metadata = {
+                        kind = metadata.kind,
+                        catcodes = metadata.catcodes,
+                        coding = metadata.coding, -- we can omit "tex"
+                    },
+                    useddata = exporter(data),
+                    pagedata = referencer(data),
+                }
+            end
+        end
+    end
+    local pe = exported[""] if not pe then pe = { } exported[""] = pe end
+    for n, data in next, structure.lists.tobesaved do
+        local metadata = data.metadata
+        local exporter = e_lists[metadata.kind] or g_lists
+        if exporter then
+            local result = {
+                metadata = {
+                    kind = metadata.kind,
+                    catcodes = metadata.catcodes,
+                    coding = metadata.coding, -- we can omit "tex"
+                },
+                useddata = exporter(data),
+                pagedata = referencer(data),
+            }
+            for key in gmatch(data.references.reference,"[^,]+") do
+                pe[key] = result
+            end
+        end
+    end
+    local e = {
+        references = exported,
+        version = 1.00,
+    }
+    io.savedata(file.replacesuffix(usedname or tex.jobname,"tue"),table.serialize(e,true))
+end
+
+function jobreferences.import(usedname)
+    if usedname then
+        local imported = jobreferences.imported
+        local jdn = imported[usedname]
         if not jdn then
-            jdn = { }
-            local fn = files[name]
-            if fn then
-                jdn.filename = fn[1]
-                local data = io.loaddata(file.replacesuffix(fn[1],"tuc")) or ""
-                if data ~= "" then
-                    -- quick and dirty, assume sane { } usage inside strings
-                    local lists = data:match("structure%.lists%.collected=({.-[\n\r]+})[\n\r]")
-                    if lists and lists ~= "" then
-                        lists = loadstring("return" .. lists)
-                        if lists then
-                            jdn.lists = lists()
-                            jdn.derived = { }
-                            register_from_lists(jdn.lists,jdn.derived)
-                        else
-                            commands.writestatus("error","invalid structure data in %s",filename)
-                        end
-                    end
-                    local references = data:match("jobreferences%.collected=({.-[\n\r]+})[\n\r]")
-                    if references and references ~= "" then
-                        references = loadstring("return" .. references)
-                        if references then
-                            jdn.references = references()
-                        else
-                            commands.writestatus("error","invalid reference data in %s",filename)
-                        end
-                    end
+            local filename = files[usedname]
+            if filename then -- only registered files
+                filename = filename[1]
+            else
+                filename = usedname
+            end
+            local data = io.loaddata(file.replacesuffix(filename,"tue")) or ""
+            if data == "" then
+                interfaces.showmessage("references",24,filename)
+                data = nil
+            else
+                data = loadstring(data)
+                if data then
+                    data = data()
+                end
+                if data then
+                    -- version check
+                end
+                if not data then
+                    interfaces.showmessage("references",25,filename)
                 end
             end
-            jobreferences.documents[name] = jdn
+            if data then
+                interfaces.showmessage("references",26,filename)
+                jdn = data
+                jdn.filename = filename
+            else
+                jdn = { filename = filename, references = { }, version = 1.00 }
+            end
+            imported[usedname] = jdn
+            imported[filename] = jdn
         end
         return jdn
     else
         return nil
     end
+end
+
+function jobreferences.load(usedname)
+    -- gone
 end
 
 function jobreferences.define(prefix,reference,list)
@@ -480,17 +595,37 @@ local function identify(prefix,reference)
                 var.error = "unknown special"
             end
         elseif outer then
-            local e = jobreferences.load(outer)
+            local e = jobreferences.import(outer)
             if e then
-                local f = e.filename
-                if f then
-                    if inner then
-                        local r = e.references
+                if inner then
+                    local r = e.references
+                    if r then
+                        r = r[prefix]
+                        if r then
+                            r = r[inner]
+                            if r then
+                                if arguments then
+                                    -- outer::inner{argument}
+                                    var.kind = "outer with inner with arguments"
+                                else
+                                    -- outer::inner
+                                    var.kind = "outer with inner"
+                                end
+                                var.i = { "reference", r }
+                                jobreferences.resolvers.reference(var)
+                                var.f = f
+                                var.e = true -- external
+                            end
+                        end
+                    end
+                    if not r then
+                        r = e.derived
                         if r then
                             r = r[prefix]
                             if r then
                                 r = r[inner]
                                 if r then
+                                    -- outer::inner
                                     if arguments then
                                         -- outer::inner{argument}
                                         var.kind = "outer with inner with arguments"
@@ -498,63 +633,39 @@ local function identify(prefix,reference)
                                         -- outer::inner
                                         var.kind = "outer with inner"
                                     end
-                                    var.i = { "reference", r }
-                                    jobreferences.resolvers.reference(var)
+                                    var.i = r
+                                    jobreferences.resolvers[r[1]](var)
                                     var.f = f
                                 end
                             end
                         end
-                        if not r then
-                            r = e.derived
-                            if r then
-                                r = r[prefix]
-                                if r then
-                                    r = r[inner]
-                                    if r then
-                                        -- outer::inner
-                                        if arguments then
-                                            -- outer::inner{argument}
-                                            var.kind = "outer with inner with arguments"
-                                        else
-                                            -- outer::inner
-                                            var.kind = "outer with inner"
-                                        end
-                                        var.i = r
-                                        jobreferences.resolvers[r[1]](var)
-                                        var.f = f
-                                    end
-                                end
-                            end
-                        end
-                        if not r then
-                            var.error = "unknown outer"
-                        end
-                    elseif special then
-                        local s = specials[special]
-                        if s then
-                            if operation then
-                                if arguments then
-                                    -- outer::special(operation{argument,argument})
-                                    var.kind = "outer with special and operation and arguments"
-                                else
-                                    -- outer::special(operation)
-                                    var.kind = "outer with special and operation"
-                                end
+                    end
+                    if not r then
+                        var.error = "unknown outer"
+                    end
+                elseif special then
+                    local s = specials[special]
+                    if s then
+                        if operation then
+                            if arguments then
+                                -- outer::special(operation{argument,argument})
+                                var.kind = "outer with special and operation and arguments"
                             else
-                                -- outer::special()
-                                var.kind = "outer with special"
+                                -- outer::special(operation)
+                                var.kind = "outer with special and operation"
                             end
-                            var.f = f
                         else
-                            var.error = "unknown outer with special"
+                            -- outer::special()
+                            var.kind = "outer with special"
                         end
-                    else
-                        -- outer::
-                        var.kind = "outer"
                         var.f = f
+                    else
+                        var.error = "unknown outer with special"
                     end
                 else
-                    var.error = "unknown outer"
+                    -- outer::
+                    var.kind = "outer"
+                    var.f = f
                 end
             else
                 var.error = "unknown outer"
@@ -692,7 +803,7 @@ filters.generic = { }
 
 function filters.generic.title(data)
     if data then
-        local titledata = data.titledata
+        local titledata = data.titledata or data.useddata
         if titledata then
             helpers.title(titledata.title or "?",data.metadata)
         end
@@ -701,7 +812,7 @@ end
 
 function filters.generic.text(data)
     if data then
-        local entries = data.entries
+        local entries = data.entries or data.useddata
         if entries then
             helpers.title(entries.text or "?",data.metadata)
         end
@@ -710,16 +821,35 @@ end
 
 function filters.generic.number(data) -- todo: spec and then no stopper
     if data then
-        helpers.prefix(data)
         local numberdata = data.numberdata
         if numberdata then
+            helpers.prefix(data)
             sections.typesetnumber(numberdata,"number",numberdata or false)
+        else
+            local useddata = data.useddata
+            if useddata and useddsta.number then
+                tex.sprint(tex.ctxcatcodes,useddata.number)
+            end
         end
     end
 end
 
+filters.generic.default = filters.generic.text
+
 function filters.generic.page(data,prefixspec,pagespec)
-    helpers.prefixpage(data,prefixspec,pagespec)
+    local pagedata = data.pagedata
+    if pagedata then -- imported
+        local number, conversion = pagedata.number, pagedata.conversion
+        if not number then
+            -- error
+        elseif conversion then
+            tex.sprint(tex.ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+        else
+            tex.sprint(tex.ctxcatcodes,number)
+        end
+    else
+        helpers.prefixpage(data,prefixspec,pagespec)
+    end
 end
 
 filters.user = { }
@@ -761,17 +891,23 @@ end
 
 filters.section = { }
 
-filters.section.title  = filters.generic.title
-filters.section.page   = filters.generic.page
-
 function filters.section.number(data) -- todo: spec and then no stopper
     if data then
         local numberdata = data.numberdata
         if numberdata then
             sections.typesetnumber(numberdata,"number",numberdata or false)
+        else
+            local useddata = data.useddata
+            if useddata and useddata.number then
+                tex.sprint(tex.ctxcatcodes,useddata.number)
+            end
         end
     end
 end
+
+filters.section.title   = filters.generic.title
+filters.section.page    = filters.generic.page
+filters.section.default = filters.section.number
 
 --~ filters.float = { }
 

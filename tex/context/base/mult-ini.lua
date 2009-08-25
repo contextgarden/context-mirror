@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['mult-ini'] = {
     version   = 1.001,
-    comment   = "companion to mult-ini.tex",
+    comment   = "companion to mult-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -45,7 +45,7 @@ local messagesplitter = lpeg.splitat(",")
 
 function interfaces.makemessage(category,tag,arguments)
     local m = messages[category]
-    m = (m and m[tag] ) or format("unknown message, category '%s', tag '%s'",category,tag)
+    m = (m and (m[tag] or m[tostring(tag)])) or format("unknown message, category '%s', tag '%s'",category,tag)
     if not m then
         return m .. " " .. tag
     elseif not arguments then

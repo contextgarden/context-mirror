@@ -1,13 +1,12 @@
 if not modules then modules = { } end modules ['strc-ini'] = {
     version   = 1.001,
-    comment   = "companion to strc-ini.tex",
+    comment   = "companion to strc-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
 --[[
-
 The restructuring is the (intermediate) result of quite some experiments. I started
 with the basic structure, followed by lists, numbers, enumerations, itemgroups
 and floats. All these have something in common, like pagenumbers and section
@@ -25,7 +24,7 @@ local format, concat, match = string.format, table.concat, string.match
 local count, texwrite, texprint, texsprint = tex.count, tex.write, tex.print, tex.sprint
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 
-local ctxcatcodes = tex.ctxcatcodes
+local ctxcatcodes, xmlcatcodes = tex.ctxcatcodes, 11 -- tex.xmlcatcodes
 
 -- move this
 
@@ -150,16 +149,28 @@ function helpers.merged(...)
     return t
 end
 
-local tag = "ctx:tocentry"
+local tags = {
+    generic = "ctx:genericentry",
+    section = "ctx:sectionentry",
+    entry   = "ctx:registerentry",
+}
 
 function helpers.title(title,metadata)
     if title and title ~= "" then
         if metadata then
             if metadata.coding == "xml" then
+                tag = tags[metadata.kind] or tags.generic
                 buffers.set(tag,format("<?xml version='1.0'?><%s>%s</%s>",tag,title,tag))
                 texsprint(ctxcatcodes,format("\\xmlprocessbuffer{%s}{%s}{}",metadata.xmlroot or "main",tag))
+            elseif metadata.xmlsetup then
+                texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",title,metadata.xmlsetup)) -- nasty
             else
-                texsprint(metadata.catcodes,title)
+                local catcodes = metadata.catcodes
+                if catcodes == xmlcatcodes then
+                    texsprint(ctxcatcodes,title) -- nasty
+                else
+                    texsprint(catcodes,title)
+                end
             end
         else
             texsprint(title) -- no catcode switch

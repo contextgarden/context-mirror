@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['lpdf-nod'] = {
     version   = 1.001,
-    comment   = "companion to lpdf-ini.tex",
+    comment   = "companion to lpdf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -20,7 +20,7 @@ local views = { -- beware, we do support the pdf keys but this is *not* official
     fith  = 2, [variables.width]     = 2,
     fitv  = 3, [variables.height]    = 3,
     fitb  = 4,
-    fitbh = 5, [variables.minheight] = 5,
+    fitbh = 5, [variables.minwidth]  = 5,
     fitbv = 6, [variables.minheight] = 6,
     fitr  = 7,
 }

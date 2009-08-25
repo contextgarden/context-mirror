@@ -624,6 +624,7 @@
 		<cd:constant name='escape' value='فرار'/>
 		<cd:constant name='evenmargin' value='حاشیه‌زوج'/>
 		<cd:constant name='expansion' value='گسترش'/>
+		<cd:constant name='export' value='export'/>
 		<cd:constant name='extras' value='extras'/>
 		<cd:constant name='factor' value='عامل'/>
 		<cd:constant name='fallback' value='عقب‌ریختن'/>

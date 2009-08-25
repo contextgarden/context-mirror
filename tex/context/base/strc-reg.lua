@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['strc-reg'] = {
     version   = 1.001,
-    comment   = "companion to strc-reg.tex",
+    comment   = "companion to strc-reg.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -189,23 +189,31 @@ end
 
 jobregisters.define = allocate
 
-local entrysplitter = lpeg.Ct(lpeg.splitat('+'))
+local entrysplitter = lpeg.Ct(lpeg.splitat('+')) -- & obsolete in mkiv
 
 local tagged = { }
 
 local function preprocessentries(rawdata)
     local entries = rawdata.entries
     if entries then
-        local et = entrysplitter:match(entries[1]) -- alse &
-        local kt = entrysplitter:match(entries[2]) -- alse &
+        local e, k = entries[1] or "", entries[2] or ""
+        local et = (type(e) == "table" and e) or entrysplitter:match(e)
+        local kt = (type(k) == "table" and k) or entrysplitter:match(k)
         entries = { }
         for k=1,#et do
             entries[k] = { et[k] or "", kt[k] or "" }
         end
+for k=#et,1,-1 do
+    if entries[k][1] ~= "" then
+        break
+    else
+        entries[k] = nil
+    end
+end
         rawdata.list = entries
         rawdata.entries = nil
     else
-        rawdata.list = { "", "" } -- br
+        rawdata.list = { { "", "" } } -- br
     end
 end
 
@@ -426,6 +434,7 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
             d = d + 1
             local entry = data[d]
             local e = { false, false, false, false }
+            local metadata = entry.metadata
             for i=1,4 do -- max 4
                 if entry.list[i] then
                     e[i] = entry.list[i][1]
@@ -445,7 +454,13 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
                                 texsprint(ctxcatcodes,format("\\startregisterentries{%s}",n))
                             end
                         end
+if metadata then
+    texsprint(ctxcatcodes,"\\registerentry{")
+    helpers.title(e[i],metadata)
+    texsprint(ctxcatcodes,"}")
+else
                         texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
+end
                     else
                         done[i] = false
                     end
@@ -629,4 +644,3 @@ function jobregisters.process(class,...)
         jobregisters.flush(collected[class],...)
     end
 end
-

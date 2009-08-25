@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['sort-lan'] = {
     version   = 1.001,
-    comment   = "companion to sort-lan.tex",
+    comment   = "companion to sort-lan.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

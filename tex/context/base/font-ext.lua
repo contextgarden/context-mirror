@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['font-ext'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.tex and hand-ini.tex",
+    comment   = "companion to font-ini.mkiv and hand-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

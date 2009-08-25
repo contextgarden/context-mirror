@@ -153,24 +153,27 @@
 \def\xmlstarttiming{\ctxlua{statistics.starttiming(lxml)}}
 \def\xmlstoptiming {\ctxlua{statistics.stoptiming (lxml)}}
 
-\def\doxmlprocess#1#2#3#4%
+\def\doxmlprocess#1#2#3#4#5%
   {\begingroup
-   \edef\xmldocument{#2}% #2 can be \xmldocument and set as such
-   #1{#2}{#3}%
+   \edef\xmldocument{#3}% #2 can be \xmldocument and set as such
+   \ctxlua{lxml.pushdocument("#3")}%
+   #2{#3}{#4}%
+\ctxlua{lxml.addindex("\xmldocument",\ifnum#1=\plusone true\else false\fi)}% todo: only checksum for file
    \ifcase\xmlprocessingmode
      \enableXML
    \else
      \setcatcodetable\notcatcodes
    \fi
-   \doifelsenothing{#4}
+   \doifelsenothing{#5}
      {\directsetup{xml:process}}
-     {\directsetup{#4}}%
+     {\directsetup{#5}}%
+   \ctxlua{lxml.popdocument()}%
    \endgroup}
 
-\def\xmlprocessfile      {\doxmlprocess\xmlload}
-\def\xmlprocessdata      {\doxmlprocess\xmlloaddata}
-\def\xmlprocessbuffer    {\doxmlprocess\xmlloadbuffer}
-\def\xmlprocessregistered{\doxmlprocess\xmlloadregistered}
+\def\xmlprocessfile      {\doxmlprocess\plusone  \xmlload}
+\def\xmlprocessdata      {\doxmlprocess\zerocount\xmlloaddata}
+\def\xmlprocessbuffer    {\doxmlprocess\zerocount\xmlloadbuffer}
+\def\xmlprocessregistered{\doxmlprocess\zerocount\xmlloadregistered}
 \let\xmlprocess           \xmlprocessfile
 
 % beware: \xmlmain takes the real root, so also processing
@@ -189,12 +192,11 @@
 \long\def\xmlconnect#1#2#3% inefficient
   {\scratchcounter\xmlcount{#1}{#2}\relax
    \ifcase\scratchcounter \or
-       \xmlall{#1}{#2}%
+     \xmlall{#1}{#2}%
    \else
-       \dorecurse \scratchcounter {
-           \ifnum\recurselevel>\plusone#3\fi
-           \xmlidx{#1}{#2}{\recurselevel}
-       }
+     \dorecurse \scratchcounter
+       {\ifnum\recurselevel>\plusone#3\fi
+        \xmlidx{#1}{#2}\recurselevel}%
    \fi}
 
 \def\xmlcdataobeyedline {\obeyedline}
@@ -226,7 +228,7 @@
    \def\stopxmldisplayverbatim
      {\endofverbatimlines
       \stoppacked} % \endgroup
-   \mkinitializeverbatim
+   \doinitializeverbatim
    \beginofverbatimlines}
 
 \def\startxmlinlineverbatim[#1]%
@@ -234,7 +236,7 @@
    \let\currenttypingclass\??ty
    \edef\currenttyping{xml:#1}%
    \let\stopxmldisplayverbatim\endgroup
-   \mkinitializeverbatim}
+   \doinitializeverbatim}
 
 % will move but is developed for xml
 
@@ -404,5 +406,17 @@
   {\def\processXMLfilegrouped##1%
      {\let\processXMLfilegrouped\normalprocessXMLfilegrouped
       \doifelsenothing{#1}{\xmlprocess{main}{##1}{}}{\xmlprocess{#1}{##1}{}}}}
+
+%D Experimental:
+
+%def\xmladdindex   #1{\ctxlua{lxml.addindex("#1")}}
+\def\xmlgetindex   #1{\ctxlua{lxml.getindex("\xmldocument","#1")}}
+\def\xmlrawindex   #1{\ctxlua{lxml.rawindex("#1")}}
+\def\xmlwithindex#1#2{\ctxlua{lxml.withindex("\xmldocument","#1","#2")}}
+\def\xmlreference#1#2{\string\xmlwithindex{#1}{#2}}
+
+\startxmlsetups xml:flush
+    \xmlflush{#1}
+\stopxmlsetups
 
 \protect \endinput

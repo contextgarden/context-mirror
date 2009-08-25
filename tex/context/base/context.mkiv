@@ -20,8 +20,8 @@
 
 \loadcorefile{syst-ini}
 
-\ifnum\luatexversion<43
-    \writestatus{!!!!}{Your luatex binary is way too old, you need at least version 0.42.}
+\ifnum\luatexversion<43 % also change message
+    \writestatus{!!!!}{Your luatex binary is way too old, you need at least version 0.43!}
     \expandafter\end
 \fi
 
@@ -213,6 +213,7 @@
 \loadmarkfile{scrn-bar}
 \loadmarkfile{strc-bkm} % bookmarks
 
+\loadmarkfile{tabl-com}
 \loadmarkfile{tabl-pln}
 \loadcorefile{thrd-tab}
 \loadmarkfile{tabl-tab}

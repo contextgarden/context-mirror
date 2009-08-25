@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['back-pdf'] = {
+if not modules then modules = { } end modules ['lpdf-ini'] = {
     version   = 1.001,
-    comment   = "companion to lpdf-ini.tex",
+    comment   = "companion to lpdf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -516,4 +516,3 @@ function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
     texwrite(format("%s %s %s %s 0 0 cm",c,s,-s,c))
 end
-

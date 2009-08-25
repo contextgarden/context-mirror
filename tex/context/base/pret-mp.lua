@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['pret-mp'] = {
     version   = 1.001,
-    comment   = "companion to buff-ver.tex",
+    comment   = "companion to buff-ver.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

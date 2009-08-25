@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['strc-doc'] = {
     version   = 1.001,
-    comment   = "companion to strc-doc.tex",
+    comment   = "companion to strc-doc.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -449,7 +449,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             end
         end
         if separatorset  == "" then separatorset  = "default"  end
-        if conversionset == "" then conversionset = "default"  end
+        if conversionset == "" then conversionset = "default"  end -- not used
         if conversion    == "" then conversion    = nil        end
         if stopper       == "" then stopper       = nil        end
         if connector     == "" then connector     = nil        end
@@ -599,5 +599,12 @@ function sections.fullnumber(depth)
         if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
             sections.typesetnumber(sectiondata,'section',sectiondata)
         end
+    end
+end
+
+function sections.title()
+    local sc = sections.current()
+    if sc then
+        helpers.title(sc.titledata.title,sc.metadata)
     end
 end

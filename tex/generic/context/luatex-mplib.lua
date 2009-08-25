@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['supp-mpl'] = {
     version   = 1.001,
-    comment   = "companion to supp-mpl.tex",
+    comment   = "companion to luatex-mplib.tex",
     author    = "Hans Hagen & Taco Hoekwater",
     copyright = "ConTeXt Development Team",
     license   = "public domain",

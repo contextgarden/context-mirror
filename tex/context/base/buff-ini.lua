@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['buff-ini'] = {
     version   = 1.001,
-    comment   = "companion to core-buf.tex",
+    comment   = "companion to core-buf.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

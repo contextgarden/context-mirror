@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['task-ini'] = {
     version   = 1.001,
-    comment   = "companion to task-ini.tex",
+    comment   = "companion to task-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

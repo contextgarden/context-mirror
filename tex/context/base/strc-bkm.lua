@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['strc-bkm'] = {
     version   = 0.200,
-    comment   = "companion to strc-bkm.tex",
+    comment   = "companion to strc-bkm.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -85,3 +85,31 @@ function bookmarks.place()
         function bookmarks.place() end -- prevent second run
     end
 end
+
+-- bkm
+--~ function nodes.toutf(list)
+--~     local t= { }
+--~     for n in node.traverse(list) do
+--~         local id = n.id
+--~         if id == node.id("glyph") then
+--~             local c = n.char
+--~             local f = fonts.ids[n.font]
+--~             if f then
+--~                 local u = f.characters[c].tounicode
+--~                 if u then
+--~                     for s in string.gmatch(u,"..") do
+--~                         t[#t+1] = utf.char(tonumber(s,16))
+--~                     end
+--~                 else
+--~                     t[#t+1] = utf.char(c)
+--~                 end
+--~             else
+--~                 t[#t+1] = utf.char(c)
+--~             end
+--~         elseif id == node.id("glue") then
+--~             t[#t+1] = " "
+--~         end
+--~     end
+--~     return table.concat(t,"")
+--~ end
+--~ texio.write_nl(nodes.toutf(tex.box[999].list))

@@ -154,7 +154,7 @@
                     },
                 \fi
                 userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
-            })
+            },"\@@iafocus")
        }%
        \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
        \begingroup\dosetattribute{destination}\currentdestinationattribute\hbox{}\endgroup % todo
@@ -609,6 +609,21 @@
      {\settrue \autoglobalfilereferences}
      {\setfalse\autoglobalfilereferences}}
 
+% \appendtoks\ctxlua{jobreferences.export("whatever")}\to\everystoptext
+% \starttext
+%     \chapter[test]{test}
+%     test \in{IN}[more]           and \in{IN}[test]           or \at{AT}[more]           and \at{AT}[test]\par
+%     test \in{IN}[whatever::more] and \in{IN}[whatever::test] or \at{AT}[whatever::more] and \at{AT}[whatever::test] \page
+%     reference\reference[more]{oeps}
+% \stoptext
+
+\def\exportreferences
+  {\doif\@@rfexport\v!yes{\ctxlua{jobreferences.export()}}}
+
+\appendtoks
+  \exportreferences
+\to \everygoodbye
+
 \def\incrementreferenceprefix{+}
 \def\decrementreferenceprefix{-}
 
@@ -738,6 +753,7 @@
 \def\currentreferencepage    {\ctxlua{jobreferences.filter("page")}}
 \def\currentreferencetitle   {\ctxlua{jobreferences.filter("title")}}
 \def\currentreferencetext    {\ctxlua{jobreferences.filter("text")}}
+\def\currentreferencedefault {\ctxlua{jobreferences.filter("default")}}
 \def\currentreferencerealpage{\ctxlua{jobreferences.realpage()}}
 
 \def\getreferenceentry#1{\ctxlua{jobreferences.filter("#1")}} % user entry
@@ -915,8 +931,8 @@
 %     [\inxx{a}{b}[one]]
 % \stoptext
 
-\unexpanded\def\dospecialin{\let\currentreferencecontent\currentreferencenumber\doinatreference}
-\unexpanded\def\dospecialat{\let\currentreferencecontent\currentreferencepage  \doinatreference}
+\unexpanded\def\dospecialin{\let\currentreferencecontent\currentreferencedefault\doinatreference}
+\unexpanded\def\dospecialat{\let\currentreferencecontent\currentreferencepage   \doinatreference}
 
 \newtoks\leftreferencetoks
 \newtoks\rightreferencetoks
@@ -1244,11 +1260,22 @@
 %D
 %D \showsetup{from}
 
+%D We keep this for compatibility reasons, hence the hackery.
+
 \def\dospecialfrom
   {\dosingleempty\dodospecialfrom}
 
 \def\dodospecialfrom[#1]%
-  {\dontleavehmode\goto{\ctxlua{jobreferences.from("#1")}}[fileorurl(#1)]}
+  {\dontleavehmode
+   \goto{\ctxlua{jobreferences.from("#1")}}[fileorurl(#1)]}
+
+\def\dofromurl#1%
+  {\dosetfontattribute \??ur\c!style
+   \dosetcolorattribute\??ur\c!color
+   #1}
+
+\def\dofromfile#1%
+  {#1}
 
 %D We also support:
 %D
@@ -1605,7 +1632,8 @@
    \c!right=\egroup,
    \c!global=\v!no,
    \c!expansion=\v!no,
-   \c!separator=\nonbreakablespace]
+   \c!separator=\nonbreakablespace,
+   \c!export=\v!no]
 
 \setupurl
   [\c!alternative=\v!both,

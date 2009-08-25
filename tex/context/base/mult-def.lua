@@ -6532,86 +6532,90 @@ return {
   },
  },
  ["constants"]={
+  ["export"]={
+   ["en"]="export",
+   ["nl"]="exporteer",
+  },
   ["database"]={
-   ["en"]="database"
+   ["en"]="database",
   },
   ["artauthor"]={
-   ["en"]="artauthor"
+   ["en"]="artauthor",
   },
   ["editor"]={
-   ["en"]="editor"
+   ["en"]="editor",
   },
   ["authoretallimit"]={
-   ["en"]="authoretallimit"
+   ["en"]="authoretallimit",
   },
   ["artauthoretallimit"]={
-   ["en"]="artauthoretallimit"
+   ["en"]="artauthoretallimit",
   },
   ["editoretallimit"]={
-   ["en"]="editoretallimit"
+   ["en"]="editoretallimit",
   },
   ["authoretaldisplay"]={
-   ["en"]="authoretaldisplay"
+   ["en"]="authoretaldisplay",
   },
   ["artauthoretaldisplay"]={
-   ["en"]="artauthoretaldisplay"
+   ["en"]="artauthoretaldisplay",
   },
   ["editoretaldisplay"]={
-   ["en"]="editoretaldisplay"
+   ["en"]="editoretaldisplay",
   },
   ["authoretaltext"]={
-   ["en"]="authoretaltext"
+   ["en"]="authoretaltext",
   },
   ["artauthoretaltext"]={
-   ["en"]="artauthoretaltext"
+   ["en"]="artauthoretaltext",
   },
   ["editoretaltext"]={
-   ["en"]="editoretaltext"
+   ["en"]="editoretaltext",
   },
   ["otherstext"]={
-   ["en"]="otherstext"
+   ["en"]="otherstext",
   },
   ["andtext"]={
-   ["en"]="andtext"
+   ["en"]="andtext",
   },
   ["totalnumber"]={
-   ["en"]="totalnumber"
+   ["en"]="totalnumber",
   },
   ["firstnamesep"]={
-   ["en"]="firstnamesep"
+   ["en"]="firstnamesep",
   },
   ["vonsep"]={
-   ["en"]="vonsep"
+   ["en"]="vonsep",
   },
   ["juniorsep"]={
-   ["en"]="juniorsep"
+   ["en"]="juniorsep",
   },
   ["surnamesep"]={
-   ["en"]="surnamesep"
+   ["en"]="surnamesep",
   },
   ["lastnamesep"]={
-   ["en"]="lastnamesep"
+   ["en"]="lastnamesep",
   },
   ["finalnamesep"]={
-   ["en"]="finalnamesep"
+   ["en"]="finalnamesep",
   },
   ["namesep"]={
-   ["en"]="namesep"
+   ["en"]="namesep",
   },
   ["pubsep"]={
-   ["en"]="pubsep"
+   ["en"]="pubsep",
   },
   ["lastpubsep"]={
-   ["en"]="lastpubsep"
+   ["en"]="lastpubsep",
   },
   ["refcommand"]={
-   ["en"]="refcommand"
+   ["en"]="refcommand",
   },
   ["samplesize"]={
-   ["en"]="samplesize"
+   ["en"]="samplesize",
   },
   ["maybeyear"]={
-   ["en"]="maybeyear"
+   ["en"]="maybeyear",
   },
   ["action"]={
    ["cs"]="akce",

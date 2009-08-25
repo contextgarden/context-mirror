@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['strc-lst'] = {
     version   = 1.001,
-    comment   = "companion to strc-lst.tex",
+    comment   = "companion to strc-lst.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -351,7 +351,6 @@ function lists.title(name,n,tag) -- tag becomes obsolete
         local titledata = data.titledata
         if titledata then
             helpers.title(titledata[tag] or titledata.list or titledata.title or "",data.metadata)
---~             texsprint(ctxcatcodes,titledata[tag] or titledata.list or titledata.title or "")
         end
     end
 end

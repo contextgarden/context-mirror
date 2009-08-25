@@ -15,13 +15,23 @@
 
 \unprotect
 
-\startxmlsetups xml:ctx:tocentry
-    \xmlsetsetup{\xmldocument}{ctx:tocentry}{xml:ctx:tocentry}
+\startxmlsetups xml:ctx:internal:setup
+    \xmlsetsetup{\xmldocument}{ctx:genericentry} {xml:ctx:genericentry}
+    \xmlsetsetup{\xmldocument}{ctx:sectionentry} {xml:ctx:sectionentry}
+    \xmlsetsetup{\xmldocument}{ctx:registerentry}{xml:ctx:registerentry}
 \stopxmlsetups
 
-\xmlregistersetup{xml:ctx:tocentry}
+\xmlregistersetup{xml:ctx:internal:setup}
 
-\startxmlsetups xml:ctx:tocentry
+\startxmlsetups xml:ctx:genericentry
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:ctx:sectionentry
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:ctx:registerentry
     \xmlflush{#1}
 \stopxmlsetups
 

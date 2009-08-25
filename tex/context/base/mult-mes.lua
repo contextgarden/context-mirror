@@ -1306,6 +1306,15 @@ return {
    ["no"]="obskur referanse -- (Prefix=--)",
    ["ro"]="referinta obscura -- (prefix=--)",
   },
+  ["24"]={
+   ["en"]="references from document '--' are not exported",
+  },
+  ["25"]={
+   ["en"]="references from document '--' are not imported (export again)",
+  },
+  ["26"]={
+   ["en"]="references from document '--' are imported",
+  },
   ["3"]={
    ["cs"]="neznamy typ reference --",
    ["de"]="unbekannte Referenz Typ --",

@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['char-con'] = {
+if not modules then modules = { } end modules ['core-con'] = {
     version   = 1.001,
-    comment   = "companion to core-con.tex",
+    comment   = "companion to core-con.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

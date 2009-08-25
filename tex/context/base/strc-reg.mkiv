@@ -57,14 +57,14 @@
 
 \def\detokenizedregisterparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??id#1\endcsname}} % always root
 
-\def\registerparameter    #1{\csname\doregisterparameter{\??id\currentregister}#1\endcsname}
+\def\registerparameter    #1{\csname\doregisterparameter{\??id\currentregister}{#1}\endcsname}
 \def\registerparameterhash#1{\doregisterparameterhash   {\??id\currentregister}#1}
 
-\def\doregisterparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doregisterparentparameter    \csname#1\s!parent\endcsname#2\fi}
-\def\doregisterparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\doregisterparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+\def\doregisterparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doregisterparentparameter    \csname#1\s!parent\endcsname{#2}\fi}
+\def\doregisterparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\doregisterparentparameterhash\csname#1\s!parent\endcsname{#2}\fi}
 
-\def\doregisterparentparameter    #1#2{\ifx#1\relax\s!empty\else\doregisterparameter    #1#2\fi}
-\def\doregisterparentparameterhash#1#2{\ifx#1\relax        \else\doregisterparameterhash#1#2\fi}
+\def\doregisterparentparameter    #1#2{\ifx#1\relax\s!empty\else\doregisterparameter    #1{#2}\fi}
+\def\doregisterparentparameterhash#1#2{\ifx#1\relax        \else\doregisterparameterhash#1{#2}\fi}
 
 \def\dosetregisterattributes#1#2% style color
   {\edef\fontattributehash {\registerparameterhash#1}%
@@ -116,6 +116,7 @@
    \c!unknownreference=\v!empty,
    \c!prefix=\v!both,
   %\c!expansion=,
+%\c!xmlsetup=,
    \c!pageprefixconnector=\endash,
    \c!pagesegments=2:2,
    \c!file=\jobname,
@@ -144,32 +145,138 @@
 
 % tzt variant met n entries, parameters en userdata (altnum)
 
+% \def\doregisterstructurepageregister#1#2#3% register data userdata
+%   {\begingroup
+%    \edef\currentregister{#1}%
+%    \getparameters[\??id][\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
+%    \edef\currentregisterlabel    {\registerparameter\c!label}%
+%    \edef\currentregisterexpansion{\registerparameter\c!expansion}%
+%    \edef\currentregisterownnumber{\registerparameter\c!ownnumber}%
+%    \xdef\currentregisterkeys     {\registerparameter\c!keys}%
+%    \ifx\currentregisterexpansion\s!xml
+%      \xmlstartraw
+%        \xdef\currentregisterentries{\registerparameter\c!entries}%
+%      \xmlstopraw
+%      \globallet\currentregistercoding\s!xml
+%    \else
+%      \ifx\currentregisterexpansion\v!yes
+%        \xdef\currentregisterentries{\registerparameter\c!entries}%
+%      \else
+%        \xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
+%      \fi
+%      \globallet\currentregistercoding\s!tex
+%    \fi
+%    \setnextinternalreference
+%    % we could consider storing register entries in a list which we
+%    % could then sort
+%    \xdef\currentregisternumber{\ctxlua{
+%     jobregisters.store {
+%         metadata = {
+%             kind     = "entry",
+%             name     = "\currentregister",
+%             level    = structure.sections.currentlevel(),
+%             coding   = "\currentregistercoding",
+%             catcodes = \the\catcodetable,
+%         \ifx\currentregisterownnumber\v!yes
+%             own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
+%         \fi
+%         },
+%         references = {
+%             internal = \nextinternalreference,
+%             section = structure.sections.currentid(), % hm, why then not also lastsection the same way
+%             label = "\currentregisterlabel",
+%         },
+%     \ifx\currentregisterentries\empty \else
+%         entries = {
+%             % we need a special one for xml, this is just a single one
+%             \!!bs\currentregisterentries\!!es, \!!bs\currentregisterkeys\!!es
+%         },
+%     \fi
+%         userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+%      }
+%    } }%
+%    \ctxlua{jobreferences.setinternalreference(nil,nil,\nextinternalreference)}%
+%    \ifx\currentregisterownnumber\v!yes
+%      \glet\currentregistersynchronize\relax
+%    \else
+%      \xdef\currentregistersynchronize{\ctxlatelua{jobregisters.enhance("\currentregister",\currentregisternumber)}}%
+%    \fi
+%    \currentregistersynchronize % here?
+%    \attribute\destinationattribute\lastdestinationattribute \strut % todo
+%    \endgroup}
+
+\getparameters
+  [\??id]
+  [\c!label=,
+   \c!entries=,
+   \c!entries:1=,\c!entries:2=,\c!entries:3=,
+   \c!keys:1=,\c!keys:2=,\c!keys:3=,
+   \c!alternative=]
+
 \def\doregisterstructurepageregister#1#2#3% register data userdata
   {\begingroup
    \edef\currentregister{#1}%
-   \getparameters[\??id][\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
+   %getparameters[\??id][\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
+   \getparameters[\??id][#2]%
    \edef\currentregisterlabel    {\registerparameter\c!label}%
    \edef\currentregisterexpansion{\registerparameter\c!expansion}%
    \edef\currentregisterownnumber{\registerparameter\c!ownnumber}%
    \xdef\currentregisterkeys     {\registerparameter\c!keys}%
-   \ifx\currentregisterexpansion\s!xml
-     \xmlstartraw
-       \xdef\currentregisterentries{\registerparameter\c!entries}%
-     \xmlstopraw
-     \globallet\currentregistercoding\s!xml
-   \else
-     \ifx\currentregisterexpansion\v!yes
-       \xdef\currentregisterentries{\registerparameter\c!entries}%
+   \xdef\currentregisterentries  {\registerparameter\c!entries}%
+\xdef\currentregisterxmlsetup{\registerparameter\c!xmlsetup}%
+   \ifx\currentregisterentries\empty
+     \ifx\currentregisterexpansion\s!xml
+       \xmlstartraw
+         \xdef\currentregisterentriesa{\registerparameter{\c!entries:1}}%
+         \xdef\currentregisterentriesb{\registerparameter{\c!entries:2}}%
+         \xdef\currentregisterentriesc{\registerparameter{\c!entries:3}}%
+       \xmlstopraw
+       \globallet\currentregistercoding\s!xml
      \else
-       \xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
+       \ifx\currentregisterexpansion\v!yes
+         \xdef\currentregisterentriesa{\registerparameter{\c!entries:1}}%
+         \xdef\currentregisterentriesb{\registerparameter{\c!entries:2}}%
+         \xdef\currentregisterentriesc{\registerparameter{\c!entries:3}}%
+       \else
+         \xdef\currentregisterentriesa{\detokenizedregisterparameter{\c!entries:1}}%
+         \xdef\currentregisterentriesb{\detokenizedregisterparameter{\c!entries:2}}%
+         \xdef\currentregisterentriesc{\detokenizedregisterparameter{\c!entries:3}}%
+       \fi
+       \globallet\currentregistercoding\s!tex
      \fi
-     \globallet\currentregistercoding\s!tex
+   \else
+     \ifx\currentregisterexpansion\s!xml
+       \xmlstartraw
+         \xdef\currentregisterentries{\registerparameter\c!entries}%
+       \xmlstopraw
+       \globallet\currentregistercoding\s!xml
+     \else
+       \ifx\currentregisterexpansion\v!yes
+         \xdef\currentregisterentries{\registerparameter\c!entries}%
+       \else
+         \xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
+       \fi
+       \globallet\currentregistercoding\s!tex
+     \fi
+   \fi
+   \ifx\currentregisterkeys\empty
+     \ifx\currentregistercoding\s!xml
+       \xmlstartraw
+         \xdef\currentregisterkeysa{\registerparameter{\c!keys:1}}%
+         \xdef\currentregisterkeysb{\registerparameter{\c!keys:2}}%
+         \xdef\currentregisterkeysc{\registerparameter{\c!keys:3}}%
+       \xmlstopraw
+     \else
+       \xdef\currentregisterkeysa{\registerparameter{\c!keys:1}}%
+       \xdef\currentregisterkeysb{\registerparameter{\c!keys:2}}%
+       \xdef\currentregisterkeysc{\registerparameter{\c!keys:3}}%
+     \fi
    \fi
    \setnextinternalreference
    % we could consider storing register entries in a list which we
    % could then sort
    \xdef\currentregisternumber{\ctxlua{
-    jobregisters.store {
+    jobregisters.store { % 'own' should not be in metadata
         metadata = {
             kind     = "entry",
             name     = "\currentregister",
@@ -179,18 +286,31 @@
         \ifx\currentregisterownnumber\v!yes
             own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
         \fi
+            xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
+\ifx\currentregisterxmlsetup\empty \else
+    xmlsetup = "\currentregisterxmlsetup",
+\fi
         },
         references = {
             internal = \nextinternalreference,
             section = structure.sections.currentid(), % hm, why then not also lastsection the same way
             label = "\currentregisterlabel",
         },
-    \ifx\currentregisterentries\empty \else
+%     \ifx\currentregisterentries\empty \else
         entries = {
             % we need a special one for xml, this is just a single one
-            \!!bs\currentregisterentries\!!es, \!!bs\currentregisterkeys\!!es
+            \ifx\currentregisterentries\empty
+                { \!!bs\currentregisterentriesa\!!es, \!!bs\currentregisterentriesb\!!es, \!!bs\currentregisterentriesc\!!es },
+            \else
+                \!!bs\currentregisterentries\!!es,
+            \fi
+            \ifx\currentregisterkeys\empty
+                { \!!bs\currentregisterkeysa\!!es, \!!bs\currentregisterkeysb\!!es, \!!bs\currentregisterkeysc\!!es },
+            \else
+                \!!bs\currentregisterkeys\!!es,
+            \fi
         },
-    \fi
+%     \fi
         userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
      }
    } }%
@@ -233,6 +353,8 @@
 
 \def\setregisterentry   {\dotripleempty\dosetregisterentry}
 \def\finishregisterentry{\dotripleempty\dofinishregisterentry}
+
+% not yet document, not sure if thsi will stay:
 
 \def\dosetregisterentry   [#1][#2][#3]{\doflushatpar{\doregisterstructurepageregister{#1}{#2}{#3}}}
 \def\dofinishregisterentry[#1][#2][#3]{\dofinishregisterstructurepageregister{#1}{#2}{#3}}
@@ -286,6 +408,41 @@
        }}%
    \fi
    \endgroup}
+
+% The following variants are meant for (for instance xml). There is some
+% overlap with previously defined macros.
+%
+% \starttext
+%     \setstructurepageregister[index][entries=alpha]a
+%     \setstructurepageregister[index][entries=gamma]g
+%     \setstructurepageregister[index][entries=beta]b
+%     \setstructurepageregister[index][entries:1=alpha,keys:1=z]a
+%     \setstructurepageregister[index][entries:1=gamma,keys:1=x]g
+%     \setstructurepageregister[index][entries:1=beta, keys:1=y]b
+%     \index{alpha}a
+%     \index{gamma}g
+%     \index{beta}b
+%     \placeregister[index][n=1]
+% \stoptext
+
+\def\setstructurepageregister{\dotripleempty\dosetstructurepageregister}
+
+\def\dosetstructurepageregister[#1][#2][#3]% [register][settings][userdata]
+  {\doflushatpar{\doregisterstructurepageregister{#1}{#2}{#3}}}
+
+\def\startstructurepageregister{\doquadrupleempty\dostartstructurepageregister}
+\def\stopstructurepageregister {\dodoubleargument\dostopstructurepageregister}
+
+\let\openstructurepageregisterrange \startstructurepageregister
+\let\closestructurepageregisterrange\stopstructurepageregister
+
+\def\dostartstructurepageregister[#1][#2][#3][#4]% [register][tag][settings][userdata]
+  {\doflushatpar{\doregisterstructurepageregister{#1}{\c!label=#2,#3}{#4}}}
+
+\def\dostopstructurepageregister[#1][#2]%
+  {\normalexpanded{\ctxlatelua{jobregisters.extend("#1","#2")}}}
+
+% So far.
 
 \def\doseeregister[#1][#2]#3#4%
   {\doflushatpar{\doprocessseeregister{#1}{#2}{#3}{#4}}}
@@ -684,8 +841,8 @@
 %       \fi}
 %      {\dosetpageregister{#1}}}
 
-\def\dosetregister#1%
-  {\dosetpageregister{#1}}
+% \def\dosetregister#1%
+%   {\dosetpageregister{#1}}
 
 % \newcounter\internallistreference
 

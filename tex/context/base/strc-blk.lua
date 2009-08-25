@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['strc--blk'] = {
     version   = 1.001,
-    comment   = "companion to strc--blk.mkiv",
+    comment   = "companion to strc-blk.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

@@ -4763,6 +4763,10 @@
           <cd:constant type="oui"/>
           <cd:constant type="non"/>
         </cd:parameter>
+        <cd:parameter name="export">
+          <cd:constant type="oui"/>
+          <cd:constant type="non"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -4997,6 +5001,8 @@
           <cd:constant type="local"/>
           <cd:constant type="precedent"/>
           <cd:constant type="courant"/>
+          <cd:constant type="ici"/>
+          <cd:constant type="intro"/>
           <cd:constant type="tout"/>
         </cd:parameter>
         <cd:parameter name="limitespage">

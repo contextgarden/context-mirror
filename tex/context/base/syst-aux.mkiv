@@ -3519,12 +3519,20 @@
    \def\recurselevel{\number\fastrecursecounter}%
    \dodofastrecurse}
 
+\def\resetrecurselevel{\let\recurselevel\!!zerocount}
+
 \def\dodofastrecurse
-  {\ifnum\fastrecursecounter>\lastrecursecounter\else
+  {\ifnum\fastrecursecounter>\lastrecursecounter
+     % \resetrecurselevel % slows down
+   \else
      \fastrecursebody
      \advance\fastrecursecounter\steprecursecounter
      \expandafter\dodofastrecurse
    \fi}
+
+% \appendtoks \resetrecurselevel \to \everydump
+
+\everydump\expandafter{\the\everydump\resetrecurselevel}
 
 %D This alternative looks a bit different and uses a
 %D pseudo counter. When this macro is nested, we have to use

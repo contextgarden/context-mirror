@@ -51,11 +51,7 @@
 % \stoptext
 
 \ifdefined\doinitializeverbatim \else% temp hack
-    \ifdefined\mkinitializeverbatim
-        \let\doinitializeverbatim\mkinitializeverbatim
-    \else
-        \def\doinitializeverbatim{\tttf}
-    \fi
+    \def\doinitializeverbatim{\tttf}
 \fi
 
 \unprotect
@@ -174,7 +170,7 @@
 \def\definebuffer
   {\dodoubleempty\dodefinebuffer}
 
-\def\getbuffer
+\unexpanded\def\getbuffer
   {\dodoubleempty\dogetbuffer}
 
 \def\dogetbuffer[#1][#2]%
@@ -191,7 +187,7 @@
    \dobuffer{16}{#2}\dogetbufferasis
    \getvalue{\??bu#1\c!after}}
 
-\def\typebuffer
+\unexpanded\def\typebuffer
   {\dodoubleempty\dotypebuffer}
 
 \def\doprocessbufferverbatim

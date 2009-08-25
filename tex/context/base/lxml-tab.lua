@@ -151,6 +151,14 @@ local x = xml.convert(somestring)
 
 <p>An optional second boolean argument tells this function not to create a root
 element.</p>
+
+<p>Valid entities are:</p>
+
+<typing>
+<!ENTITY xxxx SYSTEM "yyyy" NDATA zzzz>
+<!ENTITY xxxx PUBLIC "yyyy" >
+<!ENTITY xxxx "yyyy" >
+</typing>
 --ldx]]--
 
 xml.strip_cm_and_dt = false -- an extra global flag, in case we have many includes
@@ -304,19 +312,27 @@ local someinstruction  = C((1 - endinstruction)^0)
 local somecomment      = C((1 - endcomment    )^0)
 local somecdata        = C((1 - endcdata      )^0)
 
-local function entity(k,v) entities[k] = v end
+local function normalentity(k,v  ) entities[k] = v end
+local function systementity(k,v,n) entities[k] = v end
+local function publicentity(k,v,n) entities[k] = v end
 
 local begindoctype     = open * P("!DOCTYPE")
 local enddoctype       = close
 local beginset         = P("[")
 local endset           = P("]")
-local doctypename      = C((1-somespace)^0)
+local doctypename      = C((1-somespace-close)^0)
 local elementdoctype   = optionalspace * P("<!ELEMENT") * (1-close)^0 * close
-local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (doctypename * somespace * value)/entity * optionalspace * close
-local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace
-local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace
-local definitiondoctype= doctypename * somespace * beginset * P(elementdoctype + entitydoctype)^0 * optionalspace * endset
-local simpledoctype    = (1-close)^1                     -- * balanced^0
+
+local normalentitytype = (doctypename * somespace * value)/normalentity
+local publicentitytype = (doctypename * somespace * P("PUBLIC") * somespace * value)/publicentity
+local systementitytype = (doctypename * somespace * P("SYSTEM") * somespace * value * somespace * P("NDATA") * somespace * doctypename)/systementity
+local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (systementitytype + publicentitytype + normalentitytype) * optionalspace * close
+
+local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + space)^0 * optionalspace * endset
+local definitiondoctype= doctypename * somespace * doctypeset
+local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace * doctypeset
+local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset
+local simpledoctype    = (1-close)^1 -- * balanced^0
 local somedoctype      = C((somespace * (publicdoctype + systemdoctype + definitiondoctype + simpledoctype) * optionalspace)^0)
 
 local instruction      = (spacing * begininstruction * someinstruction * endinstruction) / function(...) add_special("@pi@",...) end
