@@ -48,7 +48,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-string'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -94,6 +94,14 @@ function string:unquote()
     return (gsub(self,"^([\"\'])(.*)%1$","%2"))
 end
 
+--~ function string:unquote()
+--~     if find(self,"^[\'\"]") then
+--~         return self:sub(2,-2)
+--~     else
+--~         return self
+--~     end
+--~ end
+
 function string:quote() -- we could use format("%q")
     return '"' .. self:unquote() .. '"'
 end
@@ -120,7 +128,7 @@ function string:strip()
 end
 
 function string:is_empty()
-    return not find(find,"%S")
+    return not find(self,"%S")
 end
 
 function string:enhance(pattern,action)
@@ -287,7 +295,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-lpeg'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -395,7 +403,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-table'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1216,7 +1224,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-io'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1408,7 +1416,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-number'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1459,7 +1467,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-set'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1549,7 +1557,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-os'] = {
     version   = 1.001,
-    comment   = "companion to luat-lub.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -1685,7 +1693,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-file'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2027,7 +2035,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-dir'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2340,7 +2348,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-boolean'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2401,7 +2409,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-math'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2448,7 +2456,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-utils'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -2624,7 +2632,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['l-aux'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -3004,6 +3012,14 @@ local x = xml.convert(somestring)
 
 <p>An optional second boolean argument tells this function not to create a root
 element.</p>
+
+<p>Valid entities are:</p>
+
+<typing>
+<!ENTITY xxxx SYSTEM "yyyy" NDATA zzzz>
+<!ENTITY xxxx PUBLIC "yyyy" >
+<!ENTITY xxxx "yyyy" >
+</typing>
 --ldx]]--
 
 xml.strip_cm_and_dt = false -- an extra global flag, in case we have many includes
@@ -3157,19 +3173,27 @@ local someinstruction  = C((1 - endinstruction)^0)
 local somecomment      = C((1 - endcomment    )^0)
 local somecdata        = C((1 - endcdata      )^0)
 
-local function entity(k,v) entities[k] = v end
+local function normalentity(k,v  ) entities[k] = v end
+local function systementity(k,v,n) entities[k] = v end
+local function publicentity(k,v,n) entities[k] = v end
 
 local begindoctype     = open * P("!DOCTYPE")
 local enddoctype       = close
 local beginset         = P("[")
 local endset           = P("]")
-local doctypename      = C((1-somespace)^0)
+local doctypename      = C((1-somespace-close)^0)
 local elementdoctype   = optionalspace * P("<!ELEMENT") * (1-close)^0 * close
-local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (doctypename * somespace * value)/entity * optionalspace * close
-local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace
-local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace
-local definitiondoctype= doctypename * somespace * beginset * P(elementdoctype + entitydoctype)^0 * optionalspace * endset
-local simpledoctype    = (1-close)^1                     -- * balanced^0
+
+local normalentitytype = (doctypename * somespace * value)/normalentity
+local publicentitytype = (doctypename * somespace * P("PUBLIC") * somespace * value)/publicentity
+local systementitytype = (doctypename * somespace * P("SYSTEM") * somespace * value * somespace * P("NDATA") * somespace * doctypename)/systementity
+local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (systementitytype + publicentitytype + normalentitytype) * optionalspace * close
+
+local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + space)^0 * optionalspace * endset
+local definitiondoctype= doctypename * somespace * doctypeset
+local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace * doctypeset
+local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset
+local simpledoctype    = (1-close)^1 -- * balanced^0
 local somedoctype      = C((somespace * (publicdoctype + systemdoctype + definitiondoctype + simpledoctype) * optionalspace)^0)
 
 local instruction      = (spacing * begininstruction * someinstruction * endinstruction) / function(...) add_special("@pi@",...) end
@@ -3650,7 +3674,7 @@ if not modules then modules = { } end modules ['lxml-pth'] = {
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
-local format, lower, gmatch, gsub, find = string.format, string.lower, string.gmatch, string.gsub, string.find
+local format, lower, gmatch, gsub, find, rep = string.format, string.lower, string.gmatch, string.gsub, string.find, string.rep
 
 --[[ldx--
 <p>This module can be used stand alone but also inside <l n='mkiv'/> in
@@ -4532,7 +4556,8 @@ function xml.filters.attribute(root,pattern,arguments)
     local rt, dt, dk
     traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
     local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
-    return (ekat and (ekat[arguments] or ekat[gsub(arguments,"^([\"\'])(.*)%1$","%2")])) or ""
+ -- return (ekat and (ekat[arguments] or ekat[gsub(arguments,"^([\"\'])(.*)%1$","%2")])) or ""
+    return (ekat and (ekat[arguments] or (find(arguments,"^[\'\"]") and ekat[sub(arguments,2,-2)]))) or ""
 end
 
 function xml.filters.text(root,pattern,arguments) -- ?? why index, tostring slow
@@ -4943,7 +4968,6 @@ function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and 
             for i=1,#dkdt do
                 local str = dkdt[i]
                 if type(str) == "string" then
-
                     if str == "" then
                         -- stripped
                     else
@@ -5078,7 +5102,7 @@ end
 function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
     if d and k and d[k-1] and type(d[k-1]) == "string" then
         local s = d[k-1]:match("\n(%s+)")
-        xml.gsub(dk,"\n"..string.rep(" ",#s),"\n")
+        xml.gsub(dk,"\n"..rep(" ",#s),"\n")
     end
 end
 
@@ -5436,7 +5460,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['trac-tra'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to trac-tra.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -5667,7 +5691,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['luat-env'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -5948,7 +5972,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['trac-inf'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to trac-inf.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -6117,7 +6141,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['luat-log'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to trac-log.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -6407,10 +6431,10 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-inp'] = {
     version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files",
-    comment   = "companion to luat-lib.tex",
 }
 
 -- After a few years using the code the large luat-inp.lua file
@@ -8443,7 +8467,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-tmp'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -8625,7 +8649,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-res'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -8721,7 +8745,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-inp'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -8742,7 +8766,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-out'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -8758,7 +8782,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-con'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -8886,7 +8910,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-use'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -9019,7 +9043,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-zip'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -9266,7 +9290,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-crl'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -9437,7 +9461,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-aux'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -9500,7 +9524,7 @@ do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-tmf'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.tex",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['lxml-pth'] = {
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
-local format, lower, gmatch, gsub, find = string.format, string.lower, string.gmatch, string.gsub, string.find
+local format, lower, gmatch, gsub, find, rep = string.format, string.lower, string.gmatch, string.gsub, string.find, string.rep
 
 --[[ldx--
 <p>This module can be used stand alone but also inside <l n='mkiv'/> in
@@ -890,7 +890,8 @@ function xml.filters.attribute(root,pattern,arguments)
     local rt, dt, dk
     traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
     local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
-    return (ekat and (ekat[arguments] or ekat[gsub(arguments,"^([\"\'])(.*)%1$","%2")])) or ""
+ -- return (ekat and (ekat[arguments] or ekat[gsub(arguments,"^([\"\'])(.*)%1$","%2")])) or ""
+    return (ekat and (ekat[arguments] or (find(arguments,"^[\'\"]") and ekat[sub(arguments,2,-2)]))) or ""
 end
 
 function xml.filters.text(root,pattern,arguments) -- ?? why index, tostring slow
@@ -1301,7 +1302,6 @@ function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and 
             for i=1,#dkdt do
                 local str = dkdt[i]
                 if type(str) == "string" then
-
                     if str == "" then
                         -- stripped
                     else
@@ -1436,7 +1436,7 @@ end
 function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
     if d and k and d[k-1] and type(d[k-1]) == "string" then
         local s = d[k-1]:match("\n(%s+)")
-        xml.gsub(dk,"\n"..string.rep(" ",#s),"\n")
+        xml.gsub(dk,"\n"..rep(" ",#s),"\n")
     end
 end
 

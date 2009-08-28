@@ -7,10 +7,12 @@ if not modules then modules = { } end modules ['lxml-ini'] = {
 }
 
 local utf = unicode.utf8
+local tex = tex or {}
 
 local texsprint, texprint, texwrite, utfchar = tex.sprint or print, tex.print or print, tex.write or print, utf.char
-local format, concat, insert, remove = string.format, table.concat, table.insert, table.remove
-local type, next, tonumber = type, next, tonumber
+local concat, insert, remove, gsub, find = table.concat, table.insert, table.remove
+local format, sub, gsub, find = string.format, string.sub, string.gsub, string.find
+local type, next, tonumber, tostring = type, next, tonumber, tostring
 
 local ctxcatcodes = tex.ctxcatcodes
 local texcatcodes = tex.texcatcodes
@@ -66,16 +68,20 @@ document.xml = document.xml or { }
 
 -- todo: loaded and myself per document so that we can garbage collect buffers
 
-lxml         = lxml or { }
-lxml.loaded  = { }
-lxml.myself  = { }
-lxml.n       = 0
+lxml              = lxml or { }
+lxml.loaded       = { }
+lxml.paths        = { }
+lxml.myself       = { }
+lxml.noffiles     = 0
+lxml.nofconverted = 0
+lxml.nofindices   = 0
 
 local loaded = lxml.loaded
+local paths  = lxml.paths
 local myself = lxml.myself
 local stack  = lxml.stack
 
-lxml.self = myself -- be backward compatible for a while
+--~ lxml.self = myself -- be backward compatible for a while
 
 --~ local function get_id(id)
 --~     return (type(id) == "table" and id) or loaded[id] or myself[tonumber(id)] -- no need for tonumber if we pass without ""
@@ -340,8 +346,8 @@ do
     local function toverbatim(str)
         if beforecommand then texsprint(texcatcodes,beforecommand,"{}") end
         -- todo: add this to capture
-        str = str:gsub("^[ \t]+[\n\r]+","")
-        str = str:gsub("[ \t\n\r]+$","")
+        str = gsub(str,"^[ \t]+[\n\r]+","")
+        str = gsub(str,"[ \t\n\r]+$","")
         capture:match(str)
         if aftercommand  then texsprint(texcatcodes,aftercommand,"{}")  end
     end
@@ -415,26 +421,35 @@ xml.originalload = xml.originalload or xml.load
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
+--~ function xml.load(filename)
+--~     lxml.noffiles = lxml.noffiles + 1
+--~     starttiming(xml)
+--~     local xmldata = xml.convert((filename and resolvers.loadtexfile(filename)) or "")
+--~     stoptiming(xml)
+--~     return xmldata
+--~ end
+
 function xml.load(filename)
-    lxml.n = lxml.n + 1
+    lxml.noffiles = lxml.noffiles + 1
+    lxml.nofconverted = lxml.nofconverted + 1
     starttiming(xml)
-    local xmldata = xml.convert((filename and resolvers.loadtexfile(filename)) or "")
+    local ok, data = resolvers.loadbinfile(filename)
+    local xmldata = xml.convert((ok and data) or "")
     stoptiming(xml)
     return xmldata
 end
 
 function lxml.load(id,filename)
-    lxml.n = lxml.n + 1
     filename = commands.preparedfile(filename)
     if trace_loading then
         commands.writestatus("lxml","loading file '%s' as '%s'",filename,id)
     end
-    loaded[id] = xml.load(filename)
-    return loaded[id], filename
+    local root = xml.load(filename)
+    loaded[id], paths[id]= root, filename
+    return root, filename
 end
 
 function lxml.register(id,xmltable)
-    lxml.n = lxml.n + 1
     loaded[id] = xmltable
     return xmltable
 end
@@ -444,9 +459,14 @@ function lxml.include(id,pattern,attribute,recurse)
     xml.include(get_id(id),pattern,attribute,recurse,function(filename)
         if filename then
             filename = commands.preparedfile(filename)
+if file.dirname(filename) == "" then
+    filename = file.join(file.dirname(paths[currentdocument]),filename)
+end
             if trace_loading then
                 commands.writestatus("lxml","including file: %s",filename)
             end
+            lxml.noffiles = lxml.noffiles + 1
+            lxml.nofconverted = lxml.nofconverted + 1
             return resolvers.loadtexfile(filename) or ""
         else
             return ""
@@ -560,9 +580,9 @@ end
 
 function lxml.stripped(id,pattern,nolines)
     local str = xmlcontent(get_id(id),pattern) or ""
-    str = str:gsub("^%s*(.-)%s*$","%1")
+    str = gsub(str,"^%s*(.-)%s*$","%1")
     if nolines then
-        str = str:gsub("%s+"," ")
+        str = gsub(str,"%s+"," ")
     end
     xmlsprint(str)
 end
@@ -574,21 +594,6 @@ function lxml.flush(id)
         xmlsprint(dt)
     end
 end
-
---~ function lxml.strip(id,flush)
---~     local dt = get_id(id).dt
---~     local str = dt[1]
---~     if type(str) == "string" then
---~         dt[1] = str:gsub("^ *","")
---~     end
---~     str = dt[#dt]
---~     if type(str) == "string" then
---~         dt[#dt] = str:gsub(" *$","")
---~     end
---~     if flush then
---~         xmlsprint(dt)
---~     end
---~ end
 
 function lxml.direct(id)
     xmlsprint(get_id(id))
@@ -815,7 +820,10 @@ end
 
 
 local function command(root,pattern,cmd) -- met zonder ''
-    cmd = cmd:gsub("^([\'\"])(.-)%1$", "%2")
+--~     cmd = gsub(cmd,"^([\'\"])(.-)%1$", "%2")
+    if find(cmd,"^[\'\"]") then
+        cmd = sub(cmd,2,-2)
+    end
     traverse(root, lpath(pattern), function(r,d,k)
         -- this can become pretty large
         local m = (d and d[k]) or r -- brrr this r, maybe away
@@ -921,7 +929,7 @@ function lxml.directives.handle_setup(category,root,attribute,element)
                     setup = setup[category]
                 end
                 if setup then
-                    texsprint(ctxcatcodes,format("\\directsetup{%s}",setup:gsub('%*',value)))
+                    texsprint(ctxcatcodes,format("\\directsetup{%s}",gsub(setup,'%*',value)))
                 end
             end
         end
@@ -932,6 +940,7 @@ function xml.getbuffer(name) -- we need to make sure that commands are processed
     if not name or name == "" then
         name = tex.jobname
     end
+    lxml.nofconverted = lxml.nofconverted + 1
     xml.tostring(xml.convert(concat(buffers.data[name] or {},"")))
 end
 
@@ -940,6 +949,7 @@ function lxml.loadbuffer(id,name)
         name = tex.jobname
     end
     starttiming(xml)
+    lxml.nofconverted = lxml.nofconverted + 1
     loaded[id] = xml.convert(buffers.collect(name or id,"\n"))
     stoptiming(xml)
     return loaded[id], name or id
@@ -947,6 +957,7 @@ end
 
 function lxml.loaddata(id,str)
     starttiming(xml)
+    lxml.nofconverted = lxml.nofconverted + 1
     loaded[id] = xml.convert(str or "")
     stoptiming(xml)
     return loaded[id], id
@@ -964,7 +975,7 @@ lxml.set_cdata()
 local traced = { }
 
 function lxml.trace_text_entities(str)
-    return str:gsub("&(.-);",function(s)
+    return gsub(str,"&(.-);",function(s)
         traced[s] = (traced[s] or 0) + 1
         return "["..s.."]"
     end)
@@ -1183,16 +1194,20 @@ end
 
 -- rather new, indexed storage (backward refs), maybe i will merge this
 
-function lxml.addindex(name,check_sum)
+function lxml.addindex(name,check_sum,force)
     local root = get_id(name)
-    if root and not root.index then -- weird, only called once
-        local index, maxindex, check = { }, 0, { }
+    if root and (not root.index or force) then -- weird, only called once
+        local index, maxindex, check = root.index or { }, root.maxindex or 0, root.check or { }
+        local n = 0
         local function nest(root)
             local dt = root.dt
-            maxindex = maxindex + 1
-            root.ix = maxindex -- no needed if we don't want to test (extend)
-            check[maxindex] = root.tg
-            index[maxindex] = root
+            if not root.ix then
+                maxindex = maxindex + 1
+                root.ix = maxindex
+                check[maxindex] = root.tg
+                index[maxindex] = root
+                n = n + 1
+            end
             if dt then
                 for k=1,#dt do
                     local dk = dt[k]
@@ -1203,69 +1218,63 @@ function lxml.addindex(name,check_sum)
             end
         end
         nest(root)
+        lxml.nofindices = lxml.nofindices + n
         --
         if type(name) ~= "string" then
             name = "unknown"
         end
-        --
-        if check_sum then
-            local tag = format("lxml:%s:checksum",name)
-            local oldchecksum = jobvariables.collected[tag]
-            local newchecksum = md5.HEX(concat(check,".")) -- maybe no "." needed
-            jobvariables.tobesaved[tag] = newchecksum
-            --
-            if oldchecksum and oldchecksum ~= "" and oldchecksum ~= newchecksum then
-                root.index = { }
-                root.maxindex = 0
-                root.checksum = newchecksum
-                commands.writestatus("lxml",format("checksum mismatch for %s (extra run needed)",tostring(name)))
-            else
-                root.index = index
-                root.maxindex = maxindex
-                root.checksum = newchecksum
-                commands.writestatus("lxml",format("checksum match for %s: %s",tostring(name),newchecksum))
-            end
-        else
+        -- todo: checksum at the end, when tuo saved
+--~         if root.checksum then
+--~             -- extension mode
+--~             root.index = index
+--~             root.maxindex = maxindex
+--~             commands.writestatus("lxml",format("checksum adapted for %s",tostring(name)))
+--~         elseif check_sum then
+--~             local tag = format("lxml:%s:checksum",name)
+--~             local oldchecksum = jobvariables.collected[tag]
+--~             local newchecksum = md5.HEX(concat(check,".")) -- maybe no "." needed
+--~             jobvariables.tobesaved[tag] = newchecksum
+--~             --
+--~             if oldchecksum and oldchecksum ~= "" and oldchecksum ~= newchecksum then
+--~                 root.index = { }
+--~                 root.maxindex = 0
+--~                 root.checksum = newchecksum
+--~                 commands.writestatus("lxml",format("checksum mismatch for %s (extra run needed)",tostring(name)))
+--~             else
+--~                 root.index = index
+--~                 root.maxindex = maxindex
+--~                 root.checksum = newchecksum
+--~                 commands.writestatus("lxml",format("checksum match for %s: %s",tostring(name),newchecksum))
+--~             end
+--~         else
             root.index = index
             root.maxindex = maxindex
+--~         end
+        if trace_access then
+            commands.writestatus("lxml",format("%s loaded, %s index entries",tostring(name),maxindex))
         end
     end
+end
+
+local include= lxml.include
+
+function lxml.include(id,...)
+    include(id,...)
+    lxml.addindex(currentdocument,false,true)
 end
 
 -- we can share the index
 
 function lxml.checkindex(name)
     local root = get_id(name)
---~     if root then
---~         local index = root.index
---~         if not index then
---~             lxml.addindex(name,jobvariables.collected[tag])
---~             index = root.index
---~         end
---~         return index
---~     end
-    return root.index
+    return (root and root.index) or 0
 end
 
 function lxml.withindex(name,n,command)
---~     local index = lxml.checkindex(name)
---~     if index then
---~         local root = index[n]
---~         if root then
-            -- lxml.command ...
---~             local m = #myself + 1
---~             myself[m] = root
---~             texsprint(ctxcatcodes,format("\\xmlsetup{%i}{%s}",m,command))
-            texsprint(ctxcatcodes,format("\\xmlsetup{%s::%s}{%s}",name,n,command))
---~         end
---~     end
+    texsprint(ctxcatcodes,format("\\xmlsetup{%s::%s}{%s}",name,n,command))
 end
 
 function lxml.getindex(name,n)
---~     local index = lxml.checkindex(name)
---~     if index then
---~         texwrite(myself[n].ix or 0)
---~     end
     texsprint(ctxcatcodes,format("%s::%s",name,n))
 end
 
@@ -1290,19 +1299,29 @@ function lxml.doifelseempty(id,pattern) commands.doifelse(isempty(get_id(id),pat
 -- status info
 
 statistics.register("xml load time", function()
-    local n = lxml.n
-    if n > 0 then
-        local stats = xml.statistics()
-        return format("%s seconds, lpath calls: %s, cached calls: %s", statistics.elapsedtime(xml), stats.lpathcalls, stats.lpathcached)
+    local noffiles, nofconverted = lxml.noffiles, lxml.nofconverted
+    if noffiles > 0 or nofconverted > 0 then
+        return format("%s seconds, %s files, %s converted", statistics.elapsedtime(xml), noffiles, nofconverted)
     else
         return nil
     end
 end)
 
-statistics.register("lxml load time", function()
-    local n = #lxml.self
-    if n > 0 then
-        return format("%s seconds preparation, backreferences: %i", statistics.elapsedtime(lxml),n)
+--~ statistics.register("lxml preparation time", function()
+--~     local n = #lxml.self
+--~     if n > 0 then
+--~         local stats = xml.statistics()
+--~         return format("%s seconds, %s backreferences, %s lpath calls, %s cached calls", statistics.elapsedtime(xml), n, stats.lpathcalls, stats.lpathcached)
+--~     else
+--~         return nil
+--~     end
+--~ end)
+
+statistics.register("lxml preparation time", function()
+    local noffiles, nofconverted = lxml.noffiles, lxml.nofconverted
+    if noffiles > 0 or nofconverted > 0 then
+        local stats = xml.statistics()
+        return format("%s seconds, %s nodes, %s lpath calls, %s cached calls", statistics.elapsedtime(lxml), lxml.nofindices, stats.lpathcalls, stats.lpathcached)
     else
         return nil
     end

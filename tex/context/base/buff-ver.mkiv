@@ -881,7 +881,8 @@
   {\doiflocfileelse{#1}
      {\firstoftwoarguments}
      {\doifinputfileelse{#1}
-        {\def\readfilename{\pathplusfile\filepath{#1}}\firstoftwoarguments} % messy, looks wrong too
+%         {\def\readfilename{\pathplusfile\filepath{#1}}\firstoftwoarguments} % messy, looks wrong too
+        {\def\readfilename{#1}\firstoftwoarguments} % messy, looks wrong too
         {\secondoftwoarguments}}}
 
 \def\dodotypefile[#1][#2]#3%

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 08/26/09 01:45:51
+-- merge date  : 08/28/09 14:46:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -52,6 +52,14 @@ function string:unquote()
     return (gsub(self,"^([\"\'])(.*)%1$","%2"))
 end
 
+--~ function string:unquote()
+--~     if find(self,"^[\'\"]") then
+--~         return self:sub(2,-2)
+--~     else
+--~         return self
+--~     end
+--~ end
+
 function string:quote() -- we could use format("%q")
     return '"' .. self:unquote() .. '"'
 end
@@ -78,7 +86,7 @@ function string:strip()
 end
 
 function string:is_empty()
-    return not find(find,"%S")
+    return not find(self,"%S")
 end
 
 function string:enhance(pattern,action)

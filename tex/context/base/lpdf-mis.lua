@@ -34,6 +34,7 @@ local pdfboolean    = lpdf.boolean
 local pdfconstant   = lpdf.constant
 local pdfreference  = lpdf.reference
 local pdfunicode    = lpdf.unicode
+local pdfverbose    = lpdf.verbose
 local pdfstring     = lpdf.string
 
 local pdfreserveobj   = pdf.reserveobj
@@ -249,15 +250,21 @@ local function documentspecification()
     end
 end
 
+-- temp hack: the mediabox is not under our control and has a precision of 4 digits
+
 local factor = number.dimenfactors.bp
+
+local function boxvalue(n) -- we could share them
+    return pdfverbose(format("%0.4f",factor * n))
+end
 
 local function pagespecification()
     local pageheight = tex.pdfpageheight
     local box = pdfarray { -- can be cached
-        factor * (leftoffset),
-        factor * (pageheight-topoffset-height),
-        factor * (width-leftoffset),
-        factor * (pageheight-topoffset),
+        boxvalue(leftoffset),
+        boxvalue(pageheight-topoffset-height),
+        boxvalue(width-leftoffset),
+        boxvalue(pageheight-topoffset),
     }
     lpdf.addtopageattributes("CropBox",box) -- mandate for rendering
     lpdf.addtopageattributes("TrimBox",box) -- mandate for pdf/x

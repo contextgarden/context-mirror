@@ -793,9 +793,9 @@ function scripts.context.run(ctxdata,filename)
                         end
                         --
                         if environment.argument("purge") then
-                            scripts.context.purge_job(filename)
+                            scripts.context.purge_job(jobname)
                         elseif environment.argument("purgeall") then
-                            scripts.context.purge_job(filename,true)
+                            scripts.context.purge_job(jobname,true)
                         end
                         --
                         os.remove(jobname..".top")
@@ -1041,7 +1041,7 @@ local function purge_file(dfile,cfile)
         if os.remove(dfile) then
             return file.basename(dfile)
         end
-    else
+    elseif dfile then
         if os.remove(dfile) then
             return file.basename(dfile)
         end
@@ -1049,22 +1049,24 @@ local function purge_file(dfile,cfile)
 end
 
 function scripts.context.purge_job(jobname,all)
-    jobname = file.basename(jobname)
-    local filebase = file.removesuffix(jobname)
-    local deleted = { }
-    for _, suffix in ipairs(obsolete_results) do
-        deleted[#deleted+1] = purge_file(filebase.."."..suffix,filebase..".pdf")
-    end
-    for _, suffix in ipairs(temporary_runfiles) do
-        deleted[#deleted+1] = purge_file(filebase.."."..suffix)
-    end
-    if all then
-        for _, suffix in ipairs(persistent_runfiles) do
+    if jobname and jobname ~= "" then
+        jobname = file.basename(jobname)
+        local filebase = file.removesuffix(jobname)
+        local deleted = { }
+        for _, suffix in ipairs(obsolete_results) do
+            deleted[#deleted+1] = purge_file(filebase.."."..suffix,filebase..".pdf")
+        end
+        for _, suffix in ipairs(temporary_runfiles) do
             deleted[#deleted+1] = purge_file(filebase.."."..suffix)
         end
-    end
-    if #deleted > 0 then
-        logs.simple("purged files: %s", table.join(deleted,", "))
+        if all then
+            for _, suffix in ipairs(persistent_runfiles) do
+                deleted[#deleted+1] = purge_file(filebase.."."..suffix)
+            end
+        end
+        if #deleted > 0 then
+            logs.simple("purged files: %s", table.join(deleted,", "))
+        end
     end
 end
 

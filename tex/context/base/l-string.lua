@@ -46,6 +46,14 @@ function string:unquote()
     return (gsub(self,"^([\"\'])(.*)%1$","%2"))
 end
 
+--~ function string:unquote()
+--~     if find(self,"^[\'\"]") then
+--~         return self:sub(2,-2)
+--~     else
+--~         return self
+--~     end
+--~ end
+
 function string:quote() -- we could use format("%q")
     return '"' .. self:unquote() .. '"'
 end
@@ -72,7 +80,7 @@ function string:strip()
 end
 
 function string:is_empty()
-    return not find(find,"%S")
+    return not find(self,"%S")
 end
 
 function string:enhance(pattern,action)

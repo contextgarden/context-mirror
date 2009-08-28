@@ -23,4 +23,6 @@
 %     fill (point 0 of p -- point 3 of p -- point 2 of p --cycle) withcolor \MPcolor{hextestcolor} ; % top left part
 % \stopMPpage
 
+\def\checkhexcolor[#1]{\doifcolorelse{#1}\donothing{\definecolor[#1][h=#1]}} % is this ok?
+
 \endinput

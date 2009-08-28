@@ -1091,7 +1091,6 @@ leader-pattern-width=12pt,
     \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{border-top-color}{}]
     \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{border-left-color}{}]
     \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{border-right-color}{}]
-
     \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{background-color}{}]
 
     \checkFOposition{fo:region-\currentcommalistitem}{background}
@@ -2379,6 +2378,10 @@ leader-pattern-width=12pt,
   {\beginXMLelement}
   {\directsetup{fo:inline:process}\endXMLelement}
 
+\defineXMLsingular
+  [fo:inline]
+  {}
+
 % baseline-shift: baseline sub super % dimen inherit
 
 \chardef\isolatedwordsmode=1
@@ -2387,10 +2390,10 @@ leader-pattern-width=12pt,
 
 \def\shiftedword{\raise\wordshiftamount\hbox}
 
-\def\shiftedwords#1{\processisolatedwords{#1}\shiftedword}
-\def\normalwords #1{\processisolatedwords{#1}\hbox}
-\def\highwords   #1{\processisolatedwords{#1}\high}
-\def\lowwords    #1{\processisolatedwords{#1}\low}
+\long\def\shiftedwords#1{\processisolatedwords{#1}\shiftedword}
+\long\def\normalwords #1{\processisolatedwords{#1}\hbox}
+\long\def\highwords   #1{\processisolatedwords{#1}\high}
+\long\def\lowwords    #1{\processisolatedwords{#1}\low}
 
 \mapXMLvalue {fo:baseline-shift} {baseline} {\normalwords}
 \mapXMLvalue {fo:baseline-shift} {sub}      {\lowwords}
@@ -2617,8 +2620,8 @@ leader-pattern-width=12pt,
    alignment-baseline=,
    baseline-shift=,
    dominant-baseline=,
-%    text-depth=,
-%    text-altitude=,
+    %    text-depth=,
+    %    text-altitude=,
    keep-with-next=,
    keep-with-previous=,
    letter-spacing=,
@@ -2636,16 +2639,13 @@ leader-pattern-width=12pt,
 
 \startsetups fo:leader:process
 
-%   \tracebackXMLattribute{leader-pattern-width}
+    %tracebackXMLattribute{leader-pattern-width}
 
-  \strut \leaders
-
-%   \edefXMLinh \FOlepatwd {leader-pattern-width}
-
+    \strut \leaders
+    %edefXMLinh \FOlepatwd {leader-pattern-width}
     \hbox to \XMLinh{leader-pattern-width}
       {\hss\XMLval{fo:leader-pattern}{\XMLinh{leader-pattern}}{\hfill}\hss}
-
-  \hfill \strut
+    \hfill \strut
 
 \stopsetups
 
@@ -2702,7 +2702,7 @@ leader-pattern-width=12pt,
 
 \defineconversion[1][\numbers]
 
-\def\handleFOformat#1#2%
+\long\def\handleFOformat#1#2%
   {\defconvertedargument\ascii{#2}%
    \doifconversiondefinedelse\ascii{\convertnumber\ascii{#1}}{#2}}
 
@@ -3541,7 +3541,7 @@ text-indent=0pt, % yes
 
 \unprotect
 
-\def\noFOchecks#1\od{}
+\long\def\noFOchecks#1\od{}
 
 \def\FOassignskip#1#2#3%
   {\edef\!!stringa{\XMLpar{#1}{#2}\empty}%
@@ -3747,8 +3747,6 @@ text-indent=0pt, % yes
 % we can get crap like: 10pt/1.5 bold "Times Roman" ; i'm really puzzled why an
 % otherwise rather verbose coding occasionally packs attributes; a design flaw
 
-\unprotect
-
 \newtoks\FOfonttoks
 
 \def\checkFOfontSS#1'{}
@@ -3834,8 +3832,6 @@ text-indent=0pt, % yes
 
 \appendtoks \flushFOreferences \to \everypar
 \appendtoks \flushFOreferences \to \neverypar % check !
-
-\protect
 
 %D Graphics: static frames
 
@@ -3997,7 +3993,7 @@ text-indent=0pt, % yes
 
 \stopXMLcompiling
 
-\protect  \endinput
+\endinput
 
 % we can follow two approaches: set the attributes global, using
 %
