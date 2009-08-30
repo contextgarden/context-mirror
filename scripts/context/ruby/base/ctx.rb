@@ -124,6 +124,11 @@ class CtxRunner
             report("loading ctx file #{@ctxname}")
         end
 
+        if @xmldata then
+            # out if a sudden rexml started to be picky about namespaces
+            @xmldata.gsub!(/<ctx:job>/,"<ctx:job xmlns:ctx='http://www.pragma-ade.com/rng/ctx.rng'>")
+        end
+
         begin
             @xmldata = REXML::Document.new(@xmldata)
         rescue

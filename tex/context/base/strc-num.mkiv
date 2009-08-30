@@ -440,10 +440,14 @@
      \xdef\laststructurecountersynchronize{\ctxlatelua{structure.lists.enhance(\laststructurecounternumber)}}%
    \else
      \glet\laststructurecounternumber     \relax
-     \glet\laststructurecounterattribute  \relax
+     \glet\laststructurecounterattribute  \attributeunsetvalue
      \glet\laststructurecountersynchronize\relax
    \fi
    \endgroup}
+
+\let\laststructurecounternumber     \relax
+\let\laststructurecounterattribute  \relax
+\let\laststructurecountersynchronize\relax
 
 \def\dostructurecountersetup#1#2% name \someparameter
   {\setupstructurecounter

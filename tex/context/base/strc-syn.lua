@@ -24,7 +24,9 @@ local function initializer()
 end
 
 local function finalizer()
-    tobesaved.hash = nil
+    for entry, data in next, tobesaved do
+        data.hash = nil
+    end
 end
 
 job.register('joblists.collected', joblists.tobesaved, initializer, finalizer)
@@ -137,19 +139,19 @@ end
 
 function joblists.flush(data,options) -- maybe pass the settings differently
     local kind = data.metadata.kind   -- hack, will be done better
-    texsprint(ctxcatcodes,format("\\start%soutput",kind))
+--~     texsprint(ctxcatcodes,format("\\start%soutput",kind))
     local result = data.result
     for k, letter in ipairs(table.sortedkeys(result)) do
         local sublist = result[letter]
         local data = sublist.data
-        texsprint(ctxcatcodes,format("\\start%ssection{%s}",kind,sublist.tag))
+--~         texsprint(ctxcatcodes,format("\\start%ssection{%s}",kind,sublist.tag))
         for d=1,#data do
             local entry = data[d].definition
             texsprint(ctxcatcodes,format("\\%sentry{%s}{%s}{%s}",kind,d,entry.synonym,entry.meaning))
         end
-        texsprint(ctxcatcodes,format("\\stop%ssection",kind))
+--~         texsprint(ctxcatcodes,format("\\stop%ssection",kind))
     end
-    texsprint(ctxcatcodes,format("\\stop%soutput",kind))
+--~     texsprint(ctxcatcodes,format("\\stop%soutput",kind))
     -- for now, maybe at some point we will do a multipass or so
     data.result = nil
     data.metadata.sorted = false

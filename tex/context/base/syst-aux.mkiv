@@ -4131,7 +4131,22 @@
    \afterassignment\BeforeGroup
    \let\next=}
 
-\long\def\HandleNoGroup#1#2%
+% \long\def\HandleNoGroup#1#2%
+%   {\long\def\AfterGroup{#2\egroup}%
+%    \bgroup\aftergroup\AfterGroup#1}
+
+\long\def\HandleNoGroup % retrofit into mkii
+  {\ifnum\currentgrouptype=\@@semisimplegroup
+     \expandafter\HandleNoGroupA
+   \else
+     \expandafter\HandleNoGroupB
+   \fi}
+
+\long\def\HandleNoGroupA#1#2%
+  {\long\def\AfterGroup{#2\endgroup}%
+   \begingroup\aftergroup\AfterGroup#1}
+
+\long\def\HandleNoGroupB#1#2%
   {\long\def\AfterGroup{#2\egroup}%
    \bgroup\aftergroup\AfterGroup#1}
 

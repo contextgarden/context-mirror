@@ -2731,6 +2731,12 @@
   [%mode=node,%
    liga=yes,kern=yes,tlig=yes,trep=yes,onum=yes] % texligatures=yes,texquotes=yes
 
+
+\definefontfeature % == default unless redefined
+  [ligatures]
+  [%mode=node,%
+   liga=yes,kern=yes,tlig=yes,trep=yes]
+
 \definefontfeature % can be used for type1 fonts
   [complete]
   [liga=yes,kern=yes,compose=yes,tlig=yes,trep=yes]
@@ -2818,10 +2824,10 @@
 \def\setfontfeature  #1{\edef\currentfeature{#1}\attribute\zerocount\featureattribute{#1}\relax}
 \def\resetfontfeature#1{\let\currentfeature\empty\attribute\zerocount\zerocount} % initial value
 
-\def\addfontfeaturetoset        #1{\ctxlua{fonts.withset("#1", 1)}}
-\def\subtractfontfeaturefromset #1{\ctxlua{fonts.withset("#1",-1)}}
-\def\addfontfeaturetofont       #1{\ctxlua{fonts.withfnt("#1", 2)}}
-\def\subtractfontfeaturefromfont#1{\ctxlua{fonts.withfnt("#1",-2)}}
+\def\addfontfeaturetoset        #1{\ctxlua{fonts.withset("#1", 1)}} % merge
+\def\subtractfontfeaturefromset #1{\ctxlua{fonts.withset("#1",-1)}} % merge
+\def\addfontfeaturetofont       #1{\ctxlua{fonts.withfnt("#1", 2)}} % overload
+\def\subtractfontfeaturefromfont#1{\ctxlua{fonts.withfnt("#1",-2)}} % overload
 
 \let\setff\setfontfeature
 \let\addfs\addfontfeaturetoset

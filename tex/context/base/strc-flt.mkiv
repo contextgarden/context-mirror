@@ -734,6 +734,8 @@
 
 % todo: optional user pars
 
+\let\currentfloatattribute\empty % to be checked
+
 \def\floatcaptionattribute
   {\iflocation \ifnofloatnumber \else \ifnofloatcaption \else
      attr \destinationattribute \currentfloatattribute

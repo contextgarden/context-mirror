@@ -652,8 +652,8 @@
 % \chapter{some} \setupheadnumber[chapter][3] \chapter{more}
 % \setupheadnumber[section][8] \section{b} \section{c} \setupheadnumber[section][-1] \section{d}
 
-\def\thecurrentstructureheadlevel#1%
-  {\getcurrentstructurelevel{#1}}
+% \def\thecurrentstructureheadlevel#1%
+%   {\getcurrentstructurelevel{#1}}
 
 \def\thenamedstructureheadlevel#1%
   {\structuresectionlevel{\structuresectionheadsection{\structuresectionheadcoupling{#1}}}}
@@ -677,7 +677,8 @@
   {\dosingleempty\dostructureheadnumber}
 
 \def\dostructureheadnumber[#1]% simple case is just a number
-  {\getfullstructurenumber{\iffirstargument\thecurrentstructureheadlevel{#1}\fi}}
+%   {\getfullstructurenumber{\iffirstargument\thecurrentstructureheadlevel{#1}\fi}}
+  {\getfullstructurenumber{\iffirstargument\thenamedstructureheadlevel{#1}\fi}}
 
 % compatibility code (after all, we might offer different structure handlers as well
 % but we might as well remove the 'structure' substring at some point (we needed it

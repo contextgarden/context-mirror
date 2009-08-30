@@ -15,6 +15,9 @@
 
 \registerctxluafile{strc-syn}{1.001}
 
+% todo: add 'define only' option to descriptions, then add sorting (also based on key)
+% and call to definition -> replaces this module
+
 \unprotect
 
 % general help, can be shared
@@ -267,9 +270,8 @@
    \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
   %\ctxlua{joblists.define('#1')}%
    \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??so#1]}% to be obsolete
-   \setvalue{\e!place   \e!listof#2}{\doplacelistofsortings{#1}{#2}}%
-   \setvalue{\e!complete\e!listof#2}{\docompletelistofsortings{#1}{#2}}}
-
+   \setvalue{\e!place   \e!listof#2}{\doplacelistofsorts{#1}{#2}}%
+   \setvalue{\e!complete\e!listof#2}{\docompletelistofsorts{#1}{#2}}}
 
 \def\definesort
   {\dotripleempty\dodefinesort}

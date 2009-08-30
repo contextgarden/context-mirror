@@ -726,4 +726,3 @@ def chem_init_all =
 enddef ;
 
 chem_init_all ;
-

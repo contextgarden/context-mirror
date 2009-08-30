@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-ctx'] = {
     license   = "see context related readme files"
 }
 
+-- needs a cleanup: merge of replace, lang/script etc
+
 local texsprint, count = tex.sprint, tex.count
 local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
 local tostring, next = tostring, next
