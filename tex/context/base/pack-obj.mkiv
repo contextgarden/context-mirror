@@ -292,7 +292,7 @@
   {% \initializepaper
    \forgetall
    \dontshowcomposition
-   \setbox\scratchbox\vbox
+   \setbox\scratchbox\vbox attr \viewerlayerattribute \attribute\viewerlayerattribute
      {\doinsertobject{#1}{#2}}%
    \setbox\scratchbox#3%
      {\vbox to #5\scaledpoint
@@ -304,7 +304,7 @@
           %\vss\box\scratchbox
            \vss\hbox to #4\scaledpoint{\box\scratchbox\hss}% fix Chof
          \fi\fi}}%
-   \forcecolorhack % needed in order to use layers etc
+%    \forcecolorhack % needed in order to use layers etc
    \box\scratchbox
    \endgroup}
 

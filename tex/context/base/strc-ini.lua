@@ -26,6 +26,8 @@ local type, next, tonumber, tostring = type, next, tonumber, tostring
 
 local ctxcatcodes, xmlcatcodes = tex.ctxcatcodes, 11 -- tex.xmlcatcodes
 
+local trace_processors = false  trackers.register("structure.processors", function(v) trace_processors = v end)
+
 -- move this
 
 commands = commands or { }
@@ -205,11 +207,16 @@ end
 
 function processors.sprint(catcodes,str,fnc,...)
     local p, s = splitter:match(str)
+    local code
     if registered[p] then
-        texsprint(catcodes,format("\\applyprocessor{%s}{%s}",p,(fnc and fnc(s,...)) or s))
+        code = format("\\applyprocessor{%s}{%s}",p,(fnc and fnc(s,...)) or s)
     else
-        texsprint(catcodes,(fnc and fnc(str,...)) or str)
+        code = (fnc and fnc(str,...)) or str
     end
+    if trace_processors then
+        logs.report("processors","cct: %s, seq: %s",catcodes,code)
+    end
+    texsprint(catcodes,code)
 end
 
 function processors.apply(str)
@@ -271,6 +278,7 @@ function sets.get(namespace,block,name,level,default) -- check if name is passed
     if not ds then
         return default
     end
+--~ print(namespace,block,name,level,ds)
     local dn
     if name and name ~= "" then
         if block and block ~= "" then

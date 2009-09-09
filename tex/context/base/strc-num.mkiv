@@ -232,7 +232,7 @@
        separatorset  = "\structurecounterparameter{#1}\c!prefixseparatorset",
        conversion    = "\structurecounterparameter{#1}\c!prefixconversion",
        conversionset = "\structurecounterparameter{#1}\c!prefixconversionset",
-       stopper       = \!!bs\structurecounterparameter{#1}\c!prefixstopper\!!es,
+    %  stopper       = \!!bs\structurecounterparameter{#1}\c!prefixstopper\!!es,
        set           = "\structurecounterparameter{#1}\c!prefixset",
        segments      = "\structurecounterparameter{#1}\c!prefixsegments",
        connector     = \!!bs\structurecounterparameter{#1}\c!prefixconnector\!!es,
@@ -347,10 +347,11 @@
 \def\dostructurecountercomponent#1#2#3#4#5#6#7[#8][#9]%
   {\begingroup
    %
-   #2[#8]%
+   #2[\s!haslevel=1,#8]%
    \edef\hasstructurecountercaption{#3\s!hascaption}%
-   \edef\hasstructurecountertitle{#3\s!hastitle}%
-   \edef\hasstructurecounternumber{#3\s!hasnumber}%
+   \edef\hasstructurecountertitle  {#3\s!hastitle}%
+   \edef\hasstructurecounternumber {#3\s!hasnumber}%
+   \edef\hasstructurecounterlevel  {#3\s!haslevel}%
    %
    \edef\currentname{#3\c!name}%
    \ifx\currentname\empty
@@ -364,7 +365,7 @@
    \doif{#3\c!title}\v!none{\setfalse\hasstructurecountercaption\setfalse\hasstructurecounternumber}% will become obsolete
    %
    \ifx\hasstructurecounternumber\v!yes
-     \incrementstructurecounter[\currentcounter]%
+     \doincrementsubstructurecounter[\currentcounter][\hasstructurecounterlevel]%
    \fi
    %
    \ifx\hasstructurecountercaption\v!yes

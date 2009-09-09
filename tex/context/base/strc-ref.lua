@@ -909,7 +909,13 @@ filters.section.title   = filters.generic.title
 filters.section.page    = filters.generic.page
 filters.section.default = filters.section.number
 
---~ filters.float = { }
+filters.formula = {}
+
+filters.formula.default = filters.section.number
+
+filters.float = { }
+
+filters.float.default = filters.section.number
 
 --~ filters.float.title  = filters.generic.title
 --~ filters.float.number = filters.generic.number

@@ -1219,7 +1219,7 @@
    \begingroup
    \dosetfontattribute\??ur\c!style
    \dosetcolorattribute\??ur\c!color
-   \ctxlua{jobreferences.urls.get("#1","\@@uralternative","\@@urspace")}%
+   \hyphenatedurl{\ctxlua{jobreferences.urls.get("#1","\@@uralternative","\@@urspace")}}%
    \endgroup}
 
 %D This macro is hooked into a support macro, and thereby
@@ -1272,10 +1272,10 @@
 \def\dofromurl#1%
   {\dosetfontattribute \??ur\c!style
    \dosetcolorattribute\??ur\c!color
-   #1}
+   \hyphenatedurl{#1}}
 
 \def\dofromfile#1%
-  {#1}
+  {\hyphenatedurl{#1}}
 
 %D We also support:
 %D

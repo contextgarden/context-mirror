@@ -112,7 +112,7 @@
    \c!number=\v!yes,
 \c!prefix=\v!no,
 \c!prefixconnector=.,
-\c!way=bychapter,
+\c!way=\v!by\v!chapter,
 \c!prefixsegments=2:2,
 %    \c!way=\@@nrway,
 %    \c!blockway=\@@nrblockway,
@@ -1161,14 +1161,11 @@
    \blank[\floatsharedparameter\c!spaceafter]}
 
 \ifx\someherefloat\undefined \let\someherefloat\doplacefloatbox \fi
+\ifx\someslotfloat\undefined \let\someslotfloat\doplacefloatbox \fi
 \ifx\somefixdfloat\undefined \let\somefixdfloat\doplacefloatbox \fi
-\ifx\somepagefloat\undefined \let\somepagefloat\doplacefloatbox \fi
 \ifx\sometopsfloat\undefined \let\sometopsfloat\doplacefloatbox \fi
 \ifx\somebotsfloat\undefined \let\somebotsfloat\doplacefloatbox \fi
-
 \ifx\somesidefloat\undefined \let\somesidefloat\doplacefloatbox \fi
-\ifx\somefacefloat\undefined \let\somefacefloat\doplacefloatbox \fi
-\ifx\sometextfloat\undefined \let\sometextfloat\doplacefloatbox \fi
 
 % test case:
 %
@@ -1263,7 +1260,7 @@
         {\page[\v!preference]%
          \docheckiffloatfits
          \ifroomforfloat
-           \placesomeherefloat[#1]%
+           \someherefloat[#1]%
          \else
            \showmessage\m!floatblocks9\empty
            \doreversesavefloat
@@ -1274,7 +1271,7 @@
            \page[\v!preference]%
            \docheckiffloatfits
            \ifroomforfloat
-             \placesomeherefloat[#1]%
+             \someherefloat[#1]%
            \else
              \dosavefloat
            \fi
@@ -1299,15 +1296,15 @@
 \def\sometopbottomfloat[#1]%
   {\doifelse\floatmethod\v!auto
      {\ifdim\pagetotal<\floatautofactor\pagegoal % when empty page, maxdimen
-        \placesometopsfloat[#1]%
+        \sometopsfloat[#1]%
       \else
-        \placesomebotsfloat[#1]%
+        \somebotsfloat[#1]%
       \fi}
      {\doifelse\floatmethod\v!top
-        {\placesometopsfloat[#1]}
+        {\sometopsfloat[#1]}
         {\doifelse\floatmethod\v!bottom
-           {\placesomebotsfloat[#1]}
-           {\placesomeherefloat[#1]}}}}
+           {\somebotsfloat[#1]}
+           {\someherefloat[#1]}}}}
 
 % De onderstaande macro wordt gebruikt bij de macros
 % voor het plaatsen van tabellen en figuren (klopt niet
@@ -2094,16 +2091,18 @@
 \installfloathandler {fxtb} \someslotfloat
 \installfloathandler {fxbt} \someslotfloat
 
-\registerotrcommand\placesomeslotfloat      % \def\placesomeslotfloat     {\OTRcommand\someslotfloat}
-\registerotrcommand\placesomeherefloat      % \def\placesomeherefloat     {\OTRcommand\someherefloat}
-\registerotrcommand\placesomefixdfloat      % \def\placesomefixdfloat     {\OTRcommand\somefixdfloat}
-\registerotrcommand\placesomepagefloat      % \def\placesomepagefloat     {\OTRcommand\somepagefloat}
-\registerotrcommand\placesomeleftpagefloat  % \def\placesomeleftpagefloat {\OTRcommand\someleftpagefloat}
-\registerotrcommand\placesomerightpagefloat % \def\placesomerightpagefloat{\OTRcommand\somerightpagefloat}
-\registerotrcommand\placesometopsfloat      % \def\placesometopsfloat     {\OTRcommand\sometopsfloat}
-\registerotrcommand\placesomebotsfloat      % \def\placesomebotsfloat     {\OTRcommand\somebotsfloat}
-\registerotrcommand\placesomesidefloat      % \def\placesomesidefloat     {\OTRcommand\somesidefloat}
-\registerotrcommand\placesomefacefloat      % \def\placesomefacefloat     {\OTRcommand\somefacefloat}
+% no \registerotrcommand\placesome* here!, this has to be cleaned up:
+
+% \def\placesomeslotfloat     {\OTRcommand\someslotfloat}         % \def\placesomeslotfloat     {\someslotfloat}
+% \def\placesomefixdfloat     {\OTRcommand\somefixdfloat}         % \def\placesomefixdfloat     {\somefixdfloat}
+% \def\placesomesidefloat     {\OTRcommand\somesidefloat}         % \def\placesomesidefloat     {\somesidefloat}
+% \def\placesomefacefloat     {\OTRcommand\somefacefloat}         % \def\placesomefacefloat     {\somefacefloat}
+% \def\placesomepagefloat     {\OTRcommand\somepagefloat}         % \def\placesomepagefloat     {\somepagefloat}
+% \def\placesomeleftpagefloat {\OTRcommand\someleftpagefloat}     % \def\placesomeleftpagefloat {\someleftpagefloat}
+% \def\placesomerightpagefloat{\OTRcommand\somerightpagefloat}    % \def\placesomerightpagefloat{\somerightpagefloat}
+% \def\placesomeherefloat     {\OTRcommand\someherefloat}         % \def\placesomeherefloat     {\someherefloat}
+% \def\placesometopsfloat     {\OTRcommand\sometopsfloat}         % \def\placesometopsfloat     {\sometopsfloat}
+% \def\placesomebotsfloat     {\OTRcommand\somebotsfloat}         % \def\placesomebotsfloat     {\somebotsfloat}
 
 \def\someleftsidefloat     [#1]{\somesidefloat[#1]\presetindentation}
 \def\somerightsidefloat    [#1]{\somesidefloat[#1]}
@@ -2117,15 +2116,24 @@
 \def\someinrightedgefloat  [#1]{\somesidefloat[#1]}
 \def\someinmarginfloat     [#1]{\somesidefloat[#1]}
 \def\someherefloat         [#1]{\someelsefloat[\v!here,#1]}
-
 \def\somebackspacefloat    [#1]{\somesidefloat[#1]}
 \def\somecutspacefloat     [#1]{\somesidefloat[#1]}
 
-\def\somefixdfloat     {\placesomefixdfloat}
-\def\somepagefloat     {\placesomepagefloat}
-\def\someleftpagefloat {\placesomeleftpagefloat}
-\def\somerightpagefloat{\placesomerightpagefloat}
-\def\somefacefloat     {\placesomefacefloat}
-\def\someslotfloat     {\placesomeslotfloat}
+\def\sometopsfloat     {\OTRcommand\sometopsfloat}
+\def\somebotsfloat     {\OTRcommand\somebotsfloat}
+\def\someherefloat     {\OTRcommand\someherefloat}
+\def\someslotfloat     {\OTRcommand\someslotfloat}
+\def\somefixdfloat     {\OTRcommand\somefixdfloat}
+\def\somefacefloat     {\OTRcommand\somefacefloat}
+\def\somepagefloat     {\OTRcommand\somepagefloat}
+\def\someleftpagefloat {\OTRcommand\someleftpagefloat}
+\def\somerightpagefloat{\OTRcommand\somerightpagefloat}
+
+% \def\someslotfloat     {\placesomeslotfloat}
+% \def\somefixdfloat     {\placesomefixdfloat}
+% \def\somefacefloat     {\placesomefacefloat}
+% \def\somepagefloat     {\placesomepagefloat}
+% \def\someleftpagefloat {\placesomeleftpagefloat}
+% \def\somerightpagefloat{\placesomerightpagefloat}
 
 \protect \endinput

@@ -11,14 +11,17 @@ local next, type = next, type
 local min, max = math.min, math.max
 local texsprint, texcount = tex.sprint, tex.count
 
+local trace_counters = false  trackers.register("structure.counters", function(v) trace_counters = v end)
+
 structure              = structure           or { }
 structure.helpers      = structure.helpers   or { }
 structure.sections     = structure.sections  or { }
 structure.counters     = structure.counters  or { }
 structure.documents    = structure.documents or { }
 
-structure.counters      = structure.counters      or { }
-structure.counters.data = structure.counters.data or { }
+structure.counters          = structure.counters          or { }
+structure.counters.data     = structure.counters.data     or { }
+structure.counters.specials = structure.counters.specials or { }
 
 local helpers   = structure.helpers
 local sections  = structure.sections
@@ -31,6 +34,7 @@ local variables = interfaces.variables
 
 local counterdata = counters.data
 local counterranges, tbs = { }, 0
+local counterspecials = counters.specials
 
 counters.collected = counters.collected or { }
 counters.tobesaved = counters.tobesaved or { }
@@ -120,6 +124,7 @@ local function allocate(name,i)
     if not cd then
         cd = {
             level = 1,
+--~ block = "", -- todo
             numbers = nil,
             state = variables.start, -- true
             data = { }
@@ -154,14 +159,18 @@ function counters.record(name,i)
 end
 
 local function savevalue(name,i)
-    local cd = counterdata[name].data[i]
-    local cs = tobesaved[name][i]
-    local cc = collected[name]
-    local cr = cd.range
-    local old = (cc and cc[i] and cc[i][cr]) or 0
-    cs[cr] = cd.number
-    cd.range = cr + 1
-    return old
+    if name then
+        local cd = counterdata[name].data[i]
+        local cs = tobesaved[name][i]
+        local cc = collected[name]
+        local cr = cd.range
+        local old = (cc and cc[i] and cc[i][cr]) or 0
+        cs[cr] = cd.number
+        cd.range = cr + 1
+        return old
+    else
+        return 0
+    end
 end
 
 function counters.define(name, start, counter) -- todo: step
@@ -259,6 +268,24 @@ function counters.setoffset(name,value)
     counters.setvalue(name,"offset",value)
 end
 
+
+local function synchronize(name,d)
+    local dc = d.counter
+    if dc then
+        if trace_counters then
+            logs.report("counters","setting counter %s with name %s to %s",dc,name,d.number)
+        end
+        tex.setcount("global",dc,d.number)
+    end
+    local cs = counterspecials[name]
+    if cs then
+        if trace_counters then
+            logs.report("counters","invoking special for name %s",name)
+        end
+        cs()
+    end
+end
+
 function counters.reset(name,n)
     local cd = counterdata[name]
     if cd then
@@ -267,7 +294,8 @@ function counters.reset(name,n)
             savevalue(name,i)
             d.number = d.start or 0
             d.own = nil
-            if d.counter then texcount[d.counter] = d.number end
+--~ print("\n",name,d.number)
+            synchronize(name,d)
         end
         cd.numbers = nil
     end
@@ -279,7 +307,7 @@ function counters.set(name,n,value)
         local d = allocate(name,n)
         d.number = value or 0
         d.own = nil
-        if d.counter then texcount[d.counter] = d.number end
+        synchronize(name,d)
     end
 end
 
@@ -289,7 +317,7 @@ local function check(name,data,start,stop)
         savevalue(name,i)
         d.number = d.start or 0
         d.own = nil
-        if d.counter then texcount[d.counter] = d.number end
+        synchronize(name,d)
     end
 end
 
@@ -299,10 +327,15 @@ function counters.setown(name,n,value)
         local d = allocate(name,n)
         d.own = value
         d.number = (d.number or d.start or 0) + (d.step or 0)
-        if cd.level and cd.level > 0 then -- 0 is signal that we reset manually
-            check(name,data,n+1) -- where is check defined
+        local level = cd.level
+        if not level or level == -1 then
+            -- -1 is signal that we reset manually
+        elseif level > 0 then
+            check(name,d,n+1)
+        elseif level == 0 then
+            -- happens elsewhere
         end
-        if d.counter then texcount[d.counter] = d.number end
+        synchronize(name,d)
     end
 end
 
@@ -339,20 +372,29 @@ function counters.add(name,n,delta)
         local data = cd.data
         local d = allocate(name,n)
         d.number = (d.number or d.start or 0) + delta*(d.step or 0)
-        if cd.level and cd.level > 0 then -- 0 is signal that we reset manually
+        local level = cd.level
+        if not level or level == -1 then
+            -- -1 is signal that we reset manually
+        elseif level > 0 then
+            -- within countergroup
             check(name,data,n+1)
+        elseif level == 0 then
+            -- happens elsewhere
         end
-        if d.counter then texcount[d.counter] = d.number end
-        return d.number
+        synchronize(name,d)
+        return d.number -- not needed
     end
     return 0
 end
 
-function counters.check(level)
-    for _, v in next, counterdata do
-        if v.level == level then -- is level for whole counter!
-            local data = v.data
-            check(name,data)
+function counters.check(level) -- not used (yet)
+    for name, cd in next, counterdata do
+        -- logs.report("counters","%s %s %s",name,cd.level,level)
+        if cd.level == level then
+            if trace_counters then
+                logs.report("counters","resetting %s at level %s",name,level)
+            end
+            counters.reset(name)
         end
     end
 end

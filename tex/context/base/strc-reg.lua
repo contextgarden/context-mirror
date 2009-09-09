@@ -382,6 +382,7 @@ end
 function jobregisters.analysed(class,options)
     local data = collected[class]
     if data and data.entries then
+        options = options or { }
         sorters.language = options.language or sorters.defaultlanguage
         jobregisters.filter(data,options)   -- filter entries into results (criteria)
         jobregisters.prepare(data,options)  -- adds split table parallel to list table

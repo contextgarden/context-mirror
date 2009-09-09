@@ -42,19 +42,23 @@
 \registerctxluafile{math-map}{1.001}
 \registerctxluafile{math-noa}{1.001}
 
-\definesystemattribute[mathalph]
+\definesystemattribute[mathalphabet]
 \definesystemattribute[mathsize]
-\definesystemattribute[mathpunc]
+\definesystemattribute[mathpunctuation]
+\definesystemattribute[mathgreek]
 
 % todo: only in mmode
 
-% \def\setmathattribute#1#2{\dosetattribute{mathalph}{\ctxlua{tex.sprint(mathematics.sync_a_both (\number\dogetattribute{mathalph},"#1","#2"))}}}
-% \def\setmathalphabet   #1{\dosetattribute{mathalph}{\ctxlua{tex.sprint(mathematics.sync_a_name (\number\dogetattribute{mathalph},"#1"))}}}
-% \def\setmathstyle      #1{\dosetattribute{mathalph}{\ctxlua{tex.sprint(mathematics.sync_a_style(\number\dogetattribute{mathalph},"#1"))}}}
+\unexpanded\def\mathgreekupright{\dosetattribute  {mathgreek}{11}}
+\unexpanded\def\mathgreekitalic {\dosetattribute  {mathgreek}{22}}
+\unexpanded\def\mathgreekdefault{\doresetattribute{mathgreek}}
 
-\def\setmathattribute#1#2{\ctxlua{mathematics.sync_a_both ("#1","#2")}}
-\def\setmathalphabet   #1{\ctxlua{mathematics.sync_a_name ("#1")}}
-\def\setmathstyle      #1{\ctxlua{mathematics.sync_a_style("#1")}}
+\let\mathgreeknormal\mathgreekupright
+\let\mathgreeknone  \mathgreekdefault
+
+\def\setmathattribute#1#2{\ifmmode\ctxlua{mathematics.sync_a_both ("#1","#2")}\fi}
+\def\setmathalphabet   #1{\ifmmode\ctxlua{mathematics.sync_a_name ("#1")}\fi}
+\def\setmathstyle      #1{\ifmmode\ctxlua{mathematics.sync_a_style("#1")}\fi}
 
 \unexpanded\def\mr            {\setmathattribute{regular}{tf}}
 
@@ -414,6 +418,39 @@
 \setupmathematics
   [\v!compact=no]
 
+%D Delayed: greek.
+%D
+%D \starttyping
+%D \usetypescript[cambria]\setupbodyfont[cambria]
+%D \startTEXpage
+%D     $\alpha \mathgreekupright \alpha \mathgreekitalic \alpha$
+%D \stopTEXpage
+%D \stoptyping
+
+% [lc uc] normal (upright) = 1, italic = 2, none = 0
+
+\setevalue{\??mo:greek:\v!normal:\v!normal}{\dosetattribute  {mathgreek}{11}}
+\setevalue{\??mo:greek:\v!normal:\v!italic}{\dosetattribute  {mathgreek}{12}}
+\setevalue{\??mo:greek:\v!normal:\v!none  }{\dosetattribute  {mathgreek}{10}}
+\setevalue{\??mo:greek:\v!italic:\v!normal}{\dosetattribute  {mathgreek}{21}}
+\setevalue{\??mo:greek:\v!italic:\v!italic}{\dosetattribute  {mathgreek}{22}}
+\setevalue{\??mo:greek:\v!italic:\v!none  }{\dosetattribute  {mathgreek}{20}}
+\setevalue{\??mo:greek:\v!none  :\v!normal}{\dosetattribute  {mathgreek}{01}}
+\setevalue{\??mo:greek:\v!none  :\v!italic}{\dosetattribute  {mathgreek}{02}}
+\setevalue{\??mo:greek:\v!none  :\v!none  }{\doresetattribute{mathgreek}}
+
+\appendtoks
+    \csname
+        \??mo:greek%
+        :\ifcsname\??mo:lcgreek:\@@molcgreek\endcsname\@@molcgreek\else\v!none\fi
+        :\ifcsname\??mo:ucgreek:\@@moucgreek\endcsname\@@moucgreek\else\v!none\fi
+    \endcsname
+\to \everymathematics
+
+\setupmathematics
+  [lcgreek=\v!none,
+   ucgreek=\v!none]
+
 %D \macros
 %D   {enablemathpunctuation,disablemathpunctuation}
 %D
@@ -437,7 +474,7 @@
 \to \everysetupmathematics
 
 \appendtoks
-    \ifconditional\automathpunctuation\dosetattribute{mathpunc}\plusone\fi
+    \ifconditional\automathpunctuation\dosetattribute{mathpunctuation}\plusone\fi
 \to \everymathematics
 
 \setupmathematics

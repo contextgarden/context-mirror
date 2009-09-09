@@ -123,8 +123,7 @@
      \def\textskip
        {\scratchdimen\stretchedspaceamount
         \hskip\stretchedspacefactor\scratchdimen}%
-     \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA
-       \textskip\@EA{\textstring}%
+     \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA\textskip\@EA{\textstring}%
    \fi
    \egroup}
 
@@ -216,8 +215,7 @@
 
 \def\underbarmethodc#1#2#3% PERIOD
   {\hbox to #1
-     {\dimen4=#3
-      \advance\dimen4 .2ex
+     {\dimen4=\dimexpr#3+.2ex\relax
       \hskip-.25em
       \xleaders
         \hbox{\hskip.25em\lower\dimen4\hbox{.}}

@@ -195,23 +195,25 @@
 %D Although we could do with one pass, a second pass for
 %D handling the stored sequence is more readable.
 
-\startmode[mkiv]
+\ifnum\texengine=\luatexengine
 
     \def\dohandledigits
-      {\mathcode`\,="003B \mathcode`\.="003A % pretty hard coded
+      {\mathcode`\,="002C \mathcode`\.="002E % pretty hard coded
        \expandafter\handletokens\collecteddigits\with\scandigits
        \ifcase\powerdigits\else\digitpowerseparator^{\savedpowerdigits}\fi}
 
-\stopmode
+    \chardef\mathaxisfontid\zerocount
 
-\startnotmode[mkiv]
+\else
 
     \def\dohandledigits
       {\mathcode`\,="013B \mathcode`\.="013A % pretty hard coded
        \expandafter\handletokens\collecteddigits\with\scandigits
        \ifcase\powerdigits\else\digitpowerseparator^{\savedpowerdigits}\fi}
 
-\stopnotmode
+    \chardef\mathaxisfontid\plustwo
+
+\fi
 
 \def\doscandigit#1%
   {\ifcase\skipdigit\@EA\hbox\else\@EA\hphantom\fi\bgroup
@@ -229,7 +231,6 @@
         \ifodd\digitoutputmode,\else.\fi
       \fi}%
    \egroup}
-
 
 %D The signs can be made smaller and sqeezed into the width
 %D of a digit. Watch the \type {\mathaxisheight} trickery (this
@@ -317,9 +318,9 @@
   {\ifcase\digitsignmode#1\else
      \hbox
        {\setbox\scratchbox\hbox{0}%
-        \scratchdimen\mathaxisheight\textfont2
+        \scratchdimen\mathaxisheight\textfont\mathaxisfontid
         \def\digitsgn##1##2%
-          {\advance\scratchdimen-\mathaxisheight##12
+          {\advance\scratchdimen-\mathaxisheight##1\mathaxisfontid
            \raise\scratchdimen
            \hbox to \wd\scratchbox{\hss$##2#1$\hss}}%
         \ifcase\digitsignmode\or
@@ -390,7 +391,7 @@
 %D
 %D We also permit:
 
-\let\Digits=\digits
+\let\Digits\digits
 
 %D These macros are complicated by the fact that we also
 %D have to support cases like:
@@ -435,8 +436,8 @@
    \handletokens#1\with\scandigittemplate}
 
 \def\scandigittemplate#1%
-  {\if     #1.\ifcase\digitinputmode\chardef\digitinputmode1 \fi% period
-   \else\if#1,\ifcase\digitinputmode\chardef\digitinputmode2 \fi% comma
+  {\if     #1.\ifcase\digitinputmode\chardef\digitinputmode\plusone \fi% period
+   \else\if#1,\ifcase\digitinputmode\chardef\digitinputmode\plustwo \fi% comma
    \fi\fi}
 
 \protect \endinput

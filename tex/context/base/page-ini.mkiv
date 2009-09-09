@@ -187,13 +187,13 @@
   {\appendtoks\dowithotrcommand#1\to\registeredotrcommands}
 
 \def\dopresetotrcommand#1%
- {\expandafter\let\expandafter#1\csname\@@OTR
-    \ifcsname\@@OTR\OTRidentifier\expandafter\gobbleoneargument\string#1\endcsname
-      \OTRidentifier
-    \else\ifcsname\@@OTR\OTRdefault\expandafter\gobbleoneargument\string#1\endcsname % fallback
-      \OTRdefault
-    \fi\fi
-  \expandafter\gobbleoneargument\string#1\endcsname}
+  {\expandafter\let\expandafter#1\csname\@@OTR
+     \ifcsname\@@OTR\OTRidentifier\expandafter\gobbleoneargument\string#1\endcsname
+       \OTRidentifier
+     \else\ifcsname\@@OTR\OTRdefault\expandafter\gobbleoneargument\string#1\endcsname % fallback
+       \OTRdefault
+     \fi\fi
+   \expandafter\gobbleoneargument\string#1\endcsname}
 
 \def\activateotr#1#2%
   {\def\OTRidentifier{#1}%

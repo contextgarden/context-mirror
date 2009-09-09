@@ -303,7 +303,7 @@ dt[0] = top
     local attributes       = attribute^0
 
     local text             = justtext / add_text
-    local balanced         = P { "[" * ((1 - S"[]") + V(1))^0 * "]" } -- taken from lpeg manual, () example
+    local balanced         = P { "[" * ((1 - S("[]")) + V(1))^0 * "]" } -- taken from lpeg manual, () example
 
     local emptyelement     = (spacing * open         * name * attributes * optionalspace * slash * close) / add_empty
     local beginelement     = (spacing * open         * name * attributes * optionalspace         * close) / add_begin

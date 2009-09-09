@@ -298,7 +298,7 @@ local function translate(tag,int,noformat)
     if noformat then
         return ti[tag] or te[tag] or tag
     else
-        return document.setups.formats.special:format(ti[tag] or te[tag] or tag)
+        return format(document.setups.formats.special,ti[tag] or te[tag] or tag)
     end
 end
 
@@ -307,7 +307,7 @@ local function translated(e,int)
     local s = attributes.type or "?"
     local tag = s:match("^cd:(.*)$")
     if attributes.default == "yes" then
-        return document.setups.formats.default:format(tag)
+        return format(document.setups.formats.default,tag or "?")
     elseif tag then
         return translate(tag,int)
     else

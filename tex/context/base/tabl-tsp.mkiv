@@ -29,7 +29,9 @@
 
 % \splitfloat [settings] {\placetable[optional args]{test}} {content}
 
-\definenumber
+% \def\s!noftablesplits{nofsplittables}
+
+\definenumber % we need a nicer name like nofsplittables, we then also need to set \s!parent
   [\??si]
   [\c!way=\v!by\v!text,
    \c!conversion=\@@siconversion]

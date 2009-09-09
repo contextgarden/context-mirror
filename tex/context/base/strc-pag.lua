@@ -11,6 +11,8 @@ local texcount, format = tex.count, string.format
 local ctxcatcodes = tex.ctxcatcodes
 local texsprint, texwrite = tex.sprint, tex.write
 
+local trace_counters = false  trackers.register("structure.counters", function(v) trace_counters = v end)
+
 structure.pages  = structure.pages      or { }
 
 local helpers    = structure.helpers    or { }
@@ -35,49 +37,69 @@ end
 
 job.register('jobpages.collected', jobpages.tobesaved, initializer)
 
-local specification = { }
+local specification = { } -- to be checked
 
-function pages.save(userspec)
+function pages.save(prefixdata,numberdata)
     local realpage, userpage = texcount.realpageno, texcount.userpageno
-    local data = {
-        number = userpage,
-        specification = helpers.simplify(userspec or specification),
-        block = sections.currentblock(),
-    }
-    tobesaved[realpage] = data
-    if not collected[realpage] then
-        collected[realpage] = data
+    if realpage > 0 then
+        if trace_counters then
+            logs.report("counters","saving page %s.%s",realpage,userpage)
+        end
+        local data = {
+            number = userpage,
+            block = sections.currentblock(),
+            prefixdata = prefixdata and helpers.simplify(prefixdata),
+            numberdata = numberdata and helpers.simplify(numberdata),
+        }
+        tobesaved[realpage] = data
+        if not collected[realpage] then
+            collected[realpage] = data
+        end
+    elseif trace_counters then
+        logs.report("counters","not saving page %s.%s",realpage,userpage)
     end
 end
 
-function pages.pagenumber(localspec)
-    local deltaspec
-    if localspec then
-        for k,v in next, localspec do
-            if v ~= "" and v ~= specification[k] then
-                if not deltaspec then deltaspec = { } end
-                deltaspec[k] = v
+function structure.counters.specials.userpage()
+    local r = texcount.realpageno
+    if r > 0 then
+        local t = tobesaved[r]
+        if t then
+            t.number = texcount.userpageno
+            if trace_counters then
+                logs.report("counters","forcing pagenumber of realpage %s to %s",r,t.number)
             end
         end
     end
-    if deltaspec then
-        return { realpage = texcount.realpageno, specification = deltaspec }
-    else
-        return { realpage = texcount.realpageno }
-    end
 end
 
---
+--~ function pages.pagenumber(localspec)
+--~     local deltaspec
+--~     if localspec then
+--~         for k,v in next, localspec do
+--~             if v ~= "" and v ~= specification[k] then
+--~                 if not deltaspec then deltaspec = { } end
+--~                 deltaspec[k] = v
+--~             end
+--~         end
+--~     end
+--~     if deltaspec then
+--~         return { realpage = texcount.realpageno, specification = deltaspec }
+--~     else
+--~         return { realpage = texcount.realpageno }
+--~     end
+--~ end
 
 local function convertnumber(str,n)
     return format("\\convertnumber{%s}{%s}",str or "numbers",n)
 end
 
-function pages.number(realdata,pagespecification)
-    local userpage, block = realdata.number, realdata.block or ""
-    local conversionset = (pagespecification and pagespecification.conversionset) or realdata.conversionset or ""
-    local conversion    = (pagespecification and pagespecification.conversion   ) or realdata.conversion or ""
-    local stopper       = (pagespecification and pagespecification.stopper      ) or realdata.stopper or ""
+function pages.number(realdata,pagespec)
+    local userpage, block = realdata.number, realdata.block or "" -- sections.currentblock()
+    local numberspec = realdata.numberdata
+    local conversionset = (pagespec and pagespec.conversionset and pagespec.conversionset ~= "") or (numberspec and numberspec.conversionset ~= "" and numberspec.conversionset) or ""
+    local conversion    = (pagespec and pagespec.conversion    and pagespec.conversion    ~= "") or (numberspec and numberspec.conversion    ~= "" and numberspec.conversion   ) or ""
+    local stopper       = (pagespec and pagespec.stopper       and pagespec.stopper       ~= "") or (numberspec and numberspec.stopper       ~= "" and numberspec.stopper      ) or ""
     if conversion ~= "" then
         texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
     else
@@ -119,11 +141,11 @@ function pages.analyse(entry,pagespecification)
         return pagedata, false, "current spec blocks prefix"
     end
     -- stored preferences
-    if entry.prefix == no then
-        return pagedata, false, "entry blocks prefix"
-    end
+--~     if entry.prefix == no then
+--~         return pagedata, false, "entry blocks prefix"
+--~     end
     -- stored page state
-    pagespecification = pagedata.specification
+    pagespecification = pagedata.prefixdata
     if pagespecification and pagespecification.prefix == no then
         return pagedata, false, "pagedata blocks prefix"
     end
@@ -143,10 +165,9 @@ end
 function helpers.prefixpage(data,prefixspec,pagespec)
     if data then
         local pagedata, prefixdata, e = pages.analyse(data,pagespec)
---~ tex.write(e)
         if pagedata then
             if prefixdata then
-                sections.typesetnumber(prefixdata,"prefix",prefixspec or false,prefixdata or false,pagedata.specification or false)
+                sections.typesetnumber(prefixdata,"prefix",prefixspec or false,prefixdata or false,pagedata.prefixdata or false)
             end
             pages.number(pagedata,pagespec)
         end

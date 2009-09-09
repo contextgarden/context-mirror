@@ -140,7 +140,8 @@ noads.process = process
 
 -- character remapping
 
-local attribute = attributes.private("mathalph")
+local mathalphabet = attributes.private("mathalphabet")
+local mathgreek    = attributes.private("mathgreek")
 
 noads.processors.relocate = { }
 
@@ -149,33 +150,49 @@ local function report_remap(tag,id,old,new,extra)
 end
 
 local remap_alphabets = mathematics.remap_alphabets
+local remap_greek = mathematics.remap_greek
 local fcs = fonts.color.set
 
+local function relocate(pointer,what,char,newchar)
+    local fam = pointer.fam
+    local id = font_of_family(fam)
+    local tfmdata = fontdata[id]
+    if tfmdata and tfmdata.characters[newchar] then -- we could probably speed this up
+        if trace_remapping then
+            report_remap(what,id,char,newchar)
+        end
+        if trace_analyzing then
+            fcs(pointer,"font:isol")
+        end
+        pointer.char = newchar
+        return true
+    elseif trace_remapping then
+        report_remap(what,id,char,newchar," fails")
+    end
+    return false
+end
+
 noads.processors.relocate[math_char] = function(pointer)
-    local a = has_attribute(pointer,attribute)
+    local done = 0
+    local a = has_attribute(pointer,mathalphabet)
     if a and a > 0 then
-        local fam = pointer.fam
-        set_attribute(pointer,attribute,0)
+        set_attribute(pointer,mathalphabet,0)
         local char = pointer.char
         local newchar = remap_alphabets(a,char)
-        if newchar then
-            local id = font_of_family(fam)
-            local tfmdata = fontdata[id]
-            if tfmdata and tfmdata.characters[newchar] then -- we could probably speed this up
-                if trace_remapping then
-                    report_remap("char",id,char,newchar)
-                end
-                if trace_analyzing then
-                    fcs(pointer,"font:isol")
-                end
-                pointer.char = newchar
-                return
-            elseif trace_remapping then
-                report_remap("char",id,char,newchar," fails")
-            end
+        if newchar and relocate(pointer,"char",char,newchar) then
+            done = done + 1
         end
     end
-    if trace_analyzing then
+    local a = has_attribute(pointer,mathgreek)
+    if a and a > 0 then
+        set_attribute(pointer,mathgreek,0)
+        local char = pointer.char
+        local newchar = remap_greek(a,char)
+        if newchar and relocate(pointer,"greek",char,newchar) then
+            done = done + 1
+        end
+    end
+    if done > 0 and trace_analyzing then
         fcs(pointer,"font:medi")
     end
 end
@@ -207,15 +224,15 @@ end
 -- todo: just replace the character by an ord noad
 -- and remove the right delimiter as well
 
-local attribute = attributes.private("mathsize")
+local mathsize = attributes.private("mathsize")
 
 noads.processors.resize = { }
 
 noads.processors.resize[math_fence] = function(pointer)
     if pointer.subtype == 1 then -- left
-        local a = has_attribute(pointer,attribute)
+        local a = has_attribute(pointer,mathsize)
         if a and a > 0 then
-            set_attribute(pointer,attribute,0)
+            set_attribute(pointer,mathsize,0)
             local d = pointer.delim
             local df = d.small_fam
             local id = font_of_family(df)
@@ -234,7 +251,7 @@ end
 
 -- respacing
 
-local attribute = attributes.private("mathpunc")
+local mathpunctuation = attributes.private("mathpunctuation")
 
 noads.processors.respace = { }
 
@@ -244,9 +261,9 @@ local chardata = characters.data
 
 noads.processors.respace[math_noad] = function(pointer)
     if pointer.subtype == noad_ord then
-        local a = has_attribute(pointer,attribute)
+        local a = has_attribute(pointer,mathpunctuation)
         if a and a > 0 then
-            set_attribute(pointer,attribute,0)
+            set_attribute(pointer,mathpunctuation,0)
             local current_nucleus = pointer.nucleus
             if current_nucleus.id == math_char then
                 local current_char = current_nucleus.char

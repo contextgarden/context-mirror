@@ -277,6 +277,7 @@ local dquote           = S('"')
 local equal            = P('=')
 local slash            = P('/')
 local colon            = P(':')
+local ampersand        = P('&')
 local valid            = R('az', 'AZ', '09') + S('_-.')
 local name_yes         = C(valid^1) * colon * C(valid^1)
 local name_nop         = C(P(true)) * C(valid^1)
@@ -290,7 +291,7 @@ local justtext         = C((1-open)^1)
 local somespace        = space^1
 local optionalspace    = space^0
 
-local value            = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote)
+local value            = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote) -- ampersand and < also invalid in value
 local attribute        = (somespace * name * optionalspace * equal * optionalspace * value) / add_attribute
 local attributes       = attribute^0
 

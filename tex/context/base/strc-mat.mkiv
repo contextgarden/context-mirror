@@ -50,17 +50,17 @@
   [\v!formula]
   [\c!numberconversionset=\v!formula]
 
-\def\storecurrentformulanumber#1#2#3#4% ref, todo:str, \sync % todo: title etc (like float)
+\def\storecurrentformulanumber#1#2#3#4#5% ref, todo:str, \sync % todo: title etc (like float)
   {\dostructurecountercomponent
      {formula}%
-     \getfloatparameters
+     \getformulaparameters
      \formulaparameter
      \detokenizedformulaparameter
      \relax
      \relax
      \relax
      [\c!name=\currentformula,\s!counter=\currentformula,%
-      \s!hascaption=\v!yes,\s!hasnumber=\v!yes,\s!hastitle=\v!yes,%
+      \s!hascaption=\v!yes,\s!hasnumber=\v!yes,\s!hastitle=\v!yes,\s!haslevel=#5,%
       \c!reference=#1,\c!title=,\c!bookmark=]%
      [#2]%
    \globallet\currentformulanumber\laststructurecounternumber
@@ -93,13 +93,13 @@
 \def\dododoformulanumber#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
   {\hbox\bgroup
    \ifconditional\handleformulanumber
-     \ifconditional\incrementformulanumber
-       \ifconditional\insidesubformulas
-         \incrementsubstructurecounter[\v!formula][2]%
-       \else
-         \incrementstructurecounter[\v!formula]%
-       \fi
-     \fi
+%      \ifconditional\incrementformulanumber
+%        \ifconditional\insidesubformulas
+%          \incrementsubstructurecounter[\v!formula][2]%
+%        \else
+%          \incrementstructurecounter[\v!formula]%
+%        \fi
+%      \fi
      %
      % main counter
      \setbox0\hbox{\ignorespaces#2\unskip}%
@@ -111,7 +111,7 @@
        \glet\currentformulasynchronize\relax
        \glet\currentformulaattribute  \relax
      \else
-       \storecurrentformulanumber\currentformulareference\empty\currentformulasynchronize\currentformulaattribute
+       \storecurrentformulanumber\currentformulareference\empty\currentformulasynchronize\currentformulaattribute1%
      \fi
      % subcounter
      \setbox0\hbox{\ignorespaces#4\unskip}%
@@ -123,7 +123,7 @@
        \glet\currentsubformulasynchronize\relax
        \glet\currentsubformulaattribute  \relax
      \else
-       \storecurrentformulanumber\currentsubformulareference\empty\currentsubformulasynchronize\currentsubformulaattribute
+       \storecurrentformulanumber\currentsubformulareference\empty\currentsubformulasynchronize\currentsubformulaattribute2%
      \fi
      %
      \rm % nodig ?
@@ -543,13 +543,13 @@
 
 \def\dostartsubformulas[#1]%
   {\ifconditional\incrementformulanumber
-     \incrementstructurecounter[\v!formula]%
+     \incrementstructurecounter[\v!formula]% ?????
      \edef\subformulasreference{#1}% messy
      \ifx\subformulasreference\empty
        \glet\currentformulassynchronize\relax
        \glet\currentformulasattribute  \relax
      \else
-       \storecurrentformulanumber\subformulasreference\empty\currentformulassynchronize\currentformulasattribute
+       \storecurrentformulanumber\subformulasreference\empty\currentformulassynchronize\currentformulasattribute2%
      \fi
    \fi
    \settrue\insidesubformulas}

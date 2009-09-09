@@ -20,6 +20,9 @@ if not modules then modules = { } end modules ['math-map'] = {
 -- maybe: script/scriptscript dynamic,
 
 local type, next = type, next
+local floor = math.floor
+
+local texattribute = tex.attribute
 
 mathematics = mathematics or { }
 
@@ -295,48 +298,26 @@ end
 
 -- of course we could do some div/mod trickery instead
 
---~ function mathematics.sync_a_both(attribute,alphabet,style)
---~     local data = alphabets[alphabet or "regular"] or alphabets.regular
---~     data = data[style or "tf"] or data.tf
---~     return data and data.attribute or attribute
---~ end
-
---~ function mathematics.sync_a_style(attribute,style)
---~     local r = attribs[attribute]
---~     local alphabet = r and r.alphabet or "regular"
---~     local data = alphabets[alphabet][style]
---~     return data and data.attribute or attribute
---~ end
-
---~ function mathematics.sync_a_name(attribute,alphabet)
---~     local r = attribs[attribute]
---~     local style = r and r.style or "tf"
---~     local data = alphabets[alphabet][style]
---~     return data and data.attribute or attribute
---~ end
-
-local mathalph = attributes.private("mathalph")
-
-local texattribute = tex.attribute
+local mathalphabet = attributes.private("mathalphabet")
 
 function mathematics.sync_a_both(alphabet,style)
     local data = alphabets[alphabet or "regular"] or alphabets.regular
     data = data[style or "tf"] or data.tf
-    texattribute[mathalph] = data and data.attribute or texattribute[mathalph]
+    texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
 end
 
 function mathematics.sync_a_style(style)
-    local r = attribs[attribute]
+    local r = attribs[mathalphabet]
     local alphabet = r and r.alphabet or "regular"
     local data = alphabets[alphabet][style]
-    texattribute[mathalph] = data and data.attribute or texattribute[mathalph]
+    texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
 end
 
 function mathematics.sync_a_name(alphabet)
-    local r = attribs[attribute]
+    local r = attribs[mathalphabet]
     local style = r and r.style or "tf"
     local data = alphabets[alphabet][style]
-    texattribute[mathalph] = data and data.attribute or texattribute[mathalph]
+    texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
 end
 
 local issymbol = mathematics.alphabets.regular.tf.symbols
@@ -359,6 +340,37 @@ function mathematics.remap_alphabets(attribute,char)
         elseif issymbol[char] then
             newchar = offset.symbols[char]
         end
+        return newchar ~= char and newchar
+    end
+    return nil
+end
+
+-- [lc uc] normal (upright) = 1, italic = 2, none = 0
+
+mathematics.lcgreek = {
+    upright = {
+        [0x1D6FC] = 0x003B1,
+    },
+}
+
+mathematics.ucgreek = {
+    upright = {
+    },
+}
+
+local lcgreek, ucgreek = mathematics.lcgreek, mathematics.ucgreek
+
+lcgreek.italic = table.swapped(lcgreek.upright)
+ucgreek.italic = table.swapped(ucgreek.upright)
+
+lcgreek[1], lcgreek[2] = lcgreek.upright, ucgreek.italic
+ucgreek[1], ucgreek[2] = lcgreek.upright, ucgreek.italic
+
+function mathematics.remap_greek(attribute,char)
+    local lc, uc = floor(attribute/10), attribute % 10
+    local g = lcgreek[lc] or ucgreek[uc]
+    if g then
+        local newchar = g[char]
         return newchar ~= char and newchar
     end
     return nil

@@ -246,7 +246,7 @@
   {\collectingtoks\@EA{\the\collectingtoks#1}}
 
 \def\startexpandedcollect#1\stopexpandedcollect
-  {\expanded{\collectingtoks{\the\collectingtoks#1}}}
+  {\normalexpanded{\collectingtoks{\the\collectingtoks#1}}}
 
 \def\startcollecting{\collectingtoks\emptytoks}
 \def\stopcollecting {\the\collectingtoks}

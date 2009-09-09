@@ -78,7 +78,8 @@
 \let\currentstructureblock\s!unknown
 
 \def\startstructureblock[#1]%
-  {\begingroup
+  {%\ctxlua{structure.counters.check(0)}% we assume sane usage of \page, as this is the only workable place (in push)
+   \begingroup
    \edef\currentstructureblock{\ctxlua{structure.sections.pushblock("#1")}}%
    \csname #1true\endcsname % for old times sake
    \setsystemmode\currentstructureblock

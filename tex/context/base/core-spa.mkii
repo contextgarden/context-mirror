@@ -1590,11 +1590,9 @@
    \fi}
 
 \def\dosetupwhitespace % quick test for no list
-  {\ifcsname\??ws\??ws\currentwhitespace\endcsname
-     \csname\??ws\??ws\currentwhitespace\endcsname
-   \else
-     \expandafter\processcommalist\expandafter[\currentwhitespace]\dowhitespacemethod % can be raw
-   \fi\relax
+  {\doifdefinedelse{\??ws\??ws\currentwhitespace}% no ifcsname due to nested \lineheight
+     {\getvalue{\??ws\??ws\currentwhitespace}}%
+     {\processcommacommand[\currentwhitespace]\dowhitespacemethod}%
    \ifgridsnapping
      \setfalse\flexiblewhitespace
      \ifdim\ctxparskip>\zeropoint
@@ -1659,8 +1657,8 @@
 % \def\dowhitespacemethod#1%
 %   {\executeifdefined{\??ws\??ws#1}{\ctxparskip#1}\relax}
 
-\def\dowhitespacemethod#1%
-  {\ifcsname\??ws\??ws#1\endcsname\csname\??ws\??ws#1\endcsname\else\ctxparskip#1\fi\relax}
+\def\dowhitespacemethod#1% \doifdefined because of \lineheight
+  {\doifdefinedelse{\??ws\??ws#1}{\getvalue{\??ws\??ws#1}}{\ctxparskip#1}\relax}
 
 \def\nowhitespace
   {\ifdim\parskip>\zeropoint\relax

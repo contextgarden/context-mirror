@@ -55,9 +55,29 @@
 %    prefixset=mine,
 %    prefixseparatorset=mine]
 
-\definestructurecounter[\s!realpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % \c!counter=realpage
-\definestructurecounter[\s!userpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % \c!counter=userpage
-\definestructurecounter[\s!subpage] [\c!prefix=\v!no,\c!start=1,\c!prefixsegments=] % \c!counter=subpage
+% \definestructureconversionset[frontpart:pagenumber][][romannumerals]
+% \definestructureconversionset[bodypart:pagenumber] [][numbers]
+%
+% \setupuserpagenumber[way=byblock]
+% \setupuserpagenumber[way=bychapter]
+% \setupuserpagenumber[numberconversionset=pagenumber]
+%
+% \starttext
+%     \startfrontmatter
+%         \completecontent[criterium=all]
+%         \chapter{tufte} \section{one} \input tufte \page \section{two} \input tufte \page
+%         \chapter{tufte} \section{one} \input tufte \page \section{two} \input tufte \page
+%     \stopfrontmatter
+%     \startbodymatter
+%         \chapter{knuth} \section{one} \input knuth \page \section{two} \input knuth \page \section{three} \input knuth \page
+%         \chapter{knuth} \section{one} \input knuth \page \section{two} \input knuth \page \section{three} \input knuth \page
+%     \stopbodymatter
+% \stoptext
+
+
+\definestructurecounter[\s!realpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=realpageno]
+\definestructurecounter[\s!userpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=userpageno]
+\definestructurecounter[\s!subpage] [\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=subpageno]
 
 \newtoks\everysetuprealpagenumber % todo: set state: none, start, stop, reset
 \newtoks\everysetupuserpagenumber % todo: set state: none, start, stop, reset
@@ -86,17 +106,21 @@
 \let\setuppagenumber\setupuserpagenumber
 \let\resetpagenumber\resetuserpagenumber
 
-\def\savecurrentpagestate
-  {\ctxlua{structure.pages.save {
+\def\savecurrentpagestate % \normalexpanded?
+  {\ctxlua{structure.pages.save({
         prefix        = "\structurecounterparameter\s!userpage\c!prefix",
         separatorset  = "\structurecounterparameter\s!userpage\c!prefixseparatorset",
         conversion    = "\structurecounterparameter\s!userpage\c!prefixconversion",
         conversionset = "\structurecounterparameter\s!userpage\c!prefixconversionset",
         set           = "\structurecounterparameter\s!userpage\c!prefixset",
-        stopper       = \!!bs\structurecounterparameter\s!userpage\c!prefixstopper\!!es,
         segments      = "\structurecounterparameter\s!userpage\c!prefixsegments",
         connector     = \!!bs\structurecounterparameter\s!userpage\c!prefixconnector\!!es,
-    }}}
+    },{
+        conversion    = "\structurecounterparameter\s!userpage\c!numberconversion",
+        conversionset = "\structurecounterparameter\s!userpage\c!numberconversionset",
+        stopper       = \!!bs\structurecounterparameter\s!userpage\c!numberstopper\!!es,
+    }
+   )}}
 
 \prependtoks
     \savecurrentpagestate

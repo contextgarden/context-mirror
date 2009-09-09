@@ -14,6 +14,8 @@
 %D It may be that some functionality got lost. If it concerns
 %D defined features, let me know and it will be sorted out.
 
+%D We will move the calculations to lua.
+
 \writestatus{loading}{ConTeXt Graphic Macros / Transformations}
 
 \unprotect
@@ -262,6 +264,7 @@
      \else\ifdim\scaleboxdimy>\scaleboxvsize
        \global\scaleboxdimx\zeropoint \global\scaleboxdimy\scaleboxvsize
      \fi\fi
+     \setscaleboxbydimension
    \fi}
 
 \def\setscaleboxbyscale
@@ -380,7 +383,8 @@
           \scratchdimen\scaleboxoutervsize % \textheight
         \fi
       \fi\fi\fi}
-     {\scaleboxoutervsize\scaleparameter\c!maxheight}%
+     {\scratchdimen\scaleparameter\c!maxheight
+      \scaleboxoutervsize\scratchdimen}%
    \doifelsenothing{\scaleparameter\c!height}
      {\scaleboxvsize\scratchdimen}
      {\scaleboxvsize\scaleparameter\c!height}%

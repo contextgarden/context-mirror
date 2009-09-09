@@ -29,12 +29,12 @@
 
 \startxmlsetups ldx:variable
     \xmlflush{#1}
-    \expanded{\variable{\xmlflush{#1}}}
+%     \expanded{\variable{\xmlflush{#1}}}
 \stopxmlsetups
 
 \startxmlsetups ldx:function
     \dontleavehmode{\bf function}\space\xmlflush{#1}
-    \expanded{\function{\xmlflush{#1}}}
+%     \expanded{\function{\xmlflush{#1}}}
 \stopxmlsetups
 
 \startxmlsetups ldx:com
@@ -78,7 +78,7 @@
 
 \startxmlsetups ldx:code
     \startpacked
-    \xmlflush{#1}
+    \xmlflush{#1}\relax
     \stoppacked
 \stopxmlsetups
 
@@ -94,7 +94,7 @@
     } {
         \dontleavehmode \hbox to \hsize \bgroup
             \strut
-            \hskip.25\dimexpr\xmlattdef{#1}{n}{0}em\relax
+            \hskip.25\dimexpr\xmlattdef{#1}{n}{0}em\relax\relax % extra relax needed !
             \xmldoif {\xmlatt{#1}{comment}} {yes} {\tt}
             \xmlflush{#1}
             \hss
@@ -188,4 +188,3 @@
    topspace=2cm]
 
 \endinput
-

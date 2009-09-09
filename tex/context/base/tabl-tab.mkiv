@@ -1296,11 +1296,11 @@
 \letvalue{\e!stop \v!tabletail}=\undefined
 
 \expanded
-  {\def\csname\e!start\v!tablehead\endcsname##1\csname\e!stop\v!tablehead\endcsname%
+  {\long\def\csname\e!start\v!tablehead\endcsname##1\csname\e!stop\v!tablehead\endcsname%
      {\noexpand\setTABLEhead##1\noexpand\end}}
 
 \expanded
-  {\def\csname\e!start\v!tabletail\endcsname##1\csname\e!stop\v!tabletail\endcsname%
+  {\long\def\csname\e!start\v!tabletail\endcsname##1\csname\e!stop\v!tabletail\endcsname%
      {\noexpand\setTABLEtail##1\noexpand\end}}
 
 %D The second argument is a dummy one, by scanning for it, we
@@ -1312,8 +1312,8 @@
 \newconditional\preventTABLEbreak
 \newconditional\someTABLEhead
 
-\def\dosetTABLEhead[#1][#2]#3\end{\setvalue{@@TABLEhead#1}{\TABLEnoalign{\global\settrue\someTABLEhead}#3}}
-\def\dosetTABLEtail[#1][#2]#3\end{\setvalue{@@TABLEtail#1}{\TABLEnoalign{\global\settrue\someTABLEtail}#3}}
+\long\def\dosetTABLEhead[#1][#2]#3\end{\setvalue{@@TABLEhead#1}{\TABLEnoalign{\global\settrue\someTABLEhead}#3}}
+\long\def\dosetTABLEtail[#1][#2]#3\end{\setvalue{@@TABLEtail#1}{\TABLEnoalign{\global\settrue\someTABLEtail}#3}}
 
 %D Redudant \type{\HL}'s are removed automatically, so
 %D mid||lines can be used without problems.

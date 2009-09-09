@@ -321,7 +321,7 @@
      \xdef\currentregistersynchronize{\ctxlatelua{jobregisters.enhance("\currentregister",\currentregisternumber)}}%
    \fi
    \currentregistersynchronize % here?
-   \attribute\destinationattribute\lastdestinationattribute \strut % todo
+   \attribute\destinationattribute\lastdestinationattribute \forcecolorhack % no \strut as it will be removed during cleanup
    \endgroup}
 
 \def\doregister[#1][#2]%
@@ -499,7 +499,14 @@
   {\dodoubleempty\dodetermineregistercharacteristics}
 
 \def\dodetermineregistercharacteristics[#1][#2]%
-  {\edef\utilityregisterlength{\ctxlua{jobregisters.analyse('\currentregister')}}%
+  {\begingroup
+   \edef\currentregister{#1}%
+   \setupregister[\currentregister][#2]%
+   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxlua{jobregisters.analyse('\currentregister',{
+        language  = "\registerparameter\s!language",
+        compress  = "\registerparameter\c!compress",
+        criterium = "\registerparameter\c!criterium",
+   })}}}% brrr
    \ifcase\utilityregisterlength\relax
      \resetsystemmode\v!register
    \else

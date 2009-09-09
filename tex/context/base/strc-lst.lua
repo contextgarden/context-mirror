@@ -103,7 +103,7 @@ function lists.enhance(n)
     if l then
         --
         l.directives = nil -- might change
-        -- save in the right order (happen sat shipout)
+        -- save in the right order (happens at shipout)
         lists.tobesaved[#lists.tobesaved+1] = l
         -- default enhancer (cross referencing)
         l.references.realpage = texcount.realpageno

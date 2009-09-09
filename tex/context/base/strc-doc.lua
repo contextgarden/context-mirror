@@ -58,7 +58,7 @@ function documents.reset()
     data.forced = { }
     data.ownnumbers = { }
     data.status = { }
-    data.checkers = { }
+--~     data.checkers = { }
     data.depth = 0
 end
 
@@ -130,6 +130,8 @@ storage.register("structure/sections/levelmap", structure.sections.levelmap, "st
 
 sections.verbose = true
 
+levelmap.block = -1
+
 function sections.setlevel(name,level) -- level can be number or parent (=string)
     local l = tonumber(level)
     if not l then
@@ -157,6 +159,7 @@ function sections.setblock(name)
 end
 
 function sections.pushblock(name)
+    structure.counters.check(0) -- we assume sane usage of \page between blocks
     local block = name or data.block
     data.blocks[#data.blocks+1] = block
     data.block = block
@@ -233,6 +236,7 @@ function sections.somelevel(given)
             status[i] = nil
         end
     end
+structure.counters.check(newdepth)
     ownnumbers[newdepth] = given.numberdata.ownnumber or ""
     given.numberdata.ownnumber = nil
     data.depth = newdepth
@@ -383,8 +387,8 @@ function sections.userdata(depth,key,default)
     end
 end
 
-function sections.setchecker(name,level,command)
-    data.checkers[name] = (name and command and level > 0 and { level, command }) or nil
+function sections.setchecker(name,level,command) -- hm, checkers are not saved
+    data.checkers[name] = (name and command and level >= 0 and { level, command }) or nil
 end
 
 function sections.current()
@@ -466,7 +470,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             criterium = 0
         end
         --
-        local firstprefix, lastprefix = 0, 100
+        local firstprefix, lastprefix = 0, 16
         if segments then
             local f, l = (tostring(segments)):match("^(.-):(.+)$")
             if f and l then
@@ -486,12 +490,13 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         if numbers then
             local done, preceding = false, false
             local function process(index) -- move to outer
+                -- todo: too much (100 steps)
                 local number = numbers and (numbers[index] or 0)
                 local ownnumber = ownnumbers and ownnumbers[index] or ""
                 if number > criterium or (ownnumber ~= "") then
-                    local block = entry.block
+                    local block = (entry.block ~= "" and entry.block) or sections.currentblock() -- added
                     if preceding then
-                        local separator = sets.get("structure:separators",b,s,preceding,".")
+                        local separator = sets.get("structure:separators",block,separatorset,preceding,".")
                         if separator then
                             processors.sprint(ctxcatcodes,separator)
                         end
@@ -505,7 +510,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                      -- traditional (e.g. used in itemgroups)
                         texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
                     else
-                        local theconversion = sets.get("structure:conversions",block,conversion,index,"numbers")
+                        local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
                         processors.sprint(ctxcatcodes,theconversion,function(str)
                             return format("\\convertnumber{%s}{%s}",str or "numbers",number)
                         end)

@@ -102,7 +102,9 @@
    \fi}
 
 \def\structuresectionlevel#1%
-  {\executeifdefined{\??nh#1\c!level}0}
+  {\executeifdefined{\??nh#1\c!level}{-1}}
+
+\setvalue{\??nh block\c!level}{0} % -1 == manual
 
 % head -> structurehead
 

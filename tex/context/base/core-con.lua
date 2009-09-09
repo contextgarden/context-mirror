@@ -147,41 +147,63 @@ converters.chr     = chr
 converters.chrs    = chrs
 converters.maxchrs = maxchrs
 
-local function do_alphabetic(n,max,chr)
-    if n > max then
-        do_alphabetic(floor((n-1)/max),max,chr)
-        n = (n-1)%max+1
-    end
-    characters.flush(chr(n))
-end
-
 --~ more efficient but needs testing
 --~
 --~ local escapes = utffilters.private.escapes
 --~
---~ local function do_alphabetic(n,max,chr)
+--~ local function do_alphabetic(n,mapping,chr)
+--~     local max = #mapping
 --~     if n > max then
 --~         do_alphabetic(floor((n-1)/max),max,chr)
 --~         n = (n-1)%max+1
 --~     end
---~     n = chr(n)
+--~     n = chr(n,mapping)
 --~     texsprint(ctxcatcodes,escapes[n] or utfchar(n))
 --~ end
 
 --~ local lccodes, uccodes = characters.lccode, characters.uccode
 
-local function lowercased(n) return characters.lccode(code[n] or fallback) end
-local function uppercased(n) return characters.uccode(code[n] or fallback) end
+--~ local function do_alphabetic(n,mapping,chr)
+--~     local max = #mapping
+--~     if n > max then
+--~         do_alphabetic(floor((n-1)/max),mapping,chr)
+--~         n = (n-1)%max+1
+--~     end
+--~     characters.flush(chr(n,mapping))
+--~ end
+--~
+--~ local function lowercased(n,mapping) return characters.lccode(mapping[n] or fallback) end
+--~ local function uppercased(n,mapping) return characters.uccode(mapping[n] or fallback) end
+--~
+--~ function converters.alphabetic(n,code)
+--~     do_alphabetic(n,counters[code] or counters['**'],lowercased) -- lccode catches wrong tables
+--~ end
+--~
+--~ function converters.Alphabetic(n,code)
+--~     do_alphabetic(n,counters[code] or counters['**'],uppercased)
+--~ end
+
+--
+
+local function do_alphabetic(n,mapping,mapper)
+    local chr = mapper(mapping[n] or fallback)
+    local max = #mapping
+    if n > max then
+        do_alphabetic(floor((n-1)/max),mapping,mapper)
+        n = (n-1)%max+1
+    end
+    characters.flush(chr)
+end
 
 function converters.alphabetic(n,code)
-    local code = counters[code] or counters['**']
-    do_alphabetic(n,#code,lowercased) -- lccode catches wrong tables
+    do_alphabetic(n,counters[code] or counters['**'],characters.lccode)
 end
 
 function converters.Alphabetic(n,code)
-    local code = counters[code] or counters['**']
-    do_alphabetic(n,#code,uppercased)
+    do_alphabetic(n,counters[code] or counters['**'],characters.uccode)
 end
+
+--
 
 function converters.character (n) chr (n,96) end
 function converters.Character (n) chr (n,64) end

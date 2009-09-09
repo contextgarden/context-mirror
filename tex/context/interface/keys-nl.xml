@@ -423,7 +423,7 @@
 		<cd:variable name='stopper' value='afsluiter'/>
 		<cd:variable name='stretch' value='rek'/>
 		<cd:variable name='strict' value='streng'/>
-		<cd:variable name='strong' value='strong'/>
+		<cd:variable name='strong' value='sterk'/>
 		<cd:variable name='strut' value='strut'/>
 		<cd:variable name='sub' value='sub'/>
 		<cd:variable name='subbackward' value='subachteruit'/>
@@ -490,7 +490,7 @@
 		<cd:variable name='very' value='zeer'/>
 		<cd:variable name='verystrict' value='zeerstreng'/>
 		<cd:variable name='verytolerant' value='zeersoepel'/>
-		<cd:variable name='weak' value='weak'/>
+		<cd:variable name='weak' value='zwak'/>
 		<cd:variable name='wednesday' value='woensdag'/>
 		<cd:variable name='week' value='week'/>
 		<cd:variable name='weekday' value='weekdag'/>

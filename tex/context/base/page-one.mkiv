@@ -622,7 +622,7 @@
    \else
      \topofinsertfalse
    \fi
-   \global\advance\topinserted \ht\floatbox+\dp\floatbox+\floatbottomskip\relax
+   \global\advance\topinserted\dimexpr\ht\floatbox+\dp\floatbox+\floatbottomskip\relax
    \insert\topins
      {\forgetall
       \iftopofinsert

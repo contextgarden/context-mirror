@@ -262,6 +262,7 @@
      \else\ifdim\scaleboxdimy>\scaleboxvsize
        \global\scaleboxdimx\zeropoint \global\scaleboxdimy\scaleboxvsize
      \fi\fi
+     \setscaleboxbydimension
    \fi}
 
 \def\setscaleboxbyscale
@@ -380,7 +381,8 @@
           \scratchdimen\scaleboxoutervsize % \textheight
         \fi
       \fi\fi\fi}
-     {\scaleboxoutervsize\scaleparameter\c!maxheight}%
+     {\scratchdimen\scaleparameter\c!maxheight
+      \scaleboxoutervsize\scratchdimen}%
    \doifelsenothing{\scaleparameter\c!height}
      {\scaleboxvsize\scratchdimen}
      {\scaleboxvsize\scaleparameter\c!height}%
