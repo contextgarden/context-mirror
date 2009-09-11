@@ -52,9 +52,9 @@ local function tracer(what,state,head,groupcode,before,after,show)
     end
     n = n + 1
     if show then
-        texio.write_nl(format("%s %s: %s, group: %s, nodes: %s -> %s, string: %s",what,n,state,groupcode,before,after,reconstruct(head)))
+        logs.report("nodes","%s %s: %s, group: %s, nodes: %s -> %s, string: %s",what,n,state,groupcode,before,after,reconstruct(head))
     else
-        texio.write_nl(format("%s %s: %s, group: %s, nodes: %s -> %s",what,n,state,groupcode,before,after))
+        logs.report("nodes","%s %s: %s, group: %s, nodes: %s -> %s",what,n,state,groupcode,before,after)
     end
 end
 

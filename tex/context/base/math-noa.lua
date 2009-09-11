@@ -89,7 +89,7 @@ local function process(start,what,n)
     if n then n = n + 1 else n = 0 end
     while start do
         if trace_processing then
-            texio.write_nl(format("%s%s",rep("  ",n or 0),tostring(start)))
+            logs.report("math","%s%s",rep("  ",n or 0),tostring(start))
         end
         local id = start.id
         local proc = what[id]
@@ -150,49 +150,39 @@ local function report_remap(tag,id,old,new,extra)
 end
 
 local remap_alphabets = mathematics.remap_alphabets
-local remap_greek = mathematics.remap_greek
 local fcs = fonts.color.set
 
-local function relocate(pointer,what,char,newchar)
-    local fam = pointer.fam
-    local id = font_of_family(fam)
-    local tfmdata = fontdata[id]
-    if tfmdata and tfmdata.characters[newchar] then -- we could probably speed this up
-        if trace_remapping then
-            report_remap(what,id,char,newchar)
-        end
-        if trace_analyzing then
-            fcs(pointer,"font:isol")
-        end
-        pointer.char = newchar
-        return true
-    elseif trace_remapping then
-        report_remap(what,id,char,newchar," fails")
-    end
-    return false
-end
-
 noads.processors.relocate[math_char] = function(pointer)
-    local done = 0
-    local a = has_attribute(pointer,mathalphabet)
-    if a and a > 0 then
-        set_attribute(pointer,mathalphabet,0)
+    local g = has_attribute(pointer,mathgreek) or 0
+    local a = has_attribute(pointer,mathalphabet) or 0
+    if a > 0 or g > 0 then
+        if a > 0 then
+            set_attribute(pointer,mathgreek,0)
+        end
+        if g > 0 then
+            set_attribute(pointer,mathalphabet,0)
+        end
         local char = pointer.char
-        local newchar = remap_alphabets(a,char)
-        if newchar and relocate(pointer,"char",char,newchar) then
-            done = done + 1
+        local newchar = remap_alphabets(char,a,g)
+        if newchar then
+            local fam = pointer.fam
+            local id = font_of_family(fam)
+            local tfmdata = fontdata[id]
+            if tfmdata and tfmdata.characters[newchar] then -- we could probably speed this up
+                if trace_remapping then
+                    report_remap("char",id,char,newchar)
+                end
+                if trace_analyzing then
+                    fcs(pointer,"font:isol")
+                end
+                pointer.char = newchar
+                return true
+            elseif trace_remapping then
+                report_remap("char",id,char,newchar," fails")
+            end
         end
     end
-    local a = has_attribute(pointer,mathgreek)
-    if a and a > 0 then
-        set_attribute(pointer,mathgreek,0)
-        local char = pointer.char
-        local newchar = remap_greek(a,char)
-        if newchar and relocate(pointer,"greek",char,newchar) then
-            done = done + 1
-        end
-    end
-    if done > 0 and trace_analyzing then
+    if trace_analyzing then
         fcs(pointer,"font:medi")
     end
 end

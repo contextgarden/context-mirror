@@ -15,7 +15,7 @@ debugger = debugger or { }
 local counters = { }
 local names = { }
 local getinfo = debug.getinfo
-local format, find, lower, gmatch = string.format, string.find, string.lower, string.gmatch
+local format, find, lower, gmatch, gsub = string.format, string.find, string.lower, string.gmatch, string.gsub
 
 -- one
 
@@ -149,7 +149,7 @@ local data, done = { }, { }
 
 local function set(what,value)
     if type(what) == "string" then
-        what = aux.settings_to_array(what)
+        what = aux.settings_to_array(what) -- inefficient but ok
     end
     for i=1,#what do
         local w = what[i]
@@ -174,6 +174,19 @@ local function reset()
     end
 end
 
+local function enable(what)
+    set(what,true)
+end
+
+local function disable(what)
+    if not what or what == "" then
+        done = { }
+        reset()
+    else
+        set(what,false)
+    end
+end
+
 function trackers.register(what,...)
     what = lower(what)
     local w = data[what]
@@ -192,20 +205,20 @@ function trackers.register(what,...)
 end
 
 function trackers.enable(what)
-    done = { }
-    set(what,true)
+    local e = trackers.enable
+    trackers.enable, done = enable, { }
+    enable(string.simpleesc(what))
+    trackers.enable, done = e, { }
 end
 
 function trackers.disable(what)
-    done = { }
-    if not what or what == "" then
-        trackers.reset(what)
-    else
-        set(what,false)
-    end
+    local e = trackers.disable
+    trackers.disable, done = disable, { }
+    disable(string.simpleesc(what))
+    trackers.disable, done = e, { }
 end
 
-function trackers.reset(what)
+function trackers.reset()
     done = { }
     reset()
 end

@@ -15,6 +15,8 @@ local format, tonumber = string.format, tonumber
 local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write, tex.count
 local insert, remove = table.insert, table.remove
 
+local trace_lists = false  trackers.register("structure.lists", function(v) trace_lists = v end)
+
 local ctxcatcodes = tex.ctxcatcodes
 
 structure.lists     = structure.lists     or { }
@@ -135,7 +137,7 @@ end
 
 local function filter_collected(names, criterium, number, collected)
     local numbers, depth = documents.data.numbers, documents.data.depth
-    local hash, result, all = { }, { }, not names or names == "" or names == variables.all
+    local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
     if not all then
         for s in names:gmatch("[^, ]+") do
             hash[s] = true
@@ -267,24 +269,34 @@ local function filter_collected(names, criterium, number, collected)
             return filter_collected(names,variables.current,number,collected)
         end
     else -- sectionname, number
+        -- now same as register
         local depth = sections.getlevel(criterium)
-        local number = tonumber(number) or 0
-        for i=1,#collected do
-            local v = collected[i]
-            local r = v.references
-            if r then
-                local sectionnumber = jobsections.collected[r.section]
-                if sectionnumber then -- and not sectionnumber.hidenumber then
-                    local cnumbers = sectionnumber.numbers
-                    local metadata = v.metadata
-                    if cnumbers then
---                      if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth and cnumbers[depth] == number then
-                        if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth and (number == 0 or cnumbers[depth] == number) then
-                            result[#result+1] = v
+        local number = tonumber(number) or sections.number_at_depth(depth) or 0
+        detail = format("depth: %s, number: %s, numbers: %s",depth,number,concat(sections.numbers(),".",1,depth))
+        if number > 0 then
+            for i=1,#collected do
+                local v = collected[i]
+                local r = v.references
+                if r then
+                    local sectionnumber = jobsections.collected[r.section]
+                    if sectionnumber then
+                        local metadata = v.metadata
+                        local cnumbers = sectionnumber.numbers
+                        if cnumbers then
+                            if (all or hash[metadata.name or false]) and #cnumbers >= depth and sections.matching_till_depth(depth,cnumbers) then
+                                result[#result+1] = v
+                            end
                         end
                     end
                 end
             end
+        end
+    end
+    if trace_lists then
+        if detail then
+            logs.report("lists","criterium: %s, %s, found: %s",criterium,detail,#result)
+        else
+            logs.report("lists","criterium: %s, found: %s",criterium,#result)
         end
     end
     return result

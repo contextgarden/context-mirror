@@ -112,4 +112,4 @@ end
 --~     end
 --~     return table.concat(t,"")
 --~ end
---~ texio.write_nl(nodes.toutf(tex.box[999].list))
+--~ print(nodes.toutf(tex.box[999].list))

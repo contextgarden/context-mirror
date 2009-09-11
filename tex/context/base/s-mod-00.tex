@@ -22,7 +22,10 @@
 
 \usemodule[units]
 
-\enableactivediscretionaries \newprettytrue
+\doifnotmode{mkiv}{
+    \enableactivediscretionaries
+    \newprettytrue
+}
 
 \unprotect
 
@@ -57,7 +60,8 @@
    \getrawparameters[Module][type=tex,#1]}
 
 \def\startmodule
-  {\dosingleempty\dostartmodule}
+  {\starttext
+   \dosingleempty\dostartmodule}
 
 \def\complexmodule[#1]%
   {\startglobal % i.v.m. \bgroup in \startdocumentation
@@ -71,7 +75,8 @@
      [\v!index]
      [\c!balance=\v!yes,
       \c!indicator=\v!no,
-      \c!criterium=\v!text]}
+      \c!criterium=\v!text]
+   \stoptext}
 
 \def\simplemodule#1%
   {\type{#1}}

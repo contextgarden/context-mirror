@@ -150,29 +150,6 @@
 \def\donormalfield{\doprocessfield\dohandlefield}
 \def\dofitfield   {\doprocessfield\dohandlefitfield}
 
-% \def\doprocessfield#1[#2][#3]% \method [name] [label]
-%   {\dontleavehmode
-%    \begingroup
-%    \loadfieldscripts
-%    \edef\currentfieldname {#2}%
-%    \edef\currentfieldlabel{#3}%
-%    \edef\currentfieldgroup{\ctxlua{backends.codeinjections.getfieldgroup("#2")}}%
-%    \ifx\currentfieldlabel\empty
-%      \let\currentfieldlabel\currentfieldname
-%    \fi
-%    \ifx\currentfieldgroup\empty
-%      #1[#2][\v!label,\v!frame,\v!horizontal][][][]%
-%    \else
-%      \getvalue{\??fd::\currentfieldgroup}%
-%      #1[#2][][][][]% todo: pass setups
-%    \fi
-%    \endgroup}
-
-% \def\dosetupfieldindeed#1#2[#3][#4][#5][#6][#7]%
-%   {#1[#2][#4][#5][#6][#7]}
-%
-% equals:
-
 \def\dosetupfieldindeed#1#2[#3]% [#4][#5][#6][#7]%
   {#1[#2]} % [#4][#5][#6][#7]}
 

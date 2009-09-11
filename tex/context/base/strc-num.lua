@@ -426,7 +426,7 @@ function counters.converted(name,spec) -- name can be number and reference to st
     if cd then
         local spec = spec or { }
         local numbers, ownnumbers = { }, { }
-        local reverse = spec.order == variables["reverse"]
+        local reverse = spec.order == variables.reverse
         local kind = spec.type or "number"
         local v_first, v_next, v_previous, v_last = variables.first, variables.next, variables.previous, variables.last
         local data = cd.data
@@ -451,7 +451,8 @@ function counters.converted(name,spec) -- name can be number and reference to st
                         local vf = v.first
                         local vl = v.last
                         if vl > 0 then
-                            vn = vl - vn + 1 + vf
+                        --  vn = vl - vn + 1 + vf
+                            vn = vl - vn + vf -- see testbed for test
                         end
                     end
                 end

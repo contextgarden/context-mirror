@@ -62,7 +62,7 @@ end
 -- this can be done later
 
 callback.register('start_run',           main.start)
-callback.register('stop_run' ,           main.stop)
+callback.register('stop_run',            main.stop)
 callback.register('report_output_pages', main.report_output_pages)
 callback.register('report_output_log'  , main.report_output_log)
 callback.register('start_page_number'  , main.start_shipout_page)

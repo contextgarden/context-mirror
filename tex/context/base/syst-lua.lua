@@ -20,6 +20,13 @@ function commands.writestatus(a,b,c,...)
         texiowrite_nl(format("%-16s: %s\n",a,b)) -- b can have %'s
     end
 end
+function commands.writedebug(a,b,c,...)
+    if c then
+        texiowrite_nl(format("%-16s| %s\n",a,format(b,c,...)))
+    else
+        texiowrite_nl(format("%-16s| %s\n",a,b)) -- b can have %'s
+    end
+end
 
 function commands.doifelse(b)
     if b then -- faster with if than with expression

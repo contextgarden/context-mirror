@@ -94,17 +94,37 @@
 \unexpanded\def\fraktur   {\ifmmode\expandafter\mathfraktur   \fi}
 \unexpanded\def\gothic    {\ifmmode\expandafter\mathfraktur   \fi}
 
-\unexpanded\def\mathcal #1{{\setmathalphabet{script}#1}}      % for AMS compatibility
-\unexpanded\def\mathfrak#1{{\setmathalphabet{fraktur}#1}}     % for AMS compatibility
-\unexpanded\def\mathbb  #1{{\setmathalphabet{blackboard}#1}}  % for AMS compatibility
+\unexpanded\def\mathcal #1{{\mathscript    #1}}  % for AMS compatibility
+\unexpanded\def\mathfrak#1{{\mathfraktur   #1}}  % for AMS compatibility
+\unexpanded\def\mathbb  #1{{\mathblackboard#1}}  % for AMS compatibility
 
 \let\normalmr\mr
 
+% \prependtoks
+%     \let\mr\normalmr
+%     \let\rm\mathrm \let\ss\mathss \let\tt\mathtt
+%     \let\tf\mathtf \let\bf\mathbf \let\it\mathit \let\sl\mathsl \let\bi\mathbi \let\bs\mathbs
+%     \let\frak\mathfraktur \let\cal\mathscript \let\bbd\mathblackboard
+%     \mathdefault
+% \to \everymathematics
+
+\let\normaltf\tf \unexpanded\def\tf{\ifmmode\mathtf\else\normaltf\fi}
+\let\normalbf\bf \unexpanded\def\bf{\ifmmode\mathbf\else\normalbf\fi}
+\let\normalit\it \unexpanded\def\it{\ifmmode\mathit\else\normalit\fi}
+\let\normalsl\sl \unexpanded\def\sl{\ifmmode\mathsl\else\normalsl\fi}
+\let\normalbi\bi \unexpanded\def\bi{\ifmmode\mathbi\else\normalbi\fi}
+\let\normalbs\bs \unexpanded\def\bs{\ifmmode\mathbs\else\normalbs\fi}
+
+\let\normalrm\rm \unexpanded\def\rm{\ifmmode\mathrm\else\normalrm\fi}
+\let\normalss\ss \unexpanded\def\ss{\ifmmode\mathss\else\normalss\fi}
+\let\normaltt\tt \unexpanded\def\tt{\ifmmode\mathtt\else\normaltt\fi}
+                 \unexpanded\def\mr{\ifmmode            \normalmr\fi}
+
 \prependtoks
-    \let\mr\normalmr
-    \let\rm\mathrm \let\ss\mathss \let\tt\mathtt
-    \let\tf\mathtf \let\bf\mathbf \let\it\mathit \let\sl\mathsl \let\bi\mathbi \let\bs\mathbs
-    \let\frak\mathfraktur \let\cal\mathscript \let\bbd\mathblackboard
+%     \let\mr\normalmr
+%     \let\rm\mathrm \let\ss\mathss \let\tt\mathtt
+%     \let\tf\mathtf \let\bf\mathbf \let\it\mathit \let\sl\mathsl \let\bi\mathbi \let\bs\mathbs
+%     \let\frak\mathfraktur \let\cal\mathscript \let\bbd\mathblackboard
     \mathdefault
 \to \everymathematics
 
@@ -427,24 +447,30 @@
 %D \stopTEXpage
 %D \stoptyping
 
-% [lc uc] normal (upright) = 1, italic = 2, none = 0
+% [lc uc] normal (upright) = 2, italic = 3, none = 0/1
 
-\setevalue{\??mo:greek:\v!normal:\v!normal}{\dosetattribute  {mathgreek}{11}}
-\setevalue{\??mo:greek:\v!normal:\v!italic}{\dosetattribute  {mathgreek}{12}}
-\setevalue{\??mo:greek:\v!normal:\v!none  }{\dosetattribute  {mathgreek}{10}}
-\setevalue{\??mo:greek:\v!italic:\v!normal}{\dosetattribute  {mathgreek}{21}}
-\setevalue{\??mo:greek:\v!italic:\v!italic}{\dosetattribute  {mathgreek}{22}}
-\setevalue{\??mo:greek:\v!italic:\v!none  }{\dosetattribute  {mathgreek}{20}}
-\setevalue{\??mo:greek:\v!none  :\v!normal}{\dosetattribute  {mathgreek}{01}}
-\setevalue{\??mo:greek:\v!none  :\v!italic}{\dosetattribute  {mathgreek}{02}}
-\setevalue{\??mo:greek:\v!none  :\v!none  }{\doresetattribute{mathgreek}}
+\setevalue{\??mo:greek:\v!normal :\v!normal }{\dosetattribute  {mathgreek}{22}}
+\setevalue{\??mo:greek:\v!normal :\v!italic }{\dosetattribute  {mathgreek}{23}}
+\setevalue{\??mo:greek:\v!normal :\v!default}{\dosetattribute  {mathgreek}{21}}
+
+\setevalue{\??mo:greek:\v!italic :\v!normal }{\dosetattribute  {mathgreek}{32}}
+\setevalue{\??mo:greek:\v!italic :\v!italic }{\dosetattribute  {mathgreek}{33}}
+\setevalue{\??mo:greek:\v!italic :\v!default}{\dosetattribute  {mathgreek}{31}}
+
+\setevalue{\??mo:greek:\v!default:\v!normal }{\dosetattribute  {mathgreek}{12}}
+\setevalue{\??mo:greek:\v!default:\v!italic }{\dosetattribute  {mathgreek}{13}}
+\setevalue{\??mo:greek:\v!default:\v!default}{\doresetattribute{mathgreek}}
+
+% bonus:
+
+\setevalue{\??mo:greek:\v!normal :\v!none   }{\dosetattribute  {mathgreek}{21}}
+\setevalue{\??mo:greek:\v!italic :\v!none   }{\dosetattribute  {mathgreek}{31}}
+\setevalue{\??mo:greek:\v!none   :\v!normal }{\dosetattribute  {mathgreek}{12}}
+\setevalue{\??mo:greek:\v!none   :\v!italic }{\dosetattribute  {mathgreek}{13}}
+\setevalue{\??mo:greek:\v!none   :\v!none   }{\doresetattribute{mathgreek}}
 
 \appendtoks
-    \csname
-        \??mo:greek%
-        :\ifcsname\??mo:lcgreek:\@@molcgreek\endcsname\@@molcgreek\else\v!none\fi
-        :\ifcsname\??mo:ucgreek:\@@moucgreek\endcsname\@@moucgreek\else\v!none\fi
-    \endcsname
+    \csname\??mo:greek:\@@molcgreek:\@@moucgreek\endcsname
 \to \everymathematics
 
 \setupmathematics

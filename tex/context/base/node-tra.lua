@@ -360,22 +360,22 @@ function nodes.tosequence(start,stop,compact)
             return concat(t," ")
         end
     else
-        return "<empty>"
+        return "[empty]"
     end
 end
 
 function nodes.report(t,done)
     if done then
         if status.output_active then
-            texio.write(format("<++ %s>",count(t)))
+            logs.report("nodes","output, changed, %s nodes",nodes.count(t))
         else
-            texio.write(format("<+ %s>",count(t)))
+            texio.write("nodes","normal, changed, %s nodes",nodes.count(t))
         end
     else
         if status.output_active then
-            texio.write(format("<-- %s>",count(t)))
+            logs.report("nodes","output, unchanged, %s nodes",nodes.count(t))
         else
-            texio.write(format("<- %s>",count(t)))
+            texio.write("nodes","normal, unchanged, %s nodes",nodes.count(t))
         end
     end
 end

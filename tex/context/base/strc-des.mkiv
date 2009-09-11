@@ -742,7 +742,10 @@
    \xdef\currentdescriptionlabel    {\descriptionparameter\c!label}%
    \xdef\currentdescriptionreference{\descriptionparameter\c!reference}%
    %
-   \doif{\descriptionparameter\c!title}\v!none{\global\nodescriptioncaptiontrue\global\nodescriptionnumbertrue}% will become obsolete
+%    \doif{\descriptionparameter\c!title}\v!none{\global\nodescriptioncaptiontrue\global\nodescriptionnumbertrue}% will become obsolete
+   \ifx\currentdescriptiontitle\v!none % will become obsolete
+     \global\nodescriptioncaptiontrue\global\nodescriptionnumbertrue
+   \fi
    %
    \ifconditional\enumerationnumberenabled
      \doifelsedescriptioncomponent\donothing\doenumerationincrementcounter

@@ -189,6 +189,9 @@ do
             end
         end
 
+usedname = resolvers.find_file(ctxdata.ctxname,"tex")
+found = usedname ~= ""
+
         if not found and defaultname and defaultname ~= "" and lfs.isfile(defaultname) then
             usedname, found = defaultname, true
         end
@@ -338,6 +341,14 @@ do
 
         ctxrunner.savelog(ctxdata)
 
+    end
+
+    function ctxrunner.preppedfile(ctxdata,filename)
+        if ctxdata.prepfiles[file.basename(filename)] then
+            return filename .. ".prep"
+        else
+            return filename
+        end
     end
 
 end
@@ -594,12 +605,12 @@ local function analyze(filename)
     return nil
 end
 
-local function makestub(format,filename)
+local function makestub(format,filename,prepname)
     local stubname = file.replacesuffix(file.basename(filename),'run')
     local f = io.open(stubname,'w')
     if f then
         f:write("\\starttext\n")
-        f:write(string.format(format,filename),"\n")
+        f:write(string.format(format,prepname or filename),"\n")
         f:write("\\stoptext\n")
         f:close()
         filename = stubname
@@ -677,6 +688,7 @@ function scripts.context.run(ctxdata,filename)
                     end
                     if formatfile and scriptfile then
                         -- we default to mkiv xml !
+                        -- the --prep argument might become automatic (and noprep)
                         local suffix = file.extname(filename) or "?"
                         if scripts.context.xmlsuffixes[suffix] or environment.argument("forcexml") then
                             if environment.argument("mkii") then
@@ -688,6 +700,9 @@ function scripts.context.run(ctxdata,filename)
                             filename = makestub("\\ctxlua{context.runfile('%s')}",filename)
                         elseif scripts.context.luasuffixes[suffix] or environment.argument("forcelua") then
                             filename = makestub("\\ctxlua{dofile('%s')}",filename)
+                        elseif environment.argument("prep") then
+                            -- we need to keep the original jobname
+                            filename = makestub("\\readfile{%s}{}{}",filename,ctxrunner.preppedfile(ctxdata,filename))
                         end
                         --
                         -- todo: also other stubs

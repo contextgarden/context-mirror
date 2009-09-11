@@ -13,16 +13,18 @@ local match, gmatch, format, concat, sort = string.match, string.gmatch, string.
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local variables, constants = interfaces.variables, interfaces.constants
 
+local trace_bibtex = false  trackers.register("publications.bibtex", function(v) trace_bibtex = v end)
+
 local hacks = bibtex.hacks
 
 local list, done, alldone, used, registered, ordered  = { }, { }, { }, { }, { }, { }
 local mode = 0
 
-local template = [[
+local template = string.striplong([[
   \citation{*}
-  \bibstyle{%s}
+  \bibstyle{cont-%s}
   \bibdata{%s}
-]]
+]])
 
 function hacks.process(settings)
     local style = settings.style or ""
@@ -31,12 +33,18 @@ function hacks.process(settings)
     if database ~= "" then
         interfaces.showmessage("publications",3)
         io.savedata(file.addsuffix(jobname,"aux"),format(template,style,database))
+        if trace_bibtex then
+            logs.report("publications","processing bibtex file '%s'",jobname)
+        end
         os.execute(format("bibtex %s",jobname))
         -- purge 'm
     end
 end
 
 function hacks.register(str)
+    if trace_bibtex then
+        logs.report("publications","registering bibtex entry '%s'",str)
+    end
     registered[#registered+1] = str
     ordered[str] = #registered
 end

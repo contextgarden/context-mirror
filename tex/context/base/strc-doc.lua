@@ -13,7 +13,7 @@ local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
 
-if not trackers then trackers = { register = function() end } end
+--~ if not trackers then trackers = { register = function() end } end
 
 local trace_sectioning = false  trackers.register("structure.sectioning", function(v) trace_sectioning = v end)
 
@@ -326,6 +326,23 @@ end
 
 function sections.number_at_depth(depth)
     return data.numbers[tonumber(depth) or sections.getlevel(depth) or 0] or 0
+end
+
+function sections.numbers()
+    return data.numbers
+end
+
+function sections.matching_till_depth(depth,numbers)
+    local dn = data.numbers
+    local ok = false
+    for i=1,depth do
+        if dn[i] == numbers[i] then
+            ok = true
+        else
+            return false
+        end
+    end
+    return ok
 end
 
 function sections.getnumber(depth)

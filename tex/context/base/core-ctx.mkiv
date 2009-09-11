@@ -21,6 +21,8 @@
 
 \def\loadctxpreplist{\ctxlua{commands.loadctxpreplist()}\global\let\loadctxpreplist\relax}
 
-\appendtoks\loadctxpreplist\to\everystarttext % will become: \prependtoks\loadctxpreplist\to\everyjob
+% \prependtoks\loadctxpreplist\to\everyjob
+
+\appendtoks\loadctxpreplist\to\everystarttext
 
 \protect \endinput

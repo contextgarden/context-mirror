@@ -68,6 +68,7 @@ classes.variable    = classes.alphabetic
 classes.number      = classes.alphabetic
 
 -- there will be proper functions soon (and we will move this code in-line)
+-- no need for " in class and family (saves space)
 
 local function delcode(target,family,slot)
     return format('\\Udelcode%s="%X "%X ',target,family,slot)

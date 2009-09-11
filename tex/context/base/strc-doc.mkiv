@@ -53,13 +53,19 @@
 \def\dostructurecomponent[#1][#2]% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
    \getparameters[\??ns][#1]%
-   \xdef\currentstructurename     {\structureparameter\c!name}%
-   \xdef\currentstructurecoupling {\structureparameter\c!coupling}%
-   \xdef\currentstructureownnumber{\structureparameter\c!ownnumber}% optional own number
-   \xdef\currentstructurelevel    {\structureparameter\c!level}%
-   \edef\currentstructureexpansion{\structureparameter\c!expansion}%
-   \xdef\currentstructurexmlsetup {\structureparameter\c!xmlsetup}%
-   \xdef\currentstructurecatcodes {\structureparameter\s!catcodes}%
+   \xdef\currentstructurename           {\structureparameter\c!name}%
+   \xdef\currentstructurecoupling       {\structureparameter\c!coupling}%
+   \xdef\currentstructureownnumber      {\structureparameter\c!ownnumber}% optional own number
+   \xdef\currentstructurelevel          {\structureparameter\c!level}%
+   \edef\currentstructureexpansion      {\structureparameter\c!expansion}%
+   \xdef\currentstructurexmlsetup       {\structureparameter\c!xmlsetup}%
+   \xdef\currentstructurecatcodes       {\structureparameter\s!catcodes}%
+   \xdef\currentstructurelabel          {\structureparameter\c!label}%
+   \xdef\currentstructurereference      {\structureparameter\c!reference}%
+   \xdef\currentstructurereferenceprefix{\structureparameter\c!referenceprefix}%
+   \xdef\currentstructureshownumber     {\structureparameter\c!number}%
+   \xdef\currentstructuresaveinlist     {\structureparameter\c!saveinlist}%
+   \xdef\currentstructureincrementnumber{\structureparameter\c!incrementnumber}%
    \ifx\currentstructureexpansion\s!xml
      \xmlstartraw
        \xdef\currentstructuretitle   {\structureparameter\c!title}%
@@ -94,12 +100,6 @@
      \fi
      \globallet\currentstructurecoding\s!tex
    \fi
-   \xdef\currentstructurelabel          {\structureparameter\c!label}%
-   \xdef\currentstructurereference      {\structureparameter\c!reference}%
-   \xdef\currentstructurereferenceprefix{\structureparameter\c!referenceprefix}%
-   \xdef\currentstructureshownumber     {\structureparameter\c!number}%
-   \xdef\currentstructuresaveinlist     {\structureparameter\c!saveinlist}%
-   \xdef\currentstructureincrementnumber{\structureparameter\c!incrementnumber}%
    \setnextinternalreference
    \xdef\currentstructurenumber{\ctxlua{ % todo: combine with next call, adapt marks accordingly
         structure.sections.somelevel {

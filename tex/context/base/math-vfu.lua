@@ -257,7 +257,6 @@ function fonts.vf.math.define(specification,set)
     local size = specification.size -- given size
     local fnt, lst, main = { }, { }, nil
     local start = (trace_virtual or trace_timings) and os.clock()
---~ texio.write_nl("defining font " .. name .. " " .. size)
     local okset, n = { }, 0
     for s=1,#set do
         local ss = set[s]

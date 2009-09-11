@@ -18,13 +18,13 @@ function commands.loadctxpreplist()
         local x = xml.load(ctlname)
         if x then
             islocal = xml.found(x,"ctx:preplist[@local=='yes']")
-            if trace_prepfiles then
+--~             if trace_prepfiles then
                 if islocal then
                     commands.writestatus("systems","loading ctx log file (local)") -- todo: m!systems
                 else
                     commands.writestatus("systems","loading ctx log file (specified)") -- todo: m!systems
                 end
-            end
+--~             end
             for r, d, k in xml.elements(x,"ctx:prepfile") do
                 local dk = d[k]
                 local name = xml.content(dk)

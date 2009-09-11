@@ -164,7 +164,8 @@ class Commands
             if fast or (files.length > 0) then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     files.delete("texexec.pdf")
-                    Kpse.runscript('rlxtools', ['--identify','--collect'], files.join(' ')) unless fast
+                    # Kpse.runscript('rlxtools', ['--identify','--collect'], files.join(' ')) unless fast
+                    system("texmfstart rlxtools --identify --collect #{files.join(' ')}")
                     figures     = @commandline.checkedoption('method', 'a').downcase
                     paperoffset = @commandline.checkedoption('paperoffset', '0pt')
                     backspace   = @commandline.checkedoption('backspace', '1.5cm')
@@ -226,7 +227,8 @@ class Commands
                                 else
                                     markfile = nil
                                 end
-                                Kpse.runscript('ctxtools',ffname,'--document')
+                                # Kpse.runscript('ctxtools',['--document'],ffname)
+                                system("texmfstart ctxtools --document #{ffname}")
                                 if ted = File.silentopen(File.suffixed(ffname,'ted')) then
                                     firstline = ted.gets
                                     if firstline =~ /interface=/o then

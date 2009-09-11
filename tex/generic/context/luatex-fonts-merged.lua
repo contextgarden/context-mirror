@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 09/09/09 14:33:34
+-- merge date  : 09/11/09 18:16:02
 
 do -- begin closure to overcome local limits and interference
 
@@ -197,6 +197,16 @@ function string:pattesc()
     return (gsub(self,".",patterns_escapes))
 end
 
+local simple_escapes = {
+    ["-"] = "%-",
+    ["."] = "%.",
+    ["*"] = ".*",
+}
+
+function string:simpleesc()
+    return (gsub(self,".",simple_escapes))
+end
+
 function string:tohash()
     local t = { }
     for s in gmatch(self,"([^, ]+)") do -- lpeg
@@ -243,6 +253,12 @@ end
 function string:compactlong() -- strips newlines and leading spaces
     self = gsub(self,"[\n\r]+ *","")
     self = gsub(self,"^ *","")
+    return self
+end
+
+function string:striplong() -- strips newlines and leading spaces
+    self = gsub(self,"^%s*","")
+    self = gsub(self,"[\n\r]+ *","\n")
     return self
 end
 

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['l-number'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local format, foor, insert = string.format, math.floor, table.insert
 
 number = number or { }
 
@@ -42,4 +42,15 @@ function number.toset(n)
     return one:match(tostring(n))
 end
 
-
+function number.bits(n,zero)
+    local t, i = { }, (zero and 0) or 1
+    while n > 0 do
+        local m = n % 2
+        if m > 0 then
+            insert(t,1,i)
+        end
+        n = floor(n/2)
+        i = i + 1
+    end
+    return t
+end

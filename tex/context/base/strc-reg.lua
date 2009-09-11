@@ -8,8 +8,10 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 
 local next, type = next, type
 local texwrite, texsprint, texcount = tex.write, tex.sprint, tex.count
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, concat = string.format, string.gmatch, table.concat
 local utfchar = utf.char
+
+local trace_registers = false  trackers.register("structure.registers", function(v) trace_registers = v end)
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -20,13 +22,14 @@ local sections  = structure.sections
 local documents = structure.documents
 local pages     = structure.pages
 
--- to be shared, but tested first
+-- some day we will share registers and lists (although there are some conceptual
+-- differences in the application of keywords)
 
 local function filter_collected(names,criterium,number,collected,prevmode)
     if not criterium or criterium == "" then criterium = variables.all end
     local data = documents.data
     local numbers, depth = data.numbers, data.depth
-    local hash, result, all = { }, { }, not names or names == "" or names == variables.all
+    local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
     if not all then
         for s in gmatch(names,"[^, ]+") do
             hash[s] = true
@@ -117,37 +120,48 @@ local function filter_collected(names,criterium,number,collected,prevmode)
             return filter_collected(names,variables.current,number,collected,prevmode)
         end
     else -- sectionname, number
+        -- beware, this works ok for registers
         local depth = sections.getlevel(criterium)
-        local number = tonumber(number) or 0
-        for i=1,#collected do
-            local v = collected[i]
-            local r = v.references
-            if r then
-                local sectionnumber = jobsections.collected[r.section]
-                if sectionnumber then
-                    local metadata = v.metadata
-                    local cnumbers = sectionnumber.numbers
-                    if cnumbers then
-                        if (all or hash[metadata.name or false]) and #cnumbers >= depth and (number == 0 or cnumbers[depth] == number) then
-                            result[#result+1] = v
+        local number = tonumber(number) or sections.number_at_depth(depth) or 0
+        detail = format("depth: %s, number: %s, numbers: %s",depth,number,concat(sections.numbers(),".",1,depth))
+        if number > 0 then
+            for i=1,#collected do
+                local v = collected[i]
+                local r = v.references
+                if r then
+                    local sectionnumber = jobsections.collected[r.section]
+                    if sectionnumber then
+                        local metadata = v.metadata
+                        local cnumbers = sectionnumber.numbers
+                        if cnumbers then
+                            if (all or hash[metadata.name or false]) and #cnumbers >= depth and sections.matching_till_depth(depth,cnumbers) then
+                                result[#result+1] = v
+                            end
                         end
                     end
                 end
             end
         end
     end
+    if trace_registers then
+        if detail then
+            logs.report("registers","criterium: %s, %s, found: %s",criterium,detail,#result)
+        else
+            logs.report("registers","criterium: %s, found: %s",criterium,#result)
+        end
+    end
     return result
 end
-
-structure.filter_collected = filter_collected
-
--- we follow a different strategy than by lists, where we have a global
--- result table; we might do that here as well but since sorting code is
--- older we delay that decision
 
 jobregisters           = jobregisters or { }
 jobregisters.collected = jobregisters.collected or { }
 jobregisters.tobesaved = jobregisters.tobesaved or { }
+
+jobregisters.filter_collected = filter_collected
+
+-- we follow a different strategy than by lists, where we have a global
+-- result table; we might do that here as well but since sorting code is
+-- older we delay that decision
 
 local tobesaved, collected = jobregisters.tobesaved, jobregisters.collected
 
@@ -302,7 +316,7 @@ function jobregisters.compare(a,b)
 end
 
 function jobregisters.filter(data,options)
-    data.result = structure.filter_collected(nil,options.criterium,options.number,data.entries,true)
+    data.result = jobregisters.filter_collected(nil,options.criterium,options.number,data.entries,true)
 end
 
 function jobregisters.prepare(data)

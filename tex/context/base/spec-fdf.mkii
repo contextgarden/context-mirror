@@ -1171,7 +1171,7 @@
 
 \def\FDFflagMultiLine          {4096} % 13
 \def\FDFflagNoToggleToOff     {16384} % 15
-\def\FDFflagRadio             {32768} % 16
+\def\FDFflagRadio             {32768} % 16 (not used as such)
 \def\FDFflagPushButton        {65536} % 17
 \def\FDFflagPopUp            {131072} % 18
 \def\FDFflagEdit             {262144} % 19
@@ -1376,66 +1376,31 @@
 
 \let\FDFactions\empty
 
-%\def\setFDFactions[#1,#2,#3,#4,#5,#6,#7,#8]%
-%  {\global\let\FDFactions\empty
-%   \setFDFaction D#1%  mousedown
-%   \setFDFaction U#2%  mouseup
-%   \setFDFaction E#3%  enterregion
-%   \setFDFaction X#4%  exitregion
-%   \setFDFaction K#5%  afterkeystroke
-%   \setFDFaction F#6%  formatresult
-%   \setFDFaction V#7%  validateresult
-%   \setFDFaction C#8%  calculatewhatever
-%   \ifx\FDFactions\empty\else
-%     \xdef\FDFactions{/AA << \FDFactions >>}% since 1.3 no longer inherited
-%   \fi}
-%% {\setFDFaction A#2}% mouseup % changed for version 5
-
-% \def\setFDFactions[#1,#2,#3,#4,#5,#6,#7,#8,%
-%   {\global\let\FDFactions\empty
-%    \setFDFaction D#1%  mousedown
-%   %\setFDFaction U#2%  mouseup
-%    \setFDFaction E#3%  enterregion
-%    \setFDFaction X#4%  exitregion
-%    \setFDFaction K#5%  afterkeystroke
-%    \setFDFaction F#6%  formatresult
-%    \setFDFaction V#7%  validateresult
-%    \setFDFaction C#8%  calculatewhatever
-%    \setFDFactionsmore#2,}
-
-% \def\setFDFactionsmore#1,#2,#3]%
-%   {\setFDFaction{Fo}#2%  focusin
-%    \setFDFaction{Bl}#3%  focusout % was I (now pdf ref manual explicitly talks about lowercase l)
-%    \ifx\FDFactions\empty\else
-%      \xdef\FDFactions{/AA << \FDFactions >>}% since 1.3 no longer inherited
-%    \fi
-%    \setFDFaction A#1}% mouseup
-
 \def\setFDFactions[#1,#2,#3,#4,#5,#6,#7,#8,%
   {\global\let\FDFactions\empty
-   \setFDFaction D#1%  mousedown
-   \setFDFaction U#2%  mouseup
-   \setFDFaction E#3%  enterregion
-   \setFDFaction X#4%  exitregion
-   \setFDFaction K#5%  afterkeystroke
-   \setFDFaction F#6%  formatresult
-   \setFDFaction V#7%  validateresult
-   \setFDFaction C#8%  calculatewhatever
+   \setFDFaction D#1\relax%  mousedown
+   \setFDFaction U#2\relax%  mouseup
+   \setFDFaction E#3\relax%  enterregion
+   \setFDFaction X#4\relax%  exitregion
+   \setFDFaction K#5\relax%  afterkeystroke
+   \setFDFaction F#6\relax%  formatresult
+   \setFDFaction V#7\relax%  validateresult
+   \setFDFaction C#8\relax%  calculatewhatever
    \setFDFactionsmore}
 
 \def\setFDFactionsmore#1,#2]%
-  {\setFDFaction{Fo}#1%  focusin
-   \setFDFaction{Bl}#2%  focusout % was I (now pdf ref manual explicitly talks about lowercase l)
+  {\setFDFaction{Fo}#1\relax%  focusin
+   \setFDFaction{Bl}#2\relax%  focusout % was I (now pdf ref manual explicitly talks about lowercase l)
    \ifx\FDFactions\empty\else
      \xdef\FDFactions{/AA << \FDFactions >>}% since 1.3 no longer inherited
    \fi}
 
 % todo, when new var scheme is implemented
 %
-%   \setFDFaction{PO}\@@DriverFieldPageOpen
-%   \setFDFaction{PC}\@@DriverFieldPageClose
-%   \setFDFaction{PV}\@@DriverFieldPageVisible
-%   \setFDFaction{PI}\@@DriverFieldPageInVisible
+%   \setFDFaction{PO}\@@DriverFieldPageOpen\relax
+%   \setFDFaction{PC}\@@DriverFieldPageClose\relax
+%   \setFDFaction{PV}\@@DriverFieldPageVisible\relax
+%   \setFDFaction{PI}\@@DriverFieldPageInVisible\relax
 
 %D The event handler becomes something:
 %D
@@ -1444,7 +1409,7 @@
 %D /A << /S /JavaScript /JS (...) >>
 %D \stoptyping
 
-% \def\setFDFaction#1#2%
+% \def\setFDFaction#1#2\relax%
 %   {\bgroup
 %    \global\let\sanitizedJScode\empty
 %    \def\setFDFaction##1%
@@ -1466,7 +1431,7 @@
 %
 % acrobat 5 supports other that JS actions too
 
-\def\setFDFaction#1#2%
+\def\setFDFaction#1#2\relax%
   {\bgroup
    \def\docommand{\xdef\FDFactions{\FDFactions /#1 << \lastPDFaction >> }}%
    \@EA\handlereferenceactions\@EA{#2}\docommand % one level expansion
@@ -1486,7 +1451,7 @@
 %D a message to the console.
 
 \def\testFDFactions
-  {\def\setFDFaction##1##2%
+  {\def\setFDFaction##1##2\relax%
      {\doPSsanitizeJScode console.show();console.println("executing:##1"); \to\sanitizedJScode
       \edef\FDFactions{\FDFactions /##1 << /S /JavaScript /JS (\sanitizedJScode) >> }}}
 
@@ -1919,6 +1884,11 @@
 \def\doFDFpresetcheckfield#1#2#3#4#5#6#7%
   {\doFDFpresetpushcheckfield{#1}{#2}{#3}{#4}{#5}{#6}{#7}{1}}
 
+% As pdf widgets are rather consistently upward incompatible
+% especially with regards to inheritance, the following code is not
+% quite okay. I've decided no longer to bother about in it in MkII
+% and use a flat model in MkIV which somehow seems to work better.
+
 \def\doFDFpresetradiofield#1#2#3#4#5#6#7#8%
   {\bgroup
    \setFDFlayer\@@DriverFieldLayer
@@ -2003,13 +1973,19 @@
 % seems to be more important than compatibility of documents, which in
 % turn renders acrobat useless for forms.] Anyway, synchronization is
 % broken or not depending on the combination pdfversion/acrobatversion.
+%
+% Hm, nowadays Radio will overload RadiosInUnison so we need to use only one
+% of them.
 
 \def\doFDFpresetradiorecord#1#2#3#4#5%
   {\bgroup
    % < pdf 1.5 (1.5 was broken)
    % \setFDFswitches[Radio,NoToggleToOff,RadiosInUnison,#3]%
    % > pdf 1.5
-   \setFDFswitches[Radio,RadiosInUnison,#3]%
+   % \setFDFswitches[Radio,RadiosInUnison,#3]%
+   % > pdf 1.6
+   \setFDFswitches[RadiosInUnison,#3]%
+   %setFDFswitches[PushButton,RadiosInUnison,#3]% this is what acrobat itself does
    % older, else fatal error
    % \setFDFkids[#4][]%
    % newer

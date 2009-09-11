@@ -97,11 +97,11 @@ end
 function pages.number(realdata,pagespec)
     local userpage, block = realdata.number, realdata.block or "" -- sections.currentblock()
     local numberspec = realdata.numberdata
-    local conversionset = (pagespec and pagespec.conversionset and pagespec.conversionset ~= "") or (numberspec and numberspec.conversionset ~= "" and numberspec.conversionset) or ""
-    local conversion    = (pagespec and pagespec.conversion    and pagespec.conversion    ~= "") or (numberspec and numberspec.conversion    ~= "" and numberspec.conversion   ) or ""
-    local stopper       = (pagespec and pagespec.stopper       and pagespec.stopper       ~= "") or (numberspec and numberspec.stopper       ~= "" and numberspec.stopper      ) or ""
+    local conversionset = (pagespec and pagespec.conversionset ~= "" and pagespec.conversionset) or (numberspec and numberspec.conversionset ~= "" and numberspec.conversionset) or ""
+    local conversion    = (pagespec and pagespec.conversion    ~= "" and pagespec.conversion   ) or (numberspec and numberspec.conversion    ~= "" and numberspec.conversion   ) or ""
+    local stopper       = (pagespec and pagespec.stopper       ~= "" and pagespec.stopper      ) or (numberspec and numberspec.stopper       ~= "" and numberspec.stopper      ) or ""
     if conversion ~= "" then
-        texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+        texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,userpage))
     else
         if conversionset == "" then conversionset = "default" end
         local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")

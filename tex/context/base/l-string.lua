@@ -191,6 +191,16 @@ function string:pattesc()
     return (gsub(self,".",patterns_escapes))
 end
 
+local simple_escapes = {
+    ["-"] = "%-",
+    ["."] = "%.",
+    ["*"] = ".*",
+}
+
+function string:simpleesc()
+    return (gsub(self,".",simple_escapes))
+end
+
 function string:tohash()
     local t = { }
     for s in gmatch(self,"([^, ]+)") do -- lpeg
@@ -237,5 +247,11 @@ end
 function string:compactlong() -- strips newlines and leading spaces
     self = gsub(self,"[\n\r]+ *","")
     self = gsub(self,"^ *","")
+    return self
+end
+
+function string:striplong() -- strips newlines and leading spaces
+    self = gsub(self,"^%s*","")
+    self = gsub(self,"[\n\r]+ *","\n")
     return self
 end

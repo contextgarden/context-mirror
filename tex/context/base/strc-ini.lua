@@ -278,7 +278,6 @@ function sets.get(namespace,block,name,level,default) -- check if name is passed
     if not ds then
         return default
     end
---~ print(namespace,block,name,level,ds)
     local dn
     if name and name ~= "" then
         if block and block ~= "" then
