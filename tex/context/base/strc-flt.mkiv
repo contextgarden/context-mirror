@@ -1260,7 +1260,7 @@
         {\page[\v!preference]%
          \docheckiffloatfits
          \ifroomforfloat
-           \someherefloat[#1]%
+           \placesomeherefloat[#1]%
          \else
            \showmessage\m!floatblocks9\empty
            \doreversesavefloat
@@ -1271,7 +1271,7 @@
            \page[\v!preference]%
            \docheckiffloatfits
            \ifroomforfloat
-             \someherefloat[#1]%
+             \placesomeherefloat[#1]%
            \else
              \dosavefloat
            \fi
@@ -1296,15 +1296,15 @@
 \def\sometopbottomfloat[#1]%
   {\doifelse\floatmethod\v!auto
      {\ifdim\pagetotal<\floatautofactor\pagegoal % when empty page, maxdimen
-        \sometopsfloat[#1]%
+        \placesometopsfloat[#1]%
       \else
-        \somebotsfloat[#1]%
+        \placesomebotsfloat[#1]%
       \fi}
      {\doifelse\floatmethod\v!top
-        {\sometopsfloat[#1]}
+        {\placesometopsfloat[#1]}
         {\doifelse\floatmethod\v!bottom
-           {\somebotsfloat[#1]}
-           {\someherefloat[#1]}}}}
+           {\placesomebotsfloat[#1]}
+           {\placesomeherefloat[#1]}}}}
 
 % De onderstaande macro wordt gebruikt bij de macros
 % voor het plaatsen van tabellen en figuren (klopt niet
@@ -2093,17 +2093,6 @@
 
 % no \registerotrcommand\placesome* here!, this has to be cleaned up:
 
-% \def\placesomeslotfloat     {\OTRcommand\someslotfloat}         % \def\placesomeslotfloat     {\someslotfloat}
-% \def\placesomefixdfloat     {\OTRcommand\somefixdfloat}         % \def\placesomefixdfloat     {\somefixdfloat}
-% \def\placesomesidefloat     {\OTRcommand\somesidefloat}         % \def\placesomesidefloat     {\somesidefloat}
-% \def\placesomefacefloat     {\OTRcommand\somefacefloat}         % \def\placesomefacefloat     {\somefacefloat}
-% \def\placesomepagefloat     {\OTRcommand\somepagefloat}         % \def\placesomepagefloat     {\somepagefloat}
-% \def\placesomeleftpagefloat {\OTRcommand\someleftpagefloat}     % \def\placesomeleftpagefloat {\someleftpagefloat}
-% \def\placesomerightpagefloat{\OTRcommand\somerightpagefloat}    % \def\placesomerightpagefloat{\somerightpagefloat}
-% \def\placesomeherefloat     {\OTRcommand\someherefloat}         % \def\placesomeherefloat     {\someherefloat}
-% \def\placesometopsfloat     {\OTRcommand\sometopsfloat}         % \def\placesometopsfloat     {\sometopsfloat}
-% \def\placesomebotsfloat     {\OTRcommand\somebotsfloat}         % \def\placesomebotsfloat     {\somebotsfloat}
-
 \def\someleftsidefloat     [#1]{\somesidefloat[#1]\presetindentation}
 \def\somerightsidefloat    [#1]{\somesidefloat[#1]}
 \def\sometopfloat          [#1]{\someelsefloat[#1]\nonoindentation}
@@ -2119,21 +2108,22 @@
 \def\somebackspacefloat    [#1]{\somesidefloat[#1]}
 \def\somecutspacefloat     [#1]{\somesidefloat[#1]}
 
-\def\sometopsfloat     {\OTRcommand\sometopsfloat}
-\def\somebotsfloat     {\OTRcommand\somebotsfloat}
-\def\someherefloat     {\OTRcommand\someherefloat}
-\def\someslotfloat     {\OTRcommand\someslotfloat}
-\def\somefixdfloat     {\OTRcommand\somefixdfloat}
-\def\somefacefloat     {\OTRcommand\somefacefloat}
-\def\somepagefloat     {\OTRcommand\somepagefloat}
-\def\someleftpagefloat {\OTRcommand\someleftpagefloat}
-\def\somerightpagefloat{\OTRcommand\somerightpagefloat}
+\def\placesomeslotfloat     {\OTRcommand\someslotfloat}
+\def\placesomeherefloat     {\OTRcommand\someherefloat}
+\def\placesomefixdfloat     {\OTRcommand\somefixdfloat}
+\def\placesomepagefloat     {\OTRcommand\somepagefloat}
+\def\placesomeleftpagefloat {\OTRcommand\someleftpagefloat}
+\def\placesomerightpagefloat{\OTRcommand\somerightpagefloat}
+\def\placesometopsfloat     {\OTRcommand\sometopsfloat}
+\def\placesomebotsfloat     {\OTRcommand\somebotsfloat}
+\def\placesomesidefloat     {\OTRcommand\somesidefloat}
+\def\placesomefacefloat     {\OTRcommand\somefacefloat}
 
-% \def\someslotfloat     {\placesomeslotfloat}
-% \def\somefixdfloat     {\placesomefixdfloat}
-% \def\somefacefloat     {\placesomefacefloat}
-% \def\somepagefloat     {\placesomepagefloat}
-% \def\someleftpagefloat {\placesomeleftpagefloat}
-% \def\somerightpagefloat{\placesomerightpagefloat}
+\def\somefixdfloat     {\placesomefixdfloat}
+\def\somepagefloat     {\placesomepagefloat}
+\def\someleftpagefloat {\placesomeleftpagefloat}
+\def\somerightpagefloat{\placesomerightpagefloat}
+\def\somefacefloat     {\placesomefacefloat}
+\def\someslotfloat     {\placesomeslotfloat}
 
 \protect \endinput

@@ -468,39 +468,6 @@
       \hss}%
    \dp#1\zeropoint}
 
-\definepalet
-  [layout]
-  [grid=red,
-   page=green]
-
-\def\addtextgridlayer#1% to be checked for color and layer
-  {\ifcase\showgridstate\else % 1=bottom 2=top
-     \startcolor[layout:grid]%
-     \setgridbox\scratchbox\makeupwidth\textheight % todo: check color
-     \setbox#1\hbox
-       {\ifcase\showgridstate\or\or\box#1\hskip-\makeupwidth\fi
-        \bgroup % color
-        \ifcase\layoutcolumns\else
-          \gray
-          \setlayoutcomponentattribute\v!grid\v!columns
-          \hbox \layoutcomponentboxattribute to \makeupwidth
-            {\dorecurse\layoutcolumns
-               {\hskip\layoutcolumnwidth
-                \ifnum\recurselevel<\layoutcolumns
-                  \vrule
-                    \!!height\ht\scratchbox
-                    \!!depth\dp\scratchbox
-                    \!!width\layoutcolumndistance
-                \fi}}%
-          \hskip-\makeupwidth
-        \fi
-        \setlayoutcomponentattribute\v!grid\v!lines
-        \hbox \layoutcomponentboxattribute{\box\scratchbox}%
-        \egroup
-        \ifcase\showgridstate\or\hskip-\makeupwidth\box#1\fi}%
-      \stopcolor
-   \fi}
-
 %D The placement of a whole line is handled by the next two
 %D macros. These are hooked into the general purpose token
 %D list registers mentioned before.

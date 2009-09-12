@@ -266,11 +266,12 @@ runners["inner"] = function(var,actions)
 end
 
 runners["inner with arguments"] = function(var,actions)
+    logs.report("references","todo: inner with arguments")
     return false
 end
 
 runners["outer"] = function(var,actions)
-    return link(nil,var.o,nil,nil,actions) -- var.o ?
+    return link(nil,var.f,nil,nil,actions) -- var.o ?
 end
 
 runners["outer with inner"] = function(var,actions)
@@ -279,10 +280,12 @@ runners["outer with inner"] = function(var,actions)
 end
 
 runners["special outer with operation"] = function(var,actions)
-    return false
+    local handler = specials[var.special]
+    return handler and handler(var,actions)
 end
 
 runners["special outer"] = function(var,actions)
+    logs.report("references","todo: special outer")
     return false
 end
 
@@ -292,25 +295,29 @@ runners["special"] = function(var,actions)
 end
 
 runners["outer with inner with arguments"] = function(var,actions)
+    logs.report("references","todo: outer with inner with arguments")
     return false
 end
 
 runners["outer with special and operation and arguments"] = function(var,actions)
+    logs.report("references","todo: outer with special and operation and arguments")
     return false
 end
 
 runners["outer with special"] = function(var,actions)
+    logs.report("references","todo: outer with special")
     return false
 end
 
 runners["outer with special and operation"] = function(var,actions)
+    logs.report("references","todo: outer with special and operation")
     return false
 end
 
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
-function specials.internal(var,actions)
+function specials.internal(var,actions) -- better resolve in strc-ref
     local i = tonumber(var.operation)
     local v = jobreferences.internals[i]
     if not v then
@@ -326,15 +333,24 @@ end
 
 specials.i = specials.internal
 
-function specials.page(var,actions)
-    local p = jobreferences.pages[var.operation]
-    if type(p) == "function" then
-        p = p()
+function specials.page(var,actions) -- better resolve in strc-ref
+    local file = var.f
+    if file then
+        local f = jobreferences.files.data[file]
+        if f then
+            file = f[1] or file
+        end
+        return link(nil,file,nil,p or var.operation,actions)
+    else
+        local p = jobreferences.pages[var.operation]
+        if type(p) == "function" then
+            p = p()
+        end
+        return link(nil,nil,nil,p or var.operation,actions)
     end
-    return link(nil,nil,nil,p or var.operation,actions)
 end
 
-function specials.url(var,actions)
+function specials.url(var,actions) -- better resolve in strc-ref
     local url = var.operation
     if url then
         local u = jobreferences.urls.data[url]
@@ -350,7 +366,7 @@ function specials.url(var,actions)
     return link(url,nil,var.arguments,nil,actions)
 end
 
-function specials.file(var,actions)
+function specials.file(var,actions) -- better resolve in strc-ref
     local file = var.operation
     if file then
         local f = jobreferences.files.data[file]
@@ -361,7 +377,7 @@ function specials.file(var,actions)
     return link(nil,file,var.arguments,nil,actions)
 end
 
-function specials.fileorurl(var,actions)
+function specials.fileorurl(var,actions) -- better resolve in strc-ref
     local whatever, url, file = var.operation, nil, nil
     if whatever then
         local w = jobreferences.files.data[whatever]
@@ -382,7 +398,7 @@ function specials.fileorurl(var,actions)
     return link(url,file,var.arguments,nil,actions)
 end
 
-function specials.program(var,content)
+function specials.program(var,content) -- better resolve in strc-ref
     local program = var.operation
     if program then
         local p = jobreferences.programs[program]

@@ -553,12 +553,6 @@ function jobreferences.expandcurrent() -- todo: two booleans: o_has_tex& a_has_t
     end
 end
 
-local function identify(prefix,reference)
-    local set = resolve(prefix,reference)
-    local bug = false
-    for i=1,#set do
-        local var = set[i]
-        local special, inner, outer, arguments, operation = var.special, var.inner, var.outer, var.arguments, var.operation
 --~ local uo = urls[outer]
 --~ if uo then
 --~     special, operation, argument = "url", uo[1], inner or uo[2] -- maybe more is needed
@@ -568,6 +562,13 @@ local function identify(prefix,reference)
 --~         special, operation, argument = "file", fo[1], inner -- maybe more is needed
 --~     end
 --~ end
+
+local function identify(prefix,reference)
+    local set = resolve(prefix,reference)
+    local bug = false
+    for i=1,#set do
+        local var = set[i]
+        local special, inner, outer, arguments, operation = var.special, var.inner, var.outer, var.arguments, var.operation
         if special then
             local s = specials[special]
             if s then
@@ -579,6 +580,7 @@ local function identify(prefix,reference)
                         -- special()
                         var.kind = "special outer"
                     end
+                    var.f = outer
                 elseif operation then
                     if arguments then
                         -- special(operation{argument,argument})
@@ -613,7 +615,7 @@ local function identify(prefix,reference)
                                 end
                                 var.i = { "reference", r }
                                 jobreferences.resolvers.reference(var)
-                                var.f = f
+                                var.f = outer
                                 var.e = true -- external
                             end
                         end
@@ -635,7 +637,7 @@ local function identify(prefix,reference)
                                     end
                                     var.i = r
                                     jobreferences.resolvers[r[1]](var)
-                                    var.f = f
+                                    var.f = outer
                                 end
                             end
                         end
@@ -658,17 +660,51 @@ local function identify(prefix,reference)
                             -- outer::special()
                             var.kind = "outer with special"
                         end
-                        var.f = f
+                        var.f = outer
                     else
                         var.error = "unknown outer with special"
                     end
                 else
                     -- outer::
                     var.kind = "outer"
-                    var.f = f
+                    var.f = outer
                 end
             else
-                var.error = "unknown outer"
+                if inner then
+                    if arguments then
+                        -- outer::inner{argument}
+                        var.kind = "outer with inner with arguments"
+                    else
+                        -- outer::inner
+                        var.kind = "outer with inner"
+                    end
+                    var.i = { "reference", inner }
+                    jobreferences.resolvers.reference(var)
+                    var.f = outer
+                elseif special then
+                    local s = specials[special]
+                    if s then
+                        if operation then
+                            if arguments then
+                                -- outer::special(operation{argument,argument})
+                                var.kind = "outer with special and operation and arguments"
+                            else
+                                -- outer::special(operation)
+                                var.kind = "outer with special and operation"
+                            end
+                        else
+                            -- outer::special()
+                            var.kind = "outer with special"
+                        end
+                        var.f = outer
+                    else
+                        var.error = "unknown outer with special"
+                    end
+                else
+                    -- outer::
+                    var.kind = "outer"
+                    var.f = outer
+                end
             end
         else
             if arguments then
@@ -731,6 +767,7 @@ local function identify(prefix,reference)
         set[i] = var
     end
     jobreferences.currentset = set
+--  print(bug,table.serialize(set))
     return set, bug
 end
 

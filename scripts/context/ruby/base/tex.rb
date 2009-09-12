@@ -680,6 +680,11 @@ class TEX
                 texformatpath = ''
                 setvariable('error','no permissions to write')
             end
+            if not mpsformats then
+                # we want metafun to be in sync
+                setvariable('mpsformats',defaultmpsformats)
+                mpsformats = validmpsformat(getarrayvariable('mpsformats'))
+            end
         else
             texformatpath = ''
         end

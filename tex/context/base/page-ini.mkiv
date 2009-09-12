@@ -222,16 +222,19 @@
 \registerotrcommand\doflushfloats        % \def\doflushfloats        {\OTRcommand\doflushfloats}
 \registerotrcommand\flushfloatbox        % \def\flushfloatbox        {\OTRcommand\flushfloatbox}
 \registerotrcommand\docheckiffloatfits   % \def\docheckiffloatfits   {\OTRcommand\docheckiffloatfits}
-\registerotrcommand\someherefloat        % \def\someherefloat        {\OTRcommand\someherefloat}
-\registerotrcommand\somefixdfloat        % \def\somefixdfloat        {\OTRcommand\somefixdfloat}
-\registerotrcommand\somepagefloat        % \def\somepagefloat        {\OTRcommand\somepagefloat}
-\registerotrcommand\sometopsfloat        % \def\sometopsfloat        {\OTRcommand\sometopsfloat}
-\registerotrcommand\somebotsfloat        % \def\somebotsfloat        {\OTRcommand\somebotsfloat}
-\registerotrcommand\somesidefloat        % \def\somesidefloat        {\OTRcommand\somesidefloat}
 \registerotrcommand\flushsavedfloats     % \def\flushsavedfloats     {\OTRcommand\flushsavedfloats}
 \registerotrcommand\synchronizehsize     % \def\synchronizehsize     {\OTRcommand\synchronizehsize}
 \registerotrcommand\gotonextpage         % \def\gotonextpage         {\OTRcommand\gotonextpage }
 \registerotrcommand\gotonextpageX        % \def\gotonextpageX        {\OTRcommand\gotonextpageX} % will become obsolete
+
+% wrong, will be redone
+%
+% \registerotrcommand\someherefloat        % \def\someherefloat        {\OTRcommand\someherefloat}
+% \registerotrcommand\somefixdfloat        % \def\somefixdfloat        {\OTRcommand\somefixdfloat}
+% \registerotrcommand\somepagefloat        % \def\somepagefloat        {\OTRcommand\somepagefloat}
+% \registerotrcommand\sometopsfloat        % \def\sometopsfloat        {\OTRcommand\sometopsfloat}
+% \registerotrcommand\somebotsfloat        % \def\somebotsfloat        {\OTRcommand\somebotsfloat}
+% \registerotrcommand\somesidefloat        % \def\somesidefloat        {\OTRcommand\somesidefloat}
 
 % beter een \installotr#1 met #1 = macro en auto test
 
@@ -704,7 +707,47 @@
        \v!frame=>\chardef\gridboxlinemode  \plusthree,
     \v!nonumber=>\chardef\gridboxlinenomode\zerocount,
        \v!right=>\chardef\gridboxlinenomode\plusone,
-        \v!left=>\chardef\gridboxlinenomode\plustwo]}
+        \v!left=>\chardef\gridboxlinenomode\plustwo]%
+   \ifcase\showgridstate
+     \let\addtextgridlayer\gobbleoneargument
+   \else % 1=bottom 2=top
+     \let\addtextgridlayer\doaddtextgridlayer
+   \fi}
+
+\definepalet
+  [layout]
+  [grid=red,
+   page=green]
+
+% if really needed for speed we can cache the grid
+
+\let\addtextgridlayer\gobbleoneargument
+
+\def\doaddtextgridlayer#1% to be checked for color and layer
+  {\startcolor[layout:grid]%
+   \setgridbox\scratchbox\makeupwidth\textheight % todo: check color
+   \global\setbox#1\hbox
+     {\ifcase\showgridstate\or\or\box#1\hskip-\makeupwidth\fi
+      \bgroup % color
+      \ifcase\layoutcolumns\else
+        \gray
+        \setlayoutcomponentattribute\v!grid\v!columns
+        \hbox \layoutcomponentboxattribute to \makeupwidth
+          {\dorecurse\layoutcolumns
+             {\hskip\layoutcolumnwidth
+              \ifnum\recurselevel<\layoutcolumns
+                \vrule
+                  \!!height\ht\scratchbox
+                  \!!depth\dp\scratchbox
+                  \!!width\layoutcolumndistance
+              \fi}}%
+        \hskip-\makeupwidth
+      \fi
+      \setlayoutcomponentattribute\v!grid\v!lines
+      \hbox \layoutcomponentboxattribute{\box\scratchbox}%
+      \egroup
+      \ifcase\showgridstate\or\hskip-\makeupwidth\box#1\fi}%
+   \stopcolor}
 
 \def\buildpagebox#1%
   {\setbox#1\vbox to \paperheight
