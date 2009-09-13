@@ -3163,12 +3163,14 @@
 \def\definefontfeature
   {\dotripleargument\dodefinefontfeature}
 
+\def\dododefinefontfeature#1%
+  {\edef\!!stringa{\ifx\!!stringa\empty\else\!!stringa,\fi\executeifdefined{\??fa#1}\empty}}
+
 \def\dodefinefontfeature[#1][#2][#3]%
   {\doifassignmentelse{#2}
      {\setevalue{\??fa#1}{#2}}
      {\let\!!stringa\empty
-      \def\mkdodefinefontfeature##1{\edef\!!stringa{\ifx\!!stringa\empty\else\!!stringa,\fi##1}}%
-      \processcommalist[#2]\mkdodefinefontfeature
+      \processcommalist[#2]\dododefinefontfeature
       \setevalue{\??fa#1}{\ifx\!!stringa\empty\else\!!stringa,\fi#3}}}
 
 \definefontfeature
@@ -3185,10 +3187,14 @@
 
 \definefontfeature % no calt
   [arabic]
-  [mode=node,language=dflt,script=arab,
+  [language=dflt,script=arab,
    init=yes,medi=yes,fina=yes,isol=yes,
    liga=yes,dlig=yes,rlig=yes,clig=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes]
+
+\definefontfeature
+  [none]
+  [features=no]
 
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.

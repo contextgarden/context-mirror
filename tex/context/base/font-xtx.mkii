@@ -98,11 +98,14 @@
      \fi
    \fi\fi\fi}
 
+\newconditional\enabledfontfeatures
+
 \def\checkfontfilename% -- todo: integrate so that we call do.. directly
   {\expandafter\docheckfontfilename\fontfile*\empty*\relax}
 
 \def\docheckfontfilename#1*#2#3*#4\relax % class overrules file
-  {\edef\checkedfontfeatures
+  {\settrue\enabledfontfeatures
+   \edef\checkedfontfeatures
      {\expandafter\ifx\csname\fontclass\s!features\endcsname\empty
         \ifx\@@fontfeatures\empty\ifx#2\empty\else#2#3\fi\else\@@fontfeatures\fi
       \else\expandafter\ifx\csname\fontclass\s!features\endcsname\relax % redundant, will go away
@@ -121,33 +124,49 @@
        \processcommacommand[\checkedfontfeatures]\doconvertfontfeatures % raw
        \ifx\convertedfontfeatures\empty
          \let\checkedfontfeatures\empty
-       \else
+       \else\ifconditional\enabledfontfeatures
          \edef\checkedfontfeatures{:\convertedfontfeatures}%
-       \fi
+       \else
+         \let\checkedfontfeatures\empty
+       \fi\fi
      \fi
    \fi
    \docheckfontfilenameprefix#1:\empty:\empty\relax
    \doshowcheckedfontfeatures}
 
+\edef\@@fontfeaturesareno {features\v!no}
+\edef\@@fontfeaturesareoff{features\v!off}
+
 \def\dodoconvertfontfeatures#1=#2#3=#4\relax
   {\ifx#2\empty
      % invalid feature
    \else\ifcsname @xtx@#1@#2#3\endcsname
-       \expandafter\ifx\csname @xtx@#1@#2#3\endcsname\empty\else
-         \edef\convertedfontfeatures{\convertedfontfeatures\csname @xtx@#1@#2#3\endcsname;}%
-       \fi
+     \expandafter\ifx\csname @xtx@#1@#2#3\endcsname\empty\else
+       \edef\convertedfontfeatures{\convertedfontfeatures\csname @xtx@#1@#2#3\endcsname;}%
+     \fi
    \else
      \edef\!!stringa{#1}%
      \edef\!!stringb{#2#3}%
-     \edef\convertedfontfeatures
-       {\convertedfontfeatures
-        \ifx\!!stringb\v!yes
-          +\!!stringa
-        \else\ifx\!!stringb\v!no
-          -\!!stringa
-        \else
-          \!!stringa=\!!stringb
-        \fi\fi;}%
+     \edef\!!stringc{#1#2#3}%
+     \ifx\!!stringc\@@fontfeaturesareoff
+       \setfalse\enabledfontfeatures
+     \else\ifx\!!stringc\@@fontfeaturesareno
+       \setfalse\enabledfontfeatures
+     \else
+       \edef\convertedfontfeatures
+         {\convertedfontfeatures
+          \ifx\!!stringb\v!yes
+            +\!!stringa
+          \else\ifx\!!stringb\v!on
+            +\!!stringa
+          \else\ifx\!!stringb\v!no
+            -\!!stringa
+          \else\ifx\!!stringb\v!off
+            -\!!stringa
+          \else
+            \!!stringa=\!!stringb
+          \fi\fi\fi\fi;}%
+     \fi\fi
    \fi\fi}
 
 \def\doconvertfontfeatures#1%

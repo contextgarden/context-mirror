@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 
 local format, tonumber = string.format, tonumber
 local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write, tex.count
-local insert, remove = table.insert, table.remove
+local concat, insert, remove = table.concat, table.insert, table.remove
 
 local trace_lists = false  trackers.register("structure.lists", function(v) trace_lists = v end)
 
