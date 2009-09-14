@@ -941,6 +941,7 @@
 		<cd:constant name='textlayer' value='tekstlaag'/>
 		<cd:constant name='textmargin' value='tekstmarge'/>
 		<cd:constant name='textmethod' value='tekstmethode'/>
+		<cd:constant name='textoverprint' value='textoverprint'/>
 		<cd:constant name='textseparator' value='tekstscheider'/>
 		<cd:constant name='textsize' value='tekstformaat'/>
 		<cd:constant name='textstate' value='tekststatus'/>

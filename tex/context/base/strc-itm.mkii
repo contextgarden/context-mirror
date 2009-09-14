@@ -409,23 +409,22 @@
    \fi\fi}
 
 \def\setitemlevel#1%
-  {\ifnum\currentitemlevel>\zerocount
-     \settrue\firstlistitem
-     %
-     \expanded{\setitemparameter{\currentitemlevel}{\c!start}{1}}%
-     \doifinset{0}{#1}{\setitemparameter\currentitemlevel\c!start{0}}%
-     \setcounter{\@@itemcounter\currentitemlevel}{0}%
-     \doifelsenothing{\getitemparameter\currentitemlevel\c!start}
-       {\def\currentitemoffset{1}}
-       {\def\currentitemoffset{\getitemparameter\currentitemlevel\c!start}%
-        \letitemparameter\currentitemlevel\c!start\empty}%
-     %
-     \def\tempnumber
-       {\countervalue{\@@itemcounter\currentitemlevel}}%
-     \doifelse{\getitemparameter\currentitemlevel\c!placestopper}\v!yes
-       {\def\tempsymbol{\getitemparameter\currentitemlevel\c!stopper}}
-       {\let\tempsymbol\empty}%
-   \fi}
+ {\ifnum\currentitemlevel>\zerocount
+    \settrue\firstlistitem
+    % \expanded{\setitemparameter{\currentitemlevel}{\c!start}{1}}% ***
+    \doifinset{0}{#1}{\setitemparameter\currentitemlevel\c!start{0}}% ***
+    \setcounter{\@@itemcounter\currentitemlevel}{\the\numexpr\getitemparameter\currentitemlevel\c!start-1\relax}% ***
+    \doifelsenothing{\getitemparameter\currentitemlevel\c!start}
+      {\def\currentitemoffset{1}}
+      {\def\currentitemoffset{\getitemparameter\currentitemlevel\c!start}%
+       \letitemparameter\currentitemlevel\c!start\empty}%
+    \def\tempnumber
+      {\countervalue{\@@itemcounter\currentitemlevel}}%
+    \doifelse{\getitemparameter\currentitemlevel\c!placestopper}\v!yes
+      {\def\tempsymbol{\getitemparameter\currentitemlevel\c!stopper}}
+      {\let\tempsymbol\empty}%
+  \fi}
+
 
 \def\actualitemnumber
   {\ifconditional\reverselistitem

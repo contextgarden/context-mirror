@@ -589,6 +589,38 @@
        \donothing
    \fi}
 
+% maybe some day
+%
+% \newconditional\tracemovednotes
+% \def\domovednote#1#2%
+%   {\iflocation
+%      \doshowmovednote{#1}{#2}%
+%    \else\ifconditional\tracemovednotes
+%      \doshowtracednote{#1}{#2}%
+%    \fi\fi}
+% \def\doshowmovednote#1#2%
+%   {\doifreferencefoundelse{\s!fnt:t:\number\internalnotereference}
+%      {\let\savedrealreference\currentrealreference
+%       \doifreferencefoundelse{\s!fnt:f:\number\internalnotereference}
+%         {\ifnum\savedrealreference<\currentrealreference\relax
+%            \symbol[#1]%
+%          \else\ifnum\savedrealreference>\currentrealreference\relax
+%            \symbol[#2]%
+%          \fi\fi}
+%         \donothing}
+%      \donothing}
+% \def\doshowtracednote#1#2%
+%   {\doifreferencefoundelse{\s!fnt:t:\number\internalnotereference}
+%      {\let\savedrealreference\currentrealreference
+%       \doifreferencefoundelse{\s!fnt:f:\number\internalnotereference}
+%         {\ifnum\savedrealreference<\currentrealreference\relax
+%            \writestatus{NOTE}{forward note reference on real page \currentrealreference}%
+%          \else\ifnum\savedrealreference>\currentrealreference\relax
+%            \writestatus{NOTE}{backward note reference on real page \currentrealreference}%
+%          \fi\fi}
+%         \donothing}
+%      \donothing}
+
 \def\dodonote
   {\ifnotesenabled
      \iftrialtypesetting

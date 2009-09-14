@@ -941,6 +941,7 @@
 		<cd:constant name='textlayer' value='لایه‌متن'/>
 		<cd:constant name='textmargin' value='حاشیه‌متن'/>
 		<cd:constant name='textmethod' value='روش‌متن'/>
+		<cd:constant name='textoverprint' value='textoverprint'/>
 		<cd:constant name='textseparator' value='جداکننده‌متن'/>
 		<cd:constant name='textsize' value='اندازه‌متن'/>
 		<cd:constant name='textstate' value='وضعیت‌متن'/>

@@ -787,8 +787,7 @@
   {\dobeginoflist
    \the\initializebibdefinitions
    \edef\currentlist{pubs}%
-%    \doif{\listparameter\c!criterium}\v!cite{\setuplist[pubs][\c!criterium=\v!here]}%
-   \doif{\listparameter\c!criterium}\v!cite{\setuplist[pubs][\c!criterium=\v!previous]}%
+   \doif{\listparameter\c!criterium}\v!cite{\setuplist[pubs][\c!criterium=\v!here]}%
    \ctxlua{bibtex.hacks.reset(\number\bibtexoncemode)}%
    \placestructurelist{pubs}{\listparameter\c!criterium}{\listparameter\c!number}% only collects
    \ctxlua{bibtex.hacks.flush("\@@pbsorttype")}%

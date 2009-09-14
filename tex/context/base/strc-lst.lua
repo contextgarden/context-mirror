@@ -198,6 +198,7 @@ local function filter_collected(names, criterium, number, collected)
             end
         end
     elseif criterium == variables.here then
+        -- this is qquite dirty ... as cnumbers is not sparse we can misuse #cnumbers
         if depth == 0 then
             return filter_collected(names,variables.intro,number,collected)
         else
@@ -210,6 +211,7 @@ local function filter_collected(names, criterium, number, collected)
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
                         if cnumbers then
+print(#cnumbers, depth, table.concat(cnumbers))
                             if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth then
                                 local ok = true
                                 for d=1,depth do

@@ -449,32 +449,24 @@
 
 % [lc uc] normal (upright) = 2, italic = 3, none = 0/1
 
-\setevalue{\??mo:greek:\v!normal :\v!normal }{\dosetattribute  {mathgreek}{22}}
-\setevalue{\??mo:greek:\v!normal :\v!italic }{\dosetattribute  {mathgreek}{23}}
-\setevalue{\??mo:greek:\v!normal :\v!default}{\dosetattribute  {mathgreek}{21}}
+\setevalue{\??mo:greek:\v!normal :\v!normal}{\dosetattribute  {mathgreek}{22}}
+\setevalue{\??mo:greek:\v!normal :\v!italic}{\dosetattribute  {mathgreek}{23}}
+\setevalue{\??mo:greek:\v!normal :\v!none  }{\dosetattribute  {mathgreek}{21}}
 
-\setevalue{\??mo:greek:\v!italic :\v!normal }{\dosetattribute  {mathgreek}{32}}
-\setevalue{\??mo:greek:\v!italic :\v!italic }{\dosetattribute  {mathgreek}{33}}
-\setevalue{\??mo:greek:\v!italic :\v!default}{\dosetattribute  {mathgreek}{31}}
+\setevalue{\??mo:greek:\v!italic :\v!normal}{\dosetattribute  {mathgreek}{32}}
+\setevalue{\??mo:greek:\v!italic :\v!italic}{\dosetattribute  {mathgreek}{33}}
+\setevalue{\??mo:greek:\v!italic :\v!none  }{\dosetattribute  {mathgreek}{31}}
 
-\setevalue{\??mo:greek:\v!default:\v!normal }{\dosetattribute  {mathgreek}{12}}
-\setevalue{\??mo:greek:\v!default:\v!italic }{\dosetattribute  {mathgreek}{13}}
-\setevalue{\??mo:greek:\v!default:\v!default}{\doresetattribute{mathgreek}}
-
-% bonus:
-
-\setevalue{\??mo:greek:\v!normal :\v!none   }{\dosetattribute  {mathgreek}{21}}
-\setevalue{\??mo:greek:\v!italic :\v!none   }{\dosetattribute  {mathgreek}{31}}
-\setevalue{\??mo:greek:\v!none   :\v!normal }{\dosetattribute  {mathgreek}{12}}
-\setevalue{\??mo:greek:\v!none   :\v!italic }{\dosetattribute  {mathgreek}{13}}
-\setevalue{\??mo:greek:\v!none   :\v!none   }{\doresetattribute{mathgreek}}
+\setevalue{\??mo:greek:\v!none   :\v!normal}{\dosetattribute  {mathgreek}{12}}
+\setevalue{\??mo:greek:\v!none   :\v!italic}{\dosetattribute  {mathgreek}{13}}
+\setevalue{\??mo:greek:\v!none   :\v!none  }{\doresetattribute{mathgreek}}
 
 \appendtoks
     \csname\??mo:greek:\@@molcgreek:\@@moucgreek\endcsname
 \to \everymathematics
 
 \setupmathematics
-  [lcgreek=\v!none,
+  [lcgreek=\v!italic,
    ucgreek=\v!none]
 
 %D \macros

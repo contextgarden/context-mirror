@@ -152,6 +152,33 @@ end
 local remap_alphabets = mathematics.remap_alphabets
 local fcs = fonts.color.set
 
+-- we can have a global famdata == fonts.famdata and chrdata == fonts.chrdata
+
+--~ This does not work out well, as there are no fallbacks. Ok, we could
+--~ define a poor mans simplify mechanism.
+--~
+--~ local function checked(pointer)
+--~     local char = pointer.char
+--~     local fam = pointer.fam
+--~     local id = font_of_family(fam)
+--~     local tfmdata = fontdata[id]
+--~     local tc = tfmdata and tfmdata.characters
+--~     if not tc[char] then
+--~         local specials = characters.data[char].specials
+--~         if specials and (specials[1] == "char" or specials[1] == "font") then
+--~             newchar = specials[#specials]
+--~             if trace_remapping then
+--~                 report_remap("fallback",id,char,newchar)
+--~             end
+--~             if trace_analyzing then
+--~                 fcs(pointer,"font:isol")
+--~             end
+--~             pointer.char = newchar
+--~             return true
+--~         end
+--~     end
+--~ end
+
 noads.processors.relocate[math_char] = function(pointer)
     local g = has_attribute(pointer,mathgreek) or 0
     local a = has_attribute(pointer,mathalphabet) or 0
@@ -180,7 +207,11 @@ noads.processors.relocate[math_char] = function(pointer)
             elseif trace_remapping then
                 report_remap("char",id,char,newchar," fails")
             end
+        else
+            -- return checked(pointer)
         end
+    else
+        -- return checked(pointer)
     end
     if trace_analyzing then
         fcs(pointer,"font:medi")

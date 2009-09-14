@@ -19,6 +19,8 @@ local utffind   = utf.find
 local xmlsprint = xml.sprint
 local xmlcprint = xml.cprint
 
+local ctxcatcodes = tex.ctxcatcodes
+
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 
 -- an alternative is to remap to private codes, where we can have
@@ -449,11 +451,11 @@ function xml.functions.remapopenmath(r,d,k)
 end
 
 function lxml.mml.checked_operator(str)
-    texsprint(tex.ctxcatcodes,(utf.gsub(str,".",o_replacements)))
+    texsprint(ctxcatcodes,(utf.gsub(str,".",o_replacements)))
 end
 
 function lxml.mml.stripped(str)
-    tex.sprint(tex.ctxcatcodes,str:strip())
+    tex.sprint(ctxcatcodes,str:strip())
 end
 
 function lxml.mml.mn(id,pattern)
@@ -462,7 +464,7 @@ function lxml.mml.mn(id,pattern)
     local str = xml.content(lxml.id(id),pattern) or ""
     -- str = str:gsub("^%s*(.-)%s*$","%1")
     str = str:gsub("(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
-    texsprint(tex.ctxcatcodes,(str:gsub(".",n_replacements)))
+    texsprint(ctxcatcodes,(str:gsub(".",n_replacements)))
 end
 
 function characters.remapentity(chr,slot)
@@ -471,7 +473,7 @@ end
 
 function lxml.mml.mo(id,pattern)
     local str = xml.content(lxml.id(id),pattern) or ""
-    texsprint(tex.ctxcatcodes,(utf.gsub(str,".",o_replacements)))
+    texsprint(ctxcatcodes,(utf.gsub(str,".",o_replacements)))
 end
 
 function lxml.mml.mi(id,pattern)
@@ -479,9 +481,9 @@ function lxml.mml.mi(id,pattern)
     -- str = str:gsub("^%s*(.-)%s*$","%1")
     local rep = i_replacements[str]
     if rep then
-        texsprint(tex.ctxcatcodes,rep)
+        texsprint(ctxcatcodes,rep)
     else
-        texsprint(tex.ctxcatcodes,(str:gsub(".",i_replacements)))
+        texsprint(ctxcatcodes,(str:gsub(".",i_replacements)))
     end
 end
 
@@ -500,14 +502,14 @@ function lxml.mml.mfenced(id,pattern) -- multiple separators
     id = lxml.id(id)
     local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
     local l, r = l_replacements[left], r_replacements[right]
-    texsprint(tex.ctxcatcodes,"\\enabledelimiter")
+    texsprint(ctxcatcodes,"\\enabledelimiter")
     if l then
-        texsprint(tex.ctxcatcodes,l_replacements[left] or o_replacements[left] or "")
+        texsprint(ctxcatcodes,l_replacements[left] or o_replacements[left] or "")
     else
-        texsprint(tex.ctxcatcodes,o_replacements["@l"])
-        texsprint(tex.ctxcatcodes,left)
+        texsprint(ctxcatcodes,o_replacements["@l"])
+        texsprint(ctxcatcodes,left)
     end
-    texsprint(tex.ctxcatcodes,"\\disabledelimiter")
+    texsprint(ctxcatcodes,"\\disabledelimiter")
     local n = xml.count(id,pattern)
     if n == 0 then
         -- skip
@@ -531,36 +533,36 @@ function lxml.mml.mfenced(id,pattern) -- multiple separators
                 elseif m == "}" then
                     m = "\\}"
                 end
-                texsprint(tex.ctxcatcodes,m)
+                texsprint(ctxcatcodes,m)
             end
         end
     end
-    texsprint(tex.ctxcatcodes,"\\enabledelimiter")
+    texsprint(ctxcatcodes,"\\enabledelimiter")
     if r then
-        texsprint(tex.ctxcatcodes,r_replacements[right] or o_replacements[right] or "")
+        texsprint(ctxcatcodes,r_replacements[right] or o_replacements[right] or "")
     else
-        texsprint(tex.ctxcatcodes,right)
-        texsprint(tex.ctxcatcodes,o_replacements["@r"])
+        texsprint(ctxcatcodes,right)
+        texsprint(ctxcatcodes,o_replacements["@r"])
     end
-    texsprint(tex.ctxcatcodes,"\\disabledelimiter")
+    texsprint(ctxcatcodes,"\\disabledelimiter")
 end
 
 local function flush(e,tag,toggle)
- -- texsprint(tex.ctxcatcodes,(toggle and "^{") or "_{")
+ -- texsprint(ctxcatcodes,(toggle and "^{") or "_{")
     if toggle then
-        texsprint(tex.ctxcatcodes,"^{")
+        texsprint(ctxcatcodes,"^{")
     else
-        texsprint(tex.ctxcatcodes,"_{")
+        texsprint(ctxcatcodes,"_{")
     end
     if tag == "none" then
-        texsprint(tex.ctxcatcodes,"{}")
+        texsprint(ctxcatcodes,"{}")
     else
         xmlsprint(e.dt)
     end
     if not toggle then
-        texsprint(tex.ctxcatcodes,"}")
+        texsprint(ctxcatcodes,"}")
     else
-        texsprint(tex.ctxcatcodes,"}{}")
+        texsprint(ctxcatcodes,"}{}")
     end
     return not toggle
 end
@@ -573,7 +575,7 @@ function lxml.mml.mmultiscripts(id)
         local e = d[k]
         local tag = e.tg
         if tag == "mprescripts" then
-            texsprint(tex.ctxcatcodes,"{}")
+            texsprint(ctxcatcodes,"{}")
             done = true
         elseif done then
             toggle = flush(e,tag,toggle)
@@ -654,7 +656,7 @@ function lxml.mml.mcolumn(root)
             collect(m,dk)
         end
     end
-    tex.sprint(tex.ctxcatcodes,"\\halign\\bgroup\\hss$#$&$#$\\cr")
+    tex.sprint(ctxcatcodes,"\\halign\\bgroup\\hss$#$&$#$\\cr")
     for i=1,#matrix do
         local m = matrix[i]
         local mline = true
@@ -665,7 +667,7 @@ function lxml.mml.mcolumn(root)
             end
         end
         if mline then
-            tex.sprint(tex.ctxcatcodes,"\\noalign{\\obeydepth\\nointerlineskip}")
+            tex.sprint(ctxcatcodes,"\\noalign{\\obeydepth\\nointerlineskip}")
         end
         for j=1,#m do
             local mm = m[j]
@@ -701,14 +703,14 @@ function lxml.mml.mcolumn(root)
                 chr = "\\mmlmcolumndigitspace" -- utfchar(0x2007)
             end
             if j == numbers + 1 then
-                tex.sprint(tex.ctxcatcodes,"&")
+                tex.sprint(ctxcatcodes,"&")
             end
             local nchr = n_replacements[chr]
-            tex.sprint(tex.ctxcatcodes,nchr or chr)
+            tex.sprint(ctxcatcodes,nchr or chr)
         end
-        tex.sprint(tex.ctxcatcodes,"\\crcr")
+        tex.sprint(ctxcatcodes,"\\crcr")
     end
-    tex.sprint(tex.ctxcatcodes,"\\egroup")
+    tex.sprint(ctxcatcodes,"\\egroup")
 end
 
 local spacesplitter = lpeg.Ct(lpeg.splitat(" "))
@@ -728,11 +730,11 @@ function lxml.mml.mtable(root)
     local framespacing = at.framespacing or "0pt"
     local framespacing = at.framespacing or "-\\ruledlinewidth" -- make this an option
 
---~ function texsprint(a,b) print(b) end
-
-    texsprint(tex.ctxcatcodes, format("\\bTABLE[frame=%s,offset=%s]",frametypes[frame or "none"] or "off",framespacing))
+    texsprint(ctxcatcodes, format("\\bTABLE[frame=%s,offset=%s]",frametypes[frame or "none"] or "off",framespacing))
+--~ context.bTABLE { frame = frametypes[frame or "none"] or "off", offset = framespacing }
     for r, d, k in xml.elements(root,"/(mml:mtr|mml:mlabeledtr)") do
-        texsprint(tex.ctxcatcodes,"\\bTR")
+        texsprint(ctxcatcodes,"\\bTR")
+--~ context.bTR()
         local dk = d[k]
         local at = dk.at
         local col = 0
@@ -751,19 +753,28 @@ function lxml.mml.mtable(root)
                 local cra = rowalignments   [at.rowalign    or (rowaligns    and rowaligns   [col]) or rra or "center"] or "lohi"
                 local cca = columnalignments[at.columnalign or (columnaligns and columnaligns[col]) or rca or "center"] or "middle"
                 local cfr = frametypes      [at.frame       or (frames       and frames      [col]) or rfr or "none"  ] or "off"
-                texsprint(tex.ctxcatcodes,format("\\bTD[align={%s,%s},frame=%s,nx=%s,ny=%s]$\\ignorespaces",cra,cca,cfr,columnspan,rowspan))
+                texsprint(ctxcatcodes,format("\\bTD[align={%s,%s},frame=%s,nx=%s,ny=%s]$\\ignorespaces",cra,cca,cfr,columnspan,rowspan))
+--~ texfprint("\\bTD[align={%s,%s},frame=%s,nx=%s,ny=%s]$\\ignorespaces",cra,cca,cfr,columnspan,rowspan)
+--~ context.bTD { align = format("{%s,%s}",cra,cca), frame = cfr, nx = columnspan, ny = rowspan }
+--~ context.bmath()
+--~ context.ignorespaces()
                 xmlcprint(dk)
-                texsprint(tex.ctxcatcodes,"\\removeunwantedspaces$\\eTD") -- $
+                texsprint(ctxcatcodes,"\\removeunwantedspaces$\\eTD") -- $
+--~ context.emath()
+--~ context.removeunwantedspaces()
+--~ context.eTD()
             end
         end
 --~         if dk.tg == "mlabeledtr" then
---~             texsprint(tex.ctxcatcodes,"\\bTD")
+--~             texsprint(ctxcatcodes,"\\bTD")
 --~             xmlcprint(xml.first(dk,"/!mml:mtd"))
---~             texsprint(tex.ctxcatcodes,"\\eTD")
+--~             texsprint(ctxcatcodes,"\\eTD")
 --~         end
-        texsprint(tex.ctxcatcodes,"\\eTR")
+        texsprint(ctxcatcodes,"\\eTR")
+--~ context.eTR()
     end
-    texsprint(tex.ctxcatcodes, "\\eTABLE")
+    texsprint(ctxcatcodes, "\\eTABLE")
+--~ context.eTABLE()
 end
 
 function lxml.mml.csymbol(root)
@@ -773,7 +784,7 @@ function lxml.mml.csymbol(root)
     local full = hash.original or ""
     local base = hash.path or ""
     local text = string.strip(xml.content(root) or "")
-    texsprint(tex.ctxcatcodes,format("\\mmlapplycsymbol{%s}{%s}{%s}{%s}",full,base,encoding,text))
+    texsprint(ctxcatcodes,format("\\mmlapplycsymbol{%s}{%s}{%s}{%s}",full,base,encoding,text))
 end
 
 function lxml.mml.menclosepattern(root)
