@@ -35,7 +35,7 @@ tasks.appendaction("shipouts",   "normalizers", "nodes.add_destinations")
 
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_color")
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_transparency")
-tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_overprint")
+tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_colorintent")
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_negative")
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_effect")
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_viewerlayer")

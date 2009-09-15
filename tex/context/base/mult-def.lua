@@ -7183,6 +7183,9 @@ return {
    ["pe"]="رنگ",
    ["ro"]="culoare",
   },
+  ["intent"]={
+   ["en"]="intent",
+  },
   ["column"]={
    ["cs"]="sloupec",
    ["de"]="spalte",
@@ -9155,16 +9158,6 @@ return {
    ["nl"]="overprint",
    ["pe"]="overprint",
    ["ro"]="overprint",
-  },
-  ["textoverprint"]={
-   ["cs"]="textoverprint",
-   ["de"]="textoverprint",
-   ["en"]="textoverprint",
-   ["fr"]="textoverprint",
-   ["it"]="textoverprint",
-   ["nl"]="textoverprint",
-   ["pe"]="textoverprint",
-   ["ro"]="textoverprint",
   },
   ["ownnumber"]={
    ["cs"]="vlastnicislo",

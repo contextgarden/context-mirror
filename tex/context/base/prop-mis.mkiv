@@ -21,15 +21,27 @@
 
 \unprotect
 
-%D Stream based overprint and knockout:
+% D Overprint cum suis.
+%
+% \defineproperty[\v!overprint][\s!overprint] [\c!method=\v!command]
+% \defineproperty[\v!knockout] [\s!overprint] [\c!method=\v!command]
+%
+% \definepropertyhandler \v!overprint {\dotriggeroverprint\v!overprint}
+% \definepropertyhandler \v!knockout  {\dotriggeroverprint\v!knockout }
+%
+% \def\startoverprintproperty{\dotriggeroverprint\v!overprint}
+% \def\stopoverprintproperty {\dotriggeroverprint\v!knockout }
 
-\defineproperty[\v!overprint][\s!overprint] [\c!method=\v!command]
-\defineproperty[\v!knockout] [\s!overprint] [\c!method=\v!command]
-
-%D Negation.
+%D Negative cum suis.
 
 \defineproperty [\v!negative] [\s!negative] [\c!method=\v!command]
 \defineproperty [\v!positive] [\s!negative] [\c!method=\v!command]
+
+\definepropertyhandler \v!negative {\dotriggernegative\v!negative}
+\definepropertyhandler \v!positive {\dotriggernegative\v!positive}
+
+\def\startnegativeproperty{\dotriggernegative\v!negative}
+\def\stopnegativeproperty {\dotriggernegative\v!positive}
 
 %D Special font effects.
 
@@ -45,24 +57,6 @@
 \defineproperty [\v!hidden]  [\s!effect]
 
 \defineproperty [\v!stretch] [\s!effect] [\c!stretch=1]
-
-%D Overprint cum suis.
-
-\definepropertyhandler \v!overprint {\dotriggeroverprint\v!overprint}
-\definepropertyhandler \v!knockout  {\dotriggeroverprint\v!knockout }
-
-\def\startoverprintproperty{\dotriggeroverprint\v!overprint}
-\def\stopoverprintproperty {\dotriggeroverprint\v!knockout }
-
-%D Negative cum suis.
-
-\definepropertyhandler \v!negative {\dotriggernegative\v!negative}
-\definepropertyhandler \v!positive {\dotriggernegative\v!positive}
-
-\def\startnegativeproperty{\dotriggernegative\v!negative}
-\def\stopnegativeproperty {\dotriggernegative\v!positive}
-
-%D Effects.
 
 \def\mktriggereffect#1%
   {\dotriggereffect{#1}{\propertyparameter{#1}\c!stretch}{\propertyparameter{#1}\c!rulethickness}}

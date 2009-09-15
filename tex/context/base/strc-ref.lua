@@ -122,9 +122,9 @@ local special_reference  = special * lparent * (operation * optional_arguments +
 
 local scanner = (reset * outer_reference * (special_reference + inner_reference)^-1 * -1) / function() return result end
 
-function jobreferences.analyse(str)
-    return scanner:match(str)
-end
+--~ function jobreferences.analyse(str) -- overloaded
+--~     return scanner:match(str)
+--~ end
 
 function jobreferences.split(str)
     return scanner:match(str or "")

@@ -6,8 +6,10 @@ if not modules then modules = { } end modules ['mtx-server-ctx-help'] = {
     license   = "see context related readme files"
 }
 
---~ dofile(resolvers.find_file("l-xml.lua","tex"))
+-- todo in lua interface: noargument, oneargument, twoarguments, threearguments
+
 dofile(resolvers.find_file("l-aux.lua","tex"))
+dofile(resolvers.find_file("l-url.lua","tex"))
 dofile(resolvers.find_file("trac-lmx.lua","tex"))
 
 -- problem ... serialize parent stack
@@ -277,18 +279,23 @@ document.setups.translations =  document.setups.translations or {
 }
 
 document.setups.formats = {
-    interface = [[<a href='mtx-server-ctx-help.lua?interface=%s'>%s</a>]],
-    href = [[<a href='mtx-server-ctx-help.lua?command=%s'>%s</a>]],
-    source = [[<a href='mtx-server-ctx-help.lua?source=%s'>%s</a>]],
-    optional_single = "[optional string %s]",
-    optional_list = "[optional list %s]",
-    mandate_single = "[mandate string %s]",
-    mandate_list = "[mandate list %s]",
-    parameter = [[<tr><td width='15%%'>%s</td><td width='15%%'>%s</td><td width='70%%'>%s</td></tr>]],
-    parameters = [[<table width='100%%'>%s</table>]],
-    listing = [[<pre><t>%s</t></listing>]],
-    special = "<i>%s</i>",
-    default = "<u>%s</u>",
+    open_command    = { [[\%s]], [[context.%s (]] },
+    close_command   = { [[]], [[ )]] },
+    connector       = { [[]], [[, ]] },
+    href_in_list    = { [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>]], [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>]] },
+    href_as_command = { [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>\%s</a>]], [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>context.%s</a>]] },
+    interface       = [[<a href='mtx-server-ctx-help.lua?interface=%s&mode=%s'>%s</a>]],
+    source          = [[<a href='mtx-server-ctx-help.lua?source=%s&mode=%s'>%s</a>]],
+    modes           = { [[<a href='mtx-server-ctx-help.lua?mode=2'>lua mode</a>]], [[<a href='mtx-server-ctx-help.lua?mode=1'>tex mode</a>]] },
+    optional_single = { "[optional string %s]", "{optional string %s}" },
+    optional_list   = { "[optional list %s]", "{optional table %s}" } ,
+    mandate_single  = { "[mandate string %s]", "{mandate string %s}" },
+    mandate_list    = { "[mandate list %s]", "{mandate list %s}" },
+    parameter       = [[<tr><td width='15%%'>%s</td><td width='15%%'>%s</td><td width='70%%'>%s</td></tr>]],
+    parameters      = [[<table width='100%%'>%s</table>]],
+    listing         = [[<pre><t>%s</t></listing>]],
+    special         = [[<i>%s</i>]],
+    default         = [[<u>%s</u>]],
 }
 
 local function translate(tag,int,noformat)
@@ -318,7 +325,8 @@ end
 document.setups.loaded = document.setups.loaded or { }
 
 document.setups.current = { }
-document.setups.showsources = false
+document.setups.showsources = true
+document.setups.mode = 1
 
 function document.setups.load(filename)
     filename = resolvers.find_file(filename) or ""
@@ -431,7 +439,7 @@ function document.setups.resolve(name)
     end
 end
 
-function document.setups.collect(name,int)
+function document.setups.collect(name,int,lastmode)
     local current = document.setups.current
     local formats = document.setups.formats
     local command = xml.filter(current.root,format("cd:command[@name='%s']",name))
@@ -442,35 +450,45 @@ function document.setups.collect(name,int)
             category = attributes.category or "",
         }
         if document.setups.showsources then
-            data.source = (attributes.file and formats.source:format(attributes.file,attributes.file)) or ""
+            data.source = (attributes.file and formats.source:format(attributes.file,lastmode,attributes.file)) or ""
         else
             data.source = attributes.file or ""
         end
-        local sequence, n = { "\\" .. document.setups.csname(command,int) }, 0
-        local arguments = { }
+        local n, sequence, tags = 0, { }, { }
+        sequence[#sequence+1] = formats.open_command[lastmode]:format(document.setups.csname(command,int))
+        local arguments, tag = { }, ""
         for r, d, k in xml.elements(command,"(cd:keywords|cd:assignments)") do
             n = n + 1
             local attributes = d[k].at
+            if #sequence > 1 then
+                local c = formats.connector[lastmode]
+                if c ~= "" then
+                    sequence[#sequence+1] = c
+                end
+            end
             if attributes.optional == 'yes' then
                 if attributes.list == 'yes' then
-                    sequence[#sequence+1] = formats.optional_list:format(n)
+                    tag = formats.optional_list[lastmode]:format(n)
                 else
-                    sequence[#sequence+1] = formats.optional_single:format(n)
+                    tag = formats.optional_single[lastmode]:format(n)
                 end
             else
                 if attributes.list == 'yes' then
-                    sequence[#sequence+1] = formats.mandate_list:format(n)
+                    tag = formats.mandate_list[lastmode]:format(n)
                 else
-                    sequence[#sequence+1] = formats.mandate_single:format(n)
+                    tag = formats.mandate_single[lastmode]:format(n)
                 end
             end
+            sequence[#sequence+1] = tag
+            tags[#tags+1] = tag
         end
+        sequence[#sequence+1] = formats.close_command[lastmode]
         data.sequence = concat(sequence, " ")
         local parameters, n = { }, 0
         for r, d, k in xml.elements(command,"(cd:keywords|cd:assignments)") do
             n = n + 1
             if d[k].tg == "keywords" then
-                local left = sequence[n+1]
+                local left = tags[n]
                 local right = { }
                 for r, d, k in xml.elements(d[k],"(cd:constant|cd:resolve)") do
                     local tag = d[k].tg
@@ -488,13 +506,13 @@ function document.setups.collect(name,int)
                 end
                 parameters[#parameters+1] = formats.parameter:format(left,"",concat(right, ", "))
             else
-                local what = sequence[n+1]
+                local what = tags[n]
                 for r, d, k in xml.elements(d[k],"(cd:parameter|cd:inherit)") do
                     local tag = d[k].tg
                     local left, right = d[k].at.name or "?", { }
                     if tag == "inherit" then
                         local name = d[k].at.name or "?"
-                        local goto = document.setups.formats.href:format(name,"\\"..name)
+                        local goto = document.setups.formats.href_as_command[lastmode]:format(name,lastmode,name)
                         if #parameters > 0 and not parameters[#parameters]:find("<br/>") then
                             parameters[#parameters+1] = formats.parameter:format("<br/>","","")
                         end
@@ -522,6 +540,7 @@ function document.setups.collect(name,int)
             parameters[#parameters+1] = formats.parameter:format("<br/>","","")
         end
         data.parameters = parameters
+        data.mode = formats.modes[lastmode or 1]
         return data
     else
         return nil
@@ -564,7 +583,7 @@ local interfaces = {
     romanian = 'ro',
 }
 
-local lastinterface, lastcommand, lastsource = "en", "", ""
+local lastinterface, lastcommand, lastsource, lastmode = "en", "", "", 1
 
 local function doit(configuration,filename,hashed)
 
@@ -572,9 +591,12 @@ local function doit(configuration,filename,hashed)
 
     local start = os.clock()
 
-    local detail = aux.settings_to_hash(hashed.query or "")
+    local detail = url.query(hashed.query or "")
 
-    lastinterface, lastcommand, lastsource = detail.interface or lastinterface, detail.command or lastcommand, detail.source or lastsource
+    lastinterface = detail.interface or lastinterface
+    lastcommand   = detail.command or lastcommand
+    lastsource    = detail.source or lastsource
+    lastmode      = tonumber(detail.mode or lastmode) or 1
 
     if lastinterface then
         logs.simple("checking interface: %s",lastinterface)
@@ -588,10 +610,12 @@ local function doit(configuration,filename,hashed)
 
     local names, refs, ints = document.setups.names(lastinterface), { }, { }
     for k,v in ipairs(names) do
-        refs[k] = document.setups.formats.href:format(v[1],v[2])
+        refs[k] = formats.href_in_list[lastmode]:format(v[1],lastmode,v[2])
     end
-    for k,v in ipairs(table.sortedkeys(interfaces)) do
-        ints[k] = document.setups.formats.interface:format(interfaces[v],v)
+    if lastmode ~= 2 then
+        for k,v in ipairs(table.sortedkeys(interfaces)) do
+            ints[k] = formats.interface:format(interfaces[v],lastmode,v)
+        end
     end
 
     lmx.restore()
@@ -619,17 +643,17 @@ local function doit(configuration,filename,hashed)
         lmx.set('maintext', formats.listing:format(data))
         lastsource = ""
     elseif lastcommand and lastcommand ~= "" then
-        local data = document.setups.collect(lastcommand,lastinterface)
+        local data = document.setups.collect(lastcommand,lastinterface,lastmode)
         if data then
             lmx.set('maintitle', data.sequence)
             local extra = { }
-            for k, v in ipairs { "environment", "category", "source" } do
+            for k, v in ipairs { "environment", "category", "source", "mode" } do
                 if data[v] and data[v] ~= "" then
                     lmx.set(v, data[v])
                     extra[#extra+1] = v .. ": " .. data[v]
                 end
             end
-            lmx.set('extra', concat(extra,", "))
+            lmx.set('extra', concat(extra,"&nbsp;&nbsp;&nbsp;"))
             lmx.set('maintext', formats.parameters:format(concat(data.parameters)))
         else
             lmx.set('maintext', "select command")

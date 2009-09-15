@@ -126,10 +126,10 @@
    \setsystemmode\v!makeup
    \setupmakeuplayout
    \makeupparameter\c!commands % hm, what is this one doing here ?
-   \startregistercolor[\makeupparameter\c!color]%
    \forgetall % else indented flush
    \global\setbox\makeupbox\vbox to \makeupparameter\c!height
      \bgroup
+       \doifsomething{\makeupparameter\c!color}{\startcolor[\makeupparameter\c!color]}% can be made faster
        \setups[\makeupparameter\c!setups]%
        \hsize\makeupparameter\c!width
        \doifsomething{\makeupparameter\c!align}
@@ -139,9 +139,9 @@
 \def\dodostopmakeup
   {\endgraf
    \makeupparameter\c!bottom
+   \doifsomething{\makeupparameter\c!color}{\stopcolor}%
    \egroup
    \flushmarks % new, here, else empty pages
-   \stopregistercolor
    \doflushmakeup
    \egroup
    \calculatehsizes

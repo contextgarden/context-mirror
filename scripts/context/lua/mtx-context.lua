@@ -1370,20 +1370,41 @@ messages.help = [[
 --purge(all)          purge files (--pattern=...)
 --result=name         rename result to given name
 --arrange             run extra arrange pass
+--noarrange           ignore arrange commands in the file
+--batchmode           run without stopping and don't show messages on the console
+--nonstopmode         run without stopping
+--usemodule=list      load the given module (or style)
+--environment=list    load the given file first
+--mode=list           enable given the mode(s)
+--path=list           also consult the given paths when files are looked for
+--paranoid            don't descend to .. and ../..
+--randomseed=number   set the randomseed
+--arguments=list      set variables that can be consulted during a run (key/value pairs)
+--interface           use specified user interface
 
 --expert              expert options
---interface           use specified user interface
 ]]
+
+-- filter=list      is kind of obsolete
+-- color            is obsolete for mkiv, always on
+-- separation       is obsolete for mkiv, no longer available
+-- output           is currently obsolete for mkiv
+-- setuppath=list   must check
+-- modefile=name    must check
+-- inputfile=name   load the given inputfile (must check)
 
 messages.expert = [[
 expert options:
 
 --touch               update context version number (remake needed afterwards, also provide --expert)
+--nostats             omit runtime statistics at the end of the run
 --update              update context from website (not to be confused with contextgarden)
 --profile             profile job (use: mtxrun --script profile --analyse)
 --track               show/set tracker variables
 --timing              generate timing and statistics overview
 --extra=name          process extra (mtx-context-<name> in distribution)
+--tracefiles          show some extra info when locating files (at the tex end)
+--randomseed
 ]]
 
 messages.private = [[

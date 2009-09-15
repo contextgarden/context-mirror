@@ -221,6 +221,8 @@
 
 \let\showcolormessage\gobblethreearguments
 
+\newtoks\everysetupcolors
+
 \def\dosetupcolors[#1]% some no longer make sense in MkIV
   {\getparameters[\??cl][#1]%
    \doifelse\@@clspot\v!yes
@@ -273,7 +275,7 @@
      {\incolorfalse\forcegrayMPcolorstrue}%
      {\ifincolor\else\showcolormessage\m!colors1\colorstyle\fi\incolortrue\let\@@clstate\v!start}%
    \dosetupcolormodel
-   \initializemaintextcolor}
+   \the\everysetupcolors}
 
 %D In this documentation we will not go into too much details
 %D on palets. Curious users can find more information on this
@@ -874,15 +876,18 @@
 \def\defaulttextcolor  {black}
 \def\@@themaintextcolor{themaintextcolor}
 
-\appendtoks\deactivatecolor\to\everybeforeoutput
+\appendtoks
+  \deactivatecolor
+  \ifx\maintextcolor\empty\else\doactivatecolor\maintextcolor\fi
+\to \everybeforeoutput
 
-\def\startregistercolor[#1]% probably obsolete
-  {\doifelsenothing{#1}
-     {\let\stopregistercolor\relax}
-     {\edef\stopregistercolor
-        {\dosetattribute\s!color       {\dogetattribute\s!color       }%
-         \dosetattribute\s!transparency{\dogetattribute\s!transparency}}%
-      \doactivatecolor{#1}}}
+% \def\startregistercolor[#1]% probably obsolete
+%   {\doifelsenothing{#1}
+%      {\let\stopregistercolor\relax}
+%      {\edef\stopregistercolor
+%         {\dosetattribute\s!color       {\dogetattribute\s!color       }%
+%          \dosetattribute\s!transparency{\dogetattribute\s!transparency}}%
+%       \doactivatecolor{#1}}}
 
 \def\registermaintextcolor{\ctxlua{colors.main = \thecolorattribute\maintextcolor}}
 
@@ -904,6 +909,7 @@
    \registermaintextcolor}
 
 \appendtoks \initializemaintextcolor \to \everyjob
+\appendtoks \initializemaintextcolor \to \everysetupcolors
 
 \def\dodefinepaletcolor#1#2#3%
   {\doifassignmentelse{#3}% \definepalet[test][xx={y=.4}]

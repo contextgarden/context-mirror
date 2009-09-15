@@ -20,6 +20,21 @@
 
 \registerctxluafile{attr-ini}{1.001}
 
+%D This might move:
+
+\def\pushattribute#1%
+  {\global\advance\csname\??ae:\string#1\endcsname\plusone
+   \global\expandafter\mathchardef\csname\??ae:\string#1:\number\csname\??ae:\string#1\endcsname\endcsname\attribute#1}
+
+\def\popattribute#1%
+  {\attribute#1\csname\??ae:\string#1:\number\csname\??ae:\string#1\endcsname\endcsname
+   \global\advance\csname\??ae:\string#1\endcsname\minusone}
+
+\def\installattributestack#1%
+  {\expandafter\newcount\csname\??ae:\string#1\endcsname}
+
+%D For the moment we put this here (later it will move to where it's used):
+
 \definesystemattribute[state]
 \definesystemattribute[skip]
 \definesystemattribute[penalty]
@@ -27,7 +42,7 @@
 \definesystemattribute[color]                                  \chardef\colorattribute          \dogetattributeid{color}
 \definesystemattribute[transparency]                           \chardef\transparencyattribute   \dogetattributeid{transparency}
 \definesystemattribute[background]                             \chardef\backgroundattribute     \dogetattributeid{background}
-\definesystemattribute[overprint]
+\definesystemattribute[colorintent]                            \chardef\colorintentattribute    \dogetattributeid{colorintent}
 \definesystemattribute[negative]
 \definesystemattribute[effect]
 \definesystemattribute[viewerlayer]                            \chardef\viewerlayerattribute    \dogetattributeid{viewerlayer}
@@ -84,16 +99,20 @@
 
 % overprint
 
-\def\registeroverprint#1#2%
-  {\setevalue{(os:#1)}{\dosetattribute{overprint}{\ctxlua{tex.print(overprints.register('#2'))}}}}
+\def\registercolorintent#1#2%
+  {\setevalue{(os:#1)}{\dosetattribute{colorintent}{\ctxlua{tex.print(colorintents.register('#2'))}}}}
 
-\def\dotriggeroverprint
-  {\ctxlua{overprints.enabled=true}%
-   \gdef\dotriggeroverprint##1{\csname(os:##1)\endcsname}%
-   \dotriggeroverprint}
+\def\dotriggercolorintent
+  {\ctxlua{colorintents.enabled=true}%
+   \gdef\dotriggercolorintent##1{\csname(os:##1)\endcsname}%
+   \dotriggercolorintent}
 
-\registeroverprint{knockout} {knockout}
-\registeroverprint{overprint}{overprint}
+\registercolorintent{knockout} {knockout}
+\registercolorintent{overprint}{overprint}
+
+\installattributestack\colorintentattribute
+
+\setevalue{(os:#\v!none}{\doresetattribute{colorintent}} % does this work out ok?
 
 % negative
 

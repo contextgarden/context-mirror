@@ -21,8 +21,7 @@ local concat = table.concat
 local round = math.round
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local texsprint, texwrite = tex.sprint, tex.write
-
-ctxcatcodes = tex.ctxcatcodes
+local ctxcatcodes = tex.ctxcatcodes
 
 local copy_node = node.copy
 
@@ -72,9 +71,9 @@ local effects = {
     hidden = 3,
 }
 
-function nodeinjections.effect(stretch,rulethickness,effect)
+function nodeinjections.effect(effect,stretch,rulethickness)
     -- always, no zero test (removed)
-    rulethickness = number.dimenfactors["bp"]*rulethickness
+    rulethickness = number.dimenfactors["bp"] * rulethickness
     effect = effects[effect] or effects['normal']
     return register(pdfliteral(format("%s Tc %s w %s Tr",stretch,rulethickness,effect))) -- watch order
 end

@@ -336,24 +336,24 @@ shipouts.handle_transparency = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
---- overprint / knockout
+--- colorintents: overprint / knockout
 
-overprints           = overprints      or { }
-overprints.data      = overprints.data or { }
-overprints.enabled   = false
-overprints.attribute = attributes.private('overprint')
+colorintents           = colorintents      or { }
+colorintents.data      = colorintents.data or { }
+colorintents.enabled   = false
+colorintents.attribute = attributes.private('colorintent')
 
-overprints.registered = {
+colorintents.registered = {
     overprint = 1,
     knockout  = 2,
 }
 
-local data, registered = overprints.data, overprints.registered
+local data, registered = colorintents.data, colorintents.registered
 
-local function extender(overprints,key)
+local function extender(colorintents,key)
     if key == "none" then
         local d = data[2]
-        overprints.none = d
+        colorintents.none = d
         return d
     end
 end
@@ -370,20 +370,22 @@ local function reviver(data,n)
     end
 end
 
-setmetatable(overprints,      { __index = extender })
-setmetatable(overprints.data, { __index = reviver  })
+setmetatable(colorintents,      { __index = extender })
+setmetatable(colorintents.data, { __index = reviver  })
 
-function overprints.register(stamp)
+function colorintents.register(stamp)
     return registered[stamp] or registered.overprint
 end
 
-shipouts.handle_overprint = nodes.install_attribute_handler {
-    name        = "overprint",
-    namespace   = overprints,
+shipouts.handle_colorintent = nodes.install_attribute_handler {
+    name        = "colorintent",
+    namespace   = colorintents,
     initializer = states.initialize,
     finalizer   = states.finalize,
     processor   = states.process,
 }
+
+local s = shipouts.handle_colorintent
 
 --- negative / positive
 
@@ -463,7 +465,7 @@ end
 
 local function reviver(data,n)
     local e = values[n] -- we could nil values[n] now but hardly needed
-    local d = effect(v[1],v[2],v[3])
+    local d = effect(e[1],e[2],e[3])
     data[n] = d
     return d
 end

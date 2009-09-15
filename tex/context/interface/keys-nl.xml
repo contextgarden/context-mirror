@@ -685,6 +685,7 @@
 		<cd:constant name='inner' value='binnen'/>
 		<cd:constant name='innermargin' value='binnenmarge'/>
 		<cd:constant name='inputfile' value='inputfile'/>
+		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='interactie'/>
 		<cd:constant name='interlinespace' value='interlinie'/>
 		<cd:constant name='itemalign' value='itemuitlijnen'/>
@@ -941,7 +942,6 @@
 		<cd:constant name='textlayer' value='tekstlaag'/>
 		<cd:constant name='textmargin' value='tekstmarge'/>
 		<cd:constant name='textmethod' value='tekstmethode'/>
-		<cd:constant name='textoverprint' value='textoverprint'/>
 		<cd:constant name='textseparator' value='tekstscheider'/>
 		<cd:constant name='textsize' value='tekstformaat'/>
 		<cd:constant name='textstate' value='tekststatus'/>

@@ -685,6 +685,7 @@
 		<cd:constant name='inner' value='interieur'/>
 		<cd:constant name='innermargin' value='margeinterieure'/>
 		<cd:constant name='inputfile' value='fichierentree'/>
+		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='interaction'/>
 		<cd:constant name='interlinespace' value='espaceinterligne'/>
 		<cd:constant name='itemalign' value='itemalign'/>
@@ -941,7 +942,6 @@
 		<cd:constant name='textlayer' value='calquetexte'/>
 		<cd:constant name='textmargin' value='margetexte'/>
 		<cd:constant name='textmethod' value='textmethod'/>
-		<cd:constant name='textoverprint' value='textoverprint'/>
 		<cd:constant name='textseparator' value='separateurtexte'/>
 		<cd:constant name='textsize' value='tailletexte'/>
 		<cd:constant name='textstate' value='etattexte'/>

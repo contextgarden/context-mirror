@@ -29,6 +29,11 @@
 
 \ifx\v!compact\undefined \def\v!compact{compact} \fi
 
+%D New:
+
+\let\startimath\Ustartmath         \let\stopimath \Ustopmath
+\let\startdmath\Ustartdisplaymath  \let\stopdmath \Ustopmath
+
 %D We move these definitions into the format:
 
 % test [[\char948 \ctxlua{tex.sprint(utf.char(948))}]]

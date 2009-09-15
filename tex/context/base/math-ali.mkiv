@@ -19,7 +19,7 @@
 %D \MKIV\ code is not gathered in files with the same name.
 
 %D \macros
-%D   {\definemathalignment, setupmathalignment, startmathalignment}
+%D   {definemathalignment, setupmathalignment, startmathalignment}
 %D
 %D Modules may provide additional alignment features. The following
 %D mechanisms are provided by the core.
@@ -849,7 +849,7 @@
 %D \stopformula
 %D \stopbuffer
 %D
-%D \typebuffer \getbuffer
+%D \typebuffer  % does not run well: \getbuffer
 
 %D \macros
 %D   {startintertext}
@@ -940,6 +940,8 @@
 %D \text{ and }
 %D \sum_{\scriptstyle a \atop \scriptstyle}
 %D \stopformula
+%D \stopbuffer
+%D
 %D \typebuffer which gives \getbuffer
 
 \def\startsubstack

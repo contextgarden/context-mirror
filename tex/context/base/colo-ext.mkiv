@@ -41,17 +41,38 @@
 %D or independent. For the moment we only support independent overprint
 %D handling. Here we deal with a per-document setting.
 
+\unexpanded\def\startcolorintent[#1]%
+  {\pushattribute\colorintentattribute
+   \dotriggercolorintent{#1}}
+
+\unexpanded\def\stopcolorintent
+  {\popattribute\colorintentattribute}
+
+\unexpanded\def\startoverprint{\startcolorintent[\v!overprint]}
+\unexpanded\def\stopoverprint {\stopcolorintent}
+
+\unexpanded\def\startknockout {\startcolorintent[\v!knockout ]}
+\unexpanded\def\stopknockout  {\stopcolorintent}
+
+\let\starttextcolorintent\relax
+\let\stoptextcolorintent \relax
+
 \setupcolors
   [\c!overprint=\v!no]
 
-\def\starttextoverprint
-  {\doifelse\@@cloverprint\v!yes
-     {\let\stoptextoverprint\stopoverprintproperty\startoverprintproperty}
-     {\let\stoptextoverprint\donothing}}
+\appendtoks
+    \dosettextcolorintent
+\to \everysetupcolors
 
-\let\stoptextoverprint\donothing
+\def\dosettextcolorintent
+  {\doifnot\@@clintent\v!none
+     {\xdef\starttextcolorintent{\noexpand\dotriggercolorintent{\@@clintent}}%
+      \glet\dosettextcolorintent\relax
+      \dotriggercolorintent\@@clintent}}
 
-\appendtoks \starttextoverprint \to \everystarttextproperties
-\appendtoks \stoptextoverprint  \to \everystoptextproperties
+\appendtoks \starttextcolorintent \to \everystarttextproperties
+\appendtoks \stoptextcolorintent  \to \everystoptextproperties
+
+\setupcolors[\c!intent=\v!none]
 
 \protect \endinput
