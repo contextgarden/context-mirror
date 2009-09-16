@@ -16,10 +16,19 @@
 
 \usemodule[mod-00,abr-01]
 
+\dontcomplain
+
 \unprotect
 
 \setupbodyfont
-  [10pt,ams]
+  [10pt]
+
+\definetypeface
+  [narrowtt] [tt]
+  [mono] [modern-cond] [default] [encoding=\defaultencoding]
+
+\setuptyping[\v!typing][\c!style=\narrowtt]
+\setuptype  [\v!type]  [\c!style=\narrowtt]
 
 \mainlanguage
   [en]
@@ -44,7 +53,7 @@
    \c!topspace=2cm,
    \c!header=1.25cm,
    \c!footer=1.25cm,
-   \c!height=25cm,
+   \c!height=middle,
    \c!style=\ss]
 
 \setupsetup
@@ -60,9 +69,9 @@
 \setuppagenumbering
   [\c!location=]
 
-\setupfootertexts
+\expanded{\setupfootertexts
   [\v!edge]
-  [][\v!pagenumber]
+  [][\v!pagenumber]}
 
 \startmode[single]
 

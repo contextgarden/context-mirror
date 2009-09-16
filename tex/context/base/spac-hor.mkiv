@@ -1,0 +1,821 @@
+%D \module
+%D   [       file=spac-hor,
+%D        version=2009.10.16, % 1997.03.31, was core-spa.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Horizontal,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Horizontal}
+
+\unprotect
+
+\let\currentindentation\empty % amount/keyword
+\let\currentindenting  \empty % method
+
+\newdimen\ctxparindent
+
+\newif\ifindentfirstparagraph % \indentfirstparagraphtrue
+
+\chardef\indentingtoggle\zerocount
+
+%D After a blank or comparable situation (left side floats) we
+%D need to check if the next paragraph has to be indented.
+
+\def\presetindentation
+  {\doifoutervmode{\ifindentfirstparagraph\else\noindentation\fi}}
+
+%D This sets up the (normally) global indentation behavior as well
+%D as the amounts.
+
+\definecomplexorsimple\setupindenting
+
+\indentfirstparagraphtrue
+\parindent\ctxparindent
+\chardef\indentingtoggle\zerocount
+
+% we need a better everypar model: for each option a switch, which we
+% set to false with \forgetall and can enable when needed (context 4);
+% that way we can control the order of execution of options
+
+\def\checkeverypar % currently a hack
+  {\ifzeropt\parindent\else
+     \doifsometokselse\everypar\donothing{\appendtoks\checkindentation\to\everypar}%
+   \fi}
+
+\def\complexsetupindenting[#1]%
+  {\edef\currentindenting{#1}%
+   \doifsomething\currentindenting % handy when a parameter is passed
+     {% not here: \indentfirstparagraphtrue
+      % not here: \parindent\ctxparindent
+      % not here: \chardef\indentingtoggle\zerocount
+      % we use commacommand in order to catch #1 being a command (expanded parameter)
+      \processcommacommand[\currentindenting]\docomplexsetupindentingA % catch small, medium, etc
+      \processcommacommand[\currentindenting]\docomplexsetupindentingB % catch rest
+      \checkeverypar % only when non-empty #1
+      \ifindentfirstparagraph\else\noindentation\fi % added
+      \toggleindentation}}
+
+\def\docomplexsetupindentingA#1%
+  {\edefconvertedargument\!!stringa{#1}% can this be doen differently now?
+   \ifcsname\??in:\!!stringa\endcsname \else
+     \edef\currentindentation{#1}%
+     \let\normalindentation\currentindentation
+     \simplesetupindenting
+   \fi}
+
+\def\docomplexsetupindentingB#1%
+  {\edefconvertedargument\!!stringa{#1}% catch #1=\somedimen
+   \executeifdefined{\??in:\!!stringa}\donothing}
+
+\def\simplesetupindenting % empty case, a it strange, needed this way?
+  {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}}
+
+\def\indenting % kind of obsolete
+  {\dosingleargument\complexsetupindenting}
+
+% use \noindentation to suppress next indentation
+
+\def\defineindentingmethod[#1]#2%
+  {\setvalue{\??in:#1}{#2}}
+
+\defineindentingmethod [\v!no]     {\parindent\zeropoint}% was: \ctxparindent\noindent}
+\defineindentingmethod [\v!not]    {\parindent\zeropoint}% was: \ctxparindent\noindent}
+
+\defineindentingmethod [\v!first]  {\indentfirstparagraphtrue}
+\defineindentingmethod [\v!next]   {\indentfirstparagraphfalse}
+
+\defineindentingmethod [\v!yes]    {\parindent\ctxparindent\relax} % no \indent !
+\defineindentingmethod [\v!always] {\parindent\ctxparindent\relax} % no \indent !
+
+\defineindentingmethod [\v!never]  {\parindent\zeropoint\relax     % no \indent !
+                                    \chardef\indentingtoggle\zerocount}
+
+\defineindentingmethod [\v!odd]    {\chardef\indentingtoggle\plusone}
+\defineindentingmethod [\v!even]   {\chardef\indentingtoggle\plustwo}
+
+\defineindentingmethod [\v!normal] {\ifx\normalindentation\empty\else
+                                      \let\currentindentation\normalindentation
+                                      \simplesetupindenting
+                                    \fi}
+
+\defineindentingmethod [\v!reset]  {\indentfirstparagraphtrue
+                                    \parindent\zeropoint
+                                    \chardef\indentingtoggle\zerocount}
+
+\def\noindenting{\indenting[\v!no, \v!next ]}
+\def\doindenting{\indenting[\v!yes,\v!first]}
+
+%D This one sets up the local indentation behaviour (i.e. either or not
+%D a next paragraph will be indented).
+
+\def\dochecknextindentation#1% internal one
+  {\checknextindentation[\csname#1\c!indentnext\endcsname]}
+
+\setvalue{\??in->\s!empty}{}
+\setvalue{\??in->\v!yes  }{\doindentation}
+\setvalue{\??in->\v!no   }{\noindentation}
+\setvalue{\??in->\v!auto }{\autoindentation}
+
+\def\checknextindentation[#1]%
+  {\csname\??in->\ifcsname\??in->#1\endcsname#1\else\s!empty\fi\endcsname}
+
+%D Here come the handlers.
+
+\newif\ifindentation \indentationtrue  % documenteren, naar buiten
+
+\let\checkindentation\relax
+
+\ifx\autoindentation\undefined \let\autoindentation\relax \fi % hook
+
+\def\doindentation
+  {\gdef\checkindentation{\global\indentationtrue}}
+
+\def\noindentation % made global
+  {\ifinpagebody \else
+     \global\indentationfalse
+     \gdef\checkindentation
+       {\donoindentation
+        \gdef\checkindentation{\global\indentationtrue}}%
+   \fi}
+
+\def\nonoindentation % bv bij floats
+  {\ifinpagebody \else
+     \global\indentationtrue
+     \gdef\checkindentation{\global\indentationtrue}%
+   \fi}
+
+\def\donoindentation
+  {\ifdim\parindent=\zeropoint \else
+     \bgroup \setbox\scratchbox\lastbox \egroup
+   \fi}
+
+\def\indentation
+  {\ifvmode \ifdim\parindent=\zeropoint \else
+     % was : \hskip\parindent
+     % can be: \indent
+     % but we test:
+     \noindent\hskip\parindent
+   \fi \fi}
+
+\def\toggleindentation
+  {\ifcase\indentingtoggle
+     % nothing
+   \or
+     \notoggleindentation
+   \or
+     \dotoggleindentation
+   \fi}
+
+\def\dokillindentation
+  {\gdef\checkindentation{\global\indentationfalse\donoindentation}}
+
+\def\dotoggleindentation
+  {\gdef\checkindentation{\global\indentationfalse\notoggleindentation\donoindentation}}
+
+\def\notoggleindentation
+  {\gdef\checkindentation{\global\indentationtrue\dotoggleindentation}}
+
+\appendtoks
+   \pushmacro\checkindentation
+   \pushmacro\ifindentation
+\to \everypushsomestate
+
+\appendtoks
+   \popmacro\ifindentation
+   \popmacro\checkindentation
+\to \everypopsomestate
+
+% we need to save the state if we want to adapt behaviour to empty lines
+%
+% \def\setlasthvmode
+%   {\global\chardef\savedhvmode\ifhmode\plusone\else\ifvmode\plustwo\else\zerocount\fi\fi}
+%
+% \def\resetlasthvmode
+%   {\global\chardef\savedhvmode\zerocount}
+%
+% \chardef\savedhvmode\zerocount
+
+% This is a user requested hack (using the auto-hook).
+
+\chardef\recheckindentationmode\zerocount
+
+\def\dontrechecknextindentation
+  {\global\chardef\recheckindentationmode\zerocount}
+
+\def\dorechecknextindentation
+  {\ifcase\recheckindentationmode
+     % nothing
+   \or
+     \dontrechecknextindentation
+     \expandafter\doautoindentation
+   \fi}
+
+\def\doautoindentation
+  {\doifnextcharelse\par\donothing\noindentation}
+
+\def\autoindentation
+  {\global\chardef\recheckindentationmode\plusone}
+
+%D An example of usage:
+%D
+%D \starttyping
+%D \setupindenting[small,yes]
+%D
+%D \setupitemize [indentnext=auto]
+%D \setuptyping  [indentnext=auto]
+%D \setupformulas[indentnext=auto]
+%D
+%D \input tufte \startitemize \item itemize \stopitemize
+%D \input tufte \startitemize \item itemize \stopitemize
+%D \input tufte \startitemize \item itemize \stopitemize
+%D
+%D \page
+%D
+%D \input tufte
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D
+%D \input tufte
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D
+%D \input tufte
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D
+%D \page
+%D
+%D \input tufte \startformula a = b \stopformula
+%D \input tufte \startformula a = b \stopformula
+%D \input tufte \startformula a = b \stopformula
+%D \stoptyping
+
+\def\softbreak
+  {\relax\ifhmode\hskip\parfillskip\break\fi}
+
+%D   {frenchspacing,nonfrenchspacing}
+%D
+%D Smehow \type{\frenchspacing} can lead to hyphenation between
+%D dashes so we now have \type {\newfrenchspacing} (moved from
+%D \type {syst-chr}).
+
+%D Hm ... todo:
+
+\sfcode`\)=0
+\sfcode`\'=0
+\sfcode`\]=0
+
+\def\setfrenchspacing#1%
+  {\sfcode`\.#1 \sfcode`\,#1\relax
+   \sfcode`\?#1 \sfcode`\!#1\relax
+   \sfcode`\:#1 \sfcode`\;#1\relax}
+
+\def\frenchspacing
+  {\setfrenchspacing{1000}}
+
+\def\resetfrenchspacing
+  {\sfcode`\.3000 \sfcode`\,1250
+   \sfcode`\?3000 \sfcode`\!3000
+   \sfcode`\:2000 \sfcode`\;1500 }
+
+\def\frenchspacing   {\setfrenchspacing{1000}}
+\def\newfrenchspacing{\setfrenchspacing{1050}}
+\def\nonfrenchspacing{\resetfrenchspacing}
+
+\def\definespacingmethod[#1]#2{\setvalue{\??sg\??sg#1}{#2}}
+
+\definespacingmethod[\v!packed]{\newfrenchspacing}
+\definespacingmethod[\v!broad ]{\nonfrenchspacing}
+
+\def\complexsetupspacing[#1]%
+  {\executeifdefined{\??sg\??sg#1}\relax
+   \updateraggedskips}
+
+\def\simplesetupspacing
+  {\updateraggedskips}
+
+\definecomplexorsimple\setupspacing
+
+% \dorecurse{100}{\recurselevel\spacefactor 800 \space} \par
+% \dorecurse{100}{\recurselevel\spacefactor1200 \space} \par
+% \dorecurse{100}{\recurselevel\spacefactor 800 \normalspaceprimitive} \par
+% \dorecurse{100}{\recurselevel\spacefactor1200 \normalspaceprimitive} \par
+
+% When we don't add the % here, we effectively get \<endlinechar> and
+% since we have by default \def\^^M{\ } we get into a loop.
+
+\let\normalspaceprimitive=\ % space-comment is really needed
+
+% hm ...
+
+\unexpanded\def\ {\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
+
+% Because I strip spaces at the end of lines (in the editor) we need a bit of
+% a trick to define slash+newline, so \<space> and \<newline> are the same
+
+\ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\unexpanded\string\\def\string\\\string\n{\string\\ }")}
+
+\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\mathortext\ \space} % no space in math
+
+\letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace % overloaded later
+
+\def\space          { }
+\def\removelastspace{\ifhmode\unskip\fi}
+\def\nospace        {\removelastspace\ignorespaces}
+
+% in tables we need:
+%
+% \def\fixedspace   {\hskip.5em\relax}
+%
+% but, since not all fonts have .5em digits:
+
+\unexpanded\def\fixedspace
+  {\setbox\scratchbox\normalhbox{\mathortext{0}{0}}%
+   \hskip\wd\scratchbox\relax}
+
+\def\fixedspaces
+  {\letcatcodecommand \ctxcatcodes `\~ \fixedspace}
+
+\appendtoks\let~\space\to\simplifiedcommands
+
+% \def\removeunwantedspaces
+%   {\ifhmode % we also need to unskip 0pt skips
+%      \unskip\unskip\unskip\unskip\unskip
+%      \unskip\unskip\unskip\unskip\unskip
+%    \fi}
+
+\unexpanded\def\removeunwantedspaces
+  {\ifhmode
+     \expandafter \doremoveunwantedspace
+   \fi}
+
+\def\doremoveunwantedspace
+  {\ifnum\lastnodetype=\@@gluenode
+     \unskip \expandafter\doremoveunwantedspace
+   \fi}
+
+% \startbuffer
+% \startlines \tt \fixedspaces
+%  0~1~~2~~~3~~~~4~~~~~5
+%  0~~~~~~~~~~~~~~~~~~~5
+% $0~1~~2~~~3~~~~4~~~~~5$
+% $0~~~~~~~~~~~~~~~~~~~5$
+% \stoplines
+%
+% \starttabulate[|~|]
+% \NC  0~1~~2~~~3~~~~4~~~~~5  \NC \NR \NC  0~~~~~~~~~~~~~~~~~~~5  \NC \NR
+% \NC $0~1~~2~~~3~~~~4~~~~~5$ \NC \NR \NC $0~~~~~~~~~~~~~~~~~~~5$ \NC \NR
+% \stoptabulate
+%
+% \starttable[||]
+% \NC  0~1~~2~~~3~~~~4~~~~~5  \NC \AR \NC  0~~~~~~~~~~~~~~~~~~~5  \NC \AR
+% \NC $0~1~~2~~~3~~~~4~~~~~5$ \NC \AR \NC $0~~~~~~~~~~~~~~~~~~~5$ \NC \AR
+% \stoptable
+% \stopbuffer
+%
+% \setupbodyfont[cmr] \getbuffer
+% \setupbodyfont[lbr] \getbuffer
+
+%D A couple of plain macros:
+
+\ifx\thinspace\undefined
+
+    \def\thinspace   {\kern .16667\emwidth}
+    \def\negthinspace{\kern-.16667\emwidth}
+    \def\enspace     {\kern     .5\emwidth}
+
+\fi
+
+\ifx\quad\undefined
+
+    \def\enskip{\hskip.5\emwidth}
+    \def\quad  {\hskip  \emwidth}
+    \def\qquad {\hskip 2\emwidth}
+
+\fi
+
+\let\emspace\quad
+
+% Suggested by GB (not the name -):
+
+\def\rapfillskip{.5\hsize plus .092\hsize minus .5\hsize} % D.A.'s value
+
+% Bovendien definieren we enkele extra \fill's:
+
+\def\hfilll{\hskip\zeropoint\!!plus1filll\relax}
+\def\vfilll{\vskip\zeropoint\!!plus1filll\relax}
+
+% De onderstaande hulpmacro's moeten nog eens instelbaar worden
+% gemaakt.
+
+\def\tfskipsize{1em\relax}
+\def\tfkernsize{1ex\relax}
+
+\def\tfskip{\dotfskip\tfskipsize}
+\def\tfkern{\dotfkern\tfkernsize}
+
+\def\dotfskip#1{{\tf\hskip#1}}
+\def\dotfkern#1{{\tf\kern #1}}
+
+% needs a proper \definenarrower or installnarrower
+
+\newskip\ctxleftskip
+\newskip\ctxrightskip
+\newskip\ctxmidskip
+
+\def\dosinglenarrower#1%
+  {\processaction
+     [#1]
+     [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
+         \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
+          \v!right=>\global\advance\ctxrightskip \@@slright,
+          \v!reset=>\global\ctxleftskip \zeropoint
+                    \global\ctxmidskip  \zeropoint
+                    \global\ctxrightskip\zeropoint,
+          \v!none=>,
+        \s!unknown=>\global\advance\ctxmidskip   \commalistelement]}
+
+\def\donarrower[#1]% hm, can be dorepeat directly
+  {\dorepeatwithcommand[#1]\dosinglenarrower}
+
+\def\complexstartnarrower[#1]%
+  {\@@slbefore % was hard coded \par
+   \bgroup
+   \global\ctxleftskip \zeropoint
+   \global\ctxrightskip\zeropoint
+   \global\ctxmidskip  \zeropoint
+   \processcommalistwithparameters[#1]\donarrower
+   \advance\leftskip  \ctxleftskip
+   \advance\rightskip \ctxrightskip
+   \advance\leftskip  \ctxmidskip
+   \advance\rightskip \ctxmidskip
+   \seteffectivehsize}
+
+% todo: definenarrower
+
+\def\simplestartnarrower
+  {\startnarrower[\v!middle]}
+
+\definecomplexorsimple\startnarrower
+
+\def\stopnarrower
+  {\@@slafter % was hard coded \par / needed, else skips forgotten
+   \egroup}
+
+\def\setupnarrower
+  {\dodoubleargument\getparameters[\??sl]}
+
+\newdimen\@@effectivehsize     \def\effectivehsize    {\hsize}
+\newdimen\@@effectiveleftskip  \def\effectiveleftskip {\leftskip}
+\newdimen\@@effectiverightskip \def\effectiverightskip{\rightskip}
+
+\def\seteffectivehsize
+  {\setlocalhsize
+   \@@effectivehsize      \localhsize
+   \@@effectiveleftskip   \leftskip
+   \@@effectiverightskip  \rightskip
+   \let\effectivehsize    \@@effectivehsize
+   \let\effectiveleftskip \@@effectiveleftskip
+   \let\effectiverightskip\@@effectiverightskip}
+
+\newskip\leftskipadaption
+\newskip\rightskipadaption
+
+\def\doadaptleftskip#1%
+  {\dosetleftskipadaption{#1}%
+   \advance\leftskip \leftskipadaption}
+
+\def\doadaptrightskip#1%
+  {\dosetrightskipadaption{#1}%
+   \advance\rightskip \rightskipadaption}
+
+\setvalue{@lsa@\v!standard}{\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
+\setvalue{@lsa@\v!yes     }{\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
+\letvalue{@lsa@\v!no      }\zeropoint
+\letvalue{@lsa@\empty     }\zeropoint
+\setvalue{@rsa@\v!standard}{\@@slright}
+\setvalue{@rsa@\v!yes     }{\@@slright}
+\letvalue{@rsa@\v!no      }\zeropoint
+\letvalue{@rsa@\empty     }\zeropoint
+
+\def\dosetleftskipadaption#1%
+  {\edefconvertedargument\ascii{@lsa@#1}%
+   \leftskipadaption
+     \ifcsname\ascii\endcsname
+       \csname\ascii\endcsname
+     \else
+       #1%
+     \fi
+   \relax}
+
+\def\dosetrightskipadaption#1%
+  {\edefconvertedargument\ascii{@rsa@#1}%
+   \rightskipadaption
+     \ifcsname\ascii\endcsname
+       \csname\ascii\endcsname
+     \else
+       #1%
+     \fi
+   \relax}
+
+%D Tolerance:
+
+\def\dosetuptolerance[#1]%
+  {\doifinsetelse\v!vertical{#1}%
+     {\normalexpanded{\noexpand\processallactionsinset[#1]}
+        [  \v!verystrict=>\def\bottomtolerance{},
+               \v!strict=>\def\bottomtolerance{.050},
+             \v!tolerant=>\def\bottomtolerance{.075},
+         \v!verytolerant=>\def\bottomtolerance{.100}]}%
+     {\normalexpanded{\noexpand\processallactionsinset[#1]}
+        [     \v!stretch=>\emergencystretch\bodyfontsize,
+                \v!space=>\spaceskip.5em\!!plus.25em\!!minus.25em\relax,
+           \v!verystrict=>\tolerance 200,
+               \v!strict=>\tolerance1500,
+             \v!tolerant=>\tolerance3000,
+         \v!verytolerant=>\tolerance4500]}}
+
+\def\setuptolerance
+  {\dosingleargument\dosetuptolerance}
+
+%D \macros
+%D   {pushindentation,popindentation}
+%D
+%D The pushing and popping is done by:
+
+\newbox\indentationboxA
+\newbox\indentationboxB
+
+\def\pushindentation
+  {\bgroup
+   \ifhmode
+     \unskip
+     \setbox\indentationboxA\lastbox       % get \strut if present
+     \unskip
+     \setbox\indentationboxB\lastbox       % get \indent generated box
+     \unskip
+   \else
+     \hskip\zeropoint                      % switch to horizontal mode
+     \unskip
+     \setbox\indentationboxA\lastbox       % get \indent generated box
+     \setbox\indentationboxB\emptybox
+   \fi}
+
+\def\popindentation
+  {\box\indentationboxB\box\indentationboxA % put back the boxes
+   \egroup}
+
+%D The only complication lays in \type{\strut}. In \PLAIN\
+%D \TEX\ a \type{\strut} is defined as:
+%D
+%D \starttyping
+%D \def\strut%
+%D   {\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
+%D \stoptyping
+%D
+%D But what is a \type{\strut}? Normally it's a rule of width
+%D zero, but when made visual, it's a rule and a negative skip.
+%D The mechanism for putting things in the margins described
+%D here cannot handle this situation very well. One
+%D characteristic of \type{\strut} is that the \type{\unhcopy}
+%D results in entering horizontal mode, which in return leads
+%D to some indentation.
+%D
+%D To serve our purpose a bit better, the macro \type{\strut}
+%D can be redefined as:
+%D
+%D \starttyping
+%D \def\strut
+%D   {\relax\ifmmode\else\hskip0pt\fi\copy\strutbox}
+%D \stoptyping
+%D
+%D Or more compatible:
+%D
+%D \starttyping
+%D \def\strut
+%D   {\relax\ifmmode
+%D      \copy\strutbox
+%D    \else
+%D      \bgroup\setbox\strutbox=\normalhbox{\box\strutbox}\unhcopy\strutbox\egroup
+%D    \fi}
+%D \stoptyping
+%D
+%D In \CONTEXT\ however we save some processing time by putting
+%D an extra \type{\hbox} around the \type{\strutbox}.
+
+% moved from page-lin.tex to here (due to visualization added
+% in august 2003)
+%
+% \unexpanded \def\crlf
+%   {\ifhmode\unskip\else\strut\fi\ifcase\raggedstatus\hfil\fi\break}
+
+\unexpanded \def\crlf
+  {\ifhmode
+     \unskip
+     \prewordbreak\crlfplaceholder
+     \ifcase\raggedstatus\hfil\or\or\or\hfil\fi
+     \break
+   \else
+     \crlfplaceholder
+     \endgraf
+   \fi}
+
+\def\crlfplaceholder
+  {\strut}
+
+\def\settestcrlf
+  {\def\crlfplaceholder
+     {\hbox to \zeropoint
+        {\strut{\infofont\kern.25em}\lohi{\infofont CR}{\infofont LF}\hss}}}
+
+%D \starttyping
+%D % \setuplayout[gridgrid=yes] \showgrid
+%D
+%D \startbuffer
+%D test 1\crlf
+%D test 2\crlf
+%D
+%D \crlf test 3
+%D
+%D test 4\crlf
+%D test 5
+%D
+%D \crlf
+%D \crlf
+%D \crlf
+%D test 6
+%D \stopbuffer
+%D
+%D \hbox
+%D   {\hsize5em
+%D    \ruledvtop{\getbuffer}\enspace
+%D    \ruledvtop{\showstruts\getbuffer}\enspace
+%D    \hsize15em \setuptyping[before=,after=]%
+%D    \ruledvtop{\typebuffer}}
+%D \stoptyping
+
+\def\justonespace
+  {\removelastspace\space} % \removeunwantedspaces\space
+
+\def\ignorecrlf
+  {\let\crlf\justonespace\let\\\crlf}
+
+\def\definehspace
+  {\dotripleempty\dodefinehspace}
+
+\def\dodefinehspace[#1][#2][#3]% #1 = optional namespace
+  {\ifthirdargument
+     \setvalue{\??hs#1:#2}{#3}%
+   \else
+     \setvalue{\??hs:#1}{#2}%
+   \fi}
+
+\unexpanded\def\hspace
+  {\dodoubleempty\dohspace}
+
+\def\dohspace[#1][#2]%
+  {\ifsecondargument
+     \dodohspace[#1][#2]%
+   \else\iffirstargument
+     \hspace[][#1]%
+   \else
+     \hspace[][\s!default]%
+   \fi\fi}
+
+\def\dodohspace[#1][#2]%
+  {\ifhmode
+     \removeunwantedspaces
+     \hskip\hspaceamount{#1}{#2}%
+     \expandafter\ignorespaces
+    \fi}
+
+\def\hspaceamount#1#2%
+  {\executeifdefined{\??hs#1:#2}{\executeifdefined{\??hs:#2}\zeropoint}}
+
+\definehspace [\v!small]   [.25\emspaceamount]
+\definehspace [\v!medium]  [.5\emspaceamount]
+\definehspace [\v!big]     [1\emspaceamount]
+\definehspace [\v!normal]  [1\spaceamount]
+\definehspace [\v!default] [\spaceamount]
+
+%D Taken from Taco's math module (cq. \AMS\ macros), but
+%D adapted to \type {\hspace}:
+
+\unexpanded\def\textormathspace         #1#2#3{\ifmmode\mskip#1#2\else\kern #1\hspaceamount\empty{#3}\fi\relax}
+\unexpanded\def\breakabletextormathspace#1#2#3{\ifmmode\mskip#1#2\else\hskip#1\hspaceamount\empty{#3}\fi\relax}
+
+\newmuskip\hairmuskip \hairmuskip=.15mu
+
+\unexpanded\def\hairspace    {\textormathspace+\hairmuskip{.5}}
+\unexpanded\def\thinspace    {\textormathspace+\thinmuskip 1}
+\unexpanded\def\medspace     {\textormathspace+\medmuskip  2}
+\unexpanded\def\thickspace   {\textormathspace+\thickmuskip3}
+\unexpanded\def\neghairspace {\textormathspace-\thinmuskip{.5}}
+\unexpanded\def\negthinspace {\textormathspace-\thinmuskip 1}
+\unexpanded\def\negmedspace  {\textormathspace-\medmuskip  2}
+\unexpanded\def\negthickspace{\textormathspace-\thickmuskip3}
+
+% needed for unicode:
+
+\unexpanded\def\breakablethinspace      {\breakabletextormathspace+\thinmuskip 1}
+
+\unexpanded\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
+\unexpanded\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}
+\unexpanded\def\fourperemspace          {\hskip\dimexpr\emwidth/4\relax}
+\unexpanded\def\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax} % goodie
+\unexpanded\def\sixperemspace           {\hskip\dimexpr\emwidth/6\relax}
+\unexpanded\def\figurespace             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
+\unexpanded\def\punctuationspace        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
+\unexpanded\def\ideographicspace        {\hskip\dimexpr\emwidth/1\relax}
+\unexpanded\def\ideographichalffillspace{\hskip\dimexpr\emwidth/2\relax}
+%unexpanded\def\nobreakspace            {\penalty\plustenthousand\space}
+\unexpanded\def\nobreakspace            {\penalty\plustenthousand\kern\interwordspace}
+\unexpanded\def\narrownobreakspace      {\penalty\plustenthousand\thinspace}
+%unexpanded\def\zerowidthnobreakspace   {\penalty\plustenthousand\hskip\zeropoint}
+\unexpanded\def\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
+\unexpanded\def\zerowidthspace          {\hskip\zeropoint}
+
+\definehspace[.5][.1250\emspaceamount] % could also be [.1250\spaceamount]
+\definehspace[1] [.1667\emspaceamount]
+\definehspace[2] [.2222\emspaceamount]
+\definehspace[3] [.2777\emspaceamount]
+
+\let \, \thinspace
+\let \: \medspace
+\let \; \thickspace
+\let \! \negthinspace
+
+\def\flexiblespaceamount#1#2#3%
+         {#1\interwordspace
+   \!!plus#2\interwordstretch
+  \!!minus#3\interwordshrink}
+
+\def\fixedspaceamount#1%
+  {#1\interwordspace}
+
+%D This is a dangerous feature because it makes the \TEX\ source
+%D less portable, i.e. any parser now needs to apply exactly the
+%D same algorithm when it wants to interpret the source. We
+%D strongly recommend not to mention this feature in manuals! It's
+%D provided for users who are hooked to such a mechanism.
+%D
+%D \starttyping
+%D \setupsorting[logo][next=\autoinsertnextspace] \logo[TEX]{\TeX}
+%D
+%D bla bla \TEX bla bla \TEX (bla) bla (\TEX)
+%D \stoptyping
+
+\def\autoinsertnextspace{\futurelet\nexttoken\doautoinsertnextspace}
+
+\def\doautoinsertnextspace % slightly extended version of a user supplied macro
+  {\ifx\nexttoken \bgroup\else \ifx\nexttoken\begingroup\else
+   \ifx\nexttoken \egroup\else \ifx\nexttoken  \endgroup\else
+   \ifx\nexttoken      \/\else \ifx\nexttoken           /\else \ifx\nexttoken      ~\else
+   \ifx\nexttoken      \ \else \ifx\nexttoken \blankspace\else \ifx\nexttoken \space\else
+   \ifx\nexttoken       .\else \ifx\nexttoken           ,\else
+   \ifx\nexttoken       !\else \ifx\nexttoken           ?\else
+   \ifx\nexttoken       :\else \ifx\nexttoken           ;\else
+   \ifx\nexttoken       '\else \ifx\nexttoken           "\else
+   \ifx\nexttoken       )\else \ifx\nexttoken           -\else \ifx\nexttoken      |\else
+   \ifx\nexttoken      \%\else \ifx\nexttoken          \&\else
+     \space
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+
+% moved from page-lin
+
+\def\installspacehandler#1#2% needs to set \obeyedspace
+  {\setvalue{\??sr#1}{#2}}
+
+\installspacehandler \v!on
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
+   \let\ =\obeyedspace}
+
+\installspacehandler \v!yes
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode    \normalspace  }}%
+   \let\ =\obeyedspace}
+
+\installspacehandler \v!off
+  {\normalspaces
+   \let\obeyedspace\normalspace
+   \let\ =\normalspace}
+
+\installspacehandler \v!fixed
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode\fixedspace}}%
+   \let\ =\obeyedspace}
+
+\def\activatespacehandler#1%
+  {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
+
+\protect \endinput

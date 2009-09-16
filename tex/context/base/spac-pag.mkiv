@@ -1,0 +1,201 @@
+%D \module
+%D   [       file=spac-pag,
+%D        version=2009.10.16, % 1997.03.31, was core-spa.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Pages,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Pages}
+
+\unprotect
+
+%D A quick way to determine left|/|middle|/|right states
+%D (experimental).
+
+\setvalue{\??as\v!left  }{0}
+\setvalue{\??as\v!middle}{1}
+\setvalue{\??as\v!right }{2}
+
+\def\setalignmentswitch#1%
+  {\chardef\alignmentswitch0\csname\??as#1\endcsname\relax}
+
+%D
+
+\newcount \noftrackedpagestates
+\newif    \ifpagestatemismatch
+\newcount \realpagestateno
+\chardef  \frozenpagestate      \zerocount
+
+\def\dotrackpagestate#1#2%
+  {\ifdoublesided \ifinpagebody \else
+     \doforcedtrackpagestate{#1}{#2}%
+   \fi \fi}
+
+\def\doforcedtrackpagestate#1#2%
+  {\ifcase\frozenpagestate
+     \global\advance\noftrackedpagestates\plusone
+     \global\advance#2\plusone
+     \lazysavetaggedtwopassdata{#1}{\number\noftrackedpagestates}{\number#2}{\noexpand\realfolio}%
+     %\llap{\infofont\number\noftrackedpagestates/\number#2}% tracing
+   \fi}
+
+\def\doifrightpagestateelse#1#2%
+  {\ifcase\frozenpagestate
+     \pagestatemismatchfalse
+     \realpagestateno\realfolio
+     \ifinpagebody
+       \ifdoublesided
+         \ifodd\realpageno\relax
+           \twopassdatafoundtrue \else \twopassdatafoundfalse
+         \fi
+       \else
+         \twopassdatafoundtrue
+       \fi
+     \else\ifdoublesided
+       \findtwopassdata{#1}{\number#2}%
+       \iftwopassdatafound
+         \realpagestateno\twopassdata\relax
+         \ifnum\twopassdata=\realpageno \else
+           \pagestatemismatchtrue
+         \fi
+         \ifodd\twopassdata\relax
+           \twopassdatafoundtrue \else \twopassdatafoundfalse
+         \fi
+       \else
+         \ifodd\realpageno\relax
+           \twopassdatafoundtrue \else \twopassdatafoundfalse
+         \fi
+       \fi
+     \else
+       \twopassdatafoundtrue
+     \fi\fi
+   \else
+     \ifodd\realpagestateno\relax
+       \twopassdatafoundtrue \else \twopassdatafoundfalse
+     \fi
+   \fi
+   \iftwopassdatafound
+     \@EA\firstoftwoarguments
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\def\doifforcedrightpagestateelse#1#2%
+  {\ifcase\frozenpagestate
+     \pagestatemismatchfalse
+     \realpagestateno\realfolio
+     \findtwopassdata{#1}{\number#2}%
+     \iftwopassdatafound
+       \realpagestateno\twopassdata\relax
+       \ifnum\twopassdata=\realpageno \else
+         \pagestatemismatchtrue
+       \fi
+       \ifodd\twopassdata\relax
+         \twopassdatafoundtrue \else \twopassdatafoundfalse
+       \fi
+     \else
+       \ifodd\realpageno\relax
+         \twopassdatafoundtrue \else \twopassdatafoundfalse
+       \fi
+     \fi
+   \else
+     \ifodd\realpagestateno\relax
+       \twopassdatafoundtrue \else \twopassdatafoundfalse
+     \fi
+   \fi
+   \iftwopassdatafound
+     \@EA\firstoftwoarguments
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\def\freezepagestate {\chardef\frozenpagestate\plusone  }
+\def\defrostpagestate{\chardef\frozenpagestate\zerocount}
+
+% we can make more of these on top, but how to deal with mixed frozen states
+
+\definetwopasslist\s!paragraph \newcount \nofraggedparagraphs
+
+\def\signalrightpage  {\dotrackpagestate      \s!paragraph\nofraggedparagraphs}
+\def\doifrightpageelse{\doifrightpagestateelse\s!paragraph\nofraggedparagraphs}
+
+\newcount\pagesignallevel
+
+\def\startsignalrightpage % one may do a \postsignalrightplace
+  {\advance\pagesignallevel\plusone
+   \presignalrightpage
+   \let\signalrightpage\relax
+   \let\presignalrightpage\relax
+   \let\startsignalrightpage\relax
+   \doifrightpageelse\donothing\donothing
+   \freezepagestate}
+
+\def\stopsignalrightpage
+  {\ifcase\pagesignallevel\or\postsignalrightpage\fi
+   \advance\pagesignallevel\minusone}
+
+\def\setraggedparagraphmode
+  {\signalrightpage\doifrightpageelse} % move it there
+
+\ifx\swapmargins\undefined \let\swapmargins\undefined \fi % todo
+
+\def\doifswappedrightpageelse#1#2% alleen in box construction !
+  {\doifrightpageelse
+     {#1}
+     {\scratchcounter\realpageno
+      \realpageno\realpagestateno\relax
+      \swapmargins
+      \realpageno\scratchcounter
+      #2}}
+
+\newbox\signaledrightpage % this way we can avoid interference, i.e. postpone placement
+
+\def\presignalrightpage {\global\setbox\signaledrightpage\hbox{\signalrightpage}}
+\def\postsignalrightpage{\ifvoid\signaledrightpage\else\box\signaledrightpage\fi}
+
+% The next feature is is used in:
+%
+% \definenumber[test][way=bypage]
+%
+% \def\Test
+%   {\incrementnumber[test]\rawnumber[test]/%
+%    \incrementnumber[test]\rawnumber[test]/%
+%    \incrementnumber[test]\rawnumber[test]\space
+%    \checkpagechange{oeps}\changedpage{oeps}\space
+%    \ifpagechanged TRUE\else FALSE\fi}
+%
+% \Test\page \Test\par \Test\page \Test\par \Test\page \Test\page
+%
+% (adapted from cont-new.tex:)
+
+\newif\ifpagechanged \let\lastchangedpage\empty
+
+\def\docheckpagestatechange#1#2#3%
+  {\pagechangedfalse
+   \doforcedtrackpagestate{#2}{#3}%
+   \findtwopassdata{#2}{\number#3}%
+   \iftwopassdatafound
+     \ifnum\twopassdata>0\getvalue{#2:p:#1}\relax
+       \pagechangedtrue
+     \fi
+   \fi
+   \ifpagechanged
+     \letgvalue{#2:p:#1}\twopassdata
+     \globallet\lastchangedpage\twopassdata
+   \else
+     \globallet\lastchangedpage\realfolio
+   \fi}
+
+\def\changedpagestate#1#2%
+  {\executeifdefined{#2:p:#1}{0}}
+
+\def\checkpagechange#1{\docheckpagestatechange{#1}\s!paragraph\nofraggedparagraphs}
+\def\changedpage    #1{\changedpagestate{#1}\s!paragraph}
+
+\protect \endinput

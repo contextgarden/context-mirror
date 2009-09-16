@@ -110,10 +110,10 @@
    \c!textcolor=,
    \c!align=,
    \c!number=\v!yes,
-\c!prefix=\v!no,
-\c!prefixconnector=.,
-\c!way=\v!by\v!chapter,
-\c!prefixsegments=2:2,
+% \c!prefix=\v!no,
+% \c!prefixconnector=.,
+% \c!way=\v!by\v!chapter,
+% \c!prefixsegments=2:2,
 %    \c!way=\@@nrway,
 %    \c!blockway=\@@nrblockway,
 %    \c!sectionnumber=\@@nrsectionnumber,
@@ -221,8 +221,11 @@
   {\def\docommand##1{\getparameters[\??kj##1][#2]\def\currentfloat{##1}\the\everysetupcaption}%
    \processcommalist[#1]\docommand}
 
+\presetstructurecountersetup\setupcaptions\sharedstructurecounterparameter
+
 \appendtoks
     \dostructurecountersetup\currentfloat\floatcaptionparameter
+    \docheckstructurecountersetup\currentfloat
 \to \everysetupcaption
 
 %D Definitions:
@@ -297,11 +300,18 @@
 
 \installstructurelistprocessor{float}{\usestructurelistprocessor{number+title}}
 
+% \def\thecurrentfloatnumber
+%   {\ifnofloatcaption \else \ifnofloatnumber \else
+%    % \labeltexts\currentfloat{\convertedstructurecounter[\currentfloat]}% ! ! todo: use a lua call instead
+%      \ifx\currentfloatnumber\relax\else
+%        \labeltexts\currentfloat{\ctxlua{structure.lists.savednumber("\currentfloat",\currentfloatnumber)}}%
+%      \fi
+%    \fi \fi}
+
 \def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
-   % \labeltexts\currentfloat{\convertedstructurecounter[\currentfloat]}% ! ! todo: use a lua call instead
      \ifx\currentfloatnumber\relax\else
-       \labeltexts\currentfloat{\ctxlua{structure.lists.savednumber("\currentfloat",\currentfloatnumber)}}%
+       \labeltexts\currentfloat{\ctxlua{structure.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}}%
      \fi
    \fi \fi}
 

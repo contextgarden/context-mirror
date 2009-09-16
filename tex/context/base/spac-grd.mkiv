@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=core-grd,
-%D        version=1998.03.10,
-%D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Grid Snapping (Experimental),
+%D   [       file=spac-grd,
+%D        version=2009.10.16, % 1998.03.10, was core-grd.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Grid Snapping,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,9 +11,30 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{ConTeXt Core Macros / Grid Snapping}
+\writestatus{loading}{ConTeXt Spacing Macros / Grid Snapping}
 
 \unprotect
+
+\newif \iffuzzyvskip
+
+%D Helpers:
+
+\let\poplastnode\relax
+
+\def\pushlastnode
+  {\ifdim\lastskip=\zeropoint
+     \ifnum\lastpenalty=\zerocount
+       \ifnum\lastkern=\zerocount
+         \let\poplastnode\relax
+       \else
+         \edef\poplastnode{\kern\the\lastkern\relax}\kern-\lastkern % untested
+       \fi
+     \else
+       \edef\poplastnode{\penalty\the\lastpenalty\relax}\nobreak % untested
+     \fi
+   \else
+     \edef\poplastnode{\vskip\the\lastskip\relax}\vskip-\lastskip % \removelastskip
+   \fi}
 
 %D Moved from supp-box:
 

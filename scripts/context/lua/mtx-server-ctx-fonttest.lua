@@ -30,7 +30,7 @@ local process_templates = { }
 process_templates.default = [[
 \starttext
     \setcharactermirroring[1]
-    \definefontfeature[sample][%s]
+    \definefontfeature[sample][analyse=yes,%s]
     \definedfont[name:%s*sample]
     \startTEXpage[offset=3pt]
         \detokenize{%s}

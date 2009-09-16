@@ -1226,13 +1226,15 @@
    \hyphenatedurl{\ctxlua{jobreferences.urls.get("#1","\@@uralternative","\@@urspace")}}%
    \endgroup}
 
+% # fails
+
 %D This macro is hooked into a support macro, and thereby
 %D \URL's break ok, according to the setting of a switch,
 %D
 %D \startbuffer
 %D \useURL
 %D   [test]
-%D   [sentence_sentence%sentence#sentence~sentence/sentence//sentence:sentence.sentence]
+%D   [sentence_sentence~sentence//sentence:sentence.sentence]
 %D \stopbuffer
 %D
 %D \typebuffer

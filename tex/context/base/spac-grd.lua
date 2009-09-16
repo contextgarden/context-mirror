@@ -1,0 +1,41 @@
+-- educational: snapper
+
+--~ function demo_snapper(head,where) -- snap_category 105 / nodes.snapvalue = { [1] = { 8*65536, 4*65536, 12*65536 } }
+--~     if head then
+--~         local current, tail, dummy = head, nil, nil
+--~         while current do
+--~             local id = current.id
+--~             if id == glue and current.subtype == 2 then
+--~                 local sn = has_attribute(current,snap_category)
+--~                 if sn then
+--~                     local sv = nodes.snapvalues[sn]
+--~                     if sv then
+--~                         head, current, dummy = node.delete(head, current)
+--~                         free_node(dummy)
+--~                     else
+--~                         current = current.next
+--~                     end
+--~                 else
+--~                     current = current.next
+--~                 end
+--~             else
+--~                 if id == hlist and where == 'hmode_par' and current.list then
+--~                     local sn = has_attribute(current.list,snap_category)
+--~                     if sn then
+--~                         local sv = nodes.snapvalues[sn]
+--~                         if sv then
+--~                             local height, depth, lineheight = sv[1], sv[2], sv[3]
+--~                             current.height = math.ceil((current.height-height)/lineheight)*lineheight + height
+--~                             current.depth  = math.ceil((current.depth -depth )/lineheight)*lineheight + depth
+--~                         end
+--~                     end
+--~                 end
+--~                 current = current.next
+--~             end
+--~             tail = current
+--~         end
+--~     end
+--~     return head
+--~ end
+
+--~ callback.register('buildpage_filter', demo_snapper)

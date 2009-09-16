@@ -141,24 +141,53 @@
 
 \def\@@itemcounter{\s!itemcount\currentitemgroup}
 
-\def\doitembreak#1{\ifconditional\optimizelistitem\ifconditional\textlistitem\else\dosomebreak#1\fi\fi}
+% \def\doitembreak#1{\ifconditional\optimizelistitem\ifconditional\textlistitem\else\dosomebreak#1\fi\fi}
+%
+% \def\allowitembreak    {\doitembreak\allowbreak}
+% \def\noitembreak       {\doitembreak\nobreak}
+% \def\itembreakspecial  {\doitembreak\itembreak}
+% \def\noitembreakspecial{\doitembreak\itemnobreak}
+%
+% \def\itembreak  {\flushnotes\penalty-5\relax} % -10
+% \def\itemnobreak{\flushnotes\penalty+5\ifinsidecolumns\else00\fi\relax} % +5
 
-\def\allowitembreak    {\doitembreak\allowbreak}
-\def\noitembreak       {\doitembreak\nobreak}
+\definevspacing[\v!item @0]     [penalty:0]     % allow
+\definevspacing[\v!item @10000] [penalty:10000] % no
+\definevspacing[\v!item @-5]    [penalty:-5]
+\definevspacing[\v!item @5]     [penalty:5]
+\definevspacing[\v!item @500]   [penalty:500]
+
+\def\doitembreak#1{\ifconditional\optimizelistitem\ifconditional\textlistitem\else#1\fi\fi}
+
+\def\allowitembreak    {\doitembreak\itembreakallow}
+\def\noitembreak       {\doitembreak\itembreakno}
 \def\itembreakspecial  {\doitembreak\itembreak}
 \def\noitembreakspecial{\doitembreak\itemnobreak}
 
-\def\itembreak  {\flushnotes\penalty-5\relax} % -10
-\def\itemnobreak{\flushnotes\penalty+5\ifinsidecolumns\else00\fi\relax} % +5
+\def\itembreakallow{\vspacing[\v!item @0]}
+\def\itembreakno   {\vspacing[\v!item @10000]}
+\def\itembreak     {\flushnotes\vspacing[\v!item @-5]}
+\def\itemnobreak   {\flushnotes\ifinsidecolumns\vspacing[\v!item @5]\else\vspacing[\v!item @500]\fi}
+
+% cool but wrong:
+%
+% \def\initializeitemgrouplevel#1%
+%   {\ifcsname\??op\currentitemgroup#1\s!parent\endcsname
+%      % ok
+%    \else\ifnum#1>\plusone
+%      \setevalue{\??op\currentitemgroup#1\s!parent}{\??op\currentitemgroup\the\numexpr#1-1\relax}%
+%    \else
+%      \setevalue{\??op\currentitemgroup#1\s!parent}{\??op\currentitemgroup}%
+%    \fi\fi}
+%
+% so we have:
 
 \def\initializeitemgrouplevel#1%
   {\ifcsname\??op\currentitemgroup#1\s!parent\endcsname
      % ok
-   \else\ifnum#1>\plusone
-     \setevalue{\??op\currentitemgroup#1\s!parent}{\??op\currentitemgroup\the\numexpr#1-1\relax}%
    \else
      \setevalue{\??op\currentitemgroup#1\s!parent}{\??op\currentitemgroup}%
-   \fi\fi}
+   \fi}
 
 \def\defineitemgroup
   {\dotripleempty\dodefineitemgroup}
@@ -199,8 +228,12 @@
 \def\dodosetupitemgroupconstant#1%
   {\edef\itemgroupconstantvalue{#1}%
    \ifx\itemgroupconstantvalue\empty\else
-      \splitstring\itemgroupconstantvalue\at*\to\itemgroupfirst\and\itemgroupsecond
-      \ifcsname\??op:::\itemgroupfirst\endcsname\csname\??op:::\itemgroupfirst\endcsname\fi
+     \splitstring\itemgroupconstantvalue\at*\to\itemgroupfirst\and\itemgroupsecond
+     \ifx\itemgroupsecond\empty
+        \ifcsname\??op:::\itemgroupfirst\endcsname\csname\??op:::\itemgroupfirst\endcsname\fi
+     \else
+        \ifcsname\??op:::\itemgroupsecond\endcsname\csname\??op:::\itemgroupsecond\endcsname\fi
+     \fi
    \fi}
 
 \newconditional\inlinelistitem \setfalse\inlinelistitem
@@ -208,8 +241,8 @@
 \setvalue{\??op:::\v!packed   }{\packitems}
 \setvalue{\??op:::\v!intro    }{\settrue\introlistitem} % here? not set to false
 \setvalue{\??op:::\v!autointro}{\settrue\autointrolistitem}
-\setvalue{\??op:::\v!broad    }{\ifx\itemgroupsecond\empty\def\itemgroupsecond{1}\fi
-                                \letitemparameter\currentitemlevel\c!factor\itemgroupsecond}
+\setvalue{\??op:::\v!broad    }{\ifx\itemgroupfirst\empty\def\itemgroupfirst{1}\fi
+                                \letitemparameter\currentitemlevel\c!factor\itemgroupfirst}
 \setvalue{\??op:::\v!text     }{\settrue\textlistitem
                                 \settrue\inlinelistitem
                                 \settrue\joinedlistitem
@@ -225,12 +258,12 @@
 \setvalue{\??op:::\v!loose    }{\setfalse\optimizelistitem}
 \setvalue{\??op:::\v!fit      }{\settrue\fittinglistitems}
 \setvalue{\??op:::\v!nofit    }{\setfalse\fittinglistitems}
-\setvalue{\??op:v:\v!paragraph}{\settrue\paragraphlistitem
+\setvalue{\??op:::\v!paragraph}{\settrue\paragraphlistitem
                                 \packitems}
 \setvalue{\??op:::\v!joinedup }{\settrue\joinedlistitem
                                 \packitems}
-\setvalue{\??op:::\v!serried  }{\edef\itemgroupsecond{-\ifx\itemgroupsecond\empty1\else\itemgroupsecond\fi}%
-                                \letitemparameter\currentitemlevel\c!factor\itemgroupsecond}
+\setvalue{\??op:::\v!serried  }{\edef\itemgroupfirst{-\ifx\itemgroupfirst\empty1\else\itemgroupfirst\fi}%
+                                \letitemparameter\currentitemlevel\c!factor\itemgroupfirst}
 \setvalue{\??op:::\v!stopper  }{\letitemparameter\currentitemlevel\c!placestopper\v!yes} % keep {}
 \setvalue{\??op:::\v!unpacked }{\setfalse\packlistitem}
 \setvalue{\??op:::\v!repeat   }{\settrue\repeatlistitem}
@@ -240,7 +273,7 @@
 \def\dosetupstandarditemgroup#1%
   {\getparameters
      [\??op\currentitemgroup#1]
-     [\c!width=1.5em,\c!factor=0,\c!distance=.5em,\c!inner=,
+     [\c!width=1.5em,\c!factor=0,\c!distance=.5em,\c!inner=,\c!factor=0,
       \c!beforehead=,\c!afterhead=\blank,\c!before=\blank,\c!inbetween=\blank,\c!after=\blank]}
 
 % \def\packeditemspacing{\empty}

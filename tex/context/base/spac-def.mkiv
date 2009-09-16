@@ -1,0 +1,119 @@
+%D \module
+%D   [       file=spac-def,
+%D        version=2009.10.16, % 1997.03.31, was core-spa.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Definitions}
+
+\unprotect
+
+\def\forgeteverypar
+  {\everypar{\the\neverypar}}
+
+\def\forgetparindent
+  {\forgeteverypar
+   \indentfirstparagraphtrue % recently added
+   \let\currentindentation\v!none
+   \ctxparindent\zeropoint
+   \parindent\zeropoint\relax}
+
+\def\forgetparskip
+  {\let\currentwhitespace\v!none
+   \ctxparskip\zeropoint
+   \parskip\zeropoint\relax}
+
+\def\forgetbothskips
+  {\tolerance1500
+   \leftskip\zeropoint
+   \rightskip\zeropoint\relax}
+
+\def\forgetspacing
+  {\emergencystretch\zeropoint}
+
+\newif\ifforgotten % rather good signal for inner
+
+\appendtoks \forgottentrue      \to \everyforgetall
+\appendtoks \forgetragged       \to \everyforgetall
+\appendtoks \forgetparskip      \to \everyforgetall
+\appendtoks \forgetparindent    \to \everyforgetall
+\appendtoks \forgetbothskips    \to \everyforgetall
+\appendtoks \forgetspacing      \to \everyforgetall % i.v.m. funny spacing in pagebody
+\appendtoks \spacing\plusone    \to \everyforgetall % new per 10/08/2004, else problems in otr / !! needed
+\appendtoks \everypar\emptytoks \to \everyforgetall % indeed!
+
+
+\appendtoks \spacing\plusone           \to \everybodyfont
+\appendtoks \presetnormallineheight    \to \everybodyfont
+\appendtoks \setnormalbaselines        \to \everybodyfont % check if redundant
+\appendtoks \setstrut                  \to \everybodyfont % check if redundant
+\appendtoks \settopskip                \to \everybodyfont
+\appendtoks \setmaxdepth               \to \everybodyfont
+\appendtoks \simplesetupindenting      \to \everybodyfont
+\appendtoks \simplesetupblank          \to \everybodyfont
+\appendtoks \simplesetupwhitespace     \to \everybodyfont
+%appendtoks \checknotes                \to \everybodyfont % not
+\appendtoks \simplesetupspacing        \to \everybodyfont % nieuw
+\appendtoks \setrelativeinterlinespace \to \everybodyfont
+
+\appendtoks  \updateraggedskips        \to \everyfontswitch  % under test
+\prependtoks \let\par\endgraf          \to \everypagebody % see \fillinline
+\appendtoks  \simplesetupspacing       \to \everydefinedfont
+
+\setupwhitespace
+  [\v!none]
+
+\indenting
+  [\v!never]
+
+\setupindenting
+  [\v!none]
+
+\setupvspacing
+  [\v!standard,
+   \v!big]
+
+\definevspacing[\v!default]  [\currentblank]
+\definevspacing[\v!before]   [\v!default]
+\definevspacing[\v!inbetween][\v!default]
+\definevspacing[\v!after]    [\v!before]
+
+\setupinterlinespace
+  [\c!minheight=0pt, % only special purpose
+   \c!mindepth=0pt, % only special purpose
+   \c!height=.72,
+   \c!depth=.28,
+   \c!top=1.0,
+   \c!bottom=0.4,
+   \c!distance=1pt,
+   \c!line=2.8ex,
+   \c!stretch=0]
+
+\setupnarrower
+  [\c!before=\endgraf,
+   \c!after=\endgraf,
+   \c!left=1.5em,
+   \c!right=1.5em,
+   \c!middle=1.5em]
+
+\setuptolerance
+  [\v!horizontal,\v!verystrict]
+
+\setuptolerance
+  [\v!vertical,\v!strict]
+
+\setupalign
+  [\v!bottom,
+   \v!width]
+
+\setupspacing
+  [\v!packed]
+
+\protect \endinput

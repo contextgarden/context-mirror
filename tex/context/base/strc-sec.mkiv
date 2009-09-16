@@ -608,7 +608,8 @@
 
 % the next one was: \somebreakmethod
 
-\chardef\somestructureheadbreakmethod\plusone  % 0=nothing, 1=weighted, 2=strict, 3=vspacing
+% \chardef\somestructureheadbreakmethod\plusone  % 0=nothing, 1=weighted, 2=strict, 3=vspacing
+\chardef\somestructureheadbreakmethod\plusthree
 
 \def\dopreventbreakafterstructureheadauto % used after \c!before
   {\ifcase\somestructureheadbreakmethod

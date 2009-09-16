@@ -50,6 +50,13 @@
   [\v!formula]
   [\c!numberconversionset=\v!formula]
 
+\presetstructurecountersetup\setupformulas\sharedstructurecounterparameter
+
+\appendtoks
+    \dostructurecountersetup\currentformula\formulaparameter
+    \docheckstructurecountersetup\currentformula
+\to \everysetupformulas
+
 \def\storecurrentformulanumber#1#2#3#4#5% ref, todo:str, \sync % todo: title etc (like float)
   {\dostructurecountercomponent
      {formula}%
@@ -67,10 +74,17 @@
    \globallet#3\laststructurecountersynchronize
    \globallet#4\laststructurecounterattribute}
 
+\newif\ifnoformulanumber
+
+% \def\thecurrentformulanumber
+%   {%\ifnoformulacaption \else \ifnoformulanumber \else
+%      \labeltexts\currentformula{\convertedstructurecounter[formula]}% ! ! todo: use a lua call instead
+%    }%\fi \fi}
+
 \def\thecurrentformulanumber
-  {%\ifnoformulacaption \else \ifnoformulanumber \else
-     \labeltexts\currentformula{\convertedstructurecounter[formula]}% ! ! todo: use a lua call instead
-   }%\fi \fi}
+  {\ifx\currentformulanumber\relax\else \ifnoformulanumber \else
+     \labeltexts\currentformula{\ctxlua{structure.lists.savedprefixednumber("\currentformula",\currentformulanumber)}}%
+   \fi \fi}
 
 \def\placecurrentformulanumber
   {\currentformulassynchronize   \currentformulasattribute   % todo
@@ -90,6 +104,8 @@
 \let\currentsubformulasynchronize\relax  \let\currentsubformulaattribute\relax
 \let\currentformulassynchronize  \relax  \let\currentformulasattribute  \relax
 
+\def\inhibitformulanumberflag{-}
+
 \def\dododoformulanumber#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
   {\hbox\bgroup
    \ifconditional\handleformulanumber
@@ -107,11 +123,13 @@
        \setsubstructurecounterown[\v!formula][2]{#2}% \detokenize?
      \fi
      \edef\currentformulareference{#1}%
-     \ifx\currentformulareference\empty
+     \ifx\currentformulareference\inhibitformulanumberflag
        \glet\currentformulasynchronize\relax
        \glet\currentformulaattribute  \relax
+       \noformulanumbertrue
      \else
        \storecurrentformulanumber\currentformulareference\empty\currentformulasynchronize\currentformulaattribute1%
+       \noformulanumberfalse
      \fi
      % subcounter
      \setbox0\hbox{\ignorespaces#4\unskip}%
@@ -561,7 +579,7 @@
    \checknextindentation[\formulaparameter\c!indentnext]%
    \dorechecknextindentation} % here ?
 
-%D Named subformulas
+%D Named subformulas (to be redone)
 
 \def\startnamedsubformulas
   {\dosingleempty\dostartnamedsubformulas}

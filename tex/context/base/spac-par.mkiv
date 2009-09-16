@@ -1,0 +1,206 @@
+%D \module
+%D   [       file=spac-par,
+%D        version=2009.10.16, % 1997.03.31, was core-spa.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Paragraphs,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Paragraphs}
+
+\unprotect
+
+
+%D The dreadful sequence \type {\bgroup} \unknown\
+%D \type {\carryoverpar} \unknown\ \type {\egroup} is needed
+%D when for instance sidefloats are used in combination with
+%D something that starts with a group. This is because
+%D otherwise the indentation as set (by the output routine)
+%D inside the group are forgotten afterwards. (I must
+%D not forget its existence).
+
+\global\let\carriedoverpar\relax
+
+\def\carryoverpar#1%
+  {\normalexpanded     % \scratchtoks{#1}%
+     {\noexpand#1% \the\scratchtoks
+      \hangindent\the\hangindent
+      \hangafter \the\hangafter
+      \parskip   \the\parskip
+      \leftskip  \the\leftskip
+      \rightskip \the\rightskip}}
+
+
+\newconditional \parbasedattributes
+
+\def\finishparbasedattributes
+  {\ifconditional\parbasedattributes
+     \setfalse\parbasedattributes
+     \par
+   \fi}
+
+\def\dostopparbasedattributes
+  {\settrue\parbasedattributes
+   \dostopattributes}
+
+% beware, changing this will break some code (like pos/backgrounds)
+
+\newtoks\everyfirstparagraphintro
+\newtoks\everynextparagraphintro
+\newtoks\@@everyparagraphtoks
+
+\chardef\everyparagraphintro\zerocount
+
+\def\setupparagraphintro
+  {\dodoubleempty\dosetupparagraphintro}
+
+\def\dosetupparagraphintro[#1][#2]%
+  {\processallactionsinset
+     [#1]
+     [   \v!reset=>\global\chardef\everyparagraphintro\zerocount
+                   \global\everyfirstparagraphintro\emptytoks
+                   \global\everynextparagraphintro \emptytoks,
+         \v!first=>\global\chardef\everyparagraphintro\plusone
+                   \doglobal\appendtoks#2\to\everyfirstparagraphintro,
+          \v!next=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plusone\fi
+                   \doglobal\appendtoks#2\to\everynextparagraphintro,
+          \v!each=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plustwo\fi
+                   \doglobal\appendtoks#2\to\everyfirstparagraphintro
+                   \doglobal\appendtoks#2\to\everynextparagraphintro]}
+
+%D We can say:
+%D
+%D \starttyping
+%D \setupparagraphintro[first][\index{Knuth}]
+%D \stoptyping
+%D
+%D Maybe more convenient is:
+%D
+%D \starttyping
+%D \flushatparagraph{\index{Zapf}}
+%D \stoptyping
+
+\def\flushatparagraph#1%
+  {\global\chardef\everyparagraphintro\plusone
+   \global\appendtoks{#1}\to\everyfirstparagraphintro
+   \global\let\insertparagraphintro\doinsertparagraphintro}
+
+\def\doinsertparagraphintro % can be merged with the next
+  {\ifcase\everyparagraphintro\else\@EA\dodoinsertparagraphintro\fi}
+
+\def\dodoinsertparagraphintro
+  {\begingroup
+   \everypar\emptytoks
+   \ifcase\everyparagraphintro\relax
+     % no data
+     \@@everyparagraphtoks\emptytoks
+   \or
+     % first data
+     \global\chardef\everyparagraphintro\plustwo
+     \@@everyparagraphtoks\everyfirstparagraphintro
+     \global\everyfirstparagraphintro\emptytoks
+   \or
+     % next data
+     \@@everyparagraphtoks\everynextparagraphintro
+   \fi
+   \the\@@everyparagraphtoks
+   \global\let\insertparagraphintro\relax
+   \endgroup}
+
+\let\insertparagraphintro\relax
+
+%D \starttyping
+%D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]
+%D \setupparagraphintro[first][\hbox to 3.5em{\tt TSRIF \hss}]
+%D \setupparagraphintro[next] [\hbox to 3.5em{\tt NEXT  \hss}]
+%D \setupparagraphintro[next] [\hbox to 3.5em{\tt TXEN  \hss}]
+%D \setupparagraphintro[each] [\hbox to 3.0em{\tt EACH  \hss}]
+%D \setupparagraphintro[each] [\hbox to 3.0em{\tt HCEA  \hss}]
+%D
+%D some paragraph \par
+%D some paragraph \par
+%D some paragraph \par
+%D
+%D \definelabel[parnumber]
+%D
+%D \setupparagraphintro[reset,each][\inleft{\slxx\parnumber}]
+%D
+%D some paragraph \par
+%D some paragraph \par
+%D some paragraph \par
+%D \stoptyping
+
+%D \macros
+%D   {flushatnextpar}
+%D
+%D This macro collects data that will be flushed at the next paragraph.
+%D By using this macro you can avoid interfering nodes (writes, etc).
+
+\newbox\postponednodedata
+\let\flushpostponednodedata\relax
+
+\def\flushatnextpar
+  {\bgroup
+   \global\let\flushpostponednodedata\doflushpostponednodedata
+   \dowithnextbox{\global\setbox\postponednodedata\hbox{\box\postponednodedata\box\nextbox}\egroup}\hbox}
+
+\def\doflushpostponednodedata
+  {\ifvoid\postponednodedata\else
+     \hbox{\smashedbox\postponednodedata}%
+   \fi
+   \global\let\flushpostponednodedata\relax}
+
+% Very nasty but needed for margin stuff inside colored
+% paragraphs.
+
+\let\normalvadjust\vadjust
+
+% \def\graphicvadjust % bad, those low level color calls here
+%   {\dowithnextboxcontent
+%      {\forgetall}
+%      {\normalvadjust
+%         {\unvbox\nextbox
+%          % corrects for one line paragraphs
+%          \nointerlineskip
+%          \kern-\struttotal
+%          \nointerlineskip
+%          \verticalstrut}}%
+%      \vbox}
+
+\def\graphicvadjust % nasty bidi handling
+  {\dowithnextboxcontent
+     {\forgetall}
+     {\vadjust{\vbox attr \graphicvadjustattribute \plusone
+        {\unvbox\nextbox
+         % corrects for one line paragraphs
+         \nointerlineskip
+         \kern-\struttotal
+         \nointerlineskip
+         \verticalstrut}}}%
+     \vbox}
+
+%D This works only in a properly strutted line, and is meant
+%D for deeply burried operations, like in heads.
+
+\def\fakedvadjust
+  {\dowithnextbox
+     {\setbox\nextbox\hbox{\llap{\lower\strutdepth\box\nextbox}}%
+      \smashedbox\nextbox}%
+   \vtop}
+
+\def\localvbox#1#%
+  {\vbox#1\bgroup
+     \forgetparskip
+     \setlocalhsize
+     \hsize\localhsize
+     \forgetparindent
+     \forgetbothskips
+     \forgeteverypar
+     \let\next=}
+
+\protect \endinput

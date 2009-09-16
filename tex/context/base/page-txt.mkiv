@@ -197,7 +197,7 @@
 
 \def\dosingletexts#1#2#3#4#5#6%
   {\bgroup
-   \defconvertedargument\ascii{#6}% no longer \defconvertedargument
+   \defconvertedargument\ascii{#6}% no longer \defconvertedargument, this also does not permit \v!pagenumber (i.e. v!)
    \ifx\ascii\empty\else
      \dostartattributes{\??tk#1#2}#3#4\empty
        \placetextlinestrut{\??tk#1}% here !

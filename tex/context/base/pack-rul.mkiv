@@ -1866,9 +1866,9 @@
 %D            framecolorkaderkleur=DemoBlue,
 %D            rulethickness=2pt]
 %D         \def\status%
-%D           {backgroundoffset=\framedparameter\c!backgroundoffset\\
-%D            frameoffset=\framedparameter\c!frameoffset\\
-%D            depth=\framedparameter\c!depth}
+%D           {backgroundoffset=\the\dimexpr\framedparameter\c!backgroundoffset\relax\\
+%D            frameoffset=\the\dimexpr\framedparameter\c!frameoffset\relax\\
+%D            depth=\the\dimexpr\framedparameter\c!depth\relax}
 %D         \dontleavehmode \ruledhbox{\framed[backgroundoffset=0pt,frameoffset=0pt]{\status}}
 %D         \vss
 %D         \dontleavehmode \ruledhbox{\framed[backgroundoffset=5pt,frameoffset=0pt]{\status}}

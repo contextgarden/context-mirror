@@ -40,16 +40,18 @@ local function source_to_ted(inpname,outname,filetype)
     local inp = io.open(inpname)
     if not inp then
         logs.simple("unable to open '%s'",inpname)
+        return
     end
     local out = io.open(outname,"w")
     if not out then
         logs.simple("unable to open '%s'",outname)
+        return
     end
     logs.simple("converting '%s' to '%s'",inpname,outname)
     local skiplevel, indocument, indefinition = 0, false, false
     out:write(format("\\startmodule[type=%s]\n",filetype or file.suffix(inpname)))
     for line in inp:lines() do
-        line = strip(line)
+--~         line = strip(line)
         if find(line,"^%%D ") or find(line,"^%%D$") then
             if skiplevel == 0 then
                 local someline = (#line < 3 and "") or sub(line,4,#line)

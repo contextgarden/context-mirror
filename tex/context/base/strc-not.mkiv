@@ -156,7 +156,6 @@
 \setupnotes
   [\c!location=\v!page,
    \c!way=\v!by\v!part,
-   \c!sectionnumber=\v!no,
   %\c!conversion=,
    \c!rule=\v!on,
    \c!before=\blank,
@@ -194,18 +193,6 @@
 \def\@@defaultnotedefloc{\v!inleft}
 \def\@@defaultnotedefdis{\!!zeropoint}
 
-% also s!root
-%
-% \definedescription
-%   [\??vn\??vn]
-%   [\c!location=\@@defaultnotedefloc,
-%    \c!distance=\@@defaultnotedefdis,
-%    \c!width=\v!fit,
-%    \c!headstyle=\noteparameter\c!style,
-%    \c!headcolor=\noteparameter\c!color,
-%    \c!before=,
-%    \c!after=]
-
 \def\startnotedef{\resetdescriptions\csname\e!start\??vn\??vn\currentnote\endcsname}
 \def\stopnotedef                   {\csname\e!stop \??vn\??vn\currentnote\endcsname}
 
@@ -229,7 +216,7 @@
       \c!width=\v!fit,
       \c!headstyle=\noteparameter\c!style,
       \c!headcolor=\noteparameter\c!color,
-\s!handler=\v!note,
+      \s!handler=\v!note,
       \c!text=,
       \c!before=,
       \c!after=]%

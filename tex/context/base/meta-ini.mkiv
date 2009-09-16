@@ -435,7 +435,7 @@
    \xdef\MPlly{#3}%        ugly as well
    \xdef\MPurx{#4}%
    \xdef\MPury{#5}%
-   \getobject{MP}{#1}}
+   \forcecolorhack\getobject{MP}{#1}} % else no proper color intent
 
 \long\def\handleuniqueMPgraphic#1#2#3%
   {\begingroup

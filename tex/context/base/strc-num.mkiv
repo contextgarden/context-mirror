@@ -39,20 +39,24 @@
 
 % todo: better inheritane system
 
-\definesystemvariable {nn}
-
 \def\setupstructurecountering{\dodoubleempty\getparameters[\??nn]}
 
 \setupstructurecountering
   [\c!way=\v!by\v!chapter,
-% \c!blockway=,
-% \c!prefixstopper=,
-\c!prefixconnector=.,
-\c!prefixsegments=\thenamedstructurecounterlevel\currentstructurecounter,
-\c!start=0,
-\c!state=\v!start,
+%  \c!blockway=,
+%  \c!prefixstopper=,
+   \c!prefixconnector=.,
+   \c!prefixsegments=\thenamedstructurecounterlevel\currentstructurecounter,
+   \c!start=0,
+   \c!state=\v!start,
    \c!prefix=\v!yes,
    \c!state=\v!start]
+
+\setupstructurecountering
+  [\c!prefixsegments=\autostructureprefixsegments\sharedstructurecounterparameter]
+
+\def\autostructureprefixsegments#1% todo: \c!prefixsegments=\v!auto
+  {2:\thenamedstructureheadlevel{\ctxlua{structure.sections.way("#1\c!way","\v!by")}}}
 
 % \letvalue{\??nn\s!empty}\empty
 
@@ -75,6 +79,17 @@
    \else
      #1%
    \fi}
+
+\def\sharedstructurecounterparameter#1%
+  {\csname
+     \ifcsname\??nn#1\endcsname
+       \??nn#1%
+     \else
+       \s!empty
+     \fi
+   \endcsname}
+
+\let\numberingparameter\sharedstructurecounterparameter
 
 % \def\structurecounterparameter        #1#2{\csname\dostructurecounterparameter{\??nn#1}#2\endcsname}
 % \def\dostructurecounterparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dostructurecounterparentparameter\csname#1\s!number\endcsname#2\fi}
@@ -314,17 +329,6 @@
    \c!blockway=,
    \c!state=\v!start]
 
-\def\numberingparameter#1{\csname\??nr#1\endcsname}
-
-%    \c!prefixconnector=.,
-%    \c!stopper=,
-
-% \c!prefix=\v!no,
-% \c!prefixconnector=.,
-% \c!way=bychapter,
-% \c!prefixsegments=2:2,
-
-
 %D Helpers:
 
 % call:
@@ -352,6 +356,11 @@
    \edef\hasstructurecountertitle  {#3\s!hastitle}%
    \edef\hasstructurecounternumber {#3\s!hasnumber}%
    \edef\hasstructurecounterlevel  {#3\s!haslevel}%
+   %
+\edef\askedprefixsegments{#3\c!prefixsegments}%
+\ifx\askedprefixsegments\v!auto
+  \edef\askedprefixsegments{\autostructureprefixsegments#3}%
+\fi
    %
    \edef\currentname{#3\c!name}%
    \ifx\currentname\empty
@@ -422,7 +431,8 @@
             conversion    = \!!bs#3\c!prefixconversion\!!es,
             conversionset = "#3\c!prefixconversionset",
             set           = "#3\c!prefixset",
-            segments      = "#3\c!prefixsegments",
+%             segments      = "#3\c!prefixsegments",
+segments      = "\askedprefixsegments",
             connector     = \!!bs#3\c!prefixconnector\!!es,
         },
         numberdata = {
@@ -472,5 +482,22 @@
       \c!numberconversionset=#2\c!numberconversionset,
             \c!numberstopper=#2\c!numberstopper,
            \c!numbersegments=#2\c!numbersegments]}
+
+\def\presetstructurecountersetup#1#2% \setupcommand \someparameter
+  {#1%
+    [\c!way                =#2\c!way,
+     \c!prefix             =#2\c!prefix,
+     \c!prefixseparatorset =#2\c!prefixseparatorset,
+     \c!prefixconversion   =#2\c!prefixconversion,
+     \c!prefixconversionset=#2\c!prefixconversionset,
+     \c!prefixstopper      =#2\c!prefixstopper,
+     \c!prefixsegments     =#2\c!prefixsegments,
+     \c!prefixset          =#2\c!prefixset,
+     \c!prefixconnector    =#2\c!prefixconnector,
+     \c!numberseparatorset =#2\c!numberseparatorset,
+     \c!numberconversion   =#2\c!numberconversion,
+     \c!numberconversionset=#2\c!numberconversionset,
+     \c!numberstopper      =#2\c!numberstopper,
+     \c!numbersegments     =#2\c!numbersegments]}
 
 \protect \endinput

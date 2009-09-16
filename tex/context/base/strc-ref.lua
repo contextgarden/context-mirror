@@ -948,15 +948,11 @@ filters.section.default = filters.section.number
 
 filters.formula = {}
 
-filters.formula.default = filters.section.number
+filters.formula.default = filters.generic.number
 
 filters.float = { }
 
-filters.float.default = filters.section.number
-
---~ filters.float.title  = filters.generic.title
---~ filters.float.number = filters.generic.number
---~ filters.float.page   = filters.generic.page
+filters.float.default = filters.generic.number
 
 structure.references = structure.references or { }
 structure.helpers    = structure.helpers    or { }

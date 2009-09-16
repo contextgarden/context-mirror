@@ -48,6 +48,20 @@ filters.ttf   = fontloader.info
 filters.ttc   = fontloader.info
 filters.dfont = fontloader.info
 
+function fontloader.fullinfo(...)
+    local ff = fontloader.open(...)
+    if ff then
+        local d = ff and fontloader.to_table(ff)
+        d.glyphs, d.subfonts, d.gpos, d.gsub, d.lookups = nil, nil, nil, nil, nil
+        fontloader.close(ff)
+        return d
+    else
+        return nil, "error in loading font"
+    end
+end
+
+filters.otf   = fontloader.fullinfo
+
 function filters.afm(name)
     -- we could parse the afm file as well, and then report an error but
     -- it's not worth the trouble
@@ -191,7 +205,7 @@ function names.identify(verbose) -- lsr is for kpse
             end
         end
         if result.fontname then
-            fontname = fontname or result.fontname
+            fontname = result.fontname or fontname
             local n = cleanname(result.fontname)
             if not mapping[n] then
                 mapping[n], nofok = { lower(suffix), fontname, filename, is_sub }, nofok + 1
@@ -199,10 +213,32 @@ function names.identify(verbose) -- lsr is for kpse
         end
         if result.familyname and result.weight and result.italicangle == 0 then
             local madename = result.familyname .. " " .. result.weight
-            fontname = fontname or madename
+            fontname = madename or fontname
             local n = cleanname(fontname)
             if not mapping[n] and not fallback_mapping[n] then
                 fallback_mapping[n], nofok = { lower(suffix), fontname, filename, is_sub }, nofok + 1
+            end
+        end
+        if result.names then
+            for k, v in ipairs(result.names) do
+                local lang, names = v.lang, v.names
+                if lang == "English (US)" then
+                    local family, subfamily, fullnamet = names.family, names.subfamily, names.fullname
+                    local preffamilyname, prefmodifiers, weight = names.preffamilyname, names.prefmodifiers, names.weight
+                    if preffamilyname then
+                        if subfamily then
+                            local n = cleanname(preffamilyname .. " " .. subfamily)
+                            if not mapping[n] and not fallback_mapping[n] then
+                                fallback_mapping[n], nofok = { lower(suffix), fontname, filename, is_sub }, nofok + 1
+                            end
+                        end
+                        -- okay?
+                        local n = cleanname(preffamilyname)
+                        if not mapping[n] and not fallback_mapping[n] then
+                            fallback_mapping[n], nofok = { lower(suffix), fontname, filename, is_sub }, nofok + 1
+                        end
+                    end
+                end
             end
         end
     end

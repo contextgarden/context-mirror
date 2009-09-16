@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['core-spa'] = {
+if not modules then modules = { } end modules ['spac-ver'] = {
     version   = 1.001,
-    comment   = "companion to core-spa.mkiv",
+    comment   = "companion to spac-ver.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -14,6 +14,9 @@ local format, gmatch, concat = string.format, string.gmatch, table.concat
 local texsprint, texlists = tex.sprint, tex.lists
 
 local ctxcatcodes = tex.ctxcatcodes
+local variables = interfaces.variables
+
+local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 -- vertical space handler
 
@@ -111,18 +114,24 @@ do -- todo: interface.variables
     local keyword    = lpeg.C((1-category)^1)
     local splitter   = (multiplier + lpeg.Cc(1)) * keyword * (category + lpeg.Cc(false))
 
+    local k_fixed, k_flexible, k_category, k_penalty, k_order = variables.fixed, variables.flexible, "category", "penalty", "order"
+
     local function analyse(str,oldcategory,texsprint)
+--~ print(table.serialize(map))
+--~ print(table.serialize(skip))
         for s in gmatch(str,"([^ ,]+)") do
             local amount, keyword, detail = splitter:match(s)
-            if keyword then
+            if not keyword then
+                logs.report("vspacing","unknown directive: %s",s)
+            else
                 local mk = map[keyword]
                 if mk then
                     category = analyse(mk,category,texsprint)
-                elseif keyword == "fixed" then
+                elseif keyword == k_fixed then
                     texsprint(ctxcatcodes,"\\fixedblankskip")
-                elseif keyword == "flexible" then
+                elseif keyword == k_flexible then
                     texsprint(ctxcatcodes,"\\flexibleblankskip")
-                elseif keyword == "category" then
+                elseif keyword == k_category then
                     local category = tonumber(detail)
                     if category then
                         texsprint(ctxcatcodes,format("\\setblankcategory{%s}",category))
@@ -131,12 +140,12 @@ do -- todo: interface.variables
                             oldcategory = category
                         end
                     end
-                elseif keyword == "order" and detail then
+                elseif keyword == k_order and detail then
                     local order = tonumber(detail)
                     if order then
                         texsprint(ctxcatcodes,format("\\setblankorder{%s}",order))
                     end
-                elseif keyword == "penalty" and detail then
+                elseif keyword == k_penalty and detail then
                     local penalty = tonumber(detail)
                     if penalty then
                         texsprint(ctxcatcodes,format("\\setblankpenalty{%s}",penalty))
@@ -151,8 +160,6 @@ do -- todo: interface.variables
                         texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,keyword,keyword))
                     end
                 end
-            else
-                logs.report("vspacing","unknown directive: %s",s)
             end
         end
         return category
@@ -345,7 +352,7 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
     local penalty_order, penalty_data, natural_penalty = 0, nil, nil
     local parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
     while current do
-        local id = current.id
+        local id = current.id -- has each node a subtype ?
         if id == glue and current.subtype == 0 then -- todo, other subtypes, like math
             local sc = has_attribute(current,skip_category)      -- has no default, no unset (yet)
             local so = has_attribute(current,skip_order   ) or 1 -- has  1 default, no unset (yet)
@@ -510,12 +517,12 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
                 local p = make_penalty_node(penalty_data)
                 if trace then trace_done("flushed",p) end
                 head, current = insert_node_before(head,current,p)
-                penalty_data = nil
+            --  penalty_data = nil
             end
             if glue_data then
                 if trace then trace_done("flushed",glue_data) end
                 head, current = insert_node_before(head,current,glue_data)
-                glue_order, glue_data = 0, nil
+            --  glue_order, glue_data = 0, nil
             end
             if trace then trace_node(current) end
             if id == hlist and where == 'hmode_par' then
@@ -533,6 +540,9 @@ local function collapser(head,where,what,trace) -- maybe also pass tail
                     end
                 end
             end
+            glue_order, glue_data = 0, nil
+            penalty_order, penalty_data, natural_penalty = 0, nil, nil
+            parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
             current = current.next
         end
     end
@@ -583,7 +593,7 @@ end
 function nodes.handle_page_spacing(where)
     local newhead = texlists.contrib_head
     if newhead then
-        statistics.starttiming(vspacing)
+        starttiming(vspacing)
         local newtail = find_node_tail(newhead)
         local flush = false
         for n in traverse_nodes(newhead) do -- we could just look for glue nodes
@@ -630,7 +640,7 @@ function nodes.handle_page_spacing(where)
             stacktail = newtail
             texlists.contrib_head = nil
         end
-        statistics.stoptiming(vspacing)
+        stoptiming(vspacing)
     end
 end
 
@@ -642,9 +652,9 @@ local ignore = table.tohash {
 
 function nodes.handle_vbox_spacing(head,where)
     if head and not ignore[where] and head.next then
-        statistics.starttiming(vspacing)
+        starttiming(vspacing)
         head = collapser(head,"vbox",where,trace_vbox_vspacing)
-        statistics.stoptiming(vspacing)
+        stoptiming(vspacing)
     end
     return head
 end
@@ -659,7 +669,7 @@ end)
 -- be moved elsewhere as part of a chain of vnode handling
 
 function vspacing.enable()
---~     callback.register('vpack_filter', nodes.handle_vbox_spacing)
+    callback.register('vpack_filter', nodes.handle_vbox_spacing) -- enabled per 2009/10/16
     callback.register('buildpage_filter', nodes.handle_page_spacing)
 end
 
@@ -667,6 +677,8 @@ function vspacing.disable()
     callback.register('vpack_filter', nil)
     callback.register('buildpage_filter', nil)
 end
+
+vspacing.enable()
 
 -- we will split this module hence the locals
 
