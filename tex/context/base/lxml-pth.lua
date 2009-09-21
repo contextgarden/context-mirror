@@ -822,6 +822,36 @@ function xml.filters.attributes(root,pattern,arguments)
     end
 end
 
+-- new
+
+local rt, dt, dk
+
+local function action(r,d,k) rt, dt, dk = r, d, k return true end
+
+function xml.filters.chainattribute(root,pattern,arguments) -- todo: optional levels
+    rt, dt, dk = nil, nil, nil
+    traverse(root, lpath(pattern), action)
+    local dtk = dt and dt[dk]
+    local ekat = (dtk and dtk.at) or (rt and rt.at)
+    local rp = rt
+    while true do
+        if ekat then
+            local a = ekat[arguments]
+            if a then
+                return a, rt, dt, dk
+            end
+        end
+        rp = rp.__p__
+        if rp then
+            ekat = rp.at
+        else
+            return "", rt, dt, dk
+        end
+    end
+end
+
+--
+
 function xml.filters.reverse(root,pattern)
     local rt, dt, dk
     traverse(root, lpath(pattern), function(r,d,k) rt,dt,dk = r,d,k return true end, 'reverse')

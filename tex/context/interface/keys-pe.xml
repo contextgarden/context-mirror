@@ -272,11 +272,15 @@
 		<cd:variable name='mathcases' value='حالتهای‌ریاضی'/>
 		<cd:variable name='mathmatrix' value='ماتریش‌ریاضی'/>
 		<cd:variable name='max' value='بیشترین'/>
+		<cd:variable name='maxdepth' value='maxdepth'/>
+		<cd:variable name='maxheight' value='maxheight'/>
+		<cd:variable name='maxwidth' value='maxwidth'/>
 		<cd:variable name='may' value='مه'/>
 		<cd:variable name='mediaeval' value='mediaeval'/>
 		<cd:variable name='medium' value='متوسط'/>
 		<cd:variable name='middle' value='میان'/>
 		<cd:variable name='min' value='کمترین'/>
+		<cd:variable name='mindepth' value='mindepth'/>
 		<cd:variable name='minheight' value='کمترین‌ارتفاع'/>
 		<cd:variable name='minwidth' value='کمترین‌عرض'/>
 		<cd:variable name='mirrored' value='منعکس'/>
@@ -736,6 +740,7 @@
 		<cd:constant name='marking' value='نشانه‌گذاری'/>
 		<cd:constant name='marstyle' value='سبک‌حاش'/>
 		<cd:constant name='max' value='بیشترین'/>
+		<cd:constant name='maxdepth' value='maxdepth'/>
 		<cd:constant name='maxheight' value='بیشترین‌ارتفاع'/>
 		<cd:constant name='maxwidth' value='بیشترین‌عرض'/>
 		<cd:constant name='maybeyear' value='maybeyear'/>

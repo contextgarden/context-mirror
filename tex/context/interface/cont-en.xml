@@ -7055,6 +7055,10 @@
         <cd:constant type="left"/>
         <cd:constant type="middle" default="yes"/>
         <cd:constant type="right"/>
+        <cd:constant type="-left"/>
+        <cd:constant type="-middle"/>
+        <cd:constant type="-right"/>
+        <cd:constant type="-none"/>
       </cd:keywords>
     </cd:arguments>
   </cd:command>

@@ -33,8 +33,7 @@
 \unexpanded\def\righttoleft{\textdir TRT\pardir TRT\relax}
 
 \def\dodefinehbox[#1][#2]%
-  {\setvalue{hbox#1}##1%
-     {\hbox to #2{\begstrut##1\endstrut\hss}}}
+  {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}
 
 \def\definehbox
   {\dodoubleargument\dodefinehbox}
@@ -86,8 +85,8 @@
 \def\raggedcommand{\the\everyraggedcommand}
 
 \def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
-  {\everyraggedcommand     \emptytoks
-   \let\raggedtopcommand   \empty
+  {\everyraggedcommand\emptytoks
+   \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
    \chardef\raggedoneliner\zerocount
    \doifsomething{#1}
@@ -446,9 +445,6 @@
 \installalign \v!verytolerant  {\tolerance4500   \relax}
 \installalign \v!stretch       {\emergencystretch\bodyfontsize}
 
-\installalign \v!grid          {\doenablegridsnapping } % only mkiv
-\installalign \v!nogrid        {\dodisablegridsnapping} % only mkiv
-
 \installalign \v!righttoleft   {\lefttoright}
 \installalign \v!lefttoright   {\righttoleft}
 \installalign {l2r}            {\lefttoright}
@@ -531,10 +527,10 @@
 
 % plain commands
 
-\ifx\undefined\line       \def\line        {\hbox to\hsize}    \fi
-\ifx\undefined\leftline   \def\leftline  #1{\line{#1\hss}}     \fi
-\ifx\undefined\rightline  \def\rightline #1{\line{\hss#1}}     \fi
-\ifx\undefined\centerline \def\centerline#1{\line{\hss#1\hss}} \fi
+\ifdefined\line       \else \def\line        {\hbox to\hsize}    \fi
+\ifdefined\leftline   \else \def\leftline  #1{\line{#1\hss}}     \fi
+\ifdefined\rightline  \else \def\rightline #1{\line{\hss#1}}     \fi
+\ifdefined\centerline \else \def\centerline#1{\line{\hss#1\hss}} \fi
 
 % directe commando's
 

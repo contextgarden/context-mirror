@@ -2605,6 +2605,9 @@
      [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
          \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
           \v!right=>\global\advance\ctxrightskip \@@slright,
+          -\v!left=>\global\advance\ctxleftskip -\@@slleft,
+        -\v!middle=>\global\advance\ctxmidskip  -\@@slmiddle,
+         -\v!right=>\global\advance\ctxrightskip-\@@slright,
           \v!reset=>\global\ctxleftskip \zeropoint
                     \global\ctxmidskip  \zeropoint
                     \global\ctxrightskip\zeropoint,

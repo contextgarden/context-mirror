@@ -649,13 +649,13 @@
 % The next mechanism is obsolete and will be removed in \MKIV\ (or move to
 % the compatibility module.
 
-% \newskip\xposition  \newskip\yposition
-% \newskip\xdimension \newskip\ydimension
-% \newskip\xoffset    \newskip\yoffset
+\newskip\xposition  \newskip\yposition
+\newskip\xdimension \newskip\ydimension
+\newskip\xoffset    \newskip\yoffset
 
 % already defined \newbox\positionbox
 
-\def\startpositioning
+\unexpanded\def\startpositioning
   {\bgroup
    \xposition \zeropoint     \yposition \zeropoint
    \xdimension\zeropoint     \ydimension\zeropoint
@@ -663,7 +663,7 @@
    \hfuzz     \paperwidth \vfuzz     \paperheight
    \setbox\positionbox\hbox\bgroup}
 
-\def\stoppositioning
+\unexpanded\def\stoppositioning
   {\doifnot\@@psoffset\v!yes
      {\global\xoffset\zeropoint
       \global\yoffset\zeropoint}%

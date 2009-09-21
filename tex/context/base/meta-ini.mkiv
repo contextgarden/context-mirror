@@ -435,7 +435,7 @@
    \xdef\MPlly{#3}%        ugly as well
    \xdef\MPurx{#4}%
    \xdef\MPury{#5}%
-   \forcecolorhack\getobject{MP}{#1}} % else no proper color intent
+   \hbox{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
 
 \long\def\handleuniqueMPgraphic#1#2#3%
   {\begingroup
@@ -774,7 +774,7 @@
   {\iffirstargument
      \startuseMPgraphic{#1}#2\stopuseMPgraphic
    \else
-     \startuseMPgraphic{mprun}#1\stopuseMPgraphic
+     \startuseMPgraphic{mprun}#2\stopuseMPgraphic
    \fi}
 
 % for old time sake
@@ -1247,7 +1247,7 @@
 \stopMPinitializations
 
 %D \macros
-%D   {\setupMPgraphics}
+%D   {setupMPgraphics}
 %D
 %D Here is a generic setup command:
 

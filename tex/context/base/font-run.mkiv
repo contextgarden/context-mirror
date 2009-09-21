@@ -109,7 +109,6 @@
 \gdef\doshowfont[#1][#2]%
   {\bgroup
    \boxrulewidth=.1pt
-   \setupcolors[\c!state=\v!local]%
    \iffirstargument
      \definefont[\s!dummy][#1]\dummy
    \else\ifdim2.5em>.05\hsize \tx
@@ -227,7 +226,6 @@
      \@@onlyenglish\showligatures
    \else
      \bgroup
-     \setupcolors[\c!state=\v!local]%
      \def\show##1{\hbox{\red\ruledhbox{\black##1}}}%
      \definefont[\s!dummy][#1]\dummy
      \starttabulate[|*{9}{c|}]

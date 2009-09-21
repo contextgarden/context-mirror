@@ -545,7 +545,8 @@
    \else
      \letvalue{\??dd#1\s!counter}\currentdescriptioncounter % ?
      \doifstructurecounterelse{\currentdescriptioncounter}{}{\dodefineenumerationcounter\currentdescriptioncounter}%
-   \fi\fi\fi}
+   \fi\fi\fi
+   \dosetupenumerationcounter{#1}} % new
 
 \newtoks\everysetupenumerationcounter
 \let\currentenumerationcountername\empty

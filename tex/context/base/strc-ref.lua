@@ -810,13 +810,25 @@ end
 
 --
 
+function jobreferences.get_current_kind()
+    local data = currentreference and currentreference.i
+    if data then
+        local kind = data.metadata and data.metadata.kind
+        if kind then
+            texsprint(ctxcatcodes,kind)
+        end
+    end
+end
+
+--
+
 jobreferences.filters = jobreferences.filters or { }
 
 local filters  = jobreferences.filters
 local helpers  = structure.helpers
 local sections = structure.sections
 
-function jobreferences.filter(name) -- number page title ...
+function jobreferences.filter(name,...) -- number page title ...
     local data = currentreference and currentreference.i
     if data then
         local kind = data.metadata and data.metadata.kind
@@ -824,7 +836,7 @@ function jobreferences.filter(name) -- number page title ...
             local filter = filters[kind] or filters.generic
             filter = filter and (filter[name] or filter.unknown or filters.generic[name] or filters.generic.unknown)
             if filter then
-                filter(data,name)
+                filter(data,name,...)
             elseif trace_referencing then
                 logs.report("referencing","no (generic) filter.name for '%s'",name)
             end
@@ -856,11 +868,11 @@ function filters.generic.text(data)
     end
 end
 
-function filters.generic.number(data) -- todo: spec and then no stopper
+function filters.generic.number(data,what,...) -- todo: spec and then no stopper
     if data then
         local numberdata = data.numberdata
         if numberdata then
-            helpers.prefix(data)
+            helpers.prefix(data,...)
             sections.typesetnumber(numberdata,"number",numberdata or false)
         else
             local useddata = data.useddata

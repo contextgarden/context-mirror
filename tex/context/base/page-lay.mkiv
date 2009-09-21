@@ -434,6 +434,8 @@
      {\expanded{\dododosetuppapersize[\layoutparameter\c!page][\layoutparameter\c!paper]}}%
    \dorecalculatelayout}
 
+\ifdefined\docheckgridsnapping \else \let\docheckgridsnapping\relax \fi
+
 \def\dorecalculatelayout
   {%\the\everybeforelayout
    \setups[\layoutparameter\c!preset]%
@@ -448,12 +450,7 @@
    \global\backspace       \layoutparameter\c!backspace
    \global\topspace        \layoutparameter\c!topspace
    \setlayoutdimensions % the rest of the `dimensions'
-   \doifelse\@@lygrid\v!yes\gridsnappingtrue\gridsnappingfalse
-   \ifgridsnapping
-     \setsystemmode\v!grid
-   \else
-     \resetsystemmode\v!grid
-   \fi
+   \docheckgridsnapping
    \setups[\layoutparameter\c!setups]% depends on gridsnapping !
    \simplesetupwhitespace
    \simplesetupblank
@@ -535,7 +532,6 @@
    \calculatehsizes
    \calculatevsizes
    \calculatepseudocolumns
-   \checkgridsnapping
    \recalculatebackgrounds}
 
 \def\calculatepseudocolumns

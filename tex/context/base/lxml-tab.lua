@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
     license   = "see context related readme files"
 }
 
+-- this module needs a cleanup: check latest lpeg, passing args, (sub)grammar, etc etc
+
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
 handles comment and processing instructions, has a different structure, provides

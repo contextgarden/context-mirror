@@ -109,14 +109,6 @@
 \def\dododoformulanumber#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
   {\hbox\bgroup
    \ifconditional\handleformulanumber
-%      \ifconditional\incrementformulanumber
-%        \ifconditional\insidesubformulas
-%          \incrementsubstructurecounter[\v!formula][2]%
-%        \else
-%          \incrementstructurecounter[\v!formula]%
-%        \fi
-%      \fi
-     %
      % main counter
      \setbox0\hbox{\ignorespaces#2\unskip}%
      \ifdim\wd0>\zeropoint
@@ -326,7 +318,6 @@
 \def\rightdisplayskip   {\rightskip}
 \def\leftdisplaymargin  {\formulaparameter\c!leftmargin}
 \def\rightdisplaymargin {\formulaparameter\c!rightmargin}
-\def\displaygridsnapping{\formulaparameter\c!grid}
 
 \def\beforedisplayspace
   {\doifnot{\formulaparameter\c!spacebefore}\v!none{\blank[\formulaparameter\c!spacebefore]}}
@@ -441,88 +432,61 @@
    \setfalse\handleformulanumber
    \dorechecknextindentation} % here ?
 
+% \def\startdisplaymath
+%   {\bgroup
+%    \parskip\formulaparskip % ! !
+%    \informulatrue
+%    %\forgetall % otherwise backgrounds fail
+%    \ifdim\lastskip<\zeropoint\else
+%      \par
+%      \ifvmode \ifdim\parskip>\zeropoint\relax
+%        \whitespace \vskip-\parskip % kind of forces and cancels again
+%      \fi \fi
+%    \fi
+%    \beforedisplayspace
+%    \par
+%    \ifvmode
+%       \prevdepth-\maxdimen % texbook pagina 79-80
+%       % otherwise problems at the top of a page
+%       \verticalstrut
+%       \vskip-\struttotal
+%       \vskip-\baselineskip
+%    \fi
+%    $$\setdisplaydimensions
+%    \setpredisplaysize\lastlinewidth
+%    \startinnermath}
+
+% \def\stopdisplaymath
+%   {\stopinnermath
+%    $$%
+%    \par\ifvmode\ifdim\parskip>\zeropoint\whitespace\vskip-\parskip\fi\fi
+%    \afterdisplayspace
+%    \egroup}
+
 \def\startdisplaymath
-  {\ifgridsnapping
-     \beforedisplayspace
-     \snapmathtogrid\vbox
-     \bgroup
-     \informulatrue
-    %\forgetall % breaks side floats
-   \else
-     \bgroup
-     \parskip\formulaparskip % ! !
-     \informulatrue
-    %\forgetall % otherwise backgrounds fail
-     \ifdim\lastskip<\zeropoint\else
-       \par
-       \ifvmode \ifdim\parskip>\zeropoint\relax
-         \whitespace \vskip-\parskip % kind of forces and cancels again
-       \fi \fi
-     \fi
-     \doif\displaygridcorrection{-\v!top}{\kern-\strutht}% new, currently only option/default
-     \beforedisplayspace
-     \par
-     \ifvmode
-        \prevdepth-\maxdimen % texbook pagina 79-80
-        % otherwise problems at the top of a page
-        \verticalstrut
-        \vskip-\struttotal
-        \vskip-\baselineskip
-     \fi
+  {\bgroup
+   \par
+   \informulatrue
+   \beforedisplayspace
+   \par
+   \ifvmode
+      \prevdepth-\maxdimen % texbook pagina 79-80
    \fi
-   $$\setdisplaydimensions
+   $$
+   \setdisplaydimensions
    \setpredisplaysize\lastlinewidth
    \startinnermath}
 
 \def\stopdisplaymath
   {\stopinnermath
    $$%
-   \ifgridsnapping
-     \egroup
-     \afterdisplayspace
-   \else
-     \par\ifvmode\ifdim\parskip>\zeropoint\whitespace\vskip-\parskip\fi\fi
-     \afterdisplayspace
-     \egroup
-   \fi
-   \globallet\displaylinecorrection\empty
-   \gdef\displaygridcorrection{\displaygridsnapping}}
+   \par
+   \afterdisplayspace
+   \par
+   \egroup}
 
 \newif\ifclipdisplaymath \clipdisplaymathtrue
 \def\displaymathclipfactor{1.1}
-
-\def\snapmathtogrid % to do \dp
-  {\dowithnextbox
-     {\bgroup
-      \donefalse
-      \ifclipdisplaymath
-        \ifdim\nextboxht<\displaymathclipfactor\lineheight
-          \donetrue
-        \fi
-      \fi
-      \ifdone
-        \nextboxht\lineheight
-      \else
-        \getnoflines\nextboxht
-        \setbox\nextbox\vbox to \noflines\lineheight{\vfill\flushnextbox\vfill}%
-        \setbox\nextbox\hbox{\lower\strutdepth\flushnextbox}%
-      \fi
-      \snaptogrid[\displaygridcorrection]\hbox{\flushnextbox}%
-      \egroup}}
-
-\def\displaygridcorrection{\displaygridsnapping}
-\let\displaygridcorrection\empty
-
-\def\moveformula
-  {\dosingleempty\domoveformula}
-
-\def\domoveformula[#1]% brr gaat mogelijk fout
-  {\iffirstargument
-     \xdef\displaygridcorrection{#1}%
-   \else
-     \gdef\displaygridcorrection{-\v!top}% handy with short preline
-   \fi
-   \globallet\displaylinecorrection\displaygridcorrection}
 
 \let\startinnermath\empty
 \let\stopinnermath \empty

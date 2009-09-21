@@ -4385,19 +4385,6 @@
 %D a row. In both commands, the \type{n*} is optional. When this
 %D specification is missing, the command executes once.
 
-% this one is obsolete:
-
-\def\dorepeat[#1]%
-  {\dodorepeat#1*\empty*\relax}
-
-\long\def\dodorepeat#1*#2#3*#4\relax
-  {\ifx#2\empty#1\else\dorecurse{#1}{#2#3}\fi}
-
-\def\repeater
-  {\recurselevel}
-
-% this one will be kept
-
 \def\dorepeatwithcommand[#1]%
   {\dodorepeatwithcommand#1*\empty*\relax}
 
@@ -4408,8 +4395,7 @@
   {\ifx#2\empty % redundant but gives cleaner extensions
      #4{#1}%
    \else\ifnum#1<\zerocount
-     \bgroup\scratchcounter#1%
-     \normalexpanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#4{-#2#3}}%
+     \normalexpanded{\noexpand\dorecurse{\number-\number#1}}{#4{-#2#3}}%
    \else\ifx#2+%
      \dorecurse{#1}{#4{#3}}%
    \else

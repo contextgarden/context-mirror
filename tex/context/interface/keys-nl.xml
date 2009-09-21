@@ -272,11 +272,15 @@
 		<cd:variable name='mathcases' value='mathcases'/>
 		<cd:variable name='mathmatrix' value='wiskundematrix'/>
 		<cd:variable name='max' value='max'/>
+		<cd:variable name='maxdepth' value='maxdepth'/>
+		<cd:variable name='maxheight' value='maxheight'/>
+		<cd:variable name='maxwidth' value='maxwidth'/>
 		<cd:variable name='may' value='mei'/>
 		<cd:variable name='mediaeval' value='mediaeval'/>
 		<cd:variable name='medium' value='middel'/>
 		<cd:variable name='middle' value='midden'/>
 		<cd:variable name='min' value='min'/>
+		<cd:variable name='mindepth' value='mindepth'/>
 		<cd:variable name='minheight' value='minhoogte'/>
 		<cd:variable name='minwidth' value='minbreedte'/>
 		<cd:variable name='mirrored' value='gespiegeld'/>
@@ -736,6 +740,7 @@
 		<cd:constant name='marking' value='markering'/>
 		<cd:constant name='marstyle' value='marletter'/>
 		<cd:constant name='max' value='max'/>
+		<cd:constant name='maxdepth' value='maxdepth'/>
 		<cd:constant name='maxheight' value='maxhoogte'/>
 		<cd:constant name='maxwidth' value='maxbreedte'/>
 		<cd:constant name='maybeyear' value='maybeyear'/>

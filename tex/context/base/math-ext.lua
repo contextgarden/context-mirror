@@ -100,19 +100,31 @@ mathematics.extras.add(0xFE303, {
 
 -- 0xFE321 -- 0xFE340 for missing characters
 
--- mathematics.extras.add(0xFE321, {
---     category="sm",
---     description="SHORT BAR",
--- --  direction="on",
--- --  linebreak="nu",
---     mathclass="relation",
---     mathname="mapstochar",
---     unicodeslot=0xFE321,
--- } )
+mathematics.extras.add(0xFE321, {
+    category="sm",
+    description="MATHEMATICAL SHORT BAR",
+--  direction="on",
+--  linebreak="nu",
+    mathclass="relation",
+    mathname="mapstochar",
+    unicodeslot=0xFE321,
+} )
 
+mathematics.extras.add(0xFE322, {
+    category="sm",
+    description="MATHEMATICAL LEFT HOOK",
+    mathclass="relation",
+    mathname="lhook",
+    unicodeslot=0xFE322,
+} )
 
-
-
+mathematics.extras.add(0xFE323, {
+    category="sm",
+    description="MATHEMATICAL RIGHT HOOK",
+    mathclass="relation",
+    mathname="rhook",
+    unicodeslot=0xFE323,
+} )
 
 --~ mathematics.extras.add(0xFE304, {
 --~   category="sm",

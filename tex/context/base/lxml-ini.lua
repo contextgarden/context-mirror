@@ -60,7 +60,8 @@ local traverse, lpath = xml.traverse, xml.lpath
 
 local xmlfilter, xmlfirst, xmllast, xmlall = xml.filter, xml.first, xml.last, xml.all
 local xmlcollect, xmlcontent, xmlcollect_texts, xmlcollect_tags, xmlcollect_elements = xml.collect, xml.content, xml.collect_texts, xml.collect_tags, xml.collect_elements
-local xmlattribute, xmlindex = xml.filters.attribute, xml.filters.index
+local xmlattribute, xmlindex, xmlchainattribute = xml.filters.attribute, xml.filters.index, xml.filters.chainattribute
+
 local xmlelements = xml.elements
 
 document     = document or { }
@@ -605,6 +606,11 @@ end
 
 function lxml.attribute(id,pattern,a,default) --todo: snelle xmlatt
     local str = xmlattribute(get_id(id),pattern,a) or ""
+    texsprint((str == "" and default) or str)
+end
+
+function lxml.chainattribute(id,pattern,a,default) --todo: snelle xmlatt
+    local str = xmlchainattribute(get_id(id),pattern,a) or ""
     texsprint((str == "" and default) or str)
 end
 

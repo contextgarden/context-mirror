@@ -26,18 +26,6 @@
 
 \ifx\textheight\undefined \def\textheight{\vsize} \fi
 
-%D Helper:
-
-\def\doassignsomeskip#1\to#2% ook nog \v!halfline+fuzzysnap
-  {\doifelse{#1}\v!line
-     {#2\openlineheight}
-     {\ifgridsnapping
-        \assigndimension{#1}{#2}{.25\openlineheight}{.5\openlineheight}\openlineheight
-      \else
-        \assigndimension{#1}{#2}\smallskipamount\medskipamount\bigskipamount
-      \fi}%
-   \relax}
-
 %D The next macros so some housekeeping.
 
 \def\pageanchor{page:0} % for the moment only one pagesize
@@ -809,7 +797,7 @@
    %
    \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
    \nowhitespace
-\nobreak % new per 23/04/2006 (else potential break when whitespace)
+   \nobreak % new per 23/04/2006 (else potential break when whitespace)
    \seteffectivehsize
    \doinhibitblank %   \blank[\v!disable]% new
    \par}
@@ -828,7 +816,7 @@
    \nobreak \vskip-\lineheight \nobreak
    \nowhitespace
    \egroup
-\bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
+   \bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
    \nobreak \noindent \strut \hfill \kern\zeropoint
    \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
@@ -840,7 +828,7 @@
    \else
      \tpos\currentparbackground
    \fi
-\egroup
+   \egroup
    \endgraf % new
    \textbackgroundparameter\c!after}
 

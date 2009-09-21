@@ -689,8 +689,8 @@ fonts.enc.math["tex-mi"] = {
     [0x021BD] = 0x29, -- leftharpoondown
     [0x021C0] = 0x2A, -- righttharpoonup
     [0x021C1] = 0x2B, -- rightharpoondown
-    --          0x2C, -- lhook (hook for combining arrows)
-    --          0x2D, -- rhook (hook for combining arrows)
+    [0xFE322] = 0x2C, -- lhook (hook for combining arrows)
+    [0xFE323] = 0x2D, -- rhook (hook for combining arrows)
     [0x022B3] = 0x2E, -- triangleright (TODO: which one is right?)
     [0x022B2] = 0x2F, -- triangleleft (TODO: which one is right?)
 --  [0x00041] = 0x30, -- 0

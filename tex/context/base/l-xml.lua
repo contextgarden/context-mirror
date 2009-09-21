@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['l-xml'] = {
 
 -- RJ: key=value ... lpeg.Ca(lpeg.Cc({}) * (pattern-producing-key-and-value / rawset)^0)
 
+-- this module needs a cleanup: check latest lpeg, passing args, (sub)grammar, etc etc
 -- some code may move to l-xmlext
 -- some day we will really compile the lpaths (just construct functions)
 -- todo: some things per xml file, like namespace remapping

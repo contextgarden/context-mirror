@@ -25,6 +25,8 @@
 \def\xmlall              #1#2{\ctxlua{lxml.all("#1","#2")}}
 \def\xmlatt              #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
 \def\xmlattdef         #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
+\def\xmlchainatt         #1#2{\ctxlua{lxml.chainattribute("#1","/","#2")}}
+\def\xmlchainattdef    #1#2#3{\ctxlua{lxml.chainattribute("#1","/","#2","#3")}}
 \def\xmlattribute      #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
 \def\xmlattributedef #1#2#3#4{\ctxlua{lxml.attribute("#1","#2","#3","#4")}}
 \def\xmlcommand        #1#2#3{\ctxlua{lxml.command("#1","#2","#3")}}

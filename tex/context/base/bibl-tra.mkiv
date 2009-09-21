@@ -874,13 +874,12 @@
 
 \unexpanded\def\typesetapublication#1%
   {\doifsomething{#1}
-     {\ifgridsnapping\expandafter\snaptogrid\expandafter\vbox\fi\bgroup
-      \doifelse{\namedlistparameter{pubs}\c!criterium}\v!all
+     {\doifelse{\namedlistparameter{pubs}\c!criterium}\v!all
         {\doplacepublicationindeed{#1}}%
         {\ctxlua{bibtex.hacks.doifalreadyplaced("#1")}
            {}
            {\doplacepublicationindeed{#1}}}%
-      \egroup}}
+      }}
 
 % for the moment we don't access the data directly but we will do that
 % later when we get away from storing the data and only deal with
@@ -1482,11 +1481,15 @@
    \processcommalist[#1]\dobibauthornumref }
 
 \def\dobibauthornumref#1%
-  {\bibinsertrefsep
-   \doifbibreferencefoundelse{#1}
-     {\bibgetvara{#1}%
-      \bibalternative\c!inbetween\cite[#1]}
-     {\unknownreference{#1}}}
+ {\bibinsertrefsep
+  \doifbibreferencefoundelse{#1}
+    {\begingroup
+     \bibgetvara{#1}%
+     \bibalternative\c!inbetween
+     \setuppublications[\c!refcommand=num]%
+     \cite[#1]%
+     \endgroup}
+    {\unknownreference{#1}}}
 
 %D And some defaults are loaded from bibl-apa:
 

@@ -15,7 +15,6 @@
 
 \unprotect
 
-
 %D The dreadful sequence \type {\bgroup} \unknown\
 %D \type {\carryoverpar} \unknown\ \type {\egroup} is needed
 %D when for instance sidefloats are used in combination with
@@ -34,7 +33,6 @@
       \parskip   \the\parskip
       \leftskip  \the\leftskip
       \rightskip \the\rightskip}}
-
 
 \newconditional \parbasedattributes
 
@@ -160,18 +158,6 @@
 
 \let\normalvadjust\vadjust
 
-% \def\graphicvadjust % bad, those low level color calls here
-%   {\dowithnextboxcontent
-%      {\forgetall}
-%      {\normalvadjust
-%         {\unvbox\nextbox
-%          % corrects for one line paragraphs
-%          \nointerlineskip
-%          \kern-\struttotal
-%          \nointerlineskip
-%          \verticalstrut}}%
-%      \vbox}
-
 \def\graphicvadjust % nasty bidi handling
   {\dowithnextboxcontent
      {\forgetall}
@@ -193,7 +179,7 @@
       \smashedbox\nextbox}%
    \vtop}
 
-\def\localvbox#1#%
+\def\localvbox#1#% used?
   {\vbox#1\bgroup
      \forgetparskip
      \setlocalhsize

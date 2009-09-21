@@ -217,13 +217,13 @@
 \def\redefinebotharrow#1#2#3% real dirty, this overload!
   {\doifdefined{#1}
      {\pushmacro\dohandlemtharrow
-      \def\dohandlemtharrow[##1][##2]{\setvalue{#1}{\dohandlemtharrow[#2][##2]}}%
+      \def\dohandlemtharrow[##1][##2]{\unexpanded\setvalue{#1}{\dohandlemtharrow[#2][##2]}}%
       % == \def\dohandlemtharrow[##1][##2]{\dodefinebotharrow{#1}{#2}{##2}}%
       \getvalue{#1}%
       \popmacro\dohandlemtharrow}}
 
 \def\dodefinebotharrow#1#2#3%
-  {\setvalue{#1}{\dohandlemtharrow[#2][#3]}}
+  {\unexpanded\setvalue{#1}{\dohandlemtharrow[#2][#3]}}
 
 \def\dohandlemtharrow
   {\dotripleempty\doxmtharrow}
@@ -281,34 +281,34 @@
 %D arrowfills: \tex{specrightarrowfill} which takes an extra argument, and
 %D \tex{rightarrowfill} which does not.
 
-\def\specrightarrowfill   {\defaultmtharrowfill \relbar               \relbar \rightarrow}
-\def\specleftarrowfill    {\defaultmtharrowfill \leftarrow            \relbar \relbar}
+\unexpanded\def\specrightarrowfill   {\defaultmtharrowfill \relbar               \relbar \rightarrow}
+\unexpanded\def\specleftarrowfill    {\defaultmtharrowfill \leftarrow            \relbar \relbar}
 
-\def\rightarrowfill       {\specrightarrowfill  \textstyle}
-\def\leftarrowfill        {\specleftarrowfill   \textstyle}
+\unexpanded\def\rightarrowfill       {\specrightarrowfill  \textstyle}
+\unexpanded\def\leftarrowfill        {\specleftarrowfill   \textstyle}
 
-\def\equalfill            {\defaultmtharrowfill \Relbar               \Relbar \Relbar}
-\def\Rightarrowfill       {\defaultmtharrowfill \Relbar               \Relbar \Rightarrow}
-\def\Leftarrowfill        {\defaultmtharrowfill \Leftarrow            \Relbar \Relbar}
-\def\Leftrightarrowfill   {\defaultmtharrowfill \Leftarrow            \Relbar \Rightarrow}
-\def\leftrightarrowfill   {\defaultmtharrowfill \leftarrow            \relbar \rightarrow}
-\def\mapstofill           {\defaultmtharrowfill{\mapstochar\relbar}   \relbar \rightarrow}
-\def\twoheadrightarrowfill{\defaultmtharrowfill \relbar               \relbar \twoheadrightarrow}
-\def\twoheadleftarrowfill {\defaultmtharrowfill \twoheadleftarrow     \relbar \relbar}
-\def\rightharpoondownfill {\defaultmtharrowfill \relbar               \relbar \rightharpoondown}
-\def\rightharpoonupfill   {\defaultmtharrowfill \relbar               \relbar \rightharpoonup}
-\def\leftharpoondownfill  {\defaultmtharrowfill \leftharpoondown      \relbar \relbar}
-\def\leftharpoonupfill    {\defaultmtharrowfill \leftharpoonup        \relbar \relbar}
-\def\hookleftfill         {\defaultmtharrowfill \leftarrow            \relbar{\relbar\joinrel\rhook}}
-\def\hookrightfill        {\defaultmtharrowfill{\lhook\joinrel\relbar}\relbar \rightarrow}
-\def\relfill              {\defaultmtharrowfill \relbar               \relbar \relbar}
+\unexpanded\def\equalfill            {\defaultmtharrowfill \Relbar               \Relbar \Relbar}
+\unexpanded\def\Rightarrowfill       {\defaultmtharrowfill \Relbar               \Relbar \Rightarrow}
+\unexpanded\def\Leftarrowfill        {\defaultmtharrowfill \Leftarrow            \Relbar \Relbar}
+\unexpanded\def\Leftrightarrowfill   {\defaultmtharrowfill \Leftarrow            \Relbar \Rightarrow}
+\unexpanded\def\leftrightarrowfill   {\defaultmtharrowfill \leftarrow            \relbar \rightarrow}
+\unexpanded\def\mapstofill           {\defaultmtharrowfill{\mapstochar\relbar}   \relbar \rightarrow}
+\unexpanded\def\twoheadrightarrowfill{\defaultmtharrowfill \relbar               \relbar \twoheadrightarrow}
+\unexpanded\def\twoheadleftarrowfill {\defaultmtharrowfill \twoheadleftarrow     \relbar \relbar}
+\unexpanded\def\rightharpoondownfill {\defaultmtharrowfill \relbar               \relbar \rightharpoondown}
+\unexpanded\def\rightharpoonupfill   {\defaultmtharrowfill \relbar               \relbar \rightharpoonup}
+\unexpanded\def\leftharpoondownfill  {\defaultmtharrowfill \leftharpoondown      \relbar \relbar}
+\unexpanded\def\leftharpoonupfill    {\defaultmtharrowfill \leftharpoonup        \relbar \relbar}
+\unexpanded\def\hookleftfill         {\defaultmtharrowfill \leftarrow            \relbar{\relbar\joinrel\rhook}}
+\unexpanded\def\hookrightfill        {\defaultmtharrowfill{\lhook\joinrel\relbar}\relbar \rightarrow}
+\unexpanded\def\relfill              {\defaultmtharrowfill \relbar               \relbar \relbar}
 
-\def\triplerelbar {\mathrel\equiv}
-\def\triplerelfill{\defaultmtharrowfill\triplerelbar\triplerelbar\triplerelbar}
+\unexpanded\def\triplerelbar {\mathrel\equiv}
+\unexpanded\def\triplerelfill{\defaultmtharrowfill\triplerelbar\triplerelbar\triplerelbar}
 
-\def\singlebond{{\xrel}} % or \def\singlebond{{\xrel[2]}}
-\def\doublebond{{\xequal}}
-\def\triplebond{{\xtriplerel}}
+\unexpanded\def\singlebond{{\xrel}} % or \def\singlebond{{\xrel[2]}}
+\unexpanded\def\doublebond{{\xequal}}
+\unexpanded\def\triplebond{{\xtriplerel}}
 
 %D Now we define most commonly used arrows. These include arrows
 %D defined in \filename{amsmath.sty}, \filename{extarrows.sty},
@@ -363,9 +363,9 @@
 
 \def\dodefinemathoverarrow[#1][#2][#3]%
   {\ifthirdargument
-      \setvalue{#1}{\dohandlemathoverarrow[#2][#3]}%
+      \unexpanded\setvalue{#1}{\dohandlemathoverarrow[#2][#3]}%
     \else
-      \setvalue{#1}{\dohandlemathoverarrow[\zeropoint][#2]}%
+      \unexpanded\setvalue{#1}{\dohandlemathoverarrow[\zeropoint][#2]}%
     \fi}
 
 \def\dohandlemathoverarrow[#1][#2]%
@@ -390,9 +390,9 @@
 
 \def\dodefinemathunderarrow[#1][#2][#3]%
   {\ifthirdargument
-      \setvalue{#1}{\dohandlemathunderarrow[#2][#3]}%
+      \unexpanded\setvalue{#1}{\dohandlemathunderarrow[#2][#3]}%
     \else
-      \setvalue{#1}{\dohandlemathunderarrow[0.3ex][#2]}%
+      \unexpanded\setvalue{#1}{\dohandlemathunderarrow[0.3ex][#2]}%
     \fi}
 
 \def\dohandlemathunderarrow[#1][#2]%

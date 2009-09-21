@@ -156,20 +156,16 @@
 \def\doifoutervmode#1%
   {\ifvmode\ifinner\else#1\fi\fi}
 
-\ifx\dosomebreak\undefined % defined in mkiv
-
-    \def\dosomebreak#1%
-      {\doifoutervmode
-         {\scratchskip\lastskip
-          \removelastskip
-          %\leavevmode\type{#1}%
-          #1\relax
-          \ifdim\scratchskip=\zeropoint % else interference with footnotes
-          \else
-            \vskip\scratchskip
-          \fi}}
-
-\fi
+\def\dosomebreak#1%
+  {\doifoutervmode
+     {\scratchskip\lastskip
+      \removelastskip
+      %\leavevmode\type{#1}%
+      #1\relax
+      \ifdim\scratchskip=\zeropoint % else interference with footnotes
+      \else
+        \vskip\scratchskip
+      \fi}}
 
 \def\packed
   {\nointerlineskip}
@@ -209,14 +205,16 @@
     {\par
      \scratchdimen\prevdepth
      \hrule\!!height\zeropoint
-     \nobreak\vskip\scratchskip
+     \nobreak
+     \vskip\scratchskip
      \prevdepth\scratchdimen}
 
   \def\dohglue
     {\dontleavehmode % \leavevmode
      \scratchcounter\spacefactor
      \vrule\!!width\zeropoint
-     \nobreak\hskip\scratchskip
+     \nobreak
+     \hskip\scratchskip
      \spacefactor\scratchcounter}
 
 \fi
@@ -371,9 +369,6 @@
 
 \definewhitespacemethod [\s!default]  {\simplesetupwhitespace} % {\stelwitruimteopnieuwin}
 
-% \def\dowhitespacemethod#1%
-%   {\executeifdefined{\??ws\??ws#1}{\ctxparskip#1}\relax}
-
 \def\dowhitespacemethod#1%
   {\ifcsname\??ws\??ws#1\endcsname\csname\??ws\??ws#1\endcsname\else\ctxparskip#1\fi\relax}
 
@@ -384,35 +379,12 @@
 %        \vskip-\parskip
 %      \fi
 %    \fi}
-
-\def\nowhitespace
-  {}
-
-\def\nowhitespaceunlessskip
-  {\ifdim\lastskip>\zeropoint \else
-     \nowhitespace
-   \fi}
-
-\def\redowhitespace
-  {\ifdim\lastskip>-\parskip \else
-     \vskip\parskip
-   \fi}
-
-\def\savecurrentwhitespace   {\edef\savedcurrentwhitespace{\currentwhitespace}}
-\def\restorecurrentwhitespace{\edef\currentwhitespace{\savedcurrentwhitespace}}
-
-\def\savedcurrentwhitespace{\currentwhitespace}
-
-% deze variant is nodig binnen \startopelkaar
-% steeds testen:
 %
-% \hoofdstuk{..}
-% \plaatslijst[..]
-% \hoofdstuk{..}
-% \input tufte
+% \def\nowhitespaceunlessskip
+%   {\ifdim\lastskip>\zeropoint \else
+%      \nowhitespace
+%    \fi}
 %
-% met/zonder witruimte
-
 % \def\whitespace
 %   {\par
 %    \ifdim\parskip>\zeropoint\relax
@@ -422,15 +394,19 @@
 %     %\fi
 %    \fi}
 
-\def\whitespace
-  {\vspacing[\v!white]}
+\def\nowhitespace{\vspacing[\v!nowhite]}
+\def\whitespace  {\vspacing[\v!white]}
+
+% obsolete:
+%
+% \def\savedcurrentwhitespace{\currentwhitespace}
+% \def\savecurrentwhitespace   {\edef\savedcurrentwhitespace{\currentwhitespace}}
+% \def\restorecurrentwhitespace{\edef\currentwhitespace{\savedcurrentwhitespace}}
 
 % De onderstaande macro handelt ook de situatie dat er geen
 % tekst tussen \start ... \stop is geplaatst. Daartoe wordt de
 % laatste skip over de lege tekst heen gehaald. Dit komt goed
 % van pas bij het plaatsen van (mogelijk lege) lijsten.
-
-\newif\ifopelkaar
 
 \newsignal \noparskipsignal % \def\noparskipsignal {0.00001pt}
 \def\lastdoneparskip {0pt}
@@ -527,7 +503,7 @@
 % commando \leavevmode. Binnen een \vbox geeft dit echter
 % niet altijd het gewenste resultaat, vandaar het commando
 %
-%   \leaveoutervmode
+%   \dontleavehmode
 
 % Pas op: niet zomaar \topskip en \baselineskip aanpassen
 % en zeker niet \widowpenalty. Dit kan ernstige gevolgen
@@ -570,14 +546,12 @@
 \def\systemtopskipfactor    {\topskipfactor}
 \def\systemmaxdepthfactor   {\maxdepthfactor}
 
-% De onderstaande definitie wordt in de font-module overruled
-
 \ifdefined\globalbodyfontsize\else
   \newdimen\globalbodyfontsize
   \globalbodyfontsize=12pt
 \fi
 
-\ifx\normalizedbodyfontsize\undefined
+\ifdefined\normalizedbodyfontsize\else
   \def\normalizedbodyfontsize{12pt}
 \fi
 
@@ -602,18 +576,21 @@
    \ifgridsnapping \else
      \ifr@ggedbottom\!!plus5\globalbodyfontsize\fi
    \fi
+\ifgridsnapping
+    \topskip\zeropoint
+\fi
    \relax % the skip
    \topskipgap\topskip
    \advance\topskipgap -\openstrutheight\relax
-\ifdim\minimumstrutheight>\zeropoint
-   \ifdim\topskip<\minimumstrutheight
-     \topskip\minimumstrutheight\relax
-   \fi
-\else
-   \ifdim\topskip<\strutheightfactor\openlineheight
-     \topskip\strutheightfactor\openlineheight\relax
-   \fi
-\fi}
+   \ifdim\minimumstrutheight>\zeropoint
+     \ifdim\topskip<\minimumstrutheight
+       \topskip\minimumstrutheight\relax
+     \fi
+  \else
+     \ifdim\topskip<\strutheightfactor\openlineheight
+       \topskip\strutheightfactor\openlineheight\relax
+     \fi
+  \fi}
 
 \def\setmaxdepth
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
@@ -648,8 +625,7 @@
      \fi
    \normallineskip\minimumlinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
-   \normalbaselines
-   \dosetupgridsnapping}
+   \normalbaselines}
 
 \def\spacing#1%
   {\ifgridsnapping
@@ -944,7 +920,7 @@
   {\let\strutwidth\zeropoint
    \setstrut}
 
-\ifx\setfontparameters\undefined
+\ifdefined\setfontparameters\else
   % problems ! ! ! !
   \def\setfontparameters{\the\everybodyfont}
 \fi
@@ -998,19 +974,17 @@
    \fi\fi}
 
 % We stellen enkele penalties anders in dan Plain TEX:
-
-% oud
 %
 % \widowpenalty=\defaultwidowpenalty\relax
 % \clubpenalty =\defaultclubpenalty \relax
 
 \def\resetpenalties#1%
-  {\ifx#1\undefined\else
+  {\ifdefined#1%
      #1\minusone
    \fi}
 
 \def\setpenalties#1#2#3%
-  {\ifx#1\undefined\else % space before #3 prevents lookahead problems, needed when #3=text
+  {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
      #1\numexpr#2+\plusone\relax\space\doexpandedrecurse{\the\numexpr#2\relax}{ #3}\zerocount\relax
    \fi}
 
@@ -1163,30 +1137,271 @@
 %
 % \let\normalbottom  =\alignbottom
 
-%D Good old blank:
+%D Good old blank redone:
 
 \definesystemattribute[kern-chars]
 \definesystemattribute[skip-category]  \chardef\skipcategoryattribute  \dogetattributeid{skip-category}
 \definesystemattribute[skip-penalty]   \chardef\skippenaltyattribute   \dogetattributeid{skip-penalty}
 \definesystemattribute[skip-order]     \chardef\skiporderattribute     \dogetattributeid{skip-order}
-\definesystemattribute[snap-category]
 \definesystemattribute[display-math]
+\definesystemattribute[snap-method]    \chardef\snapmethodattribute    \dogetattributeid{snap-method}
+\definesystemattribute[snap-done]      \chardef\snapdoneattribute      \dogetattributeid{snap-done}
+
+%definesystemattribute[snap-category]
+
+% TODO: NAMED SNAPPERS
+
+\newdimen \bodyfontlineheight
+\newdimen \bodyfontstrutheight
+\newdimen \bodyfontstrutdepth
+
+\appendtoks
+    \bodyfontlineheight  \normallineheight
+    \bodyfontstrutheight \strutheight
+    \bodyfontstrutdepth  \strutdepth
+    \dosetupgridsnapping
+\to \everysetupbodyfont
+
+\def\installsnapvalues#1#2% todo: a proper define
+  {\edef\currentsnapper{#1:#2}%
+   \ifcsname\currentsnapper\endcsname \else
+     \setevalue\currentsnapper{\ctxlua{vspacing.define_snap_method("#1","#2")}}%
+   \fi
+   \setevalue{\??gr:#1}{\dosetattribute{snap-method}{\csname\currentsnapper\endcsname}}}
+
+\def\definegridsnapping
+  {\dodoubleargument\dodefinegridsnapping}
+
+\def\dodefinegridsnapping[#1][#2]%
+  {\installsnapvalues{#1}{#2}}
+
+\edef\resetsnapvalue
+  {%\gridsnappingfalse
+   \doresetattribute{snap-method}}
+
+\def\setsnapvalue#1%
+  {%\gridsnappingtrue
+   \ifcsname\??gr:#1\endcsname\csname\??gr:#1\endcsname\fi}
+
+\def\autosetsnapvalue#1%
+  {\ifcsname\??gr:#1\endcsname
+     \csname\??gr:#1\endcsname
+   \else
+     \installsnapvalues\s!dummy{#1}%
+     \csname\??gr:\s!dummy\endcsname
+   \fi}
+
+% \installsnapvalues{loose} {\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut}
+% \installsnapvalues{normal}{\v!maxdepth:1.0,\v!maxheight:1.0,\v!strut}
+% \installsnapvalues{tight} {\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut}
+
+% none             don't enlarge
+% halfline         enlarge by halfline/halfline
+% line             enlarge by line/line
+% strut            enlarge by ht/dp (default)
+% first            align to top line
+% last             align to bottom line
+% mindepth         round depth down
+% maxdepth         round depth up
+% minheight        round height down
+% maxheight        round height up
+
+%D We're not downward compatible with \MKII !
+
+\definegridsnapping[\v!normal]   [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!standard] [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!yes]      [\v!maxheight,\v!maxdepth,\v!strut]
+
+\definegridsnapping[\v!strict]   [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
+\definegridsnapping[\v!tolerant] [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
+
+\definegridsnapping[\v!top]      [\v!minheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!bottom]   [\v!maxheight,\v!mindepth,\v!strut]
+\definegridsnapping[\v!both]     [\v!minheight,\v!mindepth,\v!strut]
+
+\definegridsnapping[\v!broad]    [\v!maxheight,\v!maxdepth,\v!strut,0.8] % maybe 0.85
+\definegridsnapping[\v!fit]      [\v!maxheight,\v!maxdepth,\v!strut,1.2] % tight 0.15
+
+\definegridsnapping[\v!first]    [\v!first]
+\definegridsnapping[\v!last]     [\v!last]
+\definegridsnapping[\v!high]     [\v!minheight,\v!maxdepth,\v!none]
+\definegridsnapping[\v!low]      [\v!maxheight,\v!mindepth,\v!none]
+\definegridsnapping[\v!line]     [\v!line]
+\definegridsnapping[\v!strut]    [\v!strut]
+
+\definegridsnapping[\v!max]      [\v!maxdepth,\v!maxheight,\v!strut]
+\definegridsnapping[\v!min]      [\v!mindepth,\v!minheight,\v!strut]
+
+\newtoks\everysetupgridsnapping
+
+\def\dosetupgridsnapping{\the\everysetupgridsnapping}
+
+\appendtoks
+    \ctxlua{vspacing.freeze_snap_method(\number\bodyfontstrutheight,\number\bodyfontstrutdepth)}%
+\to \everysetupgridsnapping
+
+% \appendtoks
+%     \resetsnapvalues
+% \to \everyforgetall
+
+%D Snapping.
+
+\newif\ifgridsnapping
+
+\let\showgridsnapping\relax
+
+\def\snaptogrid {\dosingleempty\dosnaptogrid}
+\def\moveongrid {\dosingleempty\domoveongrid}
+\def\placeongrid{\dosingleempty\doplaceongrid}
+
+\def\dodomoveongrid[#1]%
+  {} % gone, unless we set an attribute
+
+\def\doplaceongrid[#1]%
+  {\snaptogrid[#1]\vbox}
+
+\def\dosnaptogrid[#1]% list or predefined
+  {\ifgridsnapping
+     \expandafter\dodosnaptogrid
+   \else
+     \expandafter\gobbleoneargument
+   \fi{#1}}
+
+\def\dodosnaptogrid#1%
+  {\bgroup
+   \resetsnapvalue
+   \dowithnextbox{\dododosnaptogrid{#1}}}
+
+\def\dododosnaptogrid#1%
+  {\ifvbox\nextbox
+     \ctxlua{nodes.collapse_vbox(\number\nextbox)}%
+   \fi
+   \doifelsenothing{#1}{\setsnapvalue\v!normal}{\autosetsnapvalue{#1}}%
+   \ctxlua{vspacing.snap_box(\number\nextbox,\number\attribute\snapmethodattribute)}%
+   \box\nextbox
+   \egroup}
+
+% no off
+
+% \def\docheckgridsnapping
+%   {\doifelse\@@lygrid\v!yes\gridsnappingtrue\gridsnappingfalse
+%    \ifgridsnapping
+%      \setsnapvalue\v!normal
+%      \setsystemmode\v!grid
+%    \else
+%      \resetsnapvalue
+%      \resetsystemmode\v!grid
+%    \fi}
+
+\def\docheckgridsnapping
+  {\doifelse\@@lygrid\v!no
+     {\gridsnappingfalse
+      \resetsystemmode\v!grid
+      \resetsnapvalue}
+     {\gridsnappingtrue
+      \setsystemmode\v!grid
+      \autosetsnapvalue\@@lygrid}}
+
+%D Visualization:
+
+\definepalet
+  [grid]
+  [  one=red,
+     two=green,
+   three=blue,
+    four=gray]
+
+\def\setgridtracebox#1[#2]% % maybe reverse the order
+  {\setbox\nextbox#1%
+     {\hbox
+        {\hbox to \zeropoint
+           {\setlayoutcomponentattribute\v!grid\v!test
+            \color[grid:#2]{\ruledhbox \layoutcomponentboxattribute {\fakebox\nextbox}}%
+            \hss}%
+         \flushnextbox}}}
+
+\chardef\gridboxlinenomode\plusone
+\chardef\gridboxlinemode  \plusone % 0:nothing 1:all 2:lines 3:frame
+
+\def\gridboxvbox {\ifcase\gridboxlinemode\vbox\or\ruledvbox\or\vbox\or\ruledvbox\else\ruledvbox\fi}
+\def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\testrulewidth}
+
+\def\setgridbox#1#2#3% maybe ifgridsnapping at outer level
+  {\setbox#1\gridboxvbox to #3 % given size
+     {\forgetall
+      \resetteststrut
+      \offinterlineskip
+      \hsize#2%
+      \baselinerulefalse
+      \gridboxvbox % calculated size
+        {\getrawnoflines{#3}% \getnoflines{#3}%
+%          \ifgridsnapping \else
+%            \vskip\topskip
+%            \vskip-\strutht
+%          \fi
+         \scratchdimen#2\advance\scratchdimen \lineheight
+         \dorecurse\noflines
+           {\strut
+            \hskip-.5\lineheight
+            \ifcase\gridboxlinenomode\or
+              \rlap
+                {\hskip.2\bodyfontsize\hskip\scratchdimen
+                 \infofont\hbox to 1em{\hss\recurselevel}}%
+            \or
+              \llap
+                {\infofont\hbox to 1em{\hss\recurselevel}%
+                 \hskip.2\bodyfontsize}%
+            \fi
+            \vrule
+              \!!height \gridboxwidth
+              \!!depth  \gridboxwidth
+              \!!width  \scratchdimen
+            \par}}
+      \vfill}}
+
+%D This has become obsolete:
+
+\def\fuzzysnappedbox#1#2% \box<n> \unvbox<n>
+  {#1#2}
+
+% \def\moveboxontogrid#1#2#3% will become obsolete
+%   {\doif{#2}\v!top   {\setbox#1\hbox{\snaptogrid[\v!first]\box#1}}%
+%    \doif{#2}\v!bottom{\setbox#1\hbox{\snaptogrid[\v!last ]\box#1}}}
+
+\def\moveboxontogrid#1#2#3% will become obsolete
+  {}
+
+%D Helper:
+
+\def\doassignsomeskip#1\to#2% ook nog \v!halfline+fuzzysnap
+  {\doifelse{#1}\v!line
+     {#2\ifgridsnapping
+        \bodyfontlineheight
+      \else
+        \openlineheight
+      \fi}
+     {\ifgridsnapping
+        \assigndimension{#1}{#2}{.25\bodyfontlineheight}{.5\bodyfontlineheight}\bodyfontlineheight
+      \else
+        \assigndimension{#1}{#2}\smallskipamount\medskipamount\bigskipamount
+      \fi}%
+   \relax}
 
 % \start \dosetstretch{.25em} \setuptolerance[tolerant,stretch] \input tufte \endgraf \stop
 % \start \dosetstretch{.5em} effe flink doorfietsen \stop
 
-\def\dosetupgridsnapping % calls too often, only needed in gridsnapping
-  {\ctxlua{nodes.setsnapvalue(1,\number\openstrutheight,\number\openstrutdepth)}}
-
-\def\doenablegridsnapping
-  {\dosetattribute{snap-category}{1}%
-   \topskip\strutht
-   \offinterlineskip}
-
-\def\dodisablegridsnapping
-  {\doresetattribute{snap-category}%
-   % reset topskip
-   \oninterlineskip}
+% \def\dosetupgridsnapping % calls too often, only needed in gridsnapping
+%   {\ctxlua{nodes.setsnapvalue(1,\number\openstrutheight,\number\openstrutdepth)}}
+%
+% \def\doenablegridsnapping
+%   {\dosetattribute{snap-category}{1}%
+%    \topskip\strutht
+%    \offinterlineskip}
+%
+% \def\dodisablegridsnapping
+%   {\doresetattribute{snap-category}%
+%    % reset topskip
+%    \oninterlineskip}
 
 % experimental code, not yet interfaced:
 
@@ -1204,10 +1419,6 @@
 % order: larger wins
 % category:2,order:5,penalty:10000,skip:value|kw
 %
-% always -- obsolete
-% none   -- obsolete
-% outer  -- obsolete
-% reset  -- obsolete
 % \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
 
 % todo, in grid mode: vspacing.fixed = false
@@ -1217,6 +1428,8 @@
 
 \newtoks\everybeforeblankhandling
 \newtoks\everyafterblankhandling
+
+\newconditional\someblankdone
 
 \appendtoks
     \blankskip\zeropoint
@@ -1238,25 +1451,58 @@
     \fi
 \to \everyafterblankhandling
 
-\def\setblankcategory#1{\attribute\skipcategoryattribute#1\relax}
-\def\setblankorder   #1{\attribute\skiporderattribute   #1\relax}
-\def\setblankpenalty #1{\attribute\skippenaltyattribute #1\relax}
-\def\addblankskip#1#2#3{\advance\blankskip#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
-\def\fixedblankskip    {\settrue \blankisfixed} % \blankskip1\blankskip}
-\def\flexibleblankskip {\setfalse\blankisfixed} % \blankskip1\blankskip\!!plus\skipgluefactor\blankskip\!!minus\skipgluefactor\blankskip}
+% \ifgridsnapping will go
+
+\appendtoks
+    \ifgridsnapping
+        \settrue\blankisfixed
+    \else
+        \setfalse\blankisfixed
+    \fi
+\to \everybeforeblankhandling
+
+\def\setblankcategory#1%
+  {\settrue\someblankdone
+   \attribute\skipcategoryattribute#1\relax}
+
+\def\setblankorder#1%
+  {\attribute\skiporderattribute#1\relax}
+
+\def\fixedblankskip
+  {\settrue\blankisfixed}
+
+\def\flexibleblankskip
+  {\setfalse\blankisfixed}
+
+\def\addblankskip#1#2#3%
+  {\settrue\someblankdone
+   \advance\blankskip#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
+
+\def\setblankpenalty #1%
+  {\flushblankhandling
+   \settrue\someblankdone
+   \attribute\skipcategoryattribute \plusthree
+   \attribute\skippenaltyattribute #1\relax
+   \flushblankhandling}
 
 \def\startblankhandling
   {\begingroup
+   \setfalse\someblankdone
    \the\everybeforeblankhandling}
 
 \def\stopblankhandling
   {\the\everyafterblankhandling
-   \vskip\blankskip
+   \ifconditional\someblankdone
+     \vskip\blankskip
+   \fi
    \endgroup}
 
 \def\flushblankhandling
   {\the\everyafterblankhandling
-   \vskip\blankskip
+   \ifconditional\someblankdone
+     \vskip\blankskip
+   \fi
+   \setfalse\someblankdone
    \the\everybeforeblankhandling}
 
 % % % %
@@ -1279,7 +1525,7 @@
 \def\dovspacing[#1]%
   {\ctxlua{vspacing.analyse("\iffirstargument#1\else\s!default\fi")}}
 
-% todo: checm them and make them faster:
+% todo: check them and make them faster:
 
 \definecomplexorsimple\setupvspacing
 
@@ -1308,15 +1554,25 @@
 
 % category:4 is default
 
-\definevspacingamount[\v!big]     [\bigskipamount]     [\openlineheight]
-\definevspacingamount[\v!medium]  [\medskipamount]     [0.50\openlineheight]
-\definevspacingamount[\v!small]   [\smallskipamount]   [0.25\openlineheight]
-\definevspacingamount[\v!line]    [\openlineheight]    [\openlineheight]
-\definevspacingamount[\v!halfline][0.50\openlineheight][0.50\openlineheight]
-\definevspacingamount[\v!formula] [\medskipamount]     [0.50\openlineheight]
-\definevspacingamount[\v!white]   [\parskip]           [\openlineheight]
-\definevspacingamount[\v!height]  [\strutheight]       [\strutheight]
-\definevspacingamount[\v!depth]   [\strutdepth]        [\strutdepth]
+% \definevspacingamount[\v!big]     [\bigskipamount]     [\openlineheight]
+% \definevspacingamount[\v!medium]  [\medskipamount]     [0.50\openlineheight]
+% \definevspacingamount[\v!small]   [\smallskipamount]   [0.25\openlineheight]
+% \definevspacingamount[\v!line]    [\openlineheight]    [\openlineheight]
+% \definevspacingamount[\v!halfline][0.50\openlineheight][0.50\openlineheight]
+% \definevspacingamount[\v!formula] [\medskipamount]     [0.50\openlineheight]
+% \definevspacingamount[\v!white]   [\parskip]           [\openlineheight]
+% \definevspacingamount[\v!height]  [\strutheight]       [\strutheight]
+% \definevspacingamount[\v!depth]   [\strutdepth]        [\strutdepth]
+
+\definevspacingamount[\v!big]     [\bigskipamount]     [\bodyfontlineheight]
+\definevspacingamount[\v!medium]  [\medskipamount]     [0.50\bodyfontlineheight]
+\definevspacingamount[\v!small]   [\smallskipamount]   [0.25\bodyfontlineheight]
+\definevspacingamount[\v!line]    [\openlineheight]    [\bodyfontlineheight]
+\definevspacingamount[\v!halfline][0.50\openlineheight][0.50\bodyfontlineheight]
+\definevspacingamount[\v!formula] [\medskipamount]     [0.50\bodyfontlineheight]
+\definevspacingamount[\v!white]   [\parskip]           [\bodyfontlineheight]
+\definevspacingamount[\v!height]  [\strutheight]       [\bodyfontstrutheight]
+\definevspacingamount[\v!depth]   [\strutdepth]        [\bodyfontstrutdepth]
 
 \definevspacing[\v!samepage][penalty:10000]
 \definevspacing[\v!max]     [category:1]
@@ -1350,8 +1606,9 @@
     \ctxlua{vspacing.disable()}%
 \to \everydisablevspacing
 
-\global\let\blank      \vspacing
-\global\let\defineblank\definevspacing
+\let\blank            \vspacing
+\let\defineblank      \definevspacing
+\let\defineblankmethod\definevspacingamount
 
 % moved from page-lin
 

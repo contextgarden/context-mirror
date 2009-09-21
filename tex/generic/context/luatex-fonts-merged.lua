@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 09/16/09 20:09:33
+-- merge date  : 09/21/09 17:40:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -2245,6 +2245,8 @@ local glyph      = nodes.register(new_node("glyph",0))
 local textdir    = nodes.register(new_node("whatsit",7))
 local rule       = nodes.register(new_node("rule"))
 local latelua    = nodes.register(new_node("whatsit",35))
+--~ local user       = nodes.register(new_node("user_defined"))
+local user       = nodes.register(new_node(44))
 
 function nodes.glyph(fnt,chr)
     local n = copy_node(glyph)
@@ -2291,6 +2293,31 @@ end
 function nodes.latelua(code)
     local n = copy_node(latelua)
     n.data = code
+    return n
+end
+
+function nodes.usernumber(num)
+    local n = copy_node(user)
+    n.type = 100
+    if num then n.value = num end
+    return n
+end
+function nodes.userstring(str)
+    local n = copy_node(user)
+    n.type = 115
+    if str then n.value = str end
+    return n
+end
+function nodes.userlist(list)
+    local n = copy_node(user)
+    n.type = 110
+    if list then n.value = list end
+    return n
+end
+function nodes.usertokens(tokens)
+    local n = copy_node(user)
+    n.type = 116
+    if tokens then n.value = tokens end
     return n
 end
 
@@ -5566,6 +5593,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
         cidcodes = usedmap.unicodes
     end
     uparser = fonts.map.make_name_parser()
+    local aglmap = fonts.map and fonts.map.agl_to_unicode
     for index, glyph in next, data.glyphs do
         local name, unic = glyph.name, glyph.unicode or -1 -- play safe
         if unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then
@@ -5610,7 +5638,8 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
                 if nplit == 0 then
                     -- skip
                 elseif nplit == 1 then
-                    unicode = unicodes[split[1]]
+                    local base = split[1]
+                    unicode = unicodes[base] or (agl and agl[base])
                     if unicode then
                         if type(unicode) == "table" then
                             unicode = unicode[1]
@@ -5620,7 +5649,8 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
                 else
                     local done = true
                     for l=1,nplit do
-                        local u = unicodes[split[l]]
+                        local base = split[l]
+                        local u = unicodes[base] or (agl and agl[base])
                         if not u then
                             done = false
                             break
@@ -11002,7 +11032,7 @@ local match, format, find, concat = string.match, string.format, string.find, ta
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
-local ctxcatcodes = tex.ctxcatcodes
+local ctxcatcodes = tex and tex.ctxcatcodes
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
@@ -11133,13 +11163,15 @@ end
 
 local hex     = lpeg.R("AF","09")
 local hexfour = (hex*hex*hex*hex) / function(s) return tonumber(s,16) end
-local dec     = (lpeg.R("09")^1) / tonumber
+local hexsix  = (hex^1)           / function(s) return tonumber(s,16) end
+local dec     = (lpeg.R("09")^1)  / tonumber
 local period  = lpeg.P(".")
 
 local unicode = lpeg.P("uni")   * (hexfour * (period + lpeg.P(-1)) * lpeg.Cc(false) + lpeg.Ct(hexfour^1) * lpeg.Cc(true))
+local ucode   = lpeg.P("u")     * (hexsix  * (period + lpeg.P(-1)) * lpeg.Cc(false) + lpeg.Ct(hexsix ^1) * lpeg.Cc(true))
 local index   = lpeg.P("index") * dec * lpeg.Cc(false)
 
-local parser  = unicode + index
+local parser  = unicode + ucode + index
 
 local parsers = { }
 
@@ -11157,10 +11189,13 @@ function fonts.map.make_name_parser(str)
 end
 
 --~ local parser = fonts.map.make_name_parser("Japan1")
+--~ local parser = fonts.map.make_name_parser()
 --~ local function test(str)
 --~     local b, a = parser:match(str)
 --~     print((a and table.serialize(b)) or b)
 --~ end
+--~ test("a.sc")
+--~ test("a")
 --~ test("uni1234")
 --~ test("uni1234.xx")
 --~ test("uni12349876")

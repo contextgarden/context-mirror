@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+#encoding: ASCII-8BIT
 
 # program   : ctxtools
 # copyright : PRAGMA Advanced Document Engineering

@@ -618,7 +618,6 @@
    \dowithnextboxcontent % better a \the\everyfloattoks
      {\setlocalfloathsize
       \floatparameter\c!inner
-      \fuzzysnappingfalse
       \postponenotes} % new
      {\doifsomething{\floatparameter\c!criterium}
         {\ifdim\wd\nextbox>\floatparameter\c!criterium\relax
@@ -808,10 +807,6 @@
   \everyinsidefloat\emptytoks % in case it's called earlier
   \dogetfloatdata
 \to \everyinsidefloat
-
-%\appendtoks
-%  \fuzzysnappingfalse
-%\to \everyinsidefloat
 
 \def\doifrightpagefloatelse
   {\ifdoublesided
@@ -2102,6 +2097,8 @@
 \installfloathandler {fxbt} \someslotfloat
 
 % no \registerotrcommand\placesome* here!, this has to be cleaned up:
+
+\def\somesidefloat{\OTRcommand\somesidefloat}
 
 \def\someleftsidefloat     [#1]{\somesidefloat[#1]\presetindentation}
 \def\somerightsidefloat    [#1]{\somesidefloat[#1]}

@@ -8705,6 +8705,9 @@ return {
    ["pe"]="بیشترین‌ارتفاع",
    ["ro"]="inaltimemaxima",
   },
+  ["maxdepth"]={
+   ["en"]="maxdepth",
+  },
   ["maxwidth"]={
    ["cs"]="maxsirka",
    ["de"]="maxbreite",
@@ -11136,6 +11139,24 @@ return {
   },
  },
  ["variables"]={
+  ["maxheight"]={
+   ["en"]="maxheight",
+  },
+  ["maxdepth"]={
+   ["en"]="maxdepth",
+  },
+  ["maxwidth"]={
+   ["en"]="maxwidth",
+  },
+  ["minheight"]={
+   ["en"]="minheight",
+  },
+  ["mindepth"]={
+   ["en"]="mindepth",
+  },
+  ["minwidth"]={
+   ["en"]="minwidth",
+  },
   ["short"]={
    ["nl"]="kort",
    ["en"]="short",

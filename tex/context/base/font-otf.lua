@@ -500,6 +500,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
         cidcodes = usedmap.unicodes
     end
     uparser = fonts.map.make_name_parser()
+    local aglmap = fonts.map and fonts.map.agl_to_unicode
     for index, glyph in next, data.glyphs do
         local name, unic = glyph.name, glyph.unicode or -1 -- play safe
         if unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then
@@ -544,7 +545,8 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
                 if nplit == 0 then
                     -- skip
                 elseif nplit == 1 then
-                    unicode = unicodes[split[1]]
+                    local base = split[1]
+                    unicode = unicodes[base] or (agl and agl[base])
                     if unicode then
                         if type(unicode) == "table" then
                             unicode = unicode[1]
@@ -554,7 +556,8 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
                 else
                     local done = true
                     for l=1,nplit do
-                        local u = unicodes[split[l]]
+                        local base = split[l]
+                        local u = unicodes[base] or (agl and agl[base])
                         if not u then
                             done = false
                             break

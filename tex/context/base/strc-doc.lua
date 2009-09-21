@@ -609,7 +609,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 processors.sprint(ctxcatcodes,stopper)
             end
         else
-            report("error: no numbers")
+        --  report("error: no numbers")
         end
     end
 end

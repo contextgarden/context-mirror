@@ -272,11 +272,15 @@
 		<cd:variable name='mathcases' value='mathcases'/>
 		<cd:variable name='mathmatrix' value='mathmatrix'/>
 		<cd:variable name='max' value='max'/>
+		<cd:variable name='maxdepth' value='maxdepth'/>
+		<cd:variable name='maxheight' value='maxheight'/>
+		<cd:variable name='maxwidth' value='maxwidth'/>
 		<cd:variable name='may' value='kveten'/>
 		<cd:variable name='mediaeval' value='stredoveky'/>
 		<cd:variable name='medium' value='stredni'/>
 		<cd:variable name='middle' value='nastred'/>
 		<cd:variable name='min' value='min'/>
+		<cd:variable name='mindepth' value='mindepth'/>
 		<cd:variable name='minheight' value='minvyska'/>
 		<cd:variable name='minwidth' value='minsirka'/>
 		<cd:variable name='mirrored' value='zrcadleno'/>
@@ -736,6 +740,7 @@
 		<cd:constant name='marking' value='znaceni'/>
 		<cd:constant name='marstyle' value='stylsnacky'/>
 		<cd:constant name='max' value='max'/>
+		<cd:constant name='maxdepth' value='maxdepth'/>
 		<cd:constant name='maxheight' value='maxvyska'/>
 		<cd:constant name='maxwidth' value='maxsirka'/>
 		<cd:constant name='maybeyear' value='maybeyear'/>

@@ -33,61 +33,6 @@
 \def\OTRONEsethsize
   {\global\hsize\textwidth}
 
-% keep (original one)
-%
-% \def\OTRONEsetvsize
-%    {\ifdim\vsize=\teksthoogte \else
-%       \bgroup
-%       \scratchdimen-\vsize
-%       \advance\scratchdimen \teksthoogte
-%       \global\advance\vsize \scratchdimen
-%       \relax \ifdim\pagegoal<\maxdimen
-%         \advance\scratchdimen \pagegoal
-%         \global\pagegoal\scratchdimen
-%       \fi
-%       \egroup
-%    \fi}
-%
-% no (keep)
-%
-% \def\OTRONEsetvsize
-%   {\ifdim\vsize=\teksthoogte \else
-%      \bgroup
-%      \scratchdimen-\vsize
-%      \advance\scratchdimen \teksthoogte
-%      \ifgridsnapping
-%        \getrawnoflines\scratchdimen
-%        \scratchdimen\noflines\openlineheight
-%        \ifdim\scratchdimen>\noflinesheight % available afterwards
-%          \advance\scratchdimen-\openlineheight
-%        \fi
-%        \ifdim\scratchdimen<\zeropoint
-%          \scratchdimen\zeropoint
-%        \fi
-%      \fi
-%      \global\advance\vsize \scratchdimen
-%      \relax \ifdim\pagegoal<\maxdimen
-%        \advance\scratchdimen \pagegoal
-%        \global\pagegoal\scratchdimen
-%      \fi
-%      \egroup
-%   \fi}
-
-% \def\OTRONEsetvsize
-%   {\ifgridsnapping
-%      \ifcase\layoutlines
-%        \getrawnoflines\teksthoogte
-%      \else
-%        \noflines\layoutlines
-%      \fi
-%      \global\vsize\noflines\openlineheight
-%    \else
-%      \global\vsize\teksthoogte
-%    \fi
-%    \ifdim\pagegoal<\maxdimen
-%      \global\pagegoal\vsize
-%    \fi}
-
 \newdimen\oldvsize
 
 \def\OTRONEsetvsize
@@ -361,17 +306,6 @@
         \doif\@@bkcache\v!no\doflushfloats
      \fi
    \fi}
-
-% \def\OTRONEdotopinsertions
-%   {\ifvoid\topins\else
-%      \ifgridsnapping
-%        \box\topins
-%        \vskip-\topskip \vskip\strutheight % [xx] new: see icare topbleed
-%      \else
-%        \unvbox\topins
-%      \fi
-%    \fi
-%    \global\topinserted\zeropoint}
 
 \chardef\topinserttopskipmode=0 % 1 no topskip
 

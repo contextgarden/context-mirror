@@ -51,7 +51,7 @@ function environment.initialize_arguments(arg)
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
     for index, argument in pairs(arg) do
         if index > 0 then
-            local flag, value = argument:match("^%-+(.+)=(.-)$")
+            local flag, value = argument:match("^%-+(.-)=(.-)$")
             if flag then
                 arguments[flag] = string.unquote(value or "")
             else

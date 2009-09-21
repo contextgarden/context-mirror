@@ -241,7 +241,7 @@
 % Hooks:
 
 \appendtoks
-    \xdef\currentpage{\the\realpageno}%
+    \xdef\currentpage{\the\realpageno}% rather useless
     \ifnum\realpageno>\lastpage \globallet\lastpage\lastrealpage \fi
 \to \everyinitializepagecounters
 

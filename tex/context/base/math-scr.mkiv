@@ -22,6 +22,8 @@
 %D subscript mode. We want however a bit more control than
 %D normally provided, and therefore provide \type {\super}
 %D and \type{sub}.
+%D
+%D The grid snapping has been removed.
 
 \global\let\normalsuper=^
 \global\let\normalsuber=_
@@ -32,97 +34,16 @@
 
 \appendtoks \advance\supersubmode \plusone \to \everysupersub
 
-\appendtoks
-  \gridsupsubstyle
-\to \everysupersub
-
-\appendtoks
-  \doifelse\@@mtsize\v!small
-    {\let\gridsupsubstyle    \scriptscriptstyle
-     \let\gridsupsubbodyfont \setsmallbodyfont}%
-    {\let\gridsupsubstyle    \scriptstyle
-     \let\gridsupsubbodyfont \relax}%
-\to \everysetuptextformulas
-
 \setuptextformulas
   [\c!size=\v!normal]
 
-\def\dogridsupsub#1#2%
-  {\begingroup
-   \setbox\nextbox\iftracegridsnapping\ruledhbox\else\hbox\fi
-     {\gridsupsubbodyfont
-      $\strut^{\the\everysupersub#1}_{\the\everysupersub#2}$}%
-   \nextboxht\strutheight
-   \nextboxdp\strutdepth
-   \flushnextbox
-   \endgroup}
-
-\def\gridsupsub
-  {\ifconditional\crazymathsnapping
-     \ifgridsnapping
-       \@EAEAEA\dogridsupsub
-     \else
-       \@EAEAEA\normalsupsub
-     \fi
-   \else
-     \@EA\normalsupsub
-   \fi}
-
 \def\normalsupsub#1#2%
   {^{\the\everysupersub#1}_{\the\everysupersub#2}}
-
-\appendtoks
-  \let\gridsupsubstyle   \relax
-  \let\gridsupsubbodyfont\relax
-  \let\gridsupsub        \normalsupsub
-\to \everydisplay
 
 \def\super#1{^{\the\everysupersub#1}}
 \def\suber#1{_{\the\everysupersub#1}}
 \def\supsub#1#2{\super{#1}\suber{#2}}
 \def\subsup#1#2{\suber{#1}\super{#2}}
-
-%\def\super#1{\gridsupsub{#1}{}} %
-%\def\suber#1{\gridsupsub{}{#1}} %
-%
-%\def\supsub#1#2{\gridsupsub{#1}{#2}}
-%\def\subsup#1#2{\gridsupsub{#2}{#1}}
-
-\def\gridsuper#1{\gridsupsub{#1}{}}
-\def\gridsuber#1{\gridsupsub{}{#1}}
-
-% \let\sup\super % math char
-% \let\sub\suber
-
-% test set:
-%
-% \startbuffer
-% \sform{x\frac{1}{2}}
-% \sform{x\sup{\frac{1}{2}} + x\sup{2} + 2}
-% \sform{x\supsub{\frac{1}{2}}{\frac{1}{2}} + x\sup{2} + 2}
-% \stopbuffer
-%
-% \typebuffer
-%
-% \startlines
-% \getbuffer
-% \stoplines
-%
-% \startbuffer
-% $x\frac{1}{2}$
-% $x\sup{\frac{1}{2}} + x^2 + 2$
-% $x\supsub{\frac{1}{2}}{\frac{1}{2}} + x^2 + 2$
-% \stopbuffer
-%
-% \typebuffer
-%
-% \start
-% \enablesupersub
-% \enableautomath
-% \startlines
-% \getbuffer
-% \stoplines
-% \stop
 
 %D \macros
 %D   {enablesupersub,enablesimplesupersub}

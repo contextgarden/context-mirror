@@ -21,6 +21,8 @@ if known context_tool : endinput ; fi ;
 
 boolean context_tool ; context_tool := true ;
 
+let @## = @# ;
+
 %D New, version number testing:
 %D
 %D \starttyping
