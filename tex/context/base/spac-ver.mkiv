@@ -625,7 +625,9 @@
      \fi
    \normallineskip\minimumlinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
-   \normalbaselines}
+   \normalbaselines
+   \dosetupgridsnapping
+  }
 
 \def\spacing#1%
   {\ifgridsnapping
@@ -1155,12 +1157,9 @@
 \newdimen \bodyfontstrutheight
 \newdimen \bodyfontstrutdepth
 
-\appendtoks
-    \bodyfontlineheight  \normallineheight
-    \bodyfontstrutheight \strutheight
-    \bodyfontstrutdepth  \strutdepth
-    \dosetupgridsnapping
-\to \everysetupbodyfont
+% \appendtoks
+%     \dosetupgridsnapping
+% \to \everysetupbodyfont
 
 \def\installsnapvalues#1#2% todo: a proper define
   {\edef\currentsnapper{#1:#2}%
@@ -1237,7 +1236,10 @@
 \def\dosetupgridsnapping{\the\everysetupgridsnapping}
 
 \appendtoks
-    \ctxlua{vspacing.freeze_snap_method(\number\bodyfontstrutheight,\number\bodyfontstrutdepth)}%
+    \bodyfontlineheight  \normallineheight
+    \bodyfontstrutheight \strutheight
+    \bodyfontstrutdepth  \strutdepth
+    \ctxlua{vspacing.freeze_snap_method()}%
 \to \everysetupgridsnapping
 
 % \appendtoks
@@ -1564,15 +1566,27 @@
 % \definevspacingamount[\v!height]  [\strutheight]       [\strutheight]
 % \definevspacingamount[\v!depth]   [\strutdepth]        [\strutdepth]
 
+\definevspacingamount[\v!none]    [\zeropoint]         [\zeropoint]
 \definevspacingamount[\v!big]     [\bigskipamount]     [\bodyfontlineheight]
 \definevspacingamount[\v!medium]  [\medskipamount]     [0.50\bodyfontlineheight]
 \definevspacingamount[\v!small]   [\smallskipamount]   [0.25\bodyfontlineheight]
 \definevspacingamount[\v!line]    [\openlineheight]    [\bodyfontlineheight]
 \definevspacingamount[\v!halfline][0.50\openlineheight][0.50\bodyfontlineheight]
 \definevspacingamount[\v!formula] [\medskipamount]     [0.50\bodyfontlineheight]
-\definevspacingamount[\v!white]   [\parskip]           [\bodyfontlineheight]
+\definevspacingamount[\v!white]   [\parskip]           [\bodyfontwhitespace]
 \definevspacingamount[\v!height]  [\strutheight]       [\bodyfontstrutheight]
 \definevspacingamount[\v!depth]   [\strutdepth]        [\bodyfontstrutdepth]
+
+\def\bodyfontwhitespace
+  {\dimexpr
+     \ifdim\parskip=\zeropoint
+       \zeropoint
+     \else\ifgridsnapping
+       \bodyfontlineheight
+     \else
+       \parskip
+     \fi\fi
+   \relax}
 
 \definevspacing[\v!samepage][penalty:10000]
 \definevspacing[\v!max]     [category:1]

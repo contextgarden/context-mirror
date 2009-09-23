@@ -114,12 +114,12 @@
      \fi
      \unexpanded\setvalue{#1}{\definesynonym[\v!yes][#1]}% \name
    \fi
-   \getparameters[\??sm#1][\s!parent=\??sm]%
+   \getparameters[\??sm#1][\s!parent=\??sm,\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
   %\ctxlua{joblists.define('#1')}%
    \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
-   \setvalue{\e!place   \e!listof#2}{\doplacelistofsynonyms{#1}{#2}}%
-   \setvalue{\e!complete\e!listof#2}{\docompletelistofsynonyms{#1}{#2}}}
+   \setvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
+   \setvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}}
 
 \def\definesynonym
   {\dotripleempty\dodefinesynonym}
@@ -154,6 +154,12 @@
    \fi
    \endgroup}
 
+\def\registersynonym
+  {\dodoubleargument\doregistersynonym}
+
+\def\registersynonym[#1][#2]%
+  {\ctxlua{joblists.registerused("#1","#2")}}
+
 \unexpanded\def\doinsertsynonymmeaning#1#2% name tag
   {\begingroup
    \def\currentsynonym{#1}%
@@ -168,7 +174,10 @@
    \synonymparameter\c!synonymcommand{\ctxlua{joblists.synonym("#1","#2")}}%
    \endgroup}
 
-\def\doplacelistofsynonyms#1#2%
+\def\placelistofsynonyms
+  {\dodoubleempty\doplacelistofsynonyms}
+
+\def\doplacelistofsynonyms[#1][#2]%
   {\begingroup
    \def\currentsynonym{#1}%
    \definedescription  % todo, per class
@@ -188,15 +197,19 @@
      \c!headstyle=\synonymparameter\c!textstyle,
      \c!headcolor=\synonymparameter\c!textcolor,
      \c!style=,
-     \c!color=]%
+     \c!color=.
+     #2]%
    \startpacked
      \ctxlua{joblists.process('#1',{ criterium = "\synonymparameter\c!criterium" })}%
    \stoppacked
    \endgroup}
 
-\def\docompletelistofsynonyms#1#2% expansion needed to avoid v! (due to french active !)
-  {\normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{#2}}}%
-   \doplacelistofsynonyms{#1}{#2}%
+\def\completelistofsynonyms
+  {\dodoubleempty\docompletelistofsynonyms}
+
+\def\docompletelistofsynonyms[#1][#2]% expansion needed to avoid v! (due to french active !)
+  {\normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{\synonymparameter\s!single}}}%
+   \doplacelistofsynonyms[#1][#2]%
    \page[\v!yes]}
 
 \let\startsynonymoutput \relax
@@ -266,12 +279,12 @@
    \else
      \unexpanded\setvalue{#1}{\definesort[\v!yes][#1]}%
    \fi
-   \getparameters[\??so#1][\s!parent=\??so]%
+   \getparameters[\??so#1][\s!parent=\??so,\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
   %\ctxlua{joblists.define('#1')}%
    \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??so#1]}% to be obsolete
-   \setvalue{\e!place   \e!listof#2}{\doplacelistofsorts{#1}{#2}}%
-   \setvalue{\e!complete\e!listof#2}{\docompletelistofsorts{#1}{#2}}}
+   \setvalue{\e!place   \e!listof#2}{\placelistofsorts[#1]}%
+   \setvalue{\e!complete\e!listof#2}{\completelistofsorts[#1]}}
 
 \def\definesort
   {\dotripleempty\dodefinesort}
@@ -311,21 +324,34 @@
    \ctxlua{joblists.synonym("#1","#2")}%
    \endgroup}
 
+\def\registersort
+  {\dodoubleargument\doregistersort}
+
+\def\registersort[#1][#2]%
+  {\ctxlua{joblists.registerused("#1","#2")}}
+
 % before after
 %
 % maybe just 'commandset' and then combine
 
-\def\doplacelistofsorts#1% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
+\def\placelistofsorts
+  {\dodoubleempty\placelistofsorts}
+
+\def\placelistofsorts[#1][#2]% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
   {\begingroup
    \def\currentsorting{#1}%
+   \getparameters[\??so#1][#2]%
    \startpacked
-     \ctxlua{joblists.process('#1',{})}%
+     \ctxlua{joblists.process('#1',{ criterium = "\sortingparameter\c!criterium" })}%
    \stoppacked
    \endgroup}
 
-\def\docompletelistofsorts#1#2%
+\def\completelistofsorts
+  {\dodoubleemptydocompletelistofsorts}
+
+\def\docompletelistofsorts[#1][#2]%
   {\normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{#2}}}%
-   \doplacelistofsorts{#1}%
+   \doplacelistofsorts[#1][#2]%
    \page[\v!yes]}
 
 \let\startsortingoutput \relax
@@ -334,7 +360,9 @@
 \let\stopsortingsection \relax
 
 \def\sortingentry#1#2#3%
-  {\begingroup\dosetsortingattributes\c!style\c!color#2\endgroup\par} % todo
+  {\doifelsenothing{\sortingparameter\c!command}
+     {\begingroup\dosetsortingattributes\c!style\c!color#3\endgroup\par} % todo
+     {\sortingparameter\c!command{#1}{#2}{#3}}}
 
 %D Here we define a support macro that can sort simple comma
 %D separated lists. It's a multi-list variant of a prototype

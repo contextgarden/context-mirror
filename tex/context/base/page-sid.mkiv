@@ -150,39 +150,6 @@
      \fi
    \fi}
 
-% \def\setsidefloatskips
-%   {\global\sidefloatrightskip\zeropoint
-%    \global\sidefloatleftskip \zeropoint
-%    \ifcase\sidefloattype
-%    \or % backspace
-%      \global        \sidefloatleftskip \rightorleftpageaction \backspace \cutspace
-%    \or % leftedge
-%      \global        \sidefloatleftskip \rightorleftpageaction \leftmargindistance\rightmargindistance
-%      \global\advance\sidefloatleftskip \rightorleftpageaction \leftmarginwidth\rightmarginwidth
-%      \global\advance\sidefloatleftskip \rightorleftpageaction \leftedgedistance\rightedgedistance
-%    \or % leftmargin
-%      \global        \sidefloatleftskip \rightorleftpageaction \leftmargindistance\rightmargindistance
-%    \or % leftside
-%    \or % rightside
-%    \or % rightmargin
-%      \global        \sidefloatrightskip\rightorleftpageaction \rightmargindistance\leftmargindistance
-%    \or % rightedge
-%      \global        \sidefloatrightskip\rightorleftpageaction \rightmargindistance\leftmargindistance
-%      \global\advance\sidefloatrightskip\rightorleftpageaction \rightmarginwidth\leftmarginwidth
-%      \global\advance\sidefloatrightskip\rightorleftpageaction \rightedgedistance\leftedgedistance
-%    \or % cutspace
-%      \global        \sidefloatrightskip\rightorleftpageaction \cutspace\backspace
-%    \fi
-%    \ifdim\sidefloatrightskip>\zeropoint
-%      \doglobal\advance\sidefloatrightskip\rightskip
-%    \fi
-%    \ifdim\sidefloatleftskip>\zeropoint
-%      \doglobal\advance\sidefloatleftskip\leftskip
-%    \fi}
-
-
-% use \outermarginwidth etc here
-
 \def\setsidefloatskips
   {\global\sidefloatrightskip\zeropoint
    \global\sidefloatleftskip \zeropoint
@@ -467,6 +434,30 @@
 %
 % keep this ^
 
+\def\repositionsidefloat#1%
+  {\global\setbox\floatbox\hbox % no \hskip, but \kern here
+     {\ifnum\sidefloattype=\plusfour
+        \hskip\sidefloatleftshift
+      \else\ifnum\sidefloattype=\plusone
+        \hskip\sidefloatleftshift
+      \fi\fi
+      \ifnum\sidefloattype>\plusfour
+        \hskip-\sidefloatextrashift
+      \else
+        \hskip\sidefloatshift
+      \fi
+      \vbox{#1\ifnum\sidefloatalign=\plusfour \removedepth\fi}%
+      \ifnum\sidefloattype>\plusfour
+        \kern\sidefloatshift
+      \else
+        \kern-\sidefloatextrashift
+      \fi
+      \ifnum\sidefloattype=8
+        \kern\sidefloatrightshift
+      \else\ifnum\sidefloattype=\plusfive
+        \kern\sidefloatrightshift
+      \fi\fi}}
+
 \def\putsidefloat#1% grid (4) is rather experimental
   {\par
    \whitespace
@@ -490,28 +481,7 @@
    \fi
    \previoussidefloat
    \stallsidefloat
-   \global\setbox\floatbox\hbox % no \hskip, but \kern here
-     {\ifnum\sidefloattype=\plusfour
-        \hskip\sidefloatleftshift
-      \else\ifnum\sidefloattype=\plusone
-        \hskip\sidefloatleftshift
-      \fi\fi
-      \ifnum\sidefloattype>\plusfour
-        \hskip-\sidefloatextrashift
-      \else
-        \hskip\sidefloatshift
-      \fi
-      \vbox{#1\ifnum\sidefloatalign=\plusfour \removedepth\fi}%
-      \ifnum\sidefloattype>\plusfour
-        \kern\sidefloatshift
-      \else
-        \kern-\sidefloatextrashift
-      \fi
-      \ifnum\sidefloattype=8
-        \kern\sidefloatrightshift
-      \else\ifnum\sidefloattype=\plusfive
-        \kern\sidefloatrightshift
-      \fi\fi}%
+   \repositionsidefloat{#1}%
    \ifnum\sidefloatalign=\plusfour
      \getnoflines{\ht\floatbox}%
      \scratchdimen\noflines\lineheight
@@ -575,17 +545,6 @@
      \stallsidefloat
    \fi
    \setsidefloat}
-
-% \def\progresssidefloat
-%   {\sidefloatprogress\sidefloatvsize
-%    \iffloatflag
-%      \advance\sidefloatprogress -\sidefloatpagetotal
-%      \global\floatflagfalse
-%    \else
-%      \advance\sidefloatprogress -\pagetotal
-%    \fi}
-%
-% more compact:
 
 \def\progresssidefloat
   {\sidefloatprogress\sidefloatvsize
@@ -676,6 +635,10 @@
    \fi
    \egroup
    \par
+\ifgridsnapping
+    \getrawnoflines\sidefloatheight
+    \sidefloatheight=\noflines\lineheight
+\fi
    \kern-\sidefloatheight
    \penalty10001 % oeps, this will change
    \normalbaselines

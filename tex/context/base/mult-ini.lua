@@ -36,9 +36,14 @@ function interfaces.setmessage(category,tag,message)
     m[tag] = message:gsub("%-%-","%%s")
 end
 
-function interfaces.getmessage(category,tag)
+function interfaces.getmessage(category,tag,default)
     local m = messages[category]
-    return (m and m[tag]) or "unknown message"
+    return (m and m[tag]) or default or "unknown message"
+end
+
+function interfaces.doifelsemessage(category,tag)
+    local m = messages[category]
+    return commands.testcase(m and m[tag])
 end
 
 local messagesplitter = lpeg.splitat(",")

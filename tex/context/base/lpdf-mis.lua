@@ -227,26 +227,30 @@ end
 
 local function documentspecification()
     local spec = pagespecs[pagespec] or pagespecs[variables.default]
-    local mode, layout, fit = spec[1], spec[2], spec[3]
-    if layout == variables.auto then
-        if doublesided then
-            spec = pagespecs.doublesided
-            mode, layout, fit = spec[1], spec[2], spec[3]
-        else
-            layout = false
+    if spec then
+        local mode, layout, fit = spec[1], spec[2], spec[3]
+        if layout == variables.auto then
+            if doublesided then
+                spec = pagespecs[variables.doublesided] -- to be checked voor interfaces
+                if spec then
+                    mode, layout, fit = spec[1], spec[2], spec[3]
+                end
+            else
+                layout = false
+            end
         end
-    end
-    mode = mode and pdfconstant(mode)
-    layout = layout and pdfconstant(layout)
-    fit = fit and pdfdictionary { FitWindow = true }
-    if layout then
-        lpdf.addtocatalog("PageLayout",layout)
-    end
-    if mode then
-        lpdf.addtocatalog("PageMode",mode)
-    end
-    if fit then
-        lpdf.addtocatalog("ViewerPreferences",fit)
+        mode = mode and pdfconstant(mode)
+        layout = layout and pdfconstant(layout)
+        fit = fit and pdfdictionary { FitWindow = true }
+        if layout then
+            lpdf.addtocatalog("PageLayout",layout)
+        end
+        if mode then
+            lpdf.addtocatalog("PageMode",mode)
+        end
+        if fit then
+            lpdf.addtocatalog("ViewerPreferences",fit)
+        end
     end
 end
 

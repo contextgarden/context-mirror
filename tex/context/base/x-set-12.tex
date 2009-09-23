@@ -16,7 +16,10 @@
 
 \unprotect
 
-\loadsetups
+% \starttext
+%     \setup{installlanguage}
+%     \placesetup
+% \stoptext
 
 \definecolor[TitleColor][r=.375,g=.125,b=.125]
 \definecolor[TitleColor][r=.125,g=.375,b=.125]
@@ -31,6 +34,14 @@
 \definecolor[TitleColor][r=.20,g=.25,b=.15]
 \definecolor[TitleColor][r=.15,g=.20,b=.25]
 \definecolor[TitleColor][r=.15,g=.25,b=.20]
+
+\startinterface english  \loadsetups[cont-en.xml] \stopinterface
+\startinterface dutch    \loadsetups[cont-nl.xml] \stopinterface
+\startinterface german   \loadsetups[cont-de.xml] \stopinterface
+\startinterface french   \loadsetups[cont-fr.xml] \stopinterface
+\startinterface italian  \loadsetups[cont-it.xml] \stopinterface
+\startinterface czech    \loadsetups[cont-cs.xml] \stopinterface
+\startinterface romanian \loadsetups[cont-ro.xml] \stopinterface
 
 \startinterface dutch    \definecolor[LocalColor][r=.75,g=.25,b=.25]    \stopinterface
 \startinterface english  \definecolor[LocalColor][r=.25,g=.75,b=.25]    \stopinterface

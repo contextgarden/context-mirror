@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 09/21/09 17:40:59
+-- merge date  : 09/23/09 10:11:52
 
 do -- begin closure to overcome local limits and interference
 
@@ -7613,16 +7613,19 @@ local function alternative_glyph(start,alternatives,kind,chainname,chainlookupna
         value, choice = format("first, choice %s",1), alternatives[1]
     elseif value == "last" then
         value, choice = format("last, choice %s",n), alternatives[n]
-    elseif type(value) ~= "number" then
-        value, choice = "default, choice 1", alternatives[1]
-    elseif value > n then
-        value, choice = format("no %s variants, taking %s",value,n), alternatives[n]
-    elseif value == 0 then
-        value, choice = format("choice %s (no change)",value), start.char
-    elseif value < 1 then
-        value, choice = format("no %s variants, taking %s",value,1), alternatives[1]
     else
-        value, choice = format("choice %s",value), alternatives[value]
+        value = tonumber(value)
+        if type(value) ~= "number" then
+            value, choice = "default, choice 1", alternatives[1]
+        elseif value > n then
+            value, choice = format("no %s variants, taking %s",value,n), alternatives[n]
+        elseif value == 0 then
+            value, choice = format("choice %s (no change)",value), start.char
+        elseif value < 1 then
+            value, choice = format("no %s variants, taking %s",value,1), alternatives[1]
+        else
+            value, choice = format("choice %s",value), alternatives[value]
+        end
     end
     if not choice then
         logwarning("%s: no variant %s for %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(start.char))

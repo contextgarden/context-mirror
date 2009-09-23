@@ -1361,12 +1361,6 @@
     }
 \stopxmlsetups
 
-% option: to be discussed with taco/aditya: all math functions \mathentity
-%
-% \defineXMLentity [div]  {\mathematics{\triangledown\times}}
-% \defineXMLentity [curl] {\mathematics{\triangledown     .}}
-% \defineXMLentity [grad] {\mathematics{\triangledown      }}
-
 \startxmlsetups mml:divergence \mathopnolimits{div}      \xmlall{#1}{/!mml:divergence} \stopxmlsetups
 \startxmlsetups mml:grad       \mathopnolimits{grad}     \xmlall{#1}{/!mml:grad}       \stopxmlsetups
 \startxmlsetups mml:curl       \mathopnolimits{curl}     \xmlall{#1}{/!mml:curl}       \stopxmlsetups

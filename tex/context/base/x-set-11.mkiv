@@ -1,98 +1,454 @@
-% engine=luatex
+%D \module
+%D   [       file=x-set-11,
+%D        version=2004.10.31,
+%D         remark=setupx.tex: 1998.07.20 and later,
+%D          title=\CONTEXT\ Setup Definitions,
+%D       subtitle=Macro Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\startluacode
-    do
-        document = document or { }
+% todo: for fun: pure lua interface, but as this style evolved over 15 years
+% it's a waste of time
+%
+% todo:
+%
+% \setup{setupinterlinespace}
+% \setup{setupinterlinespace:1}
+% \setup{setupinterlinespace:2}
+%
+% cd:include -> @file
+% cd:choice
+%
+% register, interaction
 
-        document.setups = {
-            loaded = { },
-            root   = nil,
-            used   = { },
+\usemodule[set-99] % interface messages
+
+\unprotect
+
+% general
+
+\def\setupnumfont  {}
+\def\setuptxtfont  {}
+\def\setupintfont  {\WORD}
+\def\setupvarfont  {\sl}
+\def\setupoptfont  {\sl}
+\def\setupalwcolor {}
+\def\setupoptcolor {darkgray}
+
+\def\c!setup!definereserved#1#2%
+  {\setvalue{c!setup!:r:#1}{#2}}
+
+\def\c!setup!reserved!#1%
+  {\executeifdefined{c!setup!:r:#1}{#1}}
+
+\def\c!setup!internal!#1%
+  {\dontleavehmode
+   \begingroup
+   \setupintfont{#1}%
+   \endgroup}
+
+\def\c!setup!text!#1%
+  {\dontleavehmode
+   \begingroup
+   \setupvarfont{#1}%
+   \endgroup}
+
+\def\c!setup!command!#1%
+  {{\setupvarfont{\texescape...#1}}}
+
+\def\??stp{@@stp}
+
+\defineregister
+  [texmacro]
+  [texmacros]
+
+\definesorting
+  [texcommand]
+  [texcommands]
+
+\setupsorting
+  [texcommand]
+  [\c!command=\showsetupinlist,
+   \c!criterium=\@@stpcriterium]
+
+\pushmacro\setuptext
+
+\defineframedtext
+  [setuptext]
+  [\c!width=\hsize,
+   \c!height=\v!fit,
+   \c!align=\v!right,
+   \c!offset=0.75em]
+
+\popmacro\setuptext
+
+%D Loading:
+
+\startxmlsetups xml:setups:register
+    \edef\currentSETUPname{\xmlatt{#1}{name}}
+    % \writestatus{setups}{registering \currentSETUPname}%
+    \expanded{\texcommand[stp:x:\currentSETUPname]{\currentSETUPname}}
+\stopxmlsetups
+
+\startxmlsetups xml:setups:basics
+    \xmlsetsetup {setups} {
+        sequence|string|variable|assignments|keywords|content|displaymath|index|math|
+        nothing|file|position|reference|csname|destination|triplet|word|
+        resolve|parameter|constant|inherit|parameter|define
+    } {xml:setups:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{setups}{xml:setups:basics}
+
+\def\loadsetups{\complexorsimple\loadsetups}
+
+\def\simpleloadsetups
+  {\doifnotmode{no-setup-main}{\complexloadsetups[cont-en.xml]}}
+
+\def\complexloadsetups[#1]%
+  {\doifsomething{#1}
+     {\doonlyonce{setups:#1}
+        {\xmlloadonly{setups}{#1}{setups}%
+         \xmlpushdocument{setups}% should be automatic
+         \xmlcommand{setups}{/interface/command}{xml:setups:register}}% qualified path saves > 50% runtime
+         \xmlpopdocument}}
+
+\newif\ifshortsetup
+
+\def\setup     {\shortsetupfalse\doshowsetup}
+\def\showsetup {\shortsetupfalse\doshowsetup}
+\def\shortsetup{\shortsetuptrue \doshowsetup}
+\def\setupsetup{\dodoubleargument\getparameters[\??stp]}
+
+\unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\showsetupindeed{#3}\par}
+
+% todo: only references in lists
+
+\def\doshowsetup
+  {\dosingleempty\dodoshowsetup}
+
+\def\dodoshowsetup[#1]%
+  {\iffirstargument
+     \dododoshowsetup{#1}%
+   \else
+     \expandafter\dododoshowsetup
+   \fi}
+
+\def\dododoshowsetup#1% this will trigger 'used'
+  {\registersort[texcommand][stp:x:#1]%
+   \showsetupindeed{#1}}
+
+\def\showsetupindeed#1%
+  {\xmlcommand{setups}{/interface/command[@name='#1']}{xml:setups:typeset}}
+
+\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
+\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
+
+\let\placeeverysetup\placeallsetups
+
+%D Typesetting:
+
+\setupxml
+  [\c!method=mkiv,       % mixed mode
+   \c!default=\v!hidden, % ignore elements that are not defined
+   \c!compress=\v!yes,   % strip comment
+   \c!entities=\v!yes]   % replace entities
+
+\newcounter\currentSETUPargument
+\newcounter\maximumSETUPargument
+
+\def\currentSETUPwidth{0pt}
+
+\startxmlsetups xml:setups:typeset
+    \xmlpushdocument{setups}
+        \edef\currentSETUPname{\xmlatt{#1}{name}}%
+        \getvalue{\e!start setuptext}
+            \tttf
+            \nohyphens
+            \veryraggedright
+            \doglobal\newcounter\currentSETUPargument
+            \xdef\maximumSETUPargument{\xmlcount{#1}{/arguments/*}}
+            \bgroup
+                \doif {\xmlatt{#1}{generated}} {yes} {
+                    \ttsl
+                }
+                \doifelse {\xmlatt{#1}{type}} {environment} {
+                    \tex{\e!start}
+                } {
+                    \tex{}
+                }
+                \xmlfirst{#1}{/sequence}
+                \ignorespaces
+            \egroup
+            \xmldoif{#1}{/arguments} {
+                \bgroup
+                    \enablemode[setups-pass-one]
+                    \doglobal\newcounter\currentSETUPargument
+                    \ignorespaces
+                    \xmltext{#1}{/arguments}
+                \egroup
+            }
+            \doif {\xmlatt{#1}{type}} {environment} {
+                \bgroup
+                    \hskip.5em\unknown\hskip.5em
+                    \doif {\xmlatt{#1}{generated}} {yes} {
+                        \ttsl
+                    }
+                    \tex{\e!stop}
+                    \xmlfirst{#1}{/sequence/variable}
+                    \ignorespaces
+                \egroup
+            }
+            \endgraf
+            \xmldoif{#1}{/arguments} {
+                \bgroup
+                    \enablemode[setups-pass-two]
+                    \doglobal\newcounter\currentSETUPargument
+                    \blank[\v!line]
+                    \switchtobodyfont[small]
+                    \ignorespaces\xmltext{#1}{/arguments}\endgraf
+                \egroup
+            }
+        \getvalue{\e!stop setuptext}
+    \xmlpopdocument
+\stopxmlsetups
+
+\setupsetup
+  [\c!before=,
+   \c!after=,
+   \c!command=\setup,
+   \c!criterium=\v!used]
+
+\startxmlsetups xml:setups:resolve
+    \ignorespaces
+    \xmlfirst{setups}{define[@name='\xmlatt{#1}{name}']}
+\stopxmlsetups
+
+%D This is the first pass; here we generate the top line.
+
+\startxmlsetups xml:setups:define
+    \ignorespaces\xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:setups:sequence
+    \ignorespaces\xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:setups:string
+    \xmlatt{#1}{value}\ignorespaces
+\stopxmlsetups
+
+\startxmlsetups xml:setups:content     \showSETUPcomponent{#1}{content}    {content}     \stopxmlsetups
+\startxmlsetups xml:setups:displaymath \showSETUPcomponent{#1}{displaymath}{display math}\stopxmlsetups
+\startxmlsetups xml:setups:index       \showSETUPcomponent{#1}{index}      {index}       \stopxmlsetups
+\startxmlsetups xml:setups:math        \showSETUPcomponent{#1}{math}       {math}        \stopxmlsetups
+\startxmlsetups xml:setups:nothing     \showSETUPcomponent{#1}{nothing}    {nothing}     \stopxmlsetups
+\startxmlsetups xml:setups:file        \showSETUPcomponent{#1}{file}       {file name}   \stopxmlsetups
+\startxmlsetups xml:setups:position    \showSETUPcomponent{#1}{position}   {position}    \stopxmlsetups
+\startxmlsetups xml:setups:reference   \showSETUPcomponent{#1}{reference}  {reference}   \stopxmlsetups
+\startxmlsetups xml:setups:csname      \showSETUPcomponent{#1}{csname}     {csname}      \stopxmlsetups
+\startxmlsetups xml:setups:destination \showSETUPcomponent{#1}{destination}{destination} \stopxmlsetups
+\startxmlsetups xml:setups:triplet     \showSETUPcomponent{#1}{triplet}    {triplet}     \stopxmlsetups
+\startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       {word}        \stopxmlsetups
+
+\def\showSETUPcomponent#1#2#3%
+  {\doifmodeelse{setups-pass-one}
+     {\getvalue{showSETUP#2}{#1}}
+     {\simpleSETUPargument{#3}}}
+
+%D This is the second pass; here we generate the table.
+
+\def\startfirstSETUPcolumn#1%
+  {\bgroup
+   \advance\leftskip 2em
+   \noindent\llap{\hbox to 2em{#1\hss}}}
+
+\def\stopfirstSETUPcolumn
+  {\endgraf
+   \egroup}
+
+\def\startsecondSETUPcolumn#1#2%
+  {\bgroup
+   \advance\hangindent\dimexpr\currentSETUPwidth+2.5em\relax
+   \noindent \hbox to \hangindent{#1\hss\hbox to 2.5em{\hss#2\hss}}}
+
+\def\stopsecondSETUPcolumn
+  {\endgraf
+   \egroup}
+
+\def\secondSETUPcolumn#1#2%
+  {\startsecondSETUPcolumn{#1}{#2}\stopsecondSETUPcolumn}
+
+\def\previousSETUPargument{\currentSETUPargument}
+
+\startxmlsetups xml:setups:parameter:measure
+    \setbox0=\hbox{\c!setup!reserved!{\xmlatt{#1}{name}}}
+    \ifdim\wd0>\currentSETUPwidth\xdef\currentSETUPwidth{\the\wd0}\fi
+\stopxmlsetups
+
+\startxmlsetups xml:setups:assignments
+    \doifmodeelse{setups-pass-one} {
+        \showSETUPassignment{#1}
+    } {
+        \xdef\currentSETUPwidth{0pt}%
+        \bgroup
+            \xmlcommand{#1}{/parameter}{xml:setups:parameter:measure}
+        \egroup
+        \startfirstSETUPcolumn{\showSETUPnumber}%
+%             \xmldoifelseempty {#1} {} {
+                \ignorespaces
+                \xmlflush{#1}
+                \let\previousSETUPargument\currentSETUPargument
+%             } {
+%                 \secondSETUPcolumn{\c!setup!text!{see} \previousSETUPargument}{}
+%             }
+        \stopfirstSETUPcolumn
+        \blank[\v!halfline]
+        \ignorespaces
+    }
+\stopxmlsetups
+
+\startxmlsetups xml:setups:keywords
+    \doifmodeelse{setups-pass-one} {
+        \showSETUPkeyword{#1}
+    } {
+        \startfirstSETUPcolumn{\showSETUPnumber}%
+%             \xmldoifelseempty {#1} {} {
+                \ignorespaces
+                \xmlflush{#1}
+                \let\previousSETUPargument\currentSETUPargument
+%             }{
+%                 \secondSETUPcolumn{see \previousSETUPargument}{}
+%             }
+        \stopfirstSETUPcolumn
+        \blank[\v!halfline]
+        \ignorespaces
+    }
+\stopxmlsetups
+
+\startxmlsetups xml:setups:parameter
+    \startsecondSETUPcolumn{\c!setup!reserved!{\xmlatt{#1}{name}}}{=}
+        \ignorespaces
+        \xmlflush{#1}
+    \stopsecondSETUPcolumn
+    \ignorespaces
+\stopxmlsetups
+
+\startxmlsetups xml:setups:constant
+    \doifmodeelse {setups-pass-one} {
+    } {
+        \doif {\xmlatt{#1}{default}} {yes} {
+            \underbar % next needs to be {braced}
         }
+        {\c!setup!reserved!{\xmlatt{#1}{type}}}
+        \space
+        \ignorespaces
+    }
+\stopxmlsetups
 
-        function document.setups.load(filename)
-            filename = resolvers.find_file(filename) or ""
-            if filename ~= "" and not document.setups.loaded[filename] then
-                local loaded = xml.load(filename)
-                if loaded then
-                    if document.setups.root then
-                        xml.inject(document.setups.root,"/",loaded)
-                    else
-                        document.setups.root = loaded
-                    end
-                    document.setups.loaded[filename] = true
-                end
-            end
-        end
-        function document.setups.name(ek)
-            local at = ek.at
-            local name = at.name
-            if at.type == 'environment' then
-                name = "start" .. name
-            end
-            if at.variant then
-                name = name .. ":" .. at.variant
-            end
-            if at.generated == "yes" then
-                name = name .. "*"
-            end
-            return name:lower()
-        end
-        function document.setups.show(name)
-            if document.setups.root then
-                local name = name:gsub("[<>]","")
-                local setup = xml.first(document.setups.root,"cd:command[@name='" .. name .. "']")
-                document.setups.used[#document.setups.used+1] = setup
-                xml.sprint(setup)
-            end
-        end
-        function document.setups.showused()
-            if document.setups.root and next(document.setups.used) then
-                for k,v in ipairs(table.sortedkeys(document.setups.used)) do
-                    xml.sprint(document.setups.used[v])
-                end
-            end
-        end
-        function document.setups.showall()
-            if document.setups.root then
-                local list = { }
-                xml.each_element(document.setups.root,"cd:command", function(r,d,t)
-                    local ek = d[t]
-                    list[document.setups.name(ek)] = ek
-                end )
-                for k,v in ipairs(table.sortedkeys(list)) do
-                    xml.sprint(list[v])
-                end
-            end
-        end
-        function document.setups.resolve(name)
-            if document.setups.root then
-                local e = xml.filter(document.setups.root,string.format("cd:define[@name='%s']/text()",name))
-                if e then
-                    xml.sprint(e)
-                end
-            end
-        end
-    end
-\stopluacode
+\startxmlsetups xml:setups:variable
+    \doifmodeelse {setups-pass-one} {
+        \expanded{\setupintfont{\xmlatt{#1}{value}}}\ignorespaces
+    } {
+        \c!setup!reserved!{\xmlatt{#1}{value}}
+        \space
+        \ignorespaces
+    }
+\stopxmlsetups
 
-\def\mkloadsetups    #1{\ctxlua{document.setups.load("#1")}}
-\def\mkshowsetup     #1{\ctxlua{document.setups.show("#1")}}
-\def\mkshowusedsetups  {\bgroup\enableXML\ctxlua{document.setups.showused()}\egroup}
-\def\mkshowallsetups   {\bgroup\enableXML\ctxlua{document.setups.showall ()}\egroup}
+\startxmlsetups xml:setups:inherit
+   \secondSETUPcolumn {
+        \c!setup!text!{\getmessage{setup}{inherits}}
+        \enspace
+        \tex{}
+        \xmlatt{#1}{name}
+    } {}
+    \ignorespaces
+\stopxmlsetups
 
-\def\mkshowsetup     #1{\bgroup\enableXML\ctxlua{document.setups.show("#1")}\egroup}
+\def\simpleSETUPargument#1%
+  {\startfirstSETUPcolumn{\showSETUPnumber}%
+      \c!setup!internal!{#1}%
+   \stopfirstSETUPcolumn
+   \blank[\v!halfline]
+   \ignorespaces}
 
-\defineXMLenvironmentsave [cd:define] [name=]
-  {}
+\c!setup!definereserved {cd:command}        {\c!setup!internal!{\getmessage{setup}{command}}}
+\c!setup!definereserved {cd:dimension}      {\c!setup!internal!{\getmessage{setup}{dimension}}}
+\c!setup!definereserved {cd:file}           {\c!setup!internal!{\getmessage{setup}{file}}}
+\c!setup!definereserved {cd:name}           {\c!setup!internal!{\getmessage{setup}{identifier}}}
+\c!setup!definereserved {cd:character}      {\c!setup!internal!{\getmessage{setup}{character}}}
+\c!setup!definereserved {cd:mark}           {\c!setup!internal!{\getmessage{setup}{mark}}}
+\c!setup!definereserved {cd:number}         {\c!setup!internal!{\getmessage{setup}{number}}}
+\c!setup!definereserved {cd:reference}      {\c!setup!internal!{\getmessage{setup}{reference}}}
+\c!setup!definereserved {cd:plural}         {\c!setup!internal!{\getmessage{setup}{plural}}}
+\c!setup!definereserved {cd:singular}       {\c!setup!internal!{\getmessage{setup}{singular}}}
+\c!setup!definereserved {cd:text}           {\c!setup!internal!{\getmessage{setup}{text}}}
+\c!setup!definereserved {cd:formula}        {\c!setup!internal!{\getmessage{setup}{formula}}}
+\c!setup!definereserved {cd:file}           {\c!setup!internal!{\getmessage{setup}{file}}}
+\c!setup!definereserved {cd:matrix}         {\c!setup!internal!{\getmessage{setup}{matrix}}}
+\c!setup!definereserved {cd:list}           {\c!setup!internal!{\getmessage{setup}{list}}}
+\c!setup!definereserved {cd:section}        {\c!setup!internal!{\getmessage{setup}{section}}}
 
-\defineXMLsingular [cd:resolve] [name=]
-  {\enableXML\ignorespaces\ctxlua{document.setups.resolve("\XMLop{name}")}}
+\c!setup!definereserved {cd:noargument}     {\c!setup!command! {}}
+\c!setup!definereserved {cd:oneargument}    {\c!setup!command! {\#1}}
+\c!setup!definereserved {cd:twoarguments}   {\c!setup!command! {\#1\#2}}
+\c!setup!definereserved {cd:threearguments} {\c!setup!command! {\#1\#2\#3}}
 
-\endinput
+%D Auxiliary.
 
-% \starttext
-% \loadsetups[cont-en.xml]
-% \setup[goto]
-% \placeeverysetup
-% \stoptext
+\unexpanded\def\showSETUP#1#2#3%
+  {\bgroup
+   \doglobal\increment\currentSETUPargument
+   \setbox0=\hbox
+     {\doifelse{\xmlatt{#1}{list}}{yes}{#3}{#2}}%
+   \setbox2=\hbox to \wd0
+     {\hss
+      \raise1ex\hbox
+        {\tx\ifcase\maximumSETUPargument\relax
+           \or*\else\currentSETUPargument
+         \fi}%
+      \hss}%
+   \setbox4=\hbox to \wd0
+     {\hss
+      \lower2ex\hbox
+        \bgroup
+          \txx\doif{\xmlatt{#1}{optional}}{yes}{\c!setup!internal!{\getmessage{setup}{optional}}}%
+        \egroup
+      \hss}%
+   \ht2\ht\strutbox
+   \dp4\dp\strutbox
+   \hskip.5em\hsmash{\box0}\hsmash{\box4}\box2%
+   \egroup
+   \ignorespaces}
+
+\def\showSETUPnumber
+  {\doglobal\increment\currentSETUPargument
+   \hbox to 2em
+     {\ifcase\maximumSETUPargument\relax
+        \or*\else\currentSETUPargument
+      \fi
+      \hss}}
+
+\def\showSETUPassignment #1{\showSETUP{#1}{[.\lower.5ex\hbox{=}.]}              {[..,.\lower.5ex\hbox{=}.,..]}}
+\def\showSETUPkeyword    #1{\showSETUP{#1}{[...]}                               {[...,...]}}
+\def\showSETUPargument   #1{\showSETUP{#1}{\leftargument..\rightargument}       {\leftargument..,...,..\rightargument}}
+\def\showSETUPdisplaymath#1{\showSETUP{#1}{\$\$...\$\$}                         {\$\$...\$\$}}
+\def\showSETUPindex      #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument..+...+..\rightargument}}
+\def\showSETUPmath       #1{\showSETUP{#1}{\$...\$}                             {\$...\$}}
+\def\showSETUPnothing    #1{\showSETUP{#1}{...}                                 {}}
+\def\showSETUPfile       #1{\showSETUP{#1}{~...~}                               {}}
+\def\showSETUPposition   #1{\showSETUP{#1}{(...)}                               {(...,...)}}
+\def\showSETUPreference  #1{\showSETUP{#1}{[...]}                               {[...,...]}}
+\def\showSETUPcsname     #1{\showSETUP{#1}{{\c!setup!command!{}}}               {}}
+\def\showSETUPdestination#1{\showSETUP{#1}{[\leftargument..[ref]\rightargument]}{[..,\leftargument..[ref,..]\rightargument,..]}}
+\def\showSETUPtriplet    #1{\showSETUP{#1}{[x:y:z=]}                            {[x:y:z=,..]}}
+\def\showSETUPword       #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument.. ... ..\rightargument}}
+\def\showSETUPcontent    #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument.. ... ..\rightargument}}
+
+\protect \endinput

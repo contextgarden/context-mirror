@@ -608,7 +608,6 @@ function lxml.attribute(id,pattern,a,default) --todo: snelle xmlatt
     local str = xmlattribute(get_id(id),pattern,a) or ""
     texsprint((str == "" and default) or str)
 end
-
 function lxml.chainattribute(id,pattern,a,default) --todo: snelle xmlatt
     local str = xmlchainattribute(get_id(id),pattern,a) or ""
     texsprint((str == "" and default) or str)
@@ -695,7 +694,12 @@ function xml.command(root, command)
 --~         local n = #myself + 1
 --~         myself[n] = root
 --~         texsprint(ctxcatcodes,format("\\xmlsetup{%i}{%s}",n,command))
-        texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",root.ix,command))
+        local ix = root.ix
+--~         if not ix then
+--~             lxml.addindex(root)
+--~             ix = root.ix
+--~         end
+        texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",ix,command))
     elseif tc == "function" then
         -- function
         command(root)

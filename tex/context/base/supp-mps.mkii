@@ -236,7 +236,8 @@
 %D The next hack prevents too long lines:
 
 \long\def\runtimeobeyMPlines
-  {\ifx\rawcharacter\undefined
+  {\catcode35=11\relax % goodie
+   \ifx\rawcharacter\undefined
      \let\obeyedline\space
    \else
      \obeylines

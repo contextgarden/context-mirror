@@ -58,8 +58,18 @@ end
 function joblists.register(class,kind,spec)
     local data = allocate(class)
     data.metadata.kind = kind -- runtime, not saved in format (yet)
-    data.entries[#data.entries+1] = spec
-    data.hash[spec.definition.tag or ""] = spec
+    if not data.hash[spec.definition.tag or ""] then
+        data.entries[#data.entries+1] = spec
+        data.hash[spec.definition.tag or ""] = spec
+    end
+end
+
+function joblists.registerused(class,tag)
+    local data = allocate(class)
+    local dht = data.hash[tag]
+    if dht then
+        dht.definition.used = true
+    end
 end
 
 function joblists.synonym(class,tag)
@@ -147,7 +157,7 @@ function joblists.flush(data,options) -- maybe pass the settings differently
 --~         texsprint(ctxcatcodes,format("\\start%ssection{%s}",kind,sublist.tag))
         for d=1,#data do
             local entry = data[d].definition
-            texsprint(ctxcatcodes,format("\\%sentry{%s}{%s}{%s}",kind,d,entry.synonym,entry.meaning))
+            texsprint(ctxcatcodes,format("\\%sentry{%s}{%s}{%s}",kind,d,entry.tag,entry.synonym))
         end
 --~         texsprint(ctxcatcodes,format("\\stop%ssection",kind))
     end

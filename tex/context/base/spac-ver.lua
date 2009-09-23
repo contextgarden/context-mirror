@@ -133,12 +133,12 @@ function vspacing.define_snap_method(name,method)
 end
 
 function vspacing.freeze_snap_method(ht,dp)
-    snapht, snapdp = ht or texdimen.strutht, dp or texdimen.strutdp
+    snapht, snapdp = ht or texdimen.bodyfontstrutheight, dp or texdimen.bodyfontstrutdepth
     snaphtdp = snapht + snapdp
 end
 
-local function snap_hlist(current,method) -- method.strut is default
-    local h, d = current.height, current.depth
+local function snap_hlist(current,method,height,depth) -- method.strut is default
+    local h, d = height or current.height, depth or current.depth
     local hr, dr, ch, cd = method.hfraction or 1, method.dfraction or 1, h, d
     local done, plusht, plusdp = false, snapht, snapdp
     if method.none then
@@ -201,7 +201,12 @@ local function snap_hlist(current,method) -- method.strut is default
     else
         cd = plusdp
     end
-    current.height, current.depth = ch, cd
+    if not height then
+        current.height = ch
+    end
+    if not depth then
+        current.depth = cd
+    end
     return h, d, ch, cd, (ch+cd)/snaphtdp
 end
 
@@ -513,8 +518,9 @@ function vspacing.snap_box(n,how)
     local sv = snapmethods[how]
     if sv then
         local list = texbox[n].list
-        if list and (list.id == hlist or list.id == vlist) then
-            local h, d, ch, cd, lines = snap_hlist(list,sv)
+--~         if list and (list.id == hlist or list.id == vlist) then
+        if list then
+            local h, d, ch, cd, lines = snap_hlist(list,sv,texht[n],texdp[n])
             texht[n], texdp[n] = ch, cd
             if trace_vsnapping then
                 logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,"direct",lines)

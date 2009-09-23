@@ -1,14 +1,100 @@
+%D \module
+%D   [       file=x-set-11,
+%D        version=2004.10.31,
+%D         remark=setupx.tex: 1998.07.20 and later,
+%D          title=\CONTEXT\ Setup Definitions,
+%D       subtitle=Macro Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% module x-set-02 loads the mapping, after that we can say:
+%
+% texmfstart texexec --int=nl --pdf --global --result=setup-nl x-set-12
+
+\usemodule[set-99] % interface messages
+
 \unprotect
 
-\def\mkloadsetups#1%
-  {\doifnotmode{no-setup-all}
-     {\startXMLmapping[zero]
-      \expanded{\processXMLfilegrouped{#1}}%
-      \stopXMLmapping}}
+% general
+
+\def\setupnumfont  {}
+\def\setuptxtfont  {}
+\def\setupintfont#1{\uppercase{#1}}
+\def\setupvarfont  {\sl}
+\def\setupoptfont  {\sl}
+\def\setupalwcolor {}
+\def\setupoptcolor {darkgray}
+
+\defineXMLenvironmentsave [cd:content] [list=,state=]
+  {\simpleSETUPargument{content}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\def\c!setup!internal!#1%
+  {{\setmessagetext{setup}{#1}%
+    \expanded{\setupintfont{\currentmessagetext}}}}
+
+\def\c!setup!text!#1%
+  {{\setmessagetext{setup}{#1}%
+    \setupvarfont{\currentmessagetext}}}
+
+\def\c!setup!command!#1%
+  {{\setupvarfont{\texescape...#1}}}
+
+\def\??stp{@@stp}
+
+\defineregister
+  [texmacro]
+  [texmacros]
+
+\definesorting
+  [texcommand]
+  [texcommands]
+
+\setupsorting
+  [texcommand]
+  [\c!command=\@@stpcommand,
+   \c!criterium=\@@stpcriterium]
+
+\definesorting
+  [eachtexcommand]
+  [alltexcommands]
+
+\setupsorting
+  [eachtexcommand]
+  [\c!command=\@@stpcommand,
+   \c!criterium=\v!all]
+
+\pushmacro\setuptext
+
+\defineframedtext
+  [setuptext]
+  [\c!width=\hsize,
+   \c!height=\v!fit,
+   \c!align=\v!right,
+   \c!offset=0.75em]
+
+\popmacro\setuptext
+
+\newif\ifshortsetup
+
+\def\doshowsetup
+  {\dosingleempty\dodoshowsetup}
+
+\def\dodoshowsetup[#1]%
+  {\iffirstargument
+     \doshowsetup{#1}%
+   \else
+     \expandafter\doshowsetup
+   \fi}
 
 \bgroup \catcode`\<=\active
 
-\gdef\mkshowsetup#1%
+\gdef\doshowsetup#1%
   {\bgroup
    \def<<##1>>{##1}%
    \edef\ascii{#1}%
@@ -23,17 +109,465 @@
 
 \egroup
 
-\def\mkshowusedsetups
-  {\getvalue{\e!place\e!listof texcommands}}
+\def\setup     {\shortsetupfalse\doshowsetup}
+\def\showsetup {\shortsetupfalse\doshowsetup}
+\def\shortsetup{\shortsetuptrue \doshowsetup}
+\def\setupsetup{\dodoubleargument\getparameters[\??stp]}
 
-\def\mkshowallsetups
-  {\getvalue{\e!place\e!listof alltexcommands}}
+\setupsetup
+  [\c!before=,
+   \c!after=,
+   \c!command=\setup,
+   \c!criterium=\v!used]
+
+% verwijzing: 0 geen verwijzingen plaatsen / wel genereren
+%             1 alleen bij zie plaatsen / wel genereren
+%             2 alle verwijzingen plaatsen / niet genereren
+%             3 bij zie commando klikken / wel genereren
+
+\setupsetup
+  [\c!reference=0]
+
+\def\placesetup
+  {\bgroup
+   \getvalue{\e!place\e!listof texcommands}%
+   \egroup}
+
+\def\placeallsetups
+  {\bgroup
+   \setupsetup[\c!reference=2]%
+   \setupreferencing[\c!state=\v!stop]%
+   \getvalue{\e!place\e!listof alltexcommands}%
+   \egroup}
+
+\let\placeeverysetup\placeallsetups
+
+\let\plaatssetup    \placesetup
+\let\plaatselkesetup\placeallsetups
+
+% we use :1 as fallback
+%
+% \setup{setupinterlinespace}
+% \setup{setupinterlinespace:1}
+% \setup{setupinterlinespace:2}
+
+% todo: make this proper mkiv xml
 
 \defineXMLenvironmentsave [cd:define] [name=]
   {}
   {\setxvalue{cd:def:\XMLop{name}}{\XMLflush{cd:define}}}
 
 \defineXMLsingular [cd:resolve] [name=]
-  {\getvalue{cd:def:\XMLop{name}}}
+  {\ignorespaces\getvalue{cd:def:\XMLop{name}}\ignorespaces}
+
+\defineXMLenvironment [cd:command] [name=,type=,generated=,interactive=,variant=]
+  {}
+  {\showSETUPrecord}
+
+\def\showSETUPrecord
+  {\getvalue{\e!start setuptext}
+     \tttf
+     \nohyphens
+     \veryraggedright
+     \startXMLmapping [one]
+       \doglobal\newcounter\currentSETUPargument
+       \global\let\maximumSETUPargument\currentSETUPargument
+       \bgroup
+         \doif{\XMLpar{cd:command}{generated}{}}{yes}{\ttsl}%
+         \doifelseXMLop{type}{environment}
+           {\tex{\e!start}}{\tex{}}\ignorespaces
+         \XMLflush{cd:sequence}\ignorespaces
+       \egroup
+       \doifelseXMLempty{cd:arguments}
+         {}
+         {\bgroup
+            \setbox0=\hbox{\XMLflush{cd:arguments}}%
+            \global\let\maximumSETUPargument\currentSETUPargument
+            \doglobal\newcounter\currentSETUPargument
+            \ignorespaces\XMLflush{cd:arguments}%
+            \doif{\XMLpar{cd:command}{type}{}}{environment}
+              {\hskip.5em\unknown\hskip.5em
+               \doif{\XMLpar{cd:command}{generated}{}}{yes}{\ttsl}%
+               \tex{\e!stop}\ignorespaces\XMLflush{cd:sequence}}%
+            \endgraf
+          \egroup
+         %\bgroup
+         %  \tx
+         %  \doif{\XMLpar{cd:command}{interactive}{}}{yes}      {\quad INTERACTIVE}%
+         %  \doif{\XMLpar{cd:command}{interactive}{}}{exclusive}{\quad INTERACTIVE ONLY}%
+         %\egroup
+        \startXMLmapping [two]
+          \bgroup
+            \doglobal\newcounter\currentSETUPargument
+            \blank[\v!line]
+            \switchtobodyfont[small] % kan sneller
+            \ignorespaces\XMLflush{cd:arguments}\endgraf
+          \egroup
+        \stopXMLmapping}
+     \stopXMLmapping
+   \getvalue{\e!stop setuptext}}
+
+\defineXMLenvironmentsave [cd:sequence]  \ignorespaces \ignorespaces
+\defineXMLenvironmentsave [cd:arguments] \ignorespaces \ignorespaces
+
+%D This is the first pass; here we generate the top line.
+
+\newcounter\currentSETUPargument
+\def\currentSETUPwidth{0pt}
+
+% environmentsave ?
+
+\startXMLmapping [one]
+
+\defineXMLenvironmentsave [cd:string] [value=]
+  {\XMLop{value}\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:variable] [value=]
+  {{\expanded{\setupintfont{\XMLop{value}}}}\ignorespaces}
+  {\ignorespaces}
+
+% moet een standaard type worden
+
+\defineXMLenvironmentsave [cd:assignments] [list=,state=]
+  {\showSETUPassignment\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:keywords] [list=,state=]
+  {\showSETUPkeyword\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:content] [list=,state=]
+  {\showSETUPcontent\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:displaymath] [list=,state=]
+  {\showSETUPdisplaymath\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:index] [list=,state=]
+  {\showSETUPindex\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:math] [list=,state=]
+  {\showSETUPmath\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:nothing] [list=,state=]
+  {\showSETUPnothing\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:file] [list=,state=]
+  {\showSETUPfile\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:position] [list=,state=]
+  {\showSETUPposition\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:reference] [list=,state=]
+  {\showSETUPreference\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:csname] [list=,state=]
+  {\showSETUPcsname\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:destination] [list=,state=]
+  {\showSETUPdestination\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:triplet] [list=,state=]
+  {\showSETUPtriplet\ignorespaces} {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:word] [list=,state=]
+  {\showSETUPword\ignorespaces} {\ignorespaces}
+
+\stopXMLmapping
+
+%D This is the second pass; here we generate the table.
+
+\startXMLmapping [two]
+
+\def\startfirstSETUPcolumn#1%
+  {\bgroup
+   \advance\leftskip 2em
+   \noindent\llap{\hbox to 2em{#1\hss}}}
+
+\def\stopfirstSETUPcolumn
+  {\endgraf
+   \egroup}
+
+\def\startsecondSETUPcolumn#1#2%
+  {\bgroup
+   \advance\hangindent \currentSETUPwidth
+   \advance\hangindent 2.5em
+   \noindent \hbox to \hangindent{#1\hss\hbox to 2.5em{\hss#2\hss}}%
+   \ignorespaces}
+
+\def\stopsecondSETUPcolumn
+  {\endgraf
+   \egroup}
+
+\def\secondSETUPcolumn#1#2%
+  {\startsecondSETUPcolumn{#1}{#2}\stopsecondSETUPcolumn}
+
+\def\previousSETUPargument{\currentSETUPargument}
+
+\defineXMLenvironmentsave [cd:assignments]
+  {}
+  {\xdef\currentSETUPwidth{0pt}%
+   \bgroup
+   \defineXMLenvironment [cd:parameter] [name=]
+     {\setbox0=\hbox{\potentialXMLentity{\XMLop{name}}}%
+      \ifdim\wd0>\currentSETUPwidth\xdef\currentSETUPwidth{\the\wd0}\fi}%
+     {}%
+   \setbox0=\vbox{\XMLflush{cd:assignments}}%
+   \egroup
+   \startfirstSETUPcolumn{\showSETUPnumber}%
+     \doifelseXMLempty{cd:assignments}
+       {\secondSETUPcolumn{\c!setup!text!{see} \previousSETUPargument}{}}
+       {\ignorespaces
+        \XMLflush{cd:assignments}%
+        \let\previousSETUPargument\currentSETUPargument}%
+   \stopfirstSETUPcolumn
+   \blank[\v!halfline]
+   \ignorespaces}
+
+\defineXMLenvironmentsave [cd:keywords] [optional=no]
+  {}
+  {\startfirstSETUPcolumn{\showSETUPnumber}%
+     \doifelseXMLempty{cd:keywords}
+       {\secondSETUPcolumn{see \previousSETUPargument}{}}
+       {\ignorespaces
+        \XMLflush{cd:keywords}%
+        \let\previousSETUPargument\currentSETUPargument}%
+   \stopfirstSETUPcolumn
+   \blank[\v!halfline]
+   \ignorespaces}
+
+\defineXMLenvironment [cd:parameter] [name=]
+  {\startsecondSETUPcolumn{\potentialXMLentity{\XMLop{name}}}{=}%
+   \ignorespaces}
+  {\stopsecondSETUPcolumn
+   \ignorespaces}
+
+\defineXMLenvironmentsave [cd:constant] [type=,default=]
+  {\doifXMLop{default}{yes}{\underbar}%
+     {\potentialXMLentity{\XMLop{type}}}\space\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:variable] [value=]
+  {\potentialXMLentity{\XMLop{value}}\space\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:inherit] [name=]
+  {\secondSETUPcolumn{\c!setup!text!{inherits} \tex{}\XMLop{name}}{}\ignorespaces}
+  {\ignorespaces}
+
+\def\simpleSETUPargument#1%
+  {\startfirstSETUPcolumn{\showSETUPnumber}%
+      \c!setup!internal!{#1}%
+   \stopfirstSETUPcolumn}
+
+\defineXMLenvironmentsave [cd:content] [list=,state=]
+  {\simpleSETUPargument{content}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:displaymath] [list=,state=]
+  {\simpleSETUPargument{display math}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:index] [list=,state=]
+  {\simpleSETUPargument{index}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:math] [list=,state=]
+  {\simpleSETUPargument{math}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:nothing] [list=,state=]
+  {\simpleSETUPargument{nothing}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:file] [list=,state=]
+  {\simpleSETUPargument{file name}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:position] [list=,state=]
+  {\simpleSETUPargument{position}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:reference] [list=,state=]
+  {\simpleSETUPargument{reference}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:csname] [list=,state=]
+  {\simpleSETUPargument{csname}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:destination] [list=,state=]
+  {\simpleSETUPargument{destination}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:triplet] [list=,state=]
+  {\simpleSETUPargument{triplet}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\defineXMLenvironmentsave [cd:word] [list=,state=]
+  {\simpleSETUPargument{word}\blank[\v!halfline]\ignorespaces}
+  {\ignorespaces}
+
+\stopXMLmapping
+
+\defineXMLentity [cd:command]        {\c!setup!internal!{command}}
+\defineXMLentity [cd:dimension]      {\c!setup!internal!{dimension}}
+\defineXMLentity [cd:file]           {\c!setup!internal!{file}}
+\defineXMLentity [cd:name]           {\c!setup!internal!{identifier}}
+\defineXMLentity [cd:character]      {\c!setup!internal!{character}}
+\defineXMLentity [cd:mark]           {\c!setup!internal!{mark}}
+\defineXMLentity [cd:number]         {\c!setup!internal!{number}}
+\defineXMLentity [cd:reference]      {\c!setup!internal!{reference}}
+\defineXMLentity [cd:plural]         {\c!setup!internal!{plural}}
+\defineXMLentity [cd:singular]       {\c!setup!internal!{singular}}
+\defineXMLentity [cd:text]           {\c!setup!internal!{text}}
+\defineXMLentity [cd:formula]        {\c!setup!internal!{formula}}
+\defineXMLentity [cd:file]           {\c!setup!internal!{file}}
+\defineXMLentity [cd:matrix]         {\c!setup!internal!{matrix}}
+\defineXMLentity [cd:list]           {\c!setup!internal!{list}}
+\defineXMLentity [cd:section]        {\c!setup!internal!{section}}
+
+\defineXMLentity [cd:noargument]     {\c!setup!command!{}}
+\defineXMLentity [cd:oneargument]    {\c!setup!command!{\#1}}
+\defineXMLentity [cd:twoarguments]   {\c!setup!command!{\#1\#2}}
+\defineXMLentity [cd:threearguments] {\c!setup!command!{\#1\#2\#3}}
+
+%D Todo:
+
+\defineXMLprocess [cd:choice]
+
+%D Auxiliary.
+
+\unexpanded\def\showSETUP#1#2%
+  {\bgroup
+   \doglobal\increment\currentSETUPargument
+   \setbox0=\hbox
+     {\doifelseXMLop{list}{yes}{#2}{#1}}%
+   \setbox2=\hbox to \wd0
+     {\hss
+      \raise1ex\hbox
+        {\tx\ifcase\maximumSETUPargument\relax
+           \or*\else\currentSETUPargument
+         \fi}%
+      \hss}%
+   \setbox4=\hbox to \wd0
+     {\hss
+      \lower2ex\hbox
+        \bgroup
+          \txx\doifXMLop{optional}{yes}{\c!setup!internal!{optional}}%
+        \egroup
+      \hss}%
+   \ht2\ht\strutbox
+   \dp4\dp\strutbox
+   \hskip.5em\hsmash{\box0}\hsmash{\box4}\box2%
+   \egroup}
+
+\def\showSETUPnumber
+  {\doglobal\increment\currentSETUPargument
+   \hbox to 2em
+     {\ifcase\maximumSETUPargument\relax
+        \or*\else\currentSETUPargument
+      \fi
+      \hss}}
+
+\def\showSETUPassignment {\showSETUP
+  {[.\lower.5ex\hbox{=}.]}
+  {[..,.\lower.5ex\hbox{=}.,..]}}
+
+\def\showSETUPkeyword {\showSETUP
+  {[...]}
+  {[...,...]}}
+
+\def\showSETUPargument {\showSETUP
+  {\leftargument..\rightargument}
+  {\leftargument..,...,..\rightargument}}
+
+\def\showSETUPdisplaymath {\showSETUP
+  {\$\$...\$\$}
+  {\$\$...\$\$}}
+
+\def\showSETUPindex {\showSETUP
+  {\leftargument...\rightargument}
+  {\leftargument..+...+..\rightargument}}
+
+\def\showSETUPmath {\showSETUP
+  {\$...\$}
+  {\$...\$}}
+
+\def\showSETUPnothing {\showSETUP
+  {...}
+  {}}
+
+\def\showSETUPfile {\showSETUP
+  {~...~}
+  {}}
+
+\def\showSETUPposition {\showSETUP
+  {(...)}
+  {(...,...)}}
+
+\def\showSETUPreference {\showSETUP
+  {[...]}
+  {[...,...]}}
+
+\def\showSETUPcsname {\showSETUP
+  {{\c!setup!command!{}}}
+  {}}
+
+\def\showSETUPdestination {\showSETUP
+  {[\leftargument..[ref]\rightargument]}
+  {[..,\leftargument..[ref,..]\rightargument,..]}}
+
+\def\showSETUPtriplet {\showSETUP
+  {[x:y:z=]}
+  {[x:y:z=,..]}}
+
+\def\showSETUPword {\showSETUP
+  {\leftargument...\rightargument}
+  {\leftargument.. ... ..\rightargument}}
+
+\def\showSETUPcontent {\showSETUP
+  {\leftargument...\rightargument}
+  {\leftargument.. ... ..\rightargument}}
+
+%\def\c!par!{\c!setup!internal!{endofpar}}
+%\def\c!repeat!{\c!opt!{{\setupvarfont n}*}}
+%\showSETUP\def\c!par!{\texescape par}
+%\showSETUP\def\c!sep!{\texescape\texescape}
+%\def\c!par!{\addtypespec{delimiter}{par}}       % \par
+%\def\c!sep!{\addtypespec{separator}{backslash}} % \\
+%\def\c!repeat!{}
+%\def\c!tex!#1{\addtypespec{command}{#1}\doanother{tex}}
+
+\startXMLmapping[zero]
+
+\defineXMLenvironmentsave [cd:command] [name=,type=,generated=,interactive=,variant=]
+  {}
+  {\doifelseXMLop{type}{environment}
+     {\edef\currentSETUPname{start\XMLop{name}}}
+     {\edef\currentSETUPname{\XMLop{name}}}%
+   \doifsomething{\XMLop{variant}}
+     {\edef\currentSETUPname{\currentSETUPname:\XMLop{variant}}}% like setupinterlinespace:1
+   \doifXMLop{generated}{yes}
+     {\edef\currentSETUPname{\currentSETUPname*}}%
+   \doglobal\saveXMLdatainelement{stp:\currentSETUPname}{cd:command}{cd:command}%
+   \expanded{\eachtexcommand[stp:x:\currentSETUPname]{\currentSETUPname}}%
+   \expanded{\texcommand    [stp:y:\currentSETUPname]{\currentSETUPname}}}
+
+\stopXMLmapping
+
+\def\loadsetups{\complexorsimple\loadsetups}
+
+\def\simpleloadsetups
+  {\doifnotmode{no-setup-main}
+     {\complexloadsetups[cont-en.xml]}}
+
+\def\complexloadsetups[#1]%
+  {\doifsomething{#1}
+     {\doifnotmode{no-setup-all}
+        {\startXMLmapping[zero]
+         \expanded{\processXMLfilegrouped{#1}}%
+         \stopXMLmapping}}}
+
+\defineXMLsingular [cd:include] [file=]
+  {\complexloadsetups[\XMLop{file}]}
 
 \protect \endinput

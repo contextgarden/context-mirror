@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 }
 
 -- this module needs a cleanup: check latest lpeg, passing args, (sub)grammar, etc etc
+-- stripping spaces from e.g. cont-en.xml saves .2 sec runtime so it's not worth the
+-- trouble
 
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
