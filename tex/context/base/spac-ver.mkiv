@@ -1274,13 +1274,24 @@
    \resetsnapvalue
    \dowithnextbox{\dododosnaptogrid{#1}}}
 
+% eventually there will always be a line snap
+
 \def\dododosnaptogrid#1%
   {\ifvbox\nextbox
      \ctxlua{nodes.collapse_vbox(\number\nextbox)}%
    \fi
    \doifelsenothing{#1}{\setsnapvalue\v!normal}{\autosetsnapvalue{#1}}%
    \ctxlua{vspacing.snap_box(\number\nextbox,\number\attribute\snapmethodattribute)}%
-   \box\nextbox
+%    \ifzeropt\ht\nextbox
+%      \ifzeropt\dp\nextbox
+%        \box\nextbox % here, else empty and zero
+%        \kern-\bodyfontlineheight
+%      \else
+%        \box\nextbox
+%      \fi
+%    \else
+     \box\nextbox
+%    \fi
    \egroup}
 
 % no off
@@ -1322,8 +1333,8 @@
             \hss}%
          \flushnextbox}}}
 
-\chardef\gridboxlinenomode\plusone
-\chardef\gridboxlinemode  \plusone % 0:nothing 1:all 2:lines 3:frame
+\chardef\gridboxlinenomode\plusone % 0:nothing 1:all 2:lines 3:frame 4:l/r
+\chardef\gridboxlinemode  \plusone
 
 \def\gridboxvbox {\ifcase\gridboxlinemode\vbox\or\ruledvbox\or\vbox\or\ruledvbox\else\ruledvbox\fi}
 \def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\testrulewidth}
@@ -1335,6 +1346,9 @@
       \offinterlineskip
       \hsize#2%
       \baselinerulefalse
+      \ifnum\gridboxlinenomode=\plusthree
+        \chardef\gridboxlinenomode\ifodd\realpageno\plusone\else\plustwo\fi
+      \fi
       \gridboxvbox % calculated size
         {\getrawnoflines{#3}% \getnoflines{#3}%
 %          \ifgridsnapping \else
@@ -1588,7 +1602,7 @@
      \fi\fi
    \relax}
 
-\definevspacing[\v!samepage][penalty:10000]
+\definevspacing[\v!samepage][penalty:10000] % real strong
 \definevspacing[\v!max]     [category:1]
 \definevspacing[\v!force]   [category:2]
 \definevspacing[\v!disable] [category:5]
@@ -1599,6 +1613,9 @@
 \definevspacing[\v!strong]  [order:100]
 
 \definevspacing[\s!default] [\v!white] % was big for a while
+
+\dorecurse{10} % todo: other values < 4000
+  {\expanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr4000+250*\recurselevel\relax]}}
 
 \setfalse\vspacingenabled
 

@@ -75,7 +75,7 @@ vspacing.data.snapmethods = vspacing.data.snapmethods or { }
 
 storage.register("vspacing/data/snapmethods", vspacing.data.snapmethods, "vspacing.data.snapmethods")
 
-local snapmethods, snapht, snapdp, snaphtdp = vspacing.data.snapmethods, 0, 0, 0
+local snapmethods = vspacing.data.snapmethods
 
 local default = {
     maxheight = true,
@@ -131,6 +131,8 @@ function vspacing.define_snap_method(name,method)
     t.name, t.specification = name, method
     tex.write(n)
 end
+
+local snapht, snapdp, snaphtdp = 0, 0, 0
 
 function vspacing.freeze_snap_method(ht,dp)
     snapht, snapdp = ht or texdimen.bodyfontstrutheight, dp or texdimen.bodyfontstrutdepth
@@ -241,6 +243,7 @@ vspacing.categories = {
      [5] = 'disable',
      [6] = 'nowhite',
      [7] = 'goback',
+     [8] = 'together'
 }
 
 local categories = vspacing.categories
@@ -290,6 +293,9 @@ do -- todo: interface.variables
     local splitter   = (multiplier + lpeg.Cc(1)) * keyword * (category + lpeg.Cc(false))
 
     local k_fixed, k_flexible, k_category, k_penalty, k_order = variables.fixed, variables.flexible, "category", "penalty", "order"
+
+    -- This will change: just node.write and we can store the values in skips which
+    -- then obeys grouping
 
     local function analyse(str,oldcategory,texsprint)
         for s in gmatch(str,"([^ ,]+)") do
@@ -512,7 +518,7 @@ local skips = {
 
 local free_glue_node = free_node
 local free_glue_spec = free_node
-local discard, largest, force, penalty, add, disable, nowhite, goback = 0, 1, 2, 3, 4, 5, 6, 7
+local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8
 
 function vspacing.snap_box(n,how)
     local sv = snapmethods[how]
@@ -520,10 +526,18 @@ function vspacing.snap_box(n,how)
         local list = texbox[n].list
 --~         if list and (list.id == hlist or list.id == vlist) then
         if list then
-            local h, d, ch, cd, lines = snap_hlist(list,sv,texht[n],texdp[n])
-            texht[n], texdp[n] = ch, cd
-            if trace_vsnapping then
-                logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,"direct",lines)
+            local s = has_attribute(list,snap_method)
+            if s == 0 then
+                if trace_vsnapping then
+                    logs.report("snapper", "hlist not snapped, already done")
+                end
+            else
+                local h, d, ch, cd, lines = snap_hlist(list,sv,texht[n],texdp[n])
+                texht[n], texdp[n] = ch, cd
+                if trace_vsnapping then
+                    logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,"direct",lines)
+                end
+                set_attribute(list,snap_method,0)
             end
         end
     end
@@ -552,10 +566,15 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         reset_tracing(head)
         trace_info("start analyzing",where,what)
     end
-    local current = head
+    local current, oldhead = head, head
+    snapht, snapdp = ht or texdimen.bodyfontstrutheight, dp or texdimen.bodyfontstrutdepth
+    snaphtdp = snapht + snapdp
     local glue_order, glue_data, force_glue = 0, nil, false
     local penalty_order, penalty_data, natural_penalty = 0, nil, nil
-    local parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
+    local parskip, ignore_parskip, ignore_following, ignore_whitespace, keep_together = nil, false, false, false, false
+    --
+    -- todo: keep_together: between headers
+    --
     local function flush(why)
         if penalty_data then
             local p = make_penalty_node(penalty_data)
@@ -584,24 +603,25 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         if id == hlist or id == vlist then
             if snap then
                 local s = has_attribute(current,snap_method)
-                if s then
-                    unset_attribute(current,snap_method)
-                    if not has_attribute(current,snap_done) then
-                        local sv = snapmethods[s]
-                        if sv then
-                            local h, d, ch, cd, lines = snap_hlist(current,sv)
-                            if trace_vsnapping then
-                                logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,where,lines)
-                            end
-                        elseif trace_vsnapping then
-                            logs.report("snapper", "hlist not snapped due to unknown snap specification")
-                        end
-                        set_attribute(current,snap_done,s)
-                    elseif trace_vsnapping then
+                if not s then
+                --  if trace_vsnapping then
+                --      logs.report("snapper", "hlist not snapped")
+                --  end
+                elseif s == 0 then
+                    if trace_vsnapping then
                         logs.report("snapper", "hlist not snapped, already done")
                     end
-                elseif trace_vsnapping then
-                --  logs.report("snapper", "hlist not snapped")
+                else
+                    local sv = snapmethods[s]
+                    if sv then
+                        local h, d, ch, cd, lines = snap_hlist(current,sv)
+                        if trace_vsnapping then
+                            logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,where,lines)
+                        end
+                    elseif trace_vsnapping then
+                        logs.report("snapper", "hlist not snapped due to unknown snap specification")
+                    end
+                    set_attribute(current,snap_method,0)
                 end
             else
                 --
@@ -636,6 +656,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 elseif penalty_order == so and sp > penalty_data then
                     penalty_data = sp
                 end
+                if trace then trace_skip('penalty in skip',sc,so,sp,current) end
                 head, current = remove_node(head, current, true)
             elseif not sc then  -- if not sc then
                 if glue_data then
@@ -676,6 +697,10 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             elseif sc == disable then
                 ignore_following = true
                 if trace then trace_skip("disable",sc,so,sp,current) end
+                head, current = remove_node(head, current, true)
+            elseif sc == together then
+                keep_together = true
+                if trace then trace_skip("together",sc,so,sp,current) end
                 head, current = remove_node(head, current, true)
             elseif sc == nowhite then
                 ignore_whitespace = true
@@ -745,9 +770,9 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             end
         elseif subtype == line_skip then
             if snap then
-                local sn = has_attribute(current,snap_method)
-                if sn then
-                    unset_attribute(current,snap_method)
+                local s = has_attribute(current,snap_method)
+                if s and s ~= 0 then
+                    set_attribute(current,snap_method,0)
                     local spec = current.spec
                     if spec then
                         spec.width = 0
@@ -766,9 +791,9 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             current = current.next
         elseif subtype == baseline_skip then
             if snap then
-                local sn = has_attribute(current,snap_method)
-                if sn then
-                    unset_attribute(current,snap_method)
+                local s = has_attribute(current,snap_method)
+                if s and s ~= 0 then
+                    set_attribute(current,snap_method,0)
                     local spec = current.spec
                     if spec then
                         spec.width = 0
@@ -806,8 +831,8 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         elseif subtype == top_skip_code or subtype == split_top_skip_code then
             if snap then
                 local s = has_attribute(current,snap_method)
-                if s then
-                    unset_attribute(current,snap_method)
+                if s and s ~= 0 then
+                    set_attribute(current,snap_method,0)
                     local sv = snapmethods[s]
                     local w, cw = snap_topskip(current,sv)
                     if trace_vsnapping then
@@ -886,6 +911,9 @@ current = current.next
             trace_info("stop flushing",where,what)
         end
         show_tracing(head)
+        if oldhead ~= head then
+            trace_info("head has been changed from '%s' to '%s'",node.type(oldhead.id),node.type(head.id))
+        end
     end
     return head, true
 end

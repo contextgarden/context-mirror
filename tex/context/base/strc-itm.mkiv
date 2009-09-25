@@ -230,10 +230,10 @@
    \ifx\itemgroupconstantvalue\empty\else
      \splitstring\itemgroupconstantvalue\at*\to\itemgroupfirst\and\itemgroupsecond
      \ifx\itemgroupsecond\empty
-        \ifcsname\??op:::\itemgroupfirst\endcsname\csname\??op:::\itemgroupfirst\endcsname\fi
-     \else
-        \ifcsname\??op:::\itemgroupsecond\endcsname\csname\??op:::\itemgroupsecond\endcsname\fi
+        \let\itemgroupsecond\itemgroupfirst
+        \let\itemgroupfirst\!!plusone
      \fi
+     \ifcsname\??op:::\itemgroupsecond\endcsname\csname\??op:::\itemgroupsecond\endcsname\fi
    \fi}
 
 \newconditional\inlinelistitem \setfalse\inlinelistitem
@@ -913,7 +913,7 @@
    \else
      \scratchdimen\zeropoint
    \fi
-   \llap{\hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+}\fi\box\itemgroupitembox\hss}}% was: \hfill
+   \llap{\hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+\enspace}\fi\box\itemgroupitembox\hss}}% was: \hfill
    \hskip\scratchdimen}
 
 \def\optimizelistitemsbreak
@@ -982,7 +982,7 @@
    % so that content differs per run (esp mp graphics afterwards)
    \checkforrepeatedlistitem
    \ifdim\itemgroupaskedwidth<\zeropoint\relax
-     \llap{\ifconditional\sublistitem\llap{+}\fi\box\itemgroupitembox\hskip\leftmargindistance}%
+     \llap{\ifconditional\sublistitem\llap{+\enspace}\fi\box\itemgroupitembox\hskip\leftmargindistance}%
    \else
      \ifdim\itemgroupaskedwidth=\zeropoint\relax
        \calculatelistwidth1%
@@ -990,14 +990,14 @@
        \calculatelistwidth\currentitemlevel
      \fi
      \ifconditional\textlistitem
-       \hbox{\ifconditional\sublistitem+\fi\box\itemgroupitembox\hskip\interwordspace}\nobreak
+       \hbox{\ifconditional\sublistitem+\enspace\fi\box\itemgroupitembox\hskip\interwordspace}\nobreak
      \else\ifconditional\inlinelistitem
-       \hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+}\fi\box\itemgroupitembox\hss}% was: \hfill
+       \hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+\enspace}\fi\box\itemgroupitembox\hss}% was: \hfill
      \else\ifconditional\txtlistitem
        \dodotxtitem
      \else
        % todo: align+marge binnen de hbox
-       \llap{\hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+}\fi
+       \llap{\hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+\enspace}\fi
                               \symalignleft
                               \box\itemgroupitembox\hfil
                               \hskip\getitemparameter\currentitemlevel\c!distance% T h

@@ -706,7 +706,8 @@
        \v!frame=>\chardef\gridboxlinemode  \plusthree,
     \v!nonumber=>\chardef\gridboxlinenomode\zerocount,
        \v!right=>\chardef\gridboxlinenomode\plusone,
-        \v!left=>\chardef\gridboxlinenomode\plustwo]%
+        \v!left=>\chardef\gridboxlinenomode\plustwo,
+       \v!outer=>\chardef\gridboxlinenomode\plusthree]%
    \ifcase\showgridstate
      \let\addtextgridlayer\gobbleoneargument
    \else % 1=bottom 2=top
@@ -1229,8 +1230,6 @@
 
 \def\dodefinepagebreak[#1][#2]% non recursive, meant for simple mappings
   {\setvalue{\??pe::#1}{#2}}
-
-% hier nog uti blokkeren
 
 % don't change this / test case:
 %

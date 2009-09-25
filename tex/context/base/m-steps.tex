@@ -116,18 +116,6 @@
 
 %D ...
 
-\defineXMLdirective [stepchart] [charts] \setupSTEPcharts
-\defineXMLdirective [stepchart] [cells]  \setupSTEPcells
-\defineXMLdirective [stepchart] [texts]  \setupSTEPtexts
-\defineXMLdirective [stepchart] [lines]  \setupSTEPlines
-
-\defineXMLdirective [steptable] [tables] \setupSTEPtables
-\defineXMLdirective [steptable] [cells]  \setupSTEPcells
-\defineXMLdirective [steptable] [texts]  \setupSTEPtexts
-\defineXMLdirective [steptable] [lines]  \setupSTEPlines
-
-%D ...
-
 \presetlocalframed[\@@STPF]
 
 \def\@@stepcell#1%
@@ -664,31 +652,6 @@
      \@@STELalternative, get_step_chart_bot_line(#1,#2),
      \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
 
-%D \XML\ coupling.
-
-\defineXMLpickup[stepchart][@@STPC]
-  {\bgroup
-   \defineXMLpush[top]%
-   \defineXMLpush[bot]%
-   \defineXMLenvironment[lines][@@STEL]
-     {\expanded{\startlines[\theXMLarguments{@@STEL}]}}
-     {\stoplines}%
-   \defineXMLenvironment[cells][@@STEC]
-     {\XMLerase{top}\XMLerase{bot}}
-     {\expanded{\cells[\theXMLarguments{@@STEC}]{\XMLpop{top}}{\XMLpop{bot}}}}%
-   \defineXMLenvironment[texts][@@STET]
-     {\XMLerase{top}\XMLerase{bot}}
-     {\expanded{\texts[\theXMLarguments{@@STET}]{\XMLpop{top}}{\XMLpop{bot}}}}%
-   \defineXMLenvironmentpush[cell][@@STEC]
-     {\XMLerase{cell}}
-     {\expanded{\cell [\theXMLarguments{@@STEC}]{\XMLpop{cell}}}}%
-   \defineXMLenvironmentpush [text] [@@STET]
-     {\XMLerase{text}}
-     {\expanded{\text [\theXMLarguments{@@STET}]{\XMLpop{text}}}}%
-   \expanded{\startSTEPchart[\theXMLarguments{@@STPC}]}}
-  {\stopSTEPchart
-   \egroup}
-
 %D Step tables are the vertical counterpart of stepcharts.
 
 \newcounter\currentsteptable
@@ -845,38 +808,6 @@
   {image ( drawline (
      \@@STELalternative, get_step_table_line(\cellcounter),
      \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
-
-\defineXMLpickup[steptable][@@STPT]
-  {\bgroup
-   \defineXMLenvironment[lines][@@STEL]
-     {\expanded{\startlines[\theXMLarguments{@@STEL}]}}
-     {\stoplines}%
-   \defineXMLargument[cell][@@STEC]
-     {\expanded{\cell[\theXMLarguments{@@STEC}]}}%
-   \defineXMLargument[text][@@STET]
-     {\expanded{\text[\theXMLarguments{@@STET}]}}%
-   \defineXMLargument[prep]
-     {\prep}%
-   \expanded{\startSTEPtable[\theXMLarguments{@@STPT}]}}
-  {\stopSTEPtable
-   \egroup}
-
-\defineXMLpickup[stepaligntable][@@STPT]
-  {\bgroup
-    \defineXMLenvironment[lines][@@STEL]
-      {\expanded{\setupSTEPlines[\theXMLarguments{@@STEL}]}}
-      {}%
-   \defineXMLpush[c1]\defineXMLpush[c2]\defineXMLpush[c3]%
-   \defineXMLenvironment[cells][@@STEC]
-     {\XMLerase{c1}\XMLerase{c1}\XMLerase{c3}}
-     {\expanded{\cells[\theXMLarguments{@@STEC}]{\XMLpop{c1}}{\XMLpop{c2}}{\XMLpop{c3}}}}%
-   \defineXMLargument[text][@@STET]
-     {\expanded{\text[\theXMLarguments{@@STET}]}}%
-   \defineXMLargument[prep]
-     {\prep}%
-   \expanded{\startSTEPaligntable[\theXMLarguments{@@STPT}]}}
-  {\stopSTEPaligntable
-   \egroup}
 
 \protect \endinput
 

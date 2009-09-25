@@ -15,8 +15,8 @@
 % todo: make mkiv variant
 % todo: use dimexpr/numspr
 
-% will be redone with layers and dimexpr ro even better, by just using
-% textext
+% will be redone with layers and dimexpr or even better, by just using
+% textext .. a nice example of old code
 
 %D This is an experimental module. Pieces of code will be moved
 %D to other modules. More features are possible but will be
@@ -1280,36 +1280,6 @@
 % \def\processFLOWbuffer#1{\getvalue{\FLOWbufferprefix#1}}
 % \def\typeFLOWbuffer   #1{[Sorry, no verbatim chart #1 available.]}
 
-%D The XML interface [will be mode protected or separate x-chart file]
-
-\startXMLdefinitions flowchart
-
-\defineXMLargument [flowchartdefinition]
-  {\defineFLOWchart[\XMLpar{flowchartdefinition}{identifier}{unknown}]}
-
-\defineXMLpickup [flowcell]
-  {\startFLOWcell
-   \defineXMLargument[name]{\unspaceafter\name}%
-   \defineXMLargument[shape]{\unspaceafter\shape}%
-   \defineXMLnestedargument[text]{\text}}
-  {\stopFLOWcell}
-
-\defineXMLenvironment [location] % global unspace/store
-  {\bgroup\defineXMLpush[x]\defineXMLpush[y]}
-  {\XMLunspace{x}\XMLunspace{y}%
-   \expanded{\egroup\noexpand\location{\XMLpop{x},\XMLpop{y}}}}
-
-\defineXMLenvironment [connection]
-  {\bgroup\defineXMLpush[type]\defineXMLpush[name]}%
-  {\XMLunspace{type}\XMLunspace{name}%
-   \expanded{\egroup\noexpand\connection[\XMLpop{type}]{\XMLpop{name}}}}
-
-\defineXMLsingular [flowchart]
-  {\expanded{\FLOWchart[\XMLpar{flowchart}{identifier}{unknown}]}}
-
-\defineXMLdirective [flowchart] [shapes] \setupFLOWshapes
-\defineXMLdirective [flowchart] [lines]  \setupFLOWlines
-
-\stopXMLdefinitions
+\loadmarkfile{m-chart}
 
 \protect \endinput

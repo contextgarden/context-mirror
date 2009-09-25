@@ -993,8 +993,11 @@
 
     \def\doaddtototalnoteheight#1%
       {\ifdim\ht#1>\zeropoint
-         \advance\totalnoteheight\ht  #1%
-         \advance\totalnoteheight\skip#1%
+         \ifcase\count#1\else
+           % todo: divide by count
+           \advance\totalnoteheight\ht  #1%
+           \advance\totalnoteheight\skip#1%
+         \fi
        \fi}
 
     \def\docalculatetotalnoteheight

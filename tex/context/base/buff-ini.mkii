@@ -188,15 +188,15 @@
      \letvalue{\??bu#1\c!number   }\nofdefinedbuffers
      \letvalue{\??bu#1\c!paragraph}\v!no
      \setevalue{\e!start#1}{\noexpand\dostartbuffer[#1][def-\nofdefinedbuffers][\e!start#1][\e!stop#1]}%
-     \setevalue{\e!get  #1}{\noexpand\dogetbuffer  [#1][def-\nofdefinedbuffers]}%
-     \setevalue{\e!type #1}{\noexpand\dotypebuffer [#1][def-\nofdefinedbuffers]}%
+     \unexpanded\setevalue{\e!get  #1}{\noexpand\dogetbuffer  [#1][def-\nofdefinedbuffers]}%
+     \unexpanded\setevalue{\e!type #1}{\noexpand\dotypebuffer [#1][def-\nofdefinedbuffers]}%
      \getparameters[\??bu#1][#2]%
    \fi}
 
 \def\definebuffer
   {\dodoubleempty\dodefinebuffer}
 
-\def\getbuffer
+\unexpanded\def\getbuffer
   {\dodoubleempty\dogetbuffer}
 
 \def\dogetbuffer[#1][#2]%
@@ -213,7 +213,7 @@
    \dobuffer{16}{#2}\dogetbufferasis
    \getvalue{\??bu#1\c!after}}
 
-\def\typebuffer
+\unexpanded\def\typebuffer
   {\dodoubleempty\dotypebuffer}
 
 \def\dogetfilebuffer{\typefile{\TEXbufferfile{\currentbuffer}}}

@@ -611,40 +611,56 @@
 % \chardef\somestructureheadbreakmethod\plusone  % 0=nothing, 1=weighted, 2=strict, 3=vspacing
 \chardef\somestructureheadbreakmethod\plusthree
 
+% \def\dopreventbreakafterstructureheadauto % used after \c!before
+%   {\ifcase\somestructureheadbreakmethod
+%      % 0 = nothing
+%    \or
+%      % 1 = old weighted version
+%      \ifnum\currentstructureheadlevel>\precedingstructurelevel
+%        \dosomebreak{\penalty\numexpr20000+500*\currentstructureheadlevel\relax}%
+%      \else
+%        \dosomebreak\allowbreak % brr
+%      \fi
+%    \or
+%       % 2 = strict version
+%      \dosomebreak{\penalty\maxdimen}%
+%    \or
+%       % 3 = vspacing
+%       \vspacing[\v!samepage]% if preceded by ! then a loop
+%    \else
+%       % nothing
+%    \fi}
+%
+% \def\dopreventbreakafterstructureheadspec#1% see enumerations etc
+%   {\ifcase\somestructureheadbreakmethod
+%      % 0 = nothing
+%    \or
+%      % 1 = old weighted version
+%      \dosomebreak{\penalty\numexpr20000+500*(\currentstructureheadlevel+#1)\relax}%
+%    \or
+%      % 2 = strict version
+%      \dosomebreak{\penalty\maxdimen}%
+%    \or
+%       % 3 = vspacing
+%       \vspacing[\v!samepage]%
+%    \else
+%      % nothing
+%    \fi}
+%
+% todo: \vspacing[category:8] == keep_together
+
 \def\dopreventbreakafterstructureheadauto % used after \c!before
   {\ifcase\somestructureheadbreakmethod
      % 0 = nothing
-   \or
-     % 1 = old weighted version
-     \ifnum\currentstructureheadlevel>\precedingstructurelevel
-       \dosomebreak{\penalty\numexpr20000+500*\currentstructureheadlevel\relax}%
-     \else
-       \dosomebreak\allowbreak % brr
-     \fi
-   \or
-      % 2 = strict version
-     \dosomebreak{\penalty\maxdimen}%
-   \or
-      % 3 = vspacing
-      \vspacing[\v!samepage]% if preceded by ! then a loop
    \else
-      % nothing
+      \vspacing[\v!samepage-\currentstructureheadlevel]%
    \fi}
 
 \def\dopreventbreakafterstructureheadspec#1% see enumerations etc
   {\ifcase\somestructureheadbreakmethod
      % 0 = nothing
-   \or
-     % 1 = old weighted version
-     \dosomebreak{\penalty\numexpr20000+500*(\currentstructureheadlevel+#1)\relax}%
-   \or
-     % 2 = strict version
-     \dosomebreak{\penalty\maxdimen}%
-   \or
-      % 3 = vspacing
-      \vspacing[\v!samepage]%
    \else
-     % nothing
+      \vspacing[\v!samepage-\the\numexpr\currentstructureheadlevel+1\relax]% todo #1
    \fi}
 
 \def\dohandlepagebreakX{\dopreventbreakafterstructureheadspec} % no \let so we can redefind

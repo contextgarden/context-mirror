@@ -115,6 +115,8 @@
   {\def\xmlself{#1}%            % by using #1 inside a setup; maybe self becomes obsolete
    \setupwithargument{#2}{#1}}
 
+\let\xmls\xmlsetup
+
 \newtoks \registeredxmlsetups
 
 % todo: 1:xml:whatever alwas before 3:xml:something
@@ -156,9 +158,6 @@
 
 \def\xmlstarttiming{\ctxlua{statistics.starttiming(lxml)}}
 \def\xmlstoptiming {\ctxlua{statistics.stoptiming (lxml)}}
-
-\def\xmlpushdocument#1{\ctxlua{lxml.pushdocument("#1")}}
-\def\xmlpopdocument   {\ctxlua{lxml.popdocument()}}
 
 \def\doxmlprocess#1#2#3#4#5%
   {\begingroup
@@ -416,11 +415,13 @@
 
 %D Experimental:
 
-\def\xmladdindex   #1{\ctxlua{lxml.addindex("#1")}}
-\def\xmlgetindex   #1{\ctxlua{lxml.getindex("\xmldocument","#1")}}
-\def\xmlrawindex   #1{\ctxlua{lxml.rawindex("#1")}}
-\def\xmlwithindex#1#2{\ctxlua{lxml.withindex("\xmldocument","#1","#2")}}
-\def\xmlreference#1#2{\string\xmlwithindex{#1}{#2}}
+\def\xmlpushdocument#1{\ctxlua{lxml.pushdocument("#1")}}
+\def\xmlpopdocument   {\ctxlua{lxml.popdocument()}}
+\def\xmladdindex    #1{\ctxlua{lxml.addindex("#1")}}
+\def\xmlgetindex    #1{\ctxlua{lxml.getindex("\xmldocument","#1")}}
+\def\xmlrawindex    #1{\ctxlua{lxml.rawindex("#1")}}
+\def\xmlwithindex #1#2{\ctxlua{lxml.withindex("\xmldocument","#1","#2")}}
+\def\xmlreference #1#2{\string\xmlwithindex{#1}{#2}}
 
 \startxmlsetups xml:flush
     \xmlflush{#1}

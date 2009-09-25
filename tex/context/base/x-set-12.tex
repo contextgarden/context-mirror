@@ -72,7 +72,7 @@
 \definecolor [lightgray] [s=.9]
 \definecolor [darkgray]  [s=.1]
 
-\usetypescript[palatino][\defaultencoding]
+\usetypescript[palatino]
 \setupbodyfont[palatino,9pt]
 
 \setupcolors
@@ -192,9 +192,9 @@
 
 \startmakeup[\v!standard]
   \dontcomplain
+  \setupalign[\v!left]
   \startcolor[TitleColor]
   \definedfont[RegularBold at 100pt]\setstrut
-  \setupalign[\v!left]
   \strut Con\TeX t \par
   \definedfont[RegularBold at 50pt]\setstrut
   \setups[text:commands]

@@ -17,11 +17,7 @@ functions that set the tracers. Here we overload a previously defined
 function.</p>
 --ldx]]--
 
-local trace_lpath = false
-
-if trackers then
-    trackers.register("xml.lpath", function(v) trace_lpath = v end)
-end
+local trace_lpath = false  if trackers then trackers.register("xml.lpath", function(v) trace_lpath = v end) end
 
 local settrace = xml.settrace -- lxml-tab
 
@@ -797,17 +793,19 @@ local r, d, k = xml.filter(root,"/a/b/c/position(4)"
 </typing>
 --ldx]]--
 
-local traverse, lpath, convert = xml.traverse, xml.lpath, xml.convert
-
 xml.filters = { }
 
-function xml.filters.default(root,pattern)
+local traverse, lpath, convert = xml.traverse, xml.lpath, xml.convert
+
+local filters = xml.filters
+
+function filters.default(root,pattern)
     local rt, dt, dk
     traverse(root, lpath(pattern), function(r,d,k) rt,dt,dk = r,d,k return true end)
     return dt and dt[dk], rt, dt, dk
 end
 
-function xml.filters.attributes(root,pattern,arguments)
+function filters.attributes(root,pattern,arguments)
     local rt, dt, dk
     traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
     local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
@@ -828,7 +826,7 @@ local rt, dt, dk
 
 local function action(r,d,k) rt, dt, dk = r, d, k return true end
 
-function xml.filters.chainattribute(root,pattern,arguments) -- todo: optional levels
+function filters.chainattribute(root,pattern,arguments) -- todo: optional levels
     rt, dt, dk = nil, nil, nil
     traverse(root, lpath(pattern), action)
     local dtk = dt and dt[dk]
@@ -852,13 +850,13 @@ end
 
 --
 
-function xml.filters.reverse(root,pattern)
+function filters.reverse(root,pattern)
     local rt, dt, dk
     traverse(root, lpath(pattern), function(r,d,k) rt,dt,dk = r,d,k return true end, 'reverse')
     return dt and dt[dk], rt, dt, dk
 end
 
-function xml.filters.count(root,pattern,everything)
+function filters.count(root,pattern,everything)
     local n = 0
     traverse(root, lpath(pattern), function(r,d,t)
         if everything or type(d[t]) == "table" then
@@ -868,7 +866,19 @@ function xml.filters.count(root,pattern,everything)
     return n
 end
 
-function xml.filters.elements(root, pattern) -- == all
+--~ local n = 0
+--~ local function doit(r,d,t)
+--~     if everything or type(d[t]) == "table" then
+--~         n = n + 1
+--~     end
+--~ end
+--~ function filters.count(root,pattern,everything)
+--~     n = 0
+--~     traverse(root, lpath(pattern), doit)
+--~     return n
+--~ end
+
+function filters.elements(root, pattern) -- == all
     local t = { }
     traverse(root, lpath(pattern), function(r,d,k)
         local e = d[k]
@@ -879,7 +889,7 @@ function xml.filters.elements(root, pattern) -- == all
     return t
 end
 
-function xml.filters.texts(root, pattern)
+function filters.texts(root, pattern)
     local t = { }
     traverse(root, lpath(pattern), function(r,d,k)
         local e = d[k]
@@ -890,19 +900,19 @@ function xml.filters.texts(root, pattern)
     return t
 end
 
-function xml.filters.first(root,pattern)
+function filters.first(root,pattern)
     local rt, dt, dk
     traverse(root, lpath(pattern), function(r,d,k) rt,dt,dk = r,d,k return true end)
     return dt and dt[dk], rt, dt, dk
 end
 
-function xml.filters.last(root,pattern)
+function filters.last(root,pattern)
     local rt, dt, dk
     traverse(root, lpath(pattern), function(r,d,k) rt,dt,dk = r,d,k return true end, 'reverse')
     return dt and dt[dk], rt, dt, dk
 end
 
-function xml.filters.index(root,pattern,arguments)
+function filters.index(root,pattern,arguments)
     local rt, dt, dk, reverse, i = nil, nil, nil, false, tonumber(arguments or '1') or 1
     if i and i ~= 0 then
         if i < 0 then
@@ -916,16 +926,25 @@ function xml.filters.index(root,pattern,arguments)
     return nil, nil, nil, nil
 end
 
-function xml.filters.attribute(root,pattern,arguments)
-    local rt, dt, dk
-    traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
-    local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
- -- return (ekat and (ekat[arguments] or ekat[gsub(arguments,"^([\"\'])(.*)%1$","%2")])) or ""
+--~ function filters.attribute(root,pattern,arguments)
+--~     local rt, dt, dk
+--~     traverse(root, lpath(pattern), function(r,d,k) rt, dt, dk = r, d, k return true end)
+--~     local ekat = (dt and dt[dk] and dt[dk].at) or (rt and rt.at)
+--~     return (ekat and (ekat[arguments] or (find(arguments,"^[\'\"]") and ekat[sub(arguments,2,-2)]))) or ""
+--~ end
+
+local rt, dt, dk
+local function doit(r,d,k) rt, dt, dk = r, d, k return true end
+function filters.attribute(root,pattern,arguments)
+    rt, dt, dk = nil, nil, nil
+    traverse(root, lpath(pattern), doit)
+    local dtk = dt and dt[k]
+    local ekat = (dtk and dtk.at) or (rt and rt.at)
     return (ekat and (ekat[arguments] or (find(arguments,"^[\'\"]") and ekat[sub(arguments,2,-2)]))) or ""
 end
 
-function xml.filters.text(root,pattern,arguments) -- ?? why index, tostring slow
-    local dtk, rt, dt, dk = xml.filters.index(root,pattern,arguments)
+function filters.text(root,pattern,arguments) -- ?? why index, tostring slow
+    local dtk, rt, dt, dk = filters.index(root,pattern,arguments)
     if dtk then -- n
         local dtkdt = dtk.dt
         if not dtkdt then
@@ -940,7 +959,7 @@ function xml.filters.text(root,pattern,arguments) -- ?? why index, tostring slow
     end
 end
 
-function xml.filters.tag(root,pattern,n)
+function filters.tag(root,pattern,n)
     local tag = ""
     traverse(root, lpath(pattern), function(r,d,k)
         tag = xml.functions.tag(d,k,n and tonumber(n))
@@ -949,7 +968,7 @@ function xml.filters.tag(root,pattern,n)
     return tag
 end
 
-function xml.filters.name(root,pattern,n)
+function filters.name(root,pattern,n)
     local tag = ""
     traverse(root, lpath(pattern), function(r,d,k)
         tag = xml.functions.name(d,k,n and tonumber(n))
@@ -1054,13 +1073,13 @@ function xml.collect_texts(root, pattern, flatten)
                 if tx then
                     t[#t+1] = xml.tostring(tx) or ""
                 else
-                    t[#t+1] = ""
+                    t[#t+1] = "" -- hm
                 end
             else
                 t[#t+1] = tx or ""
             end
         else
-            t[#t+1] = ""
+            t[#t+1] = "" -- hm
         end
     end)
     return t
@@ -1068,7 +1087,7 @@ end
 
 function xml.collect_tags(root, pattern, nonamespace)
     local t = { }
-    xml.traverse(root, xml.lpath(pattern), function(r,d,k)
+    xml.traverse(root, lpath(pattern), function(r,d,k)
         local dk = d and d[k]
         if dk and type(dk) == "table" then
             local ns, tg = e.ns, e.tg
@@ -1127,6 +1146,11 @@ function xml.each_element(root, pattern, handle, reverse)
     traverse(root, lpath(pattern), function(r,d,k) ok = true handle(r,d,k) end, reverse)
     return ok
 end
+
+--~ todo:
+--~
+--~ function xml.process_elements(root, pattern, handle)
+--~     traverse(root, lpath(pattern), fnc, nil, nil, nil, handle) -> fnc gets r, d, k and handle (...) passed
 
 function xml.process_elements(root, pattern, handle)
     traverse(root, lpath(pattern), function(r,d,k)

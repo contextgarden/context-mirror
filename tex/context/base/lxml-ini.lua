@@ -58,7 +58,7 @@ end
 
 local traverse, lpath = xml.traverse, xml.lpath
 
-local xmlfilter, xmlfirst, xmllast, xmlall = xml.filter, xml.first, xml.last, xml.all
+local xmlfilter, xmlfirst, xmllast, xmlall, xmlcount = xml.filter, xml.first, xml.last, xml.all, xml.count
 local xmlcollect, xmlcontent, xmlcollect_texts, xmlcollect_tags, xmlcollect_elements = xml.collect, xml.content, xml.collect_texts, xml.collect_tags, xml.collect_elements
 local xmlattribute, xmlindex, xmlchainattribute = xml.filters.attribute, xml.filters.index, xml.filters.chainattribute
 
@@ -460,9 +460,9 @@ function lxml.include(id,pattern,attribute,recurse)
     xml.include(get_id(id),pattern,attribute,recurse,function(filename)
         if filename then
             filename = commands.preparedfile(filename)
-if file.dirname(filename) == "" then
-    filename = file.join(file.dirname(paths[currentdocument]),filename)
-end
+            if file.dirname(filename) == "" then
+                filename = file.join(file.dirname(paths[currentdocument]),filename)
+            end
             if trace_loading then
                 commands.writestatus("lxml","including file: %s",filename)
             end
@@ -515,6 +515,7 @@ function lxml.strip(id,pattern,nolines)
 end
 
 function lxml.text(id,pattern)
+    -- we can avoid some steps by passing xmlsprint
     xmltprint(xmlcollect_texts(get_id(id),pattern) or {})
 end
 
@@ -614,7 +615,7 @@ function lxml.chainattribute(id,pattern,a,default) --todo: snelle xmlatt
 end
 
 function lxml.count(id,pattern)
-    texsprint(xml.count(get_id(id),pattern) or 0)
+    texsprint(xmlcount(get_id(id),pattern) or 0)
 end
 function lxml.nofelements(id)
     local e = get_id(id)
@@ -653,7 +654,7 @@ end
 --~ end
 
 function lxml.concatrange(id,what,start,stop,separator,lastseparator) -- test this on mml
-    local t = xmlcollect_elements(lxml.id(id),what,true) -- ignorespaces
+    local t = xmlcollect_elements(get_id(id),what,true) -- ignorespaces
     local separator = separator or ""
     local lastseparator = lastseparator or separator or ""
     start, stop = (start == "" and 1) or tonumber(start) or 1, (stop == "" and #t) or tonumber(stop) or #t
@@ -687,7 +688,7 @@ end
 -- we use a real tex.sprint, else spaces go wrong
 -- maybe just a .. because this happens often
 
-function xml.command(root, command)
+function lxml.serialize(root, command)
     local tc = type(command)
     if tc == "string" then
         -- setup
@@ -699,7 +700,8 @@ function xml.command(root, command)
 --~             lxml.addindex(root)
 --~             ix = root.ix
 --~         end
-        texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",ix,command))
+--~         texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",ix,command))
+        texsprint(ctxcatcodes,format("\\xmls{%s}{%s}",ix,command))
     elseif tc == "function" then
         -- function
         command(root)
@@ -712,6 +714,8 @@ function xml.command(root, command)
         -- fuzzy, so ignore too
     end
 end
+
+xml.setserializer(lxml.serialize)
 
 function lxml.setaction(id,pattern,action)
     for rt, dt, dk in xmlelements(get_id(id),pattern) do
@@ -1292,19 +1296,21 @@ end
 
 local found, isempty = xml.found, xml.isempty
 
-function lxml.doif         (id,pattern) commands.doif    (found(get_id(id),pattern,false)) end
-function lxml.doifnot      (id,pattern) commands.doifnot (found(get_id(id),pattern,false)) end
-function lxml.doifelse     (id,pattern) commands.doifelse(found(get_id(id),pattern,false)) end
+local doif, doifnot, doifelse = commands.doif, commands.doifnot, commands.doifelse
+
+function lxml.doif         (id,pattern) doif    (found(get_id(id),pattern,false)) end
+function lxml.doifnot      (id,pattern) doifnot (found(get_id(id),pattern,false)) end
+function lxml.doifelse     (id,pattern) doifelse(found(get_id(id),pattern,false)) end
 
 -- todo: if no second arg or second arg == "" then quick test
 
-function lxml.doiftext     (id,pattern) commands.doif    (found  (get_id(id),pattern,true)) end
-function lxml.doifnottext  (id,pattern) commands.doifnot (found  (get_id(id),pattern,true)) end
-function lxml.doifelsetext (id,pattern) commands.doifelse(found  (get_id(id),pattern,true)) end
+function lxml.doiftext     (id,pattern) doif    (found  (get_id(id),pattern,true)) end
+function lxml.doifnottext  (id,pattern) doifnot (found  (get_id(id),pattern,true)) end
+function lxml.doifelsetext (id,pattern) doifelse(found  (get_id(id),pattern,true)) end
 
 -- special case: "*" and "" -> self else lpath lookup
 
-function lxml.doifelseempty(id,pattern) commands.doifelse(isempty(get_id(id),pattern ~= "" and pattern ~= nil)) end -- not yet done, pattern
+function lxml.doifelseempty(id,pattern) doifelse(isempty(get_id(id),pattern ~= "" and pattern ~= nil)) end -- not yet done, pattern
 
 -- status info
 

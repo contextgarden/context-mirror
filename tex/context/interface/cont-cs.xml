@@ -4001,6 +4001,7 @@
         <cd:constant type="nonumber"/>
         <cd:constant type="vpravo"/>
         <cd:constant type="vlevo"/>
+        <cd:constant type="vnejsi"/>
       </cd:keywords>
       <cd:content n="2"/>
     </cd:arguments>

@@ -500,6 +500,12 @@ alternative.</p>
 
 local fallbackhandle = (tex and tex.sprint) or io.write
 
+local serializer
+
+function xml.setserializer(f)
+    serializer = f
+end
+
 local function serialize(e, handle, textconverter, attributeconverter, specialconverter, nocommands)
     if not e then
         return
@@ -519,9 +525,8 @@ local function serialize(e, handle, textconverter, attributeconverter, specialco
                     end
                 end
             end
-            local xc = xml.command
-            if xc then
-                xc(e,ec)
+            if serializer then
+                serializer(e,ec)
                 return
             end
         end

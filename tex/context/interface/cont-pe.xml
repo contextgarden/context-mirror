@@ -4001,6 +4001,7 @@
         <cd:constant type="بدون‌شماره"/>
         <cd:constant type="راست"/>
         <cd:constant type="چپ"/>
+        <cd:constant type="خارجی"/>
       </cd:keywords>
       <cd:content n="2"/>
     </cd:arguments>

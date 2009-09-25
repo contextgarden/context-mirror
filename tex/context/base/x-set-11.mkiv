@@ -89,10 +89,37 @@
 
 %D Loading:
 
-\startxmlsetups xml:setups:register
+\let\currentSETUPfullname\s!unknown
+
+\startxmlsetups xml:setups:assemblename
+    \doifelse {\xmlatt{#1}{environment}} {yes} {
+        \let\currentSETUPprefix\e!start
+    } {
+        \let\currentSETUPprefix\empty
+    }
     \edef\currentSETUPname{\xmlatt{#1}{name}}
-    % \writestatus{setups}{registering \currentSETUPname}%
-    \expanded{\texcommand[stp:x:\currentSETUPname]{\currentSETUPname}}
+    \doifelse {\xmlatt{#1}{generated}} {yes} {
+        \def\currentSETUPgenerated{*}
+    } {
+        \let\currentSETUPgenerated\empty
+    }
+    \doifelsenothing {\xmlatt{#1}{variant}} {
+        \let\currentSETUPvariant\empty
+    } {
+        \def\currentSETUPvariant{:\xmlatt{#1}{variant}}
+    }
+    \edef\currentSETUPfullname {
+        \currentSETUPprefix
+        \currentSETUPname
+        \currentSETUPvariant
+        \currentSETUPgenerated
+    }
+\stopxmlsetups
+
+\startxmlsetups xml:setups:register
+    \xmlsetup{#1}{xml:setups:assemblename}
+    %expanded{\texcommand[stp:x:\currentSETUPfullname]{\currentSETUPfullname}}
+    \expanded{\texcommand[stp:x:\currentSETUPfullname]{#1}}
 \stopxmlsetups
 
 \startxmlsetups xml:setups:basics
@@ -125,7 +152,8 @@
 \def\shortsetup{\shortsetuptrue \doshowsetup}
 \def\setupsetup{\dodoubleargument\getparameters[\??stp]}
 
-\unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\showsetupindeed{#3}\par}
+%unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\showsetupindeed{#3}\par}
+\unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\xmlsetup{#3}{xml:setups:typeset}\par}
 
 % todo: only references in lists
 
@@ -166,7 +194,6 @@
 
 \startxmlsetups xml:setups:typeset
     \xmlpushdocument{setups}
-        \edef\currentSETUPname{\xmlatt{#1}{name}}%
         \getvalue{\e!start setuptext}
             \tttf
             \nohyphens
