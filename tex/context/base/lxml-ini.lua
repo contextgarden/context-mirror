@@ -22,38 +22,6 @@ local trace_setups  = false  trackers.register("lxml.setups",  function(v) trace
 local trace_loading = false  trackers.register("lxml.loading", function(v) trace_loading = v end)
 local trace_access  = false  trackers.register("lxml.access",  function(v) trace_access  = v end)
 
--- for the moment here
-
-function table.insert_before_value(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i,extra)
-            return
-        end
-    end
-    insert(t,1,extra)
-end
-
-function table.insert_after_value(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i+1,extra)
-            return
-        end
-    end
-    insert(t,#t+1,extra)
-end
-
 -- todo: speed up: remember last index/match combination
 
 local traverse, lpath = xml.traverse, xml.lpath
@@ -61,8 +29,7 @@ local traverse, lpath = xml.traverse, xml.lpath
 local xmlfilter, xmlfirst, xmllast, xmlall, xmlcount = xml.filter, xml.first, xml.last, xml.all, xml.count
 local xmlcollect, xmlcontent, xmlcollect_texts, xmlcollect_tags, xmlcollect_elements = xml.collect, xml.content, xml.collect_texts, xml.collect_tags, xml.collect_elements
 local xmlattribute, xmlindex, xmlchainattribute = xml.filters.attribute, xml.filters.index, xml.filters.chainattribute
-
-local xmlelements = xml.elements
+local xmlelements, xmlsetproperty = xml.elements, xml.setproperty
 
 document     = document or { }
 document.xml = document.xml or { }
@@ -71,54 +38,52 @@ document.xml = document.xml or { }
 
 lxml              = lxml or { }
 lxml.loaded       = { }
-lxml.paths        = { }
-lxml.myself       = { }
 lxml.noffiles     = 0
 lxml.nofconverted = 0
 lxml.nofindices   = 0
 
 local loaded = lxml.loaded
-local paths  = lxml.paths
-local myself = lxml.myself
-local stack  = lxml.stack
-
---~ lxml.self = myself -- be backward compatible for a while
-
---~ local function get_id(id)
---~     return (type(id) == "table" and id) or loaded[id] or myself[tonumber(id)] -- no need for tonumber if we pass without ""
---~ end
 
 -- experiment
 
-local currentdocuments, currentloaded, currentdocument, defaultdocument = { }, { }, "", ""
-
-function lxml.pushdocument(name) -- catches double names
-    if #currentdocuments == 0 then
-        defaultdocument = name
-    end
-    currentdocument = name
-    insert(currentdocuments,currentdocument)
-    insert(currentloaded,loaded[currentdocument])
-    if trace_access then
-        logs.report("lxml","pushed: %s",currentdocument)
+function lxml.store(id,root,filename)
+    loaded[id] = root
+    xmlsetproperty(root,"name",id)
+    if filename then
+        xmlsetproperty(root,"filename",filename)
     end
 end
 
-function lxml.popdocument()
-    currentdocument = remove(currentdocuments)
-    if not currentdocument or currentdocument == "" then
-        currentdocument = defaultdocument
-    end
-    loaded[currentdocument] = remove(currentloaded)
-    if trace_access then
-        logs.report("lxml","popped: %s",currentdocument)
-    end
-end
+--~ local currentdocuments, currentloaded, currentdocument, defaultdocument = { }, { }, "", ""
 
---~ local splitter = lpeg.splitat("::")
+--~ function lxml.pushdocument(name) -- catches double names
+--~     if #currentdocuments == 0 then
+--~         defaultdocument = name
+--~     end
+--~     currentdocument = name
+--~     insert(currentdocuments,currentdocument)
+--~     insert(currentloaded,loaded[currentdocument])
+--~     if trace_access then
+--~         logs.report("lxml","pushed: %s",currentdocument)
+--~     end
+--~ end
+
+--~ function lxml.popdocument()
+--~     currentdocument = remove(currentdocuments)
+--~     if not currentdocument or currentdocument == "" then
+--~         currentdocument = defaultdocument
+--~     end
+--~     loaded[currentdocument] = remove(currentloaded)
+--~     if trace_access then
+--~         logs.report("lxml","popped: %s",currentdocument)
+--~     end
+--~ end
+
+--~ local splitter = ((lpeg.R("09")^1/tonumber) + lpeg.Cc(false)) * lpeg.P("@")^0 * (lpeg.C(lpeg.P(1)^1) + lpeg.Cc(false))
+
 local splitter = lpeg.C((1-lpeg.P(":"))^1) * lpeg.P("::") * lpeg.C(lpeg.P(1)^1)
 
-local function get_id(id)
+local function get_id(id, qualified)
     if type(id) == "table" then
         return id
     else
@@ -134,7 +99,11 @@ local function get_id(id)
                     if ldi then
                         local root = ldi[tonumber(i)]
                         if root then
-                            return root
+                            if qualified then -- we need this else two args that confuse others
+                                return root, d
+                            else
+                                return root
+                            end
                         elseif trace_access then
                             logs.report("lxml","'%s' has no index entry '%s'",d,i)
                         end
@@ -145,22 +114,26 @@ local function get_id(id)
                     logs.report("lxml","'%s' is not loaded",d)
                 end
             else
-                local ld = loaded[currentdocument]
-                if ld then
-                    local ldi = ld.index
-                    if ldi then
-                        local root = ldi[tonumber(id)]
-                        if root then
-                            return root
-                        elseif trace_access then
-                            logs.report("lxml","current document '%s' has no index entry '%s'",currentdocument,id)
-                        end
-                    elseif trace_access then
-                        logs.report("lxml","current document '%s' has no index",currentdocument)
-                    end
-                elseif trace_access then
-                    logs.report("lxml","current document '%s' not loaded",currentdocument)
-                end
+--~                 local ld = loaded[currentdocument]
+--~                 if ld then
+--~                     local ldi = ld.index
+--~                     if ldi then
+--~                         local root = ldi[tonumber(id)]
+--~                         if root then
+--~                             if qualified then -- we need this else two args that confuse others
+--~                                 return root, currentdocument
+--~                             else
+--~                                 return root
+--~                             end
+--~                         elseif trace_access then
+--~                             logs.report("lxml","current document '%s' has no index entry '%s'",currentdocument,id)
+--~                         end
+--~                     elseif trace_access then
+--~                         logs.report("lxml","current document '%s' has no index",currentdocument)
+--~                     end
+--~                 elseif trace_access then
+--~                     logs.report("lxml","current document '%s' not loaded",currentdocument)
+--~                 end
             end
         end
     end
@@ -422,22 +395,14 @@ xml.originalload = xml.originalload or xml.load
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
---~ function xml.load(filename)
---~     lxml.noffiles = lxml.noffiles + 1
---~     starttiming(xml)
---~     local xmldata = xml.convert((filename and resolvers.loadtexfile(filename)) or "")
---~     stoptiming(xml)
---~     return xmldata
---~ end
-
 function xml.load(filename)
     lxml.noffiles = lxml.noffiles + 1
     lxml.nofconverted = lxml.nofconverted + 1
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
-    local xmldata = xml.convert((ok and data) or "")
+    local xmltable = xml.convert((ok and data) or "")
     stoptiming(xml)
-    return xmldata
+    return xmltable
 end
 
 function lxml.load(id,filename)
@@ -445,23 +410,24 @@ function lxml.load(id,filename)
     if trace_loading then
         commands.writestatus("lxml","loading file '%s' as '%s'",filename,id)
     end
-    local root = xml.load(filename)
-    loaded[id], paths[id]= root, filename
-    return root, filename
+    local xmltable = xml.load(filename)
+    lxml.store(id,xmltable,filename)
+    return xmltable, filename
 end
 
-function lxml.register(id,xmltable)
-    loaded[id] = xmltable
+function lxml.register(id,xmltable,filename)
+    lxml.store(id,xmltable,filename)
     return xmltable
 end
 
 function lxml.include(id,pattern,attribute,recurse)
     starttiming(xml)
-    xml.include(get_id(id),pattern,attribute,recurse,function(filename)
+    local root = get_id(id)
+    xml.include(root,pattern,attribute,recurse,function(filename)
         if filename then
             filename = commands.preparedfile(filename)
-            if file.dirname(filename) == "" then
-                filename = file.join(file.dirname(paths[currentdocument]),filename)
+            if file.dirname(filename) == "" and root.filename then
+                filename = file.join(file.dirname(root.filename),filename)
             end
             if trace_loading then
                 commands.writestatus("lxml","including file: %s",filename)
@@ -692,16 +658,17 @@ function lxml.serialize(root, command)
     local tc = type(command)
     if tc == "string" then
         -- setup
---~         local n = #myself + 1
---~         myself[n] = root
---~         texsprint(ctxcatcodes,format("\\xmlsetup{%i}{%s}",n,command))
         local ix = root.ix
---~         if not ix then
---~             lxml.addindex(root)
---~             ix = root.ix
---~         end
---~         texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",ix,command))
-        texsprint(ctxcatcodes,format("\\xmls{%s}{%s}",ix,command))
+        local rootname = root.name
+        if rootname then
+            if not ix then
+                lxml.addindex(rootname,false,true)
+                ix = root.ix
+            end
+            texsprint(ctxcatcodes,format("\\xmls{%s::%s}{%s}",rootname,ix,command))
+        else
+            texsprint(ctxcatcodes,format("\\xmls{%s}{%s}",ix,command))
+        end
     elseif tc == "function" then
         -- function
         command(root)
@@ -733,17 +700,21 @@ function lxml.setsetup(id,pattern,setup)
                 if setup == "-" then
                     dtdk.command = false
                     if trace then
-                        logs.report("lxml","lpath matched -> %s -> skipped", command)
+                        logs.report("lxml","lpath matched -> %s -> skipped", setup)
                     end
                 elseif setup == "+" then
                     dtdk.command = true
                     if trace_setups then
-                        logs.report("lxml","lpath matched -> %s -> text", command)
+                        logs.report("lxml","lpath matched -> %s -> text", setup)
                     end
                 else
-                    dtdk.command = command
+                    dtdk.command = tg -- command -- setup
                     if trace_setups then
-                        logs.report("lxml","lpath matched -> %s -> %s", command, command)
+                        if ns == "" then
+                            logs.report("lxml","lpath matched -> %s -> %s", tg, tg)
+                        else
+                            logs.report("lxml","lpath matched -> %s:%s -> %s", ns, tg, tg)
+                        end
                     end
                 end
             end
@@ -832,29 +803,94 @@ function lxml.info(id)
     texsprint(tg)
 end
 
+-- can be simplified ... we can use the outer name
 
-local function command(root,pattern,cmd) -- met zonder ''
---~     cmd = gsub(cmd,"^([\'\"])(.-)%1$", "%2")
-    if find(cmd,"^[\'\"]") then
-        cmd = sub(cmd,2,-2)
+--~ local function command(root,pattern,cmd) -- met zonder ''
+--~     if find(cmd,"^[\'\"]") then
+--~         cmd = sub(cmd,2,-2)
+--~     end
+--~     local rootname = root.name
+--~     traverse(root, lpath(pattern), function(r,d,k)
+--~         -- this can become pretty large
+--~         local m = (d and d[k]) or r -- brrr this r, maybe away
+--~         local ix = m.ix
+--~         if not ix then
+--~             lxml.addindex(rootname,false,true)
+--~             ix = m.ix
+--~         end
+--~         texsprint(ctxcatcodes,format("\\xmls{%s::%s}{%s}",rootname,ix,cmd))
+--~     end)
+--~ end
+--~ local function qualifiedcommand(parent,root,pattern,cmd) -- met zonder ''
+--~     if find(cmd,"^[\'\"]") then
+--~         cmd = sub(cmd,2,-2)
+--~     end
+--~     traverse(root, lpath(pattern), function(r,d,k)
+--~         local m = (d and d[k]) or r
+--~         local ix = m.ix
+--~         if not ix then
+--~             lxml.addindex(parent,false,true)
+--~             ix = m.ix
+--~         end
+--~         texsprint(ctxcatcodes,format("\\xmls{%s::%s}{%s}",parent,ix,cmd))
+--~     end)
+--~ end
+
+local rootname, thecmd
+local function ndoit(r,d,k)
+    local m = (d and d[k]) or r -- brrr this r, maybe away
+    local ix = m.ix
+    if not ix then
+        lxml.addindex(rootname,false,true)
+        ix = m.ix
     end
-    traverse(root, lpath(pattern), function(r,d,k)
-        -- this can become pretty large
-        local m = (d and d[k]) or r -- brrr this r, maybe away
-        if type(m) == "table" then -- probably a bug
---~             local n = #myself + 1
---~             myself[n] = m
---~             texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",n,cmd))
-            texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",tostring(m.ix),cmd))
-        end
-    end)
+    texsprint(ctxcatcodes,format("\\xmls{%s::%s}{%s}",rootname,ix,thecmd))
+end
+local function qdoit(r,d,k)
+    local m = (d and d[k]) or r
+    local ix = m.ix
+    if not ix then
+        lxml.addindex(parent,false,true)
+        ix = m.ix
+    end
+    texsprint(ctxcatcodes,format("\\xmls{%s::%s}{%s}",rootname,ix,thecmd))
+end
+local function command(root,pattern,cmd) -- met zonder ''
+    if find(cmd,"^[\'\"]") then
+        thecmd = sub(cmd,2,-2)
+    else
+        thecmd = cmd
+    end
+    rootname = root.name
+    traverse(root, lpath(pattern), ndoit)
+end
+local function qualifiedcommand(parent,root,pattern,cmd) -- met zonder ''
+    if find(cmd,"^[\'\"]") then
+        thecmd = sub(cmd,2,-2)
+    else
+        thecmd = cmd
+    end
+    rootname = parent
+    traverse(root, lpath(pattern), qdoit)
+end
+
+function lxml.command(id,pattern,cmd)
+    if find(cmd,"^[\'\"]") then
+        thecmd = sub(cmd,2,-2)
+    else
+        thecmd = cmd
+    end
+    local i, p = get_id(id,true)
+    if p then
+        rootname = p
+        traverse(i, lpath(pattern), qdoit)
+    else
+        rootname = i.name
+        traverse(i, lpath(pattern), ndoit)
+    end
 end
 
 xml.filters.command = command
-
-function lxml.command(id,pattern,cmd)
-    command(get_id(id),pattern,cmd)
-end
 
 local function dofunction(root,pattern,fnc)
     traverse(root, lpath(pattern), xml.functions[fnc]) -- r, d, t
@@ -964,17 +1000,19 @@ function lxml.loadbuffer(id,name)
     end
     starttiming(xml)
     lxml.nofconverted = lxml.nofconverted + 1
-    loaded[id] = xml.convert(buffers.collect(name or id,"\n"))
+    local xmltable = xml.convert(buffers.collect(name or id,"\n"))
+    lxml.store(id,xmltable)
     stoptiming(xml)
-    return loaded[id], name or id
+    return xmltable, name or id
 end
 
 function lxml.loaddata(id,str)
     starttiming(xml)
     lxml.nofconverted = lxml.nofconverted + 1
-    loaded[id] = xml.convert(str or "")
+    local xmltable = xml.convert(str or "")
+    lxml.store(id,xmltable)
     stoptiming(xml)
-    return loaded[id], id
+    return xmltable, id
 end
 
 function lxml.loadregistered(id)
@@ -1211,8 +1249,7 @@ end
 function lxml.addindex(name,check_sum,force)
     local root = get_id(name)
     if root and (not root.index or force) then -- weird, only called once
-        local index, maxindex, check = root.index or { }, root.maxindex or 0, root.check or { }
-        local n = 0
+        local n, index, maxindex, check = 0, root.index or { }, root.maxindex or 0, root.check or { }
         local function nest(root)
             local dt = root.dt
             if not root.ix then
@@ -1265,16 +1302,9 @@ function lxml.addindex(name,check_sum,force)
             root.maxindex = maxindex
 --~         end
         if trace_access then
-            commands.writestatus("lxml",format("%s loaded, %s index entries",tostring(name),maxindex))
+            logs.report("lxml","%s indexed, %s nodes",tostring(name),maxindex)
         end
     end
-end
-
-local include= lxml.include
-
-function lxml.include(id,...)
-    include(id,...)
-    lxml.addindex(currentdocument,false,true)
 end
 
 -- we can share the index
@@ -1284,12 +1314,22 @@ function lxml.checkindex(name)
     return (root and root.index) or 0
 end
 
-function lxml.withindex(name,n,command)
-    texsprint(ctxcatcodes,format("\\xmlsetup{%s::%s}{%s}",name,n,command))
+function lxml.withindex(name,n,command) -- will change as name is always there now
+    local i, p = splitter:match(n)
+    if p then
+        texsprint(ctxcatcodes,format("\\xmls{%s}{%s}",n,command))
+    else
+        texsprint(ctxcatcodes,format("\\xmls{%s::%s}{%s}",name,n,command))
+    end
 end
 
-function lxml.getindex(name,n)
-    texsprint(ctxcatcodes,format("%s::%s",name,n))
+function lxml.getindex(name,n) -- will change as name is always there now
+    local i, p = splitter:match(n)
+    if p then
+        texsprint(ctxcatcodes,n)
+    else
+        texsprint(ctxcatcodes,format("%s::%s",name,n))
+    end
 end
 
 --

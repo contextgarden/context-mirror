@@ -418,8 +418,10 @@
   {\par
    \ifvmode
      \bgroup
+     \whitespace % not combined
      \blank[\v!disable]
      \setupwhitespace[\v!none]
+     \let\startpacked\nestedstartpacked
    \fi}
 
 \def\stoppacked
@@ -427,6 +429,15 @@
    \ifvmode
      \egroup
    \fi}
+
+\def\nestedstartpacked
+  {\par
+   \bgroup
+   \let\stoppacked\nestedstoppacked}
+
+\def\nestedstoppacked
+  {\par
+   \egroup}
 
 \def\startunpacked
   {\blank
@@ -1521,13 +1532,25 @@
    \setfalse\someblankdone
    \the\everybeforeblankhandling}
 
-% % % %
+% % % % we can move much to lua once we can expand there % % % %
 
 \def\definevspacingamount
   {\dotripleempty\dodefinevspacingamount}
 
-\def\dodefinevspacingamount[#1][#2][#3]%
-  {\ctxlua{vspacing.setskip("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+% \def\dodefinevspacingamount[#1][#2][#3]%
+%   {\ctxlua{vspacing.setskip("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+
+\def\dodefinevspacingamount[#1][#2][#3]% can be combined
+  {\setvalue{\??vs:#1}{\ifgridsnapping#3\else#2\fi}%
+   \ctxlua{vspacing.setskip("#1")}}
+
+\def\addpredefinedblankskip#1#2%
+  {\settrue\someblankdone
+   \advance\blankskip#1\dimexpr\csname\??vs:#2\endcsname\relax}
+
+\def\addaskedblankskip#1#2%
+  {\settrue\someblankdone
+   \advance\blankskip#1\dimexpr#2\relax}
 
 \def\definevspacing
   {\dodoubleempty\dodefinevspacing}

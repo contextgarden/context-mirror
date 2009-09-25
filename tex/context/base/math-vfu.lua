@@ -288,6 +288,7 @@ function fonts.vf.math.define(specification,set)
     main.name, main.fonts, main.virtualized, main.math_parameters = name, lst, true, { }
     local characters, descriptions = main.characters, main.descriptions
     main.parameters.x_height = main.parameters.x_height or 0
+    local already_reported = false
     for s=1,n do
         local ss, fs = okset[s], fnt[s]
         if not fs then
@@ -343,7 +344,12 @@ function fonts.vf.math.define(specification,set)
                             if not rv then rv = { } rf[vectorname] = rv end
                             local ru = rv[unicode]
                             if not ru then
-                                logs.report("math virtual", "unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
+                                if trace_virtual then
+                                    logs.report("math virtual", "unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
+                                elseif not already_reported then
+                                    logs.report("math virtual", "the mapping is incomplete for '%s' at %s",name,size)
+                                    already_reported = true
+                                end
                                 rv[unicode] = true
                             end
                         else

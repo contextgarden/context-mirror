@@ -39,7 +39,7 @@ xml = xml or { }
 --~ local xml = xml
 
 local concat, remove, insert = table.concat, table.remove, table.insert
-local type, next, setmetatable = type, next, setmetatable
+local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
 local format, lower, find = string.format, string.lower, string.find
 
 --[[ldx--
@@ -174,6 +174,14 @@ local nsremap, resolvens = xml.xmlns, xml.resolvens
 local stack, top, dt, at, xmlns, errorstr, entities = {}, {}, {}, {}, {}, nil, {}
 
 local mt = { __tostring = xml.text }
+
+function initialize_mt(root)
+    mt = { __tostring = xml.text, __index = root }
+end
+
+function xml.setproperty(root,k,v)
+    getmetatable(root).__index[k] = v
+end
 
 function xml.check_error(top,toclose)
     return ""
@@ -366,9 +374,14 @@ local grammar = P { "preamble",
 
 -- todo: xml.new + properties like entities and strip and such (store in root)
 
-function xml.convert(data, no_root, strip_cm_and_dt, given_entities) -- maybe use table met k/v (given_entities may disapear)
+function xml.convert(data, no_root, strip_cm_and_dt, given_entities, parent_root) -- maybe use table met k/v (given_entities may disapear)
     strip = strip_cm_and_dt or xml.strip_cm_and_dt
     stack, top, at, xmlns, errorstr, result, entities = {}, {}, {}, {}, nil, nil, given_entities or {}
+    if parent_root then
+        mt = getmetatable(parent_root)
+    else
+        initialize_mt(top)
+    end
     stack[#stack+1] = top
     top.dt = { }
     dt = top.dt

@@ -813,3 +813,33 @@ end
 --~     end
 --~     return concat(k,"")
 --~ end
+
+function table.insert_before_value(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i,extra)
+            return
+        end
+    end
+    insert(t,1,extra)
+end
+
+function table.insert_after_value(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i+1,extra)
+            return
+        end
+    end
+    insert(t,#t+1,extra)
+end

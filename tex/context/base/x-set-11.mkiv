@@ -141,9 +141,7 @@
   {\doifsomething{#1}
      {\doonlyonce{setups:#1}
         {\xmlloadonly{setups}{#1}{setups}%
-         \xmlpushdocument{setups}% should be automatic
-         \xmlcommand{setups}{/interface/command}{xml:setups:register}}% qualified path saves > 50% runtime
-         \xmlpopdocument}}
+         \xmlcommand{setups}{/interface/command}{xml:setups:register}}}} % qualified path saves > 50% runtime
 
 \newif\ifshortsetup
 
@@ -193,56 +191,54 @@
 \def\currentSETUPwidth{0pt}
 
 \startxmlsetups xml:setups:typeset
-    \xmlpushdocument{setups}
-        \getvalue{\e!start setuptext}
-            \tttf
-            \nohyphens
-            \veryraggedright
-            \doglobal\newcounter\currentSETUPargument
-            \xdef\maximumSETUPargument{\xmlcount{#1}{/arguments/*}}
+    \getvalue{\e!start setuptext}
+        \tttf
+        \nohyphens
+        \veryraggedright
+        \doglobal\newcounter\currentSETUPargument
+        \xdef\maximumSETUPargument{\xmlcount{#1}{/arguments/*}}
+        \bgroup
+            \doif {\xmlatt{#1}{generated}} {yes} {
+                \ttsl
+            }
+            \doifelse {\xmlatt{#1}{type}} {environment} {
+                \tex{\e!start}
+            } {
+                \tex{}
+            }
+            \xmlfirst{#1}{/sequence}
+            \ignorespaces
+        \egroup
+        \xmldoif{#1}{/arguments} {
             \bgroup
+                \enablemode[setups-pass-one]
+                \doglobal\newcounter\currentSETUPargument
+                \ignorespaces
+                \xmltext{#1}{/arguments}
+            \egroup
+        }
+        \doif {\xmlatt{#1}{type}} {environment} {
+            \bgroup
+                \hskip.5em\unknown\hskip.5em
                 \doif {\xmlatt{#1}{generated}} {yes} {
                     \ttsl
                 }
-                \doifelse {\xmlatt{#1}{type}} {environment} {
-                    \tex{\e!start}
-                } {
-                    \tex{}
-                }
-                \xmlfirst{#1}{/sequence}
+                \tex{\e!stop}
+                \xmlfirst{#1}{/sequence/variable}
                 \ignorespaces
             \egroup
-            \xmldoif{#1}{/arguments} {
-                \bgroup
-                    \enablemode[setups-pass-one]
-                    \doglobal\newcounter\currentSETUPargument
-                    \ignorespaces
-                    \xmltext{#1}{/arguments}
-                \egroup
-            }
-            \doif {\xmlatt{#1}{type}} {environment} {
-                \bgroup
-                    \hskip.5em\unknown\hskip.5em
-                    \doif {\xmlatt{#1}{generated}} {yes} {
-                        \ttsl
-                    }
-                    \tex{\e!stop}
-                    \xmlfirst{#1}{/sequence/variable}
-                    \ignorespaces
-                \egroup
-            }
-            \endgraf
-            \xmldoif{#1}{/arguments} {
-                \bgroup
-                    \enablemode[setups-pass-two]
-                    \doglobal\newcounter\currentSETUPargument
-                    \blank[\v!line]
-                    \switchtobodyfont[small]
-                    \ignorespaces\xmltext{#1}{/arguments}\endgraf
-                \egroup
-            }
-        \getvalue{\e!stop setuptext}
-    \xmlpopdocument
+        }
+        \endgraf
+        \xmldoif{#1}{/arguments} {
+            \bgroup
+                \enablemode[setups-pass-two]
+                \doglobal\newcounter\currentSETUPargument
+                \blank[\v!line]
+                \switchtobodyfont[small]
+                \ignorespaces\xmltext{#1}{/arguments}\endgraf
+            \egroup
+        }
+    \getvalue{\e!stop setuptext}
 \stopxmlsetups
 
 \setupsetup

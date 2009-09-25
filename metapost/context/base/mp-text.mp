@@ -107,6 +107,9 @@ enddef ;
 pair laboff.origin ; laboff.origin = (0,0) ; % (infinity,infinity) ;
 pair laboff.raw    ; laboff.raw    = (0,0) ; % (infinity,infinity) ;
 
+laboff.origin = (0,0) ; labxf.origin := 0 ; labyf.origin := 0 ;
+laboff.raw    = (0,0) ; labxf.raw    := 0 ; labyf.raw    := 0 ;
+
 vardef thelabel@#(expr s, z) =
   save p ; picture p ;
   p = s if not picture s : infont defaultfont scaled defaultscale fi ;

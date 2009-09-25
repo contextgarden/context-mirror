@@ -297,7 +297,7 @@ do -- todo: interface.variables
     -- This will change: just node.write and we can store the values in skips which
     -- then obeys grouping
 
-    local function analyse(str,oldcategory,texsprint)
+    local function analyse(str,oldcategory,texsprint) -- we could use shorter names
         for s in gmatch(str,"([^ ,]+)") do
             local amount, keyword, detail = splitter:match(s)
             if not keyword then
@@ -332,10 +332,15 @@ do -- todo: interface.variables
                 else
                     amount = tonumber(amount) or 1
                     local sk = skip[keyword]
+--~                     if sk then
+--~                         texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,sk[1],sk[2] or sk[1]))
+--~                     else -- no check
+--~                         texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,keyword,keyword))
+--~                     end
                     if sk then
-                        texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,sk[1],sk[2] or sk[1]))
+                        texsprint(ctxcatcodes,format("\\addpredefinedblankskip{%s}{%s}",amount,keyword))
                     else -- no check
-                        texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,keyword,keyword))
+                        texsprint(ctxcatcodes,format("\\addaskedblankskip{%s}{%s}",amount,keyword))
                     end
                 end
             end

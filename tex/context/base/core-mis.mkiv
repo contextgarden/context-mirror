@@ -819,7 +819,7 @@
 
 \def\doinitializetextlevel#1%
   {\ifcsname\??ci:#1:\c!level\endcsname
-     \newcount\csname\??ci:#1:\c!level\endcsname\zerocount
+     \csname\??ci:#1:\c!level\endcsname\zerocount
    \else
      \expandafter\newcount\csname\??ci:#1:\c!level\endcsname
    \fi}

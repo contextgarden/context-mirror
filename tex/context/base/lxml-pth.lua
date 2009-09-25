@@ -1334,7 +1334,8 @@ function xml.include(xmldata,pattern,attribute,recursive,loaddata)
         elseif ek.at["parse"] == "text" then -- for the moment hard coded
             d[k] = xml.escaped(data)
         else
-            local xi = xml.convert(data)
+            -- data, no_root, strip_cm_and_dt, given_entities, parent_root (todo: entities)
+            local xi = xml.convert(data,nil,nil,xmldata.entities,xmldata)
             if not xi then
                 xml.empty(d,k)
             else

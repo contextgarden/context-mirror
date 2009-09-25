@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 09/25/09 09:47:31
+-- merge date  : 09/25/09 23:59:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -1294,6 +1294,36 @@ end
 --~     end
 --~     return concat(k,"")
 --~ end
+
+function table.insert_before_value(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i,extra)
+            return
+        end
+    end
+    insert(t,1,extra)
+end
+
+function table.insert_after_value(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i+1,extra)
+            return
+        end
+    end
+    insert(t,#t+1,extra)
+end
 
 end -- closure
 

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Todo: push/pop for nested usage ... think this over
+%D Todo: auto apply setups (manage at lua end)
 
 \writestatus{loading}{ConTeXt XML Support / Initialization}
 
@@ -42,8 +42,8 @@
 \def\xmlfilter           #1#2{\ctxlua{lxml.filter("#1",\!!bs#2\!!es)}}
 \def\xmlfirst            #1#2{\ctxlua{lxml.first("#1","#2")}}
 \def\xmlflush              #1{\ctxlua{lxml.flush("#1")}}
-% \def\xmlcontent            #1{\ctxlua{lxml.content("#1")}}
-% \def\xmlflushstripped      #1{\ctxlua{lxml.strip("#1",true)}}
+%def\xmlcontent            #1{\ctxlua{lxml.content("#1")}}
+%def\xmlflushstripped      #1{\ctxlua{lxml.strip("#1",true)}}
 \def\xmldirect             #1{\ctxlua{lxml.direct("#1")}} % in loops, not dt but root
 \def\xmlidx            #1#2#3{\ctxlua{lxml.idx("#1","#2",\number#3)}}
 \def\xmlinclude        #1#2#3{\ctxlua{lxml.include("#1","#2","#3",true)}}
@@ -109,10 +109,11 @@
 %
 % \xmlprependsetup{xml:include}
 
-\let\xmlgrab\xmlsetsetup
+\let\xmlgrab\xmlsetsetup % obsolete
+\let\xmlself\s!unknown   % obsolete
 
-\def\xmlsetup#1#2%              % we pass the reference so that we have access to the frozen number
-  {\def\xmlself{#1}%            % by using #1 inside a setup; maybe self becomes obsolete
+\def\xmlsetup#1#2%
+  {%\def\xmlself{#1}%
    \setupwithargument{#2}{#1}}
 
 \let\xmls\xmlsetup
@@ -153,7 +154,6 @@
    % todo: test for duplicates !
    \xmlflushdocumentsetups{#1}%
    \xmldefaulttotext{#1}% after include
-\xmladdindex{#1}% check for dups
    \xmlstoptiming}
 
 \def\xmlstarttiming{\ctxlua{statistics.starttiming(lxml)}}
@@ -162,18 +162,17 @@
 \def\doxmlprocess#1#2#3#4#5%
   {\begingroup
    \edef\xmldocument{#3}% #2 can be \xmldocument and set as such
-   \xmlpushdocument{#3}%
+   %xmlpushdocument{#3}%
    #2{#3}{#4}%
-   \ctxlua{lxml.addindex("\xmldocument",\ifnum#1=\plusone true\else false\fi)}% todo: only checksum for file
    \ifcase\xmlprocessingmode
      \enableXML
    \else
      \setcatcodetable\notcatcodes
    \fi
    \doifelsenothing{#5}
-     {\directsetup{xml:process}}
-     {\directsetup{#5}}%
-   \xmlpopdocument
+     {\xmlsetup{#3}{xml:process}}
+     {\xmlsetup{#3}{#5}}%
+   %xmlpopdocument
    \endgroup}
 
 \def\xmlprocessfile      {\doxmlprocess\plusone  \xmlload}
@@ -182,14 +181,22 @@
 \def\xmlprocessregistered{\doxmlprocess\zerocount\xmlloadregistered}
 \let\xmlprocess           \xmlprocessfile
 
+\startxmlsetups xml:flush
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:process
+    \xmlregistereddocumentsetups{#1}
+    \xmlmain{#1}
+\stopxmlsetups
+
+\def\xmlloadonly#1#2#3%
+  {\xmlload{#1}{#2}%
+   \xmlregistereddocumentsetups{#3}}
+
 % beware: \xmlmain takes the real root, so also processing
 % instructions preceding the root element; well, in some
 % sense that is the root
-
-\startsetups xml:process
-    \xmlregistereddocumentsetups\xmldocument
-    \xmlmain\xmldocument
-\stopsetups
 
 \long\def\xmlloop#1#2#3%
   {\def\xmli##1##2{\xmlidx{#1}{#2/##1}{##2}}%
@@ -415,23 +422,13 @@
 
 %D Experimental:
 
-\def\xmlpushdocument#1{\ctxlua{lxml.pushdocument("#1")}}
-\def\xmlpopdocument   {\ctxlua{lxml.popdocument()}}
-\def\xmladdindex    #1{\ctxlua{lxml.addindex("#1")}}
+%def\xmlpushdocument#1{\ctxlua{lxml.pushdocument("#1")}}
+%def\xmlpopdocument   {\ctxlua{lxml.popdocument()}}
+%def\xmladdindex    #1{\ctxlua{lxml.addindex("#1")}}
+
 \def\xmlgetindex    #1{\ctxlua{lxml.getindex("\xmldocument","#1")}}
 \def\xmlrawindex    #1{\ctxlua{lxml.rawindex("#1")}}
 \def\xmlwithindex #1#2{\ctxlua{lxml.withindex("\xmldocument","#1","#2")}}
 \def\xmlreference #1#2{\string\xmlwithindex{#1}{#2}}
-
-\startxmlsetups xml:flush
-    \xmlflush{#1}
-\stopxmlsetups
-
-%D Under construction (see x-set-11)
-
-\def\xmlloadonly#1#2#3%
-  {\xmlload{#1}{#2}%
-   \xmlregistereddocumentsetups{#3}%
-   \xmladdindex{#1}}
 
 \protect \endinput
