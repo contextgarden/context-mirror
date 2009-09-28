@@ -34,6 +34,12 @@
 \def\doplaceheadtextcomponent#1#2%
   {\begingroup
      \dosetstructureheadattributes\c!style\c!color
+     % nasty, we need to adapt twice
+     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+       \setupinterlinespace
+     \else
+       \setupspacing
+     \fi
      \dosetstructureheadattributes\c!textstyle\c!textcolor
      \dontconvertfont
      \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
@@ -240,10 +246,25 @@
          \v!unknown=>\hangheadplacement\noflines\numexpr0\commalistelement-1\relax]%
      % so far
      \let\headlastlinewidth\!!zeropoint
-     \snaptogrid[\structureheadparameter\c!grid]\hbox
-       {\hskip\localheadskip
-        \hskip\structureheadparameter\c!margin\relax
-        \box\sectionheadbox}%
+     % kind of special, we want to snap heads also according to local specs local
+     \ifgridsnapping
+       \begingroup
+       \ifconditional\structureheadisdisplay
+         \edef\currentstructureheadgridsnapping{\structureheadparameter\c!grid}%
+         \ifx\currentstructureheadgridsnapping\empty\else
+           \dosetstructureheadattributes\c!style\c!color
+           \setupinterlinespace
+           \dosetstructureheadattributes\c!textstyle\c!textcolor
+           \setupinterlinespace
+         \fi
+       \fi
+       \snaptogrid[\structureheadparameter\c!grid]\hbox
+         {\hskip\localheadskip\hskip\structureheadparameter\c!margin\box\sectionheadbox}%
+       \endgroup
+     \else
+       \hbox
+         {\hskip\localheadskip\hskip\structureheadparameter\c!margin\box\sectionheadbox}%
+     \fi
      \flushnotes % new, not really needed
      \endgraf
      \ifvmode

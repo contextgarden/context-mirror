@@ -134,18 +134,23 @@
 
 % \appendtoks \setrelativeinterlinespace \to \everybodyfont
 
+\newtoks \everysetupglobalinterlinespace
+\newtoks \everysetuplocalinterlinespace
+
 \def\complexsetupinterlinespace[#1]% \commalistelement ipv #1
-  {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]}
+  {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
+   \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
 
 \def\setuplocalinterlinespace[#1]%
   {\localinterlinespacetrue
    \setupinterlinespace[#1]%
    \localinterlinespacefalse}
 
-\def\simplesetupinterlinespace
+\def\simplesetupinterlinespace % adapts to the font
   {\localinterlinespacetrue
    \setfontparameters
    \updateraggedskips % funny one here
+   \the\everysetuplocalinterlinespace
    \localinterlinespacefalse}
 
 \definecomplexorsimple\setupinterlinespace
@@ -637,7 +642,7 @@
    \normallineskip\minimumlinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
    \normalbaselines
-   \dosetupgridsnapping
+  %\dosetupgridsnapping
   }
 
 \def\spacing#1%
@@ -1164,9 +1169,13 @@
 
 % TODO: NAMED SNAPPERS
 
-\newdimen \bodyfontlineheight
+\newskip  \bodyfontlineheight
 \newdimen \bodyfontstrutheight
 \newdimen \bodyfontstrutdepth
+
+\newskip  \globalbodyfontlineheight
+\newdimen \globalbodyfontstrutheight
+\newdimen \globalbodyfontstrutdepth
 
 % \appendtoks
 %     \dosetupgridsnapping
@@ -1242,16 +1251,33 @@
 \definegridsnapping[\v!max]      [\v!maxdepth,\v!maxheight,\v!strut]
 \definegridsnapping[\v!min]      [\v!mindepth,\v!minheight,\v!strut]
 
-\newtoks\everysetupgridsnapping
+\newtoks\everysetupgridsnapping % this only happens at the setuplayout level
 
-\def\dosetupgridsnapping{\the\everysetupgridsnapping}
+\def\dosetupgridsnapping{\the\everysetupgridsnapping} % not used !
+
+\def\synchronizelocallinespecs
+  {\bodyfontlineheight \normallineheight
+   \bodyfontstrutheight\strutheight
+   \bodyfontstrutdepth \strutdepth}
+
+\def\synchronizegloballinespecs
+  {\global\globalbodyfontlineheight \normallineheight
+   \global\globalbodyfontstrutheight\strutheight
+   \global\globalbodyfontstrutdepth \strutdepth}
+
+% \appendtoks
+%     \synchronizegloballinespecs
+%     \synchronizelocallinespecs
+% \to \everysetupgridsnapping
 
 \appendtoks
-    \bodyfontlineheight  \normallineheight
-    \bodyfontstrutheight \strutheight
-    \bodyfontstrutdepth  \strutdepth
-    \ctxlua{vspacing.freeze_snap_method()}%
-\to \everysetupgridsnapping
+    \synchronizegloballinespecs
+    \synchronizelocallinespecs
+\to \everysetupglobalinterlinespace
+
+\appendtoks
+    \synchronizelocallinespecs
+\to \everysetuplocalinterlinespace
 
 % \appendtoks
 %     \resetsnapvalues

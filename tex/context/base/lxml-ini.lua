@@ -83,6 +83,17 @@ end
 
 local splitter = lpeg.C((1-lpeg.P(":"))^1) * lpeg.P("::") * lpeg.C(lpeg.P(1)^1)
 
+lxml.idsplitter = splitter
+
+function lxml.splitid(id)
+    local d, i = splitter:match(id)
+    if d then
+        return d, i
+    else
+        return "", id
+    end
+end
+
 local function get_id(id, qualified)
     if type(id) == "table" then
         return id

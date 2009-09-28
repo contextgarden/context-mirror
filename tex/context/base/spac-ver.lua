@@ -88,6 +88,7 @@ local default = {
 local fractions = {
     minheight = "hfraction", maxheight = "hfraction",
     mindepth  = "dfraction", maxdepth  = "dfraction",
+    top       = "tlines",    bottom    = "blines",
 }
 
 local colonsplitter = lpeg.splitat(":")
@@ -132,17 +133,17 @@ function vspacing.define_snap_method(name,method)
     tex.write(n)
 end
 
-local snapht, snapdp, snaphtdp = 0, 0, 0
-
-function vspacing.freeze_snap_method(ht,dp)
-    snapht, snapdp = ht or texdimen.bodyfontstrutheight, dp or texdimen.bodyfontstrutdepth
-    snaphtdp = snapht + snapdp
-end
-
 local function snap_hlist(current,method,height,depth) -- method.strut is default
+    local snapht, snapdp
+    if method["local"] then
+        snapht, snapdp = texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth
+    else
+        snapht, snapdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
+    end
     local h, d = height or current.height, depth or current.depth
     local hr, dr, ch, cd = method.hfraction or 1, method.dfraction or 1, h, d
     local done, plusht, plusdp = false, snapht, snapdp
+    local snaphtdp = snapht + snapdp
     if method.none then
         plusht, plusdp = 0, 0
     end
@@ -203,6 +204,12 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
     else
         cd = plusdp
     end
+    if method.top then
+        ch = ch + (method.tlines or 1) * snaphtdp
+    end
+    if method.bottom then
+        cd = cd + (method.blines or 1) * snaphtdp
+    end
     if not height then
         current.height = ch
     end
@@ -217,21 +224,10 @@ local function snap_topskip(current,method)
     local w = spec.width
     local wd = w
     if spec then
-        wd = 0 -- snapht - w
+        wd = 0
         spec.width = wd
     end
     return w, wd
-end
-
-local function snapped_spec(current)
-    local spec = current.spec
-    if spec then
-        local w = ceil(spec.width/snaphtdp)*snaphtdp
-        spec.width = w
-        return w
-    else
-        return 0
-    end
 end
 
 vspacing.categories = {
@@ -569,11 +565,8 @@ end
 local function collapser(head,where,what,trace,snap) -- maybe also pass tail
     if trace then
         reset_tracing(head)
-        trace_info("start analyzing",where,what)
     end
     local current, oldhead = head, head
-    snapht, snapdp = ht or texdimen.bodyfontstrutheight, dp or texdimen.bodyfontstrutdepth
-    snaphtdp = snapht + snapdp
     local glue_order, glue_data, force_glue = 0, nil, false
     local penalty_order, penalty_data, natural_penalty = 0, nil, nil
     local parskip, ignore_parskip, ignore_following, ignore_whitespace, keep_together = nil, false, false, false, false
@@ -602,6 +595,11 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         glue_order, glue_data, force_glue = 0, nil, false
         penalty_order, penalty_data, natural_penalty = 0, nil, nil
         parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
+    end
+    if trace_vsnapping then
+        logs.report("snapper", "global ht/dp = %s/%s, local ht/dp = %s/%s",
+            texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth,
+            texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth)
     end
     while current do
         local id, subtype = current.id, current.subtype
@@ -903,7 +901,6 @@ current = current.next
     if glue_data then
         if not tail then tail = find_node_tail(head) end
         if trace then trace_done("result",glue_data) end
---~ snapped_spec(glue_data)
         if force_glue then
             head, tail = forced_skip(head,tail,glue_data.spec.width,"after",trace)
             free_glue_node(glue_data)

@@ -69,4 +69,13 @@
 \ifdefined\from  \let\normalmathfrom \from  \unexpanded\def\from {\mathortext\normalmathfrom \dospecialfrom } \else \let\from \dospecialfrom  \fi
 \ifdefined\over  \let\normalmathover \over  \unexpanded\def\over {\mathortext\normalmathover \dospecialabout} \else \let\over \dospecialabout \fi
 
+\appendtoks
+    \synchronizegloballinespecs
+    \synchronizelocallinespecs
+\to \everysetupbodyfont
+
+\appendtoks
+    \synchronizelocallinespecs
+\to \everyswitchtobodyfont
+
 \protect \endinput

@@ -59,6 +59,8 @@
 \def\dostructureheadparentparameter    #1#2{\ifx#1\relax\s!empty\else\dostructureheadparameter    #1#2\fi}
 \def\dostructureheadparentparameterhash#1#2{\ifx#1\relax        \else\dostructureheadparameterhash#1#2\fi}
 
+\def\structureheadparameterstrict#1{\csname\ifcsname\??nh\currentstructurehead#1\endcsname\??nh\currentstructurehead#1\else\s!empty\fi\endcsname}
+
 \def\dosetstructureheadattributes#1#2% style color
   {\edef\fontattributehash {\structureheadparameterhash#1}%
    \edef\colorattributehash{\structureheadparameterhash#2}%
@@ -76,12 +78,20 @@
      {\global\advance\maxstructuredepth\plusone
       \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
       \setstructurelevel{#1}{\the\maxstructuredepth}%
-%       \letvalue{\??nh#1\c!marking}\empty % ?
+%     \letvalue{\??nh#1\c!marking}\empty % ?
      %\writestatus{structure}{#1\ifx\laststructuresectionname\empty\else\space->\space\laststructuresectionname\fi}%
       \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\laststructuresectionname]}%
+      % this is a rather practical default that we don't want to be part of the parent chain
+      % lookup mechanism; it's also mkii compativle; this might become \everystructureheaddefine
+      \getparameters[\??nh#1]
+        [  \c!textstyle=\structureheadparameterstrict\c!style,
+           \c!textcolor=\structureheadparameterstrict\c!color,
+         \c!numberstyle=\structureheadparameterstrict\c!style,
+         \c!numbercolor=\structureheadparameterstrict\c!color]%
+      % so far for these default inheritances
       \definemarking[#1]%
       \ifnum\maxstructuredepth>\plusone
-%         \normalexpanded{\noexpand\couplemarking[#1][\laststructuresectionname]}% so, the child inherits settings from the parent
+%       \normalexpanded{\noexpand\couplemarking[#1][\laststructuresectionname]}% so, the child inherits settings from the parent
         \normalexpanded{\noexpand\relatemarking[#1][\laststructuresectionname]}% so, the parent will reset the child
       \fi
       \xdef\laststructuresectionname{#1}}}
