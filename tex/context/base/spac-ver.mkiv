@@ -416,39 +416,35 @@
 \newsignal \noparskipsignal % \def\noparskipsignal {0.00001pt}
 \def\lastdoneparskip {0pt}
 
-\def\startpacked
+\newconditional\noblankinpacked
+\newcount\packeddepth
+
+\unexpanded\def\startpacked
   {\dosingleempty\dostartpacked}
 
 \def\dostartpacked[#1]% nesting afvangen
-  {\par
-   \ifvmode
+  {\global\advance\packeddepth\plusone
+   \par
+   \ifnum\packeddepth=\plusone \ifvmode
      \bgroup
      \whitespace % not combined
-     \blank[\v!disable]
-     \setupwhitespace[\v!none]
-     \let\startpacked\nestedstartpacked
-   \fi}
+     \blank[\v!disable]%
+     \doifelse{#1}\v!blank\setfalse\settrue\noblankinpacked
+     \setupwhitespace[\v!none]%
+   \fi \fi}
 
-\def\stoppacked
+\unexpanded\def\stoppacked
   {\par
-   \ifvmode
+   \ifnum\packeddepth=\plusone \ifvmode
      \egroup
-   \fi}
+   \fi \fi
+   \global\advance\packeddepth\minusone}
 
-\def\nestedstartpacked
-  {\par
-   \bgroup
-   \let\stoppacked\nestedstoppacked}
-
-\def\nestedstoppacked
-  {\par
-   \egroup}
-
-\def\startunpacked
+\unexpanded\def\startunpacked
   {\blank
    \bgroup}
 
-\def\stopunpacked
+\unexpanded\def\stopunpacked
   {\egroup
    \blank}
 
@@ -1539,6 +1535,17 @@
    \flushblankhandling}
 
 \def\startblankhandling
+  {\par
+   \ifvmode
+     \expandafter\dostartblankhandling
+   \else
+     \expandafter\nostartblankhandling
+   \fi}
+
+\def\nostartblankhandling#1\stopblankhandling
+  {}
+
+\def\dostartblankhandling
   {\begingroup
    \setfalse\someblankdone
    \the\everybeforeblankhandling}
@@ -1587,8 +1594,20 @@
 \unexpanded\def\vspacing
   {\dosingleempty\dovspacing}
 
-\def\dovspacing[#1]%
-  {\ctxlua{vspacing.analyse("\iffirstargument#1\else\s!default\fi")}}
+\def\dovspacing % blank also has a \flushnotes
+  {\ifinpagebody
+     \expandafter\dovspacingyes
+   \else\ifconditional\noblankinpacked % todo: better reset this conditional in pagebody
+     \expandafter\expandafter\expandafter\dovspacingnop
+   \else
+     \expandafter\expandafter\expandafter\dovspacingyes
+   \fi\fi}
+
+\def\dovspacingyes[#1]%
+  {\ifmmode\else\ctxlua{vspacing.analyse("\iffirstargument#1\else\s!default\fi")}\fi}
+
+\def\dovspacingnop[#1]%
+  {\ifmmode\else\par\fi}
 
 % todo: check them and make them faster:
 

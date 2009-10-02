@@ -15,6 +15,8 @@ local format, lower, gmatch, gsub, find, rep = string.format, string.lower, stri
 which case it hooks into the tracker code. Therefore we provide a few
 functions that set the tracers. Here we overload a previously defined
 function.</p>
+<p>If I can get in the mood I will make a variant that is XSLT compliant
+but I wonder if it makes sense.</P>
 --ldx]]--
 
 local trace_lpath = false  if trackers then trackers.register("xml.lpath", function(v) trace_lpath = v end) end
@@ -44,6 +46,10 @@ xml.expressions = xml.expressions or { }
 local functions   = xml.functions
 local expressions = xml.expressions
 
+-- although we could remap all to expressions we prefer to have a few speed ups
+-- like simple expressions as they happen to occur a lot and then we want to
+-- avoid too many loops
+
 local actions = {
     [10] = "stay",
     [11] = "parent",
@@ -58,6 +64,7 @@ local actions = {
     [23] = "match and attribute ne",
     [24] = "match one of and attribute eq",
     [25] = "match one of and attribute ne",
+    [26] = "has name",
     [27] = "has attribute",
     [28] = "has value",
     [29] = "fast match",
@@ -72,7 +79,11 @@ local P, S, R, C, V, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc
 
 -- instead of using functions we just parse a few names which saves a call
 -- later on
+--
+-- we can use a metatable
 
+local lp_space     = S(" \n\r\t")
+local lp_any       = P(1)
 local lp_position  = P("position()") / "ps"
 local lp_index     = P("index()")    / "id"
 local lp_text      = P("text()")     / "tx"
@@ -81,7 +92,12 @@ local lp_tag       = P("tag()")      / "tg" -- (rt.tg or '')
 local lp_ns        = P("ns()")       / "ns" -- (rt.ns or '')
 local lp_noequal   = P("!=")         / "~=" + P("<=") + P(">=") + P("==")
 local lp_doequal   = P("=")          / "=="
-local lp_attribute = P("@")          / "" * Cc("(at['") * R("az","AZ","--","__")^1 * Cc("'] or '')")
+--~ local lp_attribute = P("@")          / "" * Cc("(at['") * R("az","AZ","--","__")^1 * Cc("'] or '')")
+local lp_attribute = P("@")          / "" * Cc("at['") * R("az","AZ","--","__")^1 * Cc("']")
+local lp_or        = P("|")          / " or "
+local lp_and       = P("&")          / " and "
+
+local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
 
 local lp_lua_function  = C(R("az","AZ","--","__")^1 * (P(".") * R("az","AZ","--","__")^1)^1) * P("(") / function(t) -- todo: better . handling
     return t .. "("
@@ -101,12 +117,19 @@ local noparent = 1 - (lparent+rparent)
 local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
 local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
+local lp_child  = Cc("expressions.child(r,k,'") * R("az","AZ","--","__")^1 * Cc("')")
+local lp_string = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
+local lp_content= Cc("tx==") * (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
+
+
 -- if we use a dedicated namespace then we don't need to pass rt and k
 
-local lp_special = (C(P("name")+P("text")+P("tag"))) * value / function(t,s)
+local converter, cleaner
+
+local lp_special = (C(P("name")+P("text")+P("tag")+P("count")+P("child"))) * value / function(t,s)
     if expressions[t] then
         if s then
-            return "expressions." .. t .. "(r,k," .. s ..")"
+            return "expressions." .. t .. "(r,k," .. cleaner:match(s) ..")"
         else
             return "expressions." .. t .. "(r,k)"
         end
@@ -115,20 +138,34 @@ local lp_special = (C(P("name")+P("text")+P("tag"))) * value / function(t,s)
     end
 end
 
-local converter = lpeg.Cs ( (
+local content =
     lp_position +
     lp_index +
     lp_text + lp_name + -- fast one
     lp_special +
     lp_noequal + lp_doequal +
     lp_attribute +
+    lp_or + lp_and +
     lp_lua_function +
     lp_function +
+    lp_reserved +
+    lp_content +
+    lp_child +
+    lp_any
+
+converter = lpeg.Cs (
+    (lpeg.P { lparent * (lpeg.V(1))^0 * rparent + content } )^0
+)
+
+cleaner = lpeg.Cs ( (
+    lp_reserved +
+    lp_string +
 1 )^1 )
 
 -- expressions,root,rootdt,k,e,edt,ns,tg,idx,hsh[tg] or 1
 
 local template = [[
+    -- todo: locals for xml.functions
     return function(expressions,r,d,k,e,dt,ns,tg,id,ps)
         local at, tx = e.at or { }, dt[1] or ""
         return %s
@@ -136,11 +173,16 @@ local template = [[
 ]]
 
 local function make_expression(str)
+--~ print(">>>",str)
     str = converter:match(str)
-    return str, loadstring(format(template,str))()
+--~ print("<<<",str)
+    local s = loadstring(format(template,str))
+    if s then
+        return str, s()
+    else
+        return str, ""
+    end
 end
-
-local map = { }
 
 local space                    = S(' \r\n\t')
 local squote                   = S("'")
@@ -173,71 +215,84 @@ local optionalspace            = space^0
 local text                     = C(valid^0)
 local value                    = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote)
 local empty                    = 1-slash
+local nobracket                = 1-(lbracket+rbracket)
 
-local is_eq                    = lbracket * atsign * name * eq * value * rbracket
-local is_ne                    = lbracket * atsign * name * ne * value * rbracket
-local is_attribute             = lbracket * atsign * name              * rbracket
-local is_value                 = lbracket *          value             * rbracket
-local is_number                = lbracket *          number            * rbracket
+-- this has to become a proper grammar instead of a substitution (which we started
+-- with when we moved to lpeg)
 
-local nobracket                = 1-(lbracket+rbracket)  -- must be improved
-local is_expression            = lbracket * C(((C(nobracket^1))/make_expression)) * rbracket
+local is_eq                    = lbracket * atsign * name * eq * value * rbracket * #(1-lbracket)
+local is_ne                    = lbracket * atsign * name * ne * value * rbracket * #(1-lbracket)
+local is_attribute             = lbracket * atsign * name              * rbracket * #(1-lbracket)
+local is_value                 = lbracket *          value             * rbracket * #(1-lbracket)
+local is_number                = lbracket *          number            * rbracket * #(1-lbracket)
+local is_name                  = lbracket *          name              * rbracket * #(1-lbracket)
 
-local is_expression            = lbracket * (C(nobracket^1))/make_expression * rbracket
+--~ local is_expression            = lbracket * (C(nobracket^1))/make_expression * rbracket
+--~ local is_expression            = is_expression * (Cc(" and ") * is_expression)^0
+
+--~ local is_expression            = (lbracket/"(") * C(nobracket^1) * (rbracket/")")
+--~ local is_expression            = lpeg.Cs(is_expression * (Cc(" and ") * is_expression)^0) / make_expression
+
+local is_position = function(s) return " position()==" .. s .. " " end
+
+local is_expression            = (is_number/is_position) + (lbracket/"(") * (nobracket^1) * (rbracket/")")
+local is_expression            = lpeg.Cs(is_expression * (Cc(" and ") * is_expression)^0) / make_expression
 
 local is_one                   =          name
 local is_none                  = exclam * name
 local is_one_of                =          ((lparent * names * rparent) + morenames)
 local is_none_of               = exclam * ((lparent * names * rparent) + morenames)
 
+--~ local stay_action = { 11 }, beware, sometimes we adapt !
+
 local stay                     = (period                )
-local parent                   = (period * period       ) / function(   ) map[#map+1] = { 11             } end
-local subtreeroot              = (slash + hat           ) / function(   ) map[#map+1] = { 12             } end
-local documentroot             = (hat * hat             ) / function(   ) map[#map+1] = { 13             } end
-local any                      = (star                  ) / function(   ) map[#map+1] = { 14             } end
-local many                     = (star * star           ) / function(   ) map[#map+1] = { 15             } end
-local initial                  = (hat * hat * hat       ) / function(   ) map[#map+1] = { 16             } end
+local parent                   = (period * period       ) / function(   ) return { 11             } end
+local subtreeroot              = (slash + hat           ) / function(   ) return { 12             } end
+local documentroot             = (hat * hat             ) / function(   ) return { 13             } end
+local any                      = (star                  ) / function(   ) return { 14             } end
+local many                     = (star * star           ) / function(   ) return { 15             } end
+local initial                  = (hat * hat * hat       ) / function(   ) return { 16             } end
 
-local match                    = (is_one                ) / function(...) map[#map+1] = { 20, true , ... } end
-local match_one_of             = (is_one_of             ) / function(...) map[#map+1] = { 21, true , ... } end
-local dont_match               = (is_none               ) / function(...) map[#map+1] = { 20, false, ... } end
-local dont_match_one_of        = (is_none_of            ) / function(...) map[#map+1] = { 21, false, ... } end
+local match                    = (is_one                ) / function(...) return { 20, true , ... } end
+local match_one_of             = (is_one_of             ) / function(...) return { 21, true , ... } end
+local dont_match               = (is_none               ) / function(...) return { 20, false, ... } end
+local dont_match_one_of        = (is_none_of            ) / function(...) return { 21, false, ... } end
 
-local match_and_eq             = (is_one     * is_eq    ) / function(...) map[#map+1] = { 22, true , ... } end
-local match_and_ne             = (is_one     * is_ne    ) / function(...) map[#map+1] = { 23, true , ... } end
-local dont_match_and_eq        = (is_none    * is_eq    ) / function(...) map[#map+1] = { 22, false, ... } end
-local dont_match_and_ne        = (is_none    * is_ne    ) / function(...) map[#map+1] = { 23, false, ... } end
+local match_and_eq             = (is_one     * is_eq    ) / function(...) return { 22, true , ... } end
+local match_and_ne             = (is_one     * is_ne    ) / function(...) return { 23, true , ... } end
+local dont_match_and_eq        = (is_none    * is_eq    ) / function(...) return { 22, false, ... } end
+local dont_match_and_ne        = (is_none    * is_ne    ) / function(...) return { 23, false, ... } end
 
-local match_one_of_and_eq      = (is_one_of  * is_eq    ) / function(...) map[#map+1] = { 24, true , ... } end
-local match_one_of_and_ne      = (is_one_of  * is_ne    ) / function(...) map[#map+1] = { 25, true , ... } end
-local dont_match_one_of_and_eq = (is_none_of * is_eq    ) / function(...) map[#map+1] = { 24, false, ... } end
-local dont_match_one_of_and_ne = (is_none_of * is_ne    ) / function(...) map[#map+1] = { 25, false, ... } end
+local match_one_of_and_eq      = (is_one_of  * is_eq    ) / function(...) return { 24, true , ... } end
+local match_one_of_and_ne      = (is_one_of  * is_ne    ) / function(...) return { 25, true , ... } end
+local dont_match_one_of_and_eq = (is_none_of * is_eq    ) / function(...) return { 24, false, ... } end
+local dont_match_one_of_and_ne = (is_none_of * is_ne    ) / function(...) return { 25, false, ... } end
 
-local has_attribute            = (is_one  * is_attribute) / function(...) map[#map+1] = { 27, true , ... } end
-local has_value                = (is_one  * is_value    ) / function(...) map[#map+1] = { 28, true , ... } end
-local dont_has_attribute       = (is_none * is_attribute) / function(...) map[#map+1] = { 27, false, ... } end
-local dont_has_value           = (is_none * is_value    ) / function(...) map[#map+1] = { 28, false, ... } end
-local position                 = (is_one  * is_number   ) / function(...) map[#map+1] = { 30, true,  ... } end
-local dont_position            = (is_none * is_number   ) / function(...) map[#map+1] = { 30, false, ... } end
+local has_name                 = (is_one  * is_name)      / function(...) return { 26, true , ... } end
+local dont_has_name            = (is_none * is_name)      / function(...) return { 26, false, ... } end
+local has_attribute            = (is_one  * is_attribute) / function(...) return { 27, true , ... } end
+local dont_has_attribute       = (is_none * is_attribute) / function(...) return { 27, false, ... } end
+local has_value                = (is_one  * is_value    ) / function(...) return { 28, true , ... } end
+local dont_has_value           = (is_none * is_value    ) / function(...) return { 28, false, ... } end
+local position                 = (is_one  * is_number   ) / function(...) return { 30, true,  ... } end
+local dont_position            = (is_none * is_number   ) / function(...) return { 30, false, ... } end
 
-local expression               = (is_one  * is_expression)/ function(...) map[#map+1] = { 31, true,  ... } end
-local dont_expression          = (is_none * is_expression)/ function(...) map[#map+1] = { 31, false, ... } end
+local expression               = (is_one  * is_expression)/ function(...) return { 31, true,  ... } end
+local dont_expression          = (is_none * is_expression)/ function(...) return { 31, false, ... } end
 
-local self_expression          = (         is_expression) / function(...) if #map == 0 then map[#map+1] = { 11 } end
-                                                                          map[#map+1] = { 31, true,  "*", "*", ... } end
-local dont_self_expression     = (exclam * is_expression) / function(...) if #map == 0 then map[#map+1] = { 11 } end
-                                                                          map[#map+1] = { 31, false, "*", "*", ... } end
+local self_expression          = (         is_expression) / function(...) return { 31, true,  "*", "*", ... } end
+local dont_self_expression     = (exclam * is_expression) / function(...) return { 31, false, "*", "*", ... } end
 
-local instruction              = (instructiontag * text ) / function(...) map[#map+1] = { 40,        ... } end
-local nothing                  = (empty                 ) / function(   ) map[#map+1] = { 15             } end -- 15 ?
+local instruction              = (instructiontag * text ) / function(...) return { 40,        ... } end
+local nothing                  = (empty                 ) / function(   ) return { 15             } end -- 15 ?
 local crap                     = (1-slash)^1
 
 -- a few ugly goodies:
 
-local docroottag               = P('^^')             / function(   ) map[#map+1] = { 12             } end
-local subroottag               = P('^')              / function(   ) map[#map+1] = { 13             } end
-local roottag                  = P('root::')         / function(   ) map[#map+1] = { 12             } end
-local parenttag                = P('parent::')       / function(   ) map[#map+1] = { 11             } end
+local docroottag               = P('^^')             / function() return { 12 } end
+local subroottag               = P('^')              / function() return { 13 } end
+local roottag                  = P('root::')         / function() return { 12 } end
+local parenttag                = P('parent::')       / function() return { 11 } end
 local childtag                 = P('child::')
 local selftag                  = P('self::')
 
@@ -247,21 +302,23 @@ local selector = (
     instruction +
 --  many + any + -- brrr, not here !
     parent + stay +
-    dont_position + position +
+    dont_position + position + -- fast one
+    dont_has_attribute + has_attribute + -- fast ones
+    dont_has_name + has_name + -- fast ones
+    dont_has_value + has_value + -- fast ones
     dont_match_one_of_and_eq + dont_match_one_of_and_ne +
     match_one_of_and_eq + match_one_of_and_ne +
     dont_match_and_eq + dont_match_and_ne +
     match_and_eq + match_and_ne +
     dont_expression + expression +
     dont_self_expression + self_expression +
-    has_attribute + has_value +
     dont_match_one_of + match_one_of +
     dont_match + match +
     many + any +
     crap + empty
 )
 
-local grammar = P { "startup",
+local grammar = lpeg.Ct { "startup",
     startup  = (initial + documentroot + subtreeroot + roottag + docroottag + subroottag)^0 * V("followup"),
     followup = ((slash + parenttag + childtag + selftag)^0 * selector)^1,
 }
@@ -274,11 +331,14 @@ local function compose(str)
         -- root
         return false
     else
-        map = { }
-        grammar:match(str)
+        local map = grammar:match(str)
         if #map == 0 then
             return true
         else
+            if map[1][1] == 32 then
+                -- lone expression
+                insert(map, 1, { 11 })
+            end
             local m = map[1][1]
             if #map == 1 then
                 if m == 14 or m == 15 then
@@ -289,14 +349,12 @@ local function compose(str)
                     return false
                 end
             elseif #map == 2 and m == 12 and map[2][1] == 20 then
-            --  return { { 29, map[2][2], map[2][3], map[2][4], map[2][5] } }
                 map[2][1] = 29
                 return { map[2] }
             end
             if m ~= 11 and m ~= 12 and m ~= 13 and m ~= 14 and m ~= 15 and m ~= 16 then
                 insert(map, 1, { 16 })
             end
-        --  print(gsub(table.serialize(map),"[ \n]+"," "))
             return map
         end
     end
@@ -304,7 +362,7 @@ end
 
 local cache = { }
 
-function xml.lpath(pattern,trace)
+local function lpath(pattern,trace)
     lpathcalls = lpathcalls + 1
     if type(pattern) == "string" then
         local result = cache[pattern]
@@ -322,6 +380,8 @@ function xml.lpath(pattern,trace)
     end
 end
 
+xml.lpath = lpath
+
 function xml.cached_patterns()
     return cache
 end
@@ -333,7 +393,7 @@ end
 function xml.lshow(pattern,report)
 --      report = report or fallbackreport
     report = report or (texio and texio.write) or io.write
-    local lp = xml.lpath(pattern)
+    local lp = lpath(pattern)
     if lp == false then
         report(" -: root\n")
     elseif lp == true then
@@ -414,13 +474,13 @@ expressions.error = function(str)
 end
 
 functions.text = function(root,k,n) -- unchecked, maybe one deeper
-    local t = type(t)
-    if t == "string" then
-        return t
-    else -- todo n
+--~     local t = type(t) -- ?
+--~     if t == "string" then
+--~         return t
+--~     else -- todo n
         local rdt = root.dt
         return (rdt and rdt[k]) or root[k] or ""
-    end
+--~     end
 end
 
 functions.name = function(d,k,n) -- ns + tg
@@ -550,8 +610,10 @@ local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- mu
             local ep = root.__p__ or parent
             if index < #pattern then
                 if not traverse(ep,pattern,handle,reverse,index+1,root) then return false end
-            elseif handle(root,rootdt,k) then
+            elseif handle(ep) then -- wrong (others also)
                 return false
+            else
+                -- ?
             end
         else
             if (command == 16 or command == 12) and index == 1 then -- initial
@@ -565,8 +627,10 @@ local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- mu
                 local ep = root.__p__ or parent
                 if index < #pattern then
                     if not traverse(ep,pattern,handle,reverse,index+1,root) then return false end
-                elseif handle(root,rootdt,k) then
+                elseif handle(ep) then
                     return false
+                else
+                    -- ?
                 end
             else
                 local rootdt = root.dt
@@ -579,8 +643,7 @@ local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- mu
                 elseif reverse and index == #pattern then
                     start, stop, step = stop, start, -1
                 end
-                local idx = 0
-                local hsh = { } -- this will slooow down the lot
+                local idx, hsh = 0, { } -- this hsh will slooow down the lot
                 for k=start,stop,step do -- we used to have functions for all but a case is faster
                     local e = rootdt[k]
                     local ns, tg = e.rn or e.ns, e.tg
@@ -676,6 +739,30 @@ local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- mu
                                 end
                                 if not action[2] then matched = not matched end
                                 matched = matched and e.at[action[#action-1]] ~= action[#action]
+                            elseif command == 26 then -- has child
+                                local ns_a, tg_a = action[3], action[4]
+                                if tg == tg_a then
+                                    matched = ns_a == "*" or ns == ns_a
+                                elseif tg_a == '*' then
+                                    matched, multiple = ns_a == "*" or ns == ns_a, true
+                                else
+                                    matched = false
+                                end
+                                if not action[2] then matched = not matched end
+                                if matched then
+                                    -- ok, we could have the whole sequence here ... but > 1 has become an expression
+                                    local ns_a, tg_a, ok, edt = action[5], action[6], false, e.dt
+                                    for k=1,#edt do
+                                        local edk = edt[k]
+                                        if type(edk) == "table" then
+                                            if (ns_a == "*" or edk.ns == ns_a) and (edk.tg == tg_a) then
+                                                ok = true
+                                                break
+                                            end
+                                        end
+                                    end
+                                    matched = matched and ok
+                                end
                             elseif command == 27 then -- has attribute
                                 local ns_a, tg_a = action[3], action[4]
                                 if tg == tg_a then
@@ -686,8 +773,8 @@ local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- mu
                                     matched = false
                                 end
                                 if not action[2] then matched = not matched end
-                                matched = matched and e.at[action[5]]
-                            elseif command == 28 then -- has value
+                                matched = matched and e.at[action[6]]
+                            elseif command == 28 then -- has value (text match)
                                 local edt, ns_a, tg_a = e.dt, action[3], action[4]
                                 if tg == tg_a then
                                     matched = ns_a == "*" or ns == ns_a
@@ -724,6 +811,7 @@ local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- mu
                                         end
                                     end
                                 else
+                                    -- todo: [expr][expr]
                                     if not traverse(e,pattern,handle,reverse,index+1,root) then return false end
                                 end
                             elseif command == 14 then -- any
@@ -768,8 +856,10 @@ local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- mu
                             local ep = e.__p__ or parent
                             if index < #pattern then
                                 if not traverse(ep,pattern,handle,reverse,index+1,root) then return false end
-                            elseif handle(root,rootdt,k) then
+                            elseif handle(ep) then
                                 return false
+                            else
+                                --
                             end
                             break -- else loop
                         end
@@ -782,6 +872,18 @@ local function traverse(root,pattern,handle,reverse,index,parent,wildcard) -- mu
 end
 
 xml.traverse = traverse
+
+expressions.child = function(root,k,what) -- we could move the lpath converter to the scanner
+    local ok = false
+    traverse(root.dt[k],lpath(what),function(r,d,t) ok = true return true end)
+    return ok
+end
+
+expressions.count = function(root,k,what) -- we could move the lpath converter to the scanner
+    local n = 0
+    traverse(root.dt[k],lpath(what),function(r,d,t) n = n + 1 return false end)
+    return n
+end
 
 --[[ldx--
 <p>Next come all kind of locators and manipulators. The most generic function here
@@ -1570,6 +1672,29 @@ end
 --~ xml.lshow("/../../../a/(b|c)[@d='e']/f")
 --~ xml.lshow("/../../../a/!(b|c)[@d='e']/f")
 --~ xml.lshow("/../../../a/!b[@d!='e']/f")
+--~ xml.lshow("a[text()=='b']")
+--~ xml.lshow("a['b']")
+--~ xml.lshow("(x|y)[b]")
+--~ xml.lshow("/aaa[bbb]")
+--~ xml.lshow("aaa[bbb][ccc][ddd]")
+--~ xml.lshow("aaa['xxx']")
+--~ xml.lshow("a[b|c]")
+--~ xml.lshow("whatever['crap']")
+--~ xml.lshow("whatever[count(whocares) > 1 and oeps and 'oeps']")
+--~ xml.lshow("whatever[whocares]")
+--~ xml.lshow("whatever[@whocares]")
+--~ xml.lshow("whatever[count(whocares) > 1]")
+--~ xml.lshow("a(@b)")
+--~ xml.lshow("a[b|c|d]")
+--~ xml.lshow("a[b and @b]")
+--~ xml.lshow("a[b]")
+--~ xml.lshow("a[b and b]")
+--~ xml.lshow("a[b][c]")
+--~ xml.lshow("a[b][1]")
+--~ xml.lshow("a[1]")
+--~ xml.lshow("a[count(b)!=0][count(b)!=0]")
+--~ xml.lshow("a[not(count(b))][not(count(b))]")
+--~ xml.lshow("a[count(b)!=0][count(b)!=0]")
 
 --~ x = xml.convert([[
 --~     <a>

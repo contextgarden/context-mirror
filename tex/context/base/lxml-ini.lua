@@ -467,13 +467,9 @@ function lxml.last(id,pattern)
     xmlsprint(xmllast(get_id(id),pattern))
 end
 function lxml.all(id,pattern)
- -- xmltprint(xmlcollect(get_id(id),pattern))
     traverse(get_id(id), lpath(pattern), function(r,d,k)
-        -- to be checked for root::
         if d then
             xmlsprint(d[k])
-        else -- new, maybe wrong
---~             xmlsprint(r)
         end
         return false
     end)
@@ -482,10 +478,6 @@ end
 function lxml.nonspace(id,pattern) -- slow, todo loop
     xmltprint(xmlcollect(get_id(id),pattern,true))
 end
-
---~ function lxml.content(id)
---~     xmlsprint(xmlcontent(get_id(id)) or "")
---~ end
 
 function lxml.strip(id,pattern,nolines)
     xml.strip(get_id(id),pattern,nolines)
@@ -676,8 +668,10 @@ function lxml.serialize(root, command)
                 lxml.addindex(rootname,false,true)
                 ix = root.ix
             end
+--~ print(rootname,ix,command)
             texsprint(ctxcatcodes,format("\\xmls{%s::%s}{%s}",rootname,ix,command))
         else
+--~ print(ix,command)
             texsprint(ctxcatcodes,format("\\xmls{%s}{%s}",ix,command))
         end
     elseif tc == "function" then
@@ -689,6 +683,7 @@ function lxml.serialize(root, command)
     elseif command == false then
         -- ignore
     else
+        -- texsprint("?")
         -- fuzzy, so ignore too
     end
 end
@@ -849,7 +844,7 @@ end
 
 local rootname, thecmd
 local function ndoit(r,d,k)
-    local m = (d and d[k]) or r -- brrr this r, maybe away
+    local m = (d and d[k]) or r
     local ix = m.ix
     if not ix then
         lxml.addindex(rootname,false,true)
