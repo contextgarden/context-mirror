@@ -297,26 +297,25 @@ function define.command_1(str)
     elseif name == "unknown" then
         texsprint(ctxcatcodes,"\\fcglet\\somefontname\\defaultfontfile")
     else
-        texsprint(ctxcatcodes,format("\\fcxdef\\somefontname{%s}",name))
+        texsprint(ctxcatcodes,"\\fcxdef\\somefontname{",name,"}")
     end
     -- we can also use a count for the size
     if size and size ~= "" then
         local mode, size = sizepattern:match(size)
         if size and mode then
             count.scaledfontmode = mode
-            texsprint(ctxcatcodes,format("\\def\\somefontsize{%s}",size))
+            texsprint(ctxcatcodes,"\\def\\somefontsize{",size,"}")
         else
             count.scaledfontmode = 0
-            texsprint(ctxcatcodes,format("\\let\\somefontsize\\empty",size))
+            texsprint(ctxcatcodes,"\\let\\somefontsize\\empty")
         end
     elseif true then
         -- so we don't need to check in tex
         count.scaledfontmode = 2
---~         texsprint(ctxcatcodes,format("\\def\\somefontsize{*}",size))
-        texsprint(ctxcatcodes,format("\\let\\somefontsize\\empty",size))
+        texsprint(ctxcatcodes,"\\let\\somefontsize\\empty")
     else
         count.scaledfontmode = 0
-        texsprint(ctxcatcodes,format("\\let\\somefontsize\\empty",size))
+        texsprint(ctxcatcodes,"\\let\\somefontsize\\empty")
     end
     specification = define.makespecification(str,lookup,name,sub,method,detail,size)
 end

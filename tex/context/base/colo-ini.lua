@@ -23,6 +23,8 @@ local a_transparency = attributes.private('transparency')
 local a_colorspace   = attributes.private('colormodel')
 local a_background   = attributes.private('background')
 
+-- no format needed any more or maybe use low level commands (less tokenization)
+
 local a_l_c_template = "\\setevalue{(ca:%s)}{%s}" ..
                        "\\setevalue{(cs:%s)}{\\dosetattribute{color}{%s}}"
 local a_g_c_template = "\\setxvalue{(ca:%s)}{%s}" ..
@@ -350,7 +352,7 @@ function colors.formatgray(ca,separator)
     return format("%0.3f",(cv and cv[2]) or 0)
 end
 
-function colors.colorcomponents(ca)
+function colors.colorcomponents(ca) -- return list
     local cv = colors.value(ca)
     if cv then
         local model = cv[1]

@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['node-bck'] = {
     license   = "see context related readme files"
 }
 
+-- beware, this one takes quite some runtime, so we need a status flag
+-- maybe some page related state
+
 local hlist = node.id("hlist")
 local vlist = node.id("vlist")
 

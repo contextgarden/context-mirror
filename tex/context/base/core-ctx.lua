@@ -25,13 +25,12 @@ function commands.loadctxpreplist()
                     commands.writestatus("systems","loading ctx log file (specified)") -- todo: m!systems
                 end
 --~             end
-            for r, d, k in xml.elements(x,"ctx:prepfile") do
-                local dk = d[k]
-                local name = xml.content(dk)
+            for e in xml.collected(x,"ctx:prepfile") do
+                local name = xml.content(e)
                 if islocal then
                     name = file.basename(name)
                 end
-                local done = dk.at['done'] or 'no'
+                local done = e.at['done'] or 'no'
                 if trace_prepfiles then
                     commands.writestatus("systems","registering %s -> %s",done)
                 end

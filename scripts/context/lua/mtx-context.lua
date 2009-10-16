@@ -299,7 +299,6 @@ found = usedname ~= ""
                                         xml.each(command,"ctx:new", function(r,d,k)
                                             d[k] = ctxrunner.substitute(newfile)
                                         end)
-                                        --  message: preprocessing #{oldfile} into #{newfile} using #{pp}
                                         ctxdata.variables['old'] = oldfile
                                         ctxdata.variables['new'] = newfile
                                         xml.each(command,"ctx:value", function(r,d,k)
@@ -750,6 +749,10 @@ function scripts.context.run(ctxdata,filename)
                         if environment.argument("batchmode") then
                             flags[#flags+1] = "--interaction=batchmode"
                         end
+                        if environment.argument("synctex") then
+                            logs.simple("warning: syntex is enabled") -- can add upto 5% runtime
+                            flags[#flags+1] = "--synctex=1"
+                        end
                         flags[#flags+1] = "--fmt=" .. string.quote(formatfile)
                         flags[#flags+1] = "--lua=" .. string.quote(scriptfile)
                         flags[#flags+1] = "--backend=pdf"
@@ -769,16 +772,16 @@ function scripts.context.run(ctxdata,filename)
                         --~     scripts.context.make(formatname)
                         --~     returncode, errorstring = os.spawn(command)
                         --~     if returncode == 3 then
-                        --~         logs.simple("fatal error, return code 3, message: %s",errorstring or "?")
+                        --~         logs.simple("ks: return code 3, message: %s",errorstring or "?")
                         --~         os.exit(1)
                         --~     end
                         --~ end
                             if not returncode then
-                                logs.simple("fatal error, no return code, message: %s",errorstring or "?")
+                                logs.simple("fatal error: no return code, message: %s",errorstring or "?")
                                 os.exit(1)
                                 break
                             elseif returncode > 0 then
-                                logs.simple("fatal error, return code: %s",returncode or "?")
+                                logs.simple("fatal error: return code: %s",returncode or "?")
                                 os.exit(returncode)
                                 break
                             else
@@ -799,10 +802,10 @@ function scripts.context.run(ctxdata,filename)
                             logs.simple("arrange run: %s",command)
                             local returncode, errorstring = os.spawn(command)
                             if not returncode then
-                                logs.simple("fatal error, no return code, message: %s",errorstring or "?")
+                                logs.simple("fatal error: no return code, message: %s",errorstring or "?")
                                 os.exit(1)
                             elseif returncode > 0 then
-                                logs.simple("fatal error, return code: %s",returncode or "?")
+                                logs.simple("fatal error: return code: %s",returncode or "?")
                                 os.exit(returncode)
                             end
                         end

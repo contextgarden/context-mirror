@@ -13,12 +13,12 @@
 
 %D The following catcode tables are rather \CONTEXT\ independent.
 
-\ifx\nilcatcodes \undefined \newcatcodetable \nilcatcodes  \fi
-\ifx\texcatcodes \undefined \newcatcodetable \texcatcodes  \fi
-\ifx\luacatcodes \undefined \newcatcodetable \luacatcodes  \fi
-\ifx\notcatcodes \undefined \newcatcodetable \notcatcodes  \fi
-\ifx\vrbcatcodes \undefined \newcatcodetable \vrbcatcodes  \fi
-\ifx\prtcatcodes \undefined \newcatcodetable \prtcatcodes  \fi
+\ifdefined\nilcatcodes \else \newcatcodetable \nilcatcodes  \fi
+\ifdefined\texcatcodes \else \newcatcodetable \texcatcodes  \fi
+\ifdefined\luacatcodes \else \newcatcodetable \luacatcodes  \fi
+\ifdefined\notcatcodes \else \newcatcodetable \notcatcodes  \fi
+\ifdefined\vrbcatcodes \else \newcatcodetable \vrbcatcodes  \fi
+\ifdefined\prtcatcodes \else \newcatcodetable \prtcatcodes  \fi
 
 \startcatcodetable \nilcatcodes
     \catcode`\^^I = 10 % ascii tab is a blank space

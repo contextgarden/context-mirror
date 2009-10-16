@@ -12,6 +12,11 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% \startluacode
+%     collectgarbage("stop")
+%     function collectgarbage() return 0 end
+% \stopluacode
+
 % todo: for fun: pure lua interface, but as this style evolved over 15 years
 % it's a waste of time
 %
@@ -141,7 +146,8 @@
   {\doifsomething{#1}
      {\doonlyonce{setups:#1}
         {\xmlloadonly{setups}{#1}{setups}%
-         \xmlcommand{setups}{/interface/command}{xml:setups:register}}}} % qualified path saves > 50% runtime
+%          \xmlcommand{setups}{/interface/command}{xml:setups:register}}}} % qualified path saves > 50% runtime
+         \xmlfilter{setups}{/interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
 
 \newif\ifshortsetup
 
@@ -170,7 +176,8 @@
    \showsetupindeed{#1}}
 
 \def\showsetupindeed#1%
-  {\xmlcommand{setups}{/interface/command[@name='#1']}{xml:setups:typeset}}
+%   {\xmlcommand{setups}{/interface/command[@name='#1']}{xml:setups:typeset}}
+  {\xmlfilter{setups}{/interface/command[@name='#1']/command(xml:setups:typeset)}}
 
 \def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
@@ -206,7 +213,8 @@
             } {
                 \tex{}
             }
-            \xmlfirst{#1}{/sequence}
+%             \xmlfirst{#1}{/sequence}
+            \xmlfilter{#1}{/sequence/first()}
             \ignorespaces
         \egroup
         \xmldoif{#1}{/arguments} {
@@ -214,7 +222,8 @@
                 \enablemode[setups-pass-one]
                 \doglobal\newcounter\currentSETUPargument
                 \ignorespaces
-                \xmltext{#1}{/arguments}
+%                 \xmltext{#1}{/arguments}
+                \xmlfilter{#1}{/arguments/text()}
             \egroup
         }
         \doif {\xmlatt{#1}{type}} {environment} {
@@ -224,7 +233,8 @@
                     \ttsl
                 }
                 \tex{\e!stop}
-                \xmlfirst{#1}{/sequence/variable}
+%                 \xmlfirst{#1}{/sequence/variable}
+                \xmlfilter{#1}{/sequence/variable/first()}
                 \ignorespaces
             \egroup
         }
@@ -235,7 +245,8 @@
                 \doglobal\newcounter\currentSETUPargument
                 \blank[\v!line]
                 \switchtobodyfont[small]
-                \ignorespaces\xmltext{#1}{/arguments}\endgraf
+%                 \ignorespaces\xmltext{#1}{/arguments}\endgraf
+                \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
             \egroup
         }
     \getvalue{\e!stop setuptext}
@@ -249,7 +260,8 @@
 
 \startxmlsetups xml:setups:resolve
     \ignorespaces
-    \xmlfirst{setups}{define[@name='\xmlatt{#1}{name}']}
+%     \xmlfirst{setups}{define[@name='\xmlatt{#1}{name}']}
+    \xmlfilter{setups}{/interface/define[@name='\xmlatt{#1}{name}']/first()}
 \stopxmlsetups
 
 %D This is the first pass; here we generate the top line.
@@ -320,7 +332,8 @@
     } {
         \xdef\currentSETUPwidth{0pt}%
         \bgroup
-            \xmlcommand{#1}{/parameter}{xml:setups:parameter:measure}
+%             \xmlcommand{#1}{/parameter}{xml:setups:parameter:measure}
+            \xmlfilter{#1}{/parameter/command(xml:setups:parameter:measure)}
         \egroup
         \startfirstSETUPcolumn{\showSETUPnumber}%
 %             \xmldoifelseempty {#1} {} {

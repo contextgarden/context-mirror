@@ -136,6 +136,7 @@ local trace_bugs         = false  trackers.register("otf.bugs",         function
 local trace_details      = false  trackers.register("otf.details",      function(v) trace_details      = v end)
 local trace_applied      = false  trackers.register("otf.applied",      function(v) trace_applied      = v end)
 local trace_steps        = false  trackers.register("otf.steps",        function(v) trace_steps        = v end)
+local trace_skips        = false  trackers.register("otf.skips",        function(v) trace_skips        = v end)
 
 trackers.register("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 trackers.register("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
@@ -1506,16 +1507,26 @@ end
 -- we don't need to pass the currentcontext, saves a bit
 -- make a slow variant then can be activated but with more tracing
 
+local function show_skip(kind,chainname,char,ck,class)
+    if ck[9] then
+        logwarning("%s: skipping char %s (%s) in rule %s, lookuptype %s (%s=>%s)",cref(kind,chainname),gref(char),class,ck[1],ck[2],ck[9],ck[10])
+    else
+        logwarning("%s: skipping char %s (%s) in rule %s, lookuptype %s",cref(kind,chainname),gref(char),class,ck[1],ck[2])
+    end
+end
+
 local function normal_handle_contextchain(start,kind,chainname,contexts,sequence,cache)
     --  local rule, lookuptype, sequence, f, l, lookups = ck[1], ck[2] ,ck[3], ck[4], ck[5], ck[6]
     local flags, done = sequence.flags, false
     local skipmark, skipligature, skipbase = flags[1], flags[2], flags[3]
     local someskip = skipmark or skipligature or skipbase -- could be stored in flags for a fast test (hm, flags could be false !)
+    local markclass = sequence.markclass
     for k=1,#contexts do
         local match, current, last = true, start, start
         local ck = contexts[k]
         local sequence = ck[3]
         local s = #sequence
+        -- f..l = mid string
         if s == 1 then
             -- never happens
             match = current.id == glyph and current.subtype<256 and current.font == currentfont and sequence[1][current.char]
@@ -1543,9 +1554,13 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
+--~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
                                         if class == skipmark or class == skipligature or class == skipbase then
---~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
+--~                                         if someskip and (class == skipmark or class == skipligature or class == skipbase) then
                                             -- skip 'm
+                                            if trace_skips then
+                                                show_skip(kind,chainname,char,ck,class)
+                                            end
                                             last = last.next
                                         elseif sequence[n][char] then
                                             if n < l then
@@ -1573,6 +1588,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 -- end
             end
             if match and f > 1 then
+                -- before
                 local prev = start.prev
                 if prev then
                     local n = f-1
@@ -1585,9 +1601,13 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
+--~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
                                         if class == skipmark or class == skipligature or class == skipbase then
 --~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
                                             -- skip 'm
+                                            if trace_skips then
+                                                show_skip(kind,chainname,char,ck,class)
+                                            end
                                         elseif sequence[n][char] then
                                             n = n -1
                                         else
@@ -1624,9 +1644,10 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 end
             end
             if match and s > l then
+                -- after
                 local current = last.next
                 if current then
-                    -- removed optimiziation for s-l == 1, we have to deal with marks anyway
+                    -- removed optimization for s-l == 1, we have to deal with marks anyway
                     local n = l + 1
                     while n <= s do
                         if current then
@@ -1637,9 +1658,13 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
+--~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
                                         if class == skipmark or class == skipligature or class == skipbase then
 --~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
                                             -- skip 'm
+                                            if trace_skips then
+                                                show_skip(kind,chainname,char,ck,class)
+                                            end
                                         elseif sequence[n][char] then
                                             n = n + 1
                                         else
@@ -1800,6 +1825,8 @@ end
 
 local resolved = { } -- we only resolve a font,script,language pair once
 
+-- todo: pass all these 'locals' in a table
+
 function fonts.methods.node.otf.features(head,font,attr)
     if trace_steps then
         checkstep(head)
@@ -1959,6 +1986,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                         -- sequence kan weg
                                         local ok
                                         start, ok = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,1)
+--~ texio.write_nl(tostring(lookupname),tostring(lookupmatch),tostring(ok))
                                         if ok then
                                             success = true
                                         end

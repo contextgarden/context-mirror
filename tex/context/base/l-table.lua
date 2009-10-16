@@ -26,6 +26,14 @@ function table.strip(tab)
     return lst
 end
 
+function table.keys(t)
+    local k = { }
+    for key,_ in next, t do
+        k[#k+1] = key
+    end
+    return k
+end
+
 local function compare(a,b)
     return (tostring(a) < tostring(b))
 end
@@ -797,22 +805,6 @@ function table.reverse(t)
     end
     return tt
 end
-
---~ function table.keys(t)
---~     local k = { }
---~     for k,_ in next, t do
---~         k[#k+1] = k
---~     end
---~     return k
---~ end
-
---~ function table.keys_as_string(t)
---~     local k = { }
---~     for k,_ in next, t do
---~         k[#k+1] = k
---~     end
---~     return concat(k,"")
---~ end
 
 function table.insert_before_value(t,value,extra)
     for i=1,#t do

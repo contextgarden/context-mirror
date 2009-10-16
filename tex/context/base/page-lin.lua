@@ -42,15 +42,16 @@ nodes.lines.scratchbox = nodes.lines.scratchbox or 0
 -- cross referencing
 
 function nodes.lines.number(n)
+    n = tonumber(n)
     local cr = cross_references[n] or 0
     cross_references[n] = nil
     return cr
 end
 
-local function resolve(n,m)
+local function resolve(n,m) -- we can now check the 'line' flag (todo)
     while n do
         local id = n.id
-        if id == whatsit then
+        if id == whatsit then -- why whatsit
             local a = has_attribute(n,line_reference)
             if a then
                 cross_references[a] = m
@@ -60,6 +61,33 @@ local function resolve(n,m)
         end
         n = n.next
     end
+end
+
+function nodes.lines.finalize(t)
+    local getnumber = nodes.lines.number
+    for _,p in next, t do
+        for _,r in next, p do
+            if r.metadata.kind == "line" then
+                local e = r.entries
+                e.linenumber = getnumber(e.text or 0)
+            end
+        end
+    end
+end
+
+local filters = jobreferences.filters
+local helpers = structure.helpers
+
+jobreferences.registerfinalizer(nodes.lines.finalize)
+
+filters.line = filters.line or { }
+
+function filters.line.default(data)
+    helpers.title(data.entries.linenumber or "?",data.metadata)
+end
+
+function filters.line.page(data,prefixspec,pagespec) -- redundant
+    helpers.prefixpage(data,prefixspec,pagespec)
 end
 
 -- boxed variant

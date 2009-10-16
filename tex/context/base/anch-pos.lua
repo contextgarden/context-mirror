@@ -80,12 +80,13 @@ function jobpositions.MPd(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatco
 
 -- the following are only for MP so there we can leave out the pt
 
--- can be writes
+-- can be writes and no format needed any more
 
 function jobpositions.MPxy(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s-%s,%s-%s)',jpi[2],dx,jpi[3],dy))
+--~         texprint(ctxcatcodes,'(',jpi[2],'-',dx,',',jpi[3],'-',dy,')')
     else
         texprint(ctxcatcodes,'(0,0)')
     end
@@ -94,6 +95,7 @@ function jobpositions.MPll(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s-%s,%s-%s-%s)',jpi[2],dx,jpi[3],jpi[6],dy))
+--~         texprint(ctxcatcodes,'(',jpi[2],'-',dx,',',jpi[3],'-',jpi[6],'-',dy,')')
     else
         texprint(ctxcatcodes,'(0,0)')
     end
@@ -102,6 +104,7 @@ function jobpositions.MPlr(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s+%s-%s,%s-%s-%s)',jpi[2],jpi[4],dx,jpi[3],jpi[6],dy))
+--~         texprint(ctxcatcodes,'(',jpi[2],'+',jpi[4],'-',dx,',',jpi[3],'-',jpi[6],'-',dy,')')
     else
         texprint(ctxcatcodes,'(0,0)')
     end
@@ -110,6 +113,7 @@ function jobpositions.MPur(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s+%s-%s,%s+%s-%s)',jpi[2],jpi[4],dx,jpi[3],jpi[5],dy))
+--~         texprint(ctxcatcodes,'(',jpi[2],'+',jpi[4],'-',dx,',',jpi[3],'+',jpi[5],'-',dy,')')
     else
         texprint(ctxcatcodes,'(0,0)')
     end
@@ -118,6 +122,7 @@ function jobpositions.MPul(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s-%s,%s+%s-%s)',jpi[2],dx,jpi[3],jpi[5],dy))
+--~         texprint(ctxcatcodes,'(',jpi[2],'-',dx,',',jpi[3],'+',jpi[5],'-',dy,')')
     else
         texprint(ctxcatcodes,'(0,0)')
     end

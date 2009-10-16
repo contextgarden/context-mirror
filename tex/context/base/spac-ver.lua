@@ -309,7 +309,7 @@ do -- todo: interface.variables
                 elseif keyword == k_category then
                     local category = tonumber(detail)
                     if category then
-                        texsprint(ctxcatcodes,format("\\setblankcategory{%s}",category))
+                        texsprint(ctxcatcodes,"\\setblankcategory{",category,"}")
                         if category ~= oldcategory then
                             texsprint(ctxcatcodes,"\\flushblankhandling")
                             oldcategory = category
@@ -318,25 +318,20 @@ do -- todo: interface.variables
                 elseif keyword == k_order and detail then
                     local order = tonumber(detail)
                     if order then
-                        texsprint(ctxcatcodes,format("\\setblankorder{%s}",order))
+                        texsprint(ctxcatcodes,"\\setblankorder{",order,"}")
                     end
                 elseif keyword == k_penalty and detail then
                     local penalty = tonumber(detail)
                     if penalty then
-                        texsprint(ctxcatcodes,format("\\setblankpenalty{%s}",penalty))
+                        texsprint(ctxcatcodes,"\\setblankpenalty{",penalty,"}")
                     end
                 else
                     amount = tonumber(amount) or 1
                     local sk = skip[keyword]
---~                     if sk then
---~                         texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,sk[1],sk[2] or sk[1]))
---~                     else -- no check
---~                         texsprint(ctxcatcodes,format("\\addblankskip{%s}{%s}{%s}",amount,keyword,keyword))
---~                     end
                     if sk then
-                        texsprint(ctxcatcodes,format("\\addpredefinedblankskip{%s}{%s}",amount,keyword))
+                        texsprint(ctxcatcodes,"\\addpredefinedblankskip{",amount,"}{",keyword,"}")
                     else -- no check
-                        texsprint(ctxcatcodes,format("\\addaskedblankskip{%s}{%s}",amount,keyword))
+                        texsprint(ctxcatcodes,"\\addaskedblankskip{",amount,"}{",keyword,"}")
                     end
                 end
             end

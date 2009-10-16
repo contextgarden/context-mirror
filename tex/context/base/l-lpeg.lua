@@ -100,3 +100,15 @@ function string:split(separator)
     end
     return c:match(self)
 end
+
+--~ function lpeg.L(list,pp)
+--~     local p = pp
+--~     for l=1,#list do
+--~         if p then
+--~             p = p + lpeg.P(list[l])
+--~         else
+--~             p = lpeg.P(list[l])
+--~         end
+--~     end
+--~     return p
+--~ end

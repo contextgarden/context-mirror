@@ -17,6 +17,7 @@
 %D \MKII\ code, when enabled.
 
 \startluacode
+    dofile(resolvers.find_file("lxml-inf.lua"))
     local list = { }
     function document.check_pending_xml_element(str)
         list[str] = (list[str] and (list[str]+1)) or 1

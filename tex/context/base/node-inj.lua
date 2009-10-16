@@ -309,11 +309,12 @@ function nodes.inject_kerns(head,where,keep)
                                 --  if rlmode and rlmode < 0 then
                                 --      n.xoffset = p.xoffset + d[1]
                                 --  else
+local k = wx[p]
+if k then
+    n.xoffset = p.xoffset - d[1] - k[2]
+else
                                          n.xoffset = p.xoffset - d[1]
---~ local k = wx[p]
---~ if k then
---~     wx[n] = k
---~ end
+end
                                 --  end
                                     if mk[p] then
                                         n.yoffset = p.yoffset + d[2]

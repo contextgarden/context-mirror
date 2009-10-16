@@ -392,6 +392,8 @@
    \readfile{#1}{#2}{#3}%
    \popcatcodetable}
 
+\ifdefined\xmlcatcodes \else \let\xmlcatcodes\xmlcatcodesn \fi
+
 \def\readxmlfile#1#2#3%
   {\pushcatcodetable \catcodetable \xmlcatcodes
    \readfile{#1}{#2}{#3}%

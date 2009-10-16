@@ -28,7 +28,7 @@
     \xmlfilter  {\xmldocument} {omt:*/function(remapopenmath)}
     \xmlfilter  {\xmldocument} {mml:bind/function(remapmmlbind)}
     \xmlfilter  {\xmldocument} {mml:csymbol/function(remapmmlcsymbol)}
-    \xmlsetsetup{\xmldocument} {mml:*} {*}
+    \xmlsetsetup{\xmldocument} {mml:*} {mml:*}
     \xmlsetsetup{\xmldocument} {mml:apply/mml:apply/mml:inverse/../../..} {mml:apply:inverse}
     \xmlstrip   {\xmldocument} {(mml:mi|mml:mo|mml:mn|mml:mtext|mml:csymbol)}
 \stopxmlsetups
@@ -334,7 +334,7 @@
             \MMLcreset
             \MMLdoL
             \mmlfirst{#1}
-            \ifnum\xmlnofelements{#1}>\plusone
+            \ifnum\xmlcount{#1}>\plusone
                 \negthinspace % not enough
                 \left(\MMLcreset\xmlconcatrange{#1}{/*}{2}{}{\MMLseparator,}\right)
             \fi
@@ -354,7 +354,7 @@
 
 \startxmlsetups mml:apply:mml:ci
     \xmlfirst{#1}{/mml:ci}
-    \ifnum\xmlnofelements{#1}>\plusone
+    \ifnum\xmlcount{#1}>\plusone
        \left(\MMLcreset\xmlconcatrange{#1}{/*}{2}{}{\MMLseparator,}\right)
     \fi
 \stopxmlsetups
@@ -368,7 +368,7 @@
 % fn
 
 \startxmlsetups mmc:fn:\utfchar{"00B1} % plusminus ±
-    \ifnum\xmlnofelements{#1}>\plustwo
+    \ifnum\xmlcount{#1}>\plustwo
         \MMLcreset
         \left(\xmlconcat{#1}{/*}{2}{}{\mmlfirst{#1}}\right)
     \else
@@ -382,7 +382,7 @@
 
 \startxmlsetups mmc:fn
     \begingroup
-    \edef\mmlnoffn{\xmlnofelements{#1}}
+    \edef\mmlnoffn{\xmlcount{#1}}
     \ifnum\mmlnoffn>\plustwo
       \def\MMCfnleft {\left(}
       \def\MMCfnright{\right)}
@@ -428,7 +428,7 @@
         } {
             \MMLcreset
             \mmlfirst{#1}
-            \ifnum\xmlnofelements{#1}>\plusone
+            \ifnum\xmlcount{#1}>\plusone
                 \negthinspace
                 \left(\MMLcreset\xmlconcat{#1}{2}{}{\MMLseparator,}\right)
             \fi
@@ -759,7 +759,7 @@
     \doif \MMLdeclarestate \v!start {
         \mathopnolimits{declare}
         \mmlfirst{#1}
-        \ifnum\xmlnofelements{#1}>\plusone
+        \ifnum\xmlcount{#1}>\plusone
             \thickspace
             \mathopnolimits{as}
             \thickspace
@@ -1589,7 +1589,7 @@
 
 \startxmlsetups mml:vector
     \begingroup
-    \ifnum\xmlnofelements{#1}>\plusone
+    \ifnum\xmlcount{#1}>\plusone
         \doifelse\MMLvectordirection\v!horizontal {
             \left(\xmlconcat{#1}{/*}{\MMLseparator\MMLvectorseparator}\right)
         } {
@@ -1846,12 +1846,12 @@
 % setups
 
 \startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
-    \ctxlua{lxml.mml.mi("#1","*")}
+    \ctxlua{lxml.mml.mi("#1","/*")}
 \stopxmlsetups
 
 \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
     \begingroup
-        \mr \ctxlua{lxml.mml.mn("#1","*")}% no \hbox, would be ok for . , but spoils rest
+        \mr \ctxlua{lxml.mml.mn("#1","/*")}% no \hbox, would be ok for . , but spoils rest
     \endgroup
 \stopxmlsetups
 
@@ -1862,7 +1862,7 @@
 \startxmlsetups mml:mo
     \doif {\xmlatt{#1}{maxsize}}  {1}     {\settrue\mmlignoredelimiter}
     \doif {\xmlatt{#1}{stretchy}} {false} {\settrue\mmlignoredelimiter}
-    \ctxlua{lxml.mml.mo("#1","*")}
+    \ctxlua{lxml.mml.mo("#1","/*")}
     \setfalse\mmlignoredelimiter
 \stopxmlsetups
 
@@ -2074,8 +2074,9 @@
 
 \startxmlsetups mml:mrow
     \begingroup
-        \ifnum\xmlcount{#1}{/mml:mo}=\plustwo
-            \xmldoifelse {#1} {/mml:mo[position()==1 or position()==\xmlnofelements{#1}]} {% we need a {}
+        \edef\nofmmlrows{\xmlcount{#1}{/mml:mo}}%
+        \ifnum\nofmmlrows=\plustwo
+            \xmldoifelse {#1} {/mml:mo[position()==1 or position()==\nofmmlrows]} {% we need a {}
                 \def\MMLleft  {\left }
                 \def\MMLright {\right}
                 \def\MMLmiddle{\middle}
@@ -2140,12 +2141,12 @@
 
 \startxmlsetups mml:mover
 %     \mathop {
-        \edef\mmlovertoken{\xmlraw{#1}{/mml:*[position()==2]}}
+        \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}
         \doifelse{\utfmathclass\mmlovertoken}{accent} {
             \edef\mmlovercommand{\utfmathcommand\mmlovertoken}
             \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
         } {
-            \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[position()==1]}}
+            \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
             \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
             \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
             \vbox {
@@ -2164,12 +2165,12 @@
 
 \startxmlsetups mml:munder
 %     \mathop {
-        \edef\mmlundertoken{\xmlraw{#1}{/mml:*[position()==2]}}
+        \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}
         \doifelse{\utfmathclass\mmlundertoken}{accent} {
             \edef\mmlundercommand{\utfmathcommand\mmlundertoken}
             \mmlexecuteifdefined\mmlundercommand\mathematics{\mmlfirst{#1}}
         } {
-            \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[position()==1]}}
+            \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[1]}}
             \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
             \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
             \vtop {
@@ -2187,7 +2188,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:munderover
-    \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[position()==1]}}
+    \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
     \edef\mmlbasecommand{\utfmathcommand\mmlbasetoken}
     \mmlexecuteifdefined\mmlbasecommand{\mathematics{\mmlfirst{#1}}}_{\mmlsecond{#1}}^{\mmlthird{#1}}
 \stopxmlsetups

@@ -4011,6 +4011,11 @@
 %       \fi\fi\fi\fi
 %     \endcsname}
 
+%D goodies:
+
+\def\showchardata#1{\ctxlua{fonts.show_char_data("#1")}}
+\def\showfontdata  {\ctxlua{fonts.show_font_parameters()}}
+
 \protect \endinput
 
 % \startluacode

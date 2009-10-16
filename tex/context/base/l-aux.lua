@@ -221,3 +221,21 @@ function aux.accesstable(target)
     end
     return t
 end
+
+-- as we use this a lot ...
+
+--~ function aux.cachefunction(action,weak)
+--~     local cache = { }
+--~     if weak then
+--~         setmetatable(cache, { __mode = "kv" } )
+--~     end
+--~     local function reminder(str)
+--~         local found = cache[str]
+--~         if not found then
+--~             found = action(str)
+--~             cache[str] = found
+--~         end
+--~         return found
+--~     end
+--~     return reminder, cache
+--~ end

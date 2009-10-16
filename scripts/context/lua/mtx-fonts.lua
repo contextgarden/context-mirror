@@ -134,6 +134,8 @@ function scripts.fonts.save(name,sub)
                     else
                         save(fontinfo.fullname,fontloader.open(filename))
                     end
+                else
+                    logs.simple("font: %s cannot be read",filename)
                 end
             else
                 logs.simple("font: %s not saved",filename)
@@ -141,6 +143,8 @@ function scripts.fonts.save(name,sub)
         else
             logs.simple("font: %s not found",name)
         end
+    else
+        logs.simple("font: no name given")
     end
 end
 

@@ -14,13 +14,13 @@
 %D We prefer to define relevant catcode tables in this file instead
 %D of everywhere around.
 
-\ifx\ctxcatcodes \undefined \newcatcodetable \ctxcatcodes  \fi
-\ifx\mthcatcodes \undefined \newcatcodetable \mthcatcodes  \fi % math, not used, too tricky
-\ifx\xmlcatcodesn\undefined \newcatcodetable \xmlcatcodesn \fi % normal
-\ifx\xmlcatcodese\undefined \newcatcodetable \xmlcatcodese \fi % entitle
-\ifx\xmlcatcodesr\undefined \newcatcodetable \xmlcatcodesr \fi % reduce
-\ifx\typcatcodesa\undefined \newcatcodetable \typcatcodesa \fi % { }
-\ifx\typcatcodesb\undefined \newcatcodetable \typcatcodesb \fi % < >
+\ifdefined \ctxcatcodes  \else \newcatcodetable \ctxcatcodes  \fi
+\ifdefined \mthcatcodes  \else \newcatcodetable \mthcatcodes  \fi % math, not used, too tricky
+\ifdefined \xmlcatcodesn \else \newcatcodetable \xmlcatcodesn \fi % normal
+\ifdefined \xmlcatcodese \else \newcatcodetable \xmlcatcodese \fi % entitle
+\ifdefined \xmlcatcodesr \else \newcatcodetable \xmlcatcodesr \fi % reduce
+\ifdefined \typcatcodesa \else \newcatcodetable \typcatcodesa \fi % { }
+\ifdefined \typcatcodesb \else \newcatcodetable \typcatcodesb \fi % < >
 
 \startcatcodetable \ctxcatcodes
     \catcode`\^^I = 10
@@ -202,7 +202,7 @@
 
     \catcodetable       \ctxcatcodes
 \let\defaultcatcodetable\ctxcatcodes
-\let\xmlcatcodes        \xmlcatcodesn
+\let\xmlcatcodes        \xmlcatcodesn % beware, in mkiv we use \notcatcodes
 
 \endinput
 

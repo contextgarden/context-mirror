@@ -15,18 +15,23 @@
 
 \writestatus{loading}{ConTeXt XML Support / Initialization}
 
-\registerctxluafile{lxml-tab}{1.001}
-\registerctxluafile{lxml-pth}{1.001}
-\registerctxluafile{lxml-ent}{1.001}
-\registerctxluafile{lxml-mis}{1.001}
-\registerctxluafile{lxml-ini}{1.001}
+%registerctxluafile{lxml-tab}{1.001} % loader
+%registerctxluafile{lxml-lpt}{1.001} % parser
+%registerctxluafile{lxml-xml}{1.001} % xml finalizers
+%registerctxluafile{lxml-aux}{1.001} % extras using parser
+%registerctxluafile{lxml-mis}{1.001} % extras independent of parser
+%registerctxluafile{lxml-ent}{1.001} % entity hacks
+\registerctxluafile{lxml-tex}{1.001} % tex finalizers
+\registerctxluafile{lxml-dir}{1.001} % ctx hacks
 
 \unprotect
 
+\def\c!entities{entities} % to be internationalized
+
 \def\xmlmain               #1{\ctxlua{lxml.main("#1")}}
 \def\xmlall              #1#2{\ctxlua{lxml.all("#1","#2")}}
-\def\xmlatt              #1#2{\ctxlua{lxml.attribute("#1","/","#2")}}
-\def\xmlattdef         #1#2#3{\ctxlua{lxml.attribute("#1","/","#2","#3")}}
+\def\xmlatt              #1#2{\ctxlua{lxml.att("#1","#2")}}
+\def\xmlattdef         #1#2#3{\ctxlua{lxml.att("#1","#2","#3")}}
 \def\xmlchainatt         #1#2{\ctxlua{lxml.chainattribute("#1","/","#2")}}
 \def\xmlchainattdef    #1#2#3{\ctxlua{lxml.chainattribute("#1","/","#2","#3")}}
 \def\xmlattribute      #1#2#3{\ctxlua{lxml.attribute("#1","#2","#3")}}
@@ -40,6 +45,7 @@
 \def\xmldirectivesbefore   #1{\ctxlua{lxml.directives.before("#1")}}
 \def\xmldirectivesafter    #1{\ctxlua{lxml.directives.after("#1")}}
 \def\xmlfilter           #1#2{\ctxlua{lxml.filter("#1",\!!bs#2\!!es)}}
+\def\xmlfunction         #1#2{\ctxlua{lxml["function"]("#1",\!!bs#2\!!es)}}
 \def\xmlfirst            #1#2{\ctxlua{lxml.first("#1","#2")}}
 \def\xmlflush              #1{\ctxlua{lxml.flush("#1")}}
 %def\xmlcontent            #1{\ctxlua{lxml.content("#1")}}
@@ -51,18 +57,12 @@
 \def\xmlinfo               #1{\hbox{\ttxx[\ctxlua{lxml.info("#1")}]}}
 \def\xmlshow               #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
 \def\xmllast             #1#2{\ctxlua{lxml.last("#1","#2")}}
-\def\xmlload             #1#2{\ctxlua{lxml.load("#1","#2")}}
-\def\xmlloadbuffer       #1#2{\ctxlua{lxml.loadbuffer("#1","#2")}}
-\def\xmlloaddata         #1#2{\ctxlua{lxml.loaddata("#1",\!!bs#2\!!es)}}
-\def\xmlloadregistered   #1#2{\ctxlua{lxml.loadregistered("#1")}}
-\def\xmlloaddirectives     #1{\ctxlua{lxml.directives.load("#1")}}
 \def\xmlname               #1{\ctxlua{lxml.name("#1")}}
 \def\xmlnamespace          #1{\ctxlua{lxml.namespace("#1")}}
 \def\xmlnonspace         #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
 \def\xmlraw              #1#2{\ctxlua{lxml.raw("#1","#2")}}
 \def\xmlsnippet          #1#2{\ctxlua{lxml.snippet("#1",#2)}}
 \def\xmlelement          #1#2{\ctxlua{lxml.element("#1",#2)}}
-\def\xmlnofelements        #1{\ctxlua{lxml.nofelements("#1")}}
 \def\xmlregisterns       #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
 \def\xmlremapname    #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
 \def\xmlremapnamespace #1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
@@ -75,11 +75,16 @@
 \def\xmlstrippednolines  #1#2{\ctxlua{lxml.stripped("#1","#2",true)}}
 \def\xmltag                #1{\ctxlua{lxml.tag("#1")}}
 \def\xmltext             #1#2{\ctxlua{lxml.text("#1","#2")}}
-\def\xmltags             #1#2{\ctxlua{lxml.tags("#1","#2")}}
-\def\xmlutfize             #1{\ctxlua{lxml.utfize("#1")}}
 \def\xmlverbatim           #1{\ctxlua{lxml.verbatim("#1")}}
 \def\xmldisplayverbatim    #1{\ctxlua{lxml.displayverbatim("#1")}}
 \def\xmlinlineverbatim     #1{\ctxlua{lxml.inlineverbatim("#1")}}
+
+\def\xmlload             #1#2{\ctxlua{lxml.load("#1","#2","\@@xmentities","\@@xmcompress")}}
+\def\xmlloadbuffer       #1#2{\ctxlua{lxml.loadbuffer("#1","#2","\@@xmentities","\@@xmcompress")}}
+\def\xmlloaddata         #1#2{\ctxlua{lxml.loaddata("#1",\!!bs#2\!!es,"\@@xmentities","\@@xmcompress")}}
+\def\xmlloadregistered   #1#2{\ctxlua{lxml.loadregistered("#1","\@@xmentities","\@@xmcompress")}}
+\def\xmlloaddirectives     #1{\ctxlua{lxml.directives.load("#1")}}
+\def\xmlpos                #1{\ctxlua{lxml.pos("#1")}}
 
 %def\xmldoifelse         #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
 %def\xmldoifelsetext     #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
@@ -97,11 +102,9 @@
 \def\xmldoiftext         #1#2{\ctxlua{lxml.doiftext("#1","#2")}}
 \def\xmldoifnottext      #1#2{\ctxlua{lxml.doifnottext("#1","#2")}}
 \def\xmldoifelsetext     #1#2{\ctxlua{lxml.doifelsetext("#1","#2")}}
-\def\xmldoifelseempty    #1#2{\ctxlua{lxml.doifelseempty("#1","#2")}} % #2, "*" or "" == self not yet implemented
-\def\xmldoifelseselfempty  #1{\ctxlua{lxml.doifelseempty("#1")}}
 
-\def\xmldefaulttotext      #1{\ifcase\xmlprocessingmode\or\or   \ctxlua{lxml.set_command_to_text("#1")}\fi}
-\def\xmldefaulttonone      #1{\ifcase\xmlprocessingmode\or\or\or\ctxlua{lxml.set_command_to_none("#1")}\fi}
+%def\xmldoifelseempty    #1#2{\ctxlua{lxml.doifelseempty("#1","#2")}} % #2, "*" or "" == self not yet implemented
+%def\xmldoifelseselfempty  #1{\ctxlua{lxml.doifelseempty("#1")}}
 
 % \startxmlsetups xml:include
 %     \xmlinclude{main}{include}{filename|href}
@@ -112,11 +115,10 @@
 \let\xmlgrab\xmlsetsetup % obsolete
 \let\xmlself\s!unknown   % obsolete
 
-\def\xmlsetup#1#2%
-  {%\def\xmlself{#1}%
-   \setupwithargument{#2}{#1}}
+\def\xmlsetup#1#2{\setupwithargument{#2}{#1}}
 
 \let\xmls\xmlsetup
+\let\xmlw\setupwithargument
 
 \newtoks \registeredxmlsetups
 
@@ -164,11 +166,7 @@
    \edef\xmldocument{#3}% #2 can be \xmldocument and set as such
    %xmlpushdocument{#3}%
    #2{#3}{#4}%
-   \ifcase\xmlprocessingmode
-     \enableXML
-   \else
-     \setcatcodetable\notcatcodes
-   \fi
+   \setcatcodetable\notcatcodes
    \doifelsenothing{#5}
      {\xmlsetup{#3}{xml:process}}
      {\xmlsetup{#3}{#5}}%
@@ -197,10 +195,6 @@
 % beware: \xmlmain takes the real root, so also processing
 % instructions preceding the root element; well, in some
 % sense that is the root
-
-\long\def\xmlloop#1#2#3%
-  {\def\xmli##1##2{\xmlidx{#1}{#2/##1}{##2}}%
-   \dorecurse{\xmlcount{#1}{#2}}{#3}}
 
 \long\def\xmlconnect#1#2#3% inefficient
   {\scratchcounter\xmlcount{#1}{#2}\relax
@@ -278,98 +272,43 @@
 
 % setting up xml:
 %
-% \setupxml[\c!method=mkii]                    % mixed mkiv and mkii
-% \setupxml[\c!method=mkiv,\c!default=]        % mkiv only
-% \setupxml[\c!method=mkiv,\c!default=\v!none] % mkiv only, undefined -> hidden
-% \setupxml[\c!method=mkiv,\c!default=\v!text] % mkiv only, undefined -> text
+% \setupxml[\c!default=]        % mkiv only == text
+% \setupxml[\c!default=\v!none] % mkiv only, undefined -> hidden
+% \setupxml[\c!default=\v!text] % mkiv only, undefined -> text
 
 % \def\xmlctxdirective#1#2#3{\doif{#1}{clue}{\doif{#2}{page}}{\page[#3]}}
 
-\chardef\xmlprocessingmode=0 % 0=mixed, 1=mkivonly, 2=mkivonly-default-text, 3=mkivonly-default-none
-
-% \setupxml[method=mkiv,strip=yes,entities=yes,default=text]
+\chardef\xmlprocessingmode=0 % 0=unset, 1=text, 2=hidden
 
 \newtoks\everysetupxml
 
 \def\setupxml[#1]{\getparameters[\??xm][#1]\the\everysetupxml}
 
-\def\c!entities{entities} % to be internationalized
-\def\s!mkiv    {mkiv}
-\def\s!mkii    {mkii}
 
-% entities
+\letvalue{\??xm:\s!default:\v!normal}\zerocount
+\letvalue{\??xm:\s!default:\v!none  }\zerocount
+\letvalue{\??xm:\s!default:\v!text  }\plusone
+\letvalue{\??xm:\s!default:\v!hidden}\plustwo
 
-\newif\ifautoXMLentities
-
-\def\xmlkeepentities{\ctxlua{lxml.reset_entityhandler()}}
-\def\xmlmkiientities{\ctxlua{lxml.set_mkii_entityhandler()}\autoXMLentitiestrue}
-\def\xmlmkiventities{\ctxlua{lxml.set_mkiv_entityhandler()}}
-
-\let\xmlresolveentities\xmlmkiventities % will become \xmlmkiventities
-
-\letvalue{\??xm:1:\s!mkii  }\zerocount
-\letvalue{\??xm:1:\s!mkiv  }\plusone
-
-\letvalue{\??xm:2:\v!none  }\plusone
-\letvalue{\??xm:2:\v!text  }\plustwo
-\letvalue{\??xm:2:\v!hidden}\plusthree
-
-\letvalue{\??xm:ii:\v!yes }\xmlresolveentities
-\letvalue{\??xm:ii:\v!no  }\xmlkeepentities
-\letvalue{\??xm:ii:\s!mkii}\xmlmkiientities
-\letvalue{\??xm:ii:\s!mkiv}\xmlmkiventities
-
-\letvalue{\??xm:iv:\v!yes }\xmlresolveentities
-\letvalue{\??xm:iv:\v!no  }\xmlkeepentities
-\letvalue{\??xm:iv:\s!mkii}\xmlmkiventities
-\letvalue{\??xm:iv:\s!mkiv}\xmlmkiventities
+\def\xmldefaulttotext#1%
+  {\ifcase\xmlprocessingmode
+     % unset
+   \or
+     \ctxlua{lxml.set_command_to_text("#1")}% 1
+   \or
+     \ctxlua{lxml.set_command_to_none("#1")}% 2
+   \else
+     % unset
+   \fi}
 
 \appendtoks
-    \chardef\xmlprocessingmode\executeifdefined{\??xm:1:\@@xmmethod}\zerocount
-    \ifcase\xmlprocessingmode
-        % mkii, permits both methods
-        \executeifdefined{\??xm:ii:\@@xmentities}\xmlkeepentities
-    \or
-        % mkiv, mkiv exclusively
-        \chardef\xmlprocessingmode\executeifdefined{\??xm:2:\@@xmdefault}\plusone
-        \executeifdefined{\??xm:iv:\@@xmentities}\xmlresolveentities
-    \else
-        % unset
-    \fi
-    \ifcase\xmlprocessingmode
-        \ctxlua{characters.setmkiientities()}%
-    \else
-        \ctxlua{characters.setmkiventities()}%
-    \fi
-    \doifelse\@@xmcompress\v!yes % this key may change, maybe compress=yes|no
-      {\ctxlua{xml.strip_cm_and_dt=true}}
-      {\ctxlua{xml.strip_cm_and_dt=false}}%
+    \chardef\xmlprocessingmode\executeifdefined{\??xm:\s!default:\@@xmdefault}\plusone
 \to \everysetupxml
 
 \def\xmlinitialize{\the\everysetupxml}
 
-\newcount\charactersactiveoffset \charactersactiveoffset="10000
-
-\startextendcatcodetable\ctxcatcodes
-    \catcode\numexpr\charactersactiveoffset+`<\relax=13
-    \catcode\numexpr\charactersactiveoffset+`&\relax=13
-    \catcode\numexpr\charactersactiveoffset+`>\relax=13
-\stopextendcatcodetable
-\startextendcatcodetable\xmlcatcodes
-    \catcode\numexpr\charactersactiveoffset+`<\relax=13
-    \catcode\numexpr\charactersactiveoffset+`&\relax=13
-    \catcode\numexpr\charactersactiveoffset+`>\relax=13
-\stopextendcatcodetable
-
-\ctxlua { % entities are remembered in the format
-    characters.remapentity("<",characters.active_offset + utf.byte("<"))
-    characters.remapentity("&",characters.active_offset + utf.byte("&"))
-    characters.remapentity(">",characters.active_offset + utf.byte(">"))
-}
-
 \setupxml
-  [\c!method=mkii,       % mixed mode
-   \c!default=\v!hidden, % ignore elements that are not defined
+  [\c!default=,          % flush all
    \c!compress=\v!no,    % strip comment
    \c!entities=\v!yes]   % replace entities
 
@@ -391,44 +330,75 @@
 %
 % mkii: [\processXMLbuffer]\quad mkiv: [\xmlprocessbuffer{main}{}{}]
 
-% some mkii commands, but mkiv-ified
-
 \def\xmlmapvalue#1#2#3{\setvalue{\??xm:v:#1:#2}{#3}} % keep #3 to grab spaces
 \def\xmlvalue   #1#2#3{\executeifdefined{\??xm:v:#1:#2}{#3}}
 
 \let\xmlmapval\xmlmapvalue
 \let\xmlval   \xmlvalue
 
-% brrrr, give this at the top of a style that needs to stub mkiv loading
-
-\def\remapXMLtoMKIV
-  {\ifx\xmldocument\undefined\def\xmldocument{main}\fi
-   \def\processXMLfile          ##1{\xmlprocessfile  \xmldocument{##1}{}}%
-   \def\processXMLfilegrouped   ##1{\xmlprocessfile  \xmldocument{##1}{}}% maybe still grouped?
-   \def\processXMLbuffer           {\dosingleempty\doprocessXMLbuffer}%
-   \def\doprocessXMLbuffer    [##1]{\xmlprocessbuffer\xmldocument{##1}{}}%
-   \def\XMLdata                 ##1{\xmlprocessdata  \xmldocument{##1}{}}%
-   \def\startXMLdata##1\stopXMLdata{\xmlprocessdata  \xmldocument{##1}{}}}
-
-\let\normalprocessXMLfilegrouped\processXMLfilegrouped
-
-\def\processXMLfileMKIV % one-shot, will become obsolete, personal hack
-  {\dosingleempty\doprocessXMLfileMKIV}
-
-\def\doprocessXMLfileMKIV[#1]%
-  {\def\processXMLfilegrouped##1%
-     {\let\processXMLfilegrouped\normalprocessXMLfilegrouped
-      \doifelsenothing{#1}{\xmlprocess{main}{##1}{}}{\xmlprocess{#1}{##1}{}}}}
-
 %D Experimental:
-
-%def\xmlpushdocument#1{\ctxlua{lxml.pushdocument("#1")}}
-%def\xmlpopdocument   {\ctxlua{lxml.popdocument()}}
-%def\xmladdindex    #1{\ctxlua{lxml.addindex("#1")}}
 
 \def\xmlgetindex    #1{\ctxlua{lxml.getindex("\xmldocument","#1")}}
 \def\xmlrawindex    #1{\ctxlua{lxml.rawindex("#1")}}
 \def\xmlwithindex #1#2{\ctxlua{lxml.withindex("\xmldocument","#1","#2")}}
 \def\xmlreference #1#2{\string\xmlwithindex{#1}{#2}}
 
+%D Entities:
+
+\chardef\xmlautoentities=1 % 0=off, 1=upper, 2=upper,lower
+
+\def\xmlsetentity#1#2{\ctxlua{xml.entities['#1'] = \!!bs\detokenize{#2}\!!es}}
+
+% \xmlsetentity{tex}{\TEX{}} % {} needed
+
+\unexpanded\def\xmle
+  {\ifcase\xmlautoentities
+     \expandafter\xmle@none
+   \or
+     \expandafter\xmle@upper
+   \or
+     \expandafter\xmle@upperlower
+   \else
+     \expandafter\xmle@none
+   \fi}
+
+\def\xmle@none#1#2% safe
+  {[#1]}
+
+\def\xmle@upper#1#2% can be abbreviation
+  {\ifcsname#2\endcsname
+     \csname#2\expandafter\endcsname
+   \else
+     [#1]%
+   \fi}
+
+\def\xmle@upperlower#1#2% can be anything, so unsafe
+  {\ifcsname#2\endcsname
+     \csname#2\expandafter\endcsname
+   \else\ifcsname#1\endcsname
+     \csname#1\expandafter\expandafter\expandafter\endcsname
+   \else
+     [#1]%
+   \fi\fi}
+
 \protect \endinput
+
+% \newcount\charactersactiveoffset \charactersactiveoffset="10000
+%
+% \startextendcatcodetable\ctxcatcodes
+%     \catcode\numexpr\charactersactiveoffset+`<\relax=13
+%     \catcode\numexpr\charactersactiveoffset+`&\relax=13
+%     \catcode\numexpr\charactersactiveoffset+`>\relax=13
+% \stopextendcatcodetable
+%
+% \startextendcatcodetable\xmlcatcodes % not needed
+%     \catcode\numexpr\charactersactiveoffset+`<\relax=13
+%     \catcode\numexpr\charactersactiveoffset+`&\relax=13
+%     \catcode\numexpr\charactersactiveoffset+`>\relax=13
+% \stopextendcatcodetable
+%
+% \ctxlua { % entities are remembered in the format
+%     characters.remapentity("<",characters.active_offset + utf.byte("<"))
+%     characters.remapentity("&",characters.active_offset + utf.byte("&"))
+%     characters.remapentity(">",characters.active_offset + utf.byte(">"))
+% }

@@ -3403,7 +3403,7 @@
 %D for conditional errors.
 
 %D Krzysztof Leszczynski suggested to provide access to the level by
-%D means of a \type {#1}. I decided to pass the more frquently used
+%D means of a \type {#1}. I decided to pass the more frequently used
 %D level as \type {#1} and the less favoured depth as \type {#2}. The
 %D intended usage is:
 %D
@@ -3430,6 +3430,15 @@
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \@EA\dodorecurse\@EA1\@EA{\number#1}}
+
+\long\def\ydorecurse#1#2%
+  {\global\advance\outerrecurse \plusone
+   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \let\recurselevel\!!plusone
+   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
+   \expandrecursecontent
+   \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+   \global\advance\outerrecurse \minusone}
 
 \long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone

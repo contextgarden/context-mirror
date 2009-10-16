@@ -265,6 +265,8 @@ end
 
 -- eventually we might end up with more extensive parsing
 -- todo: pass t[start..stop] == original
+--
+-- one of the time consuming functiions:
 
 function scripts.preprocess(head)
     local start = first_character(head)

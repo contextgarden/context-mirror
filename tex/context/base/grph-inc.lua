@@ -190,8 +190,8 @@ function figures.setpaths(locationset,pathlist)
     end
     figures.paths, last_pathlist = t, pathlist
     if trace_figures then
-        logs.report("figures","locations: %s",last_locationset)
-        logs.report("figures","path list: %s",table.concat(figures.paths))
+        commands.writestatus("figures","locations: %s",last_locationset)
+        commands.writestatus("figures","path list: %s",table.concat(figures.paths, " "))
     end
 end
 
@@ -300,7 +300,6 @@ do
         end
     end
     function figures.tprint(category,tag,default)
---~ print("!!!!!!!!",category,tag,default)
         texsprint(ctxcatcodes,figures.get(category,tag,default))
     end
     function figures.current()
@@ -355,15 +354,15 @@ local function register(askedname,specification)
         if not found then
             specification.found = false
             if trace_figures then
-                logs.report("figures","format not supported: %s",format)
+                commands.writestatus("figures","format not supported: %s",format)
             end
         else
             specification.found = true
             if trace_figures then
                 if validtypes[format] then
-                    logs.report("figures","format natively supported by backend: %s",format)
+                    commands.writestatus("figures","format natively supported by backend: %s",format)
                 else
-                    logs.report("figures","format supported by output file format: %s",format)
+                    commands.writestatus("figures","format supported by output file format: %s",format)
                 end
             end
         end
@@ -380,7 +379,7 @@ local function locate(request) -- name, format, cache
     if figures.found[askedname] then
         return figures.found[askedname]
     end
-    local askedpath= file.dirname(askedname)
+    local askedpath= file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
     local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
     local askedcache = request.cache
@@ -407,7 +406,7 @@ local function locate(request) -- name, format, cache
                 })
             end
         end
-        if askedpath ~= "" then
+        if askedpath then
             -- path and type given, todo: strip pieces of path
             if figures.exists(askedname,askedformat) then
                 return register(askedname, {
@@ -442,7 +441,7 @@ local function locate(request) -- name, format, cache
                 end
             end
         end
-    elseif askedpath ~= "" then
+    elseif askedpath then
         for _, format in ipairs(figures.order) do
             local list = figures.formats[format].list or { format }
             for _, suffix in ipairs(list) do
@@ -592,17 +591,20 @@ end
 
 -- -- -- generic -- -- --
 
-function figures.existers.generic(askedname)
---~     local result = io.exists(askedname)
---~     result = (result==true and askedname) or result
---~     local result = resolvers.find_file(askedname) or ""
-    local result = resolvers.findbinfile(askedname) or ""
-    if result == "" then result = false end
+function figures.existers.generic(askedname,resolve)
+    -- not findbinfile
+    local result
+    if lfs.isfile(askedname) then
+        result = askedname
+    elseif resolve then
+        result = resolvers.findbinfile(askedname) or ""
+        if result == "" then result = false end
+    end
     if trace_figures then
         if result then
-            logs.report("figures","found: %s -> %s",askedname,result)
+            commands.writestatus("figures","found: %s -> %s",askedname,result)
         else
-            logs.report("figures","not found: %s",askedname)
+            commands.writestatus("figures","not found: %s",askedname)
         end
     end
     return result
@@ -821,13 +823,13 @@ function bases.find(basename,askedlabel)
         end
         t = false
         if base[2] and base[3] then -- rlx:library
-            for e, d, k in xml.elements(base[3],"/(*:library|figurelibrary)/*:figure/*:label") do
+            for e in xml.collected(base[3],"/(*:library|figurelibrary)/*:figure/*:label") do
                 page = page + 1
-                if xml.content(d[k]) == askedlabel then
+                if xml.content(e) == askedlabel then
                     t = {
                         base = file.replacesuffix(base[2],"pdf"),
                         format = "pdf",
-                        name = xml.filters.text(e,"*:file"),
+                        name = xml.text(e,"../*:file"), -- to be checked
                         page = page,
                     }
                     bases.found[askedlabel] = t

@@ -95,7 +95,7 @@ function scripts.profiler.analyse(filename)
     end
 end
 
-function scripts.profiler.analyse(filename)
+function scripts.profiler.x_analyse(filename)
     local f = io.open(filename)
     local calls = { }
     local lines = 0

@@ -45,8 +45,8 @@ do
 
     local function specifiedtemplate(root,templatespec)
         local template = { }
-        for r, d, k in xml.elements(root,templatespec) do
-            local at = d[k].at
+        for e in xml.collected(root,templatespec) do
+            local at = e.at
             local tm = halignments[at.align] or ""
             if toboolean(at.paragraph) then
                 tm = tm .. "p"
@@ -54,7 +54,7 @@ do
             template[#template+1] = tm
         end
         if #template > 0 then
-            return "|" .. table.join(template,"|") .. "|"
+            return "|" .. table.concat(template,"|") .. "|"
         else
             return nil
         end
@@ -62,8 +62,8 @@ do
 
     local function autotemplate(root,rowspec,cellspec)
         local max = 0
-        for r, d, k in xml.elements(root,rowspec) do
-            local n = xml.count(d[k],cellspec)
+        for e in xml.collected(root,rowspec) do
+            local n = xml.count(e,cellspec)
             if n > max then max = n end
         end
         if max == 2 then
@@ -101,10 +101,10 @@ do
         lxml.directives.setup(root,'cdx')
         -- todo: head and foot
         texsprint(tex.ctxcatcodes, string.format("\\starttabulate[%s]",template))
-        for r, d, k in xml.elements(root,bodyrowspec) do
+        for e in xml.collected(root,bodyrowspec) do
             texsprint(tex.ctxcatcodes, "\\NC ")
-            for r, d, k in xml.elements(d[k],cellspec) do
-                texsprint(xml.content(d[k]))
+            for e in xml.collected(e,cellspec) do
+                texsprint(xml.content(e))
                 texsprint(tex.ctxcatcodes, "\\NC")
             end
             texsprint(tex.ctxcatcodes, "\\NR")
@@ -141,13 +141,12 @@ do
         lxml.directives.setup(root,'cdx')
         -- todo: alignments
         texsprint(tex.ctxcatcodes, string.format("\\startcombination[%s]",template))
-        for r, d, k in xml.elements(root,pairspec) do
-            local dk = d[k]
+        for e in xml.collected(root,pairspec) do
             texsprint(tex.ctxcatcodes,"{")
-            xmlsprint(xml.filter(dk,contentspec) or "")
+            xmlsprint(xml.filter(e,contentspec) or "")
             texsprint(tex.ctxcatcodes,"}")
             texsprint(tex.ctxcatcodes,"{")
-            xmlsprint(xml.filter(dk,captionspec) or "")
+            xmlsprint(xml.filter(e,captionspec) or "")
             texsprint(tex.ctxcatcodes,"}")
         end
         texsprint(tex.ctxcatcodes, "\\stopcombination")
@@ -169,34 +168,3 @@ end
 \xmlregisterns{context}{context}
 
 \endinput
-
-% this replaces:
-
-% \startxmlsetups tabulate
-%     \starttabulate[||p|]
-%         \xmlall{#1}{/body/row}
-%     \stoptabulate
-% \stopxmlsetups
-% \startxmlsetups tabulate:row
-%     \NC \xmlall{#1}{/cell} \NR
-% \stopxmlsetups
-% \startxmlsetups tabulate:cell
-%     \xmlflush{#1} \NC
-% \stopxmlsetups
-
-% \startxmlsetups combination
-%     \startcollecting
-%         \startcollect
-%             \startcombination[\xmlatt{#1}{nx}*\xmlatt{#1}{ny}]
-%         \stopcollect
-%         \xmlloop {#1} {combiblock} {
-%             \startcollect
-%                 {\xmli{/content}{##1}}
-%                 {\xmli{/caption}{##1}}
-%             \stopcollect
-%         }
-%         \startcollect
-%             \stopcombination
-%         \stopcollect
-%     \stopcollecting
-% \stopxmlsetups

@@ -69,6 +69,7 @@ scripts.update.base = {
     { "context/img/",             "texmf-context" },
     { "misc/setuptex/",           "." },
     { "misc/web2c",               "texmf" },
+    { "bin/common/luatex/",   "texmf-<platform>" },
     { "bin/common/<platform>/",   "texmf-<platform>" },
     { "bin/context/<platform>/",  "texmf-<platform>" },
     { "bin/metapost/<platform>/", "texmf-<platform>" },

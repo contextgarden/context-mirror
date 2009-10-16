@@ -223,7 +223,7 @@ function fonts.vf.math.alas(main,id,size)
     arrow(main,0x2192,0xFE192,0xFF501,false) -- right
 end
 
-local reverse -- index -> unicode
+local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage
 
 function fonts.basecopy(tfmtable)
     local t, c, p = { }, { }, { }
@@ -237,10 +237,13 @@ function fonts.basecopy(tfmtable)
         p[k] = v
     end
     t.characters, t.parameters = c, p
+    unique = unique + 1
+    t.fullname = t.fullname .. "-" .. unique
     return t
 end
 
 local reported = { }
+local reverse -- index -> unicode
 
 function fonts.vf.math.define(specification,set)
     if not reverse then

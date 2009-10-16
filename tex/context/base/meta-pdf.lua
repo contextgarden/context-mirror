@@ -47,8 +47,8 @@ resetall()
 -- todo: collect and flush packed using pdfliteral node injection but we're
 -- in no hurry as this kind of conversion does not happen that often in mkiv
 
-local function pdfcode(str)
-    texsprint(ctxcatcodes,"\\pdfliteral{" .. str .. "}")
+local function pdfcode(str) -- could be a node.write instead
+    texsprint(ctxcatcodes,"\\pdfliteral{",str,"}")
 end
 
 local function texcode(str)

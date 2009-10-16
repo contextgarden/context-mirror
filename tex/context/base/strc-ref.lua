@@ -40,21 +40,31 @@ local exporters, runners = jobreferences.exporters, jobreferences.runners
 
 local currentreference = nil
 
-jobreferences.initializers = jobreferences.initializers or { }
+local initializers = { }
+local finalizers   = { }
 
 function jobreferences.registerinitializer(func) -- we could use a token register instead
-    jobreferences.initializers[#jobreferences.initializers+1] = func
+    initializers[#initializers+1] = func
+end
+function jobreferences.registerfinalizer(func) -- we could use a token register instead
+    finalizers[#finalizers+1] = func
 end
 
 local function initializer()
     tobesaved, collected = jobreferences.tobesaved, jobreferences.collected
-    for k,v in ipairs(jobreferences.initializers) do
-        v(tobesaved,collected)
+    for i=1,#initializers do
+        initializers[i](tobesaved,collected)
+    end
+end
+local function finalizer()
+    tobesaved = jobreferences.tobesaved
+    for i=1,#finalizers do
+        finalizers[i](tobesaved)
     end
 end
 
 if job then
-    job.register('jobreferences.collected', jobreferences.tobesaved, initializer)
+    job.register('jobreferences.collected', jobreferences.tobesaved, initializer, finalizer)
 end
 
 -- todo: delay split till later as in destinations we split anyway

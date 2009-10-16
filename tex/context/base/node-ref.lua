@@ -112,6 +112,9 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
     if id == hlist then
         -- can be either an explicit hbox or a line and there is no way
         -- to recognize this; anyway only if ht/dp (then inline)
+        --
+        -- to be tested: 0=unknown, 1=linebreak, 2=hbox
+--~ if id.subtype == 1 then
         local sr = stack[reference]
         if first then
             if sr and sr[2] then
@@ -133,6 +136,10 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
             else
                 -- also weird
             end
+--~ else
+--~     print("!!!!!!!!!!!!!!!!!")
+    -- simple
+--~ end
         else
             -- ok
         end
@@ -185,26 +192,27 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                     txtdir = current.dir
                 end
             elseif id == hlist or id == vlist then
---~                 if r and (not skip or r > skip) then
                 if not reference and r and (not skip or r > skip) then
                     inject_list(id,current,r,make,stack,pardir,txtdir)
---~                     done[r] = true
                 end
-if r then done[r] = (done[r] or 0) + 1 end
+                if r then
+                    done[r] = (done[r] or 0) + 1
+                end
                 local list = current.list
                 if list then
                     local _
                     current.list, _, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
                 end
-if r then done[r] = done[r] - 1 end
+                if r then
+                    done[r] = done[r] - 1
+                end
             elseif not r then
                 -- just go on, can be kerns
             elseif not reference then
                 reference, first, last, firstdir = r, current, current, txtdir
             elseif r == reference then
                 last = current
---~             elseif not done[reference] then
-elseif (done[reference] or 0) == 0 then
+            elseif (done[reference] or 0) == 0 then
                 if not skip or r > skip then
                     head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
                     reference, first, last, firstdir = nil, nil, nil, nil
@@ -214,7 +222,6 @@ elseif (done[reference] or 0) == 0 then
             end
             current = current.next
         end
---~         if reference and not done[reference] then
         if reference and (done[reference] or 0) == 0 then
             head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
         end

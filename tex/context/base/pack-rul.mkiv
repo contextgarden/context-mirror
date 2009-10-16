@@ -2892,15 +2892,13 @@
    \setbox\scratchbox\hbox to \hsize
      {\dimen4\dimexpr .5ex+.5\linewidth\relax
       \dimen6\dimexpr-.5ex+.5\linewidth\relax
-      \doifnothing{#1}\firstargumentfalse
-      \iffirstargument
-        \doifelse\@@tllocation\v!inmargin
-          {\llap{\doattributes\??tl\c!style\c!color{#1}\hskip\leftmargindistance}}
-          {\color[\@@tlrulecolor]
-             {\vrule\!!height\dimen4\!!depth\dimen6\!!width\@@tlwidth}%
-           \hbox spread 2\dimexpr\@@tldistance\relax
-             {\hss\doattributes\??tl\c!style\c!color{\strut#1}\hss}}%
-      \fi
+      \doifsomething{#1}
+        {\doifelse\@@tllocation\v!inmargin
+           {\llap{\doattributes\??tl\c!style\c!color{#1}\hskip\leftmargindistance}}
+           {\color[\@@tlrulecolor]
+              {\vrule\!!height\dimen4\!!depth\dimen6\!!width\@@tlwidth}%
+            \hbox spread 2\dimexpr\@@tldistance\relax
+              {\hss\doattributes\??tl\c!style\c!color{\strut#1}\hss}}}%
       \color[\@@tlrulecolor]
         {\leaders\hrule\!!height\dimen4\!!depth\dimen6\hfill}}%
    \ht\scratchbox\strutht

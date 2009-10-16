@@ -89,11 +89,10 @@ end
 
 local function convertexamodes(str)
     local x = xml.convert(str)
-    for e, d, k in xml.elements(x,"exa:variable") do
-        local dk = d[k]
-        local label = dk.at and dk.at.label
+    for e in xml.collected(x,"exa:variable") do
+        local label = e.at and e.at.label
         if label and label ~= "" then
-            local data = xml.content(dk) or ""
+            local data = xml.content(e) or ""
             local mode = label:match("^mode:(.+)$")
             if mode then
                 texsprint(ctxcatcodes,format("\\enablemode[%s:%s]",mode,data))

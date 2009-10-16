@@ -369,7 +369,7 @@
       \c!saveinlist=\ifconditional\structureheadtolist\v!yes\else\v!no\fi,
       \c!level=\currentstructureheadlevel,
       \c!name=#1,
-      \c!number=\ifconditional\structureheadshownumber\v!yes\else\v!no\fi,
+      \c!number=\ifconditional\structureheaddoincrement\ifconditional\structureheadshownumber\v!yes\else\v!no\fi\else\v!no\fi,
       \c!bookmark=,
       \c!marking=,
       \c!list=,

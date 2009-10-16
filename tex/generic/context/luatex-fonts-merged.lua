@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 10/02/09 13:19:15
+-- merge date  : 10/16/09 16:21:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -369,6 +369,18 @@ function string:split(separator)
     return c:match(self)
 end
 
+--~ function lpeg.L(list,pp)
+--~     local p = pp
+--~     for l=1,#list do
+--~         if p then
+--~             p = p + lpeg.P(list[l])
+--~         else
+--~             p = lpeg.P(list[l])
+--~         end
+--~     end
+--~     return p
+--~ end
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -505,6 +517,14 @@ function table.strip(tab)
         end
     end
     return lst
+end
+
+function table.keys(t)
+    local k = { }
+    for key,_ in next, t do
+        k[#k+1] = key
+    end
+    return k
 end
 
 local function compare(a,b)
@@ -1279,22 +1299,6 @@ function table.reverse(t)
     return tt
 end
 
---~ function table.keys(t)
---~     local k = { }
---~     for k,_ in next, t do
---~         k[#k+1] = k
---~     end
---~     return k
---~ end
-
---~ function table.keys_as_string(t)
---~     local k = { }
---~     for k,_ in next, t do
---~         k[#k+1] = k
---~     end
---~     return concat(k,"")
---~ end
-
 function table.insert_before_value(t,value,extra)
     for i=1,#t do
         if t[i] == extra then
@@ -1561,11 +1565,11 @@ local rootbased = lpeg.P("/") + letter*lpeg.P(":")
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)
-    return qualified:match(filename)
+    return qualified:match(filename) ~= nil
 end
 
 function file.is_rootbased_path(filename)
-    return rootbased:match(filename)
+    return rootbased:match(filename) ~= nil
 end
 
 local slash  = lpeg.S("\\/")
@@ -2674,11 +2678,12 @@ function nodes.inject_kerns(head,where,keep)
                                 --  if rlmode and rlmode < 0 then
                                 --      n.xoffset = p.xoffset + d[1]
                                 --  else
+local k = wx[p]
+if k then
+    n.xoffset = p.xoffset - d[1] - k[2]
+else
                                          n.xoffset = p.xoffset - d[1]
---~ local k = wx[p]
---~ if k then
---~     wx[n] = k
---~ end
+end
                                 --  end
                                     if mk[p] then
                                         n.yoffset = p.yoffset + d[2]
@@ -3025,7 +3030,6 @@ else do
     --                             X000 1100 = 12 = 0x1C = leftghost
     --                             X001 0100 = 20 = 0x14 = rightghost
 
-
     function nodes.protect_glyphs(head)
         local done = false
         for g in traverse_id(glyph,head) do
@@ -3093,6 +3097,8 @@ if not modules then modules = { } end modules ['font-ini'] = {
 --ldx]]--
 
 local utf = unicode.utf8
+local format, serialize = string.format, table.serialize
+local write_nl = texio.write_nl
 
 if not fontloader then fontloader = fontforge end
 
@@ -3173,7 +3179,24 @@ function fonts.show_char_data(n)
         end
         local chr = tfmdata.characters[n]
         if chr then
-            texio.write_nl(table.serialize(chr,string.format("U_%04X",n)))
+            write_nl(format("%s @ %s => U%04X => %s => ",tfmdata.fullname,tfmdata.size,n,utf.char(n)) .. serialize(chr,false))
+        end
+    end
+end
+
+function fonts.show_font_parameters()
+    local tfmdata = fonts.ids[font.current()]
+    if tfmdata then
+        local parameters, mathconstants = tfmdata.parameters, tfmdata.MathConstants
+        local hasparameters, hasmathconstants = parameters and next(parameters), mathconstants and next(mathconstants)
+        if hasparameters then
+            write_nl(format("%s @ %s => parameters => ",tfmdata.fullname,tfmdata.size) .. serialize(parameters,false))
+        end
+        if hasmathconstants then
+            write_nl(format("%s @ %s => math constants => ",tfmdata.fullname,tfmdata.size) .. serialize(mathconstants,false))
+        end
+        if not hasparameters and not hasmathconstants then
+            write_nl(format("%s @ %s => no parameters and/or mathconstants",tfmdata.fullname,tfmdata.size))
         end
     end
 end
@@ -3442,6 +3465,7 @@ function tfm.do_scale(tfmtable, scaledpoints)
     t.unicodes = tfmtable.unicodes
     t.indices = tfmtable.indices
     t.marks = tfmtable.marks
+t.colorscheme = tfmtable.colorscheme
     t.descriptions = descriptions
     if tfmtable.fonts then
         t.fonts = table.fastcopy(tfmtable.fonts) -- hm  also at the end
@@ -5205,7 +5229,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.628 -- beware: also sync font-mis.lua
+otf.version          = 2.631 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -5325,6 +5349,7 @@ local enhancers = {
     "patch bugs",
     "merge cid fonts", "prepare unicode", "cleanup ttf tables", "compact glyphs", "reverse coverage",
     "cleanup aat", "enrich with features", "add some missing characters",
+--~     "reorganize mark classes",
     "reorganize kerns", -- moved here
     "flatten glyph lookups", "flatten anchor tables", "flatten feature tables",
     "prepare luatex tables",
@@ -5476,6 +5501,22 @@ function otf.show_feature_order(otfdata,filename)
 end
 
 -- todo: normalize, design_size => designsize
+
+otf.enhancers["reorganize mark classes"] = function(data,filename)
+    if data.mark_classes then
+        local unicodes = data.luatex.unicodes
+        local reverse = { }
+        for name, class in next, data.mark_classes do
+            local t = { }
+            for s in gmatch(class,"[^ ]+") do
+                t[unicodes[s]] = true
+            end
+            reverse[name] = t
+        end
+        data.luatex.markclasses = reverse
+        data.mark_classes = nil
+    end
+end
 
 otf.enhancers["prepare luatex tables"] = function(data,filename)
     data.luatex = data.luatex or { }
@@ -5780,12 +5821,21 @@ otf.enhancers["analyse subtables"] = function(data,filename)
             end
             local flags = gk.flags
             if flags then
+--~                 gk.flags = { -- forcing false packs nicer
+--~                     (flags.ignorecombiningmarks and "mark")     or false,
+--~                     (flags.ignoreligatures      and "ligature") or false,
+--~                     (flags.ignorebaseglyphs     and "base")     or false,
+--~                      flags.r2l                                  or false,
+--~                 }
                 gk.flags = { -- forcing false packs nicer
-                    (flags.ignorecombiningmarks and "mark")     or false,
-                    (flags.ignoreligatures      and "ligature") or false,
-                    (flags.ignorebaseglyphs     and "base")     or false,
-                    flags.r2l                                   or false
+                    ((flags.ignorecombiningmarks or flags.mark_class) and "mark")     or false,
+                    ( flags.ignoreligatures                           and "ligature") or false,
+                    ( flags.ignorebaseglyphs                          and "base")     or false,
+                      flags.r2l                                                       or false,
                 }
+--~                 if flags.mark_class then
+--~                     gk.markclass = luatex.markclasses[flags.mark_class]
+--~                 end
             end
         end
     end
@@ -7394,6 +7444,7 @@ local trace_bugs         = false  trackers.register("otf.bugs",         function
 local trace_details      = false  trackers.register("otf.details",      function(v) trace_details      = v end)
 local trace_applied      = false  trackers.register("otf.applied",      function(v) trace_applied      = v end)
 local trace_steps        = false  trackers.register("otf.steps",        function(v) trace_steps        = v end)
+local trace_skips        = false  trackers.register("otf.skips",        function(v) trace_skips        = v end)
 
 trackers.register("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 trackers.register("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
@@ -8764,16 +8815,26 @@ end
 -- we don't need to pass the currentcontext, saves a bit
 -- make a slow variant then can be activated but with more tracing
 
+local function show_skip(kind,chainname,char,ck,class)
+    if ck[9] then
+        logwarning("%s: skipping char %s (%s) in rule %s, lookuptype %s (%s=>%s)",cref(kind,chainname),gref(char),class,ck[1],ck[2],ck[9],ck[10])
+    else
+        logwarning("%s: skipping char %s (%s) in rule %s, lookuptype %s",cref(kind,chainname),gref(char),class,ck[1],ck[2])
+    end
+end
+
 local function normal_handle_contextchain(start,kind,chainname,contexts,sequence,cache)
     --  local rule, lookuptype, sequence, f, l, lookups = ck[1], ck[2] ,ck[3], ck[4], ck[5], ck[6]
     local flags, done = sequence.flags, false
     local skipmark, skipligature, skipbase = flags[1], flags[2], flags[3]
     local someskip = skipmark or skipligature or skipbase -- could be stored in flags for a fast test (hm, flags could be false !)
+    local markclass = sequence.markclass
     for k=1,#contexts do
         local match, current, last = true, start, start
         local ck = contexts[k]
         local sequence = ck[3]
         local s = #sequence
+        -- f..l = mid string
         if s == 1 then
             -- never happens
             match = current.id == glyph and current.subtype<256 and current.font == currentfont and sequence[1][current.char]
@@ -8801,9 +8862,13 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
+--~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
                                         if class == skipmark or class == skipligature or class == skipbase then
---~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
+--~                                         if someskip and (class == skipmark or class == skipligature or class == skipbase) then
                                             -- skip 'm
+                                            if trace_skips then
+                                                show_skip(kind,chainname,char,ck,class)
+                                            end
                                             last = last.next
                                         elseif sequence[n][char] then
                                             if n < l then
@@ -8831,6 +8896,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 -- end
             end
             if match and f > 1 then
+                -- before
                 local prev = start.prev
                 if prev then
                     local n = f-1
@@ -8843,9 +8909,13 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
+--~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
                                         if class == skipmark or class == skipligature or class == skipbase then
 --~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
                                             -- skip 'm
+                                            if trace_skips then
+                                                show_skip(kind,chainname,char,ck,class)
+                                            end
                                         elseif sequence[n][char] then
                                             n = n -1
                                         else
@@ -8882,9 +8952,10 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 end
             end
             if match and s > l then
+                -- after
                 local current = last.next
                 if current then
-                    -- removed optimiziation for s-l == 1, we have to deal with marks anyway
+                    -- removed optimization for s-l == 1, we have to deal with marks anyway
                     local n = l + 1
                     while n <= s do
                         if current then
@@ -8895,9 +8966,13 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
+--~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
                                         if class == skipmark or class == skipligature or class == skipbase then
 --~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
                                             -- skip 'm
+                                            if trace_skips then
+                                                show_skip(kind,chainname,char,ck,class)
+                                            end
                                         elseif sequence[n][char] then
                                             n = n + 1
                                         else
@@ -9058,6 +9133,8 @@ end
 
 local resolved = { } -- we only resolve a font,script,language pair once
 
+-- todo: pass all these 'locals' in a table
+
 function fonts.methods.node.otf.features(head,font,attr)
     if trace_steps then
         checkstep(head)
@@ -9217,6 +9294,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                         -- sequence kan weg
                                         local ok
                                         start, ok = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,1)
+--~ texio.write_nl(tostring(lookupname),tostring(lookupmatch),tostring(ok))
                                         if ok then
                                             success = true
                                         end

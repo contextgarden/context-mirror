@@ -178,7 +178,6 @@ else do
     --                             X000 1100 = 12 = 0x1C = leftghost
     --                             X001 0100 = 20 = 0x14 = rightghost
 
-
     function nodes.protect_glyphs(head)
         local done = false
         for g in traverse_id(glyph,head) do

@@ -6,22 +6,17 @@ if not modules then modules = { } end modules ['x-mathml'] = {
     license   = "see context related readme files"
 }
 
+local type, pairs = type, pairs
 local utf = unicode.utf8
+local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local format, lower = string.format, string.lower
+local utfchar, utffind, utfgmatch  = utf.char, utf.find, utf.gmatch
+local xmlsprint, xmlcprint = xml.sprint, xml.cprint
+local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 
-lxml     = lxml or { }
 lxml.mml = lxml.mml or { }
 
-local texsprint = tex.sprint
-local format    = string.format
-local lower     = string.lower
-local utfchar   = utf.char
-local utffind   = utf.find
-local xmlsprint = xml.sprint
-local xmlcprint = xml.cprint
-
-local ctxcatcodes = tex.ctxcatcodes
-
-local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
+local get_id = lxml.get_id
 
 -- an alternative is to remap to private codes, where we can have
 -- different properties .. to be done; this will move and become
@@ -389,30 +384,29 @@ local csymbols = {
     },
 }
 
-function xml.functions.remapmmlcsymbol(r,d,k)
-    local dk = d[k]
-    local at = dk.at
+function xml.functions.remapmmlcsymbol(e)
+    local at = e.at
     local cd = at.cd
     if cd then
         cd = csymbols[cd]
         if cd then
-            local tx = dk.dt[1]
+            local tx = e.dt[1]
             if tx and tx ~= "" then
                 local tg = cd[tx]
                 if tg then
                     at.cd = nil
                     at.cdbase = nil
-                    dk.dt = { }
+                    e.dt = { }
                     if type(tg) == "table" then
                         for k, v in pairs(tg) do
                             if k == "tag" then
-                                dk.tg = v
+                                e.tg = v
                             else
                                 at[k] = v
                             end
                         end
                     else
-                        dk.tg = tg
+                        e.tg = tg
                     end
                 end
             end
@@ -420,34 +414,32 @@ function xml.functions.remapmmlcsymbol(r,d,k)
     end
 end
 
-function xml.functions.remapmmlbind(r,d,k)
-    d[k].tg = "apply"
+function xml.functions.remapmmlbind(e)
+    e.tg = "apply"
 end
 
-function xml.functions.remapopenmath(r,d,k)
-    local dk = d[k]
-    local tg = dk.tg
+function xml.functions.remapopenmath(e)
+    local tg = e.tg
     if tg == "OMOBJ" then
-        dk.tg = "math"
+        e.tg = "math"
     elseif tg == "OMA" then
-        dk.tg = "apply"
+        e.tg = "apply"
     elseif tg == "OMB" then
-        dk.tg = "apply"
+        e.tg = "apply"
     elseif tg == "OMS" then
-    --  xml.functions.remapmmlcsymbol(r,d,k)
-        local at = dk.at
-        dk.tg = "csymbol"
-        dk.dt = { at.name or "unknown" }
+        local at = e.at
+        e.tg = "csymbol"
+        e.dt = { at.name or "unknown" }
         at.name = nil
     elseif tg == "OMV" then
-        local at = dk.at
-        dk.tg = "ci"
-        dk.dt = { at.name or "unknown" }
+        local at = e.at
+        e.tg = "ci"
+        e.dt = { at.name or "unknown" }
         at.name = nil
     elseif tg == "OMI" then
-        dk.tg = "ci"
+        e.tg = "ci"
     end
-    dk.rn = "mml"
+    e.rn = "mml"
 end
 
 function lxml.mml.checked_operator(str)
@@ -461,8 +453,7 @@ end
 function lxml.mml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
-    local str = xml.content(lxml.id(id),pattern) or ""
-    -- str = str:gsub("^%s*(.-)%s*$","%1")
+    local str = xml.content(get_id(id),pattern) or ""
     str = str:gsub("(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
     texsprint(ctxcatcodes,(str:gsub(".",n_replacements)))
 end
@@ -472,12 +463,12 @@ function characters.remapentity(chr,slot)
 end
 
 function lxml.mml.mo(id,pattern)
-    local str = xml.content(lxml.id(id),pattern) or ""
+    local str = xml.content(get_id(id),pattern) or ""
     texsprint(ctxcatcodes,(utf.gsub(str,".",o_replacements)))
 end
 
 function lxml.mml.mi(id,pattern)
-    local str = xml.content(lxml.id(id),pattern) or ""
+    local str = xml.content(get_id(id),pattern) or ""
     -- str = str:gsub("^%s*(.-)%s*$","%1")
     local rep = i_replacements[str]
     if rep then
@@ -499,7 +490,7 @@ end
 --~ local rightdelimiters = "[" .. table.keys_as_string(r_replacements) .. "]"
 
 function lxml.mml.mfenced(id,pattern) -- multiple separators
-    id = lxml.id(id)
+    id = get_id(id)
     local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
     local l, r = l_replacements[left], r_replacements[right]
     texsprint(ctxcatcodes,"\\enabledelimiter")
@@ -510,30 +501,33 @@ function lxml.mml.mfenced(id,pattern) -- multiple separators
         texsprint(ctxcatcodes,left)
     end
     texsprint(ctxcatcodes,"\\disabledelimiter")
-    local n = xml.count(id,pattern)
-    if n == 0 then
-        -- skip
-    elseif n == 1 then
-        lxml.all(id,pattern)
-    else
-        local t = { }
-        for s in utf.gmatch(separators,"[^%s]") do
-            t[#t+1] = s
-        end
-        for i=1,n do
-            lxml.idx(id,pattern,i) -- kind of slow, some day ...
-            if i < n then
-                local m = t[i] or t[#t] or ""
-                if m == "|" then
-                    m = "\\enabledelimiter\\middle|\\relax\\disabledelimiter"
-                elseif m == doublebar then
-                    m = "\\enabledelimiter\\middle|\\relax\\disabledelimiter"
-                elseif m == "{" then
-                    m = "\\{"
-                elseif m == "}" then
-                    m = "\\}"
+    local collected = lxml.filter(id,pattern)
+    if collected then
+        local n = #collected
+        if n == 0 then
+            -- skip
+        elseif n == 1 then
+            lxml.all(id,pattern)
+        else
+            local t = { }
+            for s in utfgmatch(separators,"[^%s]") do
+                t[#t+1] = s
+            end
+            for i=1,n do
+                xmlsprint(collected[i]) -- to be checked
+                if i < n then
+                    local m = t[i] or t[#t] or ""
+                    if m == "|" then
+                        m = "\\enabledelimiter\\middle|\\relax\\disabledelimiter"
+                    elseif m == doublebar then
+                        m = "\\enabledelimiter\\middle|\\relax\\disabledelimiter"
+                    elseif m == "{" then
+                        m = "\\{"
+                    elseif m == "}" then
+                        m = "\\}"
+                    end
+                    texsprint(ctxcatcodes,m)
                 end
-                texsprint(ctxcatcodes,m)
             end
         end
     end
@@ -569,10 +563,7 @@ end
 
 function lxml.mml.mmultiscripts(id)
     local done, toggle = false, false
-    id = lxml.id(id)
-    -- for i=1,#id.dt do local e = id.dt[i] if type(e) == table then ...
-    for r, d, k in xml.elements(id,"/*") do
-        local e = d[k]
+    for e in lxml.collected(id,"/*") do
         local tag = e.tg
         if tag == "mprescripts" then
             texsprint(ctxcatcodes,"{}")
@@ -582,8 +573,7 @@ function lxml.mml.mmultiscripts(id)
         end
     end
     local done, toggle = false, false
-    for r, d, k in xml.elements(id,"/*") do
-        local e = d[k]
+    for e in lxml.collected(id,"/*") do
         local tag = e.tg
         if tag == "mprescripts" then
             break
@@ -621,10 +611,10 @@ local frametypes = {
 function lxml.mml.mcolumn(root)
     root = lxml.id(root)
     local matrix, numbers = { }, 0
-    local function collect(m,dk)
-        local tag = dk.tg
+    local function collect(m,e)
+        local tag = e.tg
         if tag == "mi" or tag == "mn" or tag == "mo" or tag == "mtext" then
-            local str = xml.content(dk)
+            local str = xml.content(e)
             for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
                 m[#m+1] = { tag, s }
             end
@@ -635,25 +625,24 @@ function lxml.mml.mcolumn(root)
                 end
             end
         elseif tag == "mspace" or tag == "mline" then
-            local str = dk.at.spacing or ""
+            local str = e.at.spacing or ""
             for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
                 m[#m+1] = { tag, s }
             end
         elseif tag == "mline" then
-            m[#m+1] = { tag, dk }
+            m[#m+1] = { tag, e }
         end
     end
-    for r, d, k in xml.elements(root,"/*") do
+    for e in lxml.collected(root,"/*") do
         local m = { }
         matrix[#matrix+1] = m
-        local dk = d[k]
-        if dk.tg == "mrow" then
+        if e.tg == "mrow" then
             -- only one level
-            for r, d, k in xml.elements(dk,"/*") do
-                collect(m,d[k])
+            for e in lxml.collected(e,"/*") do
+                collect(m,e)
             end
         else
-            collect(m,dk)
+            collect(m,e)
         end
     end
     tex.sprint(ctxcatcodes,"\\halign\\bgroup\\hss$#$&$#$\\cr")
@@ -716,10 +705,8 @@ end
 local spacesplitter = lpeg.Ct(lpeg.splitat(" "))
 
 function lxml.mml.mtable(root)
-    root = lxml.id(root)
-
     -- todo: align, rowspacing, columnspacing, rowlines, columnlines
-
+    root = get_id(root)
     local at           = root.at
     local rowalign     = at.rowalign
     local columnalign  = at.columnalign
@@ -732,23 +719,21 @@ function lxml.mml.mtable(root)
 
     texsprint(ctxcatcodes, format("\\bTABLE[frame=%s,offset=%s]",frametypes[frame or "none"] or "off",framespacing))
 --~ context.bTABLE { frame = frametypes[frame or "none"] or "off", offset = framespacing }
-    for r, d, k in xml.elements(root,"/(mml:mtr|mml:mlabeledtr)") do
+    for e in lxml.collected(root,"/(mml:mtr|mml:mlabeledtr)") do
         texsprint(ctxcatcodes,"\\bTR")
 --~ context.bTR()
-        local dk = d[k]
-        local at = dk.at
+        local at = e.at
         local col = 0
         local rfr = at.frame       or (frames       and frames      [#frames])
         local rra = at.rowalign    or (rowaligns    and rowaligns   [#rowaligns])
         local rca = at.columnalign or (columnaligns and columnaligns[#columnaligns])
-        local ignorelabel = dk.tg == "mlabeledtr"
-        for rr, dd, kk in xml.elements(dk,"/mml:mtd") do
+        local ignorelabel = e.tg == "mlabeledtr"
+        for e in lxml.collected(e,"/mml:mtd") do -- nested we can use xml.collected
             col = col + 1
             if ignorelabel and col == 1 then
                 -- get rid of label, should happen at the document level
             else
-                local dk = dd[kk]
-                local at = dk.at
+                local at = e.at
                 local rowspan, columnspan = at.rowspan or 1, at.columnspan or 1
                 local cra = rowalignments   [at.rowalign    or (rowaligns    and rowaligns   [col]) or rra or "center"] or "lohi"
                 local cca = columnalignments[at.columnalign or (columnaligns and columnaligns[col]) or rca or "center"] or "middle"
@@ -758,16 +743,16 @@ function lxml.mml.mtable(root)
 --~ context.bTD { align = format("{%s,%s}",cra,cca), frame = cfr, nx = columnspan, ny = rowspan }
 --~ context.bmath()
 --~ context.ignorespaces()
-                xmlcprint(dk)
+                xmlcprint(e)
                 texsprint(ctxcatcodes,"\\removeunwantedspaces$\\eTD") -- $
 --~ context.emath()
 --~ context.removeunwantedspaces()
 --~ context.eTD()
             end
         end
---~         if dk.tg == "mlabeledtr" then
+--~         if e.tg == "mlabeledtr" then
 --~             texsprint(ctxcatcodes,"\\bTD")
---~             xmlcprint(xml.first(dk,"/!mml:mtd"))
+--~             xmlcprint(xml.first(e,"/!mml:mtd"))
 --~             texsprint(ctxcatcodes,"\\eTD")
 --~         end
         texsprint(ctxcatcodes,"\\eTR")
@@ -778,19 +763,21 @@ function lxml.mml.mtable(root)
 end
 
 function lxml.mml.csymbol(root)
-    root = lxml.id(root)
-    local encoding = root.at.encoding or ""
-    local hash = url.hashed(lower(root.at.definitionUrl or ""))
+    root = get_id(root)
+    local at = root.at
+    local encoding = at.encoding or ""
+    local hash = url.hashed(lower(at.definitionUrl or ""))
     local full = hash.original or ""
     local base = hash.path or ""
-    local text = string.strip(xml.content(root) or "")
-    texsprint(ctxcatcodes,format("\\mmlapplycsymbol{%s}{%s}{%s}{%s}",full,base,encoding,text))
+    local text = string.strip(lxml.content(root))
+--~     texsprint(ctxcatcodes,format("\\mmlapplycsymbol{%s}{%s}{%s}{%s}",full,base,encoding,text))
+    texsprint(ctxcatcodes,"\\mmlapplycsymbol{",full,"}{",base,"}{",encoding,"}{",text,"}")
 end
 
 function lxml.mml.menclosepattern(root)
-    root = lxml.id(root)
+    root = get_id(root)
     local a = root.at.notation
     if a and a ~= "" then
-        texsprint("mml:enclose:"..a:gsub(" +",",mml:enclose:"))
+        texsprint("mml:enclose:",a:gsub(" +",",mml:enclose:"))
     end
 end

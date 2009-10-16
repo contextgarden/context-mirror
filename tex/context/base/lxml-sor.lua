@@ -122,18 +122,16 @@ function lxml.sorters.flush(name,setup)
     if results and next(results) then
         for key, result in next, results do
             local tag, data = result.tag, result.data
---~             tex.sprint(ctxcatcodes,format("key=%s\\quad tag=%s\\blank",key,tag))
             for d=1,#data do
                 local dr = data[d]
-                texsprint(ctxcatcodes,format("\\xmls{%s}{%s}",dr.entry,setup))
+                texsprint(ctxcatcodes,"\\xmlw{",setup,"}{",dr.entry,"}")
             end
---~             tex.sprint(ctxcatcodes,format("\\blank"))
         end
     else
         local entries = list and list.entries
         if entries then
             for i=1,#entries do
-                texsprint(ctxcatcodes,format("\\xmls{%s}{%s}",entries[i][1],setup))
+                texsprint(ctxcatcodes,"\\xmlw{",setup,"}{",entries[i][1],"}")
             end
         end
     end

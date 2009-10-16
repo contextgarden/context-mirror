@@ -476,7 +476,10 @@
    \fi}
 
 \def\externalfigurestamp % needs \edef'd macros!
-  {\wantedfigurename
+  {\ifx\wantedfigurepath\empty\else
+     -\wantedfigurepath
+   \fi
+   \wantedfigurename
    \ifx\wantedfiguretype\empty\else
      \ifx\wantedfiguretype\s!unknown\else
        -\wantedfiguretype

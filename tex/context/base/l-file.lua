@@ -230,11 +230,11 @@ local rootbased = lpeg.P("/") + letter*lpeg.P(":")
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)
-    return qualified:match(filename)
+    return qualified:match(filename) ~= nil
 end
 
 function file.is_rootbased_path(filename)
-    return rootbased:match(filename)
+    return rootbased:match(filename) ~= nil
 end
 
 local slash  = lpeg.S("\\/")

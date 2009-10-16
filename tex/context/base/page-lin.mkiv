@@ -95,12 +95,17 @@
 \def\mkstoptextlinenumbering
   {\doresetattribute{line-number}}
 
+% we could make this a bit more efficient by putting the end reference
+% in the same table as the start one but why make thinsg complex ...
+
+\let\dofinishlinereference\dofinishfullreference
+
 \def\mksomelinereference#1#2#3%
   {\dontleavehmode\begingroup
    \global\advance\linerefcounter\plusone
    \dosetattribute{line-reference}\linerefcounter
-   % this will change and is troublesome anyway
-   #3\textreference[#2]{\noexpand\ctxlua{tex.sprint(nodes.lines.number(\the\linerefcounter))}}%
+   #3%
+   \expanded{\dodosetreference{line}{#2}{}{\the\linerefcounter}}% kind labels userdata text
    \endgroup}
 
 \def\mkstartlinereference#1{\mksomelinereference{#1}{lr:b:#1}{}\ignorespaces}
@@ -388,9 +393,9 @@
 
 \def\doifelsesamelinereference#1#2#3%
   {\doifreferencefoundelse{lr:b:#1}
-     {\let\fline\currenttextreference
+     {\edef\fline{\currentreferencetext}%
       \doifreferencefoundelse{lr:e:#1}
-        {\let\tline\currenttextreference
+        {\edef\tline{\currentreferencetext}%
          \ifx\fline\tline#2\else#3\fi}
         {\unknownreference{#1}#2}}
      {\unknownreference{#1}#2}}

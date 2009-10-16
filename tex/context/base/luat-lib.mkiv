@@ -42,7 +42,13 @@
 \registerctxluafile{luat-ini} {1.001}
 \registerctxluafile{luat-env} {1.001}
 
-\registerctxluafile{l-xml}    {1.001} % we need to load lxml-tab earlier so this will change ! ! ! ! ! ! !
+%registerctxluafile{l-xml}    {1.001} % we need to load lxml-tab earlier so this will change ! ! ! ! ! ! !
+\registerctxluafile{lxml-tab} {1.001}
+\registerctxluafile{lxml-lpt} {1.001}
+\registerctxluafile{lxml-xml} {1.001}
+\registerctxluafile{lxml-aux} {1.001}
+\registerctxluafile{lxml-mis} {1.001}
+\registerctxluafile{lxml-ent} {1.001}
 
 \startruntimeluacode
     \edef\asciia{\ctxlua{tex.sprint(logs.mode)}}

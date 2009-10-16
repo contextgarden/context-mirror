@@ -82,7 +82,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.628 -- beware: also sync font-mis.lua
+otf.version          = 2.631 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -202,6 +202,7 @@ local enhancers = {
     "patch bugs",
     "merge cid fonts", "prepare unicode", "cleanup ttf tables", "compact glyphs", "reverse coverage",
     "cleanup aat", "enrich with features", "add some missing characters",
+--~     "reorganize mark classes",
     "reorganize kerns", -- moved here
     "flatten glyph lookups", "flatten anchor tables", "flatten feature tables",
     "prepare luatex tables",
@@ -353,6 +354,22 @@ function otf.show_feature_order(otfdata,filename)
 end
 
 -- todo: normalize, design_size => designsize
+
+otf.enhancers["reorganize mark classes"] = function(data,filename)
+    if data.mark_classes then
+        local unicodes = data.luatex.unicodes
+        local reverse = { }
+        for name, class in next, data.mark_classes do
+            local t = { }
+            for s in gmatch(class,"[^ ]+") do
+                t[unicodes[s]] = true
+            end
+            reverse[name] = t
+        end
+        data.luatex.markclasses = reverse
+        data.mark_classes = nil
+    end
+end
 
 otf.enhancers["prepare luatex tables"] = function(data,filename)
     data.luatex = data.luatex or { }
@@ -657,12 +674,21 @@ otf.enhancers["analyse subtables"] = function(data,filename)
             end
             local flags = gk.flags
             if flags then
+--~                 gk.flags = { -- forcing false packs nicer
+--~                     (flags.ignorecombiningmarks and "mark")     or false,
+--~                     (flags.ignoreligatures      and "ligature") or false,
+--~                     (flags.ignorebaseglyphs     and "base")     or false,
+--~                      flags.r2l                                  or false,
+--~                 }
                 gk.flags = { -- forcing false packs nicer
-                    (flags.ignorecombiningmarks and "mark")     or false,
-                    (flags.ignoreligatures      and "ligature") or false,
-                    (flags.ignorebaseglyphs     and "base")     or false,
-                    flags.r2l                                   or false
+                    ((flags.ignorecombiningmarks or flags.mark_class) and "mark")     or false,
+                    ( flags.ignoreligatures                           and "ligature") or false,
+                    ( flags.ignorebaseglyphs                          and "base")     or false,
+                      flags.r2l                                                       or false,
                 }
+--~                 if flags.mark_class then
+--~                     gk.markclass = luatex.markclasses[flags.mark_class]
+--~                 end
             end
         end
     end

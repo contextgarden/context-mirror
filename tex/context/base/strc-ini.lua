@@ -24,7 +24,7 @@ local format, concat, match = string.format, table.concat, string.match
 local count, texwrite, texprint, texsprint = tex.count, tex.write, tex.print, tex.sprint
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 
-local ctxcatcodes, xmlcatcodes = tex.ctxcatcodes, 11 -- tex.xmlcatcodes
+local ctxcatcodes, xmlcatcodes = tex.ctxcatcodes, 11 -- tex.xmlcatcodes -- tricky as we're in notcatcodes
 
 local trace_processors = false  trackers.register("structure.processors", function(v) trace_processors = v end)
 
@@ -157,7 +157,7 @@ local tags = {
     entry   = "ctx:registerentry",
 }
 
-function helpers.title(title,metadata)
+function helpers.title(title,metadata) -- brrr
     if title and title ~= "" then
         if metadata then
             if metadata.coding == "xml" then
