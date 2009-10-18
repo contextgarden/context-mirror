@@ -10,6 +10,8 @@ local match, lower = string.match, string.lower
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
+-- this will become a per font patch file
+--
 -- older versions of latin modern didn't have the designsize set
 -- so for them we get it from the name
 
@@ -92,3 +94,18 @@ local function patch(data,filename)
 end
 
 patches["palatino.*arabic"] = patch
+
+local function patch(data,filename)
+    local m = data.math
+    if m then
+        local d = m.DisplayOperatorMinHeight or 0
+        if d < 2800 then
+            if trace_loading then
+                logs.report("load otf","patching DisplayOperatorMinHeight(%s -> 2800)",d)
+            end
+            m.DisplayOperatorMinHeight = 2800
+        end
+    end
+end
+
+patches["cambria"] = patch

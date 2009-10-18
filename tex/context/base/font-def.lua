@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['font-def'] = {
 local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
 local tostring, next = tostring, next
 
-local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
+local trace_defining     = false  trackers  .register("fonts.defining", function(v) trace_defining     = v end)
+local directive_embedall = false  directives.register("fonts.embedall", function(v) directive_embedall = v end)
 
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
 trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
@@ -283,7 +284,9 @@ function tfm.read(specification)
             end
         end
         if tfmtable then
-            if tfmtable.filename and fonts.dontembed[tfmtable.filename] then
+            if directive_embedall then
+                tfmtable.embedding = "full"
+            elseif tfmtable.filename and fonts.dontembed[tfmtable.filename] then
                 tfmtable.embedding = "no"
             else
                 tfmtable.embedding = "subset"

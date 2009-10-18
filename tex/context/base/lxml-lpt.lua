@@ -35,8 +35,9 @@ a/b/c/text() a/b/c/text(1) a/b/c/text(-1) a/b/c/text(n)
 </typing>
 --ldx]]--
 
-local trace_lpath  = false  if trackers then trackers.register("xml.lpath",  function(v) trace_lpath  = v end) end
-local trace_lparse = false  if trackers then trackers.register("xml.lparse", function(v) trace_lparse = v end) end
+local trace_lpath    = false  if trackers then trackers.register("xml.path",    function(v) trace_lpath  = v end) end
+local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
+local trace_lprofile = false  if trackers then trackers.register("xml.profile", function(v) trace_lpath  = v trace_lparse = v trace_lprofile = v end) end
 
 --[[ldx--
 <p>We've now arrived at an interesting part: accessing the tree using a subset
@@ -694,7 +695,7 @@ local function parse_pattern(pattern) -- the gain of caching is rather minimal
                 parsed = { pattern = pattern }
             end
             cache[pattern] = parsed
-            if trace_lparse then
+            if trace_lparse and not trace_lprofile then
                 lshow(parsed)
             end
         end
@@ -714,6 +715,73 @@ end
 -- caching found lookups saves not that much (max .1 sec on a 8 sec run)
 -- and it also messes up finalizers
 
+local profiled = { }  xml.profiled = profiled
+
+local function profiled_apply(list,parsed,nofparsed)
+    local p = profiled[parsed.pattern]
+    if p then
+        p.tested = p.tested + 1
+    else
+        p = { tested = 1, matched = 0, finalized = 0 }
+        profiled[parsed.pattern] = p
+    end
+    local collected = list
+    for i=1,nofparsed do
+        local pi = parsed[i]
+        local kind = pi.kind
+        if kind == "axis" then
+            collected = apply_axis[pi.axis](collected)
+        elseif kind == "nodes" then
+            collected = apply_nodes(collected,pi.nodetest,pi.nodes)
+        elseif kind == "expression" then
+            collected = apply_expression(collected,pi.evaluator,i)
+        elseif kind == "finalizer" then
+            collected = pi.finalizer(collected)
+            p.matched = p.matched + 1
+            p.finalized = p.finalized + 1
+            return collected
+        end
+        if not collected or #collected == 0 then
+            return nil
+        end
+    end
+    if collected then
+        p.matched = p.matched + 1
+    end
+    return collected
+end
+
+local function traced_apply(list,parsed,nofparsed)
+    if trace_lparse then
+        lshow(parsed)
+    end
+    logs.report("lpath", "collecting : %s",parsed.pattern)
+    logs.report("lpath", " root tags : %s",tagstostring(list))
+    local collected = list
+    for i=1,nofparsed do
+        local pi = parsed[i]
+        local kind = pi.kind
+        if kind == "axis" then
+            collected = apply_axis[pi.axis](collected)
+            logs.report("lpath", "% 10i : ax : %s",(collected and #collected) or 0,pi.axis)
+        elseif kind == "nodes" then
+            collected = apply_nodes(collected,pi.nodetest,pi.nodes)
+            logs.report("lpath", "% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
+        elseif kind == "expression" then
+            collected = apply_expression(collected,pi.evaluator,i)
+            logs.report("lpath", "% 10i : ex : %s",(collected and #collected) or 0,pi.expression)
+        elseif kind == "finalizer" then
+            collected = pi.finalizer(collected)
+            logs.report("lpath", "% 10i : fi : %s : %s(%s)",(collected and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
+            return collected
+        end
+        if not collected or #collected == 0 then
+            return nil
+        end
+    end
+    return collected
+end
+
 local function parse_apply(list,pattern)
     -- we avoid an extra call
     local parsed = cache[pattern]
@@ -730,60 +798,35 @@ local function parse_apply(list,pattern)
         return
     end
     local nofparsed = #parsed
-    if nofparsed > 0 then
-        if trace_lpath then
-            if trace_lparse then
-                lshow(parsed)
+    if nofparsed == 0 then
+        -- something is wrong
+    elseif not trace_lpath then
+        -- normal apply, inline, no self
+        local collected = list
+        for i=1,nofparsed do
+            local pi = parsed[i]
+            local kind = pi.kind
+            if kind == "axis" then
+                local axis = pi.axis
+                if axis ~= "self" then
+                    collected = apply_axis[axis](collected)
+                end
+            elseif kind == "nodes" then
+                collected = apply_nodes(collected,pi.nodetest,pi.nodes)
+            elseif kind == "expression" then
+                collected = apply_expression(collected,pi.evaluator,i)
+            elseif kind == "finalizer" then
+                return pi.finalizer(collected)
             end
-            logs.report("lpath", "collecting : %s",pattern)
-            logs.report("lpath", " root tags : %s",tagstostring(list))
-            local collected = list
-            for i=1,nofparsed do
-                local pi = parsed[i]
-                local kind = pi.kind
-                if kind == "axis" then
-                    collected = apply_axis[pi.axis](collected)
-                --  collected = pi.apply(collected)
-                    logs.report("lpath", "% 10i : ax : %s",(collected and #collected) or 0,pi.axis)
-                elseif kind == "nodes" then
-                    collected = apply_nodes(collected,pi.nodetest,pi.nodes)
-                    logs.report("lpath", "% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
-                elseif kind == "expression" then
-                    collected = apply_expression(collected,pi.evaluator,i)
-                    logs.report("lpath", "% 10i : ex : %s",(collected and #collected) or 0,pi.expression)
-                elseif kind == "finalizer" then
-                    collected = pi.finalizer(collected)
-                    logs.report("lpath", "% 10i : fi : %s : %s(%s)",(collected and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
-                    return collected
-                end
-                if not collected or #collected == 0 then
-                    return nil
-                end
+            if not collected or #collected == 0 then
+                return nil
             end
-            return collected
-        else
-            local collected = list
-            for i=1,nofparsed do
-                local pi = parsed[i]
-                local kind = pi.kind
-                if kind == "axis" then
-                    local axis = pi.axis
-                    if axis ~= "self" then
-                        collected = apply_axis[axis](collected)
-                    end
-                elseif kind == "nodes" then
-                    collected = apply_nodes(collected,pi.nodetest,pi.nodes)
-                elseif kind == "expression" then
-                    collected = apply_expression(collected,pi.evaluator,i)
-                elseif kind == "finalizer" then
-                    return pi.finalizer(collected)
-                end
-                if not collected or #collected == 0 then
-                    return nil
-                end
-            end
-            return collected
         end
+        return collected
+    elseif trace_lprofile then
+        return profiled_apply(list,parsed,nofparsed)
+    else -- trace_lpath
+        return traced_apply(list,parsed,nofparsed)
     end
 end
 

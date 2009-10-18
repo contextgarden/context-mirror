@@ -111,7 +111,7 @@ function xml.collect_texts(root, pattern, flatten) -- todo: variant with handle
     if collected and flatten then
         local xmltostring = xml.tostring
         for c=1,#collected do
-            collected[c] = xmltostring(collected[c])
+            collected[c] = xmltostring(collected[c].dt)
         end
     end
     return collected or { }

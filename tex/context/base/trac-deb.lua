@@ -194,13 +194,3 @@ function tracers.register_dump_hash(delta)
     end
     main.register_stop_actions(1,function() tracers.dump_hash(nil,true) end) -- at front
 end
-
--- trackers (maybe group the show by class)
-
-function trackers.show()
-    commands.writestatus("","")
-    for k,v in ipairs(trackers.list()) do
-        commands.writestatus("tracker",v)
-    end
-    commands.writestatus("","")
-end

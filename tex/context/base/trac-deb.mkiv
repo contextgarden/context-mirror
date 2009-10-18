@@ -41,3 +41,8 @@
 \def\resettrackers      {\ctxlua{trackers.reset()}}
 \def\enabletrackers [#1]{\ctxlua{trackers.enable("#1")}}
 \def\disabletrackers[#1]{\ctxlua{trackers.disable("#1")}}
+
+\def\showdirectives       {\ctxlua{directives.show()}}
+%def\resetdirectives      {\ctxlua{directives.reset()}} % would be weird to use
+\def\enabledirectives [#1]{\ctxlua{directives.enable("#1")}}
+\def\disabledirectives[#1]{\ctxlua{directives.disable("#1")}}

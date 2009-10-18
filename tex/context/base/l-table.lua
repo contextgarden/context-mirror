@@ -614,7 +614,7 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     end
 end
 
-local function flatten(t,f,complete)
+local function flatten(t,f,complete) -- is this used? meybe a variant with next, ...
     for i=1,#t do
         local v = t[i]
         if type(v) == "table" then
@@ -642,6 +642,24 @@ function table.unnest(t) -- bad name
 end
 
 table.flatten_one_level = table.unnest
+
+-- a better one:
+
+local function flattened(t,f)
+    if not f then
+        f = { }
+    end
+    for k, v in next, t do
+        if type(v) == "table" then
+            flattened(v,f)
+        else
+            f[k] = v
+        end
+    end
+    return f
+end
+
+table.flattened = flattened
 
 -- the next three may disappear
 

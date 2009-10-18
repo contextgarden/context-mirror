@@ -1,7 +1,7 @@
 % LM replacement, thanks to Jacko
 
 % official
-%
+
 % cmb10     LMRomanDemi10-Regular        <lm-rep-cmrm.enc  <lmb10.pfb
 % cmbx10    LMRoman10-Bold               <lm-rep-cmrm.enc  <lmbx10.pfb
 % cmbx12    LMRoman12-Bold               <lm-rep-cmrm.enc  <lmbx12.pfb
@@ -126,44 +126,56 @@ cmtt8     CMTT8     <lm-rep-cmtt.enc  <lmtt8.pfb
 cmtt9     CMTT9     <lm-rep-cmtt.enc  <lmtt9.pfb
 cmvtt10   CMVTT10   <lm-rep-cmrm.enc  <lmvtt10.pfb
 
+% Math 
+
+cmex10  LMMathExtension10-Regular  "enclmmathex ReEncodeFont" <lm-mathex.enc  <lmex10.pfb
+cmex9   LMMathExtension10-Regular  "enclmmathex ReEncodeFont" <lm-mathex.enc  <lmex10.pfb
+cmex8   LMMathExtension10-Regular  "enclmmathex ReEncodeFont" <lm-mathex.enc  <lmex10.pfb
+cmex7   LMMathExtension10-Regular  "enclmmathex ReEncodeFont" <lm-mathex.enc  <lmex10.pfb
+
+cmmi5   LMMathItalic5-Italic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmi5.pfb
+cmmi6   LMMathItalic6-Italic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmi6.pfb
+cmmi7   LMMathItalic7-Italic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmi7.pfb
+cmmi8   LMMathItalic8-Italic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmi8.pfb
+cmmi9   LMMathItalic9-Italic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmi9.pfb
+cmmi10  LMMathItalic10-Italic  "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmi10.pfb
+cmmi12  LMMathItalic12-Italic  "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmi12.pfb
+
+cmmib5   LMMathItalic5-BoldItalic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmib5.pfb
+cmmib6   LMMathItalic6-BoldItalic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmib6.pfb
+cmmib7   LMMathItalic7-BoldItalic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmib7.pfb
+cmmib8   LMMathItalic8-BoldItalic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmib8.pfb
+cmmib9   LMMathItalic9-BoldItalic   "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmib9.pfb
+cmmib10  LMMathItalic10-BoldItalic  "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmib10.pfb
+cmmib12  LMMathItalic12-BoldItalic  "enclmmathit ReEncodeFont" <lm-mathit.enc  <lmmib12.pfb
+
+cmsy5   LMMathSymbols5-Italic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmsy5.pfb
+cmsy6   LMMathSymbols6-Italic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmsy6.pfb
+cmsy7   LMMathSymbols7-Italic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmsy7.pfb
+cmsy8   LMMathSymbols8-Italic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmsy8.pfb
+cmsy9   LMMathSymbols9-Italic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmsy9.pfb
+cmsy10  LMMathSymbols10-Italic  "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmsy10.pfb
+
+cmbsy5   LMMathSymbols5-BoldItalic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmbsy5.pfb
+cmbsy6   LMMathSymbols6-BoldItalic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmbsy6.pfb
+cmbsy7   LMMathSymbols7-BoldItalic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmbsy7.pfb
+cmbsy8   LMMathSymbols8-BoldItalic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmbsy8.pfb
+cmbsy9   LMMathSymbols9-BoldItalic   "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmbsy9.pfb
+cmbsy10  LMMathSymbols10-BoldItalic  "enclmmathsy ReEncodeFont" <lm-mathsy.enc  <lmbsy10.pfb
+
+
 % original
 
-cmbsy10   CMBSY10  <cmbsy10.pfb
-cmbsy5    CMBSY5   <cmbsy5.pfb
-cmbsy6    CMBSY7   <cmbsy7.pfb
-cmbsy7    CMBSY7   <cmbsy7.pfb
-cmbsy8    CMBSY7   <cmbsy7.pfb
-cmbsy9    CMBSY10  <cmbsy10.pfb
 cmdunh10  CMDUNH10 <cmdunh10.pfb
-cmex10    CMEX10   <cmex10.pfb
-cmex7     CMEX10   <cmex10.pfb
-cmex8     CMEX10   <cmex10.pfb
-cmex9     CMEX10   <cmex10.pfb
-cmff10    CMFF10   <cmff10.pfb
-cmfi10    CMFI10   <cmfi10.pfb
-cmfib8    CMFIB8   <cmfib8.pfb
-cmmi10    CMMI10   <cmmi10.pfb
-cmmi12    CMMI12   <cmmi12.pfb
-cmmi5     CMMI5    <cmmi5.pfb
-cmmi6     CMMI6    <cmmi6.pfb
-cmmi7     CMMI7    <cmmi7.pfb
-cmmi8     CMMI8    <cmmi8.pfb
-cmmi9     CMMI9    <cmmi9.pfb
-cmmib10   CMMIB10  <cmmib10.pfb
-cmmib5    CMMIB5   <cmmib5.pfb
-cmmib6    CMMIB7   <cmmib7.pfb
-cmmib7    CMMIB7   <cmmib7.pfb
-cmmib8    CMMIB7   <cmmib7.pfb
-cmmib9    CMMIB10  <cmmib10.pfb
-cmsy10    CMSY10   <cmsy10.pfb
-cmsy5     CMSY5    <cmsy5.pfb
-cmsy6     CMSY6    <cmsy6.pfb
-cmsy7     CMSY7    <cmsy7.pfb
-cmsy8     CMSY8    <cmsy8.pfb
-cmsy9     CMSY9    <cmsy9.pfb
+
 cmtex10   CMTEX10  <cmtex10.pfb
 cmtex8    CMTEX8   <cmtex8.pfb
 cmtex9    CMTEX9   <cmtex9.pfb
+
+cmff10    CMFF10   <cmff10.pfb
+cmfi10    CMFI10   <cmfi10.pfb
+cmfib8    CMFIB8   <cmfib8.pfb
+
 
 % a weird one, not used in context
 

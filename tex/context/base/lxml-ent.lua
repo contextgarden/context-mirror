@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['lxml-ent'] = {
 
 local type, next =  type, next
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local utf = unicode.utf8
 local utfupper = utf.upper
 
 --[[ldx--

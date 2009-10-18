@@ -161,3 +161,4 @@ function statistics.timed(action,report)
     statistics.stoptiming(timer)
     report("total runtime: %s",statistics.elapsedtime(timer))
 end
+

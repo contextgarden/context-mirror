@@ -13,6 +13,11 @@ statistics = {
     starttiming   = dummyfunction,
     stoptiming    = dummyfunction,
 }
+directives = {
+    register      = dummyfunction,
+    enable        = dummyfunction,
+    disable       = dummyfunction,
+}
 trackers = {
     register      = dummyfunction,
     enable        = dummyfunction,

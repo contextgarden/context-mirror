@@ -312,6 +312,7 @@ function nodes.inject_kerns(head,where,keep)
 local k = wx[p]
 if k then
     n.xoffset = p.xoffset - d[1] - k[2]
+--~     n.xoffset = p.xoffset - k[2]
 else
                                          n.xoffset = p.xoffset - d[1]
 end

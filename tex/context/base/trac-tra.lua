@@ -10,12 +10,15 @@ if not modules then modules = { } end modules ['trac-tra'] = {
 -- bound to a variable, like node.new, node.copy etc (contrary to for instance
 -- node.has_attribute which is bound to a has_attribute local variable in mkiv)
 
+local getinfo = debug.getinfo
+local type, next = type, next
+local concat = table.concat
+local format, find, lower, gmatch, gsub = string.format, string.find, string.lower, string.gmatch, string.gsub
+
 debugger = debugger or { }
 
 local counters = { }
 local names = { }
-local getinfo = debug.getinfo
-local format, find, lower, gmatch, gsub = string.format, string.find, string.lower, string.gmatch, string.gsub
 
 -- one
 
@@ -143,11 +146,11 @@ end
 --~ print("")
 --~ debugger.showstats(print,3)
 
-trackers = trackers or { }
+setters      = setters      or { }
+setters.data = setters.data or { }
 
-local data, done = { }, { }
-
-local function set(what,value)
+local function set(t,what,value)
+    local data, done = t.data, t.done
     if type(what) == "string" then
         what = aux.settings_to_array(what) -- inefficient but ok
     end
@@ -166,28 +169,30 @@ local function set(what,value)
     end
 end
 
-local function reset()
-    for d, f in next, data do
+local function reset(t)
+    for d, f in next, t.data do
         for i=1,#f do
             f[i](false)
         end
     end
 end
 
-local function enable(what)
-    set(what,true)
+local function enable(t,what)
+    set(t,what,true)
 end
 
-local function disable(what)
+local function disable(t,what)
+    local data = t.data
     if not what or what == "" then
-        done = { }
-        reset()
+        t.done = { }
+        reset(t)
     else
-        set(what,false)
+        set(t,what,false)
     end
 end
 
-function trackers.register(what,...)
+function setters.register(t,what,...)
+    local data = t.data
     what = lower(what)
     local w = data[what]
     if not w then
@@ -199,32 +204,32 @@ function trackers.register(what,...)
         if typ == "function" then
             w[#w+1] = fnc
         elseif typ == "string" then
-            w[#w+1] = function(value) set(fnc,value,nesting) end
+            w[#w+1] = function(value) set(t,fnc,value,nesting) end
         end
     end
 end
 
-function trackers.enable(what)
-    local e = trackers.enable
-    trackers.enable, done = enable, { }
-    enable(string.simpleesc(what))
-    trackers.enable, done = e, { }
+function setters.enable(t,what)
+    local e = t.enable
+    t.enable, t.done = enable, { }
+    enable(t,string.simpleesc(what))
+    t.enable, t.done = e, { }
 end
 
-function trackers.disable(what)
-    local e = trackers.disable
-    trackers.disable, done = disable, { }
-    disable(string.simpleesc(what))
-    trackers.disable, done = e, { }
+function setters.disable(t,what)
+    local e = t.disable
+    t.disable, t.done = disable, { }
+    disable(t,string.simpleesc(what))
+    t.disable, t.done = e, { }
 end
 
-function trackers.reset()
-    done = { }
-    reset()
+function setters.reset(t)
+    t.done = { }
+    reset(t)
 end
 
-function trackers.list() -- pattern
-    local list = table.sortedkeys(data)
+function setters.list(t) -- pattern
+    local list = table.sortedkeys(t.data)
     local user, system = { }, { }
     for l=1,#list do
         local what = list[l]
@@ -236,3 +241,136 @@ function trackers.list() -- pattern
     end
     return user, system
 end
+
+function setters.show(t)
+    commands.writestatus("","")
+    for k,v in ipairs(setters.list(t)) do
+        commands.writestatus(t.name,v)
+    end
+    commands.writestatus("","")
+end
+
+-- we could have used a bit of oo and the trackers:enable syntax but
+-- there is already a lot of code around using the singluar tracker
+
+function setters.new(name)
+    local t
+    t = {
+        data     = { },
+        name     = name,
+        enable   = function(...) setters.enable  (t,...) end,
+        disable  = function(...) setters.disable (t,...) end,
+        register = function(...) setters.register(t,...) end,
+        list     = function(...) setters.list    (t,...) end,
+        show     = function(...) setters.show    (t,...) end,
+    }
+    setters.data[name] = t
+    return t
+end
+
+trackers   = setters.new("trackers")
+directives = setters.new("directives")
+
+-- nice trick: we overload two of the directives related functions with variants that
+-- do tracing (itself using a tracker) .. proof of concept
+
+local trace_directives = false local trace_directives = false  trackers.register("system.directives", function(v) trace_directives = v end)
+
+local e = directives.enable
+local d = directives.disable
+
+function directives.enable(...)
+    commands.writestatus("directives","enabling: %s",concat({...}," "))
+    e(...)
+end
+
+function directives.disable(...)
+    commands.writestatus("directives","disabling: %s",concat({...}," "))
+    d(...)
+end
+
+--~ -- old code:
+--
+--~ trackers = trackers or { }
+--~ local data, done = { }, { }
+--~ local function set(what,value)
+--~     if type(what) == "string" then
+--~         what = aux.settings_to_array(what) -- inefficient but ok
+--~     end
+--~     for i=1,#what do
+--~         local w = what[i]
+--~         for d, f in next, data do
+--~             if done[d] then
+--~                 -- prevent recursion due to wildcards
+--~             elseif find(d,w) then
+--~                 done[d] = true
+--~                 for i=1,#f do
+--~                     f[i](value)
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+--~ local function reset()
+--~     for d, f in next, data do
+--~         for i=1,#f do
+--~             f[i](false)
+--~         end
+--~     end
+--~ end
+--~ local function enable(what)
+--~     set(what,true)
+--~ end
+--~ local function disable(what)
+--~     if not what or what == "" then
+--~         done = { }
+--~         reset()
+--~     else
+--~         set(what,false)
+--~     end
+--~ end
+--~ function trackers.register(what,...)
+--~     what = lower(what)
+--~     local w = data[what]
+--~     if not w then
+--~         w = { }
+--~         data[what] = w
+--~     end
+--~     for _, fnc in next, { ... } do
+--~         local typ = type(fnc)
+--~         if typ == "function" then
+--~             w[#w+1] = fnc
+--~         elseif typ == "string" then
+--~             w[#w+1] = function(value) set(fnc,value,nesting) end
+--~         end
+--~     end
+--~ end
+--~ function trackers.enable(what)
+--~     local e = trackers.enable
+--~     trackers.enable, done = enable, { }
+--~     enable(string.simpleesc(what))
+--~     trackers.enable, done = e, { }
+--~ end
+--~ function trackers.disable(what)
+--~     local e = trackers.disable
+--~     trackers.disable, done = disable, { }
+--~     disable(string.simpleesc(what))
+--~     trackers.disable, done = e, { }
+--~ end
+--~ function trackers.reset()
+--~     done = { }
+--~     reset()
+--~ end
+--~ function trackers.list() -- pattern
+--~     local list = table.sortedkeys(data)
+--~     local user, system = { }, { }
+--~     for l=1,#list do
+--~         local what = list[l]
+--~         if find(what,"^%*") then
+--~             system[#system+1] = what
+--~         else
+--~             user[#user+1] = what
+--~         end
+--~     end
+--~     return user, system
+--~ end

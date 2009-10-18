@@ -69,7 +69,6 @@ scripts.update.base = {
     { "context/img/",             "texmf-context" },
     { "misc/setuptex/",           "." },
     { "misc/web2c",               "texmf" },
-    { "bin/common/luatex/",   "texmf-<platform>" },
     { "bin/common/<platform>/",   "texmf-<platform>" },
     { "bin/context/<platform>/",  "texmf-<platform>" },
     { "bin/metapost/<platform>/", "texmf-<platform>" },
@@ -87,10 +86,12 @@ scripts.update.engines = {
     ["xetex"] = {
         { "base/xetex/",              "texmf" },
         { "fonts/new/",               "texmf" },
+        { "bin/luatex/<platform>/",   "texmf-<platform>" }, -- tools
         { "bin/xetex/<platform>/",    "texmf-<platform>" },
     },
     ["pdftex"] = {
         { "fonts/old/",               "texmf" },
+        { "bin/luatex/<platform>/",   "texmf-<platform>" }, -- tools
         { "bin/pdftex/<platform>/",   "texmf-<platform>" },
     },
     ["all"] = {

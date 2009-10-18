@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 local texsprint, count = tex.sprint, tex.count
 local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
-local tostring, next = tostring, next
+local tostring, next, type = tostring, next, type
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -68,22 +68,25 @@ local settings_to_hash   = aux.settings_to_hash
 local default_features   = fonts.otf.features.default
 
 local function preset_context(name,parent,features) -- currently otf only
-    if features == "" then
-        if find(parent,"=") then
-            features = parent
-            parent = ""
-        end
+    if features == "" and find(parent,"=") then
+        features = parent
+        parent = ""
     end
-    local number = (setups[name] and setups[name].number) or 0
-    local t = (features == "" and { }) or normalize_meanings(settings_to_hash(features))
+    if features == "" then
+        features = { }
+    elseif type(features) == "string" then
+        features = normalize_meanings(settings_to_hash(features))
+    else
+        features = normalize_meanings(features)
+    end
     -- todo: synonyms, and not otf bound
     if parent ~= "" then
         for p in gmatch(parent,"[^, ]+") do
             local s = setups[p]
             if s then
                 for k,v in next, s do
-                    if t[k] == nil then
-                        t[k] = v
+                    if features[k] == nil then
+                        features[k] = v
                     end
                 end
             end
@@ -93,25 +96,26 @@ local function preset_context(name,parent,features) -- currently otf only
     -- we need to preset them (we hash the features and adding a default
     -- setting during initialization may result in a different hash)
     for k,v in next, triggers do
-        if type(t[v]) == "nil" then
+        if features[v] == nil then -- not false !
             local vv = default_features[v]
-            if vv then t[v] = vv end
+            if vv then features[v] = vv end
         end
     end
     -- sparse 'm so that we get a better hash and less test (experimental
     -- optimization)
-    local tt = { } -- maybe avoid tt
-    for k,v in next, t do
-        if v then tt[k] = v end
+    local t = { } -- can we avoid t ?
+    for k,v in next, features do
+        if v then t[k] = v end
     end
     -- needed for dynamic features
+    local number = (setups[name] and setups[name].number) or 0
     if number == 0 then
         number = #numbers + 1
         numbers[number] = name
     end
-    tt.number = number
-    setups[name] = tt
-    return number
+    t.number = number
+    setups[name] = t
+    return number, t
 end
 
 local function context_number(name) -- will be replaced

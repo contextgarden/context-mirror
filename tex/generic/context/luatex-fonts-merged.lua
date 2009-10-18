@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 10/16/09 16:21:21
+-- merge date  : 10/18/09 15:26:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -1107,7 +1107,7 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     end
 end
 
-local function flatten(t,f,complete)
+local function flatten(t,f,complete) -- is this used? meybe a variant with next, ...
     for i=1,#t do
         local v = t[i]
         if type(v) == "table" then
@@ -1135,6 +1135,24 @@ function table.unnest(t) -- bad name
 end
 
 table.flatten_one_level = table.unnest
+
+-- a better one:
+
+local function flattened(t,f)
+    if not f then
+        f = { }
+    end
+    for k, v in next, t do
+        if type(v) == "table" then
+            flattened(v,f)
+        else
+            f[k] = v
+        end
+    end
+    return f
+end
+
+table.flattened = flattened
 
 -- the next three may disappear
 
@@ -1801,6 +1819,11 @@ statistics = {
     register      = dummyfunction,
     starttiming   = dummyfunction,
     stoptiming    = dummyfunction,
+}
+directives = {
+    register      = dummyfunction,
+    enable        = dummyfunction,
+    disable       = dummyfunction,
 }
 trackers = {
     register      = dummyfunction,
@@ -2681,6 +2704,7 @@ function nodes.inject_kerns(head,where,keep)
 local k = wx[p]
 if k then
     n.xoffset = p.xoffset - d[1] - k[2]
+--~     n.xoffset = p.xoffset - k[2]
 else
                                          n.xoffset = p.xoffset - d[1]
 end
@@ -3465,7 +3489,9 @@ function tfm.do_scale(tfmtable, scaledpoints)
     t.unicodes = tfmtable.unicodes
     t.indices = tfmtable.indices
     t.marks = tfmtable.marks
+t.goodies = tfmtable.goodies
 t.colorscheme = tfmtable.colorscheme
+--~ t.embedding = tfmtable.embedding
     t.descriptions = descriptions
     if tfmtable.fonts then
         t.fonts = table.fastcopy(tfmtable.fonts) -- hm  also at the end
@@ -5229,7 +5255,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.631 -- beware: also sync font-mis.lua
+otf.version          = 2.633 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -5349,7 +5375,7 @@ local enhancers = {
     "patch bugs",
     "merge cid fonts", "prepare unicode", "cleanup ttf tables", "compact glyphs", "reverse coverage",
     "cleanup aat", "enrich with features", "add some missing characters",
---~     "reorganize mark classes",
+    "reorganize mark classes",
     "reorganize kerns", -- moved here
     "flatten glyph lookups", "flatten anchor tables", "flatten feature tables",
     "prepare luatex tables",
@@ -5821,21 +5847,15 @@ otf.enhancers["analyse subtables"] = function(data,filename)
             end
             local flags = gk.flags
             if flags then
---~                 gk.flags = { -- forcing false packs nicer
---~                     (flags.ignorecombiningmarks and "mark")     or false,
---~                     (flags.ignoreligatures      and "ligature") or false,
---~                     (flags.ignorebaseglyphs     and "base")     or false,
---~                      flags.r2l                                  or false,
---~                 }
                 gk.flags = { -- forcing false packs nicer
-                    ((flags.ignorecombiningmarks or flags.mark_class) and "mark")     or false,
-                    ( flags.ignoreligatures                           and "ligature") or false,
-                    ( flags.ignorebaseglyphs                          and "base")     or false,
-                      flags.r2l                                                       or false,
+                    (flags.ignorecombiningmarks and "mark")     or false,
+                    (flags.ignoreligatures      and "ligature") or false,
+                    (flags.ignorebaseglyphs     and "base")     or false,
+                     flags.r2l                                  or false,
                 }
---~                 if flags.mark_class then
---~                     gk.markclass = luatex.markclasses[flags.mark_class]
---~                 end
+                if flags.mark_class then
+                    gk.markclass = luatex.markclasses[flags.mark_class]
+                end
             end
         end
     end
@@ -8751,12 +8771,11 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,cur
                 local factor = tfmdata.factor
                 while snext and snext.id == glyph and snext.subtype<256 and snext.font == currentfont do
                     local nextchar = snext.char
-local krn = kerns[nextchar]
+                    local krn = kerns[nextchar]
                     if not krn and marks[nextchar] then
                         prev = snext
                         snext = snext.next
                     else
---~                         local krn = kerns[nextchar]
                         if not krn then
                             -- skip
                         elseif type(krn) == "table" then
@@ -8828,7 +8847,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
     local flags, done = sequence.flags, false
     local skipmark, skipligature, skipbase = flags[1], flags[2], flags[3]
     local someskip = skipmark or skipligature or skipbase -- could be stored in flags for a fast test (hm, flags could be false !)
-    local markclass = sequence.markclass
+    local markclass = sequence.markclass -- todo, first we need a proper test
     for k=1,#contexts do
         local match, current, last = true, start, start
         local ck = contexts[k]
@@ -8862,10 +8881,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
---~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
-                                        if class == skipmark or class == skipligature or class == skipbase then
---~                                         if someskip and (class == skipmark or class == skipligature or class == skipbase) then
-                                            -- skip 'm
+                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
@@ -8909,10 +8925,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
---~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
-                                        if class == skipmark or class == skipligature or class == skipbase then
---~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
-                                            -- skip 'm
+                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
@@ -8966,10 +8979,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
---~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
-                                        if class == skipmark or class == skipligature or class == skipbase then
---~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
-                                            -- skip 'm
+                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
@@ -10418,7 +10428,8 @@ if not modules then modules = { } end modules ['font-def'] = {
 local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
 local tostring, next = tostring, next
 
-local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
+local trace_defining     = false  trackers  .register("fonts.defining", function(v) trace_defining     = v end)
+local directive_embedall = false  directives.register("fonts.embedall", function(v) directive_embedall = v end)
 
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
 trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
@@ -10692,7 +10703,9 @@ function tfm.read(specification)
             end
         end
         if tfmtable then
-            if tfmtable.filename and fonts.dontembed[tfmtable.filename] then
+            if directive_embedall then
+                tfmtable.embedding = "full"
+            elseif tfmtable.filename and fonts.dontembed[tfmtable.filename] then
                 tfmtable.embedding = "no"
             else
                 tfmtable.embedding = "subset"

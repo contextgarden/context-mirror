@@ -173,7 +173,15 @@ local function empty(collected)
                 local edt = e.dt
                 if edt then
                     local n = #edt
-                    if (n > 2) or (n > 0 and edt[1] == "") then
+                    if n == 1 then
+                        local edk = edt[1]
+                        local typ = type(edk)
+                        if typ == "table" then
+                            return false
+                        elseif edk ~= "" then -- maybe an extra tester for spacing only
+                            return false
+                        end
+                    elseif n > 1 then
                         return false
                     end
                 end

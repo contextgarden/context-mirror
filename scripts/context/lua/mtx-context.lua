@@ -131,7 +131,6 @@ do
             if f then
                 f:write("<?xml version='1.0' standalone='yes'?>\n\n")
                 f:write(string.format("<ctx:preplist local='%s'>\n",yn(ctxdata.runlocal)))
---~                 for name, value in pairs(ctxdata.prepfiles) do
                 for _, name in ipairs(table.sortedkeys(ctxdata.prepfiles)) do
                     f:write(string.format("\t<ctx:prepfile done='%s'>%s</ctx:prepfile>\n",yn(ctxdata.prepfiles[name]),name))
                 end
@@ -189,8 +188,8 @@ do
             end
         end
 
-usedname = resolvers.find_file(ctxdata.ctxname,"tex")
-found = usedname ~= ""
+        usedname = resolvers.find_file(ctxdata.ctxname,"tex")
+        found = usedname ~= ""
 
         if not found and defaultname and defaultname ~= "" and lfs.isfile(defaultname) then
             usedname, found = defaultname, true
@@ -225,36 +224,35 @@ found = usedname ~= ""
             logs.simple("ctx comment: %s", xml.tostring(message))
         end
 
-        xml.each(ctxdata.xmldata,"ctx:value[@name='job']", function(ek,e,k)
+        for r, e, k in xml.elements(ctxdata.xmldata,"ctx:value[@name='job']") do
             e[k] = ctxdata.variables['job'] or ""
-        end)
+        end
 
         local commands = { }
-        xml.each(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor", function(r,d,k)
-            local ek = d[k]
-            commands[ek.at and ek.at['name'] or "unknown"] = ek
-        end)
+        for e in xml.collected(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor") do
+            commands[e.at and e.at['name'] or "unknown"] = e
+        end
 
         local suffix   = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/attribute(suffix)") or ctxdata.suffix
         local runlocal = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/attribute(local)")
 
         runlocal = toboolean(runlocal)
 
-        for _, files in ipairs(xml.filters.elements(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:files")) do
-            for _, pattern in ipairs(xml.filters.elements(files,"ctx:file")) do
+        for files in xml.collected(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:files") do
+            for pattern in xml.collected(files,"ctx:file") do
 
                 preprocessor = pattern.at['processor'] or ""
 
                 if preprocessor ~= "" then
 
                     ctxdata.variables['old'] = ctxdata.jobname
-                    xml.each(ctxdata.xmldata,"ctx:value", function(r,d,k)
+                    for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value") do
                         local ek = d[k]
                         local ekat = ek.at['name']
                         if ekat == 'old' then
                             d[k] = ctxrunner.substitute(ctxdata.variables[ekat] or "")
                         end
-                    end)
+                    end
 
                     pattern = ctxrunner.justtext(xml.tostring(pattern))
 
@@ -293,21 +291,21 @@ found = usedname ~= ""
                                         if ctxdata.runlocal then
                                             newfile = file.basename(newfile)
                                         end
-                                        xml.each(command,"ctx:old", function(r,d,k)
+                                        for r, d, k in xml.elements(command,"ctx:old") do
                                             d[k] = ctxrunner.substitute(oldfile)
-                                        end)
-                                        xml.each(command,"ctx:new", function(r,d,k)
+                                        end
+                                        for r, d, k in xml.elements(command,"ctx:new") do
                                             d[k] = ctxrunner.substitute(newfile)
-                                        end)
+                                        end
                                         ctxdata.variables['old'] = oldfile
                                         ctxdata.variables['new'] = newfile
-                                        xml.each(command,"ctx:value", function(r,d,k)
+                                        for r, d, k in xml.elements(command,"ctx:value") do
                                             local ek = d[k]
                                             local ekat = ek.at and ek.at['name']
                                             if ekat then
                                                 d[k] = ctxrunner.substitute(ctxdata.variables[ekat] or "")
                                             end
-                                        end)
+                                        end
                                         -- potential optimization: when mtxrun run internal
                                         command = xml.text(command)
                                         command = ctxrunner.justtext(command) -- command is still xml element here
@@ -443,6 +441,12 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         setalways("%% feedback and basic job control")
         if type(environment.argument("track")) == "string" then
             setvalue ("track"    , "\\enabletrackers[%s]")
+        end
+        if type(environment.argument("trackers")) == "string" then
+            setvalue ("trackers" , "\\enabletrackers[%s]")
+        end
+        if type(environment.argument("directives")) == "string" then
+            setvalue ("directives", "\\enabledirectives[%s]")
         end
         setfixed ("timing"       , "\\usemodule[timing]")
         setfixed ("batchmode"    , "\\batchmode")
@@ -1211,8 +1215,15 @@ end
 
 -- todo: we need to do a dummy run
 
-function scripts.context.track()
-    environment.files = { "m-track" }
+function scripts.context.trackers()
+    environment.files = { "m-trackers" }
+    scripts.context.multipass.nofruns = 1
+    scripts.context.run()
+    -- maybe filter from log
+end
+
+function scripts.context.directives()
+    environment.files = { "m-directives" }
     scripts.context.multipass.nofruns = 1
     scripts.context.run()
     -- maybe filter from log
@@ -1403,7 +1414,8 @@ expert options:
 --nostats             omit runtime statistics at the end of the run
 --update              update context from website (not to be confused with contextgarden)
 --profile             profile job (use: mtxrun --script profile --analyse)
---track               show/set tracker variables
+--trackers            show/set tracker variables
+--directives          show/set directive variables
 --timing              generate timing and statistics overview
 --extra=name          process extra (mtx-context-<name> in distribution)
 --tracefiles          show some extra info when locating files (at the tex end)
@@ -1462,8 +1474,12 @@ elseif environment.argument("extra") then
     scripts.context.extra()
 elseif environment.argument("help") then
     logs.help(messages.help)
-elseif environment.argument("track") and type(environment.argument("track"))  == "boolean" then
-    scripts.context.track()
+elseif environment.argument("trackers") and type(environment.argument("trackers")) == "boolean" then
+    scripts.context.trackers()
+elseif environment.argument("directives") and type(environment.argument("directives")) == "boolean" then
+    scripts.context.directives()
+elseif environment.argument("track") and type(environment.argument("track")) == "boolean" then -- for old times sake, will go
+    scripts.context.trackers()
 elseif environment.files[1] then
 --  scripts.context.timed(scripts.context.run)
     scripts.context.timed(scripts.context.autoctx)

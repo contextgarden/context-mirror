@@ -258,7 +258,9 @@ function tfm.do_scale(tfmtable, scaledpoints)
     t.unicodes = tfmtable.unicodes
     t.indices = tfmtable.indices
     t.marks = tfmtable.marks
+t.goodies = tfmtable.goodies
 t.colorscheme = tfmtable.colorscheme
+--~ t.embedding = tfmtable.embedding
     t.descriptions = descriptions
     if tfmtable.fonts then
         t.fonts = table.fastcopy(tfmtable.fonts) -- hm  also at the end

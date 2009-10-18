@@ -230,6 +230,16 @@ function string:pattesc()
     return (gsub(self,".",patterns_escapes))
 end
 
+local simple_escapes = {
+    ["-"] = "%-",
+    ["."] = "%.",
+    ["*"] = ".*",
+}
+
+function string:simpleesc()
+    return (gsub(self,".",simple_escapes))
+end
+
 function string:tohash()
     local t = { }
     for s in gmatch(self,"([^, ]+)") do -- lpeg
@@ -276,6 +286,12 @@ end
 function string:compactlong() -- strips newlines and leading spaces
     self = gsub(self,"[\n\r]+ *","")
     self = gsub(self,"^ *","")
+    return self
+end
+
+function string:striplong() -- strips newlines and leading spaces
+    self = gsub(self,"^%s*","")
+    self = gsub(self,"[\n\r]+ *","\n")
     return self
 end
 
@@ -387,6 +403,18 @@ function string:split(separator)
     return c:match(self)
 end
 
+--~ function lpeg.L(list,pp)
+--~     local p = pp
+--~     for l=1,#list do
+--~         if p then
+--~             p = p + lpeg.P(list[l])
+--~         else
+--~             p = lpeg.P(list[l])
+--~         end
+--~     end
+--~     return p
+--~ end
+
 
 end -- of closure
 
@@ -418,6 +446,14 @@ function table.strip(tab)
         end
     end
     return lst
+end
+
+function table.keys(t)
+    local k = { }
+    for key,_ in next, t do
+        k[#k+1] = key
+    end
+    return k
 end
 
 local function compare(a,b)
@@ -1192,21 +1228,35 @@ function table.reverse(t)
     return tt
 end
 
---~ function table.keys(t)
---~     local k = { }
---~     for k,_ in next, t do
---~         k[#k+1] = k
---~     end
---~     return k
---~ end
+function table.insert_before_value(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i,extra)
+            return
+        end
+    end
+    insert(t,1,extra)
+end
 
---~ function table.keys_as_string(t)
---~     local k = { }
---~     for k,_ in next, t do
---~         k[#k+1] = k
---~     end
---~     return concat(k,"")
---~ end
+function table.insert_after_value(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i+1,extra)
+            return
+        end
+    end
+    insert(t,#t+1,extra)
+end
 
 
 end -- of closure
@@ -1413,7 +1463,7 @@ if not modules then modules = { } end modules ['l-number'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local format, foor, insert = string.format, math.floor, table.insert
 
 number = number or { }
 
@@ -1449,7 +1499,18 @@ function number.toset(n)
     return one:match(tostring(n))
 end
 
-
+function number.bits(n,zero)
+    local t, i = { }, (zero and 0) or 1
+    while n > 0 do
+        local m = n % 2
+        if m > 0 then
+            insert(t,1,i)
+        end
+        n = floor(n/2)
+        i = i + 1
+    end
+    return t
+end
 
 
 end -- of closure
@@ -1914,11 +1975,11 @@ local rootbased = lpeg.P("/") + letter*lpeg.P(":")
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)
-    return qualified:match(filename)
+    return qualified:match(filename) ~= nil
 end
 
 function file.is_rootbased_path(filename)
-    return rootbased:match(filename)
+    return rootbased:match(filename) ~= nil
 end
 
 local slash  = lpeg.S("\\/")
@@ -3134,6 +3195,24 @@ function aux.accesstable(target)
     return t
 end
 
+-- as we use this a lot ...
+
+--~ function aux.cachefunction(action,weak)
+--~     local cache = { }
+--~     if weak then
+--~         setmetatable(cache, { __mode = "kv" } )
+--~     end
+--~     local function reminder(str)
+--~         local found = cache[str]
+--~         if not found then
+--~             found = action(str)
+--~             cache[str] = found
+--~         end
+--~         return found
+--~     end
+--~     return reminder, cache
+--~ end
+
 
 end -- of closure
 
@@ -3156,7 +3235,7 @@ debugger = debugger or { }
 local counters = { }
 local names = { }
 local getinfo = debug.getinfo
-local format, find, lower, gmatch = string.format, string.find, string.lower, string.gmatch
+local format, find, lower, gmatch, gsub = string.format, string.find, string.lower, string.gmatch, string.gsub
 
 -- one
 
@@ -3290,7 +3369,7 @@ local data, done = { }, { }
 
 local function set(what,value)
     if type(what) == "string" then
-        what = aux.settings_to_array(what)
+        what = aux.settings_to_array(what) -- inefficient but ok
     end
     for i=1,#what do
         local w = what[i]
@@ -3315,6 +3394,19 @@ local function reset()
     end
 end
 
+local function enable(what)
+    set(what,true)
+end
+
+local function disable(what)
+    if not what or what == "" then
+        done = { }
+        reset()
+    else
+        set(what,false)
+    end
+end
+
 function trackers.register(what,...)
     what = lower(what)
     local w = data[what]
@@ -3333,20 +3425,20 @@ function trackers.register(what,...)
 end
 
 function trackers.enable(what)
-    done = { }
-    set(what,true)
+    local e = trackers.enable
+    trackers.enable, done = enable, { }
+    enable(string.simpleesc(what))
+    trackers.enable, done = e, { }
 end
 
 function trackers.disable(what)
-    done = { }
-    if not what or what == "" then
-        trackers.reset(what)
-    else
-        set(what,false)
-    end
+    local e = trackers.disable
+    trackers.disable, done = disable, { }
+    disable(string.simpleesc(what))
+    trackers.disable, done = e, { }
 end
 
-function trackers.reset(what)
+function trackers.reset()
     done = { }
     reset()
 end
@@ -3423,7 +3515,7 @@ function environment.initialize_arguments(arg)
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
     for index, argument in pairs(arg) do
         if index > 0 then
-            local flag, value = argument:match("^%-+(.+)=(.-)$")
+            local flag, value = argument:match("^%-+(.-)=(.-)$")
             if flag then
                 arguments[flag] = string.unquote(value or "")
             else

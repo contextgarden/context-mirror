@@ -2719,8 +2719,8 @@
   {\dotripleargument\dodefinefontfeature}
 
 \def\dodefinefontfeature[#1][#2][#3]%
-  {\global\expandafter\chardef\csname\??fq=#1\endcsname
-     \ctxlua{tex.write(fonts.define.specify.preset_context("#1","#2","#3"))}\relax}
+  {\global\expandafter\chardef\csname\??fq=#1\endcsname % beware () needed as we get two values returned
+     \ctxlua{tex.write((fonts.define.specify.preset_context("#1","#2","#3")))}\relax}
 
 \definefontfeature
   [default]

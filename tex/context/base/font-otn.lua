@@ -1443,12 +1443,11 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,cur
                 local factor = tfmdata.factor
                 while snext and snext.id == glyph and snext.subtype<256 and snext.font == currentfont do
                     local nextchar = snext.char
-local krn = kerns[nextchar]
+                    local krn = kerns[nextchar]
                     if not krn and marks[nextchar] then
                         prev = snext
                         snext = snext.next
                     else
---~                         local krn = kerns[nextchar]
                         if not krn then
                             -- skip
                         elseif type(krn) == "table" then
@@ -1520,7 +1519,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
     local flags, done = sequence.flags, false
     local skipmark, skipligature, skipbase = flags[1], flags[2], flags[3]
     local someskip = skipmark or skipligature or skipbase -- could be stored in flags for a fast test (hm, flags could be false !)
-    local markclass = sequence.markclass
+    local markclass = sequence.markclass -- todo, first we need a proper test
     for k=1,#contexts do
         local match, current, last = true, start, start
         local ck = contexts[k]
@@ -1554,10 +1553,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
---~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
-                                        if class == skipmark or class == skipligature or class == skipbase then
---~                                         if someskip and (class == skipmark or class == skipligature or class == skipbase) then
-                                            -- skip 'm
+                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
@@ -1601,10 +1597,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
---~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
-                                        if class == skipmark or class == skipligature or class == skipbase then
---~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
-                                            -- skip 'm
+                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
@@ -1658,10 +1651,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
---~ if class == skipmark or class == skipligature or class == skipbase or (markclass and not markclass[char]) then
-                                        if class == skipmark or class == skipligature or class == skipbase then
---~                                         if someskip and class == skipmark or class == skipligature or class == skipbase then
-                                            -- skip 'm
+                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
