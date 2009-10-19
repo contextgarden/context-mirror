@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 10/18/09 15:26:25
+-- merge date  : 10/19/09 14:48:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -2402,7 +2402,8 @@ if not modules then modules = { } end modules ['node-inj'] = {
 
 -- This is very experimental (this will change when we have luatex > .50 and
 -- a few pending thingies are available. Also, Idris needs to make a few more
--- test fonts.
+-- test fonts. Btw, future versions of luatex will have extended glyph properties
+-- that can be of help.
 
 local next = next
 
@@ -2442,6 +2443,8 @@ local kerns    = { }
 -- explicitly i will provide an alternative; also, we can share
 -- tables
 
+-- for the moment we pass the r2l key ... volt/arabtype tests
+
 function nodes.set_cursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext)
     local dx, dy = factor*(exit[1]-entry[1]), factor*(exit[2]-entry[2])
     local ws, wn = tfmstart.width, tfmnext.width
@@ -2452,7 +2455,7 @@ function nodes.set_cursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext)
     return dx, dy, bound
 end
 
-function nodes.set_pair(current,factor,rlmode,spec,tfmchr)
+function nodes.set_pair(current,factor,rlmode,r2lflag,spec,tfmchr)
     local x, y, w, h = factor*spec[1], factor*spec[2], factor*spec[3], factor*spec[4]
     -- dy = y - h
     if x ~= 0 or w ~= 0 or y ~= 0 or h ~= 0 then
@@ -2463,7 +2466,7 @@ function nodes.set_pair(current,factor,rlmode,spec,tfmchr)
         else
             bound = #kerns + 1
             set_attribute(current,kernpair,bound)
-            kerns[bound] = { rlmode, x, y, w, h }
+            kerns[bound] = { rlmode, x, y, w, h, r2lflag }
         end
         return x, y, w, h, bound
     end
@@ -2563,7 +2566,7 @@ end
 function nodes.inject_kerns(head,where,keep)
     local has_marks, has_cursives, has_kerns = next(marks), next(cursives), next(kerns)
     if has_marks or has_cursives then
---~     if true  then
+--~     if has_marks or has_cursives or has_kerns then
         if trace_injections then
             nodes.trace_injection(head)
         end
@@ -2698,16 +2701,15 @@ function nodes.inject_kerns(head,where,keep)
                                 local d = mrks[index]
                                 if d then
                                 --  local rlmode = d[3] -- not used
-                                --  if rlmode and rlmode < 0 then
-                                --      n.xoffset = p.xoffset + d[1]
+                                --  if rlmode and rlmode > 0 then
+                                        -- todo
                                 --  else
-local k = wx[p]
-if k then
-    n.xoffset = p.xoffset - d[1] - k[2]
---~     n.xoffset = p.xoffset - k[2]
-else
-                                         n.xoffset = p.xoffset - d[1]
-end
+                                        local k = wx[p]
+                                        if k then
+                                            n.xoffset = p.xoffset - d[1] - k[2]
+                                        else
+                                            n.xoffset = p.xoffset - d[1]
+                                        end
                                 --  end
                                     if mk[p] then
                                         n.yoffset = p.yoffset + d[2]
@@ -2729,30 +2731,40 @@ end
             if next(wx) then
                 for n, k in next, wx do
                  -- only w can be nil, can be sped up when w == nil
-                    local rl, x, w = k[1], k[2] or 0, k[4] or 0
+                    local rl, x, w, r2l = k[1], k[2] or 0, k[4] or 0, k[6]
                     local wx = w - x
+-- we can probably listen to only one of them i.e. ignore rl here
                     if rl < 0 then
---~ if false then
-                        if wx ~= 0 then
-                            insert_node_before(head,n,newkern(wx))
+                        if r2l then
+                            if wx ~= 0 then
+                                insert_node_before(head,n,newkern(wx))
+                            end
+                            if x ~= 0 then
+                                insert_node_after (head,n,newkern(x))
+                            end
+                        else
+                            if x ~= 0 then
+                                insert_node_before(head,n,newkern(x))
+                            end
+                            if wx ~= 0 then
+                                insert_node_after(head,n,newkern(wx))
+                            end
                         end
-                        if x ~= 0 then
-                            insert_node_after (head,n,newkern(x))
-                        end
---~ else
---~     if wx ~= 0 then
---~         insert_node_after(head,n,newkern(wx))
---~     end
---~     if x ~= 0 then
---~         insert_node_before(head,n,newkern(x))
---~     end
---~ end
                     else
-                    --  if wx ~= 0 then
-                    --      insert_node_after(head,n,newkern(wx))
-                    --  end
-                        if x ~= 0 then
-                            insert_node_before(head,n,newkern(x))
+                        if r2l then
+                            if wx ~= 0 then
+                                insert_node_before(head,n,newkern(wx))
+                            end
+                            if x ~= 0 then
+                                insert_node_after (head,n,newkern(x))
+                            end
+                        else
+                            if x ~= 0 then
+                                insert_node_before(head,n,newkern(x))
+                            end
+                            if wx ~= 0 then
+                                insert_node_after(head,n,newkern(wx))
+                            end
                         end
                     end
                 end
@@ -2780,10 +2792,7 @@ end
         if trace_injections then
             nodes.trace_injection(head)
         end
-        local n = head
-        while n do
-            local id = n.id
-            if id == glyph then
+            for n in traverse_id(glyph,head) do
                 local k = has_attribute(n,kernpair)
                 if k then
                     local kk = kerns[k]
@@ -2793,34 +2802,51 @@ end
                             n.yoffset = y -- todo: h ?
                         end
                         if w then
-                            -- gpospair kerns
+                            -- copied from above
+                            local r2l = kk[6]
                             local wx = w - x
                             if rl < 0 then
-                                if wx ~= 0 then
-                                    head, _ = insert_node_before(head,n,newkern(wx))
-                                end
-                                if x ~= 0 then
-                                    head, n = insert_node_after(head,n,newkern(x))
+                                if r2l then
+                                    if wx ~= 0 then
+                                        insert_node_before(head,n,newkern(wx))
+                                    end
+                                    if x ~= 0 then
+                                        insert_node_after (head,n,newkern(x))
+                                    end
+                                else
+                                    if x ~= 0 then
+                                        insert_node_before(head,n,newkern(x))
+                                    end
+                                    if wx ~= 0 then
+                                        insert_node_after(head,n,newkern(wx))
+                                    end
                                 end
                             else
-                            --  if wx ~= 0 then
-                            --      head, n =  insert_node_after(head,n,newkern(wx))
-                            --  end
-                                if x ~= 0 then
-                                    head, _ = insert_node_before(head,n,newkern(x))
+                                if r2l then
+                                    if wx ~= 0 then
+                                        insert_node_before(head,n,newkern(wx))
+                                    end
+                                    if x ~= 0 then
+                                        insert_node_after (head,n,newkern(x))
+                                    end
+                                else
+                                    if x ~= 0 then
+                                        insert_node_before(head,n,newkern(x))
+                                    end
+                                    if wx ~= 0 then
+                                        insert_node_after(head,n,newkern(wx))
+                                    end
                                 end
                             end
                         else
                             -- simple (e.g. kernclass kerns)
                             if x ~= 0 then
-                                head, _ = insert_node_before(head,n,newkern(x))
+                                insert_node_before(head,n,newkern(x))
                             end
                         end
                     end
                 end
             end
-            n = n.next
-        end
         if not keep then
             kerns = { }
         end
@@ -2830,45 +2856,6 @@ end
     end
     return head, false
 end
-
---~         for n in traverse_id(glyph,head) do
---~             local k = has_attribute(n,kernpair)
---~             if k then
---~                 local kk = kerns[k]
---~                 if kk then
---~                  -- only w can be nil, can be sped up when w == nil
---~                     local rl, x, y, w = kk[1], kk[2] or 0, kk[3] or 0, kk[4] or 0
---~                     if y ~= 0 then
---~                         n.yoffset = y -- todo: h ?
---~                     end
---~                     local wx = w - x
---~                     if rl < 0 then
---~ if false then
---~                         if wx ~= 0 then
---~                             insert_node_before(head,n,newkern(wx))
---~                         end
---~                         if x ~= 0 then
---~                             insert_node_after (head,n,newkern(x))
---~                         end
---~ else
---~     if wx ~= 0 then
---~         insert_node_after(head,n,newkern(wx))
---~     end
---~     if x ~= 0 then
---~         insert_node_before(head,n,newkern(x))
---~     end
---~ end
---~                     else
---~                     --  if wx ~= 0 then
---~                     --      insert_node_after(head,n,newkern(wx))
---~                     --  end
---~                         if x ~= 0 then
---~                             insert_node_before(head,n,newkern(x))
---~                         end
---~                     end
---~                 end
---~             end
---~         end
 
 end -- closure
 
@@ -8084,9 +8071,9 @@ end
 
 function handlers.gpos_single(start,kind,lookupname,kerns,sequence)
     local startchar = start.char
-    local dx, dy = set_pair(start,tfmdata.factor,rlmode,kerns,characters[startchar])
+    local dx, dy, w, h = set_pair(start,tfmdata.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
     if trace_kerns then
-        logprocess("%s: shifting single %s by (%s,%s)",pref(kind,lookupname),gref(startchar),dx,dy)
+        logprocess("%s: shifting single %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),dx,dy,w,h)
     end
     return start, false
 end
@@ -8115,14 +8102,14 @@ local krn = kerns[nextchar]
                         local a, b = krn[3], krn[4]
                         if a and #a > 0 then
                             local startchar = start.char
-                            local x, y, w, h = set_pair(start,factor,rlmode,a,characters[startchar])
+                            local x, y, w, h = set_pair(start,factor,rlmode,sequence.flags[4],a,characters[startchar])
                             if trace_kerns then
                                 logprocess("%s: shifting first of pair %s and %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),gref(nextchar),x,y,w,h)
                             end
                         end
                         if b and #b > 0 then
                             local startchar = start.char
-                            local x, y, w, h = set_pair(snext,factor,rlmode,b,characters[nextchar])
+                            local x, y, w, h = set_pair(snext,factor,rlmode,sequence.flags[4],b,characters[nextchar])
                             if trace_kerns then
                                 logprocess("%s: shifting second of pair %s and %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),gref(nextchar),x,y,w,h)
                             end
@@ -8736,7 +8723,7 @@ function chainprocs.gpos_cursive(start,stop,kind,chainname,currentcontext,cache,
     return start, false
 end
 
-function chainprocs.gpos_single(start,stop,kind,chainname,currentcontext,cache,currentlookup,chainlookupname)
+function chainprocs.gpos_single(start,stop,kind,chainname,currentcontext,cache,currentlookup,chainlookupname,chainindex,sequence)
     -- untested
     local startchar = start.char
     local subtables = currentlookup.subtables
@@ -8745,9 +8732,9 @@ function chainprocs.gpos_single(start,stop,kind,chainname,currentcontext,cache,c
     if kerns then
         kerns = kerns[startchar]
         if kerns then
-            local dx, dy = set_pair(start,tfmdata.factor,rlmode,kerns,characters[startchar])
+            local dx, dy, w, h = set_pair(start,tfmdata.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
             if trace_kerns then
-                logprocess("%s: shifting single %s by (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),dx,dy)
+                logprocess("%s: shifting single %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),dx,dy,w,h)
             end
         end
     end
@@ -8756,7 +8743,7 @@ end
 
 -- when machines become faster i will make a shared function
 
-function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,currentlookup,chainlookupname)
+function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,currentlookup,chainlookupname,chainindex,sequence)
 --    logwarning("%s: gpos_pair not yet supported",cref(kind,chainname,chainlookupname))
     local snext = start.next
     if snext then
@@ -8783,14 +8770,14 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,cur
                                 local a, b = krn[3], krn[4]
                                 if a and #a > 0 then
                                     local startchar = start.char
-                                    local x, y, w, h = set_pair(start,factor,rlmode,a,characters[startchar])
+                                    local x, y, w, h = set_pair(start,factor,rlmode,sequence.flags[4],a,characters[startchar])
                                     if trace_kerns then
                                         logprocess("%s: shifting first of pair %s and %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),gref(nextchar),x,y,w,h)
                                     end
                                 end
                                 if b and #b > 0 then
                                     local startchar = start.char
-                                    local x, y, w, h = set_pair(snext,factor,rlmode,b,characters[nextchar])
+                                    local x, y, w, h = set_pair(snext,factor,rlmode,sequence.flags[4],b,characters[nextchar])
                                     if trace_kerns then
                                         logprocess("%s: shifting second of pair %s and %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),gref(nextchar),x,y,w,h)
                                     end
@@ -8851,12 +8838,12 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
     for k=1,#contexts do
         local match, current, last = true, start, start
         local ck = contexts[k]
-        local sequence = ck[3]
-        local s = #sequence
+        local seq = ck[3]
+        local s = #seq
         -- f..l = mid string
         if s == 1 then
             -- never happens
-            match = current.id == glyph and current.subtype<256 and current.font == currentfont and sequence[1][current.char]
+            match = current.id == glyph and current.subtype<256 and current.font == currentfont and seq[1][current.char]
         else
             -- todo: better space check (maybe check for glue)
             local f, l = ck[4], ck[5]
@@ -8870,7 +8857,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 -- we cannot optimize for n=2 because there can be disc nodes
                 -- if not someskip and n == l then
                 --    -- n=2 and no skips then faster loop
-                --    match = last and last.id == glyph and last.subtype<256 and last.font == currentfont and sequence[n][last.char]
+                --    match = last and last.id == glyph and last.subtype<256 and last.font == currentfont and seq[n][last.char]
                 -- else
                     while n <= l do
                         if last then
@@ -8886,7 +8873,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
                                             last = last.next
-                                        elseif sequence[n][char] then
+                                        elseif seq[n][char] then
                                             if n < l then
                                                 last = last.next
                                             end
@@ -8929,7 +8916,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
-                                        elseif sequence[n][char] then
+                                        elseif seq[n][char] then
                                             n = n -1
                                         else
                                             match = false break
@@ -8942,23 +8929,23 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 end
                             elseif id == disc then
                                 -- skip 'm
-                            elseif sequence[n][32] then
+                            elseif seq[n][32] then
                                 n = n -1
                             else
                                 match = false break
                             end
                             prev = prev.prev
-                        elseif sequence[n][32] then
+                        elseif seq[n][32] then
                             n = n -1
                         else
                             match = false break
                         end
                     end
                 elseif f == 2 then
-                    match = sequence[1][32]
+                    match = seq[1][32]
                 else
                     for n=f-1,1 do
-                        if not sequence[n][32] then
+                        if not seq[n][32] then
                             match = false break
                         end
                     end
@@ -8983,7 +8970,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
-                                        elseif sequence[n][char] then
+                                        elseif seq[n][char] then
                                             n = n + 1
                                         else
                                             match = false break
@@ -8996,23 +8983,23 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 end
                             elseif id == disc then
                                 -- skip 'm
-                            elseif sequence[n][32] then -- brrr
+                            elseif seq[n][32] then -- brrr
                                 n = n + 1
                             else
                                 match = false break
                             end
                             current = current.next
-                        elseif sequence[n][32] then
+                        elseif seq[n][32] then
                             n = n + 1
                         else
                             match = false break
                         end
                     end
                 elseif s-l == 1 then
-                    match = sequence[s][32]
+                    match = seq[s][32]
                 else
                     for n=l+1,s do
-                        if not sequence[n][32] then
+                        if not seq[n][32] then
                             match = false break
                         end
                     end
@@ -9022,7 +9009,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
         if match then
             -- ck == currentcontext
             if trace_contexts then
-                local rule, lookuptype, sequence, f, l = ck[1], ck[2] ,ck[3], ck[4], ck[5]
+                local rule, lookuptype, f, l = ck[1], ck[2], ck[4], ck[5]
                 local char = start.char
                 if ck[9] then
                     logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s (%s=>%s)",cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype,ck[9],ck[10])
@@ -9039,7 +9026,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                     local chainlookup = lookuptable[chainlookupname]
                     local cp = chainprocs[chainlookup.type]
                     if cp then
-                        start, done = cp(start,last,kind,chainname,ck,cache,chainlookup,chainlookupname)
+                        start, done = cp(start,last,kind,chainname,ck,cache,chainlookup,chainlookupname,nil,sequence)
                     else
                         logprocess("%s: %s is not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
                     end
@@ -9052,7 +9039,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                         local cp = chainmores[chainlookup.type]
                         if cp then
                             local ok, n
-                            start, ok, n = cp(start,last,kind,chainname,ck,cache,chainlookup,chainlookupname,i)
+                            start, ok, n = cp(start,last,kind,chainname,ck,cache,chainlookup,chainlookupname,i,sequence)
                             -- messy since last can be changed !
                             if ok then
                                 done = true
@@ -9071,7 +9058,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
             else
                 local replacements = ck[7]
                 if replacements then
-                    start, done = chainprocs.reversesub(start,last,kind,chainname,ck,cache,replacements)
+                    start, done = chainprocs.reversesub(start,last,kind,chainname,ck,cache,replacements) -- sequence
                 else
                     done = true -- can be meant to be skipped
                     if trace_contexts then

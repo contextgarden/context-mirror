@@ -17,7 +17,12 @@ storage.register("catcodes/names",   catcodes.names,   "catcodes.names")
 
 function catcodes.register(name,number)
     catcodes.numbers[name] = number
-    catcodes.names[number] = name
+    local cnn = catcodes.names[number]
+    if cnn then
+        cnn[#cnn+1] = name
+    else
+        catcodes.names[number] = { name }
+    end
     tex[name] = number
 end
 

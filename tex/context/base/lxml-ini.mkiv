@@ -40,7 +40,7 @@
 \def\xmlconcat         #1#2#3{\ctxlua{lxml.concat("#1","#2",[[\detokenize{#3}]])}}
 \def\xmlconcatrange#1#2#3#4#5{\ctxlua{lxml.concatrange("#1","#2","#3","#4",[[\detokenize{#5}]])}}
 \def\xmlcount            #1#2{\ctxlua{lxml.count("#1","#2")}}
-\def\xmldelete           #1#2{\ctxlua{xml.delete(lxml.id("#1"),"#2")}}
+\def\xmldelete           #1#2{\ctxlua{lxml.delete("#1","#2")}}
 \def\xmldirectives         #1{\ctxlua{lxml.directives.setup("#1")}}
 \def\xmldirectivesbefore   #1{\ctxlua{lxml.directives.before("#1")}}
 \def\xmldirectivesafter    #1{\ctxlua{lxml.directives.after("#1")}}

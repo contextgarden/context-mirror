@@ -39,12 +39,13 @@ local data = {
 }
 
 local function load_setup(filename)
-    local fullname = resolvers.find_file(filename) or ""
+    local fullname = resolvers.findtexfile(filename) or ""
     if fullname ~= "" then
         filename = fullname
     end
     local collection = xmlparseapply({ get_id(xml.load(filename)) },"directive")
     if collection then
+        local valid = 0
         for i=1,#collection do
             local at = collection[i].at
             local attribute, value, element = at.attribute or "", at.value or "", at.element or '*'
@@ -56,8 +57,12 @@ local function load_setup(filename)
                 if before ~= "" then t.before = before end
                 if after  ~= "" then t.after  = after  end
                 data[key] = t
+                valid = valid + 1
             end
         end
+        logs.report("lxml","%s directives found in '%s', %s valid",#collection,filename,valid)
+    else
+        logs.report("lxml","no directives found in '%s'",filename)
     end
 end
 

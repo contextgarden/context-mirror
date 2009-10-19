@@ -357,10 +357,10 @@
    \edef\hasstructurecounternumber {#3\s!hasnumber}%
    \edef\hasstructurecounterlevel  {#3\s!haslevel}%
    %
-\edef\askedprefixsegments{#3\c!prefixsegments}%
-\ifx\askedprefixsegments\v!auto
-  \edef\askedprefixsegments{\autostructureprefixsegments#3}%
-\fi
+   \edef\askedprefixsegments{#3\c!prefixsegments}%
+   \ifx\askedprefixsegments\v!auto
+     \edef\askedprefixsegments{\autostructureprefixsegments#3}%
+   \fi
    %
    \edef\currentname{#3\c!name}%
    \ifx\currentname\empty

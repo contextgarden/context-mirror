@@ -1329,3 +1329,7 @@ function lxml.stripped(id,pattern,nolines)
     end
     xmlsprint(str)
 end
+
+function lxml.delete(id,pattern)
+    xml.delete(get_id(id),pattern)
+end

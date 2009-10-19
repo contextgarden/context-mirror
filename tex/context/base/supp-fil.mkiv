@@ -265,6 +265,8 @@
 
 % We need to postpone loading, else we got frozen type-* files and so when
 % a format is generated on a source path.
+%
+% It's about time we move this to lua.
 
 \def\doreadfile#1#2#3#4%
   {\sanitizefilename#2\to\readfilename

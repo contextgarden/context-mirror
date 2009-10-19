@@ -4300,6 +4300,16 @@ function xml.content(root) -- bugged
     return (root and root.dt and xml.tostring(root.dt)) or ""
 end
 
+function xml.name(root)
+    if not root then
+        return ""
+    elseif root.ns == "" then
+        return root.tg
+    else
+        return root.ns .. ":" .. root.tg
+    end
+end
+
 --[[ldx--
 <p>The next helper erases an element but keeps the table as it is,
 and since empty strings are not serialized (effectively) it does
@@ -4729,7 +4739,7 @@ local lp_builtin = P (
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
-local lp_attribute    = (P("@") + P("attribute::"))    / "" * Cc("ll.at['") * R("az","AZ","--","__")^1 * Cc("']")
+local lp_attribute    = (P("@") + P("attribute::"))    / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
 local lp_fastpos      = ((R("09","--","++")^1 * P(-1)) / function(s) return "l==" .. s end)
 
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
@@ -5404,65 +5414,6 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['lxml-ent'] = {
-    version   = 1.001,
-    comment   = "this module is the basis for the lxml-* ones",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
-local type, next =  type, next
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
-local utf = unicode.utf8
-local utfupper = utf.upper
-
---[[ldx--
-<p>We provide (at least here) two entity handlers. The more extensive
-resolver consults a hash first, tries to convert to <l n='utf'/> next,
-and finaly calls a handler when defines. When this all fails, the
-original entity is returned.</p>
-
-<p>We do things different now but it's still somewhat experimental</p>
---ldx]]--
-
-xml.entities = xml.entities or { } -- xml.entity_handler == function
-
--- experimental, this will be done differently
-
-function xml.merge_entities(root)
-    local documententities = root.entities
-    local allentities = xml.entities
-    if documententities then
-        for k, v in next, documententities do
-            allentities[k] = v
-        end
-    end
-end
-
-function xml.resolved_entity(str)
-    local e = xml.entities[str]
-    if e then
-        local te = type(e)
-        if te == "function" then
-            e(str)
-        else
-            texsprint(ctxcatcodes,e)
-        end
-    else
-        texsprint(ctxcatcodes,"\\xmle{",str,"}{",utfupper(str),"}") -- we need to use our own upper
-    end
-end
-
-xml.entities.amp = function() tex.write("&") end
-xml.entities.lt  = function() tex.write("<") end
-xml.entities.gt  = function() tex.write(">") end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
 if not modules then modules = { } end modules ['lxml-mis'] = {
     version   = 1.001,
     comment   = "this module is the basis for the lxml-* ones",
@@ -5566,6 +5517,8 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 
 -- not all functions here make sense anymore vbut we keep them for
 -- compatibility reasons
+
+local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
 
 local xmlparseapply, xmlconvert, xmlcopy = xml.parse_apply, xml.convert, xml.copy
 
@@ -5796,16 +5749,25 @@ xml.insert_element_before = function(r,p,e) xml.insert_element(r,p,e,true) end
 xml.inject_element_after  =                 xml.inject_element
 xml.inject_element_before = function(r,p,e) xml.inject_element(r,p,e,true) end
 
+local function report(what,pattern,c,e)
+    logs.report("xml","%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xml.name(e),xml.name(e.__p__),c,e.ni,pattern)
+end
+
 function xml.delete_element(root, pattern)
     local collected = xmlparseapply({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
-            remove(e.__p__.dt,e.ni)
-            e.ni = nil
+            local p = e.__p__
+            if p then
+                if trace_manipulations then
+                    report('deleting',pattern,c,e)
+                end
+                remove(p.dt,e.ni)
+                e.ni = nil
+            end
         end
     end
-    return collection
 end
 
 function xml.replace_element(root, pattern, element)
@@ -5820,7 +5782,13 @@ function xml.replace_element(root, pattern, element)
         if collected then
             for c=1,#collected do
                 local e = collected[c]
-                e.__p__.dt[e.ni] = element.dt -- maybe not clever enough
+                local p = e.__p__
+                if p then
+                    if trace_manipulations then
+                        report('replacing',pattern,c,e)
+                    end
+                    p.dt[e.ni] = element.dt -- maybe not clever enough
+                end
             end
         end
     end
@@ -10375,7 +10343,7 @@ own.libs = { -- todo: check which ones are really needed
     'trac-tra.lua',
     'lxml-tab.lua',
     'lxml-lpt.lua',
-    'lxml-ent.lua',
+--  'lxml-ent.lua',
     'lxml-mis.lua',
     'lxml-aux.lua',
     'lxml-xml.lua',

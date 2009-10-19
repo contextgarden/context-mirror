@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 -- not all functions here make sense anymore vbut we keep them for
 -- compatibility reasons
 
+local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
+
 local xmlparseapply, xmlconvert, xmlcopy = xml.parse_apply, xml.convert, xml.copy
 
 local type = type
@@ -238,16 +240,25 @@ xml.insert_element_before = function(r,p,e) xml.insert_element(r,p,e,true) end
 xml.inject_element_after  =                 xml.inject_element
 xml.inject_element_before = function(r,p,e) xml.inject_element(r,p,e,true) end
 
+local function report(what,pattern,c,e)
+    logs.report("xml","%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xml.name(e),xml.name(e.__p__),c,e.ni,pattern)
+end
+
 function xml.delete_element(root, pattern)
     local collected = xmlparseapply({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
-            remove(e.__p__.dt,e.ni)
-            e.ni = nil
+            local p = e.__p__
+            if p then
+                if trace_manipulations then
+                    report('deleting',pattern,c,e)
+                end
+                remove(p.dt,e.ni)
+                e.ni = nil
+            end
         end
     end
-    return collection
 end
 
 function xml.replace_element(root, pattern, element)
@@ -262,7 +273,13 @@ function xml.replace_element(root, pattern, element)
         if collected then
             for c=1,#collected do
                 local e = collected[c]
-                e.__p__.dt[e.ni] = element.dt -- maybe not clever enough
+                local p = e.__p__
+                if p then
+                    if trace_manipulations then
+                        report('replacing',pattern,c,e)
+                    end
+                    p.dt[e.ni] = element.dt -- maybe not clever enough
+                end
             end
         end
     end

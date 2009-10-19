@@ -960,6 +960,16 @@ function xml.content(root) -- bugged
     return (root and root.dt and xml.tostring(root.dt)) or ""
 end
 
+function xml.name(root)
+    if not root then
+        return ""
+    elseif root.ns == "" then
+        return root.tg
+    else
+        return root.ns .. ":" .. root.tg
+    end
+end
+
 --[[ldx--
 <p>The next helper erases an element but keeps the table as it is,
 and since empty strings are not serialized (effectively) it does

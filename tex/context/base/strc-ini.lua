@@ -24,7 +24,7 @@ local format, concat, match = string.format, table.concat, string.match
 local count, texwrite, texprint, texsprint = tex.count, tex.write, tex.print, tex.sprint
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 
-local ctxcatcodes, xmlcatcodes = tex.ctxcatcodes, 11 -- tex.xmlcatcodes -- tricky as we're in notcatcodes
+local ctxcatcodes, xmlcatcodes, notcatcodes = tex.ctxcatcodes, tex.xmlcatcodes, tex.notcatcodes -- tricky as we're in notcatcodes
 
 local trace_processors = false  trackers.register("structure.processors", function(v) trace_processors = v end)
 
@@ -168,7 +168,8 @@ function helpers.title(title,metadata) -- brrr
                 texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",title,metadata.xmlsetup)) -- nasty
             else
                 local catcodes = metadata.catcodes
-                if catcodes == xmlcatcodes then
+--~ print(tex.ctxcatcodes,tex.xmlcatcodes,catcodes,title)
+                if catcodes == notcatcodes or catcodes == xmlcatcodes then
                     texsprint(ctxcatcodes,title) -- nasty
                 else
                     texsprint(catcodes,title)

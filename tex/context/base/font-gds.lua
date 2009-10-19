@@ -11,6 +11,8 @@ local type, next = type, next
 local gmatch = string.gmatch
 
 -- goodies=name,colorscheme=,featureset=
+--
+-- goodies=auto
 
 -- goodies
 
@@ -52,8 +54,9 @@ fonts.goodies.get = getgoodies
 local preset_context = fonts.define.specify.preset_context
 
 function fonts.initializers.common.goodies(tfmdata,value)
-    local goodies = { }
+    local goodies = tfmdata.goodies or { } -- future versions might store goodies in the cached instance
     for filename in gmatch(value,"[^, ]+") do
+        -- we need to check for duplicates
         local ok = getgoodies(filename)
         if ok then
             goodies[#goodies+1] = ok

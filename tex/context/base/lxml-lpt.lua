@@ -389,7 +389,7 @@ local lp_builtin = P (
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
-local lp_attribute    = (P("@") + P("attribute::"))    / "" * Cc("ll.at['") * R("az","AZ","--","__")^1 * Cc("']")
+local lp_attribute    = (P("@") + P("attribute::"))    / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
 local lp_fastpos      = ((R("09","--","++")^1 * P(-1)) / function(s) return "l==" .. s end)
 
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")

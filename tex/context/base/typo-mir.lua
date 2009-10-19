@@ -14,7 +14,7 @@ local utfchar = utf.char
 
 -- vertical space handler
 
-local trace_mirroring     = false  trackers.register("nodes.mirroring",     function(v) trace_mirroring     = v end)
+local trace_mirroring = false  trackers.register("nodes.mirroring", function(v) trace_mirroring = v end)
 
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
@@ -254,9 +254,15 @@ function mirror.process(namespace,attribute,start) -- todo: make faster
                         if autodir <= 0 then
                             force_auto_left_before()
                         end
-                    elseif d == "r" or d == "al" or d == "an" then -- arabic left, arabic number
+                    elseif d == "r" or d == "al" then -- arabic number
                         if autodir >= 0 then
                             force_auto_right_before()
+                        end
+                    elseif d == "an" then -- arabic number
+                        -- actually this is language dependent ...
+                        if autodir <= 0 then
+--~                             force_auto_right_before()
+                            force_auto_left_before()
                         end
                     elseif d == "lro" then -- Left-to-Right Override -> right becomes left
                         if trace_mirroring then
@@ -310,7 +316,7 @@ function mirror.process(namespace,attribute,start) -- todo: make faster
                     if trace_mirroring then
                         local char = current.char
                         local d = directions[char]
-                        list[#list+1] = format("char %s (%s / U+%04X) of class %s (no bidi)",utfchar(char),char,char,d)
+                        list[#list+1] = format("char %s (%s / U+%04X) of class %s (no bidi)",utfchar(char),char,char,d or "?")
                     end
                 end
             elseif id == whatsit then

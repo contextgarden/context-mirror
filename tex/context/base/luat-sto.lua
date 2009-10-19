@@ -122,7 +122,7 @@ function statistics.report_storage(whereto)
     end
     write_nl(whereto," ","stored catcodetables:"," ")
     for k,v in table.sortedpairs(catcodes.names) do
-        write_nl(whereto,format("%03i %s",k,v))
+        write_nl(whereto,format("%03i %s",k,table.concat(v," ")))
     end
     write_nl(whereto," ")
 end

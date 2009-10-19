@@ -968,13 +968,10 @@ filters.section.title   = filters.generic.title
 filters.section.page    = filters.generic.page
 filters.section.default = filters.section.number
 
-filters.formula = {}
-
-filters.formula.default = filters.generic.number
-
-filters.float = { }
-
-filters.float.default = filters.generic.number
+filters.note        = { default = filters.generic.number }
+filters.formula     = { default = filters.generic.number }
+filters.float       = { default = filters.generic.number }
+filters.description = { default = filters.generic.number }
 
 structure.references = structure.references or { }
 structure.helpers    = structure.helpers    or { }
