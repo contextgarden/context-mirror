@@ -1658,6 +1658,7 @@
 \stopxmlsetups
 
 \usemodule[x][calcmath]
+%usemodule[x][asciimath]
 
 \startxmlsetups mml:annotation
     \xmldoifelse {#1} {[oneof(@encoding,'TeX','tex','TEX','ConTeXt','context','CONTEXT','ctx')]} {
@@ -1667,9 +1668,17 @@
        \endgroup
     } {
         \xmldoifelse {#1} {[oneof(@encoding,'calcmath','cm')]} {
-            \calcmath{\xmlflush{#1}}
+            \expanded{\calcmath{\xmlflush{#1}}}
         } {
-            \xmlall{#1}{../!mml:annotation}
+            \xmldoifelse {#1} {[oneof(@encoding,'asciimath','am')]} {
+                \ifdefined\asciimath
+                    \expanded{\asciimath{\xmlflush{#1}}}
+                \else
+                    \hbox{\tt no am loaded}%
+                \fi
+            } {
+                \xmlall{#1}{../!mml:annotation}
+            }
         }
     }
 \stopxmlsetups

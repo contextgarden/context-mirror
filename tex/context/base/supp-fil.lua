@@ -12,9 +12,8 @@ if not modules then modules = { } end modules ['supp-fil'] = {
 at the <l n='tex'/> side.</p>
 --ldx]]--
 
-local find, gsub, match = string.find, string.gsub, string.match
-
-local ctxcatcodes = tex.ctxcatcodes
+local find, gsub, match, format = string.find, string.gsub, string.match, string.format
+local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 support     = support     or { }
 environment = environment or { }
@@ -87,3 +86,55 @@ function support.lastexistingfile()
     tex.sprint(ctxcatcodes,lastexistingfile)
 end
 
+-- more, we can cache matches
+
+local finders, loaders, openers = resolvers.finders, resolvers.loaders, resolvers.openers
+
+local found = { } -- can best be done in the resolver itself
+
+-- todo: tracing
+
+local function readfile(specification,backtrack,treetoo)
+    local fnd = found[specification]
+    if not fnd then
+        local splitspec = resolvers.splitmethod(specification)
+        local filename = splitspec.path or ""
+        if lfs.isfile(filename) then
+            fnd = filename
+        end
+        if not fnd and backtrack then
+            local fname = filename
+            for i=1,backtrack,1 do
+                fname = "../" .. fname
+                if lfs.isfile(fname) then
+                    fnd = fname
+                    break
+                end
+            end
+        end
+        if not fnd and treetoo then
+            fnd = resolvers.find_file(filename)
+        end
+        found[specification] = fnd
+    end
+    return fnd or ""
+end
+
+function finders.job(filename) return readfile(filename,nil,false) end -- current path, no backtracking
+function finders.loc(filename) return readfile(filename,2,  false) end -- current path, backtracking
+function finders.sys(filename) return readfile(filename,nil,true ) end -- current path, obeys tex search
+function finders.fix(filename) return readfile(filename,2,  false) end -- specified path, backtracking
+function finders.set(filename) return readfile(filename,nil,false) end -- specified path, no backtracking
+function finders.any(filename) return readfile(filename,2,  true ) end -- loc job sys
+
+openers.job = openers.generic loaders.job = loaders.generic
+openers.loc = openers.generic loaders.loc = loaders.generic
+openers.sys = openers.generic loaders.sys = loaders.generic
+openers.fix = openers.generic loaders.fix = loaders.generic
+openers.set = openers.generic loaders.set = loaders.generic
+openers.any = openers.generic loaders.any = loaders.generic
+
+function support.doreadfile(protocol,path,name)
+    local specification = ((path == "") and format("%s:///%s",protocol,name)) or format("%s:///%s/%s",protocol,path,name)
+    texsprint(ctxcatcodes,resolvers.findtexfile(specification))
+end

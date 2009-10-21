@@ -284,12 +284,13 @@ local function handle_hex_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &#x%s;",str)
             end
-            h = "&#" .. str .. ";"
+            h = "&#c" .. str .. ";"
         end
         hcache[str] = h
     end
     return h
 end
+
 local function handle_dec_entity(str)
     local d = dcache[str]
     if not d then
@@ -305,12 +306,44 @@ local function handle_dec_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &#%s;",str)
             end
-            d = "&" .. str .. ";"
+            d = "&#" .. str .. ";"
         end
         dcache[str] = d
     end
     return d
 end
+
+-- one level expansion (simple case)
+
+local function fromhex(s)
+    local n = tonumber(s,16)
+    if n then
+        return utfchar(n)
+    else
+        return format("h:%s",s), true
+    end
+end
+
+local function fromdec(s)
+    local n = tonumber(s)
+    if n then
+        return utfchar(n)
+    else
+        return format("d:%s",s), true
+    end
+end
+
+local P, S, R, C, V, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cs
+
+local rest = (1-P(";"))^0
+local many = P(1)^0
+
+local parsedentity =
+    P("&") * (P("#x")*(rest/fromhex) + P("#")*(rest/fromdec)) * P(";") * P(-1) +
+             (P("#x")*(many/fromhex) + P("#")*(many/fromdec))
+
+xml.parsedentitylpeg = parsedentity
+
 local function handle_any_entity(str)
     if resolve then
         local a = entities[str] -- per instance !
@@ -328,11 +361,11 @@ local function handle_any_entity(str)
             end
         elseif trace_entities then
             if not acache[str] then
-                logs.report("xml","converting entity &%s; into %s",str,r)
+                logs.report("xml","converting entity &%s; into %s",str,a)
                 acache[str] = a
             end
         end
-        return a
+        return (a and parsedentity:match(a)) or a
     else
         local a = acache[str]
         if not a then
@@ -345,8 +378,6 @@ local function handle_any_entity(str)
         return a
     end
 end
-
-local P, S, R, C, V, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cs
 
 local space            = S(' \r\n\t')
 local open             = P('<')
@@ -369,12 +400,11 @@ local utfbom           = P('\000\000\254\255') + P('\255\254\000\000') +
 local spacing          = C(space^0)
 
 local entitycontent    = (1-open-semicolon)^0
-local entity           = ampersand/"" * (
-                            P("#")/"" * (
+local parsedentity     = P("#")/"" * (
                                 P("x")/"" * (entitycontent/handle_hex_entity) +
                                             (entitycontent/handle_dec_entity)
                             ) +             (entitycontent/handle_any_entity)
-                         ) * (semicolon/"")
+local entity           = ampersand/"" * parsedentity * (semicolon/"")
 
 local text_unparsed    = C((1-open)^1)
 local text_parsed      = Cs(((1-open-ampersand)^1 + entity)^1)

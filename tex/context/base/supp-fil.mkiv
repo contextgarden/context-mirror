@@ -265,97 +265,25 @@
 
 % We need to postpone loading, else we got frozen type-* files and so when
 % a format is generated on a source path.
-%
-% It's about time we move this to lua.
 
-\def\doreadfile#1#2#3#4%
-  {\sanitizefilename#2\to\readfilename
+% tracefiles -> tracker
+
+\def\doreadfile#1#2#3% protocol path filename true false
+  {\edef\readfilename{\ctxlua{support.doreadfile("#1","#2","#3")}}%
    \ifx\readfilename\empty
-     % silently ignore
+     \expandafter\doreadfilenop
    \else
-     \let\trackedfilename\readfilename
-     \ifconditional\trackfilenames
-       \doifundefinedelse{fn..\trackedfilename}\donetrue\donefalse
-     \else
-       \donetrue
-     \fi
-     \ifdone
-       \checkfilename\readfilename
-       \ifcase\kindoffile
-         \iftracefiles\writestatus\m!systems{searching for \readfilename\space on #1}\fi
-         % not a full path or url, check for existence
-         \doifelsenothing{#1}
-           {\def\next{\redoreadfile\readfilename{#3}{#4}}}%
-           {\def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
-       \else
-         % a full path or url, no further checking done
-         \doiffileexistselse\readfilename
-           {\iftracefiles\writestatus\m!systems{located \readfilename}\fi
-            \def\next{#3\dodoreadfile}}%
-           {\iftracefiles\writestatus\m!systems{not found \readfilename}\fi
-            \def\next{#4}}%
-       \fi
-     \else
-       \edef\readfilename{\getvalue{fn..\readfilename}}%
-       \iftracefiles\writestatus\m!systems{already located \readfilename}\fi
-       \def\next{#3\dodoreadfile}%
-     \fi
-     \expandafter\next
+     \expandafter\doreadfileyes
    \fi}
 
-\def\redoreadfile#1#2#3%
-  {\doiffileexistselse{#1}%
-     {\edef\readfilename{#1}%
-      \iftracefiles\writestatus\m!systems{#1 located}\fi
-      \def\next{#2\dodoreadfile}}%
-     {\iftracefiles\writestatus\m!systems{cannot locate #1}\fi
-      \advance\readlevel\minusone
-      \ifnum\readlevel>\zerocount
-        \edef\readfilename{\pathplusfile{\f!parentpath}{\readfilename}}%
-        \def\next{\redoreadfile\readfilename{#2}{#3}}%
-      \else
-        \def\next{#3}%
-      \fi}%
-   \next}
-
-\def\dodoreadfile % we provide hooks, for instance for \enableXML
-  {\ifconditional\trackfilenames
-     \setxvalue{fn..\trackedfilename}{\readfilename}%
-   \fi
+\long\def\doreadfileyes#1#2%
+  {#1\relax
    \the\everybeforereadfile
    \relax\inputgivenfile\readfilename\relax
    \the\everyafterreadfile}
 
-% too less:
-%
-% \unexpanded\def\readfile% #1%
-%   {\readlevel\maxreadlevel
-%    \doreadfile\empty} % {#1}
-%
-% too much:
-%
-% \unexpanded\def\readfile#1#2#3%
-%   {\readlocfile{#1}{#2}
-%      {\readjobfile{#1}{#2}
-%         {\readsysfile{#1}{#2}{#3}}}}
-%
-% just ok:
-
-\unexpanded\def\readfile#1#2#3%
-  {\readlocfile{#1}{#2}{\readsysfile{#1}{#2}{#3}}}
-
-\def\readtexfile#1#2#3%
-  {\pushcatcodetable \catcodetable \ctxcatcodes
-   \readfile{#1}{#2}{#3}%
-   \popcatcodetable}
-
-\def\readxmlfile#1#2#3%
-  {\pushcatcodetable \catcodetable \xmlcatcodes
-   \readfile{#1}{#2}{#3}%
-   \popcatcodetable}
-
-\unexpanded\def\ReadFile#1%
-  {\readfile{#1}\donothing\donothing}
+\long\def\doreadfilenop#1#2%
+  {#2}
 
 %D \macros
 %D   {readjobfile,readlocfile,readsysfile,
@@ -370,43 +298,24 @@
 %D file and do no backtracking, while \type{\readlocfile}
 %D backtracks~\number\readlevel\ directories, including the current
 %D one.
-
-\unexpanded\def\readjobfile % #1% current path, no backtracking
-  {\readlevel\zerocount
-   \doreadfile\f!currentpath} % {#1}}
-
-\unexpanded\def\readlocfile % #1% current path, backtracking
-  {\readlevel\maxreadlevel
-   \doreadfile\f!currentpath} % {#1}}
-
+%D
 %D System files can be anywhere and therefore
 %D \type{\readsysfile} is not bound to the current directory
 %D and obeys the \TEX\ implementation.
-
-\unexpanded\def\readsysfile % #1% current path, obeys tex search
-  {\readlevel\zerocount
-   \doreadfile\empty} % {#1}}
-
+%D
 %D Of the last two, \type{\readfixfile} searches on the
 %D directory specified and backtracks too, while
 %D \type{\readsetfile} does only search on the specified path.
+%D
+%D The most liberal is \type {\readfile}.
 
-\unexpanded\def\readfixfile % #1#2% specified path, backtracking
-  {\readlevel\maxreadlevel
-   \doreadfile} % {#1}{#2}}
-
-\unexpanded\def\readsetfile % #1#2% specified path, no backtracking
-  {\readlevel\zerocount
-   \doreadfile} % {#1}{#2}}
-
-%D After having defined this commands, we reconsidered the
-%D previously defined \type{\readfile}. This time we more or
-%D less impose the search order.
-
-\unexpanded\def\readfile#1#2#3%
-  {\readlocfile{#1}{#2}
-     {\readjobfile{#1}{#2}
-        {\readsysfile{#1}{#2}{#3}}}}
+\unexpanded\def\readjobfile  #1{\doreadfile{job} {.}{#1}} % current path, no backtracking
+\unexpanded\def\readlocfile  #1{\doreadfile{loc} {.}{#1}} % current path, backtracking
+\unexpanded\def\readsysfile  #1{\doreadfile{sys} {.}{#1}} % current path, obeys tex search
+\unexpanded\def\readfixfile#1#2{\doreadfile{fix}{#1}{#2}} % specified path, backtracking
+\unexpanded\def\readsetfile#1#2{\doreadfile{set}{#1}{#2}} % specified path, no backtracking
+\unexpanded\def\readfile     #1{\doreadfile{any} {.}{#1}}
+\unexpanded\def\ReadFile     #1{\doreadfile{any} {.}{#1}\donothing\donothing}
 
 %D So now we've got ourselves five file loading commands:
 %D
@@ -419,8 +328,18 @@
 %D \readsysfile {directory} {filename} {before loading} {not found}
 %D \stoptyping
 
+\def\readtexfile#1#2#3%
+  {\pushcatcodetable \catcodetable \ctxcatcodes
+   \readfile{#1}{#2}{#3}%
+   \popcatcodetable}
+
+\def\readxmlfile#1#2#3%
+  {\pushcatcodetable \catcodetable \xmlcatcodes
+   \readfile{#1}{#2}{#3}%
+   \popcatcodetable}
+
 %D \macros
-%D   {readjobfile,readlocfile,readsysfile,readfixfile}
+%D   {openjobfile,openlocfile,opensysfile,openfixfile}
 %D
 %D The next four alternatives can be used for opening files
 %D for reading on a line||by||line basis. These commands get

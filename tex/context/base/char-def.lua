@@ -59984,6 +59984,8 @@ characters.data={
   description="BLACK RIGHT-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
+  mathclass="bin",
+  mathname="blacktriangleright",
   unicodeslot=0x25B6,
  },
  [0x25B7]={
@@ -59999,6 +60001,8 @@ characters.data={
   description="BLACK RIGHT-POINTING SMALL TRIANGLE",
   direction="on",
   linebreak="al",
+  mathclass="bin",
+  mathname="blacktriangleleft",
   unicodeslot=0x25B8,
  },
  [0x25B9]={

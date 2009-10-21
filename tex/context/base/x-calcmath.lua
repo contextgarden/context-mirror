@@ -191,19 +191,20 @@ if false then
     -- Df Dg      {\rm f}^{\prime}
     -- f() g()    {\rm f}()
 
+
     -- valid utf8
 
     local S, P, R, C, V, Cc, Ct  = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct
 
     local space      = S(" \n\r\t")^0
-    local number_x   = P("-")^-1 * R("09")^1
-    local real_x     = P("-")^-1 * R("09")^1 * S(".")^1 * R("09")^1
-    local number     = Cc("number")     * C(number_x) * space
-    local real       = Cc("real")       * C(real_x) * space
-    local float      = Cc("float")      * C(real_x) * lpeg.P("E") * lpeg.C(number_x) * space
-    local identifier = Cc("identifier") * C(R("az","AZ")^1) * space
-    local compareop  = P("<") + P("=") + P(">") + P(">=") + P("<=") + P("&gt;") + P("&lt;")
-    local factorop   = Cc("factor")     * C(S("+-^,") + compareop ) * space
+    local integer    = P("-")^-1 * R("09")^1
+    local realpart   = P("-")^-1 * R("09")^1 * S(".")^1 * R("09")^1
+    local number     = Cc("number")     * C(integer) * space
+    local real       = Cc("real")       * C(realpart) * space
+    local float      = Cc("float")      * C(realpart) * lpeg.P("E") * lpeg.C(integer) * space
+    local identifier = Cc("identifier") * C(R("az","AZ")) * space
+    local compareop  = Cc("compare")    * C(P("<") + P("=") + P(">") + P(">=") + P("<=") + P("&gt;") + P("&lt;")) * space
+    local factorop   = Cc("factor")     * C(S("+-^_,")) * space
     local termop     = Cc("term")       * C(S("*/")) * space
     local constant   = Cc("constant")   * C(P("pi") + lpeg.P("inf")) * space
     local functionop = Cc("function")   * C(R("az")^1) * space
@@ -212,108 +213,139 @@ if false then
 
     local grammar = P {
         "expression",
-        expression = Ct(V("factor"    ) * (factorop  * V("factor"    ))^0),
-        factor     = Ct(V("term"      ) * (termop    * V("term"      ))^0),
+        expression = Ct(V("factor") * ((factorop+compareop) * V("factor"))^0),
+        factor     = Ct(V("term") * (termop * V("term"))^0),
         term       = Ct(
             float + real + number +
             (open * V("expression") * close) +
-            (functionop * open * V("expression") * close) +
+            (functionop * open * (V("expression") * (P(",") * V("expression"))^0) * close) +
+            (functionop * V("term")) +
             constant + identifier
         ),
     }
 
+
     local parser = space * grammar * -1
+
+    local texprint = function(...) texio.write(table.concat{ ... }) end
+
+    local function has_factor(t)
+        for i=1,#t do
+            if t[i] == "factor" then
+                return true
+            end
+        end
+    end
 
     function totex(t)
         if t then
-            local one, two, three = t[1], t[2], t[3]
-            if one == "number" then
-                return two
-            elseif one == "real" then
-                return two
-            elseif one == "float" then
-                return format("\\scinot{%s}{%s}", two, three)
-            elseif one == "identifier" then
-                return format(" %s ", two)
-            elseif one == "constant" then
-                return format("\\%s ", two)
-            elseif one == "function" then
-                if two == "sqrt" then
-                    return format("\\sqrt{%s}", totex(three))
-                elseif two == "exp" then
-                    return format(" e^{%s}", totex(three))
-                elseif two == "abs" then
-                    return format("\\left|%s\\right|", totex(three))
-                elseif two == "mean" then
-                    return format("\\overline{%s}", totex(three))
-                elseif two == "int" or two == "prod" or two == "sum" then --brrr, we need to parse better for ,,
-                    local tt = three
-                    if #tt == 1 then
-                        return format("\\%s{%s}", two ,totex(tt[1]))
-                    elseif #tt == 4 then
-                        return format("\\%s^{%s}{%s}", two ,totex(tt[1]), totex(tt[4]))
-                    elseif #tt == 7 then
-                        return format("\\%s^{%s}_{%s}{%s}", two ,totex(tt[1]), totex(tt[4]), totex(tt[7]))
-                    end
-                elseif #two == 1 then
-                    return format("%s(%s)", two, totex(three))
-                else
-                    return format("\\%s(%s)", two, totex(three))
-                end
-            elseif one == "factor" then
-                if two == '^' then
-                    return format("^{%s}%s",totex(three), (#t>3 and totex({unpack(t,4,#t)})) or "")
-                else
-                    if two == ">=" then
-                        two = "\\ge "
-                    elseif two == "<=" then
-                        two = "\\le "
-                    elseif two == "&gt;" then
-                        two = "> "
-                    elseif two == "&lt;" then
-                        two = "< "
-                    end
-                    return format("%s%s%s", two, totex(three), (#t>3 and totex({unpack(t,4,#t)})) or "")
-                end
-            elseif one == "term" then
-                if two == '/' then
-                    if #t > 4 then
-                        return format("\\frac{%s}{%s}", totex(three), totex({unpack(t,4,#t)}))
+            local one = t[1]
+            if type(one) == "string" then
+                local two, three = t[2], t[3]
+                if one == "number" then
+                    texprint(two)
+                elseif one == "real" then
+                    texprint(two)
+                elseif one == "float" then
+                    texprint("\\scinot{",two,"}{",three,"}")
+                elseif one == "identifier" then
+                    texprint(two)
+                elseif one == "constant" then
+                    texprint("\\"..two)
+                elseif one == "function" then
+                    if two == "sqrt" then
+                        texprint("\\sqrt{")
+                        totex(three)
+                        texprint("}")
+                    elseif two == "exp" then
+                        texprint(" e^{")
+                        totex(three)
+                        texprint("}")
+                    elseif two == "abs" then
+                        texprint("\\left|")
+                        totex(three)
+                        texprint("\\right|")
+                    elseif two == "mean" then
+                        texprint("\\overline{")
+                        totex(three)
+                        texprint("}")
+                    elseif two == "int" or two == "prod" or two == "sum" then
+                        local four, five = t[4], t[5]
+                        if five then
+                            texprint("\\"..two.."^{")
+                            totex(three)
+                            texprint("}_{")
+                            totex(four)
+                            texprint("}")
+                            totex(five)
+                        elseif four then
+                            texprint("\\"..two.."^{")
+                            totex(three)
+                            texprint("}")
+                            totex(four)
+                        elseif three then
+                            texprint("\\"..two.." ") -- " " not needed
+                            totex(three)
+                        else
+                            texprint("\\"..two)
+                        end
                     else
-                        return format("\\frac{%s}{%s}", totex(three), totex(t[4]))
+                        texprint("\\"..two.."(")
+                        totex(three)
+                        texprint(")")
                     end
-                elseif two == '*' then
-                    local times = "\\times "
-                    return format("%s%s%s", times, totex(three), (#t>3 and totex({unpack(t,4,#t)})) or "")
-                else
-                    return format("%s%s%s", two, totex(three), (#t>3 and totex({unpack(t,4,#t)})) or "")
-                end
-            elseif two == "factor" then
-                if three == '^' then
-                    return format("%s^{%s}", totex(one), totex(t[4]))
-                else
-                    if two == ">=" then
-                        two = "\\ge "
-                    elseif two == "<=" then
-                        two = "\\le "
-                    elseif two == "&gt;" then
-                        two = "> "
-                    elseif two == "&lt;" then
-                        two = "< "
-                    end
-                    return format("%s%s", totex(one), (#t>1 and totex({unpack(t,2,#t)})) or "")
-                end
-            elseif two == "term" then
-                if three == '/' then
-                    return format("\\frac{%s}{%s}", totex(one), (#t>3 and totex({unpack(t,4,#t)})) or "")
-                else
-                    return format("%s%s", totex(one), (#t>1 and totex({unpack(t,2,#t)})) or "")
                 end
             else
-                return totex(one)
+                local nt = #t
+                local hasfactor = has_factor(t)
+                if hasfactor then
+                    texprint("\\left(")
+                end
+                totex(one)
+                for i=2,nt,3 do
+                    local what, how, rest = t[i], t[i+1], t[i+2]
+                    if what == "factor" then
+                        if how == '^' or how == "_" then
+                            texprint(how)
+                            texprint("{")
+                            totex(rest)
+                            texprint("}")
+                        else
+                            texprint(how)
+                            totex(rest)
+                        end
+                    elseif what == "term" then
+                        if how == '/' then
+                            texprint("\\frac{")
+                            totex(rest)
+                            texprint("}{")
+                            totex(t[i+3] or "")
+                            texprint("}")
+                        elseif how == '*' then
+                            texprint("\\times")
+                            totex(rest)
+                        else
+                            texprint(how)
+                            totex(three)
+                        end
+                    elseif what == "compare" then
+                        if two == ">=" then
+                            texprint("\\ge")
+                        elseif two == "<=" then
+                            texprint("\\le")
+                        elseif two == "&gt;" then
+                            texprint(">")
+                        elseif two == "&lt;" then
+                            texprint("<")
+                        end
+                        totex(three)
+                    end
+                end
+                if hasfactor then
+                    texprint("\\right)")
+                end
             end
         end
-        return ""
     end
 
     calcmath = { }
@@ -324,11 +356,7 @@ if false then
 
     function calcmath.tex(str)
         str = totex(parser:match(str))
-        print(str)
         return (str == "" and "[error]") or str
     end
 
 end
-
---~ compareop  = Cc("compare")    * C(P("<") + P("=") + P(">") + P(">=") + P("<=") + P("&gt;")/">" + P("&lt;")/"<") * space
---~ comparison = Ct(V("expression") * (compareop * V("expression"))^0),

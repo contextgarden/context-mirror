@@ -60,9 +60,9 @@ local function load_setup(filename)
                 valid = valid + 1
             end
         end
-        logs.report("lxml","%s directives found in '%s', %s valid",#collection,filename,valid)
+        commands.writestatus("lxml","%s directives found in '%s', %s valid",#collection,filename,valid)
     else
-        logs.report("lxml","no directives found in '%s'",filename)
+        commands.writestatus("lxml","no directives found in '%s'",filename)
     end
 end
 

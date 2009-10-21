@@ -20,7 +20,7 @@
 %registerctxluafile{lxml-xml}{1.001} % xml finalizers
 %registerctxluafile{lxml-aux}{1.001} % extras using parser
 %registerctxluafile{lxml-mis}{1.001} % extras independent of parser
-%registerctxluafile{lxml-ent}{1.001} % entity hacks
+\registerctxluafile{lxml-ent}{1.001} % entity hacks
 \registerctxluafile{lxml-tex}{1.001} % tex finalizers
 \registerctxluafile{lxml-dir}{1.001} % ctx hacks
 
@@ -83,7 +83,7 @@
 \def\xmlloadbuffer       #1#2{\ctxlua{lxml.loadbuffer("#1","#2","\@@xmentities","\@@xmcompress")}}
 \def\xmlloaddata         #1#2{\ctxlua{lxml.loaddata("#1",\!!bs#2\!!es,"\@@xmentities","\@@xmcompress")}}
 \def\xmlloadregistered   #1#2{\ctxlua{lxml.loadregistered("#1","\@@xmentities","\@@xmcompress")}}
-\def\xmlloaddirectives     #1{\ctxlua{lxml.directives.load("#1")}}
+\def\xmlloaddirectives     #1{\ctxlua{lxml.directives.load("any:///#1")}}
 \def\xmlpos                #1{\ctxlua{lxml.pos("#1")}}
 
 %def\xmldoifelse         #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}

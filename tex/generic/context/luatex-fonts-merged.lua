@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 10/19/09 14:48:40
+-- merge date  : 10/21/09 10:32:02
 
 do -- begin closure to overcome local limits and interference
 
@@ -274,7 +274,7 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
-local P, S, Ct, C, Cs, Cc = lpeg.P, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 
 --~ l-lpeg.lua :
 
@@ -380,6 +380,41 @@ end
 --~     end
 --~     return p
 --~ end
+
+--~ from roberto's site:
+--~
+--~ -- decode a two-byte UTF-8 sequence
+--~ local function f2 (s)
+--~   local c1, c2 = string.byte(s, 1, 2)
+--~   return c1 * 64 + c2 - 12416
+--~ end
+--~
+--~ -- decode a three-byte UTF-8 sequence
+--~ local function f3 (s)
+--~   local c1, c2, c3 = string.byte(s, 1, 3)
+--~   return (c1 * 64 + c2) * 64 + c3 - 925824
+--~ end
+--~
+--~ -- decode a four-byte UTF-8 sequence
+--~ local function f4 (s)
+--~   local c1, c2, c3, c4 = string.byte(s, 1, 4)
+--~   return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168
+--~ end
+--~
+--~ local cont = lpeg.R("\128\191")   -- continuation byte
+--~
+--~ local utf8 = lpeg.R("\0\127") / string.byte
+--~            + lpeg.R("\194\223") * cont / f2
+--~            + lpeg.R("\224\239") * cont * cont / f3
+--~            + lpeg.R("\240\244") * cont * cont * cont / f4
+--~
+--~ local decode_pattern = lpeg.Ct(utf8^0) * -1
+
+
+local cont = R("\128\191")   -- continuation byte
+
+lpeg.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
+
 
 end -- closure
 

@@ -367,15 +367,13 @@ end
 
 local P, V, C, Cs, Cc, Ct, R, S, Cg, Cb = lpeg.P, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cb
 
-local spaces       = S(" \n\r\t\f")^0
-
-local lp_space     = S(" \n\r\t\f")
-local lp_any       = P(1)
-
-local lp_noequal   = P("!=") / "~=" + P("<=") + P(">=") + P("==")
-local lp_doequal   = P("=")  / "=="
-local lp_or        = P("|")  / " or "
-local lp_and       = P("&")  / " and "
+local spaces     = S(" \n\r\t\f")^0
+local lp_space   = S(" \n\r\t\f")
+local lp_any     = P(1)
+local lp_noequal = P("!=") / "~=" + P("<=") + P(">=") + P("==")
+local lp_doequal = P("=")  / "=="
+local lp_or      = P("|")  / " or "
+local lp_and     = P("&")  / " and "
 
 local lp_builtin = P (
         P("first")        / "1" +
@@ -389,9 +387,8 @@ local lp_builtin = P (
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
-local lp_attribute    = (P("@") + P("attribute::"))    / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
-local lp_fastpos      = ((R("09","--","++")^1 * P(-1)) / function(s) return "l==" .. s end)
-
+local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
+local lp_fastpos   = ((R("09","--","++")^1 * P(-1)) / function(s) return "l==" .. s end)
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
 
 local lp_lua_function  = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
@@ -412,9 +409,9 @@ local noparent = 1 - (lparent+rparent)
 local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
 local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
-local lp_child  = Cc("expr.child(e,'") * R("az","AZ","--","__")^1 * Cc("')")
-local lp_string = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
-local lp_content= (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
+local lp_child   = Cc("expr.child(e,'") * R("az","AZ","--","__")^1 * Cc("')")
+local lp_string  = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
+local lp_content = (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
 
 local cleaner
 

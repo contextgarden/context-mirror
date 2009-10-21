@@ -1,0 +1,96 @@
+%D \module
+%D   [       file=m-asciimath,
+%D        version=2006.04.24, % 1999.11.06,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=AsciiMath,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Lua code.
+
+\ctxloadluafile{x-asciimath}{}
+
+%D The following code is not officially supported and is only meant
+%D for the \MATHFORALL\ project.
+%D
+%D The following code kind of maps ascii math
+%D http://www1.chapman.edu/~jipsen/mathml/asciimath.html onto \TEX. The
+%D code was written for the math4all project but in retrospect we
+%D could have used just tex code as the web version can handle that
+%D as well. Anyhow, as we use \MATHML\ as basis it makes sense to add
+%D this to the repertoire as annotation variant, so now we have
+%D content \MATHML\ (prefered), presentation \MATHML\ (often messy),
+%D \OPENMATH\ (what was which we started with in this project)
+%D calcmath (handy for students who are accustomed to calculators),
+%D asciimath (to make Frits's live easier) and of course \TEX. Of
+%D course all are used mixed.
+%D
+%D We don't support all quirks of asciimath as I am not in the mood to
+%D write a complex parser while a bit of sane coding can work as well.
+%D
+%D \startitemize
+%D \item We support only the syntactically clear variants and as long
+%D       as lpeg does not support left recursion this is as far as we
+%D       want to go.
+%D \item The parser is rather insensitive for spaces but yet the advice is
+%D       to avoid weird coding like \type {d/dxf(x)} but use \type {d/dx
+%D       f(x)} instead. After all we're not in a compact coding cq.\
+%D       parser challenge.
+%D \item We also don't support the somewhat confusing \type {sqrt sqrt 2}
+%D       nor \type {root3x} (although the second one kind of works). A bit
+%D       of defensive coding does not hurt.
+%D \item We can process \type {a/b/c/d} but it's not compatible with the
+%D       default behaviour of asciimath. Use grouping instead. Yes, we do
+%D       support the somewhat nonstandard grouping token mix.
+%D \item You should use explicit \type {text(..)} directives as one can
+%D       never be sure what is a reserved word and  not.
+%D \stopitemize
+%D
+%D Actually, as the only parsing sensitive elements of \TEX\ are
+%D fractions (\type {\over} and friends, a restricted use of \TEX\
+%D coding is probably as comprehensive and parseble.
+%D
+%D The webpage with examples served as starting point so anything beyond
+%D what can be found there isn't supported.
+
+\unprotect
+
+\writestatus{asciimath}{beware, this is an experimental (m4all only) module}
+
+\unexpanded\def\asciimath#1{\ctxlua{asciimath.convert(\!!bs\detokenize{#1}\!!es,true)}}
+
+\protect
+
+\doifnotmode{demo}{\endinput}
+
+\enabletrackers[asciimath.mapping]
+
+\starttext
+
+\startlines
+\asciimath{x^2+y_1+z_12^34}
+\asciimath{sin^-1(x)}
+\asciimath{d/dx f(x)=lim_(h->0) (f(x+h)-f(x))/h}
+\asciimath{f(x)=sum_(n=0)^oo(f^((n))(a))/(n!)(x-a)^n}
+\asciimath{int_0^1 f(x)dx}
+\asciimath{int^1_0 f(x)dx}
+\asciimath{a//b}
+\asciimath{(a/b)/(d/c)}
+\asciimath{((a*b))/(d/c)}
+\asciimath{[[a,b],[c,d]]((n),(k))}
+\asciimath{1/x={(1,text{if } x!=0),(text{undefined},if x=0):}}
+\asciimath{{ (1,2), (x,(x + text(x))) }}
+\asciimath{{(1,2),(x,(x+text(x))),(x,text(x))}}
+\asciimath{{(1,2),(x,(x+text(x))),(x,x text(x))}}
+\asciimath{{(1,2/2),(x,(x+x^22+sqrt(xx))),(x,x text(xyz))}}
+\asciimath{{(1,2/2),(x,(x+x^22+sqrt(xx))),(x,text(xyz)+1+text(hans))}}
+\asciimath{<<a,b>> text{and} {:(x,y),(u,v):}}
+\asciimath{(a,b] = {x text(in) RR | a < x <= b}}
+\stoplines
+
+\stoptext
