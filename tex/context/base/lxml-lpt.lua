@@ -553,7 +553,9 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
 
     protocol             = Cg(V("letters"),"protocol") * P("://") + Cg(Cc(nil),"protocol"),
 
-    step                 = (V("shortcuts") + V("axis") * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
+ -- the / is needed for // as descendant or self is somewhat special
+ -- step                 = (V("shortcuts") + V("axis") * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
+    step                 = ((V("shortcuts") + P("/") + V("axis")) * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
 
     axis                 = V("descendant") + V("child") + V("parent") + V("self") + V("root") + V("ancestor") +
                            V("descendant_or_self") + V("following") + V("following_sibling") +
@@ -568,7 +570,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
 
     shortcuts            = V("shortcuts_a") * (spaces * "/" * spaces * V("shortcuts_a"))^0,
 
-    s_descendant_or_self = P("/")  * Cc(register_descendant_or_self),
+    s_descendant_or_self = (P("***/") + P("/")) * Cc(register_descendant_or_self), --- *** is a bonus
+ -- s_descendant_or_self = P("/")  * Cc(register_descendant_or_self),
     s_descendant         = P("**") * Cc(register_descendant),
     s_child              = P("*")  * Cc(register_child     ),
     s_parent             = P("..") * Cc(register_parent    ),

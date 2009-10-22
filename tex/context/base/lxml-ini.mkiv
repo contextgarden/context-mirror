@@ -347,7 +347,7 @@
 
 \chardef\xmlautoentities=1 % 0=off, 1=upper, 2=upper,lower
 
-\def\xmlsetentity#1#2{\ctxlua{xml.entities['#1'] = \!!bs\detokenize{#2}\!!es}}
+\def\xmlsetentity#1#2{\ctxlua{xml.register_entity('#1',\!!bs\detokenize{#2}\!!es)}}
 
 % \xmlsetentity{tex}{\TEX{}} % {} needed
 
@@ -363,13 +363,13 @@
    \fi}
 
 \def\xmle@none#1#2% safe
-  {[#1]}
+  {#1}
 
 \def\xmle@upper#1#2% can be abbreviation
   {\ifcsname#2\endcsname
      \csname#2\expandafter\endcsname
    \else
-     [#1]%
+     #1%
    \fi}
 
 \def\xmle@upperlower#1#2% can be anything, so unsafe
@@ -378,7 +378,7 @@
    \else\ifcsname#1\endcsname
      \csname#1\expandafter\expandafter\expandafter\endcsname
    \else
-     [#1]%
+     #1%
    \fi\fi}
 
 \protect \endinput

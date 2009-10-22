@@ -273,7 +273,9 @@ local P, C, Cc = lpeg.P, lpeg.C, lpeg.Cc
 
 local space        = P(" ")
 local spaces       = space^0
-local value        = C((1-space)^1)
+local leftparent   = (P"(")
+local rightparent  = (P")")
+local value        = C((leftparent * (1-rightparent)^0 * rightparent + (1-space))^1)
 local rest         = C(P(1)^0)
 local scale_none   =               Cc(0)
 local scale_at     = P("at")     * Cc(1) * spaces * value
@@ -333,7 +335,8 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
     if lookup and lookup ~= "" then specification.lookup = lookup end
     specification.name = name
     specification.size = size
-    specification.sub = sub
+--~     specification.sub = sub
+    specification.sub = (sub and sub ~= "" and sub) or specification.sub
     specification.mathsize = mathsize
     specification.textsize = textsize
     if detail and detail ~= "" then

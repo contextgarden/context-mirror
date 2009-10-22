@@ -64,13 +64,15 @@
   {\edef\currentnofitems    {\ctxlua{structure.itemgroups.nofitems("\currentitemgroup",\number\currentnoflists)}}%
    \edef\currentitemmaxwidth{\ctxlua{structure.itemgroups.maxwidth("\currentitemgroup",\number\currentnoflists)}\scaledpoint}}
 
+% todo: \dodosetreference
+
 \def\dohandleitemreference % we will make a decent number helper
   {\ifx\currentitemreference \empty \else
      \setnextinternalreference
      \ctxlua { jobreferences.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
         {
             metadata = {
-                kind     = "list",
+                kind     = "item",% ?
                 catcodes = \the\catcodetable,
                 xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
             },
@@ -1120,7 +1122,6 @@
    \marsymbol
    \let\marsymbol\relax
    \strut % added 11-08-99
-%    \dohandleitemreference
    \setfalse\concatnextitem % new, concat
    \nobreak % else problems with intext items
    \hskip\itemsignal        % new, concat

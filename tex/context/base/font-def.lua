@@ -78,18 +78,22 @@ and prepares a table that will move along as we proceed.</p>
 
 local splitter, specifiers = nil, ""
 
+local P, C, S, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc
+
+local left  = P("(")
+local right = P(")")
+local colon = P(":")
+local space = P(" ")
+
 function define.add_specifier(symbol)
     specifiers = specifiers .. symbol
-    local left          = lpeg.P("(")
-    local right         = lpeg.P(")")
-    local colon         = lpeg.P(":")
-    local method        = lpeg.S(specifiers)
-    local lookup        = lpeg.C(lpeg.P("file")+lpeg.P("name")) * colon -- hard test, else problems with : method
-    local sub           = left * lpeg.C(lpeg.P(1-left-right-method)^1) * right
---~   local specification = lpeg.C(method) * lpeg.C(lpeg.P(1-method)^1)
-    local specification = lpeg.C(method) * lpeg.C(lpeg.P(1)^1)
-    local name          = lpeg.C((1-sub-specification)^1)
-    splitter = lpeg.P((lookup + lpeg.Cc("")) * name * (sub + lpeg.Cc("")) * (specification + lpeg.Cc("")))
+    local method        = S(specifiers)
+    local lookup        = C(P("file")+P("name")) * colon -- hard test, else problems with : method
+    local sub           = left * C(P(1-left-right-method)^1) * right
+--~   local specification = C(method) * C(P(1-method)^1)
+    local specification = C(method) * C(P(1)^1)
+    local name          = C((1-sub-specification)^1)
+    splitter = P((lookup + Cc("")) * name * (sub + Cc("")) * (specification + Cc("")))
 end
 
 function define.get_specification(str)
@@ -133,7 +137,7 @@ end
 function define.analyze(specification, size)
     -- can be optimized with locals
     local lookup, name, sub, method, detail = define.get_specification(specification or "")
-    return define.makespecification(specification,lookup, name, sub, method, detail, size)
+    return define.makespecification(specification, lookup, name, sub, method, detail, size)
 end
 
 --[[ldx--
@@ -409,16 +413,22 @@ function readers.afm(specification,method)
     return tfmtable
 end
 
-local function check_otf(specification,suffix,what)
-    local fullname, tfmtable = resolvers.findbinfile(specification.name,suffix) or "", nil
+-- maybe some day a set of names
+
+local function check_otf(forced,specification,suffix,what)
+    local name = specification.name
+    if forced then
+        name = file.addsuffix(name,suffix)
+    end
+    local fullname, tfmtable = resolvers.findbinfile(name,suffix) or "", nil -- one shot
     if fullname == "" then
-        local fb = fonts.names.old_to_new[specification.name]
+        local fb = fonts.names.old_to_new[name]
         if fb then
             fullname = resolvers.findbinfile(fb,suffix) or ""
         end
     end
     if fullname == "" then
-        local fb = fonts.names.new_to_old[specification.name]
+        local fb = fonts.names.new_to_old[name]
         if fb then
             fullname = resolvers.findbinfile(fb,suffix) or ""
         end
@@ -433,13 +443,11 @@ end
 function readers.opentype(specification,suffix,what)
     local forced = specification.forced or ""
     if forced == "otf" then
-        return check_otf(specification,forced,"opentype")
-    elseif forced == "ttf" then
-        return check_otf(specification,forced,"truetype")
-    elseif forced == "ttf" then
-        return check_otf(specification,forced,"truetype")
+        return check_otf(true,specification,forced,"opentype")
+    elseif forced == "ttf" or forced == "ttc" or forced == "dfont" then
+        return check_otf(true,specification,forced,"truetype")
     else
-        return check_otf(specification,suffix,what)
+        return check_otf(false,specification,suffix,what)
     end
 end
 

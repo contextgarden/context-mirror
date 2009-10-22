@@ -607,28 +607,28 @@ function characters.n_is_of_category(n,category) -- by name (string)
     return cd and cd.category == category
 end
 
--- xml support
-
-characters.active_offset = 0x10000
-
-xml.entities = xml.entities or { }
-
-storage.register("xml/entities",xml.entities,"xml.entities") -- this will move to lxml
+-- xml support (moved)
 
 function characters.remapentity(chr,slot)
     texsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
 end
 
-function characters.setmkiventities()
-    local entities = xml.entities
-    entities.lt  = "<"
-    entities.amp = "&"
-    entities.gt  = ">"
-end
+characters.active_offset = 0x10000 -- there will be remapped in that byte range
 
-function characters.setmkiientities()
-    local entities = xml.entities
-    entities.lt  = utfchar(characters.active_offset + utfbyte("<"))
-    entities.amp = utfchar(characters.active_offset + utfbyte("&"))
-    entities.gt  = utfchar(characters.active_offset + utfbyte(">"))
-end
+-- xml.entities = xml.entities or { }
+--
+-- storage.register("xml/entities",xml.entities,"xml.entities") -- this will move to lxml
+--
+-- function characters.setmkiventities()
+--     local entities = xml.entities
+--     entities.lt  = "<"
+--     entities.amp = "&"
+--     entities.gt  = ">"
+-- end
+--
+-- function characters.setmkiientities()
+--     local entities = xml.entities
+--     entities.lt  = utfchar(characters.active_offset + utfbyte("<"))
+--     entities.amp = utfchar(characters.active_offset + utfbyte("&"))
+--     entities.gt  = utfchar(characters.active_offset + utfbyte(">"))
+-- end

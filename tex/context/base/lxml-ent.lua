@@ -21,24 +21,27 @@ original entity is returned.</p>
 <p>We do things different now but it's still somewhat experimental</p>
 --ldx]]--
 
+local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
+
 xml.entities = xml.entities or { } -- xml.entity_handler == function
 
--- experimental, this will be done differently
+storage.register("xml/entities",xml.entities,"xml.entities") -- this will move to lxml
+
+local entities = xml.entities -- this is a shared hash
+
+xml.unknown_any_entity_format = nil -- has to be per xml
 
 local parsedentity = xml.parsedentitylpeg
 
-function xml.merge_entities(root)
-    local documententities = root.entities
-    local allentities = xml.entities
-    if documententities then
-        for k, v in next, documententities do
-            allentities[k] = v
-        end
+function xml.register_entity(key,value)
+    entities[key] = value
+    if trace_entities then
+        logs.report("xml","registering entity '%s' as: %s",key,value)
     end
 end
 
 function xml.resolved_entity(str)
-    local e = xml.entities[str]
+    local e = entities[str]
     if e then
         local te = type(e)
         if te == "function" then
@@ -60,6 +63,6 @@ function xml.resolved_entity(str)
     end
 end
 
-xml.entities.amp = function() tex.write("&") end
-xml.entities.lt  = function() tex.write("<") end
-xml.entities.gt  = function() tex.write(">") end
+entities.amp = function() tex.write("&") end
+entities.lt  = function() tex.write("<") end
+entities.gt  = function() tex.write(">") end

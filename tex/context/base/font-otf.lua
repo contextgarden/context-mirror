@@ -82,7 +82,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.633 -- beware: also sync font-mis.lua
+otf.version          = 2.635 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -104,6 +104,7 @@ otf.tables.global_fields = table.tohash {
     "names",
     "unicodes",
     "names",
+--~     "math",
     "anchor_classes",
     "kern_classes",
     "gpos",
@@ -228,7 +229,7 @@ function otf.load(filename,format,sub,featurefile)
     local data = containers.read(otf.cache(), hash)
     local size = lfs.attributes(filename,"size") or 0
     if not data or data.verbose ~= fonts.verbose or data.size ~= size then
-        logs.report("load otf","loading: %s",filename)
+        logs.report("load otf","loading: %s (hash: %s)",filename,hash)
         local ff, messages
         if sub then
             ff, messages = fontloader.open(filename,sub)
@@ -527,7 +528,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
             end
             -- cidmap heuristics, beware, there is no guarantee for a match unless
             -- the chain resolves
-            if not unicode and usedmap then
+            if (not unicode) and usedmap then
                 local foundindex = oparser:match(name)
                 if foundindex then
                     unicode = cidcodes[foundindex] -- name to number
@@ -571,21 +572,20 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
                         originals[index], tounicode[index], ns = unicode, tounicode16(unicode), ns + 1
                     end
                 else
-                    local done = true
+                    local t = { }
                     for l=1,nplit do
                         local base = split[l]
                         local u = unicodes[base] or (agl and agl[base])
                         if not u then
-                            done = false
                             break
                         elseif type(u) == "table" then
-                            split[l] = u[1]
+                            t[#t+1] = u[1]
                         else
-                            split[l] = u
+                            t[#t+1] = u
                         end
                     end
-                    if done then
-                        originals[index], tounicode[index], nl, unicode = split, tounicode16sequence(split), nl + 1, true
+                    if #t > 0 then -- done then
+                        originals[index], tounicode[index], nl, unicode = t, tounicode16sequence(t), nl + 1, true
                     end
                 end
             end
@@ -779,7 +779,7 @@ otf.enhancers["prepare unicode"] = function(data,filename)
             end
         end
     end
-    -- beware: the indeces table is used to initialize the tfm table
+    -- beware: the indices table is used to initialize the tfm table
     for unicode, index in next, mapmap do
         if not internals[index] then
             local name = glyphs[index].name

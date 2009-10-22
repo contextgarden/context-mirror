@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 10/21/09 10:32:02
+-- merge date  : 10/22/09 23:31:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -2501,7 +2501,7 @@ function nodes.set_pair(current,factor,rlmode,r2lflag,spec,tfmchr)
         else
             bound = #kerns + 1
             set_attribute(current,kernpair,bound)
-            kerns[bound] = { rlmode, x, y, w, h, r2lflag }
+            kerns[bound] = { rlmode, x, y, w, h, r2lflag, tfmchr.width }
         end
         return x, y, w, h, bound
     end
@@ -2768,8 +2768,23 @@ function nodes.inject_kerns(head,where,keep)
                  -- only w can be nil, can be sped up when w == nil
                     local rl, x, w, r2l = k[1], k[2] or 0, k[4] or 0, k[6]
                     local wx = w - x
--- we can probably listen to only one of them i.e. ignore rl here
-                    if rl < 0 then
+--~                     if rl < 0 then
+--~                         if r2l then
+--~                             if wx ~= 0 then
+--~                                 insert_node_before(head,n,newkern(wx))
+--~                             end
+--~                             if x ~= 0 then
+--~                                 insert_node_after (head,n,newkern(x))
+--~                             end
+--~                         else
+--~                             if x ~= 0 then
+--~                                 insert_node_before(head,n,newkern(x))
+--~                             end
+--~                             if wx ~= 0 then
+--~                                 insert_node_after(head,n,newkern(wx))
+--~                             end
+--~                         end
+--~                     else
                         if r2l then
                             if wx ~= 0 then
                                 insert_node_before(head,n,newkern(wx))
@@ -2785,23 +2800,7 @@ function nodes.inject_kerns(head,where,keep)
                                 insert_node_after(head,n,newkern(wx))
                             end
                         end
-                    else
-                        if r2l then
-                            if wx ~= 0 then
-                                insert_node_before(head,n,newkern(wx))
-                            end
-                            if x ~= 0 then
-                                insert_node_after (head,n,newkern(x))
-                            end
-                        else
-                            if x ~= 0 then
-                                insert_node_before(head,n,newkern(x))
-                            end
-                            if wx ~= 0 then
-                                insert_node_after(head,n,newkern(wx))
-                            end
-                        end
-                    end
+--~                     end
                 end
             end
             if next(cx) then
@@ -2827,61 +2826,61 @@ function nodes.inject_kerns(head,where,keep)
         if trace_injections then
             nodes.trace_injection(head)
         end
-            for n in traverse_id(glyph,head) do
-                local k = has_attribute(n,kernpair)
-                if k then
-                    local kk = kerns[k]
-                    if kk then
-                        local rl, x, y, w = kk[1], kk[2] or 0, kk[3], kk[4]
-                        if y and y ~= 0 then
-                            n.yoffset = y -- todo: h ?
-                        end
-                        if w then
-                            -- copied from above
-                            local r2l = kk[6]
-                            local wx = w - x
-                            if rl < 0 then
-                                if r2l then
-                                    if wx ~= 0 then
-                                        insert_node_before(head,n,newkern(wx))
-                                    end
-                                    if x ~= 0 then
-                                        insert_node_after (head,n,newkern(x))
-                                    end
-                                else
-                                    if x ~= 0 then
-                                        insert_node_before(head,n,newkern(x))
-                                    end
-                                    if wx ~= 0 then
-                                        insert_node_after(head,n,newkern(wx))
-                                    end
+        for n in traverse_id(glyph,head) do
+            local k = has_attribute(n,kernpair)
+            if k then
+                local kk = kerns[k]
+                if kk then
+                    local rl, x, y, w = kk[1], kk[2] or 0, kk[3], kk[4]
+                    if y and y ~= 0 then
+                        n.yoffset = y -- todo: h ?
+                    end
+                    if w then
+                        -- copied from above
+                        local r2l = kk[6]
+                        local wx = w - x
+--~                         if rl < 0 then
+--~                             if r2l then
+--~                                 if x ~= 0 then
+--~                                     insert_node_before(head,n,newkern(x))
+--~                                 end
+--~                                 if wx ~= 0 then
+--~                                     insert_node_after(head,n,newkern(wx))
+--~                                 end
+--~                             else
+--~                                 if wx ~= 0 then
+--~                                     insert_node_before(head,n,newkern(wx))
+--~                                 end
+--~                                 if x ~= 0 then
+--~                                     insert_node_after (head,n,newkern(x))
+--~                                 end
+--~                             end
+--~                         else
+                            if r2l then
+                                if wx ~= 0 then
+                                    insert_node_before(head,n,newkern(wx))
+                                end
+                                if x ~= 0 then
+                                    insert_node_after (head,n,newkern(x))
                                 end
                             else
-                                if r2l then
-                                    if wx ~= 0 then
-                                        insert_node_before(head,n,newkern(wx))
-                                    end
-                                    if x ~= 0 then
-                                        insert_node_after (head,n,newkern(x))
-                                    end
-                                else
-                                    if x ~= 0 then
-                                        insert_node_before(head,n,newkern(x))
-                                    end
-                                    if wx ~= 0 then
-                                        insert_node_after(head,n,newkern(wx))
-                                    end
+                                if x ~= 0 then
+                                    insert_node_before(head,n,newkern(x))
+                                end
+                                if wx ~= 0 then
+                                    insert_node_after(head,n,newkern(wx))
                                 end
                             end
-                        else
-                            -- simple (e.g. kernclass kerns)
-                            if x ~= 0 then
-                                insert_node_before(head,n,newkern(x))
-                            end
+--~                         end
+                    else
+                        -- simple (e.g. kernclass kerns)
+                        if x ~= 0 then
+                            insert_node_before(head,n,newkern(x))
                         end
                     end
                 end
             end
+        end
         if not keep then
             kerns = { }
         end
@@ -5277,7 +5276,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.633 -- beware: also sync font-mis.lua
+otf.version          = 2.635 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -5299,6 +5298,7 @@ otf.tables.global_fields = table.tohash {
     "names",
     "unicodes",
     "names",
+--~     "math",
     "anchor_classes",
     "kern_classes",
     "gpos",
@@ -5423,7 +5423,7 @@ function otf.load(filename,format,sub,featurefile)
     local data = containers.read(otf.cache(), hash)
     local size = lfs.attributes(filename,"size") or 0
     if not data or data.verbose ~= fonts.verbose or data.size ~= size then
-        logs.report("load otf","loading: %s",filename)
+        logs.report("load otf","loading: %s (hash: %s)",filename,hash)
         local ff, messages
         if sub then
             ff, messages = fontloader.open(filename,sub)
@@ -5722,7 +5722,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
             end
             -- cidmap heuristics, beware, there is no guarantee for a match unless
             -- the chain resolves
-            if not unicode and usedmap then
+            if (not unicode) and usedmap then
                 local foundindex = oparser:match(name)
                 if foundindex then
                     unicode = cidcodes[foundindex] -- name to number
@@ -5766,21 +5766,20 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
                         originals[index], tounicode[index], ns = unicode, tounicode16(unicode), ns + 1
                     end
                 else
-                    local done = true
+                    local t = { }
                     for l=1,nplit do
                         local base = split[l]
                         local u = unicodes[base] or (agl and agl[base])
                         if not u then
-                            done = false
                             break
                         elseif type(u) == "table" then
-                            split[l] = u[1]
+                            t[#t+1] = u[1]
                         else
-                            split[l] = u
+                            t[#t+1] = u
                         end
                     end
-                    if done then
-                        originals[index], tounicode[index], nl, unicode = split, tounicode16sequence(split), nl + 1, true
+                    if #t > 0 then -- done then
+                        originals[index], tounicode[index], nl, unicode = t, tounicode16sequence(t), nl + 1, true
                     end
                 end
             end
@@ -5974,7 +5973,7 @@ otf.enhancers["prepare unicode"] = function(data,filename)
             end
         end
     end
-    -- beware: the indeces table is used to initialize the tfm table
+    -- beware: the indices table is used to initialize the tfm table
     for unicode, index in next, mapmap do
         if not internals[index] then
             local name = glyphs[index].name
@@ -10417,7 +10416,9 @@ function otf.name_to_slot(name) -- todo: afm en tfm
     if tfmdata and tfmdata.shared then
         local otfdata = tfmdata.shared.otfdata
         local unicode = otfdata.luatex.unicodes[name]
-        if type(unicode) == "number" then
+        if not unicode then
+            return string.byte("?") -- nil
+        elseif type(unicode) == "number" then
             return unicode
         else
             return unicode[1]
@@ -10519,18 +10520,22 @@ and prepares a table that will move along as we proceed.</p>
 
 local splitter, specifiers = nil, ""
 
+local P, C, S, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc
+
+local left  = P("(")
+local right = P(")")
+local colon = P(":")
+local space = P(" ")
+
 function define.add_specifier(symbol)
     specifiers = specifiers .. symbol
-    local left          = lpeg.P("(")
-    local right         = lpeg.P(")")
-    local colon         = lpeg.P(":")
-    local method        = lpeg.S(specifiers)
-    local lookup        = lpeg.C(lpeg.P("file")+lpeg.P("name")) * colon -- hard test, else problems with : method
-    local sub           = left * lpeg.C(lpeg.P(1-left-right-method)^1) * right
---~   local specification = lpeg.C(method) * lpeg.C(lpeg.P(1-method)^1)
-    local specification = lpeg.C(method) * lpeg.C(lpeg.P(1)^1)
-    local name          = lpeg.C((1-sub-specification)^1)
-    splitter = lpeg.P((lookup + lpeg.Cc("")) * name * (sub + lpeg.Cc("")) * (specification + lpeg.Cc("")))
+    local method        = S(specifiers)
+    local lookup        = C(P("file")+P("name")) * colon -- hard test, else problems with : method
+    local sub           = left * C(P(1-left-right-method)^1) * right
+--~   local specification = C(method) * C(P(1-method)^1)
+    local specification = C(method) * C(P(1)^1)
+    local name          = C((1-sub-specification)^1)
+    splitter = P((lookup + Cc("")) * name * (sub + Cc("")) * (specification + Cc("")))
 end
 
 function define.get_specification(str)
@@ -10574,7 +10579,7 @@ end
 function define.analyze(specification, size)
     -- can be optimized with locals
     local lookup, name, sub, method, detail = define.get_specification(specification or "")
-    return define.makespecification(specification,lookup, name, sub, method, detail, size)
+    return define.makespecification(specification, lookup, name, sub, method, detail, size)
 end
 
 --[[ldx--
@@ -10850,16 +10855,22 @@ function readers.afm(specification,method)
     return tfmtable
 end
 
-local function check_otf(specification,suffix,what)
-    local fullname, tfmtable = resolvers.findbinfile(specification.name,suffix) or "", nil
+-- maybe some day a set of names
+
+local function check_otf(forced,specification,suffix,what)
+    local name = specification.name
+    if forced then
+        name = file.addsuffix(name,suffix)
+    end
+    local fullname, tfmtable = resolvers.findbinfile(name,suffix) or "", nil -- one shot
     if fullname == "" then
-        local fb = fonts.names.old_to_new[specification.name]
+        local fb = fonts.names.old_to_new[name]
         if fb then
             fullname = resolvers.findbinfile(fb,suffix) or ""
         end
     end
     if fullname == "" then
-        local fb = fonts.names.new_to_old[specification.name]
+        local fb = fonts.names.new_to_old[name]
         if fb then
             fullname = resolvers.findbinfile(fb,suffix) or ""
         end
@@ -10874,13 +10885,11 @@ end
 function readers.opentype(specification,suffix,what)
     local forced = specification.forced or ""
     if forced == "otf" then
-        return check_otf(specification,forced,"opentype")
-    elseif forced == "ttf" then
-        return check_otf(specification,forced,"truetype")
-    elseif forced == "ttf" then
-        return check_otf(specification,forced,"truetype")
+        return check_otf(true,specification,forced,"opentype")
+    elseif forced == "ttf" or forced == "ttc" or forced == "dfont" then
+        return check_otf(true,specification,forced,"truetype")
     else
-        return check_otf(specification,suffix,what)
+        return check_otf(false,specification,suffix,what)
     end
 end
 

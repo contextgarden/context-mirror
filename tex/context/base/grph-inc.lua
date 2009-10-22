@@ -384,6 +384,9 @@ local function locate(request) -- name, format, cache
     local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
     local askedcache = request.cache
     if askedformat ~= "" then
+        if trace_figures then
+            commands.writestatus("figures","strategy: forced format")
+        end
         askedformat = lower(askedformat)
         local format = figures.suffixes[askedformat]
         if not format then
@@ -442,6 +445,9 @@ local function locate(request) -- name, format, cache
             end
         end
     elseif askedpath then
+        if trace_figures then
+            commands.writestatus("figures","strategy: rootbased path")
+        end
         for _, format in ipairs(figures.order) do
             local list = figures.formats[format].list or { format }
             for _, suffix in ipairs(list) do
@@ -458,10 +464,14 @@ local function locate(request) -- name, format, cache
         end
     else
         if figures.prefer_quality then
+            if trace_figures then
+                commands.writestatus("figures","strategy: unknown format, prefer quality")
+            end
             for _, format in ipairs(figures.order) do
                 local list = figures.formats[format].list or { format }
                 for _, suffix in ipairs(list) do
-                    local name = file.replacesuffix(askedbase,suffix)
+--~                     local name = file.replacesuffix(askedbase,suffix)
+                    local name = file.replacesuffix(askedname,suffix)
                     for _, path in ipairs(figures.paths) do
                         local check = path .. "/" .. name
                         if figures.exists(check,format) then
@@ -476,6 +486,9 @@ local function locate(request) -- name, format, cache
                 end
             end
         else -- 'location'
+            if trace_figures then
+                commands.writestatus("figures","strategy: unknown format, prefer path")
+            end
             for _, path in ipairs(figures.paths) do
                 for _, format in ipairs(figures.order) do
                     local list = figures.formats[format].list or { format }
@@ -494,6 +507,9 @@ local function locate(request) -- name, format, cache
             end
         end
         if figures.defaultsearch then
+            if trace_figures then
+                commands.writestatus("figures","strategy: default tex path")
+            end
             for _, format in ipairs(figures.order) do
                 local list = figures.formats[format].list or { format }
                 for _, suffix in ipairs(list) do

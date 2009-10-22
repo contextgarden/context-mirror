@@ -142,8 +142,9 @@ element.</p>
 
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
-local stack, top, dt, at, xmlns, errorstr, entities = {}, {}, {}, {}, {}, nil, {}
+local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
 local strip, cleanup, utfize, resolve = false, false, false, false
+local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
 
@@ -263,8 +264,6 @@ local function attribute_specification_error(str)
     return str
 end
 
-local dcache, hcache, acache = { }, { }, { }
-
 function xml.unknown_dec_entity_format(str) return format("&%s;",  str) end
 function xml.unknown_hex_entity_format(str) return format("&#x%s;",str) end
 function xml.unknown_any_entity_format(str) return format("&%s;",  str) end
@@ -346,26 +345,37 @@ xml.parsedentitylpeg = parsedentity
 
 local function handle_any_entity(str)
     if resolve then
-        local a = entities[str] -- per instance !
+        local a = acache[str] -- per instance ! todo
         if not a then
-            a = acache[str]
-            if not a then
+            a = entities[str]
+            if a then
                 if trace_entities then
-                    logs.report("xml","ignoring entity &%s;",str)
-                else
-                    -- can be defined in a global mapper and intercepted elsewhere
-                    -- as happens in lxml-tex.lua
+                    logs.report("xml","resolved entity &%s; -> %s (internal)",str,a)
                 end
-                a = xml.unknown_any_entity_format(str) or ""
-                acache[str] = a
+                a = parsedentity:match(a) or a
+            else
+                if xml.unknown_any_entity_format then
+                    a = xml.unknown_any_entity_format(str) or ""
+                end
+                if a then
+                    if trace_entities then
+                        logs.report("xml","resolved entity &%s; -> %s (external)",str,a)
+                    end
+                else
+                    if trace_entities then
+                        logs.report("xml","keeping entity &%s;",str)
+                    end
+                    a = "&" .. str .. ";"
+                end
             end
+            acache[str] = a
         elseif trace_entities then
             if not acache[str] then
                 logs.report("xml","converting entity &%s; into %s",str,a)
                 acache[str] = a
             end
         end
-        return (a and parsedentity:match(a)) or a
+        return a
     else
         local a = acache[str]
         if not a then
@@ -503,7 +513,8 @@ local function xmlconvert(data, settings)
     utfize = settings.utfize_entities
     resolve = settings.resolve_entities
     cleanup = settings.text_cleanup
-    stack, top, at, xmlns, errorstr, result, entities = {}, {}, {}, {}, nil, nil, settings.entities or {}
+    stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
+    acache, hcache, dcache = { }, { }, { } -- not stored
     reported_attribute_errors = { }
     if settings.parent_root then
         mt = getmetatable(settings.parent_root)

@@ -420,42 +420,54 @@
 
 % new
 
-% cambria.ttc cambriab.ttf cambriai.ttf cambriaz.ttf
+% microsoft: cambria.ttc cambriab.ttf cambriai.ttf cambriaz.ttf
+% ascender : cambmath.ttf cambria.ttf cambriab.ttf cambriai.ttf cambriaz.ttf
 
-\starttypescript [math] [cambria] [name]
-    \definefontsynonym [MathRoman] [name:cambriamath] [features=math\mathsizesuffix]
+\starttypescript [math,serif] [cambria,cambria-x,cambria-y]
+    % whatever matches
+    \definefontsynonym [CambriaMath]  [name:cambriamath]
+    \definefontsynonym [CambriaSerif] [name:cambria]
+\stoptypescript
+\starttypescript [math,serif] [cambria-m]
+    % microsoft cabria
+    \definefontsynonym [CambriaMath]  [file:cambria.ttc(Cambria Math)]
+    \definefontsynonym [CambriaSerif] [file:cambria.ttc(Cambria)]
+\stoptypescript
+\starttypescript [math,serif] [cambria-a]
+    % ascender cambria
+    \definefontsynonym [CambriaMath]  [file:cambmath.ttf]
+    \definefontsynonym [CambriaSerif] [file:cambria.ttf]
+\stoptypescript
+
+\starttypescript [math] [cambria,cambria-m,cambria-a] [name]
+    \definefontsynonym [MathRoman] [CambriaMath] [features=math\mathsizesuffix]
 \stoptypescript
 \starttypescript [math] [cambria-x] [name]
-    \definefontsynonym [MathRoman] [name:cambriamath] [features=math]
+    \definefontsynonym [MathRoman] [CambriaMath] [features=math]
 \stoptypescript
 \starttypescript [math] [cambria-y] [name]
-    \definefontsynonym [MathRoman] [name:cambriamath] [features=math-nostack\mathsizesuffix]
+    \definefontsynonym [MathRoman] [CambriaMath] [features=math-nostack\mathsizesuffix]
 \stoptypescript
 
-\starttypescript [serif] [cambria] [name]
+\starttypescript [serif] [cambria,cambria-m,cambria-a] [name]
     \usetypescript[fallback:serif]
-    \definefontsynonym [Serif]           [name:cambria]           [features=default]
+    \definefontsynonym [Serif]           [CambriaSerif]           [features=default]
     \definefontsynonym [SerifBold]       [name:cambriabold]       [features=default]
     \definefontsynonym [SerifItalic]     [name:cambriaitalic]     [features=default]
     \definefontsynonym [SerifBoldItalic] [name:cambriabolditalic] [features=default]
 \stoptypescript
 
-\starttypescript [cambria]
-    \definetypeface [cambria]   [rm] [serif] [cambria]   [default]
-    \definetypeface [cambria]   [tt] [mono]  [modern]    [default]
-    \definetypeface [cambria]   [mm] [math]  [cambria]   [default]
+\starttypescript [cambria,cambria-m,cambria-a]
+    % any
+    \definetypeface [cambria] [rm] [serif] [\typescriptone] [default]
+    \definetypeface [cambria] [tt] [mono]  [modern]         [default]
+    \definetypeface [cambria] [mm] [math]  [\typescriptone] [default]
 \stoptypescript
-
-\starttypescript [cambria-x]
-    \definetypeface [cambria-x] [rm] [serif] [cambria]   [default]
-    \definetypeface [cambria-x] [tt] [mono]  [modern]    [default]
-    \definetypeface [cambria-x] [mm] [math]  [cambria-x] [default]
-\stoptypescript
-
-\starttypescript [cambria-y]
-    \definetypeface [cambria-y] [rm] [serif] [cambria]   [default]
-    \definetypeface [cambria-y] [tt] [mono]  [modern]    [default]
-    \definetypeface [cambria-y] [mm] [math]  [cambria-y] [default]
+\starttypescript [cambria-x,cambria-y]
+    % test x
+    \definetypeface [cambria-x] [rm] [serif] [cambria]        [default]
+    \definetypeface [cambria-x] [tt] [mono]  [modern]         [default]
+    \definetypeface [cambria-x] [mm] [math]  [\typescriptone] [default]
 \stoptypescript
 
 % math times

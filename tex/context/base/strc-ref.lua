@@ -972,6 +972,7 @@ filters.note        = { default = filters.generic.number }
 filters.formula     = { default = filters.generic.number }
 filters.float       = { default = filters.generic.number }
 filters.description = { default = filters.generic.number }
+filters.item        = { default = filters.generic.number }
 
 structure.references = structure.references or { }
 structure.helpers    = structure.helpers    or { }
