@@ -328,14 +328,20 @@ function xml.load(filename)
     return xmltable
 end
 
-function lxml.convert(data,entities,compress)
+local entities = xml.entities
+
+local function entityconverter(id,str)
+    return entities[str] and "&"..str..";" -- feed back into tex end later
+end
+
+function lxml.convert(id,data,entities,compress)
     local settings = { }
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true
     end
     if entities and entities == variables.yes then
         settings.utfize_entities = true
-        settings.resolve_entities = true
+        settings.resolve_entities = function (str) return entityconverter(id,str) end
     end
     return xml.convert(data,settings)
 end
@@ -347,7 +353,7 @@ function lxml.load(id,filename,compress,entities)
     end
  -- local xmltable = xml.load(filename)
     local ok, data = resolvers.loadbinfile(filename)
-    local xmltable = lxml.convert((ok and data) or "",compress,entities)
+    local xmltable = lxml.convert(id,(ok and data) or "",compress,entities)
     lxml.store(id,xmltable,filename)
     return xmltable, filename
 end
@@ -384,7 +390,7 @@ function xml.getbuffer(name,compress,entities) -- we need to make sure that comm
         name = tex.jobname
     end
     nofconverted = nofconverted + 1
-    xmltostring(lxml.convert(concat(buffers.data[name] or {},""),compress,entities))
+    xmltostring(lxml.convert(name,concat(buffers.data[name] or {},""),compress,entities))
 end
 
 function lxml.loadbuffer(id,name,compress,entities)
@@ -393,7 +399,7 @@ function lxml.loadbuffer(id,name,compress,entities)
     end
     starttiming(xml)
     nofconverted = nofconverted + 1
-    local xmltable = lxml.convert(buffers.collect(name or id,"\n"),compress,entities)
+    local xmltable = lxml.convert(id,buffers.collect(name or id,"\n"),compress,entities)
     lxml.store(id,xmltable)
     stoptiming(xml)
     return xmltable, name or id
@@ -402,7 +408,7 @@ end
 function lxml.loaddata(id,str,compress,entities)
     starttiming(xml)
     nofconverted = nofconverted + 1
-    local xmltable = lxml.convert(str or "",compress,entities)
+    local xmltable = lxml.convert(id,str or "",compress,entities)
     lxml.store(id,xmltable)
     stoptiming(xml)
     return xmltable, id

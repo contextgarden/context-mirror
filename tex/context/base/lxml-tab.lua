@@ -347,7 +347,11 @@ local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
-            a = entities[str]
+            if type(resolve) == "function" then
+                a = resolve(str) or entities[str]
+            else
+                a = entities[str]
+            end
             if a then
                 if trace_entities then
                     logs.report("xml","resolved entity &%s; -> %s (internal)",str,a)

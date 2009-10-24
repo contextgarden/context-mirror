@@ -140,8 +140,13 @@ local function filter_collected(names, criterium, number, collected)
     local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
     if not all then
         for s in names:gmatch("[^, ]+") do
+            if trace_lists then
+                logs.report("lists","filtering: %s",s)
+            end
             hash[s] = true
         end
+    elseif trace_lists then
+        logs.report("lists","filtering all")
     end
     if criterium == variables.intro then
         -- special case, no structure yet

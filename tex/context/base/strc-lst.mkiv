@@ -211,8 +211,14 @@
 \setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}}
 \getvalue{\??li\c!alternative}
 
+\def\checklistexistence#1%
+  {\ifcsname\??li#1\s!parent\endcsname \else
+     \letvalue{\??li#1\s!parent}\??li
+   \fi}
+
 \def\dosetuplist[#1][#2]% slow -)
-  {\def\docommand##1{\getparameters[\??li##1][#2]}%
+  {\checklistexistence{#1}%
+   \def\docommand##1{\getparameters[\??li##1][#2]}%
    \processcommalist[#1]\docommand}
 
 \def\setuplist

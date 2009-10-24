@@ -195,9 +195,12 @@ local function register_from_lists(collected,derived)
                 local kind, realpage = m.kind, r.realpage
                 if kind and realpage then
                     local d = derived[prefix] if not d then d = { } derived[prefix] = d end
-                --~ d[reference] = { kind, i }
-                    for s in gmatch(reference,"[^,]+") do
-                        d[s] = { kind, i }
+                    local t = { kind, i }
+                    for s in gmatch(reference,"[^, ]+") do
+                        if trace_referencing then
+                            logs.report("referencing","list entry %s provides %s reference '%s' on realpage %s)",i,kind,s,realpage)
+                        end
+                        d[s] = t -- share them
                     end
                 end
             end

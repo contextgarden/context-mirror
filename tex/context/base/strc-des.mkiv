@@ -607,6 +607,13 @@
 
 \def\@@doenumerationhandler#1%
   {\strut
+   \iftrialtypesetting \else
+     \begingroup
+     \currentdescriptionsynchronize
+     \dosetattribute{destination}\currentdescriptionattribute % todo, whole text
+     \forcecolorhack
+     \endgroup
+   \fi
    \ifconditional\enumerationnumberenabled
      \iftrialtypesetting
        \doenumerationfullnumber\showdntext{#1}%
@@ -618,10 +625,6 @@
      \fi
    \else
      \doenumerationfullnumber\showdnpuretext{#1}%
-   \fi
-   \iftrialtypesetting \else
-     \currentdescriptionsynchronize
-     \dosetattribute{destination}\currentdescriptionattribute % todo
    \fi}
 
 \def\doenumerationsavecounter     {\savestructurecounter[\currentdescriptionnumber]}
@@ -659,7 +662,8 @@
   {\ctxlua{structure.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
 
 \def\currentenumerationfullnumber
-  {\ctxlua{structure.lists.savednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+%   {\ctxlua{structure.lists.savednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+  {\ctxlua{structure.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
 
 \def\doenumerationfullnumber#1#2% text, title
   {\begingroup
@@ -974,6 +978,7 @@
   [\c!location=\v!top,
    \c!text=,
    \c!way=\v!by\v!text,
+   \c!prefix=\v!no,
    \c!prefixconnector=.,
    \c!stopper=,
    \c!number=\v!yes, % else description
