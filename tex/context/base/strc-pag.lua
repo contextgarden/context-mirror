@@ -191,7 +191,7 @@ function helpers.analyse(entry,specification)
     if not entry then
         return false, false, "no entry"
     end
-    local no = variables.no
+    local yes, no = variables.yes, variables.no
     -- section data
     local references = entry.references
     if not references then
@@ -220,7 +220,7 @@ end
 
 function helpers.prefix(data,prefixspec)
     if data then
-        local _, prefixdata = helpers.analyse(data,prefixspec)
+        local _, prefixdata, status = helpers.analyse(data,prefixspec)
         if prefixdata then
             sections.typesetnumber(prefixdata,"prefix",prefixspec or false,data.prefixdata or false,prefixdata or false)
         end

@@ -70,7 +70,7 @@ local function initializer()
     if not r then
         r = math.random()
     end
-    math.randomseed(r)
+    math.setrandomseedi(r)
     jobvariables.tobesaved.randomseed = r
     for cs, value in next, jobvariables.collected do
         tex.sprint(format("\\xdef\\%s{%s}",cs,value))

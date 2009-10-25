@@ -34,22 +34,23 @@
 
 \newconditional\tracelinenumbering
 
-\def\mkaddtextlinenumbers#1#2#3% box col max
-  {\bgroup
-   \def\skipnumber{\hbox{}}%
-   \ifcase#3\relax
-     \let\makenumber\mkskiplinenumber
-   \or
-     \let\makenumber\mkleftlinenumber
-   \else\ifcase#2\relax
-     \let\makenumber\mkskiplinenumber
-   \or
-     \let\makenumber\mkleftlinenumber
-   \else
-     \let\makenumber\mkrightlinenumber
-   \fi\fi
-   \mkprocesstextlinenumbers{#1}%
-   \egroup}
+% \def\mkaddtextlinenumbers#1#2#3% box col max
+%   {\bgroup
+%    \fullrestoreglobalbodyfont
+%    \def\skipnumber{\hbox{}}%
+%    \ifcase#3\relax
+%      \let\makenumber\mkskiplinenumber
+%    \or
+%      \let\makenumber\mkleftlinenumber
+%    \else\ifcase#2\relax
+%      \let\makenumber\mkskiplinenumber
+%    \or
+%      \let\makenumber\mkleftlinenumber
+%    \else
+%      \let\makenumber\mkrightlinenumber
+%    \fi\fi
+%    \mkprocesstextlinenumbers{#1}%
+%    \egroup}
 
 \def\mkprocesstextlinenumbers#1%
   {\setbox\linenumberscratchbox\vbox{\forgetall\offinterlineskip\ctxlua{nodes.lines.boxed.stage_one(\number#1)}}%
@@ -57,9 +58,9 @@
 
 % id nr shift width leftskip
 
-\def\mkskiplinenumber #1#2#3#4#5{}
-\def\mkleftlinenumber #1#2#3#4#5{\hbox{\llap{#2\quad\hskip#3\scaledpoint}}}
-\def\mkrightlinenumber#1#2#3#4#5{\hbox{\rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\quad#2}}}
+% \def\mkskiplinenumber #1#2#3#4#5{}
+% \def\mkleftlinenumber #1#2#3#4#5{\hbox{\llap{#2\quad\hskip#3\scaledpoint}}}
+% \def\mkrightlinenumber#1#2#3#4#5{\hbox{\rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\quad#2}}}
 
 \def\makenumber#1#2{\hbox{\llap{#1\quad\hskip#2\scaledpoint}}\endgraf}%
 
@@ -267,15 +268,30 @@
 
 \def\mkaddtextlinenumbers#1#2#3% box col max
   {\bgroup
+   \chardef\linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
+   \chardef\linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
+   \fullrestoreglobalbodyfont
    \def\skipnumber{\hbox{}}%
    \ifcase#3\relax
      \let\makenumber\mkskiplinenumber
    \or
-     \let\makenumber\mkleftlinenumber
+    % one column
+     \ifcase\linenumberlocation
+        % hm
+     \or
+       \let\makenumber\mkleftlinenumber
+     \or
+       \let\makenumber\mkrightlinenumber
+     \or % inner
+       \let\makenumber\mkdoinnerlinenumber
+     \or % outer
+       \let\makenumber\mkdoouterlinenumber
+     \or % text
+     \fi
    \else\ifcase#2\relax
      \let\makenumber\mkskiplinenumber
    \or
-     \let\makenumber\mkdoleftlinenumber
+     \let\makenumber\mkleftlinenumber
      \ifcase\linenumberlocation\or
        \chardef\linenumberlocation\plusone
      \or
@@ -288,7 +304,7 @@
        \chardef\linenumberlocation\plusone
      \fi
    \else
-     \let\makenumber\mkdorightlinenumber
+     \let\makenumber\mkrightlinenumber
      \ifcase\linenumberlocation\or
        \chardef\linenumberlocation\plustwo
      \or
@@ -310,8 +326,9 @@
 \def\dosomelinenumber#1#2#3#4% tag 1=left|2=right linenumber leftskip
   {\begingroup
    \def\currentlinenumbering{#1}%
-   \chardef\linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
-   \chardef\linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
+   \def\linenumber{#3}% unsafe
+%    \chardef\linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
+%    \chardef\linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
    \doifelse{\linenumberparameter\c!width}\v!margin
      {\linenumberwidth\leftmarginwidth}
      {\linenumberwidth\linenumberparameter\c!width}%
@@ -411,7 +428,7 @@
 
 \protect \endinput
 
-\iffalse % \iftrue
+\iffalse % \iftrue  eventually we will do it like ...
 
     \appendtoks\ctxlua{nodes.lines.flowed.prepare()}\to\everyshipout
     \appendtoks\ctxlua{nodes.lines.flowed.cleanup()}\to\everybye

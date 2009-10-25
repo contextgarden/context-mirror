@@ -11,7 +11,14 @@ if not modules then modules = { } end modules ['supp-ran'] = {
 
 commands = commands or { }
 
-local texwrite, random, seed, last = tex.write, math.random, false, 1
+local texwrite, random, randomseed, round, seed, last = tex.write, math.random, math.randomseed, math.round, false, 1
+
+function math.setrandomseedi(n)
+    if n <= 1 then
+        n = n*1073741823 -- maxcount
+    end
+    randomseed(round(n))
+end
 
 function commands.getrandomcounta(min,max)
     last = random(min,max)
@@ -25,7 +32,7 @@ end
 
 function commands.setrandomseed(n)
     last = n
-    math.randomseed(n)
+    math.setrandomseedi(n)
 end
 
 function commands.getrandomseed(n)
@@ -40,7 +47,7 @@ end
 
 function commands.defrostrandomseed()
     if seed ~= false then
-        math.randomseed(last)
+        math.setrandomseedi(last)
         seed = false
     end
 end

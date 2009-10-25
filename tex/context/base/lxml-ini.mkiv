@@ -45,6 +45,7 @@
 \def\xmldirectivesbefore   #1{\ctxlua{lxml.directives.before("#1")}}
 \def\xmldirectivesafter    #1{\ctxlua{lxml.directives.after("#1")}}
 \def\xmlfilter           #1#2{\ctxlua{lxml.filter("#1",\!!bs#2\!!es)}}
+\def\xmlfilterlist       #1#2{\ctxlua{lxml.filterlist("#1",\!!bs#2\!!es)}}
 \def\xmlfunction         #1#2{\ctxlua{lxml["function"]("#1",\!!bs#2\!!es)}}
 \def\xmlfirst            #1#2{\ctxlua{lxml.first("#1","#2")}}
 \def\xmlflush              #1{\ctxlua{lxml.flush("#1")}}
@@ -122,7 +123,7 @@
 
 \newtoks \registeredxmlsetups
 
-% todo: 1:xml:whatever alwas before 3:xml:something
+% todo: 1:xml:whatever always before 3:xml:something
 
 \def\xmlprependsetup           #1{\ctxlua{lxml.installsetup(1,"*","#1")}}
 \def\xmlappendsetup            #1{\ctxlua{lxml.installsetup(2,"*","#1")}}
@@ -137,7 +138,7 @@
 \def\xmlremovesetup            #1{\ctxlua{lxml.removesetup("*","#1")}}
 \def\xmlremovedocumentsetup  #1#2{\ctxlua{lxml.removesetup("#1","#2")}}
 
-\def\xmlflushdocumentsetups    #1{\ctxlua{lxml.flushsetups("*","#1")}}
+\def\xmlflushdocumentsetups  #1#2{\ctxlua{lxml.flushsetups("#1","*","#2")}} % #1 == id where to apply * and #2
 \def\xmlresetdocumentsetups    #1{\ctxlua{lxml.resetsetups("#1")}}
 
 \let\xmlregistersetup        \xmlappendsetup
@@ -151,17 +152,17 @@
    \xmldefaulttotext\xmldocument % after include
    \xmlstoptiming}
 
-\def\xmlregistereddocumentsetups#1%
+\def\xmlregistereddocumentsetups#1#2% id setups
   {\xmlstarttiming
    % todo: test for duplicates !
-   \xmlflushdocumentsetups{#1}%
+   \xmlflushdocumentsetups{#1}{#2}%
    \xmldefaulttotext{#1}% after include
    \xmlstoptiming}
 
 \def\xmlstarttiming{\ctxlua{statistics.starttiming(lxml)}}
 \def\xmlstoptiming {\ctxlua{statistics.stoptiming (lxml)}}
 
-\def\doxmlprocess#1#2#3#4#5%
+\def\doxmlprocess#1#2#3#4#5% flag \loader id name what initializersetup
   {\begingroup
    \edef\xmldocument{#3}% #2 can be \xmldocument and set as such
    %xmlpushdocument{#3}%
@@ -184,13 +185,13 @@
 \stopxmlsetups
 
 \startxmlsetups xml:process
-    \xmlregistereddocumentsetups{#1}
+    \xmlregistereddocumentsetups{#1}{#1}
     \xmlmain{#1}
 \stopxmlsetups
 
 \def\xmlloadonly#1#2#3%
   {\xmlload{#1}{#2}%
-   \xmlregistereddocumentsetups{#3}}
+   \xmlregistereddocumentsetups{#1}{#3}}
 
 % beware: \xmlmain takes the real root, so also processing
 % instructions preceding the root element; well, in some

@@ -123,12 +123,11 @@
 
 \startxmlsetups xml:setups:register
     \xmlsetup{#1}{xml:setups:assemblename}
-    %expanded{\texcommand[stp:x:\currentSETUPfullname]{\currentSETUPfullname}}
     \expanded{\texcommand[stp:x:\currentSETUPfullname]{#1}}
 \stopxmlsetups
 
 \startxmlsetups xml:setups:basics
-    \xmlsetsetup {setups} {
+    \xmlsetsetup {#1} {
         sequence|string|variable|assignments|keywords|content|displaymath|index|math|
         nothing|file|position|reference|csname|destination|triplet|word|
         resolve|parameter|constant|inherit|parameter|define
@@ -139,15 +138,17 @@
 
 \def\loadsetups{\complexorsimple\loadsetups}
 
+\let\loadedsetups\empty % we load more setups, setups:<name>
+
 \def\simpleloadsetups
   {\doifnotmode{no-setup-main}{\complexloadsetups[cont-en.xml]}}
 
 \def\complexloadsetups[#1]%
   {\doifsomething{#1}
      {\doonlyonce{setups:#1}
-        {\xmlloadonly{setups}{#1}{setups}%
-%          \xmlcommand{setups}{/interface/command}{xml:setups:register}}}} % qualified path saves > 50% runtime
-         \xmlfilter{setups}{/interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
+        {\doglobal\prependtocommalist{setups:#1}\loadedsetups % last overloads first
+         \xmlloadonly{setups:#1}{#1}{setups}%
+         \xmlfilter{setups:#1}{/interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
 
 \newif\ifshortsetup
 
@@ -176,8 +177,7 @@
    \showsetupindeed{#1}}
 
 \def\showsetupindeed#1%
-%   {\xmlcommand{setups}{/interface/command[@name='#1']}{xml:setups:typeset}}
-  {\xmlfilter{setups}{/interface/command[@name='#1']/command(xml:setups:typeset)}}
+  {\xmlfilterlist{\loadedsetups}{/interface/command[@name='#1']/command(xml:setups:typeset)}}
 
 \def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
@@ -213,7 +213,6 @@
             } {
                 \tex{}
             }
-%             \xmlfirst{#1}{/sequence}
             \xmlfilter{#1}{/sequence/first()}
             \ignorespaces
         \egroup
@@ -222,7 +221,6 @@
                 \enablemode[setups-pass-one]
                 \doglobal\newcounter\currentSETUPargument
                 \ignorespaces
-%                 \xmltext{#1}{/arguments}
                 \xmlfilter{#1}{/arguments/text()}
             \egroup
         }
@@ -233,7 +231,6 @@
                     \ttsl
                 }
                 \tex{\e!stop}
-%                 \xmlfirst{#1}{/sequence/variable}
                 \xmlfilter{#1}{/sequence/variable/first()}
                 \ignorespaces
             \egroup
@@ -245,7 +242,6 @@
                 \doglobal\newcounter\currentSETUPargument
                 \blank[\v!line]
                 \switchtobodyfont[small]
-%                 \ignorespaces\xmltext{#1}{/arguments}\endgraf
                 \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
             \egroup
         }
@@ -260,8 +256,7 @@
 
 \startxmlsetups xml:setups:resolve
     \ignorespaces
-%     \xmlfirst{setups}{define[@name='\xmlatt{#1}{name}']}
-    \xmlfilter{setups}{/interface/define[@name='\xmlatt{#1}{name}']/first()}
+    \xmlfilterlist{\loadedsetups}{/interface/define[@name='\xmlatt{#1}{name}']/first()}
 \stopxmlsetups
 
 %D This is the first pass; here we generate the top line.
@@ -332,17 +327,12 @@
     } {
         \xdef\currentSETUPwidth{0pt}%
         \bgroup
-%             \xmlcommand{#1}{/parameter}{xml:setups:parameter:measure}
             \xmlfilter{#1}{/parameter/command(xml:setups:parameter:measure)}
         \egroup
         \startfirstSETUPcolumn{\showSETUPnumber}%
-%             \xmldoifelseempty {#1} {} {
-                \ignorespaces
-                \xmlflush{#1}
-                \let\previousSETUPargument\currentSETUPargument
-%             } {
-%                 \secondSETUPcolumn{\c!setup!text!{see} \previousSETUPargument}{}
-%             }
+            \ignorespaces
+            \xmlflush{#1}
+            \let\previousSETUPargument\currentSETUPargument
         \stopfirstSETUPcolumn
         \blank[\v!halfline]
         \ignorespaces
@@ -354,13 +344,9 @@
         \showSETUPkeyword{#1}
     } {
         \startfirstSETUPcolumn{\showSETUPnumber}%
-%             \xmldoifelseempty {#1} {} {
-                \ignorespaces
-                \xmlflush{#1}
-                \let\previousSETUPargument\currentSETUPargument
-%             }{
-%                 \secondSETUPcolumn{see \previousSETUPargument}{}
-%             }
+            \ignorespaces
+            \xmlflush{#1}
+            \let\previousSETUPargument\currentSETUPargument
         \stopfirstSETUPcolumn
         \blank[\v!halfline]
         \ignorespaces

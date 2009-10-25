@@ -64,7 +64,7 @@
   {\edef\currentnofitems    {\ctxlua{structure.itemgroups.nofitems("\currentitemgroup",\number\currentnoflists)}}%
    \edef\currentitemmaxwidth{\ctxlua{structure.itemgroups.maxwidth("\currentitemgroup",\number\currentnoflists)}\scaledpoint}}
 
-% todo: \dodosetreference
+% todo: \dodosetreference -> \dostructurecountercomponent (to be checked)
 
 \def\dohandleitemreference % we will make a decent number helper
   {\ifx\currentitemreference \empty \else
@@ -80,6 +80,16 @@
                 internal = \nextinternalreference,
                 section  = structure.sections.currentid(),
             },
+            prefixdata = structure.helpers.simplify {
+                prefix        = "\structurecounterparameter\currentitemgroupcounter\c!prefix",
+                separatorset  = "\structurecounterparameter\currentitemgroupcounter\c!prefixseparatorset",
+                conversion    = \!!bs\structurecounterparameter\currentitemgroupcounter\c!prefixconversion\!!es,
+                conversionset = "\structurecounterparameter\currentitemgroupcounter\c!prefixconversionset",
+                set           = "\structurecounterparameter\currentitemgroupcounter\c!prefixset",
+                segments      = "\structurecounterparameter\currentitemgroupcounter\c!prefixsegments",
+            %     segments      = "\askedprefixsegments",
+                connector     = \!!bs\structurecounterparameter\currentitemgroupcounter\c!prefixconnector\!!es,
+            },
             numberdata = structure.helpers.simplify {
                 numbers       = structure.counters.compact("\currentitemgroupcounter",nil,true),
                 separatorset  = "\structurecounterparameter\currentitemgroupcounter\c!numberseparatorset",
@@ -94,6 +104,7 @@
      \xdef\currentitemattribute{\number\lastdestinationattribute}%
      \begingroup\dosetattribute{destination}\currentitemattribute\kern\zeropoint\endgroup % todo
    \fi}
+
 
 % \startitemize[n,packed]
 % \item test \item test \item test
@@ -420,7 +431,15 @@
   {\begingroup
    \setupstructurecounter
      [\currentitemgroupcounter]
-     [\c!prefix=\v!no,
+     [%\c!prefix=\v!no,
+      \c!prefix=\getitemparameter\currentitemlevel\c!prefix,
+      \c!prefixstopper=\getitemparameter\currentitemlevel\c!prefixstopper,
+      \c!prefixseparatorset=\getitemparameter\currentitemlevel\c!prefixseparatorset,
+      \c!prefixconversion=\getitemparameter\currentitemlevel\c!prefixconversion,
+      \c!prefixconversionset=\getitemparameter\currentitemlevel\c!prefixseparatorset,
+      \c!prefixset=\getitemparameter\currentitemlevel\c!prefixset,
+      \c!prefixsegments=\getitemparameter\currentitemlevel\c!prefixsegments,
+      \c!prefixconnector=\getitemparameter\currentitemlevel\c!prefixconnector,
       \c!criterium=\getitemparameter\currentitemlevel\c!criterium,
       \c!numberorder=\ifconditional\reverselistitem\v!reverse\else\v!normal\fi,
       \c!numberstopper=\expdoif{\getitemparameter\currentitemlevel\c!placestopper}\v!yes{\getitemparameter\currentitemlevel\c!stopper},
@@ -1238,7 +1257,16 @@
    \c!symbol=\currentitemlevel]
 
 \setupitemgroups
-   [\c!numberseparatorset=,
+   [\c!prefix=\v!no,
+%     \c!prefixstopper=.,
+%     \c!prefixseparatorset=,
+%     \c!prefixconversion=,
+%     \c!prefixconversionset=,
+%     \c!prefixset=,
+%     \c!prefixsegments=1:100,
+    \c!prefixconnector=.,
+    %
+    \c!numberseparatorset=,
     \c!numberconversionset=,
     \c!numberstopper=.,
     \c!numbersegments=1]

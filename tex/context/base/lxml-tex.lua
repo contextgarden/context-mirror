@@ -10,7 +10,7 @@ local utf = unicode.utf8
 
 local utfchar = utf.char
 local concat, insert, remove, gsub, find = table.concat, table.insert, table.remove
-local format, sub, gsub, find = string.format, string.sub, string.gsub, string.find
+local format, sub, gsub, find, gmatch = string.format, string.sub, string.gsub, string.find, string.gmatch
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 
 if not tex and not tex.sprint then
@@ -173,7 +173,8 @@ function lxml.store(id,root,filename)
     end
 end
 
-local splitter = lpeg.C((1-lpeg.P(":"))^1) * lpeg.P("::") * lpeg.C(lpeg.P(1)^1)
+--~ local splitter = lpeg.C((1-lpeg.P(":"))^1) * lpeg.P("::") * lpeg.C(lpeg.P(1)^1)
+local splitter = lpeg.splitat("::")
 
 lxml.idsplitter = splitter
 
@@ -281,6 +282,12 @@ local function lxmlparseapply(id,pattern) -- better inline, saves call
 end
 
 lxml.filter = lxmlparseapply
+
+function lxml.filterlist(list,pattern)
+    for s in gmatch(list,"[^, ]+") do -- we could cache a table
+        lxmlparseapply(s,pattern)
+    end
+end
 
 lxml["function"] = function(id,name)
     local f = xml.functions[name]
@@ -689,7 +696,7 @@ function lxml.installsetup(what,document,setup,where)
     end
 end
 
-function lxml.flushsetups(...)
+function lxml.flushsetups(id,...)
     local done = { }
     for _, document in ipairs({...}) do
         local sd = setups[document]
@@ -700,7 +707,8 @@ function lxml.flushsetups(...)
                     if trace_loading then
                         commands.writestatus("lxml","applying setup %02i = %s to %s",k,v,document)
                     end
-                    texsprint(ctxcatcodes,"\\directsetup{",v,"}")
+--~                     texsprint(ctxcatcodes,"\\directsetup{",v,"}")
+                    texsprint(ctxcatcodes,"\\xmlsetup{",id,"}{",v,"}")
                     done[v] = true
                 end
             end
