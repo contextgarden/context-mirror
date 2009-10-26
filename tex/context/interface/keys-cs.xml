@@ -662,6 +662,7 @@
 		<cd:constant name='global' value='globalne'/>
 		<cd:constant name='grid' value='mrizka'/>
 		<cd:constant name='hang' value='zaveseni'/>
+		<cd:constant name='headalign' value='headalign'/>
 		<cd:constant name='headcolor' value='barvahlavicky'/>
 		<cd:constant name='headcommand' value='headcommand'/>
 		<cd:constant name='headconversion' value='konverzehlavicky'/>

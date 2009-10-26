@@ -31,6 +31,7 @@ function graphics.converters.jpg(oldname,newname)
     return imtemplate[quality]:format(improgram,oldname,newname)
 end
 
+graphics.converters.gif  = graphics.converters.jpg
 graphics.converters.tif  = graphics.converters.jpg
 graphics.converters.tiff = graphics.converters.jpg
 graphics.converters.png  = graphics.converters.jpg

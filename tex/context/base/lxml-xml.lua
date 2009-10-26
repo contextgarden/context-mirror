@@ -96,7 +96,7 @@ end
 
 local function text(collected)
     if collected then
-        return xmltostring(collected[1]) -- only first as we cannot concat function
+        return xmltostring(collected[1].dt) -- only first as we cannot concat function
     else
         return ""
     end

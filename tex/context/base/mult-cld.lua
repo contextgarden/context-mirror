@@ -46,41 +46,50 @@ function context.trace(intercept)
     context.trace = function() end
 end
 
+local trace_context = false  trackers.register("context.flush",     function(v) if v then context.trace()     end end)
+local trace_context = false  trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
+
 local function writer(k,...)
     flush(ctxcatcodes,k)
     local t = { ... }
-    if next(t) then
-        for i=1,#t do
+    local nt = #t
+    if nt > 0 then
+        for i=1,nt do
             local ti = t[i]
             local typ, force = type(ti), nil
             local saved_flush = flush
-            flush = cached_flush
-            while typ == "function" do
-                cache = { }
-                ti, force = ti()
-                if force then
-                    typ = false -- force special cases
-                else
-                    typ = type(ti)
-                    if typ == "nil" then
-                        typ = "string"
-                        ti = concat(cache)
-                    elseif typ == "string" then
-                        ti = concat(cache)
+            if typ == "function" then
+                flush = cached_flush
+                while true do
+                    cache = { }
+                    ti, force = ti()
+                    if force then
+                        typ = false -- force special cases
+                    else
+                        typ = type(ti)
+                        if typ == "nil" then
+                            typ = "string"
+                            ti = concat(cache)
+                        elseif typ == "string" then
+                            ti = concat(cache)
+                        end
+                    end
+                    if typ ~= "function" then
+                        break
                     end
                 end
+                flush = saved_flush
             end
-            flush = saved_flush
             if ti == nil then
                 -- next
             elseif typ == "string" or typ == "number" then
                 flush(ctxcatcodes,"{",ti,"}")
             elseif typ == "table" then
-                flush(ctxcatcodes,"[")
                 local c = concat(ti,",")
                 if c ~= "" then
-                    flush(ctxcatcodes,c)
+                    flush(ctxcatcodes,"[",c,"]")
                 else
+                    flush(ctxcatcodes,"[")
                     local done = false
                     for k, v in next, ti do
                         if done then
@@ -90,8 +99,8 @@ local function writer(k,...)
                             done = true
                         end
                     end
+                    flush(ctxcatcodes,"]")
                 end
-                flush(ctxcatcodes,"]")
         --  elseif typ == "boolean" then
         --      flush(ctxcatcodes,"\n")
             elseif ti == true then
@@ -107,15 +116,32 @@ local function writer(k,...)
     end
 end
 
+--~ local function indexer(t,k)
+--~     local f = function(...) return writer("\\"..k.." ",...) end
+--~     t[k] = f
+--~     return f
+--~ end
+
 local function indexer(t,k)
-    local f = function(...) return writer("\\"..k.." ",...) end -- building the cs here saves time
+    local c = "\\" .. k .. " "
+    local f = function(...) return writer(c,...) end
     t[k] = f
     return f
 end
 
-local function caller(t,f,...)
-    if f then
-        flush(ctxcatcodes,format(f,...))
+--~ local function caller(t,f,...)
+--~     if f then
+--~         flush(ctxcatcodes,format(f,...))
+--~     else
+--~         flush(ctxcatcodes,"\n")
+--~     end
+--~ end
+
+local function caller(t,f,a,...)
+    if a then
+        flush(ctxcatcodes,format(f,a,...))
+    elseif f then
+        flush(ctxcatcodes,f)
     else
         flush(ctxcatcodes,"\n")
     end
@@ -167,7 +193,7 @@ end)
 function context.enabletrackers (str) trackers.enable (str) end
 function context.disabletrackers(str) trackers.disable(str) end
 
--- see demo-lud.lud for an example
+-- see demo-cld.cld for an example
 
 -- context.starttext(true)
 -- context.chapter({ "label" }, "title", true)

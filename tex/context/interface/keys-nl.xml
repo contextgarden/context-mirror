@@ -662,6 +662,7 @@
 		<cd:constant name='global' value='globaal'/>
 		<cd:constant name='grid' value='grid'/>
 		<cd:constant name='hang' value='hang'/>
+		<cd:constant name='headalign' value='kopuitlijnen'/>
 		<cd:constant name='headcolor' value='kopkleur'/>
 		<cd:constant name='headcommand' value='kopcommando'/>
 		<cd:constant name='headconversion' value='kopconversie'/>

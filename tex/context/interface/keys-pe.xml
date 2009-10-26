@@ -662,6 +662,7 @@
 		<cd:constant name='global' value='سراسری'/>
 		<cd:constant name='grid' value='توری'/>
 		<cd:constant name='hang' value='بیاویز'/>
+		<cd:constant name='headalign' value='headalign'/>
 		<cd:constant name='headcolor' value='رنگ‌سر'/>
 		<cd:constant name='headcommand' value='فرمان‌سر'/>
 		<cd:constant name='headconversion' value='تبدیل‌سر'/>

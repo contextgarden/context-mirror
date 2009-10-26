@@ -6540,6 +6540,10 @@ return {
   },
  },
  ["constants"]={
+  ["headalign"]={
+   ["en"]="headalign",
+   ["nl"]="kopuitlijnen",
+  },
   ["export"]={
    ["en"]="export",
    ["nl"]="exporteer",

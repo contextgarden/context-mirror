@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 10/24/09 16:49:06
+-- merge date  : 10/26/09 17:28:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -1500,6 +1500,7 @@ function file.collapse_path(str)
     return str
 end
 
+--~ print(file.collapse_path("/a"))
 --~ print(file.collapse_path("a/./b/.."))
 --~ print(file.collapse_path("a/aa/../b/bb"))
 --~ print(file.collapse_path("a/../.."))

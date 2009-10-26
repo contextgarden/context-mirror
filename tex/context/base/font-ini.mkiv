@@ -949,16 +949,8 @@
 \def\setupfontsynonym
   {\dodoubleempty\dosetupfontsynonym}
 
-\def\dosetupfontsynonym[#1][#2]%
-  {\edef\@@fontdata{#2}%
-   \ifx\@@fontdata\empty \else
-     \edef\@@fontfile{#1}%
-     \ifx\fontclass\empty
-       \getfontparameters
-     \else
-       \getglobalfontparameters
-     \fi
-   \fi}
+\def\dosetupfontsynonym[#1][#2]% not yet supported, will do when needed
+  {}
 
 \def\truefontname#1%
   {\@EA\dotruefontname#1*\empty*\relax}
@@ -1349,12 +1341,9 @@
       % we test for em as we assume it to be set
    \else
      \def\docommand##1%
-% fails: \def\checkbodyfontenvironment[#1]{! #1 ! \definebodyfontenvironment[\fontclass][#1][]} \setupbodyfont[8.5pt]
-%        {\normalizebodyfontsize\csname\??ft\s!default##1\endcsname\dimexpr#1\relax\to\tempbodyfontsize
-%         \letvalue{\??ft#2#1##1}\tempbodyfontsize}%
-        {\scratchdimen\csname\??ft\s!default##1\endcsname\dimexpr#1\relax
-         \normalizebodyfontsize\scratchdimen\to\tempbodyfontsize
-         \letvalue{\??ft#2#1##1}\tempbodyfontsize}%
+       {\scratchdimen\csname\??ft\s!default##1\endcsname\dimexpr#1\relax
+        \normalizebodyfontsize\scratchdimen\to\tempbodyfontsize
+        \letvalue{\??ft#2#1##1}\tempbodyfontsize}%
      \processcommacommand[\fontrelativesizelist]\docommand
      \copyparameters
        [\??ft#2#1][\??ft\s!default]
@@ -1370,7 +1359,10 @@
    \else
      % prevent loop (hence \empty)
      \letvalue{\@size@#1}\empty
+     \pushmacro\fontclass     % new per 26102009
+     \edef\fontclass{#2}%     % new per 26102009
      \defineunknownfont{#1}%
+     \popmacro\fontclass      % new per 26102009
    \fi\fi
    % so far
    \setvalue{\@size@#1}{\docompletefontswitch[#1]}}
@@ -1686,7 +1678,7 @@
        [\fontstylelist]
        {\dodefineunknownbodyfont{#1}}%
      \ifdone
-     \donefalse
+       \donefalse
        \setvalue{\@size@#1}{\docompletefontswitch[#1]}%
        \ifdefiningunknownfont \else
          \definingunknownfonttrue

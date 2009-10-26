@@ -104,7 +104,7 @@ figures.cachepaths = {
 figures.paths  = table.copy(figures.localpaths)
 
 figures.order =  {
-    "pdf", "mps", "jpg", "png", "jbig", "svg", "eps", "mov", "buffer", "tex"
+    "pdf", "mps", "jpg", "png", "jbig", "svg", "eps", "gif", "mov", "buffer", "tex",
 }
 
 figures.formats = {
@@ -115,6 +115,7 @@ figures.formats = {
     ["jbig"]   = { list = { "jbig", "jbig2", "jb2" } },
     ["svg"]    = { list = { "svg", "svgz" } },
     ["eps"]    = { list = { "eps", "ai" } },
+    ["gif"]    = { list = { "gif" } },
     ["mov"]    = { list = { "mov", "avi" } },
     ["buffer"] = { list = { "tmp", "buffer", "buf" } },
     ["tex"]    = { list = { "tex" } },
@@ -777,11 +778,19 @@ function figures.converters.eps(oldname,newname)
     -- rlx as alternative
     local outputpath = file.dirname(newname)
     local outputbase = file.basename(newname)
+    if outputpath == "" then outputpath = "." end
     local command = format("mtxrun bin:pstopdf --outputpath=%s %s",outputpath,oldname)
     os.spawn(command)
 end
 
 figures.converters.svg = figures.converters.eps
+
+function figures.converters.gif(oldname,newname)
+    -- hack, we need a lua based converter script, or better, we should use
+    -- rlx as alternative
+    local command = format("mtxrun bin:convert %s %s",oldname,newname)
+    os.spawn(command)
+end
 
 -- -- -- lowres -- -- --
 

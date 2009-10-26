@@ -112,6 +112,7 @@ function file.collapse_path(str)
     return str
 end
 
+--~ print(file.collapse_path("/a"))
 --~ print(file.collapse_path("a/./b/.."))
 --~ print(file.collapse_path("a/aa/../b/bb"))
 --~ print(file.collapse_path("a/../.."))

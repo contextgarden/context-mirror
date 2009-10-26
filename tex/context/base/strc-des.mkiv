@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=strc-blk,
+%D   [       file=strc-des,
 %D        version=2008.10.20,
 %D          title=\CONTEXT\ Structure Macros,
 %D       subtitle=Descriptions,
@@ -155,7 +155,7 @@
       \hsize\descriptionsheadwidth
       \leftskip\zeropoint
       \rightskip\zeropoint
-      #1\setupalign[\descriptionparameter\c!align]%
+      #1\setupalign[\descriptionparameter\c!headalign]%
       \ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox}%
    \ht\descriptionheadbox\strutht
    \dp\descriptionheadbox\strutdp}
@@ -191,7 +191,7 @@
      {\forgetall
       \dontcomplain
       \hsize\descriptionsheadwidth
-      #1\setupalign[\descriptionparameter\c!align]#2%
+      #1\setupalign[\descriptionparameter\c!headalign]#2%
       \ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox}%
    \ht\descriptionheadbox\strutht
    \dp\descriptionheadbox\strutdp
@@ -334,10 +334,12 @@
         {\dodescriptionhandler
            {\vtop
               {\hsize\dimexpr\descriptionsheadwidth-\descriptionsheaddistance\relax
+               \doifsomething{\descriptionparameter\c!headalign}{\setupalign[\descriptionparameter\c!headalign]}%
                \begstrut\descriptionparameter\c!text\ignorespaces\currentdescriptiontext\endstrut}}}}%
    \doifelse{\descriptionparameter\c!aligntitle}\v!no
      {\leftdescriptionskip\leftskip\rightdescriptionskip\rightskip}
      {\ifcase\nesteddescriptionstate\leftdescriptionskip\leftskip\rightdescriptionskip\rightskip\fi}%
+   \doifsomething{\descriptionparameter\c!align}{\setupalign[\descriptionparameter\c!align]}%
    \normalexpanded{\noexpand\indenting[\descriptionparameter\c!indenting]}%
    % better a system mode
    \ifcase\nesteddescriptionstate
@@ -961,6 +963,7 @@
    \c!hang=,
    \c!sample=,
    \c!align=,
+   \c!headalign=,
    \c!margin=\v!no,
    \c!before=\blank,
    \c!inbetween=\blank,

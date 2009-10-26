@@ -213,7 +213,14 @@
    \c!keys:1=,\c!keys:2=,\c!keys:3=,
    \c!alternative=]
 
-\def\doregisterstructurepageregister#1#2#3% register data userdata
+\def\doregisterstructurepageregister
+  {\iftrialtypesetting
+     \expandafter\gobblethreearguments
+   \else
+     \expandafter\dodoregisterstructurepageregister
+   \fi}
+
+\def\dodoregisterstructurepageregister#1#2#3% register data userdata
   {\begingroup
    \edef\currentregister{#1}%
    %getparameters[\??id][\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
