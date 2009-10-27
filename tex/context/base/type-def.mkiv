@@ -1,0 +1,94 @@
+%D \module
+%D   [       file=type-def,
+%D        version=2005.02.04,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Default Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\definetypescriptprefix [serif] [Serif]
+\definetypescriptprefix [sans]  [Sans]
+\definetypescriptprefix [mono]  [Mono]
+
+\definefontsynonym [DefaultFont] [cmvtt10]
+
+\startsetups [font:fallback:serif]
+    \definefontsynonym [Serif]            [DefaultFont]
+    \definefontsynonym [SerifBold]        [Serif]
+    \definefontsynonym [SerifItalic]      [Serif]
+    \definefontsynonym [SerifSlanted]     [SerifItalic]
+    \definefontsynonym [SerifBoldItalic]  [Serif]
+    \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
+    \definefontsynonym [SerifCaps]        [Serif]
+\stopsetups
+
+\startsetups [font:fallback:sans]
+    \definefontsynonym [Sans]            [DefaultFont]
+    \definefontsynonym [SansBold]        [Sans]
+    \definefontsynonym [SansItalic]      [Sans]
+    \definefontsynonym [SansSlanted]     [SansItalic]
+    \definefontsynonym [SansBoldItalic]  [Sans]
+    \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
+    \definefontsynonym [SansCaps]        [Sans]
+\stopsetups
+
+\startsetups [font:fallback:mono]
+    \definefontsynonym [Mono]            [DefaultFont]
+    \definefontsynonym [MonoBold]        [Mono]
+    \definefontsynonym [MonoItalic]      [Mono]
+    \definefontsynonym [MonoSlanted]     [MonoItalic]
+    \definefontsynonym [MonoBoldItalic]  [Mono]
+    \definefontsynonym [MonoBoldSlanted] [MonoBoldItalic]
+    \definefontsynonym [MonoCaps]        [Mono]
+\stopsetups
+
+\startsetups [font:allbold:serif]
+    \definefontsynonym [Serif]            [SerifBold]
+    \definefontsynonym [SerifItalic]      [SerifBoldItalic]
+    \definefontsynonym [SerifSlanted]     [SerifBoldSlanted]
+    %definefontsynonym [SerifCaps]        [SerifBold]
+\stopsetups
+
+\startsetups [font:allbold:sans]
+    \definefontsynonym [Sans]            [SansBold]
+    \definefontsynonym [SansItalic]      [SansBoldItalic]
+    \definefontsynonym [SansSlanted]     [SansBoldSlanted]
+    %definefontsynonym [SansCaps]        [SansBold]
+\stopsetups
+
+\starttypescript [serif] [simple] [name]
+    \definefontsynonym [Serif]            [Simple]
+    \definefontsynonym [SerifBold]        [Serif]
+    \definefontsynonym [SerifItalic]      [Serif]
+    \definefontsynonym [SerifSlanted]     [Serif]
+    \definefontsynonym [SerifBoldItalic]  [Serif]
+    \definefontsynonym [SerifBoldSlanted] [Serif]
+    \definefontsynonym [SerifCaps]        [Serif]
+\stoptypescript
+
+\starttypescript [sans] [simple] [name]
+    \definefontsynonym [Sans]            [Simple]
+    \definefontsynonym [SansBold]        [Sans]
+    \definefontsynonym [SansItalic]      [Sans]
+    \definefontsynonym [SansSlanted]     [Sans]
+    \definefontsynonym [SansBoldItalic]  [Sans]
+    \definefontsynonym [SansBoldSlanted] [Sans]
+    \definefontsynonym [SansCaps]        [Sans]
+\stoptypescript
+
+\starttypescript [mono] [simple] [name]
+    \definefontsynonym [Mono]            [Simple]
+    \definefontsynonym [MonoBold]        [Mono]
+    \definefontsynonym [MonoItalic]      [Mono]
+    \definefontsynonym [MonoSlanted]     [Mono]
+    \definefontsynonym [MonoBoldItalic]  [Mono]
+    \definefontsynonym [MonoBoldSlanted] [Mono]
+    \definefontsynonym [MonoCaps]        [Mono]
+\stoptypescript
+
+\endinput

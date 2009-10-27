@@ -366,16 +366,15 @@ end
 
 function document.setups.csname(ek,int)
     local cs = ""
-    local at = ek.at
+    local at = ek.at or { }
     if at.type == 'environment' then
         cs = translate("start",int,true) .. cs
     end
-    for r, d, k in xml.elements(ek,'cd:sequence/(cd:string|variable)') do
-        local dk = d[k]
-        if dk.tg == "string" then
-            cs = cs .. dk.at.value
+    for e in xml.collected(ek,'cd:sequence/(cd:string|variable)') do
+        if e.tg == "string" then
+            cs = cs .. e.at.value
         else
-            cs = cs .. dk.at.value -- to be translated
+            cs = cs .. e.at.value -- to be translated
         end
     end
     return cs
@@ -388,9 +387,8 @@ function document.setups.names()
         names = { }
         local name = document.setups.name
         local csname = document.setups.csname
-        for r, d, k in xml.elements(current.root,'cd:command') do
-            local dk = d[k]
-            names[#names+1] = { dk.at.name, csname(dk,int) }
+        for e in xml.collected(current.root,'cd:command') do
+            names[#names+1] = { e.at.name, csname(e,int) }
         end
         table.sort(names, function(a,b) return a[2]:lower() < b[2]:lower() end)
         current.names = names
@@ -420,10 +418,9 @@ function document.setups.showall()
     local current = document.setups.current
     if current.root then
         local list = { }
-        xml.each_element(current.root,"cd:command", function(r,d,t)
-            local ek = d[t]
-            list[document.setups.name(ek)] = ek
-        end )
+        for e in xml.collected(current.root,"cd:command") do
+            list[document.setups.name(e)] = e
+        end
         for k,v in ipairs(table.sortedkeys(list)) do
             xml.sprint(list[v])
         end
@@ -442,9 +439,9 @@ end
 function document.setups.collect(name,int,lastmode)
     local current = document.setups.current
     local formats = document.setups.formats
-    local command = xml.filter(current.root,format("cd:command[@name='%s']",name))
+    local command = xml.filter(current.root,format("cd:command[@name='%s']/first()",name))
     if command then
-        local attributes = command.at
+        local attributes = command.at or { }
         local data = {
             command = command,
             category = attributes.category or "",
@@ -539,7 +536,7 @@ function document.setups.collect(name,int,lastmode)
             end
             parameters[#parameters+1] = formats.parameter:format("<br/>","","")
         end
-        data.parameters = parameters
+        data.parameters = parameters or { }
         data.mode = formats.modes[lastmode or 1]
         return data
     else

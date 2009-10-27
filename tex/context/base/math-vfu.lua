@@ -542,7 +542,6 @@ function fonts.vf.math.define(specification,set)
     main.has_italic = true
     main.type = "virtual" -- not needed
     mathematics.scaleparameters(main,main,1)
---~ main.name = nil -- crashes
     main.nomath = false
     return main
 end
@@ -1632,8 +1631,8 @@ mathematics.make_font ( "utopia-math", {
 } )
 
 mathematics.make_font ( "hvmath-math", {
-    { name = "texgyreheros-regular.otf", features = "virtualmath", main = true },
-    { name = "hvrm108r.tfm", vector="tex-mr", features = "virtualmath", main = true },
+    { name = "file:texgyreheros-regular.otf", features = "virtualmath", main = true },
+    { name = "hvrm108r.tfm", vector="tex-mr" },
     { name = "hvmi10.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "hvsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "hvex10.tfm", vector = "tex-ex", extension = true },

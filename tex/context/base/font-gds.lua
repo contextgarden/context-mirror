@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['font-gds'] = {
     license   = "see context related readme files"
 }
 
-local flattened= table.flattened
 local type, next = type, next
 local gmatch = string.gmatch
 
@@ -37,6 +36,10 @@ local function getgoodies(filename) -- maybe a merge is better
             data[filename] = false -- signal for not found
         else
             goodies = dofile(fullname) or false
+            for name, fnc in next, list do
+                fnc(goodies)
+            end
+            goodies.initialized = true
             data[filename] = goodies
         end
     end
@@ -60,18 +63,35 @@ function fonts.initializers.common.goodies(tfmdata,value)
         local ok = getgoodies(filename)
         if ok then
             goodies[#goodies+1] = ok
-            if not ok.initialized then
-                for name, fnc in next, list do
-                    fnc(ok,tfmdata)
-                end
-                ok.initialized = true
-            end
         end
     end
     tfmdata.goodies = goodies -- shared ?
 end
 
 -- featuresets
+
+local function flattened(t,tt)
+    -- first set value dominates
+    local tt = tt or { }
+    for i=1,#t do
+        local ti = t[i]
+        if type(ti) == "table" then
+            flattened(ti,tt)
+        elseif tt[ti] == nil then
+            tt[ti] = true
+        end
+    end
+    for k, v in next, t do
+        if type(k) ~= "number" then
+            if type(v) == "table" then
+                flattened(v,tt)
+            elseif tt[k] == nil then
+                tt[k] = v
+            end
+        end
+    end
+    return tt
+end
 
 local function initialize(goodies,tfmdata)
     local featuresets = goodies.featuresets
