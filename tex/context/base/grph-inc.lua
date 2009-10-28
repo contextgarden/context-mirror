@@ -39,6 +39,7 @@ local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
 
 local trace_figures = false  trackers.register("figures.locating",function(v) trace_figures = v end)
+local trace_bases   = false  trackers.register("figures.bases",   function(v) trace_bases   = v end)
 
 --- some extra img functions ---
 
@@ -811,10 +812,7 @@ local bases = figures.bases
 
 function bases.use(basename)
     if basename == "reset" then
-        bases.list = { }
-        bases.used = { }
-        bases.found = { }
-        bases.enabled = false
+        bases.list, bases.used, bases.found, bases.enabled = { }, { }, { }, false
     else
         basename = file.addsuffix(basename,"xml")
         if not bases.used[basename] then
@@ -825,11 +823,17 @@ function bases.use(basename)
                 bases.enabled = true
                 xml.registerns("rlx","http://www.pragma-ade.com/schemas/rlx") -- we should be able to do this per xml file
             end
+            if trace_bases then
+                commands.writestatus("figures","registering base '%s'",basename)
+            end
         end
     end
 end
 
 function bases.find(basename,askedlabel)
+    if trace_bases then
+        commands.writestatus("figures","checking for '%s' in base '%s'",askedlabel,basename)
+    end
     basename = file.addsuffix(basename,"xml")
     local t = bases.found[askedlabel]
     if t == nil then
@@ -842,6 +846,9 @@ function bases.find(basename,askedlabel)
                 if io.exists(xmlfile) then
                     base[2] = xmlfile
                     base[3] = xml.load(xmlfile)
+                    if trace_bases then
+                        commands.writestatus("figures","base '%s' loaded",xmlfile)
+                    end
                     break
                 end
             end
@@ -858,8 +865,14 @@ function bases.find(basename,askedlabel)
                         page = page,
                     }
                     bases.found[askedlabel] = t
+                    if trace_bases then
+                        commands.writestatus("figures","figure '%s' found in base '%s'",askedlabel,base[2])
+                    end
                     return t
                 end
+            end
+            if trace_bases and not t then
+                commands.writestatus("figures","figure '%s' not found in base '%s'",askedlabel,base[2])
             end
         end
     end

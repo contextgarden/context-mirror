@@ -68,31 +68,16 @@
 
 -- generic functions
 
+props = props or { } setmetatable(props,{ __index = function(k,v) props[k] = "unknown" return "unknown" end } )
+
+local byte, lower, upper, gsub, sub, find, rep, match, gmatch = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch
+local sort, concat = table.sort, table.concat
+
 local crlf = "\n"
 
 function traceln(str)
     trace(str .. crlf)
     io.flush()
-end
-
-function table.found(tab, str)
-    local l, r, p
-    if #str == 0 then
-        return false
-    else
-        l, r = 1, #tab
-        while l <= r do
-            p = math.floor((l+r)/2)
-            if str < tab[p] then
-                r = p - 1
-            elseif str > tab[p] then
-                l = p + 1
-            else
-                return true
-            end
-        end
-        return false
-    end
 end
 
 function string:grab(delimiter)
@@ -103,10 +88,6 @@ function string:grab(delimiter)
     return list
 end
 
-function string:is_empty()
-    return not self:find("%S")
-end
-
 function string:expand()
     return (self:gsub("ENV%((%w+)%)", os.envvar))
 end
@@ -115,24 +96,18 @@ function string:strip()
     return (self:gsub("^%s*(.-)%s*$", "%1"))
 end
 
-do
-
-    local lower, gsub, sub = string.lower, string.gsub, string.sub
-
-    function table.alphasort(list,i)
-        if i and i > 0 then
-            local function alphacmp(a,b)
-                return lower(gsub(sub(a,i),'0',' ')) < lower(gsub(sub(b,i),'0',' '))
-            end
-            table.sort(list,alphacmp)
-        else
-            local function alphacmp(a,b)
-                return a:lower() < b:lower()
-            end
-            table.sort(list,alphacmp)
+function table.alphasort(list,i)
+    if i and i > 0 then
+        local function alphacmp(a,b)
+            return lower(gsub(sub(a,i),'0',' ')) < lower(gsub(sub(b,i),'0',' '))
         end
+        sort(list,alphacmp)
+    else
+        local function alphacmp(a,b)
+            return lower(a) < lower(b)
+        end
+        sort(list,alphacmp)
     end
-
 end
 
 function io.exists(filename)
@@ -150,11 +125,11 @@ function os.envvar(str)
     if s ~= '' then
         return s
     end
-    s = os.getenv(str:upper())
+    s = os.getenv(upper(str))
     if s ~= '' then
         return s
     end
-    s = os.getenv(str:lower())
+    s = os.getenv(lower(str))
     if s ~= '' then
         return s
     end
@@ -217,9 +192,9 @@ function getfiletype()
         return 'tex'
     elseif editor.Lexer == SCLEX_XML then
         return 'xml'
-    elseif firstline:find("^%%") then
+    elseif find(firstline,"^%%") then
         return 'tex'
-    elseif firstline:find("^<%?xml") then
+    elseif find(firstline,"^<%?xml") then
         return 'xml'
     else
         return 'unknown'
@@ -233,7 +208,7 @@ function get_dir_list(mask)
     if props['PLAT_GTK'] and props['PLAT_GTK'] ~= "" then
         f = io.popen('ls -1 ' .. mask)
     else
-        mask = mask:gsub('/','\\')
+        mask = gsub(mask,'/','\\')
         local tmpfile = 'scite-ctx.tmp'
         local cmd = 'dir /b "' .. mask .. '" > ' .. tmpfile
         os.execute(cmd)
@@ -257,7 +232,7 @@ do
     print("loading scite-ctx.lua definition file\n")
     print("-  see scite-ctx.properties for configuring info\n")
     print("-  ctx.spellcheck.wordpath set to " .. props['ctx.spellcheck.wordpath'])
-    if (props['ctx.spellcheck.wordpath']:lower()):find("ctxspellpath") then
+    if find(lower(props['ctx.spellcheck.wordpath']),"ctxspellpath") then
         if os.getenv('ctxspellpath') then
             print("-  ctxspellpath set to " .. os.getenv('CTXSPELLPATH'))
         else
@@ -268,7 +243,7 @@ do
     print("\n-  ctx.wraptext.length is set to " .. props['ctx.wraptext.length'])
     if props['ctx.helpinfo'] ~= '' then
         print("\n-  key bindings:\n")
-        print(((string.strip(props['ctx.helpinfo'])):gsub("%s*\|%s*","\n")))
+        print((gsub(string.strip(props['ctx.helpinfo']),"%s*\|%s*","\n")))
     end
     print("\n-  recognized first lines:\n")
     print("xml   <?xml version='1.0' language='nl'")
@@ -280,7 +255,7 @@ end
 
 -- written while listening to Talk Talk
 
-local magicstring = string.rep("<ctx-crlf/>", 2)
+local magicstring = rep("<ctx-crlf/>", 2)
 
 function wrap_text()
 
@@ -315,14 +290,14 @@ function wrap_text()
 
     local replacement = { }
     local templine    = ''
-    local indentation = string.rep(' ',startcolumn)
+    local indentation = rep(' ',startcolumn)
     local selection   = editor:GetSelText()
 
-    selection = selection:gsub("[\n\r][\n\r]","\n")
-    selection = selection:gsub("\n\n+",' ' .. magicstring .. ' ')
-    selection = selection:gsub("^%s",'')
+    selection = gsub(selection,"[\n\r][\n\r]","\n")
+    selection = gsub(selection,"\n\n+",' ' .. magicstring .. ' ')
+    selection = gsub(selection,"^%s",'')
 
-    for snippet in selection:gmatch("%S+") do
+    for snippet in gmatch(selection,"%S+") do
         if snippet == magicstring then
             replacement[#replacement+1] = templine
             replacement[#replacement+1] = ""
@@ -338,13 +313,13 @@ function wrap_text()
     end
 
     replacement[#replacement+1] = templine
-    replacement[1] = replacement[1]:gsub("^%s+",'')
+    replacement[1] = gsub(replacement[1],"^%s+",'')
 
     if endcolumn == 0 then
         replacement[#replacement+1] = ""
     end
 
-    editor:ReplaceSel(table.concat(replacement,"\n"))
+    editor:ReplaceSel(concat(replacement,"\n"))
 
 end
 
@@ -361,11 +336,11 @@ function unwrap_text()
     startposition = editor.SelectionStart
     endposition   = editor.SelectionEnd
 
-    local magicstring = string.rep("<multiplelines/>", 2)
-    local selection   = string.gsub(editor:GetSelText(),"[\n\r][\n\r]+", ' ' .. magicstring .. ' ')
+    local magicstring = rep("<multiplelines/>", 2)
+    local selection   = gsub(editor:GetSelText(),"[\n\r][\n\r]+", ' ' .. magicstring .. ' ')
     local replacement = ''
 
-    for snippet in selection:gmatch("%S+") do
+    for snippet in gmatch(selection,"%S+") do
         if snippet == magicstring then
             replacement = replacement .. "\n"
         else
@@ -399,11 +374,11 @@ function sort_text()
     startposition = extend_to_start()
     endposition   = extend_to_end()
 
-    local selection = string.gsub(editor:GetSelText(), "%s*$", '')
+    local selection = gsub(editor:GetSelText(), "%s*$", '')
 
     list = string.grab(selection,"[^\n\r]+")
     table.alphasort(list, startcolumn)
-    local replacement = table.concat(list, "\n")
+    local replacement = concat(list, "\n")
 
     editor:GotoPos(startposition)
     editor:SetSel(startposition,endposition)
@@ -411,6 +386,26 @@ function sort_text()
     if endcolumn == 0 then replacement = replacement .. "\n" end
 
     editor:ReplaceSel(replacement)
+
+end
+
+function uncomment_xml()
+
+    local startposition = editor.SelectionStart
+    local endposition   = editor.SelectionEnd
+
+    if startposition == endposition then return end
+
+    local startposition = editor.SelectionStart
+    local endposition   = editor.SelectionEnd
+
+    local selection = gsub(editor:GetSelText(), "%<%!%-%-.-%-%-%>", '')
+
+    editor:GotoPos(startposition)
+    editor:SetSel(startposition,endposition)
+
+    editor:ReplaceSel(selection)
+    editor:GotoPos(startposition)
 
 end
 
@@ -432,25 +427,25 @@ function document_text()
     for i = editor:LineFromPosition(startposition), editor:LineFromPosition(endposition) do
         local str = editor:GetLine(i)
         if filetype == 'xml' then
-            if str:find("^<%!%-%- .* %-%->%s*$") then
-                replacement = replacement .. str:gsub("^<%!%-%- (.*) %-%->(%s*)$","%1\n")
-            elseif not str:is_empty() then
-                replacement = replacement .. '<!-- ' .. str:gsub("(%s*)$",'') .. " -->\n"
+            if find(str,"^<%!%-%- .* %-%->%s*$") then
+                replacement = replacement .. gsub(str,"^<%!%-%- (.*) %-%->(%s*)$","%1\n")
+            elseif find(str,"%S") then
+                replacement = replacement .. '<!-- ' .. gsub(str,"(%s*)$",'') .. " -->\n"
             else
                 replacement = replacement .. str
             end
         else
-            if str:find("^%%D%s+$") then
+            if find(str,"^%%D%s+$") then
                 replacement = replacement .. "\n"
-            elseif str:find("^%%D ") then
-                replacement = replacement .. str:gsub("^%%D ",'')
+            elseif find(str,"^%%D ") then
+                replacement = replacement .. gsub(str,"^%%D ",'')
             else
                 replacement = replacement .. '%D ' .. str
             end
         end
     end
 
-    editor:ReplaceSel(replacement:gsub("[\n\r]$",''))
+    editor:ReplaceSel(gsub(replacement,"[\n\r]$",''))
 
 end
 
@@ -467,10 +462,10 @@ function quote_text()
     end
 
     local replacement = editor:GetSelText()
-    replacement = replacement.gsub("\`\`(.-)\'\'", leftquotation .. "%1" .. rightquotation)
-    replacement = replacement.gsub("\"(.-)\"",     leftquotation .. "%1" .. rightquotation)
-    replacement = replacement.gsub("\`(.-)\'",     leftquote     .. "%1" .. rightquote    )
-    replacement = replacement.gsub("\'(.-)\'",     leftquote     .. "%1" .. rightquote    )
+    replacement = gsub(replacement,"\`\`(.-)\'\'", leftquotation .. "%1" .. rightquotation)
+    replacement = gsub(replacement,"\"(.-)\"",     leftquotation .. "%1" .. rightquotation)
+    replacement = gsub(replacement,"\`(.-)\'",     leftquote     .. "%1" .. rightquote    )
+    replacement = gsub(replacement,"\'(.-)\'",     leftquote     .. "%1" .. rightquote    )
     editor:ReplaceSel(replacement)
 
 end
@@ -480,9 +475,9 @@ function compound_text()
     local filetype = getfiletype()
 
     if filetype == 'xml' then
-        editor:ReplaceSel(string.gsub(editor:GetSelText(),"(>[^<%-][^<%-]+)([-\/])(%w%w+)","%1<compound token='%2'/>%3"))
+        editor:ReplaceSel(gsub(editor:GetSelText(),"(>[^<%-][^<%-]+)([-\/])(%w%w+)","%1<compound token='%2'/>%3"))
     else
-        editor:ReplaceSel(string.gsub(editor:GetSelText(),"([^\|])([-\/]+)([^\|])","%1|%2|%3"))
+        editor:ReplaceSel(gsub(editor:GetSelText(),"([^\|])([-\/]+)([^\|])","%1|%2|%3"))
     end
 
 end
@@ -517,7 +512,7 @@ local worddone = 0
 --     local command = "kpsewhich" .. progflag .. typeflag .. " " .. filename .. " > " .. tempname
 --     os.execute(command)
 --     for line in io.lines(tempname) do
---         return string.gsub(line, "\s*$", '')
+--         return gsub(line, "\s*$", '')
 --     end
 -- end
 
@@ -543,9 +538,9 @@ function check_text()
     if props["ctx.spellcheck.language"] == 'auto' then
         if filetype == 'tex' then
             -- % version =1.0 language=uk
-            firstline = firstline:gsub("^%%%s*",'')
-            firstline = firstline:gsub("%s*$",'')
-            for key, val in firstline:gmatch("(%w+)=(%w+)") do
+            firstline = gsub(firstline,"^%%%s*",'')
+            firstline = gsub(firstline,"%s*$",'')
+            for key, val in gmatch(firstline,"(%w+)=(%w+)") do
                 if key == "language" then
                     language = val
                     traceln("auto document language "  .. "'" .. language .. "' (tex)")
@@ -554,9 +549,9 @@ function check_text()
             skipfirst = true
         elseif filetype == 'xml' then
             -- <?xml version='1.0' language='uk' ?>
-            firstline = firstline:gsub("^%<%?xml%s*", '')
-            firstline = firstline:gsub("%s*%?%>%s*$", '')
-            for key, val in firstline:gmatch("(%w+)=[\"\'](.-)[\"\']") do
+            firstline = gsub(firstline,"^%<%?xml%s*", '')
+            firstline = gsub(firstline,"%s*%?%>%s*$", '')
+            for key, val in gmatch(firstline,"(%w+)=[\"\'](.-)[\"\']") do
                 if key == "language" then
                     language = val
                     traceln("auto document language "  .. "'" .. language .. "' (xml)")
@@ -573,15 +568,15 @@ function check_text()
 
     if fname ~= '' and fname ~= wordfile then
         wordfile, worddone, wordlist = fname, 0, {}
-        for filename in wordfile:gmatch("[^%,]+") do
+        for filename in gmatch(wordfile,"[^%,]+") do
             if wordpath ~= '' then
                 filename = string.expand(wordpath) .. '/' .. filename
             end
             if io.exists(filename) then
                 traceln("loading " .. filename)
                 for line in io.lines(filename) do
-                    if not line:find("^[\%\#\-]") then
-                        str = line:gsub("%s*$", '')
+                    if not find(line,"^[\%\#\-]") then
+                        str = gsub(line,"%s*$", '')
                         rawset(wordlist,str,true)
                         worddone = worddone + 1
                     end
@@ -612,7 +607,7 @@ function check_text()
             elseif ch == wordskip then
                 skip = true
             end
-            if ch:find("%w") and not ch:find("%d") then
+            if find(ch,"%w") and not find(ch,"%d") then
                 if not skip then
                     if ok then
                         endpos = k
@@ -627,7 +622,7 @@ function check_text()
                 if len >= wordsize then
                     snippet = editor:textrange(startpos,endpos+1)
                     i = i + 1
-                    if wordlist[snippet] or wordlist[snippet:lower()] then -- table.found(wordlist,snippet)
+                    if wordlist[snippet] or wordlist[lower(snippet)] then
                         j = j + 1
                     else
                         editor:StartStyling(startpos,INDICS_MASK)
@@ -660,19 +655,19 @@ function UserListShow(menutrigger, menulist)
     menuactions = {}
     for i=1, #list do
         if list[i] ~= '' then
-            for key, val in list[i]:gmatch("%s*(.+)=(.+)%s*") do
+            for key, val in gmatch(list[i],"%s*(.+)=(.+)%s*") do
                 menuentries[#menuentries+1] = key
                 menuactions[key] = val
             end
         end
     end
-    local menustring = table.concat(menuentries,'|')
+    local menustring = concat(menuentries,'|')
     if menustring == "" then
         traceln("There are no templates defined for this file type.")
     else
-        editor.AutoCSeparator = string.byte('|')
+        editor.AutoCSeparator = byte('|')
         editor:UserListShow(menutrigger,menustring)
-        editor.AutoCSeparator = string.byte(' ')
+        editor.AutoCSeparator = byte(' ')
     end
 end
 
@@ -693,7 +688,7 @@ function show_menu(menulist)
 end
 
 function process_menu(action)
-    if not action:find("%(%)$") then
+    if not find(action,"%(%)$") then
         assert(loadstring(action .. "()"))()
     else
         assert(loadstring(action))()
@@ -731,7 +726,7 @@ function insert_template(templatelist)
         if not ctx_path_done[path] or rescan then
             local pattern = "*.*"
             for i, pathname in ipairs(ctx_template_paths) do
-                print("scanning " .. path:gsub("\\","/") .. "/" .. pathname)
+                print("scanning " .. gsub(path,"\\","/") .. "/" .. pathname)
                 ctx_path_name[path] = pathname
                 ctx_path_list[path] = get_dir_list(pathname .. "/" .. pattern)
                 if ctx_list_loaded(path) then
@@ -750,9 +745,9 @@ function insert_template(templatelist)
             local pattern = "%." .. suffix .. "$"
             local n = 0
             for j, filename in ipairs(ctx_path_list[path]) do
-                if filename:find(pattern) then
+                if find(filename,pattern) then
                     n = n + 1
-                    local menuname = filename:gsub("%..-$","")
+                    local menuname = gsub(filename,"%..-$","")
                     if ctx_template_list ~= "" then
                         ctx_template_list = ctx_template_list .. "|"
                     end
@@ -789,7 +784,7 @@ function process_template_one(action)
     if ctx_auto_templates then
         local f = io.open(action,"r")
         if f then
-            text = string.gsub(f:read("*all"),"\n$","")
+            text = gsub(f:read("*all"),"\n$","")
             f:close()
         else
             print("unable to auto load template file " .. text)
@@ -806,7 +801,7 @@ function process_template_one(action)
         else
             local f = io.open(text,"r")
             if f then
-                text = string.gsub(f:read("*all"),"\n$","")
+                text = gsub(f:read("*all"),"\n$","")
                 f:close()
             else
                 print("unable to load template file " .. text)
@@ -815,9 +810,9 @@ function process_template_one(action)
         end
     end
     if text then
-        text = text:gsub("\\n","\n")
-        local pos = text:find("%?")
-        text = text:gsub("%?","")
+        text = gsub(text,"\\n","\n")
+        local pos = find(text,"%?")
+        text = gsub(text,"%?","")
         editor:insert(editor.CurrentPos,text)
         if pos then
             editor.CurrentPos = editor.CurrentPos + pos - 1

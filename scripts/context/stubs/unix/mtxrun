@@ -1919,6 +1919,7 @@ function file.collapse_path(str)
     return str
 end
 
+--~ print(file.collapse_path("/a"))
 --~ print(file.collapse_path("a/./b/.."))
 --~ print(file.collapse_path("a/aa/../b/bb"))
 --~ print(file.collapse_path("a/../.."))
@@ -3517,8 +3518,9 @@ element.</p>
 
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
-local stack, top, dt, at, xmlns, errorstr, entities = {}, {}, {}, {}, {}, nil, {}
+local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
 local strip, cleanup, utfize, resolve = false, false, false, false
+local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
 
@@ -3638,8 +3640,6 @@ local function attribute_specification_error(str)
     return str
 end
 
-local dcache, hcache, acache = { }, { }, { }
-
 function xml.unknown_dec_entity_format(str) return format("&%s;",  str) end
 function xml.unknown_hex_entity_format(str) return format("&#x%s;",str) end
 function xml.unknown_any_entity_format(str) return format("&%s;",  str) end
@@ -3659,12 +3659,13 @@ local function handle_hex_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &#x%s;",str)
             end
-            h = "&#" .. str .. ";"
+            h = "&#c" .. str .. ";"
         end
         hcache[str] = h
     end
     return h
 end
+
 local function handle_dec_entity(str)
     local d = dcache[str]
     if not d then
@@ -3680,30 +3681,77 @@ local function handle_dec_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &#%s;",str)
             end
-            d = "&" .. str .. ";"
+            d = "&#" .. str .. ";"
         end
         dcache[str] = d
     end
     return d
 end
+
+-- one level expansion (simple case)
+
+local function fromhex(s)
+    local n = tonumber(s,16)
+    if n then
+        return utfchar(n)
+    else
+        return format("h:%s",s), true
+    end
+end
+
+local function fromdec(s)
+    local n = tonumber(s)
+    if n then
+        return utfchar(n)
+    else
+        return format("d:%s",s), true
+    end
+end
+
+local P, S, R, C, V, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cs
+
+local rest = (1-P(";"))^0
+local many = P(1)^0
+
+local parsedentity =
+    P("&") * (P("#x")*(rest/fromhex) + P("#")*(rest/fromdec)) * P(";") * P(-1) +
+             (P("#x")*(many/fromhex) + P("#")*(many/fromdec))
+
+xml.parsedentitylpeg = parsedentity
+
 local function handle_any_entity(str)
     if resolve then
-        local a = entities[str] -- per instance !
+        local a = acache[str] -- per instance ! todo
         if not a then
-            a = acache[str]
-            if not a then
-                if trace_entities then
-                    logs.report("xml","ignoring entity &%s;",str)
-                else
-                    -- can be defined in a global mapper and intercepted elsewhere
-                    -- as happens in lxml-tex.lua
-                end
-                a = xml.unknown_any_entity_format(str) or ""
-                acache[str] = a
+            if type(resolve) == "function" then
+                a = resolve(str) or entities[str]
+            else
+                a = entities[str]
             end
+            if a then
+                if trace_entities then
+                    logs.report("xml","resolved entity &%s; -> %s (internal)",str,a)
+                end
+                a = parsedentity:match(a) or a
+            else
+                if xml.unknown_any_entity_format then
+                    a = xml.unknown_any_entity_format(str) or ""
+                end
+                if a then
+                    if trace_entities then
+                        logs.report("xml","resolved entity &%s; -> %s (external)",str,a)
+                    end
+                else
+                    if trace_entities then
+                        logs.report("xml","keeping entity &%s;",str)
+                    end
+                    a = "&" .. str .. ";"
+                end
+            end
+            acache[str] = a
         elseif trace_entities then
             if not acache[str] then
-                logs.report("xml","converting entity &%s; into %s",str,r)
+                logs.report("xml","converting entity &%s; into %s",str,a)
                 acache[str] = a
             end
         end
@@ -3720,8 +3768,6 @@ local function handle_any_entity(str)
         return a
     end
 end
-
-local P, S, R, C, V, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cs
 
 local space            = S(' \r\n\t')
 local open             = P('<')
@@ -3744,12 +3790,11 @@ local utfbom           = P('\000\000\254\255') + P('\255\254\000\000') +
 local spacing          = C(space^0)
 
 local entitycontent    = (1-open-semicolon)^0
-local entity           = ampersand/"" * (
-                            P("#")/"" * (
+local parsedentity     = P("#")/"" * (
                                 P("x")/"" * (entitycontent/handle_hex_entity) +
                                             (entitycontent/handle_dec_entity)
                             ) +             (entitycontent/handle_any_entity)
-                         ) * (semicolon/"")
+local entity           = ampersand/"" * parsedentity * (semicolon/"")
 
 local text_unparsed    = C((1-open)^1)
 local text_parsed      = Cs(((1-open-ampersand)^1 + entity)^1)
@@ -3848,7 +3893,8 @@ local function xmlconvert(data, settings)
     utfize = settings.utfize_entities
     resolve = settings.resolve_entities
     cleanup = settings.text_cleanup
-    stack, top, at, xmlns, errorstr, result, entities = {}, {}, {}, {}, nil, nil, settings.entities or {}
+    stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
+    acache, hcache, dcache = { }, { }, { } -- not stored
     reported_attribute_errors = { }
     if settings.parent_root then
         mt = getmetatable(settings.parent_root)
@@ -4572,9 +4618,9 @@ apply_axis['descendant-or-self'] = function(list)
     local collected = { }
     for l=1,#list do
         local ll = list[l]
-if ll.special ~= true then -- catch double root
-        collected[#collected+1] = ll
-end
+        if ll.special ~= true then -- catch double root
+            collected[#collected+1] = ll
+        end
         collect(ll,collected)
     end
     return collected
@@ -4663,7 +4709,7 @@ local function apply_nodes(list,directive,nodes)
                 return { }
             end
         else
-            local collected = { }
+            local collected, m, p = { }, 0, nil
             if not nns then -- only check tag
                 for l=1,#list do
                     local ll = list[l]
@@ -4671,10 +4717,12 @@ local function apply_nodes(list,directive,nodes)
                     if ltg then
                         if directive then
                             if ntg == ltg then
-                                collected[#collected+1] = ll
+                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                collected[#collected+1], ll.mi = ll, m
                             end
                         elseif ntg ~= ltg then
-                            collected[#collected+1] = ll
+                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            collected[#collected+1], ll.mi = ll, m
                         end
                     end
                 end
@@ -4685,10 +4733,12 @@ local function apply_nodes(list,directive,nodes)
                     if lns then
                         if directive then
                             if lns == nns then
-                                collected[#collected+1] = ll
+                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                collected[#collected+1], ll.mi = ll, m
                             end
                         elseif lns ~= nns then
-                            collected[#collected+1] = ll
+                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            collected[#collected+1], ll.mi = ll, m
                         end
                     end
                 end
@@ -4701,10 +4751,12 @@ local function apply_nodes(list,directive,nodes)
                         local ok = ltg == ntg and lns == nns
                         if directive then
                             if ok then
-                                collected[#collected+1] = ll
+                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                collected[#collected+1], ll.mi = ll, m
                             end
                         elseif not ok then
-                            collected[#collected+1] = ll
+                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            collected[#collected+1], ll.mi = ll, m
                         end
                     end
                 end
@@ -4712,7 +4764,7 @@ local function apply_nodes(list,directive,nodes)
             return collected
         end
     else
-        local collected = { }
+        local collected, m, p = { }, 0, nil
         for l=1,#list do
             local ll = list[l]
             local ltg = ll.tg
@@ -4728,10 +4780,12 @@ local function apply_nodes(list,directive,nodes)
                 end
                 if directive then
                     if ok then
-                        collected[#collected+1] = ll
+                        local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                        collected[#collected+1], ll.mi = ll, m
                     end
                 elseif not ok then
-                    collected[#collected+1] = ll
+                    local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                    collected[#collected+1], ll.mi = ll, m
                 end
             end
         end
@@ -4752,31 +4806,29 @@ end
 
 local P, V, C, Cs, Cc, Ct, R, S, Cg, Cb = lpeg.P, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cb
 
-local spaces       = S(" \n\r\t\f")^0
-
-local lp_space     = S(" \n\r\t\f")
-local lp_any       = P(1)
-
-local lp_noequal   = P("!=") / "~=" + P("<=") + P(">=") + P("==")
-local lp_doequal   = P("=")  / "=="
-local lp_or        = P("|")  / " or "
-local lp_and       = P("&")  / " and "
+local spaces     = S(" \n\r\t\f")^0
+local lp_space   = S(" \n\r\t\f")
+local lp_any     = P(1)
+local lp_noequal = P("!=") / "~=" + P("<=") + P(">=") + P("==")
+local lp_doequal = P("=")  / "=="
+local lp_or      = P("|")  / " or "
+local lp_and     = P("&")  / " and "
 
 local lp_builtin = P (
         P("first")        / "1" +
         P("last")         / "#list" +
         P("position")     / "l" +
         P("rootposition") / "order" +
-        P("index")        / "ll.ni" +
+        P("index")        / "(ll.ni or 1)" +
+        P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +
         P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
         P("tag")          / "ll.tg" +
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
-local lp_attribute    = (P("@") + P("attribute::"))    / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
-local lp_fastpos      = ((R("09","--","++")^1 * P(-1)) / function(s) return "l==" .. s end)
-
+local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
+local lp_fastpos   = ((R("09","--","++")^1 * P(-1)) / function(s) return "l==" .. s end)
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
 
 local lp_lua_function  = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
@@ -4797,9 +4849,9 @@ local noparent = 1 - (lparent+rparent)
 local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
 local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
-local lp_child  = Cc("expr.child(e,'") * R("az","AZ","--","__")^1 * Cc("')")
-local lp_string = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
-local lp_content= (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
+local lp_child   = Cc("expr.child(e,'") * R("az","AZ","--","__")^1 * Cc("')")
+local lp_string  = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
+local lp_content = (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
 
 local cleaner
 
@@ -4941,7 +4993,9 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
 
     protocol             = Cg(V("letters"),"protocol") * P("://") + Cg(Cc(nil),"protocol"),
 
-    step                 = (V("shortcuts") + V("axis") * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
+ -- the / is needed for // as descendant or self is somewhat special
+ -- step                 = (V("shortcuts") + V("axis") * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
+    step                 = ((V("shortcuts") + P("/") + V("axis")) * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
 
     axis                 = V("descendant") + V("child") + V("parent") + V("self") + V("root") + V("ancestor") +
                            V("descendant_or_self") + V("following") + V("following_sibling") +
@@ -4956,13 +5010,14 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
 
     shortcuts            = V("shortcuts_a") * (spaces * "/" * spaces * V("shortcuts_a"))^0,
 
-    s_descendant_or_self = P("/")  * Cc(register_descendant_or_self),
-    s_descendant         = P("**") * Cc(register_descendant),
-    s_child              = P("*")  * Cc(register_child     ),
-    s_parent             = P("..") * Cc(register_parent    ),
-    s_self               = P("." ) * Cc(register_self      ),
-    s_root               = P("^^") * Cc(register_root      ),
-    s_ancestor           = P("^")  * Cc(register_ancestor  ),
+    s_descendant_or_self = (P("***/") + P("/"))  * Cc(register_descendant_or_self), --- *** is a bonus
+ -- s_descendant_or_self = P("/")                * Cc(register_descendant_or_self),
+    s_descendant         = P("**")               * Cc(register_descendant),
+    s_child              = P("*")  * #(1-P(":")) * Cc(register_child     ),
+    s_parent             = P("..")               * Cc(register_parent    ),
+    s_self               = P("." )               * Cc(register_self      ),
+    s_root               = P("^^")               * Cc(register_root      ),
+    s_ancestor           = P("^")                * Cc(register_ancestor  ),
 
     descendant           = P("descendant::")         * Cc(register_descendant         ),
     child                = P("child::")              * Cc(register_child              ),
@@ -5154,7 +5209,7 @@ local function traced_apply(list,parsed,nofparsed)
             logs.report("lpath", "% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
         elseif kind == "expression" then
             collected = apply_expression(collected,pi.evaluator,i)
-            logs.report("lpath", "% 10i : ex : %s",(collected and #collected) or 0,pi.expression)
+            logs.report("lpath", "% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
         elseif kind == "finalizer" then
             collected = pi.finalizer(collected)
             logs.report("lpath", "% 10i : fi : %s : %s(%s)",(collected and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
@@ -6091,7 +6146,7 @@ end
 
 local function text(collected)
     if collected then
-        return xmltostring(collected[1]) -- only first as we cannot concat function
+        return xmltostring(collected[1].dt) -- only first as we cannot concat function
     else
         return ""
     end

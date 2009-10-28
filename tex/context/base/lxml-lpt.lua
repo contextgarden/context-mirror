@@ -187,9 +187,9 @@ apply_axis['descendant-or-self'] = function(list)
     local collected = { }
     for l=1,#list do
         local ll = list[l]
-if ll.special ~= true then -- catch double root
-        collected[#collected+1] = ll
-end
+        if ll.special ~= true then -- catch double root
+            collected[#collected+1] = ll
+        end
         collect(ll,collected)
     end
     return collected
@@ -278,7 +278,7 @@ local function apply_nodes(list,directive,nodes)
                 return { }
             end
         else
-            local collected = { }
+            local collected, m, p = { }, 0, nil
             if not nns then -- only check tag
                 for l=1,#list do
                     local ll = list[l]
@@ -286,10 +286,12 @@ local function apply_nodes(list,directive,nodes)
                     if ltg then
                         if directive then
                             if ntg == ltg then
-                                collected[#collected+1] = ll
+                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                collected[#collected+1], ll.mi = ll, m
                             end
                         elseif ntg ~= ltg then
-                            collected[#collected+1] = ll
+                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            collected[#collected+1], ll.mi = ll, m
                         end
                     end
                 end
@@ -300,10 +302,12 @@ local function apply_nodes(list,directive,nodes)
                     if lns then
                         if directive then
                             if lns == nns then
-                                collected[#collected+1] = ll
+                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                collected[#collected+1], ll.mi = ll, m
                             end
                         elseif lns ~= nns then
-                            collected[#collected+1] = ll
+                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            collected[#collected+1], ll.mi = ll, m
                         end
                     end
                 end
@@ -316,10 +320,12 @@ local function apply_nodes(list,directive,nodes)
                         local ok = ltg == ntg and lns == nns
                         if directive then
                             if ok then
-                                collected[#collected+1] = ll
+                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                collected[#collected+1], ll.mi = ll, m
                             end
                         elseif not ok then
-                            collected[#collected+1] = ll
+                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            collected[#collected+1], ll.mi = ll, m
                         end
                     end
                 end
@@ -327,7 +333,7 @@ local function apply_nodes(list,directive,nodes)
             return collected
         end
     else
-        local collected = { }
+        local collected, m, p = { }, 0, nil
         for l=1,#list do
             local ll = list[l]
             local ltg = ll.tg
@@ -343,10 +349,12 @@ local function apply_nodes(list,directive,nodes)
                 end
                 if directive then
                     if ok then
-                        collected[#collected+1] = ll
+                        local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                        collected[#collected+1], ll.mi = ll, m
                     end
                 elseif not ok then
-                    collected[#collected+1] = ll
+                    local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                    collected[#collected+1], ll.mi = ll, m
                 end
             end
         end
@@ -380,7 +388,8 @@ local lp_builtin = P (
         P("last")         / "#list" +
         P("position")     / "l" +
         P("rootposition") / "order" +
-        P("index")        / "ll.ni" +
+        P("index")        / "(ll.ni or 1)" +
+        P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +
         P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
         P("tag")          / "ll.tg" +
@@ -570,14 +579,14 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
 
     shortcuts            = V("shortcuts_a") * (spaces * "/" * spaces * V("shortcuts_a"))^0,
 
-    s_descendant_or_self = (P("***/") + P("/")) * Cc(register_descendant_or_self), --- *** is a bonus
- -- s_descendant_or_self = P("/")  * Cc(register_descendant_or_self),
-    s_descendant         = P("**") * Cc(register_descendant),
-    s_child              = P("*")  * Cc(register_child     ),
-    s_parent             = P("..") * Cc(register_parent    ),
-    s_self               = P("." ) * Cc(register_self      ),
-    s_root               = P("^^") * Cc(register_root      ),
-    s_ancestor           = P("^")  * Cc(register_ancestor  ),
+    s_descendant_or_self = (P("***/") + P("/"))  * Cc(register_descendant_or_self), --- *** is a bonus
+ -- s_descendant_or_self = P("/")                * Cc(register_descendant_or_self),
+    s_descendant         = P("**")               * Cc(register_descendant),
+    s_child              = P("*")  * #(1-P(":")) * Cc(register_child     ),
+    s_parent             = P("..")               * Cc(register_parent    ),
+    s_self               = P("." )               * Cc(register_self      ),
+    s_root               = P("^^")               * Cc(register_root      ),
+    s_ancestor           = P("^")                * Cc(register_ancestor  ),
 
     descendant           = P("descendant::")         * Cc(register_descendant         ),
     child                = P("child::")              * Cc(register_child              ),
@@ -769,7 +778,7 @@ local function traced_apply(list,parsed,nofparsed)
             logs.report("lpath", "% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
         elseif kind == "expression" then
             collected = apply_expression(collected,pi.evaluator,i)
-            logs.report("lpath", "% 10i : ex : %s",(collected and #collected) or 0,pi.expression)
+            logs.report("lpath", "% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
         elseif kind == "finalizer" then
             collected = pi.finalizer(collected)
             logs.report("lpath", "% 10i : fi : %s : %s(%s)",(collected and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")

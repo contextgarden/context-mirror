@@ -11,7 +11,7 @@ local texcount, format = tex.count, string.format
 local ctxcatcodes = tex.ctxcatcodes
 local texsprint, texwrite = tex.sprint, tex.write
 
-local trace_counters = false  trackers.register("structure.counters", function(v) trace_counters = v end)
+local trace_pages = false  trackers.register("structure.pages", function(v) trace_pages = v end)
 
 structure.pages  = structure.pages      or { }
 
@@ -42,8 +42,8 @@ local specification = { } -- to be checked
 function pages.save(prefixdata,numberdata)
     local realpage, userpage = texcount.realpageno, texcount.userpageno
     if realpage > 0 then
-        if trace_counters then
-            logs.report("counters","saving page %s.%s",realpage,userpage)
+        if trace_pages then
+            logs.report("pages","saving page %s.%s",realpage,userpage)
         end
         local data = {
             number = userpage,
@@ -55,8 +55,8 @@ function pages.save(prefixdata,numberdata)
         if not collected[realpage] then
             collected[realpage] = data
         end
-    elseif trace_counters then
-        logs.report("counters","not saving page %s.%s",realpage,userpage)
+    elseif trace_pages then
+        logs.report("pages","not saving page %s.%s",realpage,userpage)
     end
 end
 
@@ -66,8 +66,8 @@ function structure.counters.specials.userpage()
         local t = tobesaved[r]
         if t then
             t.number = texcount.userpageno
-            if trace_counters then
-                logs.report("counters","forcing pagenumber of realpage %s to %s",r,t.number)
+            if trace_pages then
+                logs.report("pages","forcing pagenumber of realpage %s to %s",r,t.number)
             end
         end
     end

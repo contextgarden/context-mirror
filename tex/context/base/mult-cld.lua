@@ -157,16 +157,18 @@ function context.runfile(filename)
     filename = resolvers.findtexfile(filename) or ""
     if filename ~= "" then
         local ok = dofile(filename)
-        if ok then
+        if type(ok) == "function" then
             if trace_cld then
-                commands.writestatus("cld","begin of file '%s'",filename)
+                commands.writestatus("cld","begin of file '%s' (funciton call)",filename)
             end
             ok()
             if trace_cld then
-                commands.writestatus("cld","end of file '%s'",filename)
+                commands.writestatus("cld","end of file '%s' (funciton call)",filename)
             end
+        elseif ok then
+            commands.writestatus("cld","file '%s' is processed and returns true",filename)
         else
-            commands.writestatus("cld","invalid file '%s'",filename)
+            commands.writestatus("cld","file '%s' is processed and returns nothing",filename)
         end
     else
         commands.writestatus("cld","unknown file '%s'",filename)
