@@ -324,6 +324,9 @@
   {\setvalue{\??ns:#1}{#2}%
    \setvalue{\??ns::#1}}
 
+\def\presetnumberheadalternative
+  {\doifelsevalue{\??ns:\numberheadalternative}\v!horizontal\setfalse\settrue\structureheadisdisplay}
+
 % \def\normalplacehead
 %   {\executeifdefined
 %      {\??ns::\numberheadalternative}

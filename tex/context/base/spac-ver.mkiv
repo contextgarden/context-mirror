@@ -141,17 +141,37 @@
   {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
    \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
 
-\def\setuplocalinterlinespace[#1]%
-  {\localinterlinespacetrue
-   \setupinterlinespace[#1]%
-   \localinterlinespacefalse}
-
 \def\simplesetupinterlinespace % adapts to the font
   {\localinterlinespacetrue
    \setfontparameters
    \updateraggedskips % funny one here
    \the\everysetuplocalinterlinespace
    \localinterlinespacefalse}
+
+\unexpanded\def\setuplocalinterlinespace[#1]%
+  {\localinterlinespacetrue
+   \let\@@saveditheight   \@@itheight
+   \let\@@saveditdepth    \@@itdepth
+   \let\@@saveditline     \@@itline
+   \let\@@saveditminheight\@@itminheight
+   \let\@@saveditmindepth \@@itmindepth
+   \let\@@saveditdistance \@@itdistance
+   \let\@@savedittop      \@@ittop
+   \let\@@saveditbottom   \@@itbottom
+   \let\@@saveditstretch  \@@itstretch
+   \setupinterlinespace[#1]%
+   \let\@@itheight   \@@saveditheight
+   \let\@@itdepth    \@@saveditdepth
+   \let\@@itline     \@@saveditline
+   \let\@@itminheight\@@saveditminheight
+   \let\@@itmindepth \@@saveditmindepth
+   \let\@@itdistance \@@saveditdistance
+   \let\@@ittop      \@@savedittop
+   \let\@@itbottom   \@@saveditbottom
+   \let\@@itstretch  \@@saveditstretch
+   \localinterlinespacefalse}
+
+\let\switchtointerlinespace\setuplocalinterlinespace
 
 \definecomplexorsimple\setupinterlinespace
 

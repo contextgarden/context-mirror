@@ -419,6 +419,8 @@
    \endgraf
    \endgroup}
 
+\ifdefined \else \let\presetnumberheadalternative\relax \fi
+
 \def\dohandlestructurehead#1#2#3% name data userdata
   {\xdef\currentstructurehead        {#1}%
    \xdef\currentstructureheadcoupling{\structuresectionheadcoupling\currentstructurehead}%
@@ -447,6 +449,7 @@
    %
    \edef\numberheaddistance   {\structureheadparameter\c!distance   }% compatibility
    \edef\numberheadalternative{\structureheadparameter\c!alternative}% compatibility
+   \presetnumberheadalternative
    %
    \let\getstructureheadnumber\empty
    \let\getstructureheadtitle \empty

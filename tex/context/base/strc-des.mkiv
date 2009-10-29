@@ -727,29 +727,56 @@
 \def\dododescriptioncomponent[#1][#2]% #1=interfaced-settings, #2=optional user data
   {\begingroup               % similar to structure so we might generalize this
    \getparameters[\??dd\currentdescription][#1]%
-   \edef\currentdescriptionexpansion{\descriptionparameter\c!expansion}%
+   %
+   \xdef\currentdescriptionexpansion      {\descriptionparameter\c!expansion}%
+   \xdef\currentdescriptionxmlsetup       {\descriptionparameter\c!xmlsetup}%
+   \xdef\currentdescriptioncatcodes       {\descriptionparameter\s!catcodes}%
+   \xdef\currentdescriptionlabel          {\descriptionparameter\c!label}%
+   \xdef\currentdescriptionreference      {\descriptionparameter\c!reference}%
+   \xdef\currentdescriptionreferenceprefix{\descriptionparameter\c!referenceprefix}%
+   %xdef\currentdescriptionshownumber     {\descriptionparameter\c!number}%
+   \xdef\currentdescriptionsaveinlist     {\descriptionparameter\c!saveinlist}%
+   \xdef\currentdescriptionincrementnumber{\descriptionparameter\c!incrementnumber}%
+   %
+   \ifx\currentdescriptionexpansion\empty
+     \glet\currentdescriptionexpansion\v!no
+   \fi
+   %
    \ifx\currentdescriptionexpansion\s!xml
-     \xdef\currentdescriptiontitle   {\detokenizeddescriptionparameter\c!title}%
-     \xdef\currentdescriptionbookmark{\detokenizeddescriptionparameter\c!bookmark}%
      \xmlstartraw
-       \xdef\currentdescriptionlisttitle   {\descriptionparameter\c!title}%
+       \xdef\currentdescriptiontitle   {\descriptionparameter\c!title}%
+       \xdef\currentdescriptionbookmark{\descriptionparameter\c!bookmark}%
+       \xdef\currentdescriptionmarking {\descriptionparameter\c!marking}%
+       \xdef\currentdescriptionlist    {\descriptionparameter\c!list}%
      \xmlstopraw
+     \ifx\currentdescriptionlist\empty
+       \globallet\currentdescriptionlist\currentdescriptiontitle
+     \fi
      \globallet\currentdescriptioncoding\s!xml
    \else
      \ifx\currentdescriptionexpansion\v!yes
        \xdef\currentdescriptiontitle   {\descriptionparameter\c!title}%
        \xdef\currentdescriptionbookmark{\descriptionparameter\c!bookmark}%
+       \xdef\currentdescriptionmarking {\descriptionparameter\c!marking}%
+       \xdef\currentdescriptionlist    {\descriptionparameter\c!list}%
      \else
        \xdef\currentdescriptiontitle   {\detokenizeddescriptionparameter\c!title}%
        \xdef\currentdescriptionbookmark{\detokenizeddescriptionparameter\c!bookmark}%
+       \xdef\currentdescriptionmarking {\detokenizeddescriptionparameter\c!marking}%
+       \xdef\currentdescriptionlist    {\detokenizeddescriptionparameter\c!list}%
+       \iflocation \ifx\currentdescriptionbookmark\empty
+         \begingroup
+         \simplifycommands
+         \xdef\currentdescriptionbookmark{\detokenize\expandafter{\normalexpanded{\descriptionparameter\c!title}}}%
+        \endgroup
+       \fi \fi
      \fi
-     \globallet\currentdescriptionlisttitle   \currentdescriptiontitle
+     \ifx\currentdescriptionlist\empty
+       \globallet\currentdescriptionlist\currentdescriptiontitle
+     \fi
      \globallet\currentdescriptioncoding\s!tex
    \fi
-   \xdef\currentdescriptionlabel    {\descriptionparameter\c!label}%
-   \xdef\currentdescriptionreference{\descriptionparameter\c!reference}%
    %
-%    \doif{\descriptionparameter\c!title}\v!none{\global\nodescriptioncaptiontrue\global\nodescriptionnumbertrue}% will become obsolete
    \ifx\currentdescriptiontitle\v!none % will become obsolete
      \global\nodescriptioncaptiontrue\global\nodescriptionnumbertrue
    \fi
@@ -784,8 +811,8 @@
         \ifx\currentdescriptionbookmark\currentdescriptiontitle \else
             bookmark = \!!bs\detokenize\expandafter{\currentdescriptionbookmark}\!!es,
         \fi
-        \ifx\currentdescriptionlisttitle\currentdescriptiontitle \else % \ifx\currentdescriptionsaveinlist\v!no
-            list     = \!!bs\detokenize\expandafter{\currentdescriptionlisttitle   }\!!es,
+        \ifx\currentdescriptionlist\currentdescriptiontitle \else % \ifx\currentdescriptionsaveinlist\v!no
+            list     = \!!bs\detokenize\expandafter{\currentdescriptionlist    }\!!es,
         \fi % \fi
         },
     \ifconditional\enumerationnumberenabled
@@ -987,6 +1014,18 @@
    \c!number=\v!yes, % else description
    \c!start=0,
    \s!parent=\??dd]
+
+\setupdescriptions
+  [\c!expansion=\v!no,
+   \c!xmlsetup=,
+   \s!catcodes=,
+   \c!saveinlist=\v!yes]
+
+\setupenumerations
+  [\c!expansion=\v!no,
+   \c!xmlsetup=,
+   \s!catcodes=,
+   \c!saveinlist=\v!yes]
 
 \setuplabels
   [\s!parent=\??dn]

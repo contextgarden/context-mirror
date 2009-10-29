@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 10/28/09 19:32:33
+-- merge date  : 10/29/09 21:30:47
 
 do -- begin closure to overcome local limits and interference
 
@@ -3164,6 +3164,7 @@ fonts.verbose = false -- more verbose cache tables
 fonts.ids[0] = { -- nullfont
     characters   = { },
     descriptions = { },
+    name         = "nullfont",
 }
 
 fonts.methods = fonts.methods or {

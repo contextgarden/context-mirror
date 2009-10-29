@@ -32,6 +32,7 @@ fonts.verbose = false -- more verbose cache tables
 fonts.ids[0] = { -- nullfont
     characters   = { },
     descriptions = { },
+    name         = "nullfont",
 }
 
 fonts.methods = fonts.methods or {

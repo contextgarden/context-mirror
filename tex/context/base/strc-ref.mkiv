@@ -1721,6 +1721,72 @@
 
 %D We cannot set up buttons (not yet, this one calls a menu macro):
 
+%D New (and experimental):
+
+% \starttext
+%     \chapter{test}
+%     \placefigure[here][xx:1]{}{\framed{one}} \placefigure[here][xx:2]{}{\framed{three}}
+%     \placetable [here][xx:3]{}{\framed{two}} \placetable [here][xx:4]{}{\framed{four}}
+%     \start
+%         \in{fig}[xx:1] and \in{fig}[xx:2] \in{tab}[xx:3] and \in{tab}[xx:4]
+%     \stop \blank \start
+%         \setupreferencestructureprefix[default][prefix=no]
+%         \in{fig}[xx:1] and \in{fig}[xx:2] \in{tab}[xx:3] and \in{tab}[xx:4]
+%     \stop \blank \start
+%         \setupreferencestructureprefix[float][default][prefix=no]
+%         \in{fig}[xx:1] and \in{fig}[xx:2] \in{tab}[xx:3] and \in{tab}[xx:4]
+%     \stop \blank \start
+%         \setupreferencestructureprefix[figure][default][prefix=no]
+%         \in{fig}[xx:1] and \in{fig}[xx:2] \in{tab}[xx:3] and \in{tab}[xx:4]
+%     \stop \blank
+% \stoptext
+
+\def\setupreferencestructureprefix
+  {\dotripleargument\dosetupreferencestructureprefix}
+
+\def\getreferencestructureprefix#1#2#3%
+  {{
+        prefix        = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefix",
+        separatorset  = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixseparatorset",
+        conversion    = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixconversion",
+        conversionset = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixconversionset",
+        set           = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixset",
+        segments      = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixsegments",
+        connector     = \!!bs\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixconnector\!!es,
+  }}
+
+\def\setupreferencestructureprefix
+  {\dotripleempty\dosetupreferencestructureprefix}
+
+\def\dosetupreferencestructureprefix[#1][#2][#3]%
+  {\ifthirdargument
+     \getparameters[\??rf:\c!prefix:#1:#2][#3]%
+   \else\ifsecondargument
+     \getparameters[\??rf:\c!prefix::#1][#2]%
+   \fi\fi}
+
+\def\referencestructureprefixparameter#1#2#3#4% kind name category parameter
+  {\ifcsname\??rf:\c!prefix:#2:#3#4\endcsname
+     \csname\??rf:\c!prefix:#2:#3#4\endcsname
+   \else\ifcsname\??rf:\c!prefix:#1:#3#4\endcsname
+     \csname\??rf:\c!prefix:#1:#3#4\endcsname
+   \else\ifcsname\??rf:\c!prefix::#3#4\endcsname
+     \csname\??rf:\c!prefix::#3#4\endcsname
+   \fi\fi\fi}
+
+% \def\getreferencestructureprefixspec#1% we can save one call by moving this to the lua end
+%   {\getreferencestructureprefix
+%      {\ctxlua{jobreferences.get_current_metadata("kind")}}
+%      {\ctxlua{jobreferences.get_current_metadata("name")}}
+%      {#1}}
+% \def\currentreferencedefault
+%   {\ctxlua{jobreferences.filter("default",\referencestructureprefixspec\v!default)}}
+%
+% this is shortcut for:
+
+\def\currentreferencedefault
+  {\ctxlua{jobreferences.filter("default",\ctxlua{jobreferences.get_current_prefixspec("\v!default")})}}
+
 \protect \endinput
 
 % tricky:

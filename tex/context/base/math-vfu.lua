@@ -360,7 +360,7 @@ function fonts.vf.math.define(specification,set)
                     for unicode, index in next, vector do
                         local fci = fc[index]
                         if not fci then
-                            local fontname = fs.name
+                            local fontname = fs.name or "unknown"
                             local rf = reported[fontname]
                             if not rf then rf = { } reported[fontname] = rf end
                             local rv = rf[vectorname]
