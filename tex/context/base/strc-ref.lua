@@ -836,9 +836,9 @@ local function current_metadata(tag)
 end
 jobreferences.current_metadata = current_metadata
 
-function jobreferences.get_current_prefixspec(default)
+function jobreferences.get_current_prefixspec(default) -- todo: message
     texsprint(ctxcatcodes,"\\getreferencestructureprefix{",
-        current_metadata("kind"), "}{", current_metadata("name"), "}{", default, "}")
+        current_metadata("kind"), "}{", current_metadata("name") or "?", "}{", default, "}")
 end
 --~ function jobreferences.get_current_prefixspec(default) -- we can consider storing the data at the lua end
 --~     context.getreferencestructureprefix(current_metadata("kind"),current_metadata("name"),default)

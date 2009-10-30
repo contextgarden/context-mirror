@@ -68,7 +68,7 @@
 
 -- generic functions
 
-props = props or { } setmetatable(props,{ __index = function(k,v) props[k] = "unknown" return "unknown" end } )
+props = props or { } -- setmetatable(props,{ __index = function(k,v) props[k] = "unknown" return "unknown" end } )
 
 local byte, lower, upper, gsub, sub, find, rep, match, gmatch = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch
 local sort, concat = table.sort, table.concat

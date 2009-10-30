@@ -428,15 +428,17 @@ local optionalspace    = space^0
 
 local value            = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote) -- ampersand and < also invalid in value
 
+local endofattributes  = slash * close + close -- recovery of flacky html
 local whatever         = space * name * optionalspace * equal
 local wrongvalue       = C(P(1-whatever-close)^1 + P(1-close)^1) / attribute_value_error
+----- local wrongvalue = C(P(1-whatever-endofattributes)^1 + P(1-endofattributes)^1) / attribute_value_error
+local wrongvalue       = C(P(1-space-endofattributes)^1) / attribute_value_error
 
 local attributevalue   = value + wrongvalue
 
 local attribute        = (somespace * name * optionalspace * equal * optionalspace * attributevalue) / add_attribute
 ----- attributes       = (attribute)^0
 
-local endofattributes  = slash * close + close -- recovery of flacky html
 local attributes       = (attribute + somespace^-1 * (((1-endofattributes)^1)/attribute_specification_error))^0
 
 local parsedtext       = text_parsed   / add_text
