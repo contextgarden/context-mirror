@@ -30,8 +30,7 @@ local texcatcodes, ctxcatcodes, vrbcatcodes = tex.texcatcodes, tex.ctxcatcodes, 
 
 local xmlelements, xmlcollected, xmlsetproperty = xml.elements, xml.collected, xml.setproperty
 local xmlparseapply, xmlwithelements = xml.parse_apply, xml.withelements
-local xmlserialize, xmlcollect, xmlcontent = xml.serialize, xml.collect, xml.content
-local xmltostring  = xml.tostring
+local xmlserialize, xmlcollect, xmltext, xmltostring = xml.serialize, xml.collect, xml.text, xml.tostring
 
 local variables = (interfaces and interfaces.variables) or { }
 
@@ -1125,19 +1124,21 @@ function lxml.attribute(id,pattern,a,default)
     end
 end
 
+function lxml.raw(id,pattern) -- the content, untouched by commands
+    local collected = (pattern and lxmlparseapply(id,pattern)) or get_id(id)
+    if collected then
+        texsprint(xmltostring(collected[1].dt))
+    end
+end
+
 function lxml.text(id,pattern)
-    local collected = lxmlparseapply(id,pattern)
+    local collected = (pattern and lxmlparseapply(id,pattern)) or get_id(id)
     if collected then
         text(collected)
     end
 end
 
-function lxml.raw(id,pattern) -- the content, untouched by commands
-    local collected = lxmlparseapply(id,pattern)
-    if collected then
-        texsprint(xmltostring(collected[1].dt))
-    end
-end
+lxml.content = text
 
 function lxml.position(id,pattern,n)
     local collected = lxmlparseapply(id,pattern)
@@ -1165,17 +1166,7 @@ function lxml.element(id,n)
     position(lxmlparseapply(id,"/*"),n)
 end
 
-lxml.index   = lxml.position
-
--- fast direct ones
-
-function lxml.content(root) -- bugged, does not print
-    local root = get_id(id)
-    local content = root and root.dt and xmltostring(root.dt)
-    if content then
-        texsprint(content)
-    end
-end
+lxml.index = lxml.position
 
 function lxml.pos(id)
     local root = get_id(id)
@@ -1336,7 +1327,7 @@ function lxml.strip(id,pattern,nolines)
 end
 
 function lxml.stripped(id,pattern,nolines)
-    local str = xmlcontent(get_id(id),pattern) or ""
+    local str = xmltext(get_id(id),pattern) or ""
     str = gsub(str,"^%s*(.-)%s*$","%1")
     if nolines then
         str = gsub(str,"%s+"," ")

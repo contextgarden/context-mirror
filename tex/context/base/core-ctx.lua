@@ -26,7 +26,7 @@ function commands.loadctxpreplist()
                 end
 --~             end
             for e in xml.collected(x,"ctx:prepfile") do
-                local name = xml.content(e)
+                local name = xml.text(e)
                 if islocal then
                     name = file.basename(name)
                 end

@@ -94,6 +94,14 @@ local function chainattribute(collected,arguments) -- todo: optional levels
     return ""
 end
 
+local function raw(collected)
+    if collected then
+        return xmlserialize(collected[1]) -- only first as we cannot concat function
+    else
+        return ""
+    end
+end
+
 local function text(collected)
     if collected then
         return xmltostring(collected[1].dt) -- only first as we cannot concat function
@@ -229,13 +237,23 @@ function xml.attribute(id,pattern,a,default)
     return attribute(xmlfilter(id,pattern),a,default)
 end
 
-function xml.text(id,pattern)
-    return text(xmlfilter(id,pattern))
+function xml.raw(id,pattern)
+    if pattern then
+        return raw(xmlfilter(id,pattern))
+    else
+        return raw(id)
+    end
 end
 
-function xml.raw(id,pattern)
-    return xmlserialize(xmlfilter(id,pattern))
+function xml.text(id,pattern)
+    if pattern then
+        return text(xmlfilter(id,pattern))
+    else
+        return text(id)
+    end
 end
+
+xml.content = text
 
 function xml.position(id,pattern,n)
     return position(xmlfilter(id,pattern),n)

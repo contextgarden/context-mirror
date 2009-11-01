@@ -1057,37 +1057,11 @@
 
 %D \macros
 %D   {startMPcolor}
-%D
-%D The following time consuming method uses \METAPOST\ to
-%D calculate a color. This enables a match between colors
-%D resulting from a complex calculation (e.g. for a title
-%D page) and those in the text.
 
-% \startuseMPgraphic{somecolors}
-%   color c[] ; c[1] := .7[red,green] ; c[2] := .7[blue,yellow] ;
-% \stopuseMPgraphic
-
-% \startMPcolor[shade-1][t=.2,a=1]
-%   \includeMPgraphic{somecolors} ; fill fullcircle withcolor c[1] ;
-% \stopMPcolor
-
-% \startMPcolor[shade-2][t=.2,a=1]
-%   \includeMPgraphic{somecolors} ; fill fullcircle withcolor c[2] ;
-% \stopMPcolor
-
-% \blackrule[width=\hsize,height=4cm,color=shade-1]
-% \blackrule[width=\hsize,height=4cm,color=shade-2]
-
-\def\startMPcolor
-  {\dodoubleempty\dostartMPcolor}
-
-\long\def\dostartMPcolor[#1][#2]#3\stopMPcolor % slow but sometimes handy
-  {\startnointerference
-     \def\handleMPgraycolor{\normalexpanded{\noexpand\defineglobalcolor[#1][s=\!MPgMPa1,#2]}}%
-     \def\handleMPrgbcolor {\normalexpanded{\noexpand\defineglobalcolor[#1][r=\!MPgMPa1,g=\!MPgMPa2,b=\!MPgMPa3,#2]}}%
-     \def\handleMPcmykcolor{\normalexpanded{\noexpand\defineglobalcolor[#1][c=\!MPgMPa1,m=\!MPgMPa2,y=\!MPgMPa3,k=\!MPgMPa4,#2]}}%
-     \processMPgraphic{#3}%
-   \stopnointerference}
+\long\def\startMPcolor#1\stopMPcolor
+  {\writestatus \m!metapost % eventually this placeholder will go away
+     {\string\startMPcolor...\stopMPcolor\space is obsolete,\space
+      use \string\defineintermediatecolor\space instead}}
 
 %D New:
 

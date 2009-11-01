@@ -92,7 +92,7 @@ local function convertexamodes(str)
     for e in xml.collected(x,"exa:variable") do
         local label = e.at and e.at.label
         if label and label ~= "" then
-            local data = xml.content(e) or ""
+            local data = xml.text(e)
             local mode = label:match("^mode:(.+)$")
             if mode then
                 texsprint(ctxcatcodes,format("\\enablemode[%s:%s]",mode,data))

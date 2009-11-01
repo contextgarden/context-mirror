@@ -268,9 +268,9 @@ do
         local figuredata = figures.new()
         if request then
         local iv = interfaces.variables
-        -- request.width/height are strings and are only used when no natural dimensions
-        -- can be determined; at some point the handlers might set them to numbers instead
---~             local w, h = tonumber(request.width), tonumber(request.height)
+        --  request.width/height are strings and are only used when no natural dimensions
+        --  can be determined; at some point the handlers might set them to numbers instead
+        --  local w, h = tonumber(request.width), tonumber(request.height)
             request.page      = math.max(tonumber(request.page) or 1,1)
             request.size      = img.check_size(request.size)
             request.object    = iv[request.object] == variables.yes
@@ -279,8 +279,8 @@ do
             request.cache     = request.cache  ~= "" and request.cache
             request.prefix    = request.prefix ~= "" and request.prefix
             request.format    = request.format ~= "" and request.format
---~             request.width     = (w and w > 0) or false
---~             request.height    = (h and h > 0) or false
+        --  request.width     = (w and w > 0) or false
+        --  request.height    = (h and h > 0) or false
             table.merge(figuredata.request,request)
         end
         callstack[#callstack+1] = figuredata
@@ -293,6 +293,7 @@ do
     end
     -- maybe move texsprint to tex
     function figures.get(category,tag,default)
+--~ print(table.serialize(figuredata))
         local value = figuredata[category]
         value = value and value[tag]
         if not value or value == "" or value == true then
@@ -857,7 +858,7 @@ function bases.find(basename,askedlabel)
         if base[2] and base[3] then -- rlx:library
             for e in xml.collected(base[3],"/(*:library|figurelibrary)/*:figure/*:label") do
                 page = page + 1
-                if xml.content(e) == askedlabel then
+                if xml.text(e) == askedlabel then
                     t = {
                         base = file.replacesuffix(base[2],"pdf"),
                         format = "pdf",

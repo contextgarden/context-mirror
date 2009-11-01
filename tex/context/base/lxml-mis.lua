@@ -85,3 +85,15 @@ xml.cleansed_pattern  = cleansed
 function xml.escaped  (str) return escaped  :match(str) end
 function xml.unescaped(str) return unescaped:match(str) end
 function xml.cleansed (str) return cleansed :match(str) end
+
+-- this might move
+
+function xml.fillin(root,pattern,str,check)
+    local e = xml.first(root,pattern)
+    if e then
+        local n = #e.dt
+        if not check or n == 0 or (n == 1 and e.dt[1] == "") then
+            e.dt = { str }
+        end
+    end
+end

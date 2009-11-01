@@ -44,7 +44,7 @@ local tobasepoints = number.tobasepoints
 
 local variables = interfaces.variables
 
-lpdf.addtoinfo   ("Trapped", pdfboolean(false))
+lpdf.addtoinfo   ("Trapped", pdfboolean(false), "False")
 lpdf.addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
 
 --
@@ -149,25 +149,26 @@ lpdf.registerdocumentfinalizer(flushdocumentactions)
 
 function codeinjections.setupidentity(specification)
     local title = specification.title or "" if title ~= "" then
-        lpdf.addtoinfo("Title", pdfunicode(title))
+        lpdf.addtoinfo("Title", pdfunicode(title), title)
     end
     local subject = specification.subject or "" if subject ~= "" then
-        lpdf.addtoinfo("Subject", pdfunicode(subject))
+        lpdf.addtoinfo("Subject", pdfunicode(subject), subject)
     end
     local author = specification.author or "" if author ~= "" then
-        lpdf.addtoinfo("Author",  pdfunicode(author))
+        lpdf.addtoinfo("Author",  pdfunicode(author), author)
     end
     local creator = specification.creator or "" if creator ~= "" then
-        lpdf.addtoinfo("Creator", pdfunicode(creator))
+        lpdf.addtoinfo("Creator", pdfunicode(creator), creator)
     end
     local date = specification.date or "" if date ~= "" then
-        lpdf.addtoinfo("ModDate", pdfstring(date))
+        lpdf.addtoinfo("ModDate", pdfstring(date), date)
     end
     local keywords = specification.keywords or "" if keywords ~= "" then
         keywords = string.gsub(keywords, "[%s,]+", " ")
-        lpdf.addtoinfo("Keywords",pdfunicode(keywords))
+        lpdf.addtoinfo("Keywords",pdfunicode(keywords), keywords)
     end
-    lpdf.addtoinfo("ID", pdfstring(format("%s.%s",tex.jobname,os.date("%Y%m%d.%H%M")))) -- needed for pdf/x
+    local id = format("%s.%s",tex.jobname,os.date("%Y%m%d.%H%M"))
+    lpdf.addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
 end
 
 local function flushjavascripts()

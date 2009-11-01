@@ -148,8 +148,8 @@ local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
 
-function initialize_mt(root) -- we will make a xml.new that then sets the mt as field
-    mt = { __tostring = xml.text, __index = root }
+function initialize_mt(root)
+    mt = { __index = root } -- will be redefined later
 end
 
 function xml.setproperty(root,k,v)
@@ -963,7 +963,6 @@ xml.defaulthandlers = handlers
 xml.newhandlers     = newhandlers
 xml.serialize       = serialize
 xml.tostring        = xmltostring
-xml.text            = xmltext
 
 --[[ldx--
 <p>The next function operated on the content only and needs a handle function
@@ -997,14 +996,6 @@ end
 
 function xml.body(root)
     return (root.ri and root.dt[root.ri]) or root
-end
-
-function xml.text(root)
-    return (root and xml.tostring(root)) or ""
-end
-
-function xml.content(root) -- bugged
-    return (root and root.dt and xml.tostring(root.dt)) or ""
 end
 
 function xml.name(root)

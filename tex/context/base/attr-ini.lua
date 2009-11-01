@@ -16,7 +16,8 @@ local texsprint = tex.sprint
 
 local ctxcatcodes = tex.ctxcatcodes
 
--- todo: document this
+-- todo: document this but first reimplement this as it reflects the early
+-- days of luatex / mkiv and we have better ways now
 
 -- nb: attributes: color etc is much slower than normal (marks + literals) but ...
 -- nb. too many "0 g"s

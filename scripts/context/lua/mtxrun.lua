@@ -1677,7 +1677,8 @@ if not modules then modules = { } end modules ['l-os'] = {
     license   = "see context related readme files"
 }
 
-local find = string.find
+local find, format = string.find, string.format
+local random, ceil = math.random, math.ceil
 
 function os.resultof(command)
     return io.popen(command,"r"):read("*all")
@@ -1774,6 +1775,8 @@ function os.currentplatform(name,default)
             elseif name == "macosx" then
                 if find(architecture,"i386") then
                     platform = "osx-intel"
+                elseif find(architecture,"x86_64") then
+                    platform = "osx-64"
                 else
                     platform = "osx-ppc"
                 end
@@ -1798,6 +1801,29 @@ function os.currentplatform(name,default)
         end
     end
     return platform
+end
+
+-- beware, we set the randomseed
+--
+
+-- from wikipedia: Version 4 UUIDs use a scheme relying only on random numbers. This algorithm sets the
+-- version number as well as two reserved bits. All other bits are set using a random or pseudorandom
+-- data source. Version 4 UUIDs have the form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx with hexadecimal
+-- digits x and hexadecimal digits 8, 9, A, or B for y. e.g. f47ac10b-58cc-4372-a567-0e02b2c3d479.
+--
+-- as we don't call this function too often there is not so much risk on repetition
+
+
+local t = { 8, 9, "a", "b" }
+
+function os.uuid()
+    return format("%04x%04x-4%03x-%s%03x-%04x-%04x%04x%04x",
+        random(0xFFFF),random(0xFFFF),
+        random(0x0FFF),
+        t[ceil(random(4))] or 8,random(0x0FFF),
+        random(0xFFFF),
+        random(0xFFFF),random(0xFFFF),random(0xFFFF)
+    )
 end
 
 
@@ -3524,8 +3550,8 @@ local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
 
-function initialize_mt(root) -- we will make a xml.new that then sets the mt as field
-    mt = { __tostring = xml.text, __index = root }
+function initialize_mt(root)
+    mt = { __index = root } -- will be redefined later
 end
 
 function xml.setproperty(root,k,v)
@@ -4339,7 +4365,6 @@ xml.defaulthandlers = handlers
 xml.newhandlers     = newhandlers
 xml.serialize       = serialize
 xml.tostring        = xmltostring
-xml.text            = xmltext
 
 --[[ldx--
 <p>The next function operated on the content only and needs a handle function
@@ -4373,14 +4398,6 @@ end
 
 function xml.body(root)
     return (root.ri and root.dt[root.ri]) or root
-end
-
-function xml.text(root)
-    return (root and xml.tostring(root)) or ""
-end
-
-function xml.content(root) -- bugged
-    return (root and root.dt and xml.tostring(root.dt)) or ""
 end
 
 function xml.name(root)
@@ -5594,6 +5611,18 @@ function xml.escaped  (str) return escaped  :match(str) end
 function xml.unescaped(str) return unescaped:match(str) end
 function xml.cleansed (str) return cleansed :match(str) end
 
+-- this might move
+
+function xml.fillin(root,pattern,str,check)
+    local e = xml.first(root,pattern)
+    if e then
+        local n = #e.dt
+        if not check or n == 0 or (n == 1 and e.dt[1] == "") then
+            e.dt = { str }
+        end
+    end
+end
+
 
 end -- of closure
 
@@ -6146,6 +6175,14 @@ local function chainattribute(collected,arguments) -- todo: optional levels
     return ""
 end
 
+local function raw(collected)
+    if collected then
+        return xmlserialize(collected[1]) -- only first as we cannot concat function
+    else
+        return ""
+    end
+end
+
 local function text(collected)
     if collected then
         return xmltostring(collected[1].dt) -- only first as we cannot concat function
@@ -6281,13 +6318,23 @@ function xml.attribute(id,pattern,a,default)
     return attribute(xmlfilter(id,pattern),a,default)
 end
 
-function xml.text(id,pattern)
-    return text(xmlfilter(id,pattern))
+function xml.raw(id,pattern)
+    if pattern then
+        return raw(xmlfilter(id,pattern))
+    else
+        return raw(id)
+    end
 end
 
-function xml.raw(id,pattern)
-    return xmlserialize(xmlfilter(id,pattern))
+function xml.text(id,pattern)
+    if pattern then
+        return text(xmlfilter(id,pattern))
+    else
+        return text(id)
+    end
 end
+
+xml.content = text
 
 function xml.position(id,pattern,n)
     return position(xmlfilter(id,pattern),n)

@@ -39,9 +39,12 @@ function commands.getrandomseed(n)
     texwrite(last)
 end
 
-function commands.freezerandomseed()
+function commands.freezerandomseed(n)
     if seed == false then
         seed = last
+    end
+    if n then
+        randomseed(n)
     end
 end
 

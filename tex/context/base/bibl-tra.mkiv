@@ -785,11 +785,13 @@
 
 \def\typesetpubslist
   {\dobeginoflist
-   \the\initializebibdefinitions
+   % \the\initializebibdefinitions % COMMENTED
    \edef\currentlist{pubs}%
-   \doif{\listparameter\c!criterium}\v!cite{\setuplist[pubs][\c!criterium=\v!here]}%
+   \doif{\listparameter\c!criterium}\v!cite
+       {\setuplist[pubs][\c!criterium=\v!here]}%
    \ctxlua{bibtex.hacks.reset(\number\bibtexoncemode)}%
-   \placestructurelist{pubs}{\listparameter\c!criterium}{\listparameter\c!number}% only collects
+   \placestructurelist{pubs}%
+     {\listparameter\c!criterium}{\listparameter\c!number}%
    \ctxlua{bibtex.hacks.flush("\@@pbsorttype")}%
    \doendoflist}
 
@@ -904,6 +906,7 @@
 
 \def\dotypesetapublication#1%
   {\bgroup
+   \the\initializebibdefinitions % NEW
    \def\@@currentalternative{:l:}%
    \presetbibvariables
    \let\biblanguage\empty

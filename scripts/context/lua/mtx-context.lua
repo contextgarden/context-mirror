@@ -152,7 +152,7 @@ do
         print(table.serialize(ctxdata.modules))
         print(table.serialize(ctxdata.filters))
         print(table.serialize(ctxdata.modes))
-        print(xml.serialize(ctxdata.xmldata))
+        print(xml.tostring(ctxdata.xmldata))
     end
 
     function ctxrunner.manipulate(ctxdata,ctxname,defaultname)
@@ -224,8 +224,8 @@ do
             logs.simple("ctx comment: %s", xml.tostring(message))
         end
 
-        for r, e, k in xml.elements(ctxdata.xmldata,"ctx:value[@name='job']") do
-            e[k] = ctxdata.variables['job'] or ""
+        for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value[@name='job']") do
+            d[k] = ctxdata.variables['job'] or ""
         end
 
         local commands = { }
@@ -307,8 +307,8 @@ do
                                             end
                                         end
                                         -- potential optimization: when mtxrun run internal
-                                        command = xml.text(command)
-                                        command = ctxrunner.justtext(command) -- command is still xml element here
+                                        command = xml.content(command)
+                                        command = ctxrunner.justtext(command)
                                         logs.simple("command: %s",command)
                                         local result = os.spawn(command) or 0
                                         if result > 0 then

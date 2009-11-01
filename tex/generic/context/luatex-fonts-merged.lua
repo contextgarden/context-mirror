@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 10/29/09 21:30:47
+-- merge date  : 11/01/09 21:29:22
 
 do -- begin closure to overcome local limits and interference
 

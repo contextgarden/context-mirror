@@ -93,7 +93,6 @@
 \def\figurefilename      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.nameonly(figures.get("used","fullname")))}}
 \def\figurefiletype      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.extname (figures.get("used","fullname")))}}
 \def\figurefullname      {\ctxlua{figures.tprint("used","fullname")}}
-
 \def\noffigurepages      {\ctxlua{figures.tprint("used","pages",0)}}
 
 \let\naturalfigurewidth  \figurenaturalwidth
@@ -244,6 +243,10 @@
     } }%
    \ctxlua{figures.identify()}%
    \ifconditional\testexternalfigureonly
+      \ifcase\figurestatus \else
+        \ctxlua{figures.check()}%
+        \ctxlua{figures.scale()}%
+      \fi
       \signalexternalfigure
    \else
       \ifcase\figurestatus

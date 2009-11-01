@@ -822,7 +822,7 @@
 
 \def\typesetpubslist
   {\dobeginoflist
-   \the\initializebibdefinitions
+%    \the\initializebibdefinitions
    \edef\askedlevel{\csname \??li pubs\c!criterium\endcsname}%
    \ifx\askedlevel\v!all
       \def\bibrefprefix{}%
@@ -987,19 +987,21 @@
 %D \subsubject{What's in a publication}
 
 \unexpanded\def\typesetapublication#1%
-  {\doifsomething{#1}{\doglobal\increment\bibcounter
-    \bgroup
-    \makepbkvalue{#1}%
-    \ifgridsnapping
-      \snaptogrid\vbox{\dodolistelement{pubs}{}{\bibcounter}%
-        {\expanded{\reference[\bibrefprefix#1]{\bibcounter}}%
-         \strut \dotypesetapublication{#1}\strut }{}{}}%
-    \else
-      \dodolistelement{pubs}{}{\bibcounter}%
-        {\expanded{\reference[\bibrefprefix#1]{\bibcounter}}%
+  {\doifsomething{#1}
+     {\doglobal\increment\bibcounter
+      \bgroup
+      \the\initializebibdefinitions
+      \makepbkvalue{#1}%
+      \ifgridsnapping
+       \snaptogrid\vbox{\dodolistelement{pubs}{}{\bibcounter}%
+         {\expanded{\reference[\bibrefprefix#1]{\bibcounter}}%
+          \strut \dotypesetapublication{#1}\strut }{}{}}%
+     \else
+       \dodolistelement{pubs}{}{\bibcounter}%
+         {\expanded{\reference[\bibrefprefix#1]{\bibcounter}}%
          \strut \dotypesetapublication{#1}\strut }{}{}%
-    \fi
-    \egroup }}
+     \fi
+     \egroup}}
 
 \def\dotypesetapublication#1%
   {\bgroup

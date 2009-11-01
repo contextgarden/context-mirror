@@ -97,7 +97,7 @@ function lxml.context.tabulate(root,namespace)
 --~     for e in xmlcollected(root,bodyrowspec) do
 --~         texsprint(ctxcatcodes, "\\NC ")
 --~         for e in xmlcollected(e,cellspec) do
---~             texsprint(xml.content(e)) -- use some xmlprint
+--~             texsprint(xml.text(e)) -- use some xmlprint
 --~             texsprint(ctxcatcodes, "\\NC")
 --~         end
 --~         texsprint(ctxcatcodes, "\\NR")
@@ -115,7 +115,7 @@ function lxml.context.tabulate(root,namespace)
     for e in xmlcollected(root,bodyrowspec) do
         NC()
         for e in xmlcollected(e,cellspec) do
-            texsprint(xml.content(e)) -- test: xmlcprint(e)
+            texsprint(xml.text(e)) -- test: xmlcprint(e)
             NC()
         end
         NR()

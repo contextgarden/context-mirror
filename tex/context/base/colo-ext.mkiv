@@ -75,4 +75,26 @@
 
 \setupcolors[\c!intent=\v!none]
 
+% A goodie that replaces the startMPcolor hackery
+%
+% \definecolor[red-t]  [r=1,t=0.5,a=1]
+% \definecolor[green-t][g=1,t=0.5,a=1]
+% \defineintermediatecolor[mycolora][0.5,red,green]
+% \defineintermediatecolor[mycolorb][0.5,red-t,green-t]
+% \starttext
+%     test {\mycolora OEPS} test
+%     test {\mycolorb OEPS} test
+% \stoptext
+
+\def\defineintermediatecolor
+  {\dodoubleempty\dodefineintermediatecolor}
+
+\def\dodefineintermediatecolor[#1][#2,#3,#4]% -- no checking
+  {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
+   \ctxlua{colors.defineintermediate("#1",0#2,
+     \thecolorattribute{#3},\thecolorattribute{#4},
+     \thetransparencyattribute{#3},\thetransparencyattribute{#4},
+     \iffreezecolors true\else false\fi)}%
+   \dodefinecolorcommand\setvalue{#1}}
+
 \protect \endinput

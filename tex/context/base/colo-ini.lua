@@ -407,3 +407,39 @@ function colors.spotcolorvalue(ca,default)
     end
     return tostring(v)
 end
+
+-- experiment  (a bit of a hack, as we need to get the attribute number)
+
+local min = math.min
+
+local function f(one,two,i,fraction)
+    return min(fraction*(one[i]+two[i]),1)
+end
+
+function colors.defineintermediate(name,fraction,c_one,c_two,a_one,a_two,global,freeze)
+    local one, two = colors.value(c_one), colors.value(c_two)
+    if one and two then
+        local csone, cstwo = one[1], two[1]
+        if csone == cstwo then
+            local ca
+            if csone == 2 then
+                ca = colors.register(name,'gray',f(one,two,2,fraction))
+            elseif csone == 3 then
+                ca = colors.register(name,'rgb',f(one,two,3,fraction),f(one,two,4,fraction),f(one,two,5,fraction))
+            elseif csone == 4 then
+                ca = colors.register(name,'rgb',f(one,two,6,fraction),f(one,two,7,fraction),f(one,two,8,fraction),f(one,two,9,fraction))
+            else
+                ca = colors.register(name,'gray',f(one,two,2,fraction))
+            end
+            definecolor(name,ca,global,freeze)
+        end
+    end
+    local one, two = transparencies.value(a_one), transparencies.value(a_two)
+    if one and two then
+        local tsone, tstwo = one[1], two[1]
+        if tsone == tstwo then
+            local ta = transparencies.register(name,tsone,f(one,two,2,fraction))
+            definetransparent(name,ta,global)
+        end
+    end
+end

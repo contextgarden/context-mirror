@@ -67,6 +67,7 @@ local function add_backgrounds(head) -- boxes, inline will be done too
                         if mode then
                             local glue = new_glue(-current.width)
                             local rule = new_rule(current.width,current.height,current.depth)
+--~ local rule = new_rule(current.width,-current.depth/2,current.depth) -- test
                             local color = has_attribute(found,a_color)
                             local transparency = has_attribute(found,a_transparency)
                             set_attribute(rule,a_colorspace, mode)

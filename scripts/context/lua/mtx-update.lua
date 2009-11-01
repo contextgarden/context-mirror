@@ -132,6 +132,7 @@ scripts.update.platforms = {
     ["osx-intel"]     = "osx-intel",
     ["osx-ppc"]       = "osx-ppc",
     ["osx-powerpc"]   = "osx-ppc",
+    ["osx-64"]        = "osx-64",
     ["osxintel"]      = "osx-intel",
     ["osxppc"]        = "osx-ppc",
     ["osxpowerpc"]    = "osx-ppc",

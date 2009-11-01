@@ -46,8 +46,8 @@ function context.trace(intercept)
     context.trace = function() end
 end
 
-local trace_context = false  trackers.register("context.flush",     function(v) if v then context.trace()     end end)
-local trace_context = false  trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
+trackers.register("context.flush",     function(v) if v then context.trace()     end end)
+trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
 
 local function writer(k,...)
     flush(ctxcatcodes,k)

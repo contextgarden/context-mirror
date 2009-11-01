@@ -11,12 +11,11 @@ local utf = unicode.utf8
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local format, lower = string.format, string.lower
 local utfchar, utffind, utfgmatch  = utf.char, utf.find, utf.gmatch
-local xmlsprint, xmlcprint = xml.sprint, xml.cprint
+local xmlsprint, xmlcprint, xmltext = xml.sprint, xml.cprint, xml.text
+local lxmltext, get_id = lxml.text, lxml.get_id
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 
 lxml.mml = lxml.mml or { }
-
-local get_id = lxml.get_id
 
 -- an alternative is to remap to private codes, where we can have
 -- different properties .. to be done; this will move and become
@@ -453,7 +452,7 @@ end
 function lxml.mml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
-    local str = xml.content(get_id(id),pattern) or ""
+    local str = xmltext(get_id(id),pattern) or ""
     str = str:gsub("(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
     texsprint(ctxcatcodes,(str:gsub(".",n_replacements)))
 end
@@ -463,12 +462,12 @@ function characters.remapentity(chr,slot)
 end
 
 function lxml.mml.mo(id,pattern)
-    local str = xml.content(get_id(id),pattern) or ""
+    local str = xmltext(get_id(id),pattern) or ""
     texsprint(ctxcatcodes,(utf.gsub(str,".",o_replacements)))
 end
 
 function lxml.mml.mi(id,pattern)
-    local str = xml.content(get_id(id),pattern) or ""
+    local str = xmltext(get_id(id),pattern) or ""
     -- str = str:gsub("^%s*(.-)%s*$","%1")
     local rep = i_replacements[str]
     if rep then
@@ -609,12 +608,12 @@ local frametypes = {
 -- crazy element ... should be a proper structure instead of such a mess
 
 function lxml.mml.mcolumn(root)
-    root = lxml.id(root)
+    root = get_id(root)
     local matrix, numbers = { }, 0
     local function collect(m,e)
         local tag = e.tg
         if tag == "mi" or tag == "mn" or tag == "mo" or tag == "mtext" then
-            local str = xml.content(e)
+            local str = xmltext(e)
             for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
                 m[#m+1] = { tag, s }
             end
@@ -769,7 +768,7 @@ function lxml.mml.csymbol(root)
     local hash = url.hashed(lower(at.definitionUrl or ""))
     local full = hash.original or ""
     local base = hash.path or ""
-    local text = string.strip(lxml.content(root))
+    local text = string.strip(lxmltext(root))
 --~     texsprint(ctxcatcodes,format("\\mmlapplycsymbol{%s}{%s}{%s}{%s}",full,base,encoding,text))
     texsprint(ctxcatcodes,"\\mmlapplycsymbol{",full,"}{",base,"}{",encoding,"}{",text,"}")
 end
