@@ -1058,10 +1058,12 @@
 %D \macros
 %D   {startMPcolor}
 
-\long\def\startMPcolor#1\stopMPcolor
+\long\unexpanded\def\startMPcolor#1\stopMPcolor
   {\writestatus \m!metapost % eventually this placeholder will go away
      {\string\startMPcolor...\stopMPcolor\space is obsolete,\space
       use \string\defineintermediatecolor\space instead}}
+
+\let\stopMPcolor\relax
 
 %D New:
 

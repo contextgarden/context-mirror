@@ -107,7 +107,9 @@
 
 %D The next command can be defined in a cleaner way in the
 %D Mk IV file but we want to have a fast one with a minimal
-%D chance for interference.
+%D chance for interference. Do we still need this complex
+%D mechanism? Future versions of \MKIV\ might only use
+%D active characters for very special cases.
 
 \chardef\activehackcode=`\~
 
@@ -128,7 +130,7 @@
 \def\letcatcodecommandc % only first time
   {\expandafter\gdef\csname CCL:\number\cctcountera:\number\cctcounterb\expandafter\endcsname\expandafter
      {\expandafter\let\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname}%
-   \reinstatecatcodecommanda
+   \reinstatecatcodecommandua % unexpanded
    \csname CCL:\number\cctcountera:\number\cctcounterb\endcsname}
 
 % expandable def
@@ -165,8 +167,8 @@
 \def\uedcatcodecommandc % only first time
   {\expandafter\gdef\csname CCU:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
      \expandafter##\expandafter1\expandafter
-       {\expandafter\unexpanded\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
-   \reinstatecatcodecommanda
+       {\expandafter\normalprotected\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
+   \reinstatecatcodecommandua % unexpanded
    \csname CCU:\number\cctcountera:\number\cctcounterb\endcsname}
 
 \def\reinstatecatcodecommand{\afterassignment\reinstatecatcodecommanda\cctcounterb}
@@ -176,6 +178,13 @@
    \uccode\activehackcode\cctcounterb
    \catcode\uccode\activehackcode\activecatcode
    \uppercase{\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
+   \egroup}
+
+\def\reinstatecatcodecommandua % can be used when a direct definition has been done
+  {\bgroup                     % and the selector has been lost
+   \uccode\activehackcode\cctcounterb
+   \catcode\uccode\activehackcode\activecatcode
+   \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
    \egroup}
 
 \chardef\defaultcatcodetable\zerocount

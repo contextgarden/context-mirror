@@ -279,7 +279,10 @@ local function filter_collected(names, criterium, number, collected)
         -- now same as register
         local depth = sections.getlevel(criterium)
         local number = tonumber(number) or sections.number_at_depth(depth) or 0
-        detail = format("depth: %s, number: %s, numbers: %s",depth,number,concat(sections.numbers(),".",1,depth))
+        if trace_lists then
+            local t = sections.numbers()
+            detail = format("depth: %s, number: %s, numbers: %s",depth,number,(#t>0 and concat(t,".",1,depth)) or "?")
+        end
         if number > 0 then
             for i=1,#collected do
                 local v = collected[i]

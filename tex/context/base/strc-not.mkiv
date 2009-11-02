@@ -497,20 +497,24 @@
 
 \newif\ifnotesymbol \notesymboltrue
 
+\newconditional\skipnoteplacement
+
 \def\setnote    [#1]{\getvalue{#1}}
 \def\setnotetext[#1]{\global\settrue\skipnoteplacement\getvalue{#1}}
 
 \def\domovednote#1#2#3#4%
   {\ifcase\ctxlua{structure.notes.deltapage("#1",#2)}\or\symbol[#3]\or\symbol[#4]\fi}
 
-\setvalue{\??dd:\v!note:\s!handler         }{\@@doenumerationhandler}
-\setvalue{\??dd:\v!note:\s!handler:\s!do   }{\@@somenotedescription}
-\setvalue{\??dd:\v!note:\s!handler:\s!start}{\@@startsomenotedescription}
+\setvalue{\??dd:\v!note:\s!handler:\s!text  }{\@@donotetext}
+\setvalue{\??dd:\v!note:\s!handler:\s!number}{\@@donotenumber}
+\setvalue{\??dd:\v!note:\s!handler          }{\@@donotehandler}
+\setvalue{\??dd:\v!note:\s!handler:\s!do    }{\@@somenotedescription}
+\setvalue{\??dd:\v!note:\s!handler:\s!start }{\@@startsomenotedescription}
+
+\let\@@donotehandler\@@dodescriptionhandler
 
 \def\@@somenotedescription     {\@@notemakedescription}
 \def\@@startsomenotedescription{\@@notemakedescription}
-
-\newconditional\skipnoteplacement
 
 \def\@@notemakedescription[#1]#2#3% todo ... proper [key=value] etc
   {\ifnotesenabled
@@ -568,7 +572,22 @@
 \def\currentnotedescriptiontext % todo: can be other number
   {\ctxlua{structure.notes.title("\currentnote",\currentdescriptionnumberentry)}}
 
-\def\currentnoteenumerationfullnumber
+\def\@@donotetext
+  {\ifconditional\enumerationnumberenabled
+     \iftrialtypesetting
+       \doenumerationfullnumber\showdntext
+       \doenumerationcouplingsymbol
+     \else
+       \doenumerationregistercoupling
+       \doenumerationfullnumber\showdntext
+       \doenumerationcouplingsymbol
+     \fi
+   \else
+     \doenumerationfullnumber\showdnpuretext
+   \fi}
+
+% \def\currentnoteenumerationfullnumber
+\def\@@donotenumber
   {\doifelse{\noteparameter\c!interaction}\v!no
      {\docurrentnoteenumerationfullnumber}%
      {\directgotobox
@@ -598,8 +617,7 @@
   {\edef\currentdescription{#1}%
    \edef\currentnote{#1}%
    \edef\currentdescriptionnumberentry{#2}%
-   \let\currentdescriptiontext\currentnotedescriptiontext
-   \let\currentenumerationfullnumber\currentnoteenumerationfullnumber
+%    \let\currentenumerationfullnumber\currentnoteenumerationfullnumber
    \dostartstoreddescription\begstrut\currentnotedescriptiontext\endstrut\dostopstoreddescription}
 
 \def\dostartstoreddescription

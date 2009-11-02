@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['font-otn'] = {
 -- much functionality could only be implemented thanks to the husayni font
 -- of Idris Samawi Hamid to who we dedicate this module.
 
+-- some day when we can jit this, we can use more functions
+
 -- we can use more lpegs when lpeg is extended with function args and so
 -- resolving to unicode does not gain much
 

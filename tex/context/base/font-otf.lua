@@ -363,7 +363,14 @@ otf.enhancers["reorganize mark classes"] = function(data,filename)
         for name, class in next, data.mark_classes do
             local t = { }
             for s in gmatch(class,"[^ ]+") do
-                t[unicodes[s]] = true
+                local us = unicodes[s]
+                if type(us) == "table" then
+                    for u=1,#us do
+                        t[us[u]] = true
+                    end
+                else
+                    t[us] = true
+                end
             end
             reverse[name] = t
         end

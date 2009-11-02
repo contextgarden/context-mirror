@@ -67,6 +67,17 @@
 \def\dodescriptionparentparameter#1#2%
   {\ifx#1\relax\s!empty\else\dodescriptionparameter#1#2\fi}
 
+\def\descriptionlocationparameter#1{\csname\dodescriptionlocationparameter{\??dd\currentdescription}#1\endcsname}
+
+\def\dodescriptionlocationparameter#1#2%
+  {\ifcsname#1#2:\descriptionparameter\c!location\endcsname
+     #1#2:\descriptionparameter\c!location
+   \else\ifcsname#1\s!parent\endcsname
+     \expandafter\dodescriptionlocationparameter\csname#1\s!parent\endcsname#2%
+   \else
+     \dodescriptionparameter{\??dd\currentdescription}#2%
+   \fi\fi}
+
 % description hashes (needed for style/color)
 
 \def\descriptionparameterhash    #1{\dodescriptionparameterhash{\??dd\currentdescription    }#1}
@@ -136,17 +147,17 @@
    \noindent
    \llap
      {\@@makedescriptionpurebox\raggedright
-      \hbox to \descriptionparameter\c!width{\copy\descriptionheadbox\hss}%
-      \hskip\descriptionparameter\c!distance}%
+      \hbox to \descriptionsheadwidth{\copy\descriptionheadbox\hss}%
+      \hskip\descriptionsheaddistance}%
    \@@dodescription}
 
 \def\@@descriptionrightmargin % whatever this means
   {\def\\{\crlf}%
    \noindent
    \rlap
-     {\hskip\descriptionparameter\c!distance
+     {\hskip\descriptionsheaddistance
       \@@makedescriptionpurebox\raggedright
-      \hbox to \descriptionparameter\c!width{\copy\descriptionheadbox\hss}}%
+      \hbox to \descriptionsheadwidth{\copy\descriptionheadbox\hss}}%
    \@@dodescription}
 
 \def\@@makedescriptionpurebox#1%
@@ -256,7 +267,7 @@
 
 \setvalue{@@description\v!serried}%
   {\processaction
-      [\descriptionparameter\c!width]
+      [\descriptionlocationparameter\c!width]
       [     \v!fit=>\let\next\v!fit,
           \v!broad=>\let\next\v!broad,
         \s!unknown=>\let\next\v!wide,
@@ -309,33 +320,27 @@
    \begingroup
    \doadaptleftskip{\descriptionparameter\c!margin}%
    \showcomposition
-   \descriptionsheaddistance\descriptionparameter\c!distance\relax
+   \setlocalhsize % so we can use \localhsize in width assignments
+   \descriptionsheaddistance\descriptionlocationparameter\c!distance\relax
    \ifdim\descriptionsheaddistance=\zeropoint\relax
-     \doif{\descriptionparameter\c!width}\v!broad{\descriptionsheaddistance=1em}%
+     \doif{\descriptionlocationparameter\c!width}\v!broad{\descriptionsheaddistance=1em}%
    \fi
    \setbox\descriptionheadbox\hbox
      {\forgetall\dontcomplain
       \trialtypesettingtrue
       \doifelsenothing{\descriptionparameter\c!sample}
-        {\dodescriptionhandler
-           {\begstrut\descriptionparameter\c!text\ignorespaces\currentdescriptiontext\endstrut}}%
-        {\dodescriptionhandler
-           {\begstrut\descriptionparameter\c!text\descriptionparameter\c!sample\endstrut}}}%
+        {\dodescriptionhandler\currentdescriptiontext}%
+        {\dodescriptionhandler\currentdescriptionsample}}%
    \assignwidth
      \descriptionsheadwidth
-     {\descriptionparameter\c!width}
+     {\descriptionlocationparameter\c!width}
      {\unhcopy\descriptionheadbox}
      \descriptionsheaddistance
    \setbox\descriptionheadbox\hbox
      {\forgetall\dontcomplain
       \doifelse{\descriptionparameter\c!location}\v!serried % brrr, hack
-        {\dodescriptionhandler
-           {\begstrut\descriptionparameter\c!text\currentdescriptiontext\endstrut}}
-        {\dodescriptionhandler
-           {\vtop
-              {\hsize\dimexpr\descriptionsheadwidth-\descriptionsheaddistance\relax
-               \doifsomething{\descriptionparameter\c!headalign}{\setupalign[\descriptionparameter\c!headalign]}%
-               \begstrut\descriptionparameter\c!text\ignorespaces\currentdescriptiontext\endstrut}}}}%
+        {\dodescriptionhandler\currentdescriptiontext}
+        {\dodescriptionhandler{\boxeddescriptionhead\currentdescriptiontext}}}%
    \doifelse{\descriptionparameter\c!aligntitle}\v!no
      {\leftdescriptionskip\leftskip\rightdescriptionskip\rightskip}
      {\ifcase\nesteddescriptionstate\leftdescriptionskip\leftskip\rightdescriptionskip\rightskip\fi}%
@@ -348,6 +353,13 @@
      \chardef\nesteddescriptionstate\plustwo
    \fi % now happens elsewhere : \noindent\ignorespaces
    \@@resetdescriptionclosesymbol}
+
+\def\boxeddescriptionhead#1%
+  {\vtop
+    %{\hsize\dimexpr\descriptionsheadwidth-\descriptionsheaddistance\relax
+     {\hsize\descriptionsheadwidth
+      \doifsomething{\descriptionparameter\c!headalign}{\setupalign[\descriptionparameter\c!headalign]}%
+      #1}}
 
 \def\@@stopdescription
   {\@@placedescriptionclosesymbol
@@ -467,9 +479,14 @@
 \def\dodescriptionstart  #1{\dodescriptioninit{#1}\dosingleempty\@@startdescription}
 \def\dodescriptionstop   #1{\dodescriptioninit{#1}\@@stopdescription}
 
-\def\dodescriptionhandler    {\csname\??dd:\descriptionparameter\s!handler:\s!handler         \endcsname}
-\def\dohandledescriptiondo   {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!do   \endcsname}
-\def\dohandledescriptionstart{\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!start\endcsname}
+\def\dodescriptiontext       {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!text  \endcsname}
+\def\dodescriptionnumber     {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!number\endcsname}
+\def\dodescriptionhandler    {\csname\??dd:\descriptionparameter\s!handler:\s!handler          \endcsname}
+\def\dohandledescriptiondo   {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!do    \endcsname}
+\def\dohandledescriptionstart{\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!start \endcsname}
+
+\def\currentdescriptiontext  {\begstrut\dodescriptiontext\endstrut}
+\def\currentdescriptionsample{\begstrut\descriptionparameter\c!text\descriptionparameter\c!sample\endstrut}
 
 % implementation
 
@@ -478,23 +495,28 @@
 
 \newtoks \everydescription
 
+\setvalue{\??dd:\v!description:\s!handler:\s!text }{\@@dodescriptiontext}
 \setvalue{\??dd:\v!description:\s!handler         }{\@@dodescriptionhandler}
 \setvalue{\??dd:\v!description:\s!handler:\s!do   }{\@@somedescription}
 \setvalue{\??dd:\v!description:\s!handler:\s!start}{\@@startsomedescription}
 
 \def\@@dodescriptionhandler#1%
-  {\strut
-   \dodescriptionheadtext{#1}%
-   \iftrialtypesetting \else
+  {\iftrialtypesetting \else
+     \begingroup
      \currentdescriptionsynchronize
-     \dosetattribute{destination}\currentdescriptionattribute % todo
-   \fi}
+     \dosetattribute{destination}\currentdescriptionattribute % todo, whole text
+     \forcecolorhack
+     \endgroup
+   \fi#1}
 
-\def\dodescriptionheadtext#1% title
+\def\@@dododescriptiontext
+  {\ctxlua{structure.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+
+\def\@@dodescriptiontext
   {\begingroup
    \dosetdescriptionattributes\c!headstyle\c!headcolor
    \the\everydescription
-   \descriptionparameter\c!command{\strut#1}% probably incomplete
+   \descriptionparameter\c!command{\strut\descriptionparameter\c!text\ignorespaces\@@dododescriptiontext}% probably incomplete
    \endgroup}
 
 % setup enumerations
@@ -603,31 +625,60 @@
 \letvalue{\??dd:\c!couplingway:\v!local }\plusone
 \letvalue{\??dd:\c!couplingway:\v!global}\plustwo
 
-\setvalue{\??dd:\v!enumeration:\s!handler         }{\@@doenumerationhandler}
-\setvalue{\??dd:\v!enumeration:\s!handler:\s!do   }{\@@somedescription}
-\setvalue{\??dd:\v!enumeration:\s!handler:\s!start}{\@@startsomedescription}
+\setvalue{\??dd:\v!enumeration:\s!handler:\s!number}{\@@doenumerationnumber}
+\setvalue{\??dd:\v!enumeration:\s!handler:\s!text  }{\@@doenumerationtext}
+\setvalue{\??dd:\v!enumeration:\s!handler          }{\@@doenumerationhandler}
+\setvalue{\??dd:\v!enumeration:\s!handler:\s!do    }{\@@somedescription}
+\setvalue{\??dd:\v!enumeration:\s!handler:\s!start }{\@@startsomedescription}
 
-\def\@@doenumerationhandler#1%
-  {\strut
-   \iftrialtypesetting \else
-     \begingroup
-     \currentdescriptionsynchronize
-     \dosetattribute{destination}\currentdescriptionattribute % todo, whole text
-     \forcecolorhack
-     \endgroup
-   \fi
-   \ifconditional\enumerationnumberenabled
+\let\@@doenumerationhandler\@@dodescriptionhandler
+
+% \def\currentenumerationfullnumber
+%   {\ctxlua{structure.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+
+\def\@@doenumerationnumber
+  {\ctxlua{structure.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+
+\def\@@dodoenumerationtext
+  {\ctxlua{structure.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+
+\def\doenumerationnumber
+  {\descriptionparameter\c!left
+   \dodescriptionnumber
+   \descriptionparameter\c!stopper
+   \descriptionparameter\c!right}
+
+\def\@@doenumerationtext
+  {\ifconditional\enumerationnumberenabled
      \iftrialtypesetting
-       \doenumerationfullnumber\showdntext{#1}%
+       \doenumerationfullnumber\showdntext
        \doenumerationcouplingsymbol
      \else
        \doenumerationregistercoupling
-       \doenumerationfullnumber\showdntext{#1}%
+       \doenumerationfullnumber\showdntext
        \doenumerationcouplingsymbol
      \fi
    \else
-     \doenumerationfullnumber\showdnpuretext{#1}%
+     \doenumerationfullnumber\showdnpuretext
    \fi}
+
+\def\doenumerationfullnumber#1% text, title
+  {\begingroup
+   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \the\everyenumeration
+   \descriptionparameter\c!command{\strut#1\doenumerationnumber\doenumerationextratext}%
+   \endgroup}
+
+\def\doenumerationextratext
+  {\doif{\descriptionparameter\c!title}\v!yes
+     {\begingroup
+      \dosetdescriptionattributes\c!titlestyle\c!titlecolor
+      \hskip\descriptionparameter\c!titledistance
+      \descriptionparameter\c!titlecommand
+         {\descriptionparameter\c!titleleft
+          \begstrut\@@dodoenumerationtext\endstrut
+          \descriptionparameter\c!titleright}%
+      \endgroup}}
 
 \def\doenumerationsavecounter     {\savestructurecounter[\currentdescriptionnumber]}
 \def\doenumerationrestorecounter  {\restorestructurecounter[\currentdescriptionnumber]}
@@ -659,38 +710,6 @@
   {\iflocation\ifcase\enumerationcouplingmode \else
      % todo
    \fi\fi}
-
-\def\currentdescriptiontext
-  {\ctxlua{structure.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
-
-\def\currentenumerationfullnumber
-%   {\ctxlua{structure.lists.savednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
-  {\ctxlua{structure.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
-
-\def\doenumerationfullnumber#1#2% text, title
-  {\begingroup
-   \dosetdescriptionattributes\c!headstyle\c!headcolor
-   \the\everyenumeration
-   \descriptionparameter\c!command
-     {\strut
-      #1%
-      \descriptionparameter\c!left
-      \currentenumerationfullnumber
-      % save cq. treat expansion etc
-      \doiftext{#2} % always true anyway
-        {\doif{\descriptionparameter\c!title}\v!yes
-           {\begingroup
-            \dosetdescriptionattributes\c!titlestyle\c!titlecolor
-            \hskip\descriptionparameter\c!titledistance
-            \descriptionparameter\c!titlecommand
-               {\descriptionparameter\c!titleleft
-                \begstrut#2\endstrut
-                \descriptionparameter\c!titleright}%
-            \endgroup}}%
-      %
-      \descriptionparameter\c!stopper
-      \descriptionparameter\c!right}%
-   \endgroup}
 
 \def\showdnpuretext{\strut\descriptionparameter\c!text} % geen spatie
 \def\showdnlisttext{\descriptionparameter\c!listtext}   % space in default
@@ -1026,6 +1045,15 @@
    \c!xmlsetup=,
    \s!catcodes=,
    \c!saveinlist=\v!yes]
+
+\setupdescriptions
+  [\c!width=7em,
+   \c!distance=1em]
+
+\setupdescriptions[\c!width:\c!top=\localhsize] % undocumented, only width and distance
+% \setupdescriptions[\c!width:\c!left=7em,\c!distance=1em]
+% \setupdescriptions[\c!width:\c!right=7em,\c!distance=1em]
+
 
 \setuplabels
   [\s!parent=\??dn]

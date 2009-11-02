@@ -225,6 +225,22 @@
     \definefontsynonym [AntykwaTorunska-CondMedItalicCap]  [file:AntykwaTorunskaCondMed-Italic]    [features=smallcaps]
 \stoptypescript
 
+\starttypescript [math][antykwa-torunska][all]
+    \definefontsynonym[MathRoman][antykwamath@antykwa-math]
+\stoptypescript
+
+\starttypescript [math][antykwa-torunska-light][all]
+    \definefontsynonym[MathRoman][antykwalightmath@antykwa-light-math]
+\stoptypescript
+
+\starttypescript [math][antykwa-torunska-cond][all]
+    \definefontsynonym[MathRoman][antykwacondmath@antykwa-cond-math]
+\stoptypescript
+
+\starttypescript [math][antykwa-torunska-lightcond][all]
+    \definefontsynonym[MathRoman][antykwalightcondmath@antykwa-lightcond-math]
+\stoptypescript
+
 % \starttypescript [math] [antykwa-torunska] [default]
 %     \definefontsynonym [AntykwaTorunska-Math-Letters-Regular]       [rm-anttr]
 %     \definefontsynonym [AntykwaTorunska-Math-Letters-Italic]        [mi-anttri]
@@ -252,14 +268,14 @@
 %     \definefontsynonym [AntykwaTorunska-Math-Symbols-CondLight]       [sy-anttclz]
 %     \definefontsynonym [AntykwaTorunska-Math-Extension-CondLight]     [ex-anttcl]
 % \stoptypescript
-%
-% \starttypescript [math] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
-%     \usemathcollection[default]
-%     \loadmapfile[antt-rm.map]
-%     \loadmapfile[antt-mi.map]
-%     \loadmapfile[antt-sy.map]
-%     \loadmapfile[antt-ex.map]
-% \stoptypescript
+
+\starttypescript [math] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
+    \usemathcollection[default]
+    \loadmapfile[antt-rm.map]
+    \loadmapfile[antt-mi.map]
+    \loadmapfile[antt-sy.map]
+    \loadmapfile[antt-ex.map]
+\stoptypescript
 
 % Antykwa Poltawskiego (GUST)
 

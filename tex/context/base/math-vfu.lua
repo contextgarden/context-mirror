@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 }
 
 -- All these math vectors .. thanks to Aditya and Mojca they become
--- better and better.
+-- better and better. If you have problems with math fonts or miss
+-- characters report it to the ConTeXt mailing list.
 
 local type, next = type, next
 
@@ -673,6 +674,10 @@ fonts.enc.math["tex-mr"] = {
 --  [0x000A8] = 0x7F, -- [math]ddot
 }
 
+fonts.enc.math["tex-mr-missing"] = {
+    [0x02236] = 0x3A, -- colon
+}
+
 fonts.enc.math["tex-mi"] = {
     [0x1D6E4] = 0x00, -- Gamma
     [0x1D6E5] = 0x01, -- Delta
@@ -1335,7 +1340,7 @@ fonts.vf.math.set_digits (fonts.enc.math, "tex-bf", 0x1D7CE)
 
 mathematics.make_font ( "lmroman5-math", {
     { name = "lmroman5-regular.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr5.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr5.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi5.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy5.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1356,7 +1361,7 @@ mathematics.make_font ( "lmroman5-math", {
 
 mathematics.make_font ( "lmroman6-math", {
     { name = "lmroman6-regular.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr6.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr6.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi6.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy6.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1380,7 +1385,7 @@ mathematics.make_font ( "lmroman6-math", {
 
 mathematics.make_font ( "lmroman7-math", {
     { name = "lmroman7-regular.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr7.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr7.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi7.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy7.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1402,7 +1407,7 @@ mathematics.make_font ( "lmroman7-math", {
 
 mathematics.make_font ( "lmroman8-math", {
     { name = "lmroman8-regular.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr8.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr8.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi8.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy8.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1424,7 +1429,7 @@ mathematics.make_font ( "lmroman8-math", {
 
 mathematics.make_font ( "lmroman9-math", {
     { name = "lmroman9-regular.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr9.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr9.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi9.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy9.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1449,7 +1454,7 @@ mathematics.make_font ( "lmroman9-math", {
 
 mathematics.make_font ( "lmroman10-math", {
     { name = "lmroman10-regular.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr10.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr10.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi10.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1466,7 +1471,7 @@ mathematics.make_font ( "lmroman10-math", {
 
 mathematics.make_font ( "lmroman10-boldmath", {
     { name = "lmroman10-bold.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr10.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr10.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmib10.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmbsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1488,7 +1493,7 @@ mathematics.make_font ( "lmroman10-boldmath", {
 
 mathematics.make_font ( "lmroman12-math", {
     { name = "lmroman12-regular.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr12.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr12.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi12.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1507,7 +1512,7 @@ mathematics.make_font ( "lmroman12-math", {
 
 mathematics.make_font ( "lmroman17-math", {
     { name = "lmroman17-regular.otf", features = "virtualmath", main = true },
- -- { name = "rm-lmr12.tfm", vector = "tex-mr" } ,
+    { name = "rm-lmr12.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi12.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
@@ -1542,6 +1547,42 @@ mathematics.make_font ( "tx-math", {
     { name = "txex.tfm", vector = "tex-ex", extension = true } ,
     { name = "txsya.tfm", vector = "tex-ma" },
     { name = "txsyb.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "antykwa-math", {
+    { name = "file:AntykwaTorunska-Regular", features = "virtualmath", main = true },
+    { name = "mi-anttri.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+    { name = "ex-anttr.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "antykwa-light-math", {
+    { name = "file:AntykwaTorunskaLight-Regular", features = "virtualmath", main = true },
+    { name = "mi-anttli.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+    { name = "ex-anttl.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "antykwa-cond-math", {
+    { name = "file:AntykwaTorunskaCond-Regular", features = "virtualmath", main = true },
+    { name = "mi-anttcri.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+    { name = "ex-anttcr.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "antykwa-lightcond-math", {
+    { name = "file:AntykwaTorunskaCondLight-Regular", features = "virtualmath", main = true },
+    { name = "mi-anttcli.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+    { name = "ex-anttcl.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
 } )
 
 mathematics.make_font ( "iwona-math", {

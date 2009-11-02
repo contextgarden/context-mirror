@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/01/09 21:29:22
+-- merge date  : 11/02/09 21:36:28
 
 do -- begin closure to overcome local limits and interference
 
@@ -5559,7 +5559,14 @@ otf.enhancers["reorganize mark classes"] = function(data,filename)
         for name, class in next, data.mark_classes do
             local t = { }
             for s in gmatch(class,"[^ ]+") do
-                t[unicodes[s]] = true
+                local us = unicodes[s]
+                if type(us) == "table" then
+                    for u=1,#us do
+                        t[us[u]] = true
+                    end
+                else
+                    t[us] = true
+                end
             end
             reverse[name] = t
         end
@@ -7360,6 +7367,8 @@ if not modules then modules = { } end modules ['font-otn'] = {
 -- this is still somewhat preliminary and it will get better in due time;
 -- much functionality could only be implemented thanks to the husayni font
 -- of Idris Samawi Hamid to who we dedicate this module.
+
+-- some day when we can jit this, we can use more functions
 
 -- we can use more lpegs when lpeg is extended with function args and so
 -- resolving to unicode does not gain much

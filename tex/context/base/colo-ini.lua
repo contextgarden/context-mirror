@@ -410,24 +410,31 @@ end
 
 -- experiment  (a bit of a hack, as we need to get the attribute number)
 
-local min = math.min
+local min, abs = math.min, math.abs
 
 local function f(one,two,i,fraction)
-    return min(fraction*(one[i]+two[i]),1)
+    local a, b = one[i], two[i]
+    if a > b then
+        return min(fraction*(a+b),1)
+    else
+        return min(1-fraction*(a+b),1)
+    end
 end
 
-function colors.defineintermediate(name,fraction,c_one,c_two,a_one,a_two,global,freeze)
+function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,specs,global,freeze)
     local one, two = colors.value(c_one), colors.value(c_two)
     if one and two then
         local csone, cstwo = one[1], two[1]
         if csone == cstwo then
+            -- actually we can set all 8 values at once here but this is cleaner as we avoid
+            -- problems with weighted gray conversions and work with original values
             local ca
             if csone == 2 then
                 ca = colors.register(name,'gray',f(one,two,2,fraction))
             elseif csone == 3 then
                 ca = colors.register(name,'rgb',f(one,two,3,fraction),f(one,two,4,fraction),f(one,two,5,fraction))
             elseif csone == 4 then
-                ca = colors.register(name,'rgb',f(one,two,6,fraction),f(one,two,7,fraction),f(one,two,8,fraction),f(one,two,9,fraction))
+                ca = colors.register(name,'cmyk',f(one,two,6,fraction),f(one,two,7,fraction),f(one,two,8,fraction),f(one,two,9,fraction))
             else
                 ca = colors.register(name,'gray',f(one,two,2,fraction))
             end
@@ -435,11 +442,11 @@ function colors.defineintermediate(name,fraction,c_one,c_two,a_one,a_two,global,
         end
     end
     local one, two = transparencies.value(a_one), transparencies.value(a_two)
-    if one and two then
-        local tsone, tstwo = one[1], two[1]
-        if tsone == tstwo then
-            local ta = transparencies.register(name,tsone,f(one,two,2,fraction))
-            definetransparent(name,ta,global)
-        end
+    local t = settings_to_hash_strict(specs)
+    local ta = (t and t.a) or (one and one[1]) or (two and two[1])
+    local tt = (t and t.t) or (one and two and f(one,two,2,fraction))
+--~ print(t,table.serialize(t),ta,tt)
+    if ta and tt then
+        definetransparent(name,transparencies.register(name,ta,tt),global)
     end
 end
