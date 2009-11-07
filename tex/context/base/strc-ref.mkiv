@@ -1017,8 +1017,8 @@
 
 \def\extrareferencearguments{\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow,"\currentviewerlayer"}
 
-\unexpanded\def\directgoto    {\ifconditional\uselocationstrut\expandafter\dodirectgoto\else\expandafter\directgotohtdp\fi}
-\unexpanded\def\goto          {\ifconditional\uselocationstrut\expandafter\dogoto      \else\expandafter\gotohtdp      \fi}
+\unexpanded\def\directgoto{\ifconditional\uselocationstrut\expandafter\dodirectgoto\else\expandafter\directgotohtdp\fi}
+\unexpanded\def\goto      {\ifconditional\uselocationstrut\expandafter\dogoto      \else\expandafter\gotohtdp      \fi}
 
 % The unbox trick is needed in order to permit \par inside a reference. Otherwise
 % the reference attribute migrates to the outer boxes.
@@ -1614,7 +1614,7 @@
    \setbox\scratchbox\hbox{#1}% to be solved some day
    \ifdim\wd\scratchbox>\zeropoint
      \unhbox\scratchbox
-     \@@rfseparator
+     \doifsomething\@@rfseparator{\removeunwantedspaces\@@rfseparator}% remove is new
    \else
      \unhbox\scratchbox
    \fi

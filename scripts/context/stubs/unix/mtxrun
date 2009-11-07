@@ -812,7 +812,8 @@ local function do_serialize(root,name,depth,level,indexed)
                         handle(format("%s %s,",depth,v))
                     end
                 elseif t == "string" then
-                    if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+--~                     if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                    if reduce and tonumber(v) then
                         handle(format("%s %s,",depth,v))
                     else
                         handle(format("%s %q,",depth,v))
@@ -871,7 +872,8 @@ local function do_serialize(root,name,depth,level,indexed)
                     end
                 end
             elseif t == "string" then
-                if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+--~                 if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                if reduce and tonumber(v) then
                 --~ handle(format("%s %s=%s,",depth,key(k),v))
                     if type(k) == "number" then -- or find(k,"^%d+$") then
                         if hexify then
@@ -4847,7 +4849,9 @@ local lp_builtin = P (
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
 local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
-local lp_fastpos   = ((R("09","--","++")^1 * P(-1)) / function(s) return "l==" .. s end)
+local lp_fastpos_p = ((P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end)
+local lp_fastpos_n = ((P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end)
+local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
 
 local lp_lua_function  = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
@@ -4899,11 +4903,11 @@ local content =
     lp_child +
     lp_any
 
-local converter = lpeg.Cs (
-    lp_fastpos + (lpeg.P { lparent * (lpeg.V(1))^0 * rparent + content } )^0
+local converter = Cs (
+    lp_fastpos + (P { lparent * (V(1))^0 * rparent + content } )^0
 )
 
-cleaner = lpeg.Cs ( (
+cleaner = Cs ( (
 --~     lp_fastpos +
     lp_reserved +
     lp_string +
@@ -5647,6 +5651,21 @@ local type = type
 local insert, remove = table.insert, table.remove
 local gmatch, gsub = string.gmatch, string.gsub
 
+
+function xml.inheritedconvert(data,xmldata)
+    local settings = xmldata.settings
+    settings.parent_root = xmldata -- to be tested
+--~ settings.no_root = true
+    local xc = xmlconvert(data,settings)
+--~ xc.settings = nil
+--~ xc.entities = nil
+--~ xc.special = nil
+--~ xc.ri = nil
+--~ print(xc.tg)
+--    for k,v in pairs(xc) do print(k,tostring(v)) end
+    return xc
+end
+
 local function withelements(e,handle,depth)
     if e and handle then
         local edt = e.dt
@@ -5774,24 +5793,33 @@ end
 
 local no_root = { no_root = true }
 
+function xml.redo_ni(d)
+    for k=1,#d do
+        local dk = d[k]
+        if type(dk) == "table" then
+            dk.ni = k
+        end
+    end
+end
+
 function xml.inject_element(root, pattern, element, prepend)
     if root and element then
         if type(element) == "string" then
-            element = xmlconvert(element,no_root)
+--~             element = xmlconvert(element,no_root)
+            element = xml.inheritedconvert(element,root)
         end
         if element then
+            if element.ri then
+                element = element.dt[element.ri].dt
+            else
+                element = element.dt
+            end
+            -- we need to re-index
             local collected = xmlparseapply({ root },pattern)
             if collected then
                 for c=1,#collected do
                     local e = collected[c]
-                    local r = e.__p__
-                    local d = r.dt
-                    local k = e.ni
-                    if element.ri then
-                        element = element.dt[element.ri].dt
-                    else
-                        element = element.dt
-                    end
+                    local r, d, k = e.__p__, r.dt, e.ni
                     local edt
                     if r.ri then
                         edt = r.dt[r.ri].dt
@@ -5802,8 +5830,11 @@ function xml.inject_element(root, pattern, element, prepend)
                         local be, af
                         if prepend then
                             be, af = xmlcopy(element), edt
+be.__p__ = e
+
                         else
                             be, af = edt, xmlcopy(element)
+af.__p__ = e
                         end
                         for i=1,#af do
                             be[#be+1] = af[i]
@@ -5816,6 +5847,7 @@ function xml.inject_element(root, pattern, element, prepend)
                     else
                         -- r.dt = element.dt -- todo
                     end
+xml.redo_ni(d)
                 end
             end
         end
@@ -5831,7 +5863,8 @@ function xml.insert_element(root, pattern, element, before) -- todo: element als
         else
             local matches, collect = { }, nil
             if type(element) == "string" then
-                element = xmlconvert(element,true)
+--~                 element = xmlconvert(element,no_root)
+                element = xml.inheritedconvert(element,root)
             end
             if element and element.ri then
                 element = element.dt[element.ri]
@@ -5847,17 +5880,25 @@ function xml.insert_element(root, pattern, element, before) -- todo: element als
                         if not before then
                             k = k + 1
                         end
+                        local ce = xmlcopy(element)
+ce.__p__ = r
                         if element.tg then
-                            insert(d,k,element) -- untested
+                            insert(d,k,ce) -- untested
                         else
-                            local edt = element.dt
+                            -- maybe bugged
+                            local edt = ce.dt
                             if edt then
                                 for i=1,#edt do
-                                    insert(d,k,edt[i])
+local edti = edt[i]
+                                    insert(d,k,edti)
+if type(edti) == "table" then
+    edti.__p__ = r
+end
                                     k = k + 1
                                 end
                             end
                         end
+xml.redo_ni(d)
                     end
                 end
             end
@@ -5882,10 +5923,11 @@ function xml.delete_element(root, pattern)
             local p = e.__p__
             if p then
                 if trace_manipulations then
-                    report('deleting',pattern,c,e)
+                    report('deleting',pattern,c,tostring(e)) -- fails
                 end
-                remove(p.dt,e.ni)
-                e.ni = nil
+                local d = p.dt
+                remove(d,e.ni)
+xml.redo_ni(d)
             end
         end
     end
@@ -5893,7 +5935,8 @@ end
 
 function xml.replace_element(root, pattern, element)
     if type(element) == "string" then
-        element = xmlconvert(element,true)
+--~         element = xmlconvert(element,true)
+            element = xml.inheritedconvert(element,root)
     end
     if element and element.ri then
         element = element.dt[element.ri]
@@ -5908,7 +5951,9 @@ function xml.replace_element(root, pattern, element)
                     if trace_manipulations then
                         report('replacing',pattern,c,e)
                     end
-                    p.dt[e.ni] = element.dt -- maybe not clever enough
+                    local d = p.dt
+                    d[e.ni] = element.dt -- maybe not clever enough
+--~ xml.redo_ni(d)
                 end
             end
         end
@@ -5944,9 +5989,10 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
                 -- for the moment hard coded
                 epdt[ek.ni] = xml.escaped(data) -- d[k] = xml.escaped(data)
             else
-                local settings = xmldata.settings
-                settings.parent_root = xmldata -- to be tested
-                local xi = xmlconvert(data,settings)
+--~                 local settings = xmldata.settings
+--~                 settings.parent_root = xmldata -- to be tested
+--~                 local xi = xmlconvert(data,settings)
+                local xi = xml.inheritedconvert(element,xmldata)
                 if not xi then
                     epdt[ek.ni] = "" -- xml.empty(d,k)
                 else
@@ -6175,17 +6221,19 @@ local function chainattribute(collected,arguments) -- todo: optional levels
     return ""
 end
 
-local function raw(collected)
+local function raw(collected) -- hybrid
     if collected then
-        return xmlserialize(collected[1]) -- only first as we cannot concat function
+        local e = collected[1] or collected
+        return (e and xmlserialize(e)) or "" -- only first as we cannot concat function
     else
         return ""
     end
 end
 
-local function text(collected)
+local function text(collected) -- hybrid
     if collected then
-        return xmltostring(collected[1].dt) -- only first as we cannot concat function
+        local e = collected[1] or collected
+        return (e and xmltostring(e.dt)) or ""
     else
         return ""
     end
@@ -6328,9 +6376,14 @@ end
 
 function xml.text(id,pattern)
     if pattern then
-        return text(xmlfilter(id,pattern))
+     -- return text(xmlfilter(id,pattern))
+        local collected = xmlfilter(id,pattern)
+        return (collected and xmltostring(collected[1].dt)) or ""
+    elseif id then
+     -- return text(id)
+        return xmltostring(id.dt) or ""
     else
-        return text(id)
+        return ""
     end
 end
 

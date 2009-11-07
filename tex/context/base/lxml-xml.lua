@@ -94,17 +94,19 @@ local function chainattribute(collected,arguments) -- todo: optional levels
     return ""
 end
 
-local function raw(collected)
+local function raw(collected) -- hybrid
     if collected then
-        return xmlserialize(collected[1]) -- only first as we cannot concat function
+        local e = collected[1] or collected
+        return (e and xmlserialize(e)) or "" -- only first as we cannot concat function
     else
         return ""
     end
 end
 
-local function text(collected)
+local function text(collected) -- hybrid
     if collected then
-        return xmltostring(collected[1].dt) -- only first as we cannot concat function
+        local e = collected[1] or collected
+        return (e and xmltostring(e.dt)) or ""
     else
         return ""
     end
@@ -247,9 +249,14 @@ end
 
 function xml.text(id,pattern)
     if pattern then
-        return text(xmlfilter(id,pattern))
+     -- return text(xmlfilter(id,pattern))
+        local collected = xmlfilter(id,pattern)
+        return (collected and xmltostring(collected[1].dt)) or ""
+    elseif id then
+     -- return text(id)
+        return xmltostring(id.dt) or ""
     else
-        return text(id)
+        return ""
     end
 end
 

@@ -1044,6 +1044,241 @@
   {\preparebinrel{#2}%
    \currentbinrel{\mathop{\kern\zeropoint#2}\limits_{#1}}}
 
+%D The following code comes from \type {math-str.mkiv}.
+
+%D Here we implement a basic math alignment mechanism. Numbers
+%D are also handled. The macros \type {\startinnermath} and
+%D \type {\stopinnermath} can be overloaded in specialized
+%D modules.
+
+\def\startinnermath
+  {\getvalue{\e!start\??fm\formulaparameter\c!align}}
+
+\def\stopinnermath
+  {\getvalue{\e!stop \??fm\formulaparameter\c!align}}
+
+\def\mathinnerstrut
+  {\doif{\formulaparameter\c!strut}\v!yes\strut}
+
+\long\def\defineinnermathhandler#1#2#3%
+  {\setvalue{\e!start\??fm#1}{#2}%
+   \setvalue{\e!stop \??fm#1}{#3}}
+
+\newif\iftracemath
+
+\def\mathhbox
+  {\iftracemath\ruledhbox\else\hbox\fi}
+
+\chardef\mathraggedstatus=0 % normal left center  right
+\chardef\mathnumberstatus=0 % nothing normal shift_right
+\let\mathnumbercorrection\!!zeropoint
+
+\def\startmathbox#1%
+  {\hsize\displaywidth
+   \global\chardef\mathnumberstatus\plusone
+   \chardef\mathraggedstatus#1\relax
+   \let\mathnumbercorrection\!!zeropoint
+   \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
+   \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
+   % added
+   \let\normalreqno\eqno
+   \let\normalleqno\leqno
+   % added
+   \doplaceformulanumber
+   \setbox\scratchbox\mathhbox to \displaywidth\bgroup
+     \mathinnerstrut
+     $%
+     \displaystyle
+     \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
+
+\def\llappedmathno
+  {\ifcase\mathraggedstatus\or
+     \@eqno
+   \or
+     \llap{\@eqno}%
+   \or
+     \llap{\@eqno}%
+   \fi}
+
+\def\rlappedmathno
+  {\ifcase\mathraggedstatus\or
+     \rlap{\@leqno}%
+   \or
+     \rlap{\@leqno}%
+   \or
+     \@leqno
+   \fi}
+
+\def\stopmathbox
+  {$%
+   \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
+   \egroup
+   \setbox0\hbox{\unhcopy\scratchbox}%
+   \scratchdimen\wd0
+   \ifdim\scratchdimen>\displaywidth
+     \donetrue
+   \else
+     \donefalse
+   \fi
+   \hbox to \displaywidth\bgroup
+     \ifcase\mathnumberstatus
+       \box\scratchbox
+     \or
+       \ifx\@leqno\empty
+         \ifx\@eqno\empty
+           \box\scratchbox
+         \else
+           \ifdone
+             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\llappedmathno}}%
+           \else
+             \hss\box\scratchbox\llappedmathno % hss makes room for number
+           \fi
+         \fi
+       \else
+         \ifdone
+           \vbox{\hbox to \displaywidth{\rlappedmathno\hss}\box\scratchbox}%
+         \else
+           \rlappedmathno\box\scratchbox\hss % hss makes room for number
+         \fi
+       \fi
+     \or
+        \hskip\mathnumbercorrection
+        \box\scratchbox
+        \hss
+     \else
+        \box\scratchbox
+     \fi
+   \egroup}
+
+\defineinnermathhandler\v!left      {\startmathbox\plusone  }{\stopmathbox}
+\defineinnermathhandler\v!middle    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!right     {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!flushleft {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!center    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!flushright{\startmathbox\plusone  }{\stopmathbox}
+
+%D [The examples below are in english and don't process in the
+%D  documentation style, which will be english some day.]
+%D
+%D Normally a formula is centered, but in case you want to
+%D align it left or right, you can set up formulas to behave
+%D that way. Normally a formula will adapt is left indentation
+%D to the environment:
+%D
+%D \startbuffer
+%D \fakewords{20}{40}\epar
+%D \startitemize
+%D \item \fakewords{20}{40}\epar
+%D       \placeformula \startformula \fakeformula \stopformula
+%D \item \fakewords{20}{40}\epar
+%D \stopitemize
+%D \fakewords{20}{40}\epar
+%D \stopbuffer
+%D
+%D % \getbuffer
+%D
+%D In the next examples we explicitly align formulas to the
+%D left (\type {\raggedleft}), center and right (\type
+%D {\raggedright}):
+%D
+%D \startbuffer
+%D \setupformulas[align=left]
+%D \startformula\fakeformula\stopformula
+%D \setupformulas[align=middle]
+%D \startformula\fakeformula\stopformula
+%D \setupformulas[align=right]
+%D \startformula\fakeformula\stopformula
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Or in print:
+%D
+%D % {\getbuffer}
+%D
+%D With formula numbers these formulas look as follows:
+%D
+%D \startbuffer
+%D \setupformulas[align=left]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \setupformulas[align=middle]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \setupformulas[align=right]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \stopbuffer
+%D
+%D % {\getbuffer}
+%D
+%D This was keyed in as:
+%D
+%D \typebuffer
+%D
+%D When tracing is turned on (\type {\tracemathtrue}) you can
+%D visualize the bounding box of the formula,
+%D
+%D % {\tracemathtrue\getbuffer}
+%D
+%D As you can see, the dimensions are the natural ones, but if
+%D needed you can force a normalized line:
+%D
+%D \startbuffer
+%D \setupformulas[strut=yes]
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This time we get a more spacy result.
+%D
+%D % {\tracemathtrue\getbuffer}
+%D
+%D We will now show a couple of more settings and combinations
+%D of settings. In centered formulas, the number takes no space
+%D
+%D \startbuffer
+%D \setupformulas[align=middle]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D You can influence the placement of the whole box with the
+%D parameters \type {leftmargin} and \type {rightmargin}.
+%D
+%D \startbuffer
+%D \setupformulas[align=right,leftmargin=3em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D
+%D \setupformulas[align=left,rightmargin=1em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D You can also inherit the margin from the environment.
+%D
+%D \startbuffer
+%D \setupformulas[align=right,margin=standard]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D The distance between the formula and the number is only
+%D applied when the formula is left or right aligned.
+%D
+%D \startbuffer
+%D \setupformulas[align=left,distance=2em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+
 \protect \endinput
 
 % \placeformula \startformula[-] \startmatrix

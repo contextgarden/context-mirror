@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['page-lin'] = {
 -- experimental
 
 local format = string.format
-local texsprint, texbox = tex.sprint, tex.box
+local texsprint, texwrite, texbox = tex.sprint, tex.write, tex.box
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -69,7 +69,10 @@ function nodes.lines.finalize(t)
         for _,r in next, p do
             if r.metadata.kind == "line" then
                 local e = r.entries
-                e.linenumber = getnumber(e.text or 0)
+                local u = r.userdata
+                e.linenumber = getnumber(e.text or 0) -- we can nil e.text
+                e.conversion = u and u.conversion
+                r.userdata = nil -- hack
             end
         end
     end
@@ -83,12 +86,18 @@ jobreferences.registerfinalizer(nodes.lines.finalize)
 filters.line = filters.line or { }
 
 function filters.line.default(data)
-    helpers.title(data.entries.linenumber or "?",data.metadata)
+--  helpers.title(data.entries.linenumber or "?",data.metadata)
+    texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",data.entries.conversion or "numbers",data.entries.linenumber or "0"))
 end
 
 function filters.line.page(data,prefixspec,pagespec) -- redundant
     helpers.prefixpage(data,prefixspec,pagespec)
 end
+
+function filters.line.linenumber(data) -- raw
+    texwrite(data.entries.linenumber or "0")
+end
+
 
 -- boxed variant
 

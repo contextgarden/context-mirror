@@ -328,8 +328,12 @@
 		<cd:variable name='outer' value='خارجی'/>
 		<cd:variable name='outeredge' value='لبه‌خارجی'/>
 		<cd:variable name='outermargin' value='حاشیه‌خارجی'/>
+		<cd:variable name='overbar' value='میله‌رو'/>
+		<cd:variable name='overbars' value='میله‌ها‌رو'/>
 		<cd:variable name='overlay' value='پوشش'/>
 		<cd:variable name='overprint' value='overprint'/>
+		<cd:variable name='overstrike' value='خط‌زدن'/>
+		<cd:variable name='overstrikes' value='خط‌زدنها'/>
 		<cd:variable name='packed' value='فشرده'/>
 		<cd:variable name='page' value='صفحه'/>
 		<cd:variable name='pagecomment' value='توضیح‌صفحه'/>
@@ -483,6 +487,8 @@
 		<cd:variable name='type' value='تایپ'/>
 		<cd:variable name='typing' value='تایپ‌کردن'/>
 		<cd:variable name='unavailable' value='غیرموجود'/>
+		<cd:variable name='underbar' value='میله‌زیر'/>
+		<cd:variable name='underbars' value='میله‌‌های‌زیر'/>
 		<cd:variable name='unit' value='واحد'/>
 		<cd:variable name='units' value='واحدها'/>
 		<cd:variable name='unknown' value='ناشناس'/>
@@ -793,6 +799,7 @@
 		<cd:constant name='openaction' value='عمل‌باز'/>
 		<cd:constant name='openpageaction' value='عمل‌صفحه‌باز'/>
 		<cd:constant name='option' value='گزینه'/>
+		<cd:constant name='order' value='order'/>
 		<cd:constant name='orientation' value='جهت‌دهی'/>
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='حاشیه‌خارجی'/>
@@ -923,6 +930,7 @@
 		<cd:constant name='stop' value='پایان'/>
 		<cd:constant name='stopper' value='ایست'/>
 		<cd:constant name='stretch' value='کشیدن'/>
+		<cd:constant name='strip' value='strip'/>
 		<cd:constant name='strut' value='بست'/>
 		<cd:constant name='style' value='سبک'/>
 		<cd:constant name='sub' value='زیر'/>
@@ -1314,10 +1322,6 @@
 		<cd:command name='outeredgewidth' value='عرض‌لبه‌خارجی'/>
 		<cd:command name='outermargindistance' value='فاصله‌حاشیه‌خارجی'/>
 		<cd:command name='outermarginwidth' value='عرض‌حاشیه‌خارجی'/>
-		<cd:command name='overbar' value='میله‌رو'/>
-		<cd:command name='overbars' value='میله‌ها‌رو'/>
-		<cd:command name='overstrike' value='خط‌زدن'/>
-		<cd:command name='overstrikes' value='خط‌زدنها'/>
 		<cd:command name='packed' value='فشرده'/>
 		<cd:command name='page' value='صفحه'/>
 		<cd:command name='pagedepth' value='عمق‌صفحه'/>
@@ -1652,8 +1656,6 @@
 		<cd:command name='type' value='تایپ'/>
 		<cd:command name='typebuffer' value='تایپ‌بافر'/>
 		<cd:command name='typefile' value='تایپ‌پرونده'/>
-		<cd:command name='underbar' value='میله‌زیر'/>
-		<cd:command name='underbars' value='میله‌‌های‌زیر'/>
 		<cd:command name='unitmeaning' value='معنی‌واحد'/>
 		<cd:command name='unknown' value='ناشناس'/>
 		<cd:command name='useJSscripts' value='useJSscripts'/>

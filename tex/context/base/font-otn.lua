@@ -304,16 +304,29 @@ end
 
 local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
     if start ~= stop then
+--~         if discfound then
+--~             local lignode = copy_node(start)
+--~             lignode.font = start.font
+--~             lignode.char = char
+--~             lignode.subtype = 2
+--~             start = node.do_ligature_n(start, stop, lignode)
+--~             if start.id == disc then
+--~                 local prev = start.prev
+--~                 start = start.next
+--~             end
         if discfound then
+         -- print("start->stop",nodes.tosequence(start,stop))
             local lignode = copy_node(start)
-            lignode.font = start.font
-            lignode.char = char
-            lignode.subtype = 2
-            start = node.do_ligature_n(start, stop, lignode)
-            if start.id == disc then
-                local prev = start.prev
-                start = start.next
+            lignode.font, lignode.char, lignode.subtype = start.font, char, 2
+            local next, prev = stop.next, start.prev
+            stop.next = nil
+            lignode = node.do_ligature_n(start, stop, lignode)
+            prev.next = lignode
+            if next then
+                next.prev = lignode
             end
+            lignode.next, lignode.prev = next, prev
+         -- print("start->end",nodes.tosequence(start))
         else -- start is the ligature
             local deletemarks = markflag ~= "mark"
             local n = copy_node(start)

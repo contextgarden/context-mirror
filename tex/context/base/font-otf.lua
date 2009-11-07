@@ -19,6 +19,7 @@ local trace_dynamics   = false  trackers.register("otf.dynamics",     function(v
 local trace_sequences  = false  trackers.register("otf.sequences",    function(v) trace_sequences    = v end)
 local trace_math       = false  trackers.register("otf.math",         function(v) trace_math         = v end)
 local trace_unimapping = false  trackers.register("otf.unimapping",   function(v) trace_unimapping   = v end)
+local trace_defining   = false  trackers.register("fonts.defining",   function(v) trace_defining     = v end)
 
 --~ trackers.enable("otf.loading")
 
@@ -269,6 +270,9 @@ function otf.load(filename,format,sub,featurefile)
         end
     end
     if data then
+        if trace_defining then
+            logs.report("define font","loading from cache: %s",hash)
+        end
         otf.enhance("unpack",data,filename,false) -- no message here
         otf.add_dimensions(data)
         if trace_sequences then

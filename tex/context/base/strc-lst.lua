@@ -38,6 +38,7 @@ lists.internals = lists.internals or { }
 lists.ordered   = lists.ordered   or { }
 
 local variables = interfaces.variables
+local matching_till_depth, number_at_depth = sections.matching_till_depth, sections.number_at_depth
 
 local function initializer()
     -- create a cross reference between internal references
@@ -78,8 +79,7 @@ if job then
     job.register('structure.lists.collected', structure.lists.tobesaved, initializer)
 end
 
-local cached = { }
-local pushed = { }
+local cached, pushed = { }, { }
 
 function lists.push(t)
     local r = t.references
@@ -127,7 +127,7 @@ function lists.pushnesting(i)
     local name = r.metadata.name
     local numberdata = r and r.numberdata
     local n = (numberdata and numberdata.numbers[sections.getlevel(name)]) or 0
-    insert(nesting, { number = n, name = name, result = lists.result })
+    insert(nesting, { number = n, name = name, result = lists.result, parent = r })
 end
 
 function lists.popnesting()
@@ -135,7 +135,7 @@ function lists.popnesting()
     lists.result = old.result
 end
 
-local function filter_collected(names, criterium, number, collected)
+local function filter_collected(names, criterium, number, collected, nested)
     local numbers, depth = documents.data.numbers, documents.data.depth
     local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
     if not all then
@@ -269,21 +269,22 @@ local function filter_collected(names, criterium, number, collected)
     elseif criterium == variables["local"] then -- not yet ok
         local nested = nesting[#nesting]
         if nested then
-            return filter_collected(names,nested.name,nested.number,collected)
+            return filter_collected(names,nested.name,nested.number,collected,nested)
         elseif sections.autodepth(documents.data.numbers) == 0 then
             return filter_collected(names,variables.all,number,collected)
         else
             return filter_collected(names,variables.current,number,collected)
         end
     else -- sectionname, number
-        -- now same as register
+        -- not the same as register
         local depth = sections.getlevel(criterium)
-        local number = tonumber(number) or sections.number_at_depth(depth) or 0
+        local number = tonumber(number) or number_at_depth(depth) or 0
         if trace_lists then
             local t = sections.numbers()
-            detail = format("depth: %s, number: %s, numbers: %s",depth,number,(#t>0 and concat(t,".",1,depth)) or "?")
+            detail = format("depth: %s, number: %s, numbers: %s, startset: %s",depth,number,(#t>0 and concat(t,".",1,depth)) or "?",#collected)
         end
         if number > 0 then
+            local parent = nested and nested.parent and nested.parent.numberdata.numbers -- so local as well as nested
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
@@ -293,7 +294,7 @@ local function filter_collected(names, criterium, number, collected)
                         local metadata = v.metadata
                         local cnumbers = sectionnumber.numbers
                         if cnumbers then
-                            if (all or hash[metadata.name or false]) and #cnumbers >= depth and sections.matching_till_depth(depth,cnumbers) then
+                            if (all or hash[metadata.name or false]) and #cnumbers >= depth and matching_till_depth(depth,cnumbers,parent) then
                                 result[#result+1] = v
                             end
                         end
@@ -404,6 +405,7 @@ function lists.savedprefixednumber(name,n)
         helpers.prefix(data,data.prefixdata)
         local numberdata = data.numberdata
         if numberdata then
+--~ print(name,n,table.serialize(numberdata))
             sections.typesetnumber(numberdata,"number",numberdata or false)
         end
     end

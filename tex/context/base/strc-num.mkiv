@@ -95,8 +95,6 @@
 % \def\dostructurecounterparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dostructurecounterparentparameter\csname#1\s!number\endcsname#2\fi}
 % \def\dostructurecounterparentparameter#1#2{\ifx#1\relax\s!empty\else\dostructurecounterparameter#1#2\fi}
 
-%
-
 \def\definestructurecounter
   {\dodoubleempty\dodefinestructurecounter}
 
@@ -373,7 +371,7 @@
    %
    \doif{#3\c!title}\v!none{\setfalse\hasstructurecountercaption\setfalse\hasstructurecounternumber}% will become obsolete
    %
-   \ifx\hasstructurecounternumber\v!yes
+   \ifx\hasstructurecounternumber\v!yes % here due to previous test but best in callers
      \doincrementsubstructurecounter[\currentcounter][\hasstructurecounterlevel]%
    \fi
    %

@@ -273,9 +273,9 @@ storage.register("vspacing/data/skip", vspacing.data.skip, "vspacing.data.skip")
 
 do -- todo: interface.variables
 
-    local function logger(c,s)
-        logs.report("vspacing",s)
-        texsprint(c,s)
+    local function logger(c,...)
+        logs.report("vspacing",concat {...})
+        texsprint(c,...)
     end
 
     vspacing.fixed = false
@@ -436,7 +436,7 @@ end
 local function trace_node(what)
     local nt = node.type(what.id)
     local tl = trace_list[#trace_list]
-    if tl[1] == "node" then
+    if tl and tl[1] == "node" then
         trace_list[#trace_list] = { "node", tl[2] .. " + " .. nt }
     else
         trace_list[#trace_list+1] = { "node", nt }
@@ -577,7 +577,8 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         if glue_data then
             if force_glue then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
-                head, _ = forced_skip(head,current,glue_data.spec.width,"before",trace)
+                local spec = glue_data.spec
+                head, _ = forced_skip(head,current,(spec and spec.width) or 0,"before",trace)
                 free_glue_node(glue_data)
             elseif glue_data.spec then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
@@ -737,7 +738,8 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                     free_glue_node(glue_data) -- also free spec
                     head, current, glue_data = remove_node(head, current)
                 elseif sc == force then
-                    -- todo: inject kern
+                    -- last one counts, some day we can provide an accumulator and largest etc
+                    -- but not now
                     if trace then trace_skip('force',sc,so,sp,current) end
                     free_glue_node(glue_data) -- also free spec
                     head, current, glue_data = remove_node(head, current)
@@ -847,27 +849,27 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             current = current.next
         elseif subtype == above_display_skip then
             --
-if trace then trace_skip("above display skip (normal)",sc,so,sp,current) end
-flush("above display skip (normal)")
-current = current.next
+            if trace then trace_skip("above display skip (normal)",sc,so,sp,current) end
+            flush("above display skip (normal)")
+            current = current.next
             --
         elseif subtype == below_display_skip then
             --
-if trace then trace_skip("below display skip (normal)",sc,so,sp,current) end
-flush("below display skip (normal)")
-current = current.next
+            if trace then trace_skip("below display skip (normal)",sc,so,sp,current) end
+            flush("below display skip (normal)")
+            current = current.next
             --
         elseif subtype == above_display_short_skip then
             --
-if trace then trace_skip("above display skip (short)",sc,so,sp,current) end
-flush("above display skip (short)")
-current = current.next
+            if trace then trace_skip("above display skip (short)",sc,so,sp,current) end
+            flush("above display skip (short)")
+            current = current.next
             --
         elseif subtype == below_display_short_skip then
             --
-if trace then trace_skip("below display skip (short)",sc,so,sp,current) end
-flush("below display skip (short)")
-current = current.next
+            if trace then trace_skip("below display skip (short)",sc,so,sp,current) end
+            flush("below display skip (short)")
+            current = current.next
             --
         else -- other glue
             if snap and trace_vsnapping and current.spec and current.spec.width ~= 0 then

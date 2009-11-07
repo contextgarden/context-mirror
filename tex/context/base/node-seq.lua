@@ -13,6 +13,8 @@ assume that namespaces for the functions are used, but for speed we
 use locals to refer to them when compiling the chain.</p>
 --ldx]]--
 
+-- todo: delayed: i.e. we register them in the right order already but delay usage
+
 local format, gsub, concat, gmatch = string.format, string.gsub, table.concat, string.gmatch
 
 sequencer = sequencer or { }
@@ -30,9 +32,11 @@ end
 
 function sequencer.reset()
     return {
-        list = { },
+        list  = { },
         order = { },
-        kind = { },
+        kind  = { },
+        askip = { },
+        gskip = { },
     }
 end
 
@@ -68,6 +72,11 @@ function sequencer.appendaction(t,group,action,where,kind,force)
     end
 end
 
+function sequencer.enableaction (t,action) t.askip[action] = false end
+function sequencer.disableaction(t,action) t.askip[action] = true  end
+function sequencer.enablegroup  (t,group)  t.gskip[group]  = false end
+function sequencer.disablegroup (t,group)  t.gskip[group]  = true  end
+
 function sequencer.setkind(t,action,kind)
     t.kind[action] = kind
 end
@@ -101,15 +110,20 @@ return function(...)
 end]]
 
 function sequencer.tostring(t,n) -- n not done
-    local list, order, kind, vars, calls = t.list, t.order, t.kind, { }, { }
+    local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
+    local vars, calls, args = { }, { }, nil
     for i=1,#order do
         local group = order[i]
-        local actions = list[group]
-        for i=1,#actions do
-            local action = actions[i]
-            local localized = localize(action)
-            vars [#vars +1] = format("local %s = %s", localized, action)
-            calls[#calls+1] = format("  %s(...) -- %s %i", localized, group, i)
+        if not gskip[group] then
+            local actions = list[group]
+            for i=1,#actions do
+                local action = actions[i]
+                if not askip[action] then
+                    local localized = localize(action)
+                    vars [#vars +1] = format("local %s = %s", localized, action)
+                    calls[#calls+1] = format("  %s(...) -- %s %i", localized, group, i)
+                end
+            end
         end
     end
     return format(template,concat(vars,"\n"),concat(calls,"\n"))
@@ -130,7 +144,8 @@ return function(head%s)
 end]]
 
 function sequencer.nodeprocessor(t,n)
-    local list, order, kind, vars, calls, args = t.list, t.order, t.kind, { }, { }, nil
+    local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
+    local vars, calls, args = { }, { }, nil
     if n == 0 then
         args = ""
     elseif n == 1 then
@@ -142,20 +157,24 @@ function sequencer.nodeprocessor(t,n)
     end
     for i=1,#order do
         local group = order[i]
-        local actions = list[group]
-        for i=1,#actions do
-            local action = actions[i]
-            local localized = localize(action)
-            vars[#vars+1] = format("local %s = %s",localized,action)
-            if kind[action] == "nohead" then
-                calls[#calls+1] = format("        ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
-            else
-                calls[#calls+1] = format("  head, ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
+        if not gskip[group] then
+            local actions = list[group]
+            for i=1,#actions do
+                local action = actions[i]
+                if not askip[action] then
+                    local localized = localize(action)
+                    vars[#vars+1] = format("local %s = %s",localized,action)
+                    if kind[action] == "nohead" then
+                        calls[#calls+1] = format("        ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
+                    else
+                        calls[#calls+1] = format("  head, ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
+                    end
+                end
             end
         end
     end
     local processor = format(template,concat(vars,"\n"),args,concat(calls,"\n"))
- -- print(processor)
+--~ print(processor)
     return processor
 end
 

@@ -521,7 +521,7 @@
      \begingroup
      \doenumerationcheckconditions
      \let\currentnote\currentdescriptionmain
-     \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#3},\c!bookmark=,][]%
+     \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#3},\c!list=,\c!bookmark=,][]%
      \xdef\currentnotenumber{\ctxlua{structure.notes.store("\currentnote",\currentdescriptionnumberentry)}}%
      \settrue\processingnote
      \ifconditional\skipnoteplacement

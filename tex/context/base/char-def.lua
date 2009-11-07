@@ -50145,6 +50145,8 @@ characters.data={
   description="COMBINING THREE DOTS ABOVE",
   direction="nsm",
   linebreak="cm",
+  mathclass="accent",
+  mathname="dddot",
   unicodeslot=0x20DB,
  },
  [0x20DC]={

@@ -328,8 +328,12 @@
 		<cd:variable name='outer' value='buiten'/>
 		<cd:variable name='outeredge' value='buitenrand'/>
 		<cd:variable name='outermargin' value='buitenmarge'/>
+		<cd:variable name='overbar' value='overstreep'/>
+		<cd:variable name='overbars' value='overstrepen'/>
 		<cd:variable name='overlay' value='overlay'/>
 		<cd:variable name='overprint' value='overprint'/>
+		<cd:variable name='overstrike' value='doorstreep'/>
+		<cd:variable name='overstrikes' value='doorstrepen'/>
 		<cd:variable name='packed' value='opelkaar'/>
 		<cd:variable name='page' value='pagina'/>
 		<cd:variable name='pagecomment' value='paginacommentaar'/>
@@ -483,6 +487,8 @@
 		<cd:variable name='type' value='type'/>
 		<cd:variable name='typing' value='typen'/>
 		<cd:variable name='unavailable' value='nietbeschikbaar'/>
+		<cd:variable name='underbar' value='onderstreep'/>
+		<cd:variable name='underbars' value='onderstrepen'/>
 		<cd:variable name='unit' value='eenheid'/>
 		<cd:variable name='units' value='eenheden'/>
 		<cd:variable name='unknown' value='onbekend'/>
@@ -793,6 +799,7 @@
 		<cd:constant name='openaction' value='openactie'/>
 		<cd:constant name='openpageaction' value='openpaginaactie'/>
 		<cd:constant name='option' value='optie'/>
+		<cd:constant name='order' value='order'/>
 		<cd:constant name='orientation' value='orientatie'/>
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='buitenmarge'/>
@@ -923,6 +930,7 @@
 		<cd:constant name='stop' value='stop'/>
 		<cd:constant name='stopper' value='afsluiter'/>
 		<cd:constant name='stretch' value='rek'/>
+		<cd:constant name='strip' value='strip'/>
 		<cd:constant name='strut' value='strut'/>
 		<cd:constant name='style' value='letter'/>
 		<cd:constant name='sub' value='sub'/>
@@ -1314,10 +1322,6 @@
 		<cd:command name='outeredgewidth' value='buitenrandbreedte'/>
 		<cd:command name='outermargindistance' value='buitenmargeafstand'/>
 		<cd:command name='outermarginwidth' value='buitenmargebreedte'/>
-		<cd:command name='overbar' value='overstreep'/>
-		<cd:command name='overbars' value='overstrepen'/>
-		<cd:command name='overstrike' value='doorstreep'/>
-		<cd:command name='overstrikes' value='doorstrepen'/>
 		<cd:command name='packed' value='opelkaar'/>
 		<cd:command name='page' value='pagina'/>
 		<cd:command name='pagedepth' value='paginadiepte'/>
@@ -1652,8 +1656,6 @@
 		<cd:command name='type' value='type'/>
 		<cd:command name='typebuffer' value='typebuffer'/>
 		<cd:command name='typefile' value='typefile'/>
-		<cd:command name='underbar' value='onderstreep'/>
-		<cd:command name='underbars' value='onderstrepen'/>
 		<cd:command name='unitmeaning' value='betekenis'/>
 		<cd:command name='unknown' value='onbekend'/>
 		<cd:command name='useJSscripts' value='gebruikJSscripts'/>

@@ -89,7 +89,7 @@ alternative index function.</p>
 local mt = { }  setmetatable(dimenfactors,mt)
 
 mt.__index = function(t,s)
-    error("wrong dimension: " .. s)
+    error("wrong dimension: " .. (s or "?"))
     return 1
 end
 

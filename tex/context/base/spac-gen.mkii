@@ -1337,21 +1337,11 @@
 
 \definecomplexorsimple\setupspacing
 
-% \dorecurse{100}{\recurselevel\spacefactor 800 \space} \par
-% \dorecurse{100}{\recurselevel\spacefactor1200 \space} \par
-% \dorecurse{100}{\recurselevel\spacefactor 800 \normalspaceprimitive} \par
-% \dorecurse{100}{\recurselevel\spacefactor1200 \normalspaceprimitive} \par
+\let\normalspaceprimitive=\ % space-comment is really needed else \<newline>
 
-% When we don't add the % here, we effectively get \<endlinechar> and
-% since we have by default \def\^^M{\ } we get into a loop.
+\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\normalspaceprimitive}
 
-\let\normalspaceprimitive=\ % space-comment is really needed
-
-\unexpanded\def\ {\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
-
-\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\space}
-
-\letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace % overloaded later
+\letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace
 
 \def\space          { }
 \def\removelastspace{\ifhmode\unskip\fi}
@@ -1376,7 +1366,10 @@
      \unskip\unskip\unskip\unskip\unskip
    \fi}
 
-\appendtoks\let~\space\to\simplifiedcommands
+\appendtoks
+  \let~\space
+  \let\ \space
+\to\simplifiedcommands
 
 % still not fixed in aleph / luatex
 %
@@ -4514,10 +4507,10 @@
    \def\obeyedspace{\mathortext\normalspace{\dontleavehmode    \normalspace  }}%
    \let\ =\obeyedspace}
 
-\installspacehandler \v!off
+\installspacehandler \v!off % == default
   {\normalspaces
    \let\obeyedspace\normalspace
-   \let\ =\normalspace}
+   \let\ =\normalspaceprimitive} % was \normalspace
 
 \installspacehandler \v!fixed
   {\obeyspaces

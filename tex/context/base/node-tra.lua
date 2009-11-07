@@ -390,7 +390,7 @@ end
 
 function nodes.ids_to_string(head,tail)
     local t, last_id, last_n = { }, nil, 0
-    for n in traverse_nodes(head,tail) do
+    for n in traverse_nodes(head,tail) do -- hm, does not stop at tail
         local id = n.id
         if not last_id then
             last_id, last_n = id, 1
@@ -403,6 +403,9 @@ function nodes.ids_to_string(head,tail)
                 t[#t+1] = format("[%s]",node_type(last_id) or "?")
             end
             last_id, last_n = id, 1
+        end
+        if n == tail then
+            break
         end
     end
     if not last_id then

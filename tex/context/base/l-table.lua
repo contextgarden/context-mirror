@@ -11,7 +11,7 @@ table.join = table.concat
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump = string.format, string.find, string.gsub, string.lower, string.dump
 local getmetatable, setmetatable = getmetatable, setmetatable
-local type, next, tostring, ipairs = type, next, tostring, ipairs
+local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
 
 function table.strip(tab)
     local lst = { }
@@ -346,7 +346,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         handle(format("%s %s,",depth,v))
                     end
                 elseif t == "string" then
-                    if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                    if reduce and tonumber(v) then
                         handle(format("%s %s,",depth,v))
                     else
                         handle(format("%s %q,",depth,v))
@@ -405,7 +405,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     end
                 end
             elseif t == "string" then
-                if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                if reduce and tonumber(v) then
                 --~ handle(format("%s %s=%s,",depth,key(k),v))
                     if type(k) == "number" then -- or find(k,"^%d+$") then
                         if hexify then

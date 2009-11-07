@@ -328,8 +328,12 @@
 		<cd:variable name='outer' value='exterieur'/>
 		<cd:variable name='outeredge' value='bordexterieur'/>
 		<cd:variable name='outermargin' value='margeexterieure'/>
+		<cd:variable name='overbar' value='overbar'/>
+		<cd:variable name='overbars' value='overbars'/>
 		<cd:variable name='overlay' value='revetement'/>
 		<cd:variable name='overprint' value='overprint'/>
+		<cd:variable name='overstrike' value='surlignetout'/>
+		<cd:variable name='overstrikes' value='surligne'/>
 		<cd:variable name='packed' value='groupe'/>
 		<cd:variable name='page' value='page'/>
 		<cd:variable name='pagecomment' value='commentairepage'/>
@@ -483,6 +487,8 @@
 		<cd:variable name='type' value='type'/>
 		<cd:variable name='typing' value='typing'/>
 		<cd:variable name='unavailable' value='indisponible'/>
+		<cd:variable name='underbar' value='souslignetout'/>
+		<cd:variable name='underbars' value='sousligne'/>
 		<cd:variable name='unit' value='unite'/>
 		<cd:variable name='units' value='unites'/>
 		<cd:variable name='unknown' value='inconnu'/>
@@ -793,6 +799,7 @@
 		<cd:constant name='openaction' value='actionouverture'/>
 		<cd:constant name='openpageaction' value='actionouverturepage'/>
 		<cd:constant name='option' value='option'/>
+		<cd:constant name='order' value='order'/>
 		<cd:constant name='orientation' value='orientation'/>
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='margeexterieure'/>
@@ -923,6 +930,7 @@
 		<cd:constant name='stop' value='stoppe'/>
 		<cd:constant name='stopper' value='taquet'/>
 		<cd:constant name='stretch' value='etire'/>
+		<cd:constant name='strip' value='strip'/>
 		<cd:constant name='strut' value='strut'/>
 		<cd:constant name='style' value='style'/>
 		<cd:constant name='sub' value='sous'/>
@@ -1314,10 +1322,6 @@
 		<cd:command name='outeredgewidth' value='outeredgewidth'/>
 		<cd:command name='outermargindistance' value='outermargindistance'/>
 		<cd:command name='outermarginwidth' value='outermarginwidth'/>
-		<cd:command name='overbar' value='overbar'/>
-		<cd:command name='overbars' value='overbars'/>
-		<cd:command name='overstrike' value='surlignetout'/>
-		<cd:command name='overstrikes' value='surligne'/>
 		<cd:command name='packed' value='groupe'/>
 		<cd:command name='page' value='page'/>
 		<cd:command name='pagedepth' value='pagedepth'/>
@@ -1652,8 +1656,6 @@
 		<cd:command name='type' value='dactylographier'/>
 		<cd:command name='typebuffer' value='tapebuffer'/>
 		<cd:command name='typefile' value='fichierdactylo'/>
-		<cd:command name='underbar' value='souslignetout'/>
-		<cd:command name='underbars' value='sousligne'/>
 		<cd:command name='unitmeaning' value='sensunite'/>
 		<cd:command name='unknown' value='inconnu'/>
 		<cd:command name='useJSscripts' value='utiliseJSscripts'/>

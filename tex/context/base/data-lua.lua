@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-lua'] = {
     license   = "see context related readme files"
 }
 
--- some loading stuff ... we might move this one to slot 1 depending
+-- some loading stuff ... we might move this one to slot 2 depending
 -- on the developments (the loaders must not trigger kpse); we could
 -- of course use a more extensive lib path spec
 
@@ -17,7 +17,7 @@ local gsub = string.gsub
 local libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' }
 local libpaths   = file.split_path(package.path)
 
-package.loaders[#package.loaders+1] = function(name)
+package.loaders[2] = function(name) -- was [#package.loaders+1]
     for i=1,#libformats do
         local format = libformats[i]
         local resolved = resolvers.find_file(name,format) or ""
@@ -29,7 +29,7 @@ package.loaders[#package.loaders+1] = function(name)
         end
     end
     local simple = file.removesuffix(name)
-    for i=1,#libpaths do
+    for i=1,#libpaths do -- package.path, might become option
         local resolved = gsub(libpaths[i],"?",simple)
         if resolvers.isreadable.file(resolved) then
             if trace_locating then

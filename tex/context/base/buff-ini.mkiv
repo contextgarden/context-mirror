@@ -192,13 +192,13 @@
 
 \def\doprocessbufferverbatim
   {\doinitializeverbatim
-   \ctxlua{buffers.type("\currentbuffer")}}
+   \ctxlua{buffers.type("\currentbuffer","\typingparameter\c!strip")}}
 
 \def\doprocessbufferlinesverbatim#1#2#3%
   {#2%
    % todo, set up numbers
    \doinitializeverbatim
-   \ctxlua{buffers.type("\currentbuffer")}
+   \ctxlua{buffers.type("\currentbuffer","\typingparameter\c!strip")}
    #3}
 
 \def\doifelsebuffer#1%

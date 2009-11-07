@@ -311,20 +311,40 @@
 
 % hm ...
 
-\unexpanded\def\ {\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
+% \unexpanded\def\normalnotobeyedspace{\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
+% \let\ =\normalnotobeyedspace
 
 % Because I strip spaces at the end of lines (in the editor) we need a bit of
-% a trick to define slash+newline, so \<space> and \<newline> are the same
+% a trick to define slash+newline, so \space and \<newline> are the same
 
-\ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\unexpanded\string\\def\string\\\string\n{\string\\ }")}
+% We need to be careful with \ and \space and the definition of ~ which uses \ as
+% we need to associate unicode spacing with it. There is some messy thing that that
+% I forgot to note down so I will revision the \ once I ran into it again.
 
-\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\mathortext\ \space} % no space in math
+% \ruledhbox spread 10pt {\frenchspacing    xx xx\ X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx xx\ X}
+% \ruledhbox spread 10pt {\frenchspacing    xx xx X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx xx X}
+% \ruledhbox spread 10pt {\frenchspacing    xx xx~X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx xx~X}
+
+% \ruledhbox spread 10pt {\frenchspacing    xx dr.\ X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx dr.\ X}
+% \ruledhbox spread 10pt {\frenchspacing    xx dr. X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx dr. X}
+% \ruledhbox spread 10pt {\frenchspacing    xx dr.~X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx dr.~X}
+
+\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\normalspaceprimitive} % no space in math
 
 \letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace % overloaded later
 
 \def\space          { }
 \def\removelastspace{\ifhmode\unskip\fi}
 \def\nospace        {\removelastspace\ignorespaces}
+
+\ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\unexpanded\string\\def\string\\\string\n{\string\\space}")}
+% \ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\let\string\\\string\n=\string\\space")}
 
 % in tables we need:
 %
@@ -339,13 +359,10 @@
 \def\fixedspaces
   {\letcatcodecommand \ctxcatcodes `\~ \fixedspace}
 
-\appendtoks\let~\space\to\simplifiedcommands
-
-% \def\removeunwantedspaces
-%   {\ifhmode % we also need to unskip 0pt skips
-%      \unskip\unskip\unskip\unskip\unskip
-%      \unskip\unskip\unskip\unskip\unskip
-%    \fi}
+\appendtoks
+  \let~\space
+  \let\ \space
+\to\simplifiedcommands
 
 \unexpanded\def\removeunwantedspaces
   {\ifhmode
@@ -782,37 +799,11 @@
 \def\fixedspaceamount#1%
   {#1\interwordspace}
 
-%D This is a dangerous feature because it makes the \TEX\ source
-%D less portable, i.e. any parser now needs to apply exactly the
-%D same algorithm when it wants to interpret the source. We
-%D strongly recommend not to mention this feature in manuals! It's
-%D provided for users who are hooked to such a mechanism.
-%D
-%D \starttyping
-%D \setupsorting[logo][next=\autoinsertnextspace] \logo[TEX]{\TeX}
-%D
-%D bla bla \TEX bla bla \TEX (bla) bla (\TEX)
-%D \stoptyping
-
-%D This will become a proper mkiv method: (user node with attribute)
-
-\def\autoinsertnextspace{\futurelet\nexttoken\doautoinsertnextspace}
-
-\def\doautoinsertnextspace % slightly extended version of a user supplied macro
-  {\ifx\nexttoken \bgroup\else \ifx\nexttoken\begingroup\else
-   \ifx\nexttoken \egroup\else \ifx\nexttoken  \endgroup\else
-   \ifx\nexttoken      \/\else \ifx\nexttoken           /\else \ifx\nexttoken      ~\else
-   \ifx\nexttoken      \ \else \ifx\nexttoken \blankspace\else \ifx\nexttoken \space\else
-   \ifx\nexttoken       .\else \ifx\nexttoken           ,\else
-   \ifx\nexttoken       !\else \ifx\nexttoken           ?\else
-   \ifx\nexttoken       :\else \ifx\nexttoken           ;\else
-   \ifx\nexttoken       '\else \ifx\nexttoken           "\else
-   \ifx\nexttoken       )\else \ifx\nexttoken           -\else \ifx\nexttoken      |\else
-   \ifx\nexttoken      \%\else \ifx\nexttoken          \&\else
-     \space
-   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
-
 % moved from page-lin
+%
+% the following code is used in startlines\stoplines
+%
+% do we need \normalspaceprimitive here?
 
 \def\installspacehandler#1#2% needs to set \obeyedspace
   {\setvalue{\??sr#1}{#2}}
@@ -824,13 +815,13 @@
 
 \installspacehandler \v!yes
   {\obeyspaces
-   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode    \normalspace  }}%
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode\normalspace}}%
    \let\ =\obeyedspace}
 
-\installspacehandler \v!off
+\installspacehandler \v!off % == default
   {\normalspaces
    \let\obeyedspace\normalspace
-   \let\ =\normalspace}
+   \let\ =\normalspaceprimitive} % was \normalspace
 
 \installspacehandler \v!fixed
   {\obeyspaces

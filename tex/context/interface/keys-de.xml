@@ -328,8 +328,12 @@
 		<cd:variable name='outer' value='aussen'/>
 		<cd:variable name='outeredge' value='outeredge'/>
 		<cd:variable name='outermargin' value='outermargin'/>
+		<cd:variable name='overbar' value='ueberstrichen'/>
+		<cd:variable name='overbars' value='ueberstreichen'/>
 		<cd:variable name='overlay' value='overlay'/>
 		<cd:variable name='overprint' value='overprint'/>
+		<cd:variable name='overstrike' value='durchgestrichen'/>
+		<cd:variable name='overstrikes' value='durchstreichen'/>
 		<cd:variable name='packed' value='gepackt'/>
 		<cd:variable name='page' value='seite'/>
 		<cd:variable name='pagecomment' value='pagecomment'/>
@@ -483,6 +487,8 @@
 		<cd:variable name='type' value='tippen'/>
 		<cd:variable name='typing' value='tippen'/>
 		<cd:variable name='unavailable' value='nichtverfuegbar'/>
+		<cd:variable name='underbar' value='unterstrichen'/>
+		<cd:variable name='underbars' value='unterstreichen'/>
 		<cd:variable name='unit' value='einheit'/>
 		<cd:variable name='units' value='einheiten'/>
 		<cd:variable name='unknown' value='unbekannt'/>
@@ -793,6 +799,7 @@
 		<cd:constant name='openaction' value='oeffenaktion'/>
 		<cd:constant name='openpageaction' value='openpageaction'/>
 		<cd:constant name='option' value='option'/>
+		<cd:constant name='order' value='order'/>
 		<cd:constant name='orientation' value='orientation'/>
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='outermargin'/>
@@ -923,6 +930,7 @@
 		<cd:constant name='stop' value='stop'/>
 		<cd:constant name='stopper' value='abschnitttrenner'/>
 		<cd:constant name='stretch' value='strecken'/>
+		<cd:constant name='strip' value='strip'/>
 		<cd:constant name='strut' value='strut'/>
 		<cd:constant name='style' value='stil'/>
 		<cd:constant name='sub' value='unter'/>
@@ -1314,10 +1322,6 @@
 		<cd:command name='outeredgewidth' value='outeredgewidth'/>
 		<cd:command name='outermargindistance' value='outermargindistance'/>
 		<cd:command name='outermarginwidth' value='outermarginwidth'/>
-		<cd:command name='overbar' value='ueberstrichen'/>
-		<cd:command name='overbars' value='ueberstreichen'/>
-		<cd:command name='overstrike' value='durchgestrichen'/>
-		<cd:command name='overstrikes' value='durchstreichen'/>
 		<cd:command name='packed' value='kleinerdurchschuss'/>
 		<cd:command name='page' value='seite'/>
 		<cd:command name='pagedepth' value='pagedepth'/>
@@ -1652,8 +1656,6 @@
 		<cd:command name='type' value='tippen'/>
 		<cd:command name='typebuffer' value='tippepuffer'/>
 		<cd:command name='typefile' value='tippedatei'/>
-		<cd:command name='underbar' value='unterstrichen'/>
-		<cd:command name='underbars' value='unterstreichen'/>
 		<cd:command name='unitmeaning' value='bedeutung'/>
 		<cd:command name='unknown' value='unbekant'/>
 		<cd:command name='useJSscripts' value='verwendeJSscript'/>

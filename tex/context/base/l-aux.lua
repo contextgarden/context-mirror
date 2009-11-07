@@ -55,9 +55,9 @@ function aux.make_settings_to_hash_pattern(set,how)
     end
 end
 
-function aux.settings_to_hash(str)
+function aux.settings_to_hash(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         if moretolerant then
             pattern_b_s:match(str)
         else
@@ -69,9 +69,9 @@ function aux.settings_to_hash(str)
     end
 end
 
-function aux.settings_to_hash_tolerant(str)
+function aux.settings_to_hash_tolerant(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         pattern_b_s:match(str)
         return hash
     else
@@ -79,9 +79,9 @@ function aux.settings_to_hash_tolerant(str)
     end
 end
 
-function aux.settings_to_hash_strict(str)
+function aux.settings_to_hash_strict(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         pattern_c_s:match(str)
         return next(hash) and hash
     else

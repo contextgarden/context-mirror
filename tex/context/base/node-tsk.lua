@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['node-tsk'] = {
 
 local trace_tasks = false  trackers.register("tasks", function(v) trace_tasks = v end)
 
-tasks      = tasks      or { }
-tasks.data = tasks.data or { }
+tasks         = tasks       or { }
+tasks.data    = tasks.data  or { }
 
 function tasks.new(name,list)
     local tasklist = sequencer.reset()
@@ -19,9 +19,38 @@ function tasks.new(name,list)
     end
 end
 
-function tasks.restart(name,group)
+function tasks.restart(name)
     local data = tasks.data[name]
     if data then
+        data.runner = false
+    end
+end
+
+function tasks.enableaction(name,action)
+    local data = tasks.data[name]
+    if data then
+        sequencer.enableaction(data.list,action)
+        data.runner = false
+    end
+end
+function tasks.disableaction(name,action)
+    local data = tasks.data[name]
+    if data then
+        sequencer.disableaction(data.list,action)
+        data.runner = false
+    end
+end
+function tasks.enablegroup(name,group)
+    local data = tasks.data[name]
+    if data then
+        sequencer.enablegroup(data.list,group)
+        data.runner = false
+    end
+end
+function tasks.disablegroup(name,group)
+    local data = tasks.data[name]
+    if data then
+        sequencer.disablegroup(data.list,group)
         data.runner = false
     end
 end

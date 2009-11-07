@@ -49,12 +49,15 @@
 
 \def\dosetupformulas[#1][#2]%
   {\ifsecondargument
+     \edef\currentformula{#1}%
      \getparameters[\??fm#1][#2]%
    \else
+%      \let\currentformula\v!formula % hm
+     \let\currentformula\empty
      \getparameters[\??fm][#1]%
    \fi
-   \edef\currentformula{#1}%
-   \the\everysetupformulas}
+   \the\everysetupformulas
+   \let\currentformula\empty}
 
 %D Not yet cleanup up:
 

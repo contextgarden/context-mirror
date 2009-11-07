@@ -408,7 +408,7 @@
    \veryraggedright}
 
 \def\ignorehyphens
-  {% \language\minusone % extra bonus, the \null should do the job too
+  {\language\minusone % extra bonus, the \null should do the job too
    \let\obeyedspace \specialobeyedspace
    \let\controlspace\specialcontrolspace
    \spaceskip.5em\relax}
@@ -465,6 +465,14 @@
 \unexpanded\def\arg{\groupedcommand{\setgroupedtype\leftargument}{\rightargument}}
 \unexpanded\def\mat{\groupedcommand{\setgroupedtype\$}{\$}}
 \unexpanded\def\dis{\groupedcommand{\setgroupedtype\$\$}{\$\$}}
+
+\def\astype
+  {\groupedcommand\dorawtype\relax}
+
+\def\dorawtype
+  {\let\currenttypingclass\??ty
+   \normalverbatimcolor % \verbatimcolor
+   \dosetverbatimfont}
 
 %D \macros
 %D   {starttyping}
@@ -584,22 +592,22 @@
 
 \def\dotypefileverbatim
   {\doinitializeverbatim
-   \ctxlua{buffers.typefile("\readfilename")}}
+   \ctxlua{buffers.typefile("\readfilename","\typingparameter\c!strip")}}
 
 \def\dotypefilelinesverbatim#1#2%
   {#1%
    \doinitializeverbatim
-   \ctxlua{buffers.typefile("\readfilename")}%
+   \ctxlua{buffers.typefile("\readfilename","\typingparameter\c!strip")}%
    #2}
 
 \unexpanded\def\dotypeblockverbatim#1#2%
-   {\dowithbuffer{_typing_}{#1}{#2}
-      {}
-      {\doinitializeverbatim
-       \beginofverbatimlines
-       \ctxlua{buffers.type("_typing_")}%
-       \endofverbatimlines
-       \csname#2\endcsname}}
+  {\dowithbuffer{_typing_}{#1}{#2}
+     {}
+     {\doinitializeverbatim
+      \beginofverbatimlines
+      \ctxlua{buffers.type("_typing_","\typingparameter\c!strip")}%
+      \endofverbatimlines
+      \csname#2\endcsname}}
 
 \def\dododostarttyping[#1]%
   {\typingparameter\c!before
@@ -941,6 +949,7 @@
             \c!stop=,
             \c!step=1,
         \c!continue=,
+           \c!strip=\v!no, % auto or number
           \c!nlines=]
 
 \definetyping[\v!typing]

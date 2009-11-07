@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/02/09 21:36:28
+-- merge date  : 11/07/09 18:04:39
 
 do -- begin closure to overcome local limits and interference
 
@@ -539,7 +539,7 @@ table.join = table.concat
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump = string.format, string.find, string.gsub, string.lower, string.dump
 local getmetatable, setmetatable = getmetatable, setmetatable
-local type, next, tostring, ipairs = type, next, tostring, ipairs
+local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
 
 function table.strip(tab)
     local lst = { }
@@ -874,7 +874,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         handle(format("%s %s,",depth,v))
                     end
                 elseif t == "string" then
-                    if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                    if reduce and tonumber(v) then
                         handle(format("%s %s,",depth,v))
                     else
                         handle(format("%s %q,",depth,v))
@@ -933,7 +933,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     end
                 end
             elseif t == "string" then
-                if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                if reduce and tonumber(v) then
                 --~ handle(format("%s %s=%s,",depth,key(k),v))
                     if type(k) == "number" then -- or find(k,"^%d+$") then
                         if hexify then
@@ -3248,6 +3248,18 @@ function fonts.show_font_parameters()
     end
 end
 
+local dimenfactors = number.dimenfactors
+
+function fonts.dimenfactor(unit,tfmdata)
+    if unit == "ex" then
+        return tfmdata.parameters.x_height
+    elseif unit == "em" then
+        return tfmdata.parameters.em_height
+    else
+        return dimenfactors[unit] or unit
+    end
+end
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -3813,6 +3825,9 @@ end
     -- fullname is used in the subsetting
     if not t.psname then
         t.psname = t.fullname -- else bad luck
+    end
+    if trace_defining then
+        logs.report("define font","used for subsetting: %s ",t.fullname or "nofullname")
     end
     return t, delta
 end
@@ -5215,6 +5230,7 @@ local trace_dynamics   = false  trackers.register("otf.dynamics",     function(v
 local trace_sequences  = false  trackers.register("otf.sequences",    function(v) trace_sequences    = v end)
 local trace_math       = false  trackers.register("otf.math",         function(v) trace_math         = v end)
 local trace_unimapping = false  trackers.register("otf.unimapping",   function(v) trace_unimapping   = v end)
+local trace_defining   = false  trackers.register("fonts.defining",   function(v) trace_defining     = v end)
 
 --~ trackers.enable("otf.loading")
 
@@ -5465,6 +5481,9 @@ function otf.load(filename,format,sub,featurefile)
         end
     end
     if data then
+        if trace_defining then
+            logs.report("define font","loading from cache: %s",hash)
+        end
         otf.enhance("unpack",data,filename,false) -- no message here
         otf.add_dimensions(data)
         if trace_sequences then
@@ -7662,16 +7681,29 @@ end
 
 local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
     if start ~= stop then
+--~         if discfound then
+--~             local lignode = copy_node(start)
+--~             lignode.font = start.font
+--~             lignode.char = char
+--~             lignode.subtype = 2
+--~             start = node.do_ligature_n(start, stop, lignode)
+--~             if start.id == disc then
+--~                 local prev = start.prev
+--~                 start = start.next
+--~             end
         if discfound then
+         -- print("start->stop",nodes.tosequence(start,stop))
             local lignode = copy_node(start)
-            lignode.font = start.font
-            lignode.char = char
-            lignode.subtype = 2
-            start = node.do_ligature_n(start, stop, lignode)
-            if start.id == disc then
-                local prev = start.prev
-                start = start.next
+            lignode.font, lignode.char, lignode.subtype = start.font, char, 2
+            local next, prev = stop.next, start.prev
+            stop.next = nil
+            lignode = node.do_ligature_n(start, stop, lignode)
+            prev.next = lignode
+            if next then
+                next.prev = lignode
             end
+            lignode.next, lignode.prev = next, prev
+         -- print("start->end",nodes.tosequence(start))
         else -- start is the ligature
             local deletemarks = markflag ~= "mark"
             local n = copy_node(start)

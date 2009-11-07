@@ -25,9 +25,11 @@ local utf = unicode.utf8
 local concat, texsprint, texprint, texwrite = table.concat, tex.sprint, tex.print, tex.write
 local utfbyte, utffind, utfgsub = utf.byte, utf.find, utf.gsub
 local type, next = type, next
+local huge = math.huge
 local byte, sub, find, char, gsub, rep, lower = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local ctxcatcodes = tex.ctxcatcodes
+local variables = interfaces.variables
 
 local data, commands, flags, hooks, visualizers = buffers.data, buffers.commands, buffers.flags, buffers.hooks, buffers.visualizers
 
@@ -46,6 +48,7 @@ end
 function buffers.append(name, str)
     data[name] = (data[name] or "") .. str
 end
+
 
 buffers.flags.store_as_table = true
 
@@ -129,12 +132,16 @@ function buffers.strip(lines)
     return first, last, last - first + 1
 end
 
-function buffers.type(name)
+function buffers.type(name,realign)
     local lines = data[name]
     local action = buffers.typeline
     if lines then
         if type(lines) == "string" then
             lines = lines:splitlines()
+            data[name] = lines
+        end
+        if realign then
+            lines = buffers.realign(lines,realign)
         end
         local line, n = 0, 0
         local first, last, m = buffers.strip(lines)
@@ -156,10 +163,13 @@ function buffers.loaddata(filename) -- this one might go away
     return str or ""
 end
 
-function buffers.typefile(name) -- still somewhat messy, since name can be be suffixless
+function buffers.typefile(name,realign) -- still somewhat messy, since name can be be suffixless
     local str = buffers.loaddata(name)
     if str and str~= "" then
         local lines = str:splitlines()
+        if realign then
+            lines = buffers.realign(lines,realign)
+        end
         local line, n, action = 0, 0, buffers.typeline
         local first, last, m = buffers.strip(lines)
         hooks.begin_of_display()
@@ -544,6 +554,45 @@ function buffers.flush_result(result,nested)
     else
         texsprint(ctxcatcodes,concat(result,""))
     end
+end
+
+-- new
+
+function buffers.realign(name,forced_n) -- no, auto, <number>
+    local n, d
+    if type(name) == "string" then
+        d = data[name]
+        if type(d) == "string" then
+            d = d:splitlines()
+        end
+    else
+        d = name -- already a buffer
+    end
+    forced_n = (forced_n == variables.auto and huge) or tonumber(forced_n)
+    if forced_n then
+        for i=1, #d do
+            local spaces = find(d[i],"%S")
+            if not spaces then
+                -- empty line
+            elseif not n then
+                n = spaces
+            elseif spaces == 0 then
+                n = 0
+                break
+            elseif n > spaces then
+                n = spaces
+            end
+        end
+        if n > 0 then
+            if n > forced_n then
+                n = forced_n
+            end
+            for i=1,#d do
+                d[i] = sub(d[i],n)
+            end
+        end
+    end
+    return d
 end
 
 -- THIS WILL BECOME A FRAMEWORK: the problem with prety printing is that

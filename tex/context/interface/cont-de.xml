@@ -1034,6 +1034,11 @@
         <cd:parameter name="fliesstext">
           <cd:resolve name="bodyfont"/>
         </cd:parameter>
+        <cd:parameter name="strip">
+          <cd:constant type="nein"/>
+          <cd:constant type="auto"/>
+          <cd:constant type="cd:number"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -1244,7 +1249,7 @@
 
   <cd:command name="underbar" file="core-fnt.tex">
     <cd:sequence>
-      <cd:string value="unterstrichen"/>
+      <cd:string value="underbar"/>
     </cd:sequence>
     <cd:arguments>
       <cd:content n="1"/>
@@ -1253,7 +1258,7 @@
 
   <cd:command name="underbars" file="core-fnt.tex">
     <cd:sequence>
-      <cd:string value="unterstreichen"/>
+      <cd:string value="underbars"/>
     </cd:sequence>
     <cd:arguments>
       <cd:word n="1" list="yes"/>
@@ -1262,7 +1267,7 @@
 
   <cd:command name="overbar" file="core-fnt.tex">
     <cd:sequence>
-      <cd:string value="ueberstrichen"/>
+      <cd:string value="overbar"/>
     </cd:sequence>
     <cd:arguments>
       <cd:content n="1"/>
@@ -1271,7 +1276,7 @@
 
   <cd:command name="overbars" file="core-fnt.tex">
     <cd:sequence>
-      <cd:string value="ueberstreichen"/>
+      <cd:string value="overbars"/>
     </cd:sequence>
     <cd:arguments>
       <cd:word n="1" list="yes"/>
@@ -1280,7 +1285,7 @@
 
   <cd:command name="overstrike" file="core-fnt.tex">
     <cd:sequence>
-      <cd:string value="durchgestrichen"/>
+      <cd:string value="overstrike"/>
     </cd:sequence>
     <cd:arguments>
       <cd:content n="1"/>
@@ -1289,7 +1294,7 @@
 
   <cd:command name="overstrikes" file="core-fnt.tex">
     <cd:sequence>
-      <cd:string value="durchstreichen"/>
+      <cd:string value="overstrikes"/>
     </cd:sequence>
     <cd:arguments>
       <cd:word n="1" list="yes"/>

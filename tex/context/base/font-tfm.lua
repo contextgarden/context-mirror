@@ -560,6 +560,9 @@ end
     if not t.psname then
         t.psname = t.fullname -- else bad luck
     end
+    if trace_defining then
+        logs.report("define font","used for subsetting: %s ",t.fullname or "nofullname")
+    end
     return t, delta
 end
 

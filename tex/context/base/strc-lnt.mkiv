@@ -17,26 +17,13 @@
 
 \unprotect
 
-\newcounter\linenotecounter
-\newtoks   \collectedlinenotes
-\newif     \iftracelinenotes
-
-\appendtoks
-  \the\collectedlinenotes
-\to \everylinenumber
-
-\appendtoks
-  \global\collectedlinenotes\emptytoks
-\to \beforeeverylinenumbering
+\newcounter\linenotecounter \newif\iftracelinenotes % will be tracker
 
 \def\dohandlelinenote#1#2#3%
   {\bgroup
-   \expanded{\beforesplitstring#2}\at--\to\linenotelinenumber
-   \ifnum\linenotelinenumber=\linenumber\relax
-      \def\linenotelinenumber##1{#2}%
-      \setupnote[#1][\c!numbercommand=\linenotelinenumber,\c!textcommand=\gobbleoneargument]%
-      \setnote[#1]{#3}%
-   \fi
+   \def\linenotelinenumber##1{\inlinerange[#2]}% ##1 == order
+   \setupnote[ln:#1][\c!numbercommand=\linenotelinenumber,\c!textcommand=\gobbleoneargument]% todo: deep hook
+   \setnote[ln:#1]{#3}%
    \egroup}
 
 \def\dotracedlinenote#1%
@@ -54,37 +41,30 @@
 
 \def\dolinenote#1#2%
   {\doglobal\increment\linenotecounter
-   \doifreferencefoundelse{\??rr:\linenotecounter}%
-     {\expanded{\doglobal\noexpand\appendtoks\noexpand\dohandlelinenote
-        {#1}{\currenttextreference}}{#2}\to\collectedlinenotes}
-     \donothing
+   \dohandlelinenote{#1}{\linenotecounter}{#2}%
    \dotracedlinenote\empty
-   \expanded{\someline[\??rr:\linenotecounter]}}
+   \expanded{\someline[\linenotecounter]}}
 
 \def\dostartlinenote#1[#2]#3%
-  {\doifreferencefoundelse{\??rr:#2}%
-     {\expanded{\doglobal\noexpand\appendtoks\noexpand\dohandlelinenote
-        {#1}{\currenttextreference}}{#3}\to\collectedlinenotes}%
-     {\unknownreference{#2}}%
+  {\doglobal\increment\linenotecounter
+   \dohandlelinenote{#1}{#2}{#3}%
    \dotracedlinenote{#2}%
-   \startline[\??rr:#2]}
+   \startline[#2]}
 
 \def\dostoplinenote#1[#2]%
-  {\stopline[\??rr:#2]}
-
-% defining them
+  {\stopline[#2]}
 
 \def\definelinenote
   {\dodoubleempty\dodefinelinenote}
 
 \def\dodefinelinenote[#1][#2]%
-  {\definenote[#1][#2]%
-   \setvalue        {#1}{\dolinenote     {#1}}%
-   \setvalue{\e!start#1}{\dostartlinenote{#1}}%
-   \setvalue{\e!stop #1}{\dostoplinenote {#1}}}
+  {\definenote[ln:#1][#2]%
+   \unexpanded\setvalue        {#1}{\dolinenote     {#1}}%
+   \unexpanded\setvalue{\e!start#1}{\dostartlinenote{#1}}%
+   \unexpanded\setvalue{\e!stop #1}{\dostoplinenote {#1}}}
 
-\def\setuplinenote % convenient
-  {\setupnote}
+\def\setuplinenote[#1]% convenient
+  {\setupnote[ln:#1]}
 
 % We predefine one, namely \type {\linenote} cum suis.
 

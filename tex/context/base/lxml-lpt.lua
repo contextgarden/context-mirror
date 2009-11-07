@@ -397,7 +397,9 @@ local lp_builtin = P (
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
 local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
-local lp_fastpos   = ((R("09","--","++")^1 * P(-1)) / function(s) return "l==" .. s end)
+local lp_fastpos_p = ((P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end)
+local lp_fastpos_n = ((P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end)
+local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
 
 local lp_lua_function  = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
@@ -449,11 +451,11 @@ local content =
     lp_child +
     lp_any
 
-local converter = lpeg.Cs (
-    lp_fastpos + (lpeg.P { lparent * (lpeg.V(1))^0 * rparent + content } )^0
+local converter = Cs (
+    lp_fastpos + (P { lparent * (V(1))^0 * rparent + content } )^0
 )
 
-cleaner = lpeg.Cs ( (
+cleaner = Cs ( (
 --~     lp_fastpos +
     lp_reserved +
     lp_string +

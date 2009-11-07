@@ -4435,7 +4435,15 @@
 % \ifx\writestatus\undefined \let\writestatus\normalwritestatus \fi
 % \ifx\writebanner\undefined \def\writebanner{\writestring}     \fi
 
-\let\writestatus\normalwritestatus
+\ifx\normalwritestatus\undefined
+    % for use within latex
+    \ifx\writestatus\undefined
+        \def\writestatus#1#2{\immediate\write16{#1 : #2}}
+    \fi
+\else
+    \let\writestatus\normalwritestatus
+\fi
+
 \def\writebanner{\writestring}
 
 \writestatus{loading}{ConTeXt System Macros / General}

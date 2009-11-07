@@ -206,10 +206,12 @@ function counters.compact(name,level,onlynumbers)
         local compact = { }
         for i=1,level or #data do
             local d = data[i]
+--~ print(name,i,d.number)
             if d.number ~= 0 then
                 compact[i] = (onlynumbers and d.number) or d
             end
         end
+--~ print(table.serialize(compact))
         return compact
     end
 end
@@ -294,7 +296,6 @@ function counters.reset(name,n)
             savevalue(name,i)
             d.number = d.start or 0
             d.own = nil
---~ print("\n",name,d.number)
             synchronize(name,d)
         end
         cd.numbers = nil

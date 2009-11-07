@@ -8,13 +8,15 @@ if not modules then modules = { } end modules ['task-ini'] = {
 
 -- this is a temporary solution, we need to isolate some modules and then
 -- the load order can determine the trickery to be applied to node lists
+--
+-- we can disable more handlers and enable then when really used (*)
 
 tasks.appendaction("processors", "normalizers", "fonts.collections.process")
-tasks.appendaction("processors", "normalizers", "fonts.checkers.missing")
+tasks.appendaction("processors", "normalizers", "fonts.checkers.missing")                    -- *
 
-tasks.appendaction("processors", "characters",  "chars.handle_mirroring")
-tasks.appendaction("processors", "characters",  "chars.handle_casing")
-tasks.appendaction("processors", "characters",  "chars.handle_breakpoints")
+tasks.appendaction("processors", "characters",  "chars.handle_mirroring")                    -- *
+tasks.appendaction("processors", "characters",  "chars.handle_casing")                       -- *
+tasks.appendaction("processors", "characters",  "chars.handle_breakpoints")                  -- *
 tasks.appendaction("processors", "characters",  "scripts.preprocess")
 
 tasks.appendaction("processors", "words",       "kernel.hyphenation")
@@ -26,26 +28,29 @@ tasks.appendaction("processors", "fonts",       "nodes.protect_glyphs", nil, "no
 tasks.appendaction("processors", "fonts",       "kernel.ligaturing")
 tasks.appendaction("processors", "fonts",       "kernel.kerning")
 
-tasks.appendaction("processors", "lists",       "lists.handle_spacing")
-tasks.appendaction("processors", "lists",       "lists.handle_kerning")
+tasks.appendaction("processors", "lists",       "lists.handle_spacing")                      -- *
+tasks.appendaction("processors", "lists",       "lists.handle_kerning")                      -- *
 
 tasks.appendaction("shipouts",   "normalizers", "nodes.cleanup_page")
-tasks.appendaction("shipouts",   "normalizers", "nodes.add_references")
-tasks.appendaction("shipouts",   "normalizers", "nodes.add_destinations")
+tasks.appendaction("shipouts",   "normalizers", "nodes.add_references")                      -- *
+tasks.appendaction("shipouts",   "normalizers", "nodes.add_destinations")                    -- *
+tasks.appendaction("shipouts",   "normalizers", "nodes.rules.process")                       -- *
+
+tasks.disableaction("shipouts",                 "nodes.rules.process")                       -- * only kick in when used
 
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_color")
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_transparency")
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_colorintent")
-tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_negative")
-tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_effect")
-tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_viewerlayer")
+tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_negative")                  -- *
+tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_effect")                    -- *
+tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_viewerlayer")               -- *
 
 tasks.appendaction("math",       "normalizers", "noads.relocate_characters", nil, "nohead")
-tasks.appendaction("math",       "normalizers", "noads.resize_characters", nil, "nohead")
-tasks.appendaction("math",       "normalizers", "noads.respace_characters", nil, "nohead")
+tasks.appendaction("math",       "normalizers", "noads.resize_characters",   nil, "nohead")
+tasks.appendaction("math",       "normalizers", "noads.respace_characters",  nil, "nohead")
 
 tasks.appendaction("math",       "builders",    "noads.mlist_to_hlist")
 
 -- quite experimental
 
-tasks.appendaction("finalizers", "lists",       "nodes.repackage_graphicvadjust")
+tasks.appendaction("finalizers", "lists",       "nodes.repackage_graphicvadjust")            -- *

@@ -332,8 +332,8 @@ function sections.numbers()
     return data.numbers
 end
 
-function sections.matching_till_depth(depth,numbers)
-    local dn = data.numbers
+function sections.matching_till_depth(depth,numbers,parentnumbers)
+    local dn = parentnumbers or data.numbers
     local ok = false
     for i=1,depth do
         if dn[i] == numbers[i] then

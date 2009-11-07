@@ -979,7 +979,7 @@ local function number(collected)
     end
 end
 
-local function concatrange(collected,start,stop,separator,lastseparator) -- test this on mml
+local function concatrange(collected,start,stop,separator,lastseparator,textonly) -- test this on mml
     if collected then
         local nofcollected = #collected
         local separator = separator or ""
@@ -987,7 +987,11 @@ local function concatrange(collected,start,stop,separator,lastseparator) -- test
         start, stop = (start == "" and 1) or tonumber(start) or 1, (stop == "" and nofcollected) or tonumber(stop) or nofcollected
         if stop < 0 then stop = nofcollected + stop end -- -1 == last-1
         for i=start,stop do
-            xmlsprint(collected[i])
+            if textonly then
+                xmlcprint(collected[i])
+            else
+                xmlsprint(collected[i])
+            end
             if i == nofcollected then
                 -- nothing
             elseif i == nofcollected-1 and lastseparator ~= "" then
@@ -999,8 +1003,8 @@ local function concatrange(collected,start,stop,separator,lastseparator) -- test
     end
 end
 
-local function concat(collected,separator,lastseparator) -- test this on mml
-    concatrange(collected,false,false,separator,lastseparator)
+local function concat(collected,separator,lastseparator,textonly) -- test this on mml
+    concatrange(collected,false,false,separator,lastseparator,textonly)
 end
 
 finalizers.first          = first
@@ -1154,12 +1158,12 @@ function lxml.chainattribute(id,pattern,a,default)
     end
 end
 
-function lxml.concatrange(id,pattern,start,stop,separator,lastseparator) -- test this on mml
-    concatrange(lxmlparseapply(id,pattern),start,stop,separator,lastseparator)
+function lxml.concatrange(id,pattern,start,stop,separator,lastseparator,textonly) -- test this on mml
+    concatrange(lxmlparseapply(id,pattern),start,stop,separator,lastseparator,textonly)
 end
 
-function lxml.concat(id,pattern,separator,lastseparator)
-    concatrange(lxmlparseapply(id,pattern),false,false,separator,lastseparator)
+function lxml.concat(id,pattern,separator,lastseparator,textonly)
+    concatrange(lxmlparseapply(id,pattern),false,false,separator,lastseparator,textonly)
 end
 
 function lxml.element(id,n)

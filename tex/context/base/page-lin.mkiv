@@ -97,7 +97,7 @@
   {\doresetattribute{line-number}}
 
 % we could make this a bit more efficient by putting the end reference
-% in the same table as the start one but why make thinsg complex ...
+% in the same table as the start one but why make things complex ...
 
 \let\dofinishlinereference\dofinishfullreference
 
@@ -106,7 +106,8 @@
    \global\advance\linerefcounter\plusone
    \dosetattribute{line-reference}\linerefcounter
    #3%
-   \expanded{\dodosetreference{line}{#2}{}{\the\linerefcounter}}% kind labels userdata text
+   % for the moment we use a simple system i.e. no prefixes etc .. todo: store as number
+   \expanded{\dodosetreference{line}{#2}{conversion=\linenumberparameter\c!conversion}{\the\linerefcounter}}% kind labels userdata text
    \endgroup}
 
 \def\mkstartlinereference#1{\mksomelinereference{#1}{lr:b:#1}{}\ignorespaces}
@@ -320,6 +321,7 @@
 
 \def\mkdoleftlinenumber #1#2#3#4#5%
   {\hbox{\llap{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}}
+
 \def\mkdorightlinenumber#1#2#3#4#5%
   {\hbox{\rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\dosomelinenumber{#1}{1}{#2}{#5}}}}
 
@@ -408,11 +410,14 @@
 
 % eventually we will do this in lua
 
+\def\currentreferencelinenumber{\ctxlua{jobreferences.filter("linenumber")}}
+
 \def\doifelsesamelinereference#1#2#3%
   {\doifreferencefoundelse{lr:b:#1}
-     {\edef\fline{\currentreferencetext}%
+     {\edef\fline{\currentreferencelinenumber}%
       \doifreferencefoundelse{lr:e:#1}
-        {\edef\tline{\currentreferencetext}%
+        {\edef\tline{\currentreferencelinenumber}%
+         %[\fline,\tline]
          \ifx\fline\tline#2\else#3\fi}
         {\unknownreference{#1}#2}}
      {\unknownreference{#1}#2}}
@@ -425,6 +430,11 @@
      {\doifelsesamelinereference{#2}
         {\in{#1}[lr:b:#2]}
         {\in{#1}[lr:b:#2]--\in[lr:e:#2]}}}
+
+\def\inlinerange[#1]%
+  {\doifelsesamelinereference{#1}
+     {\in[lr:b:#1]}
+     {\in[lr:b:#1]--\in[lr:e:#1]}}
 
 \protect \endinput
 
