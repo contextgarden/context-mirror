@@ -417,3 +417,5 @@ function nodes.ids_to_string(head,tail)
     end
     return concat(t," ")
 end
+
+nodes.ids_tostring = nodes.ids_to_string

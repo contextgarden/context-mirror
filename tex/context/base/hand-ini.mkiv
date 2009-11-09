@@ -21,8 +21,14 @@
 
 %D New stuff.
 
-\def\setupfontexpansion [#1][#2]{\ctxlua{commands.setupfontexpansion ("#1","#2")}}
-\def\setupfontprotrusion[#1][#2]{\ctxlua{commands.setupfontprotrusion("#1","#2")}}
+\def\setupfontexpansion {\dodoubleargument\dosetupfontexpansion }
+\def\setupfontprotrusion{\dodoubleargument\dosetupfontprotrusion}
+
+\def\dosetupfontexpansion [#1][#2]{\ctxlua{commands.setupfontexpansion ("#1","#2")}}
+\def\dosetupfontprotrusion[#1][#2]{\ctxlua{commands.setupfontprotrusion("#1","#2")}}
+
+% \setupfontprotrusion[quality-upright][vector=quality]
+% \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]
 
 %D Old stuff.
 

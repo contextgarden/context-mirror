@@ -142,12 +142,24 @@ function languages.hyphenation.n()
     return table.count(langdata)
 end
 
+languages.registered = languages.registered or { }
+languages.associated = languages.associated or { }
+languages.numbers    = languages.numbers    or { }
+
+storage.register("languages/registered",languages.registered,"languages.registered")
+storage.register("languages/associated",languages.associated,"languages.associated")
+
+local numbers    = languages.numbers
+local registered = languages.registered
+local associated = languages.associated
+
 -- we can speed this one up with locals if needed
 
 local function tolang(what)
     local kind = type(what)
     if kind == "number" then
-        return langdata[languages.numbers[what]]
+        local w = what >= 0 and what <= 0x7FFF and numbers[what]
+        return (w and langdata[w]) or 0
     elseif kind == "string" then
         return langdata[what]
     else
@@ -164,16 +176,9 @@ end
 
 languages.tolang = tolang
 
-languages.registered = languages.registered or { }
-languages.associated = languages.associated or { }
-languages.numbers    = languages.numbers    or { }
-
-storage.register("languages/registered",languages.registered,"languages.registered")
-storage.register("languages/associated",languages.associated,"languages.associated")
-
 function languages.register(tag,parent,patterns,exceptions)
     parent = parent or tag
-    languages.registered[tag] = {
+    registered[tag] = {
         parent     = parent,
         patterns   = patterns   or format("lang-%s.pat",parent),
         exceptions = exceptions or format("lang-%s.hyp",parent),
@@ -183,14 +188,14 @@ function languages.register(tag,parent,patterns,exceptions)
 end
 
 function languages.associate(tag,script,language)
-    languages.associated[tag] = { script, language }
+    associated[tag] = { script, language }
 end
 
 function languages.association(tag)
     if type(tag) == "number" then
-        tag = languages.numbers[tag]
+        tag = numbers[tag]
     end
-    local lat = tag and languages.associated[tag]
+    local lat = tag and associated[tag]
     if lat then
         return lat[1], lat[2]
     else
@@ -199,7 +204,7 @@ function languages.association(tag)
 end
 
 function languages.loadable(tag)
-    local l = languages.registered[tag]
+    local l = registered[tag]
     if l and l.patterns and resolvers.find_file(patterns) then
         return true
     else
@@ -213,7 +218,7 @@ function languages.enable(tags)
     -- beware: we cannot set tex.language, but need tex.normallanguage
     for i=1,#tags do
         local tag = tags[i]
-        local l = languages.registered[tag]
+        local l = registered[tag]
         if l then
             if not l.loaded then
                 local tag = l.parent
@@ -225,7 +230,7 @@ function languages.enable(tags)
                     l.number = languages.hyphenation.define(tag)
                     languages.hyphenation.loadpatterns(tag,l.patterns)
                     languages.hyphenation.loadexceptions(tag,l.exceptions)
-                    languages.numbers[l.number] = tag
+                    numbers[l.number] = tag
                 end
                 l.loaded = true
             end
@@ -262,8 +267,8 @@ languages.logger = languages.logger or { }
 
 function languages.logger.report()
     local result = {}
-    for _, tag in ipairs(table.sortedkeys(languages.registered)) do
-        local l = languages.registered[tag]
+    for _, tag in ipairs(table.sortedkeys(registered)) do
+        local l = registered[tag]
         if l.loaded then
             local p = (l.patterns   and "pat") or '-'
             local e = (l.exceptions and "exc") or '-'
@@ -308,7 +313,7 @@ do
 end
 
 function languages.words.found(id, str)
-    local tag = languages.numbers[id]
+    local tag = numbers[id]
     if tag then
         local data = languages.words.data[tag]
         return data and (data[str] or data[lower(str)])

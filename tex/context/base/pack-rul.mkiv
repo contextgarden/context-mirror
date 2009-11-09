@@ -2271,19 +2271,22 @@
 %D \showsetup{vl}
 %D \showsetup{hl}
 
-\def\complexvl[#1]%
+\def\dovlwdhtdp#1#2#3%
   {\bgroup
-   \!!dimena#1\strutht
-   \!!dimenb#1\strutdp
+   \!!dimena#2\strutht
+   \!!dimenb#3\strutdp
    \setbox\scratchbox\hbox
      {\vrule
-        \!!width \linewidth
+        \!!width #1\linewidth
         \!!height\!!dimena
         \!!depth \!!dimenb}%
    \dp\scratchbox\strutdp
    \ht\scratchbox\strutht
    \box\scratchbox
    \egroup}
+
+\def\complexvl[#1]%
+  {\dovlwdhtdp\linewidth{#1}{#1}}
 
 \def\complexhl[#1]%
   {\hbox

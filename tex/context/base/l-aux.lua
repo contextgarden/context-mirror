@@ -169,7 +169,7 @@ function aux.getparameters(self,class,parentclass,settings)
         sc = table.clone(self[parent])
         self[class] = sc
     end
-    aux.add_settings_to_array(sc, settings)
+    aux.settings_to_hash(settings,sc)
 end
 
 -- temporary here

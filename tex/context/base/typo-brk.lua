@@ -115,6 +115,8 @@ breakpoints.methods[4] = function(head,start) -- - => - - -
     return head, start
 end
 
+local methods = breakpoints.methods
+
 function breakpoints.process(namespace,attribute,head)
     local done, numbers = false,  languages.numbers
     local start, n = head, 0
@@ -129,7 +131,9 @@ function breakpoints.process(namespace,attribute,head)
                 if map then
                     local cmap = map[start.char]
                     if cmap then
-                        local smap = cmap[numbers[start.lang]] or cmap[""]
+                        local lang = start.lang
+                        -- we do a sanity check for language
+                        local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
                         if smap then
                             if n >= smap[2] then
                                 local m = smap[3]
@@ -140,7 +144,7 @@ function breakpoints.process(namespace,attribute,head)
                                         if map[next.char] then
                                             break
                                         elseif m == 1 then
-                                            local method = breakpoints.methods[smap[1]]
+                                            local method = methods[smap[1]]
                                             if method then
                                                 head, start = method(head,start)
                                                 done = true

@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-ext'] = {
 }
 
 local next, type, byte = next, type, string.byte
+local gmatch = string.gmatch
 
 --[[ldx--
 <p>When we implement functions that deal with features, most of them
@@ -228,6 +229,8 @@ vectors['default'] = {
     [byte('2')] = 0.7, [byte('3')] = 0.7, [byte('6')] = 0.7, [byte('8')] = 0.7, [byte('9')] = 0.7,
 }
 
+vectors['quality'] = vectors['default'] -- metatable ?
+
 function initializers.common.expansion(tfmdata,value)
     if value then
         local class = classes[value]
@@ -237,8 +240,9 @@ function initializers.common.expansion(tfmdata,value)
                 tfmdata.stretch = (class.stretch or 0) * 10
                 tfmdata.shrink = (class.shrink  or 0) * 10
                 tfmdata.step = (class.step or 0) * 10
-                tfmdata.auto_expand = true
                 local factor = class.factor or 1
+--~ logs.report("fonts","define expansion %s, vector: %s, stretch: %s, shrink: %s, step: %s, factor: %s",value,class.vector,tfmdata.stretch,tfmdata.shrink,tfmdata.step,factor)
+                tfmdata.auto_expand = true
                 local data = characters.data
                 for i, chr in next, tfmdata.characters do
                     local v = vector[i]
@@ -288,7 +292,7 @@ local vectors     = fonts.protrusions.vectors
 
 -- the values need to be revisioned
 
-classes.preset = { factor = 1 }
+classes.preset = { factor = 1, left = 1, right = 1 }
 
 function commands.setupfontprotrusion(class,settings)
     aux.getparameters(classes,class,'preset',settings)
@@ -395,10 +399,13 @@ vectors['quality'] = table.merge( {},
 function initializers.common.protrusion(tfmdata,value)
     if value then
         local class = classes[value]
+--~ logs.report("fonts","define protrusion %s",table.serialize(class))
         if class then
             local vector = vectors[class.vector]
             if vector then
                 local factor = class.factor or 1
+                local left = class.left or 1
+                local right = class.right or 1
                 local data = characters.data
                 local emwidth = tfmdata.parameters.quad
                 tfmdata.auto_protrude = true
@@ -424,8 +431,8 @@ function initializers.common.protrusion(tfmdata,value)
                             end
                         end
                     end
-                    if pl and pl ~= 0 then chr.left_protruding  = pl*factor end
-                    if pr and pr ~= 0 then chr.right_protruding = pr*factor end
+                    if pl and pl ~= 0 then chr.left_protruding  = left *pl*factor end
+                    if pr and pr ~= 0 then chr.right_protruding = right*pr*factor end
                 end
             end
         end

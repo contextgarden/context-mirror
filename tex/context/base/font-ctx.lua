@@ -398,3 +398,17 @@ end
 --~         return nil
 --~     end
 --~ end
+
+-- we need a place for this .. outside the generic scope
+
+local dimenfactors = number.dimenfactors
+
+function fonts.dimenfactor(unit,tfmdata)
+    if unit == "ex" then
+        return tfmdata.parameters.x_height
+    elseif unit == "em" then
+        return tfmdata.parameters.em_height
+    else
+        return dimenfactors[unit] or unit
+    end
+end

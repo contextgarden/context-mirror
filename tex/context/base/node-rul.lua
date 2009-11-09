@@ -8,7 +8,11 @@ if not modules then modules = { } end modules ['node-rul'] = {
 
 -- todo: order and maybe other dimensions
 
+local trace_ruled = false  trackers.register("nodes.ruled", function(v) trace_ruled = v end)
+
 local floor = math.floor
+local topoints = number.topoints
+local n_tostring, n_tosequence = nodes.ids_tostring, nodes.tosequence
 
 local a_ruled        = attributes.private('ruled')
 local a_color        = attributes.private('color')
@@ -31,8 +35,8 @@ local list_dimensions, has_attribute, set_attribute = node.dimensions, node.has_
 local dimenfactor = fonts.dimenfactor
 local texwrite = tex.write
 
-local fontdata    = fonts.ids
-local variables   = interfaces.variables
+local fontdata  = fonts.ids
+local variables = interfaces.variables
 
 nodes.rules      = nodes.rules      or { }
 nodes.rules.data = nodes.rules.data or { }
@@ -41,31 +45,30 @@ storage.register("nodes/rules/data", nodes.rules.data, "nodes.rules.data")
 
 local data = nodes.rules.data
 
--- method, offset, continue, dy, rulethickness, unit, order, max, colorspace, color, transparency
-
-function nodes.rules.define(...)
-    data[#data+1] = { ... }
+function nodes.rules.define(settings)
+    data[#data+1] = settings
     texwrite(#data)
 end
 
 local function flush(head,f,l,d,level,parent) -- not that fast but acceptable for this purpose
     local r, m
     local w = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,f,l.next)
-    local method, offset, continue, dy, rulethickness, unit, order, max = d[1], d[2], d[3], d[4], d[5]/2, d[6], d[7], d[8]
-    local cs, co, tr = d[9], d[10], d[11]
+    local method, offset, continue, dy, rulethickness, unit, order, max, ma, ca, ta =
+        d.method, d.offset, d.continue, d.dy, d.rulethickness, d.unit, d.order, d.max, d.ma, d.ca, d.ta
     local e = dimenfactor(unit,fontdata[f.font])
-    local colorspace   = (cs > 0 and cs) or has_attribute(f,a_colorspace) or 1
-    local color        = (co > 0 and co) or has_attribute(f,a_color)
-    local transparency = (tr > 0 and tr) or has_attribute(f,a_transparency)
+    local colorspace   = (ma > 0 and ma) or has_attribute(f,a_colorspace) or 1
+    local color        = (ca > 0 and ca) or has_attribute(f,a_color)
+    local transparency = (ta > 0 and ta) or has_attribute(f,a_transparency)
     local foreground = order == variables.foreground
+    rulethickness= rulethickness/2
+    if level > max then
+        level = max
+    end
     if method == 0 then -- center
         offset = 2*offset
         m = (offset+(level-1)*dy+rulethickness)*e/2
     else
         m = 0
-    end
-    if level > max then
-        level = max
     end
     for i=1,level do
         local ht =  (offset+(i-1)*dy+rulethickness)*e - m
@@ -87,12 +90,16 @@ local function flush(head,f,l,d,level,parent) -- not that fast but acceptable fo
             head, _ = insert_before(head,f,r)
             insert_after(head,r,k)
         end
-     -- print(level,w,nodes.ids_to_string(f,l),nodes.tosequence(f,l,true))
+        if trace_ruled then
+            logs.report("ruled", "level: %s, width: %s, nodes: %s, text: %s",level,topoints(w),n_tostring(f,l),n_tosequence(f,l,true))
+        end
     end
     return head
 end
 
 -- todo: functions: word, sentence
+
+-- glyph rule unset whatsit glue margin_kern kern math disc
 
 local function process(head,parent)
     local n = head
@@ -116,7 +123,7 @@ local function process(head,parent)
                     f, l, a = n, n, aa
                     level, i = floor(a/1000), a%1000
                     d = data[i]
-                    continue = d[3] == variables.yes
+                    continue = d.continue == variables.yes
                 end
             else
                 if f then
@@ -154,4 +161,3 @@ end
 
 --~ tasks.appendaction ("shipouts", "normalizers", "nodes.rules.process")
 --~ tasks.disableaction("shipouts",                "nodes.rules.process") -- only kick in when used
-

@@ -796,7 +796,7 @@ function table.clone(t,p) -- t is optional or nil or table
     elseif not t then
         t = { }
     end
-    setmetatable(t, { __index = function(_,key) return p[key] end })
+    setmetatable(t, { __index = function(_,key) return p[key] end }) -- why not __index = p ?
     return t
 end
 

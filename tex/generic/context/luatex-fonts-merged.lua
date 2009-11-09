@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/07/09 18:04:39
+-- merge date  : 11/09/09 17:53:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -1324,7 +1324,7 @@ function table.clone(t,p) -- t is optional or nil or table
     elseif not t then
         t = { }
     end
-    setmetatable(t, { __index = function(_,key) return p[key] end })
+    setmetatable(t, { __index = function(_,key) return p[key] end }) -- why not __index = p ?
     return t
 end
 
@@ -3248,18 +3248,6 @@ function fonts.show_font_parameters()
     end
 end
 
-local dimenfactors = number.dimenfactors
-
-function fonts.dimenfactor(unit,tfmdata)
-    if unit == "ex" then
-        return tfmdata.parameters.x_height
-    elseif unit == "em" then
-        return tfmdata.parameters.em_height
-    else
-        return dimenfactors[unit] or unit
-    end
-end
-
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -3631,6 +3619,7 @@ local private = fonts.private
             end
         end
         if hasquality then
+            -- we could move these calculations elsewhere (saves calculations)
             local ve = v.expansion_factor
             if ve then
                 chr.expansion_factor = ve*1000 -- expansionfactor, hm, can happen elsewhere

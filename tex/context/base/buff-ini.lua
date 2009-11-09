@@ -197,7 +197,10 @@ function buffers.typeline(str,n,m,line)
     return n, line
 end
 
-function buffers.save(name,list,encapsulate)
+-- The optional prefix hack is there for the typesetbuffer feature and
+-- in mkii we needed that (this hidden feature is used in a manual).
+
+function buffers.save(name,list,encapsulate,optionalprefix)
     if not name or name == "" then
         name = tex.jobname
     end
@@ -207,7 +210,7 @@ function buffers.save(name,list,encapsulate)
         list = name
         name = tex.jobname .. "-" .. name .. ".tmp"
     end
-    local content = buffers.collect(list)
+    local content = buffers.collect(list,nil,optionalprefix)
     if content == "" then
         content = "empty buffer"
     end
@@ -233,8 +236,8 @@ function buffers.get(name)
     end
 end
 
-local function content(name,separator) -- no print
-    local b = data[name]
+local function content(name,separator,optionalprefix) -- no print
+    local b = data[name] or (optionalprefix and data[optionalprefix .. name])
     if b then
         if type(b) == "table" then
             return concat(b,separator or "\n")
@@ -248,20 +251,20 @@ end
 
 buffers.content = content
 
-function buffers.collect(names,separator) -- no print
+function buffers.collect(names,separator,optionalprefix) -- no print
     -- maybe we should always store a buffer as table so
     -- that we can pass if directly
     local t = { }
     if type(names) == "table" then
         for i=1,#names do
-            local c = content(names[i],separator)
+            local c = content(names[i],separator,optionalprefix)
             if c ~= "" then
                 t[#t+1] = c
             end
         end
     else
         for name in names:gmatch("[^,%s]+") do
-            local c = content(name,separator)
+            local c = content(name,separator,optionalprefix)
             if c ~= "" then
                 t[#t+1] = c
             end

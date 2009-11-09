@@ -94,31 +94,32 @@
      {\donefalse}%
    \normalexpanded
      {\egroup
-      \scratchcounter\ctxlua{nodes.rules.define(
-        \barparameter\c!method,
-        \barparameter\c!offset,
-        "\barparameter\c!continue",
-        \barparameter\c!dy,
-        \barparameter\c!rulethickness,
-        "\barparameter\c!unit",
-        "\barparameter\c!order",
-        \barparameter\c!max,
-        \ifdone\the\attribute\colormodelattribute\else0\fi,
-        \ifdone\the\attribute\colorattribute\else0\fi,
-        \ifdone\the\attribute\transparencyattribute\else0\fi)}}%
+      \scratchcounter\ctxlua{nodes.rules.define {
+        method        = \barparameter\c!method,
+        offset        = \barparameter\c!offset,
+        continue      = "\barparameter\c!continue",
+        dy            = \barparameter\c!dy,
+        rulethickness = \barparameter\c!rulethickness,
+        unit          = "\barparameter\c!unit",
+        order         = "\barparameter\c!order",
+        max           = \barparameter\c!max,
+        ma            = \ifdone\the\attribute\colormodelattribute  \else0\fi,
+        ca            = \ifdone\the\attribute\colorattribute       \else0\fi,
+        ta            = \ifdone\the\attribute\transparencyattribute\else0\fi
+      }}}%
    \setevalue{\??on#1:a}{\the\scratchcounter}}
 
 \let\doredefinebar\dodefinebarindeed
 
-\def\doruled
-  {\ctxlua{nodes.rules.enable()}%
-   \glet\doruled\doruledindeed
-   \doruledindeed}
-
-\def\doruledindeed#1%
+\def\doruled#1%
   {\groupedcommand{\dodoruled{#1}}\relax}
 
-\def\dodoruled#1%
+\def\dodoruled
+  {\ctxlua{nodes.rules.enable()}%
+   \glet\dodoruled\dodoruledindeed
+   \dodoruled}
+
+\def\dodoruledindeed#1%
   {\advance\csname\??on:#1:c\endcsname\plusone
    \scratchcounter\csname\??on:#1:c\endcsname
    \dosetattribute{ruled}{\numexpr1000*\scratchcounter

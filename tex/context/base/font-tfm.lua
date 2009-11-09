@@ -365,6 +365,7 @@ local private = fonts.private
             end
         end
         if hasquality then
+            -- we could move these calculations elsewhere (saves calculations)
             local ve = v.expansion_factor
             if ve then
                 chr.expansion_factor = ve*1000 -- expansionfactor, hm, can happen elsewhere
