@@ -161,7 +161,7 @@ local pdf_indexed     = pdfconstant("Indexed")
 local pdf_device_n    = pdfconstant("DeviceN")
 local pdf_device_rgb  = pdfconstant("DeviceRGB")
 local pdf_device_cmyk = pdfconstant("DeviceCMYK")
-local pdf_device_gray = pdfconstant("Devicegray")
+local pdf_device_gray = pdfconstant("DeviceGray")
 local pdf_extgstate   = pdfconstant("ExtGState")
 
 local pdf_rbg_range  = pdfarray { 0, 1, 0, 1, 0, 1 }
@@ -302,6 +302,7 @@ local function indexcolorref(name) -- actually, names (parent) is the hash
 end
 
 function registrations.rgbspotcolor(name,noffractions,names,p,r,g,b)
+--~ print(name,noffractions,names,p,r,g,b)
     if noffractions == 1 then
         registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rbg_range,format(rgb_function,r,g,b))
     else

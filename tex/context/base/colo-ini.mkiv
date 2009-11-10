@@ -933,6 +933,28 @@
 \def\doinheritta#1{\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
 \def\doinheritts#1{\csname(ts:\ifcsname(ts:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ts:#1)\endcsname#1\fi\fi)\endcsname}
 
+%D Low level defs: ... \colorattribute#2
+
+% \def\colordefalc#1#2{\setevalue{(ca:#1)}{#2}\setevalue{(cs:#1)}{\dosetattribute{color}{#2}}}
+% \def\colordefagc#1#2{\setxvalue{(ca:#1)}{#2}\setevalue{(cs:#1)}{\dosetattribute{color}{#2}}}
+% \def\colordefalt#1#2{\setevalue{(ta:#1)}{#2}\setevalue{(ts:#1)}{\dosetattribute{transparency}{#2}}}
+% \def\colordefagt#1#2{\setxvalue{(ta:#1)}{#2}\setxvalue{(ts:#1)}{\dosetattribute{transparency}{#2}}}
+
+\def\colordefalc#1#2{\setevalue{(ca:#1)}{#2}\setvalue {(cs:#1)}{\attribute\colorattribute       #2 }}
+\def\colordefagc#1#2{\setxvalue{(ca:#1)}{#2}\setvalue {(cs:#1)}{\attribute\colorattribute       #2 }}
+\def\colordefalt#1#2{\setevalue{(ta:#1)}{#2}\setvalue {(ts:#1)}{\attribute\transparencyattribute#2 }}
+\def\colordefagt#1#2{\setxvalue{(ta:#1)}{#2}\setgvalue{(ts:#1)}{\attribute\transparencyattribute#2 }}
+
+\def\colordefflc#1#2{\setvalue {(ca:#1)}{\doinheritca{#2}}\setvalue {(cs:#1)}{\doinheritcs{#2}}}
+\def\colordeffgc#1#2{\setgvalue{(ca:#1)}{\doinheritca{#2}}\setvalue {(cs:#1)}{\doinheritcs{#2}}}
+\def\colordefflt#1#2{\setvalue {(ta:#1)}{\doinheritta{#2}}\setvalue {(ts:#1)}{\doinheritts{#2}}}
+\def\colordeffgt#1#2{\setgvalue{(ta:#1)}{\doinheritta{#2}}\setgvalue{(ts:#1)}{\doinheritts{#2}}}
+
+\def\colordefrlc  #1{\localundefine {(ca:#1)}\localundefine {(cs:#1)}}
+\def\colordefrgc  #1{\globalundefine{(ca:#1)}\globalundefine{(cs:#1)}}
+\def\colordefrlt  #1{\localundefine {(ta:#1)}\localundefine {(ts:#1)}}
+\def\colordefrgt  #1{\globalundefine{(ta:#1)}\globalundefine{(ts:#1)}}
+
 %D \macros
 %D   {colorvalue, grayvalue}
 %D

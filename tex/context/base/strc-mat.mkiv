@@ -187,50 +187,52 @@
 \let\currentsubformulasynchronize\relax  \let\currentsubformulaattribute\relax
 \let\currentformulassynchronize  \relax  \let\currentformulasattribute  \relax
 
+\def\dohandleformulanumbering
+  {\doincrementsubstructurecounter[\v!formula][1]%
+   \doiftext\currentplaceformulasuffix{\setsubstructurecounterown[\v!formula][2]{\currentplaceformulasuffix}}%
+   \placecurrentformulanumber}
+
+\def\dohandlesubformulanumbering
+  {\doiftextelse\currentsubformulasuffix
+     {\setsubstructurecounterown[\v!formula][2]{\currentsubformulasuffix}}
+     {\doincrementsubstructurecounter[\v!formula][2]}%
+    \placecurrentformulanumber}
+
 \def\dododoformulanumber
   {\ifconditional\handleformulanumber
      \hbox\bgroup
        % main counter
-       \doiftext \currentplaceformulasuffix {\setsubstructurecounterown[\v!formula][2]{\currentplaceformulasuffix}}%
        \ifconditional\insidesubformulas
          % nothing
        \else
          \ifcase\formulasnumbermode
            \ifcase\placeformulanumbermode
-             \doincrementsubstructurecounter[\v!formula][1]%
-             \placecurrentformulanumber
+             \dohandleformulanumbering
            \or
-             \doincrementsubstructurecounter[\v!formula][1]%
-             \placecurrentformulanumber
+             \dohandleformulanumbering
            \or
              % nothing
            \or
-             \doincrementsubstructurecounter[\v!formula][1]%
-             \placecurrentformulanumber
+             \dohandleformulanumbering
            \fi
          \or
-           \doincrementsubstructurecounter[\v!formula][1]%
-           \placecurrentformulanumber
+           \dohandleformulanumbering
          \or
            % nothing
          \or
-           \doincrementsubstructurecounter[\v!formula][1]%
-           \placecurrentformulanumber
+           \dohandleformulanumbering
          \fi
        \fi
        % subcounter
-       \doiftext \currentsubformulasuffix {\setsubstructurecounterown[\v!formula][2]{\currentsubformulasuffix}}%
        \ifconditional\insidesubformulas
          \ifcase\subformulasnumbermode
            % nothing
          \or
-           \doincrementsubstructurecounter[\v!formula][2]%
-           \placecurrentformulanumber
+           \dohandlesubformulanumbering
          \or
            % nothing
          \or
-           \doincrementsubstructurecounter[\v!formula][2]%
-           \placecurrentformulanumber
+           \dohandlesubformulanumbering
          \fi
        \fi
       %\rlap{\tracedformulamode}%
@@ -633,40 +635,42 @@
    \setfalse\incrementformulanumber
    \dodoubleempty\doplaceformula}
 
-\def\placeformula
-  {\doglobal\settrue\insideplaceformula
-   \settrue\incrementformulanumber
-   \dodoubleempty\doplaceformula}
-
-\def\placesubformula
-  {\doglobal\settrue\insideplacesubformula
-   \setfalse\incrementformulanumber
-   \dodoubleempty\doplaceformula}
+% \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
+%   {\def\currentplaceformulareference{#1}%
+%    \let\currentplaceformulasuffix\empty
+%    \futurelet\next\redoplaceformulaone}
+%
+% \let\mathdollarsign$ % no def
+%
+% \def\redoplaceformulaone % use doifnextcharelse
+%   {\ifx\next\bgroup
+%      \@EA\moreplaceformula % [ref]{}
+%    \else
+%      \@EA\redoplaceformulatwo
+%    \fi}
+%
+% \long\def\moreplaceformula#1#2% #1 dummy #1 gobbles spaces
+%   {\def\currentplaceformulasuffix{#1}%
+%    \futurelet\next\redoplaceformulatwo#2}
+%
+% \def\redoplaceformulatwo
+%   {\ifx\next\mathdollarsign
+%      \@EA\dispplaceformula % [ref]$$
+%    \else
+%      \@EA\dodoplaceformula % [ref]\start
+%    \fi}%
 
 \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
   {\def\currentplaceformulareference{#1}%
    \let\currentplaceformulasuffix\empty
-   \futurelet\next\redoplaceformulaone}
+   \doifnextbgroupelse\moreplaceformula\redoplaceformula} % [ref]{}
 
-\let\mathdollarsign$ % no def
+\long\def\moreplaceformula#1%
+  {\def\currentplaceformulasuffix{#1}%
+   \redoplaceformula}
 
-\def\redoplaceformulaone % use doifnextcharelse
-  {\ifx\next\bgroup
-     \@EA\moreplaceformula % [ref]{}
-   \else
-     \@EA\redoplaceformulatwo
-   \fi}
-
-\long\def\moreplaceformula#1#2#3% #1 dummy #3 gobbles spaces
-  {\def\currentplaceformulasuffix{#2}%
-   \futurelet\next\redoplaceformulatwo#3}
-
-\def\redoplaceformulatwo
-  {\ifx\next\mathdollarsign
-     \@EA\dispplaceformula % [ref]$$
-   \else
-     \@EA\dodoplaceformula % [ref]\start
-   \fi}%
+\long\def\redoplaceformula
+  {\doifnextcharelse$\dispplaceformula\dodoplaceformula} % [ref]$$ [ref]\start
 
 \def\dodoplaceformula
   {\handleplaceformulanumbering}

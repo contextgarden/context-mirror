@@ -423,7 +423,7 @@
          \localcolumnwidth\OTRSETlocalwidth\mofcolumns
          \offinterlineskip
          \setbox\scratchbox\vbox to \!!heighta
-           {\topskipcorrection % not needed
+           {%\topskipcorrection % not needed
             \ifcase\OTRSETbalancemethod
               % no
             \or
@@ -2996,6 +2996,10 @@
      \OTRSETdoflush
    \fi
    \egroup}
+
+\def\OTRSETdobalance% splitten in met en zonder footnotes
+  {\writestatus{columnsets}{balancing is not supported yet}%
+   \OTRSETnobalance}
 
 \protect \endinput
 

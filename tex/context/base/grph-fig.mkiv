@@ -433,41 +433,64 @@
      \dodotypesetbuffer[\jobname][]
    \fi\fi}
 
+% \def\dodotypesetbuffer[#1][#2]%
+%   {\bgroup
+%    \global\advance\noftypesetbuffers\plusone
+%    \edef\bufferfilename{\jobname-buffer-\the\noftypesetbuffers}%
+%    \doifmode{*\v!first}
+%      {\ctxlua{buffers.save("\bufferfilename.tmp","#1",true)}%
+%       \executesystemcommand{context \bufferfilename.tmp}}%
+%    \externalfigure[\bufferfilename.pdf][#2]%
+%    \egroup}
+
 \def\dodotypesetbuffer[#1][#2]%
   {\bgroup
    \global\advance\noftypesetbuffers\plusone
    \edef\bufferfilename{\jobname-buffer-\the\noftypesetbuffers}%
-% \iftrialtypesetting
-%    \externalfigure[\bufferfilename.pdf][#2]%
-%    \global\advance\noftypesetbuffers\minusone
-%  \else
-   \doifmode{*\v!first}
-     {\ctxlua{buffers.save("\bufferfilename.tmp","#1",true,"typeset-")}%
-      \executesystemcommand{context \bufferfilename.tmp}}%
+   \ctxlua{buffers.run("\bufferfilename.tmp","#1",true)}%
    \externalfigure[\bufferfilename.pdf][#2]%
-% \fi
    \egroup}
 
 \def\dodotypesetbufferindeed#1%
   {}
 
 % for me only (manuals and such)
+%
+% \definetypesetting [name] [options]   [settings-a]
+%
+% \typesetfile       [name] [file]      [settings-b]
+% \typesetfile       [file] [options]   [settings-b]
+% \typesetfile       [file] [settings-b]
+% \typesetfile       [file]
+%
+% \enabletrackers[files.run]
+% \starttext
+%     \typesetfile[oepsoeps.tex][width=10cm,frame=on]
+% \stoptext
 
 \definesystemvariable{tz}
 
 \def\definetypesetting{\dotripleempty\dodefinetypesetting}
 \def\typesetfile      {\dotripleempty\dotypesetfile}
 
-\def\dodefinetypesetting[#1][#2][#3]%
+\def\definetypesetting{\dotripleempty\dodefinetypesetting}
+\def\typesetfile      {\dotripleempty\dotypesetfile}
+
+\def\dodefinetypesetting[#1][#2][#3]% <name> options settings-a
   {\doifsomething{#1}{\setvalue{\??tz#1}{\dodotypesetfile{#2}{#3}}}}
 
-\def\dotypesetfile[#1][#2][#3]%
-  {\executeifdefined{\??tz#1}\gobbletwoarguments{#2}{#3}}
+\def\dotypesetfile[#1][#2][#3]% <name> filename settings-b | filename options settings
+  {\ifcsname\??tz#1\endcsname
+     \csname\??tz#1\endcsname{#2}{#3}%
+   \else\ifthirdargument % filename options settings
+     \dodotypesetfile{#2}{#3}{#1}{}%
+   \else\ifsecondargument % filename settings
+     \dodotypesetfile{}{#2}{#1}{}%
+   \fi\fi\fi}
 
-\def\dodotypesetfile#1#2#3#4% args settings file settings
-  {\doifmode{*\v!first}{\executesystemcommand{context #1 #3}}%
-   \doglobal\beforesplitstring#3\at.\to\typesetfilename
-   \externalfigure[\typesetfilename.pdf][#2,#4]}
+\def\dodotypesetfile#1#2#3#4% options settings-a filename settings-b
+  {\edef\typesetfilename{\ctxlua{tex.write(jobfiles.run("#3","#1"))}}%
+   \expanded{\externalfigure[\typesetfilename]}[#2,#4]}
 
 \setupexternalfigures
   [\c!option=,

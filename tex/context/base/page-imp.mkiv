@@ -387,6 +387,7 @@
 
 \def\outputarrangedbox#1%
   {\bgroup
+   \forgetall % somehow we're back and need to redo this
    \gotonextarrangepage
    \ifnum\arrangedrotationO\arrangedrotationE>\zerocount
      \setbox#1\vbox

@@ -20,18 +20,20 @@ buffers.visualizers = { }
 
 -- if needed we can make 'm local
 
+local trace_run = false  trackers.register("buffers.run",function(v) trace_run = v end)
+
 local utf = unicode.utf8
 
 local concat, texsprint, texprint, texwrite = table.concat, tex.sprint, tex.print, tex.write
 local utfbyte, utffind, utfgsub = utf.byte, utf.find, utf.gsub
 local type, next = type, next
 local huge = math.huge
-local byte, sub, find, char, gsub, rep, lower = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower
+local byte, sub, find, char, gsub, rep, lower, format = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
 
-local data, commands, flags, hooks, visualizers = buffers.data, buffers.commands, buffers.flags, buffers.hooks, buffers.visualizers
+local data, flags, hooks, visualizers = buffers.data, buffers.flags, buffers.hooks, buffers.visualizers
 
 function buffers.raw(name)
     return data[name] or { }
@@ -200,7 +202,7 @@ end
 -- The optional prefix hack is there for the typesetbuffer feature and
 -- in mkii we needed that (this hidden feature is used in a manual).
 
-function buffers.save(name,list,encapsulate,optionalprefix)
+local function prepared(name,list)
     if not name or name == "" then
         name = tex.jobname
     end
@@ -210,14 +212,33 @@ function buffers.save(name,list,encapsulate,optionalprefix)
         list = name
         name = tex.jobname .. "-" .. name .. ".tmp"
     end
-    local content = buffers.collect(list,nil,optionalprefix)
+    local content = buffers.collect(list,nil) or ""
     if content == "" then
         content = "empty buffer"
     end
-    if encapsulate then
-        io.savedata(name, "\\starttext\n"..content.."\n\\stoptext\n")
-    else
-        io.savedata(name, content)
+    return name, content
+end
+
+local capsule = "\\starttext\n%s\n\\stoptext\n"
+local command = "context %s"
+
+function buffers.save(name,list,encapsulate)
+    local name, content = prepared(name,list)
+    io.savedata(name, (encapsulate and format(capsule,content)) or content)
+end
+
+function buffers.run(name,list,encapsulate)
+    local name, content = prepared(name,list)
+    local data = io.loaddata(name)
+    content = (encapsulate and format(capsule,content)) or content
+    if data ~= content then
+        if trace_run then
+            commands.writestatus("buffers","changes in '%s', processing forced",name)
+        end
+        io.savedata(name,content)
+        os.execute(format(command,name))
+    elseif trace_run then
+        commands.writestatus("buffers","no changes in '%s', not processed",name)
     end
 end
 
@@ -236,8 +257,8 @@ function buffers.get(name)
     end
 end
 
-local function content(name,separator,optionalprefix) -- no print
-    local b = data[name] or (optionalprefix and data[optionalprefix .. name])
+local function content(name,separator) -- no print
+    local b = data[name]
     if b then
         if type(b) == "table" then
             return concat(b,separator or "\n")
@@ -251,20 +272,20 @@ end
 
 buffers.content = content
 
-function buffers.collect(names,separator,optionalprefix) -- no print
+function buffers.collect(names,separator) -- no print
     -- maybe we should always store a buffer as table so
     -- that we can pass if directly
     local t = { }
     if type(names) == "table" then
         for i=1,#names do
-            local c = content(names[i],separator,optionalprefix)
+            local c = content(names[i],separator)
             if c ~= "" then
                 t[#t+1] = c
             end
         end
     else
         for name in names:gmatch("[^,%s]+") do
-            local c = content(name,separator,optionalprefix)
+            local c = content(name,separator)
             if c ~= "" then
                 t[#t+1] = c
             end
@@ -467,13 +488,14 @@ end
 
 -- special one
 
-commands.nested = "\\switchslantedtype "
+buffers.commands.nested = "\\switchslantedtype "
 
 -- todo : utf + faster, direct print and such. no \\char, vrb catcodes, see end
 
 function visualizers.flush_nested(str, enable) -- no utf, kind of obsolete mess
     str = str:gsub(" *[\n\r]+ *"," ")
     local result, c, nested, i = "", "", 0, 1
+    local commands = buffers.commands -- otherwise wrong commands
     while i < #str do -- slow
         c = sub(str,i,i+1)
         if c == "<<" then

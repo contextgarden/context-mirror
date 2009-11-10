@@ -11,6 +11,8 @@ local format, gmatch, gsub, lower, match = string.format, string.gmatch, string.
 local texsprint = tex.sprint
 local ctxcatcodes = tex.ctxcatcodes
 
+local trace_define = false  trackers.register("colors.define",function(v) trace_define = v end)
+
 local settings_to_hash_strict = aux.settings_to_hash_strict
 
 colors         = colors         or { }
@@ -23,91 +25,93 @@ local a_transparency = attributes.private('transparency')
 local a_colorspace   = attributes.private('colormodel')
 local a_background   = attributes.private('background')
 
--- no format needed any more or maybe use low level commands (less tokenization)
-
-local a_l_c_template = "\\setevalue{(ca:%s)}{%s}" ..
-                       "\\setevalue{(cs:%s)}{\\dosetattribute{color}{%s}}"
-local a_g_c_template = "\\setxvalue{(ca:%s)}{%s}" ..
-                       "\\setxvalue{(cs:%s)}{\\dosetattribute{color}{%s}}"
-local f_l_c_template = "\\setvalue {(ca:%s)}{\\doinheritca{%s}}" ..
-                       "\\setvalue {(cs:%s)}{\\doinheritcs{%s}}"
-local f_g_c_template = "\\setgvalue{(ca:%s)}{\\doinheritca{%s}}" ..
-                       "\\setgvalue{(cs:%s)}{\\doinheritcs{%s}}"
-local r_l_c_template = "\\localundefine{(ca:%s)}" ..
-                       "\\localundefine{(cs:%s)}"
-local r_g_c_template = "\\globalundefine{(ca:%s)}" ..
-                       "\\globalundefine{(cs:%s)}"
-
-local a_l_t_template = "\\setevalue{(ta:%s)}{%s}" ..
-                       "\\setevalue{(ts:%s)}{\\dosetattribute{transparency}{%s}}"
-local a_g_t_template = "\\setxvalue{(ta:%s)}{%s}" ..
-                       "\\setxvalue{(ts:%s)}{\\dosetattribute{transparency}{%s}}"
-local f_l_t_template = "\\setvalue {(ta:%s)}{\\doinheritta{%s}}" ..
-                       "\\setvalue {(ts:%s)}{\\doinheritts{%s}}"
-local f_g_t_template = "\\setgvalue{(ta:%s)}{\\doinheritta{%s}}" ..
-                       "\\setgvalue{(ts:%s)}{\\doinheritts{%s}}"
-local r_l_t_template = "\\localundefine{(ta:%s)}" ..
-                       "\\localundefine{(ts:%s)}"
-local r_g_t_template = "\\globalundefine{(ta:%s)}" ..
-                       "\\globalundefine{(ts:%s)}"
+local register_color  = colors.register
+local attributes_list = attributes.list
 
 local function definecolor(name, ca, global)
     if ca and ca > 0 then
         if global then
-            texsprint(ctxcatcodes,format(a_g_c_template, name, ca, name, ca))
+            if trace_define then
+                commands.writestatus("color","define global color '%s' with attribute: %s",name,ca)
+            end
+            context.colordefagc(name,ca) -- texsprint(ctxcatcodes,"\\colordefagc{",name,"}{",ca,"}")
         else
-            texsprint(ctxcatcodes,format(a_l_c_template, name, ca, name, ca))
+            if trace_define then
+                commands.writestatus("color","define local color '%s' with attribute: %s",name,ca)
+            end
+            context.colordefalc(name,ca) -- texsprint(ctxcatcodes,"\\colordefalc{",name,"}{",ca,"}")
         end
     else
         if global then
-            texsprint(ctxcatcodes,format(r_g_c_template, name, name))
+            context.colordefrgc(name) -- texsprint(ctxcatcodes,"\\colordefrgc{",name,"}")
         else
-            texsprint(ctxcatcodes,format(r_l_c_template, name, name))
+            context.colordefrlc(name) -- texsprint(ctxcatcodes,"\\colordefrlc{",name,"}")
         end
     end
 end
+
 local function inheritcolor(name, ca, global)
     if ca and ca ~= "" then
         if global then
-            texsprint(ctxcatcodes,format(f_g_c_template, name, ca, name, ca))
+            if trace_define then
+                commands.writestatus("color","inherit global color '%s' with attribute: %s",name,ca)
+            end
+            context.colordeffgc(name,ca) -- texsprint(ctxcatcodes,"\\colordeffgc{",name,"}{",ca,"}")
         else
-            texsprint(ctxcatcodes,format(f_l_c_template, name, ca, name, ca))
+            if trace_define then
+                commands.writestatus("color","inherit local color '%s' with attribute: %s",name,ca)
+            end
+            context.colordefflc(name,ca) -- texsprint(ctxcatcodes,"\\colordefflc{",name,"}{",ca,"}")
         end
     else
         if global then
-            texsprint(ctxcatcodes,format(r_g_c_template, name, name))
+            context.colordefrgc(name) -- texsprint(ctxcatcodes,"\\colordefrgc{",name,"}")
         else
-            texsprint(ctxcatcodes,format(r_l_c_template, name, name))
+            context.colordefrlc(name) -- texsprint(ctxcatcodes,"\\colordefrlc{",name,"}")
         end
     end
 end
+
 local function definetransparent(name, ta, global)
     if ta and ta > 0 then
         if global then
-            texsprint(ctxcatcodes,format(a_g_t_template, name, ta, name, ta))
+            if trace_define then
+                commands.writestatus("color","define global transparency '%s' with attribute: %s",name,ta)
+            end
+            context.colordefagt(name,ta) -- texsprint(ctxcatcodes,"\\colordefagt{",name,"}{",ta,"}")
         else
-            texsprint(ctxcatcodes,format(a_l_t_template, name, ta, name, ta))
+            if trace_define then
+                commands.writestatus("color","define local transparency '%s' with attribute: %s",name,ta)
+            end
+            context.colordefalt(name,ta) -- texsprint(ctxcatcodes,"\\colordefalt{",name,"}{",ta,"}")
         end
     else
         if global then
-            texsprint(ctxcatcodes,format(r_g_t_template, name, name))
+            context.colordefrgt(name) -- texsprint(ctxcatcodes,"\\colordefrgt{",name,"}")
         else
-            texsprint(ctxcatcodes,format(r_l_t_template, name, name))
+            context.colordefrlt(name) -- texsprint(ctxcatcodes,"\\colordefrlt{",name,"}")
         end
     end
 end
+
 local function inherittransparent(name, ta, global)
     if ta and ta ~= "" then
         if global then
-            texsprint(ctxcatcodes,format(f_g_t_template, name, ta, name, ta))
+            if trace_define then
+                commands.writestatus("color","inherit global transparency '%s' with attribute: %s",name,ta)
+            end
+            context.colordeffgt(name,ta) -- texsprint(ctxcatcodes,"\\colordeffgt{",name,"}{",ta,"}")
         else
-            texsprint(ctxcatcodes,format(f_l_t_template, name, ta, name, ta))
+            if trace_define then
+                commands.writestatus("color","inherit local transparency '%s' with attribute: %s",name,ta)
+            end
+            context.colordefflt(name,ta) -- texsprint(ctxcatcodes,"\\colordefflt{",name,"}{",ta,"}")
         end
     else
         if global then
-            texsprint(ctxcatcodes,format(r_g_t_template, name, name))
+            context.colordefrgt(name) -- texsprint(ctxcatcodes,"\\colordefrgt{",name,"}")
         else
-            texsprint(ctxcatcodes,format(r_l_t_template, name, name))
+            context.colordefrlt(name) -- texsprint(ctxcatcodes,"\\colordefrlt{",name,"}")
         end
     end
 end
@@ -180,7 +184,7 @@ local function do_registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- sa
 end
 
 function colors.definesimplegray(name,s)
-    return colors.register(name,'gray',s) -- we still need to get rid of 'color'
+    return register_color(name,'gray',s) -- we still need to get rid of 'color'
 end
 
 function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
@@ -189,13 +193,13 @@ function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent
     if t then
         if t.h then
             local r, g, b = match(t.h .. "000000","(..)(..)(..)") -- watch the 255
-            definecolor(name, colors.register(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255               ), global)
+            definecolor(name, register_color(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255               ), global)
         elseif t.r or t.g or t.b then
-            definecolor(name, colors.register(name,'rgb', tonumber(t.r)  or 0,      tonumber(t.g)  or 0,      tonumber(t.b)  or 0                    ), global)
+            definecolor(name, register_color(name,'rgb', tonumber(t.r)  or 0,      tonumber(t.g)  or 0,      tonumber(t.b)  or 0                    ), global)
         elseif t.c or t.m or t.y or t.k then
-            definecolor(name, colors.register(name,'cmyk',tonumber(t.c)  or 0,      tonumber(t.m)  or 0,      tonumber(t.y)  or 0, tonumber(t.k) or 0), global)
+            definecolor(name, register_color(name,'cmyk',tonumber(t.c)  or 0,      tonumber(t.m)  or 0,      tonumber(t.y)  or 0, tonumber(t.k) or 0), global)
         else
-            definecolor(name, colors.register(name,'gray',tonumber(t.s)  or 0), global)
+            definecolor(name, register_color(name,'gray',tonumber(t.s)  or 0), global)
         end
         if t.a and t.t then
             definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
@@ -204,8 +208,8 @@ function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent
             definetransparent(name, 0, global) -- can be sped up
         end
     elseif freeze then
-        local ca = attributes.list[a_color]       [str]
-        local ta = attributes.list[a_transparency][str]
+        local ca = attributes_list[a_color]       [str]
+        local ta = attributes_list[a_transparency][str]
         if ca then
             definecolor(name, ca, global)
         end
@@ -216,8 +220,8 @@ function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent
         inheritcolor(name, str, global)
         inherittransparent(name, str, global)
     --  if global and str ~= "" then -- For Peter Rolf who wants access to the numbers in Lua. (Currently only global is supported.)
-    --      attributes.list[a_color]       [name] = attributes.list[a_color]       [str] or attributes.unsetvalue  -- reset
-    --      attributes.list[a_transparency][name] = attributes.list[a_transparency][str] or attributes.unsetvalue
+    --      attributes_list[a_color]       [name] = attributes_list[a_color]       [str] or attributes.unsetvalue  -- reset
+    --      attributes_list[a_transparency][name] = attributes_list[a_transparency][str] or attributes.unsetvalue
     --  end
     end
 end
@@ -231,16 +235,17 @@ function colors.definespotcolor(name,parent,str,global)
     if parent == "" or parent:find("=") then
         colors.registerspotcolor(name, parent)
     elseif name ~= parent then
-        local cp = attributes.list[a_color][parent]
+        local cp = attributes_list[a_color][parent]
         if cp then
             local t = settings_to_hash_strict(str)
             if t then
-                t.p = tonumber(t.p) or 1
-                do_registerspotcolor(parent, name, cp, t.e, 1, "", t.p) -- p not really needed, only diagnostics
+                local tp = tonumber(t.p) or 1
+                do_registerspotcolor(parent, name, cp, t.e, 1, "", tp) -- p not really needed, only diagnostics
                 if name and name ~= "" then
-                    definecolor(name, colors.register(name,'spot', parent, 1, "", t.p), true)
-                    if t.a and t.t then
-                        definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
+                    definecolor(name, register_color(name,'spot', parent, 1, "", tp), true)
+                    local ta, tt = t.a, t.t
+                    if ta and tt then
+                        definetransparent(name, transparencies.register(name,transparent[ta] or tonumber(ta) or 1,tonumber(tt) or 1), global)
                     elseif colors.couple then
                     --~ definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
                         definetransparent(name, 0, global) -- can be sped up
@@ -252,7 +257,7 @@ function colors.definespotcolor(name,parent,str,global)
 end
 
 function colors.registerspotcolor(parent, str)
-    local cp = attributes.list[a_color][parent]
+    local cp = attributes_list[a_color][parent]
     if cp then
         local e = ""
         if str then
@@ -277,11 +282,11 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
         dd, pp, nn = concat(dd,','), concat(pp,','), concat(nn,'_')
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
         colors.defineprocesscolor(parent,colorspec..","..selfspec,true,true)
-        local cp = attributes.list[a_color][parent]
+        local cp = attributes_list[a_color][parent]
         if cp then
             do_registerspotcolor(parent, name, cp, "", nof, dd, pp)
             do_registermultitonecolor(parent, name, cp, "", nof, dd, pp)
-            definecolor(name, colors.register(name, 'spot', parent, nof, dd, pp), true)
+            definecolor(name, register_color(name, 'spot', parent, nof, dd, pp), true)
             local t = settings_to_hash_strict(selfspec)
             if t and t.a and t.t then
                 definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
@@ -430,13 +435,13 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
             -- problems with weighted gray conversions and work with original values
             local ca
             if csone == 2 then
-                ca = colors.register(name,'gray',f(one,two,2,fraction))
+                ca = register_color(name,'gray',f(one,two,2,fraction))
             elseif csone == 3 then
-                ca = colors.register(name,'rgb',f(one,two,3,fraction),f(one,two,4,fraction),f(one,two,5,fraction))
+                ca = register_color(name,'rgb',f(one,two,3,fraction),f(one,two,4,fraction),f(one,two,5,fraction))
             elseif csone == 4 then
-                ca = colors.register(name,'cmyk',f(one,two,6,fraction),f(one,two,7,fraction),f(one,two,8,fraction),f(one,two,9,fraction))
+                ca = register_color(name,'cmyk',f(one,two,6,fraction),f(one,two,7,fraction),f(one,two,8,fraction),f(one,two,9,fraction))
             else
-                ca = colors.register(name,'gray',f(one,two,2,fraction))
+                ca = register_color(name,'gray',f(one,two,2,fraction))
             end
             definecolor(name,ca,global,freeze)
         end

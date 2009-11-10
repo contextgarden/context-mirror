@@ -57,11 +57,10 @@ end
 jobvariables           = jobvariables or { }
 jobvariables.collected = jobvariables.collected or { }
 jobvariables.tobesaved = jobvariables.tobesaved or { }
-
 jobvariables.checksums = jobvariables.checksums or { }
 
-if not jobvariables.checksums.old then jobvariables.checksums.old = md5.HEX("old") end
-if not jobvariables.checksums.new then jobvariables.checksums.new = md5.HEX("new") end
+if not jobvariables.checksums.old then jobvariables.checksums.old = md5.HEX("old") end -- used in experiment
+if not jobvariables.checksums.new then jobvariables.checksums.new = md5.HEX("new") end -- used in experiment
 
 job.register('jobvariables.checksums', jobvariables.checksums)
 
