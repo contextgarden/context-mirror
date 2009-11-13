@@ -358,7 +358,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
 --~                 local settings = xmldata.settings
 --~                 settings.parent_root = xmldata -- to be tested
 --~                 local xi = xmlconvert(data,settings)
-                local xi = xml.inheritedconvert(element,xmldata)
+                local xi = xml.inheritedconvert(data,xmldata)
                 if not xi then
                     epdt[ek.ni] = "" -- xml.empty(d,k)
                 else

@@ -85,16 +85,27 @@ local right = P(")")
 local colon = P(":")
 local space = P(" ")
 
+define.defaultlookup = "file"
+
+local prefixpattern  = P(false)
+
 function define.add_specifier(symbol)
     specifiers = specifiers .. symbol
     local method        = S(specifiers)
-    local lookup        = C(P("file")+P("name")) * colon -- hard test, else problems with : method
+    local lookup        = C(prefixpattern) * colon
     local sub           = left * C(P(1-left-right-method)^1) * right
---~   local specification = C(method) * C(P(1-method)^1)
     local specification = C(method) * C(P(1)^1)
     local name          = C((1-sub-specification)^1)
     splitter = P((lookup + Cc("")) * name * (sub + Cc("")) * (specification + Cc("")))
 end
+
+function define.add_lookup(str,default)
+    prefixpattern = prefixpattern + P(str)
+end
+
+define.add_lookup("file")
+define.add_lookup("name")
+define.add_lookup("spec")
 
 function define.get_specification(str)
     return splitter:match(str)
@@ -116,8 +127,8 @@ function define.makespecification(specification, lookup, name, sub, method, deta
 --~         lookup = specification.lookup -- can come from xetex [] syntax
 --~         specification.lookup = nil
 --~     end
-    if lookup ~= 'name' then -- for the moment only two lookups, maybe some day also system:
-        lookup = 'file'
+    if not lookup or lookup == "" then
+        lookup = define.defaultlookup
     end
     local t = {
         lookup        = lookup,        -- forced type
@@ -219,17 +230,44 @@ end
 <p>We can resolve the filename using the next function:</p>
 --ldx]]--
 
+define.resolvers = resolvers
+
+function define.resolvers.file(specification)
+    specification.forced = file.extname(specification.name)
+    specification.name = file.removesuffix(specification.name)
+end
+
+function define.resolvers.name(specification)
+    local resolve = fonts.names.resolve
+    if resolve then
+        specification.resolved, specification.sub = fonts.names.resolve(specification.name,specification.sub)
+        if specification.resolved then
+            specification.forced = file.extname(specification.resolved)
+            specification.name = file.removesuffix(specification.resolved)
+        end
+    else
+        define.resolvers.file(specification)
+    end
+end
+
+function define.resolvers.spec(specification)
+    local resolvespec = fonts.names.resolvespec
+    if resolvespec then
+        specification.resolved, specification.sub = fonts.names.resolvespec(specification.name,specification.sub)
+        if specification.resolved then
+            specification.forced = file.extname(specification.resolved)
+            specification.name = file.removesuffix(specification.resolved)
+        end
+    else
+        define.resolvers.name(specification)
+    end
+end
+
 function define.resolve(specification)
     if not specification.resolved or specification.resolved == "" then -- resolved itself not per se in mapping hash
-        if specification.lookup == 'name' then
-            specification.resolved, specification.sub = fonts.names.resolve(specification.name,specification.sub)
-            if specification.resolved then
-                specification.forced = file.extname(specification.resolved)
-                specification.name = file.removesuffix(specification.resolved)
-            end
-        elseif specification.lookup == 'file' then
-            specification.forced = file.extname(specification.name)
-            specification.name = file.removesuffix(specification.name)
+        local r = define.resolvers[specification.lookup]
+        if r then
+            r(specification)
         end
     end
     if specification.forced == "" then
@@ -237,7 +275,6 @@ function define.resolve(specification)
     else
         specification.forced = specification.forced
     end
---~     specification.hash = specification.name .. ' @ ' .. tfm.hash_features(specification)
     specification.hash = lower(specification.name .. ' @ ' .. tfm.hash_features(specification))
     if specification.sub and specification.sub ~= "" then
         specification.hash = specification.sub .. ' @ ' .. specification.hash

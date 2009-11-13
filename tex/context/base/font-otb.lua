@@ -309,7 +309,7 @@ local supported_gsub = {
     'zero',
     'smcp','cpsp','c2sc','ornm','aalt',
     'hwid','fwid',
-    'ssty', -- math
+    'ssty', 'rtlm', -- math
 }
 
 local supported_gpos = {

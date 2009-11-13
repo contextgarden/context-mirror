@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['font-syn'] = {
 
 local next = next
 local gsub, lower, match, find, lower, upper = string.gsub, string.lower, string.match, string.find, string.lower, string.upper
+local concat, sort, format = table.concat, table.sort, string.format
 
 local trace_names = false  trackers.register("fonts.names", function(v) trace_names = v end)
 
@@ -29,7 +30,7 @@ fonts.names.data       = fonts.names.data    or { }
 local names   = fonts.names
 local filters = fonts.names.filters
 
-names.version    = 1.08 -- when adapting this, also changed font-dum.lua
+names.version    = 1.014 -- when adapting this, also changed font-dum.lua
 names.basename   = "names"
 names.saved      = false
 names.loaded     = false
@@ -103,12 +104,14 @@ filters.list = {
     "otf", "ttf", "ttc", "dfont", "afm",
 }
 
-filters.fixes = {
-    { "reg$", "regular", },
-    { "ita$", "italic", },
+filters.fixes = { -- can be lpeg
+    { "bolita$", "bolditalic", },
     { "ital$", "italic", },
     { "cond$", "condensed", },
     { "book$", "", },
+    { "reg$", "regular", },
+    { "ita$", "italic", },
+    { "bol$", "bold", },
 }
 
 names.xml_configuration_file    = "fonts.conf" -- a bit weird format, bonus feature
@@ -196,7 +199,7 @@ function names.identify(verbose) -- lsr is for kpse
     }
     local done, mapping, fallback_mapping, nofread, nofok = { }, names.data.mapping, names.data.fallback_mapping, 0, 0
     local cleanname = names.cleanname
-    local function check(result, filename, suffix, is_sub)
+    local function check(result, filename, suffix, is_sub) -- unlocal this one
         local fontname = result.fullname
         if fontname then
             local n = cleanname(result.fullname)
@@ -373,6 +376,10 @@ function names.identify(verbose) -- lsr is for kpse
     if n > 0 then
         logs.report("fontnames", "%s files read, %s normal and %s extra entries added, %s rejected, %s valid",totalread,totalok,n,rejected,totalok+n-rejected)
     end
+    names.analyse(mapping)
+    names.analyse(fallback_mapping)
+    names.checkduplicates(mapping)
+    names.checkduplicates(fallback_mapping)
 end
 
 function names.is_permitted(name)
@@ -383,6 +390,120 @@ function names.write_data(name,data)
 end
 function names.read_data(name)
     return containers.read(names.cache(),name)
+end
+
+local sorter = function(a,b) return #a < #b and a < b end
+
+function names.sorted(t)
+    local s = table.keys(t or { }) or { }
+    sort(s,sorted)
+    return s
+end
+
+--~ local P, C, Cc = lpeg.P, lpeg.C, lpeg.Cc
+--~
+--~ local weight   = C(P("demibold") + P("semibold") + P("mediumbold") + P("ultrabold") + P("bold") + P("demi") + P("semi") + P("light") + P("medium") + P("heavy") + P("ultra") + P("black"))
+--~ local style    = C(P("regular") + P("italic") + P("oblique") + P("slanted") + P("roman") + P("ital"))
+--~ local width    = C(P("condensed") + P("normal") + P("expanded") + P("cond"))
+--~ local special  = P("roman")
+--~ local reserved = style + weight + width
+--~ local any      = (1-reserved)
+--~ local name     = C((special + any)^1)
+--~ local crap     = any^0
+--~ local dummy    = Cc(false)
+--~ local normal   = Cc("normal")
+--~ local analyser = name * (weight + normal) * crap * (style + normal) * crap * (width + normal) * crap
+--~
+--~ function names.analyse(mapping)
+--~     for k, v in next, mapping do
+--~         -- fails on "Romantik" but that's a border case anyway
+--~         local name, weight, style, width = analyser:match(k)
+--~         v[5], v[6], v[7], v[8] = name or k, weight or "normal", style or "normal", width or "normal"
+--~     end
+--~ end
+
+local P, C, Cc, Cs, Carg = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg
+
+local weight = C(P("demibold") + P("semibold") + P("mediumbold") + P("ultrabold") + P("bold") + P("demi") + P("semi") + P("light") + P("medium") + P("heavy") + P("ultra") + P("black"))
+local style  = C(P("regular") + P("italic") + P("oblique") + P("slanted") + P("roman") + P("ital"))
+local width  = C(P("condensed") + P("normal") + P("expanded") + P("cond"))
+local strip  = P("book") + P("roman")
+local any    = P(1)
+
+local t
+
+local analyser = Cs (
+    (
+        strip  / "" +
+        weight / function(s) t[6] = s return "" end +
+        style  / function(s) t[7] = s return "" end +
+        width  / function(s) t[8] = s return "" end +
+        any
+    )^0
+)
+
+local stripper = Cs (
+    (
+        strip  / "" +
+        any
+    )^0
+)
+
+function names.analyse(mapping) -- fails on "Romantik" but that's a border case anyway
+    for k, v in next, mapping do
+        t = v
+        t[5] = analyser:match(k) -- somehow Carg fails
+        v[5], v[6], v[7], v[8] = t[5] or k, t[6] or "normal", t[7] or "normal", t[8] or "normal"
+    end
+end
+
+local splitter = lpeg.splitat("-")
+
+function names.splitspec(askedname)
+    local name, weight, style, width = splitter:match(stripper:match(askedname) or askedname)
+    if trace_names then
+        logs.report("fonts","requested name '%s' split in name '%s', weight '%s', style '%s' and width '%s'",askedname,name or '',weight or '',style or '',width or '')
+    end
+    if not weight or not weight or not width then
+        weight, style, width = weight or "normal", style or "normal", width or "normal"
+        if trace_names then
+            logs.report("fonts","request '%s' normalized to '%s-%s-%s-%s'",askedname,name,weight,style,width)
+        end
+    end
+    return name or askedname, weight, style, width
+end
+
+function names.checkduplicates(mapping) -- fails on "Romantik" but that's a border case anyway
+    local loaded = { }
+    for k, v in next, mapping do
+        local hash = format("%s-%s-%s-%s",v[5],v[6],v[7],v[8])
+        local h = loaded[hash]
+        if h then
+            local ok = true
+            local fn = v[3]
+            for i=1,#h do
+                local hn = mapping[h[i]][3]
+                if hn == fn then
+                    ok = false
+                    break
+                end
+            end
+            if ok then
+                h[#h+1] = k
+            end
+        else
+            loaded[hash] = { h }
+        end
+    end
+    for k, v in table.sortedpairs(loaded) do
+        if #v > 1 then
+            for i=1,#v do
+                local vi = v[i]
+                v[i] = format("%s = %s",vi,mapping[vi][3])
+            end
+            logs.report("fonts", "double lookup: %s => %s",k,concat(v," | "))
+        end
+    end
 end
 
 function names.load(reload,verbose)
@@ -405,9 +526,11 @@ function names.load(reload,verbose)
             end
         end
         local data = names.data
+    --  names.analyse(data.mapping)
+    --  names.analyse(data.fallback_mapping)
         if data then
-            data.sorted = table.sortedkeys(data.mapping or { }) or { }
-            data.fallback_sorted = table.sortedkeys(data.fallback_mapping or { }) or { }
+            data.sorted = names.sorted(data.mapping)
+            data.fallback_sorted = names.sorted(data.fallback_mapping)
         else
             logs.report("font table", "accessing the data table failed")
         end
@@ -494,26 +617,248 @@ local function found(name)
     end
 end
 
+local function collect(stage,mapping,sorted,found,done,name,weight,style,width,all)
+    if not mapping or not sorted then
+        return
+    end
+strictname = "^".. name
+    local f = mapping[name]
+    if weight ~= "" then
+        if style ~= "" then
+            if width ~= "" then
+                if trace_names then
+                    logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s', width '%s'",stage,name,weight,style,width)
+                end
+                if f and width ~= f[8] and style == f[7] and weight == f[6] then
+                    found[#found+1], done[name] = f, true
+                    if not all then return end
+                end
+                for i=1,#sorted do
+                    local k = sorted[i]
+                    if not done[k] then
+                        local v = mapping[k]
+                        if v[6] == weight and v[7] == style and v[8] == width and find(v[5],strictname) then
+                            found[#found+1], done[k] = v, true
+                            if not all then return end
+                        end
+                    end
+                end
+            else
+                if trace_names then
+                    logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s'",stage,name,weight,style)
+                end
+                if f and style == f[7] and weight == f[6] then
+                    found[#found+1], done[name] = f, true
+                    if not all then return end
+                end
+                for i=1,#sorted do
+                    local k = sorted[i]
+                    if not done[k] then
+                        local v = mapping[k]
+                        if v[6] == weight and v[7] == style and find(v[5],strictname) then
+                            found[#found+1], done[k] = v, true
+                            if not all then return end
+                        end
+                    end
+                end
+            end
+        else
+            if trace_names then
+                logs.report("fonts","resolving stage %s, name '%s', weight '%s'",stage,name,weight)
+            end
+            if f and weight == f[6] then
+                found[#found+1], done[name] = f, true
+                if not all then return end
+            end
+            for i=1,#sorted do
+                local k = sorted[i]
+                if not done[k] then
+                    local v = mapping[k]
+                    if v[6] == weight and find(v[5],strictname) then
+                        found[#found+1], done[k] = v, true
+                        if not all then return end
+                    end
+                end
+            end
+        end
+    elseif style ~= "" then
+        if width ~= "" then
+            if trace_names then
+                logs.report("fonts","resolving stage %s, name '%s', style '%s', width '%s'",stage,name,style,width)
+            end
+            if f and style == f[7] and width == f[8] then
+                found[#found+1], done[name] = f, true
+                if not all then return end
+            end
+            for i=1,#sorted do
+                local k = sorted[i]
+                if not done[k] then
+                    local v = mapping[k]
+                    if v[7] == style and v[8] == width and find(v[5],strictname) then
+                        found[#found+1], done[k] = v, true
+                        if not all then return end
+                    end
+                end
+            end
+        else
+            if trace_names then
+                logs.report("fonts","resolving stage %s, name '%s', style '%s'",stage,name,style)
+            end
+            if f and style == f[7] then
+                found[#found+1], done[name] = f, true
+                if not all then return end
+            end
+            for i=1,#sorted do
+                local k = sorted[i]
+                if not done[k] then
+                    local v = mapping[k]
+                    if v[7] == style and find(v[5],strictname) then
+                        found[#found+1], done[k] = v, true
+                        if not all then return end
+                    end
+                end
+            end
+        end
+    elseif width ~= "" then
+        if trace_names then
+            logs.report("fonts","resolving stage %s, name '%s', width '%s'",stage,name,width)
+        end
+        if f and width == f[8] then
+            found[#found+1], done[name] = f, true
+            if not all then return end
+        end
+        for i=1,#sorted do
+            local k = sorted[i]
+            if not done[k] then
+                local v = mapping[k]
+                if v[8] == width and find(v[5],strictname) then
+                    found[#found+1], done[k] = v, true
+                    if not all then return end
+                end
+            end
+        end
+    else
+        if trace_names then
+            logs.report("fonts","resolving stage %s, name '%s'",stage,name)
+        end
+        if f then
+            found[#found+1], done[name] = f, true
+            if not all then return end
+        end
+        for i=1,#sorted do
+            local k = sorted[i]
+            if not done[k] then
+                local v = mapping[k]
+                if find(v[5],strictname) then
+                    found[#found+1], done[k] = v, true
+                    if not all then return end
+                end
+            end
+        end
+    end
+end
+
+function heuristic(name,weight,style,width,all) -- todo: fallbacks
+    local found, done = { }, { }
+    local data = names.data
+    local mapping, sorted, fbmapping, fbsorted = data.mapping, data.sorted, data.fallback_mapping, data.fallback_sorted
+    weight, style = weight or "", style or ""
+    name = names.cleanname(name)
+    collect(1,mapping,sorted,found,done,name,weight,style,width,all)
+    if #found == 0 then
+        collect(2,fbmapping,fbsorted,found,done,name,weight,style,width,all)
+    end
+    if #found == 0 and width ~= "" then
+        width = "normal"
+        collect(3,mapping,sorted,found,done,name,weight,style,width,all)
+        if #found == 0 then
+            collect(4,fbmapping,fbsorted,found,done,name,weight,style,width,all)
+        end
+    end
+    if #found == 0 and weight ~= "" then -- not style
+        weight = "normal"
+        collect(5,mapping,sorted,found,done,name,weight,style,width,all)
+        if #found == 0 then
+            collect(6,fbmapping,fbsorted,found,done,name,weight,style,width,all)
+        end
+    end
+    if #found == 0 and style ~= "" then -- not weight
+        style = "normal"
+        collect(7,mapping,sorted,found,done,name,weight,style,width,all)
+        if #found == 0 then
+            collect(8,fbmapping,fbsorted,found,done,name,weight,style,width,all)
+        end
+    end
+    local nf = #found
+    if trace_names then
+        if nf then
+            local t = { }
+            for i=1,nf do
+                t[#t+1] = format("'%s'",found[i][2])
+            end
+            logs.report("fonts","name '%s' resolved to %s instances: %s",name,nf,concat(t," "))
+        else
+            logs.report("fonts","name '%s' unresolved",name)
+        end
+    end
+    if all then
+        return nf > 0 and found
+    elseif nf > 0 then
+        local f = found[1]
+        return f[2], f[3], f[4]
+    else
+        return nil, nil, nil
+    end
+end
+
 local reloaded = false
 
-function names.specification(askedname, sub)
+function names.specification(askedname,weight,style,width)
     if askedname and askedname ~= "" and names.enabled then
-        askedname = lower(askedname)
+        askedname = lower(askedname) -- or cleanname
         names.load()
-        local name, filename, is_sub = found(askedname)
+        local name, filename, is_sub = heuristic(askedname,weight,style,width)
         if not filename and not reloaded and names.autoreload then
             names.loaded = false
             reloaded = true
             io.flush()
             names.load(true)
-            name, filename, is_sub = found(askedname)
+            name, filename, is_sub = heuristic(askedname,weight,style,width)
+            if not filename then
+                name, filename, is_sub = found(askedname) -- old method
+            end
         end
         return name, filename, is_sub
     end
 end
 
+function names.collect(askedname,weight,style,width)
+    if askedname and askedname ~= "" and names.enabled then
+        askedname = lower(askedname) -- or cleanname
+        names.load()
+        local list = heuristic(askedname,weight,style,width,true)
+        if not list or #list == 0 and not reloaded and names.autoreload then
+            names.loaded = false
+            reloaded = true
+            io.flush()
+            names.load(true)
+            list = heuristic(askedname,weight,style,width,true)
+        end
+        return list
+    end
+end
+
 function names.resolve(askedname, sub)
-    local name, filename, is_sub = names.specification(askedname, sub)
+    local name, filename, is_sub = names.specification(askedname)
+    return filename, (is_sub and name) or sub
+end
+
+function names.collectspec(askedname)
+    return names.collect(names.splitspec(askedname))
+end
+
+function names.resolvespec(askedname,sub)
+    local name, filename, is_sub = names.specification(names.splitspec(askedname))
     return filename, (is_sub and name) or sub
 end
 

@@ -37,6 +37,8 @@ local format, gsub, find, lower, upper, match, gmatch = string.format, string.gs
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
 
+local collapse_path = file.collapse_path
+
 local trace_locating, trace_detail, trace_verbose  = false, false, false
 
 trackers.register("resolvers.verbose",  function(v) trace_verbose  = v end)
@@ -425,7 +427,7 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
     end
     if ok then
         local function validate(s)
-            s = file.collapse_path(s)
+            s = collapse_path(s)
             return s ~= "" and not find(s,dummy_path_expr) and s
         end
         for k=1,#pathlist do
@@ -434,7 +436,7 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
     else
         for k=1,#pathlist do
             for p in gmatch(pathlist[k],"([^,]+)") do
-                p = file.collapse_path(p)
+                p = collapse_path(p)
                 if p ~= "" then newlist[#newlist+1] = p end
             end
         end
@@ -499,9 +501,9 @@ local function identify_own()
     local ownpath = resolvers.getownpath() or lfs.currentdir()
     local ie = instance.environment
     if ownpath then
-        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = file.collapse_path(ownpath) end
-        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = file.collapse_path(ownpath .. "/..") end
-        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = file.collapse_path(ownpath .. "/../..") end
+        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = collapse_path(ownpath) end
+        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = collapse_path(ownpath .. "/..") end
+        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = collapse_path(ownpath .. "/../..") end
     else
         logs.report("fileio","error: unable to locate ownpath")
         os.exit()
@@ -530,7 +532,7 @@ function resolvers.identify_cnf()
         local function locate(filename,list)
             for i=1,#t do
                 local ti = t[i]
-                local texmfcnf = file.collapse_path(file.join(ti,filename))
+                local texmfcnf = collapse_path(file.join(ti,filename))
                 if lfs.isfile(texmfcnf) then
                     list[#list+1] = texmfcnf
                 end
@@ -625,12 +627,12 @@ function resolvers.load_cnf()
     else
         instance.rootpath = instance.cnffiles[1]
         for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.cnffiles[k] = collapse_path(gsub(fname,"\\",'/'))
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
-        instance.rootpath = file.collapse_path(instance.rootpath)
+        instance.rootpath = collapse_path(instance.rootpath)
         if instance.diskcache and not instance.renewcache then
             resolvers.loadoldconfig(instance.cnffiles)
             if instance.loaderror then
@@ -654,12 +656,12 @@ function resolvers.load_lua()
     else
         instance.rootpath = instance.luafiles[1]
         for k,fname in ipairs(instance.luafiles) do
-            instance.luafiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.luafiles[k] = collapse_path(gsub(fname,"\\",'/'))
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
-        instance.rootpath = file.collapse_path(instance.rootpath)
+        instance.rootpath = collapse_path(instance.rootpath)
         resolvers.loadnewconfig()
         collapse_cnf_data()
     end
@@ -721,7 +723,7 @@ function resolvers.locatelists()
         if trace_verbose then
             logs.report("fileio","locating list of %s",path)
         end
-        resolvers.locatedatabase(file.collapse_path(path))
+        resolvers.locatedatabase(collapse_path(path))
     end
 end
 
@@ -1263,7 +1265,7 @@ function resolvers.clean_path_list(str)
     local t = resolvers.expanded_path_list(str)
     if t then
         for i=1,#t do
-            t[i] = file.collapse_path(resolvers.clean_path(t[i]))
+            t[i] = collapse_path(resolvers.clean_path(t[i]))
         end
     end
     return t
@@ -1460,8 +1462,8 @@ end
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = file.collapse_path(filename)  -- elsewhere
-    filename = file.collapse_path(gsub(filename,"\\","/")) -- elsewhere
+    filename = collapse_path(filename)  -- elsewhere
+    filename = collapse_path(gsub(filename,"\\","/")) -- elsewhere
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -1692,7 +1694,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         end
     end
     for k=1,#result do
-        result[k] = file.collapse_path(result[k])
+        result[k] = collapse_path(result[k])
     end
     if instance.remember then
         instance.found[stamp] = result

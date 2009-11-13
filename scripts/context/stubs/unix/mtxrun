@@ -475,9 +475,9 @@ if not modules then modules = { } end modules ['l-table'] = {
 table.join = table.concat
 
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
-local format, find, gsub, lower, dump = string.format, string.find, string.gsub, string.lower, string.dump
+local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
-local type, next, tostring, ipairs = type, next, tostring, ipairs
+local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
 
 function table.strip(tab)
     local lst = { }
@@ -765,6 +765,8 @@ end
 --
 -- local propername = lpeg.P(lpeg.R("AZ","az","__") * lpeg.R("09","AZ","az", "__")^0 * lpeg.P(-1) )
 
+-- problem: there no good number_to_string converter with the best resolution
+
 local function do_serialize(root,name,depth,level,indexed)
     if level > 0 then
         depth = depth .. " "
@@ -809,10 +811,9 @@ local function do_serialize(root,name,depth,level,indexed)
                     if hexify then
                         handle(format("%s 0x%04X,",depth,v))
                     else
-                        handle(format("%s %s,",depth,v))
+                        handle(format("%s %.99g,",depth,v))
                     end
                 elseif t == "string" then
---~                     if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
                     if reduce and tonumber(v) then
                         handle(format("%s %s,",depth,v))
                     else
@@ -850,29 +851,28 @@ local function do_serialize(root,name,depth,level,indexed)
             --~ if hexify then
             --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
             --~ else
-            --~     handle(format("%s %s=%s,",depth,key(k),v))
+            --~     handle(format("%s %s=%.99g,",depth,key(k),v))
             --~ end
                 if type(k) == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%s]=%s,",depth,k,v))
+                        handle(format("%s [%s]=%.99g,",depth,k,v))
                     end
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     if hexify then
                         handle(format("%s %s=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s %s=%s,",depth,k,v))
+                        handle(format("%s %s=%.99g,",depth,k,v))
                     end
                 else
                     if hexify then
                         handle(format("%s [%q]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%q]=%s,",depth,k,v))
+                        handle(format("%s [%q]=%.99g,",depth,k,v))
                     end
                 end
             elseif t == "string" then
---~                 if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
                 if reduce and tonumber(v) then
                 --~ handle(format("%s %s=%s,",depth,key(k),v))
                     if type(k) == "number" then -- or find(k,"^%d+$") then
@@ -1264,7 +1264,7 @@ function table.clone(t,p) -- t is optional or nil or table
     elseif not t then
         t = { }
     end
-    setmetatable(t, { __index = function(_,key) return p[key] end })
+    setmetatable(t, { __index = function(_,key) return p[key] end }) -- why not __index = p ?
     return t
 end
 
@@ -2830,9 +2830,9 @@ function aux.make_settings_to_hash_pattern(set,how)
     end
 end
 
-function aux.settings_to_hash(str)
+function aux.settings_to_hash(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         if moretolerant then
             pattern_b_s:match(str)
         else
@@ -2844,9 +2844,9 @@ function aux.settings_to_hash(str)
     end
 end
 
-function aux.settings_to_hash_tolerant(str)
+function aux.settings_to_hash_tolerant(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         pattern_b_s:match(str)
         return hash
     else
@@ -2854,9 +2854,9 @@ function aux.settings_to_hash_tolerant(str)
     end
 end
 
-function aux.settings_to_hash_strict(str)
+function aux.settings_to_hash_strict(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         pattern_c_s:match(str)
         return next(hash) and hash
     else
@@ -2944,7 +2944,7 @@ function aux.getparameters(self,class,parentclass,settings)
         sc = table.clone(self[parent])
         self[class] = sc
     end
-    aux.add_settings_to_array(sc, settings)
+    aux.settings_to_hash(settings,sc)
 end
 
 -- temporary here
@@ -7046,6 +7046,7 @@ end
 local name, banner = 'report', 'context'
 
 local function report(category,fmt,...)
+--~ print(fmt,...)
     if fmt then
         write_nl(format("%s | %s: %s",name,category,format(fmt,...)))
     elseif category then

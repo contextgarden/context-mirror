@@ -19,6 +19,7 @@ saves much runtime but at the cost of more memory usage.</p>
 
 local sort, concat, format = table.sort, table.concat, string.format
 local next, type, tostring = next, type, tostring
+local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 if not jobs then jobs         = { } end
 if not job  then jobs['main'] = { } end job = jobs['main']
@@ -72,7 +73,7 @@ local function initializer()
     math.setrandomseedi(r)
     jobvariables.tobesaved.randomseed = r
     for cs, value in next, jobvariables.collected do
-        tex.sprint(format("\\xdef\\%s{%s}",cs,value))
+        texsprint(ctxcatcodes,format("\\xdef\\%s{%s}",cs,value))
     end
 end
 

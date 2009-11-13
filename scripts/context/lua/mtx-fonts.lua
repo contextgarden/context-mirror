@@ -65,11 +65,7 @@ local function showfeatures(v,n,f,s,t)
     logs.reportline()
 end
 
-function scripts.fonts.list(pattern,reload,all,info)
-    if reload then
-        logs.simple("fontnames, reloading font database")
-    end
-    -- make a function for this
+local function make_pattern(pattern) -- will become helper in string
     pattern = pattern:lower()
     pattern = pattern:gsub("%-","%%-")
     pattern = pattern:gsub("%.","%%.")
@@ -80,33 +76,60 @@ function scripts.fonts.list(pattern,reload,all,info)
     else
         pattern = "^" .. pattern .. "$"
     end
-    --
-    local t = fonts.names.list(pattern,reload)
+    return pattern
+end
+
+local function reloadbase(reload)
     if reload then
+        logs.simple("fontnames, reloading font database")
+        names.load(true)
         logs.simple("fontnames, done\n\n")
     end
+end
+
+function scripts.fonts.list_by_pattern(pattern,reload,all,info)
+    reloadbase(reload)
+    local t = fonts.names.list(make_pattern(pattern))
     if t then
         local s, w = table.sortedkeys(t), { 0, 0, 0 }
-        local function action(f)
-            for k,v in ipairs(s) do
-                local type, name, file, sub = unpack(t[v])
-                f(v,name,file,sub,type)
+        for k,v in ipairs(s) do
+            local entry = t[v]
+            local n = #v        if n > w[1] then w[1] = n end
+            local n = #entry[2] if n > w[2] then w[2] = n end
+            local n = #entry[3] if n > w[3] then w[3] = n end
+        end
+        local template = "%-" .. w[1] .. "s  %-" .. w[2] .. "s  %-" .. w[3] .. "s %s"
+        for k,v in ipairs(s) do
+            local entry = t[v]
+            local tag, fontname, filename, sub = v, entry[2], entry[3], entry[4]
+            if sub then sub = "(sub)" else sub = "" end
+            if info then
+                showfeatures(tag,fontname,filename,sub,t)
+            else
+                print(string.format(template,tag,fontname,filename,sub))
             end
         end
-        action(function(v,n,f,s,t)
-            if #v > w[1] then w[1] = #v end
-            if #n > w[2] then w[2] = #n end
-            if #f > w[3] then w[3] = #f end
-        end)
-        action(function(v,n,f,s,t)
-            if s then s = "(sub)" else s = "" end
-            if info then
-                showfeatures(v,n,f,s,t)
-            else
-                local str = string.format("%s  %s  %s %s",v:padd(w[1]," "),n:padd(w[2]," "),f:padd(w[3]," "), s)
-                print(str:strip())
-            end
-        end)
+    end
+end
+
+function scripts.fonts.list_by_specification(specification,reload,all,info)
+    reloadbase(reload)
+    local t = fonts.names.collectspec(specification)
+    if t then
+        local w, tags = { 0, 0, 0 }, { }
+        for k,entry in ipairs(t) do
+            local s = entry[5] .. "-" .. (entry[6] or "noweight") .. "-" .. (entry[7] or "nostyle") .. "-" .. (entry[8] or "nowidth")
+            local n = #s        if n > w[1] then w[1] = n end
+            local n = #entry[2] if n > w[2] then w[2] = n end
+            local n = #entry[3] if n > w[3] then w[3] = n end
+            tags[k] = s
+        end
+        local template = "%-" .. w[1] .."s  %-" .. w[2] .. "s  %-" .. w[3] .. "s  %s"
+        for k,entry in ipairs(t) do
+            local tag, fontname, filename, sub, name, weight, style = tags[k], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]
+            if sub then sub = "(sub)" else sub = "" end
+            print(string.format(template,tag,fontname,filename,sub))
+        end
     end
 end
 
@@ -156,7 +179,7 @@ messages.help = [[
 --save                save open type font in raw table
 --names               generate 'luatex-fonts-names.lua' (not for context!)
 
---pattern=str         filter files
+--pattern=str         filter files using pattern
 --all                 provide alternatives
 ]]
 
@@ -165,11 +188,16 @@ if environment.argument("reload") then
 elseif environment.argument("names") then
     scripts.fonts.names()
 elseif environment.argument("list") then
-    local pattern = environment.argument("pattern") or environment.files[1] or ""
     local all     = environment.argument("all")
     local info    = environment.argument("info")
     local reload  = environment.argument("reload")
-    scripts.fonts.list(pattern,reload,all,info)
+    if environment.argument("pattern") then
+        scripts.fonts.list_by_pattern(environment.argument("pattern"),reload,all,info)
+    elseif environment.files[1] then
+        scripts.fonts.list_by_specification(environment.files[1],reload,all,info)
+    else
+        scripts.fonts.list_by_pattern("",reload,all,info) -- wildcard
+    end
 elseif environment.argument("save") then
     local name = environment.files[1] or ""
     local sub  = environment.files[2] or ""

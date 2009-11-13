@@ -343,6 +343,8 @@
 \def\removelastspace{\ifhmode\unskip\fi}
 \def\nospace        {\removelastspace\ignorespaces}
 
+\ifdefined\softhyphen \else \let\softhyphen\- \fi
+
 \ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\unexpanded\string\\def\string\\\string\n{\string\\space}")}
 % \ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\let\string\\\string\n=\string\\space")}
 

@@ -1178,6 +1178,7 @@ function scripts.context.extras(pattern)
                 for s in string.gmatch(data,"%% *(.-)[\n\r]") do
                     h[#h+1] = s
                 end
+                h[#h+1] = ""
                 logs.help(table.concat(h,"\n"),"nomoreinfo")
             end
         end
@@ -1417,9 +1418,11 @@ expert options:
 --trackers            show/set tracker variables
 --directives          show/set directive variables
 --timing              generate timing and statistics overview
---extra=name          process extra (mtx-context-<name> in distribution)
 --tracefiles          show some extra info when locating files (at the tex end)
 --randomseed
+
+--extra=name          process extra (mtx-context-<name> in distribution)
+--extras              show extras
 ]]
 
 messages.private = [[
@@ -1470,10 +1473,16 @@ elseif environment.argument("update") then
     scripts.context.update()
 elseif environment.argument("expert") then
     logs.help(table.join({ messages.expert, messages.private, messages.special },"\n"))
+elseif environment.argument("extras") then
+    scripts.context.extras()
 elseif environment.argument("extra") then
     scripts.context.extra()
 elseif environment.argument("help") then
-    logs.help(messages.help)
+    if environment.files[1] == "extras" then
+        scripts.context.extras()
+    else
+        logs.help(messages.help)
+    end
 elseif environment.argument("trackers") and type(environment.argument("trackers")) == "boolean" then
     scripts.context.trackers()
 elseif environment.argument("directives") and type(environment.argument("directives")) == "boolean" then

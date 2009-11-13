@@ -91,6 +91,7 @@ function jobpositions.MPxy(id)
         texprint(ctxcatcodes,'(0,0)')
     end
 end
+
 function jobpositions.MPll(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
@@ -100,6 +101,7 @@ function jobpositions.MPll(id)
         texprint(ctxcatcodes,'(0,0)')
     end
 end
+
 function jobpositions.MPlr(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
@@ -109,6 +111,7 @@ function jobpositions.MPlr(id)
         texprint(ctxcatcodes,'(0,0)')
     end
 end
+
 function jobpositions.MPur(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
@@ -118,6 +121,7 @@ function jobpositions.MPur(id)
         texprint(ctxcatcodes,'(0,0)')
     end
 end
+
 function jobpositions.MPul(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
@@ -127,6 +131,7 @@ function jobpositions.MPul(id)
         texprint(ctxcatcodes,'(0,0)')
     end
 end
+
 function jobpositions.MPpos(id)
     local jpi = pcol[id] or ptbs[id]
     if jpi then
@@ -135,11 +140,25 @@ function jobpositions.MPpos(id)
         texprint(ctxcatcodes,'0,0,0,0,0,0')
     end
 end
+
+local splitter = lpeg.splitat(",")
+
 function jobpositions.MPplus(id,n,default)
     local jpi = pcol[id] or ptbs[id]
-    texprint(ctxcatcodes,(jpi and jpi[6+n]) or default)
+    if not jpi then
+        texprint(ctxcatcodes,default)
+    else
+        local split = jpi[0]
+        if not split then
+            split = splitter:match(jpi[7])
+            jpi[0] = split
+        end
+        texprint(ctxcatcodes,split[n] or default)
+    end
 end
+
 function jobpositions.MPrest(id,default)
     local jpi = pcol[id] or ptbs[id]
-    texprint(ctxcatcodes,(jpi and jpi[7] and concat(jpi,",",7,#jpi)) or default)
+ -- texprint(ctxcatcodes,(jpi and jpi[7] and concat(jpi,",",7,#jpi)) or default)
+    texprint(ctxcatcodes,(jpi and jpi[7]) or default)
 end

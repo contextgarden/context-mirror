@@ -376,13 +376,15 @@ function lxml.include(id,pattern,attribute,recurse)
         if filename then
             filename = commands.preparedfile(filename)
             if file.dirname(filename) == "" and root.filename then
-                filename = file.join(file.dirname(root.filename),filename)
+                local dn = file.dirname(root.filename)
+                if dn ~= "" then
+                    filename = file.join(dn,filename)
+                end
             end
             if trace_loading then
                 commands.writestatus("lxml","including file: %s",filename)
             end
-            noffiles = noffiles + 1
-            nofconverted = nofconverted + 1
+            noffiles, nofconverted = noffiles + 1, nofconverted + 1
             return resolvers.loadtexfile(filename) or ""
         else
             return ""

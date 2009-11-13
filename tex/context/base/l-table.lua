@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['l-table'] = {
 table.join = table.concat
 
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
-local format, find, gsub, lower, dump = string.format, string.find, string.gsub, string.lower, string.dump
+local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
 local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
 
@@ -299,6 +299,8 @@ end
 --
 -- local propername = lpeg.P(lpeg.R("AZ","az","__") * lpeg.R("09","AZ","az", "__")^0 * lpeg.P(-1) )
 
+-- problem: there no good number_to_string converter with the best resolution
+
 local function do_serialize(root,name,depth,level,indexed)
     if level > 0 then
         depth = depth .. " "
@@ -321,6 +323,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s{",depth))
         end
     end
+    -- we could check for k (index) being number (cardinal)
     if root and next(root) then
         local first, last = nil, 0 -- #root cannot be trusted here
         if compact then
@@ -343,7 +346,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     if hexify then
                         handle(format("%s 0x%04X,",depth,v))
                     else
-                        handle(format("%s %s,",depth,v))
+                        handle(format("%s %s,",depth,v)) -- %.99g
                     end
                 elseif t == "string" then
                     if reduce and tonumber(v) then
@@ -383,25 +386,25 @@ local function do_serialize(root,name,depth,level,indexed)
             --~ if hexify then
             --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
             --~ else
-            --~     handle(format("%s %s=%s,",depth,key(k),v))
+            --~     handle(format("%s %s=%s,",depth,key(k),v)) -- %.99g
             --~ end
                 if type(k) == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%s]=%s,",depth,k,v))
+                        handle(format("%s [%s]=%s,",depth,k,v)) -- %.99g
                     end
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     if hexify then
                         handle(format("%s %s=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s %s=%s,",depth,k,v))
+                        handle(format("%s %s=%s,",depth,k,v)) -- %.99g
                     end
                 else
                     if hexify then
                         handle(format("%s [%q]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%q]=%s,",depth,k,v))
+                        handle(format("%s [%q]=%s,",depth,k,v)) -- %.99g
                     end
                 end
             elseif t == "string" then

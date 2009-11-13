@@ -38,6 +38,75 @@ local texwrite = tex.write
 local fontdata  = fonts.ids
 local variables = interfaces.variables
 
+-- we can use this one elsewhere too
+--
+-- todo: functions: word, sentence
+--
+-- glyph rule unset whatsit glue margin_kern kern math disc
+
+local function process_words(attribute,data,flush,head,parent)
+    local n = head
+    if n then
+        local f, l, a, d, i, level
+        local continue, done = false, false
+        while n do
+            local id = n.id
+            if id == glyph then
+                local aa = has_attribute(n,attribute)
+                if aa then
+                    if aa == a then
+                        if not f then
+                            f = n
+                        end
+                        l = n
+                    else
+                        -- possible extensions: when in same class then keep spanning
+                        if f then
+                            head, done = flush(head,f,l,d,level,parent), true
+                        end
+                        f, l, a = n, n, aa
+                        level, i = floor(a/1000), a%1000
+                        d = data[i]
+                        continue = d.continue == variables.yes
+                    end
+                else
+                    if f then
+                        head, done = flush(head,f,l,d,level,parent), true
+                    end
+                    f, l, a = nil, nil, nil
+                end
+            elseif f and id == disc then
+                l = n
+            elseif f and id == kern and n.subtype == 0 then
+                l = n
+            elseif id == hlist or id == vlist then
+                if f then
+                    head, done = flush(head,f,l,d,level,parent), true
+                    f, l, a = nil, nil, nil
+                end
+                local list = n.list
+                if list then
+                    n.list = process_words(attribute,data,flush,list,n)
+                end
+            elseif f and not continue then
+                head, done = flush(head,f,l,d,level,parent), true
+                f, l, a = nil, nil, nil
+            end
+            n = n.next
+        end
+        if f then
+            head, done = flush(head,f,l,d,level,parent), true
+        end
+        return head, true -- todo: done
+    else
+        return head, false
+    end
+end
+
+nodes.process_words = process_words
+
+--
+
 nodes.rules      = nodes.rules      or { }
 nodes.rules.data = nodes.rules.data or { }
 
@@ -50,7 +119,7 @@ function nodes.rules.define(settings)
     texwrite(#data)
 end
 
-local function flush(head,f,l,d,level,parent) -- not that fast but acceptable for this purpose
+local function flush_ruled(head,f,l,d,level,parent) -- not that fast but acceptable for this purpose
     local r, m
     local w = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,f,l.next)
     local method, offset, continue, dy, rulethickness, unit, order, max, ma, ca, ta =
@@ -97,67 +166,56 @@ local function flush(head,f,l,d,level,parent) -- not that fast but acceptable fo
     return head
 end
 
--- todo: functions: word, sentence
+local process = nodes.process_words
 
--- glyph rule unset whatsit glue margin_kern kern math disc
-
-local function process(head,parent)
-    local n = head
-    local f, l, a, d, i, level
-    local continue = false
-    while n do
-        local id = n.id
-        if id == glyph then
-            local aa = has_attribute(n,a_ruled)
-            if aa then
-                if aa == a then
-                    if not f then
-                        f = n
-                    end
-                    l = n
-                else
-                    -- possible extensions: when in same class then keep spanning
-                    if f then
-                        head = flush(head,f,l,d,level,parent)
-                    end
-                    f, l, a = n, n, aa
-                    level, i = floor(a/1000), a%1000
-                    d = data[i]
-                    continue = d.continue == variables.yes
-                end
-            else
-                if f then
-                    head = flush(head,f,l,d,level,parent)
-                end
-                f, l, a = nil, nil, nil
-            end
-        elseif f and id == disc then
-            l = n
-        elseif f and id == kern and n.subtype == 0 then
-            l = n
-        elseif id == hlist or id == vlist then
-            if f then
-                head = flush(head,f,l,d,level,parent)
-                f, l, a = nil, nil, nil
-            end
-            n.list = process(n.list,n)
-        elseif f and not continue then
-            head = flush(head,f,l,d,level,parent)
-            f, l, a = nil, nil, nil
-        end
-        n = n.next
-    end
-    if f then
-        head = flush(head,f,l,d,level,parent)
-    end
-    return head, true -- todo: done
-end
-
-nodes.rules.process = function(head) return process(head) end
+nodes.rules.process = function(head) return process(a_ruled,data,flush_ruled,head) end
 
 function nodes.rules.enable()
     tasks.enableaction("shipouts","nodes.rules.process")
 end
 
---~ tasks.appendaction ("shipouts", "normalizers", "nodes.rules.process")
---~ tasks.disableaction("shipouts",                "nodes.rules.process") -- only kick in when used
+-- elsewhere:
+--
+-- tasks.appendaction ("shipouts", "normalizers", "nodes.rules.process")
+-- tasks.disableaction("shipouts",                "nodes.rules.process") -- only kick in when used
+
+local a_shifted = attributes.private('shifted')
+
+nodes.shifts      = nodes.shifts      or { }
+nodes.shifts.data = nodes.shifts.data or { }
+
+storage.register("nodes/shifts/data", nodes.shifts.data, "nodes.shifts.data")
+
+local data = nodes.shifts.data
+
+function nodes.shifts.define(settings)
+    data[#data+1] = settings
+    texwrite(#data)
+end
+
+local function flush_shifted(head,first,last,data,level,parent) -- not that fast but acceptable for this purpose
+    local prev, next = first.prev, last.next
+    first.prev, last.next = nil, nil
+    local width, height, depth = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,first,next)
+    local list = node.hpack(first,width,"exactly")
+    if first == head then
+        head = list
+    end
+    if prev then
+        prev.next, list.prev = list, prev
+    end
+    if next then
+        next.prev, list.next = list, next
+    end
+    local raise = data.dy * dimenfactor(data.unit,fontdata[first.font])
+    list.shift, list.height, list.depth = raise, height, depth
+    return head
+end
+
+local process = nodes.process_words
+
+nodes.shifts.process = function(head) return process(a_shifted,data,flush_shifted,head) end
+
+function nodes.shifts.enable()
+    tasks.enableaction("shipouts","nodes.shifts.process")
+end

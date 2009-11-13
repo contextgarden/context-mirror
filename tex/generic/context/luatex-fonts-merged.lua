@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/10/09 13:34:42
+-- merge date  : 11/13/09 12:51:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -537,7 +537,7 @@ if not modules then modules = { } end modules ['l-table'] = {
 table.join = table.concat
 
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
-local format, find, gsub, lower, dump = string.format, string.find, string.gsub, string.lower, string.dump
+local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
 local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
 
@@ -827,6 +827,8 @@ end
 --
 -- local propername = lpeg.P(lpeg.R("AZ","az","__") * lpeg.R("09","AZ","az", "__")^0 * lpeg.P(-1) )
 
+-- problem: there no good number_to_string converter with the best resolution
+
 local function do_serialize(root,name,depth,level,indexed)
     if level > 0 then
         depth = depth .. " "
@@ -849,6 +851,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s{",depth))
         end
     end
+    -- we could check for k (index) being number (cardinal)
     if root and next(root) then
         local first, last = nil, 0 -- #root cannot be trusted here
         if compact then
@@ -871,7 +874,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     if hexify then
                         handle(format("%s 0x%04X,",depth,v))
                     else
-                        handle(format("%s %s,",depth,v))
+                        handle(format("%s %s,",depth,v)) -- %.99g
                     end
                 elseif t == "string" then
                     if reduce and tonumber(v) then
@@ -911,25 +914,25 @@ local function do_serialize(root,name,depth,level,indexed)
             --~ if hexify then
             --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
             --~ else
-            --~     handle(format("%s %s=%s,",depth,key(k),v))
+            --~     handle(format("%s %s=%s,",depth,key(k),v)) -- %.99g
             --~ end
                 if type(k) == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%s]=%s,",depth,k,v))
+                        handle(format("%s [%s]=%s,",depth,k,v)) -- %.99g
                     end
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     if hexify then
                         handle(format("%s %s=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s %s=%s,",depth,k,v))
+                        handle(format("%s %s=%s,",depth,k,v)) -- %.99g
                     end
                 else
                     if hexify then
                         handle(format("%s [%q]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%q]=%s,",depth,k,v))
+                        handle(format("%s [%q]=%s,",depth,k,v)) -- %.99g
                     end
                 end
             elseif t == "string" then
@@ -1421,8 +1424,12 @@ function file.dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
 end
 
+--~ function file.basename(name)
+--~     return match(name,"^.+[/\\](.-)$") or name
+--~ end
+
 function file.basename(name)
-    return match(name,"^.+[/\\](.-)$") or name
+    return match(name,"^.*[/\\](.-)$") or name
 end
 
 function file.nameonly(name)
@@ -4337,7 +4344,7 @@ otf.tables.scripts = {
     ['ugar'] = 'Ugaritic Cuneiform',
     ['xpeo'] = 'Old Persian Cuneiform',
     ['xsux'] = 'Sumero-Akkadian Cuneiform',
-    ['yi'  ] = 'Yi'
+    ['yi'  ] = 'Yi',
 }
 
 otf.tables.languages = {
@@ -4819,6 +4826,7 @@ otf.tables.features = {
     ['rphf'] = 'Reph Form',
     ['rtbd'] = 'Right Bounds',
     ['rtla'] = 'Right-To-Left Alternates',
+    ['rtlm'] = 'Right To Left Math', -- math
     ['ruby'] = 'Ruby Notation Forms',
     ['salt'] = 'Stylistic Alternates',
     ['sinf'] = 'Scientific Inferiors',
@@ -7299,7 +7307,7 @@ local supported_gsub = {
     'zero',
     'smcp','cpsp','c2sc','ornm','aalt',
     'hwid','fwid',
-    'ssty', -- math
+    'ssty', 'rtlm', -- math
 }
 
 local supported_gpos = {
@@ -10559,16 +10567,27 @@ local right = P(")")
 local colon = P(":")
 local space = P(" ")
 
+define.defaultlookup = "file"
+
+local prefixpattern  = P(false)
+
 function define.add_specifier(symbol)
     specifiers = specifiers .. symbol
     local method        = S(specifiers)
-    local lookup        = C(P("file")+P("name")) * colon -- hard test, else problems with : method
+    local lookup        = C(prefixpattern) * colon
     local sub           = left * C(P(1-left-right-method)^1) * right
---~   local specification = C(method) * C(P(1-method)^1)
     local specification = C(method) * C(P(1)^1)
     local name          = C((1-sub-specification)^1)
     splitter = P((lookup + Cc("")) * name * (sub + Cc("")) * (specification + Cc("")))
 end
+
+function define.add_lookup(str,default)
+    prefixpattern = prefixpattern + P(str)
+end
+
+define.add_lookup("file")
+define.add_lookup("name")
+define.add_lookup("spec")
 
 function define.get_specification(str)
     return splitter:match(str)
@@ -10590,8 +10609,8 @@ function define.makespecification(specification, lookup, name, sub, method, deta
 --~         lookup = specification.lookup -- can come from xetex [] syntax
 --~         specification.lookup = nil
 --~     end
-    if lookup ~= 'name' then -- for the moment only two lookups, maybe some day also system:
-        lookup = 'file'
+    if not lookup or lookup == "" then
+        lookup = define.defaultlookup
     end
     local t = {
         lookup        = lookup,        -- forced type
@@ -10693,17 +10712,44 @@ end
 <p>We can resolve the filename using the next function:</p>
 --ldx]]--
 
+define.resolvers = resolvers
+
+function define.resolvers.file(specification)
+    specification.forced = file.extname(specification.name)
+    specification.name = file.removesuffix(specification.name)
+end
+
+function define.resolvers.name(specification)
+    local resolve = fonts.names.resolve
+    if resolve then
+        specification.resolved, specification.sub = fonts.names.resolve(specification.name,specification.sub)
+        if specification.resolved then
+            specification.forced = file.extname(specification.resolved)
+            specification.name = file.removesuffix(specification.resolved)
+        end
+    else
+        define.resolvers.file(specification)
+    end
+end
+
+function define.resolvers.spec(specification)
+    local resolvespec = fonts.names.resolvespec
+    if resolvespec then
+        specification.resolved, specification.sub = fonts.names.resolvespec(specification.name,specification.sub)
+        if specification.resolved then
+            specification.forced = file.extname(specification.resolved)
+            specification.name = file.removesuffix(specification.resolved)
+        end
+    else
+        define.resolvers.name(specification)
+    end
+end
+
 function define.resolve(specification)
     if not specification.resolved or specification.resolved == "" then -- resolved itself not per se in mapping hash
-        if specification.lookup == 'name' then
-            specification.resolved, specification.sub = fonts.names.resolve(specification.name,specification.sub)
-            if specification.resolved then
-                specification.forced = file.extname(specification.resolved)
-                specification.name = file.removesuffix(specification.resolved)
-            end
-        elseif specification.lookup == 'file' then
-            specification.forced = file.extname(specification.name)
-            specification.name = file.removesuffix(specification.name)
+        local r = define.resolvers[specification.lookup]
+        if r then
+            r(specification)
         end
     end
     if specification.forced == "" then
@@ -10711,7 +10757,6 @@ function define.resolve(specification)
     else
         specification.forced = specification.forced
     end
---~     specification.hash = specification.name .. ' @ ' .. tfm.hash_features(specification)
     specification.hash = lower(specification.name .. ' @ ' .. tfm.hash_features(specification))
     if specification.sub and specification.sub ~= "" then
         specification.hash = specification.sub .. ' @ ' .. specification.hash
@@ -11479,6 +11524,7 @@ end
 
 fonts.names = fonts.names or { }
 
+fonts.names.version    = 1.014
 fonts.names.basename   = "luatex-fonts-names.lua"
 fonts.names.new_to_old = { }
 fonts.names.old_to_new = { }
@@ -11509,7 +11555,7 @@ function fonts.names.resolve(name,sub)
         end
         loaded = true
     end
-    if type(data) == "table" and data.version == 1.08 then
+    if type(data) == "table" and data.version == fonts.names.version then
         local condensed = string.gsub(string.lower(name),"[^%a%d]","")
         local found = data.mapping and data.mapping[condensed]
         if found then
@@ -11521,6 +11567,8 @@ function fonts.names.resolve(name,sub)
         end
     end
 end
+
+fonts.names.resolvespec = fonts.names.resolve -- only supported in mkiv
 
 -- For the moment we put this (adapted) pseudo feature here.
 

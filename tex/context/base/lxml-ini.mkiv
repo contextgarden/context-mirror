@@ -331,8 +331,10 @@
 %
 % mkii: [\processXMLbuffer]\quad mkiv: [\xmlprocessbuffer{main}{}{}]
 
-\def\xmlmapvalue#1#2#3{\setvalue{\??xm:v:#1:#2}{#3}} % keep #3 to grab spaces
-\def\xmlvalue   #1#2#3{\executeifdefined{\??xm:v:#1:#2}{#3}}
+\def\xmlmapvalue    #1#2#3{\setvalue{\??xm:v:#1:#2}{#3}} % keep #3 to grab spaces
+\def\xmlvalue       #1#2#3{\executeifdefined{\??xm:v:#1:#2}{#3}}
+%def\xmlvalue         #1#2{\ifcsname\??xm:v:#1:#2\endcsname\csname\??xm:v:#1:#2\expandafter\expandafter\gobbleoneargument\expandafter\endcsname\else\expandafter\firstofoneargument\fi}
+\def\xmldoifelsevalue #1#2{\ifcsname\??xm:v:#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
 
 \let\xmlmapval\xmlmapvalue
 \let\xmlval   \xmlvalue

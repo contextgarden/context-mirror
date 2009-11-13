@@ -33,8 +33,12 @@ function file.dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
 end
 
+--~ function file.basename(name)
+--~     return match(name,"^.+[/\\](.-)$") or name
+--~ end
+
 function file.basename(name)
-    return match(name,"^.+[/\\](.-)$") or name
+    return match(name,"^.*[/\\](.-)$") or name
 end
 
 function file.nameonly(name)

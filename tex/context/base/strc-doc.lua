@@ -617,7 +617,7 @@ end
 function sections.fullnumber(depth)
     local data = data.status[depth or data.depth]
     if data then
-        local sectiondata = jobsections.collected[data.references.section]
+        local sectiondata = jobsections.collected[data.references.section] -- tobesaved?
         if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
             sections.typesetnumber(sectiondata,'section',sectiondata)
         end

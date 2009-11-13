@@ -12,6 +12,7 @@ local format = string.format
 local texsprint, texwrite, texbox = tex.sprint, tex.write, tex.box
 
 local ctxcatcodes = tex.ctxcatcodes
+local variables = interfaces.variables
 
 nodes            = nodes            or { }
 nodes.lines      = nodes.lines      or { }
@@ -119,12 +120,12 @@ end
 
 local leftskip = nodes.leftskip
 
-local function check_number(n,a) -- move inline
+local function check_number(n,a,skip) -- move inline
     local d = data[a]
     if d then
         local s = d.start
         current_list[#current_list+1] = { n, s }
-        if d.start % d.step == 0 then
+        if not skip and s % d.step == 0 then
             texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}\\endgraf", d.tag or "", s, n.shift, n.width, leftskip(n.list)))
         else
             texsprint(ctxcatcodes, "\\skipnumber\\endgraf")
@@ -141,21 +142,29 @@ function nodes.lines.boxed.stage_one(n)
     --~ while list.id == vlist and not list.next do
     --~     list = list.list
     --~ end
+        local last_a, skip = nil, false
         for n in traverse_id(hlist,list) do -- attr test here and quit as soon as zero found
             if n.height == 0 and n.depth == 0 then
                 -- skip funny hlists
             else
                 local a = has_attribute(n.list,line_number)
                 if a and a > 0 then
+                    if last_a ~= a then
+                        if data[a].method == variables.next then
+                            skip = true
+                        end
+                        last_a = a
+                    end
                     if has_attribute(n,display_math) then
                         if nodes.is_display_math(n) then
-                            check_number(n,a)
+                            check_number(n,a,skip)
                         end
                     else
                         if node.first_character(n.list) then
-                            check_number(n,a)
+                            check_number(n,a,skip)
                         end
                     end
+                    skip = false
                 end
             end
         end

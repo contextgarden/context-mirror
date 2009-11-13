@@ -420,7 +420,7 @@ local noparent = 1 - (lparent+rparent)
 local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
 local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
-local lp_child   = Cc("expr.child(e,'") * R("az","AZ","--","__")^1 * Cc("')")
+local lp_child   = Cc("expr.child(ll,'") * R("az","AZ","--","__")^1 * Cc("')")
 local lp_string  = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
 local lp_content = (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
 
@@ -430,9 +430,9 @@ local lp_special = (C(P("name")+P("text")+P("tag")+P("count")+P("child"))) * val
     if expressions[t] then
         s = s and s ~= "" and cleaner:match(s)
         if s and s ~= "" then
-            return "expr." .. t .. "(e," .. s ..")"
+            return "expr." .. t .. "(ll," .. s ..")"
         else
-            return "expr." .. t .. "(e)"
+            return "expr." .. t .. "(ll)"
         end
     else
         return "expr.error(" .. t .. ")"
@@ -982,38 +982,42 @@ expressions.name = function(e,n) -- ns + tg
 end
 
 expressions.tag = function(e,n) -- only tg
-    local found = false
-    n = tonumber(n) or 0
-    if n == 0 then
-        found = (type(e) == "table") and e -- seems to fail
-    elseif n < 0 then
-        local d, k = e.__p__.dt, e.ni
-        for i=k-1,1,-1 do
-            local di = d[i]
-            if type(di) == "table" then
-                if n == -1 then
-                    found = di
-                    break
-                else
-                    n = n + 1
-                end
-            end
-        end
+    if not e then
+        return ""
     else
-        local d, k = e.__p__.dt, e.ni
-        for i=k+1,#d,1 do
-            local di = d[i]
-            if type(di) == "table" then
-                if n == 1 then
-                    found = di
-                    break
-                else
-                    n = n - 1
+        local found = false
+        n = tonumber(n) or 0
+        if n == 0 then
+            found = (type(e) == "table") and e -- seems to fail
+        elseif n < 0 then
+            local d, k = e.__p__.dt, e.ni
+            for i=k-1,1,-1 do
+                local di = d[i]
+                if type(di) == "table" then
+                    if n == -1 then
+                        found = di
+                        break
+                    else
+                        n = n + 1
+                    end
+                end
+            end
+        else
+            local d, k = e.__p__.dt, e.ni
+            for i=k+1,#d,1 do
+                local di = d[i]
+                if type(di) == "table" then
+                    if n == 1 then
+                        found = di
+                        break
+                    else
+                        n = n - 1
+                    end
                 end
             end
         end
+        return (found and found.tg) or ""
     end
-    return (found and found.tg) or ""
 end
 
 --[[ldx--

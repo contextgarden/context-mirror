@@ -35,8 +35,10 @@ tasks.appendaction("shipouts",   "normalizers", "nodes.cleanup_page")
 tasks.appendaction("shipouts",   "normalizers", "nodes.add_references")                      -- *
 tasks.appendaction("shipouts",   "normalizers", "nodes.add_destinations")                    -- *
 tasks.appendaction("shipouts",   "normalizers", "nodes.rules.process")                       -- *
+tasks.appendaction("shipouts",   "normalizers", "nodes.shifts.process")                      -- *
 
 tasks.disableaction("shipouts",                 "nodes.rules.process")                       -- * only kick in when used
+tasks.disableaction("shipouts",                 "nodes.shifts.process")                      -- * only kick in when used
 
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_color")
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_transparency")

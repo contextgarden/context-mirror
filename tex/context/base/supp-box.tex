@@ -1897,6 +1897,13 @@
    \advance\hsize \scratchdimen
    \divide\hsize #3\relax}
 
+% ==
+%
+% \def\setrigidcolumnhsize#1#2#3%
+%   {\xdef\savedrigidhsize{\the\hsize}%
+%    \global\chardef\rigidcolumns#3\relax
+%    \hsize=\dimexpr(#1-\numexpr#3-1\relax\dimexpr#2\relax)/#3\relax}
+
 \newbox\rigidcolumnbox
 
 \let\rigidcolumnlines\!!zerocount

@@ -70,28 +70,35 @@
 \def\mkdoprocessboxcontents   #1{\mkaddtextlinenumbers{#1}\plusone      \plusone}
 \def\mkdoprocesscolumncontents#1{\mkaddtextlinenumbers{#1}\currentcolumn\nofcolumns}
 
-\def\mkcurrentstart{0}
-\def\mkcurrentstep {1}
-
-\def\mkdefinetextlinenumbering#1%
-  {\begingroup
-   \scratchcounter\ctxlua{tex.sprint(nodes.lines.boxed.register({start=\mkcurrentstart,step=\mkcurrentstep,tag="#1"}))}%
-   \setxvalue{ln:c:#1}{\number\scratchcounter}%
-   \endgroup}
+\def\mkdefinetextlinenumbering
+  {\setxvalue{ln:c:\currentlinenumbering}{\number\ctxlua{tex.sprint(nodes.lines.boxed.register({
+        start  = \linenumberparameter\c!start,
+        step   = \linenumberparameter\c!step,
+        method = "\linenumberparameter\c!method",
+        tag    = "\currentlinenumbering",
+    }))}}}
 
 \def\mkstarttextlinenumbering#1#2%
   {\globallet\mkprocesspagecontents  \mkdoprocesspagecontents
    \globallet\mkprocesscolumncontents\mkdoprocesscolumncontents
    \global\settrue\boxcontentneedsprocessing % see core-rul.mkiv
+   \edef\currentlinenumbering{#1}%
    \ifcase#2\relax
      % continue
    \or
-     \mkdefinetextlinenumbering{#1}% restart
+     \mkdefinetextlinenumbering % restart
    \fi
-   \dosetattribute{line-number}{\getvalue{ln:c:#1}}}
+   \dosetattribute{line-number}{\getvalue{ln:c:\currentlinenumbering}}}
 
-\def\mksetuptextlinenumbering#1%
-  {\ctxlua{nodes.lines.boxed.setup(\getvalue{ln:c:#1},{start=\mkcurrentstart,step=\mkcurrentstep,tag="#1"})}}
+\def\mksetuptextlinenumbering
+  {\ifcsname ln:c:\currentlinenumbering\endcsname
+     \expanded{\ctxlua{nodes.lines.boxed.setup(\getvalue{ln:c:\currentlinenumbering},{
+          start  = \linenumberparameter\c!start,
+          step   = \linenumberparameter\c!step,
+          method = "\linenumberparameter\c!method",
+          tag    = "\currentlinenumbering"
+      })}}%
+   \fi}
 
 \def\mkstoptextlinenumbering
   {\doresetattribute{line-number}}
@@ -138,8 +145,8 @@
   {\dosingleempty\dodefinelinenumbering}
 
 \def\dodefinelinenumbering[#1]%
-  {\def\currentlinenumbering{#1}%
-   \mkdefinetextlinenumbering\currentlinenumbering}
+  {\edef\currentlinenumbering{#1}%
+   \mkdefinetextlinenumbering}
 
 \def\setuplinenumbering
   {\dodoubleempty\dosetuplinenumbering}
@@ -152,7 +159,7 @@
      \let\currentlinenumbering\empty
      \getparameters[\??rn][#1]%
    \fi
-   \mksetuptextlinenumbering\currentlinenumbering}
+   \mksetuptextlinenumbering}
 
 \def\linenumberparameter#1%
   {\csname\??rn\ifcsname\??rn\currentlinenumbering#1\endcsname\currentlinenumbering\fi#1\endcsname}
@@ -160,12 +167,11 @@
 \def\linenumberattributes
   {\doattributes{\??rn\ifcsname\??rn\currentlinenumbering\c!style\endcsname\currentlinenumbering\fi}}
 
-\definelinenumbering
-
 \setuplinenumbering
   [\c!conversion=\v!numbers,
    \c!start=1,
    \c!step=1,
+   \c!method=\v!first,
    \c!continue=v!no,
    \c!location=\v!left,
    \c!style=,
@@ -177,14 +183,13 @@
    \c!distance=\zeropoint,
    \c!align=\v!auto]
 
+\definelinenumbering
+
 \def\startlinenumbering
   {\dodoubleempty\dostartlinenumbering}
 
 % no intermediate changes in values, define a class, otherwise each range
 % would need a number
-
-\def\mkcurrentstart{\linenumberparameter\c!start}
-\def\mkcurrentstep {\linenumberparameter\c!step }
 
 % todo: text
 
