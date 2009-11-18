@@ -11,7 +11,6 @@ if not modules then modules = { } end modules ['node-rul'] = {
 local trace_ruled = false  trackers.register("nodes.ruled", function(v) trace_ruled = v end)
 
 local floor = math.floor
-local topoints = number.topoints
 local n_tostring, n_tosequence = nodes.ids_tostring, nodes.tosequence
 
 local a_ruled        = attributes.private('ruled')
@@ -19,12 +18,14 @@ local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')
 local a_colorspace   = attributes.private('colormodel')
 
-local glyph = node.id("glyph")
-local disc  = node.id("disc")
-local glue  = node.id("glue")
-local kern  = node.id("kern")
-local hlist = node.id("hlist")
-local vlist = node.id("vlist")
+local glyph   = node.id("glyph")
+local disc    = node.id("disc")
+local glue    = node.id("glue")
+local kern    = node.id("kern")
+local hlist   = node.id("hlist")
+local vlist   = node.id("vlist")
+local rule    = node.id("rule")
+local whatsit = node.id("whatsit")
 
 local new_rule = nodes.rule
 local new_kern = nodes.kern
@@ -44,6 +45,11 @@ local variables = interfaces.variables
 --
 -- glyph rule unset whatsit glue margin_kern kern math disc
 
+local checkdir = true
+
+-- we assume {glyphruns} and no funny extra kerning, ok, maybe we need
+-- a dummy character as start and end; anyway we only collect glyphs
+
 local function process_words(attribute,data,flush,head,parent)
     local n = head
     if n then
@@ -55,7 +61,7 @@ local function process_words(attribute,data,flush,head,parent)
                 local aa = has_attribute(n,attribute)
                 if aa then
                     if aa == a then
-                        if not f then
+                        if not f then -- ?
                             f = n
                         end
                         l = n
@@ -77,6 +83,8 @@ local function process_words(attribute,data,flush,head,parent)
                 end
             elseif f and id == disc then
                 l = n
+            elseif f and id == rule then
+                l = n
             elseif f and id == kern and n.subtype == 0 then
                 l = n
             elseif id == hlist or id == vlist then
@@ -87,6 +95,10 @@ local function process_words(attribute,data,flush,head,parent)
                 local list = n.list
                 if list then
                     n.list = process_words(attribute,data,flush,list,n)
+                end
+            elseif checkdir and id == whatsit and n.subtype == 7 then -- only changes in dir, we assume proper boundaries
+                if f and a then
+                    l = n
                 end
             elseif f and not continue then
                 head, done = flush(head,f,l,d,level,parent), true
@@ -160,7 +172,7 @@ local function flush_ruled(head,f,l,d,level,parent) -- not that fast but accepta
             insert_after(head,r,k)
         end
         if trace_ruled then
-            logs.report("ruled", "level: %s, width: %s, nodes: %s, text: %s",level,topoints(w),n_tostring(f,l),n_tosequence(f,l,true))
+            logs.report("ruled", "level: %s, width: %s, nodes: %s, text: %s",level,w,n_tostring(f,l),n_tosequence(f,l,true))
         end
     end
     return head
@@ -178,6 +190,8 @@ end
 --
 -- tasks.appendaction ("shipouts", "normalizers", "nodes.rules.process")
 -- tasks.disableaction("shipouts",                "nodes.rules.process") -- only kick in when used
+
+local trace_shifted = false  trackers.register("nodes.shifted", function(v) trace_shifted = v end)
 
 local a_shifted = attributes.private('shifted')
 
@@ -209,6 +223,9 @@ local function flush_shifted(head,first,last,data,level,parent) -- not that fast
     end
     local raise = data.dy * dimenfactor(data.unit,fontdata[first.font])
     list.shift, list.height, list.depth = raise, height, depth
+    if trace_shifted then
+        logs.report("shifted", "width: %s, nodes: %s, text: %s",width,n_tostring(first,last),n_tosequence(first,last,true))
+    end
     return head
 end
 

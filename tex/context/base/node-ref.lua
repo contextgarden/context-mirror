@@ -67,6 +67,8 @@ local function dimensions(parent,start,stop)
     end
 end
 
+-- is pardir important at all?
+
 local function inject_range(head,first,last,reference,make,stack,parent,pardir,txtdir)
     local width, height, depth = dimensions(parent,first,last)
     if pardir == "TRT" or txtdir == "+TRT" then

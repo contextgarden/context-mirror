@@ -1497,8 +1497,9 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         tfm.units              = metadata.units_per_em or 1000
         -- we need a runtime lookup because of running from cdrom or zip, brrr
         tfm.filename           = resolvers.findbinfile(luatex.filename,"") or luatex.filename
-        tfm.fullname           = metadata.fontname or metadata.fullname
-        tfm.psname             = tfm.fullname
+        tfm.fullname           = metadata.fullname
+        tfm.fontname           = metadata.fontname
+        tfm.psname             = tfm.fontname or tfm.fullname
         tfm.encodingbytes      = 2
         tfm.cidinfo            = data.cidinfo
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
@@ -1622,7 +1623,8 @@ function tfm.read_from_open_type(specification)
         if filename then
             tfmtable.encodingbytes = 2
             tfmtable.filename = resolvers.findbinfile(filename,"") or filename
-            tfmtable.fullname = tfmtable.fullname or otfdata.metadata.fontname or otfdata.metadata.fullname
+            tfmtable.fontname = tfmtable.fontname or otfdata.metadata.fontname
+            tfmtable.fullname = tfmtable.fullname or otfdata.metadata.fullname or tfmtable.fontname
             local order = otfdata and otfdata.metadata.order2
             if order == 0 then
                 tfmtable.format = 'opentype'
@@ -1631,7 +1633,7 @@ function tfm.read_from_open_type(specification)
             else
                 tfmtable.format = specification.format
             end
-            tfmtable.name = tfmtable.filename or tfmtable.fullname
+            tfmtable.name = tfmtable.filename or tfmtable.fullname or tfmtable.fontname
         end
         fonts.logger.save(tfmtable,file.extname(specification.filename),specification)
     end

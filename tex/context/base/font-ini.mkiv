@@ -4010,6 +4010,28 @@
 \def\showchardata#1{\ctxlua{fonts.show_char_data("#1")}}
 \def\showfontdata  {\ctxlua{fonts.show_font_parameters()}}
 
+%D some low level helpers
+%D
+%D \starttyping
+%D \def\TestLookup#1%
+%D   {pattern: #1, found: \dolookupnoffound
+%D    \blank
+%D    \dolookupfontbyspec{#1}
+%D    \dorecurse {\dolookupnoffound} {%
+%D      \recurselevel:~\dolookupgetkeyofindex{fontname}{\recurselevel}\quad
+%D    }%
+%D    \blank}
+%D
+%D \TestLookup{familyname=helveticaneue}
+%D \TestLookup{familyname=helveticaneue,weight=bold}
+%D \TestLookup{familyname=helveticaneue,weight=bold,style=italic}
+%D \stoptyping
+
+\def\dolookupfontbyspec     #1{\ctxlua{fonts.names.lookup("#1")}}
+\def\dolookupnoffound         {\ctxlua{tex.write(fonts.names.noflookups())}}
+\def\dolookupgetkeyofindex#1#2{\ctxlua{tex.write(fonts.names.getlookupkey("#1",#2))}}
+\def\dolookupgetkey         #1{\ctxlua{tex.write(fonts.names.getlookupkey("#1"))}}
+
 \protect \endinput
 
 % \startluacode

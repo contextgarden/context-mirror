@@ -544,11 +544,11 @@ function resolvers.identify_cnf()
 end
 
 local function load_cnf_file(fname)
+    -- why don't we just read the file from the cache
+    -- we need to switch to the lua file
     fname = resolvers.clean_path(fname)
     local lname = file.replacesuffix(fname,'lua')
-    local f = io.open(lname)
-    if f then -- this will go
-        f:close()
+    if lfs.isfile(lname) then
         local dname = file.dirname(fname)
         if not instance.configuration[dname] then
             resolvers.load_data(dname,'configuration',lname and file.basename(lname))
@@ -613,13 +613,17 @@ local function collapse_cnf_data() -- potential optimization: pass start index (
     end
 end
 
-function resolvers.load_cnf()
-    local function loadoldconfigdata()
-        for _, fname in ipairs(instance.cnffiles) do
-            load_cnf_file(fname)
-        end
+local function loadoldconfigdata()
+    for _, fname in ipairs(instance.cnffiles) do
+        load_cnf_file(fname)
     end
+end
+
+function resolvers.load_cnf()
     -- instance.cnffiles contain complete names now !
+    -- we still use a funny mix of cnf and new but soon
+    -- we will switch to lua exclusively as we only use
+    -- the file to collect the tree roots
     if #instance.cnffiles == 0 then
         if trace_verbose then
             logs.report("fileio","no cnf files found (TEXMFCNF may not be set/known)")
@@ -982,6 +986,7 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
             date    = os.date("%Y-%m-%d"),
             time    = os.date("%H:%M:%S"),
             content = files,
+            uuid    = os.uuid(),
         }
         local ok = io.savedata(luaname,resolvers.serialize(data))
         if ok then
@@ -1004,6 +1009,12 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
     end
 end
 
+local data_state = { }
+
+function resolvers.data_state()
+    return data_state or { }
+end
+
 function resolvers.load_data(pathname,dataname,filename,makename) -- untested without cache overload
     filename = ((not filename or (filename == "")) and dataname) or filename
     filename = (makename and makename(dataname,filename)) or file.join(pathname,filename)
@@ -1011,6 +1022,7 @@ function resolvers.load_data(pathname,dataname,filename,makename) -- untested wi
     if blob then
         local data = blob()
         if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
+            data_state[#data_state+1] = data.uuid
             if trace_verbose then
                 logs.report("fileio","loading %s for %s from %s",dataname,pathname,filename)
             end
@@ -1846,9 +1858,9 @@ function resolvers.load(option)
     statistics.starttiming(instance)
     resolvers.resetconfig()
     resolvers.identify_cnf()
-    resolvers.load_lua()
+    resolvers.load_lua() -- will become the new method
     resolvers.expand_variables()
-    resolvers.load_cnf()
+    resolvers.load_cnf() -- will be skipped when we have a lua file
     resolvers.expand_variables()
     if option ~= "nofiles" then
         resolvers.load_hash()

@@ -25,7 +25,7 @@ local fontdata           = fonts.ids
 
 spacings           = spacings         or { }
 spacings.mapping   = spacings.mapping or { }
-spacings.enabled   = false
+spacings.enabled   = false -- will go
 spacings.attribute = attributes.private("spacing")
 
 storage.register("spacings/mapping", spacings.mapping, "spacings.mapping")
@@ -148,3 +148,18 @@ lists.handle_spacing = nodes.install_attribute_handler {
     namespace = spacings,
     processor = spacings.process,
 }
+
+function spacings.enable()
+    tasks.enableaction("processors","lists.handle_spacing")
+    spacings.enabled = true -- will go
+end
+
+--~ local data = {
+--~     name      = "spacing",
+--~     namespace = spacings,
+--~     processor = spacings.process,
+--~ }
+--~ nodes.process_attribute = process_attribute
+--~ function lists.handle_spacing(head)
+--~     return process_attribute(head,data)
+--~ end

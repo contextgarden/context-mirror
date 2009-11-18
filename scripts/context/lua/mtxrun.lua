@@ -789,6 +789,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s{",depth))
         end
     end
+    -- we could check for k (index) being number (cardinal)
     if root and next(root) then
         local first, last = nil, 0 -- #root cannot be trusted here
         if compact then
@@ -811,7 +812,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     if hexify then
                         handle(format("%s 0x%04X,",depth,v))
                     else
-                        handle(format("%s %.99g,",depth,v))
+                        handle(format("%s %s,",depth,v)) -- %.99g
                     end
                 elseif t == "string" then
                     if reduce and tonumber(v) then
@@ -851,25 +852,25 @@ local function do_serialize(root,name,depth,level,indexed)
             --~ if hexify then
             --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
             --~ else
-            --~     handle(format("%s %s=%.99g,",depth,key(k),v))
+            --~     handle(format("%s %s=%s,",depth,key(k),v)) -- %.99g
             --~ end
                 if type(k) == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%s]=%.99g,",depth,k,v))
+                        handle(format("%s [%s]=%s,",depth,k,v)) -- %.99g
                     end
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     if hexify then
                         handle(format("%s %s=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s %s=%.99g,",depth,k,v))
+                        handle(format("%s %s=%s,",depth,k,v)) -- %.99g
                     end
                 else
                     if hexify then
                         handle(format("%s [%q]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%q]=%.99g,",depth,k,v))
+                        handle(format("%s [%q]=%s,",depth,k,v)) -- %.99g
                     end
                 end
             elseif t == "string" then
@@ -1868,8 +1869,12 @@ function file.dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
 end
 
+--~ function file.basename(name)
+--~     return match(name,"^.+[/\\](.-)$") or name
+--~ end
+
 function file.basename(name)
-    return match(name,"^.+[/\\](.-)$") or name
+    return match(name,"^.*[/\\](.-)$") or name
 end
 
 function file.nameonly(name)
@@ -4872,7 +4877,7 @@ local noparent = 1 - (lparent+rparent)
 local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
 local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
-local lp_child   = Cc("expr.child(e,'") * R("az","AZ","--","__")^1 * Cc("')")
+local lp_child   = Cc("expr.child(ll,'") * R("az","AZ","--","__")^1 * Cc("')")
 local lp_string  = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
 local lp_content = (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
 
@@ -4882,9 +4887,9 @@ local lp_special = (C(P("name")+P("text")+P("tag")+P("count")+P("child"))) * val
     if expressions[t] then
         s = s and s ~= "" and cleaner:match(s)
         if s and s ~= "" then
-            return "expr." .. t .. "(e," .. s ..")"
+            return "expr." .. t .. "(ll," .. s ..")"
         else
-            return "expr." .. t .. "(e)"
+            return "expr." .. t .. "(ll)"
         end
     else
         return "expr.error(" .. t .. ")"
@@ -5434,38 +5439,42 @@ expressions.name = function(e,n) -- ns + tg
 end
 
 expressions.tag = function(e,n) -- only tg
-    local found = false
-    n = tonumber(n) or 0
-    if n == 0 then
-        found = (type(e) == "table") and e -- seems to fail
-    elseif n < 0 then
-        local d, k = e.__p__.dt, e.ni
-        for i=k-1,1,-1 do
-            local di = d[i]
-            if type(di) == "table" then
-                if n == -1 then
-                    found = di
-                    break
-                else
-                    n = n + 1
-                end
-            end
-        end
+    if not e then
+        return ""
     else
-        local d, k = e.__p__.dt, e.ni
-        for i=k+1,#d,1 do
-            local di = d[i]
-            if type(di) == "table" then
-                if n == 1 then
-                    found = di
-                    break
-                else
-                    n = n - 1
+        local found = false
+        n = tonumber(n) or 0
+        if n == 0 then
+            found = (type(e) == "table") and e -- seems to fail
+        elseif n < 0 then
+            local d, k = e.__p__.dt, e.ni
+            for i=k-1,1,-1 do
+                local di = d[i]
+                if type(di) == "table" then
+                    if n == -1 then
+                        found = di
+                        break
+                    else
+                        n = n + 1
+                    end
+                end
+            end
+        else
+            local d, k = e.__p__.dt, e.ni
+            for i=k+1,#d,1 do
+                local di = d[i]
+                if type(di) == "table" then
+                    if n == 1 then
+                        found = di
+                        break
+                    else
+                        n = n - 1
+                    end
                 end
             end
         end
+        return (found and found.tg) or ""
     end
-    return (found and found.tg) or ""
 end
 
 --[[ldx--
@@ -5992,7 +6001,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
 --~                 local settings = xmldata.settings
 --~                 settings.parent_root = xmldata -- to be tested
 --~                 local xi = xmlconvert(data,settings)
-                local xi = xml.inheritedconvert(element,xmldata)
+                local xi = xml.inheritedconvert(data,xmldata)
                 if not xi then
                     epdt[ek.ni] = "" -- xml.empty(d,k)
                 else
@@ -7046,7 +7055,6 @@ end
 local name, banner = 'report', 'context'
 
 local function report(category,fmt,...)
---~ print(fmt,...)
     if fmt then
         write_nl(format("%s | %s: %s",name,category,format(fmt,...)))
     elseif category then
@@ -7186,6 +7194,8 @@ if not modules then modules = { } end modules ['data-inp'] = {
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
+
+local collapse_path = file.collapse_path
 
 local trace_locating, trace_detail, trace_verbose  = false, false, false
 
@@ -7575,7 +7585,7 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
     end
     if ok then
         local function validate(s)
-            s = file.collapse_path(s)
+            s = collapse_path(s)
             return s ~= "" and not find(s,dummy_path_expr) and s
         end
         for k=1,#pathlist do
@@ -7584,7 +7594,7 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
     else
         for k=1,#pathlist do
             for p in gmatch(pathlist[k],"([^,]+)") do
-                p = file.collapse_path(p)
+                p = collapse_path(p)
                 if p ~= "" then newlist[#newlist+1] = p end
             end
         end
@@ -7649,9 +7659,9 @@ local function identify_own()
     local ownpath = resolvers.getownpath() or lfs.currentdir()
     local ie = instance.environment
     if ownpath then
-        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = file.collapse_path(ownpath) end
-        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = file.collapse_path(ownpath .. "/..") end
-        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = file.collapse_path(ownpath .. "/../..") end
+        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = collapse_path(ownpath) end
+        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = collapse_path(ownpath .. "/..") end
+        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = collapse_path(ownpath .. "/../..") end
     else
         logs.report("fileio","error: unable to locate ownpath")
         os.exit()
@@ -7680,7 +7690,7 @@ function resolvers.identify_cnf()
         local function locate(filename,list)
             for i=1,#t do
                 local ti = t[i]
-                local texmfcnf = file.collapse_path(file.join(ti,filename))
+                local texmfcnf = collapse_path(file.join(ti,filename))
                 if lfs.isfile(texmfcnf) then
                     list[#list+1] = texmfcnf
                 end
@@ -7692,11 +7702,11 @@ function resolvers.identify_cnf()
 end
 
 local function load_cnf_file(fname)
+    -- why don't we just read the file from the cache
+    -- we need to switch to the lua file
     fname = resolvers.clean_path(fname)
     local lname = file.replacesuffix(fname,'lua')
-    local f = io.open(lname)
-    if f then -- this will go
-        f:close()
+    if lfs.isfile(lname) then
         local dname = file.dirname(fname)
         if not instance.configuration[dname] then
             resolvers.load_data(dname,'configuration',lname and file.basename(lname))
@@ -7761,13 +7771,17 @@ local function collapse_cnf_data() -- potential optimization: pass start index (
     end
 end
 
-function resolvers.load_cnf()
-    local function loadoldconfigdata()
-        for _, fname in ipairs(instance.cnffiles) do
-            load_cnf_file(fname)
-        end
+local function loadoldconfigdata()
+    for _, fname in ipairs(instance.cnffiles) do
+        load_cnf_file(fname)
     end
+end
+
+function resolvers.load_cnf()
     -- instance.cnffiles contain complete names now !
+    -- we still use a funny mix of cnf and new but soon
+    -- we will switch to lua exclusively as we only use
+    -- the file to collect the tree roots
     if #instance.cnffiles == 0 then
         if trace_verbose then
             logs.report("fileio","no cnf files found (TEXMFCNF may not be set/known)")
@@ -7775,12 +7789,12 @@ function resolvers.load_cnf()
     else
         instance.rootpath = instance.cnffiles[1]
         for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.cnffiles[k] = collapse_path(gsub(fname,"\\",'/'))
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
-        instance.rootpath = file.collapse_path(instance.rootpath)
+        instance.rootpath = collapse_path(instance.rootpath)
         if instance.diskcache and not instance.renewcache then
             resolvers.loadoldconfig(instance.cnffiles)
             if instance.loaderror then
@@ -7804,12 +7818,12 @@ function resolvers.load_lua()
     else
         instance.rootpath = instance.luafiles[1]
         for k,fname in ipairs(instance.luafiles) do
-            instance.luafiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.luafiles[k] = collapse_path(gsub(fname,"\\",'/'))
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
-        instance.rootpath = file.collapse_path(instance.rootpath)
+        instance.rootpath = collapse_path(instance.rootpath)
         resolvers.loadnewconfig()
         collapse_cnf_data()
     end
@@ -7871,7 +7885,7 @@ function resolvers.locatelists()
         if trace_verbose then
             logs.report("fileio","locating list of %s",path)
         end
-        resolvers.locatedatabase(file.collapse_path(path))
+        resolvers.locatedatabase(collapse_path(path))
     end
 end
 
@@ -8130,6 +8144,7 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
             date    = os.date("%Y-%m-%d"),
             time    = os.date("%H:%M:%S"),
             content = files,
+            uuid    = os.uuid(),
         }
         local ok = io.savedata(luaname,resolvers.serialize(data))
         if ok then
@@ -8152,6 +8167,12 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
     end
 end
 
+local data_state = { }
+
+function resolvers.data_state()
+    return data_state or { }
+end
+
 function resolvers.load_data(pathname,dataname,filename,makename) -- untested without cache overload
     filename = ((not filename or (filename == "")) and dataname) or filename
     filename = (makename and makename(dataname,filename)) or file.join(pathname,filename)
@@ -8159,6 +8180,7 @@ function resolvers.load_data(pathname,dataname,filename,makename) -- untested wi
     if blob then
         local data = blob()
         if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
+            data_state[#data_state+1] = data.uuid
             if trace_verbose then
                 logs.report("fileio","loading %s for %s from %s",dataname,pathname,filename)
             end
@@ -8413,7 +8435,7 @@ function resolvers.clean_path_list(str)
     local t = resolvers.expanded_path_list(str)
     if t then
         for i=1,#t do
-            t[i] = file.collapse_path(resolvers.clean_path(t[i]))
+            t[i] = collapse_path(resolvers.clean_path(t[i]))
         end
     end
     return t
@@ -8610,8 +8632,8 @@ end
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = file.collapse_path(filename)  -- elsewhere
-    filename = file.collapse_path(gsub(filename,"\\","/")) -- elsewhere
+    filename = collapse_path(filename)  -- elsewhere
+    filename = collapse_path(gsub(filename,"\\","/")) -- elsewhere
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -8842,7 +8864,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         end
     end
     for k=1,#result do
-        result[k] = file.collapse_path(result[k])
+        result[k] = collapse_path(result[k])
     end
     if instance.remember then
         instance.found[stamp] = result
@@ -8994,9 +9016,9 @@ function resolvers.load(option)
     statistics.starttiming(instance)
     resolvers.resetconfig()
     resolvers.identify_cnf()
-    resolvers.load_lua()
+    resolvers.load_lua() -- will become the new method
     resolvers.expand_variables()
-    resolvers.load_cnf()
+    resolvers.load_cnf() -- will be skipped when we have a lua file
     resolvers.expand_variables()
     if option ~= "nofiles" then
         resolvers.load_hash()
@@ -9343,6 +9365,7 @@ function caches.savedata(filepath,filename,data,raw)
     if raw then
         reduce, simplify = false, false
     end
+    data.cache_uuid = os.uuid()
     if caches.direct then
         file.savedata(tmaname, table.serialize(data,'return',false,true,false)) -- no hex
     else

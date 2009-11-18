@@ -25,6 +25,8 @@
 %
 % \setbreakpoints[compound]
 
+\ctxlua{logs.report=function(s,...) commands.writestatus("!"..s,...) end}
+
 \unprotect
 
 % % % % % % needs testing but saves runtime

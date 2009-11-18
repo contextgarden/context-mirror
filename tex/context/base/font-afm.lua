@@ -720,7 +720,8 @@ function tfm.read_from_afm(specification)
         if filename then
             tfmtable.encodingbytes = 2
             tfmtable.filename = resolvers.findbinfile(filename,"") or filename
-            tfmtable.fullname = afmdata.metadata.fontname or afmdata.metadata.fullname
+            tfmtable.fontname = afmdata.metadata.fontname or afmdata.metadata.fullname
+            tfmtable.fullname = afmdata.metadata.fullname or afmdata.metadata.fontname
             tfmtable.format   = 'type1'
             tfmtable.name     = afmdata.luatex.filename or tfmtable.fullname
         end

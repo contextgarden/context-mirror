@@ -280,7 +280,7 @@ end
 
 languages.words           = languages.words      or {}
 languages.words.data      = languages.words.data or {}
-languages.words.enable    = false
+languages.words.enables   = false
 languages.words.threshold = 4
 
 languages.words.colors    = {
@@ -426,13 +426,22 @@ do
     local color = attributes.private('color')
 
     function languages.words.check(head)
-        if lw.enable and head.next then
+        if lw.enabled and head.next then
             local colors = lw.colors
             local alc    = attributes.list[color]
             return lw.methods[lw.method](head, color, alc[colors.known], alc[colors.unknown])
         else
             return head, false
         end
+    end
+
+    function languages.words.enable()
+        tasks.enableaction("processors","languages.words.check")
+        languages.words.enabled = true
+    end
+
+    function languages.words.disable()
+        languages.words.enabled = false
     end
 
 end

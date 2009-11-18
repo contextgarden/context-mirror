@@ -217,3 +217,8 @@ lists.handle_kerning = nodes.install_attribute_handler {
     namespace = kerns,
     processor = kerns.process,
 }
+
+function kerns.enable()
+    tasks.enableaction("processors","lists.handle_kerning")
+    kerns.enabled = true -- will go
+end

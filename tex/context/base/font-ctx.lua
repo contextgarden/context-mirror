@@ -405,9 +405,9 @@ local dimenfactors = number.dimenfactors
 
 function fonts.dimenfactor(unit,tfmdata)
     if unit == "ex" then
-        return tfmdata.parameters.x_height
+        return (tfmdata and tfmdata.parameters.x_height) or 655360
     elseif unit == "em" then
-        return tfmdata.parameters.em_height
+        return (tfmdata and tfmdata.parameters.em_height) or 655360
     else
         return dimenfactors[unit] or unit
     end

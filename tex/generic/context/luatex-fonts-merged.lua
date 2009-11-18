@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/13/09 12:51:09
+-- merge date  : 11/18/09 21:55:28
 
 do -- begin closure to overcome local limits and interference
 
@@ -2345,8 +2345,10 @@ local glyph      = nodes.register(new_node("glyph",0))
 local textdir    = nodes.register(new_node("whatsit",7))
 local rule       = nodes.register(new_node("rule"))
 local latelua    = nodes.register(new_node("whatsit",35))
---~ local user       = nodes.register(new_node("user_defined"))
-local user       = nodes.register(new_node(44))
+local user_n     = nodes.register(new_node("whatsit",44)) user_n.type = 100
+local user_l     = nodes.register(new_node("whatsit",44)) user_l.type = 110
+local user_s     = nodes.register(new_node("whatsit",44)) user_s.type = 115
+local user_t     = nodes.register(new_node("whatsit",44)) user_t.type = 116
 
 function nodes.glyph(fnt,chr)
     local n = copy_node(glyph)
@@ -2396,27 +2398,41 @@ function nodes.latelua(code)
     return n
 end
 
+local cache = { }
+
 function nodes.usernumber(num)
-    local n = copy_node(user)
-    n.type = 100
-    if num then n.value = num end
-    return n
+    local n = cache[num]
+    if n then
+        return copy_node(n)
+    else
+        local n = copy_node(user_n)
+        if num then n.value = num end
+        return n
+    end
 end
-function nodes.userstring(str)
-    local n = copy_node(user)
-    n.type = 115
-    if str then n.value = str end
-    return n
-end
+
 function nodes.userlist(list)
-    local n = copy_node(user)
-    n.type = 110
+    local n = copy_node(user_l)
     if list then n.value = list end
     return n
 end
+
+local cache = { } -- we could use the same cache
+
+function nodes.userstring(str)
+    local n = cache[str]
+    if n then
+        return copy_node(n)
+    else
+        local n = copy_node(user_s)
+        n.type = 115
+        if str then n.value = str end
+        return n
+    end
+end
+
 function nodes.usertokens(tokens)
-    local n = copy_node(user)
-    n.type = 116
+    local n = copy_node(user_t)
     if tokens then n.value = tokens end
     return n
 end
@@ -3794,15 +3810,15 @@ local private = fonts.private
     end
     -- needed for \high cum suis
     local tpx = tp.x_height
-if hasmath then
-    if not tp[13] then tp[13] = .86*tpx end  -- mathsupdisplay
-    if not tp[14] then tp[14] = .86*tpx end  -- mathsupnormal
-    if not tp[15] then tp[15] = .86*tpx end  -- mathsupcramped
-    if not tp[16] then tp[16] = .48*tpx end  -- mathsubnormal
-    if not tp[17] then tp[17] = .48*tpx end  -- mathsubcombined
-    if not tp[22] then tp[22] =   0     end  -- mathaxisheight
-    if t.MathConstants then t.MathConstants.AccentBaseHeight = nil end -- safeguard
-end
+    if hasmath then
+        if not tp[13] then tp[13] = .86*tpx end  -- mathsupdisplay
+        if not tp[14] then tp[14] = .86*tpx end  -- mathsupnormal
+        if not tp[15] then tp[15] = .86*tpx end  -- mathsupcramped
+        if not tp[16] then tp[16] = .48*tpx end  -- mathsubnormal
+        if not tp[17] then tp[17] = .48*tpx end  -- mathsubcombined
+        if not tp[22] then tp[22] =   0     end  -- mathaxisheight
+        if t.MathConstants then t.MathConstants.AccentBaseHeight = nil end -- safeguard
+    end
     t.tounicode = 1
     t.cidinfo = tfmtable.cidinfo
     -- we have t.name=metricfile and t.fullname=RealName and t.filename=diskfilename
@@ -3810,20 +3826,21 @@ end
     -- can have multiple subfonts
     if hasmath then
         if trace_defining then
-            logs.report("define font","math enabled for: %s %s %s",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
+            logs.report("define font","math enabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
         end
     else
         if trace_defining then
-            logs.report("define font","math disabled for: %s %s %s",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
+            logs.report("define font","math disabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
         end
         t.nomath, t.MathConstants = true, nil
     end
-    -- fullname is used in the subsetting
     if not t.psname then
-        t.psname = t.fullname -- else bad luck
+     -- name used in pdf file as well as for selecting subfont in ttc/dfont
+        t.psname = t.fontname or (t.fullname and fonts.names.cleanname(t.fullname))
     end
     if trace_defining then
-        logs.report("define font","used for subsetting: %s ",t.fullname or "nofullname")
+        logs.report("define font","used for accesing subfont: '%s'",t.psname or "nopsname")
+        logs.report("define font","used for subsetting: '%s'",t.fontname or "nofontname")
     end
     return t, delta
 end
@@ -6705,8 +6722,9 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         tfm.units              = metadata.units_per_em or 1000
         -- we need a runtime lookup because of running from cdrom or zip, brrr
         tfm.filename           = resolvers.findbinfile(luatex.filename,"") or luatex.filename
-        tfm.fullname           = metadata.fontname or metadata.fullname
-        tfm.psname             = tfm.fullname
+        tfm.fullname           = metadata.fullname
+        tfm.fontname           = metadata.fontname
+        tfm.psname             = tfm.fontname or tfm.fullname
         tfm.encodingbytes      = 2
         tfm.cidinfo            = data.cidinfo
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
@@ -6830,7 +6848,8 @@ function tfm.read_from_open_type(specification)
         if filename then
             tfmtable.encodingbytes = 2
             tfmtable.filename = resolvers.findbinfile(filename,"") or filename
-            tfmtable.fullname = tfmtable.fullname or otfdata.metadata.fontname or otfdata.metadata.fullname
+            tfmtable.fontname = tfmtable.fontname or otfdata.metadata.fontname
+            tfmtable.fullname = tfmtable.fullname or otfdata.metadata.fullname or tfmtable.fontname
             local order = otfdata and otfdata.metadata.order2
             if order == 0 then
                 tfmtable.format = 'opentype'
@@ -6839,7 +6858,7 @@ function tfm.read_from_open_type(specification)
             else
                 tfmtable.format = specification.format
             end
-            tfmtable.name = tfmtable.filename or tfmtable.fullname
+            tfmtable.name = tfmtable.filename or tfmtable.fullname or tfmtable.fontname
         end
         fonts.logger.save(tfmtable,file.extname(specification.filename),specification)
     end
@@ -7491,7 +7510,7 @@ results in different tables.</p>
 -- remark: the 'not implemented yet' variants will be done when we have fonts that use them
 -- remark: we need to check what to do with discretionaries
 
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 
@@ -7513,6 +7532,7 @@ local trace_details      = false  trackers.register("otf.details",      function
 local trace_applied      = false  trackers.register("otf.applied",      function(v) trace_applied      = v end)
 local trace_steps        = false  trackers.register("otf.steps",        function(v) trace_steps        = v end)
 local trace_skips        = false  trackers.register("otf.skips",        function(v) trace_skips        = v end)
+local trace_directions   = false  trackers.register("otf.directions",   function(v) trace_directions   = v end)
 
 trackers.register("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 trackers.register("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
@@ -8117,7 +8137,7 @@ function handlers.gpos_cursive(start,kind,lookupname,exitanchors,sequence) -- to
                                         if exit then
                                             local dx, dy, bound = set_cursive(start,nxt,tfmdata.factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                                             if trace_cursive then
-                                                logprocess("%s: moving %s to %s cursive (%s,%s) using anchor %s and bound %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound)
+                                                logprocess("%s: moving %s to %s cursive (%s,%s) using anchor %s and bound %s in rlmode %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound,rlmode)
                                             end
                                             done = true
                                             break
@@ -8769,7 +8789,7 @@ function chainprocs.gpos_cursive(start,stop,kind,chainname,currentcontext,cache,
                                             if exit then
                                                 local dx, dy, bound = set_cursive(start,nxt,tfmdata.factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                                                 if trace_cursive then
-                                                    logprocess("%s: moving %s to %s cursive (%s,%s) using anchor %s and bound %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound)
+                                                    logprocess("%s: moving %s to %s cursive (%s,%s) using anchor %s and bound %s in rlmode %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound,rlmode)
                                                 end
                                                 done = true
                                                 break
@@ -9206,6 +9226,9 @@ local resolved = { } -- we only resolve a font,script,language pair once
 
 -- todo: pass all these 'locals' in a table
 
+-- maybe some day i'll make an alternative that works on 'sub direction runs' which might be
+-- more efficient for arabic but it has quite some consequences
+
 function fonts.methods.node.otf.features(head,font,attr)
     if trace_steps then
         checkstep(head)
@@ -9249,6 +9272,7 @@ function fonts.methods.node.otf.features(head,font,attr)
     local ra  = rl      [attr]     if ra == nil then ra  = { } rl      [attr]     = ra  end -- attr can be false
     -- sequences always > 1 so no need for optimization
     for s=1,#sequences do
+    local pardir, txtdir = 0, { }
         local success = false
         local sequence = sequences[s]
         local r = ra[s] -- cache
@@ -9348,7 +9372,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                 local ns = #subtables
                 local thecache = featuredata[typ] or { }
                 start = head -- local ?
-                rlmode = 0
+                rlmode = 0 -- to be checked ?
                 if ns == 1 then
                     local lookupname = subtables[1]
                     local lookupcache = thecache[lookupname]
@@ -9390,24 +9414,57 @@ function fonts.methods.node.otf.features(head,font,attr)
                             --         start = start.next
                             --     end
                             elseif id == whatsit then
+--~                             if subtype == 7 then
+--~                                 local dir = start.dir
+--~                                 if dir == "+TRT" then
+--~                                     rlmode = -1
+--~                                 elseif dir == "+TLT" then
+--~                                     rlmode = 1
+--~                                 else
+--~                                     rlmode = 0
+--~                                 end
+--~                             elseif subtype == 6 then
+--~                                 local dir = start.dir
+--~                                 if dir == "TRT" then
+--~                                     rlmode = -1
+--~                                 elseif dir == "TLT" then
+--~                                     rlmode = 1
+--~                                 else
+--~                                     rlmode = 0
+--~                                 end
+--~                             end
                                 local subtype = start.subtype
                                 if subtype == 7 then
                                     local dir = start.dir
-                                    if dir == "+TRT" then
+                                    if     dir == "+TRT" or dir == "+TLT" then
+                                        insert(txtdir,dir)
+                                    elseif dir == "-TRT" or dir == "-TLT" then
+                                        remove(txtdir)
+                                    end
+                                    local d = txtdir[#txtdir]
+                                    if d == "+TRT" then
                                         rlmode = -1
-                                    elseif dir == "+TLT" then
+                                    elseif d == "+TLT" then
                                         rlmode = 1
                                     else
-                                        rlmode = 0
+                                        rlmode = pardir
+                                    end
+                                    if trace_directions then
+                                        logs.report("fonts","directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                     end
                                 elseif subtype == 6 then
                                     local dir = start.dir
                                     if dir == "TRT" then
-                                        rlmode = -1
+                                        pardir = -1
                                     elseif dir == "TLT" then
-                                        rlmode = 1
+                                        pardir = 1
                                     else
-                                        rlmode = 0
+                                        pardir = 0
+                                    end
+                                    rlmode = pardir
+                                --~ txtdir = { }
+                                    if trace_directions then
+                                        logs.report("fonts","directions after pardir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                     end
                                 end
                                 start = start.next
@@ -9415,7 +9472,6 @@ function fonts.methods.node.otf.features(head,font,attr)
                                 start = start.next
                             end
                         end
-
                     end
                 else
                     while start do
@@ -9462,25 +9518,59 @@ function fonts.methods.node.otf.features(head,font,attr)
                         --     end
                         elseif id == whatsit then
                             local subtype = start.subtype
-                            if subtype == 7 then
-                                local dir = start.dir
-                                if dir == "+TRT" then
-                                    rlmode = -1
-                                elseif dir == "+TLT" then
-                                    rlmode = 1
-                                else
-                                    rlmode = 0
+--~                             if subtype == 7 then
+--~                                 local dir = start.dir
+--~                                 if dir == "+TRT" then
+--~                                     rlmode = -1
+--~                                 elseif dir == "+TLT" then
+--~                                     rlmode = 1
+--~                                 else
+--~                                     rlmode = 0
+--~                                 end
+--~                             elseif subtype == 6 then
+--~                                 local dir = start.dir
+--~                                 if dir == "TRT" then
+--~                                     rlmode = -1
+--~                                 elseif dir == "TLT" then
+--~                                     rlmode = 1
+--~                                 else
+--~                                     rlmode = 0
+--~                                 end
+--~                             end
+                                local subtype = start.subtype
+                                if subtype == 7 then
+                                    local dir = start.dir
+                                    if     dir == "+TRT" or dir == "+TLT" then
+                                        insert(txtdir,dir)
+                                    elseif dir == "-TRT" or dir == "-TLT" then
+                                        remove(txtdir)
+                                    end
+                                    local d = txtdir[#txtdir]
+                                    if d == "+TRT" then
+                                        rlmode = -1
+                                    elseif d == "+TLT" then
+                                        rlmode = 1
+                                    else
+                                        rlmode = pardir
+                                    end
+                                    if trace_directions then
+                                        logs.report("fonts","directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
+                                    end
+                                elseif subtype == 6 then
+                                    local dir = start.dir
+                                    if dir == "TRT" then
+                                        pardir = -1
+                                    elseif dir == "TLT" then
+                                        pardir = 1
+                                    else
+                                        pardir = 0
+                                    end
+                                    rlmode = pardir
+                                --~ txtdir = { }
+                                if trace_directions then
+                                    logs.report("fonts","directions after pardir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                 end
-                            elseif subtype == 6 then
-                                local dir = start.dir
-                                if dir == "TRT" then
-                                    rlmode = -1
-                                elseif dir == "TLT" then
-                                    rlmode = 1
-                                else
-                                    rlmode = 0
                                 end
-                            end
                             start = start.next
                         else
                             start = start.next
@@ -11521,10 +11611,15 @@ function fonts.logger.save()
 end
 
 -- names
+--
+-- Watch out, the version number is the same as the one used in
+-- the mtx-fonts.lua function scripts.fonts.names as we use a
+-- simplified font database in the plain solution and by using
+-- a different number we're less dependent on context.
 
 fonts.names = fonts.names or { }
 
-fonts.names.version    = 1.014
+fonts.names.version    = 1.001 -- not the same as in context
 fonts.names.basename   = "luatex-fonts-names.lua"
 fonts.names.new_to_old = { }
 fonts.names.old_to_new = { }
@@ -11539,16 +11634,6 @@ function fonts.names.resolve(name,sub)
                 local foundname = resolvers.find_file(basename,format) or ""
                 if foundname ~= "" then
                     data = dofile(foundname)
-                    if data then
-                        local d = {  }
-                        for k, v in pairs(data.mapping) do
-                            local t = v[1]
-                            if t == "ttf" or t == "otf" or t == "ttc" or t == "dfont" then
-                                d[k] = v
-                            end
-                        end
-                        data.mapping = d
-                    end
                     break
                 end
             end
@@ -11559,9 +11644,12 @@ function fonts.names.resolve(name,sub)
         local condensed = string.gsub(string.lower(name),"[^%a%d]","")
         local found = data.mapping and data.mapping[condensed]
         if found then
-            local filename, is_sub = found[3], found[4]
-            if is_sub then is_sub = found[2] end
-            return filename, is_sub
+            local fontname, filename, subfont = found[1], found[2], found[3]
+            if subfont then
+                return filename, fontname
+            else
+                return filename, false
+            end
         else
             return name, false -- fallback to filename
         end

@@ -61,6 +61,8 @@
 \appendtoks  \the\everybackendshipout              \to \everyshipout
 \prependtoks \the\everylastbackendshipout          \to \everylastshipout
 
+\prependtoks \lefttoright                          \to \everybeforeoutput
+
 % temporary here:
 
 \ifdefined\in    \let\normalmathin   \in    \unexpanded\def\in   {\mathortext\normalmathin   \dospecialin   } \else \let\in   \dospecialin    \fi

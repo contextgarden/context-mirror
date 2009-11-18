@@ -371,7 +371,7 @@ function fonts.vf.math.define(specification,set)
                                 if trace_virtual then
                                     logs.report("math virtual", "unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
                                 elseif not already_reported then
-                                    logs.report("math virtual", "the mapping is incomplete for '%s' at %s",name,size)
+                                    logs.report("math virtual", "the mapping is incomplete for '%s' at %s",name,number.topoints(size))
                                     already_reported = true
                                 end
                                 rv[unicode] = true
@@ -747,6 +747,23 @@ fonts.enc.math["tex-mi"] = {
     [0x0003E] = 0x3E, -- >
     [0x022C6] = 0x3F, -- star
     [0x02202] = 0x40, -- partial
+--
+    [0x0266D] = 0x5B, -- flat
+    [0x0266E] = 0x5C, -- natural
+    [0x0266F] = 0x5D, -- sharp
+    [0x02323] = 0x5E, -- smile
+    [0x02322] = 0x5F, -- frown
+    [0x02113] = 0x60, -- ell
+-- 
+    [0x1D6A4] = 0x7B, -- imath (TODO: also 0131)
+    [0x1D6A5] = 0x7C, -- jmath (TODO: also 0237)
+    [0x02118] = 0x7D, -- wp
+    [0x020D7] = 0x7E, -- vec (TODO: not sure)
+--              0x7F, -- (no idea what that could be)
+}
+
+
+fonts.enc.math["tex-it"] = {
 --  [0x00041] = 0x41, -- A
     [0x1D6E2] = 0x41, -- Alpha
 --  [0x00042] = 0x42, -- B
@@ -786,12 +803,6 @@ fonts.enc.math["tex-mi"] = {
 --  [0x00059] = 0x59, -- Y
 --  [0x0005A] = 0x5A, -- Z
     [0x1D6E7] = 0x5A, -- Zeta
-    [0x0266D] = 0x5B, -- flat
-    [0x0266E] = 0x5C, -- natural
-    [0x0266F] = 0x5D, -- sharp
-    [0x02323] = 0x5E, -- smile
-    [0x02322] = 0x5F, -- frown
-    [0x02113] = 0x60, -- ell
 --  [0x00061] = 0x61, -- a
 --  [0x00062] = 0x62, -- b
 --  [0x00063] = 0x63, -- c
@@ -800,7 +811,7 @@ fonts.enc.math["tex-mi"] = {
 --  [0x00066] = 0x66, -- f
 --  [0x00067] = 0x67, -- g
 --  [0x00068] = 0x68, -- h
-    [0x0210E] = 0x68, -- plant constant
+    [0x0210E] = 0x68, -- plank constant
 --  [0x00069] = 0x69, -- i
 --  [0x0006A] = 0x6A, -- j
 --  [0x0006B] = 0x6B, -- k
@@ -820,11 +831,6 @@ fonts.enc.math["tex-mi"] = {
 --  [0x00078] = 0x78, -- x
 --  [0x00079] = 0x79, -- y
 --  [0x0007A] = 0x7A, -- z
-    [0x1D6A4] = 0x7B, -- imath (TODO: also 0131)
-    [0x1D6A5] = 0x7C, -- jmath (TODO: also 0237)
-    [0x02118] = 0x7D, -- wp
-    [0x020D7] = 0x7E, -- vec (TODO: not sure)
---              0x7F, -- (no idea what that could be)
 }
 
 fonts.enc.math["tex-ss"]           = { }
@@ -1314,7 +1320,7 @@ fonts.enc.math["tex-fraktur"] = {
 
 -- now that all other vectors are defined ...
 
-fonts.vf.math.set_letters(fonts.enc.math, "tex-mi", 0x1D434, 0x1D44E)
+fonts.vf.math.set_letters(fonts.enc.math, "tex-it", 0x1D434, 0x1D44E)
 fonts.vf.math.set_letters(fonts.enc.math, "tex-ss", 0x1D5A0, 0x1D5BA)
 fonts.vf.math.set_letters(fonts.enc.math, "tex-tt", 0x1D670, 0x1D68A)
 fonts.vf.math.set_letters(fonts.enc.math, "tex-bf", 0x1D400, 0x1D41A)
@@ -1342,6 +1348,7 @@ mathematics.make_font ( "lmroman5-math", {
     { name = "lmroman5-regular.otf", features = "virtualmath", main = true },
     { name = "rm-lmr5.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi5.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmi5.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy5.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam5.tfm", vector = "tex-ma" },
@@ -1363,6 +1370,7 @@ mathematics.make_font ( "lmroman6-math", {
     { name = "lmroman6-regular.otf", features = "virtualmath", main = true },
     { name = "rm-lmr6.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi6.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmi6.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy6.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam5.tfm", vector = "tex-ma" },
@@ -1387,6 +1395,7 @@ mathematics.make_font ( "lmroman7-math", {
     { name = "lmroman7-regular.otf", features = "virtualmath", main = true },
     { name = "rm-lmr7.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi7.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmi7.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy7.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam7.tfm", vector = "tex-ma" },
@@ -1409,6 +1418,7 @@ mathematics.make_font ( "lmroman8-math", {
     { name = "lmroman8-regular.otf", features = "virtualmath", main = true },
     { name = "rm-lmr8.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi8.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmi8.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy8.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam7.tfm", vector = "tex-ma" },
@@ -1431,6 +1441,7 @@ mathematics.make_font ( "lmroman9-math", {
     { name = "lmroman9-regular.otf", features = "virtualmath", main = true },
     { name = "rm-lmr9.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi9.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmi9.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy9.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1456,6 +1467,7 @@ mathematics.make_font ( "lmroman10-math", {
     { name = "lmroman10-regular.otf", features = "virtualmath", main = true },
     { name = "rm-lmr10.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi10.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmi10.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1473,6 +1485,7 @@ mathematics.make_font ( "lmroman10-boldmath", {
     { name = "lmroman10-bold.otf", features = "virtualmath", main = true },
     { name = "rm-lmr10.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmib10.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmib10.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmbsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
 -- copied from roman:
@@ -1495,6 +1508,7 @@ mathematics.make_font ( "lmroman12-math", {
     { name = "lmroman12-regular.otf", features = "virtualmath", main = true },
     { name = "rm-lmr12.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi12.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmi12.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1514,6 +1528,7 @@ mathematics.make_font ( "lmroman17-math", {
     { name = "lmroman17-regular.otf", features = "virtualmath", main = true },
     { name = "rm-lmr12.tfm", vector = "tex-mr-missing" } ,
     { name = "lmmi12.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "lmmi12.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1533,6 +1548,7 @@ mathematics.make_font ( "px-math", {
     { name = "texgyrepagella-regular.otf", features = "virtualmath", main = true },
     { name = "rpxr.tfm", vector = "tex-mr" } ,
     { name = "rpxmi.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "pxmi1.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "pxsy.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "pxex.tfm", vector = "tex-ex", extension = true } ,
     { name = "pxsya.tfm", vector = "tex-ma" },
@@ -1542,6 +1558,7 @@ mathematics.make_font ( "px-math", {
 mathematics.make_font ( "tx-math", {
     { name = "texgyretermes-regular.otf", features = "virtualmath", main = true },
     { name = "rtxr.tfm", vector = "tex-mr" } ,
+    { name = "rtxptmri.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "rtxmi.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "txsy.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "txex.tfm", vector = "tex-ex", extension = true } ,
@@ -1552,6 +1569,7 @@ mathematics.make_font ( "tx-math", {
 mathematics.make_font ( "antykwa-math", {
     { name = "file:AntykwaTorunska-Regular", features = "virtualmath", main = true },
     { name = "mi-anttri.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mi-anttri.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "ex-anttr.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1561,6 +1579,7 @@ mathematics.make_font ( "antykwa-math", {
 mathematics.make_font ( "antykwa-light-math", {
     { name = "file:AntykwaTorunskaLight-Regular", features = "virtualmath", main = true },
     { name = "mi-anttli.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mi-anttli.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "ex-anttl.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1570,6 +1589,7 @@ mathematics.make_font ( "antykwa-light-math", {
 mathematics.make_font ( "antykwa-cond-math", {
     { name = "file:AntykwaTorunskaCond-Regular", features = "virtualmath", main = true },
     { name = "mi-anttcri.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mi-anttcri.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "ex-anttcr.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1579,6 +1599,7 @@ mathematics.make_font ( "antykwa-cond-math", {
 mathematics.make_font ( "antykwa-lightcond-math", {
     { name = "file:AntykwaTorunskaCondLight-Regular", features = "virtualmath", main = true },
     { name = "mi-anttcli.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mi-anttcli.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "ex-anttcl.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1588,6 +1609,7 @@ mathematics.make_font ( "antykwa-lightcond-math", {
 mathematics.make_font ( "iwona-math", {
     { name = "file:Iwona-Regular", features = "virtualmath", main = true },
     { name = "mi-iwonari.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mi-iwonari.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "sy-iwonarz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "ex-iwonar.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1597,6 +1619,7 @@ mathematics.make_font ( "iwona-math", {
 mathematics.make_font ( "iwona-light-math", {
     { name = "file:IwonaLight-Regular", features = "virtualmath", main = true },
     { name = "mi-iwonali.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mi-iwonali.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "sy-iwonalz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "ex-iwonal.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1606,6 +1629,7 @@ mathematics.make_font ( "iwona-light-math", {
 mathematics.make_font ( "iwona-medium-math", {
     { name = "file:IwonaMedium-Regular", features = "virtualmath", main = true },
     { name = "mi-iwonami.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mi-iwonami.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "sy-iwonamz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "ex-iwonam.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1615,6 +1639,7 @@ mathematics.make_font ( "iwona-medium-math", {
 mathematics.make_font ( "iwona-heavy-math", {
     { name = "file:IwonaHeavy-Regular", features = "virtualmath", main = true },
     { name = "mi-iwonahi.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mi-iwonahi.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "sy-iwonahz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
     { name = "ex-iwonah.tfm", vector = "tex-ex", extension = true } ,
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1626,6 +1651,7 @@ mathematics.make_font ( "iwona-heavy-math", {
 mathematics.make_font ( "mathtimes-math", {
     { name = "file:texgyretermes-regular.otf", features = "virtualmath", main = true },
     { name = "mtmiz.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "mtmiz.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "mtsyn.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "mtex.tfm", vector = "tex-ex", extension = true },
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1635,6 +1661,7 @@ mathematics.make_font ( "mathtimes-math", {
 mathematics.make_font ( "lucida-math", {
     { name = "lbr.afm", features = "virtualmath", main = true },
     { name = "hlcrim.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "hlcrim.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "hlcry.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "hlcrv.tfm", vector = "tex-ex", extension = true },
     { name = "hlcra.tfm", vector = "tex-ma" },
@@ -1645,6 +1672,7 @@ mathematics.make_font ( "charter-math", {
     { name = "file:bchr8a", features = "virtualmath", main = true },
  -- { name = "md-chr7m.tfm", vector = "tex-mr" },
     { name = "md-chri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "md-chri7m.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "md-chr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "md-chr7v.tfm", vector = "tex-ex", extension = true },
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1655,6 +1683,7 @@ mathematics.make_font ( "garamond-math", {
     { name = "file:ugmr8y", features = "virtualmath", main = true },
  -- { name = "md-gmr7m.tfm", vector = "tex-mr" },
     { name = "md-gmri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "md-gmri7m.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "md-gmr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "md-gmr7v.tfm", vector = "tex-ex", extension = true },
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1665,6 +1694,7 @@ mathematics.make_font ( "utopia-math", {
     { name = "file:putr8y", features = "virtualmath", main = true },
  -- { name = "md-utr7m.tfm", vector = "tex-mr" },
     { name = "md-utri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "md-utri7m.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "md-utr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "md-utr7v.tfm", vector = "tex-ex", extension = true },
     { name = "msam10.tfm", vector = "tex-ma" },
@@ -1675,6 +1705,7 @@ mathematics.make_font ( "hvmath-math", {
     { name = "file:texgyreheros-regular.otf", features = "virtualmath", main = true },
     { name = "hvrm108r.tfm", vector="tex-mr" },
     { name = "hvmi10.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "hvmi10.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "hvsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "hvex10.tfm", vector = "tex-ex", extension = true },
     { name = "hvam10.tfm", vector = "tex-ma" },

@@ -525,6 +525,24 @@
     \loadmapfile[mdput.map]
 \stoptypescript
 
+% asana math
+
+\starttypescript [math] [asana]
+    \definefontsynonym [AsanaMath] [name:asanamath]
+\stoptypescript
+
+\starttypescript [math] [asana] [name]
+    \definefontsynonym [MathRoman] [AsanaMath] [features=math\mathsizesuffix]
+\stoptypescript
+
+\starttypescript[asana]
+  \definetypeface [\typescriptone] [rm] [serif] [palatino]       [default]
+  \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.075]
+  \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.075]
+  \definetypeface [\typescriptone] [mm] [math]  [\typescriptone] [default]
+  \quittypescriptscanning
+\stoptypescript
+
 \stoptypescriptcollection
 
 \endinput

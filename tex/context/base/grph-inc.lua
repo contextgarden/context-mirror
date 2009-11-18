@@ -667,7 +667,12 @@ function figures.includers.generic(data)
     end
     if figure then
         local n = figures.boxnumber
-        tex.box[n] = img.node(figure) -- img.write(figure)
+        tex.box[n] = node.hpack(img.node(figure))
+     -- tex.box[n] = img.node(figure) -- img.write(figure) -- assigning img.node directly no longer valid
+--~ local inode = img.node(figure)
+--~ print(table.serialize(nodes.totable(inode)))
+--~ tex.box[n] = inode
+--~ print(table.serialize(nodes.totable(tex.box[n])))
         tex.wd[n], tex.ht[n], tex.dp[n] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         ds.objectnumber = figure.objnum
         texsprint(ctxcatcodes,"\\relocateexternalfigure")

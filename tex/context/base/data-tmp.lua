@@ -157,6 +157,7 @@ function caches.savedata(filepath,filename,data,raw)
     if raw then
         reduce, simplify = false, false
     end
+    data.cache_uuid = os.uuid()
     if caches.direct then
         file.savedata(tmaname, table.serialize(data,'return',false,true,false)) -- no hex
     else

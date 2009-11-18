@@ -191,6 +191,26 @@
 \def\appendtoPDFdocumentextgstates#1%
   {\xdef\docuPDFextgstates{\docuPDFextgstates\space#1}}
 
+%D Patterns (for tikz)
+
+\let\docuPDFpatterns\empty
+
+\def\checkPDFpatterns
+  {\ifx\docuPDFpatterns\empty \else
+     \ifnum\realpageno=\lastpage\relax
+       \doPDFdictionaryobject{FDF}{docupatterns}{\docuPDFpatterns}%
+     \fi
+     \doPDFgetobjectreference{FDF}{docupatterns}\PDFobjectreference
+     \doPDFpageresource{/Pattern \PDFobjectreference}%
+   \fi}
+
+\appendtoksonce
+    \checkPDFpatterns
+\to \everyshipout
+
+\def\appendtoPDFdocumentpatterns#1%
+  {\xdef\docuPDFpatterns{\docuPDFpatterns\space#1}}
+
 %D Another special mechanism (needed for color separation):
 
 \let\docuPDFcolorspaces\empty

@@ -35,7 +35,7 @@ end
 
 function fonts.get_features(name,t,script,language)
     local t = lower(t or (name and file.extname(name)) or "")
-    if t == "otf" or t == "ttf" or t == "ttc" then
+    if t == "otf" or t == "ttf" or t == "ttc" or t == "dfont" then
         local filename = resolvers.find_file(name,t) or ""
         if filename ~= "" then
             local data = fonts.otf.loadcached(filename)

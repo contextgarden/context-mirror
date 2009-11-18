@@ -310,7 +310,7 @@ function nodes.show_list(head, message)
     if message then
         texio.write_nl(message)
     end
-    for n in traverse(head) do
+    for n in traverse_nodes(head) do
         texio.write_nl(tostring(n))
     end
 end

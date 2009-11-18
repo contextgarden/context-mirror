@@ -95,17 +95,18 @@ end
 
 patches["palatino.*arabic"] = patch
 
-local function patch(data,filename)
+local function patch_domh(data,filename,threshold)
     local m = data.math
     if m then
         local d = m.DisplayOperatorMinHeight or 0
-        if d < 2800 then
+        if d < threshold then
             if trace_loading then
-                logs.report("load otf","patching DisplayOperatorMinHeight(%s -> 2800)",d)
+                logs.report("load otf","patching DisplayOperatorMinHeight(%s -> %s)",d,threshold)
             end
-            m.DisplayOperatorMinHeight = 2800
+            m.DisplayOperatorMinHeight = threshold
         end
     end
 end
 
-patches["cambria"] = patch
+patches["cambria"] = function(data,filename) patch_domh(data,filename,2800) end
+patches["asana"]   = function(data,filename) patch_domh(data,filename,1350) end

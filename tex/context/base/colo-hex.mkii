@@ -11,8 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx\dodododefinecolor\undefined \else
-  \endinput
+\ifdefined \hexcolorprefix
+  \expandafter \endinput
 \fi
 
 \writestatus{loading}{ConTeXt Color Macros / Hexadecimal}

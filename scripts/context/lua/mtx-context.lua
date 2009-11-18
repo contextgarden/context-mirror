@@ -992,24 +992,29 @@ local loaded = false
 
 function scripts.context.metapost()
     local filename = environment.files[1] or ""
---~     local tempname = "mtx-context-metapost.tex"
---~     local tempdata = string.format(template,"metafun",filename)
---~     io.savedata(tempname,tempdata)
---~     environment.files[1] = tempname
---~     environment.setargument("result",file.removesuffix(filename))
---~     environment.setargument("once",true)
---~     scripts.context.run()
     if not loaded then
         dofile(resolvers.find_file("mlib-run.lua"))
         loaded = true
         commands = commands or { }
         commands.writestatus = logs.report
     end
-    local formatname = environment.arguments("format") or "metafun"
+    local formatname = environment.argument("format") or "metafun"
     if formatname == "" or type(format) == "boolean" then
         formatname = "metafun"
     end
-    if environment.arguments("svg") then
+    if environment.argument("pdf") then
+        local basename = file.removesuffix(filename)
+        local resultname = environment.argument("result") or basename
+        local jobname = "mtx-context-metapost"
+        local tempname = file.addsuffix(jobname,"tex")
+        io.savedata(tempname,string.format(template,"metafun",filename))
+        environment.files[1] = tempname
+        environment.setargument("result",resultname)
+        environment.setargument("once",true)
+        scripts.context.run()
+        scripts.context.purge_job(jobname,true)
+        scripts.context.purge_job(resultname,true)
+    elseif environment.argument("svg") then
         metapost.directrun(formatname,filename,"svg")
     else
         metapost.directrun(formatname,filename,"mps")

@@ -424,7 +424,7 @@ metapost.last_box        = metapost.last_box or 1100
 metapost.textext_current = metapost.first_box
 metapost.multipass       = false
 
-function metapost.free_boxes()
+function metapost.free_boxes() -- todo: mp direct list ipv box
     local tb = tex.box
     for i = metapost.first_box,metapost.last_box do
         local b = tb[i]

@@ -567,8 +567,8 @@
 \def\setupspellchecking[#1]% todo colors
   {\getparameters[\??wl][#1]%
    \doifelse\@@wlstate\v!start
-     {\ctxlua{languages.words.enable=true }}
-     {\ctxlua{languages.words.enable=false}}}
+     {\ctxlua{languages.words.enable()}}
+     {\ctxlua{languages.words.disable()}}}
 
 \setupspellchecking
   [\c!state=\v!stop]

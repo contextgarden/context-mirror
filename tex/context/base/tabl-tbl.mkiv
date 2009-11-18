@@ -410,8 +410,8 @@
 
 \def\gettabulatepreskip#1%
   {\doifnumberelse{#1}
-     {\edef\pretabskip{\the\dimenexpr#1\tabulateunit}\let\next\empty}
-     {\edef\pretabskip{\the\dimenexpr.5\tabulateunit}\def\next{#1}}%
+     {\edef\pretabskip{\the\dimexpr#1\tabulateunit}\let\next\empty}
+     {\edef\pretabskip{\the\dimexpr.5\tabulateunit}\def\next{#1}}%
    \@EA\settabulatepreamble\next}
 
 \def\gettabulateposskip#1%
@@ -423,8 +423,8 @@
 
 \def\gettabulatepreposskip#1%
   {\doifnumberelse{#1}
-     {\edef\pretabskip{\the\dimenexpr#1\tabulateunit}\let\next\empty}
-     {\edef\pretabskip{\the\dimenexpr.5\tabulateunit}\def\next{#1}}%
+     {\edef\pretabskip{\the\dimexpr#1\tabulateunit}\let\next\empty}
+     {\edef\pretabskip{\the\dimexpr.5\tabulateunit}\def\next{#1}}%
    \let\postabskip\pretabskip
    \let\gettabulateexit\settabulatepreamble
    \@EA\settabulatepreamble\next}

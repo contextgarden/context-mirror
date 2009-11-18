@@ -308,7 +308,7 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
-local P, S, Ct, C, Cs, Cc = lpeg.P, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 
 --~ l-lpeg.lua :
 
@@ -415,6 +415,41 @@ end
 --~     return p
 --~ end
 
+--~ from roberto's site:
+--~
+--~ -- decode a two-byte UTF-8 sequence
+--~ local function f2 (s)
+--~   local c1, c2 = string.byte(s, 1, 2)
+--~   return c1 * 64 + c2 - 12416
+--~ end
+--~
+--~ -- decode a three-byte UTF-8 sequence
+--~ local function f3 (s)
+--~   local c1, c2, c3 = string.byte(s, 1, 3)
+--~   return (c1 * 64 + c2) * 64 + c3 - 925824
+--~ end
+--~
+--~ -- decode a four-byte UTF-8 sequence
+--~ local function f4 (s)
+--~   local c1, c2, c3, c4 = string.byte(s, 1, 4)
+--~   return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168
+--~ end
+--~
+--~ local cont = lpeg.R("\128\191")   -- continuation byte
+--~
+--~ local utf8 = lpeg.R("\0\127") / string.byte
+--~            + lpeg.R("\194\223") * cont / f2
+--~            + lpeg.R("\224\239") * cont * cont / f3
+--~            + lpeg.R("\240\244") * cont * cont * cont / f4
+--~
+--~ local decode_pattern = lpeg.Ct(utf8^0) * -1
+
+
+local cont = R("\128\191")   -- continuation byte
+
+lpeg.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
+
+
 
 end -- of closure
 
@@ -431,9 +466,9 @@ if not modules then modules = { } end modules ['l-table'] = {
 table.join = table.concat
 
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
-local format, find, gsub, lower, dump = string.format, string.find, string.gsub, string.lower, string.dump
+local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
-local type, next, tostring, ipairs = type, next, tostring, ipairs
+local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
 
 function table.strip(tab)
     local lst = { }
@@ -721,6 +756,8 @@ end
 --
 -- local propername = lpeg.P(lpeg.R("AZ","az","__") * lpeg.R("09","AZ","az", "__")^0 * lpeg.P(-1) )
 
+-- problem: there no good number_to_string converter with the best resolution
+
 local function do_serialize(root,name,depth,level,indexed)
     if level > 0 then
         depth = depth .. " "
@@ -743,6 +780,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s{",depth))
         end
     end
+    -- we could check for k (index) being number (cardinal)
     if root and next(root) then
         local first, last = nil, 0 -- #root cannot be trusted here
         if compact then
@@ -765,10 +803,10 @@ local function do_serialize(root,name,depth,level,indexed)
                     if hexify then
                         handle(format("%s 0x%04X,",depth,v))
                     else
-                        handle(format("%s %s,",depth,v))
+                        handle(format("%s %s,",depth,v)) -- %.99g
                     end
                 elseif t == "string" then
-                    if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                    if reduce and tonumber(v) then
                         handle(format("%s %s,",depth,v))
                     else
                         handle(format("%s %q,",depth,v))
@@ -805,29 +843,29 @@ local function do_serialize(root,name,depth,level,indexed)
             --~ if hexify then
             --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
             --~ else
-            --~     handle(format("%s %s=%s,",depth,key(k),v))
+            --~     handle(format("%s %s=%s,",depth,key(k),v)) -- %.99g
             --~ end
                 if type(k) == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%s]=%s,",depth,k,v))
+                        handle(format("%s [%s]=%s,",depth,k,v)) -- %.99g
                     end
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     if hexify then
                         handle(format("%s %s=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s %s=%s,",depth,k,v))
+                        handle(format("%s %s=%s,",depth,k,v)) -- %.99g
                     end
                 else
                     if hexify then
                         handle(format("%s [%q]=0x%04X,",depth,k,v))
                     else
-                        handle(format("%s [%q]=%s,",depth,k,v))
+                        handle(format("%s [%q]=%s,",depth,k,v)) -- %.99g
                     end
                 end
             elseif t == "string" then
-                if reduce and (find(v,"^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                if reduce and tonumber(v) then
                 --~ handle(format("%s %s=%s,",depth,key(k),v))
                     if type(k) == "number" then -- or find(k,"^%d+$") then
                         if hexify then
@@ -1036,7 +1074,7 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     end
 end
 
-local function flatten(t,f,complete)
+local function flatten(t,f,complete) -- is this used? meybe a variant with next, ...
     for i=1,#t do
         local v = t[i]
         if type(v) == "table" then
@@ -1064,6 +1102,24 @@ function table.unnest(t) -- bad name
 end
 
 table.flatten_one_level = table.unnest
+
+-- a better one:
+
+local function flattened(t,f)
+    if not f then
+        f = { }
+    end
+    for k, v in next, t do
+        if type(v) == "table" then
+            flattened(v,f)
+        else
+            f[k] = v
+        end
+    end
+    return f
+end
+
+table.flattened = flattened
 
 -- the next three may disappear
 
@@ -1200,7 +1256,7 @@ function table.clone(t,p) -- t is optional or nil or table
     elseif not t then
         t = { }
     end
-    setmetatable(t, { __index = function(_,key) return p[key] end })
+    setmetatable(t, { __index = function(_,key) return p[key] end }) -- why not __index = p ?
     return t
 end
 
@@ -1615,7 +1671,8 @@ if not modules then modules = { } end modules ['l-os'] = {
     license   = "see context related readme files"
 }
 
-local find = string.find
+local find, format = string.find, string.format
+local random, ceil = math.random, math.ceil
 
 function os.resultof(command)
     return io.popen(command,"r"):read("*all")
@@ -1712,6 +1769,8 @@ function os.currentplatform(name,default)
             elseif name == "macosx" then
                 if find(architecture,"i386") then
                     platform = "osx-intel"
+                elseif find(architecture,"x86_64") then
+                    platform = "osx-64"
                 else
                     platform = "osx-ppc"
                 end
@@ -1736,6 +1795,29 @@ function os.currentplatform(name,default)
         end
     end
     return platform
+end
+
+-- beware, we set the randomseed
+--
+
+-- from wikipedia: Version 4 UUIDs use a scheme relying only on random numbers. This algorithm sets the
+-- version number as well as two reserved bits. All other bits are set using a random or pseudorandom
+-- data source. Version 4 UUIDs have the form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx with hexadecimal
+-- digits x and hexadecimal digits 8, 9, A, or B for y. e.g. f47ac10b-58cc-4372-a567-0e02b2c3d479.
+--
+-- as we don't call this function too often there is not so much risk on repetition
+
+
+local t = { 8, 9, "a", "b" }
+
+function os.uuid()
+    return format("%04x%04x-4%03x-%s%03x-%04x-%04x%04x%04x",
+        random(0xFFFF),random(0xFFFF),
+        random(0x0FFF),
+        t[ceil(random(4))] or 8,random(0x0FFF),
+        random(0xFFFF),
+        random(0xFFFF),random(0xFFFF),random(0xFFFF)
+    )
 end
 
 
@@ -1778,8 +1860,12 @@ function file.dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
 end
 
+--~ function file.basename(name)
+--~     return match(name,"^.+[/\\](.-)$") or name
+--~ end
+
 function file.basename(name)
-    return match(name,"^.+[/\\](.-)$") or name
+    return match(name,"^.*[/\\](.-)$") or name
 end
 
 function file.nameonly(name)
@@ -1857,6 +1943,7 @@ function file.collapse_path(str)
     return str
 end
 
+--~ print(file.collapse_path("/a"))
 --~ print(file.collapse_path("a/./b/.."))
 --~ print(file.collapse_path("a/aa/../b/bb"))
 --~ print(file.collapse_path("a/../.."))
@@ -3028,9 +3115,9 @@ function aux.make_settings_to_hash_pattern(set,how)
     end
 end
 
-function aux.settings_to_hash(str)
+function aux.settings_to_hash(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         if moretolerant then
             pattern_b_s:match(str)
         else
@@ -3042,9 +3129,9 @@ function aux.settings_to_hash(str)
     end
 end
 
-function aux.settings_to_hash_tolerant(str)
+function aux.settings_to_hash_tolerant(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         pattern_b_s:match(str)
         return hash
     else
@@ -3052,9 +3139,9 @@ function aux.settings_to_hash_tolerant(str)
     end
 end
 
-function aux.settings_to_hash_strict(str)
+function aux.settings_to_hash_strict(str,existing)
     if str and str ~= "" then
-        hash = { }
+        hash = existing or { }
         pattern_c_s:match(str)
         return next(hash) and hash
     else
@@ -3142,7 +3229,7 @@ function aux.getparameters(self,class,parentclass,settings)
         sc = table.clone(self[parent])
         self[class] = sc
     end
-    aux.add_settings_to_array(sc, settings)
+    aux.settings_to_hash(settings,sc)
 end
 
 -- temporary here
@@ -3230,12 +3317,15 @@ if not modules then modules = { } end modules ['trac-tra'] = {
 -- bound to a variable, like node.new, node.copy etc (contrary to for instance
 -- node.has_attribute which is bound to a has_attribute local variable in mkiv)
 
+local getinfo = debug.getinfo
+local type, next = type, next
+local concat = table.concat
+local format, find, lower, gmatch, gsub = string.format, string.find, string.lower, string.gmatch, string.gsub
+
 debugger = debugger or { }
 
 local counters = { }
 local names = { }
-local getinfo = debug.getinfo
-local format, find, lower, gmatch, gsub = string.format, string.find, string.lower, string.gmatch, string.gsub
 
 -- one
 
@@ -3363,11 +3453,11 @@ end
 --~ print("")
 --~ debugger.showstats(print,3)
 
-trackers = trackers or { }
+setters      = setters      or { }
+setters.data = setters.data or { }
 
-local data, done = { }, { }
-
-local function set(what,value)
+local function set(t,what,value)
+    local data, done = t.data, t.done
     if type(what) == "string" then
         what = aux.settings_to_array(what) -- inefficient but ok
     end
@@ -3386,28 +3476,30 @@ local function set(what,value)
     end
 end
 
-local function reset()
-    for d, f in next, data do
+local function reset(t)
+    for d, f in next, t.data do
         for i=1,#f do
             f[i](false)
         end
     end
 end
 
-local function enable(what)
-    set(what,true)
+local function enable(t,what)
+    set(t,what,true)
 end
 
-local function disable(what)
+local function disable(t,what)
+    local data = t.data
     if not what or what == "" then
-        done = { }
-        reset()
+        t.done = { }
+        reset(t)
     else
-        set(what,false)
+        set(t,what,false)
     end
 end
 
-function trackers.register(what,...)
+function setters.register(t,what,...)
+    local data = t.data
     what = lower(what)
     local w = data[what]
     if not w then
@@ -3419,32 +3511,32 @@ function trackers.register(what,...)
         if typ == "function" then
             w[#w+1] = fnc
         elseif typ == "string" then
-            w[#w+1] = function(value) set(fnc,value,nesting) end
+            w[#w+1] = function(value) set(t,fnc,value,nesting) end
         end
     end
 end
 
-function trackers.enable(what)
-    local e = trackers.enable
-    trackers.enable, done = enable, { }
-    enable(string.simpleesc(what))
-    trackers.enable, done = e, { }
+function setters.enable(t,what)
+    local e = t.enable
+    t.enable, t.done = enable, { }
+    enable(t,string.simpleesc(what))
+    t.enable, t.done = e, { }
 end
 
-function trackers.disable(what)
-    local e = trackers.disable
-    trackers.disable, done = disable, { }
-    disable(string.simpleesc(what))
-    trackers.disable, done = e, { }
+function setters.disable(t,what)
+    local e = t.disable
+    t.disable, t.done = disable, { }
+    disable(t,string.simpleesc(what))
+    t.disable, t.done = e, { }
 end
 
-function trackers.reset()
-    done = { }
-    reset()
+function setters.reset(t)
+    t.done = { }
+    reset(t)
 end
 
-function trackers.list() -- pattern
-    local list = table.sortedkeys(data)
+function setters.list(t) -- pattern
+    local list = table.sortedkeys(t.data)
     local user, system = { }, { }
     for l=1,#list do
         local what = list[l]
@@ -3456,6 +3548,139 @@ function trackers.list() -- pattern
     end
     return user, system
 end
+
+function setters.show(t)
+    commands.writestatus("","")
+    for k,v in ipairs(setters.list(t)) do
+        commands.writestatus(t.name,v)
+    end
+    commands.writestatus("","")
+end
+
+-- we could have used a bit of oo and the trackers:enable syntax but
+-- there is already a lot of code around using the singluar tracker
+
+function setters.new(name)
+    local t
+    t = {
+        data     = { },
+        name     = name,
+        enable   = function(...) setters.enable  (t,...) end,
+        disable  = function(...) setters.disable (t,...) end,
+        register = function(...) setters.register(t,...) end,
+        list     = function(...) setters.list    (t,...) end,
+        show     = function(...) setters.show    (t,...) end,
+    }
+    setters.data[name] = t
+    return t
+end
+
+trackers   = setters.new("trackers")
+directives = setters.new("directives")
+
+-- nice trick: we overload two of the directives related functions with variants that
+-- do tracing (itself using a tracker) .. proof of concept
+
+local trace_directives = false local trace_directives = false  trackers.register("system.directives", function(v) trace_directives = v end)
+
+local e = directives.enable
+local d = directives.disable
+
+function directives.enable(...)
+    commands.writestatus("directives","enabling: %s",concat({...}," "))
+    e(...)
+end
+
+function directives.disable(...)
+    commands.writestatus("directives","disabling: %s",concat({...}," "))
+    d(...)
+end
+
+--~ -- old code:
+--
+--~ trackers = trackers or { }
+--~ local data, done = { }, { }
+--~ local function set(what,value)
+--~     if type(what) == "string" then
+--~         what = aux.settings_to_array(what) -- inefficient but ok
+--~     end
+--~     for i=1,#what do
+--~         local w = what[i]
+--~         for d, f in next, data do
+--~             if done[d] then
+--~                 -- prevent recursion due to wildcards
+--~             elseif find(d,w) then
+--~                 done[d] = true
+--~                 for i=1,#f do
+--~                     f[i](value)
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+--~ local function reset()
+--~     for d, f in next, data do
+--~         for i=1,#f do
+--~             f[i](false)
+--~         end
+--~     end
+--~ end
+--~ local function enable(what)
+--~     set(what,true)
+--~ end
+--~ local function disable(what)
+--~     if not what or what == "" then
+--~         done = { }
+--~         reset()
+--~     else
+--~         set(what,false)
+--~     end
+--~ end
+--~ function trackers.register(what,...)
+--~     what = lower(what)
+--~     local w = data[what]
+--~     if not w then
+--~         w = { }
+--~         data[what] = w
+--~     end
+--~     for _, fnc in next, { ... } do
+--~         local typ = type(fnc)
+--~         if typ == "function" then
+--~             w[#w+1] = fnc
+--~         elseif typ == "string" then
+--~             w[#w+1] = function(value) set(fnc,value,nesting) end
+--~         end
+--~     end
+--~ end
+--~ function trackers.enable(what)
+--~     local e = trackers.enable
+--~     trackers.enable, done = enable, { }
+--~     enable(string.simpleesc(what))
+--~     trackers.enable, done = e, { }
+--~ end
+--~ function trackers.disable(what)
+--~     local e = trackers.disable
+--~     trackers.disable, done = disable, { }
+--~     disable(string.simpleesc(what))
+--~     trackers.disable, done = e, { }
+--~ end
+--~ function trackers.reset()
+--~     done = { }
+--~     reset()
+--~ end
+--~ function trackers.list() -- pattern
+--~     local list = table.sortedkeys(data)
+--~     local user, system = { }, { }
+--~     for l=1,#list do
+--~         local what = list[l]
+--~         if find(what,"^%*") then
+--~             system[#system+1] = what
+--~         else
+--~             user[#user+1] = what
+--~         end
+--~     end
+--~     return user, system
+--~ end
 
 
 end -- of closure
@@ -3908,6 +4133,7 @@ function statistics.timed(action,report)
 end
 
 
+
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
@@ -4240,6 +4466,8 @@ if not modules then modules = { } end modules ['data-inp'] = {
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
+
+local collapse_path = file.collapse_path
 
 local trace_locating, trace_detail, trace_verbose  = false, false, false
 
@@ -4629,7 +4857,7 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
     end
     if ok then
         local function validate(s)
-            s = file.collapse_path(s)
+            s = collapse_path(s)
             return s ~= "" and not find(s,dummy_path_expr) and s
         end
         for k=1,#pathlist do
@@ -4638,7 +4866,7 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
     else
         for k=1,#pathlist do
             for p in gmatch(pathlist[k],"([^,]+)") do
-                p = file.collapse_path(p)
+                p = collapse_path(p)
                 if p ~= "" then newlist[#newlist+1] = p end
             end
         end
@@ -4703,9 +4931,9 @@ local function identify_own()
     local ownpath = resolvers.getownpath() or lfs.currentdir()
     local ie = instance.environment
     if ownpath then
-        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = file.collapse_path(ownpath) end
-        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = file.collapse_path(ownpath .. "/..") end
-        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = file.collapse_path(ownpath .. "/../..") end
+        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = collapse_path(ownpath) end
+        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = collapse_path(ownpath .. "/..") end
+        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = collapse_path(ownpath .. "/../..") end
     else
         logs.report("fileio","error: unable to locate ownpath")
         os.exit()
@@ -4734,7 +4962,7 @@ function resolvers.identify_cnf()
         local function locate(filename,list)
             for i=1,#t do
                 local ti = t[i]
-                local texmfcnf = file.collapse_path(file.join(ti,filename))
+                local texmfcnf = collapse_path(file.join(ti,filename))
                 if lfs.isfile(texmfcnf) then
                     list[#list+1] = texmfcnf
                 end
@@ -4746,11 +4974,11 @@ function resolvers.identify_cnf()
 end
 
 local function load_cnf_file(fname)
+    -- why don't we just read the file from the cache
+    -- we need to switch to the lua file
     fname = resolvers.clean_path(fname)
     local lname = file.replacesuffix(fname,'lua')
-    local f = io.open(lname)
-    if f then -- this will go
-        f:close()
+    if lfs.isfile(lname) then
         local dname = file.dirname(fname)
         if not instance.configuration[dname] then
             resolvers.load_data(dname,'configuration',lname and file.basename(lname))
@@ -4815,13 +5043,17 @@ local function collapse_cnf_data() -- potential optimization: pass start index (
     end
 end
 
-function resolvers.load_cnf()
-    local function loadoldconfigdata()
-        for _, fname in ipairs(instance.cnffiles) do
-            load_cnf_file(fname)
-        end
+local function loadoldconfigdata()
+    for _, fname in ipairs(instance.cnffiles) do
+        load_cnf_file(fname)
     end
+end
+
+function resolvers.load_cnf()
     -- instance.cnffiles contain complete names now !
+    -- we still use a funny mix of cnf and new but soon
+    -- we will switch to lua exclusively as we only use
+    -- the file to collect the tree roots
     if #instance.cnffiles == 0 then
         if trace_verbose then
             logs.report("fileio","no cnf files found (TEXMFCNF may not be set/known)")
@@ -4829,12 +5061,12 @@ function resolvers.load_cnf()
     else
         instance.rootpath = instance.cnffiles[1]
         for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.cnffiles[k] = collapse_path(gsub(fname,"\\",'/'))
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
-        instance.rootpath = file.collapse_path(instance.rootpath)
+        instance.rootpath = collapse_path(instance.rootpath)
         if instance.diskcache and not instance.renewcache then
             resolvers.loadoldconfig(instance.cnffiles)
             if instance.loaderror then
@@ -4858,12 +5090,12 @@ function resolvers.load_lua()
     else
         instance.rootpath = instance.luafiles[1]
         for k,fname in ipairs(instance.luafiles) do
-            instance.luafiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.luafiles[k] = collapse_path(gsub(fname,"\\",'/'))
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
-        instance.rootpath = file.collapse_path(instance.rootpath)
+        instance.rootpath = collapse_path(instance.rootpath)
         resolvers.loadnewconfig()
         collapse_cnf_data()
     end
@@ -4925,7 +5157,7 @@ function resolvers.locatelists()
         if trace_verbose then
             logs.report("fileio","locating list of %s",path)
         end
-        resolvers.locatedatabase(file.collapse_path(path))
+        resolvers.locatedatabase(collapse_path(path))
     end
 end
 
@@ -5184,6 +5416,7 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
             date    = os.date("%Y-%m-%d"),
             time    = os.date("%H:%M:%S"),
             content = files,
+            uuid    = os.uuid(),
         }
         local ok = io.savedata(luaname,resolvers.serialize(data))
         if ok then
@@ -5206,6 +5439,12 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
     end
 end
 
+local data_state = { }
+
+function resolvers.data_state()
+    return data_state or { }
+end
+
 function resolvers.load_data(pathname,dataname,filename,makename) -- untested without cache overload
     filename = ((not filename or (filename == "")) and dataname) or filename
     filename = (makename and makename(dataname,filename)) or file.join(pathname,filename)
@@ -5213,6 +5452,7 @@ function resolvers.load_data(pathname,dataname,filename,makename) -- untested wi
     if blob then
         local data = blob()
         if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
+            data_state[#data_state+1] = data.uuid
             if trace_verbose then
                 logs.report("fileio","loading %s for %s from %s",dataname,pathname,filename)
             end
@@ -5467,7 +5707,7 @@ function resolvers.clean_path_list(str)
     local t = resolvers.expanded_path_list(str)
     if t then
         for i=1,#t do
-            t[i] = file.collapse_path(resolvers.clean_path(t[i]))
+            t[i] = collapse_path(resolvers.clean_path(t[i]))
         end
     end
     return t
@@ -5664,8 +5904,8 @@ end
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = file.collapse_path(filename)  -- elsewhere
-    filename = file.collapse_path(gsub(filename,"\\","/")) -- elsewhere
+    filename = collapse_path(filename)  -- elsewhere
+    filename = collapse_path(gsub(filename,"\\","/")) -- elsewhere
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -5896,7 +6136,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         end
     end
     for k=1,#result do
-        result[k] = file.collapse_path(result[k])
+        result[k] = collapse_path(result[k])
     end
     if instance.remember then
         instance.found[stamp] = result
@@ -6048,9 +6288,9 @@ function resolvers.load(option)
     statistics.starttiming(instance)
     resolvers.resetconfig()
     resolvers.identify_cnf()
-    resolvers.load_lua()
+    resolvers.load_lua() -- will become the new method
     resolvers.expand_variables()
-    resolvers.load_cnf()
+    resolvers.load_cnf() -- will be skipped when we have a lua file
     resolvers.expand_variables()
     if option ~= "nofiles" then
         resolvers.load_hash()
@@ -6397,6 +6637,7 @@ function caches.savedata(filepath,filename,data,raw)
     if raw then
         reduce, simplify = false, false
     end
+    data.cache_uuid = os.uuid()
     if caches.direct then
         file.savedata(tmaname, table.serialize(data,'return',false,true,false)) -- no hex
     else

@@ -43,7 +43,8 @@
    \fi}
 
 \def\setcharacterspacing
-  {\ctxlua{spacings.enabled=true}%
+%   {\ctxlua{spacings.enabled=true}%
+  {\ctxlua{spacings.enable()}%
    \gdef\setcharacterspacing[##1]{\dosetattribute{spacing}{\csname\??ch:##1\endcsname}}%
    \setcharacterspacing}
 

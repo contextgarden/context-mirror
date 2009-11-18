@@ -20,7 +20,8 @@ tasks.appendaction("processors", "characters",  "chars.handle_breakpoints")     
 tasks.appendaction("processors", "characters",  "scripts.preprocess")
 
 tasks.appendaction("processors", "words",       "kernel.hyphenation")
-tasks.appendaction("processors", "words",       "languages.words.check")
+tasks.appendaction("processors", "words",       "languages.words.check")                     -- * disabled
+
 
 tasks.appendaction("processors", "fonts",       "nodes.process_characters")
 tasks.appendaction("processors", "fonts",       "nodes.inject_kerns")
@@ -28,21 +29,18 @@ tasks.appendaction("processors", "fonts",       "nodes.protect_glyphs", nil, "no
 tasks.appendaction("processors", "fonts",       "kernel.ligaturing")
 tasks.appendaction("processors", "fonts",       "kernel.kerning")
 
-tasks.appendaction("processors", "lists",       "lists.handle_spacing")                      -- *
-tasks.appendaction("processors", "lists",       "lists.handle_kerning")                      -- *
+tasks.appendaction("processors", "lists",       "lists.handle_spacing")                      -- * disabled
+tasks.appendaction("processors", "lists",       "lists.handle_kerning")                      -- * disabled
 
 tasks.appendaction("shipouts",   "normalizers", "nodes.cleanup_page")
 tasks.appendaction("shipouts",   "normalizers", "nodes.add_references")                      -- *
 tasks.appendaction("shipouts",   "normalizers", "nodes.add_destinations")                    -- *
-tasks.appendaction("shipouts",   "normalizers", "nodes.rules.process")                       -- *
-tasks.appendaction("shipouts",   "normalizers", "nodes.shifts.process")                      -- *
-
-tasks.disableaction("shipouts",                 "nodes.rules.process")                       -- * only kick in when used
-tasks.disableaction("shipouts",                 "nodes.shifts.process")                      -- * only kick in when used
+tasks.appendaction("shipouts",   "normalizers", "nodes.rules.process")                       -- * disabled
+tasks.appendaction("shipouts",   "normalizers", "nodes.shifts.process")                      -- * disabled
 
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_color")
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_transparency")
-tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_colorintent")
+tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_colorintent")               -- *
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_negative")                  -- *
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_effect")                    -- *
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_viewerlayer")               -- *
@@ -56,3 +54,11 @@ tasks.appendaction("math",       "builders",    "noads.mlist_to_hlist")
 -- quite experimental
 
 tasks.appendaction("finalizers", "lists",       "nodes.repackage_graphicvadjust")            -- *
+
+-- speedup: see * -- only kick in when used
+
+tasks.disableaction("processors", "languages.words.check")
+tasks.disableaction("processors", "lists.handle_spacing")
+tasks.disableaction("processors", "lists.handle_kerning")
+tasks.disableaction("shipouts",   "nodes.rules.process")
+tasks.disableaction("shipouts",   "nodes.shifts.process")

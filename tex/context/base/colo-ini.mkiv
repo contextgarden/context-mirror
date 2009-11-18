@@ -143,7 +143,7 @@
 \unexpanded\def\color              [#1]{\groupedcommand{\doactivatecolor{#1}}{}}
 \unexpanded\def\startcolor         [#1]{\begingroup\doactivatecolor{#1}}
 \unexpanded\def\stopcolor              {\endgroup}
-\unexpanded\def\graycolor          [#1]{\groupedcommand{\setcolormodel{gray}\getvalue{#1}}{}}
+\unexpanded\def\graycolor          [#1]{\groupedcommand{\dosetcolormodel{gray}\getvalue{#1}}{}}
 \unexpanded\def\colored            [#1]{\groupedcommand{\definecolor[@colored@][#1]\doactivatecolor{@colored@}}{}}
 \unexpanded\def\fastcolored      [#1]#2{\begingroup\dodefinefastcolor[@colored@][#1]\doactivatecolor{@colored@}#2\endgroup}
            \def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}
@@ -693,7 +693,10 @@
 
 \def\setcolormodel#1%
   {\showcolormessage\m!colors1{#1}%
-   \currentcolormodel\ctxlua{tex.print(colors.setmodel('#1',\ifweightGRAY true\else false\fi))}%
+   \dosetcolormodel{#1}}
+
+\def\dosetcolormodel#1% no message
+  {\currentcolormodel\ctxlua{tex.print(colors.setmodel('#1',\ifweightGRAY true\else false\fi))}%
    \dosetattribute{colormodel}{\the\currentcolormodel}}
 
 \setcolormodel{all}
