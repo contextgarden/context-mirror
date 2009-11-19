@@ -20,11 +20,11 @@ local texworkspaths = {
 }
 
 local texworkssignal = "texworks-context.rme"
-local texworkininame = "TeXworks.ini"
+local texworkininame = "texworks.ini"
 
 function scripts.texworks.start(indeed)
     local is_mswin = os.platform == "windows"
-    local workname = (is_mswin and "texworks.exe") or "TeXworks"
+    local workname = (is_mswin and "texworks.exe") or "texworks"
     local fullname = nil
     local binpaths = file.split_path(os.getenv("PATH")) or file.split_path(os.getenv("path"))
     local datapath = resolvers.find_file(texworkssignal,"other text files") or ""

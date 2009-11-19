@@ -157,7 +157,7 @@ function joblists.flush(data,options) -- maybe pass the settings differently
 --~         texsprint(ctxcatcodes,format("\\start%ssection{%s}",kind,sublist.tag))
         for d=1,#data do
             local entry = data[d].definition
-            texsprint(ctxcatcodes,format("\\%sentry{%s}{%s}{%s}",kind,d,entry.tag,entry.synonym))
+            texsprint(ctxcatcodes,format("\\%sentry{%s}{%s}{%s}{%s}",kind,d,entry.tag,entry.synonym,entry.meaning or ""))
         end
 --~         texsprint(ctxcatcodes,format("\\stop%ssection",kind))
     end

@@ -293,7 +293,6 @@ do
     end
     -- maybe move texsprint to tex
     function figures.get(category,tag,default)
---~ print(table.serialize(figuredata))
         local value = figuredata[category]
         value = value and value[tag]
         if not value or value == "" or value == true then
@@ -597,14 +596,14 @@ function figures.done(data)
     return data
 end
 
-function figures.dummy(data) -- fails
+function figures.dummy(data)
 --~         data = data or figures.current()
 --~         local dr, du, ds = data.request, data.used, data.status
 --~         local r = node.new("rule")
 --~         r.width  = du.width  or figures.defaultwidth
 --~         r.height = du.height or figures.defaultheight
 --~         r.depth  = du.depth  or figures.defaultdepth
---~         tex.box[figures.boxnumber] = node.write(r)
+--~         tex.box[figures.boxnumber] = node.hpack(node.write(r))
     texsprint(ctxcatcodes,"\\emptyfoundexternalfigure")
 end
 
@@ -669,10 +668,6 @@ function figures.includers.generic(data)
         local n = figures.boxnumber
         tex.box[n] = node.hpack(img.node(figure))
      -- tex.box[n] = img.node(figure) -- img.write(figure) -- assigning img.node directly no longer valid
---~ local inode = img.node(figure)
---~ print(table.serialize(nodes.totable(inode)))
---~ tex.box[n] = inode
---~ print(table.serialize(nodes.totable(tex.box[n])))
         tex.wd[n], tex.ht[n], tex.dp[n] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         ds.objectnumber = figure.objnum
         texsprint(ctxcatcodes,"\\relocateexternalfigure")

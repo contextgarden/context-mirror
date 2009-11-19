@@ -388,7 +388,7 @@ local function splitat(separator,single)
         separator = P(separator)
         if single then
             local other, any = C((1 - separator)^0), P(1)
-            splitter = other * (separator * C(any^0) + "")
+            splitter = other * (separator * C(any^0) + "") -- ?
             splitters_s[separator] = splitter
         else
             local other = C((1 - separator)^0)
@@ -407,6 +407,19 @@ function string:split(separator)
     local c = cache[separator]
     if not c then
         c = Ct(splitat(separator))
+        cache[separator] = c
+    end
+    return c:match(self)
+end
+
+local cache = { }
+
+function string:checkedsplit(separator)
+    local c = cache[separator]
+    if not c then
+        separator = P(separator)
+        local other = C((1 - separator)^1)
+        c = Ct(other * (separator^1 + other)^1)
         cache[separator] = c
     end
     return c:match(self)
@@ -1920,19 +1933,38 @@ end
 file.is_readable = file.isreadable
 file.is_writable = file.iswritable
 
--- todo: lpeg
+local checkedsplit = string.checkedsplit
 
-function file.split_path(str)
-    local t = { }
-    str = gsub(str,"\\", "/")
-    str = gsub(str,"(%a):([;/])", "%1\001%2")
-    for name in gmatch(str,"([^;:]+)") do
-        if name ~= "" then
-            t[#t+1] = gsub(name,"\001",":")
-        end
+local winpath   = (lpeg.R("AZ","az") * lpeg.P(":") * lpeg.P("/"))
+local separator = lpeg.P(":") + lpeg.P(";")
+local rest      = (1-separator)^1
+local somepath  = winpath * rest + rest
+local splitter  = lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
+
+function file.split_path(str,separator)
+    str = gsub(str,"\\","/")
+    if separator then
+        return checkedsplit(str,separator) or { }
+    else
+        return splitter:match(str) or { }
     end
-    return t
 end
+
+-- special one for private usage
+
+--~ local winpath = lpeg.P("!!")^-1 * winpath
+--~ local splitter= lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
+
+--~ function file.split_kpse_path(str)
+--~     str = gsub(str,"\\","/")
+--~     return splitter:match(str) or { }
+--~ end
+
+-- str = [[/opt/texlive/2009/bin/i386-linux:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/mine/bin:/home/mine/.local/bin]]
+--
+-- str = os.getenv("PATH") --
+-- str = [[/opt/texlive/2009/bin/i386-linux:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/mine/bin:/home/mine/.local/bin]]
+-- str = [[c:/oeps:whatever]]
 
 function file.join_path(tab)
     return concat(tab,io.pathseparator) -- can have trailing //
@@ -7574,6 +7606,11 @@ local function splitpathexpr(str, t, validate)
     return t
 end
 
+local function validate(s)
+    s = collapse_path(s)
+    return s ~= "" and not find(s,dummy_path_expr) and s
+end
+
 local function expanded_path_from_list(pathlist) -- maybe not a list, just a path
     -- a previous version fed back into pathlist
     local newlist, ok = { }, false
@@ -7584,10 +7621,6 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
         end
     end
     if ok then
-        local function validate(s)
-            s = collapse_path(s)
-            return s ~= "" and not find(s,dummy_path_expr) and s
-        end
         for k=1,#pathlist do
             splitpathexpr(pathlist[k],newlist,validate)
         end
@@ -8030,13 +8063,43 @@ function resolvers.joinconfig()
         end
     end
 end
-function resolvers.split_path(str)
+
+local winpath   = lpeg.P("!!")^-1 * (lpeg.R("AZ","az") * lpeg.P(":") * lpeg.P("/"))
+local separator = lpeg.P(":") + lpeg.P(";")
+local rest      = (1-separator)^1
+local somepath  = winpath * rest + rest
+local splitter  = lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
+
+local function split_kpse_path(str)
+    str = gsub(str,"\\","/")
+    return splitter:match(str) or { }
+end
+
+local cache = { } -- we assume stable strings
+
+function resolvers.split_path(str) -- overkill but i need to check this module anyway
     if type(str) == 'table' then
         return str
     else
-        return file.split_path(str)
+        local s = cache[str]
+        if s then
+            return s -- happens seldom
+        else
+            s = { }
+        end
+        local t = { }
+        splitpathexpr(str,t)
+        for _, p in ipairs(t) do
+            for _, pp in ipairs(split_kpse_path(p)) do
+                s[#s+1] = pp
+            end
+        end
+        cache[str] = s
+        return s
+    --~         return file.split_path(str)
     end
 end
+
 function resolvers.join_path(str)
     if type(str) == 'table' then
         return file.join_path(str)

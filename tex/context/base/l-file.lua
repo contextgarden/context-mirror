@@ -84,19 +84,38 @@ end
 file.is_readable = file.isreadable
 file.is_writable = file.iswritable
 
--- todo: lpeg
+local checkedsplit = string.checkedsplit
 
-function file.split_path(str)
-    local t = { }
-    str = gsub(str,"\\", "/")
-    str = gsub(str,"(%a):([;/])", "%1\001%2")
-    for name in gmatch(str,"([^;:]+)") do
-        if name ~= "" then
-            t[#t+1] = gsub(name,"\001",":")
-        end
+local winpath   = (lpeg.R("AZ","az") * lpeg.P(":") * lpeg.P("/"))
+local separator = lpeg.P(":") + lpeg.P(";")
+local rest      = (1-separator)^1
+local somepath  = winpath * rest + rest
+local splitter  = lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
+
+function file.split_path(str,separator)
+    str = gsub(str,"\\","/")
+    if separator then
+        return checkedsplit(str,separator) or { }
+    else
+        return splitter:match(str) or { }
     end
-    return t
 end
+
+-- special one for private usage
+
+--~ local winpath = lpeg.P("!!")^-1 * winpath
+--~ local splitter= lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
+
+--~ function file.split_kpse_path(str)
+--~     str = gsub(str,"\\","/")
+--~     return splitter:match(str) or { }
+--~ end
+
+-- str = [[/opt/texlive/2009/bin/i386-linux:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/mine/bin:/home/mine/.local/bin]]
+--
+-- str = os.getenv("PATH") --
+-- str = [[/opt/texlive/2009/bin/i386-linux:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/mine/bin:/home/mine/.local/bin]]
+-- str = [[c:/oeps:whatever]]
 
 function file.join_path(tab)
     return concat(tab,io.pathseparator) -- can have trailing //

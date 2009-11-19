@@ -15,14 +15,10 @@ dofile(resolvers.find_file("font-mis.lua","tex"))
 scripts       = scripts       or { }
 scripts.fonts = scripts.fonts or { }
 
-function scripts.fonts.reload(verbose)
-    fonts.names.load(true,verbose)
-end
-
-function scripts.fonts.names(name)
+function fonts.names.simple()
     local simpleversion = 1.001
     local simplelist = { "ttf", "otf", "ttc", "dfont" }
-    name = name or "luatex-fonts-names.lua"
+    local name = "luatex-fonts-names.lua"
     fonts.names.filters.list = simplelist
     fonts.names.version = simpleversion -- this number is the same as in font-dum.lua
     logs.report("fontnames","generating font database for 'luatex-fonts' version %s",fonts.names.version)
@@ -50,6 +46,14 @@ function scripts.fonts.names(name)
         end
     elseif lfs.isfile(name) then
         os.remove(name)
+    end
+end
+
+function scripts.fonts.reload()
+    if environment.argument("simple") then
+        fonts.names.simple()
+    else
+        fonts.names.load(true)
     end
 end
 
@@ -213,6 +217,18 @@ function scripts.fonts.list()
         else
             logs.report("fontnames","not supported: --list --spec <no specification>",name)
         end
+    elseif environment.argument("file") then
+        if pattern then
+            --~ mtxrun --script font --list --file --pattern=*somename*
+            list_specifications(fonts.names.collectfiles(make_pattern(pattern),reload,all))
+        elseif filter then
+            logs.report("fontnames","not supported: --list --spec",name)
+        elseif given then
+            --~ mtxrun --script font --list --file somename
+            list_specifications(fonts.names.collectfiles(given,reload,all))
+        else
+            logs.report("fontnames","not supported: --list --file <no specification>",name)
+        end
     elseif pattern then
         --~ mtxrun --script font --list --pattern=*somename*
         list_matches(fonts.names.list(make_pattern(pattern),reload,all))
@@ -268,21 +284,22 @@ end
 logs.extendbanner("Font Tools 0.21",true)
 
 messages.help = [[
---reload              generate new font database
 --save                save open type font in raw table
---names               generate 'luatex-fonts-names.lua' (not for context!)
---list                list installed fonts (show info)
 
---name                filter by name
---spec                filter by spec
+--reload              generate new font database
+--reload --simple     generate 'luatex-fonts-names.lua' (not for context!)
+
+--list --name         list installed fonts, filter by name [--pattern]
+--list --spec         list installed fonts, filter by spec [--filter]
+--list --file         list installed fonts, filter by file [--pattern]
 
 --pattern=str         filter files using pattern
 --filter=list         key-value pairs
---all                 provide alternatives
+--all                 show all found instances
 --info                give more details
 --track=list          enable trackers
 
-examples:
+examples of searches:
 
 mtxrun --script font --list somename (== --pattern=*somename*)
 
@@ -294,20 +311,26 @@ mtxrun --script font --list --spec somename-bold-italic
 mtxrun --script font --list --spec --pattern=*somename*
 mtxrun --script font --list --spec --filter="fontname=somename"
 mtxrun --script font --list --spec --filter="familyname=somename,weight=bold,style=italic,width=condensed"
+
+mtxrun --script font --list --file somename
+mtxrun --script font --list --file --pattern=*somename*
 ]]
 
 local track = environment.argument("track")
 
 if track then trackers.enable(track) end
 
-if environment.argument("reload") then
-    scripts.fonts.reload(true)
-elseif environment.argument("names") then
-    scripts.fonts.names()
+if environment.argument("names") then
+    environment.setargument("reload",true)
+    environment.setargument("simple",true)
+end
+
+if environment.argument("list") then
+    scripts.fonts.list()
+elseif environment.argument("reload") then
+    scripts.fonts.reload()
 elseif environment.argument("save") then
     scripts.fonts.save()
-elseif environment.argument("list") then
-    scripts.fonts.list()
 else
     logs.help(messages.help)
 end

@@ -217,10 +217,10 @@
 \let\startsynonymsection\gobbleoneargument
 \let\stopsynonymsection \relax
 
-\unexpanded\def\synonymentry#1#2#3%
+\unexpanded\def\synonymentry#1#2#3#4%
 %   {\syndef{\dosetsynonymattributes\c!textstyle\c!textcolor#2}#3\par}
 %   {\startsyndef{#2}#3\stopsyndef}
-  {\syndef{#2}#3\par}
+  {\syndef{#3}#4\par}
 
 \let\currentsorting\empty
 
@@ -359,7 +359,7 @@
 \let\startsortingsection\gobbleoneargument
 \let\stopsortingsection \relax
 
-\def\sortingentry#1#2#3%
+\def\sortingentry#1#2#3#4% #4 is meaning but empty here
   {\doifelsenothing{\sortingparameter\c!command}
      {\begingroup\dosetsortingattributes\c!style\c!color#3\endgroup\par} % todo
      {\sortingparameter\c!command{#1}{#2}{#3}}}

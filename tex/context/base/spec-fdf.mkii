@@ -3275,6 +3275,9 @@
    \doifobjectreferencefoundelse{FDF}{docuextgstates}
      {\doPDFgetobjectreference{FDF}{docuextgstates}\PDFobjectreference
       \xdef\collectedPDFresources{\collectedPDFresources/ExtGState \PDFobjectreference}}\donothing
+   \doifobjectreferencefoundelse{FDF}{docupatterns}
+     {\doPDFgetobjectreference{FDF}{docupatterns}\PDFobjectreference
+      \xdef\collectedPDFresources{\collectedPDFresources/Pattern \PDFobjectreference}}\donothing
    \doifobjectreferencefoundelse{FDF}{colorspaces}
      {\doPDFgetobjectreference{FDF}{colorspaces}\PDFobjectreference
       \xdef\collectedPDFresources{\collectedPDFresources/ColorSpace \PDFobjectreference}}\donothing

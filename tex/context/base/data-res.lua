@@ -416,6 +416,11 @@ local function splitpathexpr(str, t, validate)
     return t
 end
 
+local function validate(s)
+    s = collapse_path(s)
+    return s ~= "" and not find(s,dummy_path_expr) and s
+end
+
 local function expanded_path_from_list(pathlist) -- maybe not a list, just a path
     -- a previous version fed back into pathlist
     local newlist, ok = { }, false
@@ -426,10 +431,6 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
         end
     end
     if ok then
-        local function validate(s)
-            s = collapse_path(s)
-            return s ~= "" and not find(s,dummy_path_expr) and s
-        end
         for k=1,#pathlist do
             splitpathexpr(pathlist[k],newlist,validate)
         end
@@ -872,13 +873,43 @@ function resolvers.joinconfig()
         end
     end
 end
-function resolvers.split_path(str)
+
+local winpath   = lpeg.P("!!")^-1 * (lpeg.R("AZ","az") * lpeg.P(":") * lpeg.P("/"))
+local separator = lpeg.P(":") + lpeg.P(";")
+local rest      = (1-separator)^1
+local somepath  = winpath * rest + rest
+local splitter  = lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
+
+local function split_kpse_path(str)
+    str = gsub(str,"\\","/")
+    return splitter:match(str) or { }
+end
+
+local cache = { } -- we assume stable strings
+
+function resolvers.split_path(str) -- overkill but i need to check this module anyway
     if type(str) == 'table' then
         return str
     else
-        return file.split_path(str)
+        local s = cache[str]
+        if s then
+            return s -- happens seldom
+        else
+            s = { }
+        end
+        local t = { }
+        splitpathexpr(str,t)
+        for _, p in ipairs(t) do
+            for _, pp in ipairs(split_kpse_path(p)) do
+                s[#s+1] = pp
+            end
+        end
+        cache[str] = s
+        return s
+    --~         return file.split_path(str)
     end
 end
+
 function resolvers.join_path(str)
     if type(str) == 'table' then
         return file.join_path(str)

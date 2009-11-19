@@ -77,7 +77,7 @@ local function splitat(separator,single)
         separator = P(separator)
         if single then
             local other, any = C((1 - separator)^0), P(1)
-            splitter = other * (separator * C(any^0) + "")
+            splitter = other * (separator * C(any^0) + "") -- ?
             splitters_s[separator] = splitter
         else
             local other = C((1 - separator)^0)
@@ -96,6 +96,19 @@ function string:split(separator)
     local c = cache[separator]
     if not c then
         c = Ct(splitat(separator))
+        cache[separator] = c
+    end
+    return c:match(self)
+end
+
+local cache = { }
+
+function string:checkedsplit(separator)
+    local c = cache[separator]
+    if not c then
+        separator = P(separator)
+        local other = C((1 - separator)^1)
+        c = Ct(other * (separator^1 + other)^1)
         cache[separator] = c
     end
     return c:match(self)

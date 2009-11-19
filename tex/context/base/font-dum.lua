@@ -70,7 +70,7 @@ function fonts.names.resolve(name,sub)
     end
     if type(data) == "table" and data.version == fonts.names.version then
         local condensed = string.gsub(string.lower(name),"[^%a%d]","")
-        local found = data.mapping and data.mapping[condensed]
+        local found = data.mappings and data.mappings[condensed]
         if found then
             local fontname, filename, subfont = found[1], found[2], found[3]
             if subfont then

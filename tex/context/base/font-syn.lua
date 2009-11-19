@@ -33,7 +33,7 @@ fonts.names.data       = fonts.names.data    or { }
 local names   = fonts.names
 local filters = fonts.names.filters
 
-names.version    = 1.100
+names.version    = 1.101
 names.basename   = "names"
 names.saved      = false
 names.loaded     = false
@@ -47,6 +47,8 @@ names.cache      = containers.define("fonts","data",names.version,true)
 --ldx]]--
 
 local P, C, Cc, Cs, Carg = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg
+
+-- what to do with 'thin'
 
 local weights = Cs ( -- not extra
     P("demibold")
@@ -289,7 +291,8 @@ local function walk_tree(pathlist,suffix,identify)
             local pattern = path .. "**." .. suffix -- ** forces recurse
             logs.report("fontnames", "globbing path %s",pattern)
             local t = dir.glob(pattern)
-            for _, completename in pairs(t) do -- ipairs
+            sort(t,sorter)
+            for _, completename in ipairs(t) do -- ipairs
                 identify(completename,file.basename(completename),suffix,completename)
             end
         end
@@ -355,6 +358,9 @@ local function check_name(data,result,filename,suffix,subfont)
         weight      = weight,
         style       = style,
         width       = width,
+        minsize     = result.design_range_bottom or 0,
+        maxsize     = result.design_range_top or 0,
+        designsize  = result.design_size or 0,
     }
     local family = families[familyname]
     if not family then
@@ -418,6 +424,7 @@ local function collecthashes()
     local specifications = data.specifications
     local nofmappings, noffallbacks = 0, 0
     if specifications then
+        -- maybe multiple passes
         for index=1,#specifications do
             local s = specifications[index]
             local format, fullname, fontname, familyname, weight, subfamily = s.format, s.fullname, s.fontname, s.familyname, s.weight, s.subfamily
@@ -440,7 +447,7 @@ local function collecthashes()
                     ff[extraname], noffallbacks = index, noffallbacks + 1
                 end
             end
-            if familyname and subfamily then
+            if familyname then
                 if not mf[familyname] and not ff[familyname] then
                     ff[familyname], noffallbacks = index, noffallbacks + 1
                 end
@@ -717,7 +724,7 @@ local function list_them(mapping,sorted,pattern,t,all)
     else
         for k=1,#sorted do
             local v = sorted[k]
-            if find(v,pattern) then
+            if not t[v] and find(v,pattern) then
                 t[v] = mapping[v]
                 if not all then
                     return
@@ -1149,6 +1156,23 @@ function names.resolvespec(askedname,sub)
     local found = names.specification(names.splitspec(askedname))
     if found then
         return found.filename, found.subfont and found.rawname
+    end
+end
+
+function names.collectfiles(askedname,reload) -- no all
+    if askedname and askedname ~= "" and names.enabled then
+        askedname = lower(askedname) -- or cleanname
+        names.load(reload)
+        local list = { }
+        local basename = file.basename
+        local specifications = names.data.specifications
+        for i=1,#specifications do
+            local s = specifications[i]
+            if find(lower(basename(s.filename)),askedname) then
+                list[#list+1] = s
+            end
+        end
+        return list
     end
 end
 

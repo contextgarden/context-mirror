@@ -18,6 +18,7 @@ local libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' }
 local libpaths   = file.split_path(package.path)
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
+--~ package.loaders[#package.loaders+1] = function(name) -- was
     for i=1,#libformats do
         local format = libformats[i]
         local resolved = resolvers.find_file(name,format) or ""

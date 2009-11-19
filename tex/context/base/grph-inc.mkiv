@@ -246,7 +246,9 @@
    \ifconditional\testexternalfigureonly
       \ifcase\figurestatus \else
         \ctxlua{figures.check()}%
+        \ctxlua{figures.dummy()}%
         \ctxlua{figures.scale()}%
+        \ctxlua{figures.done()}%
       \fi
       \signalexternalfigure
    \else

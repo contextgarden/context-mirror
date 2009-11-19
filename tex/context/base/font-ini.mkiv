@@ -4014,9 +4014,9 @@
 %D
 %D \starttyping
 %D \def\TestLookup#1%
-%D   {pattern: #1, found: \dolookupnoffound
+%D   {\dolookupfontbyspec{#1}
+%D     pattern: #1, found: \dolookupnoffound
 %D    \blank
-%D    \dolookupfontbyspec{#1}
 %D    \dorecurse {\dolookupnoffound} {%
 %D      \recurselevel:~\dolookupgetkeyofindex{fontname}{\recurselevel}\quad
 %D    }%
