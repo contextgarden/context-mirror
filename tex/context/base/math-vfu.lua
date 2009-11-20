@@ -544,6 +544,8 @@ function fonts.vf.math.define(specification,set)
     main.type = "virtual" -- not needed
     mathematics.scaleparameters(main,main,1)
     main.nomath = false
+--~ print(table.serialize(characters[0x222B]))
+--~ print(main.fontname,table.serialize(main.MathConstants))
     return main
 end
 
@@ -754,7 +756,7 @@ fonts.enc.math["tex-mi"] = {
     [0x02323] = 0x5E, -- smile
     [0x02322] = 0x5F, -- frown
     [0x02113] = 0x60, -- ell
--- 
+--
     [0x1D6A4] = 0x7B, -- imath (TODO: also 0131)
     [0x1D6A5] = 0x7C, -- jmath (TODO: also 0237)
     [0x02118] = 0x7D, -- wp
@@ -802,7 +804,7 @@ fonts.enc.math["tex-it"] = {
     [0x1D6F8] = 0x58, -- Chi
 --  [0x1D44C] = 0x59, -- Y
 --  [0x1D44D] = 0x5A, -- Z
--- 
+--
 --  [0x1D44E] = 0x61, -- a
 --  [0x1D44F] = 0x62, -- b
 --  [0x1D450] = 0x63, -- c

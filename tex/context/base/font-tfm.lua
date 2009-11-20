@@ -407,6 +407,11 @@ local private = fonts.private
                         }
                     end
                     chr.vert_variants = t
+--~ local ic = v.vert_italic_correction
+--~ if ic then
+--~     chr.italic = ic * delta
+--~     print(format("0x%05X -> %s",k,chr.italic))
+--~ end
                 else
                     local hv = v.horiz_variants
                     if hv then
@@ -517,6 +522,9 @@ local private = fonts.private
             end
         end
         tc[k] = chr
+--~ if k == 0x222B then
+--~     print(t.fontname,table.serialize(chr))
+--~ end
     end
     -- t.encodingbytes, t.filename, t.fullname, t.name: elsewhere
     t.size = scaledpoints
@@ -565,6 +573,7 @@ local private = fonts.private
         logs.report("define font","used for accesing subfont: '%s'",t.psname or "nopsname")
         logs.report("define font","used for subsetting: '%s'",t.fontname or "nofontname")
     end
+--~     print(t.fontname,table.serialize(t.MathConstants))
     return t, delta
 end
 

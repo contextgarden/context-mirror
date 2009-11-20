@@ -1479,6 +1479,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
                                 end
                             end
                             c.vert_variants = m.vert_parts
+                            c.vert_italic_correction = m.vert_italic_correction
                         end
                     end
                     local kerns = m.kerns

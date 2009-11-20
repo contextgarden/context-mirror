@@ -108,5 +108,6 @@ local function patch_domh(data,filename,threshold)
     end
 end
 
-patches["cambria"] = function(data,filename) patch_domh(data,filename,2800) end
-patches["asana"]   = function(data,filename) patch_domh(data,filename,1350) end
+patches["cambria"]  = function(data,filename) patch_domh(data,filename,2800) end
+patches["cambmath"] = function(data,filename) patch_domh(data,filename,2800) end
+patches["asana"]    = function(data,filename) patch_domh(data,filename,1350) end

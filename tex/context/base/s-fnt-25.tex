@@ -124,7 +124,7 @@ function document.showmathfont(id,slot)
             if choriz_variants then
                 local t = { }
                 for k, v in next, choriz_variants do
-                    t[#t+1] = string.format("\\fontlistentryvariants{%s}",v.glyph)
+                    t[#t+1] = string.format("\\fontlistentryvariants{U+%05X}{%s}",v.glyph,v.glyph)
                 end
                 choriz_variants = t
             end

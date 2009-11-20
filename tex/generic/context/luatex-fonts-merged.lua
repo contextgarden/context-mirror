@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/19/09 23:18:54
+-- merge date  : 11/20/09 18:25:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -376,7 +376,7 @@ function string:checkedsplit(separator)
     if not c then
         separator = P(separator)
         local other = C((1 - separator)^1)
-        c = Ct(other * (separator^1 + other)^1)
+        c = Ct(other * (separator^1 * other)^1)
         cache[separator] = c
     end
     return c:match(self)
@@ -3716,6 +3716,11 @@ local private = fonts.private
                         }
                     end
                     chr.vert_variants = t
+--~ local ic = v.vert_italic_correction
+--~ if ic then
+--~     chr.italic = ic * delta
+--~     print(format("0x%05X -> %s",k,chr.italic))
+--~ end
                 else
                     local hv = v.horiz_variants
                     if hv then
@@ -3826,6 +3831,9 @@ local private = fonts.private
             end
         end
         tc[k] = chr
+--~ if k == 0x222B then
+--~     print(t.fontname,table.serialize(chr))
+--~ end
     end
     -- t.encodingbytes, t.filename, t.fullname, t.name: elsewhere
     t.size = scaledpoints
@@ -3874,6 +3882,7 @@ local private = fonts.private
         logs.report("define font","used for accesing subfont: '%s'",t.psname or "nopsname")
         logs.report("define font","used for subsetting: '%s'",t.fontname or "nofontname")
     end
+--~     print(t.fontname,table.serialize(t.MathConstants))
     return t, delta
 end
 
@@ -4163,7 +4172,7 @@ if not modules then modules = { } end modules ['font-cid'] = {
     license   = "see context related readme files"
 }
 
-local format, match = string.format, string.match
+local format, match, lower = string.format, string.match, string.lower
 local tonumber = tonumber
 
 local trace_loading = false  trackers.register("otf.loading",      function(v) trace_loading      = v end)
@@ -4236,8 +4245,9 @@ end
 local template = "%s-%s-%s.cidmap"
 
 local function locate(registry,ordering,supplement)
-    local filename = string.lower(format(template,registry,ordering,supplement))
-    local cidmap = fonts.cid.map[filename]
+    local filename = format(template,registry,ordering,supplement)
+    local hashname = lower(filename)
+    local cidmap = fonts.cid.map[hasnname]
     if not cidmap then
         if trace_loading then
             logs.report("load otf","checking cidmap, registry: %s, ordering: %s, supplement: %s, filename: %s",registry,ordering,supplement,filename)
@@ -4249,7 +4259,7 @@ local function locate(registry,ordering,supplement)
                 if trace_loading then
                     logs.report("load otf","using cidmap file %s",filename)
                 end
-                fonts.cid.map[filename] = cidmap
+                fonts.cid.map[hashname] = cidmap
                 cidmap.usedname = file.basename(filename)
                 return cidmap
             end
@@ -6736,6 +6746,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
                                 end
                             end
                             c.vert_variants = m.vert_parts
+                            c.vert_italic_correction = m.vert_italic_correction
                         end
                     end
                     local kerns = m.kerns

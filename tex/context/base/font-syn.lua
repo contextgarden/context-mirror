@@ -703,7 +703,7 @@ function names.load(reload,verbose)
         local data = names.read_data(names.basename)
         names.data = data
         if not names.saved then
-            if not next(data) or not next(data.specifications) then
+            if not data or not next(data) or not data.specifications or not next(data.specifications) then
                names.load(true)
             end
             names.saved = true
@@ -1225,18 +1225,14 @@ names.new_to_old = {
 names.old_to_new = table.swapped(names.new_to_old)
 
 function names.exists(name)
-    local fna, found = names.autoreload, false
-    names.autoreload = false
+    local found = false
     for k,v in ipairs(filters.list) do
         found = (resolvers.find_file(name,v) or "") ~= ""
         if found then
-            break
+            return found
         end
     end
-    found = found or (resolvers.find_file(name,"tfm") or "") ~= ""
-    found = found or (names.resolve(name) or "") ~= ""
-    names.autoreload = fna
-    return found
+    return ((resolvers.find_file(name,"tfm") or "") ~= "") or ((names.resolve(name) or "") ~= "")
 end
 
 -- for i=1,fonts.names.lookup(pattern) do

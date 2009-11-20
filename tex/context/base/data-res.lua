@@ -352,6 +352,32 @@ end
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
 
+local function do_first(a,b)
+    local t = { }
+    for s in gmatch(b,"[^,]+") do t[#t+1] = a .. s end
+    return "{" .. concat(t,",") .. "}"
+end
+
+local function do_second(a,b)
+    local t = { }
+    for s in gmatch(a,"[^,]+") do t[#t+1] = s .. b end
+    return "{" .. concat(t,",") .. "}"
+end
+
+local function do_both(a,b)
+    local t = { }
+    for sa in gmatch(a,"[^,]+") do
+        for sb in gmatch(b,"[^,]+") do
+            t[#t+1] = sa .. sb
+        end
+    end
+    return "{" .. concat(t,",") .. "}"
+end
+
+local function do_three(a,b,c)
+    return a .. b.. c
+end
+
 local function splitpathexpr(str, t, validate)
     -- no need for further optimization as it is only called a
     -- few times, we can use lpeg for the sub; we could move
@@ -361,28 +387,6 @@ local function splitpathexpr(str, t, validate)
     str = gsub(str,"{,","{@,")
  -- str = "@" .. str .. "@"
     local ok, done
-    local function do_first(a,b)
-        local t = { }
-        for s in gmatch(b,"[^,]+") do t[#t+1] = a .. s end
-        return "{" .. concat(t,",") .. "}"
-    end
-    local function do_second(a,b)
-        local t = { }
-        for s in gmatch(a,"[^,]+") do t[#t+1] = s .. b end
-        return "{" .. concat(t,",") .. "}"
-    end
-    local function do_both(a,b)
-        local t = { }
-        for sa in gmatch(a,"[^,]+") do
-            for sb in gmatch(b,"[^,]+") do
-                t[#t+1] = sa .. sb
-            end
-        end
-        return "{" .. concat(t,",") .. "}"
-    end
-    local function do_three(a,b,c)
-        return a .. b.. c
-    end
     while true do
         done = false
         while true do
@@ -891,22 +895,20 @@ function resolvers.split_path(str) -- overkill but i need to check this module a
     if type(str) == 'table' then
         return str
     else
+        str = gsub(str,"\\","/")
         local s = cache[str]
         if s then
             return s -- happens seldom
         else
             s = { }
         end
-        local t = { }
-        splitpathexpr(str,t)
+        local t = string.checkedsplit(str,io.pathseparator) or { str }
         for _, p in ipairs(t) do
-            for _, pp in ipairs(split_kpse_path(p)) do
-                s[#s+1] = pp
-            end
+            splitpathexpr(p,s)
         end
+        --~ print(str,table.serialize(s))
         cache[str] = s
         return s
-    --~         return file.split_path(str)
     end
 end
 
