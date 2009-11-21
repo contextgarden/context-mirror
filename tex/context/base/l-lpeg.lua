@@ -107,8 +107,8 @@ function string:checkedsplit(separator)
     local c = cache[separator]
     if not c then
         separator = P(separator)
-        local other = C((1 - separator)^1)
-        c = Ct(other * (separator^1 * other)^1)
+        local other = C((1 - separator)^0)
+        c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
     return c:match(self)

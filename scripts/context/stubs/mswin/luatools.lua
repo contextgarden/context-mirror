@@ -409,8 +409,8 @@ function string:checkedsplit(separator)
     local c = cache[separator]
     if not c then
         separator = P(separator)
-        local other = C((1 - separator)^1)
-        c = Ct(other * (separator^1 * other)^1)
+        local other = C((1 - separator)^0)
+        c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
     return c:match(self)
@@ -1873,12 +1873,8 @@ function file.dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
 end
 
---~ function file.basename(name)
---~     return match(name,"^.+[/\\](.-)$") or name
---~ end
-
 function file.basename(name)
-    return match(name,"^.*[/\\](.-)$") or name
+    return match(name,"^.+[/\\](.-)$") or name
 end
 
 function file.nameonly(name)
@@ -1924,38 +1920,26 @@ end
 file.is_readable = file.isreadable
 file.is_writable = file.iswritable
 
-local checkedsplit = string.checkedsplit
+-- todo: lpeg
 
-local winpath   = (lpeg.R("AZ","az") * lpeg.P(":") * lpeg.P("/"))
-local separator = lpeg.P(":") + lpeg.P(";")
-local rest      = (1-separator)^1
-local somepath  = winpath * rest + rest
-local splitter  = lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
+--~ function file.split_path(str)
+--~     local t = { }
+--~     str = gsub(str,"\\", "/")
+--~     str = gsub(str,"(%a):([;/])", "%1\001%2")
+--~     for name in gmatch(str,"([^;:]+)") do
+--~         if name ~= "" then
+--~             t[#t+1] = gsub(name,"\001",":")
+--~         end
+--~     end
+--~     return t
+--~ end
+
+local checkedsplit = string.checkedsplit
 
 function file.split_path(str,separator)
     str = gsub(str,"\\","/")
-    if separator then
-        return checkedsplit(str,separator) or { }
-    else
-        return splitter:match(str) or { }
-    end
+    return checkedsplit(str,separator or io.pathseparator)
 end
-
--- special one for private usage
-
---~ local winpath = lpeg.P("!!")^-1 * winpath
---~ local splitter= lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
-
---~ function file.split_kpse_path(str)
---~     str = gsub(str,"\\","/")
---~     return splitter:match(str) or { }
---~ end
-
--- str = [[/opt/texlive/2009/bin/i386-linux:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/mine/bin:/home/mine/.local/bin]]
---
--- str = os.getenv("PATH") --
--- str = [[/opt/texlive/2009/bin/i386-linux:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/mine/bin:/home/mine/.local/bin]]
--- str = [[c:/oeps:whatever]]
 
 function file.join_path(tab)
     return concat(tab,io.pathseparator) -- can have trailing //
@@ -4499,8 +4483,6 @@ local format, gsub, find, lower, upper, match, gmatch = string.format, string.gs
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
 
-local collapse_path = file.collapse_path
-
 local trace_locating, trace_detail, trace_verbose  = false, false, false
 
 trackers.register("resolvers.verbose",  function(v) trace_verbose  = v end)
@@ -4814,32 +4796,6 @@ end
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
 
-local function do_first(a,b)
-    local t = { }
-    for s in gmatch(b,"[^,]+") do t[#t+1] = a .. s end
-    return "{" .. concat(t,",") .. "}"
-end
-
-local function do_second(a,b)
-    local t = { }
-    for s in gmatch(a,"[^,]+") do t[#t+1] = s .. b end
-    return "{" .. concat(t,",") .. "}"
-end
-
-local function do_both(a,b)
-    local t = { }
-    for sa in gmatch(a,"[^,]+") do
-        for sb in gmatch(b,"[^,]+") do
-            t[#t+1] = sa .. sb
-        end
-    end
-    return "{" .. concat(t,",") .. "}"
-end
-
-local function do_three(a,b,c)
-    return a .. b.. c
-end
-
 local function splitpathexpr(str, t, validate)
     -- no need for further optimization as it is only called a
     -- few times, we can use lpeg for the sub; we could move
@@ -4849,6 +4805,28 @@ local function splitpathexpr(str, t, validate)
     str = gsub(str,"{,","{@,")
  -- str = "@" .. str .. "@"
     local ok, done
+    local function do_first(a,b)
+        local t = { }
+        for s in gmatch(b,"[^,]+") do t[#t+1] = a .. s end
+        return "{" .. concat(t,",") .. "}"
+    end
+    local function do_second(a,b)
+        local t = { }
+        for s in gmatch(a,"[^,]+") do t[#t+1] = s .. b end
+        return "{" .. concat(t,",") .. "}"
+    end
+    local function do_both(a,b)
+        local t = { }
+        for sa in gmatch(a,"[^,]+") do
+            for sb in gmatch(b,"[^,]+") do
+                t[#t+1] = sa .. sb
+            end
+        end
+        return "{" .. concat(t,",") .. "}"
+    end
+    local function do_three(a,b,c)
+        return a .. b.. c
+    end
     while true do
         done = false
         while true do
@@ -4882,11 +4860,6 @@ local function splitpathexpr(str, t, validate)
     return t
 end
 
-local function validate(s)
-    s = collapse_path(s)
-    return s ~= "" and not find(s,dummy_path_expr) and s
-end
-
 local function expanded_path_from_list(pathlist) -- maybe not a list, just a path
     -- a previous version fed back into pathlist
     local newlist, ok = { }, false
@@ -4897,13 +4870,17 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
         end
     end
     if ok then
+        local function validate(s)
+            s = file.collapse_path(s)
+            return s ~= "" and not find(s,dummy_path_expr) and s
+        end
         for k=1,#pathlist do
             splitpathexpr(pathlist[k],newlist,validate)
         end
     else
         for k=1,#pathlist do
             for p in gmatch(pathlist[k],"([^,]+)") do
-                p = collapse_path(p)
+                p = file.collapse_path(p)
                 if p ~= "" then newlist[#newlist+1] = p end
             end
         end
@@ -4968,9 +4945,9 @@ local function identify_own()
     local ownpath = resolvers.getownpath() or lfs.currentdir()
     local ie = instance.environment
     if ownpath then
-        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = collapse_path(ownpath) end
-        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = collapse_path(ownpath .. "/..") end
-        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = collapse_path(ownpath .. "/../..") end
+        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = file.collapse_path(ownpath) end
+        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = file.collapse_path(ownpath .. "/..") end
+        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = file.collapse_path(ownpath .. "/../..") end
     else
         logs.report("fileio","error: unable to locate ownpath")
         os.exit()
@@ -4999,7 +4976,7 @@ function resolvers.identify_cnf()
         local function locate(filename,list)
             for i=1,#t do
                 local ti = t[i]
-                local texmfcnf = collapse_path(file.join(ti,filename))
+                local texmfcnf = file.collapse_path(file.join(ti,filename))
                 if lfs.isfile(texmfcnf) then
                     list[#list+1] = texmfcnf
                 end
@@ -5011,11 +4988,11 @@ function resolvers.identify_cnf()
 end
 
 local function load_cnf_file(fname)
-    -- why don't we just read the file from the cache
-    -- we need to switch to the lua file
     fname = resolvers.clean_path(fname)
     local lname = file.replacesuffix(fname,'lua')
-    if lfs.isfile(lname) then
+    local f = io.open(lname)
+    if f then -- this will go
+        f:close()
         local dname = file.dirname(fname)
         if not instance.configuration[dname] then
             resolvers.load_data(dname,'configuration',lname and file.basename(lname))
@@ -5080,17 +5057,13 @@ local function collapse_cnf_data() -- potential optimization: pass start index (
     end
 end
 
-local function loadoldconfigdata()
-    for _, fname in ipairs(instance.cnffiles) do
-        load_cnf_file(fname)
-    end
-end
-
 function resolvers.load_cnf()
+    local function loadoldconfigdata()
+        for _, fname in ipairs(instance.cnffiles) do
+            load_cnf_file(fname)
+        end
+    end
     -- instance.cnffiles contain complete names now !
-    -- we still use a funny mix of cnf and new but soon
-    -- we will switch to lua exclusively as we only use
-    -- the file to collect the tree roots
     if #instance.cnffiles == 0 then
         if trace_verbose then
             logs.report("fileio","no cnf files found (TEXMFCNF may not be set/known)")
@@ -5098,12 +5071,12 @@ function resolvers.load_cnf()
     else
         instance.rootpath = instance.cnffiles[1]
         for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = collapse_path(gsub(fname,"\\",'/'))
+            instance.cnffiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
-        instance.rootpath = collapse_path(instance.rootpath)
+        instance.rootpath = file.collapse_path(instance.rootpath)
         if instance.diskcache and not instance.renewcache then
             resolvers.loadoldconfig(instance.cnffiles)
             if instance.loaderror then
@@ -5127,12 +5100,12 @@ function resolvers.load_lua()
     else
         instance.rootpath = instance.luafiles[1]
         for k,fname in ipairs(instance.luafiles) do
-            instance.luafiles[k] = collapse_path(gsub(fname,"\\",'/'))
+            instance.luafiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
         end
-        instance.rootpath = collapse_path(instance.rootpath)
+        instance.rootpath = file.collapse_path(instance.rootpath)
         resolvers.loadnewconfig()
         collapse_cnf_data()
     end
@@ -5194,7 +5167,7 @@ function resolvers.locatelists()
         if trace_verbose then
             logs.report("fileio","locating list of %s",path)
         end
-        resolvers.locatedatabase(collapse_path(path))
+        resolvers.locatedatabase(file.collapse_path(path))
     end
 end
 
@@ -5317,11 +5290,34 @@ end
 -- we join them and split them after the expansion has taken place. This
 -- is more convenient.
 
+
+local checkedsplit = string.checkedsplit
+local normalsplit  = string.split
+
+local cache = { }
+
+local function split_kpse_path(str) -- beware, this can be either a path or a {specification}
+    local found = cache[str]
+    if not found then
+        str = gsub(str,"\\","/")
+        if find(str,";") then
+            found = checkedsplit(str,";")
+        else
+            found = checkedsplit(str,io.pathseparator)
+        end
+    --  print(table.serialize(found))
+        cache[str] = found
+    end
+    return found
+end
+
+resolvers.split_kpse_path = split_kpse_path
+
 function resolvers.splitconfig()
     for i,c in ipairs(instance) do
         for k,v in pairs(c) do
             if type(v) == 'string' then
-                local t = file.split_path(v)
+                local t = split_kpse_path(v)
                 if #t > 1 then
                     c[k] = t
                 end
@@ -5339,41 +5335,13 @@ function resolvers.joinconfig()
         end
     end
 end
-
-local winpath   = lpeg.P("!!")^-1 * (lpeg.R("AZ","az") * lpeg.P(":") * lpeg.P("/"))
-local separator = lpeg.P(":") + lpeg.P(";")
-local rest      = (1-separator)^1
-local somepath  = winpath * rest + rest
-local splitter  = lpeg.Ct(lpeg.C(somepath) * (separator^1 + lpeg.C(somepath))^0)
-
-local function split_kpse_path(str)
-    str = gsub(str,"\\","/")
-    return splitter:match(str) or { }
-end
-
-local cache = { } -- we assume stable strings
-
-function resolvers.split_path(str) -- overkill but i need to check this module anyway
+function resolvers.split_path(str)
     if type(str) == 'table' then
         return str
     else
-        str = gsub(str,"\\","/")
-        local s = cache[str]
-        if s then
-            return s -- happens seldom
-        else
-            s = { }
-        end
-        local t = string.checkedsplit(str,io.pathseparator) or { str }
-        for _, p in ipairs(t) do
-            splitpathexpr(p,s)
-        end
-        --~ print(str,table.serialize(s))
-        cache[str] = s
-        return s
+        return split_kpse_path(str)
     end
 end
-
 function resolvers.join_path(str)
     if type(str) == 'table' then
         return file.join_path(str)
@@ -5386,7 +5354,7 @@ function resolvers.splitexpansions()
     local ie = instance.expansions
     for k,v in next, ie do
         local t, h = { }, { }
-        for _,vv in ipairs(file.split_path(v)) do
+        for _,vv in ipairs(split_kpse_path(v)) do
             if vv ~= "" and not h[vv] then
                 t[#t+1] = vv
                 h[vv] = true
@@ -5481,7 +5449,6 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
             date    = os.date("%Y-%m-%d"),
             time    = os.date("%H:%M:%S"),
             content = files,
-            uuid    = os.uuid(),
         }
         local ok = io.savedata(luaname,resolvers.serialize(data))
         if ok then
@@ -5504,12 +5471,6 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
     end
 end
 
-local data_state = { }
-
-function resolvers.data_state()
-    return data_state or { }
-end
-
 function resolvers.load_data(pathname,dataname,filename,makename) -- untested without cache overload
     filename = ((not filename or (filename == "")) and dataname) or filename
     filename = (makename and makename(dataname,filename)) or file.join(pathname,filename)
@@ -5517,7 +5478,6 @@ function resolvers.load_data(pathname,dataname,filename,makename) -- untested wi
     if blob then
         local data = blob()
         if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
-            data_state[#data_state+1] = data.uuid
             if trace_verbose then
                 logs.report("fileio","loading %s for %s from %s",dataname,pathname,filename)
             end
@@ -5772,7 +5732,7 @@ function resolvers.clean_path_list(str)
     local t = resolvers.expanded_path_list(str)
     if t then
         for i=1,#t do
-            t[i] = collapse_path(resolvers.clean_path(t[i]))
+            t[i] = file.collapse_path(resolvers.clean_path(t[i]))
         end
     end
     return t
@@ -5969,8 +5929,8 @@ end
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = collapse_path(filename)  -- elsewhere
-    filename = collapse_path(gsub(filename,"\\","/")) -- elsewhere
+    filename = file.collapse_path(filename)  -- elsewhere
+    filename = file.collapse_path(gsub(filename,"\\","/")) -- elsewhere
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -6201,7 +6161,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         end
     end
     for k=1,#result do
-        result[k] = collapse_path(result[k])
+        result[k] = file.collapse_path(result[k])
     end
     if instance.remember then
         instance.found[stamp] = result
@@ -6353,9 +6313,9 @@ function resolvers.load(option)
     statistics.starttiming(instance)
     resolvers.resetconfig()
     resolvers.identify_cnf()
-    resolvers.load_lua() -- will become the new method
+    resolvers.load_lua()
     resolvers.expand_variables()
-    resolvers.load_cnf() -- will be skipped when we have a lua file
+    resolvers.load_cnf()
     resolvers.expand_variables()
     if option ~= "nofiles" then
         resolvers.load_hash()
@@ -7349,7 +7309,7 @@ if not resolvers then
     os.exit()
 end
 
-logs.setprogram('LuaTools',"TDS Management Tool 1.31",environment.arguments["verbose"] or false)
+logs.setprogram('LuaTools',"TDS Management Tool 1.32",environment.arguments["verbose"] or false)
 
 local instance = resolvers.reset()
 

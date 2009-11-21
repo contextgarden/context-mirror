@@ -1026,7 +1026,7 @@ finalizers.default        = all -- !!
 
 local concat = table.concat
 
-function finalizers.tag(root,pattern,n)
+function finalizers.tag(collected)
     if collected then
         local c
         if n == 0 or not n then
@@ -1042,7 +1042,7 @@ function finalizers.tag(root,pattern,n)
     end
 end
 
-function finalizers.name(root,pattern,n)
+function finalizers.name(collected)
     if collected then
         local c
         if n == 0 or not n then
@@ -1053,7 +1053,7 @@ function finalizers.name(root,pattern,n)
             c = collected[#collected-n+1]
         end
         if c then
-            if c.ns ~= "" then
+            if c.ns == "" then
                 texsprint(c.tg)
             else
                 texsprint(c.ns,":",c.tg)
@@ -1062,7 +1062,7 @@ function finalizers.name(root,pattern,n)
     end
 end
 
-function finalizers.tags(root,pattern,nonamespace)
+function finalizers.tags(collected,nonamespace)
     if collected then
         for c=1,#collected do
             local e = collected[c]
