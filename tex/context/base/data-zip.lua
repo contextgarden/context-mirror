@@ -8,10 +8,13 @@ if not modules then modules = { } end modules ['data-zip'] = {
 
 local format, find = string.format, string.find
 
-local trace_locating, trace_verbose  = false, false
+local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-trackers.register("resolvers.verbose",  function(v) trace_verbose  = v end)
-trackers.register("resolvers.locating", function(v) trace_locating = v trace_verbose = v end)
+-- zip:///oeps.zip?name=bla/bla.tex
+-- zip:///oeps.zip?tree=tex/texmf-local
+-- zip:///texmf.zip?tree=/tex/texmf
+-- zip:///texmf.zip?tree=/tex/texmf-local
+-- zip:///texmf-mine.zip?tree=/tex/texmf-projects
 
 zip                 = zip or { }
 zip.archives        = zip.archives or { }
@@ -21,9 +24,6 @@ local finders, openers, loaders = resolvers.finders, resolvers.openers, resolver
 local locators, hashers, concatinators = resolvers.locators, resolvers.hashers, resolvers.concatinators
 
 local archives = zip.archives
-
--- zip:///oeps.zip?name=bla/bla.tex
--- zip:///oeps.zip?tree=tex/texmf-local
 
 local function validzip(str) -- todo: use url splitter
     if not find(str,"^zip://") then
@@ -54,26 +54,22 @@ function zip.closearchive(name)
     end
 end
 
--- zip:///texmf.zip?tree=/tex/texmf
--- zip:///texmf.zip?tree=/tex/texmf-local
--- zip:///texmf-mine.zip?tree=/tex/texmf-projects
-
 function locators.zip(specification) -- where is this used? startup zips (untested)
     specification = resolvers.splitmethod(specification)
     local zipfile = specification.path
     local zfile = zip.openarchive(name) -- tricky, could be in to be initialized tree
     if trace_locating then
         if zfile then
-            logs.report("fileio",'! zip locator, found: %s',specification.original)
+            logs.report("fileio","zip locator, archive '%s' found",specification.original)
         else
-            logs.report("fileio",'? zip locator, not found: %s',specification.original)
+            logs.report("fileio","zip locator, archive '%s' not found",specification.original)
         end
     end
 end
 
 function hashers.zip(tag,name)
-    if trace_verbose then
-        logs.report("fileio","loading zip file %s as %s",name,tag)
+    if trace_locating then
+        logs.report("fileio","loading zip file '%s' as '%s'",name,tag)
     end
     resolvers.usezipfile(format("%s?tree=%s",tag,name))
 end
@@ -98,23 +94,25 @@ function finders.zip(specification,filetype)
             local zfile = zip.openarchive(specification.path)
             if zfile then
                 if trace_locating then
-                    logs.report("fileio",'! zip finder, path: %s',specification.path)
+                    logs.report("fileio","zip finder, archive '%s' found",specification.path)
                 end
                 local dfile = zfile:open(q.name)
                 if dfile then
                     dfile = zfile:close()
                     if trace_locating then
-                        logs.report("fileio",'+ zip finder, name: %s',q.name)
+                        logs.report("fileio","zip finder, file '%s' found",q.name)
                     end
                     return specification.original
+                elseif trace_locating then
+                    logs.report("fileio","zip finder, file '%s' not found",q.name)
                 end
             elseif trace_locating then
-                logs.report("fileio",'? zip finder, path %s',specification.path)
+                logs.report("fileio","zip finder, unknown archive '%s'",specification.path)
             end
         end
     end
     if trace_locating then
-        logs.report("fileio",'- zip finder, name: %s',filename)
+        logs.report("fileio","zip finder, '%s' not found",filename)
     end
     return unpack(finders.notfound)
 end
@@ -127,20 +125,25 @@ function openers.zip(specification)
             local zfile = zip.openarchive(zipspecification.path)
             if zfile then
                 if trace_locating then
-                    logs.report("fileio",'+ zip starter, path: %s',zipspecification.path)
+                    logs.report("fileio","zip opener, archive '%s' opened",zipspecification.path)
                 end
                 local dfile = zfile:open(q.name)
                 if dfile then
                     logs.show_open(specification)
+                    if trace_locating then
+                        logs.report("fileio","zip opener, file '%s' found",q.name)
+                    end
                     return openers.text_opener(specification,dfile,'zip')
+                elseif trace_locating then
+                    logs.report("fileio","zip opener, file '%s' not found",q.name)
                 end
             elseif trace_locating then
-                logs.report("fileio",'- zip starter, path %s',zipspecification.path)
+                logs.report("fileio","zip opener, unknown archive '%s'",zipspecification.path)
             end
         end
     end
     if trace_locating then
-        logs.report("fileio",'- zip opener, name: %s',filename)
+        logs.report("fileio","zip opener, '%s' not found",filename)
     end
     return unpack(openers.notfound)
 end
@@ -153,25 +156,27 @@ function loaders.zip(specification)
             local zfile = zip.openarchive(specification.path)
             if zfile then
                 if trace_locating then
-                    logs.report("fileio",'+ zip starter, path: %s',specification.path)
+                    logs.report("fileio","zip loader, archive '%s' opened",specification.path)
                 end
                 local dfile = zfile:open(q.name)
                 if dfile then
                     logs.show_load(filename)
                     if trace_locating then
-                        logs.report("fileio",'+ zip loader, name: %s',filename)
+                        logs.report("fileio","zip loader, file '%s' loaded",filename)
                     end
                     local s = dfile:read("*all")
                     dfile:close()
                     return true, s, #s
+                elseif trace_locating then
+                    logs.report("fileio","zip loader, file '%s' not found",q.name)
                 end
             elseif trace_locating then
-                logs.report("fileio",'- zip starter, path: %s',specification.path)
+                logs.report("fileio","zip loader, unknown archive '%s'",specification.path)
             end
         end
     end
     if trace_locating then
-        logs.report("fileio",'- zip loader, name: %s',filename)
+        logs.report("fileio","zip loader, '%s' not found",filename)
     end
     return unpack(openers.notfound)
 end
@@ -181,21 +186,15 @@ end
 
 function resolvers.usezipfile(zipname)
     zipname = validzip(zipname)
-    if trace_locating then
-        logs.report("fileio",'! zip use, file: %s',zipname)
-    end
     local specification = resolvers.splitmethod(zipname)
     local zipfile = specification.path
     if zipfile and not zip.registeredfiles[zipname] then
         local tree = url.query(specification.query).tree or ""
-        if trace_locating then
-            logs.report("fileio",'! zip register, file: %s',zipname)
-        end
         local z = zip.openarchive(zipfile)
         if z then
             local instance = resolvers.instance
             if trace_locating then
-                logs.report("fileio","= zipfile, registering: %s",zipname)
+                logs.report("fileio","zip registering, registering archive '%s'",zipname)
             end
             statistics.starttiming(instance)
             resolvers.prepend_hash('zip',zipname,zipfile)
@@ -204,10 +203,10 @@ function resolvers.usezipfile(zipname)
             instance.files[zipname] = resolvers.register_zip_file(z,tree or "")
             statistics.stoptiming(instance)
         elseif trace_locating then
-            logs.report("fileio","? zipfile, unknown: %s",zipname)
+            logs.report("fileio","zip registering, unknown archive '%s'",zipname)
         end
     elseif trace_locating then
-        logs.report("fileio",'! zip register, no file: %s',zipname)
+        logs.report("fileio","zip registering, '%s' not found",zipname)
     end
 end
 
@@ -219,7 +218,7 @@ function resolvers.register_zip_file(z,tree)
         filter = format("^%s/(.+)/(.-)$",tree)
     end
     if trace_locating then
-        logs.report("fileio",'= zip filter: %s',filter)
+        logs.report("fileio","zip registering, using filter '%s'",filter)
     end
     local register, n = resolvers.register_file, 0
     for i in z:files() do
@@ -236,6 +235,6 @@ function resolvers.register_zip_file(z,tree)
             n = n + 1
         end
     end
-    logs.report("fileio",'= zip entries: %s',n)
+    logs.report("fileio","zip registering, %s files registered",n)
     return files
 end

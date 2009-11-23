@@ -9,6 +9,9 @@ if not modules then modules = { } end modules ['font-ext'] = {
 local next, type, byte = next, type, string.byte
 local gmatch = string.gmatch
 
+local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
+local trace_expansion  = false  trackers.register("fonts.expansion" , function(v) trace_expansion  = v end)
+
 --[[ldx--
 <p>When we implement functions that deal with features, most of them
 will depend of the font format. Here we define the few that are kind
@@ -237,12 +240,11 @@ function initializers.common.expansion(tfmdata,value)
         if class then
             local vector = vectors[class.vector]
             if vector then
-                tfmdata.stretch = (class.stretch or 0) * 10
-                tfmdata.shrink = (class.shrink  or 0) * 10
-                tfmdata.step = (class.step or 0) * 10
-                local factor = class.factor or 1
---~ logs.report("fonts","define expansion %s, vector: %s, stretch: %s, shrink: %s, step: %s, factor: %s",value,class.vector,tfmdata.stretch,tfmdata.shrink,tfmdata.step,factor)
-                tfmdata.auto_expand = true
+                local stretch, shrink, step, factor = class.stretch or 0, class.shrink or 0, class.step or 0, class.factor or 1
+                if trace_expansion then
+                    logs.report("fonts","set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",value,class.vector,factor,stretch,shrink,step)
+                end
+                tfmdata.stretch, tfmdata.shrink, tfmdata.step, tfmdata.auto_expand = stretch * 10, shrink * 10, step * 10, true
                 local data = characters.data
                 for i, chr in next, tfmdata.characters do
                     local v = vector[i]
@@ -265,7 +267,11 @@ function initializers.common.expansion(tfmdata,value)
                         chr.expansion_factor = factor
                     end
                 end
+            elseif trace_expansion then
+                logs.report("fonts","unknown expansion vector '%s' in class '%s",class.vector,value)
             end
+        elseif trace_expansion then
+            logs.report("fonts","unknown expansion class '%s'",value)
         end
     end
 end
@@ -399,13 +405,15 @@ vectors['quality'] = table.merge( {},
 function initializers.common.protrusion(tfmdata,value)
     if value then
         local class = classes[value]
---~ logs.report("fonts","define protrusion %s",table.serialize(class))
         if class then
             local vector = vectors[class.vector]
             if vector then
                 local factor = class.factor or 1
                 local left = class.left or 1
                 local right = class.right or 1
+                if trace_protrusion then
+                    logs.report("fonts","set protrusion class %s, vector: %s, factor: %s, left: %s, right: %s",value,class.vector,factor.left,right)
+                end
                 local data = characters.data
                 local emwidth = tfmdata.parameters.quad
                 tfmdata.auto_protrude = true
@@ -434,7 +442,11 @@ function initializers.common.protrusion(tfmdata,value)
                     if pl and pl ~= 0 then chr.left_protruding  = left *pl*factor end
                     if pr and pr ~= 0 then chr.right_protruding = right*pr*factor end
                 end
+            elseif trace_protrusion then
+                logs.report("fonts","unknown protrusion vector '%s' in class '%s",class.vector,value)
             end
+        elseif trace_protrusion then
+            logs.report("fonts","unknown protrusion class '%s'",value)
         end
     end
 end

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/21/09 11:50:03
+-- merge date  : 11/23/09 11:55:47
 
 do -- begin closure to overcome local limits and interference
 
@@ -1948,8 +1948,6 @@ local format, lower, gsub = string.format, string.lower, string.gsub
 local trace_cache      = false  trackers.register("resolvers.cache",      function(v) trace_cache      = v end)
 local trace_containers = false  trackers.register("resolvers.containers", function(v) trace_containers = v end)
 local trace_storage    = false  trackers.register("resolvers.storage",    function(v) trace_storage    = v end)
-local trace_verbose    = false  trackers.register("resolvers.verbose",    function(v) trace_verbose    = v end)
-local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v trackers.enable("resolvers.verbose") end)
 
 --[[ldx--
 <p>Once we found ourselves defining similar cache constructs

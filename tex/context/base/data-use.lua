@@ -8,8 +8,7 @@ if not modules then modules = { } end modules ['data-use'] = {
 
 local format, lower, gsub = string.format, string.lower, string.gsub
 
-local trace_verbose    = false  trackers.register("resolvers.verbose",    function(v) trace_verbose    = v end)
-local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v trackers.enable("resolvers.verbose") end)
+local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 -- since we want to use the cache instead of the tree, we will now
 -- reimplement the saver.

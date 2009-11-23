@@ -12,8 +12,7 @@ if not modules then modules = { } end modules ['luat-env'] = {
 -- evolved before bytecode arrays were available and so a lot of
 -- code has disappeared already.
 
-local trace_verbose  = false  trackers.register("resolvers.verbose",  function(v) trace_verbose  = v end)
-local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v trackers.enable("resolvers.verbose") end)
+local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local format = string.format
 
@@ -204,12 +203,12 @@ function environment.luafilechunk(filename) -- used for loading lua bytecode in 
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        if trace_verbose then
+        if trace_locating then
             logs.report("fileio","loading file %s", fullname)
         end
         return environment.loadedluacode(fullname)
     else
-        if trace_verbose then
+        if trace_locating then
             logs.report("fileio","unknown file %s", filename)
         end
         return nil
@@ -229,7 +228,7 @@ function environment.loadluafile(filename, version)
     -- when not overloaded by explicit suffix we look for a luc file first
     local fullname = (lucname and environment.luafile(lucname)) or ""
     if fullname ~= "" then
-        if trace_verbose then
+        if trace_locating then
             logs.report("fileio","loading %s", fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
@@ -247,7 +246,7 @@ function environment.loadluafile(filename, version)
             if v == version then
                 return true
             else
-                if trace_verbose then
+                if trace_locating then
                     logs.report("fileio","version mismatch for %s: lua=%s, luc=%s", filename, v, version)
                 end
                 environment.loadluafile(filename)
@@ -258,12 +257,12 @@ function environment.loadluafile(filename, version)
     end
     fullname = (luaname and environment.luafile(luaname)) or ""
     if fullname ~= "" then
-        if trace_verbose then
+        if trace_locating then
             logs.report("fileio","loading %s", fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
         if not chunk then
-            if verbose then
+            if trace_locating then
                 logs.report("fileio","unknown file %s", filename)
             end
         else

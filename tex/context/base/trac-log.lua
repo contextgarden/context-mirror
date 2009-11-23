@@ -207,7 +207,7 @@ end
 function logs.setprogram(_name_,_banner_,_verbose_)
     name, banner = _name_, _banner_
     if _verbose_ then
-        trackers.enable("resolvers.verbose")
+        trackers.enable("resolvers.locating")
     end
     logs.set_method("tex")
     logs.report = report -- also used in libraries
@@ -220,9 +220,9 @@ end
 
 function logs.setverbose(what)
     if what then
-        trackers.enable("resolvers.verbose")
+        trackers.enable("resolvers.locating")
     else
-        trackers.disable("resolvers.verbose")
+        trackers.disable("resolvers.locating")
     end
     logs.verbose = what or false
 end

@@ -1731,7 +1731,41 @@
 \let\defineblank      \definevspacing
 \let\defineblankmethod\definevspacingamount
 
-% moved from page-lin
+%D The following command is for Wolfgang. It has to be used with
+%D care as it does {\em not} work in tandem with the other spacing
+%D commands.
+
+\def\definevspace
+  {\dotripleempty\dodefinevspace}
+
+\def\dodefinevspace[#1][#2][#3]%
+  {\ifthirdargument
+     \setvalue{\??va#1:#2}{#3}%
+   \else
+     \setvalue{\??va:#1}{#2}%
+   \fi}
+
+\unexpanded\def\vspace
+  {\dodoubleempty\dovspace}
+
+\def\dovspace[#1][#2]%
+  {\ifsecondargument
+     \dodovspace[#1][#2]%
+   \else\iffirstargument
+     \vspace[][#1]%
+   \else
+     \vspace[][\s!default]%
+   \fi\fi}
+
+\def\dodovspace[#1][#2]%
+  {\par
+   \ifvmode
+     \removelastskip
+     \vskip\vspaceamount{#1}{#2}\relax
+   \fi}
+
+\def\vspaceamount#1#2%
+  {\executeifdefined{\??va#1:#2}{\executeifdefined{\??va:#2}\zeropoint}}
 
 %D When spacing is active we need to handle commands in
 %D a special way:

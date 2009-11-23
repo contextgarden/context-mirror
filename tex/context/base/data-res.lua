@@ -37,11 +37,11 @@ local format, gsub, find, lower, upper, match, gmatch = string.format, string.gs
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
 
-local trace_locating, trace_detail, trace_verbose  = false, false, false
+local trace_locating, trace_detail, trace_expansions = false, false, false
 
-trackers.register("resolvers.verbose",  function(v) trace_verbose  = v end)
-trackers.register("resolvers.locating", function(v) trace_locating = v trackers.enable("resolvers.verbose") end)
-trackers.register("resolvers.detail",   function(v) trace_detail   = v trackers.enable("resolvers.verbose,resolvers.detail") end)
+trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
+trackers.register("resolvers.details",    function(v) trace_detail     = v end)
+trackers.register("resolvers.expansions", function(v) trace_expansions = v end) -- todo
 
 if not resolvers then
     resolvers = {
@@ -350,37 +350,43 @@ end
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
 
+local function do_first(a,b)
+    local t = { }
+    for s in gmatch(b,"[^,]+") do t[#t+1] = a .. s end
+    return "{" .. concat(t,",") .. "}"
+end
+
+local function do_second(a,b)
+    local t = { }
+    for s in gmatch(a,"[^,]+") do t[#t+1] = s .. b end
+    return "{" .. concat(t,",") .. "}"
+end
+
+local function do_both(a,b)
+    local t = { }
+    for sa in gmatch(a,"[^,]+") do
+        for sb in gmatch(b,"[^,]+") do
+            t[#t+1] = sa .. sb
+        end
+    end
+    return "{" .. concat(t,",") .. "}"
+end
+
+local function do_three(a,b,c)
+    return a .. b.. c
+end
+
 local function splitpathexpr(str, t, validate)
     -- no need for further optimization as it is only called a
-    -- few times, we can use lpeg for the sub; we could move
-    -- the local functions outside the body
+    -- few times, we can use lpeg for the sub
+    if trace_expansion then
+        logs.report("fileio","expanding variable '%s'",str)
+    end
     t = t or { }
     str = gsub(str,",}",",@}")
     str = gsub(str,"{,","{@,")
  -- str = "@" .. str .. "@"
     local ok, done
-    local function do_first(a,b)
-        local t = { }
-        for s in gmatch(b,"[^,]+") do t[#t+1] = a .. s end
-        return "{" .. concat(t,",") .. "}"
-    end
-    local function do_second(a,b)
-        local t = { }
-        for s in gmatch(a,"[^,]+") do t[#t+1] = s .. b end
-        return "{" .. concat(t,",") .. "}"
-    end
-    local function do_both(a,b)
-        local t = { }
-        for sa in gmatch(a,"[^,]+") do
-            for sb in gmatch(b,"[^,]+") do
-                t[#t+1] = sa .. sb
-            end
-        end
-        return "{" .. concat(t,",") .. "}"
-    end
-    local function do_three(a,b,c)
-        return a .. b.. c
-    end
     while true do
         done = false
         while true do
@@ -409,6 +415,11 @@ local function splitpathexpr(str, t, validate)
     else
         for s in gmatch(str,"[^,]+") do
             t[#t+1] = s
+        end
+    end
+    if trace_expansions then
+        for k,v in ipairs(t) do
+            logs.report("fileio","% 4i: %s",k,v)
         end
     end
     return t
@@ -473,14 +484,14 @@ function resolvers.getownpath()
                     local olddir = lfs.currentdir()
                     if lfs.chdir(p) then
                         local pp = lfs.currentdir()
-                        if trace_verbose and p ~= pp then
-                            logs.report("fileio","following symlink %s to %s",p,pp)
+                        if trace_locating and p ~= pp then
+                            logs.report("fileio","following symlink '%s' to '%s'",p,pp)
                         end
                         resolvers.ownpath = pp
                         lfs.chdir(olddir)
                     else
-                        if trace_verbose then
-                            logs.report("fileio","unable to check path %s",p)
+                        if trace_locating then
+                            logs.report("fileio","unable to check path '%s'",p)
                         end
                         resolvers.ownpath =  p
                     end
@@ -509,10 +520,10 @@ local function identify_own()
     if resolvers.env('TEXMFCNF') == "" then os.env['TEXMFCNF'] = resolvers.cnfdefault end
     if resolvers.env('TEXOS')    == "" then os.env['TEXOS']    = resolvers.env('SELFAUTODIR') end
     if resolvers.env('TEXROOT')  == "" then os.env['TEXROOT']  = resolvers.env('SELFAUTOPARENT') end
-    if trace_verbose then
+    if trace_locating then
         for i=1,#own_places do
             local v = own_places[i]
-            logs.report("fileio","variable %s set to %s",v,resolvers.env(v) or "unknown")
+            logs.report("fileio","variable '%s' set to '%s'",v,resolvers.env(v) or "unknown")
         end
     end
     identify_own = function() end
@@ -544,10 +555,8 @@ end
 local function load_cnf_file(fname)
     fname = resolvers.clean_path(fname)
     local lname = file.replacesuffix(fname,'lua')
-    local f = io.open(lname)
-    if f then -- this will go
-        f:close()
-        local dname = file.dirname(fname)
+    if lfs.isfile(lname) then
+        local dname = file.dirname(fname) -- fname ?
         if not instance.configuration[dname] then
             resolvers.load_data(dname,'configuration',lname and file.basename(lname))
             instance.order[#instance.order+1] = instance.configuration[dname]
@@ -555,8 +564,8 @@ local function load_cnf_file(fname)
     else
         f = io.open(fname)
         if f then
-            if trace_verbose then
-                logs.report("fileio","loading %s", fname)
+            if trace_locating then
+                logs.report("fileio","loading configuration file %s", fname)
             end
             local line, data, n, k, v
             local dname = file.dirname(fname)
@@ -590,8 +599,8 @@ local function load_cnf_file(fname)
                 end
             end
             f:close()
-        elseif trace_verbose then
-            logs.report("fileio","skipping %s", fname)
+        elseif trace_locating then
+            logs.report("fileio","skipping configuration file '%s'", fname)
         end
     end
 end
@@ -618,8 +627,11 @@ function resolvers.load_cnf()
         end
     end
     -- instance.cnffiles contain complete names now !
+    -- we still use a funny mix of cnf and new but soon
+    -- we will switch to lua exclusively as we only use
+    -- the file to collect the tree roots
     if #instance.cnffiles == 0 then
-        if trace_verbose then
+        if trace_locating then
             logs.report("fileio","no cnf files found (TEXMFCNF may not be set/known)")
         end
     else
@@ -686,14 +698,14 @@ end
 
 function resolvers.append_hash(type,tag,name)
     if trace_locating then
-        logs.report("fileio","= hash append: %s",tag)
+        logs.report("fileio","hash '%s' appended",tag)
     end
     insert(instance.hashes, { ['type']=type, ['tag']=tag, ['name']=name } )
 end
 
 function resolvers.prepend_hash(type,tag,name)
     if trace_locating then
-        logs.report("fileio","= hash prepend: %s",tag)
+        logs.report("fileio","hash '%s' prepended",tag)
     end
     insert(instance.hashes, 1, { ['type']=type, ['tag']=tag, ['name']=name } )
 end
@@ -718,8 +730,8 @@ end
 
 function resolvers.locatelists()
     for _, path in ipairs(resolvers.clean_path_list('TEXMF')) do
-        if trace_verbose then
-            logs.report("fileio","locating list of %s",path)
+        if trace_locating then
+            logs.report("fileio","locating list of '%s'",path)
         end
         resolvers.locatedatabase(file.collapse_path(path))
     end
@@ -732,11 +744,11 @@ end
 function resolvers.locators.tex(specification)
     if specification and specification ~= '' and lfs.isdir(specification) then
         if trace_locating then
-            logs.report("fileio",'! tex locator found: %s',specification)
+            logs.report("fileio","tex locator '%s' found",specification)
         end
         resolvers.append_hash('file',specification,filename)
     elseif trace_locating then
-        logs.report("fileio",'? tex locator not found: %s',specification)
+        logs.report("fileio","tex locator '%s' not found",specification)
     end
 end
 
@@ -779,8 +791,8 @@ local weird = lpeg.P(".")^1 + lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?
 
 function resolvers.generators.tex(specification)
     local tag = specification
-    if trace_verbose then
-        logs.report("fileio","scanning path %s",specification)
+    if trace_locating then
+        logs.report("fileio","scanning path '%s'",specification)
     end
     instance.files[tag] = { }
     local files = instance.files[tag]
@@ -829,7 +841,7 @@ function resolvers.generators.tex(specification)
         end
     end
     action()
-    if trace_verbose then
+    if trace_locating then
         logs.report("fileio","%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
 end
@@ -859,7 +871,12 @@ local function split_kpse_path(str) -- beware, this can be either a path or a {s
         else
             found = checkedsplit(str,io.pathseparator)
         end
-    --  print(table.serialize(found))
+        if trace_expansions then
+            logs.report("fileio","splitting path specification '%s'",str)
+            for k,v in ipairs(found) do
+                logs.report("fileio","% 4i: %s",k,v)
+            end
+        end
         cache[str] = found
     end
     return found
@@ -889,6 +906,7 @@ function resolvers.joinconfig()
         end
     end
 end
+
 function resolvers.split_path(str)
     if type(str) == 'table' then
         return str
@@ -896,6 +914,7 @@ function resolvers.split_path(str)
         return split_kpse_path(str)
     end
 end
+
 function resolvers.join_path(str)
     if type(str) == 'table' then
         return file.join_path(str)
@@ -984,12 +1003,18 @@ function resolvers.serialize(files)
     return concat(t,"\n")
 end
 
+local data_state = { }
+
+function resolvers.data_state()
+    return data_state or { }
+end
+
 function resolvers.save_data(dataname, makename) -- untested without cache overload
     for cachename, files in next, instance[dataname] do
         local name = (makename or file.join)(cachename,dataname)
         local luaname, lucname = name .. ".lua", name .. ".luc"
-        if trace_verbose then
-            logs.report("fileio","preparing %s for %s",dataname,cachename)
+        if trace_locating then
+            logs.report("fileio","preparing '%s' for '%s'",dataname,cachename)
         end
         for k, v in next, files do
             if type(v) == "table" and #v == 1 then
@@ -1003,24 +1028,25 @@ function resolvers.save_data(dataname, makename) -- untested without cache overl
             date    = os.date("%Y-%m-%d"),
             time    = os.date("%H:%M:%S"),
             content = files,
+            uuid    = os.uuid(),
         }
         local ok = io.savedata(luaname,resolvers.serialize(data))
         if ok then
-            if trace_verbose then
-                logs.report("fileio","%s saved in %s",dataname,luaname)
+            if trace_locating then
+                logs.report("fileio","'%s' saved in '%s'",dataname,luaname)
             end
             if utils.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
-                if trace_verbose then
-                    logs.report("fileio","%s compiled to %s",dataname,lucname)
+                if trace_locating then
+                    logs.report("fileio","'%s' compiled to '%s'",dataname,lucname)
                 end
             else
-                if trace_verbose then
-                    logs.report("fileio","compiling failed for %s, deleting file %s",dataname,lucname)
+                if trace_locating then
+                    logs.report("fileio","compiling failed for '%s', deleting file '%s'",dataname,lucname)
                 end
                 os.remove(lucname)
             end
-        elseif trace_verbose then
-            logs.report("fileio","unable to save %s in %s (access error)",dataname,luaname)
+        elseif trace_locating then
+            logs.report("fileio","unable to save '%s' in '%s' (access error)",dataname,luaname)
         end
     end
 end
@@ -1032,19 +1058,20 @@ function resolvers.load_data(pathname,dataname,filename,makename) -- untested wi
     if blob then
         local data = blob()
         if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
-            if trace_verbose then
-                logs.report("fileio","loading %s for %s from %s",dataname,pathname,filename)
+            data_state[#data_state+1] = data.uuid
+            if trace_locating then
+                logs.report("fileio","loading '%s' for '%s' from '%s'",dataname,pathname,filename)
             end
             instance[dataname][pathname] = data.content
         else
-            if trace_verbose then
-                logs.report("fileio","skipping %s for %s from %s",dataname,pathname,filename)
+            if trace_locating then
+                logs.report("fileio","skipping '%s' for '%s' from '%s'",dataname,pathname,filename)
             end
             instance[dataname][pathname] = { }
             instance.loaderror = true
         end
-    elseif trace_verbose then
-        logs.report("fileio","skipping %s for %s from %s",dataname,pathname,filename)
+    elseif trace_locating then
+        logs.report("fileio","skipping '%s' for '%s' from '%s'",dataname,pathname,filename)
     end
 end
 
@@ -1070,8 +1097,8 @@ function resolvers.loadnewconfig()
         if blob then
             local data = blob()
             if data then
-                if trace_verbose then
-                    logs.report("fileio","loading configuration file %s",filename)
+                if trace_locating then
+                    logs.report("fileio","loading configuration file '%s'",filename)
                 end
                 if true then
                     -- flatten to variable.progname
@@ -1092,14 +1119,14 @@ function resolvers.loadnewconfig()
                     instance['setup'][pathname] = data
                 end
             else
-                if trace_verbose then
-                    logs.report("fileio","skipping configuration file %s",filename)
+                if trace_locating then
+                    logs.report("fileio","skipping configuration file '%s'",filename)
                 end
                 instance['setup'][pathname] = { }
                 instance.loaderror = true
             end
-        elseif trace_verbose then
-            logs.report("fileio","skipping configuration file %s",filename)
+        elseif trace_locating then
+            logs.report("fileio","skipping configuration file '%s'",filename)
         end
         instance.order[#instance.order+1] = instance.setup[pathname]
         if instance.loaderror then break end
@@ -1365,9 +1392,9 @@ function resolvers.isreadable.file(name)
     local readable = lfs.isfile(name) -- brrr
     if trace_detail then
         if readable then
-            logs.report("fileio","+ readable: %s",name)
+            logs.report("fileio","file '%s' is readable",name)
         else
-            logs.report("fileio","- readable: %s", name)
+            logs.report("fileio","file '%s' is not readable", name)
         end
     end
     return readable
@@ -1383,7 +1410,7 @@ local function collect_files(names)
     for k=1,#names do
         local fname = names[k]
         if trace_detail then
-            logs.report("fileio","? blobpath asked: %s",fname)
+            logs.report("fileio","using blobpath '%s'",fname)
         end
         local bname = file.basename(fname)
         local dname = file.dirname(fname)
@@ -1399,7 +1426,7 @@ local function collect_files(names)
             local files = blobpath and instance.files[blobpath]
             if files then
                 if trace_detail then
-                    logs.report("fileio",'? blobpath do: %s (%s)',blobpath,bname)
+                    logs.report("fileio","processing blobpath '%s' (%s)",blobpath,bname)
                 end
                 local blobfile = files[bname]
                 if not blobfile then
@@ -1433,7 +1460,7 @@ local function collect_files(names)
                     end
                 end
             elseif trace_locating then
-                logs.report("fileio",'! blobpath no: %s (%s)',blobpath,bname)
+                logs.report("fileio","no blobpath '%s' (%s)",blobpath,bname)
             end
         end
     end
@@ -1490,7 +1517,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
         if instance.found[stamp] then
             if trace_locating then
-                logs.report("fileio",'! remembered: %s',filename)
+                logs.report("fileio","remembering file '%s'",filename)
             end
             return instance.found[stamp]
         end
@@ -1498,7 +1525,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
     if not dangerous[instance.format or "?"] then
         if resolvers.isreadable.file(filename) then
             if trace_detail then
-                logs.report("fileio",'= found directly: %s',filename)
+                logs.report("fileio","file '%s' found directly",filename)
             end
             instance.found[stamp] = { filename }
             return { filename }
@@ -1506,13 +1533,13 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
     end
     if find(filename,'%*') then
         if trace_locating then
-            logs.report("fileio",'! wildcard: %s', filename)
+            logs.report("fileio","checking wildcard '%s'", filename)
         end
         result = resolvers.find_wildcard_files(filename)
     elseif file.is_qualified_path(filename) then
         if resolvers.isreadable.file(filename) then
             if trace_locating then
-                logs.report("fileio",'! qualified: %s', filename)
+                logs.report("fileio","qualified name '%s'", filename)
             end
             result = { filename }
         else
@@ -1522,7 +1549,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     forcedname = filename .. ".tex"
                     if resolvers.isreadable.file(forcedname) then
                         if trace_locating then
-                            logs.report("fileio",'! no suffix, forcing standard filetype: tex')
+                            logs.report("fileio","no suffix, forcing standard filetype 'tex'")
                         end
                         result, ok = { forcedname }, true
                     end
@@ -1532,7 +1559,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                         forcedname = filename .. "." .. s
                         if resolvers.isreadable.file(forcedname) then
                             if trace_locating then
-                                logs.report("fileio",'! no suffix, forcing format filetype: %s', s)
+                                logs.report("fileio","no suffix, forcing format filetype '%s'", s)
                             end
                             result, ok = { forcedname }, true
                             break
@@ -1582,7 +1609,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 -- end
             end
             if not ok and trace_locating then
-                logs.report("fileio",'? qualified: %s', filename)
+                logs.report("fileio","qualified name '%s'", filename)
             end
         end
     else
@@ -1601,12 +1628,12 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 wantedfiles[#wantedfiles+1] = forcedname
                 filetype = resolvers.format_of_suffix(forcedname)
                 if trace_locating then
-                    logs.report("fileio",'! forcing filetype: %s',filetype)
+                    logs.report("fileio","forcing filetype '%s'",filetype)
                 end
             else
                 filetype = resolvers.format_of_suffix(filename)
                 if trace_locating then
-                    logs.report("fileio",'! using suffix based filetype: %s',filetype)
+                    logs.report("fileio","using suffix based filetype '%s'",filetype)
                 end
             end
         else
@@ -1618,7 +1645,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             end
             filetype = instance.format
             if trace_locating then
-                logs.report("fileio",'! using given filetype: %s',filetype)
+                logs.report("fileio","using given filetype '%s'",filetype)
             end
         end
         local typespec = resolvers.variable_of_format(filetype)
@@ -1626,9 +1653,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         if not pathlist or #pathlist == 0 then
             -- no pathlist, access check only / todo == wildcard
             if trace_detail then
-                logs.report("fileio",'? filename: %s',filename)
-                logs.report("fileio",'? filetype: %s',filetype or '?')
-                logs.report("fileio",'? wanted files: %s',concat(wantedfiles," | "))
+                logs.report("fileio","checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
             end
             for k=1,#wantedfiles do
                 local fname = wantedfiles[k]
@@ -1651,7 +1676,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             local filelist = collect_files(wantedfiles)
             local doscan, recurse
             if trace_detail then
-                logs.report("fileio",'? filename: %s',filename)
+                logs.report("fileio","checking filename '%s'",filename)
             end
             -- a bit messy ... esp the doscan setting here
             for k=1,#pathlist do
@@ -1672,7 +1697,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                         local f = fl[2]
                         if find(f,expr) then
                             if trace_detail then
-                                logs.report("fileio",'= found in hash: %s',f)
+                                logs.report("fileio","file '%s' found in hash",f)
                             end
                             --- todo, test for readable
                             result[#result+1] = fl[3]
@@ -1694,7 +1719,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                                     local fname = file.join(ppname,w)
                                     if resolvers.isreadable.file(fname) then
                                         if trace_detail then
-                                            logs.report("fileio",'= found by scanning: %s',fname)
+                                            logs.report("fileio","found '%s' by scanning",fname)
                                         end
                                         result[#result+1] = fname
                                         done = true
@@ -1867,9 +1892,9 @@ function resolvers.load(option)
     statistics.starttiming(instance)
     resolvers.resetconfig()
     resolvers.identify_cnf()
-    resolvers.load_lua()
+    resolvers.load_lua() -- will become the new method
     resolvers.expand_variables()
-    resolvers.load_cnf()
+    resolvers.load_cnf() -- will be skipped when we have a lua file
     resolvers.expand_variables()
     if option ~= "nofiles" then
         resolvers.load_hash()
@@ -1881,14 +1906,14 @@ end
 function resolvers.for_files(command, files, filetype, mustexist)
     if files and #files > 0 then
         local function report(str)
-            if trace_verbose then
+            if trace_locating then
                 logs.report("fileio",str) -- has already verbose
             else
                 print(str)
             end
         end
-        if trace_verbose then
-            report('')
+        if trace_locating then
+            report('') -- ?
         end
         for _, file in ipairs(files) do
             local result = command(file,filetype,mustexist)
@@ -1954,7 +1979,7 @@ function resolvers.methodhandler(what, filename, filetype) -- ...
     local scheme = specification.scheme
     if resolvers[what][scheme] then
         if trace_locating then
-            logs.report("fileio",'= handler: %s -> %s -> %s',specification.original,what,table.sequenced(specification))
+            logs.report("fileio","handler '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
         end
         return resolvers[what][scheme](filename,filetype) -- todo: specification
     else
