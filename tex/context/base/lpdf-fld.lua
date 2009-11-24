@@ -470,11 +470,13 @@ end
 function codeinjections.getfieldgroup(name)
     local f = fields[name] or radios[name] or clones[name]
     local g = f and f.group
-    if not g then
-        local v = f.variant
+    if not g or g == "" then
+        local v, p, k = f.variant, f.parent, f.kind
         if v == "clone" or v == "copy" then
-            local p = f.parent
             f = fields[p] or radios[p]
+            g = f and f.group
+        elseif k == "sub" then
+            f = fields[p]
             g = f and f.group
         end
     end

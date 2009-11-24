@@ -34,18 +34,18 @@ local function definecolor(name, ca, global)
             if trace_define then
                 commands.writestatus("color","define global color '%s' with attribute: %s",name,ca)
             end
-            context.colordefagc(name,ca) -- texsprint(ctxcatcodes,"\\colordefagc{",name,"}{",ca,"}")
+            context.colordefagc(name,ca)
         else
             if trace_define then
                 commands.writestatus("color","define local color '%s' with attribute: %s",name,ca)
             end
-            context.colordefalc(name,ca) -- texsprint(ctxcatcodes,"\\colordefalc{",name,"}{",ca,"}")
+            context.colordefalc(name,ca)
         end
     else
         if global then
-            context.colordefrgc(name) -- texsprint(ctxcatcodes,"\\colordefrgc{",name,"}")
+            context.colordefrgc(name)
         else
-            context.colordefrlc(name) -- texsprint(ctxcatcodes,"\\colordefrlc{",name,"}")
+            context.colordefrlc(name)
         end
     end
 end
@@ -56,18 +56,18 @@ local function inheritcolor(name, ca, global)
             if trace_define then
                 commands.writestatus("color","inherit global color '%s' with attribute: %s",name,ca)
             end
-            context.colordeffgc(name,ca) -- texsprint(ctxcatcodes,"\\colordeffgc{",name,"}{",ca,"}")
+            context.colordeffgc(name,ca)
         else
             if trace_define then
                 commands.writestatus("color","inherit local color '%s' with attribute: %s",name,ca)
             end
-            context.colordefflc(name,ca) -- texsprint(ctxcatcodes,"\\colordefflc{",name,"}{",ca,"}")
+            context.colordefflc(name,ca)
         end
     else
         if global then
-            context.colordefrgc(name) -- texsprint(ctxcatcodes,"\\colordefrgc{",name,"}")
+            context.colordefrgc(name)
         else
-            context.colordefrlc(name) -- texsprint(ctxcatcodes,"\\colordefrlc{",name,"}")
+            context.colordefrlc(name)
         end
     end
 end
@@ -78,18 +78,18 @@ local function definetransparent(name, ta, global)
             if trace_define then
                 commands.writestatus("color","define global transparency '%s' with attribute: %s",name,ta)
             end
-            context.colordefagt(name,ta) -- texsprint(ctxcatcodes,"\\colordefagt{",name,"}{",ta,"}")
+            context.colordefagt(name,ta)
         else
             if trace_define then
                 commands.writestatus("color","define local transparency '%s' with attribute: %s",name,ta)
             end
-            context.colordefalt(name,ta) -- texsprint(ctxcatcodes,"\\colordefalt{",name,"}{",ta,"}")
+            context.colordefalt(name,ta)
         end
     else
         if global then
-            context.colordefrgt(name) -- texsprint(ctxcatcodes,"\\colordefrgt{",name,"}")
+            context.colordefrgt(name)
         else
-            context.colordefrlt(name) -- texsprint(ctxcatcodes,"\\colordefrlt{",name,"}")
+            context.colordefrlt(name)
         end
     end
 end
@@ -100,18 +100,18 @@ local function inherittransparent(name, ta, global)
             if trace_define then
                 commands.writestatus("color","inherit global transparency '%s' with attribute: %s",name,ta)
             end
-            context.colordeffgt(name,ta) -- texsprint(ctxcatcodes,"\\colordeffgt{",name,"}{",ta,"}")
+            context.colordeffgt(name,ta)
         else
             if trace_define then
                 commands.writestatus("color","inherit local transparency '%s' with attribute: %s",name,ta)
             end
-            context.colordefflt(name,ta) -- texsprint(ctxcatcodes,"\\colordefflt{",name,"}{",ta,"}")
+            context.colordefflt(name,ta)
         end
     else
         if global then
-            context.colordefrgt(name) -- texsprint(ctxcatcodes,"\\colordefrgt{",name,"}")
+            context.colordefrgt(name)
         else
-            context.colordefrlt(name) -- texsprint(ctxcatcodes,"\\colordefrlt{",name,"}")
+            context.colordefrlt(name)
         end
     end
 end

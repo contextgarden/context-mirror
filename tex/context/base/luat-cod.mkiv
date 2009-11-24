@@ -146,7 +146,7 @@
      {\ctxlua{environment.loadluafile("#1")}}
      {\ctxlua{environment.loadluafile("#1",#2)}}}
 
-\def\registerctxluafile#1#2% name version
+\def\registerctxluafile#1#2% name version (modules and core code)
   {\ifproductionrun
      \ctxloadluafile{#1}{#2}%
    \else

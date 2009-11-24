@@ -10786,7 +10786,7 @@ function runners.execute_script(fullname,internal)
                         logs.simpleline()
                         io.flush()
                     end
-                    local code = os.exec(command) -- maybe spawn
+                local code = os.exec(command) -- maybe spawn
                     return code == 0
                 end
             end
