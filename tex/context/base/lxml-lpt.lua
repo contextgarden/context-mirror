@@ -386,8 +386,9 @@ local lp_and     = P("&")  / " and "
 local lp_builtin = P (
         P("first")        / "1" +
         P("last")         / "#list" +
-        P("position")     / "l" +
+        P("position")     / "l" + -- is element in finalizer
         P("rootposition") / "order" +
+        P("order")        / "order" +
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +

@@ -15,6 +15,8 @@
 
 \writestatus{loading}{ConTeXt Core Macros / System}
 
+\registerctxluafile{core-sys}{1.001}
+
 \unprotect
 
 %D Version checking:
@@ -36,29 +38,65 @@
 %newlinechar=10   \def\outputnewlinechar{\rawcharacter{10}}
 \newlinechar=10  \edef\outputnewlinechar{^^J}
 
-% in case formats are shared:
+\edef\operatingsystem  {\ctxlua{tex.write(os.platform)}}
+
+\def\jobfilename      {\ctxlua{tex.sprint(tex.texcatcodes,environment.jobfilename       or "")}}
+\def\jobfilesuffix    {\ctxlua{tex.sprint(tex.texcatcodes,environment.jobfilesuffix     or "")}}
+\def\inputfilebarename{\ctxlua{tex.sprint(tex.texcatcodes,environment.inputfilebarename or "")}}
+\def\inputfilesuffix  {\ctxlua{tex.sprint(tex.texcatcodes,environment.inputfilesuffix   or "")}}
+\def\inputfilename    {\ctxlua{tex.sprint(tex.texcatcodes,environment.inputfilename     or "")}}
+\def\outputfilename   {\ctxlua{tex.sprint(tex.texcatcodes,environment.outputfilename    or "")}}
 
 \def\initializenewlinechar
   {\bgroup\newlinechar=10\xdef\outputnewlinechar{^^J}\egroup}
 
-%D Job names.
+\newtoks \everysetupsystem
 
-\def\outputfilename {\@@svfile}
-\def\inputfilename  {\@@svinputfile}
-\def\operatingsystem{\@@svtype}
+\def\setupsystem
+  {\dosingleargument\dosetupsystem}
 
-\let\jobfilename  \jobname
-\let\jobfilesuffix\c!tex
+\def\dosetupsystem[#1]%
+  {\getparameters[\??sv][#1]%
+   \the\everysetupsystem}
 
-\def\splitjobfilename % todo: mkiv
-  {\resetsystemmode{suffix-\jobfilesuffix}%
-   \edef\ascii{\inputfilename}\defconvertedcommand\ascii\ascii
-   \splitstring\ascii\at.\to\jobfilename\and\jobfilesuffix
-   \lowercasestring\jobfilesuffix\to\jobfilesuffix
-   \doifnothing\jobfilename  {\let\jobfilename  \jobname}%
-   % todo and totest: \defconvertedcommand\jobfilename\jobfilename
-   \doifnothing\jobfilesuffix{\let\jobfilesuffix\c!tex}%
-   \setsystemmode{suffix-\jobfilesuffix}}
+\appendtoks
+    \setuprandomize[\@@svrandom]%
+\to \everysetupsystem
+
+\appendtoks
+    \edef\outputresolution{\@@svresolution}%
+\to \everysetupsystem
+
+\appendtoks
+    \ifcase\@@svn
+        %                        % 0 : unknown
+    \or
+        \setsystemmode\v!first   % 1 : first run
+    \or
+        %                        % 2 : successive run
+    \or
+        \setsystemmode\v!first   % 3 : first and only run
+    \or
+        \setsystemmode\v!last    % 4 : (extra) last run
+    \fi
+\to \everysetupsystem
+
+\appendtoks
+    \edef\outputfilename{\@@svfile}%
+    \edef\inputfilename {\@@svinputfile}%
+\to \everysetupsystem
+
+\let\@@jobsuffix\s!unknown
+
+\appendtoks
+    \resetsystemmode{suffix-\@@jobsuffix}%
+    \edef\@@jobsuffix{\jobsuffix}%
+    \setsystemmode{suffix-\@@jobsuffix}%
+\to \everysetupsystem
+
+\appendtoks
+    \ctxlua {commands.updatefilenames("\inputfilename","\outputfilename")}%
+\to \everysetupsystem
 
 % Some mechanisms (see x-res-01) use either \jobfilename or
 % \jobfilename.somesuffix, in which case we need to use the
@@ -72,40 +110,22 @@
      {\let\jobfullname\empty}
      {\doif\jobfilesuffix\c!tex{\edef\jobfullname{\jobfilename.#1}}}}
 
-% ...
-
-\def\dosetupsystem[#1]%
-  {\getparameters[\??sv][#1]%
-   \setuprandomize[\@@svrandom]%
-   \beforesplitstring\@@svresolution\at dpi\to\@@svresolution
-   \let\outputresolution\@@svresolution
-   \ifcase\@@svn
-     %                        % 0 : unknown
-   \or
-     \setsystemmode\v!first   % 1 : first run
-   \or
-     %                        % 2 : successive run
-   \or
-     \setsystemmode\v!first   % 3 : first and only run
-   \or
-     \setsystemmode\v!last    % 4 : (extra) last run
-   \fi
-%    \processaction
-%      [\@@svtype]
-%     %[     mswin=>\edef\@@svline{\rawcharacter{13}\rawcharacter{10}}, % crlf
-%      [     mswin=>\edef\@@svline{\rawcharacter{13}},                  % cr % crlf
-%           darwin=>\edef\@@svline{\rawcharacter{13}},                  % cr
-%       \s!unknown=>\edef\@@svline{\rawcharacter{10}}]%                 % lf
-   \splitjobfilename}
-
-% \edef\@@svline{\rawcharacter{10}} % unix is the most critical/sensitive system
-
 \let\systemendofline\outputnewlinechar % will become obsolete
 
-\def\setupsystem
-  {\dosingleargument\dosetupsystem}
-
 \def\systemparameter#1{\executeifdefined{\??sv#1}\empty}
+
+%D There are a couple of system states avaiable:
+%D
+%D \starttabulate [|T|T|]
+%D     \NC \type{\jobname}           \NC \jobname           \NC \NR
+%D     \NC \type{\jobfilename}       \NC \jobfilename       \NC \NR
+%D     \NC \type{\jobfilesuffix}     \NC \jobfilesuffix     \NC \NR
+%D     \NC \type{\inputfilename}     \NC \inputfilename     \NC \NR
+%D     \NC \type{\inputfilebarename} \NC \inputfilebarename \NC \NR
+%D     \NC \type{\inputfilesuffix}   \NC \inputfilesuffix   \NC \NR
+%D     \NC \type{\outputfilename}    \NC \outputfilename    \NC \NR
+%D     \NC \type{\operatingsystem}   \NC \operatingsystem   \NC \NR
+%D \stoptabulate
 
 %D The system modes set by the setup command can be used in
 %D situations like:
@@ -134,13 +154,13 @@
          \s!default=>\getnewrandomseed\scratchcounter,
          \s!unknown=>\scratchcounter#1]%
       \expanded{\setrandomseed{\the\scratchcounter}}%
-% \writestatus\m!systems{randomseed: \the\scratchcounter}%
+    % \writestatus\m!systems{randomseed: \the\scratchcounter}%
       \egroup}}
 
 \setupsystem
   [\c!directory=,
    \c!n=0, % 0:unknown 1: one run 2: first 3: successive 4: final run
-   \c!resolution=600dpi,
+   \c!resolution=600,% in dpi, no unit in mkiv
    \c!random=,
    \c!file=\jobname,
    \c!inputfile=\outputfilename,
@@ -412,14 +432,5 @@
 
 \def\defreducedargument {\dodefreducedargument\edef}
 \def\gdefreducedargument{\dodefreducedargument\xdef}
-
-\startruntimeluacode
-    \ctxlua {
-        environment.inputfilename  = "\inputfilename"
-        environment.outputfilename = "\outputfilename"
-        environment.jobfilename    = "\jobfilename"
-        environment.jobfilesuffix  = "\jobfilesuffix"
-    }
-\stopruntimeluacode
 
 \protect \endinput

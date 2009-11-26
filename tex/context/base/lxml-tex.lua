@@ -904,6 +904,10 @@ local function position(collected,n)
     end
 end
 
+local function match(collected)
+    texwrite((collected and collected[1].mi) or 0)
+end
+
 local function index(collected,n)
     if collected then
         n = tonumber(n) or 0
@@ -1018,6 +1022,7 @@ finalizers.command        = command
 finalizers.attribute      = attribute
 finalizers.text           = text
 finalizers.position       = position
+finalizers.match          = match
 finalizers.index          = index
 finalizers.concat         = concat
 finalizers.concatrange    = concatrange
@@ -1200,6 +1205,10 @@ function lxml.name(id) -- or remapped name? -> lxml.info, combine
     else
         texsprint(r.tg)
     end
+end
+
+function lxml.match(id) -- or remapped name? -> lxml.info, combine
+    texsprint(get_id(id).mi or 0)
 end
 
 function lxml.tag(id) -- tag vs name -> also in l-xml tag->name

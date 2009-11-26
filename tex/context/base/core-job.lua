@@ -6,10 +6,10 @@ if not modules then modules = { } end modules ['core-job'] = {
     license   = "see context related readme files"
 }
 
-local texsprint, texprint, format, find, gmatch = tex.sprint, tex.print, string.format, string.find, string.gmatch
-
-local ctxcatcodes = tex.ctxcatcodes
-local texcatcodes = tex.texcatcodes
+local texsprint, texprint = tex.sprint, tex.print
+local ctxcatcodes, texcatcodes = tex.ctxcatcodes, tex.texcatcodes
+local lower, format, find, gmatch = string.lower, string.format, string.find, string.gmatch
+local concat = table.concat
 
 -- main code
 
@@ -63,12 +63,12 @@ end
 
 function commands.usepath(paths,maxreadlevel)
     resolvers.register_extra_path(paths)
-    texsprint(texcatcodes,table.concat(resolvers.instance.extra_paths or {}, ""))
+    texsprint(texcatcodes,concat(resolvers.instance.extra_paths or {}, ""))
 end
 
 function commands.usesubpath(subpaths,maxreadlevel)
     resolvers.register_extra_path(nil,subpaths)
-    texsprint(texcatcodes,table.concat(resolvers.instance.extra_paths or {}, ""))
+    texsprint(texcatcodes,concat(resolvers.instance.extra_paths or {}, ""))
 end
 
 function commands.usezipfile(name,tree)

@@ -138,7 +138,7 @@ end
 
 if arg then
 
-    -- new, reconstruct quoted snippets (maybe better just remnove the " then and add them later)
+    -- new, reconstruct quoted snippets (maybe better just remove the " then and add them later)
     local newarg, instring = { }, false
 
     for index, argument in ipairs(arg) do

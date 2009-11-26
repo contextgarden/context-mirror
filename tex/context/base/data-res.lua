@@ -262,7 +262,7 @@ function resolvers.settrace(n) -- no longer number but: 'locating' or 'detail'
     end
 end
 
-resolvers.settrace(os.getenv("MTX.resolvers.TRACE") or os.getenv("MTX_INPUT_TRACE"))
+resolvers.settrace(os.getenv("MTX_INPUT_TRACE"))
 
 function resolvers.osenv(key)
     local ie = instance.environment

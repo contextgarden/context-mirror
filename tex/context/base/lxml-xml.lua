@@ -11,7 +11,7 @@ local xmlfilter    = xml.filter -- we could inline this one for speed
 local xmltostring  = xml.tostring
 local xmlserialize = xml.serialize
 
-local function first(collected)
+local function first(collected) -- wrong ?
     return collected and collected[1]
 end
 
@@ -52,10 +52,16 @@ local function position(collected,n)
         n = tonumber(n) or 0
         if n < 0 then
             return collected[#collected + n + 1]
-        else
+        elseif n > 0 then
             return collected[n]
+        else
+            return collected[1].mi or 0
         end
     end
+end
+
+local function match(collected)
+    return (collected and collected[1].mi) or 0 -- match
 end
 
 local function index(collected)
@@ -211,6 +217,7 @@ finalizers.attribute      = attribute
 finalizers.att            = att
 finalizers.count          = count
 finalizers.position       = position
+finalizers.match          = match
 finalizers.index          = index
 finalizers.attributes     = attributes
 finalizers.chainattribute = chainattribute
@@ -262,8 +269,12 @@ end
 
 xml.content = text
 
-function xml.position(id,pattern,n)
+function xml.position(id,pattern,n) -- element
     return position(xmlfilter(id,pattern),n)
+end
+
+function xml.match(id,pattern) -- number
+    return match(xmlfilter(id,pattern))
 end
 
 function xml.empty(id,pattern)

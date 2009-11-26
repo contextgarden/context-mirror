@@ -146,9 +146,9 @@ scripts.update.platforms = {
 scripts.update.modules = {
 }
 
-function scripts.update.run(str)
+function scripts.update.run(str,force)
     logs.report("run", str)
-    if environment.argument("force") then
+    if force or environment.argument("force") then
         -- important, otherwise formats fly to a weird place
         -- (texlua sets luatex as the engine, we need to reset that or to fix texexec :)
         os.setenv("engine",nil)
@@ -337,13 +337,17 @@ function scripts.update.synchronize()
         --        command = format("%s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, url, archives, destination)
         --    end
             local normalflags, deleteflags = states.get("rsync.flags.normal"), ""
+            local dryrunflags = ""
+            if not environment.argument("force") then
+                dryrunflags = "--dry-run"
+            end
             if (destination:find("texmf$") or destination:find("texmf%-context$")) and (not environment.argument("keep")) then
                 deleteflags = states.get("rsync.flags.delete")
             end
-            command = format("%s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, url, archives, destination)
-            logs.report("mtx update", format("running command: %s",command))
+            command = format("%s %s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, dryrunflags, url, archives, destination)
+            --logs.report("mtx update", format("running command: %s",command))
             if not fetched[command] then
-                scripts.update.run(command)
+                scripts.update.run(command,true)
                 fetched[command] = command
             end
         end
@@ -479,7 +483,7 @@ if scripts.savestate then
     states.set("rsync.program", environment.argument("rsync"), "rsync", true) -- ok
     states.set("rsync.server", environment.argument("server"), "contextgarden.net::", true) -- ok
     states.set("rsync.module", environment.argument("module"), "minimals", true) -- ok
-    states.set("rsync.flags.normal", environment.argument("flags"), "-rpztlv --stats", true) -- ok
+    states.set("rsync.flags.normal", environment.argument("flags"), "-rpztlv", true) -- ok
     states.set("rsync.flags.delete", nil, "--delete", true) -- ok
 
     states.set("paths.root", environment.argument("texroot"), "tex", true) -- ok

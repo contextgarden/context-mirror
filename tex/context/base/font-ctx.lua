@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 -- needs a cleanup: merge of replace, lang/script etc
 
 local texsprint, count = tex.sprint, tex.count
-local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
+local format, concat, gmatch, match, find, lower, gsub = string.format, table.concat, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next, type = tostring, next, type
 
 local ctxcatcodes = tex.ctxcatcodes
@@ -411,4 +411,8 @@ function fonts.dimenfactor(unit,tfmdata)
     else
         return dimenfactors[unit] or unit
     end
+end
+
+function fonts.cleanname(name) -- mapped onto macro, see fonts.names.cleanname
+    texsprint(ctxcatcodes,(gsub(lower(name),"[^%a%d]","")))
 end

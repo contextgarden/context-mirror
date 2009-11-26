@@ -465,10 +465,11 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         --
         setalways("%% process info")
         --
-        setalways(                 "\\setupsystem[\\c!n=%s,\\c!m=%s]", kindofrun or 0, currentrun or 0)
-        setalways(                 "\\setupsystem[\\c!type=%s]",os.platform)
-        setvalue ("inputfile"    , "\\setupsystem[inputfile=%s]")
+    --  setvalue ("inputfile"    , "\\setupsystem[inputfile=%s]")
+        setalways(                 "\\setupsystem[inputfile=%s]",environment.argument("input") or environment.files[1] or "\\jobname")
         setvalue ("result"       , "\\setupsystem[file=%s]")
+        setalways(                 "\\setupsystem[\\c!n=%s,\\c!m=%s]", kindofrun or 0, currentrun or 0)
+    --  setalways(                 "\\setupsystem[\\c!type=%s]",os.platform)
         setvalues("path"         , "\\usepath[%s]")
         setvalue ("setuppath"    , "\\setupsystem[\\c!directory={%s}]")
         setvalue ("randomseed"   , "\\setupsystem[\\c!random=%s]")
@@ -621,20 +622,25 @@ local function makestub(format,filename,prepname)
     return filename
 end
 
-function scripts.context.openpdf(name)
-    os.spawn(string.format('pdfopen --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
-end
-function scripts.context.closepdf(name)
-    os.spawn(string.format('pdfclose --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
-end
-
 --~ function scripts.context.openpdf(name)
---~     -- somehow two instances start up, one with a funny filename
---~     os.spawn(string.format("\"c:/program files/kde/bin/okular.exe\" --unique %s",file.replacesuffix(name,"pdf")))
+--~     os.spawn(string.format('pdfopen --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
 --~ end
 --~ function scripts.context.closepdf(name)
---~     --
+--~     os.spawn(string.format('pdfclose --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
 --~ end
+
+local pdfview -- delayed loading
+
+function scripts.context.openpdf(name)
+    pdfview = pdfview or dofile(resolvers.find_file("l-pdfview.lua","tex"))
+    logs.simple("pdfview methods: %s, current method: %s, MTX_PDFVIEW_METHOD=%s",pdfview.methods(),pdfview.method,os.getenv(pdfview.METHOD) or "<unset>")
+    pdfview.open(file.replacesuffix(name,"pdf"))
+end
+
+function scripts.context.closepdf(name)
+    pdfview = pdfview or dofile(resolvers.find_file("l-pdfview.lua","tex"))
+    pdfview.close(file.replacesuffix(name,"pdf"))
+end
 
 function scripts.context.run(ctxdata,filename)
     -- filename overloads environment.files
@@ -1411,7 +1417,7 @@ messages.help = [[
 -- output           is currently obsolete for mkiv
 -- setuppath=list   must check
 -- modefile=name    must check
--- inputfile=name   load the given inputfile (must check)
+-- input=name   load the given inputfile (must check)
 
 messages.expert = [[
 expert options:

@@ -1755,15 +1755,6 @@
 \newdimen\bodyfontsize  \bodyfontsize=\globalbodyfontsize
 
 %D \macros
-%D   {outputresolution}
-%D
-%D Sometimes (to be honest: not in this module) we need to
-%D take the system resolution into account. Therefore we also
-%D define a macro:
-
-\def\outputresolution {600}
-
-%D \macros
 %D   {bodyfontfactor,bodyfontpoints}
 %D
 %D For multiplication purposes we keep an auxiliary counter
@@ -4027,10 +4018,13 @@
 %D \TestLookup{familyname=helveticaneue,weight=bold,style=italic}
 %D \stoptyping
 
+% we can also move the lookups to the fonts.namespace (of commands)
+
 \def\dolookupfontbyspec     #1{\ctxlua{fonts.names.lookup("#1")}}
 \def\dolookupnoffound         {\ctxlua{tex.write(fonts.names.noflookups())}}
 \def\dolookupgetkeyofindex#1#2{\ctxlua{tex.write(fonts.names.getlookupkey("#1",#2))}}
 \def\dolookupgetkey         #1{\ctxlua{tex.write(fonts.names.getlookupkey("#1"))}}
+\def\cleanfontname          #1{\ctxlua{fonts.cleanname("#1")}}
 
 \protect \endinput
 

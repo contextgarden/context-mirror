@@ -41,8 +41,8 @@ function file.nameonly(name)
     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
 end
 
-function file.extname(name)
-    return match(name,"^.+%.([^/\\]-)$") or  ""
+function file.extname(name,default)
+    return match(name,"^.+%.([^/\\]-)$") or default or ""
 end
 
 file.suffix = file.extname

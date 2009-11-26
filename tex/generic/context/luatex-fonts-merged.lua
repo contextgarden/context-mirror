@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/24/09 10:17:26
+-- merge date  : 11/26/09 16:35:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -1445,8 +1445,8 @@ function file.nameonly(name)
     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
 end
 
-function file.extname(name)
-    return match(name,"^.+%.([^/\\]-)$") or  ""
+function file.extname(name,default)
+    return match(name,"^.+%.([^/\\]-)$") or default or ""
 end
 
 file.suffix = file.extname

@@ -35,6 +35,14 @@ prefixes.relative = function(str,n)
     return resolvers.clean_path(str)
 end
 
+prefixes.auto = function(str)
+    local fullname = prefixes.relative(str)
+    if not lfs.isfile(fullname) then
+        fullname = prefixes.locate(str)
+    end
+    return fullname
+end
+
 prefixes.locate = function(str)
     local fullname = resolvers.find_given_file(str) or ""
     return resolvers.clean_path((fullname ~= "" and fullname) or str)
