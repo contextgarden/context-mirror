@@ -1,2 +1,2 @@
 #!/bin/sh
-mtxrun --usekpse --execute texexec.rb "$@"
+mtxrun --usekpse --execute texexec "$@"

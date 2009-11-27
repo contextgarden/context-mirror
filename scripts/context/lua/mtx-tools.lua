@@ -44,7 +44,7 @@ function scripts.tools.disarmutfbomb()
     end
 end
 
-logs.extendbanner("All Kind Of Tools 1.0",true)
+logs.extendbanner("Some File Related Goodies 1.00",true)
 
 messages.help = [[
 --disarmutfbomb       remove utf bomb if present

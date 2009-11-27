@@ -102,6 +102,7 @@ function os.currentplatform(name,default)
                     platform = "linux"
                 end
             elseif name == "macosx" then
+                local architecture = os.resultof("echo $HOSTTYPE")
                 if find(architecture,"i386") then
                     platform = "osx-intel"
                 elseif find(architecture,"x86_64") then

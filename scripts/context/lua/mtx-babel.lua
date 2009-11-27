@@ -415,7 +415,7 @@ do
 
 end
 
-logs.extendbanner("Babel Conversion Tools 1.2",true)
+logs.extendbanner("Babel Input To UTF Conversion 1.20",true)
 
 messages.help = [[
 --language=string     conversion language (e.g. greek)

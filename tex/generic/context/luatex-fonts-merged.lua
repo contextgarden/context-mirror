@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 11/26/09 16:35:22
+-- merge date  : 11/27/09 21:28:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -4226,10 +4226,11 @@ end
 
 local template = "%s-%s-%s.cidmap"
 
+
 local function locate(registry,ordering,supplement)
     local filename = format(template,registry,ordering,supplement)
     local hashname = lower(filename)
-    local cidmap = fonts.cid.map[hasnname]
+    local cidmap = fonts.cid.map[hashname]
     if not cidmap then
         if trace_loading then
             logs.report("load otf","checking cidmap, registry: %s, ordering: %s, supplement: %s, filename: %s",registry,ordering,supplement,filename)

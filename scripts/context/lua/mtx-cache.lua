@@ -76,7 +76,7 @@ function scripts.cache.list(all)
     end)
 end
 
-logs.extendbanner("Cache Tools 0.10")
+logs.extendbanner("ConTeXt & MetaTeX Cache Management 0.10")
 
 messages.help = [[
 --purge               remove not used files

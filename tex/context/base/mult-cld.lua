@@ -159,11 +159,11 @@ function context.runfile(filename)
         local ok = dofile(filename)
         if type(ok) == "function" then
             if trace_cld then
-                commands.writestatus("cld","begin of file '%s' (funciton call)",filename)
+                commands.writestatus("cld","begin of file '%s' (function call)",filename)
             end
             ok()
             if trace_cld then
-                commands.writestatus("cld","end of file '%s' (funciton call)",filename)
+                commands.writestatus("cld","end of file '%s' (function call)",filename)
             end
         elseif ok then
             commands.writestatus("cld","file '%s' is processed and returns true",filename)

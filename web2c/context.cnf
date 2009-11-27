@@ -139,6 +139,8 @@ TEXMFSCRIPTS   = .;$CTXDEVLUPATH;$TEXINPUTS;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/s
 % PERLINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/{$progname,$engine,}/perl
 % JAVAINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/{$progname,$engine,}/java
 
+CLUAINPUTS     = .;$SELFAUTOLOC/lib/{$progname,$engine,}/lua//
+
 % features
 
 shell_escape            = t

@@ -11,55 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\definetypescriptprefix [serif] [Serif]
-\definetypescriptprefix [sans]  [Sans]
-\definetypescriptprefix [mono]  [Mono]
-
-\definefontsynonym [DefaultFont] [cmvtt10]
-
-\startsetups [font:fallback:serif]
-    \definefontsynonym [Serif]            [DefaultFont]
-    \definefontsynonym [SerifBold]        [Serif]
-    \definefontsynonym [SerifItalic]      [Serif]
-    \definefontsynonym [SerifSlanted]     [SerifItalic]
-    \definefontsynonym [SerifBoldItalic]  [Serif]
-    \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
-    \definefontsynonym [SerifCaps]        [Serif]
-\stopsetups
-
-\startsetups [font:fallback:sans]
-    \definefontsynonym [Sans]            [DefaultFont]
-    \definefontsynonym [SansBold]        [Sans]
-    \definefontsynonym [SansItalic]      [Sans]
-    \definefontsynonym [SansSlanted]     [SansItalic]
-    \definefontsynonym [SansBoldItalic]  [Sans]
-    \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
-    \definefontsynonym [SansCaps]        [Sans]
-\stopsetups
-
-\startsetups [font:fallback:mono]
-    \definefontsynonym [Mono]            [DefaultFont]
-    \definefontsynonym [MonoBold]        [Mono]
-    \definefontsynonym [MonoItalic]      [Mono]
-    \definefontsynonym [MonoSlanted]     [MonoItalic]
-    \definefontsynonym [MonoBoldItalic]  [Mono]
-    \definefontsynonym [MonoBoldSlanted] [MonoBoldItalic]
-    \definefontsynonym [MonoCaps]        [Mono]
-\stopsetups
-
-\startsetups [font:allbold:serif]
-    \definefontsynonym [Serif]            [SerifBold]
-    \definefontsynonym [SerifItalic]      [SerifBoldItalic]
-    \definefontsynonym [SerifSlanted]     [SerifBoldSlanted]
-    %definefontsynonym [SerifCaps]        [SerifBold]
-\stopsetups
-
-\startsetups [font:allbold:sans]
-    \definefontsynonym [Sans]            [SansBold]
-    \definefontsynonym [SansItalic]      [SansBoldItalic]
-    \definefontsynonym [SansSlanted]     [SansBoldSlanted]
-    %definefontsynonym [SansCaps]        [SansBold]
-\stopsetups
+\starttypescriptcollection[simplification]
 
 \starttypescript [serif] [simple] [name]
     \definefontsynonym [Serif]            [Simple]
@@ -90,5 +42,7 @@
     \definefontsynonym [MonoBoldSlanted] [Mono]
     \definefontsynonym [MonoCaps]        [Mono]
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

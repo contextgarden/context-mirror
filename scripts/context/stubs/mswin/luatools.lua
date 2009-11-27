@@ -1780,6 +1780,7 @@ function os.currentplatform(name,default)
                     platform = "linux"
                 end
             elseif name == "macosx" then
+                local architecture = os.resultof("echo $HOSTTYPE")
                 if find(architecture,"i386") then
                     platform = "osx-intel"
                 elseif find(architecture,"x86_64") then
@@ -1881,8 +1882,8 @@ function file.nameonly(name)
     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
 end
 
-function file.extname(name)
-    return match(name,"^.+%.([^/\\]-)$") or  ""
+function file.extname(name,default)
+    return match(name,"^.+%.([^/\\]-)$") or default or ""
 end
 
 file.suffix = file.extname
@@ -3757,7 +3758,7 @@ end
 
 if arg then
 
-    -- new, reconstruct quoted snippets (maybe better just remnove the " then and add them later)
+    -- new, reconstruct quoted snippets (maybe better just remove the " then and add them later)
     local newarg, instring = { }, false
 
     for index, argument in ipairs(arg) do
@@ -4077,6 +4078,9 @@ if not modules then modules = { } end modules ['luat-log'] = {
 
 -- this is old code that needs an overhaul
 
+--~ io.stdout:setvbuf("no")
+--~ io.stderr:setvbuf("no")
+
 local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
 local texcount = tex and tex.count
 
@@ -4158,25 +4162,47 @@ function logs.tex.line(fmt,...) -- new
     end
 end
 
+--~ function logs.tex.start_page_number()
+--~     local real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
+--~     if real > 0 then
+--~         if user > 0 then
+--~             if sub > 0 then
+--~                 write(format("[%s.%s.%s",real,user,sub))
+--~             else
+--~                 write(format("[%s.%s",real,user))
+--~             end
+--~         else
+--~             write(format("[%s",real))
+--~         end
+--~     else
+--~         write("[-")
+--~     end
+--~ end
+
+--~ function logs.tex.stop_page_number()
+--~     write("]")
+--~ end
+
+local real, user, sub
+
 function logs.tex.start_page_number()
-    local real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
-    if real > 0 then
-        if user > 0 then
-            if sub > 0 then
-                write(format("[%s.%s.%s",real,user,sub))
-            else
-                write(format("[%s.%s",real,user))
-            end
-        else
-            write(format("[%s",real))
-        end
-    else
-        write("[-")
-    end
+    real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
 end
 
 function logs.tex.stop_page_number()
-    write("]")
+    if real > 0 then
+        if user > 0 then
+            if sub > 0 then
+                logs.report("pages", "flushing page, realpage %s, userpage %s, subpage %s",real,user,sub)
+            else
+                logs.report("pages", "flushing page, realpage %s, userpage %s",real,user)
+            end
+        else
+            logs.report("pages", "flushing page, realpage %s",real)
+        end
+    else
+        logs.report("pages", "flushing page")
+    end
 end
 
 logs.tex.report_job_stat = statistics.show_job_stat
@@ -4621,7 +4647,7 @@ function resolvers.settrace(n) -- no longer number but: 'locating' or 'detail'
     end
 end
 
-resolvers.settrace(os.getenv("MTX.resolvers.TRACE") or os.getenv("MTX_INPUT_TRACE"))
+resolvers.settrace(os.getenv("MTX_INPUT_TRACE"))
 
 function resolvers.osenv(key)
     local ie = instance.environment

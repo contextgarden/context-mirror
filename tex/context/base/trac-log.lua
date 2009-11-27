@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['luat-log'] = {
+if not modules then modules = { } end modules ['trac-log'] = {
     version   = 1.001,
     comment   = "companion to trac-log.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -275,8 +275,12 @@ end
 
 logs.simpleline = logs.reportline
 
-function logs.help(message,option)
+function logs.reportbanner() -- for scripts too
     logs.report(banner)
+end
+
+function logs.help(message,option)
+    logs.reportbanner()
     logs.reportline()
     logs.reportlines(message)
     local moreinfo = logs.moreinfo or ""

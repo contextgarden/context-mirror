@@ -281,7 +281,7 @@ function scripts.fonts.save()
     end
 end
 
-logs.extendbanner("Font Tools 0.21",true)
+logs.extendbanner("ConTeXt Font Database Management 0.21",true)
 
 messages.help = [[
 --save                save open type font in raw table

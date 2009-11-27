@@ -1,1 +1,0 @@
-mtxrun --script texworks --start

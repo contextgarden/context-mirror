@@ -49,7 +49,7 @@ function scripts.metatex.timed(action)
     statistics.timed(action)
 end
 
-logs.extendbanner("MetaTeX Tools 0.10",true)
+logs.extendbanner("MetaTeX Process Management 0.10",true)
 
 messages.help = [[
 --run                 process (one or more) files (default action)

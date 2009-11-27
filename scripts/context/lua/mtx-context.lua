@@ -1381,7 +1381,7 @@ function scripts.context.update()
     end
 end
 
-logs.extendbanner("ConTeXt Tools 0.51",true)
+logs.extendbanner("ConTeXt Process Management 0.51",true)
 
 messages.help = [[
 --run                 process (one or more) files (default action)

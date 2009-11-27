@@ -118,7 +118,7 @@ function scripts.convert.convertgiven()
 end
 
 
-logs.extendbanner("Graphic Conversion Tools 0.10",true)
+logs.extendbanner("ConTeXT Graphic Conversion Helpers 0.10",true)
 
 messages.help = [[
 --convertall          convert all graphics on path

@@ -234,7 +234,7 @@ function scripts.interface.messages()
     end
 end
 
-logs.extendbanner("Interface Tools 0.11",true)
+logs.extendbanner("ConTeXt Interface Related Goodies 0.11",true)
 
 messages.help = [[
 --scite               generate scite interface

@@ -55,7 +55,7 @@ function scripts.package.merge_luatex_files(name,strip)
     end
 end
 
-logs.extendbanner("Package Tools 0.1",true)
+logs.extendbanner("Distribution Related Goodies 0.10",true)
 
 messages.help = [[
 --merge               merge 'loadmodule' into merge file

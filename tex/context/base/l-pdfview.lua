@@ -12,21 +12,24 @@ pdfview = pdfview or { }
 
 local opencalls = {
     ['default'] = "pdfopen --file", -- "pdfopen --back --file"
-    ['okular']  = 'start "test" "c:/program files/kde/bin/okular.exe" --unique', -- todo: get focus
     ['xpdf']    = "xpdfopen",
 }
 
 local closecalls= {
     ['default'] = "pdfclose --file",
-    ['okular']  = nil,
     ['xpdf']    = nil,
 }
 
 local allcalls = {
     ['default'] = "pdfclose --all",
-    ['okular']  = nil,
     ['xpdf']    = nil,
 }
+
+if os.platform == "windows" then
+     opencalls['okular'] = 'start "test" "c:/program files/kde/bin/okular.exe" --unique' -- todo: get focus
+else
+     opencalls['okular'] = 'okular --unique'
+end
 
 pdfview.METHOD = "MTX_PDFVIEW_METHOD"
 pdfview.method = getenv(pdfview.METHOD) or 'default'

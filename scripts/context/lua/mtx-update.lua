@@ -445,7 +445,7 @@ function scripts.update.make()
     logs.report("make","done")
 end
 
-logs.extendbanner("Download Tools 0.20",true)
+logs.extendbanner("ConTeXt Minimals Updater 0.21",true)
 
 messages.help = [[
 --platform=string     platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)

@@ -326,7 +326,7 @@ function scripts.webserver.run(configuration)
     end
 end
 
-logs.extendbanner("Simple Webserver 0.10")
+logs.extendbanner("Simple Webserver For Helpers 0.10")
 
 messages.help = [[
 --start               start server

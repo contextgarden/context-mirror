@@ -111,7 +111,12 @@
    \else
      \edef\currentMPgraphicinstance{#1}%
    \fi
-   \edef\currentMPgraphicformat{\csname\@@MPF\currentMPgraphicinstance\s!format\endcsname}}
+   \edef\currentMPgraphicformat
+     {\ifcsname\@@MPF\currentMPgraphicinstance\s!format\endcsname
+        \csname\@@MPF\currentMPgraphicinstance\s!format\endcsname
+      \else
+        \defaultMPgraphicinstance
+      \fi}}
 
 \def\currentMPgraphicinstance{\defaultMPgraphicinstance}
 \def\currentMPgraphicformat  {\currentMPgraphicinstance}

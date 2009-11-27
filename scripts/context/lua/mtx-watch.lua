@@ -239,7 +239,7 @@ function scripts.watch.show_logs(path) -- removes duplicates
     end
 end
 
-logs.extendbanner("Watchdog 1.00",true)
+logs.extendbanner("ConTeXt Request Watchdog 1.00",true)
 
 messages.help = [[
 --logpath             optional path for log files

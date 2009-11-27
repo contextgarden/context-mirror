@@ -337,7 +337,7 @@ function scripts.patterns.convert()
     end
 end
 
-logs.extendbanner("Pattern Tools 0.20",true)
+logs.extendbanner("ConTeXt Pattern File Management 0.20",true)
 
 messages.help = [[
 --convert             generate context language files (mnemonic driven, if not given then all)

@@ -76,19 +76,6 @@
      {\splitfiletype{#1}%
       \addtocommalist\splitoffname\typescriptfiles}}
 
-\usetypescriptfile[\f!typeprefix tmf]
-\usetypescriptfile[\f!typeprefix siz]
-
-\ifnum\texengine=\xetexengine
-    \usetypescriptfile[\f!typeprefix otf]
-    \usetypescriptfile[\f!typeprefix xtx]
-\else
-    \usetypescriptfile[\f!typeprefix one]
-    %usetypescriptfile[\f!typeprefix akb] % we have gyre now
-\fi
-
-\usetypescriptfile[\f!typeprefix loc]
-
 % SO FAR
 
 \let\currenttypescripts\empty

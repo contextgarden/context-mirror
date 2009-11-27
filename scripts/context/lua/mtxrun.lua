@@ -1789,6 +1789,7 @@ function os.currentplatform(name,default)
                     platform = "linux"
                 end
             elseif name == "macosx" then
+                local architecture = os.resultof("echo $HOSTTYPE")
                 if find(architecture,"i386") then
                     platform = "osx-intel"
                 elseif find(architecture,"x86_64") then
@@ -4773,8 +4774,9 @@ local lp_and     = P("&")  / " and "
 local lp_builtin = P (
         P("first")        / "1" +
         P("last")         / "#list" +
-        P("position")     / "l" +
+        P("position")     / "l" + -- is element in finalizer
         P("rootposition") / "order" +
+        P("order")        / "order" +
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +
@@ -6125,9 +6127,13 @@ local function position(collected,n)
         elseif n > 0 then
             return collected[n]
         else
-            return collected[1].mi -- match
+            return collected[1].mi or 0
         end
     end
+end
+
+local function match(collected)
+    return (collected and collected[1].mi) or 0 -- match
 end
 
 local function index(collected)
@@ -6283,6 +6289,7 @@ finalizers.attribute      = attribute
 finalizers.att            = att
 finalizers.count          = count
 finalizers.position       = position
+finalizers.match          = match
 finalizers.index          = index
 finalizers.attributes     = attributes
 finalizers.chainattribute = chainattribute
@@ -6334,8 +6341,12 @@ end
 
 xml.content = text
 
-function xml.position(id,pattern,n)
+function xml.position(id,pattern,n) -- element
     return position(xmlfilter(id,pattern),n)
+end
+
+function xml.match(id,pattern) -- number
+    return match(xmlfilter(id,pattern))
 end
 
 function xml.empty(id,pattern)
@@ -6801,7 +6812,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['luat-log'] = {
+if not modules then modules = { } end modules ['trac-log'] = {
     version   = 1.001,
     comment   = "companion to trac-log.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -7078,8 +7089,12 @@ end
 
 logs.simpleline = logs.reportline
 
-function logs.help(message,option)
+function logs.reportbanner() -- for scripts too
     logs.report(banner)
+end
+
+function logs.help(message,option)
+    logs.reportbanner()
     logs.reportline()
     logs.reportlines(message)
     local moreinfo = logs.moreinfo or ""
@@ -7380,7 +7395,7 @@ function resolvers.settrace(n) -- no longer number but: 'locating' or 'detail'
     end
 end
 
-resolvers.settrace(os.getenv("MTX.resolvers.TRACE") or os.getenv("MTX_INPUT_TRACE"))
+resolvers.settrace(os.getenv("MTX_INPUT_TRACE"))
 
 function resolvers.osenv(key)
     local ie = instance.environment
@@ -10639,7 +10654,7 @@ runners  = runners  or { } -- global
 messages = messages or { }
 
 messages.help = [[
---script              run an mtx script (--noquotes)
+--script              run an mtx script (--noquotes), no script gives list
 --execute             run a script or program (--noquotes)
 --resolve             resolve prefixed arguments
 --ctxlua              run internally (using preloaded libs)
@@ -10685,20 +10700,17 @@ runners.suffixes = {
 }
 
 runners.registered = {
-    texexec      = { 'texexec.rb',      true  },  -- context mkii runner (only tool not to be luafied)
+    texexec      = { 'texexec.rb',      false },  -- context mkii runner (only tool not to be luafied)
     texutil      = { 'texutil.rb',      true  },  -- old perl based index sorter for mkii (old versions need it)
     texfont      = { 'texfont.pl',      true  },  -- perl script that makes mkii font metric files
     texfind      = { 'texfind.pl',      false },  -- perltk based tex searching tool, mostly used at pragma
     texshow      = { 'texshow.pl',      false },  -- perltk based context help system, will be luafied
- -- texwork      = { \texwork.pl',      false },  -- perltk based editing environment, only used at pragma
-
+ -- texwork      = { 'texwork.pl',      false },  -- perltk based editing environment, only used at pragma
     makempy      = { 'makempy.pl',      true  },
     mptopdf      = { 'mptopdf.pl',      true  },
     pstopdf      = { 'pstopdf.rb',      true  },  -- converts ps (and some more) images, does some cleaning (replaced)
-
 --  examplex     = { 'examplex.rb',     false },
     concheck     = { 'concheck.rb',     false },
-
     runtools     = { 'runtools.rb',     true  },
     textools     = { 'textools.rb',     true  },
     tmftools     = { 'tmftools.rb',     true  },
@@ -10710,7 +10722,6 @@ runners.registered = {
     xmltools     = { 'xmltools.rb',     true  },
 --  luatools     = { 'luatools.lua',    true  },
     mtxtools     = { 'mtxtools.rb',     true  },
-
     pdftrimwhite = { 'pdftrimwhite.pl', false }
 }
 
@@ -10763,7 +10774,7 @@ function runners.prepare()
     return "run"
 end
 
-function runners.execute_script(fullname,internal)
+function runners.execute_script(fullname,internal,nosplit)
     local noquote = environment.argument("noquotes")
     if fullname and fullname ~= "" then
         local state = runners.prepare()
@@ -10803,17 +10814,19 @@ function runners.execute_script(fullname,internal)
                 end
             end
             if result and result ~= "" then
-                local before, after = environment.split_arguments(fullname) -- already done
-                environment.arguments_before, environment.arguments_after = before, after
+                if not no_split then
+                    local before, after = environment.split_arguments(fullname) -- already done
+                    environment.arguments_before, environment.arguments_after = before, after
+                end
                 if internal then
-                    arg = { } for _,v in pairs(after) do arg[#arg+1] = v end
+                    arg = { } for _,v in pairs(environment.arguments_after) do arg[#arg+1] = v end
                     dofile(result)
                 else
                     local binary = runners.applications[file.extname(result)]
                     if binary and binary ~= "" then
                         result = binary .. " " .. result
                     end
-                    local command = result .. " " .. environment.reconstruct_commandline(after,noquote)
+                    local command = result .. " " .. environment.reconstruct_commandline(environment.arguments_after,noquote)
                     if logs.verbose then
                         logs.simpleline()
                         logs.simple("executing: %s",command)
@@ -10821,7 +10834,7 @@ function runners.execute_script(fullname,internal)
                         logs.simpleline()
                         io.flush()
                     end
-                local code = os.exec(command) -- maybe spawn
+                    local code = os.exec(command) -- maybe spawn
                     return code == 0
                 end
             end
@@ -10855,7 +10868,7 @@ function runners.execute_program(fullname)
     return false
 end
 
--- the --usekpse flag will fallback on kpse
+-- the --usekpse flag will fallback on kpse (hm, we can better update mtx-stubs)
 
 local windows_stub = '@echo off\013\010setlocal\013\010set ownpath=%%~dp0%%\013\010texlua "%%ownpath%%mtxrun.lua" --usekpse --execute %s %%*\013\010endlocal\013\010'
 local unix_stub    = '#!/bin/sh\010mtxrun --usekpse --execute %s \"$@\"\010'
@@ -11096,22 +11109,35 @@ function runners.execute_ctx_script(filename,arguments)
             return true
         end
     else
-        logs.setverbose(true)
-        if filename == "" then
-            logs.simple("unknown script, no name given")
+    --  logs.setverbose(true)
+        if filename == "" or filename == "help" then
             local context = resolvers.find_file("mtx-context.lua")
+            logs.setverbose(true)
             if context ~= "" then
                 local result = dir.glob((string.gsub(context,"mtx%-context","mtx-*"))) -- () needed
                 local valid = { }
+                table.sort(result)
                 for _, scriptname in ipairs(result) do
-                    scriptname = string.match(scriptname,".*mtx%-([^%-]-)%.lua")
-                    if scriptname then
-                        valid[#valid+1] = scriptname
+                    local scriptbase = string.match(scriptname,".*mtx%-([^%-]-)%.lua")
+                    if scriptbase then
+                        local data = io.loaddata(scriptname)
+                        local banner, version = string.match(data,"[\n\r]logs%.extendbanner%s*%(%s*[\"\']([^\n\r]+)%s*(%d+%.%d+)")
+                        if banner then
+                            valid[#valid+1] = { scriptbase, version, banner }
+                        end
                     end
                 end
                 if #valid > 0 then
-                    logs.simple("known scripts: %s",table.concat(valid,", "))
+                    logs.reportbanner()
+                    logs.reportline()
+                    logs.simple("no script name given, known scripts:")
+                    logs.simple()
+                    for k, v in ipairs(valid) do
+                        logs.simple("%-12s  %4s  %s",v[1],v[2],v[3])
+                    end
                 end
+            else
+                logs.simple("no script name given")
             end
         else
             filename = file.addsuffix(filename,"lua")
@@ -11124,6 +11150,7 @@ function runners.execute_ctx_script(filename,arguments)
         return false
     end
 end
+
 
 function runners.timedrun(filename) -- just for me
     if filename and filename ~= "" then
@@ -11152,7 +11179,9 @@ instance.lsrmode  = environment.argument("lsr")      or false
 
 -- maybe the unset has to go to this level
 
-if environment.argument("usekpse") or environment.argument("forcekpse") then
+local is_mkii_stub = runners.registered[file.removesuffix(file.basename(filename))]
+
+if environment.argument("usekpse") or environment.argument("forcekpse") or is_mkii_stub then
 
     os.setenv("engine","")
     os.setenv("progname","")
@@ -11187,7 +11216,7 @@ if environment.argument("usekpse") or environment.argument("forcekpse") then
             return (kpse_initialized():show_path(name)) or ""
         end
 
-    elseif environment.argument("usekpse") then
+    elseif environment.argument("usekpse") or is_mkii_stub then
 
         resolvers.load()
 
@@ -11222,7 +11251,10 @@ if trackspec then
     trackers.enable(trackspec)
 end
 
-if environment.argument("selfmerge") then
+if is_mkii_stub then
+    -- execute mkii script
+    ok = runners.execute_script(filename,false,true)
+elseif environment.argument("selfmerge") then
     -- embed used libraries
     utils.merger.selfmerge(own.name,own.libs,own.list)
 elseif environment.argument("selfclean") then

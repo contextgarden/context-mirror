@@ -186,7 +186,7 @@ function scripts.timings.xhtml(filename)
     end
 end
 
-logs.extendbanner("ConTeXt Timing Tools 0.1",true)
+logs.extendbanner("ConTeXt Timing Tools 0.10",true)
 
 messages.help = [[
 --xhtml               make xhtml file

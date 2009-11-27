@@ -11,17 +11,17 @@ local format, concat, utfchar, upper = string.format, table.concat, unicode.utf8
 scripts       = scripts       or { }
 scripts.chars = scripts.chars or { }
 
-local banner = [[
--- filename : char-mth.lua
--- comment  : companion to char-mth.tex (in ConTeXt)
--- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
--- license  : see context related readme files
--- comment  : generated from data file downloaded from STIX website
-
-if not versions   then versions   = { } end versions['char-mth'] = 1.001
-if not characters then characters = { } end
-]]
-
+--~ local banner = [[
+--~ -- filename : char-mth.lua
+--~ -- comment  : companion to char-mth.tex (in ConTeXt)
+--~ -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+--~ -- license  : see context related readme files
+--~ -- comment  : generated from data file downloaded from STIX website
+--~
+--~ if not versions   then versions   = { } end versions['char-mth'] = 1.001
+--~ if not characters then characters = { } end
+--~ ]]
+--~
 --~ function scripts.chars.stixtomkiv(inname,outname)
 --~     if inname == "" then
 --~         logs.report("aquiring math data","invalid datafilename")
@@ -301,7 +301,7 @@ function scripts.chars.makeencoutf()
     end
 end
 
-logs.extendbanner("Character Tools 0.10")
+logs.extendbanner("MkII Character Table Generators 0.10")
 
 messages.help = [[
 --stix                convert stix table to math table
