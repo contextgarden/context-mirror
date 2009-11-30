@@ -220,8 +220,8 @@
      [\c!location=\@@defaultnotedefloc,
       \c!distance=\@@defaultnotedefdis,
       \c!width=\v!fit,
-      \c!headstyle=\noteparameter\c!style,
-      \c!headcolor=\noteparameter\c!color,
+      \c!headstyle=\noteparameter\c!style, % hm
+      \c!headcolor=\noteparameter\c!color, % hm
       \s!handler=\v!note,
       \c!text=,
       \c!before=,
@@ -491,6 +491,28 @@
 %D functionality.
 
 %D The next implementation runs on top of enumerations (only in \MKIV).
+%D
+%D \starttyping
+%D \setupenumerations
+%D   [footnote]
+%D   [     style=\type{(es)},
+%D     headstyle=\type{(hs)}]
+%D
+%D \setupnote
+%D   [footnote]
+%D   [        style=\type{(s)},
+%D          command=\type{(c)},
+%D      textcommand=\type{(tc)},
+%D        textstyle=\type{(ts)},
+%D      numberstyle=\type{(ns)},
+%D    numbercommand=\type{(nc)}]
+%D
+%D \setuplayout[backspace=6cm,marginwidth=cm,width=middle]
+%D
+%D \starttext
+%D     \dorecurse{9}{This\footnote{Hello World #1} is a test.\par }
+%D \stoptext
+%D \stoptyping
 
 % TODO: \ifnotesenabled
 
@@ -548,15 +570,16 @@
      \endgroup
    \fi}
 
-\def\dolastnotesymbol{\typesetsomenotesymbol\currentnote\currentnotenumber}
+\def\dolastnotesymbol
+  {\typesetsomenotesymbol\currentnote\currentnotenumber}
 
-\def\dotypesetsomenotesymbol#1#2%
+\def\dotypesetsomenotesymbol#1#2% running text
   {\dodonotesymbol
      {\synchronizesomenotesymbol{#1}{#2}%
       \ctxlua{structure.notes.number("\currentnote",\currentnotenumber)}% \currentdescriptionnumberentry
       \domovednote{#1}{#2}\v!previouspage\v!nextpage}}
 
-\def\typesetsomenotesymbol#1#2%
+\def\typesetsomenotesymbol#1#2% running text
   {\removeunwantedspaces
    \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
@@ -595,7 +618,8 @@
 
 \def\docurrentnoteenumerationfullnumber
   {\noteparameter\c!numbercommand
-     {\ctxlua{structure.notes.number("\currentnote",\currentdescriptionnumberentry)}%
+     {\dosetnoteattributes\c!numberstyle\c!numbercolor
+      \ctxlua{structure.notes.number("\currentnote",\currentdescriptionnumberentry)}%
       \domovednote\currentdescription\currentdescriptionnumberentry\v!nextpage\v!previouspage}}
 
 \def\synchronizesomenotesymbol#1#2% called more often than needed

@@ -257,6 +257,8 @@
      \expandafter\mkdoinnerlinenumber
    \or
      \expandafter\mkdoouterlinenumber
+   \or
+     \expandafter\mkdotextlinenumber
    \fi}
 
 \def\mkrightlinenumber
@@ -270,6 +272,8 @@
      \expandafter\mkdoouterlinenumber
    \or
      \expandafter\mkdoinnerlinenumber
+   \or
+     \expandafter\mkdorightlinenumber
    \fi}
 
 \def\mkaddtextlinenumbers#1#2#3% box col max
@@ -293,6 +297,7 @@
      \or % outer
        \let\makenumber\mkdoouterlinenumber
      \or % text
+       \let\makenumber\mkdotextlinenumber
      \fi
    \else\ifcase#2\relax
      \let\makenumber\mkskiplinenumber
@@ -323,6 +328,9 @@
    \fi\fi
    \mkprocesstextlinenumbers{#1}%
    \egroup}
+
+\def\mkdotextlinenumber #1#2#3#4#5% beware, one needs so compensate for this in the width !
+  {\hbox{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}
 
 \def\mkdoleftlinenumber #1#2#3#4#5%
   {\hbox{\llap{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}}

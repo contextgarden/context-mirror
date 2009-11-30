@@ -572,18 +572,15 @@ scripts.context.interfaces = {
     it = "cont-it",
     ro = "cont-ro",
     pe = "cont-pe",
-    -- for taco and me
- -- xp = "cont-xp",
 }
 
 scripts.context.defaultformats  = {
     "cont-en",
     "cont-nl",
---  "cont-xp",
     "mptopdf",
 --  "metatex",
     "metafun",
-    "plain"
+--  "plain"
 }
 
 local function analyze(filename)

@@ -6142,6 +6142,10 @@
 \def\stopstrictinspectnextcharacter
   {\let\inspectnextcharacter\normalinspectnextcharacter}
 
+\def\strictdoifnextoptionalelse#1#2%
+  {\startstrictinspectnextcharacter
+   \doifnextcharelse[{\stopstrictinspectnextcharacter#1}{\stopstrictinspectnextcharacter#2}}
+
 %D \macros
 %D   {gobblespacetokens}
 %D

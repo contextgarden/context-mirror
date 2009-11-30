@@ -21,19 +21,30 @@
 %D
 %D \startbuffer
 %D \defineenumeration[one]
-%D \defineenumeration[two]   [one]
-%D \defineenumeration[three] [number=one,style=slanted]
-%D \defineenumeration[four]  [three]
-%D \defineenumeration[five]  [three] [number=five]
+%D \defineenumeration[two]   [one] % clone one
+%D \defineenumeration[three] [counter=one,style=slanted] % only use counter of one
+%D \defineenumeration[four]  [three] % clone three
+%D \defineenumeration[five]  [three] [counter=five] % clone three and use own counter
+%D \defineenumeration[six]   [three] [counter=four] % clone tree and use counter four (undefined)
 %D
-%D \startone   test test 1 \stopone
-%D \starttwo   test test 2 \stoptwo
-%D \startthree test test 3 \stopthree
-%D \startfour  test test 4 \stopfour
-%D \startfive  test test 1 \stopfive
+%D \startone   test test  6 \stopone
+%D \starttwo   test test  7 \stoptwo
+%D \startthree test test  8 \stopthree
+%D \startfour  test test  9 \stopfour
+%D \startfive  test test  2 \stopfive
+%D \startsix   test test 10 \stopsix
 %D \stopbuffer
 %D
 %D \typebuffer \start \getbuffer \stop
+%D
+%D \starttyping
+%D \setupenumerations[one]  [prefix=yes,prefixsegments=section]
+%D \setupenumerations[two]  [prefix=yes,prefixsegments=section]
+%D \setupenumerations[three][prefix=yes,prefixsegments=section]
+%D \setupenumerations[four] [prefix=yes,prefixsegments=chapter:section]
+%D \setupenumerations[five] [prefix=yes,prefixsegments=chapter:section]
+%D \setupenumerations[six]  [prefix=yes,prefixsegments=chapter:section]
+%D \stoptyping
 
 % list and titles are experimental
 %
@@ -553,13 +564,13 @@
        {\normalexpanded{\noexpand\dodefineenumerationcommands{#1}{\recurselevel}{\@@subslevel\v!sub}{\??dd\@@subslevel#1}}%
         \edef\@@subslevel{\@@subslevel\v!sub}}%
    \else % clone
-     \getparameters[\??dd#1][\s!counter=#2,#3]%
+     \getparameters[\??dd#1][\s!parent=\??dd#2,#3]%
      \let\@@subslevel\empty
      \dorecurse{\descriptionparameter\c!levels}
        {\normalexpanded{\noexpand\dodefineenumerationcommands{#1}{\recurselevel}{\@@subslevel}{\??dd\@@subslevel#2}}%
         \edef\@@subslevel{\@@subslevel\v!sub}}%
    \fi
-   \edef\currentdescriptioncounter{\descriptionparameter\c!number}%
+   \edef\currentdescriptioncounter{\descriptionparameter\s!counter}%
    \ifx\currentdescriptioncounter\empty
      \ifdone\dodefineenumerationcounter{#1}\fi
    \else\ifx\currentdescriptioncounter\v!yes
@@ -568,6 +579,7 @@
      \ifdone\dodefineenumerationcounter{#1}\fi
    \else
      \letvalue{\??dd#1\s!counter}\currentdescriptioncounter % ?
+    %[[#1:\currentdescriptioncounter]]
      \doifstructurecounterelse{\currentdescriptioncounter}{}{\dodefineenumerationcounter\currentdescriptioncounter}%
    \fi\fi\fi
    \dosetupenumerationcounter{#1}} % new
@@ -845,7 +857,7 @@
             connector     = \!!bs\descriptionparameter\c!prefixconnector\!!es,
         },
         numberdata = {
-            numbers       = structure.counters.compact("\currentdescriptionname",nil,true),
+            numbers       = structure.counters.compact("\currentdescriptionnumber",nil,true), % ! number can be cloned
             separatorset  = "\descriptionparameter\c!numberseparatorset",
             conversion    = "\descriptionparameter\c!numberconversion",
             conversionset = "\descriptionparameter\c!numberconversionset",

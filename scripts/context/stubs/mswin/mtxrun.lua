@@ -2886,9 +2886,9 @@ function aux.settings_to_hash_strict(str,existing)
     end
 end
 
-local seperator = comma * space^0
+local separator = comma * space^0
 local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
-local pattern   = lpeg.Ct(value*(seperator*value)^0)
+local pattern   = lpeg.Ct(value*(separator*value)^0)
 
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
@@ -2907,7 +2907,7 @@ local function set(t,v)
 end
 
 local value   = lpeg.P(lpeg.Carg(1)*value) / set
-local pattern = value*(seperator*value)^0 * lpeg.Carg(1)
+local pattern = value*(separator*value)^0 * lpeg.Carg(1)
 
 function aux.add_settings_to_array(t,str)
     return pattern:match(str, nil, t)
@@ -2956,6 +2956,13 @@ function aux.settings_to_set(str,t)
         t[s] = true
     end
     return t
+end
+
+local value     = lbrace * lpeg.C((nobrace + nested)^0) * rbrace
+local pattern   = lpeg.Ct((space + value)^0)
+
+function aux.arguments_to_table(str)
+    return pattern:match(str)
 end
 
 -- temporary here

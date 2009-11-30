@@ -541,23 +541,6 @@
   %\gdef\localcolumnmaxcells{0}% here ?
    \global\mofcolumns\nofcolumns} % otherwise problems in finaloutput
 
-% \def\OTRSETdofinaloutput
-%   {\ifdim\ht\OTRfinalpagebox=\teksthoogte
-%    % \bgroup \let\OTRSETsetvsize\relax % prevents useless search for gap
-%      \ifcase\OTRSETbalancemethod
-%        \finaloutput\box\OTRfinalpagebox
-%      \else\ifdim\OTRSETbalht>\zeropoint
-%        \global\setbox\OTRfinalpagebox \iftracecolumnset\ruledvbox\else\vbox\fi to \OTRSETbalht
-%          {\box\OTRfinalpagebox}%
-%        \global\dp\OTRfinalpagebox\strutdepth
-%        \box\OTRfinalpagebox
-%      \else
-%        \finaloutput\box\OTRfinalpagebox
-%      \fi \fi
-%      \globallet\OTRSETbalht\zeropoint
-%    % \egroup
-%    \fi}
-
 \def\OTRSETdofinaloutput
   {\ifdim\ht\OTRfinalpagebox=\textheight
     \bgroup % \let\OTRSETsetvsize\relax % prevents useless search for gap
@@ -923,36 +906,6 @@
 \appendtoks
   \OTRSETfillgapsbetweencells\mofcolumns\plusone
 \to \OTRSETeverystartofcolumn
-
-%\def\OTRSETfreezeminimumgap#1%
-%  {\OTRSETgetmaxfreecells{#1}{1}%
-%   \ifnum\columnmaxfreecells>0
-%     \!!countb=\columnfrmfreecells
-%     \!!counta=\!!counta \advance\!!counta -\columnmaxfreecells
-%     \dorecurse{\columnmaxcells}
-%       {\ifnum\recurselevel<\!!counta\relax
-%          \donetrue
-%        \else\ifnum\recurselevel>\!!countb
-%          \donetrue
-%        \else
-%          \donefalse
-%        \fi\fi
-%        \ifdone
-%          \OTRSETdoifcellelse{#1}{\recurselevel}
-%            {}{\OTRSETsetgridcell{#1}\recurselevel\copy\placeholderboxc}%
-%        \fi}%
-%   \fi}
-%
-%\def\OTRSETfillgaps#1#2#3% col from to
-%  {\dostepwiserecurse{#2}{#3}{1}
-%     {\OTRSETdoifcellelse{#1}{\recurselevel}
-%        {}{\OTRSETsetgridcell{#1}\recurselevel\copy\placeholderboxc}}}
-%
-%\def\OTRSETfillbotgaps#1#2% col first
-%  {\OTRSETfillgaps{#1}{#2}{\columnmaxcells}}
-%
-%\def\OTRSETfilltopgaps#1#2% col last
-%  {\OTRSETfillgaps{#1}{1}{#2}}
 
 \newif\ifspancolumnslots \spancolumnslotstrue
 \newif\ifcheckcolumnspan \checkcolumnspantrue
@@ -1195,15 +1148,6 @@
      \pofcolumns    \pofcolumns +\currenthcell
      \columnmaxcells\preferedrow-\currentvcell{#1}}
 
-% \def\OTRSETstoreincolumnslotHERE#1% fixed column
-%   {\OTRSETprepareforcolumnslot2{#1}%
-%    \OTRSETflushtextsofar
-%    \getnoflines\pagetotal \advance\noflines\columnfirstcell
-%    \OTRSETstoreincolumnslotindeed
-%      \mofcolumns\mofcolumns+\currenthcell
-%      \noflines\columnmaxcells+\currentvcell{#1}%
-%    \OTRSETsetvsize}
-
 \chardef\OTRSETforcefixedfloats=0
 
 \def\OTRSETstoreincolumnslotHERE#1% fixed column
@@ -1353,15 +1297,6 @@
 
 \def\OTRSETstoreincolumnslotUNKNOWN#1%
   {\OTRSETprepareforcolumnslot2{#1}\copy#1} % {} ?
-
-% \def\OTRSETprepareforcolumnslot#1#2% 1=hoog 2=midden 3=laag
-%   {\dp#2\zeropoint
-%    \ifcase\columnslotspacing\else
-%      \scratchdimen\columnslotspacing\lineheight
-%      \ifnum#1=2 \scratchdimen2\scratchdimen \fi
-%      \setbox#2\vbox spread \scratchdimen
-%        {\ifnum#1>1\vss\fi\box#2\relax\ifnum#1<3\vss\fi}%
-%    \fi}
 
 \def\OTRSETprepareforcolumnslot#1#2% 1=hoog 2=midden 3=laag
   {\dp#2\zeropoint
@@ -1724,7 +1659,6 @@
 %     \input knuth \endgraf \input knuth
 % \stoptext
 
-
 \def\OTRSETflushleftovers % new per 13/4/2006
   {\OTRSETdoifcellelse{1}{1}
      {\bgroup
@@ -1785,61 +1719,6 @@
 % 2-3 columns on one page with both sets balanced: the
 % second set does not see the first set
 
-% \def\OTRSETinitbalancing
-%   {\ifcase\OTRSETbalancemethod\or
-%      \let\savedcolumnmaxcells\columnmaxcells
-%      \ifnum\realpageno=\balancingpageno\relax
-%        \ifnum\mofcolumns=\plusone
-%          \dorecurse\nofcolumns
-%            {\!!counta\recurselevel\relax
-%             \!!countb\getvalue{\??mc\OTRSETidentifier\number\!!counta\c!regels}\relax
-%             \ifcase\!!countb
-%               \!!countb\getvalue{\??mc\OTRSETidentifier\c!regels}\relax
-%             \fi
-%             \ifcase\!!countb
-%               \!!countb \savedcolumnmaxcells\relax
-%             \fi
-%             % can be an option: absolute versus relative
-%             \ifnum\OTRSETbalancemethod=\plusthree
-%               \advance\!!countb\precolumnlines
-%               \ifnum\!!countb>\localcolumnmaxcells\relax
-%                 \xdef\localcolumnmaxcells{\the\!!countb}%
-%               \fi
-%               \advance\!!countb \plusone
-%               \dostepwiserecurse\!!countb\columnmaxcells\plusone
-%                 {\ifvoid\OTRSETgridcell\!!counta\recurselevel
-%                    \OTRSETsetgridcell\!!counta\recurselevel\copy\placeholderboxe
-%                  \fi}%
-%             \else
-%               \globallet\localcolumnmaxcells\columnmaxcells
-%               \advance\!!countb-\columnmaxcells
-%               \!!countb-\!!countb
-%               \advance\!!countb \minusone
-%               \ifnum\!!countb>\zerocount
-%                 \dostepwiserecurse\plusone\!!countb\plusone
-%                   {\ifvoid\OTRSETgridcell\!!counta\recurselevel
-%                      \OTRSETsetgridcell\!!counta\recurselevel\copy\placeholderboxe
-%                    \fi}%
-%               \fi
-%             \fi}%
-%          \OTRSETsetvsize % ! ! !
-%        \fi
-%      \fi
-%    \fi}
-%
-%  \def\OTRSETpresetbalancing
-%    {\doifvaluesomething{\??mc\OTRSETidentifier\c!regels}%
-%       {\getcommacommandsize[\csname\??mc\OTRSETidentifier\c!regels\endcsname]%
-%        \ifnum\commalistsize>\plusone
-%          \scratchcounter\zerocount
-%          \def\docommand##1%
-%            {\advance\scratchcounter\plusone
-%             \setvalue{\??mc\OTRSETidentifier\the\scratchcounter\c!regels}{##1}}%
-%          \processcommacommand
-%            [\csname\??mc\OTRSETidentifier\c!regels\endcsname]\docommand
-%          \setvalue{\??mc\OTRSETidentifier\c!regels}{0}%
-%        \fi}}
-
 % don't loose empty 1page/1column with area (example **)
 %
 % \definecolumntextarea[title][x=1,y=4,nx=2,ny=7,state=start]
@@ -1856,30 +1735,6 @@
 \def\setupcolumnsetareatext{\setupcolumntextareatext}
 
 % so this will be changed
-
-% \def\OTRSETnobalance
-%   {\iflastcolumnfootnotes % testen ! optie
-%      % inhibit flush of floats !
-%      % todo: nothing if no footnotes, else empty page
-%      \dostepwiserecurse\mofcolumns\nofcolumns\plusone
-%        {\vskip-\struttotal\verticalstrut\vfill\eject}%
-%    \else
-%      \ifdim\pagetotal>\zeropoint % no, see example **
-%        \ifnum\mofcolumns=\nofcolumns
-%          \OTRSETflushfinalfootnotes
-%        \else
-%          % probably todo
-%        \fi
-%        \vfill
-%        \eject
-%        % brr, may result in empty page after nicely fit text
-%        % or if left, then lost of first column only text
-%        \ifnum\mofcolumns>1
-%          \OTRSETdofinalflush
-%          \OTRSETdofinaloutput
-%        \fi
-%      \fi
-%    \fi}
 
 \def\OTRSETnobalance
   {\iflastcolumnfootnotes % testen ! optie
@@ -1937,17 +1792,6 @@
    \OTRSETcheckstartcells
    \OTRSETsetvsize}
 
-% \def\OTRSETcheckstartcells
-%   {\dorecurse\nofcolumns
-%      {\bgroup
-%       \mofcolumns\recurselevel
-%       \scratchcounter\currentcolumnstartcell % uses \mofcolumns, returns 1 or more
-%       \advance\scratchcounter \minusone
-%       \dorecurse\scratchcounter
-%         {\OTRSETdoifcellelse\mofcolumns\recurselevel
-%            \donothing{\OTRSETsetgridcell\mofcolumns\recurselevel\copy\placeholderboxe}}%
-%       \egroup}}
-
 \def\OTRSETcheckstartcells
   {\dorecurse\nofcolumns
      {\bgroup
@@ -1958,14 +1802,6 @@
         {\OTRSETdoifcellelse\mofcolumns\recurselevel
            \donothing{\OTRSETsetgridcell\mofcolumns\recurselevel\copy\placeholderboxe}}%
       \egroup}}
-
-% \OTRSEToutput
-%   {\dontcomplain % new, get rid of overfull message (to be sorted out)
-%    \OTRSETnaturalflush
-%   %\OTRSETstartnextpage
-%    \OTRSETdoflushfloats % actually belongs in \flushsavedfloats (but goes wrong)
-%    \OTRSETcheckfreelines
-%    \OTRSETchecksidefloat}
 
 \OTRSEToutput
   {\dontcomplain % new, get rid of overfull message (to be sorted out)
@@ -1997,67 +1833,16 @@
           \v!top=>\chardef\OTRSETbalancemethod\plustwo,
        \v!bottom=>\chardef\OTRSETbalancemethod\plusthree]}
 
-% keep 'm for a while
-%
-% \installoutput\OTRSETflushpreposttext
-%  {\global\setbox\precolumnbox\vbox{\unvbox\normalpagebox}%
-%   \ifcarryoverfootnotes \else
-%     \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
-%   \fi}
-%
-% to be tested on 'boekinhoud' in 'pascal/demo-bbi'
-%
-% junk ! ! ! ! !
-%
-%\installoutput\OTRSETflushpreposttext
-%  {\global\setbox\precolumnbox\vbox
-%     {\unvbox\normalpagebox
-%      \strut\vskip-2\lineheight\strut}% we want a proper depth
-%   \ifcarryoverfootnotes \else
-%     \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
-%   \fi}
-%
-% \starttext
-%   \definecolumnset[two][n=2]
-%   \startcolumnset[two] \dorecurse{4}{\input tufte } \stopcolumnset
-%   \input tufte
-%   \startcolumnset[two] \input tufte \stopcolumnset
-% \stoptext
-%
-% \installoutput\OTRSETflushpreposttext
-%   {\global\setbox\precolumnbox\vbox{\unvbox\normalpagebox}%
-%    \global\dp\precolumnbox\strutdepth
-%    \ifcarryoverfootnotes \else
-%      \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
-%    \fi}
-
 % test:
 %
-% \definecolumnset[two]  [n=2,balance=yes]
-% \definecolumnset[three][n=3,balance=yes]
-% \setupcolumnset [two]  [1] [lines=10]
-% \setupcolumnset [two]  [2] [lines=10]
+% \definecolumnset[test-1]  %[balance=yes]
+% \definecolumnset[test-2]  %[balance=yes]
 %
-% \startcolumnset[two]   \dorecurse{14}{\input tufte \par} \stopcolumnset
-% \startcolumnset[three] \dorecurse{12}{\input tufte \par} \stopcolumnset
+% \setupcolumnsetlines[test-1][1][1] [4]
+% \setupcolumnsetlines[test-1][1][2][10]
 %
-% with:
-%
-% \installoutput\OTRSETflushpreposttext
-%   {%\ifvoid\normalpagebox
-%    %  \global\setbox\precolumnbox\vbox{}%
-%    %\else
-%      \global\setbox\precolumnbox\vbox
-%        {\unvcopy\normalpagebox}%
-%      \global\setbox\precolumnbox\vbox to \ht\precolumnbox
-%        {\box\normalpagebox}%
-%    %\fi
-%    \global\dp\precolumnbox\strutdepth
-%    \ifcarryoverfootnotes \else
-%      \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
-%    \fi}
-
-% testcase : pascal demo-bbi, paragraaf/aanduiding koppen
+% \startcolumnset [test-1] \dorecurse {1}{\input tufte \par} \stopcolumnset
+% \startcolumnset [test-2] \dorecurse {2}{\input ward  \par} \stopcolumnset
 
 \ifx\lastskipinotr\undefined \newskip\lastskipinotr \fi
 
@@ -2076,30 +1861,6 @@
 
 \let\precolumnlines \!!zerocount
 \let\postcolumnlines\!!zerocount
-
-% \def\OTRSEThandlepreposttext
-%   {\ifdim\ht\precolumnbox>\zeropoint % new
-%      \getnoflines{\ht\precolumnbox}%
-%      \edef\precolumnlines{\the\noflines}%
-%      \doOTRSETsetgridcells
-%        {\copy\placeholderboxe}
-%        \plusone\plusone\nofcolumns\noflines
-%        {\box\precolumnbox}%
-%    \else
-%      \let\precolumnlines\!!zerocount
-%    \fi
-%    \ifdim\ht\postcolumnbox>\zeropoint % new, otherwise empty bottom line
-%      \getnoflines{\ht\postcolumnbox}%
-%      \edef\postcolumnlines{\the\noflines}%
-%      \advance\columnfreecells -\noflines
-%      \advance\columnfreecells \plusone
-%      \doOTRSETsetgridcells
-%        {\copy\placeholderboxe}
-%        \plusone\columnfreecells\nofcolumns\noflines
-%        {\box\postcolumnbox}%
-%    \else
-%      \let\postcolumnlines\!!zerocount
-%    \fi}
 
 \def\OTRSEThandlepreposttext
   {\ifdim\ht\precolumnbox>\zeropoint % new
@@ -2796,210 +2557,6 @@
 %   \startcolumnsetspan[two] \emptylines[5] \stopcolumnsetspan
 %   \startcolumnsetspan[two] \input tufte   \stopcolumnsetspan
 % \stopcolumnset
-
-% We need to set the \dimen globally since we are in the
-% OTR. Unfortunately this interferes with local settings,
-% although we may assume that they will not cross page
-% boundaries.
-
-\def\OTRSETcheckcontent
-  {\bgroup
-   \donefalse
-   \def\OTRSETcheckcontent##1%
-     {\setbox\scratchbox##1\recurselevel
-      \setbox\scratchbox\vbox{\unvbox\scratchbox}%
-      \ifdim\ht\scratchbox>\zeropoint\donetrue\fi}%
-   \dorecurse{\nofcolumns}
-     {\OTRSETcheckcontent\columngettextbox
-      \OTRSETcheckcontent\columngetfootbox
-      \OTRSETcheckcontent\columngettopbox
-      \OTRSETcheckcontent\columngetbotbox}%
-   \ifdone\egroup\donefalse\else\egroup\donetrue\fi}
-
-\def\OTRSETgetcolumntextheight#1% max - boven - top
-  {\scratchdimen=\OTRSETgetparameter\c!maxhoogte#1%
-   \advance\scratchdimen -\OTRSETgetparameter\c!bovenoffset#1%
-   \advance\scratchdimen -\ht\columntopbox#1%
-   \advance\scratchdimen -\getvalue{\??mc\number\mofcolumns-f}%
-   \advance\scratchdimen -\ht\columnbotbox#1} % not used
-
-\def\OTRSETgetcolumnnaturalheight#1% max - boven - top
-  {\setbox\scratchbox\vbox{\unvcopy\columntextbox#1}%
-   \scratchdimen\ht\scratchbox
-   \advance\scratchdimen \OTRSETgetparameter\c!bovenoffset#1%
-   \advance\scratchdimen \ht\columntopbox#1%
-   \advance\scratchdimen -\getvalue{\??mc\number\mofcolumns-f}%
-   \advance\scratchdimen \ht\columnbotbox#1} % not used
-
-\def\OTRSETdobalance% splitten in met en zonder footnotes
-  {\bgroup
-   \maxdeadcycles=1000
-   % collect content and notes
-   \bgroup
-   \OTRSEToutput
-     {\global\setbox1\vbox{\unvbox\normalpagebox}%
-      \global\setbox3\vbox{\unvbox\footins}}%
-   \verticalstrut\vskip-\struttotal % makes footnotes flush
-   \eject
-   \global\collectingcontentfalse
-   % check for footnotes only
-   \ifdim\ht1<\topskip % real dirty
-     \global\setbox1=\vbox{}
-     % fix height of first line
-     \ifdim\ht3>\!!zeropoint
-       \global\setbox3\vbox
-         {\setfootnotebodyfont
-          \kern-\strutht
-          \kern\topskip
-          \unvbox3}
-   \fi
-   % prepare trial box
-   \global\setbox5\vbox
-     {\ifdim\ht1>\zeropoint
-        \unvcopy1 \ifdim\ht3>\zeropoint \kern\skip\footins \fi
-      \fi
-      \ifdim\ht3>\zeropoint \unvcopy3 \fi}
-   \egroup
-   % erase old stuff
-   \columnerasetextboxes
-   \columnerasefootboxes
-   % prepare floats
-   \OTRSETdotopinsertions
-   \OTRSETdobotinsertions % not used can be removed
-   % calculate available space
-   \!!heighta\zeropoint % available total height
-   \dorecurse{\nofcolumns}
-     {\OTRSETgetcolumntextheight\recurselevel
-      \OTRSETcalculatelines\scratchdimen
-      \advance\!!heighta \scratchdimen}
-   % quick check
-   \ifdim\ht5>\!!heighta
-     % use normal routine
-     \columnerasetextboxes
-     \columnerasefootboxes
-     % TEMP, TODO, FORCE NEXT PASS !
-     \unvbox1
-     \unvbox3
-     \doglobal\addtocommalist{-\realfolio}\OTRSETbalancinglist
-     \donefalse
-    %\writestatus\m!columns{no balancing, text overflows height}%
-   \else\ifdim\ht5>\zeropoint \relax
-     % some text and/or notes
-     \donetrue
-   \else
-     \donefalse
-     \dorecurse\nofcolumns
-       {\ifdim\ht\columntopbox\recurselevel>\zeropoint \donetrue \fi}%
-     \ifdone
-       % no text and notes, but figures
-     \else
-       % no text, no notes, no figures
-       \doglobal\addtocommalist{-\realfolio}\OTRSETbalancinglist
-       \writestatus\m!columns{no balancing, nothing to be placed}%
-     \fi
-   \fi\fi
-   \ifdone
-     \ifdim\ht5>\zeropoint \relax
-       % balancing text and notes
-      %\writestatus\m!columns{text may fit, balancing}%
-       \newcounter\loopcounter
-       \newcounter\balancinglines
-       \doloop
-         {\increment\loopcounter\relax
-          % initialize
-          \columnerasetextboxes
-          \columnerasefootboxes
-          \setbox0=\copy5
-          \splittopskip\topskip
-          % pre-split loop and quality calculation
-         %\writestatus\m!columns{pass \loopcounter: correction -\balancinglines}
-          \dorecurse\nofcolumns
-            {\OTRSETgetcolumntextheight\recurselevel
-             \OTRSETcalculatelines\scratchdimen
-             \!!heightc\scratchdimen
-             \ifnum\recurselevel<\nofcolumns
-               \advance\!!heightc -\balancinglines\lineheight
-             \fi
-             \columnsettextbox\recurselevel\vsplit0 to \!!heightc}
-          % just one method
-          \OTRSETgetcolumnnaturalheight1           \dimen4\scratchdimen
-          \OTRSETgetcolumnnaturalheight\nofcolumns \dimen6\scratchdimen
-         %\writestatus\m!columns{first column: \the\dimen4}%
-         %\writestatus\m!columns{last  column: \the\dimen6}%
-          \ifdim\dimen4=\dimen6
-            \donetrue  % perfect balance
-          \else\ifdim\dimen4>\dimen6
-            \donefalse % not yet good enough
-            \increment\balancinglines % try again
-            \edef\balancingcount{\the\!!counta}
-          \else
-            \donetrue  % worse balance
-            \ifnum\balancinglines>0 % take previous
-              \decrement\balancinglines
-            \fi
-          \fi\fi
-          % extra check
-          % \ifdim\ht0>\zeropoint\relax \donefalse \fi
-          % another check
-          \ifdone
-           %\writestatus\m!columns{balancing finished in pass \loopcounter}%
-          \else \ifnum\loopcounter>100 \donetrue
-           %\writestatus\m!columns{balancing aborted after pass \loopcounter}%
-          \else
-           %\writestatus\m!columns{balancing continued after pass \loopcounter}%
-          \fi \fi
-          % final balancing pass
-          \ifdone
-            \setbox0\copy1
-            \setbox2\copy3
-            \columnerasetextboxes
-            \columnerasefootboxes
-            \dorecurse\nofcolumns
-              {\OTRSETgetcolumntextheight\recurselevel
-               \OTRSETcalculatelines\scratchdimen
-               \!!heightc\scratchdimen
-               \ifnum\recurselevel<\nofcolumns
-                 \advance\!!heightc -\balancinglines\lineheight
-               \fi
-               % split off text
-               \ifdim\ht0>\zeropoint
-                 \columnsettextbox\recurselevel\vsplit0 to \!!heightc
-                 \setbox4\vbox{\unvcopy\columntextbox\recurselevel}
-                 \advance\!!heightc -\ht4
-                 \ifdim\ht0>\zeropoint
-                   \columnsettextbox\recurselevel\box4
-                   \advance\!!heightc \skip\footins
-                 \fi
-               \fi
-               % split off footnotes
-               \ifdim\ht0>\zeropoint\relax \else
-                 \ifdim\ht2>\zeropoint\relax
-                   \setbox4\vsplit2 to \!!heightc
-                   \setbox\footins=\vbox{\unvbox4} % ugly and dirty trick
-                   \ifdim\ht\columntextbox\recurselevel=\zeropoint\relax
-                     \columnsettextbox\recurselevel\hbox
-                       {\raise\strutdp\hbox % ugly but needed
-                          {\setfootnotebodyfont % both these moves
-                           \lower\strutdp\hbox{\placebottomnotes}}}
-                   \else
-                     \columnsetfootbox\recurselevel\hbox{\placebottomnotes}
-                   \fi
-                 \fi
-               \fi}
-            \exitloop
-          \fi}
-       \else
-         % no reason to balance floats
-       \fi
-     \fi
-     \doglobal\addtocommalist{\realfolio}\OTRSETbalancinglist
-     \OTRSETdoflush
-   \fi
-   \egroup}
-
-\def\OTRSETdobalance% splitten in met en zonder footnotes
-  {\writestatus{columnsets}{balancing is not supported yet}%
-   \OTRSETnobalance}
 
 \protect \endinput
 

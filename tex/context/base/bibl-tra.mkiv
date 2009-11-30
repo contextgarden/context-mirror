@@ -939,19 +939,25 @@
 %D \type{\cite} commands with a braced argument (these might appear
 %D in included data from the \type{.bib} file).
 
+% \unexpanded\def\cite
+%   {\doifnextoptionalelse\dodocite\dobibref}
+% \def\dobibref#1%
+%   {\docite[#1][]}
+% \def\dodocite[#1]%
+%   {\startstrictinspectnextcharacter
+%    \dodoubleempty\dododocite[#1]}
+% \def\dododocite % [#1][#2]
+%   {\stopstrictinspectnextcharacter
+%    \docite}
+
 \unexpanded\def\cite
-  {\doifnextoptionalelse\dodocite\dobibref}
+  {\strictdoifnextoptionalelse\dodocite\dobibref}
 
 \def\dobibref#1%
   {\docite[#1][]}
 
 \def\dodocite[#1]%
-  {\startstrictinspectnextcharacter
-   \dodoubleempty\dododocite[#1]}
-
-\def\dododocite % [#1][#2]
-  {\stopstrictinspectnextcharacter
-   \docite}
+  {\strictdoifnextoptionalelse{\docite[#1]}{\docite[#1][]}}
 
 \def\docite[#1][#2]%
   {\begingroup
