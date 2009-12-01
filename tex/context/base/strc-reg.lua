@@ -221,13 +221,13 @@ local function preprocessentries(rawdata)
         for k=1,#et do
             entries[k] = { et[k] or "", kt[k] or "" }
         end
-for k=#et,1,-1 do
-    if entries[k][1] ~= "" then
-        break
-    else
-        entries[k] = nil
-    end
-end
+        for k=#et,1,-1 do
+            if entries[k][1] ~= "" then
+                break
+            else
+                entries[k] = nil
+            end
+        end
         rawdata.list = entries
         rawdata.entries = nil
     else
@@ -307,7 +307,6 @@ function jobregisters.compare(a,b)
     elseif a.metadata.kind == 'entry' then -- e/f/t
         local page_a, page_b = a.references.realpage, b.references.realpage
         if not page_a or not page_b then
---~ print(table.serialize(a),table.serialize(b))
             return 0
         elseif page_a < page_b then
             return -1
@@ -473,13 +472,13 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
                                 texsprint(ctxcatcodes,format("\\startregisterentries{%s}",n))
                             end
                         end
-if metadata then
-    texsprint(ctxcatcodes,"\\registerentry{")
-    helpers.title(e[i],metadata)
-    texsprint(ctxcatcodes,"}")
-else
-                        texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
-end
+                        if metadata then
+                            texsprint(ctxcatcodes,"\\registerentry{")
+                            helpers.title(e[i],metadata)
+                            texsprint(ctxcatcodes,"}")
+                        else
+                            texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
+                        end
                     else
                         done[i] = false
                     end

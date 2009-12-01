@@ -98,7 +98,8 @@
      \doifelse{\registerparameter\c!ownnumber}\v!yes
        \donetrue\donefalse
      \expanded{\writeutility{r % spaces are essential
-       {\ifcase\registerpagestatus\space\or e\or f\or t\fi} {\currentregister} %
+       \ifcase\registerpagestatus\space\or e\or f\or t\fi\space
+       {\currentregister} %
        {\nextinternalreference} %
        {\asciiregisterentryA} %
        {\asciiregisterentryB} %

@@ -377,6 +377,8 @@ end
 
 local pdfreference    = lpdf.reference
 local pdfdictionary   = lpdf.dictionary
+local pdfarray        = lpdf.array
+local pdfverbose      = lpdf.verbose
 local pdfreserveobj   = pdf.reserveobj
 local pdfimmediateobj = pdf.immediateobj
 
@@ -469,13 +471,25 @@ function lpdf.finalizedocument()
     end
 end
 
-local c_template = "\\normalpdfcatalog{/%s %s}"
-local i_template = "\\normalpdfinfo{/%s %s}"
-local n_template = "\\normalpdfnames{/%s %s}"
+local catalog, info, names = pdfdictionary(), pdfdictionary(), pdfdictionary()
 
-function lpdf.addtocatalog(k,v) if not environment.initex then texsprint(ctxcatcodes,format(c_template,k,tostring(v))) end end
-function lpdf.addtoinfo   (k,v) if not environment.initex then texsprint(ctxcatcodes,format(i_template,k,tostring(v))) end end
-function lpdf.addtonames  (k,v) if not environment.initex then texsprint(ctxcatcodes,format(n_template,k,tostring(v))) end end
+local function flushcatalog() if not environment.initex then pdf.pdfcatalog = catalog() end end
+local function flushinfo   () if not environment.initex then pdf.pdfinfo    = info   () end end
+local function flushnames  () if not environment.initex then pdf.pdfnames   = names  () end end
+
+if not pdf.pdfcatalog then
+
+    local c_template, i_template, n_template = "\\normalpdfcatalog{%s}", "\\normalpdfinfo{%s}", "\\normalpdfnames{%s}"
+
+    flushcatalog = function() if not environment.initex then texsprint(ctxcatcodes,format(c_template,catalog())) end end
+    flushinfo    = function() if not environment.initex then texsprint(ctxcatcodes,format(i_template,info   ())) end end
+    flushnames   = function() if not environment.initex then texsprint(ctxcatcodes,format(n_template,names  ())) end end
+
+end
+
+function lpdf.addtocatalog(k,v) catalog[k] = v end
+function lpdf.addtoinfo   (k,v) info   [k] = v end
+function lpdf.addtonames  (k,v) names  [k] = v end
 
 local r_extgstates,  d_extgstates  = pdfreserveobj(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
 local r_colorspaces, d_colorspaces = pdfreserveobj(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
@@ -513,6 +527,10 @@ lpdf.registerdocumentfinalizer(flushcolorspaces,3)
 lpdf.registerdocumentfinalizer(flushpatterns,3)
 lpdf.registerdocumentfinalizer(flushshades,3)
 
+lpdf.registerdocumentfinalizer(flushcatalog,3)
+lpdf.registerdocumentfinalizer(flushinfo,3)
+lpdf.registerdocumentfinalizer(flushnames,3)
+
 lpdf.registerpagefinalizer(checkextgstates,3)
 lpdf.registerpagefinalizer(checkcolorspaces,3)
 lpdf.registerpagefinalizer(checkpatterns,3)
@@ -524,3 +542,8 @@ function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
     texwrite(format("%s %s %s %s 0 0 cm",c,s,-s,c))
 end
+
+-- lpdf.addtoinfo("ConTeXt.Version", tex.contextversiontoks)
+-- lpdf.addtoinfo("ConTeXt.Time",    os.date("%Y.%m.%d %H:%M")) -- :%S
+-- lpdf.addtoinfo("ConTeXt.Jobname", tex.jobname)
+-- lpdf.addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")

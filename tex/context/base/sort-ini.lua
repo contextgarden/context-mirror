@@ -125,7 +125,7 @@ sorters.defaultlanguage = 'en'
 
 function sorters.splitters.utf(str) -- brrr, todo: language
     local r = sorters.replacements[sorters.language] or sorters.replacements[sorters.defaultlanguage] or { }
---~     local m = sorters.mappings    [sorters.language] or sorters.mappings    [sorters.defaultlanguage] or { }
+ -- local m = sorters.mappings    [sorters.language] or sorters.mappings    [sorters.defaultlanguage] or { }
     local u = characters.uncompose
     local b = utf.byte
     local t = { }

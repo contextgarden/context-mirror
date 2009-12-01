@@ -61,11 +61,11 @@
 
 %D An example of usage is:
 
-\appendtoks % will change ... not here the ()
-  \pdfbackendsetinfo{ConTeXt.Version}{(\contextversion)}%
-  \pdfbackendsetinfo{ConTeXt.Time}   {(\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute)}%
-  \pdfbackendsetinfo{ConTeXt.Jobname}{(\jobname)}%
-  \pdfbackendsetinfo{ConTeXt.Url}    {(www.pragma-ade.com)}%
+\appendtoks
+    \pdfbackendsetinfo{ConTeXt.Version}{\contextversion}%
+    \pdfbackendsetinfo{ConTeXt.Time}   {\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute}%
+    \pdfbackendsetinfo{ConTeXt.Jobname}{\jobname}%
+    \pdfbackendsetinfo{ConTeXt.Url}    {www.pragma-ade.com}%
 \to \everylastbackendshipout
 
 %D Unfortunately this is still needed (also for  \METAPOST\ to
