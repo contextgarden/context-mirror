@@ -156,6 +156,7 @@ function mirror.process(namespace,attribute,start) -- todo: make faster
     local lro, rlo, prevattr, inmath = false, false, 0, false
     while current do
         local id = current.id
+--~ print(id,attribute,has_attribute(current,attribute))
         if skipmath and id == mthnode then
             local subtype = current.subtype
             if subtype == 0 then
@@ -172,8 +173,7 @@ function mirror.process(namespace,attribute,start) -- todo: make faster
         else
             local attr = has_attribute(current,attribute)
             if attr and attr > 0 then
-                unset_attribute(current,attribute) -- slow, needed?
---~             set_attribute(current,attribute,0) -- might be faster
+             -- unset_attribute(current,attribute) -- slow, needed?
                 if attr == 1 then
                     -- bidi parsing mode
                 elseif attr ~= prevattr then
@@ -312,12 +312,10 @@ function mirror.process(namespace,attribute,start) -- todo: make faster
                         end
                         obsolete[#obsolete+1] = current
                     end
-                else
-                    if trace_mirroring then
-                        local char = current.char
-                        local d = directions[char]
-                        list[#list+1] = format("char %s (%s / U+%04X) of class %s (no bidi)",utfchar(char),char,char,d or "?")
-                    end
+                elseif trace_mirroring then
+                    local char = current.char
+                    local d = directions[char]
+                    list[#list+1] = format("char %s (%s / U+%04X) of class %s (no bidi)",utfchar(char),char,char,d or "?")
                 end
             elseif id == whatsit then
                 if finish then

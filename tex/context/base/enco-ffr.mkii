@@ -41,6 +41,10 @@
     \defineactivecharacter ? {\mathortext{?}{\directdiscretionary{?}}}
 \stoplanguagespecifics
 
+\appendtoks % maybe everywhere
+    \chardef\activecharactermode\zerocount
+\to\everyMPgraphic
+
 % maybe tricky due to possible name clashes:
 %
 % \def\ieme {\highordinalstr{e}}

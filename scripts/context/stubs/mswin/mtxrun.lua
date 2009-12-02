@@ -10750,10 +10750,11 @@ messages.help = [[
 --edit                launch editor with found file
 --launch (--all)      launch files like manuals, assumes os support
 
---intern              run script using built in libraries
+--internal            run script using built in libraries (same as --ctxlua)
+--timedrun            run a script an time its run
 
---usekpse            use kpse as fallback (when no mkiv and cache installed, often slower)
---forcekpse          force using kpse (handy when no mkiv and cache installed but less functionality)
+--usekpse             use kpse as fallback (when no mkiv and cache installed, often slower)
+--forcekpse           force using kpse (handy when no mkiv and cache installed but less functionality)
 ]]
 
 runners.applications = {
@@ -11137,7 +11138,8 @@ function runners.find_mtx_script(filename)
     return fullname
 end
 
-function runners.execute_ctx_script(filename,arguments)
+function runners.execute_ctx_script(filename)
+    local arguments = environment.arguments_after
     local fullname = runners.find_mtx_script(filename) or ""
     -- retyr after generate but only if --autogenerate
     if fullname == "" and environment.argument("autogenerate") then -- might become the default
@@ -11337,7 +11339,7 @@ elseif environment.argument("ctxlua") or environment.argument("internal") then
     ok = runners.execute_script(filename,true)
 elseif environment.argument("script") or environment.argument("s") then
     -- run a script by loading it (using libs), pass args
-    ok = runners.execute_ctx_script(filename,after)
+    ok = runners.execute_ctx_script(filename)
 elseif environment.argument("execute") then
     -- execute script
     ok = runners.execute_script(filename)
@@ -11374,6 +11376,9 @@ elseif filename:find("^bin:") then
     ok = runners.execute_program(filename)
 else
     ok = runners.execute_script(filename)
+    if not ok then
+        ok = runners.execute_ctx_script(filename)
+    end
 end
 
 if os.platform == "unix" then

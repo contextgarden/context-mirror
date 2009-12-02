@@ -674,11 +674,18 @@ function scripts.context.run(ctxdata,filename)
                 -- look at the first line
                 local a = analyze(filename)
                 if a and (a.engine == 'pdftex' or a.engine == 'xetex' or environment.argument("pdftex") or environment.argument("xetex")) then
-                    local texexec = resolvers.find_file("texexec.rb") or ""
-                    if texexec ~= "" then
-                        os.setenv("RUBYOPT","")
-                        local command = string.format("ruby %s %s",texexec,environment.reconstruct_commandline(environment.arguments_after))
-                        os.exec(command)
+                    if false then
+                        -- we need to write a top etc too and run mp etc so it's not worth the
+                        -- trouble, so it will take a while before the next is finished
+                        --
+                        -- require "mtx-texutil.lua"
+                    else
+                        local texexec = resolvers.find_file("texexec.rb") or ""
+                        if texexec ~= "" then
+                            os.setenv("RUBYOPT","")
+                            local command = string.format("ruby %s %s",texexec,environment.reconstruct_commandline(environment.arguments_after))
+                            os.exec(command)
+                        end
                     end
                 else
                     if a and a.interface and a.interface ~= interface then
