@@ -195,7 +195,7 @@ function scripts.update.synchronize()
 
     if ok or not force then
 
-        local fetched, individual, osplatform = { }, { }, os.currentplatform()
+        local fetched, individual, osplatform = { }, { }, os.platform
 
         -- takes a collection as argument and returns a list of folders
 
@@ -223,7 +223,7 @@ function scripts.update.synchronize()
             return prefix .. concat(list_of_folders, format(" %s", prefix))
         end
 
-        -- example of usage: print(list_of_folders_to_rsync_string(collection_to_list_of_folders(scripts.update.base, os.currentplatform)))
+        -- example of usage: print(list_of_folders_to_rsync_string(collection_to_list_of_folders(scripts.update.base, os.platform)))
 
         -- rename function and add some more functionality:
         --   * recursive/non-recursive (default: non-recursive)
@@ -507,7 +507,7 @@ if scripts.savestate then
         end
     end
     local valid = scripts.update.platforms
-    for r in gmatch(environment.argument("platform") or os.currentplatform(),"([^, ]+)") do
+    for r in gmatch(environment.argument("platform") or os.platform,"([^, ]+)") do
         if valid[r] then states.set("platforms." .. r, true) end
     end
 

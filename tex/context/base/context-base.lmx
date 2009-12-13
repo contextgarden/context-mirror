@@ -14,25 +14,62 @@
     <head>
         <title><?lua pv('title') ?></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <?lua if (v('refreshtime') and (tonumber(v('refreshtime')) or 0) > 0) and v('refreshurl') then ?>
+            <meta http-equiv='refresh' content="<?lua pv('refreshtime') ?>; <?lua pv('refreshurl') ?>"/>
+        <?lua end ?>
         <style type="text/css">
             <?lmx-include context.css ?>
         </style>
     </head>
+    <?lua if v('action') then ?>
+        <form action="<?lua pv(action) ?>" enctype="multi-part/form-data" method="post">
+    <?lua end ?>
     <body>
-        <div id="top"><div id="top-one"><div id="top-two">
-            <?lua pv('title') ?>
-        </div></div></div>
-        <div id="left"><div id="left-one"><div id="left-two">
-            <?lua pv('lefttext') ?>
-        </div></div></div>
-        <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five">
-            <?lua pv('righttext') ?>
-        </div></div></div></div></div></div></div>
-        <div id="main"><div id='main-settings'>
-            <div class='title'><?lua pv('maintext') ?></div>
-        </div></div>
-        <div id="bottom"><div id="bottom-one"><div id="bottom-two">
-            <?lua pv('bottomtext') ?>
-        </div></div></div>
+        <div id="top">
+            <div id="top-one">
+                <div id="top-two">
+                    <?lua pv('title') ?>
+                </div>
+            </div>
+        </div>
+        <div id="bottom">
+            <div id="bottom-one">
+                <div id="bottom-two">
+                    <?lua pv('bottomtext') ?>
+                </div>
+            </div>
+        </div>
+        <div id="left">
+            <div id="left-one">
+                <div id="left-two">
+                    <?lua pv('lefttext') ?>
+                </div>
+            </div>
+        </div>
+        <div id="right">
+            <div id="right-safari">
+                <div id="right-one">
+                    <div id="right-two">
+                        <div id="right-three">
+                            <div id="right-four">
+                                <div id="right-five">
+                                    <?lua pv('righttext') ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="main">
+            <div id='main-settings'>
+                <div class='title'>
+                    <?lua pv('maintext') ?>
+                </div>
+            </div>
+        </div>
     </body>
+    <?lua if v('action') then ?>
+        </form>
+    <?lua end ?>
 </html>

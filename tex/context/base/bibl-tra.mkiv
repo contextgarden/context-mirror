@@ -288,7 +288,8 @@
         {\showmessage\m!publications{1}{bibl-\@@pbalternative}}%
       \let\@@pbalternative\empty}%
    \getparameters[\??pb][#1]% as bibl-* can have set things back
-   \the\everysetuppublications}
+   \the\everysetuppublications
+   \ignorespaces}
 
 %D We can omit already shown references (\v!global) or use fresh
 %D lists each time (\v!local).
@@ -334,11 +335,25 @@
 \def\usepublications[#1]%
   {\processcommalist[#1]\dousepublications}
 
+% \def\dousepublications#1%
+%   {\doonlyonce{#1.\f!bibextension}
+%      {\readfile{#1.\f!bibextension}
+%         {\showmessage\m!publications{4}{#1.\f!bibextension}}
+%         {\showmessage\m!publications{2}{#1.\f!bibextension}}}}
+
 \def\dousepublications#1%
-  {\doonlyonce{#1.\f!bibextension}
-     {\readfile{#1.\f!bibextension}
-        {\showmessage\m!publications{4}{#1.\f!bibextension}}
-        {\showmessage\m!publications{2}{#1.\f!bibextension}}}}
+  {\doonlyonce{#1.\f!bibextension}{\dodousepublications{#1}}}
+
+\def\dodousepublications#1%
+  {\let\@@savedpar\par
+   \let\par\ignorespaces
+   \ifhmode\kern\zeropoint\fi
+   \readfile{#1.\f!bibextension}
+     {\showmessage\m!publications{4}{#1.\f!bibextension}}
+     {\showmessage\m!publications{2}{#1.\f!bibextension}}%
+   \ifhmode\removeunwantedspaces\fi
+   \let\par\@@savedpar}
+
 
 %D \macros{setuppublicationlist}
 %D
@@ -740,7 +755,8 @@
      \@@pbo\noexpand\or
      \@@pbu\noexpand\or
      \normalunexpanded{#2}\noexpand\fi}%
-   \endgroup}
+   \endgroup
+   \ignorespaces}
 
 \def\bibgetvark#1{\csname pbd:#1\endcsname\plusone  }
 \def\bibgetvara#1{\csname pbd:#1\endcsname\plustwo  }

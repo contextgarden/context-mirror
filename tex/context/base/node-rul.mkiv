@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=node-bar,
+%D   [       file=node-rul,
 %D        version=2009.11.03, % 1995.10.10,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Bars,
@@ -57,8 +57,8 @@
 
 \unprotect
 
-\definesystemattribute[ruled]
-\definesystemattribute[shifted]
+%definesystemattribute[ruled]
+%definesystemattribute[shifted]
 
 \registerctxluafile{node-rul}{1.001}
 
@@ -137,15 +137,16 @@
 \unexpanded\def\stopbar
   {\endgroup}
 
-\newcount\currentbarnesting
+\newcount\currentbarnesting % todo: same as colors
 
 \unexpanded\def\pushbar[#1]%
   {\global\advance\currentbarnesting\plusone
-   \setevalue{\??on:s:\number\currentbarnesting}{\dogetattribute{ruled}}% stack
+   \expandafter\edef\csname\??on:s:\number\currentbarnesting\endcsname
+     {\attribute\ruledattribute\the\ruledattribute}% stack
    \dodoruled{#1}}
 
 \unexpanded\def\popbar
-  {\dosetattribute{ruled}{\getvalue{\??on:s:\number\currentbarnesting}}%
+  {\csname\??on:s:\number\currentbarnesting\endcsname
    \global\advance\currentbarnesting\minusone}
 
 \def\setupbars

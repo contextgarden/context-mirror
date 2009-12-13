@@ -66,6 +66,16 @@ prefixes.full = prefixes.locate
 prefixes.file = prefixes.filename
 prefixes.path = prefixes.pathname
 
+function resolvers.allprefixes(separator)
+    local all = table.sortedkeys(prefixes)
+    if separator then
+        for i=1,#all do
+            all[i] = all[i] .. ":"
+        end
+    end
+    return all
+end
+
 local function _resolve_(method,target)
     if prefixes[method] then
         return prefixes[method](target)

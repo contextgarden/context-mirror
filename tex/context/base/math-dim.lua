@@ -260,9 +260,8 @@ function mathematics.dimensions(dimens)
             FractionNumeratorGapMin                     = t . fraction_num_vgap     . text_style,
             FractionNumeratorShiftUp                    = t . fraction_num_up       . text_style,
             FractionRuleThickness                       = t . fraction_rule         . text_style,
---~ not yet in my bin :
---~             FractionDelimiterSize                       = t . fraction_del_size     . text_style,
---~             FractionDelimiterDisplayStyleSize           = t . fraction_del_size     . display_style,
+            FractionDelimiterSize                       = t . fraction_del_size     . text_style,
+            FractionDelimiterDisplayStyleSize           = t . fraction_del_size     . display_style,
             LowerLimitBaselineDropMin                   = t . limit_below_bgap      . text_style,
             LowerLimitGapMin                            = t . limit_below_vgap      . text_style,
             OverbarExtraAscender                        = t . overbar_kern          . text_style,

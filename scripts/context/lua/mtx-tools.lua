@@ -6,9 +6,7 @@ if not modules then modules = { } end modules ['mtx-tools'] = {
     license   = "see context related readme files"
 }
 
--- data tables by Thomas A. Schmitz
-
-local find, gsub = string.find, string.gsub
+local find, format, sub, rep, gsub = string.find, string.format, string.sub, string.rep, string.gsub
 
 scripts       = scripts       or { }
 scripts.tools = scripts.tools or { }
@@ -44,14 +42,97 @@ function scripts.tools.disarmutfbomb()
     end
 end
 
-logs.extendbanner("Some File Related Goodies 1.00",true)
+function scripts.tools.dirtoxml()
+
+    local join, removesuffix, extname, date = file.join, file.removesuffix, file.extname, os.date
+
+    local xmlns      = "http://www.pragma-ade.com/rlg/xmldir.rng"
+    local timestamp  = "%Y-%m-%d %H:%M"
+
+    local pattern    = environment.argument('pattern') or ".*"
+    local url        = environment.argument('url')     or "no-url"
+    local root       = environment.argument('root')    or "."
+    local outputfile = environment.argument('output')
+
+    local recurse    = environment.argument('recurse')
+    local stripname  = environment.argument('stripname')
+    local longname   = environment.argument('longname')
+
+    local function flush(list,result,n,path)
+        n, result = n or 1, result or { }
+        local d = rep("  ",n)
+        for name, attr in table.sortedpairs(list) do
+            local mode = attr.mode
+            if mode == "file" then
+                result[#result+1] = format("%s<file name='%s'>",d,(longname and path and join(path,name)) or name)
+                result[#result+1] = format("%s  <base>%s</base>",d,removesuffix(name))
+                result[#result+1] = format("%s  <type>%s</type>",d,extname(name))
+                result[#result+1] = format("%s  <size>%s</size>",d,attr.size)
+                result[#result+1] = format("%s  <permissions>%s</permissions>",d,sub(attr.permissions,7,9))
+                result[#result+1] = format("%s  <date>%s</date>",d,date(timestamp,attr.modification))
+                result[#result+1] = format("%s</file>",d)
+            elseif mode == "directory" then
+                result[#result+1] = format("%s<directory name='%s'>",d,name)
+                flush(attr.list,result,n+1,(path and join(path,name)) or name)
+                result[#result+1] = format("%s</directory>",d)
+            end
+        end
+    end
+
+    if not pattern or pattern == ""  then
+        logs.report('provide --pattern=')
+        return
+    end
+
+    if stripname then
+        pattern = file.dirname(pattern)
+    end
+
+    local luapattern = string.topattern(pattern,true)
+
+    lfs.chdir(root)
+
+    local list = dir.collect_pattern(root,luapattern,recurse)
+
+    if list[outputfile] then
+        list[outputfile] = nil
+    end
+
+    local result = { "<?xml version='1.0'?>" }
+    result[#result+1] = format("<files url=%q root=%q pattern=%q luapattern=%q xmlns='%s' timestamp='%s'>",url,root,pattern,luapattern,xmlns,date(timestamp))
+    flush(list,result)
+    result[#result+1] = "</files>"
+
+    result = table.concat(result,"\n")
+
+    if not outputfile or outputfile == "" then
+        texio.write_nl(result)
+    else
+        io.savedata(outputfile,result)
+    end
+
+end
+
+logs.extendbanner("Some File Related Goodies 1.01",true)
 
 messages.help = [[
 --disarmutfbomb       remove utf bomb if present
+    --force             remove indeed
+
+--dirtoxml              glob directory into xml
+    --pattern           glob pattern (default: .*)
+    --url               url attribute (no processing)
+    --root              the root of the globbed path (default: .)
+    --output            output filename (console by default)
+    --recurse           recurse into subdirecories
+    --stripname         take pathpart of given pattern
+    --longname          set name attributes to full path name
 ]]
 
 if environment.argument("disarmutfbomb") then
     scripts.tools.disarmutfbomb()
+elseif environment.argument("dirtoxml") then
+    scripts.tools.dirtoxml()
 else
     logs.help(messages.help)
 end

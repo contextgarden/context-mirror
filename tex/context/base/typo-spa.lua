@@ -56,7 +56,7 @@ function spacings.process(namespace,attribute,head)
                 local map = mapping[attr]
                 if map then
                     map = map[start.char]
-                    unset_attribute(start,attribute)
+                    unset_attribute(start,attribute) -- needed?
                     if map then
                         local left, right, alternative = map.left, map.right, map.alternative
                         local quad = fontdata[start.font].parameters.quad

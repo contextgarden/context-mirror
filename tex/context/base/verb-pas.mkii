@@ -36,7 +36,7 @@
 %D   [palet=,icommand=\bf,vcommand=,ccommand=\it]
 %D \stopbuffer
 
-\ifx\undefined\setupprettyPLtype \input verb-pl \relax \fi
+\ifdefined\setupprettyPLtype \else \loadmarkfile{verb-pl} \fi
 
 \unprotect
 

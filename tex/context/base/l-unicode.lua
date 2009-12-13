@@ -6,12 +6,33 @@ if not modules then modules = { } end modules ['l-unicode'] = {
     license   = "see context related readme files"
 }
 
+if not unicode then
+
+    unicode = { utf8 = { } }
+
+    local floor, char = math.floor, string.char
+
+    function unicode.utf8.utfchar(n)
+        if n < 0x80 then
+            return char(n)
+        elseif n < 0x800 then
+            return char(0xC0 + floor(n/0x40))  .. char(0x80 + (n % 0x40))
+        elseif n < 0x10000 then
+            return char(0xE0 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+        elseif n < 0x40000 then
+            return char(0xF0 + floor(n/0x40000)) .. char(0x80 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+        else -- wrong:
+          -- return char(0xF1 + floor(n/0x1000000)) .. char(0x80 + floor(n/0x40000)) .. char(0x80 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+            return "?"
+        end
+    end
+
+end
+
 utf = utf or unicode.utf8
 
 local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
 local char, byte, find, bytepairs = string.char, string.byte, string.find, string.bytepairs
-
-unicode = unicode or { }
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian

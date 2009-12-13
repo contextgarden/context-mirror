@@ -1455,11 +1455,8 @@
 
 \ifCONTEXT \else
 
-  \input verb-tex
-  \input verb-mp
-  \input verb-pl
-  \input verb-jv
-  \input verb-sql
+  \input verb-tex.mkii
+  \input verb-mp.mkii
 
   \def\startTEX
     {\bgroup \everypar{}%
@@ -1471,26 +1468,8 @@
      \let\obeycharacters\setupprettyMPtype
      \processdisplayverbatim{\stopMP}}
 
-  \def\startPL
-    {\bgroup \everypar{}%
-     \let\obeycharacters\setupprettyPLtype
-     \processdisplayverbatim{\stopPL}}
-
-  \def\startJV
-    {\bgroup \everypar{}%
-     \let\obeycharacters\setupprettyJVtype
-     \processdisplayverbatim{\stopJV}}
-
-  \def\startSQL
-    {\bgroup \everypar{}%
-     \let\obeycharacters\setupprettySQLtype
-     \processdisplayverbatim{\stopSQL}}
-
   \let\stopTEX=\egroup
   \let\stopMP =\egroup
-  \let\stopPL =\egroup
-  \let\stopJV =\egroup
-  \let\stopSQL=\egroup
 
 \fi
 

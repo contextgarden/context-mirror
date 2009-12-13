@@ -2277,6 +2277,7 @@
               \v!right=>\doglobal\addtocommalist{#1}\columnrightareas]%
            \getparameters[\??mt#1#2]
              [\c!x=1,\c!y=1,\c!nx=1,\c!ny=1,\c!clipoffset=2\lineheight,
+              \c!leftoffset=\zeropoint,\c!rightoffset=\zeropoint,
               \c!offset=\v!overlay,\c!strut=\v!no,\c!frame=\v!off,
               \c!type=#2,\c!page=1,\c!state=\v!stop,#3]}}%
    \else
@@ -2427,7 +2428,8 @@
            %\c!bottomoffset=\columntextareaparameter\c!clipoffset,%
              %\c!leftoffset=\columntextareaparameter\c!clipoffset,%
                   \c!offset=\columntextareaparameter\c!clipoffset,%
-             \c!rightoffset=\zeropoint,%
+                  \c!offset=\columntextareaparameter\c!clipoffset,%
+             \c!rightoffset=\columntextareaparameter\c!rightoffset,%
                    \c!width=\!!widthb,%
                   \c!height=\!!heighta]%
           {\copy\scratchbox}%
@@ -2444,7 +2446,8 @@
            %\c!bottomoffset=\columntextareaparameter\c!clipoffset,%
             %\c!rightoffset=\columntextareaparameter\c!clipoffset,%
                   \c!offset=\columntextareaparameter\c!clipoffset,%
-              \c!leftoffset=\zeropoint,%
+                  \c!offset=\columntextareaparameter\c!clipoffset,%
+              \c!leftoffset=\columntextareaparameter\c!leftoffset,%
                    \c!width=\!!widtha,%
                   \c!height=\!!heighta,%
                  \c!hoffset=\!!widthb]%

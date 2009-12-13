@@ -4209,6 +4209,11 @@
         <cd:parameter name="فرمان">
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
+        <cd:parameter name="صفحه">
+          <cd:constant type="آخرین"/>
+          <cd:constant type="بله"/>
+          <cd:constant type="نه"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

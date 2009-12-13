@@ -548,25 +548,6 @@ end
 
 tex = tex or { }
 
-lmx.variables['color-background-green']      = '#4F6F6F'
-lmx.variables['color-background-blue']       = '#6F6F8F'
-lmx.variables['color-background-yellow']     = '#8F8F6F'
-lmx.variables['color-background-purple']     = '#8F6F8F'
-
-lmx.variables['color-background-body']       = '#808080'
-lmx.variables['color-background-main']       = '#3F3F3F'
-lmx.variables['color-background-main-left']  = '#3F3F3F'
-lmx.variables['color-background-main-right'] = '#5F5F5F'
-lmx.variables['color-background-one']        = lmx.variables['color-background-green']
-lmx.variables['color-background-two']        = lmx.variables['color-background-blue']
-
-lmx.variables['title-default']               = 'ConTeXt Help Information'
-lmx.variables['title']                       = lmx.variables['title-default']
-
-function lmx.loadedfile(filename)
-    return io.loaddata(resolvers.find_file(filename)) -- return resolvers.texdatablob(filename)
-end
-
 -- -- --
 
 local interfaces = {
@@ -581,6 +562,18 @@ local interfaces = {
 }
 
 local lastinterface, lastcommand, lastsource, lastmode = "en", "", "", 1
+
+local variables = {
+    ['color-background-main-left']  = '#3F3F3F',
+    ['color-background-main-right'] = '#5F5F5F',
+    ['color-background-one']        = lmx.get('color-background-green'),
+    ['color-background-two']        = lmx.get('color-background-blue'),
+    ['title']                       = 'ConTeXt Help Information',
+}
+
+--~ function lmx.loadedfile(filename)
+--~     return io.loaddata(resolvers.find_file(filename)) -- return resolvers.texdatablob(filename)
+--~ end
 
 local function doit(configuration,filename,hashed)
 
@@ -615,34 +608,32 @@ local function doit(configuration,filename,hashed)
         end
     end
 
-    lmx.restore()
-    lmx.set('title', 'ConTeXt Help Information')
-    lmx.set('color-background-one', lmx.get('color-background-green'))
-    lmx.set('color-background-two', lmx.get('color-background-blue'))
-
     local n = concat(refs,"<br/>")
     local i = concat(ints,"<br/><br/>")
 
     if div then
-        lmx.set('names',div:format(n))
-        lmx.set('interfaces',div:format(i))
+        variables.names      = div:format(n)
+        variables.interfaces = div:format(i)
     else
-        lmx.set('names', n)
-        lmx.set('interfaces', i)
+        variables.names      = n
+        variables.interfaces = i
     end
 
     -- first we need to add information about mkii/mkiv
 
+    variables.maintitle = "no definition"
+    variables.maintext  = ""
+    variables.extra     = ""
+
     if document.setups.showsources and lastsource and lastsource ~= "" then
         -- todo: mkii, mkiv, tex (can be different)
         local data = io.loaddata(resolvers.find_file(lastsource))
-        lmx.set('maintitle', lastsource)
-        lmx.set('maintext', formats.listing:format(data))
+        variables.maintitle = lastsource
+        variables.maintext  = formats.listing:format(data)
         lastsource = ""
     elseif lastcommand and lastcommand ~= "" then
         local data = document.setups.collect(lastcommand,lastinterface,lastmode)
         if data then
-            lmx.set('maintitle', data.sequence)
             local extra = { }
             for k, v in ipairs { "environment", "category", "source", "mode" } do
                 if data[v] and data[v] ~= "" then
@@ -650,16 +641,15 @@ local function doit(configuration,filename,hashed)
                     extra[#extra+1] = v .. ": " .. data[v]
                 end
             end
-            lmx.set('extra', concat(extra,"&nbsp;&nbsp;&nbsp;"))
-            lmx.set('maintext', formats.parameters:format(concat(data.parameters)))
+            variables.maintitle = data.sequence
+            variables.maintext  = formats.parameters:format(concat(data.parameters))
+            variables.extra     = concat(extra,"&nbsp;&nbsp;&nbsp;")
         else
-            lmx.set('maintext', "select command")
+            variables.maintext = "select command"
         end
-    else
-        lmx.set('maintext', "no definition")
     end
 
-    local content = lmx.convert('context-help.lmx')
+    local content = lmx.convert('context-help.lmx',false,variables)
 
     logs.simple("time spent on page: %0.03f seconds",os.clock()-start)
 

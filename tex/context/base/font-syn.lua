@@ -651,6 +651,29 @@ local function analysefiles()
     data.statistics.readfiles, data.statistics.skippedfiles = totalnofread, totalnofskipped
 end
 
+local function rejectclashes() -- just to be sure, so no explicit afm will be found then
+    local specifications, used, okay = names.data.specifications, { }, { }
+    for i=1,#specifications do
+        local s = specifications[i]
+        local f = s.fontname
+        if f then
+            local fnd, fnm = used[f], s.filename
+            if fnd then
+                logs.report("fontnames", "fontname '%s' clashes, rejecting '%s' in favor of '%s'",f,fnm,fnd)
+            else
+                used[f], okay[#okay+1] = fnm, s
+            end
+        else
+            okay[#okay+1] = s
+        end
+    end
+    local d = #specifications - #okay
+    if d > 0 then
+        logs.report("fontnames", "%s files rejected due to clashes",d)
+    end
+    names.data.specifications = okay
+end
+
 local function resetdata()
     local mappings, fallbacks = { }, { }
     for _, k in next, filters.list do
@@ -670,12 +693,12 @@ end
 function names.identify()
     resetdata()
     analysefiles()
+    rejectclashes()
     collectstatistics()
     cleanupkeywords()
     collecthashes()
     checkduplicates()
  -- sorthashes() -- will be resorted when saved
-
  --~     logs.report("fontnames", "%s files read, %s normal and %s extra entries added, %s rejected, %s valid",totalread,totalok,added,rejected,totalok+added-rejected)
 end
 
@@ -838,7 +861,7 @@ local function foundname(name,sub)
     end
 end
 
-function names.resolve(askedname,sub)
+function names.resolvedspecification(askedname,sub)
     if askedname and askedname ~= "" and names.enabled then
         askedname = cleanname(askedname)
         names.load()
@@ -846,9 +869,14 @@ function names.resolve(askedname,sub)
         if not found and is_reloaded() then
             found = foundname(askedname,sub)
         end
-        if found then
-            return found.filename, found.subfont and found.rawname
-        end
+        return found
+    end
+end
+
+function names.resolve(askedname,sub)
+    local found = names.resolvedspecification(askedname,sub)
+    if found then
+        return found.filename, found.subfont and found.rawname
     end
 end
 

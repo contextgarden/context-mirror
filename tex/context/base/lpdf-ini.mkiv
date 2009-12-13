@@ -258,4 +258,13 @@
    \wd\scratchbox#1\ht\scratchbox#2\dp\scratchbox#3\box\scratchbox
    \egroup}
 
+\unexpanded\def\pdfactualtext#1#2%
+  {\pdfliteral direct{/Span <</ActualText \ctxlua{tex.write(lpdf.tosixteen("#2"))} >> BDC}%
+   #1%
+   \pdfliteral direct{EMC}}
+
+% \starttext
+%     text \pdfactualtext{Meier}{Müller} text
+% \stoptext
+
 \protect \endinput

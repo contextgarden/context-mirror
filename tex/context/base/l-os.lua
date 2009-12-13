@@ -70,67 +70,74 @@ end
 --~ print(os.date("%H:%M:%S",os.gettimeofday()))
 --~ print(os.date("%H:%M:%S",os.time()))
 
-os.arch = os.arch or function()
-    local a = os.resultof("uname -m") or "linux"
+if os.arch then
+    -- okay
+elseif os.platform == "windows" then
     os.arch = function()
+        local a = os.getenv("PROCESSOR_ARCHITECTURE") or "x86"
+        os.arch = function()
+            return a
+        end
         return a
     end
-    return a
+else
+    os.arch = function()
+        local a = os.getenv("PROCESSOR_ARCHITECTURE") or os.resultof("uname -m") or "x86"
+        os.arch = function()
+            return a
+        end
+        return a
+    end
 end
 
-local platform
+-- no need for function anymore as we have more clever code and helpers now
 
-function os.currentplatform(name,default)
-    if not platform then
-        local name = os.name or os.platform or name -- os.name is built in, os.platform is mine
-        if not name then
-            platform = default or "linux"
-        elseif name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
-            if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
-                platform = "mswin-64"
-            else
-                platform = "mswin"
-            end
-        else
-            local architecture = os.arch()
-            if name == "linux" then
-                if find(architecture,"x86_64") then
-                    platform = "linux-64"
-                elseif find(architecture,"ppc") then
-                    platform = "linux-ppc"
-                else
-                    platform = "linux"
-                end
-            elseif name == "macosx" then
-                local architecture = os.resultof("echo $HOSTTYPE")
-                if find(architecture,"i386") then
-                    platform = "osx-intel"
-                elseif find(architecture,"x86_64") then
-                    platform = "osx-64"
-                else
-                    platform = "osx-ppc"
-                end
-            elseif name == "sunos" then
-                if find(architecture,"sparc") then
-                    platform = "solaris-sparc"
-                else -- if architecture == 'i86pc'
-                    platform = "solaris-intel"
-                end
-            elseif name == "freebsd" then
-                if find(architecture,"amd64") then
-                    platform = "freebsd-amd64"
-                else
-                    platform = "freebsd"
-                end
-            else
-                platform = default or name
-            end
-        end
-        function os.currentplatform()
-            return platform
-        end
+os.platform  = os.name
+os.libsuffix = 'so'
+
+local name = os.name
+
+if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
+    if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
+        os.platform = "mswin-64"
+    else
+        os.platform = "mswin"
     end
-    return platform
+    os.libsuffix = 'dll'
+else
+    local architecture = os.arch()
+    if name == "linux" then
+        if find(architecture,"x86_64") then
+            os.platform = "linux-64"
+        elseif find(architecture,"ppc") then
+            os.platform = "linux-ppc"
+        else
+            os.platform = "linux"
+        end
+    elseif name == "macosx" then
+        local architecture = os.resultof("echo $HOSTTYPE")
+        if find(architecture,"i386") then
+            os.platform = "osx-intel"
+        elseif find(architecture,"x86_64") then
+            os.platform = "osx-64"
+        else
+            os.platform = "osx-ppc"
+        end
+    elseif name == "sunos" then
+        if find(architecture,"sparc") then
+            os.platform = "solaris-sparc"
+        else -- if architecture == 'i86pc'
+            os.platform = "solaris-intel"
+        end
+    elseif name == "freebsd" then
+        if find(architecture,"amd64") then
+            os.platform = "freebsd-amd64"
+        else
+            os.platform = "freebsd"
+        end
+    else
+        os.platform = 'linux'
+    end
 end
 
 -- beware, we set the randomseed

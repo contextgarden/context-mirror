@@ -26,7 +26,7 @@ local params = {
     "pdf_mem_ptr",
     "pdf_mem_size",
     "pdf_os_cntr",
-    "pool_ptr",
+--  "pool_ptr", -- obsolete
     "str_ptr",
 }
 
@@ -36,12 +36,8 @@ local last  = os.clock()
 local data  = { }
 
 function progress.save()
-    local f = io.open((name or progress.defaultfilename) .. ".lut","w")
-    if f then
-        f:write(table.serialize(data,true))
-        f:close()
-        data = { }
-    end
+    io.savedata((name or progress.defaultfilename) .. ".lut",table.serialize(data,true))
+    data = { }
 end
 
 function progress.store()
@@ -61,32 +57,7 @@ end
 
 local processed = { }
 
-function progress.bot(name,tag)
-    local d = progress.convert(name)
-    return d.bot[tag] or 0
-end
-function progress.top(name,tag)
-    local d = progress.convert(name)
-    return d.top[tag] or 0
-end
-function progress.pages(name,tag)
-    local d = progress.convert(name)
-    return d.pages or 0
-end
-function progress.path(name,tag)
-    local d = progress.convert(name)
-    return d.paths[tag] or "origin"
-end
-function progress.nodes(name)
-    local d = progress.convert(name)
-    return d.names or { }
-end
-function progress.parameters(name)
-    local d = progress.convert(name)
-    return params -- shared
-end
-
-function progress.convert(name)
+local function convert(name)
     name = ((name ~= "") and name) or progress.defaultfilename
     if not processed[name] then
         local names, top, bot, pages, paths, keys = { }, { }, { }, 0, { }, { }
@@ -160,4 +131,25 @@ function progress.convert(name)
         }
     end
     return processed[name]
+end
+
+progress.convert = convert
+
+function progress.bot(name,tag)
+    return convert(name).bot[tag] or 0
+end
+function progress.top(name,tag)
+    return convert(name).top[tag] or 0
+end
+function progress.pages(name,tag)
+    return convert(name).pages or 0
+end
+function progress.path(name,tag)
+    return convert(name).paths[tag] or "origin"
+end
+function progress.nodes(name)
+    return convert(name).names or { }
+end
+function progress.parameters(name)
+    return params -- shared
 end

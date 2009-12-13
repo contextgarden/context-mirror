@@ -194,6 +194,7 @@ end
 local simple_escapes = {
     ["-"] = "%-",
     ["."] = "%.",
+    ["?"] = ".",
     ["*"] = ".*",
 }
 
@@ -253,5 +254,18 @@ end
 function string:striplong() -- strips newlines and leading spaces
     self = gsub(self,"^%s*","")
     self = gsub(self,"[\n\r]+ *","\n")
+    return self
+end
+
+function string:topattern(lowercase,strict)
+    if lowercase then
+        self = self:lower()
+    end
+    self = gsub(self,".",simple_escapes)
+    if self == "" then
+        self = ".*"
+    elseif strict then
+        self = "^" .. self .. "$"
+    end
     return self
 end

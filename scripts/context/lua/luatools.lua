@@ -233,6 +233,7 @@ end
 local simple_escapes = {
     ["-"] = "%-",
     ["."] = "%.",
+    ["?"] = ".",
     ["*"] = ".*",
 }
 
@@ -292,6 +293,19 @@ end
 function string:striplong() -- strips newlines and leading spaces
     self = gsub(self,"^%s*","")
     self = gsub(self,"[\n\r]+ *","\n")
+    return self
+end
+
+function string:topattern(lowercase,strict)
+    if lowercase then
+        self = self:lower()
+    end
+    self = gsub(self,".",simple_escapes)
+    if self == "" then
+        self = ".*"
+    elseif strict then
+        self = "^" .. self .. "$"
+    end
     return self
 end
 
@@ -1756,59 +1770,54 @@ os.arch = os.arch or function()
     return a
 end
 
-local platform
+-- no need for function anymore as we have more clever code and helpers now
 
-function os.currentplatform(name,default)
-    if not platform then
-        local name = os.name or os.platform or name -- os.name is built in, os.platform is mine
-        if not name then
-            platform = default or "linux"
-        elseif name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
-            if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
-                platform = "mswin-64"
-            else
-                platform = "mswin"
-            end
-        else
-            local architecture = os.arch()
-            if name == "linux" then
-                if find(architecture,"x86_64") then
-                    platform = "linux-64"
-                elseif find(architecture,"ppc") then
-                    platform = "linux-ppc"
-                else
-                    platform = "linux"
-                end
-            elseif name == "macosx" then
-                local architecture = os.resultof("echo $HOSTTYPE")
-                if find(architecture,"i386") then
-                    platform = "osx-intel"
-                elseif find(architecture,"x86_64") then
-                    platform = "osx-64"
-                else
-                    platform = "osx-ppc"
-                end
-            elseif name == "sunos" then
-                if find(architecture,"sparc") then
-                    platform = "solaris-sparc"
-                else -- if architecture == 'i86pc'
-                    platform = "solaris-intel"
-                end
-            elseif name == "freebsd" then
-                if find(architecture,"amd64") then
-                    platform = "freebsd-amd64"
-                else
-                    platform = "freebsd"
-                end
-            else
-                platform = default or name
-            end
-        end
-        function os.currentplatform()
-            return platform
-        end
+os.platform  = os.name
+os.libsuffix = 'so'
+
+local name = os.name
+
+if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
+    if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
+        os.platform = "mswin-64"
+    else
+        os.platform = "mswin"
     end
-    return platform
+    os.libsuffix = 'dll'
+else
+    local architecture = os.arch()
+    if name == "linux" then
+        if find(architecture,"x86_64") then
+            os.platform = "linux-64"
+        elseif find(architecture,"ppc") then
+            os.platform = "linux-ppc"
+        else
+            os.platform = "linux"
+        end
+    elseif name == "macosx" then
+        local architecture = os.resultof("echo $HOSTTYPE")
+        if find(architecture,"i386") then
+            os.platform = "osx-intel"
+        elseif find(architecture,"x86_64") then
+            os.platform = "osx-64"
+        else
+            os.platform = "osx-ppc"
+        end
+    elseif name == "sunos" then
+        if find(architecture,"sparc") then
+            os.platform = "solaris-sparc"
+        else -- if architecture == 'i86pc'
+            os.platform = "solaris-intel"
+        end
+    elseif name == "freebsd" then
+        if find(architecture,"amd64") then
+            os.platform = "freebsd-amd64"
+        else
+            os.platform = "freebsd"
+        end
+    else
+        os.platform = 'linux'
+    end
 end
 
 -- beware, we set the randomseed
@@ -2342,6 +2351,35 @@ local function glob_pattern(path,patt,recurse,action)
 end
 
 dir.glob_pattern = glob_pattern
+
+local function collect_pattern(path,patt,recurse,result)
+    local ok, scanner
+    result = result or { }
+    if path == "/" then
+        ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
+    else
+        ok, scanner = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
+    end
+    if ok and type(scanner) == "function" then
+        if not find(path,"/$") then path = path .. '/' end
+        for name in scanner do
+            local full = path .. name
+            local attr = attributes(full)
+            local mode = attr.mode
+            if mode == 'file' then
+                if find(full,patt) then
+                    result[name] = attr
+                end
+            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+                attr.list = collect_pattern(full,patt,recurse)
+                result[name] = attr
+            end
+        end
+    end
+    return result
+end
+
+dir.collect_pattern = collect_pattern
 
 local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
 
@@ -3166,9 +3204,9 @@ function aux.settings_to_hash_strict(str,existing)
     end
 end
 
-local seperator = comma * space^0
+local separator = comma * space^0
 local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
-local pattern   = lpeg.Ct(value*(seperator*value)^0)
+local pattern   = lpeg.Ct(value*(separator*value)^0)
 
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
@@ -3187,7 +3225,7 @@ local function set(t,v)
 end
 
 local value   = lpeg.P(lpeg.Carg(1)*value) / set
-local pattern = value*(seperator*value)^0 * lpeg.Carg(1)
+local pattern = value*(separator*value)^0 * lpeg.Carg(1)
 
 function aux.add_settings_to_array(t,str)
     return pattern:match(str, nil, t)
@@ -3236,6 +3274,13 @@ function aux.settings_to_set(str,t)
         t[s] = true
     end
     return t
+end
+
+local value     = lbrace * lpeg.C((nobrace + nested)^0) * rbrace
+local pattern   = lpeg.Ct((space + value)^0)
+
+function aux.arguments_to_table(str)
+    return pattern:match(str)
 end
 
 -- temporary here
@@ -4068,7 +4113,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['luat-log'] = {
+if not modules then modules = { } end modules ['trac-log'] = {
     version   = 1.001,
     comment   = "companion to trac-log.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -4345,8 +4390,12 @@ end
 
 logs.simpleline = logs.reportline
 
-function logs.help(message,option)
+function logs.reportbanner() -- for scripts too
     logs.report(banner)
+end
+
+function logs.help(message,option)
+    logs.reportbanner()
     logs.reportline()
     logs.reportlines(message)
     local moreinfo = logs.moreinfo or ""
@@ -4508,6 +4557,11 @@ suffixes['misc fonts'] = { }
 formats     ['sfd']                      = 'SFDFONTS'
 suffixes    ['sfd']                      = { 'sfd' }
 alternatives['subfont definition files'] = 'sfd'
+
+-- lib paths
+
+formats ['lib'] = 'CLUAINPUTS' -- new (needs checking)
+suffixes['lib'] = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
 
 -- In practice we will work within one tds tree, but i want to keep
 -- the option open to build tools that look at multiple trees, which is
@@ -5728,9 +5782,9 @@ end
 function resolvers.expanded_path_list_from_var(str) -- brrr
     local tmp = resolvers.var_of_format_or_suffix(gsub(str,"%$",""))
     if tmp ~= "" then
-        return resolvers.expanded_path_list(str)
-    else
         return resolvers.expanded_path_list(tmp)
+    else
+        return resolvers.expanded_path_list(str)
     end
 end
 

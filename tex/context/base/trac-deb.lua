@@ -9,19 +9,6 @@ if not modules then modules = { } end modules ['trac-deb'] = {
 if not lmx           then lmx           = { } end
 if not lmx.variables then lmx.variables = { } end
 
-lmx.variables['color-background-green']  = '#4F6F6F'
-lmx.variables['color-background-blue']   = '#6F6F8F'
-lmx.variables['color-background-yellow'] = '#8F8F6F'
-lmx.variables['color-background-purple'] = '#8F6F8F'
-
-lmx.variables['color-background-body']   = '#808080'
-lmx.variables['color-background-main']   = '#3F3F3F'
-lmx.variables['color-background-one']    = lmx.variables['color-background-green']
-lmx.variables['color-background-two']    = lmx.variables['color-background-blue']
-
-lmx.variables['title-default']           = 'ConTeXt Status Information'
-lmx.variables['title']                   = lmx.variables['title-default']
-
 lmx.htmfile = function(name) return environment.jobname .. "-status.html" end
 lmx.lmxfile = function(name) return resolvers.find_file(name,'tex') end
 
@@ -82,30 +69,30 @@ function tracers.knownlist(name)
 end
 
 function tracers.showdebuginfo()
-    lmx.set('title', 'ConTeXt Debug Information')
-    lmx.set('color-background-one', lmx.get('color-background-green'))
-    lmx.set('color-background-two', lmx.get('color-background-blue'))
-    lmx.show('context-debug.lmx')
-    lmx.restore()
+    local variables = {
+        ['title']                = 'ConTeXt Debug Information',
+        ['color-background-one'] = lmx.get('color-background-green'),
+        ['color-background-two'] = lmx.get('color-background-blue'),
+    }
+    lmx.show('context-debug.lmx',variables)
 end
 
 function tracers.showerror()
-    lmx.set('title', 'ConTeXt Error Information')
-    lmx.set('errormessage', status.lasterrorstring)
-    lmx.set('linenumber', status.linenumber)
-    lmx.set('color-background-one', lmx.get('color-background-yellow'))
-    lmx.set('color-background-two', lmx.get('color-background-purple'))
     local filename = status.filename
     local linenumber = tonumber(status.linenumber or "0")
+    local variables = {
+        ['title']                = 'ConTeXt Error Information',
+        ['errormessage']         = status.lasterrorstring,
+        ['linenumber']           = status.linenumber,
+        ['color-background-one'] = lmx.get('color-background-yellow'),
+        ['color-background-two'] = lmx.get('color-background-purple'),
+    }
     if not filename then
-        lmx.set('filename', 'unknown')
-        lmx.set('errorcontext', 'error in filename')
+        variables.filename, variables.errorcontext = 'unknown', 'error in filename'
     elseif type(filename) == "number" then
-        lmx.set('filename', "<read " .. filename .. ">")
-        lmx.set('errorcontext', 'unknown error')
+        variables.filename, variables.errorcontext = "<read " .. filename .. ">", 'unknown error'
     elseif io.exists(filename) then
         -- todo: use an input opener so that we also catch utf16 an reencoding
-        lmx.set('filename', filename)
         lines = io.lines(filename)
         if lines then
             local context = { }
@@ -124,16 +111,14 @@ function tracers.showerror()
                 end
                 n = n + 1
             end
-            lmx.set('errorcontext', table.concat(context,"\n"))
+            variables.filename, variables.errorcontext = filename, table.concat(context,"\n")
         else
-            lmx.set('errorcontext', "")
+            variables.filename, variables.errorcontext = filename, ""
         end
     else
-        lmx.set('filename', filename)
-        lmx.set('errorcontext', 'file not found')
+        variables.filename, variables.errorcontext = filename, 'file not found'
     end
-    lmx.show('context-error.lmx')
-    lmx.restore()
+    lmx.show('context-error.lmx',variables)
 end
 
 function tracers.overloaderror()

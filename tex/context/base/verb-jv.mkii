@@ -22,7 +22,7 @@
 %D driver looks much like the \JAVASCRIPT\ one, we don't
 %D comment it extensively.
 
-\ifx\undefined\setupprettyPLtype \input verb-pl \relax \fi
+\ifdefined\setupprettyPLtype \else \loadmarkfile{verb-pl} \fi
 
 \unprotect
 

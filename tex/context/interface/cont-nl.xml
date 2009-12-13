@@ -4209,6 +4209,11 @@
         <cd:parameter name="commando">
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
+        <cd:parameter name="pagina">
+          <cd:constant type="laatste"/>
+          <cd:constant type="ja"/>
+          <cd:constant type="nee"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

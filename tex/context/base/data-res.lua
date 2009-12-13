@@ -124,6 +124,11 @@ formats     ['sfd']                      = 'SFDFONTS'
 suffixes    ['sfd']                      = { 'sfd' }
 alternatives['subfont definition files'] = 'sfd'
 
+-- lib paths
+
+formats ['lib'] = 'CLUAINPUTS' -- new (needs checking)
+suffixes['lib'] = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
+
 -- In practice we will work within one tds tree, but i want to keep
 -- the option open to build tools that look at multiple trees, which is
 -- why we keep the tree specific data in a table. We used to pass the
@@ -1343,9 +1348,9 @@ end
 function resolvers.expanded_path_list_from_var(str) -- brrr
     local tmp = resolvers.var_of_format_or_suffix(gsub(str,"%$",""))
     if tmp ~= "" then
-        return resolvers.expanded_path_list(str)
-    else
         return resolvers.expanded_path_list(tmp)
+    else
+        return resolvers.expanded_path_list(str)
     end
 end
 

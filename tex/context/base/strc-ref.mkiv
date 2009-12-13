@@ -13,14 +13,17 @@
 
 % todo: (1) configure references, (2) rendering => with presets
 %
-% \starttext
-%     \definestructureconversionset[default][Character,number,Romannumerals,Character][number]
-%     \definestructureseparatorset [default][.,.,--][.]
-%     \setupstructurehead[subsection][sectionstopper=),sectionsegments=4:4]
-
-%     \setupreferencing[sectionsegments=3:4]
-%     \section {One} \subsection[sec:test]{Two} See \in[sec:test]
-% \stoptext
+% \definestructureconversionset[default][Character,number,Romannumerals,Character][number]
+% \definestructureseparatorset [default][.,.,--][.]
+% \setupstructurehead[subsection][sectionstopper=),sectionsegments=4:4]
+% \setupreferencestructureprefix[default][prefixsegments=2:4]
+% \setupreferencestructureprefix[figure][default][prefixsegments=3:4]
+% \chapter {One}
+% \section {One}
+% \subsection[sec:test]{Two}
+% See \in[sec:test] and \in[fig:xx] and \in[fig:yy]
+% \placefigure[here][fig:xx]{}{}
+% \placefigure[here][fig:yy]{}{}
 
 \writestatus{loading}{ConTeXt Structure Macros / Cross Referencing}
 
@@ -1780,7 +1783,7 @@
 %      {\ctxlua{jobreferences.get_current_metadata("name")}}
 %      {#1}}
 % \def\currentreferencedefault
-%   {\ctxlua{jobreferences.filter("default",\referencestructureprefixspec\v!default)}}
+%   {\ctxlua{jobreferences.filter("default",\getreferencestructureprefixspec\v!default)}}
 %
 % this is shortcut for:
 

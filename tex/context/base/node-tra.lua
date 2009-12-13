@@ -137,11 +137,12 @@ function nodes.tracers.characters.start()
     end
     function nodes.tracers.characters.stop()
         tracers.list['characters'] = list
-        lmx.set('title', 'ConTeXt Character Processing Information')
-        lmx.set('color-background-one', lmx.get('color-background-yellow'))
-        lmx.set('color-background-two', lmx.get('color-background-purple'))
-        lmx.show('context-characters.lmx')
-        lmx.restore()
+        local variables = {
+            ['title']                = 'ConTeXt Character Processing Information',
+            ['color-background-one'] = lmx.get('color-background-yellow'),
+            ['color-background-two'] = lmx.get('color-background-purple'),
+        }
+        lmx.show('context-characters.lmx',variables)
         nodes.process_characters = npc
         tasks.restart("processors", "characters")
     end

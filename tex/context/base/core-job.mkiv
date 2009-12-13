@@ -124,7 +124,8 @@
 \def\stoptext
   {\global\advance\textlevel\minusone
    \ifnum\textlevel>\zerocount \else
-     \page[\v!last]\page % new, moved from everybye to here; flushes headers, colors etc etc etc
+     \flushfinallayoutpage % optional
+     \page % anyway
      \the\everystoptext
     %\the\everybye            %
     %\the\everygoodbye        % == \end (new)

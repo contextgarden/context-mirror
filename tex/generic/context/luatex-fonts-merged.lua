@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 12/01/09 17:16:42
+-- merge date  : 12/13/09 23:30:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -200,6 +200,7 @@ end
 local simple_escapes = {
     ["-"] = "%-",
     ["."] = "%.",
+    ["?"] = ".",
     ["*"] = ".*",
 }
 
@@ -262,6 +263,19 @@ function string:striplong() -- strips newlines and leading spaces
     return self
 end
 
+function string:topattern(lowercase,strict)
+    if lowercase then
+        self = self:lower()
+    end
+    self = gsub(self,".",simple_escapes)
+    if self == "" then
+        self = ".*"
+    elseif strict then
+        self = "^" .. self .. "$"
+    end
+    return self
+end
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -273,6 +287,8 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
+
+lpeg = require("lpeg")
 
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 

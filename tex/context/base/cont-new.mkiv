@@ -29,6 +29,8 @@
 
 \unprotect
 
+\def\immediatemessage#1{\ctxlua{commands.writestatus("message","#1")}}
+
 % % % % % % needs testing but saves runtime
 
 \let\checknotes\relax % probably not needed, checking already done

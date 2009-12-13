@@ -147,9 +147,10 @@ local cache = { }
 
 local function showfeatures(f)
     if f then
+        logs.simple("processing font '%s'",f)
         local features = cache[f]
         if features == nil then
-            features = fonts.get_features(f)
+            features = fonts.get_features(resolvers.find_file(f))
             if not features then
                 logs.simple("building cache for '%s'",f)
                 io.savedata(file.join(temppath,file.addsuffix(tempname,"tex")),format(process_templates.cache,f,f))
@@ -217,25 +218,50 @@ local function showfeatures(f)
     end
 end
 
+local template_h = [[
+<tr>
+    <th>safe name&nbsp;&nbsp;&nbsp;&nbsp;</th>
+    <th>family name&nbsp;&nbsp;&nbsp;&nbsp;</th>
+    <th>style-variant-weight-width&nbsp;&nbsp;&nbsp;&nbsp;</th>
+    <th>font name&nbsp;&nbsp;&nbsp;&nbsp;</th>
+    <th>weight&nbsp;&nbsp;&nbsp;&nbsp;</th>
+    <th>filename</th>
+</tr>]]
+
+local template_d = [[
+<tr>
+    <td><a href='mtx-server-ctx-fonttest.lua?selection=%s'>%s</a>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>%s&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>%s-%s-%s-%s&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>%s&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>%s&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>%s</td>
+</tr>]]
+
 local function select_font()
-    local t = fonts.names.list(".*")
+    local t = fonts.names.list(".*",false,true)
     if t then
         local listoffonts = { }
-        local t = fonts.names.list(".*")
-        if t then
-            listoffonts[#listoffonts+1] = "<table>"
-            listoffonts[#listoffonts+1] = "<tr><th>safe name</th><th>font name</th><th>filename</th><th>sub font&nbsp;</th><th>type</th></tr>"
-            for k, id in ipairs(table.sortedkeys(t)) do
-                local ti = t[id]
-                local type, name, file, sub = ti[1], ti[2], ti[3], ti[4]
-                if type == "otf" or  type == "ttf" or  type == "ttc" then
-                    if sub then sub = "(sub)" else sub = "" end
-                    listoffonts[#listoffonts+1] = format("<tr><td><a href='mtx-server-ctx-fonttest.lua?selection=%s'>%s</a></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>",id,id,name,file,sub,type)
-                end
+        listoffonts[#listoffonts+1] = "<table>"
+        listoffonts[#listoffonts+1] = template_h
+        for k, v in table.sortedpairs(t) do
+            local kind = v.format
+            if kind == "otf" or kind == "ttf" or kind == "ttc" then
+                local fontname = v.fontname
+                listoffonts[#listoffonts+1] = format(template_d, fontname, fontname,
+                    v.familyname or "",
+                    t.variant    or "normal",
+                    t.weight     or "normal",
+                    t.width      or "normal",
+                    t.style      or "normal",
+                    v.rawname    or fontname,
+                    v.fontweight or "",
+                    v.filename   or ""
+                )
             end
-            listoffonts[#listoffonts+1] = "</table>"
-            return concat(listoffonts,"\n")
         end
+        listoffonts[#listoffonts+1] = "</table>"
+        return concat(listoffonts,"\n")
     end
     return "<b>no fonts</b>"
 end
@@ -260,59 +286,67 @@ local result_template = [[
 
 scripts.webserver.registerpath(temppath)
 
+local function get_specification(name)
+    return fonts.names.resolvedspecification(name or "")
+end
+
 local function edit_font(currentfont,detail,tempname)
-    local fontname, fontfile, issub = fonts.names.specification(currentfont or "")
-    local htmldata = showfeatures(fontfile)
-    if htmldata then
-        local features, languages, scripts, options = { }, { }, { }, { }
-        for k,v in ipairs(table.sortedkeys(htmldata.scripts)) do
-            local s = fonts.otf.tables.scripts[v] or v
-            if detail and v == detail.script then
-                scripts[#scripts+1] = format("<input title='%s' id='s-%s' type='radio' name='script' value='%s' onclick='check_script()' checked='checked'/>&nbsp;<span id='t-s-%s'>%s</span>",s,v,v,v,v)
-            else
-                scripts[#scripts+1] = format("<input title='%s' id='s-%s' type='radio' name='script' value='%s' onclick='check_script()' />&nbsp;<span id='t-s-%s'>%s</span>",s,v,v,v,v)
+    logs.simple("entering edit mode for '%s'",currentfont)
+    local specification = get_specification(currentfont)
+    if specification then
+        local htmldata = showfeatures(specification.filename)
+        if htmldata then
+            local features, languages, scripts, options = { }, { }, { }, { }
+            for k,v in ipairs(table.sortedkeys(htmldata.scripts)) do
+                local s = fonts.otf.tables.scripts[v] or v
+                if detail and v == detail.script then
+                    scripts[#scripts+1] = format("<input title='%s' id='s-%s' type='radio' name='script' value='%s' onclick='check_script()' checked='checked'/>&nbsp;<span id='t-s-%s'>%s</span>",s,v,v,v,v)
+                else
+                    scripts[#scripts+1] = format("<input title='%s' id='s-%s' type='radio' name='script' value='%s' onclick='check_script()' />&nbsp;<span id='t-s-%s'>%s</span>",s,v,v,v,v)
+                end
             end
-        end
-        for k,v in ipairs(table.sortedkeys(htmldata.languages)) do
-            local l = fonts.otf.tables.languages[v] or v
-            if detail and v == detail.language then
-                languages[#languages+1] = format("<input title='%s' id='l-%s' type='radio' name='language' value='%s' onclick='check_language()' checked='checked'/>&nbsp;<span id='t-l-%s'>%s</span>",l,v,v,v,v)
-            else
-                languages[#languages+1] = format("<input title='%s' id='l-%s' type='radio' name='language' value='%s' onclick='check_language()' />&nbsp;<span id='t-l-%s'>%s</span>",l,v,v,v,v)
+            for k,v in ipairs(table.sortedkeys(htmldata.languages)) do
+                local l = fonts.otf.tables.languages[v] or v
+                if detail and v == detail.language then
+                    languages[#languages+1] = format("<input title='%s' id='l-%s' type='radio' name='language' value='%s' onclick='check_language()' checked='checked'/>&nbsp;<span id='t-l-%s'>%s</span>",l,v,v,v,v)
+                else
+                    languages[#languages+1] = format("<input title='%s' id='l-%s' type='radio' name='language' value='%s' onclick='check_language()' />&nbsp;<span id='t-l-%s'>%s</span>",l,v,v,v,v)
+                end
             end
-        end
-        for k,v in ipairs(table.sortedkeys(htmldata.features)) do
-            local f = fonts.otf.tables.features[v] or v
-            if detail and detail["f-"..v] then
-                features[#features+1] = format("<input title='%s' id='f-%s' type='checkbox' name='f-%s' onclick='check_feature()' checked='checked'/>&nbsp;<span id='t-f-%s'>%s</span>",f,v,v,v,v)
-            else
-                features[#features+1] = format("<input title='%s' id='f-%s' type='checkbox' name='f-%s' onclick='check_feature()' />&nbsp;<span id='t-f-%s'>%s</span>",f,v,v,v,v)
+            for k,v in ipairs(table.sortedkeys(htmldata.features)) do
+                local f = fonts.otf.tables.features[v] or v
+                if detail and detail["f-"..v] then
+                    features[#features+1] = format("<input title='%s' id='f-%s' type='checkbox' name='f-%s' onclick='check_feature()' checked='checked'/>&nbsp;<span id='t-f-%s'>%s</span>",f,v,v,v,v)
+                else
+                    features[#features+1] = format("<input title='%s' id='f-%s' type='checkbox' name='f-%s' onclick='check_feature()' />&nbsp;<span id='t-f-%s'>%s</span>",f,v,v,v,v)
+                end
             end
-        end
-        for k, v in ipairs { "trace", "basemode" } do
-            if detail and detail["o-"..v] then
-                options[#options+1] = format("<input id='o-%s' type='checkbox' name='o-%s' checked='checked'/>&nbsp;%s",v,v,v)
-            else
-                options[#options+1] = format("<input id='o-%s' type='checkbox' name='o-%s'/>&nbsp;%s",v,v,v)
+            for k, v in ipairs { "trace", "basemode" } do
+                if detail and detail["o-"..v] then
+                    options[#options+1] = format("<input id='o-%s' type='checkbox' name='o-%s' checked='checked'/>&nbsp;%s",v,v,v)
+                else
+                    options[#options+1] = format("<input id='o-%s' type='checkbox' name='o-%s'/>&nbsp;%s",v,v,v)
+                end
             end
-        end
-        local e = format(edit_template,
-            (detail and detail.sampletext) or sample_line,(detail and detail.name) or "no name",(detail and detail.title) or "",
-            concat(scripts,"  "),concat(languages,"  "),concat(features,"  "),concat(options,"  "))
-        if tempname then
-            local pdffile, texfile = file.addsuffix(tempname,"pdf"), file.addsuffix(tempname,"tex")
-            local r = format(result_template,pdffile,texfile,pdffile)
-            return e .. r, htmldata.javascript or ""
+            local e = format(edit_template,
+                (detail and detail.sampletext) or sample_line,(detail and detail.name) or "no name",(detail and detail.title) or "",
+                concat(scripts,"  "),concat(languages,"  "),concat(features,"  "),concat(options,"  "))
+            if tempname then
+                local pdffile, texfile = file.addsuffix(tempname,"pdf"), file.addsuffix(tempname,"tex")
+                local r = format(result_template,pdffile,texfile,pdffile)
+                return e .. r, htmldata.javascript or ""
+            else
+                return e, htmldata.javascript or ""
+            end
         else
-            return e, htmldata.javascript or ""
+            return "error, nothing set up yet"
         end
     else
-        return "error, nothing set up yet"
+        return "error, no info about font"
     end
 end
 
 local function process_font(currentfont,detail) -- maybe just fontname
-    local fontname, fontfile, issub = fonts.names.specification(currentfont or "")
     local features = {
         "mode=node",
         format("language=%s",detail.language or "dflt"),
@@ -361,14 +395,27 @@ local function show_log(currentfont,detail)
 end
 
 local function show_font(currentfont,detail)
-    local fontname, fontfile, issub = fonts.names.specification(currentfont or "")
-    local features = fonts.get_features(fontfile)
+    local specification = get_specification(currentfont)
+    local features = fonts.get_features(specification.filename)
     local result = { }
     result[#result+1] = format("<h1>names</h1>",what)
     result[#result+1] = "<table>"
-    result[#result+1] = format("<tr><td class='tc'>fontname:</td><td>%s</td></tr>",currentfont)
-    result[#result+1] = format("<tr><td class='tc'>fullname:</td><td>%s</td></tr>",fontname)
-    result[#result+1] = format("<tr><td class='tc'>filename:</td><td>%s</td></tr>",fontfile)
+    result[#result+1] = format("<tr><td class='tc'>fontname:   </td><td>%s</td></tr>",currentfont)
+    result[#result+1] = format("<tr><td class='tc'>fullname:   </td><td>%s</td></tr>",specification.fontname   or "-")
+    result[#result+1] = format("<tr><td class='tc'>filename:   </td><td>%s</td></tr>",specification.fontfile   or "-")
+    result[#result+1] = format("<tr><td class='tc'>familyname: </td><td>%s</td></tr>",specification.familyname or "-")
+    result[#result+1] = format("<tr><td class='tc'>fontweight: </td><td>%s</td></tr>",specification.fontweight or "-")
+    result[#result+1] = format("<tr><td class='tc'>format:     </td><td>%s</td></tr>",specification.format     or "-")
+    result[#result+1] = format("<tr><td class='tc'>fullname:   </td><td>%s</td></tr>",specification.fullname   or "-")
+    result[#result+1] = format("<tr><td class='tc'>subfamily:  </td><td>%s</td></tr>",specification.subfamily  or "-")
+    result[#result+1] = format("<tr><td class='tc'>rawname:    </td><td>%s</td></tr>",specification.rawname    or "-")
+    result[#result+1] = format("<tr><td class='tc'>designsize: </td><td>%s</td></tr>",specification.designsize or "-")
+    result[#result+1] = format("<tr><td class='tc'>minimumsize:</td><td>%s</td></tr>",specification.minsize    or "-")
+    result[#result+1] = format("<tr><td class='tc'>maximumsize:</td><td>%s</td></tr>",specification.maxsize    or "-")
+    result[#result+1] = format("<tr><td class='tc'>style:      </td><td>%s</td></tr>",specification.style   ~= "" and specification.style or "normal")
+    result[#result+1] = format("<tr><td class='tc'>variant:    </td><td>%s</td></tr>",specification.variant ~= "" and specification.variant    or "normal")
+    result[#result+1] = format("<tr><td class='tc'>weight:     </td><td>%s</td></tr>",specification.weight  ~= "" and specification.weight     or "normal")
+    result[#result+1] = format("<tr><td class='tc'>width:      </td><td>%s</td></tr>",specification.width   ~= "" and specification.width      or "normal")
     result[#result+1] = "</table>"
     if features then
         for what, v in table.sortedpairs(features) do
@@ -486,10 +533,10 @@ local function deletestored(detail,currentfont,name)
 end
 
 local function save_font(currentfont,detail)
-    local fontname, fontfile, issub = fonts.names.specification(currentfont or "")
+    local specification = get_specification(currentfont)
     local name, title, script, language, features, options, text = currentfont, "", "dflt", "dflt", { }, { }, ""
     if detail then
-        local htmldata = showfeatures(fontfile)
+        local htmldata = showfeatures(specification.filename)
         script = detail.script or script
         language = detail.language or language
         text = string.strip(detail.sampletext or text)
@@ -519,7 +566,7 @@ local function load_font(currentfont)
     local result = {}
     result[#result+1] = format("<tr><th>del&nbsp;</th><th>name&nbsp;</th><th>font&nbsp;</th><th>fontname&nbsp;</th><th>script&nbsp;</th><th>language&nbsp;</th><th>features&nbsp;</th><th>title&nbsp;</th><th>sampletext&nbsp;</th></tr>")
     for k,v in table.sortedpairs(storage) do
-        local fontname, fontfile, issub = fonts.names.specification(v.font or "")
+        local fontname, fontfile = get_specification(v.font)
         result[#result+1] = format("<tr><td><a href='mtx-server-ctx-fonttest.lua?deletename=%s'>x</a>&nbsp;</td><td><a href='mtx-server-ctx-fonttest.lua?loadname=%s'>%s</a>&nbsp;</td><td>%s&nbsp;</td<td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td></tr>",
             k,k,k,v.font,fontname,v.script,v.language,concat(table.sortedkeys(v.features)," "),v.title or "no title",v.text or "")
     end
@@ -562,6 +609,13 @@ local status_template = [[
     <input type="hidden" name="currentfont" value="%s" />
 ]]
 
+local variables = {
+    ['color-background-one'] = lmx.get('color-background-green'),
+    ['color-background-two'] = lmx.get('color-background-blue'),
+    ['title']                = 'ConTeXt Font Tester',
+    ['formaction']           = "mtx-server-ctx-fonttest.lua",
+}
+
 function doit(configuration,filename,hashed)
 
     local start = os.clock()
@@ -589,65 +643,49 @@ function doit(configuration,filename,hashed)
         action = "extras"
     end
 
-    lmx.restore()
-
-    local fontname, fontfile, issub = fonts.names.specification(currentfont or "")
+    local fontname, fontfile = get_specification(currentfont)
 
     if fontfile then
-        lmx.variables['title-default'] = format('ConTeXt Font Tester: %s (%s)',fontname,fontfile)
+        variables.title = format('ConTeXt Font Tester: %s (%s)',fontname,fontfile)
     else
-        lmx.variables['title-default'] = 'ConTeXt Font Tester'
+        variables.title = 'ConTeXt Font Tester'
     end
 
-    lmx.variables['color-background-green']  = '#4F6F6F'
-    lmx.variables['color-background-blue']   = '#6F6F8F'
-    lmx.variables['color-background-yellow'] = '#8F8F6F'
-    lmx.variables['color-background-purple'] = '#8F6F8F'
-
-    lmx.variables['color-background-body']   = '#808080'
-    lmx.variables['color-background-main']   = '#3F3F3F'
-    lmx.variables['color-background-one']    = lmx.variables['color-background-green']
-    lmx.variables['color-background-two']    = lmx.variables['color-background-blue']
-
-    lmx.variables['title']                   = lmx.variables['title-default']
-
-    lmx.set('title',                lmx.get('title'))
-    lmx.set('color-background-one', lmx.get('color-background-green'))
-    lmx.set('color-background-two', lmx.get('color-background-blue'))
-
     -- lua table and adapt
-
-    lmx.set('formaction', "mtx-server-ctx-fonttest.lua")
 
     local menu = { }
     for k, v in ipairs { 'process', 'select', 'save', 'load', 'edit', 'reset', 'features', 'source', 'log', 'info', 'extras'} do
         menu[#menu+1] = format("<button name='action' value='%s' type='submit'>%s</button>",v,v)
     end
-    lmx.set('menu', concat(menu,"&nbsp;"))
+
+    variables.menu           = concat(menu,"&nbsp;")
+    variables.status         = format(status_template,currentfont or "")
+    variables.maintext       = ""
+    variables.javascriptdata = ""
+    variables.javascripts    = ""
+    variables.javascriptinit = ""
 
     logs.simple("action: %s",action or "no action")
-
-    lmx.set("status",format(status_template,currentfont or ""))
 
     local result
 
     if action == "select" then
-        lmx.set('maintext',select_font())
+        variables.maintext = select_font()
     elseif action == "info" then
-        lmx.set('maintext',info_about())
+        variables.maintext = info_about()
     elseif action == "extras" then
-        lmx.set('maintext',do_extras())
+        variables.maintext = do_extras()
     elseif currentfont and currentfont ~= "" then
         if action == "save" then
-            lmx.set('maintext',save_font(currentfont,detail))
+            variables.maintext = save_font(currentfont,detail)
         elseif action == "load" then
-            lmx.set('maintext',load_font(currentfont,detail))
+            variables.maintext = load_font(currentfont,detail)
         elseif action == "source" then
-            lmx.set('maintext',show_source(currentfont,detail))
+            variables.maintext = show_source(currentfont,detail)
         elseif action == "log" then
-            lmx.set('maintext',show_log(currentfont,detail))
+            variables.maintext = show_log(currentfont,detail)
         elseif action == "features" then
-            lmx.set('maintext',show_font(currentfont,detail))
+            variables.maintext = show_font(currentfont,detail)
         else
             local e, s
             if action == "process" then
@@ -659,16 +697,16 @@ function doit(configuration,filename,hashed)
             else
                 e, s = process_font(currentfont,detail)
             end
-            lmx.set('maintext',e)
-            lmx.set('javascriptdata',s)
-            lmx.set('javascripts',javascripts)
-            lmx.set('javascriptinit', "check_form()")
+            variables.maintext       = e
+            variables.javascriptdata = s
+            variables.javascripts    = javascripts
+            variables.javascriptinit = "check_form()"
         end
     else
-        lmx.set('maintext',select_font())
+        variables.maintext = select_font()
     end
 
-    result = { content = lmx.convert('context-fonttest.lmx') }
+    result = { content = lmx.convert('context-fonttest.lmx',false,variables) }
 
     logs.simple("time spent on page: %0.03f seconds",os.clock()-start)
 

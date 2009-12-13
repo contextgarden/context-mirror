@@ -666,6 +666,7 @@ function figures.includers.generic(data)
     end
     if figure then
         local n = figures.boxnumber
+        -- it looks like we have a leak in attributes here .. todo
         tex.box[n] = node.hpack(img.node(figure))
      -- tex.box[n] = img.node(figure) -- img.write(figure) -- assigning img.node directly no longer valid
         tex.wd[n], tex.ht[n], tex.dp[n] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)

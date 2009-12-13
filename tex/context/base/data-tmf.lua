@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['data-tmf'] = {
 function resolvers.check_environment(tree)
     logs.simpleline()
     os.setenv('TMP', os.getenv('TMP') or os.getenv('TEMP') or os.getenv('TMPDIR') or os.getenv('HOME'))
-    os.setenv('TEXOS', os.getenv('TEXOS') or ("texmf-" .. os.currentplatform()))
+    os.setenv('TEXOS', os.getenv('TEXOS') or ("texmf-" .. os.platform))
     os.setenv('TEXPATH', (tree or "tex"):gsub("\/+$",''))
     os.setenv('TEXMFOS', os.getenv('TEXPATH') .. "/" .. os.getenv('TEXOS'))
     logs.simpleline()

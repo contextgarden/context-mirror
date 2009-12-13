@@ -1,72 +1,128 @@
 if not modules then modules = { } end modules ['trac-lmx'] = {
-    version   = 1.001,
+    version   = 1.002,
     comment   = "companion to trac-lmx.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
-local gsub, format, concat = string.gsub, string.format, table.concat
+-- todo: use lpeg instead (although not really needed)
 
--- we can now use l-xml, and we can also use lpeg
+local gsub, format, concat, byte = string.gsub, string.format, table.concat, string.byte
 
 lmx = lmx or { }
 
-lmx.escapes = {
+local escapes = {
     ['&'] = '&amp;',
     ['<'] = '&lt;',
     ['>'] = '&gt;',
     ['"'] = '&quot;'
 }
 
--- local function p -> ends up in lmx.p, so we need to cast
+-- variables
 
-lmx.variables = { }
+lmx.variables = { } -- global, shared
 
-lmx.variables['title-default'] = 'LMX File'
-lmx.variables['title']         = lmx.variables['title-default']
+local lmxvariables = lmx.variables
 
--- demonstrates: local, *all, gsub using tables, nil or value, loadstring
+lmxvariables['title-default']           = 'ConTeXt LMX File'
+lmxvariables['title']                   = lmx.variables['title-default']
+lmxvariables['color-background-green']  = '#4F6F6F'
+lmxvariables['color-background-blue']   = '#6F6F8F'
+lmxvariables['color-background-yellow'] = '#8F8F6F'
+lmxvariables['color-background-purple'] = '#8F6F8F'
+lmxvariables['color-background-body']   = '#808080'
+lmxvariables['color-background-main']   = '#3F3F3F'
+lmxvariables['color-background-one']    = lmxvariables['color-background-green']
+lmxvariables['color-background-two']    = lmxvariables['color-background-blue']
 
-function lmx.loadedfile(filename)
-    return io.loaddata(resolvers.find_file(filename))
+function lmx.set(key, value)
+    lmxvariables[key] = value
 end
 
-lmx.converting = false
+function lmx.get(key)
+    return lmxvariables[key] or ""
+end
 
-local templates = { }
+-- helpers
 
-function lmx.convert(template,result) -- todo: use lpeg instead
-    if not lmx.converting then -- else, if error then again tex error and loop
-        local data = templates[template]
-        if not data then
-            data = lmx.loadedfile(template)
-            templates[template] = data
-        end
-        local text = { }
-        function lmx.print(...)
-            text[#text+1] = concat({...})
-        end
-        function lmx.variable(str)
-            return lmx.variables[str] or ""
-        end
-        function lmx.escape(str)
-            str = tostring(str)
-            str = gsub(str,'&','&amp;')
-            str = gsub(str,'[<>"]',lmx.escapes)
-            return str
-        end
-        function lmx.type(str)
-            if str then lmx.print("<tt>" .. lmx.escape(str) .. "</tt>") end
-        end
-        function lmx.pv(str)
-            lmx.print(lmx.variable(str))
-        end
-        function lmx.tv(str)
-            lmx.type(lmx.variable(str))
-        end
+local variables, result = { } -- we assume no nesting
+
+local function do_print(one,two,...)
+    if two then
+        result[#result+1] = concat { one, two, ... }
+    else
+        result[#result+1] = one
+    end
+end
+
+local function do_escape(str)
+    str = tostring(str)
+    str = gsub(str,'&','&amp;')
+    str = gsub(str,'[<>"]',escapes)
+    return str
+end
+
+local function do_urlescaped(str)
+    return (gsub(str,"[^%a%d]",format("%%0x",byte("%1"))))
+end
+
+function do_type(str)
+    if str then do_print("<tt>" .. do_escape(str) .. "</tt>") end
+end
+
+local function do_variable(str)
+    return variables[str] or lmxvariables[str] -- or format("<!-- unset lmx instance variable: %s -->",str or "?")
+end
+
+function lmx.loadedfile(name)
+    name = (resolvers and resolvers.find_file and resolvers.find_file(name)) or name
+    return io.loaddata(name)
+end
+
+local function do_include(filename)
+    local stylepath = do_variable('includepath')
+    local data = lmx.loadedfile(filename)
+    if (not data or data == "") and stylepath ~= "" then
+        data = lmx.loadedfile(file.join(stylepath,filename))
+    end
+    if not data or data == "" then
+        data = format("<!-- unknown lmx include file: %s -->",filename)
+    end
+    return data
+end
+
+lmx.print     = do_print
+lmx.type      = do_type
+lmx.escape    = do_escape
+lmx.urlescape = do_escape
+lmx.variable  = do_variable
+lmx.include   = do_include
+
+function lmx.pv(str)
+    do_print(do_variable(str) or "")
+end
+
+function lmx.tv(str)
+    lmx.type(do_variable(str) or "")
+end
+
+local template = [[
+    local definitions = { }
+    local p, v, e, t, pv, tv = lmx.print, lmx.variable, lmx.escape, lmx.type, lmx.pv, lmx.tv
+    %s
+]]
+
+local cache = { }
+
+local trace = false
+
+function lmx.new(data,variables)
+    local known = cache[data]
+    if not known then
+        local definitions = { }
         data = gsub(data,"<%?lmx%-include%s+(.-)%s-%?>", function(filename)
-            return lmx.loadedfile(filename)
+            return lmx.include(filename)
         end)
         local definitions =  { }
         data = gsub(data,"<%?lmx%-define%-begin%s+(%S-)%s-%?>(.-)<%?lmx%-define%-end%s-%?>", function(tag,content)
@@ -76,33 +132,60 @@ function lmx.convert(template,result) -- todo: use lpeg instead
         data = gsub(data,"<%?lmx%-resolve%s+(%S-)%s-%?>", function(tag)
             return definitions[tag] or ""
         end)
-        data = gsub(data,"%c%s-(<%?lua .-%?>)%s-%c", function(lua)
-            return "\n" .. lua .. " "
+        data = gsub(data .. "<?lua ?>","(.-)<%?lua%s+(.-)%s*%?>", function(txt,lua)
+            txt = gsub(txt,"%c+","\n")
+            return format("p(%q)%s ",txt,lua) -- nb! space
         end)
-        data = gsub(data .. "<?lua ?>","(.-)<%?lua%s+(.-)%?>", function(txt, lua)
-            txt = gsub(txt,"%c+", "\\n")
-            txt = gsub(txt,'"'  , '\\"')
-            txt = gsub(txt,"'"  , "\\'")
-         -- txt = gsub(txt,"([\'\"])", { ["'"] = '\\"', ['"'] = "\\'" } )
-            return "p(\"" .. txt .. "\")\n" .. lua .. "\n"
-        end)
-        lmx.converting = true
-        data = "local p,v,e,t,pv,tv = lmx.print,lmx.variable,lmx.escape,lmx.type,lmx.pv,lmx.tv " .. data
-        assert(loadstring(data))()
-        lmx.converting = false
-        text = concat(text)
-        if result then
-            io.savedata(result,text)
-        else
-            return text
-        end
+        data = format(template,data)
+        known = {
+            data = trace and data,
+            variables = variables or { },
+            converter = loadstring(data),
+        }
+    elseif variables then
+        known.variables = variables
+    end
+    return known, known.variables
+end
+
+function lmx.reset(self)
+    self.variables = { }
+end
+
+function lmx.result(self)
+    if trace then
+        return self.data
+    else
+        variables, result = self.variables, { }
+        self.converter()
+        return concat(result)
+    end
+end
+
+-- file converter
+
+local loaded = { }
+
+function lmx.convert(templatefile,resultfile,variables)
+    local data = loaded[templatefile]
+    if not data then
+        data = lmx.new(lmx.loadedfile(templatefile),variables)
+        loaded[template] = data
+    elseif variables then
+        data.variables = variables
+    end
+    local result = lmx.result(data)
+    if resultfile then
+        io.savedata(resultfile,result)
+    else
+        return lmx.result(data,result)
     end
 end
 
 -- these can be overloaded; we assume that the os handles filename associations
 
-lmx.lmxfile = function(filename) return filename end
-lmx.htmfile = function(filename) return filename end
+lmx.lmxfile = function(filename) return filename end -- beware, these can be set!
+lmx.htmfile = function(filename) return filename end -- beware, these can be set!
 
 if os.platform == "windows" then
     lmx.popupfile = function(filename) os.execute("start " .. filename) end
@@ -110,44 +193,25 @@ else
     lmx.popupfile = function(filename) os.execute(filename) end
 end
 
-function lmx.make(name)
+function lmx.make(name,variables)
     local lmxfile = lmx.lmxfile(name)
     local htmfile = lmx.htmfile(name)
     if lmxfile == htmfile then
         htmfile = gsub(lmxfile, "%.%a+$", "html")
     end
-    lmx.convert(lmxfile, htmfile)
+    lmx.convert(lmxfile,htmfile,variables)
     return htmfile
 end
 
-function lmx.show(name)
-    local htmfile = lmx.make(name)
+function lmx.show(name,variables)
+    local htmfile = lmx.make(name,variables)
     lmx.popupfile(htmfile)
     return htmfile
 end
 
--- kind of private
+-- test
 
-lmx.restorables = { }
-
-function lmx.set(key, value)
-    if not lmx.restorables[key] then
-        table.insert(lmx.restorables, key)
-        lmx.variables['@@' .. key] = lmx.variables[key]
-    end
-    lmx.variables[key] = value
-end
-
-function lmx.get(key)
-    return lmx.variables[key] or ""
-end
-
-function lmx.restore()
-    for _,key in pairs(lmx.restorables) do
-        lmx.variables[key] = lmx.variables['@@' .. key]
-    end
-    lmx.restorables = { }
-end
+--~ print(lmx.result(lmx.new(io.loaddata("t:/sources/context-timing.lmx"))))
 
 -- command line
 

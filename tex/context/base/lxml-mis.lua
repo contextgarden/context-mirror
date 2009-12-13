@@ -11,7 +11,7 @@ local type, next, tonumber, tostring, setmetatable, loadstring = type, next, ton
 local format, gsub = string.format, string.gsub
 
 --[[ldx--
-<p>The following helper functions best belong to the <t>lmxl-ini</t>
+<p>The following helper functions best belong to the <t>lxml-ini</t>
 module. Some are here because we need then in the <t>mk</t>
 document and other manuals, others came up when playing with
 this module. Since this module is also used in <l n='mtxrun'/> we've

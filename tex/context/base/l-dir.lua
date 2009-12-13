@@ -41,6 +41,35 @@ end
 
 dir.glob_pattern = glob_pattern
 
+local function collect_pattern(path,patt,recurse,result)
+    local ok, scanner
+    result = result or { }
+    if path == "/" then
+        ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
+    else
+        ok, scanner = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
+    end
+    if ok and type(scanner) == "function" then
+        if not find(path,"/$") then path = path .. '/' end
+        for name in scanner do
+            local full = path .. name
+            local attr = attributes(full)
+            local mode = attr.mode
+            if mode == 'file' then
+                if find(full,patt) then
+                    result[name] = attr
+                end
+            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+                attr.list = collect_pattern(full,patt,recurse)
+                result[name] = attr
+            end
+        end
+    end
+    return result
+end
+
+dir.collect_pattern = collect_pattern
+
 local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
 
 local pattern = Ct {

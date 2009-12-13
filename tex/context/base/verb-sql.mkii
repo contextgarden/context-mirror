@@ -49,7 +49,7 @@
 %D Like we did with the \JAVASCRIPT\ driver, we will borrow
 %D most of the macros from the \PERL\ driver.
 
-\ifx\undefined\setupprettyPLtype \input verb-pl \relax \fi
+\ifdefined\setupprettyPLtype \else \loadmarkfile{verb-pl} \fi
 
 \unprotect
 

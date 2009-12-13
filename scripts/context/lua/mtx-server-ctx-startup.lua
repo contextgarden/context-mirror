@@ -10,25 +10,6 @@ dofile(resolvers.find_file("trac-lmx.lua","tex"))
 
 function doit(configuration,filename,hashed)
 
-    lmx.restore()
-
-    lmx.variables['color-background-green']  = '#4F6F6F'
-    lmx.variables['color-background-blue']   = '#6F6F8F'
-    lmx.variables['color-background-yellow'] = '#8F8F6F'
-    lmx.variables['color-background-purple'] = '#8F6F8F'
-
-    lmx.variables['color-background-body']   = '#808080'
-    lmx.variables['color-background-main']   = '#3F3F3F'
-    lmx.variables['color-background-one']    = lmx.variables['color-background-green']
-    lmx.variables['color-background-two']    = lmx.variables['color-background-blue']
-
-    lmx.variables['title']                   = "Overview Of Goodies"
-
-    lmx.set('title',                lmx.get('title'))
-    lmx.set('color-background-one', lmx.get('color-background-green'))
-    lmx.set('color-background-two', lmx.get('color-background-blue'))
-
-
     local list = { }
     local root = file.dirname(resolvers.find_file("mtx-server.lua") or ".")
     if root == "" then root = "." end
@@ -42,11 +23,16 @@ function doit(configuration,filename,hashed)
         end
     end
 
-    lmx.set('maintext',table.concat(list,"\n"))
+    local variables = {
+        ['color-background-one']    = lmx.get('color-background-green'),
+        ['color-background-two']    = lmx.get('color-background-blue'),
+        ['title']                   = "Overview Of Goodies",
+        ['color-background-one']    = lmx.get('color-background-green'),
+        ['color-background-two']    = lmx.get('color-background-blue'),
+        ['maintext']                = table.concat(list,"\n"),
+    }
 
-    result = { content = lmx.convert('context-base.lmx') }
-
-    return result
+    return  { content = lmx.convert('context-base.lmx',false,variables) }
 
 end
 

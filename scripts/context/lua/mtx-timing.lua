@@ -124,50 +124,39 @@ function goodies.progress.valid_file(name)
 end
 
 function goodies.progress.make_lmx_page(name,launch,remove)
+
     local filename = name .. "-luatex-progress"
     local other    = "elapsed_time"
     local template = 'context-timing.lmx'
-
-    lmx.variables['color-background-green']  = '#4F6F6F'
-    lmx.variables['color-background-blue']   = '#6F6F8F'
-    lmx.variables['color-background-yellow'] = '#8F8F6F'
-    lmx.variables['color-background-purple'] = '#8F6F8F'
-
-    lmx.variables['color-background-body']   = '#808080'
-    lmx.variables['color-background-main']   = '#3F3F3F'
-    lmx.variables['color-background-one']    = lmx.variables['color-background-green']
-    lmx.variables['color-background-two']    = lmx.variables['color-background-blue']
-
-    lmx.variables['title-default']           = 'ConTeXt Timing Information'
-    lmx.variables['title']                   = lmx.variables['title-default']
-
-    lmx.htmfile = function(name) return name .. "-timing.xhtml" end
-    lmx.lmxfile = function(name) return resolvers.find_file(name,'tex') end
-
-    lmx.set('title', format('ConTeXt Timing Information: %s',file.basename(name)))
-    lmx.set('color-background-one', lmx.get('color-background-green'))
-    lmx.set('color-background-two', lmx.get('color-background-blue'))
 
     goodies.progress.convert(filename)
 
     local menudata, metadata = goodies.progress.make_svg(filename,other)
     local htmldata = goodies.progress.makehtml(filename,other,menudata,metadata)
 
-    lmx.set('parametersmenu', concat(htmldata.parameters, "&nbsp;&nbsp;"))
-    lmx.set('nodesmenu',      concat(htmldata.nodes,      "&nbsp;&nbsp;"))
-    lmx.set('graphics',       concat(htmldata.graphics,   "\n\n"))
+    lmx.htmfile = function(name) return name .. "-timing.xhtml" end
+    lmx.lmxfile = function(name) return resolvers.find_file(name,'tex') end
+
+    local variables = {
+        ['title-default']        = 'ConTeXt Timing Information',
+        ['title']                = format('ConTeXt Timing Information: %s',file.basename(name)),
+        ['parametersmenu']       = concat(htmldata.parameters, "&nbsp;&nbsp;"),
+        ['nodesmenu']            = concat(htmldata.nodes, "&nbsp;&nbsp;"),
+        ['graphics']             = concat(htmldata.graphics, "\n\n"),
+        ['color-background-one'] = lmx.get('color-background-green'),
+        ['color-background-two'] = lmx.get('color-background-blue'),
+    }
 
     if launch then
-        local htmfile = lmx.show(template)
+        local htmfile = lmx.show(template,variables)
         if remove then
             os.sleep(1) -- give time to launch
             os.remove(htmfile)
         end
     else
-        lmx.make(template)
+        lmx.make(template,variables)
     end
 
-    lmx.restore()
 end
 
 scripts         = scripts         or { }

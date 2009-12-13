@@ -159,6 +159,25 @@
 
 \let\grey\graycolor
 
+%D Stacking:
+
+% \colormodelattribute \colorattribute \transparencyattribute
+
+\newcount\currentcolornesting
+
+\unexpanded\def\pushcolor[#1]%
+  {\global\advance\currentcolornesting\plusone
+   \expandafter\edef\csname\??cl:s:\number\currentcolornesting\endcsname
+     {\attribute\colormodelattribute  \the\colormodelattribute
+      \attribute\colorattribute       \the\colorattribute
+      \attribute\transparencyattribute\the\transparencyattribute
+      \space}% stack
+   \doactivatecolor{#1}}
+
+\unexpanded\def\popcolor
+  {\csname\??on:s:\number\currentcolornesting\endcsname
+   \global\advance\currentcolornesting\minusone}
+
 %D \macros
 %D   {startcurrentcolor,stopcurrentcolor}
 

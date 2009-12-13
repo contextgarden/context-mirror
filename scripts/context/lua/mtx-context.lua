@@ -1390,27 +1390,36 @@ logs.extendbanner("ConTeXt Process Management 0.51",true)
 messages.help = [[
 --run                 process (one or more) files (default action)
 --make                create context formats
---generate            generate file database etc.
---ctx=name            use ctx file
---version             report installed context version
+
+--ctx=name            use ctx file (process management specification)
+--interface           use specified user interface (default: en)
+
+--autopdf             close pdf file in viewer and start pdf viewer afterwards
+--purge(all)          purge files either or not after a run (--pattern=...)
+
+--usemodule=list      load the given module or style, normally part o fthe distribution
+--environment=list    load the given environment file first (document styles)
+--mode=list           enable given the modes (conditional processing in styles)
+--path=list           also consult the given paths when files are looked for
+--arguments=list      set variables that can be consulted during a run (key/value pairs)
+--randomseed=number   set the randomseed
+--result=name         rename the resulting output to the given name
+--trackers=list       show/set tracker variables
+--directives=list     show/set directive variables
+
 --forcexml            force xml stub (optional flag: --mkii)
 --forcecld            force cld (context lua document) stub
---autopdf             close pdf file in viewer and start pdf viewer afterwards
---once                only one run
---purge(all)          purge files (--pattern=...)
---result=name         rename result to given name
---arrange             run extra arrange pass
---noarrange           ignore arrange commands in the file
+
+--arrange             run extra imposition pass, given that the style sets up imposition
+--noarrange           ignore imposition specifications in the style
+
+--once                only run once (no multipass data file is produced)
 --batchmode           run without stopping and don't show messages on the console
 --nonstopmode         run without stopping
---usemodule=list      load the given module (or style)
---environment=list    load the given file first
---mode=list           enable given the mode(s)
---path=list           also consult the given paths when files are looked for
+
+--generate            generate file database etc. (as luatools does)
 --paranoid            don't descend to .. and ../..
---randomseed=number   set the randomseed
---arguments=list      set variables that can be consulted during a run (key/value pairs)
---interface           use specified user interface
+--version             report installed context version
 
 --expert              expert options
 ]]
@@ -1430,11 +1439,8 @@ expert options:
 --nostats             omit runtime statistics at the end of the run
 --update              update context from website (not to be confused with contextgarden)
 --profile             profile job (use: mtxrun --script profile --analyse)
---trackers            show/set tracker variables
---directives          show/set directive variables
 --timing              generate timing and statistics overview
 --tracefiles          show some extra info when locating files (at the tex end)
---randomseed
 
 --extra=name          process extra (mtx-context-<name> in distribution)
 --extras              show extras

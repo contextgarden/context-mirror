@@ -198,7 +198,7 @@ local function register_from_lists(collected,derived)
                     local t = { kind, i }
                     for s in gmatch(reference,"%s*([^,]+)") do
                         if trace_referencing then
-                            logs.report("referencing","list entry %s provides %s reference '%s' on realpage %s)",i,kind,s,realpage)
+                            logs.report("referencing","list entry %s provides %s reference '%s' on realpage %s",i,kind,s,realpage)
                         end
                         d[s] = t -- share them
                     end
@@ -860,15 +860,17 @@ function jobreferences.filter(name,...) -- number page title ...
             local filter = filters[kind] or filters.generic
             filter = filter and (filter[name] or filter.unknown or filters.generic[name] or filters.generic.unknown)
             if filter then
+                logs.report("referencing","name '%s', kind '%s', using dedicated filter",name,kind)
+--~                 print(table.serialize {...})
                 filter(data,name,...)
             elseif trace_referencing then
-                logs.report("referencing","no (generic) filter.name for '%s'",name)
+                logs.report("referencing","name '%s', kind '%s', using generic filter",name,kind)
             end
         elseif trace_referencing then
-            logs.report("referencing","no metadata.kind for '%s'",name)
+            logs.report("referencing","name '%s', unknown kind",name)
         end
     elseif trace_referencing then
-        logs.report("referencing","no current reference for '%s'",name)
+        logs.report("referencing","name '%s', no reference",name)
     end
 end
 
@@ -892,12 +894,13 @@ function filters.generic.text(data)
     end
 end
 
-function filters.generic.number(data,what,...) -- todo: spec and then no stopper
+function filters.generic.number(data,what,prefixspec) -- todo: spec and then no stopper
     if data then
         local numberdata = data.numberdata
         if numberdata then
-            helpers.prefix(data,...)
-            sections.typesetnumber(numberdata,"number",numberdata or false)
+--~ print(table.serialize(prefixspec))
+            helpers.prefix(data,prefixspec)
+            sections.typesetnumber(numberdata,"number",numberdata)
         else
             local useddata = data.useddata
             if useddata and useddsta.number then
@@ -964,11 +967,11 @@ end
 
 filters.section = { }
 
-function filters.section.number(data) -- todo: spec and then no stopper
+function filters.section.number(data,what,prefixspec)
     if data then
         local numberdata = data.numberdata
         if numberdata then
-            sections.typesetnumber(numberdata,"number",numberdata or false)
+            sections.typesetnumber(numberdata,"number",prefixspec,numberdata)
         else
             local useddata = data.useddata
             if useddata and useddata.number then

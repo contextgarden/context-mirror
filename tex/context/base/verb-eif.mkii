@@ -64,7 +64,7 @@
 
 %D We borrow most of the macros from the \PERL\ driver.
 
-\ifx\undefined\setupprettyPLtype \input verb-pl \relax \fi
+\ifdefined\setupprettyPLtype \else \loadmarkfile{verb-pl} \fi
 
 \unprotect
 

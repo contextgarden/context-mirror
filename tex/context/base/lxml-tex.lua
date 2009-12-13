@@ -43,8 +43,6 @@ local trace_comments = false  trackers.register("lxml.comments", function(v) tra
 
 lxml              = lxml or { }
 lxml.loaded       = lxml.loaded or { }
-lxml.noffiles     = 0
-lxml.nofconverted = 0
 
 local loaded = lxml.loaded
 
@@ -325,8 +323,7 @@ xml.originalload = xml.originalload or xml.load
 local noffiles, nofconverted = 0, 0
 
 function xml.load(filename)
-    noffiles = noffiles + 1
-    nofconverted = nofconverted + 1
+    noffiles, nofconverted = noffiles + 1, nofconverted + 1
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
     local xmltable = xml.convert((ok and data) or "")
@@ -357,6 +354,7 @@ function lxml.load(id,filename,compress,entities)
     if trace_loading then
         commands.writestatus("lxml","loading file '%s' as '%s'",filename,id)
     end
+    noffiles, nofconverted = noffiles + 1, nofconverted + 1
  -- local xmltable = xml.load(filename)
     local ok, data = resolvers.loadbinfile(filename)
     local xmltable = lxml.convert(id,(ok and data) or "",compress,entities)
@@ -1301,9 +1299,10 @@ statistics.register("xml load time", function()
 end)
 
 statistics.register("lxml preparation time", function()
-    if noffiles > 0 or nofconverted > 0 then
+    local calls, cached = xml.lpathcalls(), xml.lpathcached()
+    if calls > 0 or cached > 0 then
         return format("%s seconds, %s nodes, %s lpath calls, %s cached calls",
-            statistics.elapsedtime(lxml), nofindices, xml.lpathcalls(), xml.lpathcached())
+            statistics.elapsedtime(lxml), nofindices, calls, cached)
     else
         return nil
     end

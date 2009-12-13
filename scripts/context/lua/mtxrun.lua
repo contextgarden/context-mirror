@@ -242,6 +242,7 @@ end
 local simple_escapes = {
     ["-"] = "%-",
     ["."] = "%.",
+    ["?"] = ".",
     ["*"] = ".*",
 }
 
@@ -301,6 +302,19 @@ end
 function string:striplong() -- strips newlines and leading spaces
     self = gsub(self,"^%s*","")
     self = gsub(self,"[\n\r]+ *","\n")
+    return self
+end
+
+function string:topattern(lowercase,strict)
+    if lowercase then
+        self = self:lower()
+    end
+    self = gsub(self,".",simple_escapes)
+    if self == "" then
+        self = ".*"
+    elseif strict then
+        self = "^" .. self .. "$"
+    end
     return self
 end
 
@@ -1765,59 +1779,54 @@ os.arch = os.arch or function()
     return a
 end
 
-local platform
+-- no need for function anymore as we have more clever code and helpers now
 
-function os.currentplatform(name,default)
-    if not platform then
-        local name = os.name or os.platform or name -- os.name is built in, os.platform is mine
-        if not name then
-            platform = default or "linux"
-        elseif name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
-            if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
-                platform = "mswin-64"
-            else
-                platform = "mswin"
-            end
-        else
-            local architecture = os.arch()
-            if name == "linux" then
-                if find(architecture,"x86_64") then
-                    platform = "linux-64"
-                elseif find(architecture,"ppc") then
-                    platform = "linux-ppc"
-                else
-                    platform = "linux"
-                end
-            elseif name == "macosx" then
-                local architecture = os.resultof("echo $HOSTTYPE")
-                if find(architecture,"i386") then
-                    platform = "osx-intel"
-                elseif find(architecture,"x86_64") then
-                    platform = "osx-64"
-                else
-                    platform = "osx-ppc"
-                end
-            elseif name == "sunos" then
-                if find(architecture,"sparc") then
-                    platform = "solaris-sparc"
-                else -- if architecture == 'i86pc'
-                    platform = "solaris-intel"
-                end
-            elseif name == "freebsd" then
-                if find(architecture,"amd64") then
-                    platform = "freebsd-amd64"
-                else
-                    platform = "freebsd"
-                end
-            else
-                platform = default or name
-            end
-        end
-        function os.currentplatform()
-            return platform
-        end
+os.platform  = os.name
+os.libsuffix = 'so'
+
+local name = os.name
+
+if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
+    if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
+        os.platform = "mswin-64"
+    else
+        os.platform = "mswin"
     end
-    return platform
+    os.libsuffix = 'dll'
+else
+    local architecture = os.arch()
+    if name == "linux" then
+        if find(architecture,"x86_64") then
+            os.platform = "linux-64"
+        elseif find(architecture,"ppc") then
+            os.platform = "linux-ppc"
+        else
+            os.platform = "linux"
+        end
+    elseif name == "macosx" then
+        local architecture = os.resultof("echo $HOSTTYPE")
+        if find(architecture,"i386") then
+            os.platform = "osx-intel"
+        elseif find(architecture,"x86_64") then
+            os.platform = "osx-64"
+        else
+            os.platform = "osx-ppc"
+        end
+    elseif name == "sunos" then
+        if find(architecture,"sparc") then
+            os.platform = "solaris-sparc"
+        else -- if architecture == 'i86pc'
+            os.platform = "solaris-intel"
+        end
+    elseif name == "freebsd" then
+        if find(architecture,"amd64") then
+            os.platform = "freebsd-amd64"
+        else
+            os.platform = "freebsd"
+        end
+    else
+        os.platform = 'linux'
+    end
 end
 
 -- beware, we set the randomseed
@@ -2240,6 +2249,35 @@ local function glob_pattern(path,patt,recurse,action)
 end
 
 dir.glob_pattern = glob_pattern
+
+local function collect_pattern(path,patt,recurse,result)
+    local ok, scanner
+    result = result or { }
+    if path == "/" then
+        ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
+    else
+        ok, scanner = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
+    end
+    if ok and type(scanner) == "function" then
+        if not find(path,"/$") then path = path .. '/' end
+        for name in scanner do
+            local full = path .. name
+            local attr = attributes(full)
+            local mode = attr.mode
+            if mode == 'file' then
+                if find(full,patt) then
+                    result[name] = attr
+                end
+            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+                attr.list = collect_pattern(full,patt,recurse)
+                result[name] = attr
+            end
+        end
+    end
+    return result
+end
+
+dir.collect_pattern = collect_pattern
 
 local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
 
@@ -7264,6 +7302,11 @@ formats     ['sfd']                      = 'SFDFONTS'
 suffixes    ['sfd']                      = { 'sfd' }
 alternatives['subfont definition files'] = 'sfd'
 
+-- lib paths
+
+formats ['lib'] = 'CLUAINPUTS' -- new (needs checking)
+suffixes['lib'] = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
+
 -- In practice we will work within one tds tree, but i want to keep
 -- the option open to build tools that look at multiple trees, which is
 -- why we keep the tree specific data in a table. We used to pass the
@@ -8483,9 +8526,9 @@ end
 function resolvers.expanded_path_list_from_var(str) -- brrr
     local tmp = resolvers.var_of_format_or_suffix(gsub(str,"%$",""))
     if tmp ~= "" then
-        return resolvers.expanded_path_list(str)
-    else
         return resolvers.expanded_path_list(tmp)
+    else
+        return resolvers.expanded_path_list(str)
     end
 end
 
@@ -9473,6 +9516,16 @@ prefixes.full = prefixes.locate
 prefixes.file = prefixes.filename
 prefixes.path = prefixes.pathname
 
+function resolvers.allprefixes(separator)
+    local all = table.sortedkeys(prefixes)
+    if separator then
+        for i=1,#all do
+            all[i] = all[i] .. ":"
+        end
+    end
+    return all
+end
+
 local function _resolve_(method,target)
     if prefixes[method] then
         return prefixes[method](target)
@@ -10130,43 +10183,109 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local gsub = string.gsub
 
-local libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' }
-local libpaths   = file.split_path(package.path)
+local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
+local clibformats = { 'lib' }
+local  libpaths   = file.split_path(package.path)
+local clibpaths   = file.split_path(package.cpath)
+
+local function thepath(...)
+    local t = { ... } t[#t+1] = "?.lua"
+    local path = file.join(unpack(t))
+    if trace_locating then
+        logs.report("fileio","! appending '%s' to 'package.path'",path)
+    end
+    return path
+end
+
+function package.append_libpath(...)
+    table.insert(libpaths,thepath(...))
+end
+
+function package.prepend_libpath(...)
+    table.insert(libpaths,1,thepath(...))
+end
+
+-- beware, we need to return a loadfile result !
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
---~ package.loaders[#package.loaders+1] = function(name) -- was
+    if trace_locating then -- mode detail
+        logs.report("fileio","! locating '%s'",name)
+    end
     for i=1,#libformats do
         local format = libformats[i]
         local resolved = resolvers.find_file(name,format) or ""
+        if trace_locating then -- mode detail
+            logs.report("fileio","! checking for '%s' using 'libformat path': '%s'",name,format)
+        end
         if resolved ~= "" then
             if trace_locating then
                 logs.report("fileio","! lib '%s' located via environment: '%s'",name,resolved)
             end
-            return function() return dofile(resolved) end
+            return loadfile(resolved)
         end
     end
-    local simple = file.removesuffix(name)
+    local simple = gsub(name,"%.lua$","")
+    local simple = gsub(simple,"%.","/")
     for i=1,#libpaths do -- package.path, might become option
-        local resolved = gsub(libpaths[i],"?",simple)
+        local libpath = libpaths[i]
+        local resolved = gsub(libpath,"?",simple)
+        if trace_locating then -- more detail
+            logs.report("fileio","! checking for '%s' on 'package.path': '%s'",simple,libpath)
+        end
         if resolvers.isreadable.file(resolved) then
             if trace_locating then
                 logs.report("fileio","! lib '%s' located via 'package.path': '%s'",name,resolved)
             end
-            return function() return dofile(resolved) end
+            return loadfile(resolved)
+        end
+    end
+    local libname = file.addsuffix(simple,os.libsuffix)
+    for i=1,#clibformats do
+        -- better have a dedicated loop
+        local format = clibformats[i]
+        local paths = resolvers.expanded_path_list_from_var(format)
+        for p=1,#paths do
+            local path = paths[p]
+            local resolved = file.join(path,libname)
+            if trace_locating then -- mode detail
+                logs.report("fileio","! checking for '%s' using 'clibformat path': '%s'",libname,path)
+            end
+            if resolvers.isreadable.file(resolved) then
+                if trace_locating then
+                    logs.report("fileio","! lib '%s' located via 'clibformat': '%s'",libname,resolved)
+                end
+                return package.loadlib(resolved,name)
+            end
+        end
+    end
+    for i=1,#clibpaths do -- package.path, might become option
+        local libpath = clibpaths[i]
+        local resolved = gsub(libpath,"?",simple)
+        if trace_locating then -- more detail
+            logs.report("fileio","! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
+        end
+        if resolvers.isreadable.file(resolved) then
+            if trace_locating then
+                logs.report("fileio","! lib '%s' located via 'package.cpath': '%s'",name,resolved)
+            end
+            return package.loadlib(resolved,name)
         end
     end
     -- just in case the distribution is messed up
+    if trace_loading then -- more detail
+        logs.report("fileio","! checking for '%s' using 'luatexlibs': '%s'",name)
+    end
     local resolved = resolvers.find_file(file.basename(name),'luatexlibs') or ""
     if resolved ~= "" then
         if trace_locating then
             logs.report("fileio","! lib '%s' located by basename via environment: '%s'",name,resolved)
         end
-        return function() return dofile(resolved) end
+        return loadfile(resolved)
     end
     if trace_locating then
         logs.report("fileio",'? unable to locate lib: %s',name)
     end
-    return "unable to locate " .. name
+--  return "unable to locate " .. name
 end
 
 resolvers.loadlualib = require
@@ -10359,7 +10478,7 @@ if not modules then modules = { } end modules ['data-tmf'] = {
 function resolvers.check_environment(tree)
     logs.simpleline()
     os.setenv('TMP', os.getenv('TMP') or os.getenv('TEMP') or os.getenv('TMPDIR') or os.getenv('HOME'))
-    os.setenv('TEXOS', os.getenv('TEXOS') or ("texmf-" .. os.currentplatform()))
+    os.setenv('TEXOS', os.getenv('TEXOS') or ("texmf-" .. os.platform))
     os.setenv('TEXPATH', (tree or "tex"):gsub("\/+$",''))
     os.setenv('TEXMFOS', os.getenv('TEXPATH') .. "/" .. os.getenv('TEXOS'))
     logs.simpleline()
@@ -10723,10 +10842,11 @@ runners  = runners  or { } -- global
 messages = messages or { }
 
 messages.help = [[
---script              run an mtx script (--noquotes), no script gives list
---execute             run a script or program (--noquotes)
+--script              run an mtx script (lua prefered method) (--noquotes), no script gives list
+--execute             run a script or program (texmfstart method) (--noquotes)
 --resolve             resolve prefixed arguments
 --ctxlua              run internally (using preloaded libs)
+--internal            run script using built in libraries (same as --ctxlua)
 --locate              locate given filename
 
 --autotree            use texmf tree cf. env 'texmfstart_tree' or 'texmfstarttree'
@@ -10750,11 +10870,13 @@ messages.help = [[
 --edit                launch editor with found file
 --launch (--all)      launch files like manuals, assumes os support
 
---internal            run script using built in libraries (same as --ctxlua)
 --timedrun            run a script an time its run
+--autogenerate        regenerate databases if needed (handy when used to run context in an editor)
 
 --usekpse             use kpse as fallback (when no mkiv and cache installed, often slower)
 --forcekpse           force using kpse (handy when no mkiv and cache installed but less functionality)
+
+--prefixes            show supported prefixes
 ]]
 
 runners.applications = {
@@ -10799,6 +10921,13 @@ runners.launchers = {
     windows = { },
     unix = { }
 }
+
+-- like runners.libpath("framework"): looks on script's subpath
+
+function runners.libpath(...)
+    package.prepend_libpath(file.dirname(environment.ownscript),...)
+    package.prepend_libpath(file.dirname(environment.ownname)  ,...)
+end
 
 function runners.prepare()
     local checkname = environment.argument("ifchanged")
@@ -10890,6 +11019,7 @@ function runners.execute_script(fullname,internal,nosplit)
                 end
                 if internal then
                     arg = { } for _,v in pairs(environment.arguments_after) do arg[#arg+1] = v end
+                    environment.ownscript = result
                     dofile(result)
                 else
                     local binary = runners.applications[file.extname(result)]
@@ -10993,7 +11123,7 @@ function runners.locate_file(filename)
 end
 
 function runners.locate_platform()
-    runners.report_location(os.currentplatform())
+    runners.report_location(os.platform)
 end
 
 function runners.report_location(result)
@@ -11170,6 +11300,7 @@ function runners.execute_ctx_script(filename)
             if logs.verbose then
                 logs.simple("using script: %s\n",fullname)
             end
+            environment.ownscript = fullname
             dofile(fullname)
             local savename = environment.arguments['save']
             if savename and runners.save_list and not table.is_empty(runners.save_list or { }) then
@@ -11222,6 +11353,11 @@ function runners.execute_ctx_script(filename)
     end
 end
 
+function runners.prefixes()
+    logs.reportbanner()
+    logs.reportline()
+    logs.simple(table.concat(resolvers.allprefixes(true)," "))
+end
 
 function runners.timedrun(filename) -- just for me
     if filename and filename ~= "" then
@@ -11337,7 +11473,7 @@ elseif environment.argument("selfupdate") then
 elseif environment.argument("ctxlua") or environment.argument("internal") then
     -- run a script by loading it (using libs)
     ok = runners.execute_script(filename,true)
-elseif environment.argument("script") or environment.argument("s") then
+elseif environment.argument("script") or environment.argument("s") or environment.argument("scripts") then
     -- run a script by loading it (using libs), pass args
     ok = runners.execute_ctx_script(filename)
 elseif environment.argument("execute") then
@@ -11366,6 +11502,8 @@ elseif environment.argument("locate") then
 elseif environment.argument("platform")then
     -- locate platform
     runners.locate_platform()
+elseif environment.argument("prefixes") then
+    runners.prefixes()
 elseif environment.argument("timedrun") then
     -- locate platform
     runners.timedrun(filename)
@@ -11375,9 +11513,9 @@ elseif environment.argument("help") or filename=='help' or filename == "" then
 elseif filename:find("^bin:") then
     ok = runners.execute_program(filename)
 else
-    ok = runners.execute_script(filename)
+    ok = runners.execute_ctx_script(filename)
     if not ok then
-        ok = runners.execute_ctx_script(filename)
+        ok = runners.execute_script(filename)
     end
 end
 

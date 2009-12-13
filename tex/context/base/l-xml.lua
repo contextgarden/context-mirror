@@ -11,13 +11,13 @@ if not modules then modules = { } end modules ['l-xml'] = {
 -- all is taken care of.
 
 if not trackers then
-    require('trac-tra.lua')
+    require('trac-tra')
 end
 
 if not xml then
-    require('lxml-tab.lua')
-    require('lxml-lpt.lua')
-    require('lxml-mis.lua')
-    require('lxml-aux.lua')
-    require('lxml-xml.lua')
+    require('lxml-tab')
+    require('lxml-lpt')
+    require('lxml-mis')
+    require('lxml-aux')
+    require('lxml-xml')
 end

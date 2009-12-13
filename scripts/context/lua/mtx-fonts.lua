@@ -96,20 +96,6 @@ local function showfeatures(tag,specification)
     logs.reportline()
 end
 
-local function make_pattern(pattern) -- will become helper in string
-    pattern = pattern:lower()
-    pattern = pattern:gsub("%-","%%-")
-    pattern = pattern:gsub("%.","%%.")
-    pattern = pattern:gsub("%*",".*")
-    pattern = pattern:gsub("%?",".?")
-    if pattern == "" then
-        pattern = ".*"
-    else
---~         pattern = "^" .. pattern .. "$"
-    end
-    return pattern
-end
-
 local function reloadbase(reload)
     if reload then
         logs.simple("fontnames, reloading font database")
@@ -195,7 +181,7 @@ function scripts.fonts.list()
     if environment.argument("name") then
         if pattern then
             --~ mtxrun --script font --list --name --pattern=*somename*
-            list_matches(fonts.names.list(make_pattern(pattern),reload,all))
+            list_matches(fonts.names.list(string.topattern(pattern,true),reload,all))
         elseif filter then
             logs.report("fontnames","not supported: --list --name --filter",name)
         elseif given then
@@ -220,7 +206,7 @@ function scripts.fonts.list()
     elseif environment.argument("file") then
         if pattern then
             --~ mtxrun --script font --list --file --pattern=*somename*
-            list_specifications(fonts.names.collectfiles(make_pattern(pattern),reload,all))
+            list_specifications(fonts.names.collectfiles(string.topattern(pattern,true),reload,all))
         elseif filter then
             logs.report("fontnames","not supported: --list --spec",name)
         elseif given then
@@ -231,7 +217,7 @@ function scripts.fonts.list()
         end
     elseif pattern then
         --~ mtxrun --script font --list --pattern=*somename*
-        list_matches(fonts.names.list(make_pattern(pattern),reload,all))
+        list_matches(fonts.names.list(string.topattern(pattern,true),reload,all))
     elseif given then
         --~ mtxrun --script font --list somename
         list_matches(fonts.names.list(given,reload,all))

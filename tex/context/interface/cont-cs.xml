@@ -4209,6 +4209,11 @@
         <cd:parameter name="prikaz">
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
+        <cd:parameter name="stranka">
+          <cd:constant type="posledni"/>
+          <cd:constant type="ano"/>
+          <cd:constant type="ne"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

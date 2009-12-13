@@ -317,6 +317,9 @@
    \ifdefined \recalculatebackgrounds \recalculatebackgrounds \fi
 \to \everysetuppagenumbering
 
+\def\flushfinallayoutpage
+  {\doifsomething\@@nmpage{\doifnot\@@nmpage\v!no{\page[\@@nmpage]}}}
+
 % The numbered location handler is there because we need to be downward
 % compatible. So, in fact there can be multiple handlers active at the
 % same time, but only the current one does something.
@@ -441,6 +444,7 @@
    \c!width=, % in geval van \v!marginedge
    \c!left=,
    \c!right=,
+   \c!page=\v!last,
    \c!textseparator=\tfskip,
    \c!state=\v!start,
    \c!command=,
