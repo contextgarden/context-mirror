@@ -125,11 +125,20 @@ local function flushxmpinfo()
         texio.write_nl("log","")
         texio.write("log","\n% ",(gsub(blob,"[\r\n]","\n%% ")),"\n")
     end
-    if true then
-        commands.writestatus("system","xmp data not flushed (needs luatex upgrade)")
-    else
-        lpdf.addtocatalog("Metadata",lpdf.reference(pdf.immediateobj("stream",format(xpacket,packetid,blob),md())))
-    end
+    --  if true then
+    --      commands.writestatus("system","xmp data not flushed (needs luatex upgrade)")
+    --  else
+    --  lpdf.addtocatalog("Metadata",lpdf.reference(pdf.immediateobj("stream",format(xpacket,packetid,blob),md())))
+        local r = pdf.obj {
+            immediate = true,
+            compresslevel = 0,
+            type = "stream",
+            string = format(xpacket,packetid,blob),
+            attr = md(),
+        }
+        lpdf.addtocatalog("Metadata",lpdf.reference(r))
+    --  end
+
     commands.defrostrandomseed() -- hack
 
 end

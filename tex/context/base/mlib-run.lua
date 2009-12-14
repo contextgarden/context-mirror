@@ -59,7 +59,7 @@ metapost.finder = finder
 
 metapost.parameters = {
     hash_size = 100000,
-    main_memory = 2000000,
+    main_memory = 2500000,
     max_in_open = 50,
     param_size = 100000,
 }

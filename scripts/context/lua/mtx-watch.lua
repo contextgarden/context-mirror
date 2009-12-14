@@ -9,27 +9,31 @@ if not modules then modules = { } end modules ['mtx-watch'] = {
 scripts       = scripts       or { }
 scripts.watch = scripts.watch or { }
 
+local format, concat, time, difftime = string.format, table.concat, os.difftime
+local pairs, ipairs, next, type = pairs, ipairs, next, type
+
 function scripts.watch.save_exa_modes(joblog,ctmname)
-    local t= { }
     if joblog then
+        local t= { }
         t[#t+1] = "<?xml version='1.0' standalone='yes'?>\n"
         t[#t+1] = "<exa:variables xmlns:exa='htpp://www.pragma-ade.com/schemas/exa-variables.rng'>"
         if joblog.values then
             for k, v in pairs(joblog.values) do
-                t[#t+1] = string.format("\t<exa:variable label='%s'>%s</exa:variable>", k, tostring(v))
+                t[#t+1] = format("\t<exa:variable label='%s'>%s</exa:variable>", k, tostring(v))
             end
         else
             t[#t+1] = "<!-- no modes -->"
         end
         t[#t+1] = "</exa:variables>"
+        io.savedata(ctmname,concat(t,"\n"))
+    else
+        os.remove(ctmname)
     end
-    os.remove(ctmname)
-    io.savedata(ctmname,table.concat(t,"\n"))
 end
 
 local function toset(t)
     if type(t) == "table" then
-        return table.concat(t,",")
+        return concat(t,",")
     else
         return t
     end
@@ -67,10 +71,13 @@ local function glob(files,path)
     end
 end
 
+local clock = os.gettimeofday or os.time -- we cannot trust os.clock on linux
+
 function scripts.watch.watch()
     local delay   = environment.argument("delay")   or 5
     local logpath = environment.argument("logpath") or ""
     local pipe    = environment.argument("pipe")    or false
+    local watcher = "mtxwatch.run"
     if #environment.files > 0 then
         for _, path in ipairs(environment.files) do
             logs.report("watch", "watching path ".. path)
@@ -81,13 +88,13 @@ function scripts.watch.watch()
                 lfs.chdir(path)
                 local files = { }
                 glob(files,path)
-                table.sort(files) -- what gets sorted here
+                table.sort(files) -- what gets sorted here, todo: by time
                 for name, time in pairs(files) do
                 --~ local ok, joblog = xpcall(function() return dofile(name) end, function() end )
                     local ok, joblog = pcall(dofile,name)
                     if ok and joblog then
                         if joblog.status == "processing" then
-                            logs.report("watch",string.format("aborted job, %s added to queue",name))
+                            logs.report("watch",format("aborted job, %s added to queue",name))
                             joblog.status = "queued"
                             io.savedata(name, table.serialize(joblog,true))
                         elseif joblog.status == "queued" then
@@ -98,12 +105,13 @@ function scripts.watch.watch()
                                     outputpath = noset((joblog.paths and joblog.paths.output) or "."),
                                     filename   = joblog.filename or "",
                                 }
+                                -- todo: revision path etc
                                 command = command:gsub("%%(.-)%%", replacements)
                                 if command ~= "" then
                                     joblog.status = "processing"
-                                    joblog.runtime = os.clock()
+                                    joblog.runtime = clock()
                                     io.savedata(name, table.serialize(joblog,true))
-                                    logs.report("watch",string.format("running: %s", command))
+                                    logs.report("watch",format("running: %s", command))
                                     local newpath = file.dirname(name)
                                     io.flush()
                                     local result = ""
@@ -120,10 +128,10 @@ function scripts.watch.watch()
                                         scripts.watch.save_exa_modes(joblog,ctmname)
                                         if pipe then result = os.resultof(command) else result = os.spawn(command) end
                                     end
-                                    logs.report("watch",string.format("return value: %s", result))
+                                    logs.report("watch",format("return value: %s", result))
                                     done = true
                                     local path, base = replacements.outputpath, file.basename(replacements.filename)
-                                    joblog.runtime = os.clock() - joblog.runtime
+                                    joblog.runtime = clock() - joblog.runtime
                                     if base ~= "" then
                                         joblog.result  = file.replacesuffix(file.join(path,base),"pdf")
                                         joblog.size    = lfs.attributes(joblog.result,"size")
@@ -138,7 +146,7 @@ function scripts.watch.watch()
                             -- pcall, when error sleep + again
                             io.savedata(name, table.serialize(joblog,true))
                             if logpath ~= "" then
-                                local name = string.format("%s/%s%04i%09i.lua", logpath, os.time(), math.floor((os.clock()*100)%1000), math.random(99999999))
+                                local name = os.uuid() .. ".lua"
                                 io.savedata(name, table.serialize(joblog,true))
                                 logs.report("watch", "saving joblog ".. name)
                             end
@@ -147,18 +155,43 @@ function scripts.watch.watch()
                 end
             end
         end
-        local n, start = 0, os.clock()
+        local n, start = 0, time()
         local function wait()
             io.flush()
             if not done then
                 n = n + 1
                 if n >= 10 then
-                    logs.report("watch", string.format("run time: %i seconds, memory usage: %0.3g MB", os.clock() - start, (status.luastate_bytes/1024)/1000))
+                    logs.report("watch", format("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000))
                     n = 0
                 end
                 os.sleep(delay)
             end
         end
+local function wait()
+    io.flush()
+    local wtime, ttime = 0, 0
+    if not done then
+        n = n + 1
+        if n >= 10 then
+            logs.report("watch", format("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000))
+            n = 0
+        end
+        while true do
+            local wt = lfs.attributes(watcher,"mtime")
+            if wt ~= wtime then
+                -- fast signal that there is a request
+                wtime = wt
+                break
+            else
+                ttime = ttime + 0.2
+                if ttime >= delay then
+                    break
+                end
+            end
+            os.sleep(0.2)
+        end
+    end
+end
         while true do
             if false then
                 process()
@@ -197,7 +230,7 @@ function scripts.watch.save_logs(collection,path) -- play safe
     if collection and not table.is_empty(collection) then
         path = path or environment.argument("logpath") or ""
         path = (path == "" and ".") or path
-        local filename = string.format("%s/collected-%s.lua",path,tostring(os.time()))
+        local filename = format("%s/collected-%s.lua",path,tostring(time()))
         io.savedata(filename,table.serialize(collection,true))
         local check = dofile(filename)
         for k,v in pairs(check) do
@@ -208,7 +241,7 @@ function scripts.watch.save_logs(collection,path) -- play safe
             end
         end
         for k,v in pairs(check) do
-            os.remove(string.format("%s.lua",k))
+            os.remove(format("%s.lua",k))
         end
         return true
     else
@@ -243,7 +276,7 @@ function scripts.watch.show_logs(path) -- removes duplicates
     for k,v in ipairs(table.sortedkeys(collection)) do
         local c = collection[v]
         local f, s, r, n = c.filename or "?", c.status or "?", c.runtime or 0, c.size or 0
-        logs.report("watch", string.format("%s  %s  %3i  %8i  %s",string.padd(f,max," "),string.padd(s,10," "),r,n,v))
+        logs.report("watch", format("%s  %s  %3i  %8i  %s",string.padd(f,max," "),string.padd(s,10," "),r,n,v))
     end
 end
 

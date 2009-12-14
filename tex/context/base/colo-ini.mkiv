@@ -168,9 +168,9 @@
 \unexpanded\def\pushcolor[#1]%
   {\global\advance\currentcolornesting\plusone
    \expandafter\edef\csname\??cl:s:\number\currentcolornesting\endcsname
-     {\attribute\colormodelattribute  \the\colormodelattribute
-      \attribute\colorattribute       \the\colorattribute
-      \attribute\transparencyattribute\the\transparencyattribute
+     {\attribute\colormodelattribute  \the\attribute\colormodelattribute
+      \attribute\colorattribute       \the\attribute\colorattribute
+      \attribute\transparencyattribute\the\attribute\transparencyattribute
       \space}% stack
    \doactivatecolor{#1}}
 

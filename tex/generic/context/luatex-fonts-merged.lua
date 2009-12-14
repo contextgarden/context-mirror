@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 12/13/09 23:30:54
+-- merge date  : 12/14/09 22:36:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -1726,7 +1726,7 @@ function io.savedata(filename,data,joiner)
         elseif type(data) == "function" then
             data(f)
         else
-            f:write(data)
+            f:write(data or "")
         end
         f:close()
         return true

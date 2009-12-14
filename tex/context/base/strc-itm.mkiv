@@ -1060,7 +1060,7 @@
 \def\checkforrepeatedlistitem
   {\ifconditional\repeatlistitem
       \ifx\currentrepeatstart\empty
-        \edef\currentrepeatstart{\the\numexpr\currentitemlevel-1}%
+        \let\currentrepeatstart\currentitemlevel
       \fi
       \setbox\itemgroupitembox\hbox to \wd\itemgroupitembox{\hskip-\itemgroupaskedwidth\box\itemgroupitembox}% what a hack !
    \fi}

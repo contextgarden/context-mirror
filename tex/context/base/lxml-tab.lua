@@ -426,13 +426,15 @@ local text_parsed      = Cs(((1-open-ampersand)^1 + entity)^1)
 local somespace        = space^1
 local optionalspace    = space^0
 
-local value            = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote) -- ampersand and < also invalid in value
+----- value            = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote) -- ampersand and < also invalid in value
+local value            = (squote * Cs((entity + (1 - squote))^0) * squote) + (dquote * Cs((entity + (1 - dquote))^0) * dquote) -- ampersand and < also invalid in value
 
 local endofattributes  = slash * close + close -- recovery of flacky html
 local whatever         = space * name * optionalspace * equal
 local wrongvalue       = C(P(1-whatever-close)^1 + P(1-close)^1) / attribute_value_error
------ local wrongvalue = C(P(1-whatever-endofattributes)^1 + P(1-endofattributes)^1) / attribute_value_error
-local wrongvalue       = C(P(1-space-endofattributes)^1) / attribute_value_error
+----- wrongvalue       = C(P(1-whatever-endofattributes)^1 + P(1-endofattributes)^1) / attribute_value_error
+----- wrongvalue       = C(P(1-space-endofattributes)^1) / attribute_value_error
+local wrongvalue       = Cs(P(entity + (1-space-endofattributes))^1) / attribute_value_error
 
 local attributevalue   = value + wrongvalue
 

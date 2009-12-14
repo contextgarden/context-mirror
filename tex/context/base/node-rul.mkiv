@@ -142,7 +142,7 @@
 \unexpanded\def\pushbar[#1]%
   {\global\advance\currentbarnesting\plusone
    \expandafter\edef\csname\??on:s:\number\currentbarnesting\endcsname
-     {\attribute\ruledattribute\the\ruledattribute}% stack
+     {\attribute\ruledattribute\the\attribute\ruledattribute}% stack
    \dodoruled{#1}}
 
 \unexpanded\def\popbar

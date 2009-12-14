@@ -487,9 +487,11 @@ if not pdf.pdfcatalog then
 
 end
 
-function lpdf.addtocatalog(k,v) catalog[k] = v end
-function lpdf.addtoinfo   (k,v) info   [k] = v end
-function lpdf.addtonames  (k,v) names  [k] = v end
+lpdf.protectresources = true
+
+function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then catalog[k] = v end end
+function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then info   [k] = v end end
+function lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then names  [k] = v end end
 
 local r_extgstates,  d_extgstates  = pdfreserveobj(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
 local r_colorspaces, d_colorspaces = pdfreserveobj(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)

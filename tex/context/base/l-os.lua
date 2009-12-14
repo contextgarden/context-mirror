@@ -10,7 +10,13 @@ local find, format = string.find, string.format
 local random, ceil = math.random, math.ceil
 
 function os.resultof(command)
-    return io.popen(command,"r"):read("*all")
+    local handle = io.popen(command,"r")
+    if not handle then
+    --  print("unknown command '".. command .. "' in os.resultof")
+        return ""
+    else
+        return handle:read("*all") or ""
+    end
 end
 
 if not os.exec  then os.exec  = os.execute end
@@ -70,26 +76,6 @@ end
 --~ print(os.date("%H:%M:%S",os.gettimeofday()))
 --~ print(os.date("%H:%M:%S",os.time()))
 
-if os.arch then
-    -- okay
-elseif os.platform == "windows" then
-    os.arch = function()
-        local a = os.getenv("PROCESSOR_ARCHITECTURE") or "x86"
-        os.arch = function()
-            return a
-        end
-        return a
-    end
-else
-    os.arch = function()
-        local a = os.getenv("PROCESSOR_ARCHITECTURE") or os.resultof("uname -m") or "x86"
-        os.arch = function()
-            return a
-        end
-        return a
-    end
-end
-
 -- no need for function anymore as we have more clever code and helpers now
 
 os.platform  = os.name
@@ -105,7 +91,13 @@ if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" th
     end
     os.libsuffix = 'dll'
 else
-    local architecture = os.arch()
+    local architecture = os.getenv("HOSTTYPE") or ""
+    if architecture == "" then
+        architecture = os.resultof("uname -m") or ""
+    end
+    if architecture == "" then
+        local architecture = os.resultof("echo $HOSTTYPE")
+    end
     if name == "linux" then
         if find(architecture,"x86_64") then
             os.platform = "linux-64"
@@ -115,7 +107,6 @@ else
             os.platform = "linux"
         end
     elseif name == "macosx" then
-        local architecture = os.resultof("echo $HOSTTYPE")
         if find(architecture,"i386") then
             os.platform = "osx-intel"
         elseif find(architecture,"x86_64") then

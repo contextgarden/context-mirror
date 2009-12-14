@@ -35,7 +35,7 @@ function io.savedata(filename,data,joiner)
         elseif type(data) == "function" then
             data(f)
         else
-            f:write(data)
+            f:write(data or "")
         end
         f:close()
         return true
