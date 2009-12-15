@@ -15,6 +15,7 @@ local texwrite = tex.write
 local sind, cosd = math.sind, math.cosd
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
+local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 
 lpdf = lpdf or { }
 
@@ -471,11 +472,24 @@ function lpdf.finalizedocument()
     end
 end
 
+-- some minimal tracing, handy for checking the order
+
+local function trace_set(what,key)
+    if trace_resources then
+        logs.report("backend", "setting key '%s' in '%s'",key,what)
+    end
+end
+local function trace_flush(what)
+    if trace_resources then
+        logs.report("backend", "flushing '%s'",what)
+    end
+end
+
 local catalog, info, names = pdfdictionary(), pdfdictionary(), pdfdictionary()
 
-local function flushcatalog() if not environment.initex then pdf.pdfcatalog = catalog() end end
-local function flushinfo   () if not environment.initex then pdf.pdfinfo    = info   () end end
-local function flushnames  () if not environment.initex then pdf.pdfnames   = names  () end end
+local function flushcatalog() if not environment.initex then trace_flush("catalog") pdf.pdfcatalog = catalog() end end
+local function flushinfo   () if not environment.initex then trace_flush("info")    pdf.pdfinfo    = info   () end end
+local function flushnames  () if not environment.initex then trace_flush("names")   pdf.pdfnames   = names  () end end
 
 if not pdf.pdfcatalog then
 
@@ -489,9 +503,9 @@ end
 
 lpdf.protectresources = true
 
-function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then catalog[k] = v end end
-function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then info   [k] = v end end
-function lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then names  [k] = v end end
+function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then trace_set("catalog",k) catalog[k] = v end end
+function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then trace_set("info",   k) info   [k] = v end end
+function lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then trace_set("names",  k) names  [k] = v end end
 
 local r_extgstates,  d_extgstates  = pdfreserveobj(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
 local r_colorspaces, d_colorspaces = pdfreserveobj(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
@@ -503,10 +517,10 @@ local function checkcolorspaces() if next(d_colorspaces) then lpdf.addtopagereso
 local function checkpatterns   () if next(d_patterns   ) then lpdf.addtopageresources("Pattern",   p_patterns   ) end end
 local function checkshades     () if next(d_shades     ) then lpdf.addtopageresources("Shading",   p_shades     ) end end
 
-local function flushextgstates () if next(d_extgstates ) then pdfimmediateobj(r_extgstates, tostring(d_extgstates )) end end
-local function flushcolorspaces() if next(d_colorspaces) then pdfimmediateobj(r_colorspaces,tostring(d_colorspaces)) end end
-local function flushpatterns   () if next(d_patterns   ) then pdfimmediateobj(r_patterns,   tostring(d_patterns   )) end end
-local function flushshades     () if next(d_shades     ) then pdfimmediateobj(r_shades,     tostring(d_shades     )) end end
+local function flushextgstates () if next(d_extgstates ) then trace_flush("extgstates")  pdfimmediateobj(r_extgstates, tostring(d_extgstates )) end end
+local function flushcolorspaces() if next(d_colorspaces) then trace_flush("colorspaces") pdfimmediateobj(r_colorspaces,tostring(d_colorspaces)) end end
+local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobj(r_patterns,   tostring(d_patterns   )) end end
+local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobj(r_shades,     tostring(d_shades     )) end end
 
 local collected = pdfdictionary {
     ExtGState  = p_extgstates,
@@ -538,7 +552,7 @@ lpdf.registerpagefinalizer(checkcolorspaces,3)
 lpdf.registerpagefinalizer(checkpatterns,3)
 lpdf.registerpagefinalizer(checkshades,3)
 
---
+-- in strc-bkm: lpdf.registerdocumentfinalizer(function() structure.bookmarks.place() end,1)
 
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)

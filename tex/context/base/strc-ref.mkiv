@@ -1201,6 +1201,9 @@
 \def\dousefile[#1][#2][#3]%
   {\ctxlua{jobreferences.files.define("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
 
+\def\doifurldefinedelse #1{\ctxlua{commands.doifurldefinedelse ("#1")}}
+\def\doiffiledefinedelse#1{\ctxlua{commands.doiffiledefinedelse("#1")}}
+
 %D \macros
 %D   {url,setupurl}
 %D

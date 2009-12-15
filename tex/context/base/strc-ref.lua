@@ -235,6 +235,10 @@ function jobreferences.urls.get(name,method,space) -- method: none, before, afte
     end
 end
 
+function commands.doifurldefinedelse(name)
+    commands.doifelse(urls[name])
+end
+
 -- files
 
 jobreferences.files      = jobreferences.files      or { }
@@ -253,6 +257,10 @@ function jobreferences.files.get(name,method,space) -- method: none, before, aft
     if f then
         texsprint(ctxcatcodes,f[1])
     end
+end
+
+function commands.doiffiledefinedelse(name)
+    commands.doifelse(files[name])
 end
 
 -- programs

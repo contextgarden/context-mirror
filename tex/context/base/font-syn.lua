@@ -192,6 +192,7 @@ for combination with the weight of a font.</p>
 
 filters.list = {
     "otf", "ttf", "ttc", "dfont", "afm",
+--~   "ttc",  "otf", "ttf", "dfont", "afm",
 }
 
 names.xml_configuration_file    = "fonts.conf" -- a bit weird format, bonus feature
@@ -499,7 +500,7 @@ local function checkduplicates()
 end
 
 local sorter = function(a,b)
-    return #a < #b and a < b
+    return a > b -- to be checked
 end
 
 local function sorthashes()
@@ -810,53 +811,64 @@ here is for testing purposes only (it deals with names prefixed by an
 encoding name).</p>
 --ldx]]--
 
--- if names.be_clever then -- this will become obsolete
---     local encoding, tag = match(name,"^(.-)[%-%:](.+)$")
---     local mt = mapping[tag]
---     if tag and fonts.enc.is_known(encoding) and mt then
---         return mt[1], encoding .. "-" .. mt[3], mt[4]
---     end
--- end
-
--- simple search
-
-local function found(mapping,sorted,name,sub)
-    local found = mapping[name]
-    -- obsolete: old encoding test
-    if not found then
-        for k,v in next, mapping do
-            if find(k,name) then
-                found = v
-                break
-            end
-        end
-        if not found then
-            local condensed = gsub(name,"[^%a%d]","")
-            found = mapping[condensed]
-            if not found then
-                for k=1,#sorted do
-                    local v = sorted[k]
-                    if find(v,condensed) then
-                        found = mapping[v]
-                        break
-                    end
-                end
-            end
+local function fuzzy(mapping,sorted,name,sub)
+    local condensed = gsub(name,"[^%a%d]","")
+    for k=1,#sorted do
+        local v = sorted[k]
+        if find(v,condensed) then
+            return mapping[v], v
         end
     end
-    return found
 end
 
-local function foundname(name,sub)
+-- we could cache a lookup .. maybe some day ... (only when auto loaded!)
+
+local function foundname(name,sub) -- sub is not used currently
     local data = names.data
     local mappings, sorted_mappings = data.mappings, data.sorted_mappings
     local fallbacks, sorted_fallbacks = data.fallbacks, data.sorted_fallbacks
     local list = filters.list
+    -- dilemma: we lookup in the order otf ttf ttc ... afm but now an otf fallback
+    -- can come after an afm match ... well, one should provide nice names anyway
+    -- and having two lists is not an option
     for i=1,#list do
         local l = list[i]
-        local okay = found(mappings[l],sorted_mappings[l],name,sub) or found(fallbacks[l],sorted_fallbacks[l],name,sub)
-        if okay then
-            return okay
+        local found = mappings[l][name]
+        if found then
+            if trace_names then
+                logs.report("fonts","resolved via direct name match: '%s'",name)
+            end
+            return found
+        end
+    end
+    for i=1,#list do
+        local l = list[i]
+        local found, fname = fuzzy(mappings[l],sorted_mappings[l],name,sub)
+        if found then
+            if trace_names then
+                logs.report("fonts","resolved via fuzzy name match: '%s' => '%s'",name,fname)
+            end
+            return found
+        end
+    end
+    for i=1,#list do
+        local l = list[i]
+        local found = fallbacks[l][name]
+        if found then
+            if trace_names then
+                logs.report("fonts","resolved via direct fallback match: '%s'",name)
+            end
+            return found
+        end
+    end
+    for i=1,#list do
+        local l = list[i]
+        local found, fname = fuzzy(sorted_mappings[l],sorted_fallbacks[l],name,sub)
+        if found then
+            if trace_names then
+                logs.report("fonts","resolved via fuzzy fallback match: '%s' => '%s'",name,fname)
+            end
+            return found
         end
     end
 end

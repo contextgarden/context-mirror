@@ -2296,6 +2296,9 @@
    \doexternaldocument{#1}{#2}{\url[#3]}%
    \egroup}
 
+\def\doifurldefinedelse #1{\doifdefinedelse{\v!file:::#1}}
+\def\doiffiledefinedelse#1{\doifdefinedelse{\v!file:::#1}}
+
 %D \macros
 %D   {url,setupurl}
 %D

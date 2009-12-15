@@ -549,7 +549,7 @@ local function build(levels,start,parent,method)
         local level, title, reference, open = li[1], li[2], li[3], li[4]
         if level == startlevel then
             if trace_bookmarks then
-                logs.report("bookmark","%3i %s%s %s",realpage,rep("  ",level-1),(open and "+") or "-",title)
+                logs.report("bookmark","%3i %s%s %s",reference.realpage,rep("  ",level-1),(open and "+") or "-",title)
             end
             local prev = child
             child = pdfreserveobj()

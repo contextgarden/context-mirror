@@ -123,12 +123,12 @@ function logs.tex.stop_page_number()
     if real > 0 then
         if user > 0 then
             if sub > 0 then
-                logs.report("pages", "flushing page, realpage %s, userpage %s, subpage %s",real,user,sub)
+                logs.report("pages", "flushing realpage %s, userpage %s, subpage %s",real,user,sub)
             else
-                logs.report("pages", "flushing page, realpage %s, userpage %s",real,user)
+                logs.report("pages", "flushing realpage %s, userpage %s",real,user)
             end
         else
-            logs.report("pages", "flushing page, realpage %s",real)
+            logs.report("pages", "flushing realpage %s",real)
         end
     else
         logs.report("pages", "flushing page")

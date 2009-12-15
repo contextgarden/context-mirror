@@ -86,6 +86,8 @@ function bookmarks.place()
     end
 end
 
+lpdf.registerdocumentfinalizer(function() structure.bookmarks.place() end,1)
+
 -- bkm
 --~ function nodes.toutf(list)
 --~     local t= { }

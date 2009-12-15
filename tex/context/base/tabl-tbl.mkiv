@@ -947,7 +947,7 @@
 
 %D When set to true, no (less) break optimization is done.
 
-\newif\iftolerantTABLEbreak
+\newif\iftolerantTABLEbreak % used in styles !
 
 %D The main processing macro is large but splitting it up
 %D would make things less clear.
@@ -1042,26 +1042,31 @@
    \global\tabulatecolumn\zerocount
    \resettabulatepheight
    \unskip\unskip\crcr\flushtabulated
-   \TABLEnoalign
-     {\the\everyaftertabulaterow}%
-   \TABLEnoalign
-     {\iftolerantTABLEbreak\else
-        \ifconditional\tabulatesomeamble \ifcase\tabulaterepeathead \else
-          \allowbreak
-        \fi \fi
-        \ifnum\noftabulatelines=\plusone
-          \dotabulatenobreak
-        \else\ifnum\noftabulatelines=\minusnoftabulatelines
-          \ifnum\tabulatemaxplines<\plustwo
-            \dotabulatenobreak
-          \else
-            \allowbreak % needed with pbreak prevention
-          \fi
-        \else
-          \allowbreak % needed with pbreak prevention
-        \fi\fi
-      \fi
-      \global\tabulatefirstflushedfalse}}
+   \TABLEnoalign{\the\everyaftertabulaterow}%
+   \TABLEnoalign{\checktabulatepenaltiesa}}
+
+\def\checktabulatepenaltiesa
+  {\iftolerantTABLEbreak\else
+     \ifnum\totalnoftabulatelines=\plusone
+     %  \allowbreak
+     \else
+       \ifconditional\tabulatesomeamble \ifcase\tabulaterepeathead \else
+         \allowbreak
+       \fi \fi
+       \ifnum\noftabulatelines=\plusone
+         \dotabulatenobreak
+       \else\ifnum\noftabulatelines=\minusnoftabulatelines
+         \ifnum\tabulatemaxplines<\plustwo
+           \dotabulatenobreak
+         \else
+           \allowbreak % needed with pbreak prevention
+         \fi
+       \else
+         \allowbreak % needed with pbreak prevention
+       \fi\fi
+     \fi
+   \fi
+   \global\tabulatefirstflushedfalse}
 
 \def\tabulatebbskiptwo
   {\ifvoid\tablebox\tabulatecolumn
