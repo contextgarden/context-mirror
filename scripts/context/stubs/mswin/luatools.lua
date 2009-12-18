@@ -322,6 +322,8 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
+lpeg = require("lpeg")
+
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 
 --~ l-lpeg.lua :
@@ -1383,7 +1385,7 @@ function io.savedata(filename,data,joiner)
         elseif type(data) == "function" then
             data(f)
         else
-            f:write(data)
+            f:write(data or "")
         end
         f:close()
         return true
@@ -1702,7 +1704,13 @@ local find, format = string.find, string.format
 local random, ceil = math.random, math.ceil
 
 function os.resultof(command)
-    return io.popen(command,"r"):read("*all")
+    local handle = io.popen(command,"r")
+    if not handle then
+    --  print("unknown command '".. command .. "' in os.resultof")
+        return ""
+    else
+        return handle:read("*all") or ""
+    end
 end
 
 if not os.exec  then os.exec  = os.execute end
@@ -1762,14 +1770,6 @@ end
 --~ print(os.date("%H:%M:%S",os.gettimeofday()))
 --~ print(os.date("%H:%M:%S",os.time()))
 
-os.arch = os.arch or function()
-    local a = os.resultof("uname -m") or "linux"
-    os.arch = function()
-        return a
-    end
-    return a
-end
-
 -- no need for function anymore as we have more clever code and helpers now
 
 os.platform  = os.name
@@ -1785,7 +1785,13 @@ if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" th
     end
     os.libsuffix = 'dll'
 else
-    local architecture = os.arch()
+    local architecture = os.getenv("HOSTTYPE") or ""
+    if architecture == "" then
+        architecture = os.resultof("uname -m") or ""
+    end
+    if architecture == "" then
+        local architecture = os.resultof("echo $HOSTTYPE")
+    end
     if name == "linux" then
         if find(architecture,"x86_64") then
             os.platform = "linux-64"
@@ -1795,7 +1801,6 @@ else
             os.platform = "linux"
         end
     elseif name == "macosx" then
-        local architecture = os.resultof("echo $HOSTTYPE")
         if find(architecture,"i386") then
             os.platform = "osx-intel"
         elseif find(architecture,"x86_64") then
@@ -2720,12 +2725,33 @@ if not modules then modules = { } end modules ['l-unicode'] = {
     license   = "see context related readme files"
 }
 
+if not unicode then
+
+    unicode = { utf8 = { } }
+
+    local floor, char = math.floor, string.char
+
+    function unicode.utf8.utfchar(n)
+        if n < 0x80 then
+            return char(n)
+        elseif n < 0x800 then
+            return char(0xC0 + floor(n/0x40))  .. char(0x80 + (n % 0x40))
+        elseif n < 0x10000 then
+            return char(0xE0 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+        elseif n < 0x40000 then
+            return char(0xF0 + floor(n/0x40000)) .. char(0x80 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+        else -- wrong:
+          -- return char(0xF1 + floor(n/0x1000000)) .. char(0x80 + floor(n/0x40000)) .. char(0x80 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+            return "?"
+        end
+    end
+
+end
+
 utf = utf or unicode.utf8
 
 local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
 local char, byte, find, bytepairs = string.char, string.byte, string.find, string.bytepairs
-
-unicode = unicode or { }
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
@@ -4238,12 +4264,12 @@ function logs.tex.stop_page_number()
     if real > 0 then
         if user > 0 then
             if sub > 0 then
-                logs.report("pages", "flushing page, realpage %s, userpage %s, subpage %s",real,user,sub)
+                logs.report("pages", "flushing realpage %s, userpage %s, subpage %s",real,user,sub)
             else
-                logs.report("pages", "flushing page, realpage %s, userpage %s",real,user)
+                logs.report("pages", "flushing realpage %s, userpage %s",real,user)
             end
         else
-            logs.report("pages", "flushing page, realpage %s",real)
+            logs.report("pages", "flushing realpage %s",real)
         end
     else
         logs.report("pages", "flushing page")
@@ -4818,7 +4844,7 @@ end
 local function splitpathexpr(str, t, validate)
     -- no need for further optimization as it is only called a
     -- few times, we can use lpeg for the sub
-    if trace_expansion then
+    if trace_expansions then
         logs.report("fileio","expanding variable '%s'",str)
     end
     t = t or { }
@@ -5305,10 +5331,13 @@ local function split_kpse_path(str) -- beware, this can be either a path or a {s
     local found = cache[str]
     if not found then
         str = gsub(str,"\\","/")
-        if find(str,";") then
-            found = checkedsplit(str,";")
-        else
-            found = checkedsplit(str,io.pathseparator)
+        local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
+        found = { }
+        for i=1,#split do
+            local s = split[i]
+            if not find(s,"^{*unset}*") then
+                found[#found+1] = s
+            end
         end
         if trace_expansions then
             logs.report("fileio","splitting path specification '%s'",str)

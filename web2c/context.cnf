@@ -99,7 +99,8 @@ CTXDEVMPPATH=unset
 CTXDEVMFPATH=unset
 
 #~ TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
-TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{$progname,plain,generic,}//
+#~ TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{$progname,plain,generic,}//
+TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{$progname,plain,generic,}//
 
 % TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
 % TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{tex,omega}/{context,plain,generic}//
@@ -131,7 +132,7 @@ JAVAINPUTS     = .;$CTXDEVJVPATH;$TEXMF/scripts/context/java
 
 % LUAINPUTS    = .;$TEXINPUTS;$TEXMFSCRIPTS
 LUAINPUTS      = .;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua
-TEXMFSCRIPTS   = .;$CTXDEVLUPATH;$TEXINPUTS;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/scripts/context//
+TEXMFSCRIPTS   = .;$CTXDEVLUPATH;$TEXINPUTS;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/scripts/context/{lua,ruby,perl}//
 
 % RUBYINPUTS   = .;$CTXDEVPLPATH;$TEXMF/scripts/{$progname,$engine,}/ruby
 % LUAINPUTS    = .;$CTXDEVPYPATH;$TEXMF/scripts/{$progname,$engine,}/lua

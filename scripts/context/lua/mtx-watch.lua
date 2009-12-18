@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['mtx-watch'] = {
 scripts       = scripts       or { }
 scripts.watch = scripts.watch or { }
 
-local format, concat, time, difftime = string.format, table.concat, os.difftime
+local format, concat, difftime, time = string.format, table.concat, os.difftime, os.time
 local pairs, ipairs, next, type = pairs, ipairs, next, type
 
 function scripts.watch.save_exa_modes(joblog,ctmname)
@@ -74,7 +74,10 @@ end
 local clock = os.gettimeofday or os.time -- we cannot trust os.clock on linux
 
 function scripts.watch.watch()
-    local delay   = environment.argument("delay")   or 5
+    local delay   = tonumber(environment.argument("delay") or 5) or 5
+    if delay == 0 then
+        delay = .25
+    end
     local logpath = environment.argument("logpath") or ""
     local pipe    = environment.argument("pipe")    or false
     local watcher = "mtxwatch.run"
@@ -156,6 +159,18 @@ function scripts.watch.watch()
             end
         end
         local n, start = 0, time()
+--~         local function wait()
+--~             io.flush()
+--~             if not done then
+--~                 n = n + 1
+--~                 if n >= 10 then
+--~                     logs.report("watch", format("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000))
+--~                     n = 0
+--~                 end
+--~                 os.sleep(delay)
+--~             end
+--~         end
+        local wtime = 0
         local function wait()
             io.flush()
             if not done then
@@ -164,40 +179,58 @@ function scripts.watch.watch()
                     logs.report("watch", format("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000))
                     n = 0
                 end
-                os.sleep(delay)
-            end
-        end
-local function wait()
-    io.flush()
-    local wtime, ttime = 0, 0
-    if not done then
-        n = n + 1
-        if n >= 10 then
-            logs.report("watch", format("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000))
-            n = 0
-        end
-        while true do
-            local wt = lfs.attributes(watcher,"mtime")
-            if wt ~= wtime then
-                -- fast signal that there is a request
-                wtime = wt
-                break
-            else
-                ttime = ttime + 0.2
-                if ttime >= delay then
-                    break
+                local ttime = 0
+                while ttime <= delay do
+                    local wt = lfs.attributes(watcher,"mtime")
+                    if wt and wt ~= wtime then
+                        -- fast signal that there is a request
+                        wtime = wt
+                        break
+                    end
+                    ttime = ttime + 0.2
+                    os.sleep(0.2)
                 end
             end
-            os.sleep(0.2)
         end
-    end
-end
+        local cleanupdelay, cleanup = environment.argument("cleanup"), false
+        if cleanupdelay then
+            local lasttime = time()
+            cleanup = function()
+                local currenttime = time()
+                local delta = difftime(currenttime,lasttime)
+                if delta > cleanupdelay then
+                    lasttime = currenttime
+                    for _, path in ipairs(environment.files) do
+                        if string.find(path,"%.") then
+                            -- safeguard, we want a fully qualified path
+                        else
+                            local files = dir.glob(file.join(path,"*"))
+                            for _, name in ipairs(files) do
+                                local filetime = lfs.attributes(name,"modification")
+                                local delta = difftime(currenttime,filetime)
+                                if delta > cleanupdelay then
+                                 -- logs.report("watch",format("cleaning up '%s'",name))
+                                    os.remove(name)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            cleanup = function()
+                -- nothing
+            end
+        end
         while true do
             if false then
+--~             if true then
                 process()
+                cleanup()
                 wait()
             else
                 pcall(process)
+                pcall(cleanup)
                 pcall(wait)
             end
         end
@@ -280,14 +313,40 @@ function scripts.watch.show_logs(path) -- removes duplicates
     end
 end
 
+function scripts.watch.cleanup_stale_files() -- removes duplicates
+    local path  = environment.files[1]
+    local delay = tonumber(environment.argument("cleanup"))
+    local force = environment.argument("force")
+    if not path or path == "." then
+        logs.report("watch","provide qualified path")
+    elseif not delay then
+        logs.report("watch","missing --cleanup=delay")
+    else
+        logs.report("watch","dryrun, use --force for real cleanup")
+        local files = dir.glob(file.join(path,"*"))
+        local rtime = time()
+        for _, name in ipairs(files) do
+            local mtime = lfs.attributes(name,"modification")
+            local delta = difftime(rtime,mtime)
+            if delta > delay then
+                logs.report("watch",format("cleaning up '%s'",name))
+                if force then
+                    os.remove(name)
+                end
+            end
+        end
+    end
+end
+
 logs.extendbanner("ConTeXt Request Watchdog 1.00",true)
 
 messages.help = [[
 --logpath             optional path for log files
---watch               watch given path
+--watch               watch given path [--delay]
 --pipe                use pipe instead of execute
 --delay               delay between sweeps
 --collect             condense log files
+--cleanup=delay       remove files in given path [--force]
 --showlog             show log data
 ]]
 
@@ -295,6 +354,8 @@ if environment.argument("watch") then
     scripts.watch.watch()
 elseif environment.argument("collect") then
     scripts.watch.save_logs(scripts.watch.collect_logs())
+elseif environment.argument("cleanup") then
+    scripts.watch.save_logs(scripts.watch.cleanup_stale_files())
 elseif environment.argument("showlog") then
     scripts.watch.show_logs()
 else

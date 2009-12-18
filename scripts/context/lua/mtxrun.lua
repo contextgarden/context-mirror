@@ -331,6 +331,8 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
+lpeg = require("lpeg")
+
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 
 --~ l-lpeg.lua :
@@ -1392,7 +1394,7 @@ function io.savedata(filename,data,joiner)
         elseif type(data) == "function" then
             data(f)
         else
-            f:write(data)
+            f:write(data or "")
         end
         f:close()
         return true
@@ -1711,7 +1713,13 @@ local find, format = string.find, string.format
 local random, ceil = math.random, math.ceil
 
 function os.resultof(command)
-    return io.popen(command,"r"):read("*all")
+    local handle = io.popen(command,"r")
+    if not handle then
+    --  print("unknown command '".. command .. "' in os.resultof")
+        return ""
+    else
+        return handle:read("*all") or ""
+    end
 end
 
 if not os.exec  then os.exec  = os.execute end
@@ -1771,14 +1779,6 @@ end
 --~ print(os.date("%H:%M:%S",os.gettimeofday()))
 --~ print(os.date("%H:%M:%S",os.time()))
 
-os.arch = os.arch or function()
-    local a = os.resultof("uname -m") or "linux"
-    os.arch = function()
-        return a
-    end
-    return a
-end
-
 -- no need for function anymore as we have more clever code and helpers now
 
 os.platform  = os.name
@@ -1794,7 +1794,13 @@ if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" th
     end
     os.libsuffix = 'dll'
 else
-    local architecture = os.arch()
+    local architecture = os.getenv("HOSTTYPE") or ""
+    if architecture == "" then
+        architecture = os.resultof("uname -m") or ""
+    end
+    if architecture == "" then
+        local architecture = os.resultof("echo $HOSTTYPE")
+    end
     if name == "linux" then
         if find(architecture,"x86_64") then
             os.platform = "linux-64"
@@ -1804,7 +1810,6 @@ else
             os.platform = "linux"
         end
     elseif name == "macosx" then
-        local architecture = os.resultof("echo $HOSTTYPE")
         if find(architecture,"i386") then
             os.platform = "osx-intel"
         elseif find(architecture,"x86_64") then
@@ -3811,13 +3816,15 @@ local text_parsed      = Cs(((1-open-ampersand)^1 + entity)^1)
 local somespace        = space^1
 local optionalspace    = space^0
 
-local value            = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote) -- ampersand and < also invalid in value
+----- value            = (squote * C((1 - squote)^0) * squote) + (dquote * C((1 - dquote)^0) * dquote) -- ampersand and < also invalid in value
+local value            = (squote * Cs((entity + (1 - squote))^0) * squote) + (dquote * Cs((entity + (1 - dquote))^0) * dquote) -- ampersand and < also invalid in value
 
 local endofattributes  = slash * close + close -- recovery of flacky html
 local whatever         = space * name * optionalspace * equal
 local wrongvalue       = C(P(1-whatever-close)^1 + P(1-close)^1) / attribute_value_error
------ local wrongvalue = C(P(1-whatever-endofattributes)^1 + P(1-endofattributes)^1) / attribute_value_error
-local wrongvalue       = C(P(1-space-endofattributes)^1) / attribute_value_error
+----- wrongvalue       = C(P(1-whatever-endofattributes)^1 + P(1-endofattributes)^1) / attribute_value_error
+----- wrongvalue       = C(P(1-space-endofattributes)^1) / attribute_value_error
+local wrongvalue       = Cs(P(entity + (1-space-endofattributes))^1) / attribute_value_error
 
 local attributevalue   = value + wrongvalue
 
@@ -5530,7 +5537,7 @@ local type, next, tonumber, tostring, setmetatable, loadstring = type, next, ton
 local format, gsub = string.format, string.gsub
 
 --[[ldx--
-<p>The following helper functions best belong to the <t>lmxl-ini</t>
+<p>The following helper functions best belong to the <t>lxml-ini</t>
 module. Some are here because we need then in the <t>mk</t>
 document and other manuals, others came up when playing with
 this module. Since this module is also used in <l n='mtxrun'/> we've
@@ -6982,12 +6989,12 @@ function logs.tex.stop_page_number()
     if real > 0 then
         if user > 0 then
             if sub > 0 then
-                logs.report("pages", "flushing page, realpage %s, userpage %s, subpage %s",real,user,sub)
+                logs.report("pages", "flushing realpage %s, userpage %s, subpage %s",real,user,sub)
             else
-                logs.report("pages", "flushing page, realpage %s, userpage %s",real,user)
+                logs.report("pages", "flushing realpage %s, userpage %s",real,user)
             end
         else
-            logs.report("pages", "flushing page, realpage %s",real)
+            logs.report("pages", "flushing realpage %s",real)
         end
     else
         logs.report("pages", "flushing page")
@@ -7562,7 +7569,7 @@ end
 local function splitpathexpr(str, t, validate)
     -- no need for further optimization as it is only called a
     -- few times, we can use lpeg for the sub
-    if trace_expansion then
+    if trace_expansions then
         logs.report("fileio","expanding variable '%s'",str)
     end
     t = t or { }
@@ -8049,10 +8056,13 @@ local function split_kpse_path(str) -- beware, this can be either a path or a {s
     local found = cache[str]
     if not found then
         str = gsub(str,"\\","/")
-        if find(str,";") then
-            found = checkedsplit(str,";")
-        else
-            found = checkedsplit(str,io.pathseparator)
+        local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
+        found = { }
+        for i=1,#split do
+            local s = split[i]
+            if not find(s,"^{*unset}*") then
+                found[#found+1] = s
+            end
         end
         if trace_expansions then
             logs.report("fileio","splitting path specification '%s'",str)

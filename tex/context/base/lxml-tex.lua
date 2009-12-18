@@ -26,7 +26,7 @@ if not tex and not tex.sprint then
 end
 
 local texsprint, texprint, texwrite = tex.sprint, tex.print, tex.write
-local texcatcodes, ctxcatcodes, vrbcatcodes = tex.texcatcodes, tex.ctxcatcodes, tex.vrbcatcodes
+local texcatcodes, ctxcatcodes, vrbcatcodes, notcatcodes = tex.texcatcodes, tex.ctxcatcodes, tex.vrbcatcodes, tex.notcatcodes
 
 local xmlelements, xmlcollected, xmlsetproperty = xml.elements, xml.collected, xml.setproperty
 local xmlparseapply, xmlwithelements = xml.parse_apply, xml.withelements
@@ -75,7 +75,7 @@ local entity    = ampersand * lpeg.C((1-semicolon)^1) * semicolon
 local xmltextcapture = (
     space^0 * newline^2  * lpeg.Cc("")            / texprint  + -- better ^-2 ?
     space^0 * newline    * space^0 * lpeg.Cc(" ") / texsprint +
-    content                                       / texsprint + -- current catcodes regime is notcatcodes
+    content                                       / function(str) return texsprint(notcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
     entity                                        / xml.resolved_entity
 )^0
 
@@ -937,10 +937,10 @@ local function attribute(collected,a,default)
         local at = collected[1].at
         local str = (at and at[a]) or default
         if str and str ~= "" then
-            texsprint(ctxcatcodes,str)
+            texsprint(notcatcodes,str)
         end
     elseif default then
-        texsprint(ctxcatcodes,default)
+        texsprint(notcatcodes,default)
     end
 end
 
@@ -952,7 +952,7 @@ local function chainattribute(collected,arguments) -- todo: optional levels
             if at then
                 local a = at[arguments]
                 if a then
-                    texsprint(ctxcatcodes,a)
+                    texsprint(notcatcodes,a)
                 end
             else
                 break -- error
@@ -1188,10 +1188,10 @@ function lxml.att(id,a,default)
         local at = root.at
         local str = (at and at[a]) or default
         if str and str ~= "" then
-            texsprint(ctxcatcodes,str)
+            texsprint(notcatcodes,str)
         end
     elseif default then
-        texsprint(ctxcatcodes,default)
+        texsprint(notcatcodes,default)
     end
 end
 

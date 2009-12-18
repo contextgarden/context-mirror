@@ -800,9 +800,10 @@
 
     \pdfminorversion \plusfive
 
-    \ifdefined\pdfcompresslevel    \else \newcount\pdfcompresslevel    \fi
-    \ifdefined\pdfobjcompresslevel \else \newcount\pdfobjcompresslevel \fi
-    \ifdefined\pdfgentounicode     \else \newcount\pdfgentounicode     \fi \pdfgentounicode\plusone
+    \ifdefined\pdfcompresslevel     \else \newcount\pdfcompresslevel      \fi
+    \ifdefined\pdfobjcompresslevel  \else \newcount\pdfobjcompresslevel   \fi
+    \ifdefined\pdfgentounicode      \else \newcount\pdfgentounicode       \fi \pdfgentounicode      \plusone
+    \ifdefined\pdfinclusioncopyfonts\else \newcount\pdfinclusioncopyfonts \fi \pdfinclusioncopyfonts\plusone
 
     \def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
     \def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }

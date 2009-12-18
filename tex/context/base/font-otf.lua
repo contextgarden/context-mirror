@@ -83,7 +83,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.636 -- beware: also sync font-mis.lua
+otf.version          = 2.640 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -214,6 +214,7 @@ local enhancers = {
     "share widths",
     "strip not needed data",
     "migrate metadata",
+    "check math parameters",
 }
 
 function otf.load(filename,format,sub,featurefile)
@@ -238,8 +239,12 @@ function otf.load(filename,format,sub,featurefile)
             ff, messages = fontloader.open(filename)
         end
         if trace_loading and messages and #messages > 0 then
-            for m=1,#messages do
-                logs.report("load otf","warning: %s",messages[m])
+            if type(messages) == "string" then
+                logs.report("load otf","warning: %s",messages)
+            else
+                for m=1,#messages do
+                    logs.report("load otf","warning: %s",tostring(messages[m]))
+                end
             end
         end
         if ff then
@@ -1164,6 +1169,26 @@ otf.enhancers["migrate metadata"] = function(data,filename)
     local pfminfo = data.pfminfo
     metadata.isfixedpitch = metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose["proportion"] == "Monospaced")
     metadata.charwidth    = pfminfo and pfminfo.avgwidth
+end
+
+local private_math_parameters = {
+    "FractionDelimiterSize",
+    "FractionDelimiterDisplayStyleSize",
+}
+
+otf.enhancers["check math parameters"] = function(data,filename)
+    local mathdata = data.metadata.math
+    if mathdata then
+        for m=1,#private_math_parameters do
+            local pmp = private_math_parameters[m]
+            if not mathdata[pmp] then
+                if trace_loading then
+                    logs.report("load otf", "setting math parameter '%s' to 0", pmp)
+                end
+                mathdata[pmp] = 0
+            end
+        end
+    end
 end
 
 otf.enhancers["flatten glyph lookups"] = function(data,filename)
