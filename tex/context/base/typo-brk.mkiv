@@ -52,7 +52,7 @@
    \fi}
 
 \def\setbreakpoints
-  {\ctxlua{breakpoints.enabled=true}%
+  {\ctxlua{breakpoints.enable()}%
    \gdef\setbreakpoints[##1]{\dosetattribute{breakpoint}{\csname\??bp:##1\endcsname}}%
    \setbreakpoints}
 

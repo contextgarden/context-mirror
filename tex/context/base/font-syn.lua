@@ -13,7 +13,8 @@ local gsub, lower, match, find, lower, upper = string.gsub, string.lower, string
 local find, gmatch = string.find, string.gmatch
 local concat, sort, format = table.concat, table.sort, string.format
 
-local trace_names = false  trackers.register("fonts.names", function(v) trace_names = v end)
+local trace_names    = false  trackers.register("fonts.names",    function(v) trace_names    = v end)
+local trace_warnings = false  trackers.register("fonts.warnings", function(v) trace_warnings = v end)
 
 --[[ldx--
 <p>This module implements a name to filename resolver. Names are resolved
@@ -458,9 +459,9 @@ local function collecthashes()
     return nofmappings, noffallbacks
 end
 
-local function checkduplicate(mapping) -- fails on "Romantik" but that's a border case anyway
+local function checkduplicate(where) -- fails on "Romantik" but that's a border case anyway
     local data = names.data
-    local mapping = data[mapping]
+    local mapping = data[where]
     local specifications, loaded = data.specifications, { }
     if specifications and mapping then
         for _, m in next, mapping do
@@ -487,11 +488,17 @@ local function checkduplicate(mapping) -- fails on "Romantik" but that's a borde
             end
         end
     end
+    local n = 0
     for k, v in table.sortedpairs(loaded) do
-        if #v > 1 then
-            logs.report("fontnames", "double lookup: %s => %s",k,concat(v," | "))
+        local nv = #v
+        if nv > 1 then
+            if trace_warnings then
+                logs.report("fontnames", "double lookup: %s => %s",k,concat(v," | "))
+            end
+            n = n + nv
         end
     end
+    logs.report("fontnames", "%s double lookups in %s",n,where)
 end
 
 local function checkduplicates()
@@ -605,10 +612,10 @@ local function analysefiles()
                         end
                     end
                 end
-                if message and message ~= "" then
+                if trace_warnings and message and message ~= "" then
                     logs.report("fontnames","warning when identifying %s font %s: %s",suffix,completename,message)
                 end
-            else
+            elseif trace_warnings then
                 logs.report("fontnames","error when identifying %s font %s: %s",suffix,completename,message or "unknown")
             end
             done[name] = true
@@ -628,6 +635,9 @@ local function analysefiles()
             local elapsed = os.gettimeofday() - t
             logs.report("fontnames", "%s %s files identified, %s hash entries added, runtime %0.3f seconds",nofread,what,nofread-nofskipped,elapsed)
         end
+    end
+    if not trace_warnings then
+        logs.report("fontnames", "warnings are disables (tracker 'fonts.warnings')")
     end
     traverse("tree", function(suffix) -- TEXTREE only
         resolvers.with_files(".*%." .. suffix .. "$", function(method,root,path,name)
@@ -660,7 +670,9 @@ local function rejectclashes() -- just to be sure, so no explicit afm will be fo
         if f then
             local fnd, fnm = used[f], s.filename
             if fnd then
-                logs.report("fontnames", "fontname '%s' clashes, rejecting '%s' in favor of '%s'",f,fnm,fnd)
+                if trace_warnings then
+                    logs.report("fontnames", "fontname '%s' clashes, rejecting '%s' in favor of '%s'",f,fnm,fnd)
+                end
             else
                 used[f], okay[#okay+1] = fnm, s
             end
@@ -700,7 +712,6 @@ function names.identify()
     collecthashes()
     checkduplicates()
  -- sorthashes() -- will be resorted when saved
- --~     logs.report("fontnames", "%s files read, %s normal and %s extra entries added, %s rejected, %s valid",totalread,totalok,added,rejected,totalok+added-rejected)
 end
 
 function names.is_permitted(name)

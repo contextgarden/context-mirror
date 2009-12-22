@@ -28,13 +28,10 @@
 %D The following registers are used (if only to be downward compatible).
 
 \newbox  \foundexternalfigure
-\newif   \iftraceexternalfigures
 \newif   \ifskipexternalfigures
 \newtoks \everyexternalfigureresets
 \newtoks \everyexternalfigurechecks
 \newtoks \externalfigurepostprocessors
-
-\let\traceexternalfigures  \traceexternalfigurestrue
 
 \def\resetfigurevariables {\the\everyexternalfigureresets}
 \def\checkfigurevariables {\the\everyexternalfigurechecks}

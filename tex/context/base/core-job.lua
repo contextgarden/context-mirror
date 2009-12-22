@@ -6,25 +6,30 @@ if not modules then modules = { } end modules ['core-job'] = {
     license   = "see context related readme files"
 }
 
-local texsprint, texprint = tex.sprint, tex.print
+local texsprint, texprint, texwrite = tex.sprint, tex.print, tex.write
 local ctxcatcodes, texcatcodes = tex.ctxcatcodes, tex.texcatcodes
 local lower, format, find, gmatch = string.lower, string.format, string.find, string.gmatch
 local concat = table.concat
 
 -- main code
 
-function resolvers.findctxfile(name,maxreadlevel)
-    local function exists(n)
+resolvers.maxreadlevel = 3
+
+directives.register("resolvers.maxreadlevel", function(v) resolvers.maxreadlevel = tonumber(v) or resolvers.maxreadlevel end)
+
+local function exists(n)
+    if io.exists(n) then
+        return n
+    else
+        n = file.addsuffix(n,'tex')
         if io.exists(n) then
             return n
-        else
-            n = file.addsuffix(n,'tex')
-            if io.exists(n) then
-                return n
-            end
         end
-        return nil
     end
+    return nil
+end
+
+function resolvers.findctxfile(name,maxreadlevel)
     if file.is_qualified_path(name) then
         return name
     else
@@ -34,7 +39,7 @@ function resolvers.findctxfile(name,maxreadlevel)
         if found then
             return found
         else
-            for i=1,maxreadlevel or 0 do
+            for i=1,maxreadlevel or resolvers.maxreadlevel or 0 do
                 n = "../" .. n
                 found = exists(n)
                 if found then
@@ -44,6 +49,10 @@ function resolvers.findctxfile(name,maxreadlevel)
         end
         return resolvers.find_file(name) or ""
     end
+end
+
+function commands.maxreadlevel()
+    texwrite(resolvers.maxreadlevel)
 end
 
 function commands.processfile(name,maxreadlevel)

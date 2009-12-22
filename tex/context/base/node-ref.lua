@@ -526,3 +526,8 @@ statistics.register("interactive elements", function()
         return nil
     end
 end)
+
+function jobreferences.enable_interaction()
+    tasks.enableaction("shipouts","nodes.add_references")
+    tasks.enableaction("shipouts","nodes.add_destinations")
+end

@@ -46,7 +46,7 @@
    \fi}
 
 \def\setcharacterkerning
-  {\ctxlua{kerns.enabled=true}%
+  {\ctxlua{kerns.enable()}%
    \gdef\setcharacterkerning[##1]{\dosetattribute{kern}{\csname\??ck:##1\endcsname}}%
    \setcharacterkerning}
 

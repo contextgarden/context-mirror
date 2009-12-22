@@ -149,20 +149,44 @@ end
 setters      = setters      or { }
 setters.data = setters.data or { }
 
+--~ local function set(t,what,value)
+--~     local data, done = t.data, t.done
+--~     if type(what) == "string" then
+--~         what = aux.settings_to_array(what) -- inefficient but ok
+--~     end
+--~     for i=1,#what do
+--~         local w = what[i]
+--~         for d, f in next, data do
+--~             if done[d] then
+--~                 -- prevent recursion due to wildcards
+--~             elseif find(d,w) then
+--~                 done[d] = true
+--~                 for i=1,#f do
+--~                     f[i](value)
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
 local function set(t,what,value)
     local data, done = t.data, t.done
     if type(what) == "string" then
-        what = aux.settings_to_array(what) -- inefficient but ok
+        what = aux.settings_to_hash(what) -- inefficient but ok
     end
-    for i=1,#what do
-        local w = what[i]
+    for w, v in next, what do
+        if v == "" then
+            v = value
+        else
+            v = toboolean(v)
+        end
         for d, f in next, data do
             if done[d] then
                 -- prevent recursion due to wildcards
             elseif find(d,w) then
                 done[d] = true
                 for i=1,#f do
-                    f[i](value)
+                    f[i](v)
                 end
             end
         end
@@ -251,7 +275,9 @@ function setters.show(t)
 end
 
 -- we could have used a bit of oo and the trackers:enable syntax but
--- there is already a lot of code around using the singluar tracker
+-- there is already a lot of code around using the singular tracker
+
+-- we could make this into a module
 
 function setters.new(name)
     local t

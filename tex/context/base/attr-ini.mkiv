@@ -92,7 +92,7 @@
 \def\sometransparencyswitch#1{\csname(ts:#1)\endcsname}
 
 \def\sometransparencyswitch
-  {\ctxlua{transparencies.enabled=true}%
+  {\ctxlua{transparencies.enable()}%
    \gdef\sometransparencyswitch##1{\csname(ts:##1)\endcsname}%
    \sometransparencyswitch}
 
@@ -105,7 +105,7 @@
   {\setevalue{(os:#1)}{\dosetattribute{colorintent}{\ctxlua{tex.print(colorintents.register('#2'))}}}}
 
 \def\dotriggercolorintent
-  {\ctxlua{colorintents.enabled=true}%
+  {\ctxlua{colorintents.enable()}%
    \gdef\dotriggercolorintent##1{\csname(os:##1)\endcsname}%
    \dotriggercolorintent}
 
@@ -122,7 +122,7 @@
   {\setevalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
 
 \def\dotriggernegative
-  {\ctxlua{negatives.enabled=true}%
+  {\ctxlua{negatives.enable()}%
    \gdef\dotriggernegative##1{\csname(ns:##1)\endcsname}%
    \dotriggernegative}
 
@@ -136,7 +136,7 @@
      {\dosetattribute{effect}{\ctxlua{tex.print(effects.register('#1',#2,\number\dimexpr#3\relax))}}}}
 
 \def\dotriggereffect
-  {\ctxlua{effects.enabled=true}%
+  {\ctxlua{effects.enable()}%
    \gdef\dotriggereffect##1##2##3%
      {\ifcsname(es:##1:##2:\number\dimexpr##3\relax)\endcsname\else\registereffect{##1}{##2}{##3}\fi
       \csname(es:##1:##2:\number\dimexpr##3\relax)\endcsname}%
@@ -163,7 +163,7 @@
 \setevalue{(vl:)}{\global\doresetattribute{viewerlayer}}
 
 \def\dotriggerviewerlayer
-  {\ctxlua{viewerlayers.enabled=true}%
+  {\ctxlua{viewerlayers.enable()}%
    \gdef\dotriggerviewerlayer##1{\csname(vl:##1)\endcsname}%
    \dotriggerviewerlayer}
 

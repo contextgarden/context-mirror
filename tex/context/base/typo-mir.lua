@@ -56,13 +56,12 @@ local chardata = characters.data
 --  elseif d == "ws"  then -- Whitespace
 --  elseif d == "on"  then -- Other Neutrals
 
-mirror         = mirror or { }
-mirror.enabled = false
-mirror.strip   = false
-mirror.attribute = attributes.private("mirror")
+mirroring           = mirroring or { }
+mirroring.strip     = false
+mirroring.attribute = attributes.private("mirroring")
 
 local state   = attributes.private('state')
-local mirrora = attributes.private('mirror')
+local mirrora = attributes.private('mirroring')
 
 local directions = characters.directions -- maybe make a special mirror table
 
@@ -144,7 +143,7 @@ local function force_auto_right_before()
     end
 end
 
-function mirror.process(namespace,attribute,start) -- todo: make faster
+function mirroring.process(namespace,attribute,start) -- todo: make faster
     if not start.next then
         return start, false
     end
@@ -379,7 +378,7 @@ function mirror.process(namespace,attribute,start) -- todo: make faster
         end
         logs.report("bidi","stop log")
     end
-    if done and mirror.strip then
+    if done and mirroring.strip then
         local n = #obsolete
         if n > 0 then
             for i=1,n do
@@ -408,7 +407,11 @@ end
 --~         end
 
 chars.handle_mirroring = nodes.install_attribute_handler {
-    name = "mirror",
-    namespace = mirror,
-    processor = mirror.process,
+    name = "mirroring",
+    namespace = mirroring,
+    processor = mirroring.process,
 }
+
+function mirroring.enable()
+    tasks.enableaction("processors","chars.handle_mirroring")
+end

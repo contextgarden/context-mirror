@@ -496,3 +496,43 @@ initializers.node.otf.itlc = initializers.common.itlc
 
 initializers.base.afm.itlc = initializers.common.itlc
 initializers.node.afm.itlc = initializers.common.itlc
+
+-- slanting
+
+table.insert(fonts.triggers,"slant")
+
+function initializers.common.slant(tfmdata,value)
+    if not value then
+        value =  0
+    elseif value >  1 then
+        value =  1
+    elseif value < -1 then
+        value = -1
+    end
+    tfmdata.slant = value
+end
+
+initializers.base.otf.slant = initializers.common.slant
+initializers.node.otf.slant = initializers.common.slant
+
+initializers.base.afm.slant = initializers.common.slant
+initializers.node.afm.slant = initializers.common.slant
+
+table.insert(fonts.triggers,"stretch")
+
+function initializers.common.stretch(tfmdata,value)
+    if not value then
+        value =  0
+    elseif value >  10 then
+        value =  10
+    elseif value < -10 then
+        value = -10
+    end
+    tfmdata.stretch = value
+end
+
+initializers.base.otf.stretch = initializers.common.stretch
+initializers.node.otf.stretch = initializers.common.stretch
+
+initializers.base.afm.stretch = initializers.common.stretch
+initializers.node.afm.stretch = initializers.common.stretch

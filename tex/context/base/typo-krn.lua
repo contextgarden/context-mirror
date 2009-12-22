@@ -33,7 +33,6 @@ local chardata = characters.data
 
 kerns           = kerns or { }
 kerns.mapping   = kerns.mapping or { }
-kerns.enabled   = false
 kerns.attribute = attributes.private("kern")
 
 storage.register("kerns/mapping", kerns.mapping, "kerns.mapping")
@@ -220,5 +219,4 @@ lists.handle_kerning = nodes.install_attribute_handler {
 
 function kerns.enable()
     tasks.enableaction("processors","lists.handle_kerning")
-    kerns.enabled = true -- will go
 end

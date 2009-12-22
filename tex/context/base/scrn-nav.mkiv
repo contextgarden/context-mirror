@@ -193,6 +193,18 @@
      \doactivatecolor{#1\c!color}%
    \fi}
 
+%D delayed ...
+
+\def\enableinteractivereferences
+  {\ifproductionrun
+     \ctxlua{jobreferences.enable_interaction()}%
+     \globallet\enableinteractivereferences\relax
+   \fi}
+
+\appendtoks
+    \enableinteractivereferences
+\to \everysetupinteraction
+
 %D More tokens are spend when we want both typeface and color
 %D highlighting.
 

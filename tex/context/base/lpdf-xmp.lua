@@ -125,19 +125,14 @@ local function flushxmpinfo()
         texio.write_nl("log","")
         texio.write("log","\n% ",(gsub(blob,"[\r\n]","\n%% ")),"\n")
     end
-    --  if true then
-    --      commands.writestatus("system","xmp data not flushed (needs luatex upgrade)")
-    --  else
-    --  lpdf.addtocatalog("Metadata",lpdf.reference(pdf.immediateobj("stream",format(xpacket,packetid,blob),md())))
-        local r = pdf.obj {
-            immediate = true,
-            compresslevel = 0,
-            type = "stream",
-            string = format(xpacket,packetid,blob),
-            attr = md(),
-        }
-        lpdf.addtocatalog("Metadata",lpdf.reference(r))
-    --  end
+    local r = pdf.obj {
+        immediate = true,
+        compresslevel = 0,
+        type = "stream",
+        string = format(xpacket,packetid,blob),
+        attr = md(),
+    }
+    lpdf.addtocatalog("Metadata",lpdf.reference(r))
 
     commands.defrostrandomseed() -- hack
 
@@ -145,7 +140,7 @@ end
 
 --  his will be enabled when we can inhibit compression for a stream at the lua end
 
-lpdf.registerdocumentfinalizer(flushxmpinfo,3)
+lpdf.registerdocumentfinalizer(flushxmpinfo,1)
 
 --~ lpdf.addxmpinfo("creator",         "PRAGMA ADE: Hans Hagen and/or Ton Otten")
 --~ lpdf.addxmpinfo("title",           "oeps")

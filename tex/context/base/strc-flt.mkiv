@@ -699,13 +699,17 @@
         {\global\nofloatnumbertrue}}%
    % this has to change
    \ConvertToConstant\doifelse{#4}{}
+%    \ConvertToConstant\doifelse{\detokenize{#4}}{}
      {\global\emptyfloatcaptiontrue}
      {\global\emptyfloatcaptionfalse}%
+%    \doifinsetelse\v!none{#2}
+%      {\global\nofloatcaptiontrue}
+%      {\ConvertToConstant\doifelse{#4}\v!none
+%         {\global\nofloatcaptiontrue}
+%         {\global\nofloatcaptionfalse}}%
    \doifinsetelse\v!none{#2}
      {\global\nofloatcaptiontrue}
-     {\ConvertToConstant\doifelse{#4}\v!none
-        {\global\nofloatcaptiontrue}
-        {\global\nofloatcaptionfalse}}%
+     {\global\nofloatcaptionfalse}%
    \doif{\floatcaptionparameter\c!number}\v!none % new
     {\global\nofloatcaptiontrue}%
    \ifemptyfloatcaption \ifnofloatnumber

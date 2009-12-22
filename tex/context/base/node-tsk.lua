@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['node-tsk'] = {
     license   = "see context related readme files"
 }
 
-local trace_tasks = false  trackers.register("tasks", function(v) trace_tasks = v end)
+local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 
 tasks         = tasks       or { }
 tasks.data    = tasks.data  or { }

@@ -60,10 +60,6 @@
    \the\everysetupsystem}
 
 \appendtoks
-    \setuprandomize[\@@svrandom]%
-\to \everysetupsystem
-
-\appendtoks
     \edef\outputresolution{\@@svresolution}%
 \to \everysetupsystem
 
@@ -161,7 +157,7 @@
   [\c!directory=,
    \c!n=0, % 0:unknown 1: one run 2: first 3: successive 4: final run
    \c!resolution=600,% in dpi, no unit in mkiv
-   \c!random=,
+   %c!random=, % obsolete here
    \c!file=\jobname,
    \c!inputfile=\outputfilename,
    \c!type=unix, % windows is normally less sensitive to handle

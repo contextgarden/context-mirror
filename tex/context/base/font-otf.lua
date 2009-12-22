@@ -83,7 +83,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.640 -- beware: also sync font-mis.lua
+otf.version          = 2.641 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -1531,7 +1531,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
         tfm.type               = "real"
         tfm.stretch            = 0 -- stretch
-        tfm.slant              = 0 -- slant
+        tfm.slant              = 0 -- data.slant
         tfm.direction          = 0
         tfm.boundarychar_label = 0
         tfm.boundarychar       = 65536

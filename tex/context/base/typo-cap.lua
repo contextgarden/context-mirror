@@ -23,7 +23,6 @@ local fontdata = fonts.ids
 local chardata = characters.data
 
 cases           = cases or { }
-cases.enabled   = false
 cases.actions   = { }
 cases.attribute = attributes.private("case")
 
@@ -202,3 +201,7 @@ chars.handle_casing = nodes.install_attribute_handler {
     namespace = cases,
     processor = cases.process,
 }
+
+function cases.enable()
+    tasks.enableaction("processors","chars.handle_casing")
+end

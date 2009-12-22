@@ -105,18 +105,20 @@ local function patch_domh(data,filename,threshold)
             end
             m.DisplayOperatorMinHeight = threshold
         end
-    end
-    for _, g in pairs(data.glyphs) do
-        local name = g.name
-        if find(name,"^integral$") or find(name,"^integral%.vsize") then
-            local width, italic = g.width or 0, g.italic_correction or 0
-            local newwidth = width - italic
-            if trace_loading then
-                logs.report("load otf","patching width of %s: %s (width) - %s (italic) = %s",name,width,italic,newwidth)
-            end
-            g.width = newwidth
+     end
+     if tex.luatexversion < 48 then
+        for _, g in pairs(data.glyphs) do
+           local name = g.name
+           if find(name,"^integral$") or find(name,"^integral%.vsize") then
+              local width, italic = g.width or 0, g.italic_correction or 0
+              local newwidth = width - italic
+              if trace_loading then
+                 logs.report("load otf","patching width of %s: %s (width) - %s (italic) = %s",name,width,italic,newwidth)
+              end
+              g.width = newwidth
+           end
         end
-    end
+     end
 end
 
 patches["cambria"]  = function(data,filename) patch_domh(data,filename,2800) end

@@ -214,8 +214,8 @@
 \def\moduleparameter     #1#2{\executeifdefined{\??md:#1:#2}\s!empty}
 \def\currentmoduleparameter#1{\executeifdefined{\??md:\currentmodule:#1}\s!empty}
 
-\def\useluamodule  [#1]{\ctxlua{dofile(resolvers.findctxfile("#1",\number\maxreadlevel))}}
-\def\luaenvironment #1 {\ctxlua{dofile(resolvers.findctxfile("#1",\number\maxreadlevel))}}
+\def\useluamodule  [#1]{\ctxlua{dofile(resolvers.findctxfile("#1"))}}
+\def\luaenvironment #1 {\ctxlua{dofile(resolvers.findctxfile("#1"))}}
 
 % \usemodule[newmml]
 % \usemodule[newmml][a=b]

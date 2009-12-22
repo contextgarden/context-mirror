@@ -1709,10 +1709,19 @@ if not modules then modules = { } end modules ['l-os'] = {
     license   = "see context related readme files"
 }
 
+-- maybe build io.flush in os.execute
+
 local find, format = string.find, string.format
 local random, ceil = math.random, math.ceil
 
+local execute, spawn, exec, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.flush
+
+function os.execute(...) ioflush() return execute(...) end
+function os.spawn  (...) ioflush() return spawn  (...) end
+function os.exec   (...) ioflush() return exec   (...) end
+
 function os.resultof(command)
+    ioflush() -- else messed up logging
     local handle = io.popen(command,"r")
     if not handle then
     --  print("unknown command '".. command .. "' in os.resultof")
@@ -1721,9 +1730,6 @@ function os.resultof(command)
         return handle:read("*all") or ""
     end
 end
-
-if not os.exec  then os.exec  = os.execute end
-if not os.spawn then os.spawn = os.execute end
 
 --~ os.type : windows | unix (new, we already guessed os.platform)
 --~ os.name : windows | msdos | linux | macosx | solaris | .. | generic (new)
@@ -6999,6 +7005,7 @@ function logs.tex.stop_page_number()
     else
         logs.report("pages", "flushing page")
     end
+    io.flush()
 end
 
 logs.tex.report_job_stat = statistics.show_job_stat

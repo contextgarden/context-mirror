@@ -597,6 +597,9 @@ local function analyze(filename)
         elseif line:find("^<?xml ") then
             t.type = "xml"
         end
+        if t.nofruns then
+            scripts.context.multipass.nofruns = t.nofruns
+        end
         if not t.engine then
             t.engine = 'luatex'
         end

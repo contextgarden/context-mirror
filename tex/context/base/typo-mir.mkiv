@@ -17,17 +17,17 @@
 
 \registerctxluafile{typo-mir}{1.001}
 
-\definesystemattribute[mirror]
+\definesystemattribute[mirroring]
 
 % experimental mirroring
 
 \def\setcharactermirroring
-  {\ctxlua{mirror.enabled=true}%
-   \gdef\setcharactermirroring[##1]{\dosetattribute{mirror}{\number##1}}%
+  {\ctxlua{mirroring.enable()}%
+   \gdef\setcharactermirroring[##1]{\dosetattribute{mirroring}{\number##1}}%
    \setcharactermirroring}
 
 \def\resetcharactermirroring
-  {\doresetattribute{mirror}}
+  {\doresetattribute{mirroring}}
 
 \newtoks\everysetupdirections
 
@@ -100,9 +100,9 @@
 \def\biditest#1#2#3% font text raw
   {\dontleavehmode\hbox
     {\framed[offset=overlay]{\tttf#2}\quad
-     \ctxlua{mirror.trace = true}%
+     \enabletrackers[nodes.mirroring]%
      \framed[offset=overlay]{#1#3}\quad
-     \ctxlua{mirror.trace = false}
+     \disabletrackers[nodes.mirroring]%
      \tttf\ctxlua{document.split_tokens([[\detokenize{#3}]])}}}
 
 \startbuffer[bidi-sample]

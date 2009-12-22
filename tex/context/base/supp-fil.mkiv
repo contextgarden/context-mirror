@@ -194,7 +194,7 @@
 \def\inputgivenfile#1{\normalinput"#1"\relax}
 
 %D \macros
-%D   {readfile,ReadFile,maxreadlevel}
+%D   {readfile,ReadFile}
 %D
 %D One cannot be sure if a file exists. When no file can be
 %D found, the \type{\input} primitive gives an error message
@@ -236,13 +236,7 @@
 %D We first present an earlier implementation of
 %D \type{\readfile}. This command backtracks parent
 %D directories, upto a predefined level. Users can change this
-%D level, but we default to~3.
-%D
-%D \starttyping
-%D \def\maxreadlevel {3}
-%D \stoptyping
-%D
-%D This is a pseudo \COUNTER.
+%D level (on the commandline using a directive); we default to~3.
 %D
 %D We use \type{\normalinput} instead of \type{\input}
 %D because we want to be able to redefine the original
@@ -254,19 +248,10 @@
 
 \let \everyreadfile \everybeforereadfile
 
-\newif\iftracefiles
-
-\newcount\readlevel
-
-\def\maxreadlevel{3}
-
-\newconditional\trackfilenames
-\let\trackedfilename\empty
+\def\maxreadlevel{\ctxlua{commands.maxreadlevel()}}
 
 % We need to postpone loading, else we got frozen type-* files and so when
 % a format is generated on a source path.
-
-% tracefiles -> tracker
 
 \def\doreadfile#1#2#3% protocol path filename true false
   {\edef\readfilename{\ctxlua{support.doreadfile("#1","#2","#3")}}%
@@ -337,45 +322,6 @@
   {\pushcatcodetable \catcodetable \xmlcatcodes
    \readfile{#1}{#2}{#3}%
    \popcatcodetable}
-
-%D \macros
-%D   {openjobfile,openlocfile,opensysfile,openfixfile}
-%D
-%D The next four alternatives can be used for opening files
-%D for reading on a line||by||line basis. These commands get
-%D an extra argument, the filetag. Explicit closing is done
-%D in the normal way by \type{\closein}.
-
-\def\doopenin#1#2%
-  {\sanitizefilename#2\to\readfilename
-   \checkfilename\readfilename
-   \ifcase\kindoffile
-     \advance\readlevel\plusone
-     \openinputfile{#1}\readfilename
-     \ifeof#1% \relax
-       \ifnum\readlevel>\maxreadlevel % \relax
-       \else
-         \closeinputfile#1% \relax
-         \doopenin{#1}{\pathplusfile\f!parentpath{#2}}%
-       \fi
-     \fi
-   \fi}
-
-\def\openjobin#1#2%
-  {\readlevel\zerocount
-   \doopenin{#1}{\pathplusfile\f!currentpath{#2}}}
-
-\def\opensysin % #1#2%
-  {\readlevel\maxreadlevel
-   \doopenin} % {#1}{#2}}
-
-\def\openlocin#1#2%
-  {\readlevel\maxreadlevel
-   \doopenin{#1}{\pathplusfile\f!currentpath{#2}}}
-
-\def\openfixin#1#2#3%
-  {\readlevel\maxreadlevel
-   \doopenin{#1}{\pathplusfile{#2}{#3}}}
 
 %D \macros
 %D   {doiffileelse,doiflocfileelse}

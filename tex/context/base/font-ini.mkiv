@@ -763,6 +763,12 @@
 
 \let\fontfile\s!unknown
 
+% \definefontfeature[slanted]  [default][slant=.25]
+% \definefontfeature[stretched][default][stretch=2]
+%
+% \start \definedfont[SerifBold*slanted   at 20pt] \ruledhbox{Test!} \stop
+% \start \definedfont[SerifBold*stretched at 20pt] \ruledhbox{Test!} \stop
+
 % \definefontfeature[default]     [liga=yes,texligatures=yes,texquotes=yes]
 % \definefontfeature[default-caps][liga=yes,texligatures=yes,texquotes=yes,smcp=yes,script=latn]
 %
@@ -3918,8 +3924,8 @@
 %
 % \setupfonts[check=...]
 
-\def\checkcharactersinfont  {\ctxlua{fonts.checkers.enabled=true}}
-\def\removemissingcharacters{\ctxlua{fonts.checkers.enabled=true fonts.checkers.delete=true}}
+\def\checkcharactersinfont  {\ctxlua{fonts.checkers.enable()}}
+\def\removemissingcharacters{\ctxlua{fonts.checkers.enable(true)}}
 
 %D New commands (not yet interfaced):
 

@@ -69,8 +69,10 @@ local function initializer()
     local r = jobvariables.collected.randomseed
     if not r then
         r = math.random()
+        math.setrandomseedi(r,"initialize")
+    else
+        math.setrandomseedi(r,"previous run")
     end
-    math.setrandomseedi(r)
     jobvariables.tobesaved.randomseed = r
     for cs, value in next, jobvariables.collected do
         texsprint(ctxcatcodes,format("\\xdef\\%s{%s}",cs,value))

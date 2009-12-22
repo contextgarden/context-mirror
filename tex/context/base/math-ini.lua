@@ -302,16 +302,24 @@ end
 
 -- plugins
 
-function mathematics.scaleparameters(t,tfmtable,delta)
+local hvars = table.tohash {
+    --~ "RadicalKernBeforeDegree",
+    --~ "RadicalKernAfterDegree",
+}
+
+function mathematics.scaleparameters(t,tfmtable,delta,hdelta,vdelta)
     local math_parameters = tfmtable.math_parameters
     if math_parameters and next(math_parameters) then
         delta = delta or 1
+        hdelta, vdelta = hdelta or delta, vdelta or delta
         local _, mp = mathematics.dimensions(math_parameters)
         for name, value in next, mp do
-            if name ~= "RadicalDegreeBottomRaisePercent" then
-                mp[name] = delta*value
-            else
+            if name == "RadicalDegreeBottomRaisePercent" then
                 mp[name] = value
+            elseif hvars[name] then
+                mp[name] = hdelta * value
+            else
+                mp[name] = vdelta * value
             end
         end
         t.MathConstants = mp

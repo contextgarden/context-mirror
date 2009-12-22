@@ -17,7 +17,7 @@
 
 \startluacode
     local function strip(s)
-        return "\times10^{"..(s:gsub("%+*0*","")).."}"
+        return "\\times10^{"..(s:gsub("%+*0*","")).."}"
     end
     function metapost.format_n(fmt,str)
         fmt = fmt:gsub("@","%%")

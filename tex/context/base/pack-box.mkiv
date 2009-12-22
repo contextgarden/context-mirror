@@ -741,7 +741,7 @@
 \setvalue{\??ab\??ab \v!line\v!middle}{\baselinemiddlebox}
 \setvalue{\??ab\??ab \v!line\v!right }{\baselinerightbox}
 
-\def\offsetbox
+\unexpanded\def\offsetbox
   {\dodoubleempty\dooffsetbox[]}
 
 % left/right/top/bottomoffset -> dimensions change
@@ -831,8 +831,8 @@
 % \placefigure[left,none]{}{\offset[bottomoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
 % \input tufte
 
-\def\offset {\dodoubleempty\dooffsetbox [\hbox]} % yes or no
-\def\aligned{\dosingleempty\doalignedbox[\hbox]} % yes or no
+\unexpanded\def\offset {\dodoubleempty\dooffsetbox [\hbox]} % yes or no
+\unexpanded\def\aligned{\dosingleempty\doalignedbox[\hbox]} % yes or no
 
 %\ruledhbox{\offsetbox[x=-1cm,y=-1cm,location=c]
 %  {\framed[width=4cm,height=4cm]{x}}}
@@ -844,9 +844,9 @@
    \hbox to \wd\scratchbox{#1#4#2}%
    \egroup}
 
-\def\ltabbed{\dotabbed\relax\hss}
-\def\rtabbed{\dotabbed\hss  \relax}
-\def\ctabbed{\dotabbed\hss  \hss}      \let\mtabbed\ctabbed
+\unexpanded\def\ltabbed{\dotabbed\relax\hss}
+\unexpanded\def\rtabbed{\dotabbed\hss  \relax}
+\unexpanded\def\ctabbed{\dotabbed\hss  \hss}      \let\mtabbed\ctabbed
 
 % \ltabbed{\romeins{3}}{\romeins{1}} test \endgraf
 % \ltabbed{\romeins{3}}{\romeins{2}} test \endgraf
@@ -893,7 +893,7 @@
 
 % to be documented
 
-\def\phantombox[#1]%
+\unexpanded\def\phantombox[#1]%
   {\hbox\bgroup
    \getparameters
      [\??ol]
@@ -909,7 +909,7 @@
 
 %  \backgroundimage{1}{\hsize}{\vsize}{\externalfigure[cow][\c!width=3cm]}
 
-\def\backgroundimage#1#2#3% repeat hsize vsize
+\unexpanded\def\backgroundimage#1#2#3% repeat hsize vsize
   {\bgroup
    \forgetall
    \dowithnextbox

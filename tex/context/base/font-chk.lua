@@ -74,3 +74,17 @@ function checkers.missing(head)
     end
     return head, false
 end
+
+trackers.register("fonts.missing", function(v)
+    tasks.enableaction("processors", "fonts.checkers.missing") -- always on then
+    checkers.enabled = v
+end)
+
+function checkers.enable(delete)
+    tasks.enableaction("processors", "fonts.checkers.missing") -- always on then
+    if delete ~= nil then
+        checkers.delete = delete
+   end
+   checkers.enabled = true
+end
+

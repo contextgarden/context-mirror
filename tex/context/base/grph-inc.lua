@@ -378,9 +378,19 @@ end
 
 local function locate(request) -- name, format, cache
     local askedname = resolvers.clean_path(request.name)
-    if figures.found[askedname] then
-        return figures.found[askedname]
+    local foundname = figures.found[askedname]
+    if foundname then
+        return foundname
     end
+    -- protocol check
+    local hashed = url.hashed(askedname)
+    if hashed and hashed.scheme ~= "file" then
+        local foundname = resolvers.findbinfile(askedname)
+        if foundname then
+            askedname = foundname
+        end
+    end
+    -- we could use the hashed data instead
     local askedpath= file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
     local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""

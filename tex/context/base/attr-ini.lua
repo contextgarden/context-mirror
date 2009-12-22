@@ -61,7 +61,6 @@ colors.data       = colors.data       or { }
 colors.values     = colors.values     or { }
 colors.registered = colors.registered or { }
 
-colors.enabled    = true
 colors.weightgray = true
 colors.attribute  = attributes.private('color')
 colors.selector   = attributes.private('colormodel')
@@ -255,13 +254,16 @@ shipouts.handle_color = nodes.install_attribute_handler {
     resolver    = function() return colors.main end,
 }
 
+function colors.enable()
+    tasks.enableaction("shipouts","shipouts.handle_color")
+end
+
 -- transparencies
 
 transparencies            = transparencies            or { }
 transparencies.registered = transparencies.registered or { }
 transparencies.data       = transparencies.data       or { }
 transparencies.values     = transparencies.values     or { }
-transparencies.enabled    = false
 transparencies.triggering = true
 transparencies.attribute  = attributes.private('transparency')
 
@@ -341,11 +343,14 @@ shipouts.handle_transparency = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
+function transparencies.enable()
+    tasks.enableaction("shipouts","shipouts.handle_transparency")
+end
+
 --- colorintents: overprint / knockout
 
 colorintents           = colorintents      or { }
 colorintents.data      = colorintents.data or { }
-colorintents.enabled   = false
 colorintents.attribute = attributes.private('colorintent')
 
 colorintents.registered = {
@@ -390,13 +395,14 @@ shipouts.handle_colorintent = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
-local s = shipouts.handle_colorintent
+function colorintents.enable()
+    tasks.enableaction("shipouts","shipouts.handle_colorintent")
+end
 
 --- negative / positive
 
 negatives           = negatives      or { }
 negatives.data      = negatives.data or { }
-negatives.enabled   = false
 negatives.attribute = attributes.private("negative")
 
 negatives.registered = {
@@ -441,13 +447,16 @@ shipouts.handle_negative = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
+function negatives.enable()
+    tasks.enableaction("shipouts","shipouts.handle_negative")
+end
+
 -- effects -- can be optimized (todo: metatables)
 
 effects            = effects            or { }
 effects.data       = effects.data       or { }
 effects.values     = effects.values     or { }
 effects.registered = effects.registered or { }
-effects.enabled    = false
 effects.stamp      = "%s:%s:%s"
 effects.attribute  = attributes.private("effect")
 
@@ -497,6 +506,10 @@ shipouts.handle_effect = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
+function effects.enable()
+    tasks.enableaction("shipouts","shipouts.handle_effect")
+end
+
 -- layers (ugly code, due to no grouping and such); currently we use exclusive layers
 -- but when we need it stacked layers might show up too; the next function based
 -- approach can be replaced by static (metatable driven) resolvers
@@ -506,7 +519,6 @@ viewerlayers.data       = viewerlayers.data       or { }
 viewerlayers.registered = viewerlayers.registered or { }
 viewerlayers.values     = viewerlayers.values     or { }
 viewerlayers.listwise   = viewerlayers.listwise   or { }
-viewerlayers.enabled    = false
 viewerlayers.attribute  = attributes.private("viewerlayer")
 
 storage.register("viewerlayers/registered", viewerlayers.registered, "viewerlayers.registered")
@@ -560,3 +572,7 @@ shipouts.handle_viewerlayer = nodes.install_attribute_handler {
     finalizer   = states.finalize,
     processor   = states.stacked,
 }
+
+function viewerlayers.enable()
+    tasks.enableaction("shipouts","shipouts.handle_viewerlayer")
+end

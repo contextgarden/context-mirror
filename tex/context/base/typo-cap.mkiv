@@ -51,8 +51,8 @@
 % test \word{test TEST \TeX} test
 % test \Word{test TEST \TeX} test
 
-\def\setcharactercasing
-  {\ctxlua{cases.enabled=true}%
+\unexpanded\def\setcharactercasing
+  {\ctxlua{cases.enable()}%
    \gdef\setcharactercasing[##1]{\dosetattribute{case}{\number##1}}%
    \setcharactercasing}
 

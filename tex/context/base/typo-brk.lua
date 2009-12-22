@@ -28,7 +28,6 @@ local kern    = node.id("kern")
 breakpoints           = breakpoints         or { }
 breakpoints.mapping   = breakpoints.mapping or { }
 breakpoints.methods   = breakpoints.methods or { }
-breakpoints.enabled   = false
 breakpoints.attribute = attributes.private("breakpoint")
 
 storage.register("breakpoints/mapping", breakpoints.mapping, "breakpoints.mapping")
@@ -189,3 +188,7 @@ chars.handle_breakpoints = nodes.install_attribute_handler {
     namespace = breakpoints,
     processor = breakpoints.process,
 }
+
+function breakpoints.enable()
+    tasks.enableaction("processors","chars.handle_breakpoints")
+end

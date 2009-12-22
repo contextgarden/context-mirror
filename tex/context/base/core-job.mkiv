@@ -51,9 +51,9 @@
 \def\processlocalfile#1#2%
   {#1{#2}\donothing{\readfile{#2}\donothing\donothing}}
 
-\def\processfile       #1{\ctxlua{commands.processfile("#1",\number\maxreadlevel)}}
-\def\doifinputfileelse #1{\ctxlua{commands.doifinputfileelse("#1",\number\maxreadlevel)}}
-\def\locatefilepath    #1{\edef\locatedfilepath{\ctxlua{commands.locatefilepath("#1",\number\maxreadlevel)}}}
+\def\processfile       #1{\ctxlua{commands.processfile("#1")}}
+\def\doifinputfileelse #1{\ctxlua{commands.doifinputfileelse("#1")}}
+\def\locatefilepath    #1{\edef\locatedfilepath{\ctxlua{commands.locatefilepath("#1")}}}
 \def\usepath         [#1]{\edef\allinputpaths{\ctxlua{commands.usepath("#1")}}}
 \def\usesubpath      [#1]{\edef\allinputpaths{\ctxlua{commands.usesubpath("#1")}}}
 \def\usezipfile          {\dodoubleempty\dousezipfile}
@@ -302,21 +302,5 @@
 
 % \appendtoks \flushnotes                     \to \everydisplay
 % \appendtoks \adjustsidefloatdisplaylines    \to \everydisplay
-
-\chardef\systemcommandmode\zerocount % 0=unknown 1=disabled 2=enabled
-
-\def\checksystemcommandmode
-  {\ifx\pdfshellescape\undefined \else
-     \chardef\systemcommandmode \ifcase\pdfshellescape \plusone \else \plustwo \fi
-   \fi
-   \global\let\checksystemcommandmode\relax}
-
-\def\reportsystemcommandmode
-  {\ifcase\systemcommandmode
-   \or
-     \writestatus\m!systems{system commands are disabled}%
-   \or
-     \writestatus\m!systems{system commands are enabled}%
-   \fi}
 
 \protect \endinput

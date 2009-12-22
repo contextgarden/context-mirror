@@ -75,7 +75,7 @@ end
 
 local function process_attribute(head,plugin) -- head,attribute,enabled,initializer,resolver,processor,finalizer
     local namespace = plugin.namespace
-    if namespace.enabled then
+    if namespace.enabled ~= false then -- this test will go away
         starttiming(attributes)
         local done, used, ok = false, nil, false
         local attribute = namespace.attribute or numbers[plugin.name] -- todo: plugin.attribute

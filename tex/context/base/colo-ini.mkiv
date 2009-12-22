@@ -773,7 +773,7 @@
 
 \def\doactivatecolor
   {\ifproductionrun
-     \ctxlua{colors.enabled=true transparencies.enabled=true}% not that efficient but at least robust
+     \ctxlua{colors.enable() transparencies.enable()}% not that efficient but at least robust
      \let\doactivatecolor\normaldoactivatecolor
      \expandafter\doactivatecolor
    \else

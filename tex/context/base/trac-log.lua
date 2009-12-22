@@ -133,6 +133,7 @@ function logs.tex.stop_page_number()
     else
         logs.report("pages", "flushing page")
     end
+    io.flush()
 end
 
 logs.tex.report_job_stat = statistics.show_job_stat
