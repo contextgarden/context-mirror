@@ -12,6 +12,9 @@ local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
 
+-- beware, this is not xpath ... e.g. position is different (currently) and
+-- we have reverse-sibling as reversed preceding sibling
+
 --[[ldx--
 <p>This module can be used stand alone but also inside <l n='mkiv'/> in
 which case it hooks into the tracker code. Therefore we provide a few
@@ -239,24 +242,92 @@ apply_axis['attribute'] = function(list)
     return { }
 end
 
-apply_axis['following'] = function(list)
-    return { }
-end
-
-apply_axis['following-sibling'] = function(list)
-    return { }
-end
-
 apply_axis['namespace'] = function(list)
     return { }
 end
 
-apply_axis['preceding'] = function(list)
+apply_axis['following'] = function(list) -- incomplete
+--~     local collected = { }
+--~     for l=1,#list do
+--~         local ll = list[l]
+--~         local p = ll.__p__
+--~         local d = p.dt
+--~         for i=ll.ni+1,#d do
+--~             local di = d[i]
+--~             if type(di) == "table" then
+--~                 collected[#collected+1] = di
+--~                 break
+--~             end
+--~         end
+--~     end
+--~     return collected
     return { }
 end
 
-apply_axis['preceding-sibling'] = function(list)
+apply_axis['preceding'] = function(list) -- incomplete
+--~     local collected = { }
+--~     for l=1,#list do
+--~         local ll = list[l]
+--~         local p = ll.__p__
+--~         local d = p.dt
+--~         for i=ll.ni-1,1,-1 do
+--~             local di = d[i]
+--~             if type(di) == "table" then
+--~                 collected[#collected+1] = di
+--~                 break
+--~             end
+--~         end
+--~     end
+--~     return collected
     return { }
+end
+
+apply_axis['following-sibling'] = function(list)
+    local collected = { }
+    for l=1,#list do
+        local ll = list[l]
+        local p = ll.__p__
+        local d = p.dt
+        for i=ll.ni+1,#d do
+            local di = d[i]
+            if type(di) == "table" then
+                collected[#collected+1] = di
+            end
+        end
+    end
+    return collected
+end
+
+apply_axis['preceding-sibling'] = function(list)
+    local collected = { }
+    for l=1,#list do
+        local ll = list[l]
+        local p = ll.__p__
+        local d = p.dt
+        for i=1,ll.ni-1 do
+            local di = d[i]
+            if type(di) == "table" then
+                collected[#collected+1] = di
+            end
+        end
+    end
+    return collected
+end
+
+apply_axis['reverse-sibling'] = function(list) -- reverse preceding
+    local collected = { }
+    for l=1,#list do
+        local ll = list[l]
+        local p = ll.__p__
+        local d = p.dt
+        for i=ll.ni-1,1,-1 do
+            local di = d[i]
+            if type(di) == "table" then
+                collected[#collected+1] = di
+            end
+        end
+    end
+    return collected
 end
 
 apply_axis['auto-descendant-or-self'] = apply_axis['descendant-or-self']
@@ -362,12 +433,18 @@ local function apply_nodes(list,directive,nodes)
     end
 end
 
+local quit_expression = false
+
 local function apply_expression(list,expression,order)
     local collected = { }
+    quit_expression = false
     for l=1,#list do
         local ll = list[l]
         if expression(list,ll,l,order) then -- nasty, alleen valid als n=1
             collected[#collected+1] = ll
+        end
+        if quit_expression then
+            break
         end
     end
     return collected
@@ -392,7 +469,8 @@ local lp_builtin = P (
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +
-        P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
+--~         P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
+        P("name")         / "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)" +
         P("tag")          / "ll.tg" +
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
@@ -422,6 +500,7 @@ local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
 local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
 local lp_child   = Cc("expr.child(ll,'") * R("az","AZ","--","__")^1 * Cc("')")
+local lp_number  = S("+-") * R("09")^1
 local lp_string  = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
 local lp_content = (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
 
@@ -430,6 +509,7 @@ local cleaner
 local lp_special = (C(P("name")+P("text")+P("tag")+P("count")+P("child"))) * value / function(t,s)
     if expressions[t] then
         s = s and s ~= "" and cleaner:match(s)
+--~ print("!!!",t,s)
         if s and s ~= "" then
             return "expr." .. t .. "(ll," .. s ..")"
         else
@@ -459,8 +539,10 @@ local converter = Cs (
 cleaner = Cs ( (
 --~     lp_fastpos +
     lp_reserved +
+    lp_number +
     lp_string +
 1 )^1 )
+
 
 --~ expr
 
@@ -544,6 +626,7 @@ local register_following               = { kind = "axis", axis = "following"    
 local register_following_sibling       = { kind = "axis", axis = "following-sibling"       } -- , apply = apply_axis["following-sibling"]  }
 local register_preceding               = { kind = "axis", axis = "preceding"               } -- , apply = apply_axis["preceding"]          }
 local register_preceding_sibling       = { kind = "axis", axis = "preceding-sibling"       } -- , apply = apply_axis["preceding-sibling"]  }
+local register_reverse_sibling         = { kind = "axis", axis = "reverse-sibling"         } -- , apply = apply_axis["reverse-sibling"]    }
 
 local register_auto_descendant_or_self = { kind = "axis", axis = "auto-descendant-or-self" } -- , apply = apply_axis["auto-descendant-or-self"] }
 local register_auto_descendant         = { kind = "axis", axis = "auto-descendant"         } -- , apply = apply_axis["auto-descendant"] }
@@ -570,8 +653,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
     step                 = ((V("shortcuts") + P("/") + V("axis")) * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
 
     axis                 = V("descendant") + V("child") + V("parent") + V("self") + V("root") + V("ancestor") +
-                           V("descendant_or_self") + V("following") + V("following_sibling") +
-                           V("preceding") + V("preceding_sibling") + V("ancestor_or_self") +
+                           V("descendant_or_self") + V("following_sibling") + V("following") +
+                           V("reverse_sibling") + V("preceding_sibling") + V("preceding") + V("ancestor_or_self") +
                            #(1-P(-1)) * Cc(register_auto_child),
 
     initial              = (P("/") * spaces * Cc(register_initial_child))^-1,
@@ -605,6 +688,7 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
     following_sibling    = P('following-sibling::')  * Cc(register_following_sibling  ),
     preceding            = P('preceding::')          * Cc(register_preceding          ),
     preceding_sibling    = P('preceding-sibling::')  * Cc(register_preceding_sibling  ),
+    reverse_sibling      = P('reverse-sibling::')    * Cc(register_reverse_sibling    ),
 
     nodes                = (V("nodefunction") * spaces * P("(") * V("nodeset") * P(")") + V("nodetest") * V("nodeset")) / register_nodes,
 
@@ -867,6 +951,18 @@ expressions.error = function(str)
 end
 expressions.undefined = function(s)
     return s == nil
+end
+
+expressions.quit = function(s)
+    if s or s == nil then
+        quit_expression = true
+    end
+    return true
+end
+
+expressions.print = function(...)
+    print(...)
+    return true
 end
 
 expressions.contains  = find

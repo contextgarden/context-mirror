@@ -523,7 +523,6 @@
   {\forgetall
    \beforefinaloutput
    \the\everybeforeshipout
-   \setpagecounters
    \message{[-\the\realpageno]}%
    \setbox\scratchbox\hbox{\dopagebody#1#2}%
    \deadcycles\zerocount
@@ -551,6 +550,7 @@
    \fi#1#2%
    \resetselectiepagina
    \incrementpagenumber
+   \incrementsubpagenumber
    \checkpagedimensions
    \ifnum\outputpenalty>\superpenalty \else
      \dosupereject
@@ -883,9 +883,9 @@
   {%\getallmarks % now in following token register
    \the\everybeforepagebody
    \starttextproperties
-   \setnextsubpageno  % nog eens: als in pagina (tbv standaard opmaak)
+%  \setnextsubpageno  % nog eens: als in pagina (tbv standaard opmaak)
    \dontshowboxes     % dan hier blokkeren en verderop resetten
-%    \shipoutfacingpage
+%  \shipoutfacingpage
    \checkmargeblokken
    \the\beforeeverypage
    \normalexpanded{\global\beforepage\emptytoks\the\beforepage}% \scratchtoks\beforepage\global\beforepage\emptytoks\the\scratchtoks % was \flushtoks\beforepage

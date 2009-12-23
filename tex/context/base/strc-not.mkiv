@@ -641,6 +641,7 @@
    \edef\currentnote{#1}%
    \edef\currentdescriptionnumberentry{#2}%
 %    \let\currentenumerationfullnumber\currentnoteenumerationfullnumber
+   \dontcomplain % should be done in startstoreddescription instead
    \dostartstoreddescription\begstrut\currentnotedescriptiontext\endstrut\dostopstoreddescription}
 
 \def\dostartstoreddescription

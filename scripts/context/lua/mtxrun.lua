@@ -3249,20 +3249,44 @@ end
 setters      = setters      or { }
 setters.data = setters.data or { }
 
+--~ local function set(t,what,value)
+--~     local data, done = t.data, t.done
+--~     if type(what) == "string" then
+--~         what = aux.settings_to_array(what) -- inefficient but ok
+--~     end
+--~     for i=1,#what do
+--~         local w = what[i]
+--~         for d, f in next, data do
+--~             if done[d] then
+--~                 -- prevent recursion due to wildcards
+--~             elseif find(d,w) then
+--~                 done[d] = true
+--~                 for i=1,#f do
+--~                     f[i](value)
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
 local function set(t,what,value)
     local data, done = t.data, t.done
     if type(what) == "string" then
-        what = aux.settings_to_array(what) -- inefficient but ok
+        what = aux.settings_to_hash(what) -- inefficient but ok
     end
-    for i=1,#what do
-        local w = what[i]
+    for w, v in next, what do
+        if v == "" then
+            v = value
+        else
+            v = toboolean(v)
+        end
         for d, f in next, data do
             if done[d] then
                 -- prevent recursion due to wildcards
             elseif find(d,w) then
                 done[d] = true
                 for i=1,#f do
-                    f[i](value)
+                    f[i](v)
                 end
             end
         end
@@ -3351,7 +3375,9 @@ function setters.show(t)
 end
 
 -- we could have used a bit of oo and the trackers:enable syntax but
--- there is already a lot of code around using the singluar tracker
+-- there is already a lot of code around using the singular tracker
+
+-- we could make this into a module
 
 function setters.new(name)
     local t
@@ -4690,7 +4716,16 @@ apply_axis['following'] = function(list)
 end
 
 apply_axis['following-sibling'] = function(list)
-    return { }
+    local collected = { }
+    for l=1,#list do
+        local ll = list[l]
+print(xml.tostring(ll))
+        if ll.special ~= true then -- catch double root
+            collected[#collected+1] = ll
+        end
+    end
+    return collected
+--~     return { }
 end
 
 apply_axis['namespace'] = function(list)
@@ -8610,7 +8645,7 @@ local function collect_files(names)
     for k=1,#names do
         local fname = names[k]
         if trace_detail then
-            logs.report("fileio","using blobpath '%s'",fname)
+            logs.report("fileio","checking name '%s'",fname)
         end
         local bname = file.basename(fname)
         local dname = file.dirname(fname)
@@ -8626,7 +8661,7 @@ local function collect_files(names)
             local files = blobpath and instance.files[blobpath]
             if files then
                 if trace_detail then
-                    logs.report("fileio","processing blobpath '%s' (%s)",blobpath,bname)
+                    logs.report("fileio","deep checking '%s' (%s)",blobpath,bname)
                 end
                 local blobfile = files[bname]
                 if not blobfile then
@@ -8660,7 +8695,7 @@ local function collect_files(names)
                     end
                 end
             elseif trace_locating then
-                logs.report("fileio","no blobpath '%s' (%s)",blobpath,bname)
+                logs.report("fileio","no match in '%s' (%s)",blobpath,bname)
             end
         end
     end
@@ -8874,7 +8909,13 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         else
             -- list search
             local filelist = collect_files(wantedfiles)
-            local doscan, recurse
+            local dirlist = { }
+            if filelist then
+                for i=1,#filelist do
+                    dirlist[i] = file.dirname(filelist[i][2]) .. "/"
+                end
+            end
+            local doscan
             if trace_detail then
                 logs.report("fileio","checking filename '%s'",filename)
             end
@@ -8882,28 +8923,42 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             for k=1,#pathlist do
                 local path = pathlist[k]
                 if find(path,"^!!") then doscan  = false else doscan  = true  end
-                if find(path,"//$") then recurse = true  else recurse = false end
                 local pathname = gsub(path,"^!+", '')
                 done = false
                 -- using file list
-                if filelist and not (done and not instance.allresults) and recurse then
-                    -- compare list entries with permitted pattern
+                if filelist then
+                    -- compare list entries with permitted pattern -- /xx /xx//
+                    if not find(pathname,"/$") then
+                        pathname = pathname .. "/"
+                    end
                     pathname = gsub(pathname,"([%-%.])","%%%1") -- this also influences
-                    pathname = gsub(pathname,"/+$", '/.*')      -- later usage of pathname
+                    pathname = gsub(pathname,"//+$", '/.*')     -- later usage of pathname
                     pathname = gsub(pathname,"//", '/.-/')      -- not ok for /// but harmless
-                    local expr = "^" .. pathname
+                    local expr = "^" .. pathname .. "$"
+                    if trace_detail then
+                        logs.report("fileio","using pattern %s for path %s",expr,path)
+                    end
                     for k=1,#filelist do
                         local fl = filelist[k]
                         local f = fl[2]
-                        if find(f,expr) then
-                            if trace_detail then
-                                logs.report("fileio","file '%s' found in hash",f)
-                            end
+                        local d = dirlist[k]
+                        if find(d,expr) then
                             --- todo, test for readable
                             result[#result+1] = fl[3]
                             resolvers.register_in_trees(f) -- for tracing used files
                             done = true
-                            if not instance.allresults then break end
+                            if instance.allresults then
+                                if trace_detail then
+                                    logs.report("fileio","match in hash for file '%s' on path '%s', continue scanning",f,d)
+                                end
+                            else
+                                if trace_detail then
+                                    logs.report("fileio","match in hash for file '%s' on path '%s', quit scanning",f,d)
+                                end
+                                break
+                            end
+                        elseif trace_detail then
+                            logs.report("fileio","no match in hash for file '%s' on path '%s'",f,d)
                         end
                     end
                 end
@@ -9308,7 +9363,7 @@ luatools with a recache feature.</p>
 
 local format, lower, gsub = string.format, string.lower, string.gsub
 
-local trace_cache = false  trackers.register("resolvers.cache", function(v) trace_cache = v end)
+local trace_cache = false  trackers.register("resolvers.cache", function(v) trace_cache = v end) -- not used yet
 
 caches = caches or { }
 
@@ -10855,6 +10910,12 @@ logs.setprogram('MTXrun',"TDS Runner Tool 1.24",environment.arguments["verbose"]
 
 local instance = resolvers.reset()
 
+local trackspec = environment.argument("trackers") or environment.argument("track")
+
+if trackspec then
+    trackers.enable(trackspec)
+end
+
 runners  = runners  or { } -- global
 messages = messages or { }
 
@@ -11262,20 +11323,22 @@ function runners.find_mtx_script(filename)
     if fullname and fullname ~= "" then
         return fullname
     end
+    -- mtx- prefix checking
+    local mtxprefix = (filename:find("^mtx%-") and "") or "mtx-"
     -- context namespace, mtx-<filename>
-    fullname = "mtx-" .. filename
+    fullname = mtxprefix .. filename
     fullname = found(fullname) or resolvers.find_file(fullname)
     if fullname and fullname ~= "" then
         return fullname
     end
     -- context namespace, mtx-<filename>s
-    fullname = "mtx-" .. basename .. "s" .. "." .. suffix
+    fullname = mtxprefix .. basename .. "s" .. "." .. suffix
     fullname = found(fullname) or resolvers.find_file(fullname)
     if fullname and fullname ~= "" then
         return fullname
     end
     -- context namespace, mtx-<filename minus trailing s>
-    fullname = "mtx-" .. basename:gsub("s$","") .. "." .. suffix
+    fullname = mtxprefix .. basename:gsub("s$","") .. "." .. suffix
     fullname = found(fullname) or resolvers.find_file(fullname)
     if fullname and fullname ~= "" then
         return fullname
@@ -11467,12 +11530,6 @@ else
 
     resolvers.load()
 
-end
-
-local trackspec = environment.argument("trackers") or environment.argument("track")
-
-if trackspec then
-    trackers.enable(trackspec)
 end
 
 if is_mkii_stub then

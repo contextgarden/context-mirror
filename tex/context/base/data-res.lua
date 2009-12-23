@@ -1418,7 +1418,7 @@ local function collect_files(names)
     for k=1,#names do
         local fname = names[k]
         if trace_detail then
-            logs.report("fileio","using blobpath '%s'",fname)
+            logs.report("fileio","checking name '%s'",fname)
         end
         local bname = file.basename(fname)
         local dname = file.dirname(fname)
@@ -1434,7 +1434,7 @@ local function collect_files(names)
             local files = blobpath and instance.files[blobpath]
             if files then
                 if trace_detail then
-                    logs.report("fileio","processing blobpath '%s' (%s)",blobpath,bname)
+                    logs.report("fileio","deep checking '%s' (%s)",blobpath,bname)
                 end
                 local blobfile = files[bname]
                 if not blobfile then
@@ -1468,7 +1468,7 @@ local function collect_files(names)
                     end
                 end
             elseif trace_locating then
-                logs.report("fileio","no blobpath '%s' (%s)",blobpath,bname)
+                logs.report("fileio","no match in '%s' (%s)",blobpath,bname)
             end
         end
     end
@@ -1682,7 +1682,13 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         else
             -- list search
             local filelist = collect_files(wantedfiles)
-            local doscan, recurse
+            local dirlist = { }
+            if filelist then
+                for i=1,#filelist do
+                    dirlist[i] = file.dirname(filelist[i][2]) .. "/"
+                end
+            end
+            local doscan
             if trace_detail then
                 logs.report("fileio","checking filename '%s'",filename)
             end
@@ -1690,28 +1696,42 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             for k=1,#pathlist do
                 local path = pathlist[k]
                 if find(path,"^!!") then doscan  = false else doscan  = true  end
-                if find(path,"//$") then recurse = true  else recurse = false end
                 local pathname = gsub(path,"^!+", '')
                 done = false
                 -- using file list
-                if filelist and not (done and not instance.allresults) and recurse then
-                    -- compare list entries with permitted pattern
+                if filelist then
+                    -- compare list entries with permitted pattern -- /xx /xx//
+                    if not find(pathname,"/$") then
+                        pathname = pathname .. "/"
+                    end
                     pathname = gsub(pathname,"([%-%.])","%%%1") -- this also influences
-                    pathname = gsub(pathname,"/+$", '/.*')      -- later usage of pathname
+                    pathname = gsub(pathname,"//+$", '/.*')     -- later usage of pathname
                     pathname = gsub(pathname,"//", '/.-/')      -- not ok for /// but harmless
-                    local expr = "^" .. pathname
+                    local expr = "^" .. pathname .. "$"
+                    if trace_detail then
+                        logs.report("fileio","using pattern %s for path %s",expr,path)
+                    end
                     for k=1,#filelist do
                         local fl = filelist[k]
                         local f = fl[2]
-                        if find(f,expr) then
-                            if trace_detail then
-                                logs.report("fileio","file '%s' found in hash",f)
-                            end
+                        local d = dirlist[k]
+                        if find(d,expr) then
                             --- todo, test for readable
                             result[#result+1] = fl[3]
                             resolvers.register_in_trees(f) -- for tracing used files
                             done = true
-                            if not instance.allresults then break end
+                            if instance.allresults then
+                                if trace_detail then
+                                    logs.report("fileio","match in hash for file '%s' on path '%s', continue scanning",f,d)
+                                end
+                            else
+                                if trace_detail then
+                                    logs.report("fileio","match in hash for file '%s' on path '%s', quit scanning",f,d)
+                                end
+                                break
+                            end
+                        elseif trace_detail then
+                            logs.report("fileio","no match in hash for file '%s' on path '%s'",f,d)
                         end
                     end
                 end

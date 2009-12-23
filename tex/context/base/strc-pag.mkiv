@@ -256,10 +256,13 @@
 \def\setnextrealpageno{\global\realpageno\incrementedstructurecounter[\s!realpage]\relax}
 \def\setnextsubpageno {\global\subpageno \incrementedstructurecounter[\s!subpage ]\relax}
 
-% Page numbers:
+% Page numbers: (can move to lua)
 
-\def\dodecrementpagenumber{\global\userpageno\decrementedstructurecounter[\s!userpage]\relax}
-\def\doincrementpagenumber{\global\userpageno\incrementedstructurecounter[\s!userpage]\relax}
+\def\dodecrementpagenumber {\global\userpageno\decrementedstructurecounter[\s!userpage]\relax}
+\def\doincrementpagenumber {\global\userpageno\incrementedstructurecounter[\s!userpage]\relax}
+
+\def\decrementsubpagenumber{\global\subpageno \decrementedstructurecounter[\s!subpage ]\relax}
+\def\incrementsubpagenumber{\global\subpageno \incrementedstructurecounter[\s!subpage ]\relax}
 
 \def\dosynchronizepagenumber{\global\let\@@pnstate\v!start}
 

@@ -98,16 +98,9 @@ CTXDEVTXPATH=unset
 CTXDEVMPPATH=unset
 CTXDEVMFPATH=unset
 
-#~ TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
-#~ TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{$progname,plain,generic,}//
-TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{$progname,plain,generic,}//
-
-% TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
-% TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{tex,omega}/{context,plain,generic}//
-% TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain/base,generic/context,generic/hyphen,generic/omega}//
+TEXINPUTS         = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{$progname,plain,generic,}//
 TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain/base,generic}//
 MPINPUTS          = .;{$MFRESOURCES}//;{$CTXDEVMPPATH};$TEXMF/metapost/{context,base,}//
-#~ MFINPUTS       = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;{$TEXMF/fonts,$VARTEXFONTS}/source//
 MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;$TEXMF/fonts/source//
 BSTINPUTS         = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/bibtex/bst//
 
@@ -131,7 +124,7 @@ RUBYINPUTS     = .;$CTXDEVRBPATH;$TEXMF/scripts/context/ruby
 JAVAINPUTS     = .;$CTXDEVJVPATH;$TEXMF/scripts/context/java
 
 % LUAINPUTS    = .;$TEXINPUTS;$TEXMFSCRIPTS
-LUAINPUTS      = .;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua
+LUAINPUTS      = .;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua//
 TEXMFSCRIPTS   = .;$CTXDEVLUPATH;$TEXINPUTS;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/scripts/context/{lua,ruby,perl}//
 
 % RUBYINPUTS   = .;$CTXDEVPLPATH;$TEXMF/scripts/{$progname,$engine,}/ruby

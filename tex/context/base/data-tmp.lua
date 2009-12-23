@@ -24,7 +24,7 @@ luatools with a recache feature.</p>
 
 local format, lower, gsub = string.format, string.lower, string.gsub
 
-local trace_cache = false  trackers.register("resolvers.cache", function(v) trace_cache = v end)
+local trace_cache = false  trackers.register("resolvers.cache", function(v) trace_cache = v end) -- not used yet
 
 caches = caches or { }
 

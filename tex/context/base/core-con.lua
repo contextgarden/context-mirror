@@ -309,7 +309,7 @@ function converters.abjadnodotnumerals(n) return texsprint(converters.toabjad(n,
 
 local vector = {
     normal = {
-                [0] = "○",
+                [0] = "〇",
                 [1] = "一",
                 [2] = "二",
                 [3] = "三",
@@ -343,7 +343,7 @@ local vector = {
         [100000000] = "亿",
     },
     all = {
-                [0] = "○",
+                [0] = "〇",
                 [1] = "一",
                 [2] = "二",
                 [3] = "三",
@@ -363,7 +363,63 @@ local vector = {
     }
 }
 
+--~ function tochinese(n,name) -- normal, caps, all
+--~     local result = { }
+--~     local vector = vector[name] or vector.normal
+--~     while true do
+--~         if n == 0 then
+--~             break
+--~         elseif n >= 100000000 then
+--~             local m = floor(n/100000000)
+--~             if m > 1 then result[#result+1] = tochinese(m) end
+--~             result[#result+1] = vector[100000000]
+--~             n = n % 100000000
+--~         elseif n >= 10000000 then
+--~             result[#result+1] = tochinese(floor(n/10000))
+--~             result[#result+1] = vector[10000]
+--~             n = n % 10000
+--~         elseif n >= 1000000 then
+--~             result[#result+1] = tochinese(floor(n/10000))
+--~             result[#result+1] = vector[10000]
+--~             n = n % 10000
+--~         elseif n >= 100000 then
+--~             result[#result+1] = tochinese(floor(n/10000))
+--~             result[#result+1] = vector[10000]
+--~             n = n % 10000
+--~         elseif n >= 10000 then
+--~             local m = floor(n/10000)
+--~             if m > 1 then result[#result+1] = vector[m] end
+--~             result[#result+1] = vector[10000]
+--~             n = n % 10000
+--~         elseif n >= 1000 then
+--~             local m = floor(n/1000)
+--~             if m > 1 then result[#result+1] = vector[m] end
+--~             result[#result+1] = vector[1000]
+--~             n = n % 1000
+--~         elseif n >= 100 then
+--~             local m = floor(n/100)
+--~             if m > 1 then result[#result+1] = vector[m] end
+--~             result[#result+1] = vector[100]
+--~             n = n % 100
+--~         elseif n >= 10 then
+--~             local m = floor(n/10)
+--~             if vector[m*10] then
+--~                 result[#result+1] = vector[m*10]
+--~             else
+--~                 result[#result+1] = vector[m]
+--~                 result[#result+1] = vector[10]
+--~             end
+--~             n = n % 10
+--~         else
+--~             result[#result+1] = vector[n]
+--~             break
+--~         end
+--~     end
+--~     return concat(result)
+--~ end
+
 function tochinese(n,name) -- normal, caps, all
+ -- improved version by Li Yanrui
     local result = { }
     local vector = vector[name] or vector.normal
     while true do
@@ -371,39 +427,56 @@ function tochinese(n,name) -- normal, caps, all
             break
         elseif n >= 100000000 then
             local m = floor(n/100000000)
-            if m > 1 then result[#result+1] = tochinese(m) end
+            result[#result+1] = tochinese(m,name)
             result[#result+1] = vector[100000000]
+            local z = n - m * 100000000
+            if z > 0 and z < 10000000 then result[#result+1] = vector[0] end
             n = n % 100000000
         elseif n >= 10000000 then
-            result[#result+1] = tochinese(floor(n/10000))
+            local m = floor(n/10000)
+            result[#result+1] = tochinese(m,name)
             result[#result+1] = vector[10000]
+            local z = n - m * 10000
+            if z > 0 and z < 1000 then result[#result+1] = vector[0] end
             n = n % 10000
         elseif n >= 1000000 then
-            result[#result+1] = tochinese(floor(n/10000))
+            local m = floor(n/10000)
+            result[#result+1] = tochinese(m,name)
             result[#result+1] = vector[10000]
+            local z = n - m * 10000
+            if z > 0 and z < 1000 then result[#result+1] = vector[0] end
             n = n % 10000
         elseif n >= 100000 then
-            result[#result+1] = tochinese(floor(n/10000))
-            result[#result+1] = vector[10000]
-            n = n % 10000
-        elseif n >= 10000 then
             local m = floor(n/10000)
-            if m > 1 then result[#result+1] = vector[m] end
+            result[#result+1] = tochinese(m,name)
             result[#result+1] = vector[10000]
+            local z = n - m * 10000
+            if z > 0 and z < 1000 then result[#result+1] = vector[0] end
             n = n % 10000
-        elseif n >= 1000 then
+         elseif n >= 10000 then
+            local m = floor(n/10000)
+            result[#result+1] = vector[m]
+            result[#result+1] = vector[10000]
+            local z = n - m * 10000
+            if z > 0 and z < 1000 then result[#result+1] = vector[0] end
+            n = n % 10000
+         elseif n >= 1000 then
             local m = floor(n/1000)
-            if m > 1 then result[#result+1] = vector[m] end
+            result[#result+1] = vector[m]
             result[#result+1] = vector[1000]
+            local z =  n - m * 1000
+            if z > 0 and z < 100 then result[#result+1] = vector[0] end
             n = n % 1000
-        elseif n >= 100 then
+         elseif n >= 100 then
             local m = floor(n/100)
-            if m > 1 then result[#result+1] = vector[m] end
+            result[#result+1] = vector[m]
             result[#result+1] = vector[100]
+            local z = n - m * 100
+            if z > 0 and z < 10 then result[#result+1] = vector[0] end
             n = n % 100
-        elseif n >= 10 then
+         elseif n >= 10 then
             local m = floor(n/10)
-            if vector[m*10] then
+            if m > 1 and vector[m*10] then
                 result[#result+1] = vector[m*10]
             else
                 result[#result+1] = vector[m]
@@ -414,6 +487,9 @@ function tochinese(n,name) -- normal, caps, all
             result[#result+1] = vector[n]
             break
         end
+    end
+    if (result[1] == vector[1] and result[2] == vector[10]) then
+        result[1] = ""
     end
     return concat(result)
 end
