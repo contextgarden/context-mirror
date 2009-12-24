@@ -28,21 +28,23 @@ function os.resultof(command)
     end
 end
 
---~ os.type : windows | unix (new, we already guessed os.platform)
---~ os.name : windows | msdos | linux | macosx | solaris | .. | generic (new)
+--~ os.type     : windows | unix (new, we already guessed os.platform)
+--~ os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
+--~ os.platform : extended os.name with architecture
 
 if not io.fileseparator then
     if find(os.getenv("PATH"),";") then
-        io.fileseparator, io.pathseparator, os.platform = "\\", ";", os.type or "windows"
+        io.fileseparator, io.pathseparator, os.type = "\\", ";", os.type or "mswin"
     else
-        io.fileseparator, io.pathseparator, os.platform = "/" , ":", os.type or "unix"
+        io.fileseparator, io.pathseparator, os.type = "/" , ":", os.type or "unix"
     end
 end
 
-os.platform = os.platform or os.type or (io.pathseparator == ";" and "windows") or "unix"
+os.type = os.type or (io.pathseparator == ";"       and "windows") or "unix"
+os.name = os.name or (os.type          == "windows" and "mswin"  ) or "linux"
 
 function os.launch(str)
-    if os.platform == "windows" then
+    if os.type == "windows" then
         os.execute("start " .. str) -- os.spawn ?
     else
         os.execute(str .. " &")     -- os.spawn ?
@@ -84,18 +86,20 @@ end
 
 -- no need for function anymore as we have more clever code and helpers now
 
-os.platform  = os.name
+os.platform  = os.name or os.type or "linux"
 os.libsuffix = 'so'
+os.binsuffix = ''
 
 local name = os.name
 
-if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
+if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" or os.type == "windows" then
     if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
         os.platform = "mswin-64"
     else
         os.platform = "mswin"
     end
     os.libsuffix = 'dll'
+    os.binsuffix = 'exe'
 else
     local architecture = os.getenv("HOSTTYPE") or ""
     if architecture == "" then

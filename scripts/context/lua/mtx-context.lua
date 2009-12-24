@@ -469,7 +469,7 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         setalways(                 "\\setupsystem[inputfile=%s]",environment.argument("input") or environment.files[1] or "\\jobname")
         setvalue ("result"       , "\\setupsystem[file=%s]")
         setalways(                 "\\setupsystem[\\c!n=%s,\\c!m=%s]", kindofrun or 0, currentrun or 0)
-    --  setalways(                 "\\setupsystem[\\c!type=%s]",os.platform)
+    --  setalways(                 "\\setupsystem[\\c!type=%s]",os.type) -- windows or unix
         setvalues("path"         , "\\usepath[%s]")
         setvalue ("setuppath"    , "\\setupsystem[\\c!directory={%s}]")
         setvalue ("randomseed"   , "\\setupsystem[\\c!random=%s]")

@@ -1731,21 +1731,23 @@ function os.resultof(command)
     end
 end
 
---~ os.type : windows | unix (new, we already guessed os.platform)
---~ os.name : windows | msdos | linux | macosx | solaris | .. | generic (new)
+--~ os.type     : windows | unix (new, we already guessed os.platform)
+--~ os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
+--~ os.platform : extended os.name with architecture
 
 if not io.fileseparator then
     if find(os.getenv("PATH"),";") then
-        io.fileseparator, io.pathseparator, os.platform = "\\", ";", os.type or "windows"
+        io.fileseparator, io.pathseparator, os.type = "\\", ";", os.type or "mswin"
     else
-        io.fileseparator, io.pathseparator, os.platform = "/" , ":", os.type or "unix"
+        io.fileseparator, io.pathseparator, os.type = "/" , ":", os.type or "unix"
     end
 end
 
-os.platform = os.platform or os.type or (io.pathseparator == ";" and "windows") or "unix"
+os.type = os.type or (io.pathseparator == ";"       and "windows") or "unix"
+os.name = os.name or (os.type          == "windows" and "mswin"  ) or "linux"
 
 function os.launch(str)
-    if os.platform == "windows" then
+    if os.type == "windows" then
         os.execute("start " .. str) -- os.spawn ?
     else
         os.execute(str .. " &")     -- os.spawn ?
@@ -1787,18 +1789,20 @@ end
 
 -- no need for function anymore as we have more clever code and helpers now
 
-os.platform  = os.name
+os.platform  = os.name or os.type or "linux"
 os.libsuffix = 'so'
+os.binsuffix = ''
 
 local name = os.name
 
-if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" then
+if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" or os.type == "windows" then
     if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
         os.platform = "mswin-64"
     else
         os.platform = "mswin"
     end
     os.libsuffix = 'dll'
+    os.binsuffix = 'exe'
 else
     local architecture = os.getenv("HOSTTYPE") or ""
     if architecture == "" then
@@ -4484,6 +4488,9 @@ local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
 
+-- beware, this is not xpath ... e.g. position is different (currently) and
+-- we have reverse-sibling as reversed preceding sibling
+
 --[[ldx--
 <p>This module can be used stand alone but also inside <l n='mkiv'/> in
 which case it hooks into the tracker code. Therefore we provide a few
@@ -4711,7 +4718,43 @@ apply_axis['attribute'] = function(list)
     return { }
 end
 
-apply_axis['following'] = function(list)
+apply_axis['namespace'] = function(list)
+    return { }
+end
+
+apply_axis['following'] = function(list) -- incomplete
+--~     local collected = { }
+--~     for l=1,#list do
+--~         local ll = list[l]
+--~         local p = ll.__p__
+--~         local d = p.dt
+--~         for i=ll.ni+1,#d do
+--~             local di = d[i]
+--~             if type(di) == "table" then
+--~                 collected[#collected+1] = di
+--~                 break
+--~             end
+--~         end
+--~     end
+--~     return collected
+    return { }
+end
+
+apply_axis['preceding'] = function(list) -- incomplete
+--~     local collected = { }
+--~     for l=1,#list do
+--~         local ll = list[l]
+--~         local p = ll.__p__
+--~         local d = p.dt
+--~         for i=ll.ni-1,1,-1 do
+--~             local di = d[i]
+--~             if type(di) == "table" then
+--~                 collected[#collected+1] = di
+--~                 break
+--~             end
+--~         end
+--~     end
+--~     return collected
     return { }
 end
 
@@ -4719,25 +4762,48 @@ apply_axis['following-sibling'] = function(list)
     local collected = { }
     for l=1,#list do
         local ll = list[l]
-print(xml.tostring(ll))
-        if ll.special ~= true then -- catch double root
-            collected[#collected+1] = ll
+        local p = ll.__p__
+        local d = p.dt
+        for i=ll.ni+1,#d do
+            local di = d[i]
+            if type(di) == "table" then
+                collected[#collected+1] = di
+            end
         end
     end
     return collected
---~     return { }
-end
-
-apply_axis['namespace'] = function(list)
-    return { }
-end
-
-apply_axis['preceding'] = function(list)
-    return { }
 end
 
 apply_axis['preceding-sibling'] = function(list)
-    return { }
+    local collected = { }
+    for l=1,#list do
+        local ll = list[l]
+        local p = ll.__p__
+        local d = p.dt
+        for i=1,ll.ni-1 do
+            local di = d[i]
+            if type(di) == "table" then
+                collected[#collected+1] = di
+            end
+        end
+    end
+    return collected
+end
+
+apply_axis['reverse-sibling'] = function(list) -- reverse preceding
+    local collected = { }
+    for l=1,#list do
+        local ll = list[l]
+        local p = ll.__p__
+        local d = p.dt
+        for i=ll.ni-1,1,-1 do
+            local di = d[i]
+            if type(di) == "table" then
+                collected[#collected+1] = di
+            end
+        end
+    end
+    return collected
 end
 
 apply_axis['auto-descendant-or-self'] = apply_axis['descendant-or-self']
@@ -4843,12 +4909,18 @@ local function apply_nodes(list,directive,nodes)
     end
 end
 
+local quit_expression = false
+
 local function apply_expression(list,expression,order)
     local collected = { }
+    quit_expression = false
     for l=1,#list do
         local ll = list[l]
         if expression(list,ll,l,order) then -- nasty, alleen valid als n=1
             collected[#collected+1] = ll
+        end
+        if quit_expression then
+            break
         end
     end
     return collected
@@ -4873,7 +4945,8 @@ local lp_builtin = P (
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +
-        P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
+--~         P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
+        P("name")         / "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)" +
         P("tag")          / "ll.tg" +
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
@@ -4903,6 +4976,7 @@ local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
 local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
 local lp_child   = Cc("expr.child(ll,'") * R("az","AZ","--","__")^1 * Cc("')")
+local lp_number  = S("+-") * R("09")^1
 local lp_string  = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
 local lp_content = (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))
 
@@ -4911,6 +4985,7 @@ local cleaner
 local lp_special = (C(P("name")+P("text")+P("tag")+P("count")+P("child"))) * value / function(t,s)
     if expressions[t] then
         s = s and s ~= "" and cleaner:match(s)
+--~ print("!!!",t,s)
         if s and s ~= "" then
             return "expr." .. t .. "(ll," .. s ..")"
         else
@@ -4940,8 +5015,10 @@ local converter = Cs (
 cleaner = Cs ( (
 --~     lp_fastpos +
     lp_reserved +
+    lp_number +
     lp_string +
 1 )^1 )
+
 
 --~ expr
 
@@ -5025,6 +5102,7 @@ local register_following               = { kind = "axis", axis = "following"    
 local register_following_sibling       = { kind = "axis", axis = "following-sibling"       } -- , apply = apply_axis["following-sibling"]  }
 local register_preceding               = { kind = "axis", axis = "preceding"               } -- , apply = apply_axis["preceding"]          }
 local register_preceding_sibling       = { kind = "axis", axis = "preceding-sibling"       } -- , apply = apply_axis["preceding-sibling"]  }
+local register_reverse_sibling         = { kind = "axis", axis = "reverse-sibling"         } -- , apply = apply_axis["reverse-sibling"]    }
 
 local register_auto_descendant_or_self = { kind = "axis", axis = "auto-descendant-or-self" } -- , apply = apply_axis["auto-descendant-or-self"] }
 local register_auto_descendant         = { kind = "axis", axis = "auto-descendant"         } -- , apply = apply_axis["auto-descendant"] }
@@ -5051,8 +5129,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
     step                 = ((V("shortcuts") + P("/") + V("axis")) * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
 
     axis                 = V("descendant") + V("child") + V("parent") + V("self") + V("root") + V("ancestor") +
-                           V("descendant_or_self") + V("following") + V("following_sibling") +
-                           V("preceding") + V("preceding_sibling") + V("ancestor_or_self") +
+                           V("descendant_or_self") + V("following_sibling") + V("following") +
+                           V("reverse_sibling") + V("preceding_sibling") + V("preceding") + V("ancestor_or_self") +
                            #(1-P(-1)) * Cc(register_auto_child),
 
     initial              = (P("/") * spaces * Cc(register_initial_child))^-1,
@@ -5086,6 +5164,7 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
     following_sibling    = P('following-sibling::')  * Cc(register_following_sibling  ),
     preceding            = P('preceding::')          * Cc(register_preceding          ),
     preceding_sibling    = P('preceding-sibling::')  * Cc(register_preceding_sibling  ),
+    reverse_sibling      = P('reverse-sibling::')    * Cc(register_reverse_sibling    ),
 
     nodes                = (V("nodefunction") * spaces * P("(") * V("nodeset") * P(")") + V("nodetest") * V("nodeset")) / register_nodes,
 
@@ -5348,6 +5427,18 @@ expressions.error = function(str)
 end
 expressions.undefined = function(s)
     return s == nil
+end
+
+expressions.quit = function(s)
+    if s or s == nil then
+        quit_expression = true
+    end
+    return true
+end
+
+expressions.print = function(...)
+    print(...)
+    return true
 end
 
 expressions.contains  = find
@@ -7292,7 +7383,7 @@ resolvers.generators.notfound = { nil }
 resolvers.cacheversion = '1.0.1'
 resolvers.cnfname      = 'texmf.cnf'
 resolvers.luaname      = 'texmfcnf.lua'
-resolvers.homedir      = os.env[os.platform == "windows" and 'USERPROFILE'] or os.env['HOME'] or '~'
+resolvers.homedir      = os.env[os.type == "windows" and 'USERPROFILE'] or os.env['HOME'] or '~'
 resolvers.cnfdefault   = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}'
 
 local dummy_path_expr = "^!*unset/*$"
@@ -7703,8 +7794,8 @@ function resolvers.getownpath()
             resolvers.ownpath = os.selfdir
         else
             local binary = resolvers.ownbin
-            if os.platform == "windows" then
-                binary = file.replacesuffix(binary,"exe")
+            if os.binsuffix ~= "" then
+                binary = file.replacesuffix(binary,os.binsuffix)
             end
             for p in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
                 local b = file.join(p,binary)
@@ -8915,11 +9006,11 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     dirlist[i] = file.dirname(filelist[i][2]) .. "/"
                 end
             end
-            local doscan
             if trace_detail then
                 logs.report("fileio","checking filename '%s'",filename)
             end
             -- a bit messy ... esp the doscan setting here
+            local doscan
             for k=1,#pathlist do
                 local path = pathlist[k]
                 if find(path,"^!!") then doscan  = false else doscan  = true  end
@@ -8927,22 +9018,25 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 done = false
                 -- using file list
                 if filelist then
+                    local expression
                     -- compare list entries with permitted pattern -- /xx /xx//
                     if not find(pathname,"/$") then
-                        pathname = pathname .. "/"
+                        expression = pathname .. "/"
+                    else
+                        expression = pathname
                     end
-                    pathname = gsub(pathname,"([%-%.])","%%%1") -- this also influences
-                    pathname = gsub(pathname,"//+$", '/.*')     -- later usage of pathname
-                    pathname = gsub(pathname,"//", '/.-/')      -- not ok for /// but harmless
-                    local expr = "^" .. pathname .. "$"
+                    expression = gsub(expression,"([%-%.])","%%%1") -- this also influences
+                    expression = gsub(expression,"//+$", '/.*')     -- later usage of pathname
+                    expression = gsub(expression,"//", '/.-/')      -- not ok for /// but harmless
+                    expression = "^" .. expression .. "$"
                     if trace_detail then
-                        logs.report("fileio","using pattern %s for path %s",expr,path)
+                        logs.report("fileio","using pattern '%s' for path '%s'",expression,pathname)
                     end
                     for k=1,#filelist do
                         local fl = filelist[k]
                         local f = fl[2]
                         local d = dirlist[k]
-                        if find(d,expr) then
+                        if find(d,expression) then
                             --- todo, test for readable
                             result[#result+1] = fl[3]
                             resolvers.register_in_trees(f) -- for tracing used files

@@ -138,11 +138,11 @@ end
 
 function io.inp.modes.handy()
     io.inp.inhibit('%.%.')
-    if os.platform == 'linux' then
-        io.inp.inhibit('^/etc')
-    else
+    if os.type == 'windows' then
         io.inp.inhibit('/windows/')
         io.inp.inhibit('/winnt/')
+    else
+        io.inp.inhibit('^/etc')
     end
 end
 function io.out.modes.handy()

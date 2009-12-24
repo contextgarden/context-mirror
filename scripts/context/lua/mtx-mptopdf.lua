@@ -10,74 +10,61 @@ scripts             = scripts             or { }
 scripts.mptopdf     = scripts.mptopdf     or { }
 scripts.mptopdf.aux = scripts.mptopdf.aux or { }
 
-do
-    -- setup functions and variables here
+local dosish      = os.type == 'windows'
+local miktex      = dosish and environment.TEXSYSTEM and environment.TEXSYSTEM:find("miktex")
+local escapeshell = environment.SHELL and environment.SHELL:find("sh") and true
 
-    local dosish, miktex, escapeshell = false, false, false
+function scripts.mptopdf.aux.find_latex(fname)
+    local d = io.loaddata(fname) or ""
+    return d:find("\\documentstyle") or d:find("\\documentclass") or d:find("\\begin{document}")
+end
 
-    if os.platform == 'windows' then
-        dosish = true
-        if environment.TEXSYSTEM and environment.TEXSYSTEM:find("miktex") then
-            miktex = true
-        end
-    end
-    if environment.SHELL and environment.SHELL:find("sh") then
-        escapeshell = true
-    end
-
-    function scripts.mptopdf.aux.find_latex(fname)
-        local d = io.loaddata(fname) or ""
-        return d:find("\\documentstyle") or d:find("\\documentclass") or d:find("\\begin{document}")
-    end
-
-    function scripts.mptopdf.aux.do_convert (fname)
-        local command, done, pdfdest = "", 0, ""
-        if fname:find(".%d+$") or fname:find("%.mps$") then
-            if miktex then
-                command = "pdftex -undump=mptopdf"
-            else
-                command = "pdftex -fmt=mptopdf -progname=context"
-            end
-            if dosish then
-                command = string.format('%s \\relax "%s"',command,fname)
-            else
-                command = string.format('%s \\\\relax "%s"',command,fname)
-            end
-            os.execute(command)
-            local name, suffix = file.nameonly(fname), file.extname(fname)
-            local pdfsrc =  name .. ".pdf"
-            if lfs.isfile(pdfsrc) then
-                pdfdest = name .. "-" .. suffix .. ".pdf"
-                os.rename(pdfsrc, pdfdest)
-                if lfs.isfile(pdfsrc) then -- rename failed
-                    file.copy(pdfsrc, pdfdest)
-                end
-                done = 1
-            end
-        end
-        return done, pdfdest
-    end
-
-    function scripts.mptopdf.aux.make_mps(fn,latex,rawmp,metafun)
-        local rest, mpbin = latex and " --tex=latex " or " ", ""
-        if rawmp then
-            if metafun then
-                mpbin = "mpost --progname=mpost --mem=metafun"
-            else
-                mpbin = "mpost --mem=mpost"
-            end
+function scripts.mptopdf.aux.do_convert (fname)
+    local command, done, pdfdest = "", 0, ""
+    if fname:find(".%d+$") or fname:find("%.mps$") then
+        if miktex then
+            command = "pdftex -undump=mptopdf"
         else
-            if latex then
-                mpbin = "mpost --mem=mpost"
-            else
-                mpbin = "texexec --mptex"
-            end
+            command = "pdftex -fmt=mptopdf -progname=context"
         end
-        local runner = mpbin .. rest .. fn
-        logs.simple("running: %s\n", runner)
-        return (os.execute(runner))
-  end
+        if dosish then
+            command = string.format('%s \\relax "%s"',command,fname)
+        else
+            command = string.format('%s \\\\relax "%s"',command,fname)
+        end
+        os.execute(command)
+        local name, suffix = file.nameonly(fname), file.extname(fname)
+        local pdfsrc =  name .. ".pdf"
+        if lfs.isfile(pdfsrc) then
+            pdfdest = name .. "-" .. suffix .. ".pdf"
+            os.rename(pdfsrc, pdfdest)
+            if lfs.isfile(pdfsrc) then -- rename failed
+                file.copy(pdfsrc, pdfdest)
+            end
+            done = 1
+        end
+    end
+    return done, pdfdest
+end
 
+function scripts.mptopdf.aux.make_mps(fn,latex,rawmp,metafun)
+    local rest, mpbin = latex and " --tex=latex " or " ", ""
+    if rawmp then
+        if metafun then
+            mpbin = "mpost --progname=mpost --mem=metafun"
+        else
+            mpbin = "mpost --mem=mpost"
+        end
+    else
+        if latex then
+            mpbin = "mpost --mem=mpost"
+        else
+            mpbin = "texexec --mptex"
+        end
+    end
+    local runner = mpbin .. rest .. fn
+    logs.simple("running: %s\n", runner)
+    return (os.execute(runner))
 end
 
 function scripts.mptopdf.convertall()

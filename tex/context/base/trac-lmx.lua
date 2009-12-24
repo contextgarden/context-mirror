@@ -187,7 +187,7 @@ end
 lmx.lmxfile = function(filename) return filename end -- beware, these can be set!
 lmx.htmfile = function(filename) return filename end -- beware, these can be set!
 
-if os.platform == "windows" then
+if os.type == "windows" then
     lmx.popupfile = function(filename) os.execute("start " .. filename) end
 else
     lmx.popupfile = function(filename) os.execute(filename) end

@@ -65,7 +65,7 @@ resolvers.generators.notfound = { nil }
 resolvers.cacheversion = '1.0.1'
 resolvers.cnfname      = 'texmf.cnf'
 resolvers.luaname      = 'texmfcnf.lua'
-resolvers.homedir      = os.env[os.platform == "windows" and 'USERPROFILE'] or os.env['HOME'] or '~'
+resolvers.homedir      = os.env[os.type == "windows" and 'USERPROFILE'] or os.env['HOME'] or '~'
 resolvers.cnfdefault   = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}'
 
 local dummy_path_expr = "^!*unset/*$"
@@ -476,8 +476,8 @@ function resolvers.getownpath()
             resolvers.ownpath = os.selfdir
         else
             local binary = resolvers.ownbin
-            if os.platform == "windows" then
-                binary = file.replacesuffix(binary,"exe")
+            if os.binsuffix ~= "" then
+                binary = file.replacesuffix(binary,os.binsuffix)
             end
             for p in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
                 local b = file.join(p,binary)
@@ -1688,11 +1688,11 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     dirlist[i] = file.dirname(filelist[i][2]) .. "/"
                 end
             end
-            local doscan
             if trace_detail then
                 logs.report("fileio","checking filename '%s'",filename)
             end
             -- a bit messy ... esp the doscan setting here
+            local doscan
             for k=1,#pathlist do
                 local path = pathlist[k]
                 if find(path,"^!!") then doscan  = false else doscan  = true  end
@@ -1700,22 +1700,25 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 done = false
                 -- using file list
                 if filelist then
+                    local expression
                     -- compare list entries with permitted pattern -- /xx /xx//
                     if not find(pathname,"/$") then
-                        pathname = pathname .. "/"
+                        expression = pathname .. "/"
+                    else
+                        expression = pathname
                     end
-                    pathname = gsub(pathname,"([%-%.])","%%%1") -- this also influences
-                    pathname = gsub(pathname,"//+$", '/.*')     -- later usage of pathname
-                    pathname = gsub(pathname,"//", '/.-/')      -- not ok for /// but harmless
-                    local expr = "^" .. pathname .. "$"
+                    expression = gsub(expression,"([%-%.])","%%%1") -- this also influences
+                    expression = gsub(expression,"//+$", '/.*')     -- later usage of pathname
+                    expression = gsub(expression,"//", '/.-/')      -- not ok for /// but harmless
+                    expression = "^" .. expression .. "$"
                     if trace_detail then
-                        logs.report("fileio","using pattern %s for path %s",expr,path)
+                        logs.report("fileio","using pattern '%s' for path '%s'",expression,pathname)
                     end
                     for k=1,#filelist do
                         local fl = filelist[k]
                         local f = fl[2]
                         local d = dirlist[k]
-                        if find(d,expr) then
+                        if find(d,expression) then
                             --- todo, test for readable
                             result[#result+1] = fl[3]
                             resolvers.register_in_trees(f) -- for tracing used files

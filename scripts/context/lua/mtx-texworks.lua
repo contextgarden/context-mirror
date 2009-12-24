@@ -23,26 +23,28 @@ local texworkssignal = "texworks-context.rme"
 local texworkininame = "texworks.ini"
 
 function scripts.texworks.start(indeed)
-    local is_mswin = os.platform == "windows"
-    local workname = (is_mswin and "texworks.exe") or "texworks"
+    local workname = (os.type == "windows" and "texworks.exe") or "texworks"
     local fullname = nil
     local binpaths = file.split_path(os.getenv("PATH")) or file.split_path(os.getenv("path"))
-    local datapath = resolvers.find_file(texworkssignal,"other text files") or ""
+    local usedsignal = texworkssignal
+    local datapath = resolvers.find_file(usedsignal,"other text files") or ""
     if datapath ~= "" then
         datapath  = file.dirname(datapath) -- data
         if datapath == "" then
-            datapath = resolvers.ownpath
+            datapath = resolvers.clean_path(lfs.currentdir())
         end
     else
-        datapath = resolvers.find_file(texworkininame,"other text files") or ""
+        usedsignal = texworkininame
+        datapath = resolvers.find_file(usedsignal,"other text files") or ""
         if datapath == "" then
-            datapath = resolvers.find_file(string.lower(texworkininame),"other text files") or ""
+            usedsignal = string.lower(usedsignal)
+            datapath = resolvers.find_file(usedsignal,"other text files") or ""
         end
         if datapath ~= "" and lfs.isfile(datapath) then
             datapath  = file.dirname(datapath) -- TUG
             datapath  = file.dirname(datapath) -- data
             if datapath == "" then
-                datapath = resolvers.ownpath
+                datapath = resolvers.clean_path(lfs.currentdir())
             end
         end
     end
@@ -56,7 +58,7 @@ function scripts.texworks.start(indeed)
     end
     for i=1,#binpaths do
         local p = file.join(binpaths[i],workname)
-        if lfs.isfile(p) then
+        if lfs.isfile(p) and lfs.attributes(p,"size") > 10000 then -- avoind stub
             fullname = p
             break
         end
@@ -71,8 +73,10 @@ function scripts.texworks.start(indeed)
     os.setenv("TW_INIPATH",datapath)
     os.setenv("TW_LIBPATH",datapath)
     if not indeed or environment.argument("verbose") then
-        logs.simple("data path: %s", datapath)
-        logs.simple("full name: %s", fullname)
+        logs.simple("used signal: %s", usedsignal)
+        logs.simple("data path  : %s", datapath)
+        logs.simple("full name  : %s", fullname)
+        logs.simple("set paths  : TW_INIPATH TW_LIBPATH")
     end
     if indeed then
         os.launch(fullname)

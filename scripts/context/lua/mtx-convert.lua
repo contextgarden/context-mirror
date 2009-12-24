@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['mtx-convert'] = {
 graphics            = graphics            or { }
 graphics.converters = graphics.converters or { }
 
-local gsprogram = (os.platform == "windows" and "gswin32c") or "gs"
+local gsprogram = (os.type == "windows" and "gswin32c") or "gs"
 local gstemplate = "%s -q -sDEVICE=pdfwrite -dEPSCrop -dNOPAUSE -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
 
 function graphics.converters.eps(oldname,newname)

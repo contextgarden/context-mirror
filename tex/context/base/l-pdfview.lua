@@ -25,7 +25,7 @@ local allcalls = {
     ['xpdf']    = nil,
 }
 
-if os.platform == "windows" then
+if os.type == "windows" then
      opencalls['okular'] = 'start "test" "c:/program files/kde/bin/okular.exe" --unique' -- todo: get focus
 else
      opencalls['okular'] = 'okular --unique'
