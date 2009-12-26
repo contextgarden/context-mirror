@@ -480,8 +480,6 @@ function afm.copy_to_tfm(data)
             tfm.psname             = tfm.fullname
             tfm.type               = "real"
             tfm.units              = 1000
-            tfm.stretch            = 0
-            tfm.slant              = 0
             tfm.direction          = 0
             tfm.boundarychar_label = 0
             tfm.boundarychar       = 65536

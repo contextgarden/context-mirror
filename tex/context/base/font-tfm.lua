@@ -244,14 +244,18 @@ function tfm.do_scale(tfmtable, scaledpoints)
             t[k] = v
         end
     end
-    local stretch = tfmtable.stretch or 0
-    if stretch ~= 0 and stretch ~= 1 then
-        hdelta = hdelta * stretch
-        t.extend = stretch * 1000
+    local extend_factor = tfmtable.extend_factor or 0
+    if extend_factor ~= 0 and extend_factor ~= 1 then
+        hdelta = hdelta * extend_factor
+        t.extend = extend_factor * 1000
+    else
+        t.extend = 1000
     end
-    local slant = tfmtable.slant or 0
-    if slant ~= 0 then
-        t.slant = t.slant * 1000
+    local slant_factor = tfmtable.slant_factor or 0
+    if slant_factor ~= 0 then
+        t.slant = slant_factor * 1000
+    else
+        t.slant = 0
     end
     -- status
     local isvirtual = tfmtable.type == "virtual" or tfmtable.virtualized

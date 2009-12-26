@@ -509,7 +509,7 @@ function initializers.common.slant(tfmdata,value)
     elseif value < -1 then
         value = -1
     end
-    tfmdata.slant = value
+    tfmdata.slant_factor = value
 end
 
 initializers.base.otf.slant = initializers.common.slant
@@ -518,9 +518,9 @@ initializers.node.otf.slant = initializers.common.slant
 initializers.base.afm.slant = initializers.common.slant
 initializers.node.afm.slant = initializers.common.slant
 
-table.insert(fonts.triggers,"stretch")
+table.insert(fonts.triggers,"extend")
 
-function initializers.common.stretch(tfmdata,value)
+function initializers.common.extend(tfmdata,value)
     if not value then
         value =  0
     elseif value >  10 then
@@ -528,11 +528,11 @@ function initializers.common.stretch(tfmdata,value)
     elseif value < -10 then
         value = -10
     end
-    tfmdata.stretch = value
+    tfmdata.extend_factor = value
 end
 
-initializers.base.otf.stretch = initializers.common.stretch
-initializers.node.otf.stretch = initializers.common.stretch
+initializers.base.otf.extend = initializers.common.extend
+initializers.node.otf.extend = initializers.common.extend
 
-initializers.base.afm.stretch = initializers.common.stretch
-initializers.node.afm.stretch = initializers.common.stretch
+initializers.base.afm.extend = initializers.common.extend
+initializers.node.afm.extend = initializers.common.extend

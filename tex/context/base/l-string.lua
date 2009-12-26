@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['l-string'] = {
     license   = "see context related readme files"
 }
 
-local sub, gsub, find, match, gmatch, format, char, byte, rep = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep
+local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
+
+-- some functions may disappear as they are not used anywhere
 
 if not string.split then
 
@@ -48,14 +50,14 @@ end
 
 --~ function string:unquote()
 --~     if find(self,"^[\'\"]") then
---~         return self:sub(2,-2)
+--~         return sub(self,2,-2)
 --~     else
 --~         return self
 --~     end
 --~ end
 
 function string:quote() -- we could use format("%q")
-    return '"' .. self:unquote() .. '"'
+    return format("%q",self)
 end
 
 function string:count(pattern) -- variant 3
@@ -75,8 +77,9 @@ function string:limit(n,sentinel)
     end
 end
 
-function string:strip()
-    return (gsub(self,"^%s*(.-)%s*$", "%1"))
+function string:strip() -- the .- is quite efficient
+--  return match(self,"^%s*(.-)%s*$") or ""
+    return match(self,'^%s*(.*%S)') or '' -- posted on lua list
 end
 
 function string:is_empty()
@@ -114,14 +117,14 @@ if not string.characters then
 
     local function nextchar(str, index)
         index = index + 1
-        return (index <= #str) and index or nil, str:sub(index,index)
+        return (index <= #str) and index or nil, sub(str,index,index)
     end
     function string:characters()
         return nextchar, self, 0
     end
     local function nextbyte(str, index)
         index = index + 1
-        return (index <= #str) and index or nil, byte(str:sub(index,index))
+        return (index <= #str) and index or nil, byte(sub(str,index,index))
     end
     function string:bytes()
         return nextbyte, self, 0
@@ -134,7 +137,7 @@ end
 function string:rpadd(n,chr)
     local m = n-#self
     if m > 0 then
-        return self .. self.rep(chr or " ",m)
+        return self .. rep(chr or " ",m)
     else
         return self
     end
@@ -143,7 +146,7 @@ end
 function string:lpadd(n,chr)
     local m = n-#self
     if m > 0 then
-        return self.rep(chr or " ",m) .. self
+        return rep(chr or " ",m) .. self
     else
         return self
     end
@@ -232,7 +235,7 @@ function string.tabtospace(str,tab)
         local s = find(str,"\t")
         if s then
             if not tab then tab = 7 end -- only when found
-            local d = tab-(s-1)%tab
+            local d = tab-(s-1) % tab
             if d > 0 then
                 str = gsub(str,"\t",rep(" ",d),1)
             else
@@ -259,7 +262,7 @@ end
 
 function string:topattern(lowercase,strict)
     if lowercase then
-        self = self:lower()
+        self = lower(self)
     end
     self = gsub(self,".",simple_escapes)
     if self == "" then

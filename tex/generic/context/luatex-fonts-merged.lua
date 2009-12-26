@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 12/24/09 18:00:24
+-- merge date  : 12/26/09 22:27:58
 
 do -- begin closure to overcome local limits and interference
 
@@ -12,7 +12,9 @@ if not modules then modules = { } end modules ['l-string'] = {
     license   = "see context related readme files"
 }
 
-local sub, gsub, find, match, gmatch, format, char, byte, rep = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep
+local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
+
+-- some functions may disappear as they are not used anywhere
 
 if not string.split then
 
@@ -54,14 +56,14 @@ end
 
 --~ function string:unquote()
 --~     if find(self,"^[\'\"]") then
---~         return self:sub(2,-2)
+--~         return sub(self,2,-2)
 --~     else
 --~         return self
 --~     end
 --~ end
 
 function string:quote() -- we could use format("%q")
-    return '"' .. self:unquote() .. '"'
+    return format("%q",self)
 end
 
 function string:count(pattern) -- variant 3
@@ -81,8 +83,9 @@ function string:limit(n,sentinel)
     end
 end
 
-function string:strip()
-    return (gsub(self,"^%s*(.-)%s*$", "%1"))
+function string:strip() -- the .- is quite efficient
+--  return match(self,"^%s*(.-)%s*$") or ""
+    return match(self,'^%s*(.*%S)') or '' -- posted on lua list
 end
 
 function string:is_empty()
@@ -120,14 +123,14 @@ if not string.characters then
 
     local function nextchar(str, index)
         index = index + 1
-        return (index <= #str) and index or nil, str:sub(index,index)
+        return (index <= #str) and index or nil, sub(str,index,index)
     end
     function string:characters()
         return nextchar, self, 0
     end
     local function nextbyte(str, index)
         index = index + 1
-        return (index <= #str) and index or nil, byte(str:sub(index,index))
+        return (index <= #str) and index or nil, byte(sub(str,index,index))
     end
     function string:bytes()
         return nextbyte, self, 0
@@ -140,7 +143,7 @@ end
 function string:rpadd(n,chr)
     local m = n-#self
     if m > 0 then
-        return self .. self.rep(chr or " ",m)
+        return self .. rep(chr or " ",m)
     else
         return self
     end
@@ -149,7 +152,7 @@ end
 function string:lpadd(n,chr)
     local m = n-#self
     if m > 0 then
-        return self.rep(chr or " ",m) .. self
+        return rep(chr or " ",m) .. self
     else
         return self
     end
@@ -238,7 +241,7 @@ function string.tabtospace(str,tab)
         local s = find(str,"\t")
         if s then
             if not tab then tab = 7 end -- only when found
-            local d = tab-(s-1)%tab
+            local d = tab-(s-1) % tab
             if d > 0 then
                 str = gsub(str,"\t",rep(" ",d),1)
             else
@@ -265,7 +268,7 @@ end
 
 function string:topattern(lowercase,strict)
     if lowercase then
-        self = self:lower()
+        self = lower(self)
     end
     self = gsub(self,".",simple_escapes)
     if self == "" then
@@ -3551,14 +3554,18 @@ function tfm.do_scale(tfmtable, scaledpoints)
             t[k] = v
         end
     end
-    local stretch = tfmtable.stretch or 0
-    if stretch ~= 0 and stretch ~= 1 then
-        hdelta = hdelta * stretch
-        t.extend = stretch * 1000
+    local extend_factor = tfmtable.extend_factor or 0
+    if extend_factor ~= 0 and extend_factor ~= 1 then
+        hdelta = hdelta * extend_factor
+        t.extend = extend_factor * 1000
+    else
+        t.extend = 1000
     end
-    local slant = tfmtable.slant or 0
-    if slant ~= 0 then
-        t.slant = t.slant * 1000
+    local slant_factor = tfmtable.slant_factor or 0
+    if slant_factor ~= 0 then
+        t.slant = slant_factor * 1000
+    else
+        t.slant = 0
     end
     -- status
     local isvirtual = tfmtable.type == "virtual" or tfmtable.virtualized
@@ -6799,8 +6806,6 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         tfm.cidinfo            = data.cidinfo
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
         tfm.type               = "real"
-        tfm.stretch            = 0 -- stretch
-        tfm.slant              = 0 -- data.slant
         tfm.direction          = 0
         tfm.boundarychar_label = 0
         tfm.boundarychar       = 65536
@@ -7790,6 +7795,7 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
                 next.prev = lignode
             end
             lignode.next, lignode.prev = next, prev
+            start = lignode
          -- print("start->end",nodes.tosequence(start))
         else -- start is the ligature
             local deletemarks = markflag ~= "mark"
@@ -7919,7 +7925,8 @@ end
 
 function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or maybe pass lookup ref
     local s, stop, discfound = start.next, nil, false
-    if marks[start.char] then
+    local startchar = start.char
+    if marks[startchar] then
         while s do
             local id = s.id
             if id == glyph and s.subtype<256 then
@@ -7942,7 +7949,7 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
         end
         if stop and ligature[2] then
             if trace_ligatures then
-                local startchar, stopchar = start.char, stop.char
+                local stopchar = stop.char
                 start = markstoligature(kind,lookupname,start,stop,ligature[2])
                 logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
             else
@@ -7981,7 +7988,7 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
         end
         if stop and ligature[2] then
             if trace_ligatures then
-                local startchar, stopchar = start.char, stop.char
+                local stopchar = stop.char
                 start = toligature(kind,lookupname,start,stop,ligature[2],skipmark,discfound)
                 logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
             else
@@ -11445,7 +11452,7 @@ function fonts.map.line.pdfmapline(tag,str)
     return "\\loadmapline[" .. tag .. "][" .. str .. "]"
 end
 
-function fonts.map.line.pdftex(e) -- so far no combination of slant and stretch
+function fonts.map.line.pdftex(e) -- so far no combination of slant and extend
     if e.name and e.fontfile then
         local fullname = e.fullname or ""
         if e.slant and e.slant ~= 0 then
@@ -11454,11 +11461,11 @@ function fonts.map.line.pdftex(e) -- so far no combination of slant and stretch
             else
                 return fonts.map.line.pdfmapline("=",format('%s %s "%g SlantFont" <%s',e.name,fullname,e.slant,e.fontfile))
             end
-        elseif e.stretch and e.stretch ~= 1 and e.stretch ~= 0 then
+        elseif e.extend and e.extend ~= 1 and e.extend ~= 0 then
             if e.encoding then
-                return fonts.map.line.pdfmapline("=",format('%s %s "%g ExtendFont" <%s <%s',e.name,fullname,e.stretch,e.encoding,e.fontfile))
+                return fonts.map.line.pdfmapline("=",format('%s %s "%g ExtendFont" <%s <%s',e.name,fullname,e.extend,e.encoding,e.fontfile))
             else
-                return fonts.map.line.pdfmapline("=",format('%s %s "%g ExtendFont" <%s',e.name,fullname,e.stretch,e.fontfile))
+                return fonts.map.line.pdfmapline("=",format('%s %s "%g ExtendFont" <%s',e.name,fullname,e.extend,e.fontfile))
             end
         else
             if e.encoding then
@@ -11501,9 +11508,9 @@ function fonts.map.load_file(filename, entries, encodings)
                 if find(line,"^[%#%%%s]") then
                     -- print(line)
                 else
-                    local stretch, slant, name, fullname, fontfile, encoding
+                    local extend, slant, name, fullname, fontfile, encoding
                     line = line:gsub('"(.+)"', function(s)
-                        stretch = find(s,'"([^"]+) ExtendFont"')
+                        extend = find(s,'"([^"]+) ExtendFont"')
                         slant = find(s,'"([^"]+) SlantFont"')
                         return ""
                     end)
@@ -11527,7 +11534,7 @@ function fonts.map.load_file(filename, entries, encodings)
                             encoding = encoding,
                             fontfile = fontfile,
                             slant    = tonumber(slant),
-                            stretch  = tonumber(stretch)
+                            extend   = tonumber(extend)
                         }
                         encodings[name] = encoding
                     elseif line ~= "" then

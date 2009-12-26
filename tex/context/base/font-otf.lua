@@ -1530,8 +1530,6 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         tfm.cidinfo            = data.cidinfo
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
         tfm.type               = "real"
-        tfm.stretch            = 0 -- stretch
-        tfm.slant              = 0 -- data.slant
         tfm.direction          = 0
         tfm.boundarychar_label = 0
         tfm.boundarychar       = 65536
