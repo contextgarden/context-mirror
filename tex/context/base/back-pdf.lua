@@ -54,7 +54,7 @@ end
 
 function nodeinjections.spotcolor(n,f,d,p)
     if type(p) == "string" then
-        p = p:gsub(","," ") -- brr misuse of spot
+        p = gsub(p,","," ") -- brr misuse of spot
     end
     return register(pdfliteral(format("/%s cs /%s CS %s SCN %s scn",n,n,p,p)))
 end

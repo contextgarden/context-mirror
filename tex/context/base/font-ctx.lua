@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 local texsprint, count = tex.sprint, tex.count
 local format, concat, gmatch, match, find, lower, gsub = string.format, table.concat, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next, type = tostring, next, type
+local lpegmatch = lpeg.match
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -48,7 +49,7 @@ name*context specification
 function specify.predefined(specification)
     local detail = specification.detail
     if detail ~= "" then
-    --  detail = detail:gsub("["..define.splitsymbols.."].*$","") -- get rid of *whatever specs and such
+    --  detail = gsub(detail,"["..define.splitsymbols.."].*$","") -- get rid of *whatever specs and such
         if define.methods[detail] then                            -- since these may be appended at the
             specification.features.vtf = { preset = detail }      -- tex end by default
         end
@@ -295,7 +296,7 @@ local get_specification = define.get_specification
 
 function define.command_1(str)
     statistics.starttiming(fonts)
-    local fullname, size = splitpattern:match(str)
+    local fullname, size = lpegmatch(splitpattern,str)
     local lookup, name, sub, method, detail = get_specification(fullname)
     if not name then
         logs.report("define font","strange definition '%s'",str)
@@ -307,7 +308,7 @@ function define.command_1(str)
     end
     -- we can also use a count for the size
     if size and size ~= "" then
-        local mode, size = sizepattern:match(size)
+        local mode, size = lpegmatch(sizepattern,size)
         if size and mode then
             count.scaledfontmode = mode
             texsprint(ctxcatcodes,"\\def\\somefontsize{",size,"}")

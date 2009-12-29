@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
 }
 
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
+local lpegmatch = lpeg.match
 
 interfaces           = interfaces           or { }
 interfaces.messages  = interfaces.messages  or { }
@@ -33,7 +34,7 @@ function interfaces.setmessage(category,tag,message)
         m = { }
         messages[category] = m
     end
-    m[tag] = message:gsub("%-%-","%%s")
+    m[tag] = gsub(message,"%-%-","%%s")
 end
 
 function interfaces.getmessage(category,tag,default)
@@ -56,7 +57,7 @@ function interfaces.makemessage(category,tag,arguments)
     elseif not arguments then
         return m
     else
-        return format(m,messagesplitter:match(arguments))
+        return format(m,lpegmatch(messagesplitter,arguments))
     end
 end
 

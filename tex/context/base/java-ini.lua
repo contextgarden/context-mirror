@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['java-ini'] = {
 }
 
 local format = string.format
+local lpegmatch = lpeg.match
 
 javascripts           = javascripts           or { }
 javascripts.codes     = javascripts.codes     or { }
@@ -42,18 +43,18 @@ local parsepreamble  = name * ((used * name) + lpeg.Cc("")) * spaces * script
 local parsefunctions = (fname + any)^0
 
 function javascripts.storecode(str)
-    local name, uses, script = parsecode:match(str)
+    local name, uses, script = lpegmatch(parsecode,str)
     if name and name ~= "" then
         javascripts.codes[name] = { uses, script }
     end
 end
 
 function javascripts.storepreamble(str) -- now later
-    local name, used, script = parsepreamble:match(str)
+    local name, used, script = lpegmatch(parsepreamble,str)
     if name and name ~= "" then
         preambles[#preambles+1] = { name, used, script }
         preambled[name] = #preambles
-        parsefunctions:match(script)
+        lpegmatch(parsefunctions,script)
     end
 end
 
@@ -61,7 +62,7 @@ function javascripts.setpreamble(name,script) -- now later
     if name and name ~= "" then
         preambles[#preambles+1] = { name, "now", script }
         preambled[name] = #preambles
-        parsefunctions:match(script)
+        lpegmatch(parsefunctions,script)
     end
 end
 
@@ -73,7 +74,7 @@ function javascripts.addtopreamble(name,script) -- now later
         else
             preambles[#preambles+1] = { name, "now", script }
             preambled[name] = #preambles
-            parsefunctions:match(script)
+            lpegmatch(parsefunctions,script)
         end
     end
 end

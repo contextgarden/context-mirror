@@ -10,10 +10,10 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 -- meta-pdh.lua but since we no longer want to overload functione we use
 -- more locals now. This module keeps changing as it is also a testbed.
 
-local concat, format, gsub, find = table.concat, string.format, string.gsub, string.find
-local byte, round = string.byte, math.round
-local texsprint = tex.sprint
-local ctxcatcodes = tex.ctxcatcodes
+local concat, format, gsub, find, byte, gmatch, match = table.concat, string.format, string.gsub, string.find, string.byte, string.gmatch, string.match
+local lpegmatch = lpeg.match
+local round = math.round
+local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 local pdfrgbcode                = lpdf.rgbcode
 local pdfcmykcode               = lpdf.cmykcode
@@ -390,7 +390,7 @@ local text  = lpegCc("{") * (
 local package = lpegCs(spec + text^0)
 
 function mps.fshow(str,font,scale) -- lpeg parser
-    mps.textext(font,scale,package:match(str))
+    mps.textext(font,scale,lpegmatch(package,str))
 end
 
 local cnumber = lpegC(number)
@@ -510,9 +510,9 @@ local captures_new = ( space + verbose + procset + preamble )^0
 
 local function parse(m_data)
     if find(m_data,"%%%%BeginResource: procset mpost") then
-        captures_new:match(m_data)
+        lpegmatch(captures_new,m_data)
     else
-        captures_old:match(m_data)
+        lpegmatch(captures_old,m_data)
     end
 end
 

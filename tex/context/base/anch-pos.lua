@@ -14,6 +14,7 @@ more efficient.</p>
 
 local concat, format = table.concat, string.format
 local texprint, ctxcatcodes = tex.print, tex.ctxcatcodes
+local lpegmatch = lpeg.match
 
 jobpositions           = jobpositions or { }
 jobpositions.collected = jobpositions.collected or { }
@@ -150,7 +151,7 @@ function jobpositions.MPplus(id,n,default)
     else
         local split = jpi[0]
         if not split then
-            split = splitter:match(jpi[7])
+            split = lpegmatch(splitter,jpi[7])
             jpi[0] = split
         end
         texprint(ctxcatcodes,split[n] or default)

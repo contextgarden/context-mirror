@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 }
 
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
+local lpegmatch = lpeg.match
 local texsprint, texwrite, texcount = tex.sprint, tex.write, tex.count
 
 local trace_referencing = false  trackers.register("structure.referencing", function(v) trace_referencing = v end)
@@ -133,11 +134,11 @@ local special_reference  = special * lparent * (operation * optional_arguments +
 local scanner = (reset * outer_reference * (special_reference + inner_reference)^-1 * -1) / function() return result end
 
 --~ function jobreferences.analyse(str) -- overloaded
---~     return scanner:match(str)
+--~     return lpegmatch(scanner,str)
 --~ end
 
 function jobreferences.split(str)
-    return scanner:match(str or "")
+    return lpegmatch(scanner,str or "")
 end
 
 --~ print(table.serialize(jobreferences.analyse("")))
@@ -502,7 +503,7 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
             if d then
                 resolve(prefix,d[2],nil,set)
             else
-                local var = scanner:match(ri)
+                local var = lpegmatch(scanner,ri)
                 if var then
                     var.reference = ri
                     if not var.outer and var.inner then

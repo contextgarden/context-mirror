@@ -11,6 +11,7 @@ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local utf = unicode.utf8
 local byte, format = string.byte, string.format
 local utfupper, utfchar = utf.upper, utf.char
+local lpegmatch = lpeg.match
 
 --[[ldx--
 <p>We provide (at least here) two entity handlers. The more extensive
@@ -52,7 +53,7 @@ function xml.resolved_entity(str)
     else
         -- resolve hex and dec, todo: escape # & etc for ctxcatcodes
         -- normally this is already solved while loading the file
-        local chr, err = parsedentity:match(str)
+        local chr, err = lpegmatch(parsedentity,str)
         if chr then
             texsprint(ctxcatcodes,chr)
         elseif err then

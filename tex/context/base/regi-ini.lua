@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['regi-ini'] = {
 }
 
 local utf = unicode.utf8
-local char, utfchar = string.char, utf.char
+local char, utfchar, gsub = string.char, utf.char, string.gsub
 local texsprint = tex.sprint
 
 local ctxcatcodes = tex.ctxcatcodes
@@ -63,7 +63,7 @@ function regimes.translate(line,regime)
     if regime and line then
         local rur = regimes.utf[regime]
         if rur then
-            return line:gsub("(.)", rur) -- () redundant
+            return (gsub(line,"(.)",rur)) -- () redundant
         end
     end
     return line

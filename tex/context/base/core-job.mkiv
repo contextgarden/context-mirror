@@ -117,7 +117,7 @@
 \def\starttext
   {\doateverystarttext
    \ifcase\textlevel
-     \registerfileinfo[begin]\jobname
+     \registerfileinfo[begin]\jobfilename
    \fi
    \global\advance\textlevel\plusone}
 
@@ -130,6 +130,9 @@
     %\the\everybye            %
     %\the\everygoodbye        % == \end (new)
     %\expandafter\normalend   %
+\ifcase\textlevel
+     \registerfileinfo[end]\jobfilename
+\fi
      \expandafter\finalend
    \fi}
 

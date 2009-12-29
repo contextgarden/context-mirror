@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['trac-tim'] = {
     license   = "see context related readme files"
 }
 
+local format, gsub = string.format, string.gsub
+local concat, sort = table.concat, table.sort
+local next, pairs, ipairs = next, pairs, ipairs
+
 goodies          = goodies          or { }
 goodies.progress = goodies.progress or { }
 
@@ -98,8 +102,8 @@ local function convert(name)
                         end
                     end
                     local tagname = subtag or tag
-                    top[tagname] = (string.format("%.3f",t)):gsub("%.000$","")
-                    bot[tagname] = (string.format("%.3f",b)):gsub("%.000$","")
+                    top[tagname] = gsub(format("%.3f",t),"%.000$","")
+                    bot[tagname] = gsub(format("%.3f",b),"%.000$","")
                     local delta = t-b
                     if delta == 0 then
                         delta = 1
@@ -109,7 +113,7 @@ local function convert(name)
                     for k, v in ipairs(s) do
                         s[k] = "(" .. k .. "," .. (v-b)*delta .. ")"
                     end
-                    paths[tagname] = table.concat(s,"--")
+                    paths[tagname] = concat(s,"--")
                 end
                 for _, tag in pairs(params) do
                     path(tag)
@@ -121,7 +125,7 @@ local function convert(name)
                 pages = pages - 1
             end
         end
-        table.sort(names)
+        sort(names)
         processed[name] = {
             names = names,
             top = top,

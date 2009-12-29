@@ -54,7 +54,10 @@ if not modules then modules = { } end modules ['l-string'] = {
     license   = "see context related readme files"
 }
 
-local sub, gsub, find, match, gmatch, format, char, byte, rep = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep
+local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
+local lpegmatch = lpeg.match
+
+-- some functions may disappear as they are not used anywhere
 
 if not string.split then
 
@@ -96,14 +99,14 @@ end
 
 --~ function string:unquote()
 --~     if find(self,"^[\'\"]") then
---~         return self:sub(2,-2)
+--~         return sub(self,2,-2)
 --~     else
 --~         return self
 --~     end
 --~ end
 
 function string:quote() -- we could use format("%q")
-    return '"' .. self:unquote() .. '"'
+    return format("%q",self)
 end
 
 function string:count(pattern) -- variant 3
@@ -123,8 +126,19 @@ function string:limit(n,sentinel)
     end
 end
 
-function string:strip()
-    return (gsub(self,"^%s*(.-)%s*$", "%1"))
+--~ function string:strip() -- the .- is quite efficient
+--~  -- return match(self,"^%s*(.-)%s*$") or ""
+--~  -- return match(self,'^%s*(.*%S)') or '' -- posted on lua list
+--~     return find(s,'^%s*$') and '' or match(s,'^%s*(.*%S)')
+--~ end
+
+do -- roberto's variant:
+    local space    = lpeg.S(" \t\v\n")
+    local nospace  = 1 - space
+    local stripper = space^0 * lpeg.C((space^0 * nospace^1)^0)
+    function string.strip(str)
+        return lpegmatch(stripper,str) or ""
+    end
 end
 
 function string:is_empty()
@@ -162,14 +176,14 @@ if not string.characters then
 
     local function nextchar(str, index)
         index = index + 1
-        return (index <= #str) and index or nil, str:sub(index,index)
+        return (index <= #str) and index or nil, sub(str,index,index)
     end
     function string:characters()
         return nextchar, self, 0
     end
     local function nextbyte(str, index)
         index = index + 1
-        return (index <= #str) and index or nil, byte(str:sub(index,index))
+        return (index <= #str) and index or nil, byte(sub(str,index,index))
     end
     function string:bytes()
         return nextbyte, self, 0
@@ -182,7 +196,7 @@ end
 function string:rpadd(n,chr)
     local m = n-#self
     if m > 0 then
-        return self .. self.rep(chr or " ",m)
+        return self .. rep(chr or " ",m)
     else
         return self
     end
@@ -191,7 +205,7 @@ end
 function string:lpadd(n,chr)
     local m = n-#self
     if m > 0 then
-        return self.rep(chr or " ",m) .. self
+        return rep(chr or " ",m) .. self
     else
         return self
     end
@@ -261,7 +275,7 @@ end
 local pattern = lpeg.Ct(lpeg.C(1)^0)
 
 function string:totable()
-    return pattern:match(self)
+    return lpegmatch(pattern,self)
 end
 
 --~ for _, str in ipairs {
@@ -280,7 +294,7 @@ function string.tabtospace(str,tab)
         local s = find(str,"\t")
         if s then
             if not tab then tab = 7 end -- only when found
-            local d = tab-(s-1)%tab
+            local d = tab-(s-1) % tab
             if d > 0 then
                 str = gsub(str,"\t",rep(" ",d),1)
             else
@@ -307,7 +321,7 @@ end
 
 function string:topattern(lowercase,strict)
     if lowercase then
-        self = self:lower()
+        self = lower(self)
     end
     self = gsub(self,".",simple_escapes)
     if self == "" then
@@ -334,6 +348,7 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 lpeg = require("lpeg")
 
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local match = lpeg.match
 
 --~ l-lpeg.lua :
 
@@ -386,15 +401,15 @@ local content  = (empty + nonempty)^1
 local capture = Ct(content^0)
 
 function string:splitlines()
-    return capture:match(self)
+    return match(capture,self)
 end
 
 lpeg.linebyline = content -- better make a sublibrary
 
---~ local p = lpeg.splitat("->",false)  print(p:match("oeps->what->more"))  -- oeps what more
---~ local p = lpeg.splitat("->",true)   print(p:match("oeps->what->more"))  -- oeps what->more
---~ local p = lpeg.splitat("->",false)  print(p:match("oeps"))              -- oeps
---~ local p = lpeg.splitat("->",true)   print(p:match("oeps"))              -- oeps
+--~ local p = lpeg.splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
+--~ local p = lpeg.splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
+--~ local p = lpeg.splitat("->",false)  print(match(p,"oeps"))              -- oeps
+--~ local p = lpeg.splitat("->",true)   print(match(p,"oeps"))              -- oeps
 
 local splitters_s, splitters_m = { }, { }
 
@@ -425,7 +440,7 @@ function string:split(separator)
         c = Ct(splitat(separator))
         cache[separator] = c
     end
-    return c:match(self)
+    return match(c,self)
 end
 
 local cache = { }
@@ -438,7 +453,7 @@ function string:checkedsplit(separator)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return c:match(self)
+    return match(c,self)
 end
 
 --~ function lpeg.L(list,pp)
@@ -1365,7 +1380,7 @@ if not modules then modules = { } end modules ['l-io'] = {
     license   = "see context related readme files"
 }
 
-local byte = string.byte
+local byte, find, gsub = string.byte, string.find, string.gsub
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -1523,7 +1538,7 @@ function io.ask(question,default,options)
         end
         io.write(string.format(" "))
         local answer = io.read()
-        answer = answer:gsub("^%s*(.*)%s*$","%1")
+        answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then
             return default
         elseif not options then
@@ -1536,7 +1551,7 @@ function io.ask(question,default,options)
             end
             local pattern = "^" .. answer
             for _,v in pairs(options) do
-                if v:find(pattern) then
+                if find(v,pattern) then
                     return v
                 end
             end
@@ -1557,14 +1572,16 @@ if not modules then modules = { } end modules ['l-number'] = {
     license   = "see context related readme files"
 }
 
-local format, foor, insert = string.format, math.floor, table.insert
+local tostring = tostring
+local format, floor, insert, match = string.format, math.floor, table.insert, string.match
+local lpegmatch = lpeg.match
 
 number = number or { }
 
 -- a,b,c,d,e,f = number.toset(100101)
 
 function number.toset(n)
-    return (tostring(n)):match("(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
+    return match(tostring(n),"(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
 end
 
 function number.toevenhex(n)
@@ -1590,7 +1607,7 @@ end
 local one = lpeg.C(1-lpeg.S(''))^1
 
 function number.toset(n)
-    return one:match(tostring(n))
+    return lpegmatch(one,tostring(n))
 end
 
 function number.bits(n,zero)
@@ -1885,7 +1902,8 @@ if not modules then modules = { } end modules ['l-file'] = {
 file = file or { }
 
 local concat = table.concat
-local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
+local find, gmatch, match, gsub, sub = string.find, string.gmatch, string.match, string.gsub, string.sub
+local lpegmatch = lpeg.match
 
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
@@ -1943,12 +1961,12 @@ end
 
 function file.iswritable(name)
     local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
-    return a and a.permissions:sub(2,2) == "w"
+    return a and sub(a.permissions,2,2) == "w"
 end
 
 function file.isreadable(name)
     local a = lfs.attributes(name)
-    return a and a.permissions:sub(1,1) == "r"
+    return a and sub(a.permissions,1,1) == "r"
 end
 
 file.is_readable = file.isreadable
@@ -2023,27 +2041,27 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.C(noperiod^1) * -1
 
 --~ function file.extname(name)
---~     return pattern:match(name) or ""
+--~     return lpegmatch(pattern,name) or ""
 --~ end
 
 --~ local pattern = lpeg.Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 
 --~ function file.removesuffix(name)
---~     return pattern:match(name)
+--~     return lpegmatch(pattern,name)
 --~ end
 
 --~ local pattern = (noslashes^0 * slashes)^1 * lpeg.C(noslashes^1) * -1
 
 --~ function file.basename(name)
---~     return pattern:match(name) or name
+--~     return lpegmatch(pattern,name) or name
 --~ end
 
 --~ local pattern = (noslashes^0 * slashes)^1 * lpeg.Cp() * noslashes^1 * -1
 
 --~ function file.dirname(name)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
---~         return name:sub(1,p-2)
+--~         return sub(name,1,p-2)
 --~     else
 --~         return ""
 --~     end
@@ -2052,7 +2070,7 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
 
 --~ function file.addsuffix(name, suffix)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
 --~         return name
 --~     else
@@ -2063,9 +2081,9 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
 
 --~ function file.replacesuffix(name,suffix)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
---~         return name:sub(1,p-2) .. "." .. suffix
+--~         return sub(name,1,p-2) .. "." .. suffix
 --~     else
 --~         return name .. "." .. suffix
 --~     end
@@ -2074,11 +2092,11 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * lpeg.Cp() * ((noperiod^1 * period)^1 * lpeg.Cp() + lpeg.P(true)) * noperiod^1 * -1
 
 --~ function file.nameonly(name)
---~     local a, b = pattern:match(name)
+--~     local a, b = lpegmatch(pattern,name)
 --~     if b then
---~         return name:sub(a,b-2)
+--~         return sub(name,a,b-2)
 --~     elseif a then
---~         return name:sub(a)
+--~         return sub(name,a)
 --~     else
 --~         return name
 --~     end
@@ -2112,11 +2130,11 @@ local rootbased = lpeg.P("/") + letter*lpeg.P(":")
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)
-    return qualified:match(filename) ~= nil
+    return lpegmatch(qualified,filename) ~= nil
 end
 
 function file.is_rootbased_path(filename)
-    return rootbased:match(filename) ~= nil
+    return lpegmatch(rootbased,filename) ~= nil
 end
 
 local slash  = lpeg.S("\\/")
@@ -2129,7 +2147,7 @@ local base   = lpeg.C((1-suffix)^0)
 local pattern = (drive + lpeg.Cc("")) * (path + lpeg.Cc("")) * (base + lpeg.Cc("")) * (suffix + lpeg.Cc(""))
 
 function file.splitname(str) -- returns drive, path, base, suffix
-    return pattern:match(str)
+    return lpegmatch(pattern,str)
 end
 
 -- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end
@@ -2203,7 +2221,7 @@ end
 function file.loadchecksum(name)
     if md5 then
         local data = io.loaddata(name .. ".md5")
-        return data and data:gsub("%s","")
+        return data and (gsub(data,"%s",""))
     end
     return nil
 end
@@ -2231,7 +2249,8 @@ if not modules then modules = { } end modules ['l-dir'] = {
 }
 
 local type = type
-local find, gmatch = string.find, string.gmatch
+local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
+local lpegmatch = lpeg.match
 
 dir = dir or { }
 
@@ -2324,14 +2343,14 @@ local function glob(str,t)
         t[#t+1] = str
         return t
     else
-        local split = pattern:match(str)
+        local split = lpegmatch(pattern,str)
         if split then
             local t = t or { }
             local action = action or function(name) t[#t+1] = name end
             local root, path, base = split[1], split[2], split[3]
             local recurse = find(base,"%*%*")
             local start = root .. path
-            local result = filter:match(start .. base)
+            local result = lpegmatch(filter,start .. base)
             glob_pattern(start,result,recurse,action)
             return t
         else
@@ -2412,13 +2431,13 @@ if string.find(os.getenv("PATH"),";") then
         end
         local first, middle, last
         local drive = false
-        first, middle, last = str:match("^(//)(//*)(.*)$")
+        first, middle, last = match(str,"^(//)(//*)(.*)$")
         if first then
             -- empty network path == local path
         else
-            first, last = str:match("^(//)/*(.-)$")
+            first, last = match(str,"^(//)/*(.-)$")
             if first then
-                middle, last = str:match("([^/]+)/+(.-)$")
+                middle, last = match(str,"([^/]+)/+(.-)$")
                 if middle then
                     pth = "//" .. middle
                 else
@@ -2426,11 +2445,11 @@ if string.find(os.getenv("PATH"),";") then
                     last = ""
                 end
             else
-                first, middle, last = str:match("^([a-zA-Z]:)(/*)(.-)$")
+                first, middle, last = match(str,"^([a-zA-Z]:)(/*)(.-)$")
                 if first then
                     pth, drive = first .. middle, true
                 else
-                    middle, last = str:match("^(/*)(.-)$")
+                    middle, last = match(str,"^(/*)(.-)$")
                     if not middle then
                         last = str
                     end
@@ -2465,33 +2484,33 @@ if string.find(os.getenv("PATH"),";") then
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
     function dir.expand_name(str)
-        local first, nothing, last = str:match("^(//)(//*)(.*)$")
+        local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
             first = lfs.currentdir() .. "/"
-            first = first:gsub("\\","/")
+            first = gsub(first,"\\","/")
         end
         if not first then
-            first, last = str:match("^(//)/*(.*)$")
+            first, last = match(str,"^(//)/*(.*)$")
         end
         if not first then
-            first, last = str:match("^([a-zA-Z]:)(.*)$")
+            first, last = match(str,"^([a-zA-Z]:)(.*)$")
             if first and not find(last,"^/") then
                 local d = lfs.currentdir()
                 if lfs.chdir(first) then
                     first = lfs.currentdir()
-                    first = first:gsub("\\","/")
+                    first = gsub(first,"\\","/")
                 end
                 lfs.chdir(d)
             end
         end
         if not first then
             first, last = lfs.currentdir(), str
-            first = first:gsub("\\","/")
+            first = gsub(first,"\\","/")
         end
-        last = last:gsub("//","/")
-        last = last:gsub("/%./","/")
-        last = last:gsub("^/*","")
-        first = first:gsub("/*$","")
+        last = gsub(last,"//","/")
+        last = gsub(last,"/%./","/")
+        last = gsub(last,"^/*","")
+        first = gsub(first,"/*$","")
         if last == "" then
             return first
         else
@@ -2512,7 +2531,7 @@ else
                 end
             end
         end
-        str = str:gsub("/+","/")
+        str = gsub(str,"/+","/")
         if find(str,"^/") then
             pth = "/"
             for s in gmatch(str,"[^/]+") do
@@ -2550,8 +2569,8 @@ else
         if not find(str,"^/") then
             str = lfs.currentdir() .. "/" .. str
         end
-        str = str:gsub("//","/")
-        str = str:gsub("/%./","/")
+        str = gsub(str,"//","/")
+        str = gsub(str,"/%./","/")
         return str
     end
 
@@ -2682,6 +2701,9 @@ if not modules then modules = { } end modules ['l-utils'] = {
 
 -- hm, quite unreadable
 
+local gsub = string.gsub
+local concat = table.concat
+
 if not utils        then utils        = { } end
 if not utils.merger then utils.merger = { } end
 if not utils.lua    then utils.lua    = { } end
@@ -2719,7 +2741,7 @@ function utils.merger._self_load_(name)
     end
     if data and utils.merger.strip_comment then
         -- saves some 20K
-        data = data:gsub("%-%-~[^\n\r]*[\r\n]", "")
+        data = gsub(data,"%-%-~[^\n\r]*[\r\n]", "")
     end
     return data or ""
 end
@@ -2737,7 +2759,7 @@ end
 
 function utils.merger._self_swap_(data,code)
     if data ~= "" then
-        return (data:gsub(utils.merger.pattern, function(s)
+        return (gsub(data,utils.merger.pattern, function(s)
             return "\n\n" .. "-- "..utils.merger.m_begin .. "\n" .. code .. "\n" .. "-- "..utils.merger.m_end .. "\n\n"
         end, 1))
     else
@@ -2747,8 +2769,8 @@ end
 
 --~ stripper:
 --~
---~ data = string.gsub(data,"%-%-~[^\n]*\n","")
---~ data = string.gsub(data,"\n\n+","\n")
+--~ data = gsub(data,"%-%-~[^\n]*\n","")
+--~ data = gsub(data,"\n\n+","\n")
 
 function utils.merger._self_libs_(libs,list)
     local result, f, frozen = { }, nil, false
@@ -2758,7 +2780,7 @@ function utils.merger._self_libs_(libs,list)
     local foundpath = nil
     for _, lib in ipairs(libs) do
         for _, pth in ipairs(list) do
-            pth = string.gsub(pth,"\\","/") -- file.clean_path
+            pth = gsub(pth,"\\","/") -- file.clean_path
             utils.report("checking library path %s",pth)
             local name = pth .. "/" .. lib
             if lfs.isfile(name) then
@@ -2784,15 +2806,15 @@ function utils.merger._self_libs_(libs,list)
             end
         end
         if #right > 0 then
-            utils.report("merged libraries: %s",table.concat(right," "))
+            utils.report("merged libraries: %s",concat(right," "))
         end
         if #wrong > 0 then
-            utils.report("skipped libraries: %s",table.concat(wrong," "))
+            utils.report("skipped libraries: %s",concat(wrong," "))
         end
     else
         utils.report("no valid library path found")
     end
-    return table.concat(result, "\n\n")
+    return concat(result, "\n\n")
 end
 
 function utils.merger.selfcreate(libs,list,target)
@@ -2860,6 +2882,7 @@ aux = aux or { }
 
 local concat, format, gmatch = table.concat, string.format, string.gmatch
 local tostring, type = tostring, type
+local lpegmatch = lpeg.match
 
 local space     = lpeg.P(' ')
 local equal     = lpeg.P("=")
@@ -2909,9 +2932,9 @@ function aux.settings_to_hash(str,existing)
     if str and str ~= "" then
         hash = existing or { }
         if moretolerant then
-            pattern_b_s:match(str)
+            lpegmatch(pattern_b_s,str)
         else
-            pattern_a_s:match(str)
+            lpegmatch(pattern_a_s,str)
         end
         return hash
     else
@@ -2922,7 +2945,7 @@ end
 function aux.settings_to_hash_tolerant(str,existing)
     if str and str ~= "" then
         hash = existing or { }
-        pattern_b_s:match(str)
+        lpegmatch(pattern_b_s,str)
         return hash
     else
         return { }
@@ -2932,7 +2955,7 @@ end
 function aux.settings_to_hash_strict(str,existing)
     if str and str ~= "" then
         hash = existing or { }
-        pattern_c_s:match(str)
+        lpegmatch(pattern_c_s,str)
         return next(hash) and hash
     else
         return nil
@@ -2951,7 +2974,7 @@ function aux.settings_to_array(str)
     if not str or str == "" then
         return { }
     else
-        return pattern:match(str)
+        return lpegmatch(pattern,str)
     end
 end
 
@@ -2963,7 +2986,7 @@ local value   = lpeg.P(lpeg.Carg(1)*value) / set
 local pattern = value*(separator*value)^0 * lpeg.Carg(1)
 
 function aux.add_settings_to_array(t,str)
-    return pattern:match(str, nil, t)
+    return lpegmatch(pattern,str,nil,t)
 end
 
 function aux.hash_to_string(h,separator,yes,no,strict,omit)
@@ -3015,7 +3038,7 @@ local value     = lbrace * lpeg.C((nobrace + nested)^0) * rbrace
 local pattern   = lpeg.Ct((space + value)^0)
 
 function aux.arguments_to_table(str)
-    return pattern:match(str)
+    return lpegmatch(pattern,str)
 end
 
 -- temporary here
@@ -3051,11 +3074,11 @@ local stripper = lpeg.Cs((number + 1)^0)
 --~ collectgarbage("collect")
 --~ str = string.rep(sample,10000)
 --~ local ts = os.clock()
---~ stripper:match(str)
---~ print(#str, os.clock()-ts, stripper:match(sample))
+--~ lpegmatch(stripper,str)
+--~ print(#str, os.clock()-ts, lpegmatch(stripper,sample))
 
 function aux.strip_zeros(str)
-    return stripper:match(str)
+    return lpegmatch(stripper,str)
 end
 
 function aux.definetable(target) -- defines undefined tables
@@ -3164,7 +3187,7 @@ function debugger.showstats(printer,threshold)
     for func, count in pairs(counters) do
         if count > threshold then
             local name = getname(func)
-            if not name:find("for generator") then
+            if not find(name,"for generator") then
                 printer(format("%8i  %s", count, name))
                 total = total + count
             end
@@ -3456,8 +3479,9 @@ xml = xml or { }
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
-local format, lower, find = string.format, string.lower, string.find
+local format, lower, find, match = string.format, string.lower, string.find, string.match
 local utfchar = unicode.utf8.char
+local lpegmatch = lpeg.match
 
 --[[ldx--
 <p>First a hack to enable namespace resolving. A namespace is characterized by
@@ -3497,7 +3521,7 @@ xml.checkns("m","http://www.w3.org/mathml")
 --ldx]]--
 
 function xml.checkns(namespace,url)
-    local ns = parse:match(lower(url))
+    local ns = lpegmatch(parse,lower(url))
     if ns and namespace ~= ns then
         xml.xmlns[namespace] = ns
     end
@@ -3515,7 +3539,7 @@ This returns <t>mml</t>.
 --ldx]]--
 
 function xml.resolvens(url)
-     return parse:match(lower(url)) or ""
+     return lpegmatch(parse,lower(url)) or ""
 end
 
 --[[ldx--
@@ -3782,7 +3806,7 @@ local function handle_any_entity(str)
                 if trace_entities then
                     logs.report("xml","resolved entity &%s; -> %s (internal)",str,a)
                 end
-                a = parsedentity:match(a) or a
+                a = lpegmatch(parsedentity,a) or a
             else
                 if xml.unknown_any_entity_format then
                     a = xml.unknown_any_entity_format(str) or ""
@@ -3961,13 +3985,13 @@ local function xmlconvert(data, settings)
     if not data or data == "" then
         errorstr = "empty xml file"
     elseif utfize or resolve then
-        if grammar_parsed_text:match(data) then
+        if lpegmatch(grammar_parsed_text,data) then
             errorstr = ""
         else
             errorstr = "invalid xml file - parsed text"
         end
     else
-        if grammar_unparsed_text:match(data) then
+        if lpegmatch(grammar_unparsed_text,data) then
             errorstr = ""
         else
             errorstr = "invalid xml file - unparsed text"
@@ -4018,7 +4042,7 @@ function xml.is_valid(root)
 end
 
 function xml.package(tag,attributes,data)
-    local ns, tg = tag:match("^(.-):?([^:]+)$")
+    local ns, tg = match(tag,"^(.-):?([^:]+)$")
     local t = { ns = ns, tg = tg, dt = data or "", at = attributes or {} }
     setmetatable(t, mt)
     return t
@@ -4487,6 +4511,7 @@ if not modules then modules = { } end modules ['lxml-pth'] = {
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
+local lpegmatch = lpeg.match
 
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
@@ -4865,6 +4890,7 @@ local function apply_nodes(list,directive,nodes)
                     if ltg then
                         local lns = ll.rn or ll.ns
                         local ok = ltg == ntg and lns == nns
+--~ if lns ~= "" then logs.report("!",ltg .. " < " .. (lns or "?")) end
                         if directive then
                             if ok then
                                 local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
@@ -4890,6 +4916,9 @@ local function apply_nodes(list,directive,nodes)
                 for n=1,maxn,3 do
                     local nns, ntg = nodes[n+1], nodes[n+2]
                     ok = (not ntg or ltg == ntg) and (not nns or lns == nns)
+--~ if lns ~= "" and ntg == "mo" then
+--~     logs.report("!",n .. "< ".. maxn .. " < ".. (lns or "?") .. ":" .. ltg .. "< " .. (nns or "?") .. ":" .. ntg .. "==>".. tostring(ok))
+--~ end
                     if ok then
                         break
                     end
@@ -4984,8 +5013,7 @@ local cleaner
 
 local lp_special = (C(P("name")+P("text")+P("tag")+P("count")+P("child"))) * value / function(t,s)
     if expressions[t] then
-        s = s and s ~= "" and cleaner:match(s)
---~ print("!!!",t,s)
+        s = s and s ~= "" and lpegmatch(cleaner,s)
         if s and s ~= "" then
             return "expr." .. t .. "(ll," .. s ..")"
         else
@@ -5056,7 +5084,7 @@ local function register_nodes(nodetest,nodes)
 end
 
 local function register_expression(expression)
-    local converted = converter:match(expression)
+    local converted = lpegmatch(converter,expression)
     local runner = loadstring(format(template_e,converted))
     runner = (runner and runner()) or function() errorrunner_e(expression,converted) end
     return { kind = "expression", expression = expression, converted = converted, evaluator = runner }
@@ -5220,6 +5248,8 @@ end
 
 xml.nodesettostring = nodesettostring
 
+local parse_pattern -- we have a harmless kind of circular reference
+
 local function lshow(parsed)
     if type(parsed) == "string" then
         parsed = parse_pattern(parsed)
@@ -5232,7 +5262,7 @@ end
 
 xml.lshow = lshow
 
-local function parse_pattern(pattern) -- the gain of caching is rather minimal
+parse_pattern = function (pattern) -- the gain of caching is rather minimal
     lpathcalls = lpathcalls + 1
     if type(pattern) == "table" then
         return pattern
@@ -5241,7 +5271,7 @@ local function parse_pattern(pattern) -- the gain of caching is rather minimal
         if parsed then
             lpathcached = lpathcached + 1
         else
-            parsed = parser:match(pattern)
+            parsed = lpegmatch(parser,pattern)
             if parsed then
                 parsed.pattern = pattern
                 local np = #parsed
@@ -5666,7 +5696,8 @@ if not modules then modules = { } end modules ['lxml-mis'] = {
 
 local concat = table.concat
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
-local format, gsub = string.format, string.gsub
+local format, gsub, match = string.format, string.gsub, string.match
+local lpegmatch = lpeg.match
 
 --[[ldx--
 <p>The following helper functions best belong to the <t>lxml-ini</t>
@@ -5740,9 +5771,9 @@ xml.escaped_pattern   = escaped
 xml.unescaped_pattern = unescaped
 xml.cleansed_pattern  = cleansed
 
-function xml.escaped  (str) return escaped  :match(str) end
-function xml.unescaped(str) return unescaped:match(str) end
-function xml.cleansed (str) return cleansed :match(str) end
+function xml.escaped  (str) return lpegmatch(escaped,str)   end
+function xml.unescaped(str) return lpegmatch(unescaped,str) end
+function xml.cleansed (str) return lpegmatch(cleansed,str)  end
 
 -- this might move
 
@@ -6562,7 +6593,8 @@ if not modules then modules = { } end modules ['luat-env'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local format = string.format
+local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
+local unquote, quote = string.unquote, string.quote
 
 -- precautions
 
@@ -6598,11 +6630,11 @@ function environment.initialize_arguments(arg)
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
     for index, argument in pairs(arg) do
         if index > 0 then
-            local flag, value = argument:match("^%-+(.-)=(.-)$")
+            local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
-                arguments[flag] = string.unquote(value or "")
+                arguments[flag] = unquote(value or "")
             else
-                flag = argument:match("^%-+(.+)")
+                flag = match(argument,"^%-+(.+)")
                 if flag then
                     arguments[flag] = true
                 else
@@ -6637,8 +6669,8 @@ function environment.argument(name,partial)
         end
         -- example of potential clash: ^mode ^modefile
         for _,v in ipairs(sortedflags) do
-            if name:find(v) then
-                return arguments[v:sub(2,#v)]
+            if find(name,v) then
+                return arguments[sub(v,2,#v)]
             end
         end
     end
@@ -6664,16 +6696,16 @@ function environment.reconstruct_commandline(arg,noquote)
     if noquote and #arg == 1 then
         local a = arg[1]
         a = resolvers.resolve(a)
-        a = a:unquote()
+        a = unquote(a)
         return a
     elseif next(arg) then
         local result = { }
         for _,a in ipairs(arg) do -- ipairs 1 .. #n
             a = resolvers.resolve(a)
-            a = a:unquote()
-            a = a:gsub('"','\\"') -- tricky
-            if a:find(" ") then
-                result[#result+1] = a:quote()
+            a = unquote(a)
+            a = gsub(a,'"','\\"') -- tricky
+            if find(a," ") then
+                result[#result+1] = quote(a)
             else
                 result[#result+1] = a
             end
@@ -6690,13 +6722,13 @@ if arg then
     local newarg, instring = { }, false
 
     for index, argument in ipairs(arg) do
-        if argument:find("^\"") then
-            newarg[#newarg+1] = argument:gsub("^\"","")
-            if not argument:find("\"$") then
+        if find(argument,"^\"") then
+            newarg[#newarg+1] = gsub(argument,"^\"","")
+            if not find(argument,"\"$") then
                 instring = true
             end
-        elseif argument:find("\"$") then
-            newarg[#newarg] = newarg[#newarg] .. " " .. argument:gsub("\"$","")
+        elseif find(argument,"\"$") then
+            newarg[#newarg] = newarg[#newarg] .. " " .. gsub(argument,"\"$","")
             instring = false
         elseif instring then
             newarg[#newarg] = newarg[#newarg] .. " " .. argument
@@ -7009,7 +7041,8 @@ if not modules then modules = { } end modules ['trac-log'] = {
 --~ io.stdout:setvbuf("no")
 --~ io.stderr:setvbuf("no")
 
-local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
+local write_nl, write = texio.write_nl or print, texio.write or io.write
+local format, gmatch = string.format, string.gmatch
 local texcount = tex and tex.count
 
 if texlua then
@@ -7263,7 +7296,7 @@ logs.report  = logs.tex.report
 logs.simple  = logs.tex.report
 
 function logs.reportlines(str) -- todo: <lines></lines>
-    for line in str:gmatch("(.-)[\n\r]") do
+    for line in gmatch(str,"(.-)[\n\r]") do
         logs.report(line)
     end
 end
@@ -7354,6 +7387,7 @@ if not modules then modules = { } end modules ['data-inp'] = {
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
+local lpegmatch = lpeg.match
 
 local trace_locating, trace_detail, trace_expansions = false, false, false
 
@@ -8131,7 +8165,7 @@ function resolvers.generators.tex(specification)
             full = spec
         end
         for name in directory(full) do
-            if not weird:match(name) then
+            if not lpegmatch(weird,name) then
                 local mode = attributes(full..name,'mode')
                 if mode == 'file' then
                     if path then
@@ -8897,7 +8931,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 -- try to find in tree (no suffix manipulation), here we search for the
                 -- matching last part of the name
                 local basename = file.basename(filename)
-                local pattern = (filename .. "$"):gsub("([%.%-])","%%%1")
+                local pattern = gsub(filename .. "$","([%.%-])","%%%1")
                 local savedformat = instance.format
                 local format = savedformat or ""
                 if format == "" then
@@ -8918,7 +8952,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 --
                 for r=1,#resolved do
                     local rr = resolved[r]
-                    if rr:find(pattern) then
+                    if find(rr,pattern) then
                         result[#result+1], ok = rr, true
                     end
                 end
@@ -8928,7 +8962,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 --     local filelist = collect_files({basename})
                 --     for f=1,#filelist do
                 --         local ff = filelist[f][3] or ""
-                --         if ff:find(pattern) then
+                --         if find(ff,pattern) then
                 --             result[#result+1], ok = ff, true
                 --         end
                 --     end
@@ -9385,7 +9419,7 @@ function resolvers.with_files(pattern,handle)
 end
 
 function resolvers.locate_format(name)
-    local barename, fmtname = name:gsub("%.%a+$",""), ""
+    local barename, fmtname = gsub(name,"%.%a+$",""), ""
     if resolvers.usecache then
         local path = file.join(caches.setpath("formats")) -- maybe platform
         fmtname = file.join(path,barename..".fmt") or ""
@@ -9899,7 +9933,7 @@ if not modules then modules = { } end modules ['data-use'] = {
     license   = "see context related readme files"
 }
 
-local format, lower, gsub = string.format, string.lower, string.gsub
+local format, lower, gsub, find = string.format, string.lower, string.gsub, string.find
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -9955,9 +9989,9 @@ function resolvers.automount(usecache)
             if f then
                 for line in f:lines() do
                     if line then
-                        if line:find("^[%%#%-]") then -- or %W
+                        if find(line,"^[%%#%-]") then -- or %W
                             -- skip
-                        elseif line:find("^zip://") then
+                        elseif find(line,"^zip://") then
                             if trace_locating then
                                 logs.report("fileio","mounting %s",line)
                             end
@@ -10031,7 +10065,7 @@ if not modules then modules = { } end modules ['data-zip'] = {
     license   = "see context related readme files"
 }
 
-local format, find = string.format, string.find
+local format, find, match = string.format, string.find, string.match
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -10247,7 +10281,7 @@ function resolvers.register_zip_file(z,tree)
     end
     local register, n = resolvers.register_file, 0
     for i in z:files() do
-        local path, name = i.filename:match(filter)
+        local path, name = match(i.filename,filter)
         if path then
             if name and name ~= '' then
                 register(files, name, path)
@@ -10277,6 +10311,8 @@ if not modules then modules = { } end modules ['data-crl'] = {
     license   = "see context related readme files"
 }
 
+local gsub = string.gsub
+
 curl = curl or { }
 
 curl.cached    = { }
@@ -10285,9 +10321,9 @@ curl.cachepath = caches.definepath("curl")
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
 function curl.fetch(protocol, name)
-    local cachename = curl.cachepath() .. "/" .. name:gsub("[^%a%d%.]+","-")
---  cachename = cachename:gsub("[\\/]", io.fileseparator)
-    cachename = cachename:gsub("[\\]", "/") -- cleanup
+    local cachename = curl.cachepath() .. "/" .. gsub(name,"[^%a%d%.]+","-")
+--  cachename = gsub(cachename,"[\\/]", io.fileseparator)
+    cachename = gsub(cachename,"[\\]", "/") -- cleanup
     if not curl.cached[name] then
         if not io.exists(cachename) then
             curl.cached[name] = cachename
@@ -10639,19 +10675,22 @@ if not modules then modules = { } end modules ['data-tmf'] = {
     license   = "see context related readme files"
 }
 
+local find, gsub, match = string.find, string.gsub, string.match
+local getenv, setenv = os.getenv, os.setenv
+
 -- loads *.tmf files in minimal tree roots (to be optimized and documented)
 
 function resolvers.check_environment(tree)
     logs.simpleline()
-    os.setenv('TMP', os.getenv('TMP') or os.getenv('TEMP') or os.getenv('TMPDIR') or os.getenv('HOME'))
-    os.setenv('TEXOS', os.getenv('TEXOS') or ("texmf-" .. os.platform))
-    os.setenv('TEXPATH', (tree or "tex"):gsub("\/+$",''))
-    os.setenv('TEXMFOS', os.getenv('TEXPATH') .. "/" .. os.getenv('TEXOS'))
+    setenv('TMP', getenv('TMP') or getenv('TEMP') or getenv('TMPDIR') or getenv('HOME'))
+    setenv('TEXOS', getenv('TEXOS') or ("texmf-" .. os.platform))
+    setenv('TEXPATH', gsub(tree or "tex","\/+$",''))
+    setenv('TEXMFOS', getenv('TEXPATH') .. "/" .. getenv('TEXOS'))
     logs.simpleline()
-    logs.simple("preset : TEXPATH => %s", os.getenv('TEXPATH'))
-    logs.simple("preset : TEXOS   => %s", os.getenv('TEXOS'))
-    logs.simple("preset : TEXMFOS => %s", os.getenv('TEXMFOS'))
-    logs.simple("preset : TMP     => %s", os.getenv('TMP'))
+    logs.simple("preset : TEXPATH => %s", getenv('TEXPATH'))
+    logs.simple("preset : TEXOS   => %s", getenv('TEXOS'))
+    logs.simple("preset : TEXMFOS => %s", getenv('TEXMFOS'))
+    logs.simple("preset : TMP     => %s", getenv('TMP'))
     logs.simple('')
 end
 
@@ -10659,27 +10698,27 @@ function resolvers.load_environment(name) -- todo: key=value as well as lua
     local f = io.open(name)
     if f then
         for line in f:lines() do
-            if line:find("^[%%%#]") then
+            if find(line,"^[%%%#]") then
                 -- skip comment
             else
-                local key, how, value = line:match("^(.-)%s*([<=>%?]+)%s*(.*)%s*$")
+                local key, how, value = match(line,"^(.-)%s*([<=>%?]+)%s*(.*)%s*$")
                 if how then
-                    value = value:gsub("%%(.-)%%", function(v) return os.getenv(v) or "" end)
+                    value = gsub(value,"%%(.-)%%", function(v) return getenv(v) or "" end)
                         if how == "=" or how == "<<" then
-                            os.setenv(key,value)
+                            setenv(key,value)
                     elseif how == "?" or how == "??" then
-                            os.setenv(key,os.getenv(key) or value)
+                            setenv(key,getenv(key) or value)
                     elseif how == "<" or how == "+=" then
-                        if os.getenv(key) then
-                            os.setenv(key,os.getenv(key) .. io.fileseparator .. value)
+                        if getenv(key) then
+                            setenv(key,getenv(key) .. io.fileseparator .. value)
                         else
-                            os.setenv(key,value)
+                            setenv(key,value)
                         end
                     elseif how == ">" or how == "=+" then
-                        if os.getenv(key) then
-                            os.setenv(key,value .. io.pathseparator .. os.getenv(key))
+                        if getenv(key) then
+                            setenv(key,value .. io.pathseparator .. getenv(key))
                         else
-                            os.setenv(key,value)
+                            setenv(key,value)
                         end
                     end
                 end
@@ -10718,6 +10757,9 @@ if not modules then modules = { } end modules ['luat-sta'] = {
 
 -- this code is used in the updater
 
+local gmatch, match = string.gmatch, string.match
+local type = type
+
 states          = states          or { }
 states.data     = states.data     or { }
 states.hash     = states.hash     or { }
@@ -10746,9 +10788,9 @@ function states.set_by_tag(tag,key,value,default,persistent)
     if d then
         if type(d) == "table" then
             local dkey, hkey = key, key
-            local pre, post = key:match("(.+)%.([^%.]+)$")
+            local pre, post = match(key,"(.+)%.([^%.]+)$")
             if pre and post then
-                for k in pre:gmatch("[^%.]+") do
+                for k in gmatch(pre,"[^%.]+") do
                     local dk = d[k]
                     if not dk then
                         dk = { }
@@ -10780,7 +10822,7 @@ function states.get_by_tag(tag,key,default)
     else
         local d = states.data[tag]
         if d then
-            for k in key:gmatch("[^%.]+") do
+            for k in gmatch(key,"[^%.]+") do
                 local dk = d[k]
                 if dk then
                     d = dk
@@ -11692,5 +11734,6 @@ if os.platform == "unix" then
 end
 
 if ok == false then ok = 1 elseif ok == true then ok = 0 end
+
 
 os.exit(ok)

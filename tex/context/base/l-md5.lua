@@ -57,7 +57,7 @@ end
 function file.loadchecksum(name)
     if md5 then
         local data = io.loaddata(name .. ".md5")
-        return data and data:gsub("%s","")
+        return data and (gsub(data,"%s",""))
     end
     return nil
 end

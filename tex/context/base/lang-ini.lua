@@ -10,8 +10,9 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 local utf = unicode.utf8
 
-local find, lower, format, utfchar = string.find, string.lower, string.format, utf.char
+local find, lower, format, match, utfchar = string.find, string.lower, string.format, string.match, utf.char
 local concat = table.concat
+local lpegmatch = lpeg.match
 
 if lang.use_new then lang.use_new(true) end
 
@@ -36,8 +37,8 @@ local langdata = languages.hyphenation.data
 
 --~ local function filter(filename,what)
 --~     local data = io.loaddata(resolvers.find_file(filename))
---~     local data = data:match(string.format("\\%s%%s*(%%b{})",what or "patterns"))
---~     return data:match("{%s*(.-)%s*}") or ""
+--~     local data = match(data,string.format("\\%s%%s*(%%b{})",what or "patterns"))
+--~     return match(data,"{%s*(.-)%s*}") or ""
 --~ end
 
 -- loading the 26 languages that we normally load in mkiv, the string based variant
@@ -59,7 +60,7 @@ local function filterpatterns(filename)
     if find(filename,"%.rpl") then
         return io.loaddata(resolvers.find_file(filename)) or ""
     else
-        return parser:match(io.loaddata(resolvers.find_file(filename)) or "")
+        return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "")
     end
 end
 
@@ -70,7 +71,7 @@ local function filterexceptions(filename)
     if find(filename,"%.rhl") then
         return io.loaddata(resolvers.find_file(filename)) or ""
     else
-        return parser:match(io.loaddata(resolvers.find_file(filename)) or {}) -- "" ?
+        return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or {}) -- "" ?
     end
 end
 
@@ -304,7 +305,7 @@ do
             local data = io.loaddata(filename) or ""
             local words = languages.words.data[tag] or {}
             parser = (spacing + word/function(s) words[s] = true end)^0
-            parser:match(data)
+            lpegmatch(parser,data)
             languages.words.data[tag] = words
             statistics.stoptiming(languages)
         end

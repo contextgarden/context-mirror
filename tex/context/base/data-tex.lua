@@ -32,6 +32,7 @@ function finders.generic(tag,filename,filetype)
     end
 end
 
+--~ local lpegmatch = lpeg.match
 --~ local getlines = lpeg.Ct(lpeg.linebyline)
 
 local input_translator, utf_translator, user_translator = nil, nil, nil
@@ -102,7 +103,7 @@ function openers.text_opener(filename,file_handle,tag)
             logs.report("fileio","%s opener, file '%s' opened",tag,filename)
         end
         -- todo: file;name -> freeze / eerste regel scannen -> freeze
-        --~ local data = getlines:match(file_handle:read("*a"))
+        --~ local data = lpegmatch(getlines,file_handle:read("*a"))
         --~ local n = 0
         t = {
             reader = function() -- self

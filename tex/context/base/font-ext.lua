@@ -100,6 +100,8 @@ only used with <l n='afm'/> files.</p>
 --~     smallcaps = lpeg.Cs((1-smallcaps)^1) * smallcaps^1
 --~     oldstyle  = lpeg.Cs((1-oldstyle )^1) * oldstyle ^1
 --~
+--~     local lpegmatch = lpeg.match
+--~
 --~     function initializers.common.encoding(tfmdata,value)
 --~         if value then
 --~             local afmdata = tfmdata.shared.afmdata
@@ -111,7 +113,7 @@ only used with <l n='afm'/> files.</p>
 --~                     local characters = tfmdata.characters
 --~                     local unicodes = afmdata.luatex.unicodes
 --~                     local function remap(pattern,name)
---~                         local p = pattern:match(name)
+--~                         local p = lpegmatch(pattern,name)
 --~                         if p then
 --~                             local oldchr, newchr = unicodes[p], unicodes[name]
 --~                             if oldchr and newchr and type(oldchr) == "number" and type(newchr) == "number" then
@@ -145,7 +147,7 @@ only used with <l n='afm'/> files.</p>
 --~                 for u, _ in next, characters do
 --~                     local name = descriptions[u].name
 --~                     if name then
---~                         local p = pattern:match(name)
+--~                         local p = lpegmatch(pattern,name)
 --~                         if p then
 --~                             local oldchr, newchr = unicodes[p], unicodes[name]
 --~                             if oldchr and newchr and type(oldchr) == "number" and type(newchr) == "number" then

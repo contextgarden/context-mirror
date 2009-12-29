@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['syst-lua'] = {
 }
 
 local texsprint, texprint, texwrite, texiowrite_nl = tex.sprint, tex.print, tex.write, texio.write_nl
-local format = string.format
+local format, find = string.format, string.find
+local lpegmatch = lpeg.match
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -57,7 +58,7 @@ function commands.boolcase(b)
 end
 
 function commands.doifelsespaces(str)
-    return commands.doifelse(str:find("^ +$"))
+    return commands.doifelse(find(str,"^ +$"))
 end
 
 local s = lpeg.Ct(lpeg.splitat(","))
@@ -66,8 +67,8 @@ local h = { }
 function commands.doifcommonelse(a,b)
     local ha = h[a]
     local hb = h[b]
-    if not ha then ha = s:match(a) h[a] = ha end
-    if not hb then hb = s:match(b) h[b] = hb end
+    if not ha then ha = lpegmatch(s,a) h[a] = ha end
+    if not hb then hb = lpegmatch(s,b) h[b] = hb end
     for i=1,#ha do
         for j=1,#hb do
             if ha[i] == hb[j] then
@@ -80,7 +81,7 @@ end
 
 function commands.doifinsetelse(a,b)
     local hb = h[b]
-    if not hb then hb = s:match(b) h[b] = hb end
+    if not hb then hb = lpegmatch(s,b) h[b] = hb end
     for i=1,#hb do
         if a == hb[i] then
             return commands.testcase(true)

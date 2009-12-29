@@ -33,7 +33,8 @@ The TeX-Lua mix is suboptimal. This has to do with the fact that we cannot
 run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
-local texsprint, format, lower, find, match = tex.sprint, string.format, string.lower, string.find, string.match
+local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
+local texsprint = tex.sprint
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
@@ -70,7 +71,7 @@ local validtypes = table.tohash(img.types())
 
 function img.check_size(size)
     if size then
-        size = size:gsub("box","")
+        size = gsub(size,"box","")
         return (validsizes[size] and size) or "crop"
     else
         return "crop"
@@ -184,7 +185,7 @@ function figures.setpaths(locationset,pathlist)
         last_locationset = locationset
     end
     if h[iv["global"]] then
-        for s in pathlist:gmatch("([^, ]+)") do
+        for s in gmatch(pathlist,"([^, ]+)") do
             if not table.contains(t,s) then
                 t[#t+1] = s
             end

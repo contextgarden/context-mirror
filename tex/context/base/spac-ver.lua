@@ -19,6 +19,7 @@ local next, type, tonumber = next, type, tonumber
 local format, gmatch, concat, match = string.format, string.gmatch, table.concat, string.match
 local ceil, floor, max, min, round = math.ceil, math.floor, math.max, math.min, math.round
 local texsprint, texlists, texdimen, texbox, texht, texdp = tex.sprint, tex.lists, tex.dimen, tex.box, tex.ht, tex.dp
+local lpegmatch = lpeg.match
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
@@ -96,7 +97,7 @@ local colonsplitter = lpeg.splitat(":")
 function interfaces.listtohash(str)
     local t = { }
     for s in gmatch(str,"[^, ]+") do
-        local key, fraction = colonsplitter:match(s)
+        local key, fraction = lpegmatch(colonsplitter,s)
         local v = variables[key]
         if v then
             t[v] = true
@@ -295,7 +296,7 @@ do -- todo: interface.variables
 
     local function analyse(str,oldcategory,texsprint) -- we could use shorter names
         for s in gmatch(str,"([^ ,]+)") do
-            local amount, keyword, detail = splitter:match(s)
+            local amount, keyword, detail = lpegmatch(splitter,s)
             if not keyword then
                 logs.report("vspacing","unknown directive: %s",s)
             else

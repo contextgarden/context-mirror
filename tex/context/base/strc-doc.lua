@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 }
 
 local next, type = next, type
-local format, gsub, find, concat = string.format, string.gsub, string.find, table.concat
+local format, gsub, find, concat, gmatch, match = string.format, string.gsub, string.find, table.concat, string.gmatch, string.match
 local texsprint, texwrite = tex.sprint, tex.write
 
 local ctxcatcodes = tex.ctxcatcodes
@@ -314,7 +314,7 @@ end
 function sections.setnumber(depth,n)
     local forced, depth, new = data.forced, depth or data.depth, tonumber(n)
     if type(n) == "string" then
-        if n:find("^[%+%-]") then
+        if find(n,"^[%+%-]") then
             forced[depth] = { "add", new }
         else
             forced[depth] = { "set", new }
@@ -362,7 +362,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
     if not depth or depth == 0 then depth = data.depth end
     local data = data.status[depth]
     local d = data
-    for k in key:gmatch("([^.]+)") do
+    for k in gmatch(key,"([^.]+)") do
         if type(d) == "table" then
             d = d[k]
             if not d then
@@ -489,7 +489,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         --
         local firstprefix, lastprefix = 0, 16
         if segments then
-            local f, l = (tostring(segments)):match("^(.-):(.+)$")
+            local f, l = match(tostring(segments),"^(.-):(.+)$")
             if f and l then
                 -- 0:100, chapter:subsubsection
                 firstprefix = tonumber(f) or sections.getlevel(f) or 0

@@ -10,6 +10,7 @@ local next, type = next, type
 local texwrite, texsprint, texcount = tex.write, tex.sprint, tex.count
 local format, gmatch, concat = string.format, string.gmatch, table.concat
 local utfchar = utf.char
+local lpegmatch = lpeg.match
 
 local trace_registers = false  trackers.register("structure.registers", function(v) trace_registers = v end)
 
@@ -215,8 +216,8 @@ local function preprocessentries(rawdata)
     local entries = rawdata.entries
     if entries then
         local e, k = entries[1] or "", entries[2] or ""
-        local et = (type(e) == "table" and e) or entrysplitter:match(e)
-        local kt = (type(k) == "table" and k) or entrysplitter:match(k)
+        local et = (type(e) == "table" and e) or lpegmatch(entrysplitter,e)
+        local kt = (type(k) == "table" and k) or lpegmatch(entrysplitter,k)
         entries = { }
         for k=1,#et do
             entries[k] = { et[k] or "", kt[k] or "" }

@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['core-job'] = {
 
 local texsprint, texprint, texwrite = tex.sprint, tex.print, tex.write
 local ctxcatcodes, texcatcodes = tex.ctxcatcodes, tex.texcatcodes
-local lower, format, find, gmatch = string.lower, string.format, string.find, string.gmatch
+local lower, format, find, gmatch, gsub, match = string.lower, string.format, string.find, string.gmatch, string.gsub, string.match
 local concat = table.concat
 
 -- main code
@@ -102,11 +102,11 @@ local function convertexamodes(str)
         local label = e.at and e.at.label
         if label and label ~= "" then
             local data = xml.text(e)
-            local mode = label:match("^mode:(.+)$")
+            local mode = match(label,"^mode:(.+)$")
             if mode then
                 texsprint(ctxcatcodes,format("\\enablemode[%s:%s]",mode,data))
             end
-            texsprint(ctxcatcodes,format("\\setvariable{exa:variables}{%s}{%s}",label,data:gsub("([{}])","\\%1")))
+            texsprint(ctxcatcodes,format("\\setvariable{exa:variables}{%s}{%s}",label,gsub(data,"([{}])","\\%1")))
         end
     end
 end

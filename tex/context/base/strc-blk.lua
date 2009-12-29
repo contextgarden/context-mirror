@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['strc--blk'] = {
 
 -- this one runs on top of buffers and structure
 
-local texprint, format, gmatch = tex.print, string.format, string.gmatch
+local texprint, format, gmatch, find = tex.print, string.format, string.gmatch, string.find
+local lpegmatch = lpeg.match
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -42,7 +43,7 @@ function blocks.print(name,data,hide)
             texprint(data[i])
         end
     else
-        printer:match(data)
+        lpegmatch(printer,data)
     end
     if hide then
         texprint(ctxcatcodes,"\\dostophiddenblock")
@@ -76,7 +77,7 @@ end
 
 function blocks.select(state,name,tag,criterium)
     criterium = criterium or "text"
-    if tag:find("=") then tag = "" end
+    if find(tag,"=") then tag = "" end
     local names = aux.settings_to_set(name)
     local all = tag == ""
     local tags = not all and aux.settings_to_set(tag)

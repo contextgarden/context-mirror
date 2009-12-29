@@ -18,8 +18,11 @@ if not tracers.strings then tracers.strings = { } end
 
 tracers.strings.undefined = "undefined"
 
+local splitter = lpeg.splitat(":")
+local lpegmatch = lpeg.match
+
 function tracers.split(csname)
-    return csname:match("^(.+):(.+)$")
+    return lpegmatch(splitter,csname)
 end
 
 function tracers.type(csname)

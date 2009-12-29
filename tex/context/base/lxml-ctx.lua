@@ -11,7 +11,6 @@ if not modules then modules = { } end modules ['lxml-ctx'] = {
 xml.ctx           = { }
 xml.ctx.enhancers = { }
 
-
 -- hashen
 
 function xml.ctx.enhancers.compound(root,lpath,before,tokens,after) -- todo lpeg
@@ -48,13 +47,18 @@ function xml.ctx.tshow(specification)
             context[titlecommand]("pattern: " .. pattern)
         end
         context.starttabulate({ "|Tr|Tl|Tp|" } )
-        if specification.warning and parsed.comment then
-            context.NC()
-            context("!")
-            context.NC()
-            context.rlap(parsed.comment)
-            context.NR()
-            context.TB()
+        if specification.warning then
+            local comment = parsed.comment
+            if comment then
+                for k, v in ipairs(comment) do
+                    context.NC()
+                    context("!")
+                    context.NC()
+                    context.rlap(v)
+                    context.NR()
+                end
+                context.TB()
+            end
         end
         for p=1,#parsed do
             local pp = parsed[p]
@@ -73,8 +77,8 @@ function xml.ctx.tshow(specification)
                 context(pp.expression)
             elseif kind == "finalizer" then
                 context("%s(%s)",pp.name,pp.arguments)
-            elseif kind == "error" and pp.comment then
-                context(pp.comment)
+            elseif kind == "error" and pp.error then
+                context(pp.error)
             end
             context.NC()
             context.NR()

@@ -11,7 +11,8 @@ if not modules then modules = { } end modules ['l-file'] = {
 file = file or { }
 
 local concat = table.concat
-local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
+local find, gmatch, match, gsub, sub = string.find, string.gmatch, string.match, string.gsub, string.sub
+local lpegmatch = lpeg.match
 
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
@@ -69,12 +70,12 @@ end
 
 function file.iswritable(name)
     local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
-    return a and a.permissions:sub(2,2) == "w"
+    return a and sub(a.permissions,2,2) == "w"
 end
 
 function file.isreadable(name)
     local a = lfs.attributes(name)
-    return a and a.permissions:sub(1,1) == "r"
+    return a and sub(a.permissions,1,1) == "r"
 end
 
 file.is_readable = file.isreadable
@@ -149,27 +150,27 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.C(noperiod^1) * -1
 
 --~ function file.extname(name)
---~     return pattern:match(name) or ""
+--~     return lpegmatch(pattern,name) or ""
 --~ end
 
 --~ local pattern = lpeg.Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 
 --~ function file.removesuffix(name)
---~     return pattern:match(name)
+--~     return lpegmatch(pattern,name)
 --~ end
 
 --~ local pattern = (noslashes^0 * slashes)^1 * lpeg.C(noslashes^1) * -1
 
 --~ function file.basename(name)
---~     return pattern:match(name) or name
+--~     return lpegmatch(pattern,name) or name
 --~ end
 
 --~ local pattern = (noslashes^0 * slashes)^1 * lpeg.Cp() * noslashes^1 * -1
 
 --~ function file.dirname(name)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
---~         return name:sub(1,p-2)
+--~         return sub(name,1,p-2)
 --~     else
 --~         return ""
 --~     end
@@ -178,7 +179,7 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
 
 --~ function file.addsuffix(name, suffix)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
 --~         return name
 --~     else
@@ -189,9 +190,9 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
 
 --~ function file.replacesuffix(name,suffix)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
---~         return name:sub(1,p-2) .. "." .. suffix
+--~         return sub(name,1,p-2) .. "." .. suffix
 --~     else
 --~         return name .. "." .. suffix
 --~     end
@@ -200,11 +201,11 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * lpeg.Cp() * ((noperiod^1 * period)^1 * lpeg.Cp() + lpeg.P(true)) * noperiod^1 * -1
 
 --~ function file.nameonly(name)
---~     local a, b = pattern:match(name)
+--~     local a, b = lpegmatch(pattern,name)
 --~     if b then
---~         return name:sub(a,b-2)
+--~         return sub(name,a,b-2)
 --~     elseif a then
---~         return name:sub(a)
+--~         return sub(name,a)
 --~     else
 --~         return name
 --~     end
@@ -238,11 +239,11 @@ local rootbased = lpeg.P("/") + letter*lpeg.P(":")
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)
-    return qualified:match(filename) ~= nil
+    return lpegmatch(qualified,filename) ~= nil
 end
 
 function file.is_rootbased_path(filename)
-    return rootbased:match(filename) ~= nil
+    return lpegmatch(rootbased,filename) ~= nil
 end
 
 local slash  = lpeg.S("\\/")
@@ -255,7 +256,7 @@ local base   = lpeg.C((1-suffix)^0)
 local pattern = (drive + lpeg.Cc("")) * (path + lpeg.Cc("")) * (base + lpeg.Cc("")) * (suffix + lpeg.Cc(""))
 
 function file.splitname(str) -- returns drive, path, base, suffix
-    return pattern:match(str)
+    return lpegmatch(pattern,str)
 end
 
 -- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end

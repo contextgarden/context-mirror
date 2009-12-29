@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['luat-cnf'] = {
     license   = "see context related readme files"
 }
 
-local format, concat = string.format, table.concat
+local format, concat, find = string.format, table.concat, string.find
 
 luatex = luatex or { }
 
@@ -26,7 +26,7 @@ function luatex.variables()
     local t, x = { }, nil
     for _,v in next, luatex.variablenames do
         x = resolvers.var_value(v)
-        if x and x:find("^%d+$") then
+        if x and find(x,"^%d+$") then
             t[v] = tonumber(x)
         end
     end

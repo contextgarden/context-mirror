@@ -14,6 +14,7 @@ in a convenient way. Actually handling the data takes place elsewhere.</p>
 
 local lower, format = string.lower, string.format
 local next = next
+local lpegmatch = lpeg.match
 
 bibtex = bibtex or { }
 
@@ -101,7 +102,7 @@ function bibtex.convert(session,content)
     data, shortcuts, entries = session.data, session.shortcuts, session.entries
  -- session.size = session.size + #content
     bibtex.size = bibtex.size + #content
-    grammar:match(content or "")
+    lpegmatch(grammar,content or "")
     statistics.stoptiming(bibtex)
 end
 
@@ -138,7 +139,7 @@ function bibtex.toxml(session)
             if not entries or entries[name] then
                 result[#result+1] = format("  <e n='%s'>",name)
                 for key, value in next, entry do
-                    value = escaped_pattern:match(value)
+                    value = lpegmatch(escaped_pattern,value)
                     if value ~= "" then
                         result[#result+1] = format("   <v n='%s'>%s</v>",key,value)
                     end

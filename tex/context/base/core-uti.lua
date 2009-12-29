@@ -17,7 +17,7 @@ utility file under different setups, we now load a table once. This
 saves much runtime but at the cost of more memory usage.</p>
 --ldx]]--
 
-local sort, concat, format = table.sort, table.concat, string.format
+local sort, concat, format, match = table.sort, table.concat, string.format, string.match
 local next, type, tostring = next, type, tostring
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
@@ -236,7 +236,7 @@ function job.load(filename)
     statistics.starttiming(job._load_)
     local data = io.loaddata(filename)
     if data and data ~= "" then
-        local version = tonumber(data:match("^-- version: ([%d%.]+)"))
+        local version = tonumber(match(data,"^-- version: ([%d%.]+)"))
         if version ~= jobs.version then
             logs.report("job","version mismatch with jobfile: %s <> %s", version or "?", jobs.version)
         else

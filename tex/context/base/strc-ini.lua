@@ -23,6 +23,7 @@ but it does not make sense to store all processdata.
 local format, concat, match = string.format, table.concat, string.match
 local count, texwrite, texprint, texsprint = tex.count, tex.write, tex.print, tex.sprint
 local type, next, tonumber, tostring = type, next, tonumber, tostring
+local lpegmatch = lpeg.match
 
 local ctxcatcodes, xmlcatcodes, notcatcodes = tex.ctxcatcodes, tex.xmlcatcodes, tex.notcatcodes -- tricky as we're in notcatcodes
 
@@ -198,7 +199,7 @@ end
 local splitter = lpeg.splitat("->",true)
 
 function processors.split(str)
-    local p, s = splitter:match(str)
+    local p, s = lpegmatch(splitter,str)
     if registered[p] then
         return p, s
     else
@@ -207,7 +208,7 @@ function processors.split(str)
 end
 
 function processors.sprint(catcodes,str,fnc,...)
-    local p, s = splitter:match(str)
+    local p, s = lpegmatch(splitter,str)
     local code
     if registered[p] then
         code = format("\\applyprocessor{%s}{%s}",p,(fnc and fnc(s,...)) or s)
@@ -221,7 +222,7 @@ function processors.sprint(catcodes,str,fnc,...)
 end
 
 function processors.apply(str)
-    local p, s = splitter:match(str)
+    local p, s = lpegmatch(splitter,str)
     if registered[p] then
         return format("\\applyprocessor{%s}{%s}",p,s)
     else

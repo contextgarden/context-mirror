@@ -60,7 +60,7 @@ function debugger.showstats(printer,threshold)
     for func, count in pairs(counters) do
         if count > threshold then
             local name = getname(func)
-            if not name:find("for generator") then
+            if not find(name,"for generator") then
                 printer(format("%8i  %s", count, name))
                 total = total + count
             end

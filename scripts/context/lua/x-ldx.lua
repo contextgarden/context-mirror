@@ -384,3 +384,5 @@ The main conversion call is:
 if arg and arg[1] then
     ldx.convert(arg[1],arg[2])
 end
+
+--~ exit(1)

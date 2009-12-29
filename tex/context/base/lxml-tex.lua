@@ -10,8 +10,9 @@ local utf = unicode.utf8
 
 local utfchar = utf.char
 local concat, insert, remove, gsub, find = table.concat, table.insert, table.remove
-local format, sub, gsub, find, gmatch = string.format, string.sub, string.gsub, string.find, string.gmatch
+local format, sub, gsub, find, gmatch, match = string.format, string.sub, string.gsub, string.find, string.gmatch, string.match
 local type, next, tonumber, tostring = type, next, tonumber, tostring
+local lpegmatch = lpeg.match
 
 if not tex and not tex.sprint then
     tex = {
@@ -79,6 +80,13 @@ local xmltextcapture = (
     entity                                        / xml.resolved_entity
 )^0
 
+local ctxtextcapture = (
+    space^0 * newline^2  * lpeg.Cc("")            / texprint  + -- better ^-2 ?
+    space^0 * newline    * space^0 * lpeg.Cc(" ") / texsprint +
+    content                                       / function(str) return texsprint(ctxcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
+    entity                                        / xml.resolved_entity
+)^0
+
 local forceraw, rawroot = false, nil
 
 function lxml.startraw()
@@ -127,7 +135,7 @@ local xmlverbosecapture = (
 
 local function toverbatim(str)
     if beforecommand then texsprint(texcatcodes,beforecommand,"{}") end
-    xmlverbosecapture:match(str)
+    lpegmatch(xmlverbosecapture,str)
     if aftercommand  then texsprint(texcatcodes,aftercommand,"{}")  end
 end
 
@@ -156,7 +164,7 @@ function lxml.toverbatim(str)
     -- todo: add this to capture
     str = gsub(str,"^[ \t]+[\n\r]+","")
     str = gsub(str,"[ \t\n\r]+$","")
-    xmlverbosecapture:match(str)
+    lpegmatch(xmlverbosecapture,str)
     if aftercommand  then texsprint(texcatcodes,aftercommand,"{}")  end
 end
 
@@ -176,7 +184,7 @@ local splitter = lpeg.splitat("::")
 lxml.idsplitter = splitter
 
 function lxml.splitid(id)
-    local d, i = splitter:match(id)
+    local d, i = lpegmatch(splitter,id)
     if d then
         return d, i
     else
@@ -192,7 +200,7 @@ local function get_id(id, qualified)
         elseif type(id) == "table" then
             return id
         else
-            local d, i = splitter:match(id)
+            local d, i = lpegmatch(splitter,id)
             if d then
                 local ld = loaded[d]
                 if ld then
@@ -299,7 +307,7 @@ function lxml.checkindex(name)
 end
 
 function lxml.withindex(name,n,command) -- will change as name is always there now
-    local i, p = splitter:match(n)
+    local i, p = lpegmatch(splitter,n)
     if p then
         texsprint(ctxcatcodes,"\\xmlw{",command,"}{",n,"}")
     else
@@ -308,7 +316,7 @@ function lxml.withindex(name,n,command) -- will change as name is always there n
 end
 
 function lxml.getindex(name,n) -- will change as name is always there now
-    local i, p = splitter:match(n)
+    local i, p = lpegmatch(splitter,n)
     if p then
         texsprint(ctxcatcodes,n)
     else
@@ -484,9 +492,9 @@ local value  = lpeg.C(lpeg.P(1-(space * -1))^0)
 local parser = kind * spaces * class * spaces * key * spaces * value
 
 pihandlers[#pihandlers+1] = function(str)
---  local kind, class, key, value = parser:match(str)
+--  local kind, class, key, value = lpegmatch(parser,str)
     if str then
-        local a, b, c, d = parser:match(str)
+        local a, b, c, d = lpegmatch(parser,str)
         if d then
             texsprint(ctxcatcodes,"\\xmlcontextdirective{",a",}{",b,"}{",c,"}{",d,"}")
         end
@@ -506,8 +514,12 @@ local function tex_cdata(e,handlers)
     end
 end
 
-local function tex_text(e,handlers)
-    xmltextcapture:match(e)
+local function tex_text(e)
+    lpegmatch(xmltextcapture,e)
+end
+
+local function ctx_text(e)
+    lpegmatch(ctxtextcapture,e)
 end
 
 local function tex_handle(...)
@@ -548,7 +560,7 @@ local function sprint(root)
         local tr = type(root)
         if tr == "string" then -- can also be result of lpath
          -- rawroot = false
-            xmltextcapture:match(root)
+            lpegmatch(xmltextcapture,root)
         elseif tr == "table" then
             if forceraw then
                 rawroot = root
@@ -572,7 +584,7 @@ local function tprint(root) -- we can move sprint inline
             end
         end
     elseif tr == "string" then
-        xmltextcapture:match(root)
+        lpegmatch(xmltextcapture,root)
     end
 end
 
@@ -582,7 +594,7 @@ local function cprint(root) -- content
         -- quit
     elseif type(root) == 'string' then
      -- rawroot = false
-        xmltextcapture:match(root)
+        lpegmatch(xmltextcapture,root)
     else
         local rootdt = root.dt
         if forceraw then
@@ -616,7 +628,7 @@ end
 --~
 --~ local xmllineshandler = table.copy(xmltexhandler)
 --~
---~ xmllineshandler.handle = function(...) xmllinescapture:match(concat{ ... }) end
+--~ xmllineshandler.handle = function(...) lpegmatch(xmllinescapture,concat{ ... }) end
 --~
 --~ function lines(root)
 --~     if not root then
@@ -624,7 +636,7 @@ end
 --~      -- quit
 --~     elseif type(root) == 'string' then
 --~      -- rawroot = false
---~         xmllinescapture:match(root)
+--~         lpegmatch(xmllinescapture,root)
 --~     elseif next(root) then -- tr == 'table'
 --~         xmlserialize(root,xmllineshandler)
 --~     end
@@ -782,7 +794,7 @@ function lxml.setsetup(id,pattern,setup)
             logs.report("lxml","no lpath matches for %s",pattern)
         end
     else
-        local a, b = setup:match("^(.+:)([%*%-])$")
+        local a, b = match(setup,"^(.+:)([%*%-])$")
         if a and b then
             local collected = lxmlparseapply(id,pattern)
             if collected then
@@ -1137,6 +1149,19 @@ function lxml.raw(id,pattern) -- the content, untouched by commands
     local collected = (pattern and lxmlparseapply(id,pattern)) or get_id(id)
     if collected then
         texsprint(xmltostring(collected[1].dt))
+    end
+end
+
+function lxml.context(id,pattern) -- the content, untouched by commands
+    if not pattern then
+        local collected = get_id(id)
+    --  texsprint(ctxcatcodes,collected.dt[1])
+        ctx_text(collected.dt[1])
+    else
+        local collected = lxmlparseapply(id,pattern) or get_id(id)
+        if collected then
+            texsprint(ctxcatcodes,collected[1].dt)
+        end
     end
 end
 

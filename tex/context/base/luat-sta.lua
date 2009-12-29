@@ -7,6 +7,9 @@ if not modules then modules = { } end modules ['luat-sta'] = {
 
 -- this code is used in the updater
 
+local gmatch, match = string.gmatch, string.match
+local type = type
+
 states          = states          or { }
 states.data     = states.data     or { }
 states.hash     = states.hash     or { }
@@ -35,9 +38,9 @@ function states.set_by_tag(tag,key,value,default,persistent)
     if d then
         if type(d) == "table" then
             local dkey, hkey = key, key
-            local pre, post = key:match("(.+)%.([^%.]+)$")
+            local pre, post = match(key,"(.+)%.([^%.]+)$")
             if pre and post then
-                for k in pre:gmatch("[^%.]+") do
+                for k in gmatch(pre,"[^%.]+") do
                     local dk = d[k]
                     if not dk then
                         dk = { }
@@ -69,7 +72,7 @@ function states.get_by_tag(tag,key,default)
     else
         local d = states.data[tag]
         if d then
-            for k in key:gmatch("[^%.]+") do
+            for k in gmatch(key,"[^%.]+") do
                 local dk = d[k]
                 if dk then
                     d = dk

@@ -311,6 +311,7 @@ do
                                         command = ctxrunner.justtext(command)
                                         logs.simple("command: %s",command)
                                         local result = os.spawn(command) or 0
+                                        -- somehow we get the wrong return value
                                         if result > 0 then
                                             logs.simple("error, return code: %s",result)
                                         end

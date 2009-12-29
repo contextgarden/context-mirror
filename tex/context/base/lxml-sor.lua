@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['lxml-sor'] = {
 }
 
 local format, concat = string.format, table.concat
+local lpegmatch = lpeg.match
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 lxml.sorters = lxml.sorters or { }
@@ -14,7 +15,7 @@ lxml.sorters = lxml.sorters or { }
 if not lxml.splitid then
     local splitter = lpeg.C((1-lpeg.P(":"))^1) * lpeg.P("::") * lpeg.C(lpeg.P(1)^1)
     function lxml.splitid(id)
-        local d, i = splitter:match(id)
+        local d, i = lpegmatch(splitter,id)
         if d then
             return d, i
         else

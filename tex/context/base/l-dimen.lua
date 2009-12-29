@@ -16,6 +16,7 @@ table.</p>
 --ldx]]--
 
 local format, match, gsub, type, setmetatable = string.format, string.match, string.gsub, type, setmetatable
+local lpegmatch = lpeg.match
 
 number = number or { }
 
@@ -145,7 +146,7 @@ function string:todimen()
     if type(self) == "number" then
         return self
     else
-        local value, unit = pattern:match(self)
+        local value, unit = lpegmatch(pattern,self)
         print(value,unit)
         return value/unit
     end
@@ -193,7 +194,7 @@ function dimen(a)
     if a then
         local ta= type(a)
         if ta == "string" then
-            local value, unit = pattern:match(a)
+            local value, unit = lpegmatch(pattern,a)
             if type(unit) == "function" then
                 k = value/unit()
             else
@@ -360,7 +361,7 @@ function dimen(a)
             if k then
                 a = k
             else
-                local value, unit = pattern:match(a)
+                local value, unit = lpegmatch(pattern,a)
                 if type(unit) == "function" then
                     k = value/unit()
                 else
@@ -384,7 +385,7 @@ function string:todimen()
     else
         local k = known[self]
         if not k then
-            local value, unit = pattern:match(self)
+            local value, unit = lpegmatch(pattern,self)
             if value and unit then
                 k = value/unit
             else

@@ -22,10 +22,10 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 
 -- only needed for mp output on disk
 
-local concat, format = table.concat, string.format
-
-local texsprint = tex.sprint
-local ctxcatcodes = tex.ctxcatcodes
+local concat, format, find, gsub, gmatch = table.concat, string.format, string.find, string.gsub, string.gmatch
+local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local tostring, tonumber, select = tostring, tonumber, select
+local lpegmatch = lpeg.match
 
 mptopdf         = { }
 mptopdf.parsers = { }
@@ -70,65 +70,65 @@ mptopdf.descapes = {
 }
 
 function mptopdf.descape(str)
-    str = str:gsub("\\(%d%d%d)",function(n)
+    str = gsub(str,"\\(%d%d%d)",function(n)
         return "\\char" .. tonumber(n,8) .. " "
     end)
-    return str:gsub("\\([%(%)\\])",mptopdf.descapes)
+    return gsub(str,"\\([%(%)\\])",mptopdf.descapes)
 end
 
 function mptopdf.steps.descape(str)
-    str = str:gsub("\\(%d%d%d)",function(n)
+    str = gsub(str,"\\(%d%d%d)",function(n)
         return "\\\\char" .. tonumber(n,8) .. " "
     end)
-    return str:gsub("\\([%(%)\\])",mptopdf.descapes)
+    return gsub(str,"\\([%(%)\\])",mptopdf.descapes)
 end
 
 function mptopdf.steps.strip() -- .3 per expr
-    mptopdf.data = mptopdf.data:gsub("^(.-)%%+Page:.-%c+(.*)%s+%a+%s+%%+EOF.*$", function(preamble, graphic)
+    mptopdf.data = gsub(mptopdf.data,"^(.-)%%+Page:.-%c+(.*)%s+%a+%s+%%+EOF.*$", function(preamble, graphic)
         local bbox = "0 0 0 0"
-        for b in preamble:gmatch("%%%%%a+oundingBox: +(.-)%c+") do
+        for b in gmatch(preamble,"%%%%%a+oundingBox: +(.-)%c+") do
             bbox = b
         end
-        local name, version = preamble:gmatch("%%%%Creator: +(.-) +(.-) ")
+        local name, version = gmatch(preamble,"%%%%Creator: +(.-) +(.-) ")
         mptopdf.version = tostring(version or "0")
-        if preamble:find("/hlw{0 dtransform") then
+        if find(preamble,"/hlw{0 dtransform") then
             mptopdf.shortcuts = true
         end
         -- the boundingbox specification needs to come before data, well, not really
         return bbox .. " boundingbox\n" .. "\nbegindata\n" .. graphic .. "\nenddata\n"
     end, 1)
-    mptopdf.data = mptopdf.data:gsub("%%%%MetaPostSpecials: +(.-)%c+", "%1 specials\n", 1)
-    mptopdf.data = mptopdf.data:gsub("%%%%MetaPostSpecial: +(.-)%c+", "%1 special\n")
-    mptopdf.data = mptopdf.data:gsub("%%.-%c+", "")
+    mptopdf.data = gsub(mptopdf.data,"%%%%MetaPostSpecials: +(.-)%c+", "%1 specials\n", 1)
+    mptopdf.data = gsub(mptopdf.data,"%%%%MetaPostSpecial: +(.-)%c+", "%1 special\n")
+    mptopdf.data = gsub(mptopdf.data,"%%.-%c+", "")
 end
 
 function mptopdf.steps.cleanup()
     if not mptopdf.shortcuts then
-        mptopdf.data = mptopdf.data:gsub("gsave%s+fill%s+grestore%s+stroke", "both")
-        mptopdf.data = mptopdf.data:gsub("([%d%.]+)%s+([%d%.]+)%s+dtransform%s+exch%s+truncate%s+exch%s+idtransform%s+pop%s+setlinewidth", function(wx,wy)
+        mptopdf.data = gsub(mptopdf.data,"gsave%s+fill%s+grestore%s+stroke", "both")
+        mptopdf.data = gsub(mptopdf.data,"([%d%.]+)%s+([%d%.]+)%s+dtransform%s+exch%s+truncate%s+exch%s+idtransform%s+pop%s+setlinewidth", function(wx,wy)
             if tonumber(wx) > 0 then return wx .. " setlinewidth" else return wy .. " setlinewidth"  end
         end)
-        mptopdf.data = mptopdf.data:gsub("([%d%.]+)%s+([%d%.]+)%s+dtransform%s+truncate%s+idtransform%s+setlinewidth%s+pop", function(wx,wy)
+        mptopdf.data = gsub(mptopdf.data,"([%d%.]+)%s+([%d%.]+)%s+dtransform%s+truncate%s+idtransform%s+setlinewidth%s+pop", function(wx,wy)
             if tonumber(wx) > 0 then return wx .. " setlinewidth" else return wy .. " setlinewidth"  end
         end)
     end
 end
 
 function mptopdf.steps.convert()
-    mptopdf.data = mptopdf.data:gsub("%c%((.-)%) (.-) (.-) fshow", function(str,font,scale)
+    mptopdf.data = gsub(mptopdf.data,"%c%((.-)%) (.-) (.-) fshow", function(str,font,scale)
         mptopdf.texts[mptopdf.texts+1] = {mptopdf.steps.descape(str), font, scale}
         return "\n" .. #mptopdf.texts .. " textext"
     end)
-    mptopdf.data = mptopdf.data:gsub("%[%s*(.-)%s*%]", function(str)
-        return str:gsub("%s+"," ")
+    mptopdf.data = gsub(mptopdf.data,"%[%s*(.-)%s*%]", function(str)
+        return gsub(str,"%s+"," ")
     end)
     local t
-    mptopdf.data = mptopdf.data:gsub("%s*([^%a]-)%s*(%a+)", function(args,cmd)
+    mptopdf.data = gsub(mptopdf.data,"%s*([^%a]-)%s*(%a+)", function(args,cmd)
         if cmd == "textext" then
             t = mptopdf.texts[tonumber(args)]
             return "mps.textext(" ..  "\"" .. t[2] .. "\"," .. t[3] .. ",\"" .. t[1] .. "\")\n"
         else
-            return "mps." .. cmd .. "(" .. args:gsub(" +",",") .. ")\n"
+            return "mps." .. cmd .. "(" .. gsub(args," +",",") .. ")\n"
         end
     end)
 end
@@ -445,7 +445,7 @@ do -- assumes \let\c\char
     local package = lpeg.Cs(spec + text^0)
 
     function mps.fshow(str,font,scale) -- lpeg parser
-        mps.textext(font,scale,package:match(str))
+        mps.textext(font,scale,lpegmatch(package,str))
     end
 
 end
@@ -579,10 +579,10 @@ do
     local captures_new = ( space + procset + preamble + verbose )^0
 
     function mptopdf.parsers.lpeg()
-        if mptopdf.data:find("%%%%BeginResource: procset mpost") then
-            captures_new:match(mptopdf.data)
+        if find(mptopdf.data,"%%%%BeginResource: procset mpost") then
+            lpegmatch(captures_new,mptopdf.data)
         else
-            captures_old:match(mptopdf.data)
+            lpegmatch(captures_old,mptopdf.data)
         end
     end
 

@@ -12,6 +12,7 @@ local next, tonumber = next, tonumber
 local gsub, lower, match, find, lower, upper = string.gsub, string.lower, string.match, string.find, string.lower, string.upper
 local find, gmatch = string.find, string.gmatch
 local concat, sort, format = table.concat, table.sort, string.format
+local lpegmatch = lpeg.match
 
 local trace_names    = false  trackers.register("fonts.names",    function(v) trace_names    = v end)
 local trace_warnings = false  trackers.register("fonts.warnings", function(v) trace_warnings = v end)
@@ -106,10 +107,10 @@ local analyser = Cs (
 local splitter = lpeg.splitat("-")
 
 function names.splitspec(askedname)
-    local name, weight, style, width = splitter:match(askedname)
-    weight = weight and weights:match(weight) or weight
-    style  = style  and styles :match(style)  or style
-    width  = width  and widths :match(width)  or width
+    local name, weight, style, width = lpegmatch(splitter,askedname)
+    weight = weight and lpegmatch(weights,weight) or weight
+    style  = style  and lpegmatch(styles, style)  or style
+    width  = width  and lpegmatch(widths, width)  or width
     if trace_names then
         logs.report("fonts","requested name '%s' split in name '%s', weight '%s', style '%s' and width '%s'",askedname,name or '',weight or '',style or '',width or '')
     end
@@ -125,7 +126,7 @@ end
 local function analysespec(somename)
     if somename then
         analysed_table = { }
-        local name = analyser:match(somename)
+        local name = lpegmatch(analyser,somename)
         return name, analysed_table[1], analysed_table[2],analysed_table[3]
     end
 end

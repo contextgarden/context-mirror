@@ -11,7 +11,8 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 -- section, metadata cache (internal then has to move up one level) or a
 -- shared cache [we can use a fast and stupid serializer]
 
-local format, tonumber = string.format, tonumber
+local format, gmatch = string.format, string.gmatch
+local tonumber = tonumber
 local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write, tex.count
 local concat, insert, remove = table.concat, table.insert, table.remove
 
@@ -139,7 +140,7 @@ local function filter_collected(names, criterium, number, collected, nested)
     local numbers, depth = documents.data.numbers, documents.data.depth
     local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
     if not all then
-        for s in names:gmatch("[^, ]+") do
+        for s in gmatch(names,"[^, ]+") do
             if trace_lists then
                 logs.report("lists","filtering: %s",s)
             end

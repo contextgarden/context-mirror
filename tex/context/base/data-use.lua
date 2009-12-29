@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-use'] = {
     license   = "see context related readme files"
 }
 
-local format, lower, gsub = string.format, string.lower, string.gsub
+local format, lower, gsub, find = string.format, string.lower, string.gsub, string.find
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -62,9 +62,9 @@ function resolvers.automount(usecache)
             if f then
                 for line in f:lines() do
                     if line then
-                        if line:find("^[%%#%-]") then -- or %W
+                        if find(line,"^[%%#%-]") then -- or %W
                             -- skip
-                        elseif line:find("^zip://") then
+                        elseif find(line,"^zip://") then
                             if trace_locating then
                                 logs.report("fileio","mounting %s",line)
                             end

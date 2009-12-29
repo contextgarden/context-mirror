@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['chem-ini'] = {
 }
 
 local format, texsprint = string.format, tex.sprint
+local lpegmatch = lpeg.match
 
 local trace_molecules = false  trackers.register("chemistry.molecules",  function(v) trace_molecules = v end)
 
@@ -60,15 +61,15 @@ local parser     = lpeg.Cs((csname + lowhigh + highlow + low + high + sign + any
 chemicals.moleculeparser = parser -- can be used to avoid functioncall
 
 function chemicals.molecule(str)
-    return parser:match(str)
+    return lpegmatch(parser,str)
 end
 
 function commands.molecule(str)
     if trace_molecules then
-        local rep = parser:match(str)
+        local rep = lpegmatch(parser,str)
         logs.report("chemistry", "molecule %s => %s",str,rep)
         texsprint(ctxcatcodes,rep)
     else
-        texsprint(ctxcatcodes,parser:match(str))
+        texsprint(ctxcatcodes,lpegmatch(parser,str))
     end
 end

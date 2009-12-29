@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['luat-exe'] = {
     license   = "see context related readme files"
 }
 
+local match, find = string.match, string.find
+local concat = table.concat
+
 if not executer then executer = { } end
 
 executer.permitted = { }
@@ -24,18 +27,18 @@ function executer.finalize() -- todo: os.exec, todo: report ipv print
         local t, name, arguments = {...}, "", ""
         if #t == 1 then
             if type(t[1]) == 'table' then
-                name, arguments = t[1], table.concat(t," ",2,#t)
+                name, arguments = t[1], concat(t," ",2,#t)
             else
-                name, arguments = t[1]:match("^(.-)%s+(.+)$")
+                name, arguments = match(t[1],"^(.-)%s+(.+)$")
                 if not (name and arguments) then
                     name, arguments = t[1], ""
                 end
             end
         else
-            name, arguments = t[1], table.concat(t," ",2,#t)
+            name, arguments = t[1], concat(t," ",2,#t)
         end
         for _,v in pairs(executer.permitted) do
-            if name:find(v) then
+            if find(name,v) then
                 execute(name .. " " .. arguments)
             --  print("executed: " .. name .. " " .. arguments)
             else

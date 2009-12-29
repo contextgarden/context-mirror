@@ -1661,16 +1661,13 @@
 %usemodule[x][asciimath]
 
 \startxmlsetups mml:annotation
-    \xmldoifelse {#1} {[oneof(@encoding,'TeX','tex','TEX','ConTeXt','context','CONTEXT','ctx')]} {
-       \begingroup
-           \setcatcodetable\ctxcatcodes
-           \xmlflush{#1}
-       \endgroup
+    \xmldoifelse {#1} {.[oneof(@encoding,'TeX','tex','TEX','ConTeXt','context','CONTEXT','ctx')]} {
+        \xmlflushcontext{#1}
     } {
-        \xmldoifelse {#1} {[oneof(@encoding,'calcmath','cm')]} {
+        \xmldoifelse {#1} {.[oneof(@encoding,'calcmath','cm')]} {
             \expanded{\calcmath{\xmlflush{#1}}}
         } {
-            \xmldoifelse {#1} {[oneof(@encoding,'asciimath','am')]} {
+            \xmldoifelse {#1} {.[oneof(@encoding,'asciimath','am')]} {
                 \ifdefined\asciimath
                     \expanded{\asciimath{\xmlflush{#1}}}
                 \else
@@ -1855,12 +1852,12 @@
 % setups
 
 \startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
-    \ctxlua{lxml.mml.mi("#1","/*")}
+    \ctxlua{lxml.mml.mi("#1")}
 \stopxmlsetups
 
 \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
     \begingroup
-        \mr \ctxlua{lxml.mml.mn("#1","/*")}% no \hbox, would be ok for . , but spoils rest
+        \mr \ctxlua{lxml.mml.mn("#1")}% no \hbox, would be ok for . , but spoils rest
     \endgroup
 \stopxmlsetups
 
@@ -1871,7 +1868,7 @@
 \startxmlsetups mml:mo
     \doif {\xmlatt{#1}{maxsize}}  {1}     {\settrue\mmlignoredelimiter}
     \doif {\xmlatt{#1}{stretchy}} {false} {\settrue\mmlignoredelimiter}
-    \ctxlua{lxml.mml.mo("#1","/*")}
+    \ctxlua{lxml.mml.mo("#1")}
     \setfalse\mmlignoredelimiter
 \stopxmlsetups
 
@@ -1879,7 +1876,7 @@
     \def\MMLleft  {\left }% weird
     \def\MMLright {\right}
     \def\MMLmiddle{\middle}
-    \ctxlua{lxml.mml.mfenced("#1","/*")}
+    \ctxlua{lxml.mml.mfenced("#1")}
 \stopxmlsetups
 
 \defineoverlay [mml:enclose:box]                [\useMPgraphic{mml:enclose:box}]

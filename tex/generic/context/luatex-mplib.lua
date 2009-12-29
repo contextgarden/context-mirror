@@ -22,7 +22,7 @@ if metapost and metapost.version then
 
 else
 
-    local format, concat, abs = string.format, table.concat, math.abs
+    local format, concat, abs, match = string.format, table.concat, math.abs, string.match
 
     local mplib = require ('mplib')
     local kpse = require ('kpse')
@@ -320,7 +320,7 @@ else
                     metapost.report("flushing figure %s",f)
                     local figure = figures[f]
                     local objects = getobjects(result,figure,f)
-                    local fignum = tonumber((figure:filename()):match("([%d]+)$") or figure:charcode() or 0)
+                    local fignum = match(tonumber((figure:filename())),"([%d]+)$") or figure:charcode() or 0)
                     local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                     local bbox = figure:boundingbox()
                     local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack

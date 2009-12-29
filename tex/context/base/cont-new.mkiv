@@ -63,12 +63,6 @@
 % \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}
 % \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}
 
-\startluacode
-    statistics.register("result saved in file", function()
-        return string.format( "%s.%s", "\outputfilename", (tex.pdfoutput>0 and "pdf") or "dvi")
-    end)
-\stopluacode
-
 %D For the moment we report some statistics. Later this will become an option,
 %D but for now we need this information.
 

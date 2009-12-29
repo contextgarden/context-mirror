@@ -13,6 +13,7 @@ local char, byte, format, gsub, concat = string.char, string.byte, string.format
 local utfvalues = string.utfvalues
 local texwrite = tex.write
 local sind, cosd = math.sind, math.cosd
+local lpegmatch = lpeg.match
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
@@ -54,7 +55,7 @@ local function toeight(str)
  -- if not str or str == "" then
  --     return "()"
  -- else
- --     return escaped:match(str)
+ --     return lpegmatch(escaped,str)
  -- end
  --
  -- no need for escaping .. just use unicode instead
@@ -71,7 +72,7 @@ local function cleaned(str)
     if not str or str == "" then
         return "()"
     else
-        return escaped:match(str)
+        return lpegmatch(escaped,str)
     end
 end
 

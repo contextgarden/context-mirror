@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['l-dir'] = {
 }
 
 local type = type
-local find, gmatch = string.find, string.gmatch
+local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
+local lpegmatch = lpeg.match
 
 dir = dir or { }
 
@@ -100,14 +101,14 @@ local function glob(str,t)
         t[#t+1] = str
         return t
     else
-        local split = pattern:match(str)
+        local split = lpegmatch(pattern,str)
         if split then
             local t = t or { }
             local action = action or function(name) t[#t+1] = name end
             local root, path, base = split[1], split[2], split[3]
             local recurse = find(base,"%*%*")
             local start = root .. path
-            local result = filter:match(start .. base)
+            local result = lpegmatch(filter,start .. base)
             glob_pattern(start,result,recurse,action)
             return t
         else
@@ -188,13 +189,13 @@ if string.find(os.getenv("PATH"),";") then
         end
         local first, middle, last
         local drive = false
-        first, middle, last = str:match("^(//)(//*)(.*)$")
+        first, middle, last = match(str,"^(//)(//*)(.*)$")
         if first then
             -- empty network path == local path
         else
-            first, last = str:match("^(//)/*(.-)$")
+            first, last = match(str,"^(//)/*(.-)$")
             if first then
-                middle, last = str:match("([^/]+)/+(.-)$")
+                middle, last = match(str,"([^/]+)/+(.-)$")
                 if middle then
                     pth = "//" .. middle
                 else
@@ -202,11 +203,11 @@ if string.find(os.getenv("PATH"),";") then
                     last = ""
                 end
             else
-                first, middle, last = str:match("^([a-zA-Z]:)(/*)(.-)$")
+                first, middle, last = match(str,"^([a-zA-Z]:)(/*)(.-)$")
                 if first then
                     pth, drive = first .. middle, true
                 else
-                    middle, last = str:match("^(/*)(.-)$")
+                    middle, last = match(str,"^(/*)(.-)$")
                     if not middle then
                         last = str
                     end
@@ -241,33 +242,33 @@ if string.find(os.getenv("PATH"),";") then
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
     function dir.expand_name(str)
-        local first, nothing, last = str:match("^(//)(//*)(.*)$")
+        local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
             first = lfs.currentdir() .. "/"
-            first = first:gsub("\\","/")
+            first = gsub(first,"\\","/")
         end
         if not first then
-            first, last = str:match("^(//)/*(.*)$")
+            first, last = match(str,"^(//)/*(.*)$")
         end
         if not first then
-            first, last = str:match("^([a-zA-Z]:)(.*)$")
+            first, last = match(str,"^([a-zA-Z]:)(.*)$")
             if first and not find(last,"^/") then
                 local d = lfs.currentdir()
                 if lfs.chdir(first) then
                     first = lfs.currentdir()
-                    first = first:gsub("\\","/")
+                    first = gsub(first,"\\","/")
                 end
                 lfs.chdir(d)
             end
         end
         if not first then
             first, last = lfs.currentdir(), str
-            first = first:gsub("\\","/")
+            first = gsub(first,"\\","/")
         end
-        last = last:gsub("//","/")
-        last = last:gsub("/%./","/")
-        last = last:gsub("^/*","")
-        first = first:gsub("/*$","")
+        last = gsub(last,"//","/")
+        last = gsub(last,"/%./","/")
+        last = gsub(last,"^/*","")
+        first = gsub(first,"/*$","")
         if last == "" then
             return first
         else
@@ -288,7 +289,7 @@ else
                 end
             end
         end
-        str = str:gsub("/+","/")
+        str = gsub(str,"/+","/")
         if find(str,"^/") then
             pth = "/"
             for s in gmatch(str,"[^/]+") do
@@ -326,8 +327,8 @@ else
         if not find(str,"^/") then
             str = lfs.currentdir() .. "/" .. str
         end
-        str = str:gsub("//","/")
-        str = str:gsub("/%./","/")
+        str = gsub(str,"//","/")
+        str = gsub(str,"/%./","/")
         return str
     end
 

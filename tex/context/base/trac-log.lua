@@ -11,7 +11,8 @@ if not modules then modules = { } end modules ['trac-log'] = {
 --~ io.stdout:setvbuf("no")
 --~ io.stderr:setvbuf("no")
 
-local write_nl, write, format = texio.write_nl or print, texio.write or io.write, string.format
+local write_nl, write = texio.write_nl or print, texio.write or io.write
+local format, gmatch = string.format, string.gmatch
 local texcount = tex and tex.count
 
 if texlua then
@@ -265,7 +266,7 @@ logs.report  = logs.tex.report
 logs.simple  = logs.tex.report
 
 function logs.reportlines(str) -- todo: <lines></lines>
-    for line in str:gmatch("(.-)[\n\r]") do
+    for line in gmatch(str,"(.-)[\n\r]") do
         logs.report(line)
     end
 end

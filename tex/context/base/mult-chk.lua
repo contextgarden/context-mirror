@@ -7,9 +7,9 @@ if not modules then modules = { } end modules ['mult-chk'] = {
 }
 
 local format = string.format
+local lpegmatch = lpeg.match
 local type = type
-local texsprint = tex.sprint
-local ctxcatcodes = tex.ctxcatcodes
+local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 interfaces = interfaces or { }
 
@@ -59,7 +59,7 @@ function commands.getcheckedparameters(k,p,s)
     if s and s ~= "" then
         prefix, kind = p, k
         keys = k and k ~= "" and interfaces.syntax[k].keys
-        pattern:match(s)
+        lpegmatch(pattern,s)
     end
 end
 

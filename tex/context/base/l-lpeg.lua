@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 lpeg = require("lpeg")
 
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local match = lpeg.match
 
 --~ l-lpeg.lua :
 
@@ -61,15 +62,15 @@ local content  = (empty + nonempty)^1
 local capture = Ct(content^0)
 
 function string:splitlines()
-    return capture:match(self)
+    return match(capture,self)
 end
 
 lpeg.linebyline = content -- better make a sublibrary
 
---~ local p = lpeg.splitat("->",false)  print(p:match("oeps->what->more"))  -- oeps what more
---~ local p = lpeg.splitat("->",true)   print(p:match("oeps->what->more"))  -- oeps what->more
---~ local p = lpeg.splitat("->",false)  print(p:match("oeps"))              -- oeps
---~ local p = lpeg.splitat("->",true)   print(p:match("oeps"))              -- oeps
+--~ local p = lpeg.splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
+--~ local p = lpeg.splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
+--~ local p = lpeg.splitat("->",false)  print(match(p,"oeps"))              -- oeps
+--~ local p = lpeg.splitat("->",true)   print(match(p,"oeps"))              -- oeps
 
 local splitters_s, splitters_m = { }, { }
 
@@ -100,7 +101,7 @@ function string:split(separator)
         c = Ct(splitat(separator))
         cache[separator] = c
     end
-    return c:match(self)
+    return match(c,self)
 end
 
 local cache = { }
@@ -113,7 +114,7 @@ function string:checkedsplit(separator)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return c:match(self)
+    return match(c,self)
 end
 
 --~ function lpeg.L(list,pp)

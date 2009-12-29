@@ -30,8 +30,9 @@ xml = xml or { }
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
-local format, lower, find = string.format, string.lower, string.find
+local format, lower, find, match = string.format, string.lower, string.find, string.match
 local utfchar = unicode.utf8.char
+local lpegmatch = lpeg.match
 
 --[[ldx--
 <p>First a hack to enable namespace resolving. A namespace is characterized by
@@ -71,7 +72,7 @@ xml.checkns("m","http://www.w3.org/mathml")
 --ldx]]--
 
 function xml.checkns(namespace,url)
-    local ns = parse:match(lower(url))
+    local ns = lpegmatch(parse,lower(url))
     if ns and namespace ~= ns then
         xml.xmlns[namespace] = ns
     end
@@ -89,7 +90,7 @@ This returns <t>mml</t>.
 --ldx]]--
 
 function xml.resolvens(url)
-     return parse:match(lower(url)) or ""
+     return lpegmatch(parse,lower(url)) or ""
 end
 
 --[[ldx--
@@ -356,7 +357,7 @@ local function handle_any_entity(str)
                 if trace_entities then
                     logs.report("xml","resolved entity &%s; -> %s (internal)",str,a)
                 end
-                a = parsedentity:match(a) or a
+                a = lpegmatch(parsedentity,a) or a
             else
                 if xml.unknown_any_entity_format then
                     a = xml.unknown_any_entity_format(str) or ""
@@ -535,13 +536,13 @@ local function xmlconvert(data, settings)
     if not data or data == "" then
         errorstr = "empty xml file"
     elseif utfize or resolve then
-        if grammar_parsed_text:match(data) then
+        if lpegmatch(grammar_parsed_text,data) then
             errorstr = ""
         else
             errorstr = "invalid xml file - parsed text"
         end
     else
-        if grammar_unparsed_text:match(data) then
+        if lpegmatch(grammar_unparsed_text,data) then
             errorstr = ""
         else
             errorstr = "invalid xml file - unparsed text"
@@ -592,7 +593,7 @@ function xml.is_valid(root)
 end
 
 function xml.package(tag,attributes,data)
-    local ns, tg = tag:match("^(.-):?([^:]+)$")
+    local ns, tg = match(tag,"^(.-):?([^:]+)$")
     local t = { ns = ns, tg = tg, dt = data or "", at = attributes or {} }
     setmetatable(t, mt)
     return t

@@ -9,11 +9,12 @@ if not modules then modules = { } end modules ['x-mathml'] = {
 local type, pairs = type, pairs
 local utf = unicode.utf8
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
-local format, lower = string.format, string.lower
-local utfchar, utffind, utfgmatch  = utf.char, utf.find, utf.gmatch
-local xmlsprint, xmlcprint, xmltext = xml.sprint, xml.cprint, xml.text
+local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
+local utfchar, utffind, utfgmatch, utfgsub  = utf.char, utf.find, utf.gmatch, utf.gsub
+local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
 local lxmltext, get_id = lxml.text, lxml.get_id
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
+local lpegmatch = lpeg.match
 
 lxml.mml = lxml.mml or { }
 
@@ -442,39 +443,11 @@ function xml.functions.remapopenmath(e)
 end
 
 function lxml.mml.checked_operator(str)
-    texsprint(ctxcatcodes,(utf.gsub(str,".",o_replacements)))
+    texsprint(ctxcatcodes,(utfgsub(str,".",o_replacements)))
 end
 
 function lxml.mml.stripped(str)
     tex.sprint(ctxcatcodes,str:strip())
-end
-
-function lxml.mml.mn(id,pattern)
-    -- maybe at some point we need to interpret the number, but
-    -- currently we assume an upright font
-    local str = xmltext(get_id(id),pattern) or ""
-    str = str:gsub("(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
-    texsprint(ctxcatcodes,(str:gsub(".",n_replacements)))
-end
-
-function characters.remapentity(chr,slot)
-    texsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
-end
-
-function lxml.mml.mo(id,pattern)
-    local str = xmltext(get_id(id),pattern) or ""
-    texsprint(ctxcatcodes,(utf.gsub(str,".",o_replacements)))
-end
-
-function lxml.mml.mi(id,pattern)
-    local str = xmltext(get_id(id),pattern) or ""
-    -- str = str:gsub("^%s*(.-)%s*$","%1")
-    local rep = i_replacements[str]
-    if rep then
-        texsprint(ctxcatcodes,rep)
-    else
-        texsprint(ctxcatcodes,(str:gsub(".",i_replacements)))
-    end
 end
 
 function table.keys_as_string(t)
@@ -488,7 +461,35 @@ end
 --~ local leftdelimiters  = "[" .. table.keys_as_string(l_replacements) .. "]"
 --~ local rightdelimiters = "[" .. table.keys_as_string(r_replacements) .. "]"
 
-function lxml.mml.mfenced(id,pattern) -- multiple separators
+function characters.remapentity(chr,slot)
+    texsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
+end
+
+function lxml.mml.mn(id,pattern)
+    -- maybe at some point we need to interpret the number, but
+    -- currently we assume an upright font
+    local str = xmlcontent(get_id(id)) or ""
+    str = gsub(str,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
+    texsprint(ctxcatcodes,(gsub(str,".",n_replacements)))
+end
+
+function lxml.mml.mo(id)
+    local str = xmlcontent(get_id(id)) or ""
+    texsprint(ctxcatcodes,(utfgsub(str,".",o_replacements)))
+end
+
+function lxml.mml.mi(id)
+    local str = xmlcontent(get_id(id)) or ""
+    -- str = gsub(str,"^%s*(.-)%s*$","%1")
+    local rep = i_replacements[str]
+    if rep then
+        texsprint(ctxcatcodes,rep)
+    else
+        texsprint(ctxcatcodes,(gsub(str,".",i_replacements)))
+    end
+end
+
+function lxml.mml.mfenced(id) -- multiple separators
     id = get_id(id)
     local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
     local l, r = l_replacements[left], r_replacements[right]
@@ -500,13 +501,14 @@ function lxml.mml.mfenced(id,pattern) -- multiple separators
         texsprint(ctxcatcodes,left)
     end
     texsprint(ctxcatcodes,"\\disabledelimiter")
-    local collected = lxml.filter(id,pattern)
+    local collected = lxml.filter(id,"/*") -- check the *
     if collected then
         local n = #collected
         if n == 0 then
             -- skip
         elseif n == 1 then
-            lxml.all(id,pattern)
+            xmlsprint(collected[1]) -- to be checked
+--~             lxml.all(id,"/*")
         else
             local t = { }
             for s in utfgmatch(separators,"[^%s]") do
@@ -669,9 +671,9 @@ function lxml.mml.mcolumn(root)
 --~                         if type(mc) ~= "string" then
 --~                             n, p = false, false
 --~                             break
---~                         elseif mc:find("^[%d ]$") then -- rangecheck is faster
+--~                         elseif find(mc,"^[%d ]$") then -- rangecheck is faster
 --~                             -- digit
---~                         elseif not mc:find("^[%.%,]$") then -- rangecheck is faster
+--~                         elseif not find(mc,"^[%.%,]$") then -- rangecheck is faster
 --~                             -- punctuation
 --~                         else
 --~                             n = false
@@ -710,9 +712,9 @@ function lxml.mml.mtable(root)
     local rowalign     = at.rowalign
     local columnalign  = at.columnalign
     local frame        = at.frame
-    local rowaligns    = rowalign    and spacesplitter:match(rowalign)
-    local columnaligns = columnalign and spacesplitter:match(columnalign)
-    local frames       = frame       and spacesplitter:match(frame)
+    local rowaligns    = rowalign    and lpegmatch(spacesplitter,rowalign)
+    local columnaligns = columnalign and lpegmatch(spacesplitter,columnalign)
+    local frames       = frame       and lpegmatch(spacesplitter,frame)
     local framespacing = at.framespacing or "0pt"
     local framespacing = at.framespacing or "-\\ruledlinewidth" -- make this an option
 
@@ -777,6 +779,6 @@ function lxml.mml.menclosepattern(root)
     root = get_id(root)
     local a = root.at.notation
     if a and a ~= "" then
-        texsprint("mml:enclose:",a:gsub(" +",",mml:enclose:"))
+        texsprint("mml:enclose:",gsub(a," +",",mml:enclose:"))
     end
 end

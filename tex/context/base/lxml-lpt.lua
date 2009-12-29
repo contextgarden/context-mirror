@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['lxml-pth'] = {
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
+local lpegmatch = lpeg.match
 
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
@@ -508,8 +509,7 @@ local cleaner
 
 local lp_special = (C(P("name")+P("text")+P("tag")+P("count")+P("child"))) * value / function(t,s)
     if expressions[t] then
-        s = s and s ~= "" and cleaner:match(s)
---~ print("!!!",t,s)
+        s = s and s ~= "" and lpegmatch(cleaner,s)
         if s and s ~= "" then
             return "expr." .. t .. "(ll," .. s ..")"
         else
@@ -566,6 +566,31 @@ local template_f_n = [[
 
 --
 
+local register_self                    = { kind = "axis", axis = "self"                    } -- , apply = apply_axis["self"]               }
+local register_parent                  = { kind = "axis", axis = "parent"                  } -- , apply = apply_axis["parent"]             }
+local register_descendant              = { kind = "axis", axis = "descendant"              } -- , apply = apply_axis["descendant"]         }
+local register_child                   = { kind = "axis", axis = "child"                   } -- , apply = apply_axis["child"]              }
+local register_descendant_or_self      = { kind = "axis", axis = "descendant-or-self"      } -- , apply = apply_axis["descendant-or-self"] }
+local register_root                    = { kind = "axis", axis = "root"                    } -- , apply = apply_axis["root"]               }
+local register_ancestor                = { kind = "axis", axis = "ancestor"                } -- , apply = apply_axis["ancestor"]           }
+local register_ancestor_or_self        = { kind = "axis", axis = "ancestor-or-self"        } -- , apply = apply_axis["ancestor-or-self"]   }
+local register_attribute               = { kind = "axis", axis = "attribute"               } -- , apply = apply_axis["attribute"]          }
+local register_namespace               = { kind = "axis", axis = "namespace"               } -- , apply = apply_axis["namespace"]          }
+local register_following               = { kind = "axis", axis = "following"               } -- , apply = apply_axis["following"]          }
+local register_following_sibling       = { kind = "axis", axis = "following-sibling"       } -- , apply = apply_axis["following-sibling"]  }
+local register_preceding               = { kind = "axis", axis = "preceding"               } -- , apply = apply_axis["preceding"]          }
+local register_preceding_sibling       = { kind = "axis", axis = "preceding-sibling"       } -- , apply = apply_axis["preceding-sibling"]  }
+local register_reverse_sibling         = { kind = "axis", axis = "reverse-sibling"         } -- , apply = apply_axis["reverse-sibling"]    }
+
+local register_auto_descendant_or_self = { kind = "axis", axis = "auto-descendant-or-self" } -- , apply = apply_axis["auto-descendant-or-self"] }
+local register_auto_descendant         = { kind = "axis", axis = "auto-descendant"         } -- , apply = apply_axis["auto-descendant"] }
+local register_auto_self               = { kind = "axis", axis = "auto-self"               } -- , apply = apply_axis["auto-self"] }
+local register_auto_child              = { kind = "axis", axis = "auto-child"              } -- , apply = apply_axis["auto-child"] }
+
+local register_initial_child           = { kind = "axis", axis = "initial-child"           } -- , apply = apply_axis["initial-child"] }
+
+local register_all_nodes               = { kind = "nodes", nodetest = true, nodes = { true, false, false } }
+
 local function errorrunner_e(str,cnv)
     logs.report("lpath","error in expression: %s => %s",str,cnv)
     return false
@@ -580,7 +605,7 @@ local function register_nodes(nodetest,nodes)
 end
 
 local function register_expression(expression)
-    local converted = converter:match(expression)
+    local converted = lpegmatch(converter,expression)
     local runner = loadstring(format(template_e,converted))
     runner = (runner and runner()) or function() errorrunner_e(expression,converted) end
     return { kind = "expression", expression = expression, converted = converted, evaluator = runner }
@@ -612,39 +637,22 @@ local arguments = P { "ar",
 
 -- todo: better arg parser
 
-local register_self                    = { kind = "axis", axis = "self"                    } -- , apply = apply_axis["self"]               }
-local register_parent                  = { kind = "axis", axis = "parent"                  } -- , apply = apply_axis["parent"]             }
-local register_descendant              = { kind = "axis", axis = "descendant"              } -- , apply = apply_axis["descendant"]         }
-local register_child                   = { kind = "axis", axis = "child"                   } -- , apply = apply_axis["child"]              }
-local register_descendant_or_self      = { kind = "axis", axis = "descendant-or-self"      } -- , apply = apply_axis["descendant-or-self"] }
-local register_root                    = { kind = "axis", axis = "root"                    } -- , apply = apply_axis["root"]               }
-local register_ancestor                = { kind = "axis", axis = "ancestor"                } -- , apply = apply_axis["ancestor"]           }
-local register_ancestor_or_self        = { kind = "axis", axis = "ancestor-or-self"        } -- , apply = apply_axis["ancestor-or-self"]   }
-local register_attribute               = { kind = "axis", axis = "attribute"               } -- , apply = apply_axis["attribute"]          }
-local register_namespace               = { kind = "axis", axis = "namespace"               } -- , apply = apply_axis["namespace"]          }
-local register_following               = { kind = "axis", axis = "following"               } -- , apply = apply_axis["following"]          }
-local register_following_sibling       = { kind = "axis", axis = "following-sibling"       } -- , apply = apply_axis["following-sibling"]  }
-local register_preceding               = { kind = "axis", axis = "preceding"               } -- , apply = apply_axis["preceding"]          }
-local register_preceding_sibling       = { kind = "axis", axis = "preceding-sibling"       } -- , apply = apply_axis["preceding-sibling"]  }
-local register_reverse_sibling         = { kind = "axis", axis = "reverse-sibling"         } -- , apply = apply_axis["reverse-sibling"]    }
-
-local register_auto_descendant_or_self = { kind = "axis", axis = "auto-descendant-or-self" } -- , apply = apply_axis["auto-descendant-or-self"] }
-local register_auto_descendant         = { kind = "axis", axis = "auto-descendant"         } -- , apply = apply_axis["auto-descendant"] }
-local register_auto_self               = { kind = "axis", axis = "auto-self"               } -- , apply = apply_axis["auto-self"] }
-local register_auto_child              = { kind = "axis", axis = "auto-child"              } -- , apply = apply_axis["auto-child"] }
-
-local register_initial_child           = { kind = "axis", axis = "initial-child"           } -- , apply = apply_axis["initial-child"] }
-
-local register_all_nodes               = { kind = "nodes", nodetest = true, nodes = { true, false, false } }
-
 local function register_error(str)
-    return { kind = "error", comment = format("unparsed: %s",str) }
+    return { kind = "error", error = format("unparsed: %s",str) }
 end
+
+-- there is a difference in * and /*/ and so we need to catch a few special cases
+
+local special_1 = P("*")  * Cc(register_auto_descendant) * Cc(register_all_nodes) -- last one not needed
+local special_2 = P("/")  * Cc(register_auto_self)
+local special_3 = P("")   * Cc(register_auto_self)
 
 local parser = Ct { "patterns", -- can be made a bit faster by moving pattern outside
 
-    patterns             = spaces * V("protocol") * spaces * V("initial") * spaces * V("step") * spaces *
-                           (P("/") * spaces * V("step") * spaces)^0,
+    patterns             = spaces * V("protocol") * spaces * (
+                              ( V("special") * spaces * P(-1)                                                         ) +
+                              ( V("initial") * spaces * V("step") * spaces * (P("/") * spaces * V("step") * spaces)^0 )
+                           ),
 
     protocol             = Cg(V("letters"),"protocol") * P("://") + Cg(Cc(nil),"protocol"),
 
@@ -657,6 +665,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
                            V("reverse_sibling") + V("preceding_sibling") + V("preceding") + V("ancestor_or_self") +
                            #(1-P(-1)) * Cc(register_auto_child),
 
+    special              = special_1 + special_2 + special_3,
+
     initial              = (P("/") * spaces * Cc(register_initial_child))^-1,
 
     error                = (P(1)^1) / register_error,
@@ -668,7 +678,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
     s_descendant_or_self = (P("***/") + P("/"))  * Cc(register_descendant_or_self), --- *** is a bonus
  -- s_descendant_or_self = P("/")                * Cc(register_descendant_or_self),
     s_descendant         = P("**")               * Cc(register_descendant),
-    s_child              = P("*")  * #(1-P(":")) * Cc(register_child     ),
+    s_child              = P("*") * #(1-P(":"))  * Cc(register_child     ),
+--  s_child              = P("*") * #(P("/")+P(-1)) * Cc(register_child     ),
     s_parent             = P("..")               * Cc(register_parent    ),
     s_self               = P("." )               * Cc(register_self      ),
     s_root               = P("^^")               * Cc(register_root      ),
@@ -744,6 +755,8 @@ end
 
 xml.nodesettostring = nodesettostring
 
+local parse_pattern -- we have a harmless kind of circular reference
+
 local function lshow(parsed)
     if type(parsed) == "string" then
         parsed = parse_pattern(parsed)
@@ -756,7 +769,16 @@ end
 
 xml.lshow = lshow
 
-local function parse_pattern(pattern) -- the gain of caching is rather minimal
+local function add_comment(p,str)
+    local pc = p.comment
+    if not pc then
+        p.comment = { str }
+    else
+        pc[#pc+1] = str
+    end
+end
+
+parse_pattern = function (pattern) -- the gain of caching is rather minimal
     lpathcalls = lpathcalls + 1
     if type(pattern) == "table" then
         return pattern
@@ -765,7 +787,7 @@ local function parse_pattern(pattern) -- the gain of caching is rather minimal
         if parsed then
             lpathcached = lpathcached + 1
         else
-            parsed = parser:match(pattern)
+            parsed = lpegmatch(parser,pattern)
             if parsed then
                 parsed.pattern = pattern
                 local np = #parsed
@@ -774,18 +796,32 @@ local function parse_pattern(pattern) -- the gain of caching is rather minimal
                     logs.report("lpath","parsing error in '%s'",pattern)
                     lshow(parsed)
                 else
-                    -- we could have done this with a more complex parsed but this
+                    -- we could have done this with a more complex parser but this
                     -- is cleaner
                     local pi = parsed[1]
                     if pi.axis == "auto-child" then
-                        parsed.comment = "auto-child replaced by auto-descendant-or-self"
-                        parsed[1] = register_auto_descendant_or_self
-                    --~ parsed.comment = "auto-child replaced by auto-descendant"
-                    --~ parsed[1] = register_auto_descendant
+                        if false then
+                            add_comment(parsed, "auto-child replaced by auto-descendant-or-self")
+                            parsed[1] = register_auto_descendant_or_self
+                        else
+                            add_comment(parsed, "auto-child replaced by auto-descendant")
+                            parsed[1] = register_auto_descendant
+                        end
                     elseif pi.axis == "initial-child" and np > 1 and parsed[2].axis then
-                        parsed.comment = "initial-child removed" -- we could also make it a auto-self
+                        add_comment(parsed, "initial-child removed") -- we could also make it a auto-self
                         remove(parsed,1)
                     end
+local np = #parsed -- can have changed
+if np > 1 then
+    local pnp = parsed[np]
+    if pnp.kind == "nodes" and pnp.nodetest == true then
+        local nodes = pnp.nodes
+        if nodes[1] == true and nodes[2] == false and nodes[3] == false then
+            add_comment(parsed, "redundant final wildcard filter removed")
+            remove(parsed,np)
+        end
+    end
+end
                 end
             else
                 parsed = { pattern = pattern }

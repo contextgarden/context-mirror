@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
     license   = "see context related readme files",
 }
 
-local format, concat = string.format, table.concat
+local format, concat, gsub = string.format, table.concat, string.gsub
 local texsprint = tex.sprint
 local abs, sqrt, round = math.abs, math.sqrt, math.round
 
@@ -119,7 +119,7 @@ function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
 end
 
 function metapost.flushers.pdf.textfigure(font,size,text,width,height,depth) -- we could save the factor
-    text = text:gsub(".","\\hbox{%1}") -- kerning happens in metapost (i have to check if this is true for mplib)
+    text = gsub(text,".","\\hbox{%1}") -- kerning happens in metapost (i have to check if this is true for mplib)
     texsprint(ctxcatcodes,format("\\MPLIBtextext{%s}{%s}{%s}{%s}{%s}",font,size,text,0,-number.dimenfactors.bp*depth))
 end
 

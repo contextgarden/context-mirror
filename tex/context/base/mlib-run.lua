@@ -31,10 +31,9 @@ nears zero.</p>
 
 local trace_graphics = false  trackers.register("metapost.graphics", function(v) trace_graphics = v end)
 
-local format = string.format
+local format, gsub, match = string.format, string.gsub, string.match
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
-
 
 metapost = metapost or { }
 
@@ -164,8 +163,8 @@ function metapost.checkformat(mpsinput, mpsformat, dirname)
             if not result.log then
                 metapost.reporterror(result)
             else
-                local version = result.log:match(">> *(.-)[\n\r]") or "unknown"
-                version = version:gsub("[\'\"]","")
+                local version = match(result.log,">> *(.-)[\n\r]") or "unknown"
+                version = gsub(version,"[\'\"]","")
                 if version ~= the_version then
                     commands.writestatus("mplib","version mismatch: %s <> %s", version or "unknown", the_version)
                 else

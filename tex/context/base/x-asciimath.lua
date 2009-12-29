@@ -14,6 +14,7 @@ local trace_mapping = false  if trackers then trackers.register("asciimath.mappi
 
 local format = string.format
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local lpegmatch = lpeg.match
 
 local S, P, R, C, V, Cc, Ct, Cs = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs
 
@@ -165,17 +166,17 @@ local function converted(original,totex)
     if trace_mapping then
         logs.report("asciimath","original  : %s",original)
     end
-    local premapped = premapper:match(original)
+    local premapped = lpegmatch(premapper,original)
     if premapped then
         if trace_mapping then
             logs.report("asciimath","prepared  : %s",premapped)
         end
-        local parsed = parser:match(premapped)
+        local parsed = lpegmatch(parser,premapped)
         if parsed then
             if trace_mapping then
                 logs.report("asciimath","parsed    : %s",parsed)
             end
-            local postmapped = postmapper:match(parsed)
+            local postmapped = lpegmatch(postmapper,parsed)
             if postmapped then
                 if trace_mapping then
                     logs.report("asciimath","finalized : %s",postmapped)
@@ -202,7 +203,7 @@ local function converted(original,totex)
 end
 
 local function onlyconverted(str)
-    local parsed = parser:match(str)
+    local parsed = lpegmatch(parser,str)
     return parsed or str
 end
 

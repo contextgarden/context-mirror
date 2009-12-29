@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 12/26/09 22:27:58
+-- merge date  : 12/29/09 22:36:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -13,6 +13,7 @@ if not modules then modules = { } end modules ['l-string'] = {
 }
 
 local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
+local lpegmatch = lpeg.match
 
 -- some functions may disappear as they are not used anywhere
 
@@ -83,9 +84,19 @@ function string:limit(n,sentinel)
     end
 end
 
-function string:strip() -- the .- is quite efficient
---  return match(self,"^%s*(.-)%s*$") or ""
-    return match(self,'^%s*(.*%S)') or '' -- posted on lua list
+--~ function string:strip() -- the .- is quite efficient
+--~  -- return match(self,"^%s*(.-)%s*$") or ""
+--~  -- return match(self,'^%s*(.*%S)') or '' -- posted on lua list
+--~     return find(s,'^%s*$') and '' or match(s,'^%s*(.*%S)')
+--~ end
+
+do -- roberto's variant:
+    local space    = lpeg.S(" \t\v\n")
+    local nospace  = 1 - space
+    local stripper = space^0 * lpeg.C((space^0 * nospace^1)^0)
+    function string.strip(str)
+        return lpegmatch(stripper,str) or ""
+    end
 end
 
 function string:is_empty()
@@ -222,7 +233,7 @@ end
 local pattern = lpeg.Ct(lpeg.C(1)^0)
 
 function string:totable()
-    return pattern:match(self)
+    return lpegmatch(pattern,self)
 end
 
 --~ for _, str in ipairs {
@@ -294,6 +305,7 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 lpeg = require("lpeg")
 
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local match = lpeg.match
 
 --~ l-lpeg.lua :
 
@@ -346,15 +358,15 @@ local content  = (empty + nonempty)^1
 local capture = Ct(content^0)
 
 function string:splitlines()
-    return capture:match(self)
+    return match(capture,self)
 end
 
 lpeg.linebyline = content -- better make a sublibrary
 
---~ local p = lpeg.splitat("->",false)  print(p:match("oeps->what->more"))  -- oeps what more
---~ local p = lpeg.splitat("->",true)   print(p:match("oeps->what->more"))  -- oeps what->more
---~ local p = lpeg.splitat("->",false)  print(p:match("oeps"))              -- oeps
---~ local p = lpeg.splitat("->",true)   print(p:match("oeps"))              -- oeps
+--~ local p = lpeg.splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
+--~ local p = lpeg.splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
+--~ local p = lpeg.splitat("->",false)  print(match(p,"oeps"))              -- oeps
+--~ local p = lpeg.splitat("->",true)   print(match(p,"oeps"))              -- oeps
 
 local splitters_s, splitters_m = { }, { }
 
@@ -385,7 +397,7 @@ function string:split(separator)
         c = Ct(splitat(separator))
         cache[separator] = c
     end
-    return c:match(self)
+    return match(c,self)
 end
 
 local cache = { }
@@ -398,7 +410,7 @@ function string:checkedsplit(separator)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return c:match(self)
+    return match(c,self)
 end
 
 --~ function lpeg.L(list,pp)
@@ -1434,7 +1446,8 @@ if not modules then modules = { } end modules ['l-file'] = {
 file = file or { }
 
 local concat = table.concat
-local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
+local find, gmatch, match, gsub, sub = string.find, string.gmatch, string.match, string.gsub, string.sub
+local lpegmatch = lpeg.match
 
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
@@ -1492,12 +1505,12 @@ end
 
 function file.iswritable(name)
     local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
-    return a and a.permissions:sub(2,2) == "w"
+    return a and sub(a.permissions,2,2) == "w"
 end
 
 function file.isreadable(name)
     local a = lfs.attributes(name)
-    return a and a.permissions:sub(1,1) == "r"
+    return a and sub(a.permissions,1,1) == "r"
 end
 
 file.is_readable = file.isreadable
@@ -1572,27 +1585,27 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.C(noperiod^1) * -1
 
 --~ function file.extname(name)
---~     return pattern:match(name) or ""
+--~     return lpegmatch(pattern,name) or ""
 --~ end
 
 --~ local pattern = lpeg.Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 
 --~ function file.removesuffix(name)
---~     return pattern:match(name)
+--~     return lpegmatch(pattern,name)
 --~ end
 
 --~ local pattern = (noslashes^0 * slashes)^1 * lpeg.C(noslashes^1) * -1
 
 --~ function file.basename(name)
---~     return pattern:match(name) or name
+--~     return lpegmatch(pattern,name) or name
 --~ end
 
 --~ local pattern = (noslashes^0 * slashes)^1 * lpeg.Cp() * noslashes^1 * -1
 
 --~ function file.dirname(name)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
---~         return name:sub(1,p-2)
+--~         return sub(name,1,p-2)
 --~     else
 --~         return ""
 --~     end
@@ -1601,7 +1614,7 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
 
 --~ function file.addsuffix(name, suffix)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
 --~         return name
 --~     else
@@ -1612,9 +1625,9 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
 
 --~ function file.replacesuffix(name,suffix)
---~     local p = pattern:match(name)
+--~     local p = lpegmatch(pattern,name)
 --~     if p then
---~         return name:sub(1,p-2) .. "." .. suffix
+--~         return sub(name,1,p-2) .. "." .. suffix
 --~     else
 --~         return name .. "." .. suffix
 --~     end
@@ -1623,11 +1636,11 @@ end
 --~ local pattern = (noslashes^0 * slashes)^0 * lpeg.Cp() * ((noperiod^1 * period)^1 * lpeg.Cp() + lpeg.P(true)) * noperiod^1 * -1
 
 --~ function file.nameonly(name)
---~     local a, b = pattern:match(name)
+--~     local a, b = lpegmatch(pattern,name)
 --~     if b then
---~         return name:sub(a,b-2)
+--~         return sub(name,a,b-2)
 --~     elseif a then
---~         return name:sub(a)
+--~         return sub(name,a)
 --~     else
 --~         return name
 --~     end
@@ -1661,11 +1674,11 @@ local rootbased = lpeg.P("/") + letter*lpeg.P(":")
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)
-    return qualified:match(filename) ~= nil
+    return lpegmatch(qualified,filename) ~= nil
 end
 
 function file.is_rootbased_path(filename)
-    return rootbased:match(filename) ~= nil
+    return lpegmatch(rootbased,filename) ~= nil
 end
 
 local slash  = lpeg.S("\\/")
@@ -1678,7 +1691,7 @@ local base   = lpeg.C((1-suffix)^0)
 local pattern = (drive + lpeg.Cc("")) * (path + lpeg.Cc("")) * (base + lpeg.Cc("")) * (suffix + lpeg.Cc(""))
 
 function file.splitname(str) -- returns drive, path, base, suffix
-    return pattern:match(str)
+    return lpegmatch(pattern,str)
 end
 
 -- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end
@@ -1700,7 +1713,7 @@ if not modules then modules = { } end modules ['l-io'] = {
     license   = "see context related readme files"
 }
 
-local byte = string.byte
+local byte, find, gsub = string.byte, string.find, string.gsub
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -1858,7 +1871,7 @@ function io.ask(question,default,options)
         end
         io.write(string.format(" "))
         local answer = io.read()
-        answer = answer:gsub("^%s*(.*)%s*$","%1")
+        answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then
             return default
         elseif not options then
@@ -1871,7 +1884,7 @@ function io.ask(question,default,options)
             end
             local pattern = "^" .. answer
             for _,v in pairs(options) do
-                if v:find(pattern) then
+                if find(v,pattern) then
                     return v
                 end
             end
@@ -4182,6 +4195,7 @@ if not modules then modules = { } end modules ['font-cid'] = {
 
 local format, match, lower = string.format, string.match, string.lower
 local tonumber = tonumber
+local lpegmatch = lpeg.match
 
 local trace_loading = false  trackers.register("otf.loading",      function(v) trace_loading      = v end)
 
@@ -4235,7 +4249,7 @@ function fonts.cid.load(filename)
     local data = io.loaddata(filename)
     if data then
         unicodes, names = { }, { }
-        grammar:match(data)
+        lpegmatch(grammar,data)
         local supplement, registry, ordering = match(filename,"^(.-)%-(.-)%-()%.(.-)$")
         return {
             supplement = supplement,
@@ -5287,6 +5301,7 @@ local utf = unicode.utf8
 local concat, getn, utfbyte = table.concat, table.getn, utf.byte
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
+local lpegmatch = lpeg.match
 
 local trace_private    = false  trackers.register("otf.private",      function(v) trace_private      = v end)
 local trace_loading    = false  trackers.register("otf.loading",      function(v) trace_loading      = v end)
@@ -5359,7 +5374,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.641 -- beware: also sync font-mis.lua
+otf.version          = 2.642 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -5483,6 +5498,7 @@ local enhancers = {
     "reorganize mark classes",
     "reorganize kerns", -- moved here
     "flatten glyph lookups", "flatten anchor tables", "flatten feature tables",
+    "simplify glyph lookups", -- some saving
     "prepare luatex tables",
     "analyse features", "rehash features",
     "analyse anchors", "analyse marks", "analyse unicodes", "analyse subtables",
@@ -5779,11 +5795,11 @@ local separator   = lpeg.S("_.")
 local other       = lpeg.C((1 - separator)^1)
 local ligsplitter = lpeg.Ct(other * (separator * other)^0)
 
---~ print(table.serialize(ligsplitter:match("this")))
---~ print(table.serialize(ligsplitter:match("this.that")))
---~ print(table.serialize(ligsplitter:match("japan1.123")))
---~ print(table.serialize(ligsplitter:match("such_so_more")))
---~ print(table.serialize(ligsplitter:match("such_so_more.that")))
+--~ print(table.serialize(lpegmatch(ligsplitter,"this")))
+--~ print(table.serialize(lpegmatch(ligsplitter,"this.that")))
+--~ print(table.serialize(lpegmatch(ligsplitter,"japan1.123")))
+--~ print(table.serialize(lpegmatch(ligsplitter,"such_so_more")))
+--~ print(table.serialize(lpegmatch(ligsplitter,"such_so_more.that")))
 
 otf.enhancers["analyse unicodes"] = function(data,filename)
     local tounicode16, tounicode16sequence = fonts.map.tounicode16, fonts.map.tounicode16sequence
@@ -5821,13 +5837,13 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
             -- cidmap heuristics, beware, there is no guarantee for a match unless
             -- the chain resolves
             if (not unicode) and usedmap then
-                local foundindex = oparser:match(name)
+                local foundindex = lpegmatch(oparser,name)
                 if foundindex then
                     unicode = cidcodes[foundindex] -- name to number
                     if not unicode then
                         local reference = cidnames[foundindex] -- number to name
                         if reference then
-                            local foundindex = oparser:match(reference)
+                            local foundindex = lpegmatch(oparser,reference)
                             if foundindex then
                                 unicode = cidcodes[foundindex]
                                 if unicode then
@@ -5835,7 +5851,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
                                 end
                             end
                             if not unicode then
-                                local foundcodes, multiple = uparser:match(reference)
+                                local foundcodes, multiple = lpegmatch(uparser,reference)
                                 if foundcodes then
                                     if multiple then
                                         originals[index], tounicode[index], nl, unicode = foundcodes, tounicode16sequence(foundcodes), nl + 1, true
@@ -5850,7 +5866,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
             end
             -- a.whatever or a_b_c.whatever or a_b_c (no numbers)
             if not unicode then
-                local split = ligsplitter:match(name)
+                local split = lpegmatch(ligsplitter,name)
                 local nplit = (split and #split) or 0
                 if nplit == 0 then
                     -- skip
@@ -5883,7 +5899,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
             end
             -- last resort
             if not unicode then
-                local foundcodes, multiple = uparser:match(name)
+                local foundcodes, multiple = lpegmatch(uparser,name)
                 if foundcodes then
                     if multiple then
                         originals[index], tounicode[index], nl, unicode = foundcodes, tounicode16sequence(foundcodes), nl + 1, true
@@ -6469,8 +6485,9 @@ end
 
 otf.enhancers["flatten glyph lookups"] = function(data,filename)
     for k, v in next, data.glyphs do
-        if v.lookups then
-            for kk, vv in next, v.lookups do
+        local lookups = v.lookups
+        if lookups then
+            for kk, vv in next, lookups do
                 for kkk=1,#vv do
                     local vvv = vv[kkk]
                     local s = vvv.specification
@@ -6516,6 +6533,31 @@ otf.enhancers["flatten glyph lookups"] = function(data,filename)
                     end
                 end
             end
+        end
+    end
+end
+
+otf.enhancers["simplify glyph lookups"] = function(data,filename)
+    for k, v in next, data.glyphs do
+        local lookups = v.lookups
+        if lookups then
+            local slookups, mlookups
+            for kk, vv in next, lookups do
+                if #vv == 1 then
+                    if not slookups then
+                        slookups = { }
+                        v.slookups = slookups
+                    end
+                    slookups[kk] = vv[1]
+                else
+                    if not mlookups then
+                        mlookups = { }
+                        v.mlookups = mlookups
+                    end
+                    mlookups[kk] = vv
+                end
+            end
+            v.lookups = nil
         end
     end
 end
@@ -6760,7 +6802,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
                     local variants = m.horiz_variants
                     if variants then
                         local c = char
-                        for n in variants:gmatch("[^ ]+") do
+                        for n in gmatch(variants,"[^ ]+") do
                             local un = unicodes[n]
                             if un and u ~= un then
                                 c.next = un
@@ -6772,7 +6814,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
                         local variants = m.vert_variants
                         if variants then
                             local c = char
-                            for n in variants:gmatch("[^ ]+") do
+                            for n in gmatch(variants,"[^ ]+") do
                                 local un = unicodes[n]
                                 if un and u ~= un then
                                     c.next = un
@@ -7101,6 +7143,7 @@ if not modules then modules = { } end modules ['font-otb'] = {
 local concat = table.concat
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
+local lpegmatch = lpeg.match
 
 local otf = fonts.otf
 local tfm = fonts.tfm
@@ -7161,7 +7204,7 @@ local function resolve_ligatures(tfmdata,ligatures,kind)
         for k,v in next, ligatures do
             local lig = v[1]
             if not done[lig] then
-                local ligs = split_at_space:match(lig)
+                local ligs = lpegmatch(split_at_space,lig)
                 if #ligs == 2 then
                     local uc = v[2]
                     local c, f, s = characters[uc], ligs[1], ligs[2]
@@ -7269,9 +7312,84 @@ function prepare_base_substitutions(tfmdata,kind,value) -- we can share some cod
             local characters = tfmdata.characters
             local descriptions = tfmdata.descriptions
             local changed = tfmdata.changed
+            --
+            local actions = {
+                substitution = function(p,lookup,k,glyph,unicode)
+                    local pv = p[2] -- p.variant
+                    if pv then
+                        local upv = unicodes[pv]
+                        if upv then
+                            if type(upv) == "table" then
+                                upv = upv[1]
+                            end
+                            if characters[upv] then
+                                if trace_baseinit and trace_singles then
+                                    logs.report("define otf","%s: base substitution %s => %s",cref(kind,lookup),gref(descriptions,k),gref(descriptions,upv))
+                                end
+                                changed[k] = upv
+                            end
+                        end
+                    end
+                end,
+                alternate = function(p,lookup,k,glyph,unicode)
+                    local pc = p[2] -- p.components
+                    if pc then
+                        -- a bit optimized ugliness
+                        if value == 1 then
+                            pc = lpegmatch(splitter,pc)
+                        elseif value == 2 then
+                            local a, b = lpegmatch(splitter,pc)
+                            pc = b or a
+                        else
+                            pc = { lpegmatch(splitter,pc) }
+                            pc = pc[value] or pc[#pc]
+                        end
+                        if pc then
+                            local upc = unicodes[pc]
+                            if upc then
+                                if type(upc) == "table" then
+                                    upc = upc[1]
+                                end
+                                if characters[upc] then
+                                    if trace_baseinit and trace_alternatives then
+                                        logs.report("define otf","%s: base alternate %s => %s",cref(kind,lookup),gref(descriptions,k),gref(descriptions,upc))
+                                    end
+                                    changed[k] = upc
+                                end
+                            end
+                        end
+                    end
+                end,
+                ligature = function(p,lookup,k,glyph,unicode)
+                    local pc = p[2]
+                    if pc then
+                        if trace_baseinit and trace_ligatures then
+                            local upc = { lpegmatch(splitter,pc) }
+                            for i=1,#upc do upc[i] = unicodes[upc[i]] end
+                            -- we assume that it's no table
+                            logs.report("define otf","%s: base ligature %s => %s",cref(kind,lookup),gref(descriptions,upc),gref(descriptions,k))
+                        end
+                        ligatures[#ligatures+1] = { pc, k }
+                    end
+                end,
+            }
+            --
             for k,c in next, characters do
                 local glyph = descriptions[k]
-                local lookups = glyph.lookups
+                local lookups = glyph.slookups
+                if lookups then
+                    for l=1,#lookuplist do
+                        local lookup = lookuplist[l]
+                        local p = lookups[lookup]
+                        if p then
+                            local a = actions[p[1]]
+                            if a then
+                                a(p,lookup,k,glyph,unicode)
+                            end
+                        end
+                    end
+                end
+                local lookups = glyph.mlookups
                 if lookups then
                     for l=1,#lookuplist do
                         local lookup = lookuplist[l]
@@ -7279,62 +7397,9 @@ function prepare_base_substitutions(tfmdata,kind,value) -- we can share some cod
                         if ps then
                             for i=1,#ps do
                                 local p = ps[i]
-                                local t = p[1]
-                                if t == 'substitution' then
-                                    local pv = p[2] -- p.variant
-                                    if pv then
-                                        local upv = unicodes[pv]
-                                        if upv then
-                                            if type(upv) == "table" then
-                                                upv = upv[1]
-                                            end
-                                            if characters[upv] then
-                                                if trace_baseinit and trace_singles then
-                                                    logs.report("define otf","%s: base substitution %s => %s",cref(kind,lookup),gref(descriptions,k),gref(descriptions,upv))
-                                                end
-                                                changed[k] = upv
-                                            end
-                                        end
-                                    end
-                                elseif t == 'alternate' then
-                                    local pc = p[2] -- p.components
-                                    if pc then
-                                        -- a bit optimized ugliness
-                                        if value == 1 then
-                                            pc = splitter:match(pc)
-                                        elseif value == 2 then
-                                            local a, b = splitter:match(pc)
-                                            pc = b or a
-                                        else
-                                            pc = { splitter:match(pc) }
-                                            pc = pc[value] or pc[#pc]
-                                        end
-                                        if pc then
-                                            local upc = unicodes[pc]
-                                            if upc then
-                                                if type(upc) == "table" then
-                                                    upc = upc[1]
-                                                end
-                                                if characters[upc] then
-                                                    if trace_baseinit and trace_alternatives then
-                                                        logs.report("define otf","%s: base alternate %s => %s",cref(kind,lookup),gref(descriptions,k),gref(descriptions,upc))
-                                                    end
-                                                    changed[k] = upc
-                                                end
-                                            end
-                                        end
-                                    end
-                                elseif t == 'ligature' and not changed[k] then
-                                    local pc = p[2]
-                                    if pc then
-                                        if trace_baseinit and trace_ligatures then
-                                            local upc = { splitter:match(pc) }
-                                            for i=1,#upc do upc[i] = unicodes[upc[i]] end
-                                            -- we assume that it's no table
-                                            logs.report("define otf","%s: base ligature %s => %s",cref(kind,lookup),gref(descriptions,upc),gref(descriptions,k))
-                                        end
-                                        ligatures[#ligatures+1] = { pc, k }
-                                    end
+                                local a = actions[p[1]]
+                                if a then
+                                    a(p,lookup,k,glyph,unicode)
                                 end
                             end
                         end
@@ -9743,141 +9808,152 @@ local function prepare_lookups(tfmdata)
     -- we can change the otf table after loading but then we need to adapt base mode
     -- as well (no big deal)
     --
+    local action = {
+        substitution = function(p,lookup,k,glyph,unicode)
+            local old, new = unicode, unicodes[p[2]]
+            if type(new) == "table" then
+                new = new[1]
+            end
+            local s = single[lookup]
+            if not s then s = { } single[lookup] = s end
+            s[old] = new
+        --~ if trace_lookups then
+        --~     logs.report("define otf","lookup %s: substitution %s => %s",lookup,old,new)
+        --~ end
+        end,
+        multiple = function (p,lookup,k,glyph,unicode)
+            local old, new = unicode, { }
+            local m = multiple[lookup]
+            if not m then m = { } multiple[lookup] = m end
+            m[old] = new
+            for pc in gmatch(p[2],"[^ ]+") do
+                local upc = unicodes[pc]
+                if type(upc) == "number" then
+                    new[#new+1] = upc
+                else
+                    new[#new+1] = upc[1]
+                end
+            end
+        --~ if trace_lookups then
+        --~     logs.report("define otf","lookup %s: multiple %s => %s",lookup,old,concat(new," "))
+        --~ end
+        end,
+        alternate = function(p,lookup,k,glyph,unicode)
+            local old, new = unicode, { }
+            local a = alternate[lookup]
+            if not a then a = { } alternate[lookup] = a end
+            a[old] = new
+            for pc in gmatch(p[2],"[^ ]+") do
+                local upc = unicodes[pc]
+                if type(upc) == "number" then
+                    new[#new+1] = upc
+                else
+                    new[#new+1] = upc[1]
+                end
+            end
+        --~ if trace_lookups then
+        --~     logs.report("define otf","lookup %s: alternate %s => %s",lookup,old,concat(new,"|"))
+        --~ end
+        end,
+        ligature = function (p,lookup,k,glyph,unicode)
+        --~ if trace_lookups then
+        --~     logs.report("define otf","lookup %s: ligature %s => %s",lookup,p[2],glyph.name)
+        --~ end
+            local first = true
+            local t = ligature[lookup]
+            if not t then t = { } ligature[lookup] = t end
+            for s in gmatch(p[2],"[^ ]+") do
+                if first then
+                    local u = unicodes[s]
+                    if not u then
+                        logs.report("define otf","lookup %s: ligature %s => %s ignored due to invalid unicode",lookup,p[2],glyph.name)
+                        break
+                    elseif type(u) == "number" then
+                        if not t[u] then
+                            t[u] = { { } }
+                        end
+                        t = t[u]
+                    else
+                        local tt = t
+                        local tu
+                        for i=1,#u do
+                            local u = u[i]
+                            if i==1 then
+                                if not t[u] then
+                                    t[u] = { { } }
+                                end
+                                tu = t[u]
+                                t = tu
+                            else
+                                if not t[u] then
+                                    tt[u] = tu
+                                end
+                            end
+                        end
+                    end
+                    first = false
+                else
+                    s = unicodes[s]
+                    local t1 = t[1]
+                    if not t1[s] then
+                        t1[s] = { { } }
+                    end
+                    t = t1[s]
+                end
+            end
+            t[2] = unicode
+        end,
+        position = function(p,lookup,k,glyph,unicode)
+            -- not used
+            local s = position[lookup]
+            if not s then s = { } position[lookup] = s end
+            s[unicode] = p[2] -- direct pointer to kern spec
+        end,
+        pair = function(p,lookup,k,glyph,unicode)
+            local s = pair[lookup]
+            if not s then s = { } pair[lookup] = s end
+            local others = s[unicode]
+            if not others then others = { } s[unicode] = others end
+            -- todo: fast check for space
+            local two = p[2]
+            local upc = unicodes[two]
+            if not upc then
+                for pc in gmatch(two,"[^ ]+") do
+                    local upc = unicodes[pc]
+                    if type(upc) == "number" then
+                        others[upc] = p -- direct pointer to main table
+                    else
+                        for i=1,#upc do
+                            others[upc[i]] = p -- direct pointer to main table
+                        end
+                    end
+                end
+            elseif type(upc) == "number" then
+                others[upc] = p -- direct pointer to main table
+            else
+                for i=1,#upc do
+                    others[upc[i]] = p -- direct pointer to main table
+                end
+            end
+        --~ if trace_lookups then
+        --~     logs.report("define otf","lookup %s: pair for U+%04X",lookup,unicode)
+        --~ end
+        end,
+    }
+    --
     for unicode, glyph in next, descriptions do
-        local lookups = glyph.lookups
+        local lookups = glyph.slookups
+        if lookups then
+            for lookup, p in next, lookups do
+                action[p[1]](p,lookup,k,glyph,unicode)
+            end
+        end
+        local lookups = glyph.mlookups
         if lookups then
             for lookup, whatever in next, lookups do
                 for i=1,#whatever do -- normaly one
                     local p = whatever[i]
-                    local what = p[1]
-                    if what == 'substitution' then
-                        local old, new = unicode, unicodes[p[2]]
-                        if type(new) == "table" then
-                            new = new[1]
-                        end
-                        local s = single[lookup]
-                        if not s then s = { } single[lookup] = s end
-                        s[old] = new
---~                             if trace_lookups then
---~                                 logs.report("define otf","lookup %s: substitution %s => %s",lookup,old,new)
---~                             end
-                        break
-                    elseif what == 'multiple' then
-                        local old, new = unicode, { }
-                        local m = multiple[lookup]
-                        if not m then m = { } multiple[lookup] = m end
-                        m[old] = new
-                        for pc in gmatch(p[2],"[^ ]+") do
-                            local upc = unicodes[pc]
-                            if type(upc) == "number" then
-                                new[#new+1] = upc
-                            else
-                                new[#new+1] = upc[1]
-                            end
-                        end
---~                             if trace_lookups then
---~                                 logs.report("define otf","lookup %s: multiple %s => %s",lookup,old,concat(new," "))
---~                             end
-                        break
-                    elseif what == 'alternate' then
-                        local old, new = unicode, { }
-                        local a = alternate[lookup]
-                        if not a then a = { } alternate[lookup] = a end
-                        a[old] = new
-                        for pc in gmatch(p[2],"[^ ]+") do
-                            local upc = unicodes[pc]
-                            if type(upc) == "number" then
-                                new[#new+1] = upc
-                            else
-                                new[#new+1] = upc[1]
-                            end
-                        end
---~                             if trace_lookups then
---~                                 logs.report("define otf","lookup %s: alternate %s => %s",lookup,old,concat(new,"|"))
---~                             end
-                        break
-                    elseif what == "ligature" then
---~                             if trace_lookups then
---~                                 logs.report("define otf","lookup %s: ligature %s => %s",lookup,p[2],glyph.name)
---~                             end
-                        local first = true
-                        local t = ligature[lookup]
-                        if not t then t = { } ligature[lookup] = t end
-                        for s in gmatch(p[2],"[^ ]+") do
-                            if first then
-                                local u = unicodes[s]
-                                if not u then
-                                    logs.report("define otf","lookup %s: ligature %s => %s ignored due to invalid unicode",lookup,p[2],glyph.name)
-                                    break
-                                elseif type(u) == "number" then
-                                    if not t[u] then
-                                        t[u] = { { } }
-                                    end
-                                    t = t[u]
-                                else
-                                    local tt = t
-                                    local tu
-                                    for i=1,#u do
-                                        local u = u[i]
-                                        if i==1 then
-                                            if not t[u] then
-                                                t[u] = { { } }
-                                            end
-                                            tu = t[u]
-                                            t = tu
-                                        else
-                                            if not t[u] then
-                                                tt[u] = tu
-                                            end
-                                        end
-                                    end
-                                end
-                                first = false
-                            else
-                                s = unicodes[s]
-                                local t1 = t[1]
-                                if not t1[s] then
-                                    t1[s] = { { } }
-                                end
-                                t = t1[s]
-                            end
-                        end
-                        t[2] = unicode
-                    elseif what == 'position' then
-                        -- not used
-                        local s = position[lookup]
-                        if not s then s = { } position[lookup] = s end
-                        s[unicode] = p[2] -- direct pointer to kern spec
-                    elseif what == 'pair' then
-                        local s = pair[lookup]
-                        if not s then s = { } pair[lookup] = s end
-                        local others = s[unicode]
-                        if not others then others = { } s[unicode] = others end
-                        -- todo: fast check for space
-                        local two = p[2]
-                        local upc = unicodes[two]
-                        if not upc then
-                            for pc in gmatch(two,"[^ ]+") do
-                                local upc = unicodes[pc]
-                                if type(upc) == "number" then
-                                    others[upc] = p -- direct pointer to main table
-                                else
-                                    for i=1,#upc do
-                                        others[upc[i]] = p -- direct pointer to main table
-                                    end
-                                end
-                            end
-                        elseif type(upc) == "number" then
-                            others[upc] = p -- direct pointer to main table
-                        else
-                            for i=1,#upc do
-                                others[upc[i]] = p -- direct pointer to main table
-                            end
-                        end
---~                             if trace_lookups then
---~                                 logs.report("define otf","lookup %s: pair for U+%04X",lookup,unicode)
---~                             end
-                    end
+                    action[p[1]](p,lookup,k,glyph,unicode)
                 end
             end
         end
@@ -9887,9 +9963,9 @@ local function prepare_lookups(tfmdata)
                 local k = kerns[lookup]
                 if not k then k = { } kerns[lookup] = k end
                 k[unicode] = krn -- ref to glyph, saves lookup
---~                     if trace_lookups then
---~                         logs.report("define otf","lookup %s: kern for U+%04X",lookup,unicode)
---~                     end
+            --~ if trace_lookups then
+            --~     logs.report("define otf","lookup %s: kern for U+%04X",lookup,unicode)
+            --~ end
             end
         end
         local oanchor = glyph.anchors
@@ -9903,9 +9979,9 @@ local function prepare_lookups(tfmdata)
                                 local f = mark[lookup]
                                 if not f then f = { } mark[lookup]  = f end
                                 f[unicode] = anchors -- ref to glyph, saves lookup
---~                                     if trace_lookups then
---~                                         logs.report("define otf","lookup %s: mark anchor %s for U+%04X",lookup,name,unicode)
---~                                     end
+                            --~ if trace_lookups then
+                            --~     logs.report("define otf","lookup %s: mark anchor %s for U+%04X",lookup,name,unicode)
+                            --~ end
                             end
                         end
                     end
@@ -9917,9 +9993,9 @@ local function prepare_lookups(tfmdata)
                                 local f = cursive[lookup]
                                 if not f then f = { } cursive[lookup]  = f end
                                 f[unicode] = anchors -- ref to glyph, saves lookup
---~                                     if trace_lookups then
---~                                         logs.report("define otf","lookup %s: exit anchor %s for U+%04X",lookup,name,unicode)
---~                                     end
+                            --~ if trace_lookups then
+                            --~     logs.report("define otf","lookup %s: exit anchor %s for U+%04X",lookup,name,unicode)
+                            --~ end
                             end
                         end
                     end
@@ -10657,6 +10733,7 @@ if not modules then modules = { } end modules ['font-def'] = {
 
 local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
 local tostring, next = tostring, next
+local lpegmatch = lpeg.match
 
 local trace_defining     = false  trackers  .register("fonts.defining", function(v) trace_defining     = v end)
 local directive_embedall = false  directives.register("fonts.embedall", function(v) directive_embedall = v end)
@@ -10757,7 +10834,7 @@ define.add_lookup("name")
 define.add_lookup("spec")
 
 function define.get_specification(str)
-    return splitter:match(str)
+    return lpegmatch(splitter,str)
 end
 
 function define.register_split(symbol,action)
@@ -11310,6 +11387,7 @@ if not modules then modules = { } end modules ['font-xtx'] = {
 local texsprint, count = tex.sprint, tex.count
 local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
 local tostring, next = tostring, next
+local lpegmatch = lpeg.match
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
@@ -11389,7 +11467,7 @@ local pattern    = (filename + fontname) * subvalue^0 * crapspec^0 * options^0
 
 function fonts.define.specify.colonized(specification) -- xetex mode
     list = { }
-    pattern:match(specification.specification)
+    lpegmatch(pattern,specification.specification)
     for k, v in next, list do
         list[k] = v:is_boolean()
         if type(list[a]) == "nil" then
@@ -11427,7 +11505,8 @@ if not modules then modules = { } end modules ['font-map'] = {
     license   = "see context related readme files"
 }
 
-local match, format, find, concat = string.match, string.format, string.find, table.concat
+local match, format, find, concat, gsub = string.match, string.format, string.find, table.concat, string.gsub
+local lpegmatch = lpeg.match
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
@@ -11509,7 +11588,7 @@ function fonts.map.load_file(filename, entries, encodings)
                     -- print(line)
                 else
                     local extend, slant, name, fullname, fontfile, encoding
-                    line = line:gsub('"(.+)"', function(s)
+                    line = gsub(line,'"(.+)"', function(s)
                         extend = find(s,'"([^"]+) ExtendFont"')
                         slant = find(s,'"([^"]+) SlantFont"')
                         return ""
@@ -11590,7 +11669,7 @@ end
 --~ local parser = fonts.map.make_name_parser("Japan1")
 --~ local parser = fonts.map.make_name_parser()
 --~ local function test(str)
---~     local b, a = parser:match(str)
+--~     local b, a = lpegmatch(parser,str)
 --~     print((a and table.serialize(b)) or b)
 --~ end
 --~ test("a.sc")

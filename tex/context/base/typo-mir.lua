@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['typo-mir'] = {
 local utf = unicode.utf8
 
 local next, type = next, type
-local format, insert = string.format, table.insert
+local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
 local utfchar = utf.char
 
 -- vertical space handler
@@ -323,8 +323,8 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
                 local subtype = current.subtype
                 if subtype == 6 then
                     local dir = current.dir
-                    local d = dir:sub(2,2) -- -- -- -- -- why is this not used
-                    if dir:find(".R.") then -- -- d == "R" or just dir == "TRT"
+                    local d = sub(dir,2,2)
+                    if d == 'R' then -- find(dir,".R.") / dir == "TRT"
                         autodir = -1
                     else
                         autodir = 1
@@ -335,8 +335,9 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
                     end
                 elseif subtype == 7 then
                     local dir = current.dir
-                    local sign = dir:sub(1,1)
-                    local dire = dir:sub(3,3)
+                 -- local sign = sub(dir,1,1)
+                 -- local dire = sub(dir,3,3)
+                    local sign, dire = match(dir,"^(.).(.)")
                     if dire == "R" then
                         if sign == "+" then
                             finish, autodir = "TRT", -1

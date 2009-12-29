@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['l-utils'] = {
 
 -- hm, quite unreadable
 
+local gsub = string.gsub
+local concat = table.concat
+
 if not utils        then utils        = { } end
 if not utils.merger then utils.merger = { } end
 if not utils.lua    then utils.lua    = { } end
@@ -45,7 +48,7 @@ function utils.merger._self_load_(name)
     end
     if data and utils.merger.strip_comment then
         -- saves some 20K
-        data = data:gsub("%-%-~[^\n\r]*[\r\n]", "")
+        data = gsub(data,"%-%-~[^\n\r]*[\r\n]", "")
     end
     return data or ""
 end
@@ -63,7 +66,7 @@ end
 
 function utils.merger._self_swap_(data,code)
     if data ~= "" then
-        return (data:gsub(utils.merger.pattern, function(s)
+        return (gsub(data,utils.merger.pattern, function(s)
             return "\n\n" .. "-- "..utils.merger.m_begin .. "\n" .. code .. "\n" .. "-- "..utils.merger.m_end .. "\n\n"
         end, 1))
     else
@@ -73,8 +76,8 @@ end
 
 --~ stripper:
 --~
---~ data = string.gsub(data,"%-%-~[^\n]*\n","")
---~ data = string.gsub(data,"\n\n+","\n")
+--~ data = gsub(data,"%-%-~[^\n]*\n","")
+--~ data = gsub(data,"\n\n+","\n")
 
 function utils.merger._self_libs_(libs,list)
     local result, f, frozen = { }, nil, false
@@ -84,7 +87,7 @@ function utils.merger._self_libs_(libs,list)
     local foundpath = nil
     for _, lib in ipairs(libs) do
         for _, pth in ipairs(list) do
-            pth = string.gsub(pth,"\\","/") -- file.clean_path
+            pth = gsub(pth,"\\","/") -- file.clean_path
             utils.report("checking library path %s",pth)
             local name = pth .. "/" .. lib
             if lfs.isfile(name) then
@@ -110,15 +113,15 @@ function utils.merger._self_libs_(libs,list)
             end
         end
         if #right > 0 then
-            utils.report("merged libraries: %s",table.concat(right," "))
+            utils.report("merged libraries: %s",concat(right," "))
         end
         if #wrong > 0 then
-            utils.report("skipped libraries: %s",table.concat(wrong," "))
+            utils.report("skipped libraries: %s",concat(wrong," "))
         end
     else
         utils.report("no valid library path found")
     end
-    return table.concat(result, "\n\n")
+    return concat(result, "\n\n")
 end
 
 function utils.merger.selfcreate(libs,list,target)

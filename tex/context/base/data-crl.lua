@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['data-crl'] = {
     license   = "see context related readme files"
 }
 
+local gsub = string.gsub
+
 curl = curl or { }
 
 curl.cached    = { }
@@ -14,9 +16,9 @@ curl.cachepath = caches.definepath("curl")
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
 function curl.fetch(protocol, name)
-    local cachename = curl.cachepath() .. "/" .. name:gsub("[^%a%d%.]+","-")
---  cachename = cachename:gsub("[\\/]", io.fileseparator)
-    cachename = cachename:gsub("[\\]", "/") -- cleanup
+    local cachename = curl.cachepath() .. "/" .. gsub(name,"[^%a%d%.]+","-")
+--  cachename = gsub(cachename,"[\\/]", io.fileseparator)
+    cachename = gsub(cachename,"[\\]", "/") -- cleanup
     if not curl.cached[name] then
         if not io.exists(cachename) then
             curl.cached[name] = cachename

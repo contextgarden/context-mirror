@@ -2,7 +2,7 @@
 
 \setupxml[method=mkiv,default=hidden]
 
-\usemodule[mathml]
+\usemodule[x][mathml]
 
 \xmlregisterdocumentsetup{ldx}{xml:mml:define}
 \xmlregisterdocumentsetup{ldx}{xml:ldx:define}
@@ -10,7 +10,8 @@
 \xmlregisterns{ldx}{ldx}
 
 \startxmlsetups xml:ldx:define
-    \xmlgrab {\xmldocument} {ldx:*} {*}
+%     \xmlgrab {\xmldocument} {ldx:*} {*}
+    \xmlsetsetup {#1} {ldx:*} {ldx:*}
 \stopxmlsetups
 
 % % %
@@ -95,7 +96,7 @@
         \dontleavehmode \hbox to \hsize \bgroup
             \strut
             \hskip.25\dimexpr\xmlattdef{#1}{n}{0}em\relax\relax % extra relax needed !
-            \xmldoif {\xmlatt{#1}{comment}} {yes} {\tt}
+            \doif {\xmlatt{#1}{comment}} {yes} {\tt}
             \xmlflush{#1}
             \hss
        \egroup
@@ -184,5 +185,7 @@
    height=middle,
    backspace=2cm,
    topspace=2cm]
+
+% \usemodule[inf-02]
 
 \endinput

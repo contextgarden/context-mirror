@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['colo-ini'] = {
 }
 
 local concat = table.concat
-local format, gmatch, gsub, lower, match = string.format, string.gmatch, string.gsub, string.lower, string.match
+local format, gmatch, gsub, lower, match, find = string.format, string.gmatch, string.gsub, string.lower, string.match, string.find
 local texsprint = tex.sprint
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -232,7 +232,7 @@ function colors.isblack(ca) -- maybe commands
 end
 
 function colors.definespotcolor(name,parent,str,global)
-    if parent == "" or parent:find("=") then
+    if parent == "" or find(parent,"=") then
         colors.registerspotcolor(name, parent)
     elseif name ~= parent then
         local cp = attributes_list[a_color][parent]

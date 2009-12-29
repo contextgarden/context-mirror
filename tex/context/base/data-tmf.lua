@@ -6,19 +6,22 @@ if not modules then modules = { } end modules ['data-tmf'] = {
     license   = "see context related readme files"
 }
 
+local find, gsub, match = string.find, string.gsub, string.match
+local getenv, setenv = os.getenv, os.setenv
+
 -- loads *.tmf files in minimal tree roots (to be optimized and documented)
 
 function resolvers.check_environment(tree)
     logs.simpleline()
-    os.setenv('TMP', os.getenv('TMP') or os.getenv('TEMP') or os.getenv('TMPDIR') or os.getenv('HOME'))
-    os.setenv('TEXOS', os.getenv('TEXOS') or ("texmf-" .. os.platform))
-    os.setenv('TEXPATH', (tree or "tex"):gsub("\/+$",''))
-    os.setenv('TEXMFOS', os.getenv('TEXPATH') .. "/" .. os.getenv('TEXOS'))
+    setenv('TMP', getenv('TMP') or getenv('TEMP') or getenv('TMPDIR') or getenv('HOME'))
+    setenv('TEXOS', getenv('TEXOS') or ("texmf-" .. os.platform))
+    setenv('TEXPATH', gsub(tree or "tex","\/+$",''))
+    setenv('TEXMFOS', getenv('TEXPATH') .. "/" .. getenv('TEXOS'))
     logs.simpleline()
-    logs.simple("preset : TEXPATH => %s", os.getenv('TEXPATH'))
-    logs.simple("preset : TEXOS   => %s", os.getenv('TEXOS'))
-    logs.simple("preset : TEXMFOS => %s", os.getenv('TEXMFOS'))
-    logs.simple("preset : TMP     => %s", os.getenv('TMP'))
+    logs.simple("preset : TEXPATH => %s", getenv('TEXPATH'))
+    logs.simple("preset : TEXOS   => %s", getenv('TEXOS'))
+    logs.simple("preset : TEXMFOS => %s", getenv('TEXMFOS'))
+    logs.simple("preset : TMP     => %s", getenv('TMP'))
     logs.simple('')
 end
 
@@ -26,27 +29,27 @@ function resolvers.load_environment(name) -- todo: key=value as well as lua
     local f = io.open(name)
     if f then
         for line in f:lines() do
-            if line:find("^[%%%#]") then
+            if find(line,"^[%%%#]") then
                 -- skip comment
             else
-                local key, how, value = line:match("^(.-)%s*([<=>%?]+)%s*(.*)%s*$")
+                local key, how, value = match(line,"^(.-)%s*([<=>%?]+)%s*(.*)%s*$")
                 if how then
-                    value = value:gsub("%%(.-)%%", function(v) return os.getenv(v) or "" end)
+                    value = gsub(value,"%%(.-)%%", function(v) return getenv(v) or "" end)
                         if how == "=" or how == "<<" then
-                            os.setenv(key,value)
+                            setenv(key,value)
                     elseif how == "?" or how == "??" then
-                            os.setenv(key,os.getenv(key) or value)
+                            setenv(key,getenv(key) or value)
                     elseif how == "<" or how == "+=" then
-                        if os.getenv(key) then
-                            os.setenv(key,os.getenv(key) .. io.fileseparator .. value)
+                        if getenv(key) then
+                            setenv(key,getenv(key) .. io.fileseparator .. value)
                         else
-                            os.setenv(key,value)
+                            setenv(key,value)
                         end
                     elseif how == ">" or how == "=+" then
-                        if os.getenv(key) then
-                            os.setenv(key,value .. io.pathseparator .. os.getenv(key))
+                        if getenv(key) then
+                            setenv(key,value .. io.pathseparator .. getenv(key))
                         else
-                            os.setenv(key,value)
+                            setenv(key,value)
                         end
                     end
                 end

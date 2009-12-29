@@ -28,10 +28,11 @@ local concat, texsprint, texprint, texwrite = table.concat, tex.sprint, tex.prin
 local utfbyte, utffind, utfgsub = utf.byte, utf.find, utf.gsub
 local type, next = type, next
 local huge = math.huge
-local byte, sub, find, char, gsub, rep, lower, format = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format
+local byte, sub, find, char, gsub, rep, lower, format, gmatch = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format, string.gmatch
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
+local lpegmatch = lpeg.match
 
 local data, flags, hooks, visualizers = buffers.data, buffers.flags, buffers.hooks, buffers.visualizers
 
@@ -70,11 +71,11 @@ function buffers.grab(name,begintag,endtag,bufferdata)
         buffers.level = buffers.level - 1
     else
         if dn == "" then
-            dn = bufferdata:sub(1,#bufferdata-1)
+            dn = sub(bufferdata,1,#bufferdata-1)
         else
-            dn = dn .. "\n" .. bufferdata:sub(1,#bufferdata-1)
+            dn = dn .. "\n" .. sub(bufferdata,1,#bufferdata-1)
         end
-        dn = dn:gsub("[\010\013]$","")
+        dn = gsub(dn,"[\010\013]$","")
         if flags.store_as_table then
             dn = dn:splitlines()
         end
@@ -185,7 +186,7 @@ end
 function buffers.typeline(str,n,m,line)
     n = n + 1
     buffers.verbatimbreak(n,m)
-    if str:find("%S") then
+    if find(str,"%S") then
         line = line + 1
         hooks.begin_of_line(line)
         hooks.flush_line(hooks.line(str))
@@ -252,7 +253,7 @@ function buffers.get(name)
                 texprint(b[i])
             end
         else
-            printer:match(b)
+            lpegmatch(printer,b)
         end
     end
 end
@@ -284,7 +285,7 @@ function buffers.collect(names,separator) -- no print
             end
         end
     else
-        for name in names:gmatch("[^,%s]+") do
+        for name in gmatch(names,"[^,%s]+") do
             local c = content(name,separator)
             if c ~= "" then
                 t[#t+1] = c
@@ -453,7 +454,7 @@ function default.line(str)
 end
 
 function default.flush_line(str)
-    str = str:gsub(" *[\n\r]+ *"," ")
+    str = gsub(str," *[\n\r]+ *"," ")
     if visualizers.obeyspace then
         for c in utfcharacters(str) do
             if c == " " then
@@ -493,7 +494,7 @@ buffers.commands.nested = "\\switchslantedtype "
 -- todo : utf + faster, direct print and such. no \\char, vrb catcodes, see end
 
 function visualizers.flush_nested(str, enable) -- no utf, kind of obsolete mess
-    str = str:gsub(" *[\n\r]+ *"," ")
+    str = gsub(str," *[\n\r]+ *"," ")
     local result, c, nested, i = "", "", 0, 1
     local commands = buffers.commands -- otherwise wrong commands
     while i < #str do -- slow
@@ -516,7 +517,7 @@ function visualizers.flush_nested(str, enable) -- no utf, kind of obsolete mess
             c = sub(str,i,i)
             if c == " " then
                 result = result .. "\\obs "
-            elseif c:find("%a") then
+            elseif find(c,"%a") then
                 result = result .. c
             else
                 result = result .. "\\char" .. byte(c) .. " "
@@ -661,6 +662,6 @@ end
 
 --~ str = [[test 123 test $oeps$]]
 
---~ pattern:match(str)
+--~ lpegmatch(pattern,str)
 
 

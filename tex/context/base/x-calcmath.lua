@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['x-calcmath'] = {
     license   = "see context related readme files"
 }
 
-local format, lower, upper, gsub = string.format, string.lower, string.upper, string.gsub
+local format, lower, upper, gsub, sub = string.format, string.lower, string.upper, string.gsub, string.sub
+local lpegmatch = lpeg.match
 
 tex = tex or { }
 
@@ -71,8 +72,8 @@ local symbols = {
 }
 
 local function nsub(str,tag,pre,post)
-    return (str:gsub(tag .. "(%b())", function(body)
-        return pre .. nsub(body:sub(2,-2),tag,pre,post) .. post
+    return (gsub(str,tag .. "(%b())", function(body)
+        return pre .. nsub(sub(body,2,-2),tag,pre,post) .. post
     end))
 end
 
@@ -80,87 +81,87 @@ function calcmath.totex(str,mode)
     if not frozen then freeze() end
     local n = 0
     -- crap
-    str = str:gsub("%s+"  , ' ')
+    str = gsub(str,"%s+",' ')
     -- xml
-    str = str:gsub("&(.-);", entities)
+    str = gsub(str,"&(.-);",entities)
     -- ...E...
-    str = str:gsub("([%-%+]?[%d%.%+%-]+)E([%-%+]?[%d%.]+)", "{\\SCINOT{%1}{%2}}")
+    str = gsub(str,"([%-%+]?[%d%.%+%-]+)E([%-%+]?[%d%.]+)", "{\\SCINOT{%1}{%2}}")
     -- ^-..
-    str = str:gsub( "%^([%-%+]*%d+)", "^{%1}")
+    str = gsub(str,"%^([%-%+]*%d+)", "^{%1}")
     -- ^(...)
-    str = nsub(str, "%^", "^{", "}")
+    str = nsub(str,"%^", "^{", "}")
     -- 1/x^2
     repeat
-        str, n = str:gsub("([%d%w%.]+)/([%d%w%.]+%^{[%d%w%.]+})", "\\frac{%1}{%2}")
+        str, n = gsub(str,"([%d%w%.]+)/([%d%w%.]+%^{[%d%w%.]+})", "\\frac{%1}{%2}")
     until n == 0
     -- todo: autoparenthesis
     -- int(a,b,c)
     for k, v in next, list_2_1 do
-        repeat str, n = str:gsub(k,v) until n == 0
+        repeat str, n = gsub(str,k,v) until n == 0
     end
     -- int(a,b)
     for k, v in next, list_2_2 do
-        repeat str, n = str:gsub(k, v) until n == 0
+        repeat str, n = gsub(str,k,v) until n == 0
     end
     -- int(a)
     for k, v in next, list_2_3 do
-        repeat str, n = str:gsub(k, v) until n == 0
+        repeat str, n = gsub(str,k,v) until n == 0
     end
     -- sin(x) => {\\sin(x)}
     for k, v in next, list_1_1 do
-        repeat str, n = str:gsub(k, v) until n == 0
+        repeat str, n = gsub(str,k,v) until n == 0
     end
     -- mean
     str = nsub(str, "mean", "\\OVERLINE{", "}")
     -- (1+x)/(1+x) => \\FRAC{1+x}{1+x}
     repeat
-        str, n = str:gsub("(%b())/(%b())", function(a,b)
-            return "\\FRAC{" .. a:sub(2,-2) .. "}{" .. b:sub(2,-2) .. "}"
+        str, n = gsub(str,"(%b())/(%b())", function(a,b)
+            return "\\FRAC{" .. sub(a,2,-2) .. "}{" .. sub(b,2,-2) .. "}"
         end )
     until n == 0
     -- (1+x)/x => \\FRAC{1+x}{x}
     repeat
-        str, n = str:gsub("(%b())/([%+%-]?[%.%d%w]+)", function(a,b)
-            return "\\FRAC{" .. a:sub(2,-2) .. "}{" .. b .. "}"
+        str, n = gsub(str,"(%b())/([%+%-]?[%.%d%w]+)", function(a,b)
+            return "\\FRAC{" .. sub(a,2,-2) .. "}{" .. b .. "}"
         end )
     until n == 0
     -- 1/(1+x) => \\FRAC{1}{1+x}
     repeat
-        str, n = str:gsub("([%.%d%w]+)/(%b())", function(a,b)
-            return "\\FRAC{" .. a .. "}{" .. b:sub(2,-2) .. "}"
+        str, n = gsub(str,"([%.%d%w]+)/(%b())", function(a,b)
+            return "\\FRAC{" .. a .. "}{" .. sub(b,2,-2) .. "}"
         end )
     until n == 0
     -- 1/x => \\FRAC{1}{x}
     repeat
-        str, n = str:gsub("([%.%d%w]+)/([%+%-]?[%.%d%w]+)", "\\FRAC{%1}{%2}")
+        str, n = gsub(str,"([%.%d%w]+)/([%+%-]?[%.%d%w]+)", "\\FRAC{%1}{%2}")
     until n == 0
     -- times
-    str = str:gsub("%*", " ")
+    str = gsub(str,"%*", " ")
     -- symbols -- we can use a table substitution here
-    str = str:gsub("([<>=][<>=]*)", symbols)
+    str = gsub(str,"([<>=][<>=]*)", symbols)
     -- functions
-    str = nsub(str, "sqrt", "\\SQRT{", "}")
-    str = nsub(str, "exp", "e^{", "}")
-    str = nsub(str, "abs", "\\left|", "\\right|")
+    str = nsub(str,"sqrt", "\\SQRT{", "}")
+    str = nsub(str,"exp", "e^{", "}")
+    str = nsub(str,"abs", "\\left|", "\\right|")
     -- d/D
-    str = nsub(str, "D", "{\\FRAC{\\MBOX{d}}{\\MBOX{d}x}{(", ")}}")
-    str = str:gsub("D([xy])", "\\FRAC{{\\RM d}%1}{{\\RM d}x}")
+    str = nsub(str,"D", "{\\FRAC{\\MBOX{d}}{\\MBOX{d}x}{(", ")}}")
+    str = gsub(str,"D([xy])", "\\FRAC{{\\RM d}%1}{{\\RM d}x}")
     -- f/g
     for k,v in next, list_3 do -- todo : prepare k,v
-        str = nsub(str, "D"..v,"{\\RM "..v.."}^{\\PRIME}(",")")
-        str = nsub(str, v,"{\\RM "..v.."}(",")")
+        str = nsub(str,"D"..v,"{\\RM "..v.."}^{\\PRIME}(",")")
+        str = nsub(str,v,"{\\RM "..v.."}(",")")
     end
     -- more symbols
     for k,v in next, list_4_1 do
-        str = str:gsub(k, v)
+        str = gsub(str,k,v)
     end
     -- parenthesis (optional)
     if mode == 2 then
-      str = str:gsub("%(", "\\left\(")
-      str = str:gsub("%)", "\\right\)")
+      str = gsub(str,"%(", "\\left\(")
+      str = gsub(str,"%)", "\\right\)")
     end
     -- csnames
-    str = str:gsub("(\\[A-Z]+)", lower)
+    str = gsub(str,"(\\[A-Z]+)", lower)
     -- trace
 --~     print(str)
     -- report
@@ -351,11 +352,11 @@ if false then
     calcmath = { }
 
     function calcmath.parse(str)
-        return parser:match(str)
+        return lpegmatch(parser,str)
     end
 
     function calcmath.tex(str)
-        str = totex(parser:match(str))
+        str = totex(lpegmatch(parser,str))
         return (str == "" and "[error]") or str
     end
 

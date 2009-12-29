@@ -6,14 +6,16 @@ if not modules then modules = { } end modules ['l-number'] = {
     license   = "see context related readme files"
 }
 
-local format, foor, insert = string.format, math.floor, table.insert
+local tostring = tostring
+local format, floor, insert, match = string.format, math.floor, table.insert, string.match
+local lpegmatch = lpeg.match
 
 number = number or { }
 
 -- a,b,c,d,e,f = number.toset(100101)
 
 function number.toset(n)
-    return (tostring(n)):match("(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
+    return match(tostring(n),"(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
 end
 
 function number.toevenhex(n)
@@ -39,7 +41,7 @@ end
 local one = lpeg.C(1-lpeg.S(''))^1
 
 function number.toset(n)
-    return one:match(tostring(n))
+    return lpegmatch(one,tostring(n))
 end
 
 function number.bits(n,zero)

@@ -17,6 +17,7 @@ local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.
 local concat, insert, remove = table.concat, table.insert, table.remove
 local apply = structure.processors.apply
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local lpegmatch = lpeg.match
 
 local variables = interfaces.variables
 
@@ -154,7 +155,7 @@ function chemicals.define(name,spec,text)
 end
 
 local metacode, kind, keys, bonds, max, txt, textsize, rot, pstack
-local molecule = chemicals.molecule -- or use chemicals.moleculeparser:match(...)
+local molecule = chemicals.molecule -- or use lpegmatch(chemicals.moleculeparser,...)
 
 local function fetch(txt)
     local st = stack[txt]
@@ -197,12 +198,12 @@ local pattern   =
         lpeg.Cc(false) * lpeg.Cc(false) * lpeg.Cc(false) * text
     )
 
---~ local n, operation, index, upto, set, text = pattern:match("RZ1357")
+--~ local n, operation, index, upto, set, text = lpegmatch(pattern,"RZ1357")
 
---~ print(pattern:match("RZ=x"))        1 RZ false false false  x
---~ print(pattern:match("RZ1=x"))       1 RZ 1     false false	x
---~ print(pattern:match("RZ1..3=x"))    1 RZ 1     3     false	x
---~ print(pattern:match("RZ13=x"))      1 RZ false false table	x
+--~ print(lpegmatch(pattern,"RZ=x"))        1 RZ false false false  x
+--~ print(lpegmatch(pattern,"RZ1=x"))       1 RZ 1     false false	x
+--~ print(lpegmatch(pattern,"RZ1..3=x"))    1 RZ 1     3     false	x
+--~ print(lpegmatch(pattern,"RZ13=x"))      1 RZ false false table	x
 
 local function process(spec,text,n,rulethickness,rulecolor,offset)
     insert(stack,{ spec=spec, text=text, n=n })
@@ -216,7 +217,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                 process(di.spec,di.text,1,rulethickness,rulecolor)
             end
         else
-            local rep, operation, special, index, upto, set, text = pattern:match(s)
+            local rep, operation, special, index, upto, set, text = lpegmatch(pattern,s)
             if operation == "pb" then
                 insert(pstack,kind)
                 metacode[#metacode+1] = syntax.pb.direct

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['l-io'] = {
     license   = "see context related readme files"
 }
 
-local byte = string.byte
+local byte, find, gsub = string.byte, string.find, string.gsub
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -164,7 +164,7 @@ function io.ask(question,default,options)
         end
         io.write(string.format(" "))
         local answer = io.read()
-        answer = answer:gsub("^%s*(.*)%s*$","%1")
+        answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then
             return default
         elseif not options then
@@ -177,7 +177,7 @@ function io.ask(question,default,options)
             end
             local pattern = "^" .. answer
             for _,v in pairs(options) do
-                if v:find(pattern) then
+                if find(v,pattern) then
                     return v
                 end
             end

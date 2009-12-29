@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 -- some optimizations removed (will come bakc if needed)
 
 local gmatch, lower, format = string.gmatch, string.lower, string.format
+local lpegmatch = lpeg.match
 
 local trace_fields = false  trackers.register("widgets.fields",   function(v) trace_fields   = v end)
 
@@ -237,12 +238,12 @@ local function fieldstates(specification,forceyes,values,default)
     else
         yes, off = v[1], v[2]
     end
-    local yesshown, yesvalue = splitter:match(yes)
+    local yesshown, yesvalue = lpegmatch(splitter,yes)
     if not (yesshown and yesvalue) then
         yesshown = yes, yes
     end
     yes = aux.settings_to_array(yesshown)
-    local offshown, offvalue = splitter:match(off)
+    local offshown, offvalue = lpegmatch(splitter,off)
     if not (offshown and offvalue) then
         offshown = off, off
     end
@@ -293,7 +294,7 @@ local function fieldoptions(specification)
         local v = aux.settings_to_array(values)
         for i=1,#v do
             local vi = v[i]
-            local shown, value = splitter:match(vi)
+            local shown, value = lpegmatch(splitter,vi)
             if shown and value then
                 v[i] = pdfarray { pdfunicode(value), shown }
             else
@@ -364,7 +365,7 @@ end
 local function predefinesymbols(specification)
     local values = specification.values
     if values then
-        local a, b = splitter:match(values)
+        local a, b = lpegmatch(splitter,values)
         codeinjections.presetsymbollist(a or values)
     end
 end
@@ -375,7 +376,7 @@ function codeinjections.getdefaultfieldvalue(name)
         local values  = f.values
         local default = f.default
         if not default or default == "" then
-            local a, b = splitter:match(values)
+            local a, b = lpegmatch(splitter,values)
             values = a or values
             for name in gmatch(list,"[^, ]+") do
                 default = name

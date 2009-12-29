@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['x-ct'] = {
 
 local xmlsprint, xmlfilter, xmlcollected = xml.sprint, xml.filter, xml.collected
 local texsprint, ctxcatcodes  = tex.sprint, tex.ctxcatcodes
-local format, concat, rep = string.format, table.concat, string.rep
+local format, concat, rep, find = string.format, table.concat, string.rep, string.find
 
 lxml.context = { }
 
@@ -26,11 +26,11 @@ local halignments = {
 local function roottemplate(root)
     local rt = root.at.template
     if rt then
-        if not rt:find("|") then
-            rt = rt:gsub(",","|")
+        if not find(rt,"|") then
+            rt = gsub(rt,",","|")
         end
-        if not rt:find("^|") then rt = "|" .. rt end
-        if not rt:find("|$") then rt = rt .. "|" end
+        if not find(rt,"^|") then rt = "|" .. rt end
+        if not find(rt,"|$") then rt = rt .. "|" end
     end
     return rt
 end

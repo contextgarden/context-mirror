@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-zip'] = {
     license   = "see context related readme files"
 }
 
-local format, find = string.format, string.find
+local format, find, match = string.format, string.find, string.match
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -222,7 +222,7 @@ function resolvers.register_zip_file(z,tree)
     end
     local register, n = resolvers.register_file, 0
     for i in z:files() do
-        local path, name = i.filename:match(filter)
+        local path, name = match(i.filename,filter)
         if path then
             if name and name ~= '' then
                 register(files, name, path)

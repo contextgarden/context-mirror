@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['font-col'] = {
 
 local format, gmatch, texsprint, type = string.format, string.gmatch, tex.sprint, type
 local traverse_id, first_character = node.traverse_id, node.first_character
+local lpegmatch = lpeg.match
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -166,7 +167,7 @@ function collections.prepare(name)
             local f = d[i]
             local name = f.font
             local scale = f.rscale or 1
-            if okay:match(name) then
+            if lpegmatch(okay,name) then
                 texsprint(ctxcatcodes,format("\\doclonefonta{%s}{%s}",name,scale))  -- define with unique specs
             else
                 texsprint(ctxcatcodes,format("\\doclonefontb{%s}{%s}",name,scale))  -- define with inherited specs

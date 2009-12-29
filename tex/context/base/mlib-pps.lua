@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, pos
 local format, gmatch, concat, round, match = string.format, string.gmatch, table.concat, math.round, string.match
 local sprint = tex.sprint
 local tonumber, type = tonumber, type
+local lpegmatch = lpeg.match
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
@@ -119,7 +120,7 @@ function metapost.specials.register(str) -- only colors
             logs.report("mplib","problematic special: %s", str or "?")
         end
     end
---~     if str:match("^%%%%MetaPostOption: multipass") then
+--~     if match(str,"^%%%%MetaPostOption: multipass") then
 --~         metapost.multipass = true
 --~     end
 end
@@ -203,11 +204,11 @@ local colorsplitter         = lpeg.Ct(lpeg.splitter(":",tonumber))
 -- This is also an example of a simple plugin.
 
 --~ function metapost.specials.cc(specification,object,result)
---~     object.color = specificationsplitter:match(specification)
+--~     object.color = lpegmatch(specificationsplitter,specification)
 --~     return object, nil, nil, nil
 --~ end
 --~ function metapost.specials.cc(specification,object,result)
---~     local c = specificationsplitter:match(specification)
+--~     local c = lpegmatch(specificationsplitter,specification)
 --~     local o = object.color[1]
 --~     c[1],c[2],c[3],c[4] = o*c[1],o*c[2],o*c[3],o*c[4]
 --~     return object, nil, nil, nil
@@ -276,10 +277,10 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
     nofshades = nofshades + 1
     flusher.flushfigure(result)
     result = { }
-    local t = specificationsplitter:match(specification)
+    local t = lpegmatch(specificationsplitter,specification)
     -- we need a way to move/scale
-    local ca = colorsplitter:match(t[4])
-    local cb = colorsplitter:match(t[8])
+    local ca = lpegmatch(colorsplitter,t[4])
+    local cb = lpegmatch(colorsplitter,t[8])
     if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
     if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
     local name = format("MplSh%s",nofshades)
@@ -348,10 +349,10 @@ function metapost.specials.ls(specification,object,result,flusher)
     nofshades = nofshades + 1
     flusher.flushfigure(result)
     result = { }
-    local t = specificationsplitter:match(specification)
+    local t = lpegmatch(specificationsplitter,specification)
     -- we need a way to move/scale
-    local ca = colorsplitter:match(t[4])
-    local cb = colorsplitter:match(t[7])
+    local ca = lpegmatch(colorsplitter,t[4])
+    local cb = lpegmatch(colorsplitter,t[7])
     if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
     if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
     local name = format("MpSh%s",nofshades)
@@ -671,7 +672,7 @@ do
 
     function metapost.check_texts(str)
         found, forced = false, false
-        return parser:match(str), found, forced
+        return lpegmatch(parser,str), found, forced
     end
 
 end

@@ -16,3 +16,7 @@ function commands.updatefilenames(inputfilename,outputfilename)
     environment.inputfilebarename = removesuffix(basename(inputfilename))
     environment.inputfilesuffix   = lower(extname(inputfilename))
 end
+
+statistics.register("result saved in file", function()
+    return string.format( "%s.%s", environment.outputfilename, (tex.pdfoutput>0 and "pdf") or "dvi")
+end)

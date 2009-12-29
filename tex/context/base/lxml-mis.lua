@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['lxml-mis'] = {
 
 local concat = table.concat
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
-local format, gsub = string.format, string.gsub
+local format, gsub, match = string.format, string.gsub, string.match
+local lpegmatch = lpeg.match
 
 --[[ldx--
 <p>The following helper functions best belong to the <t>lxml-ini</t>
@@ -82,9 +83,9 @@ xml.escaped_pattern   = escaped
 xml.unescaped_pattern = unescaped
 xml.cleansed_pattern  = cleansed
 
-function xml.escaped  (str) return escaped  :match(str) end
-function xml.unescaped(str) return unescaped:match(str) end
-function xml.cleansed (str) return cleansed :match(str) end
+function xml.escaped  (str) return lpegmatch(escaped,str)   end
+function xml.unescaped(str) return lpegmatch(unescaped,str) end
+function xml.cleansed (str) return lpegmatch(cleansed,str)  end
 
 -- this might move
 

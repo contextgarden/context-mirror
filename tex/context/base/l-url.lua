@@ -6,8 +6,9 @@ if not modules then modules = { } end modules ['l-url'] = {
     license   = "see context related readme files"
 }
 
-local char, gmatch = string.char, string.gmatch
+local char, gmatch, gsub = string.char, string.gmatch, string.gsub
 local tonumber, type = tonumber, type
+local lpegmatch = lpeg.match
 
 -- from the spec (on the web):
 --
@@ -40,7 +41,7 @@ local fragment  = hash          * lpeg.Cs((escaped+(1-           endofstring))^0
 local parser = lpeg.Ct(scheme * authority * path * query * fragment)
 
 function url.split(str)
-    return (type(str) == "string" and parser:match(str)) or str
+    return (type(str) == "string" and lpegmatch(parser,str)) or str
 end
 
 function url.hashed(str)
@@ -57,7 +58,7 @@ end
 
 function url.filename(filename)
     local t = url.hashed(filename)
-    return (t.scheme == "file" and t.path:gsub("^/([a-zA-Z])([:|])/)","%1:")) or filename
+    return (t.scheme == "file" and (gsub(t.path,"^/([a-zA-Z])([:|])/)","%1:"))) or filename
 end
 
 function url.query(str)

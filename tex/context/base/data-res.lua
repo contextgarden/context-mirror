@@ -36,6 +36,7 @@ if not modules then modules = { } end modules ['data-inp'] = {
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
+local lpegmatch = lpeg.match
 
 local trace_locating, trace_detail, trace_expansions = false, false, false
 
@@ -813,7 +814,7 @@ function resolvers.generators.tex(specification)
             full = spec
         end
         for name in directory(full) do
-            if not weird:match(name) then
+            if not lpegmatch(weird,name) then
                 local mode = attributes(full..name,'mode')
                 if mode == 'file' then
                     if path then
@@ -1579,7 +1580,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 -- try to find in tree (no suffix manipulation), here we search for the
                 -- matching last part of the name
                 local basename = file.basename(filename)
-                local pattern = (filename .. "$"):gsub("([%.%-])","%%%1")
+                local pattern = gsub(filename .. "$","([%.%-])","%%%1")
                 local savedformat = instance.format
                 local format = savedformat or ""
                 if format == "" then
@@ -1600,7 +1601,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 --
                 for r=1,#resolved do
                     local rr = resolved[r]
-                    if rr:find(pattern) then
+                    if find(rr,pattern) then
                         result[#result+1], ok = rr, true
                     end
                 end
@@ -1610,7 +1611,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 --     local filelist = collect_files({basename})
                 --     for f=1,#filelist do
                 --         local ff = filelist[f][3] or ""
-                --         if ff:find(pattern) then
+                --         if find(ff,pattern) then
                 --             result[#result+1], ok = ff, true
                 --         end
                 --     end
@@ -2067,7 +2068,7 @@ function resolvers.with_files(pattern,handle)
 end
 
 function resolvers.locate_format(name)
-    local barename, fmtname = name:gsub("%.%a+$",""), ""
+    local barename, fmtname = gsub(name,"%.%a+$",""), ""
     if resolvers.usecache then
         local path = file.join(caches.setpath("formats")) -- maybe platform
         fmtname = file.join(path,barename..".fmt") or ""

@@ -14,7 +14,8 @@ if not modules then modules = { } end modules ['luat-env'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local format = string.format
+local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
+local unquote, quote = string.unquote, string.quote
 
 -- precautions
 
@@ -50,11 +51,11 @@ function environment.initialize_arguments(arg)
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
     for index, argument in pairs(arg) do
         if index > 0 then
-            local flag, value = argument:match("^%-+(.-)=(.-)$")
+            local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
-                arguments[flag] = string.unquote(value or "")
+                arguments[flag] = unquote(value or "")
             else
-                flag = argument:match("^%-+(.+)")
+                flag = match(argument,"^%-+(.+)")
                 if flag then
                     arguments[flag] = true
                 else
@@ -89,8 +90,8 @@ function environment.argument(name,partial)
         end
         -- example of potential clash: ^mode ^modefile
         for _,v in ipairs(sortedflags) do
-            if name:find(v) then
-                return arguments[v:sub(2,#v)]
+            if find(name,v) then
+                return arguments[sub(v,2,#v)]
             end
         end
     end
@@ -116,16 +117,16 @@ function environment.reconstruct_commandline(arg,noquote)
     if noquote and #arg == 1 then
         local a = arg[1]
         a = resolvers.resolve(a)
-        a = a:unquote()
+        a = unquote(a)
         return a
     elseif next(arg) then
         local result = { }
         for _,a in ipairs(arg) do -- ipairs 1 .. #n
             a = resolvers.resolve(a)
-            a = a:unquote()
-            a = a:gsub('"','\\"') -- tricky
-            if a:find(" ") then
-                result[#result+1] = a:quote()
+            a = unquote(a)
+            a = gsub(a,'"','\\"') -- tricky
+            if find(a," ") then
+                result[#result+1] = quote(a)
             else
                 result[#result+1] = a
             end
@@ -142,13 +143,13 @@ if arg then
     local newarg, instring = { }, false
 
     for index, argument in ipairs(arg) do
-        if argument:find("^\"") then
-            newarg[#newarg+1] = argument:gsub("^\"","")
-            if not argument:find("\"$") then
+        if find(argument,"^\"") then
+            newarg[#newarg+1] = gsub(argument,"^\"","")
+            if not find(argument,"\"$") then
                 instring = true
             end
-        elseif argument:find("\"$") then
-            newarg[#newarg] = newarg[#newarg] .. " " .. argument:gsub("\"$","")
+        elseif find(argument,"\"$") then
+            newarg[#newarg] = newarg[#newarg] .. " " .. gsub(argument,"\"$","")
             instring = false
         elseif instring then
             newarg[#newarg] = newarg[#newarg] .. " " .. argument

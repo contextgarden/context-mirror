@@ -63,6 +63,8 @@
 \def\xmlnamespace          #1{\ctxlua{lxml.namespace("#1")}}
 \def\xmlnonspace         #1#2{\ctxlua{lxml.nonspace("#1","#2")}}
 \def\xmlraw              #1#2{\ctxlua{lxml.raw("#1","#2")}}
+\def\xmlcontext          #1#2{\ctxlua{lxml.context("#1","#2")}}
+\def\xmlflushcontext       #1{\ctxlua{lxml.context("#1")}}
 \def\xmlsnippet          #1#2{\ctxlua{lxml.snippet("#1",#2)}}
 \def\xmlelement          #1#2{\ctxlua{lxml.element("#1",#2)}}
 \def\xmlregisterns       #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document

@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['data-tre'] = {
 
 -- \input tree://oeps1/**/oeps.tex
 
+local find, gsub = string.find, string.gsub
+
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
 local done, found = { }, { }
@@ -25,9 +27,9 @@ function finders.tree(specification,filetype)
                 hash = dir.glob(pattern)
                 done[path] = hash
             end
-            local pattern = "/" .. name:gsub("([%.%-%+])", "%%%1") .. "$"
+            local pattern = "/" .. gsub(name,"([%.%-%+])", "%%%1") .. "$"
             for k, v in pairs(hash) do
-                if v:find(pattern) then
+                if find(v,pattern) then
                     found[specification] = v
                     return v
                 end

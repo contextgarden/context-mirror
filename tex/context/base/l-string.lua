@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['l-string'] = {
 }
 
 local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
+local lpegmatch = lpeg.match
 
 -- some functions may disappear as they are not used anywhere
 
@@ -77,9 +78,19 @@ function string:limit(n,sentinel)
     end
 end
 
-function string:strip() -- the .- is quite efficient
---  return match(self,"^%s*(.-)%s*$") or ""
-    return match(self,'^%s*(.*%S)') or '' -- posted on lua list
+--~ function string:strip() -- the .- is quite efficient
+--~  -- return match(self,"^%s*(.-)%s*$") or ""
+--~  -- return match(self,'^%s*(.*%S)') or '' -- posted on lua list
+--~     return find(s,'^%s*$') and '' or match(s,'^%s*(.*%S)')
+--~ end
+
+do -- roberto's variant:
+    local space    = lpeg.S(" \t\v\n")
+    local nospace  = 1 - space
+    local stripper = space^0 * lpeg.C((space^0 * nospace^1)^0)
+    function string.strip(str)
+        return lpegmatch(stripper,str) or ""
+    end
 end
 
 function string:is_empty()
@@ -216,7 +227,7 @@ end
 local pattern = lpeg.Ct(lpeg.C(1)^0)
 
 function string:totable()
-    return pattern:match(self)
+    return lpegmatch(pattern,self)
 end
 
 --~ for _, str in ipairs {

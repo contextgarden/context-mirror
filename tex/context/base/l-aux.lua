@@ -10,6 +10,7 @@ aux = aux or { }
 
 local concat, format, gmatch = table.concat, string.format, string.gmatch
 local tostring, type = tostring, type
+local lpegmatch = lpeg.match
 
 local space     = lpeg.P(' ')
 local equal     = lpeg.P("=")
@@ -59,9 +60,9 @@ function aux.settings_to_hash(str,existing)
     if str and str ~= "" then
         hash = existing or { }
         if moretolerant then
-            pattern_b_s:match(str)
+            lpegmatch(pattern_b_s,str)
         else
-            pattern_a_s:match(str)
+            lpegmatch(pattern_a_s,str)
         end
         return hash
     else
@@ -72,7 +73,7 @@ end
 function aux.settings_to_hash_tolerant(str,existing)
     if str and str ~= "" then
         hash = existing or { }
-        pattern_b_s:match(str)
+        lpegmatch(pattern_b_s,str)
         return hash
     else
         return { }
@@ -82,7 +83,7 @@ end
 function aux.settings_to_hash_strict(str,existing)
     if str and str ~= "" then
         hash = existing or { }
-        pattern_c_s:match(str)
+        lpegmatch(pattern_c_s,str)
         return next(hash) and hash
     else
         return nil
@@ -101,7 +102,7 @@ function aux.settings_to_array(str)
     if not str or str == "" then
         return { }
     else
-        return pattern:match(str)
+        return lpegmatch(pattern,str)
     end
 end
 
@@ -113,7 +114,7 @@ local value   = lpeg.P(lpeg.Carg(1)*value) / set
 local pattern = value*(separator*value)^0 * lpeg.Carg(1)
 
 function aux.add_settings_to_array(t,str)
-    return pattern:match(str, nil, t)
+    return lpegmatch(pattern,str,nil,t)
 end
 
 function aux.hash_to_string(h,separator,yes,no,strict,omit)
@@ -165,7 +166,7 @@ local value     = lbrace * lpeg.C((nobrace + nested)^0) * rbrace
 local pattern   = lpeg.Ct((space + value)^0)
 
 function aux.arguments_to_table(str)
-    return pattern:match(str)
+    return lpegmatch(pattern,str)
 end
 
 -- temporary here
@@ -201,11 +202,11 @@ local stripper = lpeg.Cs((number + 1)^0)
 --~ collectgarbage("collect")
 --~ str = string.rep(sample,10000)
 --~ local ts = os.clock()
---~ stripper:match(str)
---~ print(#str, os.clock()-ts, stripper:match(sample))
+--~ lpegmatch(stripper,str)
+--~ print(#str, os.clock()-ts, lpegmatch(stripper,sample))
 
 function aux.strip_zeros(str)
-    return stripper:match(str)
+    return lpegmatch(stripper,str)
 end
 
 function aux.definetable(target) -- defines undefined tables

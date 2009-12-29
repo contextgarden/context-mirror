@@ -21,7 +21,8 @@ local trace_features = false  trackers.register("afm.features", function(v) trac
 local trace_indexing = false  trackers.register("afm.indexing", function(v) trace_indexing = v end)
 local trace_loading  = false  trackers.register("afm.loading",  function(v) trace_loading  = v end)
 
-local format, match, gmatch, lower = string.format, string.match, string.gmatch, string.lower
+local format, match, gmatch, lower, gsub = string.format, string.match, string.gmatch, string.lower, string.gsub
+local lpegmatch = lpeg.match
 
 fonts      = fonts     or { }
 fonts.afm  = fonts.afm or { }
@@ -88,7 +89,7 @@ local pattern = ( c * s^1 * (
 
 local function scan_comment(str)
     fd = { }
-    pattern:match(str)
+    lpegmatch(pattern,str)
     return fd
 end
 
@@ -219,21 +220,21 @@ function afm.read_afm(filename)
                 filename = file.removesuffix(file.basename(filename))
             }
         }
-        afmblob = afmblob:gsub("StartCharMetrics(.-)EndCharMetrics", function(charmetrics)
+        afmblob = gsub(afmblob,"StartCharMetrics(.-)EndCharMetrics", function(charmetrics)
             if trace_loading then
                 logs.report("load afm","loading char metrics")
             end
             get_charmetrics(data,charmetrics,vector)
             return ""
         end)
-        afmblob = afmblob:gsub("StartKernPairs(.-)EndKernPairs", function(kernpairs)
+        afmblob = gsub(afmblob,"StartKernPairs(.-)EndKernPairs", function(kernpairs)
             if trace_loading then
                 logs.report("load afm","loading kern pairs")
             end
             get_kernpairs(data,kernpairs)
             return ""
         end)
-        afmblob = afmblob:gsub("StartFontMetrics%s+([%d%.]+)(.-)EndFontMetrics", function(version,fontmetrics)
+        afmblob = gsub(afmblob,"StartFontMetrics%s+([%d%.]+)(.-)EndFontMetrics", function(version,fontmetrics)
             if trace_loading then
                 logs.report("load afm","loading variables")
             end
