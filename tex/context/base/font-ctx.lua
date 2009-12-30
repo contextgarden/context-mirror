@@ -414,6 +414,6 @@ function fonts.dimenfactor(unit,tfmdata)
     end
 end
 
-function fonts.cleanname(name) -- mapped onto macro, see fonts.names.cleanname
-    texsprint(ctxcatcodes,(gsub(lower(name),"[^%a%d]","")))
+function fonts.cleanname(name)
+    texsprint(ctxcatcodes,fonts.names.cleanname(name))
 end

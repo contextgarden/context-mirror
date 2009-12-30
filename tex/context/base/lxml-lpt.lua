@@ -956,13 +956,17 @@ local function parse_apply(list,pattern)
     end
     local nofparsed = #parsed
     if nofparsed == 0 then
-        -- something is wrong
+        return -- something is wrong
+    end
+    local one = list[1]
+    if not one then
+        return -- something is wrong
     elseif not trace_lpath then
-        return normal_apply(list,parsed,nofparsed,list[1].mi)
+        return normal_apply(list,parsed,nofparsed,one.mi)
     elseif trace_lprofile then
-        return profiled_apply(list,parsed,nofparsed,list[1].mi)
-    else -- trace_lpath
-        return traced_apply(list,parsed,nofparsed,list[1].mi)
+        return profiled_apply(list,parsed,nofparsed,one.mi)
+    else
+        return traced_apply(list,parsed,nofparsed,one.mi)
     end
 end
 

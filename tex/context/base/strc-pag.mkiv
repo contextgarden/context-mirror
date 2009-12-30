@@ -465,6 +465,14 @@
     \fi
 \to \everysetupuserpagenumber % todo: set state: none, start, stop, reset
 
+\appendtoks
+    \edef\askedsubpagenumber{\structurecounterparameter\s!subpage\c!number}%
+    \ifx\askedsubpagenumber\empty \else
+      \normalexpanded{\noexpand\setupsubpagenumber[\c!start=\structurecounterparameter\s!subpage\c!number,\c!number=]}%
+      \subpageno\rawstructurecounter[\s!subpage]%
+    \fi
+\to \everysetupsubpagenumber % todo: set state: none, start, stop, reset
+
 % \setuplayout[width=300pt,backspace=4cm]
 % \setuppagenumbering [alternative=doublesided]
 % \setupuserpagenumber[start=2]

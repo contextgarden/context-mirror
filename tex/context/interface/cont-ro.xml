@@ -944,7 +944,7 @@
         <cd:parameter name="optiune">
           <cd:constant type="inclinat"/>
           <cd:constant type="normal"/>
-          <cd:constant type="comenzi"/>
+          <cd:constant type="comenzi" version="mkiv"/>
           <cd:constant type="culoare"/>
           <cd:constant type="niciunul"/>
         </cd:parameter>
@@ -989,7 +989,7 @@
           <cd:constant type="linie"/>
         </cd:parameter>
         <cd:parameter name="escape">
-          <cd:constant type="cd:character"/>
+          <cd:constant type="cd:text"/>
         </cd:parameter>
         <cd:parameter name="spatiu">
           <cd:constant type="on"/>

@@ -944,7 +944,7 @@
         <cd:parameter name="option">
           <cd:constant type="geneigt"/>
           <cd:constant type="normal"/>
-          <cd:constant type="befehle"/>
+          <cd:constant type="befehle" version="mkiv"/>
           <cd:constant type="farbe"/>
           <cd:constant type="kein"/>
         </cd:parameter>
@@ -989,7 +989,7 @@
           <cd:constant type="zeile"/>
         </cd:parameter>
         <cd:parameter name="escape">
-          <cd:constant type="cd:character"/>
+          <cd:constant type="cd:text"/>
         </cd:parameter>
         <cd:parameter name="spatium">
           <cd:constant type="an"/>

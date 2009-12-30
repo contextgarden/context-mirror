@@ -71,8 +71,9 @@
    \edef\prettyidentifier{\executeifdefined{\??ty\??ty\ascii}{TEX}}%
    \begingroup
    % we can move this to lua
-   \lowercasestring \f!prettyprefix\prettyidentifier\to\filename
-   \doonlyonce\filename{\ctxloadluafile\filename\empty}%
+   % \lowercasestring \f!prettyprefix\prettyidentifier\to\filename
+   % \doonlyonce\filename{\ctxloadluafile\filename\empty}%
+   \ctxlua{buffers.loadvisualizer("\ascii")}%
    \endgroup}
 
 \def\setupprettytype
@@ -94,17 +95,18 @@
 
 \setvalue{\??tp:\c!option:\v!none     }{\let\obeycharacters\relax}
 \setvalue{\??tp:\c!option:\empty      }{\let\obeycharacters\relax}
-\setvalue{\??tp:\c!option:\v!color    }{\setupprettiesintype{TEX}%
+\setvalue{\??tp:\c!option:\v!color    }{\setupprettiesintype{\typingparameter\c!option}%
                                         \let\obeycharacters\setupprettytype
                                         \let\obeytabs\ignoretabs}
 \setvalue{\??tp:\c!option:\v!normal   }{\let\obeycharacters\setupgroupedtype}
-\setvalue{\??tp:\c!option:\v!commands }{\def\obeycharacters{\setupcommandsintype}%
-                                        \let\obeytabs\ignoretabs}
 \setvalue{\??tp:\c!option:\v!slanted  }{\let\obeycharacters\setupslantedtype
                                         \let\obeytabs\ignoretabs}
 \setvalue{\??tp:\c!option:\s!unknown  }{\setupprettiesintype{\typingparameter\c!option}%
                                         \let\obeycharacters\setupprettytype
                                         \let\obeytabs\ignoretabs}
+
+%setvalue{\??tp:\c!option:\v!commands }{\def\obeycharacters{\setupcommandsintype}%
+%                                       \let\obeytabs\ignoretabs}
 
 \def\dosetverbatimfont
   {\redoconvertfont\dosetfontattribute{\currenttypingclass\currenttyping}\c!style
@@ -164,12 +166,52 @@
 % \typeTEX{\example---oeps}. this---ligates---again.
 % \type   {\example---oeps}. this---ligates---again.
 
-\def\setupcommandsintype % can also be \string\
-  {\ctxlua{
-     buffers.visualizers.enableescape = true
-     buffers.visualizers.escapetoken  = \!!bs\typingparameter\c!escape\!!es
-   }%
-   \setevalue{\typingparameter\c!escape}{\typingparameter\c!escape}}
+%D \startbuffer
+%D \setuptyping[TEX][escape=yes]
+%D
+%D \startTEX
+%D /BTEX\em sometex/ETEX
+%D /BTEX\em sometex/ETEX \after
+%D \before /BTEX\em sometex/ETEX
+%D \before /BTEX\em sometex/ETEX \after
+%D \before /BTEX\em sometex/ETEX \inbetween /BTEX\em sometex/ETEX \after
+%D \before \after
+%D \stopTEX
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+%D
+%D \startbuffer
+%D \setuptyping[TEX][escape={[[,]]}]
+%D
+%D \startTEX
+%D [[\em sometex]]
+%D [[\em sometex]] \after
+%D \before [[\em sometex]]
+%D \before [[\em sometex]] \after
+%D \before [[\em sometex]] \inbetween [[\em sometex]] \after
+%D \before \after
+%D \stopTEX
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+%D
+%D \startbuffer
+%D \setuptyping[TEX][escape=//]
+%D
+%D \startTEX
+%D //\em sometex
+%D \before //\em sometex
+%D \stopTEX
+%D
+%D \typebuffer \start \getbuffer \stop
+
+\def\setupcommandsintype
+  {\ctxlua{buffers.set_escape("\currenttyping",\!!bs\typingparameter\c!escape\!!es)}}
+
+\appendtoks
+    \setupcommandsintype
+\to \everyinitializeverbatim
 
 \def\setupslantedtype
   {\slantedtypepermittedtrue}
@@ -941,7 +983,7 @@
       \c!evenmargin=\!!zeropoint,
        \c!oddmargin=\!!zeropoint,
            \c!blank=\v!line,
-          \c!escape=/, % beware \string\ , should also be accepted
+          \c!escape=, % yes | no | START,STOP BTEX,ETEX
        \c!numbering=\v!no,
            \c!lines=,
            \c!empty=,

@@ -20,7 +20,8 @@ buffers.visualizers = { }
 
 -- if needed we can make 'm local
 
-local trace_run = false  trackers.register("buffers.run",function(v) trace_run = v end)
+local trace_run       = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
+local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
 local utf = unicode.utf8
 
@@ -28,7 +29,7 @@ local concat, texsprint, texprint, texwrite = table.concat, tex.sprint, tex.prin
 local utfbyte, utffind, utfgsub = utf.byte, utf.find, utf.gsub
 local type, next = type, next
 local huge = math.huge
-local byte, sub, find, char, gsub, rep, lower, format, gmatch = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format, string.gmatch
+local byte, sub, find, char, gsub, rep, lower, format, gmatch, match = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format, string.gmatch, string.match
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
@@ -324,23 +325,37 @@ end
 
 -- maybe just line(n,str) empty(n,str)
 
-visualizers.handlers     = visualizers.handlers or { }
-visualizers.escapetoken  = nil
-visualizers.tablength    = 7
-visualizers.enabletab    = true -- false
-visualizers.enableescape = false
-visualizers.obeyspace    = true
+visualizers.handlers  = visualizers.handlers or { }
+visualizers.tablength = 7
+visualizers.enabletab = true -- false
+visualizers.obeyspace = true
 
 local handlers = visualizers.handlers
 
 function buffers.newvisualizer(name)
+    name = lower(name)
     local handler = { }
     handlers[name] = handler
     return handler
 end
 
 function buffers.getvisualizer(name)
-    return handlers[name]
+    name = lower(name)
+    return handlers[name] or buffers.loadvisualizer(name)
+end
+
+function buffers.loadvisualizer(name)
+    name = lower(name)
+    local hn = handlers[name]
+    if hn then
+        return hn
+    else
+        if trace_visualize then
+            logs.report("buffers","loading '%s' visualizer",name)
+        end
+        environment.loadluafile("pret-" .. name)
+        return handlers[name] or buffers.newvisualizer(name)
+    end
 end
 
 local default = buffers.newvisualizer("default")
@@ -621,6 +636,67 @@ function buffers.realign(name,forced_n) -- no, auto, <number>
     return d
 end
 
+-- escapes: buffers.set_escape("tex","/BTEX","/ETEX")
+
+local function flush_escaped_line(str,pattern,flushline)
+    while true do
+        local a, b, c = match(str,pattern)
+        if a and a ~= "" then
+            flushline(a)
+        end
+        if b and b ~= "" then
+            texsprint(ctxcatcodes,"{",b,"}")
+        end
+        if c then
+            if c == "" then
+                break
+            else
+                str = c
+            end
+        else
+            flushline(str)
+            break
+        end
+    end
+end
+
+function buffers.set_escape(name,pair)
+    if pair and pair ~= "" then
+        local visualizer = buffers.getvisualizer(name)
+        visualizer.normal_flush_line = visualizer.normal_flush_line or visualizer.flush_line
+        if pair == variables.no then
+            visualizer.flush_line = visualizer.normal_flush_line or visualizer.flush_line
+            if trace_visualize then
+                logs.report("buffers","resetting escape range for visualizer '%s'",name)
+            end
+        else
+            local start, stop
+            if pair == variables.yes then
+                start, stop = "/BTEX", "/ETEX"
+            else
+                pair = string.split(pair,",")
+                start, stop = string.esc(pair[1] or ""), string.esc(pair[2] or "")
+            end
+            if start ~= "" then
+                local pattern
+                if stop == "" then
+                    pattern = "^(.-)" .. start .. "(.*)(.*)$"
+                else
+                    pattern = "^(.-)" .. start .. "(.-)" .. stop .. "(.*)$"
+                end
+                function visualizer.flush_line(str)
+                    flush_escaped_line(str,pattern,visualizer.normal_flush_line)
+                end
+                if trace_visualize then
+                    logs.report("buffers","setting escape range for visualizer '%s' to %s -> %s",name,start,stop)
+                end
+            elseif trace_visualize then
+                logs.report("buffers","problematic escape specification '%s' for visualizer '%s'",pair,name)
+            end
+        end
+    end
+end
+
 -- THIS WILL BECOME A FRAMEWORK: the problem with prety printing is that
 -- we deal with snippets and therefore we need tolerant parsing
 
@@ -663,5 +739,3 @@ end
 --~ str = [[test 123 test $oeps$]]
 
 --~ lpegmatch(pattern,str)
-
-

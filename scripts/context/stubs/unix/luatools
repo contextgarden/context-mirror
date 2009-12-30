@@ -5318,6 +5318,23 @@ end
 
 local weird = lpeg.P(".")^1 + lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
 
+--~ local l_forbidden = lpeg.S("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
+--~ local l_confusing = lpeg.P(" ")
+--~ local l_character = lpeg.utf8
+--~ local l_dangerous = lpeg.P(".")
+
+--~ local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * lpeg.P(-1)
+--~ ----- l_normal = l_normal * lpeg.Cc(true) + lpeg.Cc(false)
+
+--~ local function test(str)
+--~     print(str,lpeg.match(l_normal,str))
+--~ end
+--~ test("ヒラギノ明朝 Pro W3")
+--~ test("..ヒラギノ明朝 Pro W3")
+--~ test(":ヒラギノ明朝 Pro W3;")
+--~ test("ヒラギノ明朝 /Pro W3;")
+--~ test("ヒラギノ明朝 Pro  W3")
+
 function resolvers.generators.tex(specification)
     local tag = specification
     if trace_locating then
@@ -5338,6 +5355,7 @@ function resolvers.generators.tex(specification)
         end
         for name in directory(full) do
             if not lpegmatch(weird,name) then
+         -- if lpegmatch(l_normal,name) then
                 local mode = attributes(full..name,'mode')
                 if mode == 'file' then
                     if path then

@@ -944,7 +944,7 @@
         <cd:parameter name="volba">
           <cd:constant type="sklonene"/>
           <cd:constant type="normalni"/>
-          <cd:constant type="prikazy"/>
+          <cd:constant type="prikazy" version="mkiv"/>
           <cd:constant type="barevne"/>
           <cd:constant type="zadny"/>
         </cd:parameter>
@@ -989,7 +989,7 @@
           <cd:constant type="radek"/>
         </cd:parameter>
         <cd:parameter name="escape">
-          <cd:constant type="cd:character"/>
+          <cd:constant type="cd:text"/>
         </cd:parameter>
         <cd:parameter name="mezera">
           <cd:constant type="zap"/>

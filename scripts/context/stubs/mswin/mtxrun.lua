@@ -4890,7 +4890,6 @@ local function apply_nodes(list,directive,nodes)
                     if ltg then
                         local lns = ll.rn or ll.ns
                         local ok = ltg == ntg and lns == nns
---~ if lns ~= "" then logs.report("!",ltg .. " < " .. (lns or "?")) end
                         if directive then
                             if ok then
                                 local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
@@ -4916,9 +4915,6 @@ local function apply_nodes(list,directive,nodes)
                 for n=1,maxn,3 do
                     local nns, ntg = nodes[n+1], nodes[n+2]
                     ok = (not ntg or ltg == ntg) and (not nns or lns == nns)
---~ if lns ~= "" and ntg == "mo" then
---~     logs.report("!",n .. "< ".. maxn .. " < ".. (lns or "?") .. ":" .. ltg .. "< " .. (nns or "?") .. ":" .. ntg .. "==>".. tostring(ok))
---~ end
                     if ok then
                         break
                     end
@@ -5070,6 +5066,31 @@ local template_f_n = [[
 
 --
 
+local register_self                    = { kind = "axis", axis = "self"                    } -- , apply = apply_axis["self"]               }
+local register_parent                  = { kind = "axis", axis = "parent"                  } -- , apply = apply_axis["parent"]             }
+local register_descendant              = { kind = "axis", axis = "descendant"              } -- , apply = apply_axis["descendant"]         }
+local register_child                   = { kind = "axis", axis = "child"                   } -- , apply = apply_axis["child"]              }
+local register_descendant_or_self      = { kind = "axis", axis = "descendant-or-self"      } -- , apply = apply_axis["descendant-or-self"] }
+local register_root                    = { kind = "axis", axis = "root"                    } -- , apply = apply_axis["root"]               }
+local register_ancestor                = { kind = "axis", axis = "ancestor"                } -- , apply = apply_axis["ancestor"]           }
+local register_ancestor_or_self        = { kind = "axis", axis = "ancestor-or-self"        } -- , apply = apply_axis["ancestor-or-self"]   }
+local register_attribute               = { kind = "axis", axis = "attribute"               } -- , apply = apply_axis["attribute"]          }
+local register_namespace               = { kind = "axis", axis = "namespace"               } -- , apply = apply_axis["namespace"]          }
+local register_following               = { kind = "axis", axis = "following"               } -- , apply = apply_axis["following"]          }
+local register_following_sibling       = { kind = "axis", axis = "following-sibling"       } -- , apply = apply_axis["following-sibling"]  }
+local register_preceding               = { kind = "axis", axis = "preceding"               } -- , apply = apply_axis["preceding"]          }
+local register_preceding_sibling       = { kind = "axis", axis = "preceding-sibling"       } -- , apply = apply_axis["preceding-sibling"]  }
+local register_reverse_sibling         = { kind = "axis", axis = "reverse-sibling"         } -- , apply = apply_axis["reverse-sibling"]    }
+
+local register_auto_descendant_or_self = { kind = "axis", axis = "auto-descendant-or-self" } -- , apply = apply_axis["auto-descendant-or-self"] }
+local register_auto_descendant         = { kind = "axis", axis = "auto-descendant"         } -- , apply = apply_axis["auto-descendant"] }
+local register_auto_self               = { kind = "axis", axis = "auto-self"               } -- , apply = apply_axis["auto-self"] }
+local register_auto_child              = { kind = "axis", axis = "auto-child"              } -- , apply = apply_axis["auto-child"] }
+
+local register_initial_child           = { kind = "axis", axis = "initial-child"           } -- , apply = apply_axis["initial-child"] }
+
+local register_all_nodes               = { kind = "nodes", nodetest = true, nodes = { true, false, false } }
+
 local function errorrunner_e(str,cnv)
     logs.report("lpath","error in expression: %s => %s",str,cnv)
     return false
@@ -5116,39 +5137,22 @@ local arguments = P { "ar",
 
 -- todo: better arg parser
 
-local register_self                    = { kind = "axis", axis = "self"                    } -- , apply = apply_axis["self"]               }
-local register_parent                  = { kind = "axis", axis = "parent"                  } -- , apply = apply_axis["parent"]             }
-local register_descendant              = { kind = "axis", axis = "descendant"              } -- , apply = apply_axis["descendant"]         }
-local register_child                   = { kind = "axis", axis = "child"                   } -- , apply = apply_axis["child"]              }
-local register_descendant_or_self      = { kind = "axis", axis = "descendant-or-self"      } -- , apply = apply_axis["descendant-or-self"] }
-local register_root                    = { kind = "axis", axis = "root"                    } -- , apply = apply_axis["root"]               }
-local register_ancestor                = { kind = "axis", axis = "ancestor"                } -- , apply = apply_axis["ancestor"]           }
-local register_ancestor_or_self        = { kind = "axis", axis = "ancestor-or-self"        } -- , apply = apply_axis["ancestor-or-self"]   }
-local register_attribute               = { kind = "axis", axis = "attribute"               } -- , apply = apply_axis["attribute"]          }
-local register_namespace               = { kind = "axis", axis = "namespace"               } -- , apply = apply_axis["namespace"]          }
-local register_following               = { kind = "axis", axis = "following"               } -- , apply = apply_axis["following"]          }
-local register_following_sibling       = { kind = "axis", axis = "following-sibling"       } -- , apply = apply_axis["following-sibling"]  }
-local register_preceding               = { kind = "axis", axis = "preceding"               } -- , apply = apply_axis["preceding"]          }
-local register_preceding_sibling       = { kind = "axis", axis = "preceding-sibling"       } -- , apply = apply_axis["preceding-sibling"]  }
-local register_reverse_sibling         = { kind = "axis", axis = "reverse-sibling"         } -- , apply = apply_axis["reverse-sibling"]    }
-
-local register_auto_descendant_or_self = { kind = "axis", axis = "auto-descendant-or-self" } -- , apply = apply_axis["auto-descendant-or-self"] }
-local register_auto_descendant         = { kind = "axis", axis = "auto-descendant"         } -- , apply = apply_axis["auto-descendant"] }
-local register_auto_self               = { kind = "axis", axis = "auto-self"               } -- , apply = apply_axis["auto-self"] }
-local register_auto_child              = { kind = "axis", axis = "auto-child"              } -- , apply = apply_axis["auto-child"] }
-
-local register_initial_child           = { kind = "axis", axis = "initial-child"           } -- , apply = apply_axis["initial-child"] }
-
-local register_all_nodes               = { kind = "nodes", nodetest = true, nodes = { true, false, false } }
-
 local function register_error(str)
-    return { kind = "error", comment = format("unparsed: %s",str) }
+    return { kind = "error", error = format("unparsed: %s",str) }
 end
+
+-- there is a difference in * and /*/ and so we need to catch a few special cases
+
+local special_1 = P("*")  * Cc(register_auto_descendant) * Cc(register_all_nodes) -- last one not needed
+local special_2 = P("/")  * Cc(register_auto_self)
+local special_3 = P("")   * Cc(register_auto_self)
 
 local parser = Ct { "patterns", -- can be made a bit faster by moving pattern outside
 
-    patterns             = spaces * V("protocol") * spaces * V("initial") * spaces * V("step") * spaces *
-                           (P("/") * spaces * V("step") * spaces)^0,
+    patterns             = spaces * V("protocol") * spaces * (
+                              ( V("special") * spaces * P(-1)                                                         ) +
+                              ( V("initial") * spaces * V("step") * spaces * (P("/") * spaces * V("step") * spaces)^0 )
+                           ),
 
     protocol             = Cg(V("letters"),"protocol") * P("://") + Cg(Cc(nil),"protocol"),
 
@@ -5161,6 +5165,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
                            V("reverse_sibling") + V("preceding_sibling") + V("preceding") + V("ancestor_or_self") +
                            #(1-P(-1)) * Cc(register_auto_child),
 
+    special              = special_1 + special_2 + special_3,
+
     initial              = (P("/") * spaces * Cc(register_initial_child))^-1,
 
     error                = (P(1)^1) / register_error,
@@ -5172,7 +5178,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
     s_descendant_or_self = (P("***/") + P("/"))  * Cc(register_descendant_or_self), --- *** is a bonus
  -- s_descendant_or_self = P("/")                * Cc(register_descendant_or_self),
     s_descendant         = P("**")               * Cc(register_descendant),
-    s_child              = P("*")  * #(1-P(":")) * Cc(register_child     ),
+    s_child              = P("*") * #(1-P(":"))  * Cc(register_child     ),
+--  s_child              = P("*") * #(P("/")+P(-1)) * Cc(register_child     ),
     s_parent             = P("..")               * Cc(register_parent    ),
     s_self               = P("." )               * Cc(register_self      ),
     s_root               = P("^^")               * Cc(register_root      ),
@@ -5262,6 +5269,15 @@ end
 
 xml.lshow = lshow
 
+local function add_comment(p,str)
+    local pc = p.comment
+    if not pc then
+        p.comment = { str }
+    else
+        pc[#pc+1] = str
+    end
+end
+
 parse_pattern = function (pattern) -- the gain of caching is rather minimal
     lpathcalls = lpathcalls + 1
     if type(pattern) == "table" then
@@ -5280,18 +5296,32 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
                     logs.report("lpath","parsing error in '%s'",pattern)
                     lshow(parsed)
                 else
-                    -- we could have done this with a more complex parsed but this
+                    -- we could have done this with a more complex parser but this
                     -- is cleaner
                     local pi = parsed[1]
                     if pi.axis == "auto-child" then
-                        parsed.comment = "auto-child replaced by auto-descendant-or-self"
-                        parsed[1] = register_auto_descendant_or_self
-                    --~ parsed.comment = "auto-child replaced by auto-descendant"
-                    --~ parsed[1] = register_auto_descendant
+                        if false then
+                            add_comment(parsed, "auto-child replaced by auto-descendant-or-self")
+                            parsed[1] = register_auto_descendant_or_self
+                        else
+                            add_comment(parsed, "auto-child replaced by auto-descendant")
+                            parsed[1] = register_auto_descendant
+                        end
                     elseif pi.axis == "initial-child" and np > 1 and parsed[2].axis then
-                        parsed.comment = "initial-child removed" -- we could also make it a auto-self
+                        add_comment(parsed, "initial-child removed") -- we could also make it a auto-self
                         remove(parsed,1)
                     end
+local np = #parsed -- can have changed
+if np > 1 then
+    local pnp = parsed[np]
+    if pnp.kind == "nodes" and pnp.nodetest == true then
+        local nodes = pnp.nodes
+        if nodes[1] == true and nodes[2] == false and nodes[3] == false then
+            add_comment(parsed, "redundant final wildcard filter removed")
+            remove(parsed,np)
+        end
+    end
+end
                 end
             else
                 parsed = { pattern = pattern }
@@ -8146,6 +8176,23 @@ end
 
 local weird = lpeg.P(".")^1 + lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
 
+--~ local l_forbidden = lpeg.S("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
+--~ local l_confusing = lpeg.P(" ")
+--~ local l_character = lpeg.utf8
+--~ local l_dangerous = lpeg.P(".")
+
+--~ local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * lpeg.P(-1)
+--~ ----- l_normal = l_normal * lpeg.Cc(true) + lpeg.Cc(false)
+
+--~ local function test(str)
+--~     print(str,lpeg.match(l_normal,str))
+--~ end
+--~ test("ヒラギノ明朝 Pro W3")
+--~ test("..ヒラギノ明朝 Pro W3")
+--~ test(":ヒラギノ明朝 Pro W3;")
+--~ test("ヒラギノ明朝 /Pro W3;")
+--~ test("ヒラギノ明朝 Pro  W3")
+
 function resolvers.generators.tex(specification)
     local tag = specification
     if trace_locating then
@@ -8166,6 +8213,7 @@ function resolvers.generators.tex(specification)
         end
         for name in directory(full) do
             if not lpegmatch(weird,name) then
+         -- if lpegmatch(l_normal,name) then
                 local mode = attributes(full..name,'mode')
                 if mode == 'file' then
                     if path then

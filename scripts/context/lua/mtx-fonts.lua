@@ -119,7 +119,7 @@ local function fontweight(fw)
     end
 end
 
-local function list_specifications(t)
+local function list_specifications(t,info)
     if t then
         local s, w = table.sortedkeys(t), { 0, 0, 0 }
         for k,v in ipairs(s) do
@@ -134,6 +134,9 @@ local function list_specifications(t)
                 subfont(entry.subfont),
                 fontweight(entry.fontweight),
             }
+--~ if info then
+--~     showfeatures(v,t[v])
+--~ end
         end
         table.formatcolumns(s)
         for k,v in ipairs(s) do
@@ -142,7 +145,7 @@ local function list_specifications(t)
     end
 end
 
-local function list_matches(t)
+local function list_matches(t,info)
     if t then
         local s, w = table.sortedkeys(t), { 0, 0, 0 }
         if info then
@@ -181,12 +184,12 @@ function scripts.fonts.list()
     if environment.argument("name") then
         if pattern then
             --~ mtxrun --script font --list --name --pattern=*somename*
-            list_matches(fonts.names.list(string.topattern(pattern,true),reload,all))
+            list_matches(fonts.names.list(string.topattern(pattern,true),reload,all),info)
         elseif filter then
             logs.report("fontnames","not supported: --list --name --filter",name)
         elseif given then
             --~ mtxrun --script font --list --name somename
-            list_matches(fonts.names.list(given,reload,all))
+            list_matches(fonts.names.list(given,reload,all),info)
         else
             logs.report("fontnames","not supported: --list --name <no specification>",name)
         end
@@ -196,31 +199,31 @@ function scripts.fonts.list()
             logs.report("fontnames","not supported: --list --spec --pattern",name)
         elseif filter then
             --~ mtxrun --script font --list --spec --filter="fontname=somename"
-            list_specifications(fonts.names.getlookups(filter),nil,reload)
+            list_specifications(fonts.names.getlookups(filter),info)
         elseif given then
             --~ mtxrun --script font --list --spec somename
-            list_specifications(fonts.names.collectspec(given,reload,all))
+            list_specifications(fonts.names.collectspec(given,reload,all),info)
         else
             logs.report("fontnames","not supported: --list --spec <no specification>",name)
         end
     elseif environment.argument("file") then
         if pattern then
             --~ mtxrun --script font --list --file --pattern=*somename*
-            list_specifications(fonts.names.collectfiles(string.topattern(pattern,true),reload,all))
+            list_specifications(fonts.names.collectfiles(string.topattern(pattern,true),reload,all),info)
         elseif filter then
             logs.report("fontnames","not supported: --list --spec",name)
         elseif given then
             --~ mtxrun --script font --list --file somename
-            list_specifications(fonts.names.collectfiles(given,reload,all))
+            list_specifications(fonts.names.collectfiles(given,reload,all),info)
         else
             logs.report("fontnames","not supported: --list --file <no specification>",name)
         end
     elseif pattern then
         --~ mtxrun --script font --list --pattern=*somename*
-        list_matches(fonts.names.list(string.topattern(pattern,true),reload,all))
+        list_matches(fonts.names.list(string.topattern(pattern,true),reload,all),info)
     elseif given then
         --~ mtxrun --script font --list somename
-        list_matches(fonts.names.list(given,reload,all))
+        list_matches(fonts.names.list(given,reload,all),info)
     else
         logs.report("fontnames","not supported: --list <no specification>",name)
     end

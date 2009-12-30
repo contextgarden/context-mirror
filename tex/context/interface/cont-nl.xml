@@ -944,7 +944,7 @@
         <cd:parameter name="optie">
           <cd:constant type="schuin"/>
           <cd:constant type="normaal"/>
-          <cd:constant type="commandos"/>
+          <cd:constant type="commandos" version="mkiv"/>
           <cd:constant type="kleur"/>
           <cd:constant type="geen"/>
         </cd:parameter>
@@ -989,7 +989,7 @@
           <cd:constant type="regel"/>
         </cd:parameter>
         <cd:parameter name="escape">
-          <cd:constant type="cd:character"/>
+          <cd:constant type="cd:text"/>
         </cd:parameter>
         <cd:parameter name="spatie">
           <cd:constant type="aan"/>

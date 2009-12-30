@@ -175,7 +175,7 @@
    \doactivatecolor{#1}}
 
 \unexpanded\def\popcolor
-  {\csname\??on:s:\number\currentcolornesting\endcsname
+  {\csname\??cl:s:\number\currentcolornesting\endcsname
    \global\advance\currentcolornesting\minusone}
 
 %D \macros
@@ -955,12 +955,7 @@
 \def\doinheritta#1{\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
 \def\doinheritts#1{\csname(ts:\ifcsname(ts:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ts:#1)\endcsname#1\fi\fi)\endcsname}
 
-%D Low level defs: ... \colorattribute#2
-
-% \def\colordefalc#1#2{\setevalue{(ca:#1)}{#2}\setevalue{(cs:#1)}{\dosetattribute{color}{#2}}}
-% \def\colordefagc#1#2{\setxvalue{(ca:#1)}{#2}\setevalue{(cs:#1)}{\dosetattribute{color}{#2}}}
-% \def\colordefalt#1#2{\setevalue{(ta:#1)}{#2}\setevalue{(ts:#1)}{\dosetattribute{transparency}{#2}}}
-% \def\colordefagt#1#2{\setxvalue{(ta:#1)}{#2}\setxvalue{(ts:#1)}{\dosetattribute{transparency}{#2}}}
+%D Low level defs:
 
 \def\colordefalc#1#2{\setevalue{(ca:#1)}{#2}\setvalue {(cs:#1)}{\attribute\colorattribute       #2 }}
 \def\colordefagc#1#2{\setxvalue{(ca:#1)}{#2}\setvalue {(cs:#1)}{\attribute\colorattribute       #2 }}

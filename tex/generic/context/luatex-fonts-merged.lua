@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 12/29/09 22:36:24
+-- merge date  : 12/30/09 23:55:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -3509,36 +3509,36 @@ fonts.trace_scaling = false
 -- basekerns are scaled and will be hashed by table id
 -- sharedkerns are unscaled and are be hashed by concatenated indexes
 
-function tfm.check_base_kerns(tfmdata)
-    if tfm.share_base_kerns then
-        local sharedkerns = tfmdata.sharedkerns
-        if sharedkerns then
-            local basekerns = { }
-            tfmdata.basekerns = basekerns
-            return sharedkerns, basekerns
-        end
-    end
-    return nil, nil
-end
+--~ function tfm.check_base_kerns(tfmdata)
+--~     if tfm.share_base_kerns then
+--~         local sharedkerns = tfmdata.sharedkerns
+--~         if sharedkerns then
+--~             local basekerns = { }
+--~             tfmdata.basekerns = basekerns
+--~             return sharedkerns, basekerns
+--~         end
+--~     end
+--~     return nil, nil
+--~ end
 
-function tfm.prepare_base_kerns(tfmdata)
-    if tfm.share_base_kerns and not tfmdata.sharedkerns then
-        local sharedkerns = { }
-        tfmdata.sharedkerns = sharedkerns
-        for u, chr in next, tfmdata.characters do
-            local kerns = chr.kerns
-            if kerns then
-                local hash = concat(sortedkeys(kerns), " ")
-                local base = sharedkerns[hash]
-                if not base then
-                    sharedkerns[hash] = kerns
-                else
-                    chr.kerns = base
-                end
-            end
-        end
-    end
-end
+--~ function tfm.prepare_base_kerns(tfmdata)
+--~     if tfm.share_base_kerns and not tfmdata.sharedkerns then
+--~         local sharedkerns = { }
+--~         tfmdata.sharedkerns = sharedkerns
+--~         for u, chr in next, tfmdata.characters do
+--~             local kerns = chr.kerns
+--~             if kerns then
+--~                 local hash = concat(sortedkeys(kerns), " ")
+--~                 local base = sharedkerns[hash]
+--~                 if not base then
+--~                     sharedkerns[hash] = kerns
+--~                 else
+--~                     chr.kerns = base
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
 
 -- we can have cache scaled characters when we are in node mode and don't have
 -- protruding and expansion: hash == fullname @ size @ protruding @ expansion
@@ -3552,7 +3552,7 @@ local charactercache = { }
 -- has_italic flag. Some more flags will be added in the future.
 
 function tfm.do_scale(tfmtable, scaledpoints)
-    tfm.prepare_base_kerns(tfmtable) -- optimalization
+ -- tfm.prepare_base_kerns(tfmtable) -- optimalization
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
@@ -3626,7 +3626,7 @@ t.colorscheme = tfmtable.colorscheme
     local defaultheight = luatex and luatex.defaultheight or 0
     local defaultdepth  = luatex and luatex.defaultdepth  or 0
     -- experimental, sharing kerns (unscaled and scaled) saves memory
-    local sharedkerns, basekerns = tfm.check_base_kerns(tfmtable)
+    -- local sharedkerns, basekerns = tfm.check_base_kerns(tfmtable)
     -- loop over descriptions (afm and otf have descriptions, tfm not)
     -- there is no need (yet) to assign a value to chr.tonunicode
     local scaledwidth  = defaultwidth  * hdelta
@@ -3634,6 +3634,7 @@ t.colorscheme = tfmtable.colorscheme
     local scaleddepth  = defaultdepth  * vdelta
     local stackmath = tfmtable.ignore_stack_math ~= true
     local private = fonts.private
+    local sharedkerns = { }
     for k,v in next, characters do
         local chr, description, index
         if ischanged then
@@ -3794,19 +3795,26 @@ t.colorscheme = tfmtable.colorscheme
         if not nodemode then
             local vk = v.kerns
             if vk then
-                if sharedkerns then
-                    local base = basekerns[vk] -- hashed by table id, not content
-                    if not base then
-                        base = {}
-                        for k,v in next, vk do base[k] = v*hdelta end
-                        basekerns[vk] = base
-                    end
-                    chr.kerns = base
-                else
-                    local tt = {}
-                    for k,v in next, vk do tt[k] = v*hdelta end
-                    chr.kerns = tt
+            --~ if sharedkerns then
+            --~     local base = basekerns[vk] -- hashed by table id, not content
+            --~     if not base then
+            --~         base = {}
+            --~         for k,v in next, vk do base[k] = v*hdelta end
+            --~         basekerns[vk] = base
+            --~     end
+            --~     chr.kerns = base
+            --~ else
+            --~     local tt = {}
+            --~     for k,v in next, vk do tt[k] = v*hdelta end
+            --~     chr.kerns = tt
+            --~ end
+                local s = sharedkerns[vk]
+                if not s then
+                    local s = {}
+                    for k,v in next, vk do s[k] = v*hdelta end
+                    sharedkerns[vk] = s
                 end
+                chr.kerns = s
             end
             local vl = v.ligatures
             if vl then
@@ -3923,21 +3931,19 @@ local lastfont = nil
 --
 -- flushing the kern and ligature tables from memory saves a lot (only
 -- base mode) but it complicates vf building where the new characters
--- demand this data
-
---~ for id, f in pairs(fonts.ids) do -- or font.fonts
---~     local ffi = font.fonts[id]
---~     f.characters = ffi.characters
---~     f.kerns = ffi.kerns
---~     f.ligatures = ffi.ligatures
---~ end
+-- demand this data .. solution: functions that access them
 
 function tfm.cleanup_table(tfmdata) -- we need a cleanup callback, now we miss the last one
     if tfm.auto_cleanup then  -- ok, we can hook this into everyshipout or so ... todo
         if tfmdata.type == 'virtual' or tfmdata.virtualized then
             for k, v in next, tfmdata.characters do
-                if v.commands then v.commands  = nil end
+                if v.commands then v.commands = nil end
+            --  if v.kerns    then v.kerns    = nil end
             end
+        else
+        --  for k, v in next, tfmdata.characters do
+        --     if v.kerns    then v.kerns    = nil end
+        --  end
         end
     end
 end
@@ -5483,7 +5489,7 @@ function otf.enhance(name,data,filename,verbose)
     local enhancer = otf.enhancers[name]
     if enhancer then
         if (verbose ~= nil and verbose) or trace_loading then
-            logs.report("load otf","enhance: %s",name)
+            logs.report("load otf","enhance: %s (%s)",name,filename)
         end
         enhancer(data,filename)
     end
@@ -5548,6 +5554,7 @@ function otf.load(filename,format,sub,featurefile)
                 logs.report("load otf","enhancing ...")
                 for e=1,#enhancers do
                     otf.enhance(enhancers[e],data,filename)
+                    io.flush() -- we want instant messages
                 end
                 if otf.pack and not fonts.verbose then
                     otf.enhance("pack",data,filename)
@@ -6283,6 +6290,129 @@ end
 
 -- kern: ttf has a table with kerns
 
+--~ otf.enhancers["reorganize kerns"] = function(data,filename)
+--~     local glyphs, mapmap, unicodes = data.glyphs, data.luatex.indices, data.luatex.unicodes
+--~     local mkdone = false
+--~     for index, glyph in next, data.glyphs do
+--~         if glyph.kerns then
+--~             local mykerns = { }
+--~             for k,v in next, glyph.kerns do
+--~                 local vc, vo, vl = v.char, v.off, v.lookup
+--~                 if vc and vo and vl then -- brrr, wrong! we miss the non unicode ones
+--~                     local uvc = unicodes[vc]
+--~                     if not uvc then
+--~                         if trace_loading then
+--~                             logs.report("load otf","problems with unicode %s of kern %s at glyph %s",vc,k,index)
+--~                         end
+--~                     else
+--~                         if type(vl) ~= "table" then
+--~                             vl = { vl }
+--~                         end
+--~                         for l=1,#vl do
+--~                             local vll = vl[l]
+--~                             local mkl = mykerns[vll]
+--~                             if not mkl then
+--~                                 mkl = { }
+--~                                 mykerns[vll] = mkl
+--~                             end
+--~                             if type(uvc) == "table" then
+--~                                 for u=1,#uvc do
+--~                                     mkl[uvc[u]] = vo
+--~                                 end
+--~                             else
+--~                                 mkl[uvc] = vo
+--~                             end
+--~                         end
+--~                     end
+--~                 end
+--~             end
+--~             glyph.mykerns = mykerns
+--~             glyph.kerns = nil -- saves space and time
+--~             mkdone = true
+--~         end
+--~     end
+--~     if trace_loading and mkdone then
+--~         logs.report("load otf", "replacing 'kerns' tables by 'mykerns' tables")
+--~     end
+--~     if data.kerns then
+--~         if trace_loading then
+--~             logs.report("load otf", "removing global 'kern' table")
+--~         end
+--~         data.kerns = nil
+--~     end
+--~     local dgpos = data.gpos
+--~     if dgpos then
+--~         for gp=1,#dgpos do
+--~             local gpos = dgpos[gp]
+--~             local subtables = gpos.subtables
+--~             if subtables then
+--~                 for s=1,#subtables do
+--~                     local subtable = subtables[s]
+--~                     local kernclass = subtable.kernclass -- name is inconsistent with anchor_classes
+--~                     if kernclass then -- the next one is quite slow
+--~                         for k=1,#kernclass do
+--~                             local kcl = kernclass[k]
+--~                             local firsts, seconds, offsets, lookups = kcl.firsts, kcl.seconds, kcl.offsets, kcl.lookup -- singular
+--~                             if type(lookups) ~= "table" then
+--~                                 lookups = { lookups }
+--~                             end
+--~                             for l=1,#lookups do
+--~                                 local lookup = lookups[l]
+--~                                 -- weird, as maxfirst and maxseconds can have holes
+--~                                 local maxfirsts, maxseconds = getn(firsts), getn(seconds)
+--~                                 if trace_loading then
+--~                                     logs.report("load otf", "adding kernclass %s with %s times %s pairs",lookup, maxfirsts, maxseconds)
+--~                                 end
+--~                                 for fk, fv in next, firsts do
+--~                                     for first in gmatch(fv,"[^ ]+") do
+--~                                         local first_unicode = unicodes[first]
+--~                                         if type(first_unicode) == "number" then
+--~                                             first_unicode = { first_unicode }
+--~                                         end
+--~                                         for f=1,#first_unicode do
+--~                                             local glyph = glyphs[mapmap[first_unicode[f]]]
+--~                                             if glyph then
+--~                                                 local mykerns = glyph.mykerns
+--~                                                 if not mykerns then
+--~                                                     mykerns = { } -- unicode indexed !
+--~                                                     glyph.mykerns = mykerns
+--~                                                 end
+--~                                                 local lookupkerns = mykerns[lookup]
+--~                                                 if not lookupkerns then
+--~                                                     lookupkerns = { }
+--~                                                     mykerns[lookup] = lookupkerns
+--~                                                 end
+--~                                                 for sk, sv in next, seconds do
+--~                                                     local offset = offsets[(fk-1) * maxseconds + sk]
+--~                                                     --~ local offset = offsets[sk] -- (fk-1) * maxseconds + sk]
+--~                                                     for second in gmatch(sv,"[^ ]+") do
+--~                                                         local second_unicode = unicodes[second]
+--~                                                         if type(second_unicode) == "number" then
+--~                                                             lookupkerns[second_unicode] = offset
+--~                                                         else
+--~                                                             for s=1,#second_unicode do
+--~                                                                 lookupkerns[second_unicode[s]] = offset
+--~                                                             end
+--~                                                         end
+--~                                                     end
+--~                                                 end
+--~                                             elseif trace_loading then
+--~                                                 logs.report("load otf", "no glyph data for U+%04X", first_unicode[f])
+--~                                             end
+--~                                         end
+--~                                     end
+--~                                 end
+--~                             end
+--~                         end
+--~                         subtable.comment = "The kernclass table is merged into mykerns in the indexed glyph tables."
+--~                         subtable.kernclass = { }
+--~                     end
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
 otf.enhancers["reorganize kerns"] = function(data,filename)
     local glyphs, mapmap, unicodes = data.glyphs, data.luatex.indices, data.luatex.unicodes
     local mkdone = false
@@ -6335,6 +6465,9 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
     end
     local dgpos = data.gpos
     if dgpos then
+        local separator = lpeg.P(" ")
+        local other = ((1 - separator)^0) / unicodes
+        local splitter = lpeg.Ct(other * (separator * other)^0)
         for gp=1,#dgpos do
             local gpos = dgpos[gp]
             local subtables = gpos.subtables
@@ -6342,54 +6475,71 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
                 for s=1,#subtables do
                     local subtable = subtables[s]
                     local kernclass = subtable.kernclass -- name is inconsistent with anchor_classes
-                    if kernclass then
+                    if kernclass then -- the next one is quite slow
                         for k=1,#kernclass do
                             local kcl = kernclass[k]
                             local firsts, seconds, offsets, lookups = kcl.firsts, kcl.seconds, kcl.offsets, kcl.lookup -- singular
                             if type(lookups) ~= "table" then
                                 lookups = { lookups }
                             end
+                            local split = { }
                             for l=1,#lookups do
                                 local lookup = lookups[l]
+                                -- weird, as maxfirst and maxseconds can have holes, first seems to be indexed, seconds starts at 2
                                 local maxfirsts, maxseconds = getn(firsts), getn(seconds)
+                                for _, s in next, firsts do
+                                    split[s] = split[s] or lpegmatch(splitter,s)
+                                end
+                                for _, s in next, seconds do
+                                    split[s] = split[s] or lpegmatch(splitter,s)
+                                end
                                 if trace_loading then
                                     logs.report("load otf", "adding kernclass %s with %s times %s pairs",lookup, maxfirsts, maxseconds)
                                 end
-                                for fk, fv in next, firsts do
-                                    for first in gmatch(fv,"[^ ]+") do
-                                        local first_unicode = unicodes[first]
-                                        if type(first_unicode) == "number" then
-                                            first_unicode = { first_unicode }
+                                local function do_it(fk,first_unicode)
+                                    local glyph = glyphs[mapmap[first_unicode]]
+                                    if glyph then
+                                        local mykerns = glyph.mykerns
+                                        if not mykerns then
+                                            mykerns = { } -- unicode indexed !
+                                            glyph.mykerns = mykerns
                                         end
-                                        for f=1,#first_unicode do
-                                            local glyph = glyphs[mapmap[first_unicode[f]]]
-                                            if glyph then
-                                                local mykerns = glyph.mykerns
-                                                if not mykerns then
-                                                    mykerns = { } -- unicode indexed !
-                                                    glyph.mykerns = mykerns
-                                                end
-                                                local lookupkerns = mykerns[lookup]
-                                                if not lookupkerns then
-                                                    lookupkerns = { }
-                                                    mykerns[lookup] = lookupkerns
-                                                end
-                                                for sk, sv in next, seconds do
-                                                    local offset = offsets[(fk-1) * maxseconds + sk]
-                                                    --~ local offset = offsets[sk] -- (fk-1) * maxseconds + sk]
-                                                    for second in gmatch(sv,"[^ ]+") do
-                                                        local second_unicode = unicodes[second]
-                                                        if type(second_unicode) == "number" then
-                                                            lookupkerns[second_unicode] = offset
-                                                        else
-                                                            for s=1,#second_unicode do
-                                                                lookupkerns[second_unicode[s]] = offset
-                                                            end
-                                                        end
+                                        local lookupkerns = mykerns[lookup]
+                                        if not lookupkerns then
+                                            lookupkerns = { }
+                                            mykerns[lookup] = lookupkerns
+                                        end
+                                        local baseoffset = (fk-1) * maxseconds
+                                        for sk=2,maxseconds do
+                                            local sv = seconds[sk]
+                                            local offset = offsets[baseoffset + sk]
+                                            --~ local offset = offsets[sk] -- (fk-1) * maxseconds + sk]
+                                            local splt = split[sv]
+                                            for i=1,#splt do
+                                                local second_unicode = splt[i]
+                                                if tonumber(second_unicode) then
+                                                    lookupkerns[second_unicode] = offset
+                                                else
+                                                    for s=1,#second_unicode do
+                                                        lookupkerns[second_unicode[s]] = offset
                                                     end
                                                 end
-                                            elseif trace_loading then
-                                                logs.report("load otf", "no glyph data for U+%04X", first_unicode[f])
+                                            end
+                                        end
+                                    elseif trace_loading then
+                                        logs.report("load otf", "no glyph data for U+%04X", first_unicode)
+                                    end
+                                end
+                                for fk=1,#firsts do
+                                    local fv = firsts[fk]
+                                    local splt = split[fv]
+                                    for i=1,#splt do
+                                        local first_unicode = splt[i]
+                                        if tonumber(first_unicode) then
+                                            do_it(fk,first_unicode)
+                                        else
+                                            for f=1,#first_unicode do
+                                                do_it(fk,first_unicode[f])
                                             end
                                         end
                                     end
@@ -7413,6 +7563,47 @@ function prepare_base_substitutions(tfmdata,kind,value) -- we can share some cod
     end
 end
 
+--~ local function prepare_base_kerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
+--~     if value then
+--~         local otfdata = tfmdata.shared.otfdata
+--~         local validlookups, lookuplist = collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
+--~         if validlookups then
+--~             local unicodes = tfmdata.unicodes -- names to unicodes
+--~             local indices = tfmdata.indices
+--~             local characters = tfmdata.characters
+--~             local descriptions = tfmdata.descriptions
+--~             for u, chr in next, characters do
+--~                 local d = descriptions[u]
+--~                 if d then
+--~                     local dk = d.mykerns
+--~                     if dk then
+--~                         local t, done = chr.kerns or { }, false
+--~                         for l=1,#lookuplist do
+--~                             local lookup = lookuplist[l]
+--~                             local kerns = dk[lookup]
+--~                             if kerns then
+--~                                 for k, v in next, kerns do
+--~                                     if v ~= 0 and not t[k] then -- maybe no 0 test here
+--~                                         t[k], done = v, true
+--~                                         if trace_baseinit and trace_kerns then
+--~                                             logs.report("define otf","%s: base kern %s + %s => %s",cref(kind,lookup),gref(descriptions,u),gref(descriptions,k),v)
+--~                                         end
+--~                                     end
+--~                                 end
+--~                             end
+--~                         end
+--~                         if done then
+--~                             chr.kerns = t -- no empty assignments
+--~                         end
+--~                 --  elseif d.kerns then
+--~                 --      logs.report("define otf","%s: invalid mykerns for %s",cref(kind),gref(descriptions,u))
+--~                     end
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
 local function prepare_base_kerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
     if value then
         local otfdata = tfmdata.shared.otfdata
@@ -7422,31 +7613,40 @@ local function prepare_base_kerns(tfmdata,kind,value) -- todo what kind of kerns
             local indices = tfmdata.indices
             local characters = tfmdata.characters
             local descriptions = tfmdata.descriptions
+            local sharedkerns = { }
             for u, chr in next, characters do
                 local d = descriptions[u]
                 if d then
-                    local dk = d.mykerns
+                    local dk = d.mykerns -- shared
                     if dk then
-                        local t, done = chr.kerns or { }, false
-                        for l=1,#lookuplist do
-                            local lookup = lookuplist[l]
-                            local kerns = dk[lookup]
-                            if kerns then
-                                for k, v in next, kerns do
-                                    if v ~= 0 and not t[k] then -- maybe no 0 test here
-                                        t[k], done = v, true
-                                        if trace_baseinit and trace_kerns then
-                                            logs.report("define otf","%s: base kern %s + %s => %s",cref(kind,lookup),gref(descriptions,u),gref(descriptions,k),v)
+                        local s = sharedkerns[dk]
+                        if s == false then
+                            -- skip
+                        elseif s then
+                            chr.kerns = s
+                        else
+                            local t, done = chr.kerns or { }, false
+                            for l=1,#lookuplist do
+                                local lookup = lookuplist[l]
+                                local kerns = dk[lookup]
+                                if kerns then
+                                    for k, v in next, kerns do
+                                        if v ~= 0 and not t[k] then -- maybe no 0 test here
+                                            t[k], done = v, true
+                                            if trace_baseinit and trace_kerns then
+                                                logs.report("define otf","%s: base kern %s + %s => %s",cref(kind,lookup),gref(descriptions,u),gref(descriptions,k),v)
+                                            end
                                         end
                                     end
                                 end
                             end
+                            if done then
+                                sharedkerns[dk] = t
+                                chr.kerns = t -- no empty assignments
+                            else
+                                sharedkerns[dk] = false
+                            end
                         end
-                        if done then
-                            chr.kerns = t -- no empty assignments
-                        end
-                --  elseif d.kerns then
-                --      logs.report("define otf","%s: invalid mykerns for %s",cref(kind),gref(descriptions,u))
                     end
                 end
             end
@@ -11039,7 +11239,7 @@ function tfm.read(specification)
                 local reader = sequence[s]
                 if readers[reader] then -- not really needed
                     if trace_defining then
-                        logs.report("define font","trying (sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
+                        logs.report("define font","trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
                     end
                     tfmtable = readers[reader](specification)
                     if tfmtable then

@@ -944,7 +944,7 @@
         <cd:parameter name="گزینه">
           <cd:constant type="خوابیده"/>
           <cd:constant type="نرمال"/>
-          <cd:constant type="فرمانها"/>
+          <cd:constant type="فرمانها" version="mkiv"/>
           <cd:constant type="رنگ"/>
           <cd:constant type="هیچکدام"/>
         </cd:parameter>
@@ -989,7 +989,7 @@
           <cd:constant type="خط"/>
         </cd:parameter>
         <cd:parameter name="فرار">
-          <cd:constant type="cd:character"/>
+          <cd:constant type="cd:text"/>
         </cd:parameter>
         <cd:parameter name="فضا">
           <cd:constant type="روی"/>

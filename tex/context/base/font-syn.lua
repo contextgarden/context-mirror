@@ -8,11 +8,13 @@ if not modules then modules = { } end modules ['font-syn'] = {
 
 -- todo: subs in lookups requests
 
+local utf = unicode.utf8
 local next, tonumber = next, tonumber
 local gsub, lower, match, find, lower, upper = string.gsub, string.lower, string.match, string.find, string.lower, string.upper
 local find, gmatch = string.find, string.gmatch
 local concat, sort, format = table.concat, table.sort, string.format
 local lpegmatch = lpeg.match
+local utfgsub, utflower = utf.gsub, utf.lower
 
 local trace_names    = false  trackers.register("fonts.names",    function(v) trace_names    = v end)
 local trace_warnings = false  trackers.register("fonts.warnings", function(v) trace_warnings = v end)
@@ -270,6 +272,8 @@ end
 
 local function cleanname(name)
     return (gsub(lower(name),"[^%a%d]",""))
+ -- once we can load files with utf names, we can play with the following:
+ -- return (utfgsub(utfgsub(lower(str),"[^%a%A%d]",""),"%s",""))
 end
 
 names.cleanname = cleanname
