@@ -46,6 +46,7 @@ backends.codeinjections = {
     registeredsymbol      = nothing,
 
     registercomment       = nothing,
+    embedfile             = nothing,
     attachfile            = nothing,
     adddocumentinfo       = nothing,
     setupidentity         = nothing,

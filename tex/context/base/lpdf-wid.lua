@@ -21,6 +21,7 @@ local pdfdictionary = lpdf.dictionary
 local pdfarray      = lpdf.array
 local pdfreference  = lpdf.reference
 local pdfunicode    = lpdf.unicode
+local pdfstring     = lpdf.string
 local pdfcolorspec  = lpdf.colorspec
 
 local pdfreserveobj   = pdf.reserveobj
@@ -136,6 +137,32 @@ end
 
 local nofattachments, attachments, filestreams = 0, { }, { }
 
+function codeinjections.embedfile(filename)
+    local r = filestreams[filename]
+    if r == false then
+        return nil
+    elseif r then
+        return r
+    elseif not lfs.isfile(filename) then
+        interfaces.showmessage("interactions",5,filename)
+        filestreams[filename] = false
+        return nil
+    else
+        local basename = file.basename(filename)
+        local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
+        local f = pdfimmediateobj("streamfile",filename,a())
+        local d = pdfdictionary {
+            Type = pdfconstant("Filespec"),
+            F    = pdfstring(newname or basename),
+            UF   = pdfstring(newname or basename),
+            EF   = pdfdictionary { F = pdfreference(f) },
+        }
+        local r = pdfreference(pdfimmediateobj(tostring(d)))
+        filestreams[filename] = r
+        return r
+    end
+end
+
 function codeinjections.attachfile(specification)
     local attachment = interactions.attachment(specification.label)
     if not attachment then
@@ -156,20 +183,8 @@ function codeinjections.attachfile(specification)
     if newname == "" then newname = filename end
     local aref = attachments[label]
     if not aref then
-        if not lfs.isfile(filename) then
-            interfaces.showmessage("interactions",5,filename)
-            return -- todo: message
-        else
-            local f = pdf.immediateobj("streamfile",filename)
-            filestreams[filename] = f
-            local d = pdfdictionary {
-                Type = pdfconstant("Filespec"),
-                F    = newname,
-                EF   = pdfdictionary { F = pdfreference(d) },
-            }
-            aref = pdfreference(pdfimmediateobj(tostring(d)))
-            attachments[label] = aref
-        end
+        aref = codeinjections.embedfile(filename,newname)
+        attachments[label] = aref
     end
     local name, appearance = analyzesymbol(specification.symbol)
     local d = pdfdictionary {

@@ -142,7 +142,9 @@ tostring_a = function(t,contentonly,key)
                 r[#r+1] = tosixteen(v)
             elseif tv == "table" then
                 local mv = getmetatable(v)
-                if mv and mv.__lpdftype then
+                local mt = mv.__lpdftype
+                if mv and mt then
+--~                 print(mv,mt,v)
                     r[#r+1] = tostring(v)
                 elseif v[1] then
                     r[#r+1] = tostring_a(v)
@@ -224,7 +226,7 @@ function lpdf.dictionary(t)
 end
 
 function lpdf.array(t)
-    if type(t) == "string"then
+    if type(t) == "string" then
         return setmetatable({ t },mt_a)
     else
         return setmetatable(t or { },mt_a)
@@ -290,9 +292,12 @@ function lpdf.verbose(t) -- maybe check for type
 end
 
 --~ local d = lpdf.dictionary()
---~ local e = lpdf.dictionary { ["e"] = "abc" }
+--~ local e = lpdf.dictionary { ["e"] = "abc", x = lpdf.dictionary { ["f"] = "ABC" }  }
 --~ local f = lpdf.dictionary { ["f"] = "ABC" }
---~ local a = lpdf.array()
+--~ local a = lpdf.array { lpdf.array { lpdf.string("xxx") } }
+
+--~ print(a)
+--~ os.exit()
 
 --~ d["test"] = lpdf.string ("test")
 --~ d["more"] = "more"
@@ -306,7 +311,7 @@ end
 
 --~ d.what = a
 
---~ print(d)
+--~ print(e)
 
 --~ local d = lpdf.dictionary()
 --~ d["abcd"] = { 1, 2, 3, "test" }
