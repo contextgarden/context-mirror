@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['grph-inc'] = {
 -- dimensions
 -- consult rlx
 
+-- figures.boxnumber can go as we now can use names
+
 --[[
 The ConTeXt figure inclusion mechanisms are among the oldest code
 in ConTeXt and evolve dinto a complex whole. One reason is that we
@@ -34,7 +36,7 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
-local texsprint = tex.sprint
+local texsprint, texbox, texwd, texht, texdp = tex.sprint, tex.box, tex.wd, tex.ht, tex.dp
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
@@ -599,23 +601,21 @@ end
 function figures.done(data)
     figures.n = figures.n + 1
     data = data or figures.current()
-    local dr, du, ds = data.request, data.used, data.status
-    ds.width = tex.wd[figures.boxnumber]
-    ds.height = tex.ht[figures.boxnumber]
+    local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
+    ds.width  = texwd[nr]
+    ds.height = texht[nr]
     ds.xscale = ds.width/(du.width or 1)
     ds.yscale = ds.height/(du.height or 1)
     return data
 end
 
 function figures.dummy(data)
---~         data = data or figures.current()
---~         local dr, du, ds = data.request, data.used, data.status
---~         local r = node.new("rule")
---~         r.width  = du.width  or figures.defaultwidth
---~         r.height = du.height or figures.defaultheight
---~         r.depth  = du.depth  or figures.defaultdepth
---~         tex.box[figures.boxnumber] = node.hpack(node.write(r))
-    texsprint(ctxcatcodes,"\\emptyfoundexternalfigure")
+    data = data or figures.current()
+    local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
+    texbox[nr] = node.new("hlist")
+    texwd [nr] = du.width  or figures.defaultwidth
+    texht [nr] = du.height or figures.defaultheight
+    texdp [nr] = du.depth  or figures.defaultdepth
 end
 
 -- -- -- generic -- -- --
@@ -676,11 +676,11 @@ function figures.includers.generic(data)
         figures.used[hash] = figure
     end
     if figure then
-        local n = figures.boxnumber
+        local nr = figures.boxnumber
         -- it looks like we have a leak in attributes here .. todo
-        tex.box[n] = node.hpack(img.node(figure))
-     -- tex.box[n] = img.node(figure) -- img.write(figure) -- assigning img.node directly no longer valid
-        tex.wd[n], tex.ht[n], tex.dp[n] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
+        texbox[nr] = node.hpack(img.node(figure))
+     -- texbox[nr] = img.node(figure) -- img.write(figure) -- assigning img.node directly no longer valid
+        texwd[nr], texht[nr], texdp[nr] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         ds.objectnumber = figure.objnum
         texsprint(ctxcatcodes,"\\relocateexternalfigure")
     end

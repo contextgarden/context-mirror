@@ -3248,11 +3248,11 @@
 %
 % newer
 
-\def\os  {\mathortext{\fam\purefamily    {oldstyle}}{\symbolicfont    {OldStyle}}}
-\def\frak{\mathortext{\fam\purefamily     {fraktur}}{\symbolicfont     {Fraktur}}}
-\def\goth{\mathortext{\fam\purefamily      {gothic}}{\symbolicfont      {Gothic}}}
-\def\cal {\mathortext{\fam\purefamily{calligraphic}}{\symbolicfont{Calligraphic}}}
-\def\bbd {\mathortext{\fam\purefamily  {blackboard}}{\symbolicfont  {Blackboard}}}
+\unexpanded\def\os  {\mathortext{\fam\purefamily    {oldstyle}}{\symbolicfont    {OldStyle}}}
+\unexpanded\def\frak{\mathortext{\fam\purefamily     {fraktur}}{\symbolicfont     {Fraktur}}}
+\unexpanded\def\goth{\mathortext{\fam\purefamily      {gothic}}{\symbolicfont      {Gothic}}}
+\unexpanded\def\cal {\mathortext{\fam\purefamily{calligraphic}}{\symbolicfont{Calligraphic}}}
+\unexpanded\def\bbd {\mathortext{\fam\purefamily  {blackboard}}{\symbolicfont  {Blackboard}}}
 
 \definefontsynonym [OldStyle]     [Serif]
 \definefontsynonym [Fraktur]      [Serif]
@@ -3268,10 +3268,10 @@
 
 \ifx\mathtext\undefined \let\mathtext\hbox \fi
 
-\def\fraktur     #1{\mathortext\domathtext\donothing{\frak#1}}
-\def\gothic      #1{\mathortext\domathtext\donothing{\goth#1}}
-\def\calligraphic#1{\mathortext\domathtext\donothing{\cal #1}}
-\def\blackboard  #1{\mathortext\domathtext\donothing{\bbd#1}}
+\unexpanded\def\fraktur     #1{\mathortext\domathtext\donothing{\frak#1}}
+\unexpanded\def\gothic      #1{\mathortext\domathtext\donothing{\goth#1}}
+\unexpanded\def\calligraphic#1{\mathortext\domathtext\donothing{\cal #1}}
+\unexpanded\def\blackboard  #1{\mathortext\domathtext\donothing{\bbd#1}}
 
 %D Torture test:
 %D
