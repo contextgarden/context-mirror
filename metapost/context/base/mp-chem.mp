@@ -73,6 +73,7 @@ chem_radical_max        :=  1.50 ;
 chem_text_min           :=  0.75 ;
 chem_text_max           :=  1.75 ;
 chem_circle_radius      :=  0.80 ;
+chem_circle_radius      :=  1.10 ;
 chem_rotation           :=  1 ;
 chem_adjacent           :=  0 ;
 chem_substituent        :=  0 ;
@@ -652,8 +653,10 @@ def chem_init_some(expr n, ratio, angle, start, initialrot, initialmov)  =
     chem_msr_path  [n] := chem_sr_path[n] rotatedaround(chem_b_zero[n], (180-angle)/2) ;
     chem_psr_path  [n] := chem_sr_path[n] rotatedaround(chem_b_zero[n],-(180-angle)/2) ;
     % not yet ok:
-    chem_c_path    [n] := subpath (30/45, -30/45) of (fullcircle            scaled (1.25*chem_circle_radius*chem_width[n]));
-    chem_cc_path   [n] := subpath (30/45,8-30/45) of (fullcircle rotated 90 scaled (1.25*chem_circle_radius*chem_width[n]));
+%     chem_c_path    [n] := subpath (30/45, -30/45) of (fullcircle            scaled (1.25*chem_circle_radius*chem_width[n]));
+%     chem_cc_path   [n] := subpath (30/45,8-30/45) of (fullcircle rotated 90 scaled (1.25*chem_circle_radius*chem_width[n]));
+    chem_c_path    [n] := subpath (30/45, -30/45) of (fullcircle            scaled (chem_width[n]));
+    chem_cc_path   [n] := subpath (30/45,8-30/45) of (fullcircle rotated 90 scaled (chem_width[n]));
 enddef ;
 
 def chem_init_three      = chem_init_some(3,30/52  ,120,-60,1,2) ; enddef ; % 60

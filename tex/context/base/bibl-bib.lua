@@ -12,7 +12,7 @@ bibtex files and converts them to xml so that the we access the content
 in a convenient way. Actually handling the data takes place elsewhere.</p>
 --ldx]]--
 
-local lower, format = string.lower, string.format
+local lower, format, gsub = string.lower, string.format, string.gsub
 local next = next
 local lpegmatch = lpeg.match
 
@@ -125,6 +125,16 @@ end
 
 local escaped_pattern = xml.escaped_pattern
 
+local ihatethis = {
+    f = "\\f",
+    n = "\\n",
+    r = "\\r",
+    s = "\\s",
+    t = "\\t",
+    v = "\\v",
+    z = "\\z",
+}
+
 function bibtex.toxml(session)
     -- we can always speed this up if needed
     -- format slows down things a bit but who cares
@@ -139,6 +149,7 @@ function bibtex.toxml(session)
             if not entries or entries[name] then
                 result[#result+1] = format("  <e n='%s'>",name)
                 for key, value in next, entry do
+                    value = gsub(value,"\\(.)",ihatethis)
                     value = lpegmatch(escaped_pattern,value)
                     if value ~= "" then
                         result[#result+1] = format("   <v n='%s'>%s</v>",key,value)

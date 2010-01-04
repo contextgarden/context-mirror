@@ -1281,13 +1281,16 @@
   {\dontleavehmode
    \goto{\ctxlua{jobreferences.from("#1")}}[fileorurl(#1)]}
 
-\def\dofromurl#1%
+\def\dofromurldescription#1%
+  {#1}
+
+\def\dofromurlliteral#1%
   {\dosetfontattribute \??ur\c!style
    \dosetcolorattribute\??ur\c!color
    \hyphenatedurl{#1}}
 
-\def\dofromfile#1%
-  {\hyphenatedurl{#1}}
+\let\dofromfiledescription\dofromurldescription
+\let\dofromfileliteral    \dofromurlliteral     % maybe some day setupfile that inherits from url
 
 %D We also support:
 %D

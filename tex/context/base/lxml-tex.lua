@@ -985,6 +985,14 @@ local function text(collected)
     end
 end
 
+local function ctxtext(collected)
+    if collected then
+        for c=1,#collected do
+            texsprint(ctxcatcodes,collected[1].dt)
+        end
+    end
+end
+
 local function number(collected)
     if collected then
         local n = 0
@@ -1031,6 +1039,8 @@ finalizers.count          = count
 finalizers.command        = command
 finalizers.attribute      = attribute
 finalizers.text           = text
+finalizers.ctxtext        = ctxtext
+finalizers.context        = ctxtext
 finalizers.position       = position
 finalizers.match          = match
 finalizers.index          = index

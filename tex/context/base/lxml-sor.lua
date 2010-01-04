@@ -60,12 +60,32 @@ function lxml.sorters.show(name)
     local entries = list and list.entries
     local NC, NR, bold = context.NC, context.NR, context.bold -- somehow bold is not working
     if entries then
-        context.starttabulate { "|Tr|Tr|Tl|" }
-        NC() bold("n") NC() bold("id") NC() bold("entry") NR() context.HL()
+        local maxn = 1
+        for i=1,#entries do
+            if #entries[i][2] > maxn then maxn = #entries[i][2] end
+        end
+        context.starttabulate { "|Tr|Tr|" .. string.rep("Tlp|",maxn) }
+        NC() bold("n")
+        NC() bold("id")
+        if maxn > 1 then
+            for i=1,maxn do
+                NC() bold("entry " .. i)
+            end
+        else
+            NC() bold("entry")
+        end
+        NC() NR()
+        context.HL()
         for i=1,#entries do
             local entry = entries[i]
             local document, node = lxml.splitid(entry[1])
-            NC() context(i) NC() context(node) NC() context(concat(entry[2]," ")) NR()
+            NC() context(i)
+            NC() context(node)
+            local e = entry[2]
+            for i=1,#e do
+                NC() context.detokenize(e[i])
+            end
+            NC() NR()
         end
         context.stoptabulate()
     end

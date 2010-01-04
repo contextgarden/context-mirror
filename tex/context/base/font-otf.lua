@@ -84,7 +84,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.642 -- beware: also sync font-mis.lua
+otf.version          = 2.643 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -530,6 +530,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
     end
     local cidinfo, cidnames, cidcodes = data.cidinfo
     local usedmap = cidinfo and cidinfo.usedname
+    usedmap = usedmap and lower(usedmap)
     usedmap = usedmap and fonts.cid.map[usedmap]
     if usedmap then
         oparser = usedmap and fonts.map.make_name_parser(cidinfo.ordering)
@@ -551,7 +552,9 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
                 local foundindex = lpegmatch(oparser,name)
                 if foundindex then
                     unicode = cidcodes[foundindex] -- name to number
-                    if not unicode then
+                    if unicode then
+                        originals[index], tounicode[index], ns = unicode, tounicode16(unicode), ns + 1
+                    else
                         local reference = cidnames[foundindex] -- number to name
                         if reference then
                             local foundindex = lpegmatch(oparser,reference)

@@ -100,6 +100,9 @@
 \def\dochemicaltext#1% in ppchtex we had a more clever alignment
   {\dosetchemicaltext\strut#1} % maybe also \setstrut
 
+\def\dochemicaltext#1%
+  {\mathematics{\dosetchemicaltext\strut\ifcase\currentxfontsize\or\scriptstyle\or\scriptscriptstyle\fi#1}}
+
 \newconditional\indisplaychemical
 
 \unexpanded\def\startchemical

@@ -11,8 +11,8 @@ bibtex.load(session,"texgraph.bib")
 bibtex.load(session,"texjourn.bib")
 bibtex.load(session,"texnique.bib")
 bibtex.load(session,"tugboat.bib")
+print(bibtex.size,statistics.elapsedtime(bibtex))
 bibtex.toxml(session)
-
 print(bibtex.size,statistics.elapsedtime(bibtex))
 
 --~ print(table.serialize(session.data))

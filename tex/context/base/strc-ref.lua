@@ -290,28 +290,52 @@ function jobreferences.whatfrom(name)
     texsprint(ctxcatcodes,(urls[name] and variables.url) or (files[name] and variables.file) or variables.unknown)
 end
 
+--~ function jobreferences.from(name)
+--~     local u = urls[name]
+--~     if u then
+--~         local url, file, description = u[1], u[2], u[3]
+--~         if description ~= "" then
+--~             texsprint(ctxcatcodes,format("\\dofromurldescription{%s}",description))
+--~             -- ok
+--~         elseif file and file ~= "" then
+--~             texsprint(ctxcatcodes,format("\\dofromurlliteral{%s}",url .. "/" .. file))
+--~         else
+--~             texsprint(ctxcatcodes,format("\\dofromurlliteral{%s}",url))
+--~         end
+--~     else
+--~         local f = files[name]
+--~         if f then
+--~             local description, file = f[1], f[2]
+--~             if description ~= "" then
+--~                 texsprint(ctxcatcodes,format("\\dofromfiledescription{%s}",description))
+--~             else
+--~                 texsprint(ctxcatcodes,format("\\dofromfileliteral{%s}",file))
+--~             end
+--~         end
+--~     end
+--~ end
+
 function jobreferences.from(name)
     local u = urls[name]
     if u then
         local url, file, description = u[1], u[2], u[3]
         if description ~= "" then
+            context.dofromurldescription(description)
             -- ok
         elseif file and file ~= "" then
-            description = url .. "/" .. file
+            context.dofromurlliteral(url .. "/" .. file)
         else
-            description = url
+            context.dofromurlliteral(url)
         end
-        texsprint(ctxcatcodes,format("\\dofromurl{%s}",description))
     else
         local f = files[name]
         if f then
             local description, file = f[1], f[2]
             if description ~= "" then
-                --
+                context.dofromfiledescription(description)
             else
-                description = file
+                context.dofromfileliteral(file)
             end
-            texsprint(ctxcatcodes,format("\\dofromfile{%s}",description))
         end
     end
 end

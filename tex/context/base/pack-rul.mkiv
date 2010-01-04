@@ -770,23 +770,37 @@
 %D Because it is used so often the he next macro is (and
 %D looks) rather optimized.
 
+% \def\s!root{root} % maybe configurable
+
 \let\postprocessframebox\relax
 
 \let\@@framed\s!unknown
 
-\def\framedparameter    #1{\csname\doframedparameter\@@framed#1\endcsname}
+% \def\framedparameter    #1{\csname\doframedparameter\@@framed#1\endcsname}
+% \def\framedparameterhash#1{\doframedparameterhash   \@@framed#1}
+%
+% \def\doframedparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doframedparentparameter    \csname#1\s!parent\endcsname#2\fi}
+% \def\doframedparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\doframedparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+%
+% \def\doframedparentparameter    #1#2{\ifx#1\relax\s!empty\else\doframedparameter    #1#2\fi}
+% \def\doframedparentparameterhash#1#2{\ifx#1\relax        \else\doframedparameterhash#1#2\fi}
+%
+% \def\doframedparentparameter#1#2{\ifx#1\relax\doframedrootparameter#2\else\doframedparameter#1#2\fi}
+% \def\doframedrootparameter    #1{\ifcsname\??oi#1\endcsname\??oi#1\else\s!empty\fi}
+
+\def\framedparameter    #1{\csname\doframedparameter\@@framed{#1}\endcsname}
 \def\framedparameterhash#1{\doframedparameterhash   \@@framed#1}
 
-\def\doframedparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doframedparentparameter    \csname#1\s!parent\endcsname#2\fi}
+\def\doframedparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doframedparentparameter    \csname#1\s!parent\endcsname{#2}\fi}
 \def\doframedparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\doframedparentparameterhash\csname#1\s!parent\endcsname#2\fi}
 
-\def\doframedparentparameter    #1#2{\ifx#1\relax\s!empty\else\doframedparameter    #1#2\fi}
+\def\doframedparentparameter    #1#2{\ifx#1\relax\s!empty\else\doframedparameter    #1{#2}\fi}
 \def\doframedparentparameterhash#1#2{\ifx#1\relax        \else\doframedparameterhash#1#2\fi}
 
-% \def\s!root{root} % maybe configurable
-
-\def\doframedparentparameter#1#2{\ifx#1\relax\doframedrootparameter#2\else\doframedparameter#1#2\fi}
+\def\doframedparentparameter#1#2{\ifx#1\relax\doframedrootparameter#2\else\doframedparameter#1{#2}\fi}
 \def\doframedrootparameter    #1{\ifcsname\??oi#1\endcsname\??oi#1\else\s!empty\fi}
+
+\def\frameddimension#1{\the\dimexpr\framedparameter{#1}\relax}
 
 \def\dosetframedattributes#1#2% style color
   {\edef\fontattributehash {\framedparameterhash#1}%

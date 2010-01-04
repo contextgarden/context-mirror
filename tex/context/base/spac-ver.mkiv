@@ -113,17 +113,38 @@
 
 \let\currentrelativeinterlinespace\empty
 
+% \def\setuprelativeinterlinespace[#1]%
+%   {\processallactionsinset
+%      [#1]
+%      [      \v!on=>\oninterlineskip,
+%            \v!off=>\offinterlineskip,
+%          \v!reset=>\let\currentrelativeinterlinespace\empty
+%                    \let\setrelativeinterlinespace\relax
+%                    \setfontparameters,
+%           \v!auto=>\let\setrelativeinterlinespace\dosetrelativeinterlinespace,
+%        \s!unknown=>\assignvalue\commalistelement\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+%                    \spacing\currentrelativeinterlinespace]}
+
+\setvalue{\??it::\v!on   }{\oninterlineskip}
+\setvalue{\??it::\v!off  }{\offinterlineskip}
+\setvalue{\??it::\v!reset}{\let\currentrelativeinterlinespace\empty
+                           \let\setrelativeinterlinespace\relax
+                           \setfontparameters}
+\setvalue{\??it::\v!auto }{\let\setrelativeinterlinespace\dosetrelativeinterlinespace}
+
+\def\dosetspecifiedrelativeinterlinespace#1%
+  {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+   \spacing\currentrelativeinterlinespace}
+
 \def\setuprelativeinterlinespace[#1]%
-  {\processallactionsinset
-     [#1]
-     [      \v!on=>\oninterlineskip,
-           \v!off=>\offinterlineskip,
-         \v!reset=>\let\currentrelativeinterlinespace\empty
-                   \let\setrelativeinterlinespace\relax
-                   \setfontparameters,
-          \v!auto=>\let\setrelativeinterlinespace\dosetrelativeinterlinespace,
-       \s!unknown=>\assignvalue\commalistelement\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
-                   \spacing\currentrelativeinterlinespace]}
+  {\processcommalist[#1]\dosetuprelativeinterlinespace}
+
+\def\dosetuprelativeinterlinespace#1%
+  {\ifcsname\??it::#1\endcsname
+     \csname\??it::#1\endcsname
+   \else
+     \dosetspecifiedrelativeinterlinespace{#1}%
+   \fi}
 
 \def\dosetrelativeinterlinespace
   {\ifx\currentrelativeinterlinespace\empty\else
