@@ -355,7 +355,7 @@ function lists.size()
     texprint(#lists.result)
 end
 
-function lists.location(name,n)
+function lists.location(n)
     local l = lists.result[n]
     texsprint(l.references.internal or n)
 end

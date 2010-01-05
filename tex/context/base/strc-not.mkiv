@@ -640,7 +640,10 @@
   {\edef\currentdescription{#1}%
    \edef\currentnote{#1}%
    \edef\currentdescriptionnumberentry{#2}%
-%    \let\currentenumerationfullnumber\currentnoteenumerationfullnumber
+   % as we can have collected notes (e.g. in tables) we need to recover
+   % \currentdescriptionattribute and \currentdescriptionsynchronize
+   \reinstatedescriptionnumberentry
+   %
    \dontcomplain % should be done in startstoreddescription instead
    \dostartstoreddescription\begstrut\currentnotedescriptiontext\endstrut\dostopstoreddescription}
 

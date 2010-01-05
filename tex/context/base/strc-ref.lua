@@ -854,6 +854,12 @@ function jobreferences.setinternalreference(prefix,tag,internal,view)
     return destination
 end
 
+function jobreferences.getinternalreference(n) -- n points into list
+    local l = structure.lists.collected[n]
+    texsprint((l and l.references.internal) or n)
+end
+
+
 --
 
 function jobreferences.get_current_metadata(tag)
@@ -873,6 +879,7 @@ function jobreferences.get_current_prefixspec(default) -- todo: message
     texsprint(ctxcatcodes,"\\getreferencestructureprefix{",
         current_metadata("kind"), "}{", current_metadata("name") or "?", "}{", default, "}")
 end
+
 --~ function jobreferences.get_current_prefixspec(default) -- we can consider storing the data at the lua end
 --~     context.getreferencestructureprefix(current_metadata("kind"),current_metadata("name"),default)
 --~ end

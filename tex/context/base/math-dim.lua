@@ -118,7 +118,7 @@ local defaults = {
         ['default']={ "SubscriptBaselineDropMin", "sub_drop" },
      },
     ['sub_sup_shift_down']={
-        ['default']={ "SubscriptShiftDown", "sub2" },
+        ['default']={ "SubscriptShiftDown", "sub2" }, -- todo
      },
     ['sub_top_max']={
         ['default']={ "SubscriptTopMax", "abs(math_x_height*4)/5" },
@@ -209,6 +209,7 @@ end
 
 function mathematics.dimensions(dimens)
     if dimens.SpaceAfterScript then
+        dimens.SubscriptShiftDownWithSuperscript = dimens.SubscriptShiftDown * 1.5
         return { }, table.fastcopy(dimens)
     elseif dimens.AxisHeight or dimens.axis_height then
         local t = { }
@@ -284,6 +285,7 @@ function mathematics.dimensions(dimens)
             StackTopShiftUp                             = t . stack_num_up          . text_style,
             SubscriptBaselineDropMin                    = t . sub_shift_drop        . text_style,
             SubscriptShiftDown                          = t . sub_shift_down        . text_style,
+            SubscriptShiftDownWithSuperscript           = t . sub_sup_shift_down    . text_style,
             SubscriptTopMax                             = t . sub_top_max           . text_style,
             SubSuperscriptGapMin                        = t . subsup_vgap           . text_style,
             SuperscriptBaselineDropMax                  = t . sup_shift_drop        . text_style,

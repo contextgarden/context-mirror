@@ -873,6 +873,10 @@
    \fi
    \endgroup}
 
+\def\reinstatedescriptionnumberentry
+  {\xdef\currentdescriptionattribute  {\ctxlua    {tex.write(jobreferences.getinternalreference(\currentdescriptionnumberentry))}}%
+   \xdef\currentdescriptionsynchronize{\ctxlatelua{structure.lists.enhance(\currentdescriptionnumberentry)}}}
+
 \installstructurelistprocessor{description}{\usestructurelistprocessor{number+title}}
 
 % labels, we could share with enumerations and forget about the text; anyhow, figure
