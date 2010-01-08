@@ -15,18 +15,18 @@
 
 \unprotect
 
-\newif\ifmargeblokken
+\newif\ifmarginblocks
 
 \def\dosetupmarginblocks[#1]%
   {\getparameters[\??mb][#1]%
    \doifelse\@@mbstate\v!start
      {\showmessage\m!layouts4\empty
-      \margeblokkentrue
+      \marginblockstrue
       \let\somenextfloat\dosomenextfloat
       \let\startmarginblock\dostartmarginblock
       \let\stopmarginblock\dostopmarginblock}%
      {\showmessage\m!layouts5\empty
-      \margeblokkenfalse
+      \marginblocksfalse
       \def\somenextfloat[##1]%
         {\someelsefloat[##1,\v!here]}%
       \let\startmarginblock\dontstartmargeblok
@@ -64,16 +64,16 @@
         \@@mbbottom}%
    \fi}
 
-\def\plaatsrechtermargeblok
+\def\placerightmarginblock
   {\hskip\rightmarginwidth}
 
-\def\plaatslinkermargeblok
+\def\placeleftmarginblock
   {\hskip\leftmarginwidth}
 
-\def\checkmargeblokken
-  {\ifvoid\marginbox\else\docheckmargeblokken\fi}
+\def\checkmarginblocks
+  {\ifvoid\marginbox\else\docheckmarginblocks\fi}
 
-\def\docheckmargeblokken % erg inefficient
+\def\docheckmarginblocks % erg inefficient
   {\setbox\preparedmarginbox\vbox
      {\forgetall
       \splittopskip\topskip
@@ -134,7 +134,7 @@
    \egroup
    \@@mbafter}
 
-\newcounter\nofpostponedblocks
+\newcount\nofpostponedblocks
 
 \newif\ifinpostponing
 
@@ -159,66 +159,77 @@
 %
 % \starttext \dorecurse{4}{\input tufte \page} \stoptext
 
-\newtoks   \postponedpageblocks
-\newcounter\nofpostponedpageblocks
+\newtoks  \postponedpageblocks
+\newcount \nofpostponedpageblocks
 
 % \ifinpostponing: handhaven, want gebruikt in stijlen ! ! ! ! !
 
-\def\flushpagefloats
-  {\doifoddpageelse
-     {\ifvoid\collectedleftpagefloats
-        \ifvoid\collectedrightpagefloats\else
-           \unvbox\collectedrightpagefloats
-           \page
-          %\the\everytopofpage
-        \fi
-      \fi}
-     {\ifvoid\collectedleftpagefloats\else
-        \unvbox\collectedleftpagefloats
+\def\doflushoddpagefloats
+  {\ifvoid\collectedleftpagefloats
+     \ifvoid\collectedrightpagefloats\else
+        \unvbox\collectedrightpagefloats
         \page
        %\the\everytopofpage
-      \fi
-      \ifvoid\collectedrightpagefloats\else
-         \unvbox\collectedrightpagefloats
-         \page
-        %\the\everytopofpage
-      \fi}%
-   \ifvoid\collectedpagefloats\else
+     \fi
+   \fi}
+
+\def\doflushevenpagefloats
+  {\ifvoid\collectedleftpagefloats\else
+     \unvbox\collectedleftpagefloats
+     \page
+    %\the\everytopofpage
+   \fi
+   \ifvoid\collectedrightpagefloats\else
+      \unvbox\collectedrightpagefloats
+      \page
+     %\the\everytopofpage
+   \fi}
+
+\def\doflushcommonpagefloats
+  {\ifvoid\collectedpagefloats\else
      % message
      \unvbox\collectedpagefloats
    \fi}
+
+\def\doflushpagefloats
+  {\doifoddpageelse
+     \doflushoddpagefloats
+     \doflushevenpagefloats
+   \doflushcommonpagefloats}
 
 % \def\flushrestfloats
 %   {\doif{\floatsharedparameter\c!cache}\v!no\doflushfloats}
 
 % \let\flushrestfloats\relax
 
-\def\dopostponeblock
-  {\bgroup % new may 2004
-   \setsystemmode\v!postponing % new may 2004
+\def\dodoflushpostponedblocks
+  {\bgroup % we need the font switch, else problems inside split verbatim
+   \setnormalcatcodes % postponing in verbatim
+   \restoreglobalbodyfont
+   \global\pagetotal\zeropoint
+   \global\inpostponingtrue
+   \the\postponedpageblocks
+   \dorecurse\nofpostponedblocks
+     {\getbuffer[pbuf-\recurselevel]}%
+   \doflushfloats % new but potential dangerous
+   \global\nofpostponedblocks\zerocount
+   \global\inpostponingfalse
+   \egroup}
+
+\def\doflushpostponedblocks
+  {\ifinpostponing \else
+     \ifcase\nofpostponedblocks     \else \dodoflushpostponedblocks \fi
+     \ifcase\nofpostponedpageblocks \else \dodoflushpostponedblocks \fi
+   \fi}
+
+\def\doflushpostponedcontent
+  {\bgroup
+   \setsystemmode\v!postponing
    \the\everytopofpage
   %\flushrestfloats
-   \flushpagefloats
-   \donefalse
-   \ifinpostponing \else
-     \ifcase\nofpostponedblocks     \else \donetrue \fi
-     \ifcase\nofpostponedpageblocks \else \donetrue \fi
-   \fi
-   \ifdone
-     \bgroup % we need the color/font switch, else problems inside split verbatim
-     \setnormalcatcodes % postponing in verbatim
-     \restoreglobalbodyfont                        % The \nof-test is
-     \global\pagetotal\zeropoint                   % recently added and
-     \global\inpostponingtrue                      % definitely needed else
-     \the\postponedpageblocks                      % we can loose or disorder
-     \dorecurse\nofpostponedblocks                 % floats; anyhow, this
-       {\getbuffer[pbuf-\recurselevel]}%           % mechanism is still
-     \doflushfloats % new but potential dangerous  % suboptimal and needs a
-     \doglobal\newcounter\nofpostponedblocks       % proper analysis
-     \global\inpostponingfalse
-     \egroup
-   \fi
-   \egroup} % new may 2004
+   \doflushpagefloats
+   \doflushpostponedblocks
+   \egroup}
 
 \def\getpostponedblock#1#2%
   {\doif{#1}\realfolio{\getbuffer[rbuf-#2]}} % no \ifnum, avoid \fi
@@ -231,20 +242,20 @@
    \doifnextoptionalelse{\egroup\nodostartpostponing}{\egroup\dodostartpostponing}}
 
 \def\nodostartpostponing[#1]%
-  {\doglobal\increment\nofpostponedpageblocks
+  {\global\advance\nofpostponedpageblocks\plusone % hm, never reset?
    \bgroup % a little bit of misusing grouping
    \doifinstring{+}{#1}\advance \realpageno#1\relax % ugly but efficient
    \doglobal\appendetoks\noexpand\getpostponedblock
-     {\realfolio}{\nofpostponedpageblocks}\to\postponedpageblocks
+     {\realfolio}{\number\nofpostponedpageblocks}\to\postponedpageblocks
    \egroup
-   \showmessage\m!layouts3\nofpostponedpageblocks
-   \dostartbuffer[rbuf-\nofpostponedpageblocks]%
+   \showmessage\m!layouts3{\number\nofpostponedpageblocks}%
+   \dostartbuffer[rbuf-\number\nofpostponedpageblocks]%
      [\e!start\v!postponing][\e!stop\v!postponing]}
 
 \def\dodostartpostponing
-  {\doglobal\increment\nofpostponedblocks
-   \showmessage\m!layouts3\nofpostponedblocks
-   \expanded{\dostartbuffer[pbuf-\nofpostponedblocks][\e!start\v!postponing][\e!stop\v!postponing]}}
+  {\global\advance\nofpostponedblocks\plusone
+   \showmessage\m!layouts3{\number\nofpostponedblocks}%
+   \expanded{\dostartbuffer[pbuf-\number\nofpostponedblocks][\e!start\v!postponing][\e!stop\v!postponing]}}
 
 % Setups:
 

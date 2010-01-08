@@ -17,7 +17,7 @@
 
 \registerctxluafile{typo-brk}{1.001}
 
-\definesystemattribute[breakpoint]
+\definesystemattribute[breakpoint] \chardef\breakpointattribute \dogetattributeid{breakpoint}
 
 % compound stuff (under construction)
 
@@ -53,7 +53,7 @@
 
 \def\setbreakpoints
   {\ctxlua{breakpoints.enable()}%
-   \gdef\setbreakpoints[##1]{\dosetattribute{breakpoint}{\csname\??bp:##1\endcsname}}%
+   \gdef\setbreakpoints[##1]{\attribute\breakpointattribute\csname\??bp:##1\endcsname\relax}%
    \setbreakpoints}
 
 \letvalue{\??bp:\s!reset}\attributeunsetvalue

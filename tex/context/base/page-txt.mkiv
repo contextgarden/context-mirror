@@ -689,13 +689,8 @@
 
 %D This code will move to \type {page-flt.tex}.
 
-\appendtoks
-  \plaatsrechtermargeblok \hskip-\rightmarginwidth
-\to \rightmargintextcontent
-
-\appendtoks
-  \plaatslinkermargeblok \hskip-\leftmarginwidth
-\to \leftmargintextcontent
+\appendtoks \placerightmarginblock \hskip-\rightmarginwidth \to \rightmargintextcontent
+\appendtoks \placeleftmarginblock  \hskip-\leftmarginwidth  \to \leftmargintextcontent
 
 %D The next hook will later be used for keeping track of
 %D positions, i.e.\ it will provide a proper (page

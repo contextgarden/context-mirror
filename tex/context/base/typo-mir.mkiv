@@ -17,17 +17,17 @@
 
 \registerctxluafile{typo-mir}{1.001}
 
-\definesystemattribute[mirroring]
+\definesystemattribute[mirroring] \chardef\mirroringattribute \dogetattributeid{mirroring}
 
 % experimental mirroring
 
 \def\setcharactermirroring
   {\ctxlua{mirroring.enable()}%
-   \gdef\setcharactermirroring[##1]{\dosetattribute{mirroring}{\number##1}}%
+   \gdef\setcharactermirroring[##1]{\attribute\mirroringattribute##1\relax}%
    \setcharactermirroring}
 
 \def\resetcharactermirroring
-  {\doresetattribute{mirroring}}
+  {\attribute\mirroringattribute\attributeunsetvalue}
 
 \newtoks\everysetupdirections
 

@@ -40,7 +40,7 @@
 \to \everysetupmathematics
 
 % \appendtoks
-%     \ifconditional\automathpunctuation\dosetattribute{mathpunctuation}\plusone\fi
+%     \ifconditional\automathpunctuation\attribute\mathpunctuationattribute\plusone\fi
 % \to \everymathematics
 
 \setupmathematics[\v!autopunctuation=\v!yes]
@@ -106,7 +106,10 @@
 
 % using attributes
 
-\def\choosemathbig#1#2{\dosetattribute{mathsize}{#1}\left#2\right.\doresetattribute{mathsize}}
+\def\choosemathbig#1#2%
+  {\attribute\mathsizeattribute#1\relax
+   \left#2\right.%
+   \attribute\mathsizeattribute\attributeunsetvalue}
 
 \definemathcommand [big]  {\choosemathbig\plusone  }
 \definemathcommand [Big]  {\choosemathbig\plustwo  }

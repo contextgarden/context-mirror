@@ -1222,13 +1222,15 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
                                             local offset = offsets[baseoffset + sk]
                                             --~ local offset = offsets[sk] -- (fk-1) * maxseconds + sk]
                                             local splt = split[sv]
-                                            for i=1,#splt do
-                                                local second_unicode = splt[i]
-                                                if tonumber(second_unicode) then
-                                                    lookupkerns[second_unicode] = offset
-                                                else
-                                                    for s=1,#second_unicode do
-                                                        lookupkerns[second_unicode[s]] = offset
+                                            if splt then
+                                                for i=1,#splt do
+                                                    local second_unicode = splt[i]
+                                                    if tonumber(second_unicode) then
+                                                        lookupkerns[second_unicode] = offset
+                                                    else
+                                                        for s=1,#second_unicode do
+                                                            lookupkerns[second_unicode[s]] = offset
+                                                        end
                                                     end
                                                 end
                                             end
@@ -1240,13 +1242,15 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
                                 for fk=1,#firsts do
                                     local fv = firsts[fk]
                                     local splt = split[fv]
-                                    for i=1,#splt do
-                                        local first_unicode = splt[i]
-                                        if tonumber(first_unicode) then
-                                            do_it(fk,first_unicode)
-                                        else
-                                            for f=1,#first_unicode do
-                                                do_it(fk,first_unicode[f])
+                                    if splt then
+                                        for i=1,#splt do
+                                            local first_unicode = splt[i]
+                                            if tonumber(first_unicode) then
+                                                do_it(fk,first_unicode)
+                                            else
+                                                for f=1,#first_unicode do
+                                                    do_it(fk,first_unicode[f])
+                                                end
                                             end
                                         end
                                     end

@@ -604,12 +604,12 @@
        {\normalexpanded{\noexpand\doifcommonelse{#2}{\flushfloatslist}}\doflushfloats\donothing}%
      % but which should be done before using box \floatbox
    \fi
-   \ifmargeblokken
+   \ifmarginblocks
      \doifinset\v!margin{#2}\endgraf
    \fi
    \global\insidefloattrue
    \begingroup % **
-   \ifmargeblokken
+   \ifmarginblocks
      \doifinset\v!margin{#2}{\hsize\@@mbwidth}%
    \fi
    \the\everyinsidefloat

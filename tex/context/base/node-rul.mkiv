@@ -125,8 +125,8 @@
 \def\dodoruledindeed#1%
   {\advance\csname\??on:#1:c\endcsname\plusone
    \scratchcounter\csname\??on:#1:c\endcsname
-   \dosetattribute{ruled}{\numexpr1000*\scratchcounter
-     +\csname\??on#1\ifcsname\??on#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname}}
+   \attribute\ruledattribute\numexpr1000*\scratchcounter
+     +\csname\??on#1\ifcsname\??on#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname}
 
 % ungrouped
 
@@ -262,8 +262,8 @@
 %   {\def\currentshift{#1}%
 %    \advance\csname\??ra:#1:c\endcsname\plusone
 %    \scratchcounter\csname\??ra:#1:c\endcsname
-%    \dosetattribute{shifted}{\numexpr1000*\scratchcounter
-%      +\csname\??ra#1\ifcsname\??ra#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname}%
+%    \attribute\shiftedattribute\numexpr1000*\scratchcounter
+%      +\csname\??ra#1\ifcsname\??ra#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname
 %    \setupalign[\shiftparameter\c!align]%
 %    \dosetshiftattributes\c!style\c!color}
 
@@ -284,8 +284,8 @@
   {\def\currentshift{#1}%
    \advance\csname\??ra:#1:c\endcsname\plusone
    \scratchcounter\csname\??ra:#1:c\endcsname
-   \dosetattribute{shifted}{\numexpr1000*\scratchcounter
-     +\csname\??ra#1\ifcsname\??ra#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname}%
+   \attribute\shiftedattribute\numexpr1000*\scratchcounter
+     +\csname\??ra#1\ifcsname\??ra#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname
    \dosetshiftattributes\c!style\c!color
    \dosetupisolatedalign{\shiftparameter\c!align}}
 

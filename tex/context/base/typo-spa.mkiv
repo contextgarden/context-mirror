@@ -17,7 +17,7 @@
 
 \registerctxluafile{typo-spa}{1.001}
 
-\definesystemattribute[spacing]
+\definesystemattribute[spacing] \chardef\spacingattribute \dogetattributeid{spacing}
 
 % experimental spacing
 %
@@ -44,11 +44,11 @@
 
 \def\setcharacterspacing
   {\ctxlua{spacings.enable()}%
-   \gdef\setcharacterspacing[##1]{\dosetattribute{spacing}{\csname\??ch:##1\endcsname}}%
+   \gdef\setcharacterspacing[##1]{\attribute\spacingattribute\csname\??ch:##1\endcsname\relax}%
    \setcharacterspacing}
 
 \def\resetcharacterspacing
-  {\doresetattribute{spacing}}
+  {\attribute\spacingattribute\attributeunsetvalue}
 
 \letvalue{\??ch:\s!reset}\attributeunsetvalue
 

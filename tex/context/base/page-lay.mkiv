@@ -995,12 +995,12 @@
 
 \newif\ifshiftedrealpageno
 
-% We could use nested if here plu ssone \@EAEAEA's but but the
+% We could use nested if here plus some \@EAEAEA's but but the
 % next variant has less expansion which is nicer in tracing.
 
-\def\doifoddpageelse   {\ifshiftedrealpageno\expandafter\doifoddpageelseyes\else\expandafter\doifoddpageelsenop\fi}
-\def\doifoddpageelseyes{\ifodd\realpageno\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
-\def\doifoddpageelsenop{\ifodd\realpageno\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\def\doifoddpageelse   {\ifshiftedrealpageno\expandafter\doifoddpageelseyes  \else\expandafter\doifoddpageelsenop  \fi}
+\def\doifoddpageelseyes{\ifodd   \realpageno\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments \fi}
+\def\doifoddpageelsenop{\ifodd   \realpageno\expandafter\firstoftwoarguments \else\expandafter\secondoftwoarguments\fi}
 
 \let\doifonevenpaginaelse\doifoddpageelse
 
@@ -1031,6 +1031,30 @@
 
 \def\settexthoffset
   {\texthoffset\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}}
+
+% The next hack is too tricky as we may shipout more pages:
+%
+% \def\freezepagestatechecks
+%   {\the\everyfreezepagestatechecks}
+%
+% \newtoks \everyfreezepagestatechecks
+%
+% \appendtoks
+%     \doifbothsides
+%       {\let\doifbothsides\firstofthreearguments}%
+%       {\let\doifbothsides\secondofthreearguments}%
+%       {\let\doifbothsides\thirdofthreearguments}%
+%     \rightorleftpageaction
+%       {\let\rightorleftpageaction\firstoftwoarguments}%
+%       {\let\rightorleftpageaction\secondoftwoarguments}%
+%     \doifmarginswapelse
+%       {\let\doifmarginswapelse\firstoftwoarguments}%
+%       {\let\doifmarginswapelse\secondoftwoarguments}%
+% \to \everyfreezepagestatechecks
+%
+% \prependtoks
+%     \freezepagestatechecks
+% \to \everybeforeshipout
 
 \def\goleftonpage
   {\hskip-\dimexpr\leftmargindistance+\leftmarginwidth+\leftedgedistance+\leftedgewidth\relax}

@@ -900,8 +900,9 @@ function jobreferences.filter(name,...) -- number page title ...
             local filter = filters[kind] or filters.generic
             filter = filter and (filter[name] or filter.unknown or filters.generic[name] or filters.generic.unknown)
             if filter then
-                logs.report("referencing","name '%s', kind '%s', using dedicated filter",name,kind)
---~                 print(table.serialize {...})
+                if trace_referencing then
+                    logs.report("referencing","name '%s', kind '%s', using dedicated filter",name,kind)
+                end
                 filter(data,name,...)
             elseif trace_referencing then
                 logs.report("referencing","name '%s', kind '%s', using generic filter",name,kind)

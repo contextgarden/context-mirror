@@ -30,23 +30,23 @@
 
 \registerctxluafile{node-par}{1.001}
 
-\definesystemattribute[parbuilder]
+\definesystemattribute[parbuilder] \chardef\parbuilderattribute \dogetattributeid{parbuilder}
 
 \newcount\nofparbuilders
 
 \def\defineparbuilder[#1]%
   {\global\advance\nofparbuilders\plusone
    \ctxlua{parbuilders.register("#1",\number\nofparbuilders)}%
-   \setxvalue{\??ng:#1}{\dosetattribute{parbuilder}{\number\nofparbuilders}}}
+   \setxvalue{\??ng:#1}{\attribute\parbuilderattribute\nofparbuilders}}
 
 \def\startparbuilder[#1]%
-  {\edef\@@currentparbuilder{\number\dogetattribute{parbuilder}}%
+  {\edef\@@currentparbuilder{\number\attribute\parbuilderattribute}%
    \globalpushmacro\@@currentparbuilder
    \getvalue{\??ng:#1}}
 
 \def\stopparbuilder
   {\globalpopmacro\@@currentparbuilder
-   \dosetattribute{parbuilder}{\@@currentparbuilder}}
+   \attribute\parbuilderattribute\@@currentparbuilder\relax}
 
 % no high level interface, after all implementing a linebreaker is not something that
 % the average user will do

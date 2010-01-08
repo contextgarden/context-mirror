@@ -43,8 +43,8 @@
 \definesystemattribute[transparency]                           \chardef\transparencyattribute   \dogetattributeid{transparency}
 \definesystemattribute[background]                             \chardef\backgroundattribute     \dogetattributeid{background}
 \definesystemattribute[colorintent]                            \chardef\colorintentattribute    \dogetattributeid{colorintent}
-\definesystemattribute[negative]
-\definesystemattribute[effect]
+\definesystemattribute[negative]                               \chardef\negativeattribute       \dogetattributeid{negative}
+\definesystemattribute[effect]                                 \chardef\effectattribute         \dogetattributeid{effect}
 \definesystemattribute[viewerlayer]                            \chardef\viewerlayerattribute    \dogetattributeid{viewerlayer}
 \definesystemattribute[layoutcomponent]                        \chardef\layoutcomponentattribute\dogetattributeid{layoutcomponent}
 \definesystemattribute[reference]                              \chardef\referenceattribute      \dogetattributeid{reference}
@@ -72,7 +72,7 @@
 
 \def\setcolormodel#1%
   {\currentcolormodel\ctxlua{tex.print(colors.setmodel('#1'))}%
-   \dosetattribute{colormodel}{\the\currentcolormodel}}
+   \attribute\colormodelattribute\currentcolormodel}
 
 \setcolormodel{all}
 
@@ -87,7 +87,7 @@
 % transparency
 
 \def\registertransparency#1#2#3%
-  {\setevalue{(ts:#1)}{\dosetattribute{transparency}{\ctxlua{tex.print(transparencies.register(#2,#3))}}}}
+  {\setevalue{(ts:#1)}{\attribute\transparencyattribute\ctxlua{tex.write(transparencies.register(#2,#3))} }}
 
 \def\sometransparencyswitch#1{\csname(ts:#1)\endcsname}
 
@@ -102,7 +102,7 @@
 % overprint
 
 \def\registercolorintent#1#2%
-  {\setevalue{(os:#1)}{\dosetattribute{colorintent}{\ctxlua{tex.print(colorintents.register('#2'))}}}}
+  {\setevalue{(os:#1)}{\attribute\colorintentattribute\ctxlua{tex.write(colorintents.register('#2'))} }}
 
 \def\dotriggercolorintent
   {\ctxlua{colorintents.enable()}%
@@ -114,12 +114,12 @@
 
 \installattributestack\colorintentattribute
 
-\setevalue{(os:#\v!none}{\doresetattribute{colorintent}} % does this work out ok?
+\setevalue{(os:#\v!none}{\attribute\colorintentattribute\attributeunsetvalue} % does this work out ok?
 
 % negative
 
 \def\registernegative#1#2%
-  {\setevalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
+  {\setevalue{(ns:#1)}{\attribute\negativeattribute\ctxlua{tex.write(negatives.register('#2'))} }}
 
 \def\dotriggernegative
   {\ctxlua{negatives.enable()}%
@@ -133,7 +133,7 @@
 
 \def\registereffect#1#2#3% #2=stretch #3=rulethickness
   {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}%
-     {\dosetattribute{effect}{\ctxlua{tex.print(effects.register('#1',#2,\number\dimexpr#3\relax))}}}}
+     {\attribute\effectattribute\ctxlua{tex.write(effects.register('#1',#2,\number\dimexpr#3\relax))} }}
 
 \def\dotriggereffect
   {\ctxlua{effects.enable()}%
@@ -150,17 +150,12 @@
 
 % viewerlayers (will probably change a bit)
 
-% \def\registerviewerlayer#1#2% global !
-%   {\setxvalue{(vl:#1)}{\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
-%
-% \setevalue{(vl:)}{\doresetattribute{viewerlayer}}
-%
 % needs to work over stopitemize grouping etc
 
 \def\registerviewerlayer#1#2% global !
-  {\setxvalue{(vl:#1)}{\global\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
+  {\setxvalue{(vl:#1)}{\global\attribute\viewerlayerattribute\ctxlua{tex.write(viewerlayers.register('#2'))} }}
 
-\setevalue{(vl:)}{\global\doresetattribute{viewerlayer}}
+\setevalue{(vl:)}{\global\attribute\viewerlayerattribute\attributeunsetvalue}
 
 \def\dotriggerviewerlayer
   {\ctxlua{viewerlayers.enable()}%

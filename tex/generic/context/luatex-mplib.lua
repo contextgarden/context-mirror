@@ -320,7 +320,7 @@ else
                     metapost.report("flushing figure %s",f)
                     local figure = figures[f]
                     local objects = getobjects(result,figure,f)
-                    local fignum = match(tonumber((figure:filename())),"([%d]+)$") or figure:charcode() or 0)
+                    local fignum = tonumber(match(figure:filename(),"([%d]+)$") or figure:charcode() or 0)
                     local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                     local bbox = figure:boundingbox()
                     local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack

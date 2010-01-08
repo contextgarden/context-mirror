@@ -246,7 +246,7 @@
 % When issuing two \par\penalty-\plustenthousand's, only the first
 % triggers the otr; obscure feature or optimization?
 
-\def\outputcounter{-100010} % -10010
+\newcount\outputcounter \outputcounter=-100010 % -10010
 
 \def\doinvokeoutput
   {\iftraceotr
@@ -255,35 +255,50 @@
      \expandafter\dodoinvokeoutput
    \fi}
 
-\def\outputmessage#1#2#3%
-  {\iftraceotr\writestatus\m!otr{#1 #2 \number#3}\fi}
+\def\doshowoutputmessage#1#2#3%
+  {\writestatus\m!otr{#1 #2 \number#3}}
 
 \def\dodoinvokeoutput#1%
-  {\outputmessage+{special}{#1}%
-   \bgroup\par\penalty#1\relax\egroup
-   \outputmessage-{special}{#1}}
+  {\bgroup\par\penalty#1\egroup}
 
 \def\dodotracedoutput#1%
-  {\outputmessage+{traced}{#1/\the\outputpenalty}%
+  {\doshowoutputmessage+{traced}{#1/\the\outputpenalty}%
    \writestatus\m!otr{c:\number\mofcolumns,v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal}%
    \dodoinvokeoutput{#1}%
    \writestatus\m!otr{c:\number\mofcolumns,v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal}%
-   \outputmessage-{traced}{#1/\the\outputpenalty}}
+   \doshowoutputmessage-{traced}{#1/\the\outputpenalty}}
 
 \def\installoutput#1#2% \invoke \action
-  {\decrement\outputcounter
-   \edef#1{\noexpand\doinvokeoutput{\outputcounter}}%
-   \setvalue{\@@OTR\outputcounter}{#2}}
+  {\global\advance\outputcounter\minusone
+   \edef#1{\noexpand\doinvokeoutput{\number\outputcounter}}%
+   \setvalue{\@@OTR\number\outputcounter}{#2}}
+
+\def\invoketracedoutputroutine
+  {\doshowoutputmessage+{trying}\outputpenalty
+   \ifcsname\@@OTR\the\outputpenalty\endcsname
+     \doshowoutputmessage+{special}\outputpenalty
+     \csname\@@OTR\the\outputpenalty\endcsname
+     \doshowoutputmessage-{special}\outputpenalty
+   \else
+     \doshowoutputmessage+{normal}\outputpenalty
+     \the\OTRcommand\output
+     \doshowoutputmessage-{normal}\outputpenalty
+   \fi
+   \doshowoutputmessage-{trying}\outputpenalty}
+
+\def\invokenormaloutputroutine
+  {\ifcsname\@@OTR\the\outputpenalty\endcsname
+     \csname\@@OTR\the\outputpenalty\endcsname
+   \else
+     \the\OTRcommand\output
+   \fi}
 
 \def\invokeoutputroutine
-  {\outputmessage+{trying}\outputpenalty
-   \executeifdefined{\@@OTR\the\outputpenalty}\dodonormaloutput
-   \outputmessage-{trying}\outputpenalty}
-
-\def\dodonormaloutput
-  {\outputmessage+{normal}\outputpenalty
-   \the\OTRcommand\output
-   \outputmessage-{normal}\outputpenalty}
+  {\iftraceotr
+     \expandafter\invoketracedoutputroutine
+   \else
+     \expandafter\invokenormaloutputroutine
+   \fi}
 
 \mainoutput{\invokeoutputroutine} \output{\inotrtrue\the\mainoutput}
 
@@ -556,7 +571,7 @@
      \dosupereject
    \fi
    \doflushspread
-   \dopostponeblock}
+   \doflushpostponedcontent}
 
 \def\dooutput
   {\finaloutput\unvbox\normalpagebox}
@@ -886,7 +901,7 @@
 %  \setnextsubpageno  % nog eens: als in pagina (tbv standaard opmaak)
    \dontshowboxes     % dan hier blokkeren en verderop resetten
 %  \shipoutfacingpage
-   \checkmargeblokken
+   \checkmarginblocks
    \the\beforeeverypage
    \normalexpanded{\global\beforepage\emptytoks\the\beforepage}% \scratchtoks\beforepage\global\beforepage\emptytoks\the\scratchtoks % was \flushtoks\beforepage
    \inpagebodytrue\buildpagebody#1#2%

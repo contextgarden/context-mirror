@@ -160,7 +160,7 @@
             },"\@@iafocus")
        }%
        \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
-       \begingroup\dosetattribute{destination}\currentdestinationattribute\hbox{}\endgroup % todo
+       \begingroup\attribute\destinationattribute\currentdestinationattribute\hbox{}\endgroup % todo
      \fi
    \fi}
 
@@ -525,7 +525,7 @@
   {\global\advance\locationcount\plusone}
 
 \def\thisissomeinternal#1#2%  tag reference (only for old time sake)
-  {\begingroup\dosetattribute{destination}{\ctxlua{jobreferences.mark("#1:#2")}}\hbox{}\endgroup}
+  {\begingroup\attribute\destinationattribute\ctxlua{jobreferences.mark("#1:#2")}\hbox{}\endgroup}
 
 \def\gotosomeinternal#1#2#3#4%
   {\ifinternalnamedreferences

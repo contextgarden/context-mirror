@@ -47,11 +47,6 @@
 \unexpanded\def\textplus
   {\char"002B } % plus
 
-% \def\registerviewerlayer#1#2% global !
-%   {\setxvalue{(vl:#1)}{\global\dosetattribute{viewerlayer}{\ctxlua{tex.print(viewerlayers.register('#2'))}}}}
-
-% \setevalue{(vl:)}{\global\doresetattribute{viewerlayer}}
-
 \let\\=\crlf % till we fixed all styles
 
 % \def\pagedir{\expandafter\gobblethreearguments}
@@ -137,8 +132,6 @@
 %         end
 %     end)
 % }
-
-\definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
 
 \protect \endinput
 

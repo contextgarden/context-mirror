@@ -17,7 +17,7 @@
 
 \registerctxluafile{typo-krn}{1.001}
 
-\definesystemattribute[kern]
+\definesystemattribute[kern] \chardef\kernattribute \dogetattributeid{kern}
 
 % more
 %
@@ -47,7 +47,7 @@
 
 \def\setcharacterkerning
   {\ctxlua{kerns.enable()}%
-   \gdef\setcharacterkerning[##1]{\dosetattribute{kern}{\csname\??ck:##1\endcsname}}%
+   \gdef\setcharacterkerning[##1]{\attribute\kernattribute\csname\??ck:##1\endcsname\relax}%
    \setcharacterkerning}
 
 \letvalue{\??ck:\s!reset}\attributeunsetvalue

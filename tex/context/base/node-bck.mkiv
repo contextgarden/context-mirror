@@ -84,14 +84,14 @@
      \global\maxtabularcolorcolumn\tabulatecolumn
    \fi
    \setxvalue{\??tt:c:\the\tabulatecolumn}{#1}%
-   \dosetattribute{background}\plusone
+   \attribute\backgroundattribute\plusone
    \faststartcolor[#1]\strut\char0\faststopcolor
    \endgroup}
 
 \def\repeatsettabulatecolor
   {\begingroup
    \ifcsname\??tt:c:\the\tabulatecolumn\endcsname
-     \dosetattribute{background}\plusone
+     \attribute\backgroundattribute\plusone
      \faststartcolor[\csname\??tt:c:\the\tabulatecolumn\endcsname]\strut\char0\faststopcolor
    \fi
    \endgroup}

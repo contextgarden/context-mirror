@@ -1198,11 +1198,11 @@
 \definesystemattribute[skip-category]  \chardef\skipcategoryattribute  \dogetattributeid{skip-category}
 \definesystemattribute[skip-penalty]   \chardef\skippenaltyattribute   \dogetattributeid{skip-penalty}
 \definesystemattribute[skip-order]     \chardef\skiporderattribute     \dogetattributeid{skip-order}
-\definesystemattribute[display-math]
+\definesystemattribute[display-math]   \chardef\displaymathattribute   \dogetattributeid{display-math}
 \definesystemattribute[snap-method]    \chardef\snapmethodattribute    \dogetattributeid{snap-method}
 \definesystemattribute[snap-done]      \chardef\snapdoneattribute      \dogetattributeid{snap-done}
 
-%definesystemattribute[snap-category]
+%definesystemattribute[snap-category]  \chardef\snapcategoryattribute  \dogetattributeid{snap-category}
 
 % TODO: NAMED SNAPPERS
 
@@ -1223,7 +1223,7 @@
    \ifcsname\currentsnapper\endcsname \else
      \setevalue\currentsnapper{\ctxlua{vspacing.define_snap_method("#1","#2")}}%
    \fi
-   \setevalue{\??gr:#1}{\dosetattribute{snap-method}{\csname\currentsnapper\endcsname}}}
+   \setevalue{\??gr:#1}{\attribute\snapmethodattribute\csname\currentsnapper\endcsname\space}}
 
 \def\definegridsnapping
   {\dodoubleargument\dodefinegridsnapping}
@@ -1233,7 +1233,7 @@
 
 \edef\resetsnapvalue
   {%\gridsnappingfalse
-   \doresetattribute{snap-method}}
+   \attribute\snapmethodattribute\attributeunsetvalue}
 
 \def\setsnapvalue#1%
   {%\gridsnappingtrue
@@ -1484,12 +1484,12 @@
 %   {\ctxlua{nodes.setsnapvalue(1,\number\openstrutheight,\number\openstrutdepth)}}
 %
 % \def\doenablegridsnapping
-%   {\dosetattribute{snap-category}{1}%
+%   {\attribute\snapcategoryattribute\plusone
 %    \topskip\strutht
 %    \offinterlineskip}
 %
 % \def\dodisablegridsnapping
-%   {\doresetattribute{snap-category}%
+%   {\attribute\snapcategoryattribute\attributeunsetvalue
 %    % reset topskip
 %    \oninterlineskip}
 
@@ -1865,54 +1865,3 @@
   {\endgraf\dorecurse{\iffirstargument#1\else3\fi}\crlf}
 
 \protect \endinput
-
-\dorecurse{2}{
-    $2^{2^{2^{2}}}$ $2_{2_{2_{2}}}^{2^{2^{2^{2^{2^{2^{2^{2^{2}}}}}}}}}$
-    \input tufte \inframed {tufte}
-    \par
-}
-
-\dorecurse{100} {
-
-    \kern \recurselevel pt
-
-    \vbox {
-        \endgraf \strut first \endgraf
-        {\dosetattribute{skip-category}{1}\vskip10pt}
-        {\dosetattribute{skip-category}{1}\vskip40pt}
-        {\dosetattribute{skip-category}{1}\vskip20pt}
-        {\dosetattribute{skip-category}{2}\vskip10pt}
-        \endgraf \strut second \endgraf
-    }
-
-    \endgraf \strut first \endgraf
-    {\dosetattribute{skip-category}{1}\vskip10pt}
-    {\dosetattribute{skip-category}{1}\vskip40pt}
-    {\dosetattribute{skip-category}{1}\vskip20pt}
-    {\dosetattribute{skip-category}{1}\vskip40pt}
-    \endgraf \strut second \endgraf
-
-    {\dosetattribute{skip-category}{0}\vskip10pt} % remove
-    {\dosetattribute{skip-category}{1}\vskip10pt} % take largest
-    {\dosetattribute{skip-category}{1}\vskip40pt}
-    {\dosetattribute{skip-category}{1}\vskip40pt}
-    {\dosetattribute{skip-category}{1}\vskip40pt}
-    {\dosetattribute{skip-category}{1}\vskip40pt}
-    {\dosetattribute{skip-category}{1}\vskip40pt}
-    {\dosetattribute{skip-category}{1}\dosetattribute{skip-order}{10}\vskip20pt}
-    {\dosetattribute{skip-category}{4}\dosetattribute{skip-order}{10}\vskip20pt}
-    {\dosetattribute{skip-category}{1}\vskip60pt}
-    {\dosetattribute{skip-category}{1}\vskip20pt}
-    {\dosetattribute{skip-category}{0}\vskip10pt}
-
-    third (no break after this)
-
-    {\dosetattribute{skip-category}{1}\dosetattribute{skip-penalty}{100000}\vskip10pt}
-    {\dosetattribute{skip-category}{1}\dosetattribute{skip-penalty}{100000}\vskip20pt}
-    {\dosetattribute{skip-category}{1}\vskip10pt}
-    {\dosetattribute{skip-category}{1}\vskip20pt}
-
-    fourth
-    \vskip10pt
-    fifth
-}

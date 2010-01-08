@@ -17,7 +17,7 @@
 
 \registerctxluafile{typo-cap}{1.001}
 
-\definesystemattribute[case]
+\definesystemattribute[case] \chardef\caseattribute \dogetattributeid{case}
 
 %D \macros
 %D   {Word, Words, WORD, WORDS}
@@ -53,7 +53,7 @@
 
 \unexpanded\def\setcharactercasing
   {\ctxlua{cases.enable()}%
-   \gdef\setcharactercasing[##1]{\dosetattribute{case}{\number##1}}%
+   \gdef\setcharactercasing[##1]{\attribute\caseattribute##1\relax}%
    \setcharactercasing}
 
 \unexpanded\def\WORD {\groupedcommand{\setcharactercasing[\plusone  ]}{}}
@@ -199,6 +199,8 @@
 %
 % \definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
 
-\def\randomizetext{\groupedcommand{\dosetattribute{case}{8}}{}}
+\def\randomizetext{\groupedcommand{\attribute\caseattribute\pluseight}{}}
+
+\definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
 
 \protect \endinput

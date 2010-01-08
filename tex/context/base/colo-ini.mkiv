@@ -716,7 +716,7 @@
 
 \def\dosetcolormodel#1% no message
   {\currentcolormodel\ctxlua{tex.print(colors.setmodel('#1',\ifweightGRAY true\else false\fi))}%
-   \dosetattribute{colormodel}{\the\currentcolormodel}}
+   \attribute\colormodelattribute\currentcolormodel}
 
 \setcolormodel{all}
 
@@ -826,7 +826,7 @@
    \ifx\@@rastervalue\empty
      \let\@@rastervalue\@@rsscreen
    \fi
-   \dosetattribute\s!color{\ctxlua{tex.sprint(colors.definesimplegray("_raster_",\@@rastervalue))}}}
+   \attribute\colorattribute\ctxlua{tex.sprint(colors.definesimplegray("_raster_",\@@rastervalue))}\relax}
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok
   {\ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
@@ -902,14 +902,6 @@
   \deactivatecolor
   \ifx\maintextcolor\empty\else\doactivatecolor\maintextcolor\fi
 \to \everybeforeoutput
-
-% \def\startregistercolor[#1]% probably obsolete
-%   {\doifelsenothing{#1}
-%      {\let\stopregistercolor\relax}
-%      {\edef\stopregistercolor
-%         {\dosetattribute\s!color       {\dogetattribute\s!color       }%
-%          \dosetattribute\s!transparency{\dogetattribute\s!transparency}}%
-%       \doactivatecolor{#1}}}
 
 \def\registermaintextcolor{\ctxlua{colors.main = \thecolorattribute\maintextcolor}}
 

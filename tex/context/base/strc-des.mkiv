@@ -515,7 +515,7 @@
   {\iftrialtypesetting \else
      \begingroup
      \currentdescriptionsynchronize
-     \dosetattribute{destination}\currentdescriptionattribute % todo, whole text
+     \attribute\destinationattribute\currentdescriptionattribute\relax % todo, whole text
      \forcecolorhack
      \endgroup
    \fi#1}

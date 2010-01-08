@@ -21,11 +21,11 @@
 
 \registerctxluafile{page-lin}{1.001}
 
-\definesystemattribute[line-number]
-\definesystemattribute[line-reference]
+\definesystemattribute[line-number]    \chardef\linenumberattribute    \dogetattributeid{line-number}
+\definesystemattribute[line-reference] \chardef\linereferenceattribute \dogetattributeid{line-reference}
 
-\appendtoksonce\doresetattribute{line-number}\to\everyforgetall
-\appendtoksonce\dosetattribute{display-math}{1}\to\everybeforedisplayformula
+\appendtoksonce \attribute\linenumberattribute \attributeunsetvalue \to \everyforgetall
+\appendtoksonce \attribute\displaymathattribute\plusone             \to \everybeforedisplayformula
 
 \newcount\linenumber
 \newbox  \linenumberscratchbox
@@ -88,7 +88,7 @@
    \or
      \mkdefinetextlinenumbering % restart
    \fi
-   \dosetattribute{line-number}{\getvalue{ln:c:\currentlinenumbering}}}
+   \attribute\linenumberattribute\getvalue{ln:c:\currentlinenumbering}\relax}
 
 \def\mksetuptextlinenumbering
   {\ifcsname ln:c:\currentlinenumbering\endcsname
@@ -101,7 +101,7 @@
    \fi}
 
 \def\mkstoptextlinenumbering
-  {\doresetattribute{line-number}}
+  {\attribute\linenumberattribute\attributeunsetvalue}
 
 % we could make this a bit more efficient by putting the end reference
 % in the same table as the start one but why make things complex ...
@@ -111,7 +111,7 @@
 \def\mksomelinereference#1#2#3%
   {\dontleavehmode\begingroup
    \global\advance\linerefcounter\plusone
-   \dosetattribute{line-reference}\linerefcounter
+   \attribute\linereferenceattribute\linerefcounter
    #3%
    % for the moment we use a simple system i.e. no prefixes etc .. todo: store as number
    \expanded{\dodosetreference{line}{#2}{conversion=\linenumberparameter\c!conversion}{\the\linerefcounter}}% kind labels userdata text
@@ -458,10 +458,10 @@
 
     \def\mkstarttextlinenumbering#1#2%
       {\ctxlua{nodes.lines.flowed.prepare("#1")}%
-       \dosetattribute{line-number}{#2}}
+       \attribute\linenumberattribute#2\relax}
 
     \def\mkstoptextlinenumbering
-      {\doresetattribute{line-number}}
+      {\attribute\linenumberattribute\attributeunsetvalue}
 
     \def\mkmaketextlinenumber#1#2%
       {\hbox \bgroup

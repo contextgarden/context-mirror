@@ -47,16 +47,16 @@
 \registerctxluafile{math-map}{1.001}
 \registerctxluafile{math-noa}{1.001}
 
-\definesystemattribute[mathalphabet]
-\definesystemattribute[mathsize]
-\definesystemattribute[mathpunctuation]
-\definesystemattribute[mathgreek]
+\definesystemattribute[mathalphabet]        \chardef\mathalphabetattribute    \dogetattributeid{mathalphabet}
+\definesystemattribute[mathsize]            \chardef\mathsizeattribute        \dogetattributeid{mathsize}
+\definesystemattribute[mathpunctuation]     \chardef\mathpunctuationattribute \dogetattributeid{mathpunctuation}
+\definesystemattribute[mathgreek]           \chardef\mathgreekattribute       \dogetattributeid{mathgreek}
 
 % todo: only in mmode
 
-\unexpanded\def\mathgreekupright{\dosetattribute  {mathgreek}{11}}
-\unexpanded\def\mathgreekitalic {\dosetattribute  {mathgreek}{22}}
-\unexpanded\def\mathgreekdefault{\doresetattribute{mathgreek}}
+\unexpanded\def\mathgreekupright{\attribute\mathgreekattribute11 }
+\unexpanded\def\mathgreekitalic {\attribute\mathgreekattribute22 }
+\unexpanded\def\mathgreekdefault{\attribute\mathgreekattribute\attributeunsetvalue}
 
 \let\mathgreeknormal\mathgreekupright
 \let\mathgreeknone  \mathgreekdefault
@@ -452,17 +452,17 @@
 
 % [lc uc] normal (upright) = 2, italic = 3, none = 0/1
 
-\setevalue{\??mo:greek:\v!normal :\v!normal}{\dosetattribute  {mathgreek}{22}}
-\setevalue{\??mo:greek:\v!normal :\v!italic}{\dosetattribute  {mathgreek}{23}}
-\setevalue{\??mo:greek:\v!normal :\v!none  }{\dosetattribute  {mathgreek}{21}}
+\setevalue{\??mo:greek:\v!normal :\v!normal}{\attribute\mathgreekattribute22 }
+\setevalue{\??mo:greek:\v!normal :\v!italic}{\attribute\mathgreekattribute23 }
+\setevalue{\??mo:greek:\v!normal :\v!none  }{\attribute\mathgreekattribute21 }
 
-\setevalue{\??mo:greek:\v!italic :\v!normal}{\dosetattribute  {mathgreek}{32}}
-\setevalue{\??mo:greek:\v!italic :\v!italic}{\dosetattribute  {mathgreek}{33}}
-\setevalue{\??mo:greek:\v!italic :\v!none  }{\dosetattribute  {mathgreek}{31}}
+\setevalue{\??mo:greek:\v!italic :\v!normal}{\attribute\mathgreekattribute32 }
+\setevalue{\??mo:greek:\v!italic :\v!italic}{\attribute\mathgreekattribute33 }
+\setevalue{\??mo:greek:\v!italic :\v!none  }{\attribute\mathgreekattribute31 }
 
-\setevalue{\??mo:greek:\v!none   :\v!normal}{\dosetattribute  {mathgreek}{12}}
-\setevalue{\??mo:greek:\v!none   :\v!italic}{\dosetattribute  {mathgreek}{13}}
-\setevalue{\??mo:greek:\v!none   :\v!none  }{\doresetattribute{mathgreek}}
+\setevalue{\??mo:greek:\v!none   :\v!normal}{\attribute\mathgreekattribute12 }
+\setevalue{\??mo:greek:\v!none   :\v!italic}{\attribute\mathgreekattribute13 }
+\setevalue{\??mo:greek:\v!none   :\v!none  }{\attribute\mathgreekattribute\attributeunsetvalue}
 
 \appendtoks
     \csname\??mo:greek:\@@molcgreek:\@@moucgreek\endcsname
@@ -495,7 +495,7 @@
 \to \everysetupmathematics
 
 \appendtoks
-    \ifconditional\automathpunctuation\dosetattribute{mathpunctuation}\plusone\fi
+    \ifconditional\automathpunctuation\attribute\mathpunctuationattribute\plusone\fi
 \to \everymathematics
 
 \setupmathematics
