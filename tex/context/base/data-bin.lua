@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['data-bin'] = {
 }
 
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
+local unpack = unpack or table.unpack
 
 function resolvers.findbinfile(filename, filetype)
     return resolvers.methodhandler('finders',file.collapse_path(filename), filetype)

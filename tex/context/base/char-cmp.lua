@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['char-cmp'] = {
 }
 
 local utf = unicode.utf8
+local unpack = unpack or table.unpack
 
 characters            = characters            or { }
 characters.uncomposed = characters.uncomposed or { }

@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['data-tex'] = {
 -- special functions that deal with io
 
 local format, lower = string.format, string.lower
+local unpack = unpack or table.unpack
 
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
 

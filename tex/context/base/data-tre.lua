@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['data-tre'] = {
 -- \input tree://oeps1/**/oeps.tex
 
 local find, gsub = string.find, string.gsub
+local unpack = unpack or table.unpack
 
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 

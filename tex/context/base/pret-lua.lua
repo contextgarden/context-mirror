@@ -33,9 +33,11 @@ visualizer.identifiers.base = {
 }
 
 visualizer.identifiers.five = {
-    "_G", "getfenv", "getmetatable", "ipairs", "loadlib", "next", "pairs",
-    "pcall", "rawequal", "setfenv", "setmetatable", "xpcall", "string", "table",
-    "math", "coroutine", "io", "os", "debug", "load", "module", "select"
+    "_G", "getmetatable", "ipairs", "loadlib", "next", "pairs",
+    "pcall", "rawequal", "setmetatable", "xpcall", "string", "table",
+    "math", "coroutine", "io", "os", "debug", "load", "module", "select",
+    -- depricated
+    "getfenv", "setfenv",
 }
 
 visualizer.identifiers.libs = {
@@ -43,7 +45,7 @@ visualizer.identifiers.libs = {
     "coroutine.create", "coroutine.resume", "coroutine.status", "coroutine.wrap",
     "coroutine.yield", "coroutine.running",
     -- package
-    "package.cpath", "package.loaded", "package.loadlib", "package.path",
+    "package.cpath", "package.loaded", "package.loadlib", "package.path", "package.config",
     -- io
     "io.close", "io.flush", "io.input", "io.lines", "io.open", "io.output",
     "io.read", "io.tmpfile", "io.type", "io.write", "io.stdin", "io.stdout",
@@ -51,7 +53,7 @@ visualizer.identifiers.libs = {
     -- math
     "math.abs", "math.acos", "math.asin", "math.atan", "math.atan2", "math.ceil",
     "math.cos", "math.deg", "math.exp", "math.floor math.", "math.ldexp",
-    "math.log", "math.log10", "math.max", "math.min math.mod math.pi", "math.pow",
+    "math.log", "math.max", "math.min", "math.mod", "math.pi", "math.pow",
     "math.rad", "math.random", "math.randomseed", "math.sin", "math.sqrt",
     "math.tan", "math.cosh", "math.fmod", "math.modf", "math.sinh", "math.tanh",
     "math.huge",
@@ -60,13 +62,16 @@ visualizer.identifiers.libs = {
     "string.lower", "string.rep", "string.sub", "string.upper", "string.format",
     "string.gfind", "string.gsub", "string.gmatch", "string.match", "string.reverse",
     -- table
-    "table.maxn", "table.concat", "table.foreach", "table.foreachi", "table.getn",
+    "table.concat", "table.foreach", "table.foreachi", "table.getn",
     "table.sort", "table.insert", "table.remove", "table.setn",
+    "table.pack", "table.unpack",
     -- os
     "os.clock", "os.date", "os.difftime", "os.execute", "os.exit", "os.getenv",
     "os.remove", "os.rename", "os.setlocale", "os.time", "os.tmpname",
     -- package
-    "package.preload", "package.seeall"
+    "package.preload", "package.seeall",
+    -- depricated
+    "math.log10", "table.maxn",
 }
 
 local known_words = { }

@@ -69,6 +69,12 @@ function notes.get(tag,n)
     end
 end
 
+-- we could make a special enhancer
+
+function notes.listindex(tag,n)
+    return notedata[tag][n]
+end
+
 function notes.define(tag,kind,number)
     local state = notes.setstate(tag,kind)
     state.number = number

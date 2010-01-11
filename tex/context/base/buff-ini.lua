@@ -37,6 +37,8 @@ local lpegmatch = lpeg.match
 
 local data, flags, hooks, visualizers = buffers.data, buffers.flags, buffers.hooks, buffers.visualizers
 
+visualizers.defaultname = variables.typing
+
 function buffers.raw(name)
     return data[name] or { }
 end
@@ -350,15 +352,27 @@ function buffers.loadvisualizer(name)
     if hn then
         return hn
     else
-        if trace_visualize then
+        environment.loadluafile("pret-" .. name)
+        local hn = handlers[name]
+        if not hn then
+        --  hn = buffers.newvisualizer(name)
+            hn = handlers[visualizers.defaultname]
+            handlers[name] = n
+            if trace_visualize then
+                logs.report("buffers","mapping '%s' visualizer onto '%s'",name,visualizers.defaultname)
+            end
+        elseif trace_visualize then
             logs.report("buffers","loading '%s' visualizer",name)
         end
-        environment.loadluafile("pret-" .. name)
-        return handlers[name] or buffers.newvisualizer(name)
+        return hn
     end
 end
 
-local default = buffers.newvisualizer("default")
+-- was "default", should be set at tex end (todo)
+
+local default = buffers.newvisualizer(visualizers.defaultname)
+
+--~ print(variables.typing) os.exit()
 
 local currentvisualizer, currenthandler
 
@@ -366,7 +380,7 @@ function buffers.setvisualizer(str)
     currentvisualizer = lower(str)
     currenthandler = handlers[currentvisualizer]
     if not currenthandler then
-        currentvisualizer = 'default'
+        currentvisualizer = visualizers.defaultname
         currenthandler = handlers.default
     end
     if currenthandler.reset then
@@ -374,7 +388,7 @@ function buffers.setvisualizer(str)
     end
 end
 
-buffers.setvisualizer("default")
+buffers.setvisualizer(visualizers.defaultname)
 
 function visualizers.reset()
 end

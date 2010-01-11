@@ -640,9 +640,10 @@
   {\edef\currentdescription{#1}%
    \edef\currentnote{#1}%
    \edef\currentdescriptionnumberentry{#2}%
+   \edef\currentdescriptionlistentry{\ctxlua{tex.write(structure.notes.listindex("#1",#2))}}%
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
-   \reinstatedescriptionnumberentry
+   \reinstatedescriptionnumberentry\currentdescriptionlistentry % we could store the number in the entry
    %
    \dontcomplain % should be done in startstoreddescription instead
    \dostartstoreddescription\begstrut\currentnotedescriptiontext\endstrut\dostopstoreddescription}

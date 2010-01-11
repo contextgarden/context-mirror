@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['mult-clm'] = {
 
 local texsprint, ctxcatcodes, vrbcatcodes = tex.sprint, tex.ctxcatcodes, tex.vrbcatcodes
 local format, insert, remove, concat = string.format, table.insert, table.remove, table.concat
+local unpack = unpack or table.unpack
 
 local trace_define = false  trackers.register("context.define", function(v) trace_define = v end)
 

@@ -13,6 +13,7 @@ if not modules then modules = { } end modules ['data-lua'] = {
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local gsub = string.gsub
+local unpack = unpack or table.unpack
 
 local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
 local clibformats = { 'lib' }

@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['data-zip'] = {
 }
 
 local format, find, match = string.format, string.find, string.match
+local unpack = unpack or table.unpack
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 

@@ -15,6 +15,7 @@ local find, gmatch = string.find, string.gmatch
 local concat, sort, format = table.concat, table.sort, string.format
 local lpegmatch = lpeg.match
 local utfgsub, utflower = utf.gsub, utf.lower
+local unpack = unpack or table.unpack
 
 local trace_names    = false  trackers.register("fonts.names",    function(v) trace_names    = v end)
 local trace_warnings = false  trackers.register("fonts.warnings", function(v) trace_warnings = v end)

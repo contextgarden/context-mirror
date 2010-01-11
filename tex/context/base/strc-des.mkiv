@@ -868,14 +868,18 @@
         userdata = structure.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
        }
      }}%
-     \xdef\currentdescriptionattribute  {\ctxlua    {tex.write(jobreferences.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\@@iafocus"))}}%
-     \xdef\currentdescriptionsynchronize{\ctxlatelua{structure.lists.enhance(\currentdescriptionnumberentry)}}%
+    \xdef\currentdescriptionattribute  {\ctxlua    {tex.write(jobreferences.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\@@iafocus"))}}%
+    \xdef\currentdescriptionsynchronize{\ctxlatelua{structure.lists.enhance(\currentdescriptionnumberentry)}}%
    \fi
    \endgroup}
 
-\def\reinstatedescriptionnumberentry
-  {\xdef\currentdescriptionattribute  {\ctxlua    {tex.write(jobreferences.getinternalreference(\currentdescriptionnumberentry))}}%
-   \xdef\currentdescriptionsynchronize{\ctxlatelua{structure.lists.enhance(\currentdescriptionnumberentry)}}}
+% This is not so nice, some day i'll just store the number with the entry
+% and deal with all at the Lua end, but first we need to be able to set
+% macros.
+
+\def\reinstatedescriptionnumberentry#1%
+  {\xdef\currentdescriptionattribute  {\ctxlua    {tex.write(jobreferences.getinternalreference(#1))}}%
+   \xdef\currentdescriptionsynchronize{\ctxlatelua{structure.lists.enhance(#1)}}}
 
 \installstructurelistprocessor{description}{\usestructurelistprocessor{number+title}}
 

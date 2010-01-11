@@ -522,6 +522,7 @@ local concat, sort, insert, remove = table.concat, table.sort, table.insert, tab
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
 local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
+local unpack = unpack or table.unpack
 
 function table.strip(tab)
     local lst = { }
@@ -5456,13 +5457,17 @@ local function parse_apply(list,pattern)
     end
     local nofparsed = #parsed
     if nofparsed == 0 then
-        -- something is wrong
+        return -- something is wrong
+    end
+    local one = list[1]
+    if not one then
+        return -- something is wrong
     elseif not trace_lpath then
-        return normal_apply(list,parsed,nofparsed,list[1].mi)
+        return normal_apply(list,parsed,nofparsed,one.mi)
     elseif trace_lprofile then
-        return profiled_apply(list,parsed,nofparsed,list[1].mi)
-    else -- trace_lpath
-        return traced_apply(list,parsed,nofparsed,list[1].mi)
+        return profiled_apply(list,parsed,nofparsed,one.mi)
+    else
+        return traced_apply(list,parsed,nofparsed,one.mi)
     end
 end
 
@@ -10114,6 +10119,7 @@ if not modules then modules = { } end modules ['data-zip'] = {
 }
 
 local format, find, match = string.format, string.find, string.match
+local unpack = unpack or table.unpack
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -10432,6 +10438,7 @@ if not modules then modules = { } end modules ['data-lua'] = {
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local gsub = string.gsub
+local unpack = unpack or table.unpack
 
 local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
 local clibformats = { 'lib' }

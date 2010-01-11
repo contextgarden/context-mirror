@@ -12,6 +12,7 @@ local concat, sort, insert, remove = table.concat, table.sort, table.insert, tab
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
 local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
+local unpack = unpack or table.unpack
 
 function table.strip(tab)
     local lst = { }

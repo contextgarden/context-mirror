@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 01/09/10 00:02:29
+-- merge date  : 01/11/10 15:01:58
 
 do -- begin closure to overcome local limits and interference
 
@@ -584,6 +584,7 @@ local concat, sort, insert, remove = table.concat, table.sort, table.insert, tab
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
 local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
+local unpack = unpack or table.unpack
 
 function table.strip(tab)
     local lst = { }

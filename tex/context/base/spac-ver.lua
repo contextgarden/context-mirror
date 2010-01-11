@@ -20,6 +20,7 @@ local format, gmatch, concat, match = string.format, string.gmatch, table.concat
 local ceil, floor, max, min, round = math.ceil, math.floor, math.max, math.min, math.round
 local texsprint, texlists, texdimen, texbox, texht, texdp = tex.sprint, tex.lists, tex.dimen, tex.box, tex.ht, tex.dp
 local lpegmatch = lpeg.match
+local unpack = unpack or table.unpack
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables

@@ -45,7 +45,7 @@ one.</p>
 --ldx]]--
 
 local string, table, lpeg, math, io, system = string, table, lpeg, math, io, system
-local next, setfenv = next, setfenv
+local next, setfenv = next, setfenv or debug.setfenv
 local format = string.format
 
 local global = _G
@@ -77,6 +77,10 @@ local protected = {
 }
 
 userdata, thirddata, moduledata = nil, nil, nil
+
+if not setfenv then
+    texio.write_nl("warning: we need to fix setfenv")
+end
 
 function protect(name)
     if name == "isolateddata" then
