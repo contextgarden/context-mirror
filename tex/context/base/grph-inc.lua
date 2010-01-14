@@ -37,6 +37,7 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
 local texsprint, texbox, texwd, texht, texdp = tex.sprint, tex.box, tex.wd, tex.ht, tex.dp
+local contains = table.contains
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
@@ -154,12 +155,12 @@ local function register(tag,target,what)
         figures.formats[target] = data
     end
     local d = data[tag] -- list or pattern
-    if d and not table.contains(d,what) then
+    if d and not contains(d,what) then
         d[#d+1] = what -- suffix or patternspec
     else
         data[tag] = { what }
     end
-    if not table.contains(figures.order,target) then
+    if not contains(figures.order,target) then
         figures.order[#figures.order+1] = target
     end
     figures.setlookups()
@@ -187,8 +188,9 @@ function figures.setpaths(locationset,pathlist)
         last_locationset = locationset
     end
     if h[iv["global"]] then
-        for s in gmatch(pathlist,"([^, ]+)") do
-            if not table.contains(t,s) then
+     -- for s in gmatch(pathlist,",* *([^,]+)") do
+        for _, s in ipairs(aux.settings_to_array(pathlist)) do
+            if not contains(t,s) then
                 t[#t+1] = s
             end
         end
@@ -379,6 +381,8 @@ local function register(askedname,specification)
     return specification
 end
 
+local resolve_too = true
+
 local function locate(request) -- name, format, cache
     local askedname = resolvers.clean_path(request.name)
     local foundname = figures.found[askedname]
@@ -413,7 +417,7 @@ local function locate(request) -- name, format, cache
             end
         end
         if format then
-            local foundname = figures.exists(askedname,format) -- not askedformat
+            local foundname = figures.exists(askedname,format,resolve_too) -- not askedformat
             if foundname then
                 return register(askedname, {
                     askedname = askedname,
@@ -426,7 +430,7 @@ local function locate(request) -- name, format, cache
         end
         if askedpath then
             -- path and type given, todo: strip pieces of path
-            if figures.exists(askedname,askedformat) then
+            if figures.exists(askedname,askedformat,resolve_too) then
                 return register(askedname, {
                     askedname = askedname,
                     fullname = askedname,
@@ -438,7 +442,9 @@ local function locate(request) -- name, format, cache
             -- type given
             for _, path in ipairs(figures.paths) do
                 local check = path .. "/" .. askedname
-                if figures.exists(check,askedformat) then
+             -- we pass 'true' as it can be an url as well, as the type
+             -- is given we don't waste much time
+                if figures.exists(check,askedformat,resolve_too) then
                     return register(check, {
                         askedname = askedname,
                         fullname = check,
@@ -467,7 +473,7 @@ local function locate(request) -- name, format, cache
             local list = figures.formats[format].list or { format }
             for _, suffix in ipairs(list) do
                 local check = file.addsuffix(askedname,suffix)
-                if figures.exists(check,format) then
+                if figures.exists(check,format,resolve_too) then
                     return register(askedname, {
                         askedname = askedname,
                         fullname = check,
@@ -489,7 +495,12 @@ local function locate(request) -- name, format, cache
                     local name = file.replacesuffix(askedname,suffix)
                     for _, path in ipairs(figures.paths) do
                         local check = path .. "/" .. name
-                        if figures.exists(check,format) then
+                        local isfile = url.hashed(check).scheme == "file"
+                        if not isfile then
+                            if trace_figures then
+                                commands.writestatus("figures","warning: skipping path %s",path)
+                            end
+                        elseif figures.exists(check,format,resolve_too) then
                             return register(askedname, {
                                 askedname = askedname,
                                 fullname = check,
@@ -509,7 +520,7 @@ local function locate(request) -- name, format, cache
                     local list = figures.formats[format].list or { format }
                     for _, suffix in ipairs(list) do
                         local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
-                        if figures.exists(check,format) then
+                        if figures.exists(check,format,resolve_too) then
                             return register(askedname, {
                                 askedname = askedname,
                                 fullname = check,
@@ -581,8 +592,8 @@ function figures.identify(data)
     end
     return data
 end
-function figures.exists(askedname,format)
-    return (figures.existers[format] or figures.existers.generic)(askedname)
+function figures.exists(askedname,format,resolve)
+    return (figures.existers[format] or figures.existers.generic)(askedname,resolve)
 end
 function figures.check(data)
     data = data or figures.current()

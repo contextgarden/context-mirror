@@ -20,6 +20,9 @@
         <style type="text/css">
             <?lmx-include context.css ?>
         </style>
+        <?lua if v('styles') then for k, v in ipairs(v('styles')) do ?>
+            <link rel="StyleSheet" href="<?lua p(v) ?>" type="text/css" />
+        <?lua end end ?>
     </head>
     <?lua if v('action') then ?>
         <form action="<?lua pv(action) ?>" enctype="multi-part/form-data" method="post">

@@ -278,21 +278,15 @@ buffers.content = content
 
 function buffers.collect(names,separator) -- no print
     -- maybe we should always store a buffer as table so
-    -- that we can pass if directly
+    -- that we can pass it directly
+    if type(names) == "string" then
+        names = aux.settings_to_array(names)
+    end
     local t = { }
-    if type(names) == "table" then
-        for i=1,#names do
-            local c = content(names[i],separator)
-            if c ~= "" then
-                t[#t+1] = c
-            end
-        end
-    else
-        for name in gmatch(names,"[^,%s]+") do
-            local c = content(name,separator)
-            if c ~= "" then
-                t[#t+1] = c
-            end
+    for i=1,#names do
+        local c = content(names[i],separator)
+        if c ~= "" then
+            t[#t+1] = c
         end
     end
     return concat(t,separator or "\r") -- "\n" is safer due to comments and such

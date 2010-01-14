@@ -539,7 +539,7 @@ end
 
 function table.keys(t)
     local k = { }
-    for key,_ in next, t do
+    for key, _ in next, t do
         k[#k+1] = key
     end
     return k
@@ -1764,16 +1764,18 @@ end
 os.type = os.type or (io.pathseparator == ";"       and "windows") or "unix"
 os.name = os.name or (os.type          == "windows" and "mswin"  ) or "linux"
 
+if os.type == "windows" then
+    os.libsuffix, os.binsuffix = 'dll', 'exe'
+else
+    os.libsuffix, os.binsuffix = 'so', ''
+end
+
 function os.launch(str)
     if os.type == "windows" then
         os.execute("start " .. str) -- os.spawn ?
     else
         os.execute(str .. " &")     -- os.spawn ?
     end
-end
-
-if not os.setenv then
-    function os.setenv() return false end
 end
 
 if not os.times then
@@ -1807,63 +1809,153 @@ end
 
 -- no need for function anymore as we have more clever code and helpers now
 
-os.platform  = os.name or os.type or "linux"
-os.libsuffix = 'so'
-os.binsuffix = ''
+os.resolvers = { }
 
-local name = os.name
+local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end }
+local osix = osmt.__index
 
-if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" or os.type == "windows" then
-    if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
-        os.platform = "mswin-64"
-    else
-        os.platform = "mswin"
+osmt.__index = function(t,k)
+    return (os.resolvers[k] or osix)(t,k)
+end
+
+setmetatable(os,osmt)
+
+if not os.setenv then
+
+    -- we still store them but they won't be seen in
+    -- child processes although we might pass them some day
+    -- using command concatination
+
+    local env, getenv = { }, os.getenv
+
+    function os.setenv(k,v)
+        env[k] = v
     end
-    os.libsuffix = 'dll'
-    os.binsuffix = 'exe'
-else
-    local architecture = os.getenv("HOSTTYPE") or ""
-    if architecture == "" then
-        architecture = os.resultof("uname -m") or ""
+
+    function os.getenv(k)
+        return env[k] or getenv(k)
     end
-    if architecture == "" then
-        local architecture = os.resultof("echo $HOSTTYPE")
+
+end
+
+-- we can use HOSTTYPE on some platforms
+
+local name, platform = os.name or "linux", os.getenv("MTX_PLATFORM") or ""
+
+local function guess()
+    local architecture = os.resultof("uname -m") or ""
+    if architecture ~= "" then
+        return architecture
     end
-    if name == "linux" then
+    architecture = os.getenv("HOSTTYPE") or ""
+    if architecture ~= "" then
+        return architecture
+    end
+    return os.resultof("echo $HOSTTYPE") or ""
+end
+
+if platform ~= "" then
+
+    os.platform = platform
+
+elseif os.type == "windows" then
+
+    -- we could set the variable directly, no function needed here
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.getenv("PROCESSOR_ARCHITECTURE") or ""
+        if find(architecture,"AMD64") then
+            platform = "mswin-64"
+        else
+            platform = "mswin"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
+elseif name == "linux" then
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
         if find(architecture,"x86_64") then
-            os.platform = "linux-64"
+            platform = "linux-64"
         elseif find(architecture,"ppc") then
-            os.platform = "linux-ppc"
+            platform = "linux-ppc"
         else
-            os.platform = "linux"
+            platform = "linux"
         end
-    elseif name == "macosx" then
-        if find(architecture,"i386") then
-            os.platform = "osx-intel"
-        elseif find(architecture,"x86_64") then
-            os.platform = "osx-64"
-        else
-            os.platform = "osx-ppc"
-        end
-    elseif name == "sunos" then
-        if find(architecture,"sparc") then
-            os.platform = "solaris-sparc"
-        else -- if architecture == 'i86pc'
-            os.platform = "solaris-intel"
-        end
-    elseif name == "freebsd" then
-        if find(architecture,"amd64") then
-            os.platform = "freebsd-amd64"
-        else
-            os.platform = "freebsd"
-        end
-    else
-        os.platform = 'linux'
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
     end
+
+elseif name == "macosx" then -- a rather inconsistent mess
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.resultof("uname -m") or ""
+        if architecture == "" then
+            architecture = os.getenv("HOSTTYPE") or ""
+        end
+        if architecture == "" then
+            architecture = os.resultof("echo $HOSTTYPE") or ""
+        end
+        if find(architecture,"i386") then
+            platform = "osx-intel"
+        elseif find(architecture,"x86_64") then
+            platform = "osx-64"
+        else
+            platform = "osx-ppc"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
+elseif name == "sunos" then
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.resultof("uname -m") or ""
+        if find(architecture,"sparc") then
+            platform = "solaris-sparc"
+        else -- if architecture == 'i86pc'
+            platform = "solaris-intel"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
+elseif name == "freebsd" then
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.resultof("uname -m") or ""
+        if find(architecture,"amd64") then
+            platform = "freebsd-amd64"
+        else
+            platform = "freebsd"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
+else
+
+    -- platform = "linux"
+    -- os.setenv("MTX_PLATFORM",platform)
+    -- os.platform = platform
+
+    function os.resolvers.platform(t,k)
+        local platform = "linux"
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
 end
 
 -- beware, we set the randomseed
---
 
 -- from wikipedia: Version 4 UUIDs use a scheme relying only on random numbers. This algorithm sets the
 -- version number as well as two reserved bits. All other bits are set using a random or pseudorandom
@@ -1871,7 +1963,6 @@ end
 -- digits x and hexadecimal digits 8, 9, A, or B for y. e.g. f47ac10b-58cc-4372-a567-0e02b2c3d479.
 --
 -- as we don't call this function too often there is not so much risk on repetition
-
 
 local t = { 8, 9, "a", "b" }
 
@@ -2879,6 +2970,8 @@ if not modules then modules = { } end modules ['l-aux'] = {
     license   = "see context related readme files"
 }
 
+-- for inline, no store split : for s in string.gmatch(str,",* *([^,]+)") do .. end
+
 aux = aux or { }
 
 local concat, format, gmatch = table.concat, string.format, string.gmatch
@@ -2970,6 +3063,8 @@ local pattern   = lpeg.Ct(value*(separator*value)^0)
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
 aux.settings_to_array_pattern = pattern
+
+-- we could use a weak table as cache
 
 function aux.settings_to_array(str)
     if not str or str == "" then
@@ -3991,12 +4086,14 @@ local function xmlconvert(data, settings)
         else
             errorstr = "invalid xml file - parsed text"
         end
-    else
+    elseif type(data) == "string" then
         if lpegmatch(grammar_unparsed_text,data) then
             errorstr = ""
         else
             errorstr = "invalid xml file - unparsed text"
         end
+    else
+        errorstr = "invalid xml file - no text at all"
     end
     if errorstr and errorstr ~= "" then
         result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={}, er = true } } }
@@ -4032,6 +4129,19 @@ local function xmlconvert(data, settings)
 end
 
 xml.convert = xmlconvert
+
+function xml.inheritedconvert(data,xmldata)
+    local settings = xmldata.settings
+    settings.parent_root = xmldata -- to be tested
+ -- settings.no_root = true
+    local xc = xmlconvert(data,settings)
+ -- xc.settings = nil
+ -- xc.entities = nil
+ -- xc.special = nil
+ -- xc.ri = nil
+ -- print(xc.tg)
+    return xc
+end
 
 --[[ldx--
 <p>Packaging data in an xml like table is done with the following
@@ -5840,25 +5950,15 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
 
-local xmlparseapply, xmlconvert, xmlcopy = xml.parse_apply, xml.convert, xml.copy
+local xmlparseapply, xmlconvert, xmlcopy, xmlname = xml.parse_apply, xml.convert, xml.copy, xml.name
+local xmlinheritedconvert = xml.inheritedconvert
 
 local type = type
 local insert, remove = table.insert, table.remove
 local gmatch, gsub = string.gmatch, string.gsub
 
-
-function xml.inheritedconvert(data,xmldata)
-    local settings = xmldata.settings
-    settings.parent_root = xmldata -- to be tested
---~ settings.no_root = true
-    local xc = xmlconvert(data,settings)
---~ xc.settings = nil
---~ xc.entities = nil
---~ xc.special = nil
---~ xc.ri = nil
---~ print(xc.tg)
---    for k,v in pairs(xc) do print(k,tostring(v)) end
-    return xc
+local function report(what,pattern,c,e)
+    logs.report("xml","%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
 end
 
 local function withelements(e,handle,depth)
@@ -5914,7 +6014,7 @@ end
 
 xml.elements_only = xml.collected
 
-function xml.each_element(root, pattern, handle, reverse)
+function xml.each_element(root,pattern,handle,reverse)
     local collected = xmlparseapply({ root },pattern)
     if collected then
         if reverse then
@@ -5932,7 +6032,7 @@ end
 
 xml.process_elements = xml.each_element
 
-function xml.process_attributes(root, pattern, handle)
+function xml.process_attributes(root,pattern,handle)
     local collected = xmlparseapply({ root },pattern)
     if collected and handle then
         for c=1,#collected do
@@ -5983,7 +6083,7 @@ function xml.collect_tags(root, pattern, nonamespace)
 end
 
 --[[ldx--
-<p>We've now arrives at the functions that manipulate the tree.</p>
+<p>We've now arrived at the functions that manipulate the tree.</p>
 --ldx]]--
 
 local no_root = { no_root = true }
@@ -5997,120 +6097,44 @@ function xml.redo_ni(d)
     end
 end
 
-function xml.inject_element(root, pattern, element, prepend)
-    if root and element then
-        if type(element) == "string" then
---~             element = xmlconvert(element,no_root)
-            element = xml.inheritedconvert(element,root)
-        end
-        if element then
-            if element.ri then
-                element = element.dt[element.ri].dt
-            else
-                element = element.dt
-            end
-            -- we need to re-index
-            local collected = xmlparseapply({ root },pattern)
-            if collected then
-                for c=1,#collected do
-                    local e = collected[c]
-                    local r, d, k = e.__p__, r.dt, e.ni
-                    local edt
-                    if r.ri then
-                        edt = r.dt[r.ri].dt
-                    else
-                        edt = d and d[k] and d[k].dt
-                    end
-                    if edt then
-                        local be, af
-                        if prepend then
-                            be, af = xmlcopy(element), edt
-be.__p__ = e
+local function xmltoelement(whatever,root)
+    if not whatever then
+        return nil
+    end
+    local element
+    if type(whatever) == "string" then
+        element = xmlinheritedconvert(whatever,root)
+    else
+        element = whatever -- we assume a table
+    end
+    if element.error then
+        return whatever -- string
+    end
+    if element then
+    --~ if element.ri then
+    --~     element = element.dt[element.ri].dt
+    --~ else
+    --~     element = element.dt
+    --~ end
+    end
+    return element
+end
 
-                        else
-                            be, af = edt, xmlcopy(element)
-af.__p__ = e
-                        end
-                        for i=1,#af do
-                            be[#be+1] = af[i]
-                        end
-                        if r.ri then
-                            r.dt[r.ri].dt = be
-                        else
-                            d[k].dt = be
-                        end
-                    else
-                        -- r.dt = element.dt -- todo
-                    end
-xml.redo_ni(d)
-                end
-            end
+xml.toelement = xmltoelement
+
+local function copiedelement(element,newparent)
+    if type(element) == "string" then
+        return element
+    else
+        element = xmlcopy(element).dt
+        if newparent and type(element) == "table" then
+            element.__p__ = newparent
         end
+        return element
     end
 end
 
--- todo: copy !
-
-function xml.insert_element(root, pattern, element, before) -- todo: element als functie
-    if root and element then
-        if pattern == "/" then
-            xml.inject_element(root, pattern, element, before)
-        else
-            local matches, collect = { }, nil
-            if type(element) == "string" then
---~                 element = xmlconvert(element,no_root)
-                element = xml.inheritedconvert(element,root)
-            end
-            if element and element.ri then
-                element = element.dt[element.ri]
-            end
-            if element then
-                local collected = xmlparseapply({ root },pattern)
-                if collected then
-                    for c=1,#collected do
-                        local e = collected[c]
-                        local r = e.__p__
-                        local d = r.dt
-                        local k = e.ni
-                        if not before then
-                            k = k + 1
-                        end
-                        local ce = xmlcopy(element)
-ce.__p__ = r
-                        if element.tg then
-                            insert(d,k,ce) -- untested
-                        else
-                            -- maybe bugged
-                            local edt = ce.dt
-                            if edt then
-                                for i=1,#edt do
-local edti = edt[i]
-                                    insert(d,k,edti)
-if type(edti) == "table" then
-    edti.__p__ = r
-end
-                                    k = k + 1
-                                end
-                            end
-                        end
-xml.redo_ni(d)
-                    end
-                end
-            end
-        end
-    end
-end
-
-xml.insert_element_after  =                 xml.insert_element
-xml.insert_element_before = function(r,p,e) xml.insert_element(r,p,e,true) end
-xml.inject_element_after  =                 xml.inject_element
-xml.inject_element_before = function(r,p,e) xml.inject_element(r,p,e,true) end
-
-local function report(what,pattern,c,e)
-    logs.report("xml","%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xml.name(e),xml.name(e.__p__),c,e.ni,pattern)
-end
-
-function xml.delete_element(root, pattern)
+function xml.delete_element(root,pattern)
     local collected = xmlparseapply({ root },pattern)
     if collected then
         for c=1,#collected do
@@ -6118,42 +6142,89 @@ function xml.delete_element(root, pattern)
             local p = e.__p__
             if p then
                 if trace_manipulations then
-                    report('deleting',pattern,c,tostring(e)) -- fails
+                    report('deleting',pattern,c,e)
                 end
                 local d = p.dt
                 remove(d,e.ni)
-xml.redo_ni(d)
+                xml.redo_ni(d) -- can be made faster and inlined
             end
         end
     end
 end
 
-function xml.replace_element(root, pattern, element)
-    if type(element) == "string" then
---~         element = xmlconvert(element,true)
-            element = xml.inheritedconvert(element,root)
-    end
-    if element and element.ri then
-        element = element.dt[element.ri]
-    end
-    if element then
-        local collected = xmlparseapply({ root },pattern)
-        if collected then
-            for c=1,#collected do
-                local e = collected[c]
-                local p = e.__p__
-                if p then
-                    if trace_manipulations then
-                        report('replacing',pattern,c,e)
-                    end
-                    local d = p.dt
-                    d[e.ni] = element.dt -- maybe not clever enough
---~ xml.redo_ni(d)
+function xml.replace_element(root,pattern,whatever)
+    local element = root and xmltoelement(whatever,root)
+    local collected = element and xmlparseapply({ root },pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local p = e.__p__
+            if p then
+                if trace_manipulations then
+                    report('replacing',pattern,c,e)
                 end
+                local d = p.dt
+                d[e.ni] = copiedelement(element,p)
+                xml.redo_ni(d) -- probably not needed
             end
         end
     end
 end
+
+local function inject_element(root,pattern,whatever,prepend)
+    local element = root and xmltoelement(whatever,root)
+    local collected = element and xmlparseapply({ root },pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local r = e.__p__
+            local d, k, rri = r.dt, e.ni, r.ri
+            local edt = (rri and d[rri].dt) or (d and d[k] and d[k].dt)
+            if edt then
+                local be, af
+                local cp = copiedelement(element,e)
+                if prepend then
+                    be, af = cp, edt
+                else
+                    be, af = edt, cp
+                end
+                for i=1,#af do
+                    be[#be+1] = af[i]
+                end
+                if rri then
+                    r.dt[rri].dt = be
+                else
+                    d[k].dt = be
+                end
+                xml.redo_ni(d)
+            end
+        end
+    end
+end
+
+local function insert_element(root,pattern,whatever,before) -- todo: element als functie
+    local element = root and xmltoelement(whatever,root)
+    local collected = element and xmlparseapply({ root },pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local r = e.__p__
+            local d, k = r.dt, e.ni
+            if not before then
+                k = k + 1
+            end
+            insert(d,k,copiedelement(element,r))
+            xml.redo_ni(d)
+        end
+    end
+end
+
+xml.insert_element        =                 insert_element
+xml.insert_element_after  =                 insert_element
+xml.insert_element_before = function(r,p,e) insert_element(r,p,e,true) end
+xml.inject_element        =                 inject_element
+xml.inject_element_after  =                 inject_element
+xml.inject_element_before = function(r,p,e) inject_element(r,p,e,true) end
 
 local function include(xmldata,pattern,attribute,recursive,loaddata)
     -- parse="text" (default: xml), encoding="" (todo)
@@ -6187,7 +6258,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
 --~                 local settings = xmldata.settings
 --~                 settings.parent_root = xmldata -- to be tested
 --~                 local xi = xmlconvert(data,settings)
-                local xi = xml.inheritedconvert(data,xmldata)
+                local xi = xmlinheritedconvert(data,xmldata)
                 if not xi then
                     epdt[ek.ni] = "" -- xml.empty(d,k)
                 else

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['l-aux'] = {
     license   = "see context related readme files"
 }
 
+-- for inline, no store split : for s in string.gmatch(str,",* *([^,]+)") do .. end
+
 aux = aux or { }
 
 local concat, format, gmatch = table.concat, string.format, string.gmatch
@@ -97,6 +99,8 @@ local pattern   = lpeg.Ct(value*(separator*value)^0)
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
 aux.settings_to_array_pattern = pattern
+
+-- we could use a weak table as cache
 
 function aux.settings_to_array(str)
     if not str or str == "" then

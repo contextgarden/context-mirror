@@ -64,7 +64,7 @@
 %D macro picks up the list.
 
 \def\setfigurepathlist
-  {\ctxlua{figures.setpaths("\@@exlocation","\@@exdirectory")}}
+  {\ctxlua{figures.setpaths("\@@exlocation",\!!bs\@@exdirectory\!!es)}}
 
 %D Variables:
 

@@ -13,16 +13,13 @@ local format, concat, difftime, time = string.format, table.concat, os.difftime,
 local pairs, ipairs, next, type = pairs, ipairs, next, type
 
 function scripts.watch.save_exa_modes(joblog,ctmname)
-    if joblog then
+    local values = joblog and joblog.values
+    if values then
         local t= { }
         t[#t+1] = "<?xml version='1.0' standalone='yes'?>\n"
         t[#t+1] = "<exa:variables xmlns:exa='htpp://www.pragma-ade.com/schemas/exa-variables.rng'>"
-        if joblog.values then
-            for k, v in pairs(joblog.values) do
-                t[#t+1] = format("\t<exa:variable label='%s'>%s</exa:variable>", k, tostring(v))
-            end
-        else
-            t[#t+1] = "<!-- no modes -->"
+        for k, v in pairs(joblog.values) do
+            t[#t+1] = format("\t<exa:variable label='%s'>%s</exa:variable>", k, tostring(v))
         end
         t[#t+1] = "</exa:variables>"
         io.savedata(ctmname,concat(t,"\n"))
@@ -147,11 +144,12 @@ function scripts.watch.watch()
                                 joblog.status = "no command"
                             end
                             -- pcall, when error sleep + again
+                            -- todo: just one log file and append
                             io.savedata(name, table.serialize(joblog,true))
-                            if logpath ~= "" then
-                                local name = os.uuid() .. ".lua"
+                            if logpath and logpath ~= "" then
+                                local name = file.join(logpath,os.uuid() .. ".lua")
                                 io.savedata(name, table.serialize(joblog,true))
-                                logs.report("watch", "saving joblog ".. name)
+                                logs.report("watch", "saving joblog in " .. name)
                             end
                         end
                     end

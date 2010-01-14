@@ -29,7 +29,7 @@ end
 
 function table.keys(t)
     local k = { }
-    for key,_ in next, t do
+    for key, _ in next, t do
         k[#k+1] = key
     end
     return k

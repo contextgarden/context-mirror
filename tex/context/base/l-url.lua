@@ -32,7 +32,9 @@ local hexdigit  = lpeg.R("09","AF","af")
 local plus      = lpeg.P("+")
 local escaped   = (plus / " ") + (percent * lpeg.C(hexdigit * hexdigit) / tochar)
 
-local scheme    =                 lpeg.Cs((escaped+(1-colon-slash-qmark-hash))^0) * colon + lpeg.Cc("")
+-- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
+
+local scheme    =                 lpeg.Cs((escaped+(1-colon-slash-qmark-hash))^2) * colon + lpeg.Cc("")
 local authority = slash * slash * lpeg.Cs((escaped+(1-      slash-qmark-hash))^0)         + lpeg.Cc("")
 local path      = slash *         lpeg.Cs((escaped+(1-            qmark-hash))^0)         + lpeg.Cc("")
 local query     = qmark         * lpeg.Cs((escaped+(1-                  hash))^0)         + lpeg.Cc("")

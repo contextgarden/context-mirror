@@ -541,12 +541,14 @@ local function xmlconvert(data, settings)
         else
             errorstr = "invalid xml file - parsed text"
         end
-    else
+    elseif type(data) == "string" then
         if lpegmatch(grammar_unparsed_text,data) then
             errorstr = ""
         else
             errorstr = "invalid xml file - unparsed text"
         end
+    else
+        errorstr = "invalid xml file - no text at all"
     end
     if errorstr and errorstr ~= "" then
         result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={}, er = true } } }
@@ -582,6 +584,19 @@ local function xmlconvert(data, settings)
 end
 
 xml.convert = xmlconvert
+
+function xml.inheritedconvert(data,xmldata)
+    local settings = xmldata.settings
+    settings.parent_root = xmldata -- to be tested
+ -- settings.no_root = true
+    local xc = xmlconvert(data,settings)
+ -- xc.settings = nil
+ -- xc.entities = nil
+ -- xc.special = nil
+ -- xc.ri = nil
+ -- print(xc.tg)
+    return xc
+end
 
 --[[ldx--
 <p>Packaging data in an xml like table is done with the following

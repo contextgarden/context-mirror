@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 01/11/10 15:01:58
+-- merge date  : 01/14/10 18:30:13
 
 do -- begin closure to overcome local limits and interference
 
@@ -601,7 +601,7 @@ end
 
 function table.keys(t)
     local k = { }
-    for key,_ in next, t do
+    for key, _ in next, t do
         k[#k+1] = key
     end
     return k

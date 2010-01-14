@@ -530,7 +530,7 @@ end
 
 function table.keys(t)
     local k = { }
-    for key,_ in next, t do
+    for key, _ in next, t do
         k[#k+1] = key
     end
     return k
@@ -1755,16 +1755,18 @@ end
 os.type = os.type or (io.pathseparator == ";"       and "windows") or "unix"
 os.name = os.name or (os.type          == "windows" and "mswin"  ) or "linux"
 
+if os.type == "windows" then
+    os.libsuffix, os.binsuffix = 'dll', 'exe'
+else
+    os.libsuffix, os.binsuffix = 'so', ''
+end
+
 function os.launch(str)
     if os.type == "windows" then
         os.execute("start " .. str) -- os.spawn ?
     else
         os.execute(str .. " &")     -- os.spawn ?
     end
-end
-
-if not os.setenv then
-    function os.setenv() return false end
 end
 
 if not os.times then
@@ -1798,63 +1800,153 @@ end
 
 -- no need for function anymore as we have more clever code and helpers now
 
-os.platform  = os.name or os.type or "linux"
-os.libsuffix = 'so'
-os.binsuffix = ''
+os.resolvers = { }
 
-local name = os.name
+local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end }
+local osix = osmt.__index
 
-if name == "windows" or name == "mswin" or name == "win32" or name == "msdos" or os.type == "windows" then
-    if os.getenv("PROCESSOR_ARCHITECTURE") == "AMD64" then
-        os.platform = "mswin-64"
-    else
-        os.platform = "mswin"
+osmt.__index = function(t,k)
+    return (os.resolvers[k] or osix)(t,k)
+end
+
+setmetatable(os,osmt)
+
+if not os.setenv then
+
+    -- we still store them but they won't be seen in
+    -- child processes although we might pass them some day
+    -- using command concatination
+
+    local env, getenv = { }, os.getenv
+
+    function os.setenv(k,v)
+        env[k] = v
     end
-    os.libsuffix = 'dll'
-    os.binsuffix = 'exe'
-else
-    local architecture = os.getenv("HOSTTYPE") or ""
-    if architecture == "" then
-        architecture = os.resultof("uname -m") or ""
+
+    function os.getenv(k)
+        return env[k] or getenv(k)
     end
-    if architecture == "" then
-        local architecture = os.resultof("echo $HOSTTYPE")
+
+end
+
+-- we can use HOSTTYPE on some platforms
+
+local name, platform = os.name or "linux", os.getenv("MTX_PLATFORM") or ""
+
+local function guess()
+    local architecture = os.resultof("uname -m") or ""
+    if architecture ~= "" then
+        return architecture
     end
-    if name == "linux" then
+    architecture = os.getenv("HOSTTYPE") or ""
+    if architecture ~= "" then
+        return architecture
+    end
+    return os.resultof("echo $HOSTTYPE") or ""
+end
+
+if platform ~= "" then
+
+    os.platform = platform
+
+elseif os.type == "windows" then
+
+    -- we could set the variable directly, no function needed here
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.getenv("PROCESSOR_ARCHITECTURE") or ""
+        if find(architecture,"AMD64") then
+            platform = "mswin-64"
+        else
+            platform = "mswin"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
+elseif name == "linux" then
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
         if find(architecture,"x86_64") then
-            os.platform = "linux-64"
+            platform = "linux-64"
         elseif find(architecture,"ppc") then
-            os.platform = "linux-ppc"
+            platform = "linux-ppc"
         else
-            os.platform = "linux"
+            platform = "linux"
         end
-    elseif name == "macosx" then
-        if find(architecture,"i386") then
-            os.platform = "osx-intel"
-        elseif find(architecture,"x86_64") then
-            os.platform = "osx-64"
-        else
-            os.platform = "osx-ppc"
-        end
-    elseif name == "sunos" then
-        if find(architecture,"sparc") then
-            os.platform = "solaris-sparc"
-        else -- if architecture == 'i86pc'
-            os.platform = "solaris-intel"
-        end
-    elseif name == "freebsd" then
-        if find(architecture,"amd64") then
-            os.platform = "freebsd-amd64"
-        else
-            os.platform = "freebsd"
-        end
-    else
-        os.platform = 'linux'
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
     end
+
+elseif name == "macosx" then -- a rather inconsistent mess
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.resultof("uname -m") or ""
+        if architecture == "" then
+            architecture = os.getenv("HOSTTYPE") or ""
+        end
+        if architecture == "" then
+            architecture = os.resultof("echo $HOSTTYPE") or ""
+        end
+        if find(architecture,"i386") then
+            platform = "osx-intel"
+        elseif find(architecture,"x86_64") then
+            platform = "osx-64"
+        else
+            platform = "osx-ppc"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
+elseif name == "sunos" then
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.resultof("uname -m") or ""
+        if find(architecture,"sparc") then
+            platform = "solaris-sparc"
+        else -- if architecture == 'i86pc'
+            platform = "solaris-intel"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
+elseif name == "freebsd" then
+
+    function os.resolvers.platform(t,k)
+        local platform, architecture = "", os.resultof("uname -m") or ""
+        if find(architecture,"amd64") then
+            platform = "freebsd-amd64"
+        else
+            platform = "freebsd"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
+else
+
+    -- platform = "linux"
+    -- os.setenv("MTX_PLATFORM",platform)
+    -- os.platform = platform
+
+    function os.resolvers.platform(t,k)
+        local platform = "linux"
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
 end
 
 -- beware, we set the randomseed
---
 
 -- from wikipedia: Version 4 UUIDs use a scheme relying only on random numbers. This algorithm sets the
 -- version number as well as two reserved bits. All other bits are set using a random or pseudorandom
@@ -1862,7 +1954,6 @@ end
 -- digits x and hexadecimal digits 8, 9, A, or B for y. e.g. f47ac10b-58cc-4372-a567-0e02b2c3d479.
 --
 -- as we don't call this function too often there is not so much risk on repetition
-
 
 local t = { 8, 9, "a", "b" }
 
@@ -2266,7 +2357,9 @@ local hexdigit  = lpeg.R("09","AF","af")
 local plus      = lpeg.P("+")
 local escaped   = (plus / " ") + (percent * lpeg.C(hexdigit * hexdigit) / tochar)
 
-local scheme    =                 lpeg.Cs((escaped+(1-colon-slash-qmark-hash))^0) * colon + lpeg.Cc("")
+-- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
+
+local scheme    =                 lpeg.Cs((escaped+(1-colon-slash-qmark-hash))^2) * colon + lpeg.Cc("")
 local authority = slash * slash * lpeg.Cs((escaped+(1-      slash-qmark-hash))^0)         + lpeg.Cc("")
 local path      = slash *         lpeg.Cs((escaped+(1-            qmark-hash))^0)         + lpeg.Cc("")
 local query     = qmark         * lpeg.Cs((escaped+(1-                  hash))^0)         + lpeg.Cc("")
@@ -3181,6 +3274,8 @@ if not modules then modules = { } end modules ['l-aux'] = {
     license   = "see context related readme files"
 }
 
+-- for inline, no store split : for s in string.gmatch(str,",* *([^,]+)") do .. end
+
 aux = aux or { }
 
 local concat, format, gmatch = table.concat, string.format, string.gmatch
@@ -3272,6 +3367,8 @@ local pattern   = lpeg.Ct(value*(separator*value)^0)
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
 aux.settings_to_array_pattern = pattern
+
+-- we could use a weak table as cache
 
 function aux.settings_to_array(str)
     if not str or str == "" then

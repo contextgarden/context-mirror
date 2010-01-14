@@ -11,25 +11,15 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
 
-local xmlparseapply, xmlconvert, xmlcopy = xml.parse_apply, xml.convert, xml.copy
+local xmlparseapply, xmlconvert, xmlcopy, xmlname = xml.parse_apply, xml.convert, xml.copy, xml.name
+local xmlinheritedconvert = xml.inheritedconvert
 
 local type = type
 local insert, remove = table.insert, table.remove
 local gmatch, gsub = string.gmatch, string.gsub
 
-
-function xml.inheritedconvert(data,xmldata)
-    local settings = xmldata.settings
-    settings.parent_root = xmldata -- to be tested
---~ settings.no_root = true
-    local xc = xmlconvert(data,settings)
---~ xc.settings = nil
---~ xc.entities = nil
---~ xc.special = nil
---~ xc.ri = nil
---~ print(xc.tg)
---    for k,v in pairs(xc) do print(k,tostring(v)) end
-    return xc
+local function report(what,pattern,c,e)
+    logs.report("xml","%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
 end
 
 local function withelements(e,handle,depth)
@@ -85,7 +75,7 @@ end
 
 xml.elements_only = xml.collected
 
-function xml.each_element(root, pattern, handle, reverse)
+function xml.each_element(root,pattern,handle,reverse)
     local collected = xmlparseapply({ root },pattern)
     if collected then
         if reverse then
@@ -103,7 +93,7 @@ end
 
 xml.process_elements = xml.each_element
 
-function xml.process_attributes(root, pattern, handle)
+function xml.process_attributes(root,pattern,handle)
     local collected = xmlparseapply({ root },pattern)
     if collected and handle then
         for c=1,#collected do
@@ -154,7 +144,7 @@ function xml.collect_tags(root, pattern, nonamespace)
 end
 
 --[[ldx--
-<p>We've now arrives at the functions that manipulate the tree.</p>
+<p>We've now arrived at the functions that manipulate the tree.</p>
 --ldx]]--
 
 local no_root = { no_root = true }
@@ -168,120 +158,44 @@ function xml.redo_ni(d)
     end
 end
 
-function xml.inject_element(root, pattern, element, prepend)
-    if root and element then
-        if type(element) == "string" then
---~             element = xmlconvert(element,no_root)
-            element = xml.inheritedconvert(element,root)
-        end
-        if element then
-            if element.ri then
-                element = element.dt[element.ri].dt
-            else
-                element = element.dt
-            end
-            -- we need to re-index
-            local collected = xmlparseapply({ root },pattern)
-            if collected then
-                for c=1,#collected do
-                    local e = collected[c]
-                    local r, d, k = e.__p__, r.dt, e.ni
-                    local edt
-                    if r.ri then
-                        edt = r.dt[r.ri].dt
-                    else
-                        edt = d and d[k] and d[k].dt
-                    end
-                    if edt then
-                        local be, af
-                        if prepend then
-                            be, af = xmlcopy(element), edt
-be.__p__ = e
+local function xmltoelement(whatever,root)
+    if not whatever then
+        return nil
+    end
+    local element
+    if type(whatever) == "string" then
+        element = xmlinheritedconvert(whatever,root)
+    else
+        element = whatever -- we assume a table
+    end
+    if element.error then
+        return whatever -- string
+    end
+    if element then
+    --~ if element.ri then
+    --~     element = element.dt[element.ri].dt
+    --~ else
+    --~     element = element.dt
+    --~ end
+    end
+    return element
+end
 
-                        else
-                            be, af = edt, xmlcopy(element)
-af.__p__ = e
-                        end
-                        for i=1,#af do
-                            be[#be+1] = af[i]
-                        end
-                        if r.ri then
-                            r.dt[r.ri].dt = be
-                        else
-                            d[k].dt = be
-                        end
-                    else
-                        -- r.dt = element.dt -- todo
-                    end
-xml.redo_ni(d)
-                end
-            end
+xml.toelement = xmltoelement
+
+local function copiedelement(element,newparent)
+    if type(element) == "string" then
+        return element
+    else
+        element = xmlcopy(element).dt
+        if newparent and type(element) == "table" then
+            element.__p__ = newparent
         end
+        return element
     end
 end
 
--- todo: copy !
-
-function xml.insert_element(root, pattern, element, before) -- todo: element als functie
-    if root and element then
-        if pattern == "/" then
-            xml.inject_element(root, pattern, element, before)
-        else
-            local matches, collect = { }, nil
-            if type(element) == "string" then
---~                 element = xmlconvert(element,no_root)
-                element = xml.inheritedconvert(element,root)
-            end
-            if element and element.ri then
-                element = element.dt[element.ri]
-            end
-            if element then
-                local collected = xmlparseapply({ root },pattern)
-                if collected then
-                    for c=1,#collected do
-                        local e = collected[c]
-                        local r = e.__p__
-                        local d = r.dt
-                        local k = e.ni
-                        if not before then
-                            k = k + 1
-                        end
-                        local ce = xmlcopy(element)
-ce.__p__ = r
-                        if element.tg then
-                            insert(d,k,ce) -- untested
-                        else
-                            -- maybe bugged
-                            local edt = ce.dt
-                            if edt then
-                                for i=1,#edt do
-local edti = edt[i]
-                                    insert(d,k,edti)
-if type(edti) == "table" then
-    edti.__p__ = r
-end
-                                    k = k + 1
-                                end
-                            end
-                        end
-xml.redo_ni(d)
-                    end
-                end
-            end
-        end
-    end
-end
-
-xml.insert_element_after  =                 xml.insert_element
-xml.insert_element_before = function(r,p,e) xml.insert_element(r,p,e,true) end
-xml.inject_element_after  =                 xml.inject_element
-xml.inject_element_before = function(r,p,e) xml.inject_element(r,p,e,true) end
-
-local function report(what,pattern,c,e)
-    logs.report("xml","%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xml.name(e),xml.name(e.__p__),c,e.ni,pattern)
-end
-
-function xml.delete_element(root, pattern)
+function xml.delete_element(root,pattern)
     local collected = xmlparseapply({ root },pattern)
     if collected then
         for c=1,#collected do
@@ -289,42 +203,89 @@ function xml.delete_element(root, pattern)
             local p = e.__p__
             if p then
                 if trace_manipulations then
-                    report('deleting',pattern,c,tostring(e)) -- fails
+                    report('deleting',pattern,c,e)
                 end
                 local d = p.dt
                 remove(d,e.ni)
-xml.redo_ni(d)
+                xml.redo_ni(d) -- can be made faster and inlined
             end
         end
     end
 end
 
-function xml.replace_element(root, pattern, element)
-    if type(element) == "string" then
---~         element = xmlconvert(element,true)
-            element = xml.inheritedconvert(element,root)
-    end
-    if element and element.ri then
-        element = element.dt[element.ri]
-    end
-    if element then
-        local collected = xmlparseapply({ root },pattern)
-        if collected then
-            for c=1,#collected do
-                local e = collected[c]
-                local p = e.__p__
-                if p then
-                    if trace_manipulations then
-                        report('replacing',pattern,c,e)
-                    end
-                    local d = p.dt
-                    d[e.ni] = element.dt -- maybe not clever enough
---~ xml.redo_ni(d)
+function xml.replace_element(root,pattern,whatever)
+    local element = root and xmltoelement(whatever,root)
+    local collected = element and xmlparseapply({ root },pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local p = e.__p__
+            if p then
+                if trace_manipulations then
+                    report('replacing',pattern,c,e)
                 end
+                local d = p.dt
+                d[e.ni] = copiedelement(element,p)
+                xml.redo_ni(d) -- probably not needed
             end
         end
     end
 end
+
+local function inject_element(root,pattern,whatever,prepend)
+    local element = root and xmltoelement(whatever,root)
+    local collected = element and xmlparseapply({ root },pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local r = e.__p__
+            local d, k, rri = r.dt, e.ni, r.ri
+            local edt = (rri and d[rri].dt) or (d and d[k] and d[k].dt)
+            if edt then
+                local be, af
+                local cp = copiedelement(element,e)
+                if prepend then
+                    be, af = cp, edt
+                else
+                    be, af = edt, cp
+                end
+                for i=1,#af do
+                    be[#be+1] = af[i]
+                end
+                if rri then
+                    r.dt[rri].dt = be
+                else
+                    d[k].dt = be
+                end
+                xml.redo_ni(d)
+            end
+        end
+    end
+end
+
+local function insert_element(root,pattern,whatever,before) -- todo: element als functie
+    local element = root and xmltoelement(whatever,root)
+    local collected = element and xmlparseapply({ root },pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local r = e.__p__
+            local d, k = r.dt, e.ni
+            if not before then
+                k = k + 1
+            end
+            insert(d,k,copiedelement(element,r))
+            xml.redo_ni(d)
+        end
+    end
+end
+
+xml.insert_element        =                 insert_element
+xml.insert_element_after  =                 insert_element
+xml.insert_element_before = function(r,p,e) insert_element(r,p,e,true) end
+xml.inject_element        =                 inject_element
+xml.inject_element_after  =                 inject_element
+xml.inject_element_before = function(r,p,e) inject_element(r,p,e,true) end
 
 local function include(xmldata,pattern,attribute,recursive,loaddata)
     -- parse="text" (default: xml), encoding="" (todo)
@@ -358,7 +319,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
 --~                 local settings = xmldata.settings
 --~                 settings.parent_root = xmldata -- to be tested
 --~                 local xi = xmlconvert(data,settings)
-                local xi = xml.inheritedconvert(data,xmldata)
+                local xi = xmlinheritedconvert(data,xmldata)
                 if not xi then
                     epdt[ek.ni] = "" -- xml.empty(d,k)
                 else

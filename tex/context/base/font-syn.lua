@@ -38,7 +38,7 @@ fonts.names.data       = fonts.names.data    or { }
 local names   = fonts.names
 local filters = fonts.names.filters
 
-names.version    = 1.101
+names.version    = 1.102
 names.basename   = "names"
 names.saved      = false
 names.loaded     = false
@@ -156,7 +156,7 @@ function fontloader.fullinfo(...)
     end
 end
 
-filters.otf   = fontloader.fullinfo
+filters.otf = fontloader.fullinfo
 
 function filters.afm(name)
     -- we could parse the afm file as well, and then report an error but
@@ -348,12 +348,10 @@ local function check_name(data,result,filename,suffix,subfont)
     if not familyname then
         familyname = a_name
     end
-    fontname   = fontname   or fullname or familyname or basename
+    fontname   = fontname   or fullname or familyname or file.basename(filename)
     fullname   = fullname   or fontname
     familyname = familyname or fontname
-    -- register
-    local index = #specifications + 1
-    specifications[index] = {
+    specifications[#specifications + 1] = {
         filename    = filename,
         format      = lower(suffix),
         subfont     = subfont,
@@ -370,12 +368,6 @@ local function check_name(data,result,filename,suffix,subfont)
         maxsize     = result.design_range_top or 0,
         designsize  = result.design_size or 0,
     }
-    local family = families[familyname]
-    if not family then
-        families[familyname] = { index }
-    else
-        family[#family+1] = index
-    end
 end
 
 local function cleanupkeywords()
@@ -465,6 +457,21 @@ local function collecthashes()
     return nofmappings, noffallbacks
 end
 
+local function collectfamilies()
+    local data = names.data
+    local specifications = data.specifications
+    local families = data.families
+    for index=1,#specifications do
+        local familyname = specifications[index].familyname
+        local family = families[familyname]
+        if not family then
+            families[familyname] = { index }
+        else
+            family[#family+1] = index
+        end
+    end
+end
+
 local function checkduplicate(where) -- fails on "Romantik" but that's a border case anyway
     local data = names.data
     local mapping = data[where]
@@ -539,20 +546,20 @@ local function unpackreferences()
                 v[i] = specifications[v[i]]
             end
         end
-    end
-    local mappings = data.mappings
-    if mappings then
-        for _, m in next, mappings do
-            for k, v in next, m do
-                m[k] = specifications[v]
+        local mappings = data.mappings
+        if mappings then
+            for _, m in next, mappings do
+                for k, v in next, m do
+                    m[k] = specifications[v]
+                end
             end
         end
-    end
-    local fallbacks = data.fallbacks
-    if fallbacks then
-        for _, f in next, fallbacks do
-            for k, v in next, f do
-                f[k] = specifications[v]
+        local fallbacks = data.fallbacks
+        if fallbacks then
+            for _, f in next, fallbacks do
+                for k, v in next, f do
+                    f[k] = specifications[v]
+                end
             end
         end
     end
@@ -713,6 +720,7 @@ function names.identify()
     resetdata()
     analysefiles()
     rejectclashes()
+    collectfamilies()
     collectstatistics()
     cleanupkeywords()
     collecthashes()
@@ -1088,6 +1096,7 @@ local function collect(stage,found,done,name,weight,style,width,all)
     if trace_names then
         logs.report("fonts","resolving name '%s', weight '%s', style '%s', width '%s'",name or "?",tostring(weight),tostring(style),tostring(width))
     end
+--~ print(name,table.serialize(family))
     if weight and weight ~= "" then
         if style and style ~= "" then
             if width and width ~= "" then
