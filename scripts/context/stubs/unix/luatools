@@ -2367,20 +2367,46 @@ local fragment  = hash          * lpeg.Cs((escaped+(1-           endofstring))^0
 
 local parser = lpeg.Ct(scheme * authority * path * query * fragment)
 
+-- todo: reconsider Ct as we can as well have five return values (saves a table)
+-- so we can have two parsers, one with and one without
+
 function url.split(str)
     return (type(str) == "string" and lpegmatch(parser,str)) or str
 end
 
+-- todo: cache them
+
 function url.hashed(str)
     local s = url.split(str)
+    local somescheme = s[1] ~= ""
     return {
-        scheme = (s[1] ~= "" and s[1]) or "file",
+        scheme    = (somescheme and s[1]) or "file",
         authority = s[2],
-        path = s[3],
-        query = s[4],
-        fragment = s[5],
-        original = str
+        path      = s[3],
+        query     = s[4],
+        fragment  = s[5],
+        original  = str,
+        noscheme  = not somescheme,
     }
+end
+
+function url.hasscheme(str)
+    return not url.split(str).nosheme
+end
+
+function url.addscheme(str,scheme)
+    return (url.hasscheme(str) and str) or ((scheme or "file:///") .. str)
+end
+
+function url.construct(hash)
+    local fullurl = hash.sheme .. "://".. hash.authority .. hash.path
+    if hash.query then
+        fullurl = fullurl .. "?".. hash.query
+    end
+    if hash.fragment then
+        fullurl = fullurl .. "?".. hash.fragment
+    end
+    return fullurl
 end
 
 function url.filename(filename)

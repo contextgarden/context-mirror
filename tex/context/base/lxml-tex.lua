@@ -1364,7 +1364,6 @@ statistics.register("lxml lpath profile", function()
     end
 end)
 
-
 -- misc
 
 function lxml.nonspace(id,pattern) -- slow, todo loop

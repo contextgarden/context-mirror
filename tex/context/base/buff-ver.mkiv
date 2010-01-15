@@ -138,17 +138,28 @@
 
 \newtoks \everyinitializeverbatim
 
+\def\ignorebeginofpretty [#1]{}
+\def\ignoreendofpretty       {}
+
+\def\doverbatimbop{\bgroup\beginofpretty}
+\def\doverbatimeop{\endofpretty\egroup}
+\def\doverbatimsop{\endofpretty\egroup\bgroup\beginofpretty}
+
+\let\noverbatimbop\ignorebeginofpretty
+\let\noverbatimeop\ignoreendofpretty
+\let\noverbatimsop\ignorebeginofpretty
+
 \def\doinitializeverbatim
   {\ctxlua{buffers.visualizers.reset()}%
    \def\obs{\obeyedspace}%
    \ctxlua{buffers.doifelsevisualizer("\prettyidentifier")}
      {\ctxlua{buffers.setvisualizer("\prettyidentifier")}%
-      \def\bop{\bgroup\beginofpretty}%
-      \def\eop{\endofpretty\egroup}%
-      \def\sop{\endofpretty\egroup\bgroup\beginofpretty}}%
-     {\let\bop\donothing
-      \let\eop\donothing
-      \let\sop\donothing}%
+      \let\bop\doverbatimbop
+      \let\eop\doverbatimeop
+      \let\sop\doverbatimsop}%
+     {\let\bop\noverbatimbop
+      \let\eop\noverbatimeop
+      \let\sop\noverbatimsop}%
    \relax\the\everyinitializeverbatim\relax}
 
 \appendtoks
@@ -771,9 +782,6 @@
 \def\normalstartverbatimcolor{\startcolor[\typingparameter\c!color]}%
 \def\normalstopverbatimcolor {\stopcolor}
 \def\normalverbatimcolor     {\getvalue{\typingparameter\c!color}}% command !
-
-\def\ignorebeginofpretty [#1]{}
-\def\ignoreendofpretty       {}
 
 \def\setupnormalprettyverbatim
   {\edef\prettypalet{\prettyidentifier\prettypalet}%

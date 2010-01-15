@@ -12,8 +12,10 @@ if not modules then modules = { } end modules ['supp-fil'] = {
 at the <l n='tex'/> side.</p>
 --ldx]]--
 
-local find, gsub, match, format = string.find, string.gsub, string.match, string.format
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local find, gsub, match, format, concat = string.find, string.gsub, string.match, string.format, table.concat
+local texsprint, texwrite, ctxcatcodes = tex.sprint, tex.write, tex.ctxcatcodes
+
+local trace_modules = false  trackers.register("modules.loading", function(v) trace_modules = v end)
 
 support     = support     or { }
 environment = environment or { }
@@ -25,7 +27,7 @@ function support.checkfilename(str) -- "/whatever..." "c:..." "http://..."
 end
 
 function support.thesanitizedfilename(str)
-    tex.write((gsub(str,"\\","/")))
+    texwrite((gsub(str,"\\","/")))
 end
 
 function support.splitfilename(fullname)
@@ -83,7 +85,7 @@ function support.doiffileexistelse(name)
 end
 
 function support.lastexistingfile()
-    tex.sprint(ctxcatcodes,lastexistingfile)
+    texsprint(ctxcatcodes,lastexistingfile)
 end
 
 -- more, we can cache matches
@@ -94,7 +96,7 @@ local found = { } -- can best be done in the resolver itself
 
 -- todo: tracing
 
-local function readfile(specification,backtrack,treetoo)
+local function readfilename(specification,backtrack,treetoo)
     local fnd = found[specification]
     if not fnd then
         local splitspec = resolvers.splitmethod(specification)
@@ -113,19 +115,22 @@ local function readfile(specification,backtrack,treetoo)
             end
         end
         if not fnd and treetoo then
-            fnd = resolvers.find_file(filename)
+--~             fnd = resolvers.find_file(filename)
+            fnd = resolvers.findtexfile(filename)
         end
         found[specification] = fnd
     end
     return fnd or ""
 end
 
-function finders.job(filename) return readfile(filename,nil,false) end -- current path, no backtracking
-function finders.loc(filename) return readfile(filename,2,  false) end -- current path, backtracking
-function finders.sys(filename) return readfile(filename,nil,true ) end -- current path, obeys tex search
-function finders.fix(filename) return readfile(filename,2,  false) end -- specified path, backtracking
-function finders.set(filename) return readfile(filename,nil,false) end -- specified path, no backtracking
-function finders.any(filename) return readfile(filename,2,  true ) end -- loc job sys
+support.readfilename = readfilename
+
+function finders.job(filename) return readfilename(filename,nil,false) end -- current path, no backtracking
+function finders.loc(filename) return readfilename(filename,2,  false) end -- current path, backtracking
+function finders.sys(filename) return readfilename(filename,nil,true ) end -- current path, obeys tex search
+function finders.fix(filename) return readfilename(filename,2,  false) end -- specified path, backtracking
+function finders.set(filename) return readfilename(filename,nil,false) end -- specified path, no backtracking
+function finders.any(filename) return readfilename(filename,2,  true ) end -- loc job sys
 
 openers.job = openers.generic loaders.job = loaders.generic
 openers.loc = openers.generic loaders.loc = loaders.generic
@@ -134,7 +139,136 @@ openers.fix = openers.generic loaders.fix = loaders.generic
 openers.set = openers.generic loaders.set = loaders.generic
 openers.any = openers.generic loaders.any = loaders.generic
 
-function support.doreadfile(protocol,path,name)
-    local specification = ((path == "") and format("%s:///%s",protocol,name)) or format("%s:///%s/%s",protocol,path,name)
+function support.doreadfile(protocol,path,name) -- better do a split and then pass table
+    local specification
+    if url.hasscheme(name) then
+        specification = name
+    else
+        specification = ((path == "") and format("%s:///%s",protocol,name)) or format("%s:///%s/%s",protocol,path,name)
+    end
     texsprint(ctxcatcodes,resolvers.findtexfile(specification))
 end
+
+-- modules can only have a tex or mkiv suffix or can have a specified one
+
+local prefixes  = { "m", "p", "s", "x", "t" }
+local suffixes  = { "tex", "mkiv" }
+local modstatus = { }
+
+local function usemodule(name,hassheme)
+    local foundname
+    if hasscheme then
+        -- no auto suffix as http will return a home page or error page
+        -- so we only add one if missing
+        local fullname = file.addsuffix(name,"tex")
+        if trace_modules then
+            logs.report("modules","checking scheme driven file '%s'",fullname)
+        end
+        foundname = resolvers.findtexfile(fullname) or ""
+    elseif file.extname(name) ~= "" then
+        if trace_modules then
+            logs.report("modules","checking suffix driven file '%s'",name)
+        end
+        foundname = support.readfilename(name,false,true) or ""
+    else
+        for i=1,#suffixes do
+            local fullname = file.addsuffix(name,suffixes[i])
+            if trace_modules then
+                logs.report("modules","checking suffix driven file '%s'",fullname)
+            end
+            foundname = support.readfilename(fullname,false,true) or ""
+            if foundname ~= "" then
+                break
+            end
+        end
+    end
+    if foundname ~= "" then
+        if trace_modules then
+            logs.report("modules","loading '%s'",foundname)
+        end
+        context.startreadingfile()
+        context.input(foundname)
+        context.stopreadingfile()
+        return true
+    else
+        return false
+    end
+end
+
+function support.usemodules(prefix,askedname,truename)
+    local status = modstatus[truename]
+    if status == 0 then
+        -- not found
+    elseif status == 1 then
+        status = status + 1
+    else
+        if trace_modules then
+            logs.report("modules","locating '%s'",truename)
+        end
+        local hasscheme = url.hasscheme(truename)
+        if hasscheme then
+            -- no prefix and suffix done
+            if usemodule(truename,true) then
+                status = 1
+            else
+                status = 0
+            end
+        elseif prefix and prefix ~= "" then
+            if usemodule(prefix .. "-" .. truename) then
+                status = 1
+            else
+                status = 0
+            end
+        else
+            for i=1,#prefixes do
+                -- todo: reconstruct name i.e. basename
+                if usemodule(prefixes[i] .. "-" .. truename) then
+                    status = 1
+                    break
+                end
+            end
+            if not status and usemodule(truename) then
+                status = 1
+            else
+                status = 0
+            end
+        end
+    end
+    if status == 0 then
+        if trace_modules then
+            logs.report("modules","skipping '%s' (not found)",truename)
+        else
+            context.showmessage("systems",6,askedname)
+        end
+    elseif status == 1 then
+        if not trace_modules then
+            context.showmessage("systems",5,askedname)
+        end
+    else
+        if trace_modules then
+            logs.report("modules","skipping '%s' (already loaded)",truename)
+        else
+            context.showmessage("systems",7,askedname)
+        end
+    end
+    modstatus[truename] = status
+end
+
+statistics.register("loaded tex modules", function()
+    if next(modstatus) then
+        local t, f = { }, { }
+        for k, v in table.sortedpairs(modstatus) do
+            k = file.basename(k)
+            if v == 0 then
+                f[#f+1] = k
+            else
+                t[#t+1] = k
+            end
+        end
+        local ts = (#t>0 and format(" (%s)",concat(t," "))) or ""
+        local fs = (#f>0 and format(" (%s)",concat(f," "))) or ""
+        return format("%s requested, %s found%s, %s missing%s",#t+#f,#t,ts,#f,fs)
+    else
+        return nil
+    end
+end)

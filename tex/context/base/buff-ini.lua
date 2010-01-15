@@ -166,7 +166,18 @@ function buffers.loaddata(filename) -- this one might go away
     if not str then
         ok, str, n = resolvers.loaders.tex(file.addsuffix(filename,'tex'))
     end
-    return str or ""
+end
+
+function buffers.loaddata(filename) -- this one might go away
+    local foundname = resolvers.findtexfile(filename) or ""
+    if foundname == ""  then
+        foundname = resolvers.findtexfile(file.addsuffix(filename,'tex')) or ""
+    end
+    if foundname == "" then
+        return ""
+    else
+        return resolvers.loadtexfile(foundname)
+    end
 end
 
 function buffers.typefile(name,realign) -- still somewhat messy, since name can be be suffixless
@@ -411,8 +422,14 @@ end
 
 
 function hooks.flush_line(str,nesting)
-    str = gsub(str," *[\n\r]+ *"," ") ; -- semi colon needed
-    (currenthandler.flush_line or default.flush_line)(str,nesting)
+    local fl = currenthandler.flush_line
+    if fl then
+        str = gsub(str," *[\n\r]+ *"," ") ; -- semi colon needed
+        fl(str,nesting)
+    else
+        -- gsub done later
+        default.flush_line(str,nesting)
+    end
 end
 
 function hooks.flush_inline(str,nesting)
