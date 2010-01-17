@@ -384,10 +384,25 @@ local currentvisualizer, currenthandler
 function buffers.setvisualizer(str)
     currentvisualizer = lower(str)
     currenthandler = handlers[currentvisualizer]
-    if not currenthandler then
+    if currenthandler then
+    --  if trace_visualize then
+    --      logs.report("buffers","enabling specific '%s' visualizer",currentvisualizer)
+    --  end
+    else
         currentvisualizer = visualizers.defaultname
         currenthandler = handlers.default
+    --  if trace_visualize then
+    --      logs.report("buffers","enabling default visualizer '%s'",currentvisualizer)
+    --  end
     end
+    if currenthandler.reset then
+        currenthandler.reset()
+    end
+end
+
+function buffers.resetvisualizer()
+    currentvisualizer = visualizers.defaultname
+    currenthandler = handlers.default
     if currenthandler.reset then
         currenthandler.reset()
     end
@@ -419,7 +434,6 @@ end
 function hooks.end_of_inline()
     (currenthandler.end_of_inline or default.end_of_inline)()
 end
-
 
 function hooks.flush_line(str,nesting)
     local fl = currenthandler.flush_line

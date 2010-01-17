@@ -157,7 +157,8 @@
       \let\bop\doverbatimbop
       \let\eop\doverbatimeop
       \let\sop\doverbatimsop}%
-     {\let\bop\noverbatimbop
+     {\ctxlua{buffers.setvisualizer("\v!typing")}% or resetdefaultvisualizer
+      \let\bop\noverbatimbop
       \let\eop\noverbatimeop
       \let\sop\noverbatimsop}%
    \relax\the\everyinitializeverbatim\relax}

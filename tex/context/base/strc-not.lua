@@ -52,14 +52,14 @@ function notes.store(tag,n)
         end
         state.start = state.start or nnd
     end
-    tex.write(#nd)
+    texwrite(#nd)
 end
 
-function notes.get(tag,n)
+local function get(tag,n)
     local nd = notedata[tag]
     if nd then
-        n = n or #notedata
-        nd = nd[n or n]
+        n = n or #nd
+        nd = nd[n]
         if nd then
             if trace_notes then
                 logs.report("notes","getting %s of %s",n,tag)
@@ -68,6 +68,14 @@ function notes.get(tag,n)
         end
     end
 end
+
+local function getn(tag)
+    local nd = notedata[tag]
+    return (nd and #nd) or 0
+end
+
+nodes.get = get
+nodes.getn = getn
 
 -- we could make a special enhancer
 
@@ -142,7 +150,7 @@ function notes.doifcontent(tag)
 end
 
 local function internal(tag,n)
-    local nd = notes.get(tag,n)
+    local nd = get(tag,n)
     if nd then
         local r = nd.references
         if r then
@@ -158,6 +166,20 @@ local function ordered(kind,name,n)
     local o = lists.ordered[kind]
     o = o and o[name]
     return o and o[n]
+end
+
+notes.internal = internal
+notes.ordered  = ordered
+
+function notes.doifonsamepageasprevious(tag)
+    local same = false
+    local n = getn(tag,n)
+    local current, previous = get(tag,n), get(tag,n-1)
+    if current and previous then
+        local cr, pr = current.references, previous.references
+        same = cr and pr and cr.realpage == pr.realpage
+    end
+    commands.doifelse(same)
 end
 
 function notes.checkpagechange(tag) -- called before increment !
@@ -203,7 +225,7 @@ function notes.deltapage(tag,n)
             what = 3
         end
     end
-    tex.write(what)
+    texwrite(what)
 end
 
 function notes.postpone()
@@ -218,14 +240,14 @@ function notes.postpone()
 end
 
 function notes.setsymbolpage(tag,n)
-    local nd = notes.get(tag,n)
+    local nd = get(tag,n)
     if nd then
         nd.metadata.symbolpage = texcount.realpageno
     end
 end
 
 function notes.getsymbolpage(tag,n)
-    local nd = notes.get(tag,n)
+    local nd = get(tag,n)
     nd = nd and nd.metadata.symbolpage
     texwrite(nd or 0)
 end

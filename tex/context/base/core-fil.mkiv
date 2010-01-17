@@ -114,45 +114,6 @@
 %D their dedicated manuals. We use \type {\next} so that we
 %D can \type {\end} in modules.
 
-% \newconditional\moduleisloaded
-
-% \def\dododousemodules#1#2% no \unprotect/\protect when loading,
-%   {\relax                % since we need to use ? ! unprotected
-%    \ifconditional\moduleisloaded % sometimes (see xtag-map)
-%      \let\next\relax % or: \expandafter\gobbleoneargument
-%    \else
-%      \makeshortfilename[#1\truefilename{#2}]% beware: *- is not part of syn
-%      \doifelseflagged\shortfilename
-%        {\showmessage\m!systems7{#2 (line \number\inputlineno)}%
-%         \settrue\moduleisloaded
-%         \let\next\relax}
-%        {\doglobal\setflag\shortfilename
-%         \def\next
-%           {\startreadingfile
-%              \readsysfile\shortfilename
-%                {\showmessage\m!systems5{#2}\settrue\moduleisloaded}
-%                {\readsysfile{\shortfilename.\mksuffix} % new
-%                   {\showmessage\m!systems5{#2 (\mksuffix)}\settrue\moduleisloaded}
-%                   \donothing}%
-%            \stopreadingfile}}%
-%    \fi
-%    \next}
-
-% \def\dodousemodules#1#2%
-%   {\setfalse\moduleisloaded
-%    \doifelsenothing{#1}
-%      {\dododousemodules\f!moduleprefix {#2}%
-%       \dododousemodules\f!privateprefix{#2}%
-%       \dododousemodules\f!styleprefix  {#2}%
-%       \dododousemodules\f!xstyleprefix {#2}%
-%       \dododousemodules\f!thirdprefix  {#2}%
-%       \dododousemodules\empty          {#2}}% new, fall back on raw name
-%      {\dododousemodules{#1-}{#2}}%
-%    \ifconditional\moduleisloaded\else
-%      \showmessage\m!systems6{#2}%
-%      \appendtoks\showmessage\m!systems6{#2}\to\everynotabene
-%    \fi}
-
 \def\dodousemodules#1#2%
   {\ctxlua{support.usemodules("#1","#2","\truefilename{#2}")}}
 

@@ -196,7 +196,8 @@ local function usemodule(name,hassheme)
 end
 
 function support.usemodules(prefix,askedname,truename)
-    local status = modstatus[truename]
+    local hashname = prefix .. "-" .. truename
+    local status = modstatus[hashname]
     if status == 0 then
         -- not found
     elseif status == 1 then
@@ -251,7 +252,7 @@ function support.usemodules(prefix,askedname,truename)
             context.showmessage("systems",7,askedname)
         end
     end
-    modstatus[truename] = status
+    modstatus[hashname] = status
 end
 
 statistics.register("loaded tex modules", function()

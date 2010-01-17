@@ -860,6 +860,16 @@
 \appendtoks \letvalue\v!mar  \itemgroupmargin  \to \itemgroupcommands
 
 % todo : \startitem .. \stopitem
+%
+% beware, we don't group (yet) as we want to keep the left/right skip
+%
+% \startitemize
+% \startitem \stopitem
+% some intermediate text that will properly indent
+% \startitem \stopitem
+% \stopitem
+%
+% so we need to keep that property
 
 \appendtoks
   \letvalue{\e!start\v!item}\itemgroupitem

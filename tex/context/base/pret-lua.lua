@@ -169,7 +169,35 @@ function visualizer.flush_line(str, nested)
         end
         local p, s = nil, nil
         for c in utfcharacters(code) do
-            if c == "[" then
+            if instr then
+                if p then
+                    texwrite(p)
+                    p = nil
+                end
+                if c == s then
+                    if inesc then
+                        texwrite(c)
+                        inesc = false
+                    else
+                        state = change_state(states[c],state)
+                        instr = false
+                        texwrite(c)
+                        state = finish_state(state)
+                    end
+                    s = nil
+                else
+                    if c == "\\" then
+                        inesc = not inesc
+                    else
+                        inesc = false
+                    end
+                    texwrite(c)
+                end
+            elseif c == "[" then
+                if word then
+                    texwrite(word)
+                    word = nil
+                end
                 if p == "[" then
                     inlongstring = true
                     state = change_state(states["[["],state)
@@ -177,9 +205,16 @@ function visualizer.flush_line(str, nested)
                     state = finish_state(state)
                     p = nil
                 else
+                    if p then
+                        texwrite(p)
+                    end
                     p = c
                 end
             elseif c == "]" then
+                if word then
+                    texwrite(word)
+                    word = nil
+                end
                 if p == "]" then
                     inlongstring = false
                     state = change_state(states["]]"],state)
@@ -187,12 +222,15 @@ function visualizer.flush_line(str, nested)
                     state = finish_state(state)
                     p = nil
                 else
+                    if p then
+                        texwrite(p)
+                    end
                     p = c
                 end
             else
                 if p then
-                    state = change_state(states[c],state)
-                    texwrite(p,c)
+                    state = change_state(states[p],state)
+                    texwrite(p)
                     state = finish_state(state)
                     p = nil
                 end
@@ -204,26 +242,6 @@ function visualizer.flush_line(str, nested)
                     texsprint(ctxcatcodes,"\\obs")
                 elseif inlongstring then
                     texwrite(c)
-                elseif instr then
-                    if c == s then
-                        if inesc then
-                            texwrite(c)
-                            inesc = false
-                        else
-                            state = change_state(states[c],state)
-                            instr = false
-                            texwrite(c)
-                            state = finish_state(state)
-                        end
-                        s = nil
-                    else
-                        if c == "\\" then
-                            inesc = not inesc
-                        else
-                            inesc = false
-                        end
-                        texwrite(c)
-                    end
                 elseif c == '"' or c == "'" then
                     instr = true
                     state = change_state(states[c],state)
@@ -244,6 +262,10 @@ function visualizer.flush_line(str, nested)
                 end
             end
         end
+if p then
+    texwrite(p)
+    p = nil
+end
         state = flush_lua_word(state,word)
         if post then
             state = change_state(states['--'], state)

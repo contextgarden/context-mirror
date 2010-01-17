@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['mtx-scite'] = {
     license   = "see context related readme files"
 }
 
+-- todo: append to global properties else order of loading problem
+-- linux problem ... files are under root protection so we need --install
+
 scripts       = scripts       or { }
 scripts.scite = scripts.scite or { }
 
@@ -89,12 +92,17 @@ function scripts.scite.start(indeed)
     if fontpath ~= "" then
         check_state(extrafont,fontpath)
     end
-    local userpropfile = "sciteuser.properties"
+    local userpropfile = "SciTEUser.properties"
+    if os.name ~= "windows" then
+        userpropfile = "."  .. userpropfile
+    end
     local fullpropfile = file.join(userpath,userpropfile)
-    local userpropdata = io.loaddata(fullpropfile)
+    local userpropdata = io.loaddata(fullpropfile) or ""
     local propfiledone = false
     if pragmafound then
-        if string.find(userpropdata,"import *pragma") then
+        if userpropdata == "" then
+            logdata[#logdata+1] = { "error      : no user properties found on '%s'", fullpropfile }
+        elseif string.find(userpropdata,"import *pragma") then
             logdata[#logdata+1] = { "up to date : 'import pragma' in '%s'", userpropfile }
         else
             logdata[#logdata+1] = { "yet unset  : 'import pragma' in '%s'", userpropfile }

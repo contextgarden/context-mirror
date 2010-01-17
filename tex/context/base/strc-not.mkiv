@@ -17,6 +17,12 @@
 
 \unprotect
 
+% this needs a further cleanup ...
+%
+% -- set breakpoin in descriptions
+% -- reset after trialtypesetting
+% -- that way we can trick the symbol space
+
 % obsolete
 
 \let\autopostponenotes\relax
@@ -539,35 +545,43 @@
 
 \def\@@notemakedescription[#1]#2#3% todo ... proper [key=value] etc
   {\ifnotesenabled
-     \begingroup
-     \doenumerationcheckconditions
-     \let\currentnote\currentdescriptionmain
-     \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#3},\c!list=,\c!bookmark=,][]%
-     \xdef\currentnotenumber{\ctxlua{structure.notes.store("\currentnote",\currentdescriptionnumberentry)}}%
-     \settrue\processingnote
-     \ifconditional\skipnoteplacement
-       \globallet\lastnotesymbol\dolastnotesymbol
+     \iftrialtypesetting
+        % some day a roll back
      \else
-       \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
-         \ignorelines % makes footnotes work in \startlines ... \stoplines
-       \fi
-       \ifnotesymbol
-         \dolastnotesymbol
-       \else
-         \unskip\unskip
+       \begingroup
+       \doenumerationcheckconditions
+       \let\currentnote\currentdescriptionmain
+       \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#3},\c!list=,\c!bookmark=,][]%
+       \xdef\currentnotenumber{\ctxlua{structure.notes.store("\currentnote",\currentdescriptionnumberentry)}}%
+       \settrue\processingnote
+       \ifconditional\skipnoteplacement
          \globallet\lastnotesymbol\dolastnotesymbol
+       \else
+         \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
+           \ignorelines % makes footnotes work in \startlines ... \stoplines
+         \fi
+         \ifnotesymbol
+           \dolastnotesymbol
+         \else
+           \unskip\unskip
+           \globallet\lastnotesymbol\dolastnotesymbol
+         \fi
        \fi
+       \ifconditional\postponingnotes
+         \global\settrue\postponednote
+       \else
+         \handlenoteinsert\currentnote\currentnotenumber
+       \fi
+       \endgroup
      \fi
-     \ifconditional\postponingnotes
-       \global\settrue\postponednote
+   \fi
+   \ifconditional\skipnoteplacement \else
+     \kern\notesignal\relax % \relax is needed to honor spaces
+     \iftrialtypesetting
+       % todo: reserve some space for symbol, in that case we need to be able to roll back notes
      \else
-       \handlenoteinsert\currentnote\currentnotenumber
+       \global\setfalse\skipnoteplacement
      \fi
-     \ifconditional\skipnoteplacement \else
-       \kern\notesignal\relax % \relax is needed to honor spaces
-       \iftrialtypesetting \else \global\setfalse\skipnoteplacement \fi
-     \fi
-     \endgroup
    \fi}
 
 \def\dolastnotesymbol
@@ -770,7 +784,7 @@
          {% this should be checked, smells like a mix-up
           % does not split: \ifcase\noteparameter\c!n\unvbox\else\box\fi\currentnoteins
           \ifcase\noteparameter\c!n\relax
-            \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins
+            \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins % is this needed?
           \or
             \iftrialtypesetting\copy\else\box\fi\currentnoteins
             \obeydepth % (a) added , since split footnotes will not align properly
@@ -1159,6 +1173,16 @@
 \def\note{\dodoubleempty\donote}
 
 \def\donote[#1][#2]{\ifsecondargument\donotesymbol[#1][#2]\else\secondargumenttrue\donotesymbol[\v!footnote][#1]\fi}
+
+%D Goodies:
+%D
+%D \starttyping
+%D \dorecurse {100} {
+%D     test \footnote{\doifnoteonsamepageelse[footnote]{ibidem}{aaa}}
+%D }
+%D \stoptyping
+
+\def\doifnoteonsamepageelse[#1]{\ctxlua{structure.notes.doifonsamepageasprevious("#1")}}
 
 %D New trickery:
 

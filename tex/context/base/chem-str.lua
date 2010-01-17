@@ -142,10 +142,11 @@ local syntax = {
 local definitions = { }
 
 function chemicals.undefine(name)
-    definitions[name] = nil
+    definitions[lower(name)] = nil
 end
 
 function chemicals.define(name,spec,text)
+    name = lower(name)
     local dn = definitions[name]
     if not dn then dn = { } definitions[name] = dn end
     dn[#dn+1] = {
