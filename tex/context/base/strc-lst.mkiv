@@ -107,6 +107,7 @@
     {
      prefix        = "\listparameter\c!pageprefix",
      conversionset = "\listparameter\c!pageconversionset",
+     starter       = \!!bs\listparameter\c!pagestarter\!!es,
      stopper       = \!!bs\listparameter\c!pagestopper\!!es,
      }
    )}}
@@ -272,17 +273,20 @@
    \c!limittext=\@@kolimittext,
   %\c!sectionseparatorset=,
   %\c!sectionconversionset=,
+  %\c!sectionstarter=,
   %\c!sectionstopper=,
   %\c!sectionset=,
   %\c!sectionsegments=,
   %\c!prefix=\v!no,
   %\c!prefixseparatorset=,
   %\c!prefixconversionset=,
+  %\c!prefixstarter=.,
   %\c!prefixstopper=.,
   %\c!prefixset=,
   %\c!prefixsegments=,
   %\c!pageseparatorset=,
   %\c!pageconversionset=,
+  %\c!pagestarter=,
   %\c!pagestopper=,
   %\c!expansion=,
  % \c!prefixconnector=., % maybe inherit from setupheads
@@ -439,6 +443,7 @@
   {% prefix = no, none, yes
     \strut
     \doif{\listparameter\c!label}\v!yes{\leftlabeltext\currentlist}% we can use the new command that does left and right
+    \listparameter\c!starter
     \currentlistnumber
     \listparameter\c!stopper
     \doif{\listparameter\c!label}\v!yes{\rightlabeltext\currentlist}}
@@ -450,10 +455,12 @@
    \strut
    \doifelse{\listparameter\c!label}\v!yes
      {\leftlabeltext\currentlist
+      \listparameter\c!starter
       \currentlistnumber
       \listparameter\c!stopper
       \rightlabeltext\currentlist}
-     {\currentlistnumber
+     {\listparameter\c!starter
+      \currentlistnumber
       \listparameter\c!stopper}}
 
 \def\listsymbol@unknown
@@ -878,6 +885,7 @@
         prefix        = "\listparameter\c!prefix",
         separatorset  = "\listparameter\c!prefixseparatorset",
         conversionset = "\listparameter\c!prefixconversionset",
+        starter       = \!!bs\listparameter\c!prefixstarter\!!es,
         stopper       = \!!bs\listparameter\c!prefixstopper\!!es,
         set           = "\listparameter\c!prefixset",
         segments      = "\listparameter\c!prefixsegments",
@@ -886,6 +894,7 @@
     {
         separatorset  = "\listparameter\c!numberseparatorset",
         conversionset = "\listparameter\c!numberconversionset",
+        starter       = \!!bs\listparameter\c!numberstarter\!!es,
         stopper       = \!!bs\listparameter\c!numberstopper\!!es,
         segments      = "\listparameter\c!numbersegments",
     } )}}

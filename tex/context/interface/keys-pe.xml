@@ -426,6 +426,7 @@
 		<cd:variable name='spot' value='لکه'/>
 		<cd:variable name='standard' value='استاندارد'/>
 		<cd:variable name='start' value='شروع'/>
+		<cd:variable name='starter' value='starter'/>
 		<cd:variable name='sticker' value='دشنه'/>
 		<cd:variable name='stop' value='پایان'/>
 		<cd:variable name='stopper' value='ایست'/>
@@ -787,6 +788,7 @@
 		<cd:constant name='numberseparator' value='جداکننده‌شماره'/>
 		<cd:constant name='numberseparatorset' value='numberseparatorset'/>
 		<cd:constant name='numberset' value='numberset'/>
+		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
 		<cd:constant name='numberstyle' value='سبک‌شماره'/>
 		<cd:constant name='numberwidth' value='عرض‌شماره'/>
@@ -819,10 +821,12 @@
 		<cd:constant name='pageprefixsegments' value='pageprefixsegments'/>
 		<cd:constant name='pageprefixseparatorset' value='pageprefixseparatorset'/>
 		<cd:constant name='pageprefixset' value='pageprefixset'/>
+		<cd:constant name='pageprefixstarter' value='pageprefixstarter'/>
 		<cd:constant name='pageprefixstopper' value='pageprefixstopper'/>
 		<cd:constant name='pagesegments' value='pagesegments'/>
 		<cd:constant name='pageseparatorset' value='pageseparatorset'/>
 		<cd:constant name='pageset' value='pageset'/>
+		<cd:constant name='pagestarter' value='pagestarter'/>
 		<cd:constant name='pagestate' value='وضعیت‌صفحه'/>
 		<cd:constant name='pagestopper' value='pagestopper'/>
 		<cd:constant name='pagestyle' value='سبک‌صفحه'/>
@@ -840,6 +844,7 @@
 		<cd:constant name='prefixsegments' value='prefixsegments'/>
 		<cd:constant name='prefixseparatorset' value='prefixseparatorset'/>
 		<cd:constant name='prefixset' value='prefixset'/>
+		<cd:constant name='prefixstarter' value='prefixstarter'/>
 		<cd:constant name='prefixstopper' value='prefixstopper'/>
 		<cd:constant name='preset' value='preset'/>
 		<cd:constant name='preview' value='پیش‌دید'/>
@@ -898,6 +903,7 @@
 		<cd:constant name='sectionsegments' value='sectionsegments'/>
 		<cd:constant name='sectionseparatorset' value='sectionseparatorset'/>
 		<cd:constant name='sectionset' value='sectionset'/>
+		<cd:constant name='sectionstarter' value='sectionstarter'/>
 		<cd:constant name='sectionstopper' value='sectionstopper'/>
 		<cd:constant name='separator' value='جداکننده'/>
 		<cd:constant name='set' value='قراربده'/>
@@ -925,6 +931,7 @@
 		<cd:constant name='spot' value='لکه'/>
 		<cd:constant name='stack' value='توده'/>
 		<cd:constant name='start' value='شروع'/>
+		<cd:constant name='starter' value='starter'/>
 		<cd:constant name='state' value='وضعیت'/>
 		<cd:constant name='step' value='گام'/>
 		<cd:constant name='stop' value='پایان'/>

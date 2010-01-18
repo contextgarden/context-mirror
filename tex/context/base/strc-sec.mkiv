@@ -41,12 +41,14 @@
 
 % lua interface / names and interface might change
 
-\def\setstructurelevel      #1#2{\ctxlua{structure.sections.setlevel("#1","#2")}}  % name, level|parent
-\def\getstructurelevel        #1{\ctxlua{structure.sections.getcurrentlevel("#1")}}% name
-\def\setstructurenumber     #1#2{\ctxlua{structure.sections.setnumber(#1,"#2")}}   % level, number (+/-)
-\def\getstructurenumber       #1{\ctxlua{structure.sections.getnumber(#1)}}        % level
-\def\getfullstructurenumber   #1{\ctxlua{structure.sections.fullnumber(#1)}}       % level
-\def\getspecificstructuretitle#1{\ctxlua{structure.sections.structuredata(#1,"titledata.title",nil,"\structureheadparameter\s!catcodes")}}%
+\def\setstructurelevel         #1#2{\ctxlua{structure.sections.setlevel("#1","#2")}}  % name, level|parent
+\def\getstructurelevel           #1{\ctxlua{structure.sections.getcurrentlevel("#1")}}% name
+\def\setstructurenumber        #1#2{\ctxlua{structure.sections.setnumber(#1,"#2")}}   % level, number (+/-)
+\def\getstructurenumber          #1{\ctxlua{structure.sections.getnumber(#1)}}        % level
+\def\getsomestructurenumber    #1#2{\ctxlua{structure.sections.getnumber(#1,"#2")}}   % level, what
+\def\getfullstructurenumber      #1{\ctxlua{structure.sections.fullnumber(#1)}}       % level
+\def\getsomefullstructurenumber#1#2{\ctxlua{structure.sections.fullnumber(#1,"#2")}}
+\def\getspecificstructuretitle   #1{\ctxlua{structure.sections.structuredata(#1,"titledata.title",nil,"\structureheadparameter\s!catcodes")}}%
 
 % interface
 
@@ -380,6 +382,7 @@
       \c!sectionseparatorset=\structureheadparameter\c!sectionseparatorset,
       \c!sectionconversionset=\structureheadparameter\c!sectionconversionset,
       \c!sectionconversion=\structureheadparameter\c!conversion, % just for compatibility
+      \c!sectionstarter=\structureheadparameter\c!sectionstarter,
       \c!sectionstopper=\structureheadparameter\c!sectionstopper,
       \c!sectionset=\structureheadparameter\c!sectionset,
       \c!sectionsegments=\structureheadparameter\c!sectionsegments,
@@ -698,19 +701,40 @@
 
 \def\currentstructureheadnumber{0} % ==> \currentheadnumber
 
-\def\determineheadnumber[#1]%
+\unexpanded\def\determineheadnumber[#1]%
   {\xdef\currentstructureheadnumber{\getstructurenumber{\thenamedstructureheadlevel{#1}}}}
 
 % The previous macro is been replaced by the expandable:
 
-\def\namedheadnumber#1{\getstructurenumber{\thenamedstructureheadlevel{#1}}}
+\def\namedheadnumber      #1{\getstructurenumber    {\thenamedstructureheadlevel{#1}}}
+\def\somenamedheadnumber#1#2{\getsomestructurenumber{\thenamedstructureheadlevel{#1}}{#2}}
 
-\def\structureheadnumber
-  {\dosingleempty\dostructureheadnumber}
+\unexpanded\def\structureheadnumber
+  {\dodoubleempty\dostructureheadnumber}
 
-\def\dostructureheadnumber[#1]% simple case is just a number
-%   {\getfullstructurenumber{\iffirstargument\thecurrentstructureheadlevel{#1}\fi}}
-  {\getfullstructurenumber{\iffirstargument\thenamedstructureheadlevel{#1}\fi}}
+% \def\dostructureheadnumber[#1][#2]% simple case is just a number
+%   {\iffirstargument
+%      \ifsecondargument
+%        \getsomefullstructurenumber{\thenamedstructureheadlevel{#1}}{#2}%
+%      \else
+%        \getfullstructurenumber{\thenamedstructureheadlevel{#1}}%
+%      \fi
+%    \else
+%      \getfullstructurenumber{\thenamedstructureheadlevel{#1}}
+%    \fi}
+
+\def\dostructureheadnumber[#1][#2]% simple case is just a number
+  {\getsomefullstructurenumber{\iffirstargument\thenamedstructureheadlevel{#1}\fi}{#2}}
+
+\def\somestructureheadnumber
+  {\dodoubleempty\dosomestructureheadnumber}
+
+\def\dosomestructureheadnumber[#1][#2]%
+  {\dontleavehmode
+   \begingroup
+   \edef\currentstructurehead{#1}%
+   \getsomefullstructurenumber{\thenamedstructureheadlevel{#1}}{#2}%
+   \endgroup}
 
 % compatibility code (after all, we might offer different structure handlers as well
 % but we might as well remove the 'structure' substring at some point (we needed it

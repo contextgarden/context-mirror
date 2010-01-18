@@ -42,6 +42,7 @@ local xmpmetadata = [[
             <xmp:MetadataDate/>
         </rdf:Description>
         <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+            <pdf:Keywords/>
             <pdf:Producer/>
             <pdf:Trapped/>
         </rdf:Description>
@@ -75,6 +76,7 @@ local mapping = {
     ["CreatorTool"]     = "rdf:Description/xmp:CreatorTool",
     ["ModifyDate"]      = "rdf:Description/xmp:ModifyDate",
     ["MetadataDate"]    = "rdf:Description/xmp:MetadataDate",
+    ["Keywords"]        = "rdf:Description/pdf:Keywords",
     ["Producer"]        = "rdf:Description/pdf:Producer",
     ["Trapped"]         = "rdf:Description/pdf:Trapped",
     ["DocumentID"]      = "rdf:Description/xmpMM:DocumentID",

@@ -30,10 +30,10 @@
 
 \def\dosetupblock[#1]{\getparameters[\??tb#1]} % [#1][#2]}
 
-\def\defineblock
-  {\dosingleargument\dodefineblock}
+\def\defineblock[#1]%
+  {\processcommalist[#1]\dodefineblock}
 
-\def\dodefineblock[#1]%
+\def\dodefineblock#1%
   {\getparameters
      [\??tb#1]
      [\c!before=\blank,
@@ -59,11 +59,13 @@
 
 % order matters: \c!before (think of: \c!before=\startitemize)
 
+% no \endgroups
+
 \let\doblocksetups\gobbleoneargument
 
 \def\dostartnormalblock#1% name
   {\bgroup
-\visibletrue
+   \visibletrue
    \edef\currentblock{#1}%
    \doblocksetups\currentblock
    \let\doblocksetups\gobbleoneargument
@@ -83,7 +85,7 @@
   {\ctxlua{structure.blocks.setstate("#1","#2","#3")}}
 
 \def\doselectblocks[#1][#2][#3][#4]% state name tag setups
-  {\begingroup
+  {\bgroup
    \doifassignmentelse{#3}
      {\getparameters[\??tb\??tb][\c!criterium=\v!text,#3]%
       \def\doblocksetups##1{\getparameters[\??tb##1][#3]}%
@@ -91,7 +93,7 @@
      {\getparameters[\??tb\??tb][\c!criterium=\v!text,#4]%
       \def\doblocksetups##1{\getparameters[\??tb##1][#4]}%
       \ctxlua{structure.blocks.select("#1","#2","#3","\@@tb@@tbcriterium")}}%
-   \endgroup}
+   \egroup}
 
 % hide: save, if [+] also hidden execute
 % keep: save and normal execute

@@ -656,6 +656,7 @@
 
 \def\doenumerationnumber
   {\descriptionparameter\c!left
+   \descriptionparameter\c!starter
    \dodescriptionnumber
    \descriptionparameter\c!stopper
    \descriptionparameter\c!right}
@@ -861,6 +862,7 @@
             separatorset  = "\descriptionparameter\c!numberseparatorset",
             conversion    = "\descriptionparameter\c!numberconversion",
             conversionset = "\descriptionparameter\c!numberconversionset",
+            starter       = \!!bs\descriptionparameter\c!numberstarter\!!es,
             stopper       = \!!bs\descriptionparameter\c!numberstopper\!!es,
             segments      = "\descriptionparameter\c!numbersegments",
         },
@@ -1049,6 +1051,7 @@
    \c!way=\v!by\v!text,
    \c!prefix=\v!no,
    \c!prefixconnector=.,
+   \c!starter=,
    \c!stopper=,
    \c!number=\v!yes, % else description
    \c!start=0,

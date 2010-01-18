@@ -345,8 +345,8 @@ function sections.matching_till_depth(depth,numbers,parentnumbers)
     return ok
 end
 
-function sections.getnumber(depth)
-    return texwrite(data.numbers[depth] or 0)
+function sections.getnumber(depth) -- redefined later ...
+    texwrite(data.numbers[depth] or 0)
 end
 
 function sections.set(key,value)
@@ -453,6 +453,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local conversionset = ""
         local conversion    = ""
         local stopper       = ""
+        local starter       = ""
         local connector     = ""
         local set           = ""
         local segments      = ""
@@ -463,6 +464,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 if conversionset == "" then conversionset = data.conversionset or "" end
                 if conversion    == "" then conversion    = data.conversion    or "" end
                 if stopper       == "" then stopper       = data.stopper       or "" end
+                if starter       == "" then starter       = data.starter       or "" end
                 if connector     == "" then connector     = data.connector     or "" end
                 if set           == "" then set           = data.set           or "" end
                 if segments      == "" then segments      = data.segments      or "" end
@@ -473,6 +475,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         if conversionset == "" then conversionset = "default"  end -- not used
         if conversion    == "" then conversion    = nil        end
         if stopper       == "" then stopper       = nil        end
+        if starter       == "" then starter       = nil        end
         if connector     == "" then connector     = nil        end
         if set           == "" then set           = "default"  end
         if segments      == "" then segments      = nil        end
@@ -539,6 +542,9 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             end
             --
             local prefixlist = set and sets.getall("structure:prefixes","",set) -- "" == block
+if starter then
+    processors.sprint(ctxcatcodes,starter)
+end
             if prefixlist and (kind == 'section' or kind == 'prefix') then
                 -- find valid set (problem: for sectionnumber we should pass the level)
             --  if kind == "section" then
@@ -614,19 +620,54 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
     end
 end
 
-function sections.fullnumber(depth)
-    local data = data.status[depth or data.depth]
-    if data then
-        local sectiondata = jobsections.collected[data.references.section] -- tobesaved?
-        if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
-            sections.typesetnumber(sectiondata,'section',sectiondata)
-        end
-    end
-end
-
 function sections.title()
     local sc = sections.current()
     if sc then
         helpers.title(sc.titledata.title,sc.metadata)
     end
+end
+
+function sections.findnumber(depth,what)
+    local data = data.status[depth or data.depth]
+    if data then
+        local index = data.references.section
+        local collected = jobsections.collected
+        local sectiondata = collected[index]
+        if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
+            if what == variables.first then
+                for i=index,1,-1 do
+                    local s = collected[i]
+                    local n = s.numbers
+                    if #n == depth and n[depth] and n[depth] ~= 0 then
+                        sectiondata = s
+                    elseif #n < depth then
+                        break
+                    end
+                end
+            elseif what == variables.last then
+                for i=index,#collected do
+                    local s = collected[i]
+                    local n = s.numbers
+                    if #n == depth and n[depth] and n[depth] ~= 0 then
+                        sectiondata = s
+                    elseif #n < depth then
+                        break
+                    end
+                end
+            end
+            return sectiondata
+        end
+    end
+end
+
+function sections.fullnumber(depth,what,raw)
+    local sectiondata = sections.findnumber(depth,what)
+    if sectiondata then
+        sections.typesetnumber(sectiondata,'section',sectiondata)
+    end
+end
+
+function sections.getnumber(depth,what) -- redefined here
+    local sectiondata = sections.findnumber(depth,what)
+    texwrite((sectiondata and sectiondata.numbers[depth]) or 0)
 end

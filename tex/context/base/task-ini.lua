@@ -16,6 +16,7 @@ tasks.appendaction("processors", "normalizers", "fonts.checkers.missing")       
 
 tasks.appendaction("processors", "characters",  "chars.handle_mirroring")                    -- disabled
 tasks.appendaction("processors", "characters",  "chars.handle_casing")                       -- disabled
+tasks.appendaction("processors", "characters",  "chars.handle_digits")                       -- disabled
 tasks.appendaction("processors", "characters",  "chars.handle_breakpoints")                  -- disabled
 tasks.appendaction("processors", "characters",  "scripts.preprocess")
 
@@ -59,6 +60,7 @@ tasks.appendaction("finalizers", "lists",       "nodes.repackage_graphicvadjust"
 tasks.disableaction("processors", "fonts.checkers.missing")
 tasks.disableaction("processors", "chars.handle_breakpoints")
 tasks.disableaction("processors", "chars.handle_casing")
+tasks.disableaction("processors", "chars.handle_digits")
 tasks.disableaction("processors", "chars.handle_mirroring")
 tasks.disableaction("processors", "languages.words.check")
 tasks.disableaction("processors", "lists.handle_spacing")

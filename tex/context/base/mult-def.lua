@@ -8980,6 +8980,9 @@ return {
   ["numberstopper"]={
    ["en"]="numberstopper",
   },
+  ["numberstarter"]={
+   ["en"]="numberstarter",
+  },
   ["numberstyle"]={
    ["cs"]="stylcisla",
    ["de"]="nummernstil",
@@ -9210,6 +9213,9 @@ return {
   ["pageprefixstopper"]={
    ["en"]="pageprefixstopper",
   },
+  ["pageprefixstarter"]={
+   ["en"]="pageprefixstarter",
+  },
   ["pagesegments"]={
    ["en"]="pagesegments",
   },
@@ -9231,6 +9237,9 @@ return {
   },
   ["pagestopper"]={
    ["en"]="pagestopper",
+  },
+  ["pagestarter"]={
+   ["en"]="pagestarter",
   },
   ["pagestyle"]={
    ["cs"]="stylstranky",
@@ -9342,6 +9351,9 @@ return {
   },
   ["prefixstopper"]={
    ["en"]="prefixstopper",
+  },
+  ["prefixstarter"]={
+   ["en"]="prefixstarter",
   },
   ["preset"]={
    ["cs"]="prednastaveni",
@@ -9830,6 +9842,9 @@ return {
   ["sectionstopper"]={
    ["en"]="sectionstopper",
   },
+  ["sectionstarter"]={
+   ["en"]="sectionstarter",
+  },
   ["separator"]={
    ["cs"]="oddelovac",
    ["de"]="seperator",
@@ -10122,6 +10137,10 @@ return {
    ["nl"]="afsluiter",
    ["pe"]="ایست",
    ["ro"]="stopper",
+  },
+  ["starter"]={
+   ["en"]="starter",
+   ["nl"]="opener",
   },
   ["stretch"]={
    ["cs"]="natahnout",
@@ -15304,6 +15323,10 @@ return {
    ["nl"]="afsluiter",
    ["pe"]="ایست",
    ["ro"]="stopper",
+  },
+  ["starter"]={
+   ["en"]="starter",
+   ["nl"]="opener",
   },
   ["stretch"]={
    ["cs"]="natahnout",

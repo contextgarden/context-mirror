@@ -124,12 +124,14 @@ end
 
 function jobpasses.getdata(id,index,default)
     local jti = collected[id]
-    texprint((jit and jti[index]) or default)
+    local value = jit and jti[index]
+    texprint((value ~= "" and value) or default or "")
 end
 
 function jobpasses.getfield(id,index,tag,default)
     local jti = collected[id]
     jti = jti and jti[index]
-    texprint((jti and jti[tag]) or default)
+    local value = jti and jti[tag]
+    texprint((value ~= "" and value) or default or "")
 end
 

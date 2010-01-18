@@ -483,13 +483,26 @@
          \let\@@opsymbol\empty}%
        {}}}
 
-\def\calculatelistwidth#1% distance deals with 'broad'
-  {\itemgrouplistwidth\getitemparameter#1\c!distance\relax
-   \ifnum\getitemparameter#1\c!factor>\zerocount
+% \def\calculatelistwidth#1% distance deals with 'broad'
+%   {\itemgrouplistwidth\getitemparameter#1\c!distance\relax
+%    \ifnum\getitemparameter#1\c!factor>\zerocount
+%      \ifdim\itemgrouplistwidth=\zeropoint \itemgrouplistwidth=.5em\fi
+%    \fi
+%    \multiply\itemgrouplistwidth \getitemparameter#1\c!factor
+%    \advance \itemgrouplistwidth \getitemparameter#1\c!width\relax}
+
+\def\calculatelistwidth#1%
+  {\ifdim\currentitemmaxwidth>\zeropoint
+     \itemgrouplistwidth\currentitemmaxwidth
+   \else\ifnum\getitemparameter#1\c!factor>\zerocount
+     \itemgrouplistwidth\getitemparameter#1\c!step\relax
      \ifdim\itemgrouplistwidth=\zeropoint \itemgrouplistwidth=.5em\fi
-   \fi
-   \multiply\itemgrouplistwidth \getitemparameter#1\c!factor
-   \advance \itemgrouplistwidth \getitemparameter#1\c!width\relax}
+     \multiply\itemgrouplistwidth \getitemparameter#1\c!factor
+     \advance\itemgrouplistwidth\getitemparameter#1\c!width\relax
+   \else
+     \itemgrouplistwidth\getitemparameter#1\c!width\relax
+   \fi\fi
+   \advance\itemgrouplistwidth\getitemparameter#1\c!distance\relax}
 
 % The next conditionals deal with \item \startitemgroup. It
 % looks like a hack to skip back, but that way we preserve
@@ -972,6 +985,95 @@
      \fi
    \fi\fi}
 
+% \def\dodolapitem
+%   {% todo: align+marge binnen de hbox
+%    \llap{\hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+\enspace}\fi
+%      \symalignleft
+%      \box\itemgroupitembox\hfil
+%      \hskip\getitemparameter\currentitemlevel\c!distance% T h
+%    }}}
+
+% \def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
+%   {\ifconditional\textlistitem
+%     % begin of item
+%    \else
+%      \par
+%    \fi
+%    \advance\noflistelements\plusone
+%    \optimizelistitemsbreak
+%    \noindent
+%    \setbox\itemgroupitembox\hbox
+%      {\ifconditional\headlistitem
+%         \ifconditional\symbollistitem
+%           \dosetitemattributes\currentitemlevel\c!symstyle\c!symcolor{\symsymbol}%
+%         \else
+%           \dosetitemattributes\currentitemlevel\c!headstyle\c!headcolor{\listitem}%
+%         \fi
+%       \else
+%         \ifconditional\symbollistitem
+%           \dosetitemattributes\currentitemlevel\c!symstyle\c!symcolor{\symsymbol}%
+%         \else
+%           \dosetitemattributes\currentitemlevel\c!style\c!color{\listitem}%
+%         \fi
+%       \fi}%
+%     \ifconditional\fittinglistitems
+%       \ifdim\wd\itemgroupitembox>\getitemparameter\currentitemlevel\c!maxwidth sp\relax
+%         \xsetitemparameter\currentitemlevel\c!maxwidth{\number\wd\itemgroupitembox}%
+%       \fi
+%       \ifdim\currentitemmaxwidth>\zeropoint
+%         \setbox\itemgroupitembox\simplealignedbox{\getitemparameter\currentitemlevel\c!itemalign}{\currentitemmaxwidth}{\box\itemgroupitembox}%
+%       \fi
+%    \fi
+%    \doifsomething\doitemdestination
+%      {\setbox\itemgroupitembox\hbox{\directgotobox{\box\itemgroupitembox}[\doitemdestination]}}%
+%    \globallet\doitemdestination\empty
+%    \itemgroupaskedwidth\getitemparameter\currentitemlevel\c!width\relax
+%    % new, prevents loops when symbol is (not yet found) graphic
+%    \ht\itemgroupitembox\strutheight
+%    \dp\itemgroupitembox\strutdepth
+%    % so that content differs per run (esp mp graphics afterwards)
+%    \checkforrepeatedlistitem
+%    \ifdim\itemgroupaskedwidth<\zeropoint\relax
+%      \llap{\ifconditional\sublistitem\llap{+\enspace}\fi\box\itemgroupitembox\hskip\leftmargindistance}%
+%    \else
+%      \ifdim\itemgroupaskedwidth=\zeropoint\relax
+%        \calculatelistwidth1%
+%      \else
+%        \calculatelistwidth\currentitemlevel
+%      \fi
+%      \ifconditional\textlistitem
+%        \hbox{\ifconditional\sublistitem+\enspace\fi\box\itemgroupitembox\hskip\interwordspace}\nobreak
+%      \else\ifconditional\inlinelistitem
+%        \hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+\enspace}\fi\box\itemgroupitembox\hss}% was: \hfill
+%      \else\ifconditional\txtlistitem
+%        \dodotxtitem
+%      \else
+%        \dodolapitem
+%      \fi\fi\fi
+%    \fi
+%    \forceunexpanded % needed for m conversion (\os) / i need to look into this
+%    \setevalue{\@@currentitemsymbol\currentitemlevel}%
+%      {\getvalue{\@@localitemsymbol\currentitemlevel}}% still problems with \uchar ?
+%     %{\noexpand\getvalue{\@@localitemsymbol\currentitemlevel}}% no, spoils subrefs
+%    \resetunexpanded
+%    \setfalse\headlistitem
+%    \setfalse\sublistitem
+%    \setfalse\symbollistitem
+%    \EveryPar{\ignorespaces}% needed ?
+%    \ignorespaces}
+
+\def\dodosubitem
+  {\ifconditional\sublistitem\llap{+\enspace}\fi}
+
+\def\dodolapitem
+  {\llap
+     {\hbox to \itemgrouplistwidth
+        {\dodosubitem
+         \symalignleft
+         \box\itemgroupitembox % can already have a forced widt, only factor handled here
+         \hfil
+         \hskip\getitemparameter\currentitemlevel\c!distance}}}
+
 \def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
   {\ifconditional\textlistitem
     % begin of item
@@ -995,18 +1097,27 @@
           \dosetitemattributes\currentitemlevel\c!style\c!color{\listitem}%
         \fi
       \fi}%
-    \ifconditional\fittinglistitems
-      \ifdim\wd\itemgroupitembox>\getitemparameter\currentitemlevel\c!maxwidth sp\relax
-        \xsetitemparameter\currentitemlevel\c!maxwidth{\number\wd\itemgroupitembox}%
-      \fi
-      \ifdim\currentitemmaxwidth>\zeropoint
-        \setbox\itemgroupitembox\simplealignedbox{\getitemparameter\currentitemlevel\c!itemalign}{\currentitemmaxwidth}{\box\itemgroupitembox}%
-      \fi
-   \fi
    \doifsomething\doitemdestination
      {\setbox\itemgroupitembox\hbox{\directgotobox{\box\itemgroupitembox}[\doitemdestination]}}%
-   \globallet\doitemdestination\empty
    \itemgroupaskedwidth\getitemparameter\currentitemlevel\c!width\relax
+   \ifconditional\fittinglistitems
+     \ifdim\wd\itemgroupitembox>\getitemparameter\currentitemlevel\c!maxwidth sp\relax
+       \xsetitemparameter\currentitemlevel\c!maxwidth{\number\wd\itemgroupitembox}%
+     \fi
+     \ifdim\currentitemmaxwidth>\zeropoint
+       \setbox\itemgroupitembox\simplealignedbox
+         {\getitemparameter\currentitemlevel\c!itemalign}
+         {\dimexpr\currentitemmaxwidth+\getitemparameter\currentitemlevel\c!distance\relax}
+         {\box\itemgroupitembox\hskip\getitemparameter\currentitemlevel\c!distance}%
+     \fi
+   \else\ifdim\itemgroupaskedwidth>\zeropoint
+     \doifsomething{\getitemparameter\currentitemlevel\c!itemalign}
+       {\setbox\itemgroupitembox\simplealignedbox
+          {\getitemparameter\currentitemlevel\c!itemalign}
+          {\dimexpr\itemgroupaskedwidth+\getitemparameter\currentitemlevel\c!distance\relax}
+          {\box\itemgroupitembox\hskip\getitemparameter\currentitemlevel\c!distance}}%
+   \fi\fi
+   \globallet\doitemdestination\empty
    % new, prevents loops when symbol is (not yet found) graphic
    \ht\itemgroupitembox\strutheight
    \dp\itemgroupitembox\strutdepth
@@ -1027,12 +1138,7 @@
      \else\ifconditional\txtlistitem
        \dodotxtitem
      \else
-       % todo: align+marge binnen de hbox
-       \llap{\hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+\enspace}\fi
-                              \symalignleft
-                              \box\itemgroupitembox\hfil
-                              \hskip\getitemparameter\currentitemlevel\c!distance% T h
-                              }}%
+       \dodolapitem
      \fi\fi\fi
    \fi
    \forceunexpanded % needed for m conversion (\os) / i need to look into this
@@ -1265,6 +1371,12 @@
   %\c!option=,
    \c!command=\defaultitemcommand,
    \c!symbol=\currentitemlevel]
+
+% new:
+
+\setupitemgroups
+  [\c!step=.5em, % deals with broad
+   \c!distance=\zeropoint]
 
 \setupitemgroups
    [\c!prefix=\v!no,

@@ -542,6 +542,8 @@ local xmltexhandler = xml.newhandlers {
     }
 }
 
+lxml.xmltexhandler = xmltexhandler
+
 function lxml.serialize(root)
     xmlserialize(root,xmltexhandler)
 end

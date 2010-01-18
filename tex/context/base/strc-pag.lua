@@ -99,7 +99,11 @@ function pages.number(realdata,pagespec)
     local numberspec = realdata.numberdata
     local conversionset = (pagespec and pagespec.conversionset ~= "" and pagespec.conversionset) or (numberspec and numberspec.conversionset ~= "" and numberspec.conversionset) or ""
     local conversion    = (pagespec and pagespec.conversion    ~= "" and pagespec.conversion   ) or (numberspec and numberspec.conversion    ~= "" and numberspec.conversion   ) or ""
+    local starter       = (pagespec and pagespec.starter       ~= "" and pagespec.starter      ) or (numberspec and numberspec.starter       ~= "" and numberspec.starter      ) or ""
     local stopper       = (pagespec and pagespec.stopper       ~= "" and pagespec.stopper      ) or (numberspec and numberspec.stopper       ~= "" and numberspec.stopper      ) or ""
+    if starter ~= "" then
+        processors.sprint(ctxcatcodes,starter)
+    end
     if conversion ~= "" then
         texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,userpage))
     else

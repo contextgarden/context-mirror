@@ -426,6 +426,7 @@
 		<cd:variable name='spot' value='spot'/>
 		<cd:variable name='standard' value='standard'/>
 		<cd:variable name='start' value='demarre'/>
+		<cd:variable name='starter' value='starter'/>
 		<cd:variable name='sticker' value='sticker'/>
 		<cd:variable name='stop' value='stoppe'/>
 		<cd:variable name='stopper' value='stopper'/>
@@ -787,6 +788,7 @@
 		<cd:constant name='numberseparator' value='separateurnumbero'/>
 		<cd:constant name='numberseparatorset' value='numberseparatorset'/>
 		<cd:constant name='numberset' value='numberset'/>
+		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
 		<cd:constant name='numberstyle' value='stylenumero'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
@@ -819,10 +821,12 @@
 		<cd:constant name='pageprefixsegments' value='pageprefixsegments'/>
 		<cd:constant name='pageprefixseparatorset' value='pageprefixseparatorset'/>
 		<cd:constant name='pageprefixset' value='pageprefixset'/>
+		<cd:constant name='pageprefixstarter' value='pageprefixstarter'/>
 		<cd:constant name='pageprefixstopper' value='pageprefixstopper'/>
 		<cd:constant name='pagesegments' value='pagesegments'/>
 		<cd:constant name='pageseparatorset' value='pageseparatorset'/>
 		<cd:constant name='pageset' value='pageset'/>
+		<cd:constant name='pagestarter' value='pagestarter'/>
 		<cd:constant name='pagestate' value='etatpage'/>
 		<cd:constant name='pagestopper' value='pagestopper'/>
 		<cd:constant name='pagestyle' value='stylepage'/>
@@ -840,6 +844,7 @@
 		<cd:constant name='prefixsegments' value='prefixsegments'/>
 		<cd:constant name='prefixseparatorset' value='prefixseparatorset'/>
 		<cd:constant name='prefixset' value='prefixset'/>
+		<cd:constant name='prefixstarter' value='prefixstarter'/>
 		<cd:constant name='prefixstopper' value='prefixstopper'/>
 		<cd:constant name='preset' value='prereglage'/>
 		<cd:constant name='preview' value='previsualisation'/>
@@ -898,6 +903,7 @@
 		<cd:constant name='sectionsegments' value='sectionsegments'/>
 		<cd:constant name='sectionseparatorset' value='sectionseparatorset'/>
 		<cd:constant name='sectionset' value='sectionset'/>
+		<cd:constant name='sectionstarter' value='sectionstarter'/>
 		<cd:constant name='sectionstopper' value='sectionstopper'/>
 		<cd:constant name='separator' value='separateur'/>
 		<cd:constant name='set' value='set'/>
@@ -925,6 +931,7 @@
 		<cd:constant name='spot' value='spot'/>
 		<cd:constant name='stack' value='stack'/>
 		<cd:constant name='start' value='demarre'/>
+		<cd:constant name='starter' value='starter'/>
 		<cd:constant name='state' value='etat'/>
 		<cd:constant name='step' value='pas'/>
 		<cd:constant name='stop' value='stoppe'/>

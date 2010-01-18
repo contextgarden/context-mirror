@@ -19,8 +19,7 @@ this module. Since this module is also used in <l n='mtxrun'/> we've
 put them here instead of loading mode modules there then needed.</p>
 --ldx]]--
 
-
-local function xmlgsub(t,old,new)
+local function xmlgsub(t,old,new) -- will be replaced
     local dt = t.dt
     if dt then
         for k=1,#dt do
@@ -34,7 +33,7 @@ local function xmlgsub(t,old,new)
     end
 end
 
-xmlgsub = xmlgsub
+--~ xml.gsub = xmlgsub
 
 function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
     if d and k then

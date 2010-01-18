@@ -168,11 +168,14 @@ local function add_attribute(namespace,tag,value)
     if tag == "xmlns" then
         xmlns[#xmlns+1] = resolvens(value)
         at[tag] = value
+    elseif namespace == "" then
+        at[tag] = value
     elseif namespace == "xmlns" then
         xml.checkns(tag,value)
         at["xmlns:" .. tag] = value
     else
-        at[tag] = value
+        -- for the moment this way:
+        at[namespace .. ":" .. tag] = value
     end
 end
 
