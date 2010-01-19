@@ -1893,10 +1893,7 @@ elseif name == "linux" then
 elseif name == "macosx" then -- a rather inconsistent mess
 
     function os.resolvers.platform(t,k)
-        local platform, architecture = "", os.resultof("uname -m") or ""
-        if architecture == "" then
-            architecture = os.getenv("HOSTTYPE") or ""
-        end
+        local platform, architecture = "", os.getenv("HOSTTYPE") or ""
         if architecture == "" then
             architecture = os.resultof("echo $HOSTTYPE") or ""
         end
@@ -1974,6 +1971,19 @@ function os.uuid()
         random(0xFFFF),
         random(0xFFFF),random(0xFFFF),random(0xFFFF)
     )
+end
+
+function os.timezone(delta)
+    local d = tonumber(tonumber(os.date("%H")-os.date("!%H")))
+    if delta then
+        if d > 0 then
+            return format("+%02i:00",d)
+        else
+            return format("-%02i:00",-d)
+        end
+    else
+        return 1
+    end
 end
 
 
@@ -2400,7 +2410,7 @@ function url.hashed(str)
 end
 
 function url.hasscheme(str)
-    return not url.split(str).nosheme
+    return url.split(str)[1] ~= ""
 end
 
 function url.addscheme(str,scheme)
@@ -3657,13 +3667,15 @@ function setters.new(name)
     return t
 end
 
-trackers   = setters.new("trackers")
-directives = setters.new("directives")
+trackers    = setters.new("trackers")
+directives  = setters.new("directives")
+experiments = setters.new("experiments")
 
 -- nice trick: we overload two of the directives related functions with variants that
 -- do tracing (itself using a tracker) .. proof of concept
 
-local trace_directives = false local trace_directives = false  trackers.register("system.directives", function(v) trace_directives = v end)
+local trace_directives  = false local trace_directives  = false  trackers.register("system.directives",  function(v) trace_directives  = v end)
+local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
 local e = directives.enable
 local d = directives.disable
@@ -3675,6 +3687,19 @@ end
 
 function directives.disable(...)
     commands.writestatus("directives","disabling: %s",concat({...}," "))
+    d(...)
+end
+
+local e = experiments.enable
+local d = experiments.disable
+
+function experiments.enable(...)
+    commands.writestatus("experiments","enabling: %s",concat({...}," "))
+    e(...)
+end
+
+function experiments.disable(...)
+    commands.writestatus("experiments","disabling: %s",concat({...}," "))
     d(...)
 end
 
@@ -3853,11 +3878,14 @@ local function add_attribute(namespace,tag,value)
     if tag == "xmlns" then
         xmlns[#xmlns+1] = resolvens(value)
         at[tag] = value
+    elseif namespace == "" then
+        at[tag] = value
     elseif namespace == "xmlns" then
         xml.checkns(tag,value)
         at["xmlns:" .. tag] = value
     else
-        at[tag] = value
+        -- for the moment this way:
+        at[namespace .. ":" .. tag] = value
     end
 end
 
@@ -5992,8 +6020,7 @@ this module. Since this module is also used in <l n='mtxrun'/> we've
 put them here instead of loading mode modules there then needed.</p>
 --ldx]]--
 
-
-local function xmlgsub(t,old,new)
+local function xmlgsub(t,old,new) -- will be replaced
     local dt = t.dt
     if dt then
         for k=1,#dt do
@@ -6007,7 +6034,7 @@ local function xmlgsub(t,old,new)
     end
 end
 
-xmlgsub = xmlgsub
+--~ xml.gsub = xmlgsub
 
 function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
     if d and k then

@@ -201,3 +201,21 @@ tasks.new (
         "after",       -- for users
     }
 )
+
+tasks.new (
+    "pagebuilders",
+    {
+        "before",      -- for users
+        "normalizers",
+        "after",       -- for users
+    }
+)
+
+tasks.new (
+    "vboxbuilders",
+    {
+        "before",      -- for users
+        "normalizers",
+        "after",       -- for users
+    }
+)

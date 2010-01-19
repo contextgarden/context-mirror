@@ -3,7 +3,8 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
     comment   = "companion to lpdf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
+    license   = "see context related readme files",
+    comment   = "with help from Peter Rolf",
 }
 
 local format, random, char, gsub = string.format, math.random, string.char, string.gsub
@@ -44,7 +45,7 @@ local xmpmetadata = [[
         <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
             <pdf:Keywords/>
             <pdf:Producer/>
-            <pdf:Trapped/>
+            <pdf:Trapped>False</pdf:Trapped>
         </rdf:Description>
         <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
             <xmpMM:DocumentID/>
@@ -64,7 +65,8 @@ local xpacket = [[
 <?xpacket end="w"?>]]
 
 local mapping = {
-    ["Creator"]         = "rdf:Description/dc:creator/rdf:Seq/rdf:li",
+    ["Creator"]         = "rdf:Description/xmp:CreatorTool",
+    ["Author"]          = "rdf:Description/dc:creator/rdf:Seq/rdf:li",
     ["Title"]           = "rdf:Description/dc:title/rdf:Alt/rdf:li",
     ["ConTeXt.Jobname"] = "rdf:Description/pdfx:ConTeXt.Jobname",
     ["ConTeXt.Time"]    = "rdf:Description/pdfx:ConTeXt.Time",
@@ -73,12 +75,11 @@ local mapping = {
     ["ID"]              = "rdf:Description/pdfx:ID",
     ["PTEX.Fullbanner"] = "rdf:Description/pdfx:PTEX.Fullbanner",
     ["CreateDate"]      = "rdf:Description/xmp:CreateDate",
-    ["CreatorTool"]     = "rdf:Description/xmp:CreatorTool",
     ["ModifyDate"]      = "rdf:Description/xmp:ModifyDate",
     ["MetadataDate"]    = "rdf:Description/xmp:MetadataDate",
     ["Keywords"]        = "rdf:Description/pdf:Keywords",
     ["Producer"]        = "rdf:Description/pdf:Producer",
-    ["Trapped"]         = "rdf:Description/pdf:Trapped",
+--  ["Trapped"]         = "rdf:Description/pdf:Trapped", -- '/Trapped' in /Info, 'Trapped' in XMP
     ["DocumentID"]      = "rdf:Description/xmpMM:DocumentID",
     ["InstanceID"]      = "rdf:Description/xmpMM:InstanceID",
 }
@@ -109,7 +110,7 @@ local function flushxmpinfo()
 
     local t = { } for i=1,24 do t[i] = char(96 + random(26)) end
     local packetid = table.concat(t)
-    local time = os.date("!%Y-%m-%dT%X") -- ! -> universaltime
+    local time = lpdf.timestamp()
     addxmpinfo("Producer",format("LuaTeX-%0.2f.%s",tex.luatexversion/100,tex.luatexrevision))
     addxmpinfo("DocumentID",format("uuid:%s",os.uuid()))
     addxmpinfo("InstanceID",format("uuid:%s",os.uuid()))
@@ -117,6 +118,7 @@ local function flushxmpinfo()
     addxmpinfo("CreateDate",time)
     addxmpinfo("ModifyDate",time)
     addxmpinfo("MetadataDate",time)
+    addxmpinfo("PTEX.Fullbanner", tex.pdftexbanner)
     local blob = xml.tostring(xmp)
     local md = lpdf.dictionary {
         Subtype = lpdf.constant("XML"),

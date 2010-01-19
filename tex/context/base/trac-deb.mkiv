@@ -37,12 +37,15 @@
     }%
 \to \everybye
 
-\def\showtrackers       {\ctxlua{trackers.show()}}
-\def\resettrackers      {\ctxlua{trackers.reset()}}
-\def\enabletrackers [#1]{\ctxlua{trackers.enable("#1")}}
-\def\disabletrackers[#1]{\ctxlua{trackers.disable("#1")}}
+\def\showtrackers          {\ctxlua{trackers.show()}}
+\def\enabletrackers    [#1]{\ctxlua{trackers.enable("#1")}}
+\def\disabletrackers   [#1]{\ctxlua{trackers.disable("#1")}}
+\def\resettrackers         {\ctxlua{trackers.reset()}}
 
-\def\showdirectives       {\ctxlua{directives.show()}}
-%def\resetdirectives      {\ctxlua{directives.reset()}} % would be weird to use
-\def\enabledirectives [#1]{\ctxlua{directives.enable("#1")}}
-\def\disabledirectives[#1]{\ctxlua{directives.disable("#1")}}
+\def\showdirectives        {\ctxlua{directives.show()}}
+\def\enabledirectives  [#1]{\ctxlua{directives.enable("#1")}}
+\def\disabledirectives [#1]{\ctxlua{directives.disable("#1")}}
+
+\def\showexperiments       {\ctxlua{experiments.show()}}
+\def\enableexperiments [#1]{\ctxlua{experiments.enable("#1")}}
+\def\disableexperiments[#1]{\ctxlua{experiments.disable("#1")}}

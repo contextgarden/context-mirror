@@ -294,13 +294,15 @@ function setters.new(name)
     return t
 end
 
-trackers   = setters.new("trackers")
-directives = setters.new("directives")
+trackers    = setters.new("trackers")
+directives  = setters.new("directives")
+experiments = setters.new("experiments")
 
 -- nice trick: we overload two of the directives related functions with variants that
 -- do tracing (itself using a tracker) .. proof of concept
 
-local trace_directives = false local trace_directives = false  trackers.register("system.directives", function(v) trace_directives = v end)
+local trace_directives  = false local trace_directives  = false  trackers.register("system.directives",  function(v) trace_directives  = v end)
+local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
 local e = directives.enable
 local d = directives.disable
@@ -312,5 +314,18 @@ end
 
 function directives.disable(...)
     commands.writestatus("directives","disabling: %s",concat({...}," "))
+    d(...)
+end
+
+local e = experiments.enable
+local d = experiments.disable
+
+function experiments.enable(...)
+    commands.writestatus("experiments","enabling: %s",concat({...}," "))
+    e(...)
+end
+
+function experiments.disable(...)
+    commands.writestatus("experiments","disabling: %s",concat({...}," "))
     d(...)
 end

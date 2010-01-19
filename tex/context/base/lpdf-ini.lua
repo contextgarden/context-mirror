@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 -- This code is very experimental !
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
-local char, byte, format, gsub, concat = string.char, string.byte, string.format, string.gsub, table.concat
+local char, byte, format, gsub, concat, match = string.char, string.byte, string.format, string.gsub, table.concat, string.match
 local utfvalues = string.utfvalues
 local texwrite = tex.write
 local sind, cosd = math.sind, math.cosd
@@ -563,6 +563,23 @@ lpdf.registerpagefinalizer(checkshades,3)
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
     texwrite(format("%s %s %s %s 0 0 cm",c,s,-s,c))
+end
+
+-- ! -> universaltime
+
+local timestamp = os.date("%Y-%m-%dT%X") .. os.timezone(true)
+
+function lpdf.timestamp()
+    return timestamp
+end
+
+function lpdf.pdftimestamp(str)
+    local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
+    return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
+end
+
+function lpdf.id()
+    return format("%s.%s",tex.jobname,timestamp)
 end
 
 -- lpdf.addtoinfo("ConTeXt.Version", tex.contextversiontoks)

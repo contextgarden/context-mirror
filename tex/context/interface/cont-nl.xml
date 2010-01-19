@@ -6174,6 +6174,9 @@
         <cd:parameter name="afstand">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
+        <cd:parameter name="stap">
+          <cd:constant type="cd:dimension"/>
+        </cd:parameter>
         <cd:parameter name="factor">
           <cd:constant type="cd:number"/>
         </cd:parameter>

@@ -6174,6 +6174,9 @@
         <cd:parameter name="vzdalenost">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
+        <cd:parameter name="krok">
+          <cd:constant type="cd:dimension"/>
+        </cd:parameter>
         <cd:parameter name="faktor">
           <cd:constant type="cd:number"/>
         </cd:parameter>

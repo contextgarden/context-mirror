@@ -6174,6 +6174,9 @@
         <cd:parameter name="distance">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
+        <cd:parameter name="pas">
+          <cd:constant type="cd:dimension"/>
+        </cd:parameter>
         <cd:parameter name="facteur">
           <cd:constant type="cd:number"/>
         </cd:parameter>

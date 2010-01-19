@@ -6174,6 +6174,9 @@
         <cd:parameter name="فاصله">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
+        <cd:parameter name="گام">
+          <cd:constant type="cd:dimension"/>
+        </cd:parameter>
         <cd:parameter name="عامل">
           <cd:constant type="cd:number"/>
         </cd:parameter>

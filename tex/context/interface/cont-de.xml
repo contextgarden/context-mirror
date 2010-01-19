@@ -6174,6 +6174,9 @@
         <cd:parameter name="abstand">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
+        <cd:parameter name="schritt">
+          <cd:constant type="cd:dimension"/>
+        </cd:parameter>
         <cd:parameter name="faktor">
           <cd:constant type="cd:number"/>
         </cd:parameter>

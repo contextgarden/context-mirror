@@ -44,7 +44,7 @@ local tobasepoints = number.tobasepoints
 
 local variables = interfaces.variables
 
-lpdf.addtoinfo   ("Trapped", pdfboolean(false), "False")
+lpdf.addtoinfo   ("Trapped", pdfconstant("False")) -- ''/Trapped' in /Info, 'Trapped' in XMP
 lpdf.addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
 
 --
@@ -148,26 +148,39 @@ lpdf.registerdocumentfinalizer(flushdocumentactions)
 --- info
 
 function codeinjections.setupidentity(specification)
-    local title = specification.title or "" if title ~= "" then
+    local title = specification.title or ""
+    if title ~= "" then
         lpdf.addtoinfo("Title", pdfunicode(title), title)
     end
-    local subject = specification.subject or "" if subject ~= "" then
+    local subject = specification.subject or ""
+    if subject ~= "" then
         lpdf.addtoinfo("Subject", pdfunicode(subject), subject)
     end
-    local author = specification.author or "" if author ~= "" then
-        lpdf.addtoinfo("Author",  pdfunicode(author), author)
+    local author = specification.author or ""
+    if author ~= "" then
+        lpdf.addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
     end
-    local creator = specification.creator or "" if creator ~= "" then
-        lpdf.addtoinfo("Creator", pdfunicode(creator), creator)
+    local creator = specification.creator or ""
+    if creator ~= "" then
+        lpdf.addtoinfo("Creator", pdfunicode(creator), creator) -- '/Creator' in /Info, 'CreatorTool' in XMP
     end
-    local date = specification.date or "" if date ~= "" then
-        lpdf.addtoinfo("ModDate", pdfstring(date), date)
+    lpdf.addtoinfo("CreationDate", pdfstring(lpdf.pdftimestamp(lpdf.timestamp())))
+    local date = specification.date or ""
+    local pdfdate = lpdf.pdftimestamp(date)
+    if pdfdate then
+        lpdf.addtoinfo("ModDate", pdfstring(pdfdate), date)
+    else
+        -- users should enter the date in 2010-01-19T23:27:50+01:00 format
+        -- and if not provided that way we use the creation time instead
+        date = lpdf.timestamp()
+        lpdf.addtoinfo("ModDate", pdfstring(lpdf.pdftimestamp(date)), date)
     end
-    local keywords = specification.keywords or "" if keywords ~= "" then
+    local keywords = specification.keywords or ""
+    if keywords ~= "" then
         keywords = string.gsub(keywords, "[%s,]+", " ")
         lpdf.addtoinfo("Keywords",pdfunicode(keywords), keywords)
     end
-    local id = format("%s.%s",tex.jobname,os.date("%Y%m%d.%H%M"))
+    local id = lpdf.id()
     lpdf.addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
 end
 

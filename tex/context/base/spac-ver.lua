@@ -935,13 +935,13 @@ local function report(message,lst)
     logs.report("vspacing",message,count_nodes(lst,true),node_ids_to_string(lst))
 end
 
-function nodes.handle_page_spacing(where)
-    local newhead = texlists.contrib_head
+function nodes.handle_page_spacing(newhead,where)
+--~     local newhead = texlists.contrib_head
     if newhead then
-        starttiming(vspacing)
+--~         starttiming(vspacing)
         local newtail = find_node_tail(newhead)
         local flush = false
-stackhack = true -- todo: only when grid snapping once enabled
+        stackhack = true -- todo: only when grid snapping once enabled
         for n in traverse_nodes(newhead) do -- we could just look for glue nodes
             local id = n.id
             if id == glue then
@@ -969,10 +969,11 @@ stackhack = true -- todo: only when grid snapping once enabled
             if stackhack then
                 stackhack = false
                 if trace_collect_vspacing then report("processing %s nodes: %s",newhead) end
-                texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true)
+--~                 texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true)
+newhead = collapser(newhead,"page",where,trace_page_vspacing,true)
             else
                 if trace_collect_vspacing then report("flushing %s nodes: %s",newhead) end
-                texlists.contrib_head = newhead
+--~                 texlists.contrib_head = newhead
             end
         else
             if stackhead then
@@ -984,10 +985,12 @@ stackhack = true -- todo: only when grid snapping once enabled
                 stackhead = newhead
             end
             stacktail = newtail
-            texlists.contrib_head = nil
+--~             texlists.contrib_head = nil
+newhead = nil
         end
-        stoptiming(vspacing)
+--~         stoptiming(vspacing)
     end
+return newhead
 end
 
 local ignore = table.tohash {
@@ -998,9 +1001,9 @@ local ignore = table.tohash {
 
 function nodes.handle_vbox_spacing(head,where)
     if head and not ignore[where] and head.next then
-        starttiming(vspacing)
+--~         starttiming(vspacing)
         head = collapser(head,"vbox",where,trace_vbox_vspacing,false)
-        stoptiming(vspacing)
+--~         stoptiming(vspacing)
     end
     return head
 end
@@ -1008,32 +1011,26 @@ end
 function nodes.collapse_vbox(n) -- for boxes
     local list = texbox[n].list
     if list then
-        starttiming(vspacing)
+--~         starttiming(vspacing)
         texbox[n].list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true))
-        stoptiming(vspacing)
+--~         stoptiming(vspacing)
     end
 end
-
-statistics.register("v-node processing time", function()
-    if statistics.elapsedindeed(vspacing) then
-        return format("%s seconds", statistics.elapsedtime(vspacing))
-    end
-end)
 
 -- these are experimental callback definitions that definitely will
 -- be moved elsewhere as part of a chain of vnode handling
-
-function vspacing.enable()
-    callback.register('vpack_filter', nodes.handle_vbox_spacing) -- enabled per 2009/10/16
-    callback.register('buildpage_filter', nodes.handle_page_spacing)
-end
-
-function vspacing.disable()
-    callback.register('vpack_filter', nil)
-    callback.register('buildpage_filter', nil)
-end
-
-vspacing.enable()
+--
+--  function vspacing.enable()
+--      callback.register('vpack_filter', nodes.handle_vbox_spacing) -- enabled per 2009/10/16
+--      callback.register('buildpage_filter', nodes.handle_page_spacing)
+--  end
+--
+--  function vspacing.disable()
+--      callback.register('vpack_filter', nil)
+--      callback.register('buildpage_filter', nil)
+--  end
+--
+--  vspacing.enable()
 
 -- we will split this module hence the locals
 
@@ -1086,3 +1083,55 @@ function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an action
 end
 
 --~ tasks.appendaction("finalizers", "lists", "nodes.repackage_graphicvadjust")
+
+nodes.builders = nodes.builder or { }
+
+local builders = nodes.builders
+
+local actions = tasks.actions("vboxbuilders",2)
+
+function nodes.builders.vpack_filter(head,groupcode)
+    local done = false
+    if head then
+        starttiming(builders)
+        if trace_callbacks then
+            local before = nodes.count(head)
+            head, done = actions(head,groupcode)
+            local after = nodes.count(head)
+            if done then
+                tracer("vpack","changed",head,groupcode,before,after,true)
+            else
+                tracer("vpack","unchanged",head,groupcode,before,after,true)
+            end
+            stoptiming(builders)
+        else
+            head, done = actions(head,groupcode)
+            stoptiming(builders)
+        end
+    end
+    return head, done
+end
+
+-- This one is special in the sense that it has no head
+-- and we operate on the mlv. Also, we need to do the
+-- vspacing last as it removes items from the mvl.
+
+local actions = tasks.actions("pagebuilders",2)
+
+function nodes.builders.buildpage_filter(groupcode)
+    starttiming(builders)
+    local head = texlists.contrib_head
+    local head, done = actions(head,groupcode)
+    texlists.contrib_head = head
+    stoptiming(builders)
+    return (done and head) or true
+end
+
+callback.register('vpack_filter',     nodes.builders.vpack_filter)
+callback.register('buildpage_filter', nodes.builders.buildpage_filter)
+
+statistics.register("v-node processing time", function()
+    if statistics.elapsedindeed(builders) then
+        return format("%s seconds", statistics.elapsedtime(builders))
+    end
+end)

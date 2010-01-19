@@ -156,6 +156,7 @@ elseif os.type == "windows" then
 elseif name == "linux" then
 
     function os.resolvers.platform(t,k)
+        -- we sometims have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
         if find(architecture,"x86_64") then
             platform = "linux-64"
@@ -169,17 +170,28 @@ elseif name == "linux" then
         return platform
     end
 
-elseif name == "macosx" then -- a rather inconsistent mess
+elseif name == "macosx" then
+
+    --[[
+        Identifying the architecture of OSX is quite a mess and this
+        is the best we can come up with. For some reason $HOSTTYPE is
+        a kind of pseudo environment variable, not known to the current
+        environment. And yes, uname cannot be trusted either, so there
+        is a change that you end up with a 32 bit run on a 64 bit system.
+        Also, some proper 64 bit intel macs are too cheap (low-end) and
+        therefore not permitted to run the 64 bit kernel.
+      ]]--
 
     function os.resolvers.platform(t,k)
-        local platform, architecture = "", os.resultof("uname -m") or ""
+     -- local platform, architecture = "", os.getenv("HOSTTYPE") or ""
+     -- if architecture == "" then
+     --     architecture = os.resultof("echo $HOSTTYPE") or ""
+     -- end
+        local platform, architecture = "", os.resultof("echo $HOSTTYPE") or os.resultof("uname -m") or ""
         if architecture == "" then
-            architecture = os.getenv("HOSTTYPE") or ""
-        end
-        if architecture == "" then
-            architecture = os.resultof("echo $HOSTTYPE") or ""
-        end
-        if find(architecture,"i386") then
+         -- print("\nI have no clue what kind of OSX you're running so let's assume an 32 bit intel.\n")
+            platform = "osx-intel"
+        elseif find(architecture,"i386") then
             platform = "osx-intel"
         elseif find(architecture,"x86_64") then
             platform = "osx-64"
@@ -253,4 +265,17 @@ function os.uuid()
         random(0xFFFF),
         random(0xFFFF),random(0xFFFF),random(0xFFFF)
     )
+end
+
+function os.timezone(delta)
+    local d = tonumber(tonumber(os.date("%H")-os.date("!%H")))
+    if delta then
+        if d > 0 then
+            return format("+%02i:00",d)
+        else
+            return format("-%02i:00",-d)
+        end
+    else
+        return 1
+    end
 end

@@ -1728,25 +1728,25 @@
 \dorecurse{10} % todo: other values < 4000
   {\expanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr4000+250*\recurselevel\relax]}}
 
-\setfalse\vspacingenabled
-
-\newtoks\everyenablevspacing
-\newtoks\everydisablevspacing
-
-\def\enablevspacing {\the\everyenablevspacing}
-\def\disablevspacing{\the\everydisablevspacing}
-
-\appendtoks
-    \writestatus\m!systems{! ! enabling vspacing ! !}%
-    \settrue\vspacingenabled
-    \ctxlua{vspacing.enable()}%
-\to \everyenablevspacing
-
-\appendtoks
-    \writestatus\m!systems{! ! disabling vspacing ! !}%
-    \setfalse\vspacingenabled
-    \ctxlua{vspacing.disable()}%
-\to \everydisablevspacing
+% \setfalse\vspacingenabled
+%
+% \newtoks\everyenablevspacing
+% \newtoks\everydisablevspacing
+%
+% \def\enablevspacing {\the\everyenablevspacing}
+% \def\disablevspacing{\the\everydisablevspacing}
+%
+% \appendtoks
+%     \writestatus\m!systems{! ! enabling vspacing ! !}%
+%     \settrue\vspacingenabled
+%     \ctxlua{vspacing.enable()}%
+% \to \everyenablevspacing
+%
+% \appendtoks
+%     \writestatus\m!systems{! ! disabling vspacing ! !}%
+%     \setfalse\vspacingenabled
+%     \ctxlua{vspacing.disable()}%
+% \to \everydisablevspacing
 
 \let\blank            \vspacing
 \let\defineblank      \definevspacing

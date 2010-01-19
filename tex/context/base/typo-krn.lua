@@ -114,9 +114,10 @@ local function process(namespace,attribute,head,force)
                             -- but we could have multiple glyphs involved so ...
                             local disc = prev -- disc
                             local pre, post, replace = disc.pre, disc.post, disc.replace
-                            if pre then -- must pair with start.prev
+                            local prv, nxt = disc.prev, disc.next
+                            if pre and prv then -- must pair with start.prev
                                 -- this one happens in most cases
-                                local before = copy_node(disc.prev)
+                                local before = copy_node(prv)
                                 pre.prev = before
                                 before.next = pre
                                 before.prev = nil
@@ -126,8 +127,8 @@ local function process(namespace,attribute,head,force)
                                 disc.pre = pre
                                 free_node(before)
                             end
-                            if post then  -- must pair with start
-                                local after = copy_node(disc.next)
+                            if post and nxt then  -- must pair with start
+                                local after = copy_node(nxt)
                                 local tail = find_node_tail(post)
                                 tail.next = after
                                 after.prev = tail
@@ -137,9 +138,9 @@ local function process(namespace,attribute,head,force)
                                 disc.post = post
                                 free_node(after)
                             end
-                            if replace then -- must pair with start and start.prev
-                                local before = copy_node(disc.prev)
-                                local after = copy_node(disc.next)
+                            if replace and prv and nxt then -- must pair with start and start.prev
+                                local before = copy_node(prv)
+                                local after = copy_node(nxt)
                                 local tail = find_node_tail(replace)
                                 replace.prev = before
                                 before.next = replace
@@ -150,13 +151,13 @@ local function process(namespace,attribute,head,force)
                                 replace = process(namespace,attribute,before,attr)
                                 replace = replace.next
                                 replace.prev = nil
-                                tail.next = nil
+                                after.prev.next = nil
                                 disc.replace = replace
                                 free_node(after)
                                 free_node(before)
                             else
-                                if disc.prev.font == lastfont then
-                                    local prevchar, lastchar = disc.prev.char, start.char
+                                if prv and prv.id == glyph and prv.font == lastfont then
+                                    local prevchar, lastchar = prv.char, start.char
                                     local tfm = fontdata[lastfont].characters[prevchar]
                                     local ickern = tfm.kerns
                                     if ickern and ickern[lastchar] then

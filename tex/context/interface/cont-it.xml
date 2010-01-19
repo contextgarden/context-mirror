@@ -6174,6 +6174,9 @@
         <cd:parameter name="distanza">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
+        <cd:parameter name="passo">
+          <cd:constant type="cd:dimension"/>
+        </cd:parameter>
         <cd:parameter name="fattore">
           <cd:constant type="cd:number"/>
         </cd:parameter>
