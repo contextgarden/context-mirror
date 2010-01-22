@@ -11781,7 +11781,7 @@ end
 function runners.execute_ctx_script(filename)
     local arguments = environment.arguments_after
     local fullname = runners.find_mtx_script(filename) or ""
-    -- retyr after generate but only if --autogenerate
+    -- retry after generate but only if --autogenerate
     if fullname == "" and environment.argument("autogenerate") then -- might become the default
         instance.renewcache = true
         logs.setverbose(true)

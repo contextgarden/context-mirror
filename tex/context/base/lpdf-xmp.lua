@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
     comment   = "with help from Peter Rolf",
 }
 
-local format, random, char, gsub = string.format, math.random, string.char, string.gsub
+local format, random, char, gsub, concat = string.format, math.random, string.char, string.gsub, table.concat
 local xmlfillin = xml.fillin
 
 local trace_xmp = false  trackers.register("backend.xmp", function(v) trace_xmp = v end)
@@ -22,6 +22,7 @@ local xmpmetadata = [[
                     <rdf:li/>
                 </rdf:Seq>
             </dc:creator>
+            <dc:description/>
             <dc:title>
                 <rdf:Alt>
                     <rdf:li xml:lang="x-default"/>
@@ -65,42 +66,80 @@ local xpacket = [[
 <?xpacket end="w"?>]]
 
 local mapping = {
-    ["Creator"]         = "rdf:Description/xmp:CreatorTool",
-    ["Author"]          = "rdf:Description/dc:creator/rdf:Seq/rdf:li",
-    ["Title"]           = "rdf:Description/dc:title/rdf:Alt/rdf:li",
+    -- user defined keys (pdfx:)
     ["ConTeXt.Jobname"] = "rdf:Description/pdfx:ConTeXt.Jobname",
     ["ConTeXt.Time"]    = "rdf:Description/pdfx:ConTeXt.Time",
     ["ConTeXt.Url"]     = "rdf:Description/pdfx:ConTeXt.Url",
     ["ConTeXt.Version"] = "rdf:Description/pdfx:ConTeXt.Version",
     ["ID"]              = "rdf:Description/pdfx:ID",
     ["PTEX.Fullbanner"] = "rdf:Description/pdfx:PTEX.Fullbanner",
-    ["CreateDate"]      = "rdf:Description/xmp:CreateDate",
-    ["ModifyDate"]      = "rdf:Description/xmp:ModifyDate",
-    ["MetadataDate"]    = "rdf:Description/xmp:MetadataDate",
+    -- Adobe PDF schema
     ["Keywords"]        = "rdf:Description/pdf:Keywords",
     ["Producer"]        = "rdf:Description/pdf:Producer",
---  ["Trapped"]         = "rdf:Description/pdf:Trapped", -- '/Trapped' in /Info, 'Trapped' in XMP
+ -- ["Trapped"]         = "rdf:Description/pdf:Trapped", -- '/False' in /Info, but 'False' in XMP
+    -- Dublin Core schema
+    ["Author"]          = "rdf:Description/dc:creator/rdf:Seq/rdf:li",
+    ["Format"]          = "rdf:Description/dc:format", -- optional, but nice to have
+    ["Subject"]         = "rdf:Description/dc:description",
+    ["Title"]           = "rdf:Description/dc:title/rdf:Alt/rdf:li",
+    -- XMP Basic schema
+    ["CreateDate"]      = "rdf:Description/xmp:CreateDate",
+    ["Creator"]         = "rdf:Description/xmp:CreatorTool",
+    ["MetadataDate"]    = "rdf:Description/xmp:MetadataDate",
+    ["ModifyDate"]      = "rdf:Description/xmp:ModifyDate",
+    -- XMP Media Management schema
     ["DocumentID"]      = "rdf:Description/xmpMM:DocumentID",
     ["InstanceID"]      = "rdf:Description/xmpMM:InstanceID",
+    ["RenditionClass"]  = "rdf:Description/xmpMM:RenditionClass", -- PDF/X-4
+    ["VersionID"]       = "rdf:Description/xmpMM:VersionID", -- PDF/X-4
+    -- additional entries
+    -- PDF/X
+    ["GTS_PDFXVersion"] = "rdf:Description/pdfxid:GTS_PDFXVersion",
+    -- optional entries
+    -- all what is visible in the 'document properties --> additional metadata' window
+    -- XMP Rights Management schema (optional)
+    ["Marked"]          = "rdf:Description/xmpRights:Marked",
+ -- ["Owner"]           = "rdf:Description/xmpRights:Owner/rdf:Bag/rdf:li", -- maybe useful (not visible)
+ -- ["UsageTerms"]      = "rdf:Description/xmpRights:UsageTerms", -- maybe useful (not visible)
+    ["WebStatement"]    = "rdf:Description/xmpRights:WebStatement",
+    -- Photoshop PDF schema (optional)
+    ["AuthorsPosition"] = "rdf:Description/photoshop:AuthorsPosition",
+    ["Copyright"]       = "rdf:Description/photoshop:Copyright",
+    ["CaptionWriter"]   = "rdf:Description/photoshop:CaptionWriter",
 }
+
+-- maybe some day we will load the xmp file at runtime
 
 local xmp = xml.convert(xmpmetadata)
 
-local addtoinfo = lpdf.addtoinfo
-
-local function addxmpinfo(tag,value,check)
+function lpdf.addxmpinfo(tag,value,check)
     local pattern = mapping[tag]
     if pattern then
         xmlfillin(xmp,pattern,value,check)
     end
 end
 
+-- redefined
+
+local addtoinfo  = lpdf.addtoinfo
+local addxmpinfo = lpdf.addxmpinfo
+
 function lpdf.addtoinfo(tag,pdfvalue,strvalue)
     addtoinfo(tag,pdfvalue)
     addxmpinfo(tag,strvalue or gsub(tostring(pdfvalue),"^%((.*)%)$","%1")) -- hack
 end
 
-lpdf.addxmpinfo = addxmpinfo
+-- for the do-it-yourselvers
+
+function lpdf.insertxmpinfo(pattern,whatever,prepend)
+    xml.insert(xmp,pattern,whatever,prepend)
+end
+
+function lpdf.injectxmpinfo(pattern,whatever,prepend)
+    xml.inject(xmp,pattern,whatever,prepend)
+end
+
+-- flushing
 
 local t = { } for i=1,24 do t[i] = random() end
 
@@ -109,7 +148,7 @@ local function flushxmpinfo()
     commands.freezerandomseed(os.clock()) -- hack
 
     local t = { } for i=1,24 do t[i] = char(96 + random(26)) end
-    local packetid = table.concat(t)
+    local packetid = concat(t)
     local time = lpdf.timestamp()
     addxmpinfo("Producer",format("LuaTeX-%0.2f.%s",tex.luatexversion/100,tex.luatexrevision))
     addxmpinfo("DocumentID",format("uuid:%s",os.uuid()))
@@ -145,22 +184,3 @@ end
 --  his will be enabled when we can inhibit compression for a stream at the lua end
 
 lpdf.registerdocumentfinalizer(flushxmpinfo,1)
-
---~ lpdf.addxmpinfo("creator",         "PRAGMA ADE: Hans Hagen and/or Ton Otten")
---~ lpdf.addxmpinfo("title",           "oeps")
---~ lpdf.addxmpinfo("ConTeXt.Jobname", "oeps")
---~ lpdf.addxmpinfo("ConTeXt.Time",    "2009.10.30 17:53")
---~ lpdf.addxmpinfo("ConTeXt.Url",     "www.pragma-ade.com")
---~ lpdf.addxmpinfo("ConTeXt.Version", "2009.10.30 16:59")
---~ lpdf.addxmpinfo("ID",              "oeps.20091030.1753")
---~ lpdf.addxmpinfo("PTEX.Fullbanner", "This is LuaTeX, Version beta-0.44.0-2009103014 (Web2C 2009) kpathsea version 5.0.0")
---~ lpdf.addxmpinfo("CreateDate",      "2009-10-30T17:53:39+01:00")
---~ lpdf.addxmpinfo("CreatorTool",     "ConTeXt - 2009.10.30 16:59")
---~ lpdf.addxmpinfo("ModifyDate",      "2009-10-30T19:38:18+01:00")
---~ lpdf.addxmpinfo("MetadataDate",    "2009-10-30T19:38:18+01:00")
---~ lpdf.addxmpinfo("Producer",        "LuaTeX-0.44.0")
---~ lpdf.addxmpinfo("Trapped",         "False")
---~ lpdf.addxmpinfo("DocumentID",      "uuid:d9f1383c-e069-4619-bee0-c978d9495d7d")
---~ lpdf.addxmpinfo("InstanceID",      "uuid:67eda265-8146-4cce-a1a2-1ec91819ad73")
-
---~ print(lpdf.flushxmpinfo())

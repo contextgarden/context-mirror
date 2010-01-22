@@ -451,7 +451,9 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         end
         setfixed ("timing"       , "\\usemodule[timing]")
         setfixed ("batchmode"    , "\\batchmode")
+        setfixed ("batch"        , "\\batchmode")
         setfixed ("nonstopmode"  , "\\nonstopmode")
+        setfixed ("nonstop"      , "\\nonstopmode")
         setfixed ("tracefiles"   , "\\tracefilestrue")
         setfixed ("nostats"      , "\\nomkivstatistics")
         setfixed ("paranoid"     , "\\def\\maxreadlevel{1}")
@@ -764,7 +766,7 @@ function scripts.context.run(ctxdata,filename)
                         end
                         --
                         local flags = { }
-                        if environment.argument("batchmode") then
+                        if environment.argument("batchmode") or environment.argument("batch") then
                             flags[#flags+1] = "--interaction=batchmode"
                         end
                         if environment.argument("synctex") then

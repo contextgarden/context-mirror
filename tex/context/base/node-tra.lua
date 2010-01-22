@@ -12,7 +12,7 @@ might become a runtime module instead.</p>
 --ldx]]--
 
 local utf = unicode.utf8
-local format, match, concat, utfchar = string.format, string.match, table.concat, utf.char
+local format, match, concat, rep, utfchar = string.format, string.match, table.concat, string.rep, utf.char
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -26,6 +26,8 @@ nodes.tracers.characters = nodes.tracers.characters or { }
 nodes.tracers.steppers   = nodes.tracers.steppers   or { }
 
 local glyph   = node.id('glyph')
+local hlist   = node.id('hlist')
+local vlist   = node.id('vlist')
 local disc    = node.id('disc')
 local glue    = node.id('glue')
 local kern    = node.id('kern')
@@ -420,3 +422,26 @@ function nodes.ids_to_string(head,tail)
 end
 
 nodes.ids_tostring = nodes.ids_to_string
+
+local function show_simple_list(h,depth,n)
+    while h do
+        texio.write_nl(rep(" ",n) .. tostring(h))
+        if not depth or n < depth then
+            local id = h.id
+            if id == hlist or id == vlist then
+                show_simple_list(h.list,depth,n+1)
+            end
+        end
+        h = h.next
+    end
+end
+
+--~ \startluacode
+--~ callback.register('buildpage_filter',function() nodes.show_simple_list(tex.lists.contrib_head) end)
+--~ \stopluacode
+--~ \vbox{b\footnote{n}a}
+--~ \startluacode
+--~ callback.register('buildpage_filter',nil)
+--~ \stopluacode
+
+nodes.show_simple_list = function(h,depth) show_simple_list(h,depth,0) end

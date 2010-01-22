@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=node-ins,
+%D   [       file=node-mig,
 %D        version=2010.01.19,
 %D          title=\CONTEXT\ Node Macros,
 %D       subtitle=Inserts,
@@ -11,14 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{ConTeXt Node Support / Inserts}
+\writestatus{loading}{ConTeXt Node Support / Migrations}
 
 %D This is very experimental and although it is used in a
 %D real project it mostly serves a testbed for Taco and me so
 %D as prelude to extending the inserts mechanism.
 %D
 %D \starttyping
-%D \automoveinserts
+%D \automigrateinserts
 %D
 %D \hbox{\vbox{x\footnote{1}x\footnote{2}x\footnote{3}x}}
 %D \vbox{x\footnote{4}x}
@@ -40,16 +40,21 @@
 
 \unprotect
 
-\registerctxluafile{node-ins}{1.001}
+\registerctxluafile{node-mig}{1.001}
 
-\newtoks \everyautomovefootnotes
+\newtoks \everyautomigratefootnotes
+\newtoks \everyautomigratemarks
 
-\def\automoveinserts
-  {\the\everyautomovefootnotes}
+\def\automigrateinserts{\the\everyautomigratefootnotes}
+\def\automigratemarks  {\the\everyautomigratemarks}
 
 \appendtoks
   \let\postponenotes\relax
-  \enableexperiments[inserts.moves]%
-\to \everyautomovefootnotes
+  \enableexperiments[inserts.migrate]%
+\to \everyautomigratefootnotes
+
+\appendtoks
+  \enableexperiments[marks.migrate]%
+\to \everyautomigratemarks
 
 \protect

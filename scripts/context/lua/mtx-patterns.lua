@@ -46,6 +46,7 @@ scripts.patterns.list = {
     { "??",  "hyph-is.tex",            "icelandic" },
     { "it",  "hyph-it.tex",            "italian" },
     { "la",  "hyph-la.tex",            "latin" },
+    { "lt",  "hyph-lt.tex",            "lithuanian" },
     { "??",  "hyph-mn-cyrl.tex",       "mongolian, cyrillic script" },
     { "??",  "hyph-mn-cyrl-x-new.tex", "mongolian, cyrillic script (new patterns)" },
     { "nb",  "hyph-nb.tex",            "norwegian bokmål" },

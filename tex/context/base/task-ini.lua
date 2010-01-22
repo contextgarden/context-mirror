@@ -57,7 +57,7 @@ tasks.appendaction("finalizers", "lists",       "nodes.repackage_graphicvadjust"
 
 -- rather new
 
-tasks.appendaction("pagebuilders", "normalizers", "nodes.move_inserts_outwards")
+tasks.appendaction("pagebuilders", "normalizers", "nodes.migrate_outwards")
 tasks.appendaction("pagebuilders", "normalizers", "nodes.handle_page_spacing") -- last !
 
 tasks.appendaction("vboxbuilders", "normalizers", "nodes.handle_vbox_spacing")
@@ -85,4 +85,4 @@ tasks.disableaction("shipouts",   "shipouts.handle_viewerlayer")
 tasks.disableaction("shipouts",   "nodes.add_references")
 tasks.disableaction("shipouts",   "nodes.add_destinations")
 
-tasks.disableaction("pagebuilders", "nodes.move_inserts_outwards")
+tasks.disableaction("pagebuilders", "nodes.migrate_outwards")

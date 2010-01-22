@@ -187,7 +187,7 @@ elseif name == "macosx" then
      -- if architecture == "" then
      --     architecture = os.resultof("echo $HOSTTYPE") or ""
      -- end
-        local platform, architecture = "", os.resultof("echo $HOSTTYPE") or os.resultof("uname -m") or ""
+        local platform, architecture = "", os.resultof("echo $HOSTTYPE") or ""
         if architecture == "" then
          -- print("\nI have no clue what kind of OSX you're running so let's assume an 32 bit intel.\n")
             platform = "osx-intel"
