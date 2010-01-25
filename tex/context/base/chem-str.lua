@@ -60,7 +60,7 @@ local one_keys = {
     sb = "line", db = "line", tb = "line",
     ep = "line", es = "line", ed = "line", et = "line",
     sd = "line", ldd = "line", rdd = "line",
-    hb = "line", bb = "line", oe = "line",
+    hb = "line", bb = "line", oe = "line", bd = "line", bw = "line",
     z = "text", cz = "text", zt = "text", zn = "number",
     zbt = "text", zbn = "number", ztt = "text", ztn = "number",
     mov = "transform", sub = "transform", dir = "transform", off = "transform",

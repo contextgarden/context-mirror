@@ -1477,7 +1477,6 @@
    \getvalue{\s!chemicallinesegment#22}%
    \undochemicaloffset}
 
-
 \def\getprivatechemicallinesegment[#1][#2]%
   {\chemicalrotate[#1]%
    \getvalue{\s!chemicallinesegment#2#1}}
@@ -1531,8 +1530,104 @@
 \def\processchemicalunrotatedlinesegment#1%
   {\doprocesschemicallinesegment3{#1}\getchemicallinesegment}
 
-\def\processchemicaldashedlinesegment%
+\def\processchemicaldashedlinesegment
   {\doprocesschemicallinesegment4c\getchemicallinesegment}
+
+\def\plotchemicaldasheddeltaline#1#2#3#4%
+  {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
+   \ifnum\chemicaldrawingmode=2
+     \global\MPdrawingdonetrue
+     \setchemicalattributes
+     \startMPdrawing
+        x0 := \MPdivten[\chemicalxoffset]u ;
+        y0 := \MPdivten[\chemicalyoffset]u ;
+        x1 := \MPdivten[\the\!!counta]u ;
+        y1 := \MPdivten[\the\!!countb]u ;
+        x2 := \MPdivten[\the\!!countc]u ;
+        y2 := \MPdivten[\the\!!countd]u ;
+        z20 = z2 rotatedaround(z1,+5) ;
+        z21 = z2 rotatedaround(z1,-5) ;
+        draw (z1 rotatedaround(origin,-\chemicalangle)) shifted z0 ;
+        save n ; n := 5 ;
+        for i=1 upto n :
+          draw ((((z20--z21) shifted -z2) shifted (i/n)[z2,z1])
+                 rotatedaround(origin,-\chemicalangle)) shifted z0 ;
+        endfor
+     \stopMPdrawing
+     \account{#1}{#2}%
+     \account{#3}{#4}%
+   \else
+     \doplotchemicalline
+     \advance\!!countc by  16 \advance\!!countd by -21
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -8 \advance\!!countd by  14
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+   \fi}
+
+\def\plotchemicalwavyline#1#2#3#4%
+  {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
+   \ifnum\chemicaldrawingmode=2
+     \global\MPdrawingdonetrue
+     \setchemicalattributes
+     \startMPdrawing
+        x0 := \MPdivten[\chemicalxoffset]u ;
+        y0 := \MPdivten[\chemicalyoffset]u ;
+        x1 := \MPdivten[\the\!!counta]u ;
+        y1 := \MPdivten[\the\!!countb]u ;
+        x2 := \MPdivten[\the\!!countc]u ;
+        y2 := \MPdivten[\the\!!countd]u ;
+        save d ; pair d ;
+        d := z2 rotatedaround(z1,+5) shifted -z2 ;
+        save n ; n := 4 ;
+        draw ((for i=0 upto n-1 :
+                     ((i)/n)[z1,z2] ..
+                 ((i+.25)/n)[z1,z2] shifted d ..
+                 ((i+.50)/n)[z1,z2] ..
+                 ((i+.75)/n)[z1,z2] shifted -d ..
+               endfor
+               z2) rotatedaround(origin,-\chemicalangle)) shifted z0 ;
+     \stopMPdrawing
+     \account{#1}{#2}%
+     \account{#3}{#4}%
+   \else
+     \doplotchemicalline
+     \advance\!!countc by  16 \advance\!!countd by -21
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -8 \advance\!!countd by  14
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+     \advance\!!countc by  -4 \advance\!!countd by   7
+     \doplotchemicalline
+   \fi}
+
+\def\processchemicaldasheddeltalinesegment#1#2%
+  {\bgroup
+   \def\plotchemicalline{\plotchemicaldasheddeltaline}%
+   \doprocesschemicallinesegment0c\getchemicallinesegment{#1}{#2}%
+   \egroup}
+
+\def\processchemicalwavylinesegment#1#2%
+  {\bgroup
+   \def\plotchemicalline{\plotchemicalwavyline}%
+   \doprocesschemicallinesegment0c\getchemicallinesegment{#1}{#2}%
+   \egroup}
 
 \def\processchemicalopenend#1#2%
   {\doprocesschemicallinesegment0c\doprocesschemicalopenend{#1}{#2}}
@@ -2395,6 +2490,8 @@
               DB##3##4##5=>\processchemicallinesegment{DB}{##3##4##5},
               SB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5},
               BB##3##4##5=>\processchemicaldeltalinesegment{SB}{##3##4##5},
+              BD##3##4##5=>\processchemicaldasheddeltalinesegment{SB}{##3##4##5},
+              BW##3##4##5=>\processchemicalwavylinesegment{SB}{##3##4##5},
               SD##3##4##5=>\processchemicaldashedlinesegment{SB}{##3##4##5},
               TB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5}%
                            \processchemicallinesegment{DB}{##3##4##5},

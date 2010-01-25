@@ -11,10 +11,11 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 -- section, metadata cache (internal then has to move up one level) or a
 -- shared cache [we can use a fast and stupid serializer]
 
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local tonumber = tonumber
 local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write, tex.count
 local concat, insert, remove = table.concat, table.insert, table.remove
+local lpegmatch = lpeg.match
 
 local trace_lists = false  trackers.register("structure.lists", function(v) trace_lists = v end)
 
@@ -136,18 +137,19 @@ function lists.popnesting()
     lists.result = old.result
 end
 
+-- will be split
+
 local function filter_collected(names, criterium, number, collected, nested)
     local numbers, depth = documents.data.numbers, documents.data.depth
     local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
+    names, criterium = gsub(names," ",""), gsub(criterium," ","")
+    if trace_lists then
+        logs.report("lists","filtering names: %s, criterium: %s, number: %s",names,criterium,number or "-")
+    end
     if not all then
-        for s in gmatch(names,"[^, ]+") do
-            if trace_lists then
-                logs.report("lists","filtering: %s",s)
-            end
+        for s in gmatch(names,"[^, ]+") do -- sort of settings to hash
             hash[s] = true
         end
-    elseif trace_lists then
-        logs.report("lists","filtering all")
     end
     if criterium == variables.intro then
         -- special case, no structure yet
@@ -204,7 +206,7 @@ local function filter_collected(names, criterium, number, collected, nested)
             end
         end
     elseif criterium == variables.here then
-        -- this is qquite dirty ... as cnumbers is not sparse we can misuse #cnumbers
+        -- this is quite dirty ... as cnumbers is not sparse we can misuse #cnumbers
         if depth == 0 then
             return filter_collected(names,variables.intro,number,collected)
         else
@@ -453,6 +455,28 @@ function lists.prefixednumber(name,n,prefixspec,numberspec)
         local numberdata = data.numberdata
         if numberdata then
             sections.typesetnumber(numberdata,"number",spec or false,numberdata or false)
+        end
+    end
+end
+
+-- todo, do this in references namespace ordered instead (this is an experiment)
+--
+-- also see lpdf-ano (maybe move this there)
+
+local splitter = lpeg.splitat(":")
+
+function jobreferences.specials.order(var,actions) -- jobreferences.specials !
+    local operation = var.operation
+    if operation then
+        local kind, name, n = lpegmatch(splitter,operation)
+        local order = lists.ordered[kind]
+        order = order and order[name]
+        local v = order[tonumber(n)]
+        local r = v and v.references.realpage
+        if r then
+            actions.realpage = r
+            var.operation = r -- brrr, but test anyway
+            return jobreferences.specials.page(var,actions)
         end
     end
 end

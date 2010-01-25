@@ -544,12 +544,13 @@
      {[\currentlist: #3 -- #4 -- #5]}}
 
 \def\domakelistelement#1#2#3#4% ref internal command data
- {\dontleavehmode
-  \doifnot{\listparameter\c!interaction}{#1}\locationfalse
-  \iflocation
-    \directgotobox{\setlocationcolor\??ia#4}[internal(#2)]%
+  {\dontleavehmode
+   \iflocation % we cannot tewak \iflocation as we nest
+     \doifelse{\listparameter\c!interaction}{#1}
+      {\directgoto{\setlocationcolor\??ia#4}[internal(#2)]}% was \directgotobox
+     {#3{#4}}%
   \else
-    #3{#4}%
+     #3{#4}%
   \fi}
 
 \def\dodofreelistelement#1#2#3#4#5#6#7#8%
@@ -616,8 +617,8 @@
         {\!!widtha\listparameter\c!width}}%
    \getvalue{\??li\c!alternative\listparameter\c!alternative}%
    \endgraf
-   \doif{\listparameter\c!interaction}\v!text % not supported ! ! ! ! ! ! text == all
-     {\setlistparameter\currentlist\c!interaction\v!all}%
+%    \doif{\listparameter\c!interaction}\v!text % not supported ! ! ! ! ! ! text == all
+%      {\setlistparameter\currentlist\c!interaction\v!all}%
  % \dontleavehmode % new, else no margin, but wrong, better (else \indent as well):
    \noindent
    \domakelistelement\v!all{#2}\hbox
@@ -668,6 +669,7 @@
             \leavevmode
             \box2\relax
             \hskip\dimen2
+\domakelistelement\v!text{#2}\firstofoneargument{%
             \bgroup
             \donestedlistattributes\c!textstyle\c!textcolor
               {\let\\=\newlineinlist
@@ -676,6 +678,7 @@
                \limitatedlistentry{#4}}%
               %\carryoverpar % new otherwise wrong linespacing
             \egroup
+}%
             \ifdim\wd4=\zeropoint\relax % \ifvoid4
               % \ifdim\!!widtha<\hsize \hfill\strut \fi % spoils align
             \else
@@ -724,17 +727,20 @@
    \ifvmode
      \noindent\leavevmode % leavevmode ? ? ?
    \fi
+%% actually, the next can be supported now (will be enabled when I have time to test it)
    \doif{\listparameter\c!interaction}\v!text % not supported
      {\setlistparameter\currentlist\c!interaction\v!sectionnumber}%
    \doif{\listparameter\c!interaction}\v!all % not supported
      {\setlistparameter\currentlist\c!interaction\v!sectionnumber}%
+%%
    \setbox4\hbox
      {\doif{\listparameter\c!pagenumber}\v!yes
         {\doifsomething{#5}
            {\domakelistelement\v!pagenumber{#2}\hbox
               {\donestedlistattributes\c!pagestyle\c!pagecolor
                  {\listparameter\c!pagecommand{#5}}}}}}%
-   \doif{\listparameter\c!headnumber}\v!yes
+%% \domakelistelement\v!all{#2}\firstofoneargument{%
+    \doif{\listparameter\c!headnumber}\v!yes
      {\donetrue
       \doifnothing{#3}{\doifnothing{\listparameter\c!symbol}\donefalse}%
       % == \doifnothing{#3\listparameter\c!symbol}\donefalse
@@ -749,17 +755,20 @@
         \nobreak
      \fi}%
    \tolerance3500 % niet zomaar veranderen
+%% \domakelistelement\v!text{#2}\firstofoneargument{%
    \donestedlistattributes\c!textstyle\c!textcolor
      {\let\\=\newlineinlist
       \dontconvertfont
      %\listparameter\c!textcommand{#4}}%
       \limitatedlistentry{#4}}%
+%% }%
    \ifvoid4\else
      \nobreak
      \hskip.75em\relax
      \nobreak
      \box4
    \fi
+%% }%
    \dimen0=\listparameter\c!distance\relax
    \ifdim\dimen0<1em\relax
      \hskip1em\!!plus1em\!!minus.25em\relax

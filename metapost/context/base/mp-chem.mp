@@ -51,6 +51,7 @@ path
     chem_sb_path[], chem_msb_path[], chem_psb_path[],
     chem_s_path[], chem_ss_path[], chem_mss_path[], chem_pss_path[],
     chem_e_path[], chem_sd_path[], chem_bb_path[], chem_oe_path[],
+    chem_bd_path[], chem_bw_path[],
     chem_ddt_path[], chem_ddb_path[], chem_ldt_path[], chem_ldb_path[], chem_rdt_path[], chem_rdb_path[],
     chem_dbl_path[], chem_dbr_path[],
     chem_ad_path[], chem_au_path[],
@@ -83,6 +84,8 @@ chem_doing_pb           :=  false ;
 chem_shift              := origin ;
 chem_dot_factor         := 4 ;
 chem_text_trace         := false ;
+chem_bd_n               := 4 ;
+chem_bw_n               := 4 ;
 
 vardef chem_start_structure(expr n, l, r, t, b, scale, axis, fixedwidth, fixedheight, offset) =
     chem_setting_axis := axis ;
@@ -347,6 +350,14 @@ vardef chem_bb (expr n, f, t, r, c) = % one
 enddef ;
 vardef chem_oe (expr n, f, t, r, c) = % one
     chem_draw (n, chem_oe_path[n], f, t, r, c) ;
+enddef ;
+vardef chem_bd (expr n, f, t, r, c) = % one
+    for i=0 upto 5 :
+        chem_draw (n, subpath (2i,2i+1) of chem_bd_path[n], f, t, r, c) ;
+    endfor ;
+enddef ;
+vardef chem_bw (expr n, f, t, r, c) = % one
+    chem_draw (n, chem_bw_path[n], f, t, r, c) ;
 enddef ;
 
 vardef chem_z_zero@#(text t) =
@@ -683,7 +694,7 @@ enddef ;
 def chem_init_five_front = chem_init_some_front(-5,30/35,72,0,2,0) ; enddef ; % 36
 def chem_init_six_front  = chem_init_some_front(-6, 1   ,60,0,2,0) ; enddef ; % 30
 
-def chem_init_one =
+vardef chem_init_one =
     chem_width     [1] := .75 * chem_base_width * chem_setting_scale ;
     chem_angle     [1] := 45 ;
     chem_start     [1] := 0 ;
@@ -707,14 +718,31 @@ def chem_init_one =
     chem_ldb_path  [1] := chem_ddb_path [1] shifted (0,-.1chem_width[1]) ;
     chem_rdt_path  [1] := chem_ddt_path [1] shifted (0, .1chem_width[1]) ;
     chem_rdb_path  [1] := chem_ddb_path [1] shifted (0, .1chem_width[1]) ;
-    chem_bb_path   [1] := point 0 of chem_r_path[1] --
-        point 1 of chem_r_path[1] rotatedaround(point 0 of chem_r_path[1], -4) --
-        point 1 of chem_r_path[1] rotatedaround(point 0 of chem_r_path[1],  4) -- cycle ;
+    save pr ; pair pr[] ;
+    pr0 := point 0 of chem_r_path[1] ;
+    pr1 := point 1 of chem_r_path[1] ;
+    chem_bb_path   [1] := point 0 of chem_r_path[1] -- pr1 rotatedaround(pr0, -4) -- pr1 rotatedaround(pr0,  4) -- cycle ;
     chem_oe_path   [1] := ((-20,0)--(10,0){up}..(20,10)..(30,0)..(40,-10)..(50.0,0)..(60,10)..(70,0)..(80,-10)..{up}(90,0)--(120,0))
-        xsized (.75*chem_width[1]) shifted point 0 of chem_r_path[1] ;
+        xsized (.75*chem_width[1]) shifted pr0 ;
     chem_rt_zero   [1] := point .5 of chem_r_path[1] ;
     chem_rtt_zero  [1] := chem_rt_zero[1] rotated + (chem_angle[1]/2) ;
     chem_rbt_zero  [1] := chem_rt_zero[1] rotated - (chem_angle[1]/2) ;
+    % added by Alan Braslau (adapted to use shared variables):
+    save p ; pair p[] ;
+    p0 := pr1 rotatedaround(pr0, -4) ;
+    p1 := pr1 rotatedaround(pr0, +4) ;
+    p2 := p0 shifted - pr1 ;
+    p3 := p1 shifted - pr1 ;
+    chem_bd_path   [1] :=
+        p0 -- p1 for i=chem_bd_n downto 0 :
+            -- p2 shifted (i/chem_bd_n)[pr1,pr0]
+            -- p3 shifted (i/chem_bd_n)[pr1,pr0]
+        endfor ;
+    chem_bw_path   [1] :=
+        for i=0 upto chem_bw_n - 1 :
+            ((i)    /chem_bw_n)[pr0,pr1] .. ((i+.25)/chem_bw_n)[pr0,pr1] shifted  p2 ..
+            ((i+.50)/chem_bw_n)[pr0,pr1] .. ((i+.75)/chem_bw_n)[pr0,pr1] shifted -p2 ..
+        endfor pr1 ;
 enddef ;
 
 def chem_init_all =

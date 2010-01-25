@@ -514,15 +514,24 @@
 %D \gotosomeinternal  {tag}{identifier}{pagenumber}{text}
 %D \stoptyping
 
+%D We could do this in lua ...
+
 \newif   \iflocation
 \newcount\locationcount
+\newcount\locationorder
 \newbox  \locationbox
 
-\def\nextinternalreference
-  {\the\locationcount}
+\def\nextinternalreference    {\the\locationcount}
+\def\nextinternalorderreference{\the\locationorder}
 
 \def\setnextinternalreference
   {\global\advance\locationcount\plusone}
+
+\def\setnextinternalreferences#1#2% plural
+  {\ctxlua{jobreferences.setnextinternal("#1","#2")}}
+
+\def\getinternalorderreference#1#2%
+  {\ctxlua{jobreferences.currentorder("#1","#2")}}
 
 \def\thisissomeinternal#1#2%  tag reference (only for old time sake)
   {\begingroup\attribute\destinationattribute\ctxlua{jobreferences.mark("#1:#2")}\hbox{}\endgroup}
@@ -811,18 +820,41 @@
       \fi}[#1]}
      {[?]}}
 
+\unexpanded\def\referencesymbol
+  {\hbox{\strut\high
+     {\setupsymbolset[\@@iasymbolset]%
+      \symbol
+        [\ifcase\referencepagestate
+           \v!somewhere
+         \or % same
+           \v!nowhere
+         \or % before
+           \v!previous
+         \or % after
+           \v!next%
+         \fi]}}}
+
+% \def\dosymbolreference#1#2[#3]%
+%   {\removeunwantedspaces
+%    \goto{\setupsymbolset[\@@iasymbolset]\high{\symbol
+%      [\ifcase\referencepagestate
+%         \v!somewhere
+%       \or % same
+%         \v!nowhere
+%       \or % before
+%         \v!previous
+%       \or % after
+%         \v!next%
+%       \fi]}}[#3]}
+
 \def\dosymbolreference#1#2[#3]%
   {\removeunwantedspaces
-   \goto{\setupsymbolset[\@@iasymbolset]\high{\symbol
-     [\ifcase\referencepagestate
-        \v!somewhere
-      \or % same
-        \v!nowhere
-      \or % before
-        \v!previous
-      \or % after
-        \v!next%
-      \fi]}}[#3]}
+   \goto{\referencesymbol}[#3]}
+
+\def\symbolreference[#1]%
+  {\removeunwantedspaces
+   \goto{\referencesymbol}[#1]}
+
 
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.

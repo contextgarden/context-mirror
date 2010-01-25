@@ -629,13 +629,9 @@
 
 \newtoks       \everyenumeration
 \newconditional\enumerationnumberenabled
-\chardef       \enumerationcouplingmode        \zerocount
 \def           \enumerationdisablenumbersignal {-}
 
 \appendtoks \disablepseudocaps \to \everyenumeration  % sorry, uppercase causes troubles
-
-\letvalue{\??dd:\c!couplingway:\v!local }\plusone
-\letvalue{\??dd:\c!couplingway:\v!global}\plustwo
 
 \setvalue{\??dd:\v!enumeration:\s!handler:\s!number}{\@@doenumerationnumber}
 \setvalue{\??dd:\v!enumeration:\s!handler:\s!text  }{\@@doenumerationtext}
@@ -697,32 +693,32 @@
 \def\doenumerationrestorecounter  {\restorestructurecounter[\currentdescriptionnumber]}
 \def\doenumerationincrementcounter{\doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
 
+% to be used in for instance:
+%
+% coupling=questions .... coupling=answers
+%
+% we will provide some more control, like skipping etc or reference relates
+
 \def\doenumerationcheckconditions
   {\doifelse{\descriptionparameter\c!number}\v!yes
      {\ifx\currentdescriptionreference\enumerationdisablenumbersignal
         \setfalse\enumerationnumberenabled \else \settrue\enumerationnumberenabled
       \fi}%
      {\setfalse\enumerationnumberenabled}%
-   \chardef\enumerationcouplingmode \iflocation
-     \executeifdefined{\??dd:\c!couplingway:\descriptionparameter\c!coupling}\zerocount
-   \else
-     \zerocount
-   \fi}
+   \edef\currentenumerationcoupling{\descriptionparameter\c!coupling}}
 
 \def\doenumerationregistercoupling
   {\iflocation
-     \ifcase\enumerationcouplingmode
-     \or
-        % todo
-     \or
-        % todo
-     \fi
+     % no area yet, we will provide variants some day
    \fi}
 
 \def\doenumerationcouplingsymbol
-  {\iflocation\ifcase\enumerationcouplingmode \else
-     % todo
-   \fi\fi}
+  {\iflocation \ifx\currentenumerationcoupling\empty\else
+     \symbolreference[order(description:\currentenumerationcoupling:\nextinternalorderreference)]%
+   \fi \fi}
+
+\def\skipenumerationcoupling[#1]% e.g. for questions with no answer
+  {\ctxlua{jobreferences.setnextorder("description","#1")}}
 
 \def\showdnpuretext{\strut\descriptionparameter\c!text} % geen spatie
 \def\showdnlisttext{\descriptionparameter\c!listtext}   % space in default
@@ -822,7 +818,8 @@
      \glet\currentdescriptionsynchronize\relax
      \glet\currentdescriptionattribute  \relax
    \else
-     \setnextinternalreference
+    %\setnextinternalreference
+     \setnextinternalreferences{description}\currentdescriptionname % plural
      \xdef\currentdescriptionnumberentry{\ctxlua{structure.lists.push{
         metadata = {
             kind     = "description",
@@ -832,6 +829,7 @@
         },
         references = {
             internal        = \nextinternalreference,
+            order           = \nextinternalorderreference,
             reference       = "\currentdescriptionreference",
             referenceprefix = "\referenceprefix",
             block           = "\currentstructureblock",

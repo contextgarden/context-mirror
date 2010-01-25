@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
 local lpegmatch = lpeg.match
-local texsprint, texwrite, texcount = tex.sprint, tex.write, tex.count
+local texsprint, texwrite, texcount, texsetcount = tex.sprint, tex.write, tex.count, tex.setcount
 
 local trace_referencing = false  trackers.register("structure.referencing", function(v) trace_referencing = v end)
 
@@ -69,6 +69,33 @@ if job then
 end
 
 -- todo: delay split till later as in destinations we split anyway
+
+local orders, lastorder = { }, 0
+
+local function setnextorder(kind,name)
+    lastorder = 0
+    if kind and name then
+        local ok = orders[kind]
+        if not ok then
+            ok = { }
+            orders[kind] = ok
+        end
+        lastorder = (ok[name] or 0) + 1
+        ok[name] = lastorder
+    end
+    texsetcount("global","locationorder",lastorder)
+end
+
+jobreferences.setnextorder = setnextorder
+
+function jobreferences.setnextinternal(kind,name)
+    setnextorder(kind,name) -- always incremented with internal
+    texsetcount("global","locationcount",texcount.locationcount + 1)
+end
+
+function jobreferences.currentorder(kind,name)
+    texwrite((orders[kind] and orders[kind][name]) or lastorder)
+end
 
 function jobreferences.set(kind,prefix,tag,data)
     for ref in gmatch(tag,"[^,]+") do
@@ -877,7 +904,7 @@ jobreferences.current_metadata = current_metadata
 
 function jobreferences.get_current_prefixspec(default) -- todo: message
     texsprint(ctxcatcodes,"\\getreferencestructureprefix{",
-        current_metadata("kind"), "}{", current_metadata("name") or "?", "}{", default, "}")
+        current_metadata("kind") or "?", "}{", current_metadata("name") or "?", "}{", default or "?", "}")
 end
 
 --~ function jobreferences.get_current_prefixspec(default) -- we can consider storing the data at the lua end
@@ -1093,7 +1120,6 @@ function jobreferences.analyse(actions)
     return actions
 end
 
-
 function jobreferences.realpage() -- special case, we always want result
     local cs = jobreferences.analyse()
     texwrite(cs.realpage or 0)
@@ -1146,7 +1172,7 @@ end
 
 specials.i = specials.internal
 
-function specials.page(var,actions)
+function specials.page(var,actions) -- is this ok?
     local p = pages[var.operation]
     if type(p) == "function" then
         p = p()

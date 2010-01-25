@@ -350,6 +350,25 @@ function specials.page(var,actions) -- better resolve in strc-ref
     end
 end
 
+-- todo, do this in references namespace ordered instead (this is an experiment)
+
+local splitter = lpeg.splitat(":")
+
+function specials.order(var,actions) -- jobreferences.specials !
+    local operation = var.operation
+    if operation then
+        local kind, name, n = lpegmatch(splitter,operation)
+        local order = lists.ordered[kind]
+        order = order and order[name]
+        local v = order[tonumber(n)]
+        local r = v and v.references.realpage
+        if r then
+            var.operation = r -- brrr, but test anyway
+            return specials.page(var,actions)
+        end
+    end
+end
+
 function specials.url(var,actions) -- better resolve in strc-ref
     local url = var.operation
     if url then
