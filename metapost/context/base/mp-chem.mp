@@ -86,6 +86,8 @@ chem_dot_factor         := 4 ;
 chem_text_trace         := false ;
 chem_bd_n               := 4 ;
 chem_bw_n               := 4 ;
+chem_bd_angle           := 4 ;
+chem_bb_angle           := 4 ;
 
 vardef chem_start_structure(expr n, l, r, t, b, scale, axis, fixedwidth, fixedheight, offset) =
     chem_setting_axis := axis ;
@@ -612,37 +614,37 @@ vardef chem_restore =
     fi ;
 enddef ;
 
-def chem_init_some(expr n, ratio, angle, start, initialrot, initialmov)  =
+def chem_init_some(expr n, ratio, start, initialrot, initialmov)  =
     chem_width     [n] := ratio * chem_base_width * chem_setting_scale ;
-    chem_angle     [n] := angle ;
+    chem_angle     [n] := 360/abs(n) ;
     chem_start     [n] := start ;
     chem_initialrot[n] := initialrot ;
     chem_initialmov[n] := initialmov ;
-    chem_b_zero    [n] := (chem_width[n],0) rotated (angle/2) ;
-    chem_n_zero    [n] := (chem_text_min*chem_width[n],0) rotated (angle/2) ;
+    chem_b_zero    [n] := (chem_width[n],0) rotated (chem_angle[n]/2) ;
+    chem_n_zero    [n] := (chem_text_min*chem_width[n],0) rotated (chem_angle[n]/2) ;
     chem_r_max     [n] := chem_radical_max*chem_b_zero[n] ;
     chem_r_path    [n] := chem_b_zero[n] -- chem_r_max[n] ;
-    chem_mr_path   [n] := chem_r_path [n] rotatedaround(chem_b_zero[n], (180-angle)/2) ;
-    chem_pr_path   [n] := chem_r_path [n] rotatedaround(chem_b_zero[n],-(180-angle)/2) ;
+    chem_mr_path   [n] := chem_r_path [n] rotatedaround(chem_b_zero[n], (180-chem_angle[n])/2) ;
+    chem_pr_path   [n] := chem_r_path [n] rotatedaround(chem_b_zero[n],-(180-chem_angle[n])/2) ;
     chem_r_zero    [n] := point 1 of chem_r_path [n] ;
     chem_mr_zero   [n] := point 1 of chem_mr_path[n] ;
     chem_pr_zero   [n] := point 1 of chem_pr_path[n] ;
     chem_crz_zero  [n] := point 1 of (chem_r_path[n] enlonged chem_center_offset) ;
-    chem_au_path   [n] := subpath (0.2,0.8) of (chem_r_max[n] -- (chem_r_max[n] rotated angle)) ;
+    chem_au_path   [n] := subpath (0.2,0.8) of (chem_r_max[n] -- (chem_r_max[n] rotated chem_angle[n])) ;
     chem_ad_path   [n] := reverse(chem_au_path[n]) ;
-    chem_rt_zero   [n] := (((chem_radical_max+chem_radical_min)/2)*chem_width[n],0) rotated (angle/2) ;
+    chem_rt_zero   [n] := (((chem_radical_max+chem_radical_min)/2)*chem_width[n],0) rotated (chem_angle[n]/2) ;
     chem_rtt_zero  [n] := chem_rt_zero[n] rotated + 10 ;
     chem_rbt_zero  [n] := chem_rt_zero[n] rotated - 10 ;
-    chem_b_path    [n] := reverse(chem_b_zero[n] -- (chem_b_zero[n] rotated -angle)) ;
-    chem_bx_path   [n] := reverse(chem_b_zero[n] -- (chem_b_zero[n] rotated -angle)) ; % ?
+    chem_b_path    [n] := reverse(chem_b_zero[n] -- (chem_b_zero[n] rotated -chem_angle[n])) ;
+    chem_bx_path   [n] := reverse(chem_b_zero[n] -- (chem_b_zero[n] rotated -chem_angle[n])) ; % ?
     chem_sb_path   [n] := subpath (0.25,0.75) of chem_b_path[n] ;
-    chem_s_path    [n] := point 0 of chem_b_path[n] -- point 0 of (chem_b_path[n] rotated (2angle)) ;
+    chem_s_path    [n] := point 0 of chem_b_path[n] -- point 0 of (chem_b_path[n] rotated (2chem_angle[n])) ;
     chem_ss_path   [n] := subpath (0.25,0.75) of (chem_s_path[n]) ;
     chem_pss_path  [n] := subpath (0.00,0.75) of (chem_s_path[n]) ;
     chem_mss_path  [n] := subpath (0.25,1.00) of (chem_s_path[n]) ;
     chem_mid_zero  [n] := origin shifted (-.25chem_width[n],0) ;
-    chem_midst_path[n] := chem_mid_zero[n] -- (chem_width[n],0) rotated ( angle + angle/2) ;
-    chem_midsb_path[n] := chem_mid_zero[n] -- (chem_width[n],0) rotated (-angle - angle/2) ;
+    chem_midst_path[n] := chem_mid_zero[n] -- (chem_width[n],0) rotated ( chem_angle[n] + chem_angle[n]/2) ;
+    chem_midsb_path[n] := chem_mid_zero[n] -- (chem_width[n],0) rotated (-chem_angle[n] - chem_angle[n]/2) ;
     chem_midt_path [n] := subpath (0.25,1.00) of chem_midst_path [n] ;
     chem_midb_path [n] := subpath (0.25,1.00) of chem_midsb_path [n] ;
     chem_msb_path  [n] := subpath (0.00,0.75) of chem_b_path[n] ;
@@ -659,10 +661,10 @@ def chem_init_some(expr n, ratio, angle, start, initialrot, initialmov)  =
         point 0 of chem_sb_path[n] rotatedaround(point 1 of chem_sb_path[n], -4) --
         point 0 of chem_sb_path[n] rotatedaround(point 1 of chem_sb_path[n],  4) -- cycle ;
     chem_rb_path   [n] := chem_b_zero[n] -- chem_r_max[n] rotated -2 -- chem_r_max[n] -- chem_r_max[n] rotated 2 --  cycle ;
-    chem_mrb_path  [n] := chem_rb_path[n] rotatedaround(chem_b_zero[n], (180-angle)/2) ;
-    chem_prb_path  [n] := chem_rb_path[n] rotatedaround(chem_b_zero[n],-(180-angle)/2) ;
-    chem_msr_path  [n] := chem_sr_path[n] rotatedaround(chem_b_zero[n], (180-angle)/2) ;
-    chem_psr_path  [n] := chem_sr_path[n] rotatedaround(chem_b_zero[n],-(180-angle)/2) ;
+    chem_mrb_path  [n] := chem_rb_path[n] rotatedaround(chem_b_zero[n], (180-chem_angle[n])/2) ;
+    chem_prb_path  [n] := chem_rb_path[n] rotatedaround(chem_b_zero[n],-(180-chem_angle[n])/2) ;
+    chem_msr_path  [n] := chem_sr_path[n] rotatedaround(chem_b_zero[n], (180-chem_angle[n])/2) ;
+    chem_psr_path  [n] := chem_sr_path[n] rotatedaround(chem_b_zero[n],-(180-chem_angle[n])/2) ;
     % not yet ok:
 %     chem_c_path    [n] := subpath (30/45, -30/45) of (fullcircle            scaled (1.25*chem_circle_radius*chem_width[n]));
 %     chem_cc_path   [n] := subpath (30/45,8-30/45) of (fullcircle rotated 90 scaled (1.25*chem_circle_radius*chem_width[n]));
@@ -670,17 +672,17 @@ def chem_init_some(expr n, ratio, angle, start, initialrot, initialmov)  =
     chem_cc_path   [n] := subpath (30/45,8-30/45) of (fullcircle rotated 90 scaled (chem_width[n]));
 enddef ;
 
-def chem_init_three      = chem_init_some(3,30/52  ,120,-60,1,2) ; enddef ; % 60
-def chem_init_four       = chem_init_some(4,30/42.5, 90,  0,1,0) ; enddef ; % 45
-def chem_init_five       = chem_init_some(5,30/35  , 72,  0,1,0) ; enddef ; % 36
-def chem_init_six        = chem_init_some(6, 1     , 60,  0,1,0) ; enddef ; % 30
-def chem_init_eight      = chem_init_some(8,30/22.5, 45,  0,1,0) ; enddef ; % 22.5
+def chem_init_three      = chem_init_some(3,30/52  ,-60,1,2) ; enddef ; % 60
+def chem_init_four       = chem_init_some(4,30/42.5,  0,1,0) ; enddef ; % 45
+def chem_init_five       = chem_init_some(5,30/35  ,  0,1,0) ; enddef ; % 36
+def chem_init_six        = chem_init_some(6, 1     ,  0,1,0) ; enddef ; % 30
+def chem_init_eight      = chem_init_some(8,30/22.5,  0,1,0) ; enddef ; % 22.5
 
 % bb R -R R Z -RZ +RZ
 
-def chem_init_some_front(expr n, ratio, angle, start, initialrot, initialmov) =
-    chem_init_some(n, ratio, angle, start, initialrot, initialmov) ;
-    chem_bb_path [n] := chem_b_path[n] rotated -angle -- chem_b_path[n] -- chem_b_path[n] rotated angle --
+def chem_init_some_front(expr n, ratio, start, initialrot, initialmov) =
+    chem_init_some(n, ratio, start, initialrot, initialmov) ;
+    chem_bb_path [n] := chem_b_path[n] rotated -chem_angle[n] -- chem_b_path[n] -- chem_b_path[n] rotated chem_angle[n] --
                        (reverse(chem_b_path[n] shortened (chem_base_width/20))) paralleled (chem_base_width/20) --
                         cycle ;
     chem_r_max   [n] := chem_radical_max*chem_b_zero[n] ;
@@ -691,12 +693,12 @@ def chem_init_some_front(expr n, ratio, angle, start, initialrot, initialmov) =
     chem_pr_zero [n] := point 1 of chem_pr_path[n] ;
 enddef ;
 
-def chem_init_five_front = chem_init_some_front(-5,30/35,72,0,2,0) ; enddef ; % 36
-def chem_init_six_front  = chem_init_some_front(-6, 1   ,60,0,2,0) ; enddef ; % 30
+def chem_init_five_front = chem_init_some_front(-5,30/35,0,2,0) ; enddef ; % 36
+def chem_init_six_front  = chem_init_some_front(-6, 1   ,0,2,0) ; enddef ; % 30
 
 vardef chem_init_one =
     chem_width     [1] := .75 * chem_base_width * chem_setting_scale ;
-    chem_angle     [1] := 45 ;
+    chem_angle     [1] := 360/8 ;
     chem_start     [1] := 0 ;
     chem_initialrot[1] := 1 ;
     chem_initialmov[1] := 1 ;
@@ -721,7 +723,7 @@ vardef chem_init_one =
     save pr ; pair pr[] ;
     pr0 := point 0 of chem_r_path[1] ;
     pr1 := point 1 of chem_r_path[1] ;
-    chem_bb_path   [1] := point 0 of chem_r_path[1] -- pr1 rotatedaround(pr0, -4) -- pr1 rotatedaround(pr0,  4) -- cycle ;
+    chem_bb_path   [1] := pr0 -- (pr1 rotatedaround(pr0,-chem_bb_angle)) -- (pr1 rotatedaround(pr0,chem_bb_angle)) -- cycle ;
     chem_oe_path   [1] := ((-20,0)--(10,0){up}..(20,10)..(30,0)..(40,-10)..(50.0,0)..(60,10)..(70,0)..(80,-10)..{up}(90,0)--(120,0))
         xsized (.75*chem_width[1]) shifted pr0 ;
     chem_rt_zero   [1] := point .5 of chem_r_path[1] ;
@@ -729,8 +731,8 @@ vardef chem_init_one =
     chem_rbt_zero  [1] := chem_rt_zero[1] rotated - (chem_angle[1]/2) ;
     % added by Alan Braslau (adapted to use shared variables):
     save p ; pair p[] ;
-    p0 := pr1 rotatedaround(pr0, -4) ;
-    p1 := pr1 rotatedaround(pr0, +4) ;
+    p0 := pr1 rotatedaround(pr0, -chem_bd_angle) ;
+    p1 := pr1 rotatedaround(pr0, +chem_bd_angle) ;
     p2 := p0 shifted - pr1 ;
     p3 := p1 shifted - pr1 ;
     chem_bd_path   [1] :=

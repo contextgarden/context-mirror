@@ -169,7 +169,8 @@
   {\startreadingfile
    \pushendofline
    \unprotect
-   \readfile\currenttypefile\donothing\donothing
+   % we could have something readfilewithMKfallback
+   \readfile\currenttypefile\donothing{\readfile{\currenttypefile.\mksuffix}\donothing\donothing}%
    \protect
    \popendofline
    \stopreadingfile}

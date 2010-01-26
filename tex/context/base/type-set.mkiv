@@ -49,6 +49,10 @@
     \definefontsynonym [MonoCaps]        [Mono]
 \stopsetups
 
+\starttypescript [serif,sans,mono] [fallback]
+    \setups[\s!font:\s!fallback:\typescriptone]
+\stoptypescript
+
 \startsetups [font:allbold:serif]
     \definefontsynonym [Serif]            [SerifBold]
     \definefontsynonym [SerifItalic]      [SerifBoldItalic]

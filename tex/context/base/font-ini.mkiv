@@ -2059,9 +2059,34 @@
 \def\registerfontclass#1%
   {\letgvalue{\@fontclass@#1}\v!yes} % global ?
 
+% \def\setcurrentfontclass#1%
+%   {\ifcsname\@fontclass@#1\endcsname
+%      \edef\fontclass{#1}%
+%    \fi}
+
+\edef\@no@fontclass@{\@fontclass@:?:}
+
 \def\setcurrentfontclass#1%
   {\ifcsname\@fontclass@#1\endcsname
      \edef\fontclass{#1}%
+   \else\ifcsname\@no@fontclass@#1\endcsname
+     % already tried
+   \else\ifcase\currentgrouplevel
+     \trycurrentfontclass{#1}%
+   \fi\fi\fi}
+
+\settrue\autotypescripts
+
+\def\trycurrentfontclass#1%
+  {\ifconditional\autotypescripts
+     \usetypescript[#1]%
+     \ifcsname\@fontclass@#1\endcsname
+       \edef\fontclass{#1}%
+     \else
+       \letvalue{\@no@fontclass@#1}\empty
+     \fi
+   \else
+     \letvalue{\@no@fontclass@#1}\empty
    \fi}
 
 \let\defaultfontstyle       \c!rm
