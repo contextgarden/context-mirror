@@ -115,7 +115,7 @@
 
 % misc
 
-\appendtoks\ctxlua{backends.codeinjections.finishfields()}\to\everylastshipout
+% \appendtoks\ctxlua{backends.codeinjections.finishfields()}\to\everylastshipout
 
 % testing
 
@@ -124,7 +124,7 @@
 
 % definition
 
-\def\dodefinefield[#1][#2][#3][#4][#5]% [name] [kind] [group] [values] [default]
+\def\dodefinefield[#1][#2][#3][#4][#5]% [name] [kind] [group] [values] [default] | [name] [kind] [group] [default]
   {\ctxlua{backends.codeinjections.definefield{ variant="normal", name="#1", kind="#2", group="#3", values=\!!bs#4\!!es, default=\!!bs#5\!!es }}}
 
 \def\dodefinesubfield[#1][#2][#3]% [name] [group] [values]

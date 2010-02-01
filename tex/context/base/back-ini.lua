@@ -56,7 +56,6 @@ backends.codeinjections = {
     addtransparencygroup  = nothing,
 
     typesetfield          = nothing,
-    finishfields          = nothing,
     doiffieldelse         = nothing,
     doiffieldgroupelse    = nothing,
     definefield           = nothing,

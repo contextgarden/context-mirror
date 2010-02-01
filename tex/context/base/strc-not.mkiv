@@ -547,6 +547,10 @@
   {\ifnotesenabled
      \iftrialtypesetting
         % some day a roll back
+% temp hack
+\doenumerationcheckconditions
+\let\currentnote\currentdescriptionmain
+\typesetdummynotesymbol
      \else
        \begingroup
        \doenumerationcheckconditions
@@ -603,6 +607,16 @@
    \doifelse{\noteparameter\c!interaction}\v!no
      {\dotypesetsomenotesymbol{#1}{#2}}
      {\directgotobox{\dotypesetsomenotesymbol{#1}{#2}}[page(\ctxlua{structure.notes.getnumberpage("#1",\number#2)})]}% f:
+   \globallet\lastnotesymbol\relax}
+
+\def\typesetdummynotesymbol % temp hack
+  {\removeunwantedspaces
+   \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
+   \ifdim\lastkern=\notesignal
+     \dodonotesymbol{\kern\noteparameter\c!distance}% gets the font right, hack !
+   \fi
+   \nobreak
+   \hbox to .5em{}%
    \globallet\lastnotesymbol\relax}
 
 \def\currentnotedescriptiontext % todo: can be other number
@@ -721,6 +735,8 @@
     \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
   \fi
 \to \everyinsidenoteinsert
+
+\appendtoks \setnotehsize \to \everyinsidenoteinsert % we will sort out columns etc later
 
 \let\lastnotesymbol\relax
 

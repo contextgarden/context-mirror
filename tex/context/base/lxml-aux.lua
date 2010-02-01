@@ -335,6 +335,29 @@ end
 
 xml.include = include
 
+--~ local function manipulate(xmldata,pattern,manipulator) -- untested and might go away
+--~     local collected = xmlparseapply({ xmldata },pattern)
+--~     if collected then
+--~         local xmltostring = xml.tostring
+--~         for c=1,#collected do
+--~             local e = collected[c]
+--~             local data = manipulator(xmltostring(e))
+--~             if data == "" then
+--~                 epdt[e.ni] = ""
+--~             else
+--~                 local xi = xmlinheritedconvert(data,xmldata)
+--~                 if not xi then
+--~                     epdt[e.ni] = ""
+--~                 else
+--~                     epdt[e.ni] = xml.body(xi) -- xml.assign(d,k,xi)
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
+--~ xml.manipulate = manipulate
+
 function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and trailing space !
     local collected = xmlparseapply({ root },pattern)
     if collected then

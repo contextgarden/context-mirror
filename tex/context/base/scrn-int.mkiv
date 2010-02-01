@@ -428,15 +428,26 @@
        {\bgroup
         \setupattachments[#2]%
         \ctxlua{backends.codeinjections.presetsymbollist("\@@atsymbol")}%
-        \getvalue{\??at:\@@atalternative}{\ctxlua{backends.codeinjections.attachfile{
-          label  = "#1",
-          width  = \number\dimexpr\@@atwidth \relax,
-          height = \number\dimexpr\@@atheight\relax,
-          depth  = \number\dimexpr\@@atdepth \relax,
-          color  = "\@@atcolor",
-          symbol = "\@@atsymbol",
-          layer  = "\@@attextlayer",
-        }}}%
+        % we cannot yet ask for the wd/ht/dp of an xform else we could use those
+        \setbox\scratchbox\hbox{\symbol[\lastpredefinedsymbol]}%
+        \doif\@@atwidth \v!fit{\edef\@@atwidth {\the\wd\scratchbox}}%
+        \doif\@@atheight\v!fit{\edef\@@atheight{\the\ht\scratchbox}}%
+        \doif\@@atdepth \v!fit{\edef\@@atdepth {\the\dp\scratchbox}}%
+        %
+        \setbox\scratchbox\hbox
+          {\getvalue{\??at:\@@atalternative}{\ctxlua{backends.codeinjections.attachfile{
+             label  = "#1",
+             width  = \number\dimexpr\@@atwidth \relax,
+             height = \number\dimexpr\@@atheight\relax,
+             depth  = \number\dimexpr\@@atdepth \relax,
+             color  = "\@@atcolor",
+             symbol = "\@@atsymbol",
+             layer  = "\@@attextlayer",
+           }}}}%
+        \wd\scratchbox\@@atwidth
+        \ht\scratchbox\@@atheight
+        \dp\scratchbox\@@atdepth
+        \box\scratchbox
         \egroup}%
    \fi}
 
@@ -449,9 +460,9 @@
   [\c!state=\v!start,
    \c!color=\@@iacolor,
    \c!textlayer=,
-   \c!width=1em,
-   \c!height=\strutheight,
-   \c!depth=\strutdepth,
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!depth=\v!fit,
    \c!alternative=\v!high,
    \c!symbol=]
 

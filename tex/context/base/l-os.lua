@@ -267,8 +267,10 @@ function os.uuid()
     )
 end
 
+local d
+
 function os.timezone(delta)
-    local d = tonumber(tonumber(os.date("%H")-os.date("!%H")))
+    d = d or tonumber(tonumber(os.date("%H")-os.date("!%H")))
     if delta then
         if d > 0 then
             return format("+%02i:00",d)

@@ -39,12 +39,16 @@ function codeinjections.registeredsymbol(name)
     return presets[name]
 end
 
+function codeinjections.presetsymbol(symbol)
+    if not presets[symbol] then
+        texsprint(ctxcatcodes,format("\\predefinesymbol[%s]",symbol))
+    end
+end
+
 function codeinjections.presetsymbollist(list)
     if list then
-        for s in gmatch(list,"[^, ]+") do
-            if not presets[s] then
-                texsprint(ctxcatcodes,format("\\predefinesymbol[%s]",s))
-            end
+        for symbol in gmatch(list,"[^, ]+") do
+            codeinjections.presetsymbol(symbol)
         end
     end
 end
@@ -196,6 +200,8 @@ function codeinjections.attachfile(specification)
         OC       = analyzelayer(specification.layer),
         C        = pdfcolorspec(specification.colormodel,specification.colorvalue),
     }
+    -- as soon as we can ask for the dimensions of an xform we can
+    -- use them here
     local width  = specification.width  or 0
     local height = specification.height or 0
     local depth  = specification.depth  or 0

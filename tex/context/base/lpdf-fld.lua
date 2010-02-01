@@ -204,7 +204,7 @@ end
 local function fieldappearances(specification)
     -- todo: caching
     local values = specification.values
-    local default = specification.default
+    local default = specification.default -- todo
     if not values then
         -- error
         return
@@ -365,8 +365,12 @@ end
 local function predefinesymbols(specification)
     local values = specification.values
     if values then
-        local a, b = lpegmatch(splitter,values)
-        codeinjections.presetsymbollist(a or values)
+        local symbols = aux.settings_to_array(values)
+        for i=1,#symbols do
+            local symbol = symbols[i]
+            local a, b = lpegmatch(splitter,symbol)
+            codeinjections.presetsymbol(a or symbol)
+        end
     end
 end
 
@@ -376,11 +380,11 @@ function codeinjections.getdefaultfieldvalue(name)
         local values  = f.values
         local default = f.default
         if not default or default == "" then
-            local a, b = lpegmatch(splitter,values)
-            values = a or values
-            for name in gmatch(list,"[^, ]+") do
-                default = name
-                break
+            local symbols = aux.settings_to_array(values)
+            local symbol = symbols[1]
+            if symbol then
+                local a, b = lpegmatch(splitter,symbol) -- splits at =>
+                default = a or symbol
             end
         end
         if default then
@@ -428,6 +432,14 @@ function codeinjections.definefield(specification)
                 logs.report("fields","invalid definition of radio sub '%s': no parent",n)
             end
             predefinesymbols(specification)
+        elseif kind == "text" or kind == "line" then
+            fields[n] = specification
+            if trace_fields then
+                logs.report("fields","defining '%s' as %s",n,kind)
+            end
+            if specification.values ~= "" and specification.default == "" then
+                specification.default, specification.values = specification.values, nil
+            end
         else
             fields[n] = specification
             if trace_fields then
@@ -522,7 +534,7 @@ end
 
 local collected = pdfarray()
 
-function codeinjections.finishfields()
+local function finishfields()
     for name, field in next, fields do
         local kids = field.kids
         if kids then
@@ -546,8 +558,9 @@ function codeinjections.finishfields()
         }
         lpdf.addtocatalog("AcroForm",pdfreference(pdfimmediateobj(tostring(acroform))))
     end
-    lpdf.finishfields = function() end
 end
+
+lpdf.registerdocumentfinalizer(finishfields)
 
 local pdf_widget = pdfconstant("Widget")
 local pdf_tx     = pdfconstant("Tx")
@@ -611,7 +624,7 @@ function methods.line(name,specification,variant,extras)
         if extras then
             enhance(specification,extras)
         end
-        local text = pdfunicode(specification.default)
+        local text = pdfunicode(field.default)
         local d = pdfdictionary {
             Subtype  = pdf_widget,
             T        = pdfunicode(specification.title),
@@ -641,7 +654,7 @@ function methods.line(name,specification,variant,extras)
         OC      = fieldlayer(specification),
         MK      = fieldsurrounding(specification),
         AA      = fieldactions(specification),
-        Q       = fieldalignment(specification)
+        Q       = fieldalignment(specification),
     }
     save_kid(field,specification,d)
 end

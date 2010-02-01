@@ -1470,6 +1470,8 @@ special options:
 
 if environment.argument("once") then
     scripts.context.multipass.nofruns = 1
+elseif environment.argument("runs") then
+    scripts.context.multipass.nofruns = tonumber(environment.argument("runs")) or nil
 end
 
 if environment.argument("profile") then

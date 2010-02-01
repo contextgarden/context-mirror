@@ -519,6 +519,8 @@ local grammar_unparsed_text = P { "preamble",
     children = unparsedtext + V("parent") + emptyelement + comment + cdata + instruction,
 }
 
+-- maybe we will add settinsg to result as well
+
 local function xmlconvert(data, settings)
     settings = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
     strip = settings.strip_cm_and_dt
@@ -554,7 +556,7 @@ local function xmlconvert(data, settings)
         errorstr = "invalid xml file - no text at all"
     end
     if errorstr and errorstr ~= "" then
-        result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={}, er = true } } }
+        result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={ }, er = true } } }
         setmetatable(stack, mt)
         local error_handler = settings.error_handler
         if error_handler == false then
@@ -569,13 +571,14 @@ local function xmlconvert(data, settings)
         result = stack[1]
     end
     if not settings.no_root then
-        result = { special = true, ns = "", tg = '@rt@', dt = result.dt, at={}, entities = entities, settings = settings }
+        result = { special = true, ns = "", tg = '@rt@', dt = result.dt, at={ }, entities = entities, settings = settings }
         setmetatable(result, mt)
         local rdt = result.dt
         for k=1,#rdt do
             local v = rdt[k]
             if type(v) == "table" and not v.special then -- always table -)
                 result.ri = k -- rootindex
+v.__p__ = result  -- new, experiment, else we cannot go back to settings, we need to test this !
                 break
             end
         end
@@ -1011,12 +1014,37 @@ xml.string = xmlstring
 <p>A few helpers:</p>
 --ldx]]--
 
+--~ xmlsetproperty(root,"settings",settings)
+
+function xml.settings(e)
+    while e do
+        local s = e.settings
+        if s then
+            return s
+        else
+            e = e.__p__
+        end
+    end
+    return nil
+end
+
+function xml.root(e)
+    local r = e
+    while e do
+        e = e.__p__
+        if e then
+            r = e
+        end
+    end
+    return r
+end
+
 function xml.parent(root)
     return root.__p__
 end
 
 function xml.body(root)
-    return (root.ri and root.dt[root.ri]) or root
+    return (root.ri and root.dt[root.ri]) or root -- not ok yet
 end
 
 function xml.name(root)

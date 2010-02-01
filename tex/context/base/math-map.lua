@@ -213,6 +213,15 @@ mathematics.alphabets = {
                 [0x0005A]=0x02124,
             },
             lcletters = 0x1D552,
+            lcgreek = { -- gamma pi
+                [0x03B3]=0x0213C, [0x03C0]=0x0213D,
+            },
+            ucgreek = { -- Gamma pi
+                [0x0393]=0x0213E, [0x03A0]=0x0213F,
+            },
+            symbols = { -- sum
+              [0x2211]=0x02140,
+            },
         },
     },
     fraktur = { -- ok
@@ -294,9 +303,10 @@ alphabets.monospaced.it         = alphabets.sansserif.tf
 alphabets.monospaced.bf         = alphabets.sansserif.tf
 alphabets.monospaced.bi         = alphabets.sansserif.bf
 
-alphabets.blackboard.tf.symbols = alphabets.regular.tf.symbols
-alphabets.blackboard.tf.lcgreek = alphabets.regular.tf.lcgreek
-alphabets.blackboard.tf.ucgreek = alphabets.regular.tf.ucgreek
+alphabets.blackboard.tf.symbols = table.merge(alphabets.regular.tf.symbols, alphabets.blackboard.tf.symbols)
+alphabets.blackboard.tf.lcgreek = table.merge(alphabets.regular.tf.lcgreek, alphabets.blackboard.tf.lcgreek)
+alphabets.blackboard.tf.ucgreek = table.merge(alphabets.regular.tf.ucgreek, alphabets.blackboard.tf.ucgreek)
+
 alphabets.blackboard.it         = alphabets.blackboard.tf
 alphabets.blackboard.bf         = alphabets.blackboard.tf
 alphabets.blackboard.bi         = alphabets.blackboard.bf
@@ -312,16 +322,16 @@ alphabets.fraktur.bf.ucgreek    = alphabets.regular.bf.ucgreek
 alphabets.fraktur.it            = alphabets.fraktur.tf
 alphabets.fraktur.bi            = alphabets.fraktur.bf
 
-alphabets.script.tf.digits    = alphabets.regular.tf.digits
-alphabets.script.tf.symbols   = alphabets.regular.tf.symbols
-alphabets.script.tf.lcgreek   = alphabets.regular.tf.lcgreek
-alphabets.script.tf.ucgreek   = alphabets.regular.tf.ucgreek
-alphabets.script.bf.digits    = alphabets.regular.bf.digits
-alphabets.script.bf.symbols   = alphabets.regular.bf.symbols
-alphabets.script.bf.lcgreek   = alphabets.regular.bf.lcgreek
-alphabets.script.bf.ucgreek   = alphabets.regular.bf.ucgreek
-alphabets.script.it           = alphabets.script.tf
-alphabets.script.bi           = alphabets.script.bf
+alphabets.script.tf.digits      = alphabets.regular.tf.digits
+alphabets.script.tf.symbols     = alphabets.regular.tf.symbols
+alphabets.script.tf.lcgreek     = alphabets.regular.tf.lcgreek
+alphabets.script.tf.ucgreek     = alphabets.regular.tf.ucgreek
+alphabets.script.bf.digits      = alphabets.regular.bf.digits
+alphabets.script.bf.symbols     = alphabets.regular.bf.symbols
+alphabets.script.bf.lcgreek     = alphabets.regular.bf.lcgreek
+alphabets.script.bf.ucgreek     = alphabets.regular.bf.ucgreek
+alphabets.script.it             = alphabets.script.tf
+alphabets.script.bi             = alphabets.script.bf
 
 alphabets.tt = alphabets.monospaced
 alphabets.ss = alphabets.sansserif

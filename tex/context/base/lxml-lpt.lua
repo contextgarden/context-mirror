@@ -141,14 +141,19 @@ end
 apply_axis['child'] = function(list)
     local collected = { }
     for l=1,#list do
-        local dt = list[l].dt
+        local ll = list[l]
+        local dt = ll.dt
+local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
+en = en + 1
+dk.ei = en
             end
         end
+ll.en = en
     end
     return collected
 end
@@ -156,14 +161,18 @@ end
 local function collect(list,collected)
     local dt = list.dt
     if dt then
+local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
+en = en + 1
+dk.ei = en
                 collect(dk,collected)
             end
         end
+list.en = en
     end
 end
 apply_axis['descendant'] = function(list)
@@ -177,14 +186,18 @@ end
 local function collect(list,collected)
     local dt = list.dt
     if dt then
+local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
+en = en + 1
+dk.ei = en
                 collect(dk,collected)
             end
         end
+list.en = en
     end
 end
 apply_axis['descendant-or-self'] = function(list)
@@ -441,7 +454,7 @@ local function apply_expression(list,expression,order)
     quit_expression = false
     for l=1,#list do
         local ll = list[l]
-        if expression(list,ll,l,order) then -- nasty, alleen valid als n=1
+        if expression(list,ll,l,order) then -- nasty, order alleen valid als n=1
             collected[#collected+1] = ll
         end
         if quit_expression then
@@ -462,11 +475,16 @@ local lp_or      = P("|")  / " or "
 local lp_and     = P("&")  / " and "
 
 local lp_builtin = P (
+P("firstindex")      / "1" +
+P("lastindex")       / "(#ll.__p__.dt or 1)" +
+P("firstelement")    / "1" +
+P("lastelement")     / "(ll.__p__.en or 1)" +
         P("first")        / "1" +
         P("last")         / "#list" +
-        P("position")     / "l" + -- is element in finalizer
         P("rootposition") / "order" +
+        P("position")     / "l" + -- is element in finalizer
         P("order")        / "order" +
+        P("element")      / "(ll.ei or 1)" +
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +
