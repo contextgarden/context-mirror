@@ -11962,10 +11962,7 @@ else
 
 end
 
-if is_mkii_stub then
-    -- execute mkii script
-    ok = runners.execute_script(filename,false,true)
-elseif environment.argument("selfmerge") then
+if environment.argument("selfmerge") then
     -- embed used libraries
     utils.merger.selfmerge(own.name,own.libs,own.list)
 elseif environment.argument("selfclean") then
@@ -11977,9 +11974,14 @@ elseif environment.argument("selfupdate") then
 elseif environment.argument("ctxlua") or environment.argument("internal") then
     -- run a script by loading it (using libs)
     ok = runners.execute_script(filename,true)
-elseif environment.argument("script") or environment.argument("s") or environment.argument("scripts") then
+elseif environment.argument("script") or environment.argument("scripts") then
     -- run a script by loading it (using libs), pass args
-    ok = runners.execute_ctx_script(filename)
+    if is_mkii_stub then
+    -- execute mkii script
+        ok = runners.execute_script(filename,false,true)
+    else
+        ok = runners.execute_ctx_script(filename)
+    end
 elseif environment.argument("execute") then
     -- execute script
     ok = runners.execute_script(filename)
@@ -12016,6 +12018,9 @@ elseif environment.argument("help") or filename=='help' or filename == "" then
     -- execute script
 elseif filename:find("^bin:") then
     ok = runners.execute_program(filename)
+elseif is_mkii_stub then
+    -- execute mkii script
+    ok = runners.execute_script(filename,false,true)
 else
     ok = runners.execute_ctx_script(filename)
     if not ok then
@@ -12028,6 +12033,5 @@ if os.platform == "unix" then
 end
 
 if ok == false then ok = 1 elseif ok == true then ok = 0 end
-
 
 os.exit(ok)

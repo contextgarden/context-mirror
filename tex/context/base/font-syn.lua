@@ -38,7 +38,7 @@ fonts.names.data       = fonts.names.data    or { }
 local names   = fonts.names
 local filters = fonts.names.filters
 
-names.version    = 1.102
+names.version    = 1.103
 names.basename   = "names"
 names.saved      = false
 names.loaded     = false
@@ -70,7 +70,7 @@ local weights = Cs ( -- not extra
   + P("heavy")
   + P("ultra")
   + P("black")
-  + P("bol")
+  + P("bol")   -- / "bold"
   + P("regular")  / "normal"
 )
 
@@ -94,15 +94,22 @@ local widths = Cs(
   + P("book")     / "normal"
 )
 
+local variants = Cs( -- fax casual
+    P("smallcaps")
+  + P("oldstyle")
+  + P("caps")      / "smallcaps"
+)
+
 local any = P(1)
 
 local analysed_table
 
 local analyser = Cs (
     (
-        weights / function(s) analysed_table[1] = s return "" end
-      + styles  / function(s) analysed_table[2] = s return "" end
-      + widths  / function(s) analysed_table[3] = s return "" end
+        weights  / function(s) analysed_table[1] = s return "" end
+      + styles   / function(s) analysed_table[2] = s return "" end
+      + widths   / function(s) analysed_table[3] = s return "" end
+      + variants / function(s) analysed_table[4] = s return "" end
       + any
     )^0
 )
@@ -110,27 +117,30 @@ local analyser = Cs (
 local splitter = lpeg.splitat("-")
 
 function names.splitspec(askedname)
-    local name, weight, style, width = lpegmatch(splitter,askedname)
-    weight = weight and lpegmatch(weights,weight) or weight
-    style  = style  and lpegmatch(styles, style)  or style
-    width  = width  and lpegmatch(widths, width)  or width
+    local name, weight, style, width, variant = lpegmatch(splitter,askedname)
+    weight  = weight  and lpegmatch(weights, weight)  or weight
+    style   = style   and lpegmatch(styles,  style)   or style
+    width   = width   and lpegmatch(widths,  width)   or width
+    variant = variant and lpegmatch(variants,variant) or variant
     if trace_names then
-        logs.report("fonts","requested name '%s' split in name '%s', weight '%s', style '%s' and width '%s'",askedname,name or '',weight or '',style or '',width or '')
+        logs.report("fonts","requested name '%s' split in name '%s', weight '%s', style '%s', width '%s' and variant '%s'",
+            askedname,name or '',weight or '',style or '',width or '',variant or '')
     end
-    if not weight or not weight or not width then
-        weight, style, width = weight or "normal", style or "normal", width or "normal"
+    if not weight or not weight or not width or not variant then
+        weight, style, width, variant = weight or "normal", style or "normal", width or "normal", variant or "normal"
         if trace_names then
-            logs.report("fonts","request '%s' normalized to '%s-%s-%s-%s'",askedname,name,weight,style,width)
+            logs.report("fonts","request '%s' normalized to '%s-%s-%s-%s-%s'",
+                askedname,name,weight,style,width,variant)
         end
     end
-    return name or askedname, weight, style, width
+    return name or askedname, weight, style, width, variant
 end
 
 local function analysespec(somename)
     if somename then
         analysed_table = { }
         local name = lpegmatch(analyser,somename)
-        return name, analysed_table[1], analysed_table[2],analysed_table[3]
+        return name, analysed_table[1], analysed_table[2], analysed_table[3], analysed_table[4]
     end
 end
 
@@ -332,12 +342,16 @@ local function check_name(data,result,filename,suffix,subfont)
     weight      = weight     and cleanname(weight)
     italicangle = (italicangle == 0) and nil
     -- analyse
-    local a_name, a_weight, a_style, a_width = analysespec(fullname or fontname or familyname)
+    local a_name, a_weight, a_style, a_width, a_variant = analysespec(fullname or fontname or familyname)
     -- check
     local width = a_width
+    local variant = a_variant
     local style = modifiers and gsub(modifiers,"[^%a]","")
     if not style and italicangle then
         style = "italic"
+    end
+    if not variant or variant == "" then
+        variant = "normal"
     end
     if not weight or weight == "" then
         weight = a_weight
@@ -364,6 +378,7 @@ local function check_name(data,result,filename,suffix,subfont)
         weight      = weight,
         style       = style,
         width       = width,
+        variant     = variant,
         minsize     = result.design_range_bottom or 0,
         maxsize     = result.design_range_top or 0,
         designsize  = result.design_size or 0,
@@ -378,18 +393,23 @@ local function cleanupkeywords()
         for i=1,#specifications do
             local s = specifications[i]
             -- fix (sofar styles are taken from the name, and widths from the specification)
-            local b_variant, b_weight, b_style, b_width = analysespec(s.weight)
-            local c_variant, c_weight, c_style, c_width = analysespec(s.style)
-            local d_variant, d_weight, d_style, d_width = analysespec(s.width)
-            local e_variant, e_weight, e_style, e_width = analysespec(s.fullname or "")
-            local weight  = b_weight  or c_weight  or d_weight  or e_weight  or "normal"
-            local style   = b_style   or c_style   or d_style   or e_style   or "normal"
-            local width   = b_width   or c_width   or d_width   or e_width   or "normal"
-            local variant = b_variant or c_variant or d_variant or e_variant or "normal"
-            if weight  then weights [weight ] = (weights [weight ] or 0) + 1 end
-            if style   then styles  [style  ] = (styles  [style  ] or 0) + 1 end
-            if width   then widths  [width  ] = (widths  [width  ] or 0) + 1 end
-            if variant then variants[variant] = (variants[variant] or 0) + 1 end
+            local _, b_weight, b_style, b_width, b_variant = analysespec(s.weight)
+            local _, c_weight, c_style, c_width, c_variant = analysespec(s.style)
+            local _, d_weight, d_style, d_width, d_variant = analysespec(s.width)
+            local _, e_weight, e_style, e_width, e_variant = analysespec(s.variant)
+            local _, f_weight, f_style, f_width, f_variant = analysespec(s.fullname or "")
+            local weight  = b_weight  or c_weight  or d_weight  or e_weight  or f_weight  or "normal"
+            local style   = b_style   or c_style   or d_style   or e_style   or f_style   or "normal"
+            local width   = b_width   or c_width   or d_width   or e_width   or f_width   or "normal"
+            local variant = b_variant or c_variant or d_variant or e_variant or f_variant or "normal"
+            if not weight  or weight  == "" then weight  = "normal" end
+            if not style   or style   == "" then style   = "normal" end
+            if not width   or width   == "" then width   = "normal" end
+            if not variant or variant == "" then variant = "normal" end
+            weights [weight ] = (weights [weight ] or 0) + 1
+            styles  [style  ] = (styles  [style  ] or 0) + 1
+            widths  [width  ] = (widths  [width  ] or 0) + 1
+            variants[variant] = (variants[variant] or 0) + 1
             if weight ~= s.weight then
                 s.fontweight = s.weight
             end
@@ -404,16 +424,17 @@ local function collectstatistics()
     local data = names.data
     local specifications = data.specifications
     if specifications then
-        local weights, styles, widths = { }, { }, { }
+        local weights, styles, widths, variants = { }, { }, { }, { }
         for i=1,#specifications do
             local s = specifications[i]
-            local weight, style, width = s.weight, s.style, s.width
-            if weight then weights[weight] = (weights[weight] or 0) + 1 end
-            if style  then styles [style ] = (styles [style ] or 0) + 1 end
-            if width  then widths [width ] = (widths [width ] or 0) + 1 end
+            local weight, style, width, variant = s.weight, s.style, s.width, s.variant
+            if weight  then weights [weight ] = (weights [weight ] or 0) + 1 end
+            if style   then styles  [style  ] = (styles  [style  ] or 0) + 1 end
+            if width   then widths  [width  ] = (widths  [width  ] or 0) + 1 end
+            if variant then variants[variant] = (variants[variant] or 0) + 1 end
         end
         local stats = data.statistics
-        stats.weights, stats.styles, stats.widths, stats.fonts = weights, styles, widths, #specifications
+        stats.weights, stats.styles, stats.widths, stats.variants, stats.fonts = weights, styles, widths, variants, #specifications
     end
 end
 
@@ -480,7 +501,7 @@ local function checkduplicate(where) -- fails on "Romantik" but that's a border 
         for _, m in next, mapping do
             for k, v in next, m do
                 local s = specifications[v]
-                local hash = format("%s-%s-%s-%s",s.familyname,s.weight or "*",s.style or "*",s.width or "*")
+                local hash = format("%s-%s-%s-%s-%s",s.familyname,s.weight or "*",s.style or "*",s.width or "*",s.variant or "*")
                 local h = loaded[hash]
                 if h then
                     local ok = true
@@ -919,6 +940,31 @@ end
 
 -- specified search
 
+local function s_collect_weight_style_width_variant(found,done,all,weight,style,width,variant,family)
+    if family then
+        for i=1,#family do
+            local f = family[i]
+            if f and weight == f.weight and style == f.style and width == f.width and variant == f.variant then
+                found[#found+1], done[f] = f, true
+                if not all then return end
+            end
+        end
+    end
+end
+local function m_collect_weight_style_width_variant(found,done,all,weight,style,width,variant,families,sorted,strictname)
+    for i=1,#sorted do
+        local k = sorted[i]
+        local family = families[k]
+        for i=1,#family do
+            local f = family[i]
+            if not done[f] and weight == f.weight and style == f.style and width == f.width and variant == f.variant and find(f.fontname,strictname) then
+                found[#found+1], done[f] = f, true
+                if not all then return end
+            end
+        end
+    end
+end
+
 local function s_collect_weight_style_width(found,done,all,weight,style,width,family)
     if family then
         for i=1,#family do
@@ -1088,23 +1134,32 @@ local function m_collect(found,done,all,families,sorted,strictname)
     end
 end
 
-local function collect(stage,found,done,name,weight,style,width,all)
+local function collect(stage,found,done,name,weight,style,width,variant,all)
     local data = names.data
     local families, sorted = data.families, data.sorted_families
     strictname = "^".. name -- to be checked
     local family = families[name]
     if trace_names then
-        logs.report("fonts","resolving name '%s', weight '%s', style '%s', width '%s'",name or "?",tostring(weight),tostring(style),tostring(width))
+        logs.report("fonts","resolving name '%s', weight '%s', style '%s', width '%s', variant '%s'",
+            name or "?",tostring(weight),tostring(style),tostring(width),tostring(variant))
     end
---~ print(name,table.serialize(family))
+    --~ print(name,table.serialize(family))
     if weight and weight ~= "" then
         if style and style ~= "" then
             if width and width ~= "" then
-                if trace_names then
-                    logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s', width '%s'",stage,name,weight,style,width)
+                if variant and variant ~= "" then
+                    if trace_names then
+                        logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s', width '%s', variant '%s'",stage,name,weight,style,width,variant)
+                    end
+                    s_collect_weight_style_width_variant(found,done,all,weight,style,width,variant,family)
+                    m_collect_weight_style_width_variant(found,done,all,weight,style,width,variant,families,sorted,strictname)
+                else
+                    if trace_names then
+                        logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s', width '%s'",stage,name,weight,style,width)
+                    end
+                    s_collect_weight_style_width(found,done,all,weight,style,width,family)
+                    m_collect_weight_style_width(found,done,all,weight,style,width,families,sorted,strictname)
                 end
-                s_collect_weight_style_width(found,done,all,weight,style,width,family)
-                m_collect_weight_style_width(found,done,all,weight,style,width,families,sorted,strictname)
             else
                 if trace_names then
                     logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s'",stage,name,weight,style)
@@ -1148,23 +1203,28 @@ local function collect(stage,found,done,name,weight,style,width,all)
     end
 end
 
-function heuristic(name,weight,style,width,all) -- todo: fallbacks
+function heuristic(name,weight,style,width,variant,all) -- todo: fallbacks
     local found, done = { }, { }
-    weight, style = weight or "", style or ""
+--~ print(name,weight,style,width,variant)
+    weight, style, width, variant = weight or "normal", style or "normal", width or "normal", variant or "normal"
     name = cleanname(name)
-    collect(1,found,done,name,weight,style,width,all)
+    collect(1,found,done,name,weight,style,width,variant,all)
     -- still needed ?
-    if #found == 0 and width ~= "" then
-        width = ""
-        collect(2,found,done,name,weight,style,width,all)
+    if #found == 0 and variant ~= "normal" then -- not weight
+        variant = "normal"
+        collect(4,found,done,name,weight,style,width,variant,all)
     end
-    if #found == 0 and weight ~= "" then -- not style
-        weight = ""
-        collect(3,found,done,name,weight,style,width,all)
+    if #found == 0 and width ~= "normal" then
+        width = "normal"
+        collect(2,found,done,name,weight,style,width,variant,all)
     end
-    if #found == 0 and style ~= "" then -- not weight
-        style = ""
-        collect(4,found,done,name,weight,style,width,all)
+    if #found == 0 and weight ~= "normal" then -- not style
+        weight = "normal"
+        collect(3,found,done,name,weight,style,width,variant,all)
+    end
+    if #found == 0 and style ~= "normal" then -- not weight
+        style = "normal"
+        collect(4,found,done,name,weight,style,width,variant,all)
     end
     --
     local nf = #found
@@ -1186,13 +1246,13 @@ function heuristic(name,weight,style,width,all) -- todo: fallbacks
     end
 end
 
-function names.specification(askedname,weight,style,width,reload,all)
+function names.specification(askedname,weight,style,width,variant,reload,all)
     if askedname and askedname ~= "" and names.enabled then
         askedname = lower(askedname) -- or cleanname
         names.load(reload)
-        local found = heuristic(askedname,weight,style,width,all)
+        local found = heuristic(askedname,weight,style,width,variant,all)
         if not found and is_reloaded() then
-            found = heuristic(askedname,weight,style,width,all)
+            found = heuristic(askedname,weight,style,width,variant,all)
             if not filename then
                 found = foundname(askedname) -- old method
             end
@@ -1201,21 +1261,21 @@ function names.specification(askedname,weight,style,width,reload,all)
     end
 end
 
-function names.collect(askedname,weight,style,width,reload,all)
+function names.collect(askedname,weight,style,width,variant,reload,all)
     if askedname and askedname ~= "" and names.enabled then
         askedname = lower(askedname) -- or cleanname
         names.load(reload)
-        local list = heuristic(askedname,weight,style,width,true)
+        local list = heuristic(askedname,weight,style,width,variant,true)
         if not list or #list == 0 and is_reloaded() then
-            list = heuristic(askedname,weight,style,width,true)
+            list = heuristic(askedname,weight,style,width,variant,true)
         end
         return list
     end
 end
 
 function names.collectspec(askedname,reload,all)
-    local name, weight, style, width = names.splitspec(askedname)
-    return names.collect(name,weight,style,width,reload,all)
+    local name, weight, style, width, variant = names.splitspec(askedname)
+    return names.collect(name,weight,style,width,variant,reload,all)
 end
 
 function names.resolvespec(askedname,sub)

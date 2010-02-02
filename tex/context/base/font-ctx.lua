@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 -- needs a cleanup: merge of replace, lang/script etc
 
-local texsprint, count = tex.sprint, tex.count
+local texsprint, count, texsetcount = tex.sprint, tex.count, tex.setcount
 local format, concat, gmatch, match, find, lower, gsub = string.format, table.concat, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next, type = tostring, next, type
 local lpegmatch = lpeg.match
@@ -329,14 +329,24 @@ end
 
 local n = 0
 
-function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,mathsize,textsize)
+-- we can also move rscale to here (more consistent)
+
+function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,mathsize,textsize,relativeid)
+    if trace_defining then
+        logs.report("define font","memory usage before: %s",statistics.memused())
+    end
     -- name is now resolved and size is scaled cf sa/mo
     local lookup, name, sub, method, detail = get_specification(str or "")
     -- asome settings can be overloaded
-    if lookup and lookup ~= "" then specification.lookup = lookup end
+    if lookup and lookup ~= "" then
+        specification.lookup = lookup
+    end
+    if relativeid and relativeid ~= "" then -- experimental hook
+        local id = tonumber(relativeid) or 0
+        specification.relativeid = id > 0 and id
+    end
     specification.name = name
     specification.size = size
---~     specification.sub = sub
     specification.sub = (sub and sub ~= "" and sub) or specification.sub
     specification.mathsize = mathsize
     specification.textsize = textsize
@@ -349,9 +359,6 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
     elseif classfeatures and classfeatures ~= "" then
         specification.method, specification.detail = "*", classfeatures
     end
-    if trace_defining then
-        logs.report("define font","memory usage before: %s",statistics.memused())
-    end
     if fontfallbacks and fontfallbacks ~= "" then
         specification.fallbacks = fontfallbacks
     elseif classfallbacks and classfallbacks ~= "" then
@@ -360,6 +367,7 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
     local tfmdata = define.read(specification,size) -- id not yet known
     if not tfmdata then
         logs.report("define font","unable to define %s as \\%s",name,cs)
+        texsetcount("global","lastfontid",-1)
     elseif type(tfmdata) == "number" then
         if trace_defining then
             logs.report("define font","reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
@@ -367,6 +375,7 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
         tex.definefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
         texsprint(ctxcatcodes,format("\\def\\somefontsize{%isp}",fontdata[tfmdata].size))
+        texsetcount("global","lastfontid",tfmdata)
     else
     --  local t = os.clock(t)
         local id = font.define(tfmdata)
@@ -383,11 +392,34 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
     --~ if specification.fallbacks then
     --~     fonts.collections.prepare(specification.fallbacks)
     --~ end
+        texsetcount("global","lastfontid",id)
     end
     if trace_defining then
         logs.report("define font","memory usage after: %s",statistics.memused())
     end
     statistics.stoptiming(fonts)
+end
+
+local enable_auto_r_scale = false
+
+experiments.register("fonts.autorscale", function(v)
+    enable_auto_r_scale = v
+end)
+
+local calculate_scale = fonts.tfm.calculate_scale
+
+function fonts.tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
+    local scaledpoints, delta = calculate_scale(tfmtable, scaledpoints, relativeid)
+    if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
+        local relativedata = fontdata[relativeid]
+        local id_x_height = relativedata and relativedata.parameters and relativedata.parameters.x_height
+        local tf_x_height = id_x_height and tfmtable.parameters and tfmtable.parameters.x_height * delta
+        if tf_x_height then
+            scaledpoints = (id_x_height/tf_x_height) * scaledpoints
+            delta = scaledpoints/(tfmtable.units or 1000)
+        end
+    end
+    return scaledpoints, delta
 end
 
 --~ table.insert(readers.sequence,1,'vtf')

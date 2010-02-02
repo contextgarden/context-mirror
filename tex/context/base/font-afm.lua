@@ -710,7 +710,7 @@ function tfm.read_from_afm(specification)
     local tfmtable = afm.afm_to_tfm(specification)
     if tfmtable then
         tfmtable.name = specification.name
-        tfmtable = tfm.scale(tfmtable, specification.size)
+        tfmtable = tfm.scale(tfmtable, specification.size, specification.relativeid)
         local afmdata = tfmtable.shared.afmdata
         local filename = afmdata and afmdata.luatex and afmdata.luatex.filename
         if not filename then

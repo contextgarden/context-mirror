@@ -129,6 +129,7 @@ local function list_specifications(t,info)
                 entry.weight      or "<noweight>",
                 entry.style       or "<nostyle>",
                 entry.width       or "<nowidth>",
+                entry.variant     or "<novariant>",
                 entry.fontname,
                 entry.filename,
                 subfont(entry.subfont),

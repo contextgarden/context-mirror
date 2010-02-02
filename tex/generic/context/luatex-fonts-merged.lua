@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/01/10 11:23:44
+-- merge date  : 02/02/10 23:13:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -1922,6 +1922,11 @@ trackers = {
     enable        = dummyfunction,
     disable       = dummyfunction,
 }
+experiments = {
+    register      = dummyfunction,
+    enable        = dummyfunction,
+    disable       = dummyfunction,
+}
 storage = {
     register      = dummyfunction,
     shared        = { },
@@ -3559,12 +3564,27 @@ local charactercache = { }
 -- a virtual font has italic correction make sure to set the
 -- has_italic flag. Some more flags will be added in the future.
 
-function tfm.do_scale(tfmtable, scaledpoints)
- -- tfm.prepare_base_kerns(tfmtable) -- optimalization
+
+function tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
     local delta = scaledpoints/(tfmtable.units or 1000) -- brr, some open type fonts have 2048
+    return scaledpoints, delta
+end
+
+function tfm.do_scale(tfmtable, scaledpoints, relativeid)
+ -- tfm.prepare_base_kerns(tfmtable) -- optimalization
+    local scaledpoints, delta = tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
+    if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
+        local relativedata = fontdata[relativeid]
+        local id_x_height = relativedata and relativedata.parameters and relativedata.parameters.x_height
+        local tf_x_height = id_x_height and tfmtable.parameters and tfmtable.parameters.x_height * delta
+        if tf_x_height then
+            scaledpoints = (id_x_height/tf_x_height) * scaledpoints
+            delta = scaledpoints/(tfmtable.units or 1000)
+        end
+    end
     local hdelta, vdelta = delta, delta
     local t = { }
     -- unicoded unique descriptions shared cidinfo characters changed parameters indices
@@ -3959,8 +3979,8 @@ end
 function tfm.cleanup(tfmdata) -- we need a cleanup callback, now we miss the last one
 end
 
-function tfm.scale(tfmtable, scaledpoints)
-    local t, factor = tfm.do_scale(tfmtable, scaledpoints)
+function tfm.scale(tfmtable, scaledpoints, relativeid)
+    local t, factor = tfm.do_scale(tfmtable, scaledpoints, relativeid)
     t.factor    = factor
     t.ascender  = factor*(tfmtable.ascender  or 0)
     t.descender = factor*(tfmtable.descender or 0)
@@ -7121,7 +7141,7 @@ function tfm.read_from_open_type(specification)
                 end
             end
         end
-        tfmtable = tfm.scale(tfmtable,s)
+        tfmtable = tfm.scale(tfmtable,s,specification.relativeid)
      -- here we resolve the name; file can be relocated, so this info is not in the cache
         local filename = (otfdata and otfdata.luatex and otfdata.luatex.filename) or specification.filename
         if not filename then

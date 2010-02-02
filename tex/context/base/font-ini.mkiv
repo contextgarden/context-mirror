@@ -562,6 +562,22 @@
 %D We could instead have used dirty grouping tricks, but this
 %D one works too.
 
+% \enableexperiments[fonts.autorscale]
+%
+% \starttypescript[mscore]
+%     \definetypeface [mscore] [rm] [serif] [mscoretimes]   [default]
+%     \definetypeface [mscore] [ss] [sans]  [mscorearial]   [default] [rscale=auto] % 0.860]
+%     \definetypeface [mscore] [tt] [mono]  [mscorecourier] [default] [rscale=auto] % 1.065]
+%     \definetypeface [mscore] [mm] [math]  [times]         [default] [rscale=auto] % 1.020]
+% \stoptypescript
+%
+% \starttext
+%    \setupbodyfont[mscore,12pt]
+%    \startTEXpage
+%        test \ss test \tt test
+%    \stopTEXpage
+% \stoptext
+
 \let\defaultrelativefontsize \plusone
 \let\localrelativefontsize   \plusone
 \def\localabsolutefontsize  {\fontbody}
@@ -571,6 +587,17 @@
 \def\saverelativefontsize#1#2% #1=rm|ss|.. #2=waarde
   {\setxvalue{\fontclass#1\s!rscale}{#2}}
 
+\def\checkrelativefontid
+  {\ifcsname\??tf\fontclass\s!rname\endcsname
+     \@EA\let\@EA\relativefontid\csname\??tf\fontclass\s!rname\endcsname
+   \else
+     \@EA\xdef\csname\??tf\fontclass\s!rname\endcsname{\the\lastfontid}%
+      \let\relativefontid\empty
+   \fi}
+
+% \def\checkrelativefontid
+%   {\let\relativefontid\minusone}
+
 \def\checkrelativefontsize#1%
   {\edef\relativefontsize
      {\ifcsname\fontclass#1\s!rscale\endcsname
@@ -579,7 +606,13 @@
         \csname\defaultfontclass#1\s!rscale\endcsname
       \else
         \defaultrelativefontsize
-      \fi\fi}}
+      \fi\fi}%
+   \ifx\relativefontsize\v!auto
+     \let\relativefontsize\plusone
+     \checkrelativefontid
+   \else
+     \let\relativefontid\minusone
+   \fi}
 
 % \letvalue{\s!default\s!rscale}\defaultrelativefontsize
 %
@@ -646,7 +679,8 @@
 
 \newcount\scaledfontmode
 \newdimen\scaledfontsize
-\newtoks\everydefinefont
+\newtoks \everydefinefont
+\newcount\lastfontid
 
 \def\currentfontbodysize
   {\ifcsname\??ft\s!default\somefontsize\endcsname
@@ -654,6 +688,8 @@
    \else
      \somefontsize
    \fi}
+
+\let\relativefontid\empty
 
 \def\lowleveldefinefont#1#2% #2 = cs
   {%
@@ -698,7 +734,8 @@
       "\@@fontclassfallbacks",
       "\@@fontfallbacks",
       0\currentmathsize,
-      \number\dimexpr\textface\relax
+      \number\dimexpr\textface\relax,
+      "\relativefontid" % experiment
    )}%
    \edef\somefontspec{at \somefontsize}% we need the resolved designsize (for fallbacks)
    \expandafter\let\expandafter\lastrawfontcall\csname#2\endcsname
