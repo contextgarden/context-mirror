@@ -1877,6 +1877,7 @@ elseif os.type == "windows" then
 elseif name == "linux" then
 
     function os.resolvers.platform(t,k)
+        -- we sometims have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
         if find(architecture,"x86_64") then
             platform = "linux-64"
@@ -1890,14 +1891,28 @@ elseif name == "linux" then
         return platform
     end
 
-elseif name == "macosx" then -- a rather inconsistent mess
+elseif name == "macosx" then
+
+    --[[
+        Identifying the architecture of OSX is quite a mess and this
+        is the best we can come up with. For some reason $HOSTTYPE is
+        a kind of pseudo environment variable, not known to the current
+        environment. And yes, uname cannot be trusted either, so there
+        is a change that you end up with a 32 bit run on a 64 bit system.
+        Also, some proper 64 bit intel macs are too cheap (low-end) and
+        therefore not permitted to run the 64 bit kernel.
+      ]]--
 
     function os.resolvers.platform(t,k)
-        local platform, architecture = "", os.getenv("HOSTTYPE") or ""
+     -- local platform, architecture = "", os.getenv("HOSTTYPE") or ""
+     -- if architecture == "" then
+     --     architecture = os.resultof("echo $HOSTTYPE") or ""
+     -- end
+        local platform, architecture = "", os.resultof("echo $HOSTTYPE") or ""
         if architecture == "" then
-            architecture = os.resultof("echo $HOSTTYPE") or ""
-        end
-        if find(architecture,"i386") then
+         -- print("\nI have no clue what kind of OSX you're running so let's assume an 32 bit intel.\n")
+            platform = "osx-intel"
+        elseif find(architecture,"i386") then
             platform = "osx-intel"
         elseif find(architecture,"x86_64") then
             platform = "osx-64"
@@ -1973,8 +1988,10 @@ function os.uuid()
     )
 end
 
+local d
+
 function os.timezone(delta)
-    local d = tonumber(tonumber(os.date("%H")-os.date("!%H")))
+    d = d or tonumber(tonumber(os.date("%H")-os.date("!%H")))
     if delta then
         if d > 0 then
             return format("+%02i:00",d)
@@ -3854,7 +3871,7 @@ element.</p>
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
 local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
-local strip, cleanup, utfize, resolve = false, false, false, false
+local strip, cleanup, utfize, resolve, keep = false, false, false, false, false
 local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
@@ -3951,7 +3968,7 @@ local function add_special(what, spacing, text)
     if strip and (what == "@cm@" or what == "@dt@") then
         -- forget it
     else
-        dt[#dt+1] = { special=true, ns="", tg=what, dt={text} }
+        dt[#dt+1] = { special=true, ns="", tg=what, dt={ text } }
     end
 end
 
@@ -4057,11 +4074,22 @@ local parsedentity =
 
 xml.parsedentitylpeg = parsedentity
 
+local predefined = {
+    amp  = "&",
+    lt   = "<",
+    gt   = "<",
+    quot = '"',
+    apos = "'",
+}
+
 local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
-            if type(resolve) == "function" then
+            a = not keep and predefined[str]
+            if a then
+                -- one of the predefined
+            elseif type(resolve) == "function" then
                 a = resolve(str) or entities[str]
             else
                 a = entities[str]
@@ -4100,11 +4128,21 @@ local function handle_any_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &%s;",str)
             end
-            a = "&" .. str .. ";"
-            acache[str] = a
+            a = not keep and predefined[str]
+            if a then
+                -- one of the predefined
+                acache[str] = a
+            else
+                a = "&" .. str .. ";"
+                acache[str] = a
+            end
         end
         return a
     end
+end
+
+local function handle_end_entity(chr)
+    logs.report("xml","error in entity, %q found instead of ';'",chr)
 end
 
 local space            = S(' \r\n\t')
@@ -4127,12 +4165,15 @@ local utfbom           = P('\000\000\254\255') + P('\255\254\000\000') +
 
 local spacing          = C(space^0)
 
-local entitycontent    = (1-open-semicolon)^0
+----- entitycontent    = (1-open-semicolon)^0
+local anyentitycontent = (1-open-semicolon-space-close)^0
+local hexentitycontent = R("AF","af","09")^0
+local decentitycontent = R("09")^0
 local parsedentity     = P("#")/"" * (
-                                P("x")/"" * (entitycontent/handle_hex_entity) +
-                                            (entitycontent/handle_dec_entity)
-                            ) +             (entitycontent/handle_any_entity)
-local entity           = ampersand/"" * parsedentity * (semicolon/"")
+                                P("x")/"" * (hexentitycontent/handle_hex_entity) +
+                                            (decentitycontent/handle_dec_entity)
+                            ) +             (anyentitycontent/handle_any_entity)
+local entity           = ampersand/"" * parsedentity * ( (semicolon/"") + #(P(1)/handle_end_entity))
 
 local text_unparsed    = C((1-open)^1)
 local text_parsed      = Cs(((1-open-ampersand)^1 + entity)^1)
@@ -4229,11 +4270,14 @@ local grammar_unparsed_text = P { "preamble",
     children = unparsedtext + V("parent") + emptyelement + comment + cdata + instruction,
 }
 
+-- maybe we will add settinsg to result as well
+
 local function xmlconvert(data, settings)
     settings = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
     strip = settings.strip_cm_and_dt
     utfize = settings.utfize_entities
     resolve = settings.resolve_entities
+    keep = settings.keep_predefined_entities
     cleanup = settings.text_cleanup
     stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
     acache, hcache, dcache = { }, { }, { } -- not stored
@@ -4264,7 +4308,7 @@ local function xmlconvert(data, settings)
         errorstr = "invalid xml file - no text at all"
     end
     if errorstr and errorstr ~= "" then
-        result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={}, er = true } } }
+        result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={ }, er = true } } }
         setmetatable(stack, mt)
         local error_handler = settings.error_handler
         if error_handler == false then
@@ -4279,13 +4323,14 @@ local function xmlconvert(data, settings)
         result = stack[1]
     end
     if not settings.no_root then
-        result = { special = true, ns = "", tg = '@rt@', dt = result.dt, at={}, entities = entities, settings = settings }
+        result = { special = true, ns = "", tg = '@rt@', dt = result.dt, at={ }, entities = entities, settings = settings }
         setmetatable(result, mt)
         local rdt = result.dt
         for k=1,#rdt do
             local v = rdt[k]
             if type(v) == "table" and not v.special then -- always table -)
                 result.ri = k -- rootindex
+v.__p__ = result  -- new, experiment, else we cannot go back to settings, we need to test this !
                 break
             end
         end
@@ -4721,12 +4766,37 @@ xml.string = xmlstring
 <p>A few helpers:</p>
 --ldx]]--
 
+--~ xmlsetproperty(root,"settings",settings)
+
+function xml.settings(e)
+    while e do
+        local s = e.settings
+        if s then
+            return s
+        else
+            e = e.__p__
+        end
+    end
+    return nil
+end
+
+function xml.root(e)
+    local r = e
+    while e do
+        e = e.__p__
+        if e then
+            r = e
+        end
+    end
+    return r
+end
+
 function xml.parent(root)
     return root.__p__
 end
 
 function xml.body(root)
-    return (root.ri and root.dt[root.ri]) or root
+    return (root.ri and root.dt[root.ri]) or root -- not ok yet
 end
 
 function xml.name(root)
@@ -4770,6 +4840,24 @@ function xml.assign(dt,k,root)
     else
         return xml.body(root)
     end
+end
+
+--[[ldx--
+<p>The next helper assigns a tree (or string). Usage:</p>
+<typing>
+xml.tocdata(e)
+xml.tocdata(e,"error")
+</typing>
+--ldx]]--
+
+function xml.tocdata(e,wrapper)
+    local whatever = xmltostring(e.dt)
+    if wrapper then
+        whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)
+    end
+    local t = { special = true, ns = "", tg = "@cd@", at = {}, rn = "", dt = { whatever }, __p__ = e }
+    setmetatable(t,getmetatable(e))
+    e.dt = { t }
 end
 
 
@@ -4920,14 +5008,19 @@ end
 apply_axis['child'] = function(list)
     local collected = { }
     for l=1,#list do
-        local dt = list[l].dt
+        local ll = list[l]
+        local dt = ll.dt
+local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
+en = en + 1
+dk.ei = en
             end
         end
+ll.en = en
     end
     return collected
 end
@@ -4935,14 +5028,18 @@ end
 local function collect(list,collected)
     local dt = list.dt
     if dt then
+local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
+en = en + 1
+dk.ei = en
                 collect(dk,collected)
             end
         end
+list.en = en
     end
 end
 apply_axis['descendant'] = function(list)
@@ -4956,14 +5053,18 @@ end
 local function collect(list,collected)
     local dt = list.dt
     if dt then
+local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
+en = en + 1
+dk.ei = en
                 collect(dk,collected)
             end
         end
+list.en = en
     end
 end
 apply_axis['descendant-or-self'] = function(list)
@@ -5220,7 +5321,7 @@ local function apply_expression(list,expression,order)
     quit_expression = false
     for l=1,#list do
         local ll = list[l]
-        if expression(list,ll,l,order) then -- nasty, alleen valid als n=1
+        if expression(list,ll,l,order) then -- nasty, order alleen valid als n=1
             collected[#collected+1] = ll
         end
         if quit_expression then
@@ -5241,11 +5342,16 @@ local lp_or      = P("|")  / " or "
 local lp_and     = P("&")  / " and "
 
 local lp_builtin = P (
+P("firstindex")      / "1" +
+P("lastindex")       / "(#ll.__p__.dt or 1)" +
+P("firstelement")    / "1" +
+P("lastelement")     / "(ll.__p__.en or 1)" +
         P("first")        / "1" +
         P("last")         / "#list" +
-        P("position")     / "l" + -- is element in finalizer
         P("rootposition") / "order" +
+        P("position")     / "l" + -- is element in finalizer
         P("order")        / "order" +
+        P("element")      / "(ll.ei or 1)" +
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +
@@ -6440,6 +6546,29 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
 end
 
 xml.include = include
+
+--~ local function manipulate(xmldata,pattern,manipulator) -- untested and might go away
+--~     local collected = xmlparseapply({ xmldata },pattern)
+--~     if collected then
+--~         local xmltostring = xml.tostring
+--~         for c=1,#collected do
+--~             local e = collected[c]
+--~             local data = manipulator(xmltostring(e))
+--~             if data == "" then
+--~                 epdt[e.ni] = ""
+--~             else
+--~                 local xi = xmlinheritedconvert(data,xmldata)
+--~                 if not xi then
+--~                     epdt[e.ni] = ""
+--~                 else
+--~                     epdt[e.ni] = xml.body(xi) -- xml.assign(d,k,xi)
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
+--~ xml.manipulate = manipulate
 
 function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and trailing space !
     local collected = xmlparseapply({ root },pattern)

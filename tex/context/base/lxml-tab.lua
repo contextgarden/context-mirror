@@ -144,7 +144,7 @@ element.</p>
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
 local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
-local strip, cleanup, utfize, resolve = false, false, false, false
+local strip, cleanup, utfize, resolve, keep = false, false, false, false, false
 local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
@@ -241,7 +241,7 @@ local function add_special(what, spacing, text)
     if strip and (what == "@cm@" or what == "@dt@") then
         -- forget it
     else
-        dt[#dt+1] = { special=true, ns="", tg=what, dt={text} }
+        dt[#dt+1] = { special=true, ns="", tg=what, dt={ text } }
     end
 end
 
@@ -268,9 +268,9 @@ local function attribute_specification_error(str)
     return str
 end
 
-function xml.unknown_dec_entity_format(str) return format("&%s;",  str) end
+function xml.unknown_dec_entity_format(str) return (str == "" and "&error;") or format("&%s;",str) end
 function xml.unknown_hex_entity_format(str) return format("&#x%s;",str) end
-function xml.unknown_any_entity_format(str) return format("&%s;",  str) end
+function xml.unknown_any_entity_format(str) return format("&#x%s;",str) end
 
 local function handle_hex_entity(str)
     local h = hcache[str]
@@ -347,11 +347,22 @@ local parsedentity =
 
 xml.parsedentitylpeg = parsedentity
 
+local predefined = {
+    amp  = "&",
+    lt   = "<",
+    gt   = "<",
+    quot = '"',
+    apos = "'",
+}
+
 local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
-            if type(resolve) == "function" then
+            a = not keep and predefined[str]
+            if a then
+                -- one of the predefined
+            elseif type(resolve) == "function" then
                 a = resolve(str) or entities[str]
             else
                 a = entities[str]
@@ -373,7 +384,11 @@ local function handle_any_entity(str)
                     if trace_entities then
                         logs.report("xml","keeping entity &%s;",str)
                     end
-                    a = "&" .. str .. ";"
+                    if str == "" then
+                        a = "&error;"
+                    else
+                        a = "&" .. str .. ";"
+                    end
                 end
             end
             acache[str] = a
@@ -390,11 +405,24 @@ local function handle_any_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &%s;",str)
             end
-            a = "&" .. str .. ";"
-            acache[str] = a
+            a = not keep and predefined[str]
+            if a then
+                -- one of the predefined
+                acache[str] = a
+            elseif str == "" then
+                a = "&error;"
+                acache[str] = a
+            else
+                a = "&" .. str .. ";"
+                acache[str] = a
+            end
         end
         return a
     end
+end
+
+local function handle_end_entity(chr)
+    logs.report("xml","error in entity, %q found instead of ';'",chr)
 end
 
 local space            = S(' \r\n\t')
@@ -417,12 +445,15 @@ local utfbom           = P('\000\000\254\255') + P('\255\254\000\000') +
 
 local spacing          = C(space^0)
 
-local entitycontent    = (1-open-semicolon)^0
+----- entitycontent    = (1-open-semicolon)^0
+local anyentitycontent = (1-open-semicolon-space-close)^0
+local hexentitycontent = R("AF","af","09")^0
+local decentitycontent = R("09")^0
 local parsedentity     = P("#")/"" * (
-                                P("x")/"" * (entitycontent/handle_hex_entity) +
-                                            (entitycontent/handle_dec_entity)
-                            ) +             (entitycontent/handle_any_entity)
-local entity           = ampersand/"" * parsedentity * (semicolon/"")
+                                P("x")/"" * (hexentitycontent/handle_hex_entity) +
+                                            (decentitycontent/handle_dec_entity)
+                            ) +             (anyentitycontent/handle_any_entity)
+local entity           = ampersand/"" * parsedentity * ( (semicolon/"") + #(P(1)/handle_end_entity))
 
 local text_unparsed    = C((1-open)^1)
 local text_parsed      = Cs(((1-open-ampersand)^1 + entity)^1)
@@ -526,6 +557,7 @@ local function xmlconvert(data, settings)
     strip = settings.strip_cm_and_dt
     utfize = settings.utfize_entities
     resolve = settings.resolve_entities
+    keep = settings.keep_predefined_entities
     cleanup = settings.text_cleanup
     stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
     acache, hcache, dcache = { }, { }, { } -- not stored
@@ -708,7 +740,7 @@ function xml.checkbom(root) -- can be made faster
         local dt, found = root.dt, false
         for k=1,#dt do
             local v = dt[k]
-            if type(v) == "table" and v.special and v.tg == "@pi" and find(v.dt,"xml.*version=") then
+            if type(v) == "table" and v.special and v.tg == "@pi@" and find(v.dt[1],"xml.*version=") then
                 found = true
                 break
             end
@@ -1087,5 +1119,41 @@ function xml.assign(dt,k,root)
         return dt[k]
     else
         return xml.body(root)
+    end
+end
+
+-- the following helpers may move
+
+--[[ldx--
+<p>The next helper assigns a tree (or string). Usage:</p>
+<typing>
+xml.tocdata(e)
+xml.tocdata(e,"error")
+</typing>
+--ldx]]--
+
+function xml.tocdata(e,wrapper)
+    local whatever = xmltostring(e.dt)
+    if wrapper then
+        whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)
+    end
+    local t = { special = true, ns = "", tg = "@cd@", at = {}, rn = "", dt = { whatever }, __p__ = e }
+    setmetatable(t,getmetatable(e))
+    e.dt = { t }
+end
+
+function xml.makestandalone(root)
+    if root.ri then
+        local dt = root.dt
+        for k=1,#dt do
+            local v = dt[k]
+            if type(v) == "table" and v.special and v.tg == "@pi@" then
+                local txt = v.dt[1]
+                if find(txt,"xml.*version=") then
+                    v.dt[1] = txt .. " standalone='yes'"
+                    break
+                end
+            end
+        end
     end
 end

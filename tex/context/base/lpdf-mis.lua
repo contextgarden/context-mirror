@@ -41,11 +41,7 @@ local pdfreserveobj   = pdf.reserveobj
 local pdfimmediateobj = pdf.immediateobj
 
 local tobasepoints = number.tobasepoints
-
 local variables = interfaces.variables
-
-lpdf.addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
-lpdf.addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
 
 --
 
@@ -265,6 +261,8 @@ local function documentspecification()
         if fit then
             lpdf.addtocatalog("ViewerPreferences",fit)
         end
+        lpdf.addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
+        lpdf.addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
     end
 end
 
