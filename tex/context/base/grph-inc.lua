@@ -38,12 +38,14 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
 local texsprint, texbox, texwd, texht, texdp = tex.sprint, tex.box, tex.wd, tex.ht, tex.dp
 local contains = table.contains
+local concat = table.concat
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
 
-local trace_figures = false  trackers.register("figures.locating",function(v) trace_figures = v end)
-local trace_bases   = false  trackers.register("figures.bases",   function(v) trace_bases   = v end)
+local trace_figures  = false  trackers.register("figures.locating", function(v) trace_figures  = v end)
+local trace_bases    = false  trackers.register("figures.bases",    function(v) trace_bases    = v end)
+local trace_programs = false  trackers.register("figures.programs", function(v) trace_programs = v end)
 
 --- some extra img functions ---
 
@@ -198,7 +200,7 @@ function figures.setpaths(locationset,pathlist)
     figures.paths, last_pathlist = t, pathlist
     if trace_figures then
         commands.writestatus("figures","locations: %s",last_locationset)
-        commands.writestatus("figures","path list: %s",table.concat(figures.paths, " "))
+        commands.writestatus("figures","path list: %s",concat(figures.paths, " "))
     end
 end
 
@@ -562,6 +564,7 @@ figures.checkers    = figures.checkers    or { }
 figures.includers   = figures.includers   or { }
 figures.converters  = figures.converters  or { }
 figures.identifiers = figures.identifiers or { }
+figures.programs    = figures.programs    or { }
 
 figures.identifiers.list = {
     figures.identifiers.default
@@ -796,25 +799,70 @@ function figures.checkers.tex(data)
 end
 figures.includers.tex = figures.includers.nongeneric
 
--- -- -- eps -- -- --
+-- -- -- converters -- -- --
 
-function figures.converters.eps(oldname,newname)
-    -- hack, we need a lua based converter script, or better, we should use
-    -- rlx as alternative
-    local outputpath = file.dirname(newname)
-    local outputbase = file.basename(newname)
-    if outputpath == "" then outputpath = "." end
-    local command = format("mtxrun bin:pstopdf --outputpath=%s %s",outputpath,oldname)
+local function makeoptions(program)
+    local to = type(options)
+    return (to == "table" and concat(options," ")) or (to == "string" and options) or ""
+end
+
+local function runprogram(...)
+    local command = format(...)
+    if trace_programs then
+        logs.report("figures","running %s",command)
+    end
     os.spawn(command)
 end
 
-figures.converters.svg = figures.converters.eps
+-- -- -- eps -- -- --
+
+figures.programs.gs = {
+    options = {
+        "-dAutoRotatePages=/None",
+        "-dPDFSETTINGS=/prepress",
+        "-dEPSCrop",
+    },
+    command = (os.type == "windows" and "gswin32") or "gs"
+}
+
+function figures.converters.eps(oldname,newname)
+    local gs = figures.programs.gs
+    runprogram (
+        '%s -q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH %s -sOutputFile="%s" "%s" -c quit',
+        gs.command, makeoptions(gs.options), newname, oldname
+    )
+end
+
+-- -- -- svg -- -- --
+
+figures.programs.inkscape = {
+    command = "inkscape"
+}
+
+function figures.converters.svg(oldname,newname)
+    -- inkscape on windows only works with complete paths
+    local inkscape = figures.programs.inkscape
+    oldname, newname = dir.expand_name(oldname), dir.expand_name(newname)
+    runprogram (
+        '%s "%s" --export-pdf="%s" %s',
+        inkscape.command, oldname, newname, makeoptions(inkscape.options)
+    )
+end
+
+figures.converters.svgz = figures.converters.svg
+
+-- -- -- gif -- -- --
+
+figures.programs.convert = {
+    command = "convert" -- imagemagick
+}
 
 function figures.converters.gif(oldname,newname)
-    -- hack, we need a lua based converter script, or better, we should use
-    -- rlx as alternative
-    local command = format("mtxrun bin:convert %s %s",oldname,newname)
-    os.spawn(command)
+    local convert = figures.programs.convert
+    runprogram (
+        "convert %s %s",
+        convert.command, makeoptions(convert.options), oldname, newname
+    )
 end
 
 -- -- -- lowres -- -- --

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/02/10 23:13:26
+-- merge date  : 02/08/10 19:47:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -1543,15 +1543,17 @@ function file.join_path(tab)
 end
 
 function file.collapse_path(str)
-    str = gsub(str,"/%./","/")
-    local n, m = 1, 1
-    while n > 0 or m > 0 do
-        str, n = gsub(str,"[^/%.]+/%.%.$","")
-        str, m = gsub(str,"[^/%.]+/%.%./","")
+    if find(str,"/") then
+        str = gsub(str,"/%./","/")
+        local n, m = 1, 1
+        while n > 0 or m > 0 do
+            str, n = gsub(str,"[^/%.]+/%.%.$","")
+            str, m = gsub(str,"[^/%.]+/%.%./","")
+        end
+        str = gsub(str,"([^/])/$","%1")
+        str = gsub(str,"^%./","")
+        str = gsub(str,"/%.$","")
     end
-    str = gsub(str,"([^/])/$","%1")
-    str = gsub(str,"^%./","")
-    str = gsub(str,"/%.$","")
     if str == "" then str = "." end
     return str
 end

@@ -231,6 +231,21 @@ elseif name == "freebsd" then
         return platform
     end
 
+elseif name == "kfreebsd" then
+
+    function os.resolvers.platform(t,k)
+        -- we sometims have HOSTTYPE set so let's check that first
+        local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
+        if find(architecture,"x86_64") then
+            platform = "kfreebsd-64"
+        else
+            platform = "kfreebsd-i386"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
 else
 
     -- platform = "linux"

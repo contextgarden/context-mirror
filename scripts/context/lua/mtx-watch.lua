@@ -12,6 +12,11 @@ scripts.watch = scripts.watch or { }
 local format, concat, difftime, time = string.format, table.concat, os.difftime, os.time
 local pairs, ipairs, next, type = pairs, ipairs, next, type
 
+-- the machine/instance matches the server app we use
+
+local machine  = socket.dns.gethostname() or "unknown-machine"
+local instance = string.match(machine,"(%d+)$") or "0"
+
 function scripts.watch.save_exa_modes(joblog,ctmname)
     local values = joblog and joblog.values
     if values then
@@ -78,13 +83,20 @@ function scripts.watch.watch()
     local logpath = environment.argument("logpath") or ""
     local pipe    = environment.argument("pipe")    or false
     local watcher = "mtxwatch.run"
-    if #environment.files > 0 then
-        for _, path in ipairs(environment.files) do
+    local paths   = environment.files
+    if #paths > 0 then
+        if environment.argument("automachine") then
+            logpath = string.gsub(logpath,"/machine/","/"..machine.."/")
+            for i, path in ipairs(paths) do
+                paths[i] = string.gsub(path,"/machine/","/"..machine.."/")
+            end
+        end
+        for _, path in ipairs(paths) do
             logs.report("watch", "watching path ".. path)
         end
         local function process()
             local done = false
-            for _, path in ipairs(environment.files) do
+            for _, path in ipairs(paths) do
                 lfs.chdir(path)
                 local files = { }
                 glob(files,path)
@@ -198,7 +210,7 @@ function scripts.watch.watch()
                 local delta = difftime(currenttime,lasttime)
                 if delta > cleanupdelay then
                     lasttime = currenttime
-                    for _, path in ipairs(environment.files) do
+                    for _, path in ipairs(paths) do
                         if string.find(path,"%.") then
                             -- safeguard, we want a fully qualified path
                         else
@@ -343,6 +355,7 @@ messages.help = [[
 --watch               watch given path [--delay]
 --pipe                use pipe instead of execute
 --delay               delay between sweeps
+--automachine         replace /machine/ in path /<servername>/
 --collect             condense log files
 --cleanup=delay       remove files in given path [--force]
 --showlog             show log data

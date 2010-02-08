@@ -73,7 +73,7 @@ local processfile       = commands.processfile
 local doifinputfileelse = commands.doifinputfileelse
 
 function commands.processfile(name,maxreadlevel) -- overloaded
-    local prepname = found and resolve(name)
+    local prepname = resolve(name)
     if prepname then
         return processfile(prepname,0)
     end
@@ -81,7 +81,7 @@ function commands.processfile(name,maxreadlevel) -- overloaded
 end
 
 function commands.doifinputfileelse(name,depth)
-    local prepname = found and resolve(name)
+    local prepname = resolve(name)
     if prepname then
         return doifinputfileelse(prepname,0)
     end
@@ -89,5 +89,5 @@ function commands.doifinputfileelse(name,depth)
 end
 
 function commands.preparedfile(name)
-    return (found and resolve(name)) or name
+    return resolve(name) or name
 end

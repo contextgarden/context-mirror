@@ -118,6 +118,7 @@ local cache = { }
 local trace = false
 
 function lmx.new(data,variables)
+    data = data or ""
     local known = cache[data]
     if not known then
         local definitions = { }
