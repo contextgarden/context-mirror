@@ -2025,6 +2025,7 @@ function table.sequenced(t,sep) -- temp here
 end
 
 function resolvers.methodhandler(what, filename, filetype) -- ...
+    filename = file.collapse_path(filename)
     local specification = (type(filename) == "string" and resolvers.splitmethod(filename)) or filename -- no or { }, let it bomb
     local scheme = specification.scheme
     if resolvers[what][scheme] then

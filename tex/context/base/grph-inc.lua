@@ -43,9 +43,10 @@ local concat = table.concat
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
 
-local trace_figures  = false  trackers.register("figures.locating", function(v) trace_figures  = v end)
-local trace_bases    = false  trackers.register("figures.bases",    function(v) trace_bases    = v end)
-local trace_programs = false  trackers.register("figures.programs", function(v) trace_programs = v end)
+local trace_figures    = false  trackers.register("figures.locating",   function(v) trace_figures    = v end)
+local trace_bases      = false  trackers.register("figures.bases",      function(v) trace_bases      = v end)
+local trace_programs   = false  trackers.register("figures.programs",   function(v) trace_programs   = v end)
+local trace_conversion = false  trackers.register("figures.conversion", function(v) trace_conversion = v end)
 
 --- some extra img functions ---
 
@@ -85,13 +86,13 @@ end
 
 ---
 
-figures                = figures          or { }
-figures.loaded         = figures.loaded   or { }
-figures.used           = figures.used     or { }
-figures.found          = figures.found    or { }
-figures.suffixes       = figures.suffixes or { }
-figures.patterns       = figures.patterns or { }
-figures.boxnumber      = figures.boxid    or 0
+figures                = figures           or { }
+figures.loaded         = figures.loaded    or { }
+figures.used           = figures.used      or { }
+figures.found          = figures.found     or { }
+figures.suffixes       = figures.suffixes  or { }
+figures.patterns       = figures.patterns  or { }
+figures.boxnumber      = figures.boxnumber or 0
 figures.defaultsearch  = true
 figures.defaultwidth   = 0
 figures.defaultheight  = 0
@@ -271,7 +272,10 @@ do
     end
 
     function figures.push(request)
-        statistics.starttiming(figures)
+        local ncs = #callstack + 1
+        if ncs == 1 then
+            statistics.starttiming(figures)
+        end
         local figuredata = figures.new()
         if request then
         local iv = interfaces.variables
@@ -290,13 +294,16 @@ do
         --  request.height    = (h and h > 0) or false
             table.merge(figuredata.request,request)
         end
-        callstack[#callstack+1] = figuredata
+        callstack[ncs] = figuredata
         return figuredata
     end
     function figures.pop()
-        figuredata = callstack[#callstack]
-        callstack[#callstack] = nil
-        statistics.stoptiming(figures)
+        local ncs = #callstack
+        figuredata = callstack[ncs]
+        callstack[ncs] = nil
+        if ncs == 1 then
+            statistics.stoptiming(figures)
+        end
     end
     -- maybe move texsprint to tex
     function figures.get(category,tag,default)
@@ -317,19 +324,48 @@ do
 
 end
 
+local defaultformat = "pdf"
+local defaultprefix = "m_k_v_i_"
+
 local function register(askedname,specification)
     if specification then
         local format = specification.format
         if format then
-            local converter = figures.converters[format]
+            local conversion = specification.conversion
+            if conversion == "" then
+                conversion = nil
+            end
+            local newformat = conversion
+            if not newformat or newformat == "" then
+                newformat = defaultformat
+            end
+            local converter = (newformat ~= format) and figures.converters[format]
+            if trace_conversion then
+                logs.report("figures","checking conversion of '%s': old format '%s', new format '%s', conversion '%s'",
+                    askedname,format,newformat,conversion or "default")
+            end
+            if converter then
+                if converter[newformat] then
+                    converter = converter[newformat]
+                else
+                    newformat = defaultformat
+                    if converter[newformat] then
+                        converter = converter[newformat]
+                    else
+                        newformat = defaultformat
+                    end
+                end
+            end
             if converter then
                 local oldname = specification.fullname
-                local newformat = "pdf" -- todo, other target than pdf
                 local newpath = file.dirname(oldname)
-                local newbase = file.replacesuffix(file.basename(oldname),newformat)
+                local oldbase = file.basename(oldname)
+                local newbase = file.replacesuffix(oldbase,newformat)
                 local fc = specification.cache or figures.cachepaths.path
                 if fc and fc ~= "" and fc ~= "." then
                     newpath = fc
+                else
+                    newbase = defaultprefix .. newbase
                 end
                 local subpath = specification.subpath or figures.cachepaths.subpath
                 if subpath and subpath ~= "" and subpath ~= "."  then
@@ -341,10 +377,19 @@ local function register(askedname,specification)
                 end
                 local newname = file.join(newpath,newbase)
                 dir.makedirs(newpath)
+                oldname = dir.expand_name(oldname)
+                newname = dir.expand_name(newname)
                 local oldtime = lfs.attributes(oldname,'modification') or 0
                 local newtime = lfs.attributes(newname,'modification') or 0
                 if oldtime > newtime then
+                    if trace_conversion then
+                        logs.report("figures","converting '%s' from '%s' to '%s'",askedname,format,newformat)
+                    end
                     converter(oldname,newname)
+                else
+                    if trace_conversion then
+                        logs.report("figures","no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
+                    end
                 end
                 if io.exists(newname) then
                     specification.foundname = oldname
@@ -379,7 +424,7 @@ local function register(askedname,specification)
         specification = { }
     end
     specification.foundname = specification.foundname or specification.fullname
-    figures.found[askedname] = specification
+    figures.found[askedname .. "->" .. (specification.conversion or "default")] = specification
     return specification
 end
 
@@ -387,7 +432,7 @@ local resolve_too = true
 
 local function locate(request) -- name, format, cache
     local askedname = resolvers.clean_path(request.name)
-    local foundname = figures.found[askedname]
+    local foundname = figures.found[askedname .. "->" .. (request.conversion or "default")]
     if foundname then
         return foundname
     end
@@ -404,6 +449,7 @@ local function locate(request) -- name, format, cache
     local askedbase = file.basename(askedname)
     local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
     local askedcache = request.cache
+    local askedconversion = request.conversion
     if askedformat ~= "" then
         if trace_figures then
             commands.writestatus("figures","strategy: forced format")
@@ -427,6 +473,7 @@ local function locate(request) -- name, format, cache
                     format = format,
                     cache = askedcache,
                     foundname = foundname,
+                    conversion = askedconversion,
                 })
             end
         end
@@ -438,6 +485,7 @@ local function locate(request) -- name, format, cache
                     fullname = askedname,
                     format = askedformat,
                     cache = askedcache,
+                    conversion = askedconversion,
                 })
             end
         else
@@ -452,6 +500,7 @@ local function locate(request) -- name, format, cache
                         fullname = check,
                         format = askedformat,
                         cache = askedcache,
+                        conversion = askedconversion,
                     })
                 end
             end
@@ -463,6 +512,7 @@ local function locate(request) -- name, format, cache
                         fullname = check,
                         format = askedformat,
                         cache = askedcache,
+                        conversion = askedconversion,
                     })
                 end
             end
@@ -481,6 +531,7 @@ local function locate(request) -- name, format, cache
                         fullname = check,
                         format = format,
                         cache = askedcache,
+                        conversion = askedconversion,
                     })
                 end
             end
@@ -508,6 +559,7 @@ local function locate(request) -- name, format, cache
                                 fullname = check,
                                 format = format,
                                 cache = askedcache,
+                                conversion = askedconversion,
                             })
                         end
                     end
@@ -528,6 +580,7 @@ local function locate(request) -- name, format, cache
                                 fullname = check,
                                 format = format,
                                 cache = askedcache,
+                                conversion = askedconversion,
                             })
                         end
                     end
@@ -548,6 +601,7 @@ local function locate(request) -- name, format, cache
                             fullname = check,
                             format = format,
                             cache = askedcache,
+                            conversion = askedconversion,
                         })
                     end
                 end
@@ -655,7 +709,11 @@ end
 function figures.checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     local name, page, size, color = du.fullname or "unknown generic", du.page or dr.page, dr.size or "crop", dr.color or "natural"
-    local hash = name .. "->" .. page .. "->" .. size .. "->" .. color
+    local conversion = dr.conversion
+    if not conversion or conversion == "" then
+        conversion = "unknown"
+    end
+    local hash = name .. "->" .. page .. "->" .. size .. "->" .. color .. "->" .. conversion
     local figure = figures.loaded[hash]
     if figure == nil then
         figure = img.new { filename = name, page = page, pagebox = dr.size }
@@ -664,6 +722,13 @@ function figures.checkers.generic(data)
         local f, d = backends.codeinjections.setfigurealternative(data,figure)
         figure, data = f or figure, d or data
         figures.loaded[hash] = figure
+        if trace_conversion then
+            logs.report("figures","new graphic, hash: %s",hash)
+        end
+    else
+        if trace_conversion then
+            logs.report("figures","existing graphic, hash: %s",hash)
+        end
     end
     if figure then
         du.width = figure.width
@@ -808,13 +873,16 @@ end
 
 local function runprogram(...)
     local command = format(...)
-    if trace_programs then
+    if trace_conversion or trace_programs then
         logs.report("figures","running %s",command)
     end
     os.spawn(command)
 end
 
 -- -- -- eps -- -- --
+
+local epsconverter     = { }
+figures.converters.eps = epsconverter
 
 figures.programs.gs = {
     options = {
@@ -825,7 +893,7 @@ figures.programs.gs = {
     command = (os.type == "windows" and "gswin32") or "gs"
 }
 
-function figures.converters.eps(oldname,newname)
+function epsconverter.pdf(oldname,newname)
     local gs = figures.programs.gs
     runprogram (
         '%s -q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH %s -sOutputFile="%s" "%s" -c quit',
@@ -833,31 +901,51 @@ function figures.converters.eps(oldname,newname)
     )
 end
 
+epsconverter.default = epsconverter.pdf
+
 -- -- -- svg -- -- --
 
+local svgconverter      = { }
+figures.converters.svg  = svgconverter
+figures.converters.svgz = svgconverter
+
+-- inkscape on windows only works with complete paths
+
 figures.programs.inkscape = {
+    options = {
+        "--export-dpi=600"
+    },
     command = "inkscape"
 }
 
-function figures.converters.svg(oldname,newname)
-    -- inkscape on windows only works with complete paths
+function svgconverter.pdf(oldname,newname)
     local inkscape = figures.programs.inkscape
-    oldname, newname = dir.expand_name(oldname), dir.expand_name(newname)
     runprogram (
         '%s "%s" --export-pdf="%s" %s',
         inkscape.command, oldname, newname, makeoptions(inkscape.options)
     )
 end
 
-figures.converters.svgz = figures.converters.svg
+function svgconverter.png(oldname,newname)
+    local inkscape = figures.programs.inkscape
+    runprogram (
+        '%s "%s" --export-png="%s" %s',
+        inkscape.command, oldname, newname, makeoptions(inkscape.options)
+    )
+end
+
+svgconverter.default = svgconverter.pdf
 
 -- -- -- gif -- -- --
+
+local gifconverter     = { }
+figures.converters.gif = gifconverter
 
 figures.programs.convert = {
     command = "convert" -- imagemagick
 }
 
-function figures.converters.gif(oldname,newname)
+function gifconverter.pdf(oldname,newname)
     local convert = figures.programs.convert
     runprogram (
         "convert %s %s",
@@ -865,14 +953,11 @@ function figures.converters.gif(oldname,newname)
     )
 end
 
--- -- -- lowres -- -- --
+gifconverter.default = gifconverter.pdf
 
---~ function figures.converters.pdf(oldname,newname)
---~     local outputpath = file.dirname(newname)
---~     local outputbase = file.basename(newname)
---~     local command = format("mtxrun bin:pstopdf --method=4 --outputpath=%s %s",outputpath,oldname)
---~     os.spawn(command)
---~ end
+-- todo: lowres
+
+-- -- -- bases -- -- --
 
 figures.bases         = { }
 figures.bases.list    = { } -- index      => { basename, fullname, xmlroot }

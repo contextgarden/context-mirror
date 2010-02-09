@@ -212,6 +212,10 @@
 
 \newconditional\testexternalfigureonly
 
+% \enabletrackers[figures.conversion]
+% \externalfigure[demo.svg]
+% \externalfigure[demo.svg][conversion=png]
+
 \def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]% \cmd label filename parent_id preset current
   {\dontcomplain
    \restorecatcodes
@@ -235,6 +239,7 @@
         controls="\@@efcontrols",
         preview="\@@efpreview",
         display="\@@efdisplay",
+        conversion="\@@efconversion",
         color="\internalspotcolorparent\@@efcolor", % hack is needed
         ["repeat"]="\@@efrepeat",
         width="\@@efwidth", % can be crap

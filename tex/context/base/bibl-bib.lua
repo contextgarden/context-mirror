@@ -16,6 +16,8 @@ local lower, format, gsub = string.lower, string.format, string.gsub
 local next = next
 local lpegmatch = lpeg.match
 
+local trace_bibxml = false  trackers.register("publications.bibxml", function(v) trace_bibtex = v end)
+
 bibtex = bibtex or { }
 
 bibtex.size        = 0
@@ -109,7 +111,13 @@ end
 function bibtex.load(session,filename)
     local filename = resolvers.find_file(filename,"bib")
     if filename ~= "" then
-        bibtex.convert(session,io.loaddata(filename) or "")
+        local data = io.loaddata(filename) or ""
+        if data == "" then
+            logs.report("publications","empty file '%s', no conversion to xml",filename)
+        elseif trace_bibxml then
+            logs.report("publications","converting file '%s' to xml",filename)
+        end
+        bibtex.convert(session,data)
     end
 end
 

@@ -10,15 +10,15 @@ local finders, openers, loaders = resolvers.finders, resolvers.openers, resolver
 local unpack = unpack or table.unpack
 
 function resolvers.findbinfile(filename, filetype)
-    return resolvers.methodhandler('finders',file.collapse_path(filename), filetype)
+    return resolvers.methodhandler('finders',filename, filetype)
 end
 
 function resolvers.openbinfile(filename)
-    return resolvers.methodhandler('loaders',file.collapse_path(filename))
+    return resolvers.methodhandler('loaders',filename)
 end
 
 function resolvers.loadbinfile(filename, filetype)
-    local fname = resolvers.findbinfile(file.collapse_path(filename), filetype)
+    local fname = resolvers.methodhandler('finders',filename, filetype)
     if fname and fname ~= "" then
         return resolvers.openbinfile(fname)
     else

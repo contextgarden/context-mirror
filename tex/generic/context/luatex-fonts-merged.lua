@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/08/10 19:47:32
+-- merge date  : 02/09/10 18:25:39
 
 do -- begin closure to overcome local limits and interference
 
@@ -1447,7 +1447,7 @@ if not modules then modules = { } end modules ['l-file'] = {
 file = file or { }
 
 local concat = table.concat
-local find, gmatch, match, gsub, sub = string.find, string.gmatch, string.match, string.gsub, string.sub
+local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
 
 function file.removesuffix(filename)
@@ -1484,14 +1484,33 @@ end
 
 file.suffix = file.extname
 
---~ print(file.join("x/","/y"))
---~ print(file.join("http://","/y"))
---~ print(file.join("http://a","/y"))
---~ print(file.join("http:///a","/y"))
---~ print(file.join("//nas-1","/y"))
+--~ function file.join(...)
+--~     local pth = concat({...},"/")
+--~     pth = gsub(pth,"\\","/")
+--~     local a, b = match(pth,"^(.*://)(.*)$")
+--~     if a and b then
+--~         return a .. gsub(b,"//+","/")
+--~     end
+--~     a, b = match(pth,"^(//)(.*)$")
+--~     if a and b then
+--~         return a .. gsub(b,"//+","/")
+--~     end
+--~     return (gsub(pth,"//+","/"))
+--~ end
+
+local trick_1 = char(1)
+local trick_2 = "^" .. trick_1 .. "/+"
 
 function file.join(...)
-    local pth = concat({...},"/")
+    local lst = { ... }
+    local a, b = lst[1], lst[2]
+    if a == "" then
+        lst[1] = trick_1
+    elseif b and find(a,"^/+$") and find(b,"^/") then
+        lst[1] = ""
+        lst[2] = gsub(b,"^/+","")
+    end
+    local pth = concat(lst,"/")
     pth = gsub(pth,"\\","/")
     local a, b = match(pth,"^(.*://)(.*)$")
     if a and b then
@@ -1501,8 +1520,19 @@ function file.join(...)
     if a and b then
         return a .. gsub(b,"//+","/")
     end
+    pth = gsub(pth,trick_2,"")
     return (gsub(pth,"//+","/"))
 end
+
+--~ print(file.join("//","/y"))
+--~ print(file.join("/","/y"))
+--~ print(file.join("","/y"))
+--~ print(file.join("/x/","/y"))
+--~ print(file.join("x/","/y"))
+--~ print(file.join("http://","/y"))
+--~ print(file.join("http://a","/y"))
+--~ print(file.join("http:///a","/y"))
+--~ print(file.join("//nas-1","/y"))
 
 function file.iswritable(name)
     local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
@@ -1541,6 +1571,8 @@ end
 function file.join_path(tab)
     return concat(tab,io.pathseparator) -- can have trailing //
 end
+
+-- we can hash them weakly
 
 function file.collapse_path(str)
     if find(str,"/") then

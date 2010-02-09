@@ -609,8 +609,13 @@ local register_initial_child           = { kind = "axis", axis = "initial-child"
 
 local register_all_nodes               = { kind = "nodes", nodetest = true, nodes = { true, false, false } }
 
+local skip = { }
+
 local function errorrunner_e(str,cnv)
-    logs.report("lpath","error in expression: %s => %s",str,cnv)
+    if not skip[str] then
+        logs.report("lpath","error in expression: %s => %s",str,cnv)
+        skip[str] = cnv or str
+    end
     return false
 end
 local function errorrunner_f(str,arg)

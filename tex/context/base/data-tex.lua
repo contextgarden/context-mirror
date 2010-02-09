@@ -202,11 +202,11 @@ function loaders.tex(filename)
 end
 
 function resolvers.findtexfile(filename, filetype)
-    return resolvers.methodhandler('finders',file.collapse_path(filename), filetype)
+    return resolvers.methodhandler('finders',filename, filetype)
 end
 
 function resolvers.opentexfile(filename)
-    return resolvers.methodhandler('openers',file.collapse_path(filename))
+    return resolvers.methodhandler('openers',filename)
 end
 
 function resolvers.openfile(filename)
