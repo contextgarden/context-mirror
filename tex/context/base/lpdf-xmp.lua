@@ -168,11 +168,15 @@ local function flushxmpinfo()
         texio.write_nl("log","")
         texio.write("log","\n% ",(gsub(blob,"[\r\n]","\n%% ")),"\n")
     end
+    blob = format(xpacket,packetid,blob)
+    if tex.pdfcompresslevel > 0 then
+        blob = gsub(blob,">%s+<","><")
+    end
     local r = pdf.obj {
         immediate = true,
         compresslevel = 0,
         type = "stream",
-        string = format(xpacket,packetid,blob),
+        string = blob,
         attr = md(),
     }
     lpdf.addtocatalog("Metadata",lpdf.reference(r))

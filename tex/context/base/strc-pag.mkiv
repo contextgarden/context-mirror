@@ -241,8 +241,9 @@
 
 % Hooks:
 
+\def\currentpage{\the\realpageno}% rather useless
+
 \appendtoks
-    \xdef\currentpage{\the\realpageno}% rather useless
     \ifnum\realpageno>\lastpage \globallet\lastpage\lastrealpage \fi
 \to \everyinitializepagecounters
 

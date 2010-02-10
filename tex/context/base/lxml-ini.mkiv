@@ -353,7 +353,10 @@
 
 \chardef\xmlautoentities=1 % 0=off, 1=upper, 2=upper,lower
 
+\let\isolatedentity\firstofoneargument
+
 \def\xmlsetentity#1#2{\ctxlua{xml.register_entity('#1',\!!bs\detokenize{#2}\!!es)}}
+\def\xmltexentity#1#2{\ctxlua{xml.register_entity('#1',\!!bs\detokenize{\isolatedentity{#2}}\!!es)}}
 
 % \xmlsetentity{tex}{\TEX{}} % {} needed
 
