@@ -91,6 +91,9 @@ end
 function notes.save(tag,newkind)
     local state = notestates[tag]
     if state and not state.saved then
+        if trace_notes then
+            logs.report("notes","saving state of %s: %s -> %s",tag,state.kind,newkind or state.kind)
+        end
         state.saved = notedata[tag]
         state.savedkind = state.kind
         state.kind = newkind or state.kind
@@ -98,11 +101,14 @@ function notes.save(tag,newkind)
     end
 end
 
-function notes.restore(tag)
+function notes.restore(tag,forcedstate)
     local state = notestates[tag]
     if state and state.saved then
+        if trace_notes then
+            logs.report("notes","restoring state of %s: %s -> %s",tag,state.kind,state.savedkind)
+        end
         state.saved = nil
-        state.kind = state.savedkind
+        state.kind = forcedstate or state.savedkind
         notedata[tag] = state.saved
     end
 end
@@ -264,9 +270,9 @@ function notes.flush(tag,whatkind) -- store and postpone
     local state = notestates[tag]
     local kind = state.kind
     if kind == whatkind then
+        local nd = notedata[tag]
+        local ns = state.start -- first index
         if kind == "postpone" then
-            local nd = notedata[tag]
-            local ns = state.start -- first index
             if nd and ns then
                 if trace_notes then
                     logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
@@ -278,14 +284,19 @@ function notes.flush(tag,whatkind) -- store and postpone
             state.start = nil
             state.kind = "insert"
         elseif kind == "store" then
-            local nd = notedata[tag]
-            local ns = state.start -- first index
-            if trace_notes then
-                logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
-            end
             if nd and ns then
+                if trace_notes then
+                    logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+                end
                 for i=ns,#nd do
                     texsprint(ctxcatcodes,format("\\handlenoteitself{%s}{%s}",tag,i))
+                end
+            end
+            state.start = nil
+        elseif kind == "reset" then
+            if nd and ns then
+                if trace_notes then
+                    logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
                 end
             end
             state.start = nil

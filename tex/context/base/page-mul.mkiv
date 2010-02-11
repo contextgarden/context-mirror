@@ -602,7 +602,7 @@
      \setfalse\someprecolumncontent % will be set elsewhere
    \else
      \settrue\someprecolumncontent
-\mkprocessboxcontents\precolumnbox
+     \mkprocessboxcontents\precolumnbox
    \fi
    \forgetall
    \setmulticolumnsout
@@ -920,6 +920,7 @@
            {\lower\scratchdimen\vbox{\placenoteinserts}}%
          \ht0=\openstrutheight % \strutht
          \dp0=\openstrutdepth  % \strutdp
+         \wd0=\zeropoint
          \scratchdimen\ht\firstcolumnbox
          \global\setbox\firstcolumnbox\vbox to \scratchdimen
            {\box\firstcolumnbox
@@ -937,6 +938,7 @@
            {\lower\scratchdimen\vbox{\placenoteinserts}}%
          \ht0=\openstrutheight % \strutht
          \dp0=\openstrutdepth  % \strutdp
+         \wd0=\zeropoint
          \scratchdimen\ht\lastcolumnbox
          \global\setbox\lastcolumnbox\vbox to \scratchdimen
            {\box\lastcolumnbox

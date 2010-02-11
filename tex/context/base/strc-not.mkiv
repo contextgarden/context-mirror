@@ -194,6 +194,7 @@
    \c!prefixconnector=.,
   %\c!next=\autoinsertnextspace
    \c!prefix=\v!no,
+  %\c!continue=\v!no,
    \c!n=1]
 
 \setupnotes
@@ -571,11 +572,13 @@
            \globallet\lastnotesymbol\dolastnotesymbol
          \fi
        \fi
-       \ifconditional\postponingnotes
+       \ifconditional\postponingnotes % todo: per note class
+         \global\settrue\postponednote
+       \else\ifconditional\inlocalnotes % todo: per note class
          \global\settrue\postponednote
        \else
          \handlenoteinsert\currentnote\currentnotenumber
-       \fi
+       \fi\fi
        \endgroup
      \fi
    \fi
@@ -736,7 +739,7 @@
   \fi
 \to \everyinsidenoteinsert
 
-\appendtoks \setnotehsize \to \everyinsidenoteinsert % we will sort out columns etc later
+% not: \appendtoks \setnotehsize \to \everyinsidenoteinsert (spoils columns)
 
 \let\lastnotesymbol\relax
 
@@ -903,23 +906,29 @@
 
 \def\defaultnotewidth{\makeupwidth} % {\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}
 
+\newconditional\inlocalnotes
+
 \def\startlocalnotes
   {\dosingleempty\dostartlocalnotes}
 
 \def\dostartlocalnotes[#1]%
   {\def\localnoteslist{#1}%
+   \settrue\inlocalnotes
    \processcommacommand[\localnoteslist]\dodostartlocalnotes}
 
 \def\stoplocalnotes
-  {\processcommacommand[\localnoteslist]\dodostoplocalnotes}
+  {\processcommacommand[\localnoteslist]\dodostoplocalnotes
+   \setfalse\inlocalnotes}
 
 \def\dodostartlocalnotes#1%
-  {\savestructurecounter[#1]%
-   \resetstructurecounter[#1]%
+  {\doifnot{\noteparameter\c!continue}\v!yes
+     {\savestructurecounter[#1]%
+      \resetstructurecounter[#1]}%
    \ctxlua{structure.notes.save("#1","store")}}
 
 \def\dodostoplocalnotes#1%
-  {\restorestructurecounter[#1]%
+  {\doifnot{\noteparameter\c!continue}\v!yes
+     {\restorestructurecounter[#1]}%
    \ctxlua{structure.notes.restore("#1")}}
 
 \def\placelocalnotes

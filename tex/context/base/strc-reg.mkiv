@@ -361,7 +361,7 @@
 \def\setregisterentry   {\dotripleempty\dosetregisterentry}
 \def\finishregisterentry{\dotripleempty\dofinishregisterentry}
 
-% not yet document, not sure if thsi will stay:
+% not yet document, not sure if this will stay:
 
 \def\dosetregisterentry   [#1][#2][#3]{\doflushatpar{\doregisterstructurepageregister{#1}{#2}{#3}}}
 \def\dofinishregisterentry[#1][#2][#3]{\dofinishregisterstructurepageregister{#1}{#2}{#3}}
@@ -731,6 +731,10 @@
 %    \hbox to 1em{\hss\doregisterpagehowto{#1}{#2}\hss}}
 
 % todo: \installregisterpagehandler
+
+\def\registerpageuserdata#1#2{\ctxlua{jobregisters.userdata(#1,"#2")}}
+
+% not yet ok : new internal handler names
 
 \def\registerpagebuttonsymbol{\vrule\!!width1em\!!height1ex\!!depth\zeropoint\relax}
 

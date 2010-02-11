@@ -44,29 +44,37 @@
       \ifdim\wd2>\dimen2 \dimen2=\wd2 \fi}
    \def\dodefinemathcharacter[##1][##2][##3][##4][##5][##6]{}
    \def\dodefinemathcommand  [##1][##2][##3]##4{}
-   \readsysfile{\f!mathprefix tex}\donothing\donothing
-   \readsysfile{\f!mathprefix ams}\donothing\donothing
-   \edef\encwidth{\the\dimen0}
-   \dimen0=\hsize
-   \advance\dimen0 2em
-   \advance\dimen2 2em
-   \ifcase\showmathmodern\or\advance\dimen2 4em\fi
-   \divide \dimen0 by \dimen2 \advance\dimen0 1sp
-   \edef\enccols{\number\dimen0}
-   \startcolumns[\c!n=\enccols,\c!distance=2em]
-   \def\dodefinemathsymbol[##1][##2][##3][##4][##5][##6]%
-     {%\localcolortrue
-      %\color
-      %  [math \purefamilyhex{##3}]
-         {\hbox
-            {\ifcase\showmathmodern\or
-               \hbox to \encwidth{\modern\let\mathcollection\nomathcollection\mathematics{\getvalue{##1}{}{}{}}\hss}%
-             \fi
-             \hbox to \encwidth{\mathematics{\getvalue{##1}{}{}{}}\hss}%
-             \hbox to 1em{\tttf\purefamilyhex{##3}\hss}##1}\par}}
-   \readsysfile{\f!mathprefix tex}\donothing\donothing
-   \readsysfile{\f!mathprefix ams}\donothing\donothing
-   \stopcolumns
+   \readsysfile{\f!mathprefix tex.mkii}\!!doneatrue\!!doneafalse
+   \readsysfile{\f!mathprefix ams.mkii}\!!donebtrue\!!donebfalse
+   \if!!donea
+     \if!!doneb
+       \edef\encwidth{\the\dimen0}
+       \dimen0=\hsize
+       \advance\dimen0 2em
+       \advance\dimen2 2em
+       \ifcase\showmathmodern\or\advance\dimen2 4em\fi
+       \divide \dimen0 by \dimen2 \advance\dimen0 1sp
+       \edef\enccols{\number\dimen0}
+       \startcolumns[\c!n=\enccols,\c!distance=2em]
+       \def\dodefinemathsymbol[##1][##2][##3][##4][##5][##6]%
+         {%\localcolortrue
+          %\color
+          %  [math \purefamilyhex{##3}]
+             {\hbox
+                {\ifcase\showmathmodern\or
+                   \hbox to \encwidth{\modern\let\mathcollection\nomathcollection\mathematics{\getvalue{##1}{}{}{}}\hss}%
+                 \fi
+                 \hbox to \encwidth{\mathematics{\getvalue{##1}{}{}{}}\hss}%
+                 \hbox to 1em{\tttf\purefamilyhex{##3}\hss}##1}\par}}
+       \readsysfile{\f!mathprefix tex.mkii}\donothing\donothing
+       \readsysfile{\f!mathprefix ams.mkii}\donothing\donothing
+       \stopcolumns
+     \else
+       \par \tttf no chars in \f!mathprefix ams\par
+     \fi
+   \else
+     \par \tttf no chars in \f!mathprefix tex\par
+   \fi
    \stoptextrule
    \egroup}
 

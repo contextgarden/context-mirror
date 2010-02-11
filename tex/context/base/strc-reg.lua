@@ -416,6 +416,14 @@ end
 
 -- todo take conversion from index
 
+function jobregisters.userdata(index,name)
+    local data = jobreferences.internals[tonumber(index)]
+    data = data and data.userdata and data.userdata[name]
+    if data then
+        texsprint(ctxcatcodes,data)
+    end
+end
+
 function jobregisters.flush(data,options,prefixspec,pagespec)
     local equal = table.are_equal
     texsprint(ctxcatcodes,"\\startregisteroutput")
