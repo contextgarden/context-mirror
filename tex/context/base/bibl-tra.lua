@@ -77,6 +77,15 @@ local function compare(a,b)
     return ordered[a[1]] < ordered[b[1]]
 end
 
+local function compare(a,b)
+    local aa, bb = a[1], a[b]
+    if aa and bb then
+        return ordered[aa] < ordered[bb]
+    else
+        return true
+    end
+end
+
 function hacks.flush(sortvariant)
     if sortvariant == "" or sortvariant == variables.cite or sortvariant == "default" then
         -- order is cite order i.e. same as list

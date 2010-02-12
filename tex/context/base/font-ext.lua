@@ -12,6 +12,8 @@ local gmatch = string.gmatch
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion" , function(v) trace_expansion  = v end)
 
+commands = commands or { }
+
 --[[ldx--
 <p>When we implement functions that deal with features, most of them
 will depend of the font format. Here we define the few that are kind
@@ -85,119 +87,6 @@ function initializers.common.lineheight(tfmdata,value)
     end
 end
 
---[[ldx--
-<p>It does not make sense any more to support messed up encoding vectors
-so we stick to those that implement oldstyle and small caps. After all,
-we move on. We can extend the next function on demand. This features is
-only used with <l n='afm'/> files.</p>
---ldx]]--
-
---~ do
---~
---~     local smallcaps = lpeg.P(".sc") + lpeg.P(".smallcaps") + lpeg.P(".caps") + lpeg.P("small")
---~     local oldstyle  = lpeg.P(".os") + lpeg.P(".oldstyle")  + lpeg.P(".onum")
---~
---~     smallcaps = lpeg.Cs((1-smallcaps)^1) * smallcaps^1
---~     oldstyle  = lpeg.Cs((1-oldstyle )^1) * oldstyle ^1
---~
---~     local lpegmatch = lpeg.match
---~
---~     function initializers.common.encoding(tfmdata,value)
---~         if value then
---~             local afmdata = tfmdata.shared.afmdata
---~             if afmdata then
---~                 local encodingfile = value .. '.enc'
---~                 local encoding = fonts.enc.load(encodingfile)
---~                 if encoding then
---~                     local vector = encoding.vector
---~                     local characters = tfmdata.characters
---~                     local unicodes = afmdata.luatex.unicodes
---~                     local function remap(pattern,name)
---~                         local p = lpegmatch(pattern,name)
---~                         if p then
---~                             local oldchr, newchr = unicodes[p], unicodes[name]
---~                             if oldchr and newchr and type(oldchr) == "number" and type(newchr) == "number" then
---~                              -- logs.report("encoding","%s (%s) -> %s (%s)",p,oldchr or -1,name,newchr or -1)
---~                                 characters[oldchr] = characters[newchr]
---~                             end
---~                         end
---~                         return p
---~                     end
---~                     for _, name in next, vector do
---~                         local ok = remap(smallcaps,name) or remap(oldstyle,name)
---~                     end
---~                     if fonts.map.data[tfmdata.name] then
---~                         fonts.map.data[tfmdata.name].encoding = encodingfile
---~                     end
---~                 end
---~             end
---~         end
---~     end
---~
---~     -- when needed we can provide this as features in e.g. afm files
---~
---~     function initializers.common.remap(tfmdata,value,pattern) -- will go away
---~         if value then
---~             local afmdata = tfmdata.shared.afmdata
---~             if afmdata then
---~                 local characters = tfmdata.characters
---~                 local descriptions = tfmdata.descriptions
---~                 local unicodes = afmdata.luatex.unicodes
---~                 local done = false
---~                 for u, _ in next, characters do
---~                     local name = descriptions[u].name
---~                     if name then
---~                         local p = lpegmatch(pattern,name)
---~                         if p then
---~                             local oldchr, newchr = unicodes[p], unicodes[name]
---~                             if oldchr and newchr and type(oldchr) == "number" and type(newchr) == "number" then
---~                                 characters[oldchr] = characters[newchr]
---~                             end
---~                         end
---~                     end
---~                 end
---~             end
---~         end
---~     end
---~
---~     function initializers.common.oldstyle(tfmdata,value)
---~         initializers.common.remap(tfmdata,value,oldstyle)
---~     end
---~     function initializers.common.smallcaps(tfmdata,value)
---~         initializers.common.remap(tfmdata,value,smallcaps)
---~     end
---~
---~     function initializers.common.fakecaps(tfmdata,value)
---~         if value then
---~             -- todo: scale down
---~             local afmdata = tfmdata.shared.afmdata
---~             if afmdata then
---~                 local characters = tfmdata.characters
---~                 local descriptions = tfmdata.descriptions
---~                 local unicodes = afmdata.luatex.unicodes
---~                 for u, _ in next, characters do
---~                     local name = descriptions[u].name
---~                     if name then
---~                         local p = lower(name)
---~                         if p then
---~                             local oldchr, newchr = unicodes[p], unicodes[name]
---~                             if oldchr and newchr and type(oldchr) == "number" and type(newchr) == "number" then
---~                                 characters[oldchr] = characters[newchr]
---~                             end
---~                         end
---~                     end
---~                 end
---~             end
---~         end
---~     end
---~
---~ end
---~
---~ function initializers.common.install(format,feature) -- 'afm','lineheight'
---~     initializers.base[format][feature] = initializers.common[feature]
---~     initializers.node[format][feature] = initializers.common[feature]
---~ end
-
 -- -- -- -- -- --
 -- expansion (hz)
 -- -- -- -- -- --
@@ -247,10 +136,10 @@ function initializers.common.expansion(tfmdata,value)
                     logs.report("fonts","set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",value,class.vector,factor,stretch,shrink,step)
                 end
                 tfmdata.stretch, tfmdata.shrink, tfmdata.step, tfmdata.auto_expand = stretch * 10, shrink * 10, step * 10, true
-                local data = characters.data
+                local data = characters and characters.data
                 for i, chr in next, tfmdata.characters do
                     local v = vector[i]
-                    if not v then
+                    if data and not v then -- we could move the data test outside (needed for plain)
                         local d = data[i]
                         if d then
                             local s = d.shcode
@@ -504,6 +393,7 @@ initializers.node.afm.itlc = initializers.common.itlc
 table.insert(fonts.triggers,"slant")
 
 function initializers.common.slant(tfmdata,value)
+    value = tonumber(value)
     if not value then
         value =  0
     elseif value >  1 then
@@ -523,6 +413,7 @@ initializers.node.afm.slant = initializers.common.slant
 table.insert(fonts.triggers,"extend")
 
 function initializers.common.extend(tfmdata,value)
+    value = tonumber(value)
     if not value then
         value =  0
     elseif value >  10 then

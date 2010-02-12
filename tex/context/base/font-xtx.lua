@@ -77,7 +77,7 @@ local namespec   = (1-lpeg.S("/:("))^0 -- was: (1-lpeg.S("/: ("))^0
 local crapspec   = spaces * lpeg.P("/") * (((1-lpeg.P(":"))^0)/iscrap) * spaces
 local filename   = (lpeg.P("file:")/isfile * (namespec/thename)) + (lpeg.P("[") * lpeg.P(true)/isname * (((1-lpeg.P("]"))^0)/thename) * lpeg.P("]"))
 local fontname   = (lpeg.P("name:")/isname * (namespec/thename)) + lpeg.P(true)/issome * (namespec/thename)
-local sometext   = (lpeg.R("az") + lpeg.R("AZ") + lpeg.R("09"))^1
+local sometext   = (lpeg.R("az") + lpeg.R("AZ") + lpeg.R("09") + lpeg.P("."))^1
 local truevalue  = lpeg.P("+") * spaces * (sometext/istrue)
 local falsevalue = lpeg.P("-") * spaces * (sometext/isfalse)
 local keyvalue   = (lpeg.C(sometext) * spaces * lpeg.P("=") * spaces * lpeg.C(sometext))/iskey

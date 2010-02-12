@@ -32,6 +32,12 @@
 % \testy این یک متن نمونه است با قلم ذر که درست آمده است.
 % \font\testz=name:linlibertineo \testz
 
+\pdfprotrudechars2 \pdfadjustspacing2
+
+\font\testb=file:lmroman12-regular:+liga;extend=1.5         at 12pt \testb \input tufte \par
+\font\testb=file:lmroman12-regular:+liga;slant=0.8          at 12pt \testb \input tufte \par
+\font\testb=file:lmroman12-regular:+liga;protrusion=default at 12pt \testb \input tufte \par
+
 \setmplibformat{plain}
 
 \mplibcode
