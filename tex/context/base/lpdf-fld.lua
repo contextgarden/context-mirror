@@ -368,6 +368,7 @@ local function predefinesymbols(specification)
         local symbols = aux.settings_to_array(values)
         for i=1,#symbols do
             local symbol = symbols[i]
+print(symbol)
             local a, b = lpegmatch(splitter,symbol)
             codeinjections.presetsymbol(a or symbol)
         end

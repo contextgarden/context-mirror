@@ -144,7 +144,6 @@
                                         \let\obeycharacters\setupprettytype
                                         \let\obeytabs\ignoretabs}
 
-
 \def\setupcommonverbatim
   {\recatcodeuppercharactersfalse % obey regime / encoding
    %
@@ -577,10 +576,12 @@
    \veryraggedright}
 
 \def\ignorehyphens
-  {% \language\minusone % extra bonus, the \null should do the job too
+  {% \nohyphens % forgotten when no \par
+   \normallanguage\minusone % fails as the font redoes the language
    \def\obeyedspace {\hskip\interwordspace\relax}% better than spaceskip
    \def\controlspace{\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}%
    \spaceskip.5em\relax}
+
 
 \unexpanded\def\typ
   {\bgroup

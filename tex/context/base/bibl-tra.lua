@@ -54,7 +54,7 @@ function hacks.reset(m)
 end
 
 function hacks.add(str,listindex)
-    if mode == 0 then
+    if not str or mode == 0 then
         -- skip
     elseif mode == 1 then
         -- all locals but no duplicates
@@ -78,7 +78,7 @@ local function compare(a,b)
 end
 
 local function compare(a,b)
-    local aa, bb = a[1], a[b]
+    local aa, bb = a[1], b[1]
     if aa and bb then
         return ordered[aa] < ordered[bb]
     else

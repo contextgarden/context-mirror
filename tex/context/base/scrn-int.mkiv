@@ -92,7 +92,9 @@
    \fi\fi
    \ctxlua{backends.codeinjections.setupcanvas {
       mode        = "\@@scoption",
-      doublesided = \ifsinglesided false\else\ifdoublesided true\else false\fi\fi,
+    % doublesided = \ifsinglesided false\else\ifdoublesided true\else false\fi\fi,
+      singlesided = \ifsinglesided true\else false\fi,
+      doublesided = \ifdoublesided true\else false\fi,
       leftoffset  = \number\dimexpr\backoffset\relax,
       topoffset   = \number\dimexpr\topoffset \relax,
       width       = \number\dimexpr\!!widtha  \relax,

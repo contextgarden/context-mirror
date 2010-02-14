@@ -991,10 +991,17 @@
 
 %D The plain ones:
 
+% \def\offinterlineskip
+%   {\baselineskip-\thousandpoint
+%    \lineskip\zeropoint
+%    \lineskiplimit\maxdimen}
+
 \def\offinterlineskip
   {\baselineskip-\thousandpoint
    \lineskip\zeropoint
-   \lineskiplimit\maxdimen}
+   \lineskiplimit\maxdimen
+   % We also need this here now; thanks to taco for figuring that out!
+   \let\minimumlinedistance\zeropoint}
 
 \def\nointerlineskip
   {\prevdepth-\thousandpoint}
@@ -1008,6 +1015,7 @@
      {\baselineskip\the\baselineskip
       \lineskip\the\lineskip
       \lineskiplimit\the\lineskiplimit
+      \noexpand\edef\noexpand\minimumlinedistance{\the\dimexpr\minimumlinedistance}%
       \let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}}
 
 \def\nopushinterlineskip

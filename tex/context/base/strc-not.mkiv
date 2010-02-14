@@ -233,6 +233,7 @@
       \c!text=,
       \c!before=,
       \c!after=]%
+   \doredefinenotecommands\currentnote
    \setupenumerations
      [\currentnote]
      [\s!parent=\??vn\currentnote,
@@ -242,11 +243,34 @@
    \getparameters
      [\??vn\currentnote]
      [\s!parent=\??vn,#2]%
-   \definestructurecounter
-     [\currentnote]%
+%    \definestructurecounter
+%      [\currentnote]%
    \ctxlua{structure.notes.define("\currentnote","insert",\number\csname\??vn:\currentnote\endcsname)}%
    \the\everysetupnote
    \dochecknote}
+
+% \starttext
+%     text \startfootnote Test.\stopfootnote
+%     test \footnote{xxxx} \subfootnote{xxxx}
+%     test \footnote{xxxx} \subfootnote{xxxx}
+% \stoptext
+
+\def\dodoredefinenotecommands#1#2#3%
+  {\unexpanded\expandafter\def\csname\e!start#3#1\expandafter\endcsname\expandafter
+     {\expandafter\dosingleempty\csname\s!do\e!start#3#1\endcsname}%
+   \unexpanded\expandafter\def\csname\s!do\e!start#3#1\expandafter\endcsname
+        \expandafter[\expandafter##\expandafter1\expandafter]\expandafter##\expandafter2\csname\e!stop#3#1\endcsname
+     {\begingroup
+      \doenumerationinit{#1}{#2}{#3}%
+      \@@notemakedescription[##1]{}{##2}%
+      \endgroup}}
+
+\def\doredefinenotecommands#1%
+  {\normalexpanded{\noexpand\dodoredefinenotecommands{#1}{1}{}}%
+   \let\@@subslevel\empty
+   \dostepwiserecurse{2}{\descriptionparameter\c!levels}{1}
+     {\normalexpanded{\noexpand\dodoredefinenotecommands{#1}{\recurselevel}{\@@subslevel\v!sub}}%
+      \edef\@@subslevel{\@@subslevel\v!sub}}}
 
 \let\setupnotedefinition\setupenumerations
 

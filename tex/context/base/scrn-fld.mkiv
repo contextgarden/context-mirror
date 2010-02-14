@@ -450,7 +450,7 @@
   {\dotripleargument\dodefinefieldstack}
 
 \def\dodefinefieldstack[#1][#2][#3]% name, symbols, settings
-  {\ifcsname fieldstack:#1\endcsname
+  {\ifcsname fieldstack:#1\endcsname \else
      \setgvalue{fieldstack:#1}{\dodofieldstack[#1][#2][#3]}%
    \fi}
 
@@ -470,15 +470,15 @@
    \begingroup
    \getparameters[\??fd][\c!start=1,#3]%
    \setupfields[\v!reset]%
-   \definesymbol[\v!empty][]%
+ % \definesymbol[\v!empty][]%
    \useJSscripts[fld][FieldStack]%
    \newcounter\stackedfieldnumber
    \def\dododofieldstack##1%
      {\increment\stackedfieldnumber
       \ifnum\stackedfieldnumber=\@@fdstart\relax
-        \definefield[#1:\stackedfieldnumber][check][#1][##1,\v!empty][##1]%
+        \definefield[#1:\stackedfieldnumber][check][#1][##1,\empty][##1]% \v!empty fails
       \else
-        \definefield[#1:\stackedfieldnumber][check][#1][##1,\v!empty][\v!empty]%
+        \definefield[#1:\stackedfieldnumber][check][#1][##1,\empty][\empty]% \v!empty fails
       \fi}%
    \processcommalist[#2]\dododofieldstack
    \setupfield[#1][\v!reset]% added

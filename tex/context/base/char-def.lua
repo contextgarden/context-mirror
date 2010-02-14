@@ -587,6 +587,7 @@ characters.data={
   adobename="at",
   category="po",
   cjkwd="na",
+  contextname="textat",
   description="COMMERCIAL AT",
   direction="on",
   linebreak="al",

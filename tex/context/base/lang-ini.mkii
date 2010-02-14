@@ -397,33 +397,39 @@
    % \def\synchronizepatterns{\setnormallanguage
    %   {\csname\??la\currentlanguage\s!patterns\endcsname}}% called often
    % of even better pre-expand in an ugly way:
-%    \@EA\def\@EA\synchronizepatterns\@EA{\@EA\dosetnormallanguage
-%      \csname\??la\currentlanguage\s!patterns\endcsname}%
-\edef\synchronizepatterns{\noexpand\dosetnormallanguage{\languageparameter\s!patterns}}%
-   \donefalse
-   \synchronizepatterns
-   \ifdone\else
-     \def\synchronizepatterns{\dosetnormallanguage\currentlanguage}%
+   \ifnum\normallanguage<\zerocount
+     % we've blocked hyphenation (e.g. verbatim)
+   \else
+     \edef\synchronizepatterns{\noexpand\dosetnormallanguage{\languageparameter\s!patterns}}%
+     \donefalse
      \synchronizepatterns
      \ifdone\else
-       \ifx\currentdefaultlanguage\empty\else
-%          \@EA\def\@EA\synchronizepatterns\@EA{\@EA\dosetnormallanguage
-%            \csname\??la\currentdefaultlanguage\s!patterns\endcsname}%
-\edef\synchronizepatterns{\noexpand\dosetnormallanguage{\specificlanguageparameter\currentdefaultlanguage\s!patterns}}%
-         \synchronizepatterns
-         \ifdone\else
-           \dosetnormallanguage\currentdefaultlanguage
+       \def\synchronizepatterns{\dosetnormallanguage\currentlanguage}%
+       \synchronizepatterns
+       \ifdone\else
+         \ifx\currentdefaultlanguage\empty\else
+           \edef\synchronizepatterns{\noexpand\dosetnormallanguage{\specificlanguageparameter\currentdefaultlanguage\s!patterns}}%
            \synchronizepatterns
+           \ifdone\else
+             \dosetnormallanguage\currentdefaultlanguage
+             \synchronizepatterns
+           \fi
          \fi
        \fi
      \fi
    \fi}
 
+\normallanguage\zerocount
+
 \def\dosetnormallanguage#1% #1 == \cs (no longer)
-  {\dodosetnormallanguage{:\currentencoding:\currentmapping:}{#1}{%
-   \dodosetnormallanguage{:\currentencoding:\s!default     :}{#1}{%
-   \dodosetnormallanguage{:\s!default      :\currentmapping:}{#1}{%
-   \dodosetnormallanguage{:\s!default      :\s!default     :}{#1}\empty}}}}
+  {\ifnum\normallanguage<\zerocount
+     % we've blocked hyphenation (e.g. verbatim)
+   \else
+     \dodosetnormallanguage{:\currentencoding:\currentmapping:}{#1}{%
+     \dodosetnormallanguage{:\currentencoding:\s!default     :}{#1}{%
+     \dodosetnormallanguage{:\s!default      :\currentmapping:}{#1}{%
+     \dodosetnormallanguage{:\s!default      :\s!default     :}{#1}\empty}}}%
+   \fi}
 
 \def\dodosetnormallanguage#1#2%
   {\ifcsname\??la\??la#1#2\endcsname

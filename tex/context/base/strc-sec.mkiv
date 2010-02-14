@@ -268,6 +268,7 @@
 \newconditional\structureheaddoincrement
 \newconditional\structureheaddoplace
 \newconditional\structureheadleaveempty
+\newconditional\structureheadhidden
 \newconditional\structureheadshownumber
 \newconditional\structureheadisdisplay
 
@@ -316,11 +317,13 @@
 \def\setstructureheadplacement
   {\settrue\structureheaddoplace
    \setfalse\structureheadleaveempty
+   \setfalse\structureheadhidden
    \processaction
      [\structureheadparameter\c!placehead]
      [  \v!yes=>,
       \v!empty=>\settrue\structureheadleaveempty,
-         \v!no=>\settrue\structureheadleaveempty\setfalse\structureheaddoplace]}
+         \v!no=>\settrue\structureheadleaveempty\setfalse\structureheaddoplace,
+     \v!hidden=>\settrue\structureheadhidden\settrue\structureheadleaveempty\setfalse\structureheaddoplace]}
 
 \def\setstructureheaddisplay
   {\doifelsevalue{\??nh:\structureheadparameter\c!alternative}\v!horizontal
@@ -346,7 +349,7 @@
      \setfalse\structureheadshownumber
    \fi}
 
-\def\thestructureheadsynchonization
+\unexpanded\def\thestructureheadsynchonization
   {\pagetype[\currentstructureheadcoupling]% hm also number
    \normalexpanded{\noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}}%
    \currentstructuresynchronize}
@@ -470,13 +473,17 @@
          \placestructureheadtext
        \fi
        \dostructureheadspacingafteryes
+     \else\ifconditional\structureheadhidden
+       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \let\getstructureheadsyncs\thestructureheadsynchonization
+       \placestructureheadhidden % only something when tracing
      \else
        \dostructureheadspacingbeforenop % toegevoegd ivm subpaginanr / tug sheets
        \doregisterstructurehead{#1}{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
-       \placestructureheadnothing % just flush 'm
+       \placestructureheadempty % just flush 'm
        \dostructureheadspacingafternop
-     \fi
+     \fi\fi
    \else
      \ifconditional\structureheaddoplace
        \dostructureheadspacingbeforeyes
@@ -485,14 +492,18 @@
        \let\getstructureheadtitle\fullstructureheadtitle
        \placestructureheadtext
        \dostructureheadspacingafteryes
+     \else\ifconditional\structureheadhidden
+       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \let\getstructureheadsyncs\thestructureheadsynchonization
+       \placestructureheadhidden % only something when tracing
      \else
        % do nothing / should be vbox to 0pt
        \dostructureheadspacingbeforenop
        \doregisterstructurehead{#1}{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
-       \placestructureheadnothing % just flush 'm
+       \placestructureheadempty % just flush 'm
        \dostructureheadspacingafternop
-     \fi
+     \fi\fi
    \fi
    \flushingcolumnfloatstrue
    \setfalse\ignorehandlepagebreak
@@ -513,8 +524,32 @@
   {\getstructureheadtitle
    \getstructureheadsyncs}
 
-\def\placestructureheadnothing % dummy, will be overloaded
+\def\placestructureheadempty % dummy, will be overloaded
   {\getstructureheadsyncs}
+
+\def\placestructureheadhidden
+  {\setxvalue{\currentstructurehead:sync}%
+     {\noexpand\pagetype[\currentstructureheadcoupling]% hm also number
+      \noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}%
+      \currentstructuresynchronize}}
+
+\def\synchronizestructurehead#1%
+  {\getvalue{#1:sync}}
+
+\unexpanded\def\placerawheaddata  [#1]{\synchronizestructurehead {#1}}
+\unexpanded\def\placerawheadtext  [#1]{\getspecificstructuretitle{\thenamedstructureheadlevel{#1}}}
+\unexpanded\def\placerawheadnumber[#1]{\getfullstructurenumber   {\thenamedstructureheadlevel{#1}}}
+
+% \setuphead[chapter][placehead=hidden]
+% \chapter {test}
+%
+% %(\synchronizestructurehead{chapter}) % \getstructureheadsyncs
+% %(\getfullstructurenumber{\thenamedstructureheadlevel{chapter}})
+% %(\getspecificstructuretitle{\thenamedstructureheadlevel{chapter}})
+%
+% (\placerawheaddata  [chapter])
+% (\placerawheadnumber[chapter])
+% (\placerawheadtext  [chapter])
 
 % pagebreaks
 
@@ -711,17 +746,6 @@
 
 \unexpanded\def\structureheadnumber
   {\dodoubleempty\dostructureheadnumber}
-
-% \def\dostructureheadnumber[#1][#2]% simple case is just a number
-%   {\iffirstargument
-%      \ifsecondargument
-%        \getsomefullstructurenumber{\thenamedstructureheadlevel{#1}}{#2}%
-%      \else
-%        \getfullstructurenumber{\thenamedstructureheadlevel{#1}}%
-%      \fi
-%    \else
-%      \getfullstructurenumber{\thenamedstructureheadlevel{#1}}
-%    \fi}
 
 \def\dostructureheadnumber[#1][#2]% simple case is just a number
   {\getsomefullstructurenumber{\iffirstargument\thenamedstructureheadlevel{#1}\fi}{#2}}
