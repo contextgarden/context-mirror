@@ -417,7 +417,7 @@
         \setlayoutcomponentattribute\v!background\component
       \fi
       \let\foregroundbox\normalforegroundbox
-      \hbox to \backgroundwidth \layoutcomponentboxattribute % width in case 'foreground' is used as overlay
+      \hbox \layoutcomponentboxattribute to \backgroundwidth % width in case 'foreground' is used as overlay
         {\expandafter\dododobackgroundbox\framedbackground,\s!unknown,\relax % hm, messy .. look into it
          \box\framebox\hss}}}
 

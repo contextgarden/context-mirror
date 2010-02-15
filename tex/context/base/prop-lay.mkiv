@@ -120,7 +120,7 @@
 \let\layoutcomponentboxattribute  \empty
 
 \def\showlayoutcomponents
-  {\ctxlua{viewerlayers.enabled=true}%
+  {\ctxlua{viewerlayers.enable()}%
    \let\setlayoutcomponentattribute  \dosetlayoutcomponentattribute
    \let\resetlayoutcomponentattribute\doresetlayoutcomponentattribute}
 

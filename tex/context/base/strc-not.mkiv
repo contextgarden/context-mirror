@@ -686,6 +686,7 @@
    \the\everybeforenoteinsert
    \insert\currentnoteins\bgroup
      \the\everyinsidenoteinsert
+     \doprocesslocalsetups{\noteparameter\c!setups}% experimental
      \handlenoteitself{#1}{#2}%
    \egroup
    \the\everyafternoteinsert

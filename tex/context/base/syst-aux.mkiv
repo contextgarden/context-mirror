@@ -1120,6 +1120,15 @@
 \def\processcommacommand[#1]%
   {\expandafter\processcommalist\expandafter[\normalexpanded{#1}]}
 
+% \def\processcommacommand[#1]%
+%   {\edef\expandedcommacommand{#1%
+%    \ifx\expandedcommacommand\empty\else
+%       \doprocesscommacommand
+%    \fi}
+%
+% \def\doprocesscommacommand
+%   {\expandafter\processcommalist\expandafter[\expandedcommacommand]}
+
 %D The argument to \type{\command} is not delimited. Because
 %D we often use \type{[]} as delimiters, we also have:
 %D

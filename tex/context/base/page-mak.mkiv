@@ -130,7 +130,7 @@
    \global\setbox\makeupbox\vbox to \makeupparameter\c!height
      \bgroup
        \doifsomething{\makeupparameter\c!color}{\startcolor[\makeupparameter\c!color]}% can be made faster
-       \setups[\makeupparameter\c!setups]%
+       \doprocesslocalsetups{\makeupparameter\c!setups}%
        \hsize\makeupparameter\c!width
        \doifsomething{\makeupparameter\c!align}
          {\setupalign[\makeupparameter\c!align]}%

@@ -295,9 +295,8 @@ function jobregisters.compare(a,b)
     for i=1,max do
         if result == 0 then
             result = compare(ea[i],eb[i])
-        else
-            return result
         end
+        return result
     end
     if result ~= 0 then
         return result
@@ -442,7 +441,7 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
         texsprint(ctxcatcodes,format("\\registerpagerange{%s}{%s}{",er.internal or 0,er.realpage or 0))
         helpers.prefixpage(f_entry,prefixspec,pagespec)
         local er = t_entry.references
-        texsprint(ctxcatcodes,format("}{%s}{%s}{",er.internal or 0,er.realpage or 0))
+        texsprint(ctxcatcodes,format("}{%s}{%s}{",er.internal or 0,er.lastrealpage or er.realpage or 0))
         if is_last then
             helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
         else

@@ -456,7 +456,7 @@
 % test \setupswithbox[somefigure]{\framed[width=\dimexpr\textwidth+3cm\relax]{}} test
 
 \def\dosetcaptionthings
-  {\setups[\floatcaptionparameter\c!setups]% expanded ?
+  {\doprocesslocalsetups{\floatcaptionparameter\c!setups}% expanded ?
   %\advance\leftskip \floatcaptionparameter\c!leftmargin
   %\advance\rightskip\floatcaptionparameter\c!rightmargin
    \relax}

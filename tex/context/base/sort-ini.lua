@@ -14,8 +14,10 @@ if not modules then modules = { } end modules ['sort-ini'] = {
 -- always expand to utf
 
 local utf = unicode.utf8
-local gsub, rep = string.gsub, string.rep
+local gsub, rep, sort, concat = string.gsub, string.rep, table.sort, table.concat
 local utfcharacters, utfvalues, strcharacters = string.utfcharacters, string.utfvalues, string.characters
+
+local trace_sorters = false -- true
 
 sorters              = { }
 sorters.comparers    = { }
@@ -145,5 +147,19 @@ function sorters.splitters.utf(str) -- brrr, todo: language
 end
 
 function sorters.sort(entries,cmp)
-    table.sort(entries,function(a,b) return cmp(a,b) == -1 end)
+    if trace_sorters then
+        sort(entries, function(a,b)
+            local r = cmp(a,b)
+            local as, bs = a.split, b.split
+            if as and bs then
+                logs.report("sorter","%s %s %s",
+                    concat(as[1]), (not r and "?") or (r<0 and "<") or (r>0 and ">") or "=", concat(bs[1]))
+            end
+            return r == -1
+        end)
+    else
+        sort(entries, function(a,b)
+            return cmp(a,b) == -1
+        end)
+    end
 end

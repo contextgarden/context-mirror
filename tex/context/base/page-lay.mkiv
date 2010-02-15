@@ -451,7 +451,7 @@
    \global\topspace        \layoutparameter\c!topspace
    \setlayoutdimensions % the rest of the `dimensions'
    \docheckgridsnapping
-   \setups[\layoutparameter\c!setups]% depends on gridsnapping !
+   \doprocesslocalsetups{\layoutparameter\c!setups}% depends on gridsnapping !
    \simplesetupwhitespace
    \simplesetupblank
    \setupinterlinespace[\v!reset]% \synchronizegloballinespecs

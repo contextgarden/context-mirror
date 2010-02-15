@@ -164,7 +164,7 @@
 % \def\addsomebackground#1#2#3#4% area box width height / zero test added
 %   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
 %      \ifcsname\??ma#1\c!setups\endcsname % to be done
-%         \doifvaluesomething{\??ma#1\c!setups}{\setups[\csname\??ma#1\c!setups\endcsname]}% should not produce funny spaces !
+%         \doprocesslocalsetups{\csname\??ma#1\c!setups\endcsname}% should not produce funny spaces !
 %      \fi
 %      \setbox#2\vbox\fastlocalframed % maybe \superfastlocalframed{tag}{w}{h}
 %        [\??ma#1]%
@@ -175,7 +175,7 @@
 \def\addsomebackground#1#2#3#4% area box width height / zero test added
   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
      \ifcsname\??ma#1\c!setups\endcsname % to be done
-        \doifvaluesomething{\??ma#1\c!setups}{\setups[\csname\??ma#1\c!setups\endcsname]}% should not produce funny spaces !
+        \doprocesslocalsetups{\csname\??ma#1\c!setups\endcsname}% should not produce funny spaces !
      \fi
      \localbackgroundframed{#1}{#2}{#3}{#4}%
    \fi\fi\fi}
@@ -375,7 +375,7 @@
      \ifdim#2>\zeropoint\relax
        \ifdim#1>\zeropoint\relax
          \ifcsname\??ma#3#4\c!setups\endcsname % to be done
-            \doifvaluesomething{\??ma#3#4\c!setups}{\setups[\csname\??ma#3#4\c!setups\endcsname]}% should not produce funny spaces !
+            \doprocesslocalsetups{\csname\??ma#3#4\c!setups\endcsname}% should not produce funny spaces !
          \fi
          \fastlocalframed
            [\??ma#3#4]%

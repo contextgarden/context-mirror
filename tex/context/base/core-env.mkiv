@@ -193,6 +193,18 @@
      \fi
    \endcsname\empty} % takes one argument
 
+% the next one is meant for \c!setups situations, hence the check for
+% a shortcut
+
+\def\doprocesslocalsetups#1%
+  {\edef\tobeprocessedsetups{#1}%
+   \ifx\tobeprocessedsetups\empty\else
+     \dodoprocesslocalsetups
+   \fi}
+
+\def\dodoprocesslocalsetups
+  {\@EA\processcommalist\@EA[\tobeprocessedsetups]\dosetups}
+
 % \def\setupwithargument#1%
 %   {\csname\??su:\ifcsname\??su:#1\endcsname#1\else\letterpercent\fi\endcsname}
 
