@@ -476,7 +476,7 @@
    \fi
    \setnextinternalreference
    % we could consider storing register entries in list
-   \ctxlua{ jobregisters.store {
+   \edef\temp{\ctxlua{ jobregisters.store {
         metadata = {
             kind     = "see",
             name     = "\currentregister",
@@ -495,7 +495,7 @@
             text = "\currentregisterseeword"
         },
      }
-   }%
+   }}%
    \endgroup}
 
 %D Rendering:
@@ -599,9 +599,9 @@
 % test case for collapsing (experimental, for Steffen Wolfrum)
 %
 % \starttext
-% \placeregister[index][collapse=no]  \blank[2*big]
-% \placeregister[index][collapse=yes] \blank[2*big]
-% \placeregister[index][collapse=akk] \page
+% \placeregister[index][compress=no]  \blank[2*big]
+% \placeregister[index][compress=yes] \blank[2*big]
+% \placeregister[index][compress=all] \page
 % \dorecurse{10}{test 1:!\index{test} test \page}
 % \dorecurse{5} {test 2:\recurselevel      \page}
 % \dorecurse{10}{test 3:!\index{test} test \page}

@@ -60,24 +60,25 @@ function jobpositions.MPh(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatco
 function jobpositions.MPd(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatcodes,(jpi and jpi[6]) or '0pt') end
 
 
-    function jobpositions.MPx(id)
-        local jpi = pcol[id] or ptbs[id]
-        local x = jpi and jpi[2]
-        if x then
-            texprint(ctxcatcodes,format('\\the\\dimexpr %s-%s\\relax',x,dx))
-        else
-            texprint(ctxcatcodes,'0pt')
-        end
+function jobpositions.MPx(id)
+    local jpi = pcol[id] or ptbs[id]
+    local x = jpi and jpi[2]
+    if x then
+        texprint(ctxcatcodes,format('\\the\\dimexpr%s-%s\\relax',x,dx)) -- no space after dimexpr !
+    else
+        texprint(ctxcatcodes,'0pt')
     end
-    function jobpositions.MPy(id)
-        local jpi = pcol[id] or ptbs[id]
-        local y = jpi and jpi[3]
-        if y then
-            texprint(ctxcatcodes,format('\\the\\dimexpr %s-%s\\relax',y,dy))
-        else
-            texprint(ctxcatcodes,'0pt')
-        end
+end
+
+function jobpositions.MPy(id)
+    local jpi = pcol[id] or ptbs[id]
+    local y = jpi and jpi[3]
+    if y then
+        texprint(ctxcatcodes,format('\\the\\dimexpr%s-%s\\relax',y,dy)) -- no space after dimexpr !
+    else
+        texprint(ctxcatcodes,'0pt')
     end
+end
 
 -- the following are only for MP so there we can leave out the pt
 

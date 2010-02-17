@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['luat-cbk'] = {
     license   = "see context related readme files"
 }
 
+local insert, remove, find = table.insert, table.remove, string.find
+
 local trace_checking = false  trackers.register("memory.checking", function(v) trace_checking = v end)
 
 --[[ldx--
@@ -14,8 +16,7 @@ your own code into the <l n='tex'/> engine. Here we implement a few handy
 auxiliary functions.</p>
 --ldx]]--
 
-callbacks       = { }
-callbacks.stack = { }
+callbacks = callbacks or { }
 
 --[[ldx--
 <p>When you (temporarily) want to install a callback function, and after a
@@ -23,19 +24,111 @@ while wants to revert to the original one, you can use the following two
 functions.</p>
 --ldx]]--
 
-function callbacks.push(name, func)
-    if not callbacks.stack[name] then
-        callbacks.stack[name] = { }
+local trace_callbacks = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
+
+local register_callback, find_callback = callback.register, callback.find
+local frozen, stack = { }, { }
+
+local function frozenmessage(what,name)
+    logs.report("callbacks","not %s frozen '%s' (%s)",what,name,frozen[name])
+end
+
+function callbacks.report()
+    local list = callback.list()
+    for name, func in table.sortedpairs(list) do
+        local str = frozen[name]
+        func = (func and "set") or "nop"
+        if str then
+            logs.report("callbacks","%s: %s -> %s",func,name,str)
+        else
+            logs.report("callbacks","%s: %s",func,name)
+        end
     end
-    table.insert(callbacks.stack[name],callback.find(name))
-    callback.register(name, func)
+end
+
+function callbacks.table()
+    context.starttabulate { "|l|l|p|" }
+    for name, func in table.sortedpairs(callback.list()) do
+        context.NC()
+        context.type((func and "set") or "nop")
+        context.NC()
+        context.type(name)
+        context.NC()
+        context(frozen[name] or "")
+        context.NC()
+        context.NR()
+    end
+    context.stoptabulate()
+end
+
+function callbacks.freeze(name,freeze)
+    freeze = type(freeze) == "string" and freeze
+--~ print(name)
+    if find(name,"%*") then
+        local pattern = name -- string.simpleesc(name)
+        local list = callback.list()
+        for name, func in pairs(list) do
+            if find(name,pattern) then
+                frozen[name] = freeze or frozen[name] or "frozen"
+            end
+        end
+    else
+        frozen[name] = freeze or frozen[name] or "frozen"
+    end
+end
+
+function callbacks.register(name,func,freeze)
+    if frozen[name] then
+        if trace_callbacks then
+            frozenmessage("registering",name)
+        end
+    elseif freeze then
+        frozen[name] = (type(freeze) == "string" and freeze) or "registered"
+        register_callback(name,func)
+    else
+        register_callback(name,func)
+    end
+end
+
+function callback.register(name,func) -- original
+    if not frozen[name] then
+        register_callback(name,func)
+    elseif trace_callbacks then
+        frozenmessage("registering",name)
+    end
+end
+
+function callbacks.push(name, func)
+    if not frozen[name] then
+        local sn = stack[name]
+        if not sn then
+            sn = { }
+            stack[name] = sn
+        end
+        insert(sn,find_callback(name))
+        register_callback(name, func)
+    elseif trace_callbacks then
+        frozenmessage("pushing",name)
+    end
 end
 
 function callbacks.pop(name)
---  this fails: callback.register(name, table.remove(callbacks.stack[name]))
-    local func = table.remove(callbacks.stack[name])
-    callback.register(name, func)
+    if frozen[name] then
+        -- do nothing
+    elseif #stack == 0 then
+        -- some error
+    else
+     -- this fails: register_callback(name, remove(stack[name]))
+        local func = remove(stack[name])
+        register_callback(name, func)
+    end
 end
+
+--~ -- somehow crashes later on
+--~
+--~ callbacks.freeze("find_.*_file","finding file")
+--~ callbacks.freeze("read_.*_file","reading file")
+--~ callbacks.freeze("open_.*_file","opening file")
 
 --[[ldx--
 <p>The simple case is to remove the callback:</p>

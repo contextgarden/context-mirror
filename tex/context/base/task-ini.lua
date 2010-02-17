@@ -86,3 +86,7 @@ tasks.disableaction("shipouts",   "nodes.add_references")
 tasks.disableaction("shipouts",   "nodes.add_destinations")
 
 tasks.disableaction("pagebuilders", "nodes.migrate_outwards")
+
+callbacks.freeze("find_.*_file", "find file using resolver")
+callbacks.freeze("read_.*_file", "read file at once")
+callbacks.freeze("open_.*_file", "open file for reading")

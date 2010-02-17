@@ -100,39 +100,6 @@
 
 % \def\loadallXfontmapfiles{\ctxlua{fonts.map.flush("pdftex")}}
 
-% \ctxlua{
-%     do
-%         local pth = "." .. io.fileseparator .. "tmp" .. io.fileseparator .. "\jobname"
-%         texio.write_nl("CREATING "..pth)
-%         os.execute("mkdir " .. pth)
-%     end
-%     resolvers.output_files = { }
-%     callback.register('find_write_file', function(id,name)
-%         resolvers.output_files[name] = file.join(".","tmp","\jobname",name)
-%         texio.write_nl("REDIRECTING OUTPUT "..name.. " TO " .. resolvers.output_files[name])
-%         return resolvers.output_files[name]
-%     end)
-%     callback.register('find_read_file', function(id,name)
-%         local sname = string.gsub(name,"^\letterpercent./","")
-%         if resolvers.output_files[sname] then
-%             return resolvers.output_files[name]
-%         elseif string.find(sname,"^\jobname[\letterpercent.\letterpercent-]") then
-%             local n = file.join(".","tmp","\jobname",sname)
-%             local f = io.open(n)
-%             if f then
-%                 resolvers.output_files[name] = n
-%                 texio.write_nl("REDIRECTING INPUT "..sname.. " TO " .. n)
-%                 f:close()
-%                 return n
-%             else
-%                 return resolvers.findtexfile(name)
-%             end
-%         else
-%             return resolvers.findtexfile(name)
-%         end
-%     end)
-% }
-
 \protect \endinput
 
 % \expanded{\defineactivecharacter \number"2000E} {\textdir TRT\relax}

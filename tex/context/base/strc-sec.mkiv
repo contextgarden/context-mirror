@@ -557,11 +557,13 @@
 \newconditional\ignorehandlepagebreak
 
 \def\dostructureheadspacingbeforeyes
-  {\docheckstructureheadbefore\dohandlestructureheadpagebreak
+  {\docheckstructureheadbefore
+   \dohandlestructureheadpagebreak
    \structureheadparameter\c!inbetween}
 
 \def\dostructureheadspacingbeforenop
-  {\docheckstructureheadbefore\docheckstructureheadlayout
+  {\docheckstructureheadbefore
+   \docheckstructureheadlayout
    \structureheadparameter\c!inbetween}
 
 % \def\emptystructureheadcorrection
@@ -635,7 +637,7 @@
      \setfalse\ignorehandlepagebreak
    \else
      \ifnum\lastpenalty>\zerocount
-       \global\pagebreakdisabledtrue
+%        \global\pagebreakdisabledtrue
      \fi
      % beware, these numbers are not yet know here
      \doifelse{\structureheadparameter\c!continue}\v!yes
@@ -648,11 +650,11 @@
      \doifnot{\structureheadparameter\c!aligntitle}\v!float\flushsidefloats
      \structureheadparameter\c!before
      \relax
-     \ifpagebreakdisabled
-       \global\pagebreakdisabledfalse
-     \else
+%      \ifpagebreakdisabled
+%        \global\pagebreakdisabledfalse
+%      \else
        \dopreventbreakafterstructureheadauto
-     \fi
+%      \fi
      \doif{\structureheadparameter\c!aligntitle}\v!float\indent
      \global\precedingstructurelevel\currentstructureheadlevel
    \fi}

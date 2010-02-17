@@ -812,12 +812,12 @@
 
 \installspacehandler \v!on
   {\obeyspaces
-   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
+   \unexpanded\def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
    \let\ =\obeyedspace}
 
 \installspacehandler \v!yes
   {\obeyspaces
-   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode\normalspace}}%
+   \unexpanded\def\obeyedspace{\mathortext\normalspace{\dontleavehmode\normalspace}}%
    \let\ =\obeyedspace}
 
 \installspacehandler \v!off % == default
@@ -827,10 +827,14 @@
 
 \installspacehandler \v!fixed
   {\obeyspaces
-   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode\fixedspace}}%
+   \unexpanded\def\obeyedspace{\mathortext\normalspace{\dontleavehmode\fixedspace}}%
    \let\ =\obeyedspace}
 
 \def\activatespacehandler#1%
   {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
+
+\appendtoks
+   \normalspaces % to be sure
+\to \everybeforeoutput
 
 \protect \endinput

@@ -42,6 +42,9 @@ tasks = {
     appendaction  = dummyfunction,
     prependaction = dummyfunction,
 }
+callbacks = {
+    register = function(n,f) return callback.register(n,f) end,
+}
 
 -- we need to cheat a bit here
 

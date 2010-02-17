@@ -900,12 +900,13 @@
           \else
             \MPy#1-\MPy#2-\MPy\textanchor+\MPy\textanchor+\MPh\textanchor
           \fi
-        \fi}%
+        \fi
+      \relax}%
    \edef\textparwidth
      {\the\dimexpr
         \ifcase\scratchcounter
           % one page
-          \dimexpr\MPx#2-\MPx#1%
+          \MPx#2-\MPx#1%
         \else
           % two or more pages / maybe also hang
           \ifx#3\relax
@@ -913,7 +914,8 @@
           \else
             \MPw\MPparanchor-\MPl\MPparanchor-\MPr\MPparanchor
           \fi
-        \fi}}
+        \fi
+      \relax}}
 
 \def\mintextparheight{4\lineheight}
 

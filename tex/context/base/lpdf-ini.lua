@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 -- This code is very experimental !
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
-local char, byte, format, gsub, concat, match = string.char, string.byte, string.format, string.gsub, table.concat, string.match
+local char, byte, format, gsub, concat, match, sub = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub
 local utfvalues = string.utfvalues
 local texwrite = tex.write
 local sind, cosd = math.sind, math.cosd
@@ -142,9 +142,8 @@ tostring_a = function(t,contentonly,key)
                 r[#r+1] = tosixteen(v)
             elseif tv == "table" then
                 local mv = getmetatable(v)
-                local mt = mv.__lpdftype
-                if mv and mt then
---~                 print(mv,mt,v)
+                local mt = mv and mv.__lpdftype
+                if mt then
                     r[#r+1] = tostring(v)
                 elseif v[1] then
                     r[#r+1] = tostring_a(v)
@@ -193,6 +192,7 @@ local function value_d(t)     return tostring_d(t,true,key) end -- the call is e
 local function value_a(t)     return tostring_a(t,true,key) end -- the call is experimental
 local function value_z()      return nil                    end -- the call is experimental
 local function value_t()      return true                   end -- the call is experimental
+local function value_f()      return false                  end -- the call is experimental
 local function value_b()      return false                  end -- the call is experimental
 local function value_r()      return t[1]                   end -- the call is experimental
 local function value_v()      return t[1]                   end -- the call is experimental
@@ -276,7 +276,7 @@ function lpdf.null()
 end
 
 function lpdf.boolean(b,default)
-    if ((type(b) == boolean) and b) or default then
+    if ((type(b) == "boolean") and b) or default then
         return p_true
     else
         return p_false
@@ -316,6 +316,14 @@ end
 --~ local d = lpdf.dictionary()
 --~ d["abcd"] = { 1, 2, 3, "test" }
 --~ print(d)
+--~ print(d())
+
+--~ local d = lpdf.array()
+--~ d[#d+1] = 1
+--~ d[#d+1] = 2
+--~ d[#d+1] = 3
+--~ d[#d+1] = "test"
+--~ print(d)
 
 --~ local d = lpdf.array()
 --~ d[#d+1] = { 1, 2, 3, "test" }
@@ -325,8 +333,13 @@ end
 --~ d[#d+1] = { a=1, b=2, c=3, d="test" }
 --~ print(d)
 
---~ local s = lpdf.boolean(false)
+--~ local s = lpdf.constant("xx")
+--~ print(s) -- fails somehow
 --~ print(s()) -- fails somehow
+
+--~ local s = lpdf.boolean(false)
+--~ print(s)
+--~ print(s())
 
 function lpdf.checkedkey(t,key,kind)
     local pn = t[key]

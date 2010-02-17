@@ -42,7 +42,7 @@ if not resolvers.instance then
         callback.register('find_map_file'       , function(name) return resolvers.findbinfile(name,"map") end)
         callback.register('find_ocp_file'       , function(name) return resolvers.findbinfile(name,"ocp") end)
         callback.register('find_opentype_file'  , function(name) return resolvers.findbinfile(name,"otf") end)
-        callback.register('find_output_file'    , function(name) return name                          end)
+        callback.register('find_output_file'    , function(name) return name                              end)
         callback.register('find_pk_file'        , function(name) return resolvers.findbinfile(name,"pk")  end)
         callback.register('find_sfd_file'       , function(name) return resolvers.findbinfile(name,"sfd") end)
         callback.register('find_truetype_file'  , function(name) return resolvers.findbinfile(name,"ttf") end)

@@ -295,8 +295,9 @@ function jobregisters.compare(a,b)
     for i=1,max do
         if result == 0 then
             result = compare(ea[i],eb[i])
+        else
+            break
         end
-        return result
     end
     if result ~= 0 then
         return result
@@ -495,6 +496,7 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
             local kind = entry.metadata.kind
             if kind == 'entry' then
                 texsprint(ctxcatcodes,"\\startregisterpages")
+--~ collapse_ranges = true
                 if collapse_singles or collapse_ranges then
                     -- we collapse ranges and keep existing ranges as they are
                     -- so we get prebuilt as well as built ranges

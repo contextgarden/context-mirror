@@ -34,6 +34,6 @@ function kernel.kerning(head)
     return head, done
 end
 
-callback.register('hyphenate' , false)
-callback.register('ligaturing', false)
-callback.register('kerning'   , false)
+callbacks.register('hyphenate' , false, "normal hyphenation routine, called elsewhere")
+callbacks.register('ligaturing', false, "normal ligaturing routine, called elsewhere")
+callbacks.register('kerning'   , false, "normal kerning routine, called elsewhere")

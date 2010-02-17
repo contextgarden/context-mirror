@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/15/10 22:19:32
+-- merge date  : 02/17/10 14:29:47
 
 do -- begin closure to overcome local limits and interference
 
@@ -1974,6 +1974,9 @@ tasks = {
     actions       = dummyfunction,
     appendaction  = dummyfunction,
     prependaction = dummyfunction,
+}
+callbacks = {
+    register = function(n,f) return callback.register(n,f) end,
 }
 
 -- we need to cheat a bit here
@@ -11640,8 +11643,8 @@ end
 <p>We overload both the <l n='tfm'/> and <l n='vf'/> readers.</p>
 --ldx]]--
 
-callback.register('define_font' , define.read)
-callback.register('find_vf_file', vf.find    ) -- not that relevant any more
+callbacks.register('define_font' , define.read, "definition of fonts (tfmtable preparation)")
+callbacks.register('find_vf_file', vf.find    , "locating virtual fonts, insofar needed") -- not that relevant any more
 
 end -- closure
 

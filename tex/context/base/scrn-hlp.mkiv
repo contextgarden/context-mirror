@@ -38,6 +38,9 @@
 \newcounter     \nofhelpdataentries
 \newconditional \somehelpdatadefined
 
+\let\getpagehelpdata        \relax
+\let\synchronizepagehelpdata\relax
+
 \appendtoks \getpagehelpdata         \to \beforeeverypage
 \appendtoks \synchronizepagehelpdata \to \aftereverypage
 
@@ -46,43 +49,48 @@
 \let\pagehelpdata\empty
 
 \def\dontresetpagedata
-  {\let\synchronizepagehelpdata\relax}
+  {\let\synchronizepagehelpdataindeed\relax}
 
 \def\resetpagehelpdata
   {\iflocation
-     \let\synchronizepagehelpdata\resetpagehelpdata
+     \let\synchronizepagehelpdataindeed\resetpagehelpdata
      \global\let\pagehelpdata\empty
      \resetreference[HideHelp]%
    \fi}
 
-\let\synchronizepagehelpdata\resetpagehelpdata
+\let\synchronizepagehelpdataindeed\resetpagehelpdata
 
 \resetreference[HideHelp]
 
-\def\getpagehelpdata
+\def\getpagehelpdataindeed
   {\iflocation\ifcase\nofhelpdataentries\else
-     \let\pagehelpdata\empty
-     \ifconditional\somehelpdatadefined
-       \definetwopasslist{hlp:\realfolio}%
-       \doloop
-         {\gettwopassdata{hlp:\realfolio}%
-          \iftwopassdatafound
-            \addtocommalist\twopassdata\pagehelpdata
-          \else
-            \exitloop
-          \fi}%
-     \fi
-     \ifx\pagehelpdata\empty \else
-       \useJSscripts[fld]%
-       \definereference[HideHelp][JS(Hide_Fields)]% for the moment
-     \fi
+     \dogetpagehelpdataindeed
    \fi\fi}
+
+\def\dogetpagehelpdataindeed
+  {\let\pagehelpdata\empty
+   \ifconditional\somehelpdatadefined
+     \definetwopasslist{hlp:\realfolio}%
+     \doloop
+       {\gettwopassdata{hlp:\realfolio}%
+        \iftwopassdatafound
+          \addtocommalist\twopassdata\pagehelpdata
+        \else
+          \exitloop
+        \fi}%
+   \fi
+   \ifx\pagehelpdata\empty \else
+     \useJSscripts[fld]%
+     \definereference[HideHelp][JS(Hide_Fields)]% for the moment
+   \fi}
 
 \def\setpagehelpdata[#1]%
   {\iflocation\expanded{\dosetpagehelpdata{#1}}\fi}
 
 \def\dosetpagehelpdata#1%
   {\doglobal\increment\nofhelpdataentries
+   \global\let\getpagehelpdata\getpagehelpdataindeed
+   \global\let\synchronizepagehelpdata\synchronizepagehelpdataindeed
    \savetwopassdata{hlp:\realfolio}{\nofhelpdataentries}{#1}}
 
 \setvalue{\e!start\v!helptext}[#1]%

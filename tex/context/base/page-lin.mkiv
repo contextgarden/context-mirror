@@ -476,8 +476,7 @@
 
     \ctxlua{
         nodes.lines.scratchbox = \number\linenumberscratchbox ;
-    %   callback.register('vpack_filter', nodes.lines.flowed.apply)
-        callback.register('post_linebreak_filter', nodes.lines.flowed.apply)
+     -- register nodes.lines.flowed.apply in post_linebreak_filter actions
     }
 
 \fi

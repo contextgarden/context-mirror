@@ -1001,9 +1001,9 @@ local ignore = table.tohash {
 
 function nodes.handle_vbox_spacing(head,where)
     if head and not ignore[where] and head.next then
---~         starttiming(vspacing)
+    --  starttiming(vspacing)
         head = collapser(head,"vbox",where,trace_vbox_vspacing,false)
---~         stoptiming(vspacing)
+    --  stoptiming(vspacing)
     end
     return head
 end
@@ -1011,26 +1011,11 @@ end
 function nodes.collapse_vbox(n) -- for boxes
     local list = texbox[n].list
     if list then
---~         starttiming(vspacing)
+    --  starttiming(vspacing)
         texbox[n].list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true))
---~         stoptiming(vspacing)
+    --  stoptiming(vspacing)
     end
 end
-
--- these are experimental callback definitions that definitely will
--- be moved elsewhere as part of a chain of vnode handling
---
---  function vspacing.enable()
---      callback.register('vpack_filter', nodes.handle_vbox_spacing) -- enabled per 2009/10/16
---      callback.register('buildpage_filter', nodes.handle_page_spacing)
---  end
---
---  function vspacing.disable()
---      callback.register('vpack_filter', nil)
---      callback.register('buildpage_filter', nil)
---  end
---
---  vspacing.enable()
 
 -- we will split this module hence the locals
 
@@ -1127,8 +1112,8 @@ function nodes.builders.buildpage_filter(groupcode)
     return (done and head) or true
 end
 
-callback.register('vpack_filter',     nodes.builders.vpack_filter)
-callback.register('buildpage_filter', nodes.builders.buildpage_filter)
+callbacks.register('vpack_filter',     nodes.builders.vpack_filter,"vertical spacing etc")
+callbacks.register('buildpage_filter', nodes.builders.buildpage_filter,"vertical spacing etc (mvl)")
 
 statistics.register("v-node processing time", function()
     if statistics.elapsedindeed(builders) then

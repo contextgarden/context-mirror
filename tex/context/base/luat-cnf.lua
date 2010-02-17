@@ -43,17 +43,17 @@ end
 local stub = [[
 -- checking
 
-storage = storage or {}
-luatex  = luatex  or {}
-
--- as soon as possible
-
-luatex.starttime = os.gettimeofday()
+storage = storage or { }
+luatex  = luatex  or { }
 
 -- we provide our own file handling
 
 texconfig.kpse_init = false
 texconfig.shell_escape = 't'
+
+-- as soon as possible
+
+luatex.starttime = os.gettimeofday()
 
 -- this will happen after the format is loaded
 

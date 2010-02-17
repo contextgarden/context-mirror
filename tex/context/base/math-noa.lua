@@ -358,7 +358,7 @@ function nodes.processors.mlist_to_hlist(head,style,penalties)
     return head, done
 end
 
-callback.register('mlist_to_hlist',nodes.processors.mlist_to_hlist)
+callbacks.register('mlist_to_hlist',nodes.processors.mlist_to_hlist,"preprocessing math list")
 
 -- tracing
 

@@ -108,8 +108,8 @@ function nodes.processors.hpack_filter(head,groupcode)
     return true
 end
 
-callback.register('pre_linebreak_filter', nodes.processors.pre_linebreak_filter)
-callback.register('hpack_filter'        , nodes.processors.hpack_filter)
+callbacks.register('pre_linebreak_filter', nodes.processors.pre_linebreak_filter,"all kind of horizontal manipulations (before par break)")
+callbacks.register('hpack_filter'        , nodes.processors.hpack_filter,"all kind of horizontal manipulations")
 
 local actions = tasks.actions("finalizers",2) -- head, where, boolean
 
@@ -142,7 +142,7 @@ function nodes.processors.post_linebreak_filter(head,groupcode)
 --~     return true
 end
 
-callback.register('post_linebreak_filter', nodes.processors.post_linebreak_filter)
+callbacks.register('post_linebreak_filter', nodes.processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")
 
 statistics.register("h-node processing time", function()
     if statistics.elapsedindeed(nodes) then
