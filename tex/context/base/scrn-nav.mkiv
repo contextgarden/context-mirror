@@ -241,4 +241,16 @@
    \c!keyword=,
    \c!date=\@@iatimestamp]
 
+%D XMP support:
+
+\setupinteraction
+  [xmpfile=]
+
+\appendtoks
+    % this will move as it is a backend issue
+    \doifsomething\@@iaxmpfile
+      {\ctxlua{if lpdf then lpdf.setxmpfile("\@@iaxmpfile") end}%
+       \globallet\@@iaxmpfile\empty}%
+\to \everysetupinteraction
+
 \protect \endinput

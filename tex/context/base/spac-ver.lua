@@ -77,7 +77,7 @@ vspacing.data.snapmethods = vspacing.data.snapmethods or { }
 
 storage.register("vspacing/data/snapmethods", vspacing.data.snapmethods, "vspacing.data.snapmethods")
 
-local snapmethods = vspacing.data.snapmethods
+local snapmethods = vspacing.data.snapmethods --maybe some older code can go
 
 local default = {
     maxheight = true,
@@ -93,28 +93,40 @@ local fractions = {
     top       = "tlines",    bottom    = "blines",
 }
 
+local values = {
+    offset = "offset"
+}
+
 local colonsplitter = lpeg.splitat(":")
 
-function interfaces.listtohash(str)
+local function listtohash(str) -- redundant?
     local t = { }
     for s in gmatch(str,"[^, ]+") do
-        local key, fraction = lpegmatch(colonsplitter,s)
+        local key, detail = lpegmatch(colonsplitter,s)
         local v = variables[key]
         if v then
             t[v] = true
-            if fraction then
+            if detail then
                 local k = fractions[key]
                 if k then
-                    fraction = tonumber("0" .. fraction)
-                    if fraction then
+                    detail = tonumber("0" .. detail)
+                    if detail then
                         t[k] = fraction
+                    end
+                else
+                    k = values[key]
+                    if k then
+                        detail = string.todimen(detail)
+                        if detail then
+                            t[k] = detail
+                        end
                     end
                 end
             end
         else
-            fraction = tonumber("0" .. key)
-            if fraction then
-                t.hfraction, t.dfraction = fraction, fraction
+            detail = tonumber("0" .. key)
+            if detail then
+                t.hfraction, t.dfraction = detail, detail
             end
         end
     end
@@ -129,7 +141,7 @@ end
 
 function vspacing.define_snap_method(name,method)
     local n = #snapmethods + 1
-    local t = interfaces.listtohash(method)
+    local t = listtohash(method)
     snapmethods[n] = t
     t.name, t.specification = name, method
     tex.write(n)
@@ -211,6 +223,12 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
     end
     if method.bottom then
         cd = cd + (method.blines or 1) * snaphtdp
+    end
+    local offset = method.offset
+    if offset then
+        local shifted = vpack_node(current.list)
+        shifted.shift = offset
+        current.list = shifted
     end
     if not height then
         current.height = ch
@@ -521,7 +539,8 @@ local discard, largest, force, penalty, add, disable, nowhite, goback, together 
 function vspacing.snap_box(n,how)
     local sv = snapmethods[how]
     if sv then
-        local list = texbox[n].list
+        local box = texbox[n]
+        local list = box.list
 --~         if list and (list.id == hlist or list.id == vlist) then
         if list then
             local s = has_attribute(list,snap_method)
@@ -530,7 +549,7 @@ function vspacing.snap_box(n,how)
                     logs.report("snapper", "hlist not snapped, already done")
                 end
             else
-                local h, d, ch, cd, lines = snap_hlist(list,sv,texht[n],texdp[n])
+                local h, d, ch, cd, lines = snap_hlist(box,sv,texht[n],texdp[n])
                 texht[n], texdp[n] = ch, cd
                 if trace_vsnapping then
                     logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,"direct",lines)

@@ -15,6 +15,15 @@
 
 \registerctxluafile{mlib-pps}{1.001}
 
+%D Todo: catch nested graphics like external figures with dummies.
+
+% \newtoks\everyMPLIBtext % not yet used
+
+% \appendtoks
+%     \let\handleuseMPgraphic     \thirdofthreearguments
+%     \let\handlereusableMPgraphic\thirdofthreearguments
+% \to \everyMPLIBtext
+
 % this will move !
 
 \def\MPLIBfigure#1#2#3#4#5#6#7% todo: move Q q to lua
@@ -24,8 +33,9 @@
    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[sx=\sx,sy=\sy]{\box\scratchbox}\hss}}%
    \pdfliteral direct{Q}}
 
-\def\MPLIBsettext#1% #2%
-  {\global\setbox#1\hbox}% {#2}}
+\def\MPLIBsettext#1% #2% we could as well store in hlists at the lua end i.e. just one box
+  {\global\setbox#1\hbox}
+% {\global\setbox#1\hbox\bgroup\the\everyMPLIBtext\let\next}
 
 \def\MPLIBfreetext#1%
   {\global\setbox#1\emptybox}

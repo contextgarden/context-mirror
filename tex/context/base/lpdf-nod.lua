@@ -31,7 +31,7 @@ function nodes.pdfliteral(str)
     return t
 end
 
-function nodes.pdfannot(w,h,d,data,n)
+function nodes.pdfannotation(w,h,d,data,n)
     local t = copy_node(pdfannot)
     if w and w ~= 0 then t.width  = w end
     if h and h ~= 0 then t.height = h end
@@ -41,7 +41,7 @@ function nodes.pdfannot(w,h,d,data,n)
     return t
 end
 
-function nodes.pdfdest(w,h,d,name,view,n)
+function nodes.pdfdestination(w,h,d,name,view,n)
     local t = copy_node(pdfdest)
     if w and w ~= 0 then t.width  = w end
     if h and h ~= 0 then t.height = h end

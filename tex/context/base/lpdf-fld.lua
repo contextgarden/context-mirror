@@ -25,17 +25,17 @@ local registrations  = backends.pdf.registrations
 
 local registeredsymbol = codeinjections.registeredsymbol
 
-local pdfstream     = lpdf.stream
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfreference  = lpdf.reference
-local pdfunicode    = lpdf.unicode
-local pdfstring     = lpdf.string
-local pdfconstant   = lpdf.constant
-local pdftoeight    = lpdf.toeight
-
-local pdfimmediateobj = pdf.immediateobj
-local pdfreserveobj   = pdf.reserveobj
+local pdfstream        = lpdf.stream
+local pdfdictionary    = lpdf.dictionary
+local pdfarray         = lpdf.array
+local pdfreference     = lpdf.reference
+local pdfunicode       = lpdf.unicode
+local pdfstring        = lpdf.string
+local pdfconstant      = lpdf.constant
+local pdftoeight       = lpdf.toeight
+local pdfflushobject   = lpdf.flushobject
+local pdfreserveobject = lpdf.reserveobject
+local pdfannotation    = nodes.pdfannotation
 
 local submitoutputformat = 0 --  0=unknown 1=HTML 2=FDF 3=XML   => not yet used, needs to be checked
 
@@ -183,7 +183,7 @@ local function registerfonts()
                 Name     = pdfconstant(tag),
                 BaseFont = pdfconstant(fontnames[tag]),
             }
-            d[tag] = pdfreference(pdfimmediateobj(tostring(f)))
+            d[tag] = pdfreference(pdfflushobject(f))
         end
         return d
     end
@@ -538,25 +538,25 @@ local function finishfields()
     for name, field in next, fields do
         local kids = field.kids
         if kids then
-            pdfimmediateobj(field.kobj,tostring(kids))
+            pdfflushobject(field.kobj,kids)
         end
         local pobj = field.pobj
     end
     for name, field in next, radios do
         local kids = field.kids
         if kids then
-            pdfimmediateobj(field.kobj,tostring(kids))
+            pdfflushobject(field.kobj,kids)
         end
     end
     if #collected > 0 then
         local acroform = pdfdictionary {
             NeedAppearances = true,
-            Fields = pdfreference(pdfimmediateobj(tostring(collected))),
+            Fields = pdfreference(pdfflushobject(collected)),
             DR     = pdfdictionary { Font = registerfonts() },
             CO     = fieldsetlist(calculationset),
             DA     = "/tttf 12 Tf 0 g",
         }
-        lpdf.addtocatalog("AcroForm",pdfreference(pdfimmediateobj(tostring(acroform))))
+        lpdf.addtocatalog("AcroForm",pdfreference(pdfflushobject(acroform)))
     end
 end
 
@@ -596,19 +596,19 @@ end
 -- can be optional multipass optimization (share objects)
 
 local function save_parent(field,specification,d)
-    local kn = pdfreserveobj()
+    local kn = pdfreserveobject()
     d.Kids = pdfreference(kn)
     field.kobj = kn
     field.kids = pdfarray()
-    local pn = pdfimmediateobj(tostring(d))
+    local pn = pdfflushobject(d)
     field.pobj = pn
     collected[#collected+1] = pdfreference(pn)
 end
 
 local function save_kid(field,specification,d)
-    local kn = pdfreserveobj()
+    local kn = pdfreserveobject()
     field.kids[#field.kids+1] = pdfreference(kn)
-    node.write(nodes.pdfannot(specification.width,specification.height,0,d(),kn))
+    node.write(pdfannotation(specification.width,specification.height,0,d(),kn))
 end
 
 function methods.line(name,specification,variant,extras)

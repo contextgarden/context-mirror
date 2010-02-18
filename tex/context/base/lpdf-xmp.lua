@@ -12,49 +12,8 @@ local xmlfillin = xml.fillin
 
 local trace_xmp = false  trackers.register("backend.xmp", function(v) trace_xmp = v end)
 
-local xmpmetadata = [[
-<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 4.2.1-c043 52.372728, 2009/01/18-15:08:04">
-    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-        <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
-            <dc:format>application/pdf</dc:format>
-            <dc:creator>
-                <rdf:Seq>
-                    <rdf:li/>
-                </rdf:Seq>
-            </dc:creator>
-            <dc:description/>
-            <dc:title>
-                <rdf:Alt>
-                    <rdf:li xml:lang="x-default"/>
-                </rdf:Alt>
-            </dc:title>
-        </rdf:Description>
-        <rdf:Description rdf:about="" xmlns:pdfx="http://ns.adobe.com/pdfx/1.3/">
-            <pdfx:ConTeXt.Jobname/>
-            <pdfx:ConTeXt.Time/>
-            <pdfx:ConTeXt.Url/>
-            <pdfx:ConTeXt.Version/>
-            <pdfx:ID/>
-            <pdfx:PTEX.Fullbanner/>
-        </rdf:Description>
-        <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-            <xmp:CreateDate/>
-            <xmp:CreatorTool/>
-            <xmp:ModifyDate/>
-            <xmp:MetadataDate/>
-        </rdf:Description>
-        <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
-            <pdf:Keywords/>
-            <pdf:Producer/>
-            <pdf:Trapped>False</pdf:Trapped>
-        </rdf:Description>
-        <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
-            <xmpMM:DocumentID/>
-            <xmpMM:InstanceID/>
-        </rdf:Description>
-    </rdf:RDF>
-</x:xmpmeta>
-]]
+local pdfdictionary = lpdf.dictionary
+local pdfconstant   = lpdf.constant
 
 -- i wonder why this begin end is empty / w (no time now to look into it)
 
@@ -110,12 +69,28 @@ local mapping = {
 
 -- maybe some day we will load the xmp file at runtime
 
-local xmp = xml.convert(xmpmetadata)
+local xmp, xmpfile, xmpname = nil, nil, "lpdf-xmp.xml"
+
+function lpdf.setxmpfile(name)
+    xmpfile = resolvers.findctxfile(name) or ""
+    if xmpfile == "" then
+        xmpfile = nil
+    end
+end
+
+local function valid_xmp()
+    if not xmp then
+        local xmpfile = xmpfile or resolvers.find_file(xmpname) or ""
+        local xmpdata = (xmpfile ~= "" and io.loaddata(xmpfile)) or ""
+        xmp = xml.convert(xmpdata)
+    end
+    return xmp
+end
 
 function lpdf.addxmpinfo(tag,value,check)
     local pattern = mapping[tag]
     if pattern then
-        xmlfillin(xmp,pattern,value,check)
+        xmlfillin(xmp or valid_xmp(),pattern,value,check)
     end
 end
 
@@ -132,11 +107,11 @@ end
 -- for the do-it-yourselvers
 
 function lpdf.insertxmpinfo(pattern,whatever,prepend)
-    xml.insert(xmp,pattern,whatever,prepend)
+    xml.insert(xmp or valid_xmp(),pattern,whatever,prepend)
 end
 
 function lpdf.injectxmpinfo(pattern,whatever,prepend)
-    xml.inject(xmp,pattern,whatever,prepend)
+    xml.inject(xmp or valid_xmp(),pattern,whatever,prepend)
 end
 
 -- flushing
@@ -158,10 +133,10 @@ local function flushxmpinfo()
     addxmpinfo("ModifyDate",time)
     addxmpinfo("MetadataDate",time)
     addxmpinfo("PTEX.Fullbanner", tex.pdftexbanner)
-    local blob = xml.tostring(xmp)
-    local md = lpdf.dictionary {
-        Subtype = lpdf.constant("XML"),
-        Type    = lpdf.constant("Metadata"),
+    local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
+    local md = pdfdictionary {
+        Subtype = pdfconstant("XML"),
+        Type    = pdfconstant("Metadata"),
     }
     if trace_xmp then
         commands.writestatus("system","xmp data flushed (see log file)")

@@ -45,6 +45,7 @@ function fonts.show_all()
         sprint(tex.ctxcatcodes,format("\\stoptabulatehead"))
         sprint(tex.ctxcatcodes,format("\\starttabulate[|l|c|l|p|p|p|]"))
         for k, unicode in ipairs(table.sortedkeys(chars)) do
+--      for unicode, _  in table.sortedpairs(chars) do
             if unicode >= 0 then
                 local chr, des, dat = chars[unicode], descs[unicode], data[unicode]
                 local index = chr.index or 0

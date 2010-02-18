@@ -16,16 +16,20 @@ local registrations  = backends.pdf.registrations
 local executers = jobreferences.executers
 local variables = interfaces.variables
 
-local pdfconstant   = lpdf.constant
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfreference  = lpdf.reference
-local pdfunicode    = lpdf.unicode
-local pdfstring     = lpdf.string
-local pdfcolorspec  = lpdf.colorspec
+local pdfconstant      = lpdf.constant
+local pdfdictionary    = lpdf.dictionary
+local pdfarray         = lpdf.array
+local pdfreference     = lpdf.reference
+local pdfunicode       = lpdf.unicode
+local pdfstring        = lpdf.string
+local pdfcolorspec     = lpdf.colorspec
+local pdfflushobject   = lpdf.flushobject
+local pdfreserveobject = lpdf.reserveobject
 
 local pdfreserveobj   = pdf.reserveobj
 local pdfimmediateobj = pdf.immediateobj
+
+local pdfannotation   = nodes.pdfannotation
 
 -- symbols
 
@@ -122,17 +126,17 @@ function codeinjections.registercomment(specification)
     }
     -- watch the nice feed back to tex hack
     if usepopupcomments then
-        local nd = pdfreserveobj()
-        local nc = pdfreserveobj()
+        local nd = pdfreserveobject()
+        local nc = pdfreserveobject()
         local c = pdfdictionary {
             Subtype = pdfconstant("Popup"),
             Parent  = pdfreference(nd),
         }
         d.Popup = pdfreference(nc)
-        texbox["commentboxone"] = node.hpack(nodes.pdfannot(0,0,0,d(),nd))
-        texbox["commentboxtwo"] = node.hpack(nodes.pdfannot(specification.width,specification.height,0,c(),nc))
+        texbox["commentboxone"] = node.hpack(pdfannotation(0,0,0,d(),nd))
+        texbox["commentboxtwo"] = node.hpack(pdfannotation(specification.width,specification.height,0,c(),nc))
     else
-        texbox["commentboxone"] = node.hpack(nodes.pdfannot(0,0,0,d()))
+        texbox["commentboxone"] = node.hpack(pdfannotation(0,0,0,d()))
         texbox["commentboxtwo"] = nil
     end
 end
@@ -161,7 +165,7 @@ function codeinjections.embedfile(filename)
             UF   = pdfstring(newname or basename),
             EF   = pdfdictionary { F = pdfreference(f) },
         }
-        local r = pdfreference(pdfimmediateobj(tostring(d)))
+        local r = pdfreference(pdfflushobject(d))
         filestreams[filename] = r
         return r
     end
@@ -205,7 +209,7 @@ function codeinjections.attachfile(specification)
     local width  = specification.width  or 0
     local height = specification.height or 0
     local depth  = specification.depth  or 0
-    node.write(nodes.pdfannot(width,height,depth,d()))
+    node.write(pdfannotation(width,height,depth,d()))
 end
 
 function codeinjections.attachmentid(filename)
@@ -262,7 +266,7 @@ local function insertrenderingwindow(label,width,height,specification)
         AA      = actions,
     }
     local r = pdfreserveobj("annot")
-    node.write(nodes.pdfannot(width,height,0,d(),r)) -- save ref
+    node.write(pdfannotation(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
 
@@ -289,7 +293,7 @@ local function insertrendering(specification)
                 }
             }
         }
-        mf[label] = pdfreference(pdfimmediateobj(tostring(d)))
+        mf[label] = pdfreference(pdfflushobject(d))
         if not ms[label]  then
             mu[label] = insertrenderingwindow(label,0,0,specification.options)
         end
@@ -309,7 +313,7 @@ local function insertrenderingobject(specification)
                 D    = pdfreference(unknown), -- not label but objectname, hm
             }
         }
-        mf[label] = pdfreference(pdfimmediateobj(tostring(d)))
+        mf[label] = pdfreference(pdfflushobject(d))
         if ms[label] then
             insertrenderingwindow(label,0,0,specification)
         end

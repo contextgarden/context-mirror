@@ -12,13 +12,11 @@ local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
 local registrations  = backends.pdf.registrations
 
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfconstant   = lpdf.constant
-local pdfreference  = lpdf.reference
-
-local pdfreserveobj   = pdf.reserveobj
-local pdfimmediateobj = pdf.immediateobj
+local pdfdictionary  = lpdf.dictionary
+local pdfarray       = lpdf.array
+local pdfconstant    = lpdf.constant
+local pdfreference   = lpdf.reference
+local pdfflushobject = lpdf.flushobject
 
 local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates)
     local f = pdfdictionary {
@@ -31,11 +29,11 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates)
     local s = pdfdictionary {
         ShadingType = stype,
         ColorSpace  = pdfconstant(colorspace),
-        Function    = pdfreference(pdfimmediateobj(tostring(f))),
+        Function    = pdfreference(pdfflushobject(f)),
         Coords      = pdfarray(coordinates),
         Extend      = pdfarray { true, true },
     }
-    lpdf.adddocumentshade(name,pdfreference(pdfimmediateobj(tostring(s))))
+    lpdf.adddocumentshade(name,pdfreference(pdfflushobject(s)))
 end
 
 function lpdf.circularshade(name,domain,color_a,color_b,n,colorspace,coordinates)

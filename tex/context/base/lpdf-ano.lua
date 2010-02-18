@@ -31,18 +31,17 @@ local specials  = jobreferences.specials
 local handlers  = jobreferences.handlers
 local executers = jobreferences.executers
 
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfreference  = lpdf.reference
-local pdfunicode    = lpdf.unicode
-local pdfconstant   = lpdf.constant
+local pdfdictionary     = lpdf.dictionary
+local pdfarray          = lpdf.array
+local pdfreference      = lpdf.reference
+local pdfunicode        = lpdf.unicode
+local pdfconstant       = lpdf.constant
+local pdfflushobject    = lpdf.flushobject
+local pdfreserveobject  = lpdf.reserveobject
+local pdfannotation     = nodes.pdfannotation
+local pdfdestination    = nodes.pdfdestination
 
-local pdfreserveobj   = pdf.reserveobj
-local pdfimmediateobj = pdf.immediateobj
-local pdfpageref      = tex.pdfpageref
-
-local pdfannot  = nodes.pdfannot
-local pdfdest   = nodes.pdfdest
+local pdfpagereference  = tex.pdfpageref
 
 local pdf_uri        = pdfconstant("URI")
 local pdf_gotor      = pdfconstant("GoToR")
@@ -60,10 +59,10 @@ local function pagedest(n)
     local pd = cache[n]
     if not pd then
         local a = pdfarray {
-            pdfreference(pdfpageref(n)),
+            pdfreference(pdfpagereference(n)),
             pdfconstant("Fit")
         }
-        pd = pdfreference(pdfimmediateobj(tostring(a)))
+        pd = pdfreference(pdfflushobject(a))
         cache[n] = pd
     end
     return pd
@@ -221,7 +220,7 @@ end
 --         }
 --         local cm = cache[main]
 --         if not cm then
---             cm = "/A ".. tostring(pdfreference(pdfimmediateobj(tostring(main))))
+--             cm = "/A ".. tostring(pdfreference(pdfflushobject(main))
 --             cache[main] = cm
 --         end
 --         return cm
@@ -236,7 +235,7 @@ function nodeinjections.reference(width,height,depth,prerolled)
         if trace_references then
             logs.report("references","w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
         end
-        return pdfannot(width,height,depth,prerolled)
+        return pdfannotation(width,height,depth,prerolled)
     end
 end
 
@@ -247,7 +246,7 @@ function nodeinjections.destination(width,height,depth,name,view)
     if trace_destinations then
         logs.report("destinations","w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
     end
-    return pdfdest(width,height,depth,name,view)
+    return pdfdestination(width,height,depth,name,view)
 end
 
 -- runners and specials
@@ -571,10 +570,10 @@ local function build(levels,start,parent,method)
                 logs.report("bookmark","%3i %s%s %s",reference.realpage,rep("  ",level-1),(open and "+") or "-",title)
             end
             local prev = child
-            child = pdfreserveobj()
+            child = pdfreserveobject()
             if entry then
                 entry.Next = child and pdfreference(child)
-                pdfimmediateobj(prev,tostring(entry))
+                pdfflushobject(prev,entry)
             end
             entry = pdfdictionary {
                 Title  = pdfunicode(title),
@@ -592,7 +591,7 @@ local function build(levels,start,parent,method)
             n = n + 1
             i = i + 1
         elseif level < startlevel then
-            pdfimmediateobj(child,tostring(entry))
+            pdfflushobject(child,entry)
             return i, n, first, last
         elseif i < #levels and level > startlevel then
             i, m, f, l = build(levels,i,pdfreference(child),method)
@@ -607,16 +606,16 @@ local function build(levels,start,parent,method)
             if m > 0 then
                 entry.First, entry.Last = pdfreference(f), pdfreference(l)
             end
-            pdfimmediateobj(child,tostring(entry))
+            pdfflushobject(child,entry)
             return i, n, first, last
         end
     end
-    pdfimmediateobj(child,tostring(entry))
+    pdfflushobject(child,entry)
     return nil, n, first, last
 end
 
 function codeinjections.addbookmarks(levels,method)
-    local parent = pdfreserveobj()
+    local parent = pdfreserveobject()
     local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal")
     local dict = pdfdictionary {
         Type  = pdfconstant("Outlines"),
@@ -624,6 +623,6 @@ function codeinjections.addbookmarks(levels,method)
         Last  = pdfreference(last),
         Count = m,
     }
-    pdfimmediateobj(parent,tostring(dict))
+    pdfflushobject(parent,dict)
     lpdf.addtocatalog("Outlines",lpdf.reference(parent))
 end

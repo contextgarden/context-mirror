@@ -31,14 +31,17 @@ local registrations  = backends.pdf.registrations
 
 local pdfliteral, register = nodes.pdfliteral, nodes.register
 
-local pdfconstant   = lpdf.constant
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfreference  = lpdf.reference
-local pdfverbose    = lpdf.verbose
+local pdfconstant      = lpdf.constant
+local pdfdictionary    = lpdf.dictionary
+local pdfarray         = lpdf.array
+local pdfreference     = lpdf.reference
+local pdfverbose       = lpdf.verbose
+local pdfflushobject   = lpdf.flushobject
+local pdfreserveobject = lpdf.reserveobject
+local pdfannotation    = nodes.pdfannotation
 
-local pdfreserveobj   = pdf.reserveobj
-local pdfimmediateobj = pdf.immediateobj
+local pdfreserveobj    = pdf.reserveobj
+local pdfimmediateobj  = pdf.immediateobj
 
 function nodeinjections.rgbcolor(r,g,b)
     return register(pdfliteral(format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)))
@@ -130,7 +133,7 @@ function codeinjections.insertmovie(specification)
         Movie   = moviedict,
         A       = controldict,
     }
-    node.write(nodes.pdfannot(width,height,0,action()))
+    node.write(pdfannotation(width,height,0,action()))
 end
 
 function codeinjections.insertsound(specification)
@@ -150,7 +153,7 @@ function codeinjections.insertsound(specification)
             Movie   = sounddict,
             A       = controldict,
         }
-        node.write(nodes.pdfannot(0,0,0,action()))
+        node.write(pdfannotation(0,0,0,action()))
     end
 end
 

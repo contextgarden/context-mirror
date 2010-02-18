@@ -8,8 +8,9 @@ if not modules then modules = { } end modules ['grph-swf'] = {
 
 local format = string.format
 
-local texsprint   = tex.sprint
-local ctxcatcodes = tex.ctxcatcodes
+local texsprint     = tex.sprint
+local ctxcatcodes   = tex.ctxcatcodes
+local pdfannotation = nodes.pdfannotation
 
 function figures.checkers.swf(data)
     local dr, du, ds = data.request, data.used, data.status
@@ -28,7 +29,7 @@ function figures.checkers.swf(data)
     --  controls  = dr.controls,
     --  label     = dr.label,
     }
- -- node.write(nodes.pdfannot(width,-height,0,annot()))
+ -- node.write(pdfannotation(width,-height,0,annot()))
     texsprint(ctxcatcodes,format("\\pdfannot width %ssp height %ssp {%s}",width,height,annot())) -- brrrr
 --~     if ref then -- wrong ! a direct ref should work
 --~         texsprint(ctxcatcodes,format("\\smash{\\pdfrefximage%s\\relax}",ref)) -- brrrr

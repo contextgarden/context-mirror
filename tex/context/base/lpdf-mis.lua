@@ -28,16 +28,16 @@ local copy_node = node.copy
 
 local pdfliteral, register = nodes.pdfliteral, nodes.register
 
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfboolean    = lpdf.boolean
-local pdfconstant   = lpdf.constant
-local pdfreference  = lpdf.reference
-local pdfunicode    = lpdf.unicode
-local pdfverbose    = lpdf.verbose
-local pdfstring     = lpdf.string
+local pdfdictionary  = lpdf.dictionary
+local pdfarray       = lpdf.array
+local pdfboolean     = lpdf.boolean
+local pdfconstant    = lpdf.constant
+local pdfreference   = lpdf.reference
+local pdfunicode     = lpdf.unicode
+local pdfverbose     = lpdf.verbose
+local pdfstring      = lpdf.string
+local pdfflushobject = lpdf.flushobject
 
-local pdfreserveobj   = pdf.reserveobj
 local pdfimmediateobj = pdf.immediateobj
 
 local tobasepoints = number.tobasepoints
@@ -60,8 +60,8 @@ local function initializenegative()
     }
     local negative = pdfdictionary { Type = g, TR = pdfreference(pdf.immediateobj("stream","1 exch sub",d())) }
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
-    lpdf.adddocumentextgstate("GSnegative", pdfreference(pdfimmediateobj(tostring(negative))))
-    lpdf.adddocumentextgstate("GSPositive", pdfreference(pdfimmediateobj(tostring(positive))))
+    lpdf.adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
+    lpdf.adddocumentextgstate("GSPositive", pdfreference(pdfflushobject(positive)))
     initializenegative = nil
 end
 
@@ -69,8 +69,8 @@ local function initializeoverprint()
     local g = pdfconstant("ExtGState")
     local knockout  = pdfdictionary { Type = g, OP = false, OPM  = 0 }
     local overprint = pdfdictionary { Type = g, OP = true,  OPM  = 1 }
-    lpdf.adddocumentextgstate("GSknockout",  pdfreference(pdfimmediateobj(tostring(knockout ))))
-    lpdf.adddocumentextgstate("GSoverprint", pdfreference(pdfimmediateobj(tostring(overprint))))
+    lpdf.adddocumentextgstate("GSknockout",  pdfreference(pdfflushobject(knockout)))
+    lpdf.adddocumentextgstate("GSoverprint", pdfreference(pdfflushobject(overprint)))
     initializeoverprint = nil
 end
 
@@ -192,9 +192,9 @@ local function flushjavascripts()
                 JS = pdfreference(pdfimmediateobj("stream",script)),
             }
             a[#a+1] = pdfstring(name)
-            a[#a+1] = pdfreference(pdfimmediateobj(tostring(j)))
+            a[#a+1] = pdfreference(pdfflushobject(j))
         end
-        lpdf.addtonames("JavaScript",pdfreference(pdfimmediateobj(tostring(pdfdictionary{ Names = a }))))
+        lpdf.addtonames("JavaScript",pdfreference(pdfflushobject(pdfdictionary{ Names = a })))
     end
 end
 

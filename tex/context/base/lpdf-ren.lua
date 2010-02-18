@@ -29,13 +29,11 @@ local executers = jobreferences.executers
 
 local variables = interfaces.variables
 
-local pdfconstant   = lpdf.constant
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfreference  = lpdf.reference
-
-local pdfreserveobj   = pdf.reserveobj
-local pdfimmediateobj = pdf.immediateobj
+local pdfconstant    = lpdf.constant
+local pdfdictionary  = lpdf.dictionary
+local pdfarray       = lpdf.array
+local pdfreference   = lpdf.reference
+local pdfflushobject = lpdf.flushobject
 
 local pdf_ocg         = pdfconstant("OCG")
 local pdf_ocmd        = pdfconstant("OCMD")
@@ -66,13 +64,13 @@ function codeinjections.defineviewerlayer(specification)
             Intent = ((specification.kind > 0) and pdf_design) or nil, -- disable layer hiding by user
             Usage  = ((specification.printable == variables.no) and lpdf_usage) or nil , -- printable or not
         }
-        local nr = pdfreference(pdfimmediateobj(tostring(n)))
+        local nr = pdfreference(pdfflushobject(n))
         pdfln[tag] = nr -- was n
         local d = pdfdictionary {
             Type = pdf_ocmd,
             OCGs = pdfarray { nr },
         }
-        local dr = pdfreference(pdfimmediateobj(tostring(d)))
+        local dr = pdfreference(pdfflushobject(d))
         pdfld[tag] = dr
         textlayers[#textlayers+1] = nr
         if specification.visible == variables.start then

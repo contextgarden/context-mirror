@@ -11,12 +11,17 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub
 local utfvalues = string.utfvalues
-local texwrite = tex.write
+local texwrite, texset, texsprint, ctxcatcodes = tex.write, tex.set, tex.sprint, tex.ctxcatcodes
 local sind, cosd = math.sind, math.cosd
 local lpegmatch = lpeg.match
 
+local pdfreserveobj   = pdf and pdf.reserveobj   or function() return 1 end -- for testing
+local pdfimmediateobj = pdf and pdf.immediateobj or function() return 2 end -- for testing
+
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
+local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
+local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
 
 lpdf = lpdf or { }
 
@@ -191,9 +196,8 @@ local function value_c(t)     return sub(t[1],2)            end -- the call is e
 local function value_d(t)     return tostring_d(t,true,key) end -- the call is experimental
 local function value_a(t)     return tostring_a(t,true,key) end -- the call is experimental
 local function value_z()      return nil                    end -- the call is experimental
-local function value_t()      return true                   end -- the call is experimental
-local function value_f()      return false                  end -- the call is experimental
-local function value_b()      return false                  end -- the call is experimental
+local function value_t(t)     return t.value or true        end -- the call is experimental
+local function value_f(t)     return t.value or false       end -- the call is experimental
 local function value_r()      return t[1]                   end -- the call is experimental
 local function value_v()      return t[1]                   end -- the call is experimental
 
@@ -212,7 +216,7 @@ local mt_f = { __lpdftype = "false",      __tostring = tostring_f, __call = valu
 local mt_r = { __lpdftype = "reference",  __tostring = tostring_r, __call = value_r }
 local mt_v = { __lpdftype = "verbose",    __tostring = tostring_v, __call = value_v }
 
-function lpdf.stream(t)
+local function pdfstream(t) -- we need to add attrbutes
     if t then
         for i=1,#t do
             t[i] = tostring(t[i])
@@ -221,11 +225,11 @@ function lpdf.stream(t)
     return setmetatable(t or { },mt_x)
 end
 
-function lpdf.dictionary(t)
+local function pdfdictionary(t)
     return setmetatable(t or { },mt_d)
 end
 
-function lpdf.array(t)
+local function pdfarray(t)
     if type(t) == "string" then
         return setmetatable({ t },mt_a)
     else
@@ -233,17 +237,17 @@ function lpdf.array(t)
     end
 end
 
-function lpdf.string(str,default)
+local function pdfstring(str,default)
     return setmetatable({ str or default or "" },mt_s)
 end
 
-function lpdf.unicode(str,default)
+local function pdfunicode(str,default)
     return setmetatable({ str or default or "" },mt_u)
 end
 
 local cache = { } -- can be weak
 
-function lpdf.number(n,default) -- 0-10
+local function pdfnumber(n,default) -- 0-10
     n = n or default
     local c = cache[n]
     if not c then
@@ -253,11 +257,11 @@ function lpdf.number(n,default) -- 0-10
     return c
 end
 
-for i=-1,9 do cache[i] = lpdf.number(i) end
+for i=-1,9 do cache[i] = pdfnumber(i) end
 
 local cache = { } -- can be weak
 
-function lpdf.constant(str,default)
+local function pdfconstant(str,default)
     str = str or default or ""
     local c = cache[str]
     if not c then
@@ -271,11 +275,11 @@ local p_null  = { } setmetatable(p_null, mt_z)
 local p_true  = { } setmetatable(p_true, mt_t)
 local p_false = { } setmetatable(p_false,mt_f)
 
-function lpdf.null()
+local function pdfnull()
     return p_null
 end
 
-function lpdf.boolean(b,default)
+local function pdfboolean(b,default)
     if ((type(b) == "boolean") and b) or default then
         return p_true
     else
@@ -283,12 +287,87 @@ function lpdf.boolean(b,default)
     end
 end
 
-function lpdf.reference(r)
+local function pdfreference(r)
     return setmetatable({ r or 0 },mt_r)
 end
 
-function lpdf.verbose(t) -- maybe check for type
+local function pdfverbose(t) -- maybe check for type
     return setmetatable({ t or "" },mt_v)
+end
+
+lpdf.stream      = pdfstream
+lpdf.dictionary  = pdfdictionary
+lpdf.array       = pdfarray
+lpdf.string      = pdfstring
+lpdf.unicode     = pdfunicode
+lpdf.number      = pdfnumber
+lpdf.constant    = pdfconstant
+lpdf.null        = pdfnull
+lpdf.boolean     = pdfboolean
+lpdf.reference   = pdfreference
+lpdf.verbose     = pdfverbose
+
+-- n = pdf.obj(n, str)
+-- n = pdf.obj(n, "file", filename)
+-- n = pdf.obj(n, "stream", streamtext, attrtext)
+-- n = pdf.obj(n, "streamfile", filename, attrtext)
+
+-- we only use immediate objects
+
+-- todo: tracing
+
+local names, cache = { }, { }
+
+function lpdf.reserveobject(name)
+    local r = pdfreserveobj()
+    if name then
+        names[name] = r
+        if trace_objects then
+            logs.report("backends", "reserving object number %s under name '%s'",r,name)
+        end
+    elseif trace_objects then
+        logs.report("backends", "reserving object number %s",r)
+    end
+    return r
+end
+
+function lpdf.flushobject(name,data)
+    if data then
+        name = names[name] or name
+        if name then
+            if trace_objects then
+                if trace_detail then
+                    logs.report("backends", "flushing object data to reserved object with name '%s' -> %s",name,tostring(data))
+                else
+                    logs.report("backends", "flushing object data to reserved object with name '%s'",name)
+                end
+            end
+            return pdfimmediateobj(name,tostring(data))
+        else
+            if trace_objects then
+                if trace_detail then
+                    logs.report("backends", "flushing object data to reserved object with number %s -> %s",name,tostring(data))
+                else
+                    logs.report("backends", "flushing object data to reserved object with number %s",name)
+                end
+            end
+            return pdfimmediateobj(tostring(data))
+        end
+    else
+        if trace_objects and trace_detail then
+            logs.report("backends", "flushing object data -> %s",tostring(name))
+        end
+        return pdfimmediateobj(tostring(name))
+    end
+end
+
+function lpdf.sharedobj(content)
+    local r = cache[content]
+    if not r then
+        r = pdfreference(pdfimmediateobj(content))
+        cache[content] = r
+    end
+    return r
 end
 
 --~ local d = lpdf.dictionary()
@@ -338,93 +417,9 @@ end
 --~ print(s()) -- fails somehow
 
 --~ local s = lpdf.boolean(false)
+--~ s.value = true
 --~ print(s)
 --~ print(s())
-
-function lpdf.checkedkey(t,key,kind)
-    local pn = t[key]
-    if pn then
-        local tn = type(pn)
-        if tn == kind then
-            if kind == "string" then
-                return pn ~= "" and pn
-            elseif kind == "table" then
-                return next(pn) and pn
-            else
-                return pn
-            end
-        elseif tn == "string" and kind == "number" then
-            return tonumber(pn)
-        end
-    end
-end
-
-function lpdf.checkedvalue(value,kind) -- code not shared
-    if value then
-        local tv = type(value)
-        if tv == kind then
-            if kind == "string" then
-                return value ~= "" and value
-            elseif kind == "table" then
-                return next(value) and value
-            else
-                return value
-            end
-        elseif tv == "string" and kind == "number" then
-            return tonumber(value)
-        end
-    end
-end
-
-function lpdf.limited(n,min,max,default)
-    if not n then
-        return default
-    else
-        n = tonumber(n)
-        if not n then
-            return default
-        elseif n > max then
-            return max
-        elseif n < min then
-            return min
-        else
-            return n
-        end
-    end
-end
-
--- there will be more of this
-
-local pdfreference    = lpdf.reference
-local pdfdictionary   = lpdf.dictionary
-local pdfarray        = lpdf.array
-local pdfverbose      = lpdf.verbose
-local pdfreserveobj   = pdf.reserveobj
-local pdfimmediateobj = pdf.immediateobj
-
-local texset, texsprint, ctxcatcodes = tex.set, tex.sprint, tex.ctxcatcodes
-
-local pdfobjcache = { }
-
-function lpdf.sharedobj(content)
-    local r = pdfobjcache[content]
-    if not r then
-        r = pdfreference(pdfimmediateobj(content))
-        pdfobjcache[content] = r
-    end
-    return r
-end
-
--- saves definitions later on
-
-backends     = backends or { }
-backends.pdf = backends.pdf or {
-    comment        = "backend for directly generating pdf output",
-    nodeinjections = { },
-    codeinjections = { },
-    registrations  = { },
-    helpers        = { },
-}
 
 -- three priority levels, default=2
 
@@ -510,7 +505,7 @@ local function flushcatalog() if not environment.initex then trace_flush("catalo
 local function flushinfo   () if not environment.initex then trace_flush("info")    pdf.pdfinfo    = info   () end end
 local function flushnames  () if not environment.initex then trace_flush("names")   pdf.pdfnames   = names  () end end
 
-if not pdf.pdfcatalog then
+if pdf and not pdf.pdfcatalog then
 
     local c_template, i_template, n_template = "\\normalpdfcatalog{%s}", "\\normalpdfinfo{%s}", "\\normalpdfnames{%s}"
 
@@ -595,7 +590,70 @@ function lpdf.id()
     return format("%s.%s",tex.jobname,timestamp)
 end
 
+function lpdf.checkedkey(t,key,kind)
+    local pn = t[key]
+    if pn then
+        local tn = type(pn)
+        if tn == kind then
+            if kind == "string" then
+                return pn ~= "" and pn
+            elseif kind == "table" then
+                return next(pn) and pn
+            else
+                return pn
+            end
+        elseif tn == "string" and kind == "number" then
+            return tonumber(pn)
+        end
+    end
+end
+
+function lpdf.checkedvalue(value,kind) -- code not shared
+    if value then
+        local tv = type(value)
+        if tv == kind then
+            if kind == "string" then
+                return value ~= "" and value
+            elseif kind == "table" then
+                return next(value) and value
+            else
+                return value
+            end
+        elseif tv == "string" and kind == "number" then
+            return tonumber(value)
+        end
+    end
+end
+
+function lpdf.limited(n,min,max,default)
+    if not n then
+        return default
+    else
+        n = tonumber(n)
+        if not n then
+            return default
+        elseif n > max then
+            return max
+        elseif n < min then
+            return min
+        else
+            return n
+        end
+    end
+end
+
 -- lpdf.addtoinfo("ConTeXt.Version", tex.contextversiontoks)
 -- lpdf.addtoinfo("ConTeXt.Time",    os.date("%Y.%m.%d %H:%M")) -- :%S
 -- lpdf.addtoinfo("ConTeXt.Jobname", tex.jobname)
 -- lpdf.addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
+
+-- saves definitions later on
+
+backends     = backends or { }
+backends.pdf = backends.pdf or {
+    comment        = "backend for directly generating pdf output",
+    nodeinjections = { },
+    codeinjections = { },
+    registrations  = { },
+    helpers        = { },
+}

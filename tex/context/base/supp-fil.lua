@@ -196,7 +196,8 @@ local function usemodule(name,hassheme)
 end
 
 function support.usemodules(prefix,askedname,truename)
-    local hashname = prefix .. "-" .. truename
+    local hasprefix = prefix and prefix ~= ""
+    local hashname = ((hasprefix and prefix) or "*") .. "-" .. truename
     local status = modstatus[hashname]
     if status == 0 then
         -- not found
@@ -214,7 +215,7 @@ function support.usemodules(prefix,askedname,truename)
             else
                 status = 0
             end
-        elseif prefix and prefix ~= "" then
+        elseif hasprefix then
             if usemodule(prefix .. "-" .. truename) then
                 status = 1
             else
@@ -223,12 +224,15 @@ function support.usemodules(prefix,askedname,truename)
         else
             for i=1,#prefixes do
                 -- todo: reconstruct name i.e. basename
-                if usemodule(prefixes[i] .. "-" .. truename) then
+                local thename = prefixes[i] .. "-" .. truename
+                if usemodule(thename) then
                     status = 1
                     break
                 end
             end
-            if not status and usemodule(truename) then
+            if status then
+                -- ok, don't change
+            elseif usemodule(truename) then
                 status = 1
             else
                 status = 0
