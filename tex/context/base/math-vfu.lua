@@ -495,35 +495,44 @@ function fonts.vf.math.define(specification,set)
                                 --~ end
                             else
                                 local fci = fc[index]
-                                local ref = si[index]
-                                if not ref then
-                                    ref = { { 'slot', s, index } }
-                                    si[index] = ref
-                                end
-                                local kerns = fci.kerns
-                                if kerns then
-                                    local krn = { }
-                                    for k=1,#kerns do
-                                        krn[offset + k] = kerns[k]
-                                    end
-                                    characters[unicode] = {
-                                        width    = fci.width,
-                                        height   = fci.height,
-                                        depth    = fci.depth,
-                                        italic   = fci.italic,
-                                        commands = ref,
-                                        kerns    = krn,
-                                        next     = offset + index,
-                                    }
+                                if not fci then
+--~                                     characters[unicode] = {
+--~                                         width    = 0,
+--~                                         height   = 0,
+--~                                         depth    = 0,
+--~                                         index    = 0,
+--~                                     }
                                 else
-                                    characters[unicode] = {
-                                        width    = fci.width,
-                                        height   = fci.height,
-                                        depth    = fci.depth,
-                                        italic   = fci.italic,
-                                        commands = ref,
-                                        next     = offset + index,
-                                    }
+                                    local ref = si[index]
+                                    if not ref then
+                                        ref = { { 'slot', s, index } }
+                                        si[index] = ref
+                                    end
+                                    local kerns = fci.kerns
+                                    if kerns then
+                                        local krn = { }
+                                        for k=1,#kerns do
+                                            krn[offset + k] = kerns[k]
+                                        end
+                                        characters[unicode] = {
+                                            width    = fci.width,
+                                            height   = fci.height,
+                                            depth    = fci.depth,
+                                            italic   = fci.italic,
+                                            commands = ref,
+                                            kerns    = krn,
+                                            next     = offset + index,
+                                        }
+                                    else
+                                        characters[unicode] = {
+                                            width    = fci.width,
+                                            height   = fci.height,
+                                            depth    = fci.depth,
+                                            italic   = fci.italic,
+                                            commands = ref,
+                                            next     = offset + index,
+                                        }
+                                    end
                                 end
                             end
                         end
@@ -1661,7 +1670,7 @@ mathematics.make_font ( "mathtimes-math", {
 } )
 
 mathematics.make_font ( "lucida-math", {
-    { name = "lbr.afm", features = "virtualmath", main = true },
+    { name = "file:lbr.afm", features = "virtualmath", main = true },
     { name = "hlcrim.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "hlcrim.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "hlcry.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },

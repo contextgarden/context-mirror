@@ -453,10 +453,45 @@
 
 % lucida
 
-\starttypescript [math] [lucida,lucidanewmath] [all]
+\starttypescriptcollection[lucida]
+
+\starttypescript [serif] [lucida] [name]
+	\usetypescript[serif][fallback]
+	\definefontsynonym[Serif]          [name:LucidaBright]
+	\definefontsynonym[SerifBold]      [name:LucidaBright-Demi]
+	\definefontsynonym[SerifItalic]    [name:LucidaBright-Italic]
+	\definefontsynonym[SerifBoldItalic][name:LucidaBright-DemiItalic]
+\stoptypescript
+
+\starttypescript [sans] [lucida] [name]
+	\usetypescript[sans][fallback]
+	\definefontsynonym[Sans]			[name:LucidaSans]
+	\definefontsynonym[SansItalic]		[name:LucidaSans-Oblique]
+	\definefontsynonym[SansBold]    	[name:LucidaSans-Demi]
+	\definefontsynonym[SansBoldItalic]	[name:LucidaSans-DemiOblique]
+\stoptypescript
+
+\starttypescript [mono] [lucida] [name]
+	\usetypescript[mono][fallback]
+	\definefontsynonym[Mono]			[name:LucidaSans-Typewriter]
+	\definefontsynonym[MonoItalic]		[name:LucidaSans-TypewriterOblique]
+	\definefontsynonym[MonoBold]		[name:LucidaSans-TypewriterBold]
+	\definefontsynonym[MonoBoldItalic]	[name:LucidaSans-TypewriterBoldOblique]
+\stoptypescript
+
+\starttypescript [math] [lucida] [all]
     \definefontsynonym[MathRoman][lucidamath@lucida-math]
     \loadmapfile[lucida.map]
 \stoptypescript
+
+\starttypescript [lucida]
+    \definetypeface[lucida][rm][serif][lucida][default][features=default]
+    \definetypeface[lucida][ss][sans] [lucida][default][features=default]
+    \definetypeface[lucida][tt][mono] [lucida][default][features=default]
+    \definetypeface[lucida][mm][math] [lucida][default]
+\stoptypescript
+
+\stoptypescriptcollection
 
 % mathdesign
 

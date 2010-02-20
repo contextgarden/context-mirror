@@ -158,7 +158,7 @@ local fontnames = {
 local usedfonts = { }
 
 local function fieldsurrounding(specification)
-    local tag = (specification.fontstyle or "tt") .. (specification.fontalternative or "tf")
+    local tag = specification.style or "tttf"
     if not fontnames[tag] then
         tag = "tttf"
     end

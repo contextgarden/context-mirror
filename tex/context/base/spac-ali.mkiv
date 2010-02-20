@@ -29,8 +29,39 @@
 
 % This will become a more advanced layout controller soon:
 
-\unexpanded\def\lefttoright{\textdir TLT\pardir TLT\relax}
-\unexpanded\def\righttoleft{\textdir TRT\pardir TRT\relax}
+\newconditional\layoutlefttoright   \settrue\layoutlefttoright
+\newconditional\displaylefttoright  \settrue\displaylefttoright
+\newconditional\inlinelefttoright   \settrue\inlinelefttoright
+
+\unexpanded\def\lefttoright
+  {\ifvmode
+     \settrue\displaylefttoright
+     \settrue\inlinelefttoright
+     \textdir TLT\relax
+     \pardir  TLT\relax
+   \else
+     \settrue\inlinelefttoright
+     \textdir TLT\relax
+   \fi}
+
+\unexpanded\def\righttoleft
+  {\ifvmode
+     \setfalse\displaylefttoright
+     \setfalse\inlinelefttoright
+     \textdir TRT\relax
+     \pardir  TRT\relax
+   \else
+     \textdir TRT\relax
+     \setfalse\inlinelefttoright
+   \fi}
+
+\def\currentdirectionparameters
+  {\ifconditional\inlinelefttoright \else
+      idir="r2l",
+   \fi
+   \ifconditional\displaylefttoright \else
+      ddir="r2l",
+   \fi}
 
 \def\dodefinehbox[#1][#2]%
   {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}

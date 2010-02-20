@@ -28,4 +28,10 @@
 \def\doregisterbibtexentry [#1][#2]{\ctxlua{commands.registerbibtexentry("#1","#2")}} % also the fast one
 \def\doapplytobibtexsession[#1][#2]{\xmlprocessregistered{bibtex:#1}{#2}{#2}}
 
+\startxmlsetups bibtex
+    \xmlregistereddocumentsetups{#1}{}
+    \xmlsetsetup{#1}{bibtex|c|e|v}{bibtex:*}
+    \xmlmain{#1}
+\stopxmlsetups
+
 \protect \endinput

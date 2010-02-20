@@ -294,16 +294,20 @@
    \dochecknote}
 
 \appendtoks
-  \letvalue{\??vn\c!rule:\currentnote}\normalnoterule % hm
+  \letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule % hm
+  \letvalue{\??vn\c!rule:a:\currentnote}\empty
 \to \everysetupnote
 
 \appendtoks
-  \processaction
-    [\noteparameter\c!rule]
-    [     \v!on=>\letvalue{\??vn\c!rule:\currentnote}\normalnoterule,
-         \v!off=>\letvalue{\??vn\c!rule:\currentnote}\relax,
-     \s!default=>\letvalue{\??vn\c!rule:\currentnote}\relax,
-     \s!unknown=>\setvalue{\??vn\c!rule:\currentnote}{\noteparameter\c!rule}]%
+  \expanded{\processallactionsinset
+    [\noteparameter\c!rule]}
+    [     \v!on=>\letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule,
+      \v!normal=>\letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule,
+        \v!left=>\setvalue{\??vn\c!rule:a:\currentnote}{l2r}
+       \v!right=>\setvalue{\??vn\c!rule:a:\currentnote}{r2l},
+         \v!off=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,
+     \s!default=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,
+     \s!unknown=>\setvalue{\??vn\c!rule:c:\currentnote}{\noteparameter\c!rule}]%
 \to \everysetupnote
 
 \appendtoks
@@ -446,14 +450,24 @@
 %D runs). Let's just reserve a few points, that probably match
 %D those of the stretch component.
 
+%D A bit messy:
+
 \def\placenoterule
-  {\getvalue{\??vn\c!rule:\currentnote}}
+  {\bgroup
+   \setupalign[\getvalue{\??vn\c!rule:a:\currentnote}]%
+   \righttoleft
+   \getvalue{\??vn\c!rule:c:\currentnote}%
+   \par
+   \egroup}
 
 \def\normalnoterule
   {\ifvmode
-     \color
-       [\noteparameter\c!rulecolor]
-       {\hrule\!!width .2\hsize\!!height\noteparameter\c!rulethickness\!!depth \zeropoint}%
+     \dontleavehmode \blackrule
+       [ \c!color=\noteparameter\c!rulecolor,
+         \c!width=.2\hsize,
+        \c!height=\noteparameter\c!rulethickness,
+        \c!depth=\zeropoint]%
+     \endgraf
      \kern\strutdepth
    \fi}
 
@@ -816,12 +830,16 @@
   {\relax\ifdim\ht\currentnoteins>\zeropoint\relax
      \ifnum\noteparameter\s!noteloc=\plusfive
      \else
-        \endgraf
-        \ifvmode
-          \whitespace
-          \noteparameter\c!before
-        \fi
+       \endgraf
+       \ifvmode
+         \whitespace
+         \noteparameter\c!before
+       \fi
+%        \bgroup
+%        \setupalign[\noteparameter\c!align]%
        \placenoterule  % alleen in ..mode
+%        \par
+%        \egroup
        \bgroup
        \setnotebodyfont
        \setbox\scratchbox\hbox
