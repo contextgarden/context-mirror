@@ -295,7 +295,7 @@
 
 \appendtoks
   \letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule % hm
-  \letvalue{\??vn\c!rule:a:\currentnote}\empty
+  \letvalue{\??vn\c!rule:a:\currentnote}\v!left
 \to \everysetupnote
 
 \appendtoks
@@ -303,7 +303,7 @@
     [\noteparameter\c!rule]}
     [     \v!on=>\letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule,
       \v!normal=>\letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule,
-        \v!left=>\setvalue{\??vn\c!rule:a:\currentnote}{l2r}
+        \v!left=>\setvalue{\??vn\c!rule:a:\currentnote}{l2r},
        \v!right=>\setvalue{\??vn\c!rule:a:\currentnote}{r2l},
          \v!off=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,
      \s!default=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,

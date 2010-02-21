@@ -15,6 +15,8 @@ in a convenient way. Actually handling the data takes place elsewhere.</p>
 local lower, format, gsub = string.lower, string.format, string.gsub
 local next = next
 local lpegmatch = lpeg.match
+local textoutf = characters.tex.toutf
+local variables = interfaces.variables
 
 local trace_bibxml = false  trackers.register("publications.bibxml", function(v) trace_bibtex = v end)
 
@@ -143,30 +145,34 @@ local ihatethis = {
     z = "\\z",
 }
 
-function bibtex.toxml(session)
+function bibtex.toxml(session,options)
     -- we can always speed this up if needed
     -- format slows down things a bit but who cares
     statistics.starttiming(bibtex)
     local result = { }
+    local options = aux.settings_to_array(options)
+    local convert = options.convert -- todo: interface
     local entries = session.entries
     result[#result+1] = format("<?xml version='1.0' standalone='yes'?>")
     result[#result+1] = format("<bibtex>")
     for id, categories in next, session.data do
-        result[#result+1] = format(" <c n='%s'>",id)
+        id = lower(gsub(id,"^@",""))
         for name, entry in next, categories do
             if not entries or entries[name] then
-                result[#result+1] = format("  <e n='%s'>",name)
+                result[#result+1] = format("<entry tag='%s' category='%s'>",lower(name),id)
                 for key, value in next, entry do
                     value = gsub(value,"\\(.)",ihatethis)
                     value = lpegmatch(escaped_pattern,value)
                     if value ~= "" then
-                        result[#result+1] = format("   <v n='%s'>%s</v>",key,value)
+                        if convert then
+                            value = textoutf(value)
+                        end
+                        result[#result+1] = format(" <field name='%s'>%s</field>",key,value)
                     end
                 end
-                result[#result+1] = format("  </e>")
+                result[#result+1] = format("</eentry>")
             end
         end
-        result[#result+1] = format(" </c>")
     end
     result[#result+1] = format("</bibtex>")
     session.xml = xml.convert(table.concat(result,"\n"))
@@ -233,8 +239,8 @@ if commands then
     function commands.definebibtexsession(name)
         sessions[name] = bibtex.new()
     end
-    function commands.preparebibtexsession(name)
-        bibtex.toxml(sessions[name])
+    function commands.preparebibtexsession(name,options)
+        bibtex.toxml(sessions[name],options)
         lxml.register("bibtex:"..name,sessions[name].xml)
     end
     function commands.registerbibtexfile(name,filename)

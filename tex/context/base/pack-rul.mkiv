@@ -1106,6 +1106,7 @@
    \fi
    \edef\framedwidth {\ifdim\!!framedwidth >\zeropoint\the\!!framedwidth \else\!!zeropoint\fi}% a new feature, visible for user
    \edef\framedheight{\ifdim\!!framedheight>\zeropoint\the\!!framedheight\else\!!zeropoint\fi}% a new feature, visible for user
+   \edef\framedoffset{\the\dimexpr\ifboxhasoffset\localoffset\else\zeropoint\fi}%
    \@@startframedorientation
    \afterassignment\dodowithframebox
    \setbox\framebox\next}
@@ -3663,6 +3664,7 @@
    \!!framedroffset\framedparameter\c!roffset
    \!!framedtoffset\framedparameter\c!toffset
    \!!framedboffset\framedparameter\c!boffset
+   \relax
    \ifzeropt\!!framedloffset\else \advance\!!framedwidth -\!!framedloffset \boxhasextraoffsettrue \fi
    \ifzeropt\!!framedroffset\else \advance\!!framedwidth -\!!framedroffset \boxhasextraoffsettrue \fi
    \ifzeropt\!!framedtoffset\else \advance\!!framedheight-\!!framedtoffset \boxhasextraoffsettrue \fi

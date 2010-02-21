@@ -12,6 +12,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% runtime commands will move to modules
+
 % simplification ... we no longer deal with specific mmtfa specifications
 
 %  todo: always fontclass, then less testing
@@ -3479,9 +3481,9 @@
 %D
 %D \showfontstrip \blank \showminimalbaseline
 
-\fetchruntimecommand \showfontstrip       {\f!fontprefix\s!run.mkii}
-\fetchruntimecommand \testminimalbaseline {\f!fontprefix\s!run.mkii}
-\fetchruntimecommand \showminimalbaseline {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showfontstrip       {\f!fontprefix\s!run.mkiv}
+\fetchruntimecommand \testminimalbaseline {\f!fontprefix\s!run.mkiv}
+\fetchruntimecommand \showminimalbaseline {\f!fontprefix\s!run.mkiv}
 
 %D \macros
 %D   {showkerning}
@@ -3490,7 +3492,7 @@
 %D
 %D \showkerning{Can you guess what kerning is?}
 
-\fetchruntimecommand \showkerning         {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showkerning         {\f!fontprefix\s!run.mkiv}
 
 %D \macros
 %D   {showbodyfontenvironment}
@@ -3503,7 +3505,7 @@
 %D
 %D \showsetup{showbodyfontenvironment}
 
-\fetchruntimecommand \showbodyfontenvironment {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showbodyfontenvironment {\f!fontprefix\s!run.mkiv}
 
 %D \macros
 %D   {showfont,showfontstyle,showligatures}
@@ -3519,11 +3521,11 @@
 
 % to be internationalized
 
-\fetchruntimecommand \showfont      {\f!fontprefix\s!run.mkii}
-\fetchruntimecommand \showfontstyle {\f!fontprefix\s!run.mkii}
-\fetchruntimecommand \showligature  {\f!fontprefix\s!run.mkii}
-\fetchruntimecommand \showligatures {\f!fontprefix\s!run.mkii}
-\fetchruntimecommand \showcharratio {\f!fontprefix\s!run.mkii}
+\fetchruntimecommand \showfont      {\f!fontprefix\s!run.mkiv}
+\fetchruntimecommand \showfontstyle {\f!fontprefix\s!run.mkiv}
+\fetchruntimecommand \showligature  {\f!fontprefix\s!run.mkiv}
+\fetchruntimecommand \showligatures {\f!fontprefix\s!run.mkiv}
+\fetchruntimecommand \showcharratio {\f!fontprefix\s!run.mkiv}
 
 %D \macros
 %D   {getglyph, symbolicfont}

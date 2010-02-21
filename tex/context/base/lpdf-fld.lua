@@ -144,30 +144,53 @@ end
 -- fonts and color
 
 local fontnames = {
-    rmtf = "Times-Roman",           rmbf = "Times-Bold",
-    rmit = "Times-Italic",          rmsl = "Times-Italic",
-    rmbi = "Times-BoldItalic",      rmbs = "Times-BoldItalic",
-    sstf = "Helvetica",             ssbf = "Helvetica-Bold",
-    ssit = "Helvetica-Oblique",     sssl = "Helvetica-Oblique",
-    ssbi = "Helvetica-BoldOblique", ssbs = "Helvetica-BoldOblique",
-    tttf = "Courier",               ttbf = "Courier-Bold",
-    ttit = "Courier-Oblique",       ttsl = "Courier-Oblique",
-    ttbi = "Courier-BoldOblique",   ttbs = "Courier-BoldOblique",
+    rm = {
+        tf = "Times-Roman",
+        bf = "Times-Bold",
+        it = "Times-Italic",
+        sl = "Times-Italic",
+        bi = "Times-BoldItalic",
+        bs = "Times-BoldItalic",
+    },
+    ss = {
+        tf = "Helvetica",
+        bf = "Helvetica-Bold",
+        it = "Helvetica-Oblique",
+        sl = "Helvetica-Oblique",
+        bi = "Helvetica-BoldOblique",
+        bs = "Helvetica-BoldOblique",
+    },
+    tt = {
+        tf = "Courier",
+        bf = "Courier-Bold",
+        it = "Courier-Oblique",
+        sl = "Courier-Oblique",
+        bi = "Courier-BoldOblique",
+        bs = "Courier-BoldOblique",
+    }
 }
 
 local usedfonts = { }
 
 local function fieldsurrounding(specification)
-    local tag = specification.style or "tttf"
-    if not fontnames[tag] then
-        tag = "tttf"
+    local size        = specification.fontsize or "12pt"
+    local style       = specification.fontstyle or "rm"
+    local alternative = specification.fontalternative or "tf"
+    local s = fontnames[style]
+    if not s then
+        style, s = "rm", fontnames.rm
     end
-    local size = specification.fontsize
+    local a = s[alternative]
+    if not a then
+        alternative, a = "tf", s.tf
+    end
+    local tag = style .. alternative
+    size = string.todimen(size)
     local stream = pdfstream {
         pdfconstant(tag),
-        format("%s Tf",(size and (number.dimenfactors.bp * size)) or 12),
+        format("%0.4f Tf",(size and (number.dimenfactors.bp * size)) or 12),
     }
-    usedfonts[tag] = true
+    usedfonts[tag] = a -- the name
     -- add color to stream: 0 g
     -- move up with "x.y Ts"
     return tostring(stream)
@@ -176,12 +199,12 @@ end
 local function registerfonts()
     if next(usedfonts) then
         local d = pdfdictionary()
-        for tag, _ in next, usedfonts do
+        for tag, name in next, usedfonts do
             local f = pdfdictionary {
                 Type     = pdfconstant("Font"),
                 Subtype  = pdfconstant("Type1"), -- todo
                 Name     = pdfconstant(tag),
-                BaseFont = pdfconstant(fontnames[tag]),
+                BaseFont = pdfconstant(name),
             }
             d[tag] = pdfreference(pdfflushobject(f))
         end
@@ -549,6 +572,7 @@ local function finishfields()
         end
     end
     if #collected > 0 then
+        usedfonts.tttf = fontnames.tt.tf
         local acroform = pdfdictionary {
             NeedAppearances = true,
             Fields = pdfreference(pdfflushobject(collected)),
@@ -631,7 +655,8 @@ function methods.line(name,specification,variant,extras)
             F        = fieldplus(specification),
             Ff       = fieldflag(specification),
             OC       = fieldlayer(specification),
-            MK       = fieldsurrounding(specification),
+            MK       = fieldsurrounding(specification), -- needed ?
+            DA       = fieldsurrounding(specification),
             AA       = fieldactions(specification),
             FT       = pdf_tx,
             Q        = fieldalignment(specification),
@@ -653,6 +678,7 @@ function methods.line(name,specification,variant,extras)
         DA      = fieldattributes(specification),
         OC      = fieldlayer(specification),
         MK      = fieldsurrounding(specification),
+        DA      = fieldsurrounding(specification),
         AA      = fieldactions(specification),
         Q       = fieldalignment(specification),
     }

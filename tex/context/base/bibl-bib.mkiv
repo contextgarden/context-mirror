@@ -17,20 +17,23 @@
 
 \unprotect
 
-\def\definebibtexsession       [#1]{\ctxlua{commands.definebibtexsession("#1")}}
-\def\preparebibtexsession      [#1]{\ctxlua{commands.preparebibtexsession("#1")}}
+\def\definebibtexsession           {\dosingleargument\dodefinebibtexsession}
+\def\preparebibtexsession          {\dodoubleempty   \dopreparebibtexsession}
+
+\def\dodefinebibtexsession     [#1]{\ctxlua{commands.definebibtexsession("#1")}}
+\def\dopreparebibtexsession[#1][#2]{\ctxlua{commands.preparebibtexsession("#1","#2")}}
 
 \def\registerbibtexfile            {\dodoubleargument\doregisterbibtexfile}
 \def\registerbibtexentry           {\dodoubleargument\doregisterbibtexentry}
 \def\applytobibtexsession          {\dodoubleargument\doapplytobibtexsession}
 
-\def\doregisterbibtexfile  [#1][#2]{\ctxlua{commands.registerbibtexfile("#1","#2")}}  % also the fast one
-\def\doregisterbibtexentry [#1][#2]{\ctxlua{commands.registerbibtexentry("#1","#2")}} % also the fast one
+\def\doregisterbibtexfile  [#1][#2]{\ctxlua{commands.registerbibtexfile("#1","#2")}}
+\def\doregisterbibtexentry [#1][#2]{\ctxlua{commands.registerbibtexentry("#1","#2")}}
 \def\doapplytobibtexsession[#1][#2]{\xmlprocessregistered{bibtex:#1}{#2}{#2}}
 
 \startxmlsetups bibtex
     \xmlregistereddocumentsetups{#1}{}
-    \xmlsetsetup{#1}{bibtex|c|e|v}{bibtex:*}
+    \xmlsetsetup{#1}{bibtex|entry|field}{bibtex:*}
     \xmlmain{#1}
 \stopxmlsetups
 

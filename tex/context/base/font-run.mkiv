@@ -108,9 +108,32 @@
 
 \gdef\doshowfont[#1][#2]%
   {\bgroup
-   \boxrulewidth=.1pt
    \iffirstargument
      \definefont[\s!dummy][#1]\dummy
+   \fi
+   \doifelsenothing{#2}
+     {\dodoshowfont{#1}{0}}
+     {\doifelse{#2}\v!all
+        {\dostepwiserecurse{0}{255}{1}
+           {\donefalse
+            \let\charplane\recurselevel
+            \dostepwiserecurse{0}{255}{1}
+              {\iffontchar\font\numexpr\charplane*256+\recurselevel\relax
+                 \donetrue
+                 \exitloop
+               \fi}%
+               \ifdone
+                 \dodoshowfont{#1}\charplane
+               \fi}}
+        {\processcommalist[#2]{\dodoshowfont{#1}}}}%
+   \egroup}
+
+\gdef\dodoshowfont#1#2%
+  {\bgroup
+   \edef\charplane{\number#2}%
+   \boxrulewidth=.1pt
+   \iffirstargument
+%      \definefont[\s!dummy][#1]\dummy
    \else\ifdim2.5em>.05\hsize \tx
         \ifdim2.5em>.05\hsize \txx
    \fi\fi\fi
@@ -130,7 +153,7 @@
                   \@EA\scratchcounter\string"\hexnumber\row\hexnumber\col\relax
                   \edef\rowcol{\the\scratchcounter}%
                   \iffontchar\font\scratchcounter
-                    \setbox\scratchbox\ruledhbox{\black\char\scratchcounter}%
+                    \setbox\scratchbox\ruledhbox{\black\char\numexpr\charplane*256+\scratchcounter\relax}%
                     \ifdim\wd\scratchbox>\zeropoint
                       \donetrue \else \donefalse
                     \fi
@@ -158,11 +181,8 @@
                        {\ifdone
                           \hsize2.4em
                           \blue
-                          \edef\theshowfontspecs
-                            {\ifnum\hyphenchar\font=\rowcol hyph\else
-                             \ifnum\skewchar  \font=\rowcol skew\fi\fi}%
-                          \tinyfont % after \edef, else wrong font analyzed
-                          \doifnot\v!unknown{#2}{{\red\theshowfontspecs}}\hfill\number\rowcol
+                          \tinyfont
+                          \hfill\number\rowcol
                           \vfill
                           \octnumber\rowcol\hfill\lchexnumbers\rowcol
                           \par
@@ -176,14 +196,7 @@
    % the \noexpand before \blank is needed for non etex
    \edef\ascii{name: {\noexpand\black\fontname\font}}
    \def\do##1##2{\ifx##1\undefined\else\ifx##1\empty\else##2\fi\fi}%
-   \doifelse\v!unknown{#2}
-     {\edef\theshowfontspecs
-        {name: {\noexpand\black\fontname\font}}}
-     {\edef\theshowfontspecs
-        {name: {\noexpand\black\fontname\font}\noexpand\quad
-         \do\currentencoding{encoding: {\noexpand\black\currentencoding\noexpand\quad}}%
-         \do\currentmapping {mapping:  {\noexpand\black\currentmapping \noexpand\quad}}%
-         \do\fonthandling   {handling: {\noexpand\black\fonthandling                 }}}}%
+   \edef\theshowfontspecs{name: {\noexpand\black\fontname\font}\quad plane: \charplane\enspace"\hexnumber\charplane}%
    \tf % also sets em
    \hbox to 40em{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
    \egroup

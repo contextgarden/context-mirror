@@ -16,7 +16,7 @@
 %D in good old \TEX, and these may differ a bit. Here we also see
 %D some oldstyle definitions which normally are done with features.
 
-\starttypescriptcollection[examples]
+\starttypescriptcollection[fallback]
 
 \starttypescript [fallback]
     \definetypeface [] [rm] [serif] [modern] [computer-modern]
@@ -35,118 +35,6 @@
 %     \definetypeface [] [mm] [math]  [modern] [default]
 %     \quittypescriptscanning
 % \stoptypescript
-
-\starttypescript [modern]
-    \definetypeface [modern] [rm] [serif] [modern] [computer-modern]
-    \definetypeface [modern] [ss] [sans]  [modern] [computer-modern]
-    \definetypeface [modern] [tt] [mono]  [modern] [computer-modern]
-    \definetypeface [modern] [mm] [math]  [modern] [computer-modern]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [modern-base]
-    \definetypeface [modern] [rm] [serif] [modern] [default]
-    \definetypeface [modern] [ss] [sans]  [modern] [default]
-    \definetypeface [modern] [tt] [mono]  [modern] [default]
-    \definetypeface [modern] [mm] [math]  [modern] [default]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [postscript]
-    \definetypeface [postscript] [rm] [serif] [times]     [default]
-    \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=0.9]
-    \definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1]
-    \definetypeface [postscript] [mm] [math]  [times]     [default]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [times,termes]
-    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-    \definetypeface [\typescriptone] [ss] [sans]  [helvetica]      [default] [rscale=0.9]
-    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.05]
-    \definetypeface [\typescriptone] [mm] [math]  [times]          [default]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [palatino,pagella]
-    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.075]
-    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.075]
-    \definetypeface [\typescriptone] [mm] [math]  [palatino]       [default]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [modernvariable]
-    \definetypeface [modernvariable] [rm] [serif] [simple] [default]
-    \definetypeface [modernvariable] [ss] [sans]  [modern] [default]
-    \definetypeface [modernvariable] [tt] [mono]  [modern] [default]
-    \definetypeface [modernvariable] [mm] [math]  [modern] [default]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
-    \definetypeface[antykwa][rm][serif][\typescriptone] [default]
-    \definetypeface[antykwa][ss][sans] [modern]         [default,rscale=1.05]
-    \definetypeface[antykwa][tt][mono] [modern]         [default,rscale=1.05]
-    \definetypeface[antykwa][mm][math] [\typescriptone] [default]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [schoolbook,schola]
-    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.1]
-    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.1]
-    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.1]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [bookman,bonum]
-    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.1]
-    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.1]
-    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.1]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [chancery,chorus]
-    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default]
-    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default]
-    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [iwona,iwona-light,iwona-heavy,iwona-medium]
-    \definetypeface[\typescriptone][ss][sans] [\typescriptone] [default]
-    \definetypeface[\typescriptone][rm][serif][modern]         [default]
-    \definetypeface[\typescriptone][tt][mono] [modern]         [default]
-    \definetypeface[\typescriptone][mm][math] [\typescriptone] [default][text=ss]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [helvetica,heros]
-    \definetypeface [\typescriptone] [ss] [sans]  [\typescriptone] [default]
-    \definetypeface [\typescriptone] [rm] [serif] [modern]         [default] [rscale=1.15]
-    \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.15]
-    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.15]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [avantgarde,adventor]
-    \definetypeface [\typescriptone] [ss] [sans]  [adventor] [default]
-    \definetypeface [\typescriptone] [rm] [serif] [modern]   [default] [rscale=1.15]
-    \definetypeface [\typescriptone] [tt] [mono]  [modern]   [default] [rscale=1.15]
-    \definetypeface [\typescriptone] [mm] [math]  [modern]   [default]
-    \quittypescriptscanning
-\stoptypescript
-
-\starttypescript [courier,cursor]
-    \definetypeface [\typescriptone] [tt] [mono]  [\typescriptone] [default]
-    \definetypeface [\typescriptone] [rm] [serif] [modern]         [default]
-    \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default]
-    \definetypeface [\typescriptone] [mm] [math]  [modern]         [default]
-    \quittypescriptscanning
-\stoptypescript
 
 \stoptypescriptcollection
 

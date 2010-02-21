@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/20/10 10:27:32
+-- merge date  : 02/21/10 19:28:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -5445,7 +5445,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.643 -- beware: also sync font-mis.lua
+otf.version          = 2.644 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -5903,7 +5903,7 @@ otf.enhancers["analyse unicodes"] = function(data,filename)
     for index, glyph in next, data.glyphs do
         local name, unic = glyph.name, glyph.unicode or -1 -- play safe
         if unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then
-            local unicode = lumunic and lumunic[name]
+            local unicode = (aglmap and aglmap[name]) or (lumunic and lumunic[name])
             if unicode then
                 originals[index], tounicode[index], ns = unicode, tounicode16(unicode), ns + 1
             end

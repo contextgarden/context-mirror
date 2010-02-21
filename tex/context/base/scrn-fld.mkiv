@@ -77,30 +77,36 @@
 %D The interface to the specials. DEFAULT NOG ANDERS
 
 \def\typesetfield
-  {\ctxlua{backends.codeinjections.typesetfield("\currentfieldname", {
-    title           = "\currentfieldname",
-    width           = \number\dimexpr\@@fdwidth\relax,
-    height          = \number\dimexpr\@@fdheight\relax,
-    align           = "\@@fdalign",
-    length          = tonumber("\@@fdn") or 0,
-    style           = "\@@fdstyle",
-    color           = "\@@fdcolor",
-    backgroundcolor = "\@@fdfieldbackgroundcolor",
-    framecolor      = "\@@fdfieldframecolor",
-    layer           = "\@@fdfieldlayer",
-    options         = "\@@fdoption",
-    align           = "\@@fdalign",
-    clickin         = "\@@fdclickin",
-    clickout        = "\@@fdclickout",
-    regionin        = "\@@fdregionin",
-    regionout       = "\@@fdregionout",
-    afterkey        = "\@@fdafterkey",
-    format          = "\@@fdformat",
-    validate        = "\@@fdvalidate",
-    calculate       = "\@@fdcalculate",
-    focusin         = "\@@fdfocusin",
-    focusout        = "\@@fdfocusout",
-  }) }}
+  {\bgroup
+   \dosetfontattribute\??fd\c!style
+   \ctxlua{backends.codeinjections.typesetfield("\currentfieldname", {
+        title           = "\currentfieldname",
+        width           = \number\dimexpr\@@fdwidth\relax,
+        height          = \number\dimexpr\@@fdheight\relax,
+        align           = "\@@fdalign",
+        length          = tonumber("\@@fdn") or 0,
+        style           = "\@@fdstyle",
+        fontstyle       = "\fontstyle",
+        fontalternative = "\fontalternative",
+        fontsize        = "\currentfontbodysize",
+        color           = "\@@fdcolor",
+        backgroundcolor = "\@@fdfieldbackgroundcolor",
+        framecolor      = "\@@fdfieldframecolor",
+        layer           = "\@@fdfieldlayer",
+        options         = "\@@fdoption",
+        align           = "\@@fdalign",
+        clickin         = "\@@fdclickin",
+        clickout        = "\@@fdclickout",
+        regionin        = "\@@fdregionin",
+        regionout       = "\@@fdregionout",
+        afterkey        = "\@@fdafterkey",
+        format          = "\@@fdformat",
+        validate        = "\@@fdvalidate",
+        calculate       = "\@@fdcalculate",
+        focusin         = "\@@fdfocusin",
+        focusout        = "\@@fdfocusout",
+   }) }%
+   \egroup}
 
 \unexpanded\def\definefieldset {\dodoubleargument\dodefinefieldset}
 \unexpanded\def\definefield    {\doquintupleempty\dodefinefield}
@@ -287,7 +293,7 @@
               \c!clickin=,\c!clickout=,\c!regionin=,\c!regionout=,
               \c!afterkey=,\c!format=,\c!validate=,\c!calculate=,
               \c!focusin=,\c!focusout=,
-              \c!fieldoffset=\zeropoint,\c!fieldbackgroundcolor=,
+              \c!fieldoffset=-\framedoffset,\c!fieldbackgroundcolor=,
               \c!fieldframecolor=,\c!fieldlayer=\@@iafieldlayer,#5]%
             \scratchdimen\framedwidth \edef\@@fdwidth {\the\scratchdimen}%
             \scratchdimen\framedheight\edef\@@fdheight{\the\scratchdimen}%

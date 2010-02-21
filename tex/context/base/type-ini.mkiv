@@ -59,13 +59,13 @@
 
 \unprotect
 
-\def\starttypescriptcollection
+\unexpanded\def\starttypescriptcollection
   {\dosingleempty\dostarttypescriptcollection}
 
 \def\dostarttypescriptcollection[#1]%
   {}
 
-\def\stoptypescriptcollection
+\unexpanded\def\stoptypescriptcollection
   {}
 
 \let\typescriptfiles\empty
@@ -213,7 +213,9 @@
 
 \newif\iftracetypescripts
 
-\def\starttypescript
+\let\stoptypescript\relax
+
+\unexpanded\def\starttypescript
   {\ifcase\typescriptstate
      % 0 = skip
      \@EA\gobbleuntil\@EA\stoptypescript
@@ -470,7 +472,7 @@
 % \definetypeface [#1:joke] [#2:rm] [#3:...]
 % \definetypeface [#1:joke] [#2:rm] [#3:serif] [#4:lucida] [#5:size] [#6:...]
 
-\def\definetypeface
+\unexpanded\def\definetypeface
   {\dosixtupleargument\dodefinetypeface}
 
 \def\tsvar#1#2% \executeifdefined{\??ts#1}{#2}
@@ -619,3 +621,37 @@
 \fetchruntimecommand \typetypescript {\f!typeprefix\s!run.mkiv} % will become module
 
 \protect \endinput
+
+% Computer Modern Roman : Donald Knuth
+% Latin Modern: LM Font Revision Team
+
+% LM math vs CM math (analysis by Taco):
+%
+% lmex10.tfm  % identical
+% lmmi5.tfm   % identical
+% lmmi6.tfm   % identical
+% lmmi7.tfm   % identical
+% lmmi8.tfm   % identical
+% lmmi9.tfm   % identical
+% lmmi10.tfm  % identical
+% lmmi12.tfm  % identical
+% lmmib10.tfm % identical
+% lmsy5.tfm   % extra chars: 254,255 (octal)
+% lmsy6.tfm   % extra chars: 254,255 (octal)
+% lmsy7.tfm   % extra chars: 254,255 (octal)
+% lmsy8.tfm   % extra chars: 254,255 (octal)
+% lmsy9.tfm   % extra chars: 254,255 (octal)
+% lmsy10.tfm  % extra chars: 254,255 (octal)
+% lmbsy10.tfm % extra chars: 254,255 (octal)
+%
+% From the 'AMS' set:
+%
+% lmmib5.tfm  % identical
+% lmmib7.tfm  % identical
+% lmbsy5.tfm  % extra chars: 254,255 (octal)
+% lmbsy7.tfm  % extra chars: 254,255 (octal)
+%
+% The two extra characters are:
+%
+%   /lessorequalslant
+%   /greaterorequalslant

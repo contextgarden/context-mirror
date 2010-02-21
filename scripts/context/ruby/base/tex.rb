@@ -1723,10 +1723,10 @@ end
 
     def fixbackendvars(backend)
         if backend then
-            report("fixing backend map path for #{backend}") if getvariable('verbose')
             ENV['backend']     = backend ;
             ENV['progname']    = backend unless validtexengine(backend)
-            ENV['TEXFONTMAPS'] = ['.',"\$TEXMF/fonts/map/{#{backend},pdftex,dvips,}//",'./fonts//'].join_path
+            ENV['TEXFONTMAPS'] = ['.',"\$TEXMF/fonts/{data,map}/{#{backend},pdftex,dvips,}//",'./fonts//'].join_path
+            report("fixing backend map path for #{backend}: #{ENV['TEXFONTMAPS']}") if getvariable('verbose')
         else
             report("unable to fix backend map path") if getvariable('verbose')
         end

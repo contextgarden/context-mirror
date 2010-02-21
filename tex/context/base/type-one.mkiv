@@ -11,6 +11,103 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% We use open type fonts in \MKIV.
+% We use open type fonts in \MKIV. However we can still use type
+% one fonts but there are not that many useful left that only
+% come in type one.
+
+\starttypescriptcollection[allkindofafm]
+
+    % \starttypescript [serif] [bookman] [name]
+    %     \definefontsynonym [Serif]            [Bookman-Light]
+    %     \definefontsynonym [SerifItalic]      [Bookman-LightItalic]
+    %     \definefontsynonym [SerifBold]        [Bookman-DemiBold]
+    %     \definefontsynonym [SerifBoldItalic]  [Bookman-DemiBoldItalic]
+    %     \definefontsynonym [SerifSlanted]     [Bookman-LightSlanted]
+    %     \definefontsynonym [SerifBoldSlanted] [Bookman-DemiBoldSlanted]
+    %     \definefontsynonym [SerifCaps]        [Bookman-Light-Caps]
+    % \stoptypescript
+
+    % \starttypescript [calligraphy] [chancery] [name]
+    %     \definefontsynonym [Calligraphy] [Chancery]
+    % \stoptypescript
+
+    % \starttypescript [serif] [schoolbook] [name]
+    %     \definefontsynonym [Serif]            [Schoolbook-Roman]
+    %     \definefontsynonym [SerifItalic]      [Schoolbook-Italic]
+    %     \definefontsynonym [SerifBold]        [Schoolbook-Bold]
+    %     \definefontsynonym [SerifBoldItalic]  [Schoolbook-BoldItalic]
+    %     \definefontsynonym [SerifSlanted]     [Schoolbook-RomanSlanted]
+    %     \definefontsynonym [SerifBoldSlanted] [Schoolbook-BoldSlanted]
+    %     \definefontsynonym [SerifCaps]        [Schoolbook-Roman-Caps]
+    % \stoptypescript
+
+    % \starttypescript [serif] [utopia] [name]
+    %     \definefontsynonym [Serif]            [Utopia-Regular]
+    %     \definefontsynonym [SerifItalic]      [Utopia-Italic]
+    %     \definefontsynonym [SerifBold]        [Utopia-Bold]
+    %     \definefontsynonym [SerifBoldItalic]  [Utopia-BoldItalic]
+    %     \definefontsynonym [SerifSlanted]     [Utopia-Slanted]
+    %     \definefontsynonym [SerifBoldSlanted] [Utopia-BoldSlanted]
+    %     \definefontsynonym [SerifCaps]        [Utopia-Regular-Caps]
+    % \stoptypescript
+
+    % \starttypescript [serif] [charter] [name]
+    %     \definefontsynonym [Serif]            [Charter-Roman]
+    %     \definefontsynonym [SerifItalic]      [Charter-Italic]
+    %     \definefontsynonym [SerifBold]        [Charter-Bold]
+    %     \definefontsynonym [SerifBoldItalic]  [Charter-BoldItalic]
+    %     \definefontsynonym [SerifSlanted]     [Charter-Slanted]
+    %     \definefontsynonym [SerifBoldSlanted] [Charter-BoldSlanted]
+    %     \definefontsynonym [SerifCaps]        [Charter-Roman-Caps]
+    % \stoptypescript
+
+    % \starttypescript [serif] [times] [name]
+    %     \definefontsynonym [Serif]            [Times-Roman]
+    %     \definefontsynonym [SerifBold]        [Times-Bold]
+    %     \definefontsynonym [SerifItalic]      [Times-Italic]
+    %     \definefontsynonym [SerifSlanted]     [Times-Italic]
+    %     \definefontsynonym [SerifBoldItalic]  [Times-BoldItalic]
+    %     \definefontsynonym [SerifBoldSlanted] [Times-BoldItalic]
+    %     \definefontsynonym [SerifCaps]        [Times-Caps]
+    % \stoptypescript
+
+    % \starttypescript [sans] [helvetica] [name]
+    %     \definefontsynonym [Sans]            [Helvetica]
+    %     \definefontsynonym [SansBold]        [Helvetica-Bold]
+    %     \definefontsynonym [SansItalic]      [Helvetica-Oblique]
+    %     \definefontsynonym [SansSlanted]     [Helvetica-Oblique]
+    %     \definefontsynonym [SansBoldItalic]  [Helvetica-BoldOblique]
+    %     \definefontsynonym [SansBoldSlanted] [Helvetica-BoldOblique]
+    %     \definefontsynonym [SansCaps]        [Helvetica-Caps]
+    % \stoptypescript
+
+    % \starttypescript [math] [helvetica] [name]
+    %     \definefontsynonym [MathRoman]     [Helvetica-MathRoman]
+    %     \definefontsynonym [MathExtension] [Helvetica-MathExtendedSymbols]
+    %     \definefontsynonym [MathItalic]    [Helvetica-MathItalics]
+    %     \definefontsynonym [MathSymbol]    [Helvetica-MathSymbols]
+    % \stoptypescript
+
+    % \starttypescript [mono] [courier] [name]
+    %     \definefontsynonym [Mono]            [Courier]
+    %     \definefontsynonym [MonoBold]        [Courier-Bold]
+    %     \definefontsynonym [MonoItalic]      [Courier-Oblique]
+    %     \definefontsynonym [MonoSlanted]     [Courier-Oblique]
+    %     \definefontsynonym [MonoBoldItalic]  [Courier-BoldOblique]
+    %     \definefontsynonym [MonoBoldSlanted] [Courier-BoldOblique]
+    %     \definefontsynonym [MonoCaps]        [Courier]
+    % \stoptypescript
+
+    % \starttypescript [serif] [palatino] [name]
+    %     \definefontsynonym [Serif]            [Palatino]
+    %     \definefontsynonym [SerifBold]        [Palatino-Bold]
+    %     \definefontsynonym [SerifItalic]      [Palatino-Italic]
+    %     \definefontsynonym [SerifSlanted]     [Palatino-Slanted]
+    %     \definefontsynonym [SerifBoldItalic]  [Palatino-BoldItalic]
+    %     \definefontsynonym [SerifBoldSlanted] [Palatino-BoldSlanted]
+    %     \definefontsynonym [SerifCaps]        [Palatino-Caps]
+    % \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput
