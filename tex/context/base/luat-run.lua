@@ -61,9 +61,14 @@ end
 
 -- this can be done later
 
-callbacks.register('start_run',           main.start, "actions performed at the beginning of a run")
-callbacks.register('stop_run',            main.stop, "actions performed at the end of a run")
-callbacks.register('report_output_pages', main.report_output_pages, "actions performed when reporting pages")
-callbacks.register('report_output_log'  , main.report_output_log, "actions performed when reporting log file")
-callbacks.register('start_page_number'  , main.start_shipout_page, "actions performed at the beginning of a shipout")
-callbacks.register('stop_page_number'   , main.stop_shipout_page, "actions performed at the end of a shipout")
+callbacks.register('start_run',             main.start, "actions performed at the beginning of a run")
+callbacks.register('stop_run',              main.stop, "actions performed at the end of a run")
+
+callbacks.register('report_output_pages',   main.report_output_pages, "actions performed when reporting pages")
+callbacks.register('report_output_log',     main.report_output_log, "actions performed when reporting log file")
+
+callbacks.register('start_page_number',     main.start_shipout_page, "actions performed at the beginning of a shipout")
+callbacks.register('stop_page_number',      main.stop_shipout_page, "actions performed at the end of a shipout")
+
+callbacks.register('process_input_buffer',  false, "actions performed when reading data")
+callbacks.register('process_output_buffer', false, "actions performed when writing data")

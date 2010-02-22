@@ -1154,14 +1154,17 @@
 % beter de laatste skip buiten de \insert uitvoeren,
 % bovendien bij volle flush onder baseline.
 
+% \def\betweenfloatblanko% assumes that spaceafter is present
+%   {\bgroup
+%    \setbox0\vbox{\strut\blank[\floatsharedparameter\c!spacebefore]\strut}%
+%    \setbox2\vbox{\strut\blank[\floatsharedparameter\c!spaceafter]\strut}%
+%    \ifdim\ht0>\ht2
+%      \blank[-\floatsharedparameter\c!spaceafter,\floatsharedparameter\c!spacebefore]%
+%    \fi
+%    \egroup}
+
 \def\betweenfloatblanko% assumes that spaceafter is present
-  {\bgroup
-   \setbox0\vbox{\strut\blank[\floatsharedparameter\c!spacebefore]\strut}%
-   \setbox2\vbox{\strut\blank[\floatsharedparameter\c!spaceafter]\strut}%
-   \ifdim\ht0>\ht2
-     \blank[-\floatsharedparameter\c!spaceafter,\floatsharedparameter\c!spacebefore]%
-   \fi
-   \egroup}
+  {\blank[\floatsharedparameter\c!spacebefore]} % or v!back,....
 
 \def\doplacefloatbox
   {%\forgetall % NO

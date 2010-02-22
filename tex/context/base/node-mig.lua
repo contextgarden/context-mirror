@@ -101,14 +101,14 @@ end
 
 experiments.register("marks.migrate", function(v)
     if v then
-        tasks.enableaction("pagebuilders", "nodes.migrate_outwards")
+        tasks.enableaction("mvlbuilders", "nodes.migrate_outwards")
     end
     migrate_marks = v
 end)
 
 experiments.register("inserts.migrate", function(v)
     if v then
-        tasks.enableaction("pagebuilders", "nodes.migrate_outwards")
+        tasks.enableaction("mvlbuilders", "nodes.migrate_outwards")
     end
     migrate_inserts = v
 end)

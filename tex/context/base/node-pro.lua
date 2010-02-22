@@ -25,7 +25,7 @@ lists = lists or { }
 chars = chars or { }
 words = words or { } -- not used yet
 
-local actions = tasks.actions("processors",2) -- head, where, boolean
+local actions = tasks.actions("processors",4)
 
 local n = 0
 
@@ -60,12 +60,12 @@ end
 
 nodes.processors.enabled = true -- thsi will become a proper state (like trackers)
 
-function nodes.processors.pre_linebreak_filter(head,groupcode)
+function nodes.processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
     local first, found = first_character(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, done = actions(head,groupcode)
+            local head, done = actions(head,groupcode,size,packtype,direction)
             local after = nodes.count(head,true)
             if done then
                 tracer("pre_linebreak","changed",head,groupcode,before,after,true)
@@ -74,7 +74,7 @@ function nodes.processors.pre_linebreak_filter(head,groupcode)
             end
             return (done and head) or true
         else
-            local head, done = actions(head,groupcode)
+            local head, done = actions(head,groupcode,size,packtype,direction)
             return (done and head) or true
         end
     elseif trace_callbacks then
@@ -84,12 +84,12 @@ function nodes.processors.pre_linebreak_filter(head,groupcode)
     return true
 end
 
-function nodes.processors.hpack_filter(head,groupcode)
+function nodes.processors.hpack_filter(head,groupcode,size,packtype,direction)
     local first, found = first_character(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, done = actions(head,groupcode)
+            local head, done = actions(head,groupcode,size,packtype,direction)
             local after = nodes.count(head,true)
             if done then
                 tracer("hpack","changed",head,groupcode,before,after,true)
@@ -98,7 +98,7 @@ function nodes.processors.hpack_filter(head,groupcode)
             end
             return (done and head) or true
         else
-            local head, done = actions(head,groupcode)
+            local head, done = actions(head,groupcode,size,packtype,direction)
             return (done and head) or true
         end
     elseif trace_callbacks then
@@ -111,7 +111,7 @@ end
 callbacks.register('pre_linebreak_filter', nodes.processors.pre_linebreak_filter,"all kind of horizontal manipulations (before par break)")
 callbacks.register('hpack_filter'        , nodes.processors.hpack_filter,"all kind of horizontal manipulations")
 
-local actions = tasks.actions("finalizers",2) -- head, where, boolean
+local actions = tasks.actions("finalizers",1) -- head, where
 
 -- beware, these are packaged boxes so no first_character test
 -- maybe some day a hash with valid groupcodes
@@ -145,7 +145,5 @@ end
 callbacks.register('post_linebreak_filter', nodes.processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")
 
 statistics.register("h-node processing time", function()
-    if statistics.elapsedindeed(nodes) then
-        return format("%s seconds including kernel", statistics.elapsedtime(nodes))
-    end
+    return statistics.elapsedseconds(nodes,"including kernel")
 end)

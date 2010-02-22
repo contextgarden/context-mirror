@@ -30,7 +30,7 @@ fonts.afm  = fonts.afm or { }
 local afm = fonts.afm
 local tfm = fonts.tfm
 
-afm.version          = 1.401 -- incrementing this number one up will force a re-cache
+afm.version          = 1.402 -- incrementing this number one up will force a re-cache
 afm.syncspace        = true  -- when true, nicer stretch values
 afm.enhance_data     = true  -- best leave this set to true
 afm.features         = { }
@@ -282,6 +282,8 @@ function afm.load(filename)
                     logs.report("load afm", "add extra kerns")
                     afm.add_kerns(data) -- faster this way
                 end
+                logs.report("load afm", "add tounicode data")
+                fonts.map.add_to_unicode(data,filename)
                 data.size = size
                 data.verbose = fonts.verbose
                 logs.report("load afm","saving: %s in cache",name)
@@ -338,7 +340,6 @@ function afm.unify(data, filename)
     luatex.marks = { } -- todo
     luatex.names = names -- name to index
     luatex.private = private
-fonts.otf.enhancers["analyse unicodes"](data,filename)
 end
 
 --[[ldx--

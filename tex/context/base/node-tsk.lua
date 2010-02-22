@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['node-tsk'] = {
 
 local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 
-tasks         = tasks       or { }
-tasks.data    = tasks.data  or { }
+tasks      = tasks       or { }
+tasks.data = tasks.data  or { }
 
 function tasks.new(name,list)
     local tasklist = sequencer.reset()
@@ -95,11 +95,13 @@ local created, total = 0, 0
 
 statistics.register("node list callback tasks", function()
     if total > 0 then
-        return string.format("%s unique tasks, %s created, %s calls",table.count(tasks.data),created,total)
+        return string.format("%s unique task lists, %s instances (re)created, %s calls",table.count(tasks.data),created,total)
     else
         return nil
     end
 end)
+
+local compile, nodeprocessor = sequencer.compile, sequencer.nodeprocessor
 
 function tasks.actions(name,n) -- we optimize for the number or arguments (no ...)
     local data = tasks.data[name]
@@ -113,7 +115,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                     if trace_tasks then
                         logs.report("nodes","creating task runner '%s'",name)
                     end
-                    runner = sequencer.compile(data.list,sequencer.nodeprocessor,0)
+                    runner = compile(data.list,nodeprocessor,0)
                     data.runner = runner
                 end
                 return runner(head)
@@ -125,9 +127,9 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s'",name)
+                        logs.report("nodes","creating task runner '%s' with 1 extra arguments",name)
                     end
-                    runner = sequencer.compile(data.list,sequencer.nodeprocessor,1)
+                    runner = compile(data.list,nodeprocessor,1)
                     data.runner = runner
                 end
                 return runner(head,one)
@@ -139,12 +141,54 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s'",name)
+                        logs.report("nodes","creating task runner '%s' with 2 extra arguments",name)
                     end
-                    runner = sequencer.compile(data.list,sequencer.nodeprocessor,2)
+                    runner = compile(data.list,nodeprocessor,2)
                     data.runner = runner
                 end
                 return runner(head,one,two)
+            end
+        elseif n == 3 then
+            return function(head,one,two,three)
+                total = total + 1 -- will go away
+                local runner = data.runner
+                if not runner then
+                    created = created + 1
+                    if trace_tasks then
+                        logs.report("nodes","creating task runner '%s' with 3 extra arguments",name)
+                    end
+                    runner = compile(data.list,nodeprocessor,3)
+                    data.runner = runner
+                end
+                return runner(head,one,two,three)
+            end
+        elseif n == 4 then
+            return function(head,one,two,three,four)
+                total = total + 1 -- will go away
+                local runner = data.runner
+                if not runner then
+                    created = created + 1
+                    if trace_tasks then
+                        logs.report("nodes","creating task runner '%s' with 4 extra arguments",name)
+                    end
+                    runner = compile(data.list,nodeprocessor,4)
+                    data.runner = runner
+                end
+                return runner(head,one,two,three,four)
+            end
+        elseif n == 5 then
+            return function(head,one,two,three,four,five)
+                total = total + 1 -- will go away
+                local runner = data.runner
+                if not runner then
+                    created = created + 1
+                    if trace_tasks then
+                        logs.report("nodes","creating task runner '%s' with 5 extra arguments",name)
+                    end
+                    runner = compile(data.list,nodeprocessor,5)
+                    data.runner = runner
+                end
+                return runner(head,one,two,three,four,five)
             end
         else
             return function(head,...)
@@ -153,9 +197,9 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s'",name)
+                        logs.report("nodes","creating task runner '%s' with n extra arguments",name)
                     end
-                    runner = sequencer.compile(data.list,sequencer.nodeprocessor,3)
+                    runner = compile(data.list,nodeprocessor,"n")
                     data.runner = runner
                 end
                 return runner(head,...)
@@ -166,6 +210,31 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
     end
 end
 
+function tasks.table(name) --maybe move this to task-deb.lua
+    local tsk = tasks.data[name]
+    local lst = tsk and tsk.list
+    local HL, NC, NR, bold, type = context.HL, context.NC, context.NR, context.bold, context.type
+    if lst then
+        local list, order = lst.list, lst.order
+        if list and order then
+            context.starttabulate { "|l|l|" }
+            HL() NC() bold("category") NC() bold("function") NC() NR() HL()
+            for i=1,#order do
+                local o = order[i]
+                local l = list[o]
+                if #l == 0 then
+                    NC() type(o) NC() NC() NR()
+                else
+                    for k, v in table.sortedpairs(l) do
+                        NC() type(o) NC() type(v) NC() NR()
+                    end
+                end
+                HL()
+            end
+            context.stoptabulate()
+        end
+    end
+end
 tasks.new (
     "processors",
     {
@@ -203,7 +272,7 @@ tasks.new (
 )
 
 tasks.new (
-    "pagebuilders",
+    "mvlbuilders",
     {
         "before",      -- for users
         "normalizers",
@@ -216,6 +285,24 @@ tasks.new (
     {
         "before",      -- for users
         "normalizers",
+        "after",       -- for users
+    }
+)
+
+tasks.new (
+    "parbuilders",
+    {
+        "before",      -- for users
+        "lists",
+        "after",       -- for users
+    }
+)
+
+tasks.new (
+    "pagebuilders",
+    {
+        "before",      -- for users
+        "lists",
         "after",       -- for users
     }
 )

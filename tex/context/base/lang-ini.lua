@@ -477,7 +477,5 @@ statistics.register("loaded patterns", function()
 end)
 
 statistics.register("language load time", function()
-    if statistics.elapsedindeed(languages) then
-        return format("%s seconds, n=%s", statistics.elapsedtime(languages), languages.hyphenation.n())
-    end
+    return statistics.elapsedseconds(languages, format(", n=%s",languages.hyphenation.n()))
 end)

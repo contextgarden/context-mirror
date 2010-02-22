@@ -33,15 +33,25 @@ local function frozenmessage(what,name)
     logs.report("callbacks","not %s frozen '%s' (%s)",what,name,frozen[name])
 end
 
+local function state(name)
+    local f = find_callback(name)
+    if f == false then
+        return "disabled"
+    elseif f then
+        return "enabled"
+    else
+        return "undefined"
+    end
+end
+
 function callbacks.report()
     local list = callback.list()
     for name, func in table.sortedpairs(list) do
         local str = frozen[name]
-        func = (func and "set") or "nop"
         if str then
-            logs.report("callbacks","%s: %s -> %s",func,name,str)
+            logs.report("callbacks","%s: %s -> %s",state(func),name,str)
         else
-            logs.report("callbacks","%s: %s",func,name)
+            logs.report("callbacks","%s: %s",state(func),name)
         end
     end
 end
@@ -50,9 +60,9 @@ function callbacks.table()
     context.starttabulate { "|l|l|p|" }
     for name, func in table.sortedpairs(callback.list()) do
         context.NC()
-        context.type((func and "set") or "nop")
-        context.NC()
         context.type(name)
+        context.NC()
+        context.type(state(name))
         context.NC()
         context(frozen[name] or "")
         context.NC()

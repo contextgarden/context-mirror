@@ -261,9 +261,7 @@ end
 -- eventually this will end up in strc-ini
 
 statistics.register("startup time", function()
-    if statistics.elapsedindeed(ctx) then
-        return format("%s seconds (including runtime option file processing)", statistics.elapsedtime(ctx))
-    end
+    return statistics.elapsedseconds(ctx,"including runtime option file processing")
 end)
 
 statistics.register("jobdata time",function()

@@ -54,7 +54,7 @@
 \defineparbuilder[default] % just for testing
 \defineparbuilder[oneline] % just for testing
 
-\def\enableparbuilders {\ctxlua{callback.register('linebreak_filter', parbuilders.main)}}
-\def\disableparbuilders{\ctxlua{callback.register('linebreak_filter', nil)}}
+\def\enableparbuilders {\ctxlua{tasks.enableaction ("parbuilders", "parbuilders.constructor")}}
+\def\disableparbuilders{\ctxlua{tasks.disableaction("parbuilders", "parbuilders.constructor")}}
 
 \protect \endinput

@@ -84,6 +84,12 @@ function statistics.elapsedindeed(instance)
     return t > statistics.threshold
 end
 
+function statistics.elapsedseconds(instance,rest) -- returns nil if 0 seconds
+    if statistics.elapsedindeed(instance) then
+        return format("%s seconds %s", statistics.elapsedtime(instance),rest or "")
+    end
+end
+
 -- general function
 
 function statistics.register(tag,fnc)

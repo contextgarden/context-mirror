@@ -16,6 +16,7 @@ use locals to refer to them when compiling the chain.</p>
 -- todo: delayed: i.e. we register them in the right order already but delay usage
 
 local format, gsub, concat, gmatch = string.format, string.gsub, table.concat, string.gmatch
+local type, loadstring = type, loadstring
 
 sequencer = sequencer or { }
 
@@ -94,7 +95,7 @@ function sequencer.compile(t,compiler,n)
     elseif compiler then
         t = compiler(t,n)
     else
-        t = sequencer.tostring(t,n)
+        t = sequencer.tostring(t)
     end
     return loadstring(t)()
 end
@@ -109,7 +110,7 @@ return function(...)
 %s
 end]]
 
-function sequencer.tostring(t,n) -- n not done
+function sequencer.tostring(t)
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
     local vars, calls, args = { }, { }, nil
     for i=1,#order do
@@ -152,6 +153,12 @@ function sequencer.nodeprocessor(t,n)
         args = ",one"
     elseif n == 2 then
         args = ",one,two"
+    elseif n == 3 then
+        args = ",one,two,three"
+    elseif n == 4 then
+        args = ",one,two,three,four"
+    elseif n == 5 then
+        args = ",one,two,three,four,five"
     else
         args = ",..."
     end
@@ -174,38 +181,6 @@ function sequencer.nodeprocessor(t,n)
         end
     end
     local processor = format(template,concat(vars,"\n"),args,concat(calls,"\n"))
---~ print(processor)
+--~     print(processor)
     return processor
 end
-
---~ hans = {}
---~ taco = {}
-
---~ function hans.a(head,tail) print("a",head,tail) return head,tail,true end
---~ function hans.b(head,tail) print("b",head,tail) return head,tail,true end
---~ function hans.c(head,tail) print("c",head,tail) return head,tail,true end
---~ function hans.x(head,tail) print("x",head,tail) return head,tail,true end
---~ function taco.i(head,tail) print("i",head,tail) return head,tail,true end
---~ function taco.j(head,tail) print("j",head,tail) return head,tail,true end
-
---~ t = sequencer.reset()
-
---~ sequencer.appendgroup(t,"hans")
---~ sequencer.appendgroup(t,"taco")
---~ sequencer.prependaction(t,"hans","hans.a")
---~ sequencer.appendaction (t,"hans","hans.b")
---~ sequencer.appendaction (t,"hans","hans.x")
---~ sequencer.prependaction(t,"hans","hans.c","hans.b")
---~ sequencer.prependaction(t,"taco","taco.i")
---~ sequencer.prependaction(t,"taco","taco.j")
---~ sequencer.removeaction(t,"hans","hans.x")
-
---~ sequencer.setkind(t,"hans.b")
---~ sequencer.setkind(t,"taco.j","nohead")
-
---~ print(sequencer.tostring(t))
-
---~ s = sequencer.compile(t,sequencer.nodeprocessor)
-
---~ print(sequencer.nodeprocessor(t))
---~ print(s("head","tail"))

@@ -57,7 +57,8 @@ local remapper = {
     ttf   = "truetype fonts",
     ttc   = "truetype fonts",
     dfont = "truetype dictionary",
-    cid   = "other text files", -- will become "cid files"
+    cid   = "cid maps",
+    fea   = "font feature files",
 }
 
 function resolvers.find_file(name,kind)

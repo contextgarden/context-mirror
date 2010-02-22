@@ -342,8 +342,10 @@ end
 tasks.new (
     "math",
     {
+        "before",
         "normalizers",
         "builders",
+        "after",
     }
 )
 
@@ -363,7 +365,5 @@ callbacks.register('mlist_to_hlist',nodes.processors.mlist_to_hlist,"preprocessi
 -- tracing
 
 statistics.register("math processing time", function()
-    if statistics.elapsedindeed(noads) then
-        return format("%s seconds", statistics.elapsedtime(noads))
-    end
+    return statistics.elapsedseconds(noads)
 end)

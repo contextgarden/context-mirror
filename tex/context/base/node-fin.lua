@@ -438,7 +438,5 @@ states.stacked = stacked
 -- -- --
 
 statistics.register("attribute processing time", function()
-    if statistics.elapsedindeed(attributes) then
-        return format("%s seconds (front- and backend)",statistics.elapsedtime(attributes))
-    end
+    return statistics.elapsedseconds(attributes,"front- and backend")
 end)

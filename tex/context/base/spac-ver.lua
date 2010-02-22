@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
     license   = "see context related readme files"
 }
 
+-- we also need to call the spacer for inserts!
+
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon
 --
@@ -1092,15 +1094,15 @@ nodes.builders = nodes.builder or { }
 
 local builders = nodes.builders
 
-local actions = tasks.actions("vboxbuilders",2)
+local actions = tasks.actions("vboxbuilders",5)
 
-function nodes.builders.vpack_filter(head,groupcode)
+function nodes.builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
         if trace_callbacks then
             local before = nodes.count(head)
-            head, done = actions(head,groupcode)
+            head, done = actions(head,groupcode,size,packtype,maxdepth,direction)
             local after = nodes.count(head)
             if done then
                 tracer("vpack","changed",head,groupcode,before,after,true)
@@ -1120,7 +1122,7 @@ end
 -- and we operate on the mlv. Also, we need to do the
 -- vspacing last as it removes items from the mvl.
 
-local actions = tasks.actions("pagebuilders",2)
+local actions = tasks.actions("mvlbuilders",1)
 
 function nodes.builders.buildpage_filter(groupcode)
     starttiming(builders)
@@ -1131,11 +1133,9 @@ function nodes.builders.buildpage_filter(groupcode)
     return (done and head) or true
 end
 
-callbacks.register('vpack_filter',     nodes.builders.vpack_filter,"vertical spacing etc")
-callbacks.register('buildpage_filter', nodes.builders.buildpage_filter,"vertical spacing etc (mvl)")
+callbacks.register('vpack_filter',     nodes.builders.vpack_filter, "vertical spacing etc")
+callbacks.register('buildpage_filter', nodes.builders.buildpage_filter, "vertical spacing etc (mvl)")
 
 statistics.register("v-node processing time", function()
-    if statistics.elapsedindeed(builders) then
-        return format("%s seconds", statistics.elapsedtime(builders))
-    end
+    return statistics.elapsedseconds(builders)
 end)

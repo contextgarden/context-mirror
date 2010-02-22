@@ -838,7 +838,7 @@ local function is_reloaded()
             local c_status = table.serialize(resolvers.data_state())
             local f_status = table.serialize(data.data_state)
             if c_status == f_status then
-                logs.report("fonts","font database matches configuration and file hashes")
+             -- logs.report("fonts","font database matches configuration and file hashes")
                 return
             else
                 logs.report("fonts","font database does not match configuration and file hashes")

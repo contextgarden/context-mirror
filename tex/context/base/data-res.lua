@@ -108,8 +108,8 @@ suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 
 alternatives['map files']            = 'map'
 alternatives['enc files']            = 'enc'
-alternatives['cid files']            = 'cid'
-alternatives['fea files']            = 'fea'
+alternatives['cid maps']             = 'cid' -- great, why no cid files
+alternatives['font feature files']   = 'fea' -- and fea files here
 alternatives['opentype fonts']       = 'otf'
 alternatives['truetype fonts']       = 'ttf'
 alternatives['truetype collections'] = 'ttc'
@@ -252,8 +252,10 @@ local function check_configuration() -- not yet ok, no time for debugging now
         -- bad luck
     end
     fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS") -- no progname, hm
-    fix("FONTFEATURES", ".;$TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
-    fix("FONTCIDMAPS" , ".;$TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    -- this will go away some day
+    fix("FONTFEATURES", ".;$TEXMF/fonts/{data,fea}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    fix("FONTCIDMAPS" , ".;$TEXMF/fonts/{data,cid}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    --
     fix("LUATEXLIBS"  , ".;$TEXMF/luatex/lua//")
 end
 

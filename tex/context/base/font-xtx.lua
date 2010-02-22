@@ -72,12 +72,15 @@ local function istrue (s)   list[s]     = 'yes' end
 local function isfalse(s)   list[s]     = 'no' end
 local function iskey  (k,v) list[k]     = v end
 
+local function istrue (s)   list[s]     = true end
+local function isfalse(s)   list[s]     = false end
+
 local spaces     = lpeg.P(" ")^0
 local namespec   = (1-lpeg.S("/:("))^0 -- was: (1-lpeg.S("/: ("))^0
 local crapspec   = spaces * lpeg.P("/") * (((1-lpeg.P(":"))^0)/iscrap) * spaces
 local filename   = (lpeg.P("file:")/isfile * (namespec/thename)) + (lpeg.P("[") * lpeg.P(true)/isname * (((1-lpeg.P("]"))^0)/thename) * lpeg.P("]"))
 local fontname   = (lpeg.P("name:")/isname * (namespec/thename)) + lpeg.P(true)/issome * (namespec/thename)
-local sometext   = (lpeg.R("az") + lpeg.R("AZ") + lpeg.R("09") + lpeg.P("."))^1
+local sometext   = (lpeg.R("az","AZ","09") + lpeg.S("+-."))^1
 local truevalue  = lpeg.P("+") * spaces * (sometext/istrue)
 local falsevalue = lpeg.P("-") * spaces * (sometext/isfalse)
 local keyvalue   = (lpeg.C(sometext) * spaces * lpeg.P("=") * spaces * lpeg.C(sometext))/iskey
@@ -90,12 +93,12 @@ local pattern    = (filename + fontname) * subvalue^0 * crapspec^0 * options^0
 function fonts.define.specify.colonized(specification) -- xetex mode
     list = { }
     lpegmatch(pattern,specification.specification)
-    for k, v in next, list do
-        list[k] = v:is_boolean()
-        if type(list[a]) == "nil" then
-            list[k] = v
-        end
-    end
+--~     for k, v in next, list do
+--~         list[k] = v:is_boolean()
+--~         if type(list[a]) == "nil" then
+--~             list[k] = v
+--~         end
+--~     end
     list.crap = nil -- style not supported, maybe some day
     if list.name then
         specification.name = list.name

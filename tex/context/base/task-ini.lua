@@ -51,14 +51,16 @@ tasks.appendaction("math",       "normalizers", "noads.respace_characters",  nil
 
 tasks.appendaction("math",       "builders",    "noads.mlist_to_hlist")                      -- always on
 
+tasks.appendaction("parbuilders", "lists",      "parbuilders.constructor")                   -- disabled
+
 -- quite experimental
 
 tasks.appendaction("finalizers", "lists",       "nodes.repackage_graphicvadjust")            -- todo
 
 -- rather new
 
-tasks.appendaction("pagebuilders", "normalizers", "nodes.migrate_outwards")
-tasks.appendaction("pagebuilders", "normalizers", "nodes.handle_page_spacing") -- last !
+tasks.appendaction("mvlbuilders", "normalizers", "nodes.migrate_outwards")
+tasks.appendaction("mvlbuilders", "normalizers", "nodes.handle_page_spacing") -- last !
 
 tasks.appendaction("vboxbuilders", "normalizers", "nodes.handle_vbox_spacing")
 
@@ -85,7 +87,9 @@ tasks.disableaction("shipouts",   "shipouts.handle_viewerlayer")
 tasks.disableaction("shipouts",   "nodes.add_references")
 tasks.disableaction("shipouts",   "nodes.add_destinations")
 
-tasks.disableaction("pagebuilders", "nodes.migrate_outwards")
+tasks.disableaction("mvlbuilders", "nodes.migrate_outwards")
+
+tasks.disableaction("parbuilders", "parbuilders.constructor")
 
 callbacks.freeze("find_.*_file", "find file using resolver")
 callbacks.freeze("read_.*_file", "read file at once")

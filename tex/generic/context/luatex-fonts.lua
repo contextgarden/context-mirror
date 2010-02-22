@@ -111,6 +111,7 @@ else
     loadmodule('font-tfm.lua') -- will be split (we may need font-log)
     loadmodule('font-cid.lua')
     loadmodule('font-ott.lua') -- might be split
+    loadmodule('font-map.lua') -- for loading lum file (will be stripped)
     loadmodule('font-otf.lua')
     loadmodule('font-otd.lua')
     loadmodule('font-oti.lua')
@@ -120,7 +121,6 @@ else
     loadmodule('font-otc.lua')
     loadmodule('font-def.lua')
     loadmodule('font-xtx.lua')
-    loadmodule('font-map.lua') -- for loading lum file (will be stripped)
     loadmodule('font-dum.lua')
 
 end

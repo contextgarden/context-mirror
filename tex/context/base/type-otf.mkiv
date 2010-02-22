@@ -1702,4 +1702,24 @@
 
 \stoptypescriptcollection
 
+\starttypescriptcollection[pagella-euler]
+
+    \starttypescript [math] [euler]
+        \definefontsynonym [EulerMath] [\s!file:euler.otf]
+    \stoptypescript
+
+    \starttypescript [math] [euler] [name]
+        \definefontsynonym [MathRoman] [EulerMath] [\s!features=math\mathsizesuffix]
+    \stoptypescript
+
+    \starttypescript [pagella-euler]
+        \definetypeface [\typescriptone] [rm] [serif] [pagella] [default]
+    %   \definetypeface [\typescriptone] [ss] [sans]  [pagella] [default] [rscale=auto]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]  [default] [rscale=auto]
+        \definetypeface [\typescriptone] [mm] [math]  [euler]   [default] [rscale=auto]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
 \protect \endinput
