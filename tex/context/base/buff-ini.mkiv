@@ -338,8 +338,15 @@
    \c!after=]
 
 % only mkiv:
+%
+% \startbuffer[x]
+% x
+% \stopbuffer
+%
+% \savebuffer[x][temp.log]
 
-\def\savebuffer{\dosingleempty\dosavebuffer}
-\def\dosavebuffer[#1]{\ctxlua{buffers.save("#1")}}
+\unexpanded\def\savebuffer{\dodoubleempty\dosavebuffer}
+
+\def\dosavebuffer[#1][#2]{\ctxlua{commands.savebuffer("#1","#2")}}
 
 \protect \endinput

@@ -11,8 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx \undefined \convertMPtoPDF          \input supp-pdf.tex    \fi 
-\ifx \undefined \includefigurefile \else \expandafter \endinput \fi 
+\ifx \undefined \convertMPtoPDF          \input supp-pdf.mkii   \fi
+\ifx \undefined \includefigurefile \else \expandafter \endinput \fi
 
 \gdef\getfigurefile#1%
   {\expandafter\ifx\csname x-fig-f-#1\endcsname\relax
@@ -37,8 +37,8 @@
   {\doincludefigurefile{#1}}
 
 \def\doincludefigurefile#1#2%
-  {\edef\next{\noexpand\pdfimage 
+  {\edef\next{\noexpand\pdfimage
      #1 page \getfigurepage{#2} {\getfigurefile{#2}.pdf}}%
-   \next} 
+   \next}
 
-\endinput 
+\endinput

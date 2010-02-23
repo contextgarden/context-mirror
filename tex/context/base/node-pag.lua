@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['node-pag'] = {
     license   = "see context related readme files"
 }
 
+-- this callback might disappear
+
 pagebuilders = pagebuilders or { }
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
@@ -17,10 +19,11 @@ local function processor(head,groupcode,size,packtype,maxdepth,direction)
     local _, done = actions(head,groupcode,size,packtype,maxdepth,direction)
     stoptiming(pagebuilders)
     return (done and head) or true
+--  return vpack(head)
 end
 
-callbacks.register('pre_output_filter', processor, "preparing output box")
+--~ callbacks.register('pre_output_filter', processor, "preparing output box")
 
-statistics.register("output preparation time", function()
-    return statistics.elapsedseconds(pagebuilders)
-end)
+--~ statistics.register("output preparation time", function()
+--~     return statistics.elapsedseconds(pagebuilders)
+--~ end)

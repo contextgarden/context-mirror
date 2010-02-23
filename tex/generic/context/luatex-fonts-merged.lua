@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/22/10 19:49:18
+-- merge date  : 02/23/10 14:20:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -1997,7 +1997,7 @@ local remapper = {
 function resolvers.find_file(name,kind)
     name = string.gsub(name,"\\","\/")
     kind = string.lower(kind)
-    return kpse.find_file(name,(kind and kind ~= "" and (remapper[kind] or kind)) or "tex")
+    return kpse.find_file(name,(kind and kind ~= "" and (remapper[kind] or kind)) or file.extname(name,"tex"))
 end
 
 function resolvers.findbinfile(name,kind)
@@ -3410,6 +3410,7 @@ fonts.initializers        = fonts.initializers        or { }
 fonts.initializers.common = fonts.initializers.common or { }
 
 local fontdata      = fonts.ids
+local disc          = node.id('disc')
 local glyph         = node.id('glyph')
 local set_attribute = node.set_attribute
 
@@ -4053,7 +4054,8 @@ function fonts.analyzers.aux.setstate(head,font)
     local descriptions = tfmdata.descriptions
     local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
     while current do
-        if current.id == glyph and current.font == font then
+        local id = current.id
+        if id == glyph and current.font == font then
             local d = descriptions[current.char]
             if d then
                 if d.class == "mark" then
@@ -4074,6 +4076,10 @@ function fonts.analyzers.aux.setstate(head,font)
                 end
                 first, last, n = nil, nil, 0
             end
+        elseif id == disc then
+            -- always in the middle
+            set_attribute(current,state,2) -- midi
+            last = current
         else -- finish
             if first and first == last then
                 set_attribute(last,state,4) -- isol
@@ -5914,7 +5920,7 @@ otf.tables.valid_fields = {
 
 local function load_featurefile(ff,featurefile)
     if featurefile then
-        featurefile = resolvers.find_file(file.addsuffix(featurefile,'fea')) -- "FONTFEATURES"
+        featurefile = resolvers.find_file(file.addsuffix(featurefile,'fea'),'fea')
         if featurefile and featurefile ~= "" then
             if trace_loading then
                 logs.report("load otf", "featurefile: %s", featurefile)
@@ -7820,7 +7826,7 @@ function prepare_base_substitutions(tfmdata,kind,value) -- we can share some cod
                                 end
                                 if characters[upc] then
                                     if trace_baseinit and trace_alternatives then
-                                        logs.report("define otf","%s: base alternate %s => %s",cref(kind,lookup),gref(descriptions,k),gref(descriptions,upc))
+                                        logs.report("define otf","%s: base alternate %s %s => %s",cref(kind,lookup),tostring(value),gref(descriptions,k),gref(descriptions,upc))
                                     end
                                     changed[k] = upc
                                 end

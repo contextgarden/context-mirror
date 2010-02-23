@@ -218,7 +218,7 @@ function prepare_base_substitutions(tfmdata,kind,value) -- we can share some cod
                                 end
                                 if characters[upc] then
                                     if trace_baseinit and trace_alternatives then
-                                        logs.report("define otf","%s: base alternate %s => %s",cref(kind,lookup),gref(descriptions,k),gref(descriptions,upc))
+                                        logs.report("define otf","%s: base alternate %s %s => %s",cref(kind,lookup),tostring(value),gref(descriptions,k),gref(descriptions,upc))
                                     end
                                     changed[k] = upc
                                 end

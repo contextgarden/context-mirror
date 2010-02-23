@@ -36,6 +36,7 @@ fonts.initializers        = fonts.initializers        or { }
 fonts.initializers.common = fonts.initializers.common or { }
 
 local fontdata      = fonts.ids
+local disc          = node.id('disc')
 local glyph         = node.id('glyph')
 local set_attribute = node.set_attribute
 
@@ -679,7 +680,8 @@ function fonts.analyzers.aux.setstate(head,font)
     local descriptions = tfmdata.descriptions
     local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
     while current do
-        if current.id == glyph and current.font == font then
+        local id = current.id
+        if id == glyph and current.font == font then
             local d = descriptions[current.char]
             if d then
                 if d.class == "mark" then
@@ -700,6 +702,10 @@ function fonts.analyzers.aux.setstate(head,font)
                 end
                 first, last, n = nil, nil, 0
             end
+        elseif id == disc then
+            -- always in the middle
+            set_attribute(current,state,2) -- midi
+            last = current
         else -- finish
             if first and first == last then
                 set_attribute(last,state,4) -- isol

@@ -123,14 +123,16 @@ function callbacks.push(name, func)
 end
 
 function callbacks.pop(name)
-    if frozen[name] then
-        -- do nothing
-    elseif #stack == 0 then
-        -- some error
-    else
-     -- this fails: register_callback(name, remove(stack[name]))
-        local func = remove(stack[name])
-        register_callback(name, func)
+    if not frozen[name] then
+        local sn = stack[name]
+        if not sn or #sn == 0 then
+            -- some error
+            register_callback(name, nil) -- ! really needed
+        else
+         -- this fails: register_callback(name, remove(stack[name]))
+            local func = remove(sn)
+            register_callback(name, func)
+        end
     end
 end
 

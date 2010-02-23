@@ -218,8 +218,9 @@ function tasks.table(name) --maybe move this to task-deb.lua
         local list, order = lst.list, lst.order
         if list and order then
             context.starttabulate { "|l|l|" }
-            HL() NC() bold("category") NC() bold("function") NC() NR() HL()
+            NC() bold("category") NC() bold("function") NC() NR()
             for i=1,#order do
+                HL()
                 local o = order[i]
                 local l = list[o]
                 if #l == 0 then
@@ -229,7 +230,6 @@ function tasks.table(name) --maybe move this to task-deb.lua
                         NC() type(o) NC() type(v) NC() NR()
                     end
                 end
-                HL()
             end
             context.stoptabulate()
         end

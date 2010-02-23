@@ -217,15 +217,12 @@ end
 -- The optional prefix hack is there for the typesetbuffer feature and
 -- in mkii we needed that (this hidden feature is used in a manual).
 
-local function prepared(name,list)
-    if not name or name == "" then
-        name = tex.jobname
-    end
-    if list then
-        -- ok
-    else
+local function prepared(name,list) -- list is optional
+    if not list or list == "" then
         list = name
-        name = tex.jobname .. "-" .. name .. ".tmp"
+    end
+    if not name or name == "" then
+        name = tex.jobname .. "-" .. list .. ".tmp"
     end
     local content = buffers.collect(list,nil) or ""
     if content == "" then
@@ -237,9 +234,13 @@ end
 local capsule = "\\starttext\n%s\n\\stoptext\n"
 local command = "context %s"
 
-function buffers.save(name,list,encapsulate)
+function buffers.save(name,list,encapsulate) -- list is optional
     local name, content = prepared(name,list)
     io.savedata(name, (encapsulate and format(capsule,content)) or content)
+end
+
+function commands.savebuffer(list,name) -- name is optional
+    buffers.save(name,list)
 end
 
 function buffers.run(name,list,encapsulate)

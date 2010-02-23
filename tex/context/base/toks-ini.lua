@@ -56,7 +56,7 @@ collectors.data  = collectors.data or { }
 
 function tex.printlist(data)
     callbacks.push('token_filter', function ()
-       callbacks.pop('token_filter')
+       callbacks.pop('token_filter') -- tricky but the nil assignment helps
        return data
     end)
 end

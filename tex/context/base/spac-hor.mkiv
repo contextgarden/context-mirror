@@ -478,29 +478,99 @@
 \definenarrowermethod[\v!none   ]{}
 
 % todo: definenarrower
+%
+% \definecomplexorsimple\startnarrower
+%
+% \def\simplestartnarrower
+%   {\startnarrower[\v!middle]}
+%
+% \def\complexstartnarrower[#1]%
+%   {\@@slbefore % was hard coded \par
+%    \bgroup
+%    \global\ctxleftskip \zeropoint
+%    \global\ctxrightskip\zeropoint
+%    \global\ctxmidskip  \zeropoint
+%    \processcommalistwithparameters[#1]\donarrower
+%    \advance\leftskip  \dimexpr\ctxleftskip +\ctxmidskip\relax
+%    \advance\rightskip \dimexpr\ctxrightskip+\ctxmidskip\relax
+%    \seteffectivehsize}
+%
+% \def\stopnarrower
+%   {\@@slafter % was hard coded \par / needed, else skips forgotten
+%    \egroup}
+%
+% \def\setupnarrower
+%   {\dodoubleargument\getparameters[\??sl]}
 
-\definecomplexorsimple\startnarrower
+%D Contrary to \MKII\ we can now define classes of narrower (generalized
+%D by Wolfgang). This environment will be enhanced for bidi.
 
-\def\simplestartnarrower
-  {\startnarrower[\v!middle]}
+\def\narrowerparameter          #1{\csname\donarrowerparameter{\??sl\@@narrower}#1\endcsname}
+\def\donarrowerparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\donarrowerparentparameter\csname#1\s!parent\endcsname#2\fi}
+\def\donarrowerparentparameter#1#2{\ifx#1\relax\s!empty\else\donarrowerparameter#1#2\fi}
 
-\def\complexstartnarrower[#1]%
-  {\@@slbefore % was hard coded \par
-   \bgroup
+\getparameters
+  [\??sl]
+  [\c!before=\endgraf,
+   \c!after=\endgraf,
+   \c!left=1.5em,
+   \c!right=1.5em,
+   \c!middle=1.5em]
+
+\def\definenarrower
+  {\dodoubleempty\dodefinenarrower}
+
+\def\dodefinenarrower[#1][#2]%
+  {\getparameters[\??sl#1][\s!parent=\??sl,#2]%
+   \setvalue{\e!start#1}{\dodoubleempty\dostartnarrower[#1]}%
+   \setvalue{\e!stop #1}{\dostopnarrower}}
+
+\def\setupnarrower
+  {\dodoubleempty\dosetupnarrower}
+
+\def\dosetupnarrower[#1][#2]%
+  {\doifelsenothing{#2}
+     {\getparameters[\??sl][#1]}
+     {\def\docommand##1{\getparameters[\??sl##1][#2]}%
+      \processcommacommand[#1]\docommand}}
+
+\definenarrowermethod[\v!left   ]{\global\advance\ctxleftskip  \narrowerparameter\c!left  \relax}
+\definenarrowermethod[\v!middle ]{\global\advance\ctxmidskip   \narrowerparameter\c!middle\relax}
+\definenarrowermethod[\v!right  ]{\global\advance\ctxrightskip \narrowerparameter\c!right \relax}
+\definenarrowermethod[-\v!left  ]{\global\advance\ctxleftskip -\narrowerparameter\c!left  \relax}
+\definenarrowermethod[-\v!middle]{\global\advance\ctxmidskip  -\narrowerparameter\c!middle\relax}
+\definenarrowermethod[-\v!right ]{\global\advance\ctxrightskip-\narrowerparameter\c!right \relax}
+\definenarrowermethod[\v!reset  ]{\global\ctxleftskip \zeropoint
+                                  \global\ctxmidskip  \zeropoint
+                                  \global\ctxrightskip\zeropoint\relax}
+\definenarrowermethod[\v!none   ]{}
+
+\def\dostartnarrower[#1][#2]%
+  {\bgroup
+   \ifsecondargument % \doifsomethingelse{#2}?
+     \dodostartnarrower[#1][#2]%
+   \else
+     \dodostartnarrower[#1][\v!middle]%
+   \fi}
+
+\def\dodostartnarrower[#1][#2]%
+  {\edef\@@narrower{#1}%
+   \narrowerparameter\c!before
    \global\ctxleftskip \zeropoint
    \global\ctxrightskip\zeropoint
    \global\ctxmidskip  \zeropoint
-   \processcommalistwithparameters[#1]\donarrower
-   \advance\leftskip  \dimexpr\ctxleftskip +\ctxmidskip\relax
-   \advance\rightskip \dimexpr\ctxrightskip+\ctxmidskip\relax
+   \processcommalistwithparameters[#2]\donarrower
+   \advance\leftskip \dimexpr\ctxleftskip +\ctxmidskip\relax
+   \advance\rightskip\dimexpr\ctxrightskip+\ctxmidskip\relax
    \seteffectivehsize}
 
-\def\stopnarrower
-  {\@@slafter % was hard coded \par / needed, else skips forgotten
+\def\dostopnarrower
+  {\narrowerparameter\c!after
    \egroup}
 
-\def\setupnarrower
-  {\dodoubleargument\getparameters[\??sl]}
+\def\v!narrower{narrower}
+
+\definenarrower[\v!narrower]
 
 \newdimen\@@effectivehsize     \def\effectivehsize    {\hsize}
 \newdimen\@@effectiveleftskip  \def\effectiveleftskip {\leftskip}

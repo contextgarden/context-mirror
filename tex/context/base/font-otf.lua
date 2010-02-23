@@ -175,7 +175,7 @@ otf.tables.valid_fields = {
 
 local function load_featurefile(ff,featurefile)
     if featurefile then
-        featurefile = resolvers.find_file(file.addsuffix(featurefile,'fea')) -- "FONTFEATURES"
+        featurefile = resolvers.find_file(file.addsuffix(featurefile,'fea'),'fea')
         if featurefile and featurefile ~= "" then
             if trace_loading then
                 logs.report("load otf", "featurefile: %s", featurefile)

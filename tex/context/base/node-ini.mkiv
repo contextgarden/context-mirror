@@ -66,25 +66,6 @@
 
 \def\resetallattributes{\the\attributesresetlist}
 
-% \appendtoks
-%     \ctxlua {
-%       callbacks.push('hpack_filter')
-%       callbacks.push('vpack_filter')
-%       callbacks.push('buildpage_filter')
-%       callbacks.push('pre_linebreak_filter')
-%       callbacks.push('pre_output_filter')
-%     }%
-% \to \everybeforeoutput
-% \appendtoks
-%     \ctxlua {
-%       callbacks.pop('hpack_filter')
-%       callbacks.pop('vpack_filter')
-%       callbacks.pop('buildpage_filter')
-%       callbacks.pop('pre_linebreak_filter')
-%       callbacks.pop('pre_output_filter')
-%     }%
-% \to \everyafteroutput
-
 \newcount\shownodescounter
 
 \def\shownextnodes     {\afterassignment\doshownodes\shownextnodescounter}

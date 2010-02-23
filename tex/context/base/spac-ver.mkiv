@@ -1826,16 +1826,89 @@
 %D \stoplines
 %D \stoptyping
 
-\def\setuplines
-  {\dodoubleargument\getparameters[\??rg]}
+% \def\setuplines
+%   {\dodoubleargument\getparameters[\??rg]}
+%
+% \def\startlines
+%   {\@@rgbefore
+%    \pushmacro\checkindentation
+%    \whitespace
+%   %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
+%    \begingroup
+%    \setupindenting[\@@rgindenting]%
+%    \typesettinglinestrue
+%    \setupwhitespace[\v!none]%
+%    \obeylines
+%    \ignorespaces
+%    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
+%      {\gdef\afterfirstobeyedline
+%         {\nobreak
+%          \doifnot\@@rgoption\v!packed{\global\let\afterfirstobeyedline\relax}}}%
+%    \def\obeyedline
+%      {\par
+%       \futurelet\next\dobetweenthelines}%
+%    \activatespacehandler\@@rgspace
+%    \GotoPar}
+%
+% \def\stoplines
+%   {\endgroup
+%    \popmacro\checkindentation
+%    \@@rgafter}
+%
+% \def\dobetweenthelines
+%   {\doifmeaningelse\next\obeyedline
+%     {\@@rginbetween}
+%     {\afterfirstobeyedline}}
+%
+% \setuplines
+%   [\c!option=,
+%    \c!before=\blank,
+%    \c!after=\blank,
+%    \c!inbetween=\blank,
+%    \c!indenting=\v!no,
+%    \c!space=\v!default]
 
-\def\startlines
-  {\@@rgbefore
+%D Contrary to \MKII\ we can now define classes of lines (generalized by
+%D Wolfgang). I will probably rewrite bits in \LUA.
+
+\def\linesparameter          #1{\csname\dolinesparameter{\??rg\@@lines}#1\endcsname}
+\def\dolinesparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolinesparentparameter\csname#1\s!parent\endcsname#2\fi}
+\def\dolinesparentparameter#1#2{\ifx#1\relax\s!empty\else\dolinesparameter#1#2\fi}
+
+\getparameters
+  [\??rg]
+  [\c!option=,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!inbetween=\blank,
+   \c!indenting=\v!no,
+   \c!space=\v!default]
+
+\def\definelines
+  {\dodoubleempty\dodefinelines}
+
+\def\dodefinelines[#1][#2]%
+  {\getparameters[\??rg#1][\s!parent=\??rg,#2]%
+   \setvalue{\e!start#1}{\dostartlines[#1]}%
+   \setvalue{\e!stop #1}{\dostoplines}}
+
+\def\setuplines
+  {\dodoubleempty\dosetuplines}
+
+\def\dosetuplines[#1][#2]%
+  {\doifelsenothing{#2}
+     {\getparameters[\??rg][#1]}
+     {\def\docommand##1{\getparameters[\??rg##1][#2]}%
+      \processcommacommand[#1]\docommand}}
+
+\def\dostartlines[#1]%
+  {\bgroup
+   \edef\@@lines{#1}%
+   \linesparameter\c!before
    \pushmacro\checkindentation
    \whitespace
-  %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
    \begingroup
-   \setupindenting[\@@rgindenting]%
+   \setupindenting[\linesparameter\c!indenting]%
    \typesettinglinestrue
    \setupwhitespace[\v!none]%
    \obeylines
@@ -1843,30 +1916,25 @@
    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
      {\gdef\afterfirstobeyedline
         {\nobreak
-         \doifnot\@@rgoption\v!packed{\global\let\afterfirstobeyedline\relax}}}%
+         \doifnot{\linesparameter\c!option}\v!packed{\global\let\afterfirstobeyedline\relax}}}%
    \def\obeyedline
      {\par
       \futurelet\next\dobetweenthelines}%
-   \activatespacehandler\@@rgspace
+   \activatespacehandler{\linesparameter\c!space}%
    \GotoPar}
 
-\def\stoplines
+\def\dostoplines
   {\endgroup
    \popmacro\checkindentation
-   \@@rgafter}
+   \linesparameter\c!after
+   \egroup}
 
 \def\dobetweenthelines
   {\doifmeaningelse\next\obeyedline
-    {\@@rginbetween}
+    {\linesparameter\c!inbetween}
     {\afterfirstobeyedline}}
 
-\setuplines
-  [\c!option=,
-   \c!before=\blank,
-   \c!after=\blank,
-   \c!inbetween=\blank,
-   \c!indenting=\v!no,
-   \c!space=\v!default]
+\definelines[\v!lines]
 
 \def\emptylines
   {\dosingleempty\doemptylines}
