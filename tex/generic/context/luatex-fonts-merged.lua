@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/23/10 14:20:59
+-- merge date  : 02/24/10 22:33:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -2618,7 +2618,8 @@ function nodes.set_pair(current,factor,rlmode,r2lflag,spec,tfmchr)
         local bound = has_attribute(current,kernpair)
         if bound then
             local kb = kerns[bound]
-            kb[2], kb[3], kb[4], kb[5] = kb[2] + x, kb[3] + y, kb[4] + w, kb[5] + h
+            -- inefficient but singles have less, but weird anyway, needs checking
+            kb[2], kb[3], kb[4], kb[5] = (kb[2] or 0) + x, (kb[3] or 0) + y, (kb[4] or 0)+ w, (kb[5] or 0) + h
         else
             bound = #kerns + 1
             set_attribute(current,kernpair,bound)
@@ -3424,32 +3425,7 @@ tfm.share_base_kerns = false -- true (.5 sec slower on mk but brings down mem fr
 tfm.mathactions      = { }
 tfm.fontname_mode    = "fullpath"
 
-function tfm.enhance(tfmdata,specification)
-    local name, size = specification.name, specification.size
-    local encoding, filename = match(name,"^(.-)%-(.*)$") -- context: encoding-name.*
-    if filename and encoding and fonts.enc.known[encoding] then
-        local data = fonts.enc.load(encoding)
-        if data then
-            local characters = tfmdata.characters
-            tfmdata.encoding = encoding
-            local vector = data.vector
-            local original = { }
-            for k, v in next, characters do
-                v.name = vector[k]
-                v.index = k
-                original[k] = v
-            end
-            for k,v in next, data.unicodes do
-                if k ~= v then
-                    if trace_defining then
-                        logs.report("define font","mapping %s onto %s",k,v)
-                    end
-                    characters[k] = original[v]
-                end
-            end
-        end
-    end
-end
+tfm.enhance = tfm.enhance or function() end
 
 function tfm.read_from_tfm(specification)
     local fname, tfmdata = specification.filename or "", nil
@@ -4106,151 +4082,6 @@ function tfm.replacements(tfm,value)
     tfm.characters[0x0027] = tfm.characters[0x2019]
  -- tfm.characters[0x0060] = tfm.characters[0x2018]
 end
-
--- auto complete font with missing composed characters
-
-table.insert(fonts.manipulators,"compose")
-
-function fonts.initializers.common.compose(tfmdata,value)
-    if value then
-        fonts.vf.aux.compose_characters(tfmdata)
-    end
-end
-
--- tfm features, experimental
-
-tfm.features         = tfm.features         or { }
-tfm.features.list    = tfm.features.list    or { }
-tfm.features.default = tfm.features.default or { }
-
-function tfm.enhance(tfmdata,specification)
-    -- we don't really share tfm data because we always reload
-    -- but this is more in sycn with afm and such
-    local features = (specification.features and specification.features.normal ) or { }
-    tfmdata.shared = tfmdata.shared or { }
-    tfmdata.shared.features = features
-    --  tfmdata.shared.tfmdata = tfmdata -- circular
-    tfmdata.filename = specification.name
-    if not features.encoding then
-        local name, size = specification.name, specification.size
-        local encoding, filename = match(name,"^(.-)%-(.*)$") -- context: encoding-name.*
-        if filename and encoding and fonts.enc.known[encoding] then
-            features.encoding = encoding
-        end
-    end
-    tfm.set_features(tfmdata)
-end
-
-function tfm.set_features(tfmdata)
-    -- todo: no local functions
-    local shared = tfmdata.shared
---  local tfmdata = shared.tfmdata
-    local features = shared.features
-    if not table.is_empty(features) then
-        local mode = tfmdata.mode or fonts.mode
-        local fi = fonts.initializers[mode]
-        if fi and fi.tfm then
-            local function initialize(list) -- using tex lig and kerning
-                if list then
-                    for i=1,#list do
-                        local f = list[i]
-                        local value = features[f]
-                        if value and fi.tfm[f] then -- brr
-                            if tfm.trace_features then
-                                logs.report("define font","initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
-                            end
-                            fi.tfm[f](tfmdata,value)
-                            mode = tfmdata.mode or fonts.mode
-                            fi = fonts.initializers[mode]
-                        end
-                    end
-                end
-            end
-            initialize(fonts.triggers)
-            initialize(tfm.features.list)
-            initialize(fonts.manipulators)
-        end
-        local fm = fonts.methods[mode]
-        if fm and fm.tfm then
-            local function register(list) -- node manipulations
-                if list then
-                    for i=1,#list do
-                        local f = list[i]
-                        if features[f] and fm.tfm[f] then -- brr
-                            if not shared.processors then -- maybe also predefine
-                                shared.processors = { fm.tfm[f] }
-                            else
-                                shared.processors[#shared.processors+1] = fm.tfm[f]
-                            end
-                        end
-                    end
-                end
-            end
-            register(tfm.features.list)
-        end
-    end
-end
-
-function tfm.features.register(name,default)
-    tfm.features.list[#tfm.features.list+1] = name
-    tfm.features.default[name] = default
-end
-
-function tfm.reencode(tfmdata,encoding)
-    if encoding and fonts.enc.known[encoding] then
-        local data = fonts.enc.load(encoding)
-        if data then
-            local characters, original, vector = tfmdata.characters, { }, data.vector
-            tfmdata.encoding = encoding -- not needed
-            for k, v in next, characters do
-                v.name, v.index, original[k] = vector[k], k, v
-            end
-            for k,v in next, data.unicodes do
-                if k ~= v then
-                    if trace_defining then
-                        logs.report("define font","reencoding U+%04X to U+%04X",k,v)
-                    end
-                    characters[k] = original[v]
-                end
-            end
-        end
-    end
-end
-
-tfm.features.register('reencode')
-
-fonts.initializers.base.tfm.reencode = tfm.reencode
-fonts.initializers.node.tfm.reencode = tfm.reencode
-
-fonts.enc            = fonts.enc            or { }
-fonts.enc.remappings = fonts.enc.remappings or { }
-
-function tfm.remap(tfmdata,remapping)
-    local vector = remapping and fonts.enc.remappings[remapping]
-    if vector then
-        local characters, original = tfmdata.characters, { }
-        for k, v in next, characters do
-            original[k], characters[k] = v, nil
-        end
-        for k,v in next, vector do
-            if k ~= v then
-                if trace_defining then
-                    logs.report("define font","remapping U+%04X to U+%04X",k,v)
-                end
-                local c = original[k]
-                characters[v] = c
-                c.index = k
-            end
-        end
-        tfmdata.encodingbytes = 2
-        tfmdata.format = 'type1'
-    end
-end
-
-tfm.features.register('remap')
-
-fonts.initializers.base.tfm.remap = tfm.remap
-fonts.initializers.node.tfm.remap = tfm.remap
 
 -- status info
 
@@ -7457,6 +7288,39 @@ function tfm.read_from_open_type(specification)
     return tfmtable
 end
 
+-- helpers
+
+function otf.collect_lookups(otfdata,kind,script,language)
+    -- maybe store this in the font
+    local sequences = otfdata.luatex.sequences
+    if sequences then
+        local featuremap, featurelist = { }, { }
+        for s=1,#sequences do
+            local sequence = sequences[s]
+            local features = sequence.features
+            features = features and features[kind]
+            features = features and (features[script]   or features[default] or features[wildcard])
+            features = features and (features[language] or features[default] or features[wildcard])
+            if features then
+                local subtables = sequence.subtables
+                if subtables then
+                    for s=1,#subtables do
+                        local ss = subtables[s]
+                        if not featuremap[s] then
+                            featuremap[ss] = true
+                            featurelist[#featurelist+1] = ss
+                        end
+                    end
+                end
+            end
+        end
+        if #featurelist > 0 then
+            return featuremap, featurelist
+        end
+    end
+    return nil, nil
+end
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -7742,43 +7606,12 @@ local function resolve_ligatures(tfmdata,ligatures,kind)
     end
 end
 
-local function collect_lookups(otfdata,kind,script,language)
-    -- maybe store this  in the font
-    local sequences = otfdata.luatex.sequences
-    if sequences then
-        local featuremap, featurelist = { }, { }
-        for s=1,#sequences do
-            local sequence = sequences[s]
-            local features = sequence.features
-            features = features and features[kind]
-            features = features and (features[script]   or features[default] or features[wildcard])
-            features = features and (features[language] or features[default] or features[wildcard])
-            if features then
-                local subtables = sequence.subtables
-                if subtables then
-                    for s=1,#subtables do
-                        local ss = subtables[s]
-                        if not featuremap[s] then
-                            featuremap[ss] = true
-                            featurelist[#featurelist+1] = ss
-                        end
-                    end
-                end
-            end
-        end
-        if #featurelist > 0 then
-            return featuremap, featurelist
-        end
-    end
-    return nil, nil
-end
-
 local splitter = lpeg.splitat(" ")
 
 function prepare_base_substitutions(tfmdata,kind,value) -- we can share some code with the node features
     if value then
         local otfdata = tfmdata.shared.otfdata
-        local validlookups, lookuplist = collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
+        local validlookups, lookuplist = otf.collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
         if validlookups then
             local ligatures = { }
             local unicodes = tfmdata.unicodes -- names to unicodes
@@ -7887,51 +7720,10 @@ function prepare_base_substitutions(tfmdata,kind,value) -- we can share some cod
     end
 end
 
---~ local function prepare_base_kerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
---~     if value then
---~         local otfdata = tfmdata.shared.otfdata
---~         local validlookups, lookuplist = collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
---~         if validlookups then
---~             local unicodes = tfmdata.unicodes -- names to unicodes
---~             local indices = tfmdata.indices
---~             local characters = tfmdata.characters
---~             local descriptions = tfmdata.descriptions
---~             for u, chr in next, characters do
---~                 local d = descriptions[u]
---~                 if d then
---~                     local dk = d.mykerns
---~                     if dk then
---~                         local t, done = chr.kerns or { }, false
---~                         for l=1,#lookuplist do
---~                             local lookup = lookuplist[l]
---~                             local kerns = dk[lookup]
---~                             if kerns then
---~                                 for k, v in next, kerns do
---~                                     if v ~= 0 and not t[k] then -- maybe no 0 test here
---~                                         t[k], done = v, true
---~                                         if trace_baseinit and trace_kerns then
---~                                             logs.report("define otf","%s: base kern %s + %s => %s",cref(kind,lookup),gref(descriptions,u),gref(descriptions,k),v)
---~                                         end
---~                                     end
---~                                 end
---~                             end
---~                         end
---~                         if done then
---~                             chr.kerns = t -- no empty assignments
---~                         end
---~                 --  elseif d.kerns then
---~                 --      logs.report("define otf","%s: invalid mykerns for %s",cref(kind),gref(descriptions,u))
---~                     end
---~                 end
---~             end
---~         end
---~     end
---~ end
-
 local function prepare_base_kerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
     if value then
         local otfdata = tfmdata.shared.otfdata
-        local validlookups, lookuplist = collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
+        local validlookups, lookuplist = otf.collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
         if validlookups then
             local unicodes = tfmdata.unicodes -- names to unicodes
             local indices = tfmdata.indices
@@ -10045,6 +9837,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                     if not lookupcache then
                         report_missing_cache(typ,lookupname)
                     else
+--~ print(typ,lookupname,lookupcache,table.serialize(lookupcache))
                         while start do
                             local id = start.id
                             if id == glyph then
@@ -10054,6 +9847,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                     if lookupmatch then
                                         -- sequence kan weg
                                         local ok
+--~ print("!!!")
                                         start, ok = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,1)
 --~ texio.write_nl(tostring(lookupname),tostring(lookupmatch),tostring(ok))
                                         if ok then

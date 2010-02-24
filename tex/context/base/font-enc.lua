@@ -17,7 +17,7 @@ fonts.enc         = fonts.enc or { }
 fonts.enc.version = 1.03
 fonts.enc.cache   = containers.define("fonts", "enc", fonts.enc.version, true)
 
-fonts.enc.known = {
+fonts.enc.known = { -- sort of obsolete
     texnansi = true,
     ec       = true,
     qx       = true,

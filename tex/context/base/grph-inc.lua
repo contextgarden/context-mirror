@@ -672,7 +672,7 @@ function figures.done(data)
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
     ds.width  = texwd[nr]
     ds.height = texht[nr]
-    ds.xscale = ds.width/(du.width or 1)
+    ds.xscale = ds.width /(du.width  or 1)
     ds.yscale = ds.height/(du.height or 1)
     return data
 end

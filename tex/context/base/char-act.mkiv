@@ -102,6 +102,19 @@
    \prettynaturalfont{\scantextokens\expandafter{\ascii}\ifhmode\unskip\fi}%
    \egroup}
 
+%D What-a-mess:
+
+% \def\normalspacecodes
+%   {\catcode`\^^I = 10
+%    \catcode`\^^M =  5
+%    \catcode`\^^L =  5
+%    \catcode`\    = 10
+%    \catcode`\^^Z =  9 }
+
+% \appendtoks
+%     \normalspacecodes
+% \to \everybeforeoutput
+
 \endinput \protect
 
 % obsolete (old hack for idris)

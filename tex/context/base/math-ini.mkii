@@ -451,7 +451,10 @@
 \newtoks\everymathpunctuation
 
 \def\enablemathpunctuation % can be called inside math, so after \everymathematics
-  {\the\everymathpunctuation
+  {\relax
+   \ifmmode
+     \the\everymathpunctuation
+   \fi
    \appendtoksonce
      \the\everymathpunctuation
    \to\everymathematics}

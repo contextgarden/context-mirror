@@ -734,7 +734,7 @@ fonts.enc.math["tex-mi"] = {
     [0x1D711] = 0x27, -- varphi (the other way around)
     [0x021BC] = 0x28, -- leftharpoonup
     [0x021BD] = 0x29, -- leftharpoondown
-    [0x021C0] = 0x2A, -- righttharpoonup
+    [0x021C0] = 0x2A, -- rightharpoonup
     [0x021C1] = 0x2B, -- rightharpoondown
     [0xFE322] = 0x2C, -- lhook (hook for combining arrows)
     [0xFE323] = 0x2D, -- rhook (hook for combining arrows)
@@ -1669,16 +1669,6 @@ mathematics.make_font ( "mathtimes-math", {
     { name = "msbm10.tfm", vector = "tex-mb" },
 } )
 
-mathematics.make_font ( "lucida-math", {
-    { name = "file:lbr.afm", features = "virtualmath", main = true },
-    { name = "hlcrim.tfm", vector = "tex-mi", skewchar=0x7F },
-    { name = "hlcrim.tfm", vector = "tex-it", skewchar=0x7F },
-    { name = "hlcry.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-    { name = "hlcrv.tfm", vector = "tex-ex", extension = true },
-    { name = "hlcra.tfm", vector = "tex-ma" },
-    { name = "hlcrm.tfm", vector = "tex-mb" },
-} )
-
 mathematics.make_font ( "charter-math", {
     { name = "file:bchr8a", features = "virtualmath", main = true },
  -- { name = "md-chr7m.tfm", vector = "tex-mr" },
@@ -1721,4 +1711,232 @@ mathematics.make_font ( "hvmath-math", {
     { name = "hvex10.tfm", vector = "tex-ex", extension = true },
     { name = "hvam10.tfm", vector = "tex-ma" },
     { name = "hvbm10.tfm", vector = "tex-mb" },
+} )
+
+-- the lucida mess
+
+fonts.enc.math["lbr-ma"] = {
+    [0x000A5] = 0x03, -- yen
+    [0x000B7] = 0xE1, -- centerdot
+    [0x000F0] = 0x03, -- eth
+    [0x00127] = 0x1B, -- hbar
+    [0x003DC] = 0x03, -- digamma
+    [0x003F6] = 0x03, -- backepsilon
+    [0x0219A] = 0x32, -- nleftarrow
+    [0x0219B] = 0x33, -- nrightarrow
+    [0x0219E] = 0x23, -- twoheadleftarrow
+    [0x021A0] = 0x25, -- twoheadrightarrow
+    [0x021A2] = 0x28, -- leftarrowtail
+    [0x021A3] = 0x29, -- rightarrowtail
+    [0x021A6] = 0x2C, -- mapsto
+    [0x021A9] = 0x3C, -- hookleftarrow
+    [0x021AA] = 0x3E, -- hookrightarrow
+    [0x021AB] = 0x3F, -- looparrowleft
+    [0x021AC] = 0x40, -- looparrowright
+    [0x021AD] = 0x91, -- leftrightsquigarrow
+    [0x021AE] = 0x34, -- nleftrightarrow
+    [0x021B0] = 0x7B, -- Lsh
+    [0x021B1] = 0x7D, -- Rsh
+    [0x021B6] = 0x87, -- curvearrowleft
+    [0x021B7] = 0x88, -- curvearrowright
+    [0x021BA] = 0x8C, -- circlearrowright
+    [0x021BB] = 0x8B, -- circlearrowleft
+    [0x021BF] = 0x76, -- upharpoonleft
+    [0x021C2] = 0x77, -- downharpoonright
+    [0x021C3] = 0x78, -- downharpoonleft
+    [0x021C4] = 0x6D, -- rightleftarrows
+    [0x021C6] = 0x6E, -- leftrightarrows
+    [0x021C7] = 0x71, -- leftleftarrows
+    [0x021C8] = 0x72, -- upuparrows
+    [0x021C9] = 0x73, -- rightrightarrows
+    [0x021CA] = 0x74, -- downdownarrows
+    [0x021CB] = 0x79, -- leftrightharpoons
+    [0x021CC] = 0x7A, -- rightleftharpoons
+    [0x021CD] = 0x66, -- nLeftarrow
+    [0x021CE] = 0x67, -- nLeftrightarrow
+    [0x021CF] = 0x68, -- nRightarrow
+    [0x021DA] = 0x6A, -- Lleftarrow
+    [0x021DB] = 0x6C, -- Rrightarrow
+    [0x021E0] = 0x38, -- dashleftarrow
+    [0x02204] = 0x20, -- nexists
+    [0x02226] = 0xF7, -- nparallel
+    [0x02241] = 0x96, -- nsim
+    [0x02268] = 0xDC, -- lneqq
+    [0x02269] = 0xDE, -- gneqq
+    [0x0226E] = 0x9A, -- nless
+    [0x0226F] = 0x9B, -- ngtr
+    [0x02270] = 0x9C, -- nleq
+    [0x02271] = 0x9D, -- ngeq
+    [0x02280] = 0xE5, -- nprec
+    [0x02281] = 0xE6, -- nsucc
+    [0x02288] = 0xC8, -- nsubseteq
+    [0x02289] = 0xC9, -- nsupseteq
+    [0x0228A] = 0xCC, -- subsetneq
+    [0x0228B] = 0xCD, -- supsetneq
+    [0x022AC] = 0xF8, -- nvdash
+    [0x022AD] = 0xFA, -- nvDash
+    [0x022AE] = 0xF9, -- nVdash
+    [0x022AF] = 0xFB, -- nVDash
+    [0x022BA] = 0x03, -- intercal
+    [0x022D4] = 0xF3, -- pitchfork
+    [0x022E6] = 0xE0, -- lnsim
+    [0x022E7] = 0xE2, -- gnsim
+    [0x022E8] = 0xEB, -- precnsim
+    [0x022E9] = 0xEC, -- succnsim
+    [0x022EA] = 0xF0, -- ntriangleright
+    [0x022EB] = 0xEF, -- ntriangleleft
+    [0x022EC] = 0xF1, -- ntrianglelefteq
+    [0x022ED] = 0xF2, -- ntrianglerighteq
+    [0x0231C] = 0x5B, -- ulcorner
+    [0x0231D] = 0x5C, -- urcorner
+    [0x0231E] = 0x5D, -- llcorner
+    [0x0231F] = 0x5E, -- lrcorner
+    [0x025A2] = 0x03, -- blacksquare
+    [0x02605] = 0xAB, -- bigstar
+    [0x02713] = 0xAC, -- checkmark
+    [0x029EB] = 0x09, -- blacklozenge
+    [0x02A87] = 0xDA, -- lneq
+    [0x02A89] = 0xE4, -- lnapprox
+    [0x02A8A] = 0xE3, -- gnapprox
+    [0x02AB5] = 0xE9, -- precneqq
+    [0x02AB6] = 0xEA, -- succneqq
+    [0x02AB9] = 0xED, -- precnapprox
+    [0x02ABA] = 0xEE, -- succnapprox
+    [0x02ACB] = 0xCE, -- subsetneqq
+    [0x02ACC] = 0xCF, -- supsetneqq
+}
+
+fonts.enc.math["lbr-mb"] = {
+    [0x00393] = 0x00, -- Gamma
+    [0x00394] = 0x01, -- Delta
+    [0x00398] = 0x02, -- Theta
+    [0x0039B] = 0x03, -- Lambda
+    [0x0039E] = 0x04, -- Xi
+    [0x003A0] = 0x05, -- Pi
+    [0x003A3] = 0x06, -- Sigma
+    [0x003A5] = 0x07, -- Upsilon
+    [0x003A6] = 0x08, -- Phi
+    [0x003A8] = 0x09, -- Psi
+    [0x003A9] = 0x0A, -- Omega
+    [0x0210F] = 0x9D, -- hslash
+    [0x02127] = 0x92, -- mho
+    [0x02132] = 0x90, -- Finv
+    [0x02136] = 0x95, -- beth
+    [0x02137] = 0x96, -- gimel
+    [0x02138] = 0x97, -- daleth
+    [0x02141] = 0x91, -- Game
+    [0x02201] = 0x94, -- complement
+    [0x0226C] = 0xF2, -- between
+    [0x0227C] = 0xE4, -- preccurlyeq
+    [0x0227D] = 0xE5, -- succcurlyeq
+    [0x0229D] = 0xCC, -- circleddash
+    [0x022A8] = 0xD6, -- vDash
+    [0x022AA] = 0xD3, -- Vvdash
+    [0x022B8] = 0xC7, -- multimap
+    [0x022BB] = 0xD2, -- veebar
+    [0x022C7] = 0xF7, -- divideontimes
+    [0x022C9] = 0xCF, -- ltimes
+    [0x022CA] = 0xCE, -- rtimes
+    [0x022CB] = 0xD0, -- leftthreetimes
+    [0x022CC] = 0xD1, -- rightthreetimes
+    [0x022D6] = 0xDC, -- lessdot
+    [0x022D7] = 0xDD, -- gtrdot
+    [0x022DA] = 0xE8, -- lesseqgtr
+    [0x022DB] = 0xE9, -- gtreqless
+    [0x022DE] = 0xE6, -- curlyeqprec
+    [0x022DF] = 0xE7, -- curlyeqsucc
+    [0x024C7] = 0xC9, -- circledR
+    [0x024C8] = 0xCA, -- circledS
+    [0x025B6] = 0xF1, -- blacktriangleright
+    [0x025B8] = 0xF0, -- blacktriangleleft
+    [0x02720] = 0xCB, -- maltese
+    [0x02A7D] = 0xE0, -- leqslant
+    [0x02A7E] = 0xE1, -- geqslant
+    [0x02A85] = 0xDA, -- lessapprox
+    [0x02A86] = 0xDB, -- gtrapprox
+    [0x02A8B] = 0xEA, -- lesseqqgtr
+    [0x02A8C] = 0xEB, -- gtreqqless
+    [0x02A95] = 0xE2, -- eqslantless
+    [0x02A96] = 0xE3, -- eqslantgtr
+    [0x02AB7] = 0xEC, -- precapprox
+    [0x02AB8] = 0xED, -- succapprox
+    [0x02AC5] = 0xEE, -- subseteqq
+    [0x02AC6] = 0xEF, -- supseteqq
+    [0x12035] = 0xC8, -- backprime
+    [0x1D718] = 0x9B, -- varkappa
+}
+
+--~ fonts.enc.math["lbr-mi"] = {
+--~     ["0x00127"] = 0x9D, -- hbar
+--~     ["0x003D1"] = 0x02, -- varTheta
+--~     ["0x020D7"] = 0x7E, -- vec
+--~ }
+
+fonts.enc.math["lbr-sy"] = {
+    [0x021CB] = 0x8D, -- leftrightharpoons
+    [0x021CC] = 0x8E, -- rightleftharpoons
+    [0x02214] = 0x89, -- dotplus
+    [0x02220] = 0x8B, -- angle
+    [0x02221] = 0x8C, -- measuredangle
+    [0x02222] = 0x8D, -- sphericalangle
+    [0x02234] = 0x90, -- therefore
+    [0x02235] = 0x91, -- because
+    [0x0223D] = 0x24, -- backsim
+    [0x02242] = 0x99, -- eqsim
+    [0x0224A] = 0x9D, -- approxeq
+    [0x0224E] = 0xC7, -- Bumpeq
+    [0x02252] = 0xCB, -- fallingdotseq
+    [0x02253] = 0xCC, -- risingdotseq
+    [0x02256] = 0xCF, -- eqcirc
+    [0x02257] = 0xD0, -- circeq
+    [0x0225C] = 0xD5, -- triangleq
+    [0x02266] = 0xDA, -- leqq
+    [0x02267] = 0xDB, -- geqq
+    [0x02272] = 0xDC, -- lesssim
+    [0x02273] = 0xDD, -- gtrsim
+    [0x02276] = 0xDE, -- lessgtr
+    [0x02277] = 0xDF, -- gtrless
+    [0x0227E] = 0xE0, -- precsim
+    [0x0227F] = 0xE1, -- succsim
+    [0x0228F] = 0xE4, -- sqsubset
+    [0x02290] = 0xE5, -- sqsupset
+    [0x0229A] = 0xE6, -- circledcirc
+    [0x0229B] = 0xE7, -- circledast
+    [0x0229E] = 0xEA, -- boxplus
+    [0x0229F] = 0xEB, -- boxminus
+    [0x022A0] = 0xEC, -- boxtimes
+    [0x022A1] = 0xED, -- boxdot
+    [0x022A7] = 0xEE, -- models
+    [0x022A9] = 0xF0, -- Vdash
+    [0x022BC] = 0xF6, -- barwedge
+    [0x022CE] = 0x85, -- curlyvee
+    [0x022CF] = 0x84, -- curlywedge
+    [0x022D0] = 0xF8, -- Subset
+    [0x022D1] = 0xF9, -- Supset
+    [0x02300] = 0x53, -- varnothing
+    [0x025CA] = 0x05, -- lozenge
+}
+
+fonts.enc.math["lbr-sy"] = table.merged(fonts.enc.math["tex-sy"],fonts.enc.math["lbr-sy"])
+
+--~ fonts.enc.math["lbr-rm"] = {
+--~     [0x00060] = 0x12, -- grave
+--~     [0x000A8] = 0x7F, -- ddot
+--~     [0x000AF] = 0x16, -- bar
+--~     [0x000B4] = 0x13, -- acute
+--~     [0x002C6] = 0x5E, -- hat
+--~     [0x002C7] = 0x14, -- check
+--~     [0x002D8] = 0x15, -- breve
+--~     [0x002D9] = 0x05, -- dot
+--~     [0x002DC] = 0x7E, -- tilde
+--~ }
+
+mathematics.make_font ( "lucida-math", {
+    { name = "file:lbr.afm", features = "virtualmath", main = true },
+    { name = "hlcrim.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "hlcrim.tfm", vector = "tex-it", skewchar=0x7F },
+    { name = "hlcry.tfm", vector = "lbr-sy", skewchar=0x30, parameters = true },
+    { name = "hlcrv.tfm", vector = "tex-ex", extension = true },
+    { name = "hlcra.tfm", vector = "lbr-ma" },
+    { name = "hlcrm.tfm", vector = "lbr-mb" },
 } )

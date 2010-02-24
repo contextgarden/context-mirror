@@ -11,11 +11,15 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\def\enableshowmathfontvirtual
+  {\ctxlua{fonts.tfm.auto_cleanup=false}}
+
 \def\showmathfontcharacters
   {\dodoubleempty\doshowmathfontcharacters}
 
 \def\doshowmathfontcharacters[#1][#2]%
   {\begingroup
+   \dontcomplain
    \doifelsenothing{#1}
      {\definedfont[MathRoman*math-text]}
      {\definedfont[#1]}%
@@ -45,6 +49,9 @@
 
 \def\mathfontlistentrywdhtdpic#1#2#3#4%
   {width: #1, height: #2, depth: #3, italic: #4\par}
+
+\def\mathfontlistentryresource#1%
+  {virtual: #1\par}
 
 \def\mathfontlistentrynext#1#2%
   {#1~\ruledhbox{\char#2}}
@@ -76,6 +83,14 @@ function document.showmathfont(id,slot)
     local function report(...)
         tex.sprint(tex.ctxcatcodes,string.format(...))
     end
+    local virtual, names = tfmdata.type == "virtual", { }
+    if virtual then
+        for k, v in ipairs(tfmdata.fonts) do
+            local name = fonts.ids[v.id].name
+            names[k] = (name and file.basename(name)) or v.id
+        end
+    end
+    print(table.serialize(names))
     for _, s in next, sorted do
         local char = characters[s]
         if char then
@@ -84,6 +99,22 @@ function document.showmathfont(id,slot)
             report("\\startmathfontlistentry")
             report("\\mathfontlistentryhexdectit{U+%05X}{%s}{%s}",s,s,string.lower(info.description or "no description, private to font"))
             report("\\mathfontlistentrywdhtdpic{%s}{%s}{%s}{%s}",char.width or 0,char.height or 0,char.depth or 0,char.italic or 0)
+            if virtual then
+                local commands = char.commands
+                if commands then
+                    local t = { }
+                    for i=1,#commands do
+                        local ci = commands[i]
+                        if ci[1] == "slot" then
+                            local fnt, idx = ci[2], ci[3]
+                            t[#t+1] = string.format("%s/%0X",names[fnt] or fnt,idx)
+                        end
+                    end
+                    if #t > 0 then
+                        report("\\mathfontlistentryresource{%s}",table.concat(t,", "))
+                    end
+                end
+            end
             if info.mathclass then
                 report("\\mathfontlistentryclassname{%s}{%s}",info.mathclass,info.mathname or "no name")
             end

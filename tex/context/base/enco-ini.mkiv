@@ -322,9 +322,26 @@
 \unexpanded\def\schwa             {\hbox{\rotate[\c!rotation=180,\c!location=\v!high]{\hbox{e}}}}
 \unexpanded\def\schwagrave        {\buildtextgrave\schwa}
 
-\unexpanded\def\normalcontrolspace{\getglyph{ComputerModernMono}{\char32}}
-\unexpanded\def\textvisiblespace  {\fakecontrolspace}
-\unexpanded\def\fakecontrolspace  {\let\normalcontrolspace\fakedcontrolspace}
+\chardef\textcontrolspace"2423
+
+\unexpanded\def\fallbackcontrolspace
+ %{\getglyph{ComputerModernMono}\textcontrolspace}
+  {\getglyph{LMTypewriter10-Regular}\textcontrolspace}
+
+\unexpanded\def\normalcontrolspace
+  {\iffontchar\font\textcontrolspace
+     \textcontrolspace
+   \else
+     \fallbackcontrolspace
+   \fi}
+
+\unexpanded\def\fastcontrolspace
+  {\iffontchar\font\textcontrolspace
+     \textcontrolspace
+   \else
+     \fallbackcontrolspace
+     \let\normalcontrolspace\fallbackcontrolspace
+   \fi}
 
 % helpers
 

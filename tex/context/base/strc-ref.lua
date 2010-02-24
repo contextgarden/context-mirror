@@ -883,7 +883,7 @@ end
 
 function jobreferences.getinternalreference(n) -- n points into list
     local l = structure.lists.collected[n]
-    texsprint((l and l.references.internal) or n)
+    texsprint(ctxcatcodes,(l and l.references.internal) or n)
 end
 
 

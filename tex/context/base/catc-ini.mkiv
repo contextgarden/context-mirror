@@ -279,5 +279,39 @@
 
 % \tracecatcodetables
 
+%D Only in \MKIV\ (to be used when crossing pages with changed catcodes
+%D in the current vector):
+%D
+%D \starttyping
+%D \def\startcrap
+%D   {\bgroup
+%D    \pushcatcodes
+%D    \whitespace
+%D    \obeylines
+%D    \activatespacehandler\v!yes
+%D    \strut}
+%D
+%D \def\stopcrap
+%D   {\popcatcodes
+%D   \egroup}
+%D \stoptyping
+
+\newcount\catcodetablelevel
+
+\def\pushcatcodes
+  {\bgroup
+   \global\advance\catcodetablelevel\plusone
+   \ifcsname @@ccf:\number\catcodetablelevel\endcsname \else
+     \global\advance\cctdefcounter\plusone
+     \expandafter\global\expandafter\chardef\csname @@ccf:\number\catcodetablelevel\endcsname\cctdefcounter
+   \fi
+   \catcodetable\ctxcatcodes
+   \expandafter\savecatcodetable\csname @@ccf:\number\catcodetablelevel\endcsname
+   \egroup
+   \expandafter\catcodetable\csname @@ccf:\number\catcodetablelevel\endcsname}
+
+\def\popcatcodes
+  {\global\advance\catcodetablelevel\minusone}
+
 \endinput
 

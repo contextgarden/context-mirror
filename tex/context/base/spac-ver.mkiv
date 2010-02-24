@@ -1378,26 +1378,15 @@
 %    \fi
    \egroup}
 
-% no off
-
-% \def\docheckgridsnapping
-%   {\doifelse\@@lygrid\v!yes\gridsnappingtrue\gridsnappingfalse
-%    \ifgridsnapping
-%      \setsnapvalue\v!normal
-%      \setsystemmode\v!grid
-%    \else
-%      \resetsnapvalue
-%      \resetsystemmode\v!grid
-%    \fi}
-
 \def\docheckgridsnapping
-  {\doifelse\@@lygrid\v!no
+  {\edef\askedgridmode{\layoutparameter\c!grid}% needs checking by WS
+   \doifelse\askedgridmode\v!no
      {\gridsnappingfalse
       \resetsystemmode\v!grid
       \resetsnapvalue}
      {\gridsnappingtrue
       \setsystemmode\v!grid
-      \autosetsnapvalue\@@lygrid}}
+      \autosetsnapvalue\askedgridmode}}
 
 %D Visualization:
 
@@ -1871,9 +1860,22 @@
 %D Contrary to \MKII\ we can now define classes of lines (generalized by
 %D Wolfgang). I will probably rewrite bits in \LUA.
 
-\def\linesparameter          #1{\csname\dolinesparameter{\??rg\@@lines}#1\endcsname}
-\def\dolinesparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolinesparentparameter\csname#1\s!parent\endcsname#2\fi}
-\def\dolinesparentparameter#1#2{\ifx#1\relax\s!empty\else\dolinesparameter#1#2\fi}
+\let\currentlines\empty
+
+\def\linesparameter    #1{\csname\dolinesparameter{\??rg\currentlines}#1\endcsname}
+\def\linesparameterhash#1{\dolinesparameterhash   {\??rg\currentlines}#1}
+
+\def\dolinesparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolinesparentparameter    \csname#1\s!parent\endcsname#2\fi}
+\def\dolinesparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dolinesparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+
+\def\dolinesparentparameter    #1#2{\ifx#1\relax\s!empty\else\dolinesparameter    #1#2\fi}
+\def\dolinesparentparameterhash#1#2{\ifx#1\relax        \else\dolinesparameterhash#1#2\fi}
+
+\def\dosetlinesattributes#1#2% style color
+  {\edef\fontattributehash {\linesparameterhash#1}%
+   \edef\colorattributehash{\linesparameterhash#2}%
+   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
 
 \getparameters
   [\??rg]
@@ -1889,7 +1891,7 @@
 
 \def\dodefinelines[#1][#2]%
   {\getparameters[\??rg#1][\s!parent=\??rg,#2]%
-   \setvalue{\e!start#1}{\dostartlines[#1]}%
+   \setvalue{\e!start#1}{\dodoubleempty\dostartlines[#1]}%
    \setvalue{\e!stop #1}{\dostoplines}}
 
 \def\setuplines
@@ -1901,13 +1903,17 @@
      {\def\docommand##1{\getparameters[\??rg##1][#2]}%
       \processcommacommand[#1]\docommand}}
 
-\def\dostartlines[#1]%
+\def\dostartlines[#1][#2]%
   {\bgroup
-   \edef\@@lines{#1}%
+   \edef\currentlines{#1}%
+   \ifsecondargument
+     \getparameters[\??rg\currentlines][#2]%
+   \fi
    \linesparameter\c!before
    \pushmacro\checkindentation
    \whitespace
    \begingroup
+   \dosetlinesattributes\c!style\c!color
    \setupindenting[\linesparameter\c!indenting]%
    \typesettinglinestrue
    \setupwhitespace[\v!none]%
@@ -1931,8 +1937,8 @@
 
 \def\dobetweenthelines
   {\doifmeaningelse\next\obeyedline
-    {\linesparameter\c!inbetween}
-    {\afterfirstobeyedline}}
+     {\linesparameter\c!inbetween}
+     {\afterfirstobeyedline}}
 
 \definelines[\v!lines]
 

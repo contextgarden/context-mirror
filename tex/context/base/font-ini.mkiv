@@ -61,6 +61,7 @@
 \registerctxluafile{font-syn}{1.001}
 \registerctxluafile{font-log}{1.001}
 \registerctxluafile{font-tfm}{1.001}
+\registerctxluafile{font-enh}{1.001}
 \registerctxluafile{font-afm}{1.001}
 \registerctxluafile{font-cid}{1.001} % cid maps
 \registerctxluafile{font-ott}{1.001} % otf tables
@@ -1816,34 +1817,24 @@
 
 \chardef\fontdigits=2 % was 1
 
-\def\normalizebodyfontsize#1\to#2%
-  {\@EA\@EA\@EA\donormalizedbodyfontsize\@EA\WITHOUTPT\the\dimexpr#1+\ifcase\fontdigits.5\or.05\or.005\fi\points\relax000\to#2}
-
-\def\donormalizedbodyfontsize#1.#2#3#4#5\to#6% \points ?
-  {\edef#6% not \ifcase#2\else due to \relax adding
-     {#1%
-      \ifcase\fontdigits
-        \or   \ifcase#2     \else .#2\fi                                            % 1
-        \or   \ifcase#2#3   \else .#2\ifcase#3                      \else  #3\fi\fi % 2
-        \else \ifcase#2#3#4 \else .#2\ifcase#4 \ifcase#3 \else#3\fi \else#3#4\fi\fi % 3
-      \fi
-      \s!pt}}
-
-% not faster, just less tracing
-%
-% \def\setfontdigits#1%
-%   {\chardef\fontdigits\ifnum#1>\plusthree\plusthree\else#1\fi\relax
-%    \@EA\let\@EA\normalizedbfs\csname normalizedbfs\number\fontdigits\endcsname}
-%
 % \def\normalizebodyfontsize#1\to#2%
-%   {\@EA\@EA\@EA\normalizedbfs\@EA\WITHOUTPT\the\dimexpr#1+\ifcase\fontdigits.5\or.05\or.005\fi\points\relax000\to#2}
+%   {\@EA\@EA\@EA\donormalizedbodyfontsize\@EA\WITHOUTPT\the\dimexpr#1+\ifcase\fontdigits.5\or.05\or.005\fi\points\relax000\to#2}
 %
-% \setvalue{normalizedbfs0}#1.#2\to      #3{\edef#3{#1\s!pt}}
-% \setvalue{normalizedbfs1}#1.#2#3\to    #4{\edef#4{#1\ifcase#2 \else.#2\fi\s!pt}}
-% \setvalue{normalizedbfs2}#1.#2#3#4\to  #5{\edef#5{#1\ifcase#2#3 \else.#2\ifcase#3 \else#3\fi\fi\s!pt}}
-% \setvalue{normalizedbfs3}#1.#2#3#4#5\to#6{\edef#6{#1\ifcase#2#3#4 \else.#2\ifcase#4 \ifcase#3 \else#3\fi\else#3#4\fi\fi\s!pt}}
-%
-% \setfontdigits2
+% \def\donormalizedbodyfontsize#1.#2#3#4#5\to#6% \points ?
+%   {\edef#6% not \ifcase#2\else due to \relax adding
+%      {#1%
+%       \ifcase\fontdigits
+%         \or   \ifcase#2     \else .#2\fi                                            % 1
+%         \or   \ifcase#2#3   \else .#2\ifcase#3                      \else  #3\fi\fi % 2
+%         \else \ifcase#2#3#4 \else .#2\ifcase#4 \ifcase#3 \else#3\fi \else#3#4\fi\fi % 3
+%       \fi
+%       \s!pt}}
+
+\def\normalizebodyfontsize#1\to#2%
+  {\edef#2{\ctxlua{fonts.nbfs(\number\dimexpr#1\relax,\number\fontdigits)}}}
+
+\def\thenormalizedbodyfontsize#1%
+  {\ctxlua{fonts.nbfs(\number\dimexpr#1\relax,\number\fontdigits)}}
 
 \normalizebodyfontsize\bodyfontsize\to\normalizedglobalbodyfontsize
 \normalizebodyfontsize\bodyfontsize\to\normalizedlocalbodyfontsize

@@ -513,7 +513,7 @@ function default.flush_line(str)
     if visualizers.obeyspace then
         for c in utfcharacters(str) do
             if c == " " then
-                texsprint(ctxcatcodes,"\\obs ")
+                texsprint(ctxcatcodes,"\\obs")
             else
                 texwrite(c)
             end

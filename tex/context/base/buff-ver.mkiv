@@ -115,17 +115,9 @@
 \def\setupcommonverbatim
   {\let\prettyidentifier\s!default
    %
-%  \doifelse{\typingparameter\c!text}\v!yes
-%    \naturaltextexttrue
-%    \naturaltextextfalse
    \def\prettyidentifierfont{\typingparameter\c!icommand}%
    \def\prettyvariablefont  {\typingparameter\c!vcommand}%
    \def\prettynaturalfont   {\typingparameter\c!ccommand}%
-   %
-   \doif{\typingparameter\c!space}\v!on
-     {\def\obeyspaces{\setcontrolspaces}}%
-   \doif{\typingparameter\c!page }\v!no
-     {\def\obeypages {\ignorepages}}%
    %
    \ignorehyphens % default
    \getvalue{\??tp:\c!lines:\typingparameter\c!lines}%
@@ -151,7 +143,9 @@
 
 \def\doinitializeverbatim
   {\ctxlua{buffers.visualizers.reset()}%
-   \def\obs{\obeyedspace}%
+   \doifelse{\typingparameter\c!space}\v!on
+     {\let\obs\fastcontrolspace}%
+     {\let\obs\specialobeyedspace}%
    \ctxlua{buffers.doifelsevisualizer("\prettyidentifier")}
      {\ctxlua{buffers.setvisualizer("\prettyidentifier")}%
       \let\bop\doverbatimbop

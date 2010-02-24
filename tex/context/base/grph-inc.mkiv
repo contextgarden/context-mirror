@@ -85,7 +85,7 @@
 \def\figurefilecache     {\ctxlua{figures.tprint("request","cache")}}
 \def\figurefileprefix    {\ctxlua{figures.tprint("request","prefix")}}
 
-\def\figurenaturalwidth  {\ctxlua{figures.tprint("used","width",\number\dimexpr\defaultfigurewidth\relax)}sp}
+\def\figurenaturalwidth  {\ctxlua{figures.tprint("used","width", \number\dimexpr\defaultfigurewidth \relax)}sp}
 \def\figurenaturalheight {\ctxlua{figures.tprint("used","height",\number\dimexpr\defaultfigureheight\relax)}sp}
 
 \def\figurefilepath      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.dirname (figures.get("used","fullname")))}}
