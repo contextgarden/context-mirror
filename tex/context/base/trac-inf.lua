@@ -25,6 +25,14 @@ function statistics.hastimer(instance)
     return instance and instance.starttime
 end
 
+function statistics.resettiming(instance)
+    if not instance then
+        notimer = { timing = 0, loadtime = 0 }
+    else
+        instance.timing, instance.loadtime = 0, 0
+    end
+end
+
 function statistics.starttiming(instance)
     if not instance then
         notimer = { }
@@ -168,3 +176,20 @@ function statistics.timed(action,report)
     report("total runtime: %s",statistics.elapsedtime(timer))
 end
 
+-- where, not really the best spot for this:
+
+commands = commands or { }
+
+local timer
+
+function commands.resettimer()
+    statistics.resettiming(timer)
+    statistics.starttiming(timer)
+end
+
+function commands.elapsedtime()
+    statistics.stoptiming(timer)
+    tex.sprint(statistics.elapsedtime(timer))
+end
+
+commands.resettimer()

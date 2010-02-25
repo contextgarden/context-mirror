@@ -29,6 +29,10 @@ function commands.writedebug(a,b,c,...)
     end
 end
 
+function commands.report(s,t,...)
+    commands.writestatus("!"..s,format(t,...))
+end
+
 function commands.doifelse(b)
     if b then -- faster with if than with expression
         texsprint(ctxcatcodes,"\\firstoftwoarguments")

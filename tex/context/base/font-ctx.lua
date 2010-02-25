@@ -451,12 +451,14 @@ function fonts.cleanname(name)
     texsprint(ctxcatcodes,fonts.names.cleanname(name))
 end
 
-local p, f = 1, "%0.01fpt" -- normally this value is changed only once
+local p, f = 1, "%0.1fpt" -- normally this value is changed only once
+
+local stripper = lpeg.patterns.strip_zeros
 
 function fonts.nbfs(amount,precision)
     if precision ~= p then
         p = precision
-        f = "%0.0" .. p .. "fpt"
+        f = "%0." .. p .. "fpt"
     end
-    texsprint(ctxcatcodes,format(f,amount/65536))
+    texsprint(ctxcatcodes,lpegmatch(stripper,format(f,amount/65536)))
 end

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/24/10 22:33:12
+-- merge date  : 02/25/10 19:56:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -303,6 +303,8 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 }
 
 lpeg = require("lpeg")
+
+lpeg.patterns = lpeg.patterns or { } -- so that we can share
 
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 local match = lpeg.match

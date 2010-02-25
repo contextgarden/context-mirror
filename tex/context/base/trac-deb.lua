@@ -182,3 +182,6 @@ function tracers.register_dump_hash(delta)
     end
     main.register_stop_actions(1,function() tracers.dump_hash(nil,true) end) -- at front
 end
+
+directives.register("system.dumphash",  function() tracers.register_dump_hash(false) end)
+directives.register("system.dumpdelta", function() tracers.register_dump_hash(true ) end)

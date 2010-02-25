@@ -895,6 +895,39 @@
       \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
         {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}}
 
+% \def\dostartdelimitedtextpar[#1]%
+%    {\let\dostopdelimitedtext\dostopdelimitedtextpar
+%     \doifsomething{\delimitedtextparameter\c!spacebefore}
+%       {\blank[\delimitedtextparameter\c!spacebefore]}%
+%     \delimitedtextparameter\c!before
+%     % nicer:
+%     % \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
+%     % \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
+%     % backward compatible:
+%     \doifelsenothing{#1}
+%       {\endgraf
+%        \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
+%        \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
+%        \let\dodostopdelimitedtextpar\endgraf}
+%       {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%
+%     % so far
+%     % \dochecknextindentation{\??ci\currentdelimitedtext}% AM: not here
+%     \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
+%     \leftdelimitedtextmark
+%     \ignorespaces}
+
+% \def\dostopdelimitedtextpar
+%    {\removeunwantedspaces
+%     \removelastskip
+%     \rightdelimitedtextmark
+%     \dostopattributes
+%     \dodostopdelimitedtextpar
+%     \delimitedtextparameter\c!after
+%     \doifsomething{\delimitedtextparameter\c!spaceafter}
+%       {\blank[\delimitedtextparameter\c!spaceafter]}%
+%     \dochecknextindentation{\??ci\currentdelimitedtext}% AM: here
+%     \dorechecknextindentation}% AM: This was missing!
+
 \def\dostartdelimitedtextpar[#1]%
    {\let\dostopdelimitedtext\dostopdelimitedtextpar
     \doifsomething{\delimitedtextparameter\c!spacebefore}
@@ -912,6 +945,9 @@
       {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%
     % so far
     % \dochecknextindentation{\??ci\currentdelimitedtext}% AM: not here
+    \pushmacro\checkindentation
+    \doifsomething{\delimitedtextparameter\c!indenting} % WS
+      {\setupindenting[\delimitedtextparameter\c!indenting]}%
     \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
     \leftdelimitedtextmark
     \ignorespaces}
@@ -921,6 +957,7 @@
     \removelastskip
     \rightdelimitedtextmark
     \dostopattributes
+    \popmacro\checkindentation
     \dodostopdelimitedtextpar
     \delimitedtextparameter\c!after
     \doifsomething{\delimitedtextparameter\c!spaceafter}

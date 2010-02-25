@@ -44,7 +44,7 @@ end
 -- also for testing (no surrounding spacing done)
 
 function parbuilders.constructors.oneline(head,is_display)
---  head.list = node.hpack(head)
+    return node.hpack(head)
 end
 
 local actions = tasks.actions("parbuilders",1)

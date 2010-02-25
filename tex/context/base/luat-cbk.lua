@@ -29,6 +29,8 @@ local trace_callbacks = false  trackers.register("system.callbacks", function(v)
 local register_callback, find_callback = callback.register, callback.find
 local frozen, stack = { }, { }
 
+callback.original_register_callback = register_callback
+
 local function frozenmessage(what,name)
     logs.report("callbacks","not %s frozen '%s' (%s)",what,name,frozen[name])
 end

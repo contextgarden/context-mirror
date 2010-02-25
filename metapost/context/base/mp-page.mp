@@ -444,4 +444,31 @@ def Enlarged (expr p, d) =
    ulEnlarged (p,d) -- cycle)
 enddef ;
 
+% New:
+
+def position_anchor_bar(expr p_b_self, p_e_self, y_b_self, y_e_self, h_b_self, d_e_self,
+        distance, linewidth, linecolor) =
+    StartPage ;
+      path p ; p :=
+      if p_b_self=p_e_self :
+        (xpart ulcorner Field[Text][Text],y_b_self+h_b_self) --
+        (xpart llcorner Field[Text][Text],y_e_self-d_e_self) ;
+      elseif RealPageNumber=p_b_self :
+        (xpart ulcorner Field[Text][Text],y_b_self+h_b_self) --
+        (llcorner Field[Text][Text]) ;
+      elseif RealPageNumber=p_e_self :
+        (ulcorner Field[Text][Text]) --
+        (xpart llcorner Field[Text][Text],y_e_self-d_e_self) ;
+      else :
+        (ulcorner Field[Text][Text]) --
+        (llcorner Field[Text][Text]) ;
+      fi ;
+      p := p shifted (-llcorner Field[Text][Text]-(distance,0)) ;
+      interim linecap := butt ;
+      draw p
+        withpen pencircle scaled linewidth
+        withcolor linecolor ;
+    StopPage ;
+enddef ;
+
 endinput ;

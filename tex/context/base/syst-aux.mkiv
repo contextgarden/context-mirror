@@ -6532,10 +6532,15 @@
 
 % awaiting the definitive implementation
 
-\ifdefined\resettimer \else
-  \let\resettimer \relax
-  \newcount\elapsedtime
-\fi
+% \ifdefined\resettimer \else
+%   \let\resettimer \relax
+%   \newcount\elapsedtime
+% \fi
+% \def\elapsedseconds{\expandafter\withoutpt\the\dimexpr\elapsedtime sp\relax}
+
+\def\resettimer    {\ctxlua{commands.resettimer()}}
+\def\elapsedtime   {\ctxlua{commands.elapsedtime()}}
+\let\elapsedseconds \elapsedtime
 
 \newcount\featuretest
 
@@ -6554,8 +6559,6 @@
    \writestatus\m!systems{feature test done (\elapsedseconds s)}%
    \wait
    \egroup}
-
-\def\elapsedseconds{\expandafter\withoutpt\the\dimexpr\elapsedtime sp\relax}
 
 \def\showtimer#1%
   {\writestatus{runtime}{\elapsedseconds\space s / #1}}
@@ -6812,8 +6815,7 @@
 %D \stoptyping
 
 \def\stripstring#1% #1 is \cs
-  {\edef\cs{\ctxlua
-     {tex.sprint(tex.vrbcatcodes,string.strip(\!!bs\detokenize\expandafter{#1}\!!es))}}}
+  {\edef\cs{\ctxlua{tex.sprint(tex.vrbcatcodes,string.strip(\!!bs\detokenize\expandafter{#1}\!!es))}}}
 
 %D \macros
 %D   {dowithrange}

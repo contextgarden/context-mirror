@@ -329,3 +329,10 @@ function experiments.disable(...)
     commands.writestatus("experiments","disabling: %s",concat({...}," "))
     d(...)
 end
+
+-- a useful example
+
+directives.register("system.nostatistics", function(v)
+    statistics.enable = not v
+end)
+

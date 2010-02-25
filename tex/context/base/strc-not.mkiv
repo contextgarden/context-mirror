@@ -405,15 +405,8 @@
    \ifnotelimit
      \global\dimen\currentnoteins\dimexpr\noteparameter\c!height*\scratchcounter\relax
    \fi
-   % distance
-   \begingroup
-   \setbox\scratchbox\vbox
-     {\forgetall
-      \noteparameter\c!before
-      \placenoterule
-      \noteparameter\c!after}%
-   \global\skip\currentnoteins\ht\scratchbox
-   \endgroup
+   % distance -> tricky as this might depend on a font switch so we need a fast checker
+   \dosetnotedistance
    % play safe
    \ifnum\noteparameter\s!noteloc=\plusfive
      \ctxlua{structure.notes.setstate("\currentnote","store")}%
@@ -423,10 +416,28 @@
      \global\skip \currentnoteins\zeropoint
    \fi}
 
-% \def\checknotes
-%   {\processnotes\dochecknote}
+\def\dosetnotedistance
+  {\begingroup
+   \setbox\scratchbox\vbox
+     {\forgetall
+      \dontcomplain
+      \noteparameter\c!before
+      \placenoterule
+      \noteparameter\c!after}%
+   \global\skip\currentnoteins\ht\scratchbox
+   \endgroup}
 
-\let\checknotes\relax % experiment, avoiding this saves a lot of time
+% \def\checknotes % no longer needed
+%   {\processnotes\dochecknote}
+%
+% \def\checknotedistances
+%   {\processnotes\dosetnotedistance}
+%
+% fails but not that much needed anyway:
+%
+% \appendtoks
+%     \checknotedistances
+% \to \everyglobalbodyfont
 
 % D When \type{n} exceeds~1, footnotes are typeset in
 % D multi||columns, using the algoritm presented on page~397

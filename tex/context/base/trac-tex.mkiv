@@ -33,4 +33,23 @@
 \def\doenabletextracer #1{\csname  enabletracer#1\endcsname}
 \def\dodisabletextracer#1{\csname disabletracer#1\endcsname}
 
+% context --directives=system.nostatistics   ...
+
+\def\nomkivstatistics{\ctxlua{statistics.enable = false}} % for taco
+
+\def\tracersdumphash {\ctxlua{tracers.register_dump_hash(false)}}
+\def\tracersdumpdelta{\ctxlua{tracers.register_dump_hash(true)}}
+
+% wrong place:
+
+\def\traceluausage
+  {\dosingleempty\dotraceluausage}
+
+\def\dotraceluausage[#1]%
+  {\ctxlua{debugger.enable()}%
+   \appendtoks
+     \ctxlua{debugger.disable() debugger.showstats(print,\doifnumberelse{#1}{#1}{5000})}^
+   \to \everybye
+   \gdef\dotraceluausage[#1]{}}
+
 \protect \endinput

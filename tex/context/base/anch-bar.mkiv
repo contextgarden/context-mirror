@@ -119,30 +119,15 @@
   {\removelastspace\tpos{side:\the\currentsidebar}\carryoverpar\egroup}
 
 \startMPpositionmethod{mpos:bar}
-  \startMPpositiongraphic{mpos:bar}{linecolor,linewidth,distance}%
-    StartPage ;
-      path p ; p :=
-      if \MPp\MPbself=\MPp\MPeself :
-        (xpart ulcorner Field[Text][Text],\MPy\MPbself+\MPh\MPbself) --
-        (xpart llcorner Field[Text][Text],\MPy\MPeself-\MPd\MPeself) ;
-      elseif RealPageNumber=\MPp\MPbself :
-        (xpart ulcorner Field[Text][Text],\MPy\MPbself+\MPh\MPbself) --
-        (llcorner Field[Text][Text]) ;
-      elseif RealPageNumber=\MPp\MPeself :
-        (ulcorner Field[Text][Text]) --
-        (xpart llcorner Field[Text][Text],\MPy\MPeself-\MPd\MPeself) ;
-      else :
-        (ulcorner Field[Text][Text]) --
-        (llcorner Field[Text][Text]) ;
-      fi ;
-      p := p shifted (-llcorner Field[Text][Text]-(\MPvar{distance},0)) ;
-      interim linecap := butt ;
-      draw p
-        withpen pencircle scaled \MPvar{linewidth}
-        withcolor \MPvar{linecolor} ;
-    StopPage ;
-  \stopMPpositiongraphic
-  \MPpositiongraphic{mpos:bar}{}%
+    \startMPpositiongraphic{mpos:bar}{linecolor,linewidth,distance}%
+        position_anchor_bar (
+            \MPp\MPbself, \MPp\MPeself,
+            \MPy\MPbself, \MPy\MPeself,
+            \MPh\MPbself, \MPd\MPeself,
+            \MPvar{distance}, \MPvar{linewidth}, \MPvar{linecolor}
+        ) ;
+    \stopMPpositiongraphic
+    \MPpositiongraphic{mpos:bar}{}%
 \stopMPpositionmethod
 
 %D We now reimplement the margin rules handler defined in

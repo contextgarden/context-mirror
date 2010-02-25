@@ -209,6 +209,8 @@ local stripper = lpeg.Cs((number + 1)^0)
 --~ lpegmatch(stripper,str)
 --~ print(#str, os.clock()-ts, lpegmatch(stripper,sample))
 
+lpeg.patterns.strip_zeros = stripper
+
 function aux.strip_zeros(str)
     return lpegmatch(stripper,str)
 end

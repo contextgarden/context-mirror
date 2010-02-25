@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 
 lpeg = require("lpeg")
 
+lpeg.patterns = lpeg.patterns or { } -- so that we can share
+
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 local match = lpeg.match
 

@@ -335,39 +335,29 @@
      \fallbackcontrolspace
    \fi}
 
-\unexpanded\def\fastcontrolspace
+\unexpanded\def\fastcontrolspace % no glyph resolving after first (use grouped)
+  {\dofastcontrolspace}
+
+\def\dofastcontrolspace
   {\iffontchar\font\textcontrolspace
-     \textcontrolspace
+     \nofastfallbackcontrolspace
    \else
-     \fallbackcontrolspace
-     \let\normalcontrolspace\fallbackcontrolspace
-   \fi}
+     \dofastfallbackcontrolspace
+   \fi
+   \dofastcontrolspace}
 
-% helpers
+\newbox\controlspacebox
 
-\def\fakepercent
-  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle0}}}
+\def\nofastfallbackcontrolspace
+  {\let\dofastcontrolspace\textcontrolspace}
 
-\def\fakeperthousand
-  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle00}}}
+\def\dofastfallbackcontrolspace
+  {\setbox\controlspacebox\hbox{\space}%
+   \setbox\controlspacebox\hbox to \wd\controlspacebox{\hss\fallbackcontrolspace\hss}%
+   \let\dofastcontrolspace\flushcontrolspacebox}
 
-\def\fakepermine
-  {\dontleavehmode
-   \bgroup
-   \setbox\scratchbox\hbox
-     {\mathematics{+}}%
-   \hbox to \wd\scratchbox
-     {\hss\mathematics{^{\scriptscriptstyle-}\kern-.4em/\kern-.3em_{\scriptscriptstyle-}}\hss}%
-   \egroup}
-
-\def\fakedcontrolspace % can be virtual in luatex
-  {\dontleavehmode\hbox
-     {\scratchdimen.1ex%
-      \kern\scratchdimen
-      \vrule \!!width\scratchdimen              \!!height5.5\scratchdimen\!!depth3\scratchdimen
-      \vrule \!!width\dimexpr.5em-4\scratchdimen\!!height -2\scratchdimen\!!depth3\scratchdimen
-      \vrule \!!width\scratchdimen              \!!height5.5\scratchdimen\!!depth3\scratchdimen
-      \kern\scratchdimen}}
+\def\flushcontrolspacebox
+  {\copy\controlspacebox}
 
 % from enco-acc:
 %

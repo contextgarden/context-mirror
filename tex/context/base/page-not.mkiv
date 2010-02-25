@@ -29,17 +29,15 @@
      \flushnotes
      \savenotecontent
    \fi
-   \savenotedata
-   \checknotes}
+   \savenotedata}
 
 \def\checkendcolumnfootnotes
-  {\restorenotedata % maybe better just \checknotes
+  {\restorenotedata
    \ifcase\clevernotes\else
      \restorenotecontent
    \fi}
 
-\def\checksinglecolumnfootnotes
-  {\checknotes} % niet : \restorenotedata
+\let\checksinglecolumnfootnotes\relax
 
 \newdimen\totalinsertionheight
 
@@ -58,8 +56,7 @@
      \flushnotes
      \savenotecontent
    \fi
-   \savenotedata
-   \checknotes}
+   \savenotedata}
 
 \def\checkendcolumnfootnotes
   {\restorenotedata
