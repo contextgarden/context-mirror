@@ -59,6 +59,7 @@
 \newif\ifSPOTsupported
 \newif\ifpreferGRAY
 \newif\ifGRAYprefered
+\newif\ifconvertGRAY      \convertGRAYtrue
 \newif\ifreduceCMYK
 \newif\ifconverttoGRAY
 \newif\ifweightGRAY       \weightGRAYtrue
@@ -269,9 +270,12 @@
      {\ifMPspotcolors      \showcolormessage\m!colors {9}{\v!mp\v!spot}\MPspotcolorsfalse \fi}
      {\ifMPspotcolors \else\showcolormessage\m!colors{10}{\v!mp\v!spot}\MPspotcolorstrue  \fi}%
    \preferGRAYfalse
+   \convertGRAYtrue
    \processaction
      [\@@clconversion]
      [    \v!yes=>\preferGRAYtrue,
+           \v!no=>\convertGRAYfalse,
+        \v!never=>\convertGRAYfalse,
        \v!always=>\preferGRAYtrue\RGBsupportedfalse\CMYKsupportedfalse]%
    \ifRGBsupported
      \converttoGRAYfalse
@@ -710,35 +714,43 @@
 
 \ifx\currentcolormodel\undefined \newcount\currentcolormodel \fi
 
-\def\setcolormodel#1%
-  {\showcolormessage\m!colors1{#1}%
-   \dosetcolormodel{#1}}
+% \def\setcolormodel#1%
+%   {\showcolormessage\m!colors1{#1}%
+%    \dosetcolormodel{#1}}
 
 \def\dosetcolormodel#1% no message
   {\currentcolormodel\ctxlua{tex.print(colors.setmodel('#1',\ifweightGRAY true\else false\fi))}%
    \attribute\colormodelattribute\currentcolormodel}
 
-\setcolormodel{all}
+\dosetcolormodel{all}
+
 
 \def\dosetupcolormodel
   {\ifincolor
      \ifRGBsupported
        \ifCMYKsupported
-         \setcolormodel{all}%
+         \dosetcolormodel{all}%
        \else
-         \setcolormodel{rgb}%
+         \dosetcolormodel{rgb}%
        \fi
      \else
        \ifCMYKsupported
-         \setcolormodel{cmyk}%
+         \dosetcolormodel{cmyk}%
        \else
-         \setcolormodel{gray}%
+         \ifconvertGRAY
+           \dosetcolormodel{gray}%
+         \else
+           \dosetcolormodel{none}%
+         \fi
        \fi
      \fi
    \else
-     \setcolormodel{gray}%
-   \fi
-   }%\aftergroup\dosetupcolormodel}
+     \ifconvertGRAY
+       \dosetcolormodel{gray}%
+     \else
+       \dosetcolormodel{none}%
+     \fi
+   \fi}
 
 \appendtoks
     \dosetupcolormodel

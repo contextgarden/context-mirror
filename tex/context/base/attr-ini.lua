@@ -15,6 +15,7 @@ local concat = table.concat
 local texsprint = tex.sprint
 
 local ctxcatcodes = tex.ctxcatcodes
+local unsetvalue  = attributes.unsetvalue
 
 -- todo: document this but first reimplement this as it reflects the early
 -- days of luatex / mkiv and we have better ways now
@@ -79,10 +80,13 @@ local templates = {
 }
 
 local models = {
-    all  = 1,
-    gray = 2,
-    rgb  = 3,
-    cmyk = 4,
+    [interfaces.variables.none] = unsetvalue,
+    black = unsetvalue,
+    bw    = unsetvalue,
+    all   = 1,
+    gray  = 2,
+    rgb   = 3,
+    cmyk  = 4,
 }
 
 colors.model = "all"

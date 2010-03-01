@@ -145,5 +145,5 @@ end
 callbacks.register('post_linebreak_filter', nodes.processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")
 
 statistics.register("h-node processing time", function()
-    return statistics.elapsedseconds(nodes,"including kernel")
+    return statistics.elapsedseconds(nodes,"including kernel") -- hm, ok here?
 end)

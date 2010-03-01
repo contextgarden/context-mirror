@@ -6,9 +6,15 @@ if not modules then modules = { } end modules ['strc-doc'] = {
     license   = "see context related readme files"
 }
 
+-- todo: associate counter with head
+
+-- we need to freeze and document this module
+
 local next, type = next, type
 local format, gsub, find, concat, gmatch, match = string.format, string.gsub, string.find, table.concat, string.gmatch, string.match
 local texsprint, texwrite = tex.sprint, tex.write
+local concat = table.concat
+local max, min = math.max, math.min
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
@@ -16,6 +22,7 @@ local variables   = interfaces.variables
 --~ if not trackers then trackers = { register = function() end } end
 
 local trace_sectioning = false  trackers.register("structure.sectioning", function(v) trace_sectioning = v end)
+local trace_detail     = false  trackers.register("structure.detail",     function(v) trace_detail     = v end)
 
 local function report(...)
 --~ print(...)
@@ -190,15 +197,18 @@ end
 function sections.somelevel(given)
     -- old number
     local numbers, ownnumbers, forced, status, olddepth = data.numbers, data.ownnumbers, data.forced, data.status, data.depth
---~ print("old",olddepth,given.metadata.name,levelmap[given.metadata.name])
-    local newdepth = tonumber(levelmap[given.metadata.name] or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
---~ print("new",newdepth)
+    local givenname = given.metadata.name
+    local mappedlevel = levelmap[givenname]
+    local newdepth = tonumber(mappedlevel or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
     local directives = given.directives
     local resetset = (directives and directives.resetset) or ""
-    local resetter = sets.getall("structure:resets",data.block,resetset)
+ -- local resetter = sets.getall("structure:resets",data.block,resetset)
     -- a trick to permits userdata to overload title, ownnumber and reference
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)
+    if trace_detail then
+        logs.report("structure","name '%s', mapped level '%s', old depth '%s', new depth '%s', reset set '%s'",givenname,mappedlevel,olddepth,newdepth,resetset)
+    end
     local u = given.userdata
     if u then
         -- kind of obsolete as we can pass them directly anyway
@@ -212,7 +222,9 @@ function sections.somelevel(given)
     if newdepth > olddepth then
         for i=olddepth+1,newdepth do
             local s = tonumber(sets.get("structure:resets",data.block,resetset,i))
---~ logs.report("structure >","old: %s, new:%s, reset: %s (%s: %s)",olddepth,newdepth,s,resetset,table.concat(resetter,","))
+            if trace_detail then
+                logs.report("structure","new>old (%s>%s), reset set '%s', reset value '%s', current '%s'",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
+            end
             if not s or s == 0 then
                 numbers[i] = numbers[i] or 0
                 ownnumbers[i] = ownnumbers[i] or ""
@@ -225,7 +237,9 @@ function sections.somelevel(given)
     elseif newdepth < olddepth then
         for i=olddepth,newdepth+1,-1 do
             local s = tonumber(sets.get("structure:resets",data.block,resetset,i))
---~ logs.report("structure <","old: %s, new:%s, reset: %s (%s: %s)",olddepth,newdepth,s,resetset,table.concat(resetter,","))
+            if trace_detail then
+                logs.report("structure","new<old (%s<%s), reset set '%s', reset value '%s', current '%s'",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
+            end
             if not s or s == 0 then
                 numbers[i] = numbers[i] or 0
                 ownnumbers[i] = ownnumbers[i] or ""
@@ -243,7 +257,7 @@ structure.counters.check(newdepth)
     -- new number
     olddepth = newdepth
     if given.metadata.increment then
-        local oldn, newn = numbers[newdepth], 0
+        local oldn, newn = numbers[newdepth] or 0, 0
         local fd = forced[newdepth]
         if fd then
             if fd[1] == "add" then
@@ -255,15 +269,25 @@ structure.counters.check(newdepth)
                 newn = 1 -- maybe zero is nicer
             end
             forced[newdepth] = nil
+            if trace_detail then
+                logs.report("structure","old depth '%s', new depth '%s, old n '%s', new n '%s', forced '%s'",olddepth,newdepth,oldn,newn,concat(fd,""))
+            end
         elseif newn then
             newn = oldn + 1
+            if trace_detail then
+                logs.report("structure","old depth '%s', new depth '%s, old n '%s', new n '%s', increment",olddepth,newdepth,oldn,newn)
+            end
         else
             local s = tonumber(sets.get("structure:resets",data.block,resetset,newdepth))
---~ logs.report("structure =","old: %s, new:%s, reset: %s (%s: %s)",olddepth,newdepth,s,resetset,table.concat(resetter,","))
-            if not s or s == 0 then
+            if not s then
+                newn = oldn or 0
+            elseif s == 0 then
                 newn = oldn or 0
             else
                 newn = s - 1
+            end
+            if trace_detail then
+                logs.report("structure","old depth '%s', new depth '%s, old n '%s', new n '%s', reset",olddepth,newdepth,oldn,newn)
             end
         end
         numbers[newdepth] = newn
@@ -288,6 +312,9 @@ structure.counters.check(newdepth)
     if #ownnumbers > 0 then
         numberdata.ownnumbers = table.fastcopy(ownnumbers)
     end
+    if trace_detail then
+        logs.report("structure","name '%s', numbers '%s', own numbers '%s'",givenname,concat(numberdata.numbers, " "),concat(numberdata.ownnumbers, " "))
+    end
     given.references.section = sections.save(given)
  -- given.numberdata = nil
 end
@@ -297,7 +324,7 @@ function sections.writestatus()
         local numbers, ownnumbers, status, depth = data.numbers, data.ownnumbers, data.status, data.depth
         local d = status[depth]
         local o = concat(ownnumbers,".",1,depth)
-        local n = (numbers and concat(numbers,".",1,depth)) or 0
+        local n = (numbers and concat(numbers,".",1,min(depth,#numbers))) or 0
         local l = d.titledata.title or ""
         local t = (l ~= "" and l) or d.titledata.title or "[no title]"
         local m = d.metadata.name

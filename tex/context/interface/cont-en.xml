@@ -577,6 +577,7 @@
           <cd:constant type="yes"/>
           <cd:constant type="no"/>
           <cd:constant type="always"/>
+          <cd:constant type="never"/>
         </cd:parameter>
         <cd:parameter name="reduction">
           <cd:constant type="yes"/>

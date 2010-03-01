@@ -577,6 +577,7 @@
           <cd:constant type="ja"/>
           <cd:constant type="nee"/>
           <cd:constant type="altijd"/>
+          <cd:constant type="nooit"/>
         </cd:parameter>
         <cd:parameter name="reductie">
           <cd:constant type="ja"/>

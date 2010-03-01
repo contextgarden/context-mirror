@@ -20,6 +20,7 @@ local glyph = node.id("glyph")
 local kern  = node.id("kern")
 
 local fontdata = fonts.ids
+local fontchar = fonts.chr
 local chardata = characters.data
 
 cases           = cases or { }
@@ -50,7 +51,8 @@ local function helper(start, code, codes, special, attribute, once)
                 start.font = lastfont
             end
         end
-        local ifc = fontdata[fnt].characters
+     -- local ifc = fontdata[fnt].characters
+        local ifc = fontchar[fnt]
         local ucs = dc[codes]
         if ucs then
             local ok = true
@@ -148,7 +150,8 @@ actions[8] = function(start)
     lastfont = nil
     local ch = start.char
     local mr = math.random
-    local tfm = fontdata[start.font].characters
+ -- local tfm = fontdata[start.font].characters
+    local tfm = fontchar[start.font]
     if chardata[ch].lccode then
         while true do
             local d = chardata[mr(1,0xFFFF)]

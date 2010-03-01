@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['mtx-server-ctx-help'] = {
 
 -- todo in lua interface: noargument, oneargument, twoarguments, threearguments
 
-dofile(resolvers.find_file("l-aux.lua","tex"))
-dofile(resolvers.find_file("l-url.lua","tex"))
+--~ dofile(resolvers.find_file("l-aux.lua","tex"))
+--~ dofile(resolvers.find_file("l-url.lua","tex"))
 dofile(resolvers.find_file("trac-lmx.lua","tex"))
 
 -- problem ... serialize parent stack

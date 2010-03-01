@@ -577,6 +577,7 @@
           <cd:constant type="بله"/>
           <cd:constant type="نه"/>
           <cd:constant type="همواره"/>
+          <cd:constant type="هیچگاه"/>
         </cd:parameter>
         <cd:parameter name="کاهش">
           <cd:constant type="بله"/>

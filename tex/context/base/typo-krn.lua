@@ -97,15 +97,16 @@ local function process(namespace,attribute,head,force)
                             -- fontdata access can be done more efficient
                             if prev.font == lastfont then
                                 local prevchar, lastchar = prev.char, start.char
-                                local tfm = fontdata[lastfont].characters[prevchar]
+                                local fnt = fontdata[lastfont]
+                                local tfm = fnt.characters[prevchar]
                                 local ickern = tfm.kerns
                                 if ickern and ickern[lastchar] then
-                                    krn = scale(ickern[lastchar]+fontdata[lastfont].parameters.quad,krn)
+                                    krn = scale(ickern[lastchar]+fnt.parameters.quad,krn)
                                 else
-                                    krn = scale(fontdata[lastfont].parameters.quad,krn)
+                                    krn = scale(fnt.parameters.quad,krn)
                                 end
                             else
-                                krn = scale(fontdata[lastfont].parameters.quad,krn)
+                                krn = scale(fnt.parameters.quad,krn)
                             end
                             insert_node_before(head,start,make_kern_node(krn))
                             done = true
@@ -158,15 +159,16 @@ local function process(namespace,attribute,head,force)
                             else
                                 if prv and prv.id == glyph and prv.font == lastfont then
                                     local prevchar, lastchar = prv.char, start.char
-                                    local tfm = fontdata[lastfont].characters[prevchar]
+                                    local fnt = fontdata[lastfont]
+                                    local tfm = fnt.characters[prevchar]
                                     local ickern = tfm.kerns
                                     if ickern and ickern[lastchar] then
-                                        krn = scale(ickern[lastchar]+fontdata[lastfont].parameters.quad,krn)
+                                        krn = scale(ickern[lastchar]+fnt.parameters.quad,krn)
                                     else
-                                        krn = scale(fontdata[lastfont].parameters.quad,krn)
+                                        krn = scale(fnt.parameters.quad,krn)
                                     end
                                 else
-                                    krn = scale(fontdata[lastfont].parameters.quad,krn)
+                                    krn = scale(fnt.parameters.quad,krn)
                                 end
                                 disc.replace = make_kern_node(krn)
                             end

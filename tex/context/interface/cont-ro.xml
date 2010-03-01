@@ -577,6 +577,7 @@
           <cd:constant type="da"/>
           <cd:constant type="nu"/>
           <cd:constant type="totdeauna"/>
+          <cd:constant type="niciodata"/>
         </cd:parameter>
         <cd:parameter name="reducere">
           <cd:constant type="da"/>

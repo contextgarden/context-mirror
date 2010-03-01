@@ -100,6 +100,7 @@ end
 <p>We collect a bunch of converters in the <type>number</type> namespace.</p>
 --ldx]]--
 
+number.maxdimen     = 1073741823
 number.todimen      = todimen
 number.dimenfactors = dimenfactors
 

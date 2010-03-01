@@ -577,6 +577,7 @@
           <cd:constant type="ano"/>
           <cd:constant type="ne"/>
           <cd:constant type="vzdy"/>
+          <cd:constant type="nikdy"/>
         </cd:parameter>
         <cd:parameter name="redukce">
           <cd:constant type="ano"/>

@@ -48,13 +48,17 @@
   {\globalpopmacro\@@currentparbuilder
    \attribute\parbuilderattribute\@@currentparbuilder\relax}
 
+\def\setmainparbuilder[#1]%
+  {\ctxlua{parbuilders.setmain("#1")}}
+
 % no high level interface, after all implementing a linebreaker is not something that
 % the average user will do
 
 \defineparbuilder[default] % just for testing
 \defineparbuilder[oneline] % just for testing
+\defineparbuilder[basic]   % just for testing
 
-\def\enableparbuilders {\ctxlua{tasks.enableaction ("parbuilders", "parbuilders.constructor")}}
-\def\disableparbuilders{\ctxlua{tasks.disableaction("parbuilders", "parbuilders.constructor")}}
+\def\enableparbuilders {\ctxlua{parbuilders.enable ()}}
+\def\disableparbuilders{\ctxlua{parbuilders.disable()}}
 
 \protect \endinput

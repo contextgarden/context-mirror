@@ -29,6 +29,7 @@ local whatsit = node.id("whatsit")
 local mthnode = node.id('math')
 
 local fontdata = fonts.ids
+local fontchar = fonts.chr
 local chardata = characters.data
 
 --~ Analysis by Idris:
@@ -237,7 +238,7 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
                     end
                     if d == "on" then
                         local mirror = chardata[char].mirror -- maybe make a special mirror table
-                        if mirror and fontdata[current.font].characters[mirror] then
+                        if mirror and fontchar[current.font][mirror] then
                             -- todo: set attribute
                             if autodir < 0 then
                                 current.char = mirror

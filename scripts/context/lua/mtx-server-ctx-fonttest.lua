@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mtx-server-ctx-fonttest'] = {
     license   = "see context related readme files"
 }
 
-dofile(resolvers.find_file("l-aux.lua","tex"))
+--~ dofile(resolvers.find_file("l-aux.lua","tex"))
 dofile(resolvers.find_file("trac-lmx.lua","tex"))
 dofile(resolvers.find_file("font-ott.lua","tex"))
 dofile(resolvers.find_file("font-syn.lua","tex"))

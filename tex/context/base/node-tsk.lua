@@ -289,20 +289,20 @@ tasks.new (
     }
 )
 
-tasks.new (
-    "parbuilders",
-    {
-        "before",      -- for users
-        "lists",
-        "after",       -- for users
-    }
-)
+--~ tasks.new (
+--~     "parbuilders",
+--~     {
+--~         "before",      -- for users
+--~         "lists",
+--~         "after",       -- for users
+--~     }
+--~ )
 
-tasks.new (
-    "pagebuilders",
-    {
-        "before",      -- for users
-        "lists",
-        "after",       -- for users
-    }
-)
+--~ tasks.new (
+--~     "pagebuilders",
+--~     {
+--~         "before",      -- for users
+--~         "lists",
+--~         "after",       -- for users
+--~     }
+--~ )

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 02/25/10 19:56:12
+-- merge date  : 03/01/10 23:28:51
 
 do -- begin closure to overcome local limits and interference
 
@@ -3278,6 +3278,7 @@ fontloader.totable = fontloader.to_table
 
 fonts     = fonts     or { }
 fonts.ids = fonts.ids or { } -- aka fontdata
+fonts.chr = fonts.chr or { } -- aka chardata
 fonts.tfm = fonts.tfm or { }
 
 fonts.mode    = 'base'
@@ -3289,6 +3290,8 @@ fonts.ids[0] = { -- nullfont
     descriptions = { },
     name         = "nullfont",
 }
+
+fonts.chr[0] = { }
 
 fonts.methods = fonts.methods or {
     base = { tfm = { }, afm = { }, otf = { }, vtf = { }, fix = { } },
@@ -5665,6 +5668,9 @@ otf.notdef           = false
 otf.cache            = containers.define("fonts", "otf", otf.version, true)
 otf.cleanup_aat      = false -- only context
 
+local wildcard = "*"
+local default  = "dflt"
+
 --[[ldx--
 <p>We start with a lot of tables and related functions.</p>
 --ldx]]--
@@ -7779,12 +7785,13 @@ end
 -- to do complete mixed runs and not run featurewise (as we did before).
 
 local supported_gsub = {
-    'liga','dlig','rlig','hlig',
-    'pnum','onum','tnum','lnum',
+    'liga', 'dlig', 'rlig', 'hlig',
+    'pnum', 'onum', 'tnum', 'lnum',
     'zero',
-    'smcp','cpsp','c2sc','ornm','aalt',
-    'hwid','fwid',
+    'smcp', 'cpsp', 'c2sc', 'ornm', 'aalt',
+    'hwid', 'fwid',
     'ssty', 'rtlm', -- math
+--  'tlig', 'trep',
 }
 
 local supported_gpos = {
@@ -11582,6 +11589,7 @@ function define.register(fontdata,id)
                 logs.report("define font","loading at 2 id %s, hash: %s",id or "?",hash or "?")
             end
             fonts.ids[id] = fontdata
+            fonts.chr[id] = fontdata.characters
             tfm.internalized[hash] = id
         end
     end

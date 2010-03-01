@@ -70,14 +70,14 @@
 
 \newcount\currentcolormodel
 
-\def\setcolormodel#1%
+\def\dosetcolormodel#1%
   {\currentcolormodel\ctxlua{tex.print(colors.setmodel('#1'))}%
    \attribute\colormodelattribute\currentcolormodel}
 
-\setcolormodel{all}
+\dosetcolormodel{all}
 
 \appendtoks
-    \setcolormodel{all}% redundant?
+    \dosetcolormodel{all}% redundant?
 \to \everyjob
 
 \def\registerrgbcolor   #1#2#3#4{\ctxlua{colors.register('#1','rgb' ,#2,#3,#4)}}

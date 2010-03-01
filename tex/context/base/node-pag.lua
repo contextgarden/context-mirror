@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['node-pag'] = {
     license   = "see context related readme files"
 }
 
--- this callback might disappear
+-- this callback might disappear and come back in the same way
+-- as par builders
 
 pagebuilders = pagebuilders or { }
 
