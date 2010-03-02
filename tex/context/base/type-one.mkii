@@ -2390,7 +2390,7 @@
         \loadmapfile[lucida.map]
     \stoptypescript
 
-    \starttypescript [math] [lucida] [texnansi,ec,8r]
+    \starttypescript [math] [lucida] [default]
         \definefontsynonym [LucidaNewMath-AltItalic]     [hlcrima]
         \definefontsynonym [LucidaNewMath-Arrows]        [hlcra]
         \definefontsynonym [LucidaNewMath-Extension]     [hlcrv]
@@ -2398,10 +2398,11 @@
         \definefontsynonym [LucidaNewMath-Italic]        [hlcrim]
         \definefontsynonym [LucidaNewMath-Symbol]        [hlcry]
         \definefontsynonym [LucidaBlackletter]           [hlcrf8y] % what a mess
+        \usemathcollection[lbr]
         \loadmapfile [lucida.map]
     \stoptypescript
 
-    \starttypescript [boldmath,bfmath] [lucida] [texnansi,ec,8r]
+    \starttypescript [boldmath,bfmath] [lucida] [default]
         \definefontsynonym [LucidaNewMath-AltDemiItalic] [hlcdima]
         \definefontsynonym [LucidaNewMath-Arrows-Demi]   [hlcda]
         \definefontsynonym [LucidaNewMath-Extension]     [hlcrv]
@@ -2500,7 +2501,8 @@
     % Lucida Math
 
     \starttypescript [math] [lucida] [name]
-        \definefontsynonym [MathRoman]     [LucidaBright]
+        % \definefontsynonym [MathRoman]     [LucidaBright]
+        \definefontsynonym [MathRoman]     [LucidaNewMath-Roman]
         \definefontsynonym [MathExtension] [LucidaNewMath-Extension]
         \definefontsynonym [MathItalic]    [LucidaNewMath-AltItalic]
         \definefontsynonym [MathSymbol]    [LucidaNewMath-Symbol]

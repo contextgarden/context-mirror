@@ -376,21 +376,52 @@
 
 % we define the whole lot, although only a few differ (esp dot)
 
-\startmathcollection[lbr]
+% \startmathcollection[lbr]
+% 
+% \definemathsymbol [acute]     [accent] [tf] ["13] % mr -> tf
+% \definemathsymbol [grave]     [accent] [tf] ["12] % mr -> tf
+% \definemathsymbol [ddot]      [accent] [tf] ["7F] % mr -> tf
+% \definemathsymbol [tilde]     [accent] [tf] ["7E] % mr -> tf
+% \definemathsymbol [bar]       [accent] [tf] ["16] % mr -> tf
+% \definemathsymbol [breve]     [accent] [tf] ["15] % mr -> tf
+% \definemathsymbol [check]     [accent] [tf] ["14] % mr -> tf
+% \definemathsymbol [hat]       [accent] [tf] ["5E] % mr -> tf
+% \definemathsymbol [vec]       [accent] [mi] ["7E] % [ord]
+% \definemathsymbol [dot]       [accent] [tf] ["05] % mr -> tf, 5F -> 05
+% \definemathsymbol [widetilde] [accent] [ex] ["65] % [ord]
+% \definemathsymbol [widehat]   [accent] [ex] ["62] % [ord]
+% 
+% \stopmathcollection
 
-\definemathsymbol [acute]     [accent] [tf] ["13] % mr -> tf
-\definemathsymbol [grave]     [accent] [tf] ["12] % mr -> tf
-\definemathsymbol [ddot]      [accent] [tf] ["7F] % mr -> tf
-\definemathsymbol [tilde]     [accent] [tf] ["7E] % mr -> tf
-\definemathsymbol [bar]       [accent] [tf] ["16] % mr -> tf
-\definemathsymbol [breve]     [accent] [tf] ["15] % mr -> tf
-\definemathsymbol [check]     [accent] [tf] ["14] % mr -> tf
-\definemathsymbol [hat]       [accent] [tf] ["5E] % mr -> tf
-\definemathsymbol [vec]       [accent] [mi] ["7E] % [ord]
-\definemathsymbol [dot]       [accent] [tf] ["05] % mr -> tf, 5F -> 05
-\definemathsymbol [widetilde] [accent] [ex] ["65] % [ord]
-\definemathsymbol [widehat]   [accent] [ex] ["62] % [ord]
+\startmathcollection[lbr:texnansi]
+	\definemathsymbol [acute]    [accent] [tf] ["13]
+	\definemathsymbol [grave]    [accent] [tf] ["12]
+	\definemathsymbol [ddot]     [accent] [tf] ["7F]
+	%definemathsymbol [ddot]     [accent] [tf] ["A8] % both is OK
+	\definemathsymbol [tilde]    [accent] [tf] ["7E]
+	%definemathsymbol [tilde]    [accent] [tf] ["98] % both is OK
+	\definemathsymbol [bar]      [accent] [tf] ["16]
+	\definemathsymbol [breve]    [accent] [tf] ["15]
+	\definemathsymbol [check]    [accent] [tf] ["14]
+	\definemathsymbol [hat]      [accent] [tf] ["5E]
+	%definemathsymbol [hat]      [accent] [tf] ["88] % both is OK
+	\definemathsymbol [dot]      [accent] [tf] ["05]
+	% Why is mathring not defined??
+	\definemathsymbol [mathring] [accent] [tf] ["17]
+\stopmathcollection
 
+\startmathcollection[lbr:ec]
+	\definemathsymbol [acute]    [accent] [tf] ["01]
+	\definemathsymbol [grave]    [accent] [tf] ["00]
+	\definemathsymbol [ddot]     [accent] [tf] ["04]
+	\definemathsymbol [tilde]    [accent] [tf] ["03]
+	\definemathsymbol [bar]      [accent] [tf] ["09]
+	\definemathsymbol [breve]    [accent] [tf] ["08]
+	\definemathsymbol [check]    [accent] [tf] ["07]
+	\definemathsymbol [hat]      [accent] [tf] ["02]
+	\definemathsymbol [dot]      [accent] [tf] ["0A]
+	% Why is mathring not defined??
+	\definemathsymbol [mathring] [accent] [tf] ["06]
 \stopmathcollection
 
 \def\LBRroot#1#2%

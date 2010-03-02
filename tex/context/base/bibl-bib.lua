@@ -30,6 +30,10 @@ local shortcuts = { }
 local data      = { }
 local entries
 
+-- Currently we expand shortcuts and for large ones (like the acknowledgements
+-- in tugboat.bib this is not that efficient. However, eventually stings get
+-- hashed again.
+
 local function do_shortcut(tag,key,value)
     bibtex.shortcuts = bibtex.shortcuts + 1
     if lower(tag) == "@string" then

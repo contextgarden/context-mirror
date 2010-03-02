@@ -631,13 +631,18 @@
        \endgroup
      \fi
    \fi
-   \ifconditional\skipnoteplacement \else
+%    \ifconditional\skipnoteplacement \else
+%      \kern\notesignal\relax % \relax is needed to honor spaces
+%      \iftrialtypesetting
+%        % todo: reserve some space for symbol, in that case we need to be able to roll back notes
+%      \else
+%        \global\setfalse\skipnoteplacement
+%      \fi
+%    \fi}
+   \ifconditional\skipnoteplacement
+     \global\setfalse\skipnoteplacement
+   \else
      \kern\notesignal\relax % \relax is needed to honor spaces
-     \iftrialtypesetting
-       % todo: reserve some space for symbol, in that case we need to be able to roll back notes
-     \else
-       \global\setfalse\skipnoteplacement
-     \fi
    \fi}
 
 \def\dolastnotesymbol
