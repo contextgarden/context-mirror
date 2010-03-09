@@ -321,7 +321,17 @@
     \addPDFdocumentinfo
 \to \everyfirstshipout
 
-\def\PDFversion{1.\the\pdfminorversion}
+\ifx\pdfminorversion\undefined
+  \ifx\pdfoptionpdfminorversion\undefined
+    \newcount\pdfminorversion
+  \else
+    \let\pdfminorversion\pdfoptionpdfminorversion
+  \fi
+\fi
+
+\pdfminorversion=5
+
+\def\PDFversion{1.\number\pdfminorversion}
 
 \appendtoksonce
   \def\PDFversion{1.\the\pdfminorversion}%

@@ -645,7 +645,7 @@ function resolvers.load_cnf()
     else
         instance.rootpath = instance.cnffiles[1]
         for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.cnffiles[k] = file.collapse_path(fname)
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
@@ -674,7 +674,7 @@ function resolvers.load_lua()
     else
         instance.rootpath = instance.luafiles[1]
         for k,fname in ipairs(instance.luafiles) do
-            instance.luafiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.luafiles[k] = file.collapse_path(fname)
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
@@ -799,7 +799,7 @@ local weird = lpeg.P(".")^1 + lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?
 
 --~ local l_forbidden = lpeg.S("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
 --~ local l_confusing = lpeg.P(" ")
---~ local l_character = lpeg.utf8
+--~ local l_character = lpeg.patterns.utf8
 --~ local l_dangerous = lpeg.P(".")
 
 --~ local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * lpeg.P(-1)
@@ -1539,8 +1539,7 @@ end
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = file.collapse_path(filename)  -- elsewhere
-    filename = file.collapse_path(gsub(filename,"\\","/")) -- elsewhere
+    filename = file.collapse_path(filename)
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -2021,7 +2020,7 @@ end
 function table.sequenced(t,sep) -- temp here
     local s = { }
     for k, v in pairs(t) do -- pairs?
-        s[#s+1] = k .. "=" .. v
+        s[#s+1] = k .. "=" .. tostring(v)
     end
     return concat(s, sep or " | ")
 end

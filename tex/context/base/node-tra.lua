@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['node-tra'] = {
 
 --[[ldx--
 <p>This is rather experimental. We need more control and some of this
-might become a runtime module instead.</p>
+might become a runtime module instead. This module will be cleaned up!</p>
 --ldx]]--
 
 local utf = unicode.utf8
@@ -445,3 +445,20 @@ end
 --~ \stopluacode
 
 nodes.show_simple_list = function(h,depth) show_simple_list(h,depth,0) end
+
+function nodes.list_to_utf(h,joiner)
+    local joiner = (joiner ==true and utfchar(0x200C)) or joiner -- zwnj
+    local w = { }
+    while h do
+        if h.id == glyph then -- always true
+            w[#w+1] = utfchar(h.char)
+            if joiner then
+                w[#w+1] = joiner
+            end
+        else
+            w[#w+1] = "[-]"
+        end
+        h = h.next
+    end
+    return concat(w)
+end

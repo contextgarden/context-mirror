@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 03/02/10 12:39:47
+-- merge date  : 03/09/10 10:46:16
 
 do -- begin closure to overcome local limits and interference
 
@@ -456,11 +456,9 @@ end
 --~
 --~ local decode_pattern = lpeg.Ct(utf8^0) * -1
 
-
 local cont = R("\128\191")   -- continuation byte
 
-lpeg.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
-
+lpeg.patterns.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
 
 end -- closure
 
@@ -1577,7 +1575,9 @@ end
 -- we can hash them weakly
 
 function file.collapse_path(str)
+    str = gsub(str,"\\","/")
     if find(str,"/") then
+        str = gsub(str,"^%./",(gsub(lfs.currentdir(),"\\","/")) .. "/") -- ./xx in qualified
         str = gsub(str,"/%./","/")
         local n, m = 1, 1
         while n > 0 or m > 0 do
@@ -1585,7 +1585,7 @@ function file.collapse_path(str)
             str, m = gsub(str,"[^/%.]+/%.%./","")
         end
         str = gsub(str,"([^/])/$","%1")
-        str = gsub(str,"^%./","")
+    --  str = gsub(str,"^%./","") -- ./xx in qualified
         str = gsub(str,"/%.$","")
     end
     if str == "" then str = "." end

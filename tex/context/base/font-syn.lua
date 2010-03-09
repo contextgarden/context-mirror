@@ -671,7 +671,7 @@ local function analysefiles()
         end
     end
     if not trace_warnings then
-        logs.report("fontnames", "warnings are disables (tracker 'fonts.warnings')")
+        logs.report("fontnames", "warnings are disabled (tracker 'fonts.warnings')")
     end
     traverse("tree", function(suffix) -- TEXTREE only
         resolvers.with_files(".*%." .. suffix .. "$", function(method,root,path,name)

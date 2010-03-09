@@ -6235,6 +6235,13 @@
         <cd:parameter name="odsadpristi">
           <cd:resolve name="indentnext"/>
         </cd:parameter>
+        <cd:parameter name="textdistance">
+          <!-- maybe resolve here too -->
+          <cd:constant type="zadny"/>
+          <cd:constant type="velke"/>
+          <cd:constant type="stredni"/>
+          <cd:constant type="male"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

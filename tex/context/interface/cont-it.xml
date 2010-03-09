@@ -6235,6 +6235,13 @@
         <cd:parameter name="rientrasuccessivo">
           <cd:resolve name="indentnext"/>
         </cd:parameter>
+        <cd:parameter name="distanzatesto">
+          <!-- maybe resolve here too -->
+          <cd:constant type="nessuno"/>
+          <cd:constant type="grande"/>
+          <cd:constant type="medio"/>
+          <cd:constant type="piccolo"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

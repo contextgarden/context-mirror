@@ -347,6 +347,8 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 
 lpeg = require("lpeg")
 
+lpeg.patterns = lpeg.patterns or { } -- so that we can share
+
 local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 local match = lpeg.match
 
@@ -497,11 +499,9 @@ end
 --~
 --~ local decode_pattern = lpeg.Ct(utf8^0) * -1
 
-
 local cont = R("\128\191")   -- continuation byte
 
-lpeg.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
-
+lpeg.patterns.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
 
 
 end -- of closure
@@ -1952,6 +1952,21 @@ elseif name == "freebsd" then
         return platform
     end
 
+elseif name == "kfreebsd" then
+
+    function os.resolvers.platform(t,k)
+        -- we sometims have HOSTTYPE set so let's check that first
+        local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
+        if find(architecture,"x86_64") then
+            platform = "kfreebsd-64"
+        else
+            platform = "kfreebsd-i386"
+        end
+        os.setenv("MTX_PLATFORM",platform)
+        os.platform = platform
+        return platform
+    end
+
 else
 
     -- platform = "linux"
@@ -2021,7 +2036,7 @@ if not modules then modules = { } end modules ['l-file'] = {
 file = file or { }
 
 local concat = table.concat
-local find, gmatch, match, gsub, sub = string.find, string.gmatch, string.match, string.gsub, string.sub
+local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
 
 function file.removesuffix(filename)
@@ -2058,14 +2073,33 @@ end
 
 file.suffix = file.extname
 
---~ print(file.join("x/","/y"))
---~ print(file.join("http://","/y"))
---~ print(file.join("http://a","/y"))
---~ print(file.join("http:///a","/y"))
---~ print(file.join("//nas-1","/y"))
+--~ function file.join(...)
+--~     local pth = concat({...},"/")
+--~     pth = gsub(pth,"\\","/")
+--~     local a, b = match(pth,"^(.*://)(.*)$")
+--~     if a and b then
+--~         return a .. gsub(b,"//+","/")
+--~     end
+--~     a, b = match(pth,"^(//)(.*)$")
+--~     if a and b then
+--~         return a .. gsub(b,"//+","/")
+--~     end
+--~     return (gsub(pth,"//+","/"))
+--~ end
+
+local trick_1 = char(1)
+local trick_2 = "^" .. trick_1 .. "/+"
 
 function file.join(...)
-    local pth = concat({...},"/")
+    local lst = { ... }
+    local a, b = lst[1], lst[2]
+    if a == "" then
+        lst[1] = trick_1
+    elseif b and find(a,"^/+$") and find(b,"^/") then
+        lst[1] = ""
+        lst[2] = gsub(b,"^/+","")
+    end
+    local pth = concat(lst,"/")
     pth = gsub(pth,"\\","/")
     local a, b = match(pth,"^(.*://)(.*)$")
     if a and b then
@@ -2075,8 +2109,19 @@ function file.join(...)
     if a and b then
         return a .. gsub(b,"//+","/")
     end
+    pth = gsub(pth,trick_2,"")
     return (gsub(pth,"//+","/"))
 end
+
+--~ print(file.join("//","/y"))
+--~ print(file.join("/","/y"))
+--~ print(file.join("","/y"))
+--~ print(file.join("/x/","/y"))
+--~ print(file.join("x/","/y"))
+--~ print(file.join("http://","/y"))
+--~ print(file.join("http://a","/y"))
+--~ print(file.join("http:///a","/y"))
+--~ print(file.join("//nas-1","/y"))
 
 function file.iswritable(name)
     local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
@@ -2116,16 +2161,22 @@ function file.join_path(tab)
     return concat(tab,io.pathseparator) -- can have trailing //
 end
 
+-- we can hash them weakly
+
 function file.collapse_path(str)
-    str = gsub(str,"/%./","/")
-    local n, m = 1, 1
-    while n > 0 or m > 0 do
-        str, n = gsub(str,"[^/%.]+/%.%.$","")
-        str, m = gsub(str,"[^/%.]+/%.%./","")
+    str = gsub(str,"\\","/")
+    if find(str,"/") then
+        str = gsub(str,"^%./",(gsub(lfs.currentdir(),"\\","/")) .. "/") -- ./xx in qualified
+        str = gsub(str,"/%./","/")
+        local n, m = 1, 1
+        while n > 0 or m > 0 do
+            str, n = gsub(str,"[^/%.]+/%.%.$","")
+            str, m = gsub(str,"[^/%.]+/%.%./","")
+        end
+        str = gsub(str,"([^/])/$","%1")
+    --  str = gsub(str,"^%./","") -- ./xx in qualified
+        str = gsub(str,"/%.$","")
     end
-    str = gsub(str,"([^/])/$","%1")
-    str = gsub(str,"^%./","")
-    str = gsub(str,"/%.$","")
     if str == "" then str = "." end
     return str
 end
@@ -2824,7 +2875,7 @@ else
 --~         print(dir.mkdirs("///a/b/c"))
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
-    function dir.expand_name(str)
+    function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
             str = lfs.currentdir() .. "/" .. str
         end
@@ -3340,6 +3391,8 @@ local stripper = lpeg.Cs((number + 1)^0)
 --~ lpegmatch(stripper,str)
 --~ print(#str, os.clock()-ts, lpegmatch(stripper,sample))
 
+lpeg.patterns.strip_zeros = stripper
+
 function aux.strip_zeros(str)
     return lpegmatch(stripper,str)
 end
@@ -3626,14 +3679,14 @@ end
 function setters.enable(t,what)
     local e = t.enable
     t.enable, t.done = enable, { }
-    enable(t,string.simpleesc(what))
+    enable(t,string.simpleesc(tostring(what)))
     t.enable, t.done = e, { }
 end
 
 function setters.disable(t,what)
     local e = t.disable
     t.disable, t.done = disable, { }
-    disable(t,string.simpleesc(what))
+    disable(t,string.simpleesc(tostring(what)))
     t.disable, t.done = e, { }
 end
 
@@ -3719,6 +3772,13 @@ function experiments.disable(...)
     commands.writestatus("experiments","disabling: %s",concat({...}," "))
     d(...)
 end
+
+-- a useful example
+
+directives.register("system.nostatistics", function(v)
+    statistics.enable = not v
+end)
+
 
 
 end -- of closure
@@ -3995,9 +4055,9 @@ local function attribute_specification_error(str)
     return str
 end
 
-function xml.unknown_dec_entity_format(str) return format("&%s;",  str) end
+function xml.unknown_dec_entity_format(str) return (str == "" and "&error;") or format("&%s;",str) end
 function xml.unknown_hex_entity_format(str) return format("&#x%s;",str) end
-function xml.unknown_any_entity_format(str) return format("&%s;",  str) end
+function xml.unknown_any_entity_format(str) return format("&#x%s;",str) end
 
 local function handle_hex_entity(str)
     local h = hcache[str]
@@ -4111,7 +4171,11 @@ local function handle_any_entity(str)
                     if trace_entities then
                         logs.report("xml","keeping entity &%s;",str)
                     end
-                    a = "&" .. str .. ";"
+                    if str == "" then
+                        a = "&error;"
+                    else
+                        a = "&" .. str .. ";"
+                    end
                 end
             end
             acache[str] = a
@@ -4131,6 +4195,9 @@ local function handle_any_entity(str)
             a = not keep and predefined[str]
             if a then
                 -- one of the predefined
+                acache[str] = a
+            elseif str == "" then
+                a = "&error;"
                 acache[str] = a
             else
                 a = "&" .. str .. ";"
@@ -4460,7 +4527,7 @@ function xml.checkbom(root) -- can be made faster
         local dt, found = root.dt, false
         for k=1,#dt do
             local v = dt[k]
-            if type(v) == "table" and v.special and v.tg == "@pi" and find(v.dt,"xml.*version=") then
+            if type(v) == "table" and v.special and v.tg == "@pi@" and find(v.dt[1],"xml.*version=") then
                 found = true
                 break
             end
@@ -4842,6 +4909,8 @@ function xml.assign(dt,k,root)
     end
 end
 
+-- the following helpers may move
+
 --[[ldx--
 <p>The next helper assigns a tree (or string). Usage:</p>
 <typing>
@@ -4858,6 +4927,22 @@ function xml.tocdata(e,wrapper)
     local t = { special = true, ns = "", tg = "@cd@", at = {}, rn = "", dt = { whatever }, __p__ = e }
     setmetatable(t,getmetatable(e))
     e.dt = { t }
+end
+
+function xml.makestandalone(root)
+    if root.ri then
+        local dt = root.dt
+        for k=1,#dt do
+            local v = dt[k]
+            if type(v) == "table" and v.special and v.tg == "@pi@" then
+                local txt = v.dt[1]
+                if find(txt,"xml.*version=") then
+                    v.dt[1] = txt .. " standalone='yes'"
+                    break
+                end
+            end
+        end
+    end
 end
 
 
@@ -5476,8 +5561,13 @@ local register_initial_child           = { kind = "axis", axis = "initial-child"
 
 local register_all_nodes               = { kind = "nodes", nodetest = true, nodes = { true, false, false } }
 
+local skip = { }
+
 local function errorrunner_e(str,cnv)
-    logs.report("lpath","error in expression: %s => %s",str,cnv)
+    if not skip[str] then
+        logs.report("lpath","error in expression: %s => %s",str,cnv)
+        skip[str] = cnv or str
+    end
     return false
 end
 local function errorrunner_f(str,arg)
@@ -7287,6 +7377,14 @@ function statistics.hastimer(instance)
     return instance and instance.starttime
 end
 
+function statistics.resettiming(instance)
+    if not instance then
+        notimer = { timing = 0, loadtime = 0 }
+    else
+        instance.timing, instance.loadtime = 0, 0
+    end
+end
+
 function statistics.starttiming(instance)
     if not instance then
         notimer = { }
@@ -7344,6 +7442,12 @@ function statistics.elapsedindeed(instance)
     end
     local t = (instance and instance.loadtime) or 0
     return t > statistics.threshold
+end
+
+function statistics.elapsedseconds(instance,rest) -- returns nil if 0 seconds
+    if statistics.elapsedindeed(instance) then
+        return format("%s seconds %s", statistics.elapsedtime(instance),rest or "")
+    end
 end
 
 -- general function
@@ -7424,6 +7528,23 @@ function statistics.timed(action,report)
     report("total runtime: %s",statistics.elapsedtime(timer))
 end
 
+-- where, not really the best spot for this:
+
+commands = commands or { }
+
+local timer
+
+function commands.resettimer()
+    statistics.resettiming(timer)
+    statistics.starttiming(timer)
+end
+
+function commands.elapsedtime()
+    statistics.stoptiming(timer)
+    tex.sprint(statistics.elapsedtime(timer))
+end
+
+commands.resettimer()
 
 
 end -- of closure
@@ -7861,8 +7982,8 @@ suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 
 alternatives['map files']            = 'map'
 alternatives['enc files']            = 'enc'
-alternatives['cid files']            = 'cid'
-alternatives['fea files']            = 'fea'
+alternatives['cid maps']             = 'cid' -- great, why no cid files
+alternatives['font feature files']   = 'fea' -- and fea files here
 alternatives['opentype fonts']       = 'otf'
 alternatives['truetype fonts']       = 'ttf'
 alternatives['truetype collections'] = 'ttc'
@@ -8005,8 +8126,10 @@ local function check_configuration() -- not yet ok, no time for debugging now
         -- bad luck
     end
     fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS") -- no progname, hm
-    fix("FONTFEATURES", ".;$TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
-    fix("FONTCIDMAPS" , ".;$TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    -- this will go away some day
+    fix("FONTFEATURES", ".;$TEXMF/fonts/{data,fea}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    fix("FONTCIDMAPS" , ".;$TEXMF/fonts/{data,cid}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    --
     fix("LUATEXLIBS"  , ".;$TEXMF/luatex/lua//")
 end
 
@@ -8396,7 +8519,7 @@ function resolvers.load_cnf()
     else
         instance.rootpath = instance.cnffiles[1]
         for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.cnffiles[k] = file.collapse_path(fname)
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
@@ -8425,7 +8548,7 @@ function resolvers.load_lua()
     else
         instance.rootpath = instance.luafiles[1]
         for k,fname in ipairs(instance.luafiles) do
-            instance.luafiles[k] = file.collapse_path(gsub(fname,"\\",'/'))
+            instance.luafiles[k] = file.collapse_path(fname)
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
@@ -8550,7 +8673,7 @@ local weird = lpeg.P(".")^1 + lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?
 
 --~ local l_forbidden = lpeg.S("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
 --~ local l_confusing = lpeg.P(" ")
---~ local l_character = lpeg.utf8
+--~ local l_character = lpeg.patterns.utf8
 --~ local l_dangerous = lpeg.P(".")
 
 --~ local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * lpeg.P(-1)
@@ -9290,8 +9413,7 @@ end
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = file.collapse_path(filename)  -- elsewhere
-    filename = file.collapse_path(gsub(filename,"\\","/")) -- elsewhere
+    filename = file.collapse_path(filename)
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -9772,12 +9894,13 @@ end
 function table.sequenced(t,sep) -- temp here
     local s = { }
     for k, v in pairs(t) do -- pairs?
-        s[#s+1] = k .. "=" .. v
+        s[#s+1] = k .. "=" .. tostring(v)
     end
     return concat(s, sep or " | ")
 end
 
 function resolvers.methodhandler(what, filename, filetype) -- ...
+    filename = file.collapse_path(filename)
     local specification = (type(filename) == "string" and resolvers.splitmethod(filename)) or filename -- no or { }, let it bomb
     local scheme = specification.scheme
     if resolvers[what][scheme] then

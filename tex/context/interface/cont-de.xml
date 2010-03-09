@@ -6235,6 +6235,13 @@
         <cd:parameter name="ziehefolgendeein">
           <cd:resolve name="indentnext"/>
         </cd:parameter>
+        <cd:parameter name="textdistance">
+          <!-- maybe resolve here too -->
+          <cd:constant type="kein"/>
+          <cd:constant type="gross"/>
+          <cd:constant type="mittel"/>
+          <cd:constant type="klein"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

@@ -6235,6 +6235,13 @@
         <cd:parameter name="indentesuivant">
           <cd:resolve name="indentnext"/>
         </cd:parameter>
+        <cd:parameter name="distancetexte">
+          <!-- maybe resolve here too -->
+          <cd:constant type="rien"/>
+          <cd:constant type="grand"/>
+          <cd:constant type="moyen"/>
+          <cd:constant type="petit"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

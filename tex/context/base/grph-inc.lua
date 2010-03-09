@@ -377,8 +377,8 @@ local function register(askedname,specification)
                 end
                 local newname = file.join(newpath,newbase)
                 dir.makedirs(newpath)
-                oldname = dir.expand_name(oldname)
-                newname = dir.expand_name(newname)
+                oldname = file.collapse_path(oldname)
+                newname = file.collapse_path(newname)
                 local oldtime = lfs.attributes(oldname,'modification') or 0
                 local newtime = lfs.attributes(newname,'modification') or 0
                 if oldtime > newtime then
@@ -428,7 +428,7 @@ local function register(askedname,specification)
     return specification
 end
 
-local resolve_too = true
+local resolve_too = true -- urls
 
 local function locate(request) -- name, format, cache
     local askedname = resolvers.clean_path(request.name)
@@ -544,7 +544,7 @@ local function locate(request) -- name, format, cache
             for _, format in ipairs(figures.order) do
                 local list = figures.formats[format].list or { format }
                 for _, suffix in ipairs(list) do
---~                     local name = file.replacesuffix(askedbase,suffix)
+                 -- local name = file.replacesuffix(askedbase,suffix)
                     local name = file.replacesuffix(askedname,suffix)
                     for _, path in ipairs(figures.paths) do
                         local check = path .. "/" .. name
@@ -553,7 +553,7 @@ local function locate(request) -- name, format, cache
                             if trace_figures then
                                 commands.writestatus("figures","warning: skipping path %s",path)
                             end
-                        elseif figures.exists(check,format,resolve_too) then
+                        elseif figures.exists(check,format,true) then
                             return register(askedname, {
                                 askedname = askedname,
                                 fullname = check,

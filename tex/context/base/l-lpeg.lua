@@ -160,8 +160,6 @@ end
 --~
 --~ local decode_pattern = lpeg.Ct(utf8^0) * -1
 
-
 local cont = R("\128\191")   -- continuation byte
 
-lpeg.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
-
+lpeg.patterns.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont

@@ -44,7 +44,7 @@
    \blank}
 
 \def\mathfontlistentryhexdectit#1#2#3%
-  {#1: \ruledhbox{\char#2}\enspace#3\par
+  {#1: \char#2\enspace\ruledhbox{\char#2}\enspace#3\par
    \advance\leftskip 1em\relax}
 
 \def\mathfontlistentrywdhtdpic#1#2#3#4%
@@ -90,7 +90,8 @@ function document.showmathfont(id,slot)
             names[k] = (name and file.basename(name)) or v.id
         end
     end
-    print(table.serialize(names))
+    local round = math.round
+--  print(table.serialize(names))
     for _, s in next, sorted do
         local char = characters[s]
         if char then
@@ -98,7 +99,7 @@ function document.showmathfont(id,slot)
             local cnext, cvert_variants, choriz_variants = char.next, char.vert_variants, char.horiz_variants
             report("\\startmathfontlistentry")
             report("\\mathfontlistentryhexdectit{U+%05X}{%s}{%s}",s,s,string.lower(info.description or "no description, private to font"))
-            report("\\mathfontlistentrywdhtdpic{%s}{%s}{%s}{%s}",char.width or 0,char.height or 0,char.depth or 0,char.italic or 0)
+            report("\\mathfontlistentrywdhtdpic{%s}{%s}{%s}{%s}",round(char.width or 0),round(char.height or 0),round(char.depth or 0),round(char.italic or 0))
             if virtual then
                 local commands = char.commands
                 if commands then

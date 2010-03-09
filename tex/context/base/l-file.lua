@@ -139,7 +139,9 @@ end
 -- we can hash them weakly
 
 function file.collapse_path(str)
+    str = gsub(str,"\\","/")
     if find(str,"/") then
+        str = gsub(str,"^%./",(gsub(lfs.currentdir(),"\\","/")) .. "/") -- ./xx in qualified
         str = gsub(str,"/%./","/")
         local n, m = 1, 1
         while n > 0 or m > 0 do
@@ -147,7 +149,7 @@ function file.collapse_path(str)
             str, m = gsub(str,"[^/%.]+/%.%./","")
         end
         str = gsub(str,"([^/])/$","%1")
-        str = gsub(str,"^%./","")
+    --  str = gsub(str,"^%./","") -- ./xx in qualified
         str = gsub(str,"/%.$","")
     end
     if str == "" then str = "." end

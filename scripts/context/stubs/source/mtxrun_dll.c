@@ -1,214 +1,207 @@
-/*
+/************************************************************************
 
-Copyright:
+  Copyright:
 
-The originally 'runscript' program was written by in 2009 by
-T.M.Trzeciak and is public domain. This derived mtxrun program
-is an adapted version by Hans Hagen.
+  Public Domain
+  Originally written in 2010 by Tomasz M. Trzeciak and Hans Hagen
 
-Comment:
+  This program is derived from the 'runscript' program originally
+  written in 2009 by T.M. Trzeciak. It has been adapted for use in
+  ConTeXt MkIV.
 
-In ConTeXt MkIV we have two core scripts: luatools.lua and
-mtxrun.lua where the second one is used to launch other scripts.
-Normally a user will use a call like:
+  Comment:
 
-mtxrun --script font --reload
+  In ConTeXt MkIV we have two core scripts: luatools.lua and
+  mtxrun.lua where the second one is used to launch other scripts.
+  Normally a user will use a call like:
 
-Here mtxrun is a lua script. In order to avoid the usage of a cmd
-file on windows this runner will start texlua directly. In TeXlive
-a runner is added for each cmd file but we don't want that overhead
-(and extra files). By using an exe we can call these scripts in
-batch files without the need for using call.
+  mtxrun --script font --reload
 
-We also don't want to use other runners, like those that use kpse
-to locate the script as this is exactly what mtxrun itself is doing
-already. Therefore the runscript program is adapted to a more direct
-approach suitable for mtxrun.
+  Here mtxrun is a lua script. In order to avoid the usage of a cmd
+  file on windows this runner will start texlua directly. If the
+  shared library luatex.dll is available, texlua will be started in
+  the same process avoiding thus any additional overhead. Otherwise
+  it will be spawned in a new proces.
 
-Compilation:
+  We also don't want to use other runners, like those that use kpse
+  to locate the script as this is exactly what mtxrun itself is doing
+  already. Therefore the runscript program is adapted to a more direct
+  approach suitable for mtxrun.
 
-with gcc (size optimized):
+  Compilation:
 
-gcc -Os -s -shared -o mtxrun.dll mtxrun_dll.c
-gcc -Os -s -o mtxrun.exe mtxrun_exe.c -L./ -lmtxrun
+  with gcc (size optimized):
 
-with tcc (ver. 0.9.24), extra small size
+  gcc -Os -s -shared -o mtxrun.dll mtxrun_dll.c
+  gcc -Os -s -o mtxrun.exe mtxrun_exe.c
 
-tcc -shared -o runscript.dll runscript_dll.c
-tcc -o runscript.exe runscript_exe.c runscript.def
+  with tcc (extra small size):
 
-*/
+  tcc -shared -o mtxrun.dll mtxrun_dll.c
+  tcc -o mtxrun.exe mtxrun_exe.c mtxrun.def
 
-#include <windows.h>
+************************************************************************/
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
 
+//#define STATIC
 #define IS_WHITESPACE(c) ((c == ' ') || (c == '\t'))
 #define MAX_CMD 32768
-//~ #define DRYRUN
+#define DIE(...) { \
+  fprintf( stderr, "mtxrun: " ); \
+  fprintf( stderr, __VA_ARGS__ ); \
+  return 1; \
+}
 
-static char dirname [MAX_PATH];
-static char basename[MAX_PATH];
+char texlua_name[] = "texlua"; // just a bare name, luatex strips the rest anyway
+static char cmdline[MAX_CMD];
+static char dirpath[MAX_PATH];
 static char progname[MAX_PATH];
-static char cmdline [MAX_CMD];
+static char scriptpath[MAX_PATH];
+HMODULE dllluatex = NULL;
+typedef int ( *mainlikeproc )( int, char ** );
 
-__declspec(dllexport) int dllrunscript( int argc, char *argv[] ) {
-
-    int i;
-
-    static char path[MAX_PATH];
-
-    // get file name of this executable and split it into parts
-
-    DWORD nchars = GetModuleFileNameA(NULL, path, MAX_PATH);
-    if ( !nchars || (nchars == MAX_PATH) ) {
-        fprintf(stderr, "mtxrun: unable to determine a valid own name\n");
-        return -1;
-    }
-
-    // file extension part
-
-    i = strlen(path);
-
-    while ( i && (path[i] != '.') && (path[i] != '\\') ) i--;
-
-    strcpy(basename, path);
-
-    if ( basename[i] == '.' ) basename[i] = '\0'; //remove file extension
-
-    // file name part
-
-    while ( i && (path[i] != '\\') ) i--;
-
-    if ( path[i] != '\\' ) {
-        fprintf(stderr, "mtxrun: the runner has no directory part in its name: %s\n", path);
-        return -1;
-    }
-
-    strcpy(dirname, path);
-    dirname[i+1] = '\0'; //remove file name, leave trailing backslash
-    strcpy(progname, &basename[i+1]);
-
-    // find program to execute
-
-    if ( (strlen(basename)+100 >= MAX_PATH) ) {
-        fprintf(stderr, "mtxrun: the runners path is too long: %s\n", path);
-        return -1;
-    }
-
-    // check .lua
-
-    strcpy(path, dirname);
-    strcat(path, "mtxrun.lua");
-
-    if ( GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES ) {
-		goto PROGRAM_FOUND;
-    } else {
-		fprintf(stderr, "mtxrun: the mtxrun.lua file is not in the same path\n");
-		return -1;
-    }
-
-PROGRAM_FOUND:
-
-    strcpy(cmdline,"texlua.exe ");
-
-    if ( ( strcmp(progname,"mtxrun") == 0 ) || ( strcmp(progname,"luatools") == 0 ) ) {
-        strcat(cmdline, dirname);
-        strcat(cmdline,progname);
-        strcat(cmdline, ".lua");
-    } else if ( ( strcmp(progname,"texmfstart") == 0 ) ) {
-        strcat(cmdline, dirname);
-        strcat(cmdline,"mtxrun.lua");
-    } else {
-        strcat(cmdline, dirname);
-        strcat(cmdline, "mtxrun.lua --script ");
-        strcat(cmdline,progname);
-    }
-
-    // get the command line for this process
-
-    char *argstr;
-    argstr = GetCommandLineA();
-    if ( argstr == NULL ) {
-        fprintf(stderr, "mtxrun: fetching the command line string fails\n");
-        return -1;
-    }
-
-    // skip over argv[0] (it can contain embedded double quotes if launched from cmd.exe!)
-
-    int argstrlen = strlen(argstr);
-    int quoted = 0;
-    for ( i = 0; ( i < argstrlen) && ( !IS_WHITESPACE(argstr[i]) || quoted ); i++ )
-
-    if (argstr[i] == '"') quoted = !quoted;
-
-    // while ( IS_WHITESPACE(argstr[i]) ) i++; // arguments leading whitespace
-
-    argstr = &argstr[i];
-
-    if ( strlen(cmdline) + strlen(argstr) >= MAX_CMD ) {
-        fprintf(stderr, "mtxrun: the command line string is too long:\n%s%s\n", cmdline, argstr);
-        return -1;
-    }
-
-    // pass through all the arguments
-
-    strcat(cmdline, argstr);
-
-#ifdef DRYRUN
-    printf("progname    : %s\n", progname);
-    printf("dirname     : %s\n", dirname);
-    printf("arguments   : %s\n", &argstr[-i]);
-    for (i = 0; i < argc; i++) {
-        printf("argv[%d]     : %s\n", i, argv[i]);
-    }
-    printf("commandline : %s\n", cmdline);
-    return;
+#ifdef STATIC
+int main( int argc, char *argv[] )
+#else
+__declspec(dllexport) int dllrunscript( int argc, char *argv[] )
 #endif
+{
+  char *s, *argstr, **lua_argv;
+  int k, quoted, lua_argc;
+  int passprogname = 0;
 
-    // create child process
+  // directory of this module/executable
 
-    STARTUPINFOA si; // ANSI variant
-    PROCESS_INFORMATION pi;
-    ZeroMemory( &si, sizeof(si) );
-    si.cb = sizeof(si);
+  HMODULE module_handle = GetModuleHandle( "mtxrun.dll" );
+  // if ( module_handle == NULL ) exe path will be used, which is OK too
+  k = (int) GetModuleFileName( module_handle, dirpath, MAX_PATH );
+  if ( !k || ( k == MAX_PATH ) )
+    DIE( "unable to determine a valid module name\n" );
+  s = strrchr(dirpath, '\\');
+  if ( s == NULL ) DIE( "no directory part in module path: %s\n", dirpath );
+  *(++s) = '\0'; //remove file name, leave trailing backslash
+
+  // program name
+
+  k = strlen(argv[0]);
+  while ( k && (argv[0][k] != '/') && (argv[0][k] != '\\') ) k--;
+  strcpy(progname, &argv[0][k]);
+  s = progname;
+  if ( s = strrchr(s, '.') ) *s = '\0'; // remove file extension part
+
+  // script path
+
+  strcpy( scriptpath, dirpath );
+  k = strlen(progname);
+  if ( k < 6 ) k = 6; // in case the program name is shorter than "mtxrun"
+  if ( strlen(dirpath) + k + 4 >=  MAX_PATH )
+    DIE( "path too long: %s%s\n", dirpath, progname );
+  if ( ( strcmpi(progname,"mtxrun") == 0 ) || ( strcmpi(progname,"luatools") == 0 ) ) {
+    strcat( scriptpath, progname );
+    strcat( scriptpath, ".lua" );
+  } else {
+    strcat( scriptpath, "mtxrun.lua" );
+    if ( strcmpi(progname,"texmfstart") != 0 ) passprogname = 1;
+  }
+  if ( GetFileAttributes(scriptpath) == INVALID_FILE_ATTRIBUTES )
+    DIE( "file not found: %s\n", scriptpath );
+
+  // link with luatex.dll if available
+
+  if ( dllluatex = LoadLibrary("luatex.dll") )
+  {
+    mainlikeproc dllluatexmain = (mainlikeproc) GetProcAddress( dllluatex, "dllluatexmain" );
+    if ( dllluatexmain == NULL )
+      DIE( "unable to locate dllluatexmain procedure in luatex.dll" );
+
+    // set up argument list for texlua script
+
+    lua_argv = (char **)malloc( (argc + 4) * sizeof(char *) );
+    if ( lua_argv == NULL ) DIE( "out of memory\n" );
+    lua_argv[lua_argc=0] = texlua_name;
+    lua_argv[++lua_argc] = scriptpath; // script to execute
+    if (passprogname) {
+      lua_argv[++lua_argc] = "--script";
+      lua_argv[++lua_argc] = progname;
+    }
+    for ( k = 1; k < argc; k++ ) lua_argv[++lua_argc] = argv[k];
+    lua_argv[++lua_argc] = NULL;
+
+    // call texlua interpreter
+    // dllluatexmain  never returns, but we pretend that it does
+
+    k = dllluatexmain( lua_argc, lua_argv );
+    if (lua_argv) free( lua_argv );
+    return k;
+  }
+
+  // we are still here, so no luatex.dll; spawn texlua.exe instead
+
+  strcpy( cmdline, "\"" );
+//  strcat( cmdline, dirpath );
+  strcat( cmdline, "texlua.exe\" \"" );
+  strcat( cmdline, scriptpath );
+  strcat( cmdline, "\"" );
+  if (passprogname) {
+    strcat( cmdline, " --script " );
+    strcat( cmdline, progname );
+  }
+
+  argstr = GetCommandLine(); // get the command line of this process
+  if ( argstr == NULL ) DIE( "unable to retrieve the command line string\n" );
+
+  // skip over argv[0] in the argument string
+  // (it can contain embedded double quotes if launched from cmd.exe!)
+
+  for ( quoted = 0; (*argstr) && ( !IS_WHITESPACE(*argstr) || quoted ); argstr++ )
+    if (*argstr == '"') quoted = !quoted;
+
+  // pass through all the arguments
+
+  if ( strlen(cmdline) + strlen(argstr) >= MAX_CMD )
+    DIE( "command line string too long:\n%s%s\n", cmdline, argstr );
+  strcat( cmdline, argstr );
+
+  // create child process
+
+  STARTUPINFO si;
+  PROCESS_INFORMATION pi;
+  ZeroMemory( &si, sizeof(si) );
+  si.cb = sizeof(si);
 	si.dwFlags = STARTF_USESTDHANDLES;// | STARTF_USESHOWWINDOW;
-
 	//si.dwFlags = STARTF_USESHOWWINDOW;
 	//si.wShowWindow = SW_HIDE ; // can be used to hide console window (requires STARTF_USESHOWWINDOW flag)
+	si.hStdInput  = GetStdHandle( STD_INPUT_HANDLE );
+	si.hStdOutput = GetStdHandle( STD_OUTPUT_HANDLE );
+	si.hStdError  = GetStdHandle( STD_ERROR_HANDLE );
+  ZeroMemory( &pi, sizeof(pi) );
 
-	si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-	si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-	si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+  if( !CreateProcess(
+    NULL,     // module name (uses command line if NULL)
+    cmdline,  // command line
+    NULL,     // process security atrributes
+    NULL,     // thread security atrributes
+    TRUE,     // handle inheritance
+    0,        // creation flags, e.g. CREATE_NEW_CONSOLE, CREATE_NO_WINDOW, DETACHED_PROCESS
+    NULL,     // pointer to environment block (uses parent if NULL)
+    NULL,     // starting directory (uses parent if NULL)
+    &si,      // STARTUPINFO structure
+    &pi )     // PROCESS_INFORMATION structure
+  ) DIE( "command execution failed: %s\n", cmdline );
 
-    ZeroMemory( &pi, sizeof(pi) );
-    if( !CreateProcessA(
-        NULL,     // module name (uses command line if NULL)
-        cmdline,  // command line
-        NULL,     // process security attributes
-        NULL,     // thread security attributes
-        TRUE,     // handle inheritance
-        0,        // creation flags, e.g. CREATE_NEW_CONSOLE, CREATE_NO_WINDOW, DETACHED_PROCESS
-        NULL,     // pointer to environment block (uses parent if NULL)
-        NULL,     // starting directory (uses parent if NULL)
-        &si,      // STARTUPINFO structure
-        &pi )     // PROCESS_INFORMATION structure
-    ) {
-        fprintf(stderr, "mtxrun: unable to create a process for: %s\n", cmdline);
-        return -1;
-    }
-    CloseHandle( pi.hThread ); // thread handle is not needed
-    DWORD ret = 0;
-    if ( WaitForSingleObject( pi.hProcess, INFINITE ) == WAIT_OBJECT_0 ) {
-        if ( !GetExitCodeProcess( pi.hProcess, &ret) ) {
-            fprintf(stderr, "mtxrun: unable to fetch the exit code for process: %s\n", cmdline);
-            return -1;
-        }
-    } else {
-        fprintf(stderr, "mtxrun: the script has been terminated unexpectedly: %s\n", cmdline);
-        return -1;
-    }
-    CloseHandle( pi.hProcess );
+  DWORD ret = 0;
+  CloseHandle( pi.hThread ); // thread handle is not needed
+  if ( WaitForSingleObject( pi.hProcess, INFINITE ) == WAIT_OBJECT_0 ) {
+    if ( !GetExitCodeProcess( pi.hProcess, &ret) )
+        DIE( "unable to retrieve process exit code: %s\n", cmdline );
+  } else DIE( "failed to wait for process termination: %s\n", cmdline );
+  CloseHandle( pi.hProcess );
 
-    return ret;
+  // propagate exit code from the child process
+
+  return ret;
 
 }

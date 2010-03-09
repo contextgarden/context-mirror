@@ -383,7 +383,13 @@ function scripts.update.synchronize()
     end
     if not force then
         logs.report("update", "use --force to really update files")
+    else
+        -- update filename database for pdftex/xetex
+        scripts.update.run("mktexlsr")
+        -- update filename database for luatex
+        scripts.update.run("luatools --generate")
     end
+
     logs.report("update","done")
 end
 
@@ -408,10 +414,6 @@ function scripts.update.make()
     local formats = states.get('formats')
 
     resolvers.load_tree(texroot)
-    -- update filename database for pdftex/xetex
-    scripts.update.run("mktexlsr")
-    -- update filename database for luatex
-    scripts.update.run("luatools --generate")
     local askedformats = formats
     local texformats = table.tohash(scripts.update.texformats)
     local mpformats = table.tohash(scripts.update.mpformats)

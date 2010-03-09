@@ -203,7 +203,7 @@
    \ctxlua{structure.counters.add("\@@thestructurecounter{#1}",1,1)}}
 
 \def\doincrementsubstructurecounter[#1][#2]%
-  {\docheckstructurecounterbypage{#1}
+  {\docheckstructurecounterbypage{#1}%
    \ctxlua{structure.counters.add("\@@thestructurecounter{#1}",#2,1)}}
 
 \def\convertedstructurecounter

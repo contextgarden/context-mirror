@@ -236,14 +236,14 @@ end
 function setters.enable(t,what)
     local e = t.enable
     t.enable, t.done = enable, { }
-    enable(t,string.simpleesc(what))
+    enable(t,string.simpleesc(tostring(what)))
     t.enable, t.done = e, { }
 end
 
 function setters.disable(t,what)
     local e = t.disable
     t.disable, t.done = disable, { }
-    disable(t,string.simpleesc(what))
+    disable(t,string.simpleesc(tostring(what)))
     t.disable, t.done = e, { }
 end
 

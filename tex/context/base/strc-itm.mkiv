@@ -985,83 +985,6 @@
      \fi
    \fi\fi}
 
-% \def\dodolapitem
-%   {% todo: align+marge binnen de hbox
-%    \llap{\hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+\enspace}\fi
-%      \symalignleft
-%      \box\itemgroupitembox\hfil
-%      \hskip\getitemparameter\currentitemlevel\c!distance% T h
-%    }}}
-
-% \def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
-%   {\ifconditional\textlistitem
-%     % begin of item
-%    \else
-%      \par
-%    \fi
-%    \advance\noflistelements\plusone
-%    \optimizelistitemsbreak
-%    \noindent
-%    \setbox\itemgroupitembox\hbox
-%      {\ifconditional\headlistitem
-%         \ifconditional\symbollistitem
-%           \dosetitemattributes\currentitemlevel\c!symstyle\c!symcolor{\symsymbol}%
-%         \else
-%           \dosetitemattributes\currentitemlevel\c!headstyle\c!headcolor{\listitem}%
-%         \fi
-%       \else
-%         \ifconditional\symbollistitem
-%           \dosetitemattributes\currentitemlevel\c!symstyle\c!symcolor{\symsymbol}%
-%         \else
-%           \dosetitemattributes\currentitemlevel\c!style\c!color{\listitem}%
-%         \fi
-%       \fi}%
-%     \ifconditional\fittinglistitems
-%       \ifdim\wd\itemgroupitembox>\getitemparameter\currentitemlevel\c!maxwidth sp\relax
-%         \xsetitemparameter\currentitemlevel\c!maxwidth{\number\wd\itemgroupitembox}%
-%       \fi
-%       \ifdim\currentitemmaxwidth>\zeropoint
-%         \setbox\itemgroupitembox\simplealignedbox{\getitemparameter\currentitemlevel\c!itemalign}{\currentitemmaxwidth}{\box\itemgroupitembox}%
-%       \fi
-%    \fi
-%    \doifsomething\doitemdestination
-%      {\setbox\itemgroupitembox\hbox{\directgotobox{\box\itemgroupitembox}[\doitemdestination]}}%
-%    \globallet\doitemdestination\empty
-%    \itemgroupaskedwidth\getitemparameter\currentitemlevel\c!width\relax
-%    % new, prevents loops when symbol is (not yet found) graphic
-%    \ht\itemgroupitembox\strutheight
-%    \dp\itemgroupitembox\strutdepth
-%    % so that content differs per run (esp mp graphics afterwards)
-%    \checkforrepeatedlistitem
-%    \ifdim\itemgroupaskedwidth<\zeropoint\relax
-%      \llap{\ifconditional\sublistitem\llap{+\enspace}\fi\box\itemgroupitembox\hskip\leftmargindistance}%
-%    \else
-%      \ifdim\itemgroupaskedwidth=\zeropoint\relax
-%        \calculatelistwidth1%
-%      \else
-%        \calculatelistwidth\currentitemlevel
-%      \fi
-%      \ifconditional\textlistitem
-%        \hbox{\ifconditional\sublistitem+\enspace\fi\box\itemgroupitembox\hskip\interwordspace}\nobreak
-%      \else\ifconditional\inlinelistitem
-%        \hbox to \itemgrouplistwidth{\ifconditional\sublistitem\llap{+\enspace}\fi\box\itemgroupitembox\hss}% was: \hfill
-%      \else\ifconditional\txtlistitem
-%        \dodotxtitem
-%      \else
-%        \dodolapitem
-%      \fi\fi\fi
-%    \fi
-%    \forceunexpanded % needed for m conversion (\os) / i need to look into this
-%    \setevalue{\@@currentitemsymbol\currentitemlevel}%
-%      {\getvalue{\@@localitemsymbol\currentitemlevel}}% still problems with \uchar ?
-%     %{\noexpand\getvalue{\@@localitemsymbol\currentitemlevel}}% no, spoils subrefs
-%    \resetunexpanded
-%    \setfalse\headlistitem
-%    \setfalse\sublistitem
-%    \setfalse\symbollistitem
-%    \EveryPar{\ignorespaces}% needed ?
-%    \ignorespaces}
-
 \def\dodosubitem
   {\ifconditional\sublistitem\llap{+\enspace}\fi}
 
@@ -1074,7 +997,7 @@
          \hfil
          \hskip\getitemparameter\currentitemlevel\c!distance}}}
 
-\def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
+\unprotected\def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
   {\ifconditional\textlistitem
     % begin of item
    \else
@@ -1082,7 +1005,8 @@
    \fi
    \advance\noflistelements\plusone
    \optimizelistitemsbreak
-   \noindent
+   %\noindent %% WS: don't apply \noindent when the user sets 'first' in the indenting key
+   \checkindentation\ifindentfirstparagraph\indent\else\noindent\fi
    \setbox\itemgroupitembox\hbox
      {\ifconditional\headlistitem
         \ifconditional\symbollistitem
@@ -1204,7 +1128,7 @@
 
 \chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
 
-\def\complexdoitemgroupitem[#1]%
+\unprotected\def\complexdoitemgroupitem[#1]%
   {\def\currentitemreference{#1}%
    \ifconditional\textlistitem
      % begin of item
@@ -1239,7 +1163,11 @@
      \fi
    \else
      \ifconditional\textlistitem % was bugged: \inlinelistitem
-       \removeunwantedspaces\hskip\emwidth\!!plus\interwordstretch\!!minus\interwordshrink\relax % new per 2006/10/20
+       \ifhmode
+         % WS: make the distance between items customizable, think about better default values -> see itemize-1.tex
+         \normalexpanded{\doassigntextitemdistance{\getitemparameter\currentitemlevel\c!textdistance}}% HH: moved out and made configurable (sort of)
+         \removeunwantedspaces\hskip\textitemdistance\relax
+       \fi
      \else
        \iteminbetweencommand
      \fi
@@ -1261,6 +1189,28 @@
    \nobreak % else problems with intext items
    \hskip\itemsignal        % new, concat
    \getitemparameter\currentitemlevel\c!command} % \defaultitemcommand
+
+% \startitemize[text][space=medium]
+% \item one \item two \item three
+% \stopitemize
+
+\setvalue{\??op:\??op:\c!textdistance:\v!none}%
+  {\let\textitemdistance\zeropoint}
+
+\def\doassigngiventextitemdistance#1%
+  {\assignvalue
+     {#1}%
+     \textitemdistance
+     {.5\interwordspace\!!plus.5\emwidth}%
+     {\interwordspace  \!!plus  \emwidth}%
+     {\emwidth         \!!plus  \interwordstretch\!!minus\interwordshrink}}
+
+\unexpanded\def\doassigntextitemdistance#1%
+  {\ifcsname\??op:\??op:\c!textdistance:#1\endcsname
+     \csname\??op:\??op:\c!textdistance:#1\endcsname
+   \else
+     \doassigngiventextitemdistance{#1}%
+   \fi}
 
 \def\defaultitemcommand
   {\EveryPar{\ignorespaces}% needed ?
@@ -1369,6 +1319,7 @@
    \c!start=1,
    \c!criterium=\v!all, % permits 0 and negative numbers
   %\c!option=,
+   \c!textdistance=\v!big,
    \c!command=\defaultitemcommand,
    \c!symbol=\currentitemlevel]
 

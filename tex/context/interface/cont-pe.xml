@@ -6235,6 +6235,13 @@
         <cd:parameter name="متن‌تورفته">
           <cd:resolve name="indentnext"/>
         </cd:parameter>
+        <cd:parameter name="فاصله‌متن">
+          <!-- maybe resolve here too -->
+          <cd:constant type="هیچکدام"/>
+          <cd:constant type="بزرگ"/>
+          <cd:constant type="متوسط"/>
+          <cd:constant type="کوچک"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

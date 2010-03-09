@@ -323,7 +323,7 @@ else
 --~         print(dir.mkdirs("///a/b/c"))
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
-    function dir.expand_name(str)
+    function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
             str = lfs.currentdir() .. "/" .. str
         end
