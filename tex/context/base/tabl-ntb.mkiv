@@ -214,6 +214,7 @@
 \newif\ifappendTBLsetups    \appendTBLsetupstrue
 \newif\ifenableTBLbreak     \enableTBLbreakfalse
 \newif\ifmultipleTBLheads   \multipleTBLheadsfalse
+\newif\iftightTBLrowspan    \tightTBLrowspantrue
 
 \newif\iftraceTABLE         \traceTABLEfalse
 
@@ -319,6 +320,36 @@
 % \bTR \bTD first \eTD \bTD second \eTD \bTD third \eTD \eTR
 % \eTABLE
 % \stopTEXpage
+
+%D By default rowspans are tight but you can change that:
+%D
+%D \startbuffer
+%D \bTABLE
+%D \bTR[height=20pt] \bTH 1. col                \eTH \bTH 2. col                 \eTH  \eTR
+%D \bTR[height=20pt] \bTD 1 row in 1. col       \eTD \bTD[nr=2] 2 rows in 2. col \eTD  \eTR
+%D \bTR[height=20pt] \bTD[nr=2] 2 rows in 1. col\eTD                                   \eTR
+%D \bTR[height=20pt]                                 \bTD[nr=3] 3 rows in 2. col \eTD  \eTR
+%D \bTR[height=20pt] \bTD 1 row in 1. col       \eTD                                   \eTR
+%D \bTR[height=20pt] \bTD 1 row in 1. col       \eTD                                   \eTR
+%D \eTABLE
+%D
+%D \bTABLE
+%D \bTR[height=20pt] \bTH 2. col                 \eTH  \bTH 1. col                \eTH \eTR
+%D \bTR[height=20pt] \bTD[nr=2] 2 rows in 2. col \eTD  \bTD 1 row in 1. col       \eTD \eTR
+%D \bTR[height=20pt]                                   \bTD[nr=2] 2 rows in 1. col\eTD \eTR
+%D \bTR[height=20pt] \bTD[nr=3] 3 rows in 2. col \eTD                                  \eTR
+%D \bTR[height=20pt]                                   \bTD 1 row in 1. col       \eTD \eTR
+%D \bTR[height=20pt]                                   \bTD 1 row in 1. col       \eTD \eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+%D
+%D With \type {\tightTBLrowspanfalse} we get:
+%D
+%D \start \tightTBLrowspanfalse \getbuffer \stop
 
 \def\setupTBLcell#1#2% cell over col over row
   {\setupTBLsection % already forgotten
@@ -656,6 +687,9 @@
    \getparameters
      [\@@tbl\@@tbl]
      [\c!align={\v!right,\v!broad,\v!high},#1]%
+   \ifx\tbltblsetups\empty\else
+     \doprocesslocalsetups\tbltblsetups
+   \fi
    \hsize\tbltbltextwidth
    \processaction
      [\tbltblsplit]
@@ -776,6 +810,17 @@
      %   \vskip-\strutdp
      % \fi
    \fi
+   % tracing
+   % \iftrue
+   %   \blank \tttf
+   %   \dorecurse\maximumrow
+   %     {\row\recurselevel\relax
+   %      \dorecurse\maximumcol
+   %        {\col\recurselevel\relax
+   %         [r=\the\row,c=\the\col,h=\the\dimexpr\gettblht\row\col,w=\the\dimexpr\gettblwd\row\col]}%
+   %      \par}%
+   %   \blank
+   % \fi
    \egroup
    \popTBL}
 
@@ -829,6 +874,9 @@
      {\global\advance\tblrow\plusone
       \global\tblcol\zerocount
       \global\tblspn\zerocount}%
+   % \iftrue
+   %   \bgroup\tbox{\tttf[\number\tblrow]}\egroup
+   % \fi
    \nexttblcol
    \kern\dimexpr\tbltblleftmargindistance-\tbltblcolumndistance\relax}
 
@@ -923,8 +971,7 @@
    \else
      \scratchcounter#1\relax
      \dorecurse\!!countb
-       {\advance\scratchdimen
-        \gettblhei\scratchcounter
+       {\advance\scratchdimen\gettblhei\scratchcounter
         \advance\scratchcounter\plusone}%
      \ifdim\scratchdimen<\!!heighta\relax
        \scratchdimen\!!heighta
@@ -1206,7 +1253,9 @@
              \fi}%
           \advance\xxrowTBL\plusone}%
      \else\ifdim\dimen4>\dimen0
-       \settblhei\xrowTBL{\the\dimen2}%
+        \iftightTBLrowspan
+          \settblhei\xrowTBL{\the\dimen2}%
+        \fi
      \fi\fi
    \fi}
 
@@ -1372,7 +1421,7 @@
       \fi}%
    \hskip\gettbldis{#2}}
 
-\presetlocalframed
+\presetlocalframed % todo: tableparameter etc
    [\@@tbl\@@tbl]
 
 \setupTABLE [%
@@ -1405,6 +1454,7 @@
     \c!rightmargindistance=\zeropoint,% whole table
     \c!left=,
     \c!right=,
+    \c!setups=,
     \c!splitmethod=a%
 ]
 

@@ -524,6 +524,7 @@
 		<cd:constant name='align' value='uitlijnen'/>
 		<cd:constant name='aligncharacter' value='karakteruitlijnen'/>
 		<cd:constant name='alignmentcharacter' value='uitlijnkarakter'/>
+		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='titeluitlijnen'/>
 		<cd:constant name='alternative' value='variant'/>
 		<cd:constant name='andtext' value='andtext'/>

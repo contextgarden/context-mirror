@@ -285,7 +285,10 @@
 
 %D needed for sin, cos etc
 
-\def\mfunction#1{{\mr#1}}
+\let\mathfunction\firstofoneargument
+
+\def\mfunction         #1{{\mr#1}}
+\def\mfunctionlabeltext#1{{\mr\mathlabeltext{#1}}}
 
 % \def\mlimitsfunction  #1{\mathlimopcomm{{\mr#1}}
 % \def\mnolimitsfunction#1{\mathnolopcomm{{\mr#1}}
@@ -295,11 +298,16 @@
 
 \def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
 
-\def\setmathfunctionstyle#1% rm ss tt
+\unexpanded\def\do@mathopnolimits    #1{\mathop{\mscaledtext{#1}}\nolimits}
+\unexpanded\def\do@mfunction         #1{\mscaledtext{#1}}
+\unexpanded\def\do@mfunctionlabeltext#1{\mscaledtext{\mathlabeltext{#1}}}
+
+\def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
   {\doifsomething{#1}
      {\def\currentmscaledstyle{#1}%
-      \def\mathopnolimits##1{\mathop{\mscaledtext{##1}}\nolimits}%
-      \def\mfunction##1{\mscaledtext{##1}}}}
+      \let\mathopnolimits    \do@mathopnolimits
+      \let\mfunction         \do@mfunction
+      \let\mfunctionlabeltext\do@mfunctionlabeltext}}
 
 \def\mscaledtext#1%
   {\mathchoice

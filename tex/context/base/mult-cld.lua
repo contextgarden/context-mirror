@@ -22,17 +22,26 @@ local next, type = next, type
 local texsprint, texiowrite, ctxcatcodes = tex.sprint, texio.write, tex.ctxcatcodes
 
 local flush = texsprint
-local cache
+
+local _stack_, _n_ = { }, 0
+
+local function _store_(ti)
+    _n_ = _n_ + 1
+    _stack_[_n_] = ti
+    return _n_
+end
+
+local function _flush_(n)
+    _stack_[n]()
+    _stack_[n] = nil
+end
+
+context._stack_ = _stack_
+context._store_ = _store_
+context._flush_ = _flush_
 
 function tex.fprint(...) -- goodie
     texsprint(ctxcatcodes,format(...))
-end
-
-local function cached_flush(c,...)
-    local tt = { ... }
-    for i=1,#tt do
-        cache[#cache+1] = tt[i]
-    end
 end
 
 function context.trace(intercept)
@@ -56,32 +65,11 @@ local function writer(k,...)
     if nt > 0 then
         for i=1,nt do
             local ti = t[i]
-            local typ, force = type(ti), nil
-            local saved_flush = flush
-            if typ == "function" then
-                flush = cached_flush
-                while true do
-                    cache = { }
-                    ti, force = ti()
-                    if force then
-                        typ = false -- force special cases
-                    else
-                        typ = type(ti)
-                        if typ == "nil" then
-                            typ = "string"
-                            ti = concat(cache)
-                        elseif typ == "string" then
-                            ti = concat(cache)
-                        end
-                    end
-                    if typ ~= "function" then
-                        break
-                    end
-                end
-                flush = saved_flush
-            end
+            local typ = type(ti)
             if ti == nil then
                 -- next
+            elseif typ == "function" then
+                flush(ctxcatcodes,"{\\mkivflush{" .. _store_(ti) .. "}}")
             elseif typ == "string" or typ == "number" then
                 flush(ctxcatcodes,"{",ti,"}")
             elseif typ == "table" then
@@ -106,15 +94,18 @@ local function writer(k,...)
             elseif ti == true then
                 flush(ctxcatcodes,"\n")
             elseif typ == false then
-                if force == "direct" then
-                    flush(ctxcatcodes,tostring(ti))
-                end
+            --  if force == "direct" then
+                flush(ctxcatcodes,tostring(ti))
+            --  end
             else
                 logs.report("interfaces","error: %s gets a weird argument %s",k,tostring(ti))
             end
         end
     end
 end
+
+
+-- -- --
 
 --~ local function indexer(t,k)
 --~     local f = function(...) return writer("\\"..k.." ",...) end

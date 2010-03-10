@@ -149,13 +149,15 @@ scripts.update.platforms = {
 scripts.update.modules = {
 }
 
-function scripts.update.run(str,force)
-    logs.report("run", str)
-    if force or environment.argument("force") then
-        -- important, otherwise formats fly to a weird place
-        -- (texlua sets luatex as the engine, we need to reset that or to fix texexec :)
-        os.setenv("engine",nil)
+function scripts.update.run(str)
+    -- important, otherwise formats fly to a weird place
+    -- (texlua sets luatex as the engine, we need to reset that or to fix texexec :)
+    os.setenv("engine",nil)
+    if environment.argument("force") then
+        logs.report("run", str)
         os.execute(str)
+    else
+        logs.report("dry run", str)
     end
 end
 
@@ -171,16 +173,16 @@ function scripts.update.synchronize()
 
     logs.report("update","start")
 
-    local texroot = scripts.update.fullpath(states.get("paths.root"))
-    local engines = states.get('engines') or { }
-    local platforms = states.get('platforms') or { }
-    local repositories = states.get('repositories') -- minimals
-    local bin = states.get("rsync.program")         -- rsync
-    local url = states.get("rsync.server")          -- contextgarden.net
-    local version = states.get("context.version")   -- current (or beta)
-    local extras = states.get("extras")             -- extras (like modules)
-    local goodies = states.get("goodies")           -- goodies (like editors)
-    local force = environment.argument("force")
+    local texroot      = scripts.update.fullpath(states.get("paths.root"))
+    local engines      = states.get('engines') or { }
+    local platforms    = states.get('platforms') or { }
+    local repositories = states.get('repositories')      -- minimals
+    local bin          = states.get("rsync.program")     -- rsync
+    local url          = states.get("rsync.server")      -- contextgarden.net
+    local version      = states.get("context.version")   -- current (or beta)
+    local extras       = states.get("extras")            -- extras (like modules)
+    local goodies      = states.get("goodies")           -- goodies (like editors)
+    local force        = environment.argument("force")
 
     bin = string.gsub(bin,"\\","/")
 
@@ -383,12 +385,14 @@ function scripts.update.synchronize()
     end
     if not force then
         logs.report("update", "use --force to really update files")
-    else
-        -- update filename database for pdftex/xetex
-        scripts.update.run("mktexlsr")
-        -- update filename database for luatex
-        scripts.update.run("luatools --generate")
     end
+
+    resolvers.load_tree(texroot) -- else we operate in the wrong tree
+
+    -- update filename database for pdftex/xetex
+    scripts.update.run("mktexlsr")
+    -- update filename database for luatex
+    scripts.update.run("luatools --generate")
 
     logs.report("update","done")
 end
@@ -406,14 +410,18 @@ function scripts.update.make()
 
     logs.report("make","start")
 
-    local force = environment.argument("force")
-    local texroot = scripts.update.fullpath(states.get("paths.root"))
-    local engines = states.get('engines')
-    local goodies = states.get('goodies')
+    local force     = environment.argument("force")
+    local texroot   = scripts.update.fullpath(states.get("paths.root"))
+    local engines   = states.get('engines')
+    local goodies   = states.get('goodies')
     local platforms = states.get('platforms')
-    local formats = states.get('formats')
+    local formats   = states.get('formats')
 
     resolvers.load_tree(texroot)
+
+    scripts.update.run("mktexlsr")
+    scripts.update.run("luatools --generate")
+
     local askedformats = formats
     local texformats = table.tohash(scripts.update.texformats)
     local mpformats = table.tohash(scripts.update.mpformats)

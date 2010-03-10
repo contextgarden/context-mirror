@@ -175,13 +175,13 @@
 % \definebar[touchbar]    [\c!method=0,\c!dy=-0.4,\c!offset=-0.0]
 % \definebar[touchbars]   [touchbar]   [\c!continue=\v!yes]
 
-\definebar[\v!overstrike]  [\c!method=0,\c!dy= 0.4,\c!offset= 0.5]
-\definebar[\v!underbar]    [\c!method=1,\c!dy=-0.4,\c!offset=-0.3]
-\definebar[\v!overbar]     [\c!method=1,\c!dy= 0.4,\c!offset= 1.8]
+\definebar[\v!overstrike]  [\c!method=0,\c!dy= 0.4,\c!offset= 0.5,\c!continue=\v!yes]
+\definebar[\v!underbar]    [\c!method=1,\c!dy=-0.4,\c!offset=-0.3,\c!continue=\v!yes]
+\definebar[\v!overbar]     [\c!method=1,\c!dy= 0.4,\c!offset= 1.8,\c!continue=\v!yes]
 
-\definebar[\v!overstrikes] [\v!overstrike] [\c!continue=\v!yes]
-\definebar[\v!underbars]   [\v!underbar]   [\c!continue=\v!yes]
-\definebar[\v!overbars]    [\v!overbar]    [\c!continue=\v!yes]
+\definebar[\v!overstrikes] [\v!overstrike] [\c!continue=\v!no]
+\definebar[\v!underbars]   [\v!underbar]   [\c!continue=\v!no]
+\definebar[\v!overbars]    [\v!overbar]    [\c!continue=\v!no]
 
 % we want these always so ...
 

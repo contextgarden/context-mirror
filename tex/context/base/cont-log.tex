@@ -287,14 +287,15 @@
 
 \fi
 
-\let\ETEX     \eTeX
-\let\PDFTEX   \pdfTeX
-\let\PDFETEX  \pdfeTeX
-\let\LUATEX   \luaTeX
-\let\XETEX    \XeTeX
+\let\ETEX   \eTeX
+\let\PDFTEX \pdfTeX
+\let\PDFETEX\pdfeTeX
+\let\LUATEX \luaTeX
+\let\LuaTeX \luaTeX
+\let\XETEX  \XeTeX
 
-\def\MkApproved
-  {\rotate
+\unexpanded\def\MkApproved
+  {\dontleavehmode\rotate
      [\c!rotation={\ifnum\texengine=\luatexengine\ctxlua{tex.write(45-45*\the\luatexversion/100)}\else0\fi},
       \c!align=\v!middle,
       \c!foregroundstyle=\v!type,
@@ -306,5 +307,22 @@
       \c!framecolor=darkred,
       \c!rulethickness=2pt]
      {Mk\ifnum\texengine=\luatexengine IV\else II\fi\\approved}}
+
+
+% \unexpanded\def\luaTeX
+%   {\dontleavehmode\begingroup
+%    Lua%
+%    \setbox0\hbox{oT}%
+%    \setbox2\hbox{o\kern0ptT}%
+%    \ifdim\wd0=\wd2
+%      \setbox0\hbox dir TRT{To}%
+%      \setbox2\hbox{T\kern0pto}%
+%      \hskip\dimexpr\wd0-\wd2\relax
+%    \fi
+%    \TeX
+%    \endgroup}
+%
+% \let\LuaTeX \luaTeX
+% \let\LUATEX \luaTeX
 
 \protect \endinput

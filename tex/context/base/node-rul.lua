@@ -6,6 +6,38 @@ if not modules then modules = { } end modules ['node-rul'] = {
     license   = "see context related readme files"
 }
 
+-- this will go to an auxiliary module
+
+local glyph = node.id("glyph")
+local disc  = node.id("disc")
+local rule  = node.id("rule")
+
+function nodes.strip_range(first,last) -- todo: dir
+    local current = first
+    while current ~= last do
+        local id = current.id
+        if id == glyph or id == disc then
+--~         if id == glyph or id == rule or id == disc then
+            first = current
+            break
+        else
+            current = current.next
+        end
+    end
+    local current = last
+    while current ~= first do
+        local id = current.id
+--~         if id == glyph or id == rule or id == disc then
+        if id == glyph or id == disc then
+            last = current
+            break
+        else
+            current = current.prev
+        end
+    end
+    return first, last
+end
+
 -- todo: order and maybe other dimensions
 
 local trace_ruled = false  trackers.register("nodes.ruled", function(v) trace_ruled = v end)
@@ -21,6 +53,7 @@ local a_colorspace   = attributes.private('colormodel')
 local glyph   = node.id("glyph")
 local disc    = node.id("disc")
 local glue    = node.id("glue")
+local penalty = node.id("penalty")
 local kern    = node.id("kern")
 local hlist   = node.id("hlist")
 local vlist   = node.id("vlist")
@@ -31,7 +64,7 @@ local new_rule = nodes.rule
 local new_kern = nodes.kern
 local new_glue = nodes.glue
 
-local insert_before, insert_after = node.insert_before, node.insert_after
+local insert_before, insert_after, strip_range = node.insert_before, node.insert_after, nodes.strip_range
 local list_dimensions, has_attribute, set_attribute = node.dimensions, node.has_attribute, node.set_attribute
 local dimenfactor = fonts.dimenfactor
 local texwrite = tex.write
@@ -54,10 +87,10 @@ local function process_words(attribute,data,flush,head,parent)
     local n = head
     if n then
         local f, l, a, d, i, level
-        local continue, done = false, false
+        local continue, done, strip = false, false, false
         while n do
             local id = n.id
-            if id == glyph then
+            if id == glyph or id == rule then
                 local aa = has_attribute(n,attribute)
                 if aa then
                     if aa == a then
@@ -68,7 +101,7 @@ local function process_words(attribute,data,flush,head,parent)
                     else
                         -- possible extensions: when in same class then keep spanning
                         if f then
-                            head, done = flush(head,f,l,d,level,parent), true
+                            head, done = flush(head,f,l,d,level,parent,strip), true
                         end
                         f, l, a = n, n, aa
                         level, i = floor(a/1000), a%1000
@@ -77,19 +110,15 @@ local function process_words(attribute,data,flush,head,parent)
                     end
                 else
                     if f then
-                        head, done = flush(head,f,l,d,level,parent), true
+                        head, done = flush(head,f,l,d,level,parent,strip), true
                     end
                     f, l, a = nil, nil, nil
                 end
-            elseif f and id == disc then
-                l = n
-            elseif f and id == rule then
-                l = n
-            elseif f and id == kern and n.subtype == 0 then
+            elseif f and (id == disc or (id == kern and n.subtype == 0)) then
                 l = n
             elseif id == hlist or id == vlist then
                 if f then
-                    head, done = flush(head,f,l,d,level,parent), true
+                    head, done = flush(head,f,l,d,level,parent,strip), true
                     f, l, a = nil, nil, nil
                 end
                 local list = n.list
@@ -100,14 +129,22 @@ local function process_words(attribute,data,flush,head,parent)
                 if f and a then
                     l = n
                 end
-            elseif f and not continue then
-                head, done = flush(head,f,l,d,level,parent), true
-                f, l, a = nil, nil, nil
+            elseif f then
+                if continue then
+                    if id == penalty or id == kern then
+                        l = n
+                    elseif id == glue then
+                        l = n
+                    end
+                else
+                    head, done = flush(head,f,l,d,level,parent,strip), true
+                    f, l, a = nil, nil, nil
+                end
             end
             n = n.next
         end
         if f then
-            head, done = flush(head,f,l,d,level,parent), true
+            head, done = flush(head,f,l,d,level,parent,strip), true
         end
         return head, true -- todo: done
     else
@@ -131,8 +168,11 @@ function nodes.rules.define(settings)
     texwrite(#data)
 end
 
-local function flush_ruled(head,f,l,d,level,parent) -- not that fast but acceptable for this purpose
+local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
     local r, m
+    if true then
+        f, l = strip_range(f,l)
+    end
     local w = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,f,l.next)
     local method, offset, continue, dy, rulethickness, unit, order, max, ma, ca, ta =
         d.method, d.offset, d.continue, d.dy, d.rulethickness, d.unit, d.order, d.max, d.ma, d.ca, d.ta
@@ -207,7 +247,10 @@ function nodes.shifts.define(settings)
     texwrite(#data)
 end
 
-local function flush_shifted(head,first,last,data,level,parent) -- not that fast but acceptable for this purpose
+local function flush_shifted(head,first,last,data,level,parent,strip) -- not that fast but acceptable for this purpose
+    if true then
+        first, last = strip_range(first,last)
+    end
     local prev, next = first.prev, last.next
     first.prev, last.next = nil, nil
     local width, height, depth = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,first,next)

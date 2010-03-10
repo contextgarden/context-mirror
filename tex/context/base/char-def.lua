@@ -126207,6 +126207,7 @@ characters.data={
   description="MATHEMATICAL ITALIC CAPITAL V",
   direction="l",
   linebreak="al",
+--mathclass="variable",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D449,
  },

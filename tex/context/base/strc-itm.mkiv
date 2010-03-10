@@ -17,24 +17,26 @@
 
 \unprotect
 
-\newconditional\sublistitem       \setfalse\sublistitem
-\newconditional\symbollistitem    \setfalse\symbollistitem
-\newconditional\headlistitem      \setfalse\headlistitem
-\newconditional\introlistitem     \setfalse\introlistitem
-\newconditional\randomizeitems    \setfalse\randomizeitems
-\newconditional\autointrolistitem \setfalse\autointrolistitem
-\newconditional\optimizelistitem  \settrue \optimizelistitem
-\newconditional\packlistitem      \setfalse\packlistitem
-\newconditional\paragraphlistitem \setfalse\paragraphlistitem
-\newconditional\textlistitem      \setfalse\textlistitem
-\newconditional\firstlistitem     \setfalse\firstlistitem
-\newconditional\beforelistitem    \setfalse\beforelistitem
-\newconditional\afterlistitem     \setfalse\afterlistitem
-\newconditional\nowhitelistitem   \setfalse\nowhitelistitem
-\newconditional\joinedlistitem    \setfalse\joinedwhitelistitem
-\newconditional\reverselistitem   \setfalse\reverselistitem
-\newconditional\continuelistitems \setfalse\continuelistitems
-\newconditional\fittinglistitems  \setfalse\fittinglistitems
+\newconditional\sublistitem            \setfalse\sublistitem
+\newconditional\symbollistitem         \setfalse\symbollistitem
+\newconditional\headlistitem           \setfalse\headlistitem
+\newconditional\introlistitem          \setfalse\introlistitem
+\newconditional\randomizeitems         \setfalse\randomizeitems
+\newconditional\autointrolistitem      \setfalse\autointrolistitem
+\newconditional\optimizelistitem       \settrue \optimizelistitem
+\newconditional\packlistitem           \setfalse\packlistitem
+\newconditional\paragraphlistitem      \setfalse\paragraphlistitem
+\newconditional\textlistitem           \setfalse\textlistitem
+\newconditional\firstlistitem          \setfalse\firstlistitem
+\newconditional\beforelistitem         \setfalse\beforelistitem
+\newconditional\afterlistitem          \setfalse\afterlistitem
+\newconditional\nowhitelistitem        \setfalse\nowhitelistitem
+\newconditional\joinedlistitem         \setfalse\joinedwhitelistitem
+\newconditional\reverselistitem        \setfalse\reverselistitem
+\newconditional\continuelistitems      \setfalse\continuelistitems
+\newconditional\fittinglistitems       \setfalse\fittinglistitems
+\newconditional\indentedfirstlistitem  \setfalse\indentedfirstlistitem
+\newconditional\inlinelistitem         \setfalse\inlinelistitem
 
 \newcount\noflists
 \newcount\currentnoflists
@@ -248,8 +250,6 @@
      \fi
      \ifcsname\??op:::\itemgroupsecond\endcsname\csname\??op:::\itemgroupsecond\endcsname\fi
    \fi}
-
-\newconditional\inlinelistitem \setfalse\inlinelistitem
 
 \setvalue{\??op:::\v!packed   }{\packitems}
 \setvalue{\??op:::\v!intro    }{\settrue\introlistitem} % here? not set to false
@@ -620,6 +620,8 @@
            \v!middle=>\let\symalignleft\hfil,
            \v!center=>\let\symalignleft\hfil]}
 
+\let\currentitemindenting\empty
+
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -689,8 +691,11 @@
    \fi
    \dosetraggedcommand{\getitemparameter\currentitemlevel\c!align}\raggedcommand
    \dosetsymalign{\getitemparameter\currentitemlevel\c!symalign}%
-   \doifsomething{\getitemparameter\currentitemlevel\c!indenting}
-     {\normalexpanded{\noexpand\setupindenting[\getitemparameter\currentitemlevel\c!indenting]}}%
+   %\doifsomething{\getitemparameter\currentitemlevel\c!indenting}
+   %  {\normalexpanded{\noexpand\setupindenting[\v!reset,\v!yes,\getitemparameter\currentitemlevel\c!indenting]}}%
+   %  {\normalexpanded{\noexpand\setupindenting[\getitemparameter\currentitemlevel\c!indenting]}}%
+   %
+   \edef\currentitemindenting{\getitemparameter\currentitemlevel\c!indenting}%
    %
    \setitemlevel{#1}% moved to here
    \ifx\listitem\empty
@@ -997,7 +1002,7 @@
          \hfil
          \hskip\getitemparameter\currentitemlevel\c!distance}}}
 
-\unprotected\def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
+\def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
   {\ifconditional\textlistitem
     % begin of item
    \else
@@ -1005,8 +1010,16 @@
    \fi
    \advance\noflistelements\plusone
    \optimizelistitemsbreak
-   %\noindent %% WS: don't apply \noindent when the user sets 'first' in the indenting key
-   \checkindentation\ifindentfirstparagraph\indent\else\noindent\fi
+   \setfalse\indentedfirstlistitem
+   \ifx\currentitemindenting\empty \else
+     \normalexpanded{\noexpand\setupindenting[\v!reset,\v!yes,\currentitemindenting]}%
+     \doifnot{\getitemparameter\currentitemlevel\c!alignsymbol}\v!yes
+       {\ifindentfirstparagraph\settrue\indentedfirstlistitem\fi}%
+   \fi
+   \dontleavehmode
+   \ifconditional\indentedfirstlistitem
+     \hskip-\parindent
+   \fi
    \setbox\itemgroupitembox\hbox
      {\ifconditional\headlistitem
         \ifconditional\symbollistitem
@@ -1074,6 +1087,9 @@
    \setfalse\sublistitem
    \setfalse\symbollistitem
    \EveryPar{\ignorespaces}% needed ?
+   \ifconditional\indentedfirstlistitem
+     \hskip\parindent
+   \fi
    \ignorespaces}
 
 % For Wolfgang Schuster
@@ -1321,6 +1337,8 @@
   %\c!option=,
    \c!textdistance=\v!big,
    \c!command=\defaultitemcommand,
+   \c!indenting=\v!next,
+  %\c!alignsymbol=v!no,
    \c!symbol=\currentitemlevel]
 
 % new:

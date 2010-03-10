@@ -24,4 +24,6 @@
 \def\defmkivstop #1{\normalprotected\expandafter\def\csname\e!stop #1\endcsname}
 \def\defmkiv     #1{\normalprotected\expandafter\def\csname        #1\endcsname}
 
+\def\mkivflush   #1{\ctxlua{context._flush_(#1)}}
+
 \protect \endinput

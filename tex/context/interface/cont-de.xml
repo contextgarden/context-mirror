@@ -6120,6 +6120,7 @@
   </cd:command>
 
   <cd:command name="setupitemgroup" file="core-itm.tex">
+    <!-- we mis a few experimental keys here, like alignsymbol and indentation -->
     <cd:sequence>
       <cd:string value="setupitemgroup"/>
     </cd:sequence>

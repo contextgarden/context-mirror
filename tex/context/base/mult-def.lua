@@ -6490,6 +6490,9 @@ return {
    ["en"]="headalign",
    ["nl"]="kopuitlijnen",
   },
+  ["alignsymbol"]={
+   ["en"]="alignsymbol",
+  },
   ["export"]={
    ["en"]="export",
    ["nl"]="exporteer",
